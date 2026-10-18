@@ -1,0 +1,30 @@
+# Docs privés (non versionnés)
+docs/north-star.md
+docs/architecture.md
+
+# Dépendances et builds
+node_modules/
+.pnpm-store/
+.turbo/
+dist/
+build/
+.next/
+.expo/
+.wrangler/
+coverage/
+
+# Chaîne de contenu (Python, données brutes volumineuses)
+content/pipeline/data/
+__pycache__/
+*.pyc
+.venv/
+
+# Environnement et secrets
+.env
+.env.*
+!.env.example
+
+# Outils locaux
+.claude/settings.local.json
+.DS_Store
+*.log
