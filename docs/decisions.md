@@ -93,3 +93,38 @@ Pour ajouter ou modifier une décision, utiliser le skill `decision`.
 - **Conséquences :**
   - les données brutes restent hors du repo (`content/pipeline/data/` est ignoré par git) ;
   - le contrat entre la chaîne et l'API est le format de publication du catalogue, à définir avec le schéma de `cards`.
+
+## D-011 · Lint et formatage : Biome
+
+- **Statut :** Acceptée (2026-10-19)
+- **Choix :** Biome pour le lint et le formatage de tout le TypeScript du monorepo, configuré une fois à la racine.
+- **Pourquoi :** un seul outil, très rapide, configuration minimale.
+- **Conséquences :** pas d'ESLint ni de Prettier. Les quelques règles propres à Next.js ou Expo absentes de Biome sont acceptées comme manque.
+
+## D-012 · Runtime : Node 24 LTS
+
+- **Statut :** Acceptée (2026-10-19)
+- **Choix :** Node 24 LTS pour le développement, la CI et les outils. Version épinglée dans `.nvmrc` et le champ `engines`.
+- **Pourquoi :** LTS active, supportée jusqu'en 2028.
+- **Conséquences :** l'API s'exécute sur Cloudflare Workers (D-005), pas sur Node : le code de l'API reste compatible avec les deux.
+
+## D-013 · Commits : Conventional Commits
+
+- **Statut :** Acceptée (2026-10-19)
+- **Choix :** messages au format Conventional Commits (`feat:`, `fix:`, `chore:`…), vérifiés automatiquement.
+- **Pourquoi :** historique lisible, changelog générable plus tard.
+- **Conséquences :** un hook de commit refuse les messages non conformes.
+
+## D-014 · Tests : Vitest, Postgres réel pour l'intégration
+
+- **Statut :** Acceptée (2026-10-19)
+- **Choix :** Vitest pour les tests unitaires et d'intégration. Les tests d'intégration tournent contre un vrai Postgres (Docker en local, service Postgres en CI).
+- **Pourquoi :** rapide, natif TypeScript. Simuler la base cacherait les problèmes de transactions et de verrous des chemins critiques.
+- **Conséquences :** `docker compose up` est un prérequis pour les tests d'intégration en local.
+
+## D-015 · Hébergement du web : Cloudflare via OpenNext
+
+- **Statut :** Acceptée (2026-10-19)
+- **Choix :** l'app Next.js est déployée sur Cloudflare Workers avec l'adaptateur OpenNext (`@opennextjs/cloudflare`).
+- **Pourquoi :** tout chez le même hébergeur que l'API (D-005) : un seul compte, un seul CDN, des coûts qui suivent l'usage.
+- **Conséquences :** les fonctionnalités Next.js utilisées doivent être prises en charge par OpenNext. Vérifier la compatibilité avant d'adopter une fonctionnalité récente, et monter la version de Next.js seulement quand OpenNext la suit.

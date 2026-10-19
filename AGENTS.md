@@ -2,7 +2,25 @@
 
 Jeu de cartes à collectionner pour découvrir les mots rares et anciens du français. Boosters gratuits, collection, défis qui font monter les cartes en niveau, échanges entre joueurs. Web, iOS et Android.
 
-**État :** pré-code. Aucune app n'existe encore. La stack est décidée, le squelette du monorepo reste à créer.
+**État :** squelette du monorepo en place. Les apps démarrent mais n'ont encore aucune fonctionnalité de jeu.
+
+## Commandes
+
+```bash
+pnpm install                     # à la racine, Node 24 (voir .nvmrc)
+cp .env.example .env             # une fois
+docker compose up -d             # Postgres local sur le port 54329
+pnpm dev                         # toutes les apps (ou --filter @leximon/api, /web, /mobile)
+pnpm check                       # lint + typecheck + tests unitaires, à lancer avant de rendre la main
+pnpm test:integration            # tests contre Postgres (Docker requis)
+pnpm format                      # corrige le formatage (Biome)
+```
+
+- Ajouter une dépendance : `pnpm --filter <package> add <dep>`. Les versions partagées passent par le `catalog` de `pnpm-workspace.yaml`.
+- Dans `apps/mobile` : `pnpm expo install <dep>`, pour obtenir la version compatible avec le SDK.
+- Les packages internes exposent leurs sources TypeScript directement (pas d'étape de build) et s'importent sans extension.
+- Les scripts d'installation des dépendances sont bloqués par défaut. Pour en autoriser un, l'ajouter à `allowBuilds` dans `pnpm-workspace.yaml`.
+- `apps/web` et `apps/mobile` ont leur propre `AGENTS.md` (consignes Next.js et Expo), à lire avant d'y toucher.
 
 ## Où trouver quoi
 
@@ -30,17 +48,58 @@ Jeu de cartes à collectionner pour découvrir les mots rares et anciens du fran
 
 - **API sans état :** aucune donnée gardée en mémoire entre deux requêtes. L'état vit dans Postgres, la file ou un service temps réel dédié.
 - **Le serveur fait foi :** tirage des boosters, recharge, niveaux et échanges sont calculés côté serveur.
-- **Écritures :** chaque écriture est une transaction courte avec une clé d'idempotence.
+- **Écritures :** chaque écriture est une transaction courte avec une clé d'idempotence. Toute lecture-modification d'un état de joueur (portefeuille, exemplaires) verrouille sa ligne (`SELECT … FOR UPDATE`), et chaque route concernée a un test d'intégration avec des requêtes concurrentes.
 - **Catalogue statique :** le catalogue de cartes est versionné et servi par le CDN. L'affichage d'une carte ne lit jamais la base.
-- **Recharge :** le stock de boosters se calcule à la volée, sans tâche planifiée.
+- **Règles modifiables :** le stock de boosters se calcule à la volée, sans tâche planifiée. Un réglage de jeu qui peut changer (recharge, plafond, probabilités) est daté, et un changement ne s'applique jamais rétroactivement aux joueurs existants.
 - **Maîtrise et exemplaires :** la maîtrise est rangée par mot (`user_mastery`), les exemplaires par quantité (`user_cards`). Un échange ne touche jamais la maîtrise.
 - **Règles du jeu :** elles vivent dans `packages/core`, en TypeScript pur, sans I/O, et sont testées.
 - **Tâches de fond :** tout ce qui peut attendre passe par la file (notifications, images de partage, statistiques).
 - **Temps réel :** pas de WebSockets dans le chemin critique tant que la R&D D-007 n'a pas conclu.
 
+## Standards de code
+
+Objectif : un code lisible et facile à maintenir, performant et sûr, pensé pour les pics de charge dès la première ligne.
+
+- **Typage :**
+  - TypeScript en mode strict (`strict`, `noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`) ;
+  - pas de `any` ;
+  - les types partagés dérivent des schémas Zod de `packages/contract`.
+- **Frontières :**
+  - toute entrée externe est validée avec Zod (requêtes, messages de file, webhooks, fichiers du catalogue) ;
+  - on ne fait jamais confiance au client.
+- **Lisibilité :**
+  - logique dans des fonctions pures, I/O en bordure ;
+  - petites fonctions aux noms explicites ;
+  - pas d'abstraction avant le deuxième cas d'usage réel ;
+  - un commentaire explique le pourquoi, jamais le quoi.
+- **Erreurs :**
+  - erreurs typées et explicites, jamais avalées ;
+  - une erreur attendue (stock vide, offre expirée) est un résultat, pas une exception.
+- **Performance :**
+  - pas de requêtes N+1 ;
+  - un index pour chaque requête du chemin critique ;
+  - pagination par curseur ;
+  - réponses minimales ;
+  - rien de synchrone qui pourrait passer par la file ;
+  - budget : ouverture de booster sous 150 ms au 95e centile.
+- **Sécurité :**
+  - autorisation vérifiée côté serveur sur chaque route (le joueur possède-t-il cette carte ?) ;
+  - limites de débit ;
+  - générateur aléatoire cryptographique pour les tirages ;
+  - secrets uniquement par variables d'environnement ;
+  - aucune donnée personnelle dans les logs.
+- **Compatibilité :**
+  - des versions anciennes de l'app mobile restent en circulation, donc migrations additives et rétrocompatibles ;
+  - l'API ne casse jamais un client publié.
+- **Tests :**
+  - chaque règle de `packages/core` est testée, y compris statistiquement pour les tirages ;
+  - les chemins critiques sont testés contre un vrai Postgres ;
+  - test de charge avant chaque opération avec un streamer.
+- **Dépendances :** peu, maintenues et justifiées. Toute nouvelle dépendance est un choix structurant, donc à proposer au propriétaire.
+
 ## Stack
 
-pnpm + Turborepo · Next.js (web) · Expo (mobile) · Hono + Drizzle + Postgres (API) · Cloudflare + Postgres managé UE · Better Auth · Directus · chaîne de contenu Python en local. Le détail et les raisons sont dans `docs/decisions.md`.
+pnpm + Turborepo · Node 24 · Biome · Vitest · Next.js (web) · Expo (mobile) · Hono + Drizzle + Postgres (API) · Cloudflare + Postgres managé UE · Better Auth · Directus · chaîne de contenu Python en local. Le détail et les raisons sont dans `docs/decisions.md`.
 
 ## Structure prévue
 
@@ -56,7 +115,7 @@ docs/        voir le tableau ci-dessus
 ## Façon de travailler
 
 - **Le propriétaire pilote.** Pour tout choix structurant (dépendance, schéma, architecture, direction artistique), proposer les options avec une recommandation et le laisser trancher. Consigner ensuite la décision avec le skill `decision`.
-- **Il code lui-même une partie du projet**, a priori dans `packages/core`. Avant d'implémenter une règle du jeu, lui demander s'il veut la prendre. S'il la prend, fournir l'interface et les tests, pas l'implémentation.
+- **Par défaut, l'agent implémente.** Le propriétaire relit : dans le résumé de fin, expliquer les choix non évidents (règles du jeu, sécurité, performance) pour qu'il garde la main sur le code. S'il demande à coder une partie lui-même, fournir l'interface et les tests, pas l'implémentation.
 - **Langues :** code, identifiants et messages de commit en anglais. Docs, contenu des cartes et interface en français.
 - **Documentation en Markdown simple**, pas de pages HTML élaborées.
 - **Ne jamais commiter sans demande explicite.**
