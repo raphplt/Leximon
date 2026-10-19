@@ -6,7 +6,9 @@ import { AUTH_BASE_PATH, parseOrigins } from "./auth";
 import { createCardPoolLoader } from "./boosters/card-pool";
 import { boosterRoutes } from "./boosters/routes";
 import type { AppEnv } from "./context";
+import { meRoutes } from "./me/routes";
 import { withDatabase } from "./middleware/database";
+import { signupRateLimit } from "./middleware/rate-limit";
 
 /**
  * Builds the HTTP application. Kept separate from the Worker entry point so tests can
@@ -31,11 +33,14 @@ export function createApp() {
 
   app.get("/health", (c) => c.json({ status: "ok" }));
 
+  app.post(`${AUTH_BASE_PATH}/sign-in/anonymous`, signupRateLimit);
   app.on(["GET", "POST"], `${AUTH_BASE_PATH}/*`, withDatabase, (c) =>
     c.var.auth.handler(c.req.raw),
   );
   app.use("/boosters/*", withDatabase);
   app.route("/boosters", boosterRoutes(loadCardPool));
+  app.use("/me/*", withDatabase);
+  app.route("/me", meRoutes());
 
   app.notFound((c) => c.json({ error: "not_found" }, 404));
   app.onError((error, c) => {

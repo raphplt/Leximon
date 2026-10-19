@@ -1,3 +1,4 @@
+import type { BoosterSource } from "@leximon/contract";
 import {
   type BoosterWallet,
   computeRefill,
@@ -18,6 +19,7 @@ import { type CardPoolLoader, isEmptyPool } from "./card-pool";
 export interface OpenBoosterInput {
   readonly userId: string;
   readonly idempotencyKey: string;
+  readonly source: BoosterSource;
   readonly now: EpochMs;
   /** Fresh cryptographic seed; unused when the request replays an earlier open. */
   readonly seed: string;
@@ -36,6 +38,7 @@ export type OpenBoosterResult =
       readonly wallet: WalletView;
     }
   | { readonly kind: "stock_empty"; readonly nextRefillAt: EpochMs }
+  | { readonly kind: "collection_not_found" }
   | { readonly kind: "catalog_empty" };
 
 const { boosterWallets, boosterOpens, boosterOpenRequests, userCards } = schema;
@@ -55,10 +58,14 @@ export async function openBooster(
   loadCardPool: CardPoolLoader,
   input: OpenBoosterInput,
 ): Promise<OpenBoosterResult> {
-  const { userId, idempotencyKey, now } = input;
+  const { userId, idempotencyKey, source, now } = input;
 
   // Read outside the transaction: the catalog is shared and must not lengthen the lock.
-  const { pool, fingerprint } = await loadCardPool(db, now);
+  const loaded = await loadCardPool(db, source, now);
+  if (loaded === null) {
+    return { kind: "collection_not_found" };
+  }
+  const { pool, fingerprint } = loaded;
   if (isEmptyPool(pool)) {
     return { kind: "catalog_empty" };
   }
@@ -149,6 +156,7 @@ export async function openBooster(
         .values({
           id: openId,
           userId,
+          collectionId: source.kind === "collection" ? source.collectionId : null,
           seed: input.seed,
           poolFingerprint: fingerprint,
           pityCountersBefore: locked.pityCounters,

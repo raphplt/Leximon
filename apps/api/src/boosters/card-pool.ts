@@ -1,8 +1,11 @@
+import type { BoosterSource } from "@leximon/contract";
 import { byRarity, type CardPool, canonicalizePool, describePool, RARITIES } from "@leximon/core";
 import { type Database, schema } from "@leximon/db";
-import { isNull } from "drizzle-orm";
+import { and, eq, isNull, lte } from "drizzle-orm";
 
 const CACHE_TTL_MS = 60_000;
+/** Bounds memory: unknown collection ids sent by clients must not grow the cache forever. */
+const CACHE_MAX_ENTRIES = 256;
 
 export interface LoadedPool {
   /** Canonical pool: the same set of cards always gives the same draws for a given seed. */
@@ -12,32 +15,69 @@ export interface LoadedPool {
 }
 
 /**
- * Loads the cards that boosters can contain.
+ * Loads the cards a booster can contain, for a collection or for the discovery booster (every
+ * published collection). Returns `null` when the collection does not exist or is not published.
  *
- * The result is cached in the Worker isolate for a minute. This is not player state: the
- * catalog changes rarely, is the same for everyone, and a stale minute is harmless.
+ * Results are cached in the Worker isolate for a minute. This is not player state: the catalog
+ * changes rarely, is the same for everyone, and a stale minute is harmless.
  */
 export function createCardPoolLoader(ttlMs = CACHE_TTL_MS) {
-  let cached: { loaded: LoadedPool; expiresAt: number } | undefined;
+  const cache = new Map<string, { loaded: LoadedPool | null; expiresAt: number }>();
 
-  return async (db: Database, now: number): Promise<LoadedPool> => {
-    if (cached !== undefined && cached.expiresAt > now) {
-      return cached.loaded;
+  return async (db: Database, source: BoosterSource, now: number): Promise<LoadedPool | null> => {
+    const key = source.kind === "collection" ? `collection:${source.collectionId}` : "discovery";
+    const hit = cache.get(key);
+    if (hit !== undefined && hit.expiresAt > now) {
+      return hit.loaded;
     }
-    const rows = await db
-      .select({ id: schema.cards.id, rarity: schema.cards.rarity })
-      .from(schema.cards)
-      .where(isNull(schema.cards.retiredAt));
 
-    const loaded = await fingerprintPool(
-      byRarity((rarity) => rows.filter((row) => row.rarity === rarity).map((row) => row.id)),
-    );
-    cached = { loaded, expiresAt: now + ttlMs };
+    const loaded = await loadPool(db, source, new Date(now));
+    cache.delete(key);
+    if (cache.size >= CACHE_MAX_ENTRIES) {
+      const oldest = cache.keys().next().value;
+      if (oldest !== undefined) cache.delete(oldest);
+    }
+    cache.set(key, { loaded, expiresAt: now + ttlMs });
     return loaded;
   };
 }
 
 export type CardPoolLoader = ReturnType<typeof createCardPoolLoader>;
+
+async function loadPool(
+  db: Database,
+  source: BoosterSource,
+  now: Date,
+): Promise<LoadedPool | null> {
+  const { cards, collections } = schema;
+  const published = lte(collections.publishedAt, now);
+
+  if (source.kind === "collection") {
+    const [collection] = await db
+      .select({ id: collections.id })
+      .from(collections)
+      .where(and(eq(collections.id, source.collectionId), published));
+    if (collection === undefined) {
+      return null;
+    }
+  }
+
+  const rows = await db
+    .select({ id: cards.id, rarity: cards.rarity })
+    .from(cards)
+    .innerJoin(collections, eq(collections.id, cards.collectionId))
+    .where(
+      and(
+        isNull(cards.retiredAt),
+        published,
+        source.kind === "collection" ? eq(cards.collectionId, source.collectionId) : undefined,
+      ),
+    );
+
+  return fingerprintPool(
+    byRarity((rarity) => rows.filter((row) => row.rarity === rarity).map((row) => row.id)),
+  );
+}
 
 export async function fingerprintPool(pool: CardPool): Promise<LoadedPool> {
   const canonical = canonicalizePool(pool);

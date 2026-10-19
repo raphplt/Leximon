@@ -1,0 +1,124 @@
+import {
+  type BoosterWalletResponse,
+  type OwnedCardsResponse,
+  ownedCardsQuerySchema,
+} from "@leximon/contract";
+import { computeRefill, createFullWallet, REFILL_SCHEDULE } from "@leximon/core";
+import { schema } from "@leximon/db";
+import { and, asc, eq, gt, or } from "drizzle-orm";
+import { Hono } from "hono";
+import type { AppEnv } from "../context";
+import { playerRateLimit } from "../middleware/rate-limit";
+import { requireUser } from "../middleware/require-user";
+
+const { boosterWallets, cards, userCards } = schema;
+
+/** Player state for the current session. Never cached: it changes with every action. */
+export function meRoutes() {
+  const routes = new Hono<AppEnv>();
+  routes.use(requireUser);
+  routes.use(playerRateLimit);
+  routes.use(async (c, next) => {
+    await next();
+    c.header("Cache-Control", "no-store");
+  });
+
+  routes.get("/wallet", async (c) => {
+    const now = Date.now();
+    const [row] = await c.var.db
+      .select()
+      .from(boosterWallets)
+      .where(eq(boosterWallets.userId, c.var.userId));
+    // A player who never opened a booster has no row yet: their stock is full.
+    const wallet =
+      row === undefined
+        ? createFullWallet(REFILL_SCHEDULE, now)
+        : { stored: row.stored, progressMs: row.progressMs, asOf: row.asOf.getTime() };
+    const state = computeRefill(wallet, REFILL_SCHEDULE, now);
+    return c.json<BoosterWalletResponse>({
+      stored: state.stored,
+      nextRefillAt: state.nextRefillAt === null ? null : new Date(state.nextRefillAt).toISOString(),
+    });
+  });
+
+  routes.get("/cards", async (c) => {
+    const query = ownedCardsQuerySchema.safeParse(c.req.query());
+    if (!query.success) {
+      return c.json({ error: "invalid_request" }, 400);
+    }
+    const { collectionId, limit } = query.data;
+    const after = query.data.cursor === undefined ? null : decodeCursor(query.data.cursor);
+    if (after === undefined) {
+      return c.json({ error: "invalid_cursor" }, 400);
+    }
+
+    const rows = await c.var.db
+      .select({
+        cardId: userCards.cardId,
+        variant: userCards.variant,
+        quantity: userCards.quantity,
+        firstObtainedAt: userCards.firstObtainedAt,
+      })
+      .from(userCards)
+      .innerJoin(cards, eq(cards.id, userCards.cardId))
+      .where(
+        and(
+          eq(userCards.userId, c.var.userId),
+          gt(userCards.quantity, 0),
+          collectionId === undefined ? undefined : eq(cards.collectionId, collectionId),
+          after === null
+            ? undefined
+            : or(
+                gt(userCards.cardId, after.cardId),
+                and(eq(userCards.cardId, after.cardId), gt(userCards.variant, after.variant)),
+              ),
+        ),
+      )
+      .orderBy(asc(userCards.cardId), asc(userCards.variant))
+      // One extra row tells whether another page exists.
+      .limit(limit + 1);
+
+    const page = rows.slice(0, limit);
+    const last = page.at(-1);
+    return c.json<OwnedCardsResponse>({
+      cards: page.map((row) => ({ ...row, firstObtainedAt: row.firstObtainedAt.toISOString() })),
+      nextCursor:
+        rows.length > limit && last !== undefined
+          ? encodeCursor({ cardId: last.cardId, variant: last.variant })
+          : null,
+    });
+  });
+
+  return routes;
+}
+
+interface CardCursor {
+  readonly cardId: string;
+  readonly variant: string;
+}
+
+function encodeCursor(cursor: CardCursor): string {
+  return btoa(JSON.stringify([cursor.cardId, cursor.variant]))
+    .replaceAll("+", "-")
+    .replaceAll("/", "_")
+    .replaceAll("=", "");
+}
+
+/** `undefined` when the cursor is malformed. */
+function decodeCursor(value: string): CardCursor | undefined {
+  try {
+    const json = atob(value.replaceAll("-", "+").replaceAll("_", "/"));
+    const parsed: unknown = JSON.parse(json);
+    if (
+      Array.isArray(parsed) &&
+      parsed.length === 2 &&
+      typeof parsed[0] === "string" &&
+      typeof parsed[1] === "string"
+    ) {
+      return { cardId: parsed[0], variant: parsed[1] };
+    }
+  } catch {
+    // Falls through to the malformed result.
+  }
+  return undefined;
+}

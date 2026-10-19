@@ -1,4 +1,5 @@
 import {
+  type BoosterSource,
   boosterStockEmptySchema,
   IDEMPOTENCY_KEY_HEADER,
   openBoosterResponseSchema,
@@ -9,15 +10,15 @@ import {
   DRAW_SCHEDULE,
   drawBooster,
   drawRulesAt,
-  RARITIES,
   REFILL_SCHEDULE,
 } from "@leximon/core";
 import { createDb, schema } from "@leximon/db";
 import { testDatabaseUrl } from "@leximon/db/testing";
-import { count, eq, isNull, type Logger, sum } from "drizzle-orm";
+import { and, count, eq, isNotNull, isNull, type Logger, sum } from "drizzle-orm";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { createApp } from "../app";
 import { TEST_ORIGIN, testEnv } from "../test-env";
+import { type Guest, seedTestCatalog, signInAsGuest as signInAsGuestWith } from "../test-support";
 import { createCardPoolLoader, fingerprintPool } from "./card-pool";
 import { openBooster as openBoosterService } from "./open-booster";
 
@@ -27,48 +28,30 @@ const app = createApp();
 const { db, close } = createDb(url, { maxConnections: 2 });
 const CAPACITY = REFILL_SCHEDULE[0].capacity;
 
-beforeAll(async () => {
-  await db
-    .insert(schema.cards)
-    .values(
-      RARITIES.flatMap((rarity) =>
-        [1, 2, 3].map((n) => ({ id: `${rarity}-${n}`, lemma: `${rarity} ${n}`, rarity })),
-      ),
-    )
-    .onConflictDoNothing();
-});
+beforeAll(() => seedTestCatalog(db));
 
 afterAll(close);
 
-interface Guest {
-  readonly cookie: string;
-  readonly userId: string;
-}
+const DISCOVERY: BoosterSource = { kind: "discovery" };
+const signInAsGuest = () => signInAsGuestWith(app, env);
 
-async function signInAsGuest(): Promise<Guest> {
-  const response = await app.request(
-    "/api/auth/sign-in/anonymous",
-    {
-      method: "POST",
-      headers: { origin: TEST_ORIGIN, "content-type": "application/json" },
-      body: "{}",
-    },
-    env,
-  );
-  expect(response.status).toBe(200);
-  const cookie = response.headers
-    .getSetCookie()
-    .map((header) => header.split(";")[0])
-    .join("; ");
-  const body = (await response.json()) as { user: { id: string } };
-  return { cookie, userId: body.user.id };
-}
-
-function openBooster(guest: Guest | null, key: string | null = crypto.randomUUID()) {
-  const headers: Record<string, string> = { origin: TEST_ORIGIN };
+function openBooster(
+  guest: Guest | null,
+  key: string | null = crypto.randomUUID(),
+  body: unknown = DISCOVERY,
+  target = app,
+) {
+  const headers: Record<string, string> = {
+    origin: TEST_ORIGIN,
+    "content-type": "application/json",
+  };
   if (guest !== null) headers["cookie"] = guest.cookie;
   if (key !== null) headers[IDEMPOTENCY_KEY_HEADER] = key;
-  return app.request("/boosters/open", { method: "POST", headers }, env);
+  return target.request(
+    "/boosters/open",
+    { method: "POST", headers, body: JSON.stringify(body) },
+    env,
+  );
 }
 
 async function ownedCopies(userId: string): Promise<number> {
@@ -195,7 +178,8 @@ describe("booster draws", () => {
     const rows = await db
       .select({ id: schema.cards.id, rarity: schema.cards.rarity })
       .from(schema.cards)
-      .where(isNull(schema.cards.retiredAt));
+      .innerJoin(schema.collections, eq(schema.collections.id, schema.cards.collectionId))
+      .where(and(isNull(schema.cards.retiredAt), isNotNull(schema.collections.publishedAt)));
     const { pool, fingerprint } = await fingerprintPool(
       byRarity((rarity) => rows.filter((row) => row.rarity === rarity).map((row) => row.id)),
     );
@@ -236,18 +220,7 @@ describe("booster draws", () => {
       .set({ retiredAt: new Date() })
       .where(isNull(schema.cards.retiredAt));
     try {
-      const response = await freshApp.request(
-        "/boosters/open",
-        {
-          method: "POST",
-          headers: {
-            origin: TEST_ORIGIN,
-            cookie: guest.cookie,
-            [IDEMPOTENCY_KEY_HEADER]: crypto.randomUUID(),
-          },
-        },
-        env,
-      );
+      const response = await openBooster(guest, crypto.randomUUID(), DISCOVERY, freshApp);
       expect(response.status).toBe(503);
       expect(await openCount(guest.userId)).toBe(0);
     } finally {
@@ -271,6 +244,7 @@ describe("open latency budget", () => {
       openBoosterService(counted.db, loadCardPool, {
         userId,
         idempotencyKey: crypto.randomUUID(),
+        source: DISCOVERY,
         now: Date.now(),
         seed: "0123456789abcdef0123456789abcdef",
       });
@@ -283,5 +257,77 @@ describe("open latency budget", () => {
     } finally {
       await counted.close();
     }
+  });
+});
+
+describe("booster sources", () => {
+  it("draw a collection booster only from that collection, and record it", async () => {
+    const guest = await signInAsGuest();
+    const response = await openBooster(guest, crypto.randomUUID(), {
+      kind: "collection",
+      collectionId: "test-b",
+    });
+    const body = openBoosterResponseSchema.parse(await response.json());
+    expect(body.cards.every((card) => card.cardId.startsWith("test-b-"))).toBe(true);
+
+    const [open] = await db
+      .select({ collectionId: schema.boosterOpens.collectionId })
+      .from(schema.boosterOpens)
+      .where(eq(schema.boosterOpens.id, body.openId));
+    expect(open?.collectionId).toBe("test-b");
+  });
+
+  it("draw the discovery booster from every published collection only", async () => {
+    const loaded = await createCardPoolLoader()(db, DISCOVERY, Date.now());
+    const ids = Object.values(loaded?.pool ?? {}).flat();
+    expect(ids.some((id) => id.startsWith("test-a-"))).toBe(true);
+    expect(ids.some((id) => id.startsWith("test-b-"))).toBe(true);
+    expect(ids.some((id) => id.startsWith("test-hidden-"))).toBe(false);
+  });
+
+  it.each([
+    ["unknown", "does-not-exist"],
+    ["unpublished", "test-hidden"],
+  ])(
+    "answer 404 for an %s collection, without consuming anything",
+    async (_label, collectionId) => {
+      const guest = await signInAsGuest();
+      const response = await openBooster(guest, crypto.randomUUID(), {
+        kind: "collection",
+        collectionId,
+      });
+      expect(response.status).toBe(404);
+      expect(await response.json()).toEqual({ error: "collection_not_found" });
+      expect(await openCount(guest.userId)).toBe(0);
+    },
+  );
+
+  it.each([
+    ["null body", null],
+    ["unknown kind", { kind: "mystery" }],
+    ["collection without id", { kind: "collection" }],
+  ])("reject an invalid request: %s", async (_label, body) => {
+    const guest = await signInAsGuest();
+    const response = await openBooster(guest, crypto.randomUUID(), body);
+    expect(response.status).toBe(400);
+  });
+
+  it("reject a body that is not JSON", async () => {
+    const guest = await signInAsGuest();
+    const response = await app.request(
+      "/boosters/open",
+      {
+        method: "POST",
+        headers: {
+          origin: TEST_ORIGIN,
+          cookie: guest.cookie,
+          "content-type": "application/json",
+          [IDEMPOTENCY_KEY_HEADER]: crypto.randomUUID(),
+        },
+        body: "{not json",
+      },
+      env,
+    );
+    expect(response.status).toBe(400);
   });
 });

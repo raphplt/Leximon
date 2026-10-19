@@ -1,0 +1,163 @@
+import {
+  boosterWalletSchema,
+  IDEMPOTENCY_KEY_HEADER,
+  type OwnedCardsResponse,
+  ownedCardsResponseSchema,
+} from "@leximon/contract";
+import { REFILL_SCHEDULE } from "@leximon/core";
+import { createDb, schema } from "@leximon/db";
+import { testDatabaseUrl } from "@leximon/db/testing";
+import { count, eq, sum } from "drizzle-orm";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { createApp } from "../app";
+import { TEST_ORIGIN, testEnv } from "../test-env";
+import { type Guest, seedTestCatalog, signInAsGuest } from "../test-support";
+
+const url = testDatabaseUrl();
+const env = testEnv(url);
+const app = createApp();
+const { db, close } = createDb(url, { maxConnections: 1 });
+const CAPACITY = REFILL_SCHEDULE[0].capacity;
+
+beforeAll(() => seedTestCatalog(db));
+afterAll(close);
+
+function get(guest: Guest | null, path: string) {
+  const headers: Record<string, string> = { origin: TEST_ORIGIN };
+  if (guest !== null) headers["cookie"] = guest.cookie;
+  return app.request(path, { headers }, env);
+}
+
+async function open(guest: Guest, collectionId?: string) {
+  const response = await app.request(
+    "/boosters/open",
+    {
+      method: "POST",
+      headers: {
+        origin: TEST_ORIGIN,
+        cookie: guest.cookie,
+        "content-type": "application/json",
+        [IDEMPOTENCY_KEY_HEADER]: crypto.randomUUID(),
+      },
+      body: JSON.stringify(
+        collectionId === undefined ? { kind: "discovery" } : { kind: "collection", collectionId },
+      ),
+    },
+    env,
+  );
+  expect(response.status).toBe(200);
+}
+
+describe("GET /me/wallet", () => {
+  it("requires a session", async () => {
+    expect((await get(null, "/me/wallet")).status).toBe(401);
+  });
+
+  it("shows a full stock to a new player, without writing anything", async () => {
+    const guest = await signInAsGuest(app, env);
+    const response = await get(guest, "/me/wallet");
+
+    expect(response.status).toBe(200);
+    expect(response.headers.get("cache-control")).toBe("no-store");
+    expect(boosterWalletSchema.parse(await response.json())).toEqual({
+      stored: CAPACITY,
+      nextRefillAt: null,
+    });
+    const [row] = await db
+      .select({ total: count() })
+      .from(schema.boosterWallets)
+      .where(eq(schema.boosterWallets.userId, guest.userId));
+    expect(row?.total).toBe(0);
+  });
+
+  it("reflects opened boosters and the next refill", async () => {
+    const guest = await signInAsGuest(app, env);
+    await open(guest);
+    const body = boosterWalletSchema.parse(await (await get(guest, "/me/wallet")).json());
+    expect(body.stored).toBe(CAPACITY - 1);
+    expect(Date.parse(body.nextRefillAt ?? "")).toBeGreaterThan(Date.now());
+  });
+});
+
+describe("GET /me/cards", () => {
+  it("requires a session", async () => {
+    expect((await get(null, "/me/cards")).status).toBe(401);
+  });
+
+  it("lists every owned copy, across pages, in a stable order", async () => {
+    const guest = await signInAsGuest(app, env);
+    for (let i = 0; i < 3; i++) await open(guest);
+
+    const pages: OwnedCardsResponse[] = [];
+    let cursor: string | null = null;
+    do {
+      const query: string = cursor === null ? "limit=2" : `limit=2&cursor=${cursor}`;
+      const page = ownedCardsResponseSchema.parse(
+        await (await get(guest, `/me/cards?${query}`)).json(),
+      );
+      pages.push(page);
+      cursor = page.nextCursor;
+    } while (cursor !== null);
+
+    const listed = pages.flatMap((page) => page.cards);
+    const ids = listed.map((card) => card.cardId);
+    expect(ids).toEqual([...ids].sort((a, b) => (a < b ? -1 : a > b ? 1 : 0)));
+    expect(new Set(ids).size).toBe(ids.length);
+
+    const [owned] = await db
+      .select({ total: sum(schema.userCards.quantity) })
+      .from(schema.userCards)
+      .where(eq(schema.userCards.userId, guest.userId));
+    expect(listed.reduce((total, card) => total + card.quantity, 0)).toBe(Number(owned?.total));
+  });
+
+  it("filters by collection", async () => {
+    const guest = await signInAsGuest(app, env);
+    await open(guest, "test-a");
+    await open(guest, "test-b");
+
+    const body = ownedCardsResponseSchema.parse(
+      await (await get(guest, "/me/cards?collectionId=test-a")).json(),
+    );
+    expect(body.cards.length).toBeGreaterThan(0);
+    expect(body.cards.every((card) => card.cardId.startsWith("test-a-"))).toBe(true);
+  });
+
+  it("returns an empty first page to a new player", async () => {
+    const guest = await signInAsGuest(app, env);
+    const body = ownedCardsResponseSchema.parse(await (await get(guest, "/me/cards")).json());
+    expect(body).toEqual({ cards: [], nextCursor: null });
+  });
+
+  it.each([
+    ["limit too high", "/me/cards?limit=10000"],
+    ["invalid collection id", "/me/cards?collectionId=Not%20A%20Slug"],
+    ["malformed cursor", "/me/cards?cursor=%%%"],
+  ])("rejects an invalid query: %s", async (_label, path) => {
+    const guest = await signInAsGuest(app, env);
+    expect((await get(guest, path)).status).toBe(400);
+  });
+});
+
+describe("player rate limit", () => {
+  it("answers 429 once the player is over the limit, keyed by player", async () => {
+    const guest = await signInAsGuest(app, env);
+    const keys: string[] = [];
+    const limited: Env = {
+      ...env,
+      PLAYER_RATE_LIMITER: {
+        limit: async ({ key }) => {
+          keys.push(key);
+          return { success: false };
+        },
+      },
+    };
+    const response = await app.request(
+      "/me/wallet",
+      { headers: { origin: TEST_ORIGIN, cookie: guest.cookie } },
+      limited,
+    );
+    expect(response.status).toBe(429);
+    expect(keys).toEqual([`PLAYER_RATE_LIMITER:${guest.userId}`]);
+  });
+});

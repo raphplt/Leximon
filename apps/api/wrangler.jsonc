@@ -16,6 +16,21 @@
     // Comma-separated origins allowed to call the API with credentials (web app).
     "TRUSTED_ORIGINS": "http://localhost:3000"
   },
+  // Counted per Cloudflare location. Namespace ids are unique per account: never reuse one.
+  "ratelimits": [
+    // Guest account creation, per IP. High enough for a classroom behind a single address.
+    {
+      "name": "SIGNUP_RATE_LIMITER",
+      "namespace_id": "1001",
+      "simple": { "limit": 60, "period": 60 }
+    },
+    // Authenticated requests, per player.
+    {
+      "name": "PLAYER_RATE_LIMITER",
+      "namespace_id": "1002",
+      "simple": { "limit": 120, "period": 60 }
+    }
+  ],
   "hyperdrive": [
     {
       "binding": "HYPERDRIVE",

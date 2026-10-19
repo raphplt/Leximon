@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { boosterStockEmptySchema, openBoosterResponseSchema } from "./boosters";
+import {
+  boosterStockEmptySchema,
+  openBoosterRequestSchema,
+  openBoosterResponseSchema,
+} from "./boosters";
 import { idempotencyKeySchema } from "./common";
 
 describe("booster contract", () => {
@@ -30,5 +34,19 @@ describe("booster contract", () => {
       true,
     );
     expect(idempotencyKeySchema.safeParse("retry-1").success).toBe(false);
+  });
+
+  it("accepts a collection or discovery request, and nothing else", () => {
+    expect(openBoosterRequestSchema.safeParse({ kind: "discovery" }).success).toBe(true);
+    expect(
+      openBoosterRequestSchema.safeParse({ kind: "collection", collectionId: "grand-siecle" })
+        .success,
+    ).toBe(true);
+    expect(openBoosterRequestSchema.safeParse({ kind: "collection" }).success).toBe(false);
+    expect(
+      openBoosterRequestSchema.safeParse({ kind: "collection", collectionId: "Grand Siècle" })
+        .success,
+    ).toBe(false);
+    expect(openBoosterRequestSchema.safeParse({ kind: "mystery" }).success).toBe(false);
   });
 });

@@ -3,9 +3,11 @@ import {
   IDEMPOTENCY_KEY_HEADER,
   idempotencyKeySchema,
   type OpenBoosterResponse,
+  openBoosterRequestSchema,
 } from "@leximon/contract";
 import { Hono } from "hono";
 import type { AppEnv } from "../context";
+import { playerRateLimit } from "../middleware/rate-limit";
 import { requireUser } from "../middleware/require-user";
 import type { CardPoolLoader } from "./card-pool";
 import { openBooster } from "./open-booster";
@@ -14,15 +16,20 @@ import { generateSeed } from "./seed";
 export function boosterRoutes(loadCardPool: CardPoolLoader) {
   const routes = new Hono<AppEnv>();
 
-  routes.post("/open", requireUser, async (c) => {
+  routes.post("/open", requireUser, playerRateLimit, async (c) => {
     const key = idempotencyKeySchema.safeParse(c.req.header(IDEMPOTENCY_KEY_HEADER));
     if (!key.success) {
       return c.json({ error: "invalid_idempotency_key" }, 400);
+    }
+    const body = openBoosterRequestSchema.safeParse(await c.req.json().catch(() => null));
+    if (!body.success) {
+      return c.json({ error: "invalid_request" }, 400);
     }
 
     const result = await openBooster(c.var.db, loadCardPool, {
       userId: c.var.userId,
       idempotencyKey: key.data,
+      source: body.data,
       now: Date.now(),
       seed: generateSeed(),
     });
@@ -45,6 +52,8 @@ export function boosterRoutes(loadCardPool: CardPoolLoader) {
           },
           409,
         );
+      case "collection_not_found":
+        return c.json({ error: "collection_not_found" }, 404);
       case "catalog_empty":
         return c.json({ error: "catalog_unavailable" }, 503);
     }

@@ -2,6 +2,17 @@ import { describe, expect, it } from "vitest";
 import { createApp } from "./app";
 import { TEST_ORIGIN, testEnv } from "./test-env";
 
+function recordingLimiter(success: boolean) {
+  const keys: string[] = [];
+  const limiter: RateLimit = {
+    limit: async ({ key }) => {
+      keys.push(key);
+      return { success };
+    },
+  };
+  return { limiter, keys };
+}
+
 describe("api", () => {
   it("answers the health check", async () => {
     const response = await createApp().request("/health", {}, testEnv());
@@ -35,5 +46,28 @@ describe("api", () => {
     const response = await createApp().request("/nope", {}, testEnv());
     expect(response.status).toBe(404);
     expect(await response.json()).toEqual({ error: "not_found" });
+  });
+
+  it("limits guest sign-ups per address before touching the database", async () => {
+    const { limiter, keys } = recordingLimiter(false);
+    // The connection string points nowhere: a database access would fail the request with 500.
+    const env = { ...testEnv(), SIGNUP_RATE_LIMITER: limiter };
+    const response = await createApp().request(
+      "/api/auth/sign-in/anonymous",
+      {
+        method: "POST",
+        headers: {
+          origin: TEST_ORIGIN,
+          "content-type": "application/json",
+          "cf-connecting-ip": "203.0.113.7",
+        },
+        body: "{}",
+      },
+      env,
+    );
+    expect(response.status).toBe(429);
+    expect(response.headers.get("retry-after")).toBe("60");
+    expect(await response.json()).toEqual({ error: "rate_limited" });
+    expect(keys).toEqual(["SIGNUP_RATE_LIMITER:203.0.113.7"]);
   });
 });

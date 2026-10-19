@@ -50,8 +50,8 @@ export default function () {
 
   // Capacity is 6: the 7th open must be refused with 409.
   for (let attempt = 1; attempt <= 7; attempt++) {
-    const response = http.post(`${BASE_URL}/boosters/open`, null, {
-      headers: { Origin: ORIGIN, "Idempotency-Key": uuidV4() },
+    const response = http.post(`${BASE_URL}/boosters/open`, JSON.stringify({ kind: "discovery" }), {
+      headers: { Origin: ORIGIN, "Content-Type": "application/json", "Idempotency-Key": uuidV4() },
       tags: { name: "open" },
     });
     check(response, {

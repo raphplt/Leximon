@@ -1,6 +1,6 @@
 import { RARITIES, type Rarity } from "@leximon/core";
 import { z } from "zod";
-import { timestampSchema } from "./common";
+import { slugSchema, timestampSchema } from "./common";
 
 export const raritySchema = z.enum(RARITIES);
 
@@ -25,6 +25,17 @@ export const boosterWalletSchema = z.object({
   nextRefillAt: timestampSchema.nullable(),
 });
 export type BoosterWalletResponse = z.infer<typeof boosterWalletSchema>;
+
+/** Which booster to open: a collection's, or the discovery booster drawn from the whole catalog. */
+export const boosterSourceSchema = z.discriminatedUnion("kind", [
+  z.object({ kind: z.literal("collection"), collectionId: slugSchema }),
+  z.object({ kind: z.literal("discovery") }),
+]);
+export type BoosterSource = z.infer<typeof boosterSourceSchema>;
+
+/** `POST /boosters/open` request body. */
+export const openBoosterRequestSchema = boosterSourceSchema;
+export type OpenBoosterRequest = z.infer<typeof openBoosterRequestSchema>;
 
 /** `POST /boosters/open`, 200. */
 export const openBoosterResponseSchema = z.object({
