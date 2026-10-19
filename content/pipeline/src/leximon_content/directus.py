@@ -9,9 +9,10 @@ from itertools import pairwise
 import httpx
 
 from . import config, littre, ngram
-from .checks import Check, failed
+from .checks import Check, failed, symbol
 from .drafting import THEMES, CardDraft
-from .rarity import LABELS, RarityRule, can_be_pepite, frequency_label, rarity, rule_on
+from .quality import REVIEW_REASONS, Decision
+from .rarity import LABELS, RarityRule, frequency_label, rarity, rule_on
 
 COLLECTION = "card_drafts"
 VERDICTS = {
@@ -53,9 +54,34 @@ FIELDS = [
         "pepite",
         "boolean",
         "boolean",
+        readonly=True,
         width="half",
-        note="Une carte qu'on serait fier de tirer. Proposée par le modèle quand le mot est assez "
-        "rare pour être Épique ou Légendaire ; sans effet sur un mot plus courant.",
+        note="Choisie parmi les mots assez rares pour être Épique ou Légendaire : les meilleures "
+        "notes de charme, dans les proportions de la pyramide.",
+    ),
+    _field(
+        "charm_score",
+        "float",
+        "input",
+        readonly=True,
+        width="half",
+        note="Note de charme sur 10 donnée par un second modèle (Opus), moyenne de deux lots.",
+    ),
+    _field(
+        "to_review",
+        "boolean",
+        "boolean",
+        readonly=True,
+        width="half",
+        note="Relecture humaine : un échantillon au hasard, chaque Légendaire, chaque carte signalée.",
+    ),
+    _field(
+        "review_reasons",
+        "json",
+        "tags",
+        readonly=True,
+        width="half",
+        options={"presets": list(REVIEW_REASONS.values()), "allowCustom": False},
     ),
     _field(
         "modern_frequency",
@@ -87,6 +113,13 @@ FIELDS = [
         readonly=True,
         note="Avis du modèle sur l'intérêt du mot.",
     ),
+    _field(
+        "faithfulness",
+        "text",
+        "input-multiline",
+        readonly=True,
+        note="Comparaison de la carte avec l'entrée du Littré par un second modèle (Opus).",
+    ),
     _field("automatic_checks", "text", "input-multiline", readonly=True),
     _field(
         "verdict",
@@ -110,6 +143,7 @@ FIELDS = [
     _field("original_etymology", "text", hidden=True, readonly=True),
     _field("automatic_checks_failed", "json", hidden=True, readonly=True),
     _field("selection", "json", hidden=True, readonly=True),
+    _field("model_pepite", "boolean", hidden=True, readonly=True),
     _field("cost_usd", "float", hidden=True, readonly=True),
     {
         "field": "reviewed_at",
@@ -151,7 +185,12 @@ def ensure_schema(client: httpx.Client) -> None:
         f["field"] for f in client.get(f"/fields/{COLLECTION}").raise_for_status().json()["data"]
     }
     for definition in FIELDS:
-        if definition["field"] not in existing:
+        if definition["field"] in existing:
+            # Keeps notes and read-only flags in step with the code.
+            client.patch(
+                f"/fields/{COLLECTION}/{definition['field']}", json={"meta": definition["meta"]}
+            ).raise_for_status()
+        else:
             client.post(f"/fields/{COLLECTION}", json=definition).raise_for_status()
 
 
@@ -162,6 +201,7 @@ def draft_row(
     entry: littre.Entry,
     automatic: list[Check],
     selected: dict[str, object],
+    decision: Decision,
 ) -> dict[str, object]:
     citations = entry.citations[:12]
     quote = (
@@ -173,7 +213,6 @@ def draft_row(
     word = entry.headword.lower()
     frequency = ngram.frequency(word)
     rule = rule_on(date.today())
-    pepite = draft.pepite and frequency is not None and can_be_pepite(frequency, rule)
     return {
         "run": run,
         "model": result["model"],
@@ -189,15 +228,18 @@ def draft_row(
         "quote_reference": quote.reference if quote else None,
         "themes": draft.themes,
         "model_opinion": f"{draft.suitability} : {draft.suitability_reason}",
-        "automatic_checks": "\n".join(
-            f"{'✓' if c.passed else '✗'} {c.name} — {c.detail}" for c in automatic
-        ),
+        "automatic_checks": "\n".join(f"{symbol(c)} {c.name} — {c.detail}" for c in automatic),
         "automatic_checks_failed": failed(automatic),
         "littre_entry": littre.render(entry),
         "selection": selected,
         "modern_frequency": frequency_label(frequency),
-        "pepite": pepite,
-        "rarity": rarity_label(frequency, pepite, rule),
+        "pepite": decision.pepite,
+        "model_pepite": draft.pepite,
+        "charm_score": decision.charm,
+        "rarity": rarity_label(frequency, decision.pepite, rule),
+        "faithfulness": decision.faithfulness,
+        "to_review": bool(decision.review_reasons),
+        "review_reasons": [REVIEW_REASONS[r] for r in decision.review_reasons],
         "cost_usd": result["cost_usd"],
     }
 
@@ -208,26 +250,27 @@ def rarity_label(frequency: ngram.NgramFrequency | None, pepite: bool, rule: Rar
 
 
 #: Columns of the review table, in order. The model stays hidden: the review is blind.
-TABLE_FIELDS = ["word", "definition", "rarity", "pepite", "verdict"]
+TABLE_FIELDS = ["word", "definition", "rarity", "pepite", "review_reasons", "verdict"]
 
 
-def ensure_layout(client: httpx.Client) -> None:
-    """Shows the word first in every table view of the collection (default and saved views)."""
+def ensure_layout(client: httpx.Client, run: str) -> None:
+    """Shows the run's cards to review, word first, in every table view of the collection
+    (default and saved views). The other cards and earlier runs stay one filter away."""
     layout_query = {"tabular": {"fields": TABLE_FIELDS, "sort": ["review_order"], "limit": 50}}
+    view = {
+        "layout": "tabular",
+        "layout_query": layout_query,
+        "filter": {"_and": [{"run": {"_eq": run}}, {"to_review": {"_eq": True}}]},
+    }
     presets = (
         client.get("/presets", params={"filter[collection][_eq]": COLLECTION, "limit": "-1"})
         .raise_for_status()
         .json()["data"]
     )
     for preset in presets:
-        client.patch(
-            f"/presets/{preset['id']}", json={"layout": "tabular", "layout_query": layout_query}
-        ).raise_for_status()
+        client.patch(f"/presets/{preset['id']}", json=view).raise_for_status()
     if not any(p["user"] is None and p["role"] is None and p["bookmark"] is None for p in presets):
-        client.post(
-            "/presets",
-            json={"collection": COLLECTION, "layout": "tabular", "layout_query": layout_query},
-        ).raise_for_status()
+        client.post("/presets", json={"collection": COLLECTION, **view}).raise_for_status()
 
     # The item form follows the same order, then the remaining fields as declared.
     order = [*TABLE_FIELDS, *(f["field"] for f in FIELDS if f["field"] not in TABLE_FIELDS)]

@@ -1,5 +1,5 @@
-"""Automatic checks on a card draft. They catch mechanical problems before human review; they
-do not judge meaning, which only a human reviewer can validate."""
+"""Mechanical checks on a card draft. A failed check sends the card to human review; meaning is
+checked by the faithfulness verifier (verification.py)."""
 
 from dataclasses import dataclass
 
@@ -18,6 +18,8 @@ class Check:
     name: str
     passed: bool
     detail: str
+    #: Shown to the reviewer but never a failure.
+    informational: bool = False
 
 
 def _shares_run(a: str, b: str, length: int) -> bool:
@@ -52,6 +54,9 @@ def run_checks(draft: CardDraft, entry: littre.Entry) -> list[Check]:
             "not_copied",
             not _shares_run(draft.definition, littre_definitions, COPY_RUN_WORDS),
             f"aucune suite de {COPY_RUN_WORDS} mots reprise telle quelle du Littré",
+            # The Littré's text is public domain: a borrowed phrase is a matter of style, not of
+            # rights, and the verifier judges meaning.
+            informational=True,
         ),
     ]
 
@@ -80,4 +85,10 @@ def run_checks(draft: CardDraft, entry: littre.Entry) -> list[Check]:
 
 
 def failed(checks: list[Check]) -> list[str]:
-    return [check.name for check in checks if not check.passed]
+    return [check.name for check in checks if not check.passed and not check.informational]
+
+
+def symbol(check: Check) -> str:
+    if check.passed:
+        return "✓"
+    return "○" if check.informational else "✗"

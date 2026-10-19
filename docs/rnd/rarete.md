@@ -2,7 +2,7 @@
 
 - **Décision liée :** D-020. Décisions produit P20 à P22 (north star).
 - **Dates :** 2026-10-19 → 2026-10-19
-- **Suite donnée :** recommandation retenue, mots courants au sens ancien acceptés, fréquence affichée discrètement sur la carte. Une pépite absente de tout le corpus devient Légendaire.
+- **Suite donnée :** recommandation retenue, mots courants au sens ancien acceptés, fréquence affichée discrètement sur la carte. Une pépite absente de tout le corpus devient Légendaire. Depuis D-021, les pépites ne sont plus confirmées en relecture : un jury automatique (Opus) note le charme des mots éligibles, et les meilleures notes deviennent pépites, au plus 2 % du lot parmi les mots absents du corpus (Légendaires) et au plus 6 % parmi les autres (Épiques), jamais sous 6 sur 10.
 - **Question :** peut-on attribuer automatiquement l'une des six raretés à chaque mot à partir de sa fréquence réelle, et la répartition obtenue convient-elle au jeu ?
 
 ## Critères

@@ -13,19 +13,13 @@ import anthropic
 from pydantic import BaseModel, ValidationError
 
 from . import littre
+from .llm import USAGE_KEYS, cost
 
 #: Chosen after the 50-word trial (D-019).
 MODEL = "claude-sonnet-5-5"
 #: Models compared by `draft --compare`.
 COMPARED_MODELS = ("claude-opus-5-5", "claude-sonnet-5-5", "claude-haiku-5-5")
 MAX_DEFINITION_WORDS = 25
-
-#: USD per million tokens: input, output, cache write, cache read (first-party API rates).
-PRICES: dict[str, tuple[float, float, float, float]] = {
-    "claude-opus-5-5": (4.00, 20.00, 5.00, 0.20),
-    "claude-sonnet-5-5": (2.00, 10.00, 2.50, 0.20),
-    "claude-haiku-5-5": (0.10, 0.50, 0.125, 0.01),
-}
 
 THEMES = (
     "insultes",
@@ -54,7 +48,17 @@ SUITABILITY = (
     "sens_incertain",
 )
 
-SYSTEM_PROMPT = """Tu rédiges le texte des cartes de Leximon, un jeu de cartes à collectionner sur les mots rares et anciens du français. On te donne l'entrée du dictionnaire de Littré (1863) pour un mot.
+#: Shared with the pre-screen (prescreen.py), which predicts the same opinion more cheaply.
+SUITABILITY_GUIDE = """   - ok : mot rare ou ancien, avec du charme ou une histoire ;
+   - trop_courant : mot encore d'usage courant aujourd'hui dans son sens principal ;
+   - trop_technique : vocabulaire scientifique ou technique sans attrait pour le grand public ;
+   - offensant_aujourdhui : injure raciste, sexiste, homophobe ou visant un groupe, à écarter ;
+   - vulgaire : grossier au point de ne pas convenir à un public adolescent ;
+   - sens_incertain : l'entrée ne permet pas de rédiger une carte fiable.
+"""
+
+SYSTEM_PROMPT = (
+    """Tu rédiges le texte des cartes de Leximon, un jeu de cartes à collectionner sur les mots rares et anciens du français. On te donne l'entrée du dictionnaire de Littré (1863) pour un mot.
 
 Règles :
 1. Appuie-toi uniquement sur l'entrée fournie. N'invente ni sens, ni date, ni étymologie.
@@ -65,16 +69,13 @@ Règles :
 6. part_of_speech : la nature abrégée (n. m., n. f., adj., v. tr., v. intr., adv., loc., interj.).
 7. themes : un à trois thèmes parmi la liste autorisée.
 8. suitability : ton avis sur l'intérêt du mot pour une carte de collection.
-   - ok : mot rare ou ancien, avec du charme ou une histoire ;
-   - trop_courant : mot encore d'usage courant aujourd'hui dans son sens principal ;
-   - trop_technique : vocabulaire scientifique ou technique sans attrait pour le grand public ;
-   - offensant_aujourdhui : injure raciste, sexiste, homophobe ou visant un groupe, à écarter ;
-   - vulgaire : grossier au point de ne pas convenir à un public adolescent ;
-   - sens_incertain : l'entrée ne permet pas de rédiger une carte fiable.
-   suitability_reason : une phrase qui justifie ton avis.
+"""
+    + SUITABILITY_GUIDE
+    + """   suitability_reason : une phrase qui justifie ton avis.
 9. pepite : true si le mot est une pépite, une carte qu'on serait fier de tirer : une sonorité, une image ou une histoire qui frappent. Sois exigeant, un mot sur trois au plus. Les pépites les plus rares deviennent les cartes Épiques et Légendaires.
 
 Ton : sobre et précis. Le charme vient du mot lui-même, pas d'un commentaire ajouté."""
+)
 
 OUTPUT_SCHEMA = {
     "type": "object",
@@ -150,31 +151,33 @@ class DraftResult:
         }
 
 
-def cost(model: str, usage: dict[str, int]) -> float:
-    price_in, price_out, price_write, price_read = PRICES[model]
+def correction_request(problems: list[str]) -> str:
+    listed = "\n".join(f"- {problem}" for problem in problems)
     return (
-        usage.get("input_tokens", 0) * price_in
-        + usage.get("output_tokens", 0) * price_out
-        + usage.get("cache_creation_input_tokens", 0) * price_write
-        + usage.get("cache_read_input_tokens", 0) * price_read
-    ) / 1_000_000
-
-
-USAGE_KEYS = (
-    "input_tokens",
-    "output_tokens",
-    "cache_creation_input_tokens",
-    "cache_read_input_tokens",
-)
+        "Un vérificateur a comparé ta carte à l'entrée et relevé ces problèmes :\n"
+        f"{listed}\n\nCorrige la carte : retire ou corrige chaque affirmation signalée, sans rien "
+        "ajouter que l'entrée ne donne pas. Garde les autres champs identiques."
+    )
 
 
 async def draft_card(
-    client: anthropic.AsyncAnthropic, model: str, entry: littre.Entry
+    client: anthropic.AsyncAnthropic,
+    model: str,
+    entry: littre.Entry,
+    correction: tuple[CardDraft, list[str]] | None = None,
 ) -> DraftResult:
+    """Drafts the card, or with `correction` (a previous draft and the verifier's problems)
+    redrafts it in the same conversation."""
     started = time.monotonic()
     messages: list[dict[str, str]] = [
         {"role": "user", "content": littre.render(entry) + "\n\nRédige la carte."}
     ]
+    if correction is not None:
+        previous, problems = correction
+        messages += [
+            {"role": "assistant", "content": previous.model_dump_json()},
+            {"role": "user", "content": correction_request(problems)},
+        ]
     usage = dict.fromkeys(USAGE_KEYS, 0)
     shortened = False
     while True:

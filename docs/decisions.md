@@ -161,7 +161,7 @@ Pour ajouter ou modifier une décision, utiliser le skill `decision`.
 
 ## D-019 · Chaîne de contenu : sources, rédaction assistée, relecture dans Directus
 
-- **Statut :** Acceptée (2026-10-19). Modèle de rédaction choisi le 2026-10-19 après l'essai sur 50 mots.
+- **Statut :** Acceptée (2026-10-19). Modèle de rédaction choisi le 2026-10-19 après l'essai sur 50 mots. Relecture de chaque carte remplacée par D-021 (contrôle automatique, relecture par échantillon).
 - **Choix :**
   - **Texte de référence : le Littré, via XMLittré.** Le balisage est sous CC BY-SA 3.0 ; le texte sans balisage est dans le domaine public, comme l'indique l'auteur. On n'en extrait que du texte brut.
   - **Repérage des candidats :** les catégories du Wiktionnaire (titres seulement, aucun texte repris). Étendu à tout le Littré par D-020.
@@ -182,7 +182,7 @@ Pour ajouter ou modifier une décision, utiliser le skill `decision`.
 
 ## D-020 · Rareté des cartes : fréquence Ngram et pépites
 
-- **Statut :** Acceptée (2026-10-19). Seuils provisoires, à recalibrer sur le catalogue de lancement puis à figer. Rapport : [docs/rnd/rarete.md](rnd/rarete.md).
+- **Statut :** Acceptée (2026-10-19). Seuils provisoires, à recalibrer sur le catalogue de lancement puis à figer. Rapport : [docs/rnd/rarete.md](rnd/rarete.md). Choix des pépites (proposées par le modèle, confirmées en relecture) remplacé par D-021 (jury automatique).
 - **Choix :**
   - **Score :** fréquence Google Books Ngram (corpus français 2019), formes du mot additionnées, graphies en minuscules. Deux tiers pour 1990-2019, un tiers pour 1800-1899, en logarithme.
   - **Courant à Précieux :** seuils de score communs à tout le catalogue, en règle datée.
@@ -195,3 +195,26 @@ Pour ajouter ou modifier une décision, utiliser le skill `decision`.
   - créditer Google Books Ngram (CC BY 3.0) dans l'app ;
   - la sélection pioche dans tout le Littré : moins de 500 occurrences par milliard à l'écrit (Ngram) et de 0,5 par million à l'oral (sous-titres de Lexique), sans termes de science ni dérivés transparents. Les catégories du Wiktionnaire ne servent plus qu'aux thèmes ;
   - une liste d'exclusion des injures (`exclusions.py`) écarte les mots dès la sélection et fait échouer un contrôle automatique.
+
+## D-021 · Contrôle du contenu : décisions automatiques, relecture par échantillon
+
+- **Statut :** Acceptée (2026-10-19), à la demande du propriétaire. Mesures sur lot-1 (300 mots).
+- **Choix :**
+  - **Rejet :** un brouillon dont l'avis du rédacteur (`suitability`) n'est pas « ok » n'arrive jamais dans Directus (122 sur 300).
+  - **Pré-tri :** Claude Haiku 5.5 prédit cet avis sur un extrait du Littré, et seuls les mots retenus sont rédigés. Accord avec Sonnet : précision 85 %, rappel 78 %.
+  - **Fidélité :** Claude Opus 5.5 compare chaque carte à son entrée. Un sens, une date ou une étymologie contredits ou inventés signalent la carte. Un ajout exact, bien établi mais absent de l'entrée, est noté sans la signaler.
+  - **Correction :** une carte signalée repart une fois chez le rédacteur avec les problèmes relevés, puis Opus la vérifie de nouveau. Sur lot-1, les 28 cartes signalées sont devenues fidèles.
+  - **Pépites :** Opus note le charme des mots éligibles, par lots de six et deux fois chacun, sans voir l'avis du rédacteur. Les meilleures notes deviennent pépites : au plus 2 % du lot parmi les mots absents de Ngram (Légendaires), au plus 6 % parmi les autres (Épiques), et jamais sous 6 sur 10, même si le quota n'est pas atteint. Les notes sont enregistrées, la rareté reste calculée (D-020).
+  - **Relecture :** environ 5 % des cartes non signalées tirées au hasard, plus chaque Légendaire et chaque carte encore signalée après correction. Le contrôle de copie du Littré devient informatif.
+- **Pourquoi :**
+  - le propriétaire ne peut ni juger les pépites ni relire chaque carte ;
+  - un second modèle, différent du rédacteur, voit ce que le rédacteur ne voit pas : il signale 28 cartes sur 178, surtout des détails ajoutés à la définition ;
+  - une note minimale évite des Légendaires ternes : sans elle, le quota de lot-1 prenait deux mots notés 4,5 ;
+  - la consigne de rédaction reste inchangée : interdire tout détail absent de l'entrée divisait les cartes signalées par deux et demi sur 40 mots (5 → 2), mais faisait écarter plus de mots (2 → 7, surtout « sens_incertain »). La correction suffit.
+- **Conséquences :**
+  - environ 14,5 $ pour 1 000 cartes gardées avec le pré-tri (rédaction 4,7 $, vérification 8 $, correction 0,7 $, jury 0,9 $, pré-tri 0,07 $), 16,5 $ sans ;
+  - sur lot-1, 18 cartes sur 178 sont à relire (10 %) : 9 au hasard, 5 contrôles mécaniques, 4 Légendaires ;
+  - un lot où les mots charmants manquent a moins de pépites que la pyramide : la sélection doit alors fournir plus de mots rares ;
+  - une erreur trouvée dans l'échantillon fait corriger la chaîne (consignes, seuils), pas seulement la carte ;
+  - une étape estimée à plus de 3 $ attend l'accord du propriétaire (`--yes`).
+

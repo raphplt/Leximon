@@ -30,9 +30,12 @@ def test_too_long_definitions_fail() -> None:
     )
 
 
-def test_copying_the_littre_is_detected_despite_accents_and_case() -> None:
+def test_copying_the_littre_is_shown_despite_accents_and_case_but_is_not_a_failure() -> None:
     copied = draft(definition="C'est un HOMME DE NEANT, PLAT ET IMPERTINENT envers tous.")
-    assert "not_copied" in checks.failed(checks.run_checks(copied, ENTRY))
+    results = {c.name: c for c in checks.run_checks(copied, ENTRY)}
+    assert not results["not_copied"].passed
+    assert checks.symbol(results["not_copied"]) == "○"
+    assert checks.failed(list(results.values())) == []
 
 
 def test_a_quote_number_outside_the_list_fails() -> None:

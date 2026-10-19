@@ -69,3 +69,26 @@ def test_a_second_overlong_answer_is_kept_for_review() -> None:
     result = draft_with(client)
     assert result.draft is not None and result.draft.definition == LONG
     assert len(client.calls) == 2
+
+
+def test_a_correction_continues_the_conversation_with_the_verifier_problems() -> None:
+    client = FakeClient(SHORT)
+    previous = drafting.CardDraft(
+        definition="Pelle de fer.",
+        etymology="Origine incertaine.",
+        quote_index=None,
+        quote_author=None,
+        part_of_speech="n. f.",
+        themes=["metiers"],
+        suitability="ok",
+        suitability_reason=".",
+    )
+    problem = "definition : la carte dit « de fer », l'entrée dit seulement « pelle »."
+    result = asyncio.run(
+        drafting.draft_card(client, drafting.MODEL, ENTRY, (previous, [problem]))  # type: ignore[arg-type]
+    )
+    assert result.draft is not None and result.draft.definition == SHORT
+    conversation = client.calls[0]
+    assert [m["role"] for m in conversation] == ["user", "assistant", "user"]
+    assert "Pelle de fer." in conversation[1]["content"]
+    assert problem in conversation[2]["content"]

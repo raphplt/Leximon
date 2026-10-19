@@ -19,17 +19,20 @@ pnpm test:integration            # tests contre la base leximon_test, vidée à 
 pnpm format                      # corrige le formatage (Biome)
 ```
 
-Chaîne de contenu (Python, `content/pipeline/`, voir D-019) :
+Chaîne de contenu (Python, `content/pipeline/`, voir D-019 et D-021) :
 
 ```bash
 docker compose --profile content up -d          # Postgres + Directus (http://127.0.0.1:8055)
 cd content/pipeline && uv sync                  # dépendances Python
 uv run python -m leximon_content ngram          # une fois : fréquences Google Ngram (5 Go téléchargés)
-uv run python -m leximon_content select         # --size N, puis draft, push, refresh, report (--run <nom>)
-uv run ruff check src tests && uv run pytest    # à lancer avant de rendre la main
+uv run python -m leximon_content prescreen --pool   # pré-tri Haiku des mots candidats (--limit N)
+uv run python -m leximon_content select         # --size N, puis draft (--run <nom>)
+uv run python -m leximon_content quality        # écarte, vérifie, corrige, note le charme (--run <nom>)
+uv run python -m leximon_content push           # cartes gardées vers Directus, puis refresh, report
+uv run ruff check src tests && uv run ruff format --check src tests && uv run pytest   # avant de rendre la main
 ```
 
-Les sources téléchargées vivent dans `content/pipeline/data/` (ignoré par git). Chaque appel au LLM coûte de l'argent : demander l'accord du propriétaire avant une génération à grande échelle.
+Les sources téléchargées vivent dans `content/pipeline/data/` (ignoré par git). Chaque appel au LLM coûte de l'argent : demander l'accord du propriétaire avant une génération à grande échelle. Une étape estimée à plus de 3 $ s'arrête et attend `--yes`, à ne passer qu'avec cet accord.
 
 - Ajouter une dépendance : `pnpm --filter <package> add <dep>`. Les versions partagées passent par le `catalog` de `pnpm-workspace.yaml`.
 - Dans `apps/mobile` : `pnpm expo install <dep>`, pour obtenir la version compatible avec le SDK.
