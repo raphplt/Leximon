@@ -128,3 +128,20 @@ Pour ajouter ou modifier une décision, utiliser le skill `decision`.
 - **Choix :** l'app Next.js est déployée sur Cloudflare Workers avec l'adaptateur OpenNext (`@opennextjs/cloudflare`).
 - **Pourquoi :** tout chez le même hébergeur que l'API (D-005) : un seul compte, un seul CDN, des coûts qui suivent l'usage.
 - **Conséquences :** les fonctionnalités Next.js utilisées doivent être prises en charge par OpenNext. Vérifier la compatibilité avant d'adopter une fonctionnalité récente, et monter la version de Next.js seulement quand OpenNext la suit.
+
+## D-016 · Pilote Postgres : node-postgres
+
+- **Statut :** Acceptée (2026-10-19)
+- **Choix :** `pg` (node-postgres) avec Drizzle, à la place de postgres-js, pour l'API comme pour l'outillage de test.
+- **Pourquoi :** chaque requête HTTP ouvre sa propre connexion. Sur une connexion neuve, postgres-js fait deux allers-retours par requête paramétrée, node-postgres un seul. Mesuré à 40 ms par aller-retour : 20 allers-retours par ouverture de booster avec postgres-js, 13 avec node-postgres à requêtes identiques.
+- **Conséquences :** `db.execute` renvoie `{ rows }`. Le nombre de requêtes par ouverture est verrouillé par un test (5, BEGIN et COMMIT compris).
+
+## D-017 · Journal des tirages partitionné, idempotence séparée
+
+- **Statut :** Acceptée (2026-10-19)
+- **Choix :**
+  - `booster_opens` est partitionné par mois sur `opened_at`, avec une partition par défaut en filet de sécurité ;
+  - les clés d'idempotence vivent dans `booster_open_requests`, purgées après 48 h ;
+  - une tâche quotidienne du Worker (cron) crée les partitions à venir et purge les clés.
+- **Pourquoi :** à 250 000 joueurs par jour, le journal reçoit environ 2 millions de lignes par jour. L'idempotence n'a besoin que de 48 h, l'audit de quelques mois.
+- **Conséquences :** les anciens mois pourront être archivés sur R2 puis supprimés d'un bloc (à mettre en place avant que le volume le justifie). Chaque tirage enregistre sa graine et l'empreinte SHA-256 du catalogue utilisé, ce qui permet de le rejouer à l'identique.

@@ -9,10 +9,13 @@ Jeu de cartes à collectionner pour découvrir les mots rares et anciens du fran
 ```bash
 pnpm install                     # à la racine, Node 24 (voir .nvmrc)
 cp .env.example .env             # une fois
+cp apps/api/.dev.vars.example apps/api/.dev.vars   # une fois, puis remplir le secret
 docker compose up -d             # Postgres local sur le port 54329
+pnpm db:migrate                  # applique les migrations à la base de dev
+pnpm db:seed:dev                 # quelques cartes pour jouer en local
 pnpm dev                         # toutes les apps (ou --filter @leximon/api, /web, /mobile)
 pnpm check                       # lint + typecheck + tests unitaires, à lancer avant de rendre la main
-pnpm test:integration            # tests contre Postgres (Docker requis)
+pnpm test:integration            # tests contre la base leximon_test, vidée à chaque passage (Docker requis)
 pnpm format                      # corrige le formatage (Biome)
 ```
 
@@ -46,7 +49,7 @@ pnpm format                      # corrige le formatage (Biome)
 
 ## Règles d'architecture
 
-- **API sans état :** aucune donnée gardée en mémoire entre deux requêtes. L'état vit dans Postgres, la file ou un service temps réel dédié.
+- **API sans état :** aucun état de joueur ou de partie gardé en mémoire entre deux requêtes. L'état vit dans Postgres, la file ou un service temps réel dédié. Seul un cache court de données partagées et rarement modifiées (le catalogue de cartes) est permis, car il ne change jamais un résultat.
 - **Le serveur fait foi :** tirage des boosters, recharge, niveaux et échanges sont calculés côté serveur.
 - **Écritures :** chaque écriture est une transaction courte avec une clé d'idempotence. Toute lecture-modification d'un état de joueur (portefeuille, exemplaires) verrouille sa ligne (`SELECT … FOR UPDATE`), et chaque route concernée a un test d'intégration avec des requêtes concurrentes.
 - **Catalogue statique :** le catalogue de cartes est versionné et servi par le CDN. L'affichage d'une carte ne lit jamais la base.
@@ -99,7 +102,7 @@ Objectif : un code lisible et facile à maintenir, performant et sûr, pensé po
 
 ## Stack
 
-pnpm + Turborepo · Node 24 · Biome · Vitest · Next.js (web) · Expo (mobile) · Hono + Drizzle + Postgres (API) · Cloudflare + Postgres managé UE · Better Auth · Directus · chaîne de contenu Python en local. Le détail et les raisons sont dans `docs/decisions.md`.
+pnpm + Turborepo · Node 24 · Biome · Vitest · Next.js (web) · Expo (mobile) · Hono + Drizzle + Postgres via node-postgres (API) · Cloudflare + Postgres managé UE · Better Auth · Directus · chaîne de contenu Python en local. Le détail et les raisons sont dans `docs/decisions.md`.
 
 ## Structure prévue
 

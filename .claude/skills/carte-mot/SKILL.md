@@ -18,7 +18,7 @@ Une erreur publique sur un mot coûte cher en crédibilité. On préfère une ca
 | `etymology` | Courte. Si elle n'est pas établie, écrire « origine incertaine » |
 | `quote` | Citation d'un auteur mort depuis plus de 70 ans, avec auteur, œuvre et date |
 | `sources` | Les dictionnaires anciens consultés, avec édition et entrée |
-| `rarity` | Calculée par la chaîne de contenu, jamais choisie à la main |
+| `rarity` | Calculée par la chaîne de contenu, jamais choisie à la main. Figée une fois la carte publiée (la base le refuse) : un mot reclassé devient une nouvelle carte |
 | `collection` | Une collection principale, d'autres en tags |
 | `illustration` | Fichier issu d'une source autorisée, avec l'URL d'origine et la licence |
 
