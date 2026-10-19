@@ -1,40 +1,35 @@
--- Development fixtures only: a few real words so the game can be played locally.
--- Rarities here are placeholders: real rarities are computed by the content pipeline.
+-- Development fixtures only: cards drafted by the content pipeline (run lot-1), so the game can be
+-- played locally. Their text is in apps/web/src/cards/demo-catalog.ts: keep both lists in sync.
 insert into collections (id, name, published_at) values
-  ('fondateurs', 'Les Fondateurs', now()),
-  ('noms-d-oiseaux', 'Noms d''oiseaux', now())
-on conflict (id) do nothing;
-
-insert into themes (id, name) values
-  ('insultes', 'Insultes d''antan'),
-  ('loufoque', 'Loufoque')
+  ('fondateurs', 'Les Fondateurs', now())
 on conflict (id) do nothing;
 
 insert into cards (id, lemma, rarity, collection_id) values
-  ('vergogne', 'vergogne', 'common', 'fondateurs'),
-  ('nonobstant', 'nonobstant', 'common', 'fondateurs'),
-  ('vilipender', 'vilipender', 'common', 'fondateurs'),
-  ('turlupiner', 'turlupiner', 'common', 'fondateurs'),
-  ('escarcelle', 'escarcelle', 'uncommon', 'fondateurs'),
-  ('billevesee', 'billevesée', 'rare', 'fondateurs'),
-  ('galimatias', 'galimatias', 'precious', 'fondateurs'),
-  ('coquecigrue', 'coquecigrue', 'precious', 'fondateurs'),
-  ('mirliflore', 'mirliflore', 'epic', 'fondateurs'),
-  ('chafouin', 'chafouin', 'uncommon', 'noms-d-oiseaux'),
-  ('maraud', 'maraud', 'uncommon', 'noms-d-oiseaux'),
-  ('faquin', 'faquin', 'rare', 'noms-d-oiseaux'),
-  ('palsambleu', 'palsambleu', 'legendary', 'noms-d-oiseaux')
-on conflict (id) do update set collection_id = excluded.collection_id;
+  ('sauvagesse', 'sauvagesse', 'common', 'fondateurs'),
+  ('sapiniere', 'sapinière', 'common', 'fondateurs'),
+  ('tripaille', 'tripaille', 'common', 'fondateurs'),
+  ('raclure', 'raclure', 'common', 'fondateurs'),
+  ('marniere', 'marnière', 'common', 'fondateurs'),
+  ('septenaire', 'septénaire', 'common', 'fondateurs'),
+  ('glanure', 'glanure', 'uncommon', 'fondateurs'),
+  ('defourner', 'défourner', 'uncommon', 'fondateurs'),
+  ('poue', 'poue', 'uncommon', 'fondateurs'),
+  ('odorer', 'odorer', 'uncommon', 'fondateurs'),
+  ('ensafraner', 'ensafraner', 'rare', 'fondateurs'),
+  ('coquefredouille', 'coquefredouille', 'rare', 'fondateurs'),
+  ('pyromancien', 'pyromancien', 'rare', 'fondateurs'),
+  ('vacillatoire', 'vacillatoire', 'precious', 'fondateurs'),
+  ('poelonnee', 'poêlonnée', 'precious', 'fondateurs'),
+  ('ramoindrir', 'ramoindrir', 'precious', 'fondateurs'),
+  ('hematophobe', 'hématophobe', 'precious', 'fondateurs'),
+  ('francatu', 'francatu', 'epic', 'fondateurs'),
+  ('matrimonion', 'matrimonion', 'epic', 'fondateurs'),
+  ('affolage', 'affolage', 'epic', 'fondateurs'),
+  ('enlarme', 'enlarme', 'epic', 'fondateurs'),
+  ('barbouquine', 'barbouquine', 'legendary', 'fondateurs'),
+  ('chagnot', 'chagnot', 'legendary', 'fondateurs')
+on conflict (id) do update set collection_id = excluded.collection_id, retired_at = null;
 
-insert into card_themes (card_id, theme_id) values
-  ('chafouin', 'insultes'),
-  ('maraud', 'insultes'),
-  ('faquin', 'insultes'),
-  ('coquecigrue', 'loufoque'),
-  ('billevesee', 'loufoque'),
-  ('palsambleu', 'loufoque')
-on conflict do nothing;
-
--- The collection created by migration 0004 for older dev data is no longer needed.
-delete from collections c
-where c.id = 'non-classees' and not exists (select 1 from cards where collection_id = c.id);
+-- Cards of earlier fixtures leave the boosters; copies already owned stay.
+update cards set retired_at = now()
+where retired_at is null and id not in ('sauvagesse', 'sapiniere', 'tripaille', 'raclure', 'marniere', 'septenaire', 'glanure', 'defourner', 'poue', 'odorer', 'ensafraner', 'coquefredouille', 'pyromancien', 'vacillatoire', 'poelonnee', 'ramoindrir', 'hematophobe', 'francatu', 'matrimonion', 'affolage', 'enlarme', 'barbouquine', 'chagnot');

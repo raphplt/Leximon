@@ -1,0 +1,41 @@
+.bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 14px 16px;
+}
+
+.logo {
+  font-family: var(--font-display), Georgia, serif;
+  font-variation-settings: "SOFT" 100;
+  font-weight: 900;
+  font-size: 24px;
+  text-decoration: none;
+}
+
+.links {
+  display: flex;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 40px;
+  padding: 0 16px;
+  border-radius: var(--lx-radius-pill);
+  font-size: 15px;
+  font-weight: 700;
+  text-decoration: none;
+  color: var(--lx-color-text-muted);
+}
+
+.link[aria-current="page"] {
+  background: var(--lx-color-text);
+  color: var(--lx-color-background);
+}

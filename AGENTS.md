@@ -2,7 +2,7 @@
 
 Jeu de cartes à collectionner pour découvrir les mots rares et anciens du français. Boosters gratuits, collection, défis qui font monter les cartes en niveau, échanges entre joueurs. Web, iOS et Android.
 
-**État :** squelette du monorepo en place. Les apps démarrent mais n'ont encore aucune fonctionnalité de jeu.
+**État :** l'API ouvre des boosters et sert la collection. Le web a ses deux premiers écrans (ouverture du pli, album) sur un catalogue de démo ; le mobile n'a encore aucune fonctionnalité de jeu.
 
 ## Commandes
 
