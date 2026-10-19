@@ -3,7 +3,9 @@ quote is picked by number from the entry, and the era is computed from the entry
 
 import asyncio
 import json
+import re
 import time
+import unicodedata
 from dataclasses import dataclass
 from typing import Literal
 
@@ -12,7 +14,11 @@ from pydantic import BaseModel, ValidationError
 
 from . import littre
 
-MODELS = ("claude-opus-5-5", "claude-sonnet-5-5", "claude-haiku-5-5")
+#: Chosen after the 50-word trial (D-019).
+MODEL = "claude-sonnet-5-5"
+#: Models compared by `draft --compare`.
+COMPARED_MODELS = ("claude-opus-5-5", "claude-sonnet-5-5", "claude-haiku-5-5")
+MAX_DEFINITION_WORDS = 25
 
 #: USD per million tokens: input, output, cache write, cache read (first-party API rates).
 PRICES: dict[str, tuple[float, float, float, float]] = {
@@ -66,6 +72,7 @@ Règles :
    - vulgaire : grossier au point de ne pas convenir à un public adolescent ;
    - sens_incertain : l'entrée ne permet pas de rédiger une carte fiable.
    suitability_reason : une phrase qui justifie ton avis.
+9. pepite : true si le mot est une pépite, une carte qu'on serait fier de tirer : une sonorité, une image ou une histoire qui frappent. Sois exigeant, un mot sur trois au plus. Les pépites les plus rares deviennent les cartes Épiques et Légendaires.
 
 Ton : sobre et précis. Le charme vient du mot lui-même, pas d'un commentaire ajouté."""
 
@@ -80,6 +87,7 @@ OUTPUT_SCHEMA = {
         "themes": {"type": "array", "items": {"type": "string", "enum": list(THEMES)}},
         "suitability": {"type": "string", "enum": list(SUITABILITY)},
         "suitability_reason": {"type": "string"},
+        "pepite": {"type": "boolean"},
     },
     "required": [
         "definition",
@@ -90,9 +98,16 @@ OUTPUT_SCHEMA = {
         "themes",
         "suitability",
         "suitability_reason",
+        "pepite",
     ],
     "additionalProperties": False,
 }
+
+
+def words(text: str) -> list[str]:
+    """Words without accents or case, so that counts and comparisons ignore spelling details."""
+    folded = unicodedata.normalize("NFKD", text.lower())
+    return re.findall(r"[a-z0-9]+", folded.encode("ascii", "ignore").decode())
 
 
 class CardDraft(BaseModel):
@@ -104,6 +119,8 @@ class CardDraft(BaseModel):
     themes: list[Literal[THEMES]]  # type: ignore[valid-type]
     suitability: Literal[SUITABILITY]  # type: ignore[valid-type]
     suitability_reason: str
+    #: Absent from the drafts made before D-020.
+    pepite: bool = False
 
 
 @dataclass(frozen=True)
@@ -116,6 +133,8 @@ class DraftResult:
     usage: dict[str, int]
     cost_usd: float
     latency_s: float
+    #: True when the definition was too long and the model was asked for a shorter one.
+    shortened: bool = False
 
     def to_json(self) -> dict[str, object]:
         return {
@@ -127,6 +146,7 @@ class DraftResult:
             "usage": self.usage,
             "cost_usd": round(self.cost_usd, 6),
             "latency_s": round(self.latency_s, 2),
+            "shortened": self.shortened,
         }
 
 
@@ -140,49 +160,73 @@ def cost(model: str, usage: dict[str, int]) -> float:
     ) / 1_000_000
 
 
+USAGE_KEYS = (
+    "input_tokens",
+    "output_tokens",
+    "cache_creation_input_tokens",
+    "cache_read_input_tokens",
+)
+
+
 async def draft_card(
     client: anthropic.AsyncAnthropic, model: str, entry: littre.Entry
 ) -> DraftResult:
     started = time.monotonic()
-    response = await client.messages.create(
-        model=model,
-        max_tokens=8000,
-        system=[{"type": "text", "text": SYSTEM_PROMPT, "cache_control": {"type": "ephemeral"}}],
-        messages=[{"role": "user", "content": littre.render(entry) + "\n\nRédige la carte."}],
-        output_config={
-            "format": {"type": "json_schema", "schema": OUTPUT_SCHEMA},
-            "effort": "medium",
-        },
-    )
-    latency = time.monotonic() - started
-    usage = {
-        key: getattr(response.usage, key) or 0
-        for key in (
-            "input_tokens",
-            "output_tokens",
-            "cache_creation_input_tokens",
-            "cache_read_input_tokens",
+    messages: list[dict[str, str]] = [
+        {"role": "user", "content": littre.render(entry) + "\n\nRédige la carte."}
+    ]
+    usage = dict.fromkeys(USAGE_KEYS, 0)
+    shortened = False
+    while True:
+        response = await client.messages.create(
+            model=model,
+            max_tokens=8000,
+            system=[
+                {"type": "text", "text": SYSTEM_PROMPT, "cache_control": {"type": "ephemeral"}}
+            ],
+            messages=messages,
+            output_config={
+                "format": {"type": "json_schema", "schema": OUTPUT_SCHEMA},
+                "effort": "medium",
+            },
         )
-    }
-    common = {
-        "word": entry.headword.lower(),
-        "model": model,
-        "stop_reason": response.stop_reason,
-        "usage": usage,
-        "cost_usd": cost(model, usage),
-        "latency_s": latency,
-    }
-    if response.stop_reason != "end_turn":
-        return DraftResult(draft=None, error=f"stop_reason={response.stop_reason}", **common)
-    text = next((block.text for block in response.content if block.type == "text"), "")
-    try:
-        return DraftResult(draft=CardDraft.model_validate(json.loads(text)), error=None, **common)
-    except (json.JSONDecodeError, ValidationError) as error:
-        return DraftResult(draft=None, error=f"invalid output: {error}", **common)
+        for key in USAGE_KEYS:
+            usage[key] += getattr(response.usage, key) or 0
+        common = {
+            "word": entry.headword.lower(),
+            "model": model,
+            "stop_reason": response.stop_reason,
+            "usage": usage,
+            "cost_usd": cost(model, usage),
+            "latency_s": time.monotonic() - started,
+            "shortened": shortened,
+        }
+        if response.stop_reason != "end_turn":
+            return DraftResult(draft=None, error=f"stop_reason={response.stop_reason}", **common)
+        text = next((block.text for block in response.content if block.type == "text"), "")
+        try:
+            draft = CardDraft.model_validate(json.loads(text))
+        except (json.JSONDecodeError, ValidationError) as error:
+            return DraftResult(draft=None, error=f"invalid output: {error}", **common)
+
+        length = len(words(draft.definition))
+        if length <= MAX_DEFINITION_WORDS or shortened:
+            # A second overlong answer is kept as is: the automatic checks flag it for review.
+            return DraftResult(draft=draft, error=None, **common)
+        shortened = True
+        messages += [
+            {"role": "assistant", "content": text},
+            {
+                "role": "user",
+                "content": f"La définition fait {length} mots, le maximum est "
+                f"{MAX_DEFINITION_WORDS}. Raccourcis-la sans changer de sens ; garde les autres "
+                "champs identiques.",
+            },
+        ]
 
 
 async def draft_all(
-    entries: list[littre.Entry], models: tuple[str, ...] = MODELS, concurrency: int = 6
+    entries: list[littre.Entry], models: tuple[str, ...] = (MODEL,), concurrency: int = 6
 ) -> list[DraftResult]:
     client = anthropic.AsyncAnthropic(max_retries=4)
     semaphore = asyncio.Semaphore(concurrency)

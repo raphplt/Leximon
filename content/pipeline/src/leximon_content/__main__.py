@@ -1,8 +1,10 @@
 """Command line: `uv run python -m leximon_content <command> [--run essai-50]`.
 
+ngram     download Google Ngram (5 GB, once) and compute word frequencies (D-020)
 select    pick the words of a run (selection.json)
-draft     draft every word with every model (drafts.jsonl)
+draft     draft every word with the chosen model (drafts.jsonl); --compare uses all models
 push      run the automatic checks and send the drafts to Directus for review
+refresh   update the Directus layout, frequencies and rarities, keeping the review
 report    compare models from the review verdicts recorded in Directus
 """
 
@@ -11,13 +13,17 @@ import asyncio
 import json
 from collections import Counter
 
-from . import checks, config, directus, drafting, littre, selection
+from . import checks, config, directus, drafting, littre, ngram, selection
 
 
 def run_dir(name: str):
     path = config.RUNS_DIR / name
     path.mkdir(parents=True, exist_ok=True)
     return path
+
+
+def command_ngram(_run: str) -> None:
+    print(f"{ngram.build()} mots -> {ngram.FREQUENCIES_FILE}")
 
 
 def command_select(run: str) -> None:
@@ -29,7 +35,7 @@ def command_select(run: str) -> None:
     print(f"{len(selected)} mots -> {out}")
 
 
-def command_draft(run: str) -> None:
+def command_draft(run: str, compare: bool) -> None:
     config.load_env()
     config.require_env("ANTHROPIC_API_KEY")
     words = [
@@ -38,19 +44,22 @@ def command_draft(run: str) -> None:
     ]
     index = littre.index()
     entries = [index[word][0] for word in words]
-    results = asyncio.run(drafting.draft_all(entries))
+    models = drafting.COMPARED_MODELS if compare else (drafting.MODEL,)
+    results = asyncio.run(drafting.draft_all(entries, models))
     out = run_dir(run) / "drafts.jsonl"
     with out.open("w", encoding="utf-8") as file:
         for result in results:
             file.write(json.dumps(result.to_json(), ensure_ascii=False) + "\n")
 
-    for model in drafting.MODELS:
+    for model in models:
         mine = [r for r in results if r.model == model]
         ok = sum(r.draft is not None for r in mine)
+        shortened = sum(r.shortened for r in mine)
         total = sum(r.cost_usd for r in mine)
         latency = sorted(r.latency_s for r in mine)[len(mine) // 2]
         print(
-            f"{model}: {ok}/{len(mine)} brouillons, {total:.3f} $, latence médiane {latency:.1f} s"
+            f"{model}: {ok}/{len(mine)} brouillons ({shortened} raccourcis), {total:.3f} $, "
+            f"latence médiane {latency:.1f} s"
         )
     print(f"-> {out}")
 
@@ -76,10 +85,19 @@ def command_push(run: str) -> None:
         )
     client = directus.connect()
     directus.ensure_schema(client)
+    directus.ensure_layout(client)
     created = directus.replace_run(client, run, rows)
     failures = Counter(name for row in rows for name in row["automatic_checks_failed"])
     print(f"{created} brouillons envoyés dans Directus ({config.require_env('DIRECTUS_URL')})")
     print("contrôles en échec :", dict(failures))
+
+
+def command_refresh(run: str) -> None:
+    config.load_env()
+    client = directus.connect()
+    directus.ensure_schema(client)
+    directus.ensure_layout(client)
+    print(f"{directus.refresh_run(client, run)} brouillons mis à jour, relecture conservée")
 
 
 def command_report(run: str) -> None:
@@ -89,13 +107,20 @@ def command_report(run: str) -> None:
 
 def main() -> None:
     parser = argparse.ArgumentParser(prog="leximon_content")
-    parser.add_argument("command", choices=["select", "draft", "push", "report"])
+    parser.add_argument(
+        "command", choices=["ngram", "select", "draft", "push", "refresh", "report"]
+    )
     parser.add_argument("--run", default="essai-50")
+    parser.add_argument("--compare", action="store_true", help="draft: compare every model")
     args = parser.parse_args()
+    if args.command == "draft":
+        command_draft(args.run, args.compare)
+        return
     {
+        "ngram": command_ngram,
         "select": command_select,
-        "draft": command_draft,
         "push": command_push,
+        "refresh": command_refresh,
         "report": command_report,
     }[args.command](args.run)
 

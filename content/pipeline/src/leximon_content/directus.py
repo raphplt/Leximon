@@ -3,14 +3,15 @@
 import random
 import statistics
 from collections import Counter, defaultdict
-from datetime import datetime
+from datetime import date, datetime
 from itertools import pairwise
 
 import httpx
 
-from . import config, littre
+from . import config, littre, ngram
 from .checks import Check, failed
 from .drafting import THEMES, CardDraft
+from .rarity import LABELS, RarityRule, can_be_pepite, frequency_label, rarity, rule_on
 
 COLLECTION = "card_drafts"
 VERDICTS = {
@@ -40,6 +41,29 @@ FIELDS = [
     _field("review_order", "integer", hidden=True, readonly=True),
     _field("word", "string", "input", readonly=True, width="half"),
     _field("part_of_speech", "string", "input", width="half"),
+    _field(
+        "rarity",
+        "string",
+        "input",
+        readonly=True,
+        width="half",
+        note="Calculée depuis la fréquence et la mention pépite (D-020). Recalculée par refresh.",
+    ),
+    _field(
+        "pepite",
+        "boolean",
+        "boolean",
+        width="half",
+        note="Une carte qu'on serait fier de tirer. Proposée par le modèle quand le mot est assez "
+        "rare pour être Épique ou Légendaire ; sans effet sur un mot plus courant.",
+    ),
+    _field(
+        "modern_frequency",
+        "string",
+        "input",
+        readonly=True,
+        note="Google Ngram, occurrences par milliard de mots depuis 1990. Affichée sur la carte.",
+    ),
     _field(
         "definition", "text", "input-multiline", note="25 mots au maximum. Corrigez directement."
     ),
@@ -146,10 +170,14 @@ def draft_row(
         else None
     )
     century = entry.earliest_century
+    word = entry.headword.lower()
+    frequency = ngram.frequency(word)
+    rule = rule_on(date.today())
+    pepite = draft.pepite and frequency is not None and can_be_pepite(frequency, rule)
     return {
         "run": run,
         "model": result["model"],
-        "word": entry.headword.lower(),
+        "word": word,
         "part_of_speech": draft.part_of_speech,
         "definition": draft.definition,
         "original_definition": draft.definition,
@@ -167,8 +195,70 @@ def draft_row(
         "automatic_checks_failed": failed(automatic),
         "littre_entry": littre.render(entry),
         "selection": selected,
+        "modern_frequency": frequency_label(frequency),
+        "pepite": pepite,
+        "rarity": rarity_label(frequency, pepite, rule),
         "cost_usd": result["cost_usd"],
     }
+
+
+def rarity_label(frequency: ngram.NgramFrequency | None, pepite: bool, rule: RarityRule) -> str:
+    computed = rarity(frequency, pepite, rule)
+    return LABELS[computed] if computed else "à compléter (mot composé)"
+
+
+#: Columns of the review table, in order. The model stays hidden: the review is blind.
+TABLE_FIELDS = ["word", "definition", "rarity", "pepite", "verdict"]
+
+
+def ensure_layout(client: httpx.Client) -> None:
+    """Shows the word first in every table view of the collection (default and saved views)."""
+    layout_query = {"tabular": {"fields": TABLE_FIELDS, "sort": ["review_order"], "limit": 50}}
+    presets = (
+        client.get("/presets", params={"filter[collection][_eq]": COLLECTION, "limit": "-1"})
+        .raise_for_status()
+        .json()["data"]
+    )
+    for preset in presets:
+        client.patch(
+            f"/presets/{preset['id']}", json={"layout": "tabular", "layout_query": layout_query}
+        ).raise_for_status()
+    if not any(p["user"] is None and p["role"] is None and p["bookmark"] is None for p in presets):
+        client.post(
+            "/presets",
+            json={"collection": COLLECTION, "layout": "tabular", "layout_query": layout_query},
+        ).raise_for_status()
+
+    # The item form follows the same order, then the remaining fields as declared.
+    order = [*TABLE_FIELDS, *(f["field"] for f in FIELDS if f["field"] not in TABLE_FIELDS)]
+    for position, name in enumerate(order, start=1):
+        client.patch(
+            f"/fields/{COLLECTION}/{name}", json={"meta": {"sort": position}}
+        ).raise_for_status()
+
+
+def refresh_run(client: httpx.Client, run: str) -> int:
+    """Recomputes the derived fields (frequency, rarity from the reviewer's pépite mark) without
+    touching the review itself (verdicts, edits)."""
+    items = (
+        client.get(
+            f"/items/{COLLECTION}",
+            params={"filter[run][_eq]": run, "fields": "id,word,pepite", "limit": "-1"},
+        )
+        .raise_for_status()
+        .json()["data"]
+    )
+    rule = rule_on(date.today())
+    for item in items:
+        frequency = ngram.frequency(item["word"])
+        client.patch(
+            f"/items/{COLLECTION}/{item['id']}",
+            json={
+                "modern_frequency": frequency_label(frequency),
+                "rarity": rarity_label(frequency, bool(item["pepite"]), rule),
+            },
+        ).raise_for_status()
+    return len(items)
 
 
 def replace_run(

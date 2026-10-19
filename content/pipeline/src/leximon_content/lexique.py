@@ -38,5 +38,10 @@ def frequencies(path: Path = LEXIQUE_FILE) -> dict[str, Frequency]:
     return found
 
 
+def lexique_spelling(word: str) -> str:
+    """Lexique spells the ligatures out (coeur, oeuvre), the Littré does not (cœur, œuvre)."""
+    return word.lower().replace("œ", "oe").replace("æ", "ae")
+
+
 def frequency(word: str) -> Frequency:
-    return frequencies().get(word.lower(), Frequency(films=0.0, books=0.0))
+    return frequencies().get(lexique_spelling(word), Frequency(films=0.0, books=0.0))

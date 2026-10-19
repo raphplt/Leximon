@@ -1,14 +1,11 @@
 """Automatic checks on a card draft. They catch mechanical problems before human review; they
 do not judge meaning, which only a human reviewer can validate."""
 
-import re
-import unicodedata
 from dataclasses import dataclass
 
 from . import littre
-from .drafting import CardDraft
+from .drafting import MAX_DEFINITION_WORDS, CardDraft, words
 
-MAX_DEFINITION_WORDS = 25
 MAX_ETYMOLOGY_WORDS = 35
 MAX_QUOTE_CHARS = 300
 #: A run of this many identical words with the Littré's definition counts as copying.
@@ -22,20 +19,15 @@ class Check:
     detail: str
 
 
-def _words(text: str) -> list[str]:
-    folded = unicodedata.normalize("NFKD", text.lower())
-    return re.findall(r"[a-z0-9]+", folded.encode("ascii", "ignore").decode())
-
-
 def _shares_run(a: str, b: str, length: int) -> bool:
-    words_a, words_b = _words(a), _words(b)
+    words_a, words_b = words(a), words(b)
     runs_b = {tuple(words_b[i : i + length]) for i in range(len(words_b) - length + 1)}
     return any(tuple(words_a[i : i + length]) in runs_b for i in range(len(words_a) - length + 1))
 
 
 def run_checks(draft: CardDraft, entry: littre.Entry) -> list[Check]:
-    definition_words = len(_words(draft.definition))
-    etymology_words = len(_words(draft.etymology))
+    definition_words = len(words(draft.definition))
+    etymology_words = len(words(draft.etymology))
     littre_definitions = " ".join(sense.definition for sense in entry.senses)
     citations = entry.citations[:12]  # the citations shown to the model, see littre.render
 
