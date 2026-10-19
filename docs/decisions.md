@@ -145,3 +145,16 @@ Pour ajouter ou modifier une décision, utiliser le skill `decision`.
   - une tâche quotidienne du Worker (cron) crée les partitions à venir et purge les clés.
 - **Pourquoi :** à 250 000 joueurs par jour, le journal reçoit environ 2 millions de lignes par jour. L'idempotence n'a besoin que de 48 h, l'audit de quelques mois.
 - **Conséquences :** les anciens mois pourront être archivés sur R2 puis supprimés d'un bloc (à mettre en place avant que le volume le justifie). Chaque tirage enregistre sa graine et l'empreinte SHA-256 du catalogue utilisé, ce qui permet de le rejouer à l'identique.
+
+## D-018 · Limites de débit : liaisons Cloudflare
+
+- **Statut :** Acceptée (2026-10-19). Seuils validés par le propriétaire, à revoir avec les premières données réelles et le branchement du GAR.
+- **Choix :** liaisons Rate Limiting de Cloudflare Workers, configurées dans `wrangler.jsonc`.
+  - Création de compte invité : 60 par minute et par adresse IP. Seuil large, pour une classe derrière une même adresse.
+  - Requêtes d'un joueur connecté : 120 par minute, comptées sur son identifiant.
+  - Au-delà : réponse 429 avec `Retry-After`.
+- **Pourquoi :** les compteurs vivent chez Cloudflare, l'API reste sans état. Les limites intégrées à Better Auth sont coupées, car elles comptent en mémoire.
+- **Conséquences :**
+  - les compteurs sont tenus par emplacement Cloudflare, pas globalement ;
+  - un identifiant de namespace ne doit jamais être réutilisé pour une autre limite ;
+  - les tests fournissent des liaisons factices (`test-env.ts`).
