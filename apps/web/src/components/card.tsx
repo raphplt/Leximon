@@ -2,7 +2,7 @@ import { RARITY_LABELS } from "@leximon/contract";
 import { RARITIES, rarityRank } from "@leximon/core";
 import { cardSize, cssFill, rarityStyles } from "@leximon/tokens";
 import type { CSSProperties } from "react";
-import { type CatalogCard, collectionName, formatOdds } from "@/cards/catalog";
+import { type CatalogCard, collectionName, formatOdds, wordFontSize } from "@/cards/catalog";
 import styles from "./card.module.css";
 
 interface CardProps {
@@ -27,6 +27,7 @@ export function Card({ card, width = cardSize.width }: CardProps) {
     "--chip-ink": style.chipInk,
     "--spot": style.spot,
     "--hatch": style.hatch,
+    "--word-size": wordFontSize(card.word),
   } as CSSProperties;
   const label = RARITY_LABELS[card.rarity];
   const rank = rarityRank(card.rarity);

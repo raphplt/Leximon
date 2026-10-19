@@ -116,10 +116,10 @@
   font-family: var(--font-display), Georgia, serif;
   font-variation-settings: "SOFT" 100;
   font-weight: 900;
-  font-size: calc(34 * var(--u));
+  font-size: calc(var(--word-size) * var(--u));
   line-height: 0.95;
   letter-spacing: -0.015em;
-  overflow-wrap: anywhere;
+  overflow-wrap: break-word;
   color: var(--word);
 }
 
