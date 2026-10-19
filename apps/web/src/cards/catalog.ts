@@ -1,141 +1,97 @@
+import {
+  type CatalogCard,
+  type CatalogCollectionFile,
+  catalogCollectionFileSchema,
+  catalogManifestSchema,
+} from "@leximon/contract";
 import type { Rarity } from "@leximon/core";
-import { DEMO_CARDS } from "./demo-catalog";
 
-/** What a card shows. Provisional shape until the published catalogue format is decided. */
-export interface CatalogCard {
-  readonly id: string;
-  readonly word: string;
-  readonly partOfSpeech: string;
-  /** First attestation, e.g. "XIIIe s.". `null` when unknown. */
-  readonly era: string | null;
-  readonly definition: string;
-  readonly quote: { readonly text: string; readonly author: string } | null;
-  readonly rarity: Rarity;
-  readonly collectionId: string;
-  /** Modern written frequency (Google Books Ngram, D-020). `null` below what Ngram measures. */
-  readonly perBillion: number | null;
+/**
+ * The published catalogue (D-023), read in the browser: the manifest first (short cache), then
+ * every collection file it lists (immutable, cached for good). Both are validated with the
+ * shared contract, like any external input.
+ */
+
+// Dot access only: Next.js inlines NEXT_PUBLIC_ variables at build time, not bracket access.
+const CATALOG_URL = process.env.NEXT_PUBLIC_CATALOG_URL ?? "/catalog";
+
+export interface Catalog {
+  readonly version: string;
+  readonly collections: readonly CatalogCollectionFile[];
+  readonly cardsById: ReadonlyMap<string, CatalogCard>;
 }
 
-export interface CatalogCollection {
-  readonly id: string;
-  readonly name: string;
+export class CatalogError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "CatalogError";
+  }
 }
 
-const cardsById = new Map(DEMO_CARDS.map((card) => [card.id, card]));
-
-export const COLLECTIONS: readonly CatalogCollection[] = [
-  { id: "fondateurs", name: "Les Fondateurs" },
-];
-
-export function collectionName(collectionId: string): string {
-  return COLLECTIONS.find((collection) => collection.id === collectionId)?.name ?? collectionId;
+async function fetchJson(url: string, init: RequestInit): Promise<unknown> {
+  let response: Response;
+  try {
+    response = await fetch(url, init);
+  } catch {
+    throw new CatalogError("network_error");
+  }
+  if (!response.ok) throw new CatalogError(`catalog_unavailable_${response.status}`);
+  return response.json().catch(() => null);
 }
 
-export function findCard(id: string): CatalogCard | undefined {
-  return cardsById.get(id);
+export async function fetchCatalog(baseUrl: string = CATALOG_URL): Promise<Catalog> {
+  const manifest = catalogManifestSchema.safeParse(
+    await fetchJson(`${baseUrl}/manifest.json`, { cache: "no-cache" }),
+  );
+  if (!manifest.success) throw new CatalogError("invalid_manifest");
+  const collections = await Promise.all(
+    manifest.data.collections.map(async (entry) => {
+      const file = catalogCollectionFileSchema.safeParse(
+        await fetchJson(`${baseUrl}/${entry.file}`, { cache: "force-cache" }),
+      );
+      if (!file.success) throw new CatalogError(`invalid_collection_${entry.id}`);
+      return file.data;
+    }),
+  );
+  const cardsById = new Map(
+    collections.flatMap((collection) => collection.cards.map((card) => [card.id, card] as const)),
+  );
+  return { version: manifest.data.version, collections, cardsById };
+}
+
+let loading: Promise<Catalog> | null = null;
+
+/** The catalogue, fetched once per page load and shared by every screen. */
+export function loadCatalog(): Promise<Catalog> {
+  loading ??= fetchCatalog().catch((error: unknown) => {
+    loading = null;
+    throw error;
+  });
+  return loading;
+}
+
+export function collectionName(catalog: Catalog, collectionId: string): string {
+  return catalog.collections.find((c) => c.id === collectionId)?.name ?? collectionId;
 }
 
 /**
- * The card to show for a drawn or owned id. An id missing from the catalogue (the server knows
- * cards the demo catalogue lacks) still gets a card rather than breaking the screen.
+ * The card to show for a drawn or owned id. An id missing from the catalogue (a card retired
+ * before this release, or a newer release than the one loaded) still gets a card.
  */
-export function cardOrPlaceholder(id: string, rarity: Rarity): CatalogCard {
+export function cardOrPlaceholder(catalog: Catalog, id: string, rarity: Rarity): CatalogCard {
   return (
-    findCard(id) ?? {
+    catalog.cardsById.get(id) ?? {
       id,
       word: id,
       partOfSpeech: "mot",
       era: null,
-      definition: "Ce mot n'est pas encore dans le catalogue.",
+      definition: "Ce mot n'est pas dans le catalogue chargé. Recharge la page pour le voir.",
+      etymology: null,
       quote: null,
       rarity,
-      collectionId: "",
+      collectionId: "inconnue",
+      themes: [],
       perBillion: null,
     }
   );
-}
-
-export function cardsOfCollection(collectionId: string): CatalogCard[] {
-  return DEMO_CARDS.filter((card) => card.collectionId === collectionId);
-}
-
-const WORD_MAX_SIZE = 34;
-const WORD_MIN_SIZE = 18;
-/** Width available to the word on the reference card, in px, with a small safety margin. */
-const WORD_LINE_WIDTH = 252;
-const WORD_LETTER_SPACING = -0.015;
-/** Advance widths of Fraunces Black (SOFT 100) lowercase glyphs, in em, measured at 24 px. */
-const LETTER_WIDTHS: Readonly<Record<string, number>> = {
-  a: 0.594,
-  b: 0.642,
-  c: 0.55,
-  d: 0.652,
-  e: 0.554,
-  f: 0.46,
-  g: 0.61,
-  h: 0.678,
-  i: 0.347,
-  j: 0.346,
-  k: 0.655,
-  l: 0.347,
-  m: 0.993,
-  n: 0.678,
-  o: 0.616,
-  p: 0.657,
-  q: 0.642,
-  r: 0.524,
-  s: 0.539,
-  t: 0.445,
-  u: 0.666,
-  v: 0.59,
-  w: 0.907,
-  x: 0.613,
-  y: 0.609,
-  z: 0.551,
-  æ: 0.853,
-  œ: 0.922,
-  "-": 0.397,
-  "'": 0.22,
-  "’": 0.22,
-  " ": 0.203,
-};
-/** For any glyph missing above: as wide as an "n". */
-const DEFAULT_LETTER_WIDTH = 0.678;
-
-/** Width of `word` set in the card's display font, in em. Accents do not change the width. */
-function wordWidthEm(word: string): number {
-  let width = 0;
-  for (const letter of word.toLowerCase()) {
-    const base = letter.normalize("NFD").replace(/\p{M}/gu, "");
-    width +=
-      (LETTER_WIDTHS[letter] ?? LETTER_WIDTHS[base] ?? DEFAULT_LETTER_WIDTH) + WORD_LETTER_SPACING;
-  }
-  return width;
-}
-
-/**
- * Font size of the word on the reference card, in px: the word stays on one line, shrinking
- * for long words rather than breaking mid-word. Beyond the minimum, the word may wrap.
- */
-export function wordFontSize(word: string): number {
-  const fitting = Math.floor(WORD_LINE_WIDTH / Math.max(wordWidthEm(word), 0.01));
-  return Math.max(WORD_MIN_SIZE, Math.min(WORD_MAX_SIZE, fitting));
-}
-
-/**
- * Discreet frequency figure printed on a card (P22): "one occurrence in N words", e.g.
- * "1/3,6 M" or "1/7,7 Md". Below what Ngram measures, "< 1/Md".
- */
-export function formatOdds(perBillion: number | null): string {
-  if (perBillion === null || perBillion <= 0) return "< 1/Md";
-  const oneIn = 1e9 / perBillion;
-  if (oneIn >= 1e9) return `1/${twoDigits(oneIn / 1e9)} Md`;
-  if (oneIn >= 1e6) return `1/${twoDigits(oneIn / 1e6)} M`;
-  return `1/${twoDigits(oneIn / 1e3)} k`;
-}
-
-/** Two significant digits, French decimal comma, no trailing zero. */
-function twoDigits(value: number): string {
-  const rounded = Number(value.toPrecision(2));
-  return rounded.toLocaleString("fr-FR", { maximumFractionDigits: 1 }).replace(/\s/g, " ");
 }

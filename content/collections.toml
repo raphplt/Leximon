@@ -1,0 +1,8 @@
+# Collections of the published catalogue (D-023). Each takes the publishable cards of its runs
+# (content/pipeline/data/runs/<run>, reviewed in Directus). A card belongs to one collection only.
+# Ids are stable slugs: never rename or reuse one once published.
+
+[[collection]]
+id = "fondateurs"
+name = "Les Fondateurs"
+runs = ["lot-1"]

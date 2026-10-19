@@ -3,5 +3,12 @@
   "compilerOptions": {
     "types": ["node"]
   },
-  "include": ["src", "drizzle.config.ts", "vitest.config.ts", "vitest.global-setup.ts"]
+  "include": [
+    "src",
+    "scripts",
+    "drizzle.config.ts",
+    "vitest.config.ts",
+    "vitest.unit.config.ts",
+    "vitest.global-setup.ts"
+  ]
 }

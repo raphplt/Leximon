@@ -328,6 +328,32 @@ def replace_run(
     return len(shuffled)
 
 
+RELEASE_FIELDS = (
+    "run,word,part_of_speech,era,definition,etymology,quote_text,quote_author,themes,rarity,"
+    "verdict,to_review"
+)
+
+
+def release_rows(client: httpx.Client, runs: set[str]) -> dict[str, list[dict[str, object]]]:
+    """The cards of these runs as reviewed, edits included: what a catalogue release reads."""
+    items = (
+        client.get(
+            f"/items/{COLLECTION}",
+            params={
+                "filter[run][_in]": ",".join(sorted(runs)),
+                "fields": RELEASE_FIELDS,
+                "limit": "-1",
+            },
+        )
+        .raise_for_status()
+        .json()["data"]
+    )
+    rows: dict[str, list[dict[str, object]]] = defaultdict(list)
+    for item in items:
+        rows[item["run"]].append(item)
+    return dict(rows)
+
+
 def report(client: httpx.Client, run: str) -> str:
     items = (
         client.get(

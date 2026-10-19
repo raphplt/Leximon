@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 1,
+  "version": "2026-10-19.1",
+  "releasedAt": "2026-10-19T21:14:55.436Z",
+  "collections": [
+    {
+      "id": "fondateurs",
+      "name": "Les Fondateurs",
+      "cardCount": 160,
+      "file": "collections/fondateurs.5a9fff03ee8a.json"
+    }
+  ]
+}

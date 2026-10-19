@@ -1,11 +1,11 @@
 "use client";
 
-import { RARITY_LABELS } from "@leximon/contract";
+import { type CatalogCard, RARITY_LABELS } from "@leximon/contract";
 import { rarityRank } from "@leximon/core";
 import { cssFill, rarityStyles } from "@leximon/tokens";
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { type CatalogCard, COLLECTIONS, cardsOfCollection } from "@/cards/catalog";
+import { type Catalog, loadCatalog } from "@/cards/catalog";
 import { Card } from "@/components/card";
 import { fetchOwnedCards } from "@/lib/api";
 import styles from "./album-screen.module.css";
@@ -23,6 +23,7 @@ function albumOrder(cards: readonly CatalogCard[]): CatalogCard[] {
 }
 
 export function AlbumScreen() {
+  const [catalog, setCatalog] = useState<Catalog | null>(null);
   const [quantities, setQuantities] = useState<ReadonlyMap<string, number> | null>(null);
   const [failed, setFailed] = useState(false);
   const [zoomed, setZoomed] = useState<CatalogCard | null>(null);
@@ -31,7 +32,8 @@ export function AlbumScreen() {
   const load = useCallback(async () => {
     setFailed(false);
     try {
-      const owned = await fetchOwnedCards();
+      const [loadedCatalog, owned] = await Promise.all([loadCatalog(), fetchOwnedCards()]);
+      setCatalog(loadedCatalog);
       const byCard = new Map<string, number>();
       for (const card of owned) {
         byCard.set(card.cardId, (byCard.get(card.cardId) ?? 0) + card.quantity);
@@ -61,7 +63,7 @@ export function AlbumScreen() {
     );
   }
 
-  if (quantities === null) {
+  if (quantities === null || catalog === null) {
     return (
       <main className={styles.screen}>
         <p className={styles.hint}>Un instant…</p>
@@ -71,8 +73,8 @@ export function AlbumScreen() {
 
   return (
     <main className={styles.screen}>
-      {COLLECTIONS.map((collection) => {
-        const cards = albumOrder(cardsOfCollection(collection.id));
+      {catalog.collections.map((collection) => {
+        const cards = albumOrder(collection.cards);
         const found = cards.filter((card) => quantities.has(card.id)).length;
         return (
           <section key={collection.id} aria-labelledby={`collection-${collection.id}`}>
@@ -114,7 +116,7 @@ export function AlbumScreen() {
                         onClick={() => setZoomed(card)}
                         aria-label={`Agrandir ${card.word}`}
                       >
-                        <Card card={card} width={TILE_WIDTH} />
+                        <Card card={card} collectionName={collection.name} width={TILE_WIDTH} />
                         {quantity > 1 && <span className={styles.quantity}>×{quantity}</span>}
                       </button>
                     )}
@@ -138,7 +140,12 @@ export function AlbumScreen() {
       >
         {zoomed !== null && (
           <div className={styles.zoom}>
-            <Card card={zoomed} />
+            <Card
+              card={zoomed}
+              collectionName={
+                catalog.collections.find((c) => c.id === zoomed.collectionId)?.name ?? ""
+              }
+            />
             <button type="button" className={styles.button} onClick={() => dialog.current?.close()}>
               Fermer
             </button>

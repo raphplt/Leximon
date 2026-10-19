@@ -1,24 +1,23 @@
 "use client";
 
-import type { BoosterSource, BoosterWalletResponse } from "@leximon/contract";
+import type { BoosterWalletResponse } from "@leximon/contract";
 import { REFILL_SCHEDULE } from "@leximon/core";
 import { motion, rarityStyles } from "@leximon/tokens";
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
-import { cardOrPlaceholder, collectionName } from "@/cards/catalog";
+import { type Catalog, cardOrPlaceholder, collectionName, loadCatalog } from "@/cards/catalog";
 import { Card } from "@/components/card";
 import { fetchOwnedCards, fetchWallet, openBooster } from "@/lib/api";
 import styles from "./booster-screen.module.css";
 import { type DrawnCard, nextRefillLabel, recapLine, revealOrder } from "./reveal";
 
-const COLLECTION_ID = "fondateurs";
-const SOURCE: BoosterSource = { kind: "collection", collectionId: COLLECTION_ID };
 const STOCK_CAPACITY = REFILL_SCHEDULE[0].capacity;
 const FAN_ANGLES = [-10, -5, 0, 5, 10];
 
 type Phase =
   | { readonly name: "loading" }
   | { readonly name: "unavailable" }
+  | { readonly name: "no_collection" }
   | { readonly name: "sealed" }
   | { readonly name: "opening" }
   | { readonly name: "revealing"; readonly index: number }
@@ -39,6 +38,7 @@ function delay(ms: number): Promise<void> {
 
 export function BoosterScreen() {
   const [phase, setPhase] = useState<Phase>({ name: "loading" });
+  const [catalog, setCatalog] = useState<Catalog | null>(null);
   const [wallet, setWallet] = useState<BoosterWalletResponse | null>(null);
   const [owned, setOwned] = useState<ReadonlySet<string>>(new Set());
   const [pack, setPack] = useState<Pack | null>(null);
@@ -49,11 +49,18 @@ export function BoosterScreen() {
 
   const load = useCallback(async () => {
     try {
-      const [loadedWallet, ownedCards] = await Promise.all([fetchWallet(), fetchOwnedCards()]);
+      const [loadedCatalog, loadedWallet, ownedCards] = await Promise.all([
+        loadCatalog(),
+        fetchWallet(),
+        fetchOwnedCards(),
+      ]);
+      setCatalog(loadedCatalog);
       setWallet(loadedWallet);
       setOwned(new Set(ownedCards.map((card) => card.cardId)));
+      const ready: Phase =
+        loadedCatalog.collections.length > 0 ? { name: "sealed" } : { name: "no_collection" };
       setPhase((current) =>
-        current.name === "loading" || current.name === "unavailable" ? { name: "sealed" } : current,
+        current.name === "loading" || current.name === "unavailable" ? ready : current,
       );
     } catch {
       setPhase({ name: "unavailable" });
@@ -73,14 +80,21 @@ export function BoosterScreen() {
       .catch(() => undefined);
   }, [refillDue]);
 
+  // The first published collection, until the player can choose (P14).
+  const collection = catalog?.collections[0];
+
   const open = async () => {
+    if (collection === undefined) return;
     const key = pendingKey ?? crypto.randomUUID();
     setPendingKey(key);
     setError(null);
     setPhase({ name: "opening" });
     try {
       const animation = delay(prefersReducedMotion() ? 0 : motion.envelopeOpen);
-      const [result] = await Promise.all([openBooster(SOURCE, key), animation]);
+      const [result] = await Promise.all([
+        openBooster({ kind: "collection", collectionId: collection.id }, key),
+        animation,
+      ]);
       setPendingKey(null);
       if (result.kind === "stock_empty") {
         setWallet({ stored: 0, nextRefillAt: result.nextRefillAt });
@@ -114,7 +128,7 @@ export function BoosterScreen() {
       <header className={styles.header}>
         <div>
           <p className={styles.kicker}>Pli de collection</p>
-          <h1 className={styles.title}>{collectionName(COLLECTION_ID)}</h1>
+          <h1 className={styles.title}>{collection?.name ?? "Leximon"}</h1>
         </div>
         {wallet !== null && (
           <div className={styles.stock}>
@@ -144,6 +158,10 @@ export function BoosterScreen() {
         </div>
       )}
 
+      {phase.name === "no_collection" && (
+        <p className={styles.hint}>Aucune collection n'est encore publiée.</p>
+      )}
+
       {phase.name === "sealed" && (
         <div className={styles.center}>
           <Envelope opening={false} disabled={stored === 0} onOpen={() => void open()} />
@@ -170,8 +188,9 @@ export function BoosterScreen() {
         </div>
       )}
 
-      {phase.name === "revealing" && pack !== null && (
+      {phase.name === "revealing" && pack !== null && catalog !== null && (
         <Reveal
+          catalog={catalog}
           key={phase.index}
           card={pack.cards[phase.index]}
           isNew={!pack.ownedBefore.has(pack.cards[phase.index]?.cardId ?? "")}
@@ -195,7 +214,7 @@ export function BoosterScreen() {
                   transform: `translateX(${(index - (pack.cards.length - 1) / 2) * 34}px) rotate(${FAN_ANGLES[index] ?? 0}deg)`,
                 }}
               >
-                <Card card={cardOrPlaceholder(drawn.cardId, drawn.rarity)} width={140} />
+                <CatalogCardView catalog={catalog} drawn={drawn} width={140} />
               </li>
             ))}
           </ul>
@@ -252,13 +271,35 @@ function Envelope({
   );
 }
 
+/** A drawn card as the catalogue describes it. */
+function CatalogCardView({
+  catalog,
+  drawn,
+  width,
+}: {
+  readonly catalog: Catalog | null;
+  readonly drawn: DrawnCard;
+  readonly width?: number;
+}) {
+  if (catalog === null) return null;
+  const card = cardOrPlaceholder(catalog, drawn.cardId, drawn.rarity);
+  const name = collectionName(catalog, card.collectionId);
+  return width === undefined ? (
+    <Card card={card} collectionName={name} />
+  ) : (
+    <Card card={card} collectionName={name} width={width} />
+  );
+}
+
 function Reveal({
+  catalog,
   card: drawn,
   isNew,
   position,
   total,
   onNext,
 }: {
+  readonly catalog: Catalog;
   readonly card: DrawnCard | undefined;
   readonly isNew: boolean;
   readonly position: number;
@@ -266,7 +307,7 @@ function Reveal({
   readonly onNext: () => void;
 }) {
   if (drawn === undefined) return null;
-  const card = cardOrPlaceholder(drawn.cardId, drawn.rarity);
+  const card = cardOrPlaceholder(catalog, drawn.cardId, drawn.rarity);
   const glow = rarityStyles[card.rarity].glow;
   const last = position === total;
   return (
@@ -285,7 +326,7 @@ function Reveal({
           onClick={onNext}
           aria-label="Carte suivante"
         >
-          <Card card={card} />
+          <Card card={card} collectionName={collectionName(catalog, card.collectionId)} />
         </button>
         {isNew && <span className={styles.newBadge}>Nouveau !</span>}
       </div>

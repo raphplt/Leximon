@@ -11,6 +11,8 @@ quality   drop unsuitable drafts, verify faithfulness (Opus), send flagged cards
 push      send the kept cards to Directus, with pépites and the review sample marked
 refresh   update the Directus layout, frequencies and rarities, keeping the review
 report    compare models from the review verdicts recorded in Directus
+release   write a catalogue release (content/releases/<version>/) from the publishable cards of
+          the collections in content/collections.toml (D-023)
 
 A step whose estimated cost exceeds a few dollars waits for --yes (the owner's approval).
 """
@@ -19,8 +21,19 @@ import argparse
 import asyncio
 import json
 from collections import Counter
+from datetime import UTC, date, datetime
 
-from . import config, curation, directus, drafting, littre, ngram, prescreen, selection
+from . import (
+    config,
+    curation,
+    directus,
+    drafting,
+    littre,
+    ngram,
+    prescreen,
+    release,
+    selection,
+)
 from .curation import run_dir
 
 
@@ -156,11 +169,43 @@ def command_report(run: str) -> None:
     print(directus.report(directus.connect(), run))
 
 
+def command_release() -> None:
+    config.load_env()
+    collections = release.load_collections()
+    runs = {run for collection in collections for run in collection.runs}
+    rows = directus.release_rows(directus.connect(), runs)
+    version = release.next_version(release.RELEASES_DIR, date.today())
+    try:
+        files = release.build(collections, rows, ngram.frequency, version, datetime.now(UTC))
+    except release.ReleaseError as error:
+        raise SystemExit(f"Version refusée : {error}") from error
+    latest = release.latest_release(release.RELEASES_DIR)
+    if latest is not None and release.same_collections(files, latest):
+        print(f"Rien de nouveau depuis {latest.name}.")
+        return
+    target = release.RELEASES_DIR / version
+    release.write(files, target)
+    manifest = json.loads(files["manifest.json"])
+    for entry in manifest["collections"]:
+        print(f"{entry['name']} : {entry['cardCount']} cartes")
+    print(f"Version {version} écrite dans {target}. Publier : pnpm catalog:publish")
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(prog="leximon_content")
     parser.add_argument(
         "command",
-        choices=["ngram", "prescreen", "select", "draft", "quality", "push", "refresh", "report"],
+        choices=[
+            "ngram",
+            "prescreen",
+            "select",
+            "draft",
+            "quality",
+            "push",
+            "refresh",
+            "report",
+            "release",
+        ],
     )
     parser.add_argument("--run", default="essai-50")
     parser.add_argument("--compare", action="store_true", help="draft: compare every model")
@@ -169,6 +214,9 @@ def main() -> None:
     parser.add_argument("--limit", type=int, default=None, help="prescreen --pool: at most N")
     parser.add_argument("--yes", action="store_true", help="approve a step above a few dollars")
     args = parser.parse_args()
+    if args.command == "release":
+        command_release()
+        return
     if args.command == "prescreen":
         command_prescreen(args.run, args.pool, args.limit, args.yes)
         return

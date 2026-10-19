@@ -34,3 +34,6 @@ __pycache__/
 .claude/settings.local.json
 .DS_Store
 *.log
+
+# Catalogue copié par `pnpm catalog:publish` pour le web local (D-023)
+apps/web/public/catalog/

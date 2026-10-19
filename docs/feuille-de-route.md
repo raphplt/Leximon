@@ -6,7 +6,7 @@ Où en est Leximon, ce qui reste avant la bêta publique (novembre 2026) et ce q
 
 ## En une phrase
 
-Le cœur du jeu tourne de bout en bout sur le web : on ouvre un pli, on révèle ses cartes, on les retrouve dans l'album. Mais il s'appuie encore sur un catalogue de démo de 23 cartes, sans gravures, et rien n'est en ligne.
+Le cœur du jeu tourne de bout en bout sur le web : on ouvre un pli, on révèle ses cartes, on les retrouve dans l'album. Il lit le catalogue publié (160 cartes du lot-1), encore sans gravures, et rien n'est en ligne.
 
 ## État par chantier
 
@@ -18,7 +18,7 @@ Statuts : **Fait**, **En cours**, **À faire**, **À décider** (attend le propr
 |---|---|---|
 | Choix des mots et calcul de la rareté | Fait | D-020 : fréquence Google Ngram, environ 28 000 candidats dans le Littré |
 | Rédaction et contrôle automatique | Fait | D-019, D-021 : lot-1 de 300 mots, 178 cartes gardées, 10 % à relire |
-| Format de publication du catalogue | À décider | Ce que lisent l'API et les apps. Remplacera le catalogue de démo |
+| Publication du catalogue | Fait | D-023 : `release` puis `pnpm catalog:publish`. Première version : 160 cartes |
 | Collections de lancement | À décider | Quelles collections, combien de cartes chacune (environ 500 recommandé, P14) |
 | Volume de lancement (1 000 à 2 000 cartes) | À faire | Environ 15 $ par tranche de 1 000 cartes gardées : accord du propriétaire avant de lancer |
 | Gravures | À faire | Trouver des gravures du domaine public et les traiter (P5). Pas commencé |
@@ -39,7 +39,7 @@ Statuts : **Fait**, **En cours**, **À faire**, **À décider** (attend le propr
 | Étape | Statut | Détail |
 |---|---|---|
 | Direction artistique et tokens | Fait | D-022 « Planche populaire », `packages/tokens` |
-| Web : ouverture du pli, album | Fait | Sur le catalogue de démo |
+| Web : ouverture du pli, album | Fait | Sur le catalogue publié |
 | Web : défis, échanges, profil | À faire | Après les règles côté serveur |
 | Web : page d'accueil publique et liste d'attente | À faire | Utile avant la bêta, pour les réseaux |
 | Mobile (Expo) | À faire | Les mêmes écrans ; charger les polices demandera une dépendance (`expo-font`) |
@@ -57,17 +57,15 @@ Statuts : **Fait**, **En cours**, **À faire**, **À décider** (attend le propr
 
 Dans l'ordre où elles débloquent le plus :
 
-1. **Format de publication du catalogue.** Il débloque le vrai contenu dans le jeu. Proposition en cours.
-2. **Collections de lancement.** Elles orientent la prochaine génération de cartes.
-3. **Budget de la génération de lancement.** Environ 15 à 30 $ pour 1 000 à 2 000 cartes.
-4. **Règles d'échange.** Elles débloquent les échanges, prévus au MVP.
-5. **Dépendance FSRS.** Elle débloque les défis.
-6. **Fournisseur Postgres.** Il débloque la mise en ligne.
+1. **Collections de lancement.** Elles orientent la prochaine génération de cartes.
+2. **Budget de la génération de lancement.** Environ 15 à 30 $ pour 1 000 à 2 000 cartes.
+3. **Règles d'échange.** Elles débloquent les échanges, prévus au MVP.
+4. **Dépendance FSRS.** Elle débloque les défis.
+5. **Fournisseur Postgres.** Il débloque la mise en ligne.
 
 ## Prochaines étapes conseillées
 
-1. Publier le vrai catalogue (format, puis export depuis Directus) et le brancher sur le web.
-2. Générer les cartes de lancement et trouver les gravures.
-3. Défis, puis échanges, côté serveur puis web.
-4. Page d'accueil publique et liste d'attente.
-5. Mobile, puis mise en ligne et test de charge.
+1. Générer les cartes de lancement et trouver les gravures.
+2. Défis, puis échanges, côté serveur puis web.
+3. Page d'accueil publique et liste d'attente.
+4. Mobile, puis mise en ligne et test de charge.

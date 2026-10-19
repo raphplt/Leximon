@@ -227,3 +227,18 @@ Pour ajouter ou modifier une décision, utiliser le skill `decision`.
   - couleurs, polices, rayons et espacements vivent dans `packages/tokens`, seule source pour le web et le mobile ;
   - la carte garde la même composition sur toutes les plateformes, même si les composants sont propres à chacune (D-002) ;
   - les reflets doré et irisé et l'animation du sceau restent en CSS simple tant que la R&D D-009 n'a pas conclu.
+
+## D-023 · Publication du catalogue : manifeste et un fichier par collection
+
+- **Statut :** Acceptée (2026-10-19)
+- **Choix :**
+  - **Format :** un `manifest.json` liste les collections publiées. Chaque collection est un fichier JSON nommé d'après l'empreinte de son contenu (`collections/<id>.<empreinte>.json`), donc immuable. Le schéma Zod vit dans `packages/contract` (`catalog.ts`).
+  - **Production :** la commande `release` de la chaîne Python écrit une version dans `content/releases/<version>/`, versionnée dans git, à partir des cartes publiables de Directus et des collections définies dans `content/collections.toml`.
+  - **Publication :** `pnpm catalog:publish` valide la version avec le schéma, met à jour les tables `collections` et `cards`, puis copie les fichiers vers leur destination.
+- **Pourquoi :** une collection se télécharge seule (environ 75 Ko compressés pour 500 cartes), un fichier publié ne change jamais et se met en cache sans limite, et le manifeste est le seul fichier à cache court.
+- **Conséquences :**
+  - une carte est publiable si sa relecture l'accepte (« OK », « Retouche ») ou si elle n'était pas à relire ; les cartes encore à relire attendent ;
+  - une carte publiée garde son identifiant et sa rareté pour toujours (D-020). Une carte retirée d'une version quitte les boosters, les exemplaires possédés restent ;
+  - en local, les fichiers vont dans `apps/web/public/catalog/`. La copie vers R2 sera ajoutée avec l'hébergement de production (D-005) ;
+  - le catalogue de démo et le seed de dev des cartes disparaissent : le jeu local lit la dernière version publiée.
+  - les scripts TypeScript de `packages/db` tournent avec Node 24 directement (suppression des types), aidé d'un petit crochet de résolution (`packages/config/node/resolve-ts.mjs`) qui retrouve les imports sans extension. Aucune dépendance ajoutée.

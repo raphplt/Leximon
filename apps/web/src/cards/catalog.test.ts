@@ -1,55 +1,75 @@
-import { RARITIES } from "@leximon/core";
-import { describe, expect, it } from "vitest";
-import { COLLECTIONS, cardsOfCollection, findCard, formatOdds, wordFontSize } from "./catalog";
-import { DEMO_CARDS } from "./demo-catalog";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import { cardOrPlaceholder, fetchCatalog } from "./catalog";
 
-describe("formatOdds", () => {
-  it("prints one occurrence in N words", () => {
-    expect(formatOdds(275)).toBe("1/3,6 M");
-    expect(formatOdds(13)).toBe("1/77 M");
-    expect(formatOdds(0.13)).toBe("1/7,7 Md");
-    expect(formatOdds(0.034)).toBe("1/29 Md");
-    expect(formatOdds(1)).toBe("1/1 Md");
-    expect(formatOdds(2000)).toBe("1/500 k");
-  });
+const card = {
+  id: "poue",
+  word: "poue",
+  partOfSpeech: "interj.",
+  era: null,
+  definition: "Onomatopée d'un coup de pistolet.",
+  etymology: null,
+  quote: null,
+  rarity: "uncommon",
+  collectionId: "fondateurs",
+  themes: [],
+  perBillion: 13,
+};
+const file = "collections/fondateurs.0123456789ab.json";
+const manifest = {
+  schemaVersion: 1,
+  version: "2026-10-19.1",
+  releasedAt: "2026-10-19T20:00:00.000Z",
+  collections: [{ id: "fondateurs", name: "Les Fondateurs", cardCount: 1, file }],
+};
 
-  it("stays discreet below what Ngram measures", () => {
-    expect(formatOdds(null)).toBe("< 1/Md");
-    expect(formatOdds(0)).toBe("< 1/Md");
-  });
+function serve(files: Record<string, unknown>) {
+  const requests: [string, RequestInit | undefined][] = [];
+  vi.stubGlobal(
+    "fetch",
+    vi.fn(async (url: string, init?: RequestInit) => {
+      requests.push([url, init]);
+      const path = url.replace("/catalog/", "");
+      return path in files
+        ? new Response(JSON.stringify(files[path]), { status: 200 })
+        : new Response("not found", { status: 404 });
+    }),
+  );
+  return requests;
+}
+
+afterEach(() => {
+  vi.unstubAllGlobals();
 });
 
-describe("demo catalogue", () => {
-  it("has unique ids and every rarity", () => {
-    expect(new Set(DEMO_CARDS.map((card) => card.id)).size).toBe(DEMO_CARDS.length);
-    expect(new Set(DEMO_CARDS.map((card) => card.rarity))).toEqual(new Set(RARITIES));
+describe("fetchCatalog", () => {
+  it("reads the manifest, then every collection it lists", async () => {
+    const requests = serve({
+      "manifest.json": manifest,
+      [file]: { id: "fondateurs", name: "Les Fondateurs", cards: [card] },
+    });
+    const catalog = await fetchCatalog("/catalog");
+    expect(catalog.version).toBe("2026-10-19.1");
+    expect(catalog.cardsById.get("poue")?.word).toBe("poue");
+    // The manifest is revalidated; collection files never change once published.
+    expect(requests.map(([url, init]) => [url, init?.cache])).toEqual([
+      ["/catalog/manifest.json", "no-cache"],
+      [`/catalog/${file}`, "force-cache"],
+    ]);
   });
 
-  it("puts every card in a known collection", () => {
-    const total = COLLECTIONS.reduce((sum, c) => sum + cardsOfCollection(c.id).length, 0);
-    expect(total).toBe(DEMO_CARDS.length);
-    expect(findCard("matrimonion")?.rarity).toBe("epic");
-    expect(findCard("unknown")).toBeUndefined();
-  });
-});
-
-describe("wordFontSize", () => {
-  it("keeps short words at full size", () => {
-    expect(wordFontSize("poue")).toBe(34);
-    expect(wordFontSize("matrimonion")).toBe(34);
+  it("refuses files that break the contract", async () => {
+    serve({ "manifest.json": manifest, [file]: { id: "fondateurs", cards: "?" } });
+    await expect(fetchCatalog("/catalog")).rejects.toThrow("invalid_collection_fondateurs");
+    serve({ "manifest.json": { ...manifest, schemaVersion: 99 } });
+    await expect(fetchCatalog("/catalog")).rejects.toThrow("invalid_manifest");
   });
 
-  it("shrinks long words instead of breaking them", () => {
-    expect(wordFontSize("coquefredouille")).toBe(32);
-    expect(wordFontSize("embabouinement")).toBe(28);
-    expect(wordFontSize("anticonstitutionnellement")).toBe(19);
-  });
-
-  it("gives wide letters more room", () => {
-    expect(wordFontSize("mmmmmmmmmmmm")).toBeLessThan(wordFontSize("iiiiiiiiiiii"));
-  });
-
-  it("measures accented letters like their base letter", () => {
-    expect(wordFontSize("éééééééééééééé")).toBe(wordFontSize("eeeeeeeeeeeeee"));
+  it("gives an unknown card a placeholder instead of breaking the screen", async () => {
+    serve({ "manifest.json": { ...manifest, collections: [] } });
+    const catalog = await fetchCatalog("/catalog");
+    expect(cardOrPlaceholder(catalog, "palsambleu", "legendary")).toMatchObject({
+      word: "palsambleu",
+      rarity: "legendary",
+    });
   });
 });

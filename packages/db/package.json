@@ -7,16 +7,20 @@
   "sideEffects": false,
   "exports": {
     ".": "./src/index.ts",
-    "./testing": "./src/testing.ts"
+    "./testing": "./src/testing.ts",
+    "./catalog": "./src/catalog/index.ts"
   },
   "scripts": {
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "db:studio": "drizzle-kit studio",
     "test:integration": "vitest run",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run --config vitest.unit.config.ts",
+    "catalog:publish": "node --env-file-if-exists=../../.env --import ../config/node/resolve-ts.mjs scripts/publish-catalog.ts"
   },
   "dependencies": {
+    "@leximon/contract": "workspace:*",
     "@leximon/core": "workspace:*",
     "drizzle-orm": "catalog:",
     "pg": "8.23.1"

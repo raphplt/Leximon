@@ -7,7 +7,13 @@
   },
   "files": {
     "ignoreUnknown": true,
-    "includes": ["**", "!**/worker-configuration.d.ts", "!**/migrations", "!apps/mobile/assets"]
+    "includes": [
+      "**",
+      "!**/worker-configuration.d.ts",
+      "!**/migrations",
+      "!apps/mobile/assets",
+      "!content/releases"
+    ]
   },
   "formatter": {
     "enabled": true,

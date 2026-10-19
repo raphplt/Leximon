@@ -2,7 +2,7 @@
 
 Jeu de cartes à collectionner pour découvrir les mots rares et anciens du français. Boosters gratuits, collection, défis qui font monter les cartes en niveau, échanges entre joueurs. Web, iOS et Android.
 
-**État :** l'API ouvre des boosters et sert la collection. Le web a ses deux premiers écrans (ouverture du pli, album) sur un catalogue de démo ; le mobile n'a encore aucune fonctionnalité de jeu.
+**État :** l'API ouvre des boosters et sert la collection. Le web a ses deux premiers écrans (ouverture du pli, album), sur le catalogue publié (160 cartes du lot-1) ; le mobile n'a encore aucune fonctionnalité de jeu.
 
 ## Commandes
 
@@ -12,7 +12,7 @@ cp .env.example .env             # une fois
 cp apps/api/.dev.vars.example apps/api/.dev.vars   # une fois, puis remplir le secret
 docker compose up -d             # Postgres local sur le port 54329
 pnpm db:migrate                  # applique les migrations à la base de dev
-pnpm db:seed:dev                 # quelques cartes pour jouer en local
+pnpm catalog:publish             # publie la dernière version du catalogue (base de dev et fichiers du web, D-023)
 pnpm dev                         # toutes les apps (ou --filter @leximon/api, /web, /mobile)
 pnpm check                       # lint + typecheck + tests unitaires, à lancer avant de rendre la main
 pnpm test:integration            # tests contre la base leximon_test, vidée à chaque passage (Docker requis)
@@ -29,6 +29,7 @@ uv run python -m leximon_content prescreen --pool   # pré-tri Haiku des mots ca
 uv run python -m leximon_content select         # --size N, puis draft (--run <nom>)
 uv run python -m leximon_content quality        # écarte, vérifie, corrige, note le charme (--run <nom>)
 uv run python -m leximon_content push           # cartes gardées vers Directus, puis refresh, report
+uv run python -m leximon_content release        # version du catalogue dans content/releases (collections : content/collections.toml)
 uv run ruff check src tests && uv run ruff format --check src tests && uv run pytest   # avant de rendre la main
 ```
 

@@ -1,18 +1,20 @@
+import type { CatalogCard } from "@leximon/contract";
 import { RARITY_LABELS } from "@leximon/contract";
 import { RARITIES, rarityRank } from "@leximon/core";
 import { cardSize, cssFill, rarityStyles } from "@leximon/tokens";
 import type { CSSProperties } from "react";
-import { type CatalogCard, collectionName, formatOdds, wordFontSize } from "@/cards/catalog";
+import { formatOdds, wordFontSize } from "@/cards/display";
 import styles from "./card.module.css";
 
 interface CardProps {
   readonly card: CatalogCard;
+  readonly collectionName: string;
   /** Width in px; the card keeps its proportions. */
   readonly width?: number;
 }
 
 /** A card face, drawn from the rarity tokens (D-022). Pure display: no state, no data access. */
-export function Card({ card, width = cardSize.width }: CardProps) {
+export function Card({ card, collectionName, width = cardSize.width }: CardProps) {
   const style = rarityStyles[card.rarity];
   const variables = {
     "--u": `${width / cardSize.width}px`,
@@ -62,7 +64,7 @@ export function Card({ card, width = cardSize.width }: CardProps) {
           </p>
         )}
         <footer className={styles.footer}>
-          <span>{collectionName(card.collectionId)}</span>
+          <span>{collectionName}</span>
           <span
             className={styles.odds}
             title="Fréquence du mot dans les livres d'aujourd'hui (Google Books Ngram)"

@@ -370,6 +370,9 @@ importers:
 
   packages/db:
     dependencies:
+      '@leximon/contract':
+        specifier: workspace:*
+        version: link:../contract
       '@leximon/core':
         specifier: workspace:*
         version: link:../core
