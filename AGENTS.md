@@ -44,6 +44,7 @@ Les sources téléchargées vivent dans `content/pipeline/data/` (ignoré par gi
 
 | Fichier | Contenu | Versionné |
 |---|---|---|
+| `docs/feuille-de-route.md` | Vue d'ensemble : état de chaque chantier, décisions en attente, prochaines étapes | Oui |
 | `docs/decisions.md` | Décisions techniques : choix, statut, conséquences | Oui |
 | `docs/rnd/` | Rapports des spikes de R&D | Oui |
 | `docs/north-star.md` | Vision produit, marché, monétisation, lancement | Non (local, peut être absent) |
