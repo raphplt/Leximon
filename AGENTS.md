@@ -24,6 +24,7 @@ Chaîne de contenu (Python, `content/pipeline/`, voir D-019) :
 ```bash
 docker compose --profile content up -d          # Postgres + Directus (http://127.0.0.1:8055)
 cd content/pipeline && uv sync                  # dépendances Python
+uv run python -m leximon_content ngram          # une fois : fréquences Google Ngram (5 Go téléchargés)
 uv run python -m leximon_content select         # puis draft, push, report (--run <nom>)
 uv run ruff check src tests && uv run pytest    # à lancer avant de rendre la main
 ```

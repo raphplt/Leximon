@@ -161,19 +161,35 @@ Pour ajouter ou modifier une décision, utiliser le skill `decision`.
 
 ## D-019 · Chaîne de contenu : sources, rédaction assistée, relecture dans Directus
 
-- **Statut :** Acceptée (2026-10-19). Le choix du modèle de rédaction attend les résultats de l'essai sur 50 mots.
+- **Statut :** Acceptée (2026-10-19). Modèle de rédaction choisi le 2026-10-19 après l'essai sur 50 mots.
 - **Choix :**
   - **Texte de référence : le Littré, via XMLittré.** Le balisage est sous CC BY-SA 3.0 ; le texte sans balisage est dans le domaine public, comme l'indique l'auteur. On n'en extrait que du texte brut.
   - **Repérage des candidats :** les catégories du Wiktionnaire (titres seulement, aucun texte repris).
   - **Rareté moderne :** Lexique 3.83. Google Books Ngram viendra pour la rareté historique.
   - **Rédaction :** Claude, en sortie JSON structurée. Le modèle reformule et choisit ; la citation est choisie par numéro dans l'entrée, et l'époque est calculée depuis l'historique du Littré.
+  - **Modèle :** Claude Sonnet 5.5. Une définition de plus de 25 mots est redemandée automatiquement, plus courte.
   - **Outillage :** projet Python `uv` dans `content/pipeline/`, avec Ruff et pytest, et un job CI dédié.
   - **Relecture :** Directus 12, dans une base Postgres `leximon_content` séparée de la base du jeu, démarrée par le profil Docker `content`.
 - **Pourquoi :**
   - le Littré fournit dans chaque entrée tout ce qu'une carte demande, avec des citations d'auteurs du domaine public ;
   - le LLM qui ne fait que reformuler et choisir reste vérifiable automatiquement.
+  - sur l'essai, Sonnet perd une étymologie sur 28 contre six pour Haiku, pour environ 36 $ les 10 000 mots : le temps de relecture coûte plus cher que l'écart de prix.
 - **Conséquences :**
   - créditer « XMLittré, François Gannaz (littre.org) » dans l'app ;
   - faire valider le partage à l'identique par un juriste avant le lancement ;
   - une liste d'exclusion déterministe des injures est nécessaire : l'essai montre qu'aucun modèle ne les repère toutes, et que certains sens injurieux modernes sont absents du Littré.
   - D-008 prévoyait un schéma « contenu » : une base séparée isole mieux les tables système de Directus.
+
+## D-020 · Rareté des cartes : fréquence Ngram et pépites
+
+- **Statut :** Acceptée (2026-10-19). Seuils provisoires, à recalibrer sur le catalogue de lancement puis à figer. Rapport : [docs/rnd/rarete.md](rnd/rarete.md).
+- **Choix :**
+  - **Score :** fréquence Google Books Ngram (corpus français 2019), formes du mot additionnées, graphies en minuscules. Deux tiers pour 1990-2019, un tiers pour 1800-1899, en logarithme.
+  - **Courant à Précieux :** seuils de score communs à tout le catalogue, en règle datée.
+  - **Épique et Légendaire :** réservées aux pépites, des mots au-delà du seuil de Précieux, proposés par le modèle et confirmés en relecture. Une pépite absente de tout le corpus Ngram est Légendaire, les autres sont Épiques.
+- **Pourquoi :** Ngram classe 92 % des candidats, contre 46 % pour Lexique. Au-delà de Précieux, la fréquence ne départage plus rien : Ngram ignore les mots vus moins de 40 fois.
+- **Conséquences :**
+  - la chaîne calcule la rareté à partir de données enregistrées (fréquence, mention pépite), jamais saisie à la main ;
+  - un mot composé n'a pas de fréquence en 1-gramme : sa rareté reste à compléter jusqu'à ce qu'on interroge les 3-grammes ;
+  - la composition des collections respecte la pyramide du catalogue (collection-sim.md) ;
+  - créditer Google Books Ngram (CC BY 3.0) dans l'app.
