@@ -158,3 +158,22 @@ Pour ajouter ou modifier une décision, utiliser le skill `decision`.
   - les compteurs sont tenus par emplacement Cloudflare, pas globalement ;
   - un identifiant de namespace ne doit jamais être réutilisé pour une autre limite ;
   - les tests fournissent des liaisons factices (`test-env.ts`).
+
+## D-019 · Chaîne de contenu : sources, rédaction assistée, relecture dans Directus
+
+- **Statut :** Acceptée (2026-10-19). Le choix du modèle de rédaction attend les résultats de l'essai sur 50 mots.
+- **Choix :**
+  - **Texte de référence : le Littré, via XMLittré.** Le balisage est sous CC BY-SA 3.0 ; le texte sans balisage est dans le domaine public, comme l'indique l'auteur. On n'en extrait que du texte brut.
+  - **Repérage des candidats :** les catégories du Wiktionnaire (titres seulement, aucun texte repris).
+  - **Rareté moderne :** Lexique 3.83. Google Books Ngram viendra pour la rareté historique.
+  - **Rédaction :** Claude, en sortie JSON structurée. Le modèle reformule et choisit ; la citation est choisie par numéro dans l'entrée, et l'époque est calculée depuis l'historique du Littré.
+  - **Outillage :** projet Python `uv` dans `content/pipeline/`, avec Ruff et pytest, et un job CI dédié.
+  - **Relecture :** Directus 12, dans une base Postgres `leximon_content` séparée de la base du jeu, démarrée par le profil Docker `content`.
+- **Pourquoi :**
+  - le Littré fournit dans chaque entrée tout ce qu'une carte demande, avec des citations d'auteurs du domaine public ;
+  - le LLM qui ne fait que reformuler et choisir reste vérifiable automatiquement.
+- **Conséquences :**
+  - créditer « XMLittré, François Gannaz (littre.org) » dans l'app ;
+  - faire valider le partage à l'identique par un juriste avant le lancement ;
+  - une liste d'exclusion déterministe des injures est nécessaire : l'essai montre qu'aucun modèle ne les repère toutes, et que certains sens injurieux modernes sont absents du Littré.
+  - D-008 prévoyait un schéma « contenu » : une base séparée isole mieux les tables système de Directus.

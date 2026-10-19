@@ -25,12 +25,13 @@ Une erreur publique sur un mot coûte cher en crédibilité. On préfère une ca
 ## Sources
 
 **Autorisées :**
-- dictionnaires du domaine public : Littré, Académie jusqu'à la 8e édition (1935), Godefroy, Furetière, Trévoux, Larousse du XIXe ;
+- le Littré via XMLittré (`content/pipeline/data/littre/`) : texte brut uniquement, crédit « XMLittré, François Gannaz (littre.org) » ;
+- autres dictionnaires du domaine public : Académie jusqu'à la 8e édition (1935), Godefroy, Furetière, Trévoux, Larousse du XIXe, à partir de transcriptions réutilisables (pas les scans Gallica) ;
 - Wikidata (lexèmes, CC0) ;
 - fréquences : Google Books Ngram (CC BY, à créditer), Lexique 3.83 (CC BY-SA, scores dérivés seulement) ;
 - illustrations : Met Open Access, Rijksmuseum, Paris Musées (CC0), Wikimedia Commons uniquement si le fichier est marqué domaine public ou CC0.
 
-**À n'utiliser que pour vérifier, sans rien reprendre :** Wiktionnaire (CC BY-SA). Ses textes ne doivent pas se retrouver dans une carte.
+**À n'utiliser que pour repérer ou vérifier, sans rien reprendre :** Wiktionnaire (CC BY-SA). Ses catégories servent à trouver des candidats ; ses textes ne doivent pas se retrouver dans une carte.
 
 **Interdites :**
 - TLFi, CNRTL, Frantext (tous droits réservés) ;
@@ -51,5 +52,6 @@ Une erreur publique sur un mot coûte cher en crédibilité. On préfère une ca
 - [ ] Chaque affirmation (sens, date, étymologie) s'appuie sur une source citée dans `sources`.
 - [ ] La citation est exacte, attribuée et dans le domaine public.
 - [ ] L'illustration a une URL d'origine et une licence autorisée.
+- [ ] Le mot n'a pas de sens injurieux moderne (raciste, sexiste, homophobe…), même absent du Littré.
 - [ ] Les doutes sont signalés (« origine incertaine », champ `review_notes`), jamais comblés par une supposition.
 - [ ] La carte passe en relecture humaine dans Directus. Aucune carte n'est publiée sans validation humaine.

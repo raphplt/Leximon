@@ -19,6 +19,17 @@ pnpm test:integration            # tests contre la base leximon_test, vidée à 
 pnpm format                      # corrige le formatage (Biome)
 ```
 
+Chaîne de contenu (Python, `content/pipeline/`, voir D-019) :
+
+```bash
+docker compose --profile content up -d          # Postgres + Directus (http://127.0.0.1:8055)
+cd content/pipeline && uv sync                  # dépendances Python
+uv run python -m leximon_content select         # puis draft, push, report (--run <nom>)
+uv run ruff check src tests && uv run pytest    # à lancer avant de rendre la main
+```
+
+Les sources téléchargées vivent dans `content/pipeline/data/` (ignoré par git). Chaque appel au LLM coûte de l'argent : demander l'accord du propriétaire avant une génération à grande échelle.
+
 - Ajouter une dépendance : `pnpm --filter <package> add <dep>`. Les versions partagées passent par le `catalog` de `pnpm-workspace.yaml`.
 - Dans `apps/mobile` : `pnpm expo install <dep>`, pour obtenir la version compatible avec le SDK.
 - Les packages internes exposent leurs sources TypeScript directement (pas d'étape de build) et s'importent sans extension.
