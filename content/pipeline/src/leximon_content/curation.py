@@ -145,14 +145,20 @@ async def verify_run(run: str, yes: bool) -> None:
 
 
 async def correct_run(run: str, yes: bool) -> None:
-    """Sends each flagged card back to the drafter with the verifier's problems, once."""
+    """Sends each card flagged by the verifier or holding English words back to the drafter
+    with its problems, once."""
     directory = run_dir(run)
     verified = verification.load(directory / "verification.jsonl")
     todo = []
     for d in kept(load_drafts(run)):
+        if d.attempt >= MAX_CORRECTIONS:
+            continue
         row = verdict_of(d, verified)
-        if row and not row["verdict"]["faithful"] and d.attempt < MAX_CORRECTIONS:  # type: ignore[index]
-            todo.append((d, verification.failing_problems(row)))
+        problems = checks.english_problems(d.draft)
+        if row and not row["verdict"]["faithful"]:  # type: ignore[index]
+            problems = verification.failing_problems(row) + problems
+        if problems:
+            todo.append((d, problems))
     if not todo:
         print("correction : rien à corriger")
         return
@@ -304,7 +310,7 @@ def curate(run: str) -> Curated:
             verdict = verification.Verdict.model_validate(row["verdict"])
             faithfulness[d.word] = verification.summary(verdict)
             if d.attempt:
-                faithfulness[d.word] += "\n↺ corrigée par le rédacteur d'après la vérification"
+                faithfulness[d.word] += "\n↺ corrigée par le rédacteur, puis revérifiée"
             if not verdict.faithful:
                 mine.append("faithfulness")
         if checks.failed(automatic[d.word]):

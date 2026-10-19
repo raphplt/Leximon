@@ -52,3 +52,21 @@ def test_a_word_on_the_exclusion_list_fails_whatever_the_model_says() -> None:
 
     slur = replace(ENTRY, headword="Métèque")
     assert "not_excluded" in checks.failed(checks.run_checks(draft(), slur))
+
+
+def test_an_english_word_in_the_definition_or_etymology_fails() -> None:
+    slipped = draft(definition="Les moines, vus comme une masse that l'on dédaigne.")
+    results = {c.name: c for c in checks.run_checks(slipped, ENTRY)}
+    assert checks.failed(list(results.values())) == ["french_only"]
+    assert "« that »" in results["french_only"].detail
+    assert "french_only" in checks.failed(
+        checks.run_checks(draft(etymology="Of the Italian facchino."), ENTRY)
+    )
+
+
+def test_french_words_spelled_like_english_ones_pass() -> None:
+    french = draft(
+        definition="Buveur de thé, as du jeu, qui fait de l'are son but, or on l'en blâme.",
+        etymology="Du latin in, « dans », et de l'anglais for.",
+    )
+    assert checks.failed(checks.run_checks(french, ENTRY)) == []
