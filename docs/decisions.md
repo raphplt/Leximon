@@ -164,8 +164,8 @@ Pour ajouter ou modifier une décision, utiliser le skill `decision`.
 - **Statut :** Acceptée (2026-10-19). Modèle de rédaction choisi le 2026-10-19 après l'essai sur 50 mots.
 - **Choix :**
   - **Texte de référence : le Littré, via XMLittré.** Le balisage est sous CC BY-SA 3.0 ; le texte sans balisage est dans le domaine public, comme l'indique l'auteur. On n'en extrait que du texte brut.
-  - **Repérage des candidats :** les catégories du Wiktionnaire (titres seulement, aucun texte repris).
-  - **Rareté moderne :** Lexique 3.83. Google Books Ngram viendra pour la rareté historique.
+  - **Repérage des candidats :** les catégories du Wiktionnaire (titres seulement, aucun texte repris). Étendu à tout le Littré par D-020.
+  - **Rareté moderne :** Lexique 3.83. Remplacé par Google Books Ngram (D-020).
   - **Rédaction :** Claude, en sortie JSON structurée. Le modèle reformule et choisit ; la citation est choisie par numéro dans l'entrée, et l'époque est calculée depuis l'historique du Littré.
   - **Modèle :** Claude Sonnet 5.5. Une définition de plus de 25 mots est redemandée automatiquement, plus courte.
   - **Outillage :** projet Python `uv` dans `content/pipeline/`, avec Ruff et pytest, et un job CI dédié.
@@ -192,4 +192,6 @@ Pour ajouter ou modifier une décision, utiliser le skill `decision`.
   - la chaîne calcule la rareté à partir de données enregistrées (fréquence, mention pépite), jamais saisie à la main ;
   - un mot composé n'a pas de fréquence en 1-gramme : sa rareté reste à compléter jusqu'à ce qu'on interroge les 3-grammes ;
   - la composition des collections respecte la pyramide du catalogue (collection-sim.md) ;
-  - créditer Google Books Ngram (CC BY 3.0) dans l'app.
+  - créditer Google Books Ngram (CC BY 3.0) dans l'app ;
+  - la sélection pioche dans tout le Littré : moins de 500 occurrences par milliard à l'écrit (Ngram) et de 0,5 par million à l'oral (sous-titres de Lexique), sans termes de science ni dérivés transparents. Les catégories du Wiktionnaire ne servent plus qu'aux thèmes ;
+  - une liste d'exclusion des injures (`exclusions.py`) écarte les mots dès la sélection et fait échouer un contrôle automatique.

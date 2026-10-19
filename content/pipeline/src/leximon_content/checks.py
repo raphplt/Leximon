@@ -5,6 +5,7 @@ from dataclasses import dataclass
 
 from . import littre
 from .drafting import MAX_DEFINITION_WORDS, CardDraft, words
+from .exclusions import is_excluded
 
 MAX_ETYMOLOGY_WORDS = 35
 MAX_QUOTE_CHARS = 300
@@ -32,6 +33,11 @@ def run_checks(draft: CardDraft, entry: littre.Entry) -> list[Check]:
     citations = entry.citations[:12]  # the citations shown to the model, see littre.render
 
     checks = [
+        Check(
+            "not_excluded",
+            not is_excluded(entry.headword),
+            "absent de la liste d'exclusion des injures",
+        ),
         Check(
             "definition_length",
             0 < definition_words <= MAX_DEFINITION_WORDS,

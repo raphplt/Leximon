@@ -1,47 +1,56 @@
-"""Modern word frequencies from Lexique 3.83 (CC BY-SA 4.0). Only derived scores leave this module."""
+"""Lexique 3.83 (CC BY-SA 4.0): word forms, and how often a word is heard in film subtitles.
+Only derived values leave this module, never Lexique's rows."""
 
 import csv
-import math
-from dataclasses import dataclass
+from collections import defaultdict
 from functools import cache
 from pathlib import Path
 
 from .config import LEXIQUE_FILE
 
 
-@dataclass(frozen=True)
-class Frequency:
-    #: Occurrences per million words in film subtitles (spoken, contemporary).
-    films: float
-    #: Occurrences per million words in books.
-    books: float
-
-    @property
-    def score(self) -> float:
-        """Commonness on a log scale: 0 for a word absent from both corpora."""
-        return math.log10(1 + self.films + self.books)
-
-
-@cache
-def frequencies(path: Path = LEXIQUE_FILE) -> dict[str, Frequency]:
-    """Lemma frequencies, keeping the highest value when a lemma has several categories."""
-    found: dict[str, Frequency] = {}
-    with path.open(encoding="utf-8", newline="") as file:
-        for row in csv.DictReader(file, delimiter="\t"):
-            lemma = row["lemme"].lower()
-            current = Frequency(
-                films=float(row["freqlemfilms2"]), books=float(row["freqlemlivres"])
-            )
-            previous = found.get(lemma)
-            if previous is None or current.score > previous.score:
-                found[lemma] = current
-    return found
-
-
-def lexique_spelling(word: str) -> str:
+def spelling(word: str) -> str:
     """Lexique spells the ligatures out (coeur, oeuvre), the Littré does not (cœur, œuvre)."""
     return word.lower().replace("œ", "oe").replace("æ", "ae")
 
 
-def frequency(word: str) -> Frequency:
-    return frequencies().get(lexique_spelling(word), Frequency(films=0.0, books=0.0))
+@cache
+def _rows(path: Path = LEXIQUE_FILE) -> tuple[tuple[str, str, float], ...]:
+    """(form, lemma, lemma frequency in subtitles per million words)."""
+    with path.open(encoding="utf-8", newline="") as file:
+        return tuple(
+            (row["ortho"].lower(), row["lemme"].lower(), float(row["freqlemfilms2"]))
+            for row in csv.DictReader(file, delimiter="\t")
+        )
+
+
+@cache
+def forms() -> dict[str, frozenset[str]]:
+    """Lemma -> its inflected forms, in Lexique's spelling."""
+    found: dict[str, set[str]] = defaultdict(set)
+    for form, lemma, _ in _rows():
+        found[lemma].add(form)
+    return {lemma: frozenset(f) for lemma, f in found.items()}
+
+
+def forms_of(word: str, lemma_forms: dict[str, frozenset[str]]) -> set[str]:
+    """Forms of a Littré headword, in both spellings when it has a ligature."""
+    spelled = spelling(word)
+    found = set(lemma_forms.get(spelled, ()))
+    if spelled == word:
+        return found
+    return found | {form.replace("oe", "œ").replace("ae", "æ") for form in found}
+
+
+@cache
+def _spoken() -> dict[str, float]:
+    found: dict[str, float] = {}
+    for _, lemma, films in _rows():
+        found[lemma] = max(films, found.get(lemma, 0.0))
+    return found
+
+
+def spoken_frequency(word: str) -> float:
+    """Occurrences per million words in film subtitles: everyday spoken use, which the written
+    corpus of Ngram underrates (tournevis, torticolis)."""
+    return _spoken().get(spelling(word), 0.0)

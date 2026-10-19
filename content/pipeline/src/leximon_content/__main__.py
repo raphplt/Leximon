@@ -1,7 +1,7 @@
 """Command line: `uv run python -m leximon_content <command> [--run essai-50]`.
 
 ngram     download Google Ngram (5 GB, once) and compute word frequencies (D-020)
-select    pick the words of a run (selection.json)
+select    pick the words of a run (selection.json), skipping words of earlier runs; --size
 draft     draft every word with the chosen model (drafts.jsonl); --compare uses all models
 push      run the automatic checks and send the drafts to Directus for review
 refresh   update the Directus layout, frequencies and rarities, keeping the review
@@ -26,13 +26,26 @@ def command_ngram(_run: str) -> None:
     print(f"{ngram.build()} mots -> {ngram.FREQUENCIES_FILE}")
 
 
-def command_select(run: str) -> None:
-    selected = selection.select()
+def drafted_elsewhere(run: str) -> frozenset[str]:
+    return frozenset(
+        row["word"]
+        for path in config.RUNS_DIR.glob("*/selection.json")
+        if path.parent.name != run
+        for row in json.loads(path.read_text(encoding="utf-8"))
+    )
+
+
+def command_select(run: str, size: int) -> None:
+    selected = selection.pick(
+        selection.candidate_pool(), size, seed=2026, exclude=drafted_elsewhere(run)
+    )
     out = run_dir(run) / "selection.json"
     out.write_text(
         json.dumps(selection.as_rows(selected), ensure_ascii=False, indent=2), encoding="utf-8"
     )
+    reasons = Counter(candidate.pick_reason for candidate in selected)
     print(f"{len(selected)} mots -> {out}")
+    print(", ".join(f"{reason} {count}" for reason, count in reasons.items()))
 
 
 def command_draft(run: str, compare: bool) -> None:
@@ -112,13 +125,16 @@ def main() -> None:
     )
     parser.add_argument("--run", default="essai-50")
     parser.add_argument("--compare", action="store_true", help="draft: compare every model")
+    parser.add_argument("--size", type=int, default=50, help="select: number of words")
     args = parser.parse_args()
     if args.command == "draft":
         command_draft(args.run, args.compare)
         return
+    if args.command == "select":
+        command_select(args.run, args.size)
+        return
     {
         "ngram": command_ngram,
-        "select": command_select,
         "push": command_push,
         "refresh": command_refresh,
         "report": command_report,

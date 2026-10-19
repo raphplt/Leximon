@@ -17,8 +17,8 @@ from pathlib import Path
 
 import httpx
 
-from . import littre
-from .config import DATA_DIR, LEXIQUE_FILE, USER_AGENT
+from . import lexique, littre
+from .config import DATA_DIR, USER_AGENT
 
 NGRAM_DIR = DATA_DIR / "ngram"
 RAW_DIR = NGRAM_DIR / "raw"
@@ -79,21 +79,11 @@ def assign_forms(
     return owner_of
 
 
-def _lexique_forms() -> dict[str, set[str]]:
-    forms: dict[str, set[str]] = defaultdict(set)
-    with LEXIQUE_FILE.open(encoding="utf-8") as file:
-        next(file)
-        for line in file:
-            ortho, _, lemma = line.split("\t", 3)[:3]
-            forms[lemma.lower()].add(ortho.lower())
-    return forms
-
-
 def target_forms() -> dict[str, str]:
     """Forms of every simple Littré headword. Compounds are left out: Ngram splits them."""
-    lexique = _lexique_forms()
+    lemma_lexique_forms = lexique.forms()
     owners: dict[str, set[str]] = defaultdict(set)
-    for lemma, forms in lexique.items():
+    for lemma, forms in lemma_lexique_forms.items():
         for form in forms:
             owners[form].add(lemma)
     lemma_forms: dict[str, set[str]] = {}
@@ -101,7 +91,9 @@ def target_forms() -> dict[str, str]:
         word = headword.lower()
         if SIMPLE_WORD.match(word):
             nature = " ".join(entry.nature for entry in entries)
-            lemma_forms[word] = guessed_forms(word, nature) | lexique.get(word, set())
+            lemma_forms[word] = guessed_forms(word, nature) | lexique.forms_of(
+                word, lemma_lexique_forms
+            )
     return assign_forms(lemma_forms, owners)
 
 

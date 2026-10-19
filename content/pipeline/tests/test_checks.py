@@ -42,3 +42,10 @@ def test_a_quote_number_outside_the_list_fails() -> None:
 def test_an_unsuitable_word_is_flagged() -> None:
     flagged = draft(suitability="offensant_aujourdhui", suitability_reason="Injure raciste.")
     assert checks.failed(checks.run_checks(flagged, ENTRY)) == ["suitability"]
+
+
+def test_a_word_on_the_exclusion_list_fails_whatever_the_model_says() -> None:
+    from dataclasses import replace
+
+    slur = replace(ENTRY, headword="Métèque")
+    assert "not_excluded" in checks.failed(checks.run_checks(draft(), slur))
