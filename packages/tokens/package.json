@@ -1,0 +1,23 @@
+{
+  "name": "@leximon/tokens",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Design tokens of the « Planche populaire » art direction (D-022), shared by web and mobile.",
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@leximon/core": "workspace:*"
+  },
+  "devDependencies": {
+    "@leximon/config": "workspace:*",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}

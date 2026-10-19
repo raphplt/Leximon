@@ -218,3 +218,12 @@ Pour ajouter ou modifier une décision, utiliser le skill `decision`.
   - une erreur trouvée dans l'échantillon fait corriger la chaîne (consignes, seuils), pas seulement la carte ;
   - une étape estimée à plus de 3 $ attend l'accord du propriétaire (`--yes`).
 
+## D-022 · Direction artistique : « Planche populaire »
+
+- **Statut :** Acceptée (2026-10-19), choisie par le propriétaire parmi quatre maquettes (Planche, Enluminure, Imprimerie, et la fusion des deux premières retenues).
+- **Choix :** la chaleur de la planche d'encyclopédie (papier crème, gravure en hachures, pli kraft scellé à la cire) avec l'énergie de l'imprimerie (gros mot, aplats de couleur vive, rareté lisible par pastilles). Coins arrondis, boutons en pilule, tutoiement. Polices : Fraunces (le mot, les titres), Bricolage Grotesque (l'interface), Newsreader (définition et citation), toutes sous licence OFL. Rareté : crème, vert, tomate, cobalt, puis carte de nuit à cadre doré (Épique) ou irisé (Légendaire).
+- **Pourquoi :** le propriétaire veut un jeu grand public, pas « bourgeois » : l'ancien vient des gravures et du papier, pas d'une typographie précieuse.
+- **Conséquences :**
+  - couleurs, polices, rayons et espacements vivent dans `packages/tokens`, seule source pour le web et le mobile ;
+  - la carte garde la même composition sur toutes les plateformes, même si les composants sont propres à chacune (D-002) ;
+  - les reflets doré et irisé et l'animation du sceau restent en CSS simple tant que la R&D D-009 n'a pas conclu.
