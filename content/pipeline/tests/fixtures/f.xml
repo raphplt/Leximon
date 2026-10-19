@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xmlittre lettre="F">
+<entree terme="FAQUIN">
+<entete><prononciation>fa-kin</prononciation><nature>s. m.</nature></entete>
+<corps>
+<variante num="1">Homme de néant, plat et impertinent.
+<cit aut="MOL." ref="Préc. 12">Ah ! le faquin, que de chansons</cit>
+<cit aut="ID." ref="Scap. III, 2">Tu fais le faquin</cit>
+<indent>Par extension.
+<cit aut="BOIL." ref="Sat. I">Un faquin orgueilleux</cit>
+</indent>
+</variante>
+<variante num="2">Portefaix.</variante>
+</corps>
+<rubrique nom="HISTORIQUE">
+<indent>XVIe s. <cit aut="RAB." ref="III, 36">un faquin mangeoit son pain</cit></indent>
+<indent>XIVe s. <cit aut="ID." ref="ib.">facquin</cit></indent>
+</rubrique>
+<rubrique nom="ÉTYMOLOGIE"><indent>Ital. <i lang="it">facchino</i>, portefaix.</indent></rubrique>
+</entree>
+<entree terme="FAQUIN" supplement="1"><entete><nature>s. m.</nature></entete><corps/></entree>
+</xmlittre>

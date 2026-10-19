@@ -1,0 +1,34 @@
+[project]
+name = "leximon-content"
+version = "0.0.0"
+description = "Leximon content pipeline: sources, rarity, card drafting, review (D-010)."
+requires-python = ">=3.13"
+dependencies = [
+  "anthropic>=1.15,<2",
+  "httpx>=0.28,<1",
+  "pydantic>=2.14,<3",
+]
+
+[dependency-groups]
+dev = ["pytest", "ruff"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/leximon_content"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py313"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "SIM", "RUF"]
+# The formatter owns line length; long French prompt strings are left intact.
+ignore = ["E501"]
+# French typography uses the en dash and the typographic apostrophe.
+allowed-confusables = ["–", "’"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
