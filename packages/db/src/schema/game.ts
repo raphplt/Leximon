@@ -18,6 +18,19 @@ import { users } from "./auth";
 export const rarity = pgEnum("rarity", RARITIES);
 
 /**
+ * Collections: sets of cards, each with its own booster (P14). A collection becomes openable once
+ * published; cards of unpublished collections never appear in any booster.
+ */
+export const collections = pgTable("collections", {
+  /** Stable slug, e.g. "grand-siecle". Never reused. */
+  id: text().primaryKey(),
+  name: text().notNull(),
+  /** Openable from this moment. `null` while the collection is being prepared. */
+  publishedAt: timestamp({ withTimezone: true }),
+  createdAt: timestamp({ withTimezone: true }).defaultNow().notNull(),
+});
+
+/**
  * Cards known to the game. The full card content (definition, illustration…) lives in the
  * published catalog on the CDN; this table holds what the server needs to draw and own cards.
  */
@@ -29,11 +42,43 @@ export const cards = pgTable(
     lemma: text().notNull(),
     /** Frozen once published (enforced by a trigger): a re-tiered word becomes a new card. */
     rarity: rarity().notNull(),
+    /** Every card belongs to exactly one collection, whatever booster it comes from. */
+    collectionId: text()
+      .notNull()
+      .references(() => collections.id),
     createdAt: timestamp({ withTimezone: true }).defaultNow().notNull(),
-    /** A retired card leaves the booster pool; copies already owned stay. */
+    /** A retired card leaves the booster pools; copies already owned stay. */
     retiredAt: timestamp({ withTimezone: true }),
   },
-  (table) => [index("cards_drawable_idx").on(table.rarity).where(sql`${table.retiredAt} is null`)],
+  (table) => [
+    index("cards_drawable_idx").on(table.rarity).where(sql`${table.retiredAt} is null`),
+    index("cards_collection_drawable_idx")
+      .on(table.collectionId, table.rarity)
+      .where(sql`${table.retiredAt} is null`),
+  ],
+);
+
+/** Themes cut across collections (P16): odd words, old insults… Used for albums and events. */
+export const themes = pgTable("themes", {
+  /** Stable slug, e.g. "insultes". */
+  id: text().primaryKey(),
+  name: text().notNull(),
+});
+
+export const cardThemes = pgTable(
+  "card_themes",
+  {
+    cardId: text()
+      .notNull()
+      .references(() => cards.id, { onDelete: "cascade" }),
+    themeId: text()
+      .notNull()
+      .references(() => themes.id, { onDelete: "cascade" }),
+  },
+  (table) => [
+    primaryKey({ columns: [table.cardId, table.themeId] }),
+    index("card_themes_theme_idx").on(table.themeId),
+  ],
 );
 
 /** One row per player, locked (`SELECT … FOR UPDATE`) while a booster is opened. */
@@ -89,6 +134,8 @@ export const boosterOpens = pgTable(
       .references(() => users.id, { onDelete: "cascade" }),
     /** 128-bit seed (hex) that, with the same pool, reproduces the draw exactly. */
     seed: text().notNull(),
+    /** Collection whose booster was opened; `null` for the discovery booster (whole catalog). */
+    collectionId: text().references(() => collections.id),
     /** SHA-256 of the canonical card pool used, to check a replay used the same cards. */
     poolFingerprint: text().notNull(),
     pityCountersBefore: jsonb().$type<PityCounters>().notNull().default({}),

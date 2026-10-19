@@ -1,7 +1,7 @@
 import { eq, sql } from "drizzle-orm";
-import { afterAll, describe, expect, it } from "vitest";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { createDb } from "./client";
-import { cards } from "./schema/index";
+import { cards, collections } from "./schema/index";
 import { testDatabaseUrl } from "./testing";
 
 const { db, close } = createDb(testDatabaseUrl(), { maxConnections: 1 });
@@ -23,8 +23,11 @@ describe("database", () => {
       "booster_open_requests",
       "booster_opens",
       "booster_wallets",
+      "card_themes",
       "cards",
+      "collections",
       "sessions",
+      "themes",
       "user_cards",
       "users",
       "verifications",
@@ -33,15 +36,29 @@ describe("database", () => {
 });
 
 describe("card rarity", () => {
+  beforeAll(async () => {
+    await db.insert(collections).values({ id: "rarity-tests", name: "Rarity tests" });
+  });
+
   it("cannot change once the card exists", async () => {
-    await db.insert(cards).values({ id: "frozen-test", lemma: "frozen", rarity: "rare" });
+    await db.insert(cards).values({
+      id: "frozen-test",
+      lemma: "frozen",
+      rarity: "rare",
+      collectionId: "rarity-tests",
+    });
     await expect(
       db.update(cards).set({ rarity: "legendary" }).where(eq(cards.id, "frozen-test")),
     ).rejects.toThrow(/frozen/);
   });
 
   it("does not block other updates of the card", async () => {
-    await db.insert(cards).values({ id: "retire-test", lemma: "retire", rarity: "rare" });
+    await db.insert(cards).values({
+      id: "retire-test",
+      lemma: "retire",
+      rarity: "rare",
+      collectionId: "rarity-tests",
+    });
     await db.update(cards).set({ retiredAt: new Date() }).where(eq(cards.id, "retire-test"));
   });
 });

@@ -29,6 +29,13 @@
       "when": 1792418812333,
       "tag": "0003_pity-counters-drop-legacy",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1792419157109,
+      "tag": "0004_collections-and-themes",
+      "breakpoints": true
     }
   ]
 }
