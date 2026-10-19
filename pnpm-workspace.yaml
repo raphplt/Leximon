@@ -1,0 +1,15 @@
+packages:
+  - apps/*
+  - packages/*
+
+# Shared dependency versions: packages reference them as "catalog:".
+catalog:
+  # Expo SDK 58 targets TypeScript 6.0. Move to 7 (native compiler) once Expo and Next.js support it.
+  typescript: 6.0.3
+  vitest: 5.0.5
+  "@types/node": 24.19.2
+
+# Install scripts are blocked by default; only these packages may run them.
+allowBuilds:
+  esbuild: true
+  workerd: true

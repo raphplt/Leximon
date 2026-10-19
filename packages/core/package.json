@@ -1,0 +1,21 @@
+{
+  "name": "@leximon/core",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Game rules: pure TypeScript, no I/O.",
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@leximon/config": "workspace:*",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}
