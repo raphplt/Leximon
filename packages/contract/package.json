@@ -1,0 +1,24 @@
+{
+  "name": "@leximon/contract",
+  "version": "0.0.0",
+  "private": true,
+  "description": "API contract: Zod schemas and types shared by the API and its clients.",
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@leximon/core": "workspace:*",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@leximon/config": "workspace:*",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}

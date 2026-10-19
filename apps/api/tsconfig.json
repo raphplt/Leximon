@@ -3,5 +3,11 @@
   "compilerOptions": {
     "types": ["./worker-configuration.d.ts"]
   },
-  "include": ["src", "worker-configuration.d.ts"]
+  "include": [
+    "src",
+    "worker-configuration.d.ts",
+    "vitest.config.ts",
+    "vitest.integration.config.ts",
+    "vitest.global-setup.ts"
+  ]
 }

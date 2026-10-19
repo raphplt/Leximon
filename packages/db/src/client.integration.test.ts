@@ -1,18 +1,72 @@
-import { sql } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { afterAll, describe, expect, it } from "vitest";
 import { createDb } from "./client";
+import { cards } from "./schema/index";
+import { testDatabaseUrl } from "./testing";
 
-const url = process.env["DATABASE_URL"];
-if (!url) {
-  throw new Error("DATABASE_URL is not set. Start Postgres with `docker compose up -d`.");
-}
-
-const { db, close } = createDb(url, { maxConnections: 1 });
+const { db, close } = createDb(testDatabaseUrl(), { maxConnections: 1 });
 afterAll(close);
 
-describe("database client", () => {
-  it("runs a query against Postgres", async () => {
-    const rows = await db.execute<{ ok: number }>(sql`select 1 as ok`);
+describe("database", () => {
+  it("runs queries against Postgres", async () => {
+    const { rows } = await db.execute<{ ok: number }>(sql`select 1 as ok`);
     expect(rows[0]?.ok).toBe(1);
+  });
+
+  it("has all migrations applied", async () => {
+    const { rows } = await db.execute<{ name: string }>(sql`
+      select c.relname as name from pg_class c join pg_namespace n on n.oid = c.relnamespace
+      where n.nspname = 'public' and c.relkind in ('r', 'p') and not c.relispartition
+      order by c.relname`);
+    expect(rows.map((row) => row.name)).toEqual([
+      "accounts",
+      "booster_open_requests",
+      "booster_opens",
+      "booster_wallets",
+      "cards",
+      "sessions",
+      "user_cards",
+      "users",
+      "verifications",
+    ]);
+  });
+});
+
+describe("card rarity", () => {
+  it("cannot change once the card exists", async () => {
+    await db.insert(cards).values({ id: "frozen-test", lemma: "frozen", rarity: "rare" });
+    await expect(
+      db.update(cards).set({ rarity: "legendary" }).where(eq(cards.id, "frozen-test")),
+    ).rejects.toThrow(/frozen/);
+  });
+
+  it("does not block other updates of the card", async () => {
+    await db.insert(cards).values({ id: "retire-test", lemma: "retire", rarity: "rare" });
+    await db.update(cards).set({ retiredAt: new Date() }).where(eq(cards.id, "retire-test"));
+  });
+});
+
+describe("booster_opens partitions", () => {
+  const monthlyPartitions = async () =>
+    (
+      await db.execute<{ name: string }>(sql`
+        select c.relname as name from pg_inherits i join pg_class c on c.oid = i.inhrelid
+        where i.inhparent = 'booster_opens'::regclass and c.relname <> 'booster_opens_default'
+        order by c.relname`)
+    ).rows.map((row) => row.name);
+
+  it("exist for the current month and the next two", async () => {
+    const now = new Date();
+    const expected = [0, 1, 2].map((offset) => {
+      const month = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + offset, 1));
+      return `booster_opens_${month.getUTCFullYear()}_${String(month.getUTCMonth() + 1).padStart(2, "0")}`;
+    });
+    expect(await monthlyPartitions()).toEqual(expect.arrayContaining(expected));
+  });
+
+  it("are created idempotently", async () => {
+    const before = await monthlyPartitions();
+    await db.execute(sql`select leximon_ensure_booster_open_partitions(2)`);
+    expect(await monthlyPartitions()).toEqual(before);
   });
 });

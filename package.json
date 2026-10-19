@@ -14,7 +14,9 @@
     "lint": "biome check .",
     "format": "biome check --write .",
     "check": "biome check . && turbo run typecheck test",
-    "test:integration": "turbo run test:integration"
+    "test:integration": "turbo run test:integration --concurrency=1",
+    "db:migrate": "pnpm --filter @leximon/db db:migrate",
+    "db:seed:dev": "docker compose exec -T postgres psql -U leximon -d leximon -v ON_ERROR_STOP=1 -f - < packages/db/seeds/dev-cards.sql"
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.15",

@@ -27,6 +27,7 @@ __pycache__/
 .env
 .env.*
 !.env.example
+.dev.vars
 
 # Outils locaux
 *.pem

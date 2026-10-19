@@ -13,7 +13,7 @@ if (!url) {
 
 export default defineConfig({
   dialect: "postgresql",
-  schema: "./src/schema.ts",
+  schema: "./src/schema/index.ts",
   out: "./migrations",
   casing: "snake_case",
   strict: true,

@@ -8,10 +8,17 @@
     "deploy": "wrangler deploy",
     "cf-typegen": "wrangler types --strict-vars=false",
     "test": "vitest run",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test:integration": "vitest run --config vitest.integration.config.ts"
   },
   "dependencies": {
-    "hono": "4.13.13"
+    "@leximon/contract": "workspace:*",
+    "@leximon/core": "workspace:*",
+    "@leximon/db": "workspace:*",
+    "better-auth": "1.7.11",
+    "drizzle-orm": "catalog:",
+    "hono": "4.13.13",
+    "zod": "catalog:"
   },
   "devDependencies": {
     "@leximon/config": "workspace:*",

@@ -6,7 +6,8 @@
   "type": "module",
   "sideEffects": false,
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./testing": "./src/testing.ts"
   },
   "scripts": {
     "db:generate": "drizzle-kit generate",
@@ -16,12 +17,14 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "drizzle-orm": "0.45.4",
-    "postgres": "3.4.9"
+    "@leximon/core": "workspace:*",
+    "drizzle-orm": "catalog:",
+    "pg": "8.23.1"
   },
   "devDependencies": {
     "@leximon/config": "workspace:*",
     "@types/node": "catalog:",
+    "@types/pg": "8.23.1",
     "drizzle-kit": "0.31.11",
     "typescript": "catalog:",
     "vitest": "catalog:"

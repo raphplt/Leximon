@@ -5,7 +5,23 @@
   "compatibility_date": "2026-10-01",
   "compatibility_flags": ["nodejs_compat"],
   "observability": { "enabled": true },
+  // Runs the Worker close to the database rather than close to the player: an open makes
+  // several sequential database round trips, which would be slow from far away.
+  "placement": { "mode": "smart" },
+  // Daily maintenance (partitions, idempotency purge), at 03:17 UTC.
+  "triggers": { "crons": ["17 3 * * *"] },
   "vars": {
-    "APP_ENV": "development"
-  }
+    "APP_ENV": "development",
+    "BETTER_AUTH_URL": "http://localhost:8787",
+    // Comma-separated origins allowed to call the API with credentials (web app).
+    "TRUSTED_ORIGINS": "http://localhost:3000"
+  },
+  "hyperdrive": [
+    {
+      "binding": "HYPERDRIVE",
+      // Placeholder until the production Hyperdrive config is created (D-005).
+      "id": "00000000000000000000000000000000",
+      "localConnectionString": "postgres://leximon:leximon@127.0.0.1:54329/leximon"
+    }
+  ]
 }
