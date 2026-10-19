@@ -3,6 +3,7 @@ import {
   type BoosterWallet,
   computeRefill,
   consumeBooster,
+  createFullWallet,
   type EpochMs,
   fixedSchedule,
   type RefillSchedule,
@@ -322,5 +323,15 @@ describe("refill economy", () => {
     // Each event adds at most 120 / 5 boosters and 10 of extra capacity; each change at most 1.
     const bound = 10 + HORIZON_MINUTES / 10 + 3 * (120 / 5 + 10) + rules.length;
     expect(playRandomly(rules, seed)).toBeLessThanOrEqual(bound);
+  });
+});
+
+describe("createFullWallet", () => {
+  it("starts a new player with a full stock", () => {
+    expect(createFullWallet(schedule, at(5))).toEqual({ stored: 10, progressMs: 0, asOf: at(5) });
+  });
+
+  it("uses the capacity in force at that moment", () => {
+    expect(createFullWallet(scheduleChangingAt(60, { capacity: 12 }), at(61)).stored).toBe(12);
   });
 });

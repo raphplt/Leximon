@@ -55,6 +55,14 @@ export function fixedSchedule(capacity: number, intervalMs: number): RefillSched
   return [{ startsAt: Number.MIN_SAFE_INTEGER, capacity, intervalMs }];
 }
 
+/** The wallet of a new player: a full stock at `now`. */
+export function createFullWallet(schedule: RefillSchedule, now: EpochMs): BoosterWallet {
+  assertValidSchedule(schedule);
+  assertTimestamp(now, "now");
+  const { capacity } = periodAt(schedule, periodIndexAt(schedule, now));
+  return { stored: capacity, progressMs: 0, asOf: now };
+}
+
 /**
  * Brings `wallet` up to date at `now`.
  *
