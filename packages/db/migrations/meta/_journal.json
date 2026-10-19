@@ -15,6 +15,20 @@
       "when": 1792414994796,
       "tag": "0001_maintenance",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1792418802249,
+      "tag": "0002_pity-counters-add",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1792418812333,
+      "tag": "0003_pity-counters-drop-legacy",
+      "breakpoints": true
     }
   ]
 }

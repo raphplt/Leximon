@@ -1,4 +1,4 @@
-import { RARITIES } from "@leximon/core";
+import { type PityCounters, RARITIES } from "@leximon/core";
 import { sql } from "drizzle-orm";
 import {
   check,
@@ -46,12 +46,12 @@ export const boosterWallets = pgTable(
     stored: integer().notNull(),
     progressMs: integer().notNull(),
     asOf: timestamp({ withTimezone: true }).notNull(),
-    pityCounter: integer().notNull().default(0),
+    /** Boosters in a row without each guaranteed rarity, e.g. {"epic": 3, "legendary": 41}. */
+    pityCounters: jsonb().$type<PityCounters>().notNull().default({}),
   },
   (table) => [
     check("booster_wallets_stored_check", sql`${table.stored} >= 0`),
     check("booster_wallets_progress_check", sql`${table.progressMs} >= 0`),
-    check("booster_wallets_pity_check", sql`${table.pityCounter} >= 0`),
   ],
 );
 
@@ -91,7 +91,7 @@ export const boosterOpens = pgTable(
     seed: text().notNull(),
     /** SHA-256 of the canonical card pool used, to check a replay used the same cards. */
     poolFingerprint: text().notNull(),
-    pityCounterBefore: integer().notNull(),
+    pityCountersBefore: jsonb().$type<PityCounters>().notNull().default({}),
     cards: jsonb()
       .$type<readonly { cardId: string; rarity: (typeof RARITIES)[number] }[]>()
       .notNull(),

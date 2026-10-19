@@ -70,7 +70,7 @@ export async function openBooster(
     // takes the same row lock as SELECT … FOR UPDATE and returns the latest committed row.
     const lockedRows = await tx
       .insert(boosterWallets)
-      .values({ userId, ...toRow(fresh), pityCounter: 0 })
+      .values({ userId, ...toRow(fresh), pityCounters: {} })
       .onConflictDoUpdate({ target: boosterWallets.userId, set: { userId: sql`excluded.user_id` } })
       .returning();
 
@@ -118,7 +118,7 @@ export async function openBooster(
     const draw = drawBooster(
       drawRulesAt(DRAW_SCHEDULE, now),
       pool,
-      locked.pityCounter,
+      locked.pityCounters,
       createSeededRandom(input.seed),
     );
     const openId = crypto.randomUUID();
@@ -139,7 +139,7 @@ export async function openBooster(
     const walletUpdate = tx.$with("wallet_update").as(
       tx
         .update(boosterWallets)
-        .set({ ...toRow(consumed.state), pityCounter: draw.pityCounter })
+        .set({ ...toRow(consumed.state), pityCounters: draw.pityCounters })
         .where(eq(boosterWallets.userId, userId))
         .returning({ userId: boosterWallets.userId }),
     );
@@ -151,7 +151,7 @@ export async function openBooster(
           userId,
           seed: input.seed,
           poolFingerprint: fingerprint,
-          pityCounterBefore: locked.pityCounter,
+          pityCountersBefore: locked.pityCounters,
           cards: draw.cards,
           openedAt,
         })

@@ -9,7 +9,6 @@ import {
   DRAW_SCHEDULE,
   drawBooster,
   drawRulesAt,
-  isAtLeast,
   RARITIES,
   REFILL_SCHEDULE,
 } from "@leximon/core";
@@ -205,28 +204,28 @@ describe("booster draws", () => {
     const replay = drawBooster(
       drawRulesAt(DRAW_SCHEDULE, open.openedAt.getTime()),
       pool,
-      open.pityCounterBefore,
+      open.pityCountersBefore,
       createSeededRandom(open.seed),
     );
     expect(replay.cards).toEqual(open.cards);
   });
 
-  it("persist the pity counter and honour it on the next booster", async () => {
+  it("persist the guarantee counters and honour them on the next booster", async () => {
     const guest = await signInAsGuest();
     expect((await openBooster(guest)).status).toBe(200);
     await db
       .update(schema.boosterWallets)
-      .set({ pityCounter: 9 })
+      .set({ pityCounters: { epic: 39, legendary: 149 } })
       .where(eq(schema.boosterWallets.userId, guest.userId));
 
     const body = openBoosterResponseSchema.parse(await (await openBooster(guest)).json());
-    expect(body.cards.some((card) => isAtLeast(card.rarity, "precious"))).toBe(true);
+    expect(body.cards.some((card) => card.rarity === "legendary")).toBe(true);
 
     const [wallet] = await db
-      .select({ pityCounter: schema.boosterWallets.pityCounter })
+      .select({ pityCounters: schema.boosterWallets.pityCounters })
       .from(schema.boosterWallets)
       .where(eq(schema.boosterWallets.userId, guest.userId));
-    expect(wallet?.pityCounter).toBe(0);
+    expect(wallet?.pityCounters).toEqual({ epic: 0, legendary: 0 });
   });
 
   it("answer 503 without consuming anything when no card can be drawn", async () => {

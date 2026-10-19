@@ -29,6 +29,10 @@ export const DRAW_SCHEDULE: DrawSchedule = [
       legendary: 10,
     },
     guaranteedMinRarity: "uncommon",
-    pity: { afterBoosters: 10, minRarity: "precious" },
+    // Calibrated by simulation (docs/rnd/collection-sim.md). Never shown to players (P17).
+    pity: [
+      { minRarity: "epic", afterBoosters: 40 },
+      { minRarity: "legendary", afterBoosters: 150 },
+    ],
   },
 ];

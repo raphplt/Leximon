@@ -19,7 +19,10 @@ const rules: DrawRules = {
   cardsPerBooster: 5,
   weights: { common: 6000, uncommon: 2500, rare: 1000, precious: 400, epic: 90, legendary: 10 },
   guaranteedMinRarity: "uncommon",
-  pity: { afterBoosters: 10, minRarity: "precious" },
+  pity: [
+    { minRarity: "epic", afterBoosters: 40 },
+    { minRarity: "legendary", afterBoosters: 150 },
+  ],
 };
 
 /** Three cards per rarity, named after their rarity. */
@@ -32,7 +35,7 @@ const poolWith = (overrides: Partial<Record<Rarity, string[]>>): CardPool => ({
 
 describe("drawBooster", () => {
   it("draws the configured number of cards from the pool", () => {
-    const { cards } = drawBooster(rules, fullPool, 0, createSeededRandom(SEED));
+    const { cards } = drawBooster(rules, fullPool, {}, createSeededRandom(SEED));
     expect(cards).toHaveLength(5);
     for (const card of cards) {
       expect(fullPool[card.rarity]).toContain(card.cardId);
@@ -40,32 +43,51 @@ describe("drawBooster", () => {
   });
 
   it("gives the same booster for the same seed", () => {
-    const first = drawBooster(rules, fullPool, 3, createSeededRandom(SEED));
-    const second = drawBooster(rules, fullPool, 3, createSeededRandom(SEED));
+    const first = drawBooster(rules, fullPool, { epic: 3 }, createSeededRandom(SEED));
+    const second = drawBooster(rules, fullPool, { epic: 3 }, createSeededRandom(SEED));
     expect(second).toEqual(first);
   });
 
   it("always includes a card of the guaranteed rarity or better", () => {
     const random = createSeededRandom(SEED);
     for (let i = 0; i < 5_000; i++) {
-      const { cards } = drawBooster(rules, fullPool, 0, random);
+      const { cards } = drawBooster(rules, fullPool, {}, random);
       expect(cards.some((card) => isAtLeast(card.rarity, "uncommon"))).toBe(true);
     }
   });
 
-  it("forces the pity rarity when the pity is due, then resets the counter", () => {
+  it("forces the guaranteed rarity when its guarantee is due, then resets its counter", () => {
     const random = createSeededRandom(SEED);
     for (let i = 0; i < 2_000; i++) {
-      const draw = drawBooster(rules, fullPool, 9, random);
-      expect(draw.cards.some((card) => isAtLeast(card.rarity, "precious"))).toBe(true);
-      expect(draw.pityCounter).toBe(0);
+      const draw = drawBooster(rules, fullPool, { epic: 39, legendary: 10 }, random);
+      expect(draw.cards.some((card) => isAtLeast(card.rarity, "epic"))).toBe(true);
+      expect(draw.pityCounters.epic).toBe(0);
     }
   });
 
-  it("increments the counter when the pity rarity is not drawn", () => {
-    const noRareCards = poolWith({ precious: [], epic: [], legendary: [] });
-    const draw = drawBooster(rules, noRareCards, 4, createSeededRandom(SEED));
-    expect(draw.pityCounter).toBe(5);
+  it("forces the rarest guarantee when several are due, which meets them all", () => {
+    const random = createSeededRandom(SEED);
+    for (let i = 0; i < 500; i++) {
+      const draw = drawBooster(rules, fullPool, { epic: 39, legendary: 149 }, random);
+      expect(draw.cards.some((card) => card.rarity === "legendary")).toBe(true);
+      expect(draw.pityCounters).toEqual({ epic: 0, legendary: 0 });
+    }
+  });
+
+  it("increments each counter when its rarity is not drawn", () => {
+    const noTopCards = poolWith({ epic: [], legendary: [] });
+    const draw = drawBooster(
+      rules,
+      noTopCards,
+      { epic: 4, legendary: 7 },
+      createSeededRandom(SEED),
+    );
+    expect(draw.pityCounters).toEqual({ epic: 5, legendary: 8 });
+  });
+
+  it("drops counters of guarantees that are no longer in the rules", () => {
+    const draw = drawBooster(rules, fullPool, { precious: 6 }, createSeededRandom(SEED));
+    expect(Object.keys(draw.pityCounters).sort()).toEqual(["epic", "legendary"]);
   });
 
   it("falls back to the nearest more common rarity when one has no cards", () => {
@@ -76,7 +98,7 @@ describe("drawBooster", () => {
     const { cards } = drawBooster(
       allPrecious,
       poolWith({ precious: [] }),
-      0,
+      {},
       createSeededRandom(SEED),
     );
     expect(cards.every((card) => card.rarity === "rare")).toBe(true);
@@ -91,13 +113,13 @@ describe("drawBooster", () => {
     const { cards } = drawBooster(
       onlyCommon,
       poolWith({ common: [], uncommon: [] }),
-      0,
+      {},
       createSeededRandom(SEED),
     );
     expect(cards.every((card) => card.rarity === "rare")).toBe(true);
   });
 
-  it.each([
+  it.each<[string, DrawRules]>([
     ["no card per booster", { ...rules, cardsPerBooster: 0 }],
     ["fractional weight", { ...rules, weights: { ...rules.weights, rare: 1.5 } }],
     ["negative weight", { ...rules, weights: { ...rules.weights, rare: -1 } }],
@@ -108,18 +130,33 @@ describe("drawBooster", () => {
         weights: { common: 0, uncommon: 0, rare: 0, precious: 0, epic: 0, legendary: 0 },
       },
     ],
-    ["pity after zero boosters", { ...rules, pity: { ...rules.pity, afterBoosters: 0 } }],
+    [
+      "guarantee after zero boosters",
+      { ...rules, pity: [{ minRarity: "epic", afterBoosters: 0 }] },
+    ],
+    [
+      "two guarantees for one rarity",
+      {
+        ...rules,
+        pity: [
+          { minRarity: "epic", afterBoosters: 10 },
+          { minRarity: "epic", afterBoosters: 20 },
+        ],
+      },
+    ],
   ])("rejects invalid rules: %s", (_label, badRules) => {
-    expect(() => drawBooster(badRules, fullPool, 0, createSeededRandom(SEED))).toThrow(RangeError);
+    expect(() => drawBooster(badRules, fullPool, {}, createSeededRandom(SEED))).toThrow(RangeError);
   });
 
   it("rejects an empty pool", () => {
     const empty = byRarity((): string[] => []);
-    expect(() => drawBooster(rules, empty, 0, createSeededRandom(SEED))).toThrow(RangeError);
+    expect(() => drawBooster(rules, empty, {}, createSeededRandom(SEED))).toThrow(RangeError);
   });
 
   it("rejects a negative pity counter", () => {
-    expect(() => drawBooster(rules, fullPool, -1, createSeededRandom(SEED))).toThrow(RangeError);
+    expect(() => drawBooster(rules, fullPool, { epic: -1 }, createSeededRandom(SEED))).toThrow(
+      RangeError,
+    );
   });
 });
 
@@ -131,8 +168,8 @@ describe("drawBooster statistics", () => {
     const counts = byRarity(() => 0);
     let regularCards = 0;
     for (let i = 0; i < BOOSTERS; i++) {
-      // Counter at 0: the pity never triggers, only the last slot is constrained.
-      const { cards } = drawBooster(rules, fullPool, 0, random);
+      // Counters at 0: no guarantee triggers, only the last slot is constrained.
+      const { cards } = drawBooster(rules, fullPool, {}, random);
       for (const card of cards.slice(0, -1)) {
         counts[card.rarity]++;
         regularCards++;
@@ -147,18 +184,23 @@ describe("drawBooster statistics", () => {
     }
   });
 
-  it("never lets more than ten boosters pass without the pity rarity", () => {
+  it("never exceeds the guaranteed number of boosters without each rarity", () => {
     const random = createSeededRandom(SEED);
-    let counter = 0;
-    let longestDrought = 0;
-    let drought = 0;
+    let counters = {};
+    const drought = { epic: 0, legendary: 0 };
+    const longest = { epic: 0, legendary: 0 };
     for (let i = 0; i < BOOSTERS; i++) {
-      const draw = drawBooster(rules, fullPool, counter, random);
-      counter = draw.pityCounter;
-      drought = draw.cards.some((card) => isAtLeast(card.rarity, "precious")) ? 0 : drought + 1;
-      longestDrought = Math.max(longestDrought, drought);
+      const draw = drawBooster(rules, fullPool, counters, random);
+      counters = draw.pityCounters;
+      for (const rarity of ["epic", "legendary"] as const) {
+        drought[rarity] = draw.cards.some((card) => isAtLeast(card.rarity, rarity))
+          ? 0
+          : drought[rarity] + 1;
+        longest[rarity] = Math.max(longest[rarity], drought[rarity]);
+      }
     }
-    expect(longestDrought).toBeLessThanOrEqual(9);
+    expect(longest.epic).toBeLessThanOrEqual(39);
+    expect(longest.legendary).toBeLessThanOrEqual(149);
   });
 });
 
@@ -187,7 +229,7 @@ describe("launch draw rules", () => {
 
   it("are valid and usable", () => {
     for (const period of DRAW_SCHEDULE) {
-      expect(() => drawBooster(period, fullPool, 0, createSeededRandom(SEED))).not.toThrow();
+      expect(() => drawBooster(period, fullPool, {}, createSeededRandom(SEED))).not.toThrow();
     }
   });
 });
@@ -198,10 +240,10 @@ describe("canonical pools", () => {
     const fromShuffled = drawBooster(
       rules,
       canonicalizePool(shuffled),
-      0,
+      {},
       createSeededRandom(SEED),
     );
-    const fromSorted = drawBooster(rules, canonicalizePool(fullPool), 0, createSeededRandom(SEED));
+    const fromSorted = drawBooster(rules, canonicalizePool(fullPool), {}, createSeededRandom(SEED));
     expect(fromShuffled).toEqual(fromSorted);
   });
 

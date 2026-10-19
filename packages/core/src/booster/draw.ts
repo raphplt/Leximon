@@ -1,7 +1,7 @@
 /**
  * Booster draw: which cards a booster contains.
  *
- * Pure: the caller provides the rules in force, the card pool, the player's pity counter and a
+ * Pure: the caller provides the rules in force, the card pool, the player's pity counters and a
  * seeded random source (see `random.ts`). The same inputs always give the same booster, provided
  * the pool is canonical (`canonicalizePool`).
  */
@@ -18,9 +18,21 @@ export interface DrawRules {
   readonly weights: Readonly<Record<Rarity, number>>;
   /** One card per booster is at least this rare. */
   readonly guaranteedMinRarity: Rarity;
-  /** After `afterBoosters - 1` boosters in a row without `minRarity` or better, the next has one. */
-  readonly pity: { readonly afterBoosters: number; readonly minRarity: Rarity };
+  /** Guarantees against bad luck, each with its own counter. Never shown to players (P17). */
+  readonly pity: readonly PityRule[];
 }
+
+/** After `afterBoosters - 1` boosters in a row without `minRarity` or better, the next has one. */
+export interface PityRule {
+  readonly minRarity: Rarity;
+  readonly afterBoosters: number;
+}
+
+/**
+ * Boosters opened in a row without each guaranteed rarity, keyed by the rule's `minRarity`.
+ * A missing entry counts as 0.
+ */
+export type PityCounters = Readonly<Partial<Record<Rarity, number>>>;
 
 /** Draw rules over time, sorted by strictly increasing `startsAt`. */
 export type DrawSchedule = readonly [DrawRules, ...DrawRules[]];
@@ -35,8 +47,8 @@ export interface DrawnCard {
 
 export interface BoosterDraw {
   readonly cards: readonly DrawnCard[];
-  /** The player's pity counter after this booster. */
-  readonly pityCounter: number;
+  /** The player's pity counters after this booster, for the guarantees of these rules only. */
+  readonly pityCounters: PityCounters;
 }
 
 /**
@@ -72,28 +84,29 @@ export function drawRulesAt(schedule: DrawSchedule, time: EpochMs): DrawRules {
  * Draws one booster.
  *
  * All cards but the last follow `weights`. The last one is at least `guaranteedMinRarity`, or at
- * least `pity.minRarity` when the pity is due. If the pool has no card of the drawn rarity, the
- * nearest more common rarity is used, then the nearest rarer one.
+ * least the rarest guarantee that is due. A guarantee is met, and its counter reset, by any card
+ * of the booster at least that rare: a Legendary also resets the Epic counter. If the pool has no
+ * card of the drawn rarity, the nearest more common rarity is used, then the nearest rarer one.
  *
- * @throws {RangeError} on invalid rules, pool or counter: a programming error, not a game outcome.
+ * @throws {RangeError} on invalid rules, pool or counters: a programming error, not a game outcome.
  */
 export function drawBooster(
   rules: DrawRules,
   pool: CardPool,
-  pityCounter: number,
+  pityCounters: PityCounters,
   random: RandomSource,
 ): BoosterDraw {
   assertValidRules(rules);
   assertValidPool(pool);
-  if (!Number.isSafeInteger(pityCounter) || pityCounter < 0) {
-    throw new RangeError(`pityCounter must be a non-negative integer, got ${pityCounter}`);
-  }
+  assertValidCounters(pityCounters);
 
-  const pityDue = pityCounter + 1 >= rules.pity.afterBoosters;
-  const lastSlotMinimum =
-    pityDue && isAtLeast(rules.pity.minRarity, rules.guaranteedMinRarity)
-      ? rules.pity.minRarity
-      : rules.guaranteedMinRarity;
+  let lastSlotMinimum = rules.guaranteedMinRarity;
+  for (const { minRarity, afterBoosters } of rules.pity) {
+    const due = (pityCounters[minRarity] ?? 0) + 1 >= afterBoosters;
+    if (due && isAtLeast(minRarity, lastSlotMinimum)) {
+      lastSlotMinimum = minRarity;
+    }
+  }
 
   const cards: DrawnCard[] = [];
   for (let slot = 0; slot < rules.cardsPerBooster; slot++) {
@@ -102,8 +115,12 @@ export function drawBooster(
     cards.push(pickCard(pool, rarity, random));
   }
 
-  const pityMet = cards.some((card) => isAtLeast(card.rarity, rules.pity.minRarity));
-  return { cards, pityCounter: pityMet ? 0 : pityCounter + 1 };
+  const nextCounters: Partial<Record<Rarity, number>> = {};
+  for (const { minRarity } of rules.pity) {
+    const met = cards.some((card) => isAtLeast(card.rarity, minRarity));
+    nextCounters[minRarity] = met ? 0 : (pityCounters[minRarity] ?? 0) + 1;
+  }
+  return { cards, pityCounters: nextCounters };
 }
 
 /** Weighted pick among rarities at least as rare as `minimum`. */
@@ -167,10 +184,25 @@ function assertValidRules(rules: DrawRules): void {
   if (total === 0) {
     throw new RangeError("at least one rarity must have a positive weight");
   }
-  if (!Number.isSafeInteger(rules.pity.afterBoosters) || rules.pity.afterBoosters < 1) {
-    throw new RangeError(
-      `pity.afterBoosters must be a positive integer, got ${rules.pity.afterBoosters}`,
-    );
+  const seen = new Set<Rarity>();
+  for (const { minRarity, afterBoosters } of rules.pity) {
+    if (seen.has(minRarity)) {
+      throw new RangeError(`two guarantees for the same rarity: ${minRarity}`);
+    }
+    seen.add(minRarity);
+    if (!Number.isSafeInteger(afterBoosters) || afterBoosters < 1) {
+      throw new RangeError(`pity afterBoosters must be a positive integer, got ${afterBoosters}`);
+    }
+  }
+}
+
+function assertValidCounters(counters: PityCounters): void {
+  for (const [rarity, value] of Object.entries(counters)) {
+    if (!Number.isSafeInteger(value) || (value ?? 0) < 0) {
+      throw new RangeError(
+        `pity counter for ${rarity} must be a non-negative integer, got ${value}`,
+      );
+    }
   }
 }
 

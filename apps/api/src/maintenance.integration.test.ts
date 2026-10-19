@@ -14,7 +14,7 @@ async function insertOpenWithRequest(userId: string, openedAt: Date): Promise<st
     userId,
     seed: "0".repeat(32),
     poolFingerprint: "test",
-    pityCounterBefore: 0,
+    pityCountersBefore: {},
     cards: [],
     openedAt,
   });

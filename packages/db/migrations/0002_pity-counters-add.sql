@@ -1,0 +1,2 @@
+ALTER TABLE "booster_opens" ADD COLUMN "pity_counters_before" jsonb DEFAULT '{}'::jsonb NOT NULL;--> statement-breakpoint
+ALTER TABLE "booster_wallets" ADD COLUMN "pity_counters" jsonb DEFAULT '{}'::jsonb NOT NULL;
