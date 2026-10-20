@@ -362,3 +362,40 @@ def test_a_cc_by_credit_line_carries_the_source() -> None:
     assert gravures.credit_line(hit(artist="Honoré Daumier", date="1833")) == (
         "Honoré Daumier, 1833 · Public domain · Wikimedia Commons"
     )
+
+
+# --- Wikimedia API -------------------------------------------------------------------------------
+
+
+def wikimedia_answering(monkeypatch, tmp_path, payloads: list[dict]) -> gravures.Wikimedia:
+    import httpx
+
+    monkeypatch.setattr(gravures, "AUTHORS_FILE", tmp_path / "authors.json")
+    monkeypatch.setattr(gravures.time, "sleep", lambda _: None)
+    answers = iter(payloads)
+    wiki = gravures.Wikimedia()
+    wiki.http = httpx.Client(
+        transport=httpx.MockTransport(lambda _: httpx.Response(200, json=next(answers)))
+    )
+    return wiki
+
+
+def test_a_busy_search_is_retried_then_answered(monkeypatch, tmp_path) -> None:
+    busy = {"error": {"code": "cirrussearch-too-busy-error", "info": "too busy"}}
+    wiki = wikimedia_answering(monkeypatch, tmp_path, [busy, busy, {"query": {}}])
+    assert wiki.api(gravures.COMMONS_API, {"action": "query"}) == {"query": {}}
+    assert wiki.pause == gravures.API_PAUSE_S
+
+
+def test_a_search_busy_for_good_postpones_the_card(monkeypatch, tmp_path) -> None:
+    busy = {"error": {"code": "cirrussearch-too-busy-error", "info": "too busy"}}
+    wiki = wikimedia_answering(monkeypatch, tmp_path, [busy] * gravures.MAX_RETRIES)
+    with pytest.raises(gravures.WikimediaUnavailable):
+        wiki.api(gravures.COMMONS_API, {"action": "query"})
+
+
+def test_a_wrong_request_still_fails_loudly(monkeypatch, tmp_path) -> None:
+    wrong = {"error": {"code": "badvalue", "info": "Unrecognized value"}}
+    wiki = wikimedia_answering(monkeypatch, tmp_path, [wrong])
+    with pytest.raises(RuntimeError, match="badvalue"):
+        wiki.api(gravures.COMMONS_API, {"action": "query"})
