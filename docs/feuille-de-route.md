@@ -56,9 +56,9 @@ Arbitrés par le propriétaire le 2026-10-20 : jeu grand public (B2C), pas de ve
 | Web : page d'accueil publique et liste d'attente | À faire | Utile avant la bêta, pour les réseaux |
 | Mobile (Expo) | À faire | Les mêmes écrans ; charger les polices demandera une dépendance (`expo-font`) |
 | Animations et reflets | À faire | R&D D-009. En attendant, du CSS simple |
-| Ouverture : peaufinage | À faire | Cahier des charges : [ouverture.md](cahiers-des-charges/ouverture.md). Priorité du propriétaire (2026-10-20) : l'ouverture doit être le moment le plus jouissif du jeu. Référence : Pokémon TCG Pocket et ses petits détails. Animations plus travaillées, carte rare vraiment mise en avant |
+| Ouverture : peaufinage | En cours | Cahier des charges : [ouverture.md](cahiers-des-charges/ouverture.md). Lot A fait sur le web : déchirure au doigt, pile, mise en scène par rareté, sons synthétisés, vibration, récapitulatif. Reste : reflets interactifs, mobile |
 | Ouverture : forme du paquet | À faire | Pli et sachet développés tous les deux, départagés par un test A/B à préparer |
-| Ouverture : aperçu en glissant | À faire | Geste bonus jamais expliqué : glisser la pile en biais pour deviner une rare |
+| Ouverture : aperçu en glissant | Fait | Geste bonus jamais expliqué : glisser la pile en biais pour deviner une rare |
 | Reflets et effets holographiques par rareté | À faire | Chaque rareté a son traitement visuel. Lié à la R&D D-009 |
 | Numéro de collection sur la carte | À décider | Par exemple « 040/160 ». Dénominateur à choisir (taille annoncée ou cartes publiées) |
 

@@ -1,0 +1,42 @@
+.stack {
+  position: relative;
+  display: block;
+  padding: 0;
+  border: none;
+  background: none;
+  touch-action: none;
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.card {
+  position: absolute;
+  inset: 0;
+  transition: transform 0.3s cubic-bezier(0.2, 0.9, 0.3, 1.2);
+  animation: deal 0.5s cubic-bezier(0.2, 0.9, 0.3, 1.1) both;
+}
+
+.dragging .card {
+  transition: transform 0.06s linear;
+}
+
+@keyframes deal {
+  from {
+    translate: 0 120px;
+    scale: 0.8;
+    opacity: 0;
+  }
+  to {
+    translate: 0 0;
+    scale: 1;
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card {
+    animation: none;
+    transition: none;
+  }
+}

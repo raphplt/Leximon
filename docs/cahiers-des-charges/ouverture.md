@@ -95,7 +95,8 @@ Chaque rareté a sa montée en intensité, et l'annonce vient **avant** la face 
 
 Les deux font partie du lot A, au même titre que les animations.
 
-- **Sons, sans enregistrer de vrais paquets :**
+- **Première version (lot A) :** les sons sont synthétisés par le navigateur (Web Audio), sans fichier ni licence. La déchirure joue un grain de papier à chaque avancée du doigt. Ils pourront être remplacés par des sons travaillés sans toucher aux écrans (`apps/web/src/booster/feedback.ts`).
+- **Sons travaillés, sans enregistrer de vrais paquets :**
   - partir de banques de sons libres (CC0) ou sous licence commerciale, et les retravailler (vitesse, hauteur, superposition) pour qu'ils sonnent « Leximon » ;
   - le papier qui se déchire est un son très courant dans ces banques ;
   - la déchirure se découpe en petits fragments joués au rythme du doigt : plus le geste est rapide, plus ils s'enchaînent ;
@@ -184,6 +185,7 @@ Plus tard, `user_cards.variant` permet des variantes du même mot, par exemple u
 ## Découpage proposé
 
 1. **Lot A, web, avant la bêta :** geste de déchirure, pile et coup d'œil, révélation au glissé, mise en scène par rareté, sons, numéro de collection, récapitulatif avec progression.
+   - **Fait le 2026-10-20**, sauf le numéro de collection, qui attend la décision sur son dénominateur. Le partage d'une Légendaire renvoie vers le site, faute de page publique de carte.
 2. **Lot B :** reflets interactifs complets par rareté (CSS), seconde forme de paquet.
 3. **Lot C :** outil d'A/B et test pli contre sachet pendant la bêta, portage mobile une fois la R&D D-009 conclue.
 
@@ -200,7 +202,7 @@ Plus tard, `user_cards.variant` permet des variantes du même mot, par exemple u
 1. **Dénominateur du numéro :** taille annoncée et collections publiées complètes (recommandé), ou nombre de cartes publiées.
 2. **Légendaires « hors série »** au-delà de la taille de la collection : oui ou non.
 3. **Outil de mesure pour l'A/B :** journal d'événements maison dans Postgres via la file (aucune dépendance, recommandé), ou un service comme PostHog hébergé dans l'UE (nouvelle dépendance).
-4. **Sons :** banques CC0 retravaillées (gratuit), ou banque payante sous licence commerciale (plus de choix).
+4. **Sons :** garder les sons synthétisés du lot A, ou les remplacer par des banques CC0 retravaillées (gratuit), ou par une banque payante sous licence commerciale (plus de choix).
 5. **Dépendances mobiles :** `expo-haptics`, `expo-audio`, puis Skia et `expo-sensors` après la R&D D-009.
 
 ## Sources
