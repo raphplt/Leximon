@@ -2,7 +2,7 @@
 
 Jeu de cartes à collectionner pour découvrir les mots rares et anciens du français. Boosters gratuits, collection, défis qui font monter les cartes en niveau, échanges entre joueurs. Web, iOS et Android.
 
-**État :** l'API ouvre des boosters et sert la collection. Le web a ses deux premiers écrans (ouverture du pli, album), sur le catalogue publié (160 cartes du lot-1) ; le mobile n'a encore aucune fonctionnalité de jeu.
+**État :** le web joue de bout en bout (plis, album, défis avec plis bonus, échanges) sur le catalogue de lancement publié (1 561 cartes, trois collections) ; le mobile n'a encore aucune fonctionnalité de jeu. Rien n'est en ligne. Le détail est dans `docs/feuille-de-route.md`.
 
 ## Commandes
 
@@ -45,6 +45,7 @@ Les sources téléchargées vivent dans `content/pipeline/data/` (ignoré par gi
 
 | Fichier | Contenu | Versionné |
 |---|---|---|
+| `docs/regles-du-jeu.md` | Règles du jeu : source unique des choix métier, avec leur statut | Oui |
 | `docs/feuille-de-route.md` | Vue d'ensemble : état de chaque chantier, décisions en attente, prochaines étapes | Oui |
 | `docs/decisions.md` | Décisions techniques : choix, statut, conséquences | Oui |
 | `docs/rnd/` | Rapports des spikes de R&D | Oui |
@@ -53,16 +54,11 @@ Les sources téléchargées vivent dans `content/pipeline/data/` (ignoré par gi
 
 **Une information vit à un seul endroit.** Mettre à jour le bon fichier plutôt que dupliquer, et renvoyer par lien. Ne pas recopier dans ce fichier ce qui est déjà dans `docs/`.
 
-## Règles produit non négociables
+## Règles produit
 
-- **Aucun hasard payant :**
-  - aucun booster ne s'achète, ni directement ni via une monnaie achetée ;
-  - aucune monnaie achetable en euros ;
-  - aucune carte ne se revend contre de l'argent.
-  - Raisons : PEGI 16 minimum, régime JONUM réservé aux majeurs, public scolaire visé.
-- **Ce qui se paie a un contenu connu à l'avance :** abonnement, cosmétiques, decks imprimés, licences écoles.
-- **Échanges carte contre carte**, par offres structurées, sans messagerie libre.
-- **Contenu des cartes :** uniquement des sources autorisées. Voir le skill `carte-mot`.
+**`docs/regles-du-jeu.md` est la source unique des choix métier** (boosters, raretés, défis, récompenses, échanges, contenu). À lire avant de toucher à une règle du jeu ; tout choix métier tranché par le propriétaire s'y inscrit, nulle part ailleurs. Un réglage chiffré change aux deux endroits à la fois : ce fichier et `packages/core/src/rules.ts`.
+
+Ses règles non négociables s'imposent à tout le code : aucun hasard payant (ni booster acheté, ni monnaie achetable, ni revente de cartes), ce qui se paie a un contenu connu à l'avance, échanges carte contre carte sans messagerie libre, contenu issu de sources autorisées uniquement (skill `carte-mot`).
 
 ## Règles d'architecture
 
@@ -119,7 +115,7 @@ Objectif : un code lisible et facile à maintenir, performant et sûr, pensé po
 
 ## Stack
 
-pnpm + Turborepo · Node 24 · Biome · Vitest · Next.js (web) · Expo (mobile) · Hono + Drizzle + Postgres via node-postgres (API) · Cloudflare + Postgres managé UE · Better Auth · Directus · chaîne de contenu Python en local. Le détail et les raisons sont dans `docs/decisions.md`.
+pnpm + Turborepo · Node 24 · Biome · Vitest · Next.js (web) · Expo (mobile) · Hono + Drizzle + Postgres via node-postgres (API) · Cloudflare + Postgres managé UE · Better Auth · ts-fsrs (révision espacée) · Directus · chaîne de contenu Python en local. Le détail et les raisons sont dans `docs/decisions.md`.
 
 ## Structure prévue
 

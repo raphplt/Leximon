@@ -135,18 +135,21 @@ async def verify_run(run: str, yes: bool) -> None:
         f"vérification de {len(todo)} cartes ({verification.MODEL})", per_card * len(todo), yes
     )
     file, write = _append(path)
+    entries = littre.index()
     async with llm.client() as api:
         with file:
             await llm.for_each(
                 todo,
-                lambda d: verification.verify(api, d.draft, d.entry, d.attempt),
+                lambda d: verification.verify(
+                    api, d.draft, d.entry, d.attempt, littre.base_entry(d.entry, entries)
+                ),
                 lambda v: write(v.to_json()),
             )
 
 
 async def correct_run(run: str, yes: bool) -> None:
-    """Sends each card flagged by the verifier or holding English words back to the drafter
-    with its problems, once."""
+    """Sends each card flagged by the verifier, holding English words or giving its word away
+    back to the drafter with its problems, once."""
     directory = run_dir(run)
     verified = verification.load(directory / "verification.jsonl")
     todo = []
@@ -154,7 +157,9 @@ async def correct_run(run: str, yes: bool) -> None:
         if d.attempt >= MAX_CORRECTIONS:
             continue
         row = verdict_of(d, verified)
-        problems = checks.english_problems(d.draft)
+        problems = checks.english_problems(d.draft) + checks.giveaway_problems(
+            d.draft, d.entry.headword
+        )
         if row and not row["verdict"]["faithful"]:  # type: ignore[index]
             problems = verification.failing_problems(row) + problems
         if problems:
@@ -168,10 +173,15 @@ async def correct_run(run: str, yes: bool) -> None:
         yes,
     )
 
+    entries = littre.index()
+
     async def correct(item: tuple[Draft, list[str]]) -> dict[str, object]:
         d, problems = item
         try:
-            result = await drafting.draft_card(api, drafting.MODEL, d.entry, (d.draft, problems))
+            base = littre.base_entry(d.entry, entries)
+            result = await drafting.draft_card(
+                api, drafting.MODEL, d.entry, (d.draft, problems), base
+            )
             row = result.to_json()
         except anthropic.APIError as error:
             row = {"word": d.word, "model": drafting.MODEL, "draft": None, "error": repr(error)}

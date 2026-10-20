@@ -1,8 +1,9 @@
-"""Mechanical checks on a card draft. A failed check sends the card to human review (English
-words are first sent back to the drafter, see curation.correct_run); meaning is checked by the
-faithfulness verifier (verification.py)."""
+"""Mechanical checks on a card draft. A failed check sends the card to human review. English
+words and giveaway words are first sent back to the drafter (curation.correct_run); a giveaway
+that remains is only shown. Meaning is checked by the faithfulness verifier (verification.py)."""
 
 import re
+import unicodedata
 from dataclasses import dataclass
 
 from . import littre
@@ -53,6 +54,33 @@ def english_problems(draft: CardDraft) -> list[str]:
     ]
 
 
+def _plain(text: str) -> str:
+    decomposed = unicodedata.normalize("NFD", text.lower())
+    return "".join(c for c in decomposed if unicodedata.category(c) != "Mn")
+
+
+def giveaway_words(headword: str, definition: str) -> list[str]:
+    """Words of the definition that share the headword's opening letters ("hussards" for
+    hussarde, "jarre" for jarron): they give the answer away in a challenge. A crude stem, but
+    a false alarm only costs a rewording."""
+    word = _plain(headword)
+    if len(word) < 5:
+        return []
+    stem = word[: 5 if len(word) >= 7 else 4]
+    return [
+        token for token in re.findall(r"[^\W\d_]+", definition) if _plain(token).startswith(stem)
+    ]
+
+
+def giveaway_problems(draft: CardDraft, headword: str) -> list[str]:
+    """The giveaway words of the definition, as sent back to the drafter for correction."""
+    return [
+        f"definition : « {token} » est de la famille du mot et donne la réponse au joueur ; "
+        "reformule sans lui si la définition reste aussi claire"
+        for token in giveaway_words(headword, draft.definition)
+    ]
+
+
 def run_checks(draft: CardDraft, entry: littre.Entry) -> list[Check]:
     definition_words = len(words(draft.definition))
     etymology_words = len(words(draft.etymology))
@@ -81,6 +109,14 @@ def run_checks(draft: CardDraft, entry: littre.Entry) -> list[Check]:
             f"aucune suite de {COPY_RUN_WORDS} mots reprise telle quelle du Littré",
             # The Littré's text is public domain: a borrowed phrase is a matter of style, not of
             # rights, and the verifier judges meaning.
+            informational=True,
+        ),
+        Check(
+            "no_giveaway",
+            not (giveaway := giveaway_problems(draft, entry.headword)),
+            "; ".join(giveaway) or "la définition ne contient pas de mot de la famille du mot",
+            # Tolerated when the word cannot be defined clearly otherwise (P41): the drafter gets
+            # one chance to reword it, then the card goes on without review.
             informational=True,
         ),
         Check(

@@ -151,6 +151,67 @@ describe("POST /boosters/open", () => {
   });
 });
 
+describe("bonus reserve", () => {
+  /** A player whose free stock is `stored` (timer just started) with `bonus` in reserve. */
+  async function playerWith(stored: number, bonus: number) {
+    const guest = await signInAsGuest();
+    await db.insert(schema.boosterWallets).values({
+      userId: guest.userId,
+      stored,
+      progressMs: 0,
+      asOf: new Date(),
+      bonusBoosters: bonus,
+    });
+    return guest;
+  }
+
+  async function fromBonus(openId: string) {
+    const [row] = await db
+      .select({ fromBonus: schema.boosterOpens.fromBonus })
+      .from(schema.boosterOpens)
+      .where(eq(schema.boosterOpens.id, openId));
+    return row?.fromBonus;
+  }
+
+  it("is kept while the free stock has boosters", async () => {
+    const guest = await playerWith(1, 2);
+    const body = openBoosterResponseSchema.parse(await (await openBooster(guest)).json());
+    expect(body.wallet).toMatchObject({ stored: 0, bonus: 2 });
+    expect(await fromBonus(body.openId)).toBe(false);
+  });
+
+  it("is spent once the free stock is empty, then the stock is empty", async () => {
+    const guest = await playerWith(0, 2);
+    const first = openBoosterResponseSchema.parse(await (await openBooster(guest)).json());
+    expect(first.wallet).toMatchObject({ stored: 0, bonus: 1 });
+    expect(first.wallet.nextRefillAt).not.toBeNull();
+    expect(await fromBonus(first.openId)).toBe(true);
+
+    const key = crypto.randomUUID();
+    const second = openBoosterResponseSchema.parse(await (await openBooster(guest, key)).json());
+    expect(second.wallet).toMatchObject({ stored: 0, bonus: 0 });
+    const replay = openBoosterResponseSchema.parse(await (await openBooster(guest, key)).json());
+    expect(replay.openId).toBe(second.openId);
+    expect(replay.wallet.bonus).toBe(0);
+
+    expect((await openBooster(guest)).status).toBe(409);
+    expect(await openCount(guest.userId)).toBe(2);
+  });
+
+  it("is never overspent by concurrent opens", async () => {
+    const guest = await playerWith(0, 3);
+    const responses = await Promise.all(Array.from({ length: 6 }, () => openBooster(guest)));
+    const statuses = responses.map((response) => response.status).sort();
+    expect(statuses).toEqual([200, 200, 200, 409, 409, 409]);
+    const [wallet] = await db
+      .select({ bonus: schema.boosterWallets.bonusBoosters })
+      .from(schema.boosterWallets)
+      .where(eq(schema.boosterWallets.userId, guest.userId));
+    expect(wallet?.bonus).toBe(0);
+    expect(await openCount(guest.userId)).toBe(3);
+  });
+});
+
 describe("booster draws", () => {
   it("record the request with its idempotency key", async () => {
     const guest = await signInAsGuest();

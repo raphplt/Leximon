@@ -35,43 +35,24 @@
 }
 
 .top {
+  /* Keeps the rarity band above a tall engraving that rises into the header row. */
+  position: relative;
+  z-index: 1;
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
 
+/* Round chip of the rarity colour holding the gem (D-022, icon set chosen 2026-10-20). */
 .band {
-  display: inline-flex;
-  align-items: center;
-  gap: calc(7 * var(--u));
-  height: calc(22 * var(--u));
-  padding: 0 calc(10 * var(--u));
-  border-radius: calc(11 * var(--u));
+  display: inline-grid;
+  place-items: center;
+  width: calc(32 * var(--u));
+  height: calc(32 * var(--u));
+  border-radius: 50%;
   background: var(--band);
   color: var(--band-ink);
-  font-family: var(--font-ui), sans-serif;
-  font-size: calc(11 * var(--u));
-  font-weight: 800;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-}
-
-.pips {
-  display: inline-flex;
-  gap: calc(3 * var(--u));
-}
-
-.pip,
-.pipOn {
-  box-sizing: border-box;
-  width: calc(6 * var(--u));
-  height: calc(6 * var(--u));
-  border: max(1px, calc(1 * var(--u))) solid var(--band-ink);
-  border-radius: 50%;
-}
-
-.pipOn {
-  background: var(--band-ink);
+  font-size: calc(22 * var(--u));
 }
 
 .engraving {
@@ -98,7 +79,64 @@
     );
 }
 
-/* Stands in for the engraving until illustrations exist. */
+/*
+ * A real engraving. The slot keeps the size of the hatched one, so the text never moves; a tall
+ * subject rises above it into the header row, right of centre to clear the rarity band.
+ */
+.print {
+  position: relative;
+  flex-shrink: 0;
+  height: calc(118 * var(--u));
+  margin-top: calc(2 * var(--u));
+}
+
+.printWide,
+.printTall {
+  position: absolute;
+  left: 50%;
+}
+
+.printWide {
+  top: 50%;
+  translate: -50% -50%;
+}
+
+.printTall {
+  bottom: 0;
+  left: 62%;
+  translate: -50% 0;
+}
+
+.plate,
+.plateNight,
+.ink {
+  position: absolute;
+  inset: 0;
+  mask-repeat: no-repeat;
+  mask-position: center;
+  mask-size: 100% 100%;
+}
+
+/* Second pass of the press, out of register: it shows beside the ink, never hides it. */
+.plate,
+.plateNight {
+  background: var(--frame);
+  mask-image: var(--fill-src);
+  opacity: 0.5;
+  translate: calc(2 * var(--u)) calc(1.5 * var(--u));
+}
+
+/* On a night card the ink is light: a plate as strong would muddy its lines. */
+.plateNight {
+  opacity: 0.3;
+}
+
+.ink {
+  background: var(--word);
+  mask-image: var(--ink-src);
+}
+
+/* Stands in for the engraving on cards that have none. */
 .initial {
   font-family: var(--font-display), Georgia, serif;
   font-variation-settings: "SOFT" 100;

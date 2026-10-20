@@ -1,13 +1,20 @@
 "use client";
 
-import { type CatalogCard, RARITY_LABELS } from "@leximon/contract";
+import {
+  type CatalogCard,
+  MASTERY_LEVEL_LABELS,
+  type MasteryLevelCode,
+  RARITY_LABELS,
+} from "@leximon/contract";
 import { rarityRank } from "@leximon/core";
 import { cssFill, rarityStyles } from "@leximon/tokens";
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { type Catalog, loadCatalog } from "@/cards/catalog";
 import { Card } from "@/components/card";
-import { fetchOwnedCards } from "@/lib/api";
+import { CardCaption } from "@/components/card-caption";
+import { RarityName } from "@/components/rarity-icon";
+import { fetchMastery, fetchOwnedCards } from "@/lib/api";
 import styles from "./album-screen.module.css";
 
 const TILE_WIDTH = 150;
@@ -25,6 +32,7 @@ function albumOrder(cards: readonly CatalogCard[]): CatalogCard[] {
 export function AlbumScreen() {
   const [catalog, setCatalog] = useState<Catalog | null>(null);
   const [quantities, setQuantities] = useState<ReadonlyMap<string, number> | null>(null);
+  const [levels, setLevels] = useState<ReadonlyMap<string, MasteryLevelCode>>(new Map());
   const [failed, setFailed] = useState(false);
   const [zoomed, setZoomed] = useState<CatalogCard | null>(null);
   const dialog = useRef<HTMLDialogElement>(null);
@@ -32,8 +40,13 @@ export function AlbumScreen() {
   const load = useCallback(async () => {
     setFailed(false);
     try {
-      const [loadedCatalog, owned] = await Promise.all([loadCatalog(), fetchOwnedCards()]);
+      const [loadedCatalog, owned, mastery] = await Promise.all([
+        loadCatalog(),
+        fetchOwnedCards(),
+        fetchMastery(),
+      ]);
       setCatalog(loadedCatalog);
+      setLevels(new Map(mastery.map((word) => [word.cardId, word.level])));
       const byCard = new Map<string, number>();
       for (const card of owned) {
         byCard.set(card.cardId, (byCard.get(card.cardId) ?? 0) + card.quantity);
@@ -105,6 +118,7 @@ export function AlbumScreen() {
             <ul className={styles.grid}>
               {cards.map((card) => {
                 const quantity = quantities.get(card.id);
+                const level = levels.get(card.id) ?? "sketch";
                 return (
                   <li key={card.id} className={styles.slot}>
                     {quantity === undefined ? (
@@ -118,6 +132,11 @@ export function AlbumScreen() {
                       >
                         <Card card={card} collectionName={collection.name} width={TILE_WIDTH} />
                         {quantity > 1 && <span className={styles.quantity}>×{quantity}</span>}
+                        {level !== "sketch" && (
+                          <span className={`${styles.level} ${styles[level]}`}>
+                            {MASTERY_LEVEL_LABELS[level]}
+                          </span>
+                        )}
                       </button>
                     )}
                   </li>
@@ -146,6 +165,7 @@ export function AlbumScreen() {
                 catalog.collections.find((c) => c.id === zoomed.collectionId)?.name ?? ""
               }
             />
+            <CardCaption card={zoomed} />
             <button type="button" className={styles.button} onClick={() => dialog.current?.close()}>
               Fermer
             </button>
@@ -173,7 +193,9 @@ function MissingCard({ card }: { readonly card: CatalogCard }) {
         <span className={styles.question} aria-hidden="true">
           ?
         </span>
-        <span className={styles.missingLabel}>{RARITY_LABELS[card.rarity]}</span>
+        <span className={styles.missingLabel}>
+          <RarityName rarity={card.rarity} />
+        </span>
       </span>
     </div>
   );

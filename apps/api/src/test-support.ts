@@ -3,6 +3,7 @@
  */
 import { RARITIES } from "@leximon/core";
 import { type Database, schema } from "@leximon/db";
+import { eq, sql } from "drizzle-orm";
 import { expect } from "vitest";
 import type { createApp } from "./app";
 import { TEST_ORIGIN } from "./test-env";
@@ -64,4 +65,46 @@ export async function signInAsGuest(app: ReturnType<typeof createApp>, env: Env)
     .join("; ");
   const body = (await response.json()) as { user: { id: string } };
   return { cookie, userId: body.user.id };
+}
+
+/** Backdates an account, e.g. past the minimum age to trade (D-026). */
+export async function ageAccount(db: Database, userId: string, ageMs: number): Promise<void> {
+  await db
+    .update(schema.users)
+    .set({ createdAt: new Date(Date.now() - ageMs) })
+    .where(eq(schema.users.id, userId));
+}
+
+export interface OwnedCard {
+  readonly cardId: string;
+  readonly quantity: number;
+  /** Defaults to long ago, so that rare cards are past their holding period. */
+  readonly lastObtainedAt?: Date;
+}
+
+/** Sets the quantities a player owns of some cards (standard variant), replacing earlier ones. */
+export async function setOwnedCards(
+  db: Database,
+  userId: string,
+  owned: readonly OwnedCard[],
+): Promise<void> {
+  const longAgo = new Date("2026-01-01T00:00:00Z");
+  await db
+    .insert(schema.userCards)
+    .values(
+      owned.map(({ cardId, quantity, lastObtainedAt }) => ({
+        userId,
+        cardId,
+        quantity,
+        firstObtainedAt: longAgo,
+        lastObtainedAt: lastObtainedAt ?? longAgo,
+      })),
+    )
+    .onConflictDoUpdate({
+      target: [schema.userCards.userId, schema.userCards.cardId, schema.userCards.variant],
+      set: {
+        quantity: sql`excluded.quantity`,
+        lastObtainedAt: sql`excluded.last_obtained_at`,
+      },
+    });
 }

@@ -2,21 +2,32 @@
  * `pnpm catalog:publish [version] [--target <dir>] [--dry-run]` (D-023).
  *
  * Validates a release of content/releases (the latest by default), updates the `collections`
- * and `cards` tables, then copies the files where the apps read them. Collection files go first
- * and the manifest last, so that a reader never sees a manifest pointing at a missing file.
+ * and `cards` tables, then copies the files where the apps read them. Engravings and collection
+ * files go first and the manifest last, so that a reader never sees a manifest pointing at a
+ * missing file. Engravings come from the content pipeline's output (git-ignored binaries, never
+ * in content/releases): a release referring to one that is missing is refused.
  */
 
 import { copyFile, mkdir, readdir, readFile, rename, writeFile } from "node:fs/promises";
 import { dirname, join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 import { parseArgs } from "node:util";
-import { applyCatalog, loadPublishedCards, parseRelease, planCatalog } from "../src/catalog/index";
+import {
+  applyCatalog,
+  engravingFiles,
+  engravingProblems,
+  loadPublishedCards,
+  parseRelease,
+  planCatalog,
+} from "../src/catalog/index";
 import { createDb } from "../src/client";
 
 const REPO_ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "..");
 const RELEASES_DIR = join(REPO_ROOT, "content", "releases");
 // R2 is added with the production hosting (D-005); until then the web app serves the files.
 const DEFAULT_TARGET = join(REPO_ROOT, "apps", "web", "public", "catalog");
+// Written by `gravures-render`; paths in the catalogue are relative to this folder.
+const ENGRAVINGS_DIR = join(REPO_ROOT, "content", "pipeline", "data", "gravures", "out");
 const VERSION_PATTERN = /^\d{4}-\d{2}-\d{2}\.\d+$/;
 
 function versionKey(version: string): [string, number] {
@@ -46,6 +57,28 @@ async function readFiles(root: string): Promise<Map<string, Uint8Array>> {
   return files;
 }
 
+async function readEngravings(paths: readonly string[]) {
+  const files = new Map<string, Uint8Array | undefined>();
+  for (const path of paths) {
+    files.set(
+      path,
+      await readFile(join(ENGRAVINGS_DIR, path)).catch((error: NodeJS.ErrnoException) => {
+        if (error.code === "ENOENT") return undefined;
+        throw error;
+      }),
+    );
+  }
+  return files;
+}
+
+async function copyEngravings(target: string, files: ReadonlyMap<string, Uint8Array | undefined>) {
+  for (const [path, bytes] of files) {
+    if (bytes === undefined) continue;
+    await mkdir(dirname(join(target, path)), { recursive: true });
+    await writeFile(join(target, path), bytes);
+  }
+}
+
 async function copyRelease(source: string, target: string, files: Iterable<string>) {
   const collectionFiles = [...files].filter((path) => path !== "manifest.json");
   for (const path of collectionFiles) {
@@ -73,6 +106,16 @@ async function main(): Promise<void> {
     return;
   }
 
+  const engravings = await readEngravings(engravingFiles(parsed.release));
+  const engravingIssues = engravingProblems(engravings);
+  if (engravingIssues.length > 0) {
+    console.error(
+      `Release ${version} refused: engravings in ${ENGRAVINGS_DIR}\n- ${engravingIssues.join("\n- ")}`,
+    );
+    process.exitCode = 1;
+    return;
+  }
+
   const url = process.env["DATABASE_URL"];
   if (!url) throw new Error("DATABASE_URL is not set. Copy .env.example to .env.");
   const { db, close } = createDb(url, { maxConnections: 1 });
@@ -87,11 +130,12 @@ async function main(): Promise<void> {
     }
     console.info(
       `Release ${version}: ${plan.collections.length} collections, ${plan.cards.length} cards, ` +
-        `${plan.retire.length} retired`,
+        `${plan.retire.length} retired, ${engravings.size} engraving files`,
     );
     if (values["dry-run"]) return;
     await applyCatalog(db, plan, new Date());
     const target = values.target ?? DEFAULT_TARGET;
+    await copyEngravings(target, engravings);
     await copyRelease(source, target, files.keys());
     console.info(`Database updated, files copied to ${target}`);
   } finally {

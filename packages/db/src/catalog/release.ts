@@ -81,3 +81,39 @@ export function parseRelease(files: ReadonlyMap<string, Uint8Array>): ParsedRele
     ? { ok: false, problems }
     : { ok: true, release: { manifest: manifest.data, collections } };
 }
+
+/** Engraving files the release refers to, relative to the catalogue root, each once, sorted. */
+export function engravingFiles(release: Release): string[] {
+  const paths = new Set<string>();
+  for (const collection of release.collections) {
+    for (const card of collection.cards) {
+      if (!card.engraving) continue;
+      paths.add(card.engraving.ink);
+      paths.add(card.engraving.fill);
+    }
+  }
+  return [...paths].sort();
+}
+
+/**
+ * Checks the engraving files a release refers to: each must exist and, like the collection
+ * files, match the content hash in its name (`<card>.<hash12>.<kind>.webp`), since it is cached
+ * for good once published.
+ *
+ * @param files contents keyed by path, `undefined` for a file that could not be found
+ */
+export function engravingProblems(files: ReadonlyMap<string, Uint8Array | undefined>): string[] {
+  const problems: string[] = [];
+  for (const [path, bytes] of files) {
+    if (bytes === undefined) {
+      problems.push(`${path} is referenced by a card but missing (run gravures-render)`);
+      continue;
+    }
+    const named = /\.([0-9a-f]{12})\.[a-z]+\.webp$/.exec(path)?.[1];
+    const hash = createHash("sha256").update(bytes).digest("hex").slice(0, HASH_LENGTH);
+    if (named !== undefined && named !== hash) {
+      problems.push(`${path} does not match its content (hash ${hash})`);
+    }
+  }
+  return problems;
+}

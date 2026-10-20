@@ -3,11 +3,30 @@ import {
   type BoosterWalletResponse,
   boosterStockEmptySchema,
   boosterWalletSchema,
+  type ChallengeAnswerRequest,
+  type ChallengeAnswerResponse,
+  type ChallengesResponse,
+  type CreateTradeRequest,
+  challengeAnswerResponseSchema,
+  challengesResponseSchema,
+  errorResponseSchema,
   IDEMPOTENCY_KEY_HEADER,
+  type MasteryResponse,
+  masteryResponseSchema,
   type OpenBoosterResponse,
   type OwnedCardsResponse,
   openBoosterResponseSchema,
   ownedCardsResponseSchema,
+  type ProfileResponse,
+  profileResponseSchema,
+  type Trade,
+  type TradeableCardsResponse,
+  type TradeRefusalCode,
+  type TradesResponse,
+  tradeableCardsResponseSchema,
+  tradeRefusalSchema,
+  tradeSchema,
+  tradesResponseSchema,
 } from "@leximon/contract";
 import type { z } from "zod";
 
@@ -121,4 +140,105 @@ export async function openBooster(
   }
   if (!response.ok) throw new ApiError("open_failed", response.status);
   return { kind: "opened", ...(await parse(response, openBoosterResponseSchema)) };
+}
+
+export async function fetchChallenges(limit = 5): Promise<ChallengesResponse> {
+  const response = await sendAsPlayer(`/challenges?limit=${limit}`);
+  if (!response.ok) throw new ApiError("challenges_unavailable", response.status);
+  return parse(response, challengesResponseSchema);
+}
+
+export type AnswerResult =
+  | ({ readonly kind: "answered" } & ChallengeAnswerResponse)
+  /** Already answered elsewhere (another tab): the question is simply skipped. */
+  | { readonly kind: "not_due" };
+
+/** Sends an answer. Like boosters, the caller keeps `idempotencyKey` until it gets a result. */
+export async function answerChallenge(
+  answer: ChallengeAnswerRequest,
+  idempotencyKey: string,
+): Promise<AnswerResult> {
+  const response = await sendAsPlayer("/challenges/answer", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", [IDEMPOTENCY_KEY_HEADER]: idempotencyKey },
+    body: JSON.stringify(answer),
+  });
+  if (response.status === 409 || response.status === 404) return { kind: "not_due" };
+  if (!response.ok) throw new ApiError("answer_failed", response.status);
+  return { kind: "answered", ...(await parse(response, challengeAnswerResponseSchema)) };
+}
+
+export async function fetchMastery(): Promise<MasteryResponse["words"]> {
+  const response = await sendAsPlayer("/me/mastery");
+  if (!response.ok) throw new ApiError("mastery_unavailable", response.status);
+  return (await parse(response, masteryResponseSchema)).words;
+}
+
+export async function fetchProfile(): Promise<ProfileResponse> {
+  const response = await sendAsPlayer("/me/profile");
+  if (!response.ok) throw new ApiError("profile_unavailable", response.status);
+  return parse(response, profileResponseSchema);
+}
+
+/** Cards a player can give now: mine without `playerCode`. `null` when the code is unknown. */
+export async function fetchTradeable(playerCode?: string): Promise<TradeableCardsResponse | null> {
+  const path =
+    playerCode === undefined
+      ? "/me/tradeable"
+      : `/players/${encodeURIComponent(playerCode)}/tradeable`;
+  const response = await sendAsPlayer(path);
+  if (response.status === 404) return null;
+  if (!response.ok) throw new ApiError("tradeable_unavailable", response.status);
+  return parse(response, tradeableCardsResponseSchema);
+}
+
+export async function fetchTrades(
+  box: "incoming" | "outgoing",
+  cursor: string | null = null,
+): Promise<TradesResponse> {
+  const query = new URLSearchParams({ box });
+  if (cursor !== null) query.set("cursor", cursor);
+  const response = await sendAsPlayer(`/trades?${query}`);
+  if (!response.ok) throw new ApiError("trades_unavailable", response.status);
+  return parse(response, tradesResponseSchema);
+}
+
+export type TradeResult =
+  | { readonly kind: "ok"; readonly trade: Trade }
+  | { readonly kind: "refused"; readonly reason: TradeRefusalCode };
+
+/** Reads a refusal (`{ error }` with a known code) or the trade itself. */
+async function tradeResult(response: Response, failure: string): Promise<TradeResult> {
+  if (response.ok) return { kind: "ok", trade: await parse(response, tradeSchema) };
+  if ([404, 409, 422].includes(response.status)) {
+    const body = errorResponseSchema.safeParse(await response.json().catch(() => null));
+    const reason = tradeRefusalSchema.safeParse(body.success ? body.data.error : null);
+    if (reason.success) return { kind: "refused", reason: reason.data };
+  }
+  throw new ApiError(failure, response.status);
+}
+
+/** Sends an offer. The caller keeps `idempotencyKey` until it gets a result. */
+export async function createTrade(
+  offer: CreateTradeRequest,
+  idempotencyKey: string,
+): Promise<TradeResult> {
+  const response = await sendAsPlayer("/trades", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", [IDEMPOTENCY_KEY_HEADER]: idempotencyKey },
+    body: JSON.stringify(offer),
+  });
+  return tradeResult(response, "trade_failed");
+}
+
+/** Accepts, declines or cancels an offer; each is idempotent on the server. */
+export async function resolveTrade(
+  tradeId: string,
+  action: "accept" | "decline" | "cancel",
+): Promise<TradeResult> {
+  const response = await sendAsPlayer(`/trades/${encodeURIComponent(tradeId)}/${action}`, {
+    method: "POST",
+    headers: { [IDEMPOTENCY_KEY_HEADER]: crypto.randomUUID() },
+  });
+  return tradeResult(response, "trade_failed");
 }

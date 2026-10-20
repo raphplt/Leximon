@@ -37,6 +37,7 @@ Ne relève pas :
 - une reformulation, une simplification, un mot moderne pour dire la même chose ;
 - le choix d'un seul des sens de l'entrée ;
 - « Origine incertaine. » quand l'entrée n'a pas d'étymologie ou la dit douteuse ;
+- une étymologie qui explique la formation du mot à partir du MOT DE BASE PROBABLE, quand il est fourni et que la dérivation est évidente (secrétage, de secréter) ;
 - une abréviation d'auteur recopiée telle quelle.
 
 faithful vaut false dès qu'un problème est contredit ou invente. Pour chaque problème, dis en une phrase ce qu'affirme la carte et ce que dit l'entrée. Sois juste : un faux signalement coûte une relecture inutile, un signalement manqué publie une erreur."""
@@ -114,18 +115,22 @@ def card_text(draft: CardDraft, entry: littre.Entry) -> str:
     return "\n".join(lines)
 
 
-def prompt(draft: CardDraft, entry: littre.Entry) -> str:
+def prompt(draft: CardDraft, entry: littre.Entry, base: littre.Entry | None = None) -> str:
     return (
-        f"ENTRÉE DU LITTRÉ\n\n{littre.render(entry)}\n\n"
+        f"ENTRÉE DU LITTRÉ\n\n{littre.render(entry, base=base)}\n\n"
         f"CARTE À VÉRIFIER\n\n{card_text(draft, entry)}"
     )
 
 
 async def verify(
-    api: anthropic.AsyncAnthropic, draft: CardDraft, entry: littre.Entry, attempt: int = 0
+    api: anthropic.AsyncAnthropic,
+    draft: CardDraft,
+    entry: littre.Entry,
+    attempt: int = 0,
+    base: littre.Entry | None = None,
 ) -> Verification:
     answer = await llm.ask_json(
-        api, MODEL, SYSTEM_PROMPT, prompt(draft, entry), OUTPUT_SCHEMA, effort="medium"
+        api, MODEL, SYSTEM_PROMPT, prompt(draft, entry, base), OUTPUT_SCHEMA, effort="medium"
     )
     word = entry.headword.lower()
     if answer.error:

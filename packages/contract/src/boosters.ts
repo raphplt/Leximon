@@ -23,6 +23,8 @@ export const boosterWalletSchema = z.object({
   stored: z.int().nonnegative(),
   /** `null` when the stock is full. */
   nextRefillAt: timestampSchema.nullable(),
+  /** Bonus boosters earned through challenges, opened once the free stock is empty. */
+  bonus: z.int().nonnegative(),
 });
 export type BoosterWalletResponse = z.infer<typeof boosterWalletSchema>;
 

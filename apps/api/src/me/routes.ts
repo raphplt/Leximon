@@ -1,17 +1,27 @@
 import {
   type BoosterWalletResponse,
+  type MasteryResponse,
   type OwnedCardsResponse,
   ownedCardsQuerySchema,
+  type ProfileResponse,
+  type TradeableCardsResponse,
 } from "@leximon/contract";
-import { computeRefill, createFullWallet, REFILL_SCHEDULE } from "@leximon/core";
+import {
+  computeRefill,
+  createFullWallet,
+  REFILL_SCHEDULE,
+  TRADE_SCHEDULE,
+  tradeRulesAt,
+} from "@leximon/core";
 import { schema } from "@leximon/db";
 import { and, asc, eq, gt, or } from "drizzle-orm";
 import { Hono } from "hono";
 import type { AppEnv } from "../context";
 import { playerRateLimit } from "../middleware/rate-limit";
 import { requireUser } from "../middleware/require-user";
+import { ensurePlayer, listTradeableCards } from "../trades/players";
 
-const { boosterWallets, cards, userCards } = schema;
+const { boosterWallets, cards, userCards, userMastery } = schema;
 
 /** Player state for the current session. Never cached: it changes with every action. */
 export function meRoutes() {
@@ -38,6 +48,7 @@ export function meRoutes() {
     return c.json<BoosterWalletResponse>({
       stored: state.stored,
       nextRefillAt: state.nextRefillAt === null ? null : new Date(state.nextRefillAt).toISOString(),
+      bonus: row?.bonusBoosters ?? 0,
     });
   });
 
@@ -87,6 +98,36 @@ export function meRoutes() {
           ? encodeCursor({ cardId: last.cardId, variant: last.variant })
           : null,
     });
+  });
+
+  // The player code is created on first request: guests who never trade never get one.
+  routes.get("/profile", async (c) => {
+    const now = Date.now();
+    const player = await ensurePlayer(c.var.db, c.var.userId);
+    const { minAccountAgeMs } = tradeRulesAt(TRADE_SCHEDULE, now);
+    return c.json<ProfileResponse>({
+      playerCode: player.code,
+      canTradeFrom: new Date(player.createdAt + minAccountAgeMs).toISOString(),
+    });
+  });
+
+  routes.get("/tradeable", async (c) => {
+    const now = Date.now();
+    const player = await ensurePlayer(c.var.db, c.var.userId);
+    return c.json<TradeableCardsResponse>({
+      playerCode: player.code,
+      cardIds: await listTradeableCards(c.var.db, player.userId, now),
+    });
+  });
+
+  /** The level of every word reviewed at least once (D-025). */
+  routes.get("/mastery", async (c) => {
+    const rows = await c.var.db
+      .select({ cardId: userMastery.cardId, level: userMastery.level })
+      .from(userMastery)
+      .where(eq(userMastery.userId, c.var.userId))
+      .orderBy(asc(userMastery.cardId));
+    return c.json<MasteryResponse>({ words: rows });
   });
 
   return routes;

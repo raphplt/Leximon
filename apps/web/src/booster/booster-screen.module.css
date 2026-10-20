@@ -73,6 +73,13 @@
   color: var(--lx-color-text-muted);
 }
 
+.bonus {
+  white-space: nowrap;
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--lx-color-accent);
+}
+
 .center {
   flex-grow: 1;
   display: flex;
@@ -307,6 +314,11 @@
   color: var(--lx-color-text-muted);
 }
 
+.revealRarity {
+  font-size: 14px;
+  color: var(--lx-color-text);
+}
+
 .next {
   min-height: 46px;
   padding: 0 24px;
@@ -339,6 +351,11 @@
 }
 
 .recapLine {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 0 0.4em;
   margin: 6px 0 0;
   font-size: 14px;
   font-weight: 700;

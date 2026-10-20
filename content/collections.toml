@@ -1,8 +1,22 @@
 # Collections of the published catalogue (D-023). Each takes the publishable cards of its runs
 # (content/pipeline/data/runs/<run>, reviewed in Directus). A card belongs to one collection only.
 # Ids are stable slugs: never rename or reuse one once published.
+# `domains` (D-024): the pre-screen domains new runs of the collection select from (any if absent).
 
 [[collection]]
 id = "fondateurs"
 name = "Les Fondateurs"
-runs = ["lot-1"]
+runs = ["lot-1", "fondateurs-2"]
+domains = ["nature", "table", "autre"]
+
+[[collection]]
+id = "caracteres"
+name = "Caractères et travers"
+runs = ["caracteres-1"]
+domains = ["caractere"]
+
+[[collection]]
+id = "metiers"
+name = "Métiers et objets disparus"
+runs = ["metiers-1"]
+domains = ["metiers_objets"]

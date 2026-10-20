@@ -14,22 +14,34 @@ export function revealOrder<T extends DrawnCard>(cards: readonly T[]): T[] {
     .map(({ card }) => card);
 }
 
-/** One line under "Ton pli", e.g. "1 Épique · 3 mots nouveaux". */
-export function recapLine(cards: readonly DrawnCard[], ownedBefore: ReadonlySet<string>): string {
-  const parts: string[] = [];
-  const best = cards.reduce<DrawnCard | undefined>(
-    (top, card) =>
-      top === undefined || rarityRank(card.rarity) > rarityRank(top.rarity) ? card : top,
+export interface Recap {
+  /** The best rarity of the pack and how many cards of it, from Rare up; `null` below. */
+  readonly best: { readonly rarity: Rarity; readonly label: string } | null;
+  /** "3 mots nouveaux", "1 mot nouveau", "aucun mot nouveau". */
+  readonly fresh: string;
+}
+
+/** The line under "Ton pli", e.g. "1 Épique · 3 mots nouveaux", the rarity shown with its gem. */
+export function recap(cards: readonly DrawnCard[], ownedBefore: ReadonlySet<string>): Recap {
+  const top = cards.reduce<DrawnCard | undefined>(
+    (best, card) =>
+      best === undefined || rarityRank(card.rarity) > rarityRank(best.rarity) ? card : best,
     undefined,
   );
-  if (best !== undefined && rarityRank(best.rarity) >= rarityRank("rare")) {
-    const count = cards.filter((card) => card.rarity === best.rarity).length;
-    parts.push(`${count} ${RARITY_LABELS[best.rarity]}`);
+  let best: Recap["best"] = null;
+  if (top !== undefined && rarityRank(top.rarity) >= rarityRank("rare")) {
+    const count = cards.filter((card) => card.rarity === top.rarity).length;
+    best = { rarity: top.rarity, label: `${count} ${RARITY_LABELS[top.rarity]}` };
   }
-  const fresh = new Set(cards.map((card) => card.cardId).filter((id) => !ownedBefore.has(id))).size;
-  if (fresh === 0) parts.push("aucun mot nouveau");
-  else parts.push(fresh === 1 ? "1 mot nouveau" : `${fresh} mots nouveaux`);
-  return parts.join(" · ");
+  const freshCount = new Set(cards.map((card) => card.cardId).filter((id) => !ownedBefore.has(id)))
+    .size;
+  const fresh =
+    freshCount === 0
+      ? "aucun mot nouveau"
+      : freshCount === 1
+        ? "1 mot nouveau"
+        : `${freshCount} mots nouveaux`;
+  return { best, fresh };
 }
 
 /** "prochain dans 12 min", "prochain dans 1 h 05", or `null` when the stock is full. */
@@ -39,4 +51,10 @@ export function nextRefillLabel(nextRefillAt: string | null, now: number): strin
   if (minutes < 60) return `prochain dans ${minutes} min`;
   const rest = String(minutes % 60).padStart(2, "0");
   return `prochain dans ${Math.floor(minutes / 60)} h ${rest}`;
+}
+
+/** "+1 pli bonus", "+3 plis bonus": the reserve shown beside the stock, `null` when empty. */
+export function bonusLabel(bonus: number): string | null {
+  if (bonus <= 0) return null;
+  return `+${bonus} pli${bonus > 1 ? "s" : ""} bonus`;
 }

@@ -2,7 +2,7 @@ import { createHash } from "node:crypto";
 import type { CatalogCard } from "@leximon/contract";
 import { describe, expect, it } from "vitest";
 import { planCatalog } from "./plan";
-import { parseRelease, type Release } from "./release";
+import { engravingFiles, engravingProblems, parseRelease, type Release } from "./release";
 
 const encoder = new TextEncoder();
 
@@ -81,6 +81,57 @@ describe("parseRelease", () => {
 
   it("refuses a missing manifest", () => {
     expect(parseRelease(new Map()).ok).toBe(false);
+  });
+});
+
+describe("engraving files", () => {
+  const ink = encoder.encode("ink");
+  const inkHash = createHash("sha256").update(ink).digest("hex").slice(0, 12);
+  const engraving = {
+    ink: `gravures/poue.${inkHash}.ink.webp`,
+    fill: "gravures/poue.0123456789ab.fill.webp",
+    width: 300,
+    height: 480,
+    credit: "Anonyme, 1849 · Wikimedia Commons (domaine public)",
+    sourceUrl: "https://commons.wikimedia.org/wiki/File:X.jpg",
+    licence: "domaine public",
+  };
+
+  it("lists the files of the cards that have an engraving", () => {
+    const release: Release = {
+      manifest: {
+        schemaVersion: 1,
+        version: "2026-10-19.1",
+        releasedAt: "2026-10-19T20:00:00.000Z",
+        collections: [],
+      },
+      collections: [
+        {
+          id: "fondateurs",
+          name: "Les Fondateurs",
+          cards: [
+            card("poue", { engraving }),
+            card("raclure", { engraving: null }),
+            card("vergogne"),
+          ],
+        },
+      ],
+    };
+    expect(engravingFiles(release)).toEqual([engraving.fill, engraving.ink]);
+  });
+
+  it("refuses a missing file and a file whose content no longer matches its name", () => {
+    const problems = engravingProblems(
+      new Map<string, Uint8Array | undefined>([
+        [engraving.ink, ink],
+        [engraving.fill, encoder.encode("fill")],
+        ["gravures/raclure.0123456789ab.ink.webp", undefined],
+      ]),
+    );
+    expect(problems).toEqual([
+      expect.stringMatching(/poue\.0123456789ab\.fill\.webp does not match its content/),
+      expect.stringMatching(/raclure\.0123456789ab\.ink\.webp is referenced by a card but missing/),
+    ]);
   });
 });
 

@@ -42,6 +42,7 @@ export function boosterRoutes(loadCardPool: CardPoolLoader) {
           wallet: {
             stored: result.wallet.stored,
             nextRefillAt: toIso(result.wallet.nextRefillAt),
+            bonus: result.wallet.bonus,
           },
         });
       case "stock_empty":

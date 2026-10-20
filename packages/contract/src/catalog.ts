@@ -16,6 +16,37 @@ export const catalogQuoteSchema = z.object({
   author: z.string().min(1),
 });
 
+/**
+ * A path relative to the catalogue root, in `gravures/`: one segment, no way out of the folder,
+ * nothing a CSS `url()` would need to escape. Kept loose on the name itself so that a later
+ * naming (another size) never makes an old client reject the whole collection.
+ */
+const engravingFileSchema = z.string().regex(/^gravures\/[a-z0-9][a-z0-9.-]*\.webp$/);
+
+/**
+ * Engraving of a card (docs/rnd/gravures.md): two WebP files holding only an alpha channel,
+ * tinted by the card at display time. Files are named after their content, so immutable.
+ */
+export const catalogEngravingSchema = z.object({
+  /** The lines: `gravures/<card>.<hash12>.ink.webp`. */
+  ink: engravingFileSchema,
+  /** The dark masses as one flat shape, half size: `gravures/<card>.<hash12>.fill.webp`. */
+  fill: engravingFileSchema,
+  /** Size of the ink file, in px. */
+  width: z.int().positive(),
+  height: z.int().positive(),
+  /**
+   * Full credit line, licence included, shown as is:
+   * « D'après Albrecht Dürer, 1514 · Wikimedia Commons (domaine public) ».
+   */
+  credit: z.string().min(1),
+  /** The file's page on Wikimedia Commons. */
+  sourceUrl: z.url({ protocol: /^https$/ }),
+  /** "domaine public", "CC0" or "CC BY 4.0". A plain string: a new licence never breaks old clients. */
+  licence: z.string().min(1),
+});
+export type CatalogEngraving = z.infer<typeof catalogEngravingSchema>;
+
 export const catalogCardSchema = z.object({
   /** Stable slug, never reused (D-020): also the id of the `cards` row. */
   id: slugSchema,
@@ -31,6 +62,11 @@ export const catalogCardSchema = z.object({
   themes: z.array(slugSchema),
   /** Modern written frequency (Google Books Ngram, D-020). `null` below what Ngram measures. */
   perBillion: z.number().nonnegative().nullable(),
+  /**
+   * `null` when the card has no engraving yet (it shows its initial). Absent from releases made
+   * before engravings, hence optional: read it as `card.engraving ?? null`.
+   */
+  engraving: catalogEngravingSchema.nullable().exactOptional(),
 });
 export type CatalogCard = z.infer<typeof catalogCardSchema>;
 

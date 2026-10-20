@@ -7,9 +7,11 @@ import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { type Catalog, cardOrPlaceholder, collectionName, loadCatalog } from "@/cards/catalog";
 import { Card } from "@/components/card";
+import { RarityName } from "@/components/rarity-icon";
 import { fetchOwnedCards, fetchWallet, openBooster } from "@/lib/api";
+import { useNow } from "@/lib/use-now";
 import styles from "./booster-screen.module.css";
-import { type DrawnCard, nextRefillLabel, recapLine, revealOrder } from "./reveal";
+import { bonusLabel, type DrawnCard, nextRefillLabel, recap, revealOrder } from "./reveal";
 
 const STOCK_CAPACITY = REFILL_SCHEDULE[0].capacity;
 const FAN_ANGLES = [-10, -5, 0, 5, 10];
@@ -97,7 +99,7 @@ export function BoosterScreen() {
       ]);
       setPendingKey(null);
       if (result.kind === "stock_empty") {
-        setWallet({ stored: 0, nextRefillAt: result.nextRefillAt });
+        setWallet({ stored: 0, nextRefillAt: result.nextRefillAt, bonus: 0 });
         setPhase({ name: "sealed" });
         return;
       }
@@ -121,7 +123,11 @@ export function BoosterScreen() {
   };
 
   const stored = wallet?.stored ?? 0;
+  const bonus = wallet?.bonus ?? 0;
+  // Bonus boosters are opened once the free stock is empty (the server decides which is spent).
+  const canOpen = stored > 0 || bonus > 0;
   const refill = nextRefillLabel(wallet?.nextRefillAt ?? null, now);
+  const reserve = bonusLabel(bonus);
 
   return (
     <main className={styles.screen}>
@@ -143,6 +149,7 @@ export function BoosterScreen() {
               ))}
             </span>
             {refill !== null && <span className={styles.refill}>{refill}</span>}
+            {reserve !== null && <span className={styles.bonus}>{reserve}</span>}
           </div>
         )}
       </header>
@@ -164,7 +171,7 @@ export function BoosterScreen() {
 
       {phase.name === "sealed" && (
         <div className={styles.center}>
-          <Envelope opening={false} disabled={stored === 0} onOpen={() => void open()} />
+          <Envelope opening={false} disabled={!canOpen} onOpen={() => void open()} />
           {error !== null ? (
             <p className={styles.error} role="alert">
               {error}
@@ -173,7 +180,9 @@ export function BoosterScreen() {
             <p className={styles.hint}>
               {stored > 0
                 ? "Touche le sceau pour ouvrir"
-                : `Plus de pli pour l'instant, ${refill ?? ""}`}
+                : bonus > 0
+                  ? "Touche le sceau pour ouvrir un pli bonus"
+                  : `Plus de pli pour l'instant, ${refill ?? ""}`}
             </p>
           )}
         </div>
@@ -203,7 +212,7 @@ export function BoosterScreen() {
       {phase.name === "recap" && pack !== null && (
         <div className={styles.recap}>
           <h2 className={styles.recapTitle}>Ton pli</h2>
-          <p className={styles.recapLine}>{recapLine(pack.cards, pack.ownedBefore)}</p>
+          <RecapLine pack={pack} />
           <ul className={styles.fan}>
             {pack.cards.map((drawn, index) => (
               <li
@@ -222,10 +231,14 @@ export function BoosterScreen() {
             <button
               type="button"
               className={styles.primary}
-              disabled={stored === 0}
+              disabled={!canOpen}
               onClick={() => void open()}
             >
-              {stored > 0 ? "Ouvrir un autre pli" : `Plus de pli, ${refill ?? ""}`}
+              {stored > 0
+                ? "Ouvrir un autre pli"
+                : bonus > 0
+                  ? "Ouvrir un pli bonus"
+                  : `Plus de pli, ${refill ?? ""}`}
             </button>
             <Link href="/album" className={styles.secondary}>
               Voir mon album
@@ -234,6 +247,21 @@ export function BoosterScreen() {
         </div>
       )}
     </main>
+  );
+}
+
+function RecapLine({ pack }: { readonly pack: Pack }) {
+  const { best, fresh } = recap(pack.cards, pack.ownedBefore);
+  return (
+    <p className={styles.recapLine}>
+      {best !== null && (
+        <>
+          <RarityName rarity={best.rarity} text={best.label} />
+          <span aria-hidden="true">·</span>
+        </>
+      )}
+      <span>{fresh}</span>
+    </p>
   );
 }
 
@@ -334,21 +362,13 @@ function Reveal({
         <span className={styles.position}>
           {position} / {total}
         </span>
+        <span className={styles.revealRarity}>
+          <RarityName rarity={card.rarity} />
+        </span>
         <button type="button" className={styles.next} onClick={onNext}>
           {last ? "Voir mon pli" : "Suivante"}
         </button>
       </div>
     </div>
   );
-}
-
-/** Current time, refreshed every `intervalMs`. 0 until mounted: the clock is read in the browser only. */
-function useNow(intervalMs: number): number {
-  const [now, setNow] = useState(0);
-  useEffect(() => {
-    setNow(Date.now());
-    const timer = setInterval(() => setNow(Date.now()), intervalMs);
-    return () => clearInterval(timer);
-  }, [intervalMs]);
-  return now;
 }

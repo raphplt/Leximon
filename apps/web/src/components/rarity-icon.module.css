@@ -1,0 +1,24 @@
+.icon {
+  display: block;
+  flex-shrink: 0;
+}
+
+.name {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45em;
+  font-family: var(--font-ui), sans-serif;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+/* Sized from the text: 1.6em round, the gem at 1.1em inside. */
+.chip {
+  display: inline-grid;
+  place-items: center;
+  width: 1.6em;
+  height: 1.6em;
+  border-radius: 50%;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.18);
+  font-size: 1em;
+}

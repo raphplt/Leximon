@@ -11,7 +11,7 @@ describe("booster contract", () => {
     const response = {
       openId: "0b5d5a8e-8c5c-4a52-9a43-0f2b7f7d1e10",
       cards: [{ cardId: "galimatias", rarity: "precious" }],
-      wallet: { stored: 4, nextRefillAt: "2026-10-19T12:30:00.000Z" },
+      wallet: { stored: 4, nextRefillAt: "2026-10-19T12:30:00.000Z", bonus: 2 },
     };
     expect(openBoosterResponseSchema.parse(response)).toEqual(response);
   });

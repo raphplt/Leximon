@@ -6,7 +6,7 @@ etymology and the dated history. The XML itself is never redistributed.
 
 import re
 import xml.etree.ElementTree as ET
-from collections.abc import Iterator
+from collections.abc import Iterator, Mapping
 from dataclasses import dataclass, field
 from functools import cache
 from pathlib import Path
@@ -158,8 +158,81 @@ def index(directory: Path = LITTRE_DIR) -> dict[str, tuple[Entry, ...]]:
     return {word: tuple(entries) for word, entries in grouped.items()}
 
 
-def render(entry: Entry, max_citations: int = 12) -> str:
-    """Plain-text rendering given to the drafting model, with numbered citations."""
+#: Words of an etymology that never name the base word.
+NOT_BASE_WORDS = frozenset(
+    [
+        "préfixe",
+        "suffixe",
+        "et",
+        "de",
+        "du",
+        "des",
+        "la",
+        "le",
+        "les",
+        "wallon",
+        "namur",
+        "ital",
+        "lat",
+        "latin",
+        "provenç",
+        "espagn",
+        "portug",
+        "anc",
+        "bas",
+        "berry",
+        "picard",
+        "norm",
+        "génev",
+        "bourguig",
+        "germ",
+        "allem",
+        "angl",
+        "grec",
+        "autre",
+    ]
+)
+#: Shortest stem shared with a base word, for entries without etymology.
+MIN_BASE_STEM = 6
+
+
+def base_entry(entry: Entry, entries: Mapping[str, tuple[Entry, ...]]) -> Entry | None:
+    """The entry of the word this one derives from, so that the drafter does not invent its
+    origin. The Littré names it first in the etymology ("Oculaire.", "Tripe ; wallon…"), after a
+    prefix ("Re..., et cep.") or a cross-reference ("Voy. CHIMIE."); without etymology, it is the
+    longest headword whose stem starts the word (secrétage, from secréter). Words that only
+    translate a foreign source ("Kaftân, mot turc.") are not base words."""
+    word = entry.headword.lower()
+    etymology = entry.etymology.strip().lower()
+    if etymology:
+        tokens = re.findall(r"[a-zàâäçéèêëîïôöûùüÿœæ]+", etymology)
+        if re.match(r"^[a-zàâäçéèêëîïôöûùüÿœæ]+\.{3,}", etymology):
+            after_and = re.search(r"\bet ([a-zàâäçéèêëîïôöûùüÿœæ]+)", etymology)
+            candidate = after_and.group(1) if after_and else None
+        elif etymology.startswith("voy."):
+            candidate = tokens[1] if len(tokens) > 1 else None
+        else:
+            # Only a French word opening the etymology; a Greek source is not a base word.
+            first = re.match(r"[a-zàâäçéèêëîïôöûùüÿœæ]+", etymology)
+            candidate = first.group(0) if first else None
+        if candidate is None or candidate == word or candidate in NOT_BASE_WORDS:
+            return None
+        found = entries.get(candidate)
+        return found[0] if found else None
+    for size in range(len(word) - 1, MIN_BASE_STEM - 1, -1):
+        prefix = word[:size]
+        # Verbs first: a derivative in -age or -ment usually comes from the verb (adoucir).
+        endings = ("er", "ir", "r", "re", "e", "")
+        candidates = [prefix + end for end in endings if prefix + end != word]
+        found = next((c for c in candidates if c in entries), None)
+        if found is not None:
+            return entries[found][0]
+    return None
+
+
+def render(entry: Entry, max_citations: int = 12, base: Entry | None = None) -> str:
+    """Plain-text rendering given to the drafting model, with numbered citations, and the
+    first senses and etymology of the base word when the word derives from another."""
     lines = [f"MOT : {entry.headword}", f"NATURE : {entry.nature}", "", "DÉFINITIONS :"]
     for sense in entry.senses:
         prefix = f"{sense.number}° " if sense.number else "- "
@@ -173,4 +246,9 @@ def render(entry: Entry, max_citations: int = 12) -> str:
         lines += ["", f"ÉTYMOLOGIE : {entry.etymology}"]
     if entry.earliest_century is not None:
         lines += ["", f"PREMIÈRE ATTESTATION DATÉE : {entry.earliest_century}e siècle"]
+    if base is not None:
+        lines += ["", f"MOT DE BASE PROBABLE (autre entrée du Littré) : {base.headword}"]
+        lines += [f"- {sense.definition}" for sense in base.senses[:2]]
+        if base.etymology:
+            lines.append(f"ÉTYMOLOGIE DU MOT DE BASE : {base.etymology}")
     return "\n".join(lines)

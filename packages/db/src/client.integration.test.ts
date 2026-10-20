@@ -20,15 +20,21 @@ describe("database", () => {
       order by c.relname`);
     expect(rows.map((row) => row.name)).toEqual([
       "accounts",
+      "booster_bonus_awards",
       "booster_open_requests",
       "booster_opens",
       "booster_wallets",
       "card_themes",
       "cards",
       "collections",
+      "players",
+      "review_logs",
       "sessions",
       "themes",
+      "trade_items",
+      "trades",
       "user_cards",
+      "user_mastery",
       "users",
       "verifications",
     ]);
