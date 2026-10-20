@@ -2,10 +2,13 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { capitalize } from "@/lib/pack-shape";
+import { usePackShape } from "@/lib/use-pack-shape";
 import styles from "./nav-bar.module.css";
 
 const LINKS = [
-  { href: "/", label: "Plis" },
+  // The pack's own word: « Plis » or « Sachets », depending on the shape the player sees (P53).
+  { href: "/", label: null },
   { href: "/album", label: "Album" },
   { href: "/defis", label: "Défis" },
   { href: "/echanges", label: "Échanges" },
@@ -13,6 +16,7 @@ const LINKS = [
 
 export function NavBar() {
   const pathname = usePathname();
+  const { noun } = usePackShape();
   return (
     <nav className={styles.bar} aria-label="Navigation principale">
       <Link href="/" className={styles.logo} aria-label="Leximon">
@@ -26,7 +30,7 @@ export function NavBar() {
               className={styles.link}
               aria-current={pathname === link.href ? "page" : undefined}
             >
-              {link.label}
+              {link.label ?? capitalize(noun.many)}
             </Link>
           </li>
         ))}

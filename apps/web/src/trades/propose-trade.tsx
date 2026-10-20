@@ -7,6 +7,7 @@ import { type FormEvent, useLayoutEffect, useRef, useState } from "react";
 import { type Catalog, collectionName } from "@/cards/catalog";
 import { Card } from "@/components/card";
 import { createTrade, fetchOwnedCards, fetchTradeable } from "@/lib/api";
+import { usePackShape } from "@/lib/use-pack-shape";
 import { CardRow, cardLabel, catalogCard } from "./card-thumb";
 import {
   formatPlayerCode,
@@ -68,6 +69,7 @@ export function ProposeTrade({
   /** Shows a result in the screen's floating message, which stays in view wherever the player is. */
   readonly notify: (notice: Notice | null) => void;
 }) {
+  const { noun } = usePackShape();
   const [step, setStep] = useState<Step>("code");
   const [codeInput, setCodeInput] = useState("");
   const [partner, setPartner] = useState<Partner | null>(null);
@@ -232,10 +234,11 @@ export function ProposeTrade({
           date exacte est juste au-dessus.
         </p>
         <p className={styles.muted}>
-          En attendant, ouvre des plis pour te faire des doublons : ce sont eux qui s'échangent.
+          En attendant, ouvre des {noun.many} pour te faire des doublons : ce sont eux qui
+          s'échangent.
         </p>
         <Link href="/" className={styles.secondary}>
-          Ouvrir un pli
+          Ouvrir un {noun.one}
         </Link>
       </section>
     );
@@ -302,8 +305,8 @@ export function ProposeTrade({
           />
           {partner.cardIds.length === 0 ? (
             <p className={styles.hint}>
-              Ce joueur n'a pas encore de doublon à échanger. Réessaie quand il aura ouvert quelques
-              plis !
+              Ce joueur n'a pas encore de doublon à échanger. Réessaie quand il aura ouvert quelques{" "}
+              {noun.many} !
             </p>
           ) : (
             <CardPicker
@@ -336,10 +339,10 @@ export function ProposeTrade({
           {mine.length === 0 ? (
             <div className={styles.empty}>
               <p className={styles.hint}>
-                Tu n'as pas encore de doublon échangeable. Ouvre des plis pour t'en faire !
+                Tu n'as pas encore de doublon échangeable. Ouvre des {noun.many} pour t'en faire !
               </p>
               <Link href="/" className={styles.secondary}>
-                Ouvrir un pli
+                Ouvrir un {noun.one}
               </Link>
             </div>
           ) : (

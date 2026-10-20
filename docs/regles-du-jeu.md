@@ -12,10 +12,11 @@
 
 | # | Règle | Raison |
 |---|---|---|
-| N1 | **Aucun hasard payant :** aucun booster ne s'achète, ni directement ni via une monnaie achetée ; aucune monnaie achetable en euros ; aucune carte ne se revend contre de l'argent. | PEGI 16 minimum, régime JONUM réservé aux majeurs, public scolaire visé |
-| N2 | **Ce qui se paie a un contenu connu à l'avance :** abonnement, cosmétiques, decks imprimés, licences écoles. | Idem |
-| N3 | **Échanges carte contre carte**, par offres structurées, sans messagerie libre. | Protéger un public jeune |
+| N1 | **Aucun hasard payant :** aucun booster ne s'achète, ni directement ni via une monnaie achetée ; aucune monnaie achetable en euros ; aucune carte ne se revend contre de l'argent. | Un hasard payant imposerait un PEGI 16 au minimum et le régime JONUM, réservé aux majeurs, alors que le jeu est ouvert dès 15 ans |
+| N2 | **Ce qui se paie a un contenu connu à l'avance :** abonnement, cosmétiques, decks imprimés. Un pli ne fait jamais partie de ce qui se paie (N1). | Idem |
+| N3 | **Échanges carte contre carte**, par offres structurées, sans messagerie libre. | Protéger les joueurs, dont les mineurs de 15 ans et plus |
 | N4 | **Contenu des cartes :** uniquement des sources autorisées (skill `carte-mot`). | Droits |
+| N5 | **Texte écrit par les joueurs** (pseudo, nom de clan, discussion de clan) : filtré à l'envoi, signalable, modéré ; une sanction est motivée et contestable. | DSA, règles de l'App Store et de Google Play |
 
 ## Produit
 
@@ -25,7 +26,7 @@
 | P3 | Plateformes | Web et mobile en parallèle. | Tranché |
 | P5 | Illustrations | Gravures du domaine public, avec un traitement graphique propre. | Tranché |
 | P7 | Nom | Leximon (nom de travail). | Tranché, marque à sécuriser |
-| P8 | Cible | Grand public pour percer, B2B écoles rapidement derrière. | Tranché |
+| P8 | Cible | Grand public (B2C), inscription à partir de 15 ans. Pas de version école prévue. | Tranché le 2026-10-20 (remplace « B2B écoles rapidement derrière ») |
 | P9 | Mot du jour | Écarté : déjà vu partout, dilue le message. | Tranché |
 | P13 | Catalogue | Ambition de 10 000 cartes et plus. Au lancement, 1 000 à 2 000 mots, puis du nouveau contenu chaque semaine. Les expressions viennent après le lancement. | Tranché |
 | P16 | Thèmes | Catégories transverses aux collections (mots loufoques, insultes d'antan…). Une part du catalogue parmi d'autres : le jeu ne tourne pas autour. | Tranché |
@@ -44,6 +45,17 @@
 | P18 | Stock unique | Un seul stock pour toutes les sources : un booster découverte consomme le même stock qu'un booster de collection. | Tranché |
 | P19 | Garanties partagées | Les compteurs Épique et Légendaire comptent tous les boosters du joueur, quelle que soit leur source. | Tranché |
 | P23 | Réserve de plis bonus | Les plis bonus (P29) vont dans une réserve séparée, plafonnée à 10 ; au-delà, ils sont perdus. La réserve ne sert que quand le stock gratuit est vide : un bonus ne bloque jamais la recharge. | Tranché le 2026-10-20 |
+
+## Ouverture des plis
+
+Détail et maquettes : [cahiers-des-charges/ouverture.md](cahiers-des-charges/ouverture.md).
+
+| # | Sujet | Règle | Statut |
+|---|---|---|---|
+| P45 | Mise en scène | L'ouverture est le moment fort du jeu. Le pli se déchire au doigt ; l'annonce d'une carte vient avant sa face, plus longue à mesure que la rareté monte ; à partir de Précieux, le joueur retourne la carte lui-même. Son et vibration l'accompagnent, et se coupent dans les réglages. | Tranché le 2026-10-20 |
+| P46 | Coup d'œil | Glisser la pile en biais montre la tranche des cartes, colorée par rareté. Possible seulement une fois le pli ouvert, le tirage déjà fait : il ne sert jamais à choisir un pli. Jamais expliqué dans l'interface. | Tranché le 2026-10-20 |
+| P47 | Forme du paquet | Deux formes, le pli scellé et le sachet. Pas de test A/B : le propriétaire les essaie et choisit lui-même. En attendant, tous les joueurs voient le pli. | Tranché le 2026-10-20 |
+| P53 | Nom du paquet | Le mot suit la forme : avec le sachet, « sachet » partout (navigation, stock, sachets bonus, défis, échanges, album) ; avec le pli, « pli ». | Tranché le 2026-10-20 |
 
 ## Cartes et rareté
 
@@ -98,6 +110,18 @@ Le catalogue étant public, un tricheur peut trouver les bonnes réponses : ce s
 | P35 | Ce qui s'échange | Seulement les doublons. Une Épique ou une Légendaire attend 7 jours après sa dernière obtention. | Provisoire |
 | P36 | Garde-fous | Compte de plus de 3 jours ; 10 offres envoyées par 24 h glissantes ; une offre expire après 72 h. | Provisoire |
 
+## Progression et social
+
+Détail : [cahiers-des-charges/progression-et-social.md](cahiers-des-charges/progression-et-social.md).
+
+| # | Sujet | Règle | Statut |
+|---|---|---|---|
+| P48 | Niveau de compte | Les actions utiles (plis, mots nouveaux, défis, échanges) rapportent de l'expérience ; chaque niveau donne une récompense que le joueur réclame. Barème et courbe de départ dans le cahier des charges. | Provisoire |
+| P49 | Avatar | Portraits tirés des gravures du domaine public, dont une partie se gagne par les niveaux. Pas de photo envoyée par le joueur. | Tranché le 2026-10-20 |
+| P50 | Clans | Pas de nombre maximum de membres, un seul clan par joueur, nom libre choisi par le chef (N5), discussion texte modérée (N5), bibliothèque commune (la part de chaque collection que possède au moins un membre). | Tranché le 2026-10-20 |
+| P51 | Classements | Pas en v1. Une cote globale Glicko-2 sur les parties entre joueurs ; le Scrabble duplicate comme source d'inspiration (même partie pour tous, classement au pourcentage du meilleur score). | Tranché le 2026-10-20 |
+| P52 | Modes de jeu entre joueurs | Explorés en R&D, plusieurs pistes à prototyper. Aucune mise de cartes sur une partie. | Tranché le 2026-10-20 |
+
 ## Comptes
 
 | # | Sujet | Règle | Statut |
@@ -107,4 +131,12 @@ Le catalogue étant public, un tricheur peut trouver les bonnes réponses : ce s
 
 ## À décider
 
-Rien pour l'instant.
+Options et recommandations dans les cahiers des charges ([ouverture](cahiers-des-charges/ouverture.md#décisions), [progression et social](cahiers-des-charges/progression-et-social.md#décisions)).
+
+- **Numéro de collection sur la carte** (« 040/160 ») : dénominateur fixe annoncé à la publication, ou nombre de cartes publiées ; Légendaires « hors série » numérotées au-delà, ou non.
+- **Sons de l'ouverture :** garder les sons synthétisés, ou passer à des sons de banque.
+- **Forme du paquet :** pli ou sachet, au choix du propriétaire après les avoir essayés (`/?paquet=sachet`).
+- **Plis bonus en récompense de niveau** (dans la réserve P23), ou cosmétiques seulement.
+- **Visibilité par défaut du profil :** public ou privé.
+- **Discussion de clan :** modération automatique par un modèle dès la bêta ou plus tard ; durée de conservation des messages.
+- **Niveau minimum pour les clans** (et pour les échanges, en plus de P36).

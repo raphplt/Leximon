@@ -1,0 +1,74 @@
+/* Same measures as the card face (components/card.module.css): every size is a multiple of --u. */
+.back {
+  position: relative;
+  box-sizing: border-box;
+  width: calc(300 * var(--u));
+  height: calc(420 * var(--u));
+  padding: calc(7 * var(--u));
+  border-radius: calc(16 * var(--u));
+  background: var(--edge);
+  box-shadow: 0 calc(12 * var(--u)) calc(30 * var(--u)) rgba(0, 0, 0, 0.35);
+}
+
+/* The plain kraft edge, fading out to show the rarity color underneath. */
+.back::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: var(--lx-color-kraft);
+  opacity: var(--plain);
+  transition: opacity 0.15s linear;
+}
+
+.inner {
+  position: relative;
+  box-sizing: border-box;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: calc(18 * var(--u));
+  border-radius: calc(10 * var(--u));
+  background:
+    radial-gradient(
+      circle,
+      rgba(255, 255, 255, 0.07) calc(1.2 * var(--u)),
+      transparent calc(1.6 * var(--u))
+    )
+    0 0 / calc(16 * var(--u)) calc(16 * var(--u)),
+    radial-gradient(ellipse at 50% 40%, #3a4268 0%, #1b1f33 75%);
+  overflow: hidden;
+}
+
+.seal {
+  display: grid;
+  place-items: center;
+  width: calc(96 * var(--u));
+  height: calc(96 * var(--u));
+  border-radius: 48% 52% 50% 50%;
+  background: radial-gradient(
+    circle at 36% 32%,
+    var(--lx-color-seal-light) 0%,
+    var(--lx-color-seal) 55%,
+    var(--lx-color-seal-dark) 100%
+  );
+  box-shadow:
+    0 calc(6 * var(--u)) calc(14 * var(--u)) rgba(0, 0, 0, 0.45),
+    inset 0 0 0 calc(8 * var(--u)) rgba(140, 30, 5, 0.35);
+  font-family: var(--font-display), Georgia, serif;
+  font-variation-settings: "SOFT" 100;
+  font-weight: 900;
+  font-size: calc(48 * var(--u));
+  color: var(--lx-color-seal-ink);
+}
+
+.brand {
+  font-family: var(--font-display), Georgia, serif;
+  font-variation-settings: "SOFT" 100;
+  font-weight: 900;
+  font-size: calc(26 * var(--u));
+  letter-spacing: 0.02em;
+  color: var(--lx-color-kraft);
+}

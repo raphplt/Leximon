@@ -10,7 +10,7 @@ Le cœur du jeu tourne de bout en bout sur le web : on ouvre un pli, on révèle
 
 ## État par chantier
 
-Statuts : **Fait**, **En cours**, **À faire**, **À décider** (attend le propriétaire).
+Statuts : **Fait**, **En cours**, **À faire**, **À décider** (attend le propriétaire), **R&D** (pistes à explorer avant de choisir), **Plus tard**.
 
 ### Contenu des cartes
 
@@ -35,6 +35,18 @@ Statuts : **Fait**, **En cours**, **À faire**, **À décider** (attend le propr
 | Échanges carte contre carte | Fait | D-026 : offres directes par code joueur, doublons seulement. Notifications à venir avec la file |
 | Inscription (lien magique, Apple, Google) | À faire | Doit transférer la collection de l'invité vers son compte |
 
+### Progression et social
+
+Arbitrés par le propriétaire le 2026-10-20 : jeu grand public (B2C), pas de version école prévue. Cahier des charges : [progression-et-social.md](cahiers-des-charges/progression-et-social.md).
+
+| Étape | Statut | Détail |
+|---|---|---|
+| Niveau de compte | À faire | XP, paliers et récompenses à réclamer. Barème de départ validé, à calibrer par simulation |
+| Profil public | À faire | Pseudo, avatar gravé, clan, cartes épinglées, statistiques. Public par défaut à confirmer |
+| Clans | À faire | Sans maximum de membres, discussion texte modérée, bibliothèque commune. Après l'inscription et la modération |
+| Modes de jeu entre joueurs | R&D | Plusieurs pistes à prototyper (joute, duplicate, bluff…) |
+| Classements | Plus tard | Pas en v1. Cote globale de type Elo (Glicko-2), modèle du Scrabble duplicate |
+
 ### Interface
 
 | Étape | Statut | Détail |
@@ -45,6 +57,11 @@ Statuts : **Fait**, **En cours**, **À faire**, **À décider** (attend le propr
 | Web : page d'accueil publique et liste d'attente | À faire | Utile avant la bêta, pour les réseaux |
 | Mobile (Expo) | À faire | Les mêmes écrans ; charger les polices demandera une dépendance (`expo-font`) |
 | Animations et reflets | À faire | R&D D-009. En attendant, du CSS simple |
+| Ouverture : peaufinage | En cours | Cahier des charges : [ouverture.md](cahiers-des-charges/ouverture.md). Lots A et B faits sur le web : déchirure au doigt, pile, mise en scène par rareté, sons synthétisés, vibration, récapitulatif, reflets par rareté, sachet. Reste : mobile |
+| Ouverture : forme du paquet | À décider | Pli et sachet faits sur le web, le mot suit la forme (P53). Le propriétaire choisit en les essayant (`/?paquet=sachet`), sans A/B |
+| Ouverture : aperçu en glissant | Fait | Geste bonus jamais expliqué : glisser la pile en biais pour deviner une rare |
+| Reflets et effets holographiques par rareté | Fait (web) | Carte révélée et carte agrandie : inclinaison, reflet, puce et cadre métallisés, paillettes, arc-en-ciel de la Légendaire. Le mobile attend la R&D D-009 |
+| Numéro de collection sur la carte | À décider | Par exemple « 040/160 ». Dénominateur à choisir (taille annoncée ou cartes publiées) |
 
 ### Mise en ligne
 
@@ -60,6 +77,7 @@ Dans l'ordre où elles débloquent le plus :
 
 1. **Gravures : lancement complet** sur les 1 561 cartes (environ 5 $).
 2. **Fournisseur Postgres**, d'après `docs/rnd/postgres.md`. Il débloque la mise en ligne.
+3. **Ouverture, progression et social :** les questions ouvertes de [regles-du-jeu.md](regles-du-jeu.md#à-décider), détaillées dans les [cahiers des charges](cahiers-des-charges/).
 
 ## Prochaines étapes conseillées
 

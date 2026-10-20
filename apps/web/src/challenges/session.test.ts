@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { PACK_NOUNS } from "../lib/pack-shape";
 import {
   bonusLines,
   feedbackLine,
@@ -78,5 +79,8 @@ describe("bonus lines", () => {
     expect(sessionBonusLine([answer(0), answer(0)])).toBeNull();
     expect(sessionBonusLine([answer(1)])).toMatch(/^1 pli bonus gagné,/);
     expect(sessionBonusLine([answer(1), answer(1)])).toMatch(/^2 plis bonus gagnés,/);
+    expect(sessionBonusLine([answer(1)], PACK_NOUNS.sachet)).toBe(
+      "1 sachet bonus gagné, mis de côté pour quand tu n'auras plus de sachet.",
+    );
   });
 });
