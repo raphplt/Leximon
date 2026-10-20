@@ -13,7 +13,7 @@ import {
   takeBooster,
 } from "@leximon/core";
 import { type Database, schema } from "@leximon/db";
-import { and, eq, sql } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { type CardPoolLoader, isEmptyPool } from "./card-pool";
 
 export interface OpenBoosterInput {
@@ -41,9 +41,11 @@ export type OpenBoosterResult =
     }
   | { readonly kind: "stock_empty"; readonly nextRefillAt: EpochMs }
   | { readonly kind: "collection_not_found" }
+  /** The session is a guest archived by a sign-in: the client must use the account's. */
+  | { readonly kind: "guest_archived" }
   | { readonly kind: "catalog_empty" };
 
-const { boosterWallets, boosterOpens, boosterOpenRequests, userCards } = schema;
+const { boosterWallets, boosterOpens, boosterOpenRequests, guestLinks, userCards } = schema;
 
 /**
  * Opens a booster for a player.
@@ -56,7 +58,8 @@ const { boosterWallets, boosterOpens, boosterOpenRequests, userCards } = schema;
  * Lock order: the wallet first, then the copies (as answering a challenge: wallet, then mastery).
  *
  * Latency: each statement is a database round trip, so the open uses as few as possible:
- * BEGIN, lock (and create) the wallet, look up the idempotency key, one combined write, COMMIT.
+ * BEGIN, lock (and create) the wallet, look up the idempotency key (and whether the
+ * guest was archived by a sign-in), one combined write, COMMIT.
  */
 export async function openBooster(
   db: Database,
@@ -87,23 +90,30 @@ export async function openBooster(
       .returning();
 
     // Runs after the lock is granted, as a separate statement: it sees an open committed by a
-    // concurrent request with the same key that held the lock first.
-    const previousRows = await tx
-      .select({ id: boosterOpens.id, cards: boosterOpens.cards })
-      .from(boosterOpenRequests)
-      .innerJoin(
-        boosterOpens,
-        and(
-          eq(boosterOpens.id, boosterOpenRequests.openId),
-          eq(boosterOpens.openedAt, boosterOpenRequests.openedAt),
-        ),
-      )
-      .where(
-        and(
-          eq(boosterOpenRequests.userId, userId),
-          eq(boosterOpenRequests.idempotencyKey, idempotencyKey),
-        ),
-      );
+    // concurrent request with the same key that held the lock first, and a sign-in that archived
+    // this guest meanwhile (D-030).
+    const lookup = await tx.execute<{
+      archived: boolean;
+      previous_id: string | null;
+      previous_cards: DrawnCard[] | null;
+    }>(sql`
+      select
+        exists (select 1 from ${guestLinks} where ${guestLinks.guestId} = ${userId}) as archived,
+        previous.id as previous_id, previous.cards as previous_cards
+      from (select 1) as one
+      left join lateral (
+        select ${boosterOpens.id} as id, ${boosterOpens.cards} as cards
+        from ${boosterOpenRequests}
+        join ${boosterOpens} on ${boosterOpens.id} = ${boosterOpenRequests.openId}
+          and ${boosterOpens.openedAt} = ${boosterOpenRequests.openedAt}
+        where ${boosterOpenRequests.userId} = ${userId}
+          and ${boosterOpenRequests.idempotencyKey} = ${idempotencyKey}
+      ) as previous on true
+    `);
+    const state = lookup.rows[0];
+    if (state === undefined) {
+      throw new Error("Open lookup returned no row");
+    }
 
     const locked = lockedRows[0];
     if (locked === undefined) {
@@ -111,19 +121,24 @@ export async function openBooster(
     }
     const wallet = fromRow(locked);
 
-    const previous = previousRows[0];
-    if (previous !== undefined) {
+    if (state.previous_id !== null && state.previous_cards !== null) {
       const current = computeRefill(wallet, REFILL_SCHEDULE, now);
       return {
         kind: "opened",
-        openId: previous.id,
-        cards: previous.cards,
+        openId: state.previous_id,
+        cards: state.previous_cards,
         wallet: {
           stored: current.stored,
           nextRefillAt: current.nextRefillAt,
           bonus: locked.bonusBoosters,
         },
       };
+    }
+
+    // A guest whose game went to an account: its old session must not draw anything more. Rolls
+    // back the wallet if this request just created it.
+    if (state.archived) {
+      return { kind: "guest_archived" };
     }
 
     const consumed = takeBooster(wallet, locked.bonusBoosters, REFILL_SCHEDULE, now);

@@ -115,8 +115,8 @@ export function AlbumScreen() {
             </div>
             {found === 0 && (
               <p className={styles.hint}>
-                Ton album est vide. <Link href="/">Ouvre ton premier {noun.one}</Link> pour trouver
-                tes premiers mots.
+                Ton album est vide. <Link href="/jouer">Ouvre ton premier {noun.one}</Link> pour
+                trouver tes premiers mots.
               </p>
             )}
             <ul className={styles.grid}>

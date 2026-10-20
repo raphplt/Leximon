@@ -33,7 +33,7 @@ Statuts : **Fait**, **En cours**, **À faire**, **À décider** (attend le propr
 | Défis et niveaux de maîtrise | Fait | D-025 : FSRS (ts-fsrs), QCM, `GET /challenges`, `POST /challenges/answer`, `GET /me/mastery` |
 | Plis bonus des défis | Fait | D-027, règles P23 et P29 : défi du jour et Dorure, réserve plafonnée à 10 |
 | Échanges carte contre carte | Fait | D-026 : offres directes par code joueur, doublons seulement. Notifications à venir avec la file |
-| Inscription (lien magique, Apple, Google) | À faire | Doit transférer la collection de l'invité vers son compte |
+| Inscription par code e-mail | En cours | D-030, P37, P54 : code à 6 chiffres, transfert de la partie invitée vers un nouveau compte, abandon après avertissement vers un compte qui joue déjà (`guest_links`), écran `/compte`. Reste : choisir le fournisseur d'e-mails (aucun envoi hors dev d'ici là), Apple et Google |
 
 ### Progression et social
 
@@ -54,11 +54,11 @@ Arbitrés par le propriétaire le 2026-10-20 : jeu grand public (B2C), pas de ve
 | Direction artistique et tokens | Fait | D-022 « Planche populaire », `packages/tokens` |
 | Web : ouverture du pli, album | Fait | Sur le catalogue publié |
 | Web : défis, échanges | Fait | `/defis`, `/echanges` ; niveau de maîtrise dans l'album |
-| Web : page d'accueil publique et liste d'attente | À faire | Utile avant la bêta, pour les réseaux |
+| Web : page d'accueil publique et liste d'attente | Fait | P55 : accueil sur `/`, le jeu passe sous `/jouer`. La liste d'attente garde l'adresse seule (`POST /waitlist`, table `waitlist_signups`). Reste : l'image de partage pour les réseaux, et l'e-mail d'ouverture avec le fournisseur d'e-mails |
 | Mobile (Expo) | À faire | Les mêmes écrans ; charger les polices demandera une dépendance (`expo-font`) |
 | Animations et reflets | À faire | R&D D-009. En attendant, du CSS simple |
 | Ouverture : peaufinage | En cours | Cahier des charges : [ouverture.md](cahiers-des-charges/ouverture.md). Lots A et B faits sur le web : déchirure au doigt, pile, mise en scène par rareté, sons synthétisés, vibration, récapitulatif, reflets par rareté, sachet. Reste : mobile |
-| Ouverture : forme du paquet | À décider | Pli et sachet faits sur le web, le mot suit la forme (P53). Le propriétaire choisit en les essayant (`/?paquet=sachet`), sans A/B |
+| Ouverture : forme du paquet | À décider | Pli et sachet faits sur le web, le mot suit la forme (P53). Le propriétaire choisit en les essayant (`/jouer?paquet=sachet`), sans A/B |
 | Ouverture : aperçu en glissant | Fait | Geste bonus jamais expliqué : glisser la pile en biais pour deviner une rare |
 | Reflets et effets holographiques par rareté | Fait (web) | Carte révélée et carte agrandie : inclinaison, reflet, puce et cadre métallisés, paillettes, arc-en-ciel de la Légendaire. Le mobile attend la R&D D-009 |
 | Numéro de collection sur la carte | À décider | Par exemple « 040/160 ». Dénominateur à choisir (taille annoncée ou cartes publiées) |
@@ -69,7 +69,7 @@ Arbitrés par le propriétaire le 2026-10-20 : jeu grand public (B2C), pas de ve
 |---|---|---|
 | Hébergement de production | À décider | Cloudflare est choisi (D-005, D-015). Fournisseur Postgres : R&D faite (`docs/rnd/postgres.md`), recommandation Neon gratuit pour la bêta puis OVHcloud Paris. Hyperdrive de production à créer sans cache |
 | Test de charge, observabilité, pages légales | À faire | Avant d'ouvrir la bêta |
-| Marque, domaines, comptes réseaux | À faire | Côté propriétaire (north star § 12) |
+| Marque, domaines, comptes réseaux | En cours | Domaine leximon.fr (OVH, DNS chez Cloudflare, renouvellement automatique à activer), contact@leximon.fr routé par Cloudflare. Marque : dépôt INPI repoussé (P7). Comptes réseaux à faire |
 
 ## Ce qui attend ta décision
 
@@ -81,7 +81,6 @@ Dans l'ordre où elles débloquent le plus :
 
 ## Prochaines étapes conseillées
 
-1. Gravures : lancer la recherche sur tout le catalogue, puis valider les choix.
-2. Inscription (lien magique, Apple, Google) avec transfert de la collection de l'invité.
-3. Page d'accueil publique et liste d'attente.
-4. Mobile, puis mise en ligne et test de charge.
+1. Gravures : finir la recherche sur tout le catalogue, puis valider les choix.
+2. Inscription : choisir le fournisseur d'e-mails (il sert aussi à l'e-mail d'ouverture de la liste d'attente), puis Apple et Google.
+3. Mobile, puis mise en ligne et test de charge.

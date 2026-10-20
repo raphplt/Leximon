@@ -18,7 +18,7 @@
 .links {
   display: flex;
   gap: 6px;
-  margin: 0;
+  margin: 0 0 0 auto;
   padding: 0;
   list-style: none;
 }
@@ -35,7 +35,19 @@
   color: var(--lx-color-text-muted);
 }
 
-.link[aria-current="page"] {
+.account {
+  flex-shrink: 0;
+  display: inline-grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  margin-left: 6px;
+  border-radius: 50%;
+  color: var(--lx-color-text-muted);
+}
+
+.link[aria-current="page"],
+.account[aria-current="page"] {
   background: var(--lx-color-text);
   color: var(--lx-color-background);
 }
@@ -57,5 +69,11 @@
   .link {
     padding: 0 10px;
     font-size: 14px;
+  }
+
+  .account {
+    width: 36px;
+    height: 36px;
+    margin-left: 2px;
   }
 }

@@ -1,7 +1,6 @@
 import { cssRootRule } from "@leximon/tokens";
 import type { Metadata, Viewport } from "next";
 import { Bricolage_Grotesque, Fraunces, Newsreader } from "next/font/google";
-import { NavBar } from "@/components/nav-bar";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -32,10 +31,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <head>
         <style>{cssRootRule()}</style>
       </head>
-      <body>
-        <NavBar />
-        {children}
-      </body>
+      <body>{children}</body>
     </html>
   );
 }

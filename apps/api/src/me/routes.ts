@@ -1,4 +1,5 @@
 import {
+  type AccountResponse,
   type BoosterWalletResponse,
   type MasteryResponse,
   type OwnedCardsResponse,
@@ -118,6 +119,19 @@ export function meRoutes() {
       playerCode: player.code,
       cardIds: await listTradeableCards(c.var.db, player.userId, now),
     });
+  });
+
+  /** Who is playing: a guest, or a member signed in with their address. */
+  routes.get("/account", async (c) => {
+    const session = await c.var.auth.api.getSession({ headers: c.req.raw.headers });
+    if (session === null) {
+      return c.json({ error: "unauthorized" }, 401);
+    }
+    return c.json<AccountResponse>(
+      session.user.isAnonymous === true
+        ? { kind: "guest" }
+        : { kind: "member", email: session.user.email },
+    );
   });
 
   /** The level of every word reviewed at least once (D-025). */

@@ -27,6 +27,7 @@ describe("database", () => {
       "card_themes",
       "cards",
       "collections",
+      "guest_links",
       "players",
       "review_logs",
       "sessions",
@@ -37,6 +38,7 @@ describe("database", () => {
       "user_mastery",
       "users",
       "verifications",
+      "waitlist_signups",
     ]);
   });
 });

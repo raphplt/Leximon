@@ -1,0 +1,306 @@
+.page {
+  box-sizing: border-box;
+  max-width: 1040px;
+  min-height: 100dvh;
+  margin: 0 auto;
+  padding: 0 16px;
+  display: flex;
+  flex-direction: column;
+}
+
+.top {
+  padding: 18px 0 8px;
+}
+
+.logo {
+  font-family: var(--font-display), Georgia, serif;
+  font-variation-settings: "SOFT" 100;
+  font-weight: 900;
+  font-size: 26px;
+}
+
+/* --- Hero ----------------------------------------------------------------------------- */
+
+.hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  align-items: center;
+  gap: 40px;
+  padding: 40px 0 56px;
+}
+
+.pitch {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.kicker {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--lx-color-accent);
+}
+
+.title {
+  margin: 0;
+  font-family: var(--font-display), Georgia, serif;
+  font-variation-settings: "SOFT" 100;
+  font-weight: 900;
+  font-size: clamp(36px, 6vw, 56px);
+  line-height: 1.02;
+  text-wrap: balance;
+}
+
+.lead {
+  margin: 0;
+  font-family: var(--font-text), Georgia, serif;
+  font-size: 20px;
+  line-height: 1.45;
+  color: var(--lx-color-text-muted);
+  text-wrap: pretty;
+}
+
+/* --- Waiting list --------------------------------------------------------------------- */
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.label {
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.fields {
+  display: flex;
+  gap: 8px;
+}
+
+.input {
+  box-sizing: border-box;
+  flex: 1;
+  min-width: 0;
+  min-height: 56px;
+  padding: 0 18px;
+  border: 2px solid var(--lx-color-outline);
+  border-radius: var(--lx-radius-pill);
+  background: var(--lx-color-background);
+  color: var(--lx-color-text);
+  font: inherit;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.input:focus-visible {
+  border-color: var(--lx-color-focus);
+  outline: none;
+}
+
+.primary {
+  flex-shrink: 0;
+  min-height: 56px;
+  padding: 0 24px;
+  border: none;
+  border-radius: var(--lx-radius-pill);
+  background: var(--lx-color-accent);
+  box-shadow: 0 4px 0 var(--lx-color-accent-shadow);
+  color: var(--lx-color-accent-ink);
+  font: inherit;
+  font-size: 17px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.primary:disabled {
+  cursor: default;
+  background: var(--lx-color-outline);
+  box-shadow: none;
+  color: var(--lx-color-text);
+}
+
+.error {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--lx-color-accent);
+}
+
+.error:empty {
+  display: none;
+}
+
+.note {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.45;
+  color: var(--lx-color-text-muted);
+}
+
+.joined {
+  margin: 8px 0 0;
+  padding: 16px 18px;
+  border-radius: var(--lx-radius-card);
+  background: var(--lx-color-background-raised);
+  box-shadow: 0 4px 0 rgba(0, 0, 0, 0.25);
+  font-size: 17px;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+/* --- Showcase ------------------------------------------------------------------------- */
+
+.showcase {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+
+.fan {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 16px 0 24px;
+}
+
+.fanSlot {
+  flex-shrink: 0;
+  transform-origin: 50% 110%;
+}
+
+.fanSlot[data-slot="-1"] {
+  margin-right: -72px;
+  transform: rotate(-9deg) translateY(14px);
+}
+
+.fanSlot[data-slot="0"] {
+  position: relative;
+  z-index: 1;
+}
+
+.fanSlot[data-slot="1"] {
+  margin-left: -72px;
+  transform: rotate(9deg) translateY(14px);
+}
+
+/* Holds the room of the fan while the catalogue loads: the page does not jump. */
+.fanPlaceholder {
+  height: 330px;
+}
+
+.credits {
+  max-width: 420px;
+  font-size: 11px;
+  line-height: 1.4;
+  text-align: center;
+  color: var(--lx-color-text-muted);
+}
+
+/* --- Steps ---------------------------------------------------------------------------- */
+
+.steps {
+  padding: 8px 0 56px;
+}
+
+.subtitle {
+  margin: 0 0 20px;
+  font-family: var(--font-display), Georgia, serif;
+  font-variation-settings: "SOFT" 100;
+  font-weight: 900;
+  font-size: 30px;
+}
+
+.stepList {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.step {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 18px;
+  border-radius: var(--lx-radius-card);
+  background: var(--lx-color-background-raised);
+  box-shadow: 0 4px 0 rgba(0, 0, 0, 0.25);
+}
+
+.stepNumber {
+  display: inline-grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--lx-color-accent);
+  color: var(--lx-color-accent-ink);
+  font-family: var(--font-display), Georgia, serif;
+  font-weight: 900;
+  font-size: 19px;
+}
+
+.stepTitle {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 800;
+}
+
+.stepText {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 1.45;
+  color: var(--lx-color-text-muted);
+}
+
+.footer {
+  margin-top: auto;
+  padding: 24px 0 32px;
+  border-top: 1px solid var(--lx-color-outline);
+  font-size: 14px;
+  color: var(--lx-color-text-muted);
+}
+
+.footer p {
+  margin: 0;
+}
+
+/* --- Narrower screens ----------------------------------------------------------------- */
+
+@media (max-width: 860px) {
+  .hero {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 24px;
+    padding: 24px 0 40px;
+  }
+
+  .stepList {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 480px) {
+  .fields {
+    flex-direction: column;
+  }
+
+  .stepList {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  /* Three cards of 168 + 196 px only fit a phone squeezed together. */
+  .fan {
+    zoom: 0.72;
+  }
+}

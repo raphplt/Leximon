@@ -169,7 +169,7 @@ function Empty({ nextDueAt }: { readonly nextDueAt: string | null }) {
       {nextDueAt === null ? (
         <>
           <p className={styles.hint}>Ouvre des {noun.many} : chaque mot gagné devient un défi.</p>
-          <Link href="/" className={styles.primary}>
+          <Link href="/jouer" className={styles.primary}>
             Ouvrir un {noun.one}
           </Link>
         </>
@@ -178,7 +178,7 @@ function Empty({ nextDueAt }: { readonly nextDueAt: string | null }) {
           <p className={styles.hint}>
             Tu as révisé tous tes mots. Le prochain revient {when ?? "bientôt"}.
           </p>
-          <Link href="/" className={styles.secondary}>
+          <Link href="/jouer" className={styles.secondary}>
             Ouvrir un {noun.one} en attendant
           </Link>
         </>

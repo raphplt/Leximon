@@ -25,11 +25,12 @@
 | P1 | Positionnement | Jeu de collection qui fait apprendre. Le tirage et la collection restent forts. Pas une app d'apprentissage façon Duolingo. | Tranché |
 | P3 | Plateformes | Web et mobile en parallèle. | Tranché |
 | P5 | Illustrations | Gravures du domaine public, avec un traitement graphique propre. | Tranché |
-| P7 | Nom | Leximon (nom de travail). | Tranché, marque à sécuriser |
+| P7 | Nom | Leximon, domaine leximon.fr (contact@leximon.fr). Libre à l'INPI et à l'EUIPO au 2026-10-20 ; « LEXICON » est enregistrée en France pour les jeux (classes 16 et 28) et « LEXIMON » est déposée en Thaïlande. Dépôt INPI (classes 9, 28, 41) dès que le projet montre de la traction, avant toute communication large. | Tranché le 2026-10-20, marque à déposer |
 | P8 | Cible | Grand public (B2C), inscription à partir de 15 ans. Pas de version école prévue. | Tranché le 2026-10-20 (remplace « B2B écoles rapidement derrière ») |
 | P9 | Mot du jour | Écarté : déjà vu partout, dilue le message. | Tranché |
 | P13 | Catalogue | Ambition de 10 000 cartes et plus. Au lancement, 1 000 à 2 000 mots, puis du nouveau contenu chaque semaine. Les expressions viennent après le lancement. | Tranché |
 | P16 | Thèmes | Catégories transverses aux collections (mots loufoques, insultes d'antan…). Une part du catalogue parmi d'autres : le jeu ne tourne pas autour. | Tranché |
+| P55 | Liste d'attente | Avant la bêta, l'accueil public (`leximon.fr`) ne demande qu'une adresse e-mail, pour prévenir de l'ouverture. Rien d'autre n'est promis : ni pseudo réservé, ni carte offerte, ni parrainage. Un seul e-mail envoyé, celui de l'ouverture, puis l'adresse est effacée. | Tranché le 2026-10-20 |
 
 ## Boosters (plis)
 
@@ -126,8 +127,9 @@ Détail : [cahiers-des-charges/progression-et-social.md](cahiers-des-charges/pro
 
 | # | Sujet | Règle | Statut |
 |---|---|---|---|
-| P37 | Compte invité | On joue sans inscription. L'inscription (lien magique, Apple, Google) transférera la collection de l'invité. | Tranché |
+| P37 | Compte invité | On joue sans inscription. L'inscription (code à 6 chiffres reçu par e-mail, Apple, Google) transfère tout ce que l'invité possède au nouveau compte, y compris portefeuille, plis bonus, garanties et ancienneté. | Tranché, code plutôt que lien le 2026-10-20 |
 | P38 | Limites | 60 créations de compte invité par minute et par adresse IP (une classe derrière une même adresse) ; 120 requêtes par minute par joueur (D-018). | Provisoire |
+| P54 | Invité qui se connecte à un compte existant | Rien n'est fusionné : seul un nouveau compte reçoit la progression d'un invité (P37). Si le compte joue déjà, l'invité est abandonné (archivé, jamais supprimé) et le compte garde son jeu tel quel. Quand l'invité possède au moins une carte ou la maîtrise d'un mot, le joueur est d'abord averti du nombre de cartes perdues et doit confirmer ; il peut aussi annuler et rester invité. Un invité vide se connecte sans avertissement. Les offres en attente de l'invité sont annulées. | Tranché le 2026-10-20, remplace la fusion bornée |
 
 ## À décider
 
@@ -135,7 +137,7 @@ Options et recommandations dans les cahiers des charges ([ouverture](cahiers-des
 
 - **Numéro de collection sur la carte** (« 040/160 ») : dénominateur fixe annoncé à la publication, ou nombre de cartes publiées ; Légendaires « hors série » numérotées au-delà, ou non.
 - **Sons de l'ouverture :** garder les sons synthétisés, ou passer à des sons de banque.
-- **Forme du paquet :** pli ou sachet, au choix du propriétaire après les avoir essayés (`/?paquet=sachet`).
+- **Forme du paquet :** pli ou sachet, au choix du propriétaire après les avoir essayés (`/jouer?paquet=sachet`).
 - **Plis bonus en récompense de niveau** (dans la réserve P23), ou cosmétiques seulement.
 - **Visibilité par défaut du profil :** public ou privé.
 - **Discussion de clan :** modération automatique par un modèle dès la bêta ou plus tard ; durée de conservation des messages.

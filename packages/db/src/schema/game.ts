@@ -1,6 +1,7 @@
 import {
   BONUS_KINDS,
   CHALLENGE_FORMATS,
+  type GuestLinkOutcome,
   MASTERY_LEVELS,
   type PityCounters,
   RARITIES,
@@ -36,6 +37,10 @@ export const tradeStatus = pgEnum("trade_status", [
   "declined",
   "cancelled",
 ]);
+export const guestLinkOutcome = pgEnum("guest_link_outcome", [
+  "transfer",
+  "abandon",
+] as const satisfies readonly GuestLinkOutcome[]);
 /** Side of a trade item, seen from the proposer: cards given, cards wanted in return. */
 export const tradeSide = pgEnum("trade_side", ["give", "want"]);
 
@@ -350,4 +355,34 @@ export const tradeItems = pgTable(
       .references(() => cards.id),
   },
   (table) => [primaryKey({ columns: [table.tradeId, table.side, table.cardId] })],
+);
+
+/**
+ * Guests archived by a sign-in (P37, P54): the guest is never deleted, its game moved to a new
+ * account (transfer) or left behind when the account already plays (abandon). One row per guest:
+ * a guest links once, so a retried sign-in finds the row and does nothing. Also the audit of
+ * sign-ins from a guest.
+ */
+export const guestLinks = pgTable(
+  "guest_links",
+  {
+    guestId: text()
+      .primaryKey()
+      .references(() => users.id, { onDelete: "cascade" }),
+    accountId: text()
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    outcome: guestLinkOutcome().notNull(),
+    /** Copies the guest owned when it was linked. */
+    cards: integer().notNull(),
+    /** Words the guest had a mastery of when it was linked. */
+    words: integer().notNull(),
+    linkedAt: timestamp({ withTimezone: true }).notNull(),
+  },
+  (table) => [
+    // For the cascade when an account is deleted, like every other reference to users.id.
+    index("guest_links_account_idx").on(table.accountId),
+    check("guest_links_not_self_check", sql`${table.guestId} <> ${table.accountId}`),
+    check("guest_links_counts_check", sql`${table.cards} >= 0 and ${table.words} >= 0`),
+  ],
 );

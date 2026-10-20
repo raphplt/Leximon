@@ -5,6 +5,7 @@ import { RARITIES } from "@leximon/core";
 import { type Database, schema } from "@leximon/db";
 import { eq, sql } from "drizzle-orm";
 import { expect } from "vitest";
+import type { EmailSender, EmailSenderFactory } from "./account/email-sender";
 import type { createApp } from "./app";
 import { TEST_ORIGIN } from "./test-env";
 
@@ -107,4 +108,102 @@ export async function setOwnedCards(
         lastObtainedAt: sql`excluded.last_obtained_at`,
       },
     });
+}
+
+/** Keeps the sign-in codes "sent" by the API, by address. */
+export function createOutbox() {
+  const codes = new Map<string, string>();
+  const sender: EmailSender = {
+    async sendSignInCode({ to, code }) {
+      codes.set(to, code);
+    },
+  };
+  const emailSender: EmailSenderFactory = () => sender;
+  return {
+    emailSender,
+    codeFor(email: string): string {
+      const code = codes.get(email);
+      if (code === undefined) throw new Error(`No code sent to ${email}`);
+      return code;
+    },
+  };
+}
+
+type App = ReturnType<typeof createApp>;
+
+function authHeaders(cookie: string | null): Record<string, string> {
+  const headers: Record<string, string> = {
+    origin: TEST_ORIGIN,
+    "content-type": "application/json",
+  };
+  if (cookie !== null) headers["cookie"] = cookie;
+  return headers;
+}
+
+export function requestCode(app: App, env: Env, email: string, cookie: string | null = null) {
+  return app.request(
+    "/api/auth/email-otp/send-verification-otp",
+    {
+      method: "POST",
+      headers: authHeaders(cookie),
+      body: JSON.stringify({ email, type: "sign-in" }),
+    },
+    env,
+  );
+}
+
+export function previewLink(
+  app: App,
+  env: Env,
+  input: { email: string; code: string; cookie: string | null },
+) {
+  return app.request(
+    "/account/link-preview",
+    {
+      method: "POST",
+      headers: authHeaders(input.cookie),
+      body: JSON.stringify({ email: input.email, code: input.code }),
+    },
+    env,
+  );
+}
+
+export function signInWithCode(
+  app: App,
+  env: Env,
+  input: {
+    email: string;
+    code: string;
+    cookie: string | null;
+    ageConfirmed?: boolean;
+    acceptGuestLoss?: boolean;
+  },
+) {
+  const { cookie, code, ...rest } = input;
+  return app.request(
+    "/api/auth/sign-in/email-otp",
+    { method: "POST", headers: authHeaders(cookie), body: JSON.stringify({ ...rest, otp: code }) },
+    env,
+  );
+}
+
+/**
+ * The cookies a browser holds after this response: each `Set-Cookie` applied in order, an expired
+ * one removing the cookie, as a browser does.
+ */
+export function applySetCookies(cookie: string, response: Response): string {
+  const jar = new Map<string, string>();
+  for (const pair of cookie.split(";")) {
+    const [name, ...value] = pair.trim().split("=");
+    if (name) jar.set(name, value.join("="));
+  }
+  for (const header of response.headers.getSetCookie()) {
+    const [pair = "", ...attributes] = header.split(";");
+    const [name, ...value] = pair.trim().split("=");
+    if (!name) continue;
+    const expired = attributes.some((attribute) => /^\s*max-age=0\s*$/i.test(attribute));
+    if (expired) jar.delete(name);
+    else jar.set(name, value.join("="));
+  }
+  return [...jar].map(([name, value]) => `${name}=${value}`).join("; ");
 }

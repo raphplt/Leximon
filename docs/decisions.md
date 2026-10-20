@@ -44,7 +44,7 @@ Pour ajouter ou modifier une décision, utiliser le skill `decision`.
 
 ## D-006 · Comptes : Better Auth, hébergé chez nous
 
-- **Statut :** Acceptée (2026-10-18)
+- **Statut :** Acceptée (2026-10-18). Le lien magique est remplacé par un code par e-mail (D-030).
 - **Choix :** Better Auth avec :
   - compte invité (on joue avant de s'inscrire) ;
   - lien magique par e-mail ;
@@ -296,3 +296,10 @@ Pour ajouter ou modifier une décision, utiliser le skill `decision`.
 - **Choix :** six gemmes de plus en plus taillées, de l'éclat brut (Courant) à l'étoile (Légendaire), dessinées en tracés SVG sur une grille de 24 dans `packages/tokens/src/rarity-icons.ts`. Sur la carte, une pastille ronde aux couleurs de la rareté porte l'icône seule ; l'interface affiche l'icône suivie du nom (`RarityName`).
 - **Pourquoi :** la silhouette seule distingue les rangs jusqu'à 10 px ; des tracés bruts se dessinent à l'identique sur le web (`<svg>`) et sur mobile (react-native-svg).
 - **Conséquences :** remplace les pastilles à points de D-022. Le nom de la rareté reste le libellé accessible de la pastille.
+
+## D-030 · Inscription : code par e-mail, transfert de l'invité dans notre transaction
+
+- **Statut :** Acceptée (2026-10-20), après la R&D ([docs/rnd/inscription.md](rnd/inscription.md)). Règles P37 et P54. Fournisseur d'envoi des e-mails : à décider (recommandation : Scaleway).
+- **Choix :** plugin `emailOTP` de Better Auth (code à 6 chiffres) plutôt que `magicLink`, à côté de `anonymous`, Apple et Google. Le sort de l'invité (transfert vers un nouveau compte, abandon vers un compte qui joue déjà, P54) se règle dans `onLinkAccount`, dans une transaction à nous, avec `disableDeleteAnonymousUser: true` : l'invité est archivé, jamais supprimé, et chaque connexion depuis un invité est journalisée dans `guest_links`.
+- **Pourquoi :** un lien ouvert sur un autre appareil, ou consommé par l'antivirus d'une messagerie, crée un compte vide et perd l'invité ; un code marche partout. Toutes les tables de jeu sont en cascade sur `users.id` : la suppression par défaut de l'invité effacerait ses cartes et l'historique des échanges des autres joueurs.
+- **Conséquences :** changement additif, l'invité actuel continue de marcher. Un test liste toutes les clés étrangères vers `users.id` et échoue si l'une n'est pas traitée par le transfert. L'envoi des codes a ses propres limites de débit (D-018).

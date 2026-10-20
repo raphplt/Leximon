@@ -237,7 +237,7 @@ export function ProposeTrade({
           En attendant, ouvre des {noun.many} pour te faire des doublons : ce sont eux qui
           s'échangent.
         </p>
-        <Link href="/" className={styles.secondary}>
+        <Link href="/jouer" className={styles.secondary}>
           Ouvrir un {noun.one}
         </Link>
       </section>
@@ -341,7 +341,7 @@ export function ProposeTrade({
               <p className={styles.hint}>
                 Tu n'as pas encore de doublon échangeable. Ouvre des {noun.many} pour t'en faire !
               </p>
-              <Link href="/" className={styles.secondary}>
+              <Link href="/jouer" className={styles.secondary}>
                 Ouvrir un {noun.one}
               </Link>
             </div>
