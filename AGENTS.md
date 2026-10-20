@@ -48,6 +48,7 @@ Les sources téléchargées vivent dans `content/pipeline/data/` (ignoré par gi
 | `docs/feuille-de-route.md` | Vue d'ensemble : état de chaque chantier, décisions en attente, prochaines étapes | Oui |
 | `docs/decisions.md` | Décisions techniques : choix, statut, conséquences | Oui |
 | `docs/rnd/` | Rapports des spikes de R&D | Oui |
+| `docs/cahiers-des-charges/` | Spécifications fonctionnelles d'un chantier, avant sa réalisation | Oui |
 | `docs/north-star.md` | Vision produit, marché, monétisation, lancement | Non (local, peut être absent) |
 | `docs/architecture.md` | Architecture détaillée, charge visée, modèle de données | Non (local, peut être absent) |
 

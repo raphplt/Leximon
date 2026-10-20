@@ -36,7 +36,7 @@ Statuts : **Fait**, **En cours**, **À faire**, **À décider** (attend le propr
 
 ### Progression et social
 
-Besoins notés par le propriétaire le 2026-10-20, à étudier avant de les planifier.
+Besoins notés par le propriétaire le 2026-10-20. Cahier des charges : [progression-et-social.md](cahiers-des-charges/progression-et-social.md).
 
 | Étape | Statut | Détail |
 |---|---|---|
@@ -56,7 +56,7 @@ Besoins notés par le propriétaire le 2026-10-20, à étudier avant de les plan
 | Web : page d'accueil publique et liste d'attente | À faire | Utile avant la bêta, pour les réseaux |
 | Mobile (Expo) | À faire | Les mêmes écrans ; charger les polices demandera une dépendance (`expo-font`) |
 | Animations et reflets | À faire | R&D D-009. En attendant, du CSS simple |
-| Ouverture : peaufinage | À étudier | Priorité du propriétaire (2026-10-20) : l'ouverture doit être le moment le plus jouissif du jeu. Référence : Pokémon TCG Pocket et ses petits détails. Animations plus travaillées, carte rare vraiment mise en avant |
+| Ouverture : peaufinage | À étudier | Cahier des charges : [ouverture.md](cahiers-des-charges/ouverture.md). Priorité du propriétaire (2026-10-20) : l'ouverture doit être le moment le plus jouissif du jeu. Référence : Pokémon TCG Pocket et ses petits détails. Animations plus travaillées, carte rare vraiment mise en avant |
 | Ouverture : forme du paquet | À étudier | Le pli ne satisfait pas pleinement le propriétaire. Essayer une forme de booster plus classique et départager par test A/B |
 | Ouverture : aperçu en glissant | À étudier | Glisser le paquet pour le voir en biais et deviner s'il contient une rare |
 | Reflets et effets holographiques par rareté | À étudier | Chaque rareté a son traitement visuel. Lié à la R&D D-009 |
