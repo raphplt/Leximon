@@ -58,6 +58,7 @@ Pour ajouter ou modifier une décision, utiliser le skill `decision`.
 - **Statut :** Acceptée pour le MVP · R&D en cours pour la suite
 - **Choix MVP :** les échanges sont asynchrones. Une offre est créée, l'autre joueur reçoit une notification push, l'app se rafraîchit à l'ouverture. Pas de WebSockets au lancement.
 - **R&D :** trouver une solution WebSockets qui tient les pics (40 000 connectés), pour les duels et peut-être les échanges en direct. Pistes : Durable Objects, service dédié. Rapport attendu dans `docs/rnd/` (skill `spike`).
+- **Discussion de clan (ajout du 2026-10-20) :** évaluer aussi le temps réel pour la discussion des clans, hors du chemin critique : un Durable Object par clan avec hibernation des connexions, coût, tenue des pics, repli par interrogation périodique. Besoin décrit dans [progression-et-social.md](cahiers-des-charges/progression-et-social.md).
 - **Pourquoi :** le temps réel est ce qui a fait laguer WikiMasters au pic. On le garde hors du chemin critique tant qu'il n'est pas prouvé.
 
 ## D-008 · Outil éditorial : Directus

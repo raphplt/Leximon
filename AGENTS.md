@@ -60,9 +60,11 @@ Les sources téléchargées vivent dans `content/pipeline/data/` (ignoré par gi
   - aucun booster ne s'achète, ni directement ni via une monnaie achetée ;
   - aucune monnaie achetable en euros ;
   - aucune carte ne se revend contre de l'argent.
-  - Raisons : PEGI 16 minimum, régime JONUM réservé aux majeurs, public scolaire visé.
-- **Ce qui se paie a un contenu connu à l'avance :** abonnement, cosmétiques, decks imprimés, licences écoles.
+  - Raisons : un hasard payant imposerait un PEGI 16 au minimum et le régime JONUM, réservé aux majeurs, alors que le jeu est ouvert dès 15 ans.
+- **Public :** jeu grand public (B2C), inscription à partir de 15 ans. Pas de version école prévue.
+- **Ce qui se paie a un contenu connu à l'avance :** abonnement, cosmétiques, decks imprimés.
 - **Échanges carte contre carte**, par offres structurées, sans messagerie libre.
+- **Texte écrit par les joueurs** (pseudo, nom de clan, discussion de clan) : filtré à l'envoi, signalable, modéré, comme l'exigent le DSA et les stores.
 - **Contenu des cartes :** uniquement des sources autorisées. Voir le skill `carte-mot`.
 
 ## Règles d'architecture

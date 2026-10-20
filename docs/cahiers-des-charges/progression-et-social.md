@@ -11,7 +11,7 @@
 Conséquences :
 - un social complet est possible : discussion de clan, noms libres, profils publics ;
 - **en échange, la modération devient une fonctionnalité à part entière** (voir Clans), exigée par la loi (DSA) et par les stores ;
-- **âge minimum à l'inscription**, à fixer (voir les décisions) ;
+- **inscription à partir de 15 ans** (décision du propriétaire) : en France, c'est l'âge à partir duquel un joueur consent seul au traitement de ses données ;
 - **la règle « aucun hasard payant » reste entière.** Un pli gagné par la progression est gratuit. Si un passe de saison payant voit le jour, il ne contient que des cosmétiques, jamais de pli.
 
 ## Règles communes
@@ -135,10 +135,12 @@ Une discussion texte par clan, modérée.
 
 Les quatre couches ci-dessus y répondent. Il faut aussi des conditions d'utilisation et une charte de la discussion, à rédiger avant la bêta.
 
-**Mise en œuvre, sans WebSockets (D-007) :**
+**Mise en œuvre :**
 - Les messages vivent dans Postgres (`clan_messages`, index sur le clan et la date) et sont purgés après une durée à fixer (90 jours par exemple).
-- L'écran de discussion interroge l'API toutes les quelques secondes, uniquement quand il est ouvert, en demandant les messages après le dernier reçu (curseur). Une requête vide coûte très peu.
-- Une fois la R&D D-007 conclue, un service temps réel par clan (un Durable Object, par exemple) remplacera ces interrogations, sans changer le stockage.
+- **Temps réel à évaluer** (demande du propriétaire, ajouté à la R&D D-007). La discussion n'est pas dans le chemin critique, donc la règle d'architecture ne l'exclut pas.
+  - **Piste :** un Durable Object Cloudflare par clan, qui garde les connexions WebSocket ouvertes et les met en sommeil quand personne n'écrit (hibernation). On reste chez le même hébergeur (D-005).
+  - **À mesurer :** coût par joueur connecté, tenue d'un pic de connexions, comportement d'un très grand clan.
+- **Repli, ou première version si la R&D tarde :** l'écran de discussion interroge l'API toutes les quelques secondes, uniquement quand il est ouvert, en demandant les messages après le dernier reçu (curseur). Une requête vide coûte très peu. Le stockage est le même dans les deux cas.
 - Notifications push des mentions, par la file.
 
 ### Mise en œuvre du reste
@@ -152,8 +154,8 @@ Les quatre couches ci-dessus y répondent. Il faut aussi des conditions d'utilis
 
 ### Pistes retenues pour la suite
 
-- **Une cote globale de type Elo,** sur les parties entre joueurs.
-  - Pour des parties asynchrones et des joueurs à la fréquence irrégulière, **Glicko-2** fait mieux que l'Elo classique : il tient compte de l'incertitude sur la cote d'un joueur qui joue peu ou revient après une pause. Il s'affiche comme un seul nombre, comme l'Elo.
+- **Une cote globale Glicko-2** (validée par le propriétaire), sur les parties entre joueurs.
+  - Pour des parties asynchrones et des joueurs à la fréquence irrégulière, Glicko-2 fait mieux que l'Elo classique : il tient compte de l'incertitude sur la cote d'un joueur qui joue peu ou revient après une pause. Il s'affiche comme un seul nombre, comme l'Elo.
   - Calculée côté serveur, une fonction pure de `packages/core`.
 - **Le modèle du Scrabble duplicate :** tous les joueurs reçoivent exactement la même partie (mêmes mots, mêmes questions), et on les classe par leur score rapporté au meilleur score possible.
   - Le classement est juste sans mise en relation entre joueurs, et la chance du tirage ne joue pas.
@@ -202,6 +204,8 @@ La collection reste le cœur du jeu, mais les modes de jeu comptent. **Ce sera u
 5. **Clans** : discussion modérée, bibliothèque, objectif de la semaine, journal.
 6. **R&D des modes de jeu**, puis **classements** (cote Glicko-2, duplicate).
 
+La R&D D-007 peut avancer en parallèle, pour décider du temps réel de la discussion avant les clans.
+
 Pour la bêta de novembre, le réaliste est l'ouverture (lot A de [ouverture.md](ouverture.md)), le niveau de compte et un profil simple. Les clans viennent juste après, une fois la modération prête.
 
 ## Décisions
@@ -212,14 +216,15 @@ Pour la bêta de novembre, le réaliste est l'ouverture (lot A de [ouverture.md]
 - avatars tirés de gravures du domaine public ;
 - clans sans maximum de membres, avec discussion texte modérée et nom choisi par le chef ;
 - bibliothèque commune ;
-- classements après la v1, avec une cote globale de type Elo ;
+- classements après la v1, avec une cote globale Glicko-2 ;
+- inscription à partir de 15 ans ;
+- temps réel de la discussion de clan à évaluer dans la R&D D-007 ;
 - modes de jeu explorés en R&D, en s'inspirant notamment du Scrabble.
 
 **À prendre :**
-1. **Âge minimum à l'inscription :** 15 ans (recommandé : en France, c'est l'âge à partir duquel un joueur consent seul au traitement de ses données, sans accord parental), ou 13 ans avec accord parental entre 13 et 15 ans.
-2. **Plis bonus en récompense de niveau :** oui (recommandé, gratuits et hors du plafond du stock), ou seulement des cosmétiques.
-3. **Visibilité par défaut du profil :** public (recommandé pour un jeu grand public), ou privé.
-4. **Modération automatique de la discussion par un modèle :** dès la bêta, ou seulement si les signalements ne suffisent plus.
-5. **Durée de conservation des messages de clan :** 90 jours (recommandé), ou plus.
-6. **Niveau 5 pour accéder aux échanges et aux clans.**
-7. **Fausses définitions :** accord pour chiffrer leur génération, utile aux défis comme aux modes de jeu.
+1. **Plis bonus en récompense de niveau :** oui (recommandé, gratuits et hors du plafond du stock), ou seulement des cosmétiques.
+2. **Visibilité par défaut du profil :** public (recommandé pour un jeu grand public), ou privé.
+3. **Modération automatique de la discussion par un modèle :** dès la bêta, ou seulement si les signalements ne suffisent plus.
+4. **Durée de conservation des messages de clan :** 90 jours (recommandé), ou plus.
+5. **Niveau 5 pour accéder aux échanges et aux clans.**
+6. **Fausses définitions :** accord pour chiffrer leur génération, utile aux défis comme aux modes de jeu.
