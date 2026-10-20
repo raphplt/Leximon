@@ -2,7 +2,7 @@
 
 Où en est Leximon, ce qui reste avant la bêta publique (novembre 2026) et ce qui attend une décision du propriétaire. Mise à jour à chaque étape franchie.
 
-**Dernière mise à jour :** 2026-10-19.
+**Dernière mise à jour :** 2026-10-20.
 
 ## En une phrase
 
@@ -10,7 +10,7 @@ Le cœur du jeu tourne de bout en bout sur le web : on ouvre un pli, on révèle
 
 ## État par chantier
 
-Statuts : **Fait**, **En cours**, **À faire**, **À décider** (attend le propriétaire).
+Statuts : **Fait**, **En cours**, **À faire**, **À décider** (attend le propriétaire), **À étudier** (besoin noté, rien de conçu).
 
 ### Contenu des cartes
 
@@ -34,6 +34,18 @@ Statuts : **Fait**, **En cours**, **À faire**, **À décider** (attend le propr
 | Échanges carte contre carte | À faire | Règles à proposer : durée d'une offre, offres ouvertes, cartes échangeables |
 | Inscription (lien magique, Apple, Google) | À faire | Doit transférer la collection de l'invité vers son compte |
 
+### Progression et social
+
+Besoins notés par le propriétaire le 2026-10-20, à étudier avant de les planifier.
+
+| Étape | Statut | Détail |
+|---|---|---|
+| Niveau de compte | À étudier | Comme dans les jeux mobiles : une progression par paliers, chaque palier donne une récompense. Important |
+| Clans (guildes) | À étudier | Important : à étudier puis planifier |
+| Classements | À étudier | Par joueur et par clan. Le critère reste à choisir |
+| Profil public | À étudier | Public ou privé, au choix du joueur. Public : nom, photo, clan, cartes épinglées (ses préférées), statistiques (nombre de cartes…) |
+| Duels entre joueurs (PvP) | À étudier | Forme encore ouverte. Secondaire face à la collection, mais pas à négliger |
+
 ### Interface
 
 | Étape | Statut | Détail |
@@ -44,6 +56,11 @@ Statuts : **Fait**, **En cours**, **À faire**, **À décider** (attend le propr
 | Web : page d'accueil publique et liste d'attente | À faire | Utile avant la bêta, pour les réseaux |
 | Mobile (Expo) | À faire | Les mêmes écrans ; charger les polices demandera une dépendance (`expo-font`) |
 | Animations et reflets | À faire | R&D D-009. En attendant, du CSS simple |
+| Ouverture : peaufinage | À étudier | Priorité du propriétaire (2026-10-20) : l'ouverture doit être le moment le plus jouissif du jeu. Référence : Pokémon TCG Pocket et ses petits détails. Animations plus travaillées, carte rare vraiment mise en avant |
+| Ouverture : forme du paquet | À étudier | Le pli ne satisfait pas pleinement le propriétaire. Essayer une forme de booster plus classique et départager par test A/B |
+| Ouverture : aperçu en glissant | À étudier | Glisser le paquet pour le voir en biais et deviner s'il contient une rare |
+| Reflets et effets holographiques par rareté | À étudier | Chaque rareté a son traitement visuel. Lié à la R&D D-009 |
+| Numéro de collection sur la carte | À étudier | Par exemple « 40/280 », pour situer la carte dans sa collection |
 
 ### Mise en ligne
 
