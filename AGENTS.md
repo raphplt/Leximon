@@ -13,7 +13,7 @@ cp apps/api/.dev.vars.example apps/api/.dev.vars   # une fois, puis remplir le s
 docker compose up -d             # Postgres local sur le port 54329
 pnpm db:migrate                  # applique les migrations à la base de dev
 pnpm catalog:publish             # publie la dernière version du catalogue (base de dev et fichiers du web, D-023)
-pnpm dev                         # toutes les apps (ou --filter @leximon/api, /web, /mobile)
+pnpm dev                         # Postgres et Directus (Docker), puis toutes les apps (ou --filter @leximon/api, /web, /mobile)
 pnpm check                       # lint + typecheck + tests unitaires, à lancer avant de rendre la main
 pnpm test:integration            # tests contre la base leximon_test, vidée à chaque passage (Docker requis)
 pnpm format                      # corrige le formatage (Biome)
