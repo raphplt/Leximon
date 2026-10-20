@@ -13,6 +13,7 @@ import { useNow } from "@/lib/use-now";
 import styles from "./booster-screen.module.css";
 import { CardStack } from "./card-stack";
 import { canVibrate, type FeedbackKind, play, readPreference, writePreference } from "./feedback";
+import { OPEN_HINTS, type PackProps, type PackShape, packShapeFromSearch } from "./pack-shape";
 import { Pli } from "./pli";
 import {
   bonusLabel,
@@ -26,6 +27,7 @@ import {
   revealOrder,
 } from "./reveal";
 import { RevealCard } from "./reveal-card";
+import { Sachet } from "./sachet";
 import { keepsAnnouncementWhenHurried, stagingFor } from "./staging";
 
 const STOCK_CAPACITY = REFILL_SCHEDULE[0].capacity;
@@ -86,6 +88,7 @@ export function BoosterScreen() {
   const [pack, setPack] = useState<Pack | null>(null);
   const [error, setError] = useState<string | null>(null);
   const request = useRef<OpenRequest | null>(null);
+  const [shape, setShape] = useState<PackShape>("pli");
   const now = useNow(15_000);
   const cardWidth = useCardWidth();
 
@@ -112,6 +115,10 @@ export function BoosterScreen() {
   useEffect(() => {
     void load();
   }, [load]);
+
+  useEffect(() => {
+    setShape(packShapeFromSearch(window.location.search));
+  }, []);
 
   // The stock refills on the server's schedule: ask again once the announced time has passed.
   const refillDue = wallet?.nextRefillAt != null && Date.parse(wallet.nextRefillAt) <= now;
@@ -222,9 +229,9 @@ export function BoosterScreen() {
   const reserve = bonusLabel(bonus);
   const sealedHint =
     stored > 0
-      ? "Déchire la bande ou touche le sceau"
+      ? OPEN_HINTS[shape]
       : bonus > 0
-        ? "Déchire la bande ou touche le sceau pour ouvrir un pli bonus"
+        ? `${OPEN_HINTS[shape]} : c'est un pli bonus`
         : `Plus de pli pour l'instant, ${refill ?? ""}`;
 
   return (
@@ -272,7 +279,8 @@ export function BoosterScreen() {
 
       {(phase.name === "sealed" || phase.name === "opening") && (
         <div className={styles.center}>
-          <Pli
+          <Pack
+            shape={shape}
             state={phase.name === "opening" ? "opening" : canOpen ? "sealed" : "empty"}
             onTearStart={() => {
               startRequest();
@@ -339,6 +347,10 @@ export function BoosterScreen() {
       )}
     </main>
   );
+}
+
+function Pack({ shape, ...props }: PackProps & { readonly shape: PackShape }) {
+  return shape === "sachet" ? <Sachet {...props} /> : <Pli {...props} />;
 }
 
 function Revealing({

@@ -134,6 +134,7 @@ Options et recommandations dans les cahiers des charges ([ouverture](cahiers-des
 
 - **Numéro de collection sur la carte** (« 040/160 ») : dénominateur fixe annoncé à la publication, ou nombre de cartes publiées ; Légendaires « hors série » numérotées au-delà, ou non.
 - **Sons de l'ouverture :** garder les sons synthétisés, ou passer à des sons de banque.
+- **Nom du paquet si le sachet l'emporte :** garder « pli » partout dans l'interface (stock, plis bonus), ou dire « sachet ».
 - **Plis bonus en récompense de niveau** (dans la réserve P23), ou cosmétiques seulement.
 - **Visibilité par défaut du profil :** public ou privé.
 - **Discussion de clan :** modération automatique par un modèle dès la bêta ou plus tard ; durée de conservation des messages.

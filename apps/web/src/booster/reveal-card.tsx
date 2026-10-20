@@ -10,7 +10,8 @@ import {
   useRef,
   useState,
 } from "react";
-import { Card } from "@/components/card";
+import { HoloCard } from "@/components/holo-card";
+import { useHoloLight } from "@/components/use-holo-light";
 import { CardBack } from "./card-back";
 import { play, vibrate } from "./feedback";
 import { cardRelease } from "./gesture";
@@ -62,6 +63,7 @@ export function RevealCard({
   const [drag, setDrag] = useState<Drag | null>(null);
   const [exit, setExit] = useState<-1 | 1 | null>(null);
   const dragRef = useRef<Drag | null>(null);
+  const light = useHoloLight(settled);
   const flippedRef = useRef(false);
   const timers = useRef<number[]>([]);
 
@@ -123,6 +125,7 @@ export function RevealCard({
   };
 
   const onPointerMove = (event: PointerEvent<HTMLButtonElement>) => {
+    light.onPointerMove(event);
     const current = dragRef.current;
     if (current === null || current.pointerId !== event.pointerId) return;
     const next = {
@@ -180,6 +183,7 @@ export function RevealCard({
             : styles.stage
         }
         style={{ width, height }}
+        ref={light.ref}
       >
         {flipped && glow !== null && (
           <div
@@ -203,6 +207,7 @@ export function RevealCard({
             dragRef.current = null;
             setDrag(null);
           }}
+          onPointerLeave={light.onPointerLeave}
           onKeyDown={onKeyDown}
           aria-label={flipped ? `${card.word}, carte suivante` : "Retourner la carte"}
         >
@@ -211,7 +216,7 @@ export function RevealCard({
             {announcing && staging.announce === "crack" && <Cracks />}
           </span>
           <span className={styles.front}>
-            <Card card={card} collectionName={collectionName} width={width} />
+            <HoloCard card={card} collectionName={collectionName} width={width} />
           </span>
         </button>
         {flipped && (staging.announce === "crack" || staging.announce === "eclipse") && (

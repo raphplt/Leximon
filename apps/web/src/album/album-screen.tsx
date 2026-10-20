@@ -13,7 +13,9 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { type Catalog, loadCatalog } from "@/cards/catalog";
 import { Card } from "@/components/card";
 import { CardCaption } from "@/components/card-caption";
+import { HoloCard } from "@/components/holo-card";
 import { RarityName } from "@/components/rarity-icon";
+import { useHoloLight } from "@/components/use-holo-light";
 import { fetchMastery, fetchOwnedCards } from "@/lib/api";
 import styles from "./album-screen.module.css";
 
@@ -159,7 +161,7 @@ export function AlbumScreen() {
       >
         {zoomed !== null && (
           <div className={styles.zoom}>
-            <Card
+            <ZoomedCard
               card={zoomed}
               collectionName={
                 catalog.collections.find((c) => c.id === zoomed.collectionId)?.name ?? ""
@@ -173,6 +175,22 @@ export function AlbumScreen() {
         )}
       </dialog>
     </main>
+  );
+}
+
+/** The card opened in large: the one card of the album that catches the light. */
+function ZoomedCard({
+  card,
+  collectionName,
+}: {
+  readonly card: CatalogCard;
+  readonly collectionName: string;
+}) {
+  const light = useHoloLight(true);
+  return (
+    <div ref={light.ref} onPointerMove={light.onPointerMove} onPointerLeave={light.onPointerLeave}>
+      <HoloCard card={card} collectionName={collectionName} />
+    </div>
   );
 }
 

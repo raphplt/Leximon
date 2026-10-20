@@ -188,6 +188,8 @@ Plus tard, `user_cards.variant` permet des variantes du même mot, par exemple u
 1. **Lot A, web, avant la bêta :** geste de déchirure, pile et coup d'œil, révélation au glissé, mise en scène par rareté, sons, numéro de collection, récapitulatif avec progression.
    - **Fait le 2026-10-20**, sauf le numéro de collection, qui attend la décision sur son dénominateur. Le partage d'une Légendaire renvoie vers le site, faute de page publique de carte.
 2. **Lot B :** reflets interactifs complets par rareté (CSS), seconde forme de paquet.
+   - **Fait le 2026-10-20.** Reflets sur la carte révélée et sur la carte agrandie de l'album, la grille restant statique (`HoloCard`, `useHoloLight`). La lumière suit la souris ou le doigt, et l'inclinaison du téléphone sur Android. Sur iPhone, l'inclinaison demande une autorisation système, pas encore demandée : la lumière y suit le doigt, et la carte dérive doucement d'elle-même tant qu'on ne la touche pas.
+   - Le sachet partage le geste du pli (`useTear`). En attendant l'A/B du lot C, on le voit avec l'adresse `/?paquet=sachet`.
 3. **Lot C :** outil d'A/B et test pli contre sachet pendant la bêta, portage mobile une fois la R&D D-009 conclue.
 
 ## Décisions
