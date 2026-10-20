@@ -125,7 +125,7 @@ Une forme hybride est possible : un sachet en papier kraft, fermé par une bande
 
 **Décision du propriétaire (2026-10-20) : pas de test A/B.** Il essaie les deux formes et choisit lui-même ; un A/B et son outil de mesure seraient disproportionnés pour cette question.
 
-- **Essayer :** `/?paquet=sachet` ou `/?paquet=pli` montre une forme pour toute la visite, avec son mot partout dans l'interface (P53).
+- **Essayer :** `/jouer?paquet=sachet` ou `/jouer?paquet=pli` montre une forme pour toute la visite, avec son mot partout dans l'interface (P53).
 - **En attendant le choix :** tous les joueurs voient le pli. Retenir le sachet revient à changer `PACK_SHAPE` dans `apps/web/src/lib/pack-shape.ts`.
 
 ## Le numéro de collection
@@ -176,7 +176,7 @@ Plus tard, `user_cards.variant` permet des variantes du même mot, par exemple u
    - **Fait le 2026-10-20**, sauf le numéro de collection, qui attend la décision sur son dénominateur. Le partage d'une Légendaire renvoie vers le site, faute de page publique de carte.
 2. **Lot B :** reflets interactifs complets par rareté (CSS), seconde forme de paquet.
    - **Fait le 2026-10-20.** Reflets sur la carte révélée et sur la carte agrandie de l'album, la grille restant statique (`HoloCard`, `useHoloLight`). La lumière suit la souris ou le doigt, et l'inclinaison du téléphone sur Android. Sur iPhone, l'inclinaison demande une autorisation système, pas encore demandée : la lumière y suit le doigt, et la carte dérive doucement d'elle-même tant qu'on ne la touche pas.
-   - Le sachet partage le geste du pli (`useTear`). On l'essaie avec l'adresse `/?paquet=sachet`, et le mot de l'interface suit la forme (P53).
+   - Le sachet partage le geste du pli (`useTear`). On l'essaie avec l'adresse `/jouer?paquet=sachet`, et le mot de l'interface suit la forme (P53).
 3. **Lot C :** portage mobile une fois la R&D D-009 conclue. Le test A/B prévu ici est abandonné : le propriétaire choisit la forme lui-même.
 
 ## Décisions

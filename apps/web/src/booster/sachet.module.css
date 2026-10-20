@@ -1,48 +1,169 @@
-.sachet {
+/*
+ * A foil pouch in 3D: the scene receives the light (`useHoloLight`), the stage sways it while
+ * nobody holds it, and the pouch stacks a back, slices and a front face in depth.
+ *
+ * Masks, filters and clip paths flatten what they apply to, so they only ever sit on the layers
+ * themselves, never on `.sachet`, which must keep its depth.
+ */
+
+.scene {
   position: relative;
-  width: 236px;
-  height: 336px;
+  /* The proportions of a real booster pouch, taller than a card. */
+  --width: 236px;
+  --height: 410px;
+  /* The tear strip across the top. */
+  --strip: 48px;
+  width: var(--width);
+  height: var(--height);
+}
+
+.stage {
+  position: absolute;
+  inset: 0;
+  perspective: 900px;
+  animation: sway 8s ease-in-out infinite;
+}
+
+/* Under a finger or a tilted phone, the light comes from there and the sway stops. */
+:global([data-holo="live"]) .stage {
+  animation: none;
+}
+
+.sachet {
+  position: absolute;
+  inset: 0;
   --torn: 0%;
   --kept: 100%;
   --lift: 0deg;
   --rise: 0px;
   /* Crimped edges: teeth of this width at the top and bottom of the pouch. */
   --tooth: 9px;
-  filter: drop-shadow(0 18px 24px rgba(0, 0, 0, 0.5));
+  /* The front face stands this far before the middle of the pouch, the back as far behind. */
+  --face: 6px;
+  transform-style: preserve-3d;
+  /* A pouch is lighter than a card: it leans further under the same light. */
+  transform: rotateX(calc(var(--holo-rx) * 1.6)) rotateY(calc(var(--holo-ry) * 1.6));
+  animation: bob 5s ease-in-out infinite;
 }
 
-.pouch,
-.stripKept,
-.stripTorn {
-  background:
-    linear-gradient(115deg, transparent 30%, rgba(255, 255, 255, 0.16) 45%, transparent 60%) 0 0 /
-    250% 100%,
-    radial-gradient(ellipse at 50% 35%, #3f4874 0%, #1b1f33 70%);
-  animation: sheen 4.5s ease-in-out infinite;
+/* On the table, under the pouch: it slides against the tilt and shrinks as the pouch rises. */
+.shadow {
+  position: absolute;
+  left: 14%;
+  right: 14%;
+  bottom: -26px;
+  height: 36px;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(0, 0, 0, 0.6), transparent);
+  filter: blur(5px);
+  translate: calc(sin(var(--holo-ry)) * -120px) 0;
+  animation: shadow 5s ease-in-out infinite;
 }
 
-/* --- Pouch ---------------------------------------------------------------------------- */
+/* --- Layers in depth ------------------------------------------------------------------ */
 
+.back,
+.slice,
 .pouch {
   position: absolute;
   left: 0;
   right: 0;
-  top: 48px;
+  top: var(--strip);
   bottom: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 14px;
-  padding: 0 0 26px;
-  border: none;
-  cursor: pointer;
   -webkit-mask:
     conic-gradient(from -45deg at bottom, #0000, #000 1deg 89deg, #0000 90deg) 50% / var(--tooth)
     100%;
   mask:
     conic-gradient(from -45deg at bottom, #0000, #000 1deg 89deg, #0000 90deg) 50% / var(--tooth)
     100%;
+}
+
+.back {
+  transform: translateZ(calc(-1 * var(--face)));
+  background: linear-gradient(180deg, #14172a, #0c0e1b);
+}
+
+/* The rim of the pouch, seen when it leans: lit in the middle of its thickness, like a seam. */
+.slice {
+  transform: translateZ(var(--z));
+  background: linear-gradient(90deg, #343c66, #232946 12%, #232946 88%, #343c66);
+}
+
+/* --- Front face ----------------------------------------------------------------------- */
+
+.pouch,
+.stripKept,
+.stripTorn {
+  background:
+    /* Brushed foil. */
+    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.03) 0 1px, transparent 1px 3px),
+    /* A band of light sweeping across with the tilt. */
+    linear-gradient(
+      112deg,
+      transparent 34%,
+      rgba(255, 255, 255, 0.05) 42%,
+      rgba(255, 255, 255, 0.2) 48%,
+      rgba(255, 255, 255, 0.05) 54%,
+      transparent 62%
+    )
+    var(--holo-x) 0 / 300% 100%,
+    /* Pillow: the foil curves away towards both sides. */
+    linear-gradient(
+      90deg,
+      rgba(0, 0, 0, 0.5),
+      rgba(0, 0, 0, 0.12) 9%,
+      transparent 22%,
+      transparent 78%,
+      rgba(0, 0, 0, 0.12) 91%,
+      rgba(0, 0, 0, 0.5)
+    ),
+    radial-gradient(ellipse 70% 55% at 50% 42%, #48528a 0%, #262c4c 55%, #161a2d 100%);
+}
+
+.pouch {
+  transform: translateZ(var(--face));
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 22px;
+  padding: 0 0 26px;
+  border: none;
+  cursor: pointer;
+  box-shadow:
+    inset 1px 0 0 rgba(255, 255, 255, 0.14),
+    inset -1px 0 0 rgba(0, 0, 0, 0.35);
+}
+
+/* The pinch near each crimp: the foil wrinkles where both faces are sealed together. */
+.pouch::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(180deg, rgba(0, 0, 0, 0.35), transparent 7%),
+    repeating-linear-gradient(
+      80deg,
+      transparent 0 18px,
+      rgba(255, 255, 255, 0.05) 18px 20px,
+      rgba(0, 0, 0, 0.12) 20px 23px
+    )
+    0 0 / 100% 16px no-repeat,
+    linear-gradient(
+      0deg,
+      rgba(0, 0, 0, 0.45) 22px,
+      transparent 22px,
+      rgba(0, 0, 0, 0.2) 24px,
+      transparent 40px
+    ),
+    repeating-linear-gradient(
+      100deg,
+      transparent 0 22px,
+      rgba(255, 255, 255, 0.05) 22px 24px,
+      rgba(0, 0, 0, 0.14) 24px 27px
+    )
+    0 calc(100% - 22px) / 100% 18px no-repeat;
+  pointer-events: none;
 }
 
 /* Ribs of the bottom crimp. */
@@ -55,7 +176,7 @@
   height: 22px;
   background: repeating-linear-gradient(
     90deg,
-    rgba(255, 255, 255, 0.14) 0 2px,
+    rgba(255, 255, 255, 0.16) 0 2px,
     transparent 2px 6px
   );
 }
@@ -64,41 +185,154 @@
   cursor: default;
 }
 
-.brand {
-  font-family: var(--font-ui), sans-serif;
-  font-size: 12px;
-  font-weight: 800;
-  letter-spacing: 0.3em;
-  text-transform: uppercase;
-  color: var(--lx-color-kraft);
+/*
+ * The specular spot where the light falls. As tall as the whole pouch whatever layer holds it,
+ * so the spot lines up across the strip and the front face; the layer's mask trims it.
+ */
+.glare {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: var(--height);
+  background: radial-gradient(
+    circle at var(--holo-x) var(--holo-y),
+    rgba(255, 246, 220, 0.3),
+    rgba(190, 200, 255, 0.1) 22%,
+    transparent 48%
+  );
+  mix-blend-mode: screen;
+  pointer-events: none;
 }
 
-.medal {
-  display: grid;
-  place-items: center;
-  width: 116px;
-  height: 116px;
-  border-radius: 50%;
-  background: radial-gradient(circle at 36% 30%, #4a548a 0%, #1b1f33 75%);
-  box-shadow:
-    0 0 0 5px #d9a233,
-    0 0 0 9px #1b1f33,
-    0 0 0 11px rgba(255, 224, 138, 0.6),
-    0 10px 24px rgba(0, 0, 0, 0.5);
+.pouch .glare {
+  top: calc(-1 * var(--strip));
+}
+
+.brand {
+  position: relative;
   font-family: var(--font-display), Georgia, serif;
   font-variation-settings: "SOFT" 100;
   font-weight: 900;
-  font-size: 72px;
+  font-size: 32px;
   line-height: 1;
-  color: #ffe08a;
-  text-shadow: 0 2px 0 #8a5d10;
+  letter-spacing: 0.01em;
+  color: var(--lx-color-kraft);
+  background:
+    linear-gradient(
+      100deg,
+      #b07a1c 20%,
+      #fff3c4 calc(var(--holo-x) - 10%),
+      #ffe08a var(--holo-x),
+      #b07a1c calc(var(--holo-x) + 25%)
+    )
+    0 0 / 100% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 2px 0 rgba(0, 0, 0, 0.45));
+}
+
+/*
+ * A blob of wax pressed with the house stamp, as on the card backs and the fold: glossy, with
+ * the light of the pouch on it, and two runs of wax spilling past its edge.
+ */
+.seal {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 116px;
+  height: 108px;
+  border-radius: 54% 46% 50% 50% / 48% 56% 44% 52%;
+  background:
+    radial-gradient(
+      circle at var(--holo-x) var(--holo-y),
+      rgba(255, 225, 205, 0.55),
+      transparent 26%
+    ),
+    radial-gradient(
+      circle at 36% 30%,
+      var(--lx-color-seal-light) 0%,
+      var(--lx-color-seal) 55%,
+      var(--lx-color-seal-dark) 100%
+    );
+  box-shadow:
+    0 3px 0 var(--lx-color-seal-dark),
+    0 10px 18px rgba(0, 0, 0, 0.55),
+    inset 0 -6px 10px rgba(60, 8, 0, 0.45),
+    inset 0 4px 6px rgba(255, 190, 160, 0.35);
+}
+
+.seal::before,
+.seal::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  border-radius: 50% 50% 46% 54%;
+  background: radial-gradient(
+    circle at 40% 35%,
+    var(--lx-color-seal) 0%,
+    var(--lx-color-seal-dark) 100%
+  );
+  box-shadow: 0 6px 10px rgba(0, 0, 0, 0.45);
+}
+
+.seal::before {
+  right: -9px;
+  bottom: 10px;
+  width: 38px;
+  height: 30px;
+  rotate: 24deg;
+}
+
+.seal::after {
+  left: -6px;
+  top: 14px;
+  width: 26px;
+  height: 22px;
+  rotate: -30deg;
+}
+
+/* Where the stamp pressed: a sunken disc with a beaded rim and the letter cut into the wax. */
+.stamp {
+  display: grid;
+  place-items: center;
+  box-sizing: border-box;
+  width: 76px;
+  height: 76px;
+  border: 2px dotted rgba(70, 10, 0, 0.45);
+  border-radius: 50%;
+  background: radial-gradient(
+    circle at 60% 72%,
+    var(--lx-color-seal-light),
+    var(--lx-color-seal) 70%
+  );
+  box-shadow:
+    0 0 0 3px rgba(70, 10, 0, 0.25),
+    0 1px 0 4px rgba(255, 190, 160, 0.18),
+    inset 0 4px 6px rgba(60, 8, 0, 0.55),
+    inset 0 -2px 3px rgba(255, 190, 160, 0.3);
+  font-family: var(--font-display), Georgia, serif;
+  font-variation-settings: "SOFT" 100;
+  font-weight: 900;
+  font-size: 46px;
+  line-height: 1;
+  color: var(--lx-color-seal-dark);
+  text-shadow:
+    0 -1px 0 rgba(40, 5, 0, 0.6),
+    0 1px 0 rgba(255, 200, 170, 0.5);
 }
 
 .sticker {
+  position: relative;
   padding: 4px 10px;
   border-radius: 10px;
-  background: var(--lx-color-sticker);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.22), transparent 55%), var(--lx-color-sticker);
   transform: rotate(-3deg);
+  box-shadow:
+    0 2px 0 rgba(0, 0, 0, 0.25),
+    0 5px 10px rgba(0, 0, 0, 0.35);
   font-family: var(--font-ui), sans-serif;
   font-size: 12px;
   font-weight: 800;
@@ -112,7 +346,8 @@
   left: 0;
   right: 0;
   top: 0;
-  height: 48px;
+  height: var(--strip);
+  transform: translateZ(var(--face));
   touch-action: none;
   cursor: grab;
   user-select: none;
@@ -166,7 +401,7 @@
   height: 18px;
   background: repeating-linear-gradient(
     90deg,
-    rgba(255, 255, 255, 0.14) 0 2px,
+    rgba(255, 255, 255, 0.16) 0 2px,
     transparent 2px 6px
   );
 }
@@ -196,6 +431,8 @@
   transition: none;
 }
 
+.empty .back,
+.empty .slice,
 .empty .pouch,
 .empty .strip {
   filter: saturate(0.4) brightness(0.75);
@@ -203,6 +440,7 @@
 
 /* --- Opening -------------------------------------------------------------------------- */
 
+/* Between the back and the front: the cards are inside the pouch until they rise out of it. */
 .burst {
   position: absolute;
   inset: 0;
@@ -212,7 +450,7 @@
 .burstCardA,
 .burstCardB {
   position: absolute;
-  top: 60px;
+  top: 110px;
   width: 150px;
   height: 210px;
   box-sizing: border-box;
@@ -242,23 +480,48 @@
   animation: burst 1.2s ease-out 0.08s forwards;
 }
 
-@keyframes sheen {
+@keyframes sway {
   0%,
   100% {
-    background-position:
-      100% 0,
-      0 0;
+    --holo-x: 30%;
+    --holo-y: 28%;
+    --holo-rx: 3deg;
+    --holo-ry: -6deg;
   }
   50% {
-    background-position:
-      0% 0,
-      0 0;
+    --holo-x: 70%;
+    --holo-y: 42%;
+    --holo-rx: -1deg;
+    --holo-ry: 6deg;
   }
 }
 
+@keyframes bob {
+  0%,
+  100% {
+    translate: 0 0;
+  }
+  50% {
+    translate: 0 -8px;
+  }
+}
+
+@keyframes shadow {
+  0%,
+  100% {
+    scale: 1;
+    opacity: 1;
+  }
+  50% {
+    scale: 0.88;
+    opacity: 0.75;
+  }
+}
+
+/* The strip flies off, turning over as it goes. */
 @keyframes tear {
   to {
-    transform: translate(60px, -140px) rotate(14deg);
+    transform: translateZ(var(--face)) translate3d(60px, -140px, 40px) rotate(14deg) rotateX(50deg);
     opacity: 0;
   }
 }
@@ -272,15 +535,15 @@
     opacity: 1;
   }
   100% {
-    transform: translateY(-160px) rotate(-5deg);
+    transform: translateY(-210px) rotate(-5deg);
     opacity: 1;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .pouch,
-  .stripKept,
-  .stripTorn,
+  .stage,
+  .sachet,
+  .shadow,
   .opening .strip,
   .opening .burstCardA,
   .opening .burstCardB {

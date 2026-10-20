@@ -6,10 +6,10 @@ import {
   tradeSchema,
   tradesResponseSchema,
 } from "@leximon/contract";
-import { TRADE_SCHEDULE } from "@leximon/core";
+import { TRADE_SCHEDULE, XP_SCHEDULE, xpToReach } from "@leximon/core";
 import { createDb, schema } from "@leximon/db";
 import { testDatabaseUrl } from "@leximon/db/testing";
-import { and, count, eq, type Logger } from "drizzle-orm";
+import { and, count, eq, inArray, type Logger } from "drizzle-orm";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { createApp } from "../app";
 import { TEST_ORIGIN, testEnv } from "../test-env";
@@ -19,6 +19,7 @@ import {
   type OwnedCard,
   seedTestCatalog,
   setOwnedCards,
+  setXp,
   signInAsGuest,
 } from "../test-support";
 import { acceptTrade } from "./trades";
@@ -42,10 +43,15 @@ interface Player extends Guest {
   readonly code: string;
 }
 
-/** A guest whose account is old enough to trade, with a player code and some cards. */
-async function player(owned: readonly OwnedCard[] = [], ageMs = RULES.minAccountAgeMs + DAY) {
+/** A guest old enough and of a high enough level to trade, with a player code and some cards. */
+async function player(
+  owned: readonly OwnedCard[] = [],
+  ageMs = RULES.minAccountAgeMs + DAY,
+  xp = xpToReach(RULES.minLevel),
+) {
   const guest = await signInAsGuest(app, env);
   await ageAccount(db, guest.userId, ageMs);
+  await setXp(db, guest.userId, xp);
   if (owned.length > 0) await setOwnedCards(db, guest.userId, owned);
   const profile = profileResponseSchema.parse(await (await get(guest, "/me/profile")).json());
   return { ...guest, code: profile.playerCode } satisfies Player;
@@ -237,6 +243,26 @@ describe("POST /trades", () => {
   });
 
   it.each([
+    ["the proposer", "proposer"],
+    ["the recipient", "recipient"],
+  ])("refuses when %s is below the minimum level", async (_label, low) => {
+    const below = xpToReach(RULES.minLevel) - 1;
+    const alice = await player(
+      [{ cardId: COMMON_1, quantity: 2 }],
+      undefined,
+      low === "proposer" ? below : undefined,
+    );
+    const bob = await player(
+      [{ cardId: COMMON_2, quantity: 2 }],
+      undefined,
+      low === "recipient" ? below : undefined,
+    );
+    const response = await propose(alice, bob, [COMMON_1], [COMMON_2]);
+    expect(response.status).toBe(422);
+    expect(await response.json()).toEqual({ error: "level_too_low" });
+  });
+
+  it.each([
     ["a card given that is not a duplicate", [COMMON_1], [COMMON_2]],
     ["a card wanted that is not a duplicate", [COMMON_2], [COMMON_3]],
     ["a card nobody owns", [COMMON_2], ["test-b-common-1"]],
@@ -395,6 +421,20 @@ describe("POST /trades/:id/accept", () => {
       .where(and(eq(schema.userCards.userId, bob.userId), eq(schema.userCards.cardId, COMMON_1)));
     expect(bobRow?.firstObtainedAt.getTime()).toBeLessThan(before);
     expect(bobRow?.lastObtainedAt.getTime()).toBeGreaterThanOrEqual(before);
+
+    // Both players earn the XP of a concluded trade (P48).
+    const xpRows = await db
+      .select({ userId: schema.userProgress.userId, xp: schema.userProgress.xp })
+      .from(schema.userProgress)
+      .where(inArray(schema.userProgress.userId, [alice.userId, bob.userId]));
+    const levelXp = xpToReach(RULES.minLevel);
+    const reward = XP_SCHEDULE[0].tradeCompleted;
+    expect(new Map(xpRows.map((row) => [row.userId, row.xp]))).toEqual(
+      new Map([
+        [alice.userId, levelXp + reward],
+        [bob.userId, levelXp + reward],
+      ]),
+    );
 
     // Mastery belongs to the player, never to a copy.
     const [mastery] = await db

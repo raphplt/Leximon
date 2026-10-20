@@ -4,6 +4,7 @@ import {
   idempotencyKeySchema,
   type OpenBoosterResponse,
   openBoosterRequestSchema,
+  type SignupRequiredResponse,
 } from "@leximon/contract";
 import { Hono } from "hono";
 import type { AppEnv } from "../context";
@@ -44,6 +45,7 @@ export function boosterRoutes(loadCardPool: CardPoolLoader) {
             nextRefillAt: toIso(result.wallet.nextRefillAt),
             bonus: result.wallet.bonus,
           },
+          progress: result.progress,
         });
       case "stock_empty":
         return c.json<BoosterStockEmptyResponse>(
@@ -55,6 +57,10 @@ export function boosterRoutes(loadCardPool: CardPoolLoader) {
         );
       case "collection_not_found":
         return c.json({ error: "collection_not_found" }, 404);
+      case "guest_archived":
+        return c.json({ error: "guest_archived" }, 409);
+      case "signup_required":
+        return c.json<SignupRequiredResponse>({ error: "signup_required" }, 403);
       case "catalog_empty":
         return c.json({ error: "catalog_unavailable" }, 503);
     }

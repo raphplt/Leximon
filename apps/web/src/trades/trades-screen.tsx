@@ -6,6 +6,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { type Catalog, loadCatalog } from "@/cards/catalog";
 import { ApiError, fetchProfile, fetchTrades, resolveTrade } from "@/lib/api";
 import { useNow } from "@/lib/use-now";
+import { useProgress } from "@/progress/use-progress";
 import { CardRow, CardZoom } from "./card-thumb";
 import {
   effectiveStatus,
@@ -17,6 +18,7 @@ import {
   type TradeBox,
   timeLeftLabel,
   tradeableFromLabel,
+  tradeLevelLabel,
   tradeSides,
 } from "./offer";
 import { ProposeTrade } from "./propose-trade";
@@ -56,6 +58,7 @@ export function TradesScreen() {
   const [busyTradeId, setBusyTradeId] = useState<string | null>(null);
   const [zoomed, setZoomed] = useState<CatalogCard | null>(null);
   const now = useNow(30_000);
+  const progress = useProgress();
 
   // Runs again each time the page is shown after a navigation (Activity), so offers stay fresh.
   const load = useCallback(async () => {
@@ -179,6 +182,7 @@ export function TradesScreen() {
   }
 
   const tooRecent = now === 0 ? null : tradeableFromLabel(profile.canTradeFrom, now);
+  const tooLow = progress === null ? null : tradeLevelLabel(progress.level, profile.tradeMinLevel);
   const incomingPending = splitTrades(inboxes.incoming.trades, now).pending.length;
 
   return (
@@ -188,7 +192,7 @@ export function TradesScreen() {
         <h1 className={styles.title}>Échanges</h1>
       </header>
 
-      <PlayerCode code={profile.playerCode} tooRecent={tooRecent} />
+      <PlayerCode code={profile.playerCode} notices={[tooRecent, tooLow]} />
 
       <fieldset className={styles.tabs}>
         <legend className={styles.visuallyHidden}>Rubriques des échanges</legend>
@@ -218,7 +222,7 @@ export function TradesScreen() {
           inbox={inboxes[tab]}
           now={now}
           busyTradeId={busyTradeId}
-          canAccept={tooRecent === null}
+          canAccept={tooRecent === null && tooLow === null}
           onResolve={(trade, action) => void resolve(tab, trade, action)}
           onLoadMore={() => void loadMore(tab)}
           onPropose={() => selectTab("propose")}
@@ -231,7 +235,7 @@ export function TradesScreen() {
         <ProposeTrade
           catalog={catalog}
           ownCode={profile.playerCode}
-          tooRecent={tooRecent}
+          blocked={tooRecent ?? tooLow}
           onSent={onSent}
           onShowSent={() => selectTab("outgoing")}
           onZoom={setZoomed}
@@ -271,10 +275,11 @@ export function TradesScreen() {
 
 function PlayerCode({
   code,
-  tooRecent,
+  notices,
 }: {
   readonly code: string;
-  readonly tooRecent: string | null;
+  /** Why the player cannot trade yet, if anything stops them. */
+  readonly notices: readonly (string | null)[];
 }) {
   const [copied, setCopied] = useState<string | null>(null);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -320,7 +325,14 @@ function PlayerCode({
       <p className={styles.codeHint} role="status" aria-live="polite">
         {copied ?? "Donne-le à tes amis pour qu'ils te proposent des échanges."}
       </p>
-      {tooRecent !== null && <p className={styles.codeWarning}>{tooRecent}</p>}
+      {notices.map(
+        (notice) =>
+          notice !== null && (
+            <p key={notice} className={styles.codeWarning}>
+              {notice}
+            </p>
+          ),
+      )}
     </section>
   );
 }

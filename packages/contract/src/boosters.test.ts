@@ -12,6 +12,14 @@ describe("booster contract", () => {
       openId: "0b5d5a8e-8c5c-4a52-9a43-0f2b7f7d1e10",
       cards: [{ cardId: "galimatias", rarity: "precious" }],
       wallet: { stored: 4, nextRefillAt: "2026-10-19T12:30:00.000Z", bonus: 2 },
+      progress: {
+        xp: 130,
+        level: 2,
+        xpIntoLevel: 30,
+        xpForNextLevel: 120,
+        xpGained: 35,
+        levelUp: true,
+      },
     };
     expect(openBoosterResponseSchema.parse(response)).toEqual(response);
   });

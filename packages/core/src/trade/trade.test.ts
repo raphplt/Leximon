@@ -18,6 +18,7 @@ const rules: TradeRules = {
   maxCardsPerSide: 3,
   offersPerDay: 10,
   minAccountAgeMs: 3 * DAY,
+  minLevel: 5,
   heldRarity: "epic",
   heldForMs: 7 * DAY,
 };
@@ -35,6 +36,9 @@ function offer(overrides: Partial<OfferCheck> = {}): OfferCheck {
     want: ["b"],
     proposerCreatedAt: 0,
     recipientCreatedAt: 0,
+    // Level 5 exactly (100 + 120 + 140 + 160).
+    proposerXp: 520,
+    recipientXp: 520,
     offersSentToday: 0,
     proposerHoldings: new Map([["a", holding("a", 2)]]),
     recipientHoldings: new Map([["b", holding("b", 3)]]),
@@ -81,6 +85,11 @@ describe("checkOffer", () => {
   it("refuses recent accounts on either side", () => {
     expect(checkOffer(offer({ proposerCreatedAt: NOW - DAY }))).toBe("account_too_recent");
     expect(checkOffer(offer({ recipientCreatedAt: NOW - DAY }))).toBe("account_too_recent");
+  });
+
+  it("refuses players below the minimum level on either side", () => {
+    expect(checkOffer(offer({ proposerXp: 519 }))).toBe("level_too_low");
+    expect(checkOffer(offer({ recipientXp: 0 }))).toBe("level_too_low");
   });
 
   it("caps the offers sent per day", () => {

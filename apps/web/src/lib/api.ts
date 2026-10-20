@@ -1,4 +1,7 @@
 import {
+  type AccountResponse,
+  accountResponseSchema,
+  authErrorResponseSchema,
   type BoosterSource,
   type BoosterWalletResponse,
   boosterStockEmptySchema,
@@ -9,8 +12,14 @@ import {
   type CreateTradeRequest,
   challengeAnswerResponseSchema,
   challengesResponseSchema,
+  type EmailSignInRequest,
   errorResponseSchema,
   IDEMPOTENCY_KEY_HEADER,
+  type JoinWaitlistRequest,
+  type LinkPreviewError,
+  type LinkPreviewResponse,
+  linkPreviewErrorSchema,
+  linkPreviewResponseSchema,
   type MasteryResponse,
   masteryResponseSchema,
   type OpenBoosterResponse,
@@ -18,7 +27,10 @@ import {
   openBoosterResponseSchema,
   ownedCardsResponseSchema,
   type ProfileResponse,
+  type ProgressResponse,
   profileResponseSchema,
+  progressResponseSchema,
+  signupRequiredSchema,
   type Trade,
   type TradeableCardsResponse,
   type TradeRefusalCode,
@@ -119,7 +131,9 @@ export async function fetchOwnedCards(): Promise<OwnedCardsResponse["cards"]> {
 
 export type OpenBoosterResult =
   | ({ readonly kind: "opened" } & OpenBoosterResponse)
-  | { readonly kind: "stock_empty"; readonly nextRefillAt: string };
+  | { readonly kind: "stock_empty"; readonly nextRefillAt: string }
+  /** The guest opened all its boosters: an account is required to go on (P37). */
+  | { readonly kind: "signup_required" };
 
 /**
  * Opens a booster. The caller keeps `idempotencyKey` until it gets a result, so that a retry
@@ -135,8 +149,20 @@ export async function openBooster(
     body: JSON.stringify(source),
   });
   if (response.status === 409) {
+    // The guest's game just went to an account (sign-in in another tab): retrying uses it.
+    const body: unknown = await response
+      .clone()
+      .json()
+      .catch(() => null);
+    if (errorResponseSchema.safeParse(body).data?.error === "guest_archived") {
+      throw new ApiError("session_changed", 409);
+    }
     const empty = await parse(response, boosterStockEmptySchema);
     return { kind: "stock_empty", nextRefillAt: empty.nextRefillAt };
+  }
+  if (response.status === 403) {
+    await parse(response, signupRequiredSchema);
+    return { kind: "signup_required" };
   }
   if (!response.ok) throw new ApiError("open_failed", response.status);
   return { kind: "opened", ...(await parse(response, openBoosterResponseSchema)) };
@@ -172,6 +198,13 @@ export async function fetchMastery(): Promise<MasteryResponse["words"]> {
   const response = await sendAsPlayer("/me/mastery");
   if (!response.ok) throw new ApiError("mastery_unavailable", response.status);
   return (await parse(response, masteryResponseSchema)).words;
+}
+
+/** The player's account level (P48). */
+export async function fetchProgress(): Promise<ProgressResponse> {
+  const response = await sendAsPlayer("/me/progress");
+  if (!response.ok) throw new ApiError("progress_unavailable", response.status);
+  return parse(response, progressResponseSchema);
 }
 
 export async function fetchProfile(): Promise<ProfileResponse> {
@@ -241,4 +274,94 @@ export async function resolveTrade(
     headers: { [IDEMPOTENCY_KEY_HEADER]: crypto.randomUUID() },
   });
   return tradeResult(response, "trade_failed");
+}
+
+// --- Account (D-030) ----------------------------------------------------------------------------
+
+/** Who is playing: a guest (created on the first visit) or a member. */
+export async function fetchAccount(): Promise<AccountResponse> {
+  const response = await sendAsPlayer("/me/account");
+  if (!response.ok) throw new ApiError("account_unavailable", response.status);
+  return parse(response, accountResponseSchema);
+}
+
+function postJson(path: string, body: unknown): Promise<Response> {
+  return send(path, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+}
+
+/** Error code of a Better Auth route (ours included), `null` when there is none. */
+async function authErrorCode(response: Response): Promise<string | null> {
+  const body = authErrorResponseSchema.safeParse(await response.json().catch(() => null));
+  return body.success ? body.data.code : null;
+}
+
+export type SendCodeResult =
+  | { readonly kind: "sent" }
+  | { readonly kind: "refused"; readonly reason: "invalid_email" | "rate_limited" | "unavailable" };
+
+/** Sends a 6-digit sign-in code to the address. */
+export async function sendSignInCode(email: string): Promise<SendCodeResult> {
+  const response = await postJson("/api/auth/email-otp/send-verification-otp", {
+    email,
+    type: "sign-in",
+  });
+  if (response.ok) return { kind: "sent" };
+  if (response.status === 400) return { kind: "refused", reason: "invalid_email" };
+  if (response.status === 429) return { kind: "refused", reason: "rate_limited" };
+  if (response.status === 503) return { kind: "refused", reason: "unavailable" };
+  throw new ApiError("code_not_sent", response.status);
+}
+
+export type PreviewResult =
+  | ({ readonly kind: "ok" } & LinkPreviewResponse)
+  | { readonly kind: "refused"; readonly reason: LinkPreviewError };
+
+/** Checks the code, without using it up, and tells what signing in does to the guest's game. */
+export async function previewSignIn(email: string, code: string): Promise<PreviewResult> {
+  const response = await postJson("/account/link-preview", { email, code });
+  if (response.ok) return { kind: "ok", ...(await parse(response, linkPreviewResponseSchema)) };
+  if (response.status === 429) return { kind: "refused", reason: "rate_limited" };
+  const body = errorResponseSchema.safeParse(await response.json().catch(() => null));
+  const reason = linkPreviewErrorSchema.safeParse(body.success ? body.data.error : null);
+  if (reason.success) return { kind: "refused", reason: reason.data };
+  throw new ApiError("preview_failed", response.status);
+}
+
+export type SignInResult =
+  | { readonly kind: "signed_in" }
+  /** Better Auth's code (`INVALID_OTP`…) or ours (`ACCOUNT_ERROR_CODES`); "rate_limited" on 429. */
+  | { readonly kind: "refused"; readonly code: string };
+
+/** Signs in with the code. The server moves or leaves the guest's game in the same request. */
+export async function signInWithCode(request: EmailSignInRequest): Promise<SignInResult> {
+  const response = await postJson("/api/auth/sign-in/email-otp", request);
+  if (response.ok) return { kind: "signed_in" };
+  if (response.status === 429) return { kind: "refused", code: "rate_limited" };
+  const code = await authErrorCode(response);
+  if (code !== null) return { kind: "refused", code };
+  throw new ApiError("sign_in_failed", response.status);
+}
+
+export async function signOut(): Promise<void> {
+  const response = await postJson("/api/auth/sign-out", {});
+  if (!response.ok) throw new ApiError("sign_out_failed", response.status);
+}
+
+// --- Waiting list -------------------------------------------------------------------------------
+
+export type JoinWaitlistResult =
+  | { readonly kind: "joined" }
+  | { readonly kind: "refused"; readonly reason: "invalid_email" | "rate_limited" };
+
+/** Puts the address on the list warned when the game opens. No session: it creates no player. */
+export async function joinWaitlist(email: string): Promise<JoinWaitlistResult> {
+  const response = await postJson("/waitlist", { email } satisfies JoinWaitlistRequest);
+  if (response.ok) return { kind: "joined" };
+  if (response.status === 400) return { kind: "refused", reason: "invalid_email" };
+  if (response.status === 429) return { kind: "refused", reason: "rate_limited" };
+  throw new ApiError("waitlist_unavailable", response.status);
 }

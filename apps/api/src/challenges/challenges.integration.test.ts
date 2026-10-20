@@ -139,11 +139,18 @@ describe("POST /challenges/answer", () => {
     const guest = await signInAsGuest(app, env);
     await give(guest, "test-a-common-1");
     const key = crypto.randomUUID();
-    const first = await (await answer(guest, "test-a-common-1", "test-a-common-1", key)).json();
+    const first = challengeAnswerResponseSchema.parse(
+      await (await answer(guest, "test-a-common-1", "test-a-common-1", key)).json(),
+    );
+    expect(first.progress).toMatchObject({ xp: 15, xpGained: 15 });
 
     const replay = await answer(guest, "test-a-common-1", "test-a-common-2", key);
     expect(replay.status).toBe(200);
-    expect(await replay.json()).toEqual(first);
+    // The same answer, and the XP counted once: a retry shows the total without a new gain.
+    expect(challengeAnswerResponseSchema.parse(await replay.json())).toEqual({
+      ...first,
+      progress: { ...first.progress, xpGained: 0, levelUp: false },
+    });
 
     const again = await answer(guest, "test-a-common-1", "test-a-common-1");
     expect(again.status).toBe(409);
@@ -379,7 +386,9 @@ describe("bonus boosters", () => {
     const replays = await Promise.all(
       [1, 2, 3].map(() => reply(guest, WORDS[4] as string, true, key)),
     );
-    for (const replay of replays) expect(replay).toEqual(first);
+    for (const replay of replays) {
+      expect(replay).toEqual({ ...first, progress: { ...first.progress, xpGained: 0 } });
+    }
     expect(await reserve(guest)).toBe(1);
     expect(await awards(guest)).toHaveLength(1);
   });

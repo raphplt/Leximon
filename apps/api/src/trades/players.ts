@@ -9,7 +9,7 @@ import { type Database, schema } from "@leximon/db";
 import { and, asc, eq, gte } from "drizzle-orm";
 import { generatePlayerCode } from "./player-code";
 
-const { cards, players, userCards, users } = schema;
+const { cards, players, userCards, userProgress, users } = schema;
 
 /** Only the standard variant is traded until variants exist (trade items carry no variant). */
 export const TRADED_VARIANT = "standard";
@@ -19,6 +19,8 @@ export interface Player {
   readonly code: string;
   /** Creation of the account, which gates trading (D-026). */
   readonly createdAt: EpochMs;
+  /** Experience, whose level gates trading too (P48). */
+  readonly xp: number;
 }
 
 /** A free code is found on the first draw in practice: 40 bits for at most millions of players. */
@@ -53,13 +55,29 @@ async function readPlayer(db: Database, userId: string): Promise<Player | null> 
 
 function playerQuery(db: Database) {
   return db
-    .select({ userId: players.userId, code: players.code, createdAt: users.createdAt })
+    .select({
+      userId: players.userId,
+      code: players.code,
+      createdAt: users.createdAt,
+      xp: userProgress.xp,
+    })
     .from(players)
-    .innerJoin(users, eq(users.id, players.userId));
+    .innerJoin(users, eq(users.id, players.userId))
+    .leftJoin(userProgress, eq(userProgress.userId, players.userId));
 }
 
-function toPlayer(row: { userId: string; code: string; createdAt: Date }): Player {
-  return { userId: row.userId, code: row.code, createdAt: row.createdAt.getTime() };
+function toPlayer(row: {
+  userId: string;
+  code: string;
+  createdAt: Date;
+  xp: number | null;
+}): Player {
+  return {
+    userId: row.userId,
+    code: row.code,
+    createdAt: row.createdAt.getTime(),
+    xp: row.xp ?? 0,
+  };
 }
 
 /** Cards this player can give now, sorted by id. Bounded by the catalog size: no pagination. */

@@ -12,6 +12,8 @@ export const profileResponseSchema = z.object({
   playerCode: z.string(),
   /** When the account becomes old enough to trade (D-026). */
   canTradeFrom: timestampSchema,
+  /** Account level needed to trade (P48). */
+  tradeMinLevel: z.int().positive(),
 });
 export type ProfileResponse = z.infer<typeof profileResponseSchema>;
 
@@ -68,6 +70,7 @@ export const tradeRefusalSchema = z.enum([
   "too_many_cards",
   "duplicate_card",
   "account_too_recent",
+  "level_too_low",
   "daily_limit_reached",
   "card_not_tradeable",
   "trade_not_pending",

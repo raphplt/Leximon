@@ -41,7 +41,7 @@ PICKS_FILE = GRAVURES_DIR / "picks.jsonl"
 THUMBS_DIR = GRAVURES_DIR / "thumbs"
 
 #: Generic on purpose: never any personal data (name, email, account) in a request.
-USER_AGENT = "LeximonContentPipeline/0.1 (non-commercial research crawler)"
+USER_AGENT = "LeximonContentPipeline/0.1 (https://leximon.fr; contact@leximon.fr)"
 COMMONS_API = "https://commons.wikimedia.org/w/api.php"
 WIKIDATA_API = "https://www.wikidata.org/w/api.php"
 #: Seconds between two API requests (Commons and Wikidata together): one at a time, ~1 per second.
@@ -470,6 +470,12 @@ def credit_line(hit: dict) -> str:
 # --- 2. Search (I/O) -----------------------------------------------------------------------------
 
 
+#: Errors in a 200 response that mean "try again later", not "your request is wrong".
+BUSY_ERRORS = frozenset(
+    {"cirrussearch-too-busy-error", "cirrussearch-backend-error", "ratelimited"}
+)
+
+
 class WikimediaUnavailable(RuntimeError):
     """The API kept refusing (429, maxlag, network): the card is retried on the next run."""
 
@@ -529,6 +535,13 @@ class Wikimedia:
             if error and error.get("code") == "maxlag":
                 pause = _retry_after(response, 10)
                 print(f"  {host} : serveurs en retard (maxlag), pause de {pause:.0f} s", flush=True)
+                time.sleep(pause)
+                continue
+            if error and error.get("code") in BUSY_ERRORS:
+                # The search cluster is full for a moment, whoever asks: wait, but unlike a 429
+                # it says nothing about our own pace, which stays as it is.
+                pause = 10 * (attempt + 1)
+                print(f"  {host} : recherche saturée, pause de {pause} s", flush=True)
                 time.sleep(pause)
                 continue
             if error:

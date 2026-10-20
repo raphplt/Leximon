@@ -65,6 +65,45 @@ Les plafonds des défis (P29) limitent aussi l'XP qu'un tricheur peut en tirer.
 - **Plis bonus :** ils vont dans la réserve de plis bonus qui existe déjà (P23, plafonnée à 10, ouverte une fois le stock vide). Ils accélèrent la collection : la simulation doit en tenir compte.
 - **Réclamer :** une récompense ne se donne pas toute seule. Le joueur la réclame, ce qui fait un moment à l'écran et garde l'écriture idempotente.
 
+### Récompenses et déblocages : proposition
+
+**À valider par le propriétaire.** Il a demandé le 2026-10-20 des récompenses variées, et plusieurs fonctionnalités ouvertes par niveau ; seul le niveau 5 pour échanger est tranché (P36). Repères : un joueur régulier (environ 300 XP par jour) atteint le niveau 5 en 2 jours, le 10 en 5 à 6 jours, le 20 en 18 jours, le 30 en un peu plus d'un mois.
+
+**Six sortes de récompenses**, toutes gratuites (aucun hasard payant) :
+
+| Récompense | Contenu | Ce qu'il faut construire |
+|---|---|---|
+| Pli bonus | 1 pli dans la réserve (P23) | Rien : la réserve existe |
+| Recharge | Le stock gratuit remis au plein tout de suite | Une écriture du portefeuille |
+| Pli garni | Un pli dont au moins une carte est Rare ou mieux | Une garantie de tirage, comme celle du Peu courant (P11) |
+| Carte au choix | Une carte Courante ou Peu courante que le joueur n'a pas, qu'il choisit | Un écran de choix ; contenu connu, aucun hasard |
+| Réserve agrandie | Une place de plus dans la réserve de plis bonus, jusqu'à +5 | Un champ du portefeuille |
+| Cosmétique | Titre, avatar gravé, dos de carte, cadre | Le profil public (partie 2) |
+
+**Cycle proposé :**
+
+| Niveau | Récompense |
+|---|---|
+| Niveaux ordinaires | Pli bonus et recharge en alternance |
+| Tous les 5 (5, 15, 25…) | Pli garni, et un titre dès que le profil existe |
+| Tous les 10 (10, 20, 30…) | Carte au choix et réserve agrandie (jusqu'au niveau 50), et un avatar gravé dès que le profil existe |
+| Au-delà du 50 | Cosmétiques et plis bonus seulement, paliers plus espacés |
+
+**Fonctionnalités par niveau :** une fonctionnalité fermée reste visible, avec le niveau qui l'ouvre ; c'est une promesse, pas un mur. Les défis ne sont jamais fermés : l'apprentissage est le cœur du jeu.
+
+| Niveau | Ouvre | Pourquoi |
+|---|---|---|
+| 1 | Plis, album, défis | Le cœur du jeu, sans rien de plus à comprendre |
+| 3 | Choisir la collection de son pli (P14) ; avant, un pli découverte | Un premier choix une fois les règles comprises |
+| 5 | Échanges (fait), d'une carte contre une carte | Freine les comptes créés pour farmer |
+| 8 | Profil public : pseudo, cartes épinglées (compte inscrit) | Un pseudo à modérer vient avec un compte qui joue vraiment |
+| 10 | Échanges jusqu'à 3 cartes de chaque côté | Les gros échanges demandent un compte établi |
+| 10 | Rejoindre un clan | Idem, et la discussion demande de la modération |
+| 15 | Créer un clan | Moins de clans vides ou créés pour nuire |
+| 15 | Modes de jeu entre joueurs, quand ils existeront | La collection doit être assez grande pour jouer |
+
+**Recommandation :** commencer par le pli bonus, la recharge, le pli garni et la carte au choix, qui ne dépendent que de l'existant, puis les déblocages des niveaux 3 et 10 ; brancher les cosmétiques avec le profil public. La simulation (`rnd/collection-sim`) doit mesurer ce que les récompenses ajoutent à la vitesse de collection.
+
 ### Mise en œuvre
 
 - **Données :** une table `user_progress` (une ligne par joueur : XP totale) et une table `user_level_rewards` (une ligne par récompense réclamée, clé joueur + niveau). Le niveau se calcule à partir de l'XP, par une fonction pure de `packages/core`.

@@ -1,4 +1,9 @@
-import { type AnswerBonus, MASTERY_LEVEL_LABELS, type MasteryLevelCode } from "@leximon/contract";
+import {
+  type AnswerBonus,
+  MASTERY_LEVEL_LABELS,
+  type MasteryLevelCode,
+  type ProgressGain,
+} from "@leximon/contract";
 import { DEFAULT_PACK_NOUN, type PackNoun } from "../lib/pack-shape";
 
 /** Outcome of one answered question, kept for the recap. */
@@ -8,6 +13,8 @@ export interface AnsweredQuestion {
   readonly levelUp: boolean;
   readonly level: MasteryLevelCode;
   readonly bonus: AnswerBonus;
+  /** XP the answer earned (P48). */
+  readonly progress: ProgressGain;
 }
 
 const HOUR = 3_600_000;
@@ -72,4 +79,10 @@ export function sessionBonusLine(
   if (won === 0) return null;
   const count = won === 1 ? `1 ${noun.one} bonus gagné` : `${won} ${noun.many} bonus gagnés`;
   return `${count}, mis de côté pour quand tu n'auras plus de ${noun.one}.`;
+}
+
+/** "+75 XP gagnés pendant ce défi" for the recap, or `null` when the session earned none. */
+export function sessionXpLine(answers: readonly AnsweredQuestion[]): string | null {
+  const xp = answers.reduce((sum, answer) => sum + answer.progress.xpGained, 0);
+  return xp === 0 ? null : `+${xp} XP gagnés pendant ce défi`;
 }

@@ -5,10 +5,12 @@
  * period: players' wallets and the draw audit depend on what was in force at the time.
  */
 
+import type { GuestSchedule } from "./account/guest-limit";
 import type { BonusSchedule } from "./bonus/bonus";
 import type { DrawSchedule } from "./booster/draw";
 import type { RefillSchedule } from "./booster/refill";
 import type { MasterySchedule } from "./mastery/mastery";
+import type { XpSchedule } from "./progress/progress";
 import type { TradeSchedule } from "./trade/trade";
 
 const MINUTE = 60_000;
@@ -60,6 +62,7 @@ export const TRADE_SCHEDULE: TradeSchedule = [
     maxCardsPerSide: 3,
     offersPerDay: 10,
     minAccountAgeMs: 3 * DAY,
+    minLevel: 5,
     heldRarity: "epic",
     heldForMs: 7 * DAY,
   },
@@ -75,3 +78,19 @@ export const BONUS_SCHEDULE: BonusSchedule = [
     reserveCap: 10,
   },
 ];
+
+// Experience of the account level (P48). Starting values, to calibrate by simulation.
+export const XP_SCHEDULE: XpSchedule = [
+  {
+    startsAt: SINCE_LAUNCH,
+    boosterOpened: 10,
+    firstBoosterOfDay: 20,
+    newWord: { common: 5, uncommon: 10, rare: 15, precious: 25, epic: 35, legendary: 50 },
+    correctAnswer: 15,
+    masteryLevelUp: 25,
+    tradeCompleted: 20,
+  },
+];
+
+// Boosters a guest opens before an account is required (P37).
+export const GUEST_SCHEDULE: GuestSchedule = [{ startsAt: SINCE_LAUNCH, boostersBeforeSignup: 2 }];

@@ -8,5 +8,7 @@ export interface AppEnv {
     db: Database;
     auth: Auth;
     userId: string;
+    /** Address in the body of a sign-in request, once read (`readAuthEmail`). */
+    authEmail: string | null | undefined;
   };
 }

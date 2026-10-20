@@ -128,6 +128,13 @@ export function tradeableFromLabel(
   return `Ton compte est tout neuf : tu pourras échanger à partir du ${day} à ${time}.`;
 }
 
+/** Why a player below the level needed cannot trade yet (P48), or `null` once they can. */
+export function tradeLevelLabel(level: number, minLevel: number): string | null {
+  if (level >= minLevel) return null;
+  const left = minLevel - level;
+  return `Les échanges s'ouvrent au niveau ${minLevel} : encore ${left} niveau${left > 1 ? "x" : ""}. Ouvre des plis et relève des défis pour y arriver.`;
+}
+
 /** Adds or removes a card from a selection, without ever going over `max`. */
 export function toggleCard(
   selection: readonly string[],
@@ -167,6 +174,8 @@ const REFUSAL_MESSAGES: Readonly<Record<TradeRefusalCode | OfferProblem, string>
   duplicate_card: "Chaque carte ne peut figurer qu'une fois dans l'offre.",
   account_too_recent:
     "Ton compte est encore tout neuf : les échanges s'ouvrent 3 jours après ton arrivée.",
+  level_too_low:
+    "Les échanges s'ouvrent au niveau 5, pour toi comme pour l'autre joueur. Il faudra un peu de patience !",
   daily_limit_reached:
     "Tu as envoyé 10 offres en 24 heures, c'est le maximum. Reviens un peu plus tard !",
   card_not_tradeable:

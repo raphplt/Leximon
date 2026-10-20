@@ -11,6 +11,7 @@ import {
   timeLeftLabel,
   toggleCard,
   tradeableFromLabel,
+  tradeLevelLabel,
   tradeSides,
 } from "./offer";
 
@@ -157,5 +158,15 @@ describe("refusalMessage", () => {
     expect(refusalMessage("card_not_tradeable")).toContain("7 jours");
     expect(refusalMessage("player_not_found")).toContain("Aucun joueur");
     expect(refusalMessage("trade_not_found")).toBe("Cette offre n'existe plus.");
+  });
+});
+
+describe("tradeLevelLabel", () => {
+  it("says how many levels are left, and nothing once the level is reached", () => {
+    expect(tradeLevelLabel(4, 5)).toBe(
+      "Les échanges s'ouvrent au niveau 5 : encore 1 niveau. Ouvre des plis et relève des défis pour y arriver.",
+    );
+    expect(tradeLevelLabel(1, 5)).toContain("encore 4 niveaux");
+    expect(tradeLevelLabel(5, 5)).toBeNull();
   });
 });

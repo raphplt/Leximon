@@ -283,6 +283,17 @@
   color: var(--lx-color-accent);
 }
 
+.recapXp {
+  margin: 2px 0 0;
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--lx-color-accent);
+}
+
+.levelUp {
+  color: var(--lx-color-text);
+}
+
 .actions {
   width: 100%;
   margin-top: auto;

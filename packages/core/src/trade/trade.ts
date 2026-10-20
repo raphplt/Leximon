@@ -7,6 +7,7 @@
 import type { Rarity } from "../booster/rarity";
 import { isAtLeast } from "../booster/rarity";
 import type { EpochMs } from "../booster/refill";
+import { levelOf } from "../progress/progress";
 
 export interface TradeRules {
   /** Period start; the rules in force when an offer is made or accepted apply. */
@@ -19,6 +20,8 @@ export interface TradeRules {
   readonly offersPerDay: number;
   /** Accounts younger than this cannot trade: limits throwaway accounts feeding a main one. */
   readonly minAccountAgeMs: number;
+  /** Account level needed to trade (P48), for the same reason. */
+  readonly minLevel: number;
   /** Cards at least this rare… */
   readonly heldRarity: Rarity;
   /** …can be traded only this long after the player last obtained a copy. */
@@ -41,6 +44,7 @@ export type TradeRefusal =
   | "too_many_cards"
   | "duplicate_card"
   | "account_too_recent"
+  | "level_too_low"
   | "daily_limit_reached"
   | "card_not_tradeable";
 
@@ -85,6 +89,10 @@ export function isAccountOldEnough(rules: TradeRules, createdAt: EpochMs, now: E
   return now - createdAt >= rules.minAccountAgeMs;
 }
 
+export function isLevelHighEnough(rules: TradeRules, xp: number): boolean {
+  return levelOf(xp).level >= rules.minLevel;
+}
+
 /**
  * Whether a player can give these cards now. `holdings` holds the player's rows for these cards;
  * a missing card is not owned.
@@ -109,6 +117,8 @@ export interface OfferCheck {
   readonly want: readonly string[];
   readonly proposerCreatedAt: EpochMs;
   readonly recipientCreatedAt: EpochMs;
+  readonly proposerXp: number;
+  readonly recipientXp: number;
   /** Offers the proposer sent over the last 24 hours. */
   readonly offersSentToday: number;
   readonly proposerHoldings: ReadonlyMap<string, Holding>;
@@ -130,6 +140,9 @@ export function checkOffer(check: OfferCheck): TradeRefusal | null {
     !isAccountOldEnough(rules, check.recipientCreatedAt, now)
   ) {
     return "account_too_recent";
+  }
+  if (!isLevelHighEnough(rules, check.proposerXp) || !isLevelHighEnough(rules, check.recipientXp)) {
+    return "level_too_low";
   }
   if (check.offersSentToday >= rules.offersPerDay) return "daily_limit_reached";
   if (

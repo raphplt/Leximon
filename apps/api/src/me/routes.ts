@@ -1,24 +1,32 @@
 import {
+  type AccountResponse,
   type BoosterWalletResponse,
   type MasteryResponse,
   type OwnedCardsResponse,
   ownedCardsQuerySchema,
   type ProfileResponse,
+  type ProgressResponse,
   type TradeableCardsResponse,
 } from "@leximon/contract";
 import {
   computeRefill,
   createFullWallet,
+  GUEST_SCHEDULE,
+  guestBoostersLeft,
+  guestRulesAt,
+  levelOf,
   REFILL_SCHEDULE,
   TRADE_SCHEDULE,
   tradeRulesAt,
 } from "@leximon/core";
 import { schema } from "@leximon/db";
-import { and, asc, eq, gt, or } from "drizzle-orm";
+import { and, asc, eq, gt, or, sql } from "drizzle-orm";
 import { Hono } from "hono";
+import { guestOpensSql } from "../boosters/open-booster";
 import type { AppEnv } from "../context";
 import { playerRateLimit } from "../middleware/rate-limit";
 import { requireUser } from "../middleware/require-user";
+import { readXp } from "../progress/progress";
 import { ensurePlayer, listTradeableCards } from "../trades/players";
 
 const { boosterWallets, cards, userCards, userMastery } = schema;
@@ -104,11 +112,18 @@ export function meRoutes() {
   routes.get("/profile", async (c) => {
     const now = Date.now();
     const player = await ensurePlayer(c.var.db, c.var.userId);
-    const { minAccountAgeMs } = tradeRulesAt(TRADE_SCHEDULE, now);
+    const { minAccountAgeMs, minLevel } = tradeRulesAt(TRADE_SCHEDULE, now);
     return c.json<ProfileResponse>({
       playerCode: player.code,
       canTradeFrom: new Date(player.createdAt + minAccountAgeMs).toISOString(),
+      tradeMinLevel: minLevel,
     });
+  });
+
+  /** Account level (P48). Read only: a player who never earned XP is at level 1. */
+  routes.get("/progress", async (c) => {
+    const xp = await readXp(c.var.db, c.var.userId);
+    return c.json<ProgressResponse>({ xp, ...levelOf(xp) });
   });
 
   routes.get("/tradeable", async (c) => {
@@ -117,6 +132,25 @@ export function meRoutes() {
     return c.json<TradeableCardsResponse>({
       playerCode: player.code,
       cardIds: await listTradeableCards(c.var.db, player.userId, now),
+    });
+  });
+
+  /** Who is playing: a guest (and how many boosters it may still open), or a member. */
+  routes.get("/account", async (c) => {
+    const session = await c.var.auth.api.getSession({ headers: c.req.raw.headers });
+    if (session === null) {
+      return c.json({ error: "unauthorized" }, 401);
+    }
+    if (session.user.isAnonymous !== true) {
+      return c.json<AccountResponse>({ kind: "member", email: session.user.email });
+    }
+    const rules = guestRulesAt(GUEST_SCHEDULE, Date.now());
+    const counted = await c.var.db.execute<{ opened: number | null }>(
+      sql`select ${guestOpensSql(session.user.id, rules.boostersBeforeSignup)} as opened`,
+    );
+    return c.json<AccountResponse>({
+      kind: "guest",
+      boostersLeft: guestBoostersLeft(rules, counted.rows[0]?.opened ?? 0),
     });
   });
 

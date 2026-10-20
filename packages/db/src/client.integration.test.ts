@@ -27,6 +27,7 @@ describe("database", () => {
       "card_themes",
       "cards",
       "collections",
+      "guest_links",
       "players",
       "review_logs",
       "sessions",
@@ -35,8 +36,10 @@ describe("database", () => {
       "trades",
       "user_cards",
       "user_mastery",
+      "user_progress",
       "users",
       "verifications",
+      "waitlist_signups",
     ]);
   });
 });

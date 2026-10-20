@@ -53,7 +53,7 @@ function pickOrder(
 export function ProposeTrade({
   catalog,
   ownCode,
-  tooRecent,
+  blocked,
   onSent,
   onShowSent,
   onZoom,
@@ -61,8 +61,8 @@ export function ProposeTrade({
 }: {
   readonly catalog: Catalog;
   readonly ownCode: string;
-  /** Set while the account is too recent to trade (D-026). */
-  readonly tooRecent: string | null;
+  /** Why the player cannot trade yet: a recent account (D-026) or a low level (P48). */
+  readonly blocked: string | null;
   readonly onSent: (trade: Trade) => void;
   readonly onShowSent: () => void;
   readonly onZoom: (card: CatalogCard) => void;
@@ -223,21 +223,18 @@ export function ProposeTrade({
     }
   };
 
-  if (tooRecent !== null) {
+  if (blocked !== null) {
     return (
       <section className={styles.panel} aria-labelledby="propose-title">
         <h2 id="propose-title" className={styles.sectionTitle}>
           Proposer un échange
         </h2>
-        <p className={styles.hint}>
-          Patience : un compte peut proposer et accepter des échanges à partir de ses 3 jours. La
-          date exacte est juste au-dessus.
-        </p>
+        <p className={styles.hint}>{blocked}</p>
         <p className={styles.muted}>
           En attendant, ouvre des {noun.many} pour te faire des doublons : ce sont eux qui
           s'échangent.
         </p>
-        <Link href="/" className={styles.secondary}>
+        <Link href="/jouer" className={styles.secondary}>
           Ouvrir un {noun.one}
         </Link>
       </section>
@@ -341,7 +338,7 @@ export function ProposeTrade({
               <p className={styles.hint}>
                 Tu n'as pas encore de doublon échangeable. Ouvre des {noun.many} pour t'en faire !
               </p>
-              <Link href="/" className={styles.secondary}>
+              <Link href="/jouer" className={styles.secondary}>
                 Ouvrir un {noun.one}
               </Link>
             </div>

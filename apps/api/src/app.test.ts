@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { createApp } from "./app";
+import { emailKey } from "./middleware/rate-limit";
 import { TEST_ORIGIN, testEnv } from "./test-env";
 
 function recordingLimiter(success: boolean) {
@@ -69,5 +70,108 @@ describe("api", () => {
     expect(response.headers.get("retry-after")).toBe("60");
     expect(await response.json()).toEqual({ error: "rate_limited" });
     expect(keys).toEqual(["SIGNUP_RATE_LIMITER:203.0.113.7"]);
+  });
+
+  it("limits waiting-list sign-ups per IP before touching the database", async () => {
+    const { limiter, keys } = recordingLimiter(false);
+    const env = { ...testEnv(), WAITLIST_RATE_LIMITER: limiter };
+    const response = await createApp().request(
+      "/waitlist",
+      {
+        method: "POST",
+        headers: {
+          origin: TEST_ORIGIN,
+          "content-type": "application/json",
+          "cf-connecting-ip": "203.0.113.7",
+        },
+        body: JSON.stringify({ email: "lectrice@example.com" }),
+      },
+      env,
+    );
+    expect(response.status).toBe(429);
+    expect(keys).toEqual(["WAITLIST_RATE_LIMITER:203.0.113.7"]);
+  });
+
+  it("limits sign-in codes per IP and per hashed address, before touching the database", async () => {
+    const ip = recordingLimiter(true);
+    const address = recordingLimiter(false);
+    const env = {
+      ...testEnv(),
+      OTP_SEND_IP_RATE_LIMITER: ip.limiter,
+      OTP_SEND_EMAIL_RATE_LIMITER: address.limiter,
+    };
+    const response = await createApp().request(
+      "/api/auth/email-otp/send-verification-otp",
+      {
+        method: "POST",
+        headers: {
+          origin: TEST_ORIGIN,
+          "content-type": "application/json",
+          "cf-connecting-ip": "203.0.113.7",
+        },
+        body: JSON.stringify({ email: "Joueur@Example.com", type: "sign-in" }),
+      },
+      env,
+    );
+    expect(response.status).toBe(429);
+    expect(ip.keys).toEqual(["OTP_SEND_IP_RATE_LIMITER:203.0.113.7"]);
+    const hashed = await emailKey(env.BETTER_AUTH_SECRET, "joueur@example.com");
+    expect(address.keys).toEqual([`OTP_SEND_EMAIL_RATE_LIMITER:${hashed}`]);
+    expect(address.keys[0]).not.toContain("example");
+  });
+
+  it("sends codes to sign in only", async () => {
+    const response = await createApp().request(
+      "/api/auth/email-otp/send-verification-otp",
+      {
+        method: "POST",
+        headers: { origin: TEST_ORIGIN, "content-type": "application/json" },
+        body: JSON.stringify({ email: "joueur@example.com", type: "forget-password" }),
+      },
+      testEnv(),
+    );
+    expect(response.status).toBe(400);
+  });
+
+  it("limits code checks per IP", async () => {
+    const { limiter, keys } = recordingLimiter(false);
+    const env = { ...testEnv(), OTP_VERIFY_IP_RATE_LIMITER: limiter };
+    for (const path of ["/api/auth/sign-in/email-otp", "/account/link-preview"]) {
+      const response = await createApp().request(
+        path,
+        {
+          method: "POST",
+          headers: {
+            origin: TEST_ORIGIN,
+            "content-type": "application/json",
+            "cf-connecting-ip": "203.0.113.8",
+          },
+          body: JSON.stringify({ email: "joueur@example.com", otp: "123456", code: "123456" }),
+        },
+        env,
+      );
+      expect(response.status, path).toBe(429);
+    }
+    expect(keys).toEqual([
+      "OTP_VERIFY_IP_RATE_LIMITER:203.0.113.8",
+      "OTP_VERIFY_IP_RATE_LIMITER:203.0.113.8",
+    ]);
+  });
+
+  it("hides the Better Auth routes the clients do not use", async () => {
+    for (const path of [
+      "/api/auth/email-otp/check-verification-otp",
+      "/api/auth/email-otp/reset-password",
+      "/api/auth/sign-up/email",
+      "/api/auth/update-user",
+      "/api/auth/delete-anonymous-user",
+    ]) {
+      const response = await createApp().request(
+        path,
+        { method: "POST", headers: { origin: TEST_ORIGIN, "content-type": "application/json" } },
+        testEnv(),
+      );
+      expect(response.status, path).toBe(404);
+    }
   });
 });

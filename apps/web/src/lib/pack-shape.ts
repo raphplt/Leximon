@@ -7,8 +7,8 @@
 export const PACK_SHAPES = ["pli", "sachet"] as const;
 export type PackShape = (typeof PACK_SHAPES)[number];
 
-/** The shape every player sees, until the owner picks one of the two (P47). */
-export const PACK_SHAPE: PackShape = "pli";
+/** The shape every player sees, picked by the owner (P47). */
+export const PACK_SHAPE: PackShape = "sachet";
 
 export interface PackNoun {
   readonly one: string;

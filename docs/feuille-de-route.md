@@ -20,6 +20,7 @@ Statuts : **Fait**, **En cours**, **À faire**, **À décider** (attend le propr
 | Rédaction et contrôle automatique | Fait | D-019, D-021 : lot-1 de 300 mots, 178 cartes gardées, 10 % à relire |
 | Publication du catalogue | Fait | D-023 : `release` puis `pnpm catalog:publish`. Première version : 160 cartes |
 | Collections de lancement | Fait | D-024 : Les Fondateurs, Caractères et travers, Métiers et objets disparus, environ 500 cartes chacune |
+| Collections suivantes | À faire | P56 : onze collections prévues (Bêtes et plantes, À table !, Habits et parures…), environ 2 à 3 $ de génération pour 300 cartes, chacune avec l'accord du propriétaire |
 | Volume de lancement (1 000 à 2 000 cartes) | Fait | Version 2026-10-20.2 publiée en local : 1 561 cartes (Les Fondateurs 519, Caractères et travers 539, Métiers et objets disparus 503), pour 20,68 $ de génération. Les 143 cartes signalées ont été pré-relues par Claude, et 358 définitions qui donnaient le mot ont été reformulées (P41) ; chaque carte touchée porte une note dans Directus |
 | Gravures | En cours | D-028, P42-P43. Chaîne complète (`gravures-queries`, `-search`, `-pick`, `-render`) ; essai sur 20 cartes : 16 choix de Sonnet, 12 validés, publiés dans la version 2026-10-20.3 et affichés sur les cartes. Reste : lancer les 1 561 cartes (environ 5 $, 5 à 9 h de recherche) puis valider |
 | Expressions | Plus tard | Après le lancement (P13) |
@@ -33,7 +34,7 @@ Statuts : **Fait**, **En cours**, **À faire**, **À décider** (attend le propr
 | Défis et niveaux de maîtrise | Fait | D-025 : FSRS (ts-fsrs), QCM, `GET /challenges`, `POST /challenges/answer`, `GET /me/mastery` |
 | Plis bonus des défis | Fait | D-027, règles P23 et P29 : défi du jour et Dorure, réserve plafonnée à 10 |
 | Échanges carte contre carte | Fait | D-026 : offres directes par code joueur, doublons seulement. Notifications à venir avec la file |
-| Inscription (lien magique, Apple, Google) | À faire | Doit transférer la collection de l'invité vers son compte |
+| Inscription par code e-mail | En cours | D-030, P37, P54 : code à 6 chiffres, invité limité à 2 plis avant de créer un compte, transfert de la partie invitée vers un nouveau compte, abandon après avertissement vers un compte qui joue déjà (`guest_links`), écran `/compte`. Reste : choisir le fournisseur d'e-mails (aucun envoi hors dev d'ici là), Apple et Google |
 
 ### Progression et social
 
@@ -41,7 +42,7 @@ Arbitrés par le propriétaire le 2026-10-20 : jeu grand public (B2C), pas de ve
 
 | Étape | Statut | Détail |
 |---|---|---|
-| Niveau de compte | À faire | XP, paliers et récompenses à réclamer. Barème de départ validé, à calibrer par simulation |
+| Niveau de compte | En cours | P48 : XP gagnée dans la transaction de chaque action (pli, défi, échange), niveau calculé, badge dans la navigation, « +N XP » après un pli ou un défi, échanges ouverts au niveau 5. Reste : récompenses à réclamer et déblocages par niveau (proposition à valider), XP des raretés complétées, calibrage par simulation |
 | Profil public | À faire | Pseudo, avatar gravé, clan, cartes épinglées, statistiques. Public par défaut à confirmer |
 | Clans | À faire | Sans maximum de membres, discussion texte modérée, bibliothèque commune. Après l'inscription et la modération |
 | Modes de jeu entre joueurs | R&D | Plusieurs pistes à prototyper (joute, duplicate, bluff…) |
@@ -54,11 +55,11 @@ Arbitrés par le propriétaire le 2026-10-20 : jeu grand public (B2C), pas de ve
 | Direction artistique et tokens | Fait | D-022 « Planche populaire », `packages/tokens` |
 | Web : ouverture du pli, album | Fait | Sur le catalogue publié |
 | Web : défis, échanges | Fait | `/defis`, `/echanges` ; niveau de maîtrise dans l'album |
-| Web : page d'accueil publique et liste d'attente | À faire | Utile avant la bêta, pour les réseaux |
+| Web : page d'accueil publique et liste d'attente | Fait | P55 : accueil sur `/`, le jeu passe sous `/jouer`. La liste d'attente garde l'adresse seule (`POST /waitlist`, table `waitlist_signups`). Image de partage générée par `opengraph-image.tsx` (Fraunces chargée depuis Google Fonts au build). Reste : l'e-mail d'ouverture avec le fournisseur d'e-mails |
 | Mobile (Expo) | À faire | Les mêmes écrans ; charger les polices demandera une dépendance (`expo-font`) |
 | Animations et reflets | À faire | R&D D-009. En attendant, du CSS simple |
 | Ouverture : peaufinage | En cours | Cahier des charges : [ouverture.md](cahiers-des-charges/ouverture.md). Lots A et B faits sur le web : déchirure au doigt, pile, mise en scène par rareté, sons synthétisés, vibration, récapitulatif, reflets par rareté, sachet. Reste : mobile |
-| Ouverture : forme du paquet | À décider | Pli et sachet faits sur le web, le mot suit la forme (P53). Le propriétaire choisit en les essayant (`/?paquet=sachet`), sans A/B |
+| Ouverture : forme du paquet | Fait | Le sachet est choisi (P47), avec le mot « sachet » partout (P53). Le pli reste à l'essai (`/jouer?paquet=pli`) |
 | Ouverture : aperçu en glissant | Fait | Geste bonus jamais expliqué : glisser la pile en biais pour deviner une rare |
 | Reflets et effets holographiques par rareté | Fait (web) | Carte révélée et carte agrandie : inclinaison, reflet, puce et cadre métallisés, paillettes, arc-en-ciel de la Légendaire. Le mobile attend la R&D D-009 |
 | Numéro de collection sur la carte | À décider | Par exemple « 040/160 ». Dénominateur à choisir (taille annoncée ou cartes publiées) |
@@ -69,19 +70,19 @@ Arbitrés par le propriétaire le 2026-10-20 : jeu grand public (B2C), pas de ve
 |---|---|---|
 | Hébergement de production | À décider | Cloudflare est choisi (D-005, D-015). Fournisseur Postgres : R&D faite (`docs/rnd/postgres.md`), recommandation Neon gratuit pour la bêta puis OVHcloud Paris. Hyperdrive de production à créer sans cache |
 | Test de charge, observabilité, pages légales | À faire | Avant d'ouvrir la bêta |
-| Marque, domaines, comptes réseaux | À faire | Côté propriétaire (north star § 12) |
+| Marque, domaines, comptes réseaux | En cours | Domaine leximon.fr (OVH, DNS chez Cloudflare, renouvellement automatique à activer), contact@leximon.fr routé par Cloudflare. Marque : dépôt INPI repoussé (P7). Comptes réseaux à faire |
 
 ## Ce qui attend ta décision
 
 Dans l'ordre où elles débloquent le plus :
 
-1. **Gravures : lancement complet** sur les 1 561 cartes (environ 5 $).
-2. **Fournisseur Postgres**, d'après `docs/rnd/postgres.md`. Il débloque la mise en ligne.
-3. **Ouverture, progression et social :** les questions ouvertes de [regles-du-jeu.md](regles-du-jeu.md#à-décider), détaillées dans les [cahiers des charges](cahiers-des-charges/).
+1. **Récompenses et déblocages par niveau**, d'après la [proposition](cahiers-des-charges/progression-et-social.md#récompenses-et-déblocages--proposition).
+2. **Gravures : lancement complet** sur les 1 561 cartes (environ 5 $).
+3. **Fournisseur Postgres**, d'après `docs/rnd/postgres.md`. Il débloque la mise en ligne.
+4. **Ouverture, progression et social :** les questions ouvertes de [regles-du-jeu.md](regles-du-jeu.md#à-décider), détaillées dans les [cahiers des charges](cahiers-des-charges/).
 
 ## Prochaines étapes conseillées
 
-1. Gravures : lancer la recherche sur tout le catalogue, puis valider les choix.
-2. Inscription (lien magique, Apple, Google) avec transfert de la collection de l'invité.
-3. Page d'accueil publique et liste d'attente.
-4. Mobile, puis mise en ligne et test de charge.
+1. Gravures : finir la recherche sur tout le catalogue, puis valider les choix.
+2. Inscription : choisir le fournisseur d'e-mails (il sert aussi à l'e-mail d'ouverture de la liste d'attente), puis Apple et Google.
+3. Mobile, puis mise en ligne et test de charge.

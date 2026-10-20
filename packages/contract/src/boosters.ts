@@ -1,6 +1,7 @@
 import { RARITIES, type Rarity } from "@leximon/core";
 import { z } from "zod";
 import { slugSchema, timestampSchema } from "./common";
+import { progressGainSchema } from "./progress";
 
 export const raritySchema = z.enum(RARITIES);
 
@@ -44,6 +45,7 @@ export const openBoosterResponseSchema = z.object({
   openId: z.uuid(),
   cards: z.array(drawnCardSchema).min(1),
   wallet: boosterWalletSchema,
+  progress: progressGainSchema,
 });
 export type OpenBoosterResponse = z.infer<typeof openBoosterResponseSchema>;
 
@@ -53,3 +55,7 @@ export const boosterStockEmptySchema = z.object({
   nextRefillAt: timestampSchema,
 });
 export type BoosterStockEmptyResponse = z.infer<typeof boosterStockEmptySchema>;
+
+/** `POST /boosters/open`, 403: the guest opened all its boosters and must create an account (P37). */
+export const signupRequiredSchema = z.object({ error: z.literal("signup_required") });
+export type SignupRequiredResponse = z.infer<typeof signupRequiredSchema>;

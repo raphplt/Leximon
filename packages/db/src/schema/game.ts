@@ -1,6 +1,7 @@
 import {
   BONUS_KINDS,
   CHALLENGE_FORMATS,
+  type GuestLinkOutcome,
   MASTERY_LEVELS,
   type PityCounters,
   RARITIES,
@@ -9,6 +10,7 @@ import { sql } from "drizzle-orm";
 import {
   boolean,
   check,
+  date,
   doublePrecision,
   foreignKey,
   index,
@@ -36,6 +38,10 @@ export const tradeStatus = pgEnum("trade_status", [
   "declined",
   "cancelled",
 ]);
+export const guestLinkOutcome = pgEnum("guest_link_outcome", [
+  "transfer",
+  "abandon",
+] as const satisfies readonly GuestLinkOutcome[]);
 /** Side of a trade item, seen from the proposer: cards given, cards wanted in return. */
 export const tradeSide = pgEnum("trade_side", ["give", "want"]);
 
@@ -120,12 +126,29 @@ export const boosterWallets = pgTable(
     pityCounters: jsonb().$type<PityCounters>().notNull().default({}),
     /** Bonus boosters earned through challenges: spent only when the free stock is empty. */
     bonusBoosters: integer().notNull().default(0),
+    /** Day in Paris of the last booster opened: the first one of a day earns more XP (P48). */
+    lastOpenedDay: date({ mode: "string" }),
   },
   (table) => [
     check("booster_wallets_stored_check", sql`${table.stored} >= 0`),
     check("booster_wallets_progress_check", sql`${table.progressMs} >= 0`),
     check("booster_wallets_bonus_check", sql`${table.bonusBoosters} >= 0`),
   ],
+);
+
+/**
+ * Account level (P48): the experience earned, one row per player, created by the first action
+ * that earns any. The level is derived from it (`levelOf` in core), never stored.
+ */
+export const userProgress = pgTable(
+  "user_progress",
+  {
+    userId: text()
+      .primaryKey()
+      .references(() => users.id, { onDelete: "cascade" }),
+    xp: integer().notNull().default(0),
+  },
+  (table) => [check("user_progress_xp_check", sql`${table.xp} >= 0`)],
 );
 
 /**
@@ -350,4 +373,34 @@ export const tradeItems = pgTable(
       .references(() => cards.id),
   },
   (table) => [primaryKey({ columns: [table.tradeId, table.side, table.cardId] })],
+);
+
+/**
+ * Guests archived by a sign-in (P37, P54): the guest is never deleted, its game moved to a new
+ * account (transfer) or left behind when the account already plays (abandon). One row per guest:
+ * a guest links once, so a retried sign-in finds the row and does nothing. Also the audit of
+ * sign-ins from a guest.
+ */
+export const guestLinks = pgTable(
+  "guest_links",
+  {
+    guestId: text()
+      .primaryKey()
+      .references(() => users.id, { onDelete: "cascade" }),
+    accountId: text()
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    outcome: guestLinkOutcome().notNull(),
+    /** Copies the guest owned when it was linked. */
+    cards: integer().notNull(),
+    /** Words the guest had a mastery of when it was linked. */
+    words: integer().notNull(),
+    linkedAt: timestamp({ withTimezone: true }).notNull(),
+  },
+  (table) => [
+    // For the cascade when an account is deleted, like every other reference to users.id.
+    index("guest_links_account_idx").on(table.accountId),
+    check("guest_links_not_self_check", sql`${table.guestId} <> ${table.accountId}`),
+    check("guest_links_counts_check", sql`${table.cards} >= 0 and ${table.words} >= 0`),
+  ],
 );

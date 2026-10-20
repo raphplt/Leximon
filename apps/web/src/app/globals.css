@@ -27,3 +27,31 @@ a {
   outline: 3px solid var(--lx-color-focus);
   outline-offset: 3px;
 }
+
+/*
+ * Light on a held card or pack (`useHoloLight`): registered so that idle drifts can animate them.
+ * Shared by the holographic cards and the 3D pouch.
+ */
+@property --holo-x {
+  syntax: "<percentage>";
+  inherits: true;
+  initial-value: 50%;
+}
+
+@property --holo-y {
+  syntax: "<percentage>";
+  inherits: true;
+  initial-value: 50%;
+}
+
+@property --holo-rx {
+  syntax: "<angle>";
+  inherits: true;
+  initial-value: 0deg;
+}
+
+@property --holo-ry {
+  syntax: "<angle>";
+  inherits: true;
+  initial-value: 0deg;
+}

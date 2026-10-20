@@ -11,6 +11,10 @@ export function testEnv(connectionString = "postgres://unused@127.0.0.1:1/unused
     HYPERDRIVE: { connectionString } as Hyperdrive,
     SIGNUP_RATE_LIMITER: unlimited,
     PLAYER_RATE_LIMITER: unlimited,
+    OTP_SEND_IP_RATE_LIMITER: unlimited,
+    OTP_SEND_EMAIL_RATE_LIMITER: unlimited,
+    OTP_VERIFY_IP_RATE_LIMITER: unlimited,
+    WAITLIST_RATE_LIMITER: unlimited,
   } as Env;
 }
 

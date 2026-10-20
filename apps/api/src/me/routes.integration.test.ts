@@ -13,7 +13,13 @@ import { count, eq, sum } from "drizzle-orm";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { createApp } from "../app";
 import { TEST_ORIGIN, testEnv } from "../test-env";
-import { type Guest, seedTestCatalog, setOwnedCards, signInAsGuest } from "../test-support";
+import {
+  type Guest,
+  seedTestCatalog,
+  setOwnedCards,
+  signInAsGuest,
+  signInAsMember,
+} from "../test-support";
 
 const url = testDatabaseUrl();
 const env = testEnv(url);
@@ -88,7 +94,7 @@ describe("GET /me/cards", () => {
   });
 
   it("lists every owned copy, across pages, in a stable order", async () => {
-    const guest = await signInAsGuest(app, env);
+    const guest = await signInAsMember(app, env, db);
     for (let i = 0; i < 3; i++) await open(guest);
 
     const pages: OwnedCardsResponse[] = [];

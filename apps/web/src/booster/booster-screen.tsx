@@ -1,6 +1,6 @@
 "use client";
 
-import type { BoosterWalletResponse } from "@leximon/contract";
+import type { BoosterWalletResponse, ProgressGain } from "@leximon/contract";
 import { type Rarity, REFILL_SCHEDULE } from "@leximon/core";
 import { motion } from "@leximon/tokens";
 import Link from "next/link";
@@ -8,10 +8,18 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { type Catalog, cardOrPlaceholder, collectionName, loadCatalog } from "@/cards/catalog";
 import { Card } from "@/components/card";
 import { RarityName } from "@/components/rarity-icon";
-import { fetchOwnedCards, fetchWallet, type OpenBoosterResult, openBooster } from "@/lib/api";
+import {
+  fetchAccount,
+  fetchOwnedCards,
+  fetchWallet,
+  type OpenBoosterResult,
+  openBooster,
+} from "@/lib/api";
 import { capitalize, countPacks, type PackNoun, type PackShape } from "@/lib/pack-shape";
 import { useNow } from "@/lib/use-now";
 import { usePackShape } from "@/lib/use-pack-shape";
+import { levelUpLabel, xpGainLabel } from "@/progress/progress";
+import { publishProgress } from "@/progress/use-progress";
 import styles from "./booster-screen.module.css";
 import { CardStack } from "./card-stack";
 import { canVibrate, type FeedbackKind, play, readPreference, writePreference } from "./feedback";
@@ -55,6 +63,8 @@ interface Pack {
   readonly raritiesBefore: ReadonlySet<Rarity>;
   readonly collectionName: string;
   readonly collectionCardIds: ReadonlySet<string>;
+  /** XP this pack earned (P48). */
+  readonly progress: ProgressGain;
 }
 
 type Outcome =
@@ -89,6 +99,8 @@ export function BoosterScreen() {
   const [owned, setOwned] = useState<ReadonlyMap<string, number>>(new Map());
   const [pack, setPack] = useState<Pack | null>(null);
   const [error, setError] = useState<string | null>(null);
+  /** Boosters a guest may still open before creating an account (P37); null for a member. */
+  const [guestLeft, setGuestLeft] = useState<number | null>(null);
   const request = useRef<OpenRequest | null>(null);
   const { shape, noun, known } = usePackShape();
   const now = useNow(15_000);
@@ -104,6 +116,10 @@ export function BoosterScreen() {
       setCatalog(loadedCatalog);
       setWallet(loadedWallet);
       setOwned(quantities(ownedCards));
+      // Only shapes the hints: if it fails, the server still applies the limit on opening.
+      fetchAccount()
+        .then((account) => setGuestLeft(account.kind === "guest" ? account.boostersLeft : null))
+        .catch(() => undefined);
       const ready: Phase =
         loadedCatalog.collections.length > 0 ? { name: "sealed" } : { name: "no_collection" };
       setPhase((current) =>
@@ -167,18 +183,26 @@ export function BoosterScreen() {
       setPhase({ name: "sealed" });
       return;
     }
+    if (result.kind === "signup_required") {
+      setGuestLeft(0);
+      setPhase({ name: "sealed" });
+      return;
+    }
+    setGuestLeft((left) => (left === null ? null : Math.max(0, left - 1)));
     const raritiesBefore = new Set<Rarity>();
     for (const id of owned.keys()) {
       const rarity = catalog.cardsById.get(id)?.rarity;
       if (rarity !== undefined) raritiesBefore.add(rarity);
     }
     setWallet(result.wallet);
+    publishProgress(result.progress);
     setPack({
       cards: revealOrder(result.cards),
       quantitiesBefore: owned,
       raritiesBefore,
       collectionName: collection.name,
       collectionCardIds: new Set(collection.cards.map((card) => card.id)),
+      progress: result.progress,
     });
     const after = new Map(owned);
     for (const card of result.cards) after.set(card.cardId, (after.get(card.cardId) ?? 0) + 1);
@@ -221,13 +245,17 @@ export function BoosterScreen() {
 
   const stored = wallet?.stored ?? 0;
   const bonus = wallet?.bonus ?? 0;
+  const mustSignUp = guestLeft === 0;
   // Bonus boosters are opened once the free stock is empty (the server decides which is spent).
-  const canOpen = stored > 0 || bonus > 0;
+  const canOpen = !mustSignUp && (stored > 0 || bonus > 0);
   const refill = nextRefillLabel(wallet?.nextRefillAt ?? null, now);
   const reserve = bonusLabel(bonus, noun);
-  const sealedHint =
-    stored > 0
-      ? OPEN_HINTS[shape]
+  const sealedHint = mustSignUp
+    ? signUpHint(noun)
+    : stored > 0
+      ? guestLeft === 1
+        ? `${OPEN_HINTS[shape]} : c'est ton dernier ${noun.one} sans compte`
+        : OPEN_HINTS[shape]
       : bonus > 0
         ? `${OPEN_HINTS[shape]} : c'est un ${noun.one} bonus`
         : `Plus de ${noun.one} pour l'instant, ${refill ?? ""}`;
@@ -298,6 +326,11 @@ export function BoosterScreen() {
           ) : (
             <p className={styles.hint}>{sealedHint}</p>
           )}
+          {mustSignUp && phase.name === "sealed" && (
+            <Link href="/compte" className={styles.primary}>
+              Créer mon compte
+            </Link>
+          )}
         </div>
       )}
 
@@ -341,6 +374,7 @@ export function BoosterScreen() {
           bonus={bonus}
           refill={refill}
           noun={noun}
+          mustSignUp={mustSignUp}
           onOpen={() => {
             setPack(null);
             setPhase({ name: "sealed" });
@@ -349,6 +383,11 @@ export function BoosterScreen() {
       )}
     </main>
   );
+}
+
+/** Shown once a guest opened all its boosters (P37). */
+function signUpHint(noun: PackNoun): string {
+  return `Pour ouvrir d'autres ${noun.many} et garder tes cartes, crée ton compte : c'est gratuit.`;
 }
 
 function PackView({ shape, ...props }: PackProps & { readonly shape: PackShape }) {
@@ -437,6 +476,7 @@ function Recap({
   bonus,
   refill,
   noun,
+  mustSignUp,
   onOpen,
 }: {
   readonly catalog: Catalog | null;
@@ -445,6 +485,7 @@ function Recap({
   readonly bonus: number;
   readonly refill: string | null;
   readonly noun: PackNoun;
+  readonly mustSignUp: boolean;
   readonly onOpen: () => void;
 }) {
   const progress = collectionProgress(pack.collectionCardIds, pack.quantitiesBefore, pack.cards);
@@ -456,6 +497,7 @@ function Recap({
         {pack.collectionName} · {progress.owned}/{progress.total}
         {progress.gained > 0 && <span className={styles.gained}> (+{progress.gained})</span>}
       </p>
+      <XpLine gain={pack.progress} />
       <ul className={styles.fan}>
         {pack.cards.map((drawn, index) => {
           const isNew =
@@ -482,19 +524,26 @@ function Recap({
           );
         })}
       </ul>
+      {mustSignUp && <p className={styles.hint}>{signUpHint(noun)}</p>}
       <div className={styles.actions}>
-        <button
-          type="button"
-          className={styles.primary}
-          disabled={stored === 0 && bonus === 0}
-          onClick={onOpen}
-        >
-          {stored > 0
-            ? `Ouvrir un autre ${noun.one}`
-            : bonus > 0
-              ? `Ouvrir un ${noun.one} bonus`
-              : `Plus de ${noun.one}, ${refill ?? ""}`}
-        </button>
+        {mustSignUp ? (
+          <Link href="/compte" className={styles.primary}>
+            Créer mon compte
+          </Link>
+        ) : (
+          <button
+            type="button"
+            className={styles.primary}
+            disabled={stored === 0 && bonus === 0}
+            onClick={onOpen}
+          >
+            {stored > 0
+              ? `Ouvrir un autre ${noun.one}`
+              : bonus > 0
+                ? `Ouvrir un ${noun.one} bonus`
+                : `Plus de ${noun.one}, ${refill ?? ""}`}
+          </button>
+        )}
         <Link href="/album" className={styles.secondary}>
           Voir mon album
         </Link>
@@ -584,4 +633,17 @@ function useCardWidth(): number {
     return () => window.removeEventListener("resize", measure);
   }, []);
   return width;
+}
+
+/** "+35 XP", and the new level when this pack raised it. */
+function XpLine({ gain }: { readonly gain: ProgressGain }) {
+  const xp = xpGainLabel(gain);
+  const levelUp = levelUpLabel(gain);
+  if (xp === null && levelUp === null) return null;
+  return (
+    <p className={styles.recapXp}>
+      {xp}
+      {levelUp !== null && <strong className={styles.levelUp}> · {levelUp}</strong>}
+    </p>
+  );
 }

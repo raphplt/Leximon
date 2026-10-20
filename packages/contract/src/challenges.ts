@@ -1,6 +1,7 @@
 import { CHALLENGE_FORMATS, CHOICES_PER_QUESTION, MASTERY_LEVELS } from "@leximon/core";
 import { z } from "zod";
 import { slugSchema, timestampSchema } from "./common";
+import { progressGainSchema } from "./progress";
 
 export const challengeFormatSchema = z.enum(CHALLENGE_FORMATS);
 export const masteryLevelSchema = z.enum(MASTERY_LEVELS);
@@ -67,6 +68,7 @@ export const challengeAnswerResponseSchema = z.object({
   levelUp: z.boolean(),
   nextReviewAt: timestampSchema,
   bonus: answerBonusSchema,
+  progress: progressGainSchema,
 });
 export type ChallengeAnswerResponse = z.infer<typeof challengeAnswerResponseSchema>;
 

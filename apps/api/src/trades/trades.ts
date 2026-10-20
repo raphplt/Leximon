@@ -6,13 +6,17 @@ import {
   type Holding,
   isAccountOldEnough,
   isExpired,
+  isLevelHighEnough,
   TRADE_SCHEDULE,
   type TradeRefusal,
   tradeRulesAt,
+  XP_SCHEDULE,
+  xpRulesAt,
 } from "@leximon/core";
 import { type Database, schema } from "@leximon/db";
 import { and, asc, desc, eq, gt, inArray, lt, or, type SQL, sql } from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
+import { addXpToPlayers } from "../progress/progress";
 import type { TradeCursor } from "./cursor";
 import {
   ensurePlayer,
@@ -23,7 +27,7 @@ import {
 } from "./players";
 import { type CardMove, planTransfers } from "./transfers";
 
-const { cards, players, tradeItems, trades, userCards, users } = schema;
+const { cards, players, tradeItems, trades, userCards, userProgress, users } = schema;
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
@@ -183,6 +187,8 @@ export async function createTrade(
       want,
       proposerCreatedAt: proposer.createdAt,
       recipientCreatedAt: recipient.createdAt,
+      proposerXp: proposer.xp,
+      recipientXp: recipient.xp,
       offersSentToday: state.sentToday,
       proposerHoldings: holdings.get(proposer.userId) ?? new Map(),
       recipientHoldings: holdings.get(recipient.userId) ?? new Map(),
@@ -267,7 +273,8 @@ export type AcceptRefusal =
   | "trade_not_pending"
   | "trade_expired"
   | "card_not_tradeable"
-  | "account_too_recent";
+  | "account_too_recent"
+  | "level_too_low";
 
 export type AcceptTradeResult =
   | { readonly kind: "completed"; readonly trade: TradeRecord }
@@ -276,6 +283,8 @@ export type AcceptTradeResult =
 
 const proposerUser = alias(users, "proposer_user");
 const recipientUser = alias(users, "recipient_user");
+const proposerProgress = alias(userProgress, "proposer_progress");
+const recipientProgress = alias(userProgress, "recipient_progress");
 
 /**
  * Concludes an offer, for its recipient only.
@@ -284,7 +293,7 @@ const recipientUser = alias(users, "recipient_user");
  * involved, always in (user_id, card_id) order so that concurrent trades between the same players
  * cannot deadlock. Everything is checked again under these locks with the rules in force now,
  * then one copy of each card changes hands. Statements: BEGIN, lock offer, lock cards, combined
- * write, COMMIT. Mastery (`user_mastery`) is never touched: it belongs to the player, not the copy.
+ * write (with the XP both players earn, P48), COMMIT. Mastery (`user_mastery`) is never touched: it belongs to the player, not the copy.
  */
 export async function acceptTrade(
   db: Database,
@@ -299,18 +308,22 @@ export async function acceptTrade(
         ...tradeFields,
         proposerCreatedAt: proposerUser.createdAt,
         recipientCreatedAt: recipientUser.createdAt,
+        proposerXp: proposerProgress.xp,
+        recipientXp: recipientProgress.xp,
       })
       .from(trades)
       .innerJoin(proposerPlayer, eq(proposerPlayer.userId, trades.proposerId))
       .innerJoin(recipientPlayer, eq(recipientPlayer.userId, trades.recipientId))
       .innerJoin(proposerUser, eq(proposerUser.id, trades.proposerId))
       .innerJoin(recipientUser, eq(recipientUser.id, trades.recipientId))
+      .leftJoin(proposerProgress, eq(proposerProgress.userId, trades.proposerId))
+      .leftJoin(recipientProgress, eq(recipientProgress.userId, trades.recipientId))
       .where(eq(trades.id, tradeId))
       .for("update", { of: trades });
     if (locked === undefined || locked.recipientId !== userId) {
       return { kind: "not_found" };
     }
-    const { proposerCreatedAt, recipientCreatedAt, ...record } = locked;
+    const { proposerCreatedAt, recipientCreatedAt, proposerXp, recipientXp, ...record } = locked;
     if (record.status === "completed") {
       return { kind: "completed", trade: record };
     }
@@ -345,6 +358,9 @@ export async function acceptTrade(
     ) {
       return { kind: "refused", reason: "account_too_recent" };
     }
+    if (!isLevelHighEnough(rules, proposerXp ?? 0) || !isLevelHighEnough(rules, recipientXp ?? 0)) {
+      return { kind: "refused", reason: "level_too_low" };
+    }
     if (
       !canGive(rules, record.give, holdings.get(record.proposerId) ?? new Map(), now) ||
       !canGive(rules, record.want, holdings.get(record.recipientId) ?? new Map(), now)
@@ -354,8 +370,13 @@ export async function acceptTrade(
     }
 
     const resolvedAt = new Date(now);
+    const { tradeCompleted } = xpRulesAt(XP_SCHEDULE, now);
+    const xpUpsert = addXpToPlayers(tx, "xp_upsert", [
+      { userId: record.proposerId, amount: tradeCompleted },
+      { userId: record.recipientId, amount: tradeCompleted },
+    ]);
     await tx
-      .with(...moveCards(tx, planTransfers(record), resolvedAt))
+      .with(...moveCards(tx, planTransfers(record), resolvedAt), xpUpsert)
       .update(trades)
       .set({ status: "completed", resolvedAt })
       .where(eq(trades.id, tradeId));

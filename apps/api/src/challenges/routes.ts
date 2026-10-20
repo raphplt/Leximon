@@ -67,6 +67,7 @@ export function challengeRoutes(loadCatalogIndex: CatalogIndexLoader) {
           levelUp: result.levelUp,
           nextReviewAt: new Date(result.nextReviewAt).toISOString(),
           bonus: result.bonus,
+          progress: result.progress,
         });
       case "card_not_owned":
         return c.json({ error: "card_not_owned" }, 404);

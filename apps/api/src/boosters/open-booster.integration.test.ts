@@ -1,8 +1,11 @@
 import {
+  accountResponseSchema,
   type BoosterSource,
   boosterStockEmptySchema,
   IDEMPOTENCY_KEY_HEADER,
   openBoosterResponseSchema,
+  progressResponseSchema,
+  signupRequiredSchema,
 } from "@leximon/contract";
 import {
   byRarity,
@@ -10,7 +13,9 @@ import {
   DRAW_SCHEDULE,
   drawBooster,
   drawRulesAt,
+  GUEST_SCHEDULE,
   REFILL_SCHEDULE,
+  XP_SCHEDULE,
 } from "@leximon/core";
 import { createDb, schema } from "@leximon/db";
 import { testDatabaseUrl } from "@leximon/db/testing";
@@ -18,7 +23,7 @@ import { and, count, eq, isNotNull, isNull, type Logger, sum } from "drizzle-orm
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { createApp } from "../app";
 import { TEST_ORIGIN, testEnv } from "../test-env";
-import { type Guest, seedTestCatalog, signInAsGuest as signInAsGuestWith } from "../test-support";
+import { type Guest, seedTestCatalog, signInAsGuest, signInAsMember } from "../test-support";
 import { createCardPoolLoader, fingerprintPool } from "./card-pool";
 import { openBooster as openBoosterService } from "./open-booster";
 
@@ -33,7 +38,7 @@ beforeAll(() => seedTestCatalog(db));
 afterAll(close);
 
 const DISCOVERY: BoosterSource = { kind: "discovery" };
-const signInAsGuest = () => signInAsGuestWith(app, env);
+const signInAsPlayer = () => signInAsMember(app, env, db);
 
 function openBooster(
   guest: Guest | null,
@@ -77,13 +82,13 @@ describe("POST /boosters/open", () => {
   });
 
   it("requires a UUID idempotency key", async () => {
-    const guest = await signInAsGuest();
+    const guest = await signInAsPlayer();
     expect((await openBooster(guest, null)).status).toBe(400);
     expect((await openBooster(guest, "retry-1")).status).toBe(400);
   });
 
   it("opens a booster for a new player, who starts with a full stock", async () => {
-    const guest = await signInAsGuest();
+    const guest = await signInAsPlayer();
     const response = await openBooster(guest);
 
     expect(response.status).toBe(200);
@@ -96,7 +101,7 @@ describe("POST /boosters/open", () => {
   });
 
   it("returns the same booster when a request is retried with the same key", async () => {
-    const guest = await signInAsGuest();
+    const guest = await signInAsPlayer();
     const key = crypto.randomUUID();
 
     const first = openBoosterResponseSchema.parse(await (await openBooster(guest, key)).json());
@@ -106,10 +111,12 @@ describe("POST /boosters/open", () => {
     expect(retry.cards).toEqual(first.cards);
     expect(retry.wallet.stored).toBe(CAPACITY - 1);
     expect(await openCount(guest.userId)).toBe(1);
+    // The XP is counted once: the retry shows the same total, without a new gain.
+    expect(retry.progress).toEqual({ ...first.progress, xpGained: 0, levelUp: false });
   });
 
   it("refuses to open once the stock is empty, with the next refill time", async () => {
-    const guest = await signInAsGuest();
+    const guest = await signInAsPlayer();
     for (let i = 0; i < CAPACITY; i++) {
       expect((await openBooster(guest)).status).toBe(200);
     }
@@ -121,7 +128,7 @@ describe("POST /boosters/open", () => {
   });
 
   it("serializes concurrent opens: never more boosters than the stock", async () => {
-    const guest = await signInAsGuest();
+    const guest = await signInAsPlayer();
     const attempts = CAPACITY + 4;
 
     const responses = await Promise.all(Array.from({ length: attempts }, () => openBooster(guest)));
@@ -134,7 +141,7 @@ describe("POST /boosters/open", () => {
   });
 
   it("opens only once when the same key is sent concurrently", async () => {
-    const guest = await signInAsGuest();
+    const guest = await signInAsPlayer();
     const key = crypto.randomUUID();
 
     const responses = await Promise.all(Array.from({ length: 5 }, () => openBooster(guest, key)));
@@ -151,10 +158,68 @@ describe("POST /boosters/open", () => {
   });
 });
 
+describe("experience (P48)", () => {
+  const XP = XP_SCHEDULE[0];
+
+  it("pays the open, the first open of the day and every word new to the player", async () => {
+    const guest = await signInAsPlayer();
+    const first = openBoosterResponseSchema.parse(await (await openBooster(guest)).json());
+    const firstWords = new Map(first.cards.map((card) => [card.cardId, card.rarity]));
+    const expected =
+      XP.boosterOpened +
+      XP.firstBoosterOfDay +
+      [...firstWords.values()].reduce((sum, rarity) => sum + XP.newWord[rarity], 0);
+    expect(first.progress).toMatchObject({ xp: expected, xpGained: expected });
+
+    const second = openBoosterResponseSchema.parse(await (await openBooster(guest)).json());
+    const newWords = [...new Map(second.cards.map((card) => [card.cardId, card.rarity]))].filter(
+      ([cardId]) => !firstWords.has(cardId),
+    );
+    const gained =
+      XP.boosterOpened + newWords.reduce((sum, [, rarity]) => sum + XP.newWord[rarity], 0);
+    expect(second.progress).toMatchObject({ xp: expected + gained, xpGained: gained });
+  });
+
+  it("is shown by GET /me/progress, at level 1 before any gain", async () => {
+    const guest = await signInAsPlayer();
+    const read = async () =>
+      progressResponseSchema.parse(
+        await (
+          await app.request(
+            "/me/progress",
+            { headers: { origin: TEST_ORIGIN, cookie: guest.cookie } },
+            env,
+          )
+        ).json(),
+      );
+    expect(await read()).toEqual({ xp: 0, level: 1, xpIntoLevel: 0, xpForNextLevel: 100 });
+
+    const opened = openBoosterResponseSchema.parse(await (await openBooster(guest)).json());
+    const { xpGained: _gained, levelUp: _levelUp, ...progress } = opened.progress;
+    expect(await read()).toEqual(progress);
+  });
+
+  it("adds up exactly under concurrent opens", async () => {
+    const guest = await signInAsPlayer();
+    const responses = await Promise.all(
+      Array.from({ length: 3 }, async () =>
+        openBoosterResponseSchema.parse(await (await openBooster(guest)).json()),
+      ),
+    );
+    const gained = responses.reduce((sum, response) => sum + response.progress.xpGained, 0);
+    const [row] = await db
+      .select({ xp: schema.userProgress.xp })
+      .from(schema.userProgress)
+      .where(eq(schema.userProgress.userId, guest.userId));
+    expect(row?.xp).toBe(gained);
+    expect(Math.max(...responses.map((response) => response.progress.xp))).toBe(gained);
+  });
+});
+
 describe("bonus reserve", () => {
   /** A player whose free stock is `stored` (timer just started) with `bonus` in reserve. */
   async function playerWith(stored: number, bonus: number) {
-    const guest = await signInAsGuest();
+    const guest = await signInAsPlayer();
     await db.insert(schema.boosterWallets).values({
       userId: guest.userId,
       stored,
@@ -214,7 +279,7 @@ describe("bonus reserve", () => {
 
 describe("booster draws", () => {
   it("record the request with its idempotency key", async () => {
-    const guest = await signInAsGuest();
+    const guest = await signInAsPlayer();
     const key = crypto.randomUUID();
     const body = openBoosterResponseSchema.parse(await (await openBooster(guest, key)).json());
 
@@ -227,7 +292,7 @@ describe("booster draws", () => {
   });
 
   it("can be replayed exactly from the journal", async () => {
-    const guest = await signInAsGuest();
+    const guest = await signInAsPlayer();
     const body = openBoosterResponseSchema.parse(await (await openBooster(guest)).json());
 
     const [open] = await db
@@ -256,7 +321,7 @@ describe("booster draws", () => {
   });
 
   it("persist the guarantee counters and honour them on the next booster", async () => {
-    const guest = await signInAsGuest();
+    const guest = await signInAsPlayer();
     expect((await openBooster(guest)).status).toBe(200);
     await db
       .update(schema.boosterWallets)
@@ -274,7 +339,7 @@ describe("booster draws", () => {
   });
 
   it("answer 503 without consuming anything when no card can be drawn", async () => {
-    const guest = await signInAsGuest();
+    const guest = await signInAsPlayer();
     const freshApp = createApp(); // empty pool cache
     await db
       .update(schema.cards)
@@ -323,7 +388,7 @@ describe("open latency budget", () => {
 
 describe("booster sources", () => {
   it("draw a collection booster only from that collection, and record it", async () => {
-    const guest = await signInAsGuest();
+    const guest = await signInAsPlayer();
     const response = await openBooster(guest, crypto.randomUUID(), {
       kind: "collection",
       collectionId: "test-b",
@@ -352,7 +417,7 @@ describe("booster sources", () => {
   ])(
     "answer 404 for an %s collection, without consuming anything",
     async (_label, collectionId) => {
-      const guest = await signInAsGuest();
+      const guest = await signInAsPlayer();
       const response = await openBooster(guest, crypto.randomUUID(), {
         kind: "collection",
         collectionId,
@@ -368,13 +433,13 @@ describe("booster sources", () => {
     ["unknown kind", { kind: "mystery" }],
     ["collection without id", { kind: "collection" }],
   ])("reject an invalid request: %s", async (_label, body) => {
-    const guest = await signInAsGuest();
+    const guest = await signInAsPlayer();
     const response = await openBooster(guest, crypto.randomUUID(), body);
     expect(response.status).toBe(400);
   });
 
   it("reject a body that is not JSON", async () => {
-    const guest = await signInAsGuest();
+    const guest = await signInAsPlayer();
     const response = await app.request(
       "/boosters/open",
       {
@@ -390,5 +455,62 @@ describe("booster sources", () => {
       env,
     );
     expect(response.status).toBe(400);
+  });
+});
+
+describe("guest limit (P37)", () => {
+  const LIMIT = GUEST_SCHEDULE[0].boostersBeforeSignup;
+
+  async function boostersLeft(guest: Guest): Promise<number> {
+    const response = await app.request(
+      "/me/account",
+      { headers: { origin: TEST_ORIGIN, cookie: guest.cookie } },
+      env,
+    );
+    const account = accountResponseSchema.parse(await response.json());
+    if (account.kind !== "guest") throw new Error("expected a guest");
+    return account.boostersLeft;
+  }
+
+  it("lets a guest open its boosters, then asks for an account", async () => {
+    const guest = await signInAsGuest(app, env);
+    expect(await boostersLeft(guest)).toBe(LIMIT);
+    for (let i = 0; i < LIMIT; i++) {
+      expect((await openBooster(guest)).status).toBe(200);
+    }
+    expect(await boostersLeft(guest)).toBe(0);
+
+    const refused = await openBooster(guest);
+    expect(refused.status).toBe(403);
+    expect(signupRequiredSchema.parse(await refused.json())).toEqual({ error: "signup_required" });
+    expect(await openCount(guest.userId)).toBe(LIMIT);
+  });
+
+  it("still replays a booster opened before the limit", async () => {
+    const guest = await signInAsGuest(app, env);
+    const key = crypto.randomUUID();
+    const first = openBoosterResponseSchema.parse(await (await openBooster(guest, key)).json());
+    for (let i = 1; i < LIMIT; i++) await openBooster(guest);
+
+    const replay = await openBooster(guest, key);
+    expect(replay.status).toBe(200);
+    expect(openBoosterResponseSchema.parse(await replay.json()).openId).toBe(first.openId);
+  });
+
+  it("never opens one booster too many under concurrent requests", async () => {
+    const guest = await signInAsGuest(app, env);
+    const statuses = await Promise.all(
+      Array.from({ length: LIMIT + 3 }, async () => (await openBooster(guest)).status),
+    );
+    expect(statuses.filter((status) => status === 200)).toHaveLength(LIMIT);
+    expect(statuses.filter((status) => status === 403)).toHaveLength(3);
+    expect(await openCount(guest.userId)).toBe(LIMIT);
+  });
+
+  it("does not limit a player with an account", async () => {
+    const member = await signInAsPlayer();
+    for (let i = 0; i <= LIMIT; i++) {
+      expect((await openBooster(member)).status).toBe(200);
+    }
   });
 });

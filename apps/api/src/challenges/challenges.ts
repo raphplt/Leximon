@@ -1,5 +1,6 @@
 import {
   answerBonuses,
+  answerXp,
   BONUS_SCHEDULE,
   type BonusKind,
   bonusRulesAt,
@@ -16,16 +17,22 @@ import {
   type MemoryState,
   masteryRulesAt,
   newWordMastery,
+  type ProgressGain,
   planSession,
+  progressGain,
   type Question,
   REFILL_SCHEDULE,
   reviewWord,
+  XP_SCHEDULE,
+  xpRulesAt,
 } from "@leximon/core";
 import { type Database, schema } from "@leximon/db";
 import { and, asc, eq, sql, type WithSubquery } from "drizzle-orm";
+import { addXp } from "../progress/progress";
 import type { CatalogIndex } from "./catalog-index";
 
-const { boosterBonusAwards, boosterWallets, userMastery, reviewLogs, userCards } = schema;
+const { boosterBonusAwards, boosterWallets, userMastery, userProgress, reviewLogs, userCards } =
+  schema;
 
 export interface ChallengeSession {
   readonly questions: readonly Question[];
@@ -125,12 +132,14 @@ export type AnswerResult =
       readonly levelUp: boolean;
       readonly nextReviewAt: EpochMs;
       readonly bonus: AnswerBonus;
+      readonly progress: ProgressGain;
     }
   | { readonly kind: "card_not_owned" }
   | { readonly kind: "not_due"; readonly nextReviewAt: EpochMs };
 
 /**
- * Applies a challenge answer to the word's mastery, and awards the bonus boosters it earns.
+ * Applies a challenge answer to the word's mastery, and awards the bonus boosters and the XP (P48)
+ * it earns.
  *
  * The answer is right when the chosen card is the card asked about. The server does not keep the
  * questions it served (stateless API): it only accepts answers on owned words that are due, once
@@ -193,7 +202,9 @@ export async function answerChallenge(db: Database, input: AnswerInput): Promise
           from ${reviewLogs}
           where ${reviewLogs.userId} = ${userId} and ${reviewLogs.challengeId} = ${input.idempotencyKey}
           limit 1) as previous,
-        tally.day_answers, tally.day_correct, awards.awards
+        tally.day_answers, tally.day_correct, awards.awards,
+        coalesce((select ${userProgress.xp} from ${userProgress}
+          where ${userProgress.userId} = ${userId}), 0) as xp
       from locked
       cross join lateral (
         select count(*)::int as day_answers, (count(*) filter (where ${reviewLogs.correct}))::int as day_correct
@@ -229,6 +240,7 @@ export async function answerChallenge(db: Database, input: AnswerInput): Promise
         levelUp: false,
         nextReviewAt: current.memory.due,
         bonus: summarize(replayed, locked.bonusBoosters),
+        progress: progressGain(row.xp, 0),
       };
     }
 
@@ -269,7 +281,10 @@ export async function answerChallenge(db: Database, input: AnswerInput): Promise
         .where(and(eq(userMastery.userId, userId), eq(userMastery.cardId, cardId)))
         .returning({ cardId: userMastery.cardId }),
     );
-    const ctes: WithSubquery[] = [masteryUpdate];
+    const xpGained = answerXp(xpRulesAt(XP_SCHEDULE, now), { correct, levelUp: outcome.levelUp });
+    // Written even for 0 XP: the statement then returns the exact total for the response.
+    const progressUpsert = addXp(tx, "progress_upsert", userId, xpGained);
+    const ctes: WithSubquery[] = [masteryUpdate, progressUpsert];
     if (credit.awards.length > 0) {
       // The primary key of the awards is a safety net: under the wallet lock, the awards read
       // above are complete, so the reserve computed from them is exact.
@@ -305,20 +320,30 @@ export async function answerChallenge(db: Database, input: AnswerInput): Promise
         );
       }
     }
-    await tx
-      .with(...ctes)
-      .insert(reviewLogs)
-      .values({
-        id: crypto.randomUUID(),
-        userId,
-        cardId,
-        challengeId: input.idempotencyKey,
-        format: input.format,
-        correct,
-        rating: outcome.rating,
-        levelAfter: outcome.mastery.level,
-        reviewedAt,
-      });
+    const reviewInsert = tx.$with("review_insert").as(
+      tx
+        .insert(reviewLogs)
+        .values({
+          id: crypto.randomUUID(),
+          userId,
+          cardId,
+          challengeId: input.idempotencyKey,
+          format: input.format,
+          correct,
+          rating: outcome.rating,
+          levelAfter: outcome.mastery.level,
+          reviewedAt,
+        })
+        .returning({ id: reviewLogs.id }),
+    );
+    // Every data-modifying CTE runs, read or not; the statement returns the new XP total.
+    const [progress] = await tx
+      .with(...ctes, reviewInsert)
+      .select({ xp: progressUpsert.xp })
+      .from(progressUpsert);
+    if (progress === undefined) {
+      throw new Error(`XP missing for user ${userId} right after the answer`);
+    }
 
     return {
       kind: "answered",
@@ -327,6 +352,7 @@ export async function answerChallenge(db: Database, input: AnswerInput): Promise
       levelUp: outcome.levelUp,
       nextReviewAt: memory.due,
       bonus: summarize(credit.awards, credit.reserve),
+      progress: progressGain(progress.xp, xpGained),
     };
   });
 }
@@ -354,6 +380,7 @@ interface AnswerLookupRow extends MasteryRow, Record<string, unknown> {
   day_answers: number;
   day_correct: number;
   awards: (StoredAward & { challengeId: string })[];
+  xp: number;
 }
 
 interface MasteryRow {

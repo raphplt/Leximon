@@ -8,6 +8,8 @@ import { type Catalog, cardOrPlaceholder, loadCatalog } from "@/cards/catalog";
 import { answerChallenge, fetchChallenges } from "@/lib/api";
 import { useNow } from "@/lib/use-now";
 import { usePackShape } from "@/lib/use-pack-shape";
+import { levelUpLabel, xpGainLabel } from "@/progress/progress";
+import { publishProgress } from "@/progress/use-progress";
 import styles from "./challenge-screen.module.css";
 import {
   type AnsweredQuestion,
@@ -17,6 +19,7 @@ import {
   nextDueLabel,
   recapLine,
   sessionBonusLine,
+  sessionXpLine,
 } from "./session";
 
 type Phase =
@@ -88,8 +91,10 @@ export function ChallengeScreen() {
           levelUp: result.levelUp,
           level: result.level,
           bonus: result.bonus,
+          progress: result.progress,
         },
       ]);
+      publishProgress(result.progress);
       setPhase({ name: "answered", index, chosen });
     } catch {
       setError("Ta réponse n'est pas partie. Vérifie ta connexion et réessaie.");
@@ -143,6 +148,9 @@ export function ChallengeScreen() {
         <div className={styles.center}>
           <h2 className={styles.recapTitle}>Défi terminé</h2>
           <p className={styles.hint}>{recapLine(answers)}</p>
+          {sessionXpLine(answers) !== null && (
+            <p className={styles.bonusRecap}>{sessionXpLine(answers)}</p>
+          )}
           {sessionBonusLine(answers, noun) !== null && (
             <p className={styles.bonusRecap}>{sessionBonusLine(answers, noun)}</p>
           )}
@@ -169,7 +177,7 @@ function Empty({ nextDueAt }: { readonly nextDueAt: string | null }) {
       {nextDueAt === null ? (
         <>
           <p className={styles.hint}>Ouvre des {noun.many} : chaque mot gagné devient un défi.</p>
-          <Link href="/" className={styles.primary}>
+          <Link href="/jouer" className={styles.primary}>
             Ouvrir un {noun.one}
           </Link>
         </>
@@ -178,7 +186,7 @@ function Empty({ nextDueAt }: { readonly nextDueAt: string | null }) {
           <p className={styles.hint}>
             Tu as révisé tous tes mots. Le prochain revient {when ?? "bientôt"}.
           </p>
-          <Link href="/" className={styles.secondary}>
+          <Link href="/jouer" className={styles.secondary}>
             Ouvrir un {noun.one} en attendant
           </Link>
         </>
@@ -261,6 +269,14 @@ function QuestionView({
             </p>
             {result.levelUp && (
               <p className={styles.levelUp}>{levelUpLine(card.word, result.level)}</p>
+            )}
+            {[xpGainLabel(result.progress), levelUpLabel(result.progress)].map(
+              (line) =>
+                line !== null && (
+                  <p key={line} className={styles.xp}>
+                    {line}
+                  </p>
+                ),
             )}
             {bonusLines(result.bonus, noun).map((line) => (
               <p key={line} className={styles.bonus}>

@@ -25,11 +25,12 @@
 | P1 | Positionnement | Jeu de collection qui fait apprendre. Le tirage et la collection restent forts. Pas une app d'apprentissage façon Duolingo. | Tranché |
 | P3 | Plateformes | Web et mobile en parallèle. | Tranché |
 | P5 | Illustrations | Gravures du domaine public, avec un traitement graphique propre. | Tranché |
-| P7 | Nom | Leximon (nom de travail). | Tranché, marque à sécuriser |
+| P7 | Nom | Leximon, domaine leximon.fr (contact@leximon.fr). Libre à l'INPI et à l'EUIPO au 2026-10-20 ; « LEXICON » est enregistrée en France pour les jeux (classes 16 et 28) et « LEXIMON » est déposée en Thaïlande. Dépôt INPI (classes 9, 28, 41) dès que le projet montre de la traction, avant toute communication large. | Tranché le 2026-10-20, marque à déposer |
 | P8 | Cible | Grand public (B2C), inscription à partir de 15 ans. Pas de version école prévue. | Tranché le 2026-10-20 (remplace « B2B écoles rapidement derrière ») |
 | P9 | Mot du jour | Écarté : déjà vu partout, dilue le message. | Tranché |
 | P13 | Catalogue | Ambition de 10 000 cartes et plus. Au lancement, 1 000 à 2 000 mots, puis du nouveau contenu chaque semaine. Les expressions viennent après le lancement. | Tranché |
-| P16 | Thèmes | Catégories transverses aux collections (mots loufoques, insultes d'antan…). Une part du catalogue parmi d'autres : le jeu ne tourne pas autour. | Tranché |
+| P16 | Collections et thèmes | Deux notions distinctes. Une **collection** est un pli qu'on ouvre : une carte appartient à une seule (P14) ; la liste prévue est en P56. Un **thème** est une étiquette transverse : une carte en porte plusieurs, et les thèmes servent aux filtres de l'album et aux défis. Thèmes sur les cartes publiées : vie quotidienne, métiers, nature, arts, sentiments, religion, sciences, insultes, guerre, corps, droit, argent, loufoque, cuisine, galanterie, autre. À ajouter : mots doux à dire, faux amis (le mot ne veut pas dire ce qu'on croit), mots d'auteurs (Rabelais, Molière…), mots à ressusciter (utiles aujourd'hui). Aucun thème ne domine le catalogue. | Tranché ; liste des thèmes provisoire le 2026-10-20 |
+| P55 | Liste d'attente | Avant la bêta, l'accueil public (`leximon.fr`) ne demande qu'une adresse e-mail, pour prévenir de l'ouverture. Rien d'autre n'est promis : ni pseudo réservé, ni carte offerte, ni parrainage. Un seul e-mail envoyé, celui de l'ouverture, puis l'adresse est effacée. | Tranché le 2026-10-20 |
 
 ## Boosters (plis)
 
@@ -54,7 +55,7 @@ Détail et maquettes : [cahiers-des-charges/ouverture.md](cahiers-des-charges/ou
 |---|---|---|---|
 | P45 | Mise en scène | L'ouverture est le moment fort du jeu. Le pli se déchire au doigt ; l'annonce d'une carte vient avant sa face, plus longue à mesure que la rareté monte ; à partir de Précieux, le joueur retourne la carte lui-même. Son et vibration l'accompagnent, et se coupent dans les réglages. | Tranché le 2026-10-20 |
 | P46 | Coup d'œil | Glisser la pile en biais montre la tranche des cartes, colorée par rareté. Possible seulement une fois le pli ouvert, le tirage déjà fait : il ne sert jamais à choisir un pli. Jamais expliqué dans l'interface. | Tranché le 2026-10-20 |
-| P47 | Forme du paquet | Deux formes, le pli scellé et le sachet. Pas de test A/B : le propriétaire les essaie et choisit lui-même. En attendant, tous les joueurs voient le pli. | Tranché le 2026-10-20 |
+| P47 | Forme du paquet | Deux formes, le pli scellé et le sachet. Pas de test A/B : le propriétaire les a essayées. **Tous les joueurs voient le sachet** ; le pli reste visible à l'essai (`/jouer?paquet=pli`). | Tranché le 2026-10-20, sachet choisi le 2026-10-20 |
 | P53 | Nom du paquet | Le mot suit la forme : avec le sachet, « sachet » partout (navigation, stock, sachets bonus, défis, échanges, album) ; avec le pli, « pli ». | Tranché le 2026-10-20 |
 
 ## Cartes et rareté
@@ -89,6 +90,7 @@ Noms des raretés : Courant (encore compris de beaucoup), Peu courant (vieilli),
 | # | Sujet | Règle | Statut |
 |---|---|---|---|
 | P30 | Collections de lancement | Trois collections d'environ 500 cartes : « Les Fondateurs » (généraliste), « Caractères et travers » (mœurs, défauts, moqueries, injures d'antan), « Métiers et objets disparus ». Les injures d'antan vont toujours dans Caractères et travers. | Tranché le 2026-10-20 |
+| P56 | Collections prévues | Après les trois de lancement (P30), dans l'ordre où le fonds du Littré le permet (environ 15 000 mots jugés exploitables au pré-tri) : Bêtes et plantes (500 et plus), À table ! (mets, boissons, fêtes, 300), Habits et parures (300), Remèdes et médecine d'antan (300), Chicane et paperasse (droit, procès, 300), Sorcellerie, foi et superstitions (300), Mer et marine (300), Chevalerie et guerre (300), Monnaies, foires et commerce (200), Amour et galanterie (200), Parlers régionaux (P39, 300 et plus), puis Expressions après le lancement (P13). Chaque nouvelle collection coûte environ 2 à 3 $ de génération pour 300 cartes, lancée avec l'accord du propriétaire. | Provisoire, 2026-10-20 |
 
 ## Défis et maîtrise
 
@@ -108,7 +110,7 @@ Le catalogue étant public, un tricheur peut trouver les bonnes réponses : ce s
 | P6 | Principe | Dès le lancement, carte contre carte, avec garde-fous (N3). | Tranché |
 | P34 | Forme d'une offre | Offre directe à un joueur désigné par son code public (8 caractères) : 1 à 3 cartes données contre 1 à 3 cartes voulues, un exemplaire de chaque. Pas de texte libre. | Tranché le 2026-10-20 |
 | P35 | Ce qui s'échange | Seulement les doublons. Une Épique ou une Légendaire attend 7 jours après sa dernière obtention. | Provisoire |
-| P36 | Garde-fous | Compte de plus de 3 jours ; 10 offres envoyées par 24 h glissantes ; une offre expire après 72 h. | Provisoire |
+| P36 | Garde-fous | Compte de plus de 3 jours et niveau 5 au moins (P48), pour les deux joueurs ; 10 offres envoyées par 24 h glissantes ; une offre expire après 72 h. | Provisoire |
 
 ## Progression et social
 
@@ -116,7 +118,7 @@ Détail : [cahiers-des-charges/progression-et-social.md](cahiers-des-charges/pro
 
 | # | Sujet | Règle | Statut |
 |---|---|---|---|
-| P48 | Niveau de compte | Les actions utiles (plis, mots nouveaux, défis, échanges) rapportent de l'expérience ; chaque niveau donne une récompense que le joueur réclame. Barème et courbe de départ dans le cahier des charges. | Provisoire |
+| P48 | Niveau de compte | Les actions utiles (plis, mots nouveaux, défis, échanges) rapportent de l'expérience ; chaque niveau donne une récompense que le joueur réclame. Barème de départ : 10 XP par pli ouvert, 20 de plus pour le premier de la journée (heure de Paris), par mot nouveau 5 (Courant), 10, 15, 25, 35 et 50 (Légendaire), 15 par bonne réponse à un défi, 25 par mot qui passe à l'Encre ou à la Dorure, 20 par échange conclu pour chacun des deux joueurs. Passer du niveau n au suivant demande 100 + 20 × (n − 1) XP, sans plafond. L'XP d'un invité le suit à l'inscription. Récompenses et fonctionnalités débloquées : proposition dans le cahier des charges. | Provisoire, échanges au niveau 5 tranché le 2026-10-20 |
 | P49 | Avatar | Portraits tirés des gravures du domaine public, dont une partie se gagne par les niveaux. Pas de photo envoyée par le joueur. | Tranché le 2026-10-20 |
 | P50 | Clans | Pas de nombre maximum de membres, un seul clan par joueur, nom libre choisi par le chef (N5), discussion texte modérée (N5), bibliothèque commune (la part de chaque collection que possède au moins un membre). | Tranché le 2026-10-20 |
 | P51 | Classements | Pas en v1. Une cote globale Glicko-2 sur les parties entre joueurs ; le Scrabble duplicate comme source d'inspiration (même partie pour tous, classement au pourcentage du meilleur score). | Tranché le 2026-10-20 |
@@ -126,8 +128,9 @@ Détail : [cahiers-des-charges/progression-et-social.md](cahiers-des-charges/pro
 
 | # | Sujet | Règle | Statut |
 |---|---|---|---|
-| P37 | Compte invité | On joue sans inscription. L'inscription (lien magique, Apple, Google) transférera la collection de l'invité. | Tranché |
+| P37 | Compte invité | On essaie sans inscription : un invité ouvre 2 plis (gratuits ou bonus), puis un compte est demandé pour en ouvrir d'autres ; l'album et les défis restent accessibles. L'inscription (code à 6 chiffres reçu par e-mail, Apple, Google) transfère tout ce que l'invité possède au nouveau compte, y compris portefeuille, plis bonus, garanties et ancienneté. | Tranché, code plutôt que lien le 2026-10-20 ; limite à 2 plis le 2026-10-20 (remplace le jeu illimité sans compte), réglage provisoire |
 | P38 | Limites | 60 créations de compte invité par minute et par adresse IP (une classe derrière une même adresse) ; 120 requêtes par minute par joueur (D-018). | Provisoire |
+| P54 | Invité qui se connecte à un compte existant | Rien n'est fusionné : seul un nouveau compte reçoit la progression d'un invité (P37). Si le compte joue déjà, l'invité est abandonné (archivé, jamais supprimé) et le compte garde son jeu tel quel. Quand l'invité possède au moins une carte ou la maîtrise d'un mot, le joueur est d'abord averti du nombre de cartes perdues et doit confirmer ; il peut aussi annuler et rester invité. Un invité vide se connecte sans avertissement. Les offres en attente de l'invité sont annulées. | Tranché le 2026-10-20, remplace la fusion bornée |
 
 ## À décider
 
@@ -135,8 +138,9 @@ Options et recommandations dans les cahiers des charges ([ouverture](cahiers-des
 
 - **Numéro de collection sur la carte** (« 040/160 ») : dénominateur fixe annoncé à la publication, ou nombre de cartes publiées ; Légendaires « hors série » numérotées au-delà, ou non.
 - **Sons de l'ouverture :** garder les sons synthétisés, ou passer à des sons de banque.
-- **Forme du paquet :** pli ou sachet, au choix du propriétaire après les avoir essayés (`/?paquet=sachet`).
-- **Plis bonus en récompense de niveau** (dans la réserve P23), ou cosmétiques seulement.
+- **Récompenses de niveau et fonctionnalités débloquées par niveau :** le propriétaire veut des récompenses variées et plusieurs fonctionnalités ouvertes par niveau (2026-10-20). Proposition chiffrée dans le [cahier des charges](cahiers-des-charges/progression-et-social.md#récompenses-et-déblocages--proposition).
+- **Abonnement premium :** le propriétaire veut l'envisager (2026-10-20), en plus des cosmétiques. Il reste dans N1 et N2 : contenu connu à l'avance, jamais de plis. Pistes de `north-star.md` : révisions illimitées, statistiques, collections en avant-première, mode hors ligne. À décider : contenu, prix, et ce qui reste gratuit pour ne pas casser le jeu.
+- **Cible principale :** hypothèse du propriétaire, les adultes de 25 à 65 ans et plus, plutôt que les moins de 18 ans (P8 reste ouvert dès 15 ans). À vérifier pendant la bêta avant d'orienter la communication.
 - **Visibilité par défaut du profil :** public ou privé.
 - **Discussion de clan :** modération automatique par un modèle dès la bêta ou plus tard ; durée de conservation des messages.
-- **Niveau minimum pour les clans** (et pour les échanges, en plus de P36).
+- **Niveau minimum pour les clans** (les échanges : niveau 5, P36).

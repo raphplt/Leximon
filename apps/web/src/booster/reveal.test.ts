@@ -145,8 +145,8 @@ describe("nextRefillLabel", () => {
 describe("bonusLabel", () => {
   it("counts the bonus boosters in reserve", () => {
     expect(bonusLabel(0)).toBeNull();
-    expect(bonusLabel(1)).toBe("+1 pli bonus");
-    expect(bonusLabel(4)).toBe("+4 plis bonus");
+    expect(bonusLabel(1, PACK_NOUNS.pli)).toBe("+1 pli bonus");
+    expect(bonusLabel(4, PACK_NOUNS.pli)).toBe("+4 plis bonus");
     expect(bonusLabel(2, PACK_NOUNS.sachet)).toBe("+2 sachets bonus");
   });
 });
