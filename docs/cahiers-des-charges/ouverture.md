@@ -1,7 +1,8 @@
 # Cahier des charges · Ouverture des plis
 
 - **Statut :** validé dans ses grandes lignes par le propriétaire (2026-10-20). Restent les décisions en fin de document.
-- **Décisions liées :** D-009 (animations, R&D), D-016 (budget de l'ouverture), D-022 (direction artistique), D-023 (catalogue).
+- **Décisions liées :** D-009 (animations, R&D), D-016 (budget de l'ouverture), D-022 (direction artistique), D-023 (catalogue), D-029 (icônes de rareté).
+- **Règles tranchées :** dans [regles-du-jeu.md](../regles-du-jeu.md) (P45 à P47), qui fait foi. Ce document détaille comment les mettre en œuvre.
 - **Objectif :** que l'ouverture soit le moment le plus jouissif du jeu. La référence est Pokémon TCG Pocket.
 
 ## Ce qui existe
@@ -191,14 +192,9 @@ Plus tard, `user_cards.variant` permet des variantes du même mot, par exemple u
 
 ## Décisions
 
-**Prises par le propriétaire (2026-10-20) :**
-- le déroulé et la mise en scène par rareté ci-dessus ;
-- le coup d'œil est un geste bonus, possible seulement après avoir choisi le paquet, jamais expliqué ;
-- l'animation du geste masque le temps de réponse du serveur ;
-- son et vibration intégrés dès le lot A, sans enregistrement de vrais paquets ;
-- pli et sachet développés tous les deux, A/B à préparer.
+Les règles tranchées le 2026-10-20 sont dans [regles-du-jeu.md](../regles-du-jeu.md) : mise en scène (P45), coup d'œil (P46), forme du paquet (P47). L'animation du geste masque le temps de réponse du serveur.
 
-**À prendre :**
+**À prendre** (aussi listées dans [regles-du-jeu.md](../regles-du-jeu.md#à-décider)) :
 1. **Dénominateur du numéro :** taille annoncée et collections publiées complètes (recommandé), ou nombre de cartes publiées.
 2. **Légendaires « hors série »** au-delà de la taille de la collection : oui ou non.
 3. **Outil de mesure pour l'A/B :** journal d'événements maison dans Postgres via la file (aucune dépendance, recommandé), ou un service comme PostHog hébergé dans l'UE (nouvelle dépendance).

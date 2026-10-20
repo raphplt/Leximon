@@ -1,0 +1,161 @@
+import type { Trade } from "@leximon/contract";
+import { describe, expect, it } from "vitest";
+import {
+  effectiveStatus,
+  formatPlayerCode,
+  normalizePlayerCode,
+  offerProblem,
+  refusalMessage,
+  splitTrades,
+  statusLabel,
+  timeLeftLabel,
+  toggleCard,
+  tradeableFromLabel,
+  tradeSides,
+} from "./offer";
+
+const now = Date.parse("2026-10-20T12:00:00.000Z");
+
+function trade(overrides: Partial<Trade> = {}): Trade {
+  return {
+    id: "00000000-0000-4000-8000-000000000001",
+    proposerCode: "AAAA1111",
+    recipientCode: "BBBB2222",
+    give: ["acariatre"],
+    want: ["bisbille", "cacochyme"],
+    status: "pending",
+    createdAt: "2026-10-20T10:00:00.000Z",
+    expiresAt: "2026-10-23T10:00:00.000Z",
+    resolvedAt: null,
+    ...overrides,
+  };
+}
+
+describe("normalizePlayerCode", () => {
+  it("accepts lower case, spaces and dashes", () => {
+    expect(normalizePlayerCode(" abcd-efgh ")).toBe("ABCDEFGH");
+    expect(normalizePlayerCode("1234 5678")).toBe("12345678");
+  });
+
+  it("refuses the wrong length and letters outside Crockford base 32", () => {
+    expect(normalizePlayerCode("ABCDEFG")).toBeNull();
+    expect(normalizePlayerCode("ABCDEFGHJ")).toBeNull();
+    expect(normalizePlayerCode("ABCDEFGI")).toBeNull();
+    expect(normalizePlayerCode("ABCDEFGU")).toBeNull();
+  });
+});
+
+describe("formatPlayerCode", () => {
+  it("splits the code in two groups", () => {
+    expect(formatPlayerCode("ABCDEFGH")).toBe("ABCD EFGH");
+    expect(formatPlayerCode("ABC")).toBe("ABC");
+  });
+});
+
+describe("effectiveStatus and statusLabel", () => {
+  it("treats a pending offer past its deadline as expired", () => {
+    expect(effectiveStatus(trade(), now)).toBe("pending");
+    expect(effectiveStatus(trade({ expiresAt: "2026-10-20T11:59:59.000Z" }), now)).toBe("expired");
+    expect(
+      effectiveStatus(trade({ status: "completed", expiresAt: "2026-10-01T00:00:00.000Z" }), now),
+    ).toBe("completed");
+  });
+
+  it("says every status in plain French", () => {
+    expect(statusLabel("completed")).toBe("Conclue");
+    expect(statusLabel("declined")).toBe("Refusée");
+    expect(statusLabel("cancelled")).toBe("Annulée");
+    expect(statusLabel("expired")).toBe("Expirée");
+    expect(statusLabel("pending")).toBe("En attente");
+  });
+});
+
+describe("tradeSides", () => {
+  it("swaps the sides for an offer received", () => {
+    expect(tradeSides(trade(), "incoming")).toEqual({
+      counterpartCode: "AAAA1111",
+      mine: ["bisbille", "cacochyme"],
+      theirs: ["acariatre"],
+    });
+    expect(tradeSides(trade(), "outgoing")).toEqual({
+      counterpartCode: "BBBB2222",
+      mine: ["acariatre"],
+      theirs: ["bisbille", "cacochyme"],
+    });
+  });
+});
+
+describe("splitTrades", () => {
+  it("puts pending offers first, the most urgent on top, then the newest answers", () => {
+    const late = trade({ id: "late", expiresAt: "2026-10-23T09:00:00.000Z" });
+    const urgent = trade({ id: "urgent", expiresAt: "2026-10-20T13:00:00.000Z" });
+    const lapsed = trade({ id: "lapsed", expiresAt: "2026-10-20T11:00:00.000Z" });
+    const declined = trade({
+      id: "declined",
+      status: "declined",
+      resolvedAt: "2026-10-20T11:30:00.000Z",
+    });
+    const { pending, history } = splitTrades([late, lapsed, declined, urgent], now);
+    expect(pending.map((t) => t.id)).toEqual(["urgent", "late"]);
+    expect(history.map((t) => t.id)).toEqual(["declined", "lapsed"]);
+  });
+});
+
+describe("timeLeftLabel", () => {
+  it("counts days, hours, then minutes", () => {
+    expect(timeLeftLabel("2026-10-23T10:00:00.000Z", now)).toBe("Expire dans 2 j 22 h");
+    expect(timeLeftLabel("2026-10-21T13:00:00.000Z", now)).toBe("Expire dans 1 j 01 h");
+    expect(timeLeftLabel("2026-10-20T15:07:00.000Z", now)).toBe("Expire dans 3 h 07");
+    expect(timeLeftLabel("2026-10-20T12:11:10.000Z", now)).toBe("Expire dans 12 min");
+  });
+
+  it("never shows zero, and says when it is over", () => {
+    expect(timeLeftLabel("2026-10-20T12:00:05.000Z", now)).toBe("Expire dans 1 min");
+    expect(timeLeftLabel("2026-10-20T12:00:00.000Z", now)).toBe("Expirée");
+  });
+});
+
+describe("tradeableFromLabel", () => {
+  it("gives the date for a recent account, and nothing once it can trade", () => {
+    expect(tradeableFromLabel("2026-10-22T13:30:00.000Z", now, "Europe/Paris")).toBe(
+      "Ton compte est tout neuf : tu pourras échanger à partir du jeudi 22 octobre à 15 h 30.",
+    );
+    expect(tradeableFromLabel("2026-10-19T00:00:00.000Z", now)).toBeNull();
+  });
+});
+
+describe("toggleCard", () => {
+  it("adds, removes, and stops at three cards", () => {
+    expect(toggleCard([], "a")).toEqual(["a"]);
+    expect(toggleCard(["a", "b"], "a")).toEqual(["b"]);
+    const full = ["a", "b", "c"];
+    expect(toggleCard(full, "d")).toBe(full);
+    expect(toggleCard(full, "b")).toEqual(["a", "c"]);
+  });
+});
+
+describe("offerProblem", () => {
+  const offer = { recipientCode: "bbbb-2222", ownCode: "AAAA1111", give: ["a"], want: ["b"] };
+
+  it("accepts one to three cards on each side for another player", () => {
+    expect(offerProblem(offer)).toBeNull();
+    expect(offerProblem({ ...offer, give: ["a", "b", "c"], want: ["d", "e", "f"] })).toBeNull();
+  });
+
+  it("names what is wrong, like the server would", () => {
+    expect(offerProblem({ ...offer, recipientCode: "nope" })).toBe("invalid_code");
+    expect(offerProblem({ ...offer, recipientCode: "aaaa 1111" })).toBe("self_trade");
+    expect(offerProblem({ ...offer, give: [] })).toBe("empty_side");
+    expect(offerProblem({ ...offer, want: ["a", "b", "c", "d"] })).toBe("too_many_cards");
+  });
+});
+
+describe("refusalMessage", () => {
+  it("explains each refusal kindly", () => {
+    expect(refusalMessage("daily_limit_reached")).toContain("10 offres");
+    expect(refusalMessage("account_too_recent")).toContain("3 jours");
+    expect(refusalMessage("card_not_tradeable")).toContain("7 jours");
+    expect(refusalMessage("player_not_found")).toContain("Aucun joueur");
+    expect(refusalMessage("trade_not_found")).toBe("Cette offre n'existe plus.");
+  });
+});

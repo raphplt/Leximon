@@ -39,3 +39,23 @@
   background: var(--lx-color-text);
   color: var(--lx-color-background);
 }
+
+/* Phones: four links leave no room for the full name, the initial stays as the logo. */
+@media (max-width: 480px) {
+  .bar {
+    padding: 12px 10px;
+  }
+
+  .logoRest {
+    display: none;
+  }
+
+  .links {
+    gap: 2px;
+  }
+
+  .link {
+    padding: 0 10px;
+    font-size: 14px;
+  }
+}

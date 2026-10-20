@@ -16,10 +16,14 @@ def test_the_excerpt_is_short_and_keeps_the_essentials() -> None:
 
 
 def test_a_prediction_outside_the_categories_is_an_error() -> None:
-    good = asyncio.run(prescreen.predict(FakeApi({"suitability": "ok"}), ENTRY))  # type: ignore[arg-type]
-    assert good.suitability == "ok" and good.error is None and good.cost_usd > 0
-    bad = asyncio.run(prescreen.predict(FakeApi({"suitability": "bof"}), ENTRY))  # type: ignore[arg-type]
+    answer = {"suitability": "ok", "domain": "nature"}
+    good = asyncio.run(prescreen.predict(FakeApi(answer), ENTRY))  # type: ignore[arg-type]
+    assert good.suitability == "ok" and good.domain == "nature"
+    assert good.error is None and good.cost_usd > 0
+    bad = asyncio.run(prescreen.predict(FakeApi({"suitability": "bof", "domain": "nature"}), ENTRY))  # type: ignore[arg-type]
     assert bad.suitability is None and bad.error
+    no_domain = asyncio.run(prescreen.predict(FakeApi({"suitability": "ok", "domain": "x"}), ENTRY))  # type: ignore[arg-type]
+    assert no_domain.suitability is None and no_domain.error
 
 
 def test_agreement_counts_the_words_let_through_and_those_lost() -> None:

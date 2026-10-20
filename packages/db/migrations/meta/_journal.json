@@ -36,6 +36,20 @@
       "when": 1792419157109,
       "tag": "0004_collections-and-themes",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1792485734140,
+      "tag": "0005_challenges-and-trades",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1792492370925,
+      "tag": "0006_bonus-boosters",
+      "breakpoints": true
     }
   ]
 }

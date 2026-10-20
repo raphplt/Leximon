@@ -3,15 +3,17 @@ import {
   IDEMPOTENCY_KEY_HEADER,
   type OwnedCardsResponse,
   ownedCardsResponseSchema,
+  profileResponseSchema,
+  tradeableCardsResponseSchema,
 } from "@leximon/contract";
-import { REFILL_SCHEDULE } from "@leximon/core";
+import { REFILL_SCHEDULE, TRADE_SCHEDULE } from "@leximon/core";
 import { createDb, schema } from "@leximon/db";
 import { testDatabaseUrl } from "@leximon/db/testing";
 import { count, eq, sum } from "drizzle-orm";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { createApp } from "../app";
 import { TEST_ORIGIN, testEnv } from "../test-env";
-import { type Guest, seedTestCatalog, signInAsGuest } from "../test-support";
+import { type Guest, seedTestCatalog, setOwnedCards, signInAsGuest } from "../test-support";
 
 const url = testDatabaseUrl();
 const env = testEnv(url);
@@ -62,6 +64,7 @@ describe("GET /me/wallet", () => {
     expect(boosterWalletSchema.parse(await response.json())).toEqual({
       stored: CAPACITY,
       nextRefillAt: null,
+      bonus: 0,
     });
     const [row] = await db
       .select({ total: count() })
@@ -136,6 +139,76 @@ describe("GET /me/cards", () => {
   ])("rejects an invalid query: %s", async (_label, path) => {
     const guest = await signInAsGuest(app, env);
     expect((await get(guest, path)).status).toBe(400);
+  });
+});
+
+describe("GET /me/profile", () => {
+  it("requires a session", async () => {
+    expect((await get(null, "/me/profile")).status).toBe(401);
+  });
+
+  it("creates the player code on first request and keeps it", async () => {
+    const guest = await signInAsGuest(app, env);
+    const response = await get(guest, "/me/profile");
+    expect(response.status).toBe(200);
+    expect(response.headers.get("cache-control")).toBe("no-store");
+    const profile = profileResponseSchema.parse(await response.json());
+    expect(profile.playerCode).toMatch(/^[0-9A-HJKMNP-TV-Z]{8}$/);
+
+    const [user] = await db
+      .select({ createdAt: schema.users.createdAt })
+      .from(schema.users)
+      .where(eq(schema.users.id, guest.userId));
+    expect(Date.parse(profile.canTradeFrom)).toBe(
+      (user?.createdAt.getTime() ?? 0) + TRADE_SCHEDULE[0].minAccountAgeMs,
+    );
+
+    const again = profileResponseSchema.parse(await (await get(guest, "/me/profile")).json());
+    expect(again).toEqual(profile);
+  });
+
+  it("creates a single code under concurrent first requests", async () => {
+    const guest = await signInAsGuest(app, env);
+    const responses = await Promise.all(Array.from({ length: 5 }, () => get(guest, "/me/profile")));
+    const codes = await Promise.all(
+      responses.map(
+        async (response) => profileResponseSchema.parse(await response.json()).playerCode,
+      ),
+    );
+    expect(new Set(codes).size).toBe(1);
+    const [row] = await db
+      .select({ total: count() })
+      .from(schema.players)
+      .where(eq(schema.players.userId, guest.userId));
+    expect(row?.total).toBe(1);
+  });
+});
+
+describe("GET /me/tradeable", () => {
+  it("requires a session", async () => {
+    expect((await get(null, "/me/tradeable")).status).toBe(401);
+  });
+
+  it("lists the player's own duplicates that can be given now, sorted by card", async () => {
+    const guest = await signInAsGuest(app, env);
+    const recently = new Date(Date.now() - 60_000);
+    await setOwnedCards(db, guest.userId, [
+      { cardId: "test-b-common-1", quantity: 2 },
+      { cardId: "test-a-rare-1", quantity: 5, lastObtainedAt: recently },
+      { cardId: "test-a-common-1", quantity: 1 },
+      { cardId: "test-a-legendary-1", quantity: 2, lastObtainedAt: recently },
+      { cardId: "test-a-epic-1", quantity: 2 },
+    ]);
+
+    const response = await get(guest, "/me/tradeable");
+    expect(response.status).toBe(200);
+    expect(response.headers.get("cache-control")).toBe("no-store");
+    const body = tradeableCardsResponseSchema.parse(await response.json());
+    const profile = profileResponseSchema.parse(await (await get(guest, "/me/profile")).json());
+    expect(body).toEqual({
+      playerCode: profile.playerCode,
+      cardIds: ["test-a-epic-1", "test-a-rare-1", "test-b-common-1"],
+    });
   });
 });
 

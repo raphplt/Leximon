@@ -9,6 +9,7 @@
     "prepare": "git config core.hooksPath .githooks || true",
     "build": "turbo run build",
     "dev": "turbo run dev",
+    "services": "docker compose --profile content up -d --wait",
     "test": "turbo run test",
     "typecheck": "turbo run typecheck",
     "lint": "biome check .",

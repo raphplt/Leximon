@@ -2,7 +2,6 @@ import type { BoosterSource } from "@leximon/contract";
 import {
   type BoosterWallet,
   computeRefill,
-  consumeBooster,
   createFullWallet,
   createSeededRandom,
   DRAW_SCHEDULE,
@@ -11,6 +10,7 @@ import {
   drawRulesAt,
   type EpochMs,
   REFILL_SCHEDULE,
+  takeBooster,
 } from "@leximon/core";
 import { type Database, schema } from "@leximon/db";
 import { and, eq, sql } from "drizzle-orm";
@@ -28,6 +28,8 @@ export interface OpenBoosterInput {
 export interface WalletView {
   readonly stored: number;
   readonly nextRefillAt: EpochMs | null;
+  /** Bonus boosters left in the reserve. */
+  readonly bonus: number;
 }
 
 export type OpenBoosterResult =
@@ -49,6 +51,9 @@ const { boosterWallets, boosterOpens, boosterOpenRequests, userCards } = schema;
  * Runs in one transaction that locks the player's wallet row, so concurrent requests from the
  * same player are applied one after the other. A request repeating an idempotency key returns
  * the booster already opened with that key instead of opening another.
+ *
+ * The free stock is spent first; once it is empty, a booster comes from the bonus reserve.
+ * Lock order: the wallet first, then the copies (as answering a challenge: wallet, then mastery).
  *
  * Latency: each statement is a database round trip, so the open uses as few as possible:
  * BEGIN, lock (and create) the wallet, look up the idempotency key, one combined write, COMMIT.
@@ -113,11 +118,15 @@ export async function openBooster(
         kind: "opened",
         openId: previous.id,
         cards: previous.cards,
-        wallet: { stored: current.stored, nextRefillAt: current.nextRefillAt },
+        wallet: {
+          stored: current.stored,
+          nextRefillAt: current.nextRefillAt,
+          bonus: locked.bonusBoosters,
+        },
       };
     }
 
-    const consumed = consumeBooster(wallet, REFILL_SCHEDULE, now);
+    const consumed = takeBooster(wallet, locked.bonusBoosters, REFILL_SCHEDULE, now);
     if (!consumed.ok) {
       return { kind: "stock_empty", nextRefillAt: consumed.nextRefillAt };
     }
@@ -136,17 +145,32 @@ export async function openBooster(
     const cardsUpsert = tx.$with("cards_upsert").as(
       tx
         .insert(userCards)
-        .values(countCopies(draw.cards).map(([cardId, quantity]) => ({ userId, cardId, quantity })))
+        .values(
+          countCopies(draw.cards).map(([cardId, quantity]) => ({
+            userId,
+            cardId,
+            quantity,
+            firstObtainedAt: openedAt,
+            lastObtainedAt: openedAt,
+          })),
+        )
         .onConflictDoUpdate({
           target: [userCards.userId, userCards.cardId, userCards.variant],
-          set: { quantity: sql`${userCards.quantity} + excluded.quantity` },
+          set: {
+            quantity: sql`${userCards.quantity} + excluded.quantity`,
+            lastObtainedAt: sql`excluded.last_obtained_at`,
+          },
         })
         .returning({ cardId: userCards.cardId }),
     );
     const walletUpdate = tx.$with("wallet_update").as(
       tx
         .update(boosterWallets)
-        .set({ ...toRow(consumed.state), pityCounters: draw.pityCounters })
+        .set({
+          ...toRow(consumed.state),
+          pityCounters: draw.pityCounters,
+          bonusBoosters: consumed.reserve,
+        })
         .where(eq(boosterWallets.userId, userId))
         .returning({ userId: boosterWallets.userId }),
     );
@@ -161,6 +185,7 @@ export async function openBooster(
           poolFingerprint: fingerprint,
           pityCountersBefore: locked.pityCounters,
           cards: draw.cards,
+          fromBonus: consumed.fromBonus,
           openedAt,
         })
         .returning({ id: boosterOpens.id }),
@@ -174,7 +199,11 @@ export async function openBooster(
       kind: "opened",
       openId,
       cards: draw.cards,
-      wallet: { stored: consumed.state.stored, nextRefillAt: consumed.state.nextRefillAt },
+      wallet: {
+        stored: consumed.state.stored,
+        nextRefillAt: consumed.state.nextRefillAt,
+        bonus: consumed.reserve,
+      },
     };
   });
 }

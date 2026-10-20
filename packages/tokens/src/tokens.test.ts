@@ -1,7 +1,7 @@
 import { RARITIES } from "@leximon/core";
 import { describe, expect, it } from "vitest";
 import { cssFill, cssRootRule, cssVariables, solidColor } from "./css";
-import { colors, rarityPips, rarityStyles } from "./tokens";
+import { colors, rarityStyles } from "./tokens";
 
 /** WCAG relative luminance of a `#RRGGBB` color. */
 function luminance(hex: string): number {
@@ -19,9 +19,8 @@ function contrast(a: string, b: string): number {
 }
 
 describe("rarity styles", () => {
-  it("cover every rarity, with one more pip per rarity", () => {
+  it("cover every rarity", () => {
     expect(Object.keys(rarityStyles)).toEqual([...RARITIES]);
-    expect(RARITIES.map((rarity) => rarityPips[rarity])).toEqual([1, 2, 3, 4, 5, 6]);
   });
 
   it.each(RARITIES)("keep the %s card text readable (WCAG AA)", (rarity) => {

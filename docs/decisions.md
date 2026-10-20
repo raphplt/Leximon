@@ -243,3 +243,56 @@ Pour ajouter ou modifier une décision, utiliser le skill `decision`.
   - en local, les fichiers vont dans `apps/web/public/catalog/`. La copie vers R2 sera ajoutée avec l'hébergement de production (D-005) ;
   - le catalogue de démo et le seed de dev des cartes disparaissent : le jeu local lit la dernière version publiée.
   - les scripts TypeScript de `packages/db` tournent avec Node 24 directement (suppression des types), aidé d'un petit crochet de résolution (`packages/config/node/resolve-ts.mjs`) qui retrouve les imports sans extension. Aucune dépendance ajoutée.
+
+## D-024 · Collections de lancement : trois collections thématiques, domaine tiré du pré-tri
+
+- **Statut :** Acceptée (2026-10-20), choisie par le propriétaire, avec un budget de génération de 25 $ au plus.
+- **Choix :** trois collections d'environ 500 cartes : « Les Fondateurs » (généraliste, complétée à partir de lot-1), « Caractères et travers » (mœurs, défauts, moqueries et injures d'antan) et « Métiers et objets disparus ». Le pré-tri Haiku (D-021) donne aussi le domaine du sens principal de chaque mot (`caractere`, `metiers_objets`, `nature`, `table`, `autre`). Dans `content/collections.toml`, chaque collection liste les domaines où ses nouvelles séries puisent ; Les Fondateurs prend `nature`, `table` et `autre`.
+- **Pourquoi :** des collections à l'identité claire se racontent et se partagent mieux qu'une suite de lots ; étiqueter le domaine au pré-tri ne coûte presque rien (environ 0,03 $ pour 1 000 mots).
+- **Conséquences :**
+  - tout le vivier (environ 28 000 mots) est pré-trié une fois, pour moins de 1 $ ;
+  - `select --run <série>` ne retient, pour une collection à domaines, que des mots pré-triés de ces domaines ;
+  - une série déclarée dans `collections.toml` doit exister dans Directus pour que `release` aboutisse.
+
+## D-025 · Défis : révision espacée FSRS (ts-fsrs), niveau tiré de la stabilité
+
+- **Statut :** Acceptée (2026-10-20), choisie par le propriétaire.
+- **Choix :** la dépendance `ts-fsrs` (MIT, sans dépendance) planifie les révisions dans `packages/core`, sans flou aléatoire ni étapes de quelques minutes : un mot oublié revient le lendemain. Le niveau d'une carte suit la stabilité mémoire mesurée par FSRS : Encre à 7 jours, Dorure à 30 jours, sans jamais redescendre. Formats du MVP : QCM à quatre choix, « trouver la définition » ou « trouver le mot », les mauvais choix venant de la même collection. Réglages datés dans `MASTERY_SCHEDULE`.
+- **Pourquoi :** FSRS est la référence actuelle de la révision espacée ; une stabilité mémoire mesurée donne un niveau qui veut dire « je connais ce mot », pas « j'ai beaucoup joué ».
+- **Conséquences :**
+  - avec les réglages de départ, Encre arrive à la 2e bonne réponse espacée (vers le 3e jour), Dorure à la 3e (vers le 17e jour) ;
+  - API sans état : le serveur ne garde pas les questions servies. Il n'accepte une réponse que sur un mot possédé et dû, une fois par clé d'idempotence, sous verrou de la ligne `user_mastery` ;
+  - les réponses ne sont pas protégées contre la triche : le catalogue est public. Sans récompense attachée, tricher ne fait monter que ses propres niveaux. Une récompense (plis bonus) demandera de revoir ce point ;
+  - chaque réponse va dans `review_logs`, partitionnée par mois, pour régler FSRS plus tard et pour le mode classe.
+
+## D-026 · Échanges : offres directes par code joueur, doublons seulement
+
+- **Statut :** Acceptée (2026-10-20), choisie par le propriétaire.
+- **Choix :** un joueur fait une offre à un autre, désigné par son code joueur public (8 caractères) : 1 à 3 cartes données contre 1 à 3 cartes voulues, un exemplaire de chaque. Seuls les doublons s'échangent ; Épiques et Légendaires attendent 7 jours après leur dernière obtention (`user_cards.last_obtained_at`) ; comptes de plus de 3 jours ; 10 offres envoyées par 24 h glissantes ; une offre expire après 72 h. Rien n'est réservé : l'acceptation verrouille l'offre puis les exemplaires dans un ordre fixe, revérifie tout et déplace les quantités en une transaction. Réglages datés dans `TRADE_SCHEDULE`.
+- **Pourquoi :** des offres structurées sans texte libre protègent un public jeune ; les garde-fous freinent le transfert de cartes rares depuis des comptes jetables.
+- **Conséquences :**
+  - « expirée » n'est jamais stocké : une offre en attente dont l'échéance est passée est expirée, sans tâche planifiée ;
+  - une offre qui ne peut plus être honorée échoue à l'acceptation et reste en attente jusqu'à son expiration ;
+  - un échange ne touche jamais la maîtrise ;
+  - pas encore de notification : elle passera par la file, avec les notifications push.
+
+## D-027 · Plis bonus : réserve sur le portefeuille, attributions idempotentes
+
+- **Statut :** Acceptée (2026-10-20), règles choisies par le propriétaire (P23, P29 dans `docs/regles-du-jeu.md`).
+- **Choix :** la réserve de plis bonus est un compteur du portefeuille, distinct du stock gratuit calculé à la volée. Chaque attribution (défi du jour, Dorure) est une ligne d'une table d'attributions de clé (joueur, motif, jour ou carte) : elle est insérée dans la transaction de la réponse, et la réserve n'augmente que si la ligne est nouvelle. L'ouverture d'un pli puise dans la réserve seulement quand le stock gratuit est vide. Réglages datés dans `BONUS_SCHEDULE`.
+- **Pourquoi :** la clé d'attribution rend impossible un double gain, même avec des réponses concurrentes ou rejouées ; une réserve séparée ne bloque jamais la recharge gratuite.
+- **Conséquences :** la triche sur les réponses (catalogue public, D-025) reste possible mais plafonnée par règle : un pli par jour, un par carte dorée. Le « jour » est le jour calendaire de Paris.
+
+## D-028 · Gravures : Wikimedia Commons filtré, choix par Sonnet, encre seule teintée à l'affichage
+
+- **Statut :** Acceptée (2026-10-20), choisie par le propriétaire après la R&D ([docs/rnd/gravures.md](rnd/gravures.md)) et un essai de cinq rendus. Règles P42 et P43.
+- **Choix :** la chaîne cherche sur Wikimedia Commons avec des requêtes écrites par Haiku et un filtre de droits strict (PD, CC0, CC BY 4.0 ; ni Gallica, ni British Museum ; auteur mort avant 1956, date cherchée sur Wikidata), puis Claude Sonnet 5.5 choisit parmi 8 vignettes par l'API Batch. Chaque choix est validé avant publication. Le traitement (Pillow et NumPy, chaîne locale seulement) produit deux WebP par carte, nommés par empreinte : l'encre avec transparence et l'aplat des masses sombres. La carte les colore par sa rareté, en masque CSS. Le champ `engraving` du catalogue est un ajout rétrocompatible.
+- **Pourquoi :** Commons est la seule source libre à cette échelle sans redevance (Gallica facture 75 € par image) ; un seul fichier teintable sert aux cartes claires et de nuit, sur le web comme sur mobile (`tintColor`).
+- **Conséquences :** environ 5 $ et 5 à 9 h de recherche pour tout le catalogue, Commons bridant les robots sans contact ; les fichiers binaires restent hors de git (`content/pipeline/data/gravures/`, puis R2 en production) ; les crédits CC BY 4.0 sont affichés au joueur.
+
+## D-029 · Icônes de rareté : une gemme par rang, géométrie partagée dans `packages/tokens`
+
+- **Statut :** Acceptée (2026-10-20), choisie par le propriétaire parmi trois séries puis trois icônes pour Courant. Règle P44.
+- **Choix :** six gemmes de plus en plus taillées, de l'éclat brut (Courant) à l'étoile (Légendaire), dessinées en tracés SVG sur une grille de 24 dans `packages/tokens/src/rarity-icons.ts`. Sur la carte, une pastille ronde aux couleurs de la rareté porte l'icône seule ; l'interface affiche l'icône suivie du nom (`RarityName`).
+- **Pourquoi :** la silhouette seule distingue les rangs jusqu'à 10 px ; des tracés bruts se dessinent à l'identique sur le web (`<svg>`) et sur mobile (react-native-svg).
+- **Conséquences :** remplace les pastilles à points de D-022. Le nom de la rareté reste le libellé accessible de la pastille.

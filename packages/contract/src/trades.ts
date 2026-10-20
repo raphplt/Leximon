@@ -1,0 +1,91 @@
+import { z } from "zod";
+import { slugSchema, timestampSchema } from "./common";
+
+/** Public code of a player, shared to receive offers: 8 characters of Crockford base 32. */
+export const playerCodeSchema = z
+  .string()
+  .transform((value) => value.replaceAll(/[\s-]/g, "").toUpperCase())
+  .pipe(z.string().regex(/^[0-9A-HJKMNP-TV-Z]{8}$/));
+
+/** `GET /me/profile`, 200. */
+export const profileResponseSchema = z.object({
+  playerCode: z.string(),
+  /** When the account becomes old enough to trade (D-026). */
+  canTradeFrom: timestampSchema,
+});
+export type ProfileResponse = z.infer<typeof profileResponseSchema>;
+
+/** `GET /players/:code/tradeable` and `GET /me/tradeable`, 200: cards that player can give now. */
+export const tradeableCardsResponseSchema = z.object({
+  playerCode: z.string(),
+  cardIds: z.array(slugSchema),
+});
+export type TradeableCardsResponse = z.infer<typeof tradeableCardsResponseSchema>;
+
+const tradeCardsSchema = z.array(slugSchema).min(1).max(3);
+
+/** `POST /trades` body, with an `Idempotency-Key` header. */
+export const createTradeRequestSchema = z.object({
+  recipientCode: playerCodeSchema,
+  /** Cards the proposer gives. */
+  give: tradeCardsSchema,
+  /** Cards the proposer wants in return. */
+  want: tradeCardsSchema,
+});
+export type CreateTradeRequest = z.input<typeof createTradeRequestSchema>;
+
+export const tradeStatusSchema = z.enum([
+  "pending",
+  "completed",
+  "declined",
+  "cancelled",
+  "expired",
+]);
+export type TradeStatus = z.infer<typeof tradeStatusSchema>;
+
+export const tradeSchema = z.object({
+  id: z.uuid(),
+  proposerCode: z.string(),
+  recipientCode: z.string(),
+  give: z.array(slugSchema),
+  want: z.array(slugSchema),
+  status: tradeStatusSchema,
+  createdAt: timestampSchema,
+  expiresAt: timestampSchema,
+  resolvedAt: timestampSchema.nullable(),
+});
+export type Trade = z.infer<typeof tradeSchema>;
+
+/**
+ * Refusals, as `{ error }`: 422 on `POST /trades`; 409 on accept, decline and cancel (an offer
+ * no longer pending or expired, a card no longer tradeable, an account too recent if the rule
+ * tightened). `player_not_found` is a 404; `trade_not_found` (also for the wrong party) too.
+ */
+export const tradeRefusalSchema = z.enum([
+  "player_not_found",
+  "self_trade",
+  "empty_side",
+  "too_many_cards",
+  "duplicate_card",
+  "account_too_recent",
+  "daily_limit_reached",
+  "card_not_tradeable",
+  "trade_not_pending",
+  "trade_expired",
+  "trade_not_found",
+]);
+export type TradeRefusalCode = z.infer<typeof tradeRefusalSchema>;
+
+/** `GET /trades` query string. */
+export const tradesQuerySchema = z.object({
+  box: z.enum(["incoming", "outgoing"]),
+  cursor: z.string().max(200).optional(),
+  limit: z.coerce.number().int().min(1).max(50).default(20),
+});
+
+/** `GET /trades`, 200: newest first. */
+export const tradesResponseSchema = z.object({
+  trades: z.array(tradeSchema),
+  nextCursor: z.string().nullable(),
+});
+export type TradesResponse = z.infer<typeof tradesResponseSchema>;

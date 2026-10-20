@@ -5,7 +5,7 @@ description: Consigner ou modifier une décision technique de Leximon dans docs/
 
 # Consigner une décision technique
 
-Les décisions techniques vivent dans un seul fichier : `docs/decisions.md`. Les décisions produit sont dans `docs/north-star.md`, qui est local et non versionné.
+Les décisions techniques vivent dans un seul fichier : `docs/decisions.md`. Les choix métier (règles du jeu) sont dans `docs/regles-du-jeu.md` : quand une décision technique met en œuvre une règle du jeu, la règle et ses valeurs vont dans ce fichier, la décision y renvoie par son numéro (P-xx).
 
 ## Étapes
 

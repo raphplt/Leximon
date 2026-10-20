@@ -46,6 +46,7 @@ SUITABILITY = (
     "offensant_aujourdhui",
     "vulgaire",
     "sens_incertain",
+    "nom_propre",
 )
 
 #: Shared with the pre-screen (prescreen.py), which predicts the same opinion more cheaply.
@@ -54,7 +55,8 @@ SUITABILITY_GUIDE = """   - ok : mot rare ou ancien, avec du charme ou une histo
    - trop_technique : vocabulaire scientifique ou technique sans attrait pour le grand public ;
    - offensant_aujourdhui : injure raciste, sexiste, homophobe ou visant un groupe, à écarter ;
    - vulgaire : grossier au point de ne pas convenir à un public adolescent ;
-   - sens_incertain : l'entrée ne permet pas de rédiger une carte fiable.
+   - sens_incertain : l'entrée ne permet pas de rédiger une carte fiable ;
+   - nom_propre : nom d'une personne, d'une divinité, d'un lieu ou d'un astre, pas un mot de la langue.
 """
 
 SYSTEM_PROMPT = (
@@ -62,8 +64,8 @@ SYSTEM_PROMPT = (
 
 Règles :
 1. Appuie-toi uniquement sur l'entrée fournie. N'invente ni sens, ni date, ni étymologie.
-2. definition : en français moderne et clair, 25 mots au maximum, une phrase si possible. Reformule avec tes mots, ne recopie pas le Littré. Si le mot a plusieurs sens, garde celui qui fait la meilleure carte (souvent le plus ancien ou le plus pittoresque) ; mentionne au plus un second sens.
-3. etymology : 30 mots au maximum, d'après la rubrique ÉTYMOLOGIE. Si elle manque ou si le Littré la dit incertaine, écris « Origine incertaine. »
+2. definition : en français moderne et clair, 25 mots au maximum, une phrase si possible. Reformule avec tes mots, ne recopie pas le Littré. Si le mot a plusieurs sens, garde celui qui fait la meilleure carte (souvent le plus ancien ou le plus pittoresque) ; mentionne au plus un second sens. Le joueur doit retrouver le mot à partir de la définition : évite d'y mettre le mot lui-même ou un mot évident de sa famille (pas « petite jarre » pour jarron), sauf si c'est la seule façon claire de le définir. Si le Littré donne le mot comme régional, dis la région (« En Lorraine, … »).
+3. etymology : 30 mots au maximum, d'après la rubrique ÉTYMOLOGIE. Si elle manque mais qu'un MOT DE BASE PROBABLE est fourni et que le mot en dérive visiblement, explique cette formation (par exemple « Dérivé de secréter. »), en t'appuyant sur l'étymologie du mot de base. Sinon, si elle manque ou si le Littré la dit incertaine, écris « Origine incertaine. »
 4. quote_index : le numéro de la citation la plus parlante, de préférence courte (moins de 200 caractères), qui montre le mot en usage. null si aucune ne convient.
 5. quote_author : le nom complet de l'auteur de cette citation, à partir de l'abréviation du Littré (par exemple MOL. donne Molière). Si tu n'es pas certain, recopie l'abréviation telle quelle. null si quote_index est null.
 6. part_of_speech : la nature abrégée (n. m., n. f., adj., v. tr., v. intr., adv., loc., interj.).
@@ -165,12 +167,13 @@ async def draft_card(
     model: str,
     entry: littre.Entry,
     correction: tuple[CardDraft, list[str]] | None = None,
+    base: littre.Entry | None = None,
 ) -> DraftResult:
     """Drafts the card, or with `correction` (a previous draft and the verifier's problems)
-    redrafts it in the same conversation."""
+    redrafts it in the same conversation. `base` is the entry of the word it derives from."""
     started = time.monotonic()
     messages: list[dict[str, str]] = [
-        {"role": "user", "content": littre.render(entry) + "\n\nRédige la carte."}
+        {"role": "user", "content": littre.render(entry, base=base) + "\n\nRédige la carte."}
     ]
     if correction is not None:
         previous, problems = correction
@@ -233,11 +236,13 @@ async def draft_all(
 ) -> list[DraftResult]:
     client = anthropic.AsyncAnthropic(max_retries=4)
     semaphore = asyncio.Semaphore(concurrency)
+    headwords = littre.index()
 
     async def guarded(model: str, entry: littre.Entry) -> DraftResult:
         async with semaphore:
             try:
-                return await draft_card(client, model, entry)
+                base = littre.base_entry(entry, headwords)
+                return await draft_card(client, model, entry, base=base)
             except anthropic.APIError as error:
                 return DraftResult(
                     word=entry.headword.lower(),

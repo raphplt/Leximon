@@ -253,14 +253,17 @@ def rarity_label(frequency: ngram.NgramFrequency | None, pepite: bool, rule: Rar
 TABLE_FIELDS = ["word", "definition", "rarity", "pepite", "review_reasons", "verdict"]
 
 
-def ensure_layout(client: httpx.Client, run: str) -> None:
-    """Shows the run's cards to review, word first, in every table view of the collection
-    (default and saved views). The other cards and earlier runs stay one filter away."""
-    layout_query = {"tabular": {"fields": TABLE_FIELDS, "sort": ["review_order"], "limit": 50}}
+def ensure_layout(client: httpx.Client) -> None:
+    """Every table view of the collection (default and saved) becomes the review queue: the cards
+    to review that have no verdict yet, all runs together, word first. A card leaves the queue as
+    soon as it gets a verdict; the other cards stay one filter away."""
+    layout_query = {
+        "tabular": {"fields": TABLE_FIELDS, "sort": ["run", "review_order"], "limit": 50}
+    }
     view = {
         "layout": "tabular",
         "layout_query": layout_query,
-        "filter": {"_and": [{"run": {"_eq": run}}, {"to_review": {"_eq": True}}]},
+        "filter": {"_and": [{"to_review": {"_eq": True}}, {"verdict": {"_null": True}}]},
     }
     presets = (
         client.get("/presets", params={"filter[collection][_eq]": COLLECTION, "limit": "-1"})
@@ -304,6 +307,10 @@ def refresh_run(client: httpx.Client, run: str) -> int:
     return len(items)
 
 
+#: Cards per insert request.
+PUSH_BATCH = 100
+
+
 def replace_run(
     client: httpx.Client, run: str, rows: list[dict[str, object]], seed: int = 2026
 ) -> int:
@@ -324,7 +331,10 @@ def replace_run(
     random.Random(seed).shuffle(shuffled)
     for order, row in enumerate(shuffled, start=1):
         row["review_order"] = order
-    client.post(f"/items/{COLLECTION}", json=shuffled).raise_for_status()
+    # Directus refuses request bodies over 1 MB by default: a run of 500 cards exceeds it.
+    for start in range(0, len(shuffled), PUSH_BATCH):
+        batch = shuffled[start : start + PUSH_BATCH]
+        client.post(f"/items/{COLLECTION}", json=batch).raise_for_status()
     return len(shuffled)
 
 

@@ -58,7 +58,31 @@ def test_card_follows_the_catalogue_schema() -> None:
         "collectionId": "fondateurs",
         "themes": ["arts", "cuisine"],
         "perBillion": 1.23,
+        "engraving": None,
     }
+
+
+def test_a_rendered_engraving_is_attached_to_its_card() -> None:
+    engraving = {
+        "ink": "gravures/poelonnee.0123456789ab.ink.webp",
+        "fill": "gravures/poelonnee.ba9876543210.fill.webp",
+        "width": 300,
+        "height": 480,
+        "credit": "Anonyme, 1849 · Wikimedia Commons (domaine public)",
+        "sourceUrl": "https://commons.wikimedia.org/wiki/File:X.jpg",
+        "licence": "domaine public",
+    }
+    files = release.build(
+        [FONDATEURS],
+        {"lot-1": [row("poêlonnée"), row("raclure")]},
+        frequency,
+        "2026-10-19.1",
+        NOW,
+        {"poelonnee": engraving, "retiree": engraving},
+    )
+    manifest = json.loads(files["manifest.json"])
+    cards = json.loads(files[manifest["collections"][0]["file"]])["cards"]
+    assert {c["id"]: c["engraving"] for c in cards} == {"poelonnee": engraving, "raclure": None}
 
 
 def test_only_publishable_cards_are_released() -> None:

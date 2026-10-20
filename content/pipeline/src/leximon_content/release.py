@@ -36,6 +36,8 @@ class Collection:
     name: str
     #: Content runs whose publishable cards make up the collection.
     runs: tuple[str, ...]
+    #: Pre-screen domains its new runs select from (D-024); empty for any domain.
+    domains: tuple[str, ...] = ()
 
 
 class ReleaseError(Exception):
@@ -45,9 +47,18 @@ class ReleaseError(Exception):
 def load_collections(path: Path = COLLECTIONS_FILE) -> list[Collection]:
     data = tomllib.loads(path.read_text(encoding="utf-8"))
     return [
-        Collection(id=item["id"], name=item["name"], runs=tuple(item["runs"]))
+        Collection(
+            id=item["id"],
+            name=item["name"],
+            runs=tuple(item["runs"]),
+            domains=tuple(item.get("domains", ())),
+        )
         for item in data["collection"]
     ]
+
+
+def collection_of_run(collections: Sequence[Collection], run: str) -> Collection | None:
+    return next((c for c in collections if run in c.runs), None)
 
 
 def slug(word: str) -> str:
@@ -78,10 +89,13 @@ def per_billion(frequency: ngram.NgramFrequency | None) -> float | None:
 
 
 def card(
-    row: Mapping[str, object], collection_id: str, frequency: ngram.NgramFrequency | None
+    row: Mapping[str, object],
+    collection_id: str,
+    frequency: ngram.NgramFrequency | None,
+    engraving: Mapping[str, object] | None = None,
 ) -> dict[str, object] | None:
     """The catalogue card of a Directus row, or `None` when its rarity is not computed yet
-    (compound words, D-020)."""
+    (compound words, D-020). A card without an approved engraving keeps its initial (`null`)."""
     rarity = RARITY_CODES.get(str(row["rarity"]))
     if rarity is None:
         return None
@@ -103,6 +117,7 @@ def card(
         "collectionId": collection_id,
         "themes": sorted(set(row.get("themes") or [])),  # type: ignore[call-overload]
         "perBillion": per_billion(frequency),
+        "engraving": dict(engraving) if engraving is not None else None,
     }
 
 
@@ -116,8 +131,11 @@ def build(
     frequency_of: Callable[[str], ngram.NgramFrequency | None],
     version: str,
     released_at: datetime,
+    engravings: Mapping[str, Mapping[str, object]] | None = None,
 ) -> dict[str, bytes]:
-    """Every file of the release, keyed by path relative to the release folder."""
+    """Every file of the release, keyed by path relative to the release folder. `engravings`
+    holds the rendered engraving of each card that has one (data/gravures/out/rendered.json)."""
+    engravings = engravings or {}
     files: dict[str, bytes] = {}
     entries = []
     owner: dict[str, str] = {}
@@ -129,7 +147,8 @@ def build(
             for row in rows_by_run[run]:
                 if not publishable(row):
                     continue
-                built = card(row, collection.id, frequency_of(str(row["word"])))
+                word = str(row["word"])
+                built = card(row, collection.id, frequency_of(word), engravings.get(slug(word)))
                 if built is None:
                     continue
                 card_id = str(built["id"])

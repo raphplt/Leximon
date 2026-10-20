@@ -17,5 +17,8 @@
     "@leximon/config": "workspace:*",
     "typescript": "catalog:",
     "vitest": "catalog:"
+  },
+  "dependencies": {
+    "ts-fsrs": "^5.4.2"
   }
 }

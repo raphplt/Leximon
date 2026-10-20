@@ -1,0 +1,384 @@
+import {
+  answerBonuses,
+  BONUS_SCHEDULE,
+  type BonusKind,
+  bonusRulesAt,
+  buildQuestion,
+  type ChallengeFormat,
+  createFullWallet,
+  createSeededRandom,
+  creditReserve,
+  type EpochMs,
+  gameDayOf,
+  isDue,
+  MASTERY_SCHEDULE,
+  type MasteryLevel,
+  type MemoryState,
+  masteryRulesAt,
+  newWordMastery,
+  planSession,
+  type Question,
+  REFILL_SCHEDULE,
+  reviewWord,
+} from "@leximon/core";
+import { type Database, schema } from "@leximon/db";
+import { and, asc, eq, sql, type WithSubquery } from "drizzle-orm";
+import type { CatalogIndex } from "./catalog-index";
+
+const { boosterBonusAwards, boosterWallets, userMastery, reviewLogs, userCards } = schema;
+
+export interface ChallengeSession {
+  readonly questions: readonly Question[];
+  /** When the next owned word becomes due, if none is due now. */
+  readonly nextDueAt: EpochMs | null;
+}
+
+/**
+ * Picks the words of a challenge session: owned words due for review (most overdue first), then
+ * owned words never reviewed (oldest first), and builds one question per word.
+ *
+ * Reads only: nothing is written until an answer arrives, so abandoning a session costs nothing.
+ */
+export async function nextChallenges(
+  db: Database,
+  catalog: CatalogIndex,
+  input: { userId: string; now: EpochMs; limit: number; seed: string },
+): Promise<ChallengeSession> {
+  const { userId, now, limit } = input;
+  const owned = sql`exists (select 1 from ${userCards} where ${userCards.userId} = ${userId}
+    and ${userCards.cardId} = candidates.card_id and ${userCards.quantity} > 0)`;
+  // One round trip: due words and never-reviewed words, each list bounded by the session size.
+  const result = await db.execute<{ card_id: string; due: boolean }>(sql`
+    select card_id, true as due from (
+      select ${userMastery.cardId} as card_id, ${userMastery.due} as sort_key
+      from ${userMastery}
+      where ${userMastery.userId} = ${userId} and ${userMastery.due} <= ${new Date(now)}
+      order by ${userMastery.due}
+      limit ${limit * 2}
+    ) candidates where ${owned}
+    union all
+    (select ${userCards.cardId} as card_id, false as due
+      from ${userCards}
+      where ${userCards.userId} = ${userId} and ${userCards.quantity} > 0
+        and not exists (select 1 from ${userMastery} where ${userMastery.userId} = ${userId}
+          and ${userMastery.cardId} = ${userCards.cardId})
+      group by ${userCards.cardId}
+      order by min(${userCards.firstObtainedAt}), ${userCards.cardId}
+      limit ${limit})
+  `);
+  const due = result.rows.filter((row) => row.due).map((row) => row.card_id);
+  const fresh = result.rows.filter((row) => !row.due).map((row) => row.card_id);
+  const words = planSession(due, fresh, limit);
+
+  const random = createSeededRandom(input.seed);
+  const questions: Question[] = [];
+  for (const cardId of words) {
+    const collectionId = catalog.collectionOf.get(cardId);
+    const sameCollection =
+      collectionId === undefined ? [] : (catalog.byCollection.get(collectionId) ?? []);
+    const question = buildQuestion(random, cardId, sameCollection, catalog.all);
+    if (question !== null) questions.push(question);
+  }
+
+  if (questions.length > 0) {
+    return { questions, nextDueAt: null };
+  }
+  const [next] = await db
+    .select({ due: userMastery.due })
+    .from(userMastery)
+    .where(
+      and(
+        eq(userMastery.userId, userId),
+        sql`exists (select 1 from ${userCards} where ${userCards.userId} = ${userId}
+          and ${userCards.cardId} = ${userMastery.cardId} and ${userCards.quantity} > 0)`,
+      ),
+    )
+    .orderBy(asc(userMastery.due))
+    .limit(1);
+  return { questions, nextDueAt: next === undefined ? null : next.due.getTime() };
+}
+
+export interface AnswerInput {
+  readonly userId: string;
+  readonly idempotencyKey: string;
+  readonly cardId: string;
+  readonly format: ChallengeFormat;
+  readonly chosenCardId: string;
+  readonly now: EpochMs;
+}
+
+/** Bonus boosters earned by one answer (see `answerBonuses` in core). */
+export interface AnswerBonus {
+  readonly daily: number;
+  readonly gilded: number;
+  /** Part of `daily + gilded` that fitted in the reserve. */
+  readonly credited: number;
+  /** Reserve after the answer. */
+  readonly reserve: number;
+}
+
+export type AnswerResult =
+  | {
+      readonly kind: "answered";
+      readonly correct: boolean;
+      readonly level: MasteryLevel;
+      readonly levelUp: boolean;
+      readonly nextReviewAt: EpochMs;
+      readonly bonus: AnswerBonus;
+    }
+  | { readonly kind: "card_not_owned" }
+  | { readonly kind: "not_due"; readonly nextReviewAt: EpochMs };
+
+/**
+ * Applies a challenge answer to the word's mastery, and awards the bonus boosters it earns.
+ *
+ * The answer is right when the chosen card is the card asked about. The server does not keep the
+ * questions it served (stateless API): it only accepts answers on owned words that are due, once
+ * per idempotency key. A client could always look the answer up in the public catalogue (D-025).
+ *
+ * Lock order: the player's wallet first, then the word's mastery row. Opening a booster also locks
+ * the wallet first (then copies), so the two never wait on each other in a cycle. Holding the
+ * wallet serializes all the answers of a player: each one counts today's answers with every
+ * earlier answer committed, so the daily goal is met by exactly one answer, even when answers race.
+ *
+ * One transaction, five round trips: BEGIN, lock (or create) the wallet, lock (or create) the
+ * mastery row of an owned word along with the idempotency lookup, today's tally and the awards
+ * already given, one combined write, COMMIT.
+ */
+export async function answerChallenge(db: Database, input: AnswerInput): Promise<AnswerResult> {
+  const { userId, cardId, now } = input;
+  const rules = masteryRulesAt(MASTERY_SCHEDULE, now);
+  const bonusRules = bonusRulesAt(BONUS_SCHEDULE, now);
+  const fresh = newWordMastery(now);
+  const wallet = createFullWallet(REFILL_SCHEDULE, now);
+  const day = gameDayOf(now);
+
+  return db.transaction(async (tx) => {
+    // Creates the wallet of a player who never opened a booster (a full stock, as when it is
+    // missing), or locks the existing one: on conflict, the no-op update takes the row lock.
+    const [locked] = await tx
+      .insert(boosterWallets)
+      .values({
+        userId,
+        stored: wallet.stored,
+        progressMs: wallet.progressMs,
+        asOf: new Date(wallet.asOf),
+      })
+      .onConflictDoUpdate({ target: boosterWallets.userId, set: { userId: sql`excluded.user_id` } })
+      .returning({ bonusBoosters: boosterWallets.bonusBoosters });
+    if (locked === undefined) {
+      throw new Error(`Wallet missing for user ${userId} right after its creation`);
+    }
+
+    // Runs after the wallet lock, as a separate statement: its snapshot sees every answer and
+    // award committed by the player's earlier requests. Creates the mastery row of a word
+    // answered for the first time, or locks the existing one; returns nothing when the player owns
+    // no copy of the word.
+    const lookup = await tx.execute<AnswerLookupRow>(sql`
+      with locked as (
+        insert into ${userMastery} (user_id, card_id, level, due, stability, difficulty,
+          scheduled_days, learning_steps, reps, lapses, state, last_reviewed_at)
+        select ${userId}, ${cardId}, ${fresh.level}, ${new Date(fresh.memory.due)},
+          ${fresh.memory.stability}, ${fresh.memory.difficulty}, ${fresh.memory.scheduledDays},
+          ${fresh.memory.learningSteps}, ${fresh.memory.reps}, ${fresh.memory.lapses},
+          ${fresh.memory.state}, null
+        where exists (select 1 from ${userCards} where ${userCards.userId} = ${userId}
+          and ${userCards.cardId} = ${cardId} and ${userCards.quantity} > 0)
+        on conflict (user_id, card_id) do update set user_id = excluded.user_id
+        returning level, due, stability, difficulty, scheduled_days, learning_steps, reps, lapses,
+          state, last_reviewed_at
+      )
+      select locked.*,
+        (select json_build_object('correct', ${reviewLogs.correct}, 'levelAfter', ${reviewLogs.levelAfter})
+          from ${reviewLogs}
+          where ${reviewLogs.userId} = ${userId} and ${reviewLogs.challengeId} = ${input.idempotencyKey}
+          limit 1) as previous,
+        tally.day_answers, tally.day_correct, awards.awards
+      from locked
+      cross join lateral (
+        select count(*)::int as day_answers, (count(*) filter (where ${reviewLogs.correct}))::int as day_correct
+        from ${reviewLogs}
+        where ${reviewLogs.userId} = ${userId}
+          and ${reviewLogs.reviewedAt} >= ${new Date(day.start)}
+          and ${reviewLogs.reviewedAt} < ${new Date(day.end)}
+      ) tally
+      cross join lateral (
+        select coalesce(json_agg(json_build_object('kind', ${boosterBonusAwards.kind},
+          'awardKey', ${boosterBonusAwards.awardKey}, 'amount', ${boosterBonusAwards.amount},
+          'credited', ${boosterBonusAwards.credited},
+          'challengeId', ${boosterBonusAwards.challengeId})), '[]'::json) as awards
+        from ${boosterBonusAwards}
+        where ${boosterBonusAwards.userId} = ${userId}
+          and ((${boosterBonusAwards.kind} = 'daily' and ${boosterBonusAwards.awardKey} = ${day.key})
+            or (${boosterBonusAwards.kind} = 'gilded' and ${boosterBonusAwards.awardKey} = ${cardId})
+            or ${boosterBonusAwards.challengeId} = ${input.idempotencyKey})
+      ) awards
+    `);
+    const row = lookup.rows[0];
+    if (row === undefined) {
+      return { kind: "card_not_owned" };
+    }
+    const current = { level: row.level, memory: toMemory(row) };
+
+    if (row.previous !== null) {
+      const replayed = row.awards.filter((award) => award.challengeId === input.idempotencyKey);
+      return {
+        kind: "answered",
+        correct: row.previous.correct,
+        level: row.previous.levelAfter,
+        levelUp: false,
+        nextReviewAt: current.memory.due,
+        bonus: summarize(replayed, locked.bonusBoosters),
+      };
+    }
+
+    if (current.memory.lastReviewedAt !== null && !isDue(current.memory, now)) {
+      return { kind: "not_due", nextReviewAt: current.memory.due };
+    }
+
+    const correct = input.chosenCardId === cardId;
+    const outcome = reviewWord(rules, current, correct, now);
+    const { memory } = outcome.mastery;
+    const reviewedAt = new Date(now);
+
+    const earned = answerBonuses(bonusRules, {
+      day,
+      tally: { answers: row.day_answers + 1, correct: row.day_correct + (correct ? 1 : 0) },
+      dailyAwarded: row.awards.some((a) => a.kind === "daily" && a.awardKey === day.key),
+      cardId,
+      reachedGilded: outcome.levelUp && outcome.mastery.level === "gilded",
+      gildedAwarded: row.awards.some((a) => a.kind === "gilded" && a.awardKey === cardId),
+    });
+    const credit = creditReserve(bonusRules, locked.bonusBoosters, earned);
+
+    const masteryUpdate = tx.$with("mastery_update").as(
+      tx
+        .update(userMastery)
+        .set({
+          level: outcome.mastery.level,
+          due: new Date(memory.due),
+          stability: memory.stability,
+          difficulty: memory.difficulty,
+          scheduledDays: memory.scheduledDays,
+          learningSteps: memory.learningSteps,
+          reps: memory.reps,
+          lapses: memory.lapses,
+          state: memory.state,
+          lastReviewedAt: reviewedAt,
+        })
+        .where(and(eq(userMastery.userId, userId), eq(userMastery.cardId, cardId)))
+        .returning({ cardId: userMastery.cardId }),
+    );
+    const ctes: WithSubquery[] = [masteryUpdate];
+    if (credit.awards.length > 0) {
+      // The primary key of the awards is a safety net: under the wallet lock, the awards read
+      // above are complete, so the reserve computed from them is exact.
+      const awardInsert = tx.$with("award_insert").as(
+        tx
+          .insert(boosterBonusAwards)
+          .values(
+            credit.awards.map((award) => ({
+              userId,
+              kind: award.kind,
+              awardKey: award.awardKey,
+              amount: award.amount,
+              credited: award.credited,
+              challengeId: input.idempotencyKey,
+              awardedAt: reviewedAt,
+            })),
+          )
+          .onConflictDoNothing()
+          .returning({ kind: boosterBonusAwards.kind }),
+      );
+      ctes.push(awardInsert);
+      if (credit.reserve !== locked.bonusBoosters) {
+        ctes.push(
+          tx.$with("wallet_update").as(
+            tx
+              .update(boosterWallets)
+              .set({ bonusBoosters: credit.reserve })
+              .where(
+                and(eq(boosterWallets.userId, userId), sql`exists (select 1 from award_insert)`),
+              )
+              .returning({ cardId: boosterWallets.userId }),
+          ),
+        );
+      }
+    }
+    await tx
+      .with(...ctes)
+      .insert(reviewLogs)
+      .values({
+        id: crypto.randomUUID(),
+        userId,
+        cardId,
+        challengeId: input.idempotencyKey,
+        format: input.format,
+        correct,
+        rating: outcome.rating,
+        levelAfter: outcome.mastery.level,
+        reviewedAt,
+      });
+
+    return {
+      kind: "answered",
+      correct,
+      level: outcome.mastery.level,
+      levelUp: outcome.levelUp,
+      nextReviewAt: memory.due,
+      bonus: summarize(credit.awards, credit.reserve),
+    };
+  });
+}
+
+interface StoredAward {
+  readonly kind: BonusKind;
+  readonly awardKey: string;
+  readonly amount: number;
+  readonly credited: number;
+}
+
+function summarize(awards: readonly StoredAward[], reserve: number): AnswerBonus {
+  const total = (kind: BonusKind) =>
+    awards.filter((award) => award.kind === kind).reduce((sum, award) => sum + award.amount, 0);
+  return {
+    daily: total("daily"),
+    gilded: total("gilded"),
+    credited: awards.reduce((sum, award) => sum + award.credited, 0),
+    reserve,
+  };
+}
+
+interface AnswerLookupRow extends MasteryRow, Record<string, unknown> {
+  previous: { correct: boolean; levelAfter: MasteryLevel } | null;
+  day_answers: number;
+  day_correct: number;
+  awards: (StoredAward & { challengeId: string })[];
+}
+
+interface MasteryRow {
+  level: MasteryLevel;
+  due: Date | string;
+  stability: number;
+  difficulty: number;
+  scheduled_days: number;
+  learning_steps: number;
+  reps: number;
+  lapses: number;
+  state: number;
+  last_reviewed_at: Date | string | null;
+}
+
+function toMemory(row: MasteryRow): MemoryState {
+  return {
+    due: new Date(row.due).getTime(),
+    stability: row.stability,
+    difficulty: row.difficulty,
+    scheduledDays: row.scheduled_days,
+    learningSteps: row.learning_steps,
+    reps: row.reps,
+    lapses: row.lapses,
+    state: row.state,
+    lastReviewedAt: row.last_reviewed_at === null ? null : new Date(row.last_reviewed_at).getTime(),
+  };
+}

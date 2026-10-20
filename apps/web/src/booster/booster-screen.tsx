@@ -7,19 +7,22 @@ import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { type Catalog, cardOrPlaceholder, collectionName, loadCatalog } from "@/cards/catalog";
 import { Card } from "@/components/card";
+import { RarityName } from "@/components/rarity-icon";
 import { fetchOwnedCards, fetchWallet, type OpenBoosterResult, openBooster } from "@/lib/api";
+import { useNow } from "@/lib/use-now";
 import styles from "./booster-screen.module.css";
 import { CardStack } from "./card-stack";
 import { canVibrate, type FeedbackKind, play, readPreference, writePreference } from "./feedback";
 import { Pli } from "./pli";
 import {
+  bonusLabel,
   collectionProgress,
   copiesAt,
   type DrawnCard,
   firstOfRarityLabel,
   isFirstOfRarity,
   nextRefillLabel,
-  recapLine,
+  recap,
   revealOrder,
 } from "./reveal";
 import { RevealCard } from "./reveal-card";
@@ -155,7 +158,7 @@ export function BoosterScreen() {
     request.current = null;
     const { result } = outcome;
     if (result.kind === "stock_empty") {
-      setWallet({ stored: 0, nextRefillAt: result.nextRefillAt });
+      setWallet({ stored: 0, nextRefillAt: result.nextRefillAt, bonus: 0 });
       setPhase({ name: "sealed" });
       return;
     }
@@ -212,11 +215,17 @@ export function BoosterScreen() {
   };
 
   const stored = wallet?.stored ?? 0;
+  const bonus = wallet?.bonus ?? 0;
+  // Bonus boosters are opened once the free stock is empty (the server decides which is spent).
+  const canOpen = stored > 0 || bonus > 0;
   const refill = nextRefillLabel(wallet?.nextRefillAt ?? null, now);
+  const reserve = bonusLabel(bonus);
   const sealedHint =
     stored > 0
       ? "Déchire la bande ou touche le sceau"
-      : `Plus de pli pour l'instant, ${refill ?? ""}`;
+      : bonus > 0
+        ? "Déchire la bande ou touche le sceau pour ouvrir un pli bonus"
+        : `Plus de pli pour l'instant, ${refill ?? ""}`;
 
   return (
     <main className={styles.screen}>
@@ -240,6 +249,7 @@ export function BoosterScreen() {
                 ))}
               </span>
               {refill !== null && <span className={styles.refill}>{refill}</span>}
+              {reserve !== null && <span className={styles.bonus}>{reserve}</span>}
             </div>
           )}
         </div>
@@ -263,7 +273,7 @@ export function BoosterScreen() {
       {(phase.name === "sealed" || phase.name === "opening") && (
         <div className={styles.center}>
           <Pli
-            state={phase.name === "opening" ? "opening" : stored > 0 ? "sealed" : "empty"}
+            state={phase.name === "opening" ? "opening" : canOpen ? "sealed" : "empty"}
             onTearStart={() => {
               startRequest();
             }}
@@ -319,6 +329,7 @@ export function BoosterScreen() {
           catalog={catalog}
           pack={pack}
           stored={stored}
+          bonus={bonus}
           refill={refill}
           onOpen={() => {
             setPack(null);
@@ -378,6 +389,9 @@ function Revealing({
         onNext={onNext}
       />
       <div className={styles.revealBar}>
+        <span className={styles.revealRarity}>
+          <RarityName rarity={drawn.rarity} />
+        </span>
         <span className={styles.position}>
           {index + 1} / {pack.cards.length}
           <span className={styles.progress}>
@@ -404,12 +418,14 @@ function Recap({
   catalog,
   pack,
   stored,
+  bonus,
   refill,
   onOpen,
 }: {
   readonly catalog: Catalog | null;
   readonly pack: Pack;
   readonly stored: number;
+  readonly bonus: number;
   readonly refill: string | null;
   readonly onOpen: () => void;
 }) {
@@ -417,7 +433,7 @@ function Recap({
   return (
     <div className={styles.recap}>
       <h2 className={styles.recapTitle}>Ton pli</h2>
-      <p className={styles.recapLine}>{recapLine(pack.cards, pack.quantitiesBefore)}</p>
+      <RecapLine pack={pack} />
       <p className={styles.recapProgress}>
         {pack.collectionName} · {progress.owned}/{progress.total}
         {progress.gained > 0 && <span className={styles.gained}> (+{progress.gained})</span>}
@@ -449,14 +465,38 @@ function Recap({
         })}
       </ul>
       <div className={styles.actions}>
-        <button type="button" className={styles.primary} disabled={stored === 0} onClick={onOpen}>
-          {stored > 0 ? "Ouvrir un autre pli" : `Plus de pli, ${refill ?? ""}`}
+        <button
+          type="button"
+          className={styles.primary}
+          disabled={stored === 0 && bonus === 0}
+          onClick={onOpen}
+        >
+          {stored > 0
+            ? "Ouvrir un autre pli"
+            : bonus > 0
+              ? "Ouvrir un pli bonus"
+              : `Plus de pli, ${refill ?? ""}`}
         </button>
         <Link href="/album" className={styles.secondary}>
           Voir mon album
         </Link>
       </div>
     </div>
+  );
+}
+
+function RecapLine({ pack }: { readonly pack: Pack }) {
+  const { best, fresh } = recap(pack.cards, pack.quantitiesBefore);
+  return (
+    <p className={styles.recapLine}>
+      {best !== null && (
+        <>
+          <RarityName rarity={best.rarity} text={best.label} />
+          <span aria-hidden="true">·</span>
+        </>
+      )}
+      <span>{fresh}</span>
+    </p>
   );
 }
 
@@ -526,15 +566,4 @@ function useCardWidth(): number {
     return () => window.removeEventListener("resize", measure);
   }, []);
   return width;
-}
-
-/** Current time, refreshed every `intervalMs`. 0 until mounted: the clock is read in the browser only. */
-function useNow(intervalMs: number): number {
-  const [now, setNow] = useState(0);
-  useEffect(() => {
-    setNow(Date.now());
-    const timer = setInterval(() => setNow(Date.now()), intervalMs);
-    return () => clearInterval(timer);
-  }, [intervalMs]);
-  return now;
 }

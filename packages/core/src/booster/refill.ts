@@ -11,8 +11,8 @@
  * reading and writing it in one transaction that holds a row lock (`SELECT … FOR UPDATE`), with an
  * idempotency key so that a retried request does not spend twice.
  *
- * Boosters earned through challenges are not handled here: they will be a separate counter,
- * not limited by `capacity`.
+ * Boosters earned through challenges are not handled here: they are a separate reserve, not
+ * limited by `capacity` (see `bonus/bonus.ts`).
  */
 
 /** Milliseconds since the Unix epoch (`Date.now()`). */

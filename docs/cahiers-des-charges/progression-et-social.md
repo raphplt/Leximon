@@ -2,7 +2,8 @@
 
 - **Statut :** arbitré par le propriétaire le 2026-10-20 ; restent les décisions en fin de document.
 - **Couvre :** niveau de compte, profil public, clans, classements, modes de jeu entre joueurs.
-- **Décisions liées :** D-006 (comptes), D-007 (temps réel), D-018 (limites de débit). Règles produit d'AGENTS.md.
+- **Décisions liées :** D-006 (comptes), D-007 (temps réel), D-018 (limites de débit), D-025 (défis), D-027 (plis bonus).
+- **Règles tranchées :** dans [regles-du-jeu.md](../regles-du-jeu.md) (N5, P8, P48 à P52), qui fait foi. Ce document détaille comment les mettre en œuvre.
 
 ## Public visé
 
@@ -11,7 +12,7 @@
 Conséquences :
 - un social complet est possible : discussion de clan, noms libres, profils publics ;
 - **en échange, la modération devient une fonctionnalité à part entière** (voir Clans), exigée par la loi (DSA) et par les stores ;
-- **inscription à partir de 15 ans** (décision du propriétaire) : en France, c'est l'âge à partir duquel un joueur consent seul au traitement de ses données ;
+- **inscription à partir de 15 ans** (P8) : en France, c'est l'âge à partir duquel un joueur consent seul au traitement de ses données ;
 - **la règle « aucun hasard payant » reste entière.** Un pli gagné par la progression est gratuit. Si un passe de saison payant voit le jour, il ne contient que des cosmétiques, jamais de pli.
 
 ## Règles communes
@@ -37,13 +38,13 @@ Valeurs de départ, à calibrer par simulation (en étendant `rnd/collection-sim
 |---|---|---|
 | Ouvrir un pli | 10 | limité de fait par le stock (au plus 48 par jour) |
 | Mot nouveau dans la collection | 5 (Courant) à 50 (Légendaire) | récompense la collection, pas les doublons |
-| Défi réussi | 15 | l'apprentissage doit peser autant que l'ouverture |
-| Mot maîtrisé (niveau de maîtrise franchi) | 25 | idem |
+| Bonne réponse à un défi | 15 | l'apprentissage doit peser autant que l'ouverture |
+| Mot qui atteint l'Encre ou la Dorure (P33) | 25 | idem |
 | Premier pli de la journée | 20 | habitude quotidienne |
 | Échange conclu | 20 | fait vivre les échanges |
 | Rareté complétée dans une collection | 100 à 500 | grands objectifs |
 
-Les défis et la maîtrise ne sont pas encore construits : leur barème suivra leurs règles.
+Les plafonds des défis (P29) limitent aussi l'XP qu'un tricheur peut en tirer.
 
 ### Courbe
 
@@ -61,7 +62,7 @@ Les défis et la maîtrise ne sont pas encore construits : leur barème suivra l
 | Niveau 5 | ouverture des échanges et des clans (freine les comptes multiples créés pour farmer) |
 | Tous les 10 niveaux | une récompense marquante : cadre de profil animé, emblème de clan rare |
 
-- **Plis bonus :** ils s'ajoutent à un compteur séparé, hors du plafond de 6 du stock, sinon ils seraient perdus quand le stock est plein. On les ouvre une fois le stock vide. Ils accélèrent la collection : la simulation doit en tenir compte.
+- **Plis bonus :** ils vont dans la réserve de plis bonus qui existe déjà (P23, plafonnée à 10, ouverte une fois le stock vide). Ils accélèrent la collection : la simulation doit en tenir compte.
 - **Réclamer :** une récompense ne se donne pas toute seule. Le joueur la réclame, ce qui fait un moment à l'écran et garde l'écriture idempotente.
 
 ### Mise en œuvre
@@ -185,13 +186,13 @@ La collection reste le cœur du jeu, mais les modes de jeu comptent. **Ce sera u
 |---|---|---|
 | **Joute asynchrone** | Chaque joueur choisit 5 cartes de sa collection. L'adversaire doit trouver la définition de chacun de ces mots parmi 4 propositions. Chacun joue son tour dans les 24 h. | Valorise la collection (des mots rares piègent l'adversaire) et l'apprentissage. Faisable sans temps réel. |
 | **Duplicate** | Tout le monde joue la même partie, classement au pourcentage du meilleur score (voir Classements). | Juste, simple à classer, idéal pour les événements. |
-| **Le Dictionnaire (bluff)** | Chaque joueur invente une fausse définition, les autres doivent trouver la vraie. | Très drôle entre amis. Le texte libre passe par la même modération que la discussion. Les fausses définitions des joueurs peuvent être complétées par des leurres générés. |
+| **Le Dictionnaire (bluff)** | Chaque joueur invente une fausse définition, les autres doivent trouver la vraie. | Très drôle entre amis. Le texte libre passe par la même modération que la discussion. Les fausses définitions des joueurs peuvent être complétées par celles d'autres mots de la collection. |
 | **Combat de cartes à statistiques** | Chaque carte a des valeurs (attaque, défense), comme Pokémon. | Les mots n'ont pas de statistiques naturelles : il faudrait les inventer (époque, longueur, rareté). Long à équilibrer. |
 | **Duel en direct** | Les mêmes questions en même temps, le plus rapide gagne. | Idéal pour les streamers, dépend de la R&D D-007. |
 
 ### Besoins communs
 
-- **Des fausses définitions :** trois par carte, plausibles mais fausses, générées par la chaîne de contenu et contrôlées comme le reste (ni vraies par accident, ni injurieuses). Elles serviront aussi aux défis. C'est un coût LLM à chiffrer, donc à valider avant de lancer.
+- **Le moteur de questions des défis** (D-025, P32) : QCM à 4 choix, dont les mauvais choix sont les définitions d'autres mots de la même collection. La joute et le duplicate peuvent le reprendre tel quel, sans rien générer de plus.
 - **Sécurité :** le serveur envoie les propositions sans dire laquelle est juste, valide la réponse et mesure le temps. Le client ne connaît jamais la bonne réponse avant d'avoir répondu.
 - **Récompenses :** XP, et la cote ou le classement du mode.
 
@@ -200,9 +201,8 @@ La collection reste le cœur du jeu, mais les modes de jeu comptent. **Ce sera u
 1. **Inscription** (déjà prévue) : prérequis de tout le social.
 2. **Niveau de compte**, avec l'XP du pli dans le récapitulatif d'ouverture.
 3. **Profil public**, avec pseudo, avatars gravés et cartes épinglées.
-4. **Défis** (déjà prévus), qui alimentent l'XP et préparent le moteur de questions.
-5. **Clans** : discussion modérée, bibliothèque, objectif de la semaine, journal.
-6. **R&D des modes de jeu**, puis **classements** (cote Glicko-2, duplicate).
+4. **Clans** : discussion modérée, bibliothèque, objectif de la semaine, journal.
+5. **R&D des modes de jeu**, puis **classements** (cote Glicko-2, duplicate).
 
 La R&D D-007 peut avancer en parallèle, pour décider du temps réel de la discussion avant les clans.
 
@@ -210,21 +210,11 @@ Pour la bêta de novembre, le réaliste est l'ouverture (lot A de [ouverture.md]
 
 ## Décisions
 
-**Prises par le propriétaire (2026-10-20) :**
-- B2C grand public, pas de version école prévue ;
-- niveau de compte, avec le barème et les récompenses ci-dessus comme point de départ ;
-- avatars tirés de gravures du domaine public ;
-- clans sans maximum de membres, avec discussion texte modérée et nom choisi par le chef ;
-- bibliothèque commune ;
-- classements après la v1, avec une cote globale Glicko-2 ;
-- inscription à partir de 15 ans ;
-- temps réel de la discussion de clan à évaluer dans la R&D D-007 ;
-- modes de jeu explorés en R&D, en s'inspirant notamment du Scrabble.
+Les règles tranchées le 2026-10-20 sont dans [regles-du-jeu.md](../regles-du-jeu.md) : public et âge (P8), texte des joueurs (N5), niveau de compte (P48), avatar (P49), clans (P50), classements (P51), modes de jeu (P52). Le temps réel de la discussion de clan est évalué dans la R&D D-007.
 
-**À prendre :**
-1. **Plis bonus en récompense de niveau :** oui (recommandé, gratuits et hors du plafond du stock), ou seulement des cosmétiques.
+**À prendre** (aussi listées dans [regles-du-jeu.md](../regles-du-jeu.md#à-décider)) :
+1. **Plis bonus en récompense de niveau :** oui (recommandé : gratuits, dans la réserve P23), ou seulement des cosmétiques.
 2. **Visibilité par défaut du profil :** public (recommandé pour un jeu grand public), ou privé.
 3. **Modération automatique de la discussion par un modèle :** dès la bêta, ou seulement si les signalements ne suffisent plus.
 4. **Durée de conservation des messages de clan :** 90 jours (recommandé), ou plus.
-5. **Niveau 5 pour accéder aux échanges et aux clans.**
-6. **Fausses définitions :** accord pour chiffrer leur génération, utile aux défis comme aux modes de jeu.
+5. **Niveau minimum pour les clans :** niveau 5 (recommandé), et le même seuil pour les échanges, en plus de P36.

@@ -90,6 +90,29 @@
   font-weight: 800;
 }
 
+/* Mastery level (D-025): sketch is the default and shows nothing. */
+.level {
+  position: absolute;
+  left: 50%;
+  bottom: -10px;
+  transform: translateX(-50%);
+  padding: 2px 10px;
+  border-radius: var(--lx-radius-pill);
+  font-size: 12px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.ink {
+  background: var(--lx-color-text);
+  color: var(--lx-color-background);
+}
+
+.gilded {
+  background: var(--lx-color-sticker);
+  color: var(--lx-color-background);
+}
+
 .missing {
   box-sizing: border-box;
   width: 150px;

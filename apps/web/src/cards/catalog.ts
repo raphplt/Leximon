@@ -15,6 +15,11 @@ import type { Rarity } from "@leximon/core";
 // Dot access only: Next.js inlines NEXT_PUBLIC_ variables at build time, not bracket access.
 const CATALOG_URL = process.env.NEXT_PUBLIC_CATALOG_URL ?? "/catalog";
 
+/** URL of a file published with the catalogue (an engraving), from its path in a collection file. */
+export function catalogFileUrl(path: string, baseUrl: string = CATALOG_URL): string {
+  return `${baseUrl}/${path}`;
+}
+
 export interface Catalog {
   readonly version: string;
   readonly collections: readonly CatalogCollectionFile[];

@@ -43,3 +43,34 @@ def test_render_numbers_the_citations(faquin: littre.Entry) -> None:
     assert "[2] « Tu fais le faquin » — MOL., Scap. III, 2" in text
     assert "ÉTYMOLOGIE : Ital. facchino, portefaix." in text
     assert "PREMIÈRE ATTESTATION DATÉE : 14e siècle" in text
+
+
+def _entry(headword: str, etymology: str = "") -> littre.Entry:
+    sense = littre.Sense(number=None, definition=f"Sens de {headword}.", citations=())
+    return littre.Entry(headword, 0, "s. m.", (sense,), etymology)
+
+
+BASES = {
+    w: (_entry(w),)
+    for w in ("secréter", "secret", "secrétaire", "oculaire", "cep", "et", "stathouder")
+}
+
+
+def test_the_base_word_named_in_a_short_etymology_is_found() -> None:
+    assert littre.base_entry(_entry("oculariste", "Oculaire."), BASES) == BASES["oculaire"][0]
+    assert littre.base_entry(_entry("receper", "Re..., et cep."), BASES) == BASES["cep"][0]
+    long = "Ital. festone. " + "L'étymologie paraît être le latin festum. " * 3
+    assert littre.base_entry(_entry("feston", long), BASES) is None
+
+
+def test_without_etymology_the_longest_shared_stem_gives_the_base() -> None:
+    assert littre.base_entry(_entry("secrétage"), BASES) == BASES["secréter"][0]
+    assert littre.base_entry(_entry("stathoudérat"), BASES) == BASES["stathouder"][0]
+    assert littre.base_entry(_entry("abracadabra"), BASES) is None
+
+
+def test_the_base_word_is_rendered_after_the_entry() -> None:
+    text = littre.render(_entry("secrétage"), base=_entry("secréter", "Secret."))
+    assert "MOT DE BASE PROBABLE (autre entrée du Littré) : secréter" in text
+    assert "ÉTYMOLOGIE DU MOT DE BASE : Secret." in text
+    assert "MOT DE BASE" not in littre.render(_entry("secrétage"))

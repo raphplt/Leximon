@@ -1,0 +1,2773 @@
+{
+  "id": "fondateurs",
+  "name": "Les Fondateurs",
+  "cards": [
+    {
+      "id": "abatant",
+      "word": "abatant",
+      "partOfSpeech": "n. m.",
+      "era": null,
+      "definition": "Panneau mobile d'un comptoir de marchand, que l'on lève ou abaisse ; aussi, pièce du métier à bas qui fait descendre les platines.",
+      "etymology": "Origine incertaine.",
+      "quote": null,
+      "rarity": "uncommon",
+      "collectionId": "fondateurs",
+      "themes": [
+        "metiers",
+        "vie-quotidienne"
+      ],
+      "perBillion": 5.76
+    },
+    {
+      "id": "affolage",
+      "word": "affolage",
+      "partOfSpeech": "n. m.",
+      "era": null,
+      "definition": "Maladie des anémones qui les fait pousser en feuilles sans jamais fleurir.",
+      "etymology": "Dérivé du verbe affoler, d'après le Littré, qui renvoie à l'entrée affoler, 1.",
+      "quote": null,
+      "rarity": "epic",
+      "collectionId": "fondateurs",
+      "themes": [
+        "nature"
+      ],
+      "perBillion": 0.208
+    },
+    {
+      "id": "aliboron",
+      "word": "aliboron",
+      "partOfSpeech": "n. m.",
+      "era": "XIIIe s.",
+      "definition": "Surnom donné à l'âne dans « maître aliboron » ; par extension, homme ignorant et stupide, que l'on traite d'âne.",
+      "etymology": "Origine incertaine. Le Littré cite le diable (aliborum, 1440), l'allemand altboran « vieil ennemi », le latin alibi et une racine « baudet ». Le sens primitif serait « personnage de conséquence ».",
+      "quote": {
+        "text": "Arrive un troisième larron Qui saisit maître aliboron",
+        "author": "La Fontaine"
+      },
+      "rarity": "uncommon",
+      "collectionId": "fondateurs",
+      "themes": [
+        "insultes",
+        "nature"
+      ],
+      "perBillion": 8.94
+    },
+    {
+      "id": "alleluia",
+      "word": "alleluia",
+      "partOfSpeech": "n. m.",
+      "era": "XIIIe s.",
+      "definition": "Cri de louange hébraïque chanté par l'Église au temps de Pâques ; aussi, petite plante à feuilles acidulées, l'oseille de bûcheron.",
+      "etymology": "Mot hébraïque composé de halelu, « louez », et de iah, « Dieu » : louez Dieu.",
+      "quote": {
+        "text": "L'antique alleluia de Jacob faisait retentir le dôme des églises",
+        "author": "Chateaubriand"
+      },
+      "rarity": "common",
+      "collectionId": "fondateurs",
+      "themes": [
+        "nature",
+        "religion"
+      ],
+      "perBillion": 83.3
+    },
+    {
+      "id": "ambesas",
+      "word": "ambesas",
+      "partOfSpeech": "n. m.",
+      "era": "XIIe s.",
+      "definition": "Au trictrac, jet de dés qui amène deux as, c'est-à-dire un as sur chacun des deux dés.",
+      "etymology": "Composé de « ambe », deux, et de « as », la face portant un point au dé.",
+      "quote": null,
+      "rarity": "rare",
+      "collectionId": "fondateurs",
+      "themes": [
+        "loufoque",
+        "vie-quotidienne"
+      ],
+      "perBillion": 0.931
+    },
+    {
+      "id": "antherologie",
+      "word": "anthérologie",
+      "partOfSpeech": "n. f.",
+      "era": null,
+      "definition": "En rhétorique, style très orné, qui sème le discours de fleurs de langage.",
+      "etymology": "Du grec anthêros, « fleuri », et logos, « discours » : littéralement, discours fleuri.",
+      "quote": null,
+      "rarity": "legendary",
+      "collectionId": "fondateurs",
+      "themes": [
+        "arts"
+      ],
+      "perBillion": null
+    },
+    {
+      "id": "appendre",
+      "word": "appendre",
+      "partOfSpeech": "v. tr.",
+      "era": "XIIIe s.",
+      "definition": "Suspendre quelque chose, d'ordinaire avec une idée de solennité, par exemple des étendards à la voûte d'une église.",
+      "etymology": "Composé de à et pendre. Il ne faut pas le confondre avec l'ancien verbe apendre, « appartenir », issu du latin appendere, alors que celui-ci vient de appendĕre.",
+      "quote": null,
+      "rarity": "common",
+      "collectionId": "fondateurs",
+      "themes": [
+        "guerre",
+        "religion"
+      ],
+      "perBillion": 143.0
+    },
+    {
+      "id": "apprehensible",
+      "word": "appréhensible",
+      "partOfSpeech": "adj.",
+      "era": null,
+      "definition": "Qui peut être saisi, compris par l'esprit ; qui se laisse appréhender par l'intelligence.",
+      "etymology": "Voir APPRÉHENSION, dérivé du latin apprehendere, saisir.",
+      "quote": null,
+      "rarity": "common",
+      "collectionId": "fondateurs",
+      "themes": [
+        "sciences"
+      ],
+      "perBillion": 33.2
+    },
+    {
+      "id": "approcheur",
+      "word": "approcheur",
+      "partOfSpeech": "n. m.",
+      "era": null,
+      "definition": "Ouvrier chargé d'amener les bois à l'endroit où l'on assemble un train de bois, pour le flottage sur les rivières.",
+      "etymology": "Dérivé du verbe approcher.",
+      "quote": null,
+      "rarity": "precious",
+      "collectionId": "fondateurs",
+      "themes": [
+        "metiers"
+      ],
+      "perBillion": 0.746
+    },
+    {
+      "id": "argyropee",
+      "word": "argyropée",
+      "partOfSpeech": "n. f.",
+      "era": null,
+      "definition": "Art prétendu des alchimistes de fabriquer de l'argent, notamment à partir de métaux moins précieux, pendant de la chrysopée qui visait l'or.",
+      "etymology": "Du grec argyros, « argent », et poiein, « faire » : littéralement l'art de faire de l'argent.",
+      "quote": null,
+      "rarity": "rare",
+      "collectionId": "fondateurs",
+      "themes": [
+        "argent",
+        "sciences"
+      ],
+      "perBillion": 0.909
+    },
+    {
+      "id": "assec",
+      "word": "assec",
+      "partOfSpeech": "n. m.",
+      "era": null,
+      "definition": "Période pendant laquelle un étang est mis à sec, vidé de son eau, puis cultivé avant d'être remis en eau.",
+      "etymology": "Composé de la préposition à et de l'adjectif sec.",
+      "quote": null,
+      "rarity": "common",
+      "collectionId": "fondateurs",
+      "themes": [
+        "metiers",
+        "nature"
+      ],
+      "perBillion": 40.7
+    },
+    {
+      "id": "assoler",
+      "word": "assoler",
+      "partOfSpeech": "v. tr.",
+      "era": null,
+      "definition": "Répartir les terres labourables en parcelles cultivées tour à tour, selon un assolement, afin de ne pas épuiser le sol.",
+      "etymology": "Composé de à et de sole, la sole désignant une parcelle de terre labourable soumise à la rotation des cultures.",
+      "quote": null,
+      "rarity": "common",
+      "collectionId": "fondateurs",
+      "themes": [
+        "metiers",
+        "nature"
+      ],
+      "perBillion": 27.5
+    },
+    {
+      "id": "avillon",
+      "word": "avillon",
+      "partOfSpeech": "n. m.",
+      "era": null,
+      "definition": "Terme de fauconnerie : le doigt de derrière, le pouce, d'un oiseau de proie, celui qui sert à enserrer la prise.",
+      "etymology": "Autre forme de aiguillon, qui s'est aussi écrit awillon.",
+      "quote": null,
+      "rarity": "uncommon",
+      "collectionId": "fondateurs",
+      "themes": [
+        "metiers",
+        "nature"
+      ],
+      "perBillion": 3.21
+    },
+    {
+      "id": "baloire",
+      "word": "baloire",
+      "partOfSpeech": "n. f.",
+      "era": null,
+      "definition": "Longue pièce de bois, en marine, qui sert de guide pour donner à la coque d'un vaisseau la forme voulue lors de sa construction.",
+      "etymology": "Origine incertaine.",
+      "quote": null,
+      "rarity": "precious",
+      "collectionId": "fondateurs",
+      "themes": [
+        "metiers",
+        "sciences"
+      ],
+      "perBillion": null
+    },
+    {
+      "id": "barbouquine",
+      "word": "barbouquine",
+      "partOfSpeech": "n. f.",
+      "era": null,
+      "definition": "Variété de salsifis, plante potagère dont on mange la racine allongée.",
+      "etymology": "Origine incertaine.",
+      "quote": null,
+      "rarity": "legendary",
+      "collectionId": "fondateurs",
+      "themes": [
+        "cuisine",
+        "nature"
+      ],
+      "perBillion": null
+    },
+    {
+      "id": "bisette",
+      "word": "bisette",
+      "partOfSpeech": "n. f.",
+      "era": "XIIIe s.",
+      "definition": "Petite dentelle de bas prix.",
+      "etymology": "Bas-latin bisetus, étoffe nommée d'après sa couleur bise. Le sens de dentelle viendrait peut-être de bisette, jeune fille brune, comme grisette, le nom passant de celle qui la portait à la dentelle.",
+      "quote": null,
+      "rarity": "uncommon",
+      "collectionId": "fondateurs",
+      "themes": [
+        "arts",
+        "vie-quotidienne"
+      ],
+      "perBillion": 3.75
+    },
+    {
+      "id": "blanquier",
+      "word": "blanquier",
+      "partOfSpeech": "n. m.",
+      "era": null,
+      "definition": "Ouvrier horloger qui fabrique les mouvements d'horlogerie « en blanc », c'est-à-dire bruts, avant leur finition et leur assemblage.",
+      "etymology": "Origine incertaine.",
+      "quote": null,
+      "rarity": "rare",
+      "collectionId": "fondateurs",
+      "themes": [
+        "arts",
+        "metiers"
+      ],
+      "perBillion": 1.55
+    },
+    {
+      "id": "bricolier",
+      "word": "bricolier",
+      "partOfSpeech": "n. m.",
+      "era": null,
+      "definition": "Cheval attelé de côté, au moyen de la bricole, à une voiture à deux roues, en renfort du cheval de brancards.",
+      "etymology": "Dérivé de bricole.",
+      "quote": null,
+      "rarity": "uncommon",
+      "collectionId": "fondateurs",
+      "themes": [
+        "metiers",
+        "vie-quotidienne"
+      ],
+      "perBillion": 4.48
+    },
+    {
+      "id": "brimborion",
+      "word": "brimborion",
+      "partOfSpeech": "n. m.",
+      "era": "XVIe s.",
+      "definition": "Petit objet sans valeur ni utilité, babiole, bagatelle ; se dit aussi de menus accessoires de parure ou de fatras encombrants.",
+      "etymology": "Probablement du latin breviarium (bréviaire), prononcé « breviarion » puis déformé en briborion, brimborion ; le sens premier serait « prières marmonnées », d'où chose sans valeur.",
+      "quote": {
+        "text": "M'ôter, pour faire bien, du grenier de céans, Cette longue lunette à faire peur aux gens, Et cent brimborions dont l'aspect importune",
+        "author": "Molière"
+      },
+      "rarity": "common",
+      "collectionId": "fondateurs",
+      "themes": [
+        "loufoque",
+        "vie-quotidienne"
+      ],
+      "perBillion": 67.8
+    },
+    {
+      "id": "cabaliser",
+      "word": "cabaliser",
+      "partOfSpeech": "v. intr.",
+      "era": "XVIe s.",
+      "definition": "Pratiquer la cabale, cet art prétendu de découvrir des sens cachés dans les textes sacrés et d'entrer en relation avec les esprits.",
+      "etymology": "Dérivé de cabale.",
+      "quote": null,
+      "rarity": "epic",
+      "collectionId": "fondateurs",
+      "themes": [
+        "autre",
+        "religion"
+      ],
+      "perBillion": 0.847
+    },
+    {
+      "id": "cabasset",
+      "word": "cabasset",
+      "partOfSpeech": "n. m.",
+      "era": "XVIe s.",
+      "definition": "Espèce de petit casque, ainsi nommé par comparaison avec un petit panier.",
+      "etymology": "Diminutif de cabas, un casque étant assimilé à un petit panier. Saint-Simon écrit cabacet au sens de tripoteur, dérivé de cabas, tripotage.",
+      "quote": null,
+      "rarity": "uncommon",
+      "collectionId": "fondateurs",
+      "themes": [
+        "guerre",
+        "vie-quotidienne"
+      ],
+      "perBillion": 6.18
+    },
+    {
+      "id": "cacologique",
+      "word": "cacologique",
+      "partOfSpeech": "adj.",
+      "era": null,
+      "definition": "Qui relève de la cacologie, c'est-à-dire d'une façon de parler ou d'écrire fautive, contraire au bon usage de la langue.",
+      "etymology": "Origine incertaine.",
+      "quote": null,
+      "rarity": "precious",
+      "collectionId": "fondateurs",
+      "themes": [
+        "arts"
+      ],
+      "perBillion": 0.475
+    },
+    {
+      "id": "cahotage",
+      "word": "cahotage",
+      "partOfSpeech": "n. m.",
+      "era": null,
+      "definition": "Succession de secousses brusques subies par un véhicule ou ses passagers sur un chemin inégal.",
+      "etymology": "Dérivé de cahot, secousse d'une voiture sur un chemin inégal.",
+      "quote": null,
+      "rarity": "rare",
+      "collectionId": "fondateurs",
+      "themes": [
+        "vie-quotidienne"
+      ],
+      "perBillion": 1.68
+    },
+    {
+      "id": "casoar",
+      "word": "casoar",
+      "partOfSpeech": "n. m.",
+      "era": null,
+      "definition": "Grand oiseau coureur qui ne vole pas, un peu plus petit que l'autruche, aux ailes très courtes, que le Littré range parmi les échassiers.",
+      "etymology": "De l'espagnol casobar ; Furetière le nomme casuel ou gasuel. Le mot vient du malais cassuwaris, nom de cet oiseau.",
+      "quote": {
+        "text": "Nos gros oiseaux sont fort petits, si on les compare au casoar",
+        "author": "Buffon"
+      },
+      "rarity": "common",
+      "collectionId": "fondateurs",
+      "themes": [
+        "nature"
+      ],
+      "perBillion": 99.8
+    },
+    {
+      "id": "catachrese",
+      "word": "catachrèse",
+      "partOfSpeech": "n. f.",
+      "era": null,
+      "definition": "Figure de rhétorique où un mot, détourné de son sens propre, nomme une chose voisine, comme la « feuille » de papier.",
+      "etymology": "Du grec katákhrêsis, « abus », formé de katá, « contre », et khrêsis, « usage ».",
+      "quote": {
+        "text": "Poussez à Marcassus, poussez à Marcellus l'antithèse, l'hypotypose, la catachrèse",
+        "author": "Paul-Louis Courier"
+      },
+      "rarity": "common",
+      "collectionId": "fondateurs",
+      "themes": [
+        "arts",
+        "sciences"
+      ],
+      "perBillion": 137.0
+    },
+    {
+      "id": "chagnot",
+      "word": "chagnot",
+      "partOfSpeech": "n. m.",
+      "era": null,
+      "definition": "Nom donné par les pêcheurs à un squale de couleur glauque, c'est-à-dire d'un bleu-vert, proche de la mer.",
+      "etymology": "Le même que cagnot.",
+      "quote": null,
+      "rarity": "precious",
+      "collectionId": "fondateurs",
+      "themes": [
+        "metiers",
+        "nature"
+      ],
+      "perBillion": null
+    },
+    {
+      "id": "charlatanesque",
+      "word": "charlatanesque",
+      "partOfSpeech": "adj.",
+      "era": null,
+      "definition": "Qui est propre au charlatan, à ses discours trompeurs et à ses airs de vendeur de remèdes ou de promesses creuses.",
+      "etymology": "Dérivé de charlatan.",
+      "quote": null,
+      "rarity": "common",
+      "collectionId": "fondateurs",
+      "themes": [
+        "metiers",
+        "vie-quotidienne"
+      ],
+      "perBillion": 38.5
+    },
+    {
+      "id": "charpentiere",
+      "word": "charpentière",
+      "partOfSpeech": "n. f.",
+      "era": null,
+      "definition": "Nom donné à certaines abeilles solitaires, femelles d'insectes hyménoptères, qui creusent leurs galeries dans le bois pour y établir leur nid.",
+      "etymology": "Dérivé de charpentier, par le féminin, d'après le travail du bois que ces insectes accomplissent.",
+      "quote": null,
+      "rarity": "common",
+      "collectionId": "fondateurs",
+      "themes": [
+        "nature"
+      ],
+      "perBillion": 51.3
+    },
+    {
+      "id": "chevauchure",
+      "word": "chevauchure",
+      "partOfSpeech": "n. f.",
+      "era": "XIIe s.",
+      "definition": "Disposition de deux éléments dont l'un recouvre en partie l'autre, comme des tuiles ou des ardoises qui se chevauchent.",
+      "etymology": "Dérivé de chevaucher ; comparable au provençal cavalcadura, à l'ancien catalan cavalgadura, à l'espagnol cabalgadura et à l'italien cavalcatura.",
+      "quote": null,
+      "rarity": "precious",
+      "collectionId": "fondateurs",
+      "themes": [
+        "metiers",
+        "vie-quotidienne"
+      ],
+      "perBillion": 0.238
+    },
+    {
+      "id": "choragique",
+      "word": "choragique",
+      "partOfSpeech": "adj.",
+      "era": null,
+      "definition": "Se dit, dans l'Antiquité grecque, de ce qui se rapporte au chorège, le citoyen riche qui finançait un chœur pour les fêtes et concours.",
+      "etymology": "Du grec khoragikos, forme rare ; le Littré précise que le grec khorêgikos, beaucoup plus usité, a donné la forme préférée chorégique.",
+      "quote": {
+        "text": "Le couvent de nos missionnaires comprend dans ses dépendances le monument choragique de Lysicrates",
+        "author": "Chateaubriand"
+      },
+      "rarity": "uncommon",
+      "collectionId": "fondateurs",
+      "themes": [
+        "arts",
+        "autre"
+      ],
+      "perBillion": 2.55
+    },
+    {
+      "id": "chorographe",
+      "word": "chorographe",
+      "partOfSpeech": "n. m.",
+      "era": null,
+      "definition": "Auteur de chorographies, c'est-à-dire celui qui décrit en détail une région ou un pays.",
+      "etymology": "Origine incertaine.",
+      "quote": null,
+      "rarity": "uncommon",
+      "collectionId": "fondateurs",
+      "themes": [
+        "arts",
+        "sciences"
+      ],
+      "perBillion": 9.18
+    },
+    {
+      "id": "clepsydre",
+      "word": "clepsydre",
+      "partOfSpeech": "n. f.",
+      "era": null,
+      "definition": "Horloge antique mesurant le temps par l'écoulement de l'eau ; le mot désignait aussi certaines machines hydrauliques.",
+      "etymology": "Du grec klepsydra, de kleptein, dérober, et hydôr, eau : l'eau semble se dérober en s'écoulant. Une fontaine intermittente d'Athènes portait déjà ce nom.",
+      "quote": {
+        "text": "Quoique les clepsydres ou horloges à eau, si usitées chez les anciens, aient été entièrement abolies parmi nous par les horloges à roues infiniment plus justes et plus commodes....",
+        "author": "Fontenelle"
+      },
+      "rarity": "common",
+      "collectionId": "fondateurs",
+      "themes": [
+        "sciences",
+        "vie-quotidienne"
+      ],
+      "perBillion": 176.0
+    },
+    {
+      "id": "convassal",
+      "word": "convassal",
+      "partOfSpeech": "n. m.",
+      "era": "XVIe s.",
+      "definition": "En droit féodal, celui qui est vassal avec un autre ; un compagnon de vassalité.",
+      "etymology": "Composé du préfixe con- (avec) et de vassal.",
+      "quote": null,
+      "rarity": "precious",
+      "collectionId": "fondateurs",
+      "themes": [
+        "droit",
+        "metiers"
+      ],
+      "perBillion": null
+    },
+    {
+      "id": "convoitable",
+      "word": "convoitable",
+      "partOfSpeech": "adj.",
+      "era": "XIVe s.",
+      "definition": "Qui mérite ou peut être convoité ; qui suscite le désir de possession.",
+      "etymology": "Dérivé de convoiter, avec le suffixe -able. Première attestation au 14e siècle.",
+      "quote": null,
+      "rarity": "uncommon",
+      "collectionId": "fondateurs",
+      "themes": [
+        "sentiments"
+      ],
+      "perBillion": 6.91
+    },
+    {
+      "id": "coquecigrue",
+      "word": "coquecigrue",
+      "partOfSpeech": "n. f.",
+      "era": "XVe s.",
+      "definition": "Animal imaginaire qui n'existe que dans des expressions : « à la venue des coquecigrues » signifie jamais. Par extension, baliverne ou conte en l'air.",
+      "etymology": "Origine inconnue. Le mot désigne aussi une plante en Normandie et en Berry. Ménage le tirait de coquilles aiguës, Nisard du latin cicus et du grec gru, mais coque y entre sûrement.",
+      "quote": {
+        "text": "Toute métaphysique ressemble assez à la coquecigrue de Rabelais",
+        "author": "Voltaire"
+      },
+      "rarity": "common",
+      "collectionId": "fondateurs",
+      "themes": [
+        "loufoque",
+        "nature"
+      ],
+      "perBillion": 36.9
+    },
+    {
+      "id": "coquefredouille",
+      "word": "coquefredouille",
+      "partOfSpeech": "n. m.",
+      "era": null,
+      "definition": "Homme de peu, niais et sans esprit, qu'on regarde avec mépris ; un pauvre hère.",
+      "etymology": "Origine incertaine.",
+      "quote": {
+        "text": "L'espagnol, ce coquefredouille, Va toujours à l'école et perd toujours bredouille",
+        "author": "Antoinette Deshoulières"
+      },
+      "rarity": "rare",
+      "collectionId": "fondateurs",
+      "themes": [
+        "insultes",
+        "loufoque"
+      ],
+      "perBillion": 1.81
+    },
+    {
+      "id": "coresse",
+      "word": "coresse",
+      "partOfSpeech": "n. f.",
+      "era": null,
+      "definition": "Magasin ou atelier où l'on prépare et fume les harengs saurs, dans les ports de Dunkerque et de Calais.",
+      "etymology": "Origine incertaine.",
+      "quote": null,
+      "rarity": "rare",
+      "collectionId": "fondateurs",
+      "themes": [
+        "cuisine",
+        "metiers"
+      ],
+      "perBillion": 0.584
+    },
+    {
+      "id": "corroyage",
+      "word": "corroyage",
+      "partOfSpeech": "n. m.",
+      "era": null,
+      "definition": "Dernière préparation que le corroyeur fait subir au cuir tanné pour l'assouplir et l'apprêter ; par extension, le métier du corroyeur.",
+      "etymology": "Dérivé de corroyer, verbe désignant l'action de préparer le cuir.",
+      "quote": null,
+      "rarity": "common",
+      "collectionId": "fondateurs",
+      "themes": [
+        "metiers"
+      ],
+      "perBillion": 32.6
+    },
+    {
+      "id": "crochechat",
+      "word": "crochechat",
+      "partOfSpeech": "n. m.",
+      "era": "XVe s.",
+      "definition": "Dans quelques localités du Sud-Ouest, nom donné aux tailleurs d'habits.",
+      "etymology": "De croche, « courbé », par allusion à la posture des tailleurs travaillant assis sur l'établi ; le second élément reste inexpliqué.",
+      "quote": null,
+      "rarity": "legendary",
+      "collectionId": "fondateurs",
+      "themes": [
+        "metiers",
+        "vie-quotidienne"
+      ],
+      "perBillion": null
+    },
+    {
+      "id": "croquignole",
+      "word": "croquignole",
+      "partOfSpeech": "n. f.",
+      "era": null,
+      "definition": "Pâtisserie sèche et très dure ; aussi, chiquenaude donnée sur la tête ou sur le nez.",
+      "etymology": "Sans doute dérivé du verbe croquer, à cause du bruit produit ; la dérivation reste peu claire, mais le wallon crokète l'éclaire davantage.",
+      "quote": {
+        "text": "Au défaut de six pistoles, Choisissez donc sans façon D'avoir trente croquignoles Ou douze coups de bâton",
+        "author": "Molière"
+      },
+      "rarity": "uncommon",
+      "collectionId": "fondateurs",
+      "themes": [
+        "cuisine",
+        "loufoque",
+        "vie-quotidienne"
+      ],
+      "perBillion": 6.21
+    },
+    {
+      "id": "crucherie",
+      "word": "crucherie",
+      "partOfSpeech": "n. f.",
+      "era": null,
+      "definition": "Bêtise, sottise ou ânerie, dite ou faite par quelqu'un de niais ; le mot dérive de « cruche », employé au figuré pour désigner un sot.",
+      "etymology": "Dérivé de cruche, le récipient, pris au figuré pour désigner une personne sotte.",
+      "quote": null,
+      "rarity": "epic",
+      "collectionId": "fondateurs",
+      "themes": [
+        "insultes",
+        "vie-quotidienne"
+      ],
+      "perBillion": 0.482
+    },
+    {
+      "id": "cuvage",
+      "word": "cuvage",
+      "partOfSpeech": "n. m.",
+      "era": null,
+      "definition": "Local où l'on dispose les cuves, en particulier celles où fermente la vendange.",
+      "etymology": "Dérivé de cuve.",
+      "quote": null,
+      "rarity": "common",
+      "collectionId": "fondateurs",
+      "themes": [
+        "metiers",
+        "vie-quotidienne"
+      ],
+      "perBillion": 30.2
+    },
+    {
+      "id": "defourner",
+      "word": "défourner",
+      "partOfSpeech": "v. tr.",
+      "era": "XIIIe s.",
+      "definition": "Retirer du four ce qui vient d'y cuire, notamment le pain.",
+      "etymology": "Composé du préfixe dé- (action inverse) et de four ; le mot est attesté dès le XIIIe siècle.",
+      "quote": {
+        "text": "Des gens enfournent ; D'autres défournent ; Aux broches tournent Veau, bœuf et mouton",
+        "author": "Béranger"
+      },
+      "rarity": "uncommon",
+      "collectionId": "fondateurs",
+      "themes": [
+        "cuisine",
+        "metiers"
+      ],
+      "perBillion": 14.5
+    },
+    {
+      "id": "diabloteau",
+      "word": "diabloteau",
+      "partOfSpeech": "n. m.",
+      "era": null,
+      "definition": "Nom ancien du stercoraire pomarin, oiseau de mer sombre qui harcèle les autres oiseaux pour leur voler leur proie.",
+      "etymology": "Autre forme de diableteau, diminutif de diable.",
+      "quote": null,
+      "rarity": "rare",
+      "collectionId": "fondateurs",
+      "themes": [
+        "nature"
+      ],
+      "perBillion": 0.942
+    },
+    {
+      "id": "dolabre",
+      "word": "dolabre",
+      "partOfSpeech": "n. f.",
+      "era": null,
+      "definition": "Hache de guerre en usage au Moyen Âge, arme tranchante maniée au combat.",
+      "etymology": "Du latin dolabra, désignant une hache ou un pic, de la même famille que le mot doloire.",
+      "quote": null,
+      "rarity": "rare",
+      "collectionId": "fondateurs",
+      "themes": [
+        "guerre",
+        "metiers"
+      ],
+      "perBillion": 2.71
+    },
+    {
+      "id": "doryphore",
+      "word": "doryphore",
+      "partOfSpeech": "n. m.",
+      "era": null,
+      "definition": "Garde impérial grec du Bas-Empire, armé d'une demi-pique ; aussi, grand coléoptère américain à la poitrine armée d'une pointe en avant.",
+      "etymology": "Du grec doru, lance, et phoros, qui porte : littéralement « porteur de lance ».",
+      "quote": null,
+      "rarity": "common",
+      "collectionId": "fondateurs",
+      "themes": [
+        "guerre",
+        "nature"
+      ],
+      "perBillion": 143.0
+    },
+    {
+      "id": "ebraisoir",
+      "word": "ébraisoir",
+      "partOfSpeech": "n. m.",
+      "era": null,
+      "definition": "Pelle servant à retirer la braise d'un four ou d'un fourneau.",
+      "etymology": "Composé du préfixe é- (issu de es-) et de braise.",
+      "quote": null,
+      "rarity": "precious",
+      "collectionId": "fondateurs",
+      "themes": [
+        "cuisine",
+        "metiers",
+        "vie-quotidienne"
+      ],
+      "perBillion": 0.643
+    },
+    {
+      "id": "ebrouer",
+      "word": "ébrouer",
+      "partOfSpeech": "v. tr.",
+      "era": "XVe s.",
+      "definition": "Laver une pièce de toile ou d'étoffe en la passant dans l'eau pour en retirer les fils, les pailles et autres impuretés.",
+      "etymology": "De l'allemand brühen, « laver à l'eau chaude » ; origine d'autant plus probable que le mot semble propre au nord de la France.",
+      "quote": {
+        "text": "Le son et les eaux dures étant bonnes pour ébrouer, dessécher et dégraisser les bleus,",
+        "author": "Instruction générale pour la teinture des laines"
+      },
+      "rarity": "common",
+      "collectionId": "fondateurs",
+      "themes": [
+        "metiers",
+        "vie-quotidienne"
+      ],
+      "perBillion": 64.7
+    },
+    {
+      "id": "eclanche",
+      "word": "éclanche",
+      "partOfSpeech": "n. f.",
+      "era": "XVIe s.",
+      "definition": "Épaule de mouton séparée du corps de l'animal.",
+      "etymology": "Origine inconnue et sens mal déterminé. Le picard éclainche signifie « épaule ». On a proposé l'ancien haut allemand hlancha, « flanc », ou l'ancien adjectif esclanche, « gauche ».",
+      "quote": null,
+      "rarity": "uncommon",
+      "collectionId": "fondateurs",
+      "themes": [
+        "cuisine",
+        "vie-quotidienne"
+      ],
+      "perBillion": 5.65
+    },
+    {
+      "id": "ecolage",
+      "word": "écolage",
+      "partOfSpeech": "n. m.",
+      "era": "XVIe s.",
+      "definition": "Somme que paie chaque élève pour sa scolarité ; par extension, le temps passé à l'école et l'enseignement reçu.",
+      "etymology": "Dérivé d'école, avec le suffixe -age. Attesté au XVIe siècle.",
+      "quote": null,
+      "rarity": "common",
+      "collectionId": "fondateurs",
+      "themes": [
+        "argent",
+        "vie-quotidienne"
+      ],
+      "perBillion": 111.0
+    },
+    {
+      "id": "ecoquer",
+      "word": "écoquer",
+      "partOfSpeech": "v. tr.",
+      "era": null,
+      "definition": "En termes de chasse, supprimer les coqs trop nombreux chez les faisans, perdrix et autres gibiers, parce qu'ils nuisent aux couvées.",
+      "etymology": "Composé du préfixe é- (issu de es-, hors de) et de coq.",
+      "quote": null,
+      "rarity": "epic",
+      "collectionId": "fondateurs",
+      "themes": [
+        "metiers",
+        "nature"
+      ],
+      "perBillion": 0.841
+    },
+    {
+      "id": "elutriation",
+      "word": "élutriation",
+      "partOfSpeech": "n. f.",
+      "era": null,
+      "definition": "Opération de chimie ancienne qui consistait à séparer un liquide des particules qu'il contient en le versant doucement, c'est-à-dire la décantation.",
+      "etymology": "Du latin elutriare, transvaser, formé de e, hors de, et du grec λούτριον, vase, lui-même issu de λούειν, laver.",
+      "quote": null,
+      "rarity": "rare",
+      "collectionId": "fondateurs",
+      "themes": [
+        "sciences"
+      ],
+      "perBillion": 3.97
+    },
+    {
+      "id": "emmenotter",
+      "word": "emmenotter",
+      "partOfSpeech": "v. tr.",
+      "era": null,
+      "definition": "Passer des menottes aux poignets de quelqu'un, notamment d'un criminel, pour l'empêcher de se servir de ses mains.",
+      "etymology": "Composé de en- et de menottes.",
+      "quote": null,
+      "rarity": "rare",
+      "collectionId": "fondateurs",
+      "themes": [
+        "droit",
+        "vie-quotidienne"
+      ],
+      "perBillion": 2.74
+    },
+    {
+      "id": "empeau",
+      "word": "empeau",
+      "partOfSpeech": "n. m.",
+      "era": null,
+      "definition": "Ancien terme de jardinage désignant une ente, c'est-à-dire une greffe, ou bien l'écorce d'un arbre.",
+      "etymology": "Composé de en et de peau, au sens d'écorce.",
+      "quote": null,
+      "rarity": "precious",
+      "collectionId": "fondateurs",
+      "themes": [
+        "metiers",
+        "nature"
+      ],
+      "perBillion": 0.0798
+    },
+    {
+      "id": "emplage",
+      "word": "emplage",
+      "partOfSpeech": "n. m.",
+      "era": "XIVe s.",
+      "definition": "Remplissage d'éclats de pierre noyés dans du mortier entre deux rangs de pierres taillées ; chez les marchands de vin, action d'ouiller un tonneau.",
+      "etymology": "Dérivé de emplir, qui faisait « emple » à l'indicatif ; le Littré renvoie à l'histoire du verbe emplir.",
+      "quote": null,
+      "rarity": "rare",
+      "collectionId": "fondateurs",
+      "themes": [
+        "metiers",
+        "vie-quotidienne"
+      ],
+      "perBillion": 0.485
+    },
+    {
+      "id": "enlarme",
+      "word": "enlarme",
+      "partOfSpeech": "n. f.",
+      "era": null,
+      "definition": "Terme d'oisellerie : grandes mailles que l'on ajoute à un filet de chasse aux oiseaux.",
+      "etymology": "Composé de en et de larme : ces mailles étant semées çà et là comme des larmes.",
+      "quote": null,
+      "rarity": "epic",
+      "collectionId": "fondateurs",
+      "themes": [
+        "metiers",
+        "nature"
+      ],
+      "perBillion": 0.034
+    },
+    {
+      "id": "ensafraner",
+      "word": "ensafraner",
+      "partOfSpeech": "v. tr.",
+      "era": "XIIIe s.",
+      "definition": "Teindre ou colorer en jaune orangé avec du safran, et par image, parer d'une teinte dorée, comme le fait l'aurore.",
+      "etymology": "Composé de en- et de safran, nom de la plante dont les stigmates fournissent une teinture jaune orangé.",
+      "quote": {
+        "text": "Lorsque la rive basanée Fut d'elle [l'aurore] toute ensafranée",
+        "author": "Scarron"
+      },
+      "rarity": "rare",
+      "collectionId": "fondateurs",
+      "themes": [
+        "arts",
+        "nature"
+      ],
+      "perBillion": 0.911
+    },
+    {
+      "id": "epellation",
+      "word": "épellation",
+      "partOfSpeech": "n. f.",
+      "era": null,
+      "definition": "Action d'épeler, de nommer une à une les lettres d'un mot ; l'art de lire ou de dire un mot lettre par lettre.",
+      "etymology": "Dérivé d'épeler. Mot moderne qui aurait dû être « épelation », formé à tort sur le modèle d'« appellation ».",
+      "quote": null,
+      "rarity": "common",
+      "collectionId": "fondateurs",
+      "themes": [
+        "vie-quotidienne"
+      ],
+      "perBillion": 96.2
+    },
+    {
+      "id": "epoussette",
+      "word": "époussette",
+      "partOfSpeech": "n. f.",
+      "era": "XVe s.",
+      "definition": "Faisceau de brins de bruyère, de poil ou de crin liés, servant à ôter la poussière des meubles ; aussi, chiffon pour nettoyer un cheval étrillé.",
+      "etymology": "Formé de é-, pour es-, préfixe, et de pousse, radical de poussière. Étymologie de Scheler, jugée meilleure que celle qui y voit le verbe pousser.",
+      "quote": {
+        "text": "Ses cheveux étaient de coton, Et gros comme poils d'époussette",
+        "author": "Scarron"
+      },
+      "rarity": "common",
+      "collectionId": "fondateurs",
+      "themes": [
+        "nature",
+        "vie-quotidienne"
+      ],
+      "perBillion": 69.1
+    },
+    {
+      "id": "equanimite",
+      "word": "équanimité",
+      "partOfSpeech": "n. f.",
+      "era": "XVIe s.",
+      "definition": "Égalité d'humeur et sérénité de l'âme, qui reste calme et impartiale face aux événements, bons ou mauvais.",
+      "etymology": "Du latin aequanimitas, dérivé d'aequanimus (équanime), composé de aequus, « égal », et d'animus, « âme ».",
+      "quote": {
+        "text": "Sa mère [du duc de Noailles] avait su profiter de la douceur et de l'équanimité du duc de Chevreuse",
+        "author": "Saint-Simon"
+      },
+      "rarity": "common",
+      "collectionId": "fondateurs",
+      "themes": [
+        "sentiments"
+      ],
+      "perBillion": 157.0
+    },
+    {
+      "id": "escogriffe",
+      "word": "escogriffe",
+      "partOfSpeech": "n. m.",
+      "era": "XVIe s.",
+      "definition": "Homme de grande taille et dégingandé, dit avec ironie ; plus anciennement, celui qui prend hardiment ce qu'il veut sans rien demander, voleur effronté.",
+      "etymology": "Origine inconnue ; le mot semble formé de façon burlesque sur griffe ou griffon, peut-être avec escot, « bâton » (comparer écoperche).",
+      "quote": {
+        "text": "Gil Blas, me dit-il, qui est ce grand escogriffe que j'ai vu tantôt avec toi ?",
+        "author": "Lesage"
+      },
+      "rarity": "common",
+      "collectionId": "fondateurs",
+      "themes": [
+        "corps",
+        "insultes",
+        "loufoque"
+      ],
+      "perBillion": 154.0
+    },
+    {
+      "id": "eteignoir",
+      "word": "éteignoir",
+      "partOfSpeech": "n. m.",
+      "era": null,
+      "definition": "Petit cône creux servant à éteindre une chandelle ; au figuré, personne ou chose qui étouffe l'esprit, le sentiment ou le progrès.",
+      "etymology": "Dérivé du verbe éteindre.",
+      "quote": {
+        "text": "La crainte de déplaire est l'éteignoir de l'imagination",
+        "author": "Voltaire"
+      },
+      "rarity": "common",
+      "collectionId": "fondateurs",
+      "themes": [
+        "arts",
+        "vie-quotidienne"
+      ],
+      "perBillion": 168.0
+    },
+    {
+      "id": "ethnarque",
+      "word": "ethnarque",
+      "partOfSpeech": "n. m.",
+      "era": null,
+      "definition": "Dans l'Antiquité, chef qui gouvernait une province ou un peuple, notamment à la tête d'une communauté juive sous domination étrangère.",
+      "etymology": "Du grec ethnarkhês, composé de ethnos, « peuple », et arkhein, « commander » : celui qui commande un peuple.",
+      "quote": {
+        "text": "Au temps où Jérusalem subsistait, les Juifs avaient, dans les provinces, des chefs de leur nation nommés en grec ethnarques",
+        "author": "Claude Fleury"
+      },
+      "rarity": "common",
+      "collectionId": "fondateurs",
+      "themes": [
+        "autre",
+        "droit"
+      ],
+      "perBillion": 42.8
+    },
+    {
+      "id": "exoterique",
+      "word": "exotérique",
+      "partOfSpeech": "adj.",
+      "era": null,
+      "definition": "Se dit d'un enseignement ou d'une doctrine donnés au dehors, ouverts à tous, par opposition à la doctrine réservée aux seuls initiés.",
+      "etymology": "Du grec exôterikos, « du dehors », dérivé de exô, « hors ».",
+      "quote": {
+        "text": "Presque tous les philosophes de l'antiquité ont eu deux sortes de doctrines, l'une publique et l'autre cachée (exotérique et ésotérique)",
+        "author": "D'Holbach"
+      },
+      "rarity": "common",
+      "collectionId": "fondateurs",
+      "themes": [
+        "religion",
+        "sciences"
+      ],
+      "perBillion": 314.0
+    },
+    {
+      "id": "fontainebleau",
+      "word": "fontainebleau",
+      "partOfSpeech": "n. m.",
+      "era": null,
+      "definition": "Variété de chasselas très estimée, raisin de table cultivé à Thomery et dans les environs de Fontainebleau.",
+      "etymology": "Origine incertaine.",
+      "quote": null,
+      "rarity": "uncommon",
+      "collectionId": "fondateurs",
+      "themes": [
+        "cuisine",
+        "nature"
+      ],
+      "perBillion": 11.7
+    },
+    {
+      "id": "forgement",
+      "word": "forgement",
+      "partOfSpeech": "n. m.",
+      "era": "XIVe s.",
+      "definition": "Action de forger le métal ; synonyme de forgeage, c'est-à-dire le travail du fer chauffé et façonné au marteau.",
+      "etymology": "Dérivé de forger, avec le suffixe -ment ; attesté dès le 14e siècle.",
+      "quote": null,
+      "rarity": "rare",
+      "collectionId": "fondateurs",
+      "themes": [
+        "metiers"
+      ],
+      "perBillion": 1.6
+    },
+    {
+      "id": "francatu",
+      "word": "francatu",
+      "partOfSpeech": "n. m.",
+      "era": null,
+      "definition": "Variété de pomme rouge d'un côté et jaunâtre de l'autre, appréciée surtout parce qu'elle se garde très longtemps.",
+      "etymology": "Origine incertaine.",
+      "quote": {
+        "text": "Les francatu [écrit ainsi sans s] sont rouges d'un côté et jaunâtres de l'autre, se conservent longtemps, et voilà leur principal mérite",
+        "author": "La Quintinye"
+      },
+      "rarity": "epic",
+      "collectionId": "fondateurs",
+      "themes": [
+        "cuisine",
+        "nature"
+      ],
+      "perBillion": 0.173
+    },
+    {
+      "id": "frusquin",
+      "word": "frusquin",
+      "partOfSpeech": "n. m.",
+      "era": null,
+      "definition": "Mot populaire désignant tout ce qu'une personne possède en argent ou en biens, c'est-à-dire son avoir.",
+      "etymology": "Origine incertaine. Le Littré cite la forme genevoise « saint frisquin ». Nisard y voyait une altération de fustaine (vêtement), hypothèse que Littré juge mal appuyée.",
+      "quote": {
+        "text": "Puis dans deux petits sacs mettant tout son frusquin",
+        "author": "Sénecé"
+      },
+      "rarity": "common",
+      "collectionId": "fondateurs",
+      "themes": [
+        "argent",
+        "vie-quotidienne"
+      ],
+      "perBillion": 44.2
+    },
+    {
+      "id": "galimafree",
+      "word": "galimafrée",
+      "partOfSpeech": "n. f.",
+      "era": "XIVe s.",
+      "definition": "Ragoût composé de restes de viandes, plat de fortune servi souvent le soir avec ce qui reste du repas précédent.",
+      "etymology": "Origine inconnue. Le genevois dit galimaufrée, et l'ancien anglais gallimaufrey vient du français.",
+      "quote": {
+        "text": "Tronchin l'a condamné à ne manger que des légumes ; Monsieur, a dit le duc de Lorges, je ne peux digérer votre galimafrée",
+        "author": "Voltaire"
+      },
+      "rarity": "uncommon",
+      "collectionId": "fondateurs",
+      "themes": [
+        "cuisine",
+        "vie-quotidienne"
+      ],
+      "perBillion": 11.1
+    },
+    {
+      "id": "gamache",
+      "word": "gamache",
+      "partOfSpeech": "n. f.",
+      "era": null,
+      "definition": "Guêtre, sorte de jambière en tissu ou en cuir qui couvrait le haut du pied et la jambe, mot aujourd'hui vieilli.",
+      "etymology": "Du bas latin gamba, « jambe », selon Diez.",
+      "quote": null,
+      "rarity": "uncommon",
+      "collectionId": "fondateurs",
+      "themes": [
+        "vie-quotidienne"
+      ],
+      "perBillion": 4.59
+    },
+    {
+      "id": "gargoterie",
+      "word": "gargoterie",
+      "partOfSpeech": "n. f.",
+      "era": null,
+      "definition": "Cuisine médiocre et sans soin, telle qu'on la sert dans une gargote, c'est-à-dire un petit restaurant bon marché et mal tenu.",
+      "etymology": "Dérivé de gargote, petit restaurant à bas prix, avec le suffixe -erie.",
+      "quote": null,
+      "rarity": "epic",
+      "collectionId": "fondateurs",
+      "themes": [
+        "cuisine",
+        "vie-quotidienne"
+      ],
+      "perBillion": 0.902
+    },
+    {
+      "id": "glanure",
+      "word": "glanure",
+      "partOfSpeech": "n. f.",
+      "era": null,
+      "definition": "Ce qu'on ramasse dans les champs après la moisson : épis ou grains oubliés par les moissonneurs.",
+      "etymology": "Dérivé du verbe glaner.",
+      "quote": null,
+      "rarity": "uncommon",
+      "collectionId": "fondateurs",
+      "themes": [
+        "nature",
+        "vie-quotidienne"
+      ],
+      "perBillion": 16.4
+    },
+    {
+      "id": "gourgandine",
+      "word": "gourgandine",
+      "partOfSpeech": "n. f.",
+      "era": null,
+      "definition": "Femme de mauvaise vie, coureuse (terme très familier) ; aussi, en 1694, corset de femme à la mode, ouvert par devant et laissant voir la chemise.",
+      "etymology": "Origine inconnue. Lehéricher la rattache à gore, prostituée, et gaudir, réjouir, d'après un passage de la Muse normande. Le vêtement serait nommé d'après la femme.",
+      "quote": {
+        "text": "Enfin la gourgandine est un riche corset, Entr'ouvert par devant à l'aide d'un lacet ; Et, comme il rend la taille et moins belle et moins fine, On a cru lui devoir le nom de gourgandine",
+        "author": "Boursault"
+      },
+      "rarity": "common",
+      "collectionId": "fondateurs",
+      "themes": [
+        "arts",
+        "vie-quotidienne"
+      ],
+      "perBillion": 130.0
+    },
+    {
+      "id": "heleux",
+      "word": "héleux",
+      "partOfSpeech": "n. m.",
+      "era": null,
+      "definition": "Espèce de héron propre à Saint-Domingue.",
+      "etymology": "Origine incertaine.",
+      "quote": null,
+      "rarity": "precious",
+      "collectionId": "fondateurs",
+      "themes": [
+        "nature"
+      ],
+      "perBillion": null
+    },
+    {
+      "id": "hematophobe",
+      "word": "hématophobe",
+      "partOfSpeech": "adj.",
+      "era": null,
+      "definition": "Se dit d'un médecin qui a horreur de la saignée et refuse d'y recourir comme remède.",
+      "etymology": "Composé de hémato-, sang, et du grec phobos, crainte.",
+      "quote": {
+        "text": "Le premier [Sarrazin, médecin], qui est un hémophobe recuit",
+        "author": "Guy Patin"
+      },
+      "rarity": "precious",
+      "collectionId": "fondateurs",
+      "themes": [
+        "corps",
+        "sciences"
+      ],
+      "perBillion": 0.199
+    },
+    {
+      "id": "hylogenie",
+      "word": "hylogénie",
+      "partOfSpeech": "n. f.",
+      "era": null,
+      "definition": "Formation de la matière.",
+      "etymology": "Du grec hylê, matière, et du suffixe -génie, qui désigne l'engendrement, la formation.",
+      "quote": null,
+      "rarity": "precious",
+      "collectionId": "fondateurs",
+      "themes": [
+        "sciences"
+      ],
+      "perBillion": 0.198
+    },
+    {
+      "id": "hymnode",
+      "word": "hymnode",
+      "partOfSpeech": "n. m. et f.",
+      "era": null,
+      "definition": "Chantre de l'Antiquité qui entonnait des hymnes lors des cérémonies religieuses ; le mot vaut aussi bien pour un homme que pour une femme.",
+      "etymology": "Du grec hymnôdos, composé de hymnos, « hymne », et ôdê, « chant ».",
+      "quote": null,
+      "rarity": "uncommon",
+      "collectionId": "fondateurs",
+      "themes": [
+        "arts",
+        "religion"
+      ],
+      "perBillion": 6.52
+    },
+    {
+      "id": "ilotisme",
+      "word": "ilotisme",
+      "partOfSpeech": "n. m.",
+      "era": null,
+      "definition": "Condition de l'ilote, esclave de Sparte ; par extension, état d'abaissement et d'ignorance imposé à une partie du peuple par ses dominateurs.",
+      "etymology": "Dérivé d'ilote, nom des esclaves d'État de Sparte.",
+      "quote": null,
+      "rarity": "common",
+      "collectionId": "fondateurs",
+      "themes": [
+        "autre"
+      ],
+      "perBillion": 14.5
+    },
+    {
+      "id": "immouvable",
+      "word": "immouvable",
+      "partOfSpeech": "adj.",
+      "era": "XVIe s.",
+      "definition": "Qui ne peut être ému ni ébranlé ; se dit de quelqu'un que rien ne touche, insensible à la pitié ou à l'émotion.",
+      "etymology": "Composé du préfixe im-, à valeur négative, et de mouvoir : qui ne peut être mû.",
+      "quote": null,
+      "rarity": "precious",
+      "collectionId": "fondateurs",
+      "themes": [
+        "sentiments"
+      ],
+      "perBillion": 0.327
+    },
+    {
+      "id": "individuite",
+      "word": "individuité",
+      "partOfSpeech": "n. f.",
+      "era": "XVIe s.",
+      "definition": "Caractère propre de ce qui forme un individu, ce par quoi un être est un et distinct de tout autre.",
+      "etymology": "Du latin individuitatem, dérivé de individuus, « individu », c'est-à-dire indivisible.",
+      "quote": {
+        "text": "Et même, pour dire un mot de cette indivisibilité prétendue, j'avoue que nous concevons naturellement que tout être et par conséquent tout corps doit avoir son unité et, par conséquent, son individuité",
+        "author": "Bossuet"
+      },
+      "rarity": "rare",
+      "collectionId": "fondateurs",
+      "themes": [
+        "autre",
+        "sciences"
+      ],
+      "perBillion": 1.64
+    },
+    {
+      "id": "jaqueline",
+      "word": "jaqueline",
+      "partOfSpeech": "n. f.",
+      "era": null,
+      "definition": "Grosse cruche de grès au ventre allongé, employée autrefois dans le nord de la France pour servir ou conserver la boisson.",
+      "etymology": "Origine incertaine.",
+      "quote": null,
+      "rarity": "epic",
+      "collectionId": "fondateurs",
+      "themes": [
+        "cuisine",
+        "vie-quotidienne"
+      ],
+      "perBillion": 0.534
+    },
+    {
+      "id": "jonchaie",
+      "word": "jonchaie",
+      "partOfSpeech": "n. f.",
+      "era": null,
+      "definition": "Terrain humide où poussent en abondance des joncs, ces plantes élancées des marais et des bords d'eau.",
+      "etymology": "Dérivé de jonc.",
+      "quote": null,
+      "rarity": "uncommon",
+      "collectionId": "fondateurs",
+      "themes": [
+        "nature"
+      ],
+      "perBillion": 14.0
+    },
+    {
+      "id": "lacerie",
+      "word": "lacerie",
+      "partOfSpeech": "n. f.",
+      "era": null,
+      "definition": "Terme de vannerie désignant les ouvrages les plus beaux et les plus fins d'un vannier, ceux qui demandent le plus de délicatesse.",
+      "etymology": "Dérivé de lacer, c'est-à-dire entrelacer.",
+      "quote": null,
+      "rarity": "precious",
+      "collectionId": "fondateurs",
+      "themes": [
+        "arts",
+        "metiers"
+      ],
+      "perBillion": 0.257
+    },
+    {
+      "id": "lavandiere",
+      "word": "lavandière",
+      "partOfSpeech": "n. f.",
+      "era": "XVIe s.",
+      "definition": "Femme qui lave le linge ; en Normandie et en Bretagne, fée qui bat le linge et assomme de sa main de fer le curieux indiscret.",
+      "etymology": "Dérivé de lavandier, lui-même issu de la même famille que le provençal lavandiera, l'espagnol lavandera et l'italien lavandaia.",
+      "quote": {
+        "text": "Ce sont les lavandières Qui passent en chantant là-bas dans les bruyères",
+        "author": "Victor Hugo"
+      },
+      "rarity": "common",
+      "collectionId": "fondateurs",
+      "themes": [
+        "metiers",
+        "nature",
+        "religion"
+      ],
+      "perBillion": 411.0
+    },
+    {
+      "id": "leucographite",
+      "word": "leucographite",
+      "partOfSpeech": "n. m.",
+      "era": null,
+      "definition": "Craie ou pierre blanche, facile à délayer dans l'eau, que les blanchisseurs employaient pour rendre le linge plus éclatant.",
+      "etymology": "Composé de leuco-, du grec leukos « blanc », et de graphite.",
+      "quote": null,
+      "rarity": "precious",
+      "collectionId": "fondateurs",
+      "themes": [
+        "metiers",
+        "vie-quotidienne"
+      ],
+      "perBillion": null
+    },
+    {
+      "id": "lilliput",
+      "word": "lilliput",
+      "partOfSpeech": "n. m.",
+      "era": null,
+      "definition": "Pays imaginaire décrit par Swift dans Gulliver, habité par de petits hommes hauts de six pouces.",
+      "etymology": "Origine incertaine.",
+      "quote": null,
+      "rarity": "rare",
+      "collectionId": "fondateurs",
+      "themes": [
+        "arts",
+        "loufoque"
+      ],
+      "perBillion": 1.78
+    },
+    {
+      "id": "lisseau",
+      "word": "lisseau",
+      "partOfSpeech": "n. m.",
+      "era": null,
+      "definition": "Petit peloton de fil ou de ficelle, dans le vocabulaire de certains ateliers.",
+      "etymology": "Dérivé de lisse, selon le renvoi du Littré à l'article Lisse 5.",
+      "quote": null,
+      "rarity": "rare",
+      "collectionId": "fondateurs",
+      "themes": [
+        "metiers"
+      ],
+      "perBillion": 0.397
+    },
+    {
+      "id": "loche",
+      "word": "loche",
+      "partOfSpeech": "n. f.",
+      "era": "XIIIe s.",
+      "definition": "Petit poisson d'eau douce à corps allongé et barbillons, du genre cobite ; en certaines provinces, nom donné à la limace.",
+      "etymology": "Rapproché de l'espagnol loja et de l'anglais loach, sans autre précision dans le Littré.",
+      "quote": null,
+      "rarity": "common",
+      "collectionId": "fondateurs",
+      "themes": [
+        "nature"
+      ],
+      "perBillion": 50.8
+    },
+    {
+      "id": "lubin",
+      "word": "lubin",
+      "partOfSpeech": "n. m.",
+      "era": null,
+      "definition": "Nom donné, sur certaines côtes, au bar, poisson de mer argenté et vorace, aussi appelé loup.",
+      "etymology": "Du latin Lupinus, nom propre appliqué à un animal, dérivé de Lupus, « loup », nom d'homme fréquent au début du Moyen Âge, qui traduisait les noms germaniques en ulf, wolf.",
+      "quote": null,
+      "rarity": "uncommon",
+      "collectionId": "fondateurs",
+      "themes": [
+        "metiers",
+        "nature"
+      ],
+      "perBillion": 9.55
+    },
+    {
+      "id": "lucine",
+      "word": "lucine",
+      "partOfSpeech": "n. f.",
+      "era": null,
+      "definition": "Nom que les Anciens donnaient à Diane, considérée comme la déesse qui présidait aux accouchements.",
+      "etymology": "Du latin Lucina, dérivé de lucere, « luire » : proprement la lune, considérée dans son influence bienfaisante.",
+      "quote": {
+        "text": "À des travaux affreux Lucine nous condamne ; Il est bien doux alors d'être chère à Diane",
+        "author": "André Chénier"
+      },
+      "rarity": "uncommon",
+      "collectionId": "fondateurs",
+      "themes": [
+        "corps",
+        "religion"
+      ],
+      "perBillion": 3.53
+    },
+    {
+      "id": "macreuse",
+      "word": "macreuse",
+      "partOfSpeech": "n. f.",
+      "era": "XIVe s.",
+      "definition": "Palmipède au plumage noir, aussi appelé bisette, qui ressemble à un canard mais a la chair noire.",
+      "etymology": "Origine inconnue. Scheler y voit probablement la même origine que maquereau, à cause de la bigarrure du plumage.",
+      "quote": {
+        "text": "On a prétendu que les macreuses naissaient, comme les bernaches, dans des coquilles ou dans du bois pourri ; nous avons suffisamment réfuté ces fables....",
+        "author": "Buffon"
+      },
+      "rarity": "common",
+      "collectionId": "fondateurs",
+      "themes": [
+        "nature"
+      ],
+      "perBillion": 57.6
+    },
+    {
+      "id": "magnaud",
+      "word": "magnaud",
+      "partOfSpeech": "n. m.",
+      "era": null,
+      "definition": "Nom régional du magnan, c'est-à-dire du ver à soie, la chenille du bombyx du mûrier élevée pour sa soie.",
+      "etymology": "Origine incertaine.",
+      "quote": null,
+      "rarity": "precious",
+      "collectionId": "fondateurs",
+      "themes": [
+        "metiers",
+        "nature"
+      ],
+      "perBillion": 0.187
+    },
+    {
+      "id": "marasquin",
+      "word": "marasquin",
+      "partOfSpeech": "n. m.",
+      "era": null,
+      "definition": "Liqueur parfumée tirée d'une variété de cerise acide, la marasque, dont la réputation était la meilleure lorsqu'elle venait de Zara.",
+      "etymology": "De l'italien marasca, variété de cerise acide avec laquelle on prépare cette liqueur.",
+      "quote": null,
+      "rarity": "common",
+      "collectionId": "fondateurs",
+      "themes": [
+        "cuisine"
+      ],
+      "perBillion": 47.9
+    },
+    {
+      "id": "marniere",
+      "word": "marnière",
+      "partOfSpeech": "n. f.",
+      "era": "XIIIe s.",
+      "definition": "Carrière d'où l'on extrait la marne, cette roche argileuse et calcaire employée pour amender les terres.",
+      "etymology": "Dérivé de marne, avec le suffixe -ière. Formes régionales apparentées : picard marlière, wallon marelîre.",
+      "quote": null,
+      "rarity": "common",
+      "collectionId": "fondateurs",
+      "themes": [
+        "metiers",
+        "nature"
+      ],
+      "perBillion": 31.7
+    },
+    {
+      "id": "marsouin",
+      "word": "marsouin",
+      "partOfSpeech": "n. m.",
+      "era": "XIVe s.",
+      "definition": "Petit cétacé proche du dauphin, au museau arrondi, aussi appelé « pourceau de mer ». En marine, forte pièce de charpente.",
+      "etymology": "De l'ancien haut allemand merisuîn, en allemand moderne Meerschwein, composé de Meer (mer) et Schwein (pourceau), littéralement « cochon de mer ».",
+      "quote": {
+        "text": "Il veut dès aujourd'hui qu'elle applique son soin à donner de l'amour au plus vilain marsouin",
+        "author": "Boursault"
+      },
+      "rarity": "common",
+      "collectionId": "fondateurs",
+      "themes": [
+        "metiers",
+        "nature"
+      ],
+      "perBillion": 336.0
+    },
+    {
+      "id": "matrimonion",
+      "word": "matrimonion",
+      "partOfSpeech": "n. m.",
+      "era": null,
+      "definition": "Mot plaisant qui n'est que le latin matrimonium habillé à la française, pour dire « mariage ».",
+      "etymology": "Du latin matrimonium, dérivé de mater, « mère » ; comparer le provençal matrimoni, l'espagnol et l'italien matrimonio.",
+      "quote": {
+        "text": "Quelque autre, sous l'espoir du matrimonion, Aurait ouvert l'oreille à la tentation",
+        "author": "Molière"
+      },
+      "rarity": "epic",
+      "collectionId": "fondateurs",
+      "themes": [
+        "galanterie",
+        "loufoque"
+      ],
+      "perBillion": 0.415
+    },
+    {
+      "id": "mergue",
+      "word": "mergue",
+      "partOfSpeech": "n. m.",
+      "era": null,
+      "definition": "Oiseau palmipède plongeur, appelé aussi harle, dont on distingue le grand harle (mergue merganser) et le harle piette (mergue albelle).",
+      "etymology": "Du latin mergus, « plongeon », dérivé de mergere, « plonger ». Le Littré précise que mergue n'est guère qu'une transcription ; le français est harle.",
+      "quote": null,
+      "rarity": "rare",
+      "collectionId": "fondateurs",
+      "themes": [
+        "nature"
+      ],
+      "perBillion": 1.39
+    },
+    {
+      "id": "metaphraste",
+      "word": "métaphraste",
+      "partOfSpeech": "n. m.",
+      "era": null,
+      "definition": "Celui qui donne la métaphrase d'un auteur difficile, c'est-à-dire qui l'explique et le traduit en même temps pour l'éclaircir.",
+      "etymology": "Du grec metaphrastês, dérivé de la même famille que métaphrase, « traduction, paraphrase ».",
+      "quote": null,
+      "rarity": "rare",
+      "collectionId": "fondateurs",
+      "themes": [
+        "arts",
+        "sciences"
+      ],
+      "perBillion": 1.46
+    },
+    {
+      "id": "moinaille",
+      "word": "moinaille",
+      "partOfSpeech": "n. f.",
+      "era": null,
+      "definition": "Terme méprisant désignant l'ensemble des moines, vus comme une masse que l'on dédaigne.",
+      "etymology": "Dérivé de moine, avec le suffixe péjoratif -aille.",
+      "quote": {
+        "text": "La moinaille et la prêtraille ont été les moteurs des émeutes à Madrid en 1765",
+        "author": "Galiani"
+      },
+      "rarity": "rare",
+      "collectionId": "fondateurs",
+      "themes": [
+        "insultes",
+        "religion"
+      ],
+      "perBillion": 1.34
+    },
+    {
+      "id": "monacaille",
+      "word": "monacaille",
+      "partOfSpeech": "n. f.",
+      "era": null,
+      "definition": "Terme de mépris désignant les moines en bloc, comme une engeance ou une cohue de religieux.",
+      "etymology": "Du latin monachus, moine, avec la finale -aille, souvent péjorative.",
+      "quote": {
+        "text": "La monacaille et la prêtraille ont été les moteurs des émeutes de Madrid en 1765",
+        "author": "Ferdinando Galiani"
+      },
+      "rarity": "rare",
+      "collectionId": "fondateurs",
+      "themes": [
+        "insultes",
+        "religion"
+      ],
+      "perBillion": 1.09
+    },
+    {
+      "id": "mosquillon",
+      "word": "mosquillon",
+      "partOfSpeech": "n. m.",
+      "era": null,
+      "definition": "Nom désignant la bergeronnette grise, un oiseau.",
+      "etymology": "Origine incertaine.",
+      "quote": null,
+      "rarity": "precious",
+      "collectionId": "fondateurs",
+      "themes": [
+        "nature"
+      ],
+      "perBillion": null
+    },
+    {
+      "id": "mouilleres",
+      "word": "mouillères",
+      "partOfSpeech": "n. f. pl.",
+      "era": null,
+      "definition": "Endroits d'un champ ou d'un pré où le sol reste habituellement détrempé, gorgé d'eau.",
+      "etymology": "Origine incertaine.",
+      "quote": null,
+      "rarity": "uncommon",
+      "collectionId": "fondateurs",
+      "themes": [
+        "nature",
+        "vie-quotidienne"
+      ],
+      "perBillion": 15.3
+    },
+    {
+      "id": "muabilite",
+      "word": "muabilité",
+      "partOfSpeech": "n. f.",
+      "era": "XIIIe s.",
+      "definition": "Caractère de ce qui peut changer, de ce qui est sujet à variation ; instabilité, inconstance.",
+      "etymology": "Dérivé de muable, comme le provençal mutabilitat, l'espagnol mutabilidad et l'italien mutabilità. Attesté dès le XIIIe siècle.",
+      "quote": null,
+      "rarity": "uncommon",
+      "collectionId": "fondateurs",
+      "themes": [
+        "autre"
+      ],
+      "perBillion": 4.77
+    },
+    {
+      "id": "nonpareille",
+      "word": "nonpareille",
+      "partOfSpeech": "n. f.",
+      "era": null,
+      "definition": "Le plus petit dans un art, tel un caractère d'imprimerie ou un ruban étroit ; aussi un oiseau ou un œillet.",
+      "etymology": "Origine non indiquée dans l'entrée ; formé de l'adjectif nonpareil, « sans pareil ».",
+      "quote": {
+        "text": "Employant pour cela le plus beau papier doré, de la poudre d'azur et d'argent pour sécher l'écriture, de la nonpareille bleue pour coudre mes cahiers",
+        "author": "Jean-Jacques Rousseau"
+      },
+      "rarity": "common",
+      "collectionId": "fondateurs",
+      "themes": [
+        "arts",
+        "metiers",
+        "nature"
+      ],
+      "perBillion": 33.2
+    },
+    {
+      "id": "normander",
+      "word": "normander",
+      "partOfSpeech": "v. tr.",
+      "era": null,
+      "definition": "Nettoyer le grain après le battage, en le séparant de la balle et des impuretés, dans le vocabulaire des travaux de la ferme.",
+      "etymology": "Origine incertaine.",
+      "quote": null,
+      "rarity": "precious",
+      "collectionId": "fondateurs",
+      "themes": [
+        "metiers",
+        "nature"
+      ],
+      "perBillion": 0.836
+    },
+    {
+      "id": "nosophore",
+      "word": "nosophore",
+      "partOfSpeech": "n. m.",
+      "era": null,
+      "definition": "Lit de fer à quatre colonnes reliées par des traverses métalliques, destiné aux blessés et adaptable à divers appareils de soutien et de déplacement.",
+      "etymology": "Composé de noso-, préfixe désignant la maladie, et du grec φορός, « qui porte » : littéralement, ce qui porte les malades.",
+      "quote": null,
+      "rarity": "precious",
+      "collectionId": "fondateurs",
+      "themes": [
+        "metiers",
+        "sciences"
+      ],
+      "perBillion": 0.0602
+    },
+    {
+      "id": "nychthemere",
+      "word": "nychthémère",
+      "partOfSpeech": "n. m.",
+      "era": null,
+      "definition": "Période de vingt-quatre heures formant un jour complet, qui réunit le jour et la nuit.",
+      "etymology": "Du grec Nychthêmeron, composé de nux, nuktos, « nuit », et hêmera, « jour ».",
+      "quote": {
+        "text": "Les heures du jour ou du nychthémère étaient consacrées aux planètes : la première au soleil, la seconde à Vénus, la troisième à Mercure, la quatrième à la lune, la cinquième à Saturne, la sixième à Jupiter, la septième à Mars, la huitième au soleil, et ainsi de suite",
+        "author": "Delambre"
+      },
+      "rarity": "uncommon",
+      "collectionId": "fondateurs",
+      "themes": [
+        "sciences",
+        "vie-quotidienne"
+      ],
+      "perBillion": 3.97
+    },
+    {
+      "id": "odorer",
+      "word": "odorer",
+      "partOfSpeech": "v. tr.",
+      "era": "XIIe s.",
+      "definition": "Percevoir une odeur par l'odorat, flairer ; au sens intransitif, posséder le sens de l'odorat.",
+      "etymology": "Du latin odorari, dérivé de odor, « odeur » ; comparer le provençal odorar et l'italien odorare.",
+      "quote": {
+        "text": "Et Dieu a odoré et reçu l'odeur du sacrifice",
+        "author": "Pascal"
+      },
+      "rarity": "uncommon",
+      "collectionId": "fondateurs",
+      "themes": [
+        "corps",
+        "sentiments"
+      ],
+      "perBillion": 8.09
+    },
+    {
+      "id": "orvietan",
+      "word": "orviétan",
+      "partOfSpeech": "n. m.",
+      "era": null,
+      "definition": "Électuaire très composé, jadis en vogue, vendu sur les places publiques par des charlatans ; par extension, chose quelconque avec laquelle on trompe.",
+      "etymology": "Remède apporté en France en 1647 par un opérateur d'Orvieto (Italie) et vendu en place publique ; le nom du charlatan Orvietano passa au remède.",
+      "quote": {
+        "text": "On laisse les bonzes débiter leur orviétan dans les places publiques",
+        "author": "Voltaire"
+      },
+      "rarity": "common",
+      "collectionId": "fondateurs",
+      "themes": [
+        "metiers",
+        "sciences",
+        "vie-quotidienne"
+      ],
+      "perBillion": 48.4
+    },
+    {
+      "id": "oubier",
+      "word": "oubier",
+      "partOfSpeech": "n. m.",
+      "era": null,
+      "definition": "Nom donné à l'une des espèces de faucons, rapace dressé autrefois pour la chasse au vol.",
+      "etymology": "Même radical que hobereau, selon le Littré, qui renvoie à cet article sans en dire davantage.",
+      "quote": null,
+      "rarity": "rare",
+      "collectionId": "fondateurs",
+      "themes": [
+        "metiers",
+        "nature"
+      ],
+      "perBillion": 2.15
+    },
+    {
+      "id": "pagure",
+      "word": "pagure",
+      "partOfSpeech": "n. m.",
+      "era": null,
+      "definition": "Crustacé décapode à abdomen mou, qui loge sa queue dans une coquille vide pour se protéger ; on l'appelle aujourd'hui bernard-l'ermite.",
+      "etymology": "Du latin pagurus, venu du grec πάγουρος : πάγ-, racine de πήγνυμι (ajuster, enfoncer), et οὐρά (queue), car il enfonce sa queue molle dans des coquilles vides.",
+      "quote": null,
+      "rarity": "common",
+      "collectionId": "fondateurs",
+      "themes": [
+        "nature",
+        "sciences"
+      ],
+      "perBillion": 18.4
+    },
+    {
+      "id": "passette",
+      "word": "passette",
+      "partOfSpeech": "n. f.",
+      "era": null,
+      "definition": "Petite passoire, ustensile percé de trous servant à filtrer ou égoutter un liquide.",
+      "etymology": "Dérivé de passer, avec le suffixe diminutif -ette.",
+      "quote": null,
+      "rarity": "uncommon",
+      "collectionId": "fondateurs",
+      "themes": [
+        "cuisine",
+        "vie-quotidienne"
+      ],
+      "perBillion": 7.94
+    },
+    {
+      "id": "pereau",
+      "word": "péreau",
+      "partOfSpeech": "n. m.",
+      "era": null,
+      "definition": "Récipient dans lequel le cirier fait fondre la cire pour la filer et la mettre en forme.",
+      "etymology": "Origine incertaine.",
+      "quote": null,
+      "rarity": "precious",
+      "collectionId": "fondateurs",
+      "themes": [
+        "metiers"
+      ],
+      "perBillion": 0.127
+    },
+    {
+      "id": "pitron",
+      "word": "pitron",
+      "partOfSpeech": "n. m.",
+      "era": null,
+      "definition": "Sur le canal du Midi, longue poutre de bois mesurant de douze à quinze mètres.",
+      "etymology": "Origine incertaine.",
+      "quote": null,
+      "rarity": "rare",
+      "collectionId": "fondateurs",
+      "themes": [
+        "metiers"
+      ],
+      "perBillion": 1.02
+    },
+    {
+      "id": "poelonnee",
+      "word": "poêlonnée",
+      "partOfSpeech": "n. f.",
+      "era": null,
+      "definition": "Contenu d'un poêlon, soit la quantité qu'un poêlon peut contenir, par exemple une poêlonnée d'eau chaude.",
+      "etymology": "Dérivé de poêlon, avec le suffixe -ée, qui désigne le contenu.",
+      "quote": {
+        "text": "J'en mis une autre [rose] dans une poêlonnée d'eau chaude, elle y fut en bouillie en un moment",
+        "author": "Madame de Sévigné"
+      },
+      "rarity": "precious",
+      "collectionId": "fondateurs",
+      "themes": [
+        "cuisine",
+        "vie-quotidienne"
+      ],
+      "perBillion": 0.0522
+    },
+    {
+      "id": "ponant",
+      "word": "ponant",
+      "partOfSpeech": "n. m.",
+      "era": "XVe s.",
+      "definition": "L'occident, où le soleil se couche ; en Méditerranée, le vent d'ouest, opposé au levant. En marine, l'Océan, face à la Méditerranée.",
+      "etymology": "Du provençal ponent, comme l'italien ponente (couchant), de poner si, se coucher ; du latin ponere, mettre, poser.",
+      "quote": {
+        "text": "Pontchartrain avait fait faire à son fils une grande tournée par les ports du Levant et du Ponant",
+        "author": "Saint-Simon"
+      },
+      "rarity": "common",
+      "collectionId": "fondateurs",
+      "themes": [
+        "autre",
+        "nature"
+      ],
+      "perBillion": 162.0
+    },
+    {
+      "id": "pontique",
+      "word": "pontique",
+      "partOfSpeech": "adj.",
+      "era": null,
+      "definition": "Qui appartient au Pont, ancienne contrée au bord de la mer Noire, ou en provient. « Rat pontique » désignait autrefois l'hermine.",
+      "etymology": "Origine incertaine.",
+      "quote": null,
+      "rarity": "common",
+      "collectionId": "fondateurs",
+      "themes": [
+        "autre",
+        "nature"
+      ],
+      "perBillion": 323.0
+    },
+    {
+      "id": "poue",
+      "word": "poue",
+      "partOfSpeech": "interj.",
+      "era": null,
+      "definition": "Onomatopée qui imite le bruit sec d'une arme à feu que l'on décharge, employée surtout pour mimer un coup de pistolet.",
+      "etymology": "Origine incertaine.",
+      "quote": {
+        "text": "Polichinelle, faisant semblant de tirer un coup de pistolet : Poue",
+        "author": "Molière"
+      },
+      "rarity": "uncommon",
+      "collectionId": "fondateurs",
+      "themes": [
+        "guerre",
+        "loufoque"
+      ],
+      "perBillion": 13.4
+    },
+    {
+      "id": "pouille",
+      "word": "pouillé",
+      "partOfSpeech": "n. m.",
+      "era": null,
+      "definition": "Registre qui dresse l'état de tous les bénéfices d'un diocèse, d'une abbaye ou d'une institution semblable.",
+      "etymology": "Du bas-latin pulegium, altération de polyptychum (voir polyptyque), registre à plusieurs feuillets ou tablettes.",
+      "quote": null,
+      "rarity": "common",
+      "collectionId": "fondateurs",
+      "themes": [
+        "droit",
+        "religion"
+      ],
+      "perBillion": 80.5
+    },
+    {
+      "id": "procillon",
+      "word": "procillon",
+      "partOfSpeech": "n. m.",
+      "era": null,
+      "definition": "Petit procès, affaire judiciaire de peu d'importance, dans le langage familier.",
+      "etymology": "Diminutif irrégulier de procès.",
+      "quote": {
+        "text": "Il achetait sous main de petits procillons, Qu'il savait élever, nourrir de procédures ; Il les empâtait bien, et de ces nourritures, Il en tirait de bons et gros procès du Mans",
+        "author": "Dufresny"
+      },
+      "rarity": "rare",
+      "collectionId": "fondateurs",
+      "themes": [
+        "droit",
+        "loufoque"
+      ],
+      "perBillion": 0.581
+    },
+    {
+      "id": "pyromancien",
+      "word": "pyromancien",
+      "partOfSpeech": "n. m.",
+      "era": "XVIe s.",
+      "definition": "Devin qui prétend lire l'avenir dans la forme, la couleur et les mouvements des flammes ou du feu.",
+      "etymology": "Origine incertaine.",
+      "quote": null,
+      "rarity": "rare",
+      "collectionId": "fondateurs",
+      "themes": [
+        "arts",
+        "religion"
+      ],
+      "perBillion": 3.07
+    },
+    {
+      "id": "quinquatries",
+      "word": "quinquatries",
+      "partOfSpeech": "n. f. pl.",
+      "era": null,
+      "definition": "Fêtes romaines en l'honneur de Minerve (Pallas), célébrées à partir du 18 mars et durant cinq jours.",
+      "etymology": "Du latin quinquatria.",
+      "quote": null,
+      "rarity": "rare",
+      "collectionId": "fondateurs",
+      "themes": [
+        "autre",
+        "religion"
+      ],
+      "perBillion": 0.683
+    },
+    {
+      "id": "rabote",
+      "word": "rabote",
+      "partOfSpeech": "n. f.",
+      "era": null,
+      "definition": "Pâtisserie régionale où une pomme entière est enfermée dans de la pâte ; le mot s'emploie dans les Ardennes et à Genève.",
+      "etymology": "De l'ancien français rabote, qui semble désigner un ballon ou une paume dans un texte du XIVe siècle ; le nom viendrait par assimilation de forme avec cette pâtisserie.",
+      "quote": null,
+      "rarity": "common",
+      "collectionId": "fondateurs",
+      "themes": [
+        "cuisine",
+        "vie-quotidienne"
+      ],
+      "perBillion": 59.7
+    },
+    {
+      "id": "raclure",
+      "word": "raclure",
+      "partOfSpeech": "n. f.",
+      "era": "XVe s.",
+      "definition": "Petits fragments détachés de la surface d'un corps en le raclant ; par extension, l'action même de racler.",
+      "etymology": "Dérivé de racler, avec le suffixe -ure. Attesté dès le XVe siècle.",
+      "quote": {
+        "text": "Il convient d'examiner si l'inscription a souffert quelque altération, si l'on y trouve quelque raclure de lettre",
+        "author": "Bouchaud"
+      },
+      "rarity": "common",
+      "collectionId": "fondateurs",
+      "themes": [
+        "vie-quotidienne"
+      ],
+      "perBillion": 138.0
+    },
+    {
+      "id": "ramberge",
+      "word": "ramberge",
+      "partOfSpeech": "n. f.",
+      "era": "XVIe s.",
+      "definition": "Nom d'un ancien bâtiment de guerre anglais, dont le nom vient de « ramer » et de « barque ».",
+      "etymology": "De l'anglais row-barge, composé de row, ramer, et de barge, barque.",
+      "quote": null,
+      "rarity": "uncommon",
+      "collectionId": "fondateurs",
+      "themes": [
+        "guerre",
+        "metiers"
+      ],
+      "perBillion": 3.2
+    },
+    {
+      "id": "ramoindrir",
+      "word": "ramoindrir",
+      "partOfSpeech": "v. tr.",
+      "era": null,
+      "definition": "Rendre de nouveau moindre, diminuer une seconde fois ce qui avait déjà été réduit.",
+      "etymology": "Composé du préfixe re- et du verbe amoindrir.",
+      "quote": {
+        "text": "L'ordinaire était mesquin, on l'a encore ramoindri",
+        "author": "Dictionnaire de l'Académie (1696)"
+      },
+      "rarity": "precious",
+      "collectionId": "fondateurs",
+      "themes": [
+        "vie-quotidienne"
+      ],
+      "perBillion": 0.127
+    },
+    {
+      "id": "rapetasser",
+      "word": "rapetasser",
+      "partOfSpeech": "v. tr.",
+      "era": "XVIe s.",
+      "definition": "Raccommoder grossièrement de vieux vêtements ou meubles avec des pièces d'origines diverses ; au figuré, remanier un texte en y ajoutant des morceaux empruntés.",
+      "etymology": "Composé de re-, à, et du bas latin petacia, « lambeau », mot de la famille de pièce. Formes dialectales : genevois repetasser, wallon rapesté.",
+      "quote": {
+        "text": "Polissant les nouveaux, les vieux rapetassant, Je fais des vers....",
+        "author": "Mathurin Régnier"
+      },
+      "rarity": "common",
+      "collectionId": "fondateurs",
+      "themes": [
+        "arts",
+        "metiers",
+        "vie-quotidienne"
+      ],
+      "perBillion": 64.0
+    },
+    {
+      "id": "rassaillir",
+      "word": "rassaillir",
+      "partOfSpeech": "v. tr.",
+      "era": "XVe s.",
+      "definition": "Assaillir de nouveau ; attaquer une seconde fois quelqu'un ou quelque chose qu'on avait déjà assailli.",
+      "etymology": "Composé de re- et d'assaillir ; comparable à l'italien rassalire.",
+      "quote": null,
+      "rarity": "rare",
+      "collectionId": "fondateurs",
+      "themes": [
+        "guerre"
+      ],
+      "perBillion": 0.494
+    },
+    {
+      "id": "redowa",
+      "word": "redowa",
+      "partOfSpeech": "n. f.",
+      "era": null,
+      "definition": "Danse à trois temps, proche de la valse, qui ressemble beaucoup à la mazurka.",
+      "etymology": "Origine incertaine.",
+      "quote": null,
+      "rarity": "uncommon",
+      "collectionId": "fondateurs",
+      "themes": [
+        "arts"
+      ],
+      "perBillion": 4.16
+    },
+    {
+      "id": "reliquataire",
+      "word": "reliquataire",
+      "partOfSpeech": "n. m. et f.",
+      "era": null,
+      "definition": "Personne qui, une fois ses comptes arrêtés, reste devoir une somme à celui envers qui elle les a rendus ; celle qui est débitrice du solde.",
+      "etymology": "Dérivé de reliquat, le solde restant dû après l'arrêté d'un compte.",
+      "quote": null,
+      "rarity": "common",
+      "collectionId": "fondateurs",
+      "themes": [
+        "argent",
+        "droit"
+      ],
+      "perBillion": 11.8
+    },
+    {
+      "id": "revancher",
+      "word": "revancher",
+      "partOfSpeech": "v. tr.",
+      "era": "XIIIe s.",
+      "definition": "Venger quelqu'un en le défendant quand on l'attaque ; à la forme pronominale, se défendre, ou rendre la pareille en mal.",
+      "etymology": "Composé de re- et de venger. Le Littré juge revancher aussi correct que revenger, la finale latine -icare donnant souvent -cher, comme pencher de pendicare.",
+      "quote": {
+        "text": "Et, puisque mon trépas conserve votre gloire, Pour vous en revancher conservez ma mémoire",
+        "author": "Corneille"
+      },
+      "rarity": "common",
+      "collectionId": "fondateurs",
+      "themes": [
+        "guerre",
+        "sentiments"
+      ],
+      "perBillion": 36.5
+    },
+    {
+      "id": "reverdissement",
+      "word": "reverdissement",
+      "partOfSpeech": "n. m.",
+      "era": "XVIe s.",
+      "definition": "Retour de la verdure sur les plantes, notamment au printemps ; état de ce qui reverdit.",
+      "etymology": "Origine incertaine.",
+      "quote": null,
+      "rarity": "uncommon",
+      "collectionId": "fondateurs",
+      "themes": [
+        "nature"
+      ],
+      "perBillion": 20.5
+    },
+    {
+      "id": "rhingraviat",
+      "word": "rhingraviat",
+      "partOfSpeech": "n. m.",
+      "era": null,
+      "definition": "Titre, dignité ou fonction de rhingrave, c'est-à-dire de comte du Rhin, seigneur allemand de haut rang.",
+      "etymology": "Origine incertaine.",
+      "quote": null,
+      "rarity": "precious",
+      "collectionId": "fondateurs",
+      "themes": [
+        "autre"
+      ],
+      "perBillion": 0.176
+    },
+    {
+      "id": "ripopee",
+      "word": "ripopée",
+      "partOfSpeech": "n. f.",
+      "era": "XVe s.",
+      "definition": "Mélange de fonds de bouteilles que faisaient les cabaretiers ; par extension, mélange hétéroclite de sauces ou de liqueurs, ou écrit d'idées banales.",
+      "etymology": "Origine incertaine.",
+      "quote": null,
+      "rarity": "uncommon",
+      "collectionId": "fondateurs",
+      "themes": [
+        "cuisine",
+        "vie-quotidienne"
+      ],
+      "perBillion": 7.63
+    },
+    {
+      "id": "rousseline",
+      "word": "rousseline",
+      "partOfSpeech": "n. f.",
+      "era": null,
+      "definition": "Nom que Buffon donnait à l'alouette des marais, pour son plumage d'un roux plus ou moins clair ; désigne aussi une variété de poire.",
+      "etymology": "Origine incertaine.",
+      "quote": null,
+      "rarity": "uncommon",
+      "collectionId": "fondateurs",
+      "themes": [
+        "nature"
+      ],
+      "perBillion": 9.0
+    },
+    {
+      "id": "sabord",
+      "word": "sabord",
+      "partOfSpeech": "n. m.",
+      "era": "XVe s.",
+      "definition": "Ouverture rectangulaire percée dans la muraille d'un navire, par laquelle passe la volée d'un canon.",
+      "etymology": "Origine inconnue. On a conjecturé un anglais fictif, sawn-board, signifiant « bord scié ».",
+      "quote": {
+        "text": "Nous avions constamment navigué dans des mers si grosses, que depuis huit jours nos sabords et nos fenêtres n'avaient pas été ouverts",
+        "author": "La Pérouse"
+      },
+      "rarity": "common",
+      "collectionId": "fondateurs",
+      "themes": [
+        "guerre",
+        "metiers"
+      ],
+      "perBillion": 252.0
+    },
+    {
+      "id": "sainbois",
+      "word": "sainbois",
+      "partOfSpeech": "n. m.",
+      "era": null,
+      "definition": "Nom courant d'un arbrisseau, le daphné gnidium ou garou, dont l'écorce servait en pharmacie à préparer une pommade vésicante.",
+      "etymology": "Composé de « sain » et de « bois », à cause de l'usage médical de la plante. Le « sanctum lignum » désigne le gaïac.",
+      "quote": null,
+      "rarity": "rare",
+      "collectionId": "fondateurs",
+      "themes": [
+        "nature",
+        "sciences"
+      ],
+      "perBillion": 1.16
+    },
+    {
+      "id": "sapience",
+      "word": "sapience",
+      "partOfSpeech": "n. f.",
+      "era": "XIIe s.",
+      "definition": "Sagesse, en langage vieilli ; désigne aussi le livre biblique de la Sagesse et, en alchimie, un lut servant à sceller hermétiquement les récipients.",
+      "etymology": "Du latin sapere, « être habile », « avoir du goût », d'où savoir ; comparer le provençal sapiensa, l'italien sapienza et l'espagnol sapiencia. On rattache sapere au grec sophos.",
+      "quote": {
+        "text": "Près de Rouen, pays de sapience",
+        "author": "La Fontaine"
+      },
+      "rarity": "common",
+      "collectionId": "fondateurs",
+      "themes": [
+        "religion",
+        "sciences",
+        "sentiments"
+      ],
+      "perBillion": 303.0
+    },
+    {
+      "id": "sapiniere",
+      "word": "sapinière",
+      "partOfSpeech": "n. f.",
+      "era": null,
+      "definition": "Lieu planté de sapins ; sur la Loire, nom d'un bateau en bois de sapin, plus large que le chaland.",
+      "etymology": "Dérivé de sapin. On trouve anciennement sapine, et au XVIe siècle sapinaye.",
+      "quote": {
+        "text": "Le myrtil, le buis et le sureau sont le fléau des sapinières",
+        "author": "Dralet"
+      },
+      "rarity": "common",
+      "collectionId": "fondateurs",
+      "themes": [
+        "metiers",
+        "nature"
+      ],
+      "perBillion": 275.0
+    },
+    {
+      "id": "sauvagesse",
+      "word": "sauvagesse",
+      "partOfSpeech": "n. f.",
+      "era": null,
+      "definition": "Femme sauvage, au sens plaisant ; par extension, femme sans culture ni usages du monde, peu policée.",
+      "etymology": "Origine incertaine.",
+      "quote": {
+        "text": "J'ai des bijoux, j'apprends je ne sais combien de belles choses, je ne suis plus du tout une sauvagesse",
+        "author": "Prosper Mérimée"
+      },
+      "rarity": "common",
+      "collectionId": "fondateurs",
+      "themes": [
+        "loufoque",
+        "vie-quotidienne"
+      ],
+      "perBillion": 62.3
+    },
+    {
+      "id": "schlague",
+      "word": "schlague",
+      "partOfSpeech": "n. f.",
+      "era": null,
+      "definition": "Châtiment militaire consistant à frapper les soldats à coups de baguette, pratiqué dans certains pays allemands pour punir une faute contre la discipline.",
+      "etymology": "De l'allemand schlagen, « battre ».",
+      "quote": {
+        "text": "Le soldat français, disent-ils, depuis trente ans, ne reçoit point de coups de bâton ; et voilà l'Espagnol qui les refuse aussi ; pour peu que cela dure, adieu la schlague chez nous, personne n'en voudra",
+        "author": "Paul-Louis Courier"
+      },
+      "rarity": "common",
+      "collectionId": "fondateurs",
+      "themes": [
+        "droit",
+        "guerre"
+      ],
+      "perBillion": 56.6
+    },
+    {
+      "id": "scirophorion",
+      "word": "scirophorion",
+      "partOfSpeech": "n. m.",
+      "era": null,
+      "definition": "Dernier mois de l'année athénienne, qui correspondait à une partie de juin et de juillet.",
+      "etymology": "Du grec skiraphorion, mois nommé d'après une sorte de parasol porté dans certaines fêtes, et de phérein, porter.",
+      "quote": null,
+      "rarity": "rare",
+      "collectionId": "fondateurs",
+      "themes": [
+        "autre",
+        "vie-quotidienne"
+      ],
+      "perBillion": 0.384
+    },
+    {
+      "id": "sebeste",
+      "word": "sébeste",
+      "partOfSpeech": "n. m.",
+      "era": "XVIe s.",
+      "definition": "Fruit du sébestier, petite prune sucrée et visqueuse autrefois employée en médecine contre la toux.",
+      "etymology": "Emprunté à l'arabe sebesten.",
+      "quote": null,
+      "rarity": "rare",
+      "collectionId": "fondateurs",
+      "themes": [
+        "cuisine",
+        "nature"
+      ],
+      "perBillion": 2.03
+    },
+    {
+      "id": "senatorerie",
+      "word": "sénatorerie",
+      "partOfSpeech": "n. f.",
+      "era": null,
+      "definition": "Sous le Premier Empire, domaine dont un sénateur recevait l'usufruit, comme dotation attachée à sa fonction.",
+      "etymology": "Dérivé de sénateur.",
+      "quote": null,
+      "rarity": "common",
+      "collectionId": "fondateurs",
+      "themes": [
+        "argent",
+        "droit"
+      ],
+      "perBillion": 52.0
+    },
+    {
+      "id": "septenaire",
+      "word": "septénaire",
+      "partOfSpeech": "adj.",
+      "era": null,
+      "definition": "Qui contient ou vaut sept ; par extension, qui dure sept ans, comme un parlement, ou sept jours, ou sept années de vie.",
+      "etymology": "Du latin septenarius, dérivé de septem, « sept ». Mot apparenté au provençal setenari, à l'espagnol setenario et à l'italien settenario.",
+      "quote": {
+        "text": "Le bill qui rendait le parlement [anglais] septénaire avait enfin passé",
+        "author": "Saint-Simon"
+      },
+      "rarity": "common",
+      "collectionId": "fondateurs",
+      "themes": [
+        "droit",
+        "sciences"
+      ],
+      "perBillion": 172.0
+    },
+    {
+      "id": "subtiliseur",
+      "word": "subtiliseur",
+      "partOfSpeech": "n. m.",
+      "era": "XVIe s.",
+      "definition": "Personne, surtout écrivain, qui se plaît à subtiliser, c'est-à-dire à raffiner à l'excès ses raisonnements et couper les idées en quatre.",
+      "etymology": "Dérivé du verbe subtiliser, lui-même issu de l'adjectif subtil. Attesté dès le XVIe siècle.",
+      "quote": null,
+      "rarity": "epic",
+      "collectionId": "fondateurs",
+      "themes": [
+        "arts",
+        "autre"
+      ],
+      "perBillion": 0.313
+    },
+    {
+      "id": "surdecime",
+      "word": "surdécime",
+      "partOfSpeech": "n. m.",
+      "era": null,
+      "definition": "Impôt supplémentaire calculé sur un décime déjà levé, c'est-à-dire un décime ajouté à un autre décime.",
+      "etymology": "Origine incertaine.",
+      "quote": {
+        "text": "Nos décimes et surdécimes de guerre",
+        "author": "Horn"
+      },
+      "rarity": "precious",
+      "collectionId": "fondateurs",
+      "themes": [
+        "argent",
+        "droit"
+      ],
+      "perBillion": null
+    },
+    {
+      "id": "susbec",
+      "word": "susbec",
+      "partOfSpeech": "n. m.",
+      "era": null,
+      "definition": "Terme de fauconnerie : sorte de pituite, c'est-à-dire d'écoulement muqueux, qui frappe les oiseaux de proie dressés pour la chasse.",
+      "etymology": "Composé de sus (au-dessus) et de bec, d'après le Littré.",
+      "quote": null,
+      "rarity": "precious",
+      "collectionId": "fondateurs",
+      "themes": [
+        "metiers",
+        "nature"
+      ],
+      "perBillion": null
+    },
+    {
+      "id": "suscitateur",
+      "word": "suscitateur",
+      "partOfSpeech": "n. m.",
+      "era": "XVIe s.",
+      "definition": "Celui qui suscite quelque chose ou quelqu'un : personne qui fait naître un événement, un sentiment ou un adversaire.",
+      "etymology": "Du latin suscitatorem, dérivé de suscitare, « susciter ».",
+      "quote": null,
+      "rarity": "uncommon",
+      "collectionId": "fondateurs",
+      "themes": [
+        "autre"
+      ],
+      "perBillion": 9.2
+    },
+    {
+      "id": "talpinette",
+      "word": "talpinette",
+      "partOfSpeech": "n. f.",
+      "era": null,
+      "definition": "Nom d'une espèce de musaraigne, petit mammifère insectivore.",
+      "etymology": "Origine incertaine.",
+      "quote": null,
+      "rarity": "legendary",
+      "collectionId": "fondateurs",
+      "themes": [
+        "nature"
+      ],
+      "perBillion": null
+    },
+    {
+      "id": "tetragramme",
+      "word": "tétragramme",
+      "partOfSpeech": "adj.",
+      "era": null,
+      "definition": "Se dit de ce qui est composé de quatre lettres, en grammaire ; en histoire naturelle, de ce qui porte quatre lignes colorées.",
+      "etymology": "Composé de tétra-, quatre, et du grec γράμμα (gramma), lettre et ligne.",
+      "quote": null,
+      "rarity": "common",
+      "collectionId": "fondateurs",
+      "themes": [
+        "autre",
+        "sciences"
+      ],
+      "perBillion": 119.0
+    },
+    {
+      "id": "theophilanthropie",
+      "word": "théophilanthropie",
+      "partOfSpeech": "n. f.",
+      "era": null,
+      "definition": "Doctrine religieuse née sous la Révolution, fondée sur l'amour de Dieu et des hommes, professée par les théophilanthropes.",
+      "etymology": "Origine incertaine.",
+      "quote": null,
+      "rarity": "common",
+      "collectionId": "fondateurs",
+      "themes": [
+        "religion"
+      ],
+      "perBillion": 22.0
+    },
+    {
+      "id": "tondage",
+      "word": "tondage",
+      "partOfSpeech": "n. m.",
+      "era": null,
+      "definition": "Action de tondre le poil d'un animal, surtout du cheval ; en drap*/erie*, action de tondre le drap pour en égaliser la surface.",
+      "etymology": "Origine incertaine.",
+      "quote": null,
+      "rarity": "uncommon",
+      "collectionId": "fondateurs",
+      "themes": [
+        "metiers",
+        "vie-quotidienne"
+      ],
+      "perBillion": 6.83
+    },
+    {
+      "id": "toreutique",
+      "word": "toreutique",
+      "partOfSpeech": "n. f.",
+      "era": null,
+      "definition": "Chez les Grecs, art de la sculpture chryséléphantine, travail de l'or et de l'ivoire ; par extension, art de ciseler et graver les métaux.",
+      "etymology": "Du grec toreutikê, de toreuein, graver, lui-même dérivé de toros, perçoir (voir tore).",
+      "quote": {
+        "text": "L'art de la toreutique ou sculpture sur métaux",
+        "author": "Quatremère de Quincy"
+      },
+      "rarity": "common",
+      "collectionId": "fondateurs",
+      "themes": [
+        "arts",
+        "metiers"
+      ],
+      "perBillion": 37.1
+    },
+    {
+      "id": "tortis",
+      "word": "tortis",
+      "partOfSpeech": "n. m.",
+      "era": "XVIe s.",
+      "definition": "Assemblage de fils tordus ensemble ; par extension, couronne ou guirlande de fleurs, ou fil de perles entourant la couronne d'un baron en blason.",
+      "etymology": "Du latin fictif torticius, dérivé de tortum, supin de torquere, « tordre ». Dans l'ancienne langue, tortis signifiait aussi torche ou flambeau.",
+      "quote": {
+        "text": "Elles étaient richement vestues.... et portaient, avec leurs carcans et leurs chaînes de pierreries, d'autres tortis de perles et de gros diamants sur la tête",
+        "author": "Le Laboureur"
+      },
+      "rarity": "uncommon",
+      "collectionId": "fondateurs",
+      "themes": [
+        "arts",
+        "vie-quotidienne"
+      ],
+      "perBillion": 12.2
+    },
+    {
+      "id": "transmigrer",
+      "word": "transmigrer",
+      "partOfSpeech": "v. intr.",
+      "era": null,
+      "definition": "Passer d'un corps dans un autre, en parlant de l'âme, selon la croyance en la transmigration ; par extension, changer de lieu.",
+      "etymology": "Du latin transmigrare, composé de trans (au-delà) et migrare (aller, partir).",
+      "quote": {
+        "text": "J'ai dit qu'il était assez prouvé que la mémoire a son siége dans le corps ; une âme qui transmigrerait d'un corps dans un autre n'y conserverait donc aucun souvenir de son état précédent",
+        "author": "Charles Bonnet"
+      },
+      "rarity": "common",
+      "collectionId": "fondateurs",
+      "themes": [
+        "religion",
+        "sciences"
+      ],
+      "perBillion": 72.5
+    },
+    {
+      "id": "trappon",
+      "word": "trappon",
+      "partOfSpeech": "n. m.",
+      "era": null,
+      "definition": "Trappe au ras du sol qui ferme une cave dont l'entrée donne directement sur la rue.",
+      "etymology": "Dérivé de trappe.",
+      "quote": null,
+      "rarity": "rare",
+      "collectionId": "fondateurs",
+      "themes": [
+        "vie-quotidienne"
+      ],
+      "perBillion": 3.57
+    },
+    {
+      "id": "tripaille",
+      "word": "tripaille",
+      "partOfSpeech": "n. f.",
+      "era": "XVIe s.",
+      "definition": "Amas d'entrailles d'animaux, abats et boyaux entassés, que l'on jette ou que l'on apprête.",
+      "etymology": "Dérivé de tripe ; le wallon dit tripail.",
+      "quote": {
+        "text": "Où la tripaille est frite en cent sortes de mets",
+        "author": "Mathurin Régnier"
+      },
+      "rarity": "common",
+      "collectionId": "fondateurs",
+      "themes": [
+        "corps",
+        "cuisine"
+      ],
+      "perBillion": 49.4
+    },
+    {
+      "id": "turlupinade",
+      "word": "turlupinade",
+      "partOfSpeech": "n. f.",
+      "era": null,
+      "definition": "Plaisanterie basse et de mauvais goût, reposant sur un jeu de mots facile ; par extension, écrit qui en est rempli.",
+      "etymology": "Origine incertaine.",
+      "quote": {
+        "text": "Ne voulez-vous pas me défaire de votre marquis incommode ? pensez-vous me le laisser toujours sur les bras, et que je puisse durer à ses turlupinades perpétuelles ?",
+        "author": "Molière"
+      },
+      "rarity": "common",
+      "collectionId": "fondateurs",
+      "themes": [
+        "arts",
+        "loufoque"
+      ],
+      "perBillion": 23.4
+    },
+    {
+      "id": "urquain",
+      "word": "urquain",
+      "partOfSpeech": "n. m.",
+      "era": null,
+      "definition": "Bout de madrier sur lequel repose la meule, ou tour, du potier.",
+      "etymology": "Origine incertaine.",
+      "quote": null,
+      "rarity": "precious",
+      "collectionId": "fondateurs",
+      "themes": [
+        "arts",
+        "metiers"
+      ],
+      "perBillion": null
+    },
+    {
+      "id": "vacillatoire",
+      "word": "vacillatoire",
+      "partOfSpeech": "adj.",
+      "era": null,
+      "definition": "Qui tient de la vacillation, d'un mouvement oscillant et instable, comme celui de l'anthère d'une fleur.",
+      "etymology": "Origine incertaine.",
+      "quote": {
+        "text": "Le mouvement vacillatoire qui se manifeste quelquefois dans l'anthère attachée par son milieu sur le filet",
+        "author": "Mirbel"
+      },
+      "rarity": "precious",
+      "collectionId": "fondateurs",
+      "themes": [
+        "nature",
+        "sciences"
+      ],
+      "perBillion": 0.107
+    },
+    {
+      "id": "veillaque",
+      "word": "veillaque",
+      "partOfSpeech": "n. m.",
+      "era": "XVIe s.",
+      "definition": "Homme sans foi ni honneur, coquin méprisable ; injure en usage au XVIIe siècle.",
+      "etymology": "De l'espagnol bellaco, comme le portugais velhaco et l'italien vigliacco ; ces mots dérivent du latin vilis, « vil ».",
+      "quote": {
+        "text": "Je vais t'assassiner d'un seul de mes regards, Veillaque....",
+        "author": "Corneille"
+      },
+      "rarity": "rare",
+      "collectionId": "fondateurs",
+      "themes": [
+        "galanterie",
+        "insultes"
+      ],
+      "perBillion": 2.04
+    },
+    {
+      "id": "victorins",
+      "word": "victorins",
+      "partOfSpeech": "n. m. pl.",
+      "era": null,
+      "definition": "Chanoines réguliers de l'abbaye Saint-Victor de Paris, communauté religieuse fondée en 1113 sous le roi Louis le Gros.",
+      "etymology": "Dérivé de Saint-Victor, nom de l'abbaye parisienne où vivait cette communauté.",
+      "quote": {
+        "text": "De dormir deux tiers de sa vie, Sans distraction, sans envie, Dans un dortoir de victorin, Ou sur la couche rebondie D'un procureur génovéfin",
+        "author": "Gresset"
+      },
+      "rarity": "uncommon",
+      "collectionId": "fondateurs",
+      "themes": [
+        "religion"
+      ],
+      "perBillion": 42.2
+    },
+    {
+      "id": "vitelliennes",
+      "word": "vitelliennes",
+      "partOfSpeech": "adj. f. pl.",
+      "era": null,
+      "definition": "Se disait, dans l'Antiquité romaine, de petites tablettes à écrire que l'on portait sur soi, sorte de minuscule carnet de poche.",
+      "etymology": "Du latin vitelliani pugillares, désignant de petites tablettes à écrire.",
+      "quote": null,
+      "rarity": "rare",
+      "collectionId": "fondateurs",
+      "themes": [
+        "autre",
+        "vie-quotidienne"
+      ],
+      "perBillion": 1.78
+    }
+  ]
+}

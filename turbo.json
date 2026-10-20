@@ -13,12 +13,16 @@
       "outputs": []
     },
     "dev": {
+      "dependsOn": ["//#services"],
       "cache": false,
       "persistent": true
     },
     "test:integration": {
       "cache": false,
       "env": ["DATABASE_URL", "TEST_DATABASE_URL", "CI"]
+    },
+    "//#services": {
+      "cache": false
     }
   }
 }

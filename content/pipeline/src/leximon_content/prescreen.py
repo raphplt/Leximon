@@ -1,5 +1,6 @@
 """Cheap pre-screen before drafting: Haiku predicts, from a short Littré excerpt, the opinion
-Sonnet would give on the word (`suitability`), so that only promising words get drafted.
+Sonnet would give on the word (`suitability`), so that only promising words get drafted. It also
+tags the word's domain, which assigns words to the themed collections (D-024).
 
 Predictions are kept in one file for the whole Littré, so a word is never screened twice."""
 
@@ -18,17 +19,32 @@ PRESCREEN_FILE = DATA_DIR / "prescreen.jsonl"
 MAX_SENSES = 3
 MAX_SENSE_CHARS = 160
 MAX_ETYMOLOGY_CHARS = 160
+#: Domain of the main sense. The themed collections draw from one or several domains (D-024).
+DOMAINS = {
+    "caractere": "caractère, mœurs, défauts, travers, moqueries et injures, relations entre les gens, sentiments",
+    "metiers_objets": "métiers, outils, objets, vêtements, habitat, techniques, commerce et monnaie",
+    "nature": "animaux, plantes, campagne, mer, ciel et météo",
+    "table": "nourriture, boissons, cuisine, fête et jeux",
+    "autre": "tout le reste : idées, discours, droit, religion, temps, lieux…",
+}
 
 SYSTEM_PROMPT = (
     """Tu tries des mots pour Leximon, un jeu de cartes à collectionner sur les mots rares et anciens du français. On te donne un court extrait du dictionnaire de Littré (1863) pour un mot. Dis si le mot ferait une bonne carte de collection :
 """
     + SUITABILITY_GUIDE
-    + """Un mot encore compris de tous aujourd'hui est trop_courant, même s'il est rare à l'écrit. Réponds par la seule catégorie."""
+    + """Un mot encore compris de tous aujourd'hui est trop_courant, même s'il est rare à l'écrit.
+
+Donne aussi le domaine du sens principal (domain) :
+"""
+    + "".join(f"   - {key} : {description} ;\n" for key, description in DOMAINS.items())
 )
 OUTPUT_SCHEMA = {
     "type": "object",
-    "properties": {"suitability": {"type": "string", "enum": list(SUITABILITY)}},
-    "required": ["suitability"],
+    "properties": {
+        "suitability": {"type": "string", "enum": list(SUITABILITY)},
+        "domain": {"type": "string", "enum": list(DOMAINS)},
+    },
+    "required": ["suitability", "domain"],
     "additionalProperties": False,
 }
 
@@ -54,6 +70,7 @@ def excerpt(entry: littre.Entry) -> str:
 class Prediction:
     word: str
     suitability: str | None
+    domain: str | None
     error: str | None
     cost_usd: float
 
@@ -62,6 +79,7 @@ class Prediction:
             "word": self.word,
             "model": MODEL,
             "suitability": self.suitability,
+            "domain": self.domain,
             "error": self.error,
             "cost_usd": round(self.cost_usd, 7),
         }
@@ -72,10 +90,12 @@ async def predict(api: anthropic.AsyncAnthropic, entry: littre.Entry) -> Predict
         api, MODEL, SYSTEM_PROMPT, excerpt(entry), OUTPUT_SCHEMA, effort="low", max_tokens=2000
     )
     word = entry.headword.lower()
-    value = answer.data.get("suitability") if answer.data else None
-    if answer.error or value not in SUITABILITY:
-        return Prediction(word, None, answer.error or f"invalid output: {value!r}", answer.cost_usd)
-    return Prediction(word, str(value), None, answer.cost_usd)
+    data = answer.data or {}
+    value, domain = data.get("suitability"), data.get("domain")
+    if answer.error or value not in SUITABILITY or domain not in DOMAINS:
+        error = answer.error or f"invalid output: {value!r}, {domain!r}"
+        return Prediction(word, None, None, error, answer.cost_usd)
+    return Prediction(word, str(value), str(domain), None, answer.cost_usd)
 
 
 def load() -> dict[str, dict[str, object]]:

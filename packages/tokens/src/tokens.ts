@@ -1,4 +1,4 @@
-import { byRarity, type Rarity, rarityRank } from "@leximon/core";
+import type { Rarity } from "@leximon/core";
 
 /**
  * Values are platform-neutral (hex colors, numbers in px, gradients as stops) so that the web
@@ -67,7 +67,7 @@ const iridescent: LinearGradient = {
 export interface RarityStyle {
   /** Thick outer frame of the card. */
   readonly frame: Fill;
-  /** Pill holding the rarity name and pips. */
+  /** Round chip holding the rarity icon (`rarity-icons.ts`). */
   readonly band: Fill;
   readonly bandInk: string;
   /** The word itself: a color, or a gradient clipped to the text. */
@@ -161,9 +161,6 @@ export const rarityStyles: Readonly<Record<Rarity, RarityStyle>> = {
     glow: "rgba(150, 225, 255, 0.55)",
   },
 };
-
-/** Number of filled pips on a card: one for Courant, six for Légendaire. */
-export const rarityPips = byRarity((rarity) => rarityRank(rarity) + 1);
 
 /**
  * Font families, all under the SIL Open Font License. Each platform loads the files itself
