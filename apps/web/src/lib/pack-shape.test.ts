@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { choosePackShape, countPacks, PACK_NOUNS, packShapeFromSearch } from "./pack-shape";
+import { countPacks, PACK_NOUNS, packShapeFromSearch } from "./pack-shape";
 
 describe("packShapeFromSearch", () => {
-  it("reads a preview from the address", () => {
+  it("reads the shape to try from the address", () => {
     expect(packShapeFromSearch("?paquet=sachet")).toBe("sachet");
     expect(packShapeFromSearch("?x=1&paquet=pli")).toBe("pli");
   });
@@ -10,15 +10,6 @@ describe("packShapeFromSearch", () => {
   it("ignores anything else", () => {
     expect(packShapeFromSearch("")).toBeNull();
     expect(packShapeFromSearch("?paquet=boite")).toBeNull();
-  });
-});
-
-describe("choosePackShape", () => {
-  it("prefers a preview, then the player's variant, then the fold", () => {
-    expect(choosePackShape("pli", { "pack-shape": "sachet" })).toBe("pli");
-    expect(choosePackShape(null, { "pack-shape": "sachet" })).toBe("sachet");
-    expect(choosePackShape(null, { "pack-shape": "carton" })).toBe("pli");
-    expect(choosePackShape(null, null)).toBe("pli");
   });
 });
 

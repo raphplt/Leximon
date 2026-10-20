@@ -9,11 +9,10 @@ Jeu de cartes à collectionner pour découvrir les mots rares et anciens du fran
 ```bash
 pnpm install                     # à la racine, Node 24 (voir .nvmrc)
 cp .env.example .env             # une fois
-cp apps/api/.dev.vars.example apps/api/.dev.vars   # une fois, puis remplir les secrets
+cp apps/api/.dev.vars.example apps/api/.dev.vars   # une fois, puis remplir le secret
 docker compose up -d             # Postgres local sur le port 54329
 pnpm db:migrate                  # applique les migrations à la base de dev
 pnpm catalog:publish             # publie la dernière version du catalogue (base de dev et fichiers du web, D-023)
-pnpm experiments:report          # résultats d'un test A/B par variante (D-030), `pack-shape` par défaut
 pnpm dev                         # Postgres et Directus (Docker), puis toutes les apps (ou --filter @leximon/api, /web, /mobile)
 pnpm check                       # lint + typecheck + tests unitaires, à lancer avant de rendre la main
 pnpm test:integration            # tests contre la base leximon_test, vidée à chaque passage (Docker requis)

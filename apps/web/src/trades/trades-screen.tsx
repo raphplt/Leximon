@@ -4,7 +4,6 @@ import type { CatalogCard, ProfileResponse, Trade } from "@leximon/contract";
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { type Catalog, loadCatalog } from "@/cards/catalog";
-import { usePageView } from "@/lib/analytics";
 import { ApiError, fetchProfile, fetchTrades, resolveTrade } from "@/lib/api";
 import { useNow } from "@/lib/use-now";
 import { CardRow, CardZoom } from "./card-thumb";
@@ -48,7 +47,6 @@ const PENDING_THUMB = 92;
 const HISTORY_THUMB = 60;
 
 export function TradesScreen() {
-  usePageView("trades");
   const [catalog, setCatalog] = useState<Catalog | null>(null);
   const [profile, setProfile] = useState<ProfileResponse | null>(null);
   const [inboxes, setInboxes] = useState<Readonly<Record<TradeBox, Inbox>> | null>(null);

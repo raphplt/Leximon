@@ -8,11 +8,10 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { type Catalog, cardOrPlaceholder, collectionName, loadCatalog } from "@/cards/catalog";
 import { Card } from "@/components/card";
 import { RarityName } from "@/components/rarity-icon";
-import { track, usePageView } from "@/lib/analytics";
 import { fetchOwnedCards, fetchWallet, type OpenBoosterResult, openBooster } from "@/lib/api";
-import { usePackShape } from "@/lib/experiments";
 import { capitalize, countPacks, type PackNoun, type PackShape } from "@/lib/pack-shape";
 import { useNow } from "@/lib/use-now";
+import { usePackShape } from "@/lib/use-pack-shape";
 import styles from "./booster-screen.module.css";
 import { CardStack } from "./card-stack";
 import { canVibrate, type FeedbackKind, play, readPreference, writePreference } from "./feedback";
@@ -92,9 +91,6 @@ export function BoosterScreen() {
   const [error, setError] = useState<string | null>(null);
   const request = useRef<OpenRequest | null>(null);
   const { shape, noun, known } = usePackShape();
-  /** When the pack being revealed was opened, and whether the player skipped to the recap. */
-  const opening = useRef({ startedAt: 0, skipped: false });
-  usePageView("boosters");
   const now = useNow(15_000);
   const cardWidth = useCardWidth();
 
@@ -150,11 +146,9 @@ export function BoosterScreen() {
     return started;
   };
 
-  const openPack = async (via: "tear" | "touch") => {
+  const openPack = async () => {
     const started = startRequest();
     if (started?.outcome == null || catalog === null || collection === undefined) return;
-    track({ name: "opening_started", shape, via });
-    opening.current = { startedAt: performance.now(), skipped: false };
     setError(null);
     setPhase({ name: "opening" });
     const reduced = prefersReducedMotion();
@@ -198,12 +192,6 @@ export function BoosterScreen() {
   };
 
   const toRecap = () => {
-    track({
-      name: "opening_finished",
-      shape,
-      revealed: opening.current.skipped ? "all_at_once" : "one_by_one",
-      durationMs: Math.round(performance.now() - opening.current.startedAt),
-    });
     play("recap");
     setPhase({ name: "recap" });
   };
@@ -223,7 +211,6 @@ export function BoosterScreen() {
 
   const revealAll = () => {
     if (pack === null) return;
-    opening.current = { ...opening.current, skipped: true };
     const from = phase.name === "revealing" ? phase.index + 1 : 0;
     const index = pack.cards.findIndex(
       (card, i) => i >= from && keepsAnnouncementWhenHurried(card.rarity),
@@ -298,7 +285,7 @@ export function BoosterScreen() {
             onTearStart={() => {
               startRequest();
             }}
-            onOpen={(via) => void openPack(via)}
+            onOpen={() => void openPack()}
           />
           {phase.name === "opening" ? (
             <p className={styles.hint} aria-live="polite">

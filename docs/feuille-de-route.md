@@ -57,8 +57,8 @@ Arbitrés par le propriétaire le 2026-10-20 : jeu grand public (B2C), pas de ve
 | Web : page d'accueil publique et liste d'attente | À faire | Utile avant la bêta, pour les réseaux |
 | Mobile (Expo) | À faire | Les mêmes écrans ; charger les polices demandera une dépendance (`expo-font`) |
 | Animations et reflets | À faire | R&D D-009. En attendant, du CSS simple |
-| Ouverture : peaufinage | En cours | Cahier des charges : [ouverture.md](cahiers-des-charges/ouverture.md). Lots A, B et C faits sur le web : déchirure au doigt, pile, mise en scène par rareté, sons synthétisés, vibration, récapitulatif, reflets par rareté, sachet, A/B. Reste : mobile |
-| Ouverture : forme du paquet | En cours | Pli et sachet faits sur le web, test A/B en place (D-030) : chaque joueur voit l'une des deux formes, avec le mot qui va avec (P53). Lecture : `pnpm experiments:report` |
+| Ouverture : peaufinage | En cours | Cahier des charges : [ouverture.md](cahiers-des-charges/ouverture.md). Lots A et B faits sur le web : déchirure au doigt, pile, mise en scène par rareté, sons synthétisés, vibration, récapitulatif, reflets par rareté, sachet. Reste : mobile |
+| Ouverture : forme du paquet | À décider | Pli et sachet faits sur le web, le mot suit la forme (P53). Le propriétaire choisit en les essayant (`/?paquet=sachet`), sans A/B |
 | Ouverture : aperçu en glissant | Fait | Geste bonus jamais expliqué : glisser la pile en biais pour deviner une rare |
 | Reflets et effets holographiques par rareté | Fait (web) | Carte révélée et carte agrandie : inclinaison, reflet, puce et cadre métallisés, paillettes, arc-en-ciel de la Légendaire. Le mobile attend la R&D D-009 |
 | Numéro de collection sur la carte | À décider | Par exemple « 040/160 ». Dénominateur à choisir (taille annoncée ou cartes publiées) |
@@ -67,8 +67,8 @@ Arbitrés par le propriétaire le 2026-10-20 : jeu grand public (B2C), pas de ve
 
 | Étape | Statut | Détail |
 |---|---|---|
-| Hébergement de production | À décider | Cloudflare est choisi (D-005, D-015). Fournisseur Postgres : R&D faite (`docs/rnd/postgres.md`), recommandation Neon gratuit pour la bêta puis OVHcloud Paris. Hyperdrive de production à créer sans cache. À créer aussi : la file `leximon-analytics` et le secret `ANALYTICS_SECRET` (D-030) |
-| Test de charge, observabilité, pages légales | À faire | Avant d'ouvrir la bêta. Les pages légales doivent informer de la mesure d'audience et offrir de la refuser (D-030) |
+| Hébergement de production | À décider | Cloudflare est choisi (D-005, D-015). Fournisseur Postgres : R&D faite (`docs/rnd/postgres.md`), recommandation Neon gratuit pour la bêta puis OVHcloud Paris. Hyperdrive de production à créer sans cache |
+| Test de charge, observabilité, pages légales | À faire | Avant d'ouvrir la bêta |
 | Marque, domaines, comptes réseaux | À faire | Côté propriétaire (north star § 12) |
 
 ## Ce qui attend ta décision

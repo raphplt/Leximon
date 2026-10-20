@@ -5,10 +5,9 @@ import { cssFill, rarityStyles } from "@leximon/tokens";
 import Link from "next/link";
 import { type CSSProperties, useCallback, useEffect, useState } from "react";
 import { type Catalog, cardOrPlaceholder, loadCatalog } from "@/cards/catalog";
-import { usePageView } from "@/lib/analytics";
 import { answerChallenge, fetchChallenges } from "@/lib/api";
-import { usePackShape } from "@/lib/experiments";
 import { useNow } from "@/lib/use-now";
+import { usePackShape } from "@/lib/use-pack-shape";
 import styles from "./challenge-screen.module.css";
 import {
   type AnsweredQuestion,
@@ -35,7 +34,6 @@ type Phase =
  */
 export function ChallengeScreen() {
   const { noun } = usePackShape();
-  usePageView("challenges");
   const [phase, setPhase] = useState<Phase>({ name: "loading" });
   const [catalog, setCatalog] = useState<Catalog | null>(null);
   const [questions, setQuestions] = useState<readonly ChallengeQuestion[]>([]);

@@ -54,8 +54,8 @@ Détail et maquettes : [cahiers-des-charges/ouverture.md](cahiers-des-charges/ou
 |---|---|---|---|
 | P45 | Mise en scène | L'ouverture est le moment fort du jeu. Le pli se déchire au doigt ; l'annonce d'une carte vient avant sa face, plus longue à mesure que la rareté monte ; à partir de Précieux, le joueur retourne la carte lui-même. Son et vibration l'accompagnent, et se coupent dans les réglages. | Tranché le 2026-10-20 |
 | P46 | Coup d'œil | Glisser la pile en biais montre la tranche des cartes, colorée par rareté. Possible seulement une fois le pli ouvert, le tirage déjà fait : il ne sert jamais à choisir un pli. Jamais expliqué dans l'interface. | Tranché le 2026-10-20 |
-| P47 | Forme du paquet | Deux formes, le pli scellé et le sachet, départagées par un test A/B : chaque joueur voit l'une ou l'autre, la moitié chacune (D-030). | Tranché le 2026-10-20 |
-| P53 | Nom du paquet | Le mot suit la forme : qui voit le sachet lit « sachet » partout (navigation, stock, sachets bonus, défis, échanges), qui voit le pli lit « pli ». Si le sachet l'emporte, « sachet » devient le mot du jeu. | Tranché le 2026-10-20 |
+| P47 | Forme du paquet | Deux formes, le pli scellé et le sachet. Pas de test A/B : le propriétaire les essaie et choisit lui-même. En attendant, tous les joueurs voient le pli. | Tranché le 2026-10-20 |
+| P53 | Nom du paquet | Le mot suit la forme : avec le sachet, « sachet » partout (navigation, stock, sachets bonus, défis, échanges, album) ; avec le pli, « pli ». | Tranché le 2026-10-20 |
 
 ## Cartes et rareté
 
@@ -135,6 +135,7 @@ Options et recommandations dans les cahiers des charges ([ouverture](cahiers-des
 
 - **Numéro de collection sur la carte** (« 040/160 ») : dénominateur fixe annoncé à la publication, ou nombre de cartes publiées ; Légendaires « hors série » numérotées au-delà, ou non.
 - **Sons de l'ouverture :** garder les sons synthétisés, ou passer à des sons de banque.
+- **Forme du paquet :** pli ou sachet, au choix du propriétaire après les avoir essayés (`/?paquet=sachet`).
 - **Plis bonus en récompense de niveau** (dans la réserve P23), ou cosmétiques seulement.
 - **Visibilité par défaut du profil :** public ou privé.
 - **Discussion de clan :** modération automatique par un modèle dès la bêta ou plus tard ; durée de conservation des messages.

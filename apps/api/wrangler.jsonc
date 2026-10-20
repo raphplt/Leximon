@@ -31,18 +31,6 @@
       "simple": { "limit": 120, "period": 60 }
     }
   ],
-  // Event log of the A/B tests (D-030): the API only queues, the same Worker consumes in batches.
-  "queues": {
-    "producers": [{ "binding": "ANALYTICS_QUEUE", "queue": "leximon-analytics" }],
-    "consumers": [
-      {
-        "queue": "leximon-analytics",
-        "max_batch_size": 100,
-        "max_batch_timeout": 10,
-        "max_retries": 5
-      }
-    ]
-  },
   "hyperdrive": [
     {
       "binding": "HYPERDRIVE",

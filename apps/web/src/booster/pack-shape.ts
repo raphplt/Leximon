@@ -1,16 +1,15 @@
 import type { PackShape } from "@/lib/pack-shape";
 
 /**
- * Props shared by the two pack shapes compared by an A/B test (P47,
- * docs/cahiers-des-charges/ouverture.md): the rest of the opening never knows which one it shows.
+ * Props shared by the two pack shapes (P47, docs/cahiers-des-charges/ouverture.md): the rest of
+ * the opening never knows which one it shows.
  */
 export interface PackProps {
   /** `opening` once the player has opened it: the strip flies off and the cards come out. */
   readonly state: "sealed" | "empty" | "opening";
   /** The tear has really begun: time to ask the server for the cards. */
   readonly onTearStart: () => void;
-  /** Opened by tearing the strip, or by touching the seal or the pouch. */
-  readonly onOpen: (via: "tear" | "touch") => void;
+  readonly onOpen: () => void;
 }
 
 /** What the screen tells the player to do with a sealed pack. */

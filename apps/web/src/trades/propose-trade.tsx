@@ -7,7 +7,7 @@ import { type FormEvent, useLayoutEffect, useRef, useState } from "react";
 import { type Catalog, collectionName } from "@/cards/catalog";
 import { Card } from "@/components/card";
 import { createTrade, fetchOwnedCards, fetchTradeable } from "@/lib/api";
-import { usePackShape } from "@/lib/experiments";
+import { usePackShape } from "@/lib/use-pack-shape";
 import { CardRow, cardLabel, catalogCard } from "./card-thumb";
 import {
   formatPlayerCode,

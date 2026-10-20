@@ -16,9 +16,8 @@ import { CardCaption } from "@/components/card-caption";
 import { HoloCard } from "@/components/holo-card";
 import { RarityName } from "@/components/rarity-icon";
 import { useHoloLight } from "@/components/use-holo-light";
-import { usePageView } from "@/lib/analytics";
 import { fetchMastery, fetchOwnedCards } from "@/lib/api";
-import { usePackShape } from "@/lib/experiments";
+import { usePackShape } from "@/lib/use-pack-shape";
 import styles from "./album-screen.module.css";
 
 const TILE_WIDTH = 150;
@@ -35,7 +34,6 @@ function albumOrder(cards: readonly CatalogCard[]): CatalogCard[] {
 
 export function AlbumScreen() {
   const { noun } = usePackShape();
-  usePageView("album");
   const [catalog, setCatalog] = useState<Catalog | null>(null);
   const [quantities, setQuantities] = useState<ReadonlyMap<string, number> | null>(null);
   const [levels, setLevels] = useState<ReadonlyMap<string, MasteryLevelCode>>(new Map());

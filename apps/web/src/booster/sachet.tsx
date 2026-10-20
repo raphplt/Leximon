@@ -17,7 +17,7 @@ export function Sachet({ state, onTearStart, onOpen }: PackProps) {
     onTearStart();
     play("tearFinish");
     vibrate([40]);
-    onOpen("touch");
+    onOpen();
   };
 
   const classes = [

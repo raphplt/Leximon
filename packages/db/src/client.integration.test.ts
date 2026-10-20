@@ -20,7 +20,6 @@ describe("database", () => {
       order by c.relname`);
     expect(rows.map((row) => row.name)).toEqual([
       "accounts",
-      "analytics_events",
       "booster_bonus_awards",
       "booster_open_requests",
       "booster_opens",

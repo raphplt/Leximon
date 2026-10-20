@@ -1,6 +1,6 @@
 import { createDb, schema } from "@leximon/db";
 import { testDatabaseUrl } from "@leximon/db/testing";
-import { eq, sql } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { afterAll, describe, expect, it } from "vitest";
 import { IDEMPOTENCY_RETENTION_MS, runMaintenance } from "./maintenance";
 
@@ -51,24 +51,6 @@ describe("runMaintenance", () => {
       .from(schema.boosterOpens)
       .where(eq(schema.boosterOpens.userId, userId));
     expect(journal.map((row) => row.id).sort()).toEqual([oldOpen, recentOpen].sort());
-  });
-
-  it("drops the months of the event log past their retention, and only them", async () => {
-    await db.execute(sql`
-      create table if not exists analytics_events_2001_01 partition of analytics_events
-      for values from ('2001-01-01T00:00:00Z') to ('2001-02-01T00:00:00Z')`);
-    const report = await runMaintenance(db, Date.now());
-    expect(report.droppedAnalyticsMonths).toBe(1);
-    const { rows } = await db.execute<{ name: string }>(sql`
-      select child.relname as name from pg_inherits
-      join pg_class parent on parent.oid = pg_inherits.inhparent
-      join pg_class child on child.oid = pg_inherits.inhrelid
-      where parent.relname = 'analytics_events'`);
-    const names = rows.map((row) => row.name);
-    expect(names).not.toContain("analytics_events_2001_01");
-    expect(names).toContain(
-      `analytics_events_${new Date().toISOString().slice(0, 7).replace("-", "_")}`,
-    );
   });
 
   it("is idempotent", async () => {

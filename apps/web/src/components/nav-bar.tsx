@@ -2,8 +2,8 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { usePackShape } from "@/lib/experiments";
 import { capitalize } from "@/lib/pack-shape";
+import { usePackShape } from "@/lib/use-pack-shape";
 import styles from "./nav-bar.module.css";
 
 const LINKS = [

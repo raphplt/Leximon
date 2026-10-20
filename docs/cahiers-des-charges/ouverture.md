@@ -2,7 +2,7 @@
 
 - **Statut :** validé dans ses grandes lignes par le propriétaire (2026-10-20). Restent les décisions en fin de document.
 - **Décisions liées :** D-009 (animations, R&D), D-016 (budget de l'ouverture), D-022 (direction artistique), D-023 (catalogue), D-029 (icônes de rareté).
-- **Règles tranchées :** dans [regles-du-jeu.md](../regles-du-jeu.md) (P45 à P47), qui fait foi. Ce document détaille comment les mettre en œuvre.
+- **Règles tranchées :** dans [regles-du-jeu.md](../regles-du-jeu.md) (P45 à P47, P53), qui fait foi. Ce document détaille comment les mettre en œuvre.
 - **Objectif :** que l'ouverture soit le moment le plus jouissif du jeu. La référence est Pokémon TCG Pocket.
 
 ## Ce qui existe
@@ -121,24 +121,12 @@ Une forme hybride est possible : un sachet en papier kraft, fermé par une bande
 
 **Le code doit donc séparer la mise en scène (étapes 3 à 6) du paquet lui-même** (étapes 1 et 2). Le paquet devient un composant interchangeable : ajouter une forme ne touche pas au reste.
 
-### Test A/B : ce qui est faisable
+### Choisir la forme
 
-- **Mesures :** part des ouvertures menées jusqu'au bout sans « Tout révéler », plis ouverts par jour, retour à J1 et J7.
-- **Retenu par le propriétaire :** les deux formes sont développées et départagées par un A/B, mesuré par un journal maison (D-030). Le mot suit la forme : qui voit le sachet lit « sachet » partout (P53).
+**Décision du propriétaire (2026-10-20) : pas de test A/B.** Il essaie les deux formes et choisit lui-même ; un A/B et son outil de mesure seraient disproportionnés pour cette question.
 
-### Préparer l'A/B
-
-Fait le 2026-10-20 (lot C, D-030). L'outil sert à tous les tests du jeu, pas seulement à celui-ci.
-
-- **Expériences déclarées dans le code :** `EXPERIMENTS` dans `packages/core/src/experiments/` : une clé, ses variantes (la première est le témoin), leur répartition et des dates. Une expérience lancée ne change plus : pour essayer autre chose, une nouvelle clé.
-- **Affectation :** hachage FNV-1a de la clé et de l'identifiant du joueur (le même que GrowthBook). Pas de table : le joueur garde sa variante sur tous ses appareils, et à l'inscription puisqu'il garde son identifiant. `GET /me/experiments` la donne au client, qui ne choisit jamais lui-même.
-- **Aperçu :** `/?paquet=sachet` ou `/?paquet=pli` force une forme pour la visite, pour la regarder ou la tester.
-- **Événements :** une liste fermée, sans texte libre : `page_viewed` (écran visité), `opening_started` (forme, déchirure ou toucher), `opening_finished` (révélé carte par carte ou d'un coup, durée). Le client les envoie par lots (`POST /events`) ; l'API les valide, calcule la variante elle-même et les dépose dans une Cloudflare Queue, que le même Worker écrit par lots dans `analytics_events`. Rien ne ralentit l'ouverture d'un pli.
-- **Vie privée (CNIL) :** la mesure d'audience et l'A/B testing sont exemptés de consentement si le joueur est informé et peut refuser, si les données ne sont pas croisées avec d'autres et si elles ne sont pas gardées plus de 13 mois. Le journal porte donc un pseudonyme (HMAC de l'identifiant par un secret de l'API), sans lien vers les tables du jeu, et la maintenance supprime ses mois trop anciens. Le retour à J1 et J7 se calcule sur le journal seul.
-- **Lecture des résultats :** `pnpm experiments:report [clé]` donne, par variante, les joueurs, les ouvertures par jour actif, la part d'ouvertures écourtées et le retour à J1 et J7, puis compare chaque variante au témoin (écart et p-value).
-- **Reste à faire avant la bêta :** informer le joueur et lui offrir le refus (`setAnalyticsEnabled` existe, sans bouton pour l'instant), avec les pages légales.
-- **Limite :** pendant la bêta, avec quelques milliers de joueurs, seul un écart important sera mesurable. Quelques essais avec des joueurs filmés restent utiles en complément.
-- **Plus tard :** si les expériences se multiplient, GrowthBook (cœur sous licence MIT, auto-hébergeable) peut lire ce même journal dans Postgres pour l'analyse, au prix d'une base MongoDB de plus.
+- **Essayer :** `/?paquet=sachet` ou `/?paquet=pli` montre une forme pour toute la visite, avec son mot partout dans l'interface (P53).
+- **En attendant le choix :** tous les joueurs voient le pli. Retenir le sachet revient à changer `PACK_SHAPE` dans `apps/web/src/lib/pack-shape.ts`.
 
 ## Le numéro de collection
 
@@ -177,7 +165,7 @@ Plus tard, `user_cards.variant` permet des variantes du même mot, par exemple u
 
 ## Contraintes techniques
 
-- Le tirage, les garanties et le journal ne changent pas. Seul le client change, à part le champ `number` du catalogue et l'éventuelle variante A/B.
+- Le tirage, les garanties et le journal ne changent pas. Seul le client change, à part le champ `number` du catalogue.
 - Les sons et les textures (paillettes, papier) sont des fichiers statiques servis par le CDN, préchargés pendant le geste d'ouverture. Ils doivent être créés pour le projet ou libres de droits (CC0), avec la source notée.
 - Sur mobile, la vibration demande `expo-haptics` et le son `expo-audio` : deux modules Expo officiels, à valider comme dépendances. Sur le web, la vibration ne marche que sur Android (pas sur iPhone).
 - Tous les effets respectent « réduire les animations ».
@@ -188,13 +176,12 @@ Plus tard, `user_cards.variant` permet des variantes du même mot, par exemple u
    - **Fait le 2026-10-20**, sauf le numéro de collection, qui attend la décision sur son dénominateur. Le partage d'une Légendaire renvoie vers le site, faute de page publique de carte.
 2. **Lot B :** reflets interactifs complets par rareté (CSS), seconde forme de paquet.
    - **Fait le 2026-10-20.** Reflets sur la carte révélée et sur la carte agrandie de l'album, la grille restant statique (`HoloCard`, `useHoloLight`). La lumière suit la souris ou le doigt, et l'inclinaison du téléphone sur Android. Sur iPhone, l'inclinaison demande une autorisation système, pas encore demandée : la lumière y suit le doigt, et la carte dérive doucement d'elle-même tant qu'on ne la touche pas.
-   - Le sachet partage le geste du pli (`useTear`). En attendant l'A/B du lot C, on le voit avec l'adresse `/?paquet=sachet`.
-3. **Lot C :** outil d'A/B et test pli contre sachet pendant la bêta, portage mobile une fois la R&D D-009 conclue.
-   - **Outil d'A/B fait le 2026-10-20** (D-030) ; le test pli contre sachet tourne dès maintenant pour chaque joueur. Reste le portage mobile.
+   - Le sachet partage le geste du pli (`useTear`). On l'essaie avec l'adresse `/?paquet=sachet`, et le mot de l'interface suit la forme (P53).
+3. **Lot C :** portage mobile une fois la R&D D-009 conclue. Le test A/B prévu ici est abandonné : le propriétaire choisit la forme lui-même.
 
 ## Décisions
 
-Les règles tranchées le 2026-10-20 sont dans [regles-du-jeu.md](../regles-du-jeu.md) : mise en scène (P45), coup d'œil (P46), forme du paquet (P47), vocabulaire (P53). L'outil d'A/B est la décision technique D-030. L'animation du geste masque le temps de réponse du serveur.
+Les règles tranchées le 2026-10-20 sont dans [regles-du-jeu.md](../regles-du-jeu.md) : mise en scène (P45), coup d'œil (P46), forme du paquet choisie par le propriétaire sans A/B (P47), mot qui suit la forme (P53). L'animation du geste masque le temps de réponse du serveur.
 
 **À prendre** (aussi listées dans [regles-du-jeu.md](../regles-du-jeu.md#à-décider)) :
 1. **Dénominateur du numéro :** taille annoncée et collections publiées complètes (recommandé), ou nombre de cartes publiées.
