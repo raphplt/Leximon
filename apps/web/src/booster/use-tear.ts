@@ -19,7 +19,7 @@ interface TearOptions {
   readonly enabled: boolean;
   /** The tear has really begun: time to ask the server for the cards. */
   readonly onTearStart: () => void;
-  readonly onOpen: () => void;
+  readonly onOpen: (via: "tear") => void;
 }
 
 /**
@@ -79,7 +79,7 @@ export function useTear({ enabled, onTearStart, onOpen }: TearOptions) {
       setProgress(1);
       play("tearFinish");
       vibrate([30]);
-      onOpen();
+      onOpen("tear");
     } else {
       // The strip sticks back. A request already sent is kept for the next try.
       setProgress(0);

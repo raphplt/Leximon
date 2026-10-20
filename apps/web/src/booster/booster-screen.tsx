@@ -8,12 +8,15 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { type Catalog, cardOrPlaceholder, collectionName, loadCatalog } from "@/cards/catalog";
 import { Card } from "@/components/card";
 import { RarityName } from "@/components/rarity-icon";
+import { track, usePageView } from "@/lib/analytics";
 import { fetchOwnedCards, fetchWallet, type OpenBoosterResult, openBooster } from "@/lib/api";
+import { usePackShape } from "@/lib/experiments";
+import { capitalize, countPacks, type PackNoun, type PackShape } from "@/lib/pack-shape";
 import { useNow } from "@/lib/use-now";
 import styles from "./booster-screen.module.css";
 import { CardStack } from "./card-stack";
 import { canVibrate, type FeedbackKind, play, readPreference, writePreference } from "./feedback";
-import { OPEN_HINTS, type PackProps, type PackShape, packShapeFromSearch } from "./pack-shape";
+import { OPEN_HINTS, type PackProps } from "./pack-shape";
 import { Pli } from "./pli";
 import {
   bonusLabel,
@@ -88,7 +91,10 @@ export function BoosterScreen() {
   const [pack, setPack] = useState<Pack | null>(null);
   const [error, setError] = useState<string | null>(null);
   const request = useRef<OpenRequest | null>(null);
-  const [shape, setShape] = useState<PackShape>("pli");
+  const { shape, noun, known } = usePackShape();
+  /** When the pack being revealed was opened, and whether the player skipped to the recap. */
+  const opening = useRef({ startedAt: 0, skipped: false });
+  usePageView("boosters");
   const now = useNow(15_000);
   const cardWidth = useCardWidth();
 
@@ -115,10 +121,6 @@ export function BoosterScreen() {
   useEffect(() => {
     void load();
   }, [load]);
-
-  useEffect(() => {
-    setShape(packShapeFromSearch(window.location.search));
-  }, []);
 
   // The stock refills on the server's schedule: ask again once the announced time has passed.
   const refillDue = wallet?.nextRefillAt != null && Date.parse(wallet.nextRefillAt) <= now;
@@ -148,9 +150,11 @@ export function BoosterScreen() {
     return started;
   };
 
-  const openPack = async () => {
+  const openPack = async (via: "tear" | "touch") => {
     const started = startRequest();
     if (started?.outcome == null || catalog === null || collection === undefined) return;
+    track({ name: "opening_started", shape, via });
+    opening.current = { startedAt: performance.now(), skipped: false };
     setError(null);
     setPhase({ name: "opening" });
     const reduced = prefersReducedMotion();
@@ -158,7 +162,7 @@ export function BoosterScreen() {
     if (outcome.kind === "failed") {
       // Same key next time: if the server did open the booster, it answers with the same cards.
       request.current = { key: started.key, outcome: null };
-      setError("Le pli n'a pas pu s'ouvrir. Vérifie ta connexion et réessaie.");
+      setError(`Le ${noun.one} n'a pas pu s'ouvrir. Vérifie ta connexion et réessaie.`);
       setPhase({ name: "sealed" });
       return;
     }
@@ -194,6 +198,12 @@ export function BoosterScreen() {
   };
 
   const toRecap = () => {
+    track({
+      name: "opening_finished",
+      shape,
+      revealed: opening.current.skipped ? "all_at_once" : "one_by_one",
+      durationMs: Math.round(performance.now() - opening.current.startedAt),
+    });
     play("recap");
     setPhase({ name: "recap" });
   };
@@ -213,6 +223,7 @@ export function BoosterScreen() {
 
   const revealAll = () => {
     if (pack === null) return;
+    opening.current = { ...opening.current, skipped: true };
     const from = phase.name === "revealing" ? phase.index + 1 : 0;
     const index = pack.cards.findIndex(
       (card, i) => i >= from && keepsAnnouncementWhenHurried(card.rarity),
@@ -226,19 +237,19 @@ export function BoosterScreen() {
   // Bonus boosters are opened once the free stock is empty (the server decides which is spent).
   const canOpen = stored > 0 || bonus > 0;
   const refill = nextRefillLabel(wallet?.nextRefillAt ?? null, now);
-  const reserve = bonusLabel(bonus);
+  const reserve = bonusLabel(bonus, noun);
   const sealedHint =
     stored > 0
       ? OPEN_HINTS[shape]
       : bonus > 0
-        ? `${OPEN_HINTS[shape]} : c'est un pli bonus`
-        : `Plus de pli pour l'instant, ${refill ?? ""}`;
+        ? `${OPEN_HINTS[shape]} : c'est un ${noun.one} bonus`
+        : `Plus de ${noun.one} pour l'instant, ${refill ?? ""}`;
 
   return (
     <main className={styles.screen}>
       <header className={styles.header}>
         <div>
-          <p className={styles.kicker}>Pli de collection</p>
+          <p className={styles.kicker}>{capitalize(noun.one)} de collection</p>
           <h1 className={styles.title}>{collection?.name ?? "Leximon"}</h1>
         </div>
         <div className={styles.side}>
@@ -248,7 +259,7 @@ export function BoosterScreen() {
               <span
                 className={styles.dots}
                 role="img"
-                aria-label={`${stored} pli${stored > 1 ? "s" : ""} sur ${STOCK_CAPACITY}`}
+                aria-label={`${countPacks(stored, noun)} sur ${STOCK_CAPACITY}`}
               >
                 {Array.from({ length: STOCK_CAPACITY }, (_, index) => (
                   // biome-ignore lint/suspicious/noArrayIndexKey: fixed-size row of identical dots
@@ -262,7 +273,9 @@ export function BoosterScreen() {
         </div>
       </header>
 
-      {phase.name === "loading" && <p className={styles.hint}>Un instant…</p>}
+      {(phase.name === "loading" || (phase.name === "sealed" && !known)) && (
+        <p className={styles.hint}>Un instant…</p>
+      )}
 
       {phase.name === "unavailable" && (
         <div className={styles.center}>
@@ -277,15 +290,15 @@ export function BoosterScreen() {
         <p className={styles.hint}>Aucune collection n'est encore publiée.</p>
       )}
 
-      {(phase.name === "sealed" || phase.name === "opening") && (
+      {((phase.name === "sealed" && known) || phase.name === "opening") && (
         <div className={styles.center}>
-          <Pack
+          <PackView
             shape={shape}
             state={phase.name === "opening" ? "opening" : canOpen ? "sealed" : "empty"}
             onTearStart={() => {
               startRequest();
             }}
-            onOpen={() => void openPack()}
+            onOpen={(via) => void openPack(via)}
           />
           {phase.name === "opening" ? (
             <p className={styles.hint} aria-live="polite">
@@ -327,6 +340,7 @@ export function BoosterScreen() {
           index={phase.index}
           hurried={phase.hurried}
           width={cardWidth}
+          noun={noun}
           onNext={next}
           onRevealAll={revealAll}
         />
@@ -339,6 +353,7 @@ export function BoosterScreen() {
           stored={stored}
           bonus={bonus}
           refill={refill}
+          noun={noun}
           onOpen={() => {
             setPack(null);
             setPhase({ name: "sealed" });
@@ -349,7 +364,7 @@ export function BoosterScreen() {
   );
 }
 
-function Pack({ shape, ...props }: PackProps & { readonly shape: PackShape }) {
+function PackView({ shape, ...props }: PackProps & { readonly shape: PackShape }) {
   return shape === "sachet" ? <Sachet {...props} /> : <Pli {...props} />;
 }
 
@@ -359,6 +374,7 @@ function Revealing({
   index,
   hurried,
   width,
+  noun,
   onNext,
   onRevealAll,
 }: {
@@ -367,6 +383,7 @@ function Revealing({
   readonly index: number;
   readonly hurried: boolean;
   readonly width: number;
+  readonly noun: PackNoun;
   readonly onNext: () => void;
   readonly onRevealAll: () => void;
 }) {
@@ -418,7 +435,7 @@ function Revealing({
             </button>
           )}
           <button type="button" className={styles.next} onClick={onNext}>
-            {last ? "Voir mon pli" : "Suivante"}
+            {last ? `Voir mon ${noun.one}` : "Suivante"}
           </button>
         </div>
       </div>
@@ -432,6 +449,7 @@ function Recap({
   stored,
   bonus,
   refill,
+  noun,
   onOpen,
 }: {
   readonly catalog: Catalog | null;
@@ -439,12 +457,13 @@ function Recap({
   readonly stored: number;
   readonly bonus: number;
   readonly refill: string | null;
+  readonly noun: PackNoun;
   readonly onOpen: () => void;
 }) {
   const progress = collectionProgress(pack.collectionCardIds, pack.quantitiesBefore, pack.cards);
   return (
     <div className={styles.recap}>
-      <h2 className={styles.recapTitle}>Ton pli</h2>
+      <h2 className={styles.recapTitle}>Ton {noun.one}</h2>
       <RecapLine pack={pack} />
       <p className={styles.recapProgress}>
         {pack.collectionName} · {progress.owned}/{progress.total}
@@ -484,10 +503,10 @@ function Recap({
           onClick={onOpen}
         >
           {stored > 0
-            ? "Ouvrir un autre pli"
+            ? `Ouvrir un autre ${noun.one}`
             : bonus > 0
-              ? "Ouvrir un pli bonus"
-              : `Plus de pli, ${refill ?? ""}`}
+              ? `Ouvrir un ${noun.one} bonus`
+              : `Plus de ${noun.one}, ${refill ?? ""}`}
         </button>
         <Link href="/album" className={styles.secondary}>
           Voir mon album

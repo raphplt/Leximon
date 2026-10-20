@@ -123,23 +123,22 @@ Une forme hybride est possible : un sachet en papier kraft, fermé par une bande
 
 ### Test A/B : ce qui est faisable
 
-- **Affectation :** le serveur attribue la variante d'après un hachage de l'identifiant du joueur, et la renvoie avec le portefeuille. Elle ne change jamais pour un joueur.
 - **Mesures :** part des ouvertures menées jusqu'au bout sans « Tout révéler », plis ouverts par jour, retour à J1 et J7.
-- **Limite :** il faut un outil de mesure d'audience, qui n'existe pas encore (voir les décisions). Et pendant la bêta, avec quelques milliers de joueurs, seul un écart important sera mesurable.
-- **Retenu par le propriétaire :** les deux formes sont développées, et l'A/B est préparé.
+- **Retenu par le propriétaire :** les deux formes sont développées et départagées par un A/B, mesuré par un journal maison (D-030). Le mot suit la forme : qui voit le sachet lit « sachet » partout (P53).
 
 ### Préparer l'A/B
 
-L'outil sert ensuite à tous les tests du jeu, pas seulement à celui-ci.
+Fait le 2026-10-20 (lot C, D-030). L'outil sert à tous les tests du jeu, pas seulement à celui-ci.
 
-- **Expériences déclarées dans le code :** une expérience a un nom, ses variantes, leur répartition (50/50 par défaut) et une date de début. C'est un réglage daté dans `packages/core`, comme les autres.
-- **Affectation :** fonction pure de `packages/core`, à partir d'un hachage de l'identifiant du joueur et du nom de l'expérience. Pas de table : le même joueur obtient toujours la même variante, sur tous ses appareils. Un invité garde sa variante à l'inscription, puisqu'il garde son identifiant.
-- **Transmission :** `GET /me/experiments` renvoie les variantes du joueur. Le client ne choisit jamais lui-même.
-- **Événements :** le client envoie des événements rattachés à son identifiant, jamais à son e-mail ou son pseudo (`booster_opened`, `reveal_skipped`, `opening_finished`, avec la variante). L'API les valide (Zod) et les dépose dans la file, qui les écrit en lots dans une table `analytics_events`, partitionnée par mois. Rien ne ralentit l'ouverture d'un pli.
-- **Retour à J1 et J7 :** se calcule à partir des ouvertures de plis déjà enregistrées (`booster_opens`), sans événement de plus.
-- **Lecture des résultats :** une requête SQL par expérience au début, un tableau de bord plus tard si besoin.
-- **Consentement :** la mesure d'audience demande le consentement du joueur (RGPD). Seuls les joueurs qui acceptent comptent dans les résultats.
-- **Limite :** pendant la bêta, avec quelques milliers de joueurs, seul un écart important sera mesurable. Quelques essais avec des joueurs filmés restent utiles en complément, s'ils sont faciles à organiser.
+- **Expériences déclarées dans le code :** `EXPERIMENTS` dans `packages/core/src/experiments/` : une clé, ses variantes (la première est le témoin), leur répartition et des dates. Une expérience lancée ne change plus : pour essayer autre chose, une nouvelle clé.
+- **Affectation :** hachage FNV-1a de la clé et de l'identifiant du joueur (le même que GrowthBook). Pas de table : le joueur garde sa variante sur tous ses appareils, et à l'inscription puisqu'il garde son identifiant. `GET /me/experiments` la donne au client, qui ne choisit jamais lui-même.
+- **Aperçu :** `/?paquet=sachet` ou `/?paquet=pli` force une forme pour la visite, pour la regarder ou la tester.
+- **Événements :** une liste fermée, sans texte libre : `page_viewed` (écran visité), `opening_started` (forme, déchirure ou toucher), `opening_finished` (révélé carte par carte ou d'un coup, durée). Le client les envoie par lots (`POST /events`) ; l'API les valide, calcule la variante elle-même et les dépose dans une Cloudflare Queue, que le même Worker écrit par lots dans `analytics_events`. Rien ne ralentit l'ouverture d'un pli.
+- **Vie privée (CNIL) :** la mesure d'audience et l'A/B testing sont exemptés de consentement si le joueur est informé et peut refuser, si les données ne sont pas croisées avec d'autres et si elles ne sont pas gardées plus de 13 mois. Le journal porte donc un pseudonyme (HMAC de l'identifiant par un secret de l'API), sans lien vers les tables du jeu, et la maintenance supprime ses mois trop anciens. Le retour à J1 et J7 se calcule sur le journal seul.
+- **Lecture des résultats :** `pnpm experiments:report [clé]` donne, par variante, les joueurs, les ouvertures par jour actif, la part d'ouvertures écourtées et le retour à J1 et J7, puis compare chaque variante au témoin (écart et p-value).
+- **Reste à faire avant la bêta :** informer le joueur et lui offrir le refus (`setAnalyticsEnabled` existe, sans bouton pour l'instant), avec les pages légales.
+- **Limite :** pendant la bêta, avec quelques milliers de joueurs, seul un écart important sera mesurable. Quelques essais avec des joueurs filmés restent utiles en complément.
+- **Plus tard :** si les expériences se multiplient, GrowthBook (cœur sous licence MIT, auto-hébergeable) peut lire ce même journal dans Postgres pour l'analyse, au prix d'une base MongoDB de plus.
 
 ## Le numéro de collection
 
@@ -191,17 +190,17 @@ Plus tard, `user_cards.variant` permet des variantes du même mot, par exemple u
    - **Fait le 2026-10-20.** Reflets sur la carte révélée et sur la carte agrandie de l'album, la grille restant statique (`HoloCard`, `useHoloLight`). La lumière suit la souris ou le doigt, et l'inclinaison du téléphone sur Android. Sur iPhone, l'inclinaison demande une autorisation système, pas encore demandée : la lumière y suit le doigt, et la carte dérive doucement d'elle-même tant qu'on ne la touche pas.
    - Le sachet partage le geste du pli (`useTear`). En attendant l'A/B du lot C, on le voit avec l'adresse `/?paquet=sachet`.
 3. **Lot C :** outil d'A/B et test pli contre sachet pendant la bêta, portage mobile une fois la R&D D-009 conclue.
+   - **Outil d'A/B fait le 2026-10-20** (D-030) ; le test pli contre sachet tourne dès maintenant pour chaque joueur. Reste le portage mobile.
 
 ## Décisions
 
-Les règles tranchées le 2026-10-20 sont dans [regles-du-jeu.md](../regles-du-jeu.md) : mise en scène (P45), coup d'œil (P46), forme du paquet (P47). L'animation du geste masque le temps de réponse du serveur.
+Les règles tranchées le 2026-10-20 sont dans [regles-du-jeu.md](../regles-du-jeu.md) : mise en scène (P45), coup d'œil (P46), forme du paquet (P47), vocabulaire (P53). L'outil d'A/B est la décision technique D-030. L'animation du geste masque le temps de réponse du serveur.
 
 **À prendre** (aussi listées dans [regles-du-jeu.md](../regles-du-jeu.md#à-décider)) :
 1. **Dénominateur du numéro :** taille annoncée et collections publiées complètes (recommandé), ou nombre de cartes publiées.
 2. **Légendaires « hors série »** au-delà de la taille de la collection : oui ou non.
-3. **Outil de mesure pour l'A/B :** journal d'événements maison dans Postgres via la file (aucune dépendance, recommandé), ou un service comme PostHog hébergé dans l'UE (nouvelle dépendance).
-4. **Sons :** garder les sons synthétisés du lot A, ou les remplacer par des banques CC0 retravaillées (gratuit), ou par une banque payante sous licence commerciale (plus de choix).
-5. **Dépendances mobiles :** `expo-haptics`, `expo-audio`, puis Skia et `expo-sensors` après la R&D D-009.
+3. **Sons :** garder les sons synthétisés du lot A, ou les remplacer par des banques CC0 retravaillées (gratuit), ou par une banque payante sous licence commerciale (plus de choix).
+4. **Dépendances mobiles :** `expo-haptics`, `expo-audio`, puis Skia et `expo-sensors` après la R&D D-009.
 
 ## Sources
 

@@ -1,5 +1,6 @@
 import { RARITY_LABELS } from "@leximon/contract";
 import { type Rarity, rarityRank } from "@leximon/core";
+import { countPacks, DEFAULT_PACK_NOUN, type PackNoun } from "../lib/pack-shape";
 
 export interface DrawnCard {
   readonly cardId: string;
@@ -117,8 +118,8 @@ export function nextRefillLabel(nextRefillAt: string | null, now: number): strin
   return `prochain dans ${Math.floor(minutes / 60)} h ${rest}`;
 }
 
-/** "+1 pli bonus", "+3 plis bonus": the reserve shown beside the stock, `null` when empty. */
-export function bonusLabel(bonus: number): string | null {
+/** "+1 pli bonus", "+3 sachets bonus": the reserve shown beside the stock, `null` when empty. */
+export function bonusLabel(bonus: number, noun: PackNoun = DEFAULT_PACK_NOUN): string | null {
   if (bonus <= 0) return null;
-  return `+${bonus} pli${bonus > 1 ? "s" : ""} bonus`;
+  return `+${countPacks(bonus, noun)} bonus`;
 }

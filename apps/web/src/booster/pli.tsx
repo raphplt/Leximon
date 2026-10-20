@@ -14,7 +14,7 @@ export function Pli({ state, onTearStart, onOpen }: PackProps) {
     onTearStart();
     play("sealBreak");
     vibrate([40]);
-    onOpen();
+    onOpen("touch");
   };
 
   const classes = [

@@ -2,6 +2,8 @@ export * from "./bonus/bonus";
 export * from "./booster/draw";
 export * from "./booster/rarity";
 export * from "./booster/refill";
+export * from "./experiments/experiments";
+export * from "./experiments/stats";
 export * from "./mastery/challenge";
 export * from "./mastery/mastery";
 export * from "./random";

@@ -2,6 +2,7 @@ import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { requestId } from "hono/request-id";
 import { secureHeaders } from "hono/secure-headers";
+import { analyticsRoutes } from "./analytics/routes";
 import { AUTH_BASE_PATH, parseOrigins } from "./auth";
 import { createCardPoolLoader } from "./boosters/card-pool";
 import { boosterRoutes } from "./boosters/routes";
@@ -53,6 +54,8 @@ export function createApp() {
   app.route("/trades", tradeRoutes());
   app.use("/players/*", withDatabase);
   app.route("/players", playerRoutes());
+  app.use("/events", withDatabase);
+  app.route("/events", analyticsRoutes());
 
   app.notFound((c) => c.json({ error: "not_found" }, 404));
   app.onError((error, c) => {

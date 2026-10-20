@@ -5,7 +5,9 @@ import { cssFill, rarityStyles } from "@leximon/tokens";
 import Link from "next/link";
 import { type CSSProperties, useCallback, useEffect, useState } from "react";
 import { type Catalog, cardOrPlaceholder, loadCatalog } from "@/cards/catalog";
+import { usePageView } from "@/lib/analytics";
 import { answerChallenge, fetchChallenges } from "@/lib/api";
+import { usePackShape } from "@/lib/experiments";
 import { useNow } from "@/lib/use-now";
 import styles from "./challenge-screen.module.css";
 import {
@@ -32,6 +34,8 @@ type Phase =
  * multiple-choice question per word, and the right answers raise the card's level.
  */
 export function ChallengeScreen() {
+  const { noun } = usePackShape();
+  usePageView("challenges");
   const [phase, setPhase] = useState<Phase>({ name: "loading" });
   const [catalog, setCatalog] = useState<Catalog | null>(null);
   const [questions, setQuestions] = useState<readonly ChallengeQuestion[]>([]);
@@ -141,8 +145,8 @@ export function ChallengeScreen() {
         <div className={styles.center}>
           <h2 className={styles.recapTitle}>Défi terminé</h2>
           <p className={styles.hint}>{recapLine(answers)}</p>
-          {sessionBonusLine(answers) !== null && (
-            <p className={styles.bonusRecap}>{sessionBonusLine(answers)}</p>
+          {sessionBonusLine(answers, noun) !== null && (
+            <p className={styles.bonusRecap}>{sessionBonusLine(answers, noun)}</p>
           )}
           <div className={styles.actions}>
             <button type="button" className={styles.primary} onClick={() => void load()}>
@@ -160,14 +164,15 @@ export function ChallengeScreen() {
 
 function Empty({ nextDueAt }: { readonly nextDueAt: string | null }) {
   const now = useNow(60_000);
+  const { noun } = usePackShape();
   const when = nextDueLabel(nextDueAt, now);
   return (
     <div className={styles.center}>
       {nextDueAt === null ? (
         <>
-          <p className={styles.hint}>Ouvre des plis : chaque mot gagné devient un défi.</p>
+          <p className={styles.hint}>Ouvre des {noun.many} : chaque mot gagné devient un défi.</p>
           <Link href="/" className={styles.primary}>
-            Ouvrir un pli
+            Ouvrir un {noun.one}
           </Link>
         </>
       ) : (
@@ -176,7 +181,7 @@ function Empty({ nextDueAt }: { readonly nextDueAt: string | null }) {
             Tu as révisé tous tes mots. Le prochain revient {when ?? "bientôt"}.
           </p>
           <Link href="/" className={styles.secondary}>
-            Ouvrir un pli en attendant
+            Ouvrir un {noun.one} en attendant
           </Link>
         </>
       )}
@@ -205,6 +210,7 @@ function QuestionView({
   readonly onChoose: (cardId: string) => void;
   readonly onNext: () => void;
 }) {
+  const { noun } = usePackShape();
   if (question === undefined) return null;
   const card = cardOrPlaceholder(catalog, question.cardId, "common");
   const asksDefinition = question.format === "definition";
@@ -258,7 +264,7 @@ function QuestionView({
             {result.levelUp && (
               <p className={styles.levelUp}>{levelUpLine(card.word, result.level)}</p>
             )}
-            {bonusLines(result.bonus).map((line) => (
+            {bonusLines(result.bonus, noun).map((line) => (
               <p key={line} className={styles.bonus}>
                 {line}
               </p>

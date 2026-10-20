@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { PACK_NOUNS } from "../lib/pack-shape";
 import {
   bonusLabel,
   collectionProgress,
@@ -146,5 +147,6 @@ describe("bonusLabel", () => {
     expect(bonusLabel(0)).toBeNull();
     expect(bonusLabel(1)).toBe("+1 pli bonus");
     expect(bonusLabel(4)).toBe("+4 plis bonus");
+    expect(bonusLabel(2, PACK_NOUNS.sachet)).toBe("+2 sachets bonus");
   });
 });

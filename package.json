@@ -17,7 +17,8 @@
     "check": "biome check . && turbo run typecheck test",
     "test:integration": "turbo run test:integration --concurrency=1",
     "db:migrate": "pnpm --filter @leximon/db db:migrate",
-    "catalog:publish": "pnpm --filter @leximon/db catalog:publish"
+    "catalog:publish": "pnpm --filter @leximon/db catalog:publish",
+    "experiments:report": "pnpm --filter @leximon/db experiments:report"
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.15",

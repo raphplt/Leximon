@@ -1,4 +1,5 @@
 import { type AnswerBonus, MASTERY_LEVEL_LABELS, type MasteryLevelCode } from "@leximon/contract";
+import { DEFAULT_PACK_NOUN, type PackNoun } from "../lib/pack-shape";
 
 /** Outcome of one answered question, kept for the recap. */
 export interface AnsweredQuestion {
@@ -44,28 +45,31 @@ export function feedbackLine(correct: boolean): string {
   return correct ? "Bien vu !" : "Raté, voici la bonne réponse.";
 }
 
-function bonusCount(count: number): string {
-  return count === 1 ? "un pli bonus" : `${count} plis bonus`;
+function bonusCount(count: number, noun: PackNoun): string {
+  return count === 1 ? `un ${noun.one} bonus` : `${count} ${noun.many} bonus`;
 }
 
 /** What an answer earned: "Défi du jour réussi : un pli bonus !", and what the cap took. */
-export function bonusLines(bonus: AnswerBonus): string[] {
+export function bonusLines(bonus: AnswerBonus, noun: PackNoun = DEFAULT_PACK_NOUN): string[] {
   const lines: string[] = [];
-  if (bonus.daily > 0) lines.push(`Défi du jour réussi : ${bonusCount(bonus.daily)} !`);
-  if (bonus.gilded > 0) lines.push(`Dorure atteinte : ${bonusCount(bonus.gilded)} !`);
+  if (bonus.daily > 0) lines.push(`Défi du jour réussi : ${bonusCount(bonus.daily, noun)} !`);
+  if (bonus.gilded > 0) lines.push(`Dorure atteinte : ${bonusCount(bonus.gilded, noun)} !`);
   const lost = bonus.daily + bonus.gilded - bonus.credited;
   if (lost > 0) {
     lines.push(
-      `Ta réserve est pleine : ${lost === 1 ? "ce pli bonus est perdu" : `${lost} plis bonus perdus`}.`,
+      `Ta réserve est pleine : ${lost === 1 ? `ce ${noun.one} bonus est perdu` : `${lost} ${noun.many} bonus perdus`}.`,
     );
   }
   return lines;
 }
 
 /** "2 plis bonus gagnés…" for the recap, or `null` when the session earned none. */
-export function sessionBonusLine(answers: readonly AnsweredQuestion[]): string | null {
+export function sessionBonusLine(
+  answers: readonly AnsweredQuestion[],
+  noun: PackNoun = DEFAULT_PACK_NOUN,
+): string | null {
   const won = answers.reduce((sum, answer) => sum + answer.bonus.credited, 0);
   if (won === 0) return null;
-  const count = won === 1 ? "1 pli bonus gagné" : `${won} plis bonus gagnés`;
-  return `${count}, mis de côté pour quand tu n'auras plus de pli.`;
+  const count = won === 1 ? `1 ${noun.one} bonus gagné` : `${won} ${noun.many} bonus gagnés`;
+  return `${count}, mis de côté pour quand tu n'auras plus de ${noun.one}.`;
 }

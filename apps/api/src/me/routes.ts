@@ -1,5 +1,6 @@
 import {
   type BoosterWalletResponse,
+  type ExperimentsResponse,
   type MasteryResponse,
   type OwnedCardsResponse,
   ownedCardsQuerySchema,
@@ -9,7 +10,9 @@ import {
 import {
   computeRefill,
   createFullWallet,
+  EXPERIMENTS,
   REFILL_SCHEDULE,
+  runningVariants,
   TRADE_SCHEDULE,
   tradeRulesAt,
 } from "@leximon/core";
@@ -51,6 +54,13 @@ export function meRoutes() {
       bonus: row?.bonusBoosters ?? 0,
     });
   });
+
+  // The player's variant in each running A/B test (D-030). Pure computation, no database.
+  routes.get("/experiments", (c) =>
+    c.json<ExperimentsResponse>({
+      variants: runningVariants(EXPERIMENTS, c.var.userId, Date.now()),
+    }),
+  );
 
   routes.get("/cards", async (c) => {
     const query = ownedCardsQuerySchema.safeParse(c.req.query());

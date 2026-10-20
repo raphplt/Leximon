@@ -1,4 +1,5 @@
 import {
+  type AnalyticsBatch,
   type BoosterSource,
   type BoosterWalletResponse,
   boosterStockEmptySchema,
@@ -9,7 +10,9 @@ import {
   type CreateTradeRequest,
   challengeAnswerResponseSchema,
   challengesResponseSchema,
+  type ExperimentsResponse,
   errorResponseSchema,
+  experimentsResponseSchema,
   IDEMPOTENCY_KEY_HEADER,
   type MasteryResponse,
   masteryResponseSchema,
@@ -93,6 +96,27 @@ async function sendAsPlayer(path: string, init: RequestInit = {}): Promise<Respo
   if (response.status !== 401) return response;
   await signInAsGuest();
   return send(path, init);
+}
+
+/** The player's variant in each running A/B test (D-030). */
+export async function fetchExperiments(): Promise<ExperimentsResponse["variants"]> {
+  const response = await sendAsPlayer("/me/experiments");
+  if (!response.ok) throw new ApiError("experiments_unavailable", response.status);
+  return (await parse(response, experimentsResponseSchema)).variants;
+}
+
+/**
+ * Sends a batch of events to the A/B log. `keepalive` lets the request finish while the page
+ * closes. Never signs in a guest: a visitor without a session has nothing to measure yet.
+ */
+export async function sendEvents(batch: AnalyticsBatch, keepalive = false): Promise<void> {
+  const response = await send("/events", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(batch),
+    keepalive,
+  });
+  if (!response.ok) throw new ApiError("events_refused", response.status);
 }
 
 export async function fetchWallet(): Promise<BoosterWalletResponse> {
