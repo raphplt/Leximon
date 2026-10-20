@@ -4,8 +4,11 @@ import { Bricolage_Grotesque, Fraunces, Newsreader } from "next/font/google";
 import "./globals.css";
 
 export const metadata: Metadata = {
+  // Shared images (`opengraph-image.tsx`) need absolute URLs.
+  metadataBase: new URL("https://leximon.fr"),
   title: "Leximon",
   description: "Collectionne les mots que la langue a oubliés.",
+  twitter: { card: "summary_large_image" },
 };
 
 export const viewport: Viewport = {
