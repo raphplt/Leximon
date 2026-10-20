@@ -1,24 +1,29 @@
 # Cahier des charges · Progression et social
 
-- **Statut :** proposition, à valider par le propriétaire (2026-10-20).
-- **Couvre :** niveau de compte, profil public, clans, classements, duels entre joueurs.
+- **Statut :** arbitré par le propriétaire le 2026-10-20 ; restent les décisions en fin de document.
+- **Couvre :** niveau de compte, profil public, clans, classements, modes de jeu entre joueurs.
 - **Décisions liées :** D-006 (comptes), D-007 (temps réel), D-018 (limites de débit). Règles produit d'AGENTS.md.
+
+## Public visé
+
+**Décision du propriétaire (2026-10-20) : un jeu grand public, en B2C classique.** Les mineurs ne sont pas le public de référence, et une version pour les écoles n'est pas prévue (peut-être jamais).
+
+Conséquences :
+- un social complet est possible : discussion de clan, noms libres, profils publics ;
+- **en échange, la modération devient une fonctionnalité à part entière** (voir Clans), exigée par la loi (DSA) et par les stores ;
+- **âge minimum à l'inscription**, à fixer (voir les décisions) ;
+- **la règle « aucun hasard payant » reste entière.** Un pli gagné par la progression est gratuit. Si un passe de saison payant voit le jour, il ne contient que des cosmétiques, jamais de pli.
 
 ## Règles communes
 
-Elles s'appliquent à tout ce qui suit.
-
-- **Public scolaire, donc des mineurs.**
-  - Rien de ce qu'un joueur écrit librement n'est vu par un autre, sauf le pseudo, filtré et signalable. C'est la règle « sans messagerie libre » étendue au social.
-  - Profil privé par défaut, comme le recommande la CNIL pour les mineurs.
-  - Pas de photo envoyée par le joueur (voir Profil public).
-- **Compte inscrit requis** pour tout ce qui est visible des autres : profil public, clan, classements, duels. Un invité gagne de l'expérience, qui le suit à l'inscription. Il faut donc l'inscription (feuille de route) avant tout le reste.
-- **Aucun hasard payant.** Un pli gagné par la progression est gratuit. Si un passe de saison payant voit le jour, il ne contient que des cosmétiques, jamais de pli.
-- **Le serveur fait foi** : expérience, niveaux, scores et résultats de duel sont calculés côté serveur.
-- **Réglages datés, jamais rétroactifs** : barème d'expérience, courbe de niveaux, taille des clans suivent la règle de `packages/core/src/rules.ts`.
-- **Rien de temps réel** tant que la R&D D-007 n'a pas conclu : tout est asynchrone.
+- **Compte inscrit requis** pour tout ce qui est visible des autres : profil public, clan, discussion, classements, parties entre joueurs. Un invité gagne de l'expérience, qui le suit à l'inscription. L'inscription (feuille de route) passe donc avant tout le reste.
+- **Le serveur fait foi** : expérience, niveaux, scores et résultats de partie sont calculés côté serveur.
+- **Réglages datés, jamais rétroactifs** : barème d'expérience, courbe de niveaux, classement suivent la règle de `packages/core/src/rules.ts`.
+- **Rien de temps réel** tant que la R&D D-007 n'a pas conclu.
 
 ## 1. Niveau de compte
+
+**Validé par le propriétaire.**
 
 ### Principe
 
@@ -52,7 +57,7 @@ Les défis et la maîtrise ne sont pas encore construits : leur barème suivra l
 | Palier | Récompense |
 |---|---|
 | Chaque niveau | 1 pli bonus, ou un petit cosmétique |
-| Tous les 5 niveaux | un avatar, un dos de carte, un titre (« Lexicographe en herbe »), un emplacement de carte épinglée en plus |
+| Tous les 5 niveaux | un avatar gravé, un dos de carte, un titre (« Lexicographe en herbe »), un emplacement de carte épinglée en plus |
 | Niveau 5 | ouverture des échanges et des clans (freine les comptes multiples créés pour farmer) |
 | Tous les 10 niveaux | une récompense marquante : cadre de profil animé, emblème de clan rare |
 
@@ -78,23 +83,12 @@ Les défis et la maîtrise ne sont pas encore construits : leur barème suivra l
 
 ### Visibilité
 
-Trois réglages, choisis par le joueur :
-
-| Réglage | Qui voit le profil |
-|---|---|
-| Privé (par défaut) | le joueur seul |
-| Clan | les membres de son clan |
-| Public | tout le monde, par un lien ; apparaît sous son pseudo dans les classements |
-
-À décider : un joueur au profil privé apparaît-il dans sa ligue (voir Classements) ? Recommandation : oui, avec son pseudo et son avatar, sans lien vers son profil.
+Deux réglages : **public** (par défaut, vu de tous par un lien, apparaît dans les classements) ou **privé** (le joueur seul ; dans les classements et le clan, il n'apparaît que par son pseudo et son avatar, sans lien vers son profil).
 
 ### Pseudo et avatar
 
 - **Pseudo :** unique, 3 à 20 caractères, filtré par une liste d'exclusion (celle des injures de la chaîne, `exclusions.py`, plus une liste générale), signalable. Modifiable une fois par mois.
-- **Avatar : pas de photo envoyée.** Recommandation : un choix de portraits tirés des gravures du domaine public, dont certains se gagnent par les niveaux. Raisons :
-  - une photo d'un mineur est une donnée personnelle sensible ;
-  - modérer des images demande un service externe et une équipe ;
-  - des portraits gravés vont avec la direction artistique, et en faire des récompenses nourrit la progression.
+- **Avatar : portraits tirés de gravures du domaine public** (validé par le propriétaire). Une partie est disponible d'emblée, les autres se gagnent par les niveaux. Pas de photo envoyée : rien à modérer, et c'est dans la direction artistique.
 
 ### Mise en œuvre
 
@@ -105,120 +99,127 @@ Trois réglages, choisis par le joueur :
 
 ## 3. Clans
 
-### Principe
-
-Un groupe de joueurs qui avancent ensemble. Ce sont les objectifs communs qui font vivre un clan, pas la discussion, qui est exclue ici.
-
 ### Règles de base
 
-- **Taille :** 30 membres au plus (réglage daté).
+- **Pas de nombre maximum de membres** (décision du propriétaire).
 - **Un seul clan par joueur.** Après l'avoir quitté, il faut attendre 24 h avant d'en rejoindre un autre : on ne change pas de clan pour toucher deux fois une récompense.
-- **Rôles :** chef (un seul), adjoints, membres. Le chef et les adjoints acceptent les demandes et excluent un membre. Si le chef est absent 14 jours, le rôle passe à l'adjoint le plus ancien.
+- **Rôles :** chef (un seul), adjoints, membres. Le chef et les adjoints acceptent les demandes, excluent un membre et modèrent la discussion. Si le chef est absent 14 jours, le rôle passe à l'adjoint le plus ancien.
 - **Entrée :** ouverte, sur demande, ou sur invitation (code à partager).
 - **Accès :** compte inscrit, niveau 5.
-
-### Nom et emblème, sans texte libre
-
-- **Recommandation : des noms générés à partir des mots du jeu.** Le chef choisit parmi des propositions (« Les Faquins de la Billevesée », « La Confrérie des Escogriffes »), qu'il peut relancer. Aucune modération, et c'est dans le ton du jeu.
-- **Autre option :** nom libre, filtré et signalable. Il faut alors une file de signalements traitée par quelqu'un.
-- **Emblème :** une gravure et deux couleurs, à choisir dans une liste.
-- **Description :** des étiquettes à choisir (« Détente », « On complète tout », « Actif tous les jours »), pas de texte.
+- **Nom :** choisi librement par le chef (décision du propriétaire), unique, 3 à 30 caractères, filtré par la liste d'exclusion et signalable. Emblème : une gravure et deux couleurs, dans une liste. Description courte libre, soumise aux mêmes règles que la discussion.
 
 ### Ce qu'on fait dans un clan
 
-1. **L'objectif de la semaine (coopératif) :** par exemple « Découvrir 300 mots nouveaux ensemble », proportionnel au nombre de membres. Trois paliers (bronze, argent, or). Chaque membre qui a contribué au minimum reçoit les récompenses du palier atteint.
-2. **La bibliothèque du clan :** la part de chaque collection que possède au moins un membre. « À nous tous, il nous manque 12 Fondateurs. » Le thème du jeu, vécu à plusieurs.
-3. **Le journal du clan :** des événements écrits par le serveur (« Raph a trouvé une Légendaire : ribonborder ! », « Objectif d'argent atteint »). Les membres réagissent par des réactions prédéfinies (bravo, jaloux, etc.), pas par du texte.
-4. **Plus tard, les dons :** un membre demande une carte Courant ou Peu courant, un autre lui donne un doublon (comme dans Clash Royale). C'est un excellent ciment de clan, mais il faut d'abord les règles d'échange. À limiter aux raretés basses, aux doublons et à quelques dons par jour, pour éviter un marché noir de cartes rares entre comptes.
-5. **Le classement des clans** (voir Classements).
+1. **La discussion** (voir plus bas).
+2. **La bibliothèque du clan** (validée) : la part de chaque collection que possède au moins un membre. « À nous tous, il nous manque 12 Fondateurs. »
+3. **L'objectif de la semaine (coopératif) :** par exemple « Découvrir 300 mots nouveaux ensemble », proportionnel au nombre de membres actifs. Trois paliers (bronze, argent, or). Chaque membre qui a contribué au minimum reçoit les récompenses du palier atteint.
+4. **Le journal du clan :** des événements écrits par le serveur (« Raph a trouvé une Légendaire : ribonborder ! », « Objectif d'argent atteint »), mêlés à la discussion.
+5. **Plus tard, les dons :** un membre demande une carte Courant ou Peu courant, un autre lui donne un doublon (comme dans Clash Royale). Il faut d'abord les règles d'échange. À limiter aux raretés basses, aux doublons et à quelques dons par jour, pour éviter qu'on fasse passer des cartes rares d'un compte à l'autre.
 
-### Plus tard : les classes
+**Sans plafond de membres :** dans un très grand clan, la bibliothèque est vite complète et la discussion défile trop vite pour être lue. À surveiller pendant la bêta. Si besoin, un plafond technique pourra être ajouté par un réglage daté.
 
-Pour les licences écoles, une classe sera un clan privé géré par l'enseignant. Prévoir un champ `kind` dans la table des clans dès le départ.
+### La discussion
 
-### Mise en œuvre
+Une discussion texte par clan, modérée.
 
-- **Tables :** `clans`, `clan_members` (clé : le joueur, ce qui garantit un seul clan), `clan_join_requests`, `clan_weekly_progress`, `clan_feed_events` (purgés après 30 jours).
-- **Rejoindre un clan plein :** la ligne du clan est verrouillée (`FOR UPDATE`) le temps de compter les membres, avec un test d'intégration de demandes simultanées (règle d'architecture).
-- **Objectif et journal :** alimentés par la file à partir des actions des joueurs. Quelques secondes de retard ne gênent pas, et rien n'alourdit l'ouverture d'un pli.
-- **Bibliothèque :** recalculée par la file quand un membre gagne un mot nouveau ou quitte le clan.
+**Modération, en quatre couches :**
+1. **À l'envoi :** filtre automatique par liste d'exclusion. Un message refusé ne part pas, et l'auteur sait pourquoi. Limite de débit (un message toutes les 2 s, 500 caractères au plus).
+2. **Par les joueurs :** signaler un message, bloquer un joueur (on ne voit plus ses messages, nulle part).
+3. **Par le clan :** le chef et les adjoints suppriment un message et rendent muet un membre pour une durée choisie.
+4. **Par nous :** les signalements arrivent dans un outil d'administration. Une sanction (masquer, rendre muet, bannir) est motivée et notifiée au joueur, qui peut la contester.
+   - En option, un modèle classe chaque message après coup (via la file) et masque les plus graves avant tout signalement. Coût à chiffrer selon le volume.
+
+**Ce que la loi et les stores demandent :**
+- **DSA (règlement européen) :** un moyen de signaler un contenu illicite, une décision motivée, une voie de contestation, et un point de contact.
+- **App Store (règle 1.2) et Google Play :** pour tout contenu écrit par les joueurs, un filtre, un signalement, un blocage, et des coordonnées de contact publiées.
+
+Les quatre couches ci-dessus y répondent. Il faut aussi des conditions d'utilisation et une charte de la discussion, à rédiger avant la bêta.
+
+**Mise en œuvre, sans WebSockets (D-007) :**
+- Les messages vivent dans Postgres (`clan_messages`, index sur le clan et la date) et sont purgés après une durée à fixer (90 jours par exemple).
+- L'écran de discussion interroge l'API toutes les quelques secondes, uniquement quand il est ouvert, en demandant les messages après le dernier reçu (curseur). Une requête vide coûte très peu.
+- Une fois la R&D D-007 conclue, un service temps réel par clan (un Durable Object, par exemple) remplacera ces interrogations, sans changer le stockage.
+- Notifications push des mentions, par la file.
+
+### Mise en œuvre du reste
+
+- **Tables :** `clans` (avec un champ `kind`, au cas où), `clan_members` (clé : le joueur, ce qui garantit un seul clan), `clan_join_requests`, `clan_messages`, `clan_weekly_progress`, `moderation_reports`, `user_blocks`.
+- **Objectif, journal, bibliothèque :** alimentés par la file à partir des actions des joueurs. Quelques secondes de retard ne gênent pas, et rien n'alourdit l'ouverture d'un pli.
 
 ## 4. Classements
 
-### Sur quoi classer
+**Pas en v1** (décision du propriétaire). Ils dépendent des modes de jeu, encore à explorer (partie 5).
 
-| Critère | Pour | Contre |
-|---|---|---|
-| Score de collection (points par mot possédé, selon sa rareté) | reflète le cœur du jeu | figé : les anciens restent en tête, et la chance pèse |
-| XP de la semaine | remis à zéro chaque lundi, un nouveau venu a sa chance | récompense l'activité plus que la collection |
-| Mots maîtrisés | récompense l'apprentissage, idéal pour les écoles | dépend des défis, pas encore construits |
+### Pistes retenues pour la suite
 
-### Recommandation
+- **Une cote globale de type Elo,** sur les parties entre joueurs.
+  - Pour des parties asynchrones et des joueurs à la fréquence irrégulière, **Glicko-2** fait mieux que l'Elo classique : il tient compte de l'incertitude sur la cote d'un joueur qui joue peu ou revient après une pause. Il s'affiche comme un seul nombre, comme l'Elo.
+  - Calculée côté serveur, une fonction pure de `packages/core`.
+- **Le modèle du Scrabble duplicate :** tous les joueurs reçoivent exactement la même partie (mêmes mots, mêmes questions), et on les classe par leur score rapporté au meilleur score possible.
+  - Le classement est juste sans mise en relation entre joueurs, et la chance du tirage ne joue pas.
+  - Il se prête à une partie quotidienne ou hebdomadaire, et à des événements de streamers (tout le monde joue la même grille en même temps).
+  - La Fédération française de Scrabble classe aussi ses joueurs par séries (comme des divisions) : une source d'inspiration pour l'affichage.
+- **Les ligues hebdomadaires** à la Duolingo (groupes de 30 joueurs, montées et descentes) restent possibles, sur l'XP de la semaine.
+- **Clans :** un classement des clans devra tenir compte de l'absence de plafond de membres : une moyenne des meilleurs contributeurs, pas une somme, sinon le plus gros clan gagne toujours.
 
-- **Joueurs : des ligues hebdomadaires, comme Duolingo.**
-  - Des groupes de 30 joueurs d'activité proche, classés à l'XP de la semaine.
-  - Le lundi, les 7 premiers montent d'une division, les 5 derniers descendent.
-  - Une dizaine de divisions aux noms du jeu (Gazette, Almanach, Chronique… jusqu'à Encyclopédie).
-  - Raison : être 12e sur 30 motive, être 84 213e sur 250 000 non.
-- **Tableau d'honneur permanent :** le top 100 mondial au score de collection, et les premiers joueurs à compléter chaque collection. C'est le prestige des collectionneurs.
-- **Clans :** classement hebdomadaire à la somme de l'XP des membres, avec un plafond par membre, pour qu'un seul joueur très actif ne porte pas tout le clan. Top 100 mondial, et le rang de son propre clan.
-- **Récompenses :** cosmétiques, titres et plis bonus pour une montée de division ou un podium. Tout est gratuit.
+### Mise en œuvre, le moment venu
 
-### Mise en œuvre
+- Scores et cotes mis à jour par la file après chaque partie.
+- Classements mondiaux recalculés toutes les 5 minutes par une tâche planifiée et servis en cache par le CDN. Pas besoin de Redis.
 
-- **Scores de la semaine :** une table `weekly_scores` (semaine, joueur, score), mise à jour par la file à chaque gain d'XP.
-- **Ligues :** formées le lundi par la tâche quotidienne (cron). Classer 30 joueurs est une requête triviale.
-- **Classements mondiaux :** une photo prise toutes les 5 minutes par une tâche planifiée, servie en cache par le CDN. Un classement n'a pas besoin d'être exact à la seconde, et la base n'est pas sollicitée par chaque visiteur. Pas besoin de Redis.
-- **Triche :** l'XP ne vient que d'actions validées par le serveur, sous limites de débit (D-018). Une vérification d'anomalies (XP hors norme) pourra passer par la file.
+## 5. Modes de jeu entre joueurs
 
-## 5. Duels entre joueurs
+La collection reste le cœur du jeu, mais les modes de jeu comptent. **Ce sera une R&D** (skill `spike`) : plusieurs pistes à prototyper et à faire essayer, sans en choisir une d'avance.
 
 ### Contraintes
 
-- La collection reste le cœur du jeu : un duel doit lui donner de la valeur, pas la remplacer.
 - Pas de temps réel avant la conclusion de la R&D D-007.
-- Pas de texte libre entre joueurs.
-- **Aucune mise de cartes :** perdre une carte sur un duel ressemblerait à un jeu d'argent.
+- **Aucune mise de cartes :** perdre une carte sur une partie ressemblerait à un jeu d'argent.
+- Un mode de jeu doit donner de la valeur à la collection ou à l'apprentissage, idéalement aux deux.
 
-### Pistes
+### Pistes à explorer
 
-| Piste | Principe | Avis |
+| Piste | Principe | Premier avis |
 |---|---|---|
-| **A. Joute asynchrone (recommandée)** | Chaque joueur choisit 5 cartes de sa collection. L'adversaire doit trouver la définition de chacun de ces mots parmi 4 propositions. Un mot rare rapporte plus s'il est trouvé. Chacun joue son tour quand il veut, dans les 24 h. | Valorise la collection (des mots rares piègent l'adversaire) et l'apprentissage (on connaît les mots qu'on a maîtrisés). Faisable sans temps réel. |
-| B. Le Dictionnaire (jeu du bluff) | Trouver la vraie définition parmi des fausses plausibles. | Même moteur que A. Dans le jeu de société, les joueurs inventent les fausses définitions, ce qui est exclu ici (texte libre). Parfait pour un mode classe. |
-| C. Combat de cartes à statistiques | Chaque carte a une attaque et une défense, comme Pokémon. | Les mots n'ont pas de statistiques naturelles : des valeurs inventées sembleraient arbitraires. Long à équilibrer. Déconseillé pour l'instant. |
-| D. Duel en direct | Les mêmes questions en même temps, le plus rapide gagne. | Idéal pour les streamers, mais dépend de la R&D D-007. Plus tard. |
+| **Joute asynchrone** | Chaque joueur choisit 5 cartes de sa collection. L'adversaire doit trouver la définition de chacun de ces mots parmi 4 propositions. Chacun joue son tour dans les 24 h. | Valorise la collection (des mots rares piègent l'adversaire) et l'apprentissage. Faisable sans temps réel. |
+| **Duplicate** | Tout le monde joue la même partie, classement au pourcentage du meilleur score (voir Classements). | Juste, simple à classer, idéal pour les événements. |
+| **Le Dictionnaire (bluff)** | Chaque joueur invente une fausse définition, les autres doivent trouver la vraie. | Très drôle entre amis. Le texte libre passe par la même modération que la discussion. Les fausses définitions des joueurs peuvent être complétées par des leurres générés. |
+| **Combat de cartes à statistiques** | Chaque carte a des valeurs (attaque, défense), comme Pokémon. | Les mots n'ont pas de statistiques naturelles : il faudrait les inventer (époque, longueur, rareté). Long à équilibrer. |
+| **Duel en direct** | Les mêmes questions en même temps, le plus rapide gagne. | Idéal pour les streamers, dépend de la R&D D-007. |
 
-### Ce qu'il faut pour la piste A
+### Besoins communs
 
 - **Des fausses définitions :** trois par carte, plausibles mais fausses, générées par la chaîne de contenu et contrôlées comme le reste (ni vraies par accident, ni injurieuses). Elles serviront aussi aux défis. C'est un coût LLM à chiffrer, donc à valider avant de lancer.
-- **Mise en relation :** défier un membre de son clan, un joueur dont on a le pseudo, ou un adversaire au hasard de niveau proche.
-- **Sécurité :** le serveur envoie les 4 propositions sans dire laquelle est juste, valide la réponse et mesure le temps. Le client ne connaît jamais la bonne réponse avant d'avoir répondu.
-- **Récompenses :** XP et points de ligue.
-- **Données :** `duels` (deux joueurs, decks, état, échéance) et `duel_answers`. Les notifications de tour passent par la file (D-007).
-
-Les duels arrivent après les défis, dont ils partagent le moteur de questions.
+- **Sécurité :** le serveur envoie les propositions sans dire laquelle est juste, valide la réponse et mesure le temps. Le client ne connaît jamais la bonne réponse avant d'avoir répondu.
+- **Récompenses :** XP, et la cote ou le classement du mode.
 
 ## Ordre de réalisation proposé
 
 1. **Inscription** (déjà prévue) : prérequis de tout le social.
 2. **Niveau de compte**, avec l'XP du pli dans le récapitulatif d'ouverture.
 3. **Profil public**, avec pseudo, avatars gravés et cartes épinglées.
-4. **Défis** (déjà prévus), qui alimentent l'XP et préparent les duels.
-5. **Clans** : objectif de la semaine, bibliothèque, journal.
-6. **Classements** : ligues, tableau d'honneur, clans.
-7. **Duels** (piste A), puis les dons de clan une fois les échanges en place.
+4. **Défis** (déjà prévus), qui alimentent l'XP et préparent le moteur de questions.
+5. **Clans** : discussion modérée, bibliothèque, objectif de la semaine, journal.
+6. **R&D des modes de jeu**, puis **classements** (cote Glicko-2, duplicate).
 
-Pour la bêta de novembre, le réaliste est l'ouverture (lot A de [ouverture.md](ouverture.md)), le niveau de compte et un profil simple. Les clans, les classements et les duels viendront après.
+Pour la bêta de novembre, le réaliste est l'ouverture (lot A de [ouverture.md](ouverture.md)), le niveau de compte et un profil simple. Les clans viennent juste après, une fois la modération prête.
 
-## Décisions à prendre
+## Décisions
 
-1. **Barème d'XP et courbe :** partir des valeurs ci-dessus et les calibrer par simulation.
-2. **Plis bonus en récompense :** oui (recommandé, gratuits et hors du plafond du stock), ou seulement des cosmétiques.
-3. **Avatar :** portraits gravés à choisir (recommandé), ou photos envoyées avec modération.
-4. **Visibilité par défaut :** privée (recommandé), et le pseudo apparaît-il dans les ligues pour un profil privé ?
-5. **Noms de clan :** générés à partir des mots du jeu (recommandé), ou libres avec modération.
-6. **Taille des clans :** 30 membres (recommandé).
-7. **Classements :** ligues hebdomadaires, tableau d'honneur et classement des clans (recommandé).
-8. **Duels :** piste A, et accord pour chiffrer la génération des fausses définitions.
-9. **Niveau 5 pour accéder aux échanges et aux clans.**
+**Prises par le propriétaire (2026-10-20) :**
+- B2C grand public, pas de version école prévue ;
+- niveau de compte, avec le barème et les récompenses ci-dessus comme point de départ ;
+- avatars tirés de gravures du domaine public ;
+- clans sans maximum de membres, avec discussion texte modérée et nom choisi par le chef ;
+- bibliothèque commune ;
+- classements après la v1, avec une cote globale de type Elo ;
+- modes de jeu explorés en R&D, en s'inspirant notamment du Scrabble.
+
+**À prendre :**
+1. **Âge minimum à l'inscription :** 15 ans (recommandé : en France, c'est l'âge à partir duquel un joueur consent seul au traitement de ses données, sans accord parental), ou 13 ans avec accord parental entre 13 et 15 ans.
+2. **Plis bonus en récompense de niveau :** oui (recommandé, gratuits et hors du plafond du stock), ou seulement des cosmétiques.
+3. **Visibilité par défaut du profil :** public (recommandé pour un jeu grand public), ou privé.
+4. **Modération automatique de la discussion par un modèle :** dès la bêta, ou seulement si les signalements ne suffisent plus.
+5. **Durée de conservation des messages de clan :** 90 jours (recommandé), ou plus.
+6. **Niveau 5 pour accéder aux échanges et aux clans.**
+7. **Fausses définitions :** accord pour chiffrer leur génération, utile aux défis comme aux modes de jeu.

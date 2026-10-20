@@ -1,6 +1,6 @@
 # Cahier des charges · Ouverture des plis
 
-- **Statut :** proposition, à valider par le propriétaire (2026-10-20).
+- **Statut :** validé dans ses grandes lignes par le propriétaire (2026-10-20). Restent les décisions en fin de document.
 - **Décisions liées :** D-009 (animations, R&D), D-016 (budget de l'ouverture), D-022 (direction artistique), D-023 (catalogue).
 - **Objectif :** que l'ouverture soit le moment le plus jouissif du jeu. La référence est Pokémon TCG Pocket.
 
@@ -15,7 +15,7 @@
 D'après les développeurs et les tests de la presse (sources en bas de page) :
 
 1. **Le geste :** on déchire le haut du paquet du bout du doigt, et la déchirure suit le doigt.
-2. **Le son et la vibration :** l'équipe a enregistré de vrais paquets pour trouver un son qui donne envie. Le son et la vibration reproduisent la déchirure.
+2. **Le son et la vibration :** l'équipe a enregistré de vrais paquets pour trouver un son qui donne envie. Le son et la vibration reproduisent la déchirure. Ici, pas d'enregistrement : voir « Son et vibration ».
 3. **Le coup d'œil :** en inclinant une carte, on devine si elle est holographique avant de la voir en entier. C'est l'aperçu en glissant que tu décris.
 4. **L'annonce :** une carte très rare est annoncée avant d'être montrée (un craquement sonore, une lueur), puis prend tout l'écran.
 5. **Le rythme :** les paquets arrivent au compte-gouttes, donc chaque ouverture est une petite cérémonie.
@@ -27,7 +27,7 @@ Le tirage est fixé dès qu'on appuie sur « Ouvrir ». Le choix du paquet et le
 **Le tirage est fait avant le spectacle.**
 - Le serveur tire les cartes au début du geste d'ouverture, comme aujourd'hui.
 - Tout ce qui suit, aperçu compris, ne fait que dévoiler un résultat déjà enregistré.
-- Aucun indice ne permet de choisir un meilleur paquet parmi plusieurs. Sinon, les probabilités affichées seraient fausses, et les garanties (P12) faussées.
+- Le coup d'œil n'est possible qu'une fois le paquet choisi et ouvert : il ne sert jamais à choisir un paquet.
 
 Le bénéfice technique : l'animation du geste masque le temps de réponse du serveur (budget de 150 ms, D-016).
 
@@ -53,8 +53,8 @@ Le bénéfice technique : l'animation du geste masque le temps de réponse du se
 - **Coup d'œil en glissant :** en faisant glisser la pile en biais, les cartes s'écartent légèrement en éventail, et on voit leur tranche.
   - La tranche a la couleur de la rareté : crème, vert, tomate, cobalt, or, irisé.
   - On devine donc qu'« il y a de l'or là-dedans » sans savoir quel mot c'est.
-  - Ce n'est que de la mise en scène : le tirage est déjà fait.
-- On peut sauter le coup d'œil : glisser vers le haut ou toucher la pile révèle la première carte.
+  - **C'est un geste bonus, jamais expliqué dans l'interface.** Les joueurs le découvrent par hasard et se le transmettent. Aucun tutoriel, aucune flèche, aucun texte d'aide ne le mentionne.
+- Sans ce geste, rien ne change : glisser vers le haut ou toucher la pile révèle la première carte.
 
 ### 4. La révélation carte par carte
 
@@ -91,6 +91,19 @@ Chaque rareté a sa montée en intensité, et l'annonce vient **avant** la face 
 - **« Tout révéler » :** un bouton permet de passer directement au récapitulatif. Les raretés hautes gardent alors une version courte de leur annonce.
 - **Son :** coupé par défaut sur le web (les navigateurs l'imposent jusqu'au premier toucher), réglable dans les paramètres. Le site ne peut pas savoir si le téléphone est en mode silencieux.
 
+### 8. Son et vibration
+
+Les deux font partie du lot A, au même titre que les animations.
+
+- **Sons, sans enregistrer de vrais paquets :**
+  - partir de banques de sons libres (CC0) ou sous licence commerciale, et les retravailler (vitesse, hauteur, superposition) pour qu'ils sonnent « Leximon » ;
+  - le papier qui se déchire est un son très courant dans ces banques ;
+  - la déchirure se découpe en petits fragments joués au rythme du doigt : plus le geste est rapide, plus ils s'enchaînent ;
+  - noter la source et la licence de chaque son dans le dépôt.
+- **Liste des sons :** déchirure, cartes qui glissent, carte qui se retourne, une annonce par rareté à partir de Rare (voir le tableau), « Nouveau ! », récapitulatif.
+- **Vibration :** sur mobile, des motifs courts associés aux mêmes moments (`expo-haptics`). Sur le web, seulement sur Android (`navigator.vibrate`), l'iPhone ne le permet pas.
+- **Réglages :** son et vibration se coupent séparément dans les paramètres.
+
 ## La forme du paquet : pli ou sachet
 
 Les deux formes partagent le même déroulé. Seuls l'apparence du paquet et le geste d'ouverture changent.
@@ -111,10 +124,20 @@ Une forme hybride est possible : un sachet en papier kraft, fermé par une bande
 - **Affectation :** le serveur attribue la variante d'après un hachage de l'identifiant du joueur, et la renvoie avec le portefeuille. Elle ne change jamais pour un joueur.
 - **Mesures :** part des ouvertures menées jusqu'au bout sans « Tout révéler », plis ouverts par jour, retour à J1 et J7.
 - **Limite :** il faut un outil de mesure d'audience, qui n'existe pas encore (voir les décisions). Et pendant la bêta, avec quelques milliers de joueurs, seul un écart important sera mesurable.
-- **Recommandation :**
-  1. faire les deux maquettes jouables sur le web ;
-  2. les faire essayer par 5 à 8 personnes du public visé, filmées, avant la bêta. C'est plus rapide et plus instructif qu'un A/B à ce stade ;
-  3. garder l'A/B pour la bêta, si les essais ne départagent pas.
+- **Retenu par le propriétaire :** les deux formes sont développées, et l'A/B est préparé.
+
+### Préparer l'A/B
+
+L'outil sert ensuite à tous les tests du jeu, pas seulement à celui-ci.
+
+- **Expériences déclarées dans le code :** une expérience a un nom, ses variantes, leur répartition (50/50 par défaut) et une date de début. C'est un réglage daté dans `packages/core`, comme les autres.
+- **Affectation :** fonction pure de `packages/core`, à partir d'un hachage de l'identifiant du joueur et du nom de l'expérience. Pas de table : le même joueur obtient toujours la même variante, sur tous ses appareils. Un invité garde sa variante à l'inscription, puisqu'il garde son identifiant.
+- **Transmission :** `GET /me/experiments` renvoie les variantes du joueur. Le client ne choisit jamais lui-même.
+- **Événements :** le client envoie des événements rattachés à son identifiant, jamais à son e-mail ou son pseudo (`booster_opened`, `reveal_skipped`, `opening_finished`, avec la variante). L'API les valide (Zod) et les dépose dans la file, qui les écrit en lots dans une table `analytics_events`, partitionnée par mois. Rien ne ralentit l'ouverture d'un pli.
+- **Retour à J1 et J7 :** se calcule à partir des ouvertures de plis déjà enregistrées (`booster_opens`), sans événement de plus.
+- **Lecture des résultats :** une requête SQL par expérience au début, un tableau de bord plus tard si besoin.
+- **Consentement :** la mesure d'audience demande le consentement du joueur (RGPD). Seuls les joueurs qui acceptent comptent dans les résultats.
+- **Limite :** pendant la bêta, avec quelques milliers de joueurs, seul un écart important sera mesurable. Quelques essais avec des joueurs filmés restent utiles en complément, s'ils sont faciles à organiser.
 
 ## Le numéro de collection
 
@@ -161,17 +184,24 @@ Plus tard, `user_cards.variant` permet des variantes du même mot, par exemple u
 ## Découpage proposé
 
 1. **Lot A, web, avant la bêta :** geste de déchirure, pile et coup d'œil, révélation au glissé, mise en scène par rareté, sons, numéro de collection, récapitulatif avec progression.
-2. **Lot B :** reflets interactifs complets par rareté (CSS), seconde forme de paquet, essais avec 5 à 8 joueurs.
-3. **Lot C :** portage mobile une fois la R&D D-009 conclue, test A/B pendant la bêta.
+2. **Lot B :** reflets interactifs complets par rareté (CSS), seconde forme de paquet.
+3. **Lot C :** outil d'A/B et test pli contre sachet pendant la bêta, portage mobile une fois la R&D D-009 conclue.
 
-## Décisions à prendre
+## Décisions
 
+**Prises par le propriétaire (2026-10-20) :**
+- le déroulé et la mise en scène par rareté ci-dessus ;
+- le coup d'œil est un geste bonus, possible seulement après avoir choisi le paquet, jamais expliqué ;
+- l'animation du geste masque le temps de réponse du serveur ;
+- son et vibration intégrés dès le lot A, sans enregistrement de vrais paquets ;
+- pli et sachet développés tous les deux, A/B à préparer.
+
+**À prendre :**
 1. **Dénominateur du numéro :** taille annoncée et collections publiées complètes (recommandé), ou nombre de cartes publiées.
 2. **Légendaires « hors série »** au-delà de la taille de la collection : oui ou non.
-3. **Forme du paquet :** maquetter pli et sachet, puis essais avec des joueurs (recommandé), ou A/B directement.
-4. **Outil de mesure pour l'A/B :** journal d'événements maison dans Postgres via la file (aucune dépendance, recommandé pour la bêta), ou un service comme PostHog hébergé dans l'UE (nouvelle dépendance, données de mineurs à encadrer).
-5. **Sons :** les faire créer (prestataire ou banque sous licence), ou partir de banques CC0.
-6. **Dépendances mobiles :** `expo-haptics`, `expo-audio`, puis Skia et `expo-sensors` après la R&D D-009.
+3. **Outil de mesure pour l'A/B :** journal d'événements maison dans Postgres via la file (aucune dépendance, recommandé), ou un service comme PostHog hébergé dans l'UE (nouvelle dépendance).
+4. **Sons :** banques CC0 retravaillées (gratuit), ou banque payante sous licence commerciale (plus de choix).
+5. **Dépendances mobiles :** `expo-haptics`, `expo-audio`, puis Skia et `expo-sensors` après la R&D D-009.
 
 ## Sources
 

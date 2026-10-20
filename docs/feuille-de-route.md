@@ -10,7 +10,7 @@ Le cœur du jeu tourne de bout en bout sur le web : on ouvre un pli, on révèle
 
 ## État par chantier
 
-Statuts : **Fait**, **En cours**, **À faire**, **À décider** (attend le propriétaire), **À étudier** (besoin noté, rien de conçu).
+Statuts : **Fait**, **En cours**, **À faire**, **À décider** (attend le propriétaire), **R&D** (pistes à explorer avant de choisir), **Plus tard**.
 
 ### Contenu des cartes
 
@@ -36,15 +36,15 @@ Statuts : **Fait**, **En cours**, **À faire**, **À décider** (attend le propr
 
 ### Progression et social
 
-Besoins notés par le propriétaire le 2026-10-20. Cahier des charges : [progression-et-social.md](cahiers-des-charges/progression-et-social.md).
+Arbitrés par le propriétaire le 2026-10-20 : jeu grand public (B2C), pas de version école prévue. Cahier des charges : [progression-et-social.md](cahiers-des-charges/progression-et-social.md).
 
 | Étape | Statut | Détail |
 |---|---|---|
-| Niveau de compte | À étudier | Comme dans les jeux mobiles : une progression par paliers, chaque palier donne une récompense. Important |
-| Clans (guildes) | À étudier | Important : à étudier puis planifier |
-| Classements | À étudier | Par joueur et par clan. Le critère reste à choisir |
-| Profil public | À étudier | Public ou privé, au choix du joueur. Public : nom, photo, clan, cartes épinglées (ses préférées), statistiques (nombre de cartes…) |
-| Duels entre joueurs (PvP) | À étudier | Forme encore ouverte. Secondaire face à la collection, mais pas à négliger |
+| Niveau de compte | À faire | XP, paliers et récompenses à réclamer. Barème de départ validé, à calibrer par simulation |
+| Profil public | À faire | Pseudo, avatar gravé, clan, cartes épinglées, statistiques. Public par défaut à confirmer |
+| Clans | À faire | Sans maximum de membres, discussion texte modérée, bibliothèque commune. Après l'inscription et la modération |
+| Modes de jeu entre joueurs | R&D | Plusieurs pistes à prototyper (joute, duplicate, bluff…) |
+| Classements | Plus tard | Pas en v1. Cote globale de type Elo (Glicko-2), modèle du Scrabble duplicate |
 
 ### Interface
 
@@ -56,11 +56,11 @@ Besoins notés par le propriétaire le 2026-10-20. Cahier des charges : [progres
 | Web : page d'accueil publique et liste d'attente | À faire | Utile avant la bêta, pour les réseaux |
 | Mobile (Expo) | À faire | Les mêmes écrans ; charger les polices demandera une dépendance (`expo-font`) |
 | Animations et reflets | À faire | R&D D-009. En attendant, du CSS simple |
-| Ouverture : peaufinage | À étudier | Cahier des charges : [ouverture.md](cahiers-des-charges/ouverture.md). Priorité du propriétaire (2026-10-20) : l'ouverture doit être le moment le plus jouissif du jeu. Référence : Pokémon TCG Pocket et ses petits détails. Animations plus travaillées, carte rare vraiment mise en avant |
-| Ouverture : forme du paquet | À étudier | Le pli ne satisfait pas pleinement le propriétaire. Essayer une forme de booster plus classique et départager par test A/B |
-| Ouverture : aperçu en glissant | À étudier | Glisser le paquet pour le voir en biais et deviner s'il contient une rare |
-| Reflets et effets holographiques par rareté | À étudier | Chaque rareté a son traitement visuel. Lié à la R&D D-009 |
-| Numéro de collection sur la carte | À étudier | Par exemple « 40/280 », pour situer la carte dans sa collection |
+| Ouverture : peaufinage | À faire | Cahier des charges : [ouverture.md](cahiers-des-charges/ouverture.md). Priorité du propriétaire (2026-10-20) : l'ouverture doit être le moment le plus jouissif du jeu. Référence : Pokémon TCG Pocket et ses petits détails. Animations plus travaillées, carte rare vraiment mise en avant |
+| Ouverture : forme du paquet | À faire | Pli et sachet développés tous les deux, départagés par un test A/B à préparer |
+| Ouverture : aperçu en glissant | À faire | Geste bonus jamais expliqué : glisser la pile en biais pour deviner une rare |
+| Reflets et effets holographiques par rareté | À faire | Chaque rareté a son traitement visuel. Lié à la R&D D-009 |
+| Numéro de collection sur la carte | À décider | Par exemple « 040/160 ». Dénominateur à choisir (taille annoncée ou cartes publiées) |
 
 ### Mise en ligne
 
@@ -79,6 +79,7 @@ Dans l'ordre où elles débloquent le plus :
 3. **Règles d'échange.** Elles débloquent les échanges, prévus au MVP.
 4. **Dépendance FSRS.** Elle débloque les défis.
 5. **Fournisseur Postgres.** Il débloque la mise en ligne.
+6. **Ouverture, progression et social :** les décisions restantes en fin de chaque [cahier des charges](cahiers-des-charges/).
 
 ## Prochaines étapes conseillées
 
