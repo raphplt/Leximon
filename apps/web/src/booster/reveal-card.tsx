@@ -10,6 +10,7 @@ import {
   useRef,
   useState,
 } from "react";
+import { frequencyLine, shareText } from "@/cards/display";
 import { HoloCard } from "@/components/holo-card";
 import { useHoloLight } from "@/components/use-holo-light";
 import { CardBack } from "./card-back";
@@ -33,6 +34,8 @@ interface RevealCardProps {
   /** « Ta première Légendaire ! », or `null`. */
   readonly firstLabel: string | null;
   readonly onNext: () => void;
+  /** The `back` of the pack's collection. */
+  readonly backTone?: string | undefined;
 }
 
 interface Drag {
@@ -56,6 +59,7 @@ export function RevealCard({
   copies,
   firstLabel,
   onNext,
+  backTone,
 }: RevealCardProps) {
   const [flipped, setFlipped] = useState(false);
   const [settled, setSettled] = useState(false);
@@ -212,7 +216,12 @@ export function RevealCard({
           aria-label={flipped ? `${card.word}, carte suivante` : "Retourner la carte"}
         >
           <span className={styles.back}>
-            <CardBack rarity={card.rarity} width={width} edge={announcing ? 1 : 0} />
+            <CardBack
+              rarity={card.rarity}
+              width={width}
+              edge={announcing ? 1 : 0}
+              tone={backTone}
+            />
             {announcing && staging.announce === "crack" && <Cracks />}
           </span>
           <span className={styles.front}>
@@ -225,10 +234,15 @@ export function RevealCard({
         {settled && isNew && <span className={styles.newBadge}>Nouveau !</span>}
         {settled && !isNew && <span className={styles.copies}>×{copies}</span>}
       </div>
-      {!flipped && staging.flip === "touch" && touchable && (
-        <p className={styles.touchHint}>Touche la carte</p>
-      )}
-      {settled && staging.spotlight && <ShareButton word={card.word} />}
+      <p className={styles.under}>
+        {!flipped && staging.flip === "touch" && touchable && (
+          <span className={styles.touchHint}>Touche la carte</span>
+        )}
+        {settled && isNew && (
+          <span className={styles.frequency}>{frequencyLine(card.perBillion)}</span>
+        )}
+      </p>
+      {settled && staging.spotlight && <ShareButton card={card} />}
     </div>
   );
 }
@@ -237,10 +251,10 @@ export function RevealCard({
  * Shares a Légendaire: through the phone's share sheet where there is one, or by copying the
  * text. A link to the card's own public page will replace the site's address once it exists.
  */
-function ShareButton({ word }: { readonly word: string }) {
+function ShareButton({ card }: { readonly card: CatalogCard }) {
   const [copied, setCopied] = useState(false);
   const share = async () => {
-    const text = `J'ai trouvé une carte Légendaire sur Leximon : « ${word} » !`;
+    const text = shareText(card.word, card.perBillion);
     const url = window.location.origin;
     try {
       if (typeof navigator.share === "function") {
@@ -255,7 +269,7 @@ function ShareButton({ word }: { readonly word: string }) {
   };
   return (
     <button type="button" className={styles.share} onClick={() => void share()}>
-      {copied ? "Copié !" : "Partager"}
+      {copied ? "Copié" : "Partager"}
     </button>
   );
 }

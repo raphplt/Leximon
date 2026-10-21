@@ -6,13 +6,29 @@
  * themselves, never on `.sachet`, which must keep its depth.
  */
 
+/* Takes the height left on the screen, so the whole screen fits without scrolling. */
+.slot {
+  flex: 1 1 0;
+  align-self: stretch;
+  min-height: 260px;
+  max-height: 434px;
+  display: grid;
+  place-items: center;
+  container-type: size;
+}
+
 .scene {
   position: relative;
-  /* The proportions of a real booster pouch, taller than a card. */
-  --width: 236px;
-  --height: 410px;
+  /*
+   * Every measure of the pouch is a multiple of --u: 1px at full size (236 × 410, the
+   * proportions of a real booster pouch), less where the screen is short. The slot keeps 24px
+   * for the pouch to sway and cast its shadow.
+   */
+  --u: min(1px, (100cqh - 24px) / 410, 100cqw / 236);
+  --width: calc(236 * var(--u));
+  --height: calc(410 * var(--u));
   /* The tear strip across the top. */
-  --strip: 48px;
+  --strip: calc(48 * var(--u));
   width: var(--width);
   height: var(--height);
 }
@@ -35,11 +51,11 @@
   --torn: 0%;
   --kept: 100%;
   --lift: 0deg;
-  --rise: 0px;
+  --rise: calc(0 * var(--u));
   /* Crimped edges: teeth of this width at the top and bottom of the pouch. */
-  --tooth: 9px;
+  --tooth: calc(9 * var(--u));
   /* The front face stands this far before the middle of the pouch, the back as far behind. */
-  --face: 6px;
+  --face: calc(6 * var(--u));
   transform-style: preserve-3d;
   /* A pouch is lighter than a card: it leans further under the same light. */
   transform: rotateX(calc(var(--holo-rx) * 1.6)) rotateY(calc(var(--holo-ry) * 1.6));
@@ -51,12 +67,12 @@
   position: absolute;
   left: 14%;
   right: 14%;
-  bottom: -26px;
-  height: 36px;
+  bottom: calc(-26 * var(--u));
+  height: calc(36 * var(--u));
   border-radius: 50%;
   background: radial-gradient(closest-side, rgba(0, 0, 0, 0.6), transparent);
-  filter: blur(5px);
-  translate: calc(sin(var(--holo-ry)) * -120px) 0;
+  filter: blur(calc(5 * var(--u)));
+  translate: calc(sin(var(--holo-ry)) * calc(-120 * var(--u))) 0;
   animation: shadow 5s ease-in-out infinite;
 }
 
@@ -96,7 +112,11 @@
 .stripTorn {
   background:
     /* Brushed foil. */
-    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.03) 0 1px, transparent 1px 3px),
+    repeating-linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0.03) 0 calc(1 * var(--u)),
+      transparent calc(1 * var(--u)) calc(3 * var(--u))
+    ),
     /* A band of light sweeping across with the tilt. */
     linear-gradient(
       112deg,
@@ -126,13 +146,13 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 22px;
-  padding: 0 0 26px;
+  gap: calc(22 * var(--u));
+  padding: 0 0 calc(26 * var(--u));
   border: none;
   cursor: pointer;
   box-shadow:
-    inset 1px 0 0 rgba(255, 255, 255, 0.14),
-    inset -1px 0 0 rgba(0, 0, 0, 0.35);
+    inset calc(1 * var(--u)) 0 0 rgba(255, 255, 255, 0.14),
+    inset calc(-1 * var(--u)) 0 0 rgba(0, 0, 0, 0.35);
 }
 
 /* The pinch near each crimp: the foil wrinkles where both faces are sealed together. */
@@ -144,25 +164,25 @@
     linear-gradient(180deg, rgba(0, 0, 0, 0.35), transparent 7%),
     repeating-linear-gradient(
       80deg,
-      transparent 0 18px,
-      rgba(255, 255, 255, 0.05) 18px 20px,
-      rgba(0, 0, 0, 0.12) 20px 23px
+      transparent 0 calc(18 * var(--u)),
+      rgba(255, 255, 255, 0.05) calc(18 * var(--u)) calc(20 * var(--u)),
+      rgba(0, 0, 0, 0.12) calc(20 * var(--u)) calc(23 * var(--u))
     )
-    0 0 / 100% 16px no-repeat,
+    0 0 / 100% calc(16 * var(--u)) no-repeat,
     linear-gradient(
       0deg,
-      rgba(0, 0, 0, 0.45) 22px,
-      transparent 22px,
-      rgba(0, 0, 0, 0.2) 24px,
-      transparent 40px
+      rgba(0, 0, 0, 0.45) calc(22 * var(--u)),
+      transparent calc(22 * var(--u)),
+      rgba(0, 0, 0, 0.2) calc(24 * var(--u)),
+      transparent calc(40 * var(--u))
     ),
     repeating-linear-gradient(
       100deg,
-      transparent 0 22px,
-      rgba(255, 255, 255, 0.05) 22px 24px,
-      rgba(0, 0, 0, 0.14) 24px 27px
+      transparent 0 calc(22 * var(--u)),
+      rgba(255, 255, 255, 0.05) calc(22 * var(--u)) calc(24 * var(--u)),
+      rgba(0, 0, 0, 0.14) calc(24 * var(--u)) calc(27 * var(--u))
     )
-    0 calc(100% - 22px) / 100% 18px no-repeat;
+    0 calc(100% - calc(22 * var(--u))) / 100% calc(18 * var(--u)) no-repeat;
   pointer-events: none;
 }
 
@@ -173,11 +193,11 @@
   left: 0;
   right: 0;
   bottom: 0;
-  height: 22px;
+  height: calc(22 * var(--u));
   background: repeating-linear-gradient(
     90deg,
-    rgba(255, 255, 255, 0.16) 0 2px,
-    transparent 2px 6px
+    rgba(255, 255, 255, 0.16) 0 calc(2 * var(--u)),
+    transparent calc(2 * var(--u)) calc(6 * var(--u))
   );
 }
 
@@ -214,7 +234,7 @@
   font-family: var(--font-display), Georgia, serif;
   font-variation-settings: "SOFT" 100;
   font-weight: 900;
-  font-size: 32px;
+  font-size: calc(32 * var(--u));
   line-height: 1;
   letter-spacing: 0.01em;
   color: var(--lx-color-kraft);
@@ -230,7 +250,7 @@
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
-  filter: drop-shadow(0 2px 0 rgba(0, 0, 0, 0.45));
+  filter: drop-shadow(0 calc(2 * var(--u)) 0 rgba(0, 0, 0, 0.45));
 }
 
 /*
@@ -241,8 +261,8 @@
   position: relative;
   display: grid;
   place-items: center;
-  width: 116px;
-  height: 108px;
+  width: calc(116 * var(--u));
+  height: calc(108 * var(--u));
   border-radius: 54% 46% 50% 50% / 48% 56% 44% 52%;
   background:
     radial-gradient(
@@ -257,10 +277,10 @@
       var(--lx-color-seal-dark) 100%
     );
   box-shadow:
-    0 3px 0 var(--lx-color-seal-dark),
-    0 10px 18px rgba(0, 0, 0, 0.55),
-    inset 0 -6px 10px rgba(60, 8, 0, 0.45),
-    inset 0 4px 6px rgba(255, 190, 160, 0.35);
+    0 calc(3 * var(--u)) 0 var(--lx-color-seal-dark),
+    0 calc(10 * var(--u)) calc(18 * var(--u)) rgba(0, 0, 0, 0.55),
+    inset 0 calc(-6 * var(--u)) calc(10 * var(--u)) rgba(60, 8, 0, 0.45),
+    inset 0 calc(4 * var(--u)) calc(6 * var(--u)) rgba(255, 190, 160, 0.35);
 }
 
 .seal::before,
@@ -274,22 +294,22 @@
     var(--lx-color-seal) 0%,
     var(--lx-color-seal-dark) 100%
   );
-  box-shadow: 0 6px 10px rgba(0, 0, 0, 0.45);
+  box-shadow: 0 calc(6 * var(--u)) calc(10 * var(--u)) rgba(0, 0, 0, 0.45);
 }
 
 .seal::before {
-  right: -9px;
-  bottom: 10px;
-  width: 38px;
-  height: 30px;
+  right: calc(-9 * var(--u));
+  bottom: calc(10 * var(--u));
+  width: calc(38 * var(--u));
+  height: calc(30 * var(--u));
   rotate: 24deg;
 }
 
 .seal::after {
-  left: -6px;
-  top: 14px;
-  width: 26px;
-  height: 22px;
+  left: calc(-6 * var(--u));
+  top: calc(14 * var(--u));
+  width: calc(26 * var(--u));
+  height: calc(22 * var(--u));
   rotate: -30deg;
 }
 
@@ -298,9 +318,9 @@
   display: grid;
   place-items: center;
   box-sizing: border-box;
-  width: 76px;
-  height: 76px;
-  border: 2px dotted rgba(70, 10, 0, 0.45);
+  width: calc(76 * var(--u));
+  height: calc(76 * var(--u));
+  border: calc(2 * var(--u)) dotted rgba(70, 10, 0, 0.45);
   border-radius: 50%;
   background: radial-gradient(
     circle at 60% 72%,
@@ -308,33 +328,33 @@
     var(--lx-color-seal) 70%
   );
   box-shadow:
-    0 0 0 3px rgba(70, 10, 0, 0.25),
-    0 1px 0 4px rgba(255, 190, 160, 0.18),
-    inset 0 4px 6px rgba(60, 8, 0, 0.55),
-    inset 0 -2px 3px rgba(255, 190, 160, 0.3);
+    0 0 0 calc(3 * var(--u)) rgba(70, 10, 0, 0.25),
+    0 calc(1 * var(--u)) 0 calc(4 * var(--u)) rgba(255, 190, 160, 0.18),
+    inset 0 calc(4 * var(--u)) calc(6 * var(--u)) rgba(60, 8, 0, 0.55),
+    inset 0 calc(-2 * var(--u)) calc(3 * var(--u)) rgba(255, 190, 160, 0.3);
   font-family: var(--font-display), Georgia, serif;
   font-variation-settings: "SOFT" 100;
   font-weight: 900;
-  font-size: 46px;
+  font-size: calc(46 * var(--u));
   line-height: 1;
   color: var(--lx-color-seal-dark);
   text-shadow:
-    0 -1px 0 rgba(40, 5, 0, 0.6),
-    0 1px 0 rgba(255, 200, 170, 0.5);
+    0 calc(-1 * var(--u)) 0 rgba(40, 5, 0, 0.6),
+    0 calc(1 * var(--u)) 0 rgba(255, 200, 170, 0.5);
 }
 
 .sticker {
   position: relative;
-  padding: 4px 10px;
-  border-radius: 10px;
+  padding: calc(4 * var(--u)) calc(10 * var(--u));
+  border-radius: calc(10 * var(--u));
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.22), transparent 55%), var(--lx-color-sticker);
   transform: rotate(-3deg);
   box-shadow:
-    0 2px 0 rgba(0, 0, 0, 0.25),
-    0 5px 10px rgba(0, 0, 0, 0.35);
+    0 calc(2 * var(--u)) 0 rgba(0, 0, 0, 0.25),
+    0 calc(5 * var(--u)) calc(10 * var(--u)) rgba(0, 0, 0, 0.35);
   font-family: var(--font-ui), sans-serif;
-  font-size: 12px;
+  font-size: calc(12 * var(--u));
   font-weight: 800;
   color: #ffffff;
 }
@@ -358,7 +378,7 @@
 .strip::before {
   content: "";
   position: absolute;
-  inset: -16px 0 -12px;
+  inset: calc(-16 * var(--u)) 0 calc(-12 * var(--u));
 }
 
 .dragging .strip {
@@ -370,13 +390,13 @@
   position: absolute;
   inset: 0;
   box-sizing: border-box;
-  padding: 18px 14px 0 0;
+  padding: calc(18 * var(--u)) calc(14 * var(--u)) 0 0;
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  border-bottom: 2px dashed rgba(255, 224, 138, 0.55);
+  border-bottom: calc(2 * var(--u)) dashed rgba(255, 224, 138, 0.55);
   font-family: var(--font-ui), sans-serif;
-  font-size: 10px;
+  font-size: calc(10 * var(--u));
   font-weight: 700;
   letter-spacing: 0.04em;
   color: rgba(255, 224, 138, 0.85);
@@ -398,11 +418,11 @@
   left: 0;
   right: 0;
   top: 0;
-  height: 18px;
+  height: calc(18 * var(--u));
   background: repeating-linear-gradient(
     90deg,
-    rgba(255, 255, 255, 0.16) 0 2px,
-    transparent 2px 6px
+    rgba(255, 255, 255, 0.16) 0 calc(2 * var(--u)),
+    transparent calc(2 * var(--u)) calc(6 * var(--u))
   );
 }
 
@@ -411,10 +431,10 @@
 }
 
 .stripTorn {
-  clip-path: inset(-40px var(--kept) 0 -40px);
+  clip-path: inset(calc(-40 * var(--u)) var(--kept) 0 calc(-40 * var(--u)));
   transform-origin: var(--torn) 100%;
   transform: rotate(var(--lift)) translateY(calc(-1 * var(--rise)));
-  filter: drop-shadow(0 4px 4px rgba(0, 0, 0, 0.35));
+  filter: drop-shadow(0 calc(4 * var(--u)) calc(4 * var(--u)) rgba(0, 0, 0, 0.35));
 }
 
 .fromRight .stripKept {
@@ -422,7 +442,7 @@
 }
 
 .fromRight .stripTorn {
-  clip-path: inset(-40px -40px 0 var(--kept));
+  clip-path: inset(calc(-40 * var(--u)) calc(-40 * var(--u)) 0 var(--kept));
   transform-origin: var(--kept) 100%;
 }
 
@@ -450,22 +470,22 @@
 .burstCardA,
 .burstCardB {
   position: absolute;
-  top: 110px;
-  width: 150px;
-  height: 210px;
+  top: calc(110 * var(--u));
+  width: calc(150 * var(--u));
+  height: calc(210 * var(--u));
   box-sizing: border-box;
-  border-radius: 12px;
+  border-radius: calc(12 * var(--u));
   background: #1b1f33;
-  border: 6px solid var(--lx-color-kraft);
+  border: calc(6 * var(--u)) solid var(--lx-color-kraft);
   opacity: 0;
 }
 
 .burstCardA {
-  left: 34px;
+  left: calc(34 * var(--u));
 }
 
 .burstCardB {
-  left: 52px;
+  left: calc(52 * var(--u));
 }
 
 .opening .strip {
@@ -502,7 +522,7 @@
     translate: 0 0;
   }
   50% {
-    translate: 0 -8px;
+    translate: 0 calc(-8 * var(--u));
   }
 }
 
@@ -521,21 +541,23 @@
 /* The strip flies off, turning over as it goes. */
 @keyframes tear {
   to {
-    transform: translateZ(var(--face)) translate3d(60px, -140px, 40px) rotate(14deg) rotateX(50deg);
+    transform: translateZ(var(--face))
+      translate3d(calc(60 * var(--u)), calc(-140 * var(--u)), calc(40 * var(--u))) rotate(14deg)
+      rotateX(50deg);
     opacity: 0;
   }
 }
 
 @keyframes burst {
   0% {
-    transform: translateY(40px);
+    transform: translateY(calc(40 * var(--u)));
     opacity: 0;
   }
   30% {
     opacity: 1;
   }
   100% {
-    transform: translateY(-210px) rotate(-5deg);
+    transform: translateY(calc(-210 * var(--u))) rotate(-5deg);
     opacity: 1;
   }
 }

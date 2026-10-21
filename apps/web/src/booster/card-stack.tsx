@@ -14,6 +14,8 @@ interface CardStackProps {
   readonly cards: readonly DrawnCard[];
   readonly width: number;
   readonly onReveal: () => void;
+  /** The `back` of the pack's collection. */
+  readonly tone?: string | undefined;
 }
 
 interface Drag {
@@ -29,7 +31,7 @@ interface Drag {
  * shows the edges, colored by rarity: a bonus gesture that nothing on screen explains
  * (docs/cahiers-des-charges/ouverture.md). The draw is already made; this only shows it early.
  */
-export function CardStack({ cards, width, onReveal }: CardStackProps) {
+export function CardStack({ cards, width, onReveal, tone }: CardStackProps) {
   const [drag, setDrag] = useState<Drag | null>(null);
   const dragRef = useRef<Drag | null>(null);
 
@@ -100,7 +102,12 @@ export function CardStack({ cards, width, onReveal }: CardStackProps) {
         return (
           // biome-ignore lint/suspicious/noArrayIndexKey: a pack can hold the same card twice
           <span key={index} className={styles.card} style={style}>
-            <CardBack rarity={card.rarity} width={width} edge={index === 0 ? 0 : peek} />
+            <CardBack
+              rarity={card.rarity}
+              width={width}
+              edge={index === 0 ? 0 : peek}
+              tone={tone}
+            />
           </span>
         );
       })}

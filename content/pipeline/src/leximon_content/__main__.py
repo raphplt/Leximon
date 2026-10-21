@@ -21,6 +21,8 @@ gravures-pick     Sonnet picks the engraving of each card among its thumbnails (
 gravures-report   counts, rejections by reason and cost so far
                   All four take --cards id1,id2 or --limit N (default: every card) and
                   --release <dir> (default: the latest one). Data in data/gravures/.
+                  --round 2: second round for the cards still without an engraving, with
+                  wider queries, a laxer pick and the first round's other candidates.
 gravures-render   download the approved engravings of data/gravures/validation.json and render
                   their ink and colour plate (WebP, data/gravures/out/), read by release
 
@@ -241,8 +243,17 @@ def gravure_cards(
 
 
 def command_gravures(
-    command: str, release_dir: str | None, ids: str | None, limit: int | None, yes: bool
+    command: str,
+    release_dir: str | None,
+    ids: str | None,
+    limit: int | None,
+    yes: bool,
+    round_number: int,
 ) -> None:
+    if round_number == 2:
+        gravures.start_second_round()
+    elif round_number != 1:
+        raise SystemExit("--round : 1 ou 2")
     cards, catalogue = gravure_cards(release_dir, ids, limit)
     if command == "gravures-search":
         gravures.run_search(cards)
@@ -287,13 +298,16 @@ def main() -> None:
     )
     parser.add_argument("--cards", default=None, help="gravures-*: comma-separated card ids")
     parser.add_argument("--release", default=None, help="gravures-*: release directory name")
+    parser.add_argument(
+        "--round", type=int, default=1, help="gravures-*: 2 for the cards still without one"
+    )
     parser.add_argument("--yes", action="store_true", help="approve a step above a few dollars")
     args = parser.parse_args()
     if args.command == "gravures-render":
         engraving.run_render()
         return
     if args.command.startswith("gravures-"):
-        command_gravures(args.command, args.release, args.cards, args.limit, args.yes)
+        command_gravures(args.command, args.release, args.cards, args.limit, args.yes, args.round)
         return
     if args.command == "release":
         command_release()

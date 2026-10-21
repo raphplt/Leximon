@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { formatOdds, wordFontSize } from "./display";
+import { formatOdds, frequencyLine, shareText, wordFontSize } from "./display";
 
 describe("formatOdds", () => {
   it("prints one occurrence in N words", () => {
@@ -14,6 +14,28 @@ describe("formatOdds", () => {
   it("stays discreet below what Ngram measures", () => {
     expect(formatOdds(null)).toBe("< 1/Md");
     expect(formatOdds(0)).toBe("< 1/Md");
+  });
+});
+
+describe("frequencyLine", () => {
+  it("says how rare the word is in today's books", () => {
+    expect(frequencyLine(0.0585)).toBe("Un mot imprimé sur 17\u00a0milliards.");
+    expect(frequencyLine(1)).toBe("Un mot imprimé sur 1\u00a0milliard.");
+    expect(frequencyLine(0.67)).toBe("Un mot imprimé sur 1,5\u00a0milliard.");
+    expect(frequencyLine(48.4)).toBe("Un mot imprimé sur 21\u00a0millions.");
+    expect(frequencyLine(2000)).toBe("Un mot imprimé sur 500\u00a0000.");
+  });
+
+  it("says when the word is no longer found at all", () => {
+    expect(frequencyLine(null)).toBe("Introuvable dans les livres d'aujourd'hui.");
+  });
+});
+
+describe("shareText", () => {
+  it("puts the word first and the game nowhere", () => {
+    expect(shareText("talpinette", null)).toBe(
+      "Talpinette. Introuvable dans les livres d'aujourd'hui. Moi, je l'ai.",
+    );
   });
 });
 

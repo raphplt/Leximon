@@ -1,7 +1,7 @@
 import { RARITIES } from "@leximon/core";
 import { describe, expect, it } from "vitest";
 import { cssFill, cssRootRule, cssVariables, solidColor } from "./css";
-import { colors, rarityStyles } from "./tokens";
+import { backTone, backTones, colors, rarityStyles } from "./tokens";
 
 /** WCAG relative luminance of a `#RRGGBB` color. */
 function luminance(hex: string): number {
@@ -60,5 +60,14 @@ describe("css helpers", () => {
     expect(cssVariables()["--lx-color-text-muted"]).toBe(colors.textMuted);
     expect(cssVariables()["--lx-radius-card"]).toBe("16px");
     expect(cssRootRule()).toMatch(/^:root\{--lx-color-background:#262B40;/);
+  });
+});
+
+describe("backTone", () => {
+  it("reads a collection's tone, and falls back to night for a name it lacks", () => {
+    expect(backTone("burgundy")).toBe(backTones.burgundy);
+    expect(backTone(undefined)).toBe(backTones.night);
+    expect(backTone("ochre")).toBe(backTones.night);
+    expect(backTone("toString")).toBe(backTones.night);
   });
 });

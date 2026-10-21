@@ -16,7 +16,9 @@
   text-align: left;
 }
 
+/* Laid paper (chosen 2026-10-21): sparse chain lines across fine laid lines, in the ink's tone. */
 .inner {
+  position: relative;
   box-sizing: border-box;
   height: 100%;
   display: flex;
@@ -28,10 +30,47 @@
   background:
     repeating-linear-gradient(
       90deg,
-      rgba(70, 50, 25, 0.05) 0 1px,
-      transparent 1px calc(21 * var(--u))
+      color-mix(in srgb, var(--ink) 6%, transparent) 0 calc(0.7 * var(--u)),
+      transparent calc(0.7 * var(--u)) calc(30 * var(--u))
+    ),
+    repeating-linear-gradient(
+      0deg,
+      color-mix(in srgb, var(--ink) 3%, transparent) 0 calc(0.5 * var(--u)),
+      transparent calc(0.5 * var(--u)) calc(2.2 * var(--u))
     ),
     var(--paper);
+}
+
+/*
+ * Double rule inside the frame (chosen 2026-10-21), in the frame's own fill, gold and iridescent
+ * included: each rule is a box of that fill with its content cut out.
+ */
+.inner::before,
+.inner::after {
+  content: "";
+  position: absolute;
+  pointer-events: none;
+  box-sizing: border-box;
+  background: var(--frame);
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask:
+    linear-gradient(#000 0 0) content-box exclude,
+    linear-gradient(#000 0 0);
+}
+
+.inner::before {
+  inset: calc(3.5 * var(--u));
+  padding: calc(1.3 * var(--u));
+  border-radius: calc(6.5 * var(--u));
+}
+
+.inner::after {
+  inset: calc(6.2 * var(--u));
+  padding: calc(0.5 * var(--u));
+  border-radius: calc(4 * var(--u));
 }
 
 .top {

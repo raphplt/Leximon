@@ -37,22 +37,18 @@ function polar(cx: number, cy: number, r: number, deg: number): string {
   return `${round(cx + r * Math.sin(a))} ${round(cy - r * Math.cos(a))}`;
 }
 
-function starPath(
-  cx: number,
-  cy: number,
-  points: number,
-  outer: number,
-  inner: number,
-  rotation = 0,
-): string {
-  const step = 360 / points;
-  const parts: string[] = [];
-  for (let i = 0; i < points; i++) {
-    const a = rotation + i * step;
-    parts.push(`${i === 0 ? "M" : "L"}${polar(cx, cy, outer, a)}`);
-    parts.push(`L${polar(cx, cy, inner, a + step / 2)}`);
-  }
-  return `${parts.join(" ")}Z`;
+/** A full circle, as two arcs. */
+function circlePath(cx: number, cy: number, r: number): string {
+  const left = `${round(cx - r)} ${round(cy)}`;
+  const right = `${round(cx + r)} ${round(cy)}`;
+  return `M${left} A${round(r)} ${round(r)} 0 1 1 ${right} A${round(r)} ${round(r)} 0 1 1 ${left}Z`;
+}
+
+/** A ray of the sun: a thin triangle from the disc's edge out to `length`. */
+function rayPath(cx: number, cy: number, length: number, deg: number): string {
+  const BASE_R = 6.2;
+  const HALF_ANGLE = 12;
+  return `M${polar(cx, cy, length, deg)} L${polar(cx, cy, BASE_R, deg + HALF_ANGLE)} L${polar(cx, cy, BASE_R, deg - HALF_ANGLE)}Z`;
 }
 
 type Point = readonly [x: number, y: number];
@@ -154,18 +150,17 @@ const crownedDiamond: RarityIconShape = {
   cuts: [line("M4.8 13 H19.2 M8 9 L10 13 L12 9 L14 13 L16 9 M10 13 L12 22 L14 13")],
 };
 
-/** A star gem: six rays cut from a hexagonal heart. */
-const STAR_CENTRE_Y = 12.2;
-const starGem: RarityIconShape = {
-  body: [starPath(12, STAR_CENTRE_Y, 6, 11.2, 5.4)],
-  cuts: [
-    line(
-      [0, 60, 120, 180, 240, 300]
-        .map((a) => `M12 ${STAR_CENTRE_Y} L${polar(12, STAR_CENTRE_Y, 9.6, a)}`)
-        .join(" "),
-    ),
-    { kind: "solid", d: starPath(12, STAR_CENTRE_Y, 6, 2.6, 2.6, 30) },
+/**
+ * A cut sun: a round gem with eight rays, the straight ones longer. Replaces the six-pointed star
+ * gem (owner's choice, 2026-10-21), too close to a religious symbol.
+ */
+const cutSun: RarityIconShape = {
+  body: [
+    circlePath(12, 12, 4.8),
+    ...[0, 90, 180, 270].map((a) => rayPath(12, 12, 11.2, a)),
+    ...[45, 135, 225, 315].map((a) => rayPath(12, 12, 9.4, a)),
   ],
+  cuts: [line(circlePath(12, 12, 2.6))],
 };
 
 export const rarityIcons: Readonly<Record<Rarity, RarityIconShape>> = {
@@ -174,5 +169,5 @@ export const rarityIcons: Readonly<Record<Rarity, RarityIconShape>> = {
   rare: emeraldCut,
   precious: brilliant,
   epic: crownedDiamond,
-  legendary: starGem,
+  legendary: cutSun,
 };

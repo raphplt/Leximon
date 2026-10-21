@@ -39,6 +39,10 @@ AUTHORS_FILE = GRAVURES_DIR / "authors.json"
 BATCHES_FILE = GRAVURES_DIR / "batches.jsonl"
 PICKS_FILE = GRAVURES_DIR / "picks.jsonl"
 THUMBS_DIR = GRAVURES_DIR / "thumbs"
+FIRST_ROUND_QUERIES_FILE = QUERIES_FILE
+FIRST_ROUND_SEARCH_FILE = SEARCH_FILE
+FIRST_ROUND_PICKS_FILE = PICKS_FILE
+SECOND_ROUND_SEARCH_FILE = GRAVURES_DIR / "search-2.jsonl"
 
 #: Generic on purpose: never any personal data (name, email, account) in a request.
 USER_AGENT = "LeximonContentPipeline/0.1 (https://leximon.fr; contact@leximon.fr)"
@@ -66,8 +70,11 @@ PICK_MODEL = "claude-sonnet-5-5"
 PICK_EFFORT: llm.Effort = "medium"
 #: The Message Batches API costs half the price of llm.PRICES.
 BATCH_DISCOUNT = 0.5
-#: Owner's cap for this whole step (queries and pick), whatever --yes says.
-STEP_BUDGET_USD = 9.0
+#: Owner's cap for this whole step (queries and pick, both rounds), whatever --yes says: 9 $ for
+#: the first round, 5 $ more for the second (owner, 2026-10-21; first round spent 4.98 $).
+STEP_BUDGET_USD = 10.0
+#: Slots kept for the first round's other candidates in a second-round search.
+SECOND_ROUND_OLD = 3
 #: Estimates before a first measurement (vision measurement, R&D §6; Haiku query trial).
 ESTIMATED_QUERY_USD = 0.0003
 PICK_TEXT_TOKENS = 1300
@@ -148,6 +155,12 @@ def load_searches() -> dict[str, dict]:
     return _latest_by_card(SEARCH_FILE, lambda r: True)
 
 
+def searches_of_round(number: int) -> dict[str, dict]:
+    """Searches of the first or second round, whichever round the run is in."""
+    path = FIRST_ROUND_SEARCH_FILE if number == 1 else SECOND_ROUND_SEARCH_FILE
+    return _latest_by_card(path, lambda r: True)
+
+
 def load_picks() -> dict[str, dict]:
     return _latest_by_card(PICKS_FILE, lambda r: not r.get("error"))
 
@@ -156,9 +169,15 @@ def spent(path: Path) -> float:
     return sum(float(row.get("cost_usd", 0.0)) for row in _jsonl(path))
 
 
+def spent_so_far() -> float:
+    """Queries and picks of both rounds."""
+    files = {FIRST_ROUND_QUERIES_FILE, FIRST_ROUND_PICKS_FILE, QUERIES_FILE, PICKS_FILE}
+    return sum(spent(path) for path in files)
+
+
 def check_budget(what: str, estimate: float) -> None:
     """Stops when the step would go over the owner's cap, --yes or not."""
-    already = spent(QUERIES_FILE) + spent(PICKS_FILE)
+    already = spent_so_far()
     print(f"déjà dépensé pour les gravures : {already:.3f} $ (plafond {STEP_BUDGET_USD:.0f} $)")
     if already + estimate > STEP_BUDGET_USD:
         raise SystemExit(
@@ -215,7 +234,11 @@ def normalize_queries(raw: Iterable[object]) -> list[str]:
 
 
 def query_prompt(card: Card) -> str:
-    return f"Mot : {card.word}\nDéfinition : {card.definition}"
+    prompt = f"Mot : {card.word}\nDéfinition : {card.definition}"
+    tried = PREVIOUS_QUERIES.get(card.id)
+    if tried:
+        prompt += "\nRequêtes déjà essayées, sans image retenue : " + " ; ".join(tried)
+    return prompt
 
 
 async def write_queries(api: anthropic.AsyncAnthropic, card: Card) -> dict[str, object]:
@@ -709,9 +732,14 @@ def download(http: httpx.Client, url: str) -> bytes | None:
     return None
 
 
-def candidates_for(wiki: Wikimedia, queries: Sequence[str]) -> tuple[list[dict], list[dict], int]:
-    """Kept candidates (at most 8), rejected files with their reason, files found."""
-    hits = interleave([wiki.search(q) for q in queries])
+def candidates_for(
+    wiki: Wikimedia, queries: Sequence[str], seen: frozenset[str] = frozenset()
+) -> tuple[list[dict], list[dict], int]:
+    """Kept candidates (at most 8), rejected files with their reason, files found. Files in
+    `seen` (already examined in the first round) are skipped."""
+    hits = [
+        hit for hit in interleave([wiki.search(q) for q in queries]) if hit["title"] not in seen
+    ]
     kept: list[dict] = []
     rejected: list[dict] = []
     lookups = 0
@@ -782,6 +810,17 @@ def save_thumbs(http: httpx.Client, card_id: str, kept: list[dict]) -> list[dict
     return saved
 
 
+def second_round_candidates(
+    new: Sequence[dict], old: Sequence[dict], refused: str | None
+) -> list[dict]:
+    """New thumbnails first, then the first round's other candidates (never its refused pick),
+    at most 8, numbered again from 1."""
+    others = [c for c in old if c["title"] != refused]
+    room = MAX_CANDIDATES - min(len(others), SECOND_ROUND_OLD)
+    merged = [*new[:room], *others][:MAX_CANDIDATES]
+    return [{**candidate, "n": n} for n, candidate in enumerate(merged, start=1)]
+
+
 def run_search(cards: Sequence[Card]) -> None:
     queries = load_queries()
     done = load_searches()
@@ -792,14 +831,24 @@ def run_search(cards: Sequence[Card]) -> None:
         f"{waiting} sans requêtes (lancer gravures-queries)",
         flush=True,
     )
+    first_round = _latest_by_card(FIRST_ROUND_SEARCH_FILE, lambda r: True) if ROUND == 2 else {}
+    refused_titles = {
+        card: row["pick_title"]
+        for card, row in _latest_by_card(FIRST_ROUND_PICKS_FILE, lambda r: True).items()
+        if row.get("pick_title")
+    }
     wiki = Wikimedia()
     started = time.monotonic()
     failures = 0
     try:
         for index, card in enumerate(todo, start=1):
             card_queries = queries[card.id]["queries"]
+            first = first_round.get(card.id, {})
+            seen = frozenset(
+                c["title"] for c in [*first.get("candidates", []), *first.get("rejected", [])]
+            )
             try:
-                kept, rejected, found = candidates_for(wiki, card_queries)
+                kept, rejected, found = candidates_for(wiki, card_queries, seen)
             except WikimediaUnavailable as error:
                 failures += 1
                 print(
@@ -813,6 +862,9 @@ def run_search(cards: Sequence[Card]) -> None:
                 continue
             failures = 0
             saved = save_thumbs(wiki.http, card.id, kept)
+            if ROUND == 2:
+                refused = refused_titles.get(card.id)
+                saved = second_round_candidates(saved, first.get("candidates", []), refused)
             _append(
                 SEARCH_FILE,
                 {
@@ -1164,3 +1216,66 @@ def report(cards: Sequence[Card]) -> str:
         f"coût : requêtes {spent(QUERIES_FILE):.4f} $, choix {spent(PICKS_FILE):.4f} $",
     ]
     return "\n".join(lines)
+
+
+# --- Second round --------------------------------------------------------------------------------
+
+QUERY_SYSTEM_2 = """Tu prépares la recherche d'une image ancienne pour illustrer une carte de Leximon, un jeu de cartes sur les mots rares et anciens du français. Une première recherche, trop étroite, n'a rien donné de retenu pour ce mot : élargis. On te donne le mot, sa définition et les requêtes déjà essayées.
+
+Écris 6 requêtes courtes, toutes nouvelles, pour le moteur de recherche de Wikimedia Commons, qui ne renvoie que les fichiers contenant tous les termes de la requête :
+- de 2 ou 3 mots chacune, en anglais pour la plupart, en français pour une ou deux ;
+- chacune avec un terme d'estampe : engraving, gravure, plate, illustration, lithograph, etching, woodcut ou caricature ;
+- des angles plus larges que la première fois : la catégorie (pour une plante rare, sa famille ou une plante voisine ; pour un outil, le métier ; pour un vêtement, le costume de l'époque), une scène de genre où la chose apparaît, une allégorie ou un emblème de l'idée, un personnage type qui l'incarne, un lieu associé ;
+- pour un mot abstrait : une allégorie (« allegory of envy engraving »), un type humain (« miser caricature »), une scène (« quarrel engraving ») ou un emblème.
+
+Préfère des termes simples et courants : une requête générale qui trouve beaucoup d'images vaut mieux qu'une requête précise qui n'en trouve aucune. Dis aussi si le mot désigne quelque chose de concret (concrete)."""
+
+PICK_SYSTEM_2 = """Tu aides à illustrer les cartes d'un jeu sur les mots rares et anciens du français.
+Chaque carte porte une petite image ancienne, retraitée en encre (traits sombres sur fond clair,
+rendu stylisé qui pardonne beaucoup) et affichée dans un encart d'environ 270 sur 120 points.
+
+On te donne un mot, sa définition et des images candidates numérotées, trouvées sur Wikimedia
+Commons. Ce mot n'a encore aucune image : une image approximative vaut mieux que rien. Choisis
+celle qui l'évoque le mieux.
+
+Un candidat convient s'il :
+- a un lien reconnaissable avec le mot : le sujet exact, mais aussi un sens voisin, l'objet ou le
+  métier associé, une scène, une caricature, une allégorie ou un emblème qui l'évoque ;
+- est une image ancienne : gravure, lithographie, dessin, mais aussi lavis, aquarelle, planche
+  coloriée, voire peinture ancienne au sujet net. Un texte en bordure se recadrera ensuite ;
+- reste à peu près lisible en petit.
+
+Réponds « aucun » seulement si aucun candidat n'a de rapport, même lâche, avec le mot, ou s'il ne
+reste que des photographies, des images modernes, une nudité explicite ou une caricature haineuse.
+
+Réponds en JSON :
+- choix : le numéro du meilleur candidat, ou "aucun" ;
+- pertinence : de 0 (hors sujet) à 10 (illustre exactement le mot), pour le candidat choisi ; 0 si aucun ;
+- technique_choix : la technique du candidat choisi, "sans objet" si aucun ;
+- techniques : la technique de chaque candidat, dans l'ordre des numéros ;
+- raison : une phrase courte."""
+
+ROUND = 1
+#: First-round queries of each card, shown to Haiku in the second round so that it widens them.
+PREVIOUS_QUERIES: dict[str, list[str]] = {}
+
+
+def start_second_round() -> None:
+    """Points every step at the second round's files and prompts (the first round's stay as they
+    are, and its spending counts in the budget)."""
+    global ROUND, QUERIES_FILE, SEARCH_FILE, BATCHES_FILE, PICKS_FILE, THUMBS_DIR
+    global QUERY_SYSTEM, PICK_SYSTEM
+    PREVIOUS_QUERIES.update(
+        {
+            card: row["queries"]
+            for card, row in _latest_by_card(QUERIES_FILE, lambda r: True).items()
+        }
+    )
+    ROUND = 2
+    QUERIES_FILE = GRAVURES_DIR / "queries-2.jsonl"
+    SEARCH_FILE = SECOND_ROUND_SEARCH_FILE
+    BATCHES_FILE = GRAVURES_DIR / "batches-2.jsonl"
+    PICKS_FILE = GRAVURES_DIR / "picks-2.jsonl"
+    THUMBS_DIR = GRAVURES_DIR / "thumbs-2"
+    QUERY_SYSTEM = QUERY_SYSTEM_2
+    PICK_SYSTEM = PICK_SYSTEM_2

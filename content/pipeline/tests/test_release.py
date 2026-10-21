@@ -142,3 +142,14 @@ def test_slug_and_versions(tmp_path) -> None:
 
 def test_unattested_word_has_no_frequency() -> None:
     assert release.per_billion(NgramFrequency(modern=0.0, littre_era=0.0, attested=False)) is None
+
+
+def test_the_back_tone_goes_into_the_collection_file() -> None:
+    toned = Collection(id="fondateurs", name="Les Fondateurs", runs=("lot-1",), back="burgundy")
+    files = build([row("billevesee")], collections=(toned,))
+    manifest = json.loads(files["manifest.json"])
+    collection = json.loads(files[manifest["collections"][0]["file"]])
+    assert collection["back"] == "burgundy"
+    plain = build([row("billevesee")])
+    manifest = json.loads(plain["manifest.json"])
+    assert "back" not in json.loads(plain[manifest["collections"][0]["file"]])

@@ -68,13 +68,38 @@ Box = tuple[float, float, float, float]
 ROLE_SUFFIX = re.compile(r"\s+(sc|sculp|sculpsit|del|delin|fecit|fec|inv|pinx|exc|excud)\.?$", re.I)
 
 
+#: English roles written before a name in Commons fields: "Engraved by …", "Attributed to …".
+ROLE_PREFIX = re.compile(
+    r"^(?:(?:(?:wood\s+)?engraved\s+by|engraving\s+by|engraver|drawn\s+by|caricature\s+by|"
+    r"illustrat(?:ed|ions?)\s+by|attributed\s+to|after|(?:a\s+)?(?:painting|drawing|print)\s+by)"
+    r"\s+|illustrateur\s*:\s*)",
+    re.I,
+)
+#: A wiki namespace left in front of a name: "Creator:Raphael Sadeler I", "en:Eugenius Warming".
+WIKI_PREFIX = re.compile(r"^(?:[a-z]{2,3}|creator|template|user|category)\s*:\s*", re.I)
+#: "Robert Havell after John James Audubon": the credit names whom the print is after.
+AFTER = re.compile(r"(?:\s+|\s*/\s*)after\s+", re.I)
+#: A phrase about the technique rather than a person: "Engravings on Wood".
+NOT_A_NAME = re.compile(r"\bengravings?\b|\billustrations?\b", re.I)
+
+
+def strip_roles(text: str) -> str:
+    """The names alone, in French: English roles dropped, "and" and "&" as "et"."""
+    text = " ".join(text.split()).rstrip(".").strip()
+    parts = AFTER.split(text)
+    text = parts[-1] if len(parts) > 1 and parts[-1].strip() else text
+    text = WIKI_PREFIX.sub("", ROLE_PREFIX.sub("", text)).strip()
+    return re.sub(r"\s+(?:and|&)\s+", " et ", text)
+
+
 def author_display(artist: str) -> str | None:
     """The first person named in a Commons artist field, as "First Last"; None when the field
     is empty, says the author is unknown, or names an institution (a museum, a scan)."""
     text = re.sub(r"\([^)]*\)", " ", artist.split(";")[0])
-    text = " ".join(text.split())
+    text = strip_roles(text)
     if (
-        not text
+        NOT_A_NAME.search(text)
+        or not text
         or gravures.UNKNOWN_AUTHOR.search(text)
         or gravures.INSTITUTION.search(text)
         or re.search(r"\d", text)
@@ -126,7 +151,8 @@ def credit_line(hit: Mapping[str, object], overrides: Mapping[str, object] | Non
     there: CC BY 4.0 requires them. `overrides` may set "author" and "year" by hand
     (validation.json), when Commons does not say them in a machine-readable field."""
     overrides = overrides or {}
-    author = overrides.get("author") or author_display(str(hit.get("artist", "")))
+    override = overrides.get("author")
+    author = strip_roles(str(override)) if override else author_display(str(hit.get("artist", "")))
     year = overrides.get("year") or gravures.work_year(str(hit.get("date", "")))
     who = f"D'après {author}" if author else "Anonyme"
     when = f", {year}" if year else ""
@@ -332,9 +358,12 @@ def load_engravings(path: Path = RENDERED_FILE) -> dict[str, dict[str, object]]:
 # --- Run (I/O) -----------------------------------------------------------------------------------
 
 
-def original_for(http: httpx.Client, card_id: str, candidate: Mapping[str, object]) -> Path:
+def original_for(
+    http: httpx.Client, card_id: str, candidate: Mapping[str, object], round_number: int = 1
+) -> Path:
     """The downloaded original of the picked file, fetched once (a new pick is a new file)."""
-    stem = f"{card_id}-{candidate['n']}"
+    prefix = card_id if round_number == 1 else f"{card_id}-r{round_number}"
+    stem = f"{prefix}-{candidate['n']}"
     existing = sorted(ORIGINALS_DIR.glob(f"{stem}.*"))
     if existing:
         return existing[0]
@@ -353,7 +382,8 @@ def original_for(http: httpx.Client, card_id: str, candidate: Mapping[str, objec
 def run_render() -> None:
     validation = json.loads(VALIDATION_FILE.read_text(encoding="utf-8"))
     approved = approved_cards(validation)
-    searches = gravures.load_searches()
+    # An engraving approved in the second round points at that round's candidates.
+    searches = {1: gravures.searches_of_round(1), 2: gravures.searches_of_round(2)}
     print(f"gravures validées : {len(approved)} sur {len(validation)}")
     entries: dict[str, dict[str, object]] = {}
     files: dict[str, bytes] = {}
@@ -361,8 +391,10 @@ def run_render() -> None:
         headers={"User-Agent": gravures.USER_AGENT}, timeout=120, follow_redirects=True
     ) as http:
         for card_id, entry in sorted(approved.items()):
-            candidate = picked_candidate(searches[card_id], int(entry["pick"]))  # type: ignore[arg-type]
-            original = original_for(http, card_id, candidate)
+            round_number = int(entry.get("round", 1))  # type: ignore[arg-type]
+            search = searches[round_number][card_id]
+            candidate = picked_candidate(search, int(entry["pick"]))  # type: ignore[arg-type]
+            original = original_for(http, card_id, candidate, round_number)
             with Image.open(original) as image:
                 grey = prepare(image, entry.get("crop"))  # type: ignore[arg-type]
             rendered = render(grey)

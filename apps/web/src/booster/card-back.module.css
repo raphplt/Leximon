@@ -1,10 +1,11 @@
 /* Same measures as the card face (components/card.module.css): every size is a multiple of --u. */
 .back {
+  --gilt: var(--lx-color-kraft);
   position: relative;
   box-sizing: border-box;
   width: calc(300 * var(--u));
   height: calc(420 * var(--u));
-  padding: calc(7 * var(--u));
+  padding: calc(4 * var(--u));
   border-radius: calc(16 * var(--u));
   background: var(--edge);
   box-shadow: 0 calc(12 * var(--u)) calc(30 * var(--u)) rgba(0, 0, 0, 0.35);
@@ -21,6 +22,7 @@
   transition: opacity 0.15s linear;
 }
 
+/* Domino paper: a printed diaper of lozenges, as on the covers of old books. */
 .inner {
   position: relative;
   box-sizing: border-box;
@@ -29,46 +31,83 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: calc(18 * var(--u));
-  border-radius: calc(10 * var(--u));
+  gap: calc(14 * var(--u));
+  border-radius: calc(12 * var(--u));
   background:
-    radial-gradient(
-      circle,
-      rgba(255, 255, 255, 0.07) calc(1.2 * var(--u)),
-      transparent calc(1.6 * var(--u))
-    )
-    0 0 / calc(16 * var(--u)) calc(16 * var(--u)),
-    radial-gradient(ellipse at 50% 40%, #3a4268 0%, #1b1f33 75%);
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' fill='none' stroke='%23D9B486' stroke-opacity='0.22' stroke-width='0.8'%3E%3Cpath d='M12 2Q16 8 22 12Q16 16 12 22Q8 16 2 12Q8 8 12 2Z'/%3E%3Ccircle cx='12' cy='12' r='1.6' fill='%23D9B486' fill-opacity='0.3' stroke='none'/%3E%3Ccircle cx='0' cy='0' r='1' fill='%23D9B486' fill-opacity='0.3' stroke='none'/%3E%3Ccircle cx='24' cy='0' r='1' fill='%23D9B486' fill-opacity='0.3' stroke='none'/%3E%3Ccircle cx='0' cy='24' r='1' fill='%23D9B486' fill-opacity='0.3' stroke='none'/%3E%3Ccircle cx='24' cy='24' r='1' fill='%23D9B486' fill-opacity='0.3' stroke='none'/%3E%3C/svg%3E")
+    50% 50% / calc(24 * var(--u)) calc(24 * var(--u)),
+    radial-gradient(ellipse at 50% 40%, var(--cloth-light) 0%, var(--cloth-dark) 80%);
   overflow: hidden;
 }
 
-.seal {
-  display: grid;
-  place-items: center;
-  width: calc(96 * var(--u));
-  height: calc(96 * var(--u));
-  border-radius: 48% 52% 50% 50%;
-  background: radial-gradient(
-    circle at 36% 32%,
-    var(--lx-color-seal-light) 0%,
-    var(--lx-color-seal) 55%,
-    var(--lx-color-seal-dark) 100%
-  );
-  box-shadow:
-    0 calc(6 * var(--u)) calc(14 * var(--u)) rgba(0, 0, 0, 0.45),
-    inset 0 0 0 calc(8 * var(--u)) rgba(140, 30, 5, 0.35);
-  font-family: var(--font-display), Georgia, serif;
-  font-variation-settings: "SOFT" 100;
-  font-weight: 900;
-  font-size: calc(48 * var(--u));
-  color: var(--lx-color-seal-ink);
+/* The same double rule as the face, in gilt. */
+.inner::before,
+.inner::after {
+  content: "";
+  position: absolute;
+  pointer-events: none;
+  box-sizing: border-box;
+  border-style: solid;
+  border-color: color-mix(in srgb, var(--gilt) 80%, transparent);
 }
 
-.brand {
+.inner::before {
+  inset: calc(6 * var(--u));
+  border-width: calc(1.3 * var(--u));
+  border-radius: calc(8 * var(--u));
+}
+
+.inner::after {
+  inset: calc(9 * var(--u));
+  border-width: calc(0.5 * var(--u));
+  border-radius: calc(5.5 * var(--u));
+}
+
+/* The printer's mark: the monogram inside a ring carrying the motto. */
+.mark {
+  width: calc(160 * var(--u));
+  height: calc(160 * var(--u));
+  fill: none;
+  stroke: var(--gilt);
+  stroke-width: 1.4;
+  overflow: visible;
+}
+
+/* The mark sits on plain cloth, out of the pattern. */
+.mark .disc {
+  fill: var(--cloth-light);
+}
+
+.mark .thin {
+  stroke-width: 0.6;
+}
+
+.motto {
+  fill: var(--gilt);
+  stroke: none;
+  font-family: var(--font-text), Georgia, serif;
+  font-size: 10px;
+}
+
+.letter {
+  fill: var(--gilt);
+  stroke: none;
   font-family: var(--font-display), Georgia, serif;
-  font-variation-settings: "SOFT" 100;
-  font-weight: 900;
-  font-size: calc(26 * var(--u));
-  letter-spacing: 0.02em;
-  color: var(--lx-color-kraft);
+  font-variation-settings: "SOFT" 0;
+  font-weight: 700;
+  font-size: 58px;
+  text-anchor: middle;
+  dominant-baseline: central;
+}
+
+.name {
+  position: relative;
+  padding: calc(2 * var(--u)) calc(8 * var(--u));
+  border-radius: calc(3 * var(--u));
+  background: var(--cloth-dark);
+  font-family: var(--font-text), Georgia, serif;
+  font-size: calc(11 * var(--u));
+  letter-spacing: 0.35em;
+  text-transform: uppercase;
+  color: var(--gilt);
 }

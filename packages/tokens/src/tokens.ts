@@ -19,7 +19,6 @@ export const colors = {
   /** Screen background: a deep blue-grey night, so that every rarity color stands out. */
   background: "#262B40",
   backgroundRaised: "#343B5C",
-  backgroundDot: "rgba(255, 255, 255, 0.05)",
   text: "#F6F0E2",
   textMuted: "#BDB6CC",
   /** Empty markers (stock dots, missing cards) on the background. */
@@ -195,6 +194,30 @@ export const space = {
 
 /** The reference card is drawn at this size; smaller cards are scaled from it. */
 export const cardSize = { width: 300, height: 420 } as const;
+
+/** Cloth of a card back: its light center and dark edges. */
+export interface BackTone {
+  readonly light: string;
+  readonly dark: string;
+}
+
+/**
+ * Tones of the card back, one per collection (`back` in content/collections.toml, chosen
+ * 2026-10-21). A pack shows the tone of its collection; an unknown name falls back to night.
+ */
+export const backTones = {
+  night: { light: "#2C3459", dark: "#161A2C" },
+  burgundy: { light: "#5E2130", dark: "#2A0D15" },
+  green: { light: "#22493C", dark: "#0E221B" },
+} as const satisfies Record<string, BackTone>;
+
+export type BackToneName = keyof typeof backTones;
+
+export function backTone(name: string | undefined): BackTone {
+  return name !== undefined && Object.hasOwn(backTones, name)
+    ? backTones[name as BackToneName]
+    : backTones.night;
+}
 
 /** Durations in ms. Screens skip them when the player asks for reduced motion. */
 export const motion = {

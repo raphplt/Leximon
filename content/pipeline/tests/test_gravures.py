@@ -399,3 +399,18 @@ def test_a_wrong_request_still_fails_loudly(monkeypatch, tmp_path) -> None:
     wiki = wikimedia_answering(monkeypatch, tmp_path, [wrong])
     with pytest.raises(RuntimeError, match="badvalue"):
         wiki.api(gravures.COMMONS_API, {"action": "query"})
+
+
+def test_second_round_puts_new_thumbnails_first_and_drops_the_refused_pick() -> None:
+    new = [{"title": f"new {n}", "n": n} for n in range(1, 8)]
+    old = [{"title": f"old {n}", "n": n} for n in range(1, 5)]
+    merged = gravures.second_round_candidates(new, old, refused="old 2")
+    titles = [c["title"] for c in merged]
+    assert titles == ["new 1", "new 2", "new 3", "new 4", "new 5", "old 1", "old 3", "old 4"]
+    assert [c["n"] for c in merged] == list(range(1, 9))
+
+
+def test_second_round_fills_with_new_thumbnails_when_few_old_ones_remain() -> None:
+    new = [{"title": f"new {n}", "n": n} for n in range(1, 10)]
+    merged = gravures.second_round_candidates(new, [{"title": "old 1", "n": 1}], refused="old 1")
+    assert [c["title"] for c in merged] == [f"new {n}" for n in range(1, 9)]

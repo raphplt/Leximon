@@ -62,6 +62,8 @@ interface Pack {
   readonly quantitiesBefore: ReadonlyMap<string, number>;
   readonly raritiesBefore: ReadonlySet<Rarity>;
   readonly collectionName: string;
+  /** Tone of the card backs (`back` of the collection). */
+  readonly back: string | undefined;
   readonly collectionCardIds: ReadonlySet<string>;
   /** XP this pack earned (P48). */
   readonly progress: ProgressGain;
@@ -172,7 +174,7 @@ export function BoosterScreen() {
     if (outcome.kind === "failed") {
       // Same key next time: if the server did open the booster, it answers with the same cards.
       request.current = { key: started.key, outcome: null };
-      setError(`Le ${noun.one} n'a pas pu s'ouvrir. Vérifie ta connexion et réessaie.`);
+      setError(`Le ${noun.one} ne s'est pas ouvert. Vérifie ta connexion.`);
       setPhase({ name: "sealed" });
       return;
     }
@@ -201,6 +203,7 @@ export function BoosterScreen() {
       quantitiesBefore: owned,
       raritiesBefore,
       collectionName: collection.name,
+      back: collection.back,
       collectionCardIds: new Set(collection.cards.map((card) => card.id)),
       progress: result.progress,
     });
@@ -254,11 +257,11 @@ export function BoosterScreen() {
     ? signUpHint(noun)
     : stored > 0
       ? guestLeft === 1
-        ? `${OPEN_HINTS[shape]} : c'est ton dernier ${noun.one} sans compte`
+        ? `${OPEN_HINTS[shape]}. Dernier ${noun.one} sans compte.`
         : OPEN_HINTS[shape]
       : bonus > 0
-        ? `${OPEN_HINTS[shape]} : c'est un ${noun.one} bonus`
-        : `Plus de ${noun.one} pour l'instant, ${refill ?? ""}`;
+        ? `${OPEN_HINTS[shape]}. ${capitalize(noun.one)} bonus.`
+        : `Plus de ${noun.one}. ${capitalize(refill ?? "")}`;
 
   return (
     <main className={styles.screen}>
@@ -289,12 +292,12 @@ export function BoosterScreen() {
       </header>
 
       {(phase.name === "loading" || (phase.name === "sealed" && !known)) && (
-        <p className={styles.hint}>Un instant…</p>
+        <p className={styles.hint}>On fouille les rayons…</p>
       )}
 
       {phase.name === "unavailable" && (
         <div className={styles.center}>
-          <p className={styles.hint}>Impossible de joindre le serveur.</p>
+          <p className={styles.hint}>Le serveur lambine.</p>
           <button type="button" className={styles.secondary} onClick={() => void load()}>
             Réessayer
           </button>
@@ -339,6 +342,7 @@ export function BoosterScreen() {
           <CardStack
             cards={pack.cards}
             width={cardWidth}
+            tone={pack.back}
             onReveal={() => {
               play("cardSlide");
               setPhase({ name: "revealing", index: 0, hurried: false });
@@ -387,7 +391,7 @@ export function BoosterScreen() {
 
 /** Shown once a guest opened all its boosters (P37). */
 function signUpHint(noun: PackNoun): string {
-  return `Pour ouvrir d'autres ${noun.many} et garder tes cartes, crée ton compte : c'est gratuit.`;
+  return `Crée ton compte pour garder tes cartes et ouvrir d'autres ${noun.many}. C'est gratuit.`;
 }
 
 function PackView({ shape, ...props }: PackProps & { readonly shape: PackShape }) {
@@ -432,6 +436,7 @@ function Revealing({
         key={index}
         card={card}
         collectionName={collectionName(catalog, card.collectionId)}
+        backTone={pack.back}
         staging={stagingFor(drawn.rarity, { reducedMotion: prefersReducedMotion(), hurried })}
         width={width}
         isNew={isNew}

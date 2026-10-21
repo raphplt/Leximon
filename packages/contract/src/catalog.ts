@@ -74,6 +74,12 @@ export type CatalogCard = z.infer<typeof catalogCardSchema>;
 export const catalogCollectionFileSchema = z.object({
   id: slugSchema,
   name: z.string().min(1),
+  /**
+   * Tone of the card back for this collection's packs, a name of `backTones` in @leximon/tokens.
+   * A plain string: a new tone never breaks old clients, which show night for a name they lack.
+   * Absent from releases made before it.
+   */
+  back: z.string().min(1).exactOptional(),
   cards: z.array(catalogCardSchema),
 });
 export type CatalogCollectionFile = z.infer<typeof catalogCollectionFileSchema>;

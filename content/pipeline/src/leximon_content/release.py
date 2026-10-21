@@ -38,6 +38,8 @@ class Collection:
     runs: tuple[str, ...]
     #: Pre-screen domains its new runs select from (D-024); empty for any domain.
     domains: tuple[str, ...] = ()
+    #: Tone of the card back for this collection's packs (`backTones` in @leximon/tokens).
+    back: str | None = None
 
 
 class ReleaseError(Exception):
@@ -52,6 +54,7 @@ def load_collections(path: Path = COLLECTIONS_FILE) -> list[Collection]:
             name=item["name"],
             runs=tuple(item["runs"]),
             domains=tuple(item.get("domains", ())),
+            back=item.get("back"),
         )
         for item in data["collection"]
     ]
@@ -159,7 +162,10 @@ def build(
                 owner[card_id] = collection.id
                 cards.append(built)
         cards.sort(key=lambda c: str(c["id"]))
-        content = _json({"id": collection.id, "name": collection.name, "cards": cards})
+        header: dict[str, object] = {"id": collection.id, "name": collection.name}
+        if collection.back is not None:
+            header["back"] = collection.back
+        content = _json({**header, "cards": cards})
         digest = hashlib.sha256(content).hexdigest()[:HASH_LENGTH]
         path = f"collections/{collection.id}.{digest}.json"
         files[path] = content

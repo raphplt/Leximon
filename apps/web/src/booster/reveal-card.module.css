@@ -254,12 +254,26 @@
   animation: fadeIn 0.4s ease-out both;
 }
 
-.touchHint {
+/* One line under the card, kept even when empty so the card never jumps. */
+.under {
   position: relative;
   z-index: 4;
+  min-height: 20px;
   margin: 0;
+  text-align: center;
+}
+
+.touchHint {
   font-size: 14px;
   font-weight: 700;
+  color: var(--lx-color-text-muted);
+  animation: fadeIn 0.4s ease-out both;
+}
+
+.frequency {
+  font-family: var(--font-text), Georgia, serif;
+  font-style: italic;
+  font-size: 16px;
   color: var(--lx-color-text-muted);
   animation: fadeIn 0.4s ease-out both;
 }
