@@ -5,9 +5,9 @@ export function xpGainLabel(gain: Pick<ProgressGain, "xpGained">): string | null
   return gain.xpGained > 0 ? `+${gain.xpGained} XP` : null;
 }
 
-/** "Niveau 6 atteint !" when the action raised the level, else `null`. */
+/** "Niveau 6 !" when the action raised the level, else `null`. */
 export function levelUpLabel(gain: Pick<ProgressGain, "levelUp" | "level">): string | null {
-  return gain.levelUp ? `Niveau ${gain.level} atteint !` : null;
+  return gain.levelUp ? `Niveau ${gain.level} !` : null;
 }
 
 /** Share of the current level already done, between 0 and 1, for a progress ring or bar. */

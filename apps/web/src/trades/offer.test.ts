@@ -119,7 +119,7 @@ describe("timeLeftLabel", () => {
 describe("tradeableFromLabel", () => {
   it("gives the date for a recent account, and nothing once it can trade", () => {
     expect(tradeableFromLabel("2026-10-22T13:30:00.000Z", now, "Europe/Paris")).toBe(
-      "Ton compte est tout neuf : tu pourras échanger à partir du jeudi 22 octobre à 15 h 30.",
+      "Compte tout neuf. Échanges possibles dès le jeudi 22 octobre à 15 h 30.",
     );
     expect(tradeableFromLabel("2026-10-19T00:00:00.000Z", now)).toBeNull();
   });
@@ -152,21 +152,19 @@ describe("offerProblem", () => {
 });
 
 describe("refusalMessage", () => {
-  it("explains each refusal kindly", () => {
+  it("explains each refusal", () => {
     expect(refusalMessage("daily_limit_reached")).toContain("10 offres");
     expect(refusalMessage("account_too_recent")).toContain("3 jours");
     expect(refusalMessage("card_not_tradeable")).toContain("7 jours");
-    expect(refusalMessage("player_not_found")).toContain("Aucun joueur");
+    expect(refusalMessage("player_not_found")).toBe("Personne n'a ce code.");
     expect(refusalMessage("trade_not_found")).toBe("Cette offre n'existe plus.");
   });
 });
 
 describe("tradeLevelLabel", () => {
   it("says how many levels are left, and nothing once the level is reached", () => {
-    expect(tradeLevelLabel(4, 5)).toBe(
-      "Les échanges s'ouvrent au niveau 5 : encore 1 niveau. Ouvre des plis et relève des défis pour y arriver.",
-    );
-    expect(tradeLevelLabel(1, 5)).toContain("encore 4 niveaux");
+    expect(tradeLevelLabel(4, 5)).toBe("Les échanges ouvrent au niveau 5. Encore 1 niveau.");
+    expect(tradeLevelLabel(1, 5)).toContain("Encore 4 niveaux");
     expect(tradeLevelLabel(5, 5)).toBeNull();
   });
 });

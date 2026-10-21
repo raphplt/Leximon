@@ -229,6 +229,8 @@ Pour ajouter ou modifier une décision, utiliser le skill `decision`.
   - couleurs, polices, rayons et espacements vivent dans `packages/tokens`, seule source pour le web et le mobile ;
   - la carte garde la même composition sur toutes les plateformes, même si les composants sont propres à chacune (D-002) ;
   - les reflets doré et irisé et l'animation du sceau restent en CSS simple tant que la R&D D-009 n'a pas conclu.
+  - le 2026-10-21, le propriétaire a choisi, sur des essais comparés, un papier vergé (vergeures fines et pontuseaux espacés, dans le ton de l'encre) et un double filet dans la couleur du cadre ; le fond du site passe des petits points à un grain fin sur halo.
+  - le même jour, le dos des cartes devient une marque d'imprimeur (un « L » dans un anneau qui porte la devise « Mots rares · Mots anciens ») sur un papier dominoté, avec le double filet de la face et une tranche plus fine qui trahit toujours la rareté. Sa teinte suit la collection du pli (`back` dans `content/collections.toml`, `backTones` dans `@leximon/tokens`) : nuit pour Les Fondateurs, bordeaux pour Caractères et travers, vert bouteille pour Métiers et objets disparus. Une teinte inconnue d'un client ancien s'affiche en nuit.
 
 ## D-023 · Publication du catalogue : manifeste et un fichier par collection
 
@@ -294,9 +296,9 @@ Pour ajouter ou modifier une décision, utiliser le skill `decision`.
 ## D-029 · Icônes de rareté : une gemme par rang, géométrie partagée dans `packages/tokens`
 
 - **Statut :** Acceptée (2026-10-20), choisie par le propriétaire parmi trois séries puis trois icônes pour Courant. Règle P44.
-- **Choix :** six gemmes de plus en plus taillées, de l'éclat brut (Courant) à l'étoile (Légendaire), dessinées en tracés SVG sur une grille de 24 dans `packages/tokens/src/rarity-icons.ts`. Sur la carte, une pastille ronde aux couleurs de la rareté porte l'icône seule ; l'interface affiche l'icône suivie du nom (`RarityName`).
+- **Choix :** six gemmes de plus en plus taillées, de l'éclat brut (Courant) au soleil taillé (Légendaire), dessinées en tracés SVG sur une grille de 24 dans `packages/tokens/src/rarity-icons.ts`. Sur la carte, une pastille ronde aux couleurs de la rareté porte l'icône seule ; l'interface affiche l'icône suivie du nom (`RarityName`).
 - **Pourquoi :** la silhouette seule distingue les rangs jusqu'à 10 px ; des tracés bruts se dessinent à l'identique sur le web (`<svg>`) et sur mobile (react-native-svg).
-- **Conséquences :** remplace les pastilles à points de D-022. Le nom de la rareté reste le libellé accessible de la pastille.
+- **Conséquences :** remplace les pastilles à points de D-022. Le nom de la rareté reste le libellé accessible de la pastille. Le 2026-10-21, le soleil taillé remplace l'étoile à six branches de Légendaire, trop proche d'un symbole religieux.
 
 ## D-030 · Inscription : code par e-mail, transfert de l'invité dans notre transaction
 
@@ -304,6 +306,20 @@ Pour ajouter ou modifier une décision, utiliser le skill `decision`.
 - **Choix :** plugin `emailOTP` de Better Auth (code à 6 chiffres) plutôt que `magicLink`, à côté de `anonymous`, Apple et Google. Le sort de l'invité (transfert vers un nouveau compte, abandon vers un compte qui joue déjà, P54) se règle dans `onLinkAccount`, dans une transaction à nous, avec `disableDeleteAnonymousUser: true` : l'invité est archivé, jamais supprimé, et chaque connexion depuis un invité est journalisée dans `guest_links`.
 - **Pourquoi :** un lien ouvert sur un autre appareil, ou consommé par l'antivirus d'une messagerie, crée un compte vide et perd l'invité ; un code marche partout. Toutes les tables de jeu sont en cascade sur `users.id` : la suppression par défaut de l'invité effacerait ses cartes et l'historique des échanges des autres joueurs.
 - **Conséquences :** changement additif, l'invité actuel continue de marcher. Un test liste toutes les clés étrangères vers `users.id` et échoue si l'une n'est pas traitée par le transfert. L'envoi des codes a ses propres limites de débit (D-018).
+
+## D-031 · Administration : pages `/admin` à nous, rôle donné en ligne de commande, chaque action journalisée
+
+- **Statut :** Acceptée (2026-10-20), plan approuvé par le propriétaire.
+- **Choix :** un espace `/admin` dans le web et des routes `/admin/*` dans l'API, réservées au rôle `admin` vérifié côté serveur à chaque requête (session relue sans le cache du cookie). Le plugin `admin` de Better Auth ne sert qu'au schéma (rôle, bannissement) et au refus de connexion des bannis ; ses routes restent fermées par la liste blanche de `app.ts`. Le rôle ne se donne que par `pnpm admin:grant <email>` (`--revoke` pour le retirer). Chaque changement (plis bonus, bannissement, annulation d'échange, export de la liste d'attente) est inscrit dans `admin_actions`, dans la même transaction. Les cartes se rédigent toujours dans Directus.
+- **Pourquoi :** aucune route web ne permet de devenir admin ; un geste sur un joueur suit les mêmes verrous et clés d'idempotence qu'une action de jeu, et laisse une trace.
+- **Conséquences :** un admin ne peut pas être banni sans retirer d'abord son rôle. Un joueur banni garde au plus cinq minutes de session (cache du cookie). La table `admin_actions` est gardée telle quelle lors d'un transfert d'invité.
+
+## D-032 · Prononciation : une voix de synthèse guidée par la notation phonétique du Littré
+
+- **Statut :** Acceptée (2026-10-21) ; fournisseur à confirmer par l'essai des 20 mots difficiles.
+- **Choix :** une notation phonétique par carte, tirée de la graphie prononcée du Littré par des règles, validée quand eSpeak NG concorde et relue sinon, avec le Wiktionnaire en contrôle. Une seule voix de synthèse lit chaque mot guidée par cette notation (balise SSML `phoneme`). Fournisseur pressenti : Azure Speech, région France Central. Aucun enregistrement humain (P57).
+- **Pourquoi :** les enregistrements libres manquent justement sur les cartes rares (31 % des Légendaires) et changent de voix d'un mot à l'autre ; une voix guidée couvre tout le catalogue d'un son homogène, pour quelques centimes (R&D `docs/rnd/prononciation.md`).
+- **Conséquences :** un module de notation et de génération dans `content/pipeline`, fichiers audio statiques nommés par leur empreinte et servis par le CDN comme les gravures (D-028), champ optionnel `pronunciation` dans le catalogue. Pas de `speechSynthesis` du navigateur, même en secours.
 
 ## D-033 · Interface v1 : logique d'écran commune, affichage propre à chaque plateforme
 

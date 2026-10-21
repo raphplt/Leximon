@@ -48,8 +48,8 @@ describe("lines", () => {
   });
 
   it("encourages", () => {
-    expect(feedbackLine(true)).toBe("Bien vu !");
-    expect(feedbackLine(false)).toContain("bonne réponse");
+    expect(feedbackLine(true)).toBe("Bien vu.");
+    expect(feedbackLine(false)).toContain("Raté");
   });
 });
 
@@ -57,18 +57,18 @@ describe("bonus lines", () => {
   it("celebrates each bonus earned", () => {
     expect(bonusLines(NO_BONUS, PLI)).toEqual([]);
     expect(bonusLines({ daily: 1, gilded: 0, credited: 1, reserve: 1 }, PLI)).toEqual([
-      "Défi du jour réussi : un pli bonus !",
+      "Un pli bonus pour le défi du jour !",
     ]);
     expect(bonusLines({ daily: 1, gilded: 2, credited: 3, reserve: 4 }, PLI)).toEqual([
-      "Défi du jour réussi : un pli bonus !",
-      "Dorure atteinte : 2 plis bonus !",
+      "Un pli bonus pour le défi du jour !",
+      "2 plis bonus pour la Dorure !",
     ]);
   });
 
   it("says when the full reserve lost a bonus", () => {
     expect(bonusLines({ daily: 0, gilded: 1, credited: 0, reserve: 10 }, PLI)).toEqual([
-      "Dorure atteinte : un pli bonus !",
-      "Ta réserve est pleine : ce pli bonus est perdu.",
+      "Un pli bonus pour la Dorure !",
+      "Réserve pleine, ce pli bonus est perdu.",
     ]);
   });
 
@@ -85,7 +85,7 @@ describe("bonus lines", () => {
     expect(sessionBonusLine([answer(1)], PLI)).toMatch(/^1 pli bonus gagné,/);
     expect(sessionBonusLine([answer(1), answer(1)], PLI)).toMatch(/^2 plis bonus gagnés,/);
     expect(sessionBonusLine([answer(1)], PACK_NOUNS.sachet)).toBe(
-      "1 sachet bonus gagné, mis de côté pour quand tu n'auras plus de sachet.",
+      "1 sachet bonus gagné, en réserve.",
     );
   });
 });
@@ -101,9 +101,7 @@ describe("sessionXpLine", () => {
   });
 
   it("adds up the XP of the session, and says nothing without any", () => {
-    expect(sessionXpLine([answer(15), answer(0), answer(40)])).toBe(
-      "+55 XP gagnés pendant ce défi",
-    );
+    expect(sessionXpLine([answer(15), answer(0), answer(40)])).toBe("+55 XP");
     expect(sessionXpLine([answer(0)])).toBeNull();
   });
 });

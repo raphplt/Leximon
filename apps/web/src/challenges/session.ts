@@ -49,22 +49,22 @@ export function recapLine(answers: readonly AnsweredQuestion[]): string {
 }
 
 export function feedbackLine(correct: boolean): string {
-  return correct ? "Bien vu !" : "Raté, voici la bonne réponse.";
+  return correct ? "Bien vu." : "Raté. C'était celle-ci.";
 }
 
 function bonusCount(count: number, noun: PackNoun): string {
-  return count === 1 ? `un ${noun.one} bonus` : `${count} ${noun.many} bonus`;
+  return count === 1 ? `Un ${noun.one} bonus` : `${count} ${noun.many} bonus`;
 }
 
-/** What an answer earned: "Défi du jour réussi : un pli bonus !", and what the cap took. */
+/** What an answer earned: "Un pli bonus pour le défi du jour !", and what the cap took. */
 export function bonusLines(bonus: AnswerBonus, noun: PackNoun = DEFAULT_PACK_NOUN): string[] {
   const lines: string[] = [];
-  if (bonus.daily > 0) lines.push(`Défi du jour réussi : ${bonusCount(bonus.daily, noun)} !`);
-  if (bonus.gilded > 0) lines.push(`Dorure atteinte : ${bonusCount(bonus.gilded, noun)} !`);
+  if (bonus.daily > 0) lines.push(`${bonusCount(bonus.daily, noun)} pour le défi du jour !`);
+  if (bonus.gilded > 0) lines.push(`${bonusCount(bonus.gilded, noun)} pour la Dorure !`);
   const lost = bonus.daily + bonus.gilded - bonus.credited;
   if (lost > 0) {
     lines.push(
-      `Ta réserve est pleine : ${lost === 1 ? `ce ${noun.one} bonus est perdu` : `${lost} ${noun.many} bonus perdus`}.`,
+      `Réserve pleine, ${lost === 1 ? `ce ${noun.one} bonus est perdu` : `${lost} ${noun.many} bonus perdus`}.`,
     );
   }
   return lines;
@@ -78,11 +78,11 @@ export function sessionBonusLine(
   const won = answers.reduce((sum, answer) => sum + answer.bonus.credited, 0);
   if (won === 0) return null;
   const count = won === 1 ? `1 ${noun.one} bonus gagné` : `${won} ${noun.many} bonus gagnés`;
-  return `${count}, mis de côté pour quand tu n'auras plus de ${noun.one}.`;
+  return `${count}, en réserve.`;
 }
 
 /** "+75 XP gagnés pendant ce défi" for the recap, or `null` when the session earned none. */
 export function sessionXpLine(answers: readonly AnsweredQuestion[]): string | null {
   const xp = answers.reduce((sum, answer) => sum + answer.progress.xpGained, 0);
-  return xp === 0 ? null : `+${xp} XP gagnés pendant ce défi`;
+  return xp === 0 ? null : `+${xp} XP`;
 }

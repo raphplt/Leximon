@@ -97,7 +97,7 @@ export function ChallengeScreen() {
       publishProgress(result.progress);
       setPhase({ name: "answered", index, chosen });
     } catch {
-      setError("Ta réponse n'est pas partie. Vérifie ta connexion et réessaie.");
+      setError("Ta réponse n'est pas partie. Vérifie ta connexion.");
       setPhase({ name: "asking", index });
     }
   };
@@ -115,11 +115,11 @@ export function ChallengeScreen() {
         <h1 className={styles.title}>Fais monter tes cartes</h1>
       </header>
 
-      {phase.name === "loading" && <p className={styles.hint}>Un instant…</p>}
+      {phase.name === "loading" && <p className={styles.hint}>On ressort tes mots…</p>}
 
       {phase.name === "unavailable" && (
         <div className={styles.center}>
-          <p className={styles.hint}>Impossible de joindre le serveur.</p>
+          <p className={styles.hint}>Le serveur lambine.</p>
           <button type="button" className={styles.secondary} onClick={() => void load()}>
             Réessayer
           </button>
@@ -156,7 +156,7 @@ export function ChallengeScreen() {
           )}
           <div className={styles.actions}>
             <button type="button" className={styles.primary} onClick={() => void load()}>
-              Continuer
+              Défi suivant
             </button>
             <Link href="/album" className={styles.secondary}>
               Voir mon album
@@ -176,7 +176,7 @@ function Empty({ nextDueAt }: { readonly nextDueAt: string | null }) {
     <div className={styles.center}>
       {nextDueAt === null ? (
         <>
-          <p className={styles.hint}>Ouvre des {noun.many} : chaque mot gagné devient un défi.</p>
+          <p className={styles.hint}>Ouvre des {noun.many}. Chaque mot trouvé devient un défi.</p>
           <Link href="/jouer" className={styles.primary}>
             Ouvrir un {noun.one}
           </Link>
@@ -184,7 +184,7 @@ function Empty({ nextDueAt }: { readonly nextDueAt: string | null }) {
       ) : (
         <>
           <p className={styles.hint}>
-            Tu as révisé tous tes mots. Le prochain revient {when ?? "bientôt"}.
+            Tes mots tiennent bon. Le prochain revient {when ?? "bientôt"}.
           </p>
           <Link href="/jouer" className={styles.secondary}>
             Ouvrir un {noun.one} en attendant

@@ -65,7 +65,7 @@ Détail et maquettes : [cahiers-des-charges/ouverture.md](cahiers-des-charges/ou
 | P20 | Calcul de la rareté | Courant à Précieux : la fréquence réelle du mot (Google Ngram), seuils communs à tout le catalogue. Épique et Légendaire : réservées aux pépites, choisies par un jury automatique ; une pépite absente de tout Google Books est Légendaire. Détails : D-020, D-021. | Seuils provisoires |
 | P21 | Mots courants au sens ancien | Acceptés (« punaise », « canaille » comme injures). Leur fréquence les classe Courant. | Tranché |
 | P22 | Fréquence affichée | La fréquence réelle du mot figure sur la carte, discrètement, en chiffre seul. | Tranché |
-| P44 | Affichage de la rareté | Sur la carte, une icône seule, de la série des gemmes (de l'éclat brut pour Courant à l'étoile pour Légendaire), dans la couleur de rareté. Le nom de la rareté reste dans l'interface, à côté de l'icône : vue agrandie, révélation d'un pli, album. | Tranché le 2026-10-20 |
+| P44 | Affichage de la rareté | Sur la carte, une icône seule, de la série des gemmes (de l'éclat brut pour Courant au soleil taillé pour Légendaire), dans la couleur de rareté. Le nom de la rareté reste dans l'interface, à côté de l'icône : vue agrandie, révélation d'un pli, album. | Tranché le 2026-10-20, soleil taillé le 2026-10-21 |
 | P24 | Rareté figée | Une carte publiée garde sa rareté et son identifiant pour toujours. Un mot reclassé devient une nouvelle carte ; une carte retirée quitte les boosters, les exemplaires possédés restent. | Tranché |
 | P25 | Pépites | Au plus 2 % d'un lot en Légendaires et 6 % en Épiques, jamais un mot noté sous 6 sur 10 en charme. | Provisoire |
 
@@ -84,6 +84,7 @@ Noms des raretés : Courant (encore compris de beaucoup), Peu courant (vieilli),
 | P41 | Indice dans la définition | À limiter : la définition évite le mot et les mots évidents de sa famille (pas « petite jarre » pour jarron), pour que le défi garde son sens. Toléré quand on ne peut pas faire autrement sans perdre en clarté. | Tranché le 2026-10-20 |
 | P42 | Gravures | Une gravure du domaine public (ou CC0, CC BY 4.0 avec crédit) illustre la carte quand on en trouve une juste ; chaque gravure est validée avant publication. Une carte sans gravure est publiée avec sa grande initiale et la reçoit plus tard. | Tranché le 2026-10-20 |
 | P43 | Rendu des gravures | L'encre seule, imprimée dans la couleur du mot (or ou irisé sur les cartes de nuit) ; à partir de Rare, un aplat de la couleur de rareté décalé sous l'encre, façon impression mal calée. Les sujets en hauteur débordent vers le haut de l'encart. | Tranché le 2026-10-20 |
+| P57 | Prononciation | Chaque carte fait entendre son mot, gratuitement pour tous, jamais réservé à l'abonnement. Une seule voix de synthèse pour tout le catalogue, guidée par une notation phonétique contrôlée (D-032) : pas d'enregistrements humains, pour un son homogène, y compris sur les cartes rares. | Tranché le 2026-10-21 |
 
 ## Collections
 
@@ -141,6 +142,7 @@ Options et recommandations dans les cahiers des charges ([ouverture](cahiers-des
 
 - **Numéro de collection sur la carte** (« 040/160 ») : dénominateur fixe annoncé à la publication, ou nombre de cartes publiées ; Légendaires « hors série » numérotées au-delà, ou non.
 - **Sons de l'ouverture :** garder les sons synthétisés, ou passer à des sons de banque.
-- **Abonnement premium :** le propriétaire veut l'envisager (2026-10-20), en plus des cosmétiques. Il reste dans N1 et N2 : contenu connu à l'avance, jamais de plis. Pistes de `north-star.md` : révisions illimitées, statistiques, collections en avant-première, mode hors ligne. À décider : contenu, prix, et ce qui reste gratuit pour ne pas casser le jeu.
+- **Abonnement premium :** le propriétaire veut l'envisager (2026-10-20), en plus des cosmétiques. Il reste dans N1 et N2 : contenu connu à l'avance, jamais de plis. Pistes de `north-star.md` : révisions illimitées, statistiques, collections en avant-première, mode hors ligne. À décider : contenu, prix, et ce qui reste gratuit pour ne pas casser le jeu. La prononciation reste gratuite (P57).
+- **Notation phonétique affichée :** sur la carte, à côté de la carte (vue agrandie), ou pas du tout. Penchant du propriétaire pour l'afficher (2026-10-21), à essayer sur des maquettes.
 - **Cible principale :** hypothèse du propriétaire, les adultes de 25 à 65 ans et plus, plutôt que les moins de 18 ans (P8 reste ouvert dès 15 ans). À vérifier pendant la bêta avant d'orienter la communication.
 - **Discussion de clan :** modération automatique par un modèle dès la bêta ou plus tard ; durée de conservation des messages.

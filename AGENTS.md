@@ -16,6 +16,7 @@ pnpm catalog:publish             # publie la dernière version du catalogue (bas
 pnpm dev                         # Postgres et Directus (Docker), puis toutes les apps (ou --filter @leximon/api, /web, /mobile)
 pnpm check                       # lint + typecheck + tests unitaires, à lancer avant de rendre la main
 pnpm test:integration            # tests contre la base leximon_test, vidée à chaque passage (Docker requis)
+pnpm admin:grant <email>         # donne le rôle admin à un compte existant (--revoke pour le retirer)
 pnpm format                      # corrige le formatage (Biome)
 ```
 
@@ -43,15 +44,16 @@ Les sources téléchargées vivent dans `content/pipeline/data/` (ignoré par gi
 
 ## Où trouver quoi
 
-| Fichier | Contenu | Versionné |
-|---|---|---|
-| `docs/regles-du-jeu.md` | Règles du jeu : source unique des choix métier, avec leur statut | Oui |
-| `docs/feuille-de-route.md` | Vue d'ensemble : état de chaque chantier, décisions en attente, prochaines étapes | Oui |
-| `docs/decisions.md` | Décisions techniques : choix, statut, conséquences | Oui |
-| `docs/rnd/` | Rapports des spikes de R&D | Oui |
-| `docs/cahiers-des-charges/` | Spécifications fonctionnelles d'un chantier, avant sa réalisation | Oui |
-| `docs/north-star.md` | Vision produit, marché, monétisation, lancement | Non (local, peut être absent) |
-| `docs/architecture.md` | Architecture détaillée, charge visée, modèle de données | Non (local, peut être absent) |
+| Fichier                     | Contenu                                                                           | Versionné                     |
+| --------------------------- | --------------------------------------------------------------------------------- | ----------------------------- |
+| `docs/regles-du-jeu.md`     | Règles du jeu : source unique des choix métier, avec leur statut                  | Oui                           |
+| `docs/feuille-de-route.md`  | Vue d'ensemble : état de chaque chantier, décisions en attente, prochaines étapes | Oui                           |
+| `docs/decisions.md`         | Décisions techniques : choix, statut, conséquences                                | Oui                           |
+| `docs/voix.md`              | Voix de Leximon : personnage, ton selon le moment, lexique, boutons               | Oui                           |
+| `docs/rnd/`                 | Rapports des spikes de R&D                                                        | Oui                           |
+| `docs/cahiers-des-charges/` | Spécifications fonctionnelles d'un chantier, avant sa réalisation                 | Oui                           |
+| `docs/north-star.md`        | Vision produit, marché, monétisation, lancement                                   | Non (local, peut être absent) |
+| `docs/architecture.md`      | Architecture détaillée, charge visée, modèle de données                           | Non (local, peut être absent) |
 
 **Une information vit à un seul endroit.** Mettre à jour le bon fichier plutôt que dupliquer, et renvoyer par lien. Ne pas recopier dans ce fichier ce qui est déjà dans `docs/`.
 
@@ -134,8 +136,9 @@ docs/        voir le tableau ci-dessus
 - **Le propriétaire pilote.** Pour tout choix structurant (dépendance, schéma, architecture, direction artistique), proposer les options avec une recommandation et le laisser trancher. Consigner ensuite la décision avec le skill `decision`.
 - **Par défaut, l'agent implémente.** Le propriétaire relit : dans le résumé de fin, expliquer les choix non évidents (règles du jeu, sécurité, performance) pour qu'il garde la main sur le code. S'il demande à coder une partie lui-même, fournir l'interface et les tests, pas l'implémentation.
 - **Langues :** code, identifiants et messages de commit en anglais. Docs, contenu des cartes et interface en français.
+- **Voix de l'interface :** `docs/voix.md` (qui parle, ton selon le moment, lexique, boutons), à lire avant d'écrire un texte que le joueur lit. En bref : court, direct, avec du caractère ; on dit les choses, on ne rassure pas. Si une phrase peut sauter sans que le joueur soit perdu, elle saute.
 - **Documentation en Markdown simple**, pas de pages HTML élaborées.
-- **Ne jamais commiter sans demande explicite.**
+- **Toujours commiter à la fin d'une session de travail sauf si demande explicite inverse.**
 
 ## Skills du projet
 

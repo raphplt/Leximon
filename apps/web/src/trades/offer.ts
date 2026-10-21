@@ -125,14 +125,14 @@ export function tradeableFromLabel(
   const time = new Intl.DateTimeFormat("fr-FR", { hour: "numeric", minute: "2-digit", ...zone })
     .format(from)
     .replace(":", " h ");
-  return `Ton compte est tout neuf : tu pourras échanger à partir du ${day} à ${time}.`;
+  return `Compte tout neuf. Échanges possibles dès le ${day} à ${time}.`;
 }
 
 /** Why a player below the level needed cannot trade yet (P48), or `null` once they can. */
 export function tradeLevelLabel(level: number, minLevel: number): string | null {
   if (level >= minLevel) return null;
   const left = minLevel - level;
-  return `Les échanges s'ouvrent au niveau ${minLevel} : encore ${left} niveau${left > 1 ? "x" : ""}. Ouvre des plis et relève des défis pour y arriver.`;
+  return `Les échanges ouvrent au niveau ${minLevel}. Encore ${left} niveau${left > 1 ? "x" : ""}.`;
 }
 
 /** Adds or removes a card from a selection, without ever going over `max`. */
@@ -165,23 +165,19 @@ export function offerProblem(offer: {
 }
 
 const REFUSAL_MESSAGES: Readonly<Record<TradeRefusalCode | OfferProblem, string>> = {
-  invalid_code:
-    "Un code joueur compte 8 caractères, lettres et chiffres (sans I, L, O ni U). Vérifie-le.",
-  player_not_found: "Aucun joueur ne porte ce code. Vérifie-le avec la personne qui te l'a donné.",
-  self_trade: "C'est ton propre code ! Demande celui de la personne avec qui tu veux échanger.",
-  empty_side: "Choisis au moins une carte de chaque côté de l'échange.",
-  too_many_cards: `Un échange compte au plus ${MAX_CARDS_PER_SIDE} cartes de chaque côté.`,
-  duplicate_card: "Chaque carte ne peut figurer qu'une fois dans l'offre.",
-  account_too_recent:
-    "Ton compte est encore tout neuf : les échanges s'ouvrent 3 jours après ton arrivée.",
-  level_too_low:
-    "Les échanges s'ouvrent au niveau 5, pour toi comme pour l'autre joueur. Il faudra un peu de patience !",
-  daily_limit_reached:
-    "Tu as envoyé 10 offres en 24 heures, c'est le maximum. Reviens un peu plus tard !",
+  invalid_code: "Un code joueur fait 8 caractères, sans I, L, O ni U.",
+  player_not_found: "Personne n'a ce code.",
+  self_trade: "C'est ton code à toi.",
+  empty_side: "Il faut au moins une carte de chaque côté.",
+  too_many_cards: `${MAX_CARDS_PER_SIDE} cartes au plus de chaque côté.`,
+  duplicate_card: "Une même carte apparaît deux fois.",
+  account_too_recent: "Compte tout neuf. Les échanges ouvrent 3 jours après ton arrivée.",
+  level_too_low: "Il faut être niveau 5, toi comme l'autre joueur.",
+  daily_limit_reached: "10 offres en 24 heures, c'est le maximum. Reviens demain.",
   card_not_tradeable:
-    "Une des cartes n'est plus échangeable : elle n'est plus en double, ou c'est une Épique ou une Légendaire obtenue il y a moins de 7 jours.",
-  trade_not_pending: "Cette offre a déjà reçu une réponse ou a été annulée.",
-  trade_expired: "Trop tard, cette offre a expiré. Tu peux en proposer une nouvelle.",
+    "Une carte n'est plus échangeable. Plus en double, ou Épique ou Légendaire de moins de 7 jours.",
+  trade_not_pending: "Cette offre est déjà close.",
+  trade_expired: "Trop tard, l'offre a expiré.",
   trade_not_found: "Cette offre n'existe plus.",
 };
 

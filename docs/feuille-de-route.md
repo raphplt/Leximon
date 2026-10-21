@@ -35,6 +35,7 @@ Statuts : **Fait**, **En cours**, **À faire**, **À décider** (attend le propr
 | Plis bonus des défis | Fait | D-027, règles P23 et P29 : défi du jour et Dorure, réserve plafonnée à 10 |
 | Échanges carte contre carte | Fait | D-026 : offres directes par code joueur, doublons seulement. Notifications à venir avec la file |
 | Inscription par code e-mail | En cours | D-030, P37, P54 : code à 6 chiffres, invité limité à 2 plis avant de créer un compte, transfert de la partie invitée vers un nouveau compte, abandon après avertissement vers un compte qui joue déjà (`guest_links`), écran `/compte`. Reste : choisir le fournisseur d'e-mails (aucun envoi hors dev d'ici là), Apple et Google |
+| Administration | Fait | D-031 : `/admin` (tableau de bord, joueurs avec plis bonus et bannissement, liste d'attente et export CSV, échanges, cartes avec recherche et fiche, collections, journal). Rôle donné par `pnpm admin:grant <email>` |
 
 ### Progression et social
 
@@ -56,7 +57,7 @@ Arbitrés par le propriétaire le 2026-10-20 : jeu grand public (B2C), pas de ve
 | Direction artistique et tokens | Fait | D-022 « Planche populaire », `packages/tokens` |
 | Web : ouverture du pli, album | Fait | Sur le catalogue publié |
 | Web : défis, échanges | Fait | `/defis`, `/echanges` ; niveau de maîtrise dans l'album |
-| Web : page d'accueil publique et liste d'attente | Fait | P55 : accueil sur `/`, le jeu passe sous `/jouer`. La liste d'attente garde l'adresse seule (`POST /waitlist`, table `waitlist_signups`). Image de partage générée par `opengraph-image.tsx` (Fraunces chargée depuis Google Fonts au build). Reste : l'e-mail d'ouverture avec le fournisseur d'e-mails |
+| Web : page d'accueil publique et liste d'attente | Fait | P55 : accueil sur `/`, le jeu passe sous `/jouer`. La liste d'attente garde l'adresse seule (`POST /waitlist`, table `waitlist_signups`). Image de partage générée par `opengraph-image.tsx` (polices chargées depuis Google Fonts au build). Page `/confidentialite` (« Tes données »), liée depuis le formulaire et le pied de page. Reste : l'e-mail d'ouverture avec le fournisseur d'e-mails, l'identité de l'éditeur sur `/confidentialite` et les mentions légales |
 | Mobile (Expo) | À faire | Les mêmes écrans ; charger les polices demandera une dépendance (`expo-font`) |
 | Animations et reflets | À faire | R&D D-009. En attendant, du CSS simple |
 | Ouverture : peaufinage | En cours | Cahier des charges : [ouverture.md](cahiers-des-charges/ouverture.md). Lots A et B faits sur le web : déchirure au doigt, pile, mise en scène par rareté, sons synthétisés, vibration, récapitulatif, reflets par rareté, sachet. Reste : mobile |

@@ -31,7 +31,7 @@ interface Partner {
 
 const PICK_THUMB = 104;
 const REVIEW_THUMB = 92;
-const CONNECTION_ERROR = "Ça n'a pas marché. Vérifie ta connexion et réessaie.";
+const CONNECTION_ERROR = "Ça n'a pas marché. Vérifie ta connexion.";
 
 /** Rarest first, then alphabetical; for the partner's cards, words the player lacks lead. */
 function pickOrder(
@@ -203,7 +203,7 @@ export function ProposeTrade({
       if (result.kind === "ok") {
         onSent(result.trade);
         shouldReset.current = true;
-        notify({ tone: "success", text: `Offre envoyée à ${formatPlayerCode(partner.code)} !` });
+        notify({ tone: "success", text: `Offre envoyée à ${formatPlayerCode(partner.code)}.` });
         setStep("sent");
         return;
       }
@@ -231,8 +231,7 @@ export function ProposeTrade({
         </h2>
         <p className={styles.hint}>{blocked}</p>
         <p className={styles.muted}>
-          En attendant, ouvre des {noun.many} pour te faire des doublons : ce sont eux qui
-          s'échangent.
+          En attendant, ouvre des {noun.many}. Seuls les doubles s'échangent.
         </p>
         <Link href="/jouer" className={styles.secondary}>
           Ouvrir un {noun.one}
@@ -273,7 +272,7 @@ export function ProposeTrade({
             aria-invalid={codeError !== null}
           />
           <p id="partner-code-hint" className={styles.muted}>
-            8 caractères. Demande-le-lui : il est en haut de son écran Échanges.
+            Il est en haut de son écran Échanges.
           </p>
           <p
             id="partner-code-error"
@@ -298,13 +297,10 @@ export function ProposeTrade({
           <PickHeading
             title={`Ce que tu veux de ${partnerCode}`}
             count={selectionCount(want)}
-            hint={`Choisis de 1 à ${MAX_CARDS_PER_SIDE} cartes parmi ses doublons échangeables.`}
+            hint={`Choisis de 1 à ${MAX_CARDS_PER_SIDE} cartes parmi ses doubles échangeables.`}
           />
           {partner.cardIds.length === 0 ? (
-            <p className={styles.hint}>
-              Ce joueur n'a pas encore de doublon à échanger. Réessaie quand il aura ouvert quelques{" "}
-              {noun.many} !
-            </p>
+            <p className={styles.hint}>Ce joueur n'a aucun double à échanger.</p>
           ) : (
             <CardPicker
               catalog={catalog}
@@ -318,7 +314,7 @@ export function ProposeTrade({
           <StepActions
             back={{ label: "Autre joueur", onClick: () => setStep("code") }}
             next={{
-              label: "Continuer",
+              label: "Choisir ce que je donne",
               disabled: want.length === 0,
               onClick: () => setStep("give"),
             }}
@@ -331,13 +327,11 @@ export function ProposeTrade({
           <PickHeading
             title="Ce que tu donnes"
             count={selectionCount(give)}
-            hint="Seuls tes doublons s'échangent : tu gardes toujours un exemplaire. Une Épique ou une Légendaire s'échange 7 jours après l'avoir obtenue."
+            hint="Seulement tes doubles. Une Épique ou une Légendaire attend 7 jours avant de partir."
           />
           {mine.length === 0 ? (
             <div className={styles.empty}>
-              <p className={styles.hint}>
-                Tu n'as pas encore de doublon échangeable. Ouvre des {noun.many} pour t'en faire !
-              </p>
+              <p className={styles.hint}>Aucun double à échanger. Ouvre des {noun.many}.</p>
               <Link href="/jouer" className={styles.secondary}>
                 Ouvrir un {noun.one}
               </Link>
@@ -355,7 +349,7 @@ export function ProposeTrade({
           <StepActions
             back={{ label: "Retour", onClick: () => setStep("want") }}
             next={{
-              label: "Voir le récapitulatif",
+              label: "Vérifier l'offre",
               disabled: give.length === 0,
               onClick: () => setStep("review"),
             }}
@@ -371,8 +365,7 @@ export function ProposeTrade({
             <p className={styles.sideLabel}>Tu donnes</p>
             <CardRow catalog={catalog} cardIds={give} width={REVIEW_THUMB} onZoom={onZoom} />
             <p className={styles.muted}>
-              {partnerCode} a 72 heures pour répondre. Tant qu'il n'a pas répondu, tu peux annuler
-              l'offre.
+              {partnerCode} a 72 heures pour répondre. Tu peux annuler d'ici là.
             </p>
           </div>
           <div className={styles.stepActions}>
@@ -398,9 +391,7 @@ export function ProposeTrade({
 
       {step === "sent" && (
         <div className={styles.empty}>
-          <p className={styles.hint}>
-            {partnerCode} a 72 heures pour répondre. Tu retrouves l'offre dans tes offres envoyées.
-          </p>
+          <p className={styles.hint}>{partnerCode} a 72 heures pour répondre.</p>
           <button
             type="button"
             className={styles.primary}

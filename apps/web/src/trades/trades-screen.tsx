@@ -40,7 +40,7 @@ interface Inbox {
 type Action = "accept" | "decline" | "cancel";
 
 const DONE_MESSAGES: Readonly<Record<Action, string>> = {
-  accept: "Échange conclu ! Tes nouvelles cartes t'attendent dans ton album.",
+  accept: "Échange conclu. Les cartes sont dans ton album.",
   decline: "Offre refusée.",
   cancel: "Offre annulée.",
 };
@@ -117,8 +117,8 @@ export function TradesScreen() {
         tone: "error",
         text:
           error instanceof ApiError && error.status === null
-            ? "Pas de connexion pour l'instant. Réessaie dans un moment."
-            : "Ça n'a pas marché. Réessaie dans un moment.",
+            ? "Pas de connexion. Réessaie."
+            : "Ça n'a pas marché. Réessaie.",
       });
     } finally {
       setBusyTradeId(null);
@@ -141,7 +141,7 @@ export function TradesScreen() {
           },
       );
     } catch {
-      setNotice({ tone: "error", text: "Les offres plus anciennes n'ont pas pu se charger." });
+      setNotice({ tone: "error", text: "Les offres plus anciennes ne se chargent pas." });
     }
   };
 
@@ -295,11 +295,11 @@ function PlayerCode({
   const copy = async () => {
     try {
       await navigator.clipboard.writeText(code);
-      setCopied("Code copié !");
+      setCopied("Copié.");
     } catch {
       // No clipboard access (old browser, permission refused): select it for a manual copy.
       if (shown.current !== null) window.getSelection()?.selectAllChildren(shown.current);
-      setCopied("Copie automatique impossible : le code est sélectionné, copie-le à la main.");
+      setCopied("Copie impossible. Le code est sélectionné, copie-le à la main.");
     }
     if (timer.current !== null) clearTimeout(timer.current);
     timer.current = setTimeout(() => setCopied(null), 3000);
@@ -323,7 +323,7 @@ function PlayerCode({
         </button>
       </div>
       <p className={styles.codeHint} role="status" aria-live="polite">
-        {copied ?? "Donne-le à tes amis pour qu'ils te proposent des échanges."}
+        {copied ?? "Donne-le à tes amis pour échanger."}
       </p>
       {notices.map(
         (notice) =>
@@ -368,7 +368,7 @@ function TradeList({
       <div className={styles.empty}>
         <p className={styles.hint}>
           {box === "incoming"
-            ? "Aucune offre reçue pour l'instant. Partage ton code joueur pour en recevoir !"
+            ? "Aucune offre reçue. Fais tourner ton code."
             : "Tu n'as encore proposé aucun échange."}
         </p>
         <button type="button" className={styles.primary} onClick={onPropose}>

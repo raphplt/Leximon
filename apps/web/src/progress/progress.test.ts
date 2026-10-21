@@ -10,7 +10,7 @@ describe("progress labels", () => {
   });
 
   it("celebrates a level up only", () => {
-    expect(levelUpLabel({ levelUp: true, level: 6 })).toBe("Niveau 6 atteint !");
+    expect(levelUpLabel({ levelUp: true, level: 6 })).toBe("Niveau 6 !");
     expect(levelUpLabel({ levelUp: false, level: 6 })).toBeNull();
   });
 
