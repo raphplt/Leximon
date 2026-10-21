@@ -258,9 +258,40 @@
 .under {
   position: relative;
   z-index: 4;
-  min-height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 36px;
   margin: 0;
   text-align: center;
+}
+
+.listen {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: var(--lx-color-background-raised);
+  color: var(--lx-color-text);
+  cursor: pointer;
+  animation: fadeIn 0.4s ease-out both;
+}
+
+.listen:hover {
+  background: #3f4770;
+}
+
+.listening,
+.listening:hover {
+  background: var(--lx-color-accent);
+  color: var(--lx-color-accent-ink);
 }
 
 .touchHint {

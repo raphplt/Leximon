@@ -51,6 +51,11 @@ function enabled(kind: FeedbackKind): boolean {
   return preferences[kind];
 }
 
+/** Whether sounds play on their own; a sound the player asks for (a button) always plays. */
+export function soundOn(): boolean {
+  return enabled("sound");
+}
+
 /** Vibration exists on Android browsers only; iPhones ignore it. */
 export function canVibrate(): boolean {
   return typeof navigator !== "undefined" && typeof navigator.vibrate === "function";

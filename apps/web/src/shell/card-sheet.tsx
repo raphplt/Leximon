@@ -10,8 +10,9 @@ import {
   shareText,
 } from "@leximon/view-model";
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
-import { type Catalog, catalogFileUrl, collectionName, loadCatalog } from "@/cards/catalog";
+import { useEffect, useState } from "react";
+import { type Catalog, collectionName, loadCatalog } from "@/cards/catalog";
+import { useSpokenWord } from "@/cards/use-spoken-word";
 import { EngravingCredit } from "@/components/engraving-credit";
 import { HoloCard } from "@/components/holo-card";
 import { RarityName } from "@/components/rarity-icon";
@@ -179,32 +180,15 @@ function SheetBody({
 
 /** The word spoken by the catalogue's voice (A-09, P57), with its phonetic notation. */
 function Pronunciation({ card }: { readonly card: CatalogCard }) {
-  const audio = useRef<HTMLAudioElement | null>(null);
-  const [playing, setPlaying] = useState(false);
+  const word = useSpokenWord(card);
   const spoken = card.pronunciation ?? null;
-  useEffect(
-    () => () => {
-      audio.current?.pause();
-    },
-    [],
-  );
   if (spoken === null) return null;
-
-  const play = () => {
-    audio.current ??= new Audio(catalogFileUrl(spoken.audio));
-    const sound = audio.current;
-    sound.currentTime = 0;
-    setPlaying(true);
-    sound.onended = () => setPlaying(false);
-    sound.play().catch(() => setPlaying(false));
-  };
-
   return (
     <p className={styles.spoken}>
       <button
         type="button"
-        className={`${ui.round} ${playing ? styles.playing : ""}`}
-        onClick={play}
+        className={`${ui.round} ${word.playing ? styles.playing : ""}`}
+        onClick={word.play}
         aria-label={`Écouter ${card.word}`}
       >
         <Icon name="sound" size={20} />

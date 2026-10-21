@@ -128,7 +128,7 @@ La maquette montre l'intention, pas la finition. Chaque écran gagne en plus :
 | A-06 | Album vide, recherche sans résultat | « Rien de ce côté. Pas pour longtemps. » | — | 2 | fait | à faire |
 | A-07 | Fiche d'une carte | Grande carte avec reflets, rareté, fréquence en chiffres (« Un mot imprimé sur 17 milliards. »), maîtrise en trois étapes avec ce qu'il reste, exemplaires et doubles, collection, origine, crédit de la gravure | existe en partie | 2 | fait | à faire |
 | A-08 | Actions de la fiche | « Réviser ce mot », « Proposer en échange » (s'il y a un double et le niveau 5), « Épingler », « Partager » | — | 2 | en partie (« Épingler » au lot 3, avec le profil) | à faire |
-| A-09 | Prononciation | Bouton pour entendre le mot, gratuit (P57) ; notation phonétique selon la décision en attente | fichiers audio du catalogue (D-032) | 2 | fait (notation phonétique affichée à côté de la carte, à confirmer) | à faire |
+| A-09 | Prononciation | Bouton pour entendre le mot, gratuit (P57) ; notation phonétique selon la décision en attente. À l'ouverture, le mot est dit quand la carte se pose (coupé avec le son, O-06) et un bouton le rejoue | fichiers audio du catalogue (D-032) | 2 | fait (notation phonétique affichée à côté de la carte, à confirmer) | à faire |
 | A-10 | Partage | Texte selon voix.md (« Talpinette. Introuvable dans les livres d'aujourd'hui. Moi, je l'ai. ») ; feuille de partage native sur mobile ; image de partage par la file (plus tard) | — | 2 | en partie (texte et feuille de partage ; image de partage plus tard) | à faire |
 
 ### D · Défis

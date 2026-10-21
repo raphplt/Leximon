@@ -11,10 +11,12 @@ import {
   useRef,
   useState,
 } from "react";
+import { useSpokenWord } from "@/cards/use-spoken-word";
 import { HoloCard } from "@/components/holo-card";
 import { useHoloLight } from "@/components/use-holo-light";
+import { Icon } from "@/ui/icon";
 import { CardBack } from "./card-back";
-import { play, vibrate } from "./feedback";
+import { play, soundOn, vibrate } from "./feedback";
 import { cardRelease } from "./gesture";
 import styles from "./reveal-card.module.css";
 import type { RarityStaging } from "./staging";
@@ -22,6 +24,9 @@ import type { RarityStaging } from "./staging";
 /** A touch during the first moments of an announcement is ignored: it may be a double tap. */
 const TOUCH_GUARD_MS = 350;
 const EXIT_MS = 180;
+/** The word is said once the face has settled, after the « Nouveau ! » chime when there is one. */
+const SPEAK_AFTER_MS = 150;
+const SPEAK_AFTER_CHIME_MS = 450;
 
 interface RevealCardProps {
   readonly card: CatalogCard;
@@ -70,6 +75,7 @@ export function RevealCard({
   const light = useHoloLight(settled);
   const flippedRef = useRef(false);
   const timers = useRef<number[]>([]);
+  const word = useSpokenWord(card);
 
   const later = (ms: number, action: () => void) => {
     timers.current.push(window.setTimeout(action, ms));
@@ -103,6 +109,7 @@ export function RevealCard({
     later(staging.flipMs, () => {
       setSettled(true);
       if (isNew) play("newCard");
+      if (soundOn()) later(isNew ? SPEAK_AFTER_CHIME_MS : SPEAK_AFTER_MS, word.play);
     });
   }
 
@@ -237,6 +244,16 @@ export function RevealCard({
       <p className={styles.under}>
         {!flipped && staging.flip === "touch" && touchable && (
           <span className={styles.touchHint}>Touche la carte</span>
+        )}
+        {settled && word.available && (
+          <button
+            type="button"
+            className={word.playing ? `${styles.listen} ${styles.listening}` : styles.listen}
+            onClick={word.play}
+            aria-label={`Écouter ${card.word}`}
+          >
+            <Icon name="sound" size={18} />
+          </button>
         )}
         {settled && isNew && (
           <span className={styles.frequency}>{frequencyLine(card.perBillion)}</span>
