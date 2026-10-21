@@ -414,3 +414,18 @@ def test_second_round_fills_with_new_thumbnails_when_few_old_ones_remain() -> No
     new = [{"title": f"new {n}", "n": n} for n in range(1, 10)]
     merged = gravures.second_round_candidates(new, [{"title": "old 1", "n": 1}], refused="old 1")
     assert [c["title"] for c in merged] == [f"new {n}" for n in range(1, 9)]
+
+
+def test_each_round_has_its_own_files_and_the_first_keeps_the_old_names() -> None:
+    assert gravures.round_file("search", 1).name == "search.jsonl"
+    assert gravures.round_file("search", 3).name == "search-3.jsonl"
+    assert gravures.round_file("thumbs", 2, suffix="").name == "thumbs-2"
+
+
+def test_files_already_engraved_on_a_card_are_known(monkeypatch, tmp_path) -> None:
+    rendered = tmp_path / "rendered.json"
+    rendered.write_text('{"cards": {"bissoc": {"title": "File:Plough.jpg"}}}', encoding="utf-8")
+    monkeypatch.setattr(gravures, "RENDERED_FILE", rendered)
+    assert gravures.engraved_titles() == frozenset({"File:Plough.jpg"})
+    monkeypatch.setattr(gravures, "RENDERED_FILE", tmp_path / "none.json")
+    assert gravures.engraved_titles() == frozenset()

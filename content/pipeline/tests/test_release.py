@@ -170,3 +170,31 @@ def test_the_back_tone_goes_into_the_collection_file() -> None:
     plain = build([row("billevesee")])
     manifest = json.loads(plain["manifest.json"])
     assert "back" not in json.loads(plain[manifest["collections"][0]["file"]])
+
+
+def test_a_card_without_engraving_shows_the_initial_of_its_word() -> None:
+    def initial(letter: str) -> dict[str, object]:
+        return {"ink": f"gravures/lettrine-{letter.lower()}.0123456789ab.ink.webp"}
+
+    initials = {"E": initial("E"), "O": initial("O"), "I": initial("I")}
+    engraving = {"ink": "gravures/raclure.0123456789ab.ink.webp"}
+    words = ["écornifleur", "œillade", "jaserie", "raclure", "zinzolin"]
+    files = release.build(
+        [FONDATEURS],
+        {"lot-1": [row(word) for word in words]},
+        frequency,
+        "2026-10-19.1",
+        NOW,
+        {"raclure": engraving},
+        None,
+        initials,
+    )
+    manifest = json.loads(files["manifest.json"])
+    cards = json.loads(files[manifest["collections"][0]["file"]])["cards"]
+    assert {c["id"]: c["engraving"] for c in cards} == {
+        "ecornifleur": initials["E"],
+        "oeillade": initials["O"],
+        "jaserie": initials["I"],
+        "raclure": engraving,
+        "zinzolin": None,
+    }

@@ -127,6 +127,19 @@ def card(
     }
 
 
+#: Old alphabets often lack J, U and W, which were written I and V.
+INITIAL_STAND_INS = {"J": "I", "U": "V", "W": "V", "I": "J", "V": "U"}
+
+
+def initial_of(word: str, initials: Mapping[str, Mapping[str, object]]) -> dict | None:
+    """The decorated initial standing in for a missing engraving: the word's first letter,
+    without its accent (« Œ » is an O), or the letter old printers used for it."""
+    first = unicodedata.normalize("NFKD", word.strip()[:1]).encode("ascii", "ignore").decode()
+    letter = {"Œ": "O", "Æ": "A"}.get(word.strip()[:1].upper(), first.upper())
+    chosen = initials.get(letter) or initials.get(INITIAL_STAND_INS.get(letter, ""))
+    return dict(chosen) if chosen is not None else None
+
+
 def _json(value: object) -> bytes:
     return (json.dumps(value, ensure_ascii=False, indent=2) + "\n").encode("utf-8")
 
@@ -139,11 +152,14 @@ def build(
     released_at: datetime,
     engravings: Mapping[str, Mapping[str, object]] | None = None,
     pronunciations: Mapping[str, Mapping[str, object]] | None = None,
+    initials: Mapping[str, Mapping[str, object]] | None = None,
 ) -> dict[str, bytes]:
     """Every file of the release, keyed by path relative to the release folder. `engravings`
     holds the rendered engraving of each card that has one (data/gravures/out/rendered.json),
-    `pronunciations` its spoken word (data/prononciation/out/rendered.json)."""
+    `pronunciations` its spoken word (data/prononciation/out/rendered.json). A card without an
+    engraving shows the decorated initial of its word, from `initials`, when there is one."""
     engravings = engravings or {}
+    initials = initials or {}
     pronunciations = pronunciations or {}
     files: dict[str, bytes] = {}
     entries = []
@@ -161,7 +177,7 @@ def build(
                     row,
                     collection.id,
                     frequency_of(word),
-                    engravings.get(slug(word)),
+                    engravings.get(slug(word)) or initial_of(word, initials),
                     pronunciations.get(slug(word)),
                 )
                 if built is None:

@@ -23,8 +23,12 @@ gravures-report   counts, rejections by reason and cost so far
                   --release <dir> (default: the latest one). Data in data/gravures/.
                   --round 2: second round for the cards still without an engraving, with
                   wider queries, a laxer pick and the first round's other candidates.
+                  --round 3: last round, from queries written by hand in queries-3.jsonl
+                  (gravures-search, then gravures-pick), never showing a file seen before.
 gravures-render   download the approved engravings of data/gravures/validation.json and render
-                  their ink and colour plate (WebP, data/gravures/out/), read by release
+                  their ink and colour plate (WebP, data/gravures/out/), read by release; also
+                  the decorated initials of data/gravures/lettrines.json, which release shows
+                  on the cards without an engraving
 
 prononciation-notation  phonetic notation of every card of the latest release (Littré checked
                   by eSpeak NG, Wiktionnaire deciding), data/prononciation/notation.json; lists
@@ -220,6 +224,7 @@ def command_release() -> None:
             datetime.now(UTC),
             engravings,
             pronunciations,
+            engraving.load_initials(),
         )
     except release.ReleaseError as error:
         raise SystemExit(f"Version refusée : {error}") from error
@@ -236,12 +241,19 @@ def command_release() -> None:
         c["id"]
         for entry in manifest["collections"]
         for c in json.loads(files[entry["file"]])["cards"]
-        if c["engraving"] is not None
+        if c["engraving"] is not None and c["id"] in engravings
     }
     missing = sorted(set(engravings) - released)
     print(
         f"{len(released)} cartes avec gravure" + (f" (hors version : {missing})" if missing else "")
     )
+    lettered = sum(
+        1
+        for entry in manifest["collections"]
+        for c in json.loads(files[entry["file"]])["cards"]
+        if c["engraving"] is not None and c["id"] not in engravings
+    )
+    print(f"{lettered} cartes avec une lettrine à la place")
     spoken = sum(
         1
         for entry in manifest["collections"]
@@ -273,10 +285,9 @@ def command_gravures(
     yes: bool,
     round_number: int,
 ) -> None:
-    if round_number == 2:
-        gravures.start_second_round()
-    elif round_number != 1:
-        raise SystemExit("--round : 1 ou 2")
+    if round_number not in (1, 2, 3):
+        raise SystemExit("--round : 1, 2 ou 3")
+    gravures.start_round(round_number)
     cards, catalogue = gravure_cards(release_dir, ids, limit)
     if command == "gravures-search":
         gravures.run_search(cards)
@@ -398,7 +409,7 @@ def main() -> None:
         "--release", default=None, help="gravures-*, prononciation-notation: release directory name"
     )
     parser.add_argument(
-        "--round", type=int, default=1, help="gravures-*: 2 for the cards still without one"
+        "--round", type=int, default=1, help="gravures-*: 2 or 3 for the cards still without one"
     )
     parser.add_argument("--yes", action="store_true", help="approve a step above a few dollars")
     args = parser.parse_args()

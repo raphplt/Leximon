@@ -39,10 +39,10 @@ AUTHORS_FILE = GRAVURES_DIR / "authors.json"
 BATCHES_FILE = GRAVURES_DIR / "batches.jsonl"
 PICKS_FILE = GRAVURES_DIR / "picks.jsonl"
 THUMBS_DIR = GRAVURES_DIR / "thumbs"
+#: Written by `gravures-render` (engraving.RENDERED_FILE), read to avoid giving an image twice.
+RENDERED_FILE = GRAVURES_DIR / "out" / "rendered.json"
 FIRST_ROUND_QUERIES_FILE = QUERIES_FILE
-FIRST_ROUND_SEARCH_FILE = SEARCH_FILE
 FIRST_ROUND_PICKS_FILE = PICKS_FILE
-SECOND_ROUND_SEARCH_FILE = GRAVURES_DIR / "search-2.jsonl"
 
 #: Generic on purpose: never any personal data (name, email, account) in a request.
 USER_AGENT = "LeximonContentPipeline/0.1 (https://leximon.fr; contact@leximon.fr)"
@@ -155,10 +155,14 @@ def load_searches() -> dict[str, dict]:
     return _latest_by_card(SEARCH_FILE, lambda r: True)
 
 
+def round_file(stem: str, number: int, suffix: str = ".jsonl") -> Path:
+    """`search.jsonl` for the first round, `search-2.jsonl` for the second, and so on."""
+    return GRAVURES_DIR / (f"{stem}{suffix}" if number == 1 else f"{stem}-{number}{suffix}")
+
+
 def searches_of_round(number: int) -> dict[str, dict]:
-    """Searches of the first or second round, whichever round the run is in."""
-    path = FIRST_ROUND_SEARCH_FILE if number == 1 else SECOND_ROUND_SEARCH_FILE
-    return _latest_by_card(path, lambda r: True)
+    """Searches of the given round, whichever round the run is in."""
+    return _latest_by_card(round_file("search", number), lambda r: True)
 
 
 def load_picks() -> dict[str, dict]:
@@ -170,8 +174,8 @@ def spent(path: Path) -> float:
 
 
 def spent_so_far() -> float:
-    """Queries and picks of both rounds."""
-    files = {FIRST_ROUND_QUERIES_FILE, FIRST_ROUND_PICKS_FILE, QUERIES_FILE, PICKS_FILE}
+    """Queries and picks of every round."""
+    files = {*GRAVURES_DIR.glob("queries*.jsonl"), *GRAVURES_DIR.glob("picks*.jsonl")}
     return sum(spent(path) for path in files)
 
 
@@ -592,6 +596,24 @@ class Wikimedia:
         pages = sorted(payload.get("query", {}).get("pages", []), key=lambda p: p["index"])
         return [hit for page in pages if (hit := _hit(page, query)) is not None]
 
+    def files(self, titles: Sequence[str]) -> dict[str, dict]:
+        """The same fields as a search hit, for files named in advance (at most 50)."""
+        payload = self.api(
+            COMMONS_API,
+            {
+                "action": "query",
+                "titles": "|".join(titles),
+                "prop": "imageinfo|categories",
+                "cllimit": "max",
+                "iiprop": "url|size|extmetadata",
+                "iiurlwidth": str(THUMB_WIDTH),
+                "iiextmetadatafilter": "LicenseShortName|License|UsageTerms|Artist|"
+                "DateTimeOriginal|ImageDescription|Credit|ObjectName|AttributionRequired",
+            },
+        )
+        pages = payload.get("query", {}).get("pages", [])
+        return {hit["title"]: hit for page in pages if (hit := _hit(page, "")) is not None}
+
     def death_by_qids(self, qids: Sequence[str]) -> int | None:
         missing = [q for q in qids if f"Q:{q}" not in self.authors]
         if missing:
@@ -821,6 +843,14 @@ def second_round_candidates(
     return [{**candidate, "n": n} for n, candidate in enumerate(merged, start=1)]
 
 
+def engraved_titles() -> frozenset[str]:
+    """Commons files already engraved on a card: a card never takes another one's image."""
+    if not RENDERED_FILE.exists():
+        return frozenset()
+    cards = json.loads(RENDERED_FILE.read_text(encoding="utf-8"))["cards"]
+    return frozenset(str(entry["title"]) for entry in cards.values())
+
+
 def run_search(cards: Sequence[Card]) -> None:
     queries = load_queries()
     done = load_searches()
@@ -831,7 +861,9 @@ def run_search(cards: Sequence[Card]) -> None:
         f"{waiting} sans requêtes (lancer gravures-queries)",
         flush=True,
     )
-    first_round = _latest_by_card(FIRST_ROUND_SEARCH_FILE, lambda r: True) if ROUND == 2 else {}
+    first_round = searches_of_round(1) if ROUND == 2 else {}
+    earlier = [searches_of_round(n) for n in range(1, ROUND)]
+    taken = engraved_titles() if ROUND > 2 else frozenset()
     refused_titles = {
         card: row["pick_title"]
         for card, row in _latest_by_card(FIRST_ROUND_PICKS_FILE, lambda r: True).items()
@@ -844,8 +876,14 @@ def run_search(cards: Sequence[Card]) -> None:
         for index, card in enumerate(todo, start=1):
             card_queries = queries[card.id]["queries"]
             first = first_round.get(card.id, {})
-            seen = frozenset(
-                c["title"] for c in [*first.get("candidates", []), *first.get("rejected", [])]
+            # Files already examined for this card in an earlier round are not shown again.
+            seen = taken | frozenset(
+                c["title"]
+                for rows in earlier
+                for c in [
+                    *rows.get(card.id, {}).get("candidates", []),
+                    *rows.get(card.id, {}).get("rejected", []),
+                ]
             )
             try:
                 kept, rejected, found = candidates_for(wiki, card_queries, seen)
@@ -1260,22 +1298,25 @@ ROUND = 1
 PREVIOUS_QUERIES: dict[str, list[str]] = {}
 
 
-def start_second_round() -> None:
-    """Points every step at the second round's files and prompts (the first round's stay as they
-    are, and its spending counts in the budget)."""
+def start_round(number: int) -> None:
+    """Points every step at the round's files and prompts (earlier rounds' files stay as they
+    are, and their spending counts in the budget). From the second round on, the prompts are the
+    laxer ones; the third round's queries are written by hand in `queries-3.jsonl`."""
     global ROUND, QUERIES_FILE, SEARCH_FILE, BATCHES_FILE, PICKS_FILE, THUMBS_DIR
     global QUERY_SYSTEM, PICK_SYSTEM
+    if number == 1:
+        return
     PREVIOUS_QUERIES.update(
         {
             card: row["queries"]
-            for card, row in _latest_by_card(QUERIES_FILE, lambda r: True).items()
+            for card, row in _latest_by_card(FIRST_ROUND_QUERIES_FILE, lambda r: True).items()
         }
     )
-    ROUND = 2
-    QUERIES_FILE = GRAVURES_DIR / "queries-2.jsonl"
-    SEARCH_FILE = SECOND_ROUND_SEARCH_FILE
-    BATCHES_FILE = GRAVURES_DIR / "batches-2.jsonl"
-    PICKS_FILE = GRAVURES_DIR / "picks-2.jsonl"
-    THUMBS_DIR = GRAVURES_DIR / "thumbs-2"
+    ROUND = number
+    QUERIES_FILE = round_file("queries", number)
+    SEARCH_FILE = round_file("search", number)
+    BATCHES_FILE = round_file("batches", number)
+    PICKS_FILE = round_file("picks", number)
+    THUMBS_DIR = round_file("thumbs", number, suffix="")
     QUERY_SYSTEM = QUERY_SYSTEM_2
     PICK_SYSTEM = PICK_SYSTEM_2

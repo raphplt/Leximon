@@ -32,6 +32,11 @@ from . import gravures
 from .gravures import GRAVURES_DIR
 
 VALIDATION_FILE = GRAVURES_DIR / "validation.json"
+#: The alphabet of decorated initials shown on a card that has no engraving (chosen by hand):
+#: {"letters": {"A": {"title": "File:…", "crop": […], "author": …, "year": …}, …}}.
+INITIALS_FILE = GRAVURES_DIR / "lettrines.json"
+#: Commons fields of those files, fetched once.
+INITIALS_FILES_FILE = GRAVURES_DIR / "lettrines-files.json"
 ORIGINALS_DIR = GRAVURES_DIR / "originals"
 OUT_DIR = GRAVURES_DIR / "out"
 RENDERED_FILE = OUT_DIR / "rendered.json"
@@ -343,6 +348,17 @@ def engraving_entry(
     }
 
 
+def load_initials(path: Path = RENDERED_FILE) -> dict[str, dict[str, object]]:
+    """The rendered decorated initial of each letter, with the catalogue fields only."""
+    if not path.exists():
+        return {}
+    data = json.loads(path.read_text(encoding="utf-8"))
+    return {
+        letter: {field: entry[field] for field in CONTRACT_FIELDS}
+        for letter, entry in data.get("initials", {}).items()
+    }
+
+
 def load_engravings(path: Path = RENDERED_FILE) -> dict[str, dict[str, object]]:
     """The `engraving` of every rendered card, with the catalogue fields only. Empty before the
     first `gravures-render`: every card is then released without an engraving."""
@@ -382,8 +398,9 @@ def original_for(
 def run_render() -> None:
     validation = json.loads(VALIDATION_FILE.read_text(encoding="utf-8"))
     approved = approved_cards(validation)
-    # An engraving approved in the second round points at that round's candidates.
-    searches = {1: gravures.searches_of_round(1), 2: gravures.searches_of_round(2)}
+    # An engraving approved in a later round points at that round's candidates.
+    rounds = {int(entry.get("round", 1)) for entry in approved.values()}  # type: ignore[arg-type]
+    searches = {n: gravures.searches_of_round(n) for n in rounds}
     print(f"gravures validées : {len(approved)} sur {len(validation)}")
     entries: dict[str, dict[str, object]] = {}
     files: dict[str, bytes] = {}
@@ -408,12 +425,65 @@ def run_render() -> None:
                 f" · {row['credit']}",
                 flush=True,
             )
-    write_out(entries, files)
+        initials = render_initials(http, files)
+    write_out(entries, files, initials)
     total = sum(len(b) for b in files.values())
-    print(f"{len(entries)} gravures, {total / 1024:.1f} Ko en tout, dans {OUT_DIR}")
+    print(
+        f"{len(entries)} gravures et {len(initials)} lettrines, {total / 1024:.1f} Ko en tout, "
+        f"dans {OUT_DIR}"
+    )
 
 
-def write_out(entries: Mapping[str, Mapping[str, object]], files: Mapping[str, bytes]) -> None:
+def initial_files(letters: Mapping[str, Mapping[str, object]]) -> dict[str, dict]:
+    """Commons fields of every initial, fetched once and kept in INITIALS_FILES_FILE."""
+    known = (
+        json.loads(INITIALS_FILES_FILE.read_text(encoding="utf-8"))
+        if INITIALS_FILES_FILE.exists()
+        else {}
+    )
+    missing = sorted({str(e["title"]) for e in letters.values()} - known.keys())
+    if missing:
+        wiki = gravures.Wikimedia()
+        try:
+            for start in range(0, len(missing), 50):
+                known.update(wiki.files(missing[start : start + 50]))
+        finally:
+            wiki.close()
+        INITIALS_FILES_FILE.write_text(
+            json.dumps(known, ensure_ascii=False, indent=1), encoding="utf-8"
+        )
+    return known
+
+
+def render_initials(http: httpx.Client, files: dict[str, bytes]) -> dict[str, dict[str, object]]:
+    """The decorated initials of INITIALS_FILE, rendered like engravings; `files` gets theirs."""
+    if not INITIALS_FILE.exists():
+        return {}
+    letters = json.loads(INITIALS_FILE.read_text(encoding="utf-8"))["letters"]
+    commons = initial_files(letters)
+    entries: dict[str, dict[str, object]] = {}
+    for letter, choice in sorted(letters.items()):
+        hit = commons.get(str(choice["title"]))
+        if hit is None:
+            raise RuntimeError(f"lettrine {letter} : {choice['title']} introuvable sur Commons")
+        name = f"lettrine-{letter.lower()}"
+        original = original_for(http, name, {**hit, "n": 1})
+        with Image.open(original) as image:
+            grey = prepare(image, choice.get("crop"))
+        rendered = render(grey)
+        row = engraving_entry(name, rendered, hit, {"pick": 1, **choice})
+        entries[letter] = row
+        files[str(row["ink"])] = rendered.ink
+        files[str(row["fill"])] = rendered.fill
+        print(f"lettrine {letter} : {rendered.size[0]}x{rendered.size[1]} · {row['credit']}")
+    return entries
+
+
+def write_out(
+    entries: Mapping[str, Mapping[str, object]],
+    files: Mapping[str, bytes],
+    initials: Mapping[str, Mapping[str, object]] | None = None,
+) -> None:
     """Writes the files, drops those no card refers to any more, then the manifest."""
     folder = OUT_DIR / PUBLISHED_FOLDER
     folder.mkdir(parents=True, exist_ok=True)
@@ -424,7 +494,11 @@ def write_out(entries: Mapping[str, Mapping[str, object]], files: Mapping[str, b
             stale.unlink()
     RENDERED_FILE.write_text(
         json.dumps(
-            {"renderVersion": RENDER_VERSION, "cards": dict(sorted(entries.items()))},
+            {
+                "renderVersion": RENDER_VERSION,
+                "cards": dict(sorted(entries.items())),
+                "initials": dict(sorted((initials or {}).items())),
+            },
             ensure_ascii=False,
             indent=1,
         )
