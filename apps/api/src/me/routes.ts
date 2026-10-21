@@ -22,6 +22,7 @@ import {
 import { schema } from "@leximon/db";
 import { and, asc, eq, gt, or, sql } from "drizzle-orm";
 import { Hono } from "hono";
+import { ADMIN_ROLE } from "../auth";
 import { guestOpensSql } from "../boosters/open-booster";
 import type { AppEnv } from "../context";
 import { playerRateLimit } from "../middleware/rate-limit";
@@ -142,7 +143,11 @@ export function meRoutes() {
       return c.json({ error: "unauthorized" }, 401);
     }
     if (session.user.isAnonymous !== true) {
-      return c.json<AccountResponse>({ kind: "member", email: session.user.email });
+      return c.json<AccountResponse>({
+        kind: "member",
+        email: session.user.email,
+        isAdmin: session.user.role === ADMIN_ROLE,
+      });
     }
     const rules = guestRulesAt(GUEST_SCHEDULE, Date.now());
     const counted = await c.var.db.execute<{ opened: number | null }>(

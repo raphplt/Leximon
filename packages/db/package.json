@@ -17,7 +17,8 @@
     "test:integration": "vitest run",
     "typecheck": "tsc --noEmit",
     "test": "vitest run --config vitest.unit.config.ts",
-    "catalog:publish": "node --env-file-if-exists=../../.env --import ../config/node/resolve-ts.mjs scripts/publish-catalog.ts"
+    "catalog:publish": "node --env-file-if-exists=../../.env --import ../config/node/resolve-ts.mjs scripts/publish-catalog.ts",
+    "admin:grant": "node --env-file-if-exists=../../.env --import ../config/node/resolve-ts.mjs scripts/grant-admin.ts"
   },
   "dependencies": {
     "@leximon/contract": "workspace:*",

@@ -61,7 +61,8 @@ export class ApiError extends Error {
   }
 }
 
-async function send(path: string, init: RequestInit = {}): Promise<Response> {
+/** A request with the session cookie, never signing in: the back office uses it as is. */
+export async function send(path: string, init: RequestInit = {}): Promise<Response> {
   try {
     return await fetch(`${API_URL}${path}`, { ...init, credentials: "include" });
   } catch {
@@ -69,7 +70,7 @@ async function send(path: string, init: RequestInit = {}): Promise<Response> {
   }
 }
 
-async function parse<T>(response: Response, schema: z.ZodType<T>): Promise<T> {
+export async function parse<T>(response: Response, schema: z.ZodType<T>): Promise<T> {
   const body: unknown = await response.json().catch(() => null);
   const result = schema.safeParse(body);
   if (!result.success) throw new ApiError("unexpected_response", response.status);

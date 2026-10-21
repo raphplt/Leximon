@@ -5,7 +5,6 @@ import {
   cardCount,
   codeErrorMessage,
   confirmStep,
-  doneMessage,
   needsConfirmation,
   needsNewCode,
 } from "./account-flow";
@@ -67,13 +66,6 @@ describe("needsConfirmation", () => {
   });
 });
 
-describe("doneMessage", () => {
-  it("says the collection is safe after a sign-up", () => {
-    expect(doneMessage("transfer")).toContain("à l'abri");
-    expect(doneMessage("abandon")).toBe("Tu as retrouvé ta collection.");
-  });
-});
-
 describe("code errors", () => {
   it("keeps the code after a typo, asks for a new one when it is used up", () => {
     expect(needsNewCode("invalid_code")).toBe(false);
@@ -83,6 +75,8 @@ describe("code errors", () => {
   });
 
   it("reassures the player when the transfer failed", () => {
-    expect(codeErrorMessage(ACCOUNT_ERROR_CODES.accountLinkFailed)).toContain("rien n'est perdu");
+    expect(codeErrorMessage(ACCOUNT_ERROR_CODES.accountLinkFailed)).toContain(
+      "Tes cartes sont toujours là",
+    );
   });
 });

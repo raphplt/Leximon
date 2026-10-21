@@ -238,7 +238,7 @@ describe("signing up from a guest (P37)", () => {
     const { user } = (await response.json()) as { user: { id: string; name: string } };
     expect(user.name).toBe("");
 
-    expect(await whoIs(cookie)).toEqual({ kind: "member", email });
+    expect(await whoIs(cookie)).toEqual({ kind: "member", email, isAdmin: false });
     expect(await cardsOf(user.id)).toEqual(cardsBefore);
     const [wallet] = await db
       .select()
@@ -379,7 +379,11 @@ describe("signing in to an account that plays (P54)", () => {
     // Warned: the guest is abandoned, its whole game stays behind on it.
     const accepted = await signIn(account.email, stillGuest, { acceptGuestLoss: true });
     expect(accepted.response.status).toBe(200);
-    expect(await whoIs(accepted.cookie)).toEqual({ kind: "member", email: account.email });
+    expect(await whoIs(accepted.cookie)).toEqual({
+      kind: "member",
+      email: account.email,
+      isAdmin: false,
+    });
     expect(await cardsOf(account.userId)).toEqual({ "test-a-common-1": 2, "test-a-common-2": 1 });
     expect(await cardsOf(guest.userId)).toEqual({ "test-a-common-1": 3, "test-a-epic-1": 1 });
     expect(
@@ -446,6 +450,7 @@ describe("signing in to an account that plays (P54)", () => {
     expect(await whoIs(applySetCookies(empty.cookie, response))).toEqual({
       kind: "member",
       email: account.email,
+      isAdmin: false,
     });
     expect(await cardsOf(account.userId)).toEqual({ "test-b-common-1": 1 });
     expect(await linkOf(empty.userId)).toMatchObject({

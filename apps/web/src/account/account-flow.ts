@@ -1,6 +1,5 @@
 import {
   ACCOUNT_ERROR_CODES,
-  type GuestLinkPreviewOutcome,
   type LinkPreviewError,
   type LinkPreviewResponse,
 } from "@leximon/contract";
@@ -36,7 +35,7 @@ export function confirmStep(preview: LinkPreviewResponse, noun: PackNoun): Confi
       return preview.accountExists
         ? {
             title: "Connecte-toi",
-            text: `Ton compte est encore vide : ${withGame(preview.guestCards, noun)} le rejoignent.`,
+            text: `${capitalize(withGame(preview.guestCards, noun))} passent sur ton compte.`,
             warning: null,
             confirmLabel: "Me connecter",
             needsAge: false,
@@ -44,7 +43,7 @@ export function confirmStep(preview: LinkPreviewResponse, noun: PackNoun): Confi
           }
         : {
             title: "Crée ton compte",
-            text: `${capitalize(withGame(preview.guestCards, noun))} te suivent : tu les retrouveras sur tous tes appareils.`,
+            text: `${capitalize(withGame(preview.guestCards, noun))} passent sur ton nouveau compte.`,
             warning: null,
             confirmLabel: "Créer mon compte",
             needsAge: true,
@@ -52,10 +51,10 @@ export function confirmStep(preview: LinkPreviewResponse, noun: PackNoun): Confi
           };
     case "abandon":
       return {
-        title: "Tes cartes d'invité seront perdues",
-        text: "Cette adresse a déjà un compte qui joue : seul un nouveau compte peut accueillir une partie commencée en invité. Pour la garder, crée plutôt un compte avec une autre adresse.",
-        warning: `Si tu te connectes, ${lostGame(preview.guestCards)}, sans retour possible.`,
-        confirmLabel: "Me connecter quand même",
+        title: "Tu vas perdre cette partie",
+        text: "Cette adresse a déjà un compte avec sa propre collection. Pour garder celle-ci, crée un compte avec une autre adresse.",
+        warning: `Si tu te connectes, ${lostGame(preview.guestCards)}.`,
+        confirmLabel: "Perdre cette partie et me connecter",
         needsAge: false,
         acceptsLoss: true,
       };
@@ -63,7 +62,7 @@ export function confirmStep(preview: LinkPreviewResponse, noun: PackNoun): Confi
       return preview.accountExists
         ? {
             title: "Connecte-toi",
-            text: "Tu retrouves ta collection.",
+            text: "Ta collection t'attend.",
             warning: null,
             confirmLabel: "Me connecter",
             needsAge: false,
@@ -71,7 +70,7 @@ export function confirmStep(preview: LinkPreviewResponse, noun: PackNoun): Confi
           }
         : {
             title: "Crée ton compte",
-            text: "Tu retrouveras ta collection sur tous tes appareils.",
+            text: "Ta collection sera sur tous tes appareils.",
             warning: null,
             confirmLabel: "Créer mon compte",
             needsAge: true,
@@ -101,25 +100,14 @@ function withGame(guestCards: number, noun: PackNoun): string {
     : `tes ${cardCount(guestCards)}, tes ${noun.many} et ta progression`;
 }
 
-/** Message once signed in. */
-export function doneMessage(outcome: GuestLinkPreviewOutcome): string {
-  switch (outcome) {
-    case "transfer":
-      return "Ton compte est prêt : ta collection est à l'abri.";
-    case "abandon":
-    case "none":
-      return "Tu as retrouvé ta collection.";
-  }
-}
-
 export function sendErrorMessage(reason: Extract<SendCodeResult, { kind: "refused" }>["reason"]) {
   switch (reason) {
     case "invalid_email":
-      return "Cette adresse ne semble pas valide.";
+      return "Il manque quelque chose à cette adresse.";
     case "rate_limited":
       return "Attends une minute avant de redemander un code.";
     case "unavailable":
-      return "L'envoi des e-mails n'est pas encore ouvert. Réessaie plus tard.";
+      return "Les e-mails ne partent pas encore. Réessaie plus tard.";
   }
 }
 
@@ -130,23 +118,23 @@ export function codeErrorMessage(error: CodeError): string {
   switch (error) {
     case "invalid_code":
     case "INVALID_OTP":
-      return "Ce n'est pas le bon code. Vérifie le dernier e-mail reçu.";
+      return "Mauvais code. Prends celui du dernier e-mail.";
     case "code_expired":
     case "OTP_EXPIRED":
-      return "Ce code a expiré. Demande-en un nouveau.";
+      return "Code expiré. Demandes-en un autre.";
     case "too_many_attempts":
     case "TOO_MANY_ATTEMPTS":
-      return "Trop d'essais avec ce code. Demande-en un nouveau.";
+      return "Trop d'essais. Demande un autre code.";
     case "rate_limited":
-      return "Trop d'essais d'un coup. Attends une minute.";
+      return "Doucement. Réessaie dans une minute.";
     case ACCOUNT_ERROR_CODES.ageConfirmationRequired:
-      return "Coche la case sur ton âge, puis demande un nouveau code.";
+      return "Coche la case de l'âge, puis demande un autre code.";
     case ACCOUNT_ERROR_CODES.guestLossNotAcknowledged:
-      return "Ton compte vient de changer. Demande un nouveau code pour voir ce que deviennent tes cartes.";
+      return "Ton compte a changé entre-temps. Demande un autre code.";
     case ACCOUNT_ERROR_CODES.accountLinkFailed:
-      return "Ta collection n'a pas pu rejoindre ton compte. Tu es toujours en invité et rien n'est perdu : réessaie avec un nouveau code.";
+      return "Le transfert a échoué. Tes cartes sont toujours là, réessaie avec un autre code.";
     default:
-      return "Ça n'a pas marché. Réessaie dans un moment.";
+      return "Ça n'a pas marché. Réessaie.";
   }
 }
 

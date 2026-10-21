@@ -1,6 +1,6 @@
 /**
  * Tables used by Better Auth (D-006), in its expected shape with plural table names.
- * Changes here must follow Better Auth's schema for the plugins in use (anonymous).
+ * Changes here must follow Better Auth's schema for the plugins in use (anonymous, admin).
  */
 
 import { boolean, index, pgTable, text, timestamp } from "drizzle-orm/pg-core";
@@ -21,6 +21,12 @@ export const users = pgTable("users", {
   image: text(),
   /** Guest account created by the anonymous plugin, before any sign-up. */
   isAnonymous: boolean().default(false).notNull(),
+  /** "admin" opens the back office; granted only by `pnpm admin:grant`, never by a request. */
+  role: text(),
+  /** A banned player can no longer sign in (admin plugin); their sessions are revoked. */
+  banned: boolean().default(false),
+  banReason: text(),
+  banExpires: timestamp({ withTimezone: true }),
   ...timestamps,
 });
 
@@ -32,6 +38,8 @@ export const sessions = pgTable(
     token: text().notNull().unique(),
     ipAddress: text(),
     userAgent: text(),
+    /** Required by the admin plugin's schema; impersonation itself is never exposed. */
+    impersonatedBy: text(),
     userId: text()
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),

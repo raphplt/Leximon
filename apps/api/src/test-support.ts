@@ -82,7 +82,12 @@ export async function signInAsMember(
     .update(schema.users)
     .set({ isAnonymous: false })
     .where(eq(schema.users.id, player.userId));
-  return player;
+  // The signed cookie cache still says "guest": dropped, the session is read from the database.
+  const cookie = player.cookie
+    .split("; ")
+    .filter((pair) => !pair.includes("session_data"))
+    .join("; ");
+  return { ...player, cookie };
 }
 
 /** Backdates an account, e.g. past the minimum age to trade (D-026). */

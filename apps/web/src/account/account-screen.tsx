@@ -1,6 +1,6 @@
 "use client";
 
-import type { GuestLinkPreviewOutcome, LinkPreviewResponse } from "@leximon/contract";
+import type { LinkPreviewResponse } from "@leximon/contract";
 import Link from "next/link";
 import { type FormEvent, useCallback, useEffect, useId, useState } from "react";
 import { fetchAccount, previewSignIn, sendSignInCode, signInWithCode, signOut } from "@/lib/api";
@@ -10,7 +10,6 @@ import {
   type CodeError,
   codeErrorMessage,
   confirmStep,
-  doneMessage,
   needsConfirmation,
   needsNewCode,
   sendErrorMessage,
@@ -20,7 +19,7 @@ import styles from "./account-screen.module.css";
 type Step =
   | { readonly kind: "loading" }
   | { readonly kind: "failed" }
-  | { readonly kind: "member"; readonly email: string }
+  | { readonly kind: "member"; readonly email: string; readonly isAdmin: boolean }
   | { readonly kind: "email" }
   | { readonly kind: "code"; readonly email: string }
   | {
@@ -28,10 +27,9 @@ type Step =
       readonly email: string;
       readonly code: string;
       readonly preview: LinkPreviewResponse;
-    }
-  | { readonly kind: "done"; readonly outcome: GuestLinkPreviewOutcome };
+    };
 
-const OFFLINE = "Pas de connexion pour l'instant. Réessaie dans un moment.";
+const OFFLINE = "Pas de connexion. Réessaie.";
 
 /**
  * Signing up or in with a code sent by e-mail (D-030). One flow for both: whether the address has
@@ -47,7 +45,9 @@ export function AccountScreen() {
     try {
       const account = await fetchAccount();
       setStep(
-        account.kind === "member" ? { kind: "member", email: account.email } : { kind: "email" },
+        account.kind === "member"
+          ? { kind: "member", email: account.email, isAdmin: account.isAdmin }
+          : { kind: "email" },
       );
     } catch {
       setStep({ kind: "failed" });
@@ -112,7 +112,8 @@ export function AccountScreen() {
     });
     if (result.kind === "signed_in") {
       forgetProgress();
-      go({ kind: "done", outcome: preview.outcome });
+      // Straight back to the game, with a full load: every screen then reads the account afresh.
+      window.location.assign("/jouer");
     } else showCodeError(result.code, email);
   };
 
@@ -139,7 +140,7 @@ export function AccountScreen() {
 
       {step.kind === "failed" && (
         <div className={styles.panel}>
-          <p className={styles.hint}>Impossible de savoir qui joue pour l'instant.</p>
+          <p className={styles.hint}>Le serveur lambine.</p>
           <button type="button" className={styles.secondary} onClick={() => void load()}>
             Réessayer
           </button>
@@ -149,9 +150,13 @@ export function AccountScreen() {
       {step.kind === "member" && (
         <div className={styles.panel}>
           <p className={styles.text}>
-            Tu es connecté avec <strong className={styles.email}>{step.email}</strong>. Ta
-            collection te suit sur tous tes appareils.
+            Connecté avec <strong className={styles.email}>{step.email}</strong>.
           </p>
+          {step.isAdmin && (
+            <Link href="/admin" className={styles.secondary}>
+              Administration
+            </Link>
+          )}
           <button type="button" className={styles.secondary} disabled={busy} onClick={leave}>
             {busy ? "Un instant…" : "Me déconnecter"}
           </button>
@@ -183,8 +188,6 @@ export function AccountScreen() {
         />
       )}
 
-      {step.kind === "done" && <Done outcome={step.outcome} />}
-
       <p className={styles.error} role="alert">
         {error}
       </p>
@@ -198,8 +201,6 @@ function titleOf(step: Step): string {
       return "Tu es connecté";
     case "code":
       return "Vérifie tes e-mails";
-    case "done":
-      return "C'est fait !";
     case "confirm":
       return "Presque fini";
     default:
@@ -222,10 +223,7 @@ function EmailForm({
   };
   return (
     <form className={styles.panel} onSubmit={submit}>
-      <p className={styles.text}>
-        Tu joues en invité : ta collection ne vit que dans ce navigateur. Crée un compte pour la
-        retrouver partout, ou connecte-toi si tu en as déjà un.
-      </p>
+      <p className={styles.text}>Sans compte, ta collection reste coincée dans ce navigateur.</p>
       <label htmlFor={id} className={styles.label}>
         Ton adresse e-mail
       </label>
@@ -242,9 +240,6 @@ function EmailForm({
       <button type="submit" className={styles.primary} disabled={busy || email.trim() === ""}>
         {busy ? "Envoi…" : "Recevoir un code"}
       </button>
-      <p className={styles.muted}>
-        Pas de mot de passe : on t'envoie un code à 6 chiffres. On ne garde que ton adresse.
-      </p>
     </form>
   );
 }
@@ -271,8 +266,7 @@ function CodeForm({
   return (
     <form className={styles.panel} onSubmit={submit}>
       <p className={styles.text}>
-        On a envoyé un code à 6 chiffres à <strong className={styles.email}>{email}</strong>. Il
-        reste valable 10 minutes.
+        Code envoyé à <strong className={styles.email}>{email}</strong>.
       </p>
       <label htmlFor={id} className={styles.label}>
         Ton code
@@ -290,7 +284,7 @@ function CodeForm({
         onChange={(event) => setCode(event.target.value.replace(/\D/g, ""))}
       />
       <button type="submit" className={styles.primary} disabled={busy || code.length !== 6}>
-        {busy ? "Vérification…" : "Continuer"}
+        {busy ? "Vérification…" : "Valider le code"}
       </button>
       <div className={styles.links}>
         <button type="button" className={styles.link} disabled={busy} onClick={onResend}>
@@ -363,21 +357,6 @@ function Confirm({
           </button>
         </>
       )}
-    </div>
-  );
-}
-
-function Done({ outcome }: { readonly outcome: GuestLinkPreviewOutcome }) {
-  const { noun } = usePackShape();
-  return (
-    <div className={styles.panel}>
-      <p className={styles.text}>{doneMessage(outcome)}</p>
-      <Link href="/jouer" className={styles.primary}>
-        Ouvrir des {noun.many}
-      </Link>
-      <Link href="/album" className={styles.secondary}>
-        Voir mon album
-      </Link>
     </div>
   );
 }

@@ -88,6 +88,11 @@ export const accountResponseSchema = z.discriminatedUnion("kind", [
     /** Boosters left before an account is required (P37). */
     boostersLeft: z.number().int().min(0),
   }),
-  z.object({ kind: z.literal("member"), email: z.string() }),
+  z.object({
+    kind: z.literal("member"),
+    email: z.string(),
+    /** Shows the link to the back office; the server checks the role on every admin route. */
+    isAdmin: z.boolean(),
+  }),
 ]);
 export type AccountResponse = z.infer<typeof accountResponseSchema>;

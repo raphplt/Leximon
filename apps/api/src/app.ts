@@ -6,6 +6,7 @@ import { requestId } from "hono/request-id";
 import { secureHeaders } from "hono/secure-headers";
 import { createEmailSender, type EmailSenderFactory } from "./account/email-sender";
 import { accountRoutes } from "./account/routes";
+import { adminRoutes } from "./admin/routes";
 import { AUTH_BASE_PATH, parseOrigins } from "./auth";
 import { createCardPoolLoader } from "./boosters/card-pool";
 import { boosterRoutes } from "./boosters/routes";
@@ -98,6 +99,8 @@ export function createApp(options: AppOptions = {}) {
   app.route("/trades", tradeRoutes());
   app.use("/players/*", withDatabase);
   app.route("/players", playerRoutes());
+  app.use("/admin/*", withDatabase);
+  app.route("/admin", adminRoutes());
   app.post("/waitlist", waitlistRateLimit);
   app.use("/waitlist", withDatabase);
   app.route("/waitlist", waitlistRoutes());

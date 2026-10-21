@@ -3,11 +3,14 @@ import { type Database, schema } from "@leximon/db";
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { APIError, createAuthMiddleware } from "better-auth/api";
-import { anonymous, emailOTP } from "better-auth/plugins";
+import { admin, anonymous, emailOTP } from "better-auth/plugins";
 import { type EmailSender, EmailSenderNotConfiguredError } from "./account/email-sender";
 import { linkGuestOnSignIn, readBodyFlag } from "./account/link-on-sign-in";
 
 export const AUTH_BASE_PATH = "/api/auth";
+
+/** Role that opens the back office, granted only from the command line (`pnpm admin:grant`). */
+export const ADMIN_ROLE = "admin";
 
 /** Sign-in codes (D-030): 6 digits, valid 10 minutes, 3 wrong attempts each. */
 export const SIGN_IN_CODE = { length: 6, expiresInS: 10 * 60, allowedAttempts: 3 } as const;
@@ -46,6 +49,13 @@ export function createAuth(env: Env, db: Database, emailSender: EmailSender) {
       anonymous({
         disableDeleteAnonymousUser: true,
         onLinkAccount: (data) => linkGuestOnSignIn(db, data),
+      }),
+      // Only for its schema (role, ban) and its sign-in refusal of banned players: its endpoints
+      // stay unreachable (AUTH_ROUTES in app.ts), the back office has its own routes (/admin).
+      admin({
+        adminRoles: [ADMIN_ROLE],
+        bannedUserMessage:
+          "Ce compte a été suspendu. Écris à contact@leximon.fr pour en savoir plus.",
       }),
       emailOTP({
         otpLength: SIGN_IN_CODE.length,
