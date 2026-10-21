@@ -46,6 +46,8 @@ class Entry:
     senses: tuple[Sense, ...]
     etymology: str
     history: tuple[HistoryItem, ...] = field(default_factory=tuple)
+    #: Littré's respelling, e.g. "ko-ro-gra-f'" (see `pronunciation.littre_to_ipa`).
+    pronunciation: str = ""
 
     @property
     def earliest_century(self) -> int | None:
@@ -101,6 +103,7 @@ def _citations(element: ET.Element, previous_author: list[str]) -> list[Citation
 def parse_entry(element: ET.Element) -> Entry:
     previous_author = [""]
     nature_el = element.find("entete/nature")
+    pronunciation_el = element.find("entete/prononciation")
     senses: list[Sense] = []
     corps = element.find("corps")
     if corps is not None:
@@ -137,6 +140,7 @@ def parse_entry(element: ET.Element) -> Entry:
         senses=tuple(senses),
         etymology=etymology,
         history=tuple(history),
+        pronunciation=_text(pronunciation_el) if pronunciation_el is not None else "",
     )
 
 

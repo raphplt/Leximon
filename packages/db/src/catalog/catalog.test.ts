@@ -2,7 +2,14 @@ import { createHash } from "node:crypto";
 import type { CatalogCard } from "@leximon/contract";
 import { describe, expect, it } from "vitest";
 import { planCatalog } from "./plan";
-import { engravingFiles, engravingProblems, parseRelease, type Release } from "./release";
+import {
+  engravingFiles,
+  engravingProblems,
+  parseRelease,
+  pronunciationFiles,
+  pronunciationProblems,
+  type Release,
+} from "./release";
 
 const encoder = new TextEncoder();
 
@@ -131,6 +138,51 @@ describe("engraving files", () => {
     expect(problems).toEqual([
       expect.stringMatching(/poue\.0123456789ab\.fill\.webp does not match its content/),
       expect.stringMatching(/raclure\.0123456789ab\.ink\.webp is referenced by a card but missing/),
+    ]);
+  });
+});
+
+describe("pronunciation files", () => {
+  const mp3 = encoder.encode("mp3");
+  const mp3Hash = createHash("sha256").update(mp3).digest("hex").slice(0, 12);
+  const pronunciation = { ipa: "pu", audio: `prononciation/poue.${mp3Hash}.mp3` };
+
+  it("lists the audio of the cards that have one", () => {
+    const release: Release = {
+      manifest: {
+        schemaVersion: 1,
+        version: "2026-10-21.1",
+        releasedAt: "2026-10-21T20:00:00.000Z",
+        collections: [],
+      },
+      collections: [
+        {
+          id: "fondateurs",
+          name: "Les Fondateurs",
+          cards: [
+            card("poue", { pronunciation }),
+            card("raclure", { pronunciation: null }),
+            card("vergogne"),
+          ],
+        },
+      ],
+    };
+    expect(pronunciationFiles(release)).toEqual([pronunciation.audio]);
+  });
+
+  it("refuses a missing file and a file whose content no longer matches its name", () => {
+    const problems = pronunciationProblems(
+      new Map<string, Uint8Array | undefined>([
+        [pronunciation.audio, mp3],
+        ["prononciation/raclure.0123456789ab.mp3", encoder.encode("other")],
+        ["prononciation/vergogne.0123456789ab.mp3", undefined],
+      ]),
+    );
+    expect(problems).toEqual([
+      expect.stringMatching(/raclure\.0123456789ab\.mp3 does not match its content/),
+      expect.stringMatching(
+        /vergogne\.0123456789ab\.mp3 is referenced by a card but missing \(run prononciation-audio\)/,
+      ),
     ]);
   });
 });

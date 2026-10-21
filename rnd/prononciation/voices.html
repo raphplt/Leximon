@@ -1,0 +1,26 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>speechSynthesis voices</title>
+<!-- Throwaway: lists the browser's speechSynthesis voices and reads the 20 hard words. -->
+<h1>Voix du navigateur</h1>
+<pre id="out"></pre>
+<script>
+const WORDS = ["ambesas","comput","orémus","tacet","palus","introït","chorographe","épichérème","nychthémère","picrochole","didrachme","casoar","lycanthrope","léthifère","apathiste","pensum","canzone","quinquatries","magnaud","faraud"];
+function list() {
+  const voices = speechSynthesis.getVoices();
+  document.getElementById("out").textContent =
+    navigator.userAgent + "\n" + voices.length + " voices\n" +
+    voices.filter(v => v.lang.startsWith("fr")).map(v => `${v.name} | ${v.lang} | local=${v.localService} | default=${v.default}`).join("\n");
+  return voices;
+}
+speechSynthesis.onvoiceschanged = list;
+list();
+window.readAll = (name, rate = 0.9) => {
+  const voice = speechSynthesis.getVoices().find(v => v.name === name);
+  for (const w of WORDS) {
+    const u = new SpeechSynthesisUtterance(w);
+    u.lang = "fr-FR"; u.rate = rate; if (voice) u.voice = voice;
+    speechSynthesis.speak(u);
+  }
+};
+</script>

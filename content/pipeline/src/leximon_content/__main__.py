@@ -26,6 +26,12 @@ gravures-report   counts, rejections by reason and cost so far
 gravures-render   download the approved engravings of data/gravures/validation.json and render
                   their ink and colour plate (WebP, data/gravures/out/), read by release
 
+prononciation-notation  phonetic notation of every card of the latest release (Littré checked
+                  by eSpeak NG, Wiktionnaire deciding), data/prononciation/notation.json; lists
+                  the words for the owner, to settle in data/prononciation/corrections.json
+prononciation-audio     read each settled notation with the Google voice (MP3,
+                  data/prononciation/out/), read by release; --limit N, --cards
+
 A step whose estimated cost exceeds a few dollars waits for --yes (the owner's approval).
 """
 
@@ -34,6 +40,8 @@ import asyncio
 import json
 from collections import Counter
 from datetime import UTC, date, datetime
+
+import httpx
 
 from . import (
     config,
@@ -45,6 +53,7 @@ from . import (
     littre,
     ngram,
     prescreen,
+    pronunciation,
     release,
     selection,
 )
@@ -201,9 +210,16 @@ def command_release() -> None:
     rows = directus.release_rows(directus.connect(), runs)
     version = release.next_version(release.RELEASES_DIR, date.today())
     engravings = engraving.load_engravings()
+    pronunciations = pronunciation.load_pronunciations()
     try:
         files = release.build(
-            collections, rows, ngram.frequency, version, datetime.now(UTC), engravings
+            collections,
+            rows,
+            ngram.frequency,
+            version,
+            datetime.now(UTC),
+            engravings,
+            pronunciations,
         )
     except release.ReleaseError as error:
         raise SystemExit(f"Version refusée : {error}") from error
@@ -226,6 +242,13 @@ def command_release() -> None:
     print(
         f"{len(released)} cartes avec gravure" + (f" (hors version : {missing})" if missing else "")
     )
+    spoken = sum(
+        1
+        for entry in manifest["collections"]
+        for c in json.loads(files[entry["file"]])["cards"]
+        if c["pronunciation"] is not None
+    )
+    print(f"{spoken} cartes avec prononciation")
     print(f"Version {version} écrite dans {target}. Publier : pnpm catalog:publish")
 
 
@@ -268,6 +291,73 @@ def command_gravures(
             asyncio.run(gravures.run_pick(cards, catalogue, yes))
 
 
+def command_pronunciation_notation(release_dir: str | None) -> None:
+    cards, _ = gravure_cards(release_dir, None, None)
+    entries = littre.index()
+    corrections = pronunciation.read_json(pronunciation.CORRECTIONS_FILE)
+    cache = pronunciation.read_json(pronunciation.WIKTIONARY_FILE)
+    wiktionary = pronunciation.fetch_wiktionary([c.word for c in cards], cache)
+    notations = []
+    for card in cards:
+        littre_entries = entries.get(card.word.lower(), ())
+        respelling = next((e.pronunciation for e in littre_entries if e.pronunciation), "")
+        notations.append(
+            pronunciation.decide(
+                card.id,
+                card.word,
+                respelling,
+                pronunciation.espeak_reading(card.word),
+                wiktionary.get(card.word, []),
+                corrections.get(card.id),
+            )
+        )
+    pronunciation.write_notations(notations)
+    counts = Counter(n.status for n in notations)
+    print(", ".join(f"{status} {count}" for status, count in counts.most_common()))
+    waiting = [n for n in notations if n.status == "a-relire"]
+    if waiting:
+        print(
+            f"À relire ({len(waiting)}), notation à mettre dans {pronunciation.CORRECTIONS_FILE} :"
+        )
+        for n in waiting:
+            print(
+                f"  {n.card:18} littré « {n.littre} » → {n.littre_ipa or '—'} · "
+                f"espeak {n.espeak or '—'} · wiktionnaire {' / '.join(n.wiktionary) or '—'}"
+            )
+
+
+def command_pronunciation_audio(ids: str | None, limit: int | None, yes: bool) -> None:
+    config.load_env()
+    api_key = config.require_env("GOOGLE_TTS_API_KEY")
+    rendered_data = pronunciation.read_json(pronunciation.RENDERED_FILE)
+    rendered: dict[str, dict[str, object]] = rendered_data.get("cards", {})
+    wanted = {i.strip() for i in ids.split(",")} if ids else None
+    todo = [
+        n
+        for n in pronunciation.read_notations()
+        if n.ipa and (wanted is None or n.card in wanted) and pronunciation.stale(n, rendered)
+    ][:limit]
+    characters = pronunciation.billed_characters(todo)
+    cost = pronunciation.estimated_cost(characters)
+    print(f"{len(todo)} sons à générer, {characters} caractères, {cost:.2f} $ au tarif public")
+    if cost > 3 and not yes:
+        raise SystemExit("Plus de 3 $ : relancer avec --yes, avec l'accord du propriétaire.")
+    out = pronunciation.OUT_DIR
+    with httpx.Client(timeout=60) as http:
+        for n in todo:
+            audio = pronunciation.synthesize(http, api_key, n.word, n.ipa)
+            path = pronunciation.published_path(n.card, audio)
+            (out / path).parent.mkdir(parents=True, exist_ok=True)
+            (out / path).write_bytes(audio)
+            rendered[n.card] = {"ipa": n.ipa, "audio": path, "voice": pronunciation.VOICE}
+            # Saved after each file: an interrupted run resumes where it stopped.
+            pronunciation.RENDERED_FILE.write_text(
+                json.dumps({"cards": rendered}, ensure_ascii=False, indent=1), encoding="utf-8"
+            )
+            print(f"{n.card:18} {n.ipa:20} {len(audio) / 1024:4.1f} Ko", flush=True)
+    print(f"{len(rendered)} cartes ont un son dans {out}")
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(prog="leximon_content")
     parser.add_argument(
@@ -287,6 +377,8 @@ def main() -> None:
             "gravures-pick",
             "gravures-report",
             "gravures-render",
+            "prononciation-notation",
+            "prononciation-audio",
         ],
     )
     parser.add_argument("--run", default="essai-50")
@@ -294,15 +386,28 @@ def main() -> None:
     parser.add_argument("--size", type=int, default=50, help="select: number of words")
     parser.add_argument("--pool", action="store_true", help="prescreen: the candidate pool")
     parser.add_argument(
-        "--limit", type=int, default=None, help="prescreen --pool, gravures-*: at most N"
+        "--limit",
+        type=int,
+        default=None,
+        help="prescreen --pool, gravures-*, prononciation-audio: at most N",
     )
-    parser.add_argument("--cards", default=None, help="gravures-*: comma-separated card ids")
-    parser.add_argument("--release", default=None, help="gravures-*: release directory name")
+    parser.add_argument(
+        "--cards", default=None, help="gravures-*, prononciation-audio: comma-separated card ids"
+    )
+    parser.add_argument(
+        "--release", default=None, help="gravures-*, prononciation-notation: release directory name"
+    )
     parser.add_argument(
         "--round", type=int, default=1, help="gravures-*: 2 for the cards still without one"
     )
     parser.add_argument("--yes", action="store_true", help="approve a step above a few dollars")
     args = parser.parse_args()
+    if args.command == "prononciation-notation":
+        command_pronunciation_notation(args.release)
+        return
+    if args.command == "prononciation-audio":
+        command_pronunciation_audio(args.cards, args.limit, args.yes)
+        return
     if args.command == "gravures-render":
         engraving.run_render()
         return

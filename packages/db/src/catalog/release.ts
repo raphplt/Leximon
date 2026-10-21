@@ -95,25 +95,48 @@ export function engravingFiles(release: Release): string[] {
   return [...paths].sort();
 }
 
+/** Audio files the release refers to, relative to the catalogue root, each once, sorted. */
+export function pronunciationFiles(release: Release): string[] {
+  const paths = new Set<string>();
+  for (const collection of release.collections) {
+    for (const card of collection.cards) {
+      if (card.pronunciation) paths.add(card.pronunciation.audio);
+    }
+  }
+  return [...paths].sort();
+}
+
 /**
- * Checks the engraving files a release refers to: each must exist and, like the collection
- * files, match the content hash in its name (`<card>.<hash12>.<kind>.webp`), since it is cached
- * for good once published.
+ * Checks files the release refers to: each must exist and, like the collection files, match the
+ * content hash in its name, since it is cached for good once published.
  *
  * @param files contents keyed by path, `undefined` for a file that could not be found
+ * @param step the pipeline command that writes them, named when one is missing
  */
-export function engravingProblems(files: ReadonlyMap<string, Uint8Array | undefined>): string[] {
+function assetProblems(files: ReadonlyMap<string, Uint8Array | undefined>, step: string): string[] {
   const problems: string[] = [];
   for (const [path, bytes] of files) {
     if (bytes === undefined) {
-      problems.push(`${path} is referenced by a card but missing (run gravures-render)`);
+      problems.push(`${path} is referenced by a card but missing (run ${step})`);
       continue;
     }
-    const named = /\.([0-9a-f]{12})\.[a-z]+\.webp$/.exec(path)?.[1];
+    const named = /\.([0-9a-f]{12})(?:\.[a-z]+)?\.(?:webp|mp3)$/.exec(path)?.[1];
     const hash = createHash("sha256").update(bytes).digest("hex").slice(0, HASH_LENGTH);
     if (named !== undefined && named !== hash) {
       problems.push(`${path} does not match its content (hash ${hash})`);
     }
   }
   return problems;
+}
+
+/** Engraving files: `gravures/<card>.<hash12>.<kind>.webp`. */
+export function engravingProblems(files: ReadonlyMap<string, Uint8Array | undefined>): string[] {
+  return assetProblems(files, "gravures-render");
+}
+
+/** Audio files: `prononciation/<card>.<hash12>.mp3`. */
+export function pronunciationProblems(
+  files: ReadonlyMap<string, Uint8Array | undefined>,
+): string[] {
+  return assetProblems(files, "prononciation-audio");
 }

@@ -96,9 +96,11 @@ def card(
     collection_id: str,
     frequency: ngram.NgramFrequency | None,
     engraving: Mapping[str, object] | None = None,
+    pronunciation: Mapping[str, object] | None = None,
 ) -> dict[str, object] | None:
     """The catalogue card of a Directus row, or `None` when its rarity is not computed yet
-    (compound words, D-020). A card without an approved engraving keeps its initial (`null`)."""
+    (compound words, D-020). A card without an approved engraving keeps its initial (`null`),
+    one without a settled pronunciation stays silent (`null`)."""
     rarity = RARITY_CODES.get(str(row["rarity"]))
     if rarity is None:
         return None
@@ -121,6 +123,7 @@ def card(
         "themes": sorted(set(row.get("themes") or [])),  # type: ignore[call-overload]
         "perBillion": per_billion(frequency),
         "engraving": dict(engraving) if engraving is not None else None,
+        "pronunciation": dict(pronunciation) if pronunciation is not None else None,
     }
 
 
@@ -135,10 +138,13 @@ def build(
     version: str,
     released_at: datetime,
     engravings: Mapping[str, Mapping[str, object]] | None = None,
+    pronunciations: Mapping[str, Mapping[str, object]] | None = None,
 ) -> dict[str, bytes]:
     """Every file of the release, keyed by path relative to the release folder. `engravings`
-    holds the rendered engraving of each card that has one (data/gravures/out/rendered.json)."""
+    holds the rendered engraving of each card that has one (data/gravures/out/rendered.json),
+    `pronunciations` its spoken word (data/prononciation/out/rendered.json)."""
     engravings = engravings or {}
+    pronunciations = pronunciations or {}
     files: dict[str, bytes] = {}
     entries = []
     owner: dict[str, str] = {}
@@ -151,7 +157,13 @@ def build(
                 if not publishable(row):
                     continue
                 word = str(row["word"])
-                built = card(row, collection.id, frequency_of(word), engravings.get(slug(word)))
+                built = card(
+                    row,
+                    collection.id,
+                    frequency_of(word),
+                    engravings.get(slug(word)),
+                    pronunciations.get(slug(word)),
+                )
                 if built is None:
                     continue
                 card_id = str(built["id"])

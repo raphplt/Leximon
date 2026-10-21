@@ -2,10 +2,11 @@
  * `pnpm catalog:publish [version] [--target <dir>] [--dry-run]` (D-023).
  *
  * Validates a release of content/releases (the latest by default), updates the `collections`
- * and `cards` tables, then copies the files where the apps read them. Engravings and collection
- * files go first and the manifest last, so that a reader never sees a manifest pointing at a
- * missing file. Engravings come from the content pipeline's output (git-ignored binaries, never
- * in content/releases): a release referring to one that is missing is refused.
+ * and `cards` tables, then copies the files where the apps read them. Engravings, audio and
+ * collection files go first and the manifest last, so that a reader never sees a manifest
+ * pointing at a missing file. Engravings and audio come from the content pipeline's output
+ * (git-ignored binaries, never in content/releases): a release referring to a missing one is
+ * refused.
  */
 
 import { copyFile, mkdir, readdir, readFile, rename, writeFile } from "node:fs/promises";
@@ -19,6 +20,8 @@ import {
   loadPublishedCards,
   parseRelease,
   planCatalog,
+  pronunciationFiles,
+  pronunciationProblems,
 } from "../src/catalog/index";
 import { createDb } from "../src/client";
 
@@ -28,6 +31,8 @@ const RELEASES_DIR = join(REPO_ROOT, "content", "releases");
 const DEFAULT_TARGET = join(REPO_ROOT, "apps", "web", "public", "catalog");
 // Written by `gravures-render`; paths in the catalogue are relative to this folder.
 const ENGRAVINGS_DIR = join(REPO_ROOT, "content", "pipeline", "data", "gravures", "out");
+// Written by `prononciation-audio`, likewise.
+const PRONUNCIATIONS_DIR = join(REPO_ROOT, "content", "pipeline", "data", "prononciation", "out");
 const VERSION_PATTERN = /^\d{4}-\d{2}-\d{2}\.\d+$/;
 
 function versionKey(version: string): [string, number] {
@@ -57,12 +62,12 @@ async function readFiles(root: string): Promise<Map<string, Uint8Array>> {
   return files;
 }
 
-async function readEngravings(paths: readonly string[]) {
+async function readAssets(root: string, paths: readonly string[]) {
   const files = new Map<string, Uint8Array | undefined>();
   for (const path of paths) {
     files.set(
       path,
-      await readFile(join(ENGRAVINGS_DIR, path)).catch((error: NodeJS.ErrnoException) => {
+      await readFile(join(root, path)).catch((error: NodeJS.ErrnoException) => {
         if (error.code === "ENOENT") return undefined;
         throw error;
       }),
@@ -71,7 +76,7 @@ async function readEngravings(paths: readonly string[]) {
   return files;
 }
 
-async function copyEngravings(target: string, files: ReadonlyMap<string, Uint8Array | undefined>) {
+async function copyAssets(target: string, files: ReadonlyMap<string, Uint8Array | undefined>) {
   for (const [path, bytes] of files) {
     if (bytes === undefined) continue;
     await mkdir(dirname(join(target, path)), { recursive: true });
@@ -106,11 +111,20 @@ async function main(): Promise<void> {
     return;
   }
 
-  const engravings = await readEngravings(engravingFiles(parsed.release));
+  const engravings = await readAssets(ENGRAVINGS_DIR, engravingFiles(parsed.release));
   const engravingIssues = engravingProblems(engravings);
   if (engravingIssues.length > 0) {
     console.error(
       `Release ${version} refused: engravings in ${ENGRAVINGS_DIR}\n- ${engravingIssues.join("\n- ")}`,
+    );
+    process.exitCode = 1;
+    return;
+  }
+  const audio = await readAssets(PRONUNCIATIONS_DIR, pronunciationFiles(parsed.release));
+  const audioIssues = pronunciationProblems(audio);
+  if (audioIssues.length > 0) {
+    console.error(
+      `Release ${version} refused: audio in ${PRONUNCIATIONS_DIR}\n- ${audioIssues.join("\n- ")}`,
     );
     process.exitCode = 1;
     return;
@@ -130,12 +144,13 @@ async function main(): Promise<void> {
     }
     console.info(
       `Release ${version}: ${plan.collections.length} collections, ${plan.cards.length} cards, ` +
-        `${plan.retire.length} retired, ${engravings.size} engraving files`,
+        `${plan.retire.length} retired, ${engravings.size} engraving files, ${audio.size} audio files`,
     );
     if (values["dry-run"]) return;
     await applyCatalog(db, plan, new Date());
     const target = values.target ?? DEFAULT_TARGET;
-    await copyEngravings(target, engravings);
+    await copyAssets(target, engravings);
+    await copyAssets(target, audio);
     await copyRelease(source, target, files.keys());
     console.info(`Database updated, files copied to ${target}`);
   } finally {

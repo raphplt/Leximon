@@ -1,0 +1,122 @@
+[
+  {
+    "word": "ambesas",
+    "kind": "finale",
+    "ipa": "ɑ̃.bzas",
+    "espeak": "ɑ̃bzˈa"
+  },
+  {
+    "word": "comput",
+    "kind": "finale",
+    "ipa": "kɔ̃.pyt",
+    "espeak": "kɔ̃pˈy"
+  },
+  {
+    "word": "orémus",
+    "kind": "finale",
+    "ipa": "ɔ.ʁe.mys",
+    "espeak": "oʁemˈy"
+  },
+  {
+    "word": "tacet",
+    "kind": "finale",
+    "ipa": "ta.sɛt",
+    "espeak": "tasˈɛ"
+  },
+  {
+    "word": "palus",
+    "kind": "finale",
+    "ipa": "pa.lys",
+    "espeak": "palˈy"
+  },
+  {
+    "word": "introït",
+    "kind": "finale",
+    "ipa": "ɛ̃.tʁɔ.it",
+    "espeak": "ɛ̃tʁɔˈi"
+  },
+  {
+    "word": "chorographe",
+    "kind": "ch-grec",
+    "ipa": "kɔ.ʁɔ.ɡʁaf",
+    "espeak": "ʃoʁɔɡʁˈaf"
+  },
+  {
+    "word": "épichérème",
+    "kind": "ch-grec",
+    "ipa": "e.pi.ke.ʁɛm",
+    "espeak": "epiʃeʁˈɛm"
+  },
+  {
+    "word": "nychthémère",
+    "kind": "ch-grec",
+    "ipa": "nik.te.mɛʁ",
+    "espeak": "niʃtemˈɛʁ"
+  },
+  {
+    "word": "picrochole",
+    "kind": "ch-grec",
+    "ipa": "pi.kʁɔ.kɔl",
+    "espeak": "pikʁoʃˈɔl"
+  },
+  {
+    "word": "didrachme",
+    "kind": "ch-grec",
+    "ipa": "di.dʁakm",
+    "espeak": "didʁˈaʃm"
+  },
+  {
+    "word": "casoar",
+    "kind": "langue",
+    "ipa": "ka.zɔ.aʁ",
+    "espeak": "(en)kˈasɔː(fr)"
+  },
+  {
+    "word": "lycanthrope",
+    "kind": "langue",
+    "ipa": "li.kɑ̃.tʁɔp",
+    "espeak": "(en)lˈaɪkanθɹˌəʊp(fr)"
+  },
+  {
+    "word": "léthifère",
+    "kind": "langue",
+    "ipa": "le.ti.fɛʁ",
+    "espeak": "(en)lˈeɪθɪfə(fr)"
+  },
+  {
+    "word": "apathiste",
+    "kind": "langue",
+    "ipa": "a.pa.tist",
+    "espeak": "(en)ˈapəθˈiːst(fr)"
+  },
+  {
+    "word": "pensum",
+    "kind": "latin",
+    "ipa": "pɛ̃.sɔm",
+    "espeak": "pɑ̃sˈɔm"
+  },
+  {
+    "word": "canzone",
+    "kind": "italien",
+    "ipa": "kɑ̃t.sɔn",
+    "espeak": "kɑ̃zˈon"
+  },
+  {
+    "word": "quinquatries",
+    "kind": "latin",
+    "ipa": "kɥɛ̃.kwa.tʁi",
+    "espeak": "kɛ̃katʁˈi"
+  },
+  {
+    "word": "magnaud",
+    "kind": "régional",
+    "ipa": "ma.ɲo",
+    "espeak": "manjˈo"
+  },
+  {
+    "word": "faraud",
+    "kind": "régional",
+    "ipa": "fa.ʁo",
+    "espeak": "faʁˈo"
+  }
+]

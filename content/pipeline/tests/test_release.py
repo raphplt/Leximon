@@ -59,6 +59,7 @@ def test_card_follows_the_catalogue_schema() -> None:
         "themes": ["arts", "cuisine"],
         "perBillion": 1.23,
         "engraving": None,
+        "pronunciation": None,
     }
 
 
@@ -83,6 +84,22 @@ def test_a_rendered_engraving_is_attached_to_its_card() -> None:
     manifest = json.loads(files["manifest.json"])
     cards = json.loads(files[manifest["collections"][0]["file"]])["cards"]
     assert {c["id"]: c["engraving"] for c in cards} == {"poelonnee": engraving, "raclure": None}
+
+
+def test_a_pronunciation_is_attached_to_its_card() -> None:
+    spoken = {"ipa": "pwalɔne", "audio": "prononciation/poelonnee.0123456789ab.mp3"}
+    files = release.build(
+        [FONDATEURS],
+        {"lot-1": [row("poêlonnée"), row("raclure")]},
+        frequency,
+        "2026-10-19.1",
+        NOW,
+        {},
+        {"poelonnee": spoken},
+    )
+    manifest = json.loads(files["manifest.json"])
+    cards = json.loads(files[manifest["collections"][0]["file"]])["cards"]
+    assert {c["id"]: c["pronunciation"] for c in cards} == {"poelonnee": spoken, "raclure": None}
 
 
 def test_only_publishable_cards_are_released() -> None:

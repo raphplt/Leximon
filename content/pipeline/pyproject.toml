@@ -34,3 +34,8 @@ allowed-confusables = ["–", "’"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+
+[tool.ruff.lint.per-file-ignores]
+# Phonetic notation is made of IPA letters that look like ASCII ones (ˈ, ɡ, ɑ).
+"src/leximon_content/pronunciation.py" = ["RUF001", "RUF002", "RUF003"]
+"tests/test_pronunciation.py" = ["RUF001", "RUF002", "RUF003"]

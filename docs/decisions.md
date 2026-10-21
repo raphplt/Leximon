@@ -316,9 +316,9 @@ Pour ajouter ou modifier une décision, utiliser le skill `decision`.
 
 ## D-032 · Prononciation : une voix de synthèse guidée par la notation phonétique du Littré
 
-- **Statut :** Acceptée (2026-10-21) ; fournisseur à confirmer par l'essai des 20 mots difficiles.
-- **Choix :** une notation phonétique par carte, tirée de la graphie prononcée du Littré par des règles, validée quand eSpeak NG concorde et relue sinon, avec le Wiktionnaire en contrôle. Une seule voix de synthèse lit chaque mot guidée par cette notation (balise SSML `phoneme`). Fournisseur pressenti : Azure Speech, région France Central. Aucun enregistrement humain (P57).
-- **Pourquoi :** les enregistrements libres manquent justement sur les cartes rares (31 % des Légendaires) et changent de voix d'un mot à l'autre ; une voix guidée couvre tout le catalogue d'un son homogène, pour quelques centimes (R&D `docs/rnd/prononciation.md`).
+- **Statut :** Acceptée (2026-10-21).
+- **Choix :** une notation phonétique par carte, tirée de la graphie prononcée du Littré par des règles, validée quand eSpeak NG concorde et relue sinon, avec le Wiktionnaire en contrôle. Une seule voix de synthèse lit chaque mot guidée par cette notation (balise SSML `phoneme`). Voix : Google Cloud Text-to-Speech, Chirp 3 HD « Charon », choisie par le propriétaire à l'écoute des 20 mots difficiles face à Azure (abandonné : ouverture du compte impossible), Kokoro et Piper. Aucun enregistrement humain (P57).
+- **Pourquoi :** les enregistrements libres manquent justement sur les cartes rares (31 % des Légendaires) et changent de voix d'un mot à l'autre ; une voix guidée couvre tout le catalogue d'un son homogène (110 000 caractères, dans l'offre gratuite mensuelle de Google ; R&D `docs/rnd/prononciation.md`).
 - **Conséquences :** un module de notation et de génération dans `content/pipeline`, fichiers audio statiques nommés par leur empreinte et servis par le CDN comme les gravures (D-028), champ optionnel `pronunciation` dans le catalogue. Pas de `speechSynthesis` du navigateur, même en secours.
 
 ## D-033 · Interface v1 : logique d'écran commune, affichage propre à chaque plateforme

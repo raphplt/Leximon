@@ -47,6 +47,21 @@ export const catalogEngravingSchema = z.object({
 });
 export type CatalogEngraving = z.infer<typeof catalogEngravingSchema>;
 
+/** `prononciation/<card>.<hash12>.mp3`: one segment, named after its content, so immutable. */
+const pronunciationFileSchema = z.string().regex(/^prononciation\/[a-z0-9][a-z0-9.-]*\.mp3$/);
+
+/**
+ * Spoken word of a card (D-032): one synthetic voice reads every word, guided by a checked
+ * phonetic notation. No credit to show: the voice is generated, not recorded.
+ */
+export const catalogPronunciationSchema = z.object({
+  /** Phonetic notation (IPA) the voice read, e.g. "kɔʁɔɡʁaf". */
+  ipa: z.string().min(1),
+  /** MP3 file, relative to the catalogue root. */
+  audio: pronunciationFileSchema,
+});
+export type CatalogPronunciation = z.infer<typeof catalogPronunciationSchema>;
+
 export const catalogCardSchema = z.object({
   /** Stable slug, never reused (D-020): also the id of the `cards` row. */
   id: slugSchema,
@@ -67,6 +82,11 @@ export const catalogCardSchema = z.object({
    * before engravings, hence optional: read it as `card.engraving ?? null`.
    */
   engraving: catalogEngravingSchema.nullable().exactOptional(),
+  /**
+   * `null` while the word has no settled notation (the card stays silent). Absent from releases
+   * made before pronunciations, hence optional: read it as `card.pronunciation ?? null`.
+   */
+  pronunciation: catalogPronunciationSchema.nullable().exactOptional(),
 });
 export type CatalogCard = z.infer<typeof catalogCardSchema>;
 
