@@ -2,10 +2,10 @@ import type { Metadata } from "next";
 import { LandingPage } from "@/landing/landing-page";
 
 const DESCRIPTION =
-  "Un jeu de cartes à collectionner pour découvrir les mots rares et anciens du français. Inscris-toi pour être prévenu de l'ouverture.";
+  "Un jeu de cartes à collectionner où chaque carte est un mot oublié du français.";
 
 export const metadata: Metadata = {
-  title: "Leximon · Collectionne les mots que la langue a oubliés",
+  title: "Leximon · Les mots oubliés, en cartes",
   description: DESCRIPTION,
   openGraph: {
     title: "Leximon",

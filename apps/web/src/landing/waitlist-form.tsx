@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { type FormEvent, useState } from "react";
 import { joinWaitlist } from "@/lib/api";
 import styles from "./landing-page.module.css";
@@ -11,9 +12,9 @@ type FormState =
   | { readonly kind: "error"; readonly message: string };
 
 const ERRORS = {
-  invalid_email: "Cette adresse ne semble pas valide.",
-  rate_limited: "Trop d'essais d'un coup. Réessaie dans une minute.",
-  unavailable: "L'inscription ne répond pas pour l'instant. Réessaie un peu plus tard.",
+  invalid_email: "Il manque quelque chose à cette adresse.",
+  rate_limited: "Doucement. Réessaie dans une minute.",
+  unavailable: "Le serveur lambine. Réessaie plus tard.",
 } as const;
 
 /** Leaves an address to be warned when the game opens. Nothing else is asked or promised. */
@@ -40,7 +41,7 @@ export function WaitlistForm() {
   if (state.kind === "joined") {
     return (
       <p className={styles.joined} role="status">
-        C'est noté ! Tu recevras un seul e-mail : celui qui t'annonce l'ouverture.
+        Noté. On se revoit à l'ouverture.
       </p>
     );
   }
@@ -48,7 +49,7 @@ export function WaitlistForm() {
   return (
     <form className={styles.form} onSubmit={submit} noValidate>
       <label className={styles.label} htmlFor="waitlist-email">
-        Préviens-moi de l'ouverture
+        Sois là à l'ouverture
       </label>
       <div className={styles.fields}>
         <input
@@ -65,15 +66,15 @@ export function WaitlistForm() {
           aria-describedby="waitlist-note waitlist-error"
         />
         <button className={styles.primary} type="submit" disabled={state.kind === "sending"}>
-          {state.kind === "sending" ? "Envoi…" : "M'inscrire"}
+          {state.kind === "sending" ? "Envoi…" : "Préviens-moi"}
         </button>
       </div>
       <p id="waitlist-error" className={styles.error} role="alert">
         {state.kind === "error" ? state.message : ""}
       </p>
       <p id="waitlist-note" className={styles.note}>
-        Ton adresse sert seulement à te prévenir de l'ouverture, puis elle est effacée. Pour la
-        retirer avant, écris à <a href="mailto:contact@leximon.fr">contact@leximon.fr</a>.
+        On t'écrit le jour de l'ouverture, puis on oublie ton adresse.{" "}
+        <Link href="/confidentialite">Tes données</Link>
       </p>
     </form>
   );

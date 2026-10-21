@@ -1,0 +1,45 @@
+.page {
+  box-sizing: border-box;
+  width: min(680px, 100% - 32px);
+  margin-inline: auto;
+  padding: 20px 0 64px;
+}
+
+.logo {
+  font-family: var(--font-display), Georgia, serif;
+  font-variation-settings: "SOFT" 100;
+  font-weight: 900;
+  font-size: 28px;
+  text-decoration: none;
+}
+
+.title {
+  margin: 48px 0 8px;
+  font-family: var(--font-display), Georgia, serif;
+  font-variation-settings: "SOFT" 100;
+  font-weight: 900;
+  font-size: clamp(40px, 7vw, 64px);
+  line-height: 1;
+}
+
+.section {
+  margin-top: 36px;
+}
+
+.section h2 {
+  margin: 0 0 8px;
+  font-size: 18px;
+  font-weight: 800;
+}
+
+.section p {
+  margin: 0;
+  font-family: var(--font-text), Georgia, serif;
+  font-size: 19px;
+  line-height: 1.5;
+  color: var(--lx-color-text-muted);
+}
+
+.section a {
+  color: var(--lx-color-text);
+}

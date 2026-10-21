@@ -7,7 +7,7 @@ export const metadata: Metadata = {
   // Shared images (`opengraph-image.tsx`) need absolute URLs.
   metadataBase: new URL("https://leximon.fr"),
   title: "Leximon",
-  description: "Collectionne les mots que la langue a oubliés.",
+  description: "Les mots oubliés du français, en cartes à collectionner.",
   twitter: { card: "summary_large_image" },
 };
 
