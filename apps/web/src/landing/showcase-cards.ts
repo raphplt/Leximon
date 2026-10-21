@@ -19,22 +19,15 @@ export const HERO_WORD_IDS = [
   "cochenillier",
 ] as const;
 
-/** Insults of old from « Caractères et travers », the collection the home page shows off. */
-export const INSULT_COLLECTION_ID = "caracteres";
-export const INSULT_IDS = [
-  "belitre",
-  "grigou",
-  "dadais",
-  "bestiasse",
-  "poetereau",
-  "faraud",
+/**
+ * Three cards fanned out for each launch collection, the rarest in the middle. A few insults of
+ * old slipped into « Caractères et travers ».
+ */
+export const COLLECTION_SHOWCASE = [
+  { collectionId: "fondateurs", cardIds: ["aliboron", "talpinette", "cochenillier"] },
+  { collectionId: "caracteres", cardIds: ["grigou", "charivarieur", "carabas"] },
+  { collectionId: "metiers", cardIds: ["fouacier", "trouillotte", "claymore"] },
 ] as const;
-
-/** The first sense of a definition, the part before the first semicolon. */
-export function firstSense(definition: string): string {
-  const [first = definition] = definition.split(" ; ");
-  return /[.!?…]$/.test(first) ? first : `${first}.`;
-}
 
 /** The two cards swapped in the trade figure, both in the public domain. */
 export const TRADE_CARD_IDS = ["antitonnerre", "griviere"] as const;

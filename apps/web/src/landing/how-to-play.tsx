@@ -12,7 +12,7 @@ import { pickShowcase, TRADE_CARD_IDS } from "./showcase-cards";
 const { many } = DEFAULT_PACK_NOUN;
 const PAPER = rarityStyles.common;
 
-/** The game in three figures, printed like a plate of an old encyclopedia. */
+/** The game in three pictures, printed like a plate of an old encyclopedia. */
 export function HowToPlay() {
   const variables = {
     "--paper": PAPER.paper,
@@ -32,7 +32,7 @@ export function HowToPlay() {
             <div className={styles.figureArt}>
               <PackFigure />
             </div>
-            <p className={styles.figureLabel}>Fig. 1. {capitalize(many)}</p>
+            <p className={styles.figureLabel}>{capitalize(many)}</p>
             <p className={styles.figureText}>
               Gratuits, tous les jours. Il y a des mots qu'on croise souvent, et d'autres qu'on ne
               voit presque jamais.
@@ -42,7 +42,7 @@ export function HowToPlay() {
             <div className={styles.figureArt}>
               <ChallengeFigure />
             </div>
-            <p className={styles.figureLabel}>Fig. 2. Défis</p>
+            <p className={styles.figureLabel}>Défis</p>
             <p className={styles.figureText}>
               Une question revient juste avant que tu oublies le mot. Tu réponds, la carte passe à
               l'Encre, puis à la Dorure.
@@ -52,15 +52,12 @@ export function HowToPlay() {
             <div className={styles.figureArt}>
               <TradeFigure />
             </div>
-            <p className={styles.figureLabel}>Fig. 3. Échanges</p>
+            <p className={styles.figureLabel}>Échanges</p>
             <p className={styles.figureText}>
               Tes doubles contre ceux des autres. Carte contre carte.
             </p>
           </li>
         </ol>
-        <p className={styles.sources}>
-          Les définitions viennent du Littré, les gravures de vieux livres.
-        </p>
       </div>
     </section>
   );

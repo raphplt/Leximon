@@ -1,13 +1,13 @@
 import Link from "next/link";
+import { Collections } from "./collections";
 import { HeroWord } from "./hero-word";
 import { HowToPlay } from "./how-to-play";
-import { InsultList } from "./insults";
 import styles from "./landing-page.module.css";
 import { WaitlistForm } from "./waitlist-form";
 
 /**
  * The public home page: a real word first, what Leximon is and a way to hear when it opens, then
- * a few insults of old, then the rules.
+ * the launch collections, the rules, and the form again for those who read to the end.
  */
 export function LandingPage() {
   return (
@@ -30,12 +30,24 @@ export function LandingPage() {
         </div>
       </section>
 
-      <InsultList />
+      <Collections />
 
       <HowToPlay />
 
+      <section className={styles.closing} aria-labelledby="closing-title">
+        <h2 id="closing-title" className={styles.closingTitle}>
+          Les premiers sachets partent bientôt.
+        </h2>
+        <WaitlistForm />
+      </section>
+
       <footer className={styles.footer}>
-        <span className={styles.logoSmall}>Leximon</span>
+        <span className={styles.footerBrand}>
+          <span className={styles.logoSmall}>Leximon</span>
+          <span className={styles.sources}>
+            Définitions du Littré, gravures de Wikimedia Commons.
+          </span>
+        </span>
         <span className={styles.footerLinks}>
           <Link href="/confidentialite">Tes données</Link>
           <a href="mailto:contact@leximon.fr">contact@leximon.fr</a>

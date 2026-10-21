@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { type FormEvent, useState } from "react";
+import { type FormEvent, useId, useState } from "react";
 import { joinWaitlist } from "@/lib/api";
 import styles from "./landing-page.module.css";
 
@@ -19,6 +19,8 @@ const ERRORS = {
 
 /** Leaves an address to be warned when the game opens. Nothing else is asked or promised. */
 export function WaitlistForm() {
+  // The page shows the form twice, so its ids must differ.
+  const id = useId();
   const [email, setEmail] = useState("");
   const [state, setState] = useState<FormState>({ kind: "idle" });
 
@@ -48,12 +50,12 @@ export function WaitlistForm() {
 
   return (
     <form className={styles.form} onSubmit={submit} noValidate>
-      <label className={styles.label} htmlFor="waitlist-email">
+      <label className={styles.label} htmlFor={`${id}-email`}>
         Sois là à l'ouverture
       </label>
       <div className={styles.fields}>
         <input
-          id="waitlist-email"
+          id={`${id}-email`}
           className={styles.input}
           type="email"
           inputMode="email"
@@ -63,16 +65,16 @@ export function WaitlistForm() {
           maxLength={254}
           value={email}
           onChange={(event) => setEmail(event.target.value)}
-          aria-describedby="waitlist-note waitlist-error"
+          aria-describedby={`${id}-note ${id}-error`}
         />
         <button className={styles.primary} type="submit" disabled={state.kind === "sending"}>
           {state.kind === "sending" ? "Envoi…" : "Préviens-moi"}
         </button>
       </div>
-      <p id="waitlist-error" className={styles.error} role="alert">
+      <p id={`${id}-error`} className={styles.error} role="alert">
         {state.kind === "error" ? state.message : ""}
       </p>
-      <p id="waitlist-note" className={styles.note}>
+      <p id={`${id}-note`} className={styles.note}>
         On t'écrit le jour de l'ouverture, puis on oublie ton adresse.{" "}
         <Link href="/confidentialite">Tes données</Link>
       </p>
