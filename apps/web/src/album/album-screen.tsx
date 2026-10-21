@@ -16,6 +16,7 @@ import { type CSSProperties, useEffect, useMemo, useState } from "react";
 import { type Catalog, loadCatalog } from "@/cards/catalog";
 import { Card } from "@/components/card";
 import { RarityIcon, RarityName } from "@/components/rarity-icon";
+import { useIncremental } from "@/lib/use-incremental";
 import { useNarrow } from "@/lib/use-narrow";
 import { useNow } from "@/lib/use-now";
 import { ownedCards, wordMemory } from "@/player/collection";
@@ -34,6 +35,9 @@ const TONES: Readonly<Record<string, string>> = {
 };
 
 const STORED_COLLECTION = "leximon.album";
+
+/** Tiles drawn per batch: a full collection at once is hundreds of cards. */
+const BATCH = 48;
 
 function readCollection(): string | null {
   try {
@@ -92,6 +96,7 @@ export function AlbumScreen() {
           ),
     [catalog, owned, memory, now, state],
   );
+  const { shown, sentinel } = useIncremental(view?.items.length ?? 0, BATCH, JSON.stringify(state));
 
   if (failed) {
     return (
@@ -222,17 +227,20 @@ export function AlbumScreen() {
           <em>{view.empty}</em>
         </p>
       ) : (
-        <ul
-          className={styles.grid}
-          style={{ "--card": `${cardWidth}px` } as CSSProperties}
-          aria-label="Cartes"
-        >
-          {view.items.map((item) => (
-            <li key={itemKey(item)} className={styles.slot}>
-              <Tile item={item} width={cardWidth} onOpen={openCard} />
-            </li>
-          ))}
-        </ul>
+        <>
+          <ul
+            className={styles.grid}
+            style={{ "--card": `${cardWidth}px` } as CSSProperties}
+            aria-label="Cartes"
+          >
+            {view.items.slice(0, shown).map((item) => (
+              <li key={itemKey(item)} className={styles.slot}>
+                <Tile item={item} width={cardWidth} onOpen={openCard} />
+              </li>
+            ))}
+          </ul>
+          {shown < view.items.length && <div ref={sentinel} aria-hidden="true" />}
+        </>
       )}
     </main>
   );
