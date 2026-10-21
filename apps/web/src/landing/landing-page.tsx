@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Logo } from "@/ui/logo";
 import { Collections } from "./collections";
 import { HeroWord } from "./hero-word";
 import { HowToPlay } from "./how-to-play";
@@ -13,7 +14,7 @@ export function LandingPage() {
   return (
     <main className={styles.page}>
       <header className={styles.top}>
-        <span className={styles.logo}>Leximon</span>
+        <Logo size="md" />
       </header>
 
       <section className={styles.hero} aria-labelledby="landing-title">
@@ -43,7 +44,7 @@ export function LandingPage() {
 
       <footer className={styles.footer}>
         <span className={styles.footerBrand}>
-          <span className={styles.logoSmall}>Leximon</span>
+          <Logo size="sm" />
           <span className={styles.sources}>
             Définitions du Littré, gravures de Wikimedia Commons.
           </span>

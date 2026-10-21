@@ -9,6 +9,13 @@ export const metadata: Metadata = {
   title: "Leximon",
   description: "Les mots oubliés du français, en cartes à collectionner.",
   twitter: { card: "summary_large_image" },
+  icons: {
+    icon: [
+      { url: "/icon.svg", type: "image/svg+xml" },
+      { url: "/favicon.ico", sizes: "32x32" },
+    ],
+    apple: [{ url: "/apple-icon.png", sizes: "180x180", type: "image/png" }],
+  },
 };
 
 export const viewport: Viewport = {

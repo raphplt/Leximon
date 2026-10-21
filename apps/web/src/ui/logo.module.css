@@ -1,0 +1,46 @@
+.logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  color: var(--lx-color-text);
+  line-height: 1;
+}
+
+.text {
+  font-family: var(--font-display), Georgia, serif;
+  font-variation-settings: "SOFT" 100;
+  font-weight: 900;
+  letter-spacing: -0.01em;
+  color: inherit;
+}
+
+.mark {
+  flex-shrink: 0;
+  display: block;
+}
+
+/* Sizes */
+.sm .mark {
+  width: 24px;
+  height: 24px;
+}
+.sm .text {
+  font-size: 20px;
+}
+
+.md .mark {
+  width: 32px;
+  height: 32px;
+}
+.md .text {
+  font-size: 26px;
+}
+
+.lg .mark {
+  width: 42px;
+  height: 42px;
+}
+.lg .text {
+  font-size: 34px;
+}

@@ -11,6 +11,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Icon } from "@/ui/icon";
 import { ringStyle, XpBar } from "@/ui/level-bits";
+import { Logo } from "@/ui/logo";
 import ui from "@/ui/ui.module.css";
 import styles from "./bars.module.css";
 import { isCurrent, PHONE_ORDER, TABS, type TabId } from "./nav";
@@ -92,12 +93,8 @@ export function TopBar({
   const closed = closedTabs(view);
   return (
     <header className={styles.top}>
-      <Link
-        href="/jouer"
-        className={`${ui.display} ${styles.logo}`}
-        aria-label="Leximon, retour au jeu"
-      >
-        Leximon
+      <Link href="/jouer" className={styles.logoLink} aria-label="Leximon, retour au jeu">
+        <Logo size="md" />
       </Link>
       <nav aria-label="Navigation principale" className={styles.nav}>
         {TABS.map((tab) => {
