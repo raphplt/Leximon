@@ -8,14 +8,47 @@
   // Runs the Worker close to the database rather than close to the player: an open makes
   // several sequential database round trips, which would be slow from far away.
   "placement": { "mode": "smart" },
-  // Daily maintenance (partitions, idempotency purge), at 03:17 UTC.
-  "triggers": { "crons": ["17 3 * * *"] },
+  // Daily maintenance (partitions, purges) at 03:17 UTC, and every minute the campaign pump that
+  // feeds the e-mail queue (D-035). `scheduled()` tells them apart by their expression.
+  "triggers": { "crons": ["17 3 * * *", "* * * * *"] },
   "vars": {
     "APP_ENV": "development",
     "BETTER_AUTH_URL": "http://localhost:8787",
     // Comma-separated origins allowed to call the API with credentials (web app).
-    "TRUSTED_ORIGINS": "http://localhost:3000"
+    "TRUSTED_ORIGINS": "http://localhost:3000",
+    // Sender of sign-in codes (D-034). Empty: no code is sent outside local development, where
+    // the code is printed in the console instead.
+    "EMAIL_CODE_FROM": "",
+    "EMAIL_REPLY_TO": "contact@leximon.fr",
+    // Sender of campaigns (D-034, Lettermint). Empty: campaigns are only printed in the console
+    // in local development, and refused elsewhere.
+    "EMAIL_CAMPAIGN_FROM": "",
+    "LETTERMINT_BROADCAST_ROUTE": "broadcast",
+    // Web app, for the unsubscribe page linked from every campaign.
+    "PUBLIC_WEB_URL": "http://localhost:3000"
   },
+  // Campaign e-mails (D-035): the pump queues row ids, the consumer sends them in batches.
+  "queues": {
+    "producers": [{ "binding": "CAMPAIGN_QUEUE", "queue": "leximon-email-campaigns" }],
+    "consumers": [
+      {
+        "queue": "leximon-email-campaigns",
+        "max_batch_size": 1,
+        "max_batch_timeout": 1,
+        "max_retries": 5,
+        "max_concurrency": 4,
+        "dead_letter_queue": "leximon-email-campaigns-dlq"
+      }
+    ]
+  },
+  // Cloudflare Email Service (D-034), sign-in codes only: the binding cannot send from any other
+  // address. `wrangler dev` simulates it.
+  "send_email": [
+    {
+      "name": "EMAIL",
+      "allowed_sender_addresses": ["code@mail.leximon.fr"]
+    }
+  ],
   // Counted per Cloudflare location. Namespace ids are unique per account: never reuse one.
   "ratelimits": [
     // Guest account creation, per IP. High enough for a classroom behind a single address.
@@ -53,6 +86,12 @@
       "name": "WAITLIST_RATE_LIMITER",
       "namespace_id": "1006",
       "simple": { "limit": 10, "period": 60 }
+    },
+    // Public e-mail routes (unsubscribe), per IP.
+    {
+      "name": "EMAIL_LINK_RATE_LIMITER",
+      "namespace_id": "1007",
+      "simple": { "limit": 30, "period": 60 }
     }
   ],
   "hyperdrive": [

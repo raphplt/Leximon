@@ -10,6 +10,8 @@ import { adminRoutes } from "./admin/routes";
 import { AUTH_BASE_PATH, parseOrigins } from "./auth";
 import { createCardPoolLoader } from "./boosters/card-pool";
 import { boosterRoutes } from "./boosters/routes";
+import { type CampaignMailerFactory, createCampaignMailer } from "./campaigns/mailer";
+import { emailPublicRoutes } from "./campaigns/routes";
 import { createCatalogIndexLoader } from "./challenges/catalog-index";
 import { challengeRoutes } from "./challenges/routes";
 import type { AppEnv } from "./context";
@@ -42,6 +44,8 @@ const AUTH_ROUTES = new Set([
 export interface AppOptions {
   /** Builds the sender of sign-in codes; tests pass one that keeps the codes. */
   readonly emailSender?: EmailSenderFactory;
+  /** Builds the campaign sender, used here for test sends; tests pass a fake. */
+  readonly campaignMailer?: CampaignMailerFactory;
 }
 
 /**
@@ -100,7 +104,9 @@ export function createApp(options: AppOptions = {}) {
   app.use("/players/*", withDatabase);
   app.route("/players", playerRoutes());
   app.use("/admin/*", withDatabase);
-  app.route("/admin", adminRoutes());
+  app.route("/admin", adminRoutes(options.campaignMailer ?? createCampaignMailer));
+  app.use("/email/*", withDatabase);
+  app.route("/email", emailPublicRoutes());
   app.post("/waitlist", waitlistRateLimit);
   app.use("/waitlist", withDatabase);
   app.route("/waitlist", waitlistRoutes());

@@ -32,6 +32,11 @@ export const ACTION_LABELS: Readonly<Record<string, string>> = {
   unban: "Levée du bannissement",
   cancel_trade: "Échange annulé",
   export_waitlist: "Export de la liste d'attente",
+  launch_campaign: "Campagne lancée",
+  pause_campaign: "Campagne en pause",
+  resume_campaign: "Campagne reprise",
+  cancel_campaign: "Campagne annulée",
+  erase_waitlist: "Liste d'attente effacée",
 };
 
 /** A short readable summary of an action's details. */
@@ -41,5 +46,12 @@ export function actionSummary(details: Record<string, unknown>): string {
   if (typeof details["days"] === "number") parts.push(`${details["days"]} jour(s)`);
   if (details["days"] === null) parts.push("sans limite");
   if (typeof details["reason"] === "string") parts.push(`« ${details["reason"]} »`);
+  if (typeof details["name"] === "string") parts.push(`« ${details["name"]} »`);
+  if (typeof details["recipients"] === "number") {
+    parts.push(`${formatNumber(details["recipients"])} destinataire(s)`);
+  }
+  if (typeof details["erased"] === "number") {
+    parts.push(`${formatNumber(details["erased"])} adresse(s)`);
+  }
   return parts.join(" · ");
 }

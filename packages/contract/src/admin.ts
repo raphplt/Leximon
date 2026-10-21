@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { raritySchema } from "./boosters";
 import { slugSchema, timestampSchema } from "./common";
+import { adminWaitlistOpeningSchema } from "./email";
 import { progressSchema } from "./progress";
 import { tradeStatusSchema } from "./trades";
 
@@ -142,6 +143,8 @@ export const adminWaitlistResponseSchema = z.object({
   total: z.int().nonnegative(),
   entries: z.array(z.object({ email: z.string(), createdAt: timestampSchema })),
   nextCursor: z.string().nullable(),
+  /** The opening e-mail (P55), once a campaign to the list exists. */
+  opening: adminWaitlistOpeningSchema.nullable(),
 });
 export type AdminWaitlistResponse = z.infer<typeof adminWaitlistResponseSchema>;
 
@@ -227,4 +230,9 @@ export const ADMIN_ACTIONS = {
   unban: "unban",
   cancelTrade: "cancel_trade",
   exportWaitlist: "export_waitlist",
+  launchCampaign: "launch_campaign",
+  pauseCampaign: "pause_campaign",
+  resumeCampaign: "resume_campaign",
+  cancelCampaign: "cancel_campaign",
+  eraseWaitlist: "erase_waitlist",
 } as const;

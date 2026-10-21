@@ -1,6 +1,11 @@
 import {
   type AdminActionsResponse,
   type AdminBanRequest,
+  type AdminCampaign,
+  type AdminCampaignContent,
+  type AdminCampaignInput,
+  type AdminCampaignPreview,
+  type AdminCampaignSummary,
   type AdminCardStats,
   type AdminCatalog,
   type AdminGrantBonusResponse,
@@ -12,6 +17,11 @@ import {
   type AdminTradesResponse,
   type AdminWaitlistResponse,
   adminActionsResponseSchema,
+  adminCampaignAudienceSchema,
+  adminCampaignCountChangedSchema,
+  adminCampaignPreviewSchema,
+  adminCampaignSchema,
+  adminCampaignsResponseSchema,
   adminCardStatsSchema,
   adminCatalogSchema,
   adminGrantBonusResponseSchema,
@@ -148,6 +158,110 @@ export async function fetchCardStats(id: string): Promise<AdminCardStats | null>
   return parse(response, adminCardStatsSchema);
 }
 
+export async function fetchCampaigns(): Promise<readonly AdminCampaignSummary[]> {
+  return (await getJson("/admin/campaigns", adminCampaignsResponseSchema)).campaigns;
+}
+
+export const fetchCampaign = (id: string): Promise<AdminCampaign> =>
+  getJson(`/admin/campaigns/${encodeURIComponent(id)}`, adminCampaignSchema);
+
+/** Creates a draft (no id) or saves an existing one. */
+export async function saveCampaign(
+  id: string | null,
+  campaign: AdminCampaignInput,
+): Promise<AdminCampaign> {
+  const path = id === null ? "/admin/campaigns" : `/admin/campaigns/${encodeURIComponent(id)}`;
+  return parse(await postJson(path, campaign), adminCampaignSchema);
+}
+
+export async function previewCampaign(
+  content: AdminCampaignContent,
+): Promise<AdminCampaignPreview> {
+  return parse(await postJson("/admin/campaigns/preview", content), adminCampaignPreviewSchema);
+}
+
+/** Sends the e-mail to the signed-in admin's own address. */
+export async function sendCampaignTest(content: AdminCampaignContent): Promise<void> {
+  await postJson("/admin/campaigns/test", content);
+}
+
+export async function fetchCampaignAudience(id: string): Promise<number> {
+  const audience = await getJson(
+    `/admin/campaigns/${encodeURIComponent(id)}/audience`,
+    adminCampaignAudienceSchema,
+  );
+  return audience.recipients;
+}
+
+export type LaunchResult =
+  | { readonly kind: "launched"; readonly campaign: AdminCampaign }
+  /** The audience moved since it was counted: the admin confirms the new number. */
+  | { readonly kind: "count_changed"; readonly recipients: number };
+
+/** The caller keeps `idempotencyKey` until it gets an answer: a retry never launches twice. */
+export async function launchCampaign(
+  id: string,
+  request: { expectedRecipients: number; scheduledAt: string | null },
+  idempotencyKey: string,
+): Promise<LaunchResult> {
+  const response = await send(`/admin/campaigns/${encodeURIComponent(id)}/launch`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", [IDEMPOTENCY_KEY_HEADER]: idempotencyKey },
+    body: JSON.stringify(request),
+  });
+  if (response.status === 409) {
+    const changed = adminCampaignCountChangedSchema.safeParse(
+      await response
+        .clone()
+        .json()
+        .catch(() => null),
+    );
+    if (changed.success) return { kind: "count_changed", recipients: changed.data.recipients };
+  }
+  if (!response.ok) throw new ApiError(await errorCode(response), response.status);
+  return { kind: "launched", campaign: await parse(response, adminCampaignSchema) };
+}
+
+export async function controlCampaign(
+  id: string,
+  control: "pause" | "resume" | "cancel",
+): Promise<AdminCampaign> {
+  const response = await postJson(`/admin/campaigns/${encodeURIComponent(id)}/${control}`, {});
+  return parse(response, adminCampaignSchema);
+}
+
+export type EraseResult =
+  | { readonly kind: "erased"; readonly erased: number }
+  | { readonly kind: "count_changed"; readonly count: number };
+
+export async function eraseWaitlist(expectedCount: number): Promise<EraseResult> {
+  const response = await send("/admin/waitlist/erase", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ expectedCount }),
+  });
+  const body: unknown = await response
+    .clone()
+    .json()
+    .catch(() => null);
+  if (response.status === 409 && isCountChanged(body)) {
+    return { kind: "count_changed", count: body.count };
+  }
+  if (!response.ok) throw new ApiError(await errorCode(response), response.status);
+  return { kind: "erased", erased: expectedCount };
+}
+
+function isCountChanged(body: unknown): body is { count: number } {
+  return (
+    typeof body === "object" &&
+    body !== null &&
+    "error" in body &&
+    body.error === "count_changed" &&
+    "count" in body &&
+    typeof body.count === "number"
+  );
+}
+
 export const fetchActions = (cursor?: string): Promise<AdminActionsResponse> =>
   getJson(withQuery("/admin/actions", { cursor }), adminActionsResponseSchema);
 
@@ -171,6 +285,22 @@ export function adminErrorMessage(error: unknown): string {
       return "Échange introuvable.";
     case "invalid_request":
       return "Valeurs refusées par le serveur.";
+    case "campaign_not_found":
+      return "Campagne introuvable.";
+    case "not_a_draft":
+      return "Cette campagne est déjà lancée : elle ne change plus.";
+    case "waitlist_closed":
+      return "La liste d'attente a déjà reçu son e-mail. Une seule fois (P55).";
+    case "no_recipients":
+      return "Personne à qui écrire.";
+    case "invalid_state":
+      return "Impossible dans l'état actuel de la campagne.";
+    case "not_sent_yet":
+      return "L'e-mail d'ouverture n'est pas fini d'envoyer.";
+    case "email_not_configured":
+      return "L'envoi d'e-mails n'est pas configuré sur ce serveur.";
+    case "send_failed":
+      return "Le fournisseur a refusé l'envoi.";
     default:
       return "Une erreur est survenue. Réessaie.";
   }

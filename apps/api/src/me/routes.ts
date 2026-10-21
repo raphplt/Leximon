@@ -28,6 +28,7 @@ import { Hono } from "hono";
 import { z } from "zod";
 import { ADMIN_ROLE } from "../auth";
 import { guestOpensSql } from "../boosters/open-booster";
+import { emailPreferenceRoutes } from "../campaigns/routes";
 import type { AppEnv } from "../context";
 import { chooseCard, claimLevelReward, readLevelRewards, walletView } from "../levels/rewards";
 import { playerRateLimit } from "../middleware/rate-limit";
@@ -49,6 +50,8 @@ export function meRoutes() {
     await next();
     c.header("Cache-Control", "no-store");
   });
+
+  routes.route("/email-preferences", emailPreferenceRoutes());
 
   routes.get("/wallet", async (c) => {
     const [row] = await c.var.db

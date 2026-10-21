@@ -59,6 +59,11 @@ export const USER_REFERENCES = {
   "guest_links.account_id": { transfer: "link_log", abandon: "link_log" },
   // Back office audit log: written by admins, who are never guests.
   "admin_actions.admin_id": { transfer: "kept", abandon: "kept" },
+  "email_campaigns.created_by": { transfer: "kept", abandon: "kept" },
+  "email_campaigns.launched_by": { transfer: "kept", abandon: "kept" },
+  // Campaigns and their consent need an address: a guest never has either (P61).
+  "email_campaign_sends.user_id": { transfer: "kept", abandon: "kept" },
+  "email_consents.user_id": { transfer: "kept", abandon: "kept" },
 } as const satisfies Readonly<
   Record<
     string,

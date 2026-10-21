@@ -4,7 +4,11 @@ import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { APIError, createAuthMiddleware } from "better-auth/api";
 import { admin, anonymous, emailOTP } from "better-auth/plugins";
-import { type EmailSender, EmailSenderNotConfiguredError } from "./account/email-sender";
+import {
+  EmailSendError,
+  type EmailSender,
+  EmailSenderNotConfiguredError,
+} from "./account/email-sender";
 import { linkGuestOnSignIn, readBodyFlag } from "./account/link-on-sign-in";
 
 export const AUTH_BASE_PATH = "/api/auth";
@@ -65,7 +69,11 @@ export function createAuth(env: Env, db: Database, emailSender: EmailSender) {
         storeOTP: "hashed",
         async sendVerificationOTP({ email, otp }) {
           try {
-            await emailSender.sendSignInCode({ to: email, code: otp });
+            await emailSender.sendSignInCode({
+              to: email,
+              code: otp,
+              validMinutes: SIGN_IN_CODE.expiresInS / 60,
+            });
           } catch (error) {
             sendFailure = error;
             throw error;
@@ -100,8 +108,9 @@ export function createAuth(env: Env, db: Database, emailSender: EmailSender) {
       after: createAuthMiddleware(async (ctx) => {
         if (ctx.path !== SEND_CODE_PATH || sendFailure === null) return;
         if (!(sendFailure instanceof EmailSenderNotConfiguredError)) {
+          // The provider's code only: its message, like the address, is personal data.
           console.error("Sign-in code not sent", {
-            message: sendFailure instanceof Error ? sendFailure.message : "",
+            code: sendFailure instanceof EmailSendError ? sendFailure.code : "E_UNKNOWN",
           });
         }
         throw new APIError("SERVICE_UNAVAILABLE", {

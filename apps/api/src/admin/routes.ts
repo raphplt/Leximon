@@ -18,6 +18,8 @@ import {
   idempotencyKeySchema,
 } from "@leximon/contract";
 import { Hono } from "hono";
+import type { CampaignMailerFactory } from "../campaigns/mailer";
+import { campaignAdminRoutes, waitlistEraseRoute } from "../campaigns/routes";
 import type { AppEnv } from "../context";
 import { playerRateLimit } from "../middleware/rate-limit";
 import { requireAdmin } from "../middleware/require-admin";
@@ -39,7 +41,7 @@ import {
 const MAX_ID_LENGTH = 200;
 
 /** Back office (`/admin/*`): admins only, never cached. */
-export function adminRoutes() {
+export function adminRoutes(createMailer: CampaignMailerFactory) {
   const routes = new Hono<AppEnv>();
   routes.use(requireAdmin);
   routes.use(playerRateLimit);
@@ -140,6 +142,9 @@ export function adminRoutes() {
     c.header("Content-Disposition", 'attachment; filename="liste-attente.csv"');
     return c.body(csv);
   });
+
+  routes.route("/waitlist/erase", waitlistEraseRoute());
+  routes.route("/campaigns", campaignAdminRoutes(createMailer));
 
   routes.get("/trades", async (c) => {
     const query = adminTradesQuerySchema.safeParse(c.req.query());

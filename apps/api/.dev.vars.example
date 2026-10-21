@@ -1,3 +1,8 @@
 # Copy to .dev.vars for `wrangler dev`. Never commit .dev.vars.
 # Generate with: openssl rand -hex 32
 BETTER_AUTH_SECRET=
+# Signs the unsubscribe links of campaigns (D-035). Generate with: openssl rand -hex 32
+EMAIL_LINK_SECRET=
+# Lettermint (campaigns, D-034). Empty in local development: campaigns go to the console.
+LETTERMINT_SENDING_TOKEN=
+LETTERMINT_WEBHOOK_SECRET=

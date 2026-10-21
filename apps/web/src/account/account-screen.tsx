@@ -3,9 +3,18 @@
 import type { LinkPreviewResponse } from "@leximon/contract";
 import Link from "next/link";
 import { type FormEvent, useCallback, useEffect, useId, useState } from "react";
-import { fetchAccount, previewSignIn, sendSignInCode, signInWithCode, signOut } from "@/lib/api";
+import {
+  fetchAccount,
+  fetchEmailPreferences,
+  previewSignIn,
+  sendSignInCode,
+  setEmailPreferences,
+  signInWithCode,
+  signOut,
+} from "@/lib/api";
 import { usePackShape } from "@/lib/use-pack-shape";
 import { forgetProgress } from "@/progress/use-progress";
+import { Switch } from "@/ui/switch";
 import {
   type CodeError,
   codeErrorMessage,
@@ -39,6 +48,8 @@ export function AccountScreen() {
   const [step, setStep] = useState<Step>({ kind: "loading" });
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  // Ticked on the address form (P61): given once the session exists, never assumed.
+  const [newsOptIn, setNewsOptIn] = useState(false);
 
   const load = useCallback(async () => {
     setStep({ kind: "loading" });
@@ -111,6 +122,10 @@ export function AccountScreen() {
       ...(preview.outcome === "abandon" ? { acceptGuestLoss: true } : {}),
     });
     if (result.kind === "signed_in") {
+      if (newsOptIn) {
+        // Missing consent is the safe failure: the player can still tick it in their account.
+        await setEmailPreferences({ newsOptIn: true, source: "signup" }).catch(() => undefined);
+      }
       forgetProgress();
       // Straight back to the game, with a full load: every screen then reads the account afresh.
       window.location.assign("/jouer");
@@ -152,6 +167,7 @@ export function AccountScreen() {
           <p className={styles.text}>
             Connecté avec <strong className={styles.email}>{step.email}</strong>.
           </p>
+          <NewsToggle />
           {step.isAdmin && (
             <Link href="/admin" className={styles.secondary}>
               Administration
@@ -164,7 +180,12 @@ export function AccountScreen() {
       )}
 
       {step.kind === "email" && (
-        <EmailForm busy={busy} onSubmit={(email) => void sendCode(email)} />
+        <EmailForm
+          busy={busy}
+          newsOptIn={newsOptIn}
+          onNewsOptIn={setNewsOptIn}
+          onSubmit={(email) => void sendCode(email)}
+        />
       )}
 
       {step.kind === "code" && (
@@ -210,9 +231,13 @@ function titleOf(step: Step): string {
 
 function EmailForm({
   busy,
+  newsOptIn,
+  onNewsOptIn,
   onSubmit,
 }: {
   readonly busy: boolean;
+  readonly newsOptIn: boolean;
+  readonly onNewsOptIn: (value: boolean) => void;
   readonly onSubmit: (email: string) => void;
 }) {
   const [email, setEmail] = useState("");
@@ -237,10 +262,64 @@ function EmailForm({
         value={email}
         onChange={(event) => setEmail(event.target.value)}
       />
+      <label className={styles.check}>
+        <input
+          type="checkbox"
+          checked={newsOptIn}
+          onChange={(event) => onNewsOptIn(event.target.checked)}
+        />
+        <span>M'écrire quand il y a du nouveau</span>
+      </label>
       <button type="submit" className={styles.primary} disabled={busy || email.trim() === ""}>
         {busy ? "Envoi…" : "Recevoir un code"}
       </button>
     </form>
+  );
+}
+
+/** The member's consent to news by e-mail (P61), changed at any time. */
+function NewsToggle() {
+  const [value, setValue] = useState<boolean | null>(null);
+  const [failed, setFailed] = useState(false);
+
+  useEffect(() => {
+    let live = true;
+    fetchEmailPreferences()
+      .then((preferences) => {
+        if (live) setValue(preferences.newsOptIn);
+      })
+      .catch(() => {
+        if (live) setFailed(true);
+      });
+    return () => {
+      live = false;
+    };
+  }, []);
+
+  const change = async (next: boolean) => {
+    const previous = value;
+    setValue(next);
+    setFailed(false);
+    try {
+      setValue((await setEmailPreferences({ newsOptIn: next, source: "settings" })).newsOptIn);
+    } catch {
+      setValue(previous);
+      setFailed(true);
+    }
+  };
+
+  if (value === null && !failed) return null;
+  return (
+    <>
+      {value !== null && (
+        <Switch
+          label="M'écrire quand il y a du nouveau"
+          checked={value}
+          onChange={(next) => void change(next)}
+        />
+      )}
+      {failed && <p className={styles.hint}>Pas enregistré. Réessaie.</p>}
+    </>
   );
 }
 

@@ -1,15 +1,18 @@
 "use client";
 
-import type { AdminWaitlistResponse } from "@leximon/contract";
-import { useEffect, useState } from "react";
+import type { AdminWaitlistOpening, AdminWaitlistResponse } from "@leximon/contract";
+import Link from "next/link";
+import { type FormEvent, useEffect, useState } from "react";
 import styles from "./admin.module.css";
-import { adminErrorMessage, downloadWaitlist, fetchWaitlist } from "./admin-api";
+import { adminErrorMessage, downloadWaitlist, eraseWaitlist, fetchWaitlist } from "./admin-api";
+import { STATUS_LABELS } from "./campaigns-screen";
 import { formatDateTime, formatNumber } from "./format";
 
 type Entry = AdminWaitlistResponse["entries"][number];
 
 export function WaitlistScreen() {
   const [total, setTotal] = useState<number | null>(null);
+  const [opening, setOpening] = useState<AdminWaitlistOpening | null>(null);
   const [entries, setEntries] = useState<readonly Entry[]>([]);
   const [cursor, setCursor] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -21,6 +24,7 @@ export function WaitlistScreen() {
       .then((page) => {
         if (!live) return;
         setTotal(page.total);
+        setOpening(page.opening);
         setEntries(page.entries);
         setCursor(page.nextCursor);
       })
@@ -81,6 +85,18 @@ export function WaitlistScreen() {
       </p>
       {error !== null && <p className={styles.error}>{error}</p>}
       {total === null && error === null && <p className={styles.muted}>Chargement…</p>}
+      {opening !== null && total !== null && (
+        <OpeningPanel
+          opening={opening}
+          total={total}
+          onErased={(erasedAt) => {
+            setTotal(0);
+            setEntries([]);
+            setCursor(null);
+            setOpening({ ...opening, erasedAt });
+          }}
+        />
+      )}
       {total !== null && (
         <>
           <p>
@@ -119,5 +135,88 @@ export function WaitlistScreen() {
         </>
       )}
     </>
+  );
+}
+
+/** The opening e-mail (P55): the list is closed, then erased once the e-mail has left. */
+function OpeningPanel({
+  opening,
+  total,
+  onErased,
+}: {
+  readonly opening: AdminWaitlistOpening;
+  readonly total: number;
+  readonly onErased: (erasedAt: string) => void;
+}) {
+  const [typed, setTyped] = useState("");
+  const [count, setCount] = useState(total);
+  const [error, setError] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+  const sent = opening.status === "completed" || opening.status === "cancelled";
+
+  const erase = async (event: FormEvent) => {
+    event.preventDefault();
+    setBusy(true);
+    setError(null);
+    try {
+      const result = await eraseWaitlist(count);
+      if (result.kind === "count_changed") {
+        setCount(result.count);
+        setTyped("");
+        setError(
+          `Le nombre a changé : ${formatNumber(result.count)} adresse(s). Confirme ce nombre.`,
+        );
+        return;
+      }
+      onErased(new Date().toISOString());
+    } catch (caught) {
+      setError(adminErrorMessage(caught));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <section className={styles.panel}>
+      <h2 className={styles.subtitle}>Liste fermée</h2>
+      <p className={styles.muted}>
+        L'e-mail d'ouverture est lancé :{" "}
+        <Link href={`/admin/campagnes/${opening.campaignId}`}>
+          {STATUS_LABELS[opening.status].toLowerCase()}
+        </Link>
+        . Plus aucune inscription, plus aucun second envoi.
+      </p>
+      {opening.erasedAt !== null ? (
+        <p>Adresses effacées le {formatDateTime(opening.erasedAt)}.</p>
+      ) : !sent ? (
+        <p className={styles.muted}>L'effacement s'ouvre quand l'envoi est fini.</p>
+      ) : (
+        <form className={styles.form} onSubmit={(event) => void erase(event)}>
+          <p>
+            Effacer les {formatNumber(count)} adresse(s) de la liste. Les désinscriptions restent.
+            Pas de retour en arrière.
+          </p>
+          <div className={styles.row}>
+            <label className={styles.field}>
+              Tape {formatNumber(count)} pour confirmer
+              <input
+                className={styles.input}
+                inputMode="numeric"
+                value={typed}
+                onChange={(event) => setTyped(event.target.value.replace(/\s/g, ""))}
+              />
+            </label>
+            <button
+              type="submit"
+              className={styles.danger}
+              disabled={busy || typed !== String(count)}
+            >
+              Effacer la liste
+            </button>
+          </div>
+          {error !== null && <p className={styles.error}>{error}</p>}
+        </form>
+      )}
+    </section>
   );
 }
