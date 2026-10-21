@@ -2,7 +2,7 @@
 
 Où en est Leximon, ce qui reste avant la bêta publique (novembre 2026) et ce qui attend une décision du propriétaire. Mise à jour à chaque étape franchie.
 
-**Dernière mise à jour :** 2026-10-20.
+**Dernière mise à jour :** 2026-10-21.
 
 ## En une phrase
 
@@ -42,8 +42,8 @@ Arbitrés par le propriétaire le 2026-10-20 : jeu grand public (B2C), pas de ve
 
 | Étape | Statut | Détail |
 |---|---|---|
-| Niveau de compte | En cours | P48 : XP gagnée dans la transaction de chaque action (pli, défi, échange), niveau calculé, badge dans la navigation, « +N XP » après un pli ou un défi, échanges ouverts au niveau 5. Reste : récompenses à réclamer et déblocages par niveau (proposition à valider), XP des raretés complétées, calibrage par simulation |
-| Profil public | À faire | Pseudo, avatar gravé, clan, cartes épinglées, statistiques. Public par défaut à confirmer |
+| Niveau de compte | En cours | P48 : XP gagnée dans la transaction de chaque action (pli, défi, échange), niveau calculé, badge dans la navigation, « +N XP » après un pli ou un défi, échanges ouverts au niveau 5. Récompenses (P58) et fonctionnalités par niveau (P59) tranchées le 2026-10-21, à construire au lot 1 de l'interface v1. Reste aussi : XP des raretés complétées, calibrage par simulation |
+| Profil public | À faire | Pseudo, avatar gravé, clan, cartes épinglées, statistiques. Public par défaut (P60). Lot 3 de l'interface v1 |
 | Clans | À faire | Sans maximum de membres, discussion texte modérée, bibliothèque commune. Après l'inscription et la modération |
 | Modes de jeu entre joueurs | R&D | Plusieurs pistes à prototyper (joute, duplicate, bluff…) |
 | Classements | Plus tard | Pas en v1. Cote globale de type Elo (Glicko-2), modèle du Scrabble duplicate |
@@ -52,6 +52,7 @@ Arbitrés par le propriétaire le 2026-10-20 : jeu grand public (B2C), pas de ve
 
 | Étape | Statut | Détail |
 |---|---|---|
+| Interface v1, web et mobile | En cours | Maquette cliquable et cahier validés le 2026-10-21 ; inventaire de chaque écran : [interface-v1.md](cahiers-des-charges/interface-v1.md). Logique d'écran commune dans `packages/view-model` (D-033), web d'abord. Lot 0 (cahier, règles) fait, lot 1 (coque web, Jouer, chemin des niveaux, coffrets) à faire |
 | Direction artistique et tokens | Fait | D-022 « Planche populaire », `packages/tokens` |
 | Web : ouverture du pli, album | Fait | Sur le catalogue publié |
 | Web : défis, échanges | Fait | `/defis`, `/echanges` ; niveau de maîtrise dans l'album |
@@ -76,10 +77,9 @@ Arbitrés par le propriétaire le 2026-10-20 : jeu grand public (B2C), pas de ve
 
 Dans l'ordre où elles débloquent le plus :
 
-1. **Récompenses et déblocages par niveau**, d'après la [proposition](cahiers-des-charges/progression-et-social.md#récompenses-et-déblocages--proposition).
-2. **Gravures : lancement complet** sur les 1 561 cartes (environ 5 $).
-3. **Fournisseur Postgres**, d'après `docs/rnd/postgres.md`. Il débloque la mise en ligne.
-4. **Ouverture, progression et social :** les questions ouvertes de [regles-du-jeu.md](regles-du-jeu.md#à-décider), détaillées dans les [cahiers des charges](cahiers-des-charges/).
+1. **Gravures : lancement complet** sur les 1 561 cartes (environ 5 $).
+2. **Fournisseur Postgres**, d'après `docs/rnd/postgres.md`. Il débloque la mise en ligne.
+3. **Ouverture, progression et social :** les questions ouvertes de [regles-du-jeu.md](regles-du-jeu.md#à-décider), détaillées dans les [cahiers des charges](cahiers-des-charges/).
 
 ## Prochaines étapes conseillées
 

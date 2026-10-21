@@ -2,7 +2,7 @@
 
 **Source unique des choix métier de Leximon.** Tout ce que le propriétaire tranche sur le jeu (ce que le joueur gagne, paie, voit, peut faire) vit ici et nulle part ailleurs. Les décisions techniques (`docs/decisions.md`) expliquent comment ces règles sont construites et y renvoient ; elles gardent la trace de la date et du pourquoi, mais en cas d'écart, c'est ce fichier qui fait foi.
 
-**Dernière mise à jour :** 2026-10-20.
+**Dernière mise à jour :** 2026-10-21.
 
 - **Statuts :** **Tranché** · **Provisoire** (valeur de départ, à recalibrer sur les données réelles) · **À décider** (en bas du fichier).
 - **Réglages chiffrés :** ils sont aussi dans `packages/core/src/rules.ts`, où le code les lit. Un changement se fait aux deux endroits dans le même commit, par une nouvelle période datée : il ne s'applique jamais rétroactivement aux joueurs existants.
@@ -118,11 +118,14 @@ Détail : [cahiers-des-charges/progression-et-social.md](cahiers-des-charges/pro
 
 | # | Sujet | Règle | Statut |
 |---|---|---|---|
-| P48 | Niveau de compte | Les actions utiles (plis, mots nouveaux, défis, échanges) rapportent de l'expérience ; chaque niveau donne une récompense que le joueur réclame. Barème de départ : 10 XP par pli ouvert, 20 de plus pour le premier de la journée (heure de Paris), par mot nouveau 5 (Courant), 10, 15, 25, 35 et 50 (Légendaire), 15 par bonne réponse à un défi, 25 par mot qui passe à l'Encre ou à la Dorure, 20 par échange conclu pour chacun des deux joueurs. Passer du niveau n au suivant demande 100 + 20 × (n − 1) XP, sans plafond. L'XP d'un invité le suit à l'inscription. Récompenses et fonctionnalités débloquées : proposition dans le cahier des charges. | Provisoire, échanges au niveau 5 tranché le 2026-10-20 |
+| P48 | Niveau de compte | Les actions utiles (plis, mots nouveaux, défis, échanges) rapportent de l'expérience ; chaque niveau donne une récompense que le joueur réclame. Barème de départ : 10 XP par pli ouvert, 20 de plus pour le premier de la journée (heure de Paris), par mot nouveau 5 (Courant), 10, 15, 25, 35 et 50 (Légendaire), 15 par bonne réponse à un défi, 25 par mot qui passe à l'Encre ou à la Dorure, 20 par échange conclu pour chacun des deux joueurs. Passer du niveau n au suivant demande 100 + 20 × (n − 1) XP, sans plafond. L'XP d'un invité le suit à l'inscription. Récompenses en P58, fonctionnalités ouvertes par niveau en P59. | Provisoire, échanges au niveau 5 tranché le 2026-10-20 |
 | P49 | Avatar | Portraits tirés des gravures du domaine public, dont une partie se gagne par les niveaux. Pas de photo envoyée par le joueur. | Tranché le 2026-10-20 |
-| P50 | Clans | Pas de nombre maximum de membres, un seul clan par joueur, nom libre choisi par le chef (N5), discussion texte modérée (N5), bibliothèque commune (la part de chaque collection que possède au moins un membre). | Tranché le 2026-10-20 |
+| P50 | Clans | Pas de nombre maximum de membres, un seul clan par joueur, nom libre choisi par le chef (N5), discussion texte modérée (N5), bibliothèque commune (la part de chaque collection que possède au moins un membre). Compte inscrit, niveau 10 pour rejoindre un clan, niveau 15 pour en créer un (P48). | Tranché le 2026-10-20, niveaux le 2026-10-21 |
 | P51 | Classements | Pas en v1. Une cote globale Glicko-2 sur les parties entre joueurs ; le Scrabble duplicate comme source d'inspiration (même partie pour tous, classement au pourcentage du meilleur score). | Tranché le 2026-10-20 |
 | P52 | Modes de jeu entre joueurs | Explorés en R&D, plusieurs pistes à prototyper. Aucune mise de cartes sur une partie. | Tranché le 2026-10-20 |
+| P58 | Récompenses de niveau | Chaque niveau donne une récompense gratuite, que le joueur réclame (coffret). Niveaux ordinaires : un sachet bonus (réserve P23) et une recharge du stock gratuit, en alternance. Tous les 5 niveaux (5, 15, 25…) : un sachet garni (au moins une carte Rare ou mieux) et un titre (5 « Lexicographe en herbe », 15 « Fine plume », 25 « Rat de bibliothèque », 35 « Grand glossateur », 45 « Puits de science »). Tous les 10 niveaux : une carte au choix (une Courante ou Peu courante qui manque au joueur), une place de plus dans la réserve de sachets bonus (jusqu'au niveau 50, soit 15 places au plus), un avatar gravé et une place de plus pour les cartes épinglées (3 à l'ouverture du profil, 6 au plus au niveau 30). Au-delà du niveau 50 : cosmétiques et sachets bonus seulement, paliers plus espacés. | Tranché le 2026-10-21 ; titres provisoires |
+| P59 | Fonctionnalités par niveau | Une fonctionnalité fermée reste visible avec le niveau qui l'ouvre. Niveau 1 : sachets découverte (P14), album, défis ; les défis ne sont jamais fermés. Niveau 3 : choisir la collection de son sachet. Niveau 5 : échanges d'une carte contre une carte (P36). Niveau 8 : profil public (compte inscrit). Niveau 10 : échanges jusqu'à 3 cartes de chaque côté, rejoindre un clan (P50). Niveau 15 : créer un clan, modes de jeu entre joueurs quand ils existeront. | Tranché le 2026-10-21 ; dans le code avec le lot 1 de [interface-v1](cahiers-des-charges/interface-v1.md) |
+| P60 | Visibilité du profil | Public par défaut : vu de tous par un lien, avec le pseudo, l'avatar, le clan, les cartes épinglées et les statistiques. Le joueur peut le passer en privé dans les réglages ; il n'apparaît alors aux autres que par son pseudo et son avatar. | Tranché le 2026-10-21 |
 
 ## Comptes
 
@@ -138,9 +141,6 @@ Options et recommandations dans les cahiers des charges ([ouverture](cahiers-des
 
 - **Numéro de collection sur la carte** (« 040/160 ») : dénominateur fixe annoncé à la publication, ou nombre de cartes publiées ; Légendaires « hors série » numérotées au-delà, ou non.
 - **Sons de l'ouverture :** garder les sons synthétisés, ou passer à des sons de banque.
-- **Récompenses de niveau et fonctionnalités débloquées par niveau :** le propriétaire veut des récompenses variées et plusieurs fonctionnalités ouvertes par niveau (2026-10-20). Proposition chiffrée dans le [cahier des charges](cahiers-des-charges/progression-et-social.md#récompenses-et-déblocages--proposition).
 - **Abonnement premium :** le propriétaire veut l'envisager (2026-10-20), en plus des cosmétiques. Il reste dans N1 et N2 : contenu connu à l'avance, jamais de plis. Pistes de `north-star.md` : révisions illimitées, statistiques, collections en avant-première, mode hors ligne. À décider : contenu, prix, et ce qui reste gratuit pour ne pas casser le jeu.
 - **Cible principale :** hypothèse du propriétaire, les adultes de 25 à 65 ans et plus, plutôt que les moins de 18 ans (P8 reste ouvert dès 15 ans). À vérifier pendant la bêta avant d'orienter la communication.
-- **Visibilité par défaut du profil :** public ou privé.
 - **Discussion de clan :** modération automatique par un modèle dès la bêta ou plus tard ; durée de conservation des messages.
-- **Niveau minimum pour les clans** (les échanges : niveau 5, P36).

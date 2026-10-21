@@ -59,7 +59,7 @@ Les plafonds des défis (P29) limitent aussi l'XP qu'un tricheur peut en tirer.
 |---|---|
 | Chaque niveau | 1 pli bonus, ou un petit cosmétique |
 | Tous les 5 niveaux | un avatar gravé, un dos de carte, un titre (« Lexicographe en herbe »), un emplacement de carte épinglée en plus |
-| Niveau 5 | ouverture des échanges et des clans (freine les comptes multiples créés pour farmer) |
+| Niveau 5 | ouverture des échanges (freine les comptes multiples créés pour farmer) ; les clans à partir du niveau 10 (P50) |
 | Tous les 10 niveaux | une récompense marquante : cadre de profil animé, emblème de clan rare |
 
 - **Plis bonus :** ils vont dans la réserve de plis bonus qui existe déjà (P23, plafonnée à 10, ouverte une fois le stock vide). Ils accélèrent la collection : la simulation doit en tenir compte.
@@ -67,7 +67,7 @@ Les plafonds des défis (P29) limitent aussi l'XP qu'un tricheur peut en tirer.
 
 ### Récompenses et déblocages : proposition
 
-**À valider par le propriétaire.** Il a demandé le 2026-10-20 des récompenses variées, et plusieurs fonctionnalités ouvertes par niveau ; seul le niveau 5 pour échanger est tranché (P36). Repères : un joueur régulier (environ 300 XP par jour) atteint le niveau 5 en 2 jours, le 10 en 5 à 6 jours, le 20 en 18 jours, le 30 en un peu plus d'un mois.
+**Validé par le propriétaire le 2026-10-21**, sur la maquette de l'interface v1 : les règles sont P58 (récompenses) et P59 (fonctionnalités par niveau), qui font foi. Ce qui suit garde le raisonnement. Repères : un joueur régulier (environ 300 XP par jour) atteint le niveau 5 en 2 jours, le 10 en 5 à 6 jours, le 20 en 18 jours, le 30 en un peu plus d'un mois.
 
 **Six sortes de récompenses**, toutes gratuites (aucun hasard payant) :
 
@@ -145,7 +145,7 @@ Deux réglages : **public** (par défaut, vu de tous par un lien, apparaît dans
 - **Un seul clan par joueur.** Après l'avoir quitté, il faut attendre 24 h avant d'en rejoindre un autre : on ne change pas de clan pour toucher deux fois une récompense.
 - **Rôles :** chef (un seul), adjoints, membres. Le chef et les adjoints acceptent les demandes, excluent un membre et modèrent la discussion. Si le chef est absent 14 jours, le rôle passe à l'adjoint le plus ancien.
 - **Entrée :** ouverte, sur demande, ou sur invitation (code à partager).
-- **Accès :** compte inscrit, niveau 5.
+- **Accès :** compte inscrit, niveau 10 pour rejoindre, niveau 15 pour créer (P50).
 - **Nom :** choisi librement par le chef (décision du propriétaire), unique, 3 à 30 caractères, filtré par la liste d'exclusion et signalable. Emblème : une gravure et deux couleurs, dans une liste. Description courte libre, soumise aux mêmes règles que la discussion.
 
 ### Ce qu'on fait dans un clan
@@ -252,8 +252,8 @@ Pour la bêta de novembre, le réaliste est l'ouverture (lot A de [ouverture.md]
 Les règles tranchées le 2026-10-20 sont dans [regles-du-jeu.md](../regles-du-jeu.md) : public et âge (P8), texte des joueurs (N5), niveau de compte (P48), avatar (P49), clans (P50), classements (P51), modes de jeu (P52). Le temps réel de la discussion de clan est évalué dans la R&D D-007.
 
 **À prendre** (aussi listées dans [regles-du-jeu.md](../regles-du-jeu.md#à-décider)) :
-1. **Plis bonus en récompense de niveau :** oui (recommandé : gratuits, dans la réserve P23), ou seulement des cosmétiques.
-2. **Visibilité par défaut du profil :** public (recommandé pour un jeu grand public), ou privé.
+1. ~~Plis bonus en récompense de niveau~~ : tranché le 2026-10-21, oui, gratuits, dans la réserve P23 (P58).
+2. ~~Visibilité par défaut du profil~~ : tranché le 2026-10-21, public (P60).
 3. **Modération automatique de la discussion par un modèle :** dès la bêta, ou seulement si les signalements ne suffisent plus.
 4. **Durée de conservation des messages de clan :** 90 jours (recommandé), ou plus.
-5. **Niveau minimum pour les clans :** niveau 5 (recommandé), et le même seuil pour les échanges, en plus de P36.
+5. ~~Niveau minimum pour les clans~~ : tranché le 2026-10-21, niveau 10 pour rejoindre et 15 pour créer (P50).
