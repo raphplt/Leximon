@@ -1,38 +1,52 @@
 "use client";
 
-import type { BoosterWalletResponse, ProgressGain } from "@leximon/contract";
-import { type Rarity, REFILL_SCHEDULE } from "@leximon/core";
+import type { ProgressGain } from "@leximon/contract";
+import type { Rarity } from "@leximon/core";
 import { motion } from "@leximon/tokens";
+import {
+  type CollectionChoice,
+  collectionChoices,
+  levelRatio,
+  levelUpLabel,
+  lockedToast,
+  openAgainLabel,
+  pickCollection,
+  stockView,
+  xpGainLabel,
+} from "@leximon/view-model";
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { type Catalog, cardOrPlaceholder, collectionName, loadCatalog } from "@/cards/catalog";
 import { Card } from "@/components/card";
 import { RarityName } from "@/components/rarity-icon";
-import {
-  fetchAccount,
-  fetchOwnedCards,
-  fetchWallet,
-  type OpenBoosterResult,
-  openBooster,
-} from "@/lib/api";
-import { capitalize, countPacks, type PackNoun, type PackShape } from "@/lib/pack-shape";
-import { useNow } from "@/lib/use-now";
+import { fetchOwnedCards, type OpenBoosterResult, openBooster } from "@/lib/api";
+import type { PackShape } from "@/lib/pack-shape";
 import { usePackShape } from "@/lib/use-pack-shape";
-import { levelUpLabel, xpGainLabel } from "@/progress/progress";
-import { publishProgress } from "@/progress/use-progress";
+import { CollectionPicker } from "@/play/collection-picker";
+import { LevelStrip } from "@/play/level-strip";
+import play from "@/play/play.module.css";
+import { PlayFabs } from "@/play/play-fabs";
+import { SlippingWord } from "@/play/slipping-word";
+import { account, wallet } from "@/player/player";
+import { useShared } from "@/player/resource";
+import { publishProgress, useProgress } from "@/progress/use-progress";
+import { useShell } from "@/shell/shell-context";
+import { usePlayerView } from "@/shell/use-player-view";
+import { Button, ButtonLink } from "@/ui/button";
+import { XpBar } from "@/ui/level-bits";
+import { useToast } from "@/ui/toast";
+import ui from "@/ui/ui.module.css";
 import styles from "./booster-screen.module.css";
 import { CardStack } from "./card-stack";
-import { canVibrate, type FeedbackKind, play, readPreference, writePreference } from "./feedback";
+import { play as playSound } from "./feedback";
 import { OPEN_HINTS, type PackProps } from "./pack-shape";
 import { Pli } from "./pli";
 import {
-  bonusLabel,
   collectionProgress,
   copiesAt,
   type DrawnCard,
   firstOfRarityLabel,
   isFirstOfRarity,
-  nextRefillLabel,
   recap,
   revealOrder,
 } from "./reveal";
@@ -40,11 +54,12 @@ import { RevealCard } from "./reveal-card";
 import { Sachet } from "./sachet";
 import { keepsAnnouncementWhenHurried, stagingFor } from "./staging";
 
-const STOCK_CAPACITY = REFILL_SCHEDULE[0].capacity;
 const FAN_ANGLES = [-10, -5, 0, 5, 10];
 /** Room left around a revealed card on a narrow phone, in px. */
 const CARD_MARGIN = 56;
 const CARD_MAX_WIDTH = 300;
+/** The sachet chosen last (J-05), kept on the device. */
+const CHOICE_KEY = "leximon.sachet";
 
 type Phase =
   | { readonly name: "loading" }
@@ -64,6 +79,7 @@ interface Pack {
   readonly collectionName: string;
   /** Tone of the card backs (`back` of the collection). */
   readonly back: string | undefined;
+  /** Cards the progress line counts: the collection's, or the whole catalog for discovery. */
   readonly collectionCardIds: ReadonlySet<string>;
   /** XP this pack earned (P48). */
   readonly progress: ProgressGain;
@@ -94,34 +110,46 @@ function quantities(owned: readonly { cardId: string; quantity: number }[]): Map
   return byId;
 }
 
+function readChoice(): string | null {
+  try {
+    return window.localStorage.getItem(CHOICE_KEY);
+  } catch {
+    return null;
+  }
+}
+
+function writeChoice(id: string): void {
+  try {
+    window.localStorage.setItem(CHOICE_KEY, id);
+  } catch {
+    // Not remembered for the next visit; the choice still applies to this one.
+  }
+}
+
+/** The Jouer screen (J-01 to J-08) and the opening of a sachet (O-01 to O-05). */
 export function BoosterScreen() {
   const [phase, setPhase] = useState<Phase>({ name: "loading" });
   const [catalog, setCatalog] = useState<Catalog | null>(null);
-  const [wallet, setWallet] = useState<BoosterWalletResponse | null>(null);
   const [owned, setOwned] = useState<ReadonlyMap<string, number>>(new Map());
   const [pack, setPack] = useState<Pack | null>(null);
   const [error, setError] = useState<string | null>(null);
-  /** Boosters a guest may still open before creating an account (P37); null for a member. */
-  const [guestLeft, setGuestLeft] = useState<number | null>(null);
+  const [wanted, setWanted] = useState<string | null>(null);
   const request = useRef<OpenRequest | null>(null);
-  const { shape, noun, known } = usePackShape();
-  const now = useNow(15_000);
+  const { shape, known } = usePackShape();
+  const view = usePlayerView();
+  const who = useShared(account);
+  const toast = useToast();
   const cardWidth = useCardWidth();
+  const { now } = view;
+  const currentWallet = view.wallet;
+  /** Boosters a guest may still open before creating an account (P37); null for a member. */
+  const guestLeft = who?.kind === "guest" ? who.boostersLeft : null;
 
   const load = useCallback(async () => {
     try {
-      const [loadedCatalog, loadedWallet, ownedCards] = await Promise.all([
-        loadCatalog(),
-        fetchWallet(),
-        fetchOwnedCards(),
-      ]);
+      const [loadedCatalog, ownedCards] = await Promise.all([loadCatalog(), fetchOwnedCards()]);
       setCatalog(loadedCatalog);
-      setWallet(loadedWallet);
       setOwned(quantities(ownedCards));
-      // Only shapes the hints: if it fails, the server still applies the limit on opening.
-      fetchAccount()
-        .then((account) => setGuestLeft(account.kind === "guest" ? account.boostersLeft : null))
-        .catch(() => undefined);
       const ready: Phase =
         loadedCatalog.collections.length > 0 ? { name: "sealed" } : { name: "no_collection" };
       setPhase((current) =>
@@ -133,29 +161,35 @@ export function BoosterScreen() {
   }, []);
 
   useEffect(() => {
+    setWanted(readChoice());
     void load();
   }, [load]);
 
   // The stock refills on the server's schedule: ask again once the announced time has passed.
-  const refillDue = wallet?.nextRefillAt != null && Date.parse(wallet.nextRefillAt) <= now;
+  const refillDue =
+    currentWallet?.nextRefillAt != null && now > 0 && Date.parse(currentWallet.nextRefillAt) <= now;
   useEffect(() => {
-    if (!refillDue) return;
-    fetchWallet()
-      .then(setWallet)
-      .catch(() => undefined);
+    if (refillDue) wallet.refresh();
   }, [refillDue]);
 
-  // The first published collection, until the player can choose (P14).
-  const collection = catalog?.collections[0];
+  const level = view.progress?.level ?? 1;
+  const choices =
+    catalog === null || now === 0 ? [] : collectionChoices(catalog.collections, level, now);
+  const choice = choices.length === 0 ? null : pickCollection(choices, wanted);
+
+  const pick = (next: CollectionChoice) => {
+    setWanted(next.id);
+    writeChoice(next.id);
+  };
 
   /** Sends the request as soon as the tear begins: the server answers while the player tears. */
   const startRequest = (): OpenRequest | null => {
-    if (collection === undefined) return null;
+    if (choice === null) return null;
     const current = request.current ?? { key: crypto.randomUUID(), outcome: null };
     if (current.outcome !== null) return current;
     const started: OpenRequest = {
       key: current.key,
-      outcome: openBooster({ kind: "collection", collectionId: collection.id }, current.key).then(
+      outcome: openBooster(choice.source, current.key).then(
         (result): Outcome => ({ kind: "answered", result }),
         (): Outcome => ({ kind: "failed" }),
       ),
@@ -166,7 +200,7 @@ export function BoosterScreen() {
 
   const openPack = async () => {
     const started = startRequest();
-    if (started?.outcome == null || catalog === null || collection === undefined) return;
+    if (started?.outcome == null || catalog === null || choice === null) return;
     setError(null);
     setPhase({ name: "opening" });
     const reduced = prefersReducedMotion();
@@ -174,37 +208,52 @@ export function BoosterScreen() {
     if (outcome.kind === "failed") {
       // Same key next time: if the server did open the booster, it answers with the same cards.
       request.current = { key: started.key, outcome: null };
-      setError(`Le ${noun.one} ne s'est pas ouvert. Vérifie ta connexion.`);
+      setError("Le sachet ne s'est pas ouvert. Vérifie ta connexion.");
       setPhase({ name: "sealed" });
       return;
     }
     request.current = null;
     const { result } = outcome;
     if (result.kind === "stock_empty") {
-      setWallet({ stored: 0, nextRefillAt: result.nextRefillAt, bonus: 0 });
+      wallet.refresh();
       setPhase({ name: "sealed" });
       return;
     }
     if (result.kind === "signup_required") {
-      setGuestLeft(0);
+      if (who?.kind === "guest") account.publish({ ...who, boostersLeft: 0 });
       setPhase({ name: "sealed" });
       return;
     }
-    setGuestLeft((left) => (left === null ? null : Math.max(0, left - 1)));
+    if (result.kind === "level_required") {
+      // The screen thought the choice was open: back to the discovery sachet.
+      pick(choices[0] ?? choice);
+      toast(lockedToast("choose_collection", now));
+      setPhase({ name: "sealed" });
+      return;
+    }
+    if (who?.kind === "guest") {
+      account.publish({ ...who, boostersLeft: Math.max(0, who.boostersLeft - 1) });
+    }
     const raritiesBefore = new Set<Rarity>();
     for (const id of owned.keys()) {
       const rarity = catalog.cardsById.get(id)?.rarity;
       if (rarity !== undefined) raritiesBefore.add(rarity);
     }
-    setWallet(result.wallet);
+    wallet.publish(result.wallet);
     publishProgress(result.progress);
+    const collection =
+      choice.source.kind === "collection"
+        ? catalog.collections.find((c) => c.id === choice.id)
+        : undefined;
     setPack({
       cards: revealOrder(result.cards),
       quantitiesBefore: owned,
       raritiesBefore,
-      collectionName: collection.name,
-      back: collection.back,
-      collectionCardIds: new Set(collection.cards.map((card) => card.id)),
+      collectionName: collection?.name ?? choice.name,
+      back: collection?.back,
+      collectionCardIds: new Set(
+        collection === undefined ? catalog.cardsById.keys() : collection.cards.map((c) => c.id),
+      ),
       progress: result.progress,
     });
     const after = new Map(owned);
@@ -213,13 +262,13 @@ export function BoosterScreen() {
     if (reduced) {
       setPhase({ name: "revealing", index: 0, hurried: false });
     } else {
-      play("cardSlide");
+      playSound("cardSlide");
       setPhase({ name: "stack" });
     }
   };
 
   const toRecap = () => {
-    play("recap");
+    playSound("recap");
     setPhase({ name: "recap" });
   };
 
@@ -246,153 +295,154 @@ export function BoosterScreen() {
     else setPhase({ name: "revealing", index, hurried: true });
   };
 
-  const stored = wallet?.stored ?? 0;
-  const bonus = wallet?.bonus ?? 0;
+  const stock = currentWallet === null || now === 0 ? null : stockView(currentWallet, now);
   const mustSignUp = guestLeft === 0;
   // Bonus boosters are opened once the free stock is empty (the server decides which is spent).
-  const canOpen = !mustSignUp && (stored > 0 || bonus > 0);
-  const refill = nextRefillLabel(wallet?.nextRefillAt ?? null, now);
-  const reserve = bonusLabel(bonus, noun);
-  const sealedHint = mustSignUp
-    ? signUpHint(noun)
-    : stored > 0
-      ? guestLeft === 1
-        ? `${OPEN_HINTS[shape]}. Dernier ${noun.one} sans compte.`
-        : OPEN_HINTS[shape]
-      : bonus > 0
-        ? `${OPEN_HINTS[shape]}. ${capitalize(noun.one)} bonus.`
-        : `Plus de ${noun.one}. ${capitalize(refill ?? "")}`;
+  const canOpen = !mustSignUp && stock !== null && !stock.empty;
 
-  return (
-    <main className={styles.screen}>
-      <header className={styles.header}>
-        <div>
-          <p className={styles.kicker}>{capitalize(noun.one)} de collection</p>
-          <h1 className={styles.title}>{collection?.name ?? "Leximon"}</h1>
-        </div>
-        <div className={styles.side}>
-          <FeedbackToggles />
-          {wallet !== null && (
-            <div className={styles.stock}>
-              <span
-                className={styles.dots}
-                role="img"
-                aria-label={`${countPacks(stored, noun)} sur ${STOCK_CAPACITY}`}
-              >
-                {Array.from({ length: STOCK_CAPACITY }, (_, index) => (
-                  // biome-ignore lint/suspicious/noArrayIndexKey: fixed-size row of identical dots
-                  <span key={index} className={index < stored ? styles.dotOn : styles.dot} />
-                ))}
-              </span>
-              {refill !== null && <span className={styles.refill}>{refill}</span>}
-              {reserve !== null && <span className={styles.bonus}>{reserve}</span>}
+  if (phase.name === "stack" || phase.name === "revealing" || phase.name === "recap") {
+    return (
+      <main className={styles.screen}>
+        {phase.name === "stack" && pack !== null && (
+          <div className={styles.center}>
+            <CardStack
+              cards={pack.cards}
+              width={cardWidth}
+              tone={pack.back}
+              onReveal={() => {
+                playSound("cardSlide");
+                setPhase({ name: "revealing", index: 0, hurried: false });
+              }}
+            />
+            <div className={styles.revealBar}>
+              <p className={styles.hint}>Touche la pile pour révéler tes mots</p>
+              <button type="button" className={styles.skip} onClick={revealAll}>
+                Tout révéler
+              </button>
             </div>
-          )}
-        </div>
-      </header>
-
-      {(phase.name === "loading" || (phase.name === "sealed" && !known)) && (
-        <p className={styles.hint}>On fouille les rayons…</p>
-      )}
-
-      {phase.name === "unavailable" && (
-        <div className={styles.center}>
-          <p className={styles.hint}>Le serveur lambine.</p>
-          <button type="button" className={styles.secondary} onClick={() => void load()}>
-            Réessayer
-          </button>
-        </div>
-      )}
-
-      {phase.name === "no_collection" && (
-        <p className={styles.hint}>Aucune collection n'est encore publiée.</p>
-      )}
-
-      {((phase.name === "sealed" && known) || phase.name === "opening") && (
-        <div className={styles.center}>
-          <PackView
-            shape={shape}
-            state={phase.name === "opening" ? "opening" : canOpen ? "sealed" : "empty"}
-            onTearStart={() => {
-              startRequest();
-            }}
-            onOpen={() => void openPack()}
-          />
-          {phase.name === "opening" ? (
-            <p className={styles.hint} aria-live="polite">
-              Ouverture…
-            </p>
-          ) : error !== null ? (
-            <p className={styles.error} role="alert">
-              {error}
-            </p>
-          ) : (
-            <p className={styles.hint}>{sealedHint}</p>
-          )}
-          {mustSignUp && phase.name === "sealed" && (
-            <Link href="/compte" className={styles.primary}>
-              Créer mon compte
-            </Link>
-          )}
-        </div>
-      )}
-
-      {phase.name === "stack" && pack !== null && (
-        <div className={styles.center}>
-          <CardStack
-            cards={pack.cards}
-            width={cardWidth}
-            tone={pack.back}
-            onReveal={() => {
-              play("cardSlide");
-              setPhase({ name: "revealing", index: 0, hurried: false });
-            }}
-          />
-          <div className={styles.revealBar}>
-            <p className={styles.hint}>Touche la pile pour révéler tes mots</p>
-            <button type="button" className={styles.skip} onClick={revealAll}>
-              Tout révéler
-            </button>
           </div>
-        </div>
-      )}
+        )}
+        {phase.name === "revealing" && pack !== null && catalog !== null && (
+          <Revealing
+            catalog={catalog}
+            pack={pack}
+            index={phase.index}
+            hurried={phase.hurried}
+            width={cardWidth}
+            onNext={next}
+            onRevealAll={revealAll}
+          />
+        )}
+        {phase.name === "recap" && pack !== null && (
+          <Recap
+            catalog={catalog}
+            pack={pack}
+            mustSignUp={mustSignUp}
+            onOpen={() => {
+              setPack(null);
+              setPhase({ name: "sealed" });
+            }}
+          />
+        )}
+      </main>
+    );
+  }
 
-      {phase.name === "revealing" && pack !== null && catalog !== null && (
-        <Revealing
-          catalog={catalog}
-          pack={pack}
-          index={phase.index}
-          hurried={phase.hurried}
-          width={cardWidth}
-          noun={noun}
-          onNext={next}
-          onRevealAll={revealAll}
-        />
-      )}
+  const ready = phase.name === "sealed" || phase.name === "opening";
+  return (
+    <main className={play.page}>
+      <LevelStrip />
+      <div className={play.stage}>
+        <PlayFabs />
+        {choice !== null && (
+          <CollectionPicker
+            choices={choices}
+            current={choice}
+            onPick={pick}
+            onLocked={() => toast(lockedToast("choose_collection", now))}
+          />
+        )}
 
-      {phase.name === "recap" && pack !== null && (
-        <Recap
-          catalog={catalog}
-          pack={pack}
-          stored={stored}
-          bonus={bonus}
-          refill={refill}
-          noun={noun}
-          mustSignUp={mustSignUp}
-          onOpen={() => {
-            setPack(null);
-            setPhase({ name: "sealed" });
-          }}
-        />
-      )}
+        {(phase.name === "loading" || (ready && !known)) && (
+          <p className={play.message}>On fouille les rayons…</p>
+        )}
+        {phase.name === "unavailable" && (
+          <>
+            <p className={play.message}>Le serveur lambine.</p>
+            <Button variant="secondary" onClick={() => void load()}>
+              Réessayer
+            </Button>
+          </>
+        )}
+        {phase.name === "no_collection" && (
+          <p className={play.message}>Aucune collection n'est encore publiée.</p>
+        )}
+
+        {ready && known && (
+          <>
+            <div className={play.sachet}>
+              <PackView
+                shape={shape}
+                state={phase.name === "opening" ? "opening" : canOpen ? "sealed" : "empty"}
+                onTearStart={() => {
+                  startRequest();
+                }}
+                onOpen={() => void openPack()}
+              />
+            </div>
+            {stock !== null && (
+              <div className={play.stock}>
+                <span className={play.dots} role="img" aria-label={stock.description}>
+                  {Array.from({ length: stock.capacity }, (_, index) => (
+                    // biome-ignore lint/suspicious/noArrayIndexKey: fixed-size row of identical dots
+                    <span key={index} className={index < stock.stored ? play.dotOn : play.dot} />
+                  ))}
+                </span>
+                <p className={play.stockLine}>{stock.line}</p>
+              </div>
+            )}
+            {mustSignUp ? (
+              <>
+                <p className={play.message}>{SIGN_UP_HINT}</p>
+                <ButtonLink href="/compte">Créer mon compte</ButtonLink>
+              </>
+            ) : (
+              <Button
+                className={play.openButton}
+                disabled={!canOpen || phase.name === "opening"}
+                onClick={() => {
+                  startRequest();
+                  playSound("tearFinish");
+                  void openPack();
+                }}
+              >
+                {phase.name === "opening" ? "Ouverture…" : (stock?.action ?? "Ouvrir le sachet")}
+              </Button>
+            )}
+            {error !== null ? (
+              <p className={play.error} role="alert">
+                {error}
+              </p>
+            ) : (
+              canOpen && (
+                <p className={play.message}>
+                  {guestLeft === 1
+                    ? `${OPEN_HINTS[shape]}. Dernier sachet sans compte.`
+                    : OPEN_HINTS[shape]}
+                </p>
+              )
+            )}
+          </>
+        )}
+      </div>
+      {catalog !== null && <SlippingWord catalog={catalog} />}
     </main>
   );
 }
 
 /** Shown once a guest opened all its boosters (P37). */
-function signUpHint(noun: PackNoun): string {
-  return `Crée ton compte pour garder tes cartes et ouvrir d'autres ${noun.many}. C'est gratuit.`;
-}
+const SIGN_UP_HINT =
+  "Crée ton compte pour garder tes cartes et ouvrir d'autres sachets. C'est gratuit.";
 
 function PackView({ shape, ...props }: PackProps & { readonly shape: PackShape }) {
   return shape === "sachet" ? <Sachet {...props} /> : <Pli {...props} />;
@@ -404,7 +454,6 @@ function Revealing({
   index,
   hurried,
   width,
-  noun,
   onNext,
   onRevealAll,
 }: {
@@ -413,7 +462,6 @@ function Revealing({
   readonly index: number;
   readonly hurried: boolean;
   readonly width: number;
-  readonly noun: PackNoun;
   readonly onNext: () => void;
   readonly onRevealAll: () => void;
 }) {
@@ -466,7 +514,7 @@ function Revealing({
             </button>
           )}
           <button type="button" className={styles.next} onClick={onNext}>
-            {last ? `Voir mon ${noun.one}` : "Suivante"}
+            {last ? "Voir mon sachet" : "Suivante"}
           </button>
         </div>
       </div>
@@ -474,35 +522,31 @@ function Revealing({
   );
 }
 
+/** What the sachet gave (O-04), and the level it raised (O-05). */
 function Recap({
   catalog,
   pack,
-  stored,
-  bonus,
-  refill,
-  noun,
   mustSignUp,
   onOpen,
 }: {
   readonly catalog: Catalog | null;
   readonly pack: Pack;
-  readonly stored: number;
-  readonly bonus: number;
-  readonly refill: string | null;
-  readonly noun: PackNoun;
   readonly mustSignUp: boolean;
   readonly onOpen: () => void;
 }) {
+  const view = usePlayerView();
+  const { openCoffret } = useShell();
+  const progressNow = useProgress();
   const progress = collectionProgress(pack.collectionCardIds, pack.quantitiesBefore, pack.cards);
+  const xp = xpGainLabel(pack.progress);
+  const levelUp = levelUpLabel(pack.progress);
+  // The coffret replaces « open another » while it waits (O-05).
+  const coffretWaits = pack.progress.levelUp && view.coffrets.length > 0;
+  const canOpen = view.wallet !== null && (view.wallet.stored > 0 || view.wallet.bonus > 0);
   return (
-    <div className={styles.recap}>
-      <h2 className={styles.recapTitle}>Ton {noun.one}</h2>
+    <div className={`${ui.panel} ${ui.pop} ${styles.recap}`}>
+      <p className={ui.kicker}>Ton sachet</p>
       <RecapLine pack={pack} />
-      <p className={styles.recapProgress}>
-        {pack.collectionName} · {progress.owned}/{progress.total}
-        {progress.gained > 0 && <span className={styles.gained}> (+{progress.gained})</span>}
-      </p>
-      <XpLine gain={pack.progress} />
       <ul className={styles.fan}>
         {pack.cards.map((drawn, index) => {
           const isNew =
@@ -529,29 +573,43 @@ function Recap({
           );
         })}
       </ul>
-      {mustSignUp && <p className={styles.hint}>{signUpHint(noun)}</p>}
+      {xp !== null && <p className={`${ui.display} ${styles.recapXp}`}>{xp}</p>}
+      {progressNow !== null && (
+        <XpBar ratio={levelRatio(progressNow)} className={styles.recapBar} />
+      )}
+      {levelUp !== null && (
+        <p className={`${ui.pop} ${styles.levelUp}`}>
+          {levelUp} {coffretWaits ? "Une récompense t'attend." : ""}
+        </p>
+      )}
+      <p className={styles.recapProgress}>
+        {pack.collectionName} · {progress.owned} / {progress.total}
+        {progress.gained > 0 && <span className={styles.gained}> (+{progress.gained})</span>}
+      </p>
+      {mustSignUp && <p className={styles.hint}>{SIGN_UP_HINT}</p>}
       <div className={styles.actions}>
-        {mustSignUp ? (
-          <Link href="/compte" className={styles.primary}>
-            Créer mon compte
-          </Link>
+        {coffretWaits ? (
+          <Button glow onClick={() => openCoffret()}>
+            Ouvrir le coffret
+          </Button>
+        ) : mustSignUp ? (
+          <ButtonLink href="/compte">Créer mon compte</ButtonLink>
         ) : (
-          <button
-            type="button"
-            className={styles.primary}
-            disabled={stored === 0 && bonus === 0}
-            onClick={onOpen}
-          >
-            {stored > 0
-              ? `Ouvrir un autre ${noun.one}`
-              : bonus > 0
-                ? `Ouvrir un ${noun.one} bonus`
-                : `Plus de ${noun.one}, ${refill ?? ""}`}
-          </button>
+          <Button disabled={!canOpen} onClick={onOpen}>
+            {view.wallet === null || view.now === 0
+              ? "Ouvrir un autre sachet"
+              : openAgainLabel(view.wallet, view.now)}
+          </Button>
         )}
-        <Link href="/album" className={styles.secondary}>
-          Voir mon album
-        </Link>
+        {mustSignUp && coffretWaits ? (
+          <ButtonLink href="/compte" variant="secondary">
+            Créer mon compte
+          </ButtonLink>
+        ) : (
+          <Link href="/album" className={ui.secondary}>
+            Voir mon album
+          </Link>
+        )}
       </div>
     </div>
   );
@@ -572,62 +630,6 @@ function RecapLine({ pack }: { readonly pack: Pack }) {
   );
 }
 
-/** Sound and vibration switches. Vibration is offered only where the browser supports it. */
-function FeedbackToggles() {
-  const [state, setState] = useState<Record<FeedbackKind, boolean> | null>(null);
-  const [vibrates, setVibrates] = useState(false);
-
-  useEffect(() => {
-    setState({ sound: readPreference("sound"), haptics: readPreference("haptics") });
-    setVibrates(canVibrate());
-  }, []);
-
-  if (state === null) return null;
-  const toggle = (kind: FeedbackKind) => {
-    const enabled = !state[kind];
-    writePreference(kind, enabled);
-    setState({ ...state, [kind]: enabled });
-  };
-  return (
-    <div className={styles.toggles}>
-      <button
-        type="button"
-        className={styles.toggle}
-        aria-pressed={state.sound}
-        aria-label="Son"
-        onClick={() => toggle("sound")}
-      >
-        <svg viewBox="0 0 24 24" aria-hidden="true">
-          <path d="M4 9h4l5-4v14l-5-4H4z" />
-          {state.sound ? (
-            <path d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12" fill="none" />
-          ) : (
-            <path d="M16.5 9.5l5 5M21.5 9.5l-5 5" fill="none" />
-          )}
-        </svg>
-      </button>
-      {vibrates && (
-        <button
-          type="button"
-          className={styles.toggle}
-          aria-pressed={state.haptics}
-          aria-label="Vibration"
-          onClick={() => toggle("haptics")}
-        >
-          <svg viewBox="0 0 24 24" aria-hidden="true">
-            <rect x="8" y="4" width="8" height="16" rx="2" />
-            {state.haptics ? (
-              <path d="M4.5 9v6M19.5 9v6M2 10.5v3M22 10.5v3" fill="none" />
-            ) : (
-              <path d="M3 3l18 18" fill="none" />
-            )}
-          </svg>
-        </button>
-      )}
-    </div>
-  );
-}
-
 /** Width of a revealed card: the reference 300 px, narrower on a small phone. */
 function useCardWidth(): number {
   const [width, setWidth] = useState(CARD_MAX_WIDTH);
@@ -638,17 +640,4 @@ function useCardWidth(): number {
     return () => window.removeEventListener("resize", measure);
   }, []);
   return width;
-}
-
-/** "+35 XP", and the new level when this pack raised it. */
-function XpLine({ gain }: { readonly gain: ProgressGain }) {
-  const xp = xpGainLabel(gain);
-  const levelUp = levelUpLabel(gain);
-  if (xp === null && levelUp === null) return null;
-  return (
-    <p className={styles.recapXp}>
-      {xp}
-      {levelUp !== null && <strong className={styles.levelUp}> · {levelUp}</strong>}
-    </p>
-  );
 }

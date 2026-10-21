@@ -1,6 +1,12 @@
 import {
   type AccountResponse,
   type BoosterWalletResponse,
+  type CardChoiceRefusal,
+  type CardChoiceResponse,
+  type ClaimLevelRewardResponse,
+  type ClaimRefusal,
+  cardChoiceRequestSchema,
+  type LevelRewardsResponse,
   type MasteryResponse,
   type OwnedCardsResponse,
   ownedCardsQuerySchema,
@@ -9,28 +15,30 @@ import {
   type TradeableCardsResponse,
 } from "@leximon/contract";
 import {
-  computeRefill,
-  createFullWallet,
   GUEST_SCHEDULE,
   guestBoostersLeft,
   guestRulesAt,
   levelOf,
-  REFILL_SCHEDULE,
   TRADE_SCHEDULE,
   tradeRulesAt,
 } from "@leximon/core";
 import { schema } from "@leximon/db";
 import { and, asc, eq, gt, or, sql } from "drizzle-orm";
 import { Hono } from "hono";
+import { z } from "zod";
 import { ADMIN_ROLE } from "../auth";
 import { guestOpensSql } from "../boosters/open-booster";
 import type { AppEnv } from "../context";
+import { chooseCard, claimLevelReward, readLevelRewards, walletView } from "../levels/rewards";
 import { playerRateLimit } from "../middleware/rate-limit";
 import { requireUser } from "../middleware/require-user";
 import { readXp } from "../progress/progress";
-import { ensurePlayer, listTradeableCards } from "../trades/players";
+import { ensurePlayer, tradeableResponse } from "../trades/players";
 
 const { boosterWallets, cards, userCards, userMastery } = schema;
+
+/** A level in a path: from the first rewarded level, within the range of the stored column. */
+const levelParamSchema = z.coerce.number().int().min(2).max(10_000);
 
 /** Player state for the current session. Never cached: it changes with every action. */
 export function meRoutes() {
@@ -43,22 +51,57 @@ export function meRoutes() {
   });
 
   routes.get("/wallet", async (c) => {
-    const now = Date.now();
     const [row] = await c.var.db
       .select()
       .from(boosterWallets)
       .where(eq(boosterWallets.userId, c.var.userId));
     // A player who never opened a booster has no row yet: their stock is full.
-    const wallet =
-      row === undefined
-        ? createFullWallet(REFILL_SCHEDULE, now)
-        : { stored: row.stored, progressMs: row.progressMs, asOf: row.asOf.getTime() };
-    const state = computeRefill(wallet, REFILL_SCHEDULE, now);
-    return c.json<BoosterWalletResponse>({
-      stored: state.stored,
-      nextRefillAt: state.nextRefillAt === null ? null : new Date(state.nextRefillAt).toISOString(),
-      bonus: row?.bonusBoosters ?? 0,
+    return c.json<BoosterWalletResponse>(walletView(row, Date.now()));
+  });
+
+  /** Level rewards (P58): what was claimed, and the cards of the player's choice left to take. */
+  routes.get("/level-rewards", async (c) => {
+    return c.json<LevelRewardsResponse>(await readLevelRewards(c.var.db, c.var.userId));
+  });
+
+  routes.post("/level-rewards/:level", async (c) => {
+    const level = levelParamSchema.safeParse(c.req.param("level"));
+    if (!level.success) {
+      return c.json({ error: "invalid_request" }, 400);
+    }
+    const result = await claimLevelReward(c.var.db, {
+      userId: c.var.userId,
+      level: level.data,
+      now: Date.now(),
     });
+    if (result.kind === "refused") {
+      return c.json<{ error: ClaimRefusal }>({ error: result.reason }, 409);
+    }
+    return c.json<ClaimLevelRewardResponse>({
+      level: result.level,
+      rewards: [...result.rewards],
+      wallet: result.wallet,
+    });
+  });
+
+  routes.post("/card-choices", async (c) => {
+    const body = cardChoiceRequestSchema.safeParse(await c.req.json().catch(() => null));
+    if (!body.success) {
+      return c.json({ error: "invalid_request" }, 400);
+    }
+    const result = await chooseCard(c.var.db, {
+      userId: c.var.userId,
+      level: body.data.level,
+      cardId: body.data.cardId,
+      now: Date.now(),
+    });
+    if (result.kind === "refused") {
+      return c.json<{ error: CardChoiceRefusal }>(
+        { error: result.reason },
+        result.reason === "card_not_choosable" ? 422 : 409,
+      );
+    }
+    return c.json<CardChoiceResponse>({ level: result.level, cardId: result.cardId });
   });
 
   routes.get("/cards", async (c) => {
@@ -128,12 +171,10 @@ export function meRoutes() {
   });
 
   routes.get("/tradeable", async (c) => {
-    const now = Date.now();
     const player = await ensurePlayer(c.var.db, c.var.userId);
-    return c.json<TradeableCardsResponse>({
-      playerCode: player.code,
-      cardIds: await listTradeableCards(c.var.db, player.userId, now),
-    });
+    return c.json<TradeableCardsResponse>(
+      await tradeableResponse(c.var.db, player, player, Date.now()),
+    );
   });
 
   /** Who is playing: a guest (and how many boosters it may still open), or a member. */

@@ -124,7 +124,7 @@ pnpm + Turborepo · Node 24 · Biome · Vitest · Next.js (web) · Expo (mobile)
 
 ```
 apps/        web (Next.js) · mobile (Expo) · api (Hono)
-packages/    core (règles du jeu) · contract (Zod + client typé) · db (Drizzle) · tokens (design) · config
+packages/    core (règles du jeu) · view-model (logique et textes des écrans, D-033) · contract (Zod + client typé) · db (Drizzle) · tokens (design) · config
 content/     pipeline (Python, local) · releases (catalogue publié, généré)
 rnd/         code jetable des spikes, jamais importé par apps/ ou packages/
 infra/       hébergement, tests de charge

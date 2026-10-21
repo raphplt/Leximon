@@ -121,18 +121,23 @@ export interface CreditedAward extends BonusAward {
   readonly credited: number;
 }
 
+/** Most bonus boosters a player's reserve holds: the cap, plus slots won by level (P58). */
+export function reserveCapacity(rules: BonusRules, extraSlots: number): number {
+  return rules.reserveCap + extraSlots;
+}
+
 /**
- * Adds awards to a reserve, in order, up to the cap. A reserve already above the cap (the cap was
- * lowered since) keeps what it holds: nothing is confiscated.
+ * Adds awards to a reserve, in order, up to its capacity (`reserveCapacity`). A reserve already
+ * above it (the cap was lowered since) keeps what it holds: nothing is confiscated.
  */
 export function creditReserve(
-  rules: BonusRules,
+  capacity: number,
   reserve: number,
   awards: readonly BonusAward[],
 ): { readonly reserve: number; readonly awards: CreditedAward[] } {
   let current = reserve;
   const credited = awards.map((award) => {
-    const next = Math.max(current, Math.min(rules.reserveCap, current + award.amount));
+    const next = Math.max(current, Math.min(capacity, current + award.amount));
     const added = next - current;
     current = next;
     return { ...award, credited: added };
@@ -140,33 +145,46 @@ export function creditReserve(
   return { reserve: current, awards: credited };
 }
 
+/**
+ * The bonus reserve: `bonus` boosters, of which `garni` are garni boosters won by level (P58),
+ * which hold at least one card of a given rarity. Garni boosters are spent first.
+ */
+export interface BonusReserve {
+  readonly bonus: number;
+  readonly garni: number;
+}
+
 export type TakeBoosterResult =
   | {
       readonly ok: true;
       readonly state: RefillState;
-      readonly reserve: number;
+      readonly reserve: BonusReserve;
       /** The booster came from the bonus reserve, the free stock being empty. */
       readonly fromBonus: boolean;
+      /** It was a garni booster. */
+      readonly garni: boolean;
     }
   | Extract<ConsumeResult, { ok: false }>;
 
 /** Spends one booster: from the free stock when it has one, otherwise from the bonus reserve. */
 export function takeBooster(
   wallet: BoosterWallet,
-  reserve: number,
+  reserve: BonusReserve,
   schedule: RefillSchedule,
   now: EpochMs,
 ): TakeBoosterResult {
   const consumed = consumeBooster(wallet, schedule, now);
   if (consumed.ok) {
-    return { ok: true, state: consumed.state, reserve, fromBonus: false };
+    return { ok: true, state: consumed.state, reserve, fromBonus: false, garni: false };
   }
-  if (reserve > 0) {
+  if (reserve.bonus > 0) {
+    const garni = reserve.garni > 0;
     return {
       ok: true,
       state: computeRefill(wallet, schedule, now),
-      reserve: reserve - 1,
+      reserve: { bonus: reserve.bonus - 1, garni: garni ? reserve.garni - 1 : reserve.garni },
       fromBonus: true,
+      garni,
     };
   }
   return consumed;

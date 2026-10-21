@@ -131,13 +131,18 @@ describe("GET /players/:code/tradeable", () => {
   });
 
   it("lists the duplicates another player can give, rare ones once held long enough", async () => {
-    const other = await player([
-      { cardId: COMMON_2, quantity: 3 },
-      { cardId: COMMON_1, quantity: 2 },
-      { cardId: COMMON_3, quantity: 1 },
-      { cardId: EPIC_1, quantity: 2, lastObtainedAt: new Date(Date.now() - DAY) },
-      { cardId: "test-b-epic-1", quantity: 2, lastObtainedAt: new Date(Date.now() - 8 * DAY) },
-    ]);
+    const yesterday = new Date(Date.now() - DAY);
+    const other = await player(
+      [
+        { cardId: COMMON_2, quantity: 3 },
+        { cardId: COMMON_1, quantity: 2 },
+        { cardId: COMMON_3, quantity: 1 },
+        { cardId: EPIC_1, quantity: 2, lastObtainedAt: yesterday },
+        { cardId: "test-b-epic-1", quantity: 2, lastObtainedAt: new Date(Date.now() - 8 * DAY) },
+      ],
+      undefined,
+      xpToReach(12),
+    );
     const me = await player();
 
     const response = await get(me, `/players/${other.code.toLowerCase()}/tradeable`);
@@ -146,7 +151,22 @@ describe("GET /players/:code/tradeable", () => {
     expect(tradeableCardsResponseSchema.parse(await response.json())).toEqual({
       playerCode: other.code,
       cardIds: [COMMON_1, COMMON_2, "test-b-epic-1"],
+      level: 12,
+      // The lower level of the two decides (P59): one card for one below level 10.
+      maxCardsPerSide: 1,
+      held: [
+        { cardId: EPIC_1, tradeableFrom: new Date(yesterday.getTime() + 7 * DAY).toISOString() },
+      ],
     });
+  });
+
+  it("allows three cards per side between two players of level 10 or more", async () => {
+    const other = await player([], undefined, xpToReach(10));
+    const me = await player([], undefined, xpToReach(11));
+    const body = tradeableCardsResponseSchema.parse(
+      await (await get(me, `/players/${other.code}/tradeable`)).json(),
+    );
+    expect(body.maxCardsPerSide).toBe(3);
   });
 
   it("answers 404 for an unknown code and 400 for a malformed one", async () => {
@@ -215,6 +235,28 @@ describe("POST /trades", () => {
       expect(tradeSchema.parse(await response.json()).id).toBe(first.id);
     }
     expect(await tradesSentBy(alice.userId)).toBe(1);
+  });
+
+  it("allows one card for one before level 10, three per side from level 10 (P59)", async () => {
+    const twoEach = (xp: number) =>
+      player(
+        [
+          { cardId: COMMON_1, quantity: 2 },
+          { cardId: COMMON_2, quantity: 2 },
+          { cardId: COMMON_3, quantity: 2 },
+        ],
+        undefined,
+        xp,
+      );
+    const alice = await twoEach(xpToReach(10));
+    const bob = await twoEach(xpToReach(9));
+    const refused = await propose(alice, bob, [COMMON_1, COMMON_2], [COMMON_2, COMMON_3]);
+    expect(refused.status).toBe(422);
+    expect(await refused.json()).toEqual({ error: "too_many_cards" });
+
+    const carol = await twoEach(xpToReach(10));
+    const sent = await propose(alice, carol, [COMMON_1, COMMON_2], [COMMON_2, COMMON_3]);
+    expect(sent.status).toBe(201);
   });
 
   it("answers 404 for an unknown recipient", async () => {

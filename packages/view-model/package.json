@@ -1,0 +1,24 @@
+{
+  "name": "@leximon/view-model",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Screen logic and interface copy shared by web and mobile (D-033): pure TypeScript, no I/O.",
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@leximon/contract": "workspace:*",
+    "@leximon/core": "workspace:*"
+  },
+  "devDependencies": {
+    "@leximon/config": "workspace:*",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}

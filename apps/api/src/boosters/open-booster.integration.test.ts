@@ -3,6 +3,7 @@ import {
   type BoosterSource,
   boosterStockEmptySchema,
   IDEMPOTENCY_KEY_HEADER,
+  levelRequiredSchema,
   openBoosterResponseSchema,
   progressResponseSchema,
   signupRequiredSchema,
@@ -14,6 +15,7 @@ import {
   drawBooster,
   drawRulesAt,
   GUEST_SCHEDULE,
+  isAtLeast,
   REFILL_SCHEDULE,
   XP_SCHEDULE,
 } from "@leximon/core";
@@ -23,7 +25,7 @@ import { and, count, eq, isNotNull, isNull, type Logger, sum } from "drizzle-orm
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { createApp } from "../app";
 import { TEST_ORIGIN, testEnv } from "../test-env";
-import { type Guest, seedTestCatalog, signInAsGuest, signInAsMember } from "../test-support";
+import { type Guest, seedTestCatalog, setXp, signInAsGuest, signInAsMember } from "../test-support";
 import { createCardPoolLoader, fingerprintPool } from "./card-pool";
 import { openBooster as openBoosterService } from "./open-booster";
 
@@ -38,6 +40,8 @@ beforeAll(() => seedTestCatalog(db));
 afterAll(close);
 
 const DISCOVERY: BoosterSource = { kind: "discovery" };
+/** Total XP at the start of level 3 (P48 curve), which opens the choice of collection. */
+const LEVEL_3_XP = 220;
 const signInAsPlayer = () => signInAsMember(app, env, db);
 
 function openBooster(
@@ -218,7 +222,7 @@ describe("experience (P48)", () => {
 
 describe("bonus reserve", () => {
   /** A player whose free stock is `stored` (timer just started) with `bonus` in reserve. */
-  async function playerWith(stored: number, bonus: number) {
+  async function playerWith(stored: number, bonus: number, garni = 0) {
     const guest = await signInAsPlayer();
     await db.insert(schema.boosterWallets).values({
       userId: guest.userId,
@@ -226,6 +230,7 @@ describe("bonus reserve", () => {
       progressMs: 0,
       asOf: new Date(),
       bonusBoosters: bonus,
+      garniBoosters: garni,
     });
     return guest;
   }
@@ -261,6 +266,22 @@ describe("bonus reserve", () => {
 
     expect((await openBooster(guest)).status).toBe(409);
     expect(await openCount(guest.userId)).toBe(2);
+  });
+
+  it("opens the garni boosters first, each with at least a Rare (P58)", async () => {
+    const guest = await playerWith(0, 3, 2);
+    for (const garniLeft of [1, 0]) {
+      const body = openBoosterResponseSchema.parse(await (await openBooster(guest)).json());
+      expect(body.wallet).toMatchObject({ garni: garniLeft });
+      expect(body.cards.some((card) => isAtLeast(card.rarity, "rare"))).toBe(true);
+      const [row] = await db
+        .select({ garni: schema.boosterOpens.garni })
+        .from(schema.boosterOpens)
+        .where(eq(schema.boosterOpens.id, body.openId));
+      expect(row?.garni).toBe(true);
+    }
+    const plain = openBoosterResponseSchema.parse(await (await openBooster(guest)).json());
+    expect(plain.wallet).toMatchObject({ bonus: 0, garni: 0 });
   });
 
   it("is never overspent by concurrent opens", async () => {
@@ -389,6 +410,7 @@ describe("open latency budget", () => {
 describe("booster sources", () => {
   it("draw a collection booster only from that collection, and record it", async () => {
     const guest = await signInAsPlayer();
+    await setXp(db, guest.userId, LEVEL_3_XP);
     const response = await openBooster(guest, crypto.randomUUID(), {
       kind: "collection",
       collectionId: "test-b",
@@ -401,6 +423,23 @@ describe("booster sources", () => {
       .from(schema.boosterOpens)
       .where(eq(schema.boosterOpens.id, body.openId));
     expect(open?.collectionId).toBe("test-b");
+  });
+
+  it("refuse a collection booster before level 3, without consuming anything (P59)", async () => {
+    const guest = await signInAsPlayer();
+    await setXp(db, guest.userId, LEVEL_3_XP - 1);
+    const response = await openBooster(guest, crypto.randomUUID(), {
+      kind: "collection",
+      collectionId: "test-b",
+    });
+    expect(response.status).toBe(403);
+    expect(levelRequiredSchema.parse(await response.json())).toEqual({
+      error: "level_required",
+      level: 3,
+    });
+    expect(await openCount(guest.userId)).toBe(0);
+    // The discovery booster is never closed.
+    expect((await openBooster(guest)).status).toBe(200);
   });
 
   it("draw the discovery booster from every published collection only", async () => {

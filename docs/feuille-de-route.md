@@ -43,7 +43,7 @@ Arbitrés par le propriétaire le 2026-10-20 : jeu grand public (B2C), pas de ve
 
 | Étape | Statut | Détail |
 |---|---|---|
-| Niveau de compte | En cours | P48 : XP gagnée dans la transaction de chaque action (pli, défi, échange), niveau calculé, badge dans la navigation, « +N XP » après un pli ou un défi, échanges ouverts au niveau 5. Récompenses (P58) et fonctionnalités par niveau (P59) tranchées le 2026-10-21, à construire au lot 1 de l'interface v1. Reste aussi : XP des raretés complétées, calibrage par simulation |
+| Niveau de compte | En cours | P48 : XP gagnée dans la transaction de chaque action (pli, défi, échange), niveau calculé, badge dans la navigation, « +N XP » après un pli ou un défi, échanges ouverts au niveau 5. Récompenses (P58, sauf cosmétiques) et fonctionnalités par niveau (P59) dans le code depuis le 2026-10-21 : coffrets réclamés (`POST /me/level-rewards/{niveau}`), carte au choix, réserve agrandie, échanges à 3 cartes au niveau 10. Reste aussi : XP des raretés complétées, calibrage par simulation |
 | Profil public | À faire | Pseudo, avatar gravé, clan, cartes épinglées, statistiques. Public par défaut (P60). Lot 3 de l'interface v1 |
 | Clans | À faire | Sans maximum de membres, discussion texte modérée, bibliothèque commune. Après l'inscription et la modération |
 | Modes de jeu entre joueurs | R&D | Plusieurs pistes à prototyper (joute, duplicate, bluff…) |
@@ -53,7 +53,7 @@ Arbitrés par le propriétaire le 2026-10-20 : jeu grand public (B2C), pas de ve
 
 | Étape | Statut | Détail |
 |---|---|---|
-| Interface v1, web et mobile | En cours | Maquette cliquable et cahier validés le 2026-10-21 ; inventaire de chaque écran : [interface-v1.md](cahiers-des-charges/interface-v1.md). Logique d'écran commune dans `packages/view-model` (D-033), web d'abord. Lot 0 (cahier, règles) fait, lot 1 (coque web, Jouer, chemin des niveaux, coffrets) à faire |
+| Interface v1, web et mobile | En cours | Maquette cliquable et cahier validés le 2026-10-21 ; inventaire de chaque écran : [interface-v1.md](cahiers-des-charges/interface-v1.md). Logique d'écran commune dans `packages/view-model` (D-033), web d'abord. Lots 0 et 1 faits sur le web (coque, Jouer, chemin des niveaux, coffrets, carte au choix, réglages de jeu et de compte, écrans fermés par le niveau). Prochain : lot 2 (album, fiche, défis et échanges repris sur la maquette) |
 | Direction artistique et tokens | Fait | D-022 « Planche populaire », `packages/tokens` |
 | Web : ouverture du pli, album | Fait | Sur le catalogue publié |
 | Web : défis, échanges | Fait | `/defis`, `/echanges` ; niveau de maîtrise dans l'album |

@@ -21,6 +21,15 @@ export type ProfileResponse = z.infer<typeof profileResponseSchema>;
 export const tradeableCardsResponseSchema = z.object({
   playerCode: z.string(),
   cardIds: z.array(slugSchema),
+  /** That player's account level. */
+  level: z.int().positive(),
+  /**
+   * Cards each side of an offer may hold (P59): between the requester and that player on
+   * `/players/:code/tradeable`, for the player alone on `/me/tradeable`. 0 below the trade level.
+   */
+  maxCardsPerSide: z.int().nonnegative(),
+  /** Rare duplicates still waiting after their last copy was obtained (P35), with their date. */
+  held: z.array(z.object({ cardId: slugSchema, tradeableFrom: timestampSchema })),
 });
 export type TradeableCardsResponse = z.infer<typeof tradeableCardsResponseSchema>;
 

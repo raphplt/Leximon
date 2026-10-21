@@ -26,6 +26,12 @@ export const boosterWalletSchema = z.object({
   nextRefillAt: timestampSchema.nullable(),
   /** Bonus boosters earned through challenges, opened once the free stock is empty. */
   bonus: z.int().nonnegative(),
+  /** Of `bonus`, the garni boosters won by level, opened first (P58). */
+  garni: z.int().nonnegative(),
+  /** Most bonus boosters the reserve holds, slots won by level included. */
+  bonusCap: z.int().positive(),
+  /** Most boosters the free stock holds. */
+  capacity: z.int().positive(),
 });
 export type BoosterWalletResponse = z.infer<typeof boosterWalletSchema>;
 
@@ -59,3 +65,10 @@ export type BoosterStockEmptyResponse = z.infer<typeof boosterStockEmptySchema>;
 /** `POST /boosters/open`, 403: the guest opened all its boosters and must create an account (P37). */
 export const signupRequiredSchema = z.object({ error: z.literal("signup_required") });
 export type SignupRequiredResponse = z.infer<typeof signupRequiredSchema>;
+
+/** 403: the feature opens at an account level (P59), e.g. choosing a booster's collection. */
+export const levelRequiredSchema = z.object({
+  error: z.literal("level_required"),
+  level: z.int().positive(),
+});
+export type LevelRequiredResponse = z.infer<typeof levelRequiredSchema>;

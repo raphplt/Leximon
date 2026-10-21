@@ -675,3 +675,31 @@
   align-items: center;
   gap: 20px;
 }
+
+/* A held Épique or Légendaire (P35): shown, not selectable, with the wait. */
+.pickHeld {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.pickHeld .pickButton {
+  opacity: 0.4;
+  filter: grayscale(0.7);
+  cursor: default;
+}
+
+.heldLabel {
+  max-width: 110px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--lx-color-text-muted);
+  text-align: center;
+}
+
+.partnerFound {
+  margin: 0 0 8px;
+  font-weight: 800;
+  color: var(--lx-color-success);
+}

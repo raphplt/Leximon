@@ -7,6 +7,8 @@ export * from "./booster/refill";
 export * from "./mastery/challenge";
 export * from "./mastery/mastery";
 export * from "./progress/progress";
+export * from "./progress/rewards";
+export * from "./progress/unlocks";
 export * from "./random";
 export * from "./rules";
 export * from "./trade/trade";

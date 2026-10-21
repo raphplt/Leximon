@@ -1,0 +1,6 @@
+/* Room under the phone tabs, so that nothing hides behind them. */
+@media (max-width: 759px) {
+  .content {
+    padding-bottom: calc(96px + env(safe-area-inset-bottom));
+  }
+}

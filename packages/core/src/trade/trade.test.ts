@@ -5,17 +5,26 @@ import {
   type Holding,
   isExpired,
   isTradeable,
+  maxCardsBetween,
+  maxCardsPerSide,
   type OfferCheck,
   type TradeRules,
+  tradeableFrom,
   tradeRulesAt,
 } from "./trade";
+
+/** Total XP at the start of level 10 (P48 curve). */
+const LEVEL_10_XP = 1620;
 
 const DAY = 86_400_000;
 const NOW = 100 * DAY;
 const rules: TradeRules = {
   startsAt: 0,
   offerTtlMs: 3 * DAY,
-  maxCardsPerSide: 3,
+  cardsPerSide: [
+    { fromLevel: 5, maxCards: 1 },
+    { fromLevel: 10, maxCards: 3 },
+  ],
   offersPerDay: 10,
   minAccountAgeMs: 3 * DAY,
   minLevel: 5,
@@ -64,12 +73,38 @@ describe("isTradeable", () => {
   });
 });
 
+describe("tradeableFrom", () => {
+  it("is now for common cards and after the wait for rare ones", () => {
+    expect(tradeableFrom(rules, holding("a", 2))).toBeLessThan(NOW);
+    expect(tradeableFrom(rules, holding("e", 2, { rarity: "epic", lastObtainedAt: NOW }))).toBe(
+      NOW + 7 * DAY,
+    );
+  });
+});
+
 describe("checkOfferShape", () => {
-  it("needs one to three distinct cards on each side", () => {
-    expect(checkOfferShape(rules, [], ["b"])).toBe("empty_side");
-    expect(checkOfferShape(rules, ["a", "b", "c", "d"], ["e"])).toBe("too_many_cards");
-    expect(checkOfferShape(rules, ["a", "a"], ["b"])).toBe("duplicate_card");
-    expect(checkOfferShape(rules, ["a", "b", "c"], ["d", "e", "f"])).toBeNull();
+  it("needs one to the allowed number of distinct cards on each side", () => {
+    expect(checkOfferShape([], ["b"], 3)).toBe("empty_side");
+    expect(checkOfferShape(["a", "b", "c", "d"], ["e"], 3)).toBe("too_many_cards");
+    expect(checkOfferShape(["a", "b"], ["c"], 1)).toBe("too_many_cards");
+    expect(checkOfferShape(["a", "a"], ["b"], 3)).toBe("duplicate_card");
+    expect(checkOfferShape(["a", "b", "c"], ["d", "e", "f"], 3)).toBeNull();
+  });
+});
+
+describe("cards per side (P59)", () => {
+  it("allows one card from the trade level and three from level 10", () => {
+    expect(maxCardsPerSide(rules, 4)).toBe(0);
+    expect(maxCardsPerSide(rules, 5)).toBe(1);
+    expect(maxCardsPerSide(rules, 9)).toBe(1);
+    expect(maxCardsPerSide(rules, 10)).toBe(3);
+    expect(maxCardsPerSide(rules, 40)).toBe(3);
+  });
+
+  it("follows the lower level of the two players", () => {
+    expect(maxCardsBetween(rules, LEVEL_10_XP, LEVEL_10_XP)).toBe(3);
+    expect(maxCardsBetween(rules, LEVEL_10_XP, 520)).toBe(1);
+    expect(maxCardsBetween(rules, 520, LEVEL_10_XP)).toBe(1);
   });
 });
 
@@ -90,6 +125,26 @@ describe("checkOffer", () => {
   it("refuses players below the minimum level on either side", () => {
     expect(checkOffer(offer({ proposerXp: 519 }))).toBe("level_too_low");
     expect(checkOffer(offer({ recipientXp: 0 }))).toBe("level_too_low");
+  });
+
+  it("refuses more cards than the lower level allows", () => {
+    const twoEach = {
+      give: ["a", "c"],
+      want: ["b", "d"],
+      proposerHoldings: new Map([
+        ["a", holding("a", 2)],
+        ["c", holding("c", 2)],
+      ]),
+      recipientHoldings: new Map([
+        ["b", holding("b", 2)],
+        ["d", holding("d", 2)],
+      ]),
+    };
+    expect(checkOffer(offer(twoEach))).toBe("too_many_cards");
+    expect(checkOffer(offer({ ...twoEach, proposerXp: LEVEL_10_XP }))).toBe("too_many_cards");
+    expect(
+      checkOffer(offer({ ...twoEach, proposerXp: LEVEL_10_XP, recipientXp: LEVEL_10_XP })),
+    ).toBeNull();
   });
 
   it("caps the offers sent per day", () => {

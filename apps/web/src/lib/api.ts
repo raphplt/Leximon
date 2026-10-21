@@ -6,18 +6,29 @@ import {
   type BoosterWalletResponse,
   boosterStockEmptySchema,
   boosterWalletSchema,
+  type CardChoiceRefusal,
+  type CardChoiceResponse,
   type ChallengeAnswerRequest,
   type ChallengeAnswerResponse,
   type ChallengesResponse,
+  type ClaimLevelRewardResponse,
+  type ClaimRefusal,
   type CreateTradeRequest,
+  cardChoiceRefusalSchema,
+  cardChoiceResponseSchema,
   challengeAnswerResponseSchema,
   challengesResponseSchema,
+  claimLevelRewardResponseSchema,
+  claimRefusalSchema,
   type EmailSignInRequest,
   errorResponseSchema,
   IDEMPOTENCY_KEY_HEADER,
   type JoinWaitlistRequest,
+  type LevelRewardsResponse,
   type LinkPreviewError,
   type LinkPreviewResponse,
+  levelRequiredSchema,
+  levelRewardsResponseSchema,
   linkPreviewErrorSchema,
   linkPreviewResponseSchema,
   type MasteryResponse,
@@ -134,7 +145,9 @@ export type OpenBoosterResult =
   | ({ readonly kind: "opened" } & OpenBoosterResponse)
   | { readonly kind: "stock_empty"; readonly nextRefillAt: string }
   /** The guest opened all its boosters: an account is required to go on (P37). */
-  | { readonly kind: "signup_required" };
+  | { readonly kind: "signup_required" }
+  /** Choosing the collection opens at a level (P59): the screen was out of date. */
+  | { readonly kind: "level_required"; readonly level: number };
 
 /**
  * Opens a booster. The caller keeps `idempotencyKey` until it gets a result, so that a retry
@@ -162,11 +175,54 @@ export async function openBooster(
     return { kind: "stock_empty", nextRefillAt: empty.nextRefillAt };
   }
   if (response.status === 403) {
-    await parse(response, signupRequiredSchema);
-    return { kind: "signup_required" };
+    const body: unknown = await response.json().catch(() => null);
+    const level = levelRequiredSchema.safeParse(body);
+    if (level.success) return { kind: "level_required", level: level.data.level };
+    if (signupRequiredSchema.safeParse(body).success) return { kind: "signup_required" };
+    throw new ApiError("unexpected_response", 403);
   }
   if (!response.ok) throw new ApiError("open_failed", response.status);
   return { kind: "opened", ...(await parse(response, openBoosterResponseSchema)) };
+}
+
+// --- Level rewards (P58) -------------------------------------------------------------------------
+
+export async function fetchLevelRewards(): Promise<LevelRewardsResponse> {
+  const response = await sendAsPlayer("/me/level-rewards");
+  if (!response.ok) throw new ApiError("level_rewards_unavailable", response.status);
+  return parse(response, levelRewardsResponseSchema);
+}
+
+export type ClaimResult =
+  | ({ readonly kind: "claimed" } & ClaimLevelRewardResponse)
+  | { readonly kind: "refused"; readonly reason: ClaimRefusal };
+
+/** Opens the coffret of a level. Idempotent on the server: the level is the key. */
+export async function claimLevelReward(level: number): Promise<ClaimResult> {
+  const response = await sendAsPlayer(`/me/level-rewards/${level}`, { method: "POST" });
+  if (response.status === 409) {
+    return { kind: "refused", reason: (await parse(response, claimRefusalSchema)).error };
+  }
+  if (!response.ok) throw new ApiError("claim_failed", response.status);
+  return { kind: "claimed", ...(await parse(response, claimLevelRewardResponseSchema)) };
+}
+
+export type CardChoiceResult =
+  | ({ readonly kind: "chosen" } & CardChoiceResponse)
+  | { readonly kind: "refused"; readonly reason: CardChoiceRefusal };
+
+/** Takes the card of the player's choice won at `level`. Idempotent for the same card. */
+export async function chooseCard(level: number, cardId: string): Promise<CardChoiceResult> {
+  const response = await sendAsPlayer("/me/card-choices", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ level, cardId }),
+  });
+  if (response.status === 409 || response.status === 422) {
+    return { kind: "refused", reason: (await parse(response, cardChoiceRefusalSchema)).error };
+  }
+  if (!response.ok) throw new ApiError("choice_failed", response.status);
+  return { kind: "chosen", ...(await parse(response, cardChoiceResponseSchema)) };
 }
 
 export async function fetchChallenges(limit = 5): Promise<ChallengesResponse> {

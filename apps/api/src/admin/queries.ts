@@ -22,6 +22,7 @@ import {
   levelOf,
   type Rarity,
   REFILL_SCHEDULE,
+  reserveCapacity,
 } from "@leximon/core";
 import { type Database, schema } from "@leximon/db";
 import { eq, type SQL, sql } from "drizzle-orm";
@@ -254,9 +255,11 @@ export async function readPlayer(
         progress_ms: number;
         as_of: string;
         bonus_boosters: number;
+        reserve_slots: number;
       }>(sql`
         select ${boosterWallets.stored} as stored, ${boosterWallets.progressMs} as progress_ms,
-          ${boosterWallets.asOf} as as_of, ${boosterWallets.bonusBoosters} as bonus_boosters
+          ${boosterWallets.asOf} as as_of, ${boosterWallets.bonusBoosters} as bonus_boosters,
+          ${boosterWallets.reserveSlots} as reserve_slots
         from ${boosterWallets} where ${boosterWallets.userId} = ${userId}`),
       db.execute<{ rarity: Rarity; distinct_cards: number; copies: number }>(sql`
         select ${cards.rarity} as rarity, count(*)::int as distinct_cards,
@@ -319,7 +322,7 @@ export async function readPlayer(
       capacity: REFILL_SCHEDULE[0].capacity,
       nextRefillAt: wallet.nextRefillAt === null ? null : iso(new Date(wallet.nextRefillAt)),
       bonus: walletRow?.bonus_boosters ?? 0,
-      bonusCap: bonusRulesAt(BONUS_SCHEDULE, now).reserveCap,
+      bonusCap: reserveCapacity(bonusRulesAt(BONUS_SCHEDULE, now), walletRow?.reserve_slots ?? 0),
     },
     progress: { xp: row.xp, ...levelOf(row.xp) },
     collection: { distinctCards, copies, byRarity },

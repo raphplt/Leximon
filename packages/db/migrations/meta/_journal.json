@@ -78,6 +78,13 @@
       "when": 1792567580205,
       "tag": "0010_admin",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1792594152611,
+      "tag": "0011_level-rewards",
+      "breakpoints": true
     }
   ]
 }

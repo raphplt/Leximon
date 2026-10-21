@@ -9,6 +9,7 @@ import {
   creditReserve,
   gameDayOf,
   meetsDailyGoal,
+  reserveCapacity,
   takeBooster,
 } from "./bonus";
 
@@ -132,22 +133,22 @@ describe("creditReserve", () => {
   const gilded = { kind: "gilded", awardKey: "galimatias", amount: 1 } as const;
 
   it("adds awards up to the cap and loses the excess", () => {
-    expect(creditReserve(rules, 3, [daily])).toEqual({
+    expect(creditReserve(rules.reserveCap, 3, [daily])).toEqual({
       reserve: 4,
       awards: [{ ...daily, credited: 1 }],
     });
-    expect(creditReserve(rules, 9, [daily, gilded])).toEqual({
+    expect(creditReserve(rules.reserveCap, 9, [daily, gilded])).toEqual({
       reserve: 10,
       awards: [
         { ...daily, credited: 1 },
         { ...gilded, credited: 0 },
       ],
     });
-    expect(creditReserve(rules, 10, [daily]).reserve).toBe(10);
+    expect(creditReserve(rules.reserveCap, 10, [daily]).reserve).toBe(10);
   });
 
   it("never takes away what a reserve above a lowered cap holds", () => {
-    expect(creditReserve({ ...rules, reserveCap: 5 }, 8, [daily])).toEqual({
+    expect(creditReserve(5, 8, [daily])).toEqual({
       reserve: 8,
       awards: [{ ...daily, credited: 0 }],
     });
@@ -156,27 +157,54 @@ describe("creditReserve", () => {
 
 describe("takeBooster", () => {
   const schedule = fixedSchedule(6, 1_000);
+  const reserve = (bonus: number, garni = 0) => ({ bonus, garni });
 
   it("spends the free stock first", () => {
-    const result = takeBooster({ stored: 2, progressMs: 0, asOf: 0 }, 3, schedule, 0);
-    expect(result).toMatchObject({ ok: true, reserve: 3, fromBonus: false, state: { stored: 1 } });
+    const result = takeBooster({ stored: 2, progressMs: 0, asOf: 0 }, reserve(3, 1), schedule, 0);
+    expect(result).toMatchObject({
+      ok: true,
+      reserve: reserve(3, 1),
+      fromBonus: false,
+      garni: false,
+      state: { stored: 1 },
+    });
   });
 
   it("spends the reserve when the free stock is empty, without touching the refill", () => {
-    const result = takeBooster({ stored: 0, progressMs: 200, asOf: 0 }, 3, schedule, 500);
+    const result = takeBooster({ stored: 0, progressMs: 200, asOf: 0 }, reserve(3), schedule, 500);
     expect(result).toEqual({
       ok: true,
-      reserve: 2,
+      reserve: reserve(2),
       fromBonus: true,
+      garni: false,
       state: { stored: 0, progressMs: 700, asOf: 500, nextRefillAt: 800 },
     });
   });
 
+  it("opens the garni boosters of the reserve first", () => {
+    const wallet = { stored: 0, progressMs: 0, asOf: 0 };
+    expect(takeBooster(wallet, reserve(3, 2), schedule, 0)).toMatchObject({
+      reserve: reserve(2, 1),
+      garni: true,
+    });
+    expect(takeBooster(wallet, reserve(1, 1), schedule, 0)).toMatchObject({
+      reserve: reserve(0, 0),
+      garni: true,
+    });
+  });
+
   it("is empty when both are", () => {
-    expect(takeBooster({ stored: 0, progressMs: 0, asOf: 0 }, 0, schedule, 0)).toEqual({
+    expect(takeBooster({ stored: 0, progressMs: 0, asOf: 0 }, reserve(0), schedule, 0)).toEqual({
       ok: false,
       reason: "empty",
       nextRefillAt: 1_000,
     });
+  });
+});
+
+describe("reserveCapacity", () => {
+  it("adds the slots won by level to the cap", () => {
+    expect(reserveCapacity(rules, 0)).toBe(rules.reserveCap);
+    expect(reserveCapacity(rules, 5)).toBe(rules.reserveCap + 5);
   });
 });

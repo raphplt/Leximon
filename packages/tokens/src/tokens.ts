@@ -19,8 +19,25 @@ export const colors = {
   /** Screen background: a deep blue-grey night, so that every rarity color stands out. */
   background: "#262B40",
   backgroundRaised: "#343B5C",
+  /** Panels on the background, slightly see-through. */
+  panel: "rgba(52, 59, 92, 0.72)",
+  /** Side panels, bottom sheets and dialogs. */
+  sheet: "#2B3150",
+  /** Menus and the bars of the shell, darker than the background. */
+  sunken: "#1F2337",
+  /** Hollow of a progress bar. */
+  well: "#1B1F33",
+  /** Unfilled part of a ring or a road. */
+  track: "#4A5175",
   text: "#F6F0E2",
   textMuted: "#BDB6CC",
+  textFaint: "#8D88A3",
+  /** Done, received: a claimed level, a switch on. */
+  success: "#2FC79B",
+  /** Destructive actions on dark: sign out, block. */
+  danger: "#FF9C80",
+  /** Red counts of what waits for the player. */
+  badge: "#E2431D",
   /** Empty markers (stock dots, missing cards) on the background. */
   outline: "#5A6182",
   /** Main call to action. */

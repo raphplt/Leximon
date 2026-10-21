@@ -2,6 +2,7 @@ import {
   BONUS_KINDS,
   CHALLENGE_FORMATS,
   type GuestLinkOutcome,
+  type LevelReward,
   MASTERY_LEVELS,
   type PityCounters,
   RARITIES,
@@ -126,6 +127,10 @@ export const boosterWallets = pgTable(
     pityCounters: jsonb().$type<PityCounters>().notNull().default({}),
     /** Bonus boosters earned through challenges: spent only when the free stock is empty. */
     bonusBoosters: integer().notNull().default(0),
+    /** Of `bonusBoosters`, the garni ones won by level (P58), spent first. */
+    garniBoosters: integer().notNull().default(0),
+    /** Places added to the reserve cap by level rewards (P58). */
+    reserveSlots: smallint().notNull().default(0),
     /** Day in Paris of the last booster opened: the first one of a day earns more XP (P48). */
     lastOpenedDay: date({ mode: "string" }),
   },
@@ -133,6 +138,11 @@ export const boosterWallets = pgTable(
     check("booster_wallets_stored_check", sql`${table.stored} >= 0`),
     check("booster_wallets_progress_check", sql`${table.progressMs} >= 0`),
     check("booster_wallets_bonus_check", sql`${table.bonusBoosters} >= 0`),
+    check(
+      "booster_wallets_garni_check",
+      sql`${table.garniBoosters} >= 0 and ${table.garniBoosters} <= ${table.bonusBoosters}`,
+    ),
+    check("booster_wallets_reserve_slots_check", sql`${table.reserveSlots} >= 0`),
   ],
 );
 
@@ -183,6 +193,33 @@ export const boosterBonusAwards = pgTable(
   ],
 );
 
+/**
+ * Level rewards claimed (P58), one row per level: the primary key makes a claim happen once, and
+ * `rewards` keeps what it gave under the rules in force. A card of the player's choice is taken
+ * later (`chosen_card_id`), once per level that gives one.
+ */
+export const userLevelRewards = pgTable(
+  "user_level_rewards",
+  {
+    userId: text()
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    level: smallint().notNull(),
+    rewards: jsonb().$type<readonly LevelReward[]>().notNull(),
+    claimedAt: timestamp({ withTimezone: true }).notNull(),
+    chosenCardId: text().references(() => cards.id),
+    chosenAt: timestamp({ withTimezone: true }),
+  },
+  (table) => [
+    primaryKey({ columns: [table.userId, table.level] }),
+    check("user_level_rewards_level_check", sql`${table.level} >= 2`),
+    check(
+      "user_level_rewards_choice_check",
+      sql`(${table.chosenCardId} is null) = (${table.chosenAt} is null)`,
+    ),
+  ],
+);
+
 /** Copies owned, as quantities. Mastery lives elsewhere, per word: trading never affects it. */
 export const userCards = pgTable(
   "user_cards",
@@ -229,6 +266,8 @@ export const boosterOpens = pgTable(
       .notNull(),
     /** Paid from the bonus reserve, the free stock being empty. */
     fromBonus: boolean().notNull().default(false),
+    /** A garni booster (P58): its last card was at least the garni rarity of the rules. */
+    garni: boolean().notNull().default(false),
     openedAt: timestamp({ withTimezone: true }).notNull(),
   },
   (table) => [

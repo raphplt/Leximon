@@ -36,6 +36,7 @@ describe("database", () => {
       "trade_items",
       "trades",
       "user_cards",
+      "user_level_rewards",
       "user_mastery",
       "user_progress",
       "users",

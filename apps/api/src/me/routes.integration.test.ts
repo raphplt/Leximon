@@ -6,7 +6,7 @@ import {
   profileResponseSchema,
   tradeableCardsResponseSchema,
 } from "@leximon/contract";
-import { REFILL_SCHEDULE, TRADE_SCHEDULE } from "@leximon/core";
+import { BONUS_SCHEDULE, REFILL_SCHEDULE, TRADE_SCHEDULE, xpToReach } from "@leximon/core";
 import { createDb, schema } from "@leximon/db";
 import { testDatabaseUrl } from "@leximon/db/testing";
 import { count, eq, sum } from "drizzle-orm";
@@ -17,6 +17,7 @@ import {
   type Guest,
   seedTestCatalog,
   setOwnedCards,
+  setXp,
   signInAsGuest,
   signInAsMember,
 } from "../test-support";
@@ -71,6 +72,9 @@ describe("GET /me/wallet", () => {
       stored: CAPACITY,
       nextRefillAt: null,
       bonus: 0,
+      garni: 0,
+      bonusCap: BONUS_SCHEDULE[0].reserveCap,
+      capacity: CAPACITY,
     });
     const [row] = await db
       .select({ total: count() })
@@ -122,6 +126,8 @@ describe("GET /me/cards", () => {
 
   it("filters by collection", async () => {
     const guest = await signInAsGuest(app, env);
+    // Choosing the collection of a booster opens at level 3 (P59).
+    await setXp(db, guest.userId, xpToReach(3));
     await open(guest, "test-a");
     await open(guest, "test-b");
 
@@ -214,6 +220,14 @@ describe("GET /me/tradeable", () => {
     expect(body).toEqual({
       playerCode: profile.playerCode,
       cardIds: ["test-a-epic-1", "test-a-rare-1", "test-b-common-1"],
+      level: 1,
+      maxCardsPerSide: 0,
+      held: [
+        {
+          cardId: "test-a-legendary-1",
+          tradeableFrom: new Date(recently.getTime() + 7 * 86_400_000).toISOString(),
+        },
+      ],
     });
   });
 });

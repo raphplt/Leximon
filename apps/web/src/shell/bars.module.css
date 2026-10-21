@@ -1,0 +1,358 @@
+/* --- Web top bar (C-01), from 760 px --- */
+
+.top {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  height: 70px;
+  padding: 0 28px;
+  border-bottom: 1px solid rgba(246, 240, 226, 0.08);
+  background: rgba(31, 35, 55, 0.86);
+  backdrop-filter: blur(10px);
+}
+
+.logo {
+  font-size: 27px;
+  letter-spacing: -0.01em;
+  text-decoration: none;
+}
+
+.nav {
+  display: flex;
+  gap: 4px;
+  margin: 0 auto;
+}
+
+.navLink {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 0 18px;
+  border-radius: var(--lx-radius-pill);
+  color: var(--lx-color-text-muted);
+  font-weight: 800;
+  font-size: 15px;
+  text-decoration: none;
+}
+
+.navLink:hover {
+  color: var(--lx-color-text);
+}
+
+.navLink[aria-current="page"] {
+  background: var(--lx-color-text);
+  color: var(--lx-color-background);
+}
+
+.navLock {
+  opacity: 0.7;
+}
+
+.navBadge {
+  display: grid;
+  place-items: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: var(--lx-radius-pill);
+  background: var(--lx-color-badge);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.side {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.num {
+  font-variant-numeric: tabular-nums;
+}
+
+.chipMuted {
+  color: var(--lx-color-text-muted);
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.badgeBar {
+  box-shadow: 0 0 0 3px var(--lx-color-sunken);
+}
+
+.ring {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  text-decoration: none;
+}
+
+.ringLevel {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: var(--lx-color-sunken);
+  font-size: 17px;
+}
+
+.avatarButton {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 3px 10px 3px 3px;
+  border: 0;
+  border-radius: var(--lx-radius-pill);
+  background: var(--lx-color-background-raised);
+  color: var(--lx-color-text);
+  font: inherit;
+  cursor: pointer;
+}
+
+.avatar {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #fbf5e8;
+  color: var(--lx-color-kraft-ink);
+  box-shadow: inset 0 0 0 2px var(--lx-color-accent);
+}
+
+.avatarName {
+  font-weight: 800;
+  font-size: 14px;
+}
+
+/* Medium widths: the bar tightens, then the tabs keep only their icon. */
+@media (max-width: 1240px) {
+  .top {
+    gap: 12px;
+    padding: 0 18px;
+  }
+
+  .navLink {
+    padding: 0 12px;
+  }
+
+  .chipMuted,
+  .avatarName {
+    display: none;
+  }
+
+  .avatarButton {
+    padding: 3px;
+  }
+}
+
+@media (max-width: 1040px) {
+  .navLabel {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .navLink[aria-current="page"] .navLabel {
+    position: static;
+    width: auto;
+    height: auto;
+    clip-path: none;
+  }
+}
+
+/* --- Phone shell (C-04, C-03), under 760 px --- */
+
+.phoneTop,
+.tabs {
+  display: none;
+}
+
+@media (max-width: 759px) {
+  .top {
+    display: none;
+  }
+
+  .phoneTop {
+    position: sticky;
+    top: 0;
+    z-index: 30;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    height: 62px;
+    padding: 8px 12px 0;
+    background: linear-gradient(var(--lx-color-background) 70%, rgba(38, 43, 64, 0));
+  }
+
+  .tabs {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 30;
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    align-items: end;
+    height: calc(84px + env(safe-area-inset-bottom));
+    padding: 0 6px calc(18px + env(safe-area-inset-bottom));
+    box-sizing: border-box;
+    border-top: 1px solid rgba(246, 240, 226, 0.08);
+    background: #1c2033;
+  }
+}
+
+.phoneAvatar {
+  position: relative;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 46px;
+  height: 46px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: var(--lx-color-track);
+  cursor: pointer;
+}
+
+.phoneAvatar .avatar {
+  width: 38px;
+  height: 38px;
+  box-shadow: none;
+}
+
+.phoneLevel {
+  position: absolute;
+  right: -6px;
+  bottom: -4px;
+  display: grid;
+  place-items: center;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 4px;
+  border-radius: var(--lx-radius-pill);
+  background: var(--lx-color-badge);
+  color: #fff;
+  font-size: 12px;
+  box-shadow: 0 0 0 2px var(--lx-color-background);
+}
+
+.phoneXp {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 84px;
+  text-decoration: none;
+}
+
+.phoneXpText {
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--lx-color-text-muted);
+  white-space: nowrap;
+}
+
+.spacer {
+  flex: 1;
+}
+
+.chipCompact {
+  min-height: 36px;
+  padding: 0 11px;
+  gap: 5px;
+}
+
+.roundCompact {
+  width: 40px;
+  height: 40px;
+}
+
+.tab,
+.tabPlay {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  color: var(--lx-color-text-muted);
+  text-decoration: none;
+}
+
+.tab {
+  padding-top: 8px;
+}
+
+.tab[aria-current="page"],
+.tabPlay[aria-current="page"] {
+  color: var(--lx-color-accent);
+}
+
+.tabPill {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 30px;
+  border-radius: var(--lx-radius-pill);
+}
+
+.tab[aria-current="page"] .tabPill {
+  background: rgba(255, 210, 77, 0.16);
+}
+
+.tabLabel {
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.tabBadge {
+  top: -4px;
+  right: -2px;
+  min-width: 17px;
+  height: 17px;
+  font-size: 10px;
+  box-shadow: 0 0 0 2px #1c2033;
+}
+
+.tabLock {
+  position: absolute;
+  top: -4px;
+  right: -2px;
+  display: grid;
+  place-items: center;
+  width: 17px;
+  height: 17px;
+  border-radius: 50%;
+  background: var(--lx-color-outline);
+  color: var(--lx-color-text);
+}
+
+.tabPlay {
+  transform: translateY(-14px);
+}
+
+.tabPlayCircle {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 66px;
+  height: 66px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #ffe48a, var(--lx-color-accent) 55%, #e0a91c);
+  color: var(--lx-color-accent-ink);
+  box-shadow:
+    0 5px 0 #a87e10,
+    0 0 0 5px #1c2033;
+}

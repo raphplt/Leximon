@@ -67,28 +67,28 @@ La maquette montre l'intention, pas la finition. Chaque écran gagne en plus :
 
 | ID | Élément | Ce qu'il faut | Serveur | Lot | Web | Mobile |
 |---|---|---|---|---|---|---|
-| C-01 | Barre du haut (web) | Logo, cinq entrées avec pastilles, stock « 4/6 · 18 min », bonus « +2 bonus », courrier, anneau de niveau, avatar avec menu | `GET /me/progress`, portefeuille | 1 | à reprendre | — |
-| C-02 | Menu de l'avatar | Mon profil, Joutes (Niv. 15), Atelier, Chemin des niveaux, Réglages. Fermé par Échap et clic à côté | — | 1 | à faire | à faire |
+| C-01 | Barre du haut (web) | Logo, cinq entrées avec pastilles, stock « 4/6 · 18 min », bonus « +2 bonus », courrier, anneau de niveau, avatar avec menu | `GET /me/progress`, portefeuille | 1 | fait | — |
+| C-02 | Menu de l'avatar | Mon profil, Joutes (Niv. 15), Atelier, Chemin des niveaux, Réglages. Fermé par Échap et clic à côté | — | 1 | en partie (profil et atelier au lot 3) | à faire |
 | C-03 | Onglets du bas (mobile) | Cinq onglets, Jouer en relief au centre, pastilles, cadenas sur les onglets fermés | — | 5 | — | à faire |
 | C-04 | Bandeau du haut (mobile) | Avatar avec anneau et niveau, barre d'XP, stock, bonus, courrier | idem C-01 | 5 | — | à faire |
-| C-05 | Panneau latéral (web), fiche montante (mobile) | Titre, croix, défilement interne, focus piégé, retour du focus à la fermeture | — | 1 | à faire | à faire |
-| C-06 | Écran fermé par le niveau | Icône, « Les clans ouvrent au niveau 10 », une phrase de promesse, barre vers le niveau, « Ouvrir un sachet », « Faire un défi » | P59 | 1 | à faire | à faire |
-| C-07 | Notification courte (toast) | Une ligne, 2,6 s, annoncée au lecteur d'écran | — | 1 | à faire | à faire |
-| C-08 | Coque mobile du web sous 760 px | Onglets en bas, bandeau du haut, fiches montantes, comme C-03 et C-04 | — | 1 | à faire | — |
-| C-09 | Invité limité à 2 sachets | Au 3e sachet, l'écran d'inscription (P37) remplace l'ouverture | existe | 1 | à reprendre | à faire |
+| C-05 | Panneau latéral (web), fiche montante (mobile) | Titre, croix, défilement interne, focus piégé, retour du focus à la fermeture | — | 1 | fait | à faire |
+| C-06 | Écran fermé par le niveau | Icône, « Les clans ouvrent au niveau 10 », une phrase de promesse, barre vers le niveau, « Ouvrir un sachet », « Faire un défi » | P59 | 1 | fait | à faire |
+| C-07 | Notification courte (toast) | Une ligne, 2,6 s, annoncée au lecteur d'écran | — | 1 | fait | à faire |
+| C-08 | Coque mobile du web sous 760 px | Onglets en bas, bandeau du haut, fiches montantes, comme C-03 et C-04 | — | 1 | fait | — |
+| C-09 | Invité limité à 2 sachets | Au 3e sachet, l'écran d'inscription (P37) remplace l'ouverture | existe | 1 | fait | à faire |
 
 ### J · Jouer
 
 | ID | Élément | Ce qu'il faut | Serveur | Lot | Web | Mobile |
 |---|---|---|---|---|---|---|
-| J-01 | Bandeau de niveau | Médaillon, « Niveau 16 · Fine plume », barre d'XP épaisse, « 260 / 400 XP » | `GET /me/progress` | 1 | à faire | à faire |
-| J-02 | Prochaines récompenses (web) | Les 4 niveaux suivants en pastilles, les paliers de 5 en kraft, un cadenas quand le niveau ouvre une fonction. Toucher : le chemin des niveaux sur ce niveau | P58, P59 | 1 | à faire | — |
-| J-03 | Bouton « N coffrets » | Visible et pulsant tant qu'une récompense attend ; ouvre le coffret du plus petit niveau | `GET /me/level-rewards` | 1 | à faire | à faire |
-| J-04 | Boutons flottants | Gauche : Clan, Discussion, Joutes. Droite : Défi du jour (anneau), Coffrets, Courrier, Réglages. Pastilles, badges « Niv. X » | plusieurs | 1 | à faire | à faire |
-| J-05 | Choix de la collection | Web : pastilles des collections. Mobile : flèches de part et d'autre du nom. Avant le niveau 3, seul le sachet découverte, les autres affichent « Niv. 3 » (P14, P59) | P59 dans `POST /boosters/open` | 1 | à faire | à faire |
-| J-06 | Le sachet | Grand sachet de la collection choisie, qui flotte ; gris et immobile quand stock et réserve sont vides | — | 1 | à reprendre | à faire |
-| J-07 | Stock | Six points, « 4 sur 6 · le prochain dans 18 min », bouton « Ouvrir le sachet » ou « Ouvrir un sachet bonus », désactivé quand tout est vide | existe | 1 | à reprendre | à faire |
-| J-08 | Mot qui s'échappe | Petite carte, « *Lucubrateur* est en train de t'échapper. », « Réviser ». Le mot dû le plus fragile ; absent s'il n'y en a pas | `GET /challenges` | 1 | à faire | à faire |
+| J-01 | Bandeau de niveau | Médaillon, « Niveau 16 · Fine plume », barre d'XP épaisse, « 260 / 400 XP » | `GET /me/progress` | 1 | fait | à faire |
+| J-02 | Prochaines récompenses (web) | Les 4 niveaux suivants en pastilles, les paliers de 5 en kraft, un cadenas quand le niveau ouvre une fonction. Toucher : le chemin des niveaux sur ce niveau | P58, P59 | 1 | fait | — |
+| J-03 | Bouton « N coffrets » | Visible et pulsant tant qu'une récompense attend ; ouvre le coffret du plus petit niveau | `GET /me/level-rewards` | 1 | fait | à faire |
+| J-04 | Boutons flottants | Gauche : Clan, Discussion, Joutes. Droite : Défi du jour (anneau), Coffrets, Courrier, Réglages. Pastilles, badges « Niv. X » | plusieurs | 1 | en partie (sans l'anneau du défi du jour) | à faire |
+| J-05 | Choix de la collection | Web : pastilles des collections. Mobile : flèches de part et d'autre du nom. Avant le niveau 3, seul le sachet découverte, les autres affichent « Niv. 3 » (P14, P59) | P59 dans `POST /boosters/open` | 1 | fait | à faire |
+| J-06 | Le sachet | Grand sachet de la collection choisie, qui flotte ; gris et immobile quand stock et réserve sont vides | — | 1 | fait | à faire |
+| J-07 | Stock | Six points, « 4 sur 6 · le prochain dans 18 min », bouton « Ouvrir le sachet » ou « Ouvrir un sachet bonus », désactivé quand tout est vide | existe | 1 | fait | à faire |
+| J-08 | Mot qui s'échappe | Petite carte, « *Lucubrateur* est en train de t'échapper. », « Réviser ». Le mot dû le plus fragile ; absent s'il n'y en a pas | `GET /challenges` | 1 | fait | à faire |
 
 ### O · Ouverture d'un sachet
 
@@ -97,23 +97,23 @@ La maquette montre l'intention, pas la finition. Chaque écran gagne en plus :
 | O-01 | Déchirure, pile, coup d'œil | Selon [ouverture.md](ouverture.md) (P45, P46) | existe | 5 | fait | à faire |
 | O-02 | Révélation | Web : cinq cartes à retourner, « Tout révéler ». Mobile : une carte à la fois, « Suivante », points de position | existe | 5 | fait | à faire |
 | O-03 | Annonce de rareté | « Rare ! », « Légendaire ! » à la couleur de la rareté, halo autour de la carte | existe | 5 | fait | à faire |
-| O-04 | Bilan | « Ton sachet », meilleure rareté, mots nouveaux, éventail des cinq cartes avec « Nouveau », « +N XP », barre d'XP, progression de la collection | existe | 1 | à reprendre | à faire |
-| O-05 | Passage de niveau | Dans le bilan : « Niveau 17 ! Une récompense t'attend. », bouton « Ouvrir le coffret » à la place de « Ouvrir un autre sachet » | idem | 1 | à faire | à faire |
+| O-04 | Bilan | « Ton sachet », meilleure rareté, mots nouveaux, éventail des cinq cartes avec « Nouveau », « +N XP », barre d'XP, progression de la collection | existe | 1 | fait | à faire |
+| O-05 | Passage de niveau | Dans le bilan : « Niveau 17 ! Une récompense t'attend. », bouton « Ouvrir le coffret » à la place de « Ouvrir un autre sachet » | idem | 1 | fait | à faire |
 | O-06 | Son et vibration | Coupés dans les réglages (R-03) | — | 5 | fait | à faire |
 
 ### N · Chemin des niveaux et coffrets
 
 | ID | Élément | Ce qu'il faut | Serveur | Lot | Web | Mobile |
 |---|---|---|---|---|---|---|
-| N-01 | Chemin | Route qui serpente, niveaux du plus haut au plus bas, partie parcourue dorée, défilement centré sur le niveau du joueur, son avatar épinglé dessus | P58 | 1 | à faire | à faire |
-| N-02 | Pastilles de niveau | États : réclamée (coche), à réclamer (coffret pulsant), suivante (contour jaune), fermée. Paliers de 5 plus gros ; écriteau « Ouvre : les échanges » aux niveaux de P59 | P58, P59 | 1 | à faire | à faire |
-| N-03 | Détail d'un niveau | Panneau à droite (web), sous le chemin (mobile) : récompenses, ce qu'il ouvre, « Ouvrir le coffret », « Réclamée » ou « Encore 1 240 XP. » | idem | 1 | à faire | à faire |
-| N-04 | D'où vient l'XP | Le barème P48 en tableau | — | 1 | à faire | à faire |
-| N-05 | Coffret | Fenêtre avec rayons : « Un coffret pour toi », « Ouvrir le coffret », puis « Niveau 16 ! », les récompenses une à une, ce qu'il ouvre, « Ranger dans ma réserve » | `POST /me/level-rewards/{niveau}` | 1 | à faire | à faire |
-| N-06 | Sachet bonus, recharge | Rangés à la réclamation, toast « Stock remis au plein. » | idem | 1 | à faire | à faire |
-| N-07 | Sachet garni | Un sachet bonus marqué « garni » dans la réserve, avec au moins une Rare au tirage | garantie de tirage | 1 | à faire | à faire |
-| N-08 | Carte au choix | Écran de choix parmi les Courantes et Peu courantes qui manquent, par collection, avec recherche ; contenu connu, aucun hasard | `GET /me/card-choices`, `POST` | 1 | à faire | à faire |
-| N-09 | Réserve agrandie | Le plafond affiché suit (« 3 / 12 bonus ») | portefeuille | 1 | à faire | à faire |
+| N-01 | Chemin | Route qui serpente, niveaux du plus haut au plus bas, partie parcourue dorée, défilement centré sur le niveau du joueur, son avatar épinglé dessus | P58 | 1 | fait | à faire |
+| N-02 | Pastilles de niveau | États : réclamée (coche), à réclamer (coffret pulsant), suivante (contour jaune), fermée. Paliers de 5 plus gros ; écriteau « Ouvre : les échanges » aux niveaux de P59 | P58, P59 | 1 | fait | à faire |
+| N-03 | Détail d'un niveau | Panneau à droite (web), sous le chemin (mobile) : récompenses, ce qu'il ouvre, « Ouvrir le coffret », « Réclamée » ou « Encore 1 240 XP. » | idem | 1 | fait | à faire |
+| N-04 | D'où vient l'XP | Le barème P48 en tableau | — | 1 | fait | à faire |
+| N-05 | Coffret | Fenêtre avec rayons : « Un coffret pour toi », « Ouvrir le coffret », puis « Niveau 16 ! », les récompenses une à une, ce qu'il ouvre, « Ranger dans ma réserve » | `POST /me/level-rewards/{niveau}` | 1 | fait | à faire |
+| N-06 | Sachet bonus, recharge | Rangés à la réclamation, toast « Stock remis au plein. » | idem | 1 | fait | à faire |
+| N-07 | Sachet garni | Un sachet bonus marqué « garni » dans la réserve, avec au moins une Rare au tirage | garantie de tirage | 1 | fait | à faire |
+| N-08 | Carte au choix | Écran de choix parmi les Courantes et Peu courantes qui manquent, par collection, avec recherche ; contenu connu, aucun hasard | `POST /me/card-choices` ; pas de GET, le client tire les candidates du catalogue et de l'album | 1 | fait | à faire |
+| N-09 | Réserve agrandie | Le plafond affiché suit (« 3 / 12 bonus ») | portefeuille | 1 | fait | à faire |
 | N-10 | Titre, avatar, place épinglée | Rangés dans l'atelier ; le coffret le dit | lot 3 | 3 | à faire | à faire |
 
 ### A · Album et carte
@@ -150,7 +150,7 @@ La maquette montre l'intention, pas la finition. Chaque écran gagne en plus :
 | E-02 | Onglets | Reçues (N), Envoyées (N), Nouvelle offre | existe | 2 | à reprendre | à faire |
 | E-03 | Offre reçue | Avatar, pseudo, niveau, « Expire dans 41 h », « Tu reçois », « Tu donnes », « Accepter l'échange », « Refuser » ; toucher une carte ouvre sa fiche | existe | 2 | à reprendre | à faire |
 | E-04 | Offres envoyées et historique | « En attente · expire dans 60 h », « Annuler l'offre », historique des échanges, « 10 offres par 24 h. Une offre expire après 72 h. » | existe | 2 | à reprendre | à faire |
-| E-05 | Nouvelle offre | Code joueur, joueur trouvé (pseudo, niveau), tes doubles, ses doubles avec « Il te manque », 1 carte par côté avant le niveau 10 et 3 ensuite (P59), Épiques et Légendaires grisées « Échangeable dans 7 j » (P35), « Vérifier l'offre » puis « Envoyer l'offre » | `TRADE_SCHEDULE` à étendre (P59) | 1 | à reprendre | à faire |
+| E-05 | Nouvelle offre | Code joueur, joueur trouvé (pseudo, niveau), tes doubles, ses doubles avec « Il te manque », 1 carte par côté avant le niveau 10 et 3 ensuite (P59), Épiques et Légendaires grisées « Échangeable dans 7 j » (P35), « Vérifier l'offre » puis « Envoyer l'offre » | `TRADE_SCHEDULE` (P59), limite revérifiée à l'acceptation | 1 | fait | à faire |
 | E-06 | Proposer depuis la fiche d'une carte | Ouvre la nouvelle offre avec la carte déjà choisie | — | 2 | à faire | à faire |
 | E-07 | Aucune offre | « Personne ne frappe à la porte. Fais le premier pas. » | — | 2 | à reprendre | à faire |
 
@@ -191,12 +191,12 @@ La maquette ne montre que le clan du joueur. Les écrans K-08 à K-13 sont à de
 
 | ID | Élément | Ce qu'il faut | Serveur | Lot | Web | Mobile |
 |---|---|---|---|---|---|---|
-| R-01 | Courrier | Liste : offre reçue, coffret à ouvrir, mot qui s'échappe, objectif de clan, offre acceptée ; non lus surlignés ; chaque ligne mène à son écran | notifications par la file | 3 | à faire | à faire |
+| R-01 | Courrier | Liste : offre reçue, coffret à ouvrir, mot qui s'échappe, objectif de clan, offre acceptée ; non lus surlignés ; chaque ligne mène à son écran | notifications par la file | 3 | en partie (tiré de l'état : coffrets, carte au choix, offres reçues) | à faire |
 | R-02 | Notifications push | Mots qui s'échappent, offres, mentions dans le clan ; demande d'autorisation au bon moment, pas au lancement | file, Expo push | 3 | — | à faire |
-| R-03 | Réglages · Jeu | Son, Vibration | local | 1 | à faire | à faire |
+| R-03 | Réglages · Jeu | Son, Vibration | local | 1 | fait | à faire |
 | R-04 | Réglages · Notifications | Mots qui s'échappent, Offres d'échange, Discussion du clan (seulement quand on te cite) | serveur | 3 | à faire | à faire |
 | R-05 | Réglages · Profil | Profil public, Pseudo, Joueurs bloqués (et débloquer) | serveur | 3 | à faire | à faire |
-| R-06 | Réglages · Compte | Adresse e-mail, Tes données, Me déconnecter ; l'inscription de l'invité (écran `/compte` existant) | existe en partie | 1 | à reprendre | à faire |
+| R-06 | Réglages · Compte | Adresse e-mail, Tes données, Me déconnecter ; l'inscription de l'invité (écran `/compte` existant) | existe en partie | 1 | fait | à faire |
 | R-07 | Supprimer mon compte | Dans l'app, exigé par l'App Store ; conséquence dans le bouton | à faire | 3 | à faire | à faire |
 | R-08 | Sanction et contestation | Message motivé d'une sanction, voie de contestation (DSA, N5) | admin | 4 | à faire | à faire |
 | R-09 | Contact et mentions | contact@leximon.fr, crédits (Littré, Ngram, gravures), conditions d'utilisation, charte de la discussion | — | 3 | à faire | à faire |
@@ -228,8 +228,8 @@ Web d'abord, décidé par le propriétaire le 2026-10-21. Le mobile reprend ensu
 
 | Lot | Contenu | Prérequis |
 |---|---|---|
-| 0 | Ce cahier, P58 et P59, D-033, squelette de `packages/view-model`, composants de base du web | — |
-| 1 | Coque web, écran Jouer, chemin des niveaux et coffrets, toutes les récompenses de P58 sauf les cosmétiques, fonctionnalités par niveau (P59) côté serveur et web, échanges à 1 puis 3 cartes | — |
+| 0 | Ce cahier, P58 et P59, D-033, squelette de `packages/view-model`, composants de base du web (fait) | — |
+| 1 | Coque web, écran Jouer, chemin des niveaux et coffrets, toutes les récompenses de P58 sauf les cosmétiques, fonctionnalités par niveau (P59) côté serveur et web, échanges à 1 puis 3 cartes (web fait le 2026-10-21 ; clans et joutes affichent un écran « pas encore construit » une fois le niveau atteint) | — |
 | 2 | Album, fiche de carte, défis et échanges repris sur la maquette ; prononciation dès que les fichiers audio sont publiés | lot 1 |
 | 3 | Profil public, atelier et cosmétiques, réglages complets, courrier, suppression du compte | inscription (fournisseur d'e-mails), file de tâches (D-005) |
 | 4 | Clans complets avec modération, outil de traitement des signalements dans `/admin` | lot 3, conditions d'utilisation et charte |

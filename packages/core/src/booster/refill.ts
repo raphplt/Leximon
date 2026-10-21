@@ -63,6 +63,27 @@ export function createFullWallet(schedule: RefillSchedule, now: EpochMs): Booste
   return { stored: capacity, progressMs: 0, asOf: now };
 }
 
+/** Most boosters the free stock holds at `now`. */
+export function capacityAt(schedule: RefillSchedule, now: EpochMs): number {
+  assertValidSchedule(schedule);
+  return periodAt(schedule, periodIndexAt(schedule, now)).capacity;
+}
+
+/**
+ * Fills the free stock to its capacity at `now` (a level reward, P58), or `null` when it is
+ * already full: a refill is never wasted.
+ */
+export function refillToFull(
+  wallet: BoosterWallet,
+  schedule: RefillSchedule,
+  now: EpochMs,
+): RefillState | null {
+  const current = computeRefill(wallet, schedule, now);
+  const capacity = capacityAt(schedule, current.asOf);
+  if (current.stored >= capacity) return null;
+  return { stored: capacity, progressMs: 0, asOf: current.asOf, nextRefillAt: null };
+}
+
 /**
  * Brings `wallet` up to date at `now`.
  *

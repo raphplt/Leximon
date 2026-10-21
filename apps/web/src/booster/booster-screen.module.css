@@ -1,122 +1,11 @@
 .screen {
   box-sizing: border-box;
-  max-width: 440px;
-  min-height: calc(100dvh - 68px);
+  max-width: 640px;
+  min-height: calc(100dvh - 70px);
   margin: 0 auto;
   padding: 8px 16px 40px;
   display: flex;
   flex-direction: column;
-}
-
-.header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-end;
-  gap: 12px;
-}
-
-.header > div:first-child {
-  min-width: 0;
-}
-
-.kicker {
-  margin: 0 0 2px;
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--lx-color-text-muted);
-}
-
-.title {
-  margin: 0;
-  font-family: var(--font-display), Georgia, serif;
-  font-variation-settings: "SOFT" 100;
-  font-weight: 900;
-  font-size: 26px;
-  line-height: 1;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.side {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 8px;
-}
-
-.toggles {
-  display: flex;
-  gap: 4px;
-}
-
-.toggle {
-  display: grid;
-  place-items: center;
-  width: 32px;
-  height: 32px;
-  padding: 0;
-  border: none;
-  border-radius: 50%;
-  background: var(--lx-color-background-raised);
-  color: var(--lx-color-text);
-  cursor: pointer;
-}
-
-.toggle[aria-pressed="false"] {
-  color: var(--lx-color-text-muted);
-}
-
-.toggle svg {
-  width: 18px;
-  height: 18px;
-  fill: currentColor;
-  stroke: currentColor;
-  stroke-width: 1.6;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
-
-.stock {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 6px;
-}
-
-.dots {
-  display: flex;
-  gap: 5px;
-}
-
-.dot,
-.dotOn {
-  box-sizing: border-box;
-  width: 11px;
-  height: 11px;
-  border-radius: 50%;
-  border: 2px solid var(--lx-color-outline);
-}
-
-.dotOn {
-  border-color: var(--lx-color-accent);
-  background: var(--lx-color-accent);
-}
-
-.refill {
-  white-space: nowrap;
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--lx-color-text-muted);
-}
-
-.bonus {
-  white-space: nowrap;
-  font-size: 12px;
-  font-weight: 800;
-  color: var(--lx-color-accent);
 }
 
 .center {
@@ -217,19 +106,13 @@
 /* --- Recap ---------------------------------------------------------------------------- */
 
 .recap {
-  flex-grow: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding-top: 24px;
-}
-
-.recapTitle {
-  margin: 0;
-  font-family: var(--font-display), Georgia, serif;
-  font-variation-settings: "SOFT" 100;
-  font-weight: 900;
-  font-size: 34px;
+  margin: 24px 0 0;
+  padding: 28px 26px;
+  text-align: center;
+  background: rgba(38, 43, 64, 0.92);
 }
 
 .recapLine {
@@ -273,7 +156,7 @@
 }
 
 .recapProgress {
-  margin: 4px 0 0;
+  margin: 14px 0 0;
   font-size: 14px;
   font-weight: 700;
   color: var(--lx-color-text-muted);
@@ -284,57 +167,32 @@
 }
 
 .recapXp {
-  margin: 2px 0 0;
-  font-size: 15px;
-  font-weight: 800;
+  margin: 14px 0 4px;
+  font-size: 34px;
   color: var(--lx-color-accent);
 }
 
+.recapBar {
+  width: 100%;
+  max-width: 360px;
+}
+
 .levelUp {
-  color: var(--lx-color-text);
+  width: 100%;
+  max-width: 360px;
+  margin: 16px 0 0;
+  padding: 12px;
+  box-sizing: border-box;
+  border-radius: 16px;
+  background: linear-gradient(120deg, var(--lx-color-badge), var(--lx-color-sticker));
+  font-weight: 800;
+  font-size: 18px;
 }
 
 .actions {
-  width: 100%;
-  margin-top: auto;
   display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.primary,
-.secondary {
-  box-sizing: border-box;
-  display: inline-flex;
-  align-items: center;
+  flex-wrap: wrap;
   justify-content: center;
-  min-height: 52px;
-  padding: 0 24px;
-  border-radius: var(--lx-radius-pill);
-  font: inherit;
-  font-size: 16px;
-  text-decoration: none;
-  cursor: pointer;
-}
-
-.primary {
-  border: none;
-  background: var(--lx-color-accent);
-  box-shadow: 0 4px 0 var(--lx-color-accent-shadow);
-  color: var(--lx-color-accent-ink);
-  font-weight: 800;
-}
-
-.primary:disabled {
-  cursor: default;
-  background: var(--lx-color-outline);
-  box-shadow: none;
-  color: var(--lx-color-text);
-}
-
-.secondary {
-  border: 2px solid var(--lx-color-text);
-  background: none;
-  color: var(--lx-color-text);
-  font-weight: 700;
+  gap: 10px;
+  margin-top: 20px;
 }

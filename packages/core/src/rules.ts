@@ -11,10 +11,14 @@ import type { DrawSchedule } from "./booster/draw";
 import type { RefillSchedule } from "./booster/refill";
 import type { MasterySchedule } from "./mastery/mastery";
 import type { XpSchedule } from "./progress/progress";
+import type { LevelRewardSchedule } from "./progress/rewards";
+import type { UnlockSchedule } from "./progress/unlocks";
 import type { TradeSchedule } from "./trade/trade";
 
 const MINUTE = 60_000;
 const SINCE_LAUNCH = Number.MIN_SAFE_INTEGER;
+/** Midnight in Paris on 2026-10-21, when the owner decided P58 and P59. */
+const LEVELS_DECIDED = Date.UTC(2026, 9, 20, 22);
 
 export const REFILL_SCHEDULE: RefillSchedule = [
   { startsAt: SINCE_LAUNCH, capacity: 6, intervalMs: 30 * MINUTE },
@@ -59,7 +63,21 @@ export const TRADE_SCHEDULE: TradeSchedule = [
   {
     startsAt: SINCE_LAUNCH,
     offerTtlMs: 3 * DAY,
-    maxCardsPerSide: 3,
+    cardsPerSide: [{ fromLevel: 1, maxCards: 3 }],
+    offersPerDay: 10,
+    minAccountAgeMs: 3 * DAY,
+    minLevel: 5,
+    heldRarity: "epic",
+    heldForMs: 7 * DAY,
+  },
+  // P59: one card for one from level 5, up to three per side from level 10.
+  {
+    startsAt: LEVELS_DECIDED,
+    offerTtlMs: 3 * DAY,
+    cardsPerSide: [
+      { fromLevel: 5, maxCards: 1 },
+      { fromLevel: 10, maxCards: 3 },
+    ],
     offersPerDay: 10,
     minAccountAgeMs: 3 * DAY,
     minLevel: 5,
@@ -94,3 +112,39 @@ export const XP_SCHEDULE: XpSchedule = [
 
 // Boosters a guest opens before an account is required (P37).
 export const GUEST_SCHEDULE: GuestSchedule = [{ startsAt: SINCE_LAUNCH, boostersBeforeSignup: 2 }];
+
+// Level rewards (P58). Titles are provisional.
+export const LEVEL_REWARD_SCHEDULE: LevelRewardSchedule = [
+  {
+    startsAt: LEVELS_DECIDED,
+    milestoneEvery: 5,
+    majorEvery: 10,
+    titles: {
+      5: "Lexicographe en herbe",
+      15: "Fine plume",
+      25: "Rat de bibliothèque",
+      35: "Grand glossateur",
+      45: "Puits de science",
+    },
+    reserveSlotsUntil: 50,
+    pinnedSlotsUntil: 30,
+    cosmeticsOnlyAbove: 50,
+    avatarEveryBeyond: 20,
+    garniMinRarity: "rare",
+    cardChoiceMaxRarity: "uncommon",
+  },
+];
+
+// Features opened by level (P59); trade levels are in TRADE_SCHEDULE.
+export const UNLOCK_SCHEDULE: UnlockSchedule = [
+  {
+    startsAt: LEVELS_DECIDED,
+    levels: {
+      choose_collection: 3,
+      public_profile: 8,
+      join_clan: 10,
+      create_clan: 15,
+      jousts: 15,
+    },
+  },
+];

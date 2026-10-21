@@ -2,13 +2,13 @@
 
 import type { CatalogCard, ChallengeQuestion } from "@leximon/contract";
 import { cssFill, rarityStyles } from "@leximon/tokens";
+import { levelUpLabel, xpGainLabel } from "@leximon/view-model";
 import Link from "next/link";
 import { type CSSProperties, useCallback, useEffect, useState } from "react";
 import { type Catalog, cardOrPlaceholder, loadCatalog } from "@/cards/catalog";
 import { answerChallenge, fetchChallenges } from "@/lib/api";
 import { useNow } from "@/lib/use-now";
 import { usePackShape } from "@/lib/use-pack-shape";
-import { levelUpLabel, xpGainLabel } from "@/progress/progress";
 import { publishProgress } from "@/progress/use-progress";
 import styles from "./challenge-screen.module.css";
 import {

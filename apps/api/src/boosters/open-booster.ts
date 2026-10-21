@@ -1,23 +1,35 @@
 import type { BoosterSource } from "@leximon/contract";
 import {
+  BONUS_SCHEDULE,
   type BoosterWallet,
+  bonusRulesAt,
   boosterXp,
   computeRefill,
   createFullWallet,
   createSeededRandom,
   DRAW_SCHEDULE,
   type DrawnCard,
+  type DrawRules,
   drawBooster,
   drawRulesAt,
   type EpochMs,
+  featureLevels,
   GUEST_SCHEDULE,
   gameDayOf,
   guestBoostersLeft,
   guestRulesAt,
+  isAtLeast,
+  LEVEL_REWARD_SCHEDULE,
+  type LevelRewardRules,
+  levelOf,
+  levelRewardRulesAt,
   type ProgressGain,
   progressGain,
   REFILL_SCHEDULE,
+  reserveCapacity,
+  TRADE_SCHEDULE,
   takeBooster,
+  UNLOCK_SCHEDULE,
   XP_SCHEDULE,
   xpRulesAt,
 } from "@leximon/core";
@@ -40,6 +52,10 @@ export interface WalletView {
   readonly nextRefillAt: EpochMs | null;
   /** Bonus boosters left in the reserve. */
   readonly bonus: number;
+  /** Of `bonus`, the garni boosters (P58). */
+  readonly garni: number;
+  /** Most bonus boosters the reserve holds. */
+  readonly bonusCap: number;
 }
 
 export type OpenBoosterResult =
@@ -52,6 +68,8 @@ export type OpenBoosterResult =
     }
   | { readonly kind: "stock_empty"; readonly nextRefillAt: EpochMs }
   | { readonly kind: "collection_not_found" }
+  /** Choosing the collection of a booster opens at a level (P59): the discovery booster does not. */
+  | { readonly kind: "level_required"; readonly level: number }
   /** The session is a guest archived by a sign-in: the client must use the account's. */
   | { readonly kind: "guest_archived" }
   /** A guest that opened all the boosters it may before creating an account (P37). */
@@ -75,7 +93,8 @@ const {
  * same player are applied one after the other. A request repeating an idempotency key returns
  * the booster already opened with that key instead of opening another.
  *
- * The free stock is spent first; once it is empty, a booster comes from the bonus reserve.
+ * The free stock is spent first; once it is empty, a booster comes from the bonus reserve, garni
+ * boosters first (P58). A collection's booster needs the level of P59; the discovery one never.
  * The open earns XP (P48), more for words the player never owned and for the first open of the day.
  * Lock order: the wallet first, then the copies (as answering a challenge: wallet, then mastery).
  *
@@ -102,6 +121,9 @@ export async function openBooster(
   }
 
   const guestRules = guestRulesAt(GUEST_SCHEDULE, now);
+  const bonusRules = bonusRulesAt(BONUS_SCHEDULE, now);
+  const drawRules = drawRulesAt(DRAW_SCHEDULE, now);
+  const collectionLevel = featureLevels(UNLOCK_SCHEDULE, TRADE_SCHEDULE, now).choose_collection;
 
   return db.transaction(async (tx) => {
     const fresh = createFullWallet(REFILL_SCHEDULE, now);
@@ -119,11 +141,18 @@ export async function openBooster(
       throw new Error(`Wallet missing for user ${userId} right after its creation`);
     }
     const wallet = fromRow(locked);
+    const bonusCap = reserveCapacity(bonusRules, locked.reserveSlots);
+    const reserve = { bonus: locked.bonusBoosters, garni: locked.garniBoosters };
+
+    // Which booster would be spent decides the draw: a garni booster guarantees its rarity (P58).
+    // Pure, so computed before the checks below; applied only if they pass.
+    const consumed = takeBooster(wallet, reserve, REFILL_SCHEDULE, now);
+    const garni = consumed.ok && consumed.garni;
 
     // Drawn before the lookup, which then tells which drawn words are new to the player. Wasted on
     // a replayed key or an empty stock, which is cheap: no I/O.
     const draw = drawBooster(
-      drawRulesAt(DRAW_SCHEDULE, now),
+      garni ? garniRules(drawRules, levelRewardRulesAt(LEVEL_REWARD_SCHEDULE, now)) : drawRules,
       pool,
       locked.pityCounters,
       createSeededRandom(input.seed),
@@ -175,6 +204,8 @@ export async function openBooster(
           stored: current.stored,
           nextRefillAt: current.nextRefillAt,
           bonus: locked.bonusBoosters,
+          garni: locked.garniBoosters,
+          bonusCap,
         },
         // The XP was counted by the first request; a retry shows the total without a new gain.
         progress: progressGain(state.xp, 0),
@@ -191,7 +222,10 @@ export async function openBooster(
       return { kind: "signup_required" };
     }
 
-    const consumed = takeBooster(wallet, locked.bonusBoosters, REFILL_SCHEDULE, now);
+    if (source.kind === "collection" && levelOf(state.xp).level < collectionLevel) {
+      return { kind: "level_required", level: collectionLevel };
+    }
+
     if (!consumed.ok) {
       return { kind: "stock_empty", nextRefillAt: consumed.nextRefillAt };
     }
@@ -235,7 +269,8 @@ export async function openBooster(
         .set({
           ...toRow(consumed.state),
           pityCounters: draw.pityCounters,
-          bonusBoosters: consumed.reserve,
+          bonusBoosters: consumed.reserve.bonus,
+          garniBoosters: consumed.reserve.garni,
           lastOpenedDay: day,
         })
         .where(eq(boosterWallets.userId, userId))
@@ -253,6 +288,7 @@ export async function openBooster(
           pityCountersBefore: locked.pityCounters,
           cards: draw.cards,
           fromBonus: consumed.fromBonus,
+          garni,
           openedAt,
         })
         .returning({ id: boosterOpens.id }),
@@ -282,11 +318,20 @@ export async function openBooster(
       wallet: {
         stored: consumed.state.stored,
         nextRefillAt: consumed.state.nextRefillAt,
-        bonus: consumed.reserve,
+        bonus: consumed.reserve.bonus,
+        garni: consumed.reserve.garni,
+        bonusCap,
       },
       progress: progressGain(progress.xp, xpGained),
     };
   });
+}
+
+/** The draw of a garni booster: its guaranteed card is at least the garni rarity (P58). */
+function garniRules(rules: DrawRules, rewards: LevelRewardRules): DrawRules {
+  return isAtLeast(rules.guaranteedMinRarity, rewards.garniMinRarity)
+    ? rules
+    : { ...rules, guaranteedMinRarity: rewards.garniMinRarity };
 }
 
 /** Groups drawn cards into quantities per card, in a stable order (consistent row locking). */

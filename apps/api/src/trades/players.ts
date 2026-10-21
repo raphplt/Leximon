@@ -1,8 +1,12 @@
+import type { TradeableCardsResponse } from "@leximon/contract";
 import {
   type EpochMs,
   type Holding,
-  isTradeable,
+  isLevelHighEnough,
+  levelOf,
+  maxCardsBetween,
   TRADE_SCHEDULE,
+  tradeableFrom,
   tradeRulesAt,
 } from "@leximon/core";
 import { type Database, schema } from "@leximon/db";
@@ -80,12 +84,19 @@ function toPlayer(row: {
   };
 }
 
-/** Cards this player can give now, sorted by id. Bounded by the catalog size: no pagination. */
+export interface TradeableCards {
+  /** Cards this player can give now, sorted by id. */
+  readonly cardIds: string[];
+  /** Duplicates of rare cards still held back (P35), with the moment they become tradeable. */
+  readonly held: { readonly cardId: string; readonly tradeableFrom: EpochMs }[];
+}
+
+/** What this player can trade. Bounded by the catalog size: no pagination. */
 export async function listTradeableCards(
   db: Database,
   userId: string,
   now: EpochMs,
-): Promise<string[]> {
+): Promise<TradeableCards> {
   const rules = tradeRulesAt(TRADE_SCHEDULE, now);
   const rows = await db
     .select(holdingFields)
@@ -100,10 +111,39 @@ export async function listTradeableCards(
       ),
     )
     .orderBy(asc(userCards.cardId));
-  return rows
-    .map(toHolding)
-    .filter((holding) => isTradeable(rules, holding, now))
-    .map((holding) => holding.cardId);
+  const result: TradeableCards = { cardIds: [], held: [] };
+  for (const holding of rows.map(toHolding)) {
+    const from = tradeableFrom(rules, holding);
+    if (from <= now) result.cardIds.push(holding.cardId);
+    else result.held.push({ cardId: holding.cardId, tradeableFrom: from });
+  }
+  return result;
+}
+
+/**
+ * `GET /players/:code/tradeable` and `GET /me/tradeable`: what `player` can trade, with the
+ * cards per side of an offer between them and `requester` (the player alone when the same).
+ */
+export async function tradeableResponse(
+  db: Database,
+  player: Player,
+  requester: Player,
+  now: EpochMs,
+): Promise<TradeableCardsResponse> {
+  const rules = tradeRulesAt(TRADE_SCHEDULE, now);
+  const tradeable = await listTradeableCards(db, player.userId, now);
+  return {
+    playerCode: player.code,
+    cardIds: tradeable.cardIds,
+    level: levelOf(player.xp).level,
+    maxCardsPerSide: isLevelHighEnough(rules, Math.min(player.xp, requester.xp))
+      ? maxCardsBetween(rules, player.xp, requester.xp)
+      : 0,
+    held: tradeable.held.map(({ cardId, tradeableFrom }) => ({
+      cardId,
+      tradeableFrom: new Date(tradeableFrom).toISOString(),
+    })),
+  };
 }
 
 /** Columns needed to build a `Holding`, from `user_cards` joined with `cards`. */

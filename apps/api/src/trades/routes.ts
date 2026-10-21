@@ -14,7 +14,7 @@ import type { AppEnv } from "../context";
 import { playerRateLimit } from "../middleware/rate-limit";
 import { requireUser } from "../middleware/require-user";
 import { decodeTradeCursor, encodeTradeCursor } from "./cursor";
-import { findPlayerByCode, listTradeableCards } from "./players";
+import { ensurePlayer, findPlayerByCode, tradeableResponse } from "./players";
 import {
   acceptTrade,
   createTrade,
@@ -152,10 +152,10 @@ export function playerRoutes() {
     if (player === null) {
       return c.json({ error: "player_not_found" }, 404);
     }
-    return c.json<TradeableCardsResponse>({
-      playerCode: player.code,
-      cardIds: await listTradeableCards(c.var.db, player.userId, Date.now()),
-    });
+    const requester = await ensurePlayer(c.var.db, c.var.userId);
+    return c.json<TradeableCardsResponse>(
+      await tradeableResponse(c.var.db, player, requester, Date.now()),
+    );
   });
 
   return routes;

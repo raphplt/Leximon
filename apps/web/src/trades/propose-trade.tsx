@@ -7,14 +7,16 @@ import { type FormEvent, useLayoutEffect, useRef, useState } from "react";
 import { type Catalog, collectionName } from "@/cards/catalog";
 import { Card } from "@/components/card";
 import { createTrade, fetchOwnedCards, fetchTradeable } from "@/lib/api";
+import { useNow } from "@/lib/use-now";
 import { usePackShape } from "@/lib/use-pack-shape";
 import { CardRow, cardLabel, catalogCard } from "./card-thumb";
 import {
   formatPlayerCode,
-  MAX_CARDS_PER_SIDE,
+  heldLabel,
   type Notice,
   normalizePlayerCode,
   offerProblem,
+  pickHint,
   refusalMessage,
   selectionCount,
   toggleCard,
@@ -25,8 +27,17 @@ type Step = "code" | "want" | "give" | "review" | "sent";
 
 interface Partner {
   readonly code: string;
+  readonly level: number;
   /** Cards that player can give now. */
   readonly cardIds: readonly string[];
+  /** Cards per side between the two players: their lower level decides (P59). */
+  readonly maxCards: number;
+}
+
+/** A card of mine that cannot move yet (P35), and from when it can. */
+interface Held {
+  readonly cardId: string;
+  readonly tradeableFrom: string;
 }
 
 const PICK_THUMB = 104;
@@ -74,6 +85,8 @@ export function ProposeTrade({
   const [codeInput, setCodeInput] = useState("");
   const [partner, setPartner] = useState<Partner | null>(null);
   const [mine, setMine] = useState<readonly string[]>([]);
+  const [held, setHeld] = useState<readonly Held[]>([]);
+  const now = useNow(60_000);
   const [owned, setOwned] = useState<ReadonlySet<string>>(new Set());
   const [want, setWant] = useState<readonly string[]>([]);
   const [give, setGive] = useState<readonly string[]>([]);
@@ -117,7 +130,7 @@ export function ProposeTrade({
     cardId: string,
     set: (next: readonly string[]) => void,
   ) => {
-    const next = toggleCard(selection, cardId);
+    const next = toggleCard(selection, cardId, partner?.maxCards ?? 1);
     if (next === selection) {
       notify({ tone: "error", text: refusalMessage("too_many_cards") });
       return;
@@ -149,14 +162,23 @@ export function ProposeTrade({
         return;
       }
       const myIds = mineNow?.cardIds ?? [];
-      setPartner({ code, cardIds: theirs.cardIds });
+      setPartner({
+        code,
+        level: theirs.level,
+        cardIds: theirs.cardIds,
+        maxCards: Math.max(1, theirs.maxCardsPerSide),
+      });
       setMine(myIds);
+      setHeld(mineNow?.held ?? []);
       setOwned(new Set(ownedCards.map((card) => card.cardId)));
       // Coming back to the same player keeps the choice, minus what can no longer move.
       setWant((current) =>
         code === partner?.code ? current.filter((id) => theirs.cardIds.includes(id)) : [],
       );
-      setGive((current) => current.filter((id) => myIds.includes(id)));
+      setGive((current) =>
+        current.filter((id) => myIds.includes(id)).slice(0, Math.max(1, theirs.maxCardsPerSide)),
+      );
+      setWant((current) => current.slice(0, Math.max(1, theirs.maxCardsPerSide)));
       setPendingKey(null);
       notify(null);
       setStep("want");
@@ -174,8 +196,17 @@ export function ProposeTrade({
     const myIds = mineNow?.cardIds ?? [];
     const keptWant = want.filter((id) => theirIds.includes(id));
     const keptGive = give.filter((id) => myIds.includes(id));
-    setPartner({ code: recipient, cardIds: theirIds });
+    setPartner((current) =>
+      current === null
+        ? current
+        : {
+            ...current,
+            cardIds: theirIds,
+            maxCards: Math.max(1, theirs?.maxCardsPerSide ?? current.maxCards),
+          },
+    );
     setMine(myIds);
+    setHeld(mineNow?.held ?? []);
     setWant(keptWant);
     setGive(keptGive);
     if (keptWant.length === 0) setStep("want");
@@ -184,7 +215,13 @@ export function ProposeTrade({
 
   const send = async () => {
     if (partner === null) return;
-    const problem = offerProblem({ recipientCode: partner.code, ownCode, give, want });
+    const problem = offerProblem({
+      recipientCode: partner.code,
+      ownCode,
+      give,
+      want,
+      max: partner.maxCards,
+    });
     if (problem !== null) {
       notify({ tone: "error", text: refusalMessage(problem) });
       return;
@@ -294,10 +331,13 @@ export function ProposeTrade({
 
       {step === "want" && partner !== null && (
         <>
+          <p className={styles.partnerFound}>
+            {partnerCode} · niveau {partner.level}
+          </p>
           <PickHeading
             title={`Ce que tu veux de ${partnerCode}`}
-            count={selectionCount(want)}
-            hint={`Choisis de 1 à ${MAX_CARDS_PER_SIDE} cartes parmi ses doubles échangeables.`}
+            count={selectionCount(want, partner.maxCards)}
+            hint={`${pickHint(partner.maxCards)} parmi ses doubles échangeables.${partner.maxCards === 1 ? " Trois cartes quand vous serez tous les deux niveau 10." : ""}`}
           />
           {partner.cardIds.length === 0 ? (
             <p className={styles.hint}>Ce joueur n'a aucun double à échanger.</p>
@@ -306,6 +346,7 @@ export function ProposeTrade({
               catalog={catalog}
               cards={pickOrder(catalog, partner.cardIds, owned)}
               selection={want}
+              max={partner.maxCards}
               owned={owned}
               onToggle={(id) => toggle(want, id, setWant)}
               onZoom={onZoom}
@@ -326,10 +367,10 @@ export function ProposeTrade({
         <>
           <PickHeading
             title="Ce que tu donnes"
-            count={selectionCount(give)}
+            count={selectionCount(give, partner.maxCards)}
             hint="Seulement tes doubles. Une Épique ou une Légendaire attend 7 jours avant de partir."
           />
-          {mine.length === 0 ? (
+          {mine.length === 0 && held.length === 0 ? (
             <div className={styles.empty}>
               <p className={styles.hint}>Aucun double à échanger. Ouvre des {noun.many}.</p>
               <Link href="/jouer" className={styles.secondary}>
@@ -341,9 +382,14 @@ export function ProposeTrade({
               catalog={catalog}
               cards={pickOrder(catalog, mine, null)}
               selection={give}
+              max={partner.maxCards}
               owned={null}
               onToggle={(id) => toggle(give, id, setGive)}
               onZoom={onZoom}
+              held={held.map((h) => ({
+                card: catalogCard(catalog, h.cardId),
+                label: now === 0 ? "" : heldLabel(h.tradeableFrom, now),
+              }))}
             />
           )}
           <StepActions
@@ -458,24 +504,32 @@ function PickHeading({
   );
 }
 
-/** Cards to tick, up to three; a separate button opens each card in full. */
+/**
+ * Cards to tick, up to `max`; a separate button opens each card in full. Held cards follow,
+ * greyed, with the time before they can move (P35).
+ */
 function CardPicker({
   catalog,
   cards,
   selection,
+  max,
   owned,
   onToggle,
   onZoom,
+  held = [],
 }: {
   readonly catalog: Catalog;
   readonly cards: readonly CatalogCard[];
   readonly selection: readonly string[];
+  readonly max: number;
+  readonly held?: readonly { readonly card: CatalogCard; readonly label: string }[];
   /** The player's own cards, to flag the words they lack; `null` to flag nothing. */
   readonly owned: ReadonlySet<string> | null;
   readonly onToggle: (cardId: string) => void;
   readonly onZoom: (card: CatalogCard) => void;
 }) {
-  const full = selection.length >= MAX_CARDS_PER_SIDE;
+  // With one card per side, a tap swaps the card: nothing is dimmed.
+  const full = max > 1 && selection.length >= max;
   return (
     <ul className={styles.picker}>
       {cards.map((card) => {
@@ -517,6 +571,22 @@ function CardPicker({
           </li>
         );
       })}
+      {held.map(({ card, label }) => (
+        <li key={card.id} className={styles.pickHeld}>
+          <span
+            className={styles.pickButton}
+            role="img"
+            aria-label={`${cardLabel(card)}, ${label}`}
+          >
+            <Card
+              card={card}
+              collectionName={collectionName(catalog, card.collectionId)}
+              width={PICK_THUMB}
+            />
+          </span>
+          <span className={styles.heldLabel}>{label}</span>
+        </li>
+      ))}
     </ul>
   );
 }

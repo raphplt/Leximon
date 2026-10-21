@@ -18,9 +18,6 @@ export interface Notice {
   readonly albumLink?: boolean;
 }
 
-/** Cards on each side of an offer (D-026). */
-export const MAX_CARDS_PER_SIDE = 3;
-
 export type TradeBox = "incoming" | "outgoing";
 
 const MINUTE = 60_000;
@@ -135,14 +132,30 @@ export function tradeLevelLabel(level: number, minLevel: number): string | null 
   return `Les échanges ouvrent au niveau ${minLevel}. Encore ${left} niveau${left > 1 ? "x" : ""}.`;
 }
 
-/** Adds or removes a card from a selection, without ever going over `max`. */
+/**
+ * Adds or removes a card from a selection, without ever going over `max` (P59: one card per
+ * side, then three). With one card per side, another card replaces the chosen one.
+ */
 export function toggleCard(
   selection: readonly string[],
   cardId: string,
-  max: number = MAX_CARDS_PER_SIDE,
+  max: number,
 ): readonly string[] {
   if (selection.includes(cardId)) return selection.filter((id) => id !== cardId);
+  if (max === 1) return [cardId];
   return selection.length < max ? [...selection, cardId] : selection;
+}
+
+/** « Échangeable dans 3 j », « dans 5 h »: when a held Épique or Légendaire can move (P35). */
+export function heldLabel(tradeableFrom: string, now: number): string {
+  const left = Math.max(0, Date.parse(tradeableFrom) - now);
+  if (left >= DAY) return `Échangeable dans ${Math.ceil(left / DAY)} j`;
+  return `Échangeable dans ${Math.max(1, Math.ceil(left / HOUR))} h`;
+}
+
+/** « Choisis 1 carte », « Choisis de 1 à 3 cartes ». */
+export function pickHint(max: number): string {
+  return max === 1 ? "Choisis 1 carte" : `Choisis de 1 à ${max} cartes`;
 }
 
 /** Problems the screen catches before asking the server, named like the server's refusals. */
@@ -153,12 +166,14 @@ export function offerProblem(offer: {
   readonly ownCode: string | null;
   readonly give: readonly string[];
   readonly want: readonly string[];
+  /** Cards per side the two levels allow (P59). */
+  readonly max: number;
 }): OfferProblem | null {
   const recipient = normalizePlayerCode(offer.recipientCode);
   if (recipient === null) return "invalid_code";
   if (recipient === offer.ownCode) return "self_trade";
   if (offer.give.length === 0 || offer.want.length === 0) return "empty_side";
-  if (offer.give.length > MAX_CARDS_PER_SIDE || offer.want.length > MAX_CARDS_PER_SIDE) {
+  if (offer.give.length > offer.max || offer.want.length > offer.max) {
     return "too_many_cards";
   }
   return null;
@@ -169,7 +184,7 @@ const REFUSAL_MESSAGES: Readonly<Record<TradeRefusalCode | OfferProblem, string>
   player_not_found: "Personne n'a ce code.",
   self_trade: "C'est ton code à toi.",
   empty_side: "Il faut au moins une carte de chaque côté.",
-  too_many_cards: `${MAX_CARDS_PER_SIDE} cartes au plus de chaque côté.`,
+  too_many_cards: "Trop de cartes pour vos niveaux. Une de chaque côté avant le niveau 10.",
   duplicate_card: "Une même carte apparaît deux fois.",
   account_too_recent: "Compte tout neuf. Les échanges ouvrent 3 jours après ton arrivée.",
   level_too_low: "Il faut être niveau 5, toi comme l'autre joueur.",
@@ -186,6 +201,6 @@ export function refusalMessage(code: TradeRefusalCode | OfferProblem): string {
 }
 
 /** Count of a selection, for the step headings: `2 / 3`. */
-export function selectionCount(selection: readonly string[]): string {
-  return `${selection.length} / ${MAX_CARDS_PER_SIDE}`;
+export function selectionCount(selection: readonly string[], max: number): string {
+  return `${selection.length} / ${max}`;
 }

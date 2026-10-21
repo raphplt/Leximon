@@ -8,6 +8,8 @@ function json(status: number, body: unknown): Response {
   });
 }
 
+const WALLET = { stored: 6, nextRefillAt: null, bonus: 0, garni: 0, bonusCap: 10, capacity: 6 };
+
 afterEach(() => {
   vi.unstubAllGlobals();
 });
@@ -26,15 +28,14 @@ describe("guest sign-in", () => {
           return json(200, {});
         }
         if (!signedIn) return json(401, { error: "unauthorized" });
-        if (url.includes("/me/wallet"))
-          return json(200, { stored: 6, nextRefillAt: null, bonus: 0 });
+        if (url.includes("/me/wallet")) return json(200, WALLET);
         return json(200, { cards: [], nextCursor: null });
       }),
     );
 
     const [wallet, cards] = await Promise.all([fetchWallet(), fetchOwnedCards()]);
 
-    expect(wallet).toEqual({ stored: 6, nextRefillAt: null, bonus: 0 });
+    expect(wallet).toEqual(WALLET);
     expect(cards).toEqual([]);
     expect(signIns).toHaveLength(1);
   });
@@ -42,7 +43,7 @@ describe("guest sign-in", () => {
   it("rejects a response that breaks the contract", async () => {
     vi.stubGlobal(
       "fetch",
-      vi.fn(async () => json(200, { stored: -1, nextRefillAt: null, bonus: 0 })),
+      vi.fn(async () => json(200, { ...WALLET, stored: -1 })),
     );
     await expect(fetchWallet()).rejects.toMatchObject({ message: "unexpected_response" });
   });

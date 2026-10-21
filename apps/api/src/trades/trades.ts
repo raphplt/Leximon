@@ -7,6 +7,7 @@ import {
   isAccountOldEnough,
   isExpired,
   isLevelHighEnough,
+  maxCardsBetween,
   TRADE_SCHEDULE,
   type TradeRefusal,
   tradeRulesAt,
@@ -274,7 +275,8 @@ export type AcceptRefusal =
   | "trade_expired"
   | "card_not_tradeable"
   | "account_too_recent"
-  | "level_too_low";
+  | "level_too_low"
+  | "too_many_cards";
 
 export type AcceptTradeResult =
   | { readonly kind: "completed"; readonly trade: TradeRecord }
@@ -360,6 +362,11 @@ export async function acceptTrade(
     }
     if (!isLevelHighEnough(rules, proposerXp ?? 0) || !isLevelHighEnough(rules, recipientXp ?? 0)) {
       return { kind: "refused", reason: "level_too_low" };
+    }
+    // Levels only rise, but the scale of P59 may have changed since the offer was made.
+    const maxCards = maxCardsBetween(rules, proposerXp ?? 0, recipientXp ?? 0);
+    if (record.give.length > maxCards || record.want.length > maxCards) {
+      return { kind: "refused", reason: "too_many_cards" };
     }
     if (
       !canGive(rules, record.give, holdings.get(record.proposerId) ?? new Map(), now) ||

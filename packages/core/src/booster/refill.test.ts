@@ -1,12 +1,14 @@
 import { describe, expect, it } from "vitest";
 import {
   type BoosterWallet,
+  capacityAt,
   computeRefill,
   consumeBooster,
   createFullWallet,
   type EpochMs,
   fixedSchedule,
   type RefillSchedule,
+  refillToFull,
 } from "./refill";
 
 const MINUTE = 60_000;
@@ -333,5 +335,27 @@ describe("createFullWallet", () => {
 
   it("uses the capacity in force at that moment", () => {
     expect(createFullWallet(scheduleChangingAt(60, { capacity: 12 }), at(61)).stored).toBe(12);
+  });
+});
+
+describe("refillToFull", () => {
+  const schedule = fixedSchedule(6, 1_000);
+
+  it("fills the stock and stops the timer", () => {
+    expect(refillToFull({ stored: 2, progressMs: 400, asOf: 0 }, schedule, 500)).toEqual({
+      stored: 6,
+      progressMs: 0,
+      asOf: 500,
+      nextRefillAt: null,
+    });
+  });
+
+  it("refuses a stock already full, refilled meanwhile included", () => {
+    expect(refillToFull({ stored: 6, progressMs: 0, asOf: 0 }, schedule, 0)).toBeNull();
+    expect(refillToFull({ stored: 5, progressMs: 0, asOf: 0 }, schedule, 1_000)).toBeNull();
+  });
+
+  it("reads the capacity of the period in force", () => {
+    expect(capacityAt(schedule, 0)).toBe(6);
   });
 });

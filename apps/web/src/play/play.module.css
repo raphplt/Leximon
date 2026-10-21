@@ -1,0 +1,355 @@
+/* The Jouer screen (J-01 to J-08), maquette v1. */
+
+.page {
+  box-sizing: border-box;
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 26px 32px 64px;
+}
+
+/* --- Level band (J-01 to J-03) --- */
+
+.strip {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  min-height: 92px;
+  padding: 14px 18px;
+  box-sizing: border-box;
+}
+
+.stripLoading {
+  opacity: 0.5;
+}
+
+.medalLink {
+  flex-shrink: 0;
+  border-radius: 50%;
+}
+
+.xp {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  text-decoration: none;
+}
+
+.xpHead {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.headline {
+  overflow: hidden;
+  font-weight: 800;
+  font-size: 17px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.title {
+  color: var(--lx-color-text-muted);
+  font-weight: 600;
+}
+
+.xpNumbers {
+  font-size: 13px;
+  color: var(--lx-color-text-muted);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.next {
+  display: flex;
+  align-items: center;
+  margin: 0;
+  padding: 0 0 0 8px;
+  list-style: none;
+}
+
+.nextItem {
+  display: flex;
+  align-items: center;
+}
+
+.nextLink {
+  width: 18px;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--lx-color-track);
+}
+
+.nextReward {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  width: 62px;
+  text-decoration: none;
+}
+
+.nextIcon,
+.nextIconKraft {
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+}
+
+.nextIcon {
+  background: var(--lx-color-background);
+  color: var(--lx-color-text-muted);
+  box-shadow: inset 0 0 0 2px var(--lx-color-track);
+}
+
+.nextIconKraft {
+  background: linear-gradient(160deg, #e9c98f, #b88a4e);
+  color: var(--lx-color-kraft-title);
+  box-shadow: 0 3px 0 #7a5a2e;
+}
+
+.nextLevel {
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--lx-color-text-muted);
+}
+
+.claim {
+  flex-shrink: 0;
+}
+
+/* --- Stage --- */
+
+.stage {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+  min-height: 640px;
+  padding: 26px 0 10px;
+}
+
+.fabsLeft,
+.fabsRight {
+  position: absolute;
+  top: 40px;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.fabsLeft {
+  left: 0;
+}
+
+.fabsRight {
+  right: 0;
+}
+
+.chips {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  max-width: calc(100% - 200px);
+}
+
+.legend {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.chipLocked {
+  opacity: 0.6;
+}
+
+.chipLock {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  font-size: 11px;
+  color: var(--lx-color-text-muted);
+}
+
+.arrows {
+  display: none;
+  align-items: center;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.arrowName {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 150px;
+  text-align: center;
+}
+
+.arrowName .kicker,
+.arrowName > span:first-child {
+  font-size: 10px;
+}
+
+.arrowTitle {
+  font-size: 18px;
+  line-height: 1.1;
+}
+
+/* The pouch takes the height of its slot (`sachet.module.css`). */
+.sachet {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 440px;
+  height: 420px;
+}
+
+.stock {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.dots {
+  display: flex;
+  gap: 7px;
+}
+
+.dot,
+.dotOn {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+}
+
+.dot {
+  box-shadow: inset 0 0 0 2px var(--lx-color-outline);
+}
+
+.dotOn {
+  background: var(--lx-color-accent);
+  box-shadow: 0 0 10px rgba(255, 210, 77, 0.5);
+}
+
+.stockLine {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--lx-color-text-muted);
+  text-align: center;
+}
+
+.openButton {
+  min-width: 240px;
+}
+
+.message {
+  max-width: 420px;
+  margin: 0;
+  font-size: 14px;
+  color: var(--lx-color-text-muted);
+  text-align: center;
+}
+
+.error {
+  composes: message;
+  color: var(--lx-color-danger);
+  font-weight: 700;
+}
+
+/* --- Slipping word (J-08) --- */
+
+.slipping {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  max-width: 560px;
+  margin: 8px auto 0;
+  padding: 12px 14px;
+}
+
+.slippingCard {
+  flex-shrink: 0;
+  transform: rotate(-4deg);
+}
+
+.slippingText {
+  flex: 1;
+  margin: 0;
+  font-family: var(--font-text), Georgia, serif;
+  font-size: 18px;
+  line-height: 1.3;
+}
+
+.slippingText em {
+  font-weight: 600;
+}
+
+/* Next rewards need room: dropped on medium screens. */
+@media (max-width: 1060px) {
+  .next {
+    display: none;
+  }
+}
+
+/* Phones (C-08). */
+@media (max-width: 759px) {
+  .page {
+    padding: 8px 14px 28px;
+  }
+
+  /* The phone top bar already carries the level and XP; coffrets keep their floating button. */
+  .strip {
+    display: none;
+  }
+
+  .stage {
+    gap: 12px;
+    min-height: 560px;
+    padding: 12px 0 6px;
+  }
+
+  /* Below the collection arrows, beside the sachet. */
+  .fabsLeft,
+  .fabsRight {
+    top: 76px;
+    gap: 12px;
+  }
+
+  .chips {
+    display: none;
+  }
+
+  .arrows {
+    display: flex;
+  }
+
+  .sachet {
+    max-width: 240px;
+    height: 300px;
+  }
+
+  .slipping {
+    margin: 10px 0 0;
+  }
+
+  .slippingText {
+    font-size: 16px;
+  }
+}

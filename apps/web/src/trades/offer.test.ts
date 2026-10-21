@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   effectiveStatus,
   formatPlayerCode,
+  heldLabel,
   normalizePlayerCode,
   offerProblem,
   refusalMessage,
@@ -126,21 +127,41 @@ describe("tradeableFromLabel", () => {
 });
 
 describe("toggleCard", () => {
-  it("adds, removes, and stops at three cards", () => {
-    expect(toggleCard([], "a")).toEqual(["a"]);
-    expect(toggleCard(["a", "b"], "a")).toEqual(["b"]);
+  it("adds, removes, and stops at the limit of the two levels", () => {
+    expect(toggleCard([], "a", 3)).toEqual(["a"]);
+    expect(toggleCard(["a", "b"], "a", 3)).toEqual(["b"]);
     const full = ["a", "b", "c"];
-    expect(toggleCard(full, "d")).toBe(full);
-    expect(toggleCard(full, "b")).toEqual(["a", "c"]);
+    expect(toggleCard(full, "d", 3)).toBe(full);
+    expect(toggleCard(full, "b", 3)).toEqual(["a", "c"]);
+  });
+
+  it("swaps the card when only one goes on each side (P59)", () => {
+    expect(toggleCard(["a"], "b", 1)).toEqual(["b"]);
+    expect(toggleCard(["a"], "a", 1)).toEqual([]);
+  });
+});
+
+describe("heldLabel", () => {
+  it("counts days, then hours, before a held card can move (P35)", () => {
+    const at = Date.parse("2026-10-20T12:00:00.000Z");
+    expect(heldLabel("2026-10-27T11:00:00.000Z", at)).toBe("Échangeable dans 7 j");
+    expect(heldLabel("2026-10-20T16:30:00.000Z", at)).toBe("Échangeable dans 5 h");
   });
 });
 
 describe("offerProblem", () => {
-  const offer = { recipientCode: "bbbb-2222", ownCode: "AAAA1111", give: ["a"], want: ["b"] };
+  const offer = {
+    recipientCode: "bbbb-2222",
+    ownCode: "AAAA1111",
+    give: ["a"],
+    want: ["b"],
+    max: 3,
+  };
 
-  it("accepts one to three cards on each side for another player", () => {
+  it("accepts up to the limit of the two levels on each side", () => {
     expect(offerProblem(offer)).toBeNull();
     expect(offerProblem({ ...offer, give: ["a", "b", "c"], want: ["d", "e", "f"] })).toBeNull();
+    expect(offerProblem({ ...offer, give: ["a", "b"], max: 1 })).toBe("too_many_cards");
   });
 
   it("names what is wrong, like the server would", () => {

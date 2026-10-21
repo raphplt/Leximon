@@ -2,10 +2,12 @@ import {
   type BoosterStockEmptyResponse,
   IDEMPOTENCY_KEY_HEADER,
   idempotencyKeySchema,
+  type LevelRequiredResponse,
   type OpenBoosterResponse,
   openBoosterRequestSchema,
   type SignupRequiredResponse,
 } from "@leximon/contract";
+import { capacityAt, REFILL_SCHEDULE } from "@leximon/core";
 import { Hono } from "hono";
 import type { AppEnv } from "../context";
 import { playerRateLimit } from "../middleware/rate-limit";
@@ -27,11 +29,12 @@ export function boosterRoutes(loadCardPool: CardPoolLoader) {
       return c.json({ error: "invalid_request" }, 400);
     }
 
+    const now = Date.now();
     const result = await openBooster(c.var.db, loadCardPool, {
       userId: c.var.userId,
       idempotencyKey: key.data,
       source: body.data,
-      now: Date.now(),
+      now,
       seed: generateSeed(),
     });
 
@@ -44,6 +47,9 @@ export function boosterRoutes(loadCardPool: CardPoolLoader) {
             stored: result.wallet.stored,
             nextRefillAt: toIso(result.wallet.nextRefillAt),
             bonus: result.wallet.bonus,
+            garni: result.wallet.garni,
+            bonusCap: result.wallet.bonusCap,
+            capacity: capacityAt(REFILL_SCHEDULE, now),
           },
           progress: result.progress,
         });
@@ -57,6 +63,8 @@ export function boosterRoutes(loadCardPool: CardPoolLoader) {
         );
       case "collection_not_found":
         return c.json({ error: "collection_not_found" }, 404);
+      case "level_required":
+        return c.json<LevelRequiredResponse>({ error: "level_required", level: result.level }, 403);
       case "guest_archived":
         return c.json({ error: "guest_archived" }, 409);
       case "signup_required":

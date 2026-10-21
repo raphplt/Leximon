@@ -5,6 +5,7 @@ import {
   createFullWallet,
   type EpochMs,
   REFILL_SCHEDULE,
+  reserveCapacity,
 } from "@leximon/core";
 import { type Database, schema } from "@leximon/db";
 import { and, eq, gt, sql } from "drizzle-orm";
@@ -42,7 +43,7 @@ export async function grantBonus(
   },
 ): Promise<GrantBonusResult> {
   const { adminId, userId, amount, reason, idempotencyKey, now } = input;
-  const cap = bonusRulesAt(BONUS_SCHEDULE, now).reserveCap;
+  const rules = bonusRulesAt(BONUS_SCHEDULE, now);
 
   return db.transaction(async (tx) => {
     const [target] = await tx
@@ -66,7 +67,7 @@ export async function grantBonus(
         asOf: new Date(fresh.asOf),
       })
       .onConflictDoUpdate({ target: boosterWallets.userId, set: { userId: sql`excluded.user_id` } })
-      .returning({ bonus: boosterWallets.bonusBoosters });
+      .returning({ bonus: boosterWallets.bonusBoosters, slots: boosterWallets.reserveSlots });
     if (locked === undefined) {
       throw new Error(`Wallet missing for user ${userId} right after its creation`);
     }
@@ -86,6 +87,7 @@ export async function grantBonus(
       };
     }
 
+    const cap = reserveCapacity(rules, locked.slots);
     const bonus = Math.max(locked.bonus, Math.min(cap, locked.bonus + amount));
     const added = bonus - locked.bonus;
     if (added > 0) {

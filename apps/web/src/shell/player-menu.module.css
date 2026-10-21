@@ -1,0 +1,108 @@
+.scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 34;
+  border: 0;
+  background: none;
+  cursor: default;
+}
+
+.menu {
+  position: fixed;
+  top: 76px;
+  right: 24px;
+  z-index: 35;
+  width: 260px;
+  padding: 8px;
+  border: 1px solid rgba(246, 240, 226, 0.1);
+  border-radius: 18px;
+  background: var(--lx-color-sunken);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+}
+
+.list,
+.sheetList {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 12px;
+  border: 0;
+  border-radius: 12px;
+  background: none;
+  color: var(--lx-color-text);
+  font: inherit;
+  font-weight: 700;
+  font-size: 15px;
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.row:hover {
+  background: rgba(246, 240, 226, 0.05);
+}
+
+.sheetList .row {
+  min-height: 56px;
+  padding: 0 10px;
+  border-radius: 14px;
+  font-size: 16px;
+  gap: 14px;
+}
+
+.icon {
+  display: grid;
+}
+
+.sheetIcon {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: var(--lx-color-background);
+}
+
+.label {
+  flex: 1;
+}
+
+.lock {
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--lx-color-text-muted);
+}
+
+.who {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 4px 4px 16px;
+}
+
+.bigAvatar {
+  display: grid;
+  place-items: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: #fbf5e8;
+  color: var(--lx-color-kraft-ink);
+  box-shadow: 0 0 0 3px var(--lx-color-accent);
+}
+
+.whoName {
+  font-size: 22px;
+}
+
+.whoLevel {
+  font-size: 13px;
+  color: var(--lx-color-text-muted);
+}

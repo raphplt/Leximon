@@ -22,6 +22,7 @@ import {
   progressGain,
   type Question,
   REFILL_SCHEDULE,
+  reserveCapacity,
   reviewWord,
   XP_SCHEDULE,
   xpRulesAt,
@@ -174,7 +175,10 @@ export async function answerChallenge(db: Database, input: AnswerInput): Promise
         asOf: new Date(wallet.asOf),
       })
       .onConflictDoUpdate({ target: boosterWallets.userId, set: { userId: sql`excluded.user_id` } })
-      .returning({ bonusBoosters: boosterWallets.bonusBoosters });
+      .returning({
+        bonusBoosters: boosterWallets.bonusBoosters,
+        reserveSlots: boosterWallets.reserveSlots,
+      });
     if (locked === undefined) {
       throw new Error(`Wallet missing for user ${userId} right after its creation`);
     }
@@ -261,7 +265,11 @@ export async function answerChallenge(db: Database, input: AnswerInput): Promise
       reachedGilded: outcome.levelUp && outcome.mastery.level === "gilded",
       gildedAwarded: row.awards.some((a) => a.kind === "gilded" && a.awardKey === cardId),
     });
-    const credit = creditReserve(bonusRules, locked.bonusBoosters, earned);
+    const credit = creditReserve(
+      reserveCapacity(bonusRules, locked.reserveSlots),
+      locked.bonusBoosters,
+      earned,
+    );
 
     const masteryUpdate = tx.$with("mastery_update").as(
       tx
