@@ -51,15 +51,20 @@ export function PlayerMenu({
     { label: view.guest ? "Créer mon compte" : "Mon compte", icon: "profil", href: "/compte" },
   ];
 
-  // Web: Escape and a click beside it close the menu; the first entry takes the focus.
+  // Web: Escape and a click beside it close the menu; the first entry takes the focus, and the
+  // avatar gets it back once the menu closes.
   useEffect(() => {
     if (!open || narrow) return;
+    const opener = document.activeElement instanceof HTMLElement ? document.activeElement : null;
     list.current?.querySelector<HTMLElement>("a, button")?.focus();
     const onKey = (event: KeyboardEvent) => {
       if (event.key === "Escape") onClose();
     };
     window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      opener?.focus();
+    };
   }, [open, narrow, onClose]);
 
   const entries = (

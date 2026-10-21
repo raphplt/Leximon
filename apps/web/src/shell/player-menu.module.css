@@ -49,6 +49,19 @@
   background: rgba(246, 240, 226, 0.05);
 }
 
+/* The global ring, thick and offset, overflows the menu: the focused row lights up like a hover. */
+.row:focus-visible {
+  outline: none;
+  background: rgba(246, 240, 226, 0.08);
+  box-shadow: inset 0 0 0 2px var(--lx-color-focus);
+}
+
+/* The first entry takes the focus on opening; under the pointer, only the hovered row shows. */
+.list:hover .row:focus-visible:not(:hover) {
+  background: none;
+  box-shadow: none;
+}
+
 .sheetList .row {
   min-height: 56px;
   padding: 0 10px;
