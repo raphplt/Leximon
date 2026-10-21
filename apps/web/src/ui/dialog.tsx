@@ -43,13 +43,16 @@ export function Dialog({
       className={styles[variant]}
       aria-label={title}
       onCancel={(event) => {
-        // Escape: React keeps the state, the dialog closes through it.
+        // Escape: React keeps the state, the dialog closes through it. A dialog opened from
+        // another one (settings, then the pseudo) closes alone.
         event.preventDefault();
+        event.stopPropagation();
         onClose();
       }}
       onClick={(event) => {
         // A click on the backdrop lands on the dialog itself, outside its box.
         if (event.target === event.currentTarget) onClose();
+        event.stopPropagation();
       }}
     >
       {open && (

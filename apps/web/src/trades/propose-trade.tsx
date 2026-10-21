@@ -1,14 +1,14 @@
 "use client";
 
-import type { CatalogCard, Trade } from "@leximon/contract";
+import type { CatalogCard, PlayerBadge, Trade } from "@leximon/contract";
 import { rarityRank } from "@leximon/core";
 import {
-  formatPlayerCode,
   heldLabel,
   type Notice,
   normalizePlayerCode,
   offerProblem,
   pickHint,
+  playerName,
   refusalMessage,
   selectionCount,
   toggleCard,
@@ -21,6 +21,7 @@ import { createTrade, fetchOwnedCards, fetchTradeable } from "@/lib/api";
 import { useNow } from "@/lib/use-now";
 import { usePackShape } from "@/lib/use-pack-shape";
 import { CardRow, cardLabel, catalogCard } from "./card-thumb";
+import { Counterpart } from "./counterpart";
 import styles from "./trades.module.css";
 
 type Step = "code" | "want" | "give" | "review" | "sent";
@@ -28,6 +29,8 @@ type Step = "code" | "want" | "give" | "review" | "sent";
 interface Partner {
   readonly code: string;
   readonly level: number;
+  /** How that player shows: avatar, pseudo (E-03). */
+  readonly badge: PlayerBadge;
   /** Cards that player can give now. */
   readonly cardIds: readonly string[];
   /** Cards per side between the two players: their lower level decides (P59). */
@@ -66,6 +69,7 @@ export function ProposeTrade({
   ownCode,
   blocked,
   preset,
+  presetPartner,
   onSent,
   onShowSent,
   onOpen,
@@ -77,6 +81,8 @@ export function ProposeTrade({
   readonly blocked: string | null;
   /** A card to give, chosen on its card sheet (E-06). */
   readonly preset: string | null;
+  /** A player code, from a public profile (P-06). */
+  readonly presetPartner: string | null;
   readonly onSent: (trade: Trade) => void;
   readonly onShowSent: () => void;
   readonly onOpen: (cardId: string) => void;
@@ -104,6 +110,10 @@ export function ProposeTrade({
   useEffect(() => {
     if (preset !== null) setGive([preset]);
   }, [preset]);
+
+  useEffect(() => {
+    if (presetPartner !== null) setCodeInput(presetPartner);
+  }, [presetPartner]);
 
   // A sent offer is done: coming back to the page later starts a fresh one.
   const shouldReset = useRef(false);
@@ -174,6 +184,7 @@ export function ProposeTrade({
       setPartner({
         code,
         level: theirs.level,
+        badge: theirs.player,
         cardIds: theirs.cardIds,
         maxCards: Math.max(1, theirs.maxCardsPerSide),
       });
@@ -249,7 +260,7 @@ export function ProposeTrade({
       if (result.kind === "ok") {
         onSent(result.trade);
         shouldReset.current = true;
-        notify({ tone: "success", text: `Offre envoyée à ${formatPlayerCode(partner.code)}.` });
+        notify({ tone: "success", text: `Offre envoyée à ${playerName(partner.badge)}.` });
         setStep("sent");
         return;
       }
@@ -286,7 +297,7 @@ export function ProposeTrade({
     );
   }
 
-  const partnerCode = partner === null ? "" : formatPlayerCode(partner.code);
+  const partnerCode = partner === null ? "" : playerName(partner.badge);
 
   return (
     <section className={styles.panel} aria-labelledby="propose-title">
@@ -345,9 +356,9 @@ export function ProposeTrade({
 
       {step === "want" && partner !== null && (
         <>
-          <p className={styles.partnerFound}>
-            {partnerCode} · niveau {partner.level}
-          </p>
+          <div className={styles.partnerFound}>
+            <Counterpart player={partner.badge} />
+          </div>
           <PickHeading
             title={`Ce que tu veux de ${partnerCode}`}
             count={selectionCount(want, partner.maxCards)}

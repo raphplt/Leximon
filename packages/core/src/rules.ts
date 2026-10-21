@@ -6,6 +6,7 @@
  */
 
 import type { GuestSchedule } from "./account/guest-limit";
+import type { PseudoSchedule } from "./account/pseudo";
 import type { BonusSchedule } from "./bonus/bonus";
 import type { DrawSchedule } from "./booster/draw";
 import type { RefillSchedule } from "./booster/refill";
@@ -19,6 +20,8 @@ const MINUTE = 60_000;
 const SINCE_LAUNCH = Number.MIN_SAFE_INTEGER;
 /** Midnight in Paris on 2026-10-21, when the owner decided P58 and P59. */
 const LEVELS_DECIDED = Date.UTC(2026, 9, 20, 22);
+/** 22:00 in Paris on 2026-10-21, when the owner added avatar frames to P58. */
+const COSMETICS_DECIDED = Date.UTC(2026, 9, 21, 20);
 
 export const REFILL_SCHEDULE: RefillSchedule = [
   { startsAt: SINCE_LAUNCH, capacity: 6, intervalMs: 30 * MINUTE },
@@ -114,25 +117,58 @@ export const XP_SCHEDULE: XpSchedule = [
 export const GUEST_SCHEDULE: GuestSchedule = [{ startsAt: SINCE_LAUNCH, boostersBeforeSignup: 2 }];
 
 // Level rewards (P58). Titles are provisional.
-export const LEVEL_REWARD_SCHEDULE: LevelRewardSchedule = [
-  {
-    startsAt: LEVELS_DECIDED,
-    milestoneEvery: 5,
-    majorEvery: 10,
-    titles: {
-      5: "Lexicographe en herbe",
-      15: "Fine plume",
-      25: "Rat de bibliothèque",
-      35: "Grand glossateur",
-      45: "Puits de science",
-    },
-    reserveSlotsUntil: 50,
-    pinnedSlotsUntil: 30,
-    cosmeticsOnlyAbove: 50,
-    avatarEveryBeyond: 20,
-    garniMinRarity: "rare",
-    cardChoiceMaxRarity: "uncommon",
+const LEVEL_REWARDS_2026_10_21 = {
+  startsAt: LEVELS_DECIDED,
+  milestoneEvery: 5,
+  majorEvery: 10,
+  titles: {
+    5: "Lexicographe en herbe",
+    15: "Fine plume",
+    25: "Rat de bibliothèque",
+    35: "Grand glossateur",
+    45: "Puits de science",
   },
+  reserveSlotsUntil: 50,
+  pinnedSlotsUntil: 30,
+  pinnedSlotsAtStart: 3,
+  cosmeticsOnlyAbove: 50,
+  avatarEveryBeyond: 20,
+  garniMinRarity: "rare",
+  cardChoiceMaxRarity: "uncommon",
+  // Engraved avatars (P49): portraits from the cards' engravings, named by their card id.
+  startingAvatars: [
+    "metaphraste",
+    "bachelette",
+    "grimelin",
+    "cassandre",
+    "preopinant",
+    "ricanerie",
+  ],
+  avatars: {
+    10: "metoposcope",
+    20: "fanfreluche",
+    30: "cuistre",
+    40: "fluteau",
+    50: "chatieur",
+    60: "soupette",
+    80: "encaveur",
+    100: "bequillard",
+    120: "zani",
+    140: "pochon",
+  },
+  startingFrame: "simple",
+  frames: {},
+} as const;
+
+export const LEVEL_REWARD_SCHEDULE: LevelRewardSchedule = [
+  LEVEL_REWARDS_2026_10_21,
+  // Avatar frames at levels 10 and 20, decided with lot 3 of interface-v1.
+  { ...LEVEL_REWARDS_2026_10_21, startsAt: COSMETICS_DECIDED, frames: { 10: "gilded", 20: "ink" } },
+];
+
+// Pseudo of a player (P-08 of interface-v1, N5).
+export const PSEUDO_SCHEDULE: PseudoSchedule = [
+  { startsAt: SINCE_LAUNCH, minLength: 3, maxLength: 20, changeEveryMs: 30 * 24 * 60 * MINUTE },
 ];
 
 // Features opened by level (P59); trade levels are in TRADE_SCHEDULE.

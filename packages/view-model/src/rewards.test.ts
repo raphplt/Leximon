@@ -29,7 +29,7 @@ describe("level rewards (P58)", () => {
     expect(rewardSummary(3, NOW)).toBe("Sachet bonus");
     expect(rewardSummary(15, NOW)).toBe("Sachet garni · Titre");
     expect(rewardSummary(20, NOW)).toBe(
-      "Carte au choix · Réserve +1 · Avatar gravé · Place épinglée +1",
+      "Carte au choix · Réserve +1 · Avatar gravé · Cadre · Place épinglée +1",
     );
   });
 

@@ -63,7 +63,7 @@ export function createApp(options: AppOptions = {}) {
       origin: parseOrigins(c.env.TRUSTED_ORIGINS),
       credentials: true,
       allowHeaders: ["Content-Type", "Idempotency-Key"],
-      allowMethods: ["GET", "POST", "OPTIONS"],
+      allowMethods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     })(c, next),
   );
 

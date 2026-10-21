@@ -1,0 +1,24 @@
+.form {
+  display: flex;
+  flex-direction: column;
+  padding: 4px 26px 26px;
+  gap: 10px;
+}
+
+.label {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.hint,
+.problem {
+  min-height: 1.4em;
+  margin: 0 0 6px;
+  font-size: 13px;
+  color: var(--lx-color-text-muted);
+}
+
+.problem {
+  color: var(--lx-color-danger);
+  font-weight: 700;
+}

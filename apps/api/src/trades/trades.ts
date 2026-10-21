@@ -1,4 +1,4 @@
-import type { Trade } from "@leximon/contract";
+import type { PlayerBadge, Trade } from "@leximon/contract";
 import {
   canGive,
   checkOffer,
@@ -17,6 +17,7 @@ import {
 import { type Database, schema } from "@leximon/db";
 import { and, asc, desc, eq, gt, inArray, lt, or, type SQL, sql } from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
+import { isBlockedEitherWay, readBadges } from "../profile/profile";
 import { addXpToPlayers } from "../progress/progress";
 import type { TradeCursor } from "./cursor";
 import {
@@ -34,13 +35,16 @@ const DAY_MS = 24 * 60 * 60 * 1000;
 
 type StoredStatus = (typeof schema.tradeStatus.enumValues)[number];
 
-/** A trade as stored, with the players' public codes. */
+/**
+ * A trade as stored, with the players' public codes. A side is `null` once its player deleted
+ * their account (R-07); a pending offer always has both.
+ */
 export interface TradeRecord {
   readonly id: string;
-  readonly proposerId: string;
-  readonly recipientId: string;
-  readonly proposerCode: string;
-  readonly recipientCode: string;
+  readonly proposerId: string | null;
+  readonly recipientId: string | null;
+  readonly proposerCode: string | null;
+  readonly recipientCode: string | null;
   readonly give: readonly string[];
   readonly want: readonly string[];
   readonly status: StoredStatus;
@@ -49,13 +53,22 @@ export interface TradeRecord {
   readonly resolvedAt: Date | null;
 }
 
-/** The public view of a trade. "expired" is derived here, never stored (no scheduled task). */
-export function toTradeResponse(record: TradeRecord, now: EpochMs): Trade {
+/**
+ * The public view of a trade, with the badges of its players (`readTradeBadges`). "expired" is
+ * derived here, never stored (no scheduled task).
+ */
+export function toTradeResponse(
+  record: TradeRecord,
+  badges: ReadonlyMap<string, PlayerBadge>,
+  now: EpochMs,
+): Trade {
   const expired = record.status === "pending" && isExpired(record.expiresAt.getTime(), now);
   return {
     id: record.id,
-    proposerCode: record.proposerCode,
-    recipientCode: record.recipientCode,
+    proposerCode: record.proposerCode ?? "",
+    recipientCode: record.recipientCode ?? "",
+    proposer: (record.proposerId !== null && badges.get(record.proposerId)) || null,
+    recipient: (record.recipientId !== null && badges.get(record.recipientId)) || null,
     give: sortIds(record.give),
     want: sortIds(record.want),
     status: expired ? "expired" : record.status,
@@ -63,6 +76,16 @@ export function toTradeResponse(record: TradeRecord, now: EpochMs): Trade {
     expiresAt: record.expiresAt.toISOString(),
     resolvedAt: record.resolvedAt === null ? null : record.resolvedAt.toISOString(),
   };
+}
+
+/** Badges of every player of some trades, in one query. */
+export function readTradeBadges(
+  db: TradeReader,
+  records: readonly TradeRecord[],
+  now: EpochMs,
+): Promise<Map<string, PlayerBadge>> {
+  const ids = records.flatMap((record) => [record.proposerId ?? [], record.recipientId ?? []]);
+  return readBadges(db, ids.flat(), now);
 }
 
 const proposerPlayer = alias(players, "proposer_player");
@@ -95,8 +118,8 @@ function selectTrades(db: TradeReader) {
   return db
     .select(tradeFields)
     .from(trades)
-    .innerJoin(proposerPlayer, eq(proposerPlayer.userId, trades.proposerId))
-    .innerJoin(recipientPlayer, eq(recipientPlayer.userId, trades.recipientId));
+    .leftJoin(proposerPlayer, eq(proposerPlayer.userId, trades.proposerId))
+    .leftJoin(recipientPlayer, eq(recipientPlayer.userId, trades.recipientId));
 }
 
 async function readTrade(db: TradeReader, tradeId: string): Promise<TradeRecord | null> {
@@ -139,7 +162,8 @@ export async function createTrade(
 
   const proposer = await ensurePlayer(db, userId);
   const recipient = await findPlayerByCode(db, input.recipientCode);
-  if (recipient === null) {
+  // A player blocked either way does not exist for the other (N5).
+  if (recipient === null || (await isBlockedEitherWay(db, userId, recipient.userId))) {
     return { kind: "player_not_found" };
   }
   const holdings = await readHoldings(db, [
@@ -326,6 +350,12 @@ export async function acceptTrade(
       return { kind: "not_found" };
     }
     const { proposerCreatedAt, recipientCreatedAt, proposerXp, recipientXp, ...record } = locked;
+    const { proposerId } = record;
+    // Inner joins on both players: a side is `null` only after an account deletion, which
+    // cancels the offer first.
+    if (proposerId === null) {
+      return { kind: "refused", reason: "trade_not_pending" };
+    }
     if (record.status === "completed") {
       return { kind: "completed", trade: record };
     }
@@ -336,7 +366,7 @@ export async function acceptTrade(
       return { kind: "refused", reason: "trade_expired" };
     }
 
-    const parties = [record.proposerId, record.recipientId];
+    const parties = [proposerId, userId];
     const cardIds = [...new Set([...record.give, ...record.want])];
     const rows = await tx
       .select(holdingFields)
@@ -369,8 +399,8 @@ export async function acceptTrade(
       return { kind: "refused", reason: "too_many_cards" };
     }
     if (
-      !canGive(rules, record.give, holdings.get(record.proposerId) ?? new Map(), now) ||
-      !canGive(rules, record.want, holdings.get(record.recipientId) ?? new Map(), now)
+      !canGive(rules, record.give, holdings.get(proposerId) ?? new Map(), now) ||
+      !canGive(rules, record.want, holdings.get(userId) ?? new Map(), now)
     ) {
       // The offer stays pending: the player may obtain the card again.
       return { kind: "refused", reason: "card_not_tradeable" };
@@ -379,11 +409,12 @@ export async function acceptTrade(
     const resolvedAt = new Date(now);
     const { tradeCompleted } = xpRulesAt(XP_SCHEDULE, now);
     const xpUpsert = addXpToPlayers(tx, "xp_upsert", [
-      { userId: record.proposerId, amount: tradeCompleted },
-      { userId: record.recipientId, amount: tradeCompleted },
+      { userId: proposerId, amount: tradeCompleted },
+      { userId, amount: tradeCompleted },
     ]);
+    const sides = { ...record, proposerId, recipientId: userId };
     await tx
-      .with(...moveCards(tx, planTransfers(record), resolvedAt), xpUpsert)
+      .with(...moveCards(tx, planTransfers(sides), resolvedAt), xpUpsert)
       .update(trades)
       .set({ status: "completed", resolvedAt })
       .where(eq(trades.id, tradeId));

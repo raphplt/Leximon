@@ -1,18 +1,28 @@
 import {
+  type BlockRefusal,
   createTradeRequestSchema,
   IDEMPOTENCY_KEY_HEADER,
   idempotencyKeySchema,
+  type PublicProfile,
   playerCodeSchema,
+  type Trade,
   type TradeableCardsResponse,
   type TradesResponse,
   tradesQuerySchema,
 } from "@leximon/contract";
-import { Hono } from "hono";
+import type { Database } from "@leximon/db";
+import { type Context, Hono } from "hono";
 import { createMiddleware } from "hono/factory";
 import { z } from "zod";
 import type { AppEnv } from "../context";
 import { playerRateLimit } from "../middleware/rate-limit";
 import { requireUser } from "../middleware/require-user";
+import {
+  type BlockResult,
+  isBlockedEitherWay,
+  readPublicProfile,
+  reportPlayer,
+} from "../profile/profile";
 import { decodeTradeCursor, encodeTradeCursor } from "./cursor";
 import { ensurePlayer, findPlayerByCode, tradeableResponse } from "./players";
 import {
@@ -20,7 +30,9 @@ import {
   createTrade,
   listTrades,
   type ResolveAction,
+  readTradeBadges,
   resolveTrade,
+  type TradeRecord,
   toTradeResponse,
 } from "./trades";
 
@@ -31,6 +43,10 @@ const noStore = createMiddleware<AppEnv>(async (c, next) => {
   await next();
   c.header("Cache-Control", "no-store");
 });
+
+async function tradeView(db: Database, record: TradeRecord, now: number): Promise<Trade> {
+  return toTradeResponse(record, await readTradeBadges(db, [record], now), now);
+}
 
 /** Trade offers (D-026). */
 export function tradeRoutes() {
@@ -58,7 +74,7 @@ export function tradeRoutes() {
     });
     switch (result.kind) {
       case "created":
-        return c.json(toTradeResponse(result.trade, now), 201);
+        return c.json(await tradeView(c.var.db, result.trade, now), 201);
       case "player_not_found":
         return c.json({ error: "player_not_found" }, 404);
       case "refused":
@@ -80,9 +96,10 @@ export function tradeRoutes() {
     const now = Date.now();
     const rows = await listTrades(c.var.db, { userId: c.var.userId, box, after, limit });
     const page = rows.slice(0, limit);
+    const badges = await readTradeBadges(c.var.db, page, now);
     const last = page.at(-1);
     return c.json<TradesResponse>({
-      trades: page.map((row) => toTradeResponse(row, now)),
+      trades: page.map((row) => toTradeResponse(row, badges, now)),
       nextCursor:
         rows.length > limit && last !== undefined
           ? encodeTradeCursor({ createdAt: last.createdAt.getTime(), id: last.id })
@@ -103,7 +120,7 @@ export function tradeRoutes() {
     });
     switch (result.kind) {
       case "completed":
-        return c.json(toTradeResponse(result.trade, now));
+        return c.json(await tradeView(c.var.db, result.trade, now));
       case "not_found":
         return c.json({ error: "trade_not_found" }, 404);
       case "refused":
@@ -126,7 +143,7 @@ export function tradeRoutes() {
       });
       switch (result.kind) {
         case "resolved":
-          return c.json(toTradeResponse(result.trade, now));
+          return c.json(await tradeView(c.var.db, result.trade, now));
         case "not_found":
           return c.json({ error: "trade_not_found" }, 404);
         case "refused":
@@ -138,18 +155,19 @@ export function tradeRoutes() {
   return routes;
 }
 
-/** Public player lookups by code (D-026): what another player can offer. */
+/**
+ * Other players: what one can offer, by code (D-026), and public profiles by pseudo (P-05, P-06).
+ */
 export function playerRoutes() {
   const routes = new Hono<AppEnv>();
-  routes.use(requireUser, playerRateLimit, noStore);
 
-  routes.get("/:code/tradeable", async (c) => {
+  routes.get("/:code/tradeable", requireUser, playerRateLimit, noStore, async (c) => {
     const code = playerCodeSchema.safeParse(c.req.param("code"));
     if (!code.success) {
       return c.json({ error: "invalid_request" }, 400);
     }
     const player = await findPlayerByCode(c.var.db, code.data);
-    if (player === null) {
+    if (player === null || (await isBlockedEitherWay(c.var.db, c.var.userId, player.userId))) {
       return c.json({ error: "player_not_found" }, 404);
     }
     const requester = await ensurePlayer(c.var.db, c.var.userId);
@@ -158,5 +176,63 @@ export function playerRoutes() {
     );
   });
 
+  /**
+   * Readable without an account: the public page is rendered by the web server and shared. The
+   * CDN keeps it a minute; a signed-in viewer is counted on their own limit and never sees a
+   * player they blocked or who blocked them, so their answer is not shared.
+   */
+  routes.get("/:pseudo", async (c) => {
+    const pseudo = pseudoParamSchema.safeParse(c.req.param("pseudo"));
+    if (!pseudo.success) {
+      return c.json({ error: "player_not_found" }, 404);
+    }
+    const session = await c.var.auth.api.getSession({ headers: c.req.raw.headers });
+    if (session !== null) {
+      c.set("userId", session.user.id);
+      const limited = await playerRateLimit(c, async () => {});
+      if (limited instanceof Response) return limited;
+    }
+    const result = await readPublicProfile(c.var.db, {
+      pseudo: pseudo.data,
+      viewerId: session?.user.id ?? null,
+      now: Date.now(),
+    });
+    c.header("Cache-Control", session === null ? "public, max-age=60" : "private, no-store");
+    if (result.kind === "not_found") {
+      return c.json({ error: "player_not_found" }, 404);
+    }
+    return c.json<PublicProfile>(result.profile);
+  });
+
+  routes.post("/:pseudo/report", requireUser, playerRateLimit, noStore, async (c) => {
+    const pseudo = pseudoParamSchema.safeParse(c.req.param("pseudo"));
+    if (!pseudo.success) {
+      return c.json({ error: "player_not_found" }, 404);
+    }
+    const result = await reportPlayer(c.var.db, {
+      userId: c.var.userId,
+      pseudo: pseudo.data,
+      now: Date.now(),
+    });
+    return blockResultResponse(c, result);
+  });
+
   return routes;
+}
+
+/** A pseudo in a path: never longer than a pseudo, so nothing heavy reaches the database. */
+const pseudoParamSchema = z.string().min(1).max(60);
+
+/** The answer to a block, an unblock or a report: 204, or the refusal. */
+export function blockResultResponse(c: Context<AppEnv>, result: BlockResult) {
+  switch (result.kind) {
+    case "ok":
+      return c.body(null, 204);
+    case "account_required":
+      return c.json<{ error: BlockRefusal }>({ error: result.kind }, 403);
+    case "player_not_found":
+      return c.json<{ error: BlockRefusal }>({ error: result.kind }, 404);
+    case "self":
+      return c.json<{ error: BlockRefusal }>({ error: result.kind }, 422);
+  }
 }

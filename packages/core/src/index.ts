@@ -1,5 +1,6 @@
 export * from "./account/guest-limit";
 export * from "./account/guest-link";
+export * from "./account/pseudo";
 export * from "./bonus/bonus";
 export * from "./booster/draw";
 export * from "./booster/rarity";

@@ -1,0 +1,40 @@
+/* Sizes scale from the 84 px atelier preview of the maquette: --k is size / 84. */
+.avatar {
+  position: relative;
+  display: grid;
+  flex-shrink: 0;
+  place-items: center;
+  width: var(--size);
+  height: var(--size);
+  overflow: hidden;
+  border-radius: 50%;
+  background: #fbf5e8;
+  color: var(--lx-color-kraft-ink, #5a3d18);
+}
+
+.ink {
+  position: absolute;
+  inset: 11%;
+  background: #2a1d0c;
+  mask-image: var(--ink-src);
+  mask-repeat: no-repeat;
+  mask-position: center;
+  mask-size: contain;
+}
+
+/* The frame worn is drawn outside the medallion, so every frame keeps the same engraving size. */
+.avatar[data-frame="simple"] {
+  box-shadow: 0 0 0 calc(3px * var(--k) + 1px) #bdb6cc;
+}
+
+.avatar[data-frame="gilded"] {
+  box-shadow:
+    0 0 0 calc(5px * var(--k)) #d9a233,
+    0 0 0 calc(8px * var(--k)) #ffe08a;
+}
+
+.avatar[data-frame="ink"] {
+  box-shadow:
+    0 0 0 calc(5px * var(--k)) #2449c4,
+    0 0 calc(18px * var(--k)) #7c9bff;
+}

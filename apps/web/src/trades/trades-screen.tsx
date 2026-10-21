@@ -8,6 +8,7 @@ import {
   NO_OFFER_RECEIVED,
   NO_OFFER_SENT,
   type Notice,
+  playerName,
   refusalMessage,
   splitTrades,
   type TradeBox,
@@ -32,6 +33,7 @@ import { Icon } from "@/ui/icon";
 import { useToast } from "@/ui/toast";
 import ui from "@/ui/ui.module.css";
 import { CardRow, catalogCard } from "./card-thumb";
+import { Counterpart } from "./counterpart";
 import { ProposeTrade } from "./propose-trade";
 import styles from "./trades.module.css";
 
@@ -63,19 +65,24 @@ export function TradesScreen() {
   const [busyTradeId, setBusyTradeId] = useState<string | null>(null);
   // E-06: « Proposer en échange » on a card sheet opens a new offer with that card given.
   const [preset, setPreset] = useState<string | null>(null);
+  // « Proposer un échange » on a public profile (P-06) opens a new offer to that player.
+  const [presetPartner, setPresetPartner] = useState<string | null>(null);
   const now = useNow(30_000);
   const progress = useProgress();
   const { openCard } = useShell();
-  const given = useSearchParams().get("donne");
+  const params = useSearchParams();
+  const given = params.get("donne");
+  const partnerParam = params.get("avec");
   const router = useRouter();
   const pathname = usePathname();
 
   useEffect(() => {
-    if (given === null) return;
-    setPreset(given);
+    if (given === null && partnerParam === null) return;
+    if (given !== null) setPreset(given);
+    if (partnerParam !== null) setPresetPartner(partnerParam);
     setTab("propose");
     router.replace(pathname, { scroll: false });
-  }, [given, router, pathname]);
+  }, [given, partnerParam, router, pathname]);
 
   // Runs again each time the page is shown after a navigation (Activity), so offers stay fresh.
   const load = useCallback(async () => {
@@ -278,6 +285,7 @@ export function TradesScreen() {
           ownCode={profile.playerCode}
           blocked={tooRecent ?? tooLow}
           preset={preset}
+          presetPartner={presetPartner}
           onSent={onSent}
           onShowSent={() => selectTab("outgoing")}
           onOpen={open}
@@ -423,13 +431,13 @@ function ReceivedOffer({
   // Accepting gives cards away for good: one more tap to be sure.
   const [confirming, setConfirming] = useState(false);
   const sides = tradeSides(trade, "incoming");
-  const code = formatPlayerCode(sides.counterpartCode);
+  const name = playerName(sides.counterpart);
   const zoom = (card: { readonly id: string }) => onOpen(card.id);
 
   return (
-    <article className={`${ui.panel} ${styles.offer}`} aria-label={`Offre de ${code}`}>
+    <article className={`${ui.panel} ${styles.offer}`} aria-label={`Offre de ${name}`}>
       <header className={styles.offerHeader}>
-        <p className={styles.counterpart}>{code}</p>
+        <Counterpart player={sides.counterpart} />
         <p className={styles.timeLeft}>
           <Icon name="clock" size={13} />
           {now === 0 ? "" : timeLeftLabel(trade.expiresAt, now)}
@@ -507,9 +515,7 @@ function Sent({
               <li key={trade.id}>
                 <article className={`${ui.panel} ${styles.sentOffer}`}>
                   <div className={styles.sentText}>
-                    <p className={styles.counterpart}>
-                      À {formatPlayerCode(sides.counterpartCode)}
-                    </p>
+                    <Counterpart player={sides.counterpart} prefix="À " />
                     <p className={styles.sentWords}>
                       <em>{wordList(sides.mine, wordOf)}</em> contre{" "}
                       <em>{wordList(sides.theirs, wordOf)}</em>

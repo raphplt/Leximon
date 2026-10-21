@@ -11,6 +11,7 @@ import {
 } from "@leximon/core";
 import { type Database, schema } from "@leximon/db";
 import { and, asc, eq, gte } from "drizzle-orm";
+import { readBadges } from "../profile/profile";
 import { generatePlayerCode } from "./player-code";
 
 const { cards, players, userCards, userProgress, users } = schema;
@@ -132,10 +133,13 @@ export async function tradeableResponse(
 ): Promise<TradeableCardsResponse> {
   const rules = tradeRulesAt(TRADE_SCHEDULE, now);
   const tradeable = await listTradeableCards(db, player.userId, now);
+  const badge = (await readBadges(db, [player.userId], now)).get(player.userId);
+  if (badge === undefined) throw new Error("Player row missing for a player just read");
   return {
     playerCode: player.code,
     cardIds: tradeable.cardIds,
     level: levelOf(player.xp).level,
+    player: badge,
     maxCardsPerSide: isLevelHighEnough(rules, Math.min(player.xp, requester.xp))
       ? maxCardsBetween(rules, player.xp, requester.xp)
       : 0,

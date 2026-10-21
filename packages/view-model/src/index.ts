@@ -7,5 +7,6 @@ export * from "./features";
 export * from "./format";
 export * from "./level";
 export * from "./play";
+export * from "./profile";
 export * from "./rewards";
 export * from "./trades";

@@ -49,6 +49,13 @@ export const USER_REFERENCES = {
   "booster_opens.user_id": { transfer: "moved", abandon: "kept" },
   "booster_open_requests.user_id": { transfer: "moved", abandon: "kept" },
   "players.user_id": { transfer: "moved", abandon: "kept" },
+  // Profile, blocks and reports are for members only: a guest never has any (kept to be safe).
+  "pinned_cards.user_id": { transfer: "kept", abandon: "kept" },
+  "user_preferences.user_id": { transfer: "kept", abandon: "kept" },
+  "user_blocks.blocker_id": { transfer: "kept", abandon: "kept" },
+  "user_blocks.blocked_id": { transfer: "kept", abandon: "kept" },
+  "moderation_reports.reporter_id": { transfer: "kept", abandon: "kept" },
+  "moderation_reports.reported_id": { transfer: "kept", abandon: "kept" },
   "review_logs.user_id": { transfer: "moved", abandon: "kept" },
   "trades.proposer_id": { transfer: "moved", abandon: "pending_cancelled" },
   "trades.recipient_id": { transfer: "moved", abandon: "pending_cancelled" },

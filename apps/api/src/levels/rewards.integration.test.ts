@@ -173,8 +173,10 @@ describe("POST /me/level-rewards/:level (P58)", () => {
       "card_choice",
       "reserve_slot",
       "avatar",
+      "frame",
       "pinned_slot",
     ]);
+    expect(body.rewards).toContainEqual({ kind: "avatar", avatar: "metoposcope" });
     expect(body.wallet.bonusCap).toBe(CAP + 1);
     const wallet = boosterWalletSchema.parse(await (await get(guest, "/me/wallet")).json());
     expect(wallet.bonusCap).toBe(CAP + 1);

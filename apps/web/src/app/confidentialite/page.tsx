@@ -36,6 +36,15 @@ export default function PrivacyPage() {
       </section>
 
       <section className={styles.section}>
+        <h2>Profil</h2>
+        <p>
+          Ton pseudo, ton avatar, ton niveau, tes cartes épinglées et tes chiffres de jeu forment
+          ton profil. Dès le niveau 8, il est visible par un lien, sauf si tu le caches dans les
+          réglages. Quand tu signales un pseudo, on garde qui a signalé qui, pour la modération.
+        </p>
+      </section>
+
+      <section className={styles.section}>
         <h2>Ce qu'on ne fait pas</h2>
         <p>
           Pas de publicité, pas de revente, pas de traceur. Le seul cookie est celui qui te garde
@@ -53,7 +62,9 @@ export default function PrivacyPage() {
       <section className={styles.section}>
         <h2>Tes droits</h2>
         <p>
-          Tu peux voir, corriger ou effacer ce qu'on a sur toi, ou t'opposer à son usage. Écris à{" "}
+          Réglages, puis « Supprimer mon compte » : tout est effacé sur-le-champ. Tes échanges
+          passés restent chez les autres joueurs, signés « Un joueur parti ». Pour le reste, tu peux
+          voir, corriger ou effacer ce qu'on a sur toi, ou t'opposer à son usage. Écris à{" "}
           <a href={`mailto:${CONTACT}`}>{CONTACT}</a>, on répond sous un mois. Si ça ne va pas, tu
           peux saisir la <a href="https://www.cnil.fr/fr/plaintes">CNIL</a>.
         </p>

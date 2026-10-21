@@ -6,6 +6,7 @@ export * from "./challenges";
 export * from "./common";
 export * from "./levels";
 export * from "./me";
+export * from "./profile";
 export * from "./progress";
 export * from "./trades";
 export * from "./waitlist";

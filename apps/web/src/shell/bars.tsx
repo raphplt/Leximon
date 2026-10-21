@@ -9,6 +9,7 @@ import {
 } from "@leximon/view-model";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { Avatar } from "@/components/avatar";
 import { Icon } from "@/ui/icon";
 import { ringStyle, XpBar } from "@/ui/level-bits";
 import { Logo } from "@/ui/logo";
@@ -136,10 +137,14 @@ export function TopBar({
           aria-label="Menu du joueur"
           aria-expanded={menuOpen}
         >
-          <span className={styles.avatar}>
-            <Icon name="profil" size={24} />
-          </span>
-          {view.guest && <span className={styles.avatarName}>Invité</span>}
+          <Avatar
+            avatar={view.profile?.avatar ?? null}
+            frame={view.profile?.frame ?? null}
+            size={40}
+          />
+          {(view.guest || view.profile?.pseudo != null) && (
+            <span className={styles.avatarName}>{view.name}</span>
+          )}
           <Icon name="chevd" size={16} />
         </button>
       </div>
@@ -161,9 +166,7 @@ export function PhoneTopBar({ onMenu }: { readonly onMenu: () => void }) {
         aria-label="Menu du joueur"
         aria-haspopup="dialog"
       >
-        <span className={styles.avatar}>
-          <Icon name="profil" size={22} />
-        </span>
+        <Avatar avatar={view.profile?.avatar ?? null} frame={null} size={38} />
         {progress !== null && (
           <span className={`${ui.display} ${styles.phoneLevel}`}>{progress.level}</span>
         )}

@@ -133,6 +133,8 @@ export const boosterWallets = pgTable(
     reserveSlots: smallint().notNull().default(0),
     /** Day in Paris of the last booster opened: the first one of a day earns more XP (P48). */
     lastOpenedDay: date({ mode: "string" }),
+    /** Days in Paris with at least one booster opened, for the profile (P-03). */
+    daysPlayed: integer().notNull().default(0),
   },
   (table) => [
     check("booster_wallets_stored_check", sql`${table.stored} >= 0`),
@@ -301,14 +303,123 @@ export const boosterOpenRequests = pgTable(
   ],
 );
 
-/** Public identity of a player: the code they share to receive trade offers (D-026). */
-export const players = pgTable("players", {
+/**
+ * Public identity of a player: the code they share to receive trade offers (D-026), and their
+ * profile (interface-v1, P-01 to P-08). Cosmetics are checked against the coffrets claimed when
+ * they are chosen; `null` wears the default (a starting avatar, the latest title).
+ */
+export const players = pgTable(
+  "players",
+  {
+    userId: text()
+      .primaryKey()
+      .references(() => users.id, { onDelete: "cascade" }),
+    /** 8 characters of Crockford base 32, e.g. "K7QF2M9D". Unique, never reused. */
+    code: text().notNull().unique(),
+    createdAt: timestamp({ withTimezone: true }).defaultNow().notNull(),
+    /** As the player wrote it (filtered, N5). Members only; `null` until chosen. */
+    pseudo: text(),
+    /** `pseudoKey` in core: lower case, no accents nor separators. Unique. */
+    pseudoKey: text(),
+    pseudoChangedAt: timestamp({ withTimezone: true }),
+    /** Card id of the engraved avatar worn. */
+    avatar: text(),
+    frame: text(),
+    title: text(),
+    /** P60: public by default; private shows only the pseudo and the avatar to others. */
+    profilePublic: boolean().notNull().default(true),
+  },
+  (table) => [
+    uniqueIndex("players_pseudo_key_idx").on(table.pseudoKey),
+    check(
+      "players_pseudo_check",
+      sql`(${table.pseudo} is null) = (${table.pseudoKey} is null) and (${table.pseudo} is null) = (${table.pseudoChangedAt} is null)`,
+    ),
+  ],
+);
+
+/**
+ * Cards pinned to a profile (P-02): owned cards only. A trade that takes the last copy unpins the
+ * card in the same transaction.
+ */
+export const pinnedCards = pgTable(
+  "pinned_cards",
+  {
+    userId: text()
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    cardId: text()
+      .notNull()
+      .references(() => cards.id),
+    /** Place on the profile, from 0. */
+    position: smallint().notNull(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.userId, table.cardId] }),
+    uniqueIndex("pinned_cards_position_idx").on(table.userId, table.position),
+    check("pinned_cards_position_check", sql`${table.position} >= 0`),
+  ],
+);
+
+/** A player blocked by another (N5): no offer either way, and they disappear from each other. */
+export const userBlocks = pgTable(
+  "user_blocks",
+  {
+    blockerId: text()
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    blockedId: text()
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    createdAt: timestamp({ withTimezone: true }).notNull(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.blockerId, table.blockedId] }),
+    // For "is this player blocked by the other one", read from the blocked side.
+    index("user_blocks_blocked_idx").on(table.blockedId),
+    check("user_blocks_not_self_check", sql`${table.blockerId} <> ${table.blockedId}`),
+  ],
+);
+
+/**
+ * Reports of a player's pseudo (N5), handled in the back office with lot 4. The pseudo is kept as
+ * it was reported: the player may change it in between. One report per reporter and pseudo.
+ */
+export const moderationReports = pgTable(
+  "moderation_reports",
+  {
+    id: uuid().primaryKey(),
+    reporterId: text()
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    reportedId: text()
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    pseudo: text().notNull(),
+    createdAt: timestamp({ withTimezone: true }).notNull(),
+    resolvedAt: timestamp({ withTimezone: true }),
+  },
+  (table) => [
+    uniqueIndex("moderation_reports_once_idx").on(table.reporterId, table.reportedId, table.pseudo),
+    index("moderation_reports_open_idx")
+      .on(table.createdAt)
+      .where(sql`${table.resolvedAt} is null`),
+    index("moderation_reports_reported_idx").on(table.reportedId),
+  ],
+);
+
+/**
+ * What the player wants to be told (R-04). Read by the notifications once the queue exists; a
+ * player without a row gets everything.
+ */
+export const userPreferences = pgTable("user_preferences", {
   userId: text()
     .primaryKey()
     .references(() => users.id, { onDelete: "cascade" }),
-  /** 8 characters of Crockford base 32, e.g. "K7QF2M9D". Unique, never reused. */
-  code: text().notNull().unique(),
-  createdAt: timestamp({ withTimezone: true }).defaultNow().notNull(),
+  notifyReviews: boolean().notNull().default(true),
+  notifyTrades: boolean().notNull().default(true),
+  /** Only when someone names the player in the clan's discussion. */
+  notifyClanMentions: boolean().notNull().default(true),
 });
 
 /**
@@ -375,17 +486,15 @@ export const reviewLogs = pgTable(
 /**
  * Trade offers (D-026): a proposer gives some duplicates to a recipient for some of theirs.
  * Nothing is reserved while the offer waits; acceptance checks and moves everything at once.
+ * A deleted account (R-07) leaves its side `null`: the other player keeps their history. Its
+ * pending offers are cancelled first, so a pending offer always has both players.
  */
 export const trades = pgTable(
   "trades",
   {
     id: uuid().primaryKey(),
-    proposerId: text()
-      .notNull()
-      .references(() => users.id, { onDelete: "cascade" }),
-    recipientId: text()
-      .notNull()
-      .references(() => users.id, { onDelete: "cascade" }),
+    proposerId: text().references(() => users.id, { onDelete: "set null" }),
+    recipientId: text().references(() => users.id, { onDelete: "set null" }),
     status: tradeStatus().notNull().default("pending"),
     idempotencyKey: uuid().notNull(),
     createdAt: timestamp({ withTimezone: true }).notNull(),

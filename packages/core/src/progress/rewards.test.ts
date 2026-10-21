@@ -2,11 +2,13 @@ import { describe, expect, it } from "vitest";
 import { LEVEL_REWARD_SCHEDULE } from "../rules";
 import {
   currentTitle,
+  defaultAvatar,
   isChoosableRarity,
   levelRewardRulesAt,
   levelRewards,
   rewardBoosters,
   unclaimedLevels,
+  wardrobe,
 } from "./rewards";
 
 const rules = levelRewardRulesAt(LEVEL_REWARD_SCHEDULE, Date.UTC(2026, 9, 21));
@@ -59,6 +61,46 @@ describe("levelRewards (P58)", () => {
     }
     expect(kinds(60)).toEqual(["bonus_booster", "avatar"]);
     expect(kinds(70)).toEqual(["bonus_booster"]);
+  });
+});
+
+describe("cosmetics (P58, P49)", () => {
+  const later = levelRewardRulesAt(LEVEL_REWARD_SCHEDULE, Date.UTC(2026, 9, 22));
+
+  it("names the avatar of each level that gives one", () => {
+    expect(levelRewards(rules, 10)).toContainEqual({ kind: "avatar", avatar: "metoposcope" });
+    expect(levelRewards(rules, 60)).toContainEqual({ kind: "avatar", avatar: "soupette" });
+    expect(levelRewards(rules, 200)).toContainEqual({ kind: "avatar" });
+  });
+
+  it("adds a frame at levels 10 and 20 from the lot 3 rules on, never before", () => {
+    expect(kinds(10)).not.toContain("frame");
+    expect(levelRewards(later, 10)).toContainEqual({ kind: "frame", frame: "gilded" });
+    expect(levelRewards(later, 20)).toContainEqual({ kind: "frame", frame: "ink" });
+    expect(levelRewards(later, 30).map((reward) => reward.kind)).not.toContain("frame");
+  });
+
+  it("dresses a player with the starting set and their claimed coffrets", () => {
+    const claimed = [10, 15, 20].map((level) => ({ level, rewards: levelRewards(later, level) }));
+    const worn = wardrobe(later, claimed);
+    expect([...worn.avatars]).toEqual([...later.startingAvatars, "metoposcope", "fanfreluche"]);
+    expect([...worn.frames]).toEqual(["simple", "gilded", "ink"]);
+    expect([...worn.titles]).toEqual(["Fine plume"]);
+    expect(worn.pinnedSlots).toBe(5);
+    expect(wardrobe(later, []).pinnedSlots).toBe(3);
+  });
+
+  it("reads an avatar claimed before avatars were named from the rules", () => {
+    const worn = wardrobe(later, [{ level: 30, rewards: [{ kind: "avatar" }] }]);
+    expect(worn.avatars.has("cuistre")).toBe(true);
+  });
+
+  it("gives every player a starting avatar from their code", () => {
+    const avatar = defaultAvatar(later, "K7QF2M9D");
+    expect(later.startingAvatars).toContain(avatar);
+    expect(defaultAvatar(later, "K7QF2M9D")).toBe(avatar);
+    const spread = new Set(["AAAAAAAA", "K7QF2M9D", "RAPH7K2Q", "ZZZZZZZZ", "12345678"]);
+    expect(new Set([...spread].map((code) => defaultAvatar(later, code))).size).toBeGreaterThan(1);
   });
 });
 

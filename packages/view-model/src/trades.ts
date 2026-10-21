@@ -1,4 +1,5 @@
 import {
+  type PlayerBadge,
   playerCodeSchema,
   type Trade,
   type TradeRefusalCode,
@@ -36,6 +37,14 @@ export function formatPlayerCode(code: string): string {
   return code.length === 8 ? `${code.slice(0, 4)} ${code.slice(4)}` : code;
 }
 
+/** How a player reads in a list: their pseudo, else their code; « Un joueur parti » once gone. */
+export function playerName(badge: Pick<PlayerBadge, "code" | "pseudo"> | null): string {
+  if (badge === null) return DEPARTED_PLAYER;
+  return badge.pseudo ?? formatPlayerCode(badge.code);
+}
+
+export const DEPARTED_PLAYER = "Un joueur parti";
+
 /** A pending offer whose deadline has passed is expired, even before the server says so. */
 export function effectiveStatus(trade: Trade, now: number): TradeStatus {
   return trade.status === "pending" && Date.parse(trade.expiresAt) <= now
@@ -58,14 +67,26 @@ export function statusLabel(status: TradeStatus): string {
 /** The offer seen from the player: what they would give, what they would get, and with whom. */
 export interface TradeSides {
   readonly counterpartCode: string;
+  /** `null` once that player deleted their account (R-07). */
+  readonly counterpart: PlayerBadge | null;
   readonly mine: readonly string[];
   readonly theirs: readonly string[];
 }
 
 export function tradeSides(trade: Trade, box: TradeBox): TradeSides {
   return box === "incoming"
-    ? { counterpartCode: trade.proposerCode, mine: trade.want, theirs: trade.give }
-    : { counterpartCode: trade.recipientCode, mine: trade.give, theirs: trade.want };
+    ? {
+        counterpartCode: trade.proposerCode,
+        counterpart: trade.proposer,
+        mine: trade.want,
+        theirs: trade.give,
+      }
+    : {
+        counterpartCode: trade.recipientCode,
+        counterpart: trade.recipient,
+        mine: trade.give,
+        theirs: trade.want,
+      };
 }
 
 /** Offers still awaiting an answer first, oldest deadline first; then the history, newest first. */
@@ -229,8 +250,8 @@ export function wordList(cardIds: readonly string[], wordOf: (cardId: string) =>
 }
 
 /**
- * One line of the history: « Conclue avec K7QP 2MXA : baloise contre talle. », the player's
- * cards first.
+ * One line of the history: « Conclue avec Raph : baloise contre talle. », the player's cards
+ * first.
  */
 export function historyLine(
   trade: Trade,
@@ -239,5 +260,5 @@ export function historyLine(
   wordOf: (cardId: string) => string,
 ): string {
   const sides = tradeSides(trade, box);
-  return `${statusLabel(effectiveStatus(trade, now))} avec ${formatPlayerCode(sides.counterpartCode)} : ${wordList(sides.mine, wordOf)} contre ${wordList(sides.theirs, wordOf)}.`;
+  return `${statusLabel(effectiveStatus(trade, now))} avec ${playerName(sides.counterpart)} : ${wordList(sides.mine, wordOf)} contre ${wordList(sides.theirs, wordOf)}.`;
 }

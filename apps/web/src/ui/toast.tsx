@@ -1,6 +1,14 @@
 "use client";
 
-import { createContext, type ReactNode, useCallback, useContext, useRef, useState } from "react";
+import {
+  createContext,
+  type ReactNode,
+  useCallback,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import styles from "./toast.module.css";
 
 /** How long a toast stays (C-07). */
@@ -14,6 +22,17 @@ export function ToastProvider({ children }: { readonly children: ReactNode }) {
   // A new message restarts the clock, so that each one is readable.
   const [key, setKey] = useState(0);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const region = useRef<HTMLDivElement>(null);
+
+  // The region is a popover, in the top layer: a toast said from a dialog (settings, the atelier's
+  // pseudo) shows above it. Shown again on each message, to sit above a dialog opened since.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: `key` changes with each message
+  useEffect(() => {
+    const element = region.current;
+    if (element === null || typeof element.showPopover !== "function") return;
+    if (element.matches(":popover-open")) element.hidePopover();
+    element.showPopover();
+  }, [key]);
 
   const say = useCallback((text: string) => {
     if (timer.current !== null) clearTimeout(timer.current);
@@ -25,7 +44,7 @@ export function ToastProvider({ children }: { readonly children: ReactNode }) {
   return (
     <ToastContext.Provider value={say}>
       {children}
-      <div className={styles.region} role="status" aria-live="polite">
+      <div ref={region} popover="manual" className={styles.region} role="status" aria-live="polite">
         {message !== null && (
           <p key={key} className={styles.toast}>
             {message}

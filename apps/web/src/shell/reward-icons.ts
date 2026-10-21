@@ -10,6 +10,7 @@ export const REWARD_ICONS: Readonly<Record<RewardIcon | "lock", IconName>> = {
   carte: "carte",
   plus: "plus",
   profil: "profil",
+  cadre: "palette",
   pin: "pin",
   lock: "lock",
 };

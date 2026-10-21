@@ -1,0 +1,61 @@
+.muted {
+  margin: 0;
+  color: var(--lx-color-text-muted);
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.rowName {
+  flex: 1;
+  min-width: 0;
+  font-weight: 800;
+  overflow-wrap: anywhere;
+}
+
+.warning {
+  margin: 0 0 18px;
+  line-height: 1.5;
+}
+
+.buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+/* A destructive button: the danger colour, never the yellow of a main action. */
+.destroy {
+  background: var(--lx-color-danger);
+  box-shadow: 0 4px 0 #b45a42;
+  color: #2a0d05;
+  white-space: normal;
+  text-align: center;
+}
+
+.destroy:hover {
+  background: #ffb39c;
+}
+
+.error {
+  margin: 14px 0 0;
+  color: var(--lx-color-danger);
+  font-weight: 700;
+}
+
+/* Centred dialogs draw their own margins. */
+.pad {
+  padding: 4px 26px 26px;
+}

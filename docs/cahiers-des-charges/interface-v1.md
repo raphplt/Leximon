@@ -68,7 +68,7 @@ La maquette montre l'intention, pas la finition. Chaque écran gagne en plus :
 | ID | Élément | Ce qu'il faut | Serveur | Lot | Web | Mobile |
 |---|---|---|---|---|---|---|
 | C-01 | Barre du haut (web) | Logo, cinq entrées avec pastilles, stock « 4/6 · 18 min », bonus « +2 bonus », courrier, anneau de niveau, avatar avec menu | `GET /me/progress`, portefeuille | 1 | fait | — |
-| C-02 | Menu de l'avatar | Mon profil, Joutes (Niv. 15), Atelier, Chemin des niveaux, Réglages. Fermé par Échap et clic à côté | — | 1 | en partie (profil et atelier au lot 3) | à faire |
+| C-02 | Menu de l'avatar | Mon profil, Joutes (Niv. 15), Atelier, Chemin des niveaux, Réglages. Fermé par Échap et clic à côté | — | 1 | fait | à faire |
 | C-03 | Onglets du bas (mobile) | Cinq onglets, Jouer en relief au centre, pastilles, cadenas sur les onglets fermés | — | 5 | — | à faire |
 | C-04 | Bandeau du haut (mobile) | Avatar avec anneau et niveau, barre d'XP, stock, bonus, courrier | idem C-01 | 5 | — | à faire |
 | C-05 | Panneau latéral (web), fiche montante (mobile) | Titre, croix, défilement interne, focus piégé, retour du focus à la fermeture | — | 1 | fait | à faire |
@@ -114,7 +114,7 @@ La maquette montre l'intention, pas la finition. Chaque écran gagne en plus :
 | N-07 | Sachet garni | Un sachet bonus marqué « garni » dans la réserve, avec au moins une Rare au tirage | garantie de tirage | 1 | fait | à faire |
 | N-08 | Carte au choix | Écran de choix parmi les Courantes et Peu courantes qui manquent, par collection, avec recherche ; contenu connu, aucun hasard | `POST /me/card-choices` ; pas de GET, le client tire les candidates du catalogue et de l'album | 1 | fait | à faire |
 | N-09 | Réserve agrandie | Le plafond affiché suit (« 3 / 12 bonus ») | portefeuille | 1 | fait | à faire |
-| N-10 | Titre, avatar, place épinglée | Rangés dans l'atelier ; le coffret le dit | lot 3 | 3 | à faire | à faire |
+| N-10 | Titre, avatar, place épinglée | Rangés dans l'atelier ; le coffret le dit | lot 3 | 3 | fait (place épinglée, avatar, cadre et titre) | à faire |
 
 ### A · Album et carte
 
@@ -127,7 +127,7 @@ La maquette montre l'intention, pas la finition. Chaque écran gagne en plus :
 | A-05 | Grille | Cartes possédées avec « ×3 » et point de maîtrise ; emplacements « ? » des manquantes ; tuile « 327 mots à trouver » qui mène à Jouer | idem | 2 | fait | à faire |
 | A-06 | Album vide, recherche sans résultat | « Rien de ce côté. Pas pour longtemps. » | — | 2 | fait | à faire |
 | A-07 | Fiche d'une carte | Grande carte avec reflets, rareté, fréquence en chiffres (« Un mot imprimé sur 17 milliards. »), maîtrise en trois étapes avec ce qu'il reste, exemplaires et doubles, collection, origine, crédit de la gravure | existe en partie | 2 | fait | à faire |
-| A-08 | Actions de la fiche | « Réviser ce mot », « Proposer en échange » (s'il y a un double et le niveau 5), « Épingler », « Partager » | — | 2 | en partie (« Épingler » au lot 3, avec le profil) | à faire |
+| A-08 | Actions de la fiche | « Réviser ce mot », « Proposer en échange » (s'il y a un double et le niveau 5), « Épingler », « Partager » | — | 2 | fait | à faire |
 | A-09 | Prononciation | Bouton pour entendre le mot, gratuit (P57) ; notation phonétique selon la décision en attente. À l'ouverture, le mot est dit quand la carte se pose (coupé avec le son, O-06) et un bouton le rejoue | fichiers audio du catalogue (D-032) | 2 | fait (notation phonétique affichée à côté de la carte, à confirmer) | à faire |
 | A-10 | Partage | Texte selon voix.md (« Talpinette. Introuvable dans les livres d'aujourd'hui. Moi, je l'ai. ») ; feuille de partage native sur mobile ; image de partage par la file (plus tard) | — | 2 | en partie (texte et feuille de partage ; image de partage plus tard) | à faire |
 
@@ -148,7 +148,7 @@ La maquette montre l'intention, pas la finition. Chaque écran gagne en plus :
 |---|---|---|---|---|---|---|
 | E-01 | En-tête | « Échanges », « Ton code K7QP2MXA » à copier | existe | 2 | fait | à faire |
 | E-02 | Onglets | Reçues (N), Envoyées (N), Nouvelle offre | existe | 2 | fait | à faire |
-| E-03 | Offre reçue | Avatar, pseudo, niveau, « Expire dans 41 h », « Tu reçois », « Tu donnes », « Accepter l'échange », « Refuser » ; toucher une carte ouvre sa fiche | existe | 2 | en partie (code joueur à la place de l'avatar, du pseudo et du niveau : profil au lot 3) | à faire |
+| E-03 | Offre reçue | Avatar, pseudo, niveau, « Expire dans 41 h », « Tu reçois », « Tu donnes », « Accepter l'échange », « Refuser » ; toucher une carte ouvre sa fiche | existe | 2 | fait | à faire |
 | E-04 | Offres envoyées et historique | « En attente · expire dans 60 h », « Annuler l'offre », historique des échanges, « 10 offres par 24 h. Une offre expire après 72 h. » | existe | 2 | fait | à faire |
 | E-05 | Nouvelle offre | Code joueur, joueur trouvé (pseudo, niveau), tes doubles, ses doubles avec « Il te manque », 1 carte par côté avant le niveau 10 et 3 ensuite (P59), Épiques et Légendaires grisées « Échangeable dans 7 j » (P35), « Vérifier l'offre » puis « Envoyer l'offre » | `TRADE_SCHEDULE` (P59), limite revérifiée à l'acceptation | 1 | fait | à faire |
 | E-06 | Proposer depuis la fiche d'une carte | Ouvre la nouvelle offre avec la carte déjà choisie | — | 2 | fait | à faire |
@@ -178,28 +178,28 @@ La maquette ne montre que le clan du joueur. Les écrans K-08 à K-13 sont à de
 
 | ID | Élément | Ce qu'il faut | Serveur | Lot | Web | Mobile |
 |---|---|---|---|---|---|---|
-| P-01 | En-tête du profil | Bannière, grand avatar avec son cadre, pseudo, titre, niveau, clan, code joueur, membre depuis, « Atelier », « Partager » | `GET /players/{pseudo}` | 3 | à faire | à faire |
-| P-02 | Cartes épinglées | 3 à 6 places (P58), place vide qui mène à l'album | `PUT /me/pinned-cards` | 3 | à faire | à faire |
-| P-03 | En chiffres | Mots sur 1 561, Légendaires, mots dorés, échanges conclus, collections complètes, jours de jeu | calcul à la lecture | 3 | à faire | à faire |
-| P-04 | Profil avant le niveau 8 | « Ton profil devient public au niveau 8. D'ici là, toi seul le vois. » | P59 | 3 | à faire | à faire |
-| P-05 | Profil d'un autre joueur | Même page sans les actions personnelles, avec « Proposer un échange » et « Signaler » | idem | 3 | à faire | à faire |
-| P-06 | Page publique partageable | `/joueur/{pseudo}` rendue par le serveur, image de partage | idem | 3 | à faire | — |
-| P-07 | Atelier | Onglets Avatars gravés, Dos de carte, Cadres, Titres ; chaque objet : porté, à mettre, « Niveau 20 », ou réservé au mécène | `PATCH /me/profile` | 3 | à faire | à faire |
-| P-08 | Pseudo | Choix et changement (une fois par mois), filtré (N5) | idem | 3 | à faire | à faire |
+| P-01 | En-tête du profil | Bannière, grand avatar avec son cadre, pseudo, titre, niveau, clan, code joueur, membre depuis, « Atelier », « Partager » | `GET /players/{pseudo}` | 3 | fait (sans le clan, pas encore construit) | à faire |
+| P-02 | Cartes épinglées | 3 à 6 places (P58), place vide qui mène à l'album | `PUT /me/pinned-cards` | 3 | fait | à faire |
+| P-03 | En chiffres | Mots sur 1 561, Légendaires, mots dorés, échanges conclus, collections complètes, jours de jeu | calcul à la lecture | 3 | fait | à faire |
+| P-04 | Profil avant le niveau 8 | « Ton profil devient public au niveau 8. D'ici là, toi seul le vois. » | P59 | 3 | fait | à faire |
+| P-05 | Profil d'un autre joueur | Même page sans les actions personnelles, avec « Proposer un échange » et « Signaler » | idem | 3 | fait (« Signaler le pseudo » et « Bloquer », compte inscrit) | à faire |
+| P-06 | Page publique partageable | `/joueur/{pseudo}` rendue par le serveur, image de partage | idem | 3 | fait (image de partage générée à la demande par Next, sans la file) | — |
+| P-07 | Atelier | Onglets Avatars gravés, Dos de carte, Cadres, Titres ; chaque objet : porté, à mettre, « Niveau 20 », ou réservé au mécène | `PATCH /me/profile` | 3 | fait (avatars, cadres, titres ; dos de carte plus tard, pas encore de mécène) | à faire |
+| P-08 | Pseudo | Choix et changement (une fois par mois), filtré (N5) | idem | 3 | fait (P61) | à faire |
 
 ### R · Réglages, courrier, compte
 
 | ID | Élément | Ce qu'il faut | Serveur | Lot | Web | Mobile |
 |---|---|---|---|---|---|---|
-| R-01 | Courrier | Liste : offre reçue, coffret à ouvrir, mot qui s'échappe, objectif de clan, offre acceptée ; non lus surlignés ; chaque ligne mène à son écran | notifications par la file | 3 | en partie (tiré de l'état : coffrets, carte au choix, offres reçues) | à faire |
+| R-01 | Courrier | Liste : offre reçue, coffret à ouvrir, mot qui s'échappe, objectif de clan, offre acceptée ; non lus surlignés ; chaque ligne mène à son écran | notifications par la file | 3 | en partie (tiré de l'état : coffrets, carte au choix, offres reçues ; la file reste à faire) | à faire |
 | R-02 | Notifications push | Mots qui s'échappent, offres, mentions dans le clan ; demande d'autorisation au bon moment, pas au lancement | file, Expo push | 3 | — | à faire |
 | R-03 | Réglages · Jeu | Son, Vibration | local | 1 | fait | à faire |
-| R-04 | Réglages · Notifications | Mots qui s'échappent, Offres d'échange, Discussion du clan (seulement quand on te cite) | serveur | 3 | à faire | à faire |
-| R-05 | Réglages · Profil | Profil public, Pseudo, Joueurs bloqués (et débloquer) | serveur | 3 | à faire | à faire |
+| R-04 | Réglages · Notifications | Mots qui s'échappent, Offres d'échange, Discussion du clan (seulement quand on te cite) | serveur | 3 | fait (préférences gardées ; rien n'est envoyé tant que la file n'existe pas) | à faire |
+| R-05 | Réglages · Profil | Profil public, Pseudo, Joueurs bloqués (et débloquer) | serveur | 3 | fait | à faire |
 | R-06 | Réglages · Compte | Adresse e-mail, Tes données, Me déconnecter ; l'inscription de l'invité (écran `/compte` existant) | existe en partie | 1 | fait | à faire |
-| R-07 | Supprimer mon compte | Dans l'app, exigé par l'App Store ; conséquence dans le bouton | à faire | 3 | à faire | à faire |
+| R-07 | Supprimer mon compte | Dans l'app, exigé par l'App Store ; conséquence dans le bouton | à faire | 3 | fait (P63) | à faire |
 | R-08 | Sanction et contestation | Message motivé d'une sanction, voie de contestation (DSA, N5) | admin | 4 | à faire | à faire |
-| R-09 | Contact et mentions | contact@leximon.fr, crédits (Littré, Ngram, gravures), conditions d'utilisation, charte de la discussion | — | 3 | à faire | à faire |
+| R-09 | Contact et mentions | contact@leximon.fr, crédits (Littré, Ngram, gravures), conditions d'utilisation, charte de la discussion | — | 3 | en partie (contact et crédits sur `/mentions` ; conditions d'utilisation et charte à écrire) | à faire |
 
 ### X · Propositions
 
@@ -231,7 +231,7 @@ Web d'abord, décidé par le propriétaire le 2026-10-21. Le mobile reprend ensu
 | 0 | Ce cahier, P58 et P59, D-033, squelette de `packages/view-model`, composants de base du web (fait) | — |
 | 1 | Coque web, écran Jouer, chemin des niveaux et coffrets, toutes les récompenses de P58 sauf les cosmétiques, fonctionnalités par niveau (P59) côté serveur et web, échanges à 1 puis 3 cartes (web fait le 2026-10-21 ; clans et joutes affichent un écran « pas encore construit » une fois le niveau atteint) | — |
 | 2 | Album, fiche de carte, défis et échanges repris sur la maquette ; prononciation dès que les fichiers audio sont publiés | lot 1 |
-| 3 | Profil public, atelier et cosmétiques, réglages complets, courrier, suppression du compte | inscription (fournisseur d'e-mails), file de tâches (D-005) |
+| 3 | Profil public, atelier et cosmétiques, réglages complets, courrier, suppression du compte (web fait le 2026-10-21, sans la file : préférences de notification gardées mais rien n'est envoyé, courrier tiré de l'état, image de partage générée à la demande ; restent les conditions d'utilisation et la charte) | inscription (fournisseur d'e-mails), file de tâches (D-005) |
 | 4 | Clans complets avec modération, outil de traitement des signalements dans `/admin` | lot 3, conditions d'utilisation et charte |
 | 5 | Mobile : base Expo (polices, onglets, fiches, gestes, push), puis tous les écrans dans l'ordre des lots 1 à 4 | lots 1 à 4 pour chaque écran |
 | 6 | Propositions retenues (X-01 à X-03) | décisions du propriétaire |

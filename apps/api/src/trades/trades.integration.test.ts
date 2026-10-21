@@ -152,6 +152,7 @@ describe("GET /players/:code/tradeable", () => {
       playerCode: other.code,
       cardIds: [COMMON_1, COMMON_2, "test-b-epic-1"],
       level: 12,
+      player: expect.objectContaining({ code: other.code, level: 12 }),
       // The lower level of the two decides (P59): one card for one below level 10.
       maxCardsPerSide: 1,
       held: [

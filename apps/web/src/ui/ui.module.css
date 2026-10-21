@@ -490,3 +490,23 @@ a.chip:hover {
     animation: none;
   }
 }
+
+/* --- Text field --- */
+
+.field {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 52px;
+  padding: 0 18px;
+  border: 2px solid var(--lx-color-outline);
+  border-radius: var(--lx-radius-pill);
+  background: var(--lx-color-background);
+  color: var(--lx-color-text);
+  font: inherit;
+  font-size: 17px;
+}
+
+.field:focus-visible {
+  border-color: var(--lx-color-focus);
+  outline: none;
+}

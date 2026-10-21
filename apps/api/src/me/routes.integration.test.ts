@@ -221,6 +221,7 @@ describe("GET /me/tradeable", () => {
       playerCode: profile.playerCode,
       cardIds: ["test-a-epic-1", "test-a-rare-1", "test-b-common-1"],
       level: 1,
+      player: expect.objectContaining({ code: profile.playerCode, pseudo: null, level: 1 }),
       maxCardsPerSide: 0,
       held: [
         {

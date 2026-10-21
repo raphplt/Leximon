@@ -6,6 +6,7 @@ import {
   copiesLabel,
   frequencyLine,
   masteryView,
+  pinButtonLabel,
   reviewState,
   shareText,
 } from "@leximon/view-model";
@@ -21,6 +22,7 @@ import { useNarrow } from "@/lib/use-narrow";
 import { useNow } from "@/lib/use-now";
 import { ownedCards, wordMemory } from "@/player/collection";
 import { useShared } from "@/player/resource";
+import { useProfileActions } from "@/profile/use-profile-actions";
 import { useProgress } from "@/progress/use-progress";
 import { ButtonLink } from "@/ui/button";
 import { Dialog } from "@/ui/dialog";
@@ -77,6 +79,7 @@ function SheetBody({
   const narrow = useNarrow();
   const light = useHoloLight(true);
   const toast = useToast();
+  const pins = useProfileActions();
 
   const quantity = owned?.get(card.id) ?? 0;
   const word = memory?.get(card.id);
@@ -158,6 +161,18 @@ function SheetBody({
               <ButtonLink href={`/echanges?donne=${card.id}`} variant="secondary" onClick={onClose}>
                 Proposer en échange
               </ButtonLink>
+            )}
+            {pins.profile?.member === true && (
+              <button
+                type="button"
+                className={ui.ghost}
+                onClick={() => void pins.togglePin(card.id)}
+                disabled={pins.busy}
+                aria-pressed={pins.isPinned(card.id)}
+              >
+                <Icon name="pin" size={17} />
+                {pinButtonLabel(pins.isPinned(card.id))}
+              </button>
             )}
             <button type="button" className={ui.ghost} onClick={() => void share()}>
               <Icon name="share" size={17} />

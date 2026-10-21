@@ -1,7 +1,11 @@
 .region {
   position: fixed;
-  left: 50%;
-  bottom: 32px;
+  inset: auto auto 32px 50%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  overflow: visible;
   z-index: 80;
   transform: translateX(-50%);
   width: max-content;
@@ -25,7 +29,7 @@
 /* Above the bottom tabs of the phone shell. */
 @media (max-width: 759px) {
   .region {
-    bottom: 100px;
+    inset: auto auto 100px 50%;
   }
 }
 

@@ -2,8 +2,12 @@ import {
   type AccountResponse,
   accountResponseSchema,
   authErrorResponseSchema,
+  type BlockRefusal,
+  type BlocksResponse,
   type BoosterSource,
   type BoosterWalletResponse,
+  blockRefusalSchema,
+  blocksResponseSchema,
   boosterStockEmptySchema,
   boosterWalletSchema,
   type CardChoiceRefusal,
@@ -21,7 +25,9 @@ import {
   claimLevelRewardResponseSchema,
   claimRefusalSchema,
   type DailyChallengeResponse,
+  type DeleteAccountRefusal,
   dailyChallengeResponseSchema,
+  deleteAccountRefusalSchema,
   type EmailSignInRequest,
   errorResponseSchema,
   IDEMPOTENCY_KEY_HEADER,
@@ -39,10 +45,16 @@ import {
   type OwnedCardsResponse,
   openBoosterResponseSchema,
   ownedCardsResponseSchema,
+  type Preferences,
+  type ProfileRefusal,
   type ProfileResponse,
   type ProgressResponse,
+  type PublicProfile,
+  preferencesSchema,
+  profileRefusalSchema,
   profileResponseSchema,
   progressResponseSchema,
+  publicProfileSchema,
   signupRequiredSchema,
   type Trade,
   type TradeableCardsResponse,
@@ -52,6 +64,7 @@ import {
   tradeRefusalSchema,
   tradeSchema,
   tradesResponseSchema,
+  type UpdateProfileRequest,
 } from "@leximon/contract";
 import type { z } from "zod";
 
@@ -279,6 +292,128 @@ export async function fetchProfile(): Promise<ProfileResponse> {
   return parse(response, profileResponseSchema);
 }
 
+/** The player's own profile when a session exists, `null` otherwise: a visitor stays a visitor. */
+export async function fetchProfileIfSignedIn(): Promise<ProfileResponse | null> {
+  const response = await send("/me/profile");
+  if (response.status === 401) return null;
+  if (!response.ok) throw new ApiError("profile_unavailable", response.status);
+  return parse(response, profileResponseSchema);
+}
+
+/** Reads `{ error }` when it is one of the refusals `schema` knows, else `null`. */
+async function refusal<T>(response: Response, schema: z.ZodType<T>): Promise<T | null> {
+  const body = errorResponseSchema.safeParse(await response.json().catch(() => null));
+  const reason = schema.safeParse(body.success ? body.data.error : null);
+  return reason.success ? reason.data : null;
+}
+
+export type ProfileResult =
+  | { readonly kind: "ok"; readonly profile: ProfileResponse }
+  | { readonly kind: "refused"; readonly reason: ProfileRefusal };
+
+async function profileResult(response: Response, failure: string): Promise<ProfileResult> {
+  if (response.ok) return { kind: "ok", profile: await parse(response, profileResponseSchema) };
+  if ([403, 409, 422].includes(response.status)) {
+    const reason = await refusal(response, profileRefusalSchema);
+    if (reason !== null) return { kind: "refused", reason };
+  }
+  throw new ApiError(failure, response.status);
+}
+
+/** Pseudo, avatar, frame, title, visibility (P-04, P-07, R-05): only the fields sent change. */
+export async function updateProfile(changes: UpdateProfileRequest): Promise<ProfileResult> {
+  const response = await sendAsPlayer("/me/profile", {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(changes),
+  });
+  return profileResult(response, "profile_not_saved");
+}
+
+/** The pinned cards, all of them, in their order (A-08). */
+export async function setPinnedCards(cardIds: readonly string[]): Promise<ProfileResult> {
+  const response = await sendAsPlayer("/me/pinned-cards", {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ cardIds }),
+  });
+  return profileResult(response, "pins_not_saved");
+}
+
+/** A public profile by pseudo (P-05); `null` when there is none to show. */
+export async function fetchPublicProfile(pseudo: string): Promise<PublicProfile | null> {
+  const response = await send(`/players/${encodeURIComponent(pseudo)}`);
+  if (response.status === 404) return null;
+  if (!response.ok) throw new ApiError("profile_unavailable", response.status);
+  return parse(response, publicProfileSchema);
+}
+
+export type BlockResult =
+  | { readonly kind: "ok" }
+  | { readonly kind: "refused"; readonly reason: BlockRefusal };
+
+async function blockResult(response: Response, failure: string): Promise<BlockResult> {
+  if (response.ok) return { kind: "ok" };
+  if ([403, 404, 422].includes(response.status)) {
+    const reason = await refusal(response, blockRefusalSchema);
+    if (reason !== null) return { kind: "refused", reason };
+  }
+  throw new ApiError(failure, response.status);
+}
+
+export async function fetchBlocks(): Promise<BlocksResponse["players"]> {
+  const response = await sendAsPlayer("/me/blocks");
+  if (!response.ok) throw new ApiError("blocks_unavailable", response.status);
+  return (await parse(response, blocksResponseSchema)).players;
+}
+
+/** Blocks or unblocks a player by code (P-06); both are idempotent on the server. */
+export async function setBlocked(playerCode: string, blocked: boolean): Promise<BlockResult> {
+  const response = await sendAsPlayer(`/me/blocks/${encodeURIComponent(playerCode)}`, {
+    method: blocked ? "PUT" : "DELETE",
+  });
+  return blockResult(response, "block_failed");
+}
+
+/** Reports a pseudo to the moderation (P-08). */
+export async function reportPlayer(pseudo: string): Promise<BlockResult> {
+  const response = await sendAsPlayer(`/players/${encodeURIComponent(pseudo)}/report`, {
+    method: "POST",
+  });
+  return blockResult(response, "report_failed");
+}
+
+export async function fetchPreferences(): Promise<Preferences> {
+  const response = await sendAsPlayer("/me/preferences");
+  if (!response.ok) throw new ApiError("preferences_unavailable", response.status);
+  return parse(response, preferencesSchema);
+}
+
+export async function updatePreferences(changes: Partial<Preferences>): Promise<Preferences> {
+  const response = await sendAsPlayer("/me/preferences", {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(changes),
+  });
+  if (!response.ok) throw new ApiError("preferences_not_saved", response.status);
+  return parse(response, preferencesSchema);
+}
+
+export type DeleteAccountResult =
+  | { readonly kind: "deleted" }
+  | { readonly kind: "refused"; readonly reason: DeleteAccountRefusal };
+
+/** Erases the account for good (R-07). The server signs the player out in the same answer. */
+export async function deleteAccount(): Promise<DeleteAccountResult> {
+  const response = await send("/me/account", { method: "DELETE" });
+  if (response.ok) return { kind: "deleted" };
+  if (response.status === 409) {
+    const reason = await refusal(response, deleteAccountRefusalSchema);
+    if (reason !== null) return { kind: "refused", reason };
+  }
+  throw new ApiError("account_not_deleted", response.status);
+}
+
 /** Cards a player can give now: mine without `playerCode`. `null` when the code is unknown. */
 export async function fetchTradeable(playerCode?: string): Promise<TradeableCardsResponse | null> {
   const path =
@@ -310,9 +445,8 @@ export type TradeResult =
 async function tradeResult(response: Response, failure: string): Promise<TradeResult> {
   if (response.ok) return { kind: "ok", trade: await parse(response, tradeSchema) };
   if ([404, 409, 422].includes(response.status)) {
-    const body = errorResponseSchema.safeParse(await response.json().catch(() => null));
-    const reason = tradeRefusalSchema.safeParse(body.success ? body.data.error : null);
-    if (reason.success) return { kind: "refused", reason: reason.data };
+    const reason = await refusal(response, tradeRefusalSchema);
+    if (reason !== null) return { kind: "refused", reason };
   }
   throw new ApiError(failure, response.status);
 }

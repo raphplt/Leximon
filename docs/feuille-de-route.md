@@ -6,7 +6,7 @@ Où en est Leximon, ce qui reste avant la bêta publique (novembre 2026) et ce q
 
 ## En une phrase
 
-Le cœur du jeu tourne de bout en bout sur le web : on ouvre un pli, on révèle ses cartes, on les retrouve dans l'album, on les fait monter de niveau par des défis qui rapportent des plis bonus, et on les échange. Il lit le catalogue de lancement (1 561 cartes, trois collections), encore sans gravures, et rien n'est en ligne.
+Le cœur du jeu tourne de bout en bout sur le web : on ouvre un pli, on révèle ses cartes, on les retrouve dans l'album, on les fait monter de niveau par des défis qui rapportent des plis bonus, on les échange et on les épingle sur son profil public. Il lit le catalogue de lancement (1 561 cartes, trois collections), encore sans gravures, et rien n'est en ligne.
 
 ## État par chantier
 
@@ -44,7 +44,7 @@ Arbitrés par le propriétaire le 2026-10-20 : jeu grand public (B2C), pas de ve
 | Étape | Statut | Détail |
 |---|---|---|
 | Niveau de compte | En cours | P48 : XP gagnée dans la transaction de chaque action (pli, défi, échange), niveau calculé, badge dans la navigation, « +N XP » après un pli ou un défi, échanges ouverts au niveau 5. Récompenses (P58, sauf cosmétiques) et fonctionnalités par niveau (P59) dans le code depuis le 2026-10-21 : coffrets réclamés (`POST /me/level-rewards/{niveau}`), carte au choix, réserve agrandie, échanges à 3 cartes au niveau 10. Reste aussi : XP des raretés complétées, calibrage par simulation |
-| Profil public | À faire | Pseudo, avatar gravé, clan, cartes épinglées, statistiques. Public par défaut (P60). Lot 3 de l'interface v1 |
+| Profil public | Fait sur le web | Pseudo (P61), avatar gravé et cadre, titre, cartes épinglées, statistiques, page publique `/joueur/{pseudo}` avec image de partage, atelier, bloquer et signaler (P62), suppression du compte (P63). Public par défaut (P60), dès le niveau 8. Reste : le clan sur le profil, l'outil de traitement des signalements (lot 4) |
 | Clans | À faire | Sans maximum de membres, discussion texte modérée, bibliothèque commune. Après l'inscription et la modération |
 | Modes de jeu entre joueurs | R&D | Plusieurs pistes à prototyper (joute, duplicate, bluff…) |
 | Classements | Plus tard | Pas en v1. Cote globale de type Elo (Glicko-2), modèle du Scrabble duplicate |
@@ -53,11 +53,11 @@ Arbitrés par le propriétaire le 2026-10-20 : jeu grand public (B2C), pas de ve
 
 | Étape | Statut | Détail |
 |---|---|---|
-| Interface v1, web et mobile | En cours | Maquette cliquable et cahier validés le 2026-10-21 ; inventaire de chaque écran : [interface-v1.md](cahiers-des-charges/interface-v1.md). Logique d'écran commune dans `packages/view-model` (D-033), web d'abord. Lots 0, 1 et 2 faits sur le web (coque, Jouer, chemin des niveaux, coffrets, carte au choix, réglages, écrans fermés par le niveau ; album, fiche d'une carte avec prononciation et partage, défis, échanges). Prochain : lot 3 |
+| Interface v1, web et mobile | En cours | Maquette cliquable et cahier validés le 2026-10-21 ; inventaire de chaque écran : [interface-v1.md](cahiers-des-charges/interface-v1.md). Logique d'écran commune dans `packages/view-model` (D-033), web d'abord. Lots 0 à 3 faits sur le web (coque, Jouer, chemin des niveaux, coffrets, carte au choix, réglages, écrans fermés par le niveau ; album, fiche d'une carte avec prononciation et partage, défis, échanges ; profil, atelier, réglages complets, suppression du compte). Le lot 3 attend encore la file (notifications, courrier) et les conditions d'utilisation. Prochain : lot 4, après les conditions d'utilisation et la charte |
 | Direction artistique et tokens | Fait | D-022 « Planche populaire », `packages/tokens` |
 | Web : ouverture du pli, album | Fait | Sur le catalogue publié |
 | Web : défis, échanges | Fait | `/defis`, `/echanges` ; niveau de maîtrise dans l'album |
-| Web : page d'accueil publique et liste d'attente | Fait | P55 : accueil sur `/`, le jeu passe sous `/jouer`. La liste d'attente garde l'adresse seule (`POST /waitlist`, table `waitlist_signups`). Image de partage générée par `opengraph-image.tsx` (polices chargées depuis Google Fonts au build). Page `/confidentialite` (« Tes données »), liée depuis le formulaire et le pied de page. Reste : l'e-mail d'ouverture avec le fournisseur d'e-mails, l'identité de l'éditeur sur `/confidentialite` et les mentions légales |
+| Web : page d'accueil publique et liste d'attente | Fait | P55 : accueil sur `/`, le jeu passe sous `/jouer`. La liste d'attente garde l'adresse seule (`POST /waitlist`, table `waitlist_signups`). Image de partage générée par `opengraph-image.tsx` (polices chargées depuis Google Fonts au build). Page `/confidentialite` (« Tes données »), liée depuis le formulaire et le pied de page. Reste : l'e-mail d'ouverture avec le fournisseur d'e-mails, l'identité de l'éditeur sur `/confidentialite` et sur `/mentions` (contact et crédits faits) |
 | Mobile (Expo) | À faire | Les mêmes écrans ; charger les polices demandera une dépendance (`expo-font`) |
 | Animations et reflets | À faire | R&D D-009. En attendant, du CSS simple |
 | Ouverture : peaufinage | En cours | Cahier des charges : [ouverture.md](cahiers-des-charges/ouverture.md). Lots A et B faits sur le web : déchirure au doigt, pile, mise en scène par rareté, sons synthétisés, vibration, récapitulatif, reflets par rareté, sachet. Reste : mobile |
@@ -80,7 +80,8 @@ Dans l'ordre où elles débloquent le plus :
 
 1. **Gravures : lancement complet** sur les 1 561 cartes (environ 5 $).
 2. **Fournisseur Postgres**, d'après `docs/rnd/postgres.md`. Il débloque la mise en ligne.
-3. **Ouverture, progression et social :** les questions ouvertes de [regles-du-jeu.md](regles-du-jeu.md#à-décider), détaillées dans les [cahiers des charges](cahiers-des-charges/).
+3. **Avatars gravés (P49) :** valider les seize gravures choisies et leurs noms.
+4. **Ouverture, progression et social :** les questions ouvertes de [regles-du-jeu.md](regles-du-jeu.md#à-décider), détaillées dans les [cahiers des charges](cahiers-des-charges/).
 
 ## Prochaines étapes conseillées
 

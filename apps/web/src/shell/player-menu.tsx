@@ -1,8 +1,9 @@
 "use client";
 
-import { levelBadge, levelsOfFeatures } from "@leximon/view-model";
+import { levelBadge, levelsOfFeatures, profileHeadline } from "@leximon/view-model";
 import Link from "next/link";
 import { useEffect, useRef } from "react";
+import { Avatar } from "@/components/avatar";
 import { useNarrow } from "@/lib/use-narrow";
 import { Dialog } from "@/ui/dialog";
 import { Icon, type IconName } from "@/ui/icon";
@@ -19,10 +20,7 @@ interface Item {
   readonly lock?: string | null;
 }
 
-/**
- * The player's menu (C-02): under the avatar on the web, a sheet on phones. The profile and the
- * workshop join it with lot 3.
- */
+/** The player's menu (C-02): under the avatar on the web, a sheet on phones. */
 export function PlayerMenu({
   open,
   onClose,
@@ -37,7 +35,7 @@ export function PlayerMenu({
 
   const joustLevel = view.now === 0 ? null : levelsOfFeatures(view.now).jousts;
   const items: Item[] = [
-    { label: "Chemin des niveaux", icon: "star", href: "/niveaux" },
+    { label: "Mon profil", icon: "profil", href: "/profil" },
     {
       label: "Joutes",
       icon: "joutes",
@@ -47,8 +45,10 @@ export function PlayerMenu({
           ? levelBadge(joustLevel)
           : null,
     },
+    { label: "Atelier", icon: "palette", href: "/atelier" },
+    { label: "Chemin des niveaux", icon: "star", href: "/niveaux" },
     { label: "Réglages", icon: "reglages", action: openSettings },
-    { label: view.guest ? "Créer mon compte" : "Mon compte", icon: "profil", href: "/compte" },
+    { label: view.guest ? "Créer mon compte" : "Mon compte", icon: "cle", href: "/compte" },
   ];
 
   // Web: Escape and a click beside it close the menu; the first entry takes the focus, and the
@@ -109,15 +109,15 @@ export function PlayerMenu({
       <Dialog open={open} title="Menu" onClose={onClose}>
         {view.progress !== null && (
           <div className={styles.who}>
-            <span className={styles.bigAvatar}>
-              <Icon name="profil" size={30} />
-            </span>
+            <Avatar
+              avatar={view.profile?.avatar ?? null}
+              frame={view.profile?.frame ?? null}
+              size={56}
+            />
             <div>
-              <div className={`${ui.display} ${styles.whoName}`}>
-                {view.guest ? "Invité" : "Toi"}
-              </div>
+              <div className={`${ui.display} ${styles.whoName}`}>{view.name}</div>
               <div className={styles.whoLevel}>
-                {view.title === null ? "" : `${view.title} · `}niveau {view.progress.level}
+                {profileHeadline(view.title, view.progress.level)}
               </div>
             </div>
           </div>

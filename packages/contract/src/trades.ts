@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { slugSchema, timestampSchema } from "./common";
+import { playerBadgeSchema, profileStatsSchema, wardrobeSchema } from "./profile";
 
 /** Public code of a player, shared to receive offers: 8 characters of Crockford base 32. */
 export const playerCodeSchema = z
@@ -7,13 +8,33 @@ export const playerCodeSchema = z
   .transform((value) => value.replaceAll(/[\s-]/g, "").toUpperCase())
   .pipe(z.string().regex(/^[0-9A-HJKMNP-TV-Z]{8}$/));
 
-/** `GET /me/profile`, 200. */
+/** `GET /me/profile`, 200: the player's own profile, also before it is public. */
 export const profileResponseSchema = z.object({
   playerCode: z.string(),
   /** When the account becomes old enough to trade (D-026). */
   canTradeFrom: timestampSchema,
   /** Account level needed to trade (P48). */
   tradeMinLevel: z.int().positive(),
+  /** A guest has no profile: everything below shows what an account would have. */
+  member: z.boolean(),
+  pseudo: z.string().nullable(),
+  /** When the pseudo may change again; `null` while it can (or was never chosen). */
+  pseudoChangeableFrom: timestampSchema.nullable(),
+  avatar: z.string(),
+  frame: z.string(),
+  /** The title worn: the one chosen, else the latest won; `null` before level 5. */
+  title: z.string().nullable(),
+  /** The player chose `title`; otherwise it follows the latest title won. */
+  titleChosen: z.boolean(),
+  profilePublic: z.boolean(),
+  /** Others see the profile from this level on (P59). */
+  publicFromLevel: z.int().positive(),
+  level: z.int().positive(),
+  memberSince: timestampSchema,
+  pinned: z.array(slugSchema),
+  pinnedSlots: z.int().nonnegative(),
+  wardrobe: wardrobeSchema,
+  stats: profileStatsSchema,
 });
 export type ProfileResponse = z.infer<typeof profileResponseSchema>;
 
@@ -23,6 +44,8 @@ export const tradeableCardsResponseSchema = z.object({
   cardIds: z.array(slugSchema),
   /** That player's account level. */
   level: z.int().positive(),
+  /** How that player shows in an offer. */
+  player: playerBadgeSchema,
   /**
    * Cards each side of an offer may hold (P59): between the requester and that player on
    * `/players/:code/tradeable`, for the player alone on `/me/tradeable`. 0 below the trade level.
@@ -56,8 +79,11 @@ export type TradeStatus = z.infer<typeof tradeStatusSchema>;
 
 export const tradeSchema = z.object({
   id: z.uuid(),
+  /** Empty once that player deleted their account (R-07), when `proposer` is `null`. */
   proposerCode: z.string(),
   recipientCode: z.string(),
+  proposer: playerBadgeSchema.nullable(),
+  recipient: playerBadgeSchema.nullable(),
   give: z.array(slugSchema),
   want: z.array(slugSchema),
   status: tradeStatusSchema,

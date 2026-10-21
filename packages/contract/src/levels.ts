@@ -6,7 +6,10 @@ import { slugSchema } from "./common";
 /** A level reward (P58), as the coffret shows it. */
 export const levelRewardSchema = z.discriminatedUnion("kind", [
   z.object({ kind: z.literal("title"), title: z.string().min(1) }),
-  z.object({ kind: z.enum(LEVEL_REWARD_KINDS).exclude(["title"]) }),
+  /** `avatar` (a card id) is absent from coffrets opened before avatars were named. */
+  z.object({ kind: z.literal("avatar"), avatar: z.string().min(1).exactOptional() }),
+  z.object({ kind: z.literal("frame"), frame: z.string().min(1) }),
+  z.object({ kind: z.enum(LEVEL_REWARD_KINDS).exclude(["title", "avatar", "frame"]) }),
 ]);
 export type LevelRewardView = z.infer<typeof levelRewardSchema>;
 

@@ -1,30 +1,31 @@
 import {
   type AccountResponse,
+  type BlocksResponse,
   type BoosterWalletResponse,
   type CardChoiceRefusal,
   type CardChoiceResponse,
   type ClaimLevelRewardResponse,
   type ClaimRefusal,
   cardChoiceRequestSchema,
+  type DeleteAccountRefusal,
   type LevelRewardsResponse,
   type MasteryResponse,
   type OwnedCardsResponse,
   ownedCardsQuerySchema,
+  type Preferences,
+  type ProfileRefusal,
   type ProfileResponse,
   type ProgressResponse,
+  pinnedCardsRequestSchema,
+  playerCodeSchema,
   type TradeableCardsResponse,
+  updatePreferencesRequestSchema,
+  updateProfileRequestSchema,
 } from "@leximon/contract";
-import {
-  GUEST_SCHEDULE,
-  guestBoostersLeft,
-  guestRulesAt,
-  levelOf,
-  TRADE_SCHEDULE,
-  tradeRulesAt,
-} from "@leximon/core";
+import { GUEST_SCHEDULE, guestBoostersLeft, guestRulesAt, levelOf } from "@leximon/core";
 import { schema } from "@leximon/db";
 import { and, asc, eq, gt, or, sql } from "drizzle-orm";
-import { Hono } from "hono";
+import { type Context, Hono } from "hono";
 import { z } from "zod";
 import { ADMIN_ROLE } from "../auth";
 import { guestOpensSql } from "../boosters/open-booster";
@@ -32,8 +33,20 @@ import type { AppEnv } from "../context";
 import { chooseCard, claimLevelReward, readLevelRewards, walletView } from "../levels/rewards";
 import { playerRateLimit } from "../middleware/rate-limit";
 import { requireUser } from "../middleware/require-user";
+import {
+  blockPlayer,
+  deleteAccount,
+  listBlocks,
+  readOwnProfile,
+  readPreferences,
+  setPinnedCards,
+  unblockPlayer,
+  updatePreferences,
+  updateProfile,
+} from "../profile/profile";
 import { readXp } from "../progress/progress";
 import { ensurePlayer, tradeableResponse } from "../trades/players";
+import { blockResultResponse } from "../trades/routes";
 
 const { boosterWallets, cards, userCards, userMastery } = schema;
 
@@ -154,14 +167,81 @@ export function meRoutes() {
 
   // The player code is created on first request: guests who never trade never get one.
   routes.get("/profile", async (c) => {
+    return c.json<ProfileResponse>(await readOwnProfile(c.var.db, c.var.userId, Date.now()));
+  });
+
+  /** Pseudo, cosmetics and visibility (P-07, P-08, P60): the profile as it now reads. */
+  routes.patch("/profile", async (c) => {
+    const body = updateProfileRequestSchema.safeParse(await c.req.json().catch(() => null));
+    if (!body.success) {
+      return c.json({ error: "invalid_request" }, 400);
+    }
     const now = Date.now();
-    const player = await ensurePlayer(c.var.db, c.var.userId);
-    const { minAccountAgeMs, minLevel } = tradeRulesAt(TRADE_SCHEDULE, now);
-    return c.json<ProfileResponse>({
-      playerCode: player.code,
-      canTradeFrom: new Date(player.createdAt + minAccountAgeMs).toISOString(),
-      tradeMinLevel: minLevel,
+    const result = await updateProfile(c.var.db, {
+      userId: c.var.userId,
+      changes: body.data,
+      now,
     });
+    if (result.kind !== "ok") return profileRefusal(c, result.kind);
+    return c.json<ProfileResponse>(await readOwnProfile(c.var.db, c.var.userId, now));
+  });
+
+  /** The cards pinned to the profile, all of them in order (P-02). */
+  routes.put("/pinned-cards", async (c) => {
+    const body = pinnedCardsRequestSchema.safeParse(await c.req.json().catch(() => null));
+    if (!body.success) {
+      return c.json({ error: "invalid_request" }, 400);
+    }
+    const now = Date.now();
+    const result = await setPinnedCards(c.var.db, {
+      userId: c.var.userId,
+      cardIds: body.data.cardIds,
+      now,
+    });
+    if (result.kind !== "ok") return profileRefusal(c, result.kind);
+    return c.json<ProfileResponse>(await readOwnProfile(c.var.db, c.var.userId, now));
+  });
+
+  /** Blocked players (N5, R-05). */
+  routes.get("/blocks", async (c) => {
+    return c.json<BlocksResponse>({
+      players: await listBlocks(c.var.db, c.var.userId, Date.now()),
+    });
+  });
+
+  routes.put("/blocks/:code", async (c) => {
+    const code = playerCodeSchema.safeParse(c.req.param("code"));
+    if (!code.success) {
+      return c.json({ error: "player_not_found" }, 404);
+    }
+    const result = await blockPlayer(c.var.db, {
+      userId: c.var.userId,
+      code: code.data,
+      now: Date.now(),
+    });
+    return blockResultResponse(c, result);
+  });
+
+  routes.delete("/blocks/:code", async (c) => {
+    const code = playerCodeSchema.safeParse(c.req.param("code"));
+    if (!code.success) {
+      return c.json({ error: "player_not_found" }, 404);
+    }
+    const result = await unblockPlayer(c.var.db, { userId: c.var.userId, code: code.data });
+    return blockResultResponse(c, result);
+  });
+
+  /** What the player wants to be told (R-04). Nothing is sent before the queue exists. */
+  routes.get("/preferences", async (c) => {
+    return c.json<Preferences>(await readPreferences(c.var.db, c.var.userId));
+  });
+
+  routes.patch("/preferences", async (c) => {
+    const body = updatePreferencesRequestSchema.safeParse(await c.req.json().catch(() => null));
+    if (!body.success) {
+      return c.json({ error: "invalid_request" }, 400);
+    }
+    return c.json<Preferences>(await updatePreferences(c.var.db, c.var.userId, body.data));
   });
 
   /** Account level (P48). Read only: a player who never earned XP is at level 1. */
@@ -200,6 +280,25 @@ export function meRoutes() {
     });
   });
 
+  /**
+   * Deletes the account at once (R-07). The session cookies are cleared in the same response:
+   * the signed cookie cache would otherwise keep a deleted player signed in for minutes.
+   */
+  routes.delete("/account", async (c) => {
+    const result = await deleteAccount(c.var.db, { userId: c.var.userId, now: Date.now() });
+    if (result.kind === "admin_account") {
+      return c.json<{ error: DeleteAccountRefusal }>({ error: result.kind }, 409);
+    }
+    const signedOut = await c.var.auth.api.signOut({
+      headers: c.req.raw.headers,
+      returnHeaders: true,
+    });
+    for (const cookie of signedOut.headers.getSetCookie()) {
+      c.header("Set-Cookie", cookie, { append: true });
+    }
+    return c.body(null, 204);
+  });
+
   /** The level, next review and stability of every word reviewed at least once (D-025). */
   routes.get("/mastery", async (c) => {
     const rows = await c.var.db
@@ -219,6 +318,17 @@ export function meRoutes() {
   });
 
   return routes;
+}
+
+/** 403 for a guest, 409 when another player or the calendar is in the way, 422 otherwise. */
+function profileRefusal(c: Context<AppEnv>, error: ProfileRefusal) {
+  const status =
+    error === "account_required"
+      ? 403
+      : error === "pseudo_taken" || error === "pseudo_too_soon"
+        ? 409
+        : 422;
+  return c.json<{ error: ProfileRefusal }>({ error }, status);
 }
 
 interface CardCursor {

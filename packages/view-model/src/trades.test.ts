@@ -26,6 +26,8 @@ function trade(overrides: Partial<Trade> = {}): Trade {
     id: "00000000-0000-4000-8000-000000000001",
     proposerCode: "AAAA1111",
     recipientCode: "BBBB2222",
+    proposer: { code: "AAAA1111", pseudo: null, avatar: "cuistre", frame: "simple", level: 12 },
+    recipient: { code: "BBBB2222", pseudo: null, avatar: "zani", frame: "simple", level: 9 },
     give: ["acariatre"],
     want: ["bisbille", "cacochyme"],
     status: "pending",
@@ -79,11 +81,13 @@ describe("tradeSides", () => {
   it("swaps the sides for an offer received", () => {
     expect(tradeSides(trade(), "incoming")).toEqual({
       counterpartCode: "AAAA1111",
+      counterpart: expect.objectContaining({ code: "AAAA1111" }),
       mine: ["bisbille", "cacochyme"],
       theirs: ["acariatre"],
     });
     expect(tradeSides(trade(), "outgoing")).toEqual({
       counterpartCode: "BBBB2222",
+      counterpart: expect.objectContaining({ code: "BBBB2222" }),
       mine: ["acariatre"],
       theirs: ["bisbille", "cacochyme"],
     });
@@ -212,5 +216,16 @@ describe("échanges screen", () => {
     expect(historyLine(done, "outgoing", now, upper)).toBe(
       "Conclue avec BBBB 2222 : ACARIATRE contre BISBILLE, CACOCHYME.",
     );
+  });
+
+  it("names the other player by pseudo, or as gone once they deleted their account", () => {
+    const upper = (id: string) => id.toUpperCase();
+    const named = trade({
+      status: "completed",
+      proposer: { code: "AAAA1111", pseudo: "Raph", avatar: "cuistre", frame: "ink", level: 30 },
+    });
+    expect(historyLine(named, "incoming", now, upper)).toMatch(/^Conclue avec Raph :/);
+    const gone = trade({ status: "completed", proposerCode: "", proposer: null });
+    expect(historyLine(gone, "incoming", now, upper)).toMatch(/^Conclue avec Un joueur parti :/);
   });
 });

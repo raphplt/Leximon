@@ -101,17 +101,6 @@
   padding: 4px 4px 16px;
 }
 
-.bigAvatar {
-  display: grid;
-  place-items: center;
-  width: 56px;
-  height: 56px;
-  border-radius: 50%;
-  background: #fbf5e8;
-  color: var(--lx-color-kraft-ink);
-  box-shadow: 0 0 0 3px var(--lx-color-accent);
-}
-
 .whoName {
   font-size: 22px;
 }

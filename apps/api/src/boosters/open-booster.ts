@@ -272,6 +272,9 @@ export async function openBooster(
           bonusBoosters: consumed.reserve.bonus,
           garniBoosters: consumed.reserve.garni,
           lastOpenedDay: day,
+          ...(locked.lastOpenedDay === day
+            ? {}
+            : { daysPlayed: sql`${boosterWallets.daysPlayed} + 1` }),
         })
         .where(eq(boosterWallets.userId, userId))
         .returning({ userId: boosterWallets.userId }),

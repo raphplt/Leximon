@@ -16,11 +16,21 @@ import {
 import { opensAt } from "./features";
 import { formatCount, plural } from "./format";
 import { xpBefore } from "./level";
+import { avatarName, frameName } from "./profile";
 
 /** Level rewards (P58): the coffret, the next rewards of the Jouer screen, the level road. */
 
 /** Icons a reward is drawn with; each platform maps them to its own icon set. */
-export type RewardIcon = "sachet" | "bolt" | "star" | "plume" | "carte" | "plus" | "profil" | "pin";
+export type RewardIcon =
+  | "sachet"
+  | "bolt"
+  | "star"
+  | "plume"
+  | "carte"
+  | "plus"
+  | "profil"
+  | "cadre"
+  | "pin";
 
 export interface RewardItem {
   readonly icon: RewardIcon;
@@ -51,7 +61,20 @@ export function rewardItem(reward: LevelRewardView | LevelReward): RewardItem {
         detail: "Une place de plus pour tes sachets bonus",
       };
     case "avatar":
-      return { icon: "profil", title: "Avatar gravé", detail: "Pour ton profil" };
+      return {
+        icon: "profil",
+        title: "Avatar gravé",
+        detail:
+          reward.avatar === undefined
+            ? "Pour ton profil"
+            : `${avatarName(reward.avatar)}, rangé dans l'atelier`,
+      };
+    case "frame":
+      return {
+        icon: "cadre",
+        title: "Cadre",
+        detail: `${frameName(reward.frame)}, rangé dans l'atelier`,
+      };
     case "pinned_slot":
       return {
         icon: "pin",

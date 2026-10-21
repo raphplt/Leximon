@@ -1,11 +1,17 @@
 "use client";
 
+import type { Preferences } from "@leximon/contract";
+import { blockedCountLabel, pseudoSettingLabel } from "@leximon/view-model";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { canVibrate, type FeedbackKind, readPreference, writePreference } from "@/booster/feedback";
-import { signOut } from "@/lib/api";
-import { account } from "@/player/player";
+import { fetchBlocks, fetchPreferences, signOut, updatePreferences } from "@/lib/api";
+import { account, profile } from "@/player/player";
 import { useShared } from "@/player/resource";
+import { BlocksDialog } from "@/profile/blocks-dialog";
+import { DeleteAccountDialog } from "@/profile/delete-account-dialog";
+import { PseudoDialog } from "@/profile/pseudo-dialog";
+import { failureMessage, useProfileActions } from "@/profile/use-profile-actions";
 import { Dialog } from "@/ui/dialog";
 import { Icon } from "@/ui/icon";
 import { Switch } from "@/ui/switch";
@@ -19,8 +25,8 @@ function maskEmail(email: string): string {
 }
 
 /**
- * Settings (R-03, R-06): sound and vibration, kept on the device; the account. Notifications and
- * profile settings join with lot 3.
+ * Settings (R-03 to R-07): sound and vibration, kept on the device; notifications, kept on the
+ * server (nothing is sent before the queue exists); the profile; the account.
  */
 export function SettingsPanel({
   open,
@@ -34,13 +40,41 @@ export function SettingsPanel({
   const [leaving, setLeaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const who = useShared(account);
+  const me = useShared(profile);
+  const profileActions = useProfileActions();
+  const [notify, setNotify] = useState<Preferences | null>(null);
+  const [blocked, setBlockedCount] = useState<number | null>(null);
+  const [dialog, setDialog] = useState<"pseudo" | "blocks" | "delete" | null>(null);
+  const member = who?.kind === "member";
 
   useEffect(() => {
     if (!open) return;
     setPrefs({ sound: readPreference("sound"), haptics: readPreference("haptics") });
     setVibrates(canVibrate());
     setError(null);
+    fetchPreferences()
+      .then(setNotify)
+      .catch(() => setNotify(null));
   }, [open]);
+
+  useEffect(() => {
+    if (!open || !member) return;
+    fetchBlocks()
+      .then((players) => setBlockedCount(players.length))
+      .catch(() => setBlockedCount(null));
+  }, [open, member]);
+
+  const toggleNotify = async (key: keyof Preferences, enabled: boolean) => {
+    if (notify === null) return;
+    const before = notify;
+    setNotify({ ...notify, [key]: enabled });
+    try {
+      setNotify(await updatePreferences({ [key]: enabled }));
+    } catch (caught) {
+      setNotify(before);
+      setError(failureMessage(caught));
+    }
+  };
 
   const toggle = (kind: FeedbackKind, enabled: boolean) => {
     writePreference(kind, enabled);
@@ -78,6 +112,68 @@ export function SettingsPanel({
           )}
         </div>
       </section>
+      {notify !== null && (
+        <section className={ui.group}>
+          <h3 className={ui.kicker}>Notifications</h3>
+          <div className={ui.groupRows}>
+            <Switch
+              label="Mots qui s'échappent"
+              detail="Quand un mot attend sa révision"
+              checked={notify.notifyReviews}
+              onChange={(on) => void toggleNotify("notifyReviews", on)}
+            />
+            <Switch
+              label="Offres d'échange"
+              checked={notify.notifyTrades}
+              onChange={(on) => void toggleNotify("notifyTrades", on)}
+            />
+            <Switch
+              label="Discussion du clan"
+              detail="Seulement quand on te cite"
+              checked={notify.notifyClanMentions}
+              onChange={(on) => void toggleNotify("notifyClanMentions", on)}
+            />
+          </div>
+        </section>
+      )}
+      {member && me !== null && (
+        <section className={ui.group}>
+          <h3 className={ui.kicker}>Profil</h3>
+          <div className={ui.groupRows}>
+            <Switch
+              label="Profil public"
+              detail={
+                me.level < me.publicFromLevel
+                  ? `Visible par un lien dès le niveau ${me.publicFromLevel}`
+                  : "Visible par un lien"
+              }
+              checked={me.profilePublic}
+              onChange={(on) =>
+                void profileActions.update(
+                  { profilePublic: on },
+                  { success: on ? "Profil visible." : "Profil caché." },
+                )
+              }
+            />
+            <button type="button" className={ui.switchRow} onClick={() => setDialog("pseudo")}>
+              <span className={ui.switchLabel}>
+                Pseudo
+                <span className={ui.switchSub}>{pseudoSettingLabel(me.pseudo)}</span>
+              </span>
+              <Icon name="chev" size={16} />
+            </button>
+            <button type="button" className={ui.switchRow} onClick={() => setDialog("blocks")}>
+              <span className={ui.switchLabel}>
+                Joueurs bloqués
+                {blocked !== null && (
+                  <span className={ui.switchSub}>{blockedCountLabel(blocked)}</span>
+                )}
+              </span>
+              <Icon name="chev" size={16} />
+            </button>
+          </div>
+        </section>
+      )}
       <section className={ui.group}>
         <h3 className={ui.kicker}>Compte</h3>
         <div className={ui.groupRows}>
@@ -105,6 +201,14 @@ export function SettingsPanel({
                 </span>
                 <Icon name="logout" size={18} />
               </button>
+              <button
+                type="button"
+                className={`${ui.switchRow} ${styles.danger}`}
+                onClick={() => setDialog("delete")}
+              >
+                <span className={ui.switchLabel}>Supprimer mon compte</span>
+                <Icon name="chev" size={16} />
+              </button>
             </>
           ) : (
             <>
@@ -128,7 +232,19 @@ export function SettingsPanel({
           </p>
         )}
       </section>
-      <p className={styles.footnote}>Leximon · contact@leximon.fr</p>
+      <p className={styles.footnote}>
+        <Link href="/mentions" onClick={onClose}>
+          Contact et mentions
+        </Link>{" "}
+        · contact@leximon.fr
+      </p>
+      <PseudoDialog open={dialog === "pseudo"} onClose={() => setDialog(null)} />
+      <BlocksDialog
+        open={dialog === "blocks"}
+        onClose={() => setDialog(null)}
+        onCount={setBlockedCount}
+      />
+      <DeleteAccountDialog open={dialog === "delete"} onClose={() => setDialog(null)} />
     </Dialog>
   );
 }

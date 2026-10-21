@@ -4,8 +4,9 @@ import type {
   AccountResponse,
   BoosterWalletResponse,
   LevelRewardsResponse,
+  ProfileResponse,
 } from "@leximon/contract";
-import { fetchAccount, fetchLevelRewards, fetchWallet } from "@/lib/api";
+import { fetchAccount, fetchLevelRewards, fetchProfile, fetchWallet } from "@/lib/api";
 import { forgetProgress } from "@/progress/use-progress";
 import { dailyChallenge, ownedCards, refreshIfRead, wordMemory } from "./collection";
 import { sharedResource } from "./resource";
@@ -19,8 +20,12 @@ export const levelRewards = sharedResource<LevelRewardsResponse>(fetchLevelRewar
 /** Guest or member (P37). */
 export const account = sharedResource<AccountResponse>(fetchAccount);
 
+/** Pseudo, avatar, cosmetics, pinned cards, figures (P-01 to P-08). */
+export const profile = sharedResource<ProfileResponse>(fetchProfile);
+
 /** A coffret was claimed: its level is done, and its card choice waits if it has one. */
 export function publishClaimed(level: number, withCardChoice: boolean): void {
+  refreshIfRead(profile);
   const state = levelRewards.current() ?? { claimed: [], cardChoices: [] };
   const sorted = (list: readonly number[]) => [...new Set(list)].sort((a, b) => a - b);
   levelRewards.publish({
@@ -41,6 +46,7 @@ export function forgetPlayer(): void {
   wallet.refresh();
   levelRewards.refresh();
   account.refresh();
+  refreshIfRead(profile);
   refreshIfRead(ownedCards);
   refreshIfRead(wordMemory);
   refreshIfRead(dailyChallenge);

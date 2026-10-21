@@ -190,9 +190,29 @@
 }
 
 .counterpart {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
   margin: 0;
   font-weight: 800;
   letter-spacing: 0.04em;
+}
+
+.counterpartLink {
+  color: inherit;
+  text-decoration: none;
+}
+
+.counterpartLink:hover {
+  text-decoration: underline;
+}
+
+.counterpartLevel {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--lx-color-text-muted);
+  letter-spacing: 0;
 }
 
 .timeLeft {
