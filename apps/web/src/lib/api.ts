@@ -20,6 +20,8 @@ import {
   challengesResponseSchema,
   claimLevelRewardResponseSchema,
   claimRefusalSchema,
+  type DailyChallengeResponse,
+  dailyChallengeResponseSchema,
   type EmailSignInRequest,
   errorResponseSchema,
   IDEMPOTENCY_KEY_HEADER,
@@ -249,6 +251,13 @@ export async function answerChallenge(
   if (response.status === 409 || response.status === 404) return { kind: "not_due" };
   if (!response.ok) throw new ApiError("answer_failed", response.status);
   return { kind: "answered", ...(await parse(response, challengeAnswerResponseSchema)) };
+}
+
+/** Today's answers towards the daily goal (D-01). */
+export async function fetchDaily(): Promise<DailyChallengeResponse> {
+  const response = await sendAsPlayer("/challenges/daily");
+  if (!response.ok) throw new ApiError("daily_unavailable", response.status);
+  return parse(response, dailyChallengeResponseSchema);
 }
 
 export async function fetchMastery(): Promise<MasteryResponse["words"]> {

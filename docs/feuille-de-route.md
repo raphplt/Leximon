@@ -53,7 +53,7 @@ Arbitrés par le propriétaire le 2026-10-20 : jeu grand public (B2C), pas de ve
 
 | Étape | Statut | Détail |
 |---|---|---|
-| Interface v1, web et mobile | En cours | Maquette cliquable et cahier validés le 2026-10-21 ; inventaire de chaque écran : [interface-v1.md](cahiers-des-charges/interface-v1.md). Logique d'écran commune dans `packages/view-model` (D-033), web d'abord. Lots 0 et 1 faits sur le web (coque, Jouer, chemin des niveaux, coffrets, carte au choix, réglages de jeu et de compte, écrans fermés par le niveau). Prochain : lot 2 (album, fiche, défis et échanges repris sur la maquette) |
+| Interface v1, web et mobile | En cours | Maquette cliquable et cahier validés le 2026-10-21 ; inventaire de chaque écran : [interface-v1.md](cahiers-des-charges/interface-v1.md). Logique d'écran commune dans `packages/view-model` (D-033), web d'abord. Lots 0, 1 et 2 faits sur le web (coque, Jouer, chemin des niveaux, coffrets, carte au choix, réglages, écrans fermés par le niveau ; album, fiche d'une carte avec prononciation et partage, défis, échanges). Prochain : lot 3 |
 | Direction artistique et tokens | Fait | D-022 « Planche populaire », `packages/tokens` |
 | Web : ouverture du pli, album | Fait | Sur le catalogue publié |
 | Web : défis, échanges | Fait | `/defis`, `/echanges` ; niveau de maîtrise dans l'album |

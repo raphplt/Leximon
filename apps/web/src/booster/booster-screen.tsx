@@ -27,6 +27,7 @@ import { LevelStrip } from "@/play/level-strip";
 import play from "@/play/play.module.css";
 import { PlayFabs } from "@/play/play-fabs";
 import { SlippingWord } from "@/play/slipping-word";
+import { ownedCards } from "@/player/collection";
 import { account, wallet } from "@/player/player";
 import { useShared } from "@/player/resource";
 import { publishProgress, useProgress } from "@/progress/use-progress";
@@ -147,9 +148,9 @@ export function BoosterScreen() {
 
   const load = useCallback(async () => {
     try {
-      const [loadedCatalog, ownedCards] = await Promise.all([loadCatalog(), fetchOwnedCards()]);
+      const [loadedCatalog, ownedList] = await Promise.all([loadCatalog(), fetchOwnedCards()]);
       setCatalog(loadedCatalog);
-      setOwned(quantities(ownedCards));
+      setOwned(quantities(ownedList));
       const ready: Phase =
         loadedCatalog.collections.length > 0 ? { name: "sealed" } : { name: "no_collection" };
       setPhase((current) =>
@@ -259,6 +260,7 @@ export function BoosterScreen() {
     const after = new Map(owned);
     for (const card of result.cards) after.set(card.cardId, (after.get(card.cardId) ?? 0) + 1);
     setOwned(after);
+    ownedCards.publish(after);
     if (reduced) {
       setPhase({ name: "revealing", index: 0, hurried: false });
     } else {

@@ -2,6 +2,7 @@
 
 import type { CatalogCard } from "@leximon/contract";
 import { rarityStyles } from "@leximon/tokens";
+import { frequencyLine, shareText } from "@leximon/view-model";
 import {
   type CSSProperties,
   type KeyboardEvent,
@@ -10,7 +11,6 @@ import {
   useRef,
   useState,
 } from "react";
-import { frequencyLine, shareText } from "@/cards/display";
 import { HoloCard } from "@/components/holo-card";
 import { useHoloLight } from "@/components/use-holo-light";
 import { CardBack } from "./card-back";

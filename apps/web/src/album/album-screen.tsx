@@ -1,221 +1,371 @@
 "use client";
 
-import {
-  type CatalogCard,
-  MASTERY_LEVEL_LABELS,
-  type MasteryLevelCode,
-  RARITY_LABELS,
-} from "@leximon/contract";
-import { rarityRank } from "@leximon/core";
+import type { Rarity } from "@leximon/core";
 import { cssFill, rarityStyles } from "@leximon/tokens";
+import {
+  type AlbumFilter,
+  type AlbumItem,
+  type AlbumState,
+  albumView,
+  type MissingItem,
+  type OwnedItem,
+  shortName,
+} from "@leximon/view-model";
 import Link from "next/link";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { type CSSProperties, useEffect, useMemo, useState } from "react";
 import { type Catalog, loadCatalog } from "@/cards/catalog";
 import { Card } from "@/components/card";
-import { CardCaption } from "@/components/card-caption";
-import { HoloCard } from "@/components/holo-card";
-import { RarityName } from "@/components/rarity-icon";
-import { useHoloLight } from "@/components/use-holo-light";
-import { fetchMastery, fetchOwnedCards } from "@/lib/api";
-import { usePackShape } from "@/lib/use-pack-shape";
+import { RarityIcon, RarityName } from "@/components/rarity-icon";
+import { useNarrow } from "@/lib/use-narrow";
+import { useNow } from "@/lib/use-now";
+import { ownedCards, wordMemory } from "@/player/collection";
+import { useShared } from "@/player/resource";
+import { useShell } from "@/shell/shell-context";
+import { Button } from "@/ui/button";
+import { Icon } from "@/ui/icon";
+import ui from "@/ui/ui.module.css";
 import styles from "./album-screen.module.css";
 
-const TILE_WIDTH = 150;
+/** Tone of each launch collection's progress bar, as on the maquette. */
+const TONES: Readonly<Record<string, string>> = {
+  fondateurs: "#7C9BFF",
+  caracteres: "#FF8462",
+  metiers: "#3BD3A5",
+};
 
-/**
- * Most common first, then alphabetical: the cards a player finds early lead the album, and the
- * rarest still missing sit at the end as goals.
- */
-function albumOrder(cards: readonly CatalogCard[]): CatalogCard[] {
-  return [...cards].sort(
-    (a, b) => rarityRank(a.rarity) - rarityRank(b.rarity) || a.word.localeCompare(b.word, "fr"),
-  );
+const STORED_COLLECTION = "leximon.album";
+
+function readCollection(): string | null {
+  try {
+    return localStorage.getItem(STORED_COLLECTION);
+  } catch {
+    return null;
+  }
 }
 
+function writeCollection(id: string): void {
+  try {
+    localStorage.setItem(STORED_COLLECTION, id);
+  } catch {
+    // Not remembered: the album opens on the first collection next time.
+  }
+}
+
+/** The album (A-01 to A-06): collection tabs, rarity and filters, the grid of cards. */
 export function AlbumScreen() {
-  const { noun } = usePackShape();
   const [catalog, setCatalog] = useState<Catalog | null>(null);
-  const [quantities, setQuantities] = useState<ReadonlyMap<string, number> | null>(null);
-  const [levels, setLevels] = useState<ReadonlyMap<string, MasteryLevelCode>>(new Map());
   const [failed, setFailed] = useState(false);
-  const [zoomed, setZoomed] = useState<CatalogCard | null>(null);
-  const dialog = useRef<HTMLDialogElement>(null);
+  const owned = useShared(ownedCards);
+  const memory = useShared(wordMemory);
+  const now = useNow(60_000);
+  const narrow = useNarrow();
+  const { openCard } = useShell();
+  const [state, setState] = useState<AlbumState>({
+    collectionId: "",
+    rarity: null,
+    filter: "all",
+    theme: null,
+    search: "",
+  });
 
-  const load = useCallback(async () => {
+  const load = () => {
     setFailed(false);
-    try {
-      const [loadedCatalog, owned, mastery] = await Promise.all([
-        loadCatalog(),
-        fetchOwnedCards(),
-        fetchMastery(),
-      ]);
-      setCatalog(loadedCatalog);
-      setLevels(new Map(mastery.map((word) => [word.cardId, word.level])));
-      const byCard = new Map<string, number>();
-      for (const card of owned) {
-        byCard.set(card.cardId, (byCard.get(card.cardId) ?? 0) + card.quantity);
-      }
-      setQuantities(byCard);
-    } catch {
-      setFailed(true);
-    }
-  }, []);
+    loadCatalog()
+      .then((loaded) => {
+        setCatalog(loaded);
+        const stored = readCollection();
+        const first = loaded.collections.find((c) => c.id === stored) ?? loaded.collections[0];
+        if (first !== undefined) setState((s) => ({ ...s, collectionId: first.id }));
+      })
+      .catch(() => setFailed(true));
+  };
 
-  useEffect(() => {
-    void load();
-  }, [load]);
+  useEffect(load, []);
 
-  useEffect(() => {
-    if (zoomed !== null) dialog.current?.showModal();
-  }, [zoomed]);
+  const view = useMemo(
+    () =>
+      catalog === null || owned === null
+        ? null
+        : albumView(
+            { collections: catalog.collections, owned, memory: memory ?? new Map(), now },
+            state,
+          ),
+    [catalog, owned, memory, now, state],
+  );
 
   if (failed) {
     return (
-      <main className={styles.screen}>
-        <p className={styles.hint}>Impossible de charger ton album.</p>
-        <button type="button" className={styles.button} onClick={() => void load()}>
+      <main className={styles.page}>
+        <p className={styles.empty}>Le catalogue ne répond pas.</p>
+        <Button variant="secondary" onClick={load}>
           Réessayer
-        </button>
+        </Button>
       </main>
     );
   }
 
-  if (quantities === null || catalog === null) {
+  if (view === null) {
     return (
-      <main className={styles.screen}>
-        <p className={styles.hint}>Un instant…</p>
+      <main className={styles.page}>
+        <p className={styles.empty}>Un instant…</p>
       </main>
     );
   }
+
+  const pickCollection = (id: string) => {
+    writeCollection(id);
+    setState((s) => ({ ...s, collectionId: id, rarity: null, theme: null, search: "" }));
+  };
+  const cardWidth = narrow ? 104 : 168;
 
   return (
-    <main className={styles.screen}>
-      {catalog.collections.map((collection) => {
-        const cards = albumOrder(collection.cards);
-        const found = cards.filter((card) => quantities.has(card.id)).length;
-        return (
-          <section key={collection.id} aria-labelledby={`collection-${collection.id}`}>
-            <header className={styles.header}>
-              <h1 id={`collection-${collection.id}`} className={styles.title}>
-                {collection.name}
-              </h1>
-              <p className={styles.count}>
-                <strong>{found}</strong> / {cards.length} mots
-              </p>
-            </header>
-            <div
-              className={styles.progress}
-              role="progressbar"
-              aria-label="Mots trouvés"
-              aria-valuemin={0}
-              aria-valuemax={cards.length}
-              aria-valuenow={found}
-            >
-              <span style={{ width: `${(found / Math.max(cards.length, 1)) * 100}%` }} />
-            </div>
-            {found === 0 && (
-              <p className={styles.hint}>
-                Album vide. <Link href="/jouer">Ouvre ton premier {noun.one}</Link>.
-              </p>
-            )}
-            <ul className={styles.grid}>
-              {cards.map((card) => {
-                const quantity = quantities.get(card.id);
-                const level = levels.get(card.id) ?? "sketch";
-                return (
-                  <li key={card.id} className={styles.slot}>
-                    {quantity === undefined ? (
-                      <MissingCard card={card} />
-                    ) : (
-                      <button
-                        type="button"
-                        className={styles.owned}
-                        onClick={() => setZoomed(card)}
-                        aria-label={`Agrandir ${card.word}`}
-                      >
-                        <Card card={card} collectionName={collection.name} width={TILE_WIDTH} />
-                        {quantity > 1 && <span className={styles.quantity}>×{quantity}</span>}
-                        {level !== "sketch" && (
-                          <span className={`${styles.level} ${styles[level]}`}>
-                            {MASTERY_LEVEL_LABELS[level]}
-                          </span>
-                        )}
-                      </button>
-                    )}
-                  </li>
-                );
-              })}
-            </ul>
-          </section>
-        );
-      })}
+    <main className={styles.page}>
+      <header className={styles.header}>
+        <div>
+          <h1 className={`${ui.display} ${styles.title}`}>Album</h1>
+          <p className={styles.headline}>
+            <strong>{view.headline.owned}</strong> mots sur {view.headline.total}
+          </p>
+        </div>
+        <label className={styles.search}>
+          <span className={styles.searchIcon}>
+            <Icon name="search" size={18} />
+          </span>
+          <span className={styles.hidden}>Chercher un mot</span>
+          <input
+            className={styles.input}
+            type="search"
+            placeholder="Chercher un mot"
+            value={state.search}
+            onChange={(event) => setState((s) => ({ ...s, search: event.target.value }))}
+          />
+        </label>
+      </header>
 
-      {/* biome-ignore lint/a11y/useKeyWithClickEvents: Escape already closes a modal dialog; the click only adds backdrop dismissal. */}
-      <dialog
-        ref={dialog}
-        className={styles.dialog}
-        onClose={() => setZoomed(null)}
-        onClick={(event) => {
-          // A click on the backdrop lands on the dialog itself.
-          if (event.target === event.currentTarget) dialog.current?.close();
-        }}
+      <div
+        className={`${styles.tabs} ${view.searching ? styles.dimmed : ""}`}
+        role="tablist"
+        aria-label="Collections"
       >
-        {zoomed !== null && (
-          <div className={styles.zoom}>
-            <ZoomedCard
-              card={zoomed}
-              collectionName={
-                catalog.collections.find((c) => c.id === zoomed.collectionId)?.name ?? ""
-              }
-            />
-            <CardCaption card={zoomed} />
-            <button type="button" className={styles.button} onClick={() => dialog.current?.close()}>
-              Fermer
+        {view.tabs.map((tab) => {
+          const selected = !view.searching && tab.id === state.collectionId;
+          return (
+            <button
+              key={tab.id}
+              type="button"
+              role="tab"
+              aria-selected={selected}
+              className={styles.tab}
+              onClick={() => pickCollection(tab.id)}
+            >
+              <span className={styles.tabHead}>
+                <span className={styles.tabName}>{narrow ? shortName(tab.name) : tab.name}</span>
+                <span className={styles.tabCount}>{tab.count}</span>
+              </span>
+              <span className={styles.tabTrack}>
+                <span
+                  className={styles.tabFill}
+                  style={{
+                    width: `${Math.round(tab.ratio * 100)}%`,
+                    background: TONES[tab.id] ?? "var(--lx-color-accent)",
+                  }}
+                />
+              </span>
             </button>
+          );
+        })}
+      </div>
+
+      {!view.searching && (
+        <>
+          <div className={styles.row}>
+            {view.rarities.map((chip) => (
+              <RarityChip
+                key={chip.rarity}
+                rarity={chip.rarity}
+                count={chip.count}
+                aria={chip.aria}
+                on={state.rarity === chip.rarity}
+                onPick={() =>
+                  setState((s) => ({ ...s, rarity: s.rarity === chip.rarity ? null : chip.rarity }))
+                }
+              />
+            ))}
           </div>
-        )}
-      </dialog>
+          <div className={styles.row}>
+            {view.filters.map((filter) => (
+              <FilterChip
+                key={filter.id}
+                label={filter.label}
+                on={state.filter === filter.id}
+                onPick={() => setState((s) => ({ ...s, filter: filter.id as AlbumFilter }))}
+              />
+            ))}
+            <span className={styles.divider} aria-hidden="true" />
+            {view.themes.map((theme) => (
+              <FilterChip
+                key={theme.id}
+                label={theme.label}
+                on={state.theme === theme.id}
+                muted
+                onPick={() =>
+                  setState((s) => ({ ...s, theme: s.theme === theme.id ? null : theme.id }))
+                }
+              />
+            ))}
+          </div>
+        </>
+      )}
+
+      {view.empty !== null ? (
+        <p className={styles.empty}>
+          <em>{view.empty}</em>
+        </p>
+      ) : (
+        <ul
+          className={styles.grid}
+          style={{ "--card": `${cardWidth}px` } as CSSProperties}
+          aria-label="Cartes"
+        >
+          {view.items.map((item) => (
+            <li key={itemKey(item)} className={styles.slot}>
+              <Tile item={item} width={cardWidth} onOpen={openCard} />
+            </li>
+          ))}
+        </ul>
+      )}
     </main>
   );
 }
 
-/** The card opened in large: the one card of the album that catches the light. */
-function ZoomedCard({
-  card,
-  collectionName,
+function itemKey(item: AlbumItem): string {
+  if (item.kind === "owned") return item.card.id;
+  if (item.kind === "missing") return `missing-${item.cardId}`;
+  return "more";
+}
+
+function Tile({
+  item,
+  width,
+  onOpen,
 }: {
-  readonly card: CatalogCard;
-  readonly collectionName: string;
+  readonly item: AlbumItem;
+  readonly width: number;
+  readonly onOpen: (cardId: string) => void;
 }) {
-  const light = useHoloLight(true);
+  switch (item.kind) {
+    case "owned":
+      return <OwnedTile item={item} width={width} onOpen={onOpen} />;
+    case "missing":
+      return <MissingTile item={item} />;
+    case "more":
+      return (
+        <Link href="/jouer" className={styles.more}>
+          <span className={`${ui.display} ${styles.moreCount}`}>{item.left}</span>
+          <span className={styles.moreLabel}>{item.label}</span>
+        </Link>
+      );
+  }
+}
+
+function OwnedTile({
+  item,
+  width,
+  onOpen,
+}: {
+  readonly item: OwnedItem;
+  readonly width: number;
+  readonly onOpen: (cardId: string) => void;
+}) {
   return (
-    <div ref={light.ref} onPointerMove={light.onPointerMove} onPointerLeave={light.onPointerLeave}>
-      <HoloCard card={card} collectionName={collectionName} />
+    <button
+      type="button"
+      className={styles.owned}
+      onClick={() => onOpen(item.card.id)}
+      aria-label={item.aria}
+    >
+      <Card card={item.card} collectionName={item.collectionName} width={width} />
+      {item.quantity > 1 && <span className={styles.quantity}>×{item.quantity}</span>}
+      <span className={`${styles.mastery} ${styles[item.level]}`}>
+        <span className={styles.dot} />
+        {item.levelLabel}
+      </span>
+    </button>
+  );
+}
+
+/** A card not found yet: only its rarity shows, the word stays a surprise. */
+function MissingTile({ item }: { readonly item: MissingItem }) {
+  const style = rarityStyles[item.rarity];
+  const frame = typeof style.frame === "string" ? style.frame : cssFill(style.frame);
+  return (
+    <div className={styles.missing} role="img" aria-label={item.aria}>
+      <span className={styles.missingBox} style={{ "--frame": frame } as CSSProperties}>
+        <span className={`${ui.display} ${styles.question}`} aria-hidden="true">
+          ?
+        </span>
+      </span>
+      <span className={styles.missingLabel}>
+        <RarityName rarity={item.rarity} />
+      </span>
     </div>
   );
 }
 
-/** Slot of a card not found yet: only its rarity shows, the word stays a surprise. */
-function MissingCard({ card }: { readonly card: CatalogCard }) {
-  const style = rarityStyles[card.rarity];
+function RarityChip({
+  rarity,
+  count,
+  aria,
+  on,
+  onPick,
+}: {
+  readonly rarity: Rarity;
+  readonly count: string;
+  readonly aria: string;
+  readonly on: boolean;
+  readonly onPick: () => void;
+}) {
+  const style = rarityStyles[rarity];
   return (
-    <div
-      className={styles.missing}
-      style={{
-        borderColor: typeof style.frame === "string" ? style.frame : undefined,
-        backgroundImage: typeof style.frame === "string" ? undefined : cssFill(style.frame),
-      }}
-      aria-label={`Carte ${RARITY_LABELS[card.rarity]} pas encore trouvée`}
-      role="img"
+    <button
+      type="button"
+      className={`${ui.chip} ${styles.rarityChip}`}
+      aria-pressed={on}
+      aria-label={aria}
+      onClick={onPick}
     >
-      <span className={styles.missingInner}>
-        <span className={styles.question} aria-hidden="true">
-          ?
-        </span>
-        <span className={styles.missingLabel}>
-          <RarityName rarity={card.rarity} />
-        </span>
+      <span
+        className={styles.gem}
+        style={{ background: cssFill(style.band), color: style.bandInk }}
+        aria-hidden="true"
+      >
+        <RarityIcon rarity={rarity} size="16px" />
       </span>
-    </div>
+      <span className={styles.num}>{count}</span>
+    </button>
+  );
+}
+
+function FilterChip({
+  label,
+  on,
+  muted = false,
+  onPick,
+}: {
+  readonly label: string;
+  readonly on: boolean;
+  readonly muted?: boolean;
+  readonly onPick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      className={`${ui.chip} ${styles.filter} ${muted ? styles.theme : ""}`}
+      data-on={on}
+      aria-pressed={on}
+      onClick={onPick}
+    >
+      {label}
+    </button>
   );
 }

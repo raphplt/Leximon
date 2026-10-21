@@ -4,6 +4,7 @@ import {
   type TradeRefusalCode,
   type TradeStatus,
 } from "@leximon/contract";
+import { TRADE_SCHEDULE, tradeRulesAt } from "@leximon/core";
 
 /**
  * Pure rules of the trades screen: what a trade means for the player looking at it, how long it
@@ -203,4 +204,40 @@ export function refusalMessage(code: TradeRefusalCode | OfferProblem): string {
 /** Count of a selection, for the step headings: `2 / 3`. */
 export function selectionCount(selection: readonly string[], max: number): string {
   return `${selection.length} / ${max}`;
+}
+
+// --- Échanges screen (E-01 to E-07) --------------------------------------------------------------
+
+/** « Reçues (2) »; the count only when there is something waiting. */
+export function boxTabLabel(box: TradeBox, pending: number): string {
+  const name = box === "incoming" ? "Reçues" : "Envoyées";
+  return pending > 0 ? `${name} (${pending})` : name;
+}
+
+export const NO_OFFER_RECEIVED = "Personne ne frappe à la porte. Fais le premier pas.";
+export const NO_OFFER_SENT = "Aucune offre en route.";
+
+/** « 10 offres par 24 h. Une offre expire après 72 h. », with the rules of `now`. */
+export function tradeRulesNote(now: number): string {
+  const rules = tradeRulesAt(TRADE_SCHEDULE, now);
+  return `${rules.offersPerDay} offres par 24 h. Une offre expire après ${Math.round(rules.offerTtlMs / HOUR)} h.`;
+}
+
+/** « baloise, talle »: the words of one side of an offer. */
+export function wordList(cardIds: readonly string[], wordOf: (cardId: string) => string): string {
+  return cardIds.map(wordOf).join(", ");
+}
+
+/**
+ * One line of the history: « Conclue avec K7QP 2MXA : baloise contre talle. », the player's
+ * cards first.
+ */
+export function historyLine(
+  trade: Trade,
+  box: TradeBox,
+  now: number,
+  wordOf: (cardId: string) => string,
+): string {
+  const sides = tradeSides(trade, box);
+  return `${statusLabel(effectiveStatus(trade, now))} avec ${formatPlayerCode(sides.counterpartCode)} : ${wordList(sides.mine, wordOf)} contre ${wordList(sides.theirs, wordOf)}.`;
 }

@@ -7,6 +7,7 @@ import type {
 } from "@leximon/contract";
 import { fetchAccount, fetchLevelRewards, fetchWallet } from "@/lib/api";
 import { forgetProgress } from "@/progress/use-progress";
+import { dailyChallenge, ownedCards, refreshIfRead, wordMemory } from "./collection";
 import { sharedResource } from "./resource";
 
 /** The player's wallet: free stock and bonus reserve (J-07, C-01). */
@@ -40,4 +41,7 @@ export function forgetPlayer(): void {
   wallet.refresh();
   levelRewards.refresh();
   account.refresh();
+  refreshIfRead(ownedCards);
+  refreshIfRead(wordMemory);
+  refreshIfRead(dailyChallenge);
 }

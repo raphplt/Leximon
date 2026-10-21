@@ -143,6 +143,6 @@ Options et recommandations dans les cahiers des charges ([ouverture](cahiers-des
 - **Numéro de collection sur la carte** (« 040/160 ») : dénominateur fixe annoncé à la publication, ou nombre de cartes publiées ; Légendaires « hors série » numérotées au-delà, ou non.
 - **Sons de l'ouverture :** garder les sons synthétisés, ou passer à des sons de banque.
 - **Abonnement premium :** le propriétaire veut l'envisager (2026-10-20), en plus des cosmétiques. Il reste dans N1 et N2 : contenu connu à l'avance, jamais de plis. Pistes de `north-star.md` : révisions illimitées, statistiques, collections en avant-première, mode hors ligne. À décider : contenu, prix, et ce qui reste gratuit pour ne pas casser le jeu. La prononciation reste gratuite (P57).
-- **Notation phonétique affichée :** sur la carte, à côté de la carte (vue agrandie), ou pas du tout. Penchant du propriétaire pour l'afficher (2026-10-21), à essayer sur des maquettes.
+- **Notation phonétique affichée :** sur la carte, à côté de la carte (vue agrandie), ou pas du tout. Penchant du propriétaire pour l'afficher (2026-10-21). Essai sur le web (lot 2 de l'interface) : affichée à côté de la carte, dans sa fiche, après le bouton qui fait entendre le mot. À confirmer.
 - **Cible principale :** hypothèse du propriétaire, les adultes de 25 à 65 ans et plus, plutôt que les moins de 18 ans (P8 reste ouvert dès 15 ans). À vérifier pendant la bêta avant d'orienter la communication.
 - **Discussion de clan :** modération automatique par un modèle dès la bêta ou plus tard ; durée de conservation des messages.

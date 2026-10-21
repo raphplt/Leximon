@@ -3,6 +3,7 @@ import {
   type ChallengesResponse,
   challengeAnswerRequestSchema,
   challengesQuerySchema,
+  type DailyChallengeResponse,
   IDEMPOTENCY_KEY_HEADER,
   idempotencyKeySchema,
 } from "@leximon/contract";
@@ -12,7 +13,7 @@ import type { AppEnv } from "../context";
 import { playerRateLimit } from "../middleware/rate-limit";
 import { requireUser } from "../middleware/require-user";
 import type { CatalogIndexLoader } from "./catalog-index";
-import { answerChallenge, nextChallenges } from "./challenges";
+import { answerChallenge, dailyTally, nextChallenges } from "./challenges";
 
 /** Challenges (D-025): questions on owned words, answers that raise their mastery. */
 export function challengeRoutes(loadCatalogIndex: CatalogIndexLoader) {
@@ -42,6 +43,12 @@ export function challengeRoutes(loadCatalogIndex: CatalogIndexLoader) {
       })),
       nextDueAt: session.nextDueAt === null ? null : new Date(session.nextDueAt).toISOString(),
     });
+  });
+
+  routes.get("/daily", async (c) => {
+    const tally = await dailyTally(c.var.db, c.var.userId, Date.now());
+    c.header("Cache-Control", "no-store");
+    return c.json<DailyChallengeResponse>(tally);
   });
 
   routes.post("/answer", async (c) => {

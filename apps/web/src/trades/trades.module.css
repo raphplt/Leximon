@@ -1,48 +1,29 @@
+/* Échanges (E-01 to E-07), maquette v1. */
+
 .screen {
   box-sizing: border-box;
-  max-width: 440px;
-  min-height: calc(100dvh - 68px);
+  max-width: 1180px;
   margin: 0 auto;
-  padding: 8px 16px 48px;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
+  padding: 26px 32px 64px;
 }
 
 .header {
   display: flex;
-  flex-direction: column;
-}
-
-.kicker {
-  margin: 0 0 2px;
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--lx-color-text-muted);
+  align-items: flex-end;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 16px;
 }
 
 .title {
   margin: 0;
-  font-family: var(--font-display), Georgia, serif;
-  font-variation-settings: "SOFT" 100;
-  font-weight: 900;
-  font-size: 30px;
+  font-size: 44px;
   line-height: 1;
 }
 
-.center {
-  flex-grow: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 20px;
-}
-
 .hint {
-  margin: 0;
+  margin: 0 0 16px;
   font-size: 16px;
   font-weight: 700;
   line-height: 1.35;
@@ -68,122 +49,58 @@
   border: 0;
 }
 
-/* --- Player code ---------------------------------------------------------------------- */
+/* --- Player code (E-01) --- */
 
-.codeCard {
-  padding: 14px 16px;
-  border-radius: var(--lx-radius-card);
-  background: var(--lx-color-background-raised);
-  box-shadow: 0 4px 0 rgba(0, 0, 0, 0.25);
-}
-
-.codeLabel {
-  margin: 0;
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: var(--lx-color-text-muted);
-}
-
-.codeRow {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  margin-top: 4px;
+.codeChip {
+  gap: 8px;
 }
 
 .code {
-  font-family: var(--font-display), Georgia, serif;
-  font-variation-settings: "SOFT" 100;
-  font-weight: 900;
-  font-size: clamp(26px, 8vw, 34px);
-  line-height: 1.1;
-  letter-spacing: 0.04em;
-  font-variant-numeric: tabular-nums;
-  color: var(--lx-color-accent);
-  white-space: nowrap;
-}
-
-.copy {
-  flex-shrink: 0;
-  min-height: 44px;
-  padding: 0 18px;
-  border: 2px solid var(--lx-color-text);
-  border-radius: var(--lx-radius-pill);
-  background: none;
-  color: var(--lx-color-text);
-  font: inherit;
   font-size: 15px;
-  font-weight: 800;
-  cursor: pointer;
+  letter-spacing: 0.08em;
 }
 
-.codeHint {
-  margin: 6px 0 0;
-  min-height: 1.4em;
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--lx-color-text-muted);
-}
-
-.codeWarning {
-  margin: 10px 0 0;
-  padding: 8px 12px;
-  border-radius: var(--lx-radius-chip);
-  background: var(--lx-color-background);
+.warning {
+  margin: 0 0 12px;
   font-size: 14px;
   font-weight: 700;
-  line-height: 1.35;
   color: var(--lx-color-accent);
 }
 
-/* --- Tabs and notices ----------------------------------------------------------------- */
+/* --- Tabs (E-02) --- */
 
 .tabs {
-  min-width: 0;
-  margin: 0;
-  border: none;
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 4px;
-  padding: 4px;
+  display: flex;
+  gap: 6px;
+  width: fit-content;
+  max-width: 100%;
+  margin-bottom: 18px;
+  padding: 5px;
   border-radius: var(--lx-radius-pill);
-  background: var(--lx-color-background-raised);
+  background: var(--lx-color-sunken);
+  overflow-x: auto;
+  scrollbar-width: none;
 }
 
 .tab {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  min-height: 42px;
-  padding: 0 8px;
-  border: none;
+  appearance: none;
+  flex-shrink: 0;
+  min-height: 40px;
+  padding: 0 16px;
+  border: 0;
   border-radius: var(--lx-radius-pill);
   background: none;
   color: var(--lx-color-text);
   font: inherit;
-  font-size: 15px;
-  font-weight: 700;
+  font-size: 14px;
+  font-weight: 800;
+  white-space: nowrap;
   cursor: pointer;
 }
 
-.tab[aria-pressed="true"] {
+.tab[aria-selected="true"] {
   background: var(--lx-color-text);
   color: var(--lx-color-background);
-}
-
-.badge {
-  min-width: 20px;
-  padding: 1px 6px;
-  box-sizing: border-box;
-  border-radius: var(--lx-radius-pill);
-  background: var(--lx-color-accent);
-  color: var(--lx-color-accent-ink);
-  font-size: 12px;
-  font-weight: 800;
 }
 
 .noticeError {
@@ -249,109 +166,74 @@
   cursor: pointer;
 }
 
-/* --- Offers --------------------------------------------------------------------------- */
-
-.sectionTitle {
-  margin: 0 0 10px;
-  font-family: var(--font-display), Georgia, serif;
-  font-variation-settings: "SOFT" 100;
-  font-weight: 900;
-  font-size: 22px;
-}
-
-.empty {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-  padding-top: 8px;
-}
+/* --- Offers received (E-03) --- */
 
 .offers {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
-.offer,
-.pastOffer {
-  padding: 12px 14px 14px;
-  border-radius: var(--lx-radius-card);
-  background: var(--lx-color-background-raised);
-}
-
-.pastOffer {
-  padding-bottom: 12px;
+.offer {
+  padding: 18px;
 }
 
 .offerHeader {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 8px;
-  margin-bottom: 4px;
+  gap: 12px;
+  margin-bottom: 14px;
 }
 
 .counterpart {
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--lx-color-text-muted);
-}
-
-.counterpart strong {
+  margin: 0;
   font-weight: 800;
   letter-spacing: 0.04em;
-  color: var(--lx-color-text);
 }
 
 .timeLeft {
-  font-size: 13px;
-  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin: 0;
+  font-size: 12px;
+  color: var(--lx-color-text-muted);
+  white-space: nowrap;
+}
+
+.sides {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 10px;
+}
+
+.getting,
+.giving {
+  margin-bottom: 6px;
+  font-size: 10px;
+}
+
+.getting {
+  color: #7fe3c2;
+}
+
+.giving {
+  color: #ff9c80;
+}
+
+.swap {
   color: var(--lx-color-accent);
-  white-space: nowrap;
-}
-
-.status,
-.statusDone {
-  padding: 2px 10px;
-  border-radius: var(--lx-radius-pill);
-  font-size: 12px;
-  font-weight: 800;
-  white-space: nowrap;
-}
-
-.status {
-  border: 2px solid var(--lx-color-outline);
-  color: var(--lx-color-text-muted);
-}
-
-.statusDone {
-  border: 2px solid var(--lx-color-accent);
-  background: var(--lx-color-accent);
-  color: var(--lx-color-accent-ink);
-}
-
-.sideLabel {
-  margin: 10px 0 6px;
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: var(--lx-color-text-muted);
-}
-
-.pastSides {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px 20px;
 }
 
 .cardRow {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 6px;
   margin: 0;
   padding: 0;
   list-style: none;
@@ -363,24 +245,120 @@
   border: none;
   border-radius: 8px;
   background: none;
-  cursor: zoom-in;
+  cursor: pointer;
 }
 
 .offerActions {
   display: flex;
-  gap: 10px;
-  margin-top: 14px;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 16px;
 }
 
-.offerActions > * {
+.grow {
   flex: 1;
 }
 
-.acceptHint {
-  margin: 8px 0 0;
-  font-size: 13px;
-  font-weight: 600;
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  margin: 30px 0;
+}
+
+.emptyText {
+  margin: 0;
+  font-family: var(--font-text), Georgia, serif;
+  font-size: 19px;
+  text-align: center;
   color: var(--lx-color-text-muted);
+}
+
+/* --- Offers sent and history (E-04) --- */
+
+.sent {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-width: 760px;
+}
+
+.sent .offers {
+  grid-template-columns: minmax(0, 1fr);
+  gap: 12px;
+}
+
+.sent .emptyText {
+  text-align: left;
+}
+
+.sentOffer {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 14px;
+  padding: 14px 16px;
+}
+
+.sentText {
+  flex: 1;
+  min-width: 180px;
+}
+
+.sentWords {
+  margin: 2px 0;
+  font-size: 14px;
+  color: #d9d3e6;
+}
+
+.sentWords em {
+  font-family: var(--font-text), Georgia, serif;
+  font-size: 16px;
+}
+
+.sentStatus {
+  margin: 0;
+  font-size: 12px;
+  color: var(--lx-color-text-muted);
+}
+
+.history {
+  margin-top: 22px;
+}
+
+.historyList {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 8px 0 0;
+  padding: 0;
+  list-style: none;
+  font-size: 14px;
+  color: var(--lx-color-text-muted);
+}
+
+.rules {
+  margin: 6px 0 0;
+  font-size: 13px;
+  color: #8d88a3;
+}
+
+.sideLabel {
+  margin: 10px 0 6px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--lx-color-text-muted);
+}
+
+.sectionTitle {
+  margin: 0 0 10px;
+  font-family: var(--font-display), Georgia, serif;
+  font-variation-settings: "SOFT" 100;
+  font-weight: 900;
+  font-size: 22px;
 }
 
 /* --- Buttons -------------------------------------------------------------------------- */
@@ -447,6 +425,7 @@
 /* --- Proposing ------------------------------------------------------------------------ */
 
 .panel {
+  max-width: 760px;
   display: flex;
   flex-direction: column;
   gap: 14px;
@@ -658,24 +637,6 @@
 
 /* --- Zoom ----------------------------------------------------------------------------- */
 
-.dialog {
-  padding: 0;
-  border: none;
-  background: none;
-  overflow: visible;
-}
-
-.dialog::backdrop {
-  background: rgba(15, 17, 28, 0.82);
-}
-
-.zoom {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 20px;
-}
-
 /* A held Épique or Légendaire (P35): shown, not selectable, with the wait. */
 .pickHeld {
   display: flex;
@@ -702,4 +663,24 @@
   margin: 0 0 8px;
   font-weight: 800;
   color: var(--lx-color-success);
+}
+
+@media (max-width: 1023px) {
+  .offers {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 759px) {
+  .screen {
+    padding: 8px 14px 28px;
+  }
+
+  .title {
+    font-size: 32px;
+  }
+}
+
+.panel > .secondary {
+  align-self: flex-start;
 }

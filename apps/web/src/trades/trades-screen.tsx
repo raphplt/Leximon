@@ -1,36 +1,41 @@
 "use client";
 
-import type { CatalogCard, ProfileResponse, Trade } from "@leximon/contract";
-import Link from "next/link";
-import { useCallback, useEffect, useRef, useState } from "react";
-import { type Catalog, loadCatalog } from "@/cards/catalog";
-import { ApiError, fetchProfile, fetchTrades, resolveTrade } from "@/lib/api";
-import { useNow } from "@/lib/use-now";
-import { useProgress } from "@/progress/use-progress";
-import { CardRow, CardZoom } from "./card-thumb";
+import type { ProfileResponse, Trade } from "@leximon/contract";
 import {
-  effectiveStatus,
+  boxTabLabel,
   formatPlayerCode,
+  historyLine,
+  NO_OFFER_RECEIVED,
+  NO_OFFER_SENT,
   type Notice,
   refusalMessage,
   splitTrades,
-  statusLabel,
   type TradeBox,
   timeLeftLabel,
   tradeableFromLabel,
   tradeLevelLabel,
+  tradeRulesNote,
   tradeSides,
-} from "./offer";
+  wordList,
+} from "@leximon/view-model";
+import Link from "next/link";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useCallback, useEffect, useState } from "react";
+import { type Catalog, loadCatalog } from "@/cards/catalog";
+import { ApiError, fetchProfile, fetchTrades, resolveTrade } from "@/lib/api";
+import { useNow } from "@/lib/use-now";
+import { ownedCards, refreshIfRead } from "@/player/collection";
+import { useProgress } from "@/progress/use-progress";
+import { useShell } from "@/shell/shell-context";
+import { Button } from "@/ui/button";
+import { Icon } from "@/ui/icon";
+import { useToast } from "@/ui/toast";
+import ui from "@/ui/ui.module.css";
+import { CardRow, catalogCard } from "./card-thumb";
 import { ProposeTrade } from "./propose-trade";
 import styles from "./trades.module.css";
 
 type Tab = TradeBox | "propose";
-
-const TABS: readonly { readonly id: Tab; readonly label: string }[] = [
-  { id: "incoming", label: "Reçues" },
-  { id: "outgoing", label: "Envoyées" },
-  { id: "propose", label: "Proposer" },
-];
 
 interface Inbox {
   readonly trades: readonly Trade[];
@@ -45,9 +50,9 @@ const DONE_MESSAGES: Readonly<Record<Action, string>> = {
   cancel: "Offre annulée.",
 };
 
-const PENDING_THUMB = 92;
-const HISTORY_THUMB = 60;
+const OFFER_THUMB = 80;
 
+/** Échanges (E-01 to E-07): offers received and sent, their history, and a new offer. */
 export function TradesScreen() {
   const [catalog, setCatalog] = useState<Catalog | null>(null);
   const [profile, setProfile] = useState<ProfileResponse | null>(null);
@@ -56,9 +61,21 @@ export function TradesScreen() {
   const [tab, setTab] = useState<Tab>("incoming");
   const [notice, setNotice] = useState<Notice | null>(null);
   const [busyTradeId, setBusyTradeId] = useState<string | null>(null);
-  const [zoomed, setZoomed] = useState<CatalogCard | null>(null);
+  // E-06: « Proposer en échange » on a card sheet opens a new offer with that card given.
+  const [preset, setPreset] = useState<string | null>(null);
   const now = useNow(30_000);
   const progress = useProgress();
+  const { openCard } = useShell();
+  const given = useSearchParams().get("donne");
+  const router = useRouter();
+  const pathname = usePathname();
+
+  useEffect(() => {
+    if (given === null) return;
+    setPreset(given);
+    setTab("propose");
+    router.replace(pathname, { scroll: false });
+  }, [given, router, pathname]);
 
   // Runs again each time the page is shown after a navigation (Activity), so offers stay fresh.
   const load = useCallback(async () => {
@@ -107,6 +124,7 @@ export function TradesScreen() {
       const result = await resolveTrade(trade.id, action);
       if (result.kind === "ok") {
         replaceTrade(box, result.trade);
+        if (action === "accept") refreshIfRead(ownedCards);
         setNotice({ tone: "success", text: DONE_MESSAGES[action], albumLink: action === "accept" });
       } else {
         setNotice({ tone: "error", text: refusalMessage(result.reason) });
@@ -163,12 +181,10 @@ export function TradesScreen() {
   if (failed) {
     return (
       <main className={styles.screen}>
-        <div className={styles.center}>
-          <p className={styles.hint}>Impossible de charger tes échanges.</p>
-          <button type="button" className={styles.secondary} onClick={() => void load()}>
-            Réessayer
-          </button>
-        </div>
+        <p className={styles.hint}>Impossible de charger tes échanges.</p>
+        <Button variant="secondary" onClick={() => void load()}>
+          Réessayer
+        </Button>
       </main>
     );
   }
@@ -183,50 +199,75 @@ export function TradesScreen() {
 
   const tooRecent = now === 0 ? null : tradeableFromLabel(profile.canTradeFrom, now);
   const tooLow = progress === null ? null : tradeLevelLabel(progress.level, profile.tradeMinLevel);
-  const incomingPending = splitTrades(inboxes.incoming.trades, now).pending.length;
+  const waiting = {
+    incoming: splitTrades(inboxes.incoming.trades, now).pending.length,
+    outgoing: splitTrades(inboxes.outgoing.trades, now).pending.length,
+  };
+  const wordOf = (cardId: string) => catalogCard(catalog, cardId).word;
+  const open = (cardId: string) => openCard(cardId);
 
   return (
     <main className={styles.screen}>
       <header className={styles.header}>
-        <p className={styles.kicker}>Carte contre carte</p>
-        <h1 className={styles.title}>Échanges</h1>
+        <h1 className={`${ui.display} ${styles.title}`}>Échanges</h1>
+        <PlayerCode code={profile.playerCode} />
       </header>
+      {[tooRecent, tooLow].map(
+        (line) =>
+          line !== null && (
+            <p key={line} className={styles.warning}>
+              {line}
+            </p>
+          ),
+      )}
 
-      <PlayerCode code={profile.playerCode} notices={[tooRecent, tooLow]} />
-
-      <fieldset className={styles.tabs}>
-        <legend className={styles.visuallyHidden}>Rubriques des échanges</legend>
-        {TABS.map((item) => (
+      <div className={styles.tabs} role="tablist" aria-label="Offres">
+        {(["incoming", "outgoing"] as const).map((box) => (
           <button
-            key={item.id}
+            key={box}
             type="button"
+            role="tab"
+            aria-selected={tab === box}
             className={styles.tab}
-            aria-pressed={tab === item.id}
-            onClick={() => selectTab(item.id)}
+            onClick={() => selectTab(box)}
           >
-            {item.label}
-            {item.id === "incoming" && incomingPending > 0 && (
-              <span className={styles.badge}>
-                {incomingPending}
-                <span className={styles.visuallyHidden}> en attente</span>
-              </span>
-            )}
+            {boxTabLabel(box, waiting[box])}
           </button>
         ))}
-      </fieldset>
+        <button
+          type="button"
+          role="tab"
+          aria-selected={tab === "propose"}
+          className={styles.tab}
+          onClick={() => selectTab("propose")}
+        >
+          Nouvelle offre
+        </button>
+      </div>
 
-      {tab !== "propose" && (
-        <TradeList
-          box={tab}
+      {tab === "incoming" && (
+        <Received
           catalog={catalog}
-          inbox={inboxes[tab]}
+          inbox={inboxes.incoming}
           now={now}
           busyTradeId={busyTradeId}
           canAccept={tooRecent === null && tooLow === null}
-          onResolve={(trade, action) => void resolve(tab, trade, action)}
-          onLoadMore={() => void loadMore(tab)}
+          wordOf={wordOf}
+          onResolve={(trade, action) => void resolve("incoming", trade, action)}
+          onLoadMore={() => void loadMore("incoming")}
           onPropose={() => selectTab("propose")}
-          onZoom={setZoomed}
+          onOpen={open}
+        />
+      )}
+
+      {tab === "outgoing" && (
+        <Sent
+          inbox={inboxes.outgoing}
+          now={now}
+          busyTradeId={busyTradeId}
+          wordOf={wordOf}
+          onCancel={(trade) => void resolve("outgoing", trade, "cancel")}
+          onLoadMore={() => void loadMore("outgoing")}
         />
       )}
 
@@ -236,14 +277,13 @@ export function TradesScreen() {
           catalog={catalog}
           ownCode={profile.playerCode}
           blocked={tooRecent ?? tooLow}
+          preset={preset}
           onSent={onSent}
           onShowSent={() => selectTab("outgoing")}
-          onZoom={setZoomed}
+          onOpen={open}
           notify={setNotice}
         />
       </div>
-
-      <CardZoom catalog={catalog} card={zoomed} onClose={() => setZoomed(null)} />
 
       {/* Floats at the top: the offer just answered leaves the list, and its result stays in view. */}
       <div className={styles.toastArea} role="status" aria-live="polite">
@@ -273,170 +313,95 @@ export function TradesScreen() {
   );
 }
 
-function PlayerCode({
-  code,
-  notices,
-}: {
-  readonly code: string;
-  /** Why the player cannot trade yet, if anything stops them. */
-  readonly notices: readonly (string | null)[];
-}) {
-  const [copied, setCopied] = useState<string | null>(null);
-  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const shown = useRef<HTMLSpanElement>(null);
-
-  useEffect(
-    () => () => {
-      if (timer.current !== null) clearTimeout(timer.current);
-    },
-    [],
-  );
-
+/** « Ton code K7QP 2MXA », copied with one tap (E-01). */
+function PlayerCode({ code }: { readonly code: string }) {
+  const toast = useToast();
   const copy = async () => {
     try {
       await navigator.clipboard.writeText(code);
-      setCopied("Copié.");
+      toast("Code copié.");
     } catch {
-      // No clipboard access (old browser, permission refused): select it for a manual copy.
-      if (shown.current !== null) window.getSelection()?.selectAllChildren(shown.current);
-      setCopied("Copie impossible. Le code est sélectionné, copie-le à la main.");
+      toast(`Copie impossible. Ton code : ${formatPlayerCode(code)}`);
     }
-    if (timer.current !== null) clearTimeout(timer.current);
-    timer.current = setTimeout(() => setCopied(null), 3000);
   };
-
   return (
-    <section className={styles.codeCard} aria-labelledby="player-code-label">
-      <p id="player-code-label" className={styles.codeLabel}>
-        Ton code joueur
-      </p>
-      <div className={styles.codeRow}>
-        <span className={styles.code}>
-          <span ref={shown} aria-hidden="true">
-            {formatPlayerCode(code)}
-          </span>
-          {/* Read letter by letter, as a code is. */}
-          <span className={styles.visuallyHidden}>{code.split("").join(" ")}</span>
-        </span>
-        <button type="button" className={styles.copy} onClick={() => void copy()}>
-          Copier
-        </button>
-      </div>
-      <p className={styles.codeHint} role="status" aria-live="polite">
-        {copied ?? "Donne-le à tes amis pour échanger."}
-      </p>
-      {notices.map(
-        (notice) =>
-          notice !== null && (
-            <p key={notice} className={styles.codeWarning}>
-              {notice}
-            </p>
-          ),
-      )}
-    </section>
+    <button
+      type="button"
+      className={`${ui.chip} ${styles.codeChip}`}
+      onClick={() => void copy()}
+      aria-label={`Copier mon code joueur, ${code.split("").join(" ")}`}
+    >
+      Ton code <strong className={`${ui.display} ${styles.code}`}>{formatPlayerCode(code)}</strong>
+      <Icon name="share" size={15} />
+    </button>
   );
 }
 
-function TradeList({
-  box,
+function Received({
   catalog,
   inbox,
   now,
   busyTradeId,
   canAccept,
+  wordOf,
   onResolve,
   onLoadMore,
   onPropose,
-  onZoom,
+  onOpen,
 }: {
-  readonly box: TradeBox;
   readonly catalog: Catalog;
   readonly inbox: Inbox;
   readonly now: number;
   readonly busyTradeId: string | null;
   /** A recent account cannot accept yet (D-026). */
   readonly canAccept: boolean;
+  readonly wordOf: (cardId: string) => string;
   readonly onResolve: (trade: Trade, action: Action) => void;
   readonly onLoadMore: () => void;
   readonly onPropose: () => void;
-  readonly onZoom: (card: CatalogCard) => void;
+  readonly onOpen: (cardId: string) => void;
 }) {
   const { pending, history } = splitTrades(inbox.trades, now);
-
-  if (inbox.trades.length === 0) {
-    return (
-      <div className={styles.empty}>
-        <p className={styles.hint}>
-          {box === "incoming"
-            ? "Aucune offre reçue. Fais tourner ton code."
-            : "Tu n'as encore proposé aucun échange."}
-        </p>
-        <button type="button" className={styles.primary} onClick={onPropose}>
-          Proposer un échange
-        </button>
-      </div>
-    );
-  }
-
   return (
     <>
-      <section aria-labelledby={`${box}-pending`}>
-        <h2 id={`${box}-pending`} className={styles.sectionTitle}>
-          En attente
-        </h2>
-        {pending.length === 0 ? (
-          <p className={styles.muted}>
-            {box === "incoming"
-              ? "Aucune offre à examiner."
-              : "Aucune offre en attente de réponse."}
+      {pending.length === 0 ? (
+        <div className={styles.empty}>
+          <p className={styles.emptyText}>
+            <em>{NO_OFFER_RECEIVED}</em>
           </p>
-        ) : (
-          <ul className={styles.offers}>
-            {pending.map((trade) => (
-              <li key={trade.id}>
-                <PendingOffer
-                  box={box}
-                  catalog={catalog}
-                  trade={trade}
-                  now={now}
-                  busy={busyTradeId === trade.id}
-                  disabled={busyTradeId !== null}
-                  canAccept={canAccept}
-                  onResolve={(action) => onResolve(trade, action)}
-                  onZoom={onZoom}
-                />
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
-
-      {history.length > 0 && (
-        <section aria-labelledby={`${box}-history`}>
-          <h2 id={`${box}-history`} className={styles.sectionTitle}>
-            Historique récent
-          </h2>
-          <ul className={styles.offers}>
-            {history.map((trade) => (
-              <li key={trade.id}>
-                <PastOffer box={box} catalog={catalog} trade={trade} now={now} onZoom={onZoom} />
-              </li>
-            ))}
-          </ul>
-        </section>
+          <Button variant="secondary" onClick={onPropose}>
+            Proposer un échange
+          </Button>
+        </div>
+      ) : (
+        <ul className={styles.offers}>
+          {pending.map((trade) => (
+            <li key={trade.id}>
+              <ReceivedOffer
+                catalog={catalog}
+                trade={trade}
+                now={now}
+                busy={busyTradeId === trade.id}
+                disabled={busyTradeId !== null}
+                canAccept={canAccept}
+                onResolve={(action) => onResolve(trade, action)}
+                onOpen={onOpen}
+              />
+            </li>
+          ))}
+        </ul>
       )}
-
+      <History box="incoming" trades={history} now={now} wordOf={wordOf} />
       {inbox.nextCursor !== null && (
-        <button type="button" className={styles.secondary} onClick={onLoadMore}>
+        <Button variant="ghost" onClick={onLoadMore}>
           Voir les offres plus anciennes
-        </button>
+        </Button>
       )}
     </>
   );
 }
 
-function PendingOffer({
-  box,
+function ReceivedOffer({
   catalog,
   trade,
   now,
@@ -444,9 +409,8 @@ function PendingOffer({
   disabled,
   canAccept,
   onResolve,
-  onZoom,
+  onOpen,
 }: {
-  readonly box: TradeBox;
   readonly catalog: Catalog;
   readonly trade: Trade;
   readonly now: number;
@@ -454,130 +418,153 @@ function PendingOffer({
   readonly disabled: boolean;
   readonly canAccept: boolean;
   readonly onResolve: (action: Action) => void;
-  readonly onZoom: (card: CatalogCard) => void;
+  readonly onOpen: (cardId: string) => void;
 }) {
   // Accepting gives cards away for good: one more tap to be sure.
   const [confirming, setConfirming] = useState(false);
-  const sides = tradeSides(trade, box);
+  const sides = tradeSides(trade, "incoming");
   const code = formatPlayerCode(sides.counterpartCode);
+  const zoom = (card: { readonly id: string }) => onOpen(card.id);
 
   return (
-    <article
-      className={styles.offer}
-      aria-label={`Offre ${box === "incoming" ? "de" : "à"} ${code}`}
-    >
+    <article className={`${ui.panel} ${styles.offer}`} aria-label={`Offre de ${code}`}>
       <header className={styles.offerHeader}>
-        <span className={styles.counterpart}>
-          {box === "incoming" ? "De" : "À"} <strong>{code}</strong>
-        </span>
-        <span className={styles.timeLeft}>
+        <p className={styles.counterpart}>{code}</p>
+        <p className={styles.timeLeft}>
+          <Icon name="clock" size={13} />
           {now === 0 ? "" : timeLeftLabel(trade.expiresAt, now)}
-        </span>
+        </p>
       </header>
-      <p className={styles.sideLabel}>Tu reçois</p>
-      <CardRow catalog={catalog} cardIds={sides.theirs} width={PENDING_THUMB} onZoom={onZoom} />
-      <p className={styles.sideLabel}>Tu donnes</p>
-      <CardRow catalog={catalog} cardIds={sides.mine} width={PENDING_THUMB} onZoom={onZoom} />
-
+      <div className={styles.sides}>
+        <div>
+          <p className={`${ui.kicker} ${styles.getting}`}>Tu reçois</p>
+          <CardRow catalog={catalog} cardIds={sides.theirs} width={OFFER_THUMB} onZoom={zoom} />
+        </div>
+        <span className={styles.swap} aria-hidden="true">
+          <Icon name="echange" size={24} />
+        </span>
+        <div>
+          <p className={`${ui.kicker} ${styles.giving}`}>Tu donnes</p>
+          <CardRow catalog={catalog} cardIds={sides.mine} width={OFFER_THUMB} onZoom={zoom} />
+        </div>
+      </div>
       <div className={styles.offerActions}>
-        {box === "outgoing" && (
-          <button
-            type="button"
-            className={styles.secondarySmall}
-            disabled={disabled}
-            onClick={() => onResolve("cancel")}
-          >
-            {busy ? "Annulation…" : "Annuler l'offre"}
-          </button>
-        )}
-        {box === "incoming" && !confirming && (
+        {confirming ? (
           <>
-            <button
-              type="button"
-              className={styles.primarySmall}
+            <Button className={styles.grow} disabled={disabled} onClick={() => onResolve("accept")}>
+              {busy ? "Échange…" : "Oui, échanger"}
+            </Button>
+            <Button variant="ghost" disabled={disabled} onClick={() => setConfirming(false)}>
+              Pas encore
+            </Button>
+          </>
+        ) : (
+          <>
+            <Button
+              className={styles.grow}
               disabled={disabled || !canAccept}
               onClick={() => setConfirming(true)}
             >
-              Accepter
-            </button>
-            <button
-              type="button"
-              className={styles.secondarySmall}
-              disabled={disabled}
-              onClick={() => onResolve("decline")}
-            >
+              Accepter l'échange
+            </Button>
+            <Button variant="ghost" disabled={disabled} onClick={() => onResolve("decline")}>
               {busy ? "Un instant…" : "Refuser"}
-            </button>
-          </>
-        )}
-        {box === "incoming" && confirming && (
-          <>
-            <button
-              type="button"
-              className={styles.primarySmall}
-              disabled={disabled}
-              onClick={() => onResolve("accept")}
-            >
-              {busy ? "Échange…" : "Oui, échanger"}
-            </button>
-            <button
-              type="button"
-              className={styles.secondarySmall}
-              disabled={disabled}
-              onClick={() => setConfirming(false)}
-            >
-              Pas encore
-            </button>
+            </Button>
           </>
         )}
       </div>
-      {box === "incoming" && !canAccept && (
-        <p className={styles.acceptHint}>Tu pourras accepter dès que ton compte aura 3 jours.</p>
-      )}
     </article>
   );
 }
 
-function PastOffer({
-  box,
-  catalog,
-  trade,
+function Sent({
+  inbox,
   now,
-  onZoom,
+  busyTradeId,
+  wordOf,
+  onCancel,
+  onLoadMore,
+}: {
+  readonly inbox: Inbox;
+  readonly now: number;
+  readonly busyTradeId: string | null;
+  readonly wordOf: (cardId: string) => string;
+  readonly onCancel: (trade: Trade) => void;
+  readonly onLoadMore: () => void;
+}) {
+  const { pending, history } = splitTrades(inbox.trades, now);
+  return (
+    <div className={styles.sent}>
+      {pending.length === 0 ? (
+        <p className={styles.emptyText}>
+          <em>{NO_OFFER_SENT}</em>
+        </p>
+      ) : (
+        <ul className={styles.offers}>
+          {pending.map((trade) => {
+            const sides = tradeSides(trade, "outgoing");
+            return (
+              <li key={trade.id}>
+                <article className={`${ui.panel} ${styles.sentOffer}`}>
+                  <div className={styles.sentText}>
+                    <p className={styles.counterpart}>
+                      À {formatPlayerCode(sides.counterpartCode)}
+                    </p>
+                    <p className={styles.sentWords}>
+                      <em>{wordList(sides.mine, wordOf)}</em> contre{" "}
+                      <em>{wordList(sides.theirs, wordOf)}</em>
+                    </p>
+                    <p className={styles.sentStatus}>
+                      En attente ·{" "}
+                      {now === 0 ? "" : timeLeftLabel(trade.expiresAt, now).toLowerCase()}
+                    </p>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    disabled={busyTradeId !== null}
+                    onClick={() => onCancel(trade)}
+                  >
+                    {busyTradeId === trade.id ? "Annulation…" : "Annuler l'offre"}
+                  </Button>
+                </article>
+              </li>
+            );
+          })}
+        </ul>
+      )}
+      <History box="outgoing" trades={history} now={now} wordOf={wordOf} />
+      {inbox.nextCursor !== null && (
+        <Button variant="ghost" onClick={onLoadMore}>
+          Voir les offres plus anciennes
+        </Button>
+      )}
+      <p className={styles.rules}>{tradeRulesNote(now)}</p>
+    </div>
+  );
+}
+
+function History({
+  box,
+  trades,
+  now,
+  wordOf,
 }: {
   readonly box: TradeBox;
-  readonly catalog: Catalog;
-  readonly trade: Trade;
+  readonly trades: readonly Trade[];
   readonly now: number;
-  readonly onZoom: (card: CatalogCard) => void;
+  readonly wordOf: (cardId: string) => string;
 }) {
-  const sides = tradeSides(trade, box);
-  const status = effectiveStatus(trade, now);
+  if (trades.length === 0) return null;
   return (
-    <article className={styles.pastOffer}>
-      <header className={styles.offerHeader}>
-        <span className={styles.counterpart}>
-          {box === "incoming" ? "De" : "À"}{" "}
-          <strong>{formatPlayerCode(sides.counterpartCode)}</strong>
-        </span>
-        <span className={status === "completed" ? styles.statusDone : styles.status}>
-          {statusLabel(status)}
-        </span>
-      </header>
-      <div className={styles.pastSides}>
-        <div>
-          <p className={styles.sideLabel}>
-            {status === "completed" ? "Tu as reçu" : "Tu recevais"}
-          </p>
-          <CardRow catalog={catalog} cardIds={sides.theirs} width={HISTORY_THUMB} onZoom={onZoom} />
-        </div>
-        <div>
-          <p className={styles.sideLabel}>
-            {status === "completed" ? "Tu as donné" : "Tu donnais"}
-          </p>
-          <CardRow catalog={catalog} cardIds={sides.mine} width={HISTORY_THUMB} onZoom={onZoom} />
-        </div>
-      </div>
-    </article>
+    <section className={styles.history} aria-labelledby={`${box}-history`}>
+      <h2 id={`${box}-history`} className={ui.kicker}>
+        Historique
+      </h2>
+      <ul className={styles.historyList}>
+        {trades.map((trade) => (
+          <li key={trade.id}>{historyLine(trade, box, now, wordOf)}</li>
+        ))}
+      </ul>
+    </section>
   );
 }

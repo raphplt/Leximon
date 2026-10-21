@@ -1,6 +1,6 @@
 import { colors, cssFill, type Fill, fonts, rarityStyles } from "@leximon/tokens";
+import { frequencyLine } from "@leximon/view-model";
 import { ImageResponse } from "next/og";
-import { frequencyLine } from "@/cards/display";
 
 export const alt =
   "Leximon, jeu de cartes à collectionner. La langue a jeté des mots superbes. On les a ramassés.";

@@ -1,9 +1,10 @@
 import type { CatalogCard } from "@leximon/contract";
 import { RARITY_LABELS } from "@leximon/contract";
 import { cardSize, cssFill, rarityStyles } from "@leximon/tokens";
+import { formatOdds } from "@leximon/view-model";
 import type { CSSProperties } from "react";
 import { catalogFileUrl } from "@/cards/catalog";
-import { formatOdds, wordFontSize } from "@/cards/display";
+import { wordFontSize } from "@/cards/display";
 import {
   creditLine,
   cssUrl,

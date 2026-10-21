@@ -1,7 +1,16 @@
 "use client";
 
-import { type FabId, type Fab as FabModel, lockedToast, playFabs } from "@leximon/view-model";
+import {
+  dailyView,
+  type FabId,
+  type Fab as FabModel,
+  lockedToast,
+  playFabs,
+} from "@leximon/view-model";
 import { useRouter } from "next/navigation";
+import type { CSSProperties } from "react";
+import { dailyChallenge } from "@/player/collection";
+import { useShared } from "@/player/resource";
 import { useShell } from "@/shell/shell-context";
 import { usePlayerView } from "@/shell/use-player-view";
 import { Fab } from "@/ui/fab";
@@ -25,7 +34,9 @@ export function PlayFabs() {
   const shell = useShell();
   const router = useRouter();
   const toast = useToast();
+  const daily = useShared(dailyChallenge);
   if (view.now === 0) return null;
+  const dailyRatio = daily === null ? 0 : dailyView(daily).ratio;
   const { left, right } = playFabs(
     {
       level: view.progress?.level ?? 1,
@@ -71,6 +82,15 @@ export function PlayFabs() {
           lock={fab.lock}
           glow={fab.glow}
           onClick={() => act(fab)}
+          ring={
+            fab.id === "daily" ? (
+              <span
+                className={styles.dailyRing}
+                style={{ "--done": `${Math.round(dailyRatio * 360)}deg` } as CSSProperties}
+                aria-hidden="true"
+              />
+            ) : undefined
+          }
         />
       ))}
     </div>

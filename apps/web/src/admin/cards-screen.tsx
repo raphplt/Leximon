@@ -1,11 +1,11 @@
 "use client";
 
 import { RARITIES, type Rarity } from "@leximon/core";
+import { formatOdds } from "@leximon/view-model";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { loadCatalog } from "@/cards/catalog";
-import { formatOdds } from "@/cards/display";
 import { Card } from "@/components/card";
 import { RarityName } from "@/components/rarity-icon";
 import { Select } from "@/components/select";

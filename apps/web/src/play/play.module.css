@@ -353,3 +353,13 @@
     font-size: 16px;
   }
 }
+
+/* Part of the daily goal reached, around the Défi du jour button (J-04). */
+.dailyRing {
+  position: absolute;
+  inset: -2px;
+  border-radius: 50%;
+  background: conic-gradient(#3bd3a5 var(--done), #4a5175 0);
+  mask: radial-gradient(closest-side, transparent 84%, #000 86%);
+  pointer-events: none;
+}

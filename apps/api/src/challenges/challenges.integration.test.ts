@@ -1,6 +1,7 @@
 import {
   challengeAnswerResponseSchema,
   challengesResponseSchema,
+  dailyChallengeResponseSchema,
   IDEMPOTENCY_KEY_HEADER,
   masteryResponseSchema,
 } from "@leximon/contract";
@@ -237,10 +238,49 @@ describe("GET /me/mastery", () => {
     const response = await get(guest, "/me/mastery");
     expect(response.status).toBe(200);
     expect(response.headers.get("cache-control")).toBe("no-store");
-    expect(masteryResponseSchema.parse(await response.json())).toEqual({
-      words: [{ cardId: "test-a-common-1", level: "sketch" }],
-    });
+    const { words } = masteryResponseSchema.parse(await response.json());
+    expect(words).toEqual([
+      {
+        cardId: "test-a-common-1",
+        level: "sketch",
+        due: expect.any(String),
+        stability: expect.any(Number),
+      },
+    ]);
+    expect(Date.parse(words[0]?.due ?? "")).toBeGreaterThan(Date.now());
     expect((await get(null, "/me/mastery")).status).toBe(401);
+  });
+});
+
+describe("GET /challenges/daily", () => {
+  async function daily(guest: Guest) {
+    const response = await get(guest, "/challenges/daily");
+    expect(response.status).toBe(200);
+    expect(response.headers.get("cache-control")).toBe("no-store");
+    return dailyChallengeResponseSchema.parse(await response.json());
+  }
+
+  it("requires a session", async () => {
+    expect((await get(null, "/challenges/daily")).status).toBe(401);
+  });
+
+  it("counts today's answers until the bonus is given", async () => {
+    const guest = await signInAsGuest(app, env);
+    const words = [1, 2, 3].flatMap((n) => [`test-a-common-${n}`, `test-a-uncommon-${n}`]);
+    await give(guest, ...words);
+    expect(await daily(guest)).toEqual({
+      goal: { answers: 5, correct: 3 },
+      answers: 0,
+      correct: 0,
+      awarded: false,
+    });
+
+    await answer(guest, "test-a-common-1", "test-a-common-1");
+    await answer(guest, "test-a-uncommon-1", "test-b-common-1");
+    expect(await daily(guest)).toMatchObject({ answers: 2, correct: 1, awarded: false });
+
+    for (const cardId of words.slice(2, 5)) await answer(guest, cardId, cardId);
+    expect(await daily(guest)).toMatchObject({ answers: 5, correct: 4, awarded: true });
   });
 });
 

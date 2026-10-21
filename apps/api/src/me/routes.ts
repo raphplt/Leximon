@@ -200,14 +200,22 @@ export function meRoutes() {
     });
   });
 
-  /** The level of every word reviewed at least once (D-025). */
+  /** The level, next review and stability of every word reviewed at least once (D-025). */
   routes.get("/mastery", async (c) => {
     const rows = await c.var.db
-      .select({ cardId: userMastery.cardId, level: userMastery.level })
+      .select({
+        cardId: userMastery.cardId,
+        level: userMastery.level,
+        due: userMastery.due,
+        stability: userMastery.stability,
+      })
       .from(userMastery)
       .where(eq(userMastery.userId, c.var.userId))
       .orderBy(asc(userMastery.cardId));
-    return c.json<MasteryResponse>({ words: rows });
+    c.header("Cache-Control", "no-store");
+    return c.json<MasteryResponse>({
+      words: rows.map((row) => ({ ...row, due: row.due.toISOString() })),
+    });
   });
 
   return routes;

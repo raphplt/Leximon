@@ -417,3 +417,38 @@ function toMemory(row: MasteryRow): MemoryState {
     lastReviewedAt: row.last_reviewed_at === null ? null : new Date(row.last_reviewed_at).getTime(),
   };
 }
+
+export interface DailyTally {
+  readonly goal: { readonly answers: number; readonly correct: number };
+  readonly answers: number;
+  readonly correct: number;
+  readonly awarded: boolean;
+}
+
+/**
+ * Today's answers towards the daily goal (P23, P29), in one read: the answers of the game day
+ * (Paris time) and whether its bonus was already given. Uses the same index as the answer tally.
+ */
+export async function dailyTally(db: Database, userId: string, now: EpochMs): Promise<DailyTally> {
+  const rules = bonusRulesAt(BONUS_SCHEDULE, now);
+  const day = gameDayOf(now);
+  const result = await db.execute<{ answers: number; correct: number; awarded: boolean }>(sql`
+    select count(*)::int as answers,
+      (count(*) filter (where ${reviewLogs.correct}))::int as correct,
+      exists (select 1 from ${boosterBonusAwards}
+        where ${boosterBonusAwards.userId} = ${userId}
+          and ${boosterBonusAwards.kind} = 'daily'
+          and ${boosterBonusAwards.awardKey} = ${day.key}) as awarded
+    from ${reviewLogs}
+    where ${reviewLogs.userId} = ${userId}
+      and ${reviewLogs.reviewedAt} >= ${new Date(day.start)}
+      and ${reviewLogs.reviewedAt} < ${new Date(day.end)}
+  `);
+  const row = result.rows[0];
+  return {
+    goal: rules.dailyGoal,
+    answers: row?.answers ?? 0,
+    correct: row?.correct ?? 0,
+    awarded: row?.awarded ?? false,
+  };
+}

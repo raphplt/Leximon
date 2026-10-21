@@ -2,14 +2,6 @@
 
 import type { CatalogCard, Trade } from "@leximon/contract";
 import { rarityRank } from "@leximon/core";
-import Link from "next/link";
-import { type FormEvent, useLayoutEffect, useRef, useState } from "react";
-import { type Catalog, collectionName } from "@/cards/catalog";
-import { Card } from "@/components/card";
-import { createTrade, fetchOwnedCards, fetchTradeable } from "@/lib/api";
-import { useNow } from "@/lib/use-now";
-import { usePackShape } from "@/lib/use-pack-shape";
-import { CardRow, cardLabel, catalogCard } from "./card-thumb";
 import {
   formatPlayerCode,
   heldLabel,
@@ -20,7 +12,15 @@ import {
   refusalMessage,
   selectionCount,
   toggleCard,
-} from "./offer";
+} from "@leximon/view-model";
+import Link from "next/link";
+import { type FormEvent, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { type Catalog, collectionName } from "@/cards/catalog";
+import { Card } from "@/components/card";
+import { createTrade, fetchOwnedCards, fetchTradeable } from "@/lib/api";
+import { useNow } from "@/lib/use-now";
+import { usePackShape } from "@/lib/use-pack-shape";
+import { CardRow, cardLabel, catalogCard } from "./card-thumb";
 import styles from "./trades.module.css";
 
 type Step = "code" | "want" | "give" | "review" | "sent";
@@ -65,18 +65,21 @@ export function ProposeTrade({
   catalog,
   ownCode,
   blocked,
+  preset,
   onSent,
   onShowSent,
-  onZoom,
+  onOpen,
   notify,
 }: {
   readonly catalog: Catalog;
   readonly ownCode: string;
   /** Why the player cannot trade yet: a recent account (D-026) or a low level (P48). */
   readonly blocked: string | null;
+  /** A card to give, chosen on its card sheet (E-06). */
+  readonly preset: string | null;
   readonly onSent: (trade: Trade) => void;
   readonly onShowSent: () => void;
-  readonly onZoom: (card: CatalogCard) => void;
+  readonly onOpen: (cardId: string) => void;
   /** Shows a result in the screen's floating message, which stays in view wherever the player is. */
   readonly notify: (notice: Notice | null) => void;
 }) {
@@ -95,6 +98,12 @@ export function ProposeTrade({
   const [codeError, setCodeError] = useState<string | null>(null);
   // Kept until the server answers, so that a retry never sends the same offer twice.
   const [pendingKey, setPendingKey] = useState<string | null>(null);
+
+  const onZoom = (card: CatalogCard) => onOpen(card.id);
+
+  useEffect(() => {
+    if (preset !== null) setGive([preset]);
+  }, [preset]);
 
   // A sent offer is done: coming back to the page later starts a fresh one.
   const shouldReset = useRef(false);
@@ -311,6 +320,11 @@ export function ProposeTrade({
           <p id="partner-code-hint" className={styles.muted}>
             Il est en haut de son écran Échanges.
           </p>
+          {give.length > 0 && (
+            <p className={styles.partnerFound}>
+              Tu donnes : {give.map((id) => catalogCard(catalog, id).word).join(", ")}
+            </p>
+          )}
           <p
             id="partner-code-error"
             className={styles.noticeError}
@@ -541,7 +555,7 @@ function CardPicker({
               type="button"
               className={styles.pickButton}
               aria-pressed={selected}
-              aria-label={`${cardLabel(card)}${isNew ? ", nouveau pour toi" : ""}`}
+              aria-label={`${cardLabel(card)}${isNew ? ", il te manque" : ""}`}
               onClick={() => onToggle(card.id)}
             >
               <Card
@@ -556,7 +570,7 @@ function CardPicker({
               )}
               {isNew && (
                 <span className={styles.newBadge} aria-hidden="true">
-                  Nouveau
+                  Il te manque
                 </span>
               )}
             </button>

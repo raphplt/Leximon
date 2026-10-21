@@ -84,7 +84,7 @@ La maquette montre l'intention, pas la finition. Chaque écran gagne en plus :
 | J-01 | Bandeau de niveau | Médaillon, « Niveau 16 · Fine plume », barre d'XP épaisse, « 260 / 400 XP » | `GET /me/progress` | 1 | fait | à faire |
 | J-02 | Prochaines récompenses (web) | Les 4 niveaux suivants en pastilles, les paliers de 5 en kraft, un cadenas quand le niveau ouvre une fonction. Toucher : le chemin des niveaux sur ce niveau | P58, P59 | 1 | fait | — |
 | J-03 | Bouton « N coffrets » | Visible et pulsant tant qu'une récompense attend ; ouvre le coffret du plus petit niveau | `GET /me/level-rewards` | 1 | fait | à faire |
-| J-04 | Boutons flottants | Gauche : Clan, Discussion, Joutes. Droite : Défi du jour (anneau), Coffrets, Courrier, Réglages. Pastilles, badges « Niv. X » | plusieurs | 1 | en partie (sans l'anneau du défi du jour) | à faire |
+| J-04 | Boutons flottants | Gauche : Clan, Discussion, Joutes. Droite : Défi du jour (anneau), Coffrets, Courrier, Réglages. Pastilles, badges « Niv. X » | plusieurs | 1 | fait | à faire |
 | J-05 | Choix de la collection | Web : pastilles des collections. Mobile : flèches de part et d'autre du nom. Avant le niveau 3, seul le sachet découverte, les autres affichent « Niv. 3 » (P14, P59) | P59 dans `POST /boosters/open` | 1 | fait | à faire |
 | J-06 | Le sachet | Grand sachet de la collection choisie, qui flotte ; gris et immobile quand stock et réserve sont vides | — | 1 | fait | à faire |
 | J-07 | Stock | Six points, « 4 sur 6 · le prochain dans 18 min », bouton « Ouvrir le sachet » ou « Ouvrir un sachet bonus », désactivé quand tout est vide | existe | 1 | fait | à faire |
@@ -120,39 +120,39 @@ La maquette montre l'intention, pas la finition. Chaque écran gagne en plus :
 
 | ID | Élément | Ce qu'il faut | Serveur | Lot | Web | Mobile |
 |---|---|---|---|---|---|---|
-| A-01 | En-tête | « Album », « 590 mots sur 1 561 », recherche | `GET /me/cards` | 2 | à reprendre | à faire |
-| A-02 | Onglets de collection | Nom, compte, barre de progression à la teinte de la collection | idem | 2 | à reprendre | à faire |
-| A-03 | Filtre par rareté | Gemme et « 85/175 » par rareté, bascule | idem | 2 | à faire | à faire |
-| A-04 | Filtres | Toutes, Doubles, À réviser, Dorure, Manquantes, et les thèmes (P16) | idem | 2 | à faire | à faire |
-| A-05 | Grille | Cartes possédées avec « ×3 » et point de maîtrise ; emplacements « ? » des manquantes ; tuile « 327 mots à trouver » qui mène à Jouer | idem | 2 | à reprendre | à faire |
-| A-06 | Album vide, recherche sans résultat | « Rien de ce côté. Pas pour longtemps. » | — | 2 | à faire | à faire |
-| A-07 | Fiche d'une carte | Grande carte avec reflets, rareté, fréquence en chiffres (« Un mot imprimé sur 17 milliards. »), maîtrise en trois étapes avec ce qu'il reste, exemplaires et doubles, collection, origine, crédit de la gravure | existe en partie | 2 | à reprendre | à faire |
-| A-08 | Actions de la fiche | « Réviser ce mot », « Proposer en échange » (s'il y a un double et le niveau 5), « Épingler », « Partager » | — | 2 | à faire | à faire |
-| A-09 | Prononciation | Bouton pour entendre le mot, gratuit (P57) ; notation phonétique selon la décision en attente | fichiers audio du catalogue (D-032) | 2 | à faire | à faire |
-| A-10 | Partage | Texte selon voix.md (« Talpinette. Introuvable dans les livres d'aujourd'hui. Moi, je l'ai. ») ; feuille de partage native sur mobile ; image de partage par la file (plus tard) | — | 2 | à faire | à faire |
+| A-01 | En-tête | « Album », « 590 mots sur 1 561 », recherche | `GET /me/cards` | 2 | fait | à faire |
+| A-02 | Onglets de collection | Nom, compte, barre de progression à la teinte de la collection | idem | 2 | fait | à faire |
+| A-03 | Filtre par rareté | Gemme et « 85/175 » par rareté, bascule | idem | 2 | fait | à faire |
+| A-04 | Filtres | Toutes, Doubles, À réviser, Dorure, Manquantes, et les thèmes (P16) | idem | 2 | fait | à faire |
+| A-05 | Grille | Cartes possédées avec « ×3 » et point de maîtrise ; emplacements « ? » des manquantes ; tuile « 327 mots à trouver » qui mène à Jouer | idem | 2 | fait | à faire |
+| A-06 | Album vide, recherche sans résultat | « Rien de ce côté. Pas pour longtemps. » | — | 2 | fait | à faire |
+| A-07 | Fiche d'une carte | Grande carte avec reflets, rareté, fréquence en chiffres (« Un mot imprimé sur 17 milliards. »), maîtrise en trois étapes avec ce qu'il reste, exemplaires et doubles, collection, origine, crédit de la gravure | existe en partie | 2 | fait | à faire |
+| A-08 | Actions de la fiche | « Réviser ce mot », « Proposer en échange » (s'il y a un double et le niveau 5), « Épingler », « Partager » | — | 2 | en partie (« Épingler » au lot 3, avec le profil) | à faire |
+| A-09 | Prononciation | Bouton pour entendre le mot, gratuit (P57) ; notation phonétique selon la décision en attente | fichiers audio du catalogue (D-032) | 2 | fait (notation phonétique affichée à côté de la carte, à confirmer) | à faire |
+| A-10 | Partage | Texte selon voix.md (« Talpinette. Introuvable dans les livres d'aujourd'hui. Moi, je l'ai. ») ; feuille de partage native sur mobile ; image de partage par la file (plus tard) | — | 2 | en partie (texte et feuille de partage ; image de partage plus tard) | à faire |
 
 ### D · Défis
 
 | ID | Élément | Ce qu'il faut | Serveur | Lot | Web | Mobile |
 |---|---|---|---|---|---|---|
-| D-01 | Défi du jour | « 5 questions, 3 bonnes », cinq barres de progression, « Commencer le défi », « Continuer le défi », « Reviens demain » | existe | 2 | à reprendre | à faire |
-| D-02 | Ta mémoire | Nombre de mots en Esquisse, Encre, Dorure ; une phrase qui explique les seuils | `GET /me/mastery` | 2 | à faire | à faire |
-| D-03 | Ces mots t'échappent | Les mots dus, avec quand ils reviennent, « Réviser » | `GET /challenges` | 2 | à faire | à faire |
-| D-04 | Session de questions | Croix pour arrêter, barres de position, « Que veut dire ce mot ? » ou « Quel mot se cache là-dessous ? », quatre choix, retour juste ou raté avec la fréquence ou la bonne réponse | existe | 2 | à reprendre | à faire |
-| D-05 | Bilan | « 4/5 », « +60 XP », « Un sachet bonus pour le défi du jour ! » ou « Pas cette fois. Ces mots reviennent demain. » ; mots passés à l'Encre ou à la Dorure | existe | 2 | à reprendre | à faire |
+| D-01 | Défi du jour | « 5 questions, 3 bonnes », cinq barres de progression, « Commencer le défi », « Continuer le défi », « Reviens demain » | existe | 2 | fait | à faire |
+| D-02 | Ta mémoire | Nombre de mots en Esquisse, Encre, Dorure ; une phrase qui explique les seuils | `GET /me/mastery` | 2 | fait | à faire |
+| D-03 | Ces mots t'échappent | Les mots dus, avec quand ils reviennent, « Réviser » | `GET /challenges` | 2 | fait | à faire |
+| D-04 | Session de questions | Croix pour arrêter, barres de position, « Que veut dire ce mot ? » ou « Quel mot se cache là-dessous ? », quatre choix, retour juste ou raté avec la fréquence ou la bonne réponse | existe | 2 | fait | à faire |
+| D-05 | Bilan | « 4/5 », « +60 XP », « Un sachet bonus pour le défi du jour ! » ou « Pas encore de bonus. Le défi du jour court jusqu'à minuit. » (le défi du jour se cumule sur la journée) ; mots passés à l'Encre ou à la Dorure | existe | 2 | fait | à faire |
 | D-06 | Rien à réviser | « Tes mots tiennent bon. Le prochain revient dans 3 h. » | — | 2 | fait | à faire |
 
 ### E · Échanges
 
 | ID | Élément | Ce qu'il faut | Serveur | Lot | Web | Mobile |
 |---|---|---|---|---|---|---|
-| E-01 | En-tête | « Échanges », « Ton code K7QP2MXA » à copier | existe | 2 | à reprendre | à faire |
-| E-02 | Onglets | Reçues (N), Envoyées (N), Nouvelle offre | existe | 2 | à reprendre | à faire |
-| E-03 | Offre reçue | Avatar, pseudo, niveau, « Expire dans 41 h », « Tu reçois », « Tu donnes », « Accepter l'échange », « Refuser » ; toucher une carte ouvre sa fiche | existe | 2 | à reprendre | à faire |
-| E-04 | Offres envoyées et historique | « En attente · expire dans 60 h », « Annuler l'offre », historique des échanges, « 10 offres par 24 h. Une offre expire après 72 h. » | existe | 2 | à reprendre | à faire |
+| E-01 | En-tête | « Échanges », « Ton code K7QP2MXA » à copier | existe | 2 | fait | à faire |
+| E-02 | Onglets | Reçues (N), Envoyées (N), Nouvelle offre | existe | 2 | fait | à faire |
+| E-03 | Offre reçue | Avatar, pseudo, niveau, « Expire dans 41 h », « Tu reçois », « Tu donnes », « Accepter l'échange », « Refuser » ; toucher une carte ouvre sa fiche | existe | 2 | en partie (code joueur à la place de l'avatar, du pseudo et du niveau : profil au lot 3) | à faire |
+| E-04 | Offres envoyées et historique | « En attente · expire dans 60 h », « Annuler l'offre », historique des échanges, « 10 offres par 24 h. Une offre expire après 72 h. » | existe | 2 | fait | à faire |
 | E-05 | Nouvelle offre | Code joueur, joueur trouvé (pseudo, niveau), tes doubles, ses doubles avec « Il te manque », 1 carte par côté avant le niveau 10 et 3 ensuite (P59), Épiques et Légendaires grisées « Échangeable dans 7 j » (P35), « Vérifier l'offre » puis « Envoyer l'offre » | `TRADE_SCHEDULE` (P59), limite revérifiée à l'acceptation | 1 | fait | à faire |
-| E-06 | Proposer depuis la fiche d'une carte | Ouvre la nouvelle offre avec la carte déjà choisie | — | 2 | à faire | à faire |
-| E-07 | Aucune offre | « Personne ne frappe à la porte. Fais le premier pas. » | — | 2 | à reprendre | à faire |
+| E-06 | Proposer depuis la fiche d'une carte | Ouvre la nouvelle offre avec la carte déjà choisie | — | 2 | fait | à faire |
+| E-07 | Aucune offre | « Personne ne frappe à la porte. Fais le premier pas. » | — | 2 | fait | à faire |
 
 ### K · Clans
 

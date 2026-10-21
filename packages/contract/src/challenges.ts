@@ -74,6 +74,26 @@ export type ChallengeAnswerResponse = z.infer<typeof challengeAnswerResponseSche
 
 /** `GET /me/mastery`, 200: the level of every word reviewed at least once. */
 export const masteryResponseSchema = z.object({
-  words: z.array(z.object({ cardId: slugSchema, level: masteryLevelSchema })),
+  words: z.array(
+    z.object({
+      cardId: slugSchema,
+      level: masteryLevelSchema,
+      /** When the word is due again. */
+      due: timestampSchema,
+      /** Memory stability in days, which raises the level (D-025). */
+      stability: z.number().nonnegative(),
+    }),
+  ),
 });
 export type MasteryResponse = z.infer<typeof masteryResponseSchema>;
+
+/** `GET /challenges/daily`, 200: today's answers towards the daily goal (P23, P29). */
+export const dailyChallengeResponseSchema = z.object({
+  goal: z.object({ answers: z.int().positive(), correct: z.int().positive() }),
+  /** Answers given today (Paris time), and how many were right. */
+  answers: z.int().nonnegative(),
+  correct: z.int().nonnegative(),
+  /** Whether today's bonus booster was already awarded. */
+  awarded: z.boolean(),
+});
+export type DailyChallengeResponse = z.infer<typeof dailyChallengeResponseSchema>;

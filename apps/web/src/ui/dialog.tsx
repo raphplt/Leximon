@@ -6,7 +6,7 @@ import { Icon } from "./icon";
 
 /**
  * Secondary content over the screen (C-05): a panel on the right on the web, a sheet rising from
- * the bottom under 760 px, or a window in the middle (`center`). A native modal `<dialog>`: the
+ * the bottom under 760 px, or a window in the middle (`center`, or `wide` for a card sheet). A native modal `<dialog>`: the
  * focus stays inside and goes back where it was on closing; Escape, the cross and the backdrop
  * close it.
  */
@@ -22,7 +22,8 @@ export function Dialog({
   readonly title: string;
   readonly onClose: () => void;
   readonly children: ReactNode;
-  readonly variant?: "side" | "center";
+  /** `wide`: a large window in the middle on the web (a card sheet), a sheet on phones. */
+  readonly variant?: "side" | "center" | "wide";
   /** The content draws its own heading; the title still names the dialog. */
   readonly hideTitle?: boolean;
 }) {
@@ -39,7 +40,7 @@ export function Dialog({
     // biome-ignore lint/a11y/useKeyWithClickEvents: the keyboard closes it with Escape (`cancel`)
     <dialog
       ref={ref}
-      className={variant === "side" ? styles.side : styles.center}
+      className={styles[variant]}
       aria-label={title}
       onCancel={(event) => {
         // Escape: React keeps the state, the dialog closes through it.
@@ -53,7 +54,7 @@ export function Dialog({
     >
       {open && (
         <div className={styles.box}>
-          {variant === "side" && <span className={styles.handle} aria-hidden="true" />}
+          {variant !== "center" && <span className={styles.handle} aria-hidden="true" />}
           <div className={hideTitle ? styles.headFloating : styles.head}>
             {!hideTitle && <h2 className={styles.title}>{title}</h2>}
             <button type="button" className={styles.close} onClick={onClose} aria-label="Fermer">

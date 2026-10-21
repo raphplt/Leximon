@@ -2,9 +2,9 @@
 
 import type { CatalogCard } from "@leximon/contract";
 import { cssFill, rarityStyles } from "@leximon/tokens";
+import { frequencyLine } from "@leximon/view-model";
 import { type CSSProperties, useEffect, useState } from "react";
 import { catalogFileUrl, loadCatalog } from "@/cards/catalog";
-import { frequencyLine } from "@/cards/display";
 import { creditLine, cssUrl, engravingOf, hasPlate } from "@/cards/engraving";
 import { RarityName } from "@/components/rarity-icon";
 import styles from "./landing-page.module.css";

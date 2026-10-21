@@ -1,18 +1,26 @@
+import { createSeededRandom } from "@leximon/core";
 import { describe, expect, it } from "vitest";
-import { PACK_NOUNS } from "../lib/pack-shape";
 import {
+  answerTitle,
   bonusLines,
+  dailyView,
+  escapingWords,
   feedbackLine,
   levelUpLine,
+  memoryCounts,
+  memoryNote,
   nextDueLabel,
+  questionKicker,
   recapLine,
+  reviewQuestion,
   sessionBonusLine,
   sessionXpLine,
-} from "./session";
+} from "./challenges";
+import { SACHET_NOUN } from "./format";
 
 const NOW = Date.UTC(2026, 9, 20, 12, 0, 0);
 const at = (ms: number) => new Date(NOW + ms).toISOString();
-const PLI = PACK_NOUNS.pli;
+const PLI = { one: "pli", many: "plis" };
 const NO_BONUS = { daily: 0, gilded: 0, credited: 0, reserve: 0 };
 const PROGRESS = { xp: 0, level: 1, xpIntoLevel: 0, xpForNextLevel: 100, levelUp: false };
 const NO_XP = { ...PROGRESS, xpGained: 0 };
@@ -84,9 +92,7 @@ describe("bonus lines", () => {
     expect(sessionBonusLine([answer(0), answer(0)])).toBeNull();
     expect(sessionBonusLine([answer(1)], PLI)).toMatch(/^1 pli bonus gagné,/);
     expect(sessionBonusLine([answer(1), answer(1)], PLI)).toMatch(/^2 plis bonus gagnés,/);
-    expect(sessionBonusLine([answer(1)], PACK_NOUNS.sachet)).toBe(
-      "1 sachet bonus gagné, en réserve.",
-    );
+    expect(sessionBonusLine([answer(1)], SACHET_NOUN)).toBe("1 sachet bonus gagné, en réserve.");
   });
 });
 
@@ -103,5 +109,83 @@ describe("sessionXpLine", () => {
   it("adds up the XP of the session, and says nothing without any", () => {
     expect(sessionXpLine([answer(15), answer(0), answer(40)])).toBe("+55 XP");
     expect(sessionXpLine([answer(0)])).toBeNull();
+  });
+});
+
+describe("défis screen", () => {
+  const goal = { answers: 5, correct: 3 };
+
+  it("shows the daily goal and what is left", () => {
+    const fresh = dailyView({ goal, answers: 0, correct: 0, awarded: false });
+    expect(fresh).toMatchObject({
+      title: "5 questions, 3 bonnes",
+      action: "Commencer le défi",
+      done: false,
+      ratio: 0,
+    });
+    expect(fresh.text).toBe("Trois bonnes réponses sur cinq, et un sachet bonus file en réserve.");
+    const going = dailyView({ goal, answers: 2, correct: 1, awarded: false });
+    expect(going.bars).toEqual(["right", "wrong", "empty", "empty", "empty"]);
+    expect(going.text).toBe("Encore 3 questions.");
+    expect(going.action).toBe("Continuer le défi");
+    expect(dailyView({ goal, answers: 6, correct: 2, awarded: false }).text).toBe(
+      "Encore 1 bonne réponse.",
+    );
+    expect(dailyView({ goal, answers: 5, correct: 4, awarded: true })).toMatchObject({
+      title: "Sachet gagné",
+      action: "Reviens demain",
+      done: true,
+      ratio: 1,
+    });
+    expect(dailyView({ goal, answers: 5, correct: 4, awarded: true }, PLI).title).toBe("Pli gagné");
+  });
+
+  it("states the level thresholds in force", () => {
+    expect(memoryNote(NOW)).toBe(
+      "Un mot retenu 7 jours passe à l'Encre, 30 jours à la Dorure. Un mot raté revient le lendemain.",
+    );
+  });
+
+  it("builds a one-word question, wrong choices from the same collection", () => {
+    const random = createSeededRandom("0123456789abcdef0123456789abcdef");
+    const home = { cards: ["a", "b", "c", "d", "e"].map((id) => ({ id })) };
+    const other = { cards: ["x", "y"].map((id) => ({ id })) };
+    const question = reviewQuestion(random, "a", [other, home]);
+    expect(question?.cardId).toBe("a");
+    expect(question?.choices).toHaveLength(4);
+    expect(question?.choices).toContain("a");
+    expect(question?.choices.every((id) => home.cards.some((card) => card.id === id))).toBe(true);
+    expect(reviewQuestion(random, "unknown", [home])).toBeNull();
+  });
+
+  it("counts words at each level, owned words starting as sketches", () => {
+    expect(memoryCounts(["a", "b", "c"], new Map([["b", "ink" as const]]))).toEqual({
+      sketch: 2,
+      ink: 1,
+      gilded: 0,
+    });
+  });
+
+  it("lists the words slipping away, most overdue first", () => {
+    const now = Date.parse("2026-10-21T12:00:00Z");
+    const memory = new Map([
+      ["late", { due: now - 3_600_000 }],
+      ["later", { due: now - 60_000 }],
+      ["soon", { due: now + 3 * 3_600_000 }],
+      ["far", { due: now + 5 * 86_400_000 }],
+      ["traded", { due: now - 1 }],
+    ]);
+    const words = escapingWords(memory, new Set(["late", "later", "soon", "far"]), now);
+    expect(words).toEqual([
+      { cardId: "late", due: true, when: "À revoir maintenant" },
+      { cardId: "later", due: true, when: "À revoir maintenant" },
+      { cardId: "soon", due: false, when: "Revient dans 3 h" },
+    ]);
+  });
+
+  it("words the question and the answer", () => {
+    expect(questionKicker("word")).toBe("Quel mot se cache là-dessous ?");
+    expect(answerTitle(true, 15)).toBe("Juste. +15 XP");
+    expect(answerTitle(false, 0)).toBe("Raté.");
   });
 });

@@ -1,11 +1,11 @@
 "use client";
 
 import type { CatalogCard } from "@leximon/contract";
+import { formatOdds } from "@leximon/view-model";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useCallback } from "react";
 import { collectionName, loadCatalog } from "@/cards/catalog";
-import { formatOdds } from "@/cards/display";
 import { Card } from "@/components/card";
 import { EngravingCredit } from "@/components/engraving-credit";
 import { RarityName } from "@/components/rarity-icon";

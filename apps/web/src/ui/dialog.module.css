@@ -1,5 +1,6 @@
 .side,
-.center {
+.center,
+.wide {
   margin: 0;
   padding: 0;
   border: 0;
@@ -9,7 +10,8 @@
 }
 
 .side::backdrop,
-.center::backdrop {
+.center::backdrop,
+.wide::backdrop {
   background: rgba(10, 12, 22, 0.6);
 }
 
@@ -42,6 +44,23 @@
 
 .center[open] {
   animation: pop 420ms cubic-bezier(0.2, 0.9, 0.3, 1.2) both;
+}
+
+/* Web: a large window in the middle, for a card and what goes with it. */
+.wide {
+  position: fixed;
+  inset: 0;
+  width: min(880px, calc(100% - 48px));
+  max-width: none;
+  height: fit-content;
+  max-height: calc(100dvh - 48px);
+  margin: auto;
+  border-radius: 28px;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.55);
+}
+
+.wide[open] {
+  animation: pop 320ms cubic-bezier(0.2, 0.9, 0.3, 1.1) both;
 }
 
 .box {
@@ -106,17 +125,24 @@
 
 /* Phones: a sheet rising from the bottom, with a handle. */
 @media (max-width: 759px) {
-  .side {
+  .side,
+  .wide {
     inset: auto 0 0 0;
     width: 100%;
+    max-width: 100%;
     height: auto;
     max-height: 90dvh;
     border-radius: 26px 26px 0 0;
     box-shadow: 0 -20px 60px rgba(0, 0, 0, 0.45);
   }
 
-  .side[open] {
+  .side[open],
+  .wide[open] {
     animation-name: fromBottom;
+  }
+
+  .wide .box {
+    max-height: 90dvh;
   }
 
   .handle {
@@ -170,7 +196,8 @@
 
 @media (prefers-reduced-motion: reduce) {
   .side[open],
-  .center[open] {
+  .center[open],
+  .wide[open] {
     animation: none;
   }
 }

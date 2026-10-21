@@ -22,3 +22,11 @@ export function formatWait(ms: number): string {
 export function capitalize(text: string): string {
   return text.charAt(0).toUpperCase() + text.slice(1);
 }
+
+/** The word for a pack (P53): « sachet » everywhere, « pli » while that shape is tried. */
+export interface PackNoun {
+  readonly one: string;
+  readonly many: string;
+}
+
+export const SACHET_NOUN: PackNoun = { one: "sachet", many: "sachets" };

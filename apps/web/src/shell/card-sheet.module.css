@@ -1,0 +1,145 @@
+/* The card sheet (A-07 to A-10): the card on the left, what goes with it on the right. */
+
+.sheet {
+  display: flex;
+  align-items: flex-start;
+  gap: 30px;
+}
+
+.cardSide {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.facts {
+  flex: 1;
+  min-width: 0;
+}
+
+.rarity {
+  margin: 0;
+  font-weight: 800;
+}
+
+.spoken {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 14px 0 0;
+}
+
+.playing {
+  background: var(--lx-color-accent);
+  color: var(--lx-color-accent-ink);
+}
+
+.ipa {
+  font-family: var(--font-text), Georgia, serif;
+  font-size: 19px;
+  color: var(--lx-color-text-muted);
+}
+
+.frequency {
+  margin: 12px 0 0;
+  font-family: var(--font-text), Georgia, serif;
+  font-style: italic;
+  font-size: 17px;
+  color: #d9d3e6;
+}
+
+.block {
+  margin-top: 18px;
+}
+
+.steps {
+  display: flex;
+  gap: 6px;
+  margin: 8px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.steps li {
+  flex: 1;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.stepBar {
+  display: block;
+  height: 8px;
+  margin-bottom: 5px;
+  border-radius: var(--lx-radius-pill);
+  background: var(--lx-color-well);
+}
+
+.sketch .stepBar {
+  background: var(--lx-color-text-muted);
+}
+
+.ink .stepBar {
+  background: #7c9bff;
+}
+
+.gilded .stepBar {
+  background: #ffd978;
+}
+
+.stepOff {
+  color: var(--lx-color-text-faint);
+}
+
+.note {
+  margin: 8px 0 0;
+  font-size: 13px;
+  color: var(--lx-color-text-muted);
+  line-height: 1.45;
+}
+
+.note a {
+  color: var(--lx-color-accent);
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 14px 0 0;
+}
+
+.chip {
+  min-height: 32px;
+  font-size: 13px;
+}
+
+.etymology {
+  margin: 6px 0 0;
+  font-family: var(--font-text), Georgia, serif;
+  font-size: 16px;
+  line-height: 1.45;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 20px;
+}
+
+.later {
+  margin: 0 8px 0 0;
+  font-weight: 700;
+  color: var(--lx-color-text-muted);
+}
+
+@media (max-width: 759px) {
+  .sheet {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 18px;
+  }
+}

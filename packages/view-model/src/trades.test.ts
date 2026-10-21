@@ -1,9 +1,11 @@
 import type { Trade } from "@leximon/contract";
 import { describe, expect, it } from "vitest";
 import {
+  boxTabLabel,
   effectiveStatus,
   formatPlayerCode,
   heldLabel,
+  historyLine,
   normalizePlayerCode,
   offerProblem,
   refusalMessage,
@@ -13,8 +15,9 @@ import {
   toggleCard,
   tradeableFromLabel,
   tradeLevelLabel,
+  tradeRulesNote,
   tradeSides,
-} from "./offer";
+} from "./trades";
 
 const now = Date.parse("2026-10-20T12:00:00.000Z");
 
@@ -187,5 +190,27 @@ describe("tradeLevelLabel", () => {
     expect(tradeLevelLabel(4, 5)).toBe("Les échanges ouvrent au niveau 5. Encore 1 niveau.");
     expect(tradeLevelLabel(1, 5)).toContain("Encore 4 niveaux");
     expect(tradeLevelLabel(5, 5)).toBeNull();
+  });
+});
+
+describe("échanges screen", () => {
+  it("counts the offers waiting in each tab", () => {
+    expect(boxTabLabel("incoming", 2)).toBe("Reçues (2)");
+    expect(boxTabLabel("outgoing", 0)).toBe("Envoyées");
+  });
+
+  it("states the limits in force", () => {
+    expect(tradeRulesNote(now)).toBe("10 offres par 24 h. Une offre expire après 72 h.");
+  });
+
+  it("sums up a past offer, the player's cards first", () => {
+    const done = trade({ status: "completed", resolvedAt: "2026-10-20T11:00:00.000Z" });
+    const upper = (id: string) => id.toUpperCase();
+    expect(historyLine(done, "incoming", now, upper)).toBe(
+      "Conclue avec AAAA 1111 : BISBILLE, CACOCHYME contre ACARIATRE.",
+    );
+    expect(historyLine(done, "outgoing", now, upper)).toBe(
+      "Conclue avec BBBB 2222 : ACARIATRE contre BISBILLE, CACOCHYME.",
+    );
   });
 });
