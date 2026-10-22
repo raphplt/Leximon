@@ -270,10 +270,12 @@ export function RevealCard({
  * there is one, or by copying the text and the link.
  */
 function ShareButton({ card }: { readonly card: CatalogCard }) {
-  const [copied, setCopied] = useState(false);
+  const [label, setLabel] = useState("Partager");
   const sharing = useCardShare(card);
   const share = async () => {
-    if ((await sharing.share()) === "copied") setCopied(true);
+    const outcome = await sharing.share();
+    if (outcome.kind === "copied") setLabel("Copié");
+    if (outcome.kind === "failed") setLabel("Copie refusée");
   };
   return (
     <button
@@ -284,7 +286,7 @@ function ShareButton({ card }: { readonly card: CatalogCard }) {
       onFocus={sharing.prepare}
       onClick={() => void share()}
     >
-      {copied ? "Copié" : "Partager"}
+      {label}
     </button>
   );
 }

@@ -3,6 +3,7 @@ import {
   cardPagePitch,
   cardPageTitle,
   cardPath,
+  cardShareRefused,
   formatOdds,
   frequencyLine,
   shareText,
@@ -51,6 +52,9 @@ describe("card page", () => {
   it("links to the card by its id, escaped", () => {
     expect(cardPath("abajoue")).toBe("/carte/abajoue");
     expect(cardPath("a b")).toBe("/carte/a%20b");
+    expect(cardShareRefused("https://leximon.fr/carte/abajoue")).toBe(
+      "Le navigateur refuse la copie. Le lien : https://leximon.fr/carte/abajoue",
+    );
   });
 
   it("titles the page with the word", () => {

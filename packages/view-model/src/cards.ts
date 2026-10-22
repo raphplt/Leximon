@@ -40,6 +40,11 @@ export function cardPath(cardId: string): string {
 /** Said when the share sheet is missing and the text and link went to the clipboard. */
 export const CARD_SHARE_COPIED = "Copié, avec le lien de la carte.";
 
+/** The browser refused the clipboard: the link, to copy by hand. */
+export function cardShareRefused(url: string): string {
+  return `Le navigateur refuse la copie. Le lien : ${url}`;
+}
+
 /** Under a card's public page, for someone who does not play yet. */
 export function cardPagePitch(cardCount: number): string {
   return `Des mots comme celui-là, il en dort ${formatCount(cardCount)} dans des sachets. Gratuits, tous les jours.`;

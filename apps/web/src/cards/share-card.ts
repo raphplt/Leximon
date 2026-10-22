@@ -4,7 +4,10 @@ import type { CatalogCard } from "@leximon/contract";
 import { cardPath, shareText } from "@leximon/view-model";
 import { useCallback, useRef } from "react";
 
-export type ShareOutcome = "shared" | "copied" | "cancelled";
+export type ShareOutcome =
+  | { readonly kind: "shared" | "copied" | "cancelled" }
+  /** The browser refused the clipboard: the link is given to copy by hand. */
+  | { readonly kind: "failed"; readonly url: string };
 
 /**
  * Shares a card: its text and the link to its public page, whose preview shows the card's
@@ -35,8 +38,8 @@ export function useCardShare(card: CatalogCard) {
     const text = shareText(card.word, card.perBillion);
     const url = new URL(cardPath(card.id), window.location.origin).toString();
     const file = image.current?.cardId === card.id ? image.current.file : null;
-    try {
-      if (typeof navigator.share === "function") {
+    if (typeof navigator.share === "function") {
+      try {
         const files = file !== null && navigator.canShare?.({ files: [file] }) ? [file] : [];
         await navigator.share({
           title: "Leximon",
@@ -44,13 +47,19 @@ export function useCardShare(card: CatalogCard) {
           url,
           ...(files.length > 0 ? { files } : {}),
         });
-        return "shared";
+        return { kind: "shared" };
+      } catch (error) {
+        // Closed by the player: nothing to say. Any other refusal falls back to the clipboard.
+        if (error instanceof DOMException && error.name === "AbortError") {
+          return { kind: "cancelled" };
+        }
       }
+    }
+    try {
       await navigator.clipboard.writeText(`${text} ${url}`);
-      return "copied";
+      return { kind: "copied" };
     } catch {
-      // Share sheet closed, or clipboard refused: nothing to report.
-      return "cancelled";
+      return { kind: "failed", url };
     }
   }, [card]);
 

@@ -4,6 +4,7 @@ import type { CatalogCard } from "@leximon/contract";
 import {
   CARD_SHARE_COPIED,
   canOfferInTrade,
+  cardShareRefused,
   copiesLabel,
   masteryView,
   pinButtonLabel,
@@ -88,7 +89,9 @@ function SheetBody({
 
   const sharing = useCardShare(card);
   const share = async () => {
-    if ((await sharing.share()) === "copied") toast(CARD_SHARE_COPIED);
+    const outcome = await sharing.share();
+    if (outcome.kind === "copied") toast(CARD_SHARE_COPIED);
+    if (outcome.kind === "failed") toast(cardShareRefused(outcome.url));
   };
 
   return (
