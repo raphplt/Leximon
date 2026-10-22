@@ -48,7 +48,12 @@ export function LevelCard() {
                 <Icon name={REWARD_ICONS[reward.icon]} size={18} />
               </span>
               <span className={styles.nextLevel}>{reward.level}</span>
-              <span className={styles.nextTitle}>{reward.title}</span>
+              <span className={styles.nextText}>
+                <span className={reward.milestone ? styles.nextTitleKraft : styles.nextTitle}>
+                  {reward.title}
+                </span>
+                {reward.opens !== null && <span className={styles.nextOpens}>{reward.opens}</span>}
+              </span>
             </Link>
           </li>
         ))}

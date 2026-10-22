@@ -1,9 +1,9 @@
 "use client";
 
 import { collectionShelf } from "@leximon/view-model";
-import Link from "next/link";
 import type { Catalog } from "@/cards/catalog";
 import { RarityName } from "@/components/rarity-icon";
+import { ButtonLink } from "@/ui/button";
 import { XpBar } from "@/ui/level-bits";
 import styles from "./play.module.css";
 
@@ -38,9 +38,9 @@ export function CollectionCard({
           </li>
         ))}
       </ul>
-      <Link href="/album" className={styles.collectionLink}>
+      <ButtonLink href="/album" variant="secondary" small className={styles.collectionLink}>
         Voir l'album
-      </Link>
+      </ButtonLink>
     </section>
   );
 }

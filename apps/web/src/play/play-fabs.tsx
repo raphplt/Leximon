@@ -97,7 +97,7 @@ function useFabs() {
       }
     />
   );
-  return { ...fabs, render, act, emblem };
+  return { ...fabs, render, act };
 }
 
 /** On a phone, the floating buttons on both sides of the sachet. */
@@ -112,14 +112,19 @@ export function PlayFabs() {
   );
 }
 
-/** On a wider screen, the places to go from Jouer; the daily challenge, coffrets and mail have their own cards. */
+/**
+ * On a wider screen, the places to go from Jouer that the top bar does not have: the clan is a
+ * tab, the daily challenge and coffrets have their cards, the mail its button.
+ */
 export function Shortcuts() {
   const fabs = useFabs();
   if (fabs === null) return null;
-  const settings = fabs.right.filter((fab) => fab.id === "settings");
+  const shown = [...fabs.left, ...fabs.right].filter(
+    (fab) => fab.id === "chat" || fab.id === "jousts" || fab.id === "settings",
+  );
   return (
     <nav className={styles.shortcuts} aria-label="Raccourcis">
-      {[...fabs.left, ...settings].map((fab) => (
+      {shown.map((fab) => (
         <button
           key={fab.id}
           type="button"
@@ -130,11 +135,7 @@ export function Shortcuts() {
           }
         >
           <span className={styles.shortcutIcon}>
-            {fab.id === "clan" && fabs.emblem !== null ? (
-              <Emblem emblem={fabs.emblem} size={24} />
-            ) : (
-              <Icon name={ICONS[fab.id]} size={20} />
-            )}
+            <Icon name={ICONS[fab.id]} size={20} />
           </span>
           <span className={styles.shortcutText}>
             <span className={styles.shortcutLabel}>{fab.label}</span>

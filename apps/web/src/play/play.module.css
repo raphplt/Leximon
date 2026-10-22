@@ -1,20 +1,20 @@
 /*
  * The Jouer screen: the counter in the middle, where the sachet sits under a lamp, the level on
  * its left, the day on its right. Three depths: the page, the cards, the lighter counter.
+ * Everything is cut from the sachet's paper: the same hatching, stitched edges, kraft labels.
  */
 
 .page {
   box-sizing: border-box;
-  max-width: 1380px;
   margin: 0 auto;
   padding: 24px 32px 48px;
   display: grid;
-  grid-template-columns: 280px minmax(0, 1fr) 300px;
-  grid-template-rows: minmax(0, 1fr);
+  /* The counter is only as wide as the sachet needs: past that, it is empty table. */
+  grid-template-columns: 280px minmax(0, 540px) 300px;
   grid-template-areas: "side counter aside";
+  justify-content: center;
+  align-items: start;
   gap: 24px;
-  /* The whole window under the top bar (70 px and its border): the counter fills it. */
-  height: max(720px, calc(100dvh - 71px));
 }
 
 .side,
@@ -35,6 +35,22 @@
 
 /* --- Cards around the counter --- */
 
+/* The fine hatching of the sachet's paper, on every surface of the screen. */
+.card,
+.today,
+.shortcuts,
+.counter {
+  --hatch: repeating-linear-gradient(-45deg, rgba(246, 240, 226, 0.022) 0 1px, transparent 1px 7px);
+}
+
+/* A stitched edge just inside the border, as on a cloth binding. */
+.card,
+.today,
+.shortcuts {
+  outline: 1px dashed rgba(246, 240, 226, 0.11);
+  outline-offset: -7px;
+}
+
 .card,
 .today {
   flex-shrink: 0;
@@ -42,9 +58,9 @@
   display: flex;
   flex-direction: column;
   gap: 14px;
-  padding: 20px;
+  padding: 22px;
   border-radius: 24px;
-  background: linear-gradient(180deg, #313859, #2a3050);
+  background: var(--hatch), linear-gradient(180deg, #313859, #2a3050);
   box-shadow:
     0 12px 30px rgba(10, 12, 24, 0.35),
     inset 0 1px 0 rgba(255, 255, 255, 0.06);
@@ -55,25 +71,23 @@
   opacity: 0.5;
 }
 
+/* A kraft label pinned on the card, as on a bookseller's crate. */
 .cardKicker {
-  margin: 0;
-  font-size: 12px;
+  align-self: flex-start;
+  margin: 0 0 2px -4px;
+  padding: 3px 10px 2px;
+  border-radius: 3px;
+  background: linear-gradient(160deg, #e3c497, var(--lx-color-kraft));
+  box-shadow: 0 2px 0 #9c7646;
+  color: var(--lx-color-kraft-title);
+  font-size: 11px;
   font-weight: 800;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--lx-color-text-faint);
+  rotate: -1.5deg;
 }
 
 /* --- Level card --- */
-
-/*
- * The columns frame the counter: their first card at its top, their last one at its bottom,
- * each card as tall as its content.
- */
-.side > :last-child:not(:first-child),
-.aside > :last-child:not(:first-child) {
-  margin-top: auto;
-}
 
 .levelHead {
   display: flex;
@@ -161,19 +175,40 @@
 }
 
 .nextLevel {
+  flex-shrink: 0;
   width: 22px;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 800;
-  color: var(--lx-color-text-faint);
+  color: var(--lx-color-text-muted);
   font-variant-numeric: tabular-nums;
 }
 
-.nextTitle {
+.nextText {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.nextTitle,
+.nextTitleKraft {
   overflow: hidden;
-  font-size: 14px;
-  font-weight: 600;
   white-space: nowrap;
   text-overflow: ellipsis;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+/* Every fifth level gives more: its title takes the kraft of its icon. */
+.nextTitleKraft {
+  font-weight: 800;
+  color: var(--lx-color-kraft);
+}
+
+.nextOpens {
+  font-size: 12px;
+  line-height: 1.3;
+  font-weight: 700;
+  color: var(--lx-color-text-muted);
 }
 
 /* --- Shortcuts --- */
@@ -183,9 +218,9 @@
   display: flex;
   flex-direction: column;
   gap: 2px;
-  padding: 10px;
+  padding: 12px;
   border-radius: 24px;
-  background: rgba(27, 31, 51, 0.6);
+  background: var(--hatch), rgba(27, 31, 51, 0.6);
 }
 
 .shortcut {
@@ -242,7 +277,7 @@
 .shortcutLock {
   font-size: 12px;
   font-weight: 700;
-  color: var(--lx-color-text-faint);
+  color: var(--lx-color-text-muted);
 }
 
 /* --- The counter --- */
@@ -253,10 +288,11 @@
   display: flex;
   flex-direction: column;
   min-width: 0;
-  min-height: 0;
+  /* The window under the top bar (71 px) and the page margins, within what the sachet can use. */
+  height: clamp(640px, calc(100dvh - 71px - 72px), 820px);
   overflow: hidden;
   border-radius: 32px;
-  background: linear-gradient(180deg, #353d65 0%, #2b3253 60%, #242a45 100%);
+  background: var(--hatch), linear-gradient(180deg, #353d65 0%, #2b3253 60%, #242a45 100%);
   box-shadow:
     0 24px 60px rgba(8, 10, 22, 0.45),
     inset 0 1px 0 rgba(255, 255, 255, 0.08);
@@ -266,7 +302,7 @@
   position: relative;
   z-index: 2;
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
   align-items: flex-start;
   gap: 12px;
   padding: 20px 22px 0;
@@ -318,7 +354,8 @@
   gap: 10px;
   padding: 24px 20px 26px;
   background: linear-gradient(180deg, #1f243c, #1a1e33);
-  border-top: 1px solid rgba(255, 255, 255, 0.07);
+  /* The dotted tear line of the sachet, between the counter and its tablet. */
+  border-top: 2px dashed rgba(246, 240, 226, 0.14);
   box-shadow: inset 0 14px 22px rgba(0, 0, 0, 0.25);
 }
 
@@ -366,8 +403,8 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 6px;
-  width: 84px;
+  gap: 7px;
+  width: 92px;
   padding: 0;
   border: 0;
   background: none;
@@ -380,8 +417,8 @@
   position: relative;
   display: grid;
   place-items: center;
-  width: 52px;
-  height: 72px;
+  width: 62px;
+  height: 86px;
   border-radius: 5px;
   background:
     repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.2) 0 1px, transparent 1px 4px) top / 100%
@@ -399,15 +436,15 @@
     inset 0 -7px 0 rgba(0, 0, 0, 0.25),
     0 8px 14px rgba(8, 10, 22, 0.45);
   color: var(--lx-color-kraft);
-  filter: saturate(0.6) brightness(0.75);
+  filter: saturate(0.8) brightness(0.88);
   transition:
     translate 160ms ease-out,
     filter 160ms ease-out;
 }
 
 .pickEmblem {
-  width: 30px;
-  height: 30px;
+  width: 34px;
+  height: 34px;
 }
 
 .pickName {
@@ -417,7 +454,7 @@
 }
 
 .pickLocked .pickPouch {
-  filter: saturate(0.2) brightness(0.55);
+  filter: saturate(0.3) brightness(0.6);
 }
 
 .pick:hover .pickPouch {
@@ -453,14 +490,6 @@
   white-space: nowrap;
 }
 
-.chipLock {
-  display: inline-flex;
-  align-items: center;
-  gap: 2px;
-  font-size: 11px;
-  color: var(--lx-color-text-muted);
-}
-
 .arrows {
   display: none;
   align-items: center;
@@ -482,50 +511,6 @@
 .arrowTitle {
   font-size: 18px;
   line-height: 1.1;
-}
-
-/* --- Stock --- */
-
-.stockRing {
-  flex-shrink: 0;
-  display: inline-flex;
-  align-items: center;
-  gap: 9px;
-  padding: 5px 14px 5px 5px;
-  border-radius: var(--lx-radius-pill);
-  background: rgba(27, 31, 51, 0.55);
-}
-
-.ring {
-  position: relative;
-  display: grid;
-  place-items: center;
-  width: 34px;
-  height: 34px;
-  border-radius: 50%;
-  background: conic-gradient(var(--lx-color-accent) var(--done), var(--lx-color-track) 0);
-}
-
-.ring::before {
-  content: "";
-  position: absolute;
-  inset: 4px;
-  border-radius: 50%;
-  background: #262b40;
-}
-
-.ringCount {
-  position: relative;
-  font-weight: 800;
-  font-size: 14px;
-  font-variant-numeric: tabular-nums;
-}
-
-.ringNote {
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--lx-color-text-muted);
-  white-space: nowrap;
 }
 
 /* --- Tear hint --- */
@@ -579,8 +564,7 @@
   cursor: pointer;
 }
 
-.todayRing,
-.todayIcon {
+.todayRing {
   position: relative;
   flex-shrink: 0;
   display: grid;
@@ -588,9 +572,6 @@
   width: 48px;
   height: 48px;
   border-radius: 50%;
-}
-
-.todayRing {
   background: conic-gradient(#2fc79b var(--done), var(--lx-color-track) 0);
 }
 
@@ -604,27 +585,6 @@
 
 .todayRing > * {
   position: relative;
-}
-
-.todayIcon {
-  background: #3a4268;
-}
-
-.todayBadge {
-  position: absolute;
-  top: -3px;
-  right: -3px;
-  min-width: 20px;
-  height: 20px;
-  display: grid;
-  place-items: center;
-  padding: 0 5px;
-  box-sizing: border-box;
-  border-radius: var(--lx-radius-pill);
-  background: var(--lx-color-badge);
-  color: #ffffff;
-  font-size: 11px;
-  font-weight: 800;
 }
 
 .todayText {
@@ -651,9 +611,8 @@
   display: flex;
   align-items: center;
   gap: 14px;
-  padding: 14px 0;
-  border-top: 1px solid rgba(246, 240, 226, 0.08);
-  border-bottom: 1px solid rgba(246, 240, 226, 0.08);
+  padding-top: 14px;
+  border-top: 1px dashed rgba(246, 240, 226, 0.12);
 }
 
 .slippingCard {
@@ -723,9 +682,6 @@
 
 .collectionLink {
   align-self: flex-start;
-  font-size: 14px;
-  font-weight: 800;
-  color: var(--lx-color-accent);
 }
 
 /* --- Floating buttons, on a phone only --- */
@@ -748,9 +704,7 @@
 /* Medium screens: the counter on top, the level and the day below it. */
 @media (max-width: 1179px) {
   .page {
-    height: auto;
-    grid-template-rows: auto;
-    align-items: start;
+    max-width: 860px;
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
     grid-template-areas:
       "counter counter"
@@ -758,6 +712,7 @@
   }
 
   .counter {
+    height: auto;
     min-height: 640px;
   }
 
@@ -788,15 +743,20 @@
     border-radius: 26px;
   }
 
+  /* No room for stitches on a phone. */
+  .card,
+  .today,
+  .shortcuts {
+    outline: none;
+  }
+
   .counterHead {
     flex-direction: column;
     align-items: center;
     padding: 12px 14px 0;
   }
 
-  /* The phone top bar carries the stock. */
-  .chips,
-  .stockRing {
+  .chips {
     display: none;
   }
 

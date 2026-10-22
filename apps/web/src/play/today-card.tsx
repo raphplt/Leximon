@@ -9,20 +9,16 @@ import { fetchChallenges } from "@/lib/api";
 import { myClan } from "@/player/clan";
 import { dailyChallenge } from "@/player/collection";
 import { useShared } from "@/player/resource";
-import { useShell } from "@/shell/shell-context";
-import { usePlayerView } from "@/shell/use-player-view";
 import { ButtonLink } from "@/ui/button";
 import { Icon } from "@/ui/icon";
 import styles from "./play.module.css";
 
 /**
  * What the day holds beside the counter: the daily challenge, the clan's goal, the word slipping
- * away, the mail.
- * On a phone, the floating buttons carry the challenge and the mail: only the word remains.
+ * away. The mail is in the top bar.
+ * On a phone, the floating buttons carry the challenge: only the word remains.
  */
 export function TodayCard({ catalog }: { readonly catalog: Catalog | null }) {
-  const view = usePlayerView();
-  const { openMail } = useShell();
   const daily = useShared(dailyChallenge);
   const challenge = daily === null ? null : dailyView(daily);
   const clan = useShared(myClan);
@@ -57,18 +53,6 @@ export function TodayCard({ catalog }: { readonly catalog: Catalog | null }) {
         </Link>
       )}
       {catalog !== null && <SlippingWord catalog={catalog} />}
-      <button type="button" className={styles.todayRow} onClick={openMail}>
-        <span className={styles.todayIcon}>
-          <Icon name="courrier" size={20} />
-          {view.mail > 0 && <span className={styles.todayBadge}>{view.mail}</span>}
-        </span>
-        <span className={styles.todayText}>
-          <span className={styles.todayTitle}>Courrier</span>
-          <span className={styles.todayDetail}>
-            {view.mail > 0 ? `${view.mail} en attente` : "Rien dans la boîte"}
-          </span>
-        </span>
-      </button>
     </section>
   );
 }

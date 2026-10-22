@@ -55,11 +55,15 @@ describe("level rewards", () => {
   it("shows the next four levels, milestones and openings marked", () => {
     const next = upcomingRewards(2, NOW);
     expect(next.map((r) => r.level)).toEqual([3, 4, 5, 6]);
-    expect(next[0]).toMatchObject({ icon: "lock", milestone: false });
+    expect(next[0]).toMatchObject({
+      icon: "lock",
+      milestone: false,
+      opens: "Ouvre choisir la collection de ton sachet",
+    });
     expect(next[0]?.label).toBe(
       "Niveau 3 : Sachet bonus, ouvre choisir la collection de ton sachet",
     );
-    expect(next[1]).toMatchObject({ icon: "bolt", label: "Niveau 4 : Recharge" });
+    expect(next[1]).toMatchObject({ icon: "bolt", opens: null, label: "Niveau 4 : Recharge" });
     expect(next[2]).toMatchObject({ milestone: true, icon: "lock" });
   });
 });

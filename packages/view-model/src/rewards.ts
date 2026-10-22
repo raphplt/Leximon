@@ -145,6 +145,8 @@ export interface UpcomingReward {
   readonly milestone: boolean;
   /** « Sachet garni », the main thing the level gives. */
   readonly title: string;
+  /** « Ouvre les clans », when the level opens a part of the game. */
+  readonly opens: string | null;
   /** « Niveau 20 : Sachet garni, ouvre les clans ». */
   readonly label: string;
 }
@@ -157,12 +159,14 @@ export function upcomingRewards(level: number, now: EpochMs, count = 4): Upcomin
     const first = levelRewards(rules, n)[0];
     const item = first === undefined ? null : rewardItem(first);
     const opens = opensAt(n, now);
+    const opening = opens === null ? null : `${opens.charAt(0).toLowerCase()}${opens.slice(1)}`;
     return {
       level: n,
       icon: opens !== null ? "lock" : (item?.icon ?? "star"),
       milestone: n % rules.milestoneEvery === 0,
       title: item?.title ?? "Départ",
-      label: `Niveau ${n} : ${item?.title ?? "Départ"}${opens === null ? "" : `, ouvre ${opens.charAt(0).toLowerCase()}${opens.slice(1)}`}`,
+      opens: opening === null ? null : `Ouvre ${opening}`,
+      label: `Niveau ${n} : ${item?.title ?? "Départ"}${opening === null ? "" : `, ouvre ${opening}`}`,
     };
   });
 }
