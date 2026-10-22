@@ -2,7 +2,7 @@
 
 Jeu de cartes à collectionner pour découvrir les mots rares et anciens du français. Boosters gratuits, collection, défis qui font monter les cartes en niveau, échanges entre joueurs. Web, iOS et Android.
 
-**État :** le web joue de bout en bout (plis, album, défis avec plis bonus, échanges, profil public et atelier, clans) sur le catalogue de lancement publié (1 561 cartes, trois collections) ; le mobile n'a encore aucune fonctionnalité de jeu. Rien n'est en ligne. Le détail est dans `docs/feuille-de-route.md`.
+**État :** le web joue de bout en bout (plis, album, défis avec plis bonus, échanges, profil public et atelier, clans) sur le catalogue de lancement publié (1 561 cartes, trois collections) ; le mobile n'a encore aucune fonctionnalité de jeu. Le site est en ligne (leximon.fr), en bêta fermée sur invitation. Le détail est dans `docs/feuille-de-route.md`.
 
 ## Commandes
 

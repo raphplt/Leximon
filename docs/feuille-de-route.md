@@ -6,7 +6,7 @@ Où en est Leximon, ce qui reste avant la bêta publique (novembre 2026) et ce q
 
 ## En une phrase
 
-Le cœur du jeu tourne de bout en bout sur le web : on ouvre un pli, on révèle ses cartes, on les retrouve dans l'album, on les fait monter de niveau par des défis qui rapportent des plis bonus, on les échange et on les épingle sur son profil public. Il lit le catalogue de lancement (1 561 cartes, trois collections), encore sans gravures, et rien n'est en ligne.
+Le cœur du jeu tourne de bout en bout sur le web : on ouvre un pli, on révèle ses cartes, on les retrouve dans l'album, on les fait monter de niveau par des défis qui rapportent des plis bonus, on les échange et on les épingle sur son profil public. Il lit le catalogue de lancement (1 561 cartes, trois collections), encore sans gravures. Le site est en ligne sur leximon.fr depuis le 2026-10-22, porte fermée : personne n'entre sans lien d'invitation.
 
 ## État par chantier
 
@@ -71,9 +71,9 @@ Arbitrés par le propriétaire le 2026-10-20 : jeu grand public (B2C), pas de ve
 
 | Étape | Statut | Détail |
 |---|---|---|
-| Hébergement de production | En cours | Prêt dans le code, rien de créé en ligne. Neon gratuit et sauvegarde nocturne sur le NAS (D-040), environnements `production` des deux Workers, catalogue servi par le Worker web. Procédure pas à pas : [mise-en-ligne.md](mise-en-ligne.md). `cacheComponents` coupé tant qu'OpenNext ne le prend pas en charge (D-043). Reste : les étapes du propriétaire (comptes, secrets, DNS), puis les déploiements |
-| Bêta fermée sur invitation | Fait (pas en ligne) | D-041 : liens par groupe dans `/admin/invitations`, page `/invitation/<code>`, porte tenue par l'API (`BETA_INVITES`), `?src=` gardé avec le joueur |
-| Mesure | Fait (pas en ligne) | D-042 : `/admin/mesure` (rétention J1/J7/J30 par semaine, lien ou source, âge ; entonnoir ; testeurs ; fausse porte mécène), `/admin/retours` (« Un retour ? » dans le menu), tranche d'âge facultative à l'inscription, page `/mecene` |
+| Hébergement de production | En cours | En ligne depuis le 2026-10-22 : `leximon.fr` et `api.leximon.fr`, base Neon migrée, catalogue publié. Neon gratuit et sauvegarde nocturne sur le NAS (D-040), environnements `production` des deux Workers, catalogue servi par le Worker web. Procédure pas à pas : [mise-en-ligne.md](mise-en-ligne.md). `cacheComponents` coupé tant qu'OpenNext ne le prend pas en charge (D-043). Reste : e-mails des codes (Email Service), compte admin, redirection de `www`, Lettermint, sauvegarde sur le NAS |
+| Bêta fermée sur invitation | En ligne, aucun lien encore | D-041 : liens par groupe dans `/admin/invitations`, page `/invitation/<code>`, porte tenue par l'API (`BETA_INVITES`), `?src=` gardé avec le joueur |
+| Mesure | En ligne | D-042 : `/admin/mesure` (rétention J1/J7/J30 par semaine, lien ou source, âge ; entonnoir ; testeurs ; fausse porte mécène), `/admin/retours` (« Un retour ? » dans le menu), tranche d'âge facultative à l'inscription, page `/mecene` |
 | Test de charge, observabilité | À faire | Avant d'ouvrir au public |
 | Marque, domaines, comptes réseaux | En cours | Domaine leximon.fr (OVH, DNS chez Cloudflare, renouvellement automatique à activer), contact@leximon.fr routé par Cloudflare. Marque : dépôt INPI repoussé (P7). Comptes réseaux à faire |
 
