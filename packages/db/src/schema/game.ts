@@ -6,6 +6,7 @@ import {
   MASTERY_LEVELS,
   type PityCounters,
   RARITIES,
+  SANCTION_KINDS,
 } from "@leximon/core";
 import { sql } from "drizzle-orm";
 import {
@@ -328,6 +329,10 @@ export const players = pgTable(
     title: text(),
     /** P60: public by default; private shows only the pseudo and the avatar to others. */
     profilePublic: boolean().notNull().default(true),
+    /** Last request, to the nearest few minutes: "online" and "seen 2 days ago" in a clan (K-05). */
+    lastSeenAt: timestamp({ withTimezone: true }),
+    /** When the player last left a clan of their own will: 24 h before joining another (P65). */
+    clanLeftAt: timestamp({ withTimezone: true }),
   },
   (table) => [
     uniqueIndex("players_pseudo_key_idx").on(table.pseudoKey),
@@ -381,9 +386,13 @@ export const userBlocks = pgTable(
   ],
 );
 
+export const reportTarget = pgEnum("report_target", ["pseudo", "clan_name", "message"]);
+export const reportResolution = pgEnum("report_resolution", ["dismissed", "sanctioned"]);
+
 /**
- * Reports of a player's pseudo (N5), handled in the back office with lot 4. The pseudo is kept as
- * it was reported: the player may change it in between. One report per reporter and pseudo.
+ * Reports of what a player wrote (N5): a pseudo, a clan name or motto, a message. `content` keeps
+ * the text as it was reported, since it may change in between; `pseudo` the author's pseudo then.
+ * One report per reporter and target (`targetKey`: the pseudo, the clan id, the message id).
  */
 export const moderationReports = pgTable(
   "moderation_reports",
@@ -396,15 +405,85 @@ export const moderationReports = pgTable(
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
     pseudo: text().notNull(),
+    targetKind: reportTarget().notNull().default("pseudo"),
+    targetKey: text().notNull(),
+    /** The reported text, for a clan name or a message. */
+    content: text(),
+    clanId: uuid(),
+    /** No foreign key: a reported message is kept until its report is handled (P67). */
+    messageId: integer(),
     createdAt: timestamp({ withTimezone: true }).notNull(),
     resolvedAt: timestamp({ withTimezone: true }),
+    resolvedBy: text().references(() => users.id),
+    resolution: reportResolution(),
   },
   (table) => [
-    uniqueIndex("moderation_reports_once_idx").on(table.reporterId, table.reportedId, table.pseudo),
+    uniqueIndex("moderation_reports_target_once_idx").on(
+      table.reporterId,
+      table.targetKind,
+      table.targetKey,
+    ),
     index("moderation_reports_open_idx")
       .on(table.createdAt)
       .where(sql`${table.resolvedAt} is null`),
     index("moderation_reports_reported_idx").on(table.reportedId),
+    index("moderation_reports_message_idx")
+      .on(table.messageId)
+      .where(sql`${table.messageId} is not null`),
+    check(
+      "moderation_reports_resolution_check",
+      sql`(${table.resolvedAt} is null) = (${table.resolution} is null)`,
+    ),
+  ],
+);
+
+export const sanctionKind = pgEnum("sanction_kind", SANCTION_KINDS);
+export const contestOutcome = pgEnum("contest_outcome", ["upheld", "revoked"]);
+
+/**
+ * Sanctions decided by the team (P68), each with its reason, shown to the player and contestable.
+ * Rows are never deleted while the account exists: a lifted sanction gets `revokedAt`.
+ */
+export const sanctions = pgTable(
+  "sanctions",
+  {
+    id: uuid().primaryKey(),
+    userId: text()
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    kind: sanctionKind().notNull(),
+    /** Shown to the player as it is written: what they did and which rule it breaks. */
+    reason: text().notNull(),
+    /** End of a timed sanction (mute, trade ban, suspension). */
+    until: timestamp({ withTimezone: true }),
+    reportId: uuid().references(() => moderationReports.id, { onDelete: "set null" }),
+    messageId: integer(),
+    clanId: uuid(),
+    createdBy: text()
+      .notNull()
+      .references(() => users.id),
+    createdAt: timestamp({ withTimezone: true }).notNull(),
+    /** The player saw it in the game (R-08). */
+    seenAt: timestamp({ withTimezone: true }),
+    contestedAt: timestamp({ withTimezone: true }),
+    contestText: text(),
+    contestResolvedAt: timestamp({ withTimezone: true }),
+    contestOutcome: contestOutcome(),
+    revokedAt: timestamp({ withTimezone: true }),
+  },
+  (table) => [
+    index("sanctions_user_idx").on(table.userId, table.createdAt.desc()),
+    index("sanctions_contested_idx")
+      .on(table.contestedAt)
+      .where(sql`${table.contestedAt} is not null and ${table.contestResolvedAt} is null`),
+    check(
+      "sanctions_until_check",
+      sql`(${table.until} is not null) = (${table.kind} in ('mute', 'trade_ban', 'suspend'))`,
+    ),
+    check(
+      "sanctions_contest_check",
+      sql`(${table.contestedAt} is null) = (${table.contestText} is null)`,
+    ),
   ],
 );
 

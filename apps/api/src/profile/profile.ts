@@ -537,7 +537,7 @@ export async function listBlocks(
 
 /**
  * `POST /players/:pseudo/report`: a report of the pseudo as it reads now, kept for the back
- * office (lot 4). Reporting the same pseudo twice adds nothing.
+ * office. Reporting the same pseudo twice adds nothing.
  */
 export async function reportPlayer(
   db: Database,
@@ -553,6 +553,8 @@ export async function reportPlayer(
       reporterId: input.userId,
       reportedId: target.targetId,
       pseudo: target.pseudo,
+      targetKind: "pseudo",
+      targetKey: target.pseudo,
       createdAt: new Date(input.now),
     })
     .onConflictDoNothing();
