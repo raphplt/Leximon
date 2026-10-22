@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { PUBLISHER } from "@/lib/publisher";
 import styles from "./privacy.module.css";
 
 export const metadata: Metadata = {
@@ -7,7 +8,7 @@ export const metadata: Metadata = {
   description: "Ce que Leximon garde sur toi, pourquoi, combien de temps, et comment l'effacer.",
 };
 
-const CONTACT = "contact@leximon.fr";
+const CONTACT = PUBLISHER.contact;
 
 /** What the game keeps about a player, in plain words (RGPD, articles 13 and 14). */
 export default function PrivacyPage() {
@@ -17,6 +18,14 @@ export default function PrivacyPage() {
         Leximon
       </Link>
       <h1 className={styles.title}>Tes données</h1>
+
+      <section className={styles.section}>
+        <h2>Qui en répond</h2>
+        <p>
+          {PUBLISHER.name}, {PUBLISHER.status} (SIREN {PUBLISHER.siren}), {PUBLISHER.address}. Pour
+          toute question sur tes données : <a href={`mailto:${CONTACT}`}>{CONTACT}</a>.
+        </p>
+      </section>
 
       <section className={styles.section}>
         <h2>Liste d'attente</h2>
@@ -69,6 +78,12 @@ export default function PrivacyPage() {
           peux saisir la <a href="https://www.cnil.fr/fr/plaintes">CNIL</a>.
         </p>
       </section>
+
+      <p className={styles.related}>
+        <Link href="/conditions">Conditions d'utilisation</Link> ·{" "}
+        <Link href="/charte">Charte de la discussion</Link> ·{" "}
+        <Link href="/mentions">Contact et mentions</Link>
+      </p>
     </main>
   );
 }

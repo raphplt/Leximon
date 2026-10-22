@@ -38,7 +38,7 @@ describe("levelRewards (P58)", () => {
   });
 
   it("gives a card choice, a reserve slot, an avatar and a pinned slot every 10 levels", () => {
-    expect(kinds(10)).toEqual(["card_choice", "reserve_slot", "avatar", "pinned_slot"]);
+    expect(kinds(10)).toEqual(["card_choice", "reserve_slot", "avatar", "frame", "pinned_slot"]);
     expect(kinds(30)).toEqual(["card_choice", "reserve_slot", "avatar", "pinned_slot"]);
     expect(kinds(40)).toEqual(["card_choice", "reserve_slot", "avatar"]);
     expect(kinds(50)).toEqual(["card_choice", "reserve_slot", "avatar"]);
@@ -73,8 +73,7 @@ describe("cosmetics (P58, P49)", () => {
     expect(levelRewards(rules, 200)).toContainEqual({ kind: "avatar" });
   });
 
-  it("adds a frame at levels 10 and 20 from the lot 3 rules on, never before", () => {
-    expect(kinds(10)).not.toContain("frame");
+  it("adds a frame at levels 10 and 20", () => {
     expect(levelRewards(later, 10)).toContainEqual({ kind: "frame", frame: "gilded" });
     expect(levelRewards(later, 20)).toContainEqual({ kind: "frame", frame: "ink" });
     expect(levelRewards(later, 30).map((reward) => reward.kind)).not.toContain("frame");

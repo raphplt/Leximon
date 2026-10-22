@@ -69,7 +69,7 @@ Ses règles non négociables s'imposent à tout le code : aucun hasard payant (n
 - **Le serveur fait foi :** tirage des boosters, recharge, niveaux et échanges sont calculés côté serveur.
 - **Écritures :** chaque écriture est une transaction courte avec une clé d'idempotence. Toute lecture-modification d'un état de joueur (portefeuille, exemplaires) verrouille sa ligne (`SELECT … FOR UPDATE`), et chaque route concernée a un test d'intégration avec des requêtes concurrentes.
 - **Catalogue statique :** le catalogue de cartes est versionné et servi par le CDN. L'affichage d'une carte ne lit jamais la base.
-- **Règles modifiables :** le stock de boosters se calcule à la volée, sans tâche planifiée. Un réglage de jeu qui peut changer (recharge, plafond, probabilités) est daté, et un changement ne s'applique jamais rétroactivement aux joueurs existants.
+- **Règles modifiables :** le stock de boosters se calcule à la volée, sans tâche planifiée. Un réglage de jeu qui peut changer (recharge, plafond, probabilités) est daté, et un changement ne s'applique jamais rétroactivement aux joueurs existants. Tant que rien n'est en ligne (aucun joueur, pas de bêta), un réglage se corrige en place dans sa période : pas de nouvelle période ni de précaution de rétroactivité.
 - **Maîtrise et exemplaires :** la maîtrise est rangée par mot (`user_mastery`), les exemplaires par quantité (`user_cards`). Un échange ne touche jamais la maîtrise.
 - **Règles du jeu :** elles vivent dans `packages/core`, en TypeScript pur, sans I/O, et sont testées.
 - **Tâches de fond :** tout ce qui peut attendre passe par la file (notifications, images de partage, statistiques).

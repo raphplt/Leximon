@@ -43,3 +43,38 @@
 .section a {
   color: var(--lx-color-text);
 }
+
+.section ul {
+  margin: 0;
+  padding-left: 22px;
+  font-family: var(--font-text), Georgia, serif;
+  font-size: 19px;
+  line-height: 1.5;
+  color: var(--lx-color-text-muted);
+}
+
+.section li + li {
+  margin-top: 4px;
+}
+
+.section p + p,
+.section p + ul,
+.section ul + p {
+  margin-top: 12px;
+}
+
+.updated {
+  margin: 0;
+  font-size: 15px;
+  color: var(--lx-color-text-faint);
+}
+
+.related {
+  margin-top: 48px;
+  font-size: 15px;
+  color: var(--lx-color-text-faint);
+}
+
+.related a {
+  color: var(--lx-color-text-muted);
+}

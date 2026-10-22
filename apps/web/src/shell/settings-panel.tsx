@@ -236,6 +236,10 @@ export function SettingsPanel({
         <Link href="/mentions" onClick={onClose}>
           Contact et mentions
         </Link>{" "}
+        ·{" "}
+        <Link href="/conditions" onClick={onClose}>
+          Conditions
+        </Link>{" "}
         · contact@leximon.fr
       </p>
       <PseudoDialog open={dialog === "pseudo"} onClose={() => setDialog(null)} />

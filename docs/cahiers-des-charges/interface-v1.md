@@ -199,7 +199,7 @@ La maquette ne montre que le clan du joueur. Les écrans K-08 à K-13 sont à de
 | R-06 | Réglages · Compte | Adresse e-mail, Tes données, Me déconnecter ; l'inscription de l'invité (écran `/compte` existant) | existe en partie | 1 | fait | à faire |
 | R-07 | Supprimer mon compte | Dans l'app, exigé par l'App Store ; conséquence dans le bouton | à faire | 3 | fait (P63) | à faire |
 | R-08 | Sanction et contestation | Message motivé d'une sanction, voie de contestation (DSA, N5) | admin | 4 | à faire | à faire |
-| R-09 | Contact et mentions | contact@leximon.fr, crédits (Littré, Ngram, gravures), conditions d'utilisation, charte de la discussion | — | 3 | en partie (contact et crédits sur `/mentions` ; conditions d'utilisation et charte à écrire) | à faire |
+| R-09 | Contact et mentions | contact@leximon.fr, crédits (Littré, Ngram, gravures), conditions d'utilisation, charte de la discussion | — | 3 | fait (`/mentions` avec l'éditeur et l'hébergeur, `/conditions`, `/charte`, acceptées à l'inscription ; textes à faire relire par un juriste) | à faire |
 
 ### X · Propositions
 
@@ -231,7 +231,7 @@ Web d'abord, décidé par le propriétaire le 2026-10-21. Le mobile reprend ensu
 | 0 | Ce cahier, P58 et P59, D-033, squelette de `packages/view-model`, composants de base du web (fait) | — |
 | 1 | Coque web, écran Jouer, chemin des niveaux et coffrets, toutes les récompenses de P58 sauf les cosmétiques, fonctionnalités par niveau (P59) côté serveur et web, échanges à 1 puis 3 cartes (web fait le 2026-10-21 ; clans et joutes affichent un écran « pas encore construit » une fois le niveau atteint) | — |
 | 2 | Album, fiche de carte, défis et échanges repris sur la maquette ; prononciation dès que les fichiers audio sont publiés | lot 1 |
-| 3 | Profil public, atelier et cosmétiques, réglages complets, courrier, suppression du compte (web fait le 2026-10-21, sans la file : préférences de notification gardées mais rien n'est envoyé, courrier tiré de l'état, image de partage générée à la demande ; restent les conditions d'utilisation et la charte) | inscription (fournisseur d'e-mails), file de tâches (D-005) |
+| 3 | Profil public, atelier et cosmétiques, réglages complets, courrier, suppression du compte (web fait le 2026-10-21, sans la file : préférences de notification gardées mais rien n'est envoyé, courrier tiré de l'état, image de partage générée à la demande ; conditions d'utilisation et charte écrites, à faire relire par un juriste) | inscription (fournisseur d'e-mails), file de tâches (D-005) |
 | 4 | Clans complets avec modération, outil de traitement des signalements dans `/admin` | lot 3, conditions d'utilisation et charte |
 | 5 | Mobile : base Expo (polices, onglets, fiches, gestes, push), puis tous les écrans dans l'ordre des lots 1 à 4 | lots 1 à 4 pour chaque écran |
 | 6 | Propositions retenues (X-01 à X-03) | décisions du propriétaire |

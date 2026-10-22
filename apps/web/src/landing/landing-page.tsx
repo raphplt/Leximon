@@ -51,6 +51,8 @@ export function LandingPage() {
         </span>
         <span className={styles.footerLinks}>
           <Link href="/confidentialite">Tes données</Link>
+          <Link href="/conditions">Conditions</Link>
+          <Link href="/mentions">Mentions</Link>
           <a href="mailto:contact@leximon.fr">contact@leximon.fr</a>
         </span>
       </footer>

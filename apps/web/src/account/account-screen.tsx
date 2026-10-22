@@ -325,7 +325,12 @@ function Confirm({
             checked={ageConfirmed}
             onChange={(event) => setAgeConfirmed(event.target.checked)}
           />
-          <span>J'ai 15 ans ou plus</span>
+          <span>
+            J'ai 15 ans ou plus et j'accepte les{" "}
+            <Link href="/conditions" target="_blank">
+              conditions d'utilisation
+            </Link>
+          </span>
         </label>
       )}
       {step.acceptsLoss ? (
