@@ -6,6 +6,7 @@
   padding: 8px 16px 48px;
   display: flex;
   flex-direction: column;
+  justify-content: center;
   gap: 16px;
 }
 
@@ -228,4 +229,28 @@
 .link:disabled {
   cursor: default;
   opacity: 0.5;
+}
+
+.ageSelect {
+  display: block;
+  width: 100%;
+}
+
+.ageSelect > button {
+  min-height: 56px;
+  padding: 0 18px;
+  border-width: 2px;
+  border-radius: var(--lx-radius-pill);
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.ageSelect ul {
+  border-radius: 18px;
+}
+
+.ageSelect li > button {
+  padding: 10px 14px;
+  border-radius: 12px;
+  font-size: 16px;
 }

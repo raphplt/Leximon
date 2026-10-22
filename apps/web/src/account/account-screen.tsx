@@ -3,6 +3,7 @@
 import { AGE_BRACKETS, type AgeBracket, type LinkPreviewResponse } from "@leximon/contract";
 import Link from "next/link";
 import { type FormEvent, useCallback, useEffect, useId, useState } from "react";
+import { Select, type SelectOption } from "@/components/select";
 import {
   BetaClosedError,
   fetchAccount,
@@ -382,6 +383,14 @@ function CodeForm({
   );
 }
 
+const AGE_OPTIONS: readonly SelectOption<AgeBracket | "">[] = [
+  { value: "", label: "Je préfère ne pas dire" },
+  ...AGE_BRACKETS.map((bracket) => ({
+    value: bracket,
+    label: bracket === "50+" ? "50 ans et plus" : `${bracket.replace("-", " à ")} ans`,
+  })),
+];
+
 function Confirm({
   preview,
   busy,
@@ -396,7 +405,6 @@ function Confirm({
   const { noun } = usePackShape();
   const [ageConfirmed, setAgeConfirmed] = useState(false);
   const [ageBracket, setAgeBracket] = useState<AgeBracket | null>(null);
-  const ageId = useId();
   const step = confirmStep(preview, noun);
   const ready = !busy && (!step.needsAge || ageConfirmed);
   if (step.closed) {
@@ -417,25 +425,14 @@ function Confirm({
       {step.warning !== null && <p className={styles.warning}>{step.warning}</p>}
       {step.needsAge && (
         <>
-          <label htmlFor={ageId} className={styles.label}>
-            Ton âge, si tu veux bien
-          </label>
-          <select
-            id={ageId}
-            className={styles.input}
+          <span className={styles.label}>Ton âge, si tu veux bien</span>
+          <Select
+            className={styles.ageSelect ?? ""}
+            ariaLabel="Ton âge, si tu veux bien"
             value={ageBracket ?? ""}
-            onChange={(event) => {
-              const value = AGE_BRACKETS.find((bracket) => bracket === event.target.value);
-              setAgeBracket(value ?? null);
-            }}
-          >
-            <option value="">Je préfère ne pas dire</option>
-            {AGE_BRACKETS.map((bracket) => (
-              <option key={bracket} value={bracket}>
-                {bracket === "50+" ? "50 ans et plus" : `${bracket.replace("-", " à ")} ans`}
-              </option>
-            ))}
-          </select>
+            options={AGE_OPTIONS}
+            onChange={(value) => setAgeBracket(value === "" ? null : value)}
+          />
         </>
       )}
       {step.needsAge && (
