@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { formatCount, formatWait, plural } from "./format";
+import { formatCount, formatWait, ofName, plural } from "./format";
 
 describe("formats", () => {
   it("groups thousands the French way", () => {
@@ -16,5 +16,13 @@ describe("formats", () => {
     expect(formatWait(0)).toBe("1 min");
     expect(formatWait(17 * 60_000 + 1)).toBe("18 min");
     expect(formatWait(125 * 60_000)).toBe("2 h 05");
+  });
+});
+
+describe("ofName", () => {
+  it("contracts « de » with the collection's article", () => {
+    expect(ofName("Les Fondateurs")).toBe("des Fondateurs");
+    expect(ofName("Le Grenier")).toBe("du Grenier");
+    expect(ofName("Caractères et travers")).toBe("de Caractères et travers");
   });
 });

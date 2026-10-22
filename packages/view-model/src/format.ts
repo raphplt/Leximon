@@ -19,6 +19,13 @@ export function formatWait(ms: number): string {
   return `${Math.floor(minutes / 60)} h ${String(minutes % 60).padStart(2, "0")}`;
 }
 
+/** « de Caractères et travers », « des Fondateurs », « du Grenier »: French contracts « de » with an article. */
+export function ofName(name: string): string {
+  if (name.startsWith("Les ")) return `des ${name.slice(4)}`;
+  if (name.startsWith("Le ")) return `du ${name.slice(3)}`;
+  return `de ${name}`;
+}
+
 export function capitalize(text: string): string {
   return text.charAt(0).toUpperCase() + text.slice(1);
 }

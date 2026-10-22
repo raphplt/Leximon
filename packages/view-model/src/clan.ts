@@ -9,7 +9,7 @@ import type {
   GoalTier,
 } from "@leximon/contract";
 import { CLAN_SCHEDULE, clanRulesAt, type EpochMs } from "@leximon/core";
-import { formatCount, formatWait, plural } from "./format";
+import { formatCount, formatWait, ofName, plural } from "./format";
 import { playerName } from "./trades";
 
 /**
@@ -261,7 +261,7 @@ export function libraryHeadline(rows: readonly LibraryRow[]): string {
     .filter((entry) => entry.missing > 0)
     .sort((a, b) => a.missing - b.missing)[0];
   if (open === undefined) return "Pas une carte ne vous manque. Chapeau.";
-  return `Il vous manque ${plural(open.missing, "carte", "cartes")} de ${open.row.name}.`;
+  return `Il vous manque ${plural(open.missing, "carte", "cartes")} ${ofName(open.row.name)}.`;
 }
 
 // --- Discussion and journal ---------------------------------------------------------
