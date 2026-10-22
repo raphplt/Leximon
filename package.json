@@ -18,7 +18,8 @@
     "test:integration": "turbo run test:integration --concurrency=1",
     "db:migrate": "pnpm --filter @leximon/db db:migrate",
     "catalog:publish": "pnpm --filter @leximon/db catalog:publish",
-    "admin:grant": "pnpm --filter @leximon/db admin:grant"
+    "admin:grant": "pnpm --filter @leximon/db admin:grant",
+    "dev:player": "pnpm --filter @leximon/db dev:player"
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.15",
