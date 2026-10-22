@@ -75,7 +75,10 @@ export const createCampaignMailer: CampaignMailerFactory = (env) => {
 const consoleMailer: CampaignMailer = {
   async sendBatch(messages) {
     for (const message of messages) {
-      console.info(`[dev] Campagne « ${message.subject} » pour ${maskEmail(message.to)}`);
+      // The text body too: it holds the unsubscribe link, to try `/desinscription` locally.
+      console.info(
+        `[dev] Campagne « ${message.subject} » pour ${maskEmail(message.to)}\n${message.text}`,
+      );
     }
     return { kind: "accepted", messageIds: messages.map(() => null) };
   },
