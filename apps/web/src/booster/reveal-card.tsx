@@ -17,7 +17,7 @@ import { HoloCard } from "@/components/holo-card";
 import { useHoloLight } from "@/components/use-holo-light";
 import { Icon } from "@/ui/icon";
 import { CardBack } from "./card-back";
-import { play, soundOn, vibrate } from "./feedback";
+import { play, speechOn, vibrate } from "./feedback";
 import { cardRelease } from "./gesture";
 import styles from "./reveal-card.module.css";
 import type { RarityStaging } from "./staging";
@@ -110,7 +110,7 @@ export function RevealCard({
     later(staging.flipMs, () => {
       setSettled(true);
       if (isNew) play("newCard");
-      if (soundOn()) later(isNew ? SPEAK_AFTER_CHIME_MS : SPEAK_AFTER_MS, word.play);
+      if (speechOn()) later(isNew ? SPEAK_AFTER_CHIME_MS : SPEAK_AFTER_MS, word.play);
     });
   }
 

@@ -25,7 +25,7 @@ function maskEmail(email: string): string {
 }
 
 /**
- * Settings: sound and vibration, kept on the device; notifications, kept on the
+ * Settings: sound, spoken words and vibration, kept on the device; notifications, kept on the
  * server (nothing is sent before the queue exists); the profile; the account.
  */
 export function SettingsPanel({
@@ -49,7 +49,11 @@ export function SettingsPanel({
 
   useEffect(() => {
     if (!open) return;
-    setPrefs({ sound: readPreference("sound"), haptics: readPreference("haptics") });
+    setPrefs({
+      sound: readPreference("sound"),
+      speech: readPreference("speech"),
+      haptics: readPreference("haptics"),
+    });
     setVibrates(canVibrate());
     setError(null);
     fetchPreferences()
@@ -101,6 +105,14 @@ export function SettingsPanel({
           {prefs !== null && (
             <>
               <Switch label="Son" checked={prefs.sound} onChange={(on) => toggle("sound", on)} />
+              {prefs.sound && (
+                <Switch
+                  label="Mots dits à voix haute"
+                  detail="Quand la carte se pose"
+                  checked={prefs.speech}
+                  onChange={(on) => toggle("speech", on)}
+                />
+              )}
               {vibrates && (
                 <Switch
                   label="Vibration"
