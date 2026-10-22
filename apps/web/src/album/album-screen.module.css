@@ -77,10 +77,17 @@
 /* --- Collection tabs --- */
 
 .tabs {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  display: flex;
   gap: 10px;
   margin-bottom: 14px;
+  /* One row: the tabs share the width, and scroll sideways once collections no longer fit. */
+  overflow-x: auto;
+  scroll-snap-type: x proximity;
+  scrollbar-width: none;
+}
+
+.tabs::-webkit-scrollbar {
+  display: none;
 }
 
 .dimmed {
@@ -88,6 +95,9 @@
 }
 
 .tab {
+  flex: 1 0 168px;
+  min-width: 0;
+  scroll-snap-align: start;
   appearance: none;
   padding: 12px 14px;
   border: 0;
@@ -369,6 +379,8 @@
   }
 
   .tab {
+    flex: 0 0 auto;
+    min-width: 128px;
     padding: 10px;
   }
 
