@@ -70,6 +70,18 @@ export function gameDayOf(time: EpochMs): GameDay {
   return { key, start: zonedMidnight(year, month, day), end: zonedMidnight(year, month, day + 1) };
 }
 
+/** The week in Paris, from Monday midnight, that contains `time` (P66). */
+export function gameWeekOf(time: EpochMs): GameDay {
+  const { year, month, day } = zonedParts(time);
+  const sinceMonday = (new Date(Date.UTC(year, month - 1, day)).getUTCDay() + 6) % 7;
+  const start = zonedMidnight(year, month, day - sinceMonday);
+  return {
+    key: gameDayOf(start).key,
+    start,
+    end: zonedMidnight(year, month, day - sinceMonday + 7),
+  };
+}
+
 /** Answers given during the current day, including the one being applied. */
 export interface DailyTally {
   readonly answers: number;

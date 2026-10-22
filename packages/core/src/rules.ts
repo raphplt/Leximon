@@ -10,6 +10,8 @@ import type { PseudoSchedule } from "./account/pseudo";
 import type { BonusSchedule } from "./bonus/bonus";
 import type { DrawSchedule } from "./booster/draw";
 import type { RefillSchedule } from "./booster/refill";
+import type { ClanSchedule } from "./clan/clan";
+import type { ClanGoalSchedule } from "./clan/goal";
 import type { MasterySchedule } from "./mastery/mastery";
 import type { XpSchedule } from "./progress/progress";
 import type { LevelRewardSchedule } from "./progress/rewards";
@@ -163,6 +165,55 @@ export const LEVEL_REWARD_SCHEDULE: LevelRewardSchedule = [
 // Pseudo of a player (P-08 of interface-v1, N5).
 export const PSEUDO_SCHEDULE: PseudoSchedule = [
   { startsAt: SINCE_LAUNCH, minLength: 3, maxLength: 20, changeEveryMs: 30 * 24 * 60 * MINUTE },
+];
+
+// Clans (P65, P67). Emblem engravings are provisional, like the avatars.
+export const CLAN_SCHEDULE: ClanSchedule = [
+  {
+    startsAt: SINCE_LAUNCH,
+    nameMinLength: 3,
+    nameMaxLength: 30,
+    mottoMaxLength: 80,
+    messageMaxLength: 500,
+    messageIntervalMs: 2_000,
+    rejoinCooldownMs: 24 * 60 * MINUTE,
+    chiefAbsenceMs: 14 * 24 * 60 * MINUTE,
+    muteDurationsMs: [60 * MINUTE, 24 * 60 * MINUTE, 7 * 24 * 60 * MINUTE],
+    messageRetentionMs: 90 * 24 * 60 * MINUTE,
+    emblemEngravings: [
+      "aiguiere",
+      "aumoniere",
+      "baudrier",
+      "bougette",
+      "alcarraza",
+      "boghei",
+      "archiere",
+      "accastillage",
+    ],
+    emblemColors: ["sang", "or", "indigo", "vert-de-gris", "ocre", "prune", "craie", "encre"],
+    emblemUnlocks: [
+      { kind: "color", id: "vermillon" },
+      { kind: "engraving", id: "antitonnerre" },
+      { kind: "color", id: "turquoise" },
+      { kind: "engraving", id: "brisoir" },
+      { kind: "color", id: "argent" },
+      { kind: "engraving", id: "calige" },
+      { kind: "color", id: "safran" },
+      { kind: "engraving", id: "barbette" },
+    ],
+  },
+];
+
+// Weekly goal of a clan (P66). Targets are provisional.
+export const CLAN_GOAL_SCHEDULE: ClanGoalSchedule = [
+  {
+    startsAt: SINCE_LAUNCH,
+    wordsPerActiveMember: { bronze: 5, silver: 10, gold: 15 },
+    activeWindowMs: 7 * 24 * 60 * MINUTE,
+    minContribution: 5,
+    bonusBoosters: { bronze: 0, silver: 1, gold: 1 },
+    emblemTiers: ["gold"],
+  },
 ];
 
 // Features opened by level (P59); trade levels are in TRADE_SCHEDULE.
