@@ -1,0 +1,49 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  // Top level: `opennextjs-cloudflare preview` on this machine, against the local API.
+  // The site itself is `env.production`, deployed by `pnpm deploy:web`.
+  "name": "leximon-web",
+  "main": ".open-next/worker.js",
+  "compatibility_date": "2026-10-01",
+  // `global_fetch_strictly_public`: the server reaches the API and its own catalogue through
+  // their public custom domains, which a same-zone fetch only allows with this flag.
+  "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+  "observability": { "enabled": true },
+  // The local API already listens on 8787.
+  "dev": { "port": 8788 },
+  // Catalogue (public/catalog) and Next.js files, served before the Worker runs.
+  // Cache headers are in public/_headers.
+  "assets": { "directory": ".open-next/assets", "binding": "ASSETS" },
+  "vars": {
+    // Server-side reads only; the browser's addresses are inlined at build time (NEXT_PUBLIC_*).
+    "API_URL": "http://localhost:8787",
+    "CATALOG_URL": "http://localhost:8788/catalog"
+  },
+  // OpenNext's cache: R2 for the entries, a Durable Object for revalidations, and a binding to
+  // the Worker itself to recompute a stale page. The service name must be the Worker's name.
+  "services": [{ "binding": "WORKER_SELF_REFERENCE", "service": "leximon-web" }],
+  "r2_buckets": [{ "binding": "NEXT_INC_CACHE_R2_BUCKET", "bucket_name": "leximon-web-cache" }],
+  "durable_objects": {
+    "bindings": [{ "name": "NEXT_CACHE_DO_QUEUE", "class_name": "DOQueueHandler" }]
+  },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["DOQueueHandler"] }],
+
+  "env": {
+    // Worker `leximon-web-production`, on leximon.fr. www.leximon.fr is redirected by a
+    // Cloudflare redirect rule (docs/mise-en-ligne.md), not by this Worker.
+    "production": {
+      "routes": [{ "pattern": "leximon.fr", "custom_domain": true }],
+      "workers_dev": false,
+      "preview_urls": false,
+      "vars": {
+        "API_URL": "https://api.leximon.fr",
+        "CATALOG_URL": "https://leximon.fr/catalog"
+      },
+      "services": [{ "binding": "WORKER_SELF_REFERENCE", "service": "leximon-web-production" }],
+      "r2_buckets": [{ "binding": "NEXT_INC_CACHE_R2_BUCKET", "bucket_name": "leximon-web-cache" }],
+      "durable_objects": {
+        "bindings": [{ "name": "NEXT_CACHE_DO_QUEUE", "class_name": "DOQueueHandler" }]
+      }
+    }
+  }
+}

@@ -1,0 +1,20 @@
+# Cache headers of the static files (Workers static assets). Pages rendered by the Worker are
+# not concerned: Next.js sets their headers.
+
+# Next.js build files: their names carry a hash.
+/_next/static/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# Catalogue: every file is named after the hash of its content, except the manifest, which
+# points at the current ones and must change within a minute of a publication.
+/catalog/collections/*
+  Cache-Control: public, max-age=31536000, immutable
+
+/catalog/gravures/*
+  Cache-Control: public, max-age=31536000, immutable
+
+/catalog/prononciation/*
+  Cache-Control: public, max-age=31536000, immutable
+
+/catalog/manifest.json
+  Cache-Control: public, max-age=60, must-revalidate

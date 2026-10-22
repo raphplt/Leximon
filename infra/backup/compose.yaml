@@ -1,0 +1,24 @@
+# Nightly backup of the production database, on the NAS (docs/mise-en-ligne.md, step 13).
+#   cp .env.example .env    # then paste the direct Neon connection string
+#   docker compose up -d    # runs every night at BACKUP_HOUR
+# A one-off dump: docker compose run --rm backup /scripts/backup.sh
+# A restore test:  docker compose run --rm backup /scripts/restore-test.sh
+services:
+  backup:
+    # Same major version as production: pg_dump refuses a server newer than itself.
+    image: postgres:18.6-alpine
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      TZ: Europe/Paris
+    volumes:
+      - ./backup.sh:/scripts/backup.sh:ro
+      - ./restore-test.sh:/scripts/restore-test.sh:ro
+      - ${BACKUP_PATH:-./dumps}:/backups
+    # Busybox cron in the foreground; its output goes to `docker compose logs backup`.
+    command:
+      - sh
+      - -c
+      - |
+        echo "$${BACKUP_MINUTE:-30} $${BACKUP_HOUR:-4} * * * /scripts/backup.sh" > /etc/crontabs/root
+        exec crond -f -l 8 -L /dev/stdout

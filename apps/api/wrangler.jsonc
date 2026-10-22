@@ -25,7 +25,9 @@
     "EMAIL_CAMPAIGN_FROM": "",
     "LETTERMINT_BROADCAST_ROUTE": "broadcast",
     // Web app, for the unsubscribe page linked from every campaign.
-    "PUBLIC_WEB_URL": "http://localhost:3000"
+    "PUBLIC_WEB_URL": "http://localhost:3000",
+    // "required": a new player needs an invitation code (closed beta). "off": anyone plays.
+    "BETA_INVITES": "off"
   },
   // Campaign e-mails: the pump queues row ids, the consumer sends them in batches.
   // Game events: cards obtained and clan changes, recounted from the database.
@@ -113,5 +115,108 @@
       "id": "00000000000000000000000000000000",
       "localConnectionString": "postgres://leximon:leximon@127.0.0.1:54329/leximon"
     }
-  ]
+  ],
+
+  // Production: `pnpm deploy:api` (Worker `leximon-api-production`, on api.leximon.fr). The top
+  // level above stays the local configuration and is never deployed. Wrangler does not inherit
+  // vars and bindings into an environment: a binding added above must be copied here too.
+  // Secrets (`wrangler secret put … --env production`): BETTER_AUTH_SECRET, EMAIL_LINK_SECRET,
+  // LETTERMINT_SENDING_TOKEN, LETTERMINT_WEBHOOK_SECRET. See docs/mise-en-ligne.md.
+  "env": {
+    "production": {
+      "routes": [{ "pattern": "api.leximon.fr", "custom_domain": true }],
+      "workers_dev": false,
+      "preview_urls": false,
+      "vars": {
+        "APP_ENV": "production",
+        "BETTER_AUTH_URL": "https://api.leximon.fr",
+        // The web app on its own subdomain: same site, so the session cookie (host-only on
+        // api.leximon.fr, SameSite=Lax) goes with every `credentials: "include"` request.
+        "TRUSTED_ORIGINS": "https://leximon.fr",
+        "EMAIL_CODE_FROM": "Leximon <code@mail.leximon.fr>",
+        "EMAIL_REPLY_TO": "contact@leximon.fr",
+        // Campaigns stay refused until LETTERMINT_SENDING_TOKEN is set.
+        "EMAIL_CAMPAIGN_FROM": "Leximon <bonjour@infos.leximon.fr>",
+        "LETTERMINT_BROADCAST_ROUTE": "broadcast",
+        "PUBLIC_WEB_URL": "https://leximon.fr",
+        "BETA_INVITES": "required"
+      },
+      // Same queue names as above: `queue()` recognises the game events queue by its name.
+      "queues": {
+        "producers": [
+          { "binding": "CAMPAIGN_QUEUE", "queue": "leximon-email-campaigns" },
+          { "binding": "GAME_EVENTS", "queue": "leximon-game-events" }
+        ],
+        "consumers": [
+          {
+            "queue": "leximon-email-campaigns",
+            "max_batch_size": 1,
+            "max_batch_timeout": 1,
+            "max_retries": 5,
+            "max_concurrency": 4,
+            "dead_letter_queue": "leximon-email-campaigns-dlq"
+          },
+          {
+            "queue": "leximon-game-events",
+            "max_batch_size": 50,
+            "max_batch_timeout": 2,
+            "max_retries": 3,
+            "dead_letter_queue": "leximon-game-events-dlq"
+          }
+        ]
+      },
+      "send_email": [
+        {
+          "name": "EMAIL",
+          "allowed_sender_addresses": ["code@mail.leximon.fr"]
+        }
+      ],
+      // Same limits and ids as above: the local ones are simulated and never reach the account.
+      "ratelimits": [
+        {
+          "name": "SIGNUP_RATE_LIMITER",
+          "namespace_id": "1001",
+          "simple": { "limit": 60, "period": 60 }
+        },
+        {
+          "name": "PLAYER_RATE_LIMITER",
+          "namespace_id": "1002",
+          "simple": { "limit": 120, "period": 60 }
+        },
+        {
+          "name": "OTP_SEND_IP_RATE_LIMITER",
+          "namespace_id": "1003",
+          "simple": { "limit": 5, "period": 60 }
+        },
+        {
+          "name": "OTP_SEND_EMAIL_RATE_LIMITER",
+          "namespace_id": "1004",
+          "simple": { "limit": 1, "period": 60 }
+        },
+        {
+          "name": "OTP_VERIFY_IP_RATE_LIMITER",
+          "namespace_id": "1005",
+          "simple": { "limit": 10, "period": 60 }
+        },
+        {
+          "name": "WAITLIST_RATE_LIMITER",
+          "namespace_id": "1006",
+          "simple": { "limit": 10, "period": 60 }
+        },
+        {
+          "name": "EMAIL_LINK_RATE_LIMITER",
+          "namespace_id": "1007",
+          "simple": { "limit": 30, "period": 60 }
+        }
+      ],
+      "hyperdrive": [
+        {
+          "binding": "HYPERDRIVE",
+          // TO REPLACE: id printed by `wrangler hyperdrive create leximon-db … --caching-disabled`
+          // (docs/mise-en-ligne.md). A deploy with this placeholder fails.
+          "id": "ffffffffffffffffffffffffffffffff"
+        }
+      ]
+    }
+  }
 }

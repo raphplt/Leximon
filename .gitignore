@@ -13,6 +13,7 @@ build/
 .next/
 .expo/
 .wrangler/
+.open-next/
 coverage/
 out/
 *.tsbuildinfo

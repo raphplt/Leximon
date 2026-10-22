@@ -19,7 +19,12 @@
     "db:migrate": "pnpm --filter @leximon/db db:migrate",
     "catalog:publish": "pnpm --filter @leximon/db catalog:publish",
     "admin:grant": "pnpm --filter @leximon/db admin:grant",
-    "dev:player": "pnpm --filter @leximon/db dev:player"
+    "dev:player": "pnpm --filter @leximon/db dev:player",
+    "db:migrate:prod": "sh infra/prod/check-database-url.sh && pnpm db:migrate",
+    "catalog:publish:prod": "sh infra/prod/check-database-url.sh && pnpm catalog:publish",
+    "admin:grant:prod": "sh infra/prod/check-database-url.sh && pnpm admin:grant",
+    "deploy:api": "pnpm --filter @leximon/api exec wrangler deploy --env production",
+    "deploy:web": "pnpm --filter @leximon/web run deploy:production"
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.15",
