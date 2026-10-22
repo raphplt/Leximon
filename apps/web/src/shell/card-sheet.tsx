@@ -2,21 +2,20 @@
 
 import type { CatalogCard } from "@leximon/contract";
 import {
+  CARD_SHARE_COPIED,
   canOfferInTrade,
   copiesLabel,
-  frequencyLine,
   masteryView,
   pinButtonLabel,
   reviewState,
-  shareText,
 } from "@leximon/view-model";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { CardFacts, CardOrigin } from "@/cards/card-facts";
 import { type Catalog, collectionName, loadCatalog } from "@/cards/catalog";
-import { useSpokenWord } from "@/cards/use-spoken-word";
+import { useCardShare } from "@/cards/share-card";
 import { EngravingCredit } from "@/components/engraving-credit";
 import { HoloCard } from "@/components/holo-card";
-import { RarityName } from "@/components/rarity-icon";
 import { useHoloLight } from "@/components/use-holo-light";
 import { useNarrow } from "@/lib/use-narrow";
 import { useNow } from "@/lib/use-now";
@@ -87,18 +86,9 @@ function SheetBody({
   const review = reviewState(word, now);
   const tradeable = progress !== null && canOfferInTrade(quantity, progress.level, now);
 
+  const sharing = useCardShare(card);
   const share = async () => {
-    const text = shareText(card.word, card.perBillion);
-    try {
-      if (typeof navigator.share === "function") {
-        await navigator.share({ text });
-        return;
-      }
-      await navigator.clipboard.writeText(text);
-      toast(`Copié : « ${text} »`);
-    } catch {
-      // Sharing cancelled: nothing to say.
-    }
+    if ((await sharing.share()) === "copied") toast(CARD_SHARE_COPIED);
   };
 
   return (
@@ -113,11 +103,7 @@ function SheetBody({
         <EngravingCredit card={card} />
       </div>
       <div className={styles.facts}>
-        <p className={styles.rarity}>
-          <RarityName rarity={card.rarity} />
-        </p>
-        <Pronunciation card={card} />
-        <p className={styles.frequency}>{frequencyLine(card.perBillion)}</p>
+        <CardFacts card={card} />
 
         {quantity > 0 && (
           <div className={styles.block}>
@@ -141,12 +127,7 @@ function SheetBody({
           <span className={`${ui.chip} ${styles.chip}`}>{collection}</span>
         </p>
 
-        {card.etymology !== null && (
-          <div className={styles.block}>
-            <p className={ui.kicker}>Origine{card.era !== null ? ` · ${card.era}` : ""}</p>
-            <p className={styles.etymology}>{card.etymology}</p>
-          </div>
-        )}
+        <CardOrigin card={card} />
 
         {quantity > 0 && (
           <div className={styles.actions}>
@@ -174,7 +155,14 @@ function SheetBody({
                 {pinButtonLabel(pins.isPinned(card.id))}
               </button>
             )}
-            <button type="button" className={ui.ghost} onClick={() => void share()}>
+            <button
+              type="button"
+              className={ui.ghost}
+              onPointerEnter={sharing.prepare}
+              onPointerDown={sharing.prepare}
+              onFocus={sharing.prepare}
+              onClick={() => void share()}
+            >
               <Icon name="share" size={17} />
               Partager
             </button>
@@ -190,27 +178,5 @@ function SheetBody({
         )}
       </div>
     </div>
-  );
-}
-
-/** The word spoken by the catalogue's voice, with its phonetic notation. */
-function Pronunciation({ card }: { readonly card: CatalogCard }) {
-  const word = useSpokenWord(card);
-  const spoken = card.pronunciation ?? null;
-  if (spoken === null) return null;
-  return (
-    <p className={styles.spoken}>
-      <button
-        type="button"
-        className={`${ui.round} ${word.playing ? styles.playing : ""}`}
-        onClick={word.play}
-        aria-label={`Écouter ${card.word}`}
-      >
-        <Icon name="sound" size={20} />
-      </button>
-      <span className={styles.ipa} lang="fr-Latn-fonipa">
-        /{spoken.ipa}/
-      </span>
-    </p>
   );
 }

@@ -2,7 +2,7 @@
 
 import type { CatalogCard } from "@leximon/contract";
 import { rarityStyles } from "@leximon/tokens";
-import { frequencyLine, shareText } from "@leximon/view-model";
+import { frequencyLine } from "@leximon/view-model";
 import {
   type CSSProperties,
   type KeyboardEvent,
@@ -11,6 +11,7 @@ import {
   useRef,
   useState,
 } from "react";
+import { useCardShare } from "@/cards/share-card";
 import { useSpokenWord } from "@/cards/use-spoken-word";
 import { HoloCard } from "@/components/holo-card";
 import { useHoloLight } from "@/components/use-holo-light";
@@ -265,27 +266,24 @@ export function RevealCard({
 }
 
 /**
- * Shares a Légendaire: through the phone's share sheet where there is one, or by copying the
- * text. A link to the card's own public page will replace the site's address once it exists.
+ * Shares a Légendaire with the link to its public page: through the phone's share sheet where
+ * there is one, or by copying the text and the link.
  */
 function ShareButton({ card }: { readonly card: CatalogCard }) {
   const [copied, setCopied] = useState(false);
+  const sharing = useCardShare(card);
   const share = async () => {
-    const text = shareText(card.word, card.perBillion);
-    const url = window.location.origin;
-    try {
-      if (typeof navigator.share === "function") {
-        await navigator.share({ title: "Leximon", text, url });
-        return;
-      }
-      await navigator.clipboard.writeText(`${text} ${url}`);
-      setCopied(true);
-    } catch {
-      // Share sheet closed by the player, or clipboard refused: nothing to report.
-    }
+    if ((await sharing.share()) === "copied") setCopied(true);
   };
   return (
-    <button type="button" className={styles.share} onClick={() => void share()}>
+    <button
+      type="button"
+      className={styles.share}
+      onPointerEnter={sharing.prepare}
+      onPointerDown={sharing.prepare}
+      onFocus={sharing.prepare}
+      onClick={() => void share()}
+    >
       {copied ? "Copié" : "Partager"}
     </button>
   );

@@ -1,0 +1,55 @@
+"use client";
+
+import type { CatalogCard } from "@leximon/contract";
+import { frequencyLine } from "@leximon/view-model";
+import { RarityName } from "@/components/rarity-icon";
+import { Icon } from "@/ui/icon";
+import ui from "@/ui/ui.module.css";
+import styles from "./card-facts.module.css";
+import { useSpokenWord } from "./use-spoken-word";
+
+/** What anyone can know of a card: its rarity, how it sounds, how rare it is in print. */
+export function CardFacts({ card }: { readonly card: CatalogCard }) {
+  return (
+    <>
+      <p className={styles.rarity}>
+        <RarityName rarity={card.rarity} />
+      </p>
+      <Pronunciation card={card} />
+      <p className={styles.frequency}>{frequencyLine(card.perBillion)}</p>
+    </>
+  );
+}
+
+/** The word's origin, when the card has one. */
+export function CardOrigin({ card }: { readonly card: CatalogCard }) {
+  if (card.etymology === null) return null;
+  return (
+    <div className={styles.origin}>
+      <p className={ui.kicker}>Origine{card.era !== null ? ` · ${card.era}` : ""}</p>
+      <p className={styles.etymology}>{card.etymology}</p>
+    </div>
+  );
+}
+
+/** The word spoken by the catalogue's voice, with its phonetic notation. */
+function Pronunciation({ card }: { readonly card: CatalogCard }) {
+  const word = useSpokenWord(card);
+  const spoken = card.pronunciation ?? null;
+  if (spoken === null) return null;
+  return (
+    <p className={styles.spoken}>
+      <button
+        type="button"
+        className={`${ui.round} ${word.playing ? styles.playing : ""}`}
+        onClick={word.play}
+        aria-label={`Écouter ${card.word}`}
+      >
+        <Icon name="sound" size={20} />
+      </button>
+      <span className={styles.ipa} lang="fr-Latn-fonipa">
+        /{spoken.ipa}/
+      </span>
+    </p>
+  );
+}

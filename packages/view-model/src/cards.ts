@@ -1,6 +1,6 @@
 /** How card values read, the same on every platform. */
 
-import { capitalize } from "./format";
+import { capitalize, formatCount } from "./format";
 
 /**
  * Discreet frequency figure printed on a card: "one occurrence in N words", e.g.
@@ -30,6 +30,26 @@ export function frequencyLine(perBillion: number | null): string {
 /** What a player shares on a Légendaire: the word first, its rarity, then the boast. */
 export function shareText(word: string, perBillion: number | null): string {
   return `${capitalize(word)}. ${frequencyLine(perBillion)} Moi, je l'ai.`;
+}
+
+/** URL path of a card's public page, the link a share carries. */
+export function cardPath(cardId: string): string {
+  return `/carte/${encodeURIComponent(cardId)}`;
+}
+
+/** Said when the share sheet is missing and the text and link went to the clipboard. */
+export const CARD_SHARE_COPIED = "Copié, avec le lien de la carte.";
+
+/** Under a card's public page, for someone who does not play yet. */
+export function cardPagePitch(cardCount: number): string {
+  return `Des mots comme celui-là, il en dort ${formatCount(cardCount)} dans des sachets. Gratuits, tous les jours.`;
+}
+export const CARD_PAGE_ACTION = "Ouvrir mon premier sachet";
+export const CARD_NOT_FOUND = "Cette carte n'existe pas. Ou plus.";
+
+/** The title of a card's public page and of its shared link. */
+export function cardPageTitle(word: string): string {
+  return `${capitalize(word)} · Leximon`;
 }
 
 /** "1 milliard", "1,5 milliard", "17 milliards": the noun takes an s from 2 on. */

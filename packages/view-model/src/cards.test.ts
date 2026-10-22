@@ -1,5 +1,13 @@
 import { describe, expect, it } from "vitest";
-import { formatOdds, frequencyLine, shareText } from "./cards";
+import {
+  cardPagePitch,
+  cardPageTitle,
+  cardPath,
+  formatOdds,
+  frequencyLine,
+  shareText,
+} from "./cards";
+import { formatCount } from "./format";
 
 describe("formatOdds", () => {
   it("prints one occurrence in N words", () => {
@@ -35,6 +43,23 @@ describe("shareText", () => {
   it("puts the word first and the game nowhere", () => {
     expect(shareText("talpinette", null)).toBe(
       "Talpinette. Introuvable dans les livres d'aujourd'hui. Moi, je l'ai.",
+    );
+  });
+});
+
+describe("card page", () => {
+  it("links to the card by its id, escaped", () => {
+    expect(cardPath("abajoue")).toBe("/carte/abajoue");
+    expect(cardPath("a b")).toBe("/carte/a%20b");
+  });
+
+  it("titles the page with the word", () => {
+    expect(cardPageTitle("talpinette")).toBe("Talpinette · Leximon");
+  });
+
+  it("counts the catalogue in the pitch", () => {
+    expect(cardPagePitch(1561)).toBe(
+      `Des mots comme celui-là, il en dort ${formatCount(1561)} dans des sachets. Gratuits, tous les jours.`,
     );
   });
 });

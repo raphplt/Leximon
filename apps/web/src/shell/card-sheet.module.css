@@ -19,37 +19,6 @@
   min-width: 0;
 }
 
-.rarity {
-  margin: 0;
-  font-weight: 800;
-}
-
-.spoken {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin: 14px 0 0;
-}
-
-.playing {
-  background: var(--lx-color-accent);
-  color: var(--lx-color-accent-ink);
-}
-
-.ipa {
-  font-family: var(--font-text), Georgia, serif;
-  font-size: 19px;
-  color: var(--lx-color-text-muted);
-}
-
-.frequency {
-  margin: 12px 0 0;
-  font-family: var(--font-text), Georgia, serif;
-  font-style: italic;
-  font-size: 17px;
-  color: #d9d3e6;
-}
-
 .block {
   margin-top: 18px;
 }
@@ -113,13 +82,6 @@
 .chip {
   min-height: 32px;
   font-size: 13px;
-}
-
-.etymology {
-  margin: 6px 0 0;
-  font-family: var(--font-text), Georgia, serif;
-  font-size: 16px;
-  line-height: 1.45;
 }
 
 .actions {
