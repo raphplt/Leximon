@@ -1,6 +1,6 @@
 import type { CatalogCard } from "@leximon/contract";
 import { describe, expect, it } from "vitest";
-import { type AlbumState, albumView, foldSearch, themeLabel } from "./album";
+import { ALL_COLLECTIONS, type AlbumState, albumView, foldSearch, themeLabel } from "./album";
 
 const NOW = Date.parse("2026-10-21T12:00:00Z");
 
@@ -60,7 +60,22 @@ describe("album", () => {
   it("counts every collection and the whole catalogue", () => {
     const view = albumView(input, STATE);
     expect(view.headline).toEqual({ owned: "3", total: "5" });
-    expect(view.tabs.map((tab) => tab.count)).toEqual(["2/4", "1/1"]);
+    expect(view.tabs.map((tab) => tab.count)).toEqual(["3/5", "2/4", "1/1"]);
+    expect(view.tabs[0]).toMatchObject({ id: ALL_COLLECTIONS, name: "Tout" });
+  });
+
+  it("gathers every collection under Tout, each card with its own collection's name", () => {
+    const view = albumView(input, { ...STATE, collectionId: ALL_COLLECTIONS });
+    const owned = view.items.flatMap((item) =>
+      item.kind === "owned" ? [`${item.card.id} · ${item.collectionName}`] : [],
+    );
+    expect(owned).toEqual([
+      "bélître · Les Fondateurs",
+      "fouacier · Métiers",
+      "grigou · Les Fondateurs",
+    ]);
+    expect(view.items.find((item) => item.kind === "more")).toMatchObject({ left: 2 });
+    expect(view.themes.map((theme) => theme.id)).toContain("metiers");
   });
 
   it("shows owned cards rarest first, then the tile, then the missing slots", () => {

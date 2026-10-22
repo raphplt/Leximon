@@ -133,6 +133,9 @@ export interface AlbumView {
 
 export const ALBUM_EMPTY = "Rien de ce côté. Pas pour longtemps.";
 
+/** The tab that gathers every collection. */
+export const ALL_COLLECTIONS = "tout";
+
 /** Lower case, without accents: « Écrouelles » is found by typing « ecrou ». */
 export function foldSearch(text: string): string {
   return text.normalize("NFD").replace(/\p{M}/gu, "").toLowerCase().trim();
@@ -190,7 +193,7 @@ function ownedItem(
 
 export function albumView(input: AlbumInput, state: AlbumState): AlbumView {
   const { collections, owned, memory, now } = input;
-  const tabs = collections.map((collection) => {
+  const collectionTabs = collections.map((collection) => {
     const found = collection.cards.filter((card) => owned.has(card.id)).length;
     const total = collection.cards.length;
     return {
@@ -202,9 +205,20 @@ export function albumView(input: AlbumInput, state: AlbumState): AlbumView {
       ratio: total === 0 ? 0 : found / total,
     };
   });
-  const totalCards = tabs.reduce((sum, tab) => sum + tab.total, 0);
-  const totalOwned = tabs.reduce((sum, tab) => sum + tab.owned, 0);
+  const totalCards = collectionTabs.reduce((sum, tab) => sum + tab.total, 0);
+  const totalOwned = collectionTabs.reduce((sum, tab) => sum + tab.owned, 0);
   const headline = { owned: formatCount(totalOwned), total: formatCount(totalCards) };
+  const tabs: AlbumTab[] = [
+    {
+      id: ALL_COLLECTIONS,
+      name: "Tout",
+      owned: totalOwned,
+      total: totalCards,
+      count: `${formatCount(totalOwned)}/${formatCount(totalCards)}`,
+      ratio: totalCards === 0 ? 0 : totalOwned / totalCards,
+    },
+    ...collectionTabs,
+  ];
 
   const filters = ALBUM_FILTERS.map((id) => ({ id, label: FILTER_LABELS[id] }));
   const query = foldSearch(state.search);
@@ -231,8 +245,14 @@ export function albumView(input: AlbumInput, state: AlbumState): AlbumView {
     };
   }
 
-  const collection = collections.find((c) => c.id === state.collectionId) ?? collections[0];
-  if (collection === undefined) {
+  // Every card in view, with the name of its own collection.
+  const shown =
+    state.collectionId === ALL_COLLECTIONS
+      ? collections
+      : collections.filter((c) => c.id === state.collectionId).slice(0, 1);
+  const chosen = shown.length > 0 ? shown : collections.slice(0, 1);
+  const pool = chosen.flatMap((c) => c.cards.map((card) => ({ card, name: c.name })));
+  if (pool.length === 0) {
     return {
       headline,
       tabs,
@@ -246,9 +266,9 @@ export function albumView(input: AlbumInput, state: AlbumState): AlbumView {
   }
 
   const rarities = RARITIES.flatMap((rarity) => {
-    const cards = collection.cards.filter((card) => card.rarity === rarity);
+    const cards = pool.filter(({ card }) => card.rarity === rarity);
     if (cards.length === 0) return [];
-    const found = cards.filter((card) => owned.has(card.id)).length;
+    const found = cards.filter(({ card }) => owned.has(card.id)).length;
     return [
       {
         rarity,
@@ -258,33 +278,33 @@ export function albumView(input: AlbumInput, state: AlbumState): AlbumView {
     ];
   }).reverse();
 
-  const themes = [...new Set(collection.cards.flatMap((card) => card.themes))]
+  const themes = [...new Set(pool.flatMap(({ card }) => card.themes))]
     .map((id) => ({ id, label: themeLabel(id) }))
     .sort((a, b) => a.label.localeCompare(b.label, "fr"));
 
-  const inView = collection.cards
+  const inView = pool
     .filter(
-      (card) =>
+      ({ card }) =>
         (state.rarity === null || card.rarity === state.rarity) &&
         (state.theme === null || card.themes.includes(state.theme)),
     )
-    .sort(albumOrder);
+    .sort((a, b) => albumOrder(a.card, b.card));
 
   const ownedItems =
     state.filter === "missing"
       ? []
-      : inView.flatMap((card) => {
+      : inView.flatMap(({ card, name }) => {
           const quantity = owned.get(card.id);
           const word = memory.get(card.id);
           if (quantity === undefined || !matchesFilter(state.filter, quantity, word, now)) {
             return [];
           }
-          return [ownedItem(card, collection.name, quantity, word)];
+          return [ownedItem(card, name, quantity, word)];
         });
 
   const missing =
     state.filter === "all" || state.filter === "missing"
-      ? inView.filter((card) => !owned.has(card.id))
+      ? inView.filter(({ card }) => !owned.has(card.id)).map(({ card }) => card)
       : [];
   const missingItems: MissingItem[] = missing.map((card) => ({
     kind: "missing",

@@ -3,6 +3,7 @@
 import type { Rarity } from "@leximon/core";
 import { cssFill, rarityStyles } from "@leximon/tokens";
 import {
+  ALL_COLLECTIONS,
   type AlbumFilter,
   type AlbumItem,
   type AlbumState,
@@ -71,9 +72,10 @@ export function AlbumScreen() {
     loadCatalog()
       .then((loaded) => {
         setCatalog(loaded);
+        // The tab chosen last time if it still exists, else every collection.
         const stored = readCollection();
-        const first = loaded.collections.find((c) => c.id === stored) ?? loaded.collections[0];
-        if (first !== undefined) setState((s) => ({ ...s, collectionId: first.id }));
+        const kept = loaded.collections.some((c) => c.id === stored) ? stored : null;
+        setState((s) => ({ ...s, collectionId: kept ?? ALL_COLLECTIONS }));
       })
       .catch(() => setFailed(true));
   };

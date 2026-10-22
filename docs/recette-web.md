@@ -203,7 +203,7 @@ Compte A : `pnpm dev:player contact@leximon.fr --level 21` pour avoir une série
 ## 5. Album et fiche d'une carte
 
 ### ALB-01 · Album
-- **Attendu :** « Album », « N mots sur 1 561 », recherche, onglets de collection avec compte et barre à la teinte de la collection, filtre par rareté (gemme et « 85/175 »).
+- **Attendu :** « Album », « N mots sur 1 561 », recherche, onglets de collection avec compte et barre à la teinte de la collection, filtre par rareté (gemme et « 85/175 »). Le premier onglet, « Tout », rassemble toutes les collections avec les mêmes filtres ; c'est lui qui s'ouvre la première fois, ensuite l'album rouvre le dernier onglet choisi.
 - **Retour :**
 
 ### ALB-02 · Filtres
