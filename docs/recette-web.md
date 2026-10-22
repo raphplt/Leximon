@@ -597,6 +597,46 @@ En local, aucun e-mail ne part : chaque envoi s'écrit dans le terminal de `pnpm
 
 ---
 
+## Retours du 2026-10-22
+
+Retours généraux du propriétaire après une première prise en main, classés du plus important au moins important. Ce qui n'est pas cité est jugé bon. Rien n'est encore traité.
+
+### 1. Décisions structurantes, à trancher avant de construire
+
+1. **Les collections dans le temps.** Avec trois collections, le choix du sachet tient ; avec des dizaines, non. Trois pistes : permanentes (préférence actuelle, mais elles s'accumulent), temporaires comme Pokémon TCG Pocket (bon pour la rareté, pas convaincu), ou cycliques (elles reviennent). La réponse décide de l'écran de choix du sachet et du sachet propre à chaque collection (point 2.2). Touche P14, P16 et P56.
+2. **Retirer le sachet « Découverte ».** Il ne correspond à rien en tant que tel. Revient sur P14, et sur P59 (avant le niveau 3, seul le sachet découverte est ouvert) : il faut dire ce qu'ouvre un joueur des niveaux 1 et 2.
+3. **Le clan, chantier à part entière.** À reprendre dans son ensemble, avec :
+   - un niveau de clan indépendant du niveau des joueurs, comme Clash of Clans ; calcul à trouver ;
+   - des objectifs de la semaine bien plus élevés : 15 mots nouveaux se font en une journée, voire un seul sachet, par un seul joueur (cibles P66, déjà provisoires) ;
+   - le délai entre quitter un clan et en rejoindre un autre (24 h aujourd'hui, P65), peut-être à supprimer ;
+   - d'autres petits défauts de l'écran, à relever plus tard.
+4. **Courbe de niveaux et niveau maximum.** Crainte d'atteindre le haut trop vite. Aujourd'hui, chaque niveau coûte 20 XP de plus que le précédent (100 XP pour passer au 2, 280 pour le 11, 1 080 pour le 51). À mesurer par simulation ; niveau maximum ou non, pas encore réfléchi. Plus de cadres et de titres pour les hauts niveaux (les avatars, jusqu'au niveau 140, suffisent).
+
+### 2. Écran Jouer, le plus gros reste à faire
+
+1. **Profondeur.** Le fond est de la même couleur partout, ça fait vide. Essayer des zones distinctes, des encadrés.
+2. **Le sachet.** Dessin à améliorer ; son logo n'est pas celui du site ; un sachet différent par collection.
+3. **Trop de texte sous le sachet.** Les six points, puis « 1 sur 6 · le prochain dans 26 min » : trouver une façon plus discrète de montrer le stock et l'attente.
+4. **« Déchire le haut du sachet ou touche-le »** reste affiché en permanence, sans moyen de le fermer.
+5. **Le mot qui s'échappe** est trop collé au sachet.
+6. **Animations d'arrivée** sur l'écran : la façon dont certains éléments apparaissent fait bizarre.
+
+### 3. Chemin des niveaux
+
+Le principe est le bon, mais le rendu n'est pas assez travaillé. Il doit faire plus jeu, à la façon du chemin des problèmes de Chess.com (cases en relief, décor, étapes marquées), sans le copier.
+
+### 4. Textes
+
+Des textes en trop ou mal sentis, qui « sentent l'IA ». Exemple, l'objectif de la semaine du clan : « 15 mots nouveaux, ensemble » et « Argent et or : 1 sachet bonus chacun, l'or ajoute la gravure … à l'emblème ». Relire tous les textes contre [voix.md](voix.md).
+
+### 5. Petites incohérences
+
+1. Le niveau s'affiche de deux façons différentes : la pastille de l'en-tête et le bandeau « Niveau 10 » de l'écran Jouer.
+2. « +3 bonus » dans l'en-tête : on peut cliquer dessus, mais il ne se passe rien.
+3. Sur l'écran Jouer, le bouton Clan devrait montrer l'emblème de son clan, une fois membre, au lieu de l'icône par défaut.
+
+---
+
 ## Hors recette
 
 Pas construit ou pas testable ici :
