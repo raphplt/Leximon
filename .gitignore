@@ -1,6 +1,8 @@
 # Docs privés (non versionnés)
 docs/north-star.md
 docs/architecture.md
+docs/prompt-strategie.md
+docs/strategie-*.md
 
 # Dépendances et builds
 node_modules/
