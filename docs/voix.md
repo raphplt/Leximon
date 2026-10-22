@@ -69,11 +69,11 @@ Ils sont lus par des gens qui ne jouent pas encore : ils font venir les joueurs.
 >
 > Pas demandé ? Ignore ce message.
 
-**Ouverture** (le seul e-mail de la liste d'attente, P55, écrit dans l'admin). Le bénéfice, puis un seul bouton.
+**Ouverture** (le premier e-mail de la liste d'attente, P55, écrit dans l'admin). Le bénéfice, puis un seul bouton.
 
 > **Objet :** Leximon ouvre ses sachets
 >
-> C'est ouvert. Des mots que plus personne ne dit t'attendent, un sachet gratuit par jour.
+> C'est ouvert. Des mots que plus personne ne dit t'attendent. Gratuits, tous les jours.
 >
 > **[Ouvrir mon premier sachet]**
 >
