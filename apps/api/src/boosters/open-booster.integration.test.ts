@@ -25,7 +25,14 @@ import { and, count, eq, isNotNull, isNull, type Logger, sum } from "drizzle-orm
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { createApp } from "../app";
 import { TEST_ORIGIN, testEnv } from "../test-env";
-import { type Guest, seedTestCatalog, setXp, signInAsGuest, signInAsMember } from "../test-support";
+import {
+  type Guest,
+  STARTER_COLLECTION,
+  seedTestCatalog,
+  setXp,
+  signInAsGuest,
+  signInAsMember,
+} from "../test-support";
 import { createCardPoolLoader, fingerprintPool } from "./card-pool";
 import { openBooster as openBoosterService } from "./open-booster";
 
@@ -39,7 +46,7 @@ beforeAll(() => seedTestCatalog(db));
 
 afterAll(close);
 
-const DISCOVERY: BoosterSource = { kind: "discovery" };
+const STARTER: BoosterSource = { kind: "collection", collectionId: STARTER_COLLECTION };
 /** Total XP at the start of level 3 (level curve), which opens the choice of collection. */
 const LEVEL_3_XP = 220;
 const signInAsPlayer = () => signInAsMember(app, env, db);
@@ -47,7 +54,7 @@ const signInAsPlayer = () => signInAsMember(app, env, db);
 function openBooster(
   guest: Guest | null,
   key: string | null = crypto.randomUUID(),
-  body: unknown = DISCOVERY,
+  body: unknown = STARTER,
   target = app,
 ) {
   const headers: Record<string, string> = {
@@ -326,7 +333,13 @@ describe("booster draws", () => {
       .select({ id: schema.cards.id, rarity: schema.cards.rarity })
       .from(schema.cards)
       .innerJoin(schema.collections, eq(schema.collections.id, schema.cards.collectionId))
-      .where(and(isNull(schema.cards.retiredAt), isNotNull(schema.collections.publishedAt)));
+      .where(
+        and(
+          isNull(schema.cards.retiredAt),
+          isNotNull(schema.collections.publishedAt),
+          eq(schema.cards.collectionId, STARTER_COLLECTION),
+        ),
+      );
     const { pool, fingerprint } = await fingerprintPool(
       byRarity((rarity) => rows.filter((row) => row.rarity === rarity).map((row) => row.id)),
     );
@@ -367,7 +380,7 @@ describe("booster draws", () => {
       .set({ retiredAt: new Date() })
       .where(isNull(schema.cards.retiredAt));
     try {
-      const response = await openBooster(guest, crypto.randomUUID(), DISCOVERY, freshApp);
+      const response = await openBooster(guest, crypto.randomUUID(), STARTER, freshApp);
       expect(response.status).toBe(503);
       expect(await openCount(guest.userId)).toBe(0);
     } finally {
@@ -391,7 +404,7 @@ describe("open latency budget", () => {
       openBoosterService(counted.db, loadCardPool, {
         userId,
         idempotencyKey: crypto.randomUUID(),
-        source: DISCOVERY,
+        source: STARTER,
         now: Date.now(),
         seed: "0123456789abcdef0123456789abcdef",
       });
@@ -438,16 +451,15 @@ describe("booster sources", () => {
       level: 3,
     });
     expect(await openCount(guest.userId)).toBe(0);
-    // The discovery booster is never closed.
+    // The starter collection is never closed.
     expect((await openBooster(guest)).status).toBe(200);
   });
 
-  it("draw the discovery booster from every published collection only", async () => {
-    const loaded = await createCardPoolLoader()(db, DISCOVERY, Date.now());
+  it("draw a collection's booster from that collection only", async () => {
+    const loaded = await createCardPoolLoader()(db, STARTER, Date.now());
     const ids = Object.values(loaded?.pool ?? {}).flat();
-    expect(ids.some((id) => id.startsWith("test-a-"))).toBe(true);
-    expect(ids.some((id) => id.startsWith("test-b-"))).toBe(true);
-    expect(ids.some((id) => id.startsWith("test-hidden-"))).toBe(false);
+    expect(ids.length).toBeGreaterThan(0);
+    expect(ids.every((id) => id.startsWith(`${STARTER_COLLECTION}-`))).toBe(true);
   });
 
   it.each([

@@ -80,7 +80,7 @@ interface Pack {
   readonly collectionName: string;
   /** Tone of the card backs (`back` of the collection). */
   readonly back: string | undefined;
-  /** Cards the progress line counts: the collection's, or the whole catalog for discovery. */
+  /** Cards the progress line counts: the collection's. */
   readonly collectionCardIds: ReadonlySet<string>;
   /** XP this pack earned. */
   readonly progress: ProgressGain;
@@ -226,7 +226,7 @@ export function BoosterScreen() {
       return;
     }
     if (result.kind === "level_required") {
-      // The screen thought the choice was open: back to the discovery sachet.
+      // The screen thought the choice was open: back to the starter sachet.
       pick(choices[0] ?? choice);
       toast(lockedToast("choose_collection", now));
       setPhase({ name: "sealed" });
@@ -242,10 +242,7 @@ export function BoosterScreen() {
     }
     wallet.publish(result.wallet);
     publishProgress(result.progress);
-    const collection =
-      choice.source.kind === "collection"
-        ? catalog.collections.find((c) => c.id === choice.id)
-        : undefined;
+    const collection = catalog.collections.find((c) => c.id === choice.id);
     setPack({
       cards: revealOrder(result.cards),
       quantitiesBefore: owned,

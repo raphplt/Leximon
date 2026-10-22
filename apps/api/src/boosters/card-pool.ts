@@ -15,8 +15,8 @@ export interface LoadedPool {
 }
 
 /**
- * Loads the cards a booster can contain, for a collection or for the discovery booster (every
- * published collection). Returns `null` when the collection does not exist or is not published.
+ * Loads the cards a collection's booster can contain. Returns `null` when the collection does not
+ * exist or is not published.
  *
  * Results are cached in the Worker isolate for a minute. This is not player state: the catalog
  * changes rarely, is the same for everyone, and a stale minute is harmless.
@@ -25,7 +25,7 @@ export function createCardPoolLoader(ttlMs = CACHE_TTL_MS) {
   const cache = new Map<string, { loaded: LoadedPool | null; expiresAt: number }>();
 
   return async (db: Database, source: BoosterSource, now: number): Promise<LoadedPool | null> => {
-    const key = source.kind === "collection" ? `collection:${source.collectionId}` : "discovery";
+    const key = source.collectionId;
     const hit = cache.get(key);
     if (hit !== undefined && hit.expiresAt > now) {
       return hit.loaded;
@@ -52,27 +52,19 @@ async function loadPool(
   const { cards, collections } = schema;
   const published = lte(collections.publishedAt, now);
 
-  if (source.kind === "collection") {
-    const [collection] = await db
-      .select({ id: collections.id })
-      .from(collections)
-      .where(and(eq(collections.id, source.collectionId), published));
-    if (collection === undefined) {
-      return null;
-    }
+  const [collection] = await db
+    .select({ id: collections.id })
+    .from(collections)
+    .where(and(eq(collections.id, source.collectionId), published));
+  if (collection === undefined) {
+    return null;
   }
 
   const rows = await db
     .select({ id: cards.id, rarity: cards.rarity })
     .from(cards)
     .innerJoin(collections, eq(collections.id, cards.collectionId))
-    .where(
-      and(
-        isNull(cards.retiredAt),
-        published,
-        source.kind === "collection" ? eq(cards.collectionId, source.collectionId) : undefined,
-      ),
-    );
+    .where(and(isNull(cards.retiredAt), published, eq(cards.collectionId, source.collectionId)));
 
   return fingerprintPool(
     byRarity((rarity) => rows.filter((row) => row.rarity === rarity).map((row) => row.id)),

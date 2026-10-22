@@ -1,7 +1,7 @@
 /**
  * Features opened by the account level. A closed feature stays visible with the level that
- * opens it: the level is a promise, not a wall. Discovery boosters, the album and challenges are
- * never closed.
+ * opens it: the level is a promise, not a wall. The starter collection's boosters, the album
+ * and challenges are never closed.
  *
  * Trade levels live in the trade rules (`TRADE_SCHEDULE`), which the server applies to every
  * offer: they are read from there, so that one setting never has two values.
@@ -27,6 +27,8 @@ export interface UnlockRules {
   /** Period start; the rules in force at the time of each action apply. */
   readonly startsAt: EpochMs;
   readonly levels: Readonly<Record<OwnFeature, number>>;
+  /** The generalist collection, whose boosters open before the choice of collection. */
+  readonly starterCollection: string;
 }
 
 export type UnlockSchedule = readonly [UnlockRules, ...UnlockRules[]];
@@ -57,6 +59,15 @@ export function featureLevels(
     trade: trade.minLevel,
     trade_three: Math.max(trade.minLevel, widest.fromLevel),
   };
+}
+
+/** Whether a player of `level` may open this collection's boosters: the starter one always. */
+export function canOpenCollection(
+  rules: UnlockRules,
+  collectionId: string,
+  level: number,
+): boolean {
+  return collectionId === rules.starterCollection || level >= rules.levels.choose_collection;
 }
 
 /** Features opened exactly at `level`, in the order of `FEATURES`. */

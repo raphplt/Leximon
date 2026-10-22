@@ -15,6 +15,7 @@ import { createApp } from "../app";
 import { TEST_ORIGIN, testEnv } from "../test-env";
 import {
   type Guest,
+  STARTER_COLLECTION,
   seedTestCatalog,
   setOwnedCards,
   setXp,
@@ -48,9 +49,10 @@ async function open(guest: Guest, collectionId?: string) {
         "content-type": "application/json",
         [IDEMPOTENCY_KEY_HEADER]: crypto.randomUUID(),
       },
-      body: JSON.stringify(
-        collectionId === undefined ? { kind: "discovery" } : { kind: "collection", collectionId },
-      ),
+      body: JSON.stringify({
+        kind: "collection",
+        collectionId: collectionId ?? STARTER_COLLECTION,
+      }),
     },
     env,
   );

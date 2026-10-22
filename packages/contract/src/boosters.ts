@@ -35,11 +35,11 @@ export const boosterWalletSchema = z.object({
 });
 export type BoosterWalletResponse = z.infer<typeof boosterWalletSchema>;
 
-/** Which booster to open: a collection's, or the discovery booster drawn from the whole catalog. */
-export const boosterSourceSchema = z.discriminatedUnion("kind", [
-  z.object({ kind: z.literal("collection"), collectionId: slugSchema }),
-  z.object({ kind: z.literal("discovery") }),
-]);
+/** Which booster to open: a collection's. */
+export const boosterSourceSchema = z.object({
+  kind: z.literal("collection"),
+  collectionId: slugSchema,
+});
 export type BoosterSource = z.infer<typeof boosterSourceSchema>;
 
 /** `POST /boosters/open` request body. */

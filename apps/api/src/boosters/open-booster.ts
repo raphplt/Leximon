@@ -4,6 +4,7 @@ import {
   type BoosterWallet,
   bonusRulesAt,
   boosterXp,
+  canOpenCollection,
   computeRefill,
   createFullWallet,
   createSeededRandom,
@@ -13,7 +14,6 @@ import {
   drawBooster,
   drawRulesAt,
   type EpochMs,
-  featureLevels,
   GUEST_SCHEDULE,
   gameDayOf,
   guestBoostersLeft,
@@ -27,9 +27,9 @@ import {
   progressGain,
   REFILL_SCHEDULE,
   reserveCapacity,
-  TRADE_SCHEDULE,
   takeBooster,
   UNLOCK_SCHEDULE,
+  unlockRulesAt,
   XP_SCHEDULE,
   xpRulesAt,
 } from "@leximon/core";
@@ -68,7 +68,7 @@ export type OpenBoosterResult =
     }
   | { readonly kind: "stock_empty"; readonly nextRefillAt: EpochMs }
   | { readonly kind: "collection_not_found" }
-  /** Choosing the collection of a booster opens at a level: the discovery booster does not. */
+  /** Choosing the collection of a booster opens at a level: the starter collection does not. */
   | { readonly kind: "level_required"; readonly level: number }
   /** The session is a guest archived by a sign-in: the client must use the account's. */
   | { readonly kind: "guest_archived" }
@@ -94,7 +94,7 @@ const {
  * the booster already opened with that key instead of opening another.
  *
  * The free stock is spent first; once it is empty, a booster comes from the bonus reserve, garni
- * boosters first. A collection's booster needs its level; the discovery one never.
+ * boosters first. A collection's booster needs its level; the starter collection's never.
  * The open earns XP, more for words the player never owned and for the first open of the day.
  * Lock order: the wallet first, then the copies (as answering a challenge: wallet, then mastery).
  *
@@ -123,7 +123,7 @@ export async function openBooster(
   const guestRules = guestRulesAt(GUEST_SCHEDULE, now);
   const bonusRules = bonusRulesAt(BONUS_SCHEDULE, now);
   const drawRules = drawRulesAt(DRAW_SCHEDULE, now);
-  const collectionLevel = featureLevels(UNLOCK_SCHEDULE, TRADE_SCHEDULE, now).choose_collection;
+  const unlockRules = unlockRulesAt(UNLOCK_SCHEDULE, now);
 
   return db.transaction(async (tx) => {
     const fresh = createFullWallet(REFILL_SCHEDULE, now);
@@ -222,8 +222,8 @@ export async function openBooster(
       return { kind: "signup_required" };
     }
 
-    if (source.kind === "collection" && levelOf(state.xp).level < collectionLevel) {
-      return { kind: "level_required", level: collectionLevel };
+    if (!canOpenCollection(unlockRules, source.collectionId, levelOf(state.xp).level)) {
+      return { kind: "level_required", level: unlockRules.levels.choose_collection };
     }
 
     if (!consumed.ok) {
@@ -285,7 +285,7 @@ export async function openBooster(
         .values({
           id: openId,
           userId,
-          collectionId: source.kind === "collection" ? source.collectionId : null,
+          collectionId: source.collectionId,
           seed: input.seed,
           poolFingerprint: fingerprint,
           pityCountersBefore: locked.pityCounters,

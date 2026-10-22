@@ -252,7 +252,7 @@ export const boosterOpens = pgTable(
       .references(() => users.id, { onDelete: "cascade" }),
     /** 128-bit seed (hex) that, with the same pool, reproduces the draw exactly. */
     seed: text().notNull(),
-    /** Collection whose booster was opened; `null` for the discovery booster (whole catalog). */
+    /** Collection whose booster was opened; `null` for the discovery boosters of the first tests. */
     collectionId: text().references(() => collections.id),
     /** SHA-256 of the canonical card pool used, to check a replay used the same cards. */
     poolFingerprint: text().notNull(),

@@ -117,7 +117,7 @@ Compte A, n'importe quel niveau.
 
 ### JOU-03 · Choix de la collection
 - **Faire :** avec un compte de niveau 1 ou 2, puis de niveau 3 ou plus.
-- **Attendu :** avant le niveau 3, seul le sachet découverte ; les collections portent « Niv. 3 ». Ensuite, les pastilles des collections changent le sachet.
+- **Attendu :** avant le niveau 3, seul le sachet des Fondateurs, en premier ; les autres collections portent « Niv. 3 ». Ensuite, les pastilles des collections changent le sachet.
 - **Retour :**
 
 ### JOU-04 · Ouverture
@@ -603,8 +603,8 @@ Retours généraux du propriétaire après une première prise en main, classés
 
 ### 1. Décisions structurantes, à trancher avant de construire
 
-1. **Les collections dans le temps.** Avec trois collections, le choix du sachet tient ; avec des dizaines, non. Trois pistes : permanentes (préférence actuelle, mais elles s'accumulent), temporaires comme Pokémon TCG Pocket (bon pour la rareté, pas convaincu), ou cycliques (elles reviennent). La réponse décide de l'écran de choix du sachet et du sachet propre à chaque collection (point 2.2). Touche P14, P16 et P56. *Tranché le 2026-10-22 : rayon tournant (P69).*
-2. **Retirer le sachet « Découverte ».** Il ne correspond à rien en tant que tel. Revient sur P14, et sur P59 (avant le niveau 3, seul le sachet découverte est ouvert) : il faut dire ce qu'ouvre un joueur des niveaux 1 et 2. *Tranché le 2026-10-22 : les Fondateurs (P14, P59).*
+1. **Les collections dans le temps.** Avec trois collections, le choix du sachet tient ; avec des dizaines, non. Trois pistes : permanentes (préférence actuelle, mais elles s'accumulent), temporaires comme Pokémon TCG Pocket (bon pour la rareté, pas convaincu), ou cycliques (elles reviennent). La réponse décide de l'écran de choix du sachet et du sachet propre à chaque collection (point 2.2). Touche P14, P16 et P56. *Tranché le 2026-10-22 : rayon tournant (P69), pas encore construit.*
+2. **Retirer le sachet « Découverte ».** Il ne correspond à rien en tant que tel. Revient sur P14, et sur P59 (avant le niveau 3, seul le sachet découverte est ouvert) : il faut dire ce qu'ouvre un joueur des niveaux 1 et 2. *Tranché le 2026-10-22 : les Fondateurs (P14, P59). Fait le 2026-10-22.*
 3. **Le clan, chantier à part entière.** À reprendre dans son ensemble, avec :
    - un niveau de clan indépendant du niveau des joueurs, comme Clash of Clans ; calcul à trouver ;
    - des objectifs de la semaine bien plus élevés : 15 mots nouveaux se font en une journée, voire un seul sachet, par un seul joueur (cibles P66, déjà provisoires) ;

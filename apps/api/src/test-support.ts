@@ -1,7 +1,7 @@
 /**
  * Shared helpers for API integration tests. Test-only: never import from application code.
  */
-import { RARITIES } from "@leximon/core";
+import { RARITIES, UNLOCK_SCHEDULE } from "@leximon/core";
 import { type Database, schema } from "@leximon/db";
 import { eq, sql } from "drizzle-orm";
 import { expect } from "vitest";
@@ -10,7 +10,11 @@ import type { createApp } from "./app";
 import { TEST_ORIGIN } from "./test-env";
 
 /** Two published collections and one in preparation, three cards per rarity each. */
+/** The collection the rules open before the choice of collection. */
+export const STARTER_COLLECTION = UNLOCK_SCHEDULE[0].starterCollection;
+
 export const TEST_COLLECTIONS = [
+  { id: STARTER_COLLECTION, name: "Les Fondateurs", published: true },
   { id: "test-a", name: "Test A", published: true },
   { id: "test-b", name: "Test B", published: true },
   { id: "test-hidden", name: "Test cachée", published: false },

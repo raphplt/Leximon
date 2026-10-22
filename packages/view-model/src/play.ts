@@ -1,6 +1,6 @@
 import type { BoosterSource, BoosterWalletResponse } from "@leximon/contract";
-import type { EpochMs } from "@leximon/core";
-import { isFeatureOpen, levelBadge, levelsOfFeatures } from "./features";
+import { canOpenCollection, type EpochMs, UNLOCK_SCHEDULE, unlockRulesAt } from "@leximon/core";
+import { levelBadge, levelsOfFeatures } from "./features";
 import { formatWait } from "./format";
 
 /** The Jouer screen and the stock shown in the top bar. */
@@ -98,7 +98,6 @@ export function reserveView(wallet: BoosterWalletResponse): ReserveView {
 // --- Collection of the sachet --------------------------------------------------------------
 
 export interface CollectionChoice {
-  /** `discovery` for the sachet drawn from the whole catalog. */
   readonly id: string;
   readonly name: string;
   readonly short: string;
@@ -107,35 +106,28 @@ export interface CollectionChoice {
   readonly lock: string | null;
 }
 
-export const DISCOVERY_ID = "discovery";
-
 /**
- * The discovery sachet, then one per published collection. Before the level that opens the
- * choice, only the discovery sachet opens; the others show their level.
+ * One sachet per published collection, the starter one first. Before the level that opens the
+ * choice, only the starter sachet opens; the others show their level.
  */
 export function collectionChoices(
   collections: readonly { readonly id: string; readonly name: string }[],
   level: number,
   now: EpochMs,
 ): CollectionChoice[] {
-  const open = isFeatureOpen("choose_collection", level, now);
-  const lock = open ? null : levelBadge(levelsOfFeatures(now).choose_collection);
-  return [
-    {
-      id: DISCOVERY_ID,
-      name: "Découverte",
-      short: "Découverte",
-      source: { kind: "discovery" },
-      lock: null,
-    },
-    ...collections.map((c) => ({
-      id: c.id,
-      name: c.name,
-      short: shortName(c.name),
-      source: { kind: "collection", collectionId: c.id } as const,
-      lock,
-    })),
+  const rules = unlockRulesAt(UNLOCK_SCHEDULE, now);
+  const lock = levelBadge(rules.levels.choose_collection);
+  const starterFirst = [
+    ...collections.filter((c) => c.id === rules.starterCollection),
+    ...collections.filter((c) => c.id !== rules.starterCollection),
   ];
+  return starterFirst.map((c) => ({
+    id: c.id,
+    name: c.name,
+    short: shortName(c.name),
+    source: { kind: "collection", collectionId: c.id } as const,
+    lock: canOpenCollection(rules, c.id, level) ? null : lock,
+  }));
 }
 
 const ARTICLES = new Set(["le", "la", "les", "l'", "un", "une", "des"]);
@@ -146,13 +138,13 @@ export function shortName(name: string): string {
   return words.find((w) => !ARTICLES.has(w.toLowerCase())) ?? name;
 }
 
-/** The choice kept when the one asked for is closed or gone: the discovery sachet. */
+/** The choice kept when the one asked for is closed or gone: the starter sachet. */
 export function pickCollection(
   choices: readonly CollectionChoice[],
   wanted: string | null,
 ): CollectionChoice {
   const found = choices.find((c) => c.id === wanted && c.lock === null);
-  // The discovery sachet is always first and always open.
+  // The starter sachet is always first and always open.
   return found ?? (choices[0] as CollectionChoice);
 }
 

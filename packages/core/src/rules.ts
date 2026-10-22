@@ -225,5 +225,7 @@ export const UNLOCK_SCHEDULE: UnlockSchedule = [
       create_clan: 15,
       jousts: 15,
     },
+    // A stable slug of the catalog.
+    starterCollection: "fondateurs",
   },
 ];

@@ -15,7 +15,7 @@ import { and, eq } from "drizzle-orm";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { createApp } from "../app";
 import { TEST_ORIGIN, testEnv } from "../test-env";
-import { type Guest, seedTestCatalog, signInAsMember } from "../test-support";
+import { type Guest, STARTER_COLLECTION, seedTestCatalog, signInAsMember } from "../test-support";
 
 const url = testDatabaseUrl();
 const env = testEnv(url);
@@ -259,7 +259,7 @@ describe("the back office", () => {
       target,
       "POST",
       "/boosters/open",
-      { kind: "discovery" },
+      { kind: "collection", collectionId: STARTER_COLLECTION },
       {
         [IDEMPOTENCY_KEY_HEADER]: crypto.randomUUID(),
       },

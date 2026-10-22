@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { TRADE_SCHEDULE, UNLOCK_SCHEDULE } from "../rules";
-import { featureLevels, featuresOpenedAt } from "./unlocks";
+import { canOpenCollection, featureLevels, featuresOpenedAt, unlockRulesAt } from "./unlocks";
 
 const NOW = Date.UTC(2026, 9, 22);
 
@@ -22,6 +22,15 @@ describe("featureLevels", () => {
     // Before features by level, three cards per side from the first trade.
     expect(before.trade).toBe(5);
     expect(before.trade_three).toBe(5);
+  });
+});
+
+describe("canOpenCollection", () => {
+  it("opens the starter collection from the start, the others with the choice", () => {
+    const rules = unlockRulesAt(UNLOCK_SCHEDULE, NOW);
+    expect(canOpenCollection(rules, "fondateurs", 1)).toBe(true);
+    expect(canOpenCollection(rules, "metiers", 2)).toBe(false);
+    expect(canOpenCollection(rules, "metiers", 3)).toBe(true);
   });
 });
 

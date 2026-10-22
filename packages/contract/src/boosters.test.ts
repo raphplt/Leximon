@@ -51,8 +51,8 @@ describe("booster contract", () => {
     expect(idempotencyKeySchema.safeParse("retry-1").success).toBe(false);
   });
 
-  it("accepts a collection or discovery request, and nothing else", () => {
-    expect(openBoosterRequestSchema.safeParse({ kind: "discovery" }).success).toBe(true);
+  it("accepts a collection request, and nothing else", () => {
+    expect(openBoosterRequestSchema.safeParse({ kind: "discovery" }).success).toBe(false);
     expect(
       openBoosterRequestSchema.safeParse({ kind: "collection", collectionId: "grand-siecle" })
         .success,

@@ -20,6 +20,7 @@ import {
   createOutbox,
   previewLink,
   requestCode,
+  STARTER_COLLECTION,
   seedTestCatalog,
   setOwnedCards,
   signInAsGuest,
@@ -72,7 +73,7 @@ function openBooster(cookie: string) {
         "content-type": "application/json",
         [IDEMPOTENCY_KEY_HEADER]: crypto.randomUUID(),
       },
-      body: JSON.stringify({ kind: "discovery" }),
+      body: JSON.stringify({ kind: "collection", collectionId: STARTER_COLLECTION }),
     },
     env,
   );

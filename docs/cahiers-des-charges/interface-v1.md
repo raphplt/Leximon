@@ -85,7 +85,7 @@ La maquette montre l'intention, pas la finition. Chaque écran gagne en plus :
 | J-02 | Prochaines récompenses (web) | Les 4 niveaux suivants en pastilles, les paliers de 5 en kraft, un cadenas quand le niveau ouvre une fonction. Toucher : le chemin des niveaux sur ce niveau | P58, P59 | 1 | fait | — |
 | J-03 | Bouton « N coffrets » | Visible et pulsant tant qu'une récompense attend ; ouvre le coffret du plus petit niveau | `GET /me/level-rewards` | 1 | fait | à faire |
 | J-04 | Boutons flottants | Gauche : Clan, Discussion, Joutes. Droite : Défi du jour (anneau), Coffrets, Courrier, Réglages. Pastilles, badges « Niv. X » | plusieurs | 1 | fait | à faire |
-| J-05 | Choix de la collection | Web : pastilles des collections. Mobile : flèches de part et d'autre du nom. Avant le niveau 3, seul le sachet découverte, les autres affichent « Niv. 3 » (P14, P59) | P59 dans `POST /boosters/open` | 1 | fait | à faire |
+| J-05 | Choix de la collection | Web : pastilles des collections. Mobile : flèches de part et d'autre du nom. Avant le niveau 3, seul le sachet des Fondateurs, en premier, les autres affichent « Niv. 3 » (P14, P59 ; sachet découverte retiré le 2026-10-22) | P59 dans `POST /boosters/open` | 1 | fait | à faire |
 | J-06 | Le sachet | Grand sachet de la collection choisie, qui flotte ; gris et immobile quand stock et réserve sont vides | — | 1 | fait | à faire |
 | J-07 | Stock | Six points, « 4 sur 6 · le prochain dans 18 min », bouton « Ouvrir le sachet » ou « Ouvrir un sachet bonus », désactivé quand tout est vide | existe | 1 | fait | à faire |
 | J-08 | Mot qui s'échappe | Petite carte, « *Lucubrateur* est en train de t'échapper. », « Réviser ». Le mot dû le plus fragile ; absent s'il n'y en a pas | `GET /challenges` | 1 | fait | à faire |

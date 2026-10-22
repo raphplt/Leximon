@@ -20,6 +20,7 @@ const wallet = (stored: number, bonus = 0) => ({
 });
 const collections = [
   { id: "caracteres", name: "Caractères et travers" },
+  { id: "fondateurs", name: "Les Fondateurs" },
   { id: "metiers", name: "Métiers oubliés" },
 ];
 
@@ -69,14 +70,14 @@ describe("stock", () => {
 });
 
 describe("collection of the sachet", () => {
-  it("offers only the discovery sachet before level 3", () => {
+  it("offers only the starter sachet before level 3, first", () => {
     const choices = collectionChoices(collections, 2, NOW);
     expect(choices.map((c) => [c.short, c.lock])).toEqual([
-      ["Découverte", null],
+      ["Fondateurs", null],
       ["Caractères", "Niv. 3"],
       ["Métiers", "Niv. 3"],
     ]);
-    expect(pickCollection(choices, "metiers").id).toBe("discovery");
+    expect(pickCollection(choices, "metiers").id).toBe("fondateurs");
   });
 
   it("lets the player choose from level 3", () => {
@@ -86,7 +87,7 @@ describe("collection of the sachet", () => {
       kind: "collection",
       collectionId: "metiers",
     });
-    expect(pickCollection(choices, "gone").id).toBe("discovery");
+    expect(pickCollection(choices, "gone").id).toBe("fondateurs");
   });
 });
 
