@@ -312,6 +312,66 @@ export const REMOVED_MESSAGE: Readonly<Record<"deleted" | "hidden", string>> = {
 export const EMPTY_DISCUSSION = "Silence de cathédrale. Lance la conversation.";
 export const MESSAGE_PLACEHOLDER = "Écris au clan";
 
+/** An "@" not inside a word, then words joined by single separators, the last one maybe begun. */
+const MENTION_BEFORE_CARET =
+  /(?:^|[^\p{L}\p{Nd}])@((?:[\p{L}\p{Nd}]+(?:[ '._-][\p{L}\p{Nd}]+){0,5}[ '._-]?)?)$/u;
+
+/**
+ * The name being typed after an "@", up to the caret: what to look up among the members.
+ * Pseudos may hold spaces, so « @Jean P » still asks. `null` when the caret is not in a mention.
+ */
+export function mentionQuery(
+  text: string,
+  caret: number,
+): { readonly start: number; readonly query: string } | null {
+  const match = MENTION_BEFORE_CARET.exec(text.slice(0, caret));
+  if (match?.[1] === undefined || match[1].length > 30) return null;
+  return { start: caret - match[1].length - 1, query: match[1] };
+}
+
+/** Puts the chosen pseudo in place of what was typed after the "@", followed by a space. */
+export function insertMention(
+  text: string,
+  mention: { readonly start: number },
+  caret: number,
+  pseudo: string,
+): { readonly text: string; readonly caret: number } {
+  const inserted = `@${pseudo} `;
+  const after = text.slice(caret).replace(/^ /, "");
+  return {
+    text: text.slice(0, mention.start) + inserted + after,
+    caret: mention.start + inserted.length,
+  };
+}
+
+export type MessageSegment =
+  | { readonly kind: "text"; readonly text: string }
+  | { readonly kind: "mention"; readonly text: string; readonly me: boolean };
+
+/** A message cut around its mentions, for the highlight. Ranges out of the text are ignored. */
+export function messageSegments(
+  body: string,
+  mentions: readonly { readonly start: number; readonly end: number; readonly me: boolean }[],
+): MessageSegment[] {
+  const segments: MessageSegment[] = [];
+  let index = 0;
+  for (const mention of [...mentions].sort((a, b) => a.start - b.start)) {
+    if (mention.start < index || mention.end > body.length || mention.end <= mention.start) {
+      continue;
+    }
+    if (mention.start > index)
+      segments.push({ kind: "text", text: body.slice(index, mention.start) });
+    segments.push({
+      kind: "mention",
+      text: body.slice(mention.start, mention.end),
+      me: mention.me,
+    });
+    index = mention.end;
+  }
+  if (index < body.length) segments.push({ kind: "text", text: body.slice(index) });
+  return segments;
+}
+
 // --- Without a clan -----------------------------------------------------------
 
 /** The button of a clan in the list. */

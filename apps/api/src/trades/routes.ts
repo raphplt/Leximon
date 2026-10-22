@@ -79,6 +79,7 @@ export function tradeRoutes() {
     });
     switch (result.kind) {
       case "created":
+        sendGameEvents(c, [{ type: "trade_changed", tradeId: result.trade.id }]);
         return c.json(await tradeView(c.var.db, result.trade, now), 201);
       case "player_not_found":
         return c.json({ error: "player_not_found" }, 404);
@@ -128,12 +129,12 @@ export function tradeRoutes() {
     });
     switch (result.kind) {
       case "completed":
-        sendGameEvents(
-          c,
-          [result.trade.proposerId, result.trade.recipientId].flatMap((userId) =>
+        sendGameEvents(c, [
+          { type: "trade_changed", tradeId: result.trade.id },
+          ...[result.trade.proposerId, result.trade.recipientId].flatMap((userId) =>
             userId === null ? [] : [{ type: "cards_obtained" as const, userId }],
           ),
-        );
+        ]);
         return c.json(await tradeView(c.var.db, result.trade, now));
       case "not_found":
         return c.json({ error: "trade_not_found" }, 404);
@@ -157,6 +158,7 @@ export function tradeRoutes() {
       });
       switch (result.kind) {
         case "resolved":
+          sendGameEvents(c, [{ type: "trade_changed", tradeId: result.trade.id }]);
           return c.json(await tradeView(c.var.db, result.trade, now));
         case "not_found":
           return c.json({ error: "trade_not_found" }, 404);

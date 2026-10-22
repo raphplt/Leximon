@@ -129,7 +129,7 @@ La maquette montre l'intention, pas la finition. Chaque écran gagne en plus :
 | A-07 | Fiche d'une carte | Grande carte avec reflets, rareté, fréquence en chiffres (« Un mot imprimé sur 17 milliards. »), maîtrise en trois étapes avec ce qu'il reste, exemplaires et doubles, collection, origine, crédit de la gravure | existe en partie | 2 | fait | à faire |
 | A-08 | Actions de la fiche | « Réviser ce mot », « Proposer en échange » (s'il y a un double et le niveau 5), « Épingler », « Partager » | — | 2 | fait | à faire |
 | A-09 | Prononciation | Bouton pour entendre le mot, gratuit (P57) ; notation phonétique selon la décision en attente. À l'ouverture, le mot est dit quand la carte se pose (coupé avec le son, O-06) et un bouton le rejoue | fichiers audio du catalogue (D-032) | 2 | fait (notation phonétique affichée à côté de la carte, à confirmer) | à faire |
-| A-10 | Partage | Texte selon voix.md (« Talpinette. Introuvable dans les livres d'aujourd'hui. Moi, je l'ai. ») ; feuille de partage native sur mobile ; image de partage par la file (plus tard) | — | 2 | en partie (texte et feuille de partage ; image de partage plus tard) | à faire |
+| A-10 | Partage | Texte selon voix.md (« Talpinette. Introuvable dans les livres d'aujourd'hui. Moi, je l'ai. ») ; feuille de partage native sur mobile ; page publique de la carte et son image | — | 2 | fait (texte et lien vers `/carte/{id}`, dont l'image est générée à la demande par Next ; l'image part aussi en fichier quand le téléphone l'accepte ; copie du texte et du lien sinon) | à faire |
 
 ### D · Défis
 
@@ -165,7 +165,7 @@ La maquette ne montre que le clan du joueur. Les écrans K-08 à K-13 ont été 
 | K-03 | Objectif de la semaine | « 300 mots nouveaux, ensemble », barre avec paliers bronze, argent, or, « reste 3 j », « ta part : 23 », récompense de l'or | `clan_weeks`, recompté par la file (D-038) | 4 | fait (sachets à prendre sur la page et au courrier) | à faire |
 | K-04 | Bibliothèque | « À vous tous, il vous manque 42 Caractères. », une barre par collection, ta part en plein et celle du clan en clair | `clan_library`, calcul par la file | 4 | fait | à faire |
 | K-05 | Membres | Avatar, en ligne, niveau, vu il y a, rôle (Chef, Adjoint), mots apportés cette semaine ; « Voir les 27 autres » | `GET /clans/{id}/members` | 4 | fait | à faire |
-| K-06 | Discussion et journal | Messages et événements du journal mêlés, mes messages à droite en jaune, « Écris au clan », envoi. Écran ouvert : nouveaux messages demandés toutes les quelques secondes, après le dernier reçu | `clan_messages`, curseur | 4 | fait (toutes les 4 s, page visible seulement) | à faire |
+| K-06 | Discussion et journal | Messages et événements du journal mêlés, mes messages à droite en jaune, « Écris au clan », envoi. Écran ouvert : nouveaux messages demandés toutes les quelques secondes, après le dernier reçu | `clan_messages`, curseur | 4 | fait (toutes les 4 s, page visible seulement ; « @ » propose les membres, la mention est surlignée et arrive au courrier du membre cité) | à faire |
 | K-07 | Modération par les joueurs | Sur chaque message : Signaler, Bloquer ; un message refusé par le filtre ne part pas (« Pas envoyé : un mot interdit. Reformule. ») ; un joueur bloqué disparaît partout (N5) | `moderation_reports`, `user_blocks` | 4 | fait | à faire |
 | K-08 | Trouver un clan | Liste et recherche, filtre par mode d'entrée, « Rejoindre » ou « Demander à entrer » ; entrée par code d'invitation | `GET /clans`, `POST /clans/join` | 4 | fait | à faire |
 | K-09 | Créer un clan (niveau 15) | Nom (filtré, N5), emblème, deux couleurs, devise, mode d'entrée | `POST /clans` | 4 | fait | à faire |
@@ -178,23 +178,23 @@ La maquette ne montre que le clan du joueur. Les écrans K-08 à K-13 ont été 
 
 | ID | Élément | Ce qu'il faut | Serveur | Lot | Web | Mobile |
 |---|---|---|---|---|---|---|
-| P-01 | En-tête du profil | Bannière, grand avatar avec son cadre, pseudo, titre, niveau, clan, code joueur, membre depuis, « Atelier », « Partager » | `GET /players/{pseudo}` | 3 | fait (sans le clan, pas encore construit) | à faire |
+| P-01 | En-tête du profil | Bannière, grand avatar avec son cadre, pseudo, titre, niveau, clan, code joueur, membre depuis, « Atelier », « Partager » | `GET /players/{pseudo}` | 3 | fait | à faire |
 | P-02 | Cartes épinglées | 3 à 6 places (P58), place vide qui mène à l'album | `PUT /me/pinned-cards` | 3 | fait | à faire |
 | P-03 | En chiffres | Mots sur 1 561, Légendaires, mots dorés, échanges conclus, collections complètes, jours de jeu | calcul à la lecture | 3 | fait | à faire |
 | P-04 | Profil avant le niveau 8 | « Ton profil devient public au niveau 8. D'ici là, toi seul le vois. » | P59 | 3 | fait | à faire |
 | P-05 | Profil d'un autre joueur | Même page sans les actions personnelles, avec « Proposer un échange » et « Signaler » | idem | 3 | fait (« Signaler le pseudo » et « Bloquer », compte inscrit) | à faire |
 | P-06 | Page publique partageable | `/joueur/{pseudo}` rendue par le serveur, image de partage | idem | 3 | fait (image de partage générée à la demande par Next, sans la file) | — |
-| P-07 | Atelier | Onglets Avatars gravés, Dos de carte, Cadres, Titres ; chaque objet : porté, à mettre, « Niveau 20 », ou réservé au mécène | `PATCH /me/profile` | 3 | fait (avatars, cadres, titres ; dos de carte plus tard, pas encore de mécène) | à faire |
+| P-07 | Atelier | Onglets Avatars gravés, Dos de carte, Cadres, Titres ; chaque objet : porté, à mettre, « Niveau 20 », ou réservé au mécène | `PATCH /me/profile` | 3 | fait (avatars, cadres, titres ; pas de mécène ; l'onglet Dos de carte est à trancher : le dos est fixe, teinté par collection) | à faire |
 | P-08 | Pseudo | Choix et changement (une fois par mois), filtré (N5) | idem | 3 | fait (P62) | à faire |
 
 ### R · Réglages, courrier, compte
 
 | ID | Élément | Ce qu'il faut | Serveur | Lot | Web | Mobile |
 |---|---|---|---|---|---|---|
-| R-01 | Courrier | Liste : offre reçue, coffret à ouvrir, mot qui s'échappe, objectif de clan, offre acceptée ; non lus surlignés ; chaque ligne mène à son écran | notifications par la file | 3 | en partie (tiré de l'état : coffrets, carte au choix, offres reçues, sachets d'objectif de clan ; la file reste à faire) | à faire |
+| R-01 | Courrier | Liste : offre reçue, coffret à ouvrir, mot qui s'échappe, objectif de clan, offre acceptée ; non lus surlignés ; chaque ligne mène à son écran | lettres écrites par la file (D-039) | 3 | fait (« À faire » tiré de l'état : coffrets, carte au choix, sachets d'objectif, mot qui s'échappe ; « Nouvelles » écrites par la file : offre reçue, acceptée, refusée, citation dans le clan, demande d'entrée ; la pastille compte l'à faire et les lettres non lues, pas les mots qui s'échappent) | à faire |
 | R-02 | Notifications push | Mots qui s'échappent, offres, mentions dans le clan ; demande d'autorisation au bon moment, pas au lancement | file, Expo push | 3 | — | à faire |
 | R-03 | Réglages · Jeu | Son, Vibration | local | 1 | fait | à faire |
-| R-04 | Réglages · Notifications | Mots qui s'échappent, Offres d'échange, Discussion du clan (seulement quand on te cite) | serveur | 3 | fait (préférences gardées ; rien n'est envoyé tant que la file n'existe pas) | à faire |
+| R-04 | Réglages · Notifications | Mots qui s'échappent, Offres d'échange, Discussion du clan (seulement quand on te cite) | serveur | 3 | fait (préférences gardées, lues par les notifications push à venir ; le courrier reçoit tout) | à faire |
 | R-05 | Réglages · Profil | Profil public, Pseudo, Joueurs bloqués (et débloquer) | serveur | 3 | fait | à faire |
 | R-06 | Réglages · Compte | Adresse e-mail, Tes données, Me déconnecter ; l'inscription de l'invité (écran `/compte` existant) | existe en partie | 1 | fait | à faire |
 | R-07 | Supprimer mon compte | Dans l'app, exigé par l'App Store ; conséquence dans le bouton | à faire | 3 | fait (P64) | à faire |
@@ -231,7 +231,7 @@ Web d'abord, décidé par le propriétaire le 2026-10-21. Le mobile reprend ensu
 | 0 | Ce cahier, P58 et P59, D-033, squelette de `packages/view-model`, composants de base du web (fait) | — |
 | 1 | Coque web, écran Jouer, chemin des niveaux et coffrets, toutes les récompenses de P58 sauf les cosmétiques, fonctionnalités par niveau (P59) côté serveur et web, échanges à 1 puis 3 cartes (web fait le 2026-10-21 ; clans et joutes affichent un écran « pas encore construit » une fois le niveau atteint) | — |
 | 2 | Album, fiche de carte, défis et échanges repris sur la maquette ; prononciation dès que les fichiers audio sont publiés | lot 1 |
-| 3 | Profil public, atelier et cosmétiques, réglages complets, courrier, suppression du compte (web fait le 2026-10-21, sans la file : préférences de notification gardées mais rien n'est envoyé, courrier tiré de l'état, image de partage générée à la demande ; conditions d'utilisation et charte écrites, à faire relire par un juriste) | inscription (fournisseur d'e-mails), file de tâches (D-005) |
+| 3 | Profil public, atelier et cosmétiques, réglages complets, courrier, suppression du compte (web fait le 2026-10-21, courrier par la file le 2026-10-22 (D-039) ; notifications push avec le mobile ; image de partage générée à la demande ; conditions d'utilisation et charte écrites, à faire relire par un juriste) | inscription (fournisseur d'e-mails), file de tâches (D-005) |
 | 4 | Clans complets avec modération, outil de traitement des signalements dans `/admin` | lot 3, conditions d'utilisation et charte |
 | 5 | Mobile : base Expo (polices, onglets, fiches, gestes, push), puis tous les écrans dans l'ordre des lots 1 à 4 | lots 1 à 4 pour chaque écran |
 | 6 | Propositions retenues (X-01 à X-03) | décisions du propriétaire |

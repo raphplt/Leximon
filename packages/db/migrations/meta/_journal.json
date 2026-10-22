@@ -113,6 +113,13 @@
       "when": 1792660555679,
       "tag": "0015_campaign_last_queued",
       "breakpoints": true
+    },
+    {
+      "idx": 16,
+      "version": "7",
+      "when": 1792676043058,
+      "tag": "0016_mail",
+      "breakpoints": true
     }
   ]
 }

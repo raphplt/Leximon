@@ -1,19 +1,29 @@
 "use client";
 
-import type { ClanMessage, ClanRefusal, ClanRole } from "@leximon/contract";
+import type { ClanMember, ClanMessage, ClanRefusal, ClanRole } from "@leximon/contract";
 import { canAct } from "@leximon/core";
 import {
   clanRefusalMessage,
   EMPTY_DISCUSSION,
   eventText,
+  insertMention,
   MESSAGE_PLACEHOLDER,
+  mentionQuery,
+  messageSegments,
   messageTime,
   mutedUntilLabel,
   playerName,
   REMOVED_MESSAGE,
   writingBlock,
 } from "@leximon/view-model";
-import { type FormEvent, useCallback, useEffect, useRef, useState } from "react";
+import {
+  type FormEvent,
+  type KeyboardEvent,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import { Avatar } from "@/components/avatar";
 import { setBlocked } from "@/lib/api";
 import { sanctions } from "@/player/clan";
@@ -21,11 +31,13 @@ import { useShared } from "@/player/resource";
 import { Icon } from "@/ui/icon";
 import { useToast } from "@/ui/toast";
 import ui from "@/ui/ui.module.css";
-import { deleteMessage, fetchMessages, postMessage, reportMessage } from "./api";
+import { deleteMessage, fetchMessages, postMessage, reportMessage, searchMembers } from "./api";
 import styles from "./clan.module.css";
 
 /** The open discussion asks for what came since every few seconds (no WebSockets). */
 const POLL_MS = 4_000;
+/** Typing after an "@" asks for members once the keys pause this long. */
+const MENTION_DELAY_MS = 150;
 
 type MessageItem = Extract<ClanMessage, { kind: "message" }>;
 
@@ -62,6 +74,11 @@ export function ClanChat({
   const stickToBottom = useRef(true);
   const toast = useToast();
   const sanctionList = useShared(sanctions);
+  const input = useRef<HTMLInputElement>(null);
+  const mention = useMentions(clanId, (text, caret) => {
+    setDraft(text);
+    requestAnimationFrame(() => input.current?.setSelectionRange(caret, caret));
+  });
 
   const lastId = messages?.at(-1)?.id;
   const loaded = messages !== null;
@@ -228,7 +245,19 @@ export function ClanChat({
                     </p>
                   ) : (
                     <p className={message.mine ? styles.bubbleMine : styles.bubble}>
-                      {message.body}
+                      {messageSegments(message.body, message.mentions).map((segment, index) =>
+                        segment.kind === "text" ? (
+                          segment.text
+                        ) : (
+                          <span
+                            // biome-ignore lint/suspicious/noArrayIndexKey: segments never move
+                            key={index}
+                            className={segment.me ? styles.mentionMe : styles.mention}
+                          >
+                            {segment.text}
+                          </span>
+                        ),
+                      )}
                     </p>
                   )}
                 </div>
@@ -293,16 +322,36 @@ export function ClanChat({
         <div className={styles.composeRow}>
           <label className={styles.composeField}>
             <span className={styles.visuallyHidden}>Message au clan</span>
+            <MentionSuggestions
+              clanId={clanId}
+              suggestions={mention.suggestions}
+              active={mention.active}
+              onPick={mention.pick}
+            />
             <input
+              ref={input}
               className={ui.field}
               maxLength={500}
               placeholder={MESSAGE_PLACEHOLDER}
               value={draft}
               disabled={muted}
+              role="combobox"
+              aria-autocomplete="list"
+              aria-expanded={mention.suggestions.length > 0}
+              aria-controls={`mentions-${clanId}`}
+              aria-activedescendant={
+                mention.suggestions.length > 0 ? `mention-${clanId}-${mention.active}` : undefined
+              }
               onChange={(event) => {
                 setDraft(event.target.value);
+                mention.update(event.target.value, event.target.selectionStart);
                 if (error !== null) setError(null);
               }}
+              onSelect={(event) =>
+                mention.update(event.currentTarget.value, event.currentTarget.selectionStart)
+              }
+              onKeyDown={mention.onKeyDown}
+              onBlur={mention.close}
             />
           </label>
           <button
@@ -316,6 +365,107 @@ export function ClanChat({
         </div>
       </form>
     </section>
+  );
+}
+
+/**
+ * Suggestions after an "@": the members whose pseudo starts with what follows, asked for once the
+ * keys pause. Arrows move, Entrée or Tab picks, Échap closes.
+ */
+function useMentions(clanId: string, onInsert: (text: string, caret: number) => void) {
+  const [suggestions, setSuggestions] = useState<readonly ClanMember[]>([]);
+  const [active, setActive] = useState(0);
+  const typed = useRef<{ text: string; caret: number; start: number } | null>(null);
+  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const asked = useRef(0);
+
+  const close = useCallback(() => {
+    if (timer.current !== null) clearTimeout(timer.current);
+    asked.current++;
+    typed.current = null;
+    setSuggestions([]);
+  }, []);
+
+  useEffect(() => close, [close]);
+
+  const update = (text: string, caret: number | null) => {
+    const found = caret === null ? null : mentionQuery(text, caret);
+    if (found === null || found.query.trim() === "" || caret === null) {
+      close();
+      return;
+    }
+    typed.current = { text, caret, start: found.start };
+    if (timer.current !== null) clearTimeout(timer.current);
+    const request = ++asked.current;
+    timer.current = setTimeout(async () => {
+      const members = await searchMembers(clanId, found.query.trim()).catch(() => []);
+      if (request !== asked.current) return;
+      setSuggestions(members.filter((member) => member.player.pseudo !== null));
+      setActive(0);
+    }, MENTION_DELAY_MS);
+  };
+
+  const pick = (member: ClanMember) => {
+    const at = typed.current;
+    if (at === null || member.player.pseudo === null) return;
+    const next = insertMention(at.text, at, at.caret, member.player.pseudo);
+    close();
+    onInsert(next.text, next.caret);
+  };
+
+  const onKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
+    if (suggestions.length === 0) return;
+    if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+      event.preventDefault();
+      const step = event.key === "ArrowDown" ? 1 : -1;
+      setActive((current) => (current + step + suggestions.length) % suggestions.length);
+    } else if (event.key === "Enter" || event.key === "Tab") {
+      const member = suggestions[active];
+      if (member === undefined) return;
+      event.preventDefault();
+      pick(member);
+    } else if (event.key === "Escape") {
+      event.preventDefault();
+      close();
+    }
+  };
+
+  return { suggestions, active, update, pick, close, onKeyDown };
+}
+
+function MentionSuggestions({
+  clanId,
+  suggestions,
+  active,
+  onPick,
+}: {
+  readonly clanId: string;
+  readonly suggestions: readonly ClanMember[];
+  readonly active: number;
+  readonly onPick: (member: ClanMember) => void;
+}) {
+  if (suggestions.length === 0) return null;
+  return (
+    <div id={`mentions-${clanId}`} role="listbox" className={styles.mentions}>
+      {suggestions.map((member, index) => (
+        <div
+          key={member.player.code}
+          id={`mention-${clanId}-${index}`}
+          role="option"
+          tabIndex={-1}
+          aria-selected={index === active}
+          className={index === active ? styles.mentionOptionActive : styles.mentionOption}
+          // Before the field loses focus, which would close the list.
+          onMouseDown={(event) => {
+            event.preventDefault();
+            onPick(member);
+          }}
+        >
+          <Avatar avatar={member.player.avatar} frame={null} size={24} />
+          {playerName(member.player)}
+        </div>
+      ))}
+    </div>
   );
 }
 

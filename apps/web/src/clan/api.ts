@@ -2,6 +2,7 @@ import {
   type ClaimGoalResponse,
   type ClanEntryMode,
   type ClanJoinResult,
+  type ClanMember,
   type ClanMembersResponse,
   type ClanMessage,
   type ClanMessagesResponse,
@@ -103,6 +104,13 @@ export async function fetchMembers(
   const response = await sendAsPlayer(clanPath(clanId, `/members${query}`));
   if (!response.ok) throw new ApiError("members_unavailable", response.status);
   return parse(response, clanMembersResponseSchema);
+}
+
+/** The members whose pseudo starts with what follows an "@", for the discussion. */
+export async function searchMembers(clanId: string, query: string): Promise<ClanMember[]> {
+  const response = await sendAsPlayer(clanPath(clanId, `/members?q=${encodeURIComponent(query)}`));
+  if (!response.ok) throw new ApiError("members_unavailable", response.status);
+  return (await parse(response, clanMembersResponseSchema)).members;
 }
 
 export async function createClan(body: CreateClanRequest): Promise<ClanResult<ClanJoinResult>> {

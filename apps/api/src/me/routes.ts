@@ -9,7 +9,11 @@ import {
   cardChoiceRequestSchema,
   type DeleteAccountRefusal,
   type LevelRewardsResponse,
+  type MailResponse,
+  type MarkMailReadResponse,
   type MasteryResponse,
+  mailQuerySchema,
+  markMailReadRequestSchema,
   type OwnedCardsResponse,
   ownedCardsQuerySchema,
   type Preferences,
@@ -35,6 +39,7 @@ import { sendGameEvents } from "../clans/events";
 import { myClanRoutes } from "../clans/routes";
 import type { AppEnv } from "../context";
 import { chooseCard, claimLevelReward, readLevelRewards, walletView } from "../levels/rewards";
+import { markMailRead, readMail } from "../mail/mail";
 import { playerRateLimit } from "../middleware/rate-limit";
 import { requireUser } from "../middleware/require-user";
 import { readRestrictions, refuseLockedWrites } from "../moderation/restrictions";
@@ -82,6 +87,35 @@ export function meRoutes() {
       .where(eq(boosterWallets.userId, c.var.userId));
     // A player who never opened a booster has no row yet: their stock is full.
     return c.json<BoosterWalletResponse>(walletView(row, Date.now()));
+  });
+
+  /** The mail: letters written by the queue, newest first, and what stays unread. */
+  routes.get("/mail", async (c) => {
+    const query = mailQuerySchema.safeParse(c.req.query());
+    if (!query.success) {
+      return c.json({ error: "invalid_request" }, 400);
+    }
+    return c.json<MailResponse>(
+      await readMail(c.var.db, {
+        userId: c.var.userId,
+        before: query.data.before,
+        now: Date.now(),
+      }),
+    );
+  });
+
+  /** Read marks: setting them twice changes nothing. */
+  routes.post("/mail/read", async (c) => {
+    const body = markMailReadRequestSchema.safeParse(await c.req.json().catch(() => null));
+    if (!body.success) {
+      return c.json({ error: "invalid_request" }, 400);
+    }
+    const unread = await markMailRead(c.var.db, {
+      userId: c.var.userId,
+      upTo: body.data.upTo,
+      now: Date.now(),
+    });
+    return c.json<MarkMailReadResponse>({ unread });
   });
 
   /** Level rewards: what was claimed, and the cards of the player's choice left to take. */

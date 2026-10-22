@@ -9,6 +9,7 @@ import {
   type ClansResponse,
   type ClanView,
   claimGoalRequestSchema,
+  clanMembersQuerySchema,
   clanMessagesQuerySchema,
   clansQuerySchema,
   createClanRequestSchema,
@@ -20,6 +21,7 @@ import {
   setRoleRequestSchema,
   updateClanRequestSchema,
 } from "@leximon/contract";
+import { pseudoKey } from "@leximon/core";
 import { type Context, Hono } from "hono";
 import { createMiddleware } from "hono/factory";
 import { z } from "zod";
@@ -68,6 +70,8 @@ import {
 const clanIdSchema = z.uuid();
 const messageIdSchema = z.coerce.number().int().positive().max(2_147_483_647);
 const MEMBERS_PAGE = 50;
+/** Members offered after "@" in the discussion. */
+const MENTION_SUGGESTIONS = 6;
 
 /** Clan state changes with every member's action: never cached. */
 const noStore = createMiddleware<AppEnv>(async (c, next) => {
@@ -170,9 +174,25 @@ export function clanRoutes() {
   routes.get("/:id/members", async (c) => {
     const clanId = clanIdSchema.safeParse(c.req.param("id"));
     if (!clanId.success) return refused(c, "clan_not_found");
-    const cursor = c.req.query("cursor");
+    const query = clanMembersQuerySchema.safeParse(c.req.query());
+    if (!query.success) return c.json({ error: "invalid_request" }, 400);
+    const { cursor, q } = query.data;
     const after = cursor === undefined ? null : decodeMemberCursor(cursor);
     if (after === undefined) return c.json({ error: "invalid_cursor" }, 400);
+    if (q !== undefined) {
+      const prefix = pseudoKey(q);
+      const page =
+        prefix === ""
+          ? { members: [] }
+          : await readMembers(c.var.db, {
+              clanId: clanId.data,
+              after: null,
+              limit: MENTION_SUGGESTIONS,
+              now: Date.now(),
+              pseudoPrefix: prefix,
+            });
+      return c.json<ClanMembersResponse>({ members: page.members, nextCursor: null });
+    }
     const page = await readMembers(c.var.db, {
       clanId: clanId.data,
       after,
@@ -352,6 +372,9 @@ export function clanRoutes() {
         result.retryAt === undefined ? {} : { retryAt: result.retryAt },
       );
     }
+    if (result.mentioned) {
+      sendGameEvents(c, [{ type: "clan_mentions", messageId: result.message.id }]);
+    }
     return c.json<ClanMessage>(result.message, 201);
   });
 
@@ -390,7 +413,11 @@ async function join(c: Context<AppEnv>, clanId: string, byCode: boolean) {
     now: Date.now(),
   });
   if (result.kind === "refused") return refused(c, result.reason);
-  if (result.outcome === "joined") sendGameEvents(c, [{ type: "clan_changed", clanId }]);
+  sendGameEvents(c, [
+    result.outcome === "joined"
+      ? { type: "clan_changed", clanId: result.clanId }
+      : { type: "clan_request", clanId: result.clanId, userId: c.var.userId },
+  ]);
   return c.json<ClanJoinResult>({ outcome: result.outcome, clanId: result.clanId });
 }
 

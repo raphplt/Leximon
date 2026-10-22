@@ -581,7 +581,65 @@
 }
 
 .composeField {
+  position: relative;
   flex: 1;
+}
+
+/* Members offered after "@", over the field. */
+.mentions {
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  z-index: 3;
+  margin: 0;
+  padding: 6px;
+  list-style: none;
+  border-radius: 14px;
+  background: #1f2337;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+}
+
+.mentionOption,
+.mentionOptionActive {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.mentionOptionActive,
+.mentionOption:hover {
+  background: rgba(255, 210, 77, 0.14);
+}
+
+/* A member named in a message; the viewer's own name stands out more. */
+.mention {
+  font-weight: 800;
+  color: var(--lx-color-accent);
+}
+
+.bubbleMine .mention {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.mentionMe {
+  padding: 0 3px;
+  border-radius: 4px;
+  font-weight: 800;
+  background: var(--lx-color-accent);
+  color: var(--lx-color-accent-ink);
+}
+
+.bubbleMine .mentionMe {
+  background: var(--lx-color-accent-ink);
+  color: var(--lx-color-accent);
 }
 
 .sendButton {

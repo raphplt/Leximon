@@ -814,7 +814,10 @@ export interface MemberCursor {
 const roleRank = sql<number>`(case ${clanMembers.role} when 'chief' then 0
   when 'deputy' then 1 else 2 end)`;
 
-/** Members in order: the chief, the deputies, then by arrival. */
+/**
+ * Members in order: the chief, the deputies, then by arrival. With `pseudoPrefix`, only those
+ * whose pseudo key starts with it.
+ */
 export async function readMembers(
   db: Reader,
   input: {
@@ -822,9 +825,10 @@ export async function readMembers(
     readonly after: MemberCursor | null;
     readonly limit: number;
     readonly now: EpochMs;
+    readonly pseudoPrefix?: string;
   },
 ): Promise<{ readonly members: ClanMember[]; readonly last: MemberCursor | null }> {
-  const { clanId, after, limit, now } = input;
+  const { clanId, after, limit, now, pseudoPrefix } = input;
   const week = gameWeekOf(now).key;
   const rows = await db
     .select({
@@ -849,6 +853,9 @@ export async function readMembers(
     .where(
       and(
         eq(clanMembers.clanId, clanId),
+        pseudoPrefix === undefined
+          ? undefined
+          : sql`starts_with(${players.pseudoKey}, ${pseudoPrefix})`,
         after === null
           ? undefined
           : sql`(${roleRank}, ${clanMembers.joinedAt}, ${clanMembers.userId})

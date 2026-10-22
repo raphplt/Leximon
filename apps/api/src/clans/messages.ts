@@ -5,10 +5,15 @@ import {
   checkClanMessage,
   clanRulesAt,
   type EpochMs,
+  type Mention,
+  mentionCandidates,
   nextMessageAt,
+  PSEUDO_SCHEDULE,
+  pseudoRulesAt,
+  resolveMentions,
 } from "@leximon/core";
 import { type ClanEventPayload, type Database, schema } from "@leximon/db";
-import { and, desc, eq, gt, lt, or, sql } from "drizzle-orm";
+import { and, desc, eq, gt, inArray, lt, or, sql } from "drizzle-orm";
 import { readBadges } from "../profile/profile";
 import type { Refused } from "./clans";
 
@@ -17,6 +22,7 @@ const { clanMembers, clanMessages, clans, moderationReports, players, userBlocks
 const refuse = (reason: Refused["reason"]): Refused => ({ kind: "refused", reason });
 
 type MessageRow = typeof clanMessages.$inferSelect;
+type Reader = Pick<Database, "select">;
 
 /** Players the viewer blocked or who blocked them: they vanish from the discussion. */
 function blockedEitherWay(viewerId: string) {
@@ -100,6 +106,14 @@ function toMessage(
       body: removed === null ? row.body : null,
       removed,
       mine: row.authorId === viewerId,
+      mentions:
+        removed === null
+          ? (row.mentions ?? []).map(({ start, end, userId }) => ({
+              start,
+              end,
+              me: userId === viewerId,
+            }))
+          : [],
       createdAt,
     },
   ];
@@ -125,7 +139,12 @@ function toEvent(event: ClanEventPayload, badges: ReadonlyMap<string, PlayerBadg
 }
 
 export type PostMessageResult =
-  | { readonly kind: "posted"; readonly message: ClanMessage }
+  | {
+      readonly kind: "posted";
+      readonly message: ClanMessage;
+      /** Members named in it, other than its author: they get a letter. */
+      readonly mentioned: boolean;
+    }
   | (Refused & { readonly retryAt?: string });
 
 /**
@@ -163,6 +182,7 @@ export async function postMessage(
     if (retryAt !== null)
       return { ...refuse("too_soon"), retryAt: new Date(retryAt).toISOString() };
 
+    const mentions = await findMentions(tx, clanId, checked.text, now);
     const [row] = await tx
       .insert(clanMessages)
       .values({
@@ -170,6 +190,7 @@ export async function postMessage(
         kind: "message",
         authorId: userId,
         body: checked.text,
+        mentions: mentions.length === 0 ? null : mentions,
         createdAt: new Date(now),
       })
       .returning();
@@ -181,8 +202,35 @@ export async function postMessage(
     const badges = await readBadges(tx, [userId], now);
     const [message] = toMessage(row, badges, userId);
     if (message === undefined) throw new Error("A message without its view");
-    return { kind: "posted", message };
+    return {
+      kind: "posted",
+      message,
+      mentioned: mentions.some((mention) => mention.userId !== userId),
+    };
   });
+}
+
+/** The members a message names with "@", looked up by pseudo key among the clan's members. */
+async function findMentions(
+  db: Reader,
+  clanId: string,
+  body: string,
+  now: EpochMs,
+): Promise<Mention[]> {
+  const candidates = mentionCandidates(body, pseudoRulesAt(PSEUDO_SCHEDULE, now).maxLength);
+  if (candidates.length === 0) return [];
+  const rows = await db
+    .select({ userId: players.userId, key: players.pseudoKey })
+    .from(clanMembers)
+    .innerJoin(players, eq(players.userId, clanMembers.userId))
+    .where(
+      and(
+        eq(clanMembers.clanId, clanId),
+        inArray(players.pseudoKey, [...new Set(candidates.map((candidate) => candidate.key))]),
+      ),
+    );
+  const members = new Map(rows.flatMap((row) => (row.key === null ? [] : [[row.key, row.userId]])));
+  return resolveMentions(candidates, members);
 }
 
 export type DeleteMessageResult = { readonly kind: "ok" } | Refused;

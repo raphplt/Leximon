@@ -12,5 +12,11 @@ export const gameEventSchema = z.discriminatedUnion("type", [
   z.object({ type: z.literal("cards_obtained"), userId: z.string().min(1) }),
   /** Members came or went: the library is recounted. */
   z.object({ type: z.literal("clan_changed"), clanId: z.uuid() }),
+  /** An offer was made or answered: the mail of the player who waits for it gets a letter. */
+  z.object({ type: z.literal("trade_changed"), tradeId: z.uuid() }),
+  /** A message named members: each one gets a letter. */
+  z.object({ type: z.literal("clan_mentions"), messageId: z.int().positive() }),
+  /** A player asked to enter a clan: its chief and deputies get a letter. */
+  z.object({ type: z.literal("clan_request"), clanId: z.uuid(), userId: z.string().min(1) }),
 ]);
 export type GameEvent = z.infer<typeof gameEventSchema>;

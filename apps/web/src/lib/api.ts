@@ -41,7 +41,10 @@ import {
   levelRewardsResponseSchema,
   linkPreviewErrorSchema,
   linkPreviewResponseSchema,
+  type MailResponse,
   type MasteryResponse,
+  mailResponseSchema,
+  markMailReadResponseSchema,
   masteryResponseSchema,
   type OpenBoosterResponse,
   type OwnedCardsResponse,
@@ -280,6 +283,24 @@ export async function fetchMastery(): Promise<MasteryResponse["words"]> {
   const response = await sendAsPlayer("/me/mastery");
   if (!response.ok) throw new ApiError("mastery_unavailable", response.status);
   return (await parse(response, masteryResponseSchema)).words;
+}
+
+/** The mail's letters, newest first; `before` pages back. */
+export async function fetchMail(before?: number): Promise<MailResponse> {
+  const response = await sendAsPlayer(`/me/mail${before === undefined ? "" : `?before=${before}`}`);
+  if (!response.ok) throw new ApiError("mail_unavailable", response.status);
+  return parse(response, mailResponseSchema);
+}
+
+/** Marks every letter up to `upTo` read; returns how many stay unread. */
+export async function markMailRead(upTo: number): Promise<number> {
+  const response = await sendAsPlayer("/me/mail/read", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ upTo }),
+  });
+  if (!response.ok) throw new ApiError("mail_not_marked", response.status);
+  return (await parse(response, markMailReadResponseSchema)).unread;
 }
 
 /** The player's account level. */

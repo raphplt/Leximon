@@ -4,6 +4,7 @@ import { type Database, schema } from "@leximon/db";
 import { sql } from "drizzle-orm";
 import type { Context } from "hono";
 import type { AppEnv } from "../context";
+import { writeMentionLetters, writeRequestLetters, writeTradeLetters } from "../mail/mail";
 import { clansOf } from "./clans";
 import { recountClanWeek } from "./goal";
 
@@ -39,9 +40,9 @@ export interface GameEventsReport {
 }
 
 /**
- * The queue's consumer. Trusts nothing in the messages but who and which clan: the goal,
- * the library and the journal are recounted from the database, once per clan for the whole
- * batch. Replaying a batch changes nothing.
+ * The queue's consumer. Trusts nothing in the messages but ids: the goal, the library and the
+ * journal are recounted from the database, once per clan for the whole batch, and letters are
+ * written from what the database says now. Replaying a batch changes nothing.
  */
 export async function handleGameEvents(
   db: Database,
@@ -51,6 +52,9 @@ export async function handleGameEvents(
 ): Promise<GameEventsReport> {
   const userIds = new Set<string>();
   const clanIds = new Set<string>();
+  const tradeIds = new Set<string>();
+  const messageIds = new Set<number>();
+  const requests = new Map<string, { clanId: string; userId: string }>();
   const weeks = new Set<string>([gameWeekOf(now).key]);
   let invalid = 0;
   bodies.forEach((body, index) => {
@@ -59,11 +63,31 @@ export async function handleGameEvents(
       invalid++;
       return;
     }
-    if (event.data.type === "cards_obtained") userIds.add(event.data.userId);
-    else clanIds.add(event.data.clanId);
-    // Cards obtained on Sunday night and counted on Monday still count for their week.
-    weeks.add(gameWeekOf(sentAt[index] ?? now).key);
+    switch (event.data.type) {
+      case "cards_obtained":
+      case "clan_changed":
+        if (event.data.type === "cards_obtained") userIds.add(event.data.userId);
+        else clanIds.add(event.data.clanId);
+        // Cards obtained on Sunday night and counted on Monday still count for their week.
+        weeks.add(gameWeekOf(sentAt[index] ?? now).key);
+        break;
+      case "trade_changed":
+        tradeIds.add(event.data.tradeId);
+        break;
+      case "clan_mentions":
+        messageIds.add(event.data.messageId);
+        break;
+      case "clan_request": {
+        const { clanId, userId } = event.data;
+        requests.set(`${clanId}:${userId}`, { clanId, userId });
+        break;
+      }
+    }
   });
+
+  await writeTradeLetters(db, [...tradeIds], now);
+  await writeMentionLetters(db, [...messageIds]);
+  await writeRequestLetters(db, [...requests.values()]);
 
   const memberships = await clansOf(db, [...userIds]);
   for (const membership of memberships.values()) clanIds.add(membership.clanId);

@@ -10,6 +10,7 @@ import { fetchAccount, fetchLevelRewards, fetchProfile, fetchWallet } from "@/li
 import { forgetProgress } from "@/progress/use-progress";
 import { myClan, sanctions } from "./clan";
 import { dailyChallenge, ownedCards, refreshIfRead, wordMemory } from "./collection";
+import { mailbox } from "./mail";
 import { sharedResource } from "./resource";
 
 /** The player's wallet: free stock and bonus reserve. */
@@ -53,4 +54,5 @@ export function forgetPlayer(): void {
   refreshIfRead(dailyChallenge);
   refreshIfRead(myClan);
   refreshIfRead(sanctions);
+  refreshIfRead(mailbox);
 }

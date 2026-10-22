@@ -106,6 +106,13 @@ export type ClanEventPayload =
   | { readonly type: "tier"; readonly week: string; readonly tier: "bronze" | "silver" | "gold" }
   | { readonly type: "renamed"; readonly name: string };
 
+/** A member named in a message: the range covers the "@" and the pseudo. */
+export interface ClanMention {
+  readonly userId: string;
+  readonly start: number;
+  readonly end: number;
+}
+
 /**
  * The clan's discussion and journal, read by cursor on `id`. Erased after 90 days unless
  * reported and not yet handled. A deleted or hidden message keeps its row, without its text.
@@ -124,6 +131,8 @@ export const clanMessages = pgTable(
     event: jsonb().$type<ClanEventPayload>(),
     /** Writes an event once even when the queue replays a message. */
     eventKey: text(),
+    /** Members named with "@" when it was sent, for the highlight and their mail. */
+    mentions: jsonb().$type<readonly ClanMention[]>(),
     createdAt: timestamp({ withTimezone: true }).notNull(),
     /** Removed by the chief, a deputy or its author. */
     deletedAt: timestamp({ withTimezone: true }),

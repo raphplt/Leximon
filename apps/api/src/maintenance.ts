@@ -2,6 +2,7 @@ import { CLAN_SCHEDULE, clanRulesAt } from "@leximon/core";
 import { type Database, schema } from "@leximon/db";
 import { and, inArray, isNotNull, lt, sql } from "drizzle-orm";
 import { recountActiveClans } from "./clans/events";
+import { purgeMail } from "./mail/mail";
 
 /** How long a client may retry an open with the same idempotency key. */
 export const IDEMPOTENCY_RETENTION_MS = 48 * 60 * 60 * 1000;
@@ -14,6 +15,7 @@ export interface MaintenanceReport {
   readonly purgedRequests: number;
   readonly erasedCampaignAddresses: number;
   readonly erasedClanMessages: number;
+  readonly erasedLetters: number;
   readonly recountedClans: number;
 }
 
@@ -66,6 +68,7 @@ export async function runMaintenance(db: Database, now: number): Promise<Mainten
     purgedRequests: purged.length,
     erasedCampaignAddresses: erased.length,
     erasedClanMessages: erasedMessages.length,
+    erasedLetters: await purgeMail(db, now),
     recountedClans: await recountActiveClans(db, now),
   };
 }

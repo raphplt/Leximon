@@ -9,10 +9,13 @@ import {
   goalCountLine,
   goalTimeLeft,
   goalTitle,
+  insertMention,
   joinLabel,
   leaveLabel,
   libraryHeadline,
   libraryRows,
+  mentionQuery,
+  messageSegments,
   messageTime,
   moreMembersLabel,
   muteChoices,
@@ -162,5 +165,49 @@ describe("joining and leaving", () => {
 
   it("explains each refusal", () => {
     expect(clanRefusalMessage("message_refused")).toBe("Pas envoyé : un mot interdit. Reformule.");
+  });
+});
+
+describe("mentions", () => {
+  it("finds the name being typed after an @, spaces included", () => {
+    expect(mentionQuery("Salut @Mir", 10)).toEqual({ start: 6, query: "Mir" });
+    expect(mentionQuery("@Jean P", 7)).toEqual({ start: 0, query: "Jean P" });
+    expect(mentionQuery("@", 1)).toEqual({ start: 0, query: "" });
+  });
+
+  it("finds nothing in an address, after a comma or with the caret elsewhere", () => {
+    expect(mentionQuery("jean@leximon", 12)).toBeNull();
+    expect(mentionQuery("@Mir, salut", 11)).toBeNull();
+    expect(mentionQuery("@Mirabelle et toi", 3)).toEqual({ start: 0, query: "Mi" });
+    expect(mentionQuery(`@${"a".repeat(400)}!`, 402)).toBeNull();
+  });
+
+  it("puts the pseudo in place of what was typed, followed by one space", () => {
+    expect(insertMention("Salut @Mir", { start: 6 }, 10, "Mirabelle")).toEqual({
+      text: "Salut @Mirabelle ",
+      caret: 17,
+    });
+    expect(insertMention("@Mi et toi", { start: 0 }, 3, "Mirabelle")).toEqual({
+      text: "@Mirabelle et toi",
+      caret: 11,
+    });
+  });
+
+  it("cuts a message around its mentions", () => {
+    expect(
+      messageSegments("Salut @Mirabelle et @Bob !", [
+        { start: 6, end: 16, me: true },
+        { start: 20, end: 24, me: false },
+      ]),
+    ).toEqual([
+      { kind: "text", text: "Salut " },
+      { kind: "mention", text: "@Mirabelle", me: true },
+      { kind: "text", text: " et " },
+      { kind: "mention", text: "@Bob", me: false },
+      { kind: "text", text: " !" },
+    ]);
+    expect(messageSegments("court", [{ start: 2, end: 40, me: false }])).toEqual([
+      { kind: "text", text: "court" },
+    ]);
   });
 });

@@ -375,3 +375,15 @@ Pour ajouter ou modifier une décision, utiliser le skill `decision`.
   - la discussion n'a pas de temps réel : l'écran ouvert demande les messages après le dernier reçu, toutes les quelques secondes (D-007 reste ouverte) ;
   - les tests remplacent la file par une file factice et appellent le consommateur directement.
 
+## D-039 · Courrier : des lettres écrites par la file, l'état du jeu lu à part
+
+- **Statut :** Acceptée (2026-10-22), le propriétaire a choisi un courrier gardé, rempli par la file, avec lu et non lu, et les mentions par @pseudo dans la discussion. Règle P67.
+- **Choix :** une table `mail_letters` (une ligne par lettre, clé unique par joueur et `dedupe_key`), écrite par le consommateur de `leximon-game-events` (D-038) sur trois nouveaux messages : `trade_changed`, `clan_mentions`, `clan_request`. Le consommateur relit l'offre, le message ou la demande en base et n'écrit que ce qui vaut encore. Ce qui attend dans l'état du jeu (coffrets, carte au choix, sachets d'objectif, mot qui s'échappe) n'est pas copié : le courrier le lit à part. Les mentions sont résolues à l'envoi du message, contre les clés de pseudo des membres, et rangées sur le message (`clan_messages.mentions`).
+- **Pourquoi :** une lettre copiée de l'état mentirait dès que l'état change. Une lettre de nouvelle (offre reçue, citée par un membre) n'a pas d'état d'origine à relire, elle doit être gardée. Résoudre la mention une seule fois donne le même surlignage à tous et la même liste de destinataires au consommateur.
+- **Conséquences :**
+  - `GET /me/mail` (curseur sur l'id, joueurs et extraits lus au moment de la lecture) et `POST /me/mail/read` (tout jusqu'à une lettre, idempotent) ;
+  - une offre qui n'attend plus rend lue la lettre de son destinataire ; un message effacé avant le passage du consommateur ne cite personne, effacé après il garde sa lettre sans son texte ;
+  - pas de lettre entre deux joueurs dont l'un bloque l'autre ;
+  - les lettres d'un invité suivent son jeu quand il s'inscrit, et une lettre d'offre nomme l'autre joueur tel que l'offre le donne au moment de la lecture ;
+  - lettres effacées après 90 jours par la maintenance quotidienne ;
+  - les notifications push (R-02) liront les mêmes lettres et les préférences de `user_preferences`.

@@ -128,6 +128,15 @@ export const clanViewSchema = z.object({
 });
 export type ClanView = z.infer<typeof clanViewSchema>;
 
+/**
+ * `GET /clans/:id/members` query. With `q`, the members whose pseudo starts with it (for "@" in
+ * the discussion): a few at most, without a next page.
+ */
+export const clanMembersQuerySchema = z.object({
+  cursor: z.string().optional(),
+  q: z.string().trim().min(1).max(30).optional(),
+});
+
 export const clanMembersResponseSchema = z.object({
   members: z.array(clanMemberSchema),
   nextCursor: z.string().nullable(),
@@ -213,6 +222,10 @@ export const clanMessageSchema = z.discriminatedUnion("kind", [
     body: z.string().nullable(),
     removed: z.enum(["deleted", "hidden"]).nullable(),
     mine: z.boolean(),
+    /** Members named with "@", as ranges of `body`; `me` when it names the viewer. */
+    mentions: z.array(
+      z.object({ start: z.int().nonnegative(), end: z.int().positive(), me: z.boolean() }),
+    ),
     createdAt: timestampSchema,
   }),
   z.object({

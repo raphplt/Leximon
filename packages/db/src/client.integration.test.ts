@@ -41,6 +41,7 @@ describe("database", () => {
       "email_consents",
       "email_suppressions",
       "guest_links",
+      "mail_letters",
       "moderation_reports",
       "pinned_cards",
       "players",

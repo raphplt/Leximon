@@ -79,6 +79,59 @@
   margin-top: 2px;
   font-size: 13px;
   color: var(--lx-color-text-muted);
+  overflow-wrap: anywhere;
+}
+
+/* A letter new to this opening of the mail: a gold edge and its dot. */
+.letterFresh {
+  background: rgba(255, 210, 77, 0.16);
+  box-shadow: inset 3px 0 0 var(--lx-color-accent);
+}
+
+.letterWhen {
+  flex-shrink: 0;
+  font-size: 12px;
+  color: var(--lx-color-text-faint);
+}
+
+.letterFresh .letterWhen {
+  color: var(--lx-color-accent);
+  font-weight: 800;
+}
+
+.mailSection + .mailSection {
+  margin-top: 22px;
+}
+
+.mailHeading {
+  margin: 0 0 8px;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--lx-color-text-faint);
+}
+
+.mailOlder {
+  margin-top: 10px;
+  padding: 8px 0;
+  border: 0;
+  background: none;
+  color: var(--lx-color-accent);
+  font: inherit;
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.visuallyHidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }
 
 /* --- Sanctions --- */

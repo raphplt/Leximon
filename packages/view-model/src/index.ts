@@ -7,6 +7,7 @@ export * from "./clan";
 export * from "./features";
 export * from "./format";
 export * from "./level";
+export * from "./mail";
 export * from "./play";
 export * from "./profile";
 export * from "./rewards";

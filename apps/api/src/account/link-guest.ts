@@ -14,6 +14,7 @@ const {
   boosterOpens,
   boosterWallets,
   guestLinks,
+  mailLetters,
   players,
   reviewLogs,
   sessions,
@@ -65,6 +66,8 @@ export const USER_REFERENCES = {
   "clan_week_members.user_id": { transfer: "kept", abandon: "kept" },
   "clan_goal_claims.user_id": { transfer: "kept", abandon: "kept" },
   "review_logs.user_id": { transfer: "moved", abandon: "kept" },
+  // Letters about the guest's offers follow the offers.
+  "mail_letters.user_id": { transfer: "moved", abandon: "kept" },
   "trades.proposer_id": { transfer: "moved", abandon: "pending_cancelled" },
   "trades.recipient_id": { transfer: "moved", abandon: "pending_cancelled" },
   "sessions.user_id": { transfer: "revoked", abandon: "revoked" },
@@ -310,6 +313,7 @@ async function transferEverything(tx: Transaction, guestId: string, accountId: s
       open_requests as (update ${boosterOpenRequests} set user_id = ${accountId} where user_id = ${guestId} returning 1),
       player as (update ${players} set user_id = ${accountId} where user_id = ${guestId} returning 1),
       reviews as (update ${reviewLogs} set user_id = ${accountId} where user_id = ${guestId} returning 1),
+      letters as (update ${mailLetters} set user_id = ${accountId} where user_id = ${guestId} returning 1),
       proposed as (update ${trades} set proposer_id = ${accountId} where proposer_id = ${guestId} returning 1),
       received as (update ${trades} set recipient_id = ${accountId} where recipient_id = ${guestId} returning 1)
     update ${users} set created_at = least(${users}.created_at, guest.created_at)

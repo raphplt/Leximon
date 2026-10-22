@@ -230,7 +230,12 @@ Compte A : `pnpm dev:player contact@leximon.fr --level 21` pour avoir une série
 - **Retour :**
 
 ### ALB-07 · Actions de la fiche
-- **Attendu :** « Réviser ce mot » lance une révision ; « Proposer en échange » seulement avec un double et le niveau 5, et ouvre la nouvelle offre avec la carte choisie ; « Épingler » la met sur le profil ; « Partager » donne le texte (« Talpinette. Introuvable dans les livres d'aujourd'hui. Moi, je l'ai. »).
+- **Attendu :** « Réviser ce mot » lance une révision ; « Proposer en échange » seulement avec un double et le niveau 5, et ouvre la nouvelle offre avec la carte choisie ; « Épingler » la met sur le profil ; « Partager » donne le texte (« Talpinette. Introuvable dans les livres d'aujourd'hui. Moi, je l'ai. ») et le lien de la page de la carte. Sur ordinateur : « Copié, avec le lien de la carte. » ; sur téléphone : la feuille de partage, avec l'image de la carte quand l'appli l'accepte.
+- **Retour :**
+
+### ALB-08 · Page publique d'une carte
+- **Faire :** ouvrir le lien copié en ALB-07 dans une fenêtre privée, puis `/carte/nimporte-quoi`. Coller le lien dans une messagerie qui affiche les aperçus (ou ouvrir `<lien>/opengraph-image`).
+- **Attendu :** la carte, sa rareté, sa fréquence, son origine, et « Ouvrir mon premier sachet » qui mène au jeu, sans compte. La carte inconnue : « Cette carte n'existe pas. Ou plus. » L'aperçu montre la carte dans les couleurs de sa rareté, avec la fréquence et le nom de la collection ; un mot long tient dans la carte.
 - **Retour :**
 
 ---
@@ -315,7 +320,7 @@ A au niveau 8 au moins.
 - **Retour :**
 
 ### PRO-02 · Mon profil
-- **Attendu :** bannière, avatar dans son cadre, pseudo, titre, niveau, code joueur, membre depuis, « Atelier », « Partager ». Cartes épinglées (3 places au niveau 10, une place vide mène à l'album). En chiffres : mots sur 1 561, Légendaires, mots dorés, échanges, collections complètes, jours de jeu. *Le clan n'y est pas encore.*
+- **Attendu :** bannière, avatar dans son cadre, pseudo, titre, niveau, code joueur, membre depuis, « Atelier », « Partager ». Cartes épinglées (3 places au niveau 10, une place vide mène à l'album). En chiffres : mots sur 1 561, Légendaires, mots dorés, échanges, collections complètes, jours de jeu. Le clan avec son emblème sous le niveau, qui mène à la page du clan (après CLA-01).
 - **Retour :**
 
 ### PRO-03 · Profil avant le niveau 8
@@ -325,7 +330,7 @@ A au niveau 8 au moins.
 
 ### PRO-04 · Page publique
 - **Faire :** ouvrir `/joueur/<pseudo de A>` sans être connecté, puis depuis B.
-- **Attendu :** la page se lit sans compte. Depuis B : « Proposer un échange », « Signaler le pseudo », « Bloquer ». L'image de partage du lien est propre.
+- **Attendu :** la page se lit sans compte, avec le clan du joueur. Depuis B : « Proposer un échange », « Signaler le pseudo », « Bloquer ». L'image de partage du lien est propre et nomme le clan.
 - **Retour :**
 
 ### PRO-05 · Profil privé
@@ -343,24 +348,30 @@ A au niveau 8 au moins.
 ## 9. Réglages, courrier, compte
 
 ### REG-01 · Réglages
-- **Attendu :** Jeu (Son, Vibration), Notifications (gardées, rien n'est encore envoyé), Profil (public, pseudo, joueurs bloqués), Compte (adresse, Tes données, « M'écrire quand il y a du nouveau », Me déconnecter).
+- **Attendu :** Jeu (Son, Vibration), Notifications (gardées pour les notifications du téléphone, à venir), Profil (public, pseudo, joueurs bloqués), Compte (adresse, Tes données, « M'écrire quand il y a du nouveau », Me déconnecter).
 - **Retour :**
 
-### REG-02 · Courrier
-- **Attendu :** coffret à ouvrir, carte au choix, offre reçue, sachets d'objectif de clan ; non lus surlignés, pastille rouge, chaque ligne mène à son écran.
+### REG-02 · Courrier, à faire
+- **Faire :** ouvrir le courrier avec un coffret à ouvrir, une carte au choix ou des sachets d'objectif, et un mot à réviser.
+- **Attendu :** section « À faire » : « N coffrets à ouvrir », « Une carte au choix t'attend », « Un sachet d'objectif à prendre », « *Abajoue* est en train de t'échapper. » (avec « Et 2 autres mots » s'il y en a). Chaque ligne mène à son écran. La pastille compte ces lignes, pas le mot qui s'échappe.
 - **Retour :**
 
-### REG-03 · Bloquer et débloquer
+### REG-03 · Courrier, nouvelles
+- **Faire :** B fait une offre à A ; A l'accepte. Une autre offre de B, refusée par A. Attendre quelques secondes, puis ouvrir le courrier de chacun.
+- **Attendu :** chez A, « B t'envoie une offre » ; chez B, « A accepte ton offre » puis « A refuse ton offre », avec l'heure. Une lettre non lue est surlignée d'un liseré doré et compte dans la pastille. À l'ouverture, elles passent lues : la pastille descend, le surlignage reste jusqu'à la fermeture. Une offre déjà acceptée laisse sa lettre lue chez A.
+- **Retour :**
+
+### REG-04 · Bloquer et débloquer
 - **Faire :** C bloque B depuis son profil, puis le débloque dans les réglages.
 - **Attendu :** bloqué, aucun ne voit le profil de l'autre ni ne peut lui faire d'offre, les offres en cours tombent, et ses messages de clan disparaissent pour celui qui bloque. Débloqué, tout revient sauf les offres tombées.
 - **Retour :**
 
-### REG-04 · Nouvelles par e-mail
+### REG-05 · Nouvelles par e-mail
 - **Faire :** cocher puis décocher « M'écrire quand il y a du nouveau ».
 - **Attendu :** le réglage tient après un rechargement. Il change l'audience « joueurs » des campagnes (CAM-03).
 - **Retour :**
 
-### REG-05 · Supprimer mon compte
+### REG-06 · Supprimer mon compte
 - **Faire :** avec `recette-invite@example.com` seulement : Réglages, Compte, supprimer.
 - **Attendu :** deux temps, la conséquence écrite dans le bouton. Ensuite, tout est effacé ; un échange conclu reste chez l'autre, signé « Un joueur parti ».
 - **Retour :**
@@ -392,7 +403,7 @@ pnpm dev:player recette-c@example.com --level 9
 
 ### CLA-04 · Demander à entrer
 - **Faire :** B trouve le clan et « Demander à entrer » ; A accepte la demande.
-- **Attendu :** la demande arrive chez A ; une fois acceptée, B est membre et l'arrivée apparaît dans le journal.
+- **Attendu :** la demande arrive chez A, avec une lettre « B veut entrer dans le clan » au courrier qui mène au clan ; une fois acceptée, B est membre et l'arrivée apparaît dans le journal.
 - **Retour :**
 
 ### CLA-05 · Code d'invitation
@@ -451,6 +462,11 @@ pnpm dev:player recette-c@example.com --level 9
 ### CLA-16 · Le chef part
 - **Faire :** A, seul avec un membre, quitte le clan.
 - **Attendu :** la tête passe à l'adjoint le plus ancien, sinon au membre le plus ancien. Le dernier qui part dissout le clan.
+- **Retour :**
+
+### CLA-17 · Citer un membre
+- **Faire :** A tape « @ » puis le début du pseudo de B dans la discussion ; choisir avec les flèches et Entrée, ou à la souris ; envoyer. Puis C bloque A, et A cite C.
+- **Attendu :** la liste propose les membres dont le pseudo commence ainsi ; le pseudo choisi s'insère, suivi d'une espace. Dans le message, la mention est soulignée chez A et surlignée en jaune chez B. Quelques secondes plus tard, B a une lettre « A parle de toi » avec le début du message, qui ouvre la discussion. C, qui bloque A, ne reçoit rien.
 - **Retour :**
 
 ---
@@ -531,7 +547,7 @@ En local, aucun e-mail ne part : chaque envoi s'écrit dans le terminal de `pnpm
 
 ### CAM-03 · Audience « joueurs »
 - **Faire :** nouvelle campagne, audience « joueurs ».
-- **Attendu :** le nombre de destinataires ne compte que les joueurs qui ont coché « M'écrire quand il y a du nouveau » (REG-04).
+- **Attendu :** le nombre de destinataires ne compte que les joueurs qui ont coché « M'écrire quand il y a du nouveau » (REG-05).
 - **Retour :**
 
 ### CAM-04 · Programmer, mettre en pause, annuler
@@ -586,8 +602,7 @@ Pas construit ou pas testable ici :
 
 - l'app mobile (lot 5, prochain chantier) ;
 - les joutes (« pas encore construit ») ;
-- la connexion Apple et Google, les notifications push et par e-mail, le courrier envoyé par la file ;
-- le clan sur le profil public ;
+- la connexion Apple et Google, les notifications push et par e-mail ;
 - les dos de carte et le mécène ;
 - les vrais envois d'e-mails (en attente des DNS et du compte Lettermint) ;
 - l'Encre et la Dorure, qui demandent 7 et 30 jours de révisions.
