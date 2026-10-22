@@ -281,7 +281,7 @@ function CampaignEditor({
           )}
           {draft.audience === "waitlist" && (
             <p className={styles.muted}>
-              Une seule fois (P55) : le lancement ferme la liste d'attente pour de bon.
+              Une seule fois : le lancement ferme la liste d'attente pour de bon.
             </p>
           )}
           <div className={styles.toolbar}>

@@ -13,7 +13,7 @@ export interface SpokenWord {
 }
 
 /**
- * The word of a card read by the catalogue's voice (D-032), free for everyone (P57). The file
+ * The word of a card read by the catalogue's voice, free for everyone. The file
  * is fetched on the first play only, and the sound stops when the component goes away.
  */
 export function useSpokenWord(card: CatalogCard): SpokenWord {

@@ -1,7 +1,7 @@
 import { renderSignInCodeEmail } from "../email/sign-in-code";
 
 /**
- * Sends sign-in codes by e-mail (D-030), through Cloudflare Email Service (D-034): the
+ * Sends sign-in codes by e-mail, through Cloudflare Email Service: the
  * `send_email` binding of the Worker, no key and no `fetch`.
  *
  * Fails closed: outside local development, without a configured sender, sending throws instead of

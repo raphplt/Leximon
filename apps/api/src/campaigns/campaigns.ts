@@ -15,7 +15,7 @@ import { isWaitlistClosed, lockWaitlist } from "../waitlist/closure";
 
 /**
  * Campaigns as the back office handles them: drafts, launch, pause, cancel, and the erasure of
- * the waiting list once its e-mail has left (P55). Sending itself is in `delivery.ts`.
+ * the waiting list once its e-mail has left. Sending itself is in `delivery.ts`.
  *
  * Every change is logged in `admin_actions` in its own transaction.
  */
@@ -59,7 +59,7 @@ function audienceSource(campaign: Pick<CampaignRow, "id" | "audience">) {
       return sql`select lower(${waitlistSignups.email}) as email, null::text as user_id
         from ${waitlistSignups}`;
     case "players":
-      // P61: explicit consent, still standing. Guests have no address of their own.
+      // Explicit consent, still standing. Guests have no address of their own.
       return sql`select lower(${users.email}) as email, ${users.id} as user_id
         from ${users} join ${emailConsents} on ${emailConsents.userId} = ${users.id}
         where ${emailConsents.grantedAt} is not null and ${emailConsents.revokedAt} is null
@@ -86,7 +86,7 @@ export type DraftResult =
   | { readonly kind: "saved"; readonly id: string }
   | { readonly kind: "campaign_not_found" }
   | { readonly kind: "not_a_draft" }
-  /** P55: the waiting list already got its e-mail. */
+  /** the waiting list already got its e-mail. */
   | { readonly kind: "waitlist_closed" };
 
 function draftValues(input: AdminCampaignInput) {
@@ -405,7 +405,7 @@ export async function readCampaignRow(db: Executor, id: string): Promise<Campaig
   return row ?? null;
 }
 
-/** The opening e-mail of the waiting list (P55), or null while none was written. */
+/** The opening e-mail of the waiting list, or null while none was written. */
 export async function readWaitlistOpening(db: Executor): Promise<AdminWaitlistOpening | null> {
   const [row] = await db
     .select({
@@ -433,7 +433,7 @@ export type EraseWaitlistResult =
   | { readonly kind: "count_changed"; readonly count: number };
 
 /**
- * Erases the waiting list once its e-mail has left (P55): the addresses, and their copies in the
+ * Erases the waiting list once its e-mail has left: the addresses, and their copies in the
  * campaign's send rows. The suppression list stays (opposition kept, as the CNIL asks). The admin
  * confirms the number of addresses erased.
  */

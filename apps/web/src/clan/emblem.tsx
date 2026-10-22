@@ -10,7 +10,7 @@ import { Icon } from "@/ui/icon";
 import styles from "./emblem.module.css";
 
 /**
- * A clan's emblem (P65): a shield of the first colour, the engraving inked in the second, a gold
+ * A clan's emblem: a shield of the first colour, the engraving inked in the second, a gold
  * rim. Decorative: the clan's name is always next to it.
  */
 export function Emblem({ emblem, size }: { readonly emblem: EmblemView; readonly size: number }) {

@@ -2,7 +2,7 @@ import { z } from "zod";
 import type { BatchOutcome, CampaignMailer, CampaignMessage } from "./mailer";
 
 /**
- * Lettermint's batch endpoint (D-034): up to 500 e-mails per call, each with its own idempotency
+ * Lettermint's batch endpoint: up to 500 e-mails per call, each with its own idempotency
  * key, kept 24 h. Called with `fetch`; tracking is off on the route (no pixel, no rewritten link).
  */
 

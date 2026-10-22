@@ -1,5 +1,5 @@
 /**
- * The pack shape players see (P47) and the word the interface uses for it (P53): with the pouch,
+ * The pack shape players see and the word the interface uses for it: with the pouch,
  * « sachet » everywhere; with the fold, « pli ». Both nouns are masculine, so only the noun
  * changes in a sentence.
  */
@@ -7,7 +7,7 @@
 export const PACK_SHAPES = ["pli", "sachet"] as const;
 export type PackShape = (typeof PACK_SHAPES)[number];
 
-/** The shape every player sees, picked by the owner (P47). */
+/** The shape every player sees, picked by the owner. */
 export const PACK_SHAPE: PackShape = "sachet";
 
 export interface PackNoun {

@@ -8,9 +8,9 @@ export interface Shell {
   openCoffret(level?: number): void;
   openSettings(): void;
   openMail(): void;
-  /** The clan's discussion in a panel (K-13). */
+  /** The clan's discussion in a panel. */
   openChat(): void;
-  /** The sheet of a card (A-07), from any screen that shows one. */
+  /** The sheet of a card, from any screen that shows one. */
   openCard(cardId: string): void;
 }
 

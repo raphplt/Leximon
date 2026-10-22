@@ -10,7 +10,7 @@ import styles from "./clan.module.css";
 import { ClanPage } from "./clan-page";
 import { FindClan } from "./find-clan";
 
-/** Clan (K-01 to K-13): the player's clan, or how to find one. */
+/** Clan: the player's clan, or how to find one. */
 export function ClanScreen() {
   const mine = useShared(myClan);
   const progress = useProgress();

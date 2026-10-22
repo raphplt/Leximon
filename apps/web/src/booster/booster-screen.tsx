@@ -59,7 +59,7 @@ const FAN_ANGLES = [-10, -5, 0, 5, 10];
 /** Room left around a revealed card on a narrow phone, in px. */
 const CARD_MARGIN = 56;
 const CARD_MAX_WIDTH = 300;
-/** The sachet chosen last (J-05), kept on the device. */
+/** The sachet chosen last, kept on the device. */
 const CHOICE_KEY = "leximon.sachet";
 
 type Phase =
@@ -82,7 +82,7 @@ interface Pack {
   readonly back: string | undefined;
   /** Cards the progress line counts: the collection's, or the whole catalog for discovery. */
   readonly collectionCardIds: ReadonlySet<string>;
-  /** XP this pack earned (P48). */
+  /** XP this pack earned. */
   readonly progress: ProgressGain;
 }
 
@@ -127,7 +127,7 @@ function writeChoice(id: string): void {
   }
 }
 
-/** The Jouer screen (J-01 to J-08) and the opening of a sachet (O-01 to O-05). */
+/** The Jouer screen and the opening of a sachet. */
 export function BoosterScreen() {
   const [phase, setPhase] = useState<Phase>({ name: "loading" });
   const [catalog, setCatalog] = useState<Catalog | null>(null);
@@ -143,7 +143,7 @@ export function BoosterScreen() {
   const cardWidth = useCardWidth();
   const { now } = view;
   const currentWallet = view.wallet;
-  /** Boosters a guest may still open before creating an account (P37); null for a member. */
+  /** Boosters a guest may still open before creating an account; null for a member. */
   const guestLeft = who?.kind === "guest" ? who.boostersLeft : null;
 
   const load = useCallback(async () => {
@@ -442,7 +442,7 @@ export function BoosterScreen() {
   );
 }
 
-/** Shown once a guest opened all its boosters (P37). */
+/** Shown once a guest opened all its boosters. */
 const SIGN_UP_HINT =
   "Crée ton compte pour garder tes cartes et ouvrir d'autres sachets. C'est gratuit.";
 
@@ -524,7 +524,7 @@ function Revealing({
   );
 }
 
-/** What the sachet gave (O-04), and the level it raised (O-05). */
+/** What the sachet gave, and the level it raised. */
 function Recap({
   catalog,
   pack,
@@ -542,7 +542,7 @@ function Recap({
   const progress = collectionProgress(pack.collectionCardIds, pack.quantitiesBefore, pack.cards);
   const xp = xpGainLabel(pack.progress);
   const levelUp = levelUpLabel(pack.progress);
-  // The coffret replaces « open another » while it waits (O-05).
+  // The coffret replaces « open another » while it waits.
   const coffretWaits = pack.progress.levelUp && view.coffrets.length > 0;
   const canOpen = view.wallet !== null && (view.wallet.stored > 0 || view.wallet.bonus > 0);
   return (

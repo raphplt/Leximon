@@ -1,7 +1,7 @@
 import type { PackShape } from "@/lib/pack-shape";
 
 /**
- * Props shared by the two pack shapes (P47, docs/cahiers-des-charges/ouverture.md): the rest of
+ * Props shared by the two pack shapes: the rest of
  * the opening never knows which one it shows.
  */
 export interface PackProps {

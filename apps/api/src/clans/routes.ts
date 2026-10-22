@@ -75,7 +75,7 @@ const noStore = createMiddleware<AppEnv>(async (c, next) => {
   c.header("Cache-Control", "no-store");
 });
 
-/** Members show as online while they use the game (K-05). */
+/** Members show as online while they use the game. */
 const seen = createMiddleware<AppEnv>(async (c, next) => {
   await touchLastSeen(c.var.db, c.var.userId, Date.now());
   return next();
@@ -93,7 +93,7 @@ async function canWrite(c: Context<AppEnv>, now: number): Promise<boolean> {
   return (await readRestrictions(c.var.db, c.var.userId, now)).canWrite;
 }
 
-/** `/clans` (K-01 to K-13). */
+/** `/clans`. */
 export function clanRoutes() {
   const routes = new Hono<AppEnv>();
   routes.use(requireUser, playerRateLimit, noStore, refuseLockedWrites, seen);
@@ -218,7 +218,7 @@ export function clanRoutes() {
     return c.body(null, 204);
   });
 
-  // --- Requests, chief and deputies (K-10) ---
+  // --- Requests, chief and deputies ---
 
   routes.get("/:id/requests", async (c) => {
     const clanId = clanIdSchema.safeParse(c.req.param("id"));
@@ -313,7 +313,7 @@ export function clanRoutes() {
     return c.body(null, 204);
   });
 
-  // --- Discussion (K-06, K-07) ---
+  // --- Discussion ---
 
   routes.get("/:id/messages", async (c) => {
     const clanId = clanIdSchema.safeParse(c.req.param("id"));

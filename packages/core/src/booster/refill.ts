@@ -70,7 +70,7 @@ export function capacityAt(schedule: RefillSchedule, now: EpochMs): number {
 }
 
 /**
- * Fills the free stock to its capacity at `now` (a level reward, P58), or `null` when it is
+ * Fills the free stock to its capacity at `now` (a level reward), or `null` when it is
  * already full: a refill is never wasted.
  */
 export function refillToFull(

@@ -1,5 +1,5 @@
 /**
- * Challenge questions (D-025): multiple choice on a word the player owns. "definition": the word
+ * Challenge questions: multiple choice on a word the player owns. "definition": the word
  * is shown, pick its definition; "word": the definition is shown, pick the word. Wrong choices
  * come from other cards, preferably of the same collection.
  */

@@ -17,7 +17,7 @@ import styles from "./settings.module.css";
 import { failureMessage } from "./use-profile-actions";
 
 /**
- * Deleting the account (R-07): erased at once, for good. Two steps: the button that names what
+ * Deleting the account: erased at once, for good. Two steps: the button that names what
  * goes, then the confirmation.
  */
 export function DeleteAccountDialog({

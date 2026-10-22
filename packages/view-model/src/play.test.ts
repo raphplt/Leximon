@@ -22,7 +22,7 @@ const collections = [
   { id: "metiers", name: "Métiers oubliés" },
 ];
 
-describe("stock (J-07)", () => {
+describe("stock", () => {
   it("says what is left and what the button does", () => {
     expect(stockView(wallet(4), NOW)).toMatchObject({
       line: "4 sur 6 · le prochain dans 18 min",
@@ -47,7 +47,7 @@ describe("stock (J-07)", () => {
   });
 });
 
-describe("collection of the sachet (J-05)", () => {
+describe("collection of the sachet", () => {
   it("offers only the discovery sachet before level 3", () => {
     const choices = collectionChoices(collections, 2, NOW);
     expect(choices.map((c) => [c.short, c.lock])).toEqual([
@@ -76,7 +76,7 @@ describe("short collection name", () => {
   });
 });
 
-describe("floating buttons (J-04)", () => {
+describe("floating buttons", () => {
   it("shows closed features with their level and what waits", () => {
     const { left, right } = playFabs({ level: 7, coffrets: 2, mail: 0 }, NOW);
     expect(left.map((f) => f.lock)).toEqual(["Niv. 10", "Niv. 10", "Niv. 15"]);

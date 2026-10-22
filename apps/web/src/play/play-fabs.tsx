@@ -28,7 +28,7 @@ const ICONS: Readonly<Record<FabId, IconName>> = {
   settings: "reglages",
 };
 
-/** The floating buttons on both sides of the sachet (J-04). */
+/** The floating buttons on both sides of the sachet. */
 export function PlayFabs() {
   const view = usePlayerView();
   const shell = useShell();

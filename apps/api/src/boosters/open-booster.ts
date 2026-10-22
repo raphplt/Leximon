@@ -52,7 +52,7 @@ export interface WalletView {
   readonly nextRefillAt: EpochMs | null;
   /** Bonus boosters left in the reserve. */
   readonly bonus: number;
-  /** Of `bonus`, the garni boosters (P58). */
+  /** Of `bonus`, the garni boosters. */
   readonly garni: number;
   /** Most bonus boosters the reserve holds. */
   readonly bonusCap: number;
@@ -68,11 +68,11 @@ export type OpenBoosterResult =
     }
   | { readonly kind: "stock_empty"; readonly nextRefillAt: EpochMs }
   | { readonly kind: "collection_not_found" }
-  /** Choosing the collection of a booster opens at a level (P59): the discovery booster does not. */
+  /** Choosing the collection of a booster opens at a level: the discovery booster does not. */
   | { readonly kind: "level_required"; readonly level: number }
   /** The session is a guest archived by a sign-in: the client must use the account's. */
   | { readonly kind: "guest_archived" }
-  /** A guest that opened all the boosters it may before creating an account (P37). */
+  /** A guest that opened all the boosters it may before creating an account. */
   | { readonly kind: "signup_required" }
   | { readonly kind: "catalog_empty" };
 
@@ -94,8 +94,8 @@ const {
  * the booster already opened with that key instead of opening another.
  *
  * The free stock is spent first; once it is empty, a booster comes from the bonus reserve, garni
- * boosters first (P58). A collection's booster needs the level of P59; the discovery one never.
- * The open earns XP (P48), more for words the player never owned and for the first open of the day.
+ * boosters first. A collection's booster needs its level; the discovery one never.
+ * The open earns XP, more for words the player never owned and for the first open of the day.
  * Lock order: the wallet first, then the copies (as answering a challenge: wallet, then mastery).
  *
  * Latency: each statement is a database round trip, so the open uses as few as possible:
@@ -144,7 +144,7 @@ export async function openBooster(
     const bonusCap = reserveCapacity(bonusRules, locked.reserveSlots);
     const reserve = { bonus: locked.bonusBoosters, garni: locked.garniBoosters };
 
-    // Which booster would be spent decides the draw: a garni booster guarantees its rarity (P58).
+    // Which booster would be spent decides the draw: a garni booster guarantees its rarity.
     // Pure, so computed before the checks below; applied only if they pass.
     const consumed = takeBooster(wallet, reserve, REFILL_SCHEDULE, now);
     const garni = consumed.ok && consumed.garni;
@@ -161,7 +161,7 @@ export async function openBooster(
 
     // Runs after the lock is granted, as a separate statement: it sees an open committed by a
     // concurrent request with the same key that held the lock first, a sign-in that archived
-    // this guest meanwhile (D-030), and the opens of a guest counted against its limit (P37). A trade does not take the wallet lock: a word received by
+    // this guest meanwhile, and the opens of a guest counted against its limit. A trade does not take the wallet lock: a word received by
     // trade in the meantime would count as new once more, a harmless few XP.
     const lookup = await tx.execute<{
       archived: boolean;
@@ -330,7 +330,7 @@ export async function openBooster(
   });
 }
 
-/** The draw of a garni booster: its guaranteed card is at least the garni rarity (P58). */
+/** The draw of a garni booster: its guaranteed card is at least the garni rarity. */
 function garniRules(rules: DrawRules, rewards: LevelRewardRules): DrawRules {
   return isAtLeast(rules.guaranteedMinRarity, rewards.garniMinRarity)
     ? rules

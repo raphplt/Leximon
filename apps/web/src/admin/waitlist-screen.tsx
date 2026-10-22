@@ -138,7 +138,7 @@ export function WaitlistScreen() {
   );
 }
 
-/** The opening e-mail (P55): the list is closed, then erased once the e-mail has left. */
+/** The opening e-mail: the list is closed, then erased once the e-mail has left. */
 function OpeningPanel({
   opening,
   total,

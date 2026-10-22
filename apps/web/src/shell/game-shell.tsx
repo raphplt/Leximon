@@ -19,7 +19,7 @@ type Overlay = "menu" | "settings" | "mail" | "chat" | null;
 
 /**
  * The frame of every game screen: the top bar on the web, the phone band and tabs under 760 px
- * (C-08), and what opens over any screen (menu, settings, mail, coffret, card sheet).
+ *, and what opens over any screen (menu, settings, mail, coffret, card sheet).
  */
 export function GameShell({ children }: { readonly children: ReactNode }) {
   return (

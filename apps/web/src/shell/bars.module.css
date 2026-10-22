@@ -1,4 +1,4 @@
-/* --- Web top bar (C-01), from 760 px --- */
+/* --- Web top bar, from 760 px --- */
 
 .top {
   position: sticky;
@@ -163,7 +163,7 @@
   }
 }
 
-/* --- Phone shell (C-04, C-03), under 760 px --- */
+/* --- Phone shell, under 760 px --- */
 
 .phoneTop,
 .tabs {

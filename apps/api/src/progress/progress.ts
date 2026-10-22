@@ -6,7 +6,7 @@ const { userProgress } = schema;
 type Writer = Pick<Database, "$with" | "insert">;
 
 /**
- * Data-modifying CTE adding XP to a player (P48), creating their row on the first gain. An atomic
+ * Data-modifying CTE adding XP to a player, creating their row on the first gain. An atomic
  * increment: it needs no lock of its own, and runs in the statement of the action that earns it.
  */
 export function addXp(tx: Writer, name: string, userId: string, amount: number) {

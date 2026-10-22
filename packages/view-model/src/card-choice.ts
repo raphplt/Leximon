@@ -9,7 +9,7 @@ import {
 import { plural } from "./format";
 
 /**
- * The card of the player's choice (P58, N-08): a Courant or Peu courant card the player lacks,
+ * The card of the player's choice: a Courant or Peu courant card the player lacks,
  * taken from the published collections. Contents are known: nothing is drawn. Once every such
  * card is owned, any of them can be taken again. The server checks the same rule.
  */

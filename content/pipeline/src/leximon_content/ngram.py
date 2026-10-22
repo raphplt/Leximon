@@ -2,7 +2,7 @@
 
 The six 1-gram files (5 GB) are downloaded once, then filtered down to the forms of the Littré
 headwords: `data/ngram/frequencies.tsv` is the only file the rest of the pipeline reads.
-See D-020 and docs/rnd/rarete.md.
+See docs/rnd/rarete.md.
 """
 
 import gzip

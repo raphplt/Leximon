@@ -1,8 +1,8 @@
 import { z } from "zod";
 
 /**
- * Signing up and signing in (D-030): a 6-digit code sent by e-mail, through Better Auth's routes
- * under `/api/auth`. The guest's game follows the player (P37, P54).
+ * Signing up and signing in: a 6-digit code sent by e-mail, through Better Auth's routes
+ * under `/api/auth`. The guest's game follows the player.
  */
 
 /** E-mail addresses are compared lowercase, as Better Auth stores them. */
@@ -26,8 +26,8 @@ export type LinkPreviewRequest = z.input<typeof linkPreviewRequestSchema>;
 
 /**
  * What signing in with this code would do to the guest's game:
- * - `transfer`: new account (or one without any game), everything the guest owns follows (P37);
- * - `abandon`: the account already plays, the guest's cards and mastery will be lost (P54);
+ * - `transfer`: new account (or one without any game), everything the guest owns follows;
+ * - `abandon`: the account already plays, the guest's cards and mastery will be lost;
  * - `none`: nothing at stake: no guest session, or an empty guest joining an account that plays.
  */
 export const guestLinkPreviewOutcomeSchema = z.enum(["transfer", "abandon", "none"]);
@@ -54,7 +54,7 @@ export type LinkPreviewError = z.infer<typeof linkPreviewErrorSchema>;
 
 /**
  * `POST /api/auth/sign-in/email-otp` body. Extra fields are read by our hooks:
- * - `ageConfirmed`: "J'ai 15 ans ou plus" (P8), required to create an account, never stored;
+ * - `ageConfirmed`: "J'ai 15 ans ou plus", required to create an account, never stored;
  * - `acceptGuestLoss`: the player saw that the guest's cards will be lost, required for `abandon`.
  */
 export const emailSignInRequestSchema = z.object({
@@ -85,7 +85,7 @@ export type AuthErrorResponse = z.infer<typeof authErrorResponseSchema>;
 export const accountResponseSchema = z.discriminatedUnion("kind", [
   z.object({
     kind: z.literal("guest"),
-    /** Boosters left before an account is required (P37). */
+    /** Boosters left before an account is required. */
     boostersLeft: z.number().int().min(0),
   }),
   z.object({

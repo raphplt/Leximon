@@ -1,5 +1,5 @@
 /**
- * Pseudo of a player (P-08, N5): unique, 3 to 20 characters, filtered when sent, changed at most
+ * Pseudo of a player: unique, 3 to 20 characters, filtered when sent, changed at most
  * once a month. Pure functions: the server checks uniqueness on `key` with a unique index.
  *
  * The filter (`moderation/text-filter`) is a deterministic floor, not a judge: a pseudo it lets

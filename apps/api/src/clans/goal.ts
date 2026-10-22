@@ -46,13 +46,13 @@ function targetsOf(row: Pick<WeekRow, "bronze" | "silver" | "gold">): GoalTarget
   return { bronze: row.bronze, silver: row.silver, gold: row.gold };
 }
 
-/** The rules of a week are those in force when it starts (P66). */
+/** The rules of a week are those in force when it starts. */
 function goalRulesOf(week: GameDay): ClanGoalRules {
   return clanGoalRulesAt(CLAN_GOAL_SCHEDULE, week.start);
 }
 
 /**
- * The clan's current week, created at its first use (P66): the targets are fixed then, from the
+ * The clan's current week, created at its first use: the targets are fixed then, from the
  * members who opened a booster in the 7 days before. Concurrent first uses insert once.
  */
 export async function ensureClanWeek(db: Database, clanId: string, now: EpochMs): Promise<WeekRow> {
@@ -97,10 +97,10 @@ export interface RecountReport {
 }
 
 /**
- * Recounts a clan's week from the albums (D-038): each member's new words since they joined,
+ * Recounts a clan's week from the albums: each member's new words since they joined,
  * within the week. A member's count never goes down, so a member who leaves keeps what they
  * brought and a tier reached stays reached. A newly reached tier enters the journal once (unique
- * event key), and a gold one unlocks one more emblem item (P66).
+ * event key), and a gold one unlocks one more emblem item.
  *
  * The current week is created if needed; a past week only recounted if it exists. Lock order: the
  * week's row, then the clan's.
@@ -180,7 +180,7 @@ export async function recountClanWeek(
 // --- Rewards -------------------------------------------------------------------------------------
 
 /**
- * Tiers whose boosters the player may claim (P66): this week and the last one, in any clan they
+ * Tiers whose boosters the player may claim: this week and the last one, in any clan they
  * brought enough words to, minus what they already claimed. One claim per tier and week, so two
  * boosters a week at most, even after changing clans.
  */
@@ -247,7 +247,7 @@ export type ClaimGoalResult =
     };
 
 /**
- * Puts a weekly goal's boosters in the reserve (P66, P23). Idempotent: the tier and week are the
+ * Puts a weekly goal's boosters in the reserve. Idempotent: the tier and week are the
  * key, a second claim returns the first. A full reserve refuses and the boosters wait, until the
  * end of the following week.
  *
@@ -346,7 +346,7 @@ async function findEligibleClan(
 
 // --- View ----------------------------------------------------------------------------------------
 
-/** The goal as a member sees it on the clan's page (K-03). */
+/** The goal as a member sees it on the clan's page. */
 export async function readGoal(
   db: Database,
   input: {

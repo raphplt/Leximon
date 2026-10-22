@@ -1,5 +1,5 @@
 /**
- * Level rewards (P58): every level from 2 on gives a free reward, claimed by the player (the
+ * Level rewards: every level from 2 on gives a free reward, claimed by the player (the
  * "coffret"). Nothing is drawn at random: what a level gives is known in advance.
  *
  * Ordinary levels alternate a bonus booster and a refill of the free stock. Every 5 levels: a
@@ -135,7 +135,7 @@ export function currentTitle(rules: LevelRewardRules, claimed: Iterable<number>)
   return best === null ? null : (rules.titles[best] ?? null);
 }
 
-/** Whether a card of this rarity can be taken as a card of the player's choice (P58). */
+/** Whether a card of this rarity can be taken as a card of the player's choice. */
 export function isChoosableRarity(rules: LevelRewardRules, rarity: Rarity): boolean {
   return rarityRank(rarity) <= rarityRank(rules.cardChoiceMaxRarity);
 }
@@ -146,7 +146,7 @@ export interface ClaimedReward {
   readonly rewards: readonly LevelReward[];
 }
 
-/** What a player may wear (P58): what everyone starts with, and what their claimed coffrets gave. */
+/** What a player may wear: what everyone starts with, and what their claimed coffrets gave. */
 export interface Wardrobe {
   readonly avatars: ReadonlySet<string>;
   readonly frames: ReadonlySet<string>;

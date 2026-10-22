@@ -81,7 +81,7 @@ export const adminPlayerDetailSchema = z.object({
   player: adminPlayerSummarySchema.extend({
     banReason: z.string().nullable(),
     banExpires: timestampSchema.nullable(),
-    /** Set for a guest whose game went to an account, or that was abandoned (D-030). */
+    /** Set for a guest whose game went to an account, or that was abandoned. */
     archivedInto: z.string().nullable(),
   }),
   wallet: z.object({
@@ -143,7 +143,7 @@ export const adminWaitlistResponseSchema = z.object({
   total: z.int().nonnegative(),
   entries: z.array(z.object({ email: z.string(), createdAt: timestampSchema })),
   nextCursor: z.string().nullable(),
-  /** The opening e-mail (P55), once a campaign to the list exists. */
+  /** The opening e-mail, once a campaign to the list exists. */
   opening: adminWaitlistOpeningSchema.nullable(),
 });
 export type AdminWaitlistResponse = z.infer<typeof adminWaitlistResponseSchema>;

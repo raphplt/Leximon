@@ -21,7 +21,7 @@ export interface CatalogPlan {
   }[];
   /** Published cards missing from the release: they leave the boosters, owned copies stay. */
   readonly retire: readonly string[];
-  /** A published card's rarity never changes (D-020): any of these blocks the publication. */
+  /** A published card's rarity never changes: any of these blocks the publication. */
   readonly rarityConflicts: readonly {
     readonly id: string;
     readonly published: Rarity;

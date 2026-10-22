@@ -46,8 +46,8 @@ const ENTRY_FILTERS: readonly (ClanEntryMode | undefined)[] = [
 ];
 
 /**
- * Without a clan (K-08, K-09, K-12): find one by its name, enter by an invitation code, or found
- * one from the level of P59.
+ * Without a clan: find one by its name, enter by an invitation code, or found
+ * one from the level that opens it.
  */
 export function FindClan({
   mine,

@@ -3,7 +3,7 @@ import { emailSchema } from "./account";
 import { timestampSchema } from "./common";
 
 /**
- * E-mail campaigns sent from the back office (D-035), the players' consent to them (P61), and the
+ * E-mail campaigns sent from the back office, the players' consent to them, and the
  * public unsubscribe flow. Sign-in codes are not campaigns: they live in `account.ts`.
  */
 
@@ -144,7 +144,7 @@ export const adminWaitlistEraseRequestSchema = z.object({
 });
 export type AdminWaitlistEraseRequest = z.input<typeof adminWaitlistEraseRequestSchema>;
 
-/** The opening e-mail to the waiting list (P55), as the waiting list screen shows it. */
+/** The opening e-mail to the waiting list, as the waiting list screen shows it. */
 export const adminWaitlistOpeningSchema = z.object({
   campaignId: z.uuid(),
   status: campaignStatusSchema,
@@ -156,7 +156,7 @@ export type AdminWaitlistOpening = z.infer<typeof adminWaitlistOpeningSchema>;
 
 /** `GET /me/email-preferences`. */
 export const emailPreferencesSchema = z.object({
-  /** "M'écrire quand il y a du nouveau" (P61). */
+  /** "M'écrire quand il y a du nouveau". */
   newsOptIn: z.boolean(),
 });
 export type EmailPreferences = z.infer<typeof emailPreferencesSchema>;
@@ -175,7 +175,7 @@ export const unsubscribeTokenSchema = z
   .regex(/^[0-9a-f-]{36}\.[A-Za-z0-9_-]{43}$/);
 
 /**
- * Lettermint webhook events we act on (D-034). Other fields and other events are ignored; an
+ * Lettermint webhook events we act on. Other fields and other events are ignored; an
  * unknown event is acknowledged without being processed.
  */
 const lettermintMessageData = z.object({

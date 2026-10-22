@@ -19,7 +19,7 @@ import styles from "./profile.module.css";
 import { PinnedCards, ProfileHeader, StatsPanel } from "./profile-view";
 import { PseudoDialog } from "./pseudo-dialog";
 
-/** The player's own profile (P-01 to P-04), also before others can see it. */
+/** The player's own profile, also before others can see it. */
 export function ProfileScreen() {
   const me = useShared(profile);
   const { openCard } = useShell();

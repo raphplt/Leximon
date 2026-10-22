@@ -15,7 +15,7 @@ export interface AnsweredQuestion {
   readonly levelUp: boolean;
   readonly level: MasteryLevelCode;
   readonly bonus: AnswerBonus;
-  /** XP the answer earned (P48). */
+  /** XP the answer earned. */
   readonly progress: ProgressGain;
 }
 
@@ -90,7 +90,7 @@ export function sessionXpLine(answers: readonly AnsweredQuestion[]): string | nu
   return xp === 0 ? null : `+${xp} XP`;
 }
 
-// --- Défis screen (D-01 to D-05) -----------------------------------------------------------------
+// --- Défis screen -----------------------------------------------------------------
 
 export interface DailyTally {
   readonly goal: { readonly answers: number; readonly correct: number };
@@ -112,7 +112,7 @@ export interface DailyView {
   readonly ratio: number;
 }
 
-/** The daily challenge card (D-01): five answers, three right, and a bonus sachet. */
+/** The daily challenge card: five answers, three right, and a bonus sachet. */
 export function dailyView(tally: DailyTally, noun: PackNoun = SACHET_NOUN): DailyView {
   const { goal, answers, correct, awarded } = tally;
   const filled = Math.min(answers, goal.answers);
@@ -168,7 +168,7 @@ function capitalize(text: string): string {
   return text.charAt(0).toUpperCase() + text.slice(1);
 }
 
-/** Words at each level (D-02): every owned word starts as a sketch. */
+/** Words at each level: every owned word starts as a sketch. */
 export function memoryCounts(
   ownedIds: Iterable<string>,
   levels: ReadonlyMap<string, MasteryLevelCode>,
@@ -192,7 +192,7 @@ export interface EscapingWord {
 }
 
 /**
- * Words slipping away (D-03, J-08): reviewed words due now, most overdue first, then those due
+ * Words slipping away: reviewed words due now, most overdue first, then those due
  * within a day, up to `limit`.
  */
 export function escapingWords(
@@ -215,7 +215,7 @@ export function escapingWords(
     }));
 }
 
-/** The question line (D-04). */
+/** The question line. */
 export function questionKicker(format: "definition" | "word"): string {
   return format === "definition" ? "Que veut dire ce mot ?" : "Quel mot se cache là-dessous ?";
 }

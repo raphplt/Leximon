@@ -21,7 +21,7 @@ services:
       timeout: 3s
       retries: 15
 
-  # Creates the content database used by Directus, kept apart from the game database (D-008).
+  # Creates the content database used by Directus, kept apart from the game database.
   content-db-init:
     profiles: ["content"]
     image: postgres:18.6-alpine

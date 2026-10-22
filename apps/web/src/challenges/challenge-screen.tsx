@@ -51,7 +51,7 @@ interface Session {
 }
 
 /**
- * Défis (D-01 to D-05, D-025): the daily goal, the player's memory, the words slipping away, and
+ * Défis: the daily goal, the player's memory, the words slipping away, and
  * the sessions of multiple-choice questions that raise the words' level.
  */
 export function ChallengeScreen() {
@@ -288,7 +288,7 @@ function MemoryPanel({ now }: { readonly now: number }) {
   );
 }
 
-/** Words slipping away (D-03): due now, or within the day. */
+/** Words slipping away: due now, or within the day. */
 function Escaping({ catalog, now }: { readonly catalog: Catalog; readonly now: number }) {
   const owned = useShared(ownedCards);
   const memory = useShared(wordMemory);

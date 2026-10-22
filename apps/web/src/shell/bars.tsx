@@ -21,7 +21,7 @@ import { usePlayerView } from "./use-player-view";
 
 type PlayerView = ReturnType<typeof usePlayerView>;
 
-/** Which tabs a level still closes (P59): shown with a padlock, never hidden. */
+/** Which tabs a level still closes: shown with a padlock, never hidden. */
 function closedTabs(view: PlayerView): ReadonlySet<TabId> {
   if (view.progress === null || view.now === 0) return new Set();
   const levels = levelsOfFeatures(view.now);
@@ -81,7 +81,7 @@ function MailButton({ view, compact }: { readonly view: PlayerView; readonly com
   );
 }
 
-/** The web top bar, from 760 px (C-01). */
+/** The web top bar, from 760 px. */
 export function TopBar({
   menuOpen,
   onMenu,
@@ -152,7 +152,7 @@ export function TopBar({
   );
 }
 
-/** The phone top band, under 760 px (C-04, C-08). */
+/** The phone top band, under 760 px. */
 export function PhoneTopBar({ onMenu }: { readonly onMenu: () => void }) {
   const view = usePlayerView();
   const { progress } = view;
@@ -188,7 +188,7 @@ export function PhoneTopBar({ onMenu }: { readonly onMenu: () => void }) {
   );
 }
 
-/** The phone tabs, under 760 px (C-03, C-08). */
+/** The phone tabs, under 760 px. */
 export function PhoneTabs() {
   const pathname = usePathname();
   const view = usePlayerView();

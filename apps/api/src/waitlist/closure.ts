@@ -2,7 +2,7 @@ import { type Database, schema } from "@leximon/db";
 import { and, eq, isNotNull, sql } from "drizzle-orm";
 
 /**
- * The waiting list closes when its opening e-mail is launched (P55). Signing up and launching share
+ * The waiting list closes when its opening e-mail is launched. Signing up and launching share
  * an advisory lock, so that no address can arrive between the frozen recipient list and the
  * closure, and be kept without ever getting the e-mail.
  */

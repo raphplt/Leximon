@@ -5,7 +5,7 @@
   padding: 26px 32px 64px;
 }
 
-/* --- Banner (P-01) --- */
+/* --- Banner --- */
 
 .banner {
   position: relative;
@@ -82,7 +82,7 @@
   margin-left: auto;
 }
 
-/* --- Panels (P-02, P-03) --- */
+/* --- Panels --- */
 
 .layout {
   display: grid;
@@ -204,7 +204,7 @@
   color: var(--lx-color-text-muted);
 }
 
-/* --- Viewer actions on someone else's profile (P-06) --- */
+/* --- Viewer actions on someone else's profile --- */
 
 .viewer {
   display: flex;
@@ -221,7 +221,7 @@
   padding: 4px 26px 26px;
 }
 
-/* --- Atelier (P-07, N-10) --- */
+/* --- Atelier --- */
 
 .back {
   display: inline-flex;

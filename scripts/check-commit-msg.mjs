@@ -1,4 +1,4 @@
-// Validates the first line of a commit message against Conventional Commits (D-013).
+// Validates the first line of a commit message against Conventional Commits.
 import { readFileSync } from "node:fs";
 
 const TYPES = [

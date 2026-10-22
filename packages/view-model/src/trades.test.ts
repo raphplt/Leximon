@@ -142,14 +142,14 @@ describe("toggleCard", () => {
     expect(toggleCard(full, "b", 3)).toEqual(["a", "c"]);
   });
 
-  it("swaps the card when only one goes on each side (P59)", () => {
+  it("swaps the card when only one goes on each side", () => {
     expect(toggleCard(["a"], "b", 1)).toEqual(["b"]);
     expect(toggleCard(["a"], "a", 1)).toEqual([]);
   });
 });
 
 describe("heldLabel", () => {
-  it("counts days, then hours, before a held card can move (P35)", () => {
+  it("counts days, then hours, before a held card can move", () => {
     const at = Date.parse("2026-10-20T12:00:00.000Z");
     expect(heldLabel("2026-10-27T11:00:00.000Z", at)).toBe("Échangeable dans 7 j");
     expect(heldLabel("2026-10-20T16:30:00.000Z", at)).toBe("Échangeable dans 5 h");

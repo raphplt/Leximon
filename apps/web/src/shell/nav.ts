@@ -11,7 +11,7 @@ export const TABS: readonly { id: TabId; href: string; label: string; icon: Icon
   { id: "clan", href: "/clan", label: "Clan", icon: "clan" },
 ];
 
-/** Phones: Jouer in the middle, raised (C-03). */
+/** Phones: Jouer in the middle, raised. */
 export const PHONE_ORDER: readonly TabId[] = ["album", "defis", "jouer", "echanges", "clan"];
 
 export function isCurrent(pathname: string, href: string): boolean {

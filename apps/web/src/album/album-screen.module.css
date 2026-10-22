@@ -1,4 +1,4 @@
-/* The album (A-01 to A-06), maquette v1. */
+/* The album. */
 
 .page {
   box-sizing: border-box;
@@ -74,7 +74,7 @@
   outline: none;
 }
 
-/* --- Collection tabs (A-02) --- */
+/* --- Collection tabs --- */
 
 .tabs {
   display: grid;
@@ -142,7 +142,7 @@
   border-radius: var(--lx-radius-pill);
 }
 
-/* --- Rarities (A-03) and filters (A-04) --- */
+/* --- Rarities and filters --- */
 
 .row {
   display: flex;
@@ -203,7 +203,7 @@
   background: var(--lx-color-outline);
 }
 
-/* --- Grid (A-05) --- */
+/* --- Grid --- */
 
 .grid {
   display: grid;
@@ -341,7 +341,7 @@
   line-height: 1.2;
 }
 
-/* --- Empty (A-06) --- */
+/* --- Empty --- */
 
 .empty {
   margin: 40px 0;

@@ -28,8 +28,8 @@ interface Drag {
 
 /**
  * The cards just out of the pack, face down. Dragging the stack diagonally fans it out and
- * shows the edges, colored by rarity: a bonus gesture that nothing on screen explains
- * (docs/cahiers-des-charges/ouverture.md). The draw is already made; this only shows it early.
+ * shows the edges, colored by rarity: a bonus gesture that nothing on screen explains. The
+ * draw is already made; this only shows it early.
  */
 export function CardStack({ cards, width, onReveal, tone }: CardStackProps) {
   const [drag, setDrag] = useState<Drag | null>(null);

@@ -31,7 +31,7 @@
   align-items: start;
 }
 
-/* --- Road (N-01, N-02) --- */
+/* --- Road --- */
 
 .road {
   position: relative;
@@ -192,7 +192,7 @@
   pointer-events: none;
 }
 
-/* --- Detail (N-03) and XP table (N-04) --- */
+/* --- Detail and XP table --- */
 
 .side {
   display: flex;

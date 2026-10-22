@@ -13,7 +13,7 @@ import ui from "@/ui/ui.module.css";
 import styles from "./panels.module.css";
 
 /**
- * A sanction the player has not read yet (R-08, P68): what was done, why, until when, and how to
+ * A sanction the player has not read yet: what was done, why, until when, and how to
  * contest it (DSA). Opens over any screen; closing it marks them read.
  */
 export function SanctionDialog({ now }: { readonly now: number }) {

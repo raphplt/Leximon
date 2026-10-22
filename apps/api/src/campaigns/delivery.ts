@@ -7,7 +7,7 @@ import { prepareCampaignEmail, type RecipientLinks } from "./render";
 import { createUnsubscribeSigner } from "./signatures";
 
 /**
- * Sending a launched campaign (D-035). Every minute the pump hands up to `rate_per_minute` rows to
+ * Sending a launched campaign. Every minute the pump hands up to `rate_per_minute` rows to
  * the queue; the consumer claims them, sends them in one batch, and records what became of each.
  *
  * No e-mail leaves twice: a row is claimed by one conditional update (`queued` → `sending`), so a

@@ -304,7 +304,7 @@ function safeJson(text: string): unknown {
 const { emailConsents, emailSuppressions, users } = schema;
 
 /**
- * `/me/email-preferences`: the player's consent to campaign e-mails (P61). Registered inside the
+ * `/me/email-preferences`: the player's consent to campaign e-mails. Registered inside the
  * player routes (session required, rate limited). Guests have no address: nothing to consent to.
  */
 export function emailPreferenceRoutes() {

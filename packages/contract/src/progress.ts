@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-/** Account level (P48). The level is derived from the XP by the server; clients only show it. */
+/** Account level. The level is derived from the XP by the server; clients only show it. */
 export const progressSchema = z.object({
   /** Total experience earned. */
   xp: z.int().nonnegative(),

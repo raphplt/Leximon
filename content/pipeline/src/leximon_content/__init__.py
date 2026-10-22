@@ -1,1 +1,1 @@
-"""Leximon content pipeline (D-010). Runs locally; never deployed."""
+"""Leximon content pipeline. Runs locally; never deployed."""

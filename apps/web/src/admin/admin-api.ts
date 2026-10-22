@@ -295,7 +295,7 @@ export function adminErrorMessage(error: unknown): string {
     case "not_a_draft":
       return "Cette campagne est déjà lancée : elle ne change plus.";
     case "waitlist_closed":
-      return "La liste d'attente a déjà reçu son e-mail. Une seule fois (P55).";
+      return "La liste d'attente a déjà reçu son e-mail. Une seule fois.";
     case "no_recipients":
       return "Personne à qui écrire.";
     case "invalid_state":

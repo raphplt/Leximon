@@ -9,7 +9,7 @@ import ui from "@/ui/ui.module.css";
 import styles from "./pseudo-dialog.module.css";
 import { useProfileActions } from "./use-profile-actions";
 
-/** Choosing or changing the pseudo (P-04, R-05): the server checks it and says why it refuses. */
+/** Choosing or changing the pseudo: the server checks it and says why it refuses. */
 export function PseudoDialog({
   open,
   onClose,

@@ -3,9 +3,9 @@ import type { EpochMs } from "@leximon/core";
 import { isFeatureOpen, levelBadge, levelsOfFeatures } from "./features";
 import { formatWait } from "./format";
 
-/** The Jouer screen (J-05 to J-08) and the stock shown in the top bar (C-01). */
+/** The Jouer screen and the stock shown in the top bar. */
 
-// --- Stock (J-07) --------------------------------------------------------------------------------
+// --- Stock --------------------------------------------------------------------------------
 
 export interface StockView {
   readonly stored: number;
@@ -52,7 +52,7 @@ export function stockView(wallet: BoosterWalletResponse, now: EpochMs): StockVie
   };
 }
 
-/** The recap's button once the cards are seen (O-04): open another, a bonus, or wait. */
+/** The recap's button once the cards are seen: open another, a bonus, or wait. */
 export function openAgainLabel(wallet: BoosterWalletResponse, now: EpochMs): string {
   if (wallet.stored > 0) return "Ouvrir un autre sachet";
   if (wallet.bonus > 0) return "Ouvrir un sachet bonus";
@@ -61,10 +61,10 @@ export function openAgainLabel(wallet: BoosterWalletResponse, now: EpochMs): str
   return `Plus de sachet${wait}`;
 }
 
-// --- Collection of the sachet (J-05) --------------------------------------------------------------
+// --- Collection of the sachet --------------------------------------------------------------
 
 export interface CollectionChoice {
-  /** `discovery` for the sachet drawn from the whole catalog (P14). */
+  /** `discovery` for the sachet drawn from the whole catalog. */
   readonly id: string;
   readonly name: string;
   readonly short: string;
@@ -77,7 +77,7 @@ export const DISCOVERY_ID = "discovery";
 
 /**
  * The discovery sachet, then one per published collection. Before the level that opens the
- * choice (P59), only the discovery sachet opens; the others show their level.
+ * choice, only the discovery sachet opens; the others show their level.
  */
 export function collectionChoices(
   collections: readonly { readonly id: string; readonly name: string }[],
@@ -122,19 +122,19 @@ export function pickCollection(
   return found ?? (choices[0] as CollectionChoice);
 }
 
-// --- Word slipping away (J-08) --------------------------------------------------------------------
+// --- Word slipping away --------------------------------------------------------------------
 
 /** « Lucubrateur est en train de t'échapper. », split so that the word can be set in italics. */
 export const SLIPPING_AWAY = { after: " est en train de t'échapper.", action: "Réviser" } as const;
 
-// --- Floating buttons (J-04) -----------------------------------------------------------------------
+// --- Floating buttons -----------------------------------------------------------------------
 
 export type FabId = "clan" | "chat" | "jousts" | "daily" | "coffrets" | "mail" | "settings";
 
 export interface Fab {
   readonly id: FabId;
   readonly label: string;
-  /** Red count of what waits for the player; 0 shows nothing (P51: never a nudge to come back). */
+  /** Red count of what waits for the player; 0 shows nothing (never a nudge to come back). */
   readonly badge: number;
   /** « Niv. 10 » when closed by the level. */
   readonly lock: string | null;

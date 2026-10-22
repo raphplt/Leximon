@@ -11,7 +11,7 @@ import { useToast } from "@/ui/toast";
 import styles from "./settings.module.css";
 import { failureMessage } from "./use-profile-actions";
 
-/** The players the player blocked (R-05), each one unblocked with a tap. */
+/** The players the player blocked, each one unblocked with a tap. */
 export function BlocksDialog({
   open,
   onClose,

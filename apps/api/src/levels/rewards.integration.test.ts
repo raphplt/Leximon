@@ -97,7 +97,7 @@ describe("GET /me/level-rewards", () => {
   });
 });
 
-describe("POST /me/level-rewards/:level (P58)", () => {
+describe("POST /me/level-rewards/:level", () => {
   it("rejects a malformed level and refuses one not reached", async () => {
     const guest = await playerAt(3);
     expect((await claim(guest, 1)).status).toBe(400);
@@ -187,7 +187,7 @@ describe("POST /me/level-rewards/:level (P58)", () => {
   });
 });
 
-describe("POST /me/card-choices (P58)", () => {
+describe("POST /me/card-choices", () => {
   async function withChoice() {
     const guest = await playerAt(10);
     expect((await claim(guest, 10)).status).toBe(200);

@@ -3,7 +3,7 @@ import { CONTEST_WINDOW_MS, canContest, restrictionsAt } from "./sanction";
 
 const now = Date.UTC(2026, 9, 22);
 
-describe("restrictionsAt (P68)", () => {
+describe("restrictionsAt", () => {
   it("leaves a player without sanctions free", () => {
     expect(restrictionsAt([], now)).toEqual({ canWrite: true, canTrade: true, locked: false });
   });

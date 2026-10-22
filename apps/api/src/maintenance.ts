@@ -22,8 +22,8 @@ export interface MaintenanceReport {
  * - creates the upcoming monthly partitions of `booster_opens` and `review_logs`;
  * - purges idempotency keys too old to be retried;
  * - erases the addresses of campaigns ended more than 30 days ago (the suppression list stays);
- * - erases clan messages older than 90 days, except those reported and not yet handled (P67);
- * - recounts the clans of this week and the last, in case an event was lost (D-038).
+ * - erases clan messages older than 90 days, except those reported and not yet handled;
+ * - recounts the clans of this week and the last, in case an event was lost.
  */
 export async function runMaintenance(db: Database, now: number): Promise<MaintenanceReport> {
   await db.execute(sql`select leximon_ensure_booster_open_partitions(${PARTITION_MONTHS_AHEAD})`);

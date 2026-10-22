@@ -29,7 +29,7 @@ export interface PackShapeState {
   readonly known: boolean;
 }
 
-/** The pack shape shown (P47) and its word (P53): the one in force, or the one being tried. */
+/** The pack shape shown and its word: the one in force, or the one being tried. */
 export function usePackShape(): PackShapeState {
   const [state, setState] = useState({ shape: PACK_SHAPE, known: false });
   useEffect(() => {

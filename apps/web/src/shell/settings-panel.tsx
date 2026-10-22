@@ -25,7 +25,7 @@ function maskEmail(email: string): string {
 }
 
 /**
- * Settings (R-03 to R-07): sound and vibration, kept on the device; notifications, kept on the
+ * Settings: sound and vibration, kept on the device; notifications, kept on the
  * server (nothing is sent before the queue exists); the profile; the account.
  */
 export function SettingsPanel({

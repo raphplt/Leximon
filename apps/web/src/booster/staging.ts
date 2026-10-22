@@ -2,9 +2,8 @@ import { type Rarity, rarityRank } from "@leximon/core";
 import type { SoundCue } from "./feedback";
 
 /**
- * How each rarity is revealed (docs/cahiers-des-charges/ouverture.md, « mise en scène des
- * raretés »). The announcement always comes before the face: the rarer the card, the longer
- * the player waits for it.
+ * How each rarity is revealed. The announcement always comes before the face: the rarer the
+ * card, the longer the player waits for it.
  */
 
 export interface RarityStaging {

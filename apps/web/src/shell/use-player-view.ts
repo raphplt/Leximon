@@ -40,7 +40,7 @@ export function usePlayerView() {
     /** The pseudo, else « Invité » or « Toi » before one is chosen. */
     name: me?.pseudo ?? (who?.kind === "guest" ? "Invité" : "Toi"),
     offers: offers ?? 0,
-    /** Weekly goal boosters to take (P66). */
+    /** Weekly goal boosters to take. */
     claimable,
     /** What waits in the mail: coffrets, cards to choose, offers received, goal boosters. */
     mail: coffrets.length + cardChoices.length + (offers ?? 0) + claimable.length,

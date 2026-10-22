@@ -1,5 +1,5 @@
 /**
- * Features opened by the account level (P59). A closed feature stays visible with the level that
+ * Features opened by the account level. A closed feature stays visible with the level that
  * opens it: the level is a promise, not a wall. Discovery boosters, the album and challenges are
  * never closed.
  *

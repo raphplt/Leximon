@@ -53,7 +53,7 @@ const reportContent = sql<
 
 // --- The player ----------------------------------------------------------------------------------
 
-/** `GET /me/sanctions` (R-08), newest first. */
+/** `GET /me/sanctions`, newest first. */
 export async function listSanctions(
   db: Database,
   userId: string,
@@ -69,7 +69,7 @@ export async function listSanctions(
   return rows.map((row) => toSanction(row.sanction, row.content, now));
 }
 
-/** `POST /me/sanctions/seen`: the player read their new sanctions (R-08). */
+/** `POST /me/sanctions/seen`: the player read their new sanctions. */
 export async function markSanctionsSeen(db: Database, userId: string, now: EpochMs) {
   await db
     .update(sanctions)
@@ -82,7 +82,7 @@ export type ContestResult =
   | { readonly kind: "sanction_not_found" | "not_contestable" };
 
 /**
- * `POST /me/sanctions/:id/contest` (P68): once per sanction, within six months. A person of the
+ * `POST /me/sanctions/:id/contest`: once per sanction, within six months. A person of the
  * team reads it. The update's condition makes a second contest, even concurrent, a refusal.
  */
 export async function contestSanction(
@@ -265,7 +265,7 @@ export type CreateSanctionResult =
     };
 
 /**
- * `POST /admin/sanctions` (P68). The sanction, its effect (message hidden, name replaced) and the
+ * `POST /admin/sanctions`. The sanction, its effect (message hidden, name replaced) and the
  * closing of the report group happen in one transaction, logged in `admin_actions`, whose
  * idempotency key makes a retried request apply once.
  */
@@ -395,7 +395,7 @@ async function findRetried(
   return row === undefined ? null : toSanction(row.sanction, row.content, now);
 }
 
-/** A content sanction acts at once (P68); restrictions are read from the sanction rows. */
+/** A content sanction acts at once; restrictions are read from the sanction rows. */
 async function applyEffect(
   tx: Transaction,
   input: {

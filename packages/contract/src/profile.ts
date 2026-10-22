@@ -16,7 +16,7 @@ export const playerBadgeSchema = z.object({
 });
 export type PlayerBadge = z.infer<typeof playerBadgeSchema>;
 
-/** The profile in figures (P-03), counted when read. */
+/** The profile in figures, counted when read. */
 export const profileStatsSchema = z.object({
   /** Distinct words owned. */
   words: z.int().nonnegative(),
@@ -31,7 +31,7 @@ export const profileStatsSchema = z.object({
 export type ProfileStats = z.infer<typeof profileStatsSchema>;
 
 /**
- * `GET /players/:pseudo`, 200 (P-05, P-06). A private profile (P60) shows only the pseudo and
+ * `GET /players/:pseudo`, 200. A private profile shows only the pseudo and
  * the avatar. A profile below the public level, or of a player blocked either way, answers 404.
  */
 export const publicProfileSchema = z.discriminatedUnion("visibility", [
@@ -57,7 +57,7 @@ export const publicProfileSchema = z.discriminatedUnion("visibility", [
 ]);
 export type PublicProfile = z.infer<typeof publicProfileSchema>;
 
-/** What the player may wear (P58): the starting set and what their coffrets gave. */
+/** What the player may wear: the starting set and what their coffrets gave. */
 export const wardrobeSchema = z.object({
   avatars: z.array(cosmeticSchema),
   frames: z.array(cosmeticSchema),
@@ -124,6 +124,6 @@ export const updatePreferencesRequestSchema = preferencesSchema
   .partial()
   .refine((body) => Object.keys(body).length > 0);
 
-/** `DELETE /me` refusal, 409: an admin hands back the role first (D-031). */
+/** `DELETE /me` refusal, 409: an admin hands back the role first. */
 export const deleteAccountRefusalSchema = z.enum(["admin_account"]);
 export type DeleteAccountRefusal = z.infer<typeof deleteAccountRefusalSchema>;

@@ -3,7 +3,7 @@ import { z } from "zod";
 import { boosterWalletSchema } from "./boosters";
 import { slugSchema } from "./common";
 
-/** A level reward (P58), as the coffret shows it. */
+/** A level reward, as the coffret shows it. */
 export const levelRewardSchema = z.discriminatedUnion("kind", [
   z.object({ kind: z.literal("title"), title: z.string().min(1) }),
   /** `avatar` (a card id) is absent from coffrets opened before avatars were named. */

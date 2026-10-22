@@ -139,12 +139,12 @@ export type AnswerResult =
   | { readonly kind: "not_due"; readonly nextReviewAt: EpochMs };
 
 /**
- * Applies a challenge answer to the word's mastery, and awards the bonus boosters and the XP (P48)
+ * Applies a challenge answer to the word's mastery, and awards the bonus boosters and the XP
  * it earns.
  *
  * The answer is right when the chosen card is the card asked about. The server does not keep the
  * questions it served (stateless API): it only accepts answers on owned words that are due, once
- * per idempotency key. A client could always look the answer up in the public catalogue (D-025).
+ * per idempotency key. A client could always look the answer up in the public catalogue.
  *
  * Lock order: the player's wallet first, then the word's mastery row. Opening a booster also locks
  * the wallet first (then copies), so the two never wait on each other in a cycle. Holding the
@@ -426,7 +426,7 @@ export interface DailyTally {
 }
 
 /**
- * Today's answers towards the daily goal (P23, P29), in one read: the answers of the game day
+ * Today's answers towards the daily goal, in one read: the answers of the game day
  * (Paris time) and whether its bonus was already given. Uses the same index as the answer tally.
  */
 export async function dailyTally(db: Database, userId: string, now: EpochMs): Promise<DailyTally> {

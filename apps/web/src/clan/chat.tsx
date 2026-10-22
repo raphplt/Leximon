@@ -24,14 +24,14 @@ import ui from "@/ui/ui.module.css";
 import { deleteMessage, fetchMessages, postMessage, reportMessage } from "./api";
 import styles from "./clan.module.css";
 
-/** The open discussion asks for what came since every few seconds (no WebSockets, D-007). */
+/** The open discussion asks for what came since every few seconds (no WebSockets). */
 const POLL_MS = 4_000;
 
 type MessageItem = Extract<ClanMessage, { kind: "message" }>;
 
 /**
- * Discussion and journal of the clan (K-06, K-07): messages and events in one thread, newest at
- * the bottom. Used on the clan page and in the panel the Jouer screen opens (K-13).
+ * Discussion and journal of the clan: messages and events in one thread, newest at
+ * the bottom. Used on the clan page and in the panel the Jouer screen opens.
  */
 export function ClanChat({
   clanId,

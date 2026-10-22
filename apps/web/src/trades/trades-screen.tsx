@@ -54,7 +54,7 @@ const DONE_MESSAGES: Readonly<Record<Action, string>> = {
 
 const OFFER_THUMB = 80;
 
-/** Échanges (E-01 to E-07): offers received and sent, their history, and a new offer. */
+/** Échanges: offers received and sent, their history, and a new offer. */
 export function TradesScreen() {
   const [catalog, setCatalog] = useState<Catalog | null>(null);
   const [profile, setProfile] = useState<ProfileResponse | null>(null);
@@ -63,9 +63,9 @@ export function TradesScreen() {
   const [tab, setTab] = useState<Tab>("incoming");
   const [notice, setNotice] = useState<Notice | null>(null);
   const [busyTradeId, setBusyTradeId] = useState<string | null>(null);
-  // E-06: « Proposer en échange » on a card sheet opens a new offer with that card given.
+  // « Proposer en échange » on a card sheet opens a new offer with that card given.
   const [preset, setPreset] = useState<string | null>(null);
-  // « Proposer un échange » on a public profile (P-06) opens a new offer to that player.
+  // « Proposer un échange » on a public profile opens a new offer to that player.
   const [presetPartner, setPresetPartner] = useState<string | null>(null);
   const now = useNow(30_000);
   const progress = useProgress();
@@ -321,7 +321,7 @@ export function TradesScreen() {
   );
 }
 
-/** « Ton code K7QP 2MXA », copied with one tap (E-01). */
+/** « Ton code K7QP 2MXA », copied with one tap. */
 function PlayerCode({ code }: { readonly code: string }) {
   const toast = useToast();
   const copy = async () => {
@@ -361,7 +361,7 @@ function Received({
   readonly inbox: Inbox;
   readonly now: number;
   readonly busyTradeId: string | null;
-  /** A recent account cannot accept yet (D-026). */
+  /** A recent account cannot accept yet. */
   readonly canAccept: boolean;
   readonly wordOf: (cardId: string) => string;
   readonly onResolve: (trade: Trade, action: Action) => void;

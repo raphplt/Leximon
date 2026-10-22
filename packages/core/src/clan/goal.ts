@@ -1,5 +1,5 @@
 /**
- * The clan's weekly goal (P66): new words found together, three tiers. The week is the game week
+ * The clan's weekly goal: new words found together, three tiers. The week is the game week
  * in Paris (`gameWeekOf`); the server counts the words and stores what was claimed.
  */
 

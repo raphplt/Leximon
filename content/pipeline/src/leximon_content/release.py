@@ -1,4 +1,4 @@
-"""Catalogue releases (D-023): turns the publishable cards of Directus into a versioned folder,
+"""Catalogue releases: turns the publishable cards of Directus into a versioned folder,
 `content/releases/<version>/`, with a manifest and one hash-named file per collection.
 
 The schema is `packages/contract/src/catalog.ts`; `pnpm catalog:publish` validates it again
@@ -36,7 +36,7 @@ class Collection:
     name: str
     #: Content runs whose publishable cards make up the collection.
     runs: tuple[str, ...]
-    #: Pre-screen domains its new runs select from (D-024); empty for any domain.
+    #: Pre-screen domains its new runs select from; empty for any domain.
     domains: tuple[str, ...] = ()
     #: Tone of the card back for this collection's packs (`backTones` in @leximon/tokens).
     back: str | None = None
@@ -99,7 +99,7 @@ def card(
     pronunciation: Mapping[str, object] | None = None,
 ) -> dict[str, object] | None:
     """The catalogue card of a Directus row, or `None` when its rarity is not computed yet
-    (compound words, D-020). A card without an approved engraving keeps its initial (`null`),
+    (compound words). A card without an approved engraving keeps its initial (`null`),
     one without a settled pronunciation stays silent (`null`)."""
     rarity = RARITY_CODES.get(str(row["rarity"]))
     if rarity is None:

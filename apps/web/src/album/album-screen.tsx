@@ -49,7 +49,7 @@ function writeCollection(id: string): void {
   }
 }
 
-/** The album (A-01 to A-06): collection tabs, rarity and filters, the grid of cards. */
+/** The album: collection tabs, rarity and filters, the grid of cards. */
 export function AlbumScreen() {
   const [catalog, setCatalog] = useState<Catalog | null>(null);
   const [failed, setFailed] = useState(false);

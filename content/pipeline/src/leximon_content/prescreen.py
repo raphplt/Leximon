@@ -1,6 +1,6 @@
 """Cheap pre-screen before drafting: Haiku predicts, from a short Littré excerpt, the opinion
 Sonnet would give on the word (`suitability`), so that only promising words get drafted. It also
-tags the word's domain, which assigns words to the themed collections (D-024).
+tags the word's domain, which assigns words to the themed collections.
 
 Predictions are kept in one file for the whole Littré, so a word is never screened twice."""
 
@@ -19,7 +19,7 @@ PRESCREEN_FILE = DATA_DIR / "prescreen.jsonl"
 MAX_SENSES = 3
 MAX_SENSE_CHARS = 160
 MAX_ETYMOLOGY_CHARS = 160
-#: Domain of the main sense. The themed collections draw from one or several domains (D-024).
+#: Domain of the main sense. The themed collections draw from one or several domains.
 DOMAINS = {
     "caractere": "caractère, mœurs, défauts, travers, moqueries et injures, relations entre les gens, sentiments",
     "metiers_objets": "métiers, outils, objets, vêtements, habitat, techniques, commerce et monnaie",

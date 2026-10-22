@@ -1,5 +1,5 @@
 /**
- * What becomes of a guest's game when the player signs in (P37, P54).
+ * What becomes of a guest's game when the player signs in.
  *
  * Only a new account receives a guest's game: signing up (the account has no game yet) moves
  * everything the guest owns to it. Signing in to an account that already plays never adds

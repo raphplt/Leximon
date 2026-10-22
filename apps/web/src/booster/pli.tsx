@@ -5,7 +5,7 @@ import type { PackProps } from "./pack-shape";
 import styles from "./pli.module.css";
 import { useTear } from "./use-tear";
 
-/** The pack as a kraft fold sealed with wax (D-022). Torn along its strip, or opened by the seal. */
+/** The pack as a kraft fold sealed with wax. Torn along its strip, or opened by the seal. */
 export function Pli({ state, onTearStart, onOpen }: PackProps) {
   const sealed = state === "sealed";
   const tear = useTear({ enabled: sealed, onTearStart, onOpen });

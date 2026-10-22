@@ -13,9 +13,9 @@ import { runMaintenance } from "./maintenance";
 
 const app = createApp();
 
-/** The cron trigger that feeds campaigns to the queue (D-035); the other one is maintenance. */
+/** The cron trigger that feeds campaigns to the queue; the other one is maintenance. */
 const CAMPAIGN_PUMP_CRON = "* * * * *";
-/** The queue of game events (D-038); the other one carries campaign e-mails. */
+/** The queue of game events; the other one carries campaign e-mails. */
 const GAME_EVENTS_QUEUE = "leximon-game-events";
 
 export default {

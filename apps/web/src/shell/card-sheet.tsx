@@ -31,7 +31,7 @@ import { useToast } from "@/ui/toast";
 import ui from "@/ui/ui.module.css";
 import styles from "./card-sheet.module.css";
 
-/** The sheet of one card (A-07 to A-10): the card large, what the player knows of it, actions. */
+/** The sheet of one card: the card large, what the player knows of it, actions. */
 export function CardSheet({
   cardId,
   onClose,
@@ -193,7 +193,7 @@ function SheetBody({
   );
 }
 
-/** The word spoken by the catalogue's voice (A-09, P57), with its phonetic notation. */
+/** The word spoken by the catalogue's voice, with its phonetic notation. */
 function Pronunciation({ card }: { readonly card: CatalogCard }) {
   const word = useSpokenWord(card);
   const spoken = card.pronunciation ?? null;

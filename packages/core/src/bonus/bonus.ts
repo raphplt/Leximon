@@ -70,7 +70,7 @@ export function gameDayOf(time: EpochMs): GameDay {
   return { key, start: zonedMidnight(year, month, day), end: zonedMidnight(year, month, day + 1) };
 }
 
-/** The week in Paris, from Monday midnight, that contains `time` (P66). */
+/** The week in Paris, from Monday midnight, that contains `time`. */
 export function gameWeekOf(time: EpochMs): GameDay {
   const { year, month, day } = zonedParts(time);
   const sinceMonday = (new Date(Date.UTC(year, month - 1, day)).getUTCDay() + 6) % 7;
@@ -133,7 +133,7 @@ export interface CreditedAward extends BonusAward {
   readonly credited: number;
 }
 
-/** Most bonus boosters a player's reserve holds: the cap, plus slots won by level (P58). */
+/** Most bonus boosters a player's reserve holds: the cap, plus slots won by level. */
 export function reserveCapacity(rules: BonusRules, extraSlots: number): number {
   return rules.reserveCap + extraSlots;
 }
@@ -158,7 +158,7 @@ export function creditReserve(
 }
 
 /**
- * The bonus reserve: `bonus` boosters, of which `garni` are garni boosters won by level (P58),
+ * The bonus reserve: `bonus` boosters, of which `garni` are garni boosters won by level,
  * which hold at least one card of a given rarity. Garni boosters are spent first.
  */
 export interface BonusReserve {

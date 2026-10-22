@@ -1,5 +1,5 @@
 /**
- * Mastery of a word (D-025): spaced repetition with FSRS decides when a word comes back in a
+ * Mastery of a word: spaced repetition with FSRS decides when a word comes back in a
  * challenge, and the memory stability it measures raises the card's level: sketch, ink, then
  * gilded. A level never goes down, even after a forgotten word.
  */

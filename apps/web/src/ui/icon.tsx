@@ -1,5 +1,5 @@
 /**
- * The interface's icon set, drawn on a 24 px grid with a round 2 px stroke (maquette v1).
+ * The interface's icon set, drawn on a 24 px grid with a round 2 px stroke.
  * Decorative by default: the control that holds an icon carries the accessible name.
  */
 

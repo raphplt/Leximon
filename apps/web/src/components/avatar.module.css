@@ -1,4 +1,4 @@
-/* Sizes scale from the 84 px atelier preview of the maquette: --k is size / 84. */
+/* Sizes scale from the 84 px atelier preview: --k is size / 84. */
 .avatar {
   position: relative;
   display: grid;

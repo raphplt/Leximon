@@ -153,7 +153,7 @@ describe("GET /players/:code/tradeable", () => {
       cardIds: [COMMON_1, COMMON_2, "test-b-epic-1"],
       level: 12,
       player: expect.objectContaining({ code: other.code, level: 12 }),
-      // The lower level of the two decides (P59): one card for one below level 10.
+      // The lower level of the two decides: one card for one below level 10.
       maxCardsPerSide: 1,
       held: [
         { cardId: EPIC_1, tradeableFrom: new Date(yesterday.getTime() + 7 * DAY).toISOString() },
@@ -238,7 +238,7 @@ describe("POST /trades", () => {
     expect(await tradesSentBy(alice.userId)).toBe(1);
   });
 
-  it("allows one card for one before level 10, three per side from level 10 (P59)", async () => {
+  it("allows one card for one before level 10, three per side from level 10", async () => {
     const twoEach = (xp: number) =>
       player(
         [
@@ -465,7 +465,7 @@ describe("POST /trades/:id/accept", () => {
     expect(bobRow?.firstObtainedAt.getTime()).toBeLessThan(before);
     expect(bobRow?.lastObtainedAt.getTime()).toBeGreaterThanOrEqual(before);
 
-    // Both players earn the XP of a concluded trade (P48).
+    // Both players earn the XP of a concluded trade.
     const xpRows = await db
       .select({ userId: schema.userProgress.userId, xp: schema.userProgress.xp })
       .from(schema.userProgress)

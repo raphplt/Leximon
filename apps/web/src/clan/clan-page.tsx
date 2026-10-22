@@ -50,7 +50,7 @@ const TABS: readonly { readonly id: Tab; readonly label: string }[] = [
 /** Refreshes the page's figures (goal, members online) while it is open. */
 const VIEW_REFRESH_MS = 60_000;
 
-/** The clan's page (K-01 to K-07, K-10, K-11): two columns on the web, three tabs on a phone. */
+/** The clan's page: two columns on the web, three tabs on a phone. */
 export function ClanPage({
   clanId,
   now,

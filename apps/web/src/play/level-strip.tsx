@@ -17,7 +17,7 @@ import { LevelMedal, XpBar } from "@/ui/level-bits";
 import ui from "@/ui/ui.module.css";
 import styles from "./play.module.css";
 
-/** The level band of the Jouer screen: medal, XP, next rewards (J-01, J-02), coffrets (J-03). */
+/** The level band of the Jouer screen: medal, XP, next rewards, coffrets. */
 export function LevelStrip() {
   const view = usePlayerView();
   const { openCoffret } = useShell();

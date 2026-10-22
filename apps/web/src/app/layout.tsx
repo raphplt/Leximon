@@ -22,7 +22,7 @@ export const viewport: Viewport = {
   themeColor: "#262B40",
 };
 
-// Font families come from D-022 (`fonts` in @leximon/tokens); next/font serves them ourselves.
+// Font families come from `fonts` in @leximon/tokens; next/font serves them ourselves.
 const display = Fraunces({
   subsets: ["latin"],
   axes: ["SOFT", "opsz"],

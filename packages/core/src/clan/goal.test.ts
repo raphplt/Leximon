@@ -28,7 +28,7 @@ describe("gameWeekOf", () => {
   });
 });
 
-describe("weekly goal (P66)", () => {
+describe("weekly goal", () => {
   it("scales the targets with the active members, one at least", () => {
     expect(goalTargets(rules, 20)).toEqual({ bronze: 100, silver: 200, gold: 300 });
     expect(goalTargets(rules, 0)).toEqual({ bronze: 5, silver: 10, gold: 15 });

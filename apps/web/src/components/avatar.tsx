@@ -12,7 +12,7 @@ import styles from "./avatar.module.css";
 const FRAMES = new Set(["simple", "gilded", "ink"]);
 
 /**
- * The player's avatar (P58): a card's engraving printed in a medallion, inside the frame worn.
+ * The player's avatar: a card's engraving printed in a medallion, inside the frame worn.
  * Decorative unless `label` is given; `frame: null` draws none. The silhouette stands in until
  * the catalogue is there.
  */

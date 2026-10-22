@@ -18,7 +18,7 @@ export interface DrawRules {
   readonly weights: Readonly<Record<Rarity, number>>;
   /** One card per booster is at least this rare. */
   readonly guaranteedMinRarity: Rarity;
-  /** Guarantees against bad luck, each with its own counter. Never shown to players (P17). */
+  /** Guarantees against bad luck, each with its own counter. Never shown to players. */
   readonly pity: readonly PityRule[];
 }
 

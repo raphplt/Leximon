@@ -1,7 +1,7 @@
 [project]
 name = "leximon-content"
 version = "0.0.0"
-description = "Leximon content pipeline: sources, rarity, card drafting, review (D-010)."
+description = "Leximon content pipeline: sources, rarity, card drafting, review."
 requires-python = ">=3.13"
 dependencies = [
   "anthropic>=1.15,<2",

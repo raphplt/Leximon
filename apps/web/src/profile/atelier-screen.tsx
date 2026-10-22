@@ -26,7 +26,7 @@ const STATE_CLASS = {
   locked: styles.closed,
 } as const;
 
-/** The atelier (P-07, N-10): what the coffrets gave, worn on the profile with one tap. */
+/** The atelier: what the coffrets gave, worn on the profile with one tap. */
 export function AtelierScreen() {
   const actions = useProfileActions();
   const me = actions.profile;

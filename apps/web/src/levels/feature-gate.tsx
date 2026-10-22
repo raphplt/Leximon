@@ -8,7 +8,7 @@ import type { IconName } from "@/ui/icon";
 import { LockedScreen } from "@/ui/locked-screen";
 
 /**
- * A screen opened by the level (P59, C-06): the locked screen until the level, then `children`.
+ * A screen opened by the level: the locked screen until the level, then `children`.
  * Without children, the feature is open but not built yet.
  */
 export function FeatureGate({

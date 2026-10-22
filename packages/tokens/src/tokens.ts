@@ -245,7 +245,7 @@ export const motion = {
 } as const;
 
 /**
- * Colours of a clan's emblem (P65, P66), by their key in the rules: the field, then the ink of the
+ * Colours of a clan's emblem, by their key in the rules: the field, then the ink of the
  * engraving. A key a newer server sends falls back on ink black.
  */
 export const emblemColors = {

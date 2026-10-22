@@ -5,7 +5,7 @@ import styles from "./dialog.module.css";
 import { Icon } from "./icon";
 
 /**
- * Secondary content over the screen (C-05): a panel on the right on the web, a sheet rising from
+ * Secondary content over the screen: a panel on the right on the web, a sheet rising from
  * the bottom under 760 px, or a window in the middle (`center`, or `wide` for a card sheet). A native modal `<dialog>`: the
  * focus stays inside and goes back where it was on closing; Escape, the cross and the backdrop
  * close it.

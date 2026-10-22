@@ -12,7 +12,7 @@ export const metadata: Metadata = {
 const CONTACT = PUBLISHER.contact;
 
 /**
- * Legal notice, contact and credits (R-09): the publisher and host the LCEN asks for, and every
+ * Legal notice, contact and credits: the publisher and host the LCEN asks for, and every
  * source the catalogue draws on, as its licence asks.
  */
 export default function MentionsPage() {

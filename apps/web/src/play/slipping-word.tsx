@@ -9,7 +9,7 @@ import { ButtonLink } from "@/ui/button";
 import ui from "@/ui/ui.module.css";
 import styles from "./play.module.css";
 
-/** The word most at risk of being forgotten (J-08); nothing when no word is due. */
+/** The word most at risk of being forgotten; nothing when no word is due. */
 export function SlippingWord({ catalog }: { readonly catalog: Catalog }) {
   const [cardId, setCardId] = useState<string | null>(null);
   useEffect(() => {

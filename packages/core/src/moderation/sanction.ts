@@ -1,5 +1,5 @@
 /**
- * Sanctions (P68): what the team may decide on a report, and what it stops the player from doing.
+ * Sanctions: what the team may decide on a report, and what it stops the player from doing.
  * Content sanctions act once (a message hidden, a name replaced); restrictions last until a date,
  * or for good when closing an account.
  */
@@ -48,7 +48,7 @@ export function restrictionsAt(sanctions: readonly SanctionState[], now: EpochMs
   return { canWrite: !locked && !has("mute"), canTrade: !locked && !has("trade_ban"), locked };
 }
 
-/** A sanction can be contested for six months (P68). */
+/** A sanction can be contested for six months. */
 export const CONTEST_WINDOW_MS = 183 * 24 * 60 * 60 * 1000;
 
 export function canContest(decidedAt: EpochMs, contestedAt: EpochMs | null, now: EpochMs): boolean {

@@ -94,7 +94,7 @@ describe("GET /me/profile", () => {
   });
 });
 
-describe("PATCH /me/profile: pseudo (P-08, N5)", () => {
+describe("PATCH /me/profile: pseudo", () => {
   it("takes a pseudo, then refuses another change within the month", async () => {
     const member = await signInAsMember(app, env, db);
     const chosen = pseudo("Plume");
@@ -152,7 +152,7 @@ describe("PATCH /me/profile: pseudo (P-08, N5)", () => {
   });
 });
 
-describe("PATCH /me/profile: cosmetics (P-07, P58)", () => {
+describe("PATCH /me/profile: cosmetics", () => {
   it("wears only what the coffrets gave", async () => {
     const member = await signInAsMember(app, env, db);
     const rules = levelRewardRulesAt(LEVEL_REWARD_SCHEDULE, Date.now());
@@ -191,7 +191,7 @@ describe("PATCH /me/profile: cosmetics (P-07, P58)", () => {
   });
 });
 
-describe("PUT /me/pinned-cards (P-02)", () => {
+describe("PUT /me/pinned-cards", () => {
   it("pins owned cards in order, within the slots", async () => {
     const member = await signInAsMember(app, env, db);
     const ids = ["test-a-common-1", "test-a-rare-1", "test-b-epic-2", "test-a-common-2"];
@@ -224,7 +224,7 @@ describe("PUT /me/pinned-cards (P-02)", () => {
   });
 });
 
-describe("GET /players/:pseudo (P-05, P-06, P60)", () => {
+describe("GET /players/:pseudo", () => {
   it("opens at the public level, with the figures, and hides a private profile", async () => {
     const member = await signInAsMember(app, env, db);
     const chosen = pseudo("Public");
@@ -253,7 +253,7 @@ describe("GET /players/:pseudo (P-05, P-06, P60)", () => {
   });
 });
 
-describe("blocks and reports (N5)", () => {
+describe("blocks and reports", () => {
   async function pair() {
     const [a, b] = await Promise.all([signInAsMember(app, env, db), signInAsMember(app, env, db)]);
     const codeOf = async (player: Guest) => (await profile(player)).playerCode;
@@ -322,7 +322,7 @@ describe("blocks and reports (N5)", () => {
   });
 });
 
-describe("/me/preferences (R-04)", () => {
+describe("/me/preferences", () => {
   it("says everything until the player turns something off", async () => {
     const member = await signInAsMember(app, env, db);
     const read = async () =>
@@ -344,7 +344,7 @@ describe("/me/preferences (R-04)", () => {
   });
 });
 
-describe("DELETE /me/account (R-07)", () => {
+describe("DELETE /me/account", () => {
   it("erases the player at once and leaves the other player's history", async () => {
     const [leaving, staying] = await Promise.all([
       signInAsMember(app, env, db),

@@ -9,26 +9,26 @@
   // several sequential database round trips, which would be slow from far away.
   "placement": { "mode": "smart" },
   // Daily maintenance (partitions, purges) at 03:17 UTC, and every minute the campaign pump that
-  // feeds the e-mail queue (D-035). `scheduled()` tells them apart by their expression.
+  // feeds the e-mail queue. `scheduled()` tells them apart by their expression.
   "triggers": { "crons": ["17 3 * * *", "* * * * *"] },
   "vars": {
     "APP_ENV": "development",
     "BETTER_AUTH_URL": "http://localhost:8787",
     // Comma-separated origins allowed to call the API with credentials (web app).
     "TRUSTED_ORIGINS": "http://localhost:3000",
-    // Sender of sign-in codes (D-034). Empty: no code is sent outside local development, where
+    // Sender of sign-in codes. Empty: no code is sent outside local development, where
     // the code is printed in the console instead.
     "EMAIL_CODE_FROM": "",
     "EMAIL_REPLY_TO": "contact@leximon.fr",
-    // Sender of campaigns (D-034, Lettermint). Empty: campaigns are only printed in the console
+    // Sender of campaigns (Lettermint). Empty: campaigns are only printed in the console
     // in local development, and refused elsewhere.
     "EMAIL_CAMPAIGN_FROM": "",
     "LETTERMINT_BROADCAST_ROUTE": "broadcast",
     // Web app, for the unsubscribe page linked from every campaign.
     "PUBLIC_WEB_URL": "http://localhost:3000"
   },
-  // Campaign e-mails (D-035): the pump queues row ids, the consumer sends them in batches.
-  // Game events (D-038): cards obtained and clan changes, recounted from the database.
+  // Campaign e-mails: the pump queues row ids, the consumer sends them in batches.
+  // Game events: cards obtained and clan changes, recounted from the database.
   // `queue()` tells them apart by `batch.queue`.
   "queues": {
     "producers": [
@@ -53,7 +53,7 @@
       }
     ]
   },
-  // Cloudflare Email Service (D-034), sign-in codes only: the binding cannot send from any other
+  // Cloudflare Email Service, sign-in codes only: the binding cannot send from any other
   // address. `wrangler dev` simulates it.
   "send_email": [
     {
@@ -109,7 +109,7 @@
   "hyperdrive": [
     {
       "binding": "HYPERDRIVE",
-      // Placeholder until the production Hyperdrive config is created (D-005).
+      // Placeholder until the production Hyperdrive config is created.
       "id": "00000000000000000000000000000000",
       "localConnectionString": "postgres://leximon:leximon@127.0.0.1:54329/leximon"
     }

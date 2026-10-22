@@ -2,7 +2,7 @@ import { isLocalDevelopment, maskEmail } from "../account/email-sender";
 import { lettermintMailer } from "./lettermint";
 
 /**
- * Sends campaign e-mails in batches (D-034: Lettermint, broadcast route). Sign-in codes never go
+ * Sends campaign e-mails in batches (Lettermint, broadcast route). Sign-in codes never go
  * through here: they have their own sender and provider.
  */
 

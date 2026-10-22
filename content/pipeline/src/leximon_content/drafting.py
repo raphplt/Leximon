@@ -15,7 +15,7 @@ from pydantic import BaseModel, ValidationError
 from . import littre
 from .llm import USAGE_KEYS, cost
 
-#: Chosen after the 50-word trial (D-019).
+#: Chosen after the 50-word trial.
 MODEL = "claude-sonnet-5-5"
 #: Models compared by `draft --compare`.
 COMPARED_MODELS = ("claude-opus-5-5", "claude-sonnet-5-5", "claude-haiku-5-5")
@@ -122,7 +122,7 @@ class CardDraft(BaseModel):
     themes: list[Literal[THEMES]]  # type: ignore[valid-type]
     suitability: Literal[SUITABILITY]  # type: ignore[valid-type]
     suitability_reason: str
-    #: Absent from the drafts made before D-020.
+    #: Absent from the drafts made before rarity was computed from Ngram.
     pepite: bool = False
 
 

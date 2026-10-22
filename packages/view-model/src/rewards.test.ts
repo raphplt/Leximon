@@ -22,7 +22,7 @@ const progress = (level: number, extra = 0) => ({
   xpForNextLevel: 100 + 20 * (level - 1),
 });
 
-describe("level rewards (P58)", () => {
+describe("level rewards", () => {
   it("sums up what each level gives", () => {
     expect(rewardSummary(1, NOW)).toBe("Départ");
     expect(rewardSummary(2, NOW)).toBe("Recharge");

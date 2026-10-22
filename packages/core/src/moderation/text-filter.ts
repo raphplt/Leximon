@@ -1,5 +1,5 @@
 /**
- * The deterministic floor of N5: words refused in what players write (pseudo, clan name and motto,
+ * The deterministic floor of moderation: words refused in what players write (pseudo, clan name and motto,
  * clan messages). Not a judge: what passes can still be reported and moderated.
  *
  * It holds the slurs of the content pipeline (`content/pipeline/…/exclusions.py`, checked by a

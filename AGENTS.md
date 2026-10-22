@@ -92,7 +92,8 @@ Objectif : un code lisible et facile à maintenir, performant et sûr, pensé po
   - logique dans des fonctions pures, I/O en bordure ;
   - petites fonctions aux noms explicites ;
   - pas d'abstraction avant le deuxième cas d'usage réel ;
-  - un commentaire explique le pourquoi, jamais le quoi.
+  - un commentaire explique le pourquoi, jamais le quoi ;
+  - le code ne renvoie pas aux documents de cadrage : ni numéro de règle, d'écran ou de décision (P59, C-06, D-033), ni lot, ni cahier, ni maquette, dans les commentaires comme dans les noms de tests.
 - **Erreurs :**
   - erreurs typées et explicites, jamais avalées ;
   - une erreur attendue (stock vide, offre expirée) est un résultat, pas une exception.

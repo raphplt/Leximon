@@ -13,15 +13,15 @@ import { formatCount, formatWait, plural } from "./format";
 import { playerName } from "./trades";
 
 /**
- * Pure rules and words of the clan screens (K-01 to K-13): the server decides, these explain.
- * Shared by the web and the mobile app (D-033).
+ * Pure rules and words of the clan screens: the server decides, these explain.
+ * Shared by the web and the mobile app.
  */
 
 const MINUTE = 60_000;
 const HOUR = 60 * MINUTE;
 const DAY = 24 * HOUR;
 
-// --- Header (K-01) -------------------------------------------------------------------------------
+// --- Header -------------------------------------------------------------------------------
 
 const ENTRY_LABELS: Readonly<Record<ClanEntryMode, string>> = {
   open: "entrée libre",
@@ -44,7 +44,7 @@ export function clanSubline(clan: {
   return parts.join(" · ");
 }
 
-/** The colour names of the emblem lists (P65). */
+/** The colour names of the emblem lists. */
 const COLOR_NAMES: Readonly<Record<string, string>> = {
   sang: "sang",
   or: "or",
@@ -74,12 +74,12 @@ export function unlockLabel(
     : `la gravure ${wordOf(item.id)}`;
 }
 
-/** The invitation link a member shares (K-01): the code opens any clan, whatever its mode. */
+/** The invitation link a member shares: the code opens any clan, whatever its mode. */
 export function inviteText(clanName: string, code: string, origin: string): string {
   return `Rejoins ${clanName} sur Leximon : ${origin}/clan?code=${code}`;
 }
 
-// --- Members (K-05) ------------------------------------------------------------------------------
+// --- Members ------------------------------------------------------------------------------
 
 const ROLE_LABELS: Readonly<Record<ClanRole, string | null>> = {
   chief: "Chef",
@@ -120,7 +120,7 @@ export function onlineCountLabel(members: readonly Pick<ClanMember, "online">[])
   return `${formatCount(members.filter((member) => member.online).length)} en ligne`;
 }
 
-/** Silences a chief or deputy may give (P65), with their label. */
+/** Silences a chief or deputy may give, with their label. */
 export function muteChoices(
   now: EpochMs,
 ): { readonly durationMs: number; readonly label: string }[] {
@@ -137,7 +137,7 @@ export function mutedUntilLabel(mutedUntil: string, now: EpochMs): string {
   return `Muet encore ${formatWait(Date.parse(mutedUntil) - now)}`;
 }
 
-// --- Weekly goal (K-03) --------------------------------------------------------------------------
+// --- Weekly goal --------------------------------------------------------------------------
 
 const TIER_NAMES: Readonly<Record<GoalTier, string>> = {
   bronze: "bronze",
@@ -191,14 +191,14 @@ export function goalCountLine(goal: Pick<ClanGoal, "targets" | "words" | "myWord
   return `${formatCount(goal.words)} / ${formatCount(goal.targets.gold)} · ta part : ${formatCount(goal.myWords)}`;
 }
 
-/** What the tiers give (P66), with the emblem item the gold adds if any is left. */
+/** What the tiers give, with the emblem item the gold adds if any is left. */
 export function goalRewardLine(unlock: string | null): string {
   return unlock === null
     ? "Argent et or : un sachet bonus chacun"
     : `Argent et or : un sachet bonus chacun. L'or ajoute ${unlock} à l'emblème.`;
 }
 
-/** Under the minimum, the member shares no booster (P66): said once, plainly. */
+/** Under the minimum, the member shares no booster: said once, plainly. */
 export function contributionHint(
   goal: Pick<ClanGoal, "myWords" | "minContribution">,
 ): string | null {
@@ -216,12 +216,12 @@ export function goalClaimedToast(claim: Pick<ClaimableGoal, "tier">): string {
   return `Un sachet bonus pour l'${tierName(claim.tier)} !`;
 }
 
-/** The mail's line (R-01): boosters of a weekly goal waiting. */
+/** The mail's line: boosters of a weekly goal waiting. */
 export function claimableMailTitle(count: number): string {
   return count > 1 ? `${count} sachets d'objectif à prendre` : "Un sachet d'objectif à prendre";
 }
 
-// --- Library (K-04) ------------------------------------------------------------------------------
+// --- Library ------------------------------------------------------------------------------
 
 export interface LibraryRow {
   readonly collectionId: string;
@@ -264,9 +264,9 @@ export function libraryHeadline(rows: readonly LibraryRow[]): string {
   return `À vous tous, il vous manque ${plural(open.missing, "carte", "cartes")} de ${open.row.name}.`;
 }
 
-// --- Discussion and journal (K-06, K-07) ---------------------------------------------------------
+// --- Discussion and journal ---------------------------------------------------------
 
-/** One line of the journal (P67). `wordOf` names a card from the catalogue. */
+/** One line of the journal. `wordOf` names a card from the catalogue. */
 export function eventText(event: ClanEvent, wordOf: (cardId: string) => string): string {
   switch (event.type) {
     case "joined":
@@ -312,9 +312,9 @@ export const REMOVED_MESSAGE: Readonly<Record<"deleted" | "hidden", string>> = {
 export const EMPTY_DISCUSSION = "Silence de cathédrale. Lance la conversation.";
 export const MESSAGE_PLACEHOLDER = "Écris au clan";
 
-// --- Without a clan (K-08, K-09, K-12) -----------------------------------------------------------
+// --- Without a clan -----------------------------------------------------------
 
-/** The button of a clan in the list (K-08). */
+/** The button of a clan in the list. */
 export function joinLabel(mode: ClanEntryMode, requested: boolean): string {
   if (requested) return "Demande envoyée";
   if (mode === "open") return "Rejoindre";
@@ -329,7 +329,7 @@ export function rejoinLabel(rejoinAt: string, now: EpochMs): string {
 export const NO_CLAN_FOUND = "Aucun clan à ce nom. Fonde le tien.";
 export const NO_CLAN_YET = "Pas encore de clan ici. Sois le premier.";
 
-/** K-11: the consequence in the button. */
+/** the consequence in the button. */
 export function leaveLabel(memberCount: number): string {
   return memberCount <= 1 ? "Quitter et dissoudre le clan" : "Quitter le clan, 24 h sans clan";
 }

@@ -1,10 +1,10 @@
 """Command line: `uv run python -m leximon_content <command> [--run essai-50]`.
 
-ngram     download Google Ngram (5 GB, once) and compute word frequencies (D-020)
+ngram     download Google Ngram (5 GB, once) and compute word frequencies
 prescreen predict with Haiku which words are worth drafting (data/prescreen.jsonl): --pool
           screens the candidate pool (--limit N), --run compares with a drafted run
 select    pick the words of a run (selection.json), skipping words of earlier runs and words the
-          pre-screen rejected, within the domains of the run's collection (D-024); --size
+          pre-screen rejected, within the domains of the run's collection; --size
 draft     draft every word with the chosen model (drafts.jsonl); --compare uses all models
 quality   drop unsuitable drafts, verify faithfulness (Opus), send flagged cards back to the
           drafter once and verify them again, judge charm (Opus), then summarize
@@ -12,7 +12,7 @@ push      send the kept cards to Directus, with pépites and the review sample m
 refresh   update the Directus layout, frequencies and rarities, keeping the review
 report    compare models from the review verdicts recorded in Directus
 release   write a catalogue release (content/releases/<version>/) from the publishable cards of
-          the collections in content/collections.toml (D-023)
+          the collections in content/collections.toml
 
 gravures-queries  Haiku writes Commons search queries for each card of the latest release
 gravures-search   search Commons with the rights filter, keep up to 8 thumbnails per card (hours:

@@ -29,15 +29,15 @@ type Step = "code" | "want" | "give" | "review" | "sent";
 interface Partner {
   readonly code: string;
   readonly level: number;
-  /** How that player shows: avatar, pseudo (E-03). */
+  /** How that player shows: avatar, pseudo. */
   readonly badge: PlayerBadge;
   /** Cards that player can give now. */
   readonly cardIds: readonly string[];
-  /** Cards per side between the two players: their lower level decides (P59). */
+  /** Cards per side between the two players: their lower level decides. */
   readonly maxCards: number;
 }
 
-/** A card of mine that cannot move yet (P35), and from when it can. */
+/** A card of mine that cannot move yet, and from when it can. */
 interface Held {
   readonly cardId: string;
   readonly tradeableFrom: string;
@@ -77,11 +77,11 @@ export function ProposeTrade({
 }: {
   readonly catalog: Catalog;
   readonly ownCode: string;
-  /** Why the player cannot trade yet: a recent account (D-026) or a low level (P48). */
+  /** Why the player cannot trade yet: a recent account or a low level. */
   readonly blocked: string | null;
-  /** A card to give, chosen on its card sheet (E-06). */
+  /** A card to give, chosen on its card sheet. */
   readonly preset: string | null;
-  /** A player code, from a public profile (P-06). */
+  /** A player code, from a public profile. */
   readonly presetPartner: string | null;
   readonly onSent: (trade: Trade) => void;
   readonly onShowSent: () => void;
@@ -531,7 +531,7 @@ function PickHeading({
 
 /**
  * Cards to tick, up to `max`; a separate button opens each card in full. Held cards follow,
- * greyed, with the time before they can move (P35).
+ * greyed, with the time before they can move.
  */
 function CardPicker({
   catalog,

@@ -3,7 +3,7 @@ import { raritySchema } from "./boosters";
 import { slugSchema, timestampSchema } from "./common";
 
 /**
- * Published catalogue (D-023): a manifest listing the collections, and one immutable file per
+ * Published catalogue: a manifest listing the collections, and one immutable file per
  * collection, named after the hash of its content. Written by the content pipeline, validated
  * again by `catalog:publish`, read by the apps. Changes must stay additive: old app versions
  * keep reading new files.
@@ -51,7 +51,7 @@ export type CatalogEngraving = z.infer<typeof catalogEngravingSchema>;
 const pronunciationFileSchema = z.string().regex(/^prononciation\/[a-z0-9][a-z0-9.-]*\.mp3$/);
 
 /**
- * Spoken word of a card (D-032): one synthetic voice reads every word, guided by a checked
+ * Spoken word of a card: one synthetic voice reads every word, guided by a checked
  * phonetic notation. No credit to show: the voice is generated, not recorded.
  */
 export const catalogPronunciationSchema = z.object({
@@ -63,7 +63,7 @@ export const catalogPronunciationSchema = z.object({
 export type CatalogPronunciation = z.infer<typeof catalogPronunciationSchema>;
 
 export const catalogCardSchema = z.object({
-  /** Stable slug, never reused (D-020): also the id of the `cards` row. */
+  /** Stable slug, never reused: also the id of the `cards` row. */
   id: slugSchema,
   word: z.string().min(1),
   partOfSpeech: z.string().min(1),
@@ -75,7 +75,7 @@ export const catalogCardSchema = z.object({
   rarity: raritySchema,
   collectionId: slugSchema,
   themes: z.array(slugSchema),
-  /** Modern written frequency (Google Books Ngram, D-020). `null` below what Ngram measures. */
+  /** Modern written frequency (Google Books Ngram). `null` below what Ngram measures. */
   perBillion: z.number().nonnegative().nullable(),
   /**
    * `null` when the card has no engraving yet (it shows its initial). Absent from releases made

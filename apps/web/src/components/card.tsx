@@ -23,7 +23,7 @@ interface CardProps {
   readonly width?: number;
 }
 
-/** A card face, drawn from the rarity tokens (D-022). Pure display: no state, no data access. */
+/** A card face, drawn from the rarity tokens. Pure display: no state, no data access. */
 export function Card({ card, collectionName, width = cardSize.width }: CardProps) {
   const style = rarityStyles[card.rarity];
   const variables = {

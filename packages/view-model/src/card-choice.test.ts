@@ -26,7 +26,7 @@ const collections = [
   },
 ];
 
-describe("card of the player's choice (N-08)", () => {
+describe("card of the player's choice", () => {
   it("offers the Courant and Peu courant cards missing, sorted, by collection", () => {
     const groups = choiceGroups(collections, new Set(["a2"]), "", NOW);
     expect(groups.map((g) => [g.collectionId, g.cards.map((c) => c.id)])).toEqual([

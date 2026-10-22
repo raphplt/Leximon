@@ -3,7 +3,7 @@ import { featureMilestones, isFeatureOpen, lockedScreen, lockedToast, opensAt } 
 
 const NOW = Date.UTC(2026, 9, 22);
 
-describe("features by level (P59)", () => {
+describe("features by level", () => {
   it("opens each feature at its level", () => {
     expect(isFeatureOpen("choose_collection", 2, NOW)).toBe(false);
     expect(isFeatureOpen("choose_collection", 3, NOW)).toBe(true);

@@ -7,8 +7,8 @@ import type { SendCodeResult } from "../lib/api";
 import type { PackNoun } from "../lib/pack-shape";
 
 /**
- * Texts of the sign-in flow (D-030), kept apart from the screen so that they are tested: what the
- * player reads before signing in decides whether a guest's cards are lost knowingly (P37, P54).
+ * Texts of the sign-in flow, kept apart from the screen so that they are tested: what the
+ * player reads before signing in decides whether a guest's cards are lost knowingly.
  */
 
 export function cardCount(count: number): string {
@@ -22,7 +22,7 @@ export interface ConfirmStep {
   /** Shown above the buttons, as a warning: something will be lost. */
   readonly warning: string | null;
   readonly confirmLabel: string;
-  /** "J'ai 15 ans ou plus" must be ticked: an account is about to be created (P8). */
+  /** "J'ai 15 ans ou plus" must be ticked: an account is about to be created. */
   readonly needsAge: boolean;
   /** Confirming abandons the guest's cards: the request says the player accepted it. */
   readonly acceptsLoss: boolean;

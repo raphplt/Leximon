@@ -28,7 +28,7 @@ function levelFromHash(): number | null {
   return match?.[1] === undefined ? null : Number(match[1]);
 }
 
-/** The level road (N-01 to N-04): every level, what it gives, what it opens. */
+/** The level road: every level, what it gives, what it opens. */
 export function LevelRoadScreen() {
   const view = usePlayerView();
   const { openCoffret } = useShell();

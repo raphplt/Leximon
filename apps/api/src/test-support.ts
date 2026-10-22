@@ -69,7 +69,7 @@ export async function signInAsGuest(app: ReturnType<typeof createApp>, env: Env)
 }
 
 /**
- * A player who created an account, for tests that open more boosters than a guest may (P37): a
+ * A player who created an account, for tests that open more boosters than a guest may: a
  * guest session whose user is then marked as signed up, quicker than the e-mail code.
  */
 export async function signInAsMember(
@@ -90,7 +90,7 @@ export async function signInAsMember(
   return { ...player, cookie };
 }
 
-/** Backdates an account, e.g. past the minimum age to trade (D-026). */
+/** Backdates an account, e.g. past the minimum age to trade. */
 export async function ageAccount(db: Database, userId: string, ageMs: number): Promise<void> {
   await db
     .update(schema.users)
@@ -98,7 +98,7 @@ export async function ageAccount(db: Database, userId: string, ageMs: number): P
     .where(eq(schema.users.id, userId));
 }
 
-/** Sets a player's total XP, e.g. to the level needed to trade (P48). */
+/** Sets a player's total XP, e.g. to the level needed to trade. */
 export async function setXp(db: Database, userId: string, xp: number): Promise<void> {
   await db
     .insert(schema.userProgress)

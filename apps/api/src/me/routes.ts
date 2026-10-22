@@ -74,7 +74,7 @@ export function meRoutes() {
   routes.route("/sanctions", sanctionRoutes());
 
   routes.get("/wallet", async (c) => {
-    // Asked for on every screen: the player's presence for the clan (K-05, P65).
+    // Asked for on every screen: the player's presence for the clan.
     await touchLastSeen(c.var.db, c.var.userId, Date.now());
     const [row] = await c.var.db
       .select()
@@ -84,7 +84,7 @@ export function meRoutes() {
     return c.json<BoosterWalletResponse>(walletView(row, Date.now()));
   });
 
-  /** Level rewards (P58): what was claimed, and the cards of the player's choice left to take. */
+  /** Level rewards: what was claimed, and the cards of the player's choice left to take. */
   routes.get("/level-rewards", async (c) => {
     return c.json<LevelRewardsResponse>(await readLevelRewards(c.var.db, c.var.userId));
   });
@@ -183,14 +183,14 @@ export function meRoutes() {
     return c.json<ProfileResponse>(await readOwnProfile(c.var.db, c.var.userId, Date.now()));
   });
 
-  /** Pseudo, cosmetics and visibility (P-07, P-08, P60): the profile as it now reads. */
+  /** Pseudo, cosmetics and visibility: the profile as it now reads. */
   routes.patch("/profile", refuseLockedWrites, async (c) => {
     const body = updateProfileRequestSchema.safeParse(await c.req.json().catch(() => null));
     if (!body.success) {
       return c.json({ error: "invalid_request" }, 400);
     }
     const now = Date.now();
-    // A muted player chooses no pseudo the others would read (P68).
+    // A muted player chooses no pseudo the others would read.
     if (
       body.data.pseudo !== undefined &&
       !(await readRestrictions(c.var.db, c.var.userId, now)).canWrite
@@ -206,7 +206,7 @@ export function meRoutes() {
     return c.json<ProfileResponse>(await readOwnProfile(c.var.db, c.var.userId, now));
   });
 
-  /** The cards pinned to the profile, all of them in order (P-02). */
+  /** The cards pinned to the profile, all of them in order. */
   routes.put("/pinned-cards", refuseLockedWrites, async (c) => {
     const body = pinnedCardsRequestSchema.safeParse(await c.req.json().catch(() => null));
     if (!body.success) {
@@ -222,7 +222,7 @@ export function meRoutes() {
     return c.json<ProfileResponse>(await readOwnProfile(c.var.db, c.var.userId, now));
   });
 
-  /** Blocked players (N5, R-05). */
+  /** Blocked players. */
   routes.get("/blocks", async (c) => {
     return c.json<BlocksResponse>({
       players: await listBlocks(c.var.db, c.var.userId, Date.now()),
@@ -251,7 +251,7 @@ export function meRoutes() {
     return blockResultResponse(c, result);
   });
 
-  /** What the player wants to be told (R-04). Nothing is sent before the queue exists. */
+  /** What the player wants to be told. Nothing is sent before the queue exists. */
   routes.get("/preferences", async (c) => {
     return c.json<Preferences>(await readPreferences(c.var.db, c.var.userId));
   });
@@ -264,7 +264,7 @@ export function meRoutes() {
     return c.json<Preferences>(await updatePreferences(c.var.db, c.var.userId, body.data));
   });
 
-  /** Account level (P48). Read only: a player who never earned XP is at level 1. */
+  /** Account level. Read only: a player who never earned XP is at level 1. */
   routes.get("/progress", async (c) => {
     const xp = await readXp(c.var.db, c.var.userId);
     return c.json<ProgressResponse>({ xp, ...levelOf(xp) });
@@ -301,7 +301,7 @@ export function meRoutes() {
   });
 
   /**
-   * Deletes the account at once (R-07). The session cookies are cleared in the same response:
+   * Deletes the account at once. The session cookies are cleared in the same response:
    * the signed cookie cache would otherwise keep a deleted player signed in for minutes.
    */
   routes.delete("/account", async (c) => {
@@ -325,7 +325,7 @@ export function meRoutes() {
     return c.body(null, 204);
   });
 
-  /** The level, next review and stability of every word reviewed at least once (D-025). */
+  /** The level, next review and stability of every word reviewed at least once. */
   routes.get("/mastery", async (c) => {
     const rows = await c.var.db
       .select({

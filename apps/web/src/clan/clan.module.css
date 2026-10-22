@@ -1,4 +1,4 @@
-/* Clan (K-01 to K-13), maquette v1. */
+/* Clan. */
 
 .screen {
   box-sizing: border-box;
@@ -67,7 +67,7 @@
   color: #ff9c80;
 }
 
-/* --- Header (K-01) --- */
+/* --- Header --- */
 
 .hero {
   display: flex;
@@ -165,7 +165,7 @@
   font-size: 22px;
 }
 
-/* --- Weekly goal (K-03) --- */
+/* --- Weekly goal --- */
 
 .goalBar {
   position: relative;
@@ -241,7 +241,7 @@
   margin-top: 14px;
 }
 
-/* --- Library (K-04) --- */
+/* --- Library --- */
 
 .libraryLine {
   margin: 6px 0 14px;
@@ -288,7 +288,7 @@
   opacity: 0.55;
 }
 
-/* --- Members (K-05) --- */
+/* --- Members --- */
 
 .members {
   margin: 10px 0 0;
@@ -369,7 +369,7 @@
   font-variant-numeric: tabular-nums;
 }
 
-/* --- Discussion and journal (K-06, K-07) --- */
+/* --- Discussion and journal --- */
 
 .chat {
   display: flex;
@@ -604,7 +604,7 @@
   cursor: default;
 }
 
-/* --- Without a clan (K-08, K-09, K-12) --- */
+/* --- Without a clan --- */
 
 .findHeader {
   display: flex;
@@ -690,7 +690,7 @@
   margin-top: 6px;
 }
 
-/* --- Clan form (K-09, K-10) --- */
+/* --- Clan form --- */
 
 .form {
   display: flex;
@@ -782,7 +782,7 @@
   color: #ff9c80;
 }
 
-/* --- Management (K-10, K-11) --- */
+/* --- Management --- */
 
 .sheet,
 .settings {

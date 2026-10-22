@@ -1,7 +1,7 @@
-# Collections of the published catalogue (D-023). Each takes the publishable cards of its runs
+# Collections of the published catalogue. Each takes the publishable cards of its runs
 # (content/pipeline/data/runs/<run>, reviewed in Directus). A card belongs to one collection only.
 # Ids are stable slugs: never rename or reuse one once published.
-# `domains` (D-024): the pre-screen domains new runs of the collection select from (any if absent).
+# `domains`: the pre-screen domains new runs of the collection select from (any if absent).
 # `back`: tone of the card back for the collection's packs, one of `backTones` in @leximon/tokens
 # (night if absent or unknown).
 

@@ -126,7 +126,7 @@ describe("GET /me/cards", () => {
 
   it("filters by collection", async () => {
     const guest = await signInAsGuest(app, env);
-    // Choosing the collection of a booster opens at level 3 (P59).
+    // Choosing the collection of a booster opens at level 3.
     await setXp(db, guest.userId, xpToReach(3));
     await open(guest, "test-a");
     await open(guest, "test-b");

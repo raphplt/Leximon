@@ -14,7 +14,7 @@ export function waitlistRoutes() {
       return c.json({ error: "invalid_request" }, 400);
     }
     const result = await joinWaitlist(c.var.db, body.data.email);
-    // The game is open: the list no longer takes addresses (P55).
+    // The game is open: the list no longer takes addresses.
     if (result === "closed") return c.json({ error: "waitlist_closed" }, 410);
     // The same answer for a new address and a known one: nobody learns who signed up.
     return c.body(null, 204);

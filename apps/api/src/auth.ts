@@ -16,17 +16,17 @@ export const AUTH_BASE_PATH = "/api/auth";
 /** Role that opens the back office, granted only from the command line (`pnpm admin:grant`). */
 export const ADMIN_ROLE = "admin";
 
-/** Sign-in codes (D-030): 6 digits, valid 10 minutes, 3 wrong attempts each. */
+/** Sign-in codes: 6 digits, valid 10 minutes, 3 wrong attempts each. */
 export const SIGN_IN_CODE = { length: 6, expiresInS: 10 * 60, allowedAttempts: 3 } as const;
 
 const SEND_CODE_PATH = "/email-otp/send-verification-otp";
 
 /**
- * Better Auth for one request (D-006). Built per request because the database client is, so the
+ * Better Auth for one request. Built per request because the database client is, so the
  * closure state below lives for one request only.
  *
  * Guest accounts come first: a player arriving from a stream link plays before signing up. Signing
- * in with a code then archives the guest and moves its game in our own transaction (D-030): the
+ * in with a code then archives the guest and moves its game in our own transaction: the
  * plugin's default would delete the guest, and its cards with it, by cascade.
  */
 export function createAuth(env: Env, db: Database, emailSender: EmailSender) {
@@ -82,7 +82,7 @@ export function createAuth(env: Env, db: Database, emailSender: EmailSender) {
       }),
     ],
     user: {
-      // "J'ai 15 ans ou plus" (P8): required to create an account with a code, never stored.
+      // "J'ai 15 ans ou plus": required to create an account with a code, never stored.
       // Apple and Google will pass it through their OAuth state.
       validateUserInfo({ source }, ctx) {
         if (source.action !== "create-user" || source.method !== "email-otp") return;
@@ -124,7 +124,7 @@ export function createAuth(env: Env, db: Database, emailSender: EmailSender) {
       cookieCache: { enabled: true, maxAge: 5 * 60 },
     },
     // Better Auth's limiter keeps counters in memory, which breaks the stateless rule: limits are
-    // Cloudflare's (D-018), see `app.ts`.
+    // Cloudflare's, see `app.ts`.
     rateLimit: { enabled: false },
     telemetry: { enabled: false },
   });

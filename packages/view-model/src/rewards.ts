@@ -18,7 +18,7 @@ import { formatCount, plural } from "./format";
 import { xpBefore } from "./level";
 import { avatarName, frameName } from "./profile";
 
-/** Level rewards (P58): the coffret, the next rewards of the Jouer screen, the level road. */
+/** Level rewards: the coffret, the next rewards of the Jouer screen, the level road. */
 
 /** Icons a reward is drawn with; each platform maps them to its own icon set. */
 export type RewardIcon =
@@ -111,7 +111,7 @@ export function coffretHint(level: number, now: EpochMs): string {
   return `${plural(count, "récompense", "récompenses")} dedans.`;
 }
 
-/** The toast once a coffret is put away (N-06). */
+/** The toast once a coffret is put away. */
 export function claimedToast(rewards: readonly LevelRewardView[]): string {
   if (rewards.some((r) => r.kind === "refill")) return "Stock remis au plein.";
   return "Rangé dans ta réserve.";
@@ -138,12 +138,12 @@ export function claimRefusalMessage(reason: ClaimRefusal, level: number): string
   }
 }
 
-/** « 3 / 12 bonus », the reserve and its ceiling, which grows with levels (N-09). */
+/** « 3 / 12 bonus », the reserve and its ceiling, which grows with levels. */
 export function reserveLabel(wallet: Pick<BoosterWalletResponse, "bonus" | "bonusCap">): string {
   return `${wallet.bonus} / ${wallet.bonusCap} bonus`;
 }
 
-// --- Next rewards (J-02) -------------------------------------------------------------------------
+// --- Next rewards -------------------------------------------------------------------------
 
 export interface UpcomingReward {
   readonly level: number;
@@ -171,7 +171,7 @@ export function upcomingRewards(level: number, now: EpochMs, count = 4): Upcomin
   });
 }
 
-// --- Level road (N-01 to N-03) -------------------------------------------------------------------
+// --- Level road -------------------------------------------------------------------
 
 export type RoadState = "claimed" | "claimable" | "next" | "locked";
 
@@ -180,7 +180,7 @@ export interface RoadNode {
   readonly state: RoadState;
   readonly milestone: boolean;
   readonly summary: string;
-  /** « Les échanges », what the level opens (P59). */
+  /** « Les échanges », what the level opens. */
   readonly opens: string | null;
   readonly label: string;
 }

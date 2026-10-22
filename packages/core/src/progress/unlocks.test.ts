@@ -4,7 +4,7 @@ import { featureLevels, featuresOpenedAt } from "./unlocks";
 
 const NOW = Date.UTC(2026, 9, 22);
 
-describe("featureLevels (P59)", () => {
+describe("featureLevels", () => {
   it("opens each feature at the level of the rules", () => {
     expect(featureLevels(UNLOCK_SCHEDULE, TRADE_SCHEDULE, NOW)).toEqual({
       choose_collection: 3,
@@ -19,7 +19,7 @@ describe("featureLevels (P59)", () => {
 
   it("reads the trade levels from the trade rules", () => {
     const before = featureLevels(UNLOCK_SCHEDULE, TRADE_SCHEDULE, Date.UTC(2026, 0, 1));
-    // Before P59, three cards per side from the first trade.
+    // Before features by level, three cards per side from the first trade.
     expect(before.trade).toBe(5);
     expect(before.trade_three).toBe(5);
   });

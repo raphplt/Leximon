@@ -1,7 +1,7 @@
 import type { Sanction, SanctionKind } from "@leximon/contract";
 import type { EpochMs } from "@leximon/core";
 
-/** Words of a sanction as the player reads it (R-08, P68): what, why, until when, how to contest. */
+/** Words of a sanction as the player reads it: what, why, until when, how to contest. */
 
 const TITLES: Readonly<Record<SanctionKind, string>> = {
   hide_message: "Un de tes messages est masqué",

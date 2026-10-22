@@ -1,4 +1,4 @@
-"""Card rarity from the Ngram frequency and the "pépite" mark (D-020, docs/rnd/rarete.md)."""
+"""Card rarity from the Ngram frequency and the "pépite" mark (docs/rnd/rarete.md)."""
 
 import math
 from dataclasses import dataclass
@@ -74,7 +74,7 @@ def rarity(frequency: NgramFrequency | None, pepite: bool, rule: RarityRule) -> 
 
 
 def frequency_label(frequency: NgramFrequency | None) -> str:
-    """The figure shown on the card (P22): occurrences per billion words since 1990."""
+    """The figure shown on the card: occurrences per billion words since 1990."""
     if frequency is None:
         return "inconnue (mot composé)"
     if frequency.modern == 0:

@@ -1,7 +1,7 @@
 import { rarityStyles } from "@leximon/tokens";
 
 /**
- * The shell shared by every e-mail Leximon sends (D-036): a 560 px column of table cells with
+ * The shell shared by every e-mail Leximon sends: a 560 px column of table cells with
  * inline styles, which is what Outlook, Gmail and Apple Mail all read. No remote image and no
  * tracked link: nothing is blocked, nothing follows the reader.
  */
@@ -15,7 +15,7 @@ export interface RenderedEmail {
 
 const paper = rarityStyles.common;
 
-/** Colors of the "Planche populaire" paper (D-022), from the shared tokens. */
+/** Colors of the "Planche populaire" paper, from the shared tokens. */
 export const EMAIL_COLORS = {
   page: paper.chip,
   paper: paper.paper,

@@ -16,7 +16,7 @@ import { refuseLockedWrites } from "../moderation/restrictions";
 import type { CatalogIndexLoader } from "./catalog-index";
 import { answerChallenge, dailyTally, nextChallenges } from "./challenges";
 
-/** Challenges (D-025): questions on owned words, answers that raise their mastery. */
+/** Challenges: questions on owned words, answers that raise their mastery. */
 export function challengeRoutes(loadCatalogIndex: CatalogIndexLoader) {
   const routes = new Hono<AppEnv>();
   routes.use(requireUser);

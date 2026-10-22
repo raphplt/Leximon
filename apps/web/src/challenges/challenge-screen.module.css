@@ -1,4 +1,4 @@
-/* Défis (D-01 to D-05), maquette v1. */
+/* Défis. */
 
 .page {
   box-sizing: border-box;
@@ -19,7 +19,7 @@
   gap: 18px;
 }
 
-/* --- Daily challenge (D-01) --- */
+/* --- Daily challenge --- */
 
 .daily {
   padding: 24px;
@@ -88,7 +88,7 @@
   background: var(--lx-color-text);
 }
 
-/* --- Memory (D-02) --- */
+/* --- Memory --- */
 
 .memory {
   padding: 22px;
@@ -166,7 +166,7 @@
   color: #ff8462;
 }
 
-/* --- Words slipping away (D-03) --- */
+/* --- Words slipping away --- */
 
 .subtitle {
   margin: 28px 0 12px;
@@ -220,7 +220,7 @@
   color: var(--lx-color-text-muted);
 }
 
-/* --- Question (D-04) --- */
+/* --- Question --- */
 
 .quiz {
   max-width: 720px;
@@ -392,7 +392,7 @@
   color: var(--lx-color-accent);
 }
 
-/* --- Recap (D-05) --- */
+/* --- Recap --- */
 
 .recap {
   max-width: 520px;

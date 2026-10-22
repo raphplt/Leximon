@@ -7,7 +7,7 @@ import {
 import type { Rarity } from "@leximon/core";
 
 /**
- * The published catalogue (D-023), read in the browser: the manifest first (short cache), then
+ * The published catalogue, read in the browser: the manifest first (short cache), then
  * every collection file it lists (immutable, cached for good). Both are validated with the
  * shared contract, like any external input.
  */

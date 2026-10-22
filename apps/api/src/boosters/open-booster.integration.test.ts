@@ -40,7 +40,7 @@ beforeAll(() => seedTestCatalog(db));
 afterAll(close);
 
 const DISCOVERY: BoosterSource = { kind: "discovery" };
-/** Total XP at the start of level 3 (P48 curve), which opens the choice of collection. */
+/** Total XP at the start of level 3 (level curve), which opens the choice of collection. */
 const LEVEL_3_XP = 220;
 const signInAsPlayer = () => signInAsMember(app, env, db);
 
@@ -162,7 +162,7 @@ describe("POST /boosters/open", () => {
   });
 });
 
-describe("experience (P48)", () => {
+describe("experience", () => {
   const XP = XP_SCHEDULE[0];
 
   it("pays the open, the first open of the day and every word new to the player", async () => {
@@ -268,7 +268,7 @@ describe("bonus reserve", () => {
     expect(await openCount(guest.userId)).toBe(2);
   });
 
-  it("opens the garni boosters first, each with at least a Rare (P58)", async () => {
+  it("opens the garni boosters first, each with at least a Rare", async () => {
     const guest = await playerWith(0, 3, 2);
     for (const garniLeft of [1, 0]) {
       const body = openBoosterResponseSchema.parse(await (await openBooster(guest)).json());
@@ -425,7 +425,7 @@ describe("booster sources", () => {
     expect(open?.collectionId).toBe("test-b");
   });
 
-  it("refuse a collection booster before level 3, without consuming anything (P59)", async () => {
+  it("refuse a collection booster before level 3, without consuming anything", async () => {
     const guest = await signInAsPlayer();
     await setXp(db, guest.userId, LEVEL_3_XP - 1);
     const response = await openBooster(guest, crypto.randomUUID(), {
@@ -497,7 +497,7 @@ describe("booster sources", () => {
   });
 });
 
-describe("guest limit (P37)", () => {
+describe("guest limit", () => {
   const LIMIT = GUEST_SCHEDULE[0].boostersBeforeSignup;
 
   async function boostersLeft(guest: Guest): Promise<number> {

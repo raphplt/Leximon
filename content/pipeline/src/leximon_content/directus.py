@@ -1,4 +1,4 @@
-"""Review workflow in Directus (D-008): one item per draft, reviewed blind (the model is hidden)."""
+"""Review workflow in Directus: one item per draft, reviewed blind (the model is hidden)."""
 
 import random
 import statistics
@@ -48,7 +48,7 @@ FIELDS = [
         "input",
         readonly=True,
         width="half",
-        note="Calculée depuis la fréquence et la mention pépite (D-020). Recalculée par refresh.",
+        note="Calculée depuis la fréquence et la mention pépite. Recalculée par refresh.",
     ),
     _field(
         "pepite",
@@ -166,7 +166,7 @@ def ensure_schema(client: httpx.Client) -> None:
                 "collection": COLLECTION,
                 "meta": {
                     "icon": "style",
-                    "note": "Brouillons de cartes à relire (essai éditorial P4)",
+                    "note": "Brouillons de cartes à relire (essai éditorial)",
                     "sort_field": "review_order",
                 },
                 "schema": {},

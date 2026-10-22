@@ -15,7 +15,7 @@ export interface SignInCodeContent {
 }
 
 /**
- * The sign-in code e-mail (D-030, wording approved on 2026-10-21). Functional, so dry
+ * The sign-in code e-mail (wording approved on 2026-10-21). Functional, so dry
  * (`docs/voix.md`): the code first, one sentence, nothing reassuring. The code is in the subject so
  * that it can be read from the notification. No unsubscribe link: it is not a campaign.
  */

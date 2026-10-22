@@ -20,7 +20,7 @@ import type { TradeSchedule } from "./trade/trade";
 
 const MINUTE = 60_000;
 const SINCE_LAUNCH = Number.MIN_SAFE_INTEGER;
-/** Midnight in Paris on 2026-10-21, when the owner decided P58 and P59. */
+/** Midnight in Paris on 2026-10-21, when the owner decided level rewards and features by level. */
 const LEVELS_DECIDED = Date.UTC(2026, 9, 20, 22);
 
 export const REFILL_SCHEDULE: RefillSchedule = [
@@ -41,7 +41,7 @@ export const DRAW_SCHEDULE: DrawSchedule = [
       legendary: 10,
     },
     guaranteedMinRarity: "uncommon",
-    // Calibrated by simulation (docs/rnd/collection-sim.md). Never shown to players (P17).
+    // Calibrated by simulation (docs/rnd/collection-sim.md). Never shown to players.
     pity: [
       { minRarity: "epic", afterBoosters: 40 },
       { minRarity: "legendary", afterBoosters: 150 },
@@ -51,7 +51,7 @@ export const DRAW_SCHEDULE: DrawSchedule = [
 
 const DAY = 24 * 60 * MINUTE;
 
-// FSRS targets 90 % recall; levels follow memory stability (D-025).
+// FSRS targets 90 % recall; levels follow memory stability.
 export const MASTERY_SCHEDULE: MasterySchedule = [
   {
     startsAt: SINCE_LAUNCH,
@@ -61,7 +61,7 @@ export const MASTERY_SCHEDULE: MasterySchedule = [
   },
 ];
 
-// Trade guards (D-026).
+// Trade guards.
 export const TRADE_SCHEDULE: TradeSchedule = [
   {
     startsAt: SINCE_LAUNCH,
@@ -73,7 +73,7 @@ export const TRADE_SCHEDULE: TradeSchedule = [
     heldRarity: "epic",
     heldForMs: 7 * DAY,
   },
-  // P59: one card for one from level 5, up to three per side from level 10.
+  // One card for one from level 5, up to three per side from level 10.
   {
     startsAt: LEVELS_DECIDED,
     offerTtlMs: 3 * DAY,
@@ -100,7 +100,7 @@ export const BONUS_SCHEDULE: BonusSchedule = [
   },
 ];
 
-// Experience of the account level (P48). Starting values, to calibrate by simulation.
+// Experience of the account level. Starting values, to calibrate by simulation.
 export const XP_SCHEDULE: XpSchedule = [
   {
     startsAt: SINCE_LAUNCH,
@@ -113,10 +113,10 @@ export const XP_SCHEDULE: XpSchedule = [
   },
 ];
 
-// Boosters a guest opens before an account is required (P37).
+// Boosters a guest opens before an account is required.
 export const GUEST_SCHEDULE: GuestSchedule = [{ startsAt: SINCE_LAUNCH, boostersBeforeSignup: 2 }];
 
-// Level rewards (P58). Titles are provisional.
+// Level rewards. Titles are provisional.
 export const LEVEL_REWARD_SCHEDULE: LevelRewardSchedule = [
   {
     startsAt: LEVELS_DECIDED,
@@ -136,7 +136,7 @@ export const LEVEL_REWARD_SCHEDULE: LevelRewardSchedule = [
     avatarEveryBeyond: 20,
     garniMinRarity: "rare",
     cardChoiceMaxRarity: "uncommon",
-    // Engraved avatars (P49): portraits from the cards' engravings, named by their card id.
+    // Engraved avatars: portraits from the cards' engravings, named by their card id.
     startingAvatars: [
       "metaphraste",
       "bachelette",
@@ -162,12 +162,12 @@ export const LEVEL_REWARD_SCHEDULE: LevelRewardSchedule = [
   },
 ];
 
-// Pseudo of a player (P-08 of interface-v1, N5).
+// Pseudo of a player.
 export const PSEUDO_SCHEDULE: PseudoSchedule = [
   { startsAt: SINCE_LAUNCH, minLength: 3, maxLength: 20, changeEveryMs: 30 * 24 * 60 * MINUTE },
 ];
 
-// Clans (P65, P67). Emblem engravings are provisional, like the avatars.
+// Clans. Emblem engravings are provisional, like the avatars.
 export const CLAN_SCHEDULE: ClanSchedule = [
   {
     startsAt: SINCE_LAUNCH,
@@ -204,7 +204,7 @@ export const CLAN_SCHEDULE: ClanSchedule = [
   },
 ];
 
-// Weekly goal of a clan (P66). Targets are provisional.
+// Weekly goal of a clan. Targets are provisional.
 export const CLAN_GOAL_SCHEDULE: ClanGoalSchedule = [
   {
     startsAt: SINCE_LAUNCH,
@@ -216,7 +216,7 @@ export const CLAN_GOAL_SCHEDULE: ClanGoalSchedule = [
   },
 ];
 
-// Features opened by level (P59); trade levels are in TRADE_SCHEDULE.
+// Features opened by level; trade levels are in TRADE_SCHEDULE.
 export const UNLOCK_SCHEDULE: UnlockSchedule = [
   {
     startsAt: LEVELS_DECIDED,

@@ -13,7 +13,7 @@ const { clans } = schema;
 const LEGENDARY_WINDOW_MS = 24 * 60 * 60 * 1000;
 
 /**
- * Sends game events after the request's transaction (D-038). They are hints: a failed send never
+ * Sends game events after the request's transaction. They are hints: a failed send never
  * fails the request, it is logged, and the next event or the daily maintenance catches up.
  */
 export function sendGameEvents(c: Context<AppEnv>, events: readonly GameEvent[]): void {
@@ -39,7 +39,7 @@ export interface GameEventsReport {
 }
 
 /**
- * The queue's consumer (D-038). Trusts nothing in the messages but who and which clan: the goal,
+ * The queue's consumer. Trusts nothing in the messages but who and which clan: the goal,
  * the library and the journal are recounted from the database, once per clan for the whole
  * batch. Replaying a batch changes nothing.
  */
@@ -78,7 +78,7 @@ export async function handleGameEvents(
 }
 
 /**
- * Writes the player's new Legendaries into the clan's journal (P67): cards first obtained since
+ * Writes the player's new Legendaries into the clan's journal: cards first obtained since
  * they joined, within the last day. The event key makes each one enter once.
  */
 async function announceLegendaries(
@@ -105,7 +105,7 @@ async function announceLegendaries(
     on conflict (clan_id, event_key) where event_key is not null do nothing`);
 }
 
-/** The clan's library (K-04): cards of each collection held by at least one member, in one statement. */
+/** The clan's library: cards of each collection held by at least one member, in one statement. */
 export async function recountLibrary(db: Database, clanId: string, now: EpochMs): Promise<void> {
   await db.execute(sql`
     with counts as (
@@ -128,7 +128,7 @@ export async function recountLibrary(db: Database, clanId: string, now: EpochMs)
 }
 
 /**
- * The daily safety net (D-038): recounts the clans that played this week or the last, in case
+ * The daily safety net: recounts the clans that played this week or the last, in case
  * their last event was lost. Bounded per run; the oldest counts go first.
  */
 export async function recountActiveClans(db: Database, now: EpochMs, limit = 500): Promise<number> {

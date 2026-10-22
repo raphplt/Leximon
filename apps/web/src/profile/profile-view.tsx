@@ -30,7 +30,7 @@ export interface ProfileFace {
   readonly memberSince: string | null;
 }
 
-/** The profile's banner (P-01): avatar in its frame, pseudo, title, level, code. */
+/** The profile's banner: avatar in its frame, pseudo, title, level, code. */
 export function ProfileHeader({
   face,
   actions,
@@ -67,7 +67,7 @@ export function ProfileHeader({
   );
 }
 
-/** Pinned cards (P-02), and on the player's own profile the empty places left. */
+/** Pinned cards, and on the player's own profile the empty places left. */
 export function PinnedCards({
   pinned,
   slots,
@@ -139,7 +139,7 @@ export function PinnedCards({
 
 const PIN_TILTS = [-3, 2, -1.5, 3, -2];
 
-/** The profile in figures (P-03). */
+/** The profile in figures. */
 export function StatsPanel({ stats }: { readonly stats: ProfileStats }) {
   const catalog = useCatalog();
   const tiles = statTiles(stats, catalog === null ? null : catalog.cardsById.size);

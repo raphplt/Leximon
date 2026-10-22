@@ -129,7 +129,7 @@ function signInAsGuest(): Promise<void> {
   return guestSignIn;
 }
 
-/** Sends a request, signing in as a guest first if there is no session yet (D-006). */
+/** Sends a request, signing in as a guest first if there is no session yet. */
 export async function sendAsPlayer(path: string, init: RequestInit = {}): Promise<Response> {
   const response = await send(path, init);
   if (response.status !== 401) return response;
@@ -162,9 +162,9 @@ export async function fetchOwnedCards(): Promise<OwnedCardsResponse["cards"]> {
 export type OpenBoosterResult =
   | ({ readonly kind: "opened" } & OpenBoosterResponse)
   | { readonly kind: "stock_empty"; readonly nextRefillAt: string }
-  /** The guest opened all its boosters: an account is required to go on (P37). */
+  /** The guest opened all its boosters: an account is required to go on. */
   | { readonly kind: "signup_required" }
-  /** Choosing the collection opens at a level (P59): the screen was out of date. */
+  /** Choosing the collection opens at a level: the screen was out of date. */
   | { readonly kind: "level_required"; readonly level: number };
 
 /**
@@ -203,7 +203,7 @@ export async function openBooster(
   return { kind: "opened", ...(await parse(response, openBoosterResponseSchema)) };
 }
 
-// --- Level rewards (P58) -------------------------------------------------------------------------
+// --- Level rewards -------------------------------------------------------------------------
 
 export async function fetchLevelRewards(): Promise<LevelRewardsResponse> {
   const response = await sendAsPlayer("/me/level-rewards");
@@ -269,7 +269,7 @@ export async function answerChallenge(
   return { kind: "answered", ...(await parse(response, challengeAnswerResponseSchema)) };
 }
 
-/** Today's answers towards the daily goal (D-01). */
+/** Today's answers towards the daily goal. */
 export async function fetchDaily(): Promise<DailyChallengeResponse> {
   const response = await sendAsPlayer("/challenges/daily");
   if (!response.ok) throw new ApiError("daily_unavailable", response.status);
@@ -282,7 +282,7 @@ export async function fetchMastery(): Promise<MasteryResponse["words"]> {
   return (await parse(response, masteryResponseSchema)).words;
 }
 
-/** The player's account level (P48). */
+/** The player's account level. */
 export async function fetchProgress(): Promise<ProgressResponse> {
   const response = await sendAsPlayer("/me/progress");
   if (!response.ok) throw new ApiError("progress_unavailable", response.status);
@@ -323,7 +323,7 @@ async function profileResult(response: Response, failure: string): Promise<Profi
   throw new ApiError(failure, response.status);
 }
 
-/** Pseudo, avatar, frame, title, visibility (P-04, P-07, R-05): only the fields sent change. */
+/** Pseudo, avatar, frame, title, visibility: only the fields sent change. */
 export async function updateProfile(changes: UpdateProfileRequest): Promise<ProfileResult> {
   const response = await sendAsPlayer("/me/profile", {
     method: "PATCH",
@@ -333,7 +333,7 @@ export async function updateProfile(changes: UpdateProfileRequest): Promise<Prof
   return profileResult(response, "profile_not_saved");
 }
 
-/** The pinned cards, all of them, in their order (A-08). */
+/** The pinned cards, all of them, in their order. */
 export async function setPinnedCards(cardIds: readonly string[]): Promise<ProfileResult> {
   const response = await sendAsPlayer("/me/pinned-cards", {
     method: "PUT",
@@ -343,7 +343,7 @@ export async function setPinnedCards(cardIds: readonly string[]): Promise<Profil
   return profileResult(response, "pins_not_saved");
 }
 
-/** A public profile by pseudo (P-05); `null` when there is none to show. */
+/** A public profile by pseudo; `null` when there is none to show. */
 export async function fetchPublicProfile(pseudo: string): Promise<PublicProfile | null> {
   const response = await send(`/players/${encodeURIComponent(pseudo)}`);
   if (response.status === 404) return null;
@@ -370,7 +370,7 @@ export async function fetchBlocks(): Promise<BlocksResponse["players"]> {
   return (await parse(response, blocksResponseSchema)).players;
 }
 
-/** Blocks or unblocks a player by code (P-06); both are idempotent on the server. */
+/** Blocks or unblocks a player by code; both are idempotent on the server. */
 export async function setBlocked(playerCode: string, blocked: boolean): Promise<BlockResult> {
   const response = await sendAsPlayer(`/me/blocks/${encodeURIComponent(playerCode)}`, {
     method: blocked ? "PUT" : "DELETE",
@@ -378,7 +378,7 @@ export async function setBlocked(playerCode: string, blocked: boolean): Promise<
   return blockResult(response, "block_failed");
 }
 
-/** Reports a pseudo to the moderation (P-08). */
+/** Reports a pseudo to the moderation. */
 export async function reportPlayer(pseudo: string): Promise<BlockResult> {
   const response = await sendAsPlayer(`/players/${encodeURIComponent(pseudo)}/report`, {
     method: "POST",
@@ -406,7 +406,7 @@ export type DeleteAccountResult =
   | { readonly kind: "deleted" }
   | { readonly kind: "refused"; readonly reason: DeleteAccountRefusal };
 
-/** Erases the account for good (R-07). The server signs the player out in the same answer. */
+/** Erases the account for good. The server signs the player out in the same answer. */
 export async function deleteAccount(): Promise<DeleteAccountResult> {
   const response = await send("/me/account", { method: "DELETE" });
   if (response.ok) return { kind: "deleted" };
@@ -479,7 +479,7 @@ export async function resolveTrade(
   return tradeResult(response, "trade_failed");
 }
 
-// --- Account (D-030) ----------------------------------------------------------------------------
+// --- Account ----------------------------------------------------------------------------
 
 /** Who is playing: a guest (created on the first visit) or a member. */
 export async function fetchAccount(): Promise<AccountResponse> {
@@ -554,7 +554,7 @@ export async function signOut(): Promise<void> {
   if (!response.ok) throw new ApiError("sign_out_failed", response.status);
 }
 
-// --- Campaign e-mails (P61) ---------------------------------------------------------------------
+// --- Campaign e-mails ---------------------------------------------------------------------
 
 /** Whether the member asked for news by e-mail. */
 export async function fetchEmailPreferences(): Promise<EmailPreferences> {
@@ -587,7 +587,7 @@ export async function unsubscribeFromLink(token: string): Promise<"done" | "inva
 export type JoinWaitlistResult =
   | { readonly kind: "joined" }
   | { readonly kind: "refused"; readonly reason: "invalid_email" | "rate_limited" }
-  /** The game is open: the list took its last address (P55). */
+  /** The game is open: the list took its last address. */
   | { readonly kind: "closed" };
 
 /** Puts the address on the list warned when the game opens. No session: it creates no player. */

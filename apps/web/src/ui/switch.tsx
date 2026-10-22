@@ -1,6 +1,6 @@
 import styles from "./ui.module.css";
 
-/** A setting that is on or off (R-03). */
+/** A setting that is on or off. */
 export function Switch({
   label,
   detail,

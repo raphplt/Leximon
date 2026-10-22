@@ -50,7 +50,7 @@ async function tradeView(db: Database, record: TradeRecord, now: number): Promis
   return toTradeResponse(record, await readTradeBadges(db, [record], now), now);
 }
 
-/** Trade offers (D-026). */
+/** Trade offers. */
 export function tradeRoutes() {
   const routes = new Hono<AppEnv>();
   routes.use(requireUser, playerRateLimit, noStore, refuseLockedWrites);
@@ -170,7 +170,7 @@ export function tradeRoutes() {
 }
 
 /**
- * Other players: what one can offer, by code (D-026), and public profiles by pseudo (P-05, P-06).
+ * Other players: what one can offer, by code, and public profiles by pseudo.
  */
 export function playerRoutes() {
   const routes = new Hono<AppEnv>();

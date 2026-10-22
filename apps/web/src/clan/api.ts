@@ -31,7 +31,7 @@ import {
 import { z } from "zod";
 import { ApiError, parse, refusal, sendAsPlayer } from "../lib/api";
 
-/** Browser client of the clan routes (K-01 to K-13) and of the player's sanctions (R-08). */
+/** Browser client of the clan routes and of the player's sanctions. */
 
 /** A refusal the screen explains, or the value. `account_locked` comes from a sanction. */
 export type ClanResult<T> =
@@ -227,7 +227,7 @@ export async function claimGoal(
   return result(response, claimGoalResponseSchema, "failed");
 }
 
-// --- Sanctions (R-08) ----------------------------------------------------------------------------
+// --- Sanctions ----------------------------------------------------------------------------
 
 export async function fetchSanctions(): Promise<SanctionsResponse["sanctions"]> {
   const response = await sendAsPlayer("/me/sanctions");

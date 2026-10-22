@@ -6,8 +6,8 @@ import ui from "@/ui/ui.module.css";
 import styles from "./play.module.css";
 
 /**
- * Which sachet to open (J-05): chips on the web, arrows around the name on a phone. Closed
- * choices stay visible with their level (P59).
+ * Which sachet to open: chips on the web, arrows around the name on a phone. Closed
+ * choices stay visible with their level.
  */
 export function CollectionPicker({
   choices,

@@ -9,7 +9,7 @@ import { TRADE_SCHEDULE, tradeRulesAt } from "@leximon/core";
 
 /**
  * Pure rules of the trades screen: what a trade means for the player looking at it, how long it
- * has left, and how a refusal reads. The server decides everything (D-026); these only explain.
+ * has left, and how a refusal reads. The server decides everything; these only explain.
  */
 
 /** A result shown to the player after an action. */
@@ -67,7 +67,7 @@ export function statusLabel(status: TradeStatus): string {
 /** The offer seen from the player: what they would give, what they would get, and with whom. */
 export interface TradeSides {
   readonly counterpartCode: string;
-  /** `null` once that player deleted their account (R-07). */
+  /** `null` once that player deleted their account. */
   readonly counterpart: PlayerBadge | null;
   readonly mine: readonly string[];
   readonly theirs: readonly string[];
@@ -147,7 +147,7 @@ export function tradeableFromLabel(
   return `Compte tout neuf. Échanges possibles dès le ${day} à ${time}.`;
 }
 
-/** Why a player below the level needed cannot trade yet (P48), or `null` once they can. */
+/** Why a player below the level needed cannot trade yet, or `null` once they can. */
 export function tradeLevelLabel(level: number, minLevel: number): string | null {
   if (level >= minLevel) return null;
   const left = minLevel - level;
@@ -155,7 +155,7 @@ export function tradeLevelLabel(level: number, minLevel: number): string | null 
 }
 
 /**
- * Adds or removes a card from a selection, without ever going over `max` (P59: one card per
+ * Adds or removes a card from a selection, without ever going over `max` (one card per
  * side, then three). With one card per side, another card replaces the chosen one.
  */
 export function toggleCard(
@@ -168,7 +168,7 @@ export function toggleCard(
   return selection.length < max ? [...selection, cardId] : selection;
 }
 
-/** « Échangeable dans 3 j », « dans 5 h »: when a held Épique or Légendaire can move (P35). */
+/** « Échangeable dans 3 j », « dans 5 h »: when a held Épique or Légendaire can move. */
 export function heldLabel(tradeableFrom: string, now: number): string {
   const left = Math.max(0, Date.parse(tradeableFrom) - now);
   if (left >= DAY) return `Échangeable dans ${Math.ceil(left / DAY)} j`;
@@ -188,7 +188,7 @@ export function offerProblem(offer: {
   readonly ownCode: string | null;
   readonly give: readonly string[];
   readonly want: readonly string[];
-  /** Cards per side the two levels allow (P59). */
+  /** Cards per side the two levels allow. */
   readonly max: number;
 }): OfferProblem | null {
   const recipient = normalizePlayerCode(offer.recipientCode);
@@ -227,7 +227,7 @@ export function selectionCount(selection: readonly string[], max: number): strin
   return `${selection.length} / ${max}`;
 }
 
-// --- Échanges screen (E-01 to E-07) --------------------------------------------------------------
+// --- Échanges screen --------------------------------------------------------------
 
 /** « Reçues (2) »; the count only when there is something waiting. */
 export function boxTabLabel(box: TradeBox, pending: number): string {

@@ -188,7 +188,7 @@ describe("foreign keys to users.id", () => {
   });
 });
 
-describe("signing up from a guest (P37)", () => {
+describe("signing up from a guest", () => {
   it("moves everything the guest owns, age included, and archives the guest", async () => {
     const guest = await signInAsGuest(app, env);
     const opened = openBoosterResponseSchema.parse(await (await openBooster(guest.cookie)).json());
@@ -253,7 +253,7 @@ describe("signing up from a guest (P37)", () => {
     expect(progress?.xp).toBe(opened.progress.xp);
     const after = profileResponseSchema.parse(await (await get(cookie, "/me/profile")).json());
     expect(after.playerCode).toBe(profile.playerCode);
-    // Old enough to trade: the 5 days of the guest count (P36).
+    // Old enough to trade: the 5 days of the guest count.
     expect(Date.parse(after.canTradeFrom)).toBeLessThan(Date.now());
     const [account] = await db.select().from(users).where(eq(users.id, user.id));
     expect(account?.createdAt).toEqual(guestRow?.createdAt);
@@ -307,7 +307,7 @@ describe("signing up from a guest (P37)", () => {
   });
 });
 
-describe("signing in to an account that plays (P54)", () => {
+describe("signing in to an account that plays", () => {
   it("abandons the guest after a warning, and adds nothing to the account", async () => {
     const account = await member([
       { cardId: "test-a-common-1", quantity: 2 },

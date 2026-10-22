@@ -58,7 +58,7 @@ export function useProfileActions() {
     profile: me,
     busy,
     isPinned: (cardId: string) => me?.pinned.includes(cardId) ?? false,
-    /** Pins or unpins a card (A-08), at the end of the profile's row. */
+    /** Pins or unpins a card, at the end of the profile's row. */
     togglePin: (cardId: string): Promise<string | null> => {
       if (me === null) return Promise.resolve(null);
       const change = togglePin(me.pinned, cardId, me.pinnedSlots);

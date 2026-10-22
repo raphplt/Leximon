@@ -22,9 +22,9 @@ export const TRADED_VARIANT = "standard";
 export interface Player {
   readonly userId: string;
   readonly code: string;
-  /** Creation of the account, which gates trading (D-026). */
+  /** Creation of the account, which gates trading. */
   readonly createdAt: EpochMs;
-  /** Experience, whose level gates trading too (P48). */
+  /** Experience, whose level gates trading too. */
   readonly xp: number;
 }
 
@@ -88,7 +88,7 @@ function toPlayer(row: {
 export interface TradeableCards {
   /** Cards this player can give now, sorted by id. */
   readonly cardIds: string[];
-  /** Duplicates of rare cards still held back (P35), with the moment they become tradeable. */
+  /** Duplicates of rare cards still held back, with the moment they become tradeable. */
   readonly held: { readonly cardId: string; readonly tradeableFrom: EpochMs }[];
 }
 

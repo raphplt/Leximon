@@ -41,14 +41,14 @@ type Step =
 const OFFLINE = "Pas de connexion. Réessaie.";
 
 /**
- * Signing up or in with a code sent by e-mail (D-030). One flow for both: whether the address has
+ * Signing up or in with a code sent by e-mail. One flow for both: whether the address has
  * an account is only told once the code is checked, so that nobody learns it without the mailbox.
  */
 export function AccountScreen() {
   const [step, setStep] = useState<Step>({ kind: "loading" });
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
-  // Ticked on the address form (P61): given once the session exists, never assumed.
+  // Ticked on the address form: given once the session exists, never assumed.
   const [newsOptIn, setNewsOptIn] = useState(false);
 
   const load = useCallback(async () => {
@@ -277,7 +277,7 @@ function EmailForm({
   );
 }
 
-/** The member's consent to news by e-mail (P61), changed at any time. */
+/** The member's consent to news by e-mail, changed at any time. */
 function NewsToggle() {
   const [value, setValue] = useState<boolean | null>(null);
   const [failed, setFailed] = useState(false);

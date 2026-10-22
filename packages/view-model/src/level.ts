@@ -10,7 +10,7 @@ import {
 } from "@leximon/core";
 import { formatCount } from "./format";
 
-/** The account level (P48) as screens show it: medal, headline, bar. */
+/** The account level as screens show it: medal, headline, bar. */
 
 /** "+35 XP", or `null` when nothing was earned (a wrong answer, a replayed request). */
 export function xpGainLabel(gain: Pick<ProgressGain, "xpGained">): string | null {
@@ -37,7 +37,7 @@ export function xpProgressLabel(progress: Progress): string {
   return `${formatCount(progress.xpIntoLevel)} / ${formatCount(progress.xpForNextLevel)} XP`;
 }
 
-/** The title the player carries (P58): the one of the highest milestone claimed, if any. */
+/** The title the player carries: the one of the highest milestone claimed, if any. */
 export function playerTitle(claimed: readonly number[], now: EpochMs): string | null {
   return currentTitle(levelRewardRulesAt(LEVEL_REWARD_SCHEDULE, now), claimed);
 }
@@ -58,7 +58,7 @@ export interface XpSource {
   readonly xp: string;
 }
 
-/** Where XP comes from (P48), read from the rules in force: the table of the level road. */
+/** Where XP comes from, read from the rules in force: the table of the level road. */
 export function xpSources(now: EpochMs): XpSource[] {
   const rules = xpRulesAt(XP_SCHEDULE, now);
   const newWord = Object.values(rules.newWord);

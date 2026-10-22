@@ -25,7 +25,7 @@ import {
 
 const idSchema = z.uuid();
 
-/** `/me/sanctions` (R-08): open to a suspended or closed account, which must read and contest. */
+/** `/me/sanctions`: open to a suspended or closed account, which must read and contest. */
 export function sanctionRoutes() {
   const routes = new Hono<AppEnv>();
 
@@ -64,7 +64,7 @@ export function sanctionRoutes() {
   return routes;
 }
 
-/** Reports, sanctions and contests in the back office (lot 4). Mounted under `/admin`. */
+/** Reports, sanctions and contests in the back office. Mounted under `/admin`. */
 export function adminModerationRoutes() {
   const routes = new Hono<AppEnv>();
 

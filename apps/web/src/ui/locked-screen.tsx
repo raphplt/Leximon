@@ -5,7 +5,7 @@ import styles from "./locked-screen.module.css";
 import ui from "./ui.module.css";
 
 /**
- * A feature closed by the level (C-06, P59): what opens it, a sentence of promise, the way there.
+ * A feature closed by the level: what opens it, a sentence of promise, the way there.
  * Without `level`, the feature is open but not built yet: the same screen, without the bar.
  */
 export function LockedScreen({

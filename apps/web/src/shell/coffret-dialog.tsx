@@ -29,7 +29,7 @@ type Step =
   | { readonly name: "failed" };
 
 /**
- * A level's coffret (N-05): closed with its rays, then opened on the rewards one by one. The
+ * A level's coffret: closed with its rays, then opened on the rewards one by one. The
  * claim happens on « Ouvrir le coffret »: the server applies it and says what it gave.
  */
 export function CoffretDialog({

@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 /**
- * Messages of the game events queue (D-038). They are hints: the consumer recounts everything from
+ * Messages of the game events queue. They are hints: the consumer recounts everything from
  * the database, so a message lost, replayed or sent twice changes nothing.
  */
 export const gameEventSchema = z.discriminatedUnion("type", [

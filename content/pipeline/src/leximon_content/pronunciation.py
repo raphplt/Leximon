@@ -1,4 +1,4 @@
-"""Pronunciation of every card (D-032, docs/rnd/prononciation.md): a phonetic notation checked
+"""Pronunciation of every card (docs/rnd/prononciation.md): a phonetic notation checked
 against two readings, then one synthetic voice reading the word guided by that notation.
 
 The notation comes from the Littré respelling ("ko-ro-gra-f'"), turned into IPA by rules. It is

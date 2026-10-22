@@ -115,7 +115,7 @@ def run_checks(draft: CardDraft, entry: littre.Entry) -> list[Check]:
             "no_giveaway",
             not (giveaway := giveaway_problems(draft, entry.headword)),
             "; ".join(giveaway) or "la définition ne contient pas de mot de la famille du mot",
-            # Tolerated when the word cannot be defined clearly otherwise (P41): the drafter gets
+            # Tolerated when the word cannot be defined clearly otherwise: the drafter gets
             # one chance to reword it, then the card goes on without review.
             informational=True,
         ),

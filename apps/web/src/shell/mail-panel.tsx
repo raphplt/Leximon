@@ -18,8 +18,8 @@ interface Letter {
 }
 
 /**
- * The mail (R-01, first form): what waits for the player, read from the game's state. Read
- * marks and notifications sent by the queue come with lot 3.
+ * The mail (first form): what waits for the player, read from the game's state. Read
+ * marks and notifications sent by the queue come later.
  */
 export function MailPanel({
   open,

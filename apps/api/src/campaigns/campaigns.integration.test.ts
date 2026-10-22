@@ -328,7 +328,7 @@ describe("campaign launch", () => {
     await db.update(campaigns).set({ status: "cancelled" }).where(eq(campaigns.id, created.id));
   });
 
-  it("writes to consenting members only (P61)", async () => {
+  it("writes to consenting members only", async () => {
     const created = await createCampaign({ audience: "players", testRecipients: [] });
     const before = await audienceOf(created.id);
 
@@ -691,7 +691,7 @@ describe("Lettermint webhook", () => {
   });
 });
 
-describe("the waiting list's opening e-mail (P55)", () => {
+describe("the waiting list's opening e-mail", () => {
   it("closes the list at launch, is sent once, then erases the addresses", async () => {
     const tag = crypto.randomUUID().slice(0, 8);
     await db

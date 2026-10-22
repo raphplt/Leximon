@@ -1,9 +1,8 @@
 import { type Rarity, rarityRank } from "@leximon/core";
 
 /**
- * Light on a card held in the hand (docs/cahiers-des-charges/ouverture.md, « reflets et effets
- * holographiques »): where the light falls, how far the card tilts, and which layers each rarity
- * gets. Pure functions; the components turn them into CSS variables.
+ * Light on a card held in the hand: where the light falls, how far the card tilts, and which
+ * layers each rarity gets. Pure functions; the components turn them into CSS variables.
  */
 
 /** Steepest tilt of a card under the finger or with the phone, in degrees. */

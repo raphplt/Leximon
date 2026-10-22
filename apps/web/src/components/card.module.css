@@ -82,7 +82,7 @@
   align-items: center;
 }
 
-/* Round chip of the rarity colour holding the gem (D-022, icon set chosen 2026-10-20). */
+/* Round chip of the rarity colour holding the gem (icon set chosen 2026-10-20). */
 .band {
   display: inline-grid;
   place-items: center;

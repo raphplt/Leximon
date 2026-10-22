@@ -37,7 +37,7 @@ async function suppress(
     .onConflictDoNothing();
 }
 
-/** Withdraws a player's consent (P61), keeping the date and the source as proof. */
+/** Withdraws a player's consent, keeping the date and the source as proof. */
 async function revokeConsent(
   tx: Transaction,
   userId: string,

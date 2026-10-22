@@ -2,7 +2,7 @@ import { z } from "zod";
 import { timestampSchema } from "./common";
 import { playerBadgeSchema } from "./profile";
 
-/** Sanctions (P68, R-08) and the back office that handles reports (interface-v1, lot 4). */
+/** Sanctions and the back office that handles reports. */
 
 export const sanctionKindSchema = z.enum([
   "hide_message",

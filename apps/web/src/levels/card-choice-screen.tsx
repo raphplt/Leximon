@@ -25,7 +25,7 @@ type Load =
   | { readonly kind: "ready"; readonly catalog: Catalog; readonly owned: ReadonlySet<string> };
 
 /**
- * The card of the player's choice (N-08, P58): every Courant and Peu courant card the player
+ * The card of the player's choice: every Courant and Peu courant card the player
  * lacks, by collection, with a search. Nothing is drawn: the player picks, the server checks.
  */
 export function CardChoiceScreen() {

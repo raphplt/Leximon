@@ -11,9 +11,9 @@ export const playerCodeSchema = z
 /** `GET /me/profile`, 200: the player's own profile, also before it is public. */
 export const profileResponseSchema = z.object({
   playerCode: z.string(),
-  /** When the account becomes old enough to trade (D-026). */
+  /** When the account becomes old enough to trade. */
   canTradeFrom: timestampSchema,
-  /** Account level needed to trade (P48). */
+  /** Account level needed to trade. */
   tradeMinLevel: z.int().positive(),
   /** A guest has no profile: everything below shows what an account would have. */
   member: z.boolean(),
@@ -27,7 +27,7 @@ export const profileResponseSchema = z.object({
   /** The player chose `title`; otherwise it follows the latest title won. */
   titleChosen: z.boolean(),
   profilePublic: z.boolean(),
-  /** Others see the profile from this level on (P59). */
+  /** Others see the profile from this level on. */
   publicFromLevel: z.int().positive(),
   level: z.int().positive(),
   memberSince: timestampSchema,
@@ -47,11 +47,11 @@ export const tradeableCardsResponseSchema = z.object({
   /** How that player shows in an offer. */
   player: playerBadgeSchema,
   /**
-   * Cards each side of an offer may hold (P59): between the requester and that player on
+   * Cards each side of an offer may hold: between the requester and that player on
    * `/players/:code/tradeable`, for the player alone on `/me/tradeable`. 0 below the trade level.
    */
   maxCardsPerSide: z.int().nonnegative(),
-  /** Rare duplicates still waiting after their last copy was obtained (P35), with their date. */
+  /** Rare duplicates still waiting after their last copy was obtained, with their date. */
   held: z.array(z.object({ cardId: slugSchema, tradeableFrom: timestampSchema })),
 });
 export type TradeableCardsResponse = z.infer<typeof tradeableCardsResponseSchema>;
@@ -79,7 +79,7 @@ export type TradeStatus = z.infer<typeof tradeStatusSchema>;
 
 export const tradeSchema = z.object({
   id: z.uuid(),
-  /** Empty once that player deleted their account (R-07), when `proposer` is `null`. */
+  /** Empty once that player deleted their account, when `proposer` is `null`. */
   proposerCode: z.string(),
   recipientCode: z.string(),
   proposer: playerBadgeSchema.nullable(),

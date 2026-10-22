@@ -1,5 +1,5 @@
 /**
- * Tables used by Better Auth (D-006), in its expected shape with plural table names.
+ * Tables used by Better Auth, in its expected shape with plural table names.
  * Changes here must follow Better Auth's schema for the plugins in use (anonymous, admin).
  */
 

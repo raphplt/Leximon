@@ -10,7 +10,7 @@ import { useLoad } from "./use-load";
 
 type Contest = AdminContestsResponse["contests"][number];
 
-/** Contested sanctions waiting for a human answer (R-08, DSA). */
+/** Contested sanctions waiting for a human answer (DSA). */
 export function ContestsScreen() {
   const { state, reload } = useLoad(fetchContests);
   const [notice, setNotice] = useState<string | null>(null);

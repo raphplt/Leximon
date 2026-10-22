@@ -58,7 +58,7 @@ function useAct() {
 
 type Pending = "kick" | "hand_over" | null;
 
-/** A member, and what the chief or a deputy may do to them (K-05, K-10). */
+/** A member, and what the chief or a deputy may do to them. */
 export function MemberSheet({
   clanId,
   myRole,
@@ -235,7 +235,7 @@ function MemberActions({
   );
 }
 
-/** Requests to enter, for the chief and the deputies (K-10). */
+/** Requests to enter, for the chief and the deputies. */
 export function RequestsDialog({
   clanId,
   open,
@@ -317,7 +317,7 @@ export function RequestsDialog({
   );
 }
 
-/** The clan's options: change it (chief), the invitation code, report its name, leave (K-11). */
+/** The clan's options: change it (chief), the invitation code, report its name, leave. */
 export function ClanSettings({
   view,
   open,

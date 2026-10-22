@@ -32,7 +32,7 @@ export async function generateMetadata({
   };
 }
 
-/** Someone's public profile (P-05), the page a shared link leads to. */
+/** Someone's public profile, the page a shared link leads to. */
 export default function PlayerPage(props: PageProps<"/joueur/[pseudo]">) {
   return (
     <div className={styles.page}>

@@ -10,7 +10,7 @@ import { claimGoal } from "./api";
 import { refusalText } from "./chat";
 
 /**
- * Takes the boosters of a weekly goal (P66), from the clan page or the mail: the wallet and the
+ * Takes the boosters of a weekly goal, from the clan page or the mail: the wallet and the
  * mail follow at once. `true` when the boosters are in the reserve.
  */
 export function useClaim(): (claim: ClaimableGoal) => Promise<boolean> {

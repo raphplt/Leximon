@@ -187,7 +187,7 @@ function wornTitle(
 }
 
 /**
- * The profile in figures (P-03), in one statement of counts. Not a critical path: the public page
+ * The profile in figures, in one statement of counts. Not a critical path: the public page
  * is cached a minute by the CDN.
  */
 async function readStats(db: Reader, userId: string): Promise<ProfileStats> {
@@ -356,9 +356,9 @@ export type PublicProfileResult =
   | { readonly kind: "not_found" };
 
 /**
- * `GET /players/:pseudo` (P-05, P-06, P60). Only members past the public level have a page; a
+ * `GET /players/:pseudo`. Only members past the public level have a page; a
  * private profile shows its pseudo and avatar alone. A player blocked either way by the viewer
- * does not exist for them (N5).
+ * does not exist for them.
  */
 export async function readPublicProfile(
   db: Database,
@@ -422,7 +422,7 @@ export async function readPublicProfile(
   };
 }
 
-// --- Blocks and reports (N5) ---------------------------------------------------------------------
+// --- Blocks and reports ---------------------------------------------------------------------
 
 export async function isBlockedEitherWay(db: Reader, a: string, b: string): Promise<boolean> {
   const rows = await db
@@ -561,7 +561,7 @@ export async function reportPlayer(
   return { kind: "ok" };
 }
 
-// --- Preferences (R-04) --------------------------------------------------------------------------
+// --- Preferences --------------------------------------------------------------------------
 
 const DEFAULT_PREFERENCES: Preferences = {
   notifyReviews: true,
@@ -603,7 +603,7 @@ export async function updatePreferences(
   return row;
 }
 
-// --- Deleting the account (R-07) -----------------------------------------------------------------
+// --- Deleting the account -----------------------------------------------------------------
 
 export type DeleteAccountResult = { readonly kind: "deleted" } | { readonly kind: "admin_account" };
 
@@ -612,7 +612,7 @@ export type DeleteAccountResult = { readonly kind: "deleted" } | { readonly kind
  * the game (cards, mastery, profile, history of opens) by the cascades, and the guests it was
  * signed in from. Trades stay with the other player, whose history shows a departed player (the
  * foreign keys set the side to `null`); pending offers are cancelled first. An admin, or a former
- * admin whose actions are in the audit log, is refused: the log is never erased (D-031).
+ * admin whose actions are in the audit log, is refused: the log is never erased.
  */
 export async function deleteAccount(
   db: Database,

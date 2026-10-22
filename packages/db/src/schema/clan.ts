@@ -21,7 +21,7 @@ export const goalTier = pgEnum("goal_tier", GOAL_TIERS);
 export const clanMessageKind = pgEnum("clan_message_kind", ["message", "event"]);
 
 /**
- * A clan (P50, P65). `memberCount` follows the members in the same transactions, under the clan's
+ * A clan. `memberCount` follows the members in the same transactions, under the clan's
  * row lock, so the list of clans never counts rows.
  */
 export const clans = pgTable(
@@ -38,10 +38,10 @@ export const clans = pgTable(
     emblemEngraving: text().notNull(),
     emblemColor: text().notNull(),
     emblemAccent: text().notNull(),
-    /** Emblem items unlocked by gold weekly goals (P66). */
+    /** Emblem items unlocked by gold weekly goals. */
     emblemUnlocked: integer().notNull().default(0),
     memberCount: integer().notNull().default(0),
-    /** Last recount of the library by the queue (D-038), to space recounts out. */
+    /** Last recount of the library by the queue, to space recounts out. */
     libraryCountedAt: timestamp({ withTimezone: true }),
     createdAt: timestamp({ withTimezone: true }).notNull(),
   },
@@ -55,7 +55,7 @@ export const clans = pgTable(
   ],
 );
 
-/** One clan per player: the player is the key (P50). */
+/** One clan per player: the player is the key. */
 export const clanMembers = pgTable(
   "clan_members",
   {
@@ -67,9 +67,9 @@ export const clanMembers = pgTable(
       .references(() => clans.id, { onDelete: "cascade" }),
     role: clanRole().notNull(),
     joinedAt: timestamp({ withTimezone: true }).notNull(),
-    /** Silenced by the chief or a deputy until then (P65). */
+    /** Silenced by the chief or a deputy until then. */
     mutedUntil: timestamp({ withTimezone: true }),
-    /** For the pace of the discussion (P67). */
+    /** For the pace of the discussion. */
     lastMessageAt: timestamp({ withTimezone: true }),
   },
   (table) => [
@@ -96,7 +96,7 @@ export const clanJoinRequests = pgTable(
   ],
 );
 
-/** The journal's events (P67), written by the server; the shape depends on `type`. */
+/** The journal's events, written by the server; the shape depends on `type`. */
 export type ClanEventPayload =
   | { readonly type: "joined"; readonly userId: string }
   | { readonly type: "left"; readonly userId: string }
@@ -107,8 +107,8 @@ export type ClanEventPayload =
   | { readonly type: "renamed"; readonly name: string };
 
 /**
- * The clan's discussion and journal (K-06), read by cursor on `id`. Erased after 90 days unless
- * reported and not yet handled (P67). A deleted or hidden message keeps its row, without its text.
+ * The clan's discussion and journal, read by cursor on `id`. Erased after 90 days unless
+ * reported and not yet handled. A deleted or hidden message keeps its row, without its text.
  */
 export const clanMessages = pgTable(
   "clan_messages",
@@ -122,13 +122,13 @@ export const clanMessages = pgTable(
     authorId: text().references(() => users.id, { onDelete: "set null" }),
     body: text(),
     event: jsonb().$type<ClanEventPayload>(),
-    /** Writes an event once even when the queue replays a message (D-038). */
+    /** Writes an event once even when the queue replays a message. */
     eventKey: text(),
     createdAt: timestamp({ withTimezone: true }).notNull(),
     /** Removed by the chief, a deputy or its author. */
     deletedAt: timestamp({ withTimezone: true }),
     deletedBy: text().references(() => users.id, { onDelete: "set null" }),
-    /** Hidden by the team (P68). */
+    /** Hidden by the team. */
     hiddenAt: timestamp({ withTimezone: true }),
   },
   (table) => [
@@ -141,7 +141,7 @@ export const clanMessages = pgTable(
   ],
 );
 
-/** A clan's week (P66): the targets fixed when it starts, and the words counted so far. */
+/** A clan's week: the targets fixed when it starts, and the words counted so far. */
 export const clanWeeks = pgTable(
   "clan_weeks",
   {
@@ -161,7 +161,7 @@ export const clanWeeks = pgTable(
   (table) => [primaryKey({ columns: [table.clanId, table.week] })],
 );
 
-/** Each member's new words for the clan's week, recounted from `user_cards` (D-038). */
+/** Each member's new words for the clan's week, recounted from `user_cards`. */
 export const clanWeekMembers = pgTable(
   "clan_week_members",
   {
@@ -182,7 +182,7 @@ export const clanWeekMembers = pgTable(
 );
 
 /**
- * Boosters claimed from weekly goals (P66). The key leaves out the clan: at most one claim per
+ * Boosters claimed from weekly goals. The key leaves out the clan: at most one claim per
  * tier and week, so two boosters a week at most, even after changing clans.
  */
 export const clanGoalClaims = pgTable(
@@ -200,7 +200,7 @@ export const clanGoalClaims = pgTable(
   (table) => [primaryKey({ columns: [table.userId, table.week, table.tier] })],
 );
 
-/** The clan's library (K-04): cards of each collection held by at least one member. */
+/** The clan's library: cards of each collection held by at least one member. */
 export const clanLibrary = pgTable(
   "clan_library",
   {

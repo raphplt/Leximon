@@ -7,7 +7,7 @@ import {
 import { RARITIES, type Rarity, rarityRank } from "@leximon/core";
 import { formatCount } from "./format";
 
-/** The album (A-01 to A-06): what the player owns, collection by collection. */
+/** The album: what the player owns, collection by collection. */
 
 export interface AlbumCollection {
   readonly id: string;
@@ -20,7 +20,7 @@ export interface WordMemory {
   readonly level: MasteryLevelCode;
   /** Epoch ms when the word is due again. */
   readonly due: number;
-  /** Memory stability in days (D-025). */
+  /** Memory stability in days. */
   readonly stability: number;
 }
 
@@ -35,7 +35,7 @@ const FILTER_LABELS: Readonly<Record<AlbumFilter, string>> = {
   missing: "Manquantes",
 };
 
-/** Theme labels (P16); a theme missing here shows its slug with a capital. */
+/** Theme labels; a theme missing here shows its slug with a capital. */
 const THEME_LABELS: Readonly<Record<string, string>> = {
   "vie-quotidienne": "Vie quotidienne",
   metiers: "Métiers",

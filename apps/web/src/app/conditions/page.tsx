@@ -9,8 +9,8 @@ export const metadata: Metadata = {
 };
 
 /**
- * Terms of use (R-09). Draft written for a lawyer's review before the beta: plain words, the
- * game's non-negotiable rules (N1 to N5) and the moderation the DSA asks for.
+ * Terms of use. Draft written for a lawyer's review before the beta: plain words, the
+ * game's non-negotiable rules and the moderation the DSA asks for.
  */
 export default function TermsPage() {
   return (

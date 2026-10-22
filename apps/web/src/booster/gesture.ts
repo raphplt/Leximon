@@ -1,5 +1,5 @@
 /**
- * Reading the opening gestures (docs/cahiers-des-charges/ouverture.md): tearing the strip,
+ * Reading the opening gestures: tearing the strip,
  * peeking at the stack, swiping a card away. Pure functions of pointer distances in px.
  */
 

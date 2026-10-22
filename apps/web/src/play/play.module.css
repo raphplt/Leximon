@@ -1,4 +1,4 @@
-/* The Jouer screen (J-01 to J-08), maquette v1. */
+/* The Jouer screen. */
 
 .page {
   box-sizing: border-box;
@@ -7,7 +7,7 @@
   padding: 26px 32px 64px;
 }
 
-/* --- Level band (J-01 to J-03) --- */
+/* --- Level band --- */
 
 .strip {
   display: flex;
@@ -273,7 +273,7 @@
   font-weight: 700;
 }
 
-/* --- Slipping word (J-08) --- */
+/* --- Slipping word --- */
 
 .slipping {
   display: flex;
@@ -308,7 +308,7 @@
   }
 }
 
-/* Phones (C-08). */
+/* Phones. */
 @media (max-width: 759px) {
   .page {
     padding: 8px 14px 28px;
@@ -354,7 +354,7 @@
   }
 }
 
-/* Part of the daily goal reached, around the Défi du jour button (J-04). */
+/* Part of the daily goal reached, around the Défi du jour button. */
 .dailyRing {
   position: absolute;
   inset: -2px;

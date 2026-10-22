@@ -121,7 +121,7 @@ export type ClaimRefusalReason =
   | "guest_archived";
 
 /**
- * Claims the reward of a level (P58): the coffret. Idempotent by nature: the level is the key, a
+ * Claims the reward of a level: the coffret. Idempotent by nature: the level is the key, a
  * second claim of the same level returns what the first one gave.
  *
  * A coffret that would waste something stays closed, to be claimed later: boosters that do not
@@ -213,7 +213,7 @@ export type CardChoiceResult =
   | { readonly kind: "refused"; readonly reason: "card_not_choosable" };
 
 /**
- * Takes the card of the player's choice won at a level (P58): a Courant or Peu courant card of a
+ * Takes the card of the player's choice won at a level: a Courant or Peu courant card of a
  * published collection that the player does not own. Contents are known in advance: nothing is
  * drawn. A player who owns every such card may take any of them.
  *

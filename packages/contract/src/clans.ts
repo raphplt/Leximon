@@ -4,9 +4,9 @@ import { slugSchema, timestampSchema } from "./common";
 import { playerBadgeSchema } from "./profile";
 
 /**
- * Clans (P50, P65 to P67; interface-v1, K-01 to K-13). Members only, from the level of P59.
+ * Clans. Members only, from the level that opens them.
  * Writes are idempotent by nature (joining twice is refused, leaving twice too); a message sent
- * twice in a row is held back by the pace of P67. Refusals answer `{ error }` with the codes below.
+ * twice in a row is held back by the message pace. Refusals answer `{ error }` with the codes below.
  */
 
 export const clanIdSchema = z.uuid();
@@ -20,7 +20,7 @@ export type ClanRole = z.infer<typeof clanRoleSchema>;
 export const goalTierSchema = z.enum(["bronze", "silver", "gold"]);
 export type GoalTier = z.infer<typeof goalTierSchema>;
 
-/** A colour or engraving key of the emblem lists (P65). */
+/** A colour or engraving key of the emblem lists. */
 const emblemKeySchema = z
   .string()
   .max(32)
@@ -63,7 +63,7 @@ export const clansResponseSchema = z.object({
 });
 export type ClansResponse = z.infer<typeof clansResponseSchema>;
 
-/** Boosters of a weekly goal the player may claim (P66). */
+/** Boosters of a weekly goal the player may claim. */
 export const claimableGoalSchema = z.object({
   week: z.string(),
   tier: goalTierSchema,
@@ -76,11 +76,11 @@ export type ClaimableGoal = z.infer<typeof claimableGoalSchema>;
 /** `GET /me/clan`: where the player stands. */
 export const myClanResponseSchema = z.object({
   clanId: clanIdSchema.nullable(),
-  /** Set while the 24 h after leaving a clan run (P65). */
+  /** Set while the 24 h after leaving a clan run. */
   rejoinAt: timestampSchema.nullable(),
   /** Clans the player asked to enter. */
   requests: z.array(clanIdSchema),
-  /** Weekly goal boosters waiting, even from a clan the player left: for the mail (R-01). */
+  /** Weekly goal boosters waiting, even from a clan the player left: for the mail. */
   claimable: z.array(claimableGoalSchema),
 });
 export type MyClanResponse = z.infer<typeof myClanResponseSchema>;
@@ -106,7 +106,7 @@ export const clanGoalSchema = z.object({
   words: z.int().nonnegative(),
   tier: goalTierSchema.nullable(),
   myWords: z.int().nonnegative(),
-  /** Words a member brings before sharing the boosters (P66). */
+  /** Words a member brings before sharing the boosters. */
   minContribution: z.int().positive(),
   /** Tiers whose boosters the player may claim now, from this week or the last one. */
   claimable: z.array(claimableGoalSchema),
@@ -115,7 +115,7 @@ export const clanGoalSchema = z.object({
 });
 export type ClanGoal = z.infer<typeof clanGoalSchema>;
 
-/** `GET /clans/:id`: the clan's page (K-01 to K-05). Members see the goal and the library. */
+/** `GET /clans/:id`: the clan's page. Members see the goal and the library. */
 export const clanViewSchema = z.object({
   clan: clanSummarySchema,
   /** The player's place in it; `null` for a visitor. */
@@ -130,13 +130,13 @@ export const clanViewSchema = z.object({
   /** The visitor already asked to enter. */
   requested: z.boolean(),
   goal: clanGoalSchema.nullable(),
-  /** Cards of each collection held by at least one member (K-04). */
+  /** Cards of each collection held by at least one member. */
   library: z.array(z.object({ collectionId: slugSchema, owned: z.int().nonnegative() })),
   /** The first members, chief and deputies first; the rest by `GET /clans/:id/members`. */
   members: z.array(clanMemberSchema),
   /** Requests waiting, for the chief and the deputies; 0 for everyone else. */
   pendingRequests: z.int().nonnegative(),
-  /** Engravings and colours the chief may choose (P65, P66). */
+  /** Engravings and colours the chief may choose. */
   emblemChoices: z.object({ engravings: z.array(z.string()), colors: z.array(z.string()) }),
 });
 export type ClanView = z.infer<typeof clanViewSchema>;
@@ -147,7 +147,7 @@ export const clanMembersResponseSchema = z.object({
 });
 export type ClanMembersResponse = z.infer<typeof clanMembersResponseSchema>;
 
-/** `POST /clans` body (K-09). */
+/** `POST /clans` body. */
 export const createClanRequestSchema = z.object({
   name: z.string().max(200),
   motto: z.string().max(400).default(""),
@@ -175,7 +175,7 @@ export type ClanJoinResult = z.infer<typeof clanJoinResultSchema>;
 /** `PUT /clans/:id/members/:code/role` body, chief only. */
 export const setRoleRequestSchema = z.object({ role: z.enum(["deputy", "member"]) });
 
-/** `POST /clans/:id/members/:code/mute` body: one of the durations of P65. */
+/** `POST /clans/:id/members/:code/mute` body: one of the allowed durations. */
 export const muteRequestSchema = z.object({ durationMs: z.int().positive() });
 
 export const clanRequestSchema = z.object({
@@ -185,7 +185,7 @@ export const clanRequestSchema = z.object({
 export const clanRequestsResponseSchema = z.object({ requests: z.array(clanRequestSchema) });
 export type ClanRequestsResponse = z.infer<typeof clanRequestsResponseSchema>;
 
-/** `POST /me/clan/claims` body: the boosters of a tier reached (P66). */
+/** `POST /me/clan/claims` body: the boosters of a tier reached. */
 export const claimGoalRequestSchema = z.object({
   week: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
   tier: goalTierSchema,
@@ -199,7 +199,7 @@ export const claimGoalResponseSchema = z.object({
 });
 export type ClaimGoalResponse = z.infer<typeof claimGoalResponseSchema>;
 
-// --- Discussion and journal (K-06, K-07) ---------------------------------------------------------
+// --- Discussion and journal ---------------------------------------------------------
 
 export const clanEventSchema = z.discriminatedUnion("type", [
   z.object({ type: z.literal("joined"), player: playerBadgeSchema.nullable() }),

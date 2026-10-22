@@ -37,7 +37,7 @@ type StoredStatus = (typeof schema.tradeStatus.enumValues)[number];
 
 /**
  * A trade as stored, with the players' public codes. A side is `null` once its player deleted
- * their account (R-07); a pending offer always has both.
+ * their account; a pending offer always has both.
  */
 export interface TradeRecord {
   readonly id: string;
@@ -162,7 +162,7 @@ export async function createTrade(
 
   const proposer = await ensurePlayer(db, userId);
   const recipient = await findPlayerByCode(db, input.recipientCode);
-  // A player blocked either way does not exist for the other (N5).
+  // A player blocked either way does not exist for the other.
   if (recipient === null || (await isBlockedEitherWay(db, userId, recipient.userId))) {
     return { kind: "player_not_found" };
   }
@@ -319,7 +319,7 @@ const recipientProgress = alias(userProgress, "recipient_progress");
  * involved, always in (user_id, card_id) order so that concurrent trades between the same players
  * cannot deadlock. Everything is checked again under these locks with the rules in force now,
  * then one copy of each card changes hands. Statements: BEGIN, lock offer, lock cards, combined
- * write (with the XP both players earn, P48), COMMIT. Mastery (`user_mastery`) is never touched: it belongs to the player, not the copy.
+ * write (with the XP both players earn), COMMIT. Mastery (`user_mastery`) is never touched: it belongs to the player, not the copy.
  */
 export async function acceptTrade(
   db: Database,
@@ -393,7 +393,7 @@ export async function acceptTrade(
     if (!isLevelHighEnough(rules, proposerXp ?? 0) || !isLevelHighEnough(rules, recipientXp ?? 0)) {
       return { kind: "refused", reason: "level_too_low" };
     }
-    // Levels only rise, but the scale of P59 may have changed since the offer was made.
+    // Levels only rise, but the scale of features by level may have changed since the offer was made.
     const maxCards = maxCardsBetween(rules, proposerXp ?? 0, recipientXp ?? 0);
     if (record.give.length > maxCards || record.want.length > maxCards) {
       return { kind: "refused", reason: "too_many_cards" };
@@ -461,7 +461,7 @@ function moveCards(tx: Transaction, plan: ReturnType<typeof planTransfers>, at: 
             target: [userCards.userId, userCards.cardId, userCards.variant],
             set: {
               quantity: sql`${userCards.quantity} + 1`,
-              // Restarts the holding period of rare cards (D-026).
+              // Restarts the holding period of rare cards.
               lastObtainedAt: sql`excluded.last_obtained_at`,
             },
           })

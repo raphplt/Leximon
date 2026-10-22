@@ -5,7 +5,7 @@ import { cacheLife } from "next/cache";
 const API_URL = process.env.API_URL ?? process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8787";
 
 /**
- * A public profile as anyone sees it (P-05), for the page, its title and its shared image: read
+ * A public profile as anyone sees it, for the page, its title and its shared image: read
  * without a session, so the same copy serves every visitor for a minute, like the API's own cache.
  * `null` when there is none to show (unknown pseudo, profile below the public level).
  */

@@ -48,7 +48,7 @@ export const guestLinkOutcome = pgEnum("guest_link_outcome", [
 export const tradeSide = pgEnum("trade_side", ["give", "want"]);
 
 /**
- * Collections: sets of cards, each with its own booster (P14). A collection becomes openable once
+ * Collections: sets of cards, each with its own booster. A collection becomes openable once
  * published; cards of unpublished collections never appear in any booster.
  */
 export const collections = pgTable("collections", {
@@ -88,7 +88,7 @@ export const cards = pgTable(
   ],
 );
 
-/** Themes cut across collections (P16): odd words, old insults… Used for albums and events. */
+/** Themes cut across collections: odd words, old insults… Used for albums and events. */
 export const themes = pgTable("themes", {
   /** Stable slug, e.g. "insultes". */
   id: text().primaryKey(),
@@ -128,13 +128,13 @@ export const boosterWallets = pgTable(
     pityCounters: jsonb().$type<PityCounters>().notNull().default({}),
     /** Bonus boosters earned through challenges: spent only when the free stock is empty. */
     bonusBoosters: integer().notNull().default(0),
-    /** Of `bonusBoosters`, the garni ones won by level (P58), spent first. */
+    /** Of `bonusBoosters`, the garni ones won by level, spent first. */
     garniBoosters: integer().notNull().default(0),
-    /** Places added to the reserve cap by level rewards (P58). */
+    /** Places added to the reserve cap by level rewards. */
     reserveSlots: smallint().notNull().default(0),
-    /** Day in Paris of the last booster opened: the first one of a day earns more XP (P48). */
+    /** Day in Paris of the last booster opened: the first one of a day earns more XP. */
     lastOpenedDay: date({ mode: "string" }),
-    /** Days in Paris with at least one booster opened, for the profile (P-03). */
+    /** Days in Paris with at least one booster opened, for the profile. */
     daysPlayed: integer().notNull().default(0),
   },
   (table) => [
@@ -150,7 +150,7 @@ export const boosterWallets = pgTable(
 );
 
 /**
- * Account level (P48): the experience earned, one row per player, created by the first action
+ * Account level: the experience earned, one row per player, created by the first action
  * that earns any. The level is derived from it (`levelOf` in core), never stored.
  */
 export const userProgress = pgTable(
@@ -197,7 +197,7 @@ export const boosterBonusAwards = pgTable(
 );
 
 /**
- * Level rewards claimed (P58), one row per level: the primary key makes a claim happen once, and
+ * Level rewards claimed, one row per level: the primary key makes a claim happen once, and
  * `rewards` keeps what it gave under the rules in force. A card of the player's choice is taken
  * later (`chosen_card_id`), once per level that gives one.
  */
@@ -237,7 +237,7 @@ export const userCards = pgTable(
     variant: text().notNull().default("standard"),
     quantity: integer().notNull(),
     firstObtainedAt: timestamp({ withTimezone: true }).defaultNow().notNull(),
-    /** Last copy gained (booster or trade): rare cards are tradeable only a while after (D-026). */
+    /** Last copy gained (booster or trade): rare cards are tradeable only a while after. */
     lastObtainedAt: timestamp({ withTimezone: true }).defaultNow().notNull(),
   },
   (table) => [
@@ -269,7 +269,7 @@ export const boosterOpens = pgTable(
       .notNull(),
     /** Paid from the bonus reserve, the free stock being empty. */
     fromBonus: boolean().notNull().default(false),
-    /** A garni booster (P58): its last card was at least the garni rarity of the rules. */
+    /** A garni booster: its last card was at least the garni rarity of the rules. */
     garni: boolean().notNull().default(false),
     openedAt: timestamp({ withTimezone: true }).notNull(),
   },
@@ -305,8 +305,8 @@ export const boosterOpenRequests = pgTable(
 );
 
 /**
- * Public identity of a player: the code they share to receive trade offers (D-026), and their
- * profile (interface-v1, P-01 to P-08). Cosmetics are checked against the coffrets claimed when
+ * Public identity of a player: the code they share to receive trade offers, and their
+ * profile. Cosmetics are checked against the coffrets claimed when
  * they are chosen; `null` wears the default (a starting avatar, the latest title).
  */
 export const players = pgTable(
@@ -318,7 +318,7 @@ export const players = pgTable(
     /** 8 characters of Crockford base 32, e.g. "K7QF2M9D". Unique, never reused. */
     code: text().notNull().unique(),
     createdAt: timestamp({ withTimezone: true }).defaultNow().notNull(),
-    /** As the player wrote it (filtered, N5). Members only; `null` until chosen. */
+    /** As the player wrote it (filtered). Members only; `null` until chosen. */
     pseudo: text(),
     /** `pseudoKey` in core: lower case, no accents nor separators. Unique. */
     pseudoKey: text(),
@@ -327,11 +327,11 @@ export const players = pgTable(
     avatar: text(),
     frame: text(),
     title: text(),
-    /** P60: public by default; private shows only the pseudo and the avatar to others. */
+    /** public by default; private shows only the pseudo and the avatar to others. */
     profilePublic: boolean().notNull().default(true),
-    /** Last request, to the nearest few minutes: "online" and "seen 2 days ago" in a clan (K-05). */
+    /** Last request, to the nearest few minutes: "online" and "seen 2 days ago" in a clan. */
     lastSeenAt: timestamp({ withTimezone: true }),
-    /** When the player last left a clan of their own will: 24 h before joining another (P65). */
+    /** When the player last left a clan of their own will: 24 h before joining another. */
     clanLeftAt: timestamp({ withTimezone: true }),
   },
   (table) => [
@@ -344,7 +344,7 @@ export const players = pgTable(
 );
 
 /**
- * Cards pinned to a profile (P-02): owned cards only. A trade that takes the last copy unpins the
+ * Cards pinned to a profile: owned cards only. A trade that takes the last copy unpins the
  * card in the same transaction.
  */
 export const pinnedCards = pgTable(
@@ -366,7 +366,7 @@ export const pinnedCards = pgTable(
   ],
 );
 
-/** A player blocked by another (N5): no offer either way, and they disappear from each other. */
+/** A player blocked by another: no offer either way, and they disappear from each other. */
 export const userBlocks = pgTable(
   "user_blocks",
   {
@@ -390,7 +390,7 @@ export const reportTarget = pgEnum("report_target", ["pseudo", "clan_name", "mes
 export const reportResolution = pgEnum("report_resolution", ["dismissed", "sanctioned"]);
 
 /**
- * Reports of what a player wrote (N5): a pseudo, a clan name or motto, a message. `content` keeps
+ * Reports of what a player wrote: a pseudo, a clan name or motto, a message. `content` keeps
  * the text as it was reported, since it may change in between; `pseudo` the author's pseudo then.
  * One report per reporter and target (`targetKey`: the pseudo, the clan id, the message id).
  */
@@ -410,7 +410,7 @@ export const moderationReports = pgTable(
     /** The reported text, for a clan name or a message. */
     content: text(),
     clanId: uuid(),
-    /** No foreign key: a reported message is kept until its report is handled (P67). */
+    /** No foreign key: a reported message is kept until its report is handled. */
     messageId: integer(),
     createdAt: timestamp({ withTimezone: true }).notNull(),
     resolvedAt: timestamp({ withTimezone: true }),
@@ -441,7 +441,7 @@ export const sanctionKind = pgEnum("sanction_kind", SANCTION_KINDS);
 export const contestOutcome = pgEnum("contest_outcome", ["upheld", "revoked"]);
 
 /**
- * Sanctions decided by the team (P68), each with its reason, shown to the player and contestable.
+ * Sanctions decided by the team, each with its reason, shown to the player and contestable.
  * Rows are never deleted while the account exists: a lifted sanction gets `revokedAt`.
  */
 export const sanctions = pgTable(
@@ -463,7 +463,7 @@ export const sanctions = pgTable(
       .notNull()
       .references(() => users.id),
     createdAt: timestamp({ withTimezone: true }).notNull(),
-    /** The player saw it in the game (R-08). */
+    /** The player saw it in the game. */
     seenAt: timestamp({ withTimezone: true }),
     contestedAt: timestamp({ withTimezone: true }),
     contestText: text(),
@@ -488,7 +488,7 @@ export const sanctions = pgTable(
 );
 
 /**
- * What the player wants to be told (R-04). Read by the notifications once the queue exists; a
+ * What the player wants to be told. Read by the notifications once the queue exists; a
  * player without a row gets everything.
  */
 export const userPreferences = pgTable("user_preferences", {
@@ -502,7 +502,7 @@ export const userPreferences = pgTable("user_preferences", {
 });
 
 /**
- * Mastery of a word (D-025), per player, never traded. Holds the FSRS memory state; locked
+ * Mastery of a word, per player, never traded. Holds the FSRS memory state; locked
  * (`SELECT … FOR UPDATE`) while an answer is applied.
  */
 export const userMastery = pgTable(
@@ -563,9 +563,9 @@ export const reviewLogs = pgTable(
 );
 
 /**
- * Trade offers (D-026): a proposer gives some duplicates to a recipient for some of theirs.
+ * Trade offers: a proposer gives some duplicates to a recipient for some of theirs.
  * Nothing is reserved while the offer waits; acceptance checks and moves everything at once.
- * A deleted account (R-07) leaves its side `null`: the other player keeps their history. Its
+ * A deleted account leaves its side `null`: the other player keeps their history. Its
  * pending offers are cancelled first, so a pending offer always has both players.
  */
 export const trades = pgTable(
@@ -603,7 +603,7 @@ export const tradeItems = pgTable(
 );
 
 /**
- * Guests archived by a sign-in (P37, P54): the guest is never deleted, its game moved to a new
+ * Guests archived by a sign-in: the guest is never deleted, its game moved to a new
  * account (transfer) or left behind when the account already plays (abandon). One row per guest:
  * a guest links once, so a retried sign-in finds the row and does nothing. Also the audit of
  * sign-ins from a guest.

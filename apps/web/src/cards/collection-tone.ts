@@ -1,4 +1,4 @@
-/** Tone of each launch collection's progress bar, as on the maquette (album, clan library). */
+/** Tone of each launch collection's progress bar (album, clan library). */
 const TONES: Readonly<Record<string, string>> = {
   fondateurs: "#7C9BFF",
   caracteres: "#FF8462",

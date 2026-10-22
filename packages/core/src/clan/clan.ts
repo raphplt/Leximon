@@ -1,5 +1,5 @@
 /**
- * Clans (P50, P65 to P67): names and texts, roles, membership, discussion. Pure functions: the
+ * Clans: names and texts, roles, membership, discussion. Pure functions: the
  * server checks uniqueness, locks and dates.
  */
 
@@ -18,16 +18,16 @@ export interface ClanRules {
   readonly messageIntervalMs: number;
   /** Wait after leaving a clan before joining another one. Not after being excluded. */
   readonly rejoinCooldownMs: number;
-  /** A chief away this long hands the role over (P65). */
+  /** A chief away this long hands the role over. */
   readonly chiefAbsenceMs: number;
   /** Silences a chief or deputy may give, shortest first. */
   readonly muteDurationsMs: readonly number[];
-  /** Messages older than this are erased, unless reported and not yet handled (P67). */
+  /** Messages older than this are erased, unless reported and not yet handled. */
   readonly messageRetentionMs: number;
   /** Engravings (card ids) and colours every clan may use for its emblem. */
   readonly emblemEngravings: readonly string[];
   readonly emblemColors: readonly string[];
-  /** Extra engravings and colours, one more for each gold weekly goal, in this order (P66). */
+  /** Extra engravings and colours, one more for each gold weekly goal, in this order. */
   readonly emblemUnlocks: readonly EmblemItem[];
 }
 
@@ -161,7 +161,7 @@ export type ClanAction =
   | "edit_clan"
   | "hand_over";
 
-/** What a role may do (P65). `target` is the role of the member the action falls on, if any. */
+/** What a role may do. `target` is the role of the member the action falls on, if any. */
 export function canAct(actor: ClanRole, action: ClanAction, target?: ClanRole): boolean {
   switch (action) {
     case "accept_request":
@@ -187,7 +187,7 @@ export interface ClanMemberState {
 }
 
 /**
- * Who becomes chief when the chief leaves or stays away (P65): the oldest deputy, else the oldest
+ * Who becomes chief when the chief leaves or stays away: the oldest deputy, else the oldest
  * member; `null` if nobody is left. Ties on the arrival date fall on the user id, to be stable.
  */
 export function nextChief(members: readonly ClanMemberState[], leavingId: string): string | null {

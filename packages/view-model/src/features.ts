@@ -12,7 +12,7 @@ import {
 import { capitalize, plural } from "./format";
 
 /**
- * Features opened by the account level (P59). A closed feature stays visible with its level:
+ * Features opened by the account level. A closed feature stays visible with its level:
  * a badge « Niv. 10 », and a screen that says what opens it. A promise, not a wall.
  */
 
@@ -53,7 +53,7 @@ export function levelBadge(level: number): string {
   return `Niv. ${level}`;
 }
 
-/** The screens a closed feature leads to (C-06). */
+/** The screens a closed feature leads to. */
 export type LockedFeature = "trade" | "join_clan" | "jousts";
 
 const LOCKED_COPY: Readonly<Record<LockedFeature, { title: string; text: string }>> = {
@@ -105,7 +105,7 @@ export function lockedToast(feature: Feature, now: EpochMs): string {
   return `${capitalize(FEATURE_NAMES[feature])}, c'est au niveau ${level}.`;
 }
 
-/** Open, but not built yet: the jousts, once decided (X-02). */
+/** Open, but not built yet: the jousts, once decided. */
 export const NOT_BUILT_COPY: Readonly<Record<"jousts", { title: string; text: string }>> = {
   jousts: {
     title: "Les joutes se préparent",

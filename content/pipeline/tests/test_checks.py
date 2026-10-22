@@ -80,7 +80,7 @@ def test_a_definition_using_the_words_family_is_shown() -> None:
         c.name: c for c in checks.run_checks(draft(definition="Danse des hussards."), hussarde)
     }
     assert not results["no_giveaway"].passed
-    assert checks.failed(list(results.values())) == []  # tolerated (P41), only reworded once
+    assert checks.failed(list(results.values())) == []  # tolerated, only reworded once
     assert "« hussards »" in results["no_giveaway"].detail
     assert checks.giveaway_words("jarron", "Petite jarre.") == ["jarre"]
     assert checks.giveaway_words("prévôté", "Charge du prevot.") == ["prevot"]

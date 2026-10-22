@@ -1,7 +1,7 @@
 import { EMAIL_COLORS, escapeHtml } from "../email/layout";
 
 /**
- * The reduced Markdown of campaign bodies (D-036), converted to e-mail HTML and to plain text.
+ * The reduced Markdown of campaign bodies, converted to e-mail HTML and to plain text.
  *
  * Accepted: paragraphs (one line break gives a `<br>`), `## titles`, `- lists`, `**bold**`,
  * `*italic*` and `[links](https://…)`. Everything else is shown as typed, escaped: no raw HTML, no

@@ -8,7 +8,7 @@ from dataclasses import dataclass
 from .drafting import CardDraft
 
 #: Shares of the catalogue (docs/rnd/collection-sim.md). Légendaire is a pépite absent from the
-#: whole Ngram corpus, Épique any other pépite (D-020): each takes its own top charm scores.
+#: whole Ngram corpus, Épique any other pépite: each takes its own top charm scores.
 EPIC_SHARE = 0.06
 LEGENDARY_SHARE = 0.02
 #: Below this mean charm score (out of 10), a word is never a pépite, even if its quota is not

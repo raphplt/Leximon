@@ -11,7 +11,7 @@ export interface DbOptions {
 }
 
 /**
- * Creates a database client (node-postgres, see D-016).
+ * Creates a database client (node-postgres).
  *
  * On Cloudflare Workers, create one per request from the Hyperdrive connection string and
  * close it when the request ends: connections must not outlive a request (stateless API).

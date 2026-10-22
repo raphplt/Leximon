@@ -12,7 +12,7 @@ For each card approved in data/gravures/validation.json:
 3. write data/gravures/out/rendered.json, which `release` reads to attach the engravings.
 
 Files are named after their content (`gravures/<card>.<hash12>.ink.webp`), like the catalogue
-(D-023): a published file never changes. Rendering is deterministic and fast, so it is always
+: a published file never changes. Rendering is deterministic and fast, so it is always
 redone; only the downloads are kept. Port of rnd/gravures/render_trial.py, never imported."""
 
 import hashlib

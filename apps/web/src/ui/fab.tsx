@@ -3,7 +3,7 @@ import { Icon, type IconName } from "./icon";
 import styles from "./ui.module.css";
 
 /**
- * A floating button of the Jouer screen (J-04): a round icon and its label, with the red count
+ * A floating button of the Jouer screen: a round icon and its label, with the red count
  * of what waits, or the level that opens it.
  */
 export function Fab({

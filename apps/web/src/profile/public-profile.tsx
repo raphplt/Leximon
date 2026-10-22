@@ -20,7 +20,7 @@ import { PinnedCards, type ProfileFace, ProfileHeader, StatsPanel } from "./prof
 import { failureMessage } from "./use-profile-actions";
 
 /**
- * Someone's profile (P-05, P-06), as the server rendered it for everyone. A signed-in viewer reads
+ * Someone's profile, as the server rendered it for everyone. A signed-in viewer reads
  * it again with their session, which hides it when either blocked the other, and gets the actions.
  */
 export function PublicProfileScreen({
@@ -137,7 +137,7 @@ function PublicProfileBody({
   );
 }
 
-/** What a signed-in player can do on someone's profile (P-06). */
+/** What a signed-in player can do on someone's profile. */
 function ViewerActions({
   profile,
   viewer,

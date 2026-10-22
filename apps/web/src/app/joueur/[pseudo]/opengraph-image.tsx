@@ -11,7 +11,7 @@ export const contentType = "image/png";
 const DOMAIN = "leximon.fr";
 
 /**
- * The image of a shared profile (P-05): pseudo, title, level, the figures. Drawn on demand by
+ * The image of a shared profile: pseudo, title, level, the figures. Drawn on demand by
  * Next, from the same cached copy as the page; nothing goes through the queue.
  */
 export default async function Image({ params }: { params: Promise<{ pseudo: string }> }) {

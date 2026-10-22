@@ -25,7 +25,7 @@ export type GrantBonusResult =
   | { readonly kind: "guest_archived" };
 
 /**
- * Adds bonus boosters to a player's reserve, up to its cap (P23): the gift follows the same rule
+ * Adds bonus boosters to a player's reserve, up to its cap: the gift follows the same rule
  * as rewards, so `added` can be less than asked.
  *
  * Locks the wallet row as opening a booster does, so a gift and an open never overwrite each other.

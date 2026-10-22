@@ -80,14 +80,14 @@ export const masteryResponseSchema = z.object({
       level: masteryLevelSchema,
       /** When the word is due again. */
       due: timestampSchema,
-      /** Memory stability in days, which raises the level (D-025). */
+      /** Memory stability in days, which raises the level. */
       stability: z.number().nonnegative(),
     }),
   ),
 });
 export type MasteryResponse = z.infer<typeof masteryResponseSchema>;
 
-/** `GET /challenges/daily`, 200: today's answers towards the daily goal (P23, P29). */
+/** `GET /challenges/daily`, 200: today's answers towards the daily goal. */
 export const dailyChallengeResponseSchema = z.object({
   goal: z.object({ answers: z.int().positive(), correct: z.int().positive() }),
   /** Answers given today (Paris time), and how many were right. */

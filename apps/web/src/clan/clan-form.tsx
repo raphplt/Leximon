@@ -13,7 +13,7 @@ import { Emblem } from "./emblem";
 const ENTRY_MODES: readonly ClanEntryMode[] = ["open", "request", "invite"];
 
 /**
- * Name, motto, entry and emblem of a clan: founding it (K-09) or changing it, chief only (K-10).
+ * Name, motto, entry and emblem of a clan: founding it or changing it, chief only.
  * The server checks everything again; its refusal comes back in `error`.
  */
 export function ClanForm({

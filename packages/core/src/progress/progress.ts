@@ -1,5 +1,5 @@
 /**
- * Account level (P48): useful actions earn experience (XP), and XP raises the level.
+ * Account level: useful actions earn experience (XP), and XP raises the level.
  *
  * Only the total XP is stored; the level is always derived from it. Concurrency: these functions
  * are pure. Callers add XP with an atomic increment, in the transaction of the action that earns it.

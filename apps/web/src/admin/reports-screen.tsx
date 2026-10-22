@@ -31,7 +31,7 @@ const SANCTIONS_BY_TARGET: Readonly<Record<AdminReport["targetKind"], readonly S
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
-/** Reports grouped by what they point at, oldest first (lot 4, R-08). */
+/** Reports grouped by what they point at, oldest first. */
 export function ReportsScreen() {
   const { state, reload } = useLoad(fetchReports);
   const [notice, setNotice] = useState<string | null>(null);

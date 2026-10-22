@@ -6,7 +6,7 @@ import Link from "next/link";
 import { Avatar } from "@/components/avatar";
 import styles from "./trades.module.css";
 
-/** The other player of an offer (E-03): avatar, pseudo or code, level; « Un joueur parti » once gone. */
+/** The other player of an offer: avatar, pseudo or code, level; « Un joueur parti » once gone. */
 export function Counterpart({
   player,
   prefix = "",

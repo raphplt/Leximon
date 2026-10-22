@@ -56,7 +56,7 @@ const input = {
   now: NOW,
 };
 
-describe("album (A-01 to A-06)", () => {
+describe("album", () => {
   it("counts every collection and the whole catalogue", () => {
     const view = albumView(input, STATE);
     expect(view.headline).toEqual({ owned: "3", total: "5" });

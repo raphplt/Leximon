@@ -20,7 +20,7 @@ export function accountRoutes() {
   });
 
   /**
-   * What signing in with this code would do to the guest's game (P54), so that the player sees
+   * What signing in with this code would do to the guest's game, so that the player sees
    * what follows or is lost before confirming. The code is checked without being used up,
    * and a wrong one counts as an attempt: only the owner of the address learns whether it has an
    * account.

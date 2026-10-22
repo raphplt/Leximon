@@ -58,7 +58,7 @@ type Reader = Pick<Database, "select">;
 export type Refused = { readonly kind: "refused"; readonly reason: ClanRefusal };
 const refuse = (reason: ClanRefusal): Refused => ({ kind: "refused", reason });
 
-/** A member seen this recently shows as online (K-05). */
+/** A member seen this recently shows as online. */
 export const ONLINE_WINDOW_MS = 5 * 60 * 1000;
 /** `lastSeenAt` is written at most this often: a write per request would be wasted. */
 const LAST_SEEN_INTERVAL_MS = 60 * 1000;
@@ -73,7 +73,7 @@ function rulesAt(now: EpochMs): ClanRules {
 
 // --- Presence ------------------------------------------------------------------------------------
 
-/** Records that the player came by (K-05, and the chief's absence of P65). */
+/** Records that the player came by (and how long the chief has been away). */
 export async function touchLastSeen(db: Database, userId: string, now: EpochMs): Promise<void> {
   await db
     .update(players)
@@ -128,7 +128,7 @@ async function lockClan(tx: Transaction, clanId: string) {
   return row ?? null;
 }
 
-/** Why the player may not enter a clan (or create one) now, `null` if they may (P50, P59, P65). */
+/** Why the player may not enter a clan (or create one) now, `null` if they may. */
 function entryRefusal(
   player: LockedPlayer,
   feature: "join_clan" | "create_clan",
@@ -251,7 +251,7 @@ async function passChief(
 
 export type CreateClanResult = { readonly kind: "created"; readonly clanId: string } | Refused;
 
-/** `POST /clans` (K-09): the player founds a clan and becomes its chief. */
+/** `POST /clans`: the player founds a clan and becomes its chief. */
 export async function createClan(
   db: Database,
   input: {
@@ -311,7 +311,7 @@ export async function createClan(
 export type JoinResult = ({ readonly kind: "ok" } & ClanJoinResult) | Refused;
 
 /**
- * `POST /clans/:id/join` (K-08): enters an open clan, or asks to enter one "sur demande". With
+ * `POST /clans/:id/join`: enters an open clan, or asks to enter one "sur demande". With
  * `byCode`, the invitation code opens any clan.
  */
 export async function joinClan(
@@ -374,7 +374,7 @@ export async function withdrawRequest(
 export type RequestDecision = { readonly kind: "ok" } | Refused;
 
 /**
- * `POST /clans/:id/requests/:code/accept` (K-10). The requester's row is locked first, as when
+ * `POST /clans/:id/requests/:code/accept`. The requester's row is locked first, as when
  * they join by themselves; their state is checked again, since it may have changed since.
  */
 export async function acceptRequest(
@@ -418,7 +418,7 @@ export async function acceptRequest(
   }
 }
 
-/** `POST /clans/:id/requests/:code/decline` (K-10). */
+/** `POST /clans/:id/requests/:code/decline`. */
 export async function declineRequest(
   db: Database,
   input: { readonly actorId: string; readonly clanId: string; readonly targetCode: string },
@@ -453,8 +453,8 @@ export type LeaveResult =
   | Refused;
 
 /**
- * `POST /me/clan/leave` (K-11). A chief who leaves hands over to the oldest deputy, else the
- * oldest member; the last one out dissolves the clan (P65). Then 24 h before entering another.
+ * `POST /me/clan/leave`. A chief who leaves hands over to the oldest deputy, else the
+ * oldest member; the last one out dissolves the clan. Then 24 h before entering another.
  */
 export async function leaveClan(
   db: Database,
@@ -499,7 +499,7 @@ export async function leaveClan(
 
 export type ManageResult = { readonly kind: "ok" } | Refused;
 
-/** `POST /clans/:id/members/:code/kick` (K-10). No waiting time after being excluded (P65). */
+/** `POST /clans/:id/members/:code/kick`. No waiting time after being excluded. */
 export async function kickMember(
   db: Database,
   input: {
@@ -523,7 +523,7 @@ export async function kickMember(
   });
 }
 
-/** `PUT /clans/:id/members/:code/role` (K-10): the chief names or removes a deputy. */
+/** `PUT /clans/:id/members/:code/role`: the chief names or removes a deputy. */
 export async function setMemberRole(
   db: Database,
   input: {
@@ -571,7 +571,7 @@ export async function handOver(
   });
 }
 
-/** `PUT /clans/:id/members/:code/mute` (K-10): silences a member for one of the durations of P65. */
+/** `PUT /clans/:id/members/:code/mute`: silences a member for one of the allowed durations. */
 export async function muteMember(
   db: Database,
   input: {
@@ -598,7 +598,7 @@ export async function muteMember(
   });
 }
 
-/** `PATCH /clans/:id` (K-10): the chief changes the name, motto, emblem or entry mode. */
+/** `PATCH /clans/:id`: the chief changes the name, motto, emblem or entry mode. */
 export async function updateClan(
   db: Database,
   input: {
@@ -628,7 +628,7 @@ export async function updateClan(
       const update: Partial<typeof clans.$inferInsert> = {};
       const renamed = name?.ok && name.name !== clan.name;
       if (renamed || (motto?.ok && motto.text !== clan.motto)) {
-        // A muted player writes nothing the others read (P68).
+        // A muted player writes nothing the others read.
         if (!canWrite) return refuse("sanctioned");
       }
       if (renamed) {
@@ -680,7 +680,7 @@ export async function renewInviteCode(
 }
 
 /**
- * A chief away for 14 days hands the role over (P65), checked when the clan's page is read rather
+ * A chief away for 14 days hands the role over, checked when the clan's page is read rather
  * than by a scheduled task. The absent chief stays, as a member.
  */
 export async function handOverIfChiefAway(
@@ -768,7 +768,7 @@ export interface ClanListCursor {
   readonly id: string;
 }
 
-/** `GET /clans` (K-08): by name prefix and entry mode, the biggest clans first. */
+/** `GET /clans`: by name prefix and entry mode, the biggest clans first. */
 export async function listClans(
   db: Reader,
   input: {
@@ -814,7 +814,7 @@ export interface MemberCursor {
 const roleRank = sql<number>`(case ${clanMembers.role} when 'chief' then 0
   when 'deputy' then 1 else 2 end)`;
 
-/** Members in the order of K-05: the chief, the deputies, then by arrival. */
+/** Members in order: the chief, the deputies, then by arrival. */
 export async function readMembers(
   db: Reader,
   input: {
@@ -892,7 +892,7 @@ export async function readMembers(
   };
 }
 
-/** `GET /clans/:id` (K-01 to K-05). Visitors see the header and the members only. */
+/** `GET /clans/:id`. Visitors see the header and the members only. */
 export async function readClanView(
   db: Database,
   input: { readonly viewerId: string; readonly clanId: string; readonly now: EpochMs },
@@ -958,7 +958,7 @@ export async function readClanView(
   };
 }
 
-/** `GET /clans/:id/requests` (K-10): for the chief and the deputies. */
+/** `GET /clans/:id/requests`: for the chief and the deputies. */
 export async function listRequests(
   db: Database,
   input: { readonly actorId: string; readonly clanId: string; readonly now: EpochMs },

@@ -18,7 +18,7 @@ import {
 const rules = clanRulesAt(CLAN_SCHEDULE, Date.UTC(2026, 9, 22));
 const HOUR = 3_600_000;
 
-describe("checkClanName (P65)", () => {
+describe("checkClanName", () => {
   it("keeps a tidy name and keys it like a pseudo", () => {
     expect(checkClanName(rules, "  Les   Fines Plumes ")).toEqual({
       ok: true,
@@ -39,7 +39,7 @@ describe("checkClanName (P65)", () => {
   });
 });
 
-describe("checkClanMotto and checkClanMessage (P65, P67)", () => {
+describe("checkClanMotto and checkClanMessage", () => {
   it("lets an empty motto through and caps it at 80 characters", () => {
     expect(checkClanMotto(rules, "   ")).toEqual({ ok: true, text: "" });
     expect(checkClanMotto(rules, "x".repeat(81))).toEqual({ ok: false, reason: "too_long" });
@@ -67,7 +67,7 @@ describe("checkClanMotto and checkClanMessage (P65, P67)", () => {
   });
 });
 
-describe("emblem (P65, P66)", () => {
+describe("emblem", () => {
   it("adds one unlocked item per gold goal, in order", () => {
     expect(emblemChoices(rules, 0).colors).toHaveLength(8);
     expect(emblemChoices(rules, 1).colors).toContain("vermillon");
@@ -88,7 +88,7 @@ describe("emblem (P65, P66)", () => {
   });
 });
 
-describe("roles (P65)", () => {
+describe("roles", () => {
   it("lets chief and deputies moderate, deputies only below them", () => {
     expect(canAct("deputy", "delete_message")).toBe(true);
     expect(canAct("member", "delete_message")).toBe(false);
@@ -123,7 +123,7 @@ describe("roles (P65)", () => {
   });
 });
 
-describe("pacing (P65, P67)", () => {
+describe("pacing", () => {
   it("waits 24 hours after leaving a clan", () => {
     expect(rejoinAllowedAt(rules, null)).toBeNull();
     expect(rejoinAllowedAt(rules, 1_000)).toBe(1_000 + 24 * HOUR);

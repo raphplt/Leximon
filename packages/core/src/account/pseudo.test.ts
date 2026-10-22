@@ -11,7 +11,7 @@ const reason = (raw: string) => {
   return result.ok ? "ok" : result.reason;
 };
 
-describe("checkPseudo (P-08)", () => {
+describe("checkPseudo", () => {
   it("keeps the pseudo as written, trimmed, with single spaces", () => {
     expect(check("  Raph   le  Grand ")).toEqual({
       ok: true,
@@ -46,7 +46,7 @@ describe("checkPseudo (P-08)", () => {
   });
 });
 
-describe("pseudo filter (N5)", () => {
+describe("pseudo filter", () => {
   it("refuses insults, hate and the staff's names, also in leetspeak", () => {
     for (const pseudo of [
       "Connard",

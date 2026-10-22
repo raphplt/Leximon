@@ -4,7 +4,7 @@ import { canOfferInTrade, comeBackIn, copiesLabel, masteryView, reviewState } fr
 const NOW = Date.parse("2026-10-21T12:00:00Z");
 const DAY = 86_400_000;
 
-describe("mastery of a card (A-07)", () => {
+describe("mastery of a card", () => {
   it("says what is left before the next level", () => {
     expect(masteryView(undefined, NOW).text).toBe("Pas encore révisé. Un défi le met en route.");
     const sketch = masteryView({ level: "sketch", due: NOW, stability: 3.4 }, NOW);
@@ -22,7 +22,7 @@ describe("mastery of a card (A-07)", () => {
   });
 });
 
-describe("copies and actions (A-08)", () => {
+describe("copies and actions", () => {
   it("counts the doubles", () => {
     expect(copiesLabel(1)).toBe("1 exemplaire");
     expect(copiesLabel(2)).toBe("2 exemplaires · 1 double");

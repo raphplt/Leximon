@@ -1,5 +1,5 @@
 /**
- * `pnpm catalog:publish [version] [--target <dir>] [--dry-run]` (D-023).
+ * `pnpm catalog:publish [version] [--target <dir>] [--dry-run]`.
  *
  * Validates a release of content/releases (the latest by default), updates the `collections`
  * and `cards` tables, then copies the files where the apps read them. Engravings, audio and
@@ -27,7 +27,7 @@ import { createDb } from "../src/client";
 
 const REPO_ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "..");
 const RELEASES_DIR = join(REPO_ROOT, "content", "releases");
-// R2 is added with the production hosting (D-005); until then the web app serves the files.
+// R2 is added with the production hosting; until then the web app serves the files.
 const DEFAULT_TARGET = join(REPO_ROOT, "apps", "web", "public", "catalog");
 // Written by `gravures-render`; paths in the catalogue are relative to this folder.
 const ENGRAVINGS_DIR = join(REPO_ROOT, "content", "pipeline", "data", "gravures", "out");
@@ -137,7 +137,7 @@ async function main(): Promise<void> {
     const plan = planCatalog(parsed.release, await loadPublishedCards(db));
     if (plan.rarityConflicts.length > 0) {
       const lines = plan.rarityConflicts.map((c) => `${c.id}: ${c.published} → ${c.release}`);
-      console.error(`Release ${version} refused: published rarities never change (D-020).`);
+      console.error(`Release ${version} refused: published rarities never change.`);
       console.error(`Publish these words as new cards instead:\n- ${lines.join("\n- ")}`);
       process.exitCode = 1;
       return;

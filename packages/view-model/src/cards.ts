@@ -3,7 +3,7 @@
 import { capitalize } from "./format";
 
 /**
- * Discreet frequency figure printed on a card (P22): "one occurrence in N words", e.g.
+ * Discreet frequency figure printed on a card: "one occurrence in N words", e.g.
  * "1/3,6 M" or "1/7,7 Md". Below what Ngram measures, "< 1/Md".
  */
 export function formatOdds(perBillion: number | null): string {

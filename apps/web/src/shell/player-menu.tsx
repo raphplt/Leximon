@@ -20,7 +20,7 @@ interface Item {
   readonly lock?: string | null;
 }
 
-/** The player's menu (C-02): under the avatar on the web, a sheet on phones. */
+/** The player's menu: under the avatar on the web, a sheet on phones. */
 export function PlayerMenu({
   open,
   onClose,

@@ -13,7 +13,7 @@ import {
   tradeRulesAt,
 } from "./trade";
 
-/** Total XP at the start of level 10 (P48 curve). */
+/** Total XP at the start of level 10 (level curve). */
 const LEVEL_10_XP = 1620;
 
 const DAY = 86_400_000;
@@ -92,7 +92,7 @@ describe("checkOfferShape", () => {
   });
 });
 
-describe("cards per side (P59)", () => {
+describe("cards per side", () => {
   it("allows one card from the trade level and three from level 10", () => {
     expect(maxCardsPerSide(rules, 4)).toBe(0);
     expect(maxCardsPerSide(rules, 5)).toBe(1);

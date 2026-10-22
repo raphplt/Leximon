@@ -57,7 +57,7 @@ export const USER_REFERENCES = {
   "moderation_reports.reporter_id": { transfer: "kept", abandon: "kept" },
   "moderation_reports.reported_id": { transfer: "kept", abandon: "kept" },
   "sanctions.user_id": { transfer: "kept", abandon: "kept" },
-  // Clans need an account (P50): a guest is in none, writes nothing and claims nothing.
+  // Clans need an account: a guest is in none, writes nothing and claims nothing.
   "clan_members.user_id": { transfer: "kept", abandon: "kept" },
   "clan_join_requests.user_id": { transfer: "kept", abandon: "kept" },
   "clan_messages.author_id": { transfer: "kept", abandon: "kept" },
@@ -78,7 +78,7 @@ export const USER_REFERENCES = {
   "sanctions.created_by": { transfer: "kept", abandon: "kept" },
   "email_campaigns.created_by": { transfer: "kept", abandon: "kept" },
   "email_campaigns.launched_by": { transfer: "kept", abandon: "kept" },
-  // Campaigns and their consent need an address: a guest never has either (P61).
+  // Campaigns and their consent need an address: a guest never has either.
   "email_campaign_sends.user_id": { transfer: "kept", abandon: "kept" },
   "email_consents.user_id": { transfer: "kept", abandon: "kept" },
 } as const satisfies Readonly<
@@ -95,7 +95,7 @@ export interface LinkGuestInput {
   readonly guestId: string;
   readonly accountId: string;
   readonly now: EpochMs;
-  /** The player was warned that the guest's cards will be lost (P54). */
+  /** The player was warned that the guest's cards will be lost. */
   readonly acceptGuestLoss: boolean;
 }
 
@@ -115,7 +115,7 @@ export type LinkGuestResult =
 
 /**
  * Archives a guest when its player signs in, in one transaction: transfers its whole game to an
- * account without any (P37), or abandons it when the account already plays (P54). The guest is
+ * account without any, or abandons it when the account already plays. The guest is
  * never deleted: trade partners keep their history, and the audit stays.
  *
  * Lock order, consistent with the rest of the API:
@@ -293,9 +293,9 @@ async function readSituation(
 }
 
 /**
- * Sign-up (P37): the guest's whole game becomes the account's, history included, in one
+ * Sign-up: the guest's whole game becomes the account's, history included, in one
  * statement. The account has no game, so no row can collide. The account takes the guest's age
- * when the guest is older, so that the wait before trading (P36) does not start again.
+ * when the guest is older, so that the wait before trading does not start again.
  */
 async function transferEverything(tx: Transaction, guestId: string, accountId: string) {
   await tx.execute(sql`

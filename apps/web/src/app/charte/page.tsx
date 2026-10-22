@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 };
 
 /**
- * Charter for everything players write (R-09, N5): pseudo, clan name, clan discussion. Draft
+ * Charter for everything players write: pseudo, clan name, clan discussion. Draft
  * written for a lawyer's review before the beta.
  */
 export default function CharterPage() {

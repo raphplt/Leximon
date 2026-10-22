@@ -1,4 +1,4 @@
-"""Words never made into cards, whatever the model or the dictionary says (D-019).
+"""Words never made into cards, whatever the model or the dictionary says.
 
 The trial showed that no model catches every slur, and that some modern slur senses are absent
 from the Littré. This list is the deterministic floor under the model's judgement and the human

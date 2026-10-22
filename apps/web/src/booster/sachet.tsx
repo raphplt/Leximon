@@ -12,7 +12,7 @@ const SLICES = [-4, -2, 0, 2, 4] as const;
 
 /**
  * The pack as a classic booster: a soft foil pouch crimped at both ends, torn across the top
- * (P47). Touching the pouch opens it too.
+ *. Touching the pouch opens it too.
  *
  * The pouch is a small 3D object: a back, a few slices for its thickness and a front, tilted by
  * the light of `useHoloLight` like a held card, swaying on its own until the pointer takes it.

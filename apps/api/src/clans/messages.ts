@@ -18,7 +18,7 @@ const refuse = (reason: Refused["reason"]): Refused => ({ kind: "refused", reaso
 
 type MessageRow = typeof clanMessages.$inferSelect;
 
-/** Players the viewer blocked or who blocked them: they vanish from the discussion (K-07, N5). */
+/** Players the viewer blocked or who blocked them: they vanish from the discussion. */
 function blockedEitherWay(viewerId: string) {
   return sql`(select ${userBlocks.blockedId} from ${userBlocks} where ${userBlocks.blockerId} = ${viewerId}
     union select ${userBlocks.blockerId} from ${userBlocks} where ${userBlocks.blockedId} = ${viewerId})`;
@@ -29,7 +29,7 @@ export type ListMessagesResult =
   | Refused;
 
 /**
- * `GET /clans/:id/messages` (K-06): members only, newest first. `after` returns what came since
+ * `GET /clans/:id/messages`: members only, newest first. `after` returns what came since
  * the last message received, `before` pages back in time.
  */
 export async function listMessages(
@@ -129,7 +129,7 @@ export type PostMessageResult =
   | (Refused & { readonly retryAt?: string });
 
 /**
- * `POST /clans/:id/messages` (K-06, P67). Filtered when sent: a refused message is not stored and
+ * `POST /clans/:id/messages`. Filtered when sent: a refused message is not stored and
  * the author learns why. The member's row is locked for the pace of one message every 2 s, so two
  * quick sends cannot both pass.
  */
@@ -188,7 +188,7 @@ export async function postMessage(
 export type DeleteMessageResult = { readonly kind: "ok" } | Refused;
 
 /**
- * `DELETE /clans/:id/messages/:messageId` (K-10): its author, the chief or a deputy. The row stays,
+ * `DELETE /clans/:id/messages/:messageId`: its author, the chief or a deputy. The row stays,
  * without its text; a report already made keeps its own copy.
  */
 export async function deleteMessage(
@@ -224,8 +224,8 @@ export async function deleteMessage(
 export type ReportResult = { readonly kind: "ok" } | Refused;
 
 /**
- * `POST /clans/:id/messages/:messageId/report` (K-07, N5): a member reports another's message.
- * The text is copied into the report, and the message is kept until the report is handled (P67).
+ * `POST /clans/:id/messages/:messageId/report`: a member reports another's message.
+ * The text is copied into the report, and the message is kept until the report is handled.
  * Reporting twice changes nothing.
  */
 export async function reportMessage(
@@ -281,7 +281,7 @@ export async function reportMessage(
 }
 
 /**
- * `POST /clans/:id/report` (N5): reports the clan's name or motto, as written now. It points at the
+ * `POST /clans/:id/report`: reports the clan's name or motto, as written now. It points at the
  * chief, who chose them. Members of any clan may report, the player being a member of the game.
  */
 export async function reportClanName(

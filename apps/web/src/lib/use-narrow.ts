@@ -2,7 +2,7 @@
 
 import { useSyncExternalStore } from "react";
 
-/** Below this width the web takes the phone shell (C-08). Same value as the CSS media queries. */
+/** Below this width the web takes the phone shell. Same value as the CSS media queries. */
 const NARROW = "(max-width: 759px)";
 
 function subscribe(listener: () => void) {

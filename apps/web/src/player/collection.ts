@@ -14,7 +14,7 @@ export const ownedCards = sharedResource<ReadonlyMap<string, number>>(async () =
   return byCard;
 });
 
-/** Level, next review and stability of every reviewed word (D-025). */
+/** Level, next review and stability of every reviewed word. */
 export const wordMemory = sharedResource<ReadonlyMap<string, WordMemory>>(async () => {
   const words = await fetchMastery();
   return new Map(
@@ -25,7 +25,7 @@ export const wordMemory = sharedResource<ReadonlyMap<string, WordMemory>>(async 
   );
 });
 
-/** Today's answers towards the daily goal (D-01, J-04). */
+/** Today's answers towards the daily goal. */
 export const dailyChallenge = sharedResource<DailyChallengeResponse>(fetchDaily);
 
 /**

@@ -14,11 +14,11 @@ import { formatCount, plural } from "./format";
 import { formatPlayerCode } from "./trades";
 
 /**
- * The profile (P-01 to P-08), the atelier (N-10, P-07) and the profile settings (R-05, R-07).
+ * The profile, the atelier and the profile settings.
  * The server decides what may be worn or pinned; these only name and explain.
  */
 
-/** Names of the engraved avatars (P58), by card id. */
+/** Names of the engraved avatars, by card id. */
 const AVATAR_NAMES: Readonly<Record<string, string>> = {
   metaphraste: "Le Métaphraste",
   bachelette: "La Bachelette",
@@ -115,7 +115,7 @@ export interface StatTile {
   readonly label: string;
 }
 
-/** The « En chiffres » panel (P-03). `totalWords` comes from the catalogue, when loaded. */
+/** The « En chiffres » panel. `totalWords` comes from the catalogue, when loaded. */
 export function statTiles(stats: ProfileStats, totalWords: number | null): StatTile[] {
   return [
     {
@@ -151,7 +151,7 @@ export type PinChange =
   | { readonly ok: true; readonly cardIds: string[]; readonly pinned: boolean }
   | { readonly ok: false; readonly reason: "full" };
 
-/** Pins the card at the end, or unpins it (A-08). The order of the others is kept. */
+/** Pins the card at the end, or unpins it. The order of the others is kept. */
 export function togglePin(pinned: readonly string[], cardId: string, slots: number): PinChange {
   if (pinned.includes(cardId)) {
     return { ok: true, cardIds: pinned.filter((id) => id !== cardId), pinned: false };
@@ -352,7 +352,7 @@ export const UNBLOCKED_TOAST = "Débloqué.";
 export const REPORTED_TOAST = "Signalé. On regarde ça.";
 export const PROFILE_LINK_COPIED = "Lien du profil copié.";
 
-/** The button that deletes the account (R-07): the consequence is in it. */
+/** The button that deletes the account: the consequence is in it. */
 export function deleteAccountLabel(words: number): string {
   return words === 0
     ? "Supprimer mon compte"

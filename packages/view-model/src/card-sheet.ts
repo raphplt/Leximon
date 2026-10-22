@@ -4,7 +4,7 @@ import type { WordMemory } from "./album";
 import { isFeatureOpen } from "./features";
 import { plural } from "./format";
 
-/** The card sheet (A-07, A-08): what the player knows of one card. */
+/** The card sheet: what the player knows of one card. */
 
 export interface MasteryStep {
   readonly label: string;
@@ -20,7 +20,7 @@ export interface MasteryView {
 
 const LEVELS: readonly MasteryLevelCode[] = ["sketch", "ink", "gilded"];
 
-/** The three steps of mastery and what is left to climb, from the memory stability (D-025). */
+/** The three steps of mastery and what is left to climb, from the memory stability. */
 export function masteryView(memory: WordMemory | undefined, now: number): MasteryView {
   const { ink, gilded } = masteryRulesAt(MASTERY_SCHEDULE, now).levelThresholdDays;
   const level = memory?.level ?? "sketch";
@@ -56,7 +56,7 @@ export function copiesLabel(quantity: number): string {
   return `${quantity} exemplaires · ${plural(quantity - 1, "double", "doubles")}`;
 }
 
-/** A double can go to trade once the trades are open (P59). */
+/** A double can go to trade once the trades are open. */
 export function canOfferInTrade(quantity: number, level: number, now: number): boolean {
   return quantity > 1 && isFeatureOpen("trade", level, now);
 }

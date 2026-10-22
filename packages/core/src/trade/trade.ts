@@ -1,5 +1,5 @@
 /**
- * Card-for-card trades (D-026): one player offers some of their duplicates to another player in
+ * Card-for-card trades: one player offers some of their duplicates to another player in
  * exchange for some of theirs. Nothing is reserved while an offer waits: everything is checked
  * again when it is accepted, and an offer that can no longer be honoured simply fails.
  */
@@ -15,7 +15,7 @@ export interface TradeRules {
   /** An offer not answered within this delay expires. */
   readonly offerTtlMs: number;
   /**
-   * Distinct cards on each side of an offer, one copy each, by account level (P59): each step
+   * Distinct cards on each side of an offer, one copy each, by account level: each step
    * applies from its level on. An offer is limited by the lower level of its two players.
    */
   readonly cardsPerSide: readonly [CardsPerSideStep, ...CardsPerSideStep[]];
@@ -23,7 +23,7 @@ export interface TradeRules {
   readonly offersPerDay: number;
   /** Accounts younger than this cannot trade: limits throwaway accounts feeding a main one. */
   readonly minAccountAgeMs: number;
-  /** Account level needed to trade (P48), for the same reason. */
+  /** Account level needed to trade, for the same reason. */
   readonly minLevel: number;
   /** Cards at least this rare… */
   readonly heldRarity: Rarity;
@@ -83,7 +83,7 @@ export function tradeableFrom(rules: TradeRules, holding: Holding): EpochMs {
     : Number.MIN_SAFE_INTEGER;
 }
 
-/** Cards each side of an offer may hold for a player of this level (P59). */
+/** Cards each side of an offer may hold for a player of this level. */
 export function maxCardsPerSide(rules: TradeRules, level: number): number {
   let max = 0;
   for (const step of rules.cardsPerSide) {

@@ -1,5 +1,5 @@
 /**
- * How far a guest plays before signing up (P37): a few boosters to discover the game, then an
+ * How far a guest plays before signing up: a few boosters to discover the game, then an
  * account is required to open more. Pure; the server counts the guest's opens under the wallet
  * lock, so concurrent requests cannot open one booster too many.
  */

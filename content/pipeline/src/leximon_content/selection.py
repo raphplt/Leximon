@@ -1,5 +1,5 @@
 """Picks the words of a drafting batch from the whole Littré, spread across the rarity tiers that
-the Ngram frequency predicts (D-020). Deterministic for a given seed."""
+the Ngram frequency predicts. Deterministic for a given seed."""
 
 import random
 import re
@@ -38,7 +38,7 @@ MAX_MODERN_FREQUENCY = 500
 #: Above this frequency in film subtitles (per million words), everybody says the word, however
 #: rarely it is written (tournevis, torticolis).
 MAX_SPOKEN_FREQUENCY = 0.5
-#: Insults may be more frequent: their old sense is what makes the card (P21). Above this, the
+#: Insults may be more frequent: their old sense is what makes the card. Above this, the
 #: word is too banal to carry it (peau, bête).
 MAX_INSULT_FREQUENCY = 2000
 #: A rare word made of one of these and a common word reads at a glance (renettoyer, insolide).
@@ -52,7 +52,7 @@ SCIENCE = re.compile(
 #: Share of the batch for each predicted tier. Précieux is oversampled: only part of these
 #: words will be confirmed as pépites, and obscure words are rejected more often.
 TIER_SHARES = {"common": 0.35, "uncommon": 0.22, "rare": 0.15, "precious": 0.28}
-#: Share of the batch reserved for the themes with a strong buzz potential (P16).
+#: Share of the batch reserved for the themes with a strong buzz potential.
 INSULT_SHARE = 0.05
 ODD_SHARE = 0.03
 

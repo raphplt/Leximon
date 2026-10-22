@@ -14,7 +14,7 @@ import {
 const rules = levelRewardRulesAt(LEVEL_REWARD_SCHEDULE, Date.UTC(2026, 9, 21));
 const kinds = (level: number) => levelRewards(rules, level).map((reward) => reward.kind);
 
-describe("levelRewards (P58)", () => {
+describe("levelRewards", () => {
   it("gives nothing for the starting level", () => {
     expect(levelRewards(rules, 1)).toEqual([]);
     expect(levelRewards(rules, 0)).toEqual([]);
@@ -64,7 +64,7 @@ describe("levelRewards (P58)", () => {
   });
 });
 
-describe("cosmetics (P58, P49)", () => {
+describe("cosmetics", () => {
   const later = levelRewardRulesAt(LEVEL_REWARD_SCHEDULE, Date.UTC(2026, 9, 22));
 
   it("names the avatar of each level that gives one", () => {

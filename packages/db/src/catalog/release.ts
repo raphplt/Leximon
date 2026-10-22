@@ -6,7 +6,7 @@ import {
   catalogManifestSchema,
 } from "@leximon/contract";
 
-/** A catalogue release (D-023), read and checked, ready to publish. */
+/** A catalogue release, read and checked, ready to publish. */
 export interface Release {
   readonly manifest: CatalogManifest;
   readonly collections: readonly CatalogCollectionFile[];

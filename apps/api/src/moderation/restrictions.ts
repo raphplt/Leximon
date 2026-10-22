@@ -6,7 +6,7 @@ import type { AppEnv } from "../context";
 
 const { sanctions } = schema;
 
-/** What the player's standing sanctions forbid now (P68). Most players have none: one index probe. */
+/** What the player's standing sanctions forbid now. Most players have none: one index probe. */
 export async function readRestrictions(
   db: Pick<Database, "select">,
   userId: string,
@@ -29,8 +29,8 @@ export async function readRestrictions(
 }
 
 /**
- * Refuses the game's writes to a suspended or closed account (P68). The player still signs in,
- * reads their sanction and contests it (R-08), and may delete their account. Reads stay open:
+ * Refuses the game's writes to a suspended or closed account. The player still signs in,
+ * reads their sanction and contests it, and may delete their account. Reads stay open:
  * they change nothing. Must run after `requireUser`.
  */
 export const refuseLockedWrites = createMiddleware<AppEnv>(async (c, next) => {

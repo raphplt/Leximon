@@ -1,7 +1,7 @@
 import type { CSSProperties } from "react";
 import styles from "./ui.module.css";
 
-/** The thick XP bar of the level (J-01). `ratio` between 0 and 1. */
+/** The thick XP bar of the level. `ratio` between 0 and 1. */
 export function XpBar({
   ratio,
   thin,

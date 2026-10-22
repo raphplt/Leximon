@@ -12,16 +12,16 @@ import { myClan, sanctions } from "./clan";
 import { dailyChallenge, ownedCards, refreshIfRead, wordMemory } from "./collection";
 import { sharedResource } from "./resource";
 
-/** The player's wallet: free stock and bonus reserve (J-07, C-01). */
+/** The player's wallet: free stock and bonus reserve. */
 export const wallet = sharedResource<BoosterWalletResponse>(fetchWallet);
 
-/** Levels claimed and cards of the player's choice left (P58). */
+/** Levels claimed and cards of the player's choice left. */
 export const levelRewards = sharedResource<LevelRewardsResponse>(fetchLevelRewards);
 
-/** Guest or member (P37). */
+/** Guest or member. */
 export const account = sharedResource<AccountResponse>(fetchAccount);
 
-/** Pseudo, avatar, cosmetics, pinned cards, figures (P-01 to P-08). */
+/** Pseudo, avatar, cosmetics, pinned cards, figures. */
 export const profile = sharedResource<ProfileResponse>(fetchProfile);
 
 /** A coffret was claimed: its level is done, and its card choice waits if it has one. */

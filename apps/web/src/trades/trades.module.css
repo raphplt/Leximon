@@ -1,4 +1,4 @@
-/* Échanges (E-01 to E-07), maquette v1. */
+/* Échanges. */
 
 .screen {
   box-sizing: border-box;
@@ -49,7 +49,7 @@
   border: 0;
 }
 
-/* --- Player code (E-01) --- */
+/* --- Player code --- */
 
 .codeChip {
   gap: 8px;
@@ -67,7 +67,7 @@
   color: var(--lx-color-accent);
 }
 
-/* --- Tabs (E-02) --- */
+/* --- Tabs --- */
 
 .tabs {
   display: flex;
@@ -166,7 +166,7 @@
   cursor: pointer;
 }
 
-/* --- Offers received (E-03) --- */
+/* --- Offers received --- */
 
 .offers {
   display: grid;
@@ -295,7 +295,7 @@
   color: var(--lx-color-text-muted);
 }
 
-/* --- Offers sent and history (E-04) --- */
+/* --- Offers sent and history --- */
 
 .sent {
   display: flex;
@@ -657,7 +657,7 @@
 
 /* --- Zoom ----------------------------------------------------------------------------- */
 
-/* A held Épique or Légendaire (P35): shown, not selectable, with the wait. */
+/* A held Épique or Légendaire: shown, not selectable, with the wait. */
 .pickHeld {
   display: flex;
   flex-direction: column;
