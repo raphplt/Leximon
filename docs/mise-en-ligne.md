@@ -38,9 +38,9 @@ Pour le remettre : réactiver les deux options dans `apps/web/next.config.ts`, r
 
 ## 1. Forfait Workers Paid · toi
 
-1. https://dash.cloudflare.com → **Workers & Pages** → **Plans** → **Workers Paid** (5 $ par mois).
+1. https://dash.cloudflare.com → **Compute** → **Workers plans** (ou le bouton **Upgrade** de Workers & Pages) → **Workers Paid** (5 $ par mois).
 2. Il est nécessaire pour Queues et les Durable Objects. Il inclut aussi 3 000 e-mails par mois (Email Service) et lève la limite quotidienne d'Hyperdrive.
-3. **R2** → **Activer R2** (accepter les conditions). L'offre gratuite (10 Go) suffit.
+3. **Storage & databases** → **R2** → activer R2 (accepter les conditions). L'offre gratuite (10 Go) suffit.
 
 ## 2. Connexion de wrangler · toi
 
@@ -49,7 +49,7 @@ pnpm --filter @leximon/api exec wrangler login
 pnpm --filter @leximon/api exec wrangler whoami   # doit afficher ton compte
 ```
 
-La session vaut pour toutes les commandes `wrangler` de la machine, y compris celles d'un agent.
+wrangler n'est pas installé pour tout le système : il passe par pnpm, depuis la racine du dépôt. La session vaut pour toutes les commandes `wrangler` de la machine, y compris celles d'un agent.
 
 ## 3. Base Neon · toi
 
