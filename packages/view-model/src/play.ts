@@ -243,3 +243,15 @@ export function collectionShelf(
     rarities,
   };
 }
+
+/** The rarest words the player found in a collection, rarest first: the pride of the shelf. */
+export function bestFinds<T extends { readonly id: string; readonly rarity: Rarity }>(
+  cards: readonly T[],
+  owned: ReadonlyMap<string, number>,
+  count: number,
+): T[] {
+  return cards
+    .filter((card) => (owned.get(card.id) ?? 0) > 0)
+    .sort((a, b) => RARITIES.indexOf(b.rarity) - RARITIES.indexOf(a.rarity))
+    .slice(0, count);
+}

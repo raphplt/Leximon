@@ -6,12 +6,15 @@
  * themselves, never on `.sachet`, which must keep its depth.
  */
 
-/* Takes the height left on the screen, so the whole screen fits without scrolling. */
+/*
+ * Takes the height left on the screen, so the whole screen fits without scrolling. A screen with
+ * room to spare raises both ceilings.
+ */
 .slot {
   flex: 1 1 0;
   align-self: stretch;
   min-height: 260px;
-  max-height: 640px;
+  max-height: var(--sachet-max-height, 640px);
   display: grid;
   place-items: center;
   container-type: size;
@@ -24,7 +27,7 @@
    * proportions of a real booster pouch), up to 1.4px on a tall screen, less where it is short.
    * The slot keeps 24px for the pouch to sway and cast its shadow.
    */
-  --u: min(1.4px, (100cqh - 24px) / 410, 100cqw / 236);
+  --u: min(var(--sachet-max-unit, 1.4px), (100cqh - 24px) / 410, 100cqw / 236);
   --width: calc(236 * var(--u));
   --height: calc(410 * var(--u));
   /* The tear strip across the top. */

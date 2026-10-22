@@ -24,7 +24,7 @@ import type { PackShape } from "@/lib/pack-shape";
 import { usePackShape } from "@/lib/use-pack-shape";
 import { CollectionCard } from "@/play/collection-card";
 import { CollectionPicker } from "@/play/collection-picker";
-import { noteSachetOpened, TearHint } from "@/play/counter-bits";
+import { noteSachetOpened, StockRing, TearHint } from "@/play/counter-bits";
 import { LevelCard } from "@/play/level-card";
 import play from "@/play/play.module.css";
 import { PlayFabs, Shortcuts } from "@/play/play-fabs";
@@ -374,6 +374,7 @@ export function BoosterScreen() {
               onLocked={() => toast(lockedToast("choose_collection", now))}
             />
           )}
+          {stock !== null && <StockRing stock={stock} />}
         </div>
 
         <div className={play.stage}>

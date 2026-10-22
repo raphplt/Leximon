@@ -16,15 +16,18 @@ import { Icon } from "@/ui/icon";
 import { LevelMedal, XpBar } from "@/ui/level-bits";
 import styles from "./play.module.css";
 
+/** As many next rewards as the card has room for, the screen's height allowing. */
+const REWARDS_SHOWN = 16;
+
 /** The level card beside the counter: medal, XP, the next rewards, the coffrets waiting. */
 export function LevelCard() {
   const view = usePlayerView();
   const { openCoffret } = useShell();
   const { progress } = view;
   if (progress === null) return <section className={`${styles.card} ${styles.cardLoading}`} />;
-  const next = view.now === 0 ? [] : upcomingRewards(progress.level, view.now, 5);
+  const next = view.now === 0 ? [] : upcomingRewards(progress.level, view.now, REWARDS_SHOWN);
   return (
-    <section className={styles.card} aria-label="Ton niveau">
+    <section className={`${styles.card} ${styles.levelCard}`} aria-label="Ton niveau">
       <Link href="/niveaux" className={styles.levelHead} aria-label={levelDescription(progress)}>
         <LevelMedal level={progress.level} size={56} />
         <span className={styles.levelText}>
@@ -43,6 +46,7 @@ export function LevelCard() {
               href={`/niveaux#niveau-${reward.level}`}
               className={styles.nextReward}
               aria-label={reward.label}
+              title={reward.label}
             >
               <span className={reward.milestone ? styles.nextIconKraft : styles.nextIcon}>
                 <Icon name={REWARD_ICONS[reward.icon]} size={18} />

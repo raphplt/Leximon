@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  bestFinds,
   collectionChoices,
   collectionShelf,
   openAgainLabel,
@@ -129,5 +130,22 @@ describe("collection shelf", () => {
       { rarity: "rare", owned: 1, total: 1 },
     ]);
     expect(collectionShelf([], new Map()).ratio).toBe(0);
+  });
+
+  it("puts forward the rarest words found", () => {
+    const cards = [
+      { id: "a", rarity: "common" },
+      { id: "b", rarity: "epic" },
+      { id: "c", rarity: "rare" },
+      { id: "d", rarity: "legendary" },
+    ] as const;
+    const owned = new Map([
+      ["a", 1],
+      ["b", 2],
+      ["c", 1],
+      ["d", 0],
+    ]);
+    expect(bestFinds(cards, owned, 2).map((card) => card.id)).toEqual(["b", "c"]);
+    expect(bestFinds(cards, new Map(), 3)).toEqual([]);
   });
 });
