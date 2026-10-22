@@ -254,6 +254,6 @@ Les règles tranchées le 2026-10-20 sont dans [regles-du-jeu.md](../regles-du-j
 **À prendre** (aussi listées dans [regles-du-jeu.md](../regles-du-jeu.md#à-décider)) :
 1. ~~Plis bonus en récompense de niveau~~ : tranché le 2026-10-21, oui, gratuits, dans la réserve P23 (P58).
 2. ~~Visibilité par défaut du profil~~ : tranché le 2026-10-21, public (P60).
-3. **Modération automatique de la discussion par un modèle :** dès la bêta, ou seulement si les signalements ne suffisent plus.
-4. **Durée de conservation des messages de clan :** 90 jours (recommandé), ou plus.
+3. ~~Modération automatique de la discussion par un modèle~~ : tranché le 2026-10-22, plus tard, seulement si les signalements ne suffisent plus (P67).
+4. ~~Durée de conservation des messages de clan~~ : tranché le 2026-10-22, 90 jours (P67).
 5. ~~Niveau minimum pour les clans~~ : tranché le 2026-10-21, niveau 10 pour rejoindre et 15 pour créer (P50).

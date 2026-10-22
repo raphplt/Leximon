@@ -363,3 +363,15 @@ Pour ajouter ou modifier une décision, utiliser le skill `decision`.
 - **Choix :** `DELETE /me/account` efface la ligne `users` dans une transaction : tout ce qui appartient au joueur part en cascade, les offres en attente sont d'abord annulées, et les clés de `trades` vers le joueur passent à `null` (`ON DELETE SET NULL`), si bien que l'autre joueur garde son historique, signé « Un joueur parti ». Un compte admin, ou ancien admin présent dans le journal (D-031), est refusé.
 - **Pourquoi :** une suppression demandée dans l'app est exigée par l'App Store et le RGPD ; effacer plutôt qu'archiver évite de garder des données sans raison, et le journal d'administration ne doit jamais perdre son auteur.
 - **Conséquences :** `trades.proposer_id` et `trades.recipient_id` sont nullables (migration additive), et tout code qui lit un échange traite un côté absent. La page publique d'un profil est mise en cache 60 s par Next : un profil supprimé ou passé en privé peut encore s'y voir pendant ce délai.
+
+## D-038 · Clans : une file d'événements de jeu, des compteurs recalculés depuis la base
+
+- **Statut :** Acceptée (2026-10-22), le propriétaire a choisi de construire la file avec les clans plutôt que de tout calculer à la lecture. Règles P50, P65 à P67.
+- **Choix :** une seconde file Cloudflare Queues, `leximon-game-events`. Après sa transaction, une action qui donne des cartes (pli, échange, carte au choix) ou change les membres d'un clan envoie un message court (`cards_obtained`, `clan_changed`). Le consommateur ne fait pas confiance au message : il recalcule depuis la base la part du joueur dans l'objectif de la semaine, le palier du clan et sa bibliothèque, et écrit le journal avec des clés uniques.
+- **Pourquoi :** rien ne s'ajoute à la transaction d'un pli, à part un envoi après coup. Un message perdu, rejoué ou en double ne fausse rien : le suivant recalcule tout, et un palier ou une Légendaire n'entre qu'une fois au journal.
+- **Conséquences :**
+  - un envoi qui échoue ne fait jamais échouer la requête, il est journalisé ;
+  - la maintenance quotidienne recalcule les clans actifs de la semaine, au cas où le dernier message se serait perdu, et efface les messages de plus de 90 jours qui ne sont pas signalés ;
+  - la discussion n'a pas de temps réel : l'écran ouvert demande les messages après le dernier reçu, toutes les quelques secondes (D-007 reste ouverte) ;
+  - les tests remplacent la file par une file factice et appellent le consommateur directement.
+
