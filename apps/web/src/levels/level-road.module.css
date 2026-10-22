@@ -31,165 +31,336 @@
   align-items: start;
 }
 
-/* --- Road --- */
+/* --- Board: one quarter of the road --- */
 
-.road {
+.board {
   position: relative;
-  overflow-y: auto;
-  scrollbar-width: none;
-  background: radial-gradient(ellipse at 50% 50%, rgba(58, 65, 102, 0.6), rgba(38, 43, 64, 0.6));
-}
-
-.road::-webkit-scrollbar {
-  display: none;
+  display: flex;
+  flex-direction: column;
+  min-height: 560px;
+  overflow: hidden;
+  border-radius: 32px;
+  background: radial-gradient(70% 60% at 50% 62%, #2e3658 0%, #1f2337 78%);
+  box-shadow:
+    0 24px 60px rgba(8, 10, 22, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
 }
 
 .loading {
   opacity: 0.5;
 }
 
-.track {
+.boardHead {
   position: relative;
-  margin: 0 auto;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 18px 20px 0;
 }
 
-.svg {
+.boardHead button:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.quarterName {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.quarterRange {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--lx-color-text-faint);
+}
+
+.quarterTitle {
+  margin: 2px 0 0;
+  font-size: 28px;
+  line-height: 1.05;
+}
+
+/* The plateau scales with the board: every position is a share of its size. */
+.plateau {
+  position: relative;
+  /* As wide as the board allows, and short enough to fit in the window under the header. */
+  width: min(100%, 660px, (100dvh - 250px) * 660 / 720);
+  margin: 0 auto 12px;
+}
+
+.decor {
   position: absolute;
   inset: 0;
+  width: 100%;
+  height: 100%;
 }
 
-.svg path {
-  fill: none;
-  stroke-linecap: round;
-}
-
-.pathEdge {
-  stroke: var(--lx-color-well);
-  stroke-width: 22;
-}
-
-.pathBase {
-  stroke: var(--lx-color-track);
-  stroke-width: 14;
-}
-
-.pathDone {
-  stroke: #f2b829;
-  stroke-width: 14;
-}
-
-.pathDots {
-  stroke: rgba(255, 255, 255, 0.35);
-  stroke-width: 2;
-  stroke-dasharray: 1 12;
-}
-
-.nodes {
+.tiles {
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
-.node {
+.tile {
   position: absolute;
-  display: grid;
-  place-items: center;
+  display: block;
   padding: 0;
   border: 0;
-  border-radius: 50%;
+  background: none;
   font: inherit;
   cursor: pointer;
-  transition: transform 120ms;
+  transition: translate 120ms ease-out;
 }
 
-.node:hover {
-  transform: scale(1.07);
+.tile:hover {
+  translate: 0 -3px;
 }
 
-.node[aria-pressed="true"] {
-  outline: 3px solid var(--lx-color-text);
-  outline-offset: 4px;
+.tile:focus-visible {
+  outline: none;
 }
 
-.locked {
-  background: var(--lx-color-background);
-  color: var(--lx-color-text-faint);
-  box-shadow:
-    0 4px 0 #191c2e,
-    inset 0 0 0 3px var(--lx-color-track);
+.block {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
 }
 
-.locked.milestone {
-  background: linear-gradient(160deg, #5a4a36, #3a2f22);
-  color: #e9c98f;
-  box-shadow:
-    0 4px 0 #191c2e,
-    inset 0 0 0 3px #b88a4e;
+.blockTop {
+  stroke: transparent;
+  stroke-width: 3;
 }
 
-.next {
-  background: var(--lx-color-background-raised);
-  color: var(--lx-color-text);
-  box-shadow:
-    0 4px 0 #191c2e,
-    inset 0 0 0 3px var(--lx-color-accent);
+.gold .blockTop {
+  fill: #f6c544;
 }
 
-.claimed {
-  background: linear-gradient(160deg, #ffe08a, #d9a233);
-  color: var(--lx-color-kraft-ink);
-  box-shadow: 0 4px 0 #8a6512;
+.gold .blockLeft {
+  fill: #c99a12;
 }
 
-.claimable {
-  background: linear-gradient(160deg, #ffe08a, #f2b829);
-  color: var(--lx-color-accent-ink);
-  box-shadow: 0 5px 0 #a87e10;
+.gold .blockRight {
+  fill: #9c7409;
 }
 
-.label {
+.cream .blockTop {
+  fill: #f6f0e2;
+}
+
+.cream .blockLeft {
+  fill: #c9bfa6;
+}
+
+.cream .blockRight {
+  fill: #a99f87;
+}
+
+.kraft .blockTop {
+  fill: #e3c393;
+}
+
+.kraft .blockLeft {
+  fill: #b98c55;
+}
+
+.kraft .blockRight {
+  fill: #97703f;
+}
+
+.slate .blockTop {
+  fill: #4a5175;
+}
+
+.slate .blockLeft {
+  fill: #343b5c;
+}
+
+.slate .blockRight {
+  fill: #2b3150;
+}
+
+.tile[aria-pressed="true"] .blockTop,
+.tile:focus-visible .blockTop {
+  stroke: var(--lx-color-text);
+}
+
+/* A coffret waits on this tile. */
+.blockGlow {
+  filter: drop-shadow(0 0 10px rgba(255, 210, 77, 0.7));
+  animation: tileGlow 1.8s ease-in-out infinite;
+}
+
+/* The mark sits on the top face, the upper 70 % of the box. */
+.tileFace {
   position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 70%;
+  display: grid;
+  place-items: center;
+  font-size: clamp(13px, 2.4vw, 20px);
+  font-weight: 800;
   pointer-events: none;
 }
 
-.labelLevel {
-  font-size: 11px;
-  font-weight: 800;
-  letter-spacing: 0.08em;
+.gold + .tileFace {
+  color: var(--lx-color-accent-ink);
+}
+
+.cream + .tileFace,
+.kraft + .tileFace {
+  color: var(--lx-color-kraft-title);
+}
+
+.slate + .tileFace {
   color: var(--lx-color-text-muted);
 }
 
-.labelText {
-  font-weight: 800;
-  font-size: 14px;
-  line-height: 1.2;
+.fog {
+  opacity: 0.55;
 }
 
-.opens {
-  display: inline-flex;
-  margin-top: 4px;
-  padding: 3px 8px;
-  border-radius: 6px;
-  background: var(--lx-color-kraft);
-  color: var(--lx-color-kraft-title);
-  font-size: 11px;
-  font-weight: 800;
-  line-height: 1.2;
-}
-
-.pin {
+/* The fog over the levels far ahead, thinning towards the player. */
+.fogBank {
   position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  background: linear-gradient(
+    180deg,
+    rgba(31, 35, 55, 0.96) 0%,
+    rgba(38, 43, 64, 0.82) 55%,
+    rgba(38, 43, 64, 0) 100%
+  );
+  pointer-events: none;
+}
+
+/* The player's medal, standing on their level. */
+.here {
+  position: absolute;
+  z-index: 2;
+  translate: -50% -78%;
+  filter: drop-shadow(0 8px 8px rgba(0, 0, 0, 0.45));
+  pointer-events: none;
+  animation: hover 2.6s ease-in-out infinite;
+}
+
+@keyframes hover {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+@keyframes tileGlow {
+  0%,
+  100% {
+    filter: drop-shadow(0 0 6px rgba(255, 210, 77, 0.5));
+  }
+  50% {
+    filter: drop-shadow(0 0 14px rgba(255, 210, 77, 0.85));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .here,
+  .blockGlow {
+    animation: none;
+  }
+}
+
+/* --- Quarters --- */
+
+.quarters {
+  padding: 18px 16px 12px;
+}
+
+.quarters > h2 {
+  padding: 0 4px;
+}
+
+.quarterList {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 10px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.quarter {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 8px;
+  border: 0;
+  border-radius: 14px;
+  background: none;
+  color: var(--lx-color-text);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  text-align: left;
+  cursor: pointer;
+}
+
+.quarter:hover {
+  background: rgba(246, 240, 226, 0.05);
+}
+
+.quarter[aria-current="true"] {
+  background: var(--lx-color-background-raised);
+}
+
+.quarterDone,
+.quarterHere,
+.quarterAhead {
+  flex-shrink: 0;
   display: grid;
   place-items: center;
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background: #fbf5e8;
-  color: var(--lx-color-kraft-ink);
-  box-shadow:
-    0 0 0 3px var(--lx-color-badge),
-    0 4px 10px rgba(0, 0, 0, 0.4);
-  pointer-events: none;
+  width: 28px;
+  height: 28px;
+  border-radius: 9px;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.quarterDone {
+  background: var(--lx-color-accent);
+  color: var(--lx-color-accent-ink);
+}
+
+.quarterHere {
+  background: var(--lx-color-badge);
+  color: #ffffff;
+}
+
+.quarterAhead {
+  background: var(--lx-color-sunken);
+  color: var(--lx-color-text-faint);
+}
+
+.quarterLabel {
+  flex: 1;
+  min-width: 0;
+}
+
+.quarterLevels {
+  font-size: 13px;
+  color: var(--lx-color-text-faint);
+  white-space: nowrap;
 }
 
 /* --- Detail and XP table --- */
@@ -327,5 +498,14 @@
 
   .side {
     width: 100%;
+  }
+
+  .board {
+    min-height: 0;
+    border-radius: 24px;
+  }
+
+  .quarterTitle {
+    font-size: 22px;
   }
 }

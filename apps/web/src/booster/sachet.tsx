@@ -1,8 +1,10 @@
 "use client";
 
+import Image from "next/image";
 import type { CSSProperties } from "react";
 import { useHoloLight } from "@/components/use-holo-light";
 import { play, vibrate } from "./feedback";
+import { PackEmblem, packVariables } from "./pack-looks";
 import type { PackProps } from "./pack-shape";
 import styles from "./sachet.module.css";
 import { useTear } from "./use-tear";
@@ -11,13 +13,14 @@ import { useTear } from "./use-tear";
 const SLICES = [-4, -2, 0, 2, 4] as const;
 
 /**
- * The pack as a classic booster: a soft foil pouch crimped at both ends, torn across the top
- *. Touching the pouch opens it too.
+ * The pack as a classic booster: a soft foil pouch crimped at both ends, torn across the top.
+ * Touching the pouch opens it too. Each collection prints its own colors, motif and emblem;
+ * the house seal stays the same on all of them.
  *
  * The pouch is a small 3D object: a back, a few slices for its thickness and a front, tilted by
  * the light of `useHoloLight` like a held card, swaying on its own until the pointer takes it.
  */
-export function Sachet({ state, onTearStart, onOpen }: PackProps) {
+export function Sachet({ state, onTearStart, onOpen, collection }: PackProps) {
   const sealed = state === "sealed";
   const tear = useTear({ enabled: sealed, onTearStart, onOpen });
   // While the strip is pulled, the pouch holds still under the finger.
@@ -43,6 +46,7 @@ export function Sachet({ state, onTearStart, onOpen }: PackProps) {
       <div
         ref={light.ref}
         className={styles.scene}
+        style={packVariables(collection)}
         onPointerMove={light.onPointerMove}
         onPointerLeave={light.onPointerLeave}
       >
@@ -65,19 +69,28 @@ export function Sachet({ state, onTearStart, onOpen }: PackProps) {
             <button
               type="button"
               className={styles.pouch}
-              aria-label="Ouvrir le sachet"
+              aria-label={`Ouvrir le sachet ${collection.name}`}
               disabled={!sealed}
               onClick={openWithTouch}
             >
+              <span className={styles.motif} aria-hidden="true" />
               <span className={styles.brand} aria-hidden="true">
                 Leximon
               </span>
-              <span className={styles.seal} aria-hidden="true">
-                <span className={styles.stamp}>L</span>
+              <span className={styles.medal} aria-hidden="true">
+                <PackEmblem collectionId={collection.id} className={styles.emblem} />
               </span>
-              <span className={styles.sticker} aria-hidden="true">
-                5 mots à découvrir
+              <span className={styles.name} aria-hidden="true">
+                {collection.name}
               </span>
+              <Image
+                src="/logo-mark.svg"
+                alt=""
+                aria-hidden="true"
+                width={64}
+                height={64}
+                className={styles.mark}
+              />
               <span className={styles.glare} aria-hidden="true" />
             </button>
             <div ref={tear.strip} className={styles.strip} {...tear.handlers} aria-hidden="true">

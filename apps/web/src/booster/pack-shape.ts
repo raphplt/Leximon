@@ -1,4 +1,5 @@
 import type { PackShape } from "@/lib/pack-shape";
+import type { PackCollection } from "./pack-looks";
 
 /**
  * Props shared by the two pack shapes: the rest of
@@ -10,10 +11,12 @@ export interface PackProps {
   /** The tear has really begun: time to ask the server for the cards. */
   readonly onTearStart: () => void;
   readonly onOpen: () => void;
+  /** The collection the pack holds: the sachet takes its colors and emblem. */
+  readonly collection: PackCollection;
 }
 
-/** What the screen tells the player to do with a sealed pack. */
+/** What the screen tells the player to do with a sealed pack, until they close the hint. */
 export const OPEN_HINTS: Readonly<Record<PackShape, string>> = {
-  pli: "Déchire la bande ou touche le sceau",
-  sachet: "Déchire le haut du sachet ou touche-le",
+  pli: "Tire sur la bande, ou touche le sceau.",
+  sachet: "Tire sur le pointillé, ou touche le sachet.",
 };

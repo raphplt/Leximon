@@ -143,6 +143,8 @@ export interface UpcomingReward {
   readonly icon: RewardIcon | "lock";
   /** Every 5 levels: drawn bigger, in kraft. */
   readonly milestone: boolean;
+  /** « Sachet garni », the main thing the level gives. */
+  readonly title: string;
   /** « Niveau 20 : Sachet garni, ouvre les clans ». */
   readonly label: string;
 }
@@ -159,6 +161,7 @@ export function upcomingRewards(level: number, now: EpochMs, count = 4): Upcomin
       level: n,
       icon: opens !== null ? "lock" : (item?.icon ?? "star"),
       milestone: n % rules.milestoneEvery === 0,
+      title: item?.title ?? "Départ",
       label: `Niveau ${n} : ${item?.title ?? "Départ"}${opens === null ? "" : `, ouvre ${opens.charAt(0).toLowerCase()}${opens.slice(1)}`}`,
     };
   });
@@ -166,30 +169,77 @@ export function upcomingRewards(level: number, now: EpochMs, count = 4): Upcomin
 
 // --- Level road -------------------------------------------------------------------
 
+/** The road is shown one quarter at a time: ten levels, the last one with a garni. */
+export const QUARTER_SIZE = 10;
+
+/** Names of the quarters from level 1 up; past the last one, they are numbered. */
+const QUARTER_NAMES = [
+  "L'Échoppe",
+  "Le Scriptorium",
+  "La Bibliothèque",
+  "Le Cabinet de curiosités",
+  "L'Académie",
+  "Les Archives",
+  "L'Imprimerie",
+  "Le Grenier aux grimoires",
+  "L'Observatoire",
+  "La Tour des lettrés",
+] as const;
+
+export interface Quarter {
+  /** 1 for levels 1 to 10. */
+  readonly index: number;
+  readonly name: string;
+  readonly first: number;
+  readonly last: number;
+  /** « Niveaux 11 à 20 ». */
+  readonly range: string;
+}
+
+export function quarterAt(index: number): Quarter {
+  const first = (index - 1) * QUARTER_SIZE + 1;
+  const last = index * QUARTER_SIZE;
+  return {
+    index,
+    name: QUARTER_NAMES[index - 1] ?? `Quartier ${index}`,
+    first,
+    last,
+    range: `Niveaux ${first} à ${last}`,
+  };
+}
+
+export function quarterOfLevel(level: number): Quarter {
+  return quarterAt(Math.max(1, Math.ceil(level / QUARTER_SIZE)));
+}
+
 export type RoadState = "claimed" | "claimable" | "next" | "locked";
 
 export interface RoadNode {
   readonly level: number;
   readonly state: RoadState;
   readonly milestone: boolean;
+  /** Far ahead of the player: drawn in the fog. */
+  readonly fog: boolean;
   readonly summary: string;
   /** « Les échanges », what the level opens. */
   readonly opens: string | null;
   readonly label: string;
 }
 
-/** The road from the top down to level 1: at least to level 30, and a dozen levels ahead. */
-export function roadNodes(
+/** How many levels past the player's stay clear of the fog. */
+const CLEAR_AHEAD = 2;
+
+/** The levels of a quarter, from its first one up. */
+export function quarterNodes(
+  quarter: Quarter,
   level: number,
   claimed: readonly number[],
   now: EpochMs,
-  options: { readonly minTop?: number; readonly ahead?: number } = {},
 ): RoadNode[] {
   const rules = levelRewardRulesAt(LEVEL_REWARD_SCHEDULE, now);
   const done = new Set(claimed);
-  const top = Math.max(options.minTop ?? 30, level + (options.ahead ?? 12));
   const nodes: RoadNode[] = [];
-  for (let n = top; n >= 1; n--) {
+  for (let n = quarter.first; n <= quarter.last; n++) {
     const state: RoadState =
       n > level
         ? n === level + 1
@@ -203,6 +253,7 @@ export function roadNodes(
       level: n,
       state,
       milestone: n % rules.milestoneEvery === 0,
+      fog: n > level + CLEAR_AHEAD,
       summary,
       opens: opensAt(n, now),
       label: `Niveau ${n}, ${summary}${state === "claimable" ? ", à réclamer" : ""}`,
@@ -217,52 +268,42 @@ export interface RoadPoint {
   readonly y: number;
 }
 
-export interface RoadLayout {
+export interface PlateauLayout {
   readonly width: number;
   readonly height: number;
+  /** Size of a tile: its top face, and the depth of its sides. */
+  readonly tile: { readonly width: number; readonly height: number; readonly depth: number };
+  /** Centre of each tile's top face, from the first level up. */
   readonly points: readonly RoadPoint[];
-  /** SVG path through every level, top to bottom. */
-  readonly path: string;
-  /** SVG path from the player's level down to level 1: the part already travelled. */
-  readonly donePath: string;
+  /** The stepping stones between two tiles; `done` once the player has walked past them. */
+  readonly stones: readonly { readonly x: number; readonly y: number; readonly done: boolean }[];
 }
 
-/** Sway of the road, level by level, as a share of the amplitude: it winds every 8 levels. */
-const SWAY = [0, 0.6, 0.95, 0.6, 0, -0.6, -0.95, -0.6] as const;
+const TILE = { width: 120, height: 60, depth: 24 } as const;
+/** Column of each tile, in tile widths: the road zigzags across four columns. */
+const ZIGZAG = [0, 1, 2, 3, 2, 1] as const;
+const PLATEAU = { width: 660, height: 720, side: 90, bottom: 60 } as const;
 
-/** Where each level sits on a winding road, highest first. */
-export function roadLayout(
-  levels: readonly number[],
-  current: number,
-  size: { readonly width: number; readonly rowHeight: number; readonly amplitude: number },
-): RoadLayout {
-  const center = size.width / 2;
+/**
+ * Where each level of a quarter sits on an isometric plateau, in a fixed space the screen
+ * scales: each tile one row up and one column aside from the previous one, a stepping stone
+ * between them.
+ */
+export function plateauLayout(levels: readonly number[], current: number): PlateauLayout {
   const points = levels.map((level, index) => ({
     level,
-    x: center + (SWAY[level % SWAY.length] ?? 0) * size.amplitude,
-    y: index * size.rowHeight + size.rowHeight / 2,
+    x: PLATEAU.side + TILE.width / 2 + (ZIGZAG[index % ZIGZAG.length] ?? 0) * TILE.width,
+    y: PLATEAU.height - PLATEAU.bottom - index * TILE.height,
   }));
-  const half = size.rowHeight / 2;
-  const pathOf = (list: readonly RoadPoint[]) =>
-    list
-      .map((p, i) => {
-        const previous = list[i - 1];
-        return previous === undefined
-          ? `M${p.x} ${p.y}`
-          : `C${previous.x} ${previous.y + half} ${p.x} ${p.y - half} ${p.x} ${p.y}`;
-      })
-      .join(" ");
-  const from = Math.max(
-    0,
-    points.findIndex((p) => p.level === current),
-  );
-  return {
-    width: size.width,
-    height: levels.length * size.rowHeight,
-    points,
-    path: pathOf(points),
-    donePath: pathOf(points.slice(from)),
-  };
+  const stones = points.slice(1).map((point, index) => {
+    const previous = points[index] ?? point;
+    return {
+      x: (previous.x + point.x) / 2,
+      y: (previous.y + point.y) / 2,
+      done: point.level <= current,
+    };
+  });
+  return { width: PLATEAU.width, height: PLATEAU.height, tile: TILE, points, stones };
 }
 
 export interface LevelDetail {

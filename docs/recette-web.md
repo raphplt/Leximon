@@ -108,21 +108,21 @@ Compte A, n'importe quel niveau.
 
 ### JOU-01 · Écran Jouer
 - **Faire :** ouvrir `/jouer` en 1440 px puis en 390 px.
-- **Attendu :** bandeau de niveau (médaillon, titre, barre d'XP, « 260 / 775 XP » au niveau 16), les 4 prochaines récompenses, le sachet au centre, boutons flottants à gauche (Clan, avec l'emblème de ton clan si tu en as un ; Discussion, Joutes) et à droite (Défi du jour, Coffrets, Courrier, Réglages). En 390 px, la coque mobile : onglets en bas, bandeau en haut.
+- **Attendu :** en 1440 px, trois colonnes. Au centre, le comptoir, plus clair que la page, avec le sachet sous une lampe et le bouton sur une tablette sombre. À gauche, la carte du niveau (médaille, titre, barre d'XP, « 260 / 775 XP » au niveau 16, les 4 prochaines récompenses, « N coffrets ») et les raccourcis : Clan, avec l'emblème de ton clan si tu en as un, Discussion, Joutes, Réglages. À droite, « Aujourd'hui » : défi du jour avec son anneau, mot qui s'échappe, courrier. Entre 760 et 1180 px, le comptoir en haut, les deux cartes dessous. En 390 px, la coque mobile : onglets en bas, bandeau en haut, boutons flottants de part et d'autre du sachet. Les panneaux apparaissent en fondu, sans glisser.
 - **Retour :**
 
 ### JOU-02 · Stock
-- **Attendu :** six points, « 4 sur 6 · le prochain dans 18 min » (selon ton stock), bouton « Ouvrir le sachet ». Stock vide et réserve vide : sachet gris et immobile, bouton désactivé. Stock vide avec des bonus : « Ouvrir un sachet bonus ». Dans l'en-tête, « +N bonus » ouvre la réserve : le nombre de sachets bonus, les garnis ouverts en premier, les places prises, quand ils s'ouvrent et d'où ils viennent ; stock vide, un bouton « Ouvrir un sachet bonus ».
+- **Attendu :** en haut à droite du comptoir, un anneau avec le nombre de sachets et « +1 dans 18 min » (« plein » quand le stock est plein), rien sous le sachet que le bouton « Ouvrir le sachet ». En 390 px, l'anneau disparaît : la barre du haut montre déjà le stock. Stock vide et réserve vide : sachet gris et immobile, bouton désactivé. Stock vide avec des bonus : « Ouvrir un sachet bonus ». Dans l'en-tête, « +N bonus » ouvre la réserve : le nombre de sachets bonus, les garnis ouverts en premier, les places prises, quand ils s'ouvrent et d'où ils viennent ; stock vide, un bouton « Ouvrir un sachet bonus ».
 - **Retour :**
 
 ### JOU-03 · Choix de la collection
 - **Faire :** avec un compte de niveau 1 ou 2, puis de niveau 3 ou plus.
-- **Attendu :** avant le niveau 3, seul le sachet des Fondateurs, en premier ; les autres collections portent « Niv. 3 ». Ensuite, les pastilles des collections changent le sachet.
+- **Attendu :** avant le niveau 3, seul le sachet des Fondateurs, en premier ; les autres collections portent « Niv. 3 ». Ensuite, les petits sachets en haut du comptoir changent le sachet. Chaque collection a le sien : couleur de son dos de carte, motif, emblème (livre et plume pour les Fondateurs, masques pour Caractères, outils pour Métiers), son nom, et le sceau du logo sur le flanc.
 - **Retour :**
 
 ### JOU-04 · Ouverture
-- **Faire :** ouvrir plusieurs sachets.
-- **Attendu :** déchirure au doigt ou à la souris, pile, cinq cartes à retourner, « Tout révéler ». Annonce « Rare ! », « Légendaire ! » à la couleur de la rareté ; à partir de Précieux, tu retournes la carte toi-même. Le mot est prononcé quand la carte se pose.
+- **Faire :** ouvrir plusieurs sachets. Avant, fermer l'astuce avec ×, recharger la page.
+- **Attendu :** l'astuce « Tire sur le pointillé, ou touche le sachet. » est une bulle à côté du sachet ; fermée, elle ne revient pas, et elle part seule après trois sachets. Déchirure au doigt ou à la souris, pile, cinq cartes à retourner, « Tout révéler ». Annonce « Rare ! », « Légendaire ! » à la couleur de la rareté ; à partir de Précieux, tu retournes la carte toi-même. Le mot est prononcé quand la carte se pose.
 - **Retour :**
 
 ### JOU-05 · Coup d'œil
@@ -150,7 +150,7 @@ Compte A, n'importe quel niveau.
 - **Retour :**
 
 ### JOU-10 · Mot qui s'échappe
-- **Attendu :** quand un mot est dû en révision, une petite carte « *Mot* est en train de t'échapper. » avec « Réviser ». Absente sinon. *Un mot devient dû au plus tôt le lendemain de son premier défi.*
+- **Attendu :** quand un mot est dû en révision, « *Mot* est en train de t'échapper. » avec « Réviser », dans la carte « Aujourd'hui » (sous le comptoir en 390 px). Absent sinon. *Un mot devient dû au plus tôt le lendemain de son premier défi.*
 - **Retour :**
 
 ---
@@ -161,12 +161,12 @@ Compte A : `pnpm dev:player contact@leximon.fr --level 21` pour avoir une série
 
 ### NIV-01 · Chemin des niveaux
 - **Faire :** menu de l'avatar, « Chemin des niveaux ».
-- **Attendu :** route qui serpente, centrée sur ton niveau, ton avatar épinglé dessus. Pastilles réclamées (coche), à réclamer (coffret qui pulse), suivante (contour jaune), fermées. Paliers de 5 plus gros, écriteaux « Ouvre : les échanges » aux niveaux 3, 5, 8, 10, 15.
+- **Attendu :** le quartier de ton niveau, dix dalles en relief qui montent en zigzag sur un plateau (au niveau 16 : « Le Scriptorium », niveaux 11 à 20). Ta médaille posée sur ta dalle. Dalles dorées avec une coche (réclamées) ou un coffret qui luit (à réclamer), crème pour la suivante, kraft pour les paliers de 5, ardoise pour les autres ; au-delà des deux suivantes, le brouillard. Pierres de gué dorées jusqu'à ton niveau. Livres, encrier, bougie, lanterne en décor. Les flèches et la liste « Les quartiers » changent de quartier, jusqu'à deux quartiers d'avance. Le plateau tient dans la fenêtre, sans défiler.
 - **Retour :**
 
 ### NIV-02 · Détail d'un niveau
-- **Faire :** toucher un niveau passé, un niveau à réclamer, un niveau futur.
-- **Attendu :** ses récompenses, ce qu'il ouvre, et « Ouvrir le coffret », « Réclamée » ou « Encore 1 240 XP. ». Le barème de l'XP (« D'où vient l'XP ») est affiché.
+- **Faire :** toucher un niveau passé, un niveau à réclamer, un niveau futur. Depuis Jouer, toucher une des prochaines récompenses.
+- **Attendu :** la dalle choisie est cerclée de blanc ; depuis Jouer, le chemin s'ouvre sur le quartier de ce niveau. Ses récompenses, ce qu'il ouvre, et « Ouvrir le coffret », « Réclamée » ou « Encore 1 240 XP. ». Le barème de l'XP (« D'où vient l'XP ») est affiché.
 - **Retour :**
 
 ### NIV-03 · Coffret
@@ -623,9 +623,13 @@ Retours généraux du propriétaire après une première prise en main, classés
 5. **Le mot qui s'échappe** est trop collé au sachet.
 6. **Animations d'arrivée** sur l'écran : la façon dont certains éléments apparaissent fait bizarre.
 
+*Repris le 2026-10-22 : comptoir au centre entre la carte du niveau et « Aujourd'hui », un sachet par collection avec le vrai sceau, le stock dans un anneau, l'astuce qui se ferme, le mot qui s'échappe dans « Aujourd'hui », un simple fondu (JOU-01 à JOU-04, JOU-10).*
+
 ### 3. Chemin des niveaux
 
 Le principe est le bon, mais le rendu n'est pas assez travaillé. Il doit faire plus jeu, à la façon du chemin des problèmes de Chess.com (cases en relief, décor, étapes marquées), sans le copier.
+
+*Repris le 2026-10-22 : un plateau de dalles en relief par quartier de dix niveaux, décor, brouillard au-delà (NIV-01). Les noms des quartiers sont provisoires.*
 
 ### 4. Textes
 

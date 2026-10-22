@@ -1,21 +1,25 @@
 "use client";
 
 import type { CollectionChoice } from "@leximon/view-model";
+import { PackEmblem, packVariables } from "@/booster/pack-looks";
 import { Icon } from "@/ui/icon";
 import ui from "@/ui/ui.module.css";
 import styles from "./play.module.css";
 
 /**
- * Which sachet to open: chips on the web, arrows around the name on a phone. Closed
+ * Which sachet to open: small sachets on the web, arrows around the name on a phone. Closed
  * choices stay visible with their level.
  */
 export function CollectionPicker({
   choices,
+  backs,
   current,
   onPick,
   onLocked,
 }: {
   readonly choices: readonly CollectionChoice[];
+  /** The `back` tone of each collection, by id. */
+  readonly backs: ReadonlyMap<string, string | undefined>;
   readonly current: CollectionChoice;
   readonly onPick: (choice: CollectionChoice) => void;
   readonly onLocked: () => void;
@@ -39,9 +43,20 @@ export function CollectionPicker({
             key={choice.id}
             type="button"
             aria-pressed={choice.id === current.id}
-            className={`${ui.chip} ${choice.lock !== null ? styles.chipLocked : ""}`}
+            className={`${styles.pick} ${choice.lock !== null ? styles.pickLocked : ""}`}
             onClick={() => (choice.lock !== null ? onLocked() : onPick(choice))}
           >
+            <span
+              className={styles.pickPouch}
+              style={packVariables({
+                id: choice.id,
+                name: choice.name,
+                back: backs.get(choice.id),
+              })}
+              aria-hidden="true"
+            >
+              <PackEmblem collectionId={choice.id} className={styles.pickEmblem} />
+            </span>
             <span>{choice.short}</span>
             {choice.lock !== null && (
               <span className={styles.chipLock}>

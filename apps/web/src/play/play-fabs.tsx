@@ -30,8 +30,8 @@ const ICONS: Readonly<Record<FabId, IconName>> = {
   settings: "reglages",
 };
 
-/** The floating buttons on both sides of the sachet. */
-export function PlayFabs() {
+/** The buttons of the Jouer screen, and what each one does. */
+function useFabs() {
   const view = usePlayerView();
   const shell = useShell();
   const router = useRouter();
@@ -40,7 +40,7 @@ export function PlayFabs() {
   const emblem = useShared(myClan)?.emblem ?? null;
   if (view.now === 0) return null;
   const dailyRatio = daily === null ? 0 : dailyView(daily).ratio;
-  const { left, right } = playFabs(
+  const fabs = playFabs(
     {
       level: view.progress?.level ?? 1,
       coffrets: view.coffrets.length,
@@ -74,37 +74,52 @@ export function PlayFabs() {
     }
   };
 
-  const column = (fabs: readonly FabModel[], side: string | undefined) => (
-    <div className={side}>
-      {fabs.map((fab) => (
-        <Fab
-          key={fab.id}
-          icon={ICONS[fab.id]}
-          label={fab.label}
-          badge={fab.badge}
-          lock={fab.lock}
-          glow={fab.glow}
-          onClick={() => act(fab)}
-          visual={
-            fab.id === "clan" && emblem !== null ? <Emblem emblem={emblem} size={30} /> : undefined
-          }
-          ring={
-            fab.id === "daily" ? (
-              <span
-                className={styles.dailyRing}
-                style={{ "--done": `${Math.round(dailyRatio * 360)}deg` } as CSSProperties}
-                aria-hidden="true"
-              />
-            ) : undefined
-          }
-        />
-      ))}
-    </div>
+  const render = (fab: FabModel) => (
+    <Fab
+      key={fab.id}
+      icon={ICONS[fab.id]}
+      label={fab.label}
+      badge={fab.badge}
+      lock={fab.lock}
+      glow={fab.glow}
+      onClick={() => act(fab)}
+      visual={
+        fab.id === "clan" && emblem !== null ? <Emblem emblem={emblem} size={30} /> : undefined
+      }
+      ring={
+        fab.id === "daily" ? (
+          <span
+            className={styles.dailyRing}
+            style={{ "--done": `${Math.round(dailyRatio * 360)}deg` } as CSSProperties}
+            aria-hidden="true"
+          />
+        ) : undefined
+      }
+    />
   );
+  return { ...fabs, render };
+}
+
+/** On a phone, the floating buttons on both sides of the sachet. */
+export function PlayFabs() {
+  const fabs = useFabs();
+  if (fabs === null) return null;
   return (
     <>
-      {column(left, styles.fabsLeft)}
-      {column(right, styles.fabsRight)}
+      <div className={styles.fabsLeft}>{fabs.left.map(fabs.render)}</div>
+      <div className={styles.fabsRight}>{fabs.right.map(fabs.render)}</div>
     </>
+  );
+}
+
+/** On a wider screen, the places to go from Jouer; the daily challenge, coffrets and mail have their own cards. */
+export function Shortcuts() {
+  const fabs = useFabs();
+  if (fabs === null) return null;
+  const settings = fabs.right.filter((fab) => fab.id === "settings");
+  return (
+    <nav className={styles.shortcuts} aria-label="Raccourcis">
+      {[...fabs.left, ...settings].map(fabs.render)}
+    </nav>
   );
 }

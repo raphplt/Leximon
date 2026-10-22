@@ -47,23 +47,23 @@ describe("reserve", () => {
 describe("stock", () => {
   it("says what is left and what the button does", () => {
     expect(stockView(wallet(4), NOW)).toMatchObject({
-      line: "4 sur 6 · le prochain dans 18 min",
+      note: "+1 dans 18 min",
       action: "Ouvrir le sachet",
       refillShort: "18 min",
       empty: false,
     });
     expect(stockView(wallet(6), NOW)).toMatchObject({
-      line: "Stock plein. Ouvre, ça se recharge.",
+      note: "plein",
       refillShort: "plein",
     });
     expect(stockView(wallet(0, 2), NOW)).toMatchObject({
-      line: "Stock vide. 2 bonus en réserve.",
+      note: "2 bonus",
       action: "Ouvrir un sachet bonus",
     });
     expect(stockView(wallet(0), NOW)).toMatchObject({
       empty: true,
       action: "Prochain dans 18 min",
-      line: "Plus rien dans la besace. Prochain sachet dans 18 min.",
+      note: "+1 dans 18 min",
     });
     expect(openAgainLabel(wallet(0), NOW)).toBe("Plus de sachet, 18 min");
   });

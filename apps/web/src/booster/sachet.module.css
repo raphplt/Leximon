@@ -96,13 +96,23 @@
 
 .back {
   transform: translateZ(calc(-1 * var(--face)));
-  background: linear-gradient(180deg, #14172a, #0c0e1b);
+  background: linear-gradient(
+    180deg,
+    var(--tone-dark),
+    color-mix(in oklab, var(--tone-dark), black 40%)
+  );
 }
 
 /* The rim of the pouch, seen when it leans: lit in the middle of its thickness, like a seam. */
 .slice {
   transform: translateZ(var(--z));
-  background: linear-gradient(90deg, #343c66, #232946 12%, #232946 88%, #343c66);
+  background: linear-gradient(
+    90deg,
+    color-mix(in oklab, var(--tone-light), white 12%),
+    var(--tone-light) 12%,
+    var(--tone-light) 88%,
+    color-mix(in oklab, var(--tone-light), white 12%)
+  );
 }
 
 /* --- Front face ----------------------------------------------------------------------- */
@@ -137,7 +147,12 @@
       rgba(0, 0, 0, 0.12) 91%,
       rgba(0, 0, 0, 0.5)
     ),
-    radial-gradient(ellipse 70% 55% at 50% 42%, #48528a 0%, #262c4c 55%, #161a2d 100%);
+    radial-gradient(
+      ellipse 70% 55% at 50% 42%,
+      color-mix(in oklab, var(--tone-light), white 22%) 0%,
+      var(--tone-light) 55%,
+      var(--tone-dark) 100%
+    );
 }
 
 .pouch {
@@ -146,7 +161,7 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: calc(22 * var(--u));
+  gap: calc(16 * var(--u));
   padding: 0 0 calc(26 * var(--u));
   border: none;
   cursor: pointer;
@@ -233,10 +248,11 @@
   position: relative;
   font-family: var(--font-display), Georgia, serif;
   font-variation-settings: "SOFT" 100;
-  font-weight: 900;
-  font-size: calc(32 * var(--u));
+  font-weight: 800;
+  font-size: calc(17 * var(--u));
   line-height: 1;
-  letter-spacing: 0.01em;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
   color: var(--lx-color-kraft);
   background:
     linear-gradient(
@@ -253,110 +269,64 @@
   filter: drop-shadow(0 calc(2 * var(--u)) 0 rgba(0, 0, 0, 0.45));
 }
 
-/*
- * A blob of wax pressed with the house stamp, as on the card backs and the fold: glossy, with
- * the light of the pouch on it, and two runs of wax spilling past its edge.
- */
-.seal {
+/* The collection's pattern, printed faintly on the foil. */
+.motif {
+  position: absolute;
+  inset: 0;
+  color: var(--lx-color-kraft);
+  background: var(--motif, none);
+  opacity: 0.11;
+  pointer-events: none;
+}
+
+/* The collection's emblem in a kraft medallion. */
+.medal {
   position: relative;
   display: grid;
   place-items: center;
-  width: calc(116 * var(--u));
-  height: calc(108 * var(--u));
-  border-radius: 54% 46% 50% 50% / 48% 56% 44% 52%;
-  background:
-    radial-gradient(
-      circle at var(--holo-x) var(--holo-y),
-      rgba(255, 225, 205, 0.55),
-      transparent 26%
-    ),
-    radial-gradient(
-      circle at 36% 30%,
-      var(--lx-color-seal-light) 0%,
-      var(--lx-color-seal) 55%,
-      var(--lx-color-seal-dark) 100%
-    );
-  box-shadow:
-    0 calc(3 * var(--u)) 0 var(--lx-color-seal-dark),
-    0 calc(10 * var(--u)) calc(18 * var(--u)) rgba(0, 0, 0, 0.55),
-    inset 0 calc(-6 * var(--u)) calc(10 * var(--u)) rgba(60, 8, 0, 0.45),
-    inset 0 calc(4 * var(--u)) calc(6 * var(--u)) rgba(255, 190, 160, 0.35);
-}
-
-.seal::before,
-.seal::after {
-  content: "";
-  position: absolute;
-  z-index: -1;
-  border-radius: 50% 50% 46% 54%;
-  background: radial-gradient(
-    circle at 40% 35%,
-    var(--lx-color-seal) 0%,
-    var(--lx-color-seal-dark) 100%
-  );
-  box-shadow: 0 calc(6 * var(--u)) calc(10 * var(--u)) rgba(0, 0, 0, 0.45);
-}
-
-.seal::before {
-  right: calc(-9 * var(--u));
-  bottom: calc(10 * var(--u));
-  width: calc(38 * var(--u));
-  height: calc(30 * var(--u));
-  rotate: 24deg;
-}
-
-.seal::after {
-  left: calc(-6 * var(--u));
-  top: calc(14 * var(--u));
-  width: calc(26 * var(--u));
-  height: calc(22 * var(--u));
-  rotate: -30deg;
-}
-
-/* Where the stamp pressed: a sunken disc with a beaded rim and the letter cut into the wax. */
-.stamp {
-  display: grid;
-  place-items: center;
-  box-sizing: border-box;
-  width: calc(76 * var(--u));
-  height: calc(76 * var(--u));
-  border: calc(2 * var(--u)) dotted rgba(70, 10, 0, 0.45);
+  width: calc(118 * var(--u));
+  height: calc(118 * var(--u));
   border-radius: 50%;
   background: radial-gradient(
-    circle at 60% 72%,
-    var(--lx-color-seal-light),
-    var(--lx-color-seal) 70%
+    circle at 50% 38%,
+    rgba(217, 180, 134, 0.2),
+    rgba(217, 180, 134, 0.04)
   );
   box-shadow:
-    0 0 0 calc(3 * var(--u)) rgba(70, 10, 0, 0.25),
-    0 calc(1 * var(--u)) 0 calc(4 * var(--u)) rgba(255, 190, 160, 0.18),
-    inset 0 calc(4 * var(--u)) calc(6 * var(--u)) rgba(60, 8, 0, 0.55),
-    inset 0 calc(-2 * var(--u)) calc(3 * var(--u)) rgba(255, 190, 160, 0.3);
-  font-family: var(--font-display), Georgia, serif;
-  font-variation-settings: "SOFT" 100;
-  font-weight: 900;
-  font-size: calc(46 * var(--u));
-  line-height: 1;
-  color: var(--lx-color-seal-dark);
-  text-shadow:
-    0 calc(-1 * var(--u)) 0 rgba(40, 5, 0, 0.6),
-    0 calc(1 * var(--u)) 0 rgba(255, 200, 170, 0.5);
+    inset 0 0 0 calc(2 * var(--u)) rgba(217, 180, 134, 0.6),
+    inset 0 0 0 calc(7 * var(--u)) rgba(0, 0, 0, 0.2),
+    inset 0 0 0 calc(8 * var(--u)) rgba(217, 180, 134, 0.3);
+  color: var(--lx-color-kraft);
 }
 
-.sticker {
+.emblem {
+  width: calc(64 * var(--u));
+  height: calc(64 * var(--u));
+}
+
+.name {
   position: relative;
-  padding: calc(4 * var(--u)) calc(10 * var(--u));
-  border-radius: calc(10 * var(--u));
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.22), transparent 55%), var(--lx-color-sticker);
-  transform: rotate(-3deg);
-  box-shadow:
-    0 calc(2 * var(--u)) 0 rgba(0, 0, 0, 0.25),
-    0 calc(5 * var(--u)) calc(10 * var(--u)) rgba(0, 0, 0, 0.35);
-  font-family: var(--font-ui), sans-serif;
-  font-size: calc(12 * var(--u));
+  max-width: calc(196 * var(--u));
+  font-family: var(--font-display), Georgia, serif;
+  font-variation-settings: "SOFT" 100;
   font-weight: 800;
-  color: #ffffff;
+  font-size: calc(26 * var(--u));
+  line-height: 1.04;
+  color: var(--lx-color-text);
+  text-align: center;
+  text-wrap: balance;
+  text-shadow: 0 calc(2 * var(--u)) calc(6 * var(--u)) rgba(0, 0, 0, 0.45);
+}
+
+/* The house seal, pressed on the flank of every sachet. */
+.mark {
+  position: absolute;
+  right: calc(8 * var(--u));
+  top: calc(150 * var(--u));
+  width: calc(58 * var(--u));
+  height: calc(58 * var(--u));
+  rotate: -10deg;
+  filter: drop-shadow(0 calc(4 * var(--u)) calc(5 * var(--u)) rgba(0, 0, 0, 0.45));
 }
 
 /* --- Tear strip, crimped at the top ---------------------------------------------------- */

@@ -1,157 +1,274 @@
-/* The Jouer screen. */
+/*
+ * The Jouer screen: the counter in the middle, where the sachet sits under a lamp, the level on
+ * its left, the day on its right. Three depths: the page, the cards, the lighter counter.
+ */
 
 .page {
   box-sizing: border-box;
-  max-width: 1180px;
+  max-width: 1380px;
   margin: 0 auto;
-  padding: 26px 32px 64px;
+  padding: 24px 32px 48px;
+  display: grid;
+  grid-template-columns: 280px minmax(0, 1fr) 300px;
+  grid-template-areas: "side counter aside";
+  gap: 24px;
+  align-items: start;
 }
 
-/* --- Level band --- */
-
-.strip {
+.side,
+.aside {
   display: flex;
-  align-items: center;
+  flex-direction: column;
   gap: 18px;
-  min-height: 92px;
-  padding: 14px 18px;
-  box-sizing: border-box;
+  min-width: 0;
 }
 
-.stripLoading {
+.side {
+  grid-area: side;
+}
+
+.aside {
+  grid-area: aside;
+}
+
+/* --- Cards around the counter --- */
+
+.card,
+.today {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 20px;
+  border-radius: 24px;
+  background: linear-gradient(180deg, #313859, #2a3050);
+  box-shadow:
+    0 12px 30px rgba(10, 12, 24, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+.cardLoading {
+  min-height: 260px;
   opacity: 0.5;
 }
 
-.medalLink {
-  flex-shrink: 0;
-  border-radius: 50%;
+.cardKicker {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--lx-color-text-faint);
 }
 
-.xp {
-  flex: 1;
-  min-width: 0;
+/* --- Level card --- */
+
+.levelHead {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  text-decoration: none;
+  color: inherit;
+}
+
+.levelText {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  text-decoration: none;
+  min-width: 0;
 }
 
-.xpHead {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  gap: 8px;
-}
-
-.headline {
-  overflow: hidden;
+.levelName {
   font-weight: 800;
-  font-size: 17px;
+  font-size: 18px;
+}
+
+.levelTitle {
+  overflow: hidden;
+  font-size: 14px;
+  color: var(--lx-color-text-muted);
   white-space: nowrap;
   text-overflow: ellipsis;
 }
 
-.title {
-  color: var(--lx-color-text-muted);
-  font-weight: 600;
+.xp {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
 }
 
 .xpNumbers {
   font-size: 13px;
+  font-weight: 700;
   color: var(--lx-color-text-muted);
   font-variant-numeric: tabular-nums;
-  white-space: nowrap;
 }
 
 .next {
   display: flex;
-  align-items: center;
+  flex-direction: column;
+  gap: 4px;
   margin: 0;
-  padding: 0 0 0 8px;
+  padding: 0;
   list-style: none;
-}
-
-.nextItem {
-  display: flex;
-  align-items: center;
-}
-
-.nextLink {
-  width: 18px;
-  height: 4px;
-  border-radius: 2px;
-  background: var(--lx-color-track);
 }
 
 .nextReward {
   display: flex;
-  flex-direction: column;
   align-items: center;
-  gap: 3px;
-  width: 62px;
+  gap: 10px;
+  padding: 4px 6px 4px 0;
+  border-radius: 12px;
+  color: inherit;
   text-decoration: none;
+}
+
+.nextReward:hover {
+  background: rgba(246, 240, 226, 0.05);
 }
 
 .nextIcon,
 .nextIconKraft {
+  flex-shrink: 0;
   display: grid;
   place-items: center;
-  width: 46px;
-  height: 46px;
+  width: 34px;
+  height: 34px;
   border-radius: 50%;
 }
 
 .nextIcon {
-  background: var(--lx-color-background);
-  color: var(--lx-color-text-muted);
-  box-shadow: inset 0 0 0 2px var(--lx-color-track);
+  background: #3a4268;
+  color: var(--lx-color-accent);
 }
 
 .nextIconKraft {
+  border-radius: 10px;
   background: linear-gradient(160deg, #e9c98f, #b88a4e);
   color: var(--lx-color-kraft-title);
-  box-shadow: 0 3px 0 #7a5a2e;
+  box-shadow: 0 2px 0 #7a5a2e;
 }
 
 .nextLevel {
-  font-size: 11px;
+  width: 22px;
+  font-size: 12px;
   font-weight: 800;
-  color: var(--lx-color-text-muted);
+  color: var(--lx-color-text-faint);
+  font-variant-numeric: tabular-nums;
 }
 
-.claim {
-  flex-shrink: 0;
+.nextTitle {
+  overflow: hidden;
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
-/* --- Stage --- */
+/* --- Shortcuts --- */
 
-.stage {
+.shortcuts {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 6px;
+  padding: 16px 10px 12px;
+  border-radius: 24px;
+  background: rgba(27, 31, 51, 0.6);
+}
+
+/* --- The counter --- */
+
+.counter {
+  grid-area: counter;
   position: relative;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 18px;
-  min-height: 640px;
-  padding: 26px 0 10px;
+  min-width: 0;
+  min-height: 660px;
+  overflow: hidden;
+  border-radius: 32px;
+  background: linear-gradient(180deg, #353d65 0%, #2b3253 60%, #242a45 100%);
+  box-shadow:
+    0 24px 60px rgba(8, 10, 22, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
 
-.fabsLeft,
-.fabsRight {
-  position: absolute;
-  top: 40px;
+.counterHead {
+  position: relative;
   z-index: 2;
   display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 20px 22px 0;
+}
+
+.stage {
+  position: relative;
+  flex: 1;
+  display: flex;
   flex-direction: column;
-  gap: 18px;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding: 10px 0;
 }
 
-.fabsLeft {
-  left: 0;
+/* The lamp over the counter. */
+.stage::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 460px;
+  height: 460px;
+  translate: -50% -50%;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 210, 77, 0.13), rgba(255, 210, 77, 0) 66%);
+  pointer-events: none;
 }
 
-.fabsRight {
-  right: 0;
+/* The pouch takes the height of its slot (`sachet.module.css`). */
+.sachet {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 440px;
+  height: 440px;
 }
+
+/* The tablet in front of the counter, where the button lies. */
+.shelf {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 24px 20px 26px;
+  background: linear-gradient(180deg, #1f243c, #1a1e33);
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
+  box-shadow: inset 0 14px 22px rgba(0, 0, 0, 0.25);
+}
+
+.openButton {
+  min-width: 260px;
+}
+
+.message {
+  position: relative;
+  max-width: 420px;
+  margin: 0;
+  font-size: 14px;
+  color: var(--lx-color-text-muted);
+  text-align: center;
+}
+
+.error {
+  composes: message;
+  color: var(--lx-color-danger);
+  font-weight: 700;
+}
+
+/* --- Collection of the sachet --- */
 
 .chips {
   margin: 0;
@@ -159,9 +276,8 @@
   border: 0;
   display: flex;
   flex-wrap: wrap;
-  justify-content: center;
   gap: 8px;
-  max-width: calc(100% - 200px);
+  min-width: 0;
 }
 
 .legend {
@@ -173,8 +289,55 @@
   white-space: nowrap;
 }
 
-.chipLocked {
+.pick {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  padding: 5px 14px 5px 5px;
+  border: 0;
+  border-radius: var(--lx-radius-pill);
+  background: rgba(246, 240, 226, 0.07);
+  color: var(--lx-color-text);
+  font: inherit;
+  font-weight: 800;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.pick:hover {
+  background: rgba(246, 240, 226, 0.13);
+}
+
+.pick[aria-pressed="true"] {
+  background: var(--lx-color-text);
+  color: var(--lx-color-background);
+}
+
+.pickLocked {
   opacity: 0.6;
+}
+
+/* A sachet in miniature, in the collection's colors. */
+.pickPouch {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 34px;
+  border-radius: 4px;
+  background: radial-gradient(
+    ellipse 80% 60% at 50% 42%,
+    color-mix(in oklab, var(--tone-light), white 22%),
+    var(--tone-dark)
+  );
+  box-shadow:
+    inset 0 3px 0 rgba(255, 255, 255, 0.14),
+    inset 0 -3px 0 rgba(0, 0, 0, 0.25);
+  color: var(--lx-color-kraft);
+}
+
+.pickEmblem {
+  width: 18px;
+  height: 18px;
 }
 
 .chipLock {
@@ -189,7 +352,6 @@
   display: none;
   align-items: center;
   gap: 6px;
-  margin-top: 4px;
 }
 
 .arrowName {
@@ -200,7 +362,6 @@
   text-align: center;
 }
 
-.arrowName .kicker,
 .arrowName > span:first-child {
   font-size: 10px;
 }
@@ -210,78 +371,180 @@
   line-height: 1.1;
 }
 
-/* The pouch takes the height of its slot (`sachet.module.css`). */
-.sachet {
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-  max-width: 440px;
-  height: 420px;
-}
+/* --- Stock --- */
 
-.stock {
-  display: flex;
-  flex-direction: column;
+.stockRing {
+  flex-shrink: 0;
+  display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 9px;
+  padding: 5px 14px 5px 5px;
+  border-radius: var(--lx-radius-pill);
+  background: rgba(27, 31, 51, 0.55);
 }
 
-.dots {
+.ring {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: conic-gradient(var(--lx-color-accent) var(--done), var(--lx-color-track) 0);
+}
+
+.ring::before {
+  content: "";
+  position: absolute;
+  inset: 4px;
+  border-radius: 50%;
+  background: #262b40;
+}
+
+.ringCount {
+  position: relative;
+  font-weight: 800;
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+}
+
+.ringNote {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--lx-color-text-muted);
+  white-space: nowrap;
+}
+
+/* --- Tear hint --- */
+
+.tearHint {
+  position: absolute;
+  z-index: 3;
+  left: calc(50% + 130px);
+  top: 70px;
+  width: 170px;
+  margin: 0;
+  padding: 12px 34px 12px 14px;
+  border-radius: 16px 16px 16px 4px;
+  background: var(--lx-color-text);
+  color: var(--lx-color-background);
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.35;
+  box-shadow: 0 10px 24px rgba(8, 10, 22, 0.4);
+}
+
+.tearHintClose {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 26px;
+  height: 26px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(38, 43, 64, 0.08);
+  color: inherit;
+  font: inherit;
+  font-size: 18px;
+  font-weight: 800;
+  line-height: 1;
+  cursor: pointer;
+}
+
+/* --- Today --- */
+
+.todayRow {
   display: flex;
-  gap: 7px;
+  align-items: center;
+  gap: 14px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
 }
 
-.dot,
-.dotOn {
-  width: 14px;
-  height: 14px;
+.todayRing,
+.todayIcon {
+  position: relative;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
   border-radius: 50%;
 }
 
-.dot {
-  box-shadow: inset 0 0 0 2px var(--lx-color-outline);
+.todayRing {
+  background: conic-gradient(#2fc79b var(--done), var(--lx-color-track) 0);
 }
 
-.dotOn {
-  background: var(--lx-color-accent);
-  box-shadow: 0 0 10px rgba(255, 210, 77, 0.5);
+.todayRing::before {
+  content: "";
+  position: absolute;
+  inset: 5px;
+  border-radius: 50%;
+  background: #2e3454;
 }
 
-.stockLine {
-  margin: 0;
-  font-size: 14px;
-  font-weight: 600;
+.todayRing > * {
+  position: relative;
+}
+
+.todayIcon {
+  background: #3a4268;
+}
+
+.todayBadge {
+  position: absolute;
+  top: -3px;
+  right: -3px;
+  min-width: 20px;
+  height: 20px;
+  display: grid;
+  place-items: center;
+  padding: 0 5px;
+  box-sizing: border-box;
+  border-radius: var(--lx-radius-pill);
+  background: var(--lx-color-badge);
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.todayText {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.todayTitle {
+  font-weight: 800;
+  font-size: 16px;
+}
+
+.todayDetail {
+  font-size: 13px;
+  line-height: 1.35;
   color: var(--lx-color-text-muted);
-  text-align: center;
 }
 
-.openButton {
-  min-width: 240px;
-}
-
-.message {
-  max-width: 420px;
-  margin: 0;
-  font-size: 14px;
-  color: var(--lx-color-text-muted);
-  text-align: center;
-}
-
-.error {
-  composes: message;
-  color: var(--lx-color-danger);
-  font-weight: 700;
-}
-
-/* --- Slipping word --- */
+/* --- Word slipping away --- */
 
 .slipping {
   display: flex;
   align-items: center;
   gap: 14px;
-  max-width: 560px;
-  margin: 8px auto 0;
-  padding: 12px 14px;
+  padding: 14px 0;
+  border-top: 1px solid rgba(246, 240, 226, 0.08);
+  border-bottom: 1px solid rgba(246, 240, 226, 0.08);
 }
 
 .slippingCard {
@@ -289,11 +552,18 @@
   transform: rotate(-4deg);
 }
 
+.slippingBody {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  min-width: 0;
+}
+
 .slippingText {
-  flex: 1;
   margin: 0;
   font-family: var(--font-text), Georgia, serif;
-  font-size: 18px;
+  font-size: 17px;
   line-height: 1.3;
 }
 
@@ -301,57 +571,11 @@
   font-weight: 600;
 }
 
-/* Next rewards need room: dropped on medium screens. */
-@media (max-width: 1060px) {
-  .next {
-    display: none;
-  }
-}
+/* --- Floating buttons, on a phone only --- */
 
-/* Phones. */
-@media (max-width: 759px) {
-  .page {
-    padding: 8px 14px 28px;
-  }
-
-  /* The phone top bar already carries the level and XP; coffrets keep their floating button. */
-  .strip {
-    display: none;
-  }
-
-  .stage {
-    gap: 12px;
-    min-height: 560px;
-    padding: 12px 0 6px;
-  }
-
-  /* Below the collection arrows, beside the sachet. */
-  .fabsLeft,
-  .fabsRight {
-    top: 76px;
-    gap: 12px;
-  }
-
-  .chips {
-    display: none;
-  }
-
-  .arrows {
-    display: flex;
-  }
-
-  .sachet {
-    max-width: 240px;
-    height: 300px;
-  }
-
-  .slipping {
-    margin: 10px 0 0;
-  }
-
-  .slippingText {
-    font-size: 16px;
-  }
+.fabsLeft,
+.fabsRight {
+  display: none;
 }
 
 /* Part of the daily goal reached, around the Défi du jour button. */
@@ -362,4 +586,127 @@
   background: conic-gradient(#3bd3a5 var(--done), #4a5175 0);
   mask: radial-gradient(closest-side, transparent 84%, #000 86%);
   pointer-events: none;
+}
+
+/* Medium screens: the counter on top, the level and the day below it. */
+@media (max-width: 1179px) {
+  .page {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-areas:
+      "counter counter"
+      "side aside";
+  }
+}
+
+/* Phones. */
+@media (max-width: 759px) {
+  .page {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      "counter"
+      "aside";
+    gap: 14px;
+    padding: 8px 14px 28px;
+  }
+
+  /* The phone top bar already carries the level; the floating buttons, the rest. */
+  .side {
+    display: none;
+  }
+
+  .counter {
+    min-height: 0;
+    border-radius: 26px;
+  }
+
+  .counterHead {
+    flex-direction: column;
+    align-items: center;
+    padding: 12px 14px 0;
+  }
+
+  /* The phone top bar carries the stock. */
+  .chips,
+  .stockRing {
+    display: none;
+  }
+
+  .arrows {
+    display: flex;
+  }
+
+  .stage {
+    min-height: 330px;
+  }
+
+  .fabsLeft,
+  .fabsRight {
+    position: absolute;
+    top: 120px;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .fabsLeft {
+    left: 10px;
+  }
+
+  .fabsRight {
+    right: 10px;
+  }
+
+  .sachet {
+    max-width: 220px;
+    height: 300px;
+  }
+
+  .tearHint {
+    left: 50%;
+    top: auto;
+    bottom: -6px;
+    translate: -50% 0;
+    width: max-content;
+    max-width: 240px;
+    border-radius: 16px;
+  }
+
+  .shelf {
+    padding: 18px 16px 20px;
+  }
+
+  .openButton {
+    min-width: 220px;
+  }
+
+  /* Only the word slipping away stays: the challenge and the mail have their buttons. */
+  .today {
+    padding: 0;
+    background: none;
+    box-shadow: none;
+  }
+
+  .today > .cardKicker,
+  .today > .todayRow {
+    display: none;
+  }
+
+  .slipping {
+    padding: 12px 14px;
+    border: 1px solid rgba(246, 240, 226, 0.09);
+    border-radius: 22px;
+    background: var(--lx-color-panel);
+  }
+
+  .slippingBody {
+    flex: 1;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .slippingText {
+    font-size: 16px;
+  }
 }

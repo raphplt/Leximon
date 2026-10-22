@@ -13,8 +13,8 @@ export interface StockView {
   readonly bonus: number;
   /** Nothing to open: the sachet turns grey and still. */
   readonly empty: boolean;
-  /** « 4 sur 6 · le prochain dans 18 min ». */
-  readonly line: string;
+  /** « +1 dans 18 min », « plein », « 2 bonus »: the note beside the count. */
+  readonly note: string;
   /** « Ouvrir le sachet », « Ouvrir un sachet bonus », « Prochain dans 18 min ». */
   readonly action: string;
   /** « 18 min », « plein »: the short form of the top bar chip. */
@@ -27,20 +27,14 @@ export function stockView(wallet: BoosterWalletResponse, now: EpochMs): StockVie
   const wait =
     wallet.nextRefillAt === null ? null : formatWait(Date.parse(wallet.nextRefillAt) - now);
   const { stored, capacity, bonus } = wallet;
-  const line =
-    stored >= capacity
-      ? "Stock plein. Ouvre, ça se recharge."
-      : stored > 0
-        ? `${stored} sur ${capacity} · le prochain dans ${wait}`
-        : bonus > 0
-          ? `Stock vide. ${bonus} bonus en réserve.`
-          : `Plus rien dans la besace. Prochain sachet dans ${wait}.`;
+  const note =
+    stored >= capacity ? "plein" : stored === 0 && bonus > 0 ? `${bonus} bonus` : `+1 dans ${wait}`;
   return {
     stored,
     capacity,
     bonus,
     empty: stored === 0 && bonus === 0,
-    line,
+    note,
     action:
       stored > 0
         ? "Ouvrir le sachet"

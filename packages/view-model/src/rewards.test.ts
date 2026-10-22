@@ -6,10 +6,12 @@ import {
   coffretHint,
   coffretsLabel,
   levelDetail,
+  plateauLayout,
+  quarterAt,
+  quarterNodes,
+  quarterOfLevel,
   reserveLabel,
   rewardSummary,
-  roadLayout,
-  roadNodes,
   upcomingRewards,
   waitingCoffrets,
 } from "./rewards";
@@ -63,11 +65,18 @@ describe("level rewards", () => {
 });
 
 describe("level road", () => {
-  it("marks each level claimed, to claim, next or closed", () => {
-    const nodes = roadNodes(4, [2], NOW);
-    expect(nodes[0]?.level).toBe(30);
-    const state = (n: number) => nodes.find((node) => node.level === n)?.state;
-    expect([1, 2, 3, 4, 5, 6].map(state)).toEqual([
+  it("cuts the road into named quarters of ten levels", () => {
+    expect(quarterOfLevel(1)).toMatchObject({ index: 1, name: "L'Échoppe", first: 1, last: 10 });
+    expect(quarterOfLevel(10).index).toBe(1);
+    expect(quarterOfLevel(16)).toMatchObject({ name: "Le Scriptorium", range: "Niveaux 11 à 20" });
+    expect(quarterAt(12).name).toBe("Quartier 12");
+  });
+
+  it("marks each level claimed, to claim, next, closed or in the fog", () => {
+    const nodes = quarterNodes(quarterAt(1), 4, [2], NOW);
+    expect(nodes.map((n) => n.level)).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
+    const node = (n: number) => nodes.find((it) => it.level === n);
+    expect([1, 2, 3, 4, 5, 6].map((n) => node(n)?.state)).toEqual([
       "claimed",
       "claimed",
       "claimable",
@@ -75,17 +84,17 @@ describe("level road", () => {
       "next",
       "locked",
     ]);
-    expect(nodes.find((n) => n.level === 5)?.opens).toBe("Les échanges");
-    expect(roadNodes(25, [], NOW)[0]?.level).toBe(37);
+    expect([6, 7].map((n) => node(n)?.fog)).toEqual([false, true]);
+    expect(node(5)?.opens).toBe("Les échanges");
   });
 
-  it("winds the road and travels it up to the player's level", () => {
-    const layout = roadLayout([3, 2, 1], 2, { width: 200, rowHeight: 100, amplitude: 50 });
-    expect(layout.height).toBe(300);
-    expect(layout.points.map((p) => p.y)).toEqual([50, 150, 250]);
-    expect(layout.points[0]?.x).toBe(100 + 0.6 * 50);
-    expect(layout.path.startsWith("M130 50 C")).toBe(true);
-    expect(layout.donePath.startsWith(`M${layout.points[1]?.x} 150`)).toBe(true);
+  it("zigzags the tiles up the plateau, a stone between two of them", () => {
+    const layout = plateauLayout([11, 12, 13, 14, 15], 13);
+    const { points, tile } = layout;
+    expect(points.map((p) => p.level)).toEqual([11, 12, 13, 14, 15]);
+    expect(points[1]?.y).toBe((points[0]?.y ?? 0) - tile.height);
+    expect(points.map((p) => (p.x - (points[0]?.x ?? 0)) / tile.width)).toEqual([0, 1, 2, 3, 2]);
+    expect(layout.stones.map((s) => s.done)).toEqual([true, true, false, false]);
   });
 
   it("details a level", () => {

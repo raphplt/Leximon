@@ -23,10 +23,11 @@ import { fetchOwnedCards, type OpenBoosterResult, openBooster } from "@/lib/api"
 import type { PackShape } from "@/lib/pack-shape";
 import { usePackShape } from "@/lib/use-pack-shape";
 import { CollectionPicker } from "@/play/collection-picker";
-import { LevelStrip } from "@/play/level-strip";
+import { noteSachetOpened, StockRing, TearHint } from "@/play/counter-bits";
+import { LevelCard } from "@/play/level-card";
 import play from "@/play/play.module.css";
-import { PlayFabs } from "@/play/play-fabs";
-import { SlippingWord } from "@/play/slipping-word";
+import { PlayFabs, Shortcuts } from "@/play/play-fabs";
+import { TodayCard } from "@/play/today-card";
 import { ownedCards } from "@/player/collection";
 import { account, wallet } from "@/player/player";
 import { useShared } from "@/player/resource";
@@ -40,6 +41,7 @@ import ui from "@/ui/ui.module.css";
 import styles from "./booster-screen.module.css";
 import { CardStack } from "./card-stack";
 import { play as playSound } from "./feedback";
+import type { PackCollection } from "./pack-looks";
 import { OPEN_HINTS, type PackProps } from "./pack-shape";
 import { Pli } from "./pli";
 import {
@@ -240,6 +242,7 @@ export function BoosterScreen() {
       const rarity = catalog.cardsById.get(id)?.rarity;
       if (rarity !== undefined) raritiesBefore.add(rarity);
     }
+    noteSachetOpened();
     wallet.publish(result.wallet);
     publishProgress(result.progress);
     const collection = catalog.collections.find((c) => c.id === choice.id);
@@ -348,93 +351,96 @@ export function BoosterScreen() {
   }
 
   const ready = phase.name === "sealed" || phase.name === "opening";
+  const backs = new Map(catalog?.collections.map((c) => [c.id, c.back]) ?? []);
+  const packCollection: PackCollection | null =
+    choice === null ? null : { id: choice.id, name: choice.name, back: backs.get(choice.id) };
   return (
     <main className={play.page}>
-      <LevelStrip />
-      <div className={play.stage}>
+      <div className={play.side}>
+        <LevelCard />
+        <Shortcuts />
+      </div>
+
+      <section className={play.counter} aria-label="Le comptoir">
         <PlayFabs />
-        {choice !== null && (
-          <CollectionPicker
-            choices={choices}
-            current={choice}
-            onPick={pick}
-            onLocked={() => toast(lockedToast("choose_collection", now))}
-          />
-        )}
+        <div className={play.counterHead}>
+          {choice !== null && (
+            <CollectionPicker
+              choices={choices}
+              backs={backs}
+              current={choice}
+              onPick={pick}
+              onLocked={() => toast(lockedToast("choose_collection", now))}
+            />
+          )}
+          {stock !== null && <StockRing stock={stock} />}
+        </div>
 
-        {(phase.name === "loading" || (ready && !known)) && (
-          <p className={play.message}>On fouille les rayons…</p>
-        )}
-        {phase.name === "unavailable" && (
-          <>
-            <p className={play.message}>Le serveur lambine.</p>
-            <Button variant="secondary" onClick={() => void load()}>
-              Réessayer
-            </Button>
-          </>
-        )}
-        {phase.name === "no_collection" && (
-          <p className={play.message}>Aucune collection n'est encore publiée.</p>
-        )}
-
-        {ready && known && (
-          <>
+        <div className={play.stage}>
+          {(phase.name === "loading" || (ready && !known)) && (
+            <p className={play.message}>On fouille les rayons…</p>
+          )}
+          {phase.name === "unavailable" && (
+            <>
+              <p className={play.message}>Le serveur lambine.</p>
+              <Button variant="secondary" onClick={() => void load()}>
+                Réessayer
+              </Button>
+            </>
+          )}
+          {phase.name === "no_collection" && (
+            <p className={play.message}>Aucune collection n'est encore publiée.</p>
+          )}
+          {ready && known && packCollection !== null && (
             <div className={play.sachet}>
               <PackView
                 shape={shape}
+                collection={packCollection}
                 state={phase.name === "opening" ? "opening" : canOpen ? "sealed" : "empty"}
                 onTearStart={() => {
                   startRequest();
                 }}
                 onOpen={() => void openPack()}
               />
+              {canOpen && phase.name === "sealed" && <TearHint text={OPEN_HINTS[shape]} />}
             </div>
-            {stock !== null && (
-              <div className={play.stock}>
-                <span className={play.dots} role="img" aria-label={stock.description}>
-                  {Array.from({ length: stock.capacity }, (_, index) => (
-                    // biome-ignore lint/suspicious/noArrayIndexKey: fixed-size row of identical dots
-                    <span key={index} className={index < stock.stored ? play.dotOn : play.dot} />
-                  ))}
-                </span>
-                <p className={play.stockLine}>{stock.line}</p>
-              </div>
-            )}
-            {mustSignUp ? (
-              <>
-                <p className={play.message}>{SIGN_UP_HINT}</p>
-                <ButtonLink href="/compte">Créer mon compte</ButtonLink>
-              </>
-            ) : (
-              <Button
-                className={play.openButton}
-                disabled={!canOpen || phase.name === "opening"}
-                onClick={() => {
-                  startRequest();
-                  playSound("tearFinish");
-                  void openPack();
-                }}
-              >
-                {phase.name === "opening" ? "Ouverture…" : (stock?.action ?? "Ouvrir le sachet")}
-              </Button>
-            )}
-            {error !== null ? (
-              <p className={play.error} role="alert">
-                {error}
-              </p>
-            ) : (
-              canOpen && (
-                <p className={play.message}>
-                  {guestLeft === 1
-                    ? `${OPEN_HINTS[shape]}. Dernier sachet sans compte.`
-                    : OPEN_HINTS[shape]}
-                </p>
-              )
-            )}
-          </>
-        )}
+          )}
+        </div>
+
+        <div className={play.shelf}>
+          {ready && known && mustSignUp && (
+            <>
+              <p className={play.message}>{SIGN_UP_HINT}</p>
+              <ButtonLink href="/compte">Créer mon compte</ButtonLink>
+            </>
+          )}
+          {ready && known && !mustSignUp && (
+            <Button
+              className={play.openButton}
+              disabled={!canOpen || phase.name === "opening"}
+              onClick={() => {
+                startRequest();
+                playSound("tearFinish");
+                void openPack();
+              }}
+            >
+              {phase.name === "opening" ? "Ouverture…" : (stock?.action ?? "Ouvrir le sachet")}
+            </Button>
+          )}
+          {error !== null ? (
+            <p className={play.error} role="alert">
+              {error}
+            </p>
+          ) : (
+            canOpen &&
+            guestLeft === 1 && <p className={play.message}>Dernier sachet sans compte.</p>
+          )}
+        </div>
+      </section>
+
+      <div className={play.aside}>
+        <TodayCard catalog={catalog} />
       </div>
-      {catalog !== null && <SlippingWord catalog={catalog} />}
     </main>
   );
 }
