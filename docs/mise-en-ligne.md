@@ -75,7 +75,9 @@ pnpm exec wrangler hyperdrive create leximon-db --caching-disabled \
 
 `--caching-disabled` est obligatoire : le cache d'Hyperdrive renverrait une collection périmée juste après l'ouverture d'un pli.
 
-Agent : recopier l'`id` affiché dans `apps/api/wrangler.jsonc`, `env.production.hyperdrive[0].id`, à la place de `ffffffffffffffffffffffffffffffff`. Commiter.
+À la question « Would you like Wrangler to add it on your behalf? », répondre **no** (ou Ctrl+C) : il l'ajouterait à la config locale, pas à `env.production`.
+
+Agent : recopier l'`id` affiché dans `apps/api/wrangler.jsonc`, `env.production.hyperdrive[0].id`. Commiter. (Fait le 2026-10-22.)
 
 ## 5. Files et bucket · agent
 

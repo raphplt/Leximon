@@ -212,9 +212,9 @@
       "hyperdrive": [
         {
           "binding": "HYPERDRIVE",
-          // TO REPLACE: id printed by `wrangler hyperdrive create leximon-db … --caching-disabled`
-          // (docs/mise-en-ligne.md). A deploy with this placeholder fails.
-          "id": "ffffffffffffffffffffffffffffffff"
+          // leximon-db, created with --caching-disabled: a cached read could show a collection
+          // from before the pack just opened.
+          "id": "43b07b65f2ab4ed797bc424b4e32e632"
         }
       ]
     }
