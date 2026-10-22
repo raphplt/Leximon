@@ -7,7 +7,7 @@ const TITLES: Readonly<Record<SanctionKind, string>> = {
   hide_message: "Un de tes messages est masqué",
   reset_pseudo: "Ton pseudo est retiré",
   reset_clan_name: "Le nom de ton clan est retiré",
-  mute: "Tu ne peux plus écrire pour l'instant",
+  mute: "Tu ne peux plus écrire",
   trade_ban: "Tes échanges sont suspendus",
   suspend: "Ton compte est suspendu",
   close: "Ton compte est fermé",
@@ -53,8 +53,7 @@ export function contestState(
   return null;
 }
 
-export const CONTEST_HINT =
-  "Tu n'es pas d'accord ? Explique pourquoi. Un membre de l'équipe relit, pas une machine.";
+export const CONTEST_HINT = "Pas d'accord ? Explique pourquoi. Un humain te lira.";
 
 const WRITE_BLOCKING: readonly SanctionKind[] = ["mute", "suspend", "close"];
 

@@ -452,8 +452,7 @@ export function BoosterScreen() {
 }
 
 /** Shown once a guest opened all its boosters. */
-const SIGN_UP_HINT =
-  "Crée ton compte pour garder tes cartes et ouvrir d'autres sachets. C'est gratuit.";
+const SIGN_UP_HINT = "Crée ton compte pour garder tes cartes et ouvrir d'autres sachets.";
 
 function PackView({ shape, ...props }: PackProps & { readonly shape: PackShape }) {
   return shape === "sachet" ? <Sachet {...props} /> : <Pli {...props} />;

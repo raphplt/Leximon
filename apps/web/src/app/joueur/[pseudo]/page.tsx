@@ -57,6 +57,6 @@ async function PlayerProfile({ params }: Pick<PageProps<"/joueur/[pseudo]">, "pa
   try {
     return <PublicProfileScreen pseudo={pseudo} initial={await readPublicProfile(pseudo)} />;
   } catch {
-    return <p className={styles.note}>Le serveur lambine. Recharge la page dans un instant.</p>;
+    return <p className={styles.note}>Le serveur lambine. Recharge la page.</p>;
   }
 }

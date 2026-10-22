@@ -149,9 +149,9 @@ export function tierName(tier: GoalTier): string {
   return TIER_NAMES[tier];
 }
 
-/** « 300 mots nouveaux, ensemble »: the gold target is the week's goal. */
+/** « Trouvez 300 mots nouveaux »: the gold target is the week's goal. */
 export function goalTitle(goal: Pick<ClanGoal, "targets">): string {
-  return `${plural(goal.targets.gold, "mot nouveau", "mots nouveaux")}, ensemble`;
+  return `Trouvez ${plural(goal.targets.gold, "mot nouveau", "mots nouveaux")}`;
 }
 
 /** « reste 3 j », « reste 5 h ». */
@@ -179,23 +179,23 @@ export function goalBar(goal: Pick<ClanGoal, "targets" | "words">): GoalBar {
     percent: Math.min(100, (goal.words / gold) * 100),
     tiers: (["bronze", "silver", "gold"] as const).map((tier) => ({
       tier,
-      label: `${tierName(tier)[0]?.toUpperCase()}${tierName(tier).slice(1)} : ${formatCount(goal.targets[tier])} mots`,
+      label: `${tierName(tier)[0]?.toUpperCase()}${tierName(tier).slice(1)} à ${formatCount(goal.targets[tier])} mots`,
       left: (goal.targets[tier] / gold) * 100,
       reached: goal.words >= goal.targets[tier],
     })),
   };
 }
 
-/** « 214 / 300 · ta part : 23 ». */
+/** « 214 / 300 · 23 à toi ». */
 export function goalCountLine(goal: Pick<ClanGoal, "targets" | "words" | "myWords">): string {
-  return `${formatCount(goal.words)} / ${formatCount(goal.targets.gold)} · ta part : ${formatCount(goal.myWords)}`;
+  return `${formatCount(goal.words)} / ${formatCount(goal.targets.gold)} · ${formatCount(goal.myWords)} à toi`;
 }
 
 /** What the tiers give, with the emblem item the gold adds if any is left. */
 export function goalRewardLine(unlock: string | null): string {
   return unlock === null
-    ? "Argent et or : un sachet bonus chacun"
-    : `Argent et or : un sachet bonus chacun. L'or ajoute ${unlock} à l'emblème.`;
+    ? "Un sachet bonus à l'argent, un autre à l'or."
+    : `Un sachet bonus à l'argent. À l'or, un autre, plus ${unlock} pour l'emblème.`;
 }
 
 /** Under the minimum, the member shares no booster: said once, plainly. */
@@ -204,7 +204,7 @@ export function contributionHint(
 ): string | null {
   const missing = goal.minContribution - goal.myWords;
   if (missing <= 0) return null;
-  return `Encore ${plural(missing, "mot nouveau", "mots nouveaux")} de ta part pour toucher les sachets.`;
+  return `Trouve encore ${plural(missing, "mot nouveau", "mots nouveaux")}, et tu touches les sachets.`;
 }
 
 /** « Prendre le sachet de l'or ». */
@@ -254,14 +254,14 @@ export function libraryRows(
   });
 }
 
-/** « À vous tous, il vous manque 42 cartes de Caractères et travers. »: the nearest to complete. */
+/** « Il vous manque 42 cartes de Caractères et travers. »: the nearest to complete. */
 export function libraryHeadline(rows: readonly LibraryRow[]): string {
   const open = rows
     .map((row) => ({ row, missing: row.total - row.owned }))
     .filter((entry) => entry.missing > 0)
     .sort((a, b) => a.missing - b.missing)[0];
   if (open === undefined) return "Pas une carte ne vous manque. Chapeau.";
-  return `À vous tous, il vous manque ${plural(open.missing, "carte", "cartes")} de ${open.row.name}.`;
+  return `Il vous manque ${plural(open.missing, "carte", "cartes")} de ${open.row.name}.`;
 }
 
 // --- Discussion and journal ---------------------------------------------------------
@@ -415,7 +415,7 @@ const REFUSALS: Readonly<Record<ClanRefusal, string>> = {
   message_too_long: "Cinq cents caractères au plus.",
   message_refused: "Pas envoyé : un mot interdit. Reformule.",
   too_soon: "Doucement. Un message toutes les 2 secondes.",
-  muted: "Tu es muet dans ce clan pour l'instant.",
+  muted: "Tu es muet dans ce clan.",
   sanctioned: "Une sanction t'empêche d'écrire.",
   mute_duration: "Cette durée n'existe pas.",
   goal_not_reached: "Pas de sachet pour toi à ce palier.",

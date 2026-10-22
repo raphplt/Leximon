@@ -74,9 +74,9 @@ describe("code errors", () => {
     expect(needsNewCode(ACCOUNT_ERROR_CODES.accountLinkFailed)).toBe(true);
   });
 
-  it("reassures the player when the transfer failed", () => {
+  it("says the cards stayed when the transfer failed", () => {
     expect(codeErrorMessage(ACCOUNT_ERROR_CODES.accountLinkFailed)).toContain(
-      "Tes cartes sont toujours là",
+      "Tes cartes n'ont pas bougé",
     );
   });
 });

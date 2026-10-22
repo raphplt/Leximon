@@ -116,7 +116,7 @@ export function PinnedCards({
         {slots !== null && <span className={styles.panelMeta}>{pinnedSlotsLabel(slots)}</span>}
       </div>
       {pinned.length === 0 && slots === null ? (
-        <p className={styles.muted}>Rien d'épinglé pour l'instant.</p>
+        <p className={styles.muted}>Vitrine vide.</p>
       ) : (
         <ul className={styles.pins}>
           {pinned.map((cardId, index) => {

@@ -35,15 +35,12 @@ export function UnsubscribeFromAddress() {
       <h1 className={styles.title}>{state === "done" ? "C'est fait" : "Plus d'e-mails ?"}</h1>
       <section className={styles.section}>
         {state === "done" && (
-          <p>
-            Plus aucune nouvelle de notre part. Les codes de connexion, eux, arrivent toujours quand
-            tu les demandes.
-          </p>
+          <p>Plus de nouvelles de notre part. Tes codes de connexion, eux, arrivent toujours.</p>
         )}
         {state === "invalid" && (
           <p>Ce lien ne mène nulle part. Recopie-le en entier depuis l'e-mail.</p>
         )}
-        {state === "failed" && <p>Le serveur lambine. Réessaie dans un moment.</p>}
+        {state === "failed" && <p>Le serveur lambine. Réessaie.</p>}
         {(state === "ready" || state === "sending" || state === "failed") && (
           <>
             <p>Un clic, et on arrête de t'écrire.</p>

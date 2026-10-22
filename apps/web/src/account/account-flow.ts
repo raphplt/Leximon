@@ -52,7 +52,7 @@ export function confirmStep(preview: LinkPreviewResponse, noun: PackNoun): Confi
     case "abandon":
       return {
         title: "Tu vas perdre cette partie",
-        text: "Cette adresse a déjà un compte avec sa propre collection. Pour garder celle-ci, crée un compte avec une autre adresse.",
+        text: "Cette adresse a déjà un compte, avec sa propre collection. Pour garder celle-ci, prends une autre adresse.",
         warning: `Si tu te connectes, ${lostGame(preview.guestCards)}.`,
         confirmLabel: "Perdre cette partie et me connecter",
         needsAge: false,
@@ -107,7 +107,7 @@ export function sendErrorMessage(reason: Extract<SendCodeResult, { kind: "refuse
     case "rate_limited":
       return "Attends une minute avant de redemander un code.";
     case "unavailable":
-      return "Les e-mails ne partent pas encore. Réessaie plus tard.";
+      return "Les e-mails ne partent plus. Réessaie tout à l'heure.";
   }
 }
 
@@ -132,7 +132,7 @@ export function codeErrorMessage(error: CodeError): string {
     case ACCOUNT_ERROR_CODES.guestLossNotAcknowledged:
       return "Ton compte a changé entre-temps. Demande un autre code.";
     case ACCOUNT_ERROR_CODES.accountLinkFailed:
-      return "Le transfert a échoué. Tes cartes sont toujours là, réessaie avec un autre code.";
+      return "Le transfert a raté. Tes cartes n'ont pas bougé. Demande un autre code.";
     default:
       return "Ça n'a pas marché. Réessaie.";
   }

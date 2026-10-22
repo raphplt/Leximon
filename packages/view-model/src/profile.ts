@@ -95,7 +95,7 @@ export function visibilityNote(
   if (profile.level < profile.publicFromLevel) {
     return `Ton profil devient public au niveau ${profile.publicFromLevel}. D'ici là, toi seul le vois.`;
   }
-  if (profile.pseudo === null) return "Choisis un pseudo : c'est lui qui fait le lien du profil.";
+  if (profile.pseudo === null) return "Choisis un pseudo. Il fera l'adresse de ton profil.";
   if (!profile.profilePublic) return "Profil caché. Toi seul le vois.";
   return null;
 }
@@ -311,8 +311,7 @@ export function pseudoHint(
   now: EpochMs,
   timeZone?: string,
 ): string {
-  if (profile.pseudo === null)
-    return "Il fait le lien de ton profil. Modifiable une fois par mois.";
+  if (profile.pseudo === null) return "Il fait l'adresse de ton profil. Un changement par mois.";
   const from =
     profile.pseudoChangeableFrom === null ? null : Date.parse(profile.pseudoChangeableFrom);
   if (from === null || from <= now) return "Modifiable une fois par mois.";
@@ -343,10 +342,9 @@ export function blockRefusalMessage(reason: BlockRefusal): string {
   return BLOCK_REFUSALS[reason];
 }
 
-export const BLOCK_CONFIRM =
-  "Vous ne vous verrez plus : ni profil, ni offre. Les offres en cours entre vous tombent.";
+export const BLOCK_CONFIRM = "Plus de profil ni d'offre entre vous. Celles en cours tombent.";
 export const BLOCKED_TOAST = "Bloqué. Vous ne vous croiserez plus.";
-export const BLOCKED_NOTE = "Bloqué. Pour revenir dessus : Réglages, Joueurs bloqués.";
+export const BLOCKED_NOTE = "Bloqué. Ça se défait dans Réglages, Joueurs bloqués.";
 export const PROFILE_NOT_FOUND = "Personne à ce nom, ou son profil n'est pas encore public.";
 export const UNBLOCKED_TOAST = "Débloqué.";
 export const REPORTED_TOAST = "Signalé. On regarde ça.";
@@ -360,7 +358,7 @@ export function deleteAccountLabel(words: number): string {
 }
 
 export const DELETE_ACCOUNT_WARNING =
-  "Cartes, niveau, profil : tout part, tout de suite, et ça ne se rattrape pas. Tes échanges passés restent chez les autres, signés « Un joueur parti ».";
+  "Tout part, sans retour. Tes anciens échanges restent chez les autres, signés « Un joueur parti ».";
 export const DELETE_ACCOUNT_CONFIRM = "Oui, tout effacer";
 export const DELETE_ACCOUNT_CANCEL = "Pas encore";
 export const DELETE_ACCOUNT_ADMIN = "Rends d'abord ton rôle d'admin. Écris-nous.";

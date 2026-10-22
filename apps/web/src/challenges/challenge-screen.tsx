@@ -100,7 +100,7 @@ export function ChallengeScreen() {
         const when = nextDueLabel(next.nextDueAt, Date.now());
         setNotice(
           next.nextDueAt === null
-            ? `Rien à réviser. Ouvre des ${noun.many} : chaque mot trouvé devient un défi.`
+            ? `Rien à réviser. Ouvre des ${noun.many}, chaque mot trouvé deviendra un défi.`
             : `Tes mots tiennent bon. Le prochain revient ${when ?? "bientôt"}.`,
         );
       } else {

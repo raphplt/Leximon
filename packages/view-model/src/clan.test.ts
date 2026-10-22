@@ -82,8 +82,8 @@ describe("members", () => {
 
 describe("the weekly goal", () => {
   it("aims at the gold target", () => {
-    expect(goalTitle(goal)).toBe("300 mots nouveaux, ensemble");
-    expect(goalCountLine(goal)).toBe("214 / 300 · ta part : 23");
+    expect(goalTitle(goal)).toBe("Trouvez 300 mots nouveaux");
+    expect(goalCountLine(goal)).toBe("214 / 300 · 23 à toi");
   });
 
   it("places the tiers on the bar", () => {
@@ -103,7 +103,7 @@ describe("the weekly goal", () => {
 
   it("tells a member under the minimum what is missing", () => {
     expect(contributionHint({ myWords: 2, minContribution: 5 })).toBe(
-      "Encore 3 mots nouveaux de ta part pour toucher les sachets.",
+      "Trouve encore 3 mots nouveaux, et tu touches les sachets.",
     );
     expect(contributionHint({ myWords: 5, minContribution: 5 })).toBeNull();
   });
@@ -127,9 +127,7 @@ describe("the library", () => {
   });
 
   it("names the collection nearest to complete", () => {
-    expect(libraryHeadline(rows)).toBe(
-      "À vous tous, il vous manque 42 cartes de Caractères et travers.",
-    );
+    expect(libraryHeadline(rows)).toBe("Il vous manque 42 cartes de Caractères et travers.");
   });
 });
 

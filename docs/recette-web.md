@@ -437,16 +437,16 @@ pnpm dev:player recette-c@example.com --level 9
 
 ### CLA-11 · Gestion par le chef
 - **Faire :** A nomme B adjoint ; B rend C muet 1 h ; B efface un message de C ; B essaie d'exclure A ; A retire l'adjoint à B ; A change le nom et l'emblème ; A passe la tête du clan à B, puis B la lui rend.
-- **Attendu :** chaque action marche et se lit dans le journal. C muet ne peut plus écrire : « Tu es muet dans ce clan pour l'instant. » Un adjoint ne peut exclure ni le chef ni un autre adjoint.
+- **Attendu :** chaque action marche et se lit dans le journal. C muet ne peut plus écrire : « Tu es muet dans ce clan. » Un adjoint ne peut exclure ni le chef ni un autre adjoint.
 - **Retour :**
 
 ### CLA-12 · Objectif de la semaine
 - **Faire :** regarder la carte de l'objectif, puis ouvrir des sachets avec A (au besoin, donne-lui des sachets bonus depuis l'admin).
-- **Attendu :** « N mots nouveaux, ensemble », barre avec bronze, argent, or, « reste N j », « ta part : N ». La barre monte peu après chaque sachet (recompte en tâche de fond). À l'argent, puis à l'or, un sachet bonus à prendre sur la page et au courrier, pour qui a apporté au moins 5 mots ; à l'or, un objet d'emblème de plus pour le clan. *La cible est fixée au premier passage de la semaine : 5, 10 et 15 mots par membre actif.*
+- **Attendu :** « Trouvez N mots nouveaux », barre avec bronze, argent, or, « reste N j », « N à toi ». La barre monte peu après chaque sachet (recompte en tâche de fond). À l'argent, puis à l'or, un sachet bonus à prendre sur la page et au courrier, pour qui a apporté au moins 5 mots ; à l'or, un objet d'emblème de plus pour le clan. *La cible est fixée au premier passage de la semaine : 5, 10 et 15 mots par membre actif.*
 - **Retour :**
 
 ### CLA-13 · Bibliothèque
-- **Attendu :** « À vous tous, il vous manque N Caractères. », une barre par collection, ta part en plein, celle du clan en clair.
+- **Attendu :** « Il vous manque N cartes de Caractères et travers. », une barre par collection, tes cartes en foncé, celles du clan en clair.
 - **Retour :**
 
 ### CLA-14 · Exclure
@@ -633,6 +633,8 @@ Le principe est le bon, mais le rendu n'est pas assez travaillé. Il doit faire 
 ### 4. Textes
 
 Des textes en trop ou mal sentis, qui « sentent l'IA ». Exemple, l'objectif de la semaine du clan : « 15 mots nouveaux, ensemble » et « Argent et or : 1 sachet bonus chacun, l'or ajoute la gravure … à l'emblème ». Relire tous les textes contre [voix.md](voix.md).
+
+*Repris le 2026-10-22 : relecture de tous les textes du jeu. Partis : les « X : Y », les listes en trois temps, les « pour l'instant », « plus tard » et « C'est gratuit ». L'objectif du clan dit « Trouvez 300 mots nouveaux », « 214 / 300 · 23 à toi », « Un sachet bonus à l'argent. À l'or, un autre, plus la gravure … pour l'emblème. » Il sera réécrit avec Clan v2.*
 
 ### 5. Petites incohérences (corrigées le 2026-10-22)
 
