@@ -24,11 +24,11 @@ Le cookie de session est posé par `api.leximon.fr`, sur ce seul hôte. `leximon
 
 Coût : 5 $ par mois (Workers Paid). Neon, R2, Lettermint et Email Service restent dans leur offre gratuite ou incluse à cette échelle.
 
-## Point bloquant : le web sur Workers
+## Le web sur Workers : sans `cacheComponents`
 
-Testé le 2026-10-22 avec Next.js 16.4.2 et `@opennextjs/cloudflare` 1.20.13 (`pnpm --filter @leximon/web preview`) : avec `cacheComponents`, la première page rendue par le serveur passe, les suivantes du même isolat restent bloquées (« Cannot perform I/O on behalf of a different request »). Touchés : la page publique d'une carte, le profil public et les images de partage. Les écrans du jeu, rendus dans le navigateur, ne sont pas touchés. Problème connu d'OpenNext (tickets 1450 et 1464, prise en charge de Next 16.4 en cours).
+Avec Next.js 16.4.2 et `@opennextjs/cloudflare` 1.20.13, `cacheComponents` bloque les pages rendues par le serveur après la première d'un isolat (tickets OpenNext 1450 et 1464). Il est coupé, avec `partialPrefetching`, jusqu'au correctif (D-043). Vérifié le 2026-10-22 avec `pnpm --filter @leximon/web preview` : page publique d'une carte, profil public et images de partage répondent à chaque requête.
 
-Sans `cacheComponents` ni `partialPrefetching`, le même build passe tous les tests. Choix à faire avant l'étape 10, voir le compte rendu de l'agent. Les étapes 1 à 9 n'en dépendent pas.
+Pour le remettre : réactiver les deux options dans `apps/web/next.config.ts`, remettre `"use cache"` dans `src/cards/catalog-server.ts` et `src/profile/public-profile-data.ts`, puis refaire ce test.
 
 ## 0. Avant de commencer · toi
 
@@ -143,8 +143,6 @@ curl https://api.leximon.fr/health   # {"status":"ok"}
 Le domaine `api.leximon.fr` est créé par le déploiement (enregistrement DNS et certificat). Si un enregistrement `api` existe déjà dans la zone, le supprimer d'abord (toi).
 
 ## 10. Web · agent
-
-Seulement une fois le point bloquant tranché.
 
 ```bash
 pnpm deploy:web

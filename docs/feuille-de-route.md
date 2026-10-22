@@ -71,7 +71,7 @@ Arbitrés par le propriétaire le 2026-10-20 : jeu grand public (B2C), pas de ve
 
 | Étape | Statut | Détail |
 |---|---|---|
-| Hébergement de production | En cours | Prêt dans le code, rien de créé en ligne. Neon gratuit et sauvegarde nocturne sur le NAS (D-040), environnements `production` des deux Workers, catalogue servi par le Worker web. Procédure pas à pas : [mise-en-ligne.md](mise-en-ligne.md). Bloquant pour le web : OpenNext ne tient pas encore `cacheComponents` de Next 16.4 (voir la procédure) |
+| Hébergement de production | En cours | Prêt dans le code, rien de créé en ligne. Neon gratuit et sauvegarde nocturne sur le NAS (D-040), environnements `production` des deux Workers, catalogue servi par le Worker web. Procédure pas à pas : [mise-en-ligne.md](mise-en-ligne.md). `cacheComponents` coupé tant qu'OpenNext ne le prend pas en charge (D-043). Reste : les étapes du propriétaire (comptes, secrets, DNS), puis les déploiements |
 | Bêta fermée sur invitation | Fait (pas en ligne) | D-041 : liens par groupe dans `/admin/invitations`, page `/invitation/<code>`, porte tenue par l'API (`BETA_INVITES`), `?src=` gardé avec le joueur |
 | Mesure | Fait (pas en ligne) | D-042 : `/admin/mesure` (rétention J1/J7/J30 par semaine, lien ou source, âge ; entonnoir ; testeurs ; fausse porte mécène), `/admin/retours` (« Un retour ? » dans le menu), tranche d'âge facultative à l'inscription, page `/mecene` |
 | Test de charge, observabilité | À faire | Avant d'ouvrir au public |
@@ -82,7 +82,7 @@ Arbitrés par le propriétaire le 2026-10-20 : jeu grand public (B2C), pas de ve
 Dans l'ordre où elles débloquent le plus :
 
 1. **Gravures : lancement complet** sur les 1 561 cartes (environ 5 $).
-2. **Web sur Workers :** couper `cacheComponents` le temps qu'OpenNext le prenne en charge, ou attendre le correctif. Il débloque la mise en ligne du web (voir [mise-en-ligne.md](mise-en-ligne.md)).
+2. **Mise en ligne :** les étapes marquées « toi » de [mise-en-ligne.md](mise-en-ligne.md) (Workers Paid, Neon, secrets, DNS des e-mails, Lettermint, NAS).
 3. **Avatars gravés (P49) :** valider les seize gravures choisies et leurs noms.
 4. **Ouverture, progression et social :** les questions ouvertes de [regles-du-jeu.md](regles-du-jeu.md#à-décider), détaillées dans les [cahiers des charges](cahiers-des-charges/).
 5. **Retours de la première prise en main (2026-10-22) :** collections dans le temps, sachet découverte, refonte du clan, courbe de niveaux, voir [recette-web.md](recette-web.md#retours-du-2026-10-22). Refonte du clan : [clan-v2.md](cahiers-des-charges/clan-v2.md), décisions à trancher.

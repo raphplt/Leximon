@@ -1,5 +1,4 @@
 import type { CatalogCard, CatalogCollectionFile } from "@leximon/contract";
-import { cacheLife } from "next/cache";
 import { fetchCatalog } from "./catalog";
 
 /**
@@ -21,17 +20,16 @@ export interface PublicCard {
   readonly catalogSize: number;
 }
 
-/** One copy of the collections for every card page; a new release shows within the hour. */
+/**
+ * The collections for a card page. Collection files are immutable and fetched with
+ * `force-cache`: only the small manifest is read on each request, so a new release shows at once.
+ */
 async function serverCollections(): Promise<readonly CatalogCollectionFile[]> {
-  "use cache";
-  cacheLife({ stale: 3600, revalidate: 3600, expire: 86_400 });
   return (await fetchCatalog(SERVER_CATALOG_URL)).collections;
 }
 
 /** A card and what its page says around it; `null` when no published card has this id. */
 export async function readCatalogCard(cardId: string): Promise<PublicCard | null> {
-  "use cache";
-  cacheLife({ stale: 3600, revalidate: 3600, expire: 86_400 });
   const collections = await serverCollections();
   let catalogSize = 0;
   let found: PublicCard | null = null;

@@ -408,3 +408,10 @@ Pour ajouter ou modifier une décision, utiliser le skill `decision`.
 - **Choix :** une ligne `player_days` par joueur et par jour où il ouvre le jeu (heure de Paris), notée par `GET /me/progress` en parallèle de sa lecture. `/admin/mesure` en tire la rétention J1, J7 et J30 (revenu ce jour-là exactement, parmi les joueurs pour qui ce jour est passé) par semaine, par lien ou source, par tranche d'âge déclarée, l'entonnoir et la liste des testeurs. Les retours (« Un retour ? ») et la fausse porte mécène s'y ajoutent.
 - **Pourquoi :** la promesse « pas de traceur » tient, rien ne part chez un tiers, et les chiffres sont ceux du jeu, pas d'un échantillon.
 - **Conséquences :** admins et invités devenus comptes ne comptent pas. Les agrégats se calculent à la lecture : assez pour la bêta, à revoir au-delà de quelques milliers de joueurs. Les retours ne sont pas filtrés, car seule l'équipe les lit. Pas de visites de pages non jouées (accueil) : l'acquisition se lit par `?src=` sur les joueurs.
+
+## D-043 · Web sur Workers : `cacheComponents` coupé jusqu'au correctif d'OpenNext
+
+- **Statut :** Acceptée (2026-10-22), choisie par le propriétaire pour tenir la bêta de début novembre. Applique D-015.
+- **Choix :** `cacheComponents` et `partialPrefetching` sont coupés. Le catalogue côté serveur repose sur le cache des fichiers de collection immuables (`force-cache`), le profil public sur un `fetch` gardé 60 s.
+- **Pourquoi :** avec Next 16.4 et `@opennextjs/cloudflare` 1.20.13, le rendu serveur se bloque après la première requête d'un isolat (tickets OpenNext 1450 et 1464). Sans ces options, toutes les pages passent.
+- **Conséquences :** pages publiques rendues à chaque requête, sans coquille préchargée. À réactiver quand OpenNext prend en charge Next 16.4, procédure dans [mise-en-ligne.md](mise-en-ligne.md).
