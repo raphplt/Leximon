@@ -4,17 +4,19 @@ import { Collections } from "./collections";
 import { HeroWord } from "./hero-word";
 import { HowToPlay } from "./how-to-play";
 import styles from "./landing-page.module.css";
-import { WaitlistForm } from "./waitlist-form";
+import { JoinOrResume, ResumeLink } from "./player-access";
 
 /**
  * The public home page: a real word first, what Leximon is and a way to hear when it opens, then
- * the launch collections, the rules, and the form again for those who read to the end.
+ * the launch collections, the rules, and the form again for those who read to the end. Someone
+ * who already plays finds the way back to the game instead of the form.
  */
 export function LandingPage() {
   return (
     <main className={styles.page}>
       <header className={styles.top}>
         <Logo size="md" />
+        <ResumeLink />
       </header>
 
       <section className={styles.hero} aria-labelledby="landing-title">
@@ -27,7 +29,7 @@ export function LandingPage() {
             Plus de 1 500 vrais mots du français, en cartes à collectionner. Tu les ouvres, tu les
             apprends, et tu les ressors au bon moment.
           </p>
-          <WaitlistForm />
+          <JoinOrResume />
         </div>
       </section>
 
@@ -39,7 +41,7 @@ export function LandingPage() {
         <h2 id="closing-title" className={styles.closingTitle}>
           Les premiers sachets partent bientôt.
         </h2>
-        <WaitlistForm />
+        <JoinOrResume />
       </section>
 
       <footer className={styles.footer}>
