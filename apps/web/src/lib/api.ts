@@ -28,7 +28,9 @@ import {
   type DeleteAccountRefusal,
   dailyChallengeResponseSchema,
   deleteAccountRefusalSchema,
+  type EmailPreferences,
   type EmailSignInRequest,
+  emailPreferencesSchema,
   errorResponseSchema,
   IDEMPOTENCY_KEY_HEADER,
   type JoinWaitlistRequest,
@@ -64,6 +66,7 @@ import {
   tradeRefusalSchema,
   tradeSchema,
   tradesResponseSchema,
+  type UpdateEmailPreferencesRequest,
   type UpdateProfileRequest,
 } from "@leximon/contract";
 import type { z } from "zod";
@@ -551,11 +554,41 @@ export async function signOut(): Promise<void> {
   if (!response.ok) throw new ApiError("sign_out_failed", response.status);
 }
 
+// --- Campaign e-mails (P61) ---------------------------------------------------------------------
+
+/** Whether the member asked for news by e-mail. */
+export async function fetchEmailPreferences(): Promise<EmailPreferences> {
+  const response = await send("/me/email-preferences");
+  if (!response.ok) throw new ApiError("preferences_unavailable", response.status);
+  return parse(response, emailPreferencesSchema);
+}
+
+/** Gives or withdraws consent; `source` is kept as proof of where it was given. */
+export async function setEmailPreferences(
+  request: UpdateEmailPreferencesRequest,
+): Promise<EmailPreferences> {
+  const response = await postJson("/me/email-preferences", request);
+  if (!response.ok) throw new ApiError("preferences_unavailable", response.status);
+  return parse(response, emailPreferencesSchema);
+}
+
+/** Unsubscribes the recipient of a campaign e-mail, from the token of its link. No session. */
+export async function unsubscribeFromLink(token: string): Promise<"done" | "invalid"> {
+  const response = await send(`/email/unsubscribe/${encodeURIComponent(token)}`, {
+    method: "POST",
+  });
+  if (response.ok) return "done";
+  if (response.status === 400) return "invalid";
+  throw new ApiError("unsubscribe_unavailable", response.status);
+}
+
 // --- Waiting list -------------------------------------------------------------------------------
 
 export type JoinWaitlistResult =
   | { readonly kind: "joined" }
-  | { readonly kind: "refused"; readonly reason: "invalid_email" | "rate_limited" };
+  | { readonly kind: "refused"; readonly reason: "invalid_email" | "rate_limited" }
+  /** The game is open: the list took its last address (P55). */
+  | { readonly kind: "closed" };
 
 /** Puts the address on the list warned when the game opens. No session: it creates no player. */
 export async function joinWaitlist(email: string): Promise<JoinWaitlistResult> {
@@ -563,5 +596,6 @@ export async function joinWaitlist(email: string): Promise<JoinWaitlistResult> {
   if (response.ok) return { kind: "joined" };
   if (response.status === 400) return { kind: "refused", reason: "invalid_email" };
   if (response.status === 429) return { kind: "refused", reason: "rate_limited" };
+  if (response.status === 410) return { kind: "closed" };
   throw new ApiError("waitlist_unavailable", response.status);
 }

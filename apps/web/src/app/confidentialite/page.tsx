@@ -31,8 +31,8 @@ export default function PrivacyPage() {
         <h2>Liste d'attente</h2>
         <p>
           On garde ton adresse e-mail, et rien d'autre. Elle sert à t'écrire une fois, le jour de
-          l'ouverture. Ensuite, on l'efface. Tu nous l'as donnée pour ça, c'est notre seule raison
-          de la garder.
+          l'ouverture. Ensuite, la liste est close et on l'efface. Tu nous l'as donnée pour ça,
+          c'est notre seule raison de la garder.
         </p>
       </section>
 
@@ -54,17 +54,30 @@ export default function PrivacyPage() {
       </section>
 
       <section className={styles.section}>
+        <h2>E-mails</h2>
+        <p>
+          Les codes de connexion partent par Cloudflare, seulement quand tu en demandes un. Les
+          nouvelles du jeu partent par Lettermint, et seulement si tu as coché « M'écrire quand il y
+          a du nouveau ». Chaque nouvelle porte un lien pour arrêter, et la case se décoche dans ton
+          compte. Si tu te désinscris, on garde ton adresse sur la liste des gens à ne plus
+          contacter, rien de plus. L'historique d'un envoi perd les adresses 30 jours après.
+        </p>
+      </section>
+
+      <section className={styles.section}>
         <h2>Ce qu'on ne fait pas</h2>
         <p>
-          Pas de publicité, pas de revente, pas de traceur. Le seul cookie est celui qui te garde
-          connecté. Tes réglages de son et de vibration restent dans ton navigateur.
+          Pas de publicité, pas de revente, pas de traceur, ni dans le site ni dans les e-mails (pas
+          de pixel, pas de lien pisté). Le seul cookie est celui qui te garde connecté. Tes réglages
+          de son et de vibration restent dans ton navigateur.
         </p>
       </section>
 
       <section className={styles.section}>
         <h2>Où elles vivent</h2>
         <p>
-          Le site passe par Cloudflare. La base de données est hébergée dans l'Union européenne.
+          Le site et les codes de connexion passent par Cloudflare. Les nouvelles passent par
+          Lettermint, un service européen. La base de données est hébergée dans l'Union européenne.
         </p>
       </section>
 

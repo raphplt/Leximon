@@ -303,7 +303,7 @@ Pour ajouter ou modifier une décision, utiliser le skill `decision`.
 
 ## D-030 · Inscription : code par e-mail, transfert de l'invité dans notre transaction
 
-- **Statut :** Acceptée (2026-10-20), après la R&D ([docs/rnd/inscription.md](rnd/inscription.md)). Règles P37 et P54. Fournisseur d'envoi des e-mails : à décider (recommandation : Scaleway).
+- **Statut :** Acceptée (2026-10-20), après la R&D ([docs/rnd/inscription.md](rnd/inscription.md)). Règles P37 et P54. Fournisseur d'envoi des codes : D-034.
 - **Choix :** plugin `emailOTP` de Better Auth (code à 6 chiffres) plutôt que `magicLink`, à côté de `anonymous`, Apple et Google. Le sort de l'invité (transfert vers un nouveau compte, abandon vers un compte qui joue déjà, P54) se règle dans `onLinkAccount`, dans une transaction à nous, avec `disableDeleteAnonymousUser: true` : l'invité est archivé, jamais supprimé, et chaque connexion depuis un invité est journalisée dans `guest_links`.
 - **Pourquoi :** un lien ouvert sur un autre appareil, ou consommé par l'antivirus d'une messagerie, crée un compte vide et perd l'invité ; un code marche partout. Toutes les tables de jeu sont en cascade sur `users.id` : la suppression par défaut de l'invité effacerait ses cartes et l'historique des échanges des autres joueurs.
 - **Conséquences :** changement additif, l'invité actuel continue de marcher. Un test liste toutes les clés étrangères vers `users.id` et échoue si l'une n'est pas traitée par le transfert. L'envoi des codes a ses propres limites de débit (D-018).
@@ -329,9 +329,37 @@ Pour ajouter ou modifier une décision, utiliser le skill `decision`.
 - **Pourquoi :** le web déjà fini (reflets, ouverture au geste) reste intact, la maquette prévoit des différences voulues (panneau à droite sur le web, fiche montante sur mobile), et une règle d'écran écrite une fois s'affiche pareil partout et se teste avec Vitest.
 - **Conséquences :** les règles du jeu restent dans `packages/core` (le serveur fait foi) ; `view-model` peut en importer les fonctions pures, jamais l'inverse. La logique d'écran qui vit aujourd'hui dans `apps/web` (`progress.ts`, `session.ts`, `offer.ts`, `display.ts`…) y migre quand un écran est repris. Chaque écran s'écrit deux fois, avec les mêmes textes.
 
-## D-034 · Suppression du compte : effacement en cascade, échanges gardés sans leur auteur
+## D-034 · E-mails : codes par Cloudflare Email Service, campagnes par Lettermint
 
-- **Statut :** Acceptée (2026-10-21), choisie par le propriétaire (suppression immédiate, échanges anonymes). Met en œuvre P63.
+- **Statut :** Acceptée (2026-10-21), choisie par le propriétaire. Cahier : [e-mails.md](cahiers-des-charges/e-mails.md).
+- **Choix :** les codes de connexion partent par la liaison `send_email` de Cloudflare Email Service, depuis le Worker. Les campagnes partent par Lettermint (Pays-Bas), sur sa route de diffusion, par lots avec une clé d'idempotence par e-mail. Lettermint reste en offre gratuite (300 par mois) et ne passe à un palier payant que le mois d'un envoi de masse.
+- **Pourquoi :** Scaleway et Cloudflare interdisent tous deux le marketing. Cloudflare inclut 3 000 e-mails par mois dans Workers Paid, déjà nécessaire pour Queues, sans clé ni nouveau sous-traitant, et n'impose pas de plafond par jour comme les offres gratuites de Brevo ou Mailjet, qui casseraient l'inscription pendant un stream. Lettermint est le seul candidat qui signe ses webhooks en HMAC et dédoublonne chaque e-mail d'un lot.
+- **Conséquences :**
+  - deux sous-domaines d'envoi, donc deux réputations : une plainte sur une campagne ne bloque jamais les connexions ;
+  - Cloudflare Email Service est en bêta publique et démarre avec un quota quotidien prudent : demander une hausse avant l'ouverture ;
+  - les secrets Lettermint (jeton d'envoi, secret des webhooks) vivent en variables d'environnement ; les codes n'ont besoin d'aucun secret.
+
+## D-035 · Campagnes : file Queues alimentée chaque minute, une ligne et une clé par destinataire
+
+- **Statut :** Acceptée (2026-10-21), choisie par le propriétaire. Règles P55 et P61.
+- **Choix :** une campagne confirmée crée une ligne par destinataire (`email_campaign_sends`, unique par campagne et adresse), audience moins la liste de suppression (`email_suppressions`). Une tâche planifiée chaque minute met en file Cloudflare Queues la part de la minute, par messages de 100 identifiants ; le consommateur réserve ses lignes par une mise à jour conditionnelle, puis les envoie avec l'identifiant de la ligne pour clé d'idempotence chez Lettermint. Le consentement des joueurs vit dans `email_consents`.
+- **Pourquoi :** la base reste la seule source de vérité. Un message perdu, rejoué ou en double, ou deux consommateurs qui se chevauchent, n'envoient jamais deux fois : la réservation ne réussit qu'une fois, et la clé couvre le consommateur mort entre l'envoi et l'écriture.
+- **Conséquences :**
+  - la tâche planifiée passe à chaque minute ; la maintenance quotidienne garde son horaire ;
+  - une ligne réservée depuis plus de 15 minutes est remise en circuit, bien avant l'expiration de la clé (24 h) ;
+  - une seule campagne vers la liste d'attente peut partir (index unique partiel), et son lancement ferme la liste ;
+  - les adresses des lignes d'envoi sont effacées 30 jours après la fin d'une campagne.
+
+## D-036 · Modèles d'e-mail : rendu maison, Markdown réduit, sans dépendance
+
+- **Statut :** Acceptée (2026-10-21), choisie par le propriétaire.
+- **Choix :** un gabarit en tableaux HTML et styles en ligne, plus une version texte, rendus par des fonctions pures de l'API. Le corps d'une campagne est un Markdown réduit (paragraphes, gras, italique, liens `https://`, listes, intertitres), converti par notre code ; tout le reste est échappé.
+- **Pourquoi :** ni React ni MJML dans le Worker, et un contenu qui ne peut injecter ni HTML ni image.
+- **Conséquences :** aucune image distante ni lien traqué (`/confidentialite` promet « pas de traceur »). Une mise en forme nouvelle s'ajoute au convertisseur, avec son test.
+
+## D-037 · Suppression du compte : effacement en cascade, échanges gardés sans leur auteur
+
+- **Statut :** Acceptée (2026-10-21), choisie par le propriétaire (suppression immédiate, échanges anonymes). Met en œuvre P64.
 - **Choix :** `DELETE /me/account` efface la ligne `users` dans une transaction : tout ce qui appartient au joueur part en cascade, les offres en attente sont d'abord annulées, et les clés de `trades` vers le joueur passent à `null` (`ON DELETE SET NULL`), si bien que l'autre joueur garde son historique, signé « Un joueur parti ». Un compte admin, ou ancien admin présent dans le journal (D-031), est refusé.
 - **Pourquoi :** une suppression demandée dans l'app est exigée par l'App Store et le RGPD ; effacer plutôt qu'archiver évite de garder des données sans raison, et le journal d'administration ne doit jamais perdre son auteur.
 - **Conséquences :** `trades.proposer_id` et `trades.recipient_id` sont nullables (migration additive), et tout code qui lit un échange traite un côté absent. La page publique d'un profil est mise en cache 60 s par Next : un profil supprimé ou passé en privé peut encore s'y voir pendant ce délai.

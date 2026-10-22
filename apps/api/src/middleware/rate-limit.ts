@@ -9,7 +9,8 @@ type Limiter =
   | "OTP_SEND_IP_RATE_LIMITER"
   | "OTP_SEND_EMAIL_RATE_LIMITER"
   | "OTP_VERIFY_IP_RATE_LIMITER"
-  | "WAITLIST_RATE_LIMITER";
+  | "WAITLIST_RATE_LIMITER"
+  | "EMAIL_LINK_RATE_LIMITER";
 
 /** The counter a request is counted on; `null` lets it through uncounted. */
 type KeyOf = (c: Context<AppEnv>) => string | null | Promise<string | null>;

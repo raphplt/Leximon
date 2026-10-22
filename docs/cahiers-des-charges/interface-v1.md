@@ -185,7 +185,7 @@ La maquette ne montre que le clan du joueur. Les écrans K-08 à K-13 sont à de
 | P-05 | Profil d'un autre joueur | Même page sans les actions personnelles, avec « Proposer un échange » et « Signaler » | idem | 3 | fait (« Signaler le pseudo » et « Bloquer », compte inscrit) | à faire |
 | P-06 | Page publique partageable | `/joueur/{pseudo}` rendue par le serveur, image de partage | idem | 3 | fait (image de partage générée à la demande par Next, sans la file) | — |
 | P-07 | Atelier | Onglets Avatars gravés, Dos de carte, Cadres, Titres ; chaque objet : porté, à mettre, « Niveau 20 », ou réservé au mécène | `PATCH /me/profile` | 3 | fait (avatars, cadres, titres ; dos de carte plus tard, pas encore de mécène) | à faire |
-| P-08 | Pseudo | Choix et changement (une fois par mois), filtré (N5) | idem | 3 | fait (P61) | à faire |
+| P-08 | Pseudo | Choix et changement (une fois par mois), filtré (N5) | idem | 3 | fait (P62) | à faire |
 
 ### R · Réglages, courrier, compte
 
@@ -197,7 +197,7 @@ La maquette ne montre que le clan du joueur. Les écrans K-08 à K-13 sont à de
 | R-04 | Réglages · Notifications | Mots qui s'échappent, Offres d'échange, Discussion du clan (seulement quand on te cite) | serveur | 3 | fait (préférences gardées ; rien n'est envoyé tant que la file n'existe pas) | à faire |
 | R-05 | Réglages · Profil | Profil public, Pseudo, Joueurs bloqués (et débloquer) | serveur | 3 | fait | à faire |
 | R-06 | Réglages · Compte | Adresse e-mail, Tes données, Me déconnecter ; l'inscription de l'invité (écran `/compte` existant) | existe en partie | 1 | fait | à faire |
-| R-07 | Supprimer mon compte | Dans l'app, exigé par l'App Store ; conséquence dans le bouton | à faire | 3 | fait (P63) | à faire |
+| R-07 | Supprimer mon compte | Dans l'app, exigé par l'App Store ; conséquence dans le bouton | à faire | 3 | fait (P64) | à faire |
 | R-08 | Sanction et contestation | Message motivé d'une sanction, voie de contestation (DSA, N5) | admin | 4 | à faire | à faire |
 | R-09 | Contact et mentions | contact@leximon.fr, crédits (Littré, Ngram, gravures), conditions d'utilisation, charte de la discussion | — | 3 | fait (`/mentions` avec l'éditeur et l'hébergeur, `/conditions`, `/charte`, acceptées à l'inscription ; textes à faire relire par un juriste) | à faire |
 

@@ -27,6 +27,7 @@ import {
 import { type Database, schema } from "@leximon/db";
 import { eq, type SQL, sql } from "drizzle-orm";
 import { ADMIN_ROLE } from "../auth";
+import { readWaitlistOpening } from "../campaigns/campaigns";
 import { decodeTimeCursor, nextCursor, type TimeCursor } from "./cursor";
 
 /**
@@ -372,16 +373,18 @@ export async function listWaitlist(
     after === null
       ? sql`true`
       : sql`(${waitlistSignups.createdAt}, ${waitlistSignups.email}) < (${new Date(after.at)}, ${after.id})`;
-  const [entries, total] = await Promise.all([
+  const [entries, total, opening] = await Promise.all([
     db.execute<{ email: string; created_at: string }>(sql`
       select ${waitlistSignups.email} as email, ${waitlistSignups.createdAt} as created_at
       from ${waitlistSignups} where ${where}
       order by ${waitlistSignups.createdAt} desc, ${waitlistSignups.email} desc
       limit ${PAGE_SIZE + 1}`),
     db.execute<{ total: number }>(sql`select count(*)::int as total from ${waitlistSignups}`),
+    readWaitlistOpening(db),
   ]);
   return {
     total: total.rows[0]?.total ?? 0,
+    opening,
     entries: entries.rows
       .slice(0, PAGE_SIZE)
       .map((entry) => ({ email: entry.email, createdAt: iso(entry.created_at) })),

@@ -55,7 +55,31 @@ Ils sont lus par des gens qui ne jouent pas encore : ils font venir les joueurs.
 
 - **Partage** : le mot d'abord, la rareté chiffrée ensuite, le jeu en dernier. Jamais de phrase de notification système (« J'ai trouvé une carte X sur Leximon ! »).
 - **Notifications de révision** : on parle du mot qui s'échappe, pas du nombre de défis en attente. « *Lucubrateur* est en train de t'échapper. »
-- **E-mails** : un objet de cinq mots au plus, une seule action par e-mail.
+- **E-mails** : un objet de cinq mots au plus, une seule action par e-mail. Pas d'image, pas de pixel, pas de lien pisté.
+
+### Exemples d'e-mails
+
+**Code de connexion** (rendu dans `apps/api/src/email/sign-in-code.ts`). Le code d'abord, dans l'objet comme dans le texte : on le lit sans ouvrir l'e-mail. Pas de lien de désinscription : c'est un service, pas des nouvelles.
+
+> **Objet :** 482913, ton code Leximon
+>
+> 482913
+>
+> Ton code pour entrer dans Leximon. Il vaut 10 minutes.
+>
+> Pas demandé ? Ignore ce message.
+
+**Ouverture** (le seul e-mail de la liste d'attente, P55, écrit dans l'admin). Le bénéfice, puis un seul bouton.
+
+> **Objet :** Leximon ouvre ses sachets
+>
+> C'est ouvert. Des mots que plus personne ne dit t'attendent, un sachet gratuit par jour.
+>
+> **[Ouvrir mon premier sachet]**
+>
+> *Leximon · leximon.fr — Ne plus recevoir ces e-mails*
+
+**Désinscription** : la page ne retient personne. « Plus d'e-mails ? Un clic, et on arrête de t'écrire. » Bouton « Me désinscrire », puis « C'est fait ».
 
 ## Lexique
 

@@ -9,6 +9,7 @@ type FormState =
   | { readonly kind: "idle" }
   | { readonly kind: "sending" }
   | { readonly kind: "joined" }
+  | { readonly kind: "closed" }
   | { readonly kind: "error"; readonly message: string };
 
 const ERRORS = {
@@ -31,9 +32,7 @@ export function WaitlistForm() {
     try {
       const result = await joinWaitlist(email);
       setState(
-        result.kind === "joined"
-          ? { kind: "joined" }
-          : { kind: "error", message: ERRORS[result.reason] },
+        result.kind === "refused" ? { kind: "error", message: ERRORS[result.reason] } : result,
       );
     } catch {
       setState({ kind: "error", message: ERRORS.unavailable });
@@ -44,6 +43,14 @@ export function WaitlistForm() {
     return (
       <p className={styles.joined} role="status">
         Noté. On se revoit à l'ouverture.
+      </p>
+    );
+  }
+
+  if (state.kind === "closed") {
+    return (
+      <p className={styles.joined} role="status">
+        Trop tard pour attendre : c'est ouvert. <Link href="/jouer">Viens jouer.</Link>
       </p>
     );
   }

@@ -10,6 +10,7 @@ const LINKS = [
   { href: "/admin", label: "Tableau de bord" },
   { href: "/admin/joueurs", label: "Joueurs" },
   { href: "/admin/attente", label: "Liste d'attente" },
+  { href: "/admin/campagnes", label: "Campagnes" },
   { href: "/admin/echanges", label: "Échanges" },
   { href: "/admin/cartes", label: "Cartes" },
   { href: "/admin/catalogue", label: "Collections" },
