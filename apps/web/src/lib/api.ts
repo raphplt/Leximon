@@ -1,4 +1,5 @@
 import {
+  ACCOUNT_ERROR_CODES,
   type AccountResponse,
   accountResponseSchema,
   authErrorResponseSchema,
@@ -29,6 +30,9 @@ import {
   emailPreferencesSchema,
   errorResponseSchema,
   IDEMPOTENCY_KEY_HEADER,
+  type InterestKind,
+  type InviteStatus,
+  inviteStatusSchema,
   type JoinWaitlistRequest,
   type LevelRewardsResponse,
   type LinkPreviewError,
@@ -56,6 +60,7 @@ import {
   profileResponseSchema,
   progressResponseSchema,
   publicProfileSchema,
+  type SendFeedbackRequest,
   signupRequiredSchema,
   type Trade,
   type TradeableCardsResponse,
@@ -69,6 +74,7 @@ import {
   type UpdateProfileRequest,
 } from "@leximon/contract";
 import type { z } from "zod";
+import { arrivalHeaders, forgetArrival } from "../beta/arrival";
 
 /**
  * Browser client of the game API. The session lives in Better Auth's cookie, sent with
@@ -105,6 +111,17 @@ export async function parse<T>(response: Response, schema: z.ZodType<T>): Promis
   return result.data;
 }
 
+/** The beta is on invitation and this browser brings none that is still open. */
+export class BetaClosedError extends ApiError {
+  constructor(readonly reason: "invite_required" | "invite_closed") {
+    super(reason, 403);
+    this.name = "BetaClosedError";
+  }
+}
+
+/** Pages that work without a player: signing in to an account, entering by an invitation. */
+const OPEN_WITHOUT_PLAYER = ["/compte", "/invitation"];
+
 /**
  * One guest sign-in at a time: screens load several resources in parallel, and each would
  * otherwise create its own guest account on a first visit.
@@ -114,11 +131,21 @@ let guestSignIn: Promise<void> | null = null;
 function signInAsGuest(): Promise<void> {
   guestSignIn ??= send("/api/auth/sign-in/anonymous", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json", ...arrivalHeaders() },
     body: "{}",
   })
-    .then((response) => {
-      if (!response.ok) throw new ApiError("guest_sign_in_failed", response.status);
+    .then(async (response) => {
+      if (response.ok) {
+        forgetArrival();
+        return;
+      }
+      const closed =
+        response.status === 403 ? betaClosedReason(await authErrorCode(response)) : null;
+      if (closed === null) throw new ApiError("guest_sign_in_failed", response.status);
+      if (!OPEN_WITHOUT_PLAYER.some((path) => window.location.pathname.startsWith(path))) {
+        window.location.assign("/invitation");
+      }
+      throw new BetaClosedError(closed);
     })
     .catch((error: unknown) => {
       // Kept after a success, so that a request answered late reuses the new session.
@@ -487,12 +514,22 @@ export async function fetchAccount(): Promise<AccountResponse> {
   return parse(response, accountResponseSchema);
 }
 
-function postJson(path: string, body: unknown): Promise<Response> {
+function postJson(
+  path: string,
+  body: unknown,
+  headers: Record<string, string> = {},
+): Promise<Response> {
   return send(path, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json", ...headers },
     body: JSON.stringify(body),
   });
+}
+
+function betaClosedReason(code: string | null): BetaClosedError["reason"] | null {
+  if (code === ACCOUNT_ERROR_CODES.inviteRequired) return "invite_required";
+  if (code === ACCOUNT_ERROR_CODES.inviteClosed) return "invite_closed";
+  return null;
 }
 
 /** Error code of a Better Auth route (ours included), `null` when there is none. */
@@ -524,7 +561,7 @@ export type PreviewResult =
 
 /** Checks the code, without using it up, and tells what signing in does to the guest's game. */
 export async function previewSignIn(email: string, code: string): Promise<PreviewResult> {
-  const response = await postJson("/account/link-preview", { email, code });
+  const response = await postJson("/account/link-preview", { email, code }, arrivalHeaders());
   if (response.ok) return { kind: "ok", ...(await parse(response, linkPreviewResponseSchema)) };
   if (response.status === 429) return { kind: "refused", reason: "rate_limited" };
   const body = errorResponseSchema.safeParse(await response.json().catch(() => null));
@@ -540,8 +577,12 @@ export type SignInResult =
 
 /** Signs in with the code. The server moves or leaves the guest's game in the same request. */
 export async function signInWithCode(request: EmailSignInRequest): Promise<SignInResult> {
-  const response = await postJson("/api/auth/sign-in/email-otp", request);
-  if (response.ok) return { kind: "signed_in" };
+  // A sign-in without a guest may create a player: it brings the invitation, if any.
+  const response = await postJson("/api/auth/sign-in/email-otp", request, arrivalHeaders());
+  if (response.ok) {
+    forgetArrival();
+    return { kind: "signed_in" };
+  }
   if (response.status === 429) return { kind: "refused", code: "rate_limited" };
   const code = await authErrorCode(response);
   if (code !== null) return { kind: "refused", code };
@@ -597,4 +638,33 @@ export async function joinWaitlist(email: string): Promise<JoinWaitlistResult> {
   if (response.status === 429) return { kind: "refused", reason: "rate_limited" };
   if (response.status === 410) return { kind: "closed" };
   throw new ApiError("waitlist_unavailable", response.status);
+}
+
+// --- Closed beta --------------------------------------------------------------------------------
+
+/** Whether an invitation link still lets someone in. */
+export async function fetchInviteStatus(code: string): Promise<InviteStatus["status"]> {
+  const response = await send(`/invites/${encodeURIComponent(code)}`);
+  if (!response.ok) throw new ApiError("invite_unavailable", response.status);
+  return (await parse(response, inviteStatusSchema)).status;
+}
+
+/** A tester's note, read by the team only. */
+export async function sendFeedback(request: SendFeedbackRequest): Promise<void> {
+  const response = await sendAsPlayer("/me/feedback", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(request),
+  });
+  if (!response.ok) throw new ApiError("feedback_failed", response.status);
+}
+
+/** Interest in the patron offer, before it is sold. */
+export async function recordInterest(kind: InterestKind): Promise<void> {
+  const response = await sendAsPlayer("/me/interest", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ kind }),
+  });
+  if (!response.ok) throw new ApiError("interest_failed", response.status);
 }

@@ -14,6 +14,7 @@ function preview(overrides: Partial<LinkPreviewResponse> = {}): LinkPreviewRespo
     accountExists: false,
     outcome: "transfer",
     guestCards: 12,
+    inviteRequired: false,
     ...overrides,
   };
 }
@@ -27,6 +28,11 @@ describe("cardCount", () => {
 });
 
 describe("confirmStep", () => {
+  it("offers no account to create when the beta needs an invitation the player lacks", () => {
+    const step = confirmStep(preview({ outcome: "none", inviteRequired: true }), DEFAULT_PACK_NOUN);
+    expect(step).toMatchObject({ closed: true, needsAge: false });
+  });
+
   it("asks for the age declaration only when an account is created", () => {
     const signUp = confirmStep(preview(), DEFAULT_PACK_NOUN);
     expect(signUp).toMatchObject({ needsAge: true, acceptsLoss: false, warning: null });

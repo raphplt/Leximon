@@ -387,3 +387,24 @@ Pour ajouter ou modifier une décision, utiliser le skill `decision`.
   - les lettres d'un invité suivent son jeu quand il s'inscrit, et une lettre d'offre nomme l'autre joueur tel que l'offre le donne au moment de la lecture ;
   - lettres effacées après 90 jours par la maintenance quotidienne ;
   - les notifications push (R-02) liront les mêmes lettres et les préférences de `user_preferences`.
+
+## D-040 · Postgres de la bêta : Neon, sauvegardé chaque nuit sur le NAS
+
+- **Statut :** Acceptée (2026-10-22), choisie par le propriétaire. Complète D-005 (fournisseur). R&D : [rnd/postgres.md](rnd/postgres.md), dont la recommandation OVH est écartée par le propriétaire.
+- **Choix :** Neon gratuit, région Francfort, Postgres 18, joint par Hyperdrive sans cache sur la connexion directe (pas le pooler). Un `pg_dump` part chaque nuit vers le NAS du propriétaire, 30 jours gardés, avec un test de restauration (`infra/backup/`).
+- **Pourquoi :** 0 € pour 40 testeurs, en UE, sans rien à administrer. Le NAS n'héberge pas la base (le jeu dépendrait d'une box et d'un courant domestiques), il garde une copie hors du fournisseur.
+- **Conséquences :** réveil d'environ 300 ms après 5 minutes sans requête, acceptable en bêta. Avant l'ouverture publique, revoir le fournisseur (Neon payant, Scaleway, Supabase). Procédure : [mise-en-ligne.md](mise-en-ligne.md).
+
+## D-041 · Bêta fermée : liens d'invitation vérifiés à la création du joueur
+
+- **Statut :** Acceptée (2026-10-22), choisie par le propriétaire.
+- **Choix :** l'admin crée dans `/admin/invitations` un lien par groupe (`/invitation/<code>`), avec un nombre de places. Quand `BETA_INVITES` vaut `"required"`, Better Auth refuse de créer un joueur (invité, ou compte sans invité) sans code ouvert, et la place se prend par une mise à jour conditionnelle (`uses < max_uses`), sans verrou tenu pendant l'inscription. Un compte créé depuis un invité n'a pas besoin de lien.
+- **Pourquoi :** la porte est tenue par le serveur, sur la seule action qui crée un joueur, et un lien par groupe dit d'où vient chaque testeur.
+- **Conséquences :** le lien et le `?src=` d'arrivée restent dans le navigateur jusqu'à la création du joueur, puis vivent dans `player_signups`, qui suit la partie de l'invité vers son compte. Une inscription qui échoue après avoir pris sa place la perd. Ouvrir à tous : `BETA_INVITES` à `"off"`.
+
+## D-042 · Mesure : calculée depuis la base, dans l'admin, sans outil tiers
+
+- **Statut :** Acceptée (2026-10-22), choisie par le propriétaire (PostHog et Cloudflare Web Analytics écartés).
+- **Choix :** une ligne `player_days` par joueur et par jour où il ouvre le jeu (heure de Paris), notée par `GET /me/progress` en parallèle de sa lecture. `/admin/mesure` en tire la rétention J1, J7 et J30 (revenu ce jour-là exactement, parmi les joueurs pour qui ce jour est passé) par semaine, par lien ou source, par tranche d'âge déclarée, l'entonnoir et la liste des testeurs. Les retours (« Un retour ? ») et la fausse porte mécène s'y ajoutent.
+- **Pourquoi :** la promesse « pas de traceur » tient, rien ne part chez un tiers, et les chiffres sont ceux du jeu, pas d'un échantillon.
+- **Conséquences :** admins et invités devenus comptes ne comptent pas. Les agrégats se calculent à la lecture : assez pour la bêta, à revoir au-delà de quelques milliers de joueurs. Les retours ne sont pas filtrés, car seule l'équipe les lit. Pas de visites de pages non jouées (accueil) : l'acquisition se lit par `?src=` sur les joueurs.

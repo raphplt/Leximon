@@ -227,6 +227,7 @@ describe("signing up from a guest", () => {
       accountExists: false,
       outcome: "transfer",
       guestCards: 5,
+      inviteRequired: false,
     });
     const response = await signInWithCode(app, env, {
       email,
@@ -360,6 +361,7 @@ describe("signing in to an account that plays", () => {
       accountExists: true,
       outcome: "abandon",
       guestCards: 4,
+      inviteRequired: false,
     });
 
     // Not warned: the sign-in is refused and the player is still the guest, cards and all.
@@ -438,6 +440,7 @@ describe("signing in to an account that plays", () => {
       accountExists: true,
       outcome: "none",
       guestCards: 0,
+      inviteRequired: false,
     });
     const response = await signInWithCode(app, env, {
       email: account.email,

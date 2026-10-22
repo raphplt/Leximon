@@ -134,6 +134,13 @@
       "when": 1792682436116,
       "tag": "0018_drop_clan_left_at",
       "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1792700176151,
+      "tag": "0019_beta",
+      "breakpoints": true
     }
   ]
 }

@@ -1,6 +1,7 @@
 import { cssRootRule } from "@leximon/tokens";
 import type { Metadata, Viewport } from "next";
 import { Bricolage_Grotesque, Fraunces, Newsreader } from "next/font/google";
+import { SourceCapture } from "@/beta/source-capture";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -41,7 +42,10 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <head>
         <style>{cssRootRule()}</style>
       </head>
-      <body>{children}</body>
+      <body>
+        {children}
+        <SourceCapture />
+      </body>
     </html>
   );
 }

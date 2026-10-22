@@ -1,9 +1,10 @@
 "use client";
 
-import type { LinkPreviewResponse } from "@leximon/contract";
+import { AGE_BRACKETS, type AgeBracket, type LinkPreviewResponse } from "@leximon/contract";
 import Link from "next/link";
 import { type FormEvent, useCallback, useEffect, useId, useState } from "react";
 import {
+  BetaClosedError,
   fetchAccount,
   fetchEmailPreferences,
   previewSignIn,
@@ -60,8 +61,9 @@ export function AccountScreen() {
           ? { kind: "member", email: account.email, isAdmin: account.isAdmin }
           : { kind: "email" },
       );
-    } catch {
-      setStep({ kind: "failed" });
+    } catch (error) {
+      // No guest can start here without an invitation: signing in to an account still works.
+      setStep(error instanceof BetaClosedError ? { kind: "email" } : { kind: "failed" });
     }
   }, []);
 
@@ -107,18 +109,21 @@ export function AccountScreen() {
     code: string,
     preview: LinkPreviewResponse,
     ageConfirmed: boolean,
-  ) => run(() => signIn(email, code, preview, ageConfirmed));
+    ageBracket: AgeBracket | null,
+  ) => run(() => signIn(email, code, preview, ageConfirmed, ageBracket));
 
   const signIn = async (
     email: string,
     code: string,
     preview: LinkPreviewResponse,
     ageConfirmed: boolean,
+    ageBracket: AgeBracket | null = null,
   ) => {
     const result = await signInWithCode({
       email,
       otp: code,
       ...(ageConfirmed ? { ageConfirmed: true } : {}),
+      ...(ageBracket === null ? {} : { ageBracket }),
       ...(preview.outcome === "abandon" ? { acceptGuestLoss: true } : {}),
     });
     if (result.kind === "signed_in") {
@@ -202,8 +207,8 @@ export function AccountScreen() {
         <Confirm
           preview={step.preview}
           busy={busy}
-          onConfirm={(ageConfirmed) =>
-            void confirm(step.email, step.code, step.preview, ageConfirmed)
+          onConfirm={(ageConfirmed, ageBracket) =>
+            void confirm(step.email, step.code, step.preview, ageConfirmed, ageBracket)
           }
           onCancel={() => go({ kind: "email" })}
         />
@@ -385,18 +390,54 @@ function Confirm({
 }: {
   readonly preview: LinkPreviewResponse;
   readonly busy: boolean;
-  readonly onConfirm: (ageConfirmed: boolean) => void;
+  readonly onConfirm: (ageConfirmed: boolean, ageBracket: AgeBracket | null) => void;
   readonly onCancel: () => void;
 }) {
   const { noun } = usePackShape();
   const [ageConfirmed, setAgeConfirmed] = useState(false);
+  const [ageBracket, setAgeBracket] = useState<AgeBracket | null>(null);
+  const ageId = useId();
   const step = confirmStep(preview, noun);
   const ready = !busy && (!step.needsAge || ageConfirmed);
+  if (step.closed) {
+    return (
+      <div className={styles.panel}>
+        <h2 className={styles.subtitle}>{step.title}</h2>
+        <p className={styles.text}>{step.text}</p>
+        <button type="button" className={styles.secondary} disabled={busy} onClick={onCancel}>
+          Changer d'adresse
+        </button>
+      </div>
+    );
+  }
   return (
     <div className={styles.panel}>
       <h2 className={styles.subtitle}>{step.title}</h2>
       <p className={styles.text}>{step.text}</p>
       {step.warning !== null && <p className={styles.warning}>{step.warning}</p>}
+      {step.needsAge && (
+        <>
+          <label htmlFor={ageId} className={styles.label}>
+            Ton âge, si tu veux bien
+          </label>
+          <select
+            id={ageId}
+            className={styles.input}
+            value={ageBracket ?? ""}
+            onChange={(event) => {
+              const value = AGE_BRACKETS.find((bracket) => bracket === event.target.value);
+              setAgeBracket(value ?? null);
+            }}
+          >
+            <option value="">Je préfère ne pas dire</option>
+            {AGE_BRACKETS.map((bracket) => (
+              <option key={bracket} value={bracket}>
+                {bracket === "50+" ? "50 ans et plus" : `${bracket.replace("-", " à ")} ans`}
+              </option>
+            ))}
+          </select>
+        </>
+      )}
       {step.needsAge && (
         <label className={styles.check}>
           <input
@@ -421,7 +462,7 @@ function Confirm({
             type="button"
             className={styles.secondary}
             disabled={busy}
-            onClick={() => onConfirm(false)}
+            onClick={() => onConfirm(false, null)}
           >
             {busy ? "Connexion…" : step.confirmLabel}
           </button>
@@ -432,7 +473,7 @@ function Confirm({
             type="button"
             className={styles.primary}
             disabled={!ready}
-            onClick={() => onConfirm(ageConfirmed)}
+            onClick={() => onConfirm(ageConfirmed, ageBracket)}
           >
             {busy ? "Un instant…" : step.confirmLabel}
           </button>

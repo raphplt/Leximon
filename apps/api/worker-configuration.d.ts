@@ -21,6 +21,7 @@ interface __BaseEnv_Env {
 	EMAIL_CAMPAIGN_FROM: string;
 	LETTERMINT_BROADCAST_ROUTE: string;
 	PUBLIC_WEB_URL: string;
+	BETA_INVITES: string;
 	BETTER_AUTH_SECRET: string;
 	EMAIL_LINK_SECRET: string;
 	LETTERMINT_SENDING_TOKEN: string;
@@ -37,7 +38,7 @@ type StringifyValues<EnvType extends Record<string, unknown>> = {
 	[Binding in keyof EnvType]: EnvType[Binding] extends string ? EnvType[Binding] : string;
 };
 declare namespace NodeJS {
-	interface ProcessEnv extends StringifyValues<Pick<Cloudflare.Env, "APP_ENV" | "BETTER_AUTH_URL" | "TRUSTED_ORIGINS" | "EMAIL_CODE_FROM" | "EMAIL_REPLY_TO" | "EMAIL_CAMPAIGN_FROM" | "LETTERMINT_BROADCAST_ROUTE" | "PUBLIC_WEB_URL" | "BETTER_AUTH_SECRET" | "EMAIL_LINK_SECRET" | "LETTERMINT_SENDING_TOKEN" | "LETTERMINT_WEBHOOK_SECRET">> {}
+	interface ProcessEnv extends StringifyValues<Pick<Cloudflare.Env, "APP_ENV" | "BETTER_AUTH_URL" | "TRUSTED_ORIGINS" | "EMAIL_CODE_FROM" | "EMAIL_REPLY_TO" | "EMAIL_CAMPAIGN_FROM" | "LETTERMINT_BROADCAST_ROUTE" | "PUBLIC_WEB_URL" | "BETA_INVITES" | "BETTER_AUTH_SECRET" | "EMAIL_LINK_SECRET" | "LETTERMINT_SENDING_TOKEN" | "LETTERMINT_WEBHOOK_SECRET">> {}
 }
 declare module "*.txt" {
 	const value: string;

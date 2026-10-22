@@ -2,7 +2,8 @@
 
 import { levelBadge, levelsOfFeatures, profileHeadline } from "@leximon/view-model";
 import Link from "next/link";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
+import { FeedbackDialog } from "@/beta/feedback-dialog";
 import { Avatar } from "@/components/avatar";
 import { useNarrow } from "@/lib/use-narrow";
 import { Dialog } from "@/ui/dialog";
@@ -32,6 +33,7 @@ export function PlayerMenu({
   const view = usePlayerView();
   const { openSettings } = useShell();
   const list = useRef<HTMLUListElement>(null);
+  const [feedbackOpen, setFeedbackOpen] = useState(false);
 
   const joustLevel = view.now === 0 ? null : levelsOfFeatures(view.now).jousts;
   const items: Item[] = [
@@ -48,6 +50,8 @@ export function PlayerMenu({
     { label: "Atelier", icon: "palette", href: "/atelier" },
     { label: "Chemin des niveaux", icon: "star", href: "/niveaux" },
     { label: "Réglages", icon: "reglages", action: openSettings },
+    { label: "Devenir mécène", icon: "crown", href: "/mecene" },
+    { label: "Un retour ?", icon: "chat", action: () => setFeedbackOpen(true) },
     { label: view.guest ? "Créer mon compte" : "Mon compte", icon: "cle", href: "/compte" },
   ];
 
@@ -104,31 +108,38 @@ export function PlayerMenu({
     </ul>
   );
 
+  // The note window outlives the menu, which closes as it opens.
+  const feedback = <FeedbackDialog open={feedbackOpen} onClose={() => setFeedbackOpen(false)} />;
+
   if (narrow) {
     return (
-      <Dialog open={open} title="Menu" onClose={onClose}>
-        {view.progress !== null && (
-          <div className={styles.who}>
-            <Avatar
-              avatar={view.profile?.avatar ?? null}
-              frame={view.profile?.frame ?? null}
-              size={56}
-            />
-            <div>
-              <div className={`${ui.display} ${styles.whoName}`}>{view.name}</div>
-              <div className={styles.whoLevel}>
-                {profileHeadline(view.title, view.progress.level)}
+      <>
+        <Dialog open={open} title="Menu" onClose={onClose}>
+          {view.progress !== null && (
+            <div className={styles.who}>
+              <Avatar
+                avatar={view.profile?.avatar ?? null}
+                frame={view.profile?.frame ?? null}
+                size={56}
+              />
+              <div>
+                <div className={`${ui.display} ${styles.whoName}`}>{view.name}</div>
+                <div className={styles.whoLevel}>
+                  {profileHeadline(view.title, view.progress.level)}
+                </div>
               </div>
             </div>
-          </div>
-        )}
-        {entries}
-      </Dialog>
+          )}
+          {entries}
+        </Dialog>
+        {feedback}
+      </>
     );
   }
-  if (!open) return null;
+  if (!open) return feedback;
   return (
     <>
+      {feedback}
       <button
         type="button"
         className={styles.scrim}

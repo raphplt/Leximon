@@ -25,6 +25,7 @@ import { playerRateLimit } from "../middleware/rate-limit";
 import { requireAdmin } from "../middleware/require-admin";
 import { adminModerationRoutes } from "../moderation/routes";
 import { banPlayer, cancelTrade, grantBonus, logExport, unbanPlayer } from "./actions";
+import { adminBetaRoutes } from "./beta-routes";
 import {
   exportWaitlist,
   InvalidCursorError,
@@ -56,6 +57,7 @@ export function adminRoutes(createMailer: CampaignMailerFactory) {
   });
 
   routes.route("/", adminModerationRoutes());
+  routes.route("/", adminBetaRoutes());
 
   routes.get("/me", async (c) => {
     const email = await readAdminEmail(c.var.db, c.var.userId);

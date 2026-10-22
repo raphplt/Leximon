@@ -9,6 +9,9 @@ import { fetchAdminAccess } from "./admin-api";
 const LINKS = [
   { href: "/admin", label: "Tableau de bord" },
   { href: "/admin/joueurs", label: "Joueurs" },
+  { href: "/admin/invitations", label: "Invitations" },
+  { href: "/admin/mesure", label: "Mesure" },
+  { href: "/admin/retours", label: "Retours" },
   { href: "/admin/attente", label: "Liste d'attente" },
   { href: "/admin/campagnes", label: "Campagnes" },
   { href: "/admin/echanges", label: "Échanges" },

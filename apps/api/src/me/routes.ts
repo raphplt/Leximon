@@ -29,6 +29,8 @@ import { and, asc, eq, gt, or, sql } from "drizzle-orm";
 import { type Context, Hono } from "hono";
 import { z } from "zod";
 import { ADMIN_ROLE } from "../auth";
+import { recordPlayedDay } from "../beta/activity";
+import { betaPlayerRoutes } from "../beta/routes";
 import { guestOpensSql } from "../boosters/open-booster";
 import { emailPreferenceRoutes } from "../campaigns/routes";
 import { leaveClan, touchLastSeen } from "../clans/clans";
@@ -74,6 +76,7 @@ export function meRoutes() {
   routes.route("/email-preferences", emailPreferenceRoutes());
   routes.route("/clan", myClanRoutes());
   routes.route("/sanctions", sanctionRoutes());
+  routes.route("/", betaPlayerRoutes());
 
   routes.get("/wallet", async (c) => {
     // Asked for on every screen: the player's presence for the clan.
@@ -274,9 +277,15 @@ export function meRoutes() {
     return c.json<Preferences>(await updatePreferences(c.var.db, c.var.userId, body.data));
   });
 
-  /** Account level. Read only: a player who never earned XP is at level 1. */
+  /**
+   * Account level: a player who never earned XP is at level 1. Every screen loads it once, so it
+   * also notes the day played, in parallel with the read.
+   */
   routes.get("/progress", async (c) => {
-    const xp = await readXp(c.var.db, c.var.userId);
+    const [xp] = await Promise.all([
+      readXp(c.var.db, c.var.userId),
+      recordPlayedDay(c.var.db, c.var.userId, Date.now()),
+    ]);
     return c.json<ProgressResponse>({ xp, ...levelOf(xp) });
   });
 

@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { ageBracketSchema } from "./beta";
 
 /**
  * Signing up and signing in: a 6-digit code sent by e-mail, through Better Auth's routes
@@ -40,6 +41,8 @@ export const linkPreviewResponseSchema = z.object({
   outcome: guestLinkPreviewOutcomeSchema,
   /** Copies the guest owns: they follow (`transfer`) or are lost (`abandon`). */
   guestCards: z.int().nonnegative(),
+  /** The beta is on invitation and this sign-in would create a player without one. */
+  inviteRequired: z.boolean(),
 });
 export type LinkPreviewResponse = z.infer<typeof linkPreviewResponseSchema>;
 
@@ -55,13 +58,15 @@ export type LinkPreviewError = z.infer<typeof linkPreviewErrorSchema>;
 /**
  * `POST /api/auth/sign-in/email-otp` body. Extra fields are read by our hooks:
  * - `ageConfirmed`: "J'ai 15 ans ou plus", required to create an account, never stored;
- * - `acceptGuestLoss`: the player saw that the guest's cards will be lost, required for `abandon`.
+ * - `acceptGuestLoss`: the player saw that the guest's cards will be lost, required for `abandon`;
+ * - `ageBracket`: given freely with a new account, kept to compare retention by age.
  */
 export const emailSignInRequestSchema = z.object({
   email: emailSchema,
   otp: signInCodeSchema,
   ageConfirmed: z.boolean().optional(),
   acceptGuestLoss: z.boolean().optional(),
+  ageBracket: ageBracketSchema.optional(),
 });
 export type EmailSignInRequest = z.input<typeof emailSignInRequestSchema>;
 
@@ -75,6 +80,10 @@ export const ACCOUNT_ERROR_CODES = {
   accountLinkFailed: "ACCOUNT_LINK_FAILED",
   /** No e-mail provider is configured: no code can be sent (fails closed). */
   emailUnavailable: "EMAIL_UNAVAILABLE",
+  /** The beta is on invitation: a new player needs a valid invitation code. */
+  inviteRequired: "INVITE_REQUIRED",
+  /** The invitation has no place left, has expired, or was withdrawn. */
+  inviteClosed: "INVITE_CLOSED",
 } as const;
 
 /** Errors of Better Auth's routes, ours included. */

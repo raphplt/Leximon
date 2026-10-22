@@ -26,10 +26,27 @@ export interface ConfirmStep {
   readonly needsAge: boolean;
   /** Confirming abandons the guest's cards: the request says the player accepted it. */
   readonly acceptsLoss: boolean;
+  /** No account can be created here: the beta is on invitation and none came with the player. */
+  readonly closed: boolean;
 }
 
 /** What the player confirms, given what signing in would do to the guest's game. */
 export function confirmStep(preview: LinkPreviewResponse, noun: PackNoun): ConfirmStep {
+  if (preview.inviteRequired) {
+    return {
+      title: "Sur invitation",
+      text: "La bêta est fermée. Pour créer un compte, passe d'abord par un lien d'invitation.",
+      warning: null,
+      confirmLabel: "",
+      needsAge: false,
+      acceptsLoss: false,
+      closed: true,
+    };
+  }
+  return { ...stepOf(preview, noun), closed: false };
+}
+
+function stepOf(preview: LinkPreviewResponse, noun: PackNoun): Omit<ConfirmStep, "closed"> {
   switch (preview.outcome) {
     case "transfer":
       return preview.accountExists
@@ -133,6 +150,10 @@ export function codeErrorMessage(error: CodeError): string {
       return "Ton compte a changé entre-temps. Demande un autre code.";
     case ACCOUNT_ERROR_CODES.accountLinkFailed:
       return "Le transfert a raté. Tes cartes n'ont pas bougé. Demande un autre code.";
+    case ACCOUNT_ERROR_CODES.inviteRequired:
+      return "La bêta est sur invitation. Passe d'abord par ton lien.";
+    case ACCOUNT_ERROR_CODES.inviteClosed:
+      return "Ce lien d'invitation est fermé.";
     default:
       return "Ça n'a pas marché. Réessaie.";
   }

@@ -15,6 +15,10 @@ const {
   boosterWallets,
   guestLinks,
   mailLetters,
+  playerDays,
+  playerFeedback,
+  playerInterest,
+  playerSignups,
   players,
   reviewLogs,
   sessions,
@@ -84,6 +88,16 @@ export const USER_REFERENCES = {
   // Campaigns and their consent need an address: a guest never has either.
   "email_campaign_sends.user_id": { transfer: "kept", abandon: "kept" },
   "email_consents.user_id": { transfer: "kept", abandon: "kept" },
+  // Where the guest came from and the days it played: the account's first days are the guest's.
+  // An account that already has its own origin keeps it.
+  "player_signups.user_id": { transfer: "moved", abandon: "kept" },
+  "player_days.user_id": { transfer: "moved", abandon: "kept" },
+  "player_feedback.user_id": { transfer: "moved", abandon: "kept" },
+  "player_interest.user_id": { transfer: "moved", abandon: "kept" },
+  // Declared with an account only.
+  "player_age_brackets.user_id": { transfer: "kept", abandon: "kept" },
+  // Invitations are created by admins, who are never guests.
+  "invites.created_by": { transfer: "kept", abandon: "kept" },
 } as const satisfies Readonly<
   Record<
     string,
@@ -315,7 +329,27 @@ async function transferEverything(tx: Transaction, guestId: string, accountId: s
       reviews as (update ${reviewLogs} set user_id = ${accountId} where user_id = ${guestId} returning 1),
       letters as (update ${mailLetters} set user_id = ${accountId} where user_id = ${guestId} returning 1),
       proposed as (update ${trades} set proposer_id = ${accountId} where proposer_id = ${guestId} returning 1),
-      received as (update ${trades} set recipient_id = ${accountId} where recipient_id = ${guestId} returning 1)
+      received as (update ${trades} set recipient_id = ${accountId} where recipient_id = ${guestId} returning 1),
+      feedback as (update ${playerFeedback} set user_id = ${accountId} where user_id = ${guestId} returning 1),
+      origin as (
+        update ${playerSignups} set user_id = ${accountId}
+        where user_id = ${guestId}
+          and not exists (select 1 from ${playerSignups} where user_id = ${accountId})
+        returning 1
+      ),
+      -- An account without a game may still have opened the game some days: merged.
+      days_copied as (
+        insert into ${playerDays} (user_id, day)
+        select ${accountId}, day from ${playerDays} where user_id = ${guestId}
+        on conflict do nothing returning 1
+      ),
+      days_dropped as (delete from ${playerDays} where user_id = ${guestId} returning 1),
+      interest_copied as (
+        insert into ${playerInterest} (user_id, kind, created_at)
+        select ${accountId}, kind, created_at from ${playerInterest} where user_id = ${guestId}
+        on conflict do nothing returning 1
+      ),
+      interest_dropped as (delete from ${playerInterest} where user_id = ${guestId} returning 1)
     update ${users} set created_at = least(${users}.created_at, guest.created_at)
     from ${users} as guest
     where ${users}.id = ${accountId} and guest.id = ${guestId}

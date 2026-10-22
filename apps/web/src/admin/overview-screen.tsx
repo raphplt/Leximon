@@ -65,7 +65,7 @@ export function OverviewScreen() {
   );
 }
 
-function Stat({
+export function Stat({
   label,
   value,
   note,

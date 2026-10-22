@@ -45,6 +45,21 @@ export default function PrivacyPage() {
       </section>
 
       <section className={styles.section}>
+        <h2>Bêta et mesure</h2>
+        <p>
+          On garde le lien d'invitation par lequel tu es entré, et le code du lien qui t'a amené
+          (une vidéo, un post), pour savoir ce qui fait venir les joueurs. On note les jours où tu
+          ouvres le jeu, pour savoir si les joueurs reviennent. Tout se calcule dans notre base,
+          sans outil extérieur, et part avec ton compte.
+        </p>
+        <p>
+          À la création du compte, tu peux donner ta tranche d'âge. C'est facultatif. Elle sert à
+          comparer comment chaque âge joue. Ce que tu écris dans « Un retour ? » est lu par
+          l'équipe, avec l'écran d'où tu l'as envoyé.
+        </p>
+      </section>
+
+      <section className={styles.section}>
         <h2>Profil</h2>
         <p>
           Ton pseudo, ton avatar, ton niveau, tes cartes épinglées et tes chiffres de jeu forment
@@ -69,7 +84,8 @@ export default function PrivacyPage() {
         <p>
           Pas de publicité, pas de revente, pas de traceur, ni dans le site ni dans les e-mails (pas
           de pixel, pas de lien pisté). Le seul cookie est celui qui te garde connecté. Tes réglages
-          de son et de vibration restent dans ton navigateur.
+          de son et de vibration restent dans ton navigateur, comme ton lien d'invitation et ton
+          code d'arrivée jusqu'à ta première partie.
         </p>
       </section>
 

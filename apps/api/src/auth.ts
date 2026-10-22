@@ -2,7 +2,7 @@ import { ACCOUNT_ERROR_CODES } from "@leximon/contract";
 import { type Database, schema } from "@leximon/db";
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
-import { APIError, createAuthMiddleware } from "better-auth/api";
+import { APIError, createAuthMiddleware, getSessionFromCtx } from "better-auth/api";
 import { admin, anonymous, emailOTP } from "better-auth/plugins";
 import {
   EmailSendError,
@@ -10,6 +10,7 @@ import {
   EmailSenderNotConfiguredError,
 } from "./account/email-sender";
 import { linkGuestOnSignIn, readBodyFlag } from "./account/link-on-sign-in";
+import { type Arrival, admitNewPlayer, recordArrival } from "./beta/arrival";
 
 export const AUTH_BASE_PATH = "/api/auth";
 
@@ -33,6 +34,8 @@ export function createAuth(env: Env, db: Database, emailSender: EmailSender) {
   // Better Auth logs and swallows errors thrown while sending (`runInBackgroundOrAwait`): the
   // failure is noted here and turned into an error response by the hook below (fails closed).
   let sendFailure: unknown = null;
+  // Who let the new user in (invitation, source), noted before the row exists, written after.
+  let arrival: Arrival | null = null;
 
   return betterAuth({
     secret: env.BETTER_AUTH_SECRET,
@@ -97,9 +100,28 @@ export function createAuth(env: Env, db: Database, emailSender: EmailSender) {
       user: {
         create: {
           // Only the address is kept: no name or picture, whatever the client or provider sends.
-          async before(user) {
-            if (user["isAnonymous"] === true) return;
+          async before(user, ctx) {
+            const isGuest = user["isAnonymous"] === true;
+            const session =
+              isGuest || ctx === null
+                ? null
+                : await getSessionFromCtx(ctx, { disableRefresh: true });
+            arrival = await admitNewPlayer(db, env, {
+              headers: ctx?.headers,
+              fromGuest: session?.user["isAnonymous"] === true,
+              now: Date.now(),
+            });
+            if (isGuest) return;
             return { data: { ...user, name: "", image: null } };
+          },
+          async after(user, ctx) {
+            if (arrival === null) return;
+            await recordArrival(db, {
+              userId: user.id,
+              isGuest: user["isAnonymous"] === true,
+              arrival,
+              body: ctx?.body,
+            });
           },
         },
       },

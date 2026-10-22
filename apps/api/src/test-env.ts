@@ -48,6 +48,7 @@ export function testEnv(connectionString = "postgres://unused@127.0.0.1:1/unused
     EMAIL_CAMPAIGN_FROM: "",
     LETTERMINT_BROADCAST_ROUTE: "broadcast",
     PUBLIC_WEB_URL: "http://localhost:3000",
+    BETA_INVITES: "off",
     EMAIL_LINK_SECRET: TEST_LINK_SECRET,
     LETTERMINT_WEBHOOK_SECRET: TEST_WEBHOOK_SECRET,
     CAMPAIGN_QUEUE: unusedQueue,

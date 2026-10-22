@@ -1,4 +1,4 @@
-import { sendSignInCodeRequestSchema } from "@leximon/contract";
+import { INVITE_HEADER, SOURCE_HEADER, sendSignInCodeRequestSchema } from "@leximon/contract";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { createMiddleware } from "hono/factory";
@@ -8,6 +8,7 @@ import { createEmailSender, type EmailSenderFactory } from "./account/email-send
 import { accountRoutes } from "./account/routes";
 import { adminRoutes } from "./admin/routes";
 import { AUTH_BASE_PATH, parseOrigins } from "./auth";
+import { inviteRoutes } from "./beta/routes";
 import { createCardPoolLoader } from "./boosters/card-pool";
 import { boosterRoutes } from "./boosters/routes";
 import { type CampaignMailerFactory, createCampaignMailer } from "./campaigns/mailer";
@@ -67,7 +68,7 @@ export function createApp(options: AppOptions = {}) {
     cors({
       origin: parseOrigins(c.env.TRUSTED_ORIGINS),
       credentials: true,
-      allowHeaders: ["Content-Type", "Idempotency-Key"],
+      allowHeaders: ["Content-Type", "Idempotency-Key", INVITE_HEADER, SOURCE_HEADER],
       allowMethods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     })(c, next),
   );
@@ -114,6 +115,10 @@ export function createApp(options: AppOptions = {}) {
   app.post("/waitlist", waitlistRateLimit);
   app.use("/waitlist", withDatabase);
   app.route("/waitlist", waitlistRoutes());
+  // Public like the waiting list, and limited the same way: nobody tries codes one by one.
+  app.get("/invites/*", waitlistRateLimit);
+  app.use("/invites/*", withDatabase);
+  app.route("/invites", inviteRoutes());
 
   app.notFound((c) => c.json({ error: "not_found" }, 404));
   app.onError((error, c) => {

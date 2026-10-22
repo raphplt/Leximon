@@ -40,6 +40,8 @@ export const ACTION_LABELS: Readonly<Record<string, string>> = {
   dismiss_report: "Signalement classé",
   sanction: "Sanction",
   resolve_contest: "Contestation tranchée",
+  invite_create: "Invitation créée",
+  invite_revoke: "Invitation retirée",
 };
 
 /** What the team does, as the sanction form and the contests name it. */

@@ -9,13 +9,18 @@ import {
   type AdminCardStats,
   type AdminCatalog,
   type AdminContestsResponse,
+  type AdminCreateInviteRequest,
+  type AdminFeedbackResponse,
   type AdminGrantBonusResponse,
+  type AdminInvite,
   type AdminMe,
+  type AdminMeasures,
   type AdminOverview,
   type AdminPlayerDetail,
   type AdminPlayerKind,
   type AdminPlayersResponse,
   type AdminReportsResponse,
+  type AdminTestersResponse,
   type AdminTradesResponse,
   type AdminWaitlistResponse,
   adminActionsResponseSchema,
@@ -27,12 +32,17 @@ import {
   adminCardStatsSchema,
   adminCatalogSchema,
   adminContestsResponseSchema,
+  adminFeedbackResponseSchema,
   adminGrantBonusResponseSchema,
+  adminInviteSchema,
+  adminInvitesResponseSchema,
+  adminMeasuresSchema,
   adminMeSchema,
   adminOverviewSchema,
   adminPlayerDetailSchema,
   adminPlayersResponseSchema,
   adminReportsResponseSchema,
+  adminTestersResponseSchema,
   adminTradesResponseSchema,
   adminWaitlistResponseSchema,
   type CreateSanctionRequest,
@@ -271,9 +281,47 @@ export const fetchActions = (cursor?: string): Promise<AdminActionsResponse> =>
   getJson(withQuery("/admin/actions", { cursor }), adminActionsResponseSchema);
 
 /** French message for a refusal the admin can act on. */
+// --- Closed beta --------------------------------------------------------------------------------
+
+export async function fetchInvites(): Promise<readonly AdminInvite[]> {
+  return (await getJson("/admin/invites", adminInvitesResponseSchema)).invites;
+}
+
+export async function createInvite(request: AdminCreateInviteRequest): Promise<AdminInvite> {
+  return parse(await postJson("/admin/invites", request), adminInviteSchema);
+}
+
+export async function revokeInvite(id: string): Promise<AdminInvite> {
+  return parse(
+    await postJson(`/admin/invites/${encodeURIComponent(id)}/revoke`, {}),
+    adminInviteSchema,
+  );
+}
+
+export const fetchMeasures = (): Promise<AdminMeasures> =>
+  getJson("/admin/measures", adminMeasuresSchema);
+
+export const fetchTesters = (cursor?: string): Promise<AdminTestersResponse> =>
+  getJson(
+    `/admin/testers${cursor === undefined ? "" : `?cursor=${encodeURIComponent(cursor)}`}`,
+    adminTestersResponseSchema,
+  );
+
+export const fetchFeedback = (cursor?: string): Promise<AdminFeedbackResponse> =>
+  getJson(
+    `/admin/feedback${cursor === undefined ? "" : `?cursor=${encodeURIComponent(cursor)}`}`,
+    adminFeedbackResponseSchema,
+  );
+
+export async function markFeedbackRead(id: string): Promise<void> {
+  await postJson(`/admin/feedback/${encodeURIComponent(id)}/read`, {});
+}
+
 export function adminErrorMessage(error: unknown): string {
   const code = error instanceof ApiError ? error.message : "";
   switch (code) {
+    case "code_taken":
+      return "Ce code sert déjà à une autre invitation.";
     case "network_error":
       return "Pas de connexion à l'API.";
     case "forbidden":
