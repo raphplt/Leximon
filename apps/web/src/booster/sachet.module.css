@@ -11,7 +11,7 @@
   flex: 1 1 0;
   align-self: stretch;
   min-height: 260px;
-  max-height: 434px;
+  max-height: 640px;
   display: grid;
   place-items: center;
   container-type: size;
@@ -20,11 +20,11 @@
 .scene {
   position: relative;
   /*
-   * Every measure of the pouch is a multiple of --u: 1px at full size (236 × 410, the
-   * proportions of a real booster pouch), less where the screen is short. The slot keeps 24px
-   * for the pouch to sway and cast its shadow.
+   * Every measure of the pouch is a multiple of --u: 1px at the reference size (236 × 410, the
+   * proportions of a real booster pouch), up to 1.4px on a tall screen, less where it is short.
+   * The slot keeps 24px for the pouch to sway and cast its shadow.
    */
-  --u: min(1px, (100cqh - 24px) / 410, 100cqw / 236);
+  --u: min(1.4px, (100cqh - 24px) / 410, 100cqw / 236);
   --width: calc(236 * var(--u));
   --height: calc(410 * var(--u));
   /* The tear strip across the top. */

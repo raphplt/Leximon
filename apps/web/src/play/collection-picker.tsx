@@ -56,14 +56,14 @@ export function CollectionPicker({
               aria-hidden="true"
             >
               <PackEmblem collectionId={choice.id} className={styles.pickEmblem} />
+              {choice.lock !== null && (
+                <span className={styles.pickLock}>
+                  <Icon name="lock" size={11} />
+                  {choice.lock}
+                </span>
+              )}
             </span>
-            <span>{choice.short}</span>
-            {choice.lock !== null && (
-              <span className={styles.chipLock}>
-                <Icon name="lock" size={12} />
-                {choice.lock}
-              </span>
-            )}
+            <span className={styles.pickName}>{choice.short}</span>
           </button>
         ))}
       </fieldset>

@@ -32,7 +32,11 @@ export function Dialog({
   useEffect(() => {
     const dialog = ref.current;
     if (dialog === null) return;
-    if (open && !dialog.open) dialog.showModal();
+    if (open && !dialog.open) {
+      dialog.showModal();
+      // On the window itself rather than its first button: no ring on the cross before a key.
+      dialog.querySelector<HTMLElement>("[data-dialog-box]")?.focus();
+    }
     if (!open && dialog.open) dialog.close();
   }, [open]);
 
@@ -56,7 +60,7 @@ export function Dialog({
       }}
     >
       {open && (
-        <div className={styles.box}>
+        <div className={styles.box} data-dialog-box tabIndex={-1}>
           {variant !== "center" && <span className={styles.handle} aria-hidden="true" />}
           <div className={hideTitle ? styles.headFloating : styles.head}>
             {!hideTitle && <h2 className={styles.title}>{title}</h2>}

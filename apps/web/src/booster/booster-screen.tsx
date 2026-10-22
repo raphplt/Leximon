@@ -22,6 +22,7 @@ import { RarityName } from "@/components/rarity-icon";
 import { fetchOwnedCards, type OpenBoosterResult, openBooster } from "@/lib/api";
 import type { PackShape } from "@/lib/pack-shape";
 import { usePackShape } from "@/lib/use-pack-shape";
+import { CollectionCard } from "@/play/collection-card";
 import { CollectionPicker } from "@/play/collection-picker";
 import { noteSachetOpened, StockRing, TearHint } from "@/play/counter-bits";
 import { LevelCard } from "@/play/level-card";
@@ -402,8 +403,10 @@ export function BoosterScreen() {
                 }}
                 onOpen={() => void openPack()}
               />
-              {canOpen && phase.name === "sealed" && <TearHint text={OPEN_HINTS[shape]} />}
             </div>
+          )}
+          {ready && known && canOpen && phase.name === "sealed" && (
+            <TearHint text={OPEN_HINTS[shape]} />
           )}
         </div>
 
@@ -440,6 +443,9 @@ export function BoosterScreen() {
 
       <div className={play.aside}>
         <TodayCard catalog={catalog} />
+        {catalog !== null && choice !== null && (
+          <CollectionCard catalog={catalog} collectionId={choice.id} owned={owned} />
+        )}
       </div>
     </main>
   );

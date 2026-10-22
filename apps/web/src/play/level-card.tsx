@@ -22,7 +22,7 @@ export function LevelCard() {
   const { openCoffret } = useShell();
   const { progress } = view;
   if (progress === null) return <section className={`${styles.card} ${styles.cardLoading}`} />;
-  const next = view.now === 0 ? [] : upcomingRewards(progress.level, view.now);
+  const next = view.now === 0 ? [] : upcomingRewards(progress.level, view.now, 5);
   return (
     <section className={styles.card} aria-label="Ton niveau">
       <Link href="/niveaux" className={styles.levelHead} aria-label={levelDescription(progress)}>
@@ -54,7 +54,7 @@ export function LevelCard() {
         ))}
       </ol>
       {view.coffrets.length > 0 && (
-        <Button small glow wide onClick={() => openCoffret()}>
+        <Button small glow wide className={styles.claim} onClick={() => openCoffret()}>
           <Icon name="coffret" size={20} />
           {coffretsLabel(view.coffrets.length)}
         </Button>

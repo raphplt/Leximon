@@ -70,6 +70,11 @@
   max-height: inherit;
 }
 
+/* Focused on opening so that the cross is not; the window itself needs no ring. */
+.box:focus {
+  outline: none;
+}
+
 .handle {
   display: none;
 }

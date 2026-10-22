@@ -16,7 +16,7 @@ import { useShared } from "@/player/resource";
 import { useShell } from "@/shell/shell-context";
 import { usePlayerView } from "@/shell/use-player-view";
 import { Fab } from "@/ui/fab";
-import type { IconName } from "@/ui/icon";
+import { Icon, type IconName } from "@/ui/icon";
 import { useToast } from "@/ui/toast";
 import styles from "./play.module.css";
 
@@ -97,7 +97,7 @@ function useFabs() {
       }
     />
   );
-  return { ...fabs, render };
+  return { ...fabs, render, act, emblem };
 }
 
 /** On a phone, the floating buttons on both sides of the sachet. */
@@ -119,7 +119,29 @@ export function Shortcuts() {
   const settings = fabs.right.filter((fab) => fab.id === "settings");
   return (
     <nav className={styles.shortcuts} aria-label="Raccourcis">
-      {[...fabs.left, ...settings].map(fabs.render)}
+      {[...fabs.left, ...settings].map((fab) => (
+        <button
+          key={fab.id}
+          type="button"
+          className={`${styles.shortcut} ${fab.lock !== null ? styles.shortcutLocked : ""}`}
+          onClick={() => fabs.act(fab)}
+          aria-label={
+            fab.lock === null ? fab.label : `${fab.label}, ${fab.lock.replace("Niv.", "niveau")}`
+          }
+        >
+          <span className={styles.shortcutIcon}>
+            {fab.id === "clan" && fabs.emblem !== null ? (
+              <Emblem emblem={fabs.emblem} size={24} />
+            ) : (
+              <Icon name={ICONS[fab.id]} size={20} />
+            )}
+          </span>
+          <span className={styles.shortcutText}>
+            <span className={styles.shortcutLabel}>{fab.label}</span>
+            {fab.lock !== null && <span className={styles.shortcutLock}>{fab.lock}</span>}
+          </span>
+        </button>
+      ))}
     </nav>
   );
 }
