@@ -237,7 +237,13 @@ describe("entering and leaving", () => {
     );
     expect(asked.outcome).toBe("requested");
     const mine = myClanResponseSchema.parse(await (await request(asker, "/me/clan")).json());
-    expect(mine).toMatchObject({ clanId: null, requests: [onRequest] });
+    expect(mine).toMatchObject({ clanId: null, emblem: null, requests: [onRequest] });
+    const inside = myClanResponseSchema.parse(await (await request(member, "/me/clan")).json());
+    expect(inside.clanId).toBe(open);
+    expect(inside.emblem).toEqual({
+      engraving: expect.any(String),
+      colors: [expect.any(String), expect.any(String)],
+    });
   });
 
   it("lets the chief or a deputy accept a request, never a plain member", async () => {

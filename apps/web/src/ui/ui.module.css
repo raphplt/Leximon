@@ -262,6 +262,12 @@ a.chip:hover {
   line-height: 1;
 }
 
+.medalSmall {
+  box-shadow:
+    0 2px 0 #7a1f0a,
+    inset 0 0 0 2px rgba(255, 255, 255, 0.18);
+}
+
 /* --- Floating buttons of the Jouer screen --- */
 
 .fab {

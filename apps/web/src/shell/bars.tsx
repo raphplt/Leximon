@@ -9,13 +9,15 @@ import {
 } from "@leximon/view-model";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useState } from "react";
 import { Avatar } from "@/components/avatar";
 import { Icon } from "@/ui/icon";
-import { ringStyle, XpBar } from "@/ui/level-bits";
+import { LevelMedal, ringStyle, XpBar } from "@/ui/level-bits";
 import { Logo } from "@/ui/logo";
 import ui from "@/ui/ui.module.css";
 import styles from "./bars.module.css";
 import { isCurrent, PHONE_ORDER, TABS, type TabId } from "./nav";
+import { ReserveDialog } from "./reserve-dialog";
 import { useShell } from "./shell-context";
 import { usePlayerView } from "./use-player-view";
 
@@ -39,6 +41,7 @@ function badgeOf(id: TabId, view: PlayerView): number {
 
 /** Stock and bonus chips, shared by both bars. */
 function StockChips({ view, compact }: { readonly view: PlayerView; readonly compact: boolean }) {
+  const [reserveOpen, setReserveOpen] = useState(false);
   if (view.wallet === null || view.now === 0) return null;
   const stock = stockView(view.wallet, view.now);
   return (
@@ -55,12 +58,21 @@ function StockChips({ view, compact }: { readonly view: PlayerView; readonly com
         {!compact && <span className={styles.chipMuted}>{stock.refillShort}</span>}
       </Link>
       {stock.bonus > 0 && (
-        <span
-          className={`${ui.chip} ${ui.chipGold} ${compact ? styles.chipCompact : ""}`}
-          title={`${stock.bonus} / ${view.wallet.bonusCap} sachets bonus en réserve`}
-        >
-          {compact ? `+${stock.bonus}` : `+${stock.bonus} bonus`}
-        </span>
+        <>
+          <button
+            type="button"
+            className={`${ui.chip} ${ui.chipGold} ${styles.chipButton} ${compact ? styles.chipCompact : ""}`}
+            onClick={() => setReserveOpen(true)}
+            aria-label={`Réserve, ${stock.bonus} sur ${view.wallet.bonusCap} sachets bonus`}
+          >
+            {compact ? `+${stock.bonus}` : `+${stock.bonus} bonus`}
+          </button>
+          <ReserveDialog
+            wallet={view.wallet}
+            open={reserveOpen}
+            onClose={() => setReserveOpen(false)}
+          />
+        </>
       )}
     </>
   );
@@ -127,7 +139,7 @@ export function TopBar({
             aria-label={`Chemin des niveaux, ${levelDescription(view.progress)}`}
             title={levelDescription(view.progress)}
           >
-            <span className={`${ui.display} ${styles.ringLevel}`}>{view.progress.level}</span>
+            <LevelMedal level={view.progress.level} size={38} small />
           </Link>
         )}
         <button
@@ -168,7 +180,9 @@ export function PhoneTopBar({ onMenu }: { readonly onMenu: () => void }) {
       >
         <Avatar avatar={view.profile?.avatar ?? null} frame={null} size={38} />
         {progress !== null && (
-          <span className={`${ui.display} ${styles.phoneLevel}`}>{progress.level}</span>
+          <span className={styles.phoneLevel}>
+            <LevelMedal level={progress.level} size={24} small />
+          </span>
         )}
       </button>
       {progress !== null && (

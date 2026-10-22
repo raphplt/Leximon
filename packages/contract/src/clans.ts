@@ -63,6 +63,8 @@ export type ClaimableGoal = z.infer<typeof claimableGoalSchema>;
 /** `GET /me/clan`: where the player stands. */
 export const myClanResponseSchema = z.object({
   clanId: clanIdSchema.nullable(),
+  /** The clan's emblem, worn by the Jouer screen's clan button; null outside a clan. */
+  emblem: emblemSchema.nullable(),
   /** Set while the 24 h after leaving a clan run. */
   rejoinAt: timestampSchema.nullable(),
   /** Clans the player asked to enter. */

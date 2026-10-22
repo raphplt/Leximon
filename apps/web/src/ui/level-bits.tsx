@@ -21,11 +21,20 @@ export function XpBar({
   );
 }
 
-/** The red level medal. */
-export function LevelMedal({ level, size }: { readonly level: number; readonly size: number }) {
+/** The red level medal, the one look of the level everywhere. */
+export function LevelMedal({
+  level,
+  size,
+  small = false,
+}: {
+  readonly level: number;
+  readonly size: number;
+  /** Lighter relief, for the bars. */
+  readonly small?: boolean;
+}) {
   return (
     <span
-      className={styles.medal}
+      className={small ? `${styles.medal} ${styles.medalSmall}` : styles.medal}
       style={{ width: size, height: size } as CSSProperties}
       aria-hidden="true"
     >

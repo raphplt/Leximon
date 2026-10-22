@@ -36,7 +36,7 @@ export function ClanScreen() {
   const onLeft = useCallback(() => {
     setJoined(null);
     const current = myClan.current();
-    if (current !== null) myClan.publish({ ...current, clanId: null });
+    if (current !== null) myClan.publish({ ...current, clanId: null, emblem: null });
     myClan.refresh();
     profile.refresh();
   }, []);

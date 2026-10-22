@@ -743,9 +743,16 @@ export async function readMyClan(
   now: EpochMs,
 ): Promise<MyClanResponse> {
   const [row] = await db
-    .select({ clanId: clanMembers.clanId, clanLeftAt: players.clanLeftAt })
+    .select({
+      clanId: clanMembers.clanId,
+      clanLeftAt: players.clanLeftAt,
+      engraving: clans.emblemEngraving,
+      color: clans.emblemColor,
+      accent: clans.emblemAccent,
+    })
     .from(players)
     .leftJoin(clanMembers, eq(clanMembers.userId, players.userId))
+    .leftJoin(clans, eq(clans.id, clanMembers.clanId))
     .where(eq(players.userId, userId));
   const requests = await db
     .select({ clanId: clanJoinRequests.clanId })
@@ -754,6 +761,10 @@ export async function readMyClan(
   const allowedAt = rejoinAllowedAt(rulesAt(now), row?.clanLeftAt?.getTime() ?? null);
   return {
     clanId: row?.clanId ?? null,
+    emblem:
+      row?.engraving == null || row.color == null || row.accent == null
+        ? null
+        : { engraving: row.engraving, colors: [row.color, row.accent] },
     rejoinAt:
       row?.clanId == null && allowedAt !== null && allowedAt > now
         ? new Date(allowedAt).toISOString()

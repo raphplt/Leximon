@@ -4,6 +4,7 @@ import {
   openAgainLabel,
   pickCollection,
   playFabs,
+  reserveView,
   shortName,
   stockView,
 } from "./play";
@@ -21,6 +22,26 @@ const collections = [
   { id: "caracteres", name: "Caractères et travers" },
   { id: "metiers", name: "Métiers oubliés" },
 ];
+
+describe("reserve", () => {
+  it("counts the bonus sachets, the garnis first, and says when they open", () => {
+    expect(reserveView(wallet(4, 1))).toMatchObject({
+      headline: "1 sachet bonus",
+      garni: null,
+      places: "1 place prise sur 10.",
+      openNow: false,
+    });
+    expect(reserveView({ ...wallet(0, 3), garni: 2 })).toMatchObject({
+      headline: "3 sachets bonus",
+      garni: "Dont 2 garnis, ouverts en premier.",
+      places: "3 places prises sur 10.",
+      openNow: true,
+    });
+    expect(reserveView({ ...wallet(0, 1), garni: 1 }).garni).toBe(
+      "Dont 1 garni, ouvert en premier.",
+    );
+  });
+});
 
 describe("stock", () => {
   it("says what is left and what the button does", () => {

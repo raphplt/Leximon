@@ -108,11 +108,11 @@ Compte A, n'importe quel niveau.
 
 ### JOU-01 · Écran Jouer
 - **Faire :** ouvrir `/jouer` en 1440 px puis en 390 px.
-- **Attendu :** bandeau de niveau (médaillon, titre, barre d'XP, « 260 / 400 XP »), les 4 prochaines récompenses, le sachet au centre, boutons flottants à gauche (Clan, Discussion, Joutes) et à droite (Défi du jour, Coffrets, Courrier, Réglages). En 390 px, la coque mobile : onglets en bas, bandeau en haut.
+- **Attendu :** bandeau de niveau (médaillon, titre, barre d'XP, « 260 / 400 XP »), les 4 prochaines récompenses, le sachet au centre, boutons flottants à gauche (Clan, avec l'emblème de ton clan si tu en as un ; Discussion, Joutes) et à droite (Défi du jour, Coffrets, Courrier, Réglages). En 390 px, la coque mobile : onglets en bas, bandeau en haut.
 - **Retour :**
 
 ### JOU-02 · Stock
-- **Attendu :** six points, « 4 sur 6 · le prochain dans 18 min » (selon ton stock), bouton « Ouvrir le sachet ». Stock vide et réserve vide : sachet gris et immobile, bouton désactivé. Stock vide avec des bonus : « Ouvrir un sachet bonus ».
+- **Attendu :** six points, « 4 sur 6 · le prochain dans 18 min » (selon ton stock), bouton « Ouvrir le sachet ». Stock vide et réserve vide : sachet gris et immobile, bouton désactivé. Stock vide avec des bonus : « Ouvrir un sachet bonus ». Dans l'en-tête, « +N bonus » ouvre la réserve : le nombre de sachets bonus, les garnis ouverts en premier, les places prises, quand ils s'ouvrent et d'où ils viennent ; stock vide, un bouton « Ouvrir un sachet bonus ».
 - **Retour :**
 
 ### JOU-03 · Choix de la collection
@@ -629,11 +629,11 @@ Le principe est le bon, mais le rendu n'est pas assez travaillé. Il doit faire 
 
 Des textes en trop ou mal sentis, qui « sentent l'IA ». Exemple, l'objectif de la semaine du clan : « 15 mots nouveaux, ensemble » et « Argent et or : 1 sachet bonus chacun, l'or ajoute la gravure … à l'emblème ». Relire tous les textes contre [voix.md](voix.md).
 
-### 5. Petites incohérences
+### 5. Petites incohérences (corrigées le 2026-10-22)
 
-1. Le niveau s'affiche de deux façons différentes : la pastille de l'en-tête et le bandeau « Niveau 10 » de l'écran Jouer.
-2. « +3 bonus » dans l'en-tête : on peut cliquer dessus, mais il ne se passe rien.
-3. Sur l'écran Jouer, le bouton Clan devrait montrer l'emblème de son clan, une fois membre, au lieu de l'icône par défaut.
+1. Le niveau s'affiche de deux façons différentes : la pastille de l'en-tête et le bandeau « Niveau 10 » de l'écran Jouer. *Corrigé : la médaille rouge partout, entourée de l'anneau d'XP dans l'en-tête, posée sur l'avatar sur téléphone.*
+2. « +3 bonus » dans l'en-tête : on peut cliquer dessus, mais il ne se passe rien. *Corrigé : il ouvre la réserve (JOU-02).*
+3. Sur l'écran Jouer, le bouton Clan devrait montrer l'emblème de son clan, une fois membre, au lieu de l'icône par défaut. *Corrigé (JOU-01).*
 
 ---
 

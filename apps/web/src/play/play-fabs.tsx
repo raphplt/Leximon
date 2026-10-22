@@ -9,6 +9,8 @@ import {
 } from "@leximon/view-model";
 import { useRouter } from "next/navigation";
 import type { CSSProperties } from "react";
+import { Emblem } from "@/clan/emblem";
+import { myClan } from "@/player/clan";
 import { dailyChallenge } from "@/player/collection";
 import { useShared } from "@/player/resource";
 import { useShell } from "@/shell/shell-context";
@@ -35,6 +37,7 @@ export function PlayFabs() {
   const router = useRouter();
   const toast = useToast();
   const daily = useShared(dailyChallenge);
+  const emblem = useShared(myClan)?.emblem ?? null;
   if (view.now === 0) return null;
   const dailyRatio = daily === null ? 0 : dailyView(daily).ratio;
   const { left, right } = playFabs(
@@ -82,6 +85,9 @@ export function PlayFabs() {
           lock={fab.lock}
           glow={fab.glow}
           onClick={() => act(fab)}
+          visual={
+            fab.id === "clan" && emblem !== null ? <Emblem emblem={emblem} size={30} /> : undefined
+          }
           ring={
             fab.id === "daily" ? (
               <span

@@ -14,6 +14,7 @@ export function Fab({
   glow = false,
   onClick,
   ring,
+  visual,
 }: {
   readonly icon: IconName;
   readonly label: string;
@@ -23,6 +24,8 @@ export function Fab({
   readonly onClick: () => void;
   /** Drawn behind the circle, e.g. the ring of the daily challenge. */
   readonly ring?: ReactNode;
+  /** Drawn in place of the icon, e.g. the emblem of the player's clan. */
+  readonly visual?: ReactNode;
 }) {
   const circle = [
     styles.fabCircle,
@@ -44,7 +47,7 @@ export function Fab({
     >
       <span className={circle}>
         {ring}
-        <Icon name={icon} size={25} />
+        {visual ?? <Icon name={icon} size={25} />}
         {badge > 0 && lock === null && <span className={styles.badge}>{badge}</span>}
         {lock !== null && <span className={styles.lockBadge}>{lock}</span>}
       </span>

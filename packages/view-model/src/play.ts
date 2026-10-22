@@ -61,6 +61,40 @@ export function openAgainLabel(wallet: BoosterWalletResponse, now: EpochMs): str
   return `Plus de sachet${wait}`;
 }
 
+// --- Reserve of bonus sachets ---------------------------------------------------------------
+
+export interface ReserveView {
+  /** « 3 sachets bonus ». */
+  readonly headline: string;
+  /** « Dont 1 garni, ouvert en premier. », or nothing without a garni. */
+  readonly garni: string | null;
+  /** « 3 places prises sur 12. » */
+  readonly places: string;
+  readonly rule: string;
+  readonly sources: string;
+  /** The free stock is empty: a bonus opens now. */
+  readonly openNow: boolean;
+}
+
+/** What the top bar's bonus chip opens: the reserve, when it serves, where it fills from. */
+export function reserveView(wallet: BoosterWalletResponse): ReserveView {
+  const { bonus, garni, bonusCap, stored } = wallet;
+  return {
+    headline: `${bonus} ${bonus > 1 ? "sachets bonus" : "sachet bonus"}`,
+    garni:
+      garni === 0
+        ? null
+        : garni > 1
+          ? `Dont ${garni} garnis, ouverts en premier.`
+          : "Dont 1 garni, ouvert en premier.",
+    places: `${bonus} ${bonus > 1 ? "places prises" : "place prise"} sur ${bonusCap}.`,
+    rule: "Ils s'ouvrent quand ton stock gratuit est vide.",
+    sources:
+      "Ils viennent des coffrets, du défi du jour, des cartes dorées et des objectifs de clan.",
+    openNow: stored === 0 && bonus > 0,
+  };
+}
+
 // --- Collection of the sachet --------------------------------------------------------------
 
 export interface CollectionChoice {

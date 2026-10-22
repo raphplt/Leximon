@@ -357,6 +357,7 @@ export function ClanSettings({
       if (result.kind === "ok") {
         toast("C'est changé.");
         profile.refresh();
+        myClan.refresh();
         onChanged();
         onClose();
       } else {
