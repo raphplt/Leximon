@@ -90,6 +90,7 @@ function PublicProfileBody({
           level: shown.level,
           code: shown.code,
           memberSince: shown.memberSince,
+          clan: shown.clan,
         }
       : {
           name: shown.pseudo,
@@ -99,6 +100,7 @@ function PublicProfileBody({
           level: 1,
           code: null,
           memberSince: null,
+          clan: null,
         };
   const own = viewer != null && shown.visibility === "public" && viewer.playerCode === shown.code;
 

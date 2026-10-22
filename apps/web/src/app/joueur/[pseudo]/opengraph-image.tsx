@@ -11,7 +11,7 @@ export const contentType = "image/png";
 const DOMAIN = "leximon.fr";
 
 /**
- * The image of a shared profile: pseudo, title, level, the figures. Drawn on demand by
+ * The image of a shared profile: pseudo, title, level, clan, the figures. Drawn on demand by
  * Next, from the same cached copy as the page; nothing goes through the queue.
  */
 export default async function Image({ params }: { params: Promise<{ pseudo: string }> }) {
@@ -26,6 +26,8 @@ export default async function Image({ params }: { params: Promise<{ pseudo: stri
   const name = profile?.pseudo ?? "Leximon";
   const headline =
     profile?.visibility === "public" ? profileHeadline(profile.title, profile.level) : "";
+  const clan =
+    profile?.visibility === "public" && profile.clan !== null ? `Clan ${profile.clan.name}` : "";
   const figures =
     profile?.visibility === "public"
       ? [
@@ -41,7 +43,7 @@ export default async function Image({ params }: { params: Promise<{ pseudo: stri
       `${fonts.display.family}:opsz,wght,SOFT@72,${fonts.display.weight},${fonts.display.soft}`,
       `Leximon${name}${initial}`,
     ),
-    googleFont(`${fonts.ui.family}:wght@800`, DOMAIN + headline + figures),
+    googleFont(`${fonts.ui.family}:wght@800`, DOMAIN + headline + clan + figures),
   ]);
 
   return new ImageResponse(
@@ -82,6 +84,7 @@ export default async function Image({ params }: { params: Promise<{ pseudo: stri
           {headline !== "" && (
             <div style={{ fontFamily: "Ui", fontSize: 34, color: colors.accent }}>{headline}</div>
           )}
+          {clan !== "" && <div style={{ fontFamily: "Ui", fontSize: 30 }}>{clan}</div>}
           {figures !== "" && (
             <div style={{ fontFamily: "Ui", fontSize: 28, color: colors.textMuted }}>{figures}</div>
           )}

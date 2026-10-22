@@ -1,6 +1,11 @@
 import { z } from "zod";
 import { slugSchema, timestampSchema } from "./common";
-import { playerBadgeSchema, profileStatsSchema, wardrobeSchema } from "./profile";
+import {
+  playerBadgeSchema,
+  profileClanSchema,
+  profileStatsSchema,
+  wardrobeSchema,
+} from "./profile";
 
 /** Public code of a player, shared to receive offers: 8 characters of Crockford base 32. */
 export const playerCodeSchema = z
@@ -31,6 +36,8 @@ export const profileResponseSchema = z.object({
   publicFromLevel: z.int().positive(),
   level: z.int().positive(),
   memberSince: timestampSchema,
+  /** `null` without a clan. */
+  clan: profileClanSchema.nullable(),
   pinned: z.array(slugSchema),
   pinnedSlots: z.int().nonnegative(),
   wardrobe: wardrobeSchema,

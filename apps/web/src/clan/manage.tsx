@@ -356,6 +356,7 @@ export function ClanSettings({
       const result = await updateClan(clanId, value);
       if (result.kind === "ok") {
         toast("C'est changé.");
+        profile.refresh();
         onChanged();
         onClose();
       } else {

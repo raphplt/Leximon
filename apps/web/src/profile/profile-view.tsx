@@ -1,6 +1,6 @@
 "use client";
 
-import type { ProfileStats } from "@leximon/contract";
+import type { ProfileClan, ProfileStats } from "@leximon/contract";
 import {
   formatPlayerCode,
   memberSinceLabel,
@@ -12,6 +12,7 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import { collectionName } from "@/cards/catalog";
 import { useCatalog } from "@/cards/use-catalog";
+import { Emblem } from "@/clan/emblem";
 import { Avatar } from "@/components/avatar";
 import { Card } from "@/components/card";
 import { useNarrow } from "@/lib/use-narrow";
@@ -28,9 +29,12 @@ export interface ProfileFace {
   /** `null` on a private profile: only the pseudo and the avatar show. */
   readonly code: string | null;
   readonly memberSince: string | null;
+  readonly clan: ProfileClan | null;
+  /** Where the clan's name leads: the player's own clan page, else nowhere. */
+  readonly clanHref?: string;
 }
 
-/** The profile's banner: avatar in its frame, pseudo, title, level, code. */
+/** The profile's banner: avatar in its frame, pseudo, title, level, clan, code. */
 export function ProfileHeader({
   face,
   actions,
@@ -59,11 +63,34 @@ export function ProfileHeader({
           {face.code !== null && (
             <p className={styles.headline}>{profileHeadline(face.title, face.level)}</p>
           )}
+          {face.clan !== null && <ClanLine clan={face.clan} href={face.clanHref} />}
           {subline.length > 0 && <p className={styles.subline}>{subline.join(" · ")}</p>}
         </div>
         {actions !== undefined && <div className={styles.actions}>{actions}</div>}
       </div>
     </header>
+  );
+}
+
+function ClanLine({
+  clan,
+  href,
+}: {
+  readonly clan: ProfileClan;
+  readonly href: string | undefined;
+}) {
+  const content = (
+    <>
+      <Emblem emblem={clan.emblem} size={22} />
+      <span>{clan.name}</span>
+    </>
+  );
+  return href === undefined ? (
+    <p className={styles.clan}>{content}</p>
+  ) : (
+    <Link href={href} className={styles.clan}>
+      {content}
+    </Link>
   );
 }
 

@@ -60,6 +60,8 @@ export function ProfileScreen() {
     level: me.level,
     code: me.playerCode,
     memberSince: me.member ? me.memberSince : null,
+    clan: me.clan,
+    clanHref: "/clan",
   };
 
   return (

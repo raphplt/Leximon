@@ -243,7 +243,21 @@ describe("GET /players/:pseudo", () => {
     if (page.visibility === "public") {
       expect(page.stats.words).toBe(1);
       expect(page.stats.legendaries).toBe(1);
+      expect(page.clan).toBeNull();
     }
+
+    await setXp(db, member.userId, xpToReach(15));
+    const clanName = `Clan ${crypto.randomUUID().slice(0, 8)}`;
+    const emblem = { engraving: "aiguiere", colors: ["sang", "or"] };
+    const created = await call(member, "POST", "/clans", {
+      name: clanName,
+      motto: "",
+      entryMode: "open",
+      emblem,
+    });
+    expect(created.status).toBe(201);
+    const withClan = publicProfileSchema.parse(await (await call(null, "GET", path)).json());
+    expect(withClan).toMatchObject({ visibility: "public", clan: { name: clanName, emblem } });
 
     await call(member, "PATCH", "/me/profile", { profilePublic: false });
     const hidden = publicProfileSchema.parse(await (await call(null, "GET", path)).json());

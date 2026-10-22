@@ -16,3 +16,17 @@ export const slugSchema = z
   .string()
   .max(64)
   .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/);
+
+/** A colour or engraving key of the clan emblem lists. */
+export const emblemKeySchema = z
+  .string()
+  .max(32)
+  .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/);
+
+/** A clan's emblem: an engraving and two colours. */
+export const emblemSchema = z.object({
+  /** Card id whose engraving the emblem shows. */
+  engraving: emblemKeySchema,
+  colors: z.tuple([emblemKeySchema, emblemKeySchema]),
+});
+export type EmblemView = z.infer<typeof emblemSchema>;

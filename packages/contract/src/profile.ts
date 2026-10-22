@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { slugSchema, timestampSchema } from "./common";
+import { emblemSchema, slugSchema, timestampSchema } from "./common";
 
 /** Cosmetic ids: avatars are card ids, frames short names ("gilded"). */
 const cosmeticSchema = z.string().min(1).max(64);
@@ -30,6 +30,14 @@ export const profileStatsSchema = z.object({
 });
 export type ProfileStats = z.infer<typeof profileStatsSchema>;
 
+/** The clan a public profile shows: its name and emblem. */
+export const profileClanSchema = z.object({
+  id: z.uuid(),
+  name: z.string(),
+  emblem: emblemSchema,
+});
+export type ProfileClan = z.infer<typeof profileClanSchema>;
+
 /**
  * `GET /players/:pseudo`, 200. A private profile shows only the pseudo and
  * the avatar. A profile below the public level, or of a player blocked either way, answers 404.
@@ -44,6 +52,8 @@ export const publicProfileSchema = z.discriminatedUnion("visibility", [
     title: z.string().nullable(),
     level: z.int().positive(),
     memberSince: timestampSchema,
+    /** `null` without a clan. */
+    clan: profileClanSchema.nullable(),
     /** In the order of the profile. */
     pinned: z.array(slugSchema),
     stats: profileStatsSchema,

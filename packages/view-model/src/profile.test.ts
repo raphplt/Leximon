@@ -39,6 +39,7 @@ function profile(overrides: Partial<ProfileResponse> = {}): ProfileResponse {
     publicFromLevel: 8,
     level: 12,
     memberSince: "2026-10-05T10:00:00.000Z",
+    clan: null,
     pinned: [],
     pinnedSlots: 3,
     wardrobe: {

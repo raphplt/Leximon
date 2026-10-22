@@ -53,6 +53,20 @@
   color: var(--lx-color-accent);
 }
 
+.clan {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 6px 0 0;
+  font-weight: 700;
+  color: var(--lx-color-text);
+  text-decoration: none;
+}
+
+a.clan:hover {
+  text-decoration: underline;
+}
+
 .subline {
   margin: 4px 0 0;
   font-size: 13px;

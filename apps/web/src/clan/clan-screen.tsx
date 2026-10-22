@@ -4,6 +4,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { useNow } from "@/lib/use-now";
 import { myClan } from "@/player/clan";
+import { profile } from "@/player/player";
 import { useShared } from "@/player/resource";
 import { useProgress } from "@/progress/use-progress";
 import styles from "./clan.module.css";
@@ -30,12 +31,14 @@ export function ClanScreen() {
   const onJoined = useCallback((clanId: string) => {
     setJoined(clanId);
     myClan.refresh();
+    profile.refresh();
   }, []);
   const onLeft = useCallback(() => {
     setJoined(null);
     const current = myClan.current();
     if (current !== null) myClan.publish({ ...current, clanId: null });
     myClan.refresh();
+    profile.refresh();
   }, []);
 
   if (mine === null || progress === null || now === 0) {

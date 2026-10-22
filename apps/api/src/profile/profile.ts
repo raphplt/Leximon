@@ -1,6 +1,7 @@
 import type {
   PlayerBadge,
   Preferences,
+  ProfileClan,
   ProfileRefusal,
   ProfileResponse,
   ProfileStats,
@@ -35,6 +36,8 @@ import { ensurePlayer } from "../trades/players";
 const {
   adminActions,
   boosterWallets,
+  clanMembers,
+  clans,
   guestLinks,
   moderationReports,
   pinnedCards,
@@ -150,6 +153,7 @@ export async function readOwnProfile(
     publicFromLevel: publicLevel(now),
     level: badge.level,
     memberSince: new Date(player.createdAt).toISOString(),
+    clan: await readProfileClan(db, userId),
     pinned: pinned.map((pin) => pin.cardId),
     pinnedSlots: worn.pinnedSlots,
     wardrobe: {
@@ -416,9 +420,31 @@ export async function readPublicProfile(
       title: wornTitle(rules, row.title, claimed, worn.titles),
       level: badge.level,
       memberSince: row.createdAt.toISOString(),
+      clan: await readProfileClan(db, row.userId),
       pinned: pinned.map((pin) => pin.cardId),
       stats: await readStats(db, row.userId),
     },
+  };
+}
+
+/** The clan a public profile shows, or `null` without one. */
+async function readProfileClan(db: Reader, userId: string): Promise<ProfileClan | null> {
+  const [row] = await db
+    .select({
+      id: clans.id,
+      name: clans.name,
+      engraving: clans.emblemEngraving,
+      color: clans.emblemColor,
+      accent: clans.emblemAccent,
+    })
+    .from(clanMembers)
+    .innerJoin(clans, eq(clans.id, clanMembers.clanId))
+    .where(eq(clanMembers.userId, userId));
+  if (row === undefined) return null;
+  return {
+    id: row.id,
+    name: row.name,
+    emblem: { engraving: row.engraving, colors: [row.color, row.accent] },
   };
 }
 
