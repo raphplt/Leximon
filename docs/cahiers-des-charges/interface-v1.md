@@ -156,23 +156,23 @@ La maquette montre l'intention, pas la finition. Chaque écran gagne en plus :
 
 ### K · Clans
 
-La maquette ne montre que le clan du joueur. Les écrans K-08 à K-13 sont à dessiner dans le même style avant le lot 4.
+La maquette ne montre que le clan du joueur. Les écrans K-08 à K-13 ont été dessinés au lot 4 dans le même style, sans maquette préalable.
 
 | ID | Élément | Ce qu'il faut | Serveur | Lot | Web | Mobile |
 |---|---|---|---|---|---|---|
-| K-01 | En-tête du clan | Emblème (gravure et deux couleurs), nom, membres, mode d'entrée, devise, « Inviter » | `GET /clans/{id}` | 4 | à faire | à faire |
+| K-01 | En-tête du clan | Emblème (gravure et deux couleurs), nom, membres, mode d'entrée, devise, « Inviter » | `GET /clans/{id}` | 4 | fait | à faire |
 | K-02 | Onglets (mobile) | Discussion, Clan, Membres ; le web montre tout sur deux colonnes | — | 4 | — | à faire |
-| K-03 | Objectif de la semaine | « 300 mots nouveaux, ensemble », barre avec paliers bronze, argent, or, « reste 3 j », « ta part : 23 », récompense de l'or | `clan_weekly_progress` | 4 | à faire | à faire |
-| K-04 | Bibliothèque | « À vous tous, il vous manque 42 Caractères. », une barre par collection, ta part en plein et celle du clan en clair | calcul par la file | 4 | à faire | à faire |
-| K-05 | Membres | Avatar, en ligne, niveau, vu il y a, rôle (Chef, Adjoint), mots apportés cette semaine ; « Voir les 27 autres » | `GET /clans/{id}/members` | 4 | à faire | à faire |
-| K-06 | Discussion et journal | Messages et événements du journal mêlés, mes messages à droite en jaune, « Écris au clan », envoi. Écran ouvert : nouveaux messages demandés toutes les quelques secondes, après le dernier reçu | `clan_messages`, curseur | 4 | à faire | à faire |
-| K-07 | Modération par les joueurs | Sur chaque message : Signaler, Bloquer ; un message refusé par le filtre ne part pas (« Pas envoyé : un mot interdit. Reformule. ») ; un joueur bloqué disparaît partout (N5) | `moderation_reports`, `user_blocks` | 4 | à faire | à faire |
-| K-08 | Trouver un clan | Liste et recherche, filtre par mode d'entrée, « Rejoindre » ou « Demander à entrer » ; entrée par code d'invitation | à faire | 4 | à faire | à faire |
-| K-09 | Créer un clan (niveau 15) | Nom (filtré, N5), emblème, deux couleurs, devise, mode d'entrée | à faire | 4 | à faire | à faire |
-| K-10 | Gestion par le chef et les adjoints | Accepter les demandes, exclure, nommer un adjoint, supprimer un message, rendre muet pour une durée | à faire | 4 | à faire | à faire |
-| K-11 | Quitter le clan | Avec la conséquence dans le bouton ; attente de 24 h avant d'en rejoindre un autre | à faire | 4 | à faire | à faire |
-| K-12 | Sans clan | Onglet Clan au niveau 10 sans clan : l'écran « Trouver un clan » ; avant le niveau 10, l'écran fermé (C-06) | — | 4 | à faire | à faire |
-| K-13 | Discussion depuis Jouer | Le bouton flottant ouvre la discussion dans un panneau ou une fiche | — | 4 | à faire | à faire |
+| K-03 | Objectif de la semaine | « 300 mots nouveaux, ensemble », barre avec paliers bronze, argent, or, « reste 3 j », « ta part : 23 », récompense de l'or | `clan_weeks`, recompté par la file (D-038) | 4 | fait (sachets à prendre sur la page et au courrier) | à faire |
+| K-04 | Bibliothèque | « À vous tous, il vous manque 42 Caractères. », une barre par collection, ta part en plein et celle du clan en clair | `clan_library`, calcul par la file | 4 | fait | à faire |
+| K-05 | Membres | Avatar, en ligne, niveau, vu il y a, rôle (Chef, Adjoint), mots apportés cette semaine ; « Voir les 27 autres » | `GET /clans/{id}/members` | 4 | fait | à faire |
+| K-06 | Discussion et journal | Messages et événements du journal mêlés, mes messages à droite en jaune, « Écris au clan », envoi. Écran ouvert : nouveaux messages demandés toutes les quelques secondes, après le dernier reçu | `clan_messages`, curseur | 4 | fait (toutes les 4 s, page visible seulement) | à faire |
+| K-07 | Modération par les joueurs | Sur chaque message : Signaler, Bloquer ; un message refusé par le filtre ne part pas (« Pas envoyé : un mot interdit. Reformule. ») ; un joueur bloqué disparaît partout (N5) | `moderation_reports`, `user_blocks` | 4 | fait | à faire |
+| K-08 | Trouver un clan | Liste et recherche, filtre par mode d'entrée, « Rejoindre » ou « Demander à entrer » ; entrée par code d'invitation | `GET /clans`, `POST /clans/join` | 4 | fait | à faire |
+| K-09 | Créer un clan (niveau 15) | Nom (filtré, N5), emblème, deux couleurs, devise, mode d'entrée | `POST /clans` | 4 | fait | à faire |
+| K-10 | Gestion par le chef et les adjoints | Accepter les demandes, exclure, nommer un adjoint, supprimer un message, rendre muet pour une durée | routes `/clans/{id}/…` | 4 | fait (aussi : passer la tête du clan, changer le clan, nouveau code) | à faire |
+| K-11 | Quitter le clan | Avec la conséquence dans le bouton ; attente de 24 h avant d'en rejoindre un autre | `POST /me/clan/leave` | 4 | fait | à faire |
+| K-12 | Sans clan | Onglet Clan au niveau 10 sans clan : l'écran « Trouver un clan » ; avant le niveau 10, l'écran fermé (C-06) | — | 4 | fait | à faire |
+| K-13 | Discussion depuis Jouer | Le bouton flottant ouvre la discussion dans un panneau ou une fiche | — | 4 | fait | à faire |
 
 ### P · Profil et atelier
 
@@ -191,14 +191,14 @@ La maquette ne montre que le clan du joueur. Les écrans K-08 à K-13 sont à de
 
 | ID | Élément | Ce qu'il faut | Serveur | Lot | Web | Mobile |
 |---|---|---|---|---|---|---|
-| R-01 | Courrier | Liste : offre reçue, coffret à ouvrir, mot qui s'échappe, objectif de clan, offre acceptée ; non lus surlignés ; chaque ligne mène à son écran | notifications par la file | 3 | en partie (tiré de l'état : coffrets, carte au choix, offres reçues ; la file reste à faire) | à faire |
+| R-01 | Courrier | Liste : offre reçue, coffret à ouvrir, mot qui s'échappe, objectif de clan, offre acceptée ; non lus surlignés ; chaque ligne mène à son écran | notifications par la file | 3 | en partie (tiré de l'état : coffrets, carte au choix, offres reçues, sachets d'objectif de clan ; la file reste à faire) | à faire |
 | R-02 | Notifications push | Mots qui s'échappent, offres, mentions dans le clan ; demande d'autorisation au bon moment, pas au lancement | file, Expo push | 3 | — | à faire |
 | R-03 | Réglages · Jeu | Son, Vibration | local | 1 | fait | à faire |
 | R-04 | Réglages · Notifications | Mots qui s'échappent, Offres d'échange, Discussion du clan (seulement quand on te cite) | serveur | 3 | fait (préférences gardées ; rien n'est envoyé tant que la file n'existe pas) | à faire |
 | R-05 | Réglages · Profil | Profil public, Pseudo, Joueurs bloqués (et débloquer) | serveur | 3 | fait | à faire |
 | R-06 | Réglages · Compte | Adresse e-mail, Tes données, Me déconnecter ; l'inscription de l'invité (écran `/compte` existant) | existe en partie | 1 | fait | à faire |
 | R-07 | Supprimer mon compte | Dans l'app, exigé par l'App Store ; conséquence dans le bouton | à faire | 3 | fait (P64) | à faire |
-| R-08 | Sanction et contestation | Message motivé d'une sanction, voie de contestation (DSA, N5) | admin | 4 | à faire | à faire |
+| R-08 | Sanction et contestation | Message motivé d'une sanction, voie de contestation (DSA, N5) | `/me/sanctions`, `/admin/reports`, `/admin/contests` | 4 | fait (fenêtre sur tout écran, contestation relue dans `/admin/contestations`) | à faire |
 | R-09 | Contact et mentions | contact@leximon.fr, crédits (Littré, Ngram, gravures), conditions d'utilisation, charte de la discussion | — | 3 | fait (`/mentions` avec l'éditeur et l'hébergeur, `/conditions`, `/charte`, acceptées à l'inscription ; textes à faire relire par un juriste) | à faire |
 
 ### X · Propositions
