@@ -13,7 +13,6 @@ import {
   splitTrades,
   type TradeBox,
   timeLeftLabel,
-  tradeableFromLabel,
   tradeLevelLabel,
   tradeRulesNote,
   tradeSides,
@@ -204,7 +203,6 @@ export function TradesScreen() {
     );
   }
 
-  const tooRecent = now === 0 ? null : tradeableFromLabel(profile.canTradeFrom, now);
   const tooLow = progress === null ? null : tradeLevelLabel(progress.level, profile.tradeMinLevel);
   const waiting = {
     incoming: splitTrades(inboxes.incoming.trades, now).pending.length,
@@ -219,14 +217,7 @@ export function TradesScreen() {
         <h1 className={`${ui.display} ${styles.title}`}>Échanges</h1>
         <PlayerCode code={profile.playerCode} />
       </header>
-      {[tooRecent, tooLow].map(
-        (line) =>
-          line !== null && (
-            <p key={line} className={styles.warning}>
-              {line}
-            </p>
-          ),
-      )}
+      {tooLow !== null && <p className={styles.warning}>{tooLow}</p>}
 
       <div className={styles.tabs} role="tablist" aria-label="Offres">
         {(["incoming", "outgoing"] as const).map((box) => (
@@ -258,7 +249,7 @@ export function TradesScreen() {
           inbox={inboxes.incoming}
           now={now}
           busyTradeId={busyTradeId}
-          canAccept={tooRecent === null && tooLow === null}
+          canAccept={tooLow === null}
           wordOf={wordOf}
           onResolve={(trade, action) => void resolve("incoming", trade, action)}
           onLoadMore={() => void loadMore("incoming")}
@@ -283,7 +274,7 @@ export function TradesScreen() {
         <ProposeTrade
           catalog={catalog}
           ownCode={profile.playerCode}
-          blocked={tooRecent ?? tooLow}
+          blocked={tooLow}
           preset={preset}
           presetPartner={presetPartner}
           onSent={onSent}

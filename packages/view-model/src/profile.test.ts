@@ -26,7 +26,6 @@ const NOW = Date.parse("2026-11-02T12:00:00.000Z");
 function profile(overrides: Partial<ProfileResponse> = {}): ProfileResponse {
   return {
     playerCode: "K7QP2MXA",
-    canTradeFrom: "2026-10-01T00:00:00.000Z",
     tradeMinLevel: 5,
     member: true,
     pseudo: "Raph",

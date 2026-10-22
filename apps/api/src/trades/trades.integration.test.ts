@@ -14,7 +14,6 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { createApp } from "../app";
 import { TEST_ORIGIN, testEnv } from "../test-env";
 import {
-  ageAccount,
   type Guest,
   type OwnedCard,
   seedTestCatalog,
@@ -43,14 +42,9 @@ interface Player extends Guest {
   readonly code: string;
 }
 
-/** A guest old enough and of a high enough level to trade, with a player code and some cards. */
-async function player(
-  owned: readonly OwnedCard[] = [],
-  ageMs = RULES.minAccountAgeMs + DAY,
-  xp = xpToReach(RULES.minLevel),
-) {
+/** A guest of a high enough level to trade, with a player code and some cards. */
+async function player(owned: readonly OwnedCard[] = [], xp = xpToReach(RULES.minLevel)) {
   const guest = await signInAsGuest(app, env);
-  await ageAccount(db, guest.userId, ageMs);
   await setXp(db, guest.userId, xp);
   if (owned.length > 0) await setOwnedCards(db, guest.userId, owned);
   const profile = profileResponseSchema.parse(await (await get(guest, "/me/profile")).json());
@@ -140,7 +134,6 @@ describe("GET /players/:code/tradeable", () => {
         { cardId: EPIC_1, quantity: 2, lastObtainedAt: yesterday },
         { cardId: "test-b-epic-1", quantity: 2, lastObtainedAt: new Date(Date.now() - 8 * DAY) },
       ],
-      undefined,
       xpToReach(12),
     );
     const me = await player();
@@ -162,8 +155,8 @@ describe("GET /players/:code/tradeable", () => {
   });
 
   it("allows three cards per side between two players of level 10 or more", async () => {
-    const other = await player([], undefined, xpToReach(10));
-    const me = await player([], undefined, xpToReach(11));
+    const other = await player([], xpToReach(10));
+    const me = await player([], xpToReach(11));
     const body = tradeableCardsResponseSchema.parse(
       await (await get(me, `/players/${other.code}/tradeable`)).json(),
     );
@@ -246,7 +239,6 @@ describe("POST /trades", () => {
           { cardId: COMMON_2, quantity: 2 },
           { cardId: COMMON_3, quantity: 2 },
         ],
-        undefined,
         xp,
       );
     const alice = await twoEach(xpToReach(10));
@@ -270,34 +262,14 @@ describe("POST /trades", () => {
   it.each([
     ["the proposer", "proposer"],
     ["the recipient", "recipient"],
-  ])("refuses when %s has a recent account", async (_label, recent) => {
-    const young = RULES.minAccountAgeMs - DAY;
-    const alice = await player(
-      [{ cardId: COMMON_1, quantity: 2 }],
-      recent === "proposer" ? young : undefined,
-    );
-    const bob = await player(
-      [{ cardId: COMMON_2, quantity: 2 }],
-      recent === "recipient" ? young : undefined,
-    );
-    const response = await propose(alice, bob, [COMMON_1], [COMMON_2]);
-    expect(response.status).toBe(422);
-    expect(await response.json()).toEqual({ error: "account_too_recent" });
-  });
-
-  it.each([
-    ["the proposer", "proposer"],
-    ["the recipient", "recipient"],
   ])("refuses when %s is below the minimum level", async (_label, low) => {
     const below = xpToReach(RULES.minLevel) - 1;
     const alice = await player(
       [{ cardId: COMMON_1, quantity: 2 }],
-      undefined,
       low === "proposer" ? below : undefined,
     );
     const bob = await player(
       [{ cardId: COMMON_2, quantity: 2 }],
-      undefined,
       low === "recipient" ? below : undefined,
     );
     const response = await propose(alice, bob, [COMMON_1], [COMMON_2]);

@@ -113,7 +113,7 @@ Le catalogue étant public, un tricheur peut trouver les bonnes réponses : ce s
 | P6 | Principe | Dès le lancement, carte contre carte, avec garde-fous (N3). | Tranché |
 | P34 | Forme d'une offre | Offre directe à un joueur désigné par son code public (8 caractères) : 1 à 3 cartes données contre 1 à 3 cartes voulues, un exemplaire de chaque. Pas de texte libre. | Tranché le 2026-10-20 |
 | P35 | Ce qui s'échange | Seulement les doublons. Une Épique ou une Légendaire attend 7 jours après sa dernière obtention. | Provisoire |
-| P36 | Garde-fous | Compte de plus de 3 jours et niveau 5 au moins (P48), pour les deux joueurs ; 10 offres envoyées par 24 h glissantes ; une offre expire après 72 h. | Provisoire |
+| P36 | Garde-fous | Niveau 5 au moins (P48) pour les deux joueurs, sans délai d'ancienneté du compte ; 10 offres envoyées par 24 h glissantes ; une offre expire après 72 h. | Provisoire ; délai de 3 jours après la création du compte retiré le 2026-10-22 |
 
 ## Progression et social
 

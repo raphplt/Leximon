@@ -13,7 +13,6 @@ import {
   statusLabel,
   timeLeftLabel,
   toggleCard,
-  tradeableFromLabel,
   tradeLevelLabel,
   tradeRulesNote,
   tradeSides,
@@ -124,15 +123,6 @@ describe("timeLeftLabel", () => {
   });
 });
 
-describe("tradeableFromLabel", () => {
-  it("gives the date for a recent account, and nothing once it can trade", () => {
-    expect(tradeableFromLabel("2026-10-22T13:30:00.000Z", now, "Europe/Paris")).toBe(
-      "Compte tout neuf. Échanges possibles dès le jeudi 22 octobre à 15 h 30.",
-    );
-    expect(tradeableFromLabel("2026-10-19T00:00:00.000Z", now)).toBeNull();
-  });
-});
-
 describe("toggleCard", () => {
   it("adds, removes, and stops at the limit of the two levels", () => {
     expect(toggleCard([], "a", 3)).toEqual(["a"]);
@@ -182,7 +172,6 @@ describe("offerProblem", () => {
 describe("refusalMessage", () => {
   it("explains each refusal", () => {
     expect(refusalMessage("daily_limit_reached")).toContain("10 offres");
-    expect(refusalMessage("account_too_recent")).toContain("3 jours");
     expect(refusalMessage("card_not_tradeable")).toContain("7 jours");
     expect(refusalMessage("player_not_found")).toBe("Personne n'a ce code.");
     expect(refusalMessage("trade_not_found")).toBe("Cette offre n'existe plus.");

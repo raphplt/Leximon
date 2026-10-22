@@ -16,8 +16,6 @@ export const playerCodeSchema = z
 /** `GET /me/profile`, 200: the player's own profile, also before it is public. */
 export const profileResponseSchema = z.object({
   playerCode: z.string(),
-  /** When the account becomes old enough to trade. */
-  canTradeFrom: timestampSchema,
   /** Account level needed to trade. */
   tradeMinLevel: z.int().positive(),
   /** A guest has no profile: everything below shows what an account would have. */
@@ -102,7 +100,7 @@ export type Trade = z.infer<typeof tradeSchema>;
 
 /**
  * Refusals, as `{ error }`: 422 on `POST /trades`; 409 on accept, decline and cancel (an offer
- * no longer pending or expired, a card no longer tradeable, an account too recent if the rule
+ * no longer pending or expired, a card no longer tradeable, a level too low if the rule
  * tightened). `player_not_found` is a 404; `trade_not_found` (also for the wrong party) too.
  */
 export const tradeRefusalSchema = z.enum([
@@ -111,7 +109,6 @@ export const tradeRefusalSchema = z.enum([
   "empty_side",
   "too_many_cards",
   "duplicate_card",
-  "account_too_recent",
   "level_too_low",
   "daily_limit_reached",
   "card_not_tradeable",

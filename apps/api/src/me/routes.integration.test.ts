@@ -6,7 +6,7 @@ import {
   profileResponseSchema,
   tradeableCardsResponseSchema,
 } from "@leximon/contract";
-import { BONUS_SCHEDULE, REFILL_SCHEDULE, TRADE_SCHEDULE, xpToReach } from "@leximon/core";
+import { BONUS_SCHEDULE, REFILL_SCHEDULE, xpToReach } from "@leximon/core";
 import { createDb, schema } from "@leximon/db";
 import { testDatabaseUrl } from "@leximon/db/testing";
 import { count, eq, sum } from "drizzle-orm";
@@ -168,14 +168,6 @@ describe("GET /me/profile", () => {
     expect(response.headers.get("cache-control")).toBe("no-store");
     const profile = profileResponseSchema.parse(await response.json());
     expect(profile.playerCode).toMatch(/^[0-9A-HJKMNP-TV-Z]{8}$/);
-
-    const [user] = await db
-      .select({ createdAt: schema.users.createdAt })
-      .from(schema.users)
-      .where(eq(schema.users.id, guest.userId));
-    expect(Date.parse(profile.canTradeFrom)).toBe(
-      (user?.createdAt.getTime() ?? 0) + TRADE_SCHEDULE[0].minAccountAgeMs,
-    );
 
     const again = profileResponseSchema.parse(await (await get(guest, "/me/profile")).json());
     expect(again).toEqual(profile);

@@ -21,9 +21,7 @@ export interface TradeRules {
   readonly cardsPerSide: readonly [CardsPerSideStep, ...CardsPerSideStep[]];
   /** Offers a player may send over a rolling 24 hours. */
   readonly offersPerDay: number;
-  /** Accounts younger than this cannot trade: limits throwaway accounts feeding a main one. */
-  readonly minAccountAgeMs: number;
-  /** Account level needed to trade, for the same reason. */
+  /** Account level needed to trade: limits throwaway accounts feeding a main one. */
   readonly minLevel: number;
   /** Cards at least this rare… */
   readonly heldRarity: Rarity;
@@ -51,7 +49,6 @@ export type TradeRefusal =
   | "empty_side"
   | "too_many_cards"
   | "duplicate_card"
-  | "account_too_recent"
   | "level_too_low"
   | "daily_limit_reached"
   | "card_not_tradeable";
@@ -113,10 +110,6 @@ export function checkOfferShape(
   return null;
 }
 
-export function isAccountOldEnough(rules: TradeRules, createdAt: EpochMs, now: EpochMs): boolean {
-  return now - createdAt >= rules.minAccountAgeMs;
-}
-
 export function isLevelHighEnough(rules: TradeRules, xp: number): boolean {
   return levelOf(xp).level >= rules.minLevel;
 }
@@ -143,8 +136,6 @@ export interface OfferCheck {
   readonly recipientId: string;
   readonly give: readonly string[];
   readonly want: readonly string[];
-  readonly proposerCreatedAt: EpochMs;
-  readonly recipientCreatedAt: EpochMs;
   readonly proposerXp: number;
   readonly recipientXp: number;
   /** Offers the proposer sent over the last 24 hours. */
@@ -161,12 +152,6 @@ export interface OfferCheck {
 export function checkOffer(check: OfferCheck): TradeRefusal | null {
   const { rules, now } = check;
   if (check.proposerId === check.recipientId) return "self_trade";
-  if (
-    !isAccountOldEnough(rules, check.proposerCreatedAt, now) ||
-    !isAccountOldEnough(rules, check.recipientCreatedAt, now)
-  ) {
-    return "account_too_recent";
-  }
   if (!isLevelHighEnough(rules, check.proposerXp) || !isLevelHighEnough(rules, check.recipientXp)) {
     return "level_too_low";
   }

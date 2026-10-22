@@ -254,8 +254,6 @@ describe("signing up from a guest", () => {
     expect(progress?.xp).toBe(opened.progress.xp);
     const after = profileResponseSchema.parse(await (await get(cookie, "/me/profile")).json());
     expect(after.playerCode).toBe(profile.playerCode);
-    // Old enough to trade: the 5 days of the guest count.
-    expect(Date.parse(after.canTradeFrom)).toBeLessThan(Date.now());
     const [account] = await db.select().from(users).where(eq(users.id, user.id));
     expect(account?.createdAt).toEqual(guestRow?.createdAt);
     const [trade] = await db.select().from(trades).where(eq(trades.id, tradeId));

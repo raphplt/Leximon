@@ -10,7 +10,7 @@ import {
   profileResponseSchema,
   tradeSchema,
 } from "@leximon/contract";
-import { pseudoKey, TRADE_SCHEDULE, xpToReach } from "@leximon/core";
+import { pseudoKey, xpToReach } from "@leximon/core";
 import { createDb, schema } from "@leximon/db";
 import { testDatabaseUrl } from "@leximon/db/testing";
 import { eq } from "drizzle-orm";
@@ -19,7 +19,6 @@ import { createApp } from "../app";
 import { handleGameEvents } from "../clans/events";
 import { recordingQueue, TEST_ORIGIN, testEnv } from "../test-env";
 import {
-  ageAccount,
   type Guest,
   type OwnedCard,
   seedTestCatalog,
@@ -34,7 +33,6 @@ const env: Env = { ...testEnv(url), GAME_EVENTS: events as Queue };
 const app = createApp();
 const { db, close } = createDb(url, { maxConnections: 8 });
 const DAY = 86_400_000;
-const RULES = TRADE_SCHEDULE[0];
 
 const { mailLetters, players, userMastery } = schema;
 
@@ -49,10 +47,9 @@ interface Player extends Guest {
   readonly pseudo: string;
 }
 
-/** A member with a pseudo, old enough and of a high enough level to trade and lead a clan. */
+/** A member with a pseudo, of a high enough level to trade and lead a clan. */
 async function player(owned: readonly OwnedCard[] = [], pseudo = randomPseudo()): Promise<Player> {
   const member = await signInAsMember(app, env, db);
-  await ageAccount(db, member.userId, RULES.minAccountAgeMs + DAY);
   const profile = profileResponseSchema.parse(await (await request(member, "/me/profile")).json());
   await db
     .update(players)

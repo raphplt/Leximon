@@ -33,14 +33,13 @@ Il faut trois navigateurs, ou trois profils séparés (une fenêtre privée par 
 | C | `recette-c@example.com` | Troisième joueur : demandes d'entrée, blocage |
 | Invité | aucun | Fenêtre privée, jamais connecté |
 
-Crée B et C en te connectant une fois sur le site avec ces adresses. Ensuite, pour sauter les heures de jeu, un script réservé à la base locale règle le niveau et l'âge d'un compte :
+Crée B et C en te connectant une fois sur le site avec ces adresses. Ensuite, pour sauter les heures de jeu, un script réservé à la base locale règle le niveau d'un compte :
 
 ```bash
-pnpm dev:player recette-b@example.com --level 16 --age-days 4
+pnpm dev:player recette-b@example.com --level 16
 ```
 
 - `--level N` met le compte au niveau N. Les coffrets des niveaux sautés attendent d'être ouverts, comme si l'XP avait été gagnée.
-- `--age-days N` vieillit le compte de N jours (les échanges demandent un compte de plus de 3 jours).
 - Pour donner des sachets bonus : `/admin/joueurs`, fiche du joueur, « Offrir des plis bonus ».
 
 Chaque section dit le niveau qu'il faut. Garde un compte bas (niveau 1 à 4) pour voir les écrans fermés, par exemple C avant la section 10.
@@ -270,11 +269,11 @@ Compte A : `pnpm dev:player contact@leximon.fr --level 21` pour avoir une série
 
 ## 7. Échanges
 
-A et B au niveau 5 au moins, comptes de plus de 3 jours, chacun avec des doubles :
+A et B au niveau 5 au moins, chacun avec des doubles :
 
 ```bash
-pnpm dev:player contact@leximon.fr --level 12 --age-days 4
-pnpm dev:player recette-b@example.com --level 6 --age-days 4
+pnpm dev:player contact@leximon.fr --level 12
+pnpm dev:player recette-b@example.com --level 6
 ```
 
 ### ECH-01 · En-tête
@@ -301,7 +300,7 @@ pnpm dev:player recette-b@example.com --level 6 --age-days 4
 - **Retour :**
 
 ### ECH-06 · Garde-fous
-- **Faire :** un compte de moins de 3 jours (`--age-days 1`) ou sous le niveau 5 essaie d'échanger ; un code faux ; 11 offres en 24 h.
+- **Faire :** un compte sous le niveau 5 essaie d'échanger ; un code faux ; 11 offres en 24 h.
 - **Attendu :** un refus clair à chaque fois. « 10 offres par 24 h. Une offre expire après 72 h. » est écrit.
 - **Retour :**
 

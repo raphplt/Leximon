@@ -4,7 +4,6 @@ import {
   checkOffer,
   type EpochMs,
   type Holding,
-  isAccountOldEnough,
   isExpired,
   isLevelHighEnough,
   maxCardsBetween,
@@ -29,7 +28,7 @@ import {
 } from "./players";
 import { type CardMove, planTransfers } from "./transfers";
 
-const { cards, players, tradeItems, trades, userCards, userProgress, users } = schema;
+const { cards, players, tradeItems, trades, userCards, userProgress } = schema;
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
@@ -210,8 +209,6 @@ export async function createTrade(
       recipientId: recipient.userId,
       give,
       want,
-      proposerCreatedAt: proposer.createdAt,
-      recipientCreatedAt: recipient.createdAt,
       proposerXp: proposer.xp,
       recipientXp: recipient.xp,
       offersSentToday: state.sentToday,
@@ -298,7 +295,6 @@ export type AcceptRefusal =
   | "trade_not_pending"
   | "trade_expired"
   | "card_not_tradeable"
-  | "account_too_recent"
   | "level_too_low"
   | "too_many_cards";
 
@@ -307,8 +303,6 @@ export type AcceptTradeResult =
   | { readonly kind: "not_found" }
   | { readonly kind: "refused"; readonly reason: AcceptRefusal };
 
-const proposerUser = alias(users, "proposer_user");
-const recipientUser = alias(users, "recipient_user");
 const proposerProgress = alias(userProgress, "proposer_progress");
 const recipientProgress = alias(userProgress, "recipient_progress");
 
@@ -332,16 +326,12 @@ export async function acceptTrade(
     const [locked] = await tx
       .select({
         ...tradeFields,
-        proposerCreatedAt: proposerUser.createdAt,
-        recipientCreatedAt: recipientUser.createdAt,
         proposerXp: proposerProgress.xp,
         recipientXp: recipientProgress.xp,
       })
       .from(trades)
       .innerJoin(proposerPlayer, eq(proposerPlayer.userId, trades.proposerId))
       .innerJoin(recipientPlayer, eq(recipientPlayer.userId, trades.recipientId))
-      .innerJoin(proposerUser, eq(proposerUser.id, trades.proposerId))
-      .innerJoin(recipientUser, eq(recipientUser.id, trades.recipientId))
       .leftJoin(proposerProgress, eq(proposerProgress.userId, trades.proposerId))
       .leftJoin(recipientProgress, eq(recipientProgress.userId, trades.recipientId))
       .where(eq(trades.id, tradeId))
@@ -349,7 +339,7 @@ export async function acceptTrade(
     if (locked === undefined || locked.recipientId !== userId) {
       return { kind: "not_found" };
     }
-    const { proposerCreatedAt, recipientCreatedAt, proposerXp, recipientXp, ...record } = locked;
+    const { proposerXp, recipientXp, ...record } = locked;
     const { proposerId } = record;
     // Inner joins on both players: a side is `null` only after an account deletion, which
     // cancels the offer first.
@@ -384,12 +374,6 @@ export async function acceptTrade(
     const holdings = groupHoldings(rows);
 
     const rules = tradeRulesAt(TRADE_SCHEDULE, now);
-    if (
-      !isAccountOldEnough(rules, proposerCreatedAt.getTime(), now) ||
-      !isAccountOldEnough(rules, recipientCreatedAt.getTime(), now)
-    ) {
-      return { kind: "refused", reason: "account_too_recent" };
-    }
     if (!isLevelHighEnough(rules, proposerXp ?? 0) || !isLevelHighEnough(rules, recipientXp ?? 0)) {
       return { kind: "refused", reason: "level_too_low" };
     }

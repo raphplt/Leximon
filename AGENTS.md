@@ -17,7 +17,7 @@ pnpm dev                         # Postgres et Directus (Docker), puis toutes le
 pnpm check                       # lint + typecheck + tests unitaires, à lancer avant de rendre la main
 pnpm test:integration            # tests contre la base leximon_test, vidée à chaque passage (Docker requis)
 pnpm admin:grant <email>         # donne le rôle admin à un compte existant (--revoke pour le retirer)
-pnpm dev:player <email> --level 16 --age-days 4   # base locale seulement : niveau et âge d'un compte, pour la recette
+pnpm dev:player <email> --level 16   # base locale seulement : niveau d'un compte, pour la recette
 pnpm format                      # corrige le formatage (Biome)
 ```
 

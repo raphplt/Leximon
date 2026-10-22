@@ -136,10 +136,9 @@ export async function readOwnProfile(
     pseudoRulesAt(PSEUDO_SCHEDULE, now),
     row.pseudoChangedAt?.getTime() ?? null,
   );
-  const { minAccountAgeMs, minLevel } = tradeRulesAt(TRADE_SCHEDULE, now);
+  const { minLevel } = tradeRulesAt(TRADE_SCHEDULE, now);
   return {
     playerCode: player.code,
-    canTradeFrom: new Date(player.createdAt + minAccountAgeMs).toISOString(),
     tradeMinLevel: minLevel,
     member: !row.isAnonymous,
     pseudo: row.pseudo,

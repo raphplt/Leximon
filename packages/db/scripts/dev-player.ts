@@ -1,7 +1,6 @@
 /**
- * `pnpm dev:player <email> [--level N] [--age-days N]`: sets an account's level and age, to test
- * what opens with the level (clans at 10 and 15, trades at 5) or with the account's age (trades
- * after 3 days) without playing for hours.
+ * `pnpm dev:player <email> --level N`: sets an account's level, to test what opens with the level
+ * (trades at 5, clans at 10 and 15) without playing for hours.
  *
  * Local database only: it refuses any other host. The coffrets of the levels skipped wait to be
  * claimed, as if the XP had been earned.
@@ -15,23 +14,21 @@ import { users } from "../src/schema/auth";
 import { userProgress } from "../src/schema/game";
 
 const LOCAL_HOSTS = new Set(["127.0.0.1", "localhost", "[::1]"]);
-const DAY_MS = 86_400_000;
 
 const { values, positionals } = parseArgs({
   allowPositionals: true,
-  options: { level: { type: "string" }, "age-days": { type: "string" } },
+  options: { level: { type: "string" } },
 });
 const email = positionals[0]?.trim().toLowerCase();
-const level = values.level === undefined ? undefined : Number(values.level);
-const ageDays = values["age-days"] === undefined ? undefined : Number(values["age-days"]);
+const level = Number(values.level);
 if (
   email === undefined ||
   !email.includes("@") ||
-  (level === undefined && ageDays === undefined) ||
-  (level !== undefined && (!Number.isInteger(level) || level < 1 || level > 200)) ||
-  (ageDays !== undefined && (!Number.isFinite(ageDays) || ageDays < 0))
+  !Number.isInteger(level) ||
+  level < 1 ||
+  level > 200
 ) {
-  console.error("Usage : pnpm dev:player <email> [--level 1-200] [--age-days N]");
+  console.error("Usage : pnpm dev:player <email> --level 1-200");
   process.exit(1);
 }
 
@@ -55,21 +52,12 @@ try {
     );
     process.exitCode = 1;
   } else {
-    if (level !== undefined) {
-      const xp = xpToReach(level);
-      await db
-        .insert(userProgress)
-        .values({ userId: user.id, xp })
-        .onConflictDoUpdate({ target: userProgress.userId, set: { xp: sql`excluded.xp` } });
-      console.info(`${email} est au niveau ${level} (${xp} XP).`);
-    }
-    if (ageDays !== undefined) {
-      await db
-        .update(users)
-        .set({ createdAt: new Date(Date.now() - ageDays * DAY_MS) })
-        .where(eq(users.id, user.id));
-      console.info(`Le compte de ${email} a ${ageDays} jours.`);
-    }
+    const xp = xpToReach(level);
+    await db
+      .insert(userProgress)
+      .values({ userId: user.id, xp })
+      .onConflictDoUpdate({ target: userProgress.userId, set: { xp: sql`excluded.xp` } });
+    console.info(`${email} est au niveau ${level} (${xp} XP).`);
   }
 } finally {
   await close();

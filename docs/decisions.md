@@ -271,7 +271,7 @@ Pour ajouter ou modifier une décision, utiliser le skill `decision`.
 ## D-026 · Échanges : offres directes par code joueur, doublons seulement
 
 - **Statut :** Acceptée (2026-10-20), choisie par le propriétaire.
-- **Choix :** un joueur fait une offre à un autre, désigné par son code joueur public (8 caractères) : 1 à 3 cartes données contre 1 à 3 cartes voulues, un exemplaire de chaque. Seuls les doublons s'échangent ; Épiques et Légendaires attendent 7 jours après leur dernière obtention (`user_cards.last_obtained_at`) ; comptes de plus de 3 jours ; 10 offres envoyées par 24 h glissantes ; une offre expire après 72 h. Rien n'est réservé : l'acceptation verrouille l'offre puis les exemplaires dans un ordre fixe, revérifie tout et déplace les quantités en une transaction. Réglages datés dans `TRADE_SCHEDULE`.
+- **Choix :** un joueur fait une offre à un autre, désigné par son code joueur public (8 caractères) : 1 à 3 cartes données contre 1 à 3 cartes voulues, un exemplaire de chaque. Seuls les doublons s'échangent ; Épiques et Légendaires attendent 7 jours après leur dernière obtention (`user_cards.last_obtained_at`) ; niveau minimum (P36) ; 10 offres envoyées par 24 h glissantes ; une offre expire après 72 h. Rien n'est réservé : l'acceptation verrouille l'offre puis les exemplaires dans un ordre fixe, revérifie tout et déplace les quantités en une transaction. Réglages datés dans `TRADE_SCHEDULE`.
 - **Pourquoi :** des offres structurées sans texte libre protègent un public jeune ; les garde-fous freinent le transfert de cartes rares depuis des comptes jetables.
 - **Conséquences :**
   - « expirée » n'est jamais stocké : une offre en attente dont l'échéance est passée est expirée, sans tâche planifiée ;

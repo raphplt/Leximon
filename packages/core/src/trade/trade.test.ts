@@ -27,7 +27,6 @@ const rules: TradeRules = {
     { fromLevel: 10, maxCards: 3 },
   ],
   offersPerDay: 10,
-  minAccountAgeMs: 3 * DAY,
   minLevel: 5,
   heldRarity: "epic",
   heldForMs: 7 * DAY,
@@ -44,8 +43,6 @@ function offer(overrides: Partial<OfferCheck> = {}): OfferCheck {
     recipientId: "bob",
     give: ["a"],
     want: ["b"],
-    proposerCreatedAt: 0,
-    recipientCreatedAt: 0,
     // Level 5 exactly (100 + 120 + 140 + 160).
     proposerXp: LEVEL_5_XP,
     recipientXp: LEVEL_5_XP,
@@ -116,11 +113,6 @@ describe("checkOffer", () => {
 
   it("refuses trading with oneself", () => {
     expect(checkOffer(offer({ recipientId: "alice" }))).toBe("self_trade");
-  });
-
-  it("refuses recent accounts on either side", () => {
-    expect(checkOffer(offer({ proposerCreatedAt: NOW - DAY }))).toBe("account_too_recent");
-    expect(checkOffer(offer({ recipientCreatedAt: NOW - DAY }))).toBe("account_too_recent");
   });
 
   it("refuses players below the minimum level on either side", () => {

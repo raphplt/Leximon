@@ -123,30 +123,6 @@ export function timeLeftLabel(expiresAt: string, now: number): string {
   return `Expire dans ${Math.max(1, Math.ceil(left / MINUTE))} min`;
 }
 
-/**
- * When a recent account will be able to trade, or `null` once it can. `timeZone` is only there
- * for tests: the player sees their own.
- */
-export function tradeableFromLabel(
-  canTradeFrom: string,
-  now: number,
-  timeZone?: string,
-): string | null {
-  const from = Date.parse(canTradeFrom);
-  if (from <= now) return null;
-  const zone = timeZone === undefined ? {} : { timeZone };
-  const day = new Intl.DateTimeFormat("fr-FR", {
-    weekday: "long",
-    day: "numeric",
-    month: "long",
-    ...zone,
-  }).format(from);
-  const time = new Intl.DateTimeFormat("fr-FR", { hour: "numeric", minute: "2-digit", ...zone })
-    .format(from)
-    .replace(":", " h ");
-  return `Compte tout neuf. Échanges possibles dès le ${day} à ${time}.`;
-}
-
 /** Why a player below the level needed cannot trade yet, or `null` once they can. */
 export function tradeLevelLabel(level: number, minLevel: number): string | null {
   if (level >= minLevel) return null;
@@ -208,7 +184,6 @@ const REFUSAL_MESSAGES: Readonly<Record<TradeRefusalCode | OfferProblem, string>
   empty_side: "Il faut au moins une carte de chaque côté.",
   too_many_cards: "Trop de cartes pour vos niveaux. Une de chaque côté avant le niveau 10.",
   duplicate_card: "Une même carte apparaît deux fois.",
-  account_too_recent: "Compte tout neuf. Les échanges ouvrent 3 jours après ton arrivée.",
   level_too_low: "Il faut être niveau 5, toi comme l'autre joueur.",
   daily_limit_reached: "10 offres en 24 heures, c'est le maximum. Reviens demain.",
   card_not_tradeable:
