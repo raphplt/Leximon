@@ -105,14 +105,8 @@ export function lockedToast(feature: Feature, now: EpochMs): string {
   return `${capitalize(FEATURE_NAMES[feature])}, c'est au niveau ${level}.`;
 }
 
-/** Open, but not built yet: clans arrive with lot 4, jousts once decided (X-02). */
-export const NOT_BUILT_COPY: Readonly<
-  Record<"join_clan" | "jousts", { title: string; text: string }>
-> = {
-  join_clan: {
-    title: "Les clans se montent",
-    text: "Tu as le niveau, il ne manque que les clans. On les assemble.",
-  },
+/** Open, but not built yet: the jousts, once decided (X-02). */
+export const NOT_BUILT_COPY: Readonly<Record<"jousts", { title: string; text: string }>> = {
   jousts: {
     title: "Les joutes se préparent",
     text: "Tu as le niveau, il ne manque que les joutes. On en affûte les règles.",
