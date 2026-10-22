@@ -188,14 +188,21 @@ async function statusesOf(campaignId: string) {
   return counts;
 }
 
+// The pump runs once a minute and hands a campaign over once per tick: each tick moves the clock.
+let clock = Date.now();
+function nextTick() {
+  clock = Math.max(clock + 60_000, Date.now());
+  return clock;
+}
+
 /** Pumps, then delivers every queued message, until nothing is left waiting. */
 async function sendAll(campaignId: string) {
   for (let round = 0; round < 20; round += 1) {
     const { queue, jobs } = fakeQueue();
-    await pumpCampaigns(db, queue, Date.now());
+    await pumpCampaigns(db, queue, nextTick());
     const mine = jobs.filter((job) => job.campaignId === campaignId);
     if (mine.length === 0) return;
-    for (const job of mine) await deliverCampaignJob(db, provider.mailer, config, job, Date.now());
+    for (const job of mine) await deliverCampaignJob(db, provider.mailer, config, job, clock);
   }
   throw new Error("campaign did not drain");
 }
@@ -364,9 +371,11 @@ describe("campaign delivery", () => {
     for (let round = 0; round < 5; round += 1) {
       const first = fakeQueue();
       const second = fakeQueue();
+      // Two runs of the same tick, a few seconds apart.
+      const now = nextTick();
       await Promise.all([
-        pumpCampaigns(db, first.queue, Date.now()),
-        pumpCampaigns(db, second.queue, Date.now()),
+        pumpCampaigns(db, first.queue, now),
+        pumpCampaigns(db, second.queue, now + 5_000),
       ]);
       const jobs = [...first.jobs, ...second.jobs].filter((job) => job.campaignId === campaignId);
       const queuedIds = jobs.flatMap((job) => job.sendIds);
@@ -375,7 +384,7 @@ describe("campaign delivery", () => {
       // Every message delivered twice, at the same time: the queue's at-least-once worst case.
       await Promise.all(
         [...jobs, ...jobs].map((job) =>
-          deliverCampaignJob(db, provider.mailer, config, job, Date.now()),
+          deliverCampaignJob(db, provider.mailer, config, job, clock),
         ),
       );
     }
@@ -423,9 +432,9 @@ describe("campaign delivery", () => {
     const campaignId = await sendingCampaign(1);
     provider.script.push({ kind: "retry_later", code: "RATE_LIMITED", retryAfterS: 120 });
     const { queue, jobs } = fakeQueue();
-    await pumpCampaigns(db, queue, Date.now());
+    await pumpCampaigns(db, queue, nextTick());
     for (const job of jobs.filter((j) => j.campaignId === campaignId)) {
-      await deliverCampaignJob(db, provider.mailer, config, job, Date.now());
+      await deliverCampaignJob(db, provider.mailer, config, job, clock);
     }
     const [row] = await db.select().from(sends).where(eq(sends.campaignId, campaignId));
     expect(row?.status).toBe("pending");
@@ -434,7 +443,7 @@ describe("campaign delivery", () => {
 
     // On hold: nothing leaves before the provider's delay.
     const held = fakeQueue();
-    await pumpCampaigns(db, held.queue, Date.now());
+    await pumpCampaigns(db, held.queue, nextTick());
     expect(held.jobs.filter((j) => j.campaignId === campaignId)).toHaveLength(0);
 
     await db
@@ -456,9 +465,9 @@ describe("campaign delivery", () => {
       code: "INVALID",
     });
     const { queue, jobs } = fakeQueue();
-    await pumpCampaigns(db, queue, Date.now());
+    await pumpCampaigns(db, queue, nextTick());
     for (const job of jobs.filter((j) => j.campaignId === campaignId)) {
-      await deliverCampaignJob(db, provider.mailer, config, job, Date.now());
+      await deliverCampaignJob(db, provider.mailer, config, job, clock);
     }
     expect(await statusesOf(campaignId)).toEqual({ sent: 1, failed: 1, pending: 1 });
     await sendAll(campaignId);
@@ -469,9 +478,9 @@ describe("campaign delivery", () => {
     const campaignId = await sendingCampaign(2);
     provider.script.push({ kind: "blocked", code: "http_401" });
     const { queue, jobs } = fakeQueue();
-    await pumpCampaigns(db, queue, Date.now());
+    await pumpCampaigns(db, queue, nextTick());
     for (const job of jobs.filter((j) => j.campaignId === campaignId)) {
-      await deliverCampaignJob(db, provider.mailer, config, job, Date.now());
+      await deliverCampaignJob(db, provider.mailer, config, job, clock);
     }
     const [row] = await db.select().from(campaigns).where(eq(campaigns.id, campaignId));
     expect(row?.status).toBe("paused");
@@ -491,7 +500,7 @@ describe("campaign delivery", () => {
   it("pauses, resumes and cancels from the back office", async () => {
     const campaignId = await sendingCampaign(3);
     const { queue } = fakeQueue();
-    await pumpCampaigns(db, queue, Date.now());
+    await pumpCampaigns(db, queue, nextTick());
 
     const paused = await post(admin, `/admin/campaigns/${campaignId}/pause`);
     expect(adminCampaignSchema.parse(await paused.json()).status).toBe("paused");

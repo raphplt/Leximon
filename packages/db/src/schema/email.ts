@@ -47,6 +47,8 @@ export const emailCampaigns = pgTable(
     completedAt: timestamp({ withTimezone: true }),
     /** Set by a provider's `Retry-After`: no batch leaves before. */
     holdUntil: timestamp({ withTimezone: true }),
+    /** When the pump last handed rows to the queue: a second pump in the same minute skips it. */
+    lastQueuedAt: timestamp({ withTimezone: true }),
     /** Waiting list campaign only: when the addresses were erased (P55). */
     waitlistErasedAt: timestamp({ withTimezone: true }),
   },

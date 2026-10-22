@@ -26,6 +26,11 @@ const {
 export const SENDS_PER_MESSAGE = 100;
 /** A row claimed longer ago is assumed lost (the consumer's wall time is 15 minutes at most). */
 export const STALE_CLAIM_MS = 15 * 60 * 1000;
+/**
+ * Pumps closer than this hand a campaign over once: overlapping runs of one tick are seconds
+ * apart, consecutive ticks a minute.
+ */
+export const PUMP_SPACING_MS = 30 * 1000;
 /** Temporary failures before a row is given up. */
 export const MAX_ATTEMPTS = 5;
 /** Pause after a temporary refusal that did not say how long to wait. */
@@ -50,8 +55,8 @@ export interface PumpReport {
 }
 
 /**
- * Run every minute by the cron trigger. Idempotent, and safe if two runs overlap: rows are taken
- * with `SKIP LOCKED`.
+ * Run every minute by the cron trigger. Idempotent, and safe if two runs overlap: a campaign is
+ * handed over once per tick, and rows are taken with `SKIP LOCKED`.
  */
 export async function pumpCampaigns(
   db: Database,
@@ -122,11 +127,19 @@ async function queueCampaignRows(
   now: EpochMs,
 ): Promise<number> {
   return db.transaction(async (tx) => {
-    // Two overlapping pumps would each take a minute's worth: the second one skips the campaign.
+    // Two overlapping pumps would each take a minute's worth: the second one skips the campaign,
+    // whether the first still holds the lock or has already committed.
     const [locked] = await tx
       .select({ id: campaigns.id })
       .from(campaigns)
-      .where(and(eq(campaigns.id, campaign.id), eq(campaigns.status, "sending")))
+      .where(
+        and(
+          eq(campaigns.id, campaign.id),
+          eq(campaigns.status, "sending"),
+          sql`(${campaigns.lastQueuedAt} is null
+            or ${campaigns.lastQueuedAt} <= ${new Date(now - PUMP_SPACING_MS)})`,
+        ),
+      )
       .for("update", { skipLocked: true });
     if (locked === undefined) return 0;
     const rows = await tx
@@ -142,6 +155,10 @@ async function queueCampaignRows(
       .update(sends)
       .set({ status: "queued", claimedAt: new Date(now) })
       .where(inArray(sends.id, ids));
+    await tx
+      .update(campaigns)
+      .set({ lastQueuedAt: new Date(now) })
+      .where(eq(campaigns.id, campaign.id));
 
     const chunks: string[][] = [];
     for (let i = 0; i < ids.length; i += SENDS_PER_MESSAGE) {

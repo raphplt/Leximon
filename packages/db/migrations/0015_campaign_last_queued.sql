@@ -1,0 +1,1 @@
+ALTER TABLE "email_campaigns" ADD COLUMN "last_queued_at" timestamp with time zone;
