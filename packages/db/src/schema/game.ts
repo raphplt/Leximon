@@ -324,8 +324,6 @@ export const players = pgTable(
     profilePublic: boolean().notNull().default(true),
     /** Last request, to the nearest few minutes: "online" and "seen 2 days ago" in a clan. */
     lastSeenAt: timestamp({ withTimezone: true }),
-    /** When the player last left a clan of their own will: 24 h before joining another. */
-    clanLeftAt: timestamp({ withTimezone: true }),
   },
   (table) => [
     uniqueIndex("players_pseudo_key_idx").on(table.pseudoKey),

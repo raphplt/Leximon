@@ -16,7 +16,6 @@ import {
   lockedToast,
   NO_CLAN_FOUND,
   NO_CLAN_YET,
-  rejoinLabel,
 } from "@leximon/view-model";
 import { type FormEvent, useCallback, useEffect, useState } from "react";
 import { myClan } from "@/player/clan";
@@ -164,7 +163,6 @@ export function FindClan({
 
   const rules = clanRulesAt(CLAN_SCHEDULE, now);
   const canCreate = isFeatureOpen("create_clan", level, now);
-  const waiting = mine.rejoinAt !== null && Date.parse(mine.rejoinAt) > now;
 
   return (
     <main className={styles.screen}>
@@ -178,9 +176,6 @@ export function FindClan({
           Fonder un clan
         </Button>
       </header>
-      {waiting && mine.rejoinAt !== null && (
-        <p className={styles.warning}>{rejoinLabel(mine.rejoinAt, now)}</p>
-      )}
 
       <div className={styles.findGrid}>
         <section>
@@ -238,7 +233,7 @@ export function FindClan({
                       <Button
                         small
                         variant={clan.entryMode === "open" ? "primary" : "secondary"}
-                        disabled={busy !== null || clan.entryMode === "invite" || waiting}
+                        disabled={busy !== null || clan.entryMode === "invite"}
                         onClick={() => void settle(clan.id, () => joinClan(clan.id))}
                       >
                         {joinLabel(clan.entryMode, false)}
@@ -268,7 +263,7 @@ export function FindClan({
               aria-label="Code d'invitation"
               onChange={(event) => setCode(event.target.value.toUpperCase())}
             />
-            <Button type="submit" disabled={busy !== null || code.trim() === "" || waiting}>
+            <Button type="submit" disabled={busy !== null || code.trim() === ""}>
               Entrer
             </Button>
           </form>

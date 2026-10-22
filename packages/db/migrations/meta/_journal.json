@@ -127,6 +127,13 @@
       "when": 1792677897729,
       "tag": "0017_drop_card_choice",
       "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1792682436116,
+      "tag": "0018_drop_clan_left_at",
+      "breakpoints": true
     }
   ]
 }

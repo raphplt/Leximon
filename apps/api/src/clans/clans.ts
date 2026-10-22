@@ -29,7 +29,6 @@ import {
   levelOf,
   nextChief,
   pseudoKey,
-  rejoinAllowedAt,
   TRADE_SCHEDULE,
   UNLOCK_SCHEDULE,
 } from "@leximon/core";
@@ -94,7 +93,6 @@ export async function touchLastSeen(db: Database, userId: string, now: EpochMs):
 interface LockedPlayer {
   readonly isAnonymous: boolean;
   readonly pseudo: string | null;
-  readonly clanLeftAt: Date | null;
   readonly xp: number | null;
   readonly clanId: string | null;
 }
@@ -109,7 +107,6 @@ async function lockPlayer(tx: Transaction, userId: string): Promise<LockedPlayer
     .select({
       isAnonymous: users.isAnonymous,
       pseudo: players.pseudo,
-      clanLeftAt: players.clanLeftAt,
       xp: userProgress.xp,
       clanId: clanMembers.clanId,
     })
@@ -139,8 +136,6 @@ function entryRefusal(
   const level = featureLevels(UNLOCK_SCHEDULE, TRADE_SCHEDULE, now)[feature];
   if (levelOf(player.xp ?? 0).level < level) return "level_too_low";
   if (player.clanId !== null) return "already_in_clan";
-  const allowedAt = rejoinAllowedAt(rulesAt(now), player.clanLeftAt?.getTime() ?? null);
-  if (allowedAt !== null && allowedAt > now) return "rejoin_too_soon";
   return null;
 }
 
@@ -472,10 +467,6 @@ export async function leaveClan(
     if (clan === null || me === null) return refuse("not_member");
 
     await tx.delete(clanMembers).where(eq(clanMembers.userId, userId));
-    await tx
-      .update(players)
-      .set({ clanLeftAt: new Date(now) })
-      .where(eq(players.userId, userId));
     if (clan.memberCount <= 1) {
       await tx.delete(clans).where(eq(clans.id, clanId));
       return { kind: "left", clanId, dissolved: true };
@@ -745,7 +736,6 @@ export async function readMyClan(
   const [row] = await db
     .select({
       clanId: clanMembers.clanId,
-      clanLeftAt: players.clanLeftAt,
       engraving: clans.emblemEngraving,
       color: clans.emblemColor,
       accent: clans.emblemAccent,
@@ -758,17 +748,12 @@ export async function readMyClan(
     .select({ clanId: clanJoinRequests.clanId })
     .from(clanJoinRequests)
     .where(eq(clanJoinRequests.userId, userId));
-  const allowedAt = rejoinAllowedAt(rulesAt(now), row?.clanLeftAt?.getTime() ?? null);
   return {
     clanId: row?.clanId ?? null,
     emblem:
       row?.engraving == null || row.color == null || row.accent == null
         ? null
         : { engraving: row.engraving, colors: [row.color, row.accent] },
-    rejoinAt:
-      row?.clanId == null && allowedAt !== null && allowedAt > now
-        ? new Date(allowedAt).toISOString()
-        : null,
     requests: requests.map((request) => request.clanId),
     claimable: await readClaimable(db, userId, now),
   };

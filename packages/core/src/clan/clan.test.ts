@@ -12,7 +12,6 @@ import {
   nextChief,
   nextEmblemUnlock,
   nextMessageAt,
-  rejoinAllowedAt,
 } from "./clan";
 
 const rules = clanRulesAt(CLAN_SCHEDULE, Date.UTC(2026, 9, 22));
@@ -124,11 +123,6 @@ describe("roles", () => {
 });
 
 describe("pacing", () => {
-  it("waits 24 hours after leaving a clan", () => {
-    expect(rejoinAllowedAt(rules, null)).toBeNull();
-    expect(rejoinAllowedAt(rules, 1_000)).toBe(1_000 + 24 * HOUR);
-  });
-
   it("allows one message every two seconds", () => {
     expect(nextMessageAt(rules, null, 10_000)).toBeNull();
     expect(nextMessageAt(rules, 9_000, 10_000)).toBe(11_000);

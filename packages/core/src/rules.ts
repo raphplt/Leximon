@@ -175,7 +175,6 @@ export const CLAN_SCHEDULE: ClanSchedule = [
     mottoMaxLength: 80,
     messageMaxLength: 500,
     messageIntervalMs: 2_000,
-    rejoinCooldownMs: 24 * 60 * MINUTE,
     chiefAbsenceMs: 14 * 24 * 60 * MINUTE,
     muteDurationsMs: [60 * MINUTE, 24 * 60 * MINUTE, 7 * 24 * 60 * MINUTE],
     messageRetentionMs: 90 * 24 * 60 * MINUTE,

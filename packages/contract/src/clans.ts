@@ -65,8 +65,6 @@ export const myClanResponseSchema = z.object({
   clanId: clanIdSchema.nullable(),
   /** The clan's emblem, worn by the Jouer screen's clan button; null outside a clan. */
   emblem: emblemSchema.nullable(),
-  /** Set while the 24 h after leaving a clan run. */
-  rejoinAt: timestampSchema.nullable(),
   /** Clans the player asked to enter. */
   requests: z.array(clanIdSchema),
   /** Weekly goal boosters waiting, even from a clan the player left: for the mail. */
@@ -265,7 +263,6 @@ export const clanRefusalSchema = z.enum([
   "pseudo_required",
   "level_too_low",
   "already_in_clan",
-  "rejoin_too_soon",
   "not_member",
   "not_allowed",
   "clan_not_found",

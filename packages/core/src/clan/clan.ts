@@ -17,7 +17,6 @@ export interface ClanRules {
   /** Shortest time between two messages of a player. */
   readonly messageIntervalMs: number;
   /** Wait after leaving a clan before joining another one. Not after being excluded. */
-  readonly rejoinCooldownMs: number;
   /** A chief away this long hands the role over. */
   readonly chiefAbsenceMs: number;
   /** Silences a chief or deputy may give, shortest first. */
@@ -201,11 +200,6 @@ export function nextChief(members: readonly ClanMemberState[], leavingId: string
 
 export function isChiefAway(rules: ClanRules, chiefLastSeenAt: EpochMs, now: EpochMs): boolean {
   return now - chiefLastSeenAt >= rules.chiefAbsenceMs;
-}
-
-/** When a player who left a clan may join another one; `null` if nothing holds them back. */
-export function rejoinAllowedAt(rules: ClanRules, leftAt: EpochMs | null): EpochMs | null {
-  return leftAt === null ? null : leftAt + rules.rejoinCooldownMs;
 }
 
 /** When the player may write again, given their last message; `null` if right away. */

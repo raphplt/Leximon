@@ -1,0 +1,1 @@
+ALTER TABLE "players" DROP COLUMN "clan_left_at";

@@ -452,12 +452,12 @@ pnpm dev:player recette-c@example.com --level 9
 
 ### CLA-14 · Exclure
 - **Faire :** A exclut C ; C essaie de rejoindre un autre clan tout de suite.
-- **Attendu :** C n'est plus membre ; exclu, il peut rejoindre un autre clan sans attendre.
+- **Attendu :** C n'est plus membre, et peut rejoindre un autre clan sans attendre.
 - **Retour :**
 
 ### CLA-15 · Quitter
 - **Faire :** B quitte le clan, puis essaie d'en rejoindre un.
-- **Attendu :** le bouton dit « Quitter le clan, 24 h sans clan » ; ensuite, 24 h d'attente avant de rejoindre un autre clan, avec un message qui le dit.
+- **Attendu :** le bouton dit « Quitter le clan » ; ensuite, B peut rejoindre un autre clan tout de suite.
 - **Retour :**
 
 ### CLA-16 · Le chef part

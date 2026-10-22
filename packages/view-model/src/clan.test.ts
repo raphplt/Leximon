@@ -160,7 +160,7 @@ describe("joining and leaving", () => {
     expect(joinLabel("request", false)).toBe("Demander à entrer");
     expect(joinLabel("request", true)).toBe("Demande envoyée");
     expect(leaveLabel(1)).toBe("Quitter et dissoudre le clan");
-    expect(leaveLabel(12)).toBe("Quitter le clan, 24 h sans clan");
+    expect(leaveLabel(12)).toBe("Quitter le clan");
   });
 
   it("explains each refusal", () => {

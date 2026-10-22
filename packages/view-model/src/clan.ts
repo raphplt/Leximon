@@ -382,16 +382,12 @@ export function joinLabel(mode: ClanEntryMode, requested: boolean): string {
   return "Sur invitation";
 }
 
-export function rejoinLabel(rejoinAt: string, now: EpochMs): string {
-  return `Tu viens de quitter un clan. Prochain dans ${formatWait(Date.parse(rejoinAt) - now)}.`;
-}
-
 export const NO_CLAN_FOUND = "Aucun clan à ce nom. Fonde le tien.";
 export const NO_CLAN_YET = "Pas encore de clan ici. Sois le premier.";
 
 /** the consequence in the button. */
 export function leaveLabel(memberCount: number): string {
-  return memberCount <= 1 ? "Quitter et dissoudre le clan" : "Quitter le clan, 24 h sans clan";
+  return memberCount <= 1 ? "Quitter et dissoudre le clan" : "Quitter le clan";
 }
 
 // --- Refusals ------------------------------------------------------------------------------------
@@ -401,7 +397,6 @@ const REFUSALS: Readonly<Record<ClanRefusal, string>> = {
   pseudo_required: "Choisis d'abord un pseudo.",
   level_too_low: "Pas encore le niveau.",
   already_in_clan: "Tu es déjà dans un clan.",
-  rejoin_too_soon: "Tu viens de quitter un clan. Attends un peu.",
   not_member: "Tu n'es plus dans ce clan.",
   not_allowed: "Ce n'est pas dans ton rôle.",
   clan_not_found: "Ce clan n'existe plus.",

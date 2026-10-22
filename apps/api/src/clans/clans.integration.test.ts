@@ -331,12 +331,9 @@ describe("entering and leaving", () => {
     expect(page.me?.role).toBe("chief");
     expect(page.clan.memberCount).toBe(2);
 
+    // Nothing holds back a player who left: another clan takes them at once.
     const other = await createClan(await player());
-    expect(await errorOf(await send(chief, "POST", `/clans/${other}/join`))).toBe(
-      "rejoin_too_soon",
-    );
-    const mine = myClanResponseSchema.parse(await (await request(chief, "/me/clan")).json());
-    expect(Date.parse(mine.rejoinAt ?? "")).toBeGreaterThan(Date.now() + 23 * HOUR);
+    expect((await send(chief, "POST", `/clans/${other}/join`)).status).toBe(200);
   });
 
   it("dissolves the clan when the last member leaves", async () => {
