@@ -93,10 +93,10 @@ export function visibilityNote(
 ): string | null {
   if (!profile.member) return "Pas de compte, pas de profil. Crée-le, ta partie suit.";
   if (profile.level < profile.publicFromLevel) {
-    return `Ton profil devient public au niveau ${profile.publicFromLevel}. D'ici là, toi seul le vois.`;
+    return `Ton profil devient public au niveau ${profile.publicFromLevel}.`;
   }
   if (profile.pseudo === null) return "Choisis un pseudo. Il fera l'adresse de ton profil.";
-  if (!profile.profilePublic) return "Profil caché. Toi seul le vois.";
+  if (!profile.profilePublic) return "Profil caché.";
   return null;
 }
 
@@ -343,7 +343,7 @@ export function blockRefusalMessage(reason: BlockRefusal): string {
 }
 
 export const BLOCK_CONFIRM = "Plus de profil ni d'offre entre vous. Celles en cours tombent.";
-export const BLOCKED_TOAST = "Bloqué. Vous ne vous croiserez plus.";
+export const BLOCKED_TOAST = "Bloqué.";
 export const BLOCKED_NOTE = "Bloqué. Ça se défait dans Réglages, Joueurs bloqués.";
 export const PROFILE_NOT_FOUND = "Personne à ce nom, ou son profil n'est pas encore public.";
 export const UNBLOCKED_TOAST = "Débloqué.";
@@ -357,8 +357,7 @@ export function deleteAccountLabel(words: number): string {
     : `Supprimer mon compte et mes ${plural(words, "mot", "mots")}`;
 }
 
-export const DELETE_ACCOUNT_WARNING =
-  "Tout part, sans retour. Tes anciens échanges restent chez les autres, signés « Un joueur parti ».";
+export const DELETE_ACCOUNT_WARNING = "Tout part, sans retour.";
 export const DELETE_ACCOUNT_CONFIRM = "Oui, tout effacer";
 export const DELETE_ACCOUNT_CANCEL = "Pas encore";
 export const DELETE_ACCOUNT_ADMIN = "Rends d'abord ton rôle d'admin. Écris-nous.";

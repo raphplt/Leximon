@@ -117,7 +117,7 @@ export function FindClan({
         onJoined(result.value.clanId);
         return;
       }
-      toast("Demande envoyée. Le chef ou un adjoint répondra.");
+      toast("Demande envoyée.");
       myClan.publish({ ...mine, requests: [...mine.requests, result.value.clanId] });
     } catch {
       toast("Ça n'a pas marché. Réessaie.");

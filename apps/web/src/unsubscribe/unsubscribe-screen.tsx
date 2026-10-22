@@ -34,9 +34,7 @@ export function UnsubscribeFromAddress() {
       </Link>
       <h1 className={styles.title}>{state === "done" ? "C'est fait" : "Plus d'e-mails ?"}</h1>
       <section className={styles.section}>
-        {state === "done" && (
-          <p>Plus de nouvelles de notre part. Tes codes de connexion, eux, arrivent toujours.</p>
-        )}
+        {state === "done" && <p>Plus de nouvelles de notre part.</p>}
         {state === "invalid" && (
           <p>Ce lien ne mène nulle part. Recopie-le en entier depuis l'e-mail.</p>
         )}

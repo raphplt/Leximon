@@ -311,7 +311,6 @@ export function ClanPage({
                 </div>
               </div>
             ))}
-            <p className={styles.faint}>En foncé, tes cartes. En clair, celles du clan.</p>
           </section>
 
           <section className={`${ui.panel} ${styles.card} ${styles.onMembers}`}>

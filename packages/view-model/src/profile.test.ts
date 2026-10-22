@@ -101,13 +101,9 @@ describe("profile header", () => {
 
   it("says who sees the profile until others do", () => {
     expect(visibilityNote(profile({ member: false }))).toMatch(/^Pas de compte/);
-    expect(visibilityNote(profile({ level: 4 }))).toBe(
-      "Ton profil devient public au niveau 8. D'ici là, toi seul le vois.",
-    );
+    expect(visibilityNote(profile({ level: 4 }))).toBe("Ton profil devient public au niveau 8.");
     expect(visibilityNote(profile({ pseudo: null }))).toMatch(/^Choisis un pseudo/);
-    expect(visibilityNote(profile({ profilePublic: false }))).toBe(
-      "Profil caché. Toi seul le vois.",
-    );
+    expect(visibilityNote(profile({ profilePublic: false }))).toBe("Profil caché.");
     expect(visibilityNote(profile())).toBeNull();
     expect(canShareProfile(profile())).toBe(true);
     expect(canShareProfile(profile({ level: 4 }))).toBe(false);

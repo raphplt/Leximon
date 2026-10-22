@@ -325,7 +325,7 @@ A au niveau 8 au moins.
 
 ### PRO-03 · Profil avant le niveau 8
 - **Faire :** avec C au niveau 5.
-- **Attendu :** « Ton profil devient public au niveau 8. D'ici là, toi seul le vois. »
+- **Attendu :** « Ton profil devient public au niveau 8. »
 - **Retour :**
 
 ### PRO-04 · Page publique

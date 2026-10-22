@@ -46,7 +46,7 @@ interface Inbox {
 type Action = "accept" | "decline" | "cancel";
 
 const DONE_MESSAGES: Readonly<Record<Action, string>> = {
-  accept: "Échange conclu. Les cartes sont dans ton album.",
+  accept: "Échange conclu.",
   decline: "Offre refusée.",
   cancel: "Offre annulée.",
 };

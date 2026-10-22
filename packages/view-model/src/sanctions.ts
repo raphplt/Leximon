@@ -53,7 +53,7 @@ export function contestState(
   return null;
 }
 
-export const CONTEST_HINT = "Pas d'accord ? Explique pourquoi. Un humain te lira.";
+export const CONTEST_HINT = "Pas d'accord ? Explique pourquoi.";
 
 const WRITE_BLOCKING: readonly SanctionKind[] = ["mute", "suspend", "close"];
 

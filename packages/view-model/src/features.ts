@@ -59,7 +59,7 @@ export type LockedFeature = "trade" | "join_clan" | "jousts";
 const LOCKED_COPY: Readonly<Record<LockedFeature, { title: string; text: string }>> = {
   trade: {
     title: "Les échanges ouvrent au niveau",
-    text: "Une carte contre une carte, avec les autres joueurs. Tes doubles attendent.",
+    text: "Une carte contre une carte, avec les autres joueurs.",
   },
   join_clan: {
     title: "Les clans ouvrent au niveau",
@@ -67,7 +67,7 @@ const LOCKED_COPY: Readonly<Record<LockedFeature, { title: string; text: string 
   },
   jousts: {
     title: "Les joutes ouvrent au niveau",
-    text: "Tes mots les plus rares contre ceux des autres. Il faut un album bien garni.",
+    text: "Tes mots les plus rares contre ceux des autres.",
   },
 };
 
@@ -109,6 +109,6 @@ export function lockedToast(feature: Feature, now: EpochMs): string {
 export const NOT_BUILT_COPY: Readonly<Record<"jousts", { title: string; text: string }>> = {
   jousts: {
     title: "Les joutes se préparent",
-    text: "Tu as le niveau, il ne manque que les joutes. On en affûte les règles.",
+    text: "On en affûte les règles.",
   },
 };
