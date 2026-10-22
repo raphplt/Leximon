@@ -8,6 +8,7 @@ import type {
 } from "@leximon/contract";
 import { fetchAccount, fetchLevelRewards, fetchProfile, fetchWallet } from "@/lib/api";
 import { forgetProgress } from "@/progress/use-progress";
+import { myClan, sanctions } from "./clan";
 import { dailyChallenge, ownedCards, refreshIfRead, wordMemory } from "./collection";
 import { sharedResource } from "./resource";
 
@@ -50,4 +51,6 @@ export function forgetPlayer(): void {
   refreshIfRead(ownedCards);
   refreshIfRead(wordMemory);
   refreshIfRead(dailyChallenge);
+  refreshIfRead(myClan);
+  refreshIfRead(sanctions);
 }

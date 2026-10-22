@@ -14,6 +14,7 @@ import {
 import Link from "next/link";
 import { type CSSProperties, useEffect, useMemo, useState } from "react";
 import { type Catalog, loadCatalog } from "@/cards/catalog";
+import { collectionTone } from "@/cards/collection-tone";
 import { Card } from "@/components/card";
 import { RarityIcon, RarityName } from "@/components/rarity-icon";
 import { useIncremental } from "@/lib/use-incremental";
@@ -26,13 +27,6 @@ import { Button } from "@/ui/button";
 import { Icon } from "@/ui/icon";
 import ui from "@/ui/ui.module.css";
 import styles from "./album-screen.module.css";
-
-/** Tone of each launch collection's progress bar, as on the maquette. */
-const TONES: Readonly<Record<string, string>> = {
-  fondateurs: "#7C9BFF",
-  caracteres: "#FF8462",
-  metiers: "#3BD3A5",
-};
 
 const STORED_COLLECTION = "leximon.album";
 
@@ -172,7 +166,7 @@ export function AlbumScreen() {
                   className={styles.tabFill}
                   style={{
                     width: `${Math.round(tab.ratio * 100)}%`,
-                    background: TONES[tab.id] ?? "var(--lx-color-accent)",
+                    background: collectionTone(tab.id),
                   }}
                 />
               </span>

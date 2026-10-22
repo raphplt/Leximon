@@ -12,6 +12,8 @@ const LINKS = [
   { href: "/admin/attente", label: "Liste d'attente" },
   { href: "/admin/campagnes", label: "Campagnes" },
   { href: "/admin/echanges", label: "Échanges" },
+  { href: "/admin/signalements", label: "Signalements" },
+  { href: "/admin/contestations", label: "Contestations" },
   { href: "/admin/cartes", label: "Cartes" },
   { href: "/admin/catalogue", label: "Collections" },
   { href: "/admin/journal", label: "Journal" },

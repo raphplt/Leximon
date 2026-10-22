@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { type ReactNode, useCallback, useMemo, useState } from "react";
+import { ChatPanel } from "@/clan/chat-panel";
 import { ToastProvider } from "@/ui/toast";
 import { PhoneTabs, PhoneTopBar, TopBar } from "./bars";
 import { CardSheet } from "./card-sheet";
@@ -9,11 +10,12 @@ import { CoffretDialog } from "./coffret-dialog";
 import styles from "./game-shell.module.css";
 import { MailPanel } from "./mail-panel";
 import { PlayerMenu } from "./player-menu";
+import { SanctionDialog } from "./sanction-dialog";
 import { SettingsPanel } from "./settings-panel";
 import { type Shell, ShellContext } from "./shell-context";
 import { usePlayerView } from "./use-player-view";
 
-type Overlay = "menu" | "settings" | "mail" | null;
+type Overlay = "menu" | "settings" | "mail" | "chat" | null;
 
 /**
  * The frame of every game screen: the top bar on the web, the phone band and tabs under 760 px
@@ -49,6 +51,7 @@ function Frame({ children }: { readonly children: ReactNode }) {
       openCoffret,
       openSettings: () => setOverlay("settings"),
       openMail: () => setOverlay("mail"),
+      openChat: () => setOverlay("chat"),
       openCard: (cardId) => {
         setOverlay(null);
         setCard(cardId);
@@ -68,6 +71,8 @@ function Frame({ children }: { readonly children: ReactNode }) {
       <PlayerMenu open={overlay === "menu"} onClose={close} />
       <SettingsPanel open={overlay === "settings"} onClose={close} />
       <MailPanel open={overlay === "mail"} onClose={close} />
+      <ChatPanel open={overlay === "chat"} onClose={close} />
+      <SanctionDialog now={view.now} />
       <CoffretDialog level={coffret} now={view.now} onClose={() => setCoffret(null)} />
       <CardSheet cardId={card} onClose={() => setCard(null)} />
     </ShellContext.Provider>

@@ -638,3 +638,29 @@
     justify-items: center;
   }
 }
+
+/* --- Moderation (lot 4) --------------------------------------------------------------------- */
+
+.panel + .panel {
+  margin-top: 16px;
+}
+
+.quote {
+  margin: 0;
+  padding: 8px 12px;
+  border-left: 3px solid var(--lx-color-outline);
+  font-style: italic;
+  overflow-wrap: anywhere;
+}
+
+.context {
+  margin: 0;
+  padding-left: 20px;
+  font-size: 13px;
+  color: var(--lx-color-text-muted);
+}
+
+.contextHit {
+  color: var(--lx-color-text);
+  font-weight: 700;
+}

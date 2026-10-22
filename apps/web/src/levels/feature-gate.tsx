@@ -37,6 +37,6 @@ export function FeatureGate({
     );
   }
   if (children !== undefined) return children;
-  const copy = feature === "trade" ? null : NOT_BUILT_COPY[feature];
+  const copy = feature === "jousts" ? NOT_BUILT_COPY.jousts : null;
   return copy === null ? null : <LockedScreen icon={icon} title={copy.title} text={copy.text} />;
 }

@@ -54,7 +54,7 @@ export function PlayFabs() {
         return;
       case "chat":
         if (fab.lock !== null) toast(lockedToast("join_clan", view.now));
-        else router.push("/clan");
+        else shell.openChat();
         return;
       case "daily":
         router.push("/defis");

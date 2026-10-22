@@ -1,0 +1,25 @@
+/* The shield of the maquette: straight top, rounded point; the rim scales with the size. */
+.emblem {
+  position: relative;
+  display: grid;
+  flex-shrink: 0;
+  place-items: center;
+  width: var(--size);
+  height: calc(var(--size) * 1.15);
+  border-radius: 14% 14% 50% 50% / 12% 12% 38% 38%;
+  background: var(--field);
+  color: var(--ink);
+  box-shadow:
+    0 0 0 calc(var(--size) * 0.045) #d9a233,
+    0 calc(var(--size) * 0.06) 0 calc(var(--size) * 0.045) #7a5410;
+}
+
+.ink {
+  position: absolute;
+  inset: 14% 12% 22%;
+  background: var(--ink);
+  mask-image: var(--ink-src);
+  mask-repeat: no-repeat;
+  mask-position: center;
+  mask-size: contain;
+}

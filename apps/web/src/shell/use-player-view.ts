@@ -3,6 +3,7 @@
 import type { Progress } from "@leximon/contract";
 import { playerTitle, waitingCoffrets } from "@leximon/view-model";
 import { useNow } from "@/lib/use-now";
+import { myClan } from "@/player/clan";
 import { incomingOffers } from "@/player/offers";
 import { account, levelRewards, profile, wallet } from "@/player/player";
 import { useShared } from "@/player/resource";
@@ -16,11 +17,13 @@ export function usePlayerView() {
   const who = useShared(account);
   const offers = useShared(incomingOffers);
   const me = useShared(profile);
+  const clan = useShared(myClan);
   const now = useNow(15_000);
   const claimed = rewards?.claimed ?? [];
   const coffrets =
     progress === null || rewards === null ? [] : waitingCoffrets(progress.level, claimed);
   const cardChoices = rewards?.cardChoices ?? [];
+  const claimable = clan?.claimable ?? [];
   return {
     progress,
     /** Levels claimed; `null` until read. */
@@ -37,7 +40,9 @@ export function usePlayerView() {
     /** The pseudo, else « Invité » or « Toi » before one is chosen. */
     name: me?.pseudo ?? (who?.kind === "guest" ? "Invité" : "Toi"),
     offers: offers ?? 0,
-    /** What waits in the mail: coffrets, cards to choose, offers received. */
-    mail: coffrets.length + cardChoices.length + (offers ?? 0),
+    /** Weekly goal boosters to take (P66). */
+    claimable,
+    /** What waits in the mail: coffrets, cards to choose, offers received, goal boosters. */
+    mail: coffrets.length + cardChoices.length + (offers ?? 0) + claimable.length,
   };
 }

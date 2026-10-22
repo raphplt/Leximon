@@ -45,6 +45,10 @@ const ICONS = {
   cle: `${circle(8, 16, 4.5)} M11.2 12.8 L20 4 M17 7 L20 10 M14.5 9.5 L17 12`,
   sound:
     "M4 9.5 H8 L13 5 V19 L8 14.5 H4Z M16.5 9 C17.8 10.5 17.8 13.5 16.5 15 M19 6.5 C21.5 9.5 21.5 14.5 19 17.5",
+  send: "M4 12 L20 4 L15 20 L11.5 13 Z M11.5 13 L20 4",
+  dots: "M5.5 12 H5.51 M12 12 H12.01 M18.5 12 H18.51",
+  crown: "M4 18 H20 M4 18 L3 7.5 L8.5 11.5 L12 5 L15.5 11.5 L21 7.5 L20 18",
+  block: `${circle(12, 12, 8.5)} M6 6 L18 18`,
 } as const;
 
 export type IconName = keyof typeof ICONS;

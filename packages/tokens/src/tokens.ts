@@ -243,3 +243,28 @@ export const motion = {
   cardReveal: 550,
   glow: 1200,
 } as const;
+
+/**
+ * Colours of a clan's emblem (P65, P66), by their key in the rules: the field, then the ink of the
+ * engraving. A key a newer server sends falls back on ink black.
+ */
+export const emblemColors = {
+  sang: "#8E1B2C",
+  or: "#D9A233",
+  indigo: "#3B3F9E",
+  "vert-de-gris": "#5E9C8A",
+  ocre: "#C67B2E",
+  prune: "#6B2F5B",
+  craie: "#F1EADB",
+  encre: "#1B1F33",
+  vermillon: "#E2431D",
+  turquoise: "#2FB8B0",
+  argent: "#C9CCD8",
+  safran: "#F2B829",
+} as const satisfies Record<string, string>;
+
+export function emblemColor(key: string): string {
+  return Object.hasOwn(emblemColors, key)
+    ? emblemColors[key as keyof typeof emblemColors]
+    : emblemColors.encre;
+}

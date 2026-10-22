@@ -130,7 +130,7 @@ function signInAsGuest(): Promise<void> {
 }
 
 /** Sends a request, signing in as a guest first if there is no session yet (D-006). */
-async function sendAsPlayer(path: string, init: RequestInit = {}): Promise<Response> {
+export async function sendAsPlayer(path: string, init: RequestInit = {}): Promise<Response> {
   const response = await send(path, init);
   if (response.status !== 401) return response;
   await signInAsGuest();
@@ -304,7 +304,7 @@ export async function fetchProfileIfSignedIn(): Promise<ProfileResponse | null> 
 }
 
 /** Reads `{ error }` when it is one of the refusals `schema` knows, else `null`. */
-async function refusal<T>(response: Response, schema: z.ZodType<T>): Promise<T | null> {
+export async function refusal<T>(response: Response, schema: z.ZodType<T>): Promise<T | null> {
   const body = errorResponseSchema.safeParse(await response.json().catch(() => null));
   const reason = schema.safeParse(body.success ? body.data.error : null);
   return reason.success ? reason.data : null;

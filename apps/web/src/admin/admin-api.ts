@@ -8,12 +8,14 @@ import {
   type AdminCampaignSummary,
   type AdminCardStats,
   type AdminCatalog,
+  type AdminContestsResponse,
   type AdminGrantBonusResponse,
   type AdminMe,
   type AdminOverview,
   type AdminPlayerDetail,
   type AdminPlayerKind,
   type AdminPlayersResponse,
+  type AdminReportsResponse,
   type AdminTradesResponse,
   type AdminWaitlistResponse,
   adminActionsResponseSchema,
@@ -24,13 +26,16 @@ import {
   adminCampaignsResponseSchema,
   adminCardStatsSchema,
   adminCatalogSchema,
+  adminContestsResponseSchema,
   adminGrantBonusResponseSchema,
   adminMeSchema,
   adminOverviewSchema,
   adminPlayerDetailSchema,
   adminPlayersResponseSchema,
+  adminReportsResponseSchema,
   adminTradesResponseSchema,
   adminWaitlistResponseSchema,
+  type CreateSanctionRequest,
   errorResponseSchema,
   IDEMPOTENCY_KEY_HEADER,
   type TradeStatus,
@@ -301,7 +306,43 @@ export function adminErrorMessage(error: unknown): string {
       return "L'envoi d'e-mails n'est pas configuré sur ce serveur.";
     case "send_failed":
       return "Le fournisseur a refusé l'envoi.";
+    case "report_not_found":
+      return "Signalement introuvable.";
+    case "sanction_not_found":
+      return "Sanction introuvable.";
+    case "duration_required":
+      return "Cette sanction demande une durée.";
+    case "duration_not_allowed":
+      return "Cette sanction ne prend pas de durée, ou une durée trop longue (un an au plus).";
+    case "target_required":
+      return "Le message ou le clan visé n'existe plus.";
+    case "already_resolved":
+      return "Déjà traité.";
+    case "admin_target":
+      return "Un admin ne se sanctionne pas.";
     default:
       return "Une erreur est survenue. Réessaie.";
   }
+}
+
+export const fetchReports = (): Promise<AdminReportsResponse> =>
+  getJson("/admin/reports", adminReportsResponseSchema);
+
+export async function dismissReport(id: string): Promise<void> {
+  await postJson(`/admin/reports/${encodeURIComponent(id)}/dismiss`, {});
+}
+
+/** The caller keeps `idempotencyKey` until it gets an answer: a retry sanctions once. */
+export async function createSanction(
+  request: CreateSanctionRequest,
+  idempotencyKey: string,
+): Promise<void> {
+  await postJson("/admin/sanctions", request, { [IDEMPOTENCY_KEY_HEADER]: idempotencyKey });
+}
+
+export const fetchContests = (): Promise<AdminContestsResponse> =>
+  getJson("/admin/contests", adminContestsResponseSchema);
+
+export async function resolveContest(id: string, outcome: "upheld" | "revoked"): Promise<void> {
+  await postJson(`/admin/sanctions/${encodeURIComponent(id)}/contest`, { outcome });
 }

@@ -1,7 +1,8 @@
 "use client";
 
-import { coffretsLabel, plural } from "@leximon/view-model";
+import { claimableMailTitle, coffretsLabel, plural, tierName } from "@leximon/view-model";
 import Link from "next/link";
+import { useClaim } from "@/clan/claim";
 import { Dialog } from "@/ui/dialog";
 import { Icon, type IconName } from "@/ui/icon";
 import styles from "./panels.module.css";
@@ -29,6 +30,7 @@ export function MailPanel({
 }) {
   const view = usePlayerView();
   const { openCoffret } = useShell();
+  const claim = useClaim();
   const letters: Letter[] = [];
   if (view.coffrets.length > 0) {
     letters.push({
@@ -44,6 +46,16 @@ export function MailPanel({
       title: "Une carte au choix t'attend",
       detail: "Une Courante ou Peu courante qui te manque",
       href: "/niveaux/carte",
+    });
+  }
+  if (view.claimable.length > 0) {
+    letters.push({
+      icon: "clan",
+      title: claimableMailTitle(view.claimable.length),
+      detail: `Objectif de clan · ${view.claimable.map((c) => tierName(c.tier)).join(", ")}`,
+      action: () => {
+        for (const goal of view.claimable) void claim(goal);
+      },
     });
   }
   if (view.offers > 0) {

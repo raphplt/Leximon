@@ -1,0 +1,899 @@
+/* Clan (K-01 to K-13), maquette v1. */
+
+.screen {
+  box-sizing: border-box;
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 26px 32px 64px;
+}
+
+.title {
+  margin: 0;
+  font-size: 44px;
+  line-height: 1;
+}
+
+.hint {
+  margin: 0 0 16px;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.warning {
+  margin: 0 0 14px;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--lx-color-accent);
+}
+
+.small {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.4;
+  color: var(--lx-color-text-muted);
+}
+
+.faint {
+  margin: 0;
+  font-size: 12px;
+  color: #8d88a3;
+}
+
+.emptyThread {
+  margin: 12px 0;
+  font-family: var(--font-text), Georgia, serif;
+  font-size: 17px;
+  color: var(--lx-color-text-muted);
+}
+
+.visuallyHidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.danger {
+  color: #ff9c80;
+}
+
+/* --- Header (K-01) --- */
+
+.hero {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+  margin-bottom: 16px;
+  padding: 22px 24px;
+  background: linear-gradient(120deg, rgba(94, 33, 48, 0.85), rgba(52, 59, 92, 0.8));
+}
+
+.heroText {
+  flex: 1;
+  min-width: 0;
+}
+
+.heroKicker {
+  color: #f2c9a8;
+}
+
+.heroName {
+  margin: 2px 0 4px;
+  font-size: 38px;
+  line-height: 1;
+  overflow-wrap: break-word;
+}
+
+.heroLine {
+  margin: 0;
+  font-size: 14px;
+  color: #e9e3f5;
+}
+
+.heroActions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* --- Tabs: a phone shows one part at a time --- */
+
+.clanTabs {
+  display: none;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 4px;
+  margin-bottom: 14px;
+  padding: 4px;
+  border-radius: var(--lx-radius-pill);
+  background: var(--lx-color-sunken);
+}
+
+.clanTab {
+  appearance: none;
+  min-height: 40px;
+  border: 0;
+  border-radius: var(--lx-radius-pill);
+  background: none;
+  color: var(--lx-color-text-muted);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.clanTab[aria-selected="true"] {
+  background: var(--lx-color-text);
+  color: var(--lx-color-background);
+}
+
+.columns {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 16px;
+  align-items: start;
+}
+
+.column {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.card {
+  padding: 20px;
+}
+
+.cardHead {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 10px;
+}
+
+.cardTitle {
+  margin: 4px 0 0;
+  font-size: 22px;
+}
+
+/* --- Weekly goal (K-03) --- */
+
+.goalBar {
+  position: relative;
+  margin: 26px 6px 10px;
+}
+
+.goalTrack {
+  height: 18px;
+}
+
+.goalFill {
+  background:
+    repeating-linear-gradient(115deg, rgba(255, 255, 255, 0.16) 0 8px, transparent 8px 16px),
+    linear-gradient(#5fe0b6, #1f9e7a);
+}
+
+.tier {
+  position: absolute;
+  top: 50%;
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  background: var(--lx-color-well);
+  color: var(--lx-color-text-muted);
+  box-shadow: 0 0 0 3px var(--lx-color-panel);
+}
+
+.tier[data-tier="bronze"][data-reached="true"] {
+  background: #c07a3e;
+  color: #fff;
+}
+
+.tier[data-tier="silver"][data-reached="true"] {
+  background: #c9ccd8;
+  color: #262b40;
+}
+
+.tier[data-tier="gold"] {
+  color: var(--lx-color-accent);
+  box-shadow:
+    0 0 0 3px var(--lx-color-panel),
+    inset 0 0 0 2px var(--lx-color-accent);
+}
+
+.tier[data-tier="gold"][data-reached="true"] {
+  background: var(--lx-color-accent);
+  color: var(--lx-color-accent-ink);
+}
+
+.goalFoot {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  font-size: 13px;
+  color: var(--lx-color-text-muted);
+}
+
+.goalHint {
+  margin: 10px 0 0;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--lx-color-accent);
+}
+
+.claims {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+/* --- Library (K-04) --- */
+
+.libraryLine {
+  margin: 6px 0 14px;
+  font-family: var(--font-text), Georgia, serif;
+  font-size: 17px;
+}
+
+.libraryRow {
+  margin-bottom: 12px;
+}
+
+.libraryHead {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 6px;
+  font-size: 14px;
+}
+
+.libraryName {
+  font-weight: 800;
+}
+
+.figures {
+  color: var(--lx-color-text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.libraryTrack {
+  position: relative;
+  height: 10px;
+  border-radius: var(--lx-radius-pill);
+  background: var(--lx-color-well);
+  overflow: hidden;
+}
+
+.libraryClan,
+.libraryMine {
+  position: absolute;
+  inset: 0 auto 0 0;
+  background: var(--tone);
+}
+
+.libraryClan {
+  opacity: 0.55;
+}
+
+/* --- Members (K-05) --- */
+
+.members {
+  margin: 10px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.member {
+  appearance: none;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 8px;
+  border: 0;
+  border-radius: 12px;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.member:hover {
+  background: rgba(246, 240, 226, 0.05);
+}
+
+.memberAvatar {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.online {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background: #2fc79b;
+  box-shadow: 0 0 0 2px var(--lx-color-panel);
+}
+
+.memberText {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.memberName {
+  font-weight: 800;
+  overflow-wrap: anywhere;
+}
+
+.role {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 9px;
+  border-radius: var(--lx-radius-pill);
+  background: #5a6182;
+  color: var(--lx-color-text);
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.role[data-role="chief"] {
+  background: var(--lx-color-accent);
+  color: var(--lx-color-accent-ink);
+}
+
+.memberWords {
+  width: 64px;
+  font-size: 12px;
+  text-align: right;
+  color: var(--lx-color-text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+/* --- Discussion and journal (K-06, K-07) --- */
+
+.chat {
+  display: flex;
+  flex-direction: column;
+  height: 760px;
+  max-height: calc(100dvh - 140px);
+  overflow: hidden;
+}
+
+.chatCompact {
+  display: flex;
+  flex-direction: column;
+  height: min(640px, calc(100dvh - 160px));
+}
+
+.chatHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 18px;
+  border-bottom: 1px solid rgba(246, 240, 226, 0.08);
+}
+
+.chatTitle {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 800;
+}
+
+.thread {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px 16px;
+  overflow-y: auto;
+}
+
+.older {
+  align-self: center;
+  appearance: none;
+  border: 0;
+  background: none;
+  color: var(--lx-color-text-muted);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.event {
+  align-self: center;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  max-width: 92%;
+  margin: 0;
+  padding: 7px 14px;
+  border-radius: var(--lx-radius-pill);
+  background: rgba(217, 180, 134, 0.14);
+  color: #f2ddbf;
+  font-size: 13px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.row,
+.rowMine {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+.rowMine {
+  flex-direction: row-reverse;
+}
+
+.bubbleWrap {
+  max-width: 78%;
+  min-width: 0;
+}
+
+.who {
+  margin: 0 6px 3px;
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--lx-color-text-muted);
+}
+
+.rowMine .who {
+  text-align: right;
+}
+
+.bubble,
+.bubbleMine,
+.bubbleRemoved {
+  margin: 0;
+  padding: 9px 13px;
+  border-radius: 16px;
+  font-size: 14px;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+
+.bubble {
+  border-bottom-left-radius: 4px;
+  background: #262b40;
+}
+
+.bubbleMine {
+  border-bottom-right-radius: 4px;
+  background: var(--lx-color-accent);
+  color: var(--lx-color-accent-ink);
+}
+
+.bubbleRemoved {
+  border: 1px dashed rgba(246, 240, 226, 0.2);
+  color: var(--lx-color-text-muted);
+  font-style: italic;
+}
+
+.menuWrap {
+  position: relative;
+}
+
+.dots {
+  appearance: none;
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border: 0;
+  border-radius: 50%;
+  background: none;
+  color: #8d88a3;
+  cursor: pointer;
+}
+
+.dots:hover {
+  background: rgba(246, 240, 226, 0.08);
+}
+
+.menu,
+.menuLeft {
+  position: absolute;
+  bottom: 34px;
+  z-index: 5;
+  min-width: 180px;
+  padding: 6px;
+  border-radius: 14px;
+  background: var(--lx-color-sunken);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+}
+
+.menu {
+  right: 0;
+}
+
+.menuLeft {
+  left: 0;
+}
+
+.menuItem,
+.menuItemDanger {
+  appearance: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 10px;
+  border: 0;
+  border-radius: 10px;
+  background: none;
+  color: var(--lx-color-text);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  text-align: left;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.menuItemDanger {
+  color: #ff9c80;
+}
+
+.menuItem:hover,
+.menuItemDanger:hover {
+  background: rgba(246, 240, 226, 0.06);
+}
+
+.compose {
+  padding: 12px 14px;
+  border-top: 1px solid rgba(246, 240, 226, 0.08);
+}
+
+.composeError {
+  margin: 0 0 8px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #ff9c80;
+}
+
+.composeRow {
+  display: flex;
+  gap: 8px;
+}
+
+.composeField {
+  flex: 1;
+}
+
+.sendButton {
+  appearance: none;
+  display: grid;
+  flex-shrink: 0;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  border: 0;
+  border-radius: 50%;
+  background: var(--lx-color-accent);
+  color: var(--lx-color-accent-ink);
+  cursor: pointer;
+}
+
+.sendButton:disabled {
+  background: var(--lx-color-track);
+  color: var(--lx-color-text-muted);
+  cursor: default;
+}
+
+/* --- Without a clan (K-08, K-09, K-12) --- */
+
+.findHeader {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.findGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 320px;
+  gap: 16px;
+  align-items: start;
+}
+
+.search {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+  padding: 0 18px;
+  border: 2px solid var(--lx-color-outline);
+  border-radius: var(--lx-radius-pill);
+  background: var(--lx-color-background);
+  color: var(--lx-color-text-muted);
+}
+
+.search:focus-within {
+  border-color: var(--lx-color-focus);
+}
+
+.searchInput {
+  flex: 1;
+  min-height: 48px;
+  border: 0;
+  outline: none;
+  background: none;
+  color: var(--lx-color-text);
+  font: inherit;
+  font-size: 17px;
+}
+
+.clanList {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 0 0 12px;
+  padding: 0;
+  list-style: none;
+}
+
+.clanRow {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 14px 16px;
+}
+
+.clanRowText {
+  flex: 1;
+  min-width: 0;
+}
+
+.clanRowName {
+  margin: 0 0 2px;
+  font-size: 17px;
+  font-weight: 800;
+  overflow-wrap: anywhere;
+}
+
+.codePanel {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 20px;
+}
+
+.codeForm {
+  display: flex;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+/* --- Clan form (K-09, K-10) --- */
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.formPreview {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 6px 4px 8px;
+}
+
+.previewName {
+  margin: 0;
+  font-size: 22px;
+  overflow-wrap: anywhere;
+}
+
+.formField {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.formLabel {
+  padding: 0;
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--lx-color-text-muted);
+}
+
+.fieldset {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.engravings {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+  gap: 8px;
+}
+
+.engravingChoice {
+  appearance: none;
+  display: grid;
+  place-items: center;
+  min-height: 72px;
+  border: 2px solid transparent;
+  border-radius: 14px;
+  background: var(--lx-color-sunken);
+  cursor: pointer;
+}
+
+.engravingChoice[aria-pressed="true"] {
+  border-color: var(--lx-color-accent);
+}
+
+.swatches {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.swatch {
+  appearance: none;
+  width: 36px;
+  height: 36px;
+  border: 2px solid rgba(246, 240, 226, 0.25);
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.swatch[aria-pressed="true"] {
+  box-shadow:
+    0 0 0 3px var(--lx-color-panel),
+    0 0 0 5px var(--lx-color-accent);
+}
+
+.formError {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 700;
+  color: #ff9c80;
+}
+
+/* --- Management (K-10, K-11) --- */
+
+.sheet,
+.settings {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.sheetHead {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 6px;
+}
+
+.sheetRole {
+  margin: 4px 0 0;
+  font-weight: 800;
+  color: var(--lx-color-accent);
+}
+
+.sheetGroup {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(246, 240, 226, 0.06);
+}
+
+.inviteCode {
+  margin: 0;
+  font-size: 26px;
+  letter-spacing: 0.08em;
+}
+
+.requests {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.request {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+@media (max-width: 759px) {
+  .screen {
+    padding: 16px 16px 48px;
+  }
+
+  .title {
+    font-size: 32px;
+  }
+
+  .hero {
+    gap: 14px;
+    padding: 16px;
+  }
+
+  .heroName {
+    font-size: 26px;
+  }
+
+  .hero {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .heroActions {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+
+  .clanTabs {
+    display: grid;
+  }
+
+  .columns,
+  .findGrid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .column {
+    display: contents;
+  }
+
+  .screen[data-tab="discussion"] .onClan,
+  .screen[data-tab="discussion"] .onMembers,
+  .screen[data-tab="clan"] .onMembers,
+  .screen[data-tab="clan"] .onDiscussion,
+  .screen[data-tab="members"] .onClan,
+  .screen[data-tab="members"] .onDiscussion {
+    display: none;
+  }
+
+  .chat {
+    height: calc(100dvh - 300px);
+    min-height: 420px;
+  }
+}
+
+.entryFilter {
+  margin-bottom: 14px;
+}
+
+.cardHead > span {
+  white-space: nowrap;
+}

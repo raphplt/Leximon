@@ -1,4 +1,4 @@
-import { RARITY_LABELS } from "@leximon/contract";
+import { RARITY_LABELS, type SanctionKind } from "@leximon/contract";
 import { RARITIES, type Rarity } from "@leximon/core";
 
 const DATE_TIME = new Intl.DateTimeFormat("fr-FR", {
@@ -37,6 +37,20 @@ export const ACTION_LABELS: Readonly<Record<string, string>> = {
   resume_campaign: "Campagne reprise",
   cancel_campaign: "Campagne annulée",
   erase_waitlist: "Liste d'attente effacée",
+  dismiss_report: "Signalement classé",
+  sanction: "Sanction",
+  resolve_contest: "Contestation tranchée",
+};
+
+/** What the team does, as the sanction form and the contests name it. */
+export const SANCTION_LABELS: Readonly<Record<SanctionKind, string>> = {
+  hide_message: "Masquer le message",
+  reset_pseudo: "Retirer le pseudo",
+  reset_clan_name: "Retirer le nom du clan",
+  mute: "Rendre muet",
+  trade_ban: "Interdire les échanges",
+  suspend: "Suspendre le compte",
+  close: "Fermer le compte",
 };
 
 /** A short readable summary of an action's details. */

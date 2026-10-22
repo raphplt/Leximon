@@ -8,6 +8,8 @@ export interface Shell {
   openCoffret(level?: number): void;
   openSettings(): void;
   openMail(): void;
+  /** The clan's discussion in a panel (K-13). */
+  openChat(): void;
   /** The sheet of a card (A-07), from any screen that shows one. */
   openCard(cardId: string): void;
 }
@@ -16,6 +18,7 @@ export const ShellContext = createContext<Shell>({
   openCoffret: () => undefined,
   openSettings: () => undefined,
   openMail: () => undefined,
+  openChat: () => undefined,
   openCard: () => undefined,
 });
 
