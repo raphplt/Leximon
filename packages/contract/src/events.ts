@@ -10,6 +10,8 @@ export const gameEventSchema = z.discriminatedUnion("type", [
    * Legendaries) move.
    */
   z.object({ type: z.literal("cards_obtained"), userId: z.string().min(1) }),
+  /** A player answered a challenge right: their clan's weekly goal and level move. */
+  z.object({ type: z.literal("answer_given"), userId: z.string().min(1) }),
   /** Members came or went: the library is recounted. */
   z.object({ type: z.literal("clan_changed"), clanId: z.uuid() }),
   /** An offer was made or answered: the mail of the player who waits for it gets a letter. */

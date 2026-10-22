@@ -51,6 +51,7 @@ export async function handleGameEvents(
   now: EpochMs,
 ): Promise<GameEventsReport> {
   const userIds = new Set<string>();
+  const answerIds = new Set<string>();
   const clanIds = new Set<string>();
   const tradeIds = new Set<string>();
   const messageIds = new Set<number>();
@@ -65,10 +66,12 @@ export async function handleGameEvents(
     }
     switch (event.data.type) {
       case "cards_obtained":
+      case "answer_given":
       case "clan_changed":
         if (event.data.type === "cards_obtained") userIds.add(event.data.userId);
+        else if (event.data.type === "answer_given") answerIds.add(event.data.userId);
         else clanIds.add(event.data.clanId);
-        // Cards obtained on Sunday night and counted on Monday still count for their week.
+        // An answer given on Sunday night and counted on Monday still counts for its week.
         weeks.add(gameWeekOf(sentAt[index] ?? now).key);
         break;
       case "trade_changed":
@@ -90,15 +93,21 @@ export async function handleGameEvents(
   await writeRequestLetters(db, [...requests.values()]);
 
   const memberships = await clansOf(db, [...userIds]);
-  for (const membership of memberships.values()) clanIds.add(membership.clanId);
+  const libraries = new Set(clanIds);
+  for (const membership of memberships.values()) libraries.add(membership.clanId);
   for (const [userId, membership] of memberships) {
     await announceLegendaries(db, { userId, ...membership, now });
   }
-  for (const clanId of clanIds) {
-    for (const week of weeks) await recountClanWeek(db, clanId, week, now);
-    await recountLibrary(db, clanId, now);
+  const goals = new Set(clanIds);
+  for (const membership of (await clansOf(db, [...answerIds])).values()) {
+    goals.add(membership.clanId);
   }
-  return { clans: clanIds.size, invalid };
+  // The goal counts answers only: new cards move the library and the journal, not the goal.
+  for (const clanId of goals) {
+    for (const week of weeks) await recountClanWeek(db, clanId, week, now);
+  }
+  for (const clanId of libraries) await recountLibrary(db, clanId, now);
+  return { clans: new Set([...goals, ...libraries]).size, invalid };
 }
 
 /**

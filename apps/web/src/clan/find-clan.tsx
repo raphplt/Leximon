@@ -32,6 +32,7 @@ import {
   joinClan,
   withdrawRequest,
 } from "./api";
+import { Banner } from "./banner";
 import { refusalText } from "./chat";
 import styles from "./clan.module.css";
 import { ClanForm } from "./clan-form";
@@ -215,7 +216,8 @@ export function FindClan({
                 const requested = mine.requests.includes(clan.id);
                 return (
                   <li key={clan.id} className={`${ui.panel} ${styles.clanRow}`}>
-                    <Emblem emblem={clan.emblem} size={44} />
+                    <Banner cardId={clan.banner} />
+                    <Emblem emblem={clan.emblem} size={44} level={clan.level} />
                     <div className={styles.clanRowText}>
                       <p className={styles.clanRowName}>{clan.name}</p>
                       <p className={styles.small}>{clanSubline(clan)}</p>

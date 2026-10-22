@@ -9,7 +9,14 @@ import {
   clanViewSchema,
   myClanResponseSchema,
 } from "@leximon/contract";
-import { BONUS_SCHEDULE, gameWeekOf, pseudoKey, xpToReach } from "@leximon/core";
+import {
+  BONUS_SCHEDULE,
+  CLAN_LEVEL,
+  clanXpToReach,
+  gameWeekOf,
+  pseudoKey,
+  xpToReach,
+} from "@leximon/core";
 import { createDb, schema } from "@leximon/db";
 import { testDatabaseUrl } from "@leximon/db/testing";
 import { and, eq, sql } from "drizzle-orm";
@@ -135,6 +142,25 @@ async function giveNewCards(userId: string, cardIds: readonly string[], at = new
       })),
     )
     .onConflictDoNothing();
+}
+
+/** Correct challenge answers the player gave at `at`, on one card. */
+async function giveAnswers(userId: string, count: number, at = new Date(), correct = true) {
+  const [card] = await cardIds();
+  if (card === undefined || count === 0) return;
+  await db.insert(schema.reviewLogs).values(
+    Array.from({ length: count }, () => ({
+      id: crypto.randomUUID(),
+      userId,
+      cardId: card,
+      challengeId: crypto.randomUUID(),
+      format: "definition" as const,
+      correct,
+      rating: correct ? 3 : 1,
+      levelAfter: "sketch" as const,
+      reviewedAt: at,
+    })),
+  );
 }
 
 /** Every test card id, 3 per rarity and collection. */
@@ -508,47 +534,59 @@ describe("the discussion", () => {
 });
 
 describe("the weekly goal", () => {
-  it("counts the members' new words, reaches the tiers once and unlocks the emblem", async () => {
+  it("counts the members' correct answers, reaches the tiers once and raises the clan's level", async () => {
     const chief = await player();
     const clanId = await createClan(chief);
     const member = await player(10);
+    const idle = await player(10);
+    await send(idle, "POST", `/clans/${clanId}/join`);
     await send(member, "POST", `/clans/${clanId}/join`);
-    // The week starts with one active member: targets 5, 10 and 15.
-    await view(chief, clanId);
-    const ids = await cardIds();
-    await giveNewCards(chief.userId, ids.slice(0, 12));
-    await giveNewCards(member.userId, ids.slice(12, 15));
-    // Found before joining: not the clan's.
-    await giveNewCards(member.userId, ids.slice(20, 30), new Date(Date.now() - DAY * 10));
+    // The week starts with no active member, so with one: targets 15, 30 and 50.
+    const before = await view(chief, clanId);
+    expect(before.goal?.targets).toEqual({ bronze: 15, silver: 30, gold: 50, illuminated: null });
+    expect(before.progress).toMatchObject({ level: 1, xpIntoLevel: 0 });
+    await giveAnswers(chief.userId, 120);
+    await giveAnswers(member.userId, 60);
+    await giveAnswers(idle.userId, 5);
+    // Wrong answers, and answers given before joining, are not the clan's.
+    await giveAnswers(member.userId, 30, new Date(), false);
+    await giveAnswers(member.userId, 30, new Date(Date.now() - DAY * 10));
 
     const bodies = [
-      { type: "cards_obtained", userId: chief.userId },
-      { type: "cards_obtained", userId: member.userId },
+      { type: "answer_given", userId: chief.userId },
+      { type: "answer_given", userId: member.userId },
     ];
     for (let i = 0; i < 2; i++) {
       await handleGameEvents(db, bodies, [Date.now(), Date.now()], Date.now());
     }
 
     const page = await view(chief, clanId);
-    expect(page.goal).toMatchObject({ words: 15, tier: "gold", myWords: 12 });
+    expect(page.goal).toMatchObject({ answers: 185, tier: "gold", myAnswers: 120 });
+    // The chief counts for 100 at most: 100 + 60 + 5, then 50 + 100 + 200 for the tiers.
+    expect(page.clan.level).toBe(2);
+    expect(page.progress).toMatchObject({ level: 2, xpIntoLevel: 515 - 500 });
     expect(page.emblemChoices.colors).toContain("vermillon");
-    const tiers = await db
-      .select({ key: clanMessages.eventKey })
-      .from(clanMessages)
-      .where(and(eq(clanMessages.clanId, clanId), sql`${clanMessages.eventKey} like 'tier:%'`));
-    expect(tiers).toHaveLength(3);
-    const legendaries = await db
+    // Members come by their share of the week, not by arrival.
+    expect(page.members.map((m) => m.weekAnswers)).toEqual([120, 60, 5]);
+    const summary = myClanResponseSchema.parse(await (await request(member, "/me/clan")).json());
+    expect(summary.goal).toEqual({ targets: before.goal?.targets, answers: 185 });
+    const journal = await db
       .select({ key: clanMessages.eventKey })
       .from(clanMessages)
       .where(
-        and(eq(clanMessages.clanId, clanId), sql`${clanMessages.eventKey} like 'legendary:%'`),
+        and(
+          eq(clanMessages.clanId, clanId),
+          sql`(${clanMessages.eventKey} like 'tier:%' or ${clanMessages.eventKey} like 'level:%')`,
+        ),
       );
-    expect(legendaries.length).toBe(
-      ids.slice(0, 15).filter((id) => id.includes("legendary")).length,
-    );
-    expect(page.library.reduce((sum, row) => sum + row.owned, 0)).toBe(15 + 10);
+    expect(journal.map((row) => row.key?.split(":")[0]).sort()).toEqual([
+      "level",
+      "tier",
+      "tier",
+      "tier",
+    ]);
 
-    // Silver and gold give a booster each; the member brought 3 words, short of 5.
+    // Silver and gold give a booster each; the idle member gave 5 answers, short of 15.
     const week = gameWeekOf(Date.now()).key;
     expect(page.goal?.claimable.map((c) => c.tier)).toEqual(["silver", "gold"]);
     const claims = await Promise.all([
@@ -563,21 +601,62 @@ describe("the weekly goal", () => {
     expect(
       await errorOf(await send(chief, "POST", "/me/clan/claims", { week, tier: "bronze" })),
     ).toBe("goal_not_reached");
-    expect(
-      await errorOf(await send(member, "POST", "/me/clan/claims", { week, tier: "gold" })),
-    ).toBe("goal_not_reached");
+    expect(await errorOf(await send(idle, "POST", "/me/clan/claims", { week, tier: "gold" }))).toBe(
+      "goal_not_reached",
+    );
     const mine = myClanResponseSchema.parse(await (await request(chief, "/me/clan")).json());
     expect(mine.claimable).toEqual([]);
+  });
+
+  it("recounts once when two members' answers arrive together", async () => {
+    const chief = await player();
+    const clanId = await createClan(chief);
+    const member = await player(10);
+    await send(member, "POST", `/clans/${clanId}/join`);
+    await view(chief, clanId);
+    await giveAnswers(chief.userId, 100);
+    await giveAnswers(member.userId, 100);
+    await Promise.all(
+      [chief, member, chief, member].map((who) =>
+        handleGameEvents(
+          db,
+          [{ type: "answer_given", userId: who.userId }],
+          [Date.now()],
+          Date.now(),
+        ),
+      ),
+    );
+    const page = await view(chief, clanId);
+    expect(page.goal?.answers).toBe(200);
+    // 200 answers, then 350 for the three tiers: level 2, entered in the journal once.
+    expect(page.progress).toMatchObject({ level: 2, xpIntoLevel: 50 });
+    const levels = await db
+      .select({ key: clanMessages.eventKey })
+      .from(clanMessages)
+      .where(and(eq(clanMessages.clanId, clanId), sql`${clanMessages.eventKey} like 'level:%'`));
+    expect(levels).toHaveLength(1);
+  });
+
+  it("opens the fourth tier for a clan whose level reached it when the week started", async () => {
+    const chief = await player();
+    const clanId = await createClan(chief);
+    await db
+      .update(clans)
+      .set({ xp: clanXpToReach(CLAN_LEVEL, CLAN_LEVEL.illuminatedLevel) })
+      .where(eq(clans.id, clanId));
+    const page = await view(chief, clanId);
+    expect(page.goal?.targets.illuminated).toBe(60);
+    expect(page.clan.level).toBe(CLAN_LEVEL.illuminatedLevel);
   });
 
   it("refuses a claim the reserve cannot hold, and keeps it for later", async () => {
     const chief = await player();
     const clanId = await createClan(chief);
     await view(chief, clanId);
-    await giveNewCards(chief.userId, (await cardIds()).slice(0, 10));
+    await giveAnswers(chief.userId, 30);
     await handleGameEvents(
       db,
-      [{ type: "cards_obtained", userId: chief.userId }],
+      [{ type: "answer_given", userId: chief.userId }],
       [Date.now()],
       Date.now(),
     );
@@ -602,6 +681,31 @@ describe("the weekly goal", () => {
     ).toBe("reserve_full");
     const mine = myClanResponseSchema.parse(await (await request(chief, "/me/clan")).json());
     expect(mine.claimable.map((c) => c.tier)).toEqual(["silver"]);
+  });
+
+  it("announces new Legendaries and recounts the library from new cards", async () => {
+    const chief = await player();
+    const clanId = await createClan(chief);
+    const ids = await cardIds();
+    await giveNewCards(chief.userId, ids.slice(0, 15));
+    await handleGameEvents(
+      db,
+      [{ type: "cards_obtained", userId: chief.userId }],
+      [Date.now()],
+      Date.now(),
+    );
+    const page = await view(chief, clanId);
+    expect(page.goal?.answers).toBe(0);
+    expect(page.library.reduce((sum, row) => sum + row.owned, 0)).toBe(15);
+    const legendaries = await db
+      .select({ key: clanMessages.eventKey })
+      .from(clanMessages)
+      .where(
+        and(eq(clanMessages.clanId, clanId), sql`${clanMessages.eventKey} like 'legendary:%'`),
+      );
+    expect(legendaries.length).toBe(
+      ids.slice(0, 15).filter((id) => id.includes("legendary")).length,
+    );
   });
 });
 

@@ -1,27 +1,26 @@
 /**
- * The clan's weekly goal: new words found together, three tiers. The week is the game week
- * in Paris (`gameWeekOf`); the server counts the words and stores what was claimed.
+ * The clan's weekly goal: correct challenge answers given together, up to four tiers. The week is
+ * the game week in Paris (`gameWeekOf`); the server counts the answers and stores what was claimed.
  */
 
 import { gameWeekOf } from "../bonus/bonus";
 import type { EpochMs } from "../booster/refill";
+import type { ClanXpRules } from "./level";
 
-export const GOAL_TIERS = ["bronze", "silver", "gold"] as const;
+export const GOAL_TIERS = ["bronze", "silver", "gold", "illuminated"] as const;
 export type GoalTier = (typeof GOAL_TIERS)[number];
 
-export interface ClanGoalRules {
+export interface ClanGoalRules extends ClanXpRules {
   /** Period start; the rules in force when the week starts apply to the whole week. */
   readonly startsAt: EpochMs;
-  /** New words per active member for each tier. */
-  readonly wordsPerActiveMember: Readonly<Record<GoalTier, number>>;
-  /** A member who opened a booster within this time before the week counts as active. */
+  /** Correct answers per active member for each tier. */
+  readonly answersPerActiveMember: Readonly<Record<GoalTier, number>>;
+  /** A member who opened a booster or answered a challenge within this time before the week is active. */
   readonly activeWindowMs: number;
-  /** Words a member must bring to share the tier rewards. */
+  /** Correct answers a member must give to share the tier rewards. */
   readonly minContribution: number;
   /** Bonus boosters each contributor may claim per tier. */
   readonly bonusBoosters: Readonly<Record<GoalTier, number>>;
-  /** Tiers that unlock one more emblem item for the clan. */
-  readonly emblemTiers: readonly GoalTier[];
 }
 
 export type ClanGoalSchedule = readonly [ClanGoalRules, ...ClanGoalRules[]];
@@ -35,31 +34,58 @@ export function clanGoalRulesAt(schedule: ClanGoalSchedule, time: EpochMs): Clan
   return active;
 }
 
-export type GoalTargets = Readonly<Record<GoalTier, number>>;
-
-/** The week's targets, fixed when the week starts from the members active then (at least one). */
-export function goalTargets(rules: ClanGoalRules, activeMembers: number): GoalTargets {
-  const members = Math.max(1, Math.floor(activeMembers));
-  return {
-    bronze: rules.wordsPerActiveMember.bronze * members,
-    silver: rules.wordsPerActiveMember.silver * members,
-    gold: rules.wordsPerActiveMember.gold * members,
-  };
-}
-
-/** Every tier the clan's words reach, lowest first. */
-export function tiersReached(targets: GoalTargets, words: number): readonly GoalTier[] {
-  return GOAL_TIERS.filter((tier) => words >= targets[tier]);
-}
-
-/** The highest tier reached, `null` before bronze. */
-export function highestTier(targets: GoalTargets, words: number): GoalTier | null {
-  return tiersReached(targets, words).at(-1) ?? null;
+/** The week's targets; `illuminated` is `null` when the clan's level did not open it. */
+export interface GoalTargets {
+  readonly bronze: number;
+  readonly silver: number;
+  readonly gold: number;
+  readonly illuminated: number | null;
 }
 
 /**
- * Tiers a member may claim boosters for: reached by the clan, with a reward, and the member brought
- * enough words. What they already claimed is the server's to subtract.
+ * The week's targets, fixed when the week starts from the members active then (at least one),
+ * with the fourth tier only if the clan's level opened it by then.
+ */
+export function goalTargets(
+  rules: ClanGoalRules,
+  activeMembers: number,
+  illuminated: boolean,
+): GoalTargets {
+  const members = Math.max(1, Math.floor(activeMembers));
+  const per = rules.answersPerActiveMember;
+  return {
+    bronze: per.bronze * members,
+    silver: per.silver * members,
+    gold: per.gold * members,
+    illuminated: illuminated ? per.illuminated * members : null,
+  };
+}
+
+/** The tiers of a week, lowest first: the fourth only when it is open. */
+export function goalTiers(targets: GoalTargets): readonly GoalTier[] {
+  return GOAL_TIERS.filter((tier) => targets[tier] !== null);
+}
+
+/** Every tier the clan's answers reach, lowest first. */
+export function tiersReached(targets: GoalTargets, answers: number): readonly GoalTier[] {
+  return goalTiers(targets).filter(
+    (tier) => answers >= (targets[tier] ?? Number.POSITIVE_INFINITY),
+  );
+}
+
+/** The highest tier reached, `null` before bronze. */
+export function highestTier(targets: GoalTargets, answers: number): GoalTier | null {
+  return tiersReached(targets, answers).at(-1) ?? null;
+}
+
+/** The first tier not reached yet, `null` once the last one is. */
+export function nextTier(targets: GoalTargets, answers: number): GoalTier | null {
+  return goalTiers(targets).find((tier) => answers < (targets[tier] ?? 0)) ?? null;
+}
+
+/**
+ * Tiers a member may claim boosters for: reached by the clan, with a reward, and the member gave
+ * enough correct answers. What they already claimed is the server's to subtract.
  */
 export function claimableTiers(
   rules: ClanGoalRules,

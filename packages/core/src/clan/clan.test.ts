@@ -10,7 +10,6 @@ import {
   isChiefAway,
   isEmblemAllowed,
   nextChief,
-  nextEmblemUnlock,
   nextMessageAt,
 } from "./clan";
 
@@ -67,22 +66,26 @@ describe("checkClanMotto and checkClanMessage", () => {
 });
 
 describe("emblem", () => {
-  it("adds one unlocked item per gold goal, in order", () => {
-    expect(emblemChoices(rules, 0).colors).toHaveLength(8);
-    expect(emblemChoices(rules, 1).colors).toContain("vermillon");
-    expect(emblemChoices(rules, 2).engravings).toContain("antitonnerre");
-    expect(nextEmblemUnlock(rules, 0)).toEqual({ kind: "color", id: "vermillon" });
-    expect(nextEmblemUnlock(rules, rules.emblemUnlocks.length)).toBeNull();
+  const vermillon = [{ kind: "color", id: "vermillon" }] as const;
+
+  it("adds the items the clan's level opened", () => {
+    expect(emblemChoices(rules, []).colors).toHaveLength(8);
+    expect(emblemChoices(rules, vermillon).colors).toContain("vermillon");
+    expect(emblemChoices(rules, [{ kind: "engraving", id: "brisoir" }]).engravings).toContain(
+      "brisoir",
+    );
   });
 
   it("allows only listed items and two different colours", () => {
-    expect(isEmblemAllowed(rules, 0, { engraving: "aiguiere", colors: ["sang", "or"] })).toBe(true);
-    expect(isEmblemAllowed(rules, 0, { engraving: "aiguiere", colors: ["or", "or"] })).toBe(false);
+    expect(isEmblemAllowed(rules, [], { engraving: "aiguiere", colors: ["sang", "or"] })).toBe(
+      true,
+    );
+    expect(isEmblemAllowed(rules, [], { engraving: "aiguiere", colors: ["or", "or"] })).toBe(false);
     expect(
-      isEmblemAllowed(rules, 0, { engraving: "aiguiere", colors: ["sang", "vermillon"] }),
+      isEmblemAllowed(rules, [], { engraving: "aiguiere", colors: ["sang", "vermillon"] }),
     ).toBe(false);
     expect(
-      isEmblemAllowed(rules, 1, { engraving: "aiguiere", colors: ["sang", "vermillon"] }),
+      isEmblemAllowed(rules, vermillon, { engraving: "aiguiere", colors: ["sang", "vermillon"] }),
     ).toBe(true);
   });
 });

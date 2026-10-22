@@ -1,6 +1,6 @@
 # Cahier des charges · Clan v2
 
-- **Statut :** proposition du 2026-10-22, à valider par le propriétaire. Les décisions à trancher sont en fin de document.
+- **Statut :** validé le 2026-10-22, toutes les recommandations retenues. La simulation a ramené la cible de l'enluminure de 80 à 60 ([clan-sim](../rnd/clan-sim.md)). Fait sur le web le 2026-10-22.
 - **Règles concernées :** P65, P66 et P70 dans [regles-du-jeu.md](../regles-du-jeu.md), qui fait foi une fois les décisions prises.
 - **D'où ça vient :** les retours de la première prise en main ([recette-web.md](../recette-web.md#retours-du-2026-10-22), point 1.3). L'objectif de la semaine se remplit en une journée, par un seul joueur. Le clan n'a pas de progression propre.
 - **Objectif :** que le clan donne une raison de revenir chaque jour, et que chaque bonne réponse en défi serve aussi la bande.
@@ -31,7 +31,7 @@
 | Bronze | 15 | la barre seulement |
 | Argent | 30 | 1 sachet bonus |
 | Or | 50 | 1 sachet bonus |
-| Enluminure (dès le niveau 5 du clan) | 80 | 1 sachet bonus |
+| Enluminure (dès le niveau 5 du clan) | 60 | 1 sachet bonus |
 
 Il faut donc, en moyenne, un membre régulier pour l'or, et des assidus pour l'enluminure.
 
@@ -79,7 +79,7 @@ L'or ne donne plus d'objet d'emblème : ces objets viennent des niveaux.
 
 Défauts relevés le 2026-10-22 sur la page actuelle :
 
-1. **L'or dépassé :** « 35 / 15 » s'affiche, avec la barre pleine et plus rien à viser. *Corrigé par les nouvelles cibles. Au-delà du dernier palier, la ligne dit « Or ! 35 bonnes réponses ».*
+1. **L'or dépassé :** « 35 / 15 » s'affiche, avec la barre pleine et plus rien à viser. *Corrigé par les nouvelles cibles. Au-delà du dernier palier, le titre dit « Objectif rempli ! » et la ligne donne le total.*
 2. **La récompense de tous les paliers en une phrase.** On ne montre que celle du prochain : « À l'argent, un sachet bonus. »
 3. **« de Les Fondateurs »** dans la bibliothèque. *Corrigé le 2026-10-22 : « des Fondateurs ».*
 4. **L'emblème de l'en-tête** se lit mal : la gravure est trop fine à cette taille.

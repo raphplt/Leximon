@@ -3,7 +3,7 @@ import type { ClanListCursor, MemberCursor } from "./clans";
 
 const clanCursorSchema = z.tuple([z.number().int().nonnegative(), z.uuid()]);
 const memberCursorSchema = z.tuple([
-  z.number().int().min(0).max(2),
+  z.number().int().nonnegative(),
   z.number().int().nonnegative(),
   z.string().min(1).max(200),
 ]);
@@ -35,12 +35,12 @@ export function decodeClanCursor(value: string): ClanListCursor | undefined {
 }
 
 export function encodeMemberCursor(cursor: MemberCursor): string {
-  return encode([cursor.rank, cursor.joinedAt, cursor.userId]);
+  return encode([cursor.answers, cursor.joinedAt, cursor.userId]);
 }
 
 export function decodeMemberCursor(value: string): MemberCursor | undefined {
   const parsed = decode(memberCursorSchema, value);
   return parsed === undefined
     ? undefined
-    : { rank: parsed[0], joinedAt: parsed[1], userId: parsed[2] };
+    : { answers: parsed[0], joinedAt: parsed[1], userId: parsed[2] };
 }

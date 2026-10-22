@@ -131,6 +131,8 @@ function toEvent(event: ClanEventPayload, badges: ReadonlyMap<string, PlayerBadg
       return { type: "legendary", player: badges.get(event.userId) ?? null, cardId: event.cardId };
     case "tier":
       return { type: "tier", tier: event.tier };
+    case "level":
+      return { type: "level", level: event.level };
     case "renamed":
       return { type: "renamed", name: event.name };
     default:

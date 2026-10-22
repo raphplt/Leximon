@@ -441,8 +441,13 @@ pnpm dev:player recette-c@example.com --level 9
 - **Retour :**
 
 ### CLA-12 · Objectif de la semaine
-- **Faire :** regarder la carte de l'objectif, puis ouvrir des sachets avec A (au besoin, donne-lui des sachets bonus depuis l'admin).
-- **Attendu :** « Trouvez N mots nouveaux », barre avec bronze, argent, or, « reste N j », « N à toi ». La barre monte peu après chaque sachet (recompte en tâche de fond). À l'argent, puis à l'or, un sachet bonus à prendre sur la page et au courrier, pour qui a apporté au moins 5 mots ; à l'or, un objet d'emblème de plus pour le clan. *La cible est fixée au premier passage de la semaine : 5, 10 et 15 mots par membre actif.*
+- **Faire :** regarder la carte de l'objectif, puis jouer des défis avec A.
+- **Attendu :** le titre donne la cible du prochain palier (« 30 bonnes réponses »), barre avec bronze, argent, or, « reste N j », « 12 / 30 · 12 à toi » et la récompense du prochain palier seulement (« À l'argent, un sachet bonus. »). La barre monte peu après chaque bonne réponse (recompte en tâche de fond) ; une mauvaise ne compte pas. À l'argent, puis à l'or, un sachet bonus à prendre sur la page et au courrier, pour qui a donné au moins 15 bonnes réponses. Au-delà de l'or : « Objectif rempli ! » et le total, sans cible dépassée. *La cible est fixée au premier passage de la semaine : 15, 30 et 50 par membre actif.*
+- **Retour :**
+
+### CLA-12b · Niveau du clan
+- **Faire :** regarder l'en-tête du clan après l'objectif de CLA-12, puis la recherche de clans depuis B (ou un compte sans clan), puis la fin d'un défi et « Aujourd'hui » sur Jouer.
+- **Attendu :** l'emblème porte une médaille avec le niveau ; sous le nom, « Niveau N · X / Y XP », une barre dorée et le prochain déblocage (« Au niveau 3, la couleur … »). Le passage de niveau s'écrit au journal, « Le clan passe au niveau 2 ! », et la nouvelle couleur ou gravure se choisit dans les réglages du clan. La recherche montre la médaille sur chaque emblème. Les membres sont triés par bonnes réponses de la semaine, « 23 cette semaine ». En fin de défi, « +N pour le clan » sous le score ; sur Jouer en 1440 px, une ligne « Objectif du clan » avec son anneau et « 12 / 30 ». *Bannière (niveau 10) et palier Enluminure (niveau 5) : pas atteignables à la main en recette.*
 - **Retour :**
 
 ### CLA-13 · Bibliothèque
@@ -610,7 +615,7 @@ Retours généraux du propriétaire après une première prise en main, classés
    - le délai entre quitter un clan et en rejoindre un autre (24 h aujourd'hui, P65), peut-être à supprimer ;
    - d'autres petits défauts de l'écran, à relever plus tard.
 
-   *Tranché le 2026-10-22 : délai supprimé (P65), objectifs comptés en révisions réussies (P66), niveau de clan cosmétique (P70). Le reste passe par un cahier Clan v2.*
+   *Tranché le 2026-10-22 : délai supprimé (P65), objectifs comptés en révisions réussies (P66), niveau de clan cosmétique (P70). Le reste passe par le cahier Clan v2, validé et fait le 2026-10-22.*
 4. **Courbe de niveaux et niveau maximum.** Crainte d'atteindre le haut trop vite. Aujourd'hui, chaque niveau coûte 20 XP de plus que le précédent (100 XP pour passer au 2, 280 pour le 11, 1 080 pour le 51). À mesurer par simulation ; niveau maximum ou non, pas encore réfléchi. Plus de cadres et de titres pour les hauts niveaux (les avatars, jusqu'au niveau 140, suffisent). *Tranché le 2026-10-22 : pas de maximum, niveau 50 en quatre mois environ, courbe 100 + 45 × (n − 1) calée par simulation (P48). Plus de cadres et de titres : à dessiner.*
 
 ### 2. Écran Jouer, le plus gros reste à faire

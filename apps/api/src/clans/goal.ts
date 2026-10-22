@@ -3,23 +3,24 @@ import {
   BONUS_SCHEDULE,
   bonusRulesAt,
   CLAN_GOAL_SCHEDULE,
-  CLAN_SCHEDULE,
+  CLAN_LEVEL,
   type ClanGoalRules,
   claimableTiers,
   claimDeadline,
   clanGoalRulesAt,
-  clanRulesAt,
+  clanLevelOf,
+  clanUnlocks,
   type EpochMs,
   type GameDay,
   type GoalTargets,
   gameWeekOf,
   goalTargets,
   highestTier,
-  nextEmblemUnlock,
   reserveCapacity,
   tiersReached,
+  weekXp,
 } from "@leximon/core";
-import { type Database, schema } from "@leximon/db";
+import { type ClanEventPayload, type Database, schema } from "@leximon/db";
 import { and, eq, inArray, sql } from "drizzle-orm";
 import { lockWallet, walletView } from "../levels/rewards";
 
@@ -42,8 +43,8 @@ function previousWeek(now: EpochMs): GameDay {
 
 type WeekRow = typeof clanWeeks.$inferSelect;
 
-function targetsOf(row: Pick<WeekRow, "bronze" | "silver" | "gold">): GoalTargets {
-  return { bronze: row.bronze, silver: row.silver, gold: row.gold };
+function targetsOf(row: Pick<WeekRow, "bronze" | "silver" | "gold" | "illuminated">): GoalTargets {
+  return { bronze: row.bronze, silver: row.silver, gold: row.gold, illuminated: row.illuminated };
 }
 
 /** The rules of a week are those in force when it starts. */
@@ -53,7 +54,8 @@ function goalRulesOf(week: GameDay): ClanGoalRules {
 
 /**
  * The clan's current week, created at its first use: the targets are fixed then, from the
- * members who opened a booster in the 7 days before. Concurrent first uses insert once.
+ * members who opened a booster or answered a challenge in the 7 days before, and the fourth tier
+ * if the clan's level opened it. Concurrent first uses insert once.
  */
 export async function ensureClanWeek(db: Database, clanId: string, now: EpochMs): Promise<WeekRow> {
   const week = gameWeekOf(now);
@@ -68,12 +70,16 @@ export async function ensureClanWeek(db: Database, clanId: string, now: EpochMs)
     .where(
       and(
         eq(clanMembers.clanId, clanId),
-        sql`exists (select 1 from booster_opens o where o.user_id = ${clanMembers.userId}
-          and o.opened_at >= ${since} and o.opened_at < ${new Date(now)})`,
+        sql`(exists (select 1 from booster_opens o where o.user_id = ${clanMembers.userId}
+            and o.opened_at >= ${since} and o.opened_at < ${new Date(now)})
+          or exists (select 1 from review_logs r where r.user_id = ${clanMembers.userId}
+            and r.reviewed_at >= ${since} and r.reviewed_at < ${new Date(now)}))`,
       ),
     );
   const activeMembers = active?.count ?? 0;
-  const targets = goalTargets(rules, activeMembers);
+  const [clan] = await db.select({ xp: clans.xp }).from(clans).where(eq(clans.id, clanId));
+  const level = clanLevelOf(CLAN_LEVEL, clan?.xp ?? 0).level;
+  const targets = goalTargets(rules, activeMembers, clanUnlocks(CLAN_LEVEL, level).illuminated);
   await db
     .insert(clanWeeks)
     .values({ clanId, week: week.key, activeMembers, ...targets, updatedAt: new Date(now) })
@@ -92,15 +98,16 @@ async function readWeek(db: Reader, clanId: string, week: string): Promise<WeekR
 }
 
 export interface RecountReport {
-  readonly words: number;
+  readonly answers: number;
   readonly newTiers: readonly GoalTier[];
+  readonly level: number;
 }
 
 /**
- * Recounts a clan's week from the albums: each member's new words since they joined,
- * within the week. A member's count never goes down, so a member who leaves keeps what they
- * brought and a tier reached stays reached. A newly reached tier enters the journal once (unique
- * event key), and a gold one unlocks one more emblem item.
+ * Recounts a clan's week from the challenge answers: each member's correct answers since they
+ * joined, within the week. A member's count never goes down, so a member who leaves keeps what
+ * they gave and a tier reached stays reached. Then the week's XP, and the clan's as the sum of its
+ * weeks. A newly reached tier or level enters the journal once (unique event key).
  *
  * The current week is created if needed; a past week only recounted if it exists. Lock order: the
  * week's row, then the clan's.
@@ -129,60 +136,93 @@ export async function recountClanWeek(
     const start = new Date(week.start);
     const end = new Date(week.end);
     await tx.execute(sql`
-      insert into clan_week_members (clan_id, week, user_id, words, updated_at)
+      insert into clan_week_members (clan_id, week, user_id, answers, updated_at)
       select m.clan_id, ${week.key}, m.user_id,
-        (select count(distinct uc.card_id)::int from user_cards uc
-          where uc.user_id = m.user_id
-            and uc.first_obtained_at >= greatest(${start}::timestamptz, m.joined_at)
-            and uc.first_obtained_at < ${end}),
+        (select count(*)::int from review_logs r
+          where r.user_id = m.user_id and r.correct
+            and r.reviewed_at >= greatest(${start}::timestamptz, m.joined_at)
+            and r.reviewed_at < ${end}),
         ${new Date(now)}
       from clan_members m
       where m.clan_id = ${clanId} and m.joined_at < ${end}
       on conflict (clan_id, week, user_id) do update
-        set words = greatest(clan_week_members.words, excluded.words),
+        set answers = greatest(clan_week_members.answers, excluded.answers),
             updated_at = excluded.updated_at`);
-    const [total] = await tx
-      .select({ words: sql<number>`coalesce(sum(${clanWeekMembers.words}), 0)::int` })
+    const members = await tx
+      .select({ answers: clanWeekMembers.answers })
       .from(clanWeekMembers)
       .where(and(eq(clanWeekMembers.clanId, clanId), eq(clanWeekMembers.week, week.key)));
-    const words = total?.words ?? 0;
+    const memberAnswers = members.map((member) => member.answers);
+    const answers = memberAnswers.reduce((sum, count) => sum + count, 0);
 
     const targets = targetsOf(row);
-    const before = new Set(tiersReached(targets, row.words));
-    const newTiers = tiersReached(targets, words).filter((tier) => !before.has(tier));
+    const reached = tiersReached(targets, answers);
+    const before = new Set(tiersReached(targets, row.answers));
+    const newTiers = reached.filter((tier) => !before.has(tier));
     for (const tier of newTiers) {
-      const inserted = await tx
-        .insert(clanMessages)
-        .values({
-          clanId,
-          kind: "event",
-          event: { type: "tier", week: week.key, tier },
-          eventKey: `tier:${week.key}:${tier}`,
-          createdAt: new Date(now),
-        })
-        .onConflictDoNothing()
-        .returning({ id: clanMessages.id });
-      if (inserted.length > 0 && rules.emblemTiers.includes(tier)) {
-        await tx
-          .update(clans)
-          .set({ emblemUnlocked: sql`${clans.emblemUnlocked} + 1` })
-          .where(eq(clans.id, clanId));
-      }
+      await writeEvent(
+        tx,
+        clanId,
+        { type: "tier", week: week.key, tier },
+        `tier:${week.key}:${tier}`,
+        now,
+      );
     }
     await tx
       .update(clanWeeks)
-      .set({ words, tier: highestTier(targets, words), updatedAt: new Date(now) })
+      .set({
+        answers,
+        xp: weekXp(rules, memberAnswers, reached),
+        tier: highestTier(targets, answers),
+        updatedAt: new Date(now),
+      })
       .where(and(eq(clanWeeks.clanId, clanId), eq(clanWeeks.week, week.key)));
-    return { words, newTiers };
+
+    const [clan] = await tx
+      .select({ xp: clans.xp })
+      .from(clans)
+      .where(eq(clans.id, clanId))
+      .for("update");
+    const [total] = await tx
+      .select({ xp: sql<number>`coalesce(sum(${clanWeeks.xp}), 0)::int` })
+      .from(clanWeeks)
+      .where(eq(clanWeeks.clanId, clanId));
+    const xp = total?.xp ?? 0;
+    const levelBefore = clanLevelOf(CLAN_LEVEL, clan?.xp ?? 0).level;
+    const level = clanLevelOf(CLAN_LEVEL, xp).level;
+    for (let reachedLevel = levelBefore + 1; reachedLevel <= level; reachedLevel++) {
+      await writeEvent(
+        tx,
+        clanId,
+        { type: "level", level: reachedLevel },
+        `level:${reachedLevel}`,
+        now,
+      );
+    }
+    await tx.update(clans).set({ xp }).where(eq(clans.id, clanId));
+    return { answers, newTiers, level };
   });
+}
+
+async function writeEvent(
+  tx: Transaction,
+  clanId: string,
+  event: ClanEventPayload,
+  eventKey: string,
+  now: EpochMs,
+): Promise<void> {
+  await tx
+    .insert(clanMessages)
+    .values({ clanId, kind: "event", event, eventKey, createdAt: new Date(now) })
+    .onConflictDoNothing();
 }
 
 // --- Rewards -------------------------------------------------------------------------------------
 
 /**
- * Tiers whose boosters the player may claim: this week and the last one, in any clan they
- * brought enough words to, minus what they already claimed. One claim per tier and week, so two
- * boosters a week at most, even after changing clans.
+ * Tiers whose boosters the player may claim: this week and the last one, in any clan they gave
+ * enough correct answers to, minus what they already claimed. One claim per tier and week, even
+ * after changing clans.
  */
 export async function readClaimable(
   db: Reader,
@@ -194,11 +234,12 @@ export async function readClaimable(
   const rows = await db
     .select({
       week: clanWeekMembers.week,
-      mine: clanWeekMembers.words,
-      words: clanWeeks.words,
+      mine: clanWeekMembers.answers,
+      answers: clanWeeks.answers,
       bronze: clanWeeks.bronze,
       silver: clanWeeks.silver,
       gold: clanWeeks.gold,
+      illuminated: clanWeeks.illuminated,
     })
     .from(clanWeekMembers)
     .innerJoin(
@@ -218,7 +259,7 @@ export async function readClaimable(
     const week = weeks.find((candidate) => candidate.key === row.week);
     if (week === undefined) continue;
     const rules = goalRulesOf(week);
-    const reached = tiersReached(targetsOf(row), row.words);
+    const reached = tiersReached(targetsOf(row), row.answers);
     for (const tier of claimableTiers(rules, reached, row.mine)) {
       const key = `${row.week}:${tier}`;
       if (taken.has(key) || found.has(key)) continue;
@@ -315,7 +356,7 @@ export async function claimGoal(
   });
 }
 
-/** A clan where the player brought enough words to a week that reached the tier. */
+/** A clan where the player gave enough correct answers to a week that reached the tier. */
 async function findEligibleClan(
   tx: Transaction,
   userId: string,
@@ -326,11 +367,12 @@ async function findEligibleClan(
   const rows = await tx
     .select({
       clanId: clanWeekMembers.clanId,
-      mine: clanWeekMembers.words,
-      words: clanWeeks.words,
+      mine: clanWeekMembers.answers,
+      answers: clanWeeks.answers,
       bronze: clanWeeks.bronze,
       silver: clanWeeks.silver,
       gold: clanWeeks.gold,
+      illuminated: clanWeeks.illuminated,
     })
     .from(clanWeekMembers)
     .innerJoin(
@@ -339,7 +381,7 @@ async function findEligibleClan(
     )
     .where(and(eq(clanWeekMembers.userId, userId), eq(clanWeekMembers.week, week.key)));
   const eligible = rows.find((row) =>
-    claimableTiers(rules, tiersReached(targetsOf(row), row.words), row.mine).includes(tier),
+    claimableTiers(rules, tiersReached(targetsOf(row), row.answers), row.mine).includes(tier),
   );
   return eligible?.clanId ?? null;
 }
@@ -349,18 +391,14 @@ async function findEligibleClan(
 /** The goal as a member sees it on the clan's page. */
 export async function readGoal(
   db: Database,
-  input: {
-    readonly clanId: string;
-    readonly userId: string;
-    readonly emblemUnlocked: number;
-    readonly now: EpochMs;
-  },
+  input: { readonly clanId: string; readonly userId: string; readonly now: EpochMs },
 ): Promise<ClanGoal> {
-  const { clanId, userId, emblemUnlocked, now } = input;
+  const { clanId, userId, now } = input;
   const row = await ensureClanWeek(db, clanId, now);
   const week = gameWeekOf(now);
+  const rules = goalRulesOf(week);
   const [mine] = await db
-    .select({ words: clanWeekMembers.words })
+    .select({ answers: clanWeekMembers.answers })
     .from(clanWeekMembers)
     .where(
       and(
@@ -374,11 +412,11 @@ export async function readGoal(
     week: week.key,
     endsAt: new Date(week.end).toISOString(),
     targets,
-    words: row.words,
-    tier: highestTier(targets, row.words),
-    myWords: mine?.words ?? 0,
-    minContribution: goalRulesOf(week).minContribution,
+    answers: row.answers,
+    tier: highestTier(targets, row.answers),
+    myAnswers: mine?.answers ?? 0,
+    minContribution: rules.minContribution,
+    boosters: rules.bonusBoosters,
     claimable: await readClaimable(db, userId, now),
-    nextUnlock: nextEmblemUnlock(clanRulesAt(CLAN_SCHEDULE, now), emblemUnlocked),
   };
 }

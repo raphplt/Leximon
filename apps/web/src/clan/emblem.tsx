@@ -11,9 +11,17 @@ import styles from "./emblem.module.css";
 
 /**
  * A clan's emblem: a shield of the first colour, the engraving inked in the second, a gold
- * rim. Decorative: the clan's name is always next to it.
+ * rim, and the clan's level on a medal when given. Decorative: the clan's name is always next to it.
  */
-export function Emblem({ emblem, size }: { readonly emblem: EmblemView; readonly size: number }) {
+export function Emblem({
+  emblem,
+  size,
+  level,
+}: {
+  readonly emblem: EmblemView;
+  readonly size: number;
+  readonly level?: number;
+}) {
   const catalog = useCatalog();
   const engraving = catalog?.cardsById.get(emblem.engraving)?.engraving ?? null;
   const style = {
@@ -29,6 +37,7 @@ export function Emblem({ emblem, size }: { readonly emblem: EmblemView; readonly
       ) : (
         <span className={styles.ink} />
       )}
+      {level !== undefined && <span className={styles.medal}>{level}</span>}
     </span>
   );
 }

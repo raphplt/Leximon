@@ -6,7 +6,9 @@ import {
   claimDeadline,
   clanGoalRulesAt,
   goalTargets,
+  goalTiers,
   highestTier,
+  nextTier,
   tiersReached,
 } from "./goal";
 
@@ -30,22 +32,49 @@ describe("gameWeekOf", () => {
 
 describe("weekly goal", () => {
   it("scales the targets with the active members, one at least", () => {
-    expect(goalTargets(rules, 20)).toEqual({ bronze: 100, silver: 200, gold: 300 });
-    expect(goalTargets(rules, 0)).toEqual({ bronze: 5, silver: 10, gold: 15 });
+    expect(goalTargets(rules, 20, false)).toEqual({
+      bronze: 300,
+      silver: 600,
+      gold: 1000,
+      illuminated: null,
+    });
+    expect(goalTargets(rules, 0, true)).toEqual({
+      bronze: 15,
+      silver: 30,
+      gold: 50,
+      illuminated: 60,
+    });
   });
 
-  it("reads the tiers reached", () => {
-    const targets = goalTargets(rules, 2);
-    expect(tiersReached(targets, 9)).toEqual([]);
-    expect(highestTier(targets, 9)).toBeNull();
-    expect(tiersReached(targets, 20)).toEqual(["bronze", "silver"]);
-    expect(highestTier(targets, 30)).toBe("gold");
+  it("has a fourth tier only when the clan's level opened it", () => {
+    expect(goalTiers(goalTargets(rules, 3, false))).toEqual(["bronze", "silver", "gold"]);
+    expect(goalTiers(goalTargets(rules, 3, true))).toEqual([
+      "bronze",
+      "silver",
+      "gold",
+      "illuminated",
+    ]);
   });
 
-  it("gives boosters at silver and gold to members who brought 5 words", () => {
-    expect(claimableTiers(rules, ["bronze", "silver", "gold"], 5)).toEqual(["silver", "gold"]);
+  it("reads the tiers reached and the next one", () => {
+    const targets = goalTargets(rules, 2, false);
+    expect(tiersReached(targets, 29)).toEqual([]);
+    expect(highestTier(targets, 29)).toBeNull();
+    expect(nextTier(targets, 29)).toBe("bronze");
+    expect(tiersReached(targets, 60)).toEqual(["bronze", "silver"]);
+    expect(highestTier(targets, 500)).toBe("gold");
+    expect(nextTier(targets, 500)).toBeNull();
+    expect(nextTier(goalTargets(rules, 2, true), 100)).toBe("illuminated");
+  });
+
+  it("gives boosters from silver on to members who gave 15 correct answers", () => {
+    expect(claimableTiers(rules, ["bronze", "silver", "gold", "illuminated"], 15)).toEqual([
+      "silver",
+      "gold",
+      "illuminated",
+    ]);
     expect(claimableTiers(rules, ["bronze"], 40)).toEqual([]);
-    expect(claimableTiers(rules, ["bronze", "silver"], 4)).toEqual([]);
+    expect(claimableTiers(rules, ["bronze", "silver"], 14)).toEqual([]);
   });
 
   it("keeps a week's rewards until the end of the following week", () => {

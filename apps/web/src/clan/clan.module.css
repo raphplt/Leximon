@@ -70,17 +70,49 @@
 /* --- Header --- */
 
 .hero {
+  position: relative;
   display: flex;
   align-items: center;
-  gap: 22px;
+  gap: 26px;
   margin-bottom: 16px;
-  padding: 22px 24px;
+  padding: 24px 26px;
+  overflow: hidden;
+  isolation: isolate;
   background: linear-gradient(120deg, rgba(94, 33, 48, 0.85), rgba(52, 59, 92, 0.8));
 }
 
 .heroText {
   flex: 1;
   min-width: 0;
+}
+
+.clanXp {
+  max-width: 420px;
+  margin-top: 12px;
+}
+
+.clanXpHead {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 2px 12px;
+  margin-bottom: 6px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #f6eedd;
+}
+
+.clanXpNext {
+  font-weight: 400;
+  color: #e9e3f5;
+}
+
+.clanXpTrack {
+  height: 10px;
+}
+
+.clanXpFill {
+  background: linear-gradient(#f4d27a, #d9a233);
 }
 
 .heroKicker {
@@ -216,6 +248,18 @@
 .tier[data-tier="gold"][data-reached="true"] {
   background: var(--lx-color-accent);
   color: var(--lx-color-accent-ink);
+}
+
+.tier[data-tier="illuminated"] {
+  color: #8e5ad8;
+  box-shadow:
+    0 0 0 3px var(--lx-color-panel),
+    inset 0 0 0 2px #8e5ad8;
+}
+
+.tier[data-tier="illuminated"][data-reached="true"] {
+  background: linear-gradient(135deg, #b48cf0, #6a3fc0);
+  color: #fff;
 }
 
 .goalFoot {
@@ -717,6 +761,9 @@
 }
 
 .clanRow {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
   display: flex;
   align-items: center;
   gap: 16px;

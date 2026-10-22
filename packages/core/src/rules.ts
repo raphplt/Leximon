@@ -12,6 +12,7 @@ import type { DrawSchedule } from "./booster/draw";
 import type { RefillSchedule } from "./booster/refill";
 import type { ClanSchedule } from "./clan/clan";
 import type { ClanGoalSchedule } from "./clan/goal";
+import type { ClanLevelRules } from "./clan/level";
 import type { MasterySchedule } from "./mastery/mastery";
 import type { XpSchedule } from "./progress/progress";
 import type { LevelRewardSchedule } from "./progress/rewards";
@@ -187,28 +188,57 @@ export const CLAN_SCHEDULE: ClanSchedule = [
       "accastillage",
     ],
     emblemColors: ["sang", "or", "indigo", "vert-de-gris", "ocre", "prune", "craie", "encre"],
-    emblemUnlocks: [
-      { kind: "color", id: "vermillon" },
-      { kind: "engraving", id: "antitonnerre" },
-      { kind: "color", id: "turquoise" },
-      { kind: "engraving", id: "brisoir" },
-      { kind: "color", id: "argent" },
-      { kind: "engraving", id: "calige" },
-      { kind: "color", id: "safran" },
-      { kind: "engraving", id: "barbette" },
-    ],
   },
 ];
 
-// Weekly goal of a clan. Targets are provisional.
+// The clan's own level. Starting values, to be checked by simulation.
+export const CLAN_LEVEL: ClanLevelRules = {
+  curve: { base: 500, step: 250 },
+  illuminatedLevel: 5,
+  bannerFrom: 10,
+  bannerEvery: 5,
+  banners: [
+    "bucephale",
+    "astrolatre",
+    "bordigue",
+    "boulingrin",
+    "asclepiion",
+    "argyropee",
+    "approcheur",
+    "barbouquine",
+  ],
+  emblemUnlocks: [
+    { kind: "color", id: "vermillon" },
+    { kind: "engraving", id: "antitonnerre" },
+    { kind: "color", id: "turquoise" },
+    { kind: "engraving", id: "brisoir" },
+    { kind: "color", id: "argent" },
+    { kind: "engraving", id: "calige" },
+    { kind: "color", id: "safran" },
+    { kind: "engraving", id: "barbette" },
+    { kind: "color", id: "azur" },
+    { kind: "engraving", id: "cabasset" },
+    { kind: "color", id: "emeraude" },
+    { kind: "engraving", id: "brimborion" },
+    { kind: "color", id: "corail" },
+    { kind: "engraving", id: "artison" },
+    { kind: "color", id: "bronze" },
+    { kind: "engraving", id: "appeau" },
+  ],
+};
+
+// Weekly goal of a clan, in correct challenge answers, and the clan XP a week brings. Targets
+// are provisional.
 export const CLAN_GOAL_SCHEDULE: ClanGoalSchedule = [
   {
     startsAt: SINCE_LAUNCH,
-    wordsPerActiveMember: { bronze: 5, silver: 10, gold: 15 },
+    answersPerActiveMember: { bronze: 15, silver: 30, gold: 50, illuminated: 60 },
     activeWindowMs: 7 * 24 * 60 * MINUTE,
-    minContribution: 5,
-    bonusBoosters: { bronze: 0, silver: 1, gold: 1 },
-    emblemTiers: ["gold"],
+    minContribution: 15,
+    bonusBoosters: { bronze: 0, silver: 1, gold: 1, illuminated: 1 },
+    xpPerAnswer: 1,
+    answersCountedPerMember: 100,
+    tierXp: { bronze: 50, silver: 100, gold: 200, illuminated: 300 },
   },
 ];
 

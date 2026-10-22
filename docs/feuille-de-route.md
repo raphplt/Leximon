@@ -46,7 +46,7 @@ Arbitrés par le propriétaire le 2026-10-20 : jeu grand public (B2C), pas de ve
 |---|---|---|
 | Niveau de compte | En cours | P48 : XP gagnée dans la transaction de chaque action (pli, défi, échange), niveau calculé, badge dans la navigation, « +N XP » après un pli ou un défi, échanges ouverts au niveau 5. Récompenses (P58, sauf cosmétiques) et fonctionnalités par niveau (P59) dans le code depuis le 2026-10-21 : coffrets réclamés (`POST /me/level-rewards/{niveau}`), réserve agrandie, échanges à 3 cartes au niveau 10. Reste aussi : XP des raretés complétées, calibrage par simulation |
 | Profil public | Fait sur le web | Pseudo (P62), avatar gravé et cadre, titre, cartes épinglées, statistiques, page publique `/joueur/{pseudo}` avec image de partage, atelier, bloquer et signaler (P63), suppression du compte (P64). Public par défaut (P60), dès le niveau 8. Le clan du joueur, avec son emblème, sur le profil et son image |
-| Clans | Fait sur le web | P65 à P68 : clans sans maximum de membres (niveau 10 pour entrer, 15 pour fonder), emblème, rôles, demandes et code d'invitation, discussion et journal filtrés et modérés (messages gardés 90 jours), objectif de la semaine avec sachets bonus à l'argent et à l'or et objets d'emblème à l'or, bibliothèque commune. Événements de jeu par la file `leximon-game-events` (D-038). Sanctions motivées et contestables, traitées dans `/admin/signalements` et `/admin/contestations`. Reste : le mobile, la modération par modèle |
+| Clans | Fait sur le web | P65 à P68 : clans sans maximum de membres (niveau 10 pour entrer, 15 pour fonder), emblème, rôles, demandes et code d'invitation, discussion et journal filtrés et modérés (messages gardés 90 jours), objectif de la semaine en bonnes réponses de défi, avec sachets bonus à l'argent, à l'or et à l'enluminure, niveau de clan qui ouvre objets d'emblème, palier Enluminure et bannières (Clan v2, P66 et P70), bibliothèque commune. Événements de jeu par la file `leximon-game-events` (D-038). Sanctions motivées et contestables, traitées dans `/admin/signalements` et `/admin/contestations`. Reste : le mobile, la modération par modèle |
 | Modes de jeu entre joueurs | R&D | Plusieurs pistes à prototyper (joute, duplicate, bluff…) |
 | Classements | Plus tard | Pas en v1. Cote globale de type Elo (Glicko-2), modèle du Scrabble duplicate |
 
@@ -85,7 +85,7 @@ Dans l'ordre où elles débloquent le plus :
 2. **Mise en ligne :** les étapes marquées « toi » de [mise-en-ligne.md](mise-en-ligne.md) (Workers Paid, Neon, secrets, DNS des e-mails, Lettermint, NAS).
 3. **Avatars gravés (P49) :** valider les seize gravures choisies et leurs noms.
 4. **Ouverture, progression et social :** les questions ouvertes de [regles-du-jeu.md](regles-du-jeu.md#à-décider), détaillées dans les [cahiers des charges](cahiers-des-charges/).
-5. **Retours de la première prise en main (2026-10-22) :** collections dans le temps, sachet découverte, refonte du clan, courbe de niveaux, voir [recette-web.md](recette-web.md#retours-du-2026-10-22). Refonte du clan : [clan-v2.md](cahiers-des-charges/clan-v2.md), décisions à trancher.
+5. **Retours de la première prise en main (2026-10-22) :** collections dans le temps, sachet découverte, refonte du clan, courbe de niveaux, voir [recette-web.md](recette-web.md#retours-du-2026-10-22). Refonte du clan : [clan-v2.md](cahiers-des-charges/clan-v2.md), validée et faite sur le web le 2026-10-22.
 
 ## Prochaines étapes conseillées
 

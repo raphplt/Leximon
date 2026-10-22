@@ -261,6 +261,10 @@ export const emblemColors = {
   turquoise: "#2FB8B0",
   argent: "#C9CCD8",
   safran: "#F2B829",
+  azur: "#2E6FD8",
+  emeraude: "#1F8A5B",
+  corail: "#F07A5C",
+  bronze: "#9C6B3A",
 } as const satisfies Record<string, string>;
 
 export function emblemColor(key: string): string {

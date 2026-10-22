@@ -6,6 +6,8 @@ import type {
   ClanMember,
   ClanRefusal,
   ClanRole,
+  ClanUnlock,
+  ClanView,
   GoalTier,
 } from "@leximon/contract";
 import { CLAN_SCHEDULE, clanRulesAt, type EpochMs } from "@leximon/core";
@@ -58,20 +60,42 @@ const COLOR_NAMES: Readonly<Record<string, string>> = {
   turquoise: "turquoise",
   argent: "argent",
   safran: "safran",
+  azur: "azur",
+  emeraude: "émeraude",
+  corail: "corail",
+  bronze: "bronze",
 };
 
 export function emblemColorName(key: string): string {
   return COLOR_NAMES[key] ?? key;
 }
 
-/** What the next gold goal adds: « la couleur vermillon », « la gravure du brisoir ». */
-export function unlockLabel(
-  item: { readonly kind: "engraving" | "color"; readonly id: string },
+/** What a clan level opens: « la couleur vermillon », « la gravure brisoir », « le palier Enluminure ». */
+export function unlockLabel(unlock: ClanUnlock, wordOf: (cardId: string) => string): string {
+  switch (unlock.kind) {
+    case "color":
+      return `la couleur ${emblemColorName(unlock.id)}`;
+    case "engraving":
+      return `la gravure ${wordOf(unlock.id)}`;
+    case "banner":
+      return `la bannière ${wordOf(unlock.id)}`;
+    case "illuminated":
+      return "le palier Enluminure";
+  }
+}
+
+/** « Niveau 4 · 240 / 1 250 XP ». */
+export function clanLevelLine(progress: ClanView["progress"]): string {
+  return `Niveau ${progress.level} · ${formatCount(progress.xpIntoLevel)} / ${formatCount(progress.xpForNextLevel)} XP`;
+}
+
+/** « Au niveau 5, le palier Enluminure. », `null` once every list is spent. */
+export function nextUnlockLine(
+  progress: ClanView["progress"],
   wordOf: (cardId: string) => string,
-): string {
-  return item.kind === "color"
-    ? `la couleur ${emblemColorName(item.id)}`
-    : `la gravure ${wordOf(item.id)}`;
+): string | null {
+  if (progress.next === null) return null;
+  return `Au niveau ${progress.next.level}, ${unlockLabel(progress.next.unlock, wordOf)}.`;
 }
 
 /** The invitation link a member shares: the code opens any clan, whatever its mode. */
@@ -106,8 +130,9 @@ export function memberLine(member: ClanMember, now: EpochMs): string {
   return `niv. ${member.player.level} · ${seenLabel(member, now)}`;
 }
 
-export function weekWordsLabel(words: number): string {
-  return plural(words, "mot", "mots");
+/** « 23 cette semaine ». */
+export function weekAnswersLabel(answers: number): string {
+  return `${formatCount(answers)} cette semaine`;
 }
 
 /** « Voir les 27 autres ». */
@@ -143,15 +168,43 @@ const TIER_NAMES: Readonly<Record<GoalTier, string>> = {
   bronze: "bronze",
   silver: "argent",
   gold: "or",
+  illuminated: "enluminure",
 };
 
 export function tierName(tier: GoalTier): string {
   return TIER_NAMES[tier];
 }
 
-/** « Trouvez 300 mots nouveaux »: the gold target is the week's goal. */
-export function goalTitle(goal: Pick<ClanGoal, "targets">): string {
-  return `Trouvez ${plural(goal.targets.gold, "mot nouveau", "mots nouveaux")}`;
+/** « au bronze », « à l'argent ». */
+function atTier(tier: GoalTier): string {
+  return tier === "bronze" ? "au bronze" : `à l'${tierName(tier)}`;
+}
+
+/** « du bronze », « de l'or ». */
+function ofTier(tier: GoalTier): string {
+  return tier === "bronze" ? "du bronze" : `de l'${tierName(tier)}`;
+}
+
+type GoalCounts = Pick<ClanGoal, "targets" | "answers">;
+
+/** The week's tiers with their target, lowest first: the fourth only when the clan opened it. */
+function tiersOf(goal: Pick<ClanGoal, "targets">): { tier: GoalTier; target: number }[] {
+  return (["bronze", "silver", "gold", "illuminated"] as const).flatMap((tier) => {
+    const target = goal.targets[tier];
+    return target === null ? [] : [{ tier, target }];
+  });
+}
+
+function nextOf(goal: GoalCounts): { tier: GoalTier; target: number } | null {
+  return tiersOf(goal).find((entry) => goal.answers < entry.target) ?? null;
+}
+
+/** « 150 bonnes réponses »: the next tier's target, or the cheer once the last one is reached. */
+export function goalTitle(goal: GoalCounts): string {
+  const next = nextOf(goal);
+  return next === null
+    ? "Objectif rempli !"
+    : plural(next.target, "bonne réponse", "bonnes réponses");
 }
 
 /** « reste 3 j », « reste 5 h ». */
@@ -162,7 +215,7 @@ export function goalTimeLeft(endsAt: string, now: EpochMs): string {
 }
 
 export interface GoalBar {
-  /** Share of the gold target reached, 0 to 100. */
+  /** Share of the last target reached, 0 to 100. */
   readonly percent: number;
   readonly tiers: readonly {
     readonly tier: GoalTier;
@@ -173,52 +226,80 @@ export interface GoalBar {
   }[];
 }
 
-export function goalBar(goal: Pick<ClanGoal, "targets" | "words">): GoalBar {
-  const gold = Math.max(1, goal.targets.gold);
+export function goalBar(goal: GoalCounts): GoalBar {
+  const tiers = tiersOf(goal);
+  const last = Math.max(1, tiers.at(-1)?.target ?? 1);
   return {
-    percent: Math.min(100, (goal.words / gold) * 100),
-    tiers: (["bronze", "silver", "gold"] as const).map((tier) => ({
+    percent: Math.min(100, (goal.answers / last) * 100),
+    tiers: tiers.map(({ tier, target }) => ({
       tier,
-      label: `${tierName(tier)[0]?.toUpperCase()}${tierName(tier).slice(1)} à ${formatCount(goal.targets[tier])} mots`,
-      left: (goal.targets[tier] / gold) * 100,
-      reached: goal.words >= goal.targets[tier],
+      label: `${tierName(tier)[0]?.toUpperCase()}${tierName(tier).slice(1)} à ${formatCount(target)}`,
+      left: (target / last) * 100,
+      reached: goal.answers >= target,
     })),
   };
 }
 
-/** « 214 / 300 · 23 à toi ». */
-export function goalCountLine(goal: Pick<ClanGoal, "targets" | "words" | "myWords">): string {
-  return `${formatCount(goal.words)} / ${formatCount(goal.targets.gold)} · ${formatCount(goal.myWords)} à toi`;
+/** « 96 / 150 · 23 à toi », or the total once the last tier is reached. */
+export function goalCountLine(goal: Pick<ClanGoal, "targets" | "answers" | "myAnswers">): string {
+  const next = nextOf(goal);
+  const count =
+    next === null
+      ? plural(goal.answers, "bonne réponse", "bonnes réponses")
+      : `${formatCount(goal.answers)} / ${formatCount(next.target)}`;
+  return `${count} · ${formatCount(goal.myAnswers)} à toi`;
 }
 
-/** What the tiers give, with the emblem item the gold adds if any is left. */
-export function goalRewardLine(unlock: string | null): string {
-  return unlock === null
-    ? "Un sachet bonus à l'argent, un autre à l'or."
-    : `Un sachet bonus à l'argent. À l'or, un autre, plus ${unlock} pour l'emblème.`;
+/** The next tier that gives something: « À l'argent, un sachet bonus. », `null` once none is left. */
+export function goalRewardLine(
+  goal: Pick<ClanGoal, "targets" | "answers" | "boosters">,
+): string | null {
+  const next = tiersOf(goal).find(
+    (entry) => goal.answers < entry.target && goal.boosters[entry.tier] > 0,
+  );
+  if (next === undefined) return null;
+  const count = goal.boosters[next.tier];
+  const reward = count === 1 ? "un sachet bonus" : `${formatCount(count)} sachets bonus`;
+  const at = atTier(next.tier);
+  return `${at[0]?.toUpperCase()}${at.slice(1)}, ${reward}.`;
+}
+
+/** The Jouer screen's row: the ring's share of the next target and « 96 / 150 », or the cheer. */
+export function todayGoalRow(goal: GoalCounts): { readonly ratio: number; readonly text: string } {
+  const next = nextOf(goal);
+  if (next === null) return { ratio: 1, text: "Objectif rempli !" };
+  return {
+    ratio: Math.min(1, goal.answers / Math.max(1, next.target)),
+    text: `${formatCount(goal.answers)} / ${formatCount(next.target)}`,
+  };
 }
 
 /** Under the minimum, the member shares no booster: said once, plainly. */
 export function contributionHint(
-  goal: Pick<ClanGoal, "myWords" | "minContribution">,
+  goal: Pick<ClanGoal, "myAnswers" | "minContribution">,
 ): string | null {
-  const missing = goal.minContribution - goal.myWords;
+  const missing = goal.minContribution - goal.myAnswers;
   if (missing <= 0) return null;
-  return `Trouve encore ${plural(missing, "mot nouveau", "mots nouveaux")}, et tu touches les sachets.`;
+  return `Encore ${plural(missing, "bonne réponse", "bonnes réponses")}, et tu touches les sachets.`;
 }
 
 /** « Prendre le sachet de l'or ». */
 export function claimLabel(claim: Pick<ClaimableGoal, "tier">): string {
-  return `Prendre le sachet de l'${tierName(claim.tier)}`;
+  return `Prendre le sachet ${ofTier(claim.tier)}`;
 }
 
 export function goalClaimedToast(claim: Pick<ClaimableGoal, "tier">): string {
-  return `Un sachet bonus pour l'${tierName(claim.tier)} !`;
+  return `Un sachet bonus pour ${claim.tier === "bronze" ? "le bronze" : `l'${tierName(claim.tier)}`} !`;
 }
 
 /** The mail's line: boosters of a weekly goal waiting. */
 export function claimableMailTitle(count: number): string {
   return count > 1 ? `${count} sachets d'objectif à prendre` : "Un sachet d'objectif à prendre";
+}
+
+/** The end of a challenge, for a clan member: « +8 pour le clan », `null` with nothing right. */
+export function clanShareLine(correct: number): string | null {
+  return correct > 0 ? `+${formatCount(correct)} pour le clan` : null;
 }
 
 // --- Library ------------------------------------------------------------------------------
@@ -282,7 +363,9 @@ export function eventText(event: ClanEvent, wordOf: (cardId: string) => string):
     case "legendary":
       return `${playerName(event.player)} trouve une Légendaire : ${wordOf(event.cardId)} !`;
     case "tier":
-      return `Palier ${event.tier === "gold" ? "d'or" : event.tier === "silver" ? "d'argent" : "de bronze"} atteint !`;
+      return `Palier ${event.tier === "bronze" ? "de bronze" : `d'${tierName(event.tier)}`} atteint !`;
+    case "level":
+      return `Le clan passe au niveau ${event.level} !`;
     case "renamed":
       return `Le clan s'appelle maintenant ${event.name}`;
   }

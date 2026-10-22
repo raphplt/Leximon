@@ -1,12 +1,15 @@
 import type { ClanMember } from "@leximon/contract";
 import { describe, expect, it } from "vitest";
 import {
+  clanLevelLine,
   clanRefusalMessage,
+  clanShareLine,
   clanSubline,
   contributionHint,
   eventText,
   goalBar,
   goalCountLine,
+  goalRewardLine,
   goalTimeLeft,
   goalTitle,
   insertMention,
@@ -19,13 +22,22 @@ import {
   messageTime,
   moreMembersLabel,
   muteChoices,
+  nextUnlockLine,
   seenLabel,
+  todayGoalRow,
+  unlockLabel,
+  weekAnswersLabel,
 } from "./clan";
 
 const now = Date.parse("2026-10-22T12:00:00.000Z");
 const HOUR = 3_600_000;
 const badge = { code: "AAAA1111", pseudo: "Mirabelle", avatar: "zani", frame: "simple", level: 12 };
-const goal = { targets: { bronze: 100, silver: 200, gold: 300 }, words: 214, myWords: 23 };
+const goal = {
+  targets: { bronze: 45, silver: 90, gold: 150, illuminated: null },
+  answers: 96,
+  myAnswers: 23,
+  boosters: { bronze: 0, silver: 1, gold: 1, illuminated: 1 },
+};
 
 function member(overrides: Partial<ClanMember> = {}): ClanMember {
   return {
@@ -34,7 +46,7 @@ function member(overrides: Partial<ClanMember> = {}): ClanMember {
     joinedAt: "2026-10-01T00:00:00.000Z",
     online: false,
     lastSeenAt: null,
-    weekWords: 0,
+    weekAnswers: 0,
     mutedUntil: null,
     ...overrides,
   };
@@ -81,19 +93,44 @@ describe("members", () => {
 });
 
 describe("the weekly goal", () => {
-  it("aims at the gold target", () => {
-    expect(goalTitle(goal)).toBe("Trouvez 300 mots nouveaux");
-    expect(goalCountLine(goal)).toBe("214 / 300 · 23 à toi");
+  it("aims at the next tier", () => {
+    expect(goalTitle(goal)).toBe("150 bonnes réponses");
+    expect(goalCountLine(goal)).toBe("96 / 150 · 23 à toi");
+    expect(goalRewardLine(goal)).toBe("À l'or, un sachet bonus.");
+  });
+
+  it("names the first tier that gives a booster", () => {
+    const start = { ...goal, answers: 10 };
+    expect(goalTitle(start)).toBe("45 bonnes réponses");
+    expect(goalRewardLine(start)).toBe("À l'argent, un sachet bonus.");
+  });
+
+  it("cheers once the last tier is reached, without a target to beat", () => {
+    const done = { ...goal, answers: 172 };
+    expect(goalTitle(done)).toBe("Objectif rempli !");
+    expect(goalCountLine(done)).toBe("172 bonnes réponses · 23 à toi");
+    expect(goalRewardLine(done)).toBeNull();
   });
 
   it("places the tiers on the bar", () => {
     const bar = goalBar(goal);
-    expect(bar.percent).toBeCloseTo(71.33, 1);
+    expect(bar.percent).toBeCloseTo(64, 1);
     expect(bar.tiers.map((tier) => [Math.round(tier.left), tier.reached])).toEqual([
-      [33, true],
-      [67, true],
+      [30, true],
+      [60, true],
       [100, false],
     ]);
+  });
+
+  it("runs the bar up to the illuminated tier once the clan opened it", () => {
+    const illuminated = { ...goal, targets: { ...goal.targets, illuminated: 180 } };
+    expect(goalBar(illuminated).tiers.map((tier) => tier.label)).toEqual([
+      "Bronze à 45",
+      "Argent à 90",
+      "Or à 150",
+      "Enluminure à 180",
+    ]);
+    expect(goalTitle({ ...illuminated, answers: 160 })).toBe("180 bonnes réponses");
   });
 
   it("counts down the days, then the hours", () => {
@@ -102,10 +139,49 @@ describe("the weekly goal", () => {
   });
 
   it("tells a member under the minimum what is missing", () => {
-    expect(contributionHint({ myWords: 2, minContribution: 5 })).toBe(
-      "Trouve encore 3 mots nouveaux, et tu touches les sachets.",
+    expect(contributionHint({ myAnswers: 12, minContribution: 15 })).toBe(
+      "Encore 3 bonnes réponses, et tu touches les sachets.",
     );
-    expect(contributionHint({ myWords: 5, minContribution: 5 })).toBeNull();
+    expect(contributionHint({ myAnswers: 15, minContribution: 15 })).toBeNull();
+  });
+
+  it("sums up on the Jouer screen", () => {
+    expect(todayGoalRow(goal)).toEqual({ ratio: 0.64, text: "96 / 150" });
+    expect(todayGoalRow({ ...goal, answers: 160 })).toEqual({
+      ratio: 1,
+      text: "Objectif rempli !",
+    });
+  });
+
+  it("credits the clan at the end of a challenge", () => {
+    expect(clanShareLine(8)).toBe("+8 pour le clan");
+    expect(clanShareLine(0)).toBeNull();
+  });
+
+  it("gives each member's share of the week", () => {
+    expect(weekAnswersLabel(23)).toBe("23 cette semaine");
+  });
+});
+
+describe("the clan level", () => {
+  const wordOf = (id: string) => (id === "brisoir" ? "Brisoir" : id);
+  const progress = {
+    level: 4,
+    xpIntoLevel: 240,
+    xpForNextLevel: 1250,
+    next: { level: 5, unlock: { kind: "illuminated" as const } },
+  };
+
+  it("shows the level and the way to the next", () => {
+    expect(clanLevelLine(progress)).toBe("Niveau 4 · 240 / 1\u202f250 XP");
+    expect(nextUnlockLine(progress, wordOf)).toBe("Au niveau 5, le palier Enluminure.");
+    expect(nextUnlockLine({ ...progress, next: null }, wordOf)).toBeNull();
+  });
+
+  it("names what a level opens", () => {
+    expect(unlockLabel({ kind: "color", id: "vermillon" }, wordOf)).toBe("la couleur vermillon");
+    expect(unlockLabel({ kind: "engraving", id: "brisoir" }, wordOf)).toBe("la gravure Brisoir");
+    expect(unlockLabel({ kind: "banner", id: "brisoir" }, wordOf)).toBe("la bannière Brisoir");
   });
 });
 
@@ -143,6 +219,10 @@ describe("the journal", () => {
     );
     expect(eventText({ type: "left", player: null }, wordOf)).toBe("Un joueur parti s'en va");
     expect(eventText({ type: "tier", tier: "silver" }, wordOf)).toBe("Palier d'argent atteint !");
+    expect(eventText({ type: "tier", tier: "illuminated" }, wordOf)).toBe(
+      "Palier d'enluminure atteint !",
+    );
+    expect(eventText({ type: "level", level: 6 }, wordOf)).toBe("Le clan passe au niveau 6 !");
   });
 
   it("dates messages by the hour today, by the day before", () => {

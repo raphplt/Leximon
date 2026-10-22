@@ -9,6 +9,7 @@ import {
 } from "@leximon/contract";
 import { Hono } from "hono";
 import { generateSeed } from "../boosters/seed";
+import { sendGameEvents } from "../clans/events";
 import type { AppEnv } from "../context";
 import { playerRateLimit } from "../middleware/rate-limit";
 import { requireUser } from "../middleware/require-user";
@@ -70,6 +71,7 @@ export function challengeRoutes(loadCatalogIndex: CatalogIndexLoader) {
     });
     switch (result.kind) {
       case "answered":
+        if (result.correct) sendGameEvents(c, [{ type: "answer_given", userId: c.var.userId }]);
         return c.json<ChallengeAnswerResponse>({
           correct: result.correct,
           level: result.level,

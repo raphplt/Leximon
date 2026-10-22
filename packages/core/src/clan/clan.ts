@@ -16,18 +16,15 @@ export interface ClanRules {
   readonly messageMaxLength: number;
   /** Shortest time between two messages of a player. */
   readonly messageIntervalMs: number;
-  /** Wait after leaving a clan before joining another one. Not after being excluded. */
   /** A chief away this long hands the role over. */
   readonly chiefAbsenceMs: number;
   /** Silences a chief or deputy may give, shortest first. */
   readonly muteDurationsMs: readonly number[];
   /** Messages older than this are erased, unless reported and not yet handled. */
   readonly messageRetentionMs: number;
-  /** Engravings (card ids) and colours every clan may use for its emblem. */
+  /** Engravings (card ids) and colours every clan may use for its emblem; levels open more. */
   readonly emblemEngravings: readonly string[];
   readonly emblemColors: readonly string[];
-  /** Extra engravings and colours, one more for each gold weekly goal, in this order. */
-  readonly emblemUnlocks: readonly EmblemItem[];
 }
 
 export type ClanSchedule = readonly [ClanRules, ...ClanRules[]];
@@ -111,12 +108,11 @@ function collapse(raw: string): string {
 
 // --- Emblem --------------------------------------------------------------------------------------
 
-/** Engravings and colours a clan may choose, given how many gold goals it reached. */
+/** Engravings and colours a clan may choose: everyone's, then those its level opened. */
 export function emblemChoices(
   rules: ClanRules,
-  unlocked: number,
+  extra: readonly EmblemItem[],
 ): { readonly engravings: readonly string[]; readonly colors: readonly string[] } {
-  const extra = rules.emblemUnlocks.slice(0, Math.max(0, unlocked));
   return {
     engravings: [
       ...rules.emblemEngravings,
@@ -129,18 +125,17 @@ export function emblemChoices(
   };
 }
 
-/** The item the next gold goal unlocks, `null` once the list is exhausted. */
-export function nextEmblemUnlock(rules: ClanRules, unlocked: number): EmblemItem | null {
-  return rules.emblemUnlocks[Math.max(0, unlocked)] ?? null;
-}
-
 export interface Emblem {
   readonly engraving: string;
   readonly colors: readonly [string, string];
 }
 
-export function isEmblemAllowed(rules: ClanRules, unlocked: number, emblem: Emblem): boolean {
-  const choices = emblemChoices(rules, unlocked);
+export function isEmblemAllowed(
+  rules: ClanRules,
+  extra: readonly EmblemItem[],
+  emblem: Emblem,
+): boolean {
+  const choices = emblemChoices(rules, extra);
   return (
     choices.engravings.includes(emblem.engraving) &&
     emblem.colors.every((color) => choices.colors.includes(color)) &&

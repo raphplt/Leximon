@@ -4,6 +4,7 @@ import type { ClaimableGoal, ClanMember, ClanView } from "@leximon/contract";
 import { canAct } from "@leximon/core";
 import {
   claimLabel,
+  clanLevelLine,
   clanSubline,
   contributionHint,
   goalBar,
@@ -16,10 +17,10 @@ import {
   libraryRows,
   memberLine,
   moreMembersLabel,
+  nextUnlockLine,
   onlineCountLabel,
   roleLabel,
-  unlockLabel,
-  weekWordsLabel,
+  weekAnswersLabel,
 } from "@leximon/view-model";
 import { type CSSProperties, useCallback, useEffect, useMemo, useState } from "react";
 import { type Catalog, loadCatalog } from "@/cards/catalog";
@@ -33,6 +34,7 @@ import { Icon } from "@/ui/icon";
 import { useToast } from "@/ui/toast";
 import ui from "@/ui/ui.module.css";
 import { fetchClan, fetchMembers } from "./api";
+import { Banner } from "./banner";
 import { ClanChat } from "./chat";
 import { useClaim } from "./claim";
 import styles from "./clan.module.css";
@@ -180,7 +182,9 @@ export function ClanPage({
 
   const goal = view.goal;
   const bar = goal === null ? null : goalBar(goal);
-  const unlock = goal?.nextUnlock ? unlockLabel(goal.nextUnlock, wordOf) : null;
+  const reward = goal === null ? null : goalRewardLine(goal);
+  const progress = view.progress;
+  const nextUnlock = nextUnlockLine(progress, wordOf);
   const hint = goal === null ? null : contributionHint(goal);
   // A claim taken from the mail leaves the page at once, without reading the clan again.
   const claimable = (goal?.claimable ?? []).filter(
@@ -191,11 +195,26 @@ export function ClanPage({
   return (
     <main className={styles.screen} data-tab={tab}>
       <header className={`${ui.panel} ${styles.hero}`}>
-        <Emblem emblem={view.clan.emblem} size={84} />
+        <Banner cardId={view.clan.banner} />
+        <Emblem emblem={view.clan.emblem} size={96} level={progress.level} />
         <div className={styles.heroText}>
           <p className={`${ui.kicker} ${styles.heroKicker}`}>Ton clan</p>
           <h1 className={`${ui.display} ${styles.heroName}`}>{view.clan.name}</h1>
           <p className={styles.heroLine}>{clanSubline(view.clan)}</p>
+          <div className={styles.clanXp}>
+            <div className={styles.clanXpHead}>
+              <span>{clanLevelLine(progress)}</span>
+              {nextUnlock !== null && <span className={styles.clanXpNext}>{nextUnlock}</span>}
+            </div>
+            <div className={`${ui.bar} ${styles.clanXpTrack}`}>
+              <div
+                className={`${ui.barFill} ${styles.clanXpFill}`}
+                style={{
+                  width: `${Math.min(100, (progress.xpIntoLevel / Math.max(1, progress.xpForNextLevel)) * 100)}%`,
+                }}
+              />
+            </div>
+          </div>
         </div>
         <div className={styles.heroActions}>
           {view.pendingRequests > 0 && canAct(me.role, "accept_request") && (
@@ -261,14 +280,17 @@ export function ClanPage({
                     style={{ left: `${Math.min(tier.left, 98)}%` }}
                     title={tier.label}
                   >
-                    <Icon name={tier.tier === "gold" ? "star" : "check"} size={16} />
+                    <Icon
+                      name={tier.tier === "gold" || tier.tier === "illuminated" ? "star" : "check"}
+                      size={16}
+                    />
                     <span className={styles.visuallyHidden}>{tier.label}</span>
                   </span>
                 ))}
               </div>
               <div className={styles.goalFoot}>
                 <span>{goalCountLine(goal)}</span>
-                <span>{goalRewardLine(unlock)}</span>
+                {reward !== null && <span>{reward}</span>}
               </div>
               {hint !== null && <p className={styles.goalHint}>{hint}</p>}
               {claimable.length > 0 && (
@@ -342,7 +364,9 @@ export function ClanPage({
                           {role}
                         </span>
                       )}
-                      <span className={styles.memberWords}>{weekWordsLabel(entry.weekWords)}</span>
+                      <span className={styles.memberWords}>
+                        {weekAnswersLabel(entry.weekAnswers)}
+                      </span>
                     </button>
                   </li>
                 );

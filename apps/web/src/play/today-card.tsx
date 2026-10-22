@@ -1,11 +1,12 @@
 "use client";
 
-import { capitalize, dailyView, SLIPPING_AWAY } from "@leximon/view-model";
+import { capitalize, dailyView, SLIPPING_AWAY, todayGoalRow } from "@leximon/view-model";
 import Link from "next/link";
 import { type CSSProperties, useEffect, useState } from "react";
 import { type Catalog, collectionName } from "@/cards/catalog";
 import { Card } from "@/components/card";
 import { fetchChallenges } from "@/lib/api";
+import { myClan } from "@/player/clan";
 import { dailyChallenge } from "@/player/collection";
 import { useShared } from "@/player/resource";
 import { useShell } from "@/shell/shell-context";
@@ -15,7 +16,8 @@ import { Icon } from "@/ui/icon";
 import styles from "./play.module.css";
 
 /**
- * What the day holds beside the counter: the daily challenge, the word slipping away, the mail.
+ * What the day holds beside the counter: the daily challenge, the clan's goal, the word slipping
+ * away, the mail.
  * On a phone, the floating buttons carry the challenge and the mail: only the word remains.
  */
 export function TodayCard({ catalog }: { readonly catalog: Catalog | null }) {
@@ -23,6 +25,8 @@ export function TodayCard({ catalog }: { readonly catalog: Catalog | null }) {
   const { openMail } = useShell();
   const daily = useShared(dailyChallenge);
   const challenge = daily === null ? null : dailyView(daily);
+  const clan = useShared(myClan);
+  const clanGoal = clan?.goal == null ? null : todayGoalRow(clan.goal);
   return (
     <section className={styles.today} aria-label="Aujourd'hui">
       <h2 className={styles.cardKicker}>Aujourd'hui</h2>
@@ -38,6 +42,20 @@ export function TodayCard({ catalog }: { readonly catalog: Catalog | null }) {
           {challenge !== null && <span className={styles.todayDetail}>{challenge.text}</span>}
         </span>
       </Link>
+      {clanGoal !== null && (
+        <Link href="/defis" className={styles.todayRow}>
+          <span
+            className={styles.todayRing}
+            style={{ "--done": `${Math.round(clanGoal.ratio * 360)}deg` } as CSSProperties}
+          >
+            <Icon name="clan" size={20} />
+          </span>
+          <span className={styles.todayText}>
+            <span className={styles.todayTitle}>Objectif du clan</span>
+            <span className={styles.todayDetail}>{clanGoal.text}</span>
+          </span>
+        </Link>
+      )}
       {catalog !== null && <SlippingWord catalog={catalog} />}
       <button type="button" className={styles.todayRow} onClick={openMail}>
         <span className={styles.todayIcon}>

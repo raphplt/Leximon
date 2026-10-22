@@ -11,6 +11,7 @@ import type {
   UpdateClanRequest,
 } from "@leximon/contract";
 import {
+  CLAN_LEVEL,
   CLAN_SCHEDULE,
   type ClanAction,
   type ClanMemberState,
@@ -18,7 +19,9 @@ import {
   canAct,
   checkClanMotto,
   checkClanName,
+  clanLevelOf,
   clanRulesAt,
+  clanUnlocks,
   type EpochMs,
   emblemChoices,
   featureLevels,
@@ -28,6 +31,7 @@ import {
   isMuteDurationAllowed,
   levelOf,
   nextChief,
+  nextClanUnlock,
   pseudoKey,
   TRADE_SCHEDULE,
   UNLOCK_SCHEDULE,
@@ -45,6 +49,7 @@ const {
   clanMembers,
   clanMessages,
   clanWeekMembers,
+  clanWeeks,
   clans,
   players,
   userProgress,
@@ -263,7 +268,7 @@ export async function createClan(
   if (!name.ok) return refuse(`name_${name.reason}`);
   const motto = checkClanMotto(rules, request.motto);
   if (!motto.ok) return refuse(motto.reason === "refused" ? "motto_refused" : "motto_too_long");
-  if (!isEmblemAllowed(rules, 0, request.emblem)) return refuse("emblem_not_allowed");
+  if (!isEmblemAllowed(rules, [], request.emblem)) return refuse("emblem_not_allowed");
 
   await ensurePlayer(db, userId);
   for (let draw = 0; draw < MAX_CODE_DRAWS; draw++) {
@@ -629,7 +634,8 @@ export async function updateClan(
       if (motto?.ok) update.motto = motto.text;
       if (changes.entryMode !== undefined) update.entryMode = changes.entryMode;
       if (changes.emblem !== undefined) {
-        if (!isEmblemAllowed(rules, clan.emblemUnlocked, changes.emblem)) {
+        const opened = clanUnlocks(CLAN_LEVEL, clanLevelOf(CLAN_LEVEL, clan.xp).level);
+        if (!isEmblemAllowed(rules, opened.emblemItems, changes.emblem)) {
           return refuse("emblem_not_allowed");
         }
         update.emblemEngraving = changes.emblem.engraving;
@@ -717,6 +723,7 @@ async function readChief(db: Reader, clanId: string) {
 type ClanRow = typeof clans.$inferSelect;
 
 export function toSummary(row: ClanRow): ClanSummary {
+  const level = clanLevelOf(CLAN_LEVEL, row.xp).level;
   return {
     id: row.id,
     name: row.name,
@@ -724,6 +731,8 @@ export function toSummary(row: ClanRow): ClanSummary {
     entryMode: row.entryMode,
     emblem: { engraving: row.emblemEngraving, colors: [row.emblemColor, row.emblemAccent] },
     memberCount: row.memberCount,
+    level,
+    banner: clanUnlocks(CLAN_LEVEL, level).banners.at(-1) ?? null,
   };
 }
 
@@ -748,6 +757,20 @@ export async function readMyClan(
     .select({ clanId: clanJoinRequests.clanId })
     .from(clanJoinRequests)
     .where(eq(clanJoinRequests.userId, userId));
+  const clanId = row?.clanId ?? null;
+  const [week] =
+    clanId === null
+      ? []
+      : await db
+          .select({
+            bronze: clanWeeks.bronze,
+            silver: clanWeeks.silver,
+            gold: clanWeeks.gold,
+            illuminated: clanWeeks.illuminated,
+            answers: clanWeeks.answers,
+          })
+          .from(clanWeeks)
+          .where(and(eq(clanWeeks.clanId, clanId), eq(clanWeeks.week, gameWeekOf(now).key)));
   return {
     clanId: row?.clanId ?? null,
     emblem:
@@ -756,6 +779,18 @@ export async function readMyClan(
         : { engraving: row.engraving, colors: [row.color, row.accent] },
     requests: requests.map((request) => request.clanId),
     claimable: await readClaimable(db, userId, now),
+    goal:
+      week === undefined
+        ? null
+        : {
+            targets: {
+              bronze: week.bronze,
+              silver: week.silver,
+              gold: week.gold,
+              illuminated: week.illuminated,
+            },
+            answers: week.answers,
+          },
   };
 }
 
@@ -802,16 +837,15 @@ export async function listClans(
 }
 
 export interface MemberCursor {
-  readonly rank: number;
+  readonly answers: number;
   readonly joinedAt: number;
   readonly userId: string;
 }
 
-const roleRank = sql<number>`(case ${clanMembers.role} when 'chief' then 0
-  when 'deputy' then 1 else 2 end)`;
+const weekAnswers = sql<number>`coalesce(${clanWeekMembers.answers}, 0)`;
 
 /**
- * Members in order: the chief, the deputies, then by arrival. With `pseudoPrefix`, only those
+ * Members in order of their share of the week, then by arrival. With `pseudoPrefix`, only those
  * whose pseudo key starts with it.
  */
 export async function readMembers(
@@ -830,11 +864,10 @@ export async function readMembers(
     .select({
       userId: clanMembers.userId,
       role: clanMembers.role,
-      rank: roleRank,
       joinedAt: clanMembers.joinedAt,
       mutedUntil: clanMembers.mutedUntil,
       lastSeenAt: players.lastSeenAt,
-      weekWords: clanWeekMembers.words,
+      weekAnswers,
     })
     .from(clanMembers)
     .innerJoin(players, eq(players.userId, clanMembers.userId))
@@ -854,11 +887,11 @@ export async function readMembers(
           : sql`starts_with(${players.pseudoKey}, ${pseudoPrefix})`,
         after === null
           ? undefined
-          : sql`(${roleRank}, ${clanMembers.joinedAt}, ${clanMembers.userId})
-              > (${after.rank}, ${new Date(after.joinedAt)}, ${after.userId})`,
+          : sql`(-${weekAnswers}, ${clanMembers.joinedAt}, ${clanMembers.userId})
+              > (${-after.answers}, ${new Date(after.joinedAt)}, ${after.userId})`,
       ),
     )
-    .orderBy(roleRank, asc(clanMembers.joinedAt), asc(clanMembers.userId))
+    .orderBy(desc(weekAnswers), asc(clanMembers.joinedAt), asc(clanMembers.userId))
     .limit(limit + 1);
   const page = rows.slice(0, limit);
   const badges = await readBadges(
@@ -877,7 +910,7 @@ export async function readMembers(
         joinedAt: row.joinedAt.toISOString(),
         online: seen !== null && now - seen < ONLINE_WINDOW_MS,
         lastSeenAt: row.lastSeenAt?.toISOString() ?? null,
-        weekWords: row.weekWords ?? 0,
+        weekAnswers: Number(row.weekAnswers),
         mutedUntil:
           row.mutedUntil !== null && row.mutedUntil.getTime() > now
             ? row.mutedUntil.toISOString()
@@ -890,7 +923,11 @@ export async function readMembers(
     members,
     last:
       rows.length > limit && last !== undefined
-        ? { rank: Number(last.rank), joinedAt: last.joinedAt.getTime(), userId: last.userId }
+        ? {
+            answers: Number(last.weekAnswers),
+            joinedAt: last.joinedAt.getTime(),
+            userId: last.userId,
+          }
         : null,
   };
 }
@@ -923,7 +960,8 @@ export async function readClanView(
       .where(eq(clanJoinRequests.clanId, clanId));
     pendingRequests = pending?.count ?? 0;
   }
-  const choices = emblemChoices(rulesAt(now), clan.emblemUnlocked);
+  const level = clanLevelOf(CLAN_LEVEL, clan.xp);
+  const choices = emblemChoices(rulesAt(now), clanUnlocks(CLAN_LEVEL, level.level).emblemItems);
   return {
     clan: toSummary(clan),
     me:
@@ -938,15 +976,8 @@ export async function readClanView(
             inviteCode: clan.inviteCode,
           },
     requested: (requested?.count ?? 0) > 0,
-    goal:
-      me === null
-        ? null
-        : await readGoal(db, {
-            clanId,
-            userId: viewerId,
-            emblemUnlocked: clan.emblemUnlocked,
-            now,
-          }),
+    goal: me === null ? null : await readGoal(db, { clanId, userId: viewerId, now }),
+    progress: { ...level, next: nextClanUnlock(CLAN_LEVEL, level.level) },
     library:
       me === null
         ? []

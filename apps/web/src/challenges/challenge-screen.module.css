@@ -414,6 +414,16 @@
   color: var(--lx-color-accent);
 }
 
+.clanShare {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 6px 0 0;
+  font-weight: 700;
+  font-size: 15px;
+  color: #5fe0b6;
+}
+
 .won {
   display: flex;
   align-items: center;

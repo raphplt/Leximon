@@ -6,6 +6,7 @@ import {
   type AnsweredQuestion,
   answerTitle,
   bonusLines,
+  clanShareLine,
   dailyView,
   escapingWords,
   frequencyLine,
@@ -28,6 +29,7 @@ import { Card } from "@/components/card";
 import { answerChallenge, fetchChallenges } from "@/lib/api";
 import { useNow } from "@/lib/use-now";
 import { usePackShape } from "@/lib/use-pack-shape";
+import { myClan } from "@/player/clan";
 import { dailyChallenge, ownedCards, refreshIfRead, wordMemory } from "@/player/collection";
 import { useShared } from "@/player/resource";
 import { publishProgress } from "@/progress/use-progress";
@@ -474,7 +476,12 @@ function Recap({
 }) {
   const { noun } = usePackShape();
   const tally = useShared(dailyChallenge);
+  const clan = useShared(myClan);
   const xp = sessionXpLine(answers);
+  const clanShare =
+    clan?.clanId == null ? null : clanShareLine(answers.filter((answer) => answer.correct).length);
+  // The Jouer screen's clan row counts these answers too.
+  useEffect(() => refreshIfRead(myClan), []);
   const bonus = sessionBonusLine(answers, noun);
   const ups = answers
     .filter((answer) => answer.levelUp)
@@ -488,6 +495,12 @@ function Recap({
       </p>
       <p className={`${ui.display} ${styles.score}`}>{sessionScore(answers)}</p>
       {xp !== null && <p className={styles.xp}>{xp}</p>}
+      {clanShare !== null && (
+        <p className={styles.clanShare}>
+          <Icon name="clan" size={18} />
+          {clanShare}
+        </p>
+      )}
       {bonus !== null ? (
         <p className={styles.won}>
           <Icon name="sachet" size={28} />

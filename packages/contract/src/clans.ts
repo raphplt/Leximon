@@ -17,13 +17,17 @@ export type ClanEntryMode = z.infer<typeof clanEntryModeSchema>;
 export const clanRoleSchema = z.enum(["chief", "deputy", "member"]);
 export type ClanRole = z.infer<typeof clanRoleSchema>;
 
-export const goalTierSchema = z.enum(["bronze", "silver", "gold"]);
+export const goalTierSchema = z.enum(["bronze", "silver", "gold", "illuminated"]);
 export type GoalTier = z.infer<typeof goalTierSchema>;
 
-export const emblemItemSchema = z.object({
-  kind: z.enum(["engraving", "color"]),
-  id: emblemKeySchema,
-});
+/** What a clan level opens: an emblem item, a banner (card id of its engraving) or the fourth tier. */
+export const clanUnlockSchema = z.discriminatedUnion("kind", [
+  z.object({ kind: z.literal("engraving"), id: emblemKeySchema }),
+  z.object({ kind: z.literal("color"), id: emblemKeySchema }),
+  z.object({ kind: z.literal("banner"), id: emblemKeySchema }),
+  z.object({ kind: z.literal("illuminated") }),
+]);
+export type ClanUnlock = z.infer<typeof clanUnlockSchema>;
 
 /** A clan as the list and the header show it. */
 export const clanSummarySchema = z.object({
@@ -33,6 +37,10 @@ export const clanSummarySchema = z.object({
   entryMode: clanEntryModeSchema,
   emblem: emblemSchema,
   memberCount: z.int().nonnegative(),
+  /** The clan's own level. */
+  level: z.int().positive(),
+  /** The last banner its level opened (card id of the engraving), `null` before level 10. */
+  banner: emblemKeySchema.nullable(),
 });
 export type ClanSummary = z.infer<typeof clanSummarySchema>;
 
@@ -61,6 +69,14 @@ export const claimableGoalSchema = z.object({
 export type ClaimableGoal = z.infer<typeof claimableGoalSchema>;
 
 /** `GET /me/clan`: where the player stands. */
+/** In correct challenge answers; `illuminated` is `null` until the clan's level opens it. */
+const goalTargetsSchema = z.object({
+  bronze: z.int(),
+  silver: z.int(),
+  gold: z.int(),
+  illuminated: z.int().nullable(),
+});
+
 export const myClanResponseSchema = z.object({
   clanId: clanIdSchema.nullable(),
   /** The clan's emblem, worn by the Jouer screen's clan button; null outside a clan. */
@@ -69,6 +85,8 @@ export const myClanResponseSchema = z.object({
   requests: z.array(clanIdSchema),
   /** Weekly goal boosters waiting, even from a clan the player left: for the mail. */
   claimable: z.array(claimableGoalSchema),
+  /** The week's goal for the Jouer screen; null outside a clan or before the week's first count. */
+  goal: z.object({ targets: goalTargetsSchema, answers: z.int().nonnegative() }).nullable(),
 });
 export type MyClanResponse = z.infer<typeof myClanResponseSchema>;
 
@@ -79,8 +97,8 @@ export const clanMemberSchema = z.object({
   /** Seen within the last few minutes. */
   online: z.boolean(),
   lastSeenAt: timestampSchema.nullable(),
-  /** New words brought to this week's goal. */
-  weekWords: z.int().nonnegative(),
+  /** Correct answers given to this week's goal. */
+  weekAnswers: z.int().nonnegative(),
   mutedUntil: timestampSchema.nullable(),
 });
 export type ClanMember = z.infer<typeof clanMemberSchema>;
@@ -89,16 +107,21 @@ export const clanGoalSchema = z.object({
   /** The Monday in Paris, "2026-10-19". */
   week: z.string(),
   endsAt: timestampSchema,
-  targets: z.object({ bronze: z.int(), silver: z.int(), gold: z.int() }),
-  words: z.int().nonnegative(),
+  targets: goalTargetsSchema,
+  answers: z.int().nonnegative(),
   tier: goalTierSchema.nullable(),
-  myWords: z.int().nonnegative(),
-  /** Words a member brings before sharing the boosters. */
+  myAnswers: z.int().nonnegative(),
+  /** Correct answers a member gives before sharing the boosters. */
   minContribution: z.int().positive(),
+  /** Bonus boosters each tier gives a member who gave enough. */
+  boosters: z.object({
+    bronze: z.int().nonnegative(),
+    silver: z.int().nonnegative(),
+    gold: z.int().nonnegative(),
+    illuminated: z.int().nonnegative(),
+  }),
   /** Tiers whose boosters the player may claim now, from this week or the last one. */
   claimable: z.array(claimableGoalSchema),
-  /** What the next gold goal unlocks for the emblem, `null` once all is unlocked. */
-  nextUnlock: emblemItemSchema.nullable(),
 });
 export type ClanGoal = z.infer<typeof clanGoalSchema>;
 
@@ -117,6 +140,13 @@ export const clanViewSchema = z.object({
   /** The visitor already asked to enter. */
   requested: z.boolean(),
   goal: clanGoalSchema.nullable(),
+  /** The clan's level: XP into it, XP it takes, and the next level that opens something. */
+  progress: z.object({
+    level: z.int().positive(),
+    xpIntoLevel: z.int().nonnegative(),
+    xpForNextLevel: z.int().positive(),
+    next: z.object({ level: z.int().positive(), unlock: clanUnlockSchema }).nullable(),
+  }),
   /** Cards of each collection held by at least one member. */
   library: z.array(z.object({ collectionId: slugSchema, owned: z.int().nonnegative() })),
   /** The first members, chief and deputies first; the rest by `GET /clans/:id/members`. */
@@ -208,6 +238,7 @@ export const clanEventSchema = z.discriminatedUnion("type", [
     cardId: slugSchema,
   }),
   z.object({ type: z.literal("tier"), tier: goalTierSchema }),
+  z.object({ type: z.literal("level"), level: z.int().positive() }),
   z.object({ type: z.literal("renamed"), name: z.string() }),
 ]);
 export type ClanEvent = z.infer<typeof clanEventSchema>;

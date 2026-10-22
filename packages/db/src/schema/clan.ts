@@ -1,4 +1,4 @@
-import { CLAN_ENTRY_MODES, CLAN_ROLES, GOAL_TIERS } from "@leximon/core";
+import { CLAN_ENTRY_MODES, CLAN_ROLES, GOAL_TIERS, type GoalTier } from "@leximon/core";
 import { sql } from "drizzle-orm";
 import {
   check,
@@ -38,9 +38,9 @@ export const clans = pgTable(
     emblemEngraving: text().notNull(),
     emblemColor: text().notNull(),
     emblemAccent: text().notNull(),
-    /** Emblem items unlocked by gold weekly goals. */
-    emblemUnlocked: integer().notNull().default(0),
     memberCount: integer().notNull().default(0),
+    /** The clan's own XP: the sum of its weeks' XP, recounted with the current week. */
+    xp: integer().notNull().default(0),
     /** Last recount of the library by the queue, to space recounts out. */
     libraryCountedAt: timestamp({ withTimezone: true }),
     createdAt: timestamp({ withTimezone: true }).notNull(),
@@ -103,7 +103,8 @@ export type ClanEventPayload =
   | { readonly type: "excluded"; readonly userId: string }
   | { readonly type: "role"; readonly userId: string; readonly role: "chief" | "deputy" | "member" }
   | { readonly type: "legendary"; readonly userId: string; readonly cardId: string }
-  | { readonly type: "tier"; readonly week: string; readonly tier: "bronze" | "silver" | "gold" }
+  | { readonly type: "tier"; readonly week: string; readonly tier: GoalTier }
+  | { readonly type: "level"; readonly level: number }
   | { readonly type: "renamed"; readonly name: string };
 
 /** A member named in a message: the range covers the "@" and the pseudo. */
@@ -150,7 +151,7 @@ export const clanMessages = pgTable(
   ],
 );
 
-/** A clan's week: the targets fixed when it starts, and the words counted so far. */
+/** A clan's week: the targets fixed when it starts, and the answers counted so far. */
 export const clanWeeks = pgTable(
   "clan_weeks",
   {
@@ -163,14 +164,19 @@ export const clanWeeks = pgTable(
     bronze: integer().notNull(),
     silver: integer().notNull(),
     gold: integer().notNull(),
-    words: integer().notNull().default(0),
+    /** The fourth target, `null` when the clan's level had not opened it when the week started. */
+    illuminated: integer(),
+    /** Correct challenge answers of the members, summed from `clan_week_members`. */
+    answers: integer().notNull().default(0),
+    /** Clan XP the week brings: answers up to each member's cap, then the tiers reached. */
+    xp: integer().notNull().default(0),
     tier: goalTier(),
     updatedAt: timestamp({ withTimezone: true }).notNull(),
   },
   (table) => [primaryKey({ columns: [table.clanId, table.week] })],
 );
 
-/** Each member's new words for the clan's week, recounted from `user_cards`. */
+/** Each member's correct answers for the clan's week. */
 export const clanWeekMembers = pgTable(
   "clan_week_members",
   {
@@ -181,7 +187,8 @@ export const clanWeekMembers = pgTable(
     userId: text()
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
-    words: integer().notNull(),
+    /** Correct challenge answers given this week since joining, recounted from `review_logs`. */
+    answers: integer().notNull().default(0),
     updatedAt: timestamp({ withTimezone: true }).notNull(),
   },
   (table) => [
@@ -192,7 +199,7 @@ export const clanWeekMembers = pgTable(
 
 /**
  * Boosters claimed from weekly goals. The key leaves out the clan: at most one claim per
- * tier and week, so two boosters a week at most, even after changing clans.
+ * tier and week, even after changing clans.
  */
 export const clanGoalClaims = pgTable(
   "clan_goal_claims",

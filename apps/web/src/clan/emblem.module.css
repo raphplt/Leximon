@@ -23,3 +23,38 @@
   mask-position: center;
   mask-size: contain;
 }
+
+/* Large and faint, on the right of a clan's header or row, behind its content. */
+.banner {
+  position: absolute;
+  z-index: -1;
+  inset: -12% -4% -12% 45%;
+  background: #f2c9a8;
+  opacity: 0.16;
+  mask-image: var(--banner-src);
+  mask-repeat: no-repeat;
+  mask-position: right center;
+  mask-size: contain;
+  pointer-events: none;
+}
+
+/* The clan's level, pinned to the point of the shield. */
+.medal {
+  position: absolute;
+  right: calc(var(--size) * -0.16);
+  bottom: calc(var(--size) * -0.08);
+  display: grid;
+  place-items: center;
+  min-width: max(18px, calc(var(--size) * 0.4));
+  height: max(18px, calc(var(--size) * 0.4));
+  padding: 0 4px;
+  border-radius: 999px;
+  background: #d9a233;
+  color: #3a2606;
+  font-family: var(--font-display), Georgia, serif;
+  font-size: max(11px, calc(var(--size) * 0.2));
+  line-height: 1;
+  box-shadow:
+    0 0 0 2px #7a5410,
+    0 2px 0 2px #7a5410;
+}
