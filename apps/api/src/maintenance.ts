@@ -1,5 +1,7 @@
+import { CLAN_SCHEDULE, clanRulesAt } from "@leximon/core";
 import { type Database, schema } from "@leximon/db";
 import { and, inArray, isNotNull, lt, sql } from "drizzle-orm";
+import { recountActiveClans } from "./clans/events";
 
 /** How long a client may retry an open with the same idempotency key. */
 export const IDEMPOTENCY_RETENTION_MS = 48 * 60 * 60 * 1000;
@@ -11,13 +13,17 @@ export const CAMPAIGN_ADDRESS_RETENTION_MS = 30 * 24 * 60 * 60 * 1000;
 export interface MaintenanceReport {
   readonly purgedRequests: number;
   readonly erasedCampaignAddresses: number;
+  readonly erasedClanMessages: number;
+  readonly recountedClans: number;
 }
 
 /**
  * Daily housekeeping, run by the Worker's cron trigger. Idempotent: running it twice is harmless.
  * - creates the upcoming monthly partitions of `booster_opens` and `review_logs`;
  * - purges idempotency keys too old to be retried;
- * - erases the addresses of campaigns ended more than 30 days ago (the suppression list stays).
+ * - erases the addresses of campaigns ended more than 30 days ago (the suppression list stays);
+ * - erases clan messages older than 90 days, except those reported and not yet handled (P67);
+ * - recounts the clans of this week and the last, in case an event was lost (D-038).
  */
 export async function runMaintenance(db: Database, now: number): Promise<MaintenanceReport> {
   await db.execute(sql`select leximon_ensure_booster_open_partitions(${PARTITION_MONTHS_AHEAD})`);
@@ -43,5 +49,23 @@ export async function runMaintenance(db: Database, now: number): Promise<Mainten
       ),
     )
     .returning({ id: sends.id });
-  return { purgedRequests: purged.length, erasedCampaignAddresses: erased.length };
+  const retention = clanRulesAt(CLAN_SCHEDULE, now).messageRetentionMs;
+  const { clanMessages, moderationReports } = schema;
+  const erasedMessages = await db
+    .delete(clanMessages)
+    .where(
+      and(
+        lt(clanMessages.createdAt, new Date(now - retention)),
+        sql`not exists (select 1 from ${moderationReports}
+          where ${moderationReports.messageId} = ${clanMessages.id}
+            and ${moderationReports.resolvedAt} is null)`,
+      ),
+    )
+    .returning({ id: clanMessages.id });
+  return {
+    purgedRequests: purged.length,
+    erasedCampaignAddresses: erased.length,
+    erasedClanMessages: erasedMessages.length,
+    recountedClans: await recountActiveClans(db, now),
+  };
 }

@@ -32,7 +32,7 @@ const {
   userProgress,
 } = schema;
 
-type WalletRow = Pick<
+export type WalletRow = Pick<
   typeof boosterWallets.$inferSelect,
   "stored" | "progressMs" | "asOf" | "bonusBoosters" | "garniBoosters" | "reserveSlots"
 >;
@@ -52,6 +52,30 @@ export function walletView(row: WalletRow | undefined, now: EpochMs): BoosterWal
     bonusCap: reserveCapacity(bonusRulesAt(BONUS_SCHEDULE, now), row?.reserveSlots ?? 0),
     capacity: capacityAt(REFILL_SCHEDULE, now),
   };
+}
+
+type Transaction = Parameters<Parameters<Database["transaction"]>[0]>[0];
+
+/**
+ * Locks the player's wallet, created full if missing: the first step of every transaction that
+ * adds boosters to the reserve (lock order: the wallet first).
+ */
+export async function lockWallet(tx: Transaction, userId: string, now: EpochMs) {
+  const fresh = createFullWallet(REFILL_SCHEDULE, now);
+  const [locked] = await tx
+    .insert(boosterWallets)
+    .values({
+      userId,
+      stored: fresh.stored,
+      progressMs: fresh.progressMs,
+      asOf: new Date(fresh.asOf),
+    })
+    .onConflictDoUpdate({ target: boosterWallets.userId, set: { userId: sql`excluded.user_id` } })
+    .returning();
+  if (locked === undefined) {
+    throw new Error(`Wallet missing for user ${userId} right after its creation`);
+  }
+  return locked;
 }
 
 export interface LevelRewardsState {
@@ -116,20 +140,7 @@ export async function claimLevelReward(
   const bonusRules = bonusRulesAt(BONUS_SCHEDULE, now);
 
   return db.transaction(async (tx): Promise<ClaimResult> => {
-    const fresh = createFullWallet(REFILL_SCHEDULE, now);
-    const [locked] = await tx
-      .insert(boosterWallets)
-      .values({
-        userId,
-        stored: fresh.stored,
-        progressMs: fresh.progressMs,
-        asOf: new Date(fresh.asOf),
-      })
-      .onConflictDoUpdate({ target: boosterWallets.userId, set: { userId: sql`excluded.user_id` } })
-      .returning();
-    if (locked === undefined) {
-      throw new Error(`Wallet missing for user ${userId} right after its creation`);
-    }
+    const locked = await lockWallet(tx, userId, now);
 
     // After the lock: sees a claim of the same level committed by a concurrent request.
     const [state] = await tx

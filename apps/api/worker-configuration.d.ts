@@ -5,6 +5,7 @@ interface __BaseEnv_Env {
 	HYPERDRIVE: Hyperdrive;
 	EMAIL: SendEmail;
 	CAMPAIGN_QUEUE: Queue;
+	GAME_EVENTS: Queue;
 	SIGNUP_RATE_LIMITER: RateLimit;
 	PLAYER_RATE_LIMITER: RateLimit;
 	OTP_SEND_IP_RATE_LIMITER: RateLimit;

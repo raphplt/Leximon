@@ -9,9 +9,11 @@ import {
 } from "@leximon/contract";
 import { capacityAt, REFILL_SCHEDULE } from "@leximon/core";
 import { Hono } from "hono";
+import { sendGameEvents } from "../clans/events";
 import type { AppEnv } from "../context";
 import { playerRateLimit } from "../middleware/rate-limit";
 import { requireUser } from "../middleware/require-user";
+import { refuseLockedWrites } from "../moderation/restrictions";
 import type { CardPoolLoader } from "./card-pool";
 import { openBooster } from "./open-booster";
 import { generateSeed } from "./seed";
@@ -19,7 +21,7 @@ import { generateSeed } from "./seed";
 export function boosterRoutes(loadCardPool: CardPoolLoader) {
   const routes = new Hono<AppEnv>();
 
-  routes.post("/open", requireUser, playerRateLimit, async (c) => {
+  routes.post("/open", requireUser, playerRateLimit, refuseLockedWrites, async (c) => {
     const key = idempotencyKeySchema.safeParse(c.req.header(IDEMPOTENCY_KEY_HEADER));
     if (!key.success) {
       return c.json({ error: "invalid_idempotency_key" }, 400);
@@ -40,6 +42,7 @@ export function boosterRoutes(loadCardPool: CardPoolLoader) {
 
     switch (result.kind) {
       case "opened":
+        sendGameEvents(c, [{ type: "cards_obtained", userId: c.var.userId }]);
         return c.json<OpenBoosterResponse>({
           openId: result.openId,
           cards: [...result.cards],

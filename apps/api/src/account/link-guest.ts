@@ -56,6 +56,14 @@ export const USER_REFERENCES = {
   "user_blocks.blocked_id": { transfer: "kept", abandon: "kept" },
   "moderation_reports.reporter_id": { transfer: "kept", abandon: "kept" },
   "moderation_reports.reported_id": { transfer: "kept", abandon: "kept" },
+  "sanctions.user_id": { transfer: "kept", abandon: "kept" },
+  // Clans need an account (P50): a guest is in none, writes nothing and claims nothing.
+  "clan_members.user_id": { transfer: "kept", abandon: "kept" },
+  "clan_join_requests.user_id": { transfer: "kept", abandon: "kept" },
+  "clan_messages.author_id": { transfer: "kept", abandon: "kept" },
+  "clan_messages.deleted_by": { transfer: "kept", abandon: "kept" },
+  "clan_week_members.user_id": { transfer: "kept", abandon: "kept" },
+  "clan_goal_claims.user_id": { transfer: "kept", abandon: "kept" },
   "review_logs.user_id": { transfer: "moved", abandon: "kept" },
   "trades.proposer_id": { transfer: "moved", abandon: "pending_cancelled" },
   "trades.recipient_id": { transfer: "moved", abandon: "pending_cancelled" },
@@ -66,6 +74,8 @@ export const USER_REFERENCES = {
   "guest_links.account_id": { transfer: "link_log", abandon: "link_log" },
   // Back office audit log: written by admins, who are never guests.
   "admin_actions.admin_id": { transfer: "kept", abandon: "kept" },
+  "moderation_reports.resolved_by": { transfer: "kept", abandon: "kept" },
+  "sanctions.created_by": { transfer: "kept", abandon: "kept" },
   "email_campaigns.created_by": { transfer: "kept", abandon: "kept" },
   "email_campaigns.launched_by": { transfer: "kept", abandon: "kept" },
   // Campaigns and their consent need an address: a guest never has either (P61).

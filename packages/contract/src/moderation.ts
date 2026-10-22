@@ -41,7 +41,10 @@ export type SanctionsResponse = z.infer<typeof sanctionsResponseSchema>;
 export const contestRequestSchema = z.object({ text: z.string().trim().min(1).max(2000) });
 
 /** `{ error }` of a route the player's sanctions forbid: 403. */
-export const sanctionRefusalSchema = z.enum(["account_locked", "muted", "trade_banned"]);
+export const sanctionRefusalSchema = z.enum(["account_locked", "sanctioned"]);
+
+/** `{ error }` of `POST /me/sanctions/:id/contest`. */
+export const contestRefusalSchema = z.enum(["sanction_not_found", "not_contestable"]);
 
 // --- Back office -----------------------------------------------------------------------------
 
@@ -74,7 +77,7 @@ export type AdminReport = z.infer<typeof adminReportSchema>;
 export const adminReportsResponseSchema = z.object({ reports: z.array(adminReportSchema) });
 export type AdminReportsResponse = z.infer<typeof adminReportsResponseSchema>;
 
-/** `POST /admin/sanctions` body, with an `Idempotency-Key`. */
+/** `POST /admin/sanctions` body, with an `Idempotency-Key`: a retry applies the sanction once. */
 export const createSanctionRequestSchema = z.object({
   userId: z.string().min(1),
   kind: sanctionKindSchema,

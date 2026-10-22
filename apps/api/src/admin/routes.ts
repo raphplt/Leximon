@@ -23,6 +23,7 @@ import { campaignAdminRoutes, waitlistEraseRoute } from "../campaigns/routes";
 import type { AppEnv } from "../context";
 import { playerRateLimit } from "../middleware/rate-limit";
 import { requireAdmin } from "../middleware/require-admin";
+import { adminModerationRoutes } from "../moderation/routes";
 import { banPlayer, cancelTrade, grantBonus, logExport, unbanPlayer } from "./actions";
 import {
   exportWaitlist,
@@ -53,6 +54,8 @@ export function adminRoutes(createMailer: CampaignMailerFactory) {
     if (error instanceof InvalidCursorError) return c.json({ error: "invalid_cursor" }, 400);
     throw error;
   });
+
+  routes.route("/", adminModerationRoutes());
 
   routes.get("/me", async (c) => {
     const email = await readAdminEmail(c.var.db, c.var.userId);

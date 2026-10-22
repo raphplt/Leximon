@@ -18,6 +18,20 @@ export const unusedQueue = {
   },
 } as unknown as Queue;
 
+/** A queue that keeps what is sent, for tests that check or replay game events (D-038). */
+export function recordingQueue<Body>(): Queue<Body> & { readonly sent: Body[] } {
+  const sent: Body[] = [];
+  return {
+    sent,
+    send: async (body: Body) => {
+      sent.push(body);
+    },
+    sendBatch: async (messages: Iterable<MessageSendRequest<Body>>) => {
+      for (const message of messages) sent.push(message.body);
+    },
+  } as unknown as Queue<Body> & { readonly sent: Body[] };
+}
+
 export const TEST_LINK_SECRET = "test-link-secret-0123456789abcdef";
 export const TEST_WEBHOOK_SECRET = "test-webhook-secret-0123456789abcdef";
 
@@ -37,6 +51,8 @@ export function testEnv(connectionString = "postgres://unused@127.0.0.1:1/unused
     EMAIL_LINK_SECRET: TEST_LINK_SECRET,
     LETTERMINT_WEBHOOK_SECRET: TEST_WEBHOOK_SECRET,
     CAMPAIGN_QUEUE: unusedQueue,
+    // Game events are hints (D-038): tests that need them pass a recording queue.
+    GAME_EVENTS: recordingQueue() as Queue,
     HYPERDRIVE: { connectionString } as Hyperdrive,
     SIGNUP_RATE_LIMITER: unlimited,
     PLAYER_RATE_LIMITER: unlimited,

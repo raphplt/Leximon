@@ -28,8 +28,13 @@
     "PUBLIC_WEB_URL": "http://localhost:3000"
   },
   // Campaign e-mails (D-035): the pump queues row ids, the consumer sends them in batches.
+  // Game events (D-038): cards obtained and clan changes, recounted from the database.
+  // `queue()` tells them apart by `batch.queue`.
   "queues": {
-    "producers": [{ "binding": "CAMPAIGN_QUEUE", "queue": "leximon-email-campaigns" }],
+    "producers": [
+      { "binding": "CAMPAIGN_QUEUE", "queue": "leximon-email-campaigns" },
+      { "binding": "GAME_EVENTS", "queue": "leximon-game-events" }
+    ],
     "consumers": [
       {
         "queue": "leximon-email-campaigns",
@@ -38,6 +43,13 @@
         "max_retries": 5,
         "max_concurrency": 4,
         "dead_letter_queue": "leximon-email-campaigns-dlq"
+      },
+      {
+        "queue": "leximon-game-events",
+        "max_batch_size": 50,
+        "max_batch_timeout": 2,
+        "max_retries": 3,
+        "dead_letter_queue": "leximon-game-events-dlq"
       }
     ]
   },

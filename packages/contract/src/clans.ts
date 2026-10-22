@@ -1,10 +1,12 @@
 import { z } from "zod";
+import { boosterWalletSchema } from "./boosters";
 import { slugSchema, timestampSchema } from "./common";
 import { playerBadgeSchema } from "./profile";
 
 /**
  * Clans (P50, P65 to P67; interface-v1, K-01 to K-13). Members only, from the level of P59.
- * Every write carries an `Idempotency-Key`; refusals answer `{ error }` with the codes below.
+ * Writes are idempotent by nature (joining twice is refused, leaving twice too); a message sent
+ * twice in a row is held back by the pace of P67. Refusals answer `{ error }` with the codes below.
  */
 
 export const clanIdSchema = z.uuid();
@@ -61,6 +63,16 @@ export const clansResponseSchema = z.object({
 });
 export type ClansResponse = z.infer<typeof clansResponseSchema>;
 
+/** Boosters of a weekly goal the player may claim (P66). */
+export const claimableGoalSchema = z.object({
+  week: z.string(),
+  tier: goalTierSchema,
+  boosters: z.int().positive(),
+  /** End of the following week. */
+  until: timestampSchema,
+});
+export type ClaimableGoal = z.infer<typeof claimableGoalSchema>;
+
 /** `GET /me/clan`: where the player stands. */
 export const myClanResponseSchema = z.object({
   clanId: clanIdSchema.nullable(),
@@ -68,6 +80,8 @@ export const myClanResponseSchema = z.object({
   rejoinAt: timestampSchema.nullable(),
   /** Clans the player asked to enter. */
   requests: z.array(clanIdSchema),
+  /** Weekly goal boosters waiting, even from a clan the player left: for the mail (R-01). */
+  claimable: z.array(claimableGoalSchema),
 });
 export type MyClanResponse = z.infer<typeof myClanResponseSchema>;
 
@@ -95,7 +109,7 @@ export const clanGoalSchema = z.object({
   /** Words a member brings before sharing the boosters (P66). */
   minContribution: z.int().positive(),
   /** Tiers whose boosters the player may claim now, from this week or the last one. */
-  claimable: z.array(z.object({ week: z.string(), tier: goalTierSchema, boosters: z.int() })),
+  claimable: z.array(claimableGoalSchema),
   /** What the next gold goal unlocks for the emblem, `null` once all is unlocked. */
   nextUnlock: emblemItemSchema.nullable(),
 });
@@ -170,6 +184,20 @@ export const clanRequestSchema = z.object({
 });
 export const clanRequestsResponseSchema = z.object({ requests: z.array(clanRequestSchema) });
 export type ClanRequestsResponse = z.infer<typeof clanRequestsResponseSchema>;
+
+/** `POST /me/clan/claims` body: the boosters of a tier reached (P66). */
+export const claimGoalRequestSchema = z.object({
+  week: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+  tier: goalTierSchema,
+});
+
+export const claimGoalResponseSchema = z.object({
+  week: z.string(),
+  tier: goalTierSchema,
+  boosters: z.int().positive(),
+  wallet: boosterWalletSchema,
+});
+export type ClaimGoalResponse = z.infer<typeof claimGoalResponseSchema>;
 
 // --- Discussion and journal (K-06, K-07) ---------------------------------------------------------
 

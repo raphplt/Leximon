@@ -235,4 +235,7 @@ export const ADMIN_ACTIONS = {
   resumeCampaign: "resume_campaign",
   cancelCampaign: "cancel_campaign",
   eraseWaitlist: "erase_waitlist",
+  dismissReport: "dismiss_report",
+  sanction: "sanction",
+  resolveContest: "resolve_contest",
 } as const;

@@ -12,6 +12,7 @@ import { generateSeed } from "../boosters/seed";
 import type { AppEnv } from "../context";
 import { playerRateLimit } from "../middleware/rate-limit";
 import { requireUser } from "../middleware/require-user";
+import { refuseLockedWrites } from "../moderation/restrictions";
 import type { CatalogIndexLoader } from "./catalog-index";
 import { answerChallenge, dailyTally, nextChallenges } from "./challenges";
 
@@ -20,6 +21,7 @@ export function challengeRoutes(loadCatalogIndex: CatalogIndexLoader) {
   const routes = new Hono<AppEnv>();
   routes.use(requireUser);
   routes.use(playerRateLimit);
+  routes.use(refuseLockedWrites);
 
   routes.get("/", async (c) => {
     const query = challengesQuerySchema.safeParse(c.req.query());

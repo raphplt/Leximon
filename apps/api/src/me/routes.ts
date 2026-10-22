@@ -30,10 +30,15 @@ import { z } from "zod";
 import { ADMIN_ROLE } from "../auth";
 import { guestOpensSql } from "../boosters/open-booster";
 import { emailPreferenceRoutes } from "../campaigns/routes";
+import { leaveClan, touchLastSeen } from "../clans/clans";
+import { sendGameEvents } from "../clans/events";
+import { myClanRoutes } from "../clans/routes";
 import type { AppEnv } from "../context";
 import { chooseCard, claimLevelReward, readLevelRewards, walletView } from "../levels/rewards";
 import { playerRateLimit } from "../middleware/rate-limit";
 import { requireUser } from "../middleware/require-user";
+import { readRestrictions, refuseLockedWrites } from "../moderation/restrictions";
+import { sanctionRoutes } from "../moderation/routes";
 import {
   blockPlayer,
   deleteAccount,
@@ -65,8 +70,12 @@ export function meRoutes() {
   });
 
   routes.route("/email-preferences", emailPreferenceRoutes());
+  routes.route("/clan", myClanRoutes());
+  routes.route("/sanctions", sanctionRoutes());
 
   routes.get("/wallet", async (c) => {
+    // Asked for on every screen: the player's presence for the clan (K-05, P65).
+    await touchLastSeen(c.var.db, c.var.userId, Date.now());
     const [row] = await c.var.db
       .select()
       .from(boosterWallets)
@@ -80,7 +89,7 @@ export function meRoutes() {
     return c.json<LevelRewardsResponse>(await readLevelRewards(c.var.db, c.var.userId));
   });
 
-  routes.post("/level-rewards/:level", async (c) => {
+  routes.post("/level-rewards/:level", refuseLockedWrites, async (c) => {
     const level = levelParamSchema.safeParse(c.req.param("level"));
     if (!level.success) {
       return c.json({ error: "invalid_request" }, 400);
@@ -100,7 +109,7 @@ export function meRoutes() {
     });
   });
 
-  routes.post("/card-choices", async (c) => {
+  routes.post("/card-choices", refuseLockedWrites, async (c) => {
     const body = cardChoiceRequestSchema.safeParse(await c.req.json().catch(() => null));
     if (!body.success) {
       return c.json({ error: "invalid_request" }, 400);
@@ -117,6 +126,7 @@ export function meRoutes() {
         result.reason === "card_not_choosable" ? 422 : 409,
       );
     }
+    sendGameEvents(c, [{ type: "cards_obtained", userId: c.var.userId }]);
     return c.json<CardChoiceResponse>({ level: result.level, cardId: result.cardId });
   });
 
@@ -174,12 +184,19 @@ export function meRoutes() {
   });
 
   /** Pseudo, cosmetics and visibility (P-07, P-08, P60): the profile as it now reads. */
-  routes.patch("/profile", async (c) => {
+  routes.patch("/profile", refuseLockedWrites, async (c) => {
     const body = updateProfileRequestSchema.safeParse(await c.req.json().catch(() => null));
     if (!body.success) {
       return c.json({ error: "invalid_request" }, 400);
     }
     const now = Date.now();
+    // A muted player chooses no pseudo the others would read (P68).
+    if (
+      body.data.pseudo !== undefined &&
+      !(await readRestrictions(c.var.db, c.var.userId, now)).canWrite
+    ) {
+      return c.json({ error: "sanctioned" }, 403);
+    }
     const result = await updateProfile(c.var.db, {
       userId: c.var.userId,
       changes: body.data,
@@ -190,7 +207,7 @@ export function meRoutes() {
   });
 
   /** The cards pinned to the profile, all of them in order (P-02). */
-  routes.put("/pinned-cards", async (c) => {
+  routes.put("/pinned-cards", refuseLockedWrites, async (c) => {
     const body = pinnedCardsRequestSchema.safeParse(await c.req.json().catch(() => null));
     if (!body.success) {
       return c.json({ error: "invalid_request" }, 400);
@@ -288,7 +305,13 @@ export function meRoutes() {
    * the signed cookie cache would otherwise keep a deleted player signed in for minutes.
    */
   routes.delete("/account", async (c) => {
-    const result = await deleteAccount(c.var.db, { userId: c.var.userId, now: Date.now() });
+    const now = Date.now();
+    // Leaves the clan first, as anyone leaving: the chief's role passes on, the count follows.
+    const left = await leaveClan(c.var.db, { userId: c.var.userId, now });
+    if (left.kind === "left" && !left.dissolved) {
+      sendGameEvents(c, [{ type: "clan_changed", clanId: left.clanId }]);
+    }
+    const result = await deleteAccount(c.var.db, { userId: c.var.userId, now });
     if (result.kind === "admin_account") {
       return c.json<{ error: DeleteAccountRefusal }>({ error: result.kind }, 409);
     }

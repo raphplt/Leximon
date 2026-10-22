@@ -14,9 +14,11 @@ import type { Database } from "@leximon/db";
 import { type Context, Hono } from "hono";
 import { createMiddleware } from "hono/factory";
 import { z } from "zod";
+import { sendGameEvents } from "../clans/events";
 import type { AppEnv } from "../context";
 import { playerRateLimit } from "../middleware/rate-limit";
 import { requireUser } from "../middleware/require-user";
+import { readRestrictions, refuseLockedWrites } from "../moderation/restrictions";
 import {
   type BlockResult,
   isBlockedEitherWay,
@@ -51,7 +53,7 @@ async function tradeView(db: Database, record: TradeRecord, now: number): Promis
 /** Trade offers (D-026). */
 export function tradeRoutes() {
   const routes = new Hono<AppEnv>();
-  routes.use(requireUser, playerRateLimit, noStore);
+  routes.use(requireUser, playerRateLimit, noStore, refuseLockedWrites);
 
   routes.post("/", async (c) => {
     const key = idempotencyKeySchema.safeParse(c.req.header(IDEMPOTENCY_KEY_HEADER));
@@ -64,6 +66,9 @@ export function tradeRoutes() {
     }
 
     const now = Date.now();
+    if (!(await readRestrictions(c.var.db, c.var.userId, now)).canTrade) {
+      return c.json({ error: "sanctioned" }, 403);
+    }
     const result = await createTrade(c.var.db, {
       userId: c.var.userId,
       idempotencyKey: key.data,
@@ -113,6 +118,9 @@ export function tradeRoutes() {
       return c.json({ error: "trade_not_found" }, 404);
     }
     const now = Date.now();
+    if (!(await readRestrictions(c.var.db, c.var.userId, now)).canTrade) {
+      return c.json({ error: "sanctioned" }, 403);
+    }
     const result = await acceptTrade(c.var.db, {
       userId: c.var.userId,
       tradeId: tradeId.data,
@@ -120,6 +128,12 @@ export function tradeRoutes() {
     });
     switch (result.kind) {
       case "completed":
+        sendGameEvents(
+          c,
+          [result.trade.proposerId, result.trade.recipientId].flatMap((userId) =>
+            userId === null ? [] : [{ type: "cards_obtained" as const, userId }],
+          ),
+        );
         return c.json(await tradeView(c.var.db, result.trade, now));
       case "not_found":
         return c.json({ error: "trade_not_found" }, 404);
@@ -204,18 +218,25 @@ export function playerRoutes() {
     return c.json<PublicProfile>(result.profile);
   });
 
-  routes.post("/:pseudo/report", requireUser, playerRateLimit, noStore, async (c) => {
-    const pseudo = pseudoParamSchema.safeParse(c.req.param("pseudo"));
-    if (!pseudo.success) {
-      return c.json({ error: "player_not_found" }, 404);
-    }
-    const result = await reportPlayer(c.var.db, {
-      userId: c.var.userId,
-      pseudo: pseudo.data,
-      now: Date.now(),
-    });
-    return blockResultResponse(c, result);
-  });
+  routes.post(
+    "/:pseudo/report",
+    requireUser,
+    playerRateLimit,
+    noStore,
+    refuseLockedWrites,
+    async (c) => {
+      const pseudo = pseudoParamSchema.safeParse(c.req.param("pseudo"));
+      if (!pseudo.success) {
+        return c.json({ error: "player_not_found" }, 404);
+      }
+      const result = await reportPlayer(c.var.db, {
+        userId: c.var.userId,
+        pseudo: pseudo.data,
+        now: Date.now(),
+      });
+      return blockResultResponse(c, result);
+    },
+  );
 
   return routes;
 }

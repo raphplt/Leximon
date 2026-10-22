@@ -14,6 +14,7 @@ import { type CampaignMailerFactory, createCampaignMailer } from "./campaigns/ma
 import { emailPublicRoutes } from "./campaigns/routes";
 import { createCatalogIndexLoader } from "./challenges/catalog-index";
 import { challengeRoutes } from "./challenges/routes";
+import { clanRoutes } from "./clans/routes";
 import type { AppEnv } from "./context";
 import { meRoutes } from "./me/routes";
 import { readAuthEmail, serializeCodeChecks } from "./middleware/auth-email";
@@ -101,6 +102,9 @@ export function createApp(options: AppOptions = {}) {
   app.use("/trades/*", withDatabase);
   app.use("/trades", withDatabase);
   app.route("/trades", tradeRoutes());
+  app.use("/clans", withDatabase);
+  app.use("/clans/*", withDatabase);
+  app.route("/clans", clanRoutes());
   app.use("/players/*", withDatabase);
   app.route("/players", playerRoutes());
   app.use("/admin/*", withDatabase);
