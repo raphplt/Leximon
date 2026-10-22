@@ -83,7 +83,7 @@ Dans l'ordre où elles débloquent le plus :
 2. **Fournisseur Postgres**, d'après `docs/rnd/postgres.md`. Il débloque la mise en ligne.
 3. **Avatars gravés (P49) :** valider les seize gravures choisies et leurs noms.
 4. **Ouverture, progression et social :** les questions ouvertes de [regles-du-jeu.md](regles-du-jeu.md#à-décider), détaillées dans les [cahiers des charges](cahiers-des-charges/).
-5. **Retours de la première prise en main (2026-10-22) :** collections dans le temps, sachet découverte, refonte du clan, courbe de niveaux, voir [recette-web.md](recette-web.md#retours-du-2026-10-22).
+5. **Retours de la première prise en main (2026-10-22) :** collections dans le temps, sachet découverte, refonte du clan, courbe de niveaux, voir [recette-web.md](recette-web.md#retours-du-2026-10-22). Refonte du clan : [clan-v2.md](cahiers-des-charges/clan-v2.md), décisions à trancher.
 
 ## Prochaines étapes conseillées
 
