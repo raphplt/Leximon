@@ -81,7 +81,7 @@ La maquette montre l'intention, pas la finition. Chaque écran gagne en plus :
 
 | ID | Élément | Ce qu'il faut | Serveur | Lot | Web | Mobile |
 |---|---|---|---|---|---|---|
-| J-01 | Bandeau de niveau | Médaillon, « Niveau 16 · Fine plume », barre d'XP épaisse, « 260 / 400 XP » | `GET /me/progress` | 1 | fait | à faire |
+| J-01 | Bandeau de niveau | Médaillon, « Niveau 16 · Fine plume », barre d'XP épaisse, « 260 / 775 XP » | `GET /me/progress` | 1 | fait | à faire |
 | J-02 | Prochaines récompenses (web) | Les 4 niveaux suivants en pastilles, les paliers de 5 en kraft, un cadenas quand le niveau ouvre une fonction. Toucher : le chemin des niveaux sur ce niveau | P58, P59 | 1 | fait | — |
 | J-03 | Bouton « N coffrets » | Visible et pulsant tant qu'une récompense attend ; ouvre le coffret du plus petit niveau | `GET /me/level-rewards` | 1 | fait | à faire |
 | J-04 | Boutons flottants | Gauche : Clan, Discussion, Joutes. Droite : Défi du jour (anneau), Coffrets, Courrier, Réglages. Pastilles, badges « Niv. X » | plusieurs | 1 | fait | à faire |

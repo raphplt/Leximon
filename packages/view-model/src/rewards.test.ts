@@ -19,7 +19,7 @@ const progress = (level: number, extra = 0) => ({
   xp: xpToReach(level) + extra,
   level,
   xpIntoLevel: extra,
-  xpForNextLevel: 100 + 20 * (level - 1),
+  xpForNextLevel: 100 + 45 * (level - 1),
 });
 
 describe("level rewards", () => {

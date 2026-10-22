@@ -5,12 +5,12 @@ import { answerXp, boosterXp, levelOf, progressGain, xpRulesAt, xpToReach } from
 const rules = xpRulesAt(XP_SCHEDULE, 0);
 
 describe("xpToReach", () => {
-  it("follows 100 + 20 × (n − 1) per level, as in the specification", () => {
+  it("follows 100 + 45 × (n − 1) per level", () => {
     expect(xpToReach(1)).toBe(0);
     expect(xpToReach(2)).toBe(100);
-    expect(xpToReach(3)).toBe(220);
-    expect(xpToReach(10)).toBe(1620);
-    expect(xpToReach(30)).toBe(11_020);
+    expect(xpToReach(3)).toBe(245);
+    expect(xpToReach(10)).toBe(2520);
+    expect(xpToReach(30)).toBe(21_170);
   });
 });
 
@@ -21,9 +21,9 @@ describe("levelOf", () => {
 
   it("changes level exactly at the threshold", () => {
     expect(levelOf(99).level).toBe(1);
-    expect(levelOf(100)).toEqual({ level: 2, xpIntoLevel: 0, xpForNextLevel: 120 });
-    expect(levelOf(1619).level).toBe(9);
-    expect(levelOf(1620).level).toBe(10);
+    expect(levelOf(100)).toEqual({ level: 2, xpIntoLevel: 0, xpForNextLevel: 145 });
+    expect(levelOf(2519).level).toBe(9);
+    expect(levelOf(2520).level).toBe(10);
   });
 
   it("agrees with xpToReach on every level up to 500", () => {

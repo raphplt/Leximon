@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { xpToReach } from "../progress/progress";
 import {
   checkOffer,
   checkOfferShape,
@@ -13,8 +14,8 @@ import {
   tradeRulesAt,
 } from "./trade";
 
-/** Total XP at the start of level 10 (level curve). */
-const LEVEL_10_XP = 1620;
+const LEVEL_5_XP = xpToReach(5);
+const LEVEL_10_XP = xpToReach(10);
 
 const DAY = 86_400_000;
 const NOW = 100 * DAY;
@@ -46,8 +47,8 @@ function offer(overrides: Partial<OfferCheck> = {}): OfferCheck {
     proposerCreatedAt: 0,
     recipientCreatedAt: 0,
     // Level 5 exactly (100 + 120 + 140 + 160).
-    proposerXp: 520,
-    recipientXp: 520,
+    proposerXp: LEVEL_5_XP,
+    recipientXp: LEVEL_5_XP,
     offersSentToday: 0,
     proposerHoldings: new Map([["a", holding("a", 2)]]),
     recipientHoldings: new Map([["b", holding("b", 3)]]),
@@ -103,8 +104,8 @@ describe("cards per side", () => {
 
   it("follows the lower level of the two players", () => {
     expect(maxCardsBetween(rules, LEVEL_10_XP, LEVEL_10_XP)).toBe(3);
-    expect(maxCardsBetween(rules, LEVEL_10_XP, 520)).toBe(1);
-    expect(maxCardsBetween(rules, 520, LEVEL_10_XP)).toBe(1);
+    expect(maxCardsBetween(rules, LEVEL_10_XP, LEVEL_5_XP)).toBe(1);
+    expect(maxCardsBetween(rules, LEVEL_5_XP, LEVEL_10_XP)).toBe(1);
   });
 });
 

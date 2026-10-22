@@ -108,7 +108,7 @@ Compte A, n'importe quel niveau.
 
 ### JOU-01 · Écran Jouer
 - **Faire :** ouvrir `/jouer` en 1440 px puis en 390 px.
-- **Attendu :** bandeau de niveau (médaillon, titre, barre d'XP, « 260 / 400 XP »), les 4 prochaines récompenses, le sachet au centre, boutons flottants à gauche (Clan, avec l'emblème de ton clan si tu en as un ; Discussion, Joutes) et à droite (Défi du jour, Coffrets, Courrier, Réglages). En 390 px, la coque mobile : onglets en bas, bandeau en haut.
+- **Attendu :** bandeau de niveau (médaillon, titre, barre d'XP, « 260 / 775 XP » au niveau 16), les 4 prochaines récompenses, le sachet au centre, boutons flottants à gauche (Clan, avec l'emblème de ton clan si tu en as un ; Discussion, Joutes) et à droite (Défi du jour, Coffrets, Courrier, Réglages). En 390 px, la coque mobile : onglets en bas, bandeau en haut.
 - **Retour :**
 
 ### JOU-02 · Stock
@@ -612,7 +612,7 @@ Retours généraux du propriétaire après une première prise en main, classés
    - d'autres petits défauts de l'écran, à relever plus tard.
 
    *Tranché le 2026-10-22 : délai supprimé (P65), objectifs comptés en révisions réussies (P66), niveau de clan cosmétique (P70). Le reste passe par un cahier Clan v2.*
-4. **Courbe de niveaux et niveau maximum.** Crainte d'atteindre le haut trop vite. Aujourd'hui, chaque niveau coûte 20 XP de plus que le précédent (100 XP pour passer au 2, 280 pour le 11, 1 080 pour le 51). À mesurer par simulation ; niveau maximum ou non, pas encore réfléchi. Plus de cadres et de titres pour les hauts niveaux (les avatars, jusqu'au niveau 140, suffisent). *Tranché le 2026-10-22 : pas de maximum, niveau 50 en quatre mois environ, courbe à caler par simulation (P48).*
+4. **Courbe de niveaux et niveau maximum.** Crainte d'atteindre le haut trop vite. Aujourd'hui, chaque niveau coûte 20 XP de plus que le précédent (100 XP pour passer au 2, 280 pour le 11, 1 080 pour le 51). À mesurer par simulation ; niveau maximum ou non, pas encore réfléchi. Plus de cadres et de titres pour les hauts niveaux (les avatars, jusqu'au niveau 140, suffisent). *Tranché le 2026-10-22 : pas de maximum, niveau 50 en quatre mois environ, courbe 100 + 45 × (n − 1) calée par simulation (P48). Plus de cadres et de titres : à dessiner.*
 
 ### 2. Écran Jouer, le plus gros reste à faire
 

@@ -58,7 +58,7 @@ export function answerXp(rules: XpRules, input: { correct: boolean; levelUp: boo
  * move players who already reached a level. The curve may only be lengthened beyond the highest
  * level anyone can reach, never changed below it.
  */
-export const LEVEL_CURVE = { base: 100, step: 20 } as const;
+export const LEVEL_CURVE = { base: 100, step: 45 } as const;
 
 export interface LevelCurve {
   readonly base: number;

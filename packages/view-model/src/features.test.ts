@@ -1,3 +1,4 @@
+import { xpToReach } from "@leximon/core";
 import { describe, expect, it } from "vitest";
 import { featureMilestones, isFeatureOpen, lockedScreen, lockedToast, opensAt } from "./features";
 
@@ -25,8 +26,8 @@ describe("features by level", () => {
       title: "Les clans ouvrent au niveau 10",
       left: "Encore 3 niveaux",
     });
-    expect(screen?.ratio).toBeCloseTo(950 / 1620);
-    expect(lockedScreen("join_clan", { level: 10, xp: 1620 }, NOW)).toBeNull();
+    expect(screen?.ratio).toBeCloseTo(950 / xpToReach(10));
+    expect(lockedScreen("join_clan", { level: 10, xp: xpToReach(10) }, NOW)).toBeNull();
     expect(lockedScreen("trade", { level: 4, xp: 400 }, NOW)?.left).toBe("Encore 1 niveau");
   });
 

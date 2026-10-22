@@ -48,7 +48,7 @@ afterAll(close);
 
 const STARTER: BoosterSource = { kind: "collection", collectionId: STARTER_COLLECTION };
 /** Total XP at the start of level 3 (level curve), which opens the choice of collection. */
-const LEVEL_3_XP = 220;
+const LEVEL_3_XP = 245;
 const signInAsPlayer = () => signInAsMember(app, env, db);
 
 function openBooster(

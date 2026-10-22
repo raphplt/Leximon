@@ -48,7 +48,7 @@ Les plafonds des défis (P29) limitent aussi l'XP qu'un tricheur peut en tirer.
 
 ### Courbe
 
-- **XP pour passer du niveau n au suivant :** 100 + 20 × (n − 1). Il faut 1 620 XP pour le niveau 10, 11 020 pour le niveau 30.
+- **XP pour passer du niveau n au suivant :** 100 + 20 × (n − 1). Il faut 1 620 XP pour le niveau 10, 11 020 pour le niveau 30. *Remplacé le 2026-10-22 par 100 + 45 × (n − 1), voir P48.*
 - **Joueur régulier** (8 plis et quelques défis par jour, environ 300 XP) : niveau 10 en 5 à 6 jours, niveau 30 en un peu plus d'un mois.
 - **Pas de plafond.** Au-delà d'un certain niveau (50 par exemple), les récompenses deviennent cosmétiques et les paliers s'espacent.
 - **La courbe ne s'allonge que par la fin.** On ne modifie jamais le coût d'un niveau déjà atteignable, sinon un joueur pourrait perdre un niveau.
