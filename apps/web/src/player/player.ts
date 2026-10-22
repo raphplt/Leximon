@@ -25,21 +25,13 @@ export const account = sharedResource<AccountResponse>(fetchAccount);
 /** Pseudo, avatar, cosmetics, pinned cards, figures. */
 export const profile = sharedResource<ProfileResponse>(fetchProfile);
 
-/** A coffret was claimed: its level is done, and its card choice waits if it has one. */
-export function publishClaimed(level: number, withCardChoice: boolean): void {
+/** A coffret was claimed: its level is done. */
+export function publishClaimed(level: number): void {
   refreshIfRead(profile);
-  const state = levelRewards.current() ?? { claimed: [], cardChoices: [] };
-  const sorted = (list: readonly number[]) => [...new Set(list)].sort((a, b) => a - b);
+  const claimed = levelRewards.current()?.claimed ?? [];
   levelRewards.publish({
-    claimed: sorted([...state.claimed, level]),
-    cardChoices: withCardChoice ? sorted([...state.cardChoices, level]) : state.cardChoices,
+    claimed: [...new Set([...claimed, level])].sort((a, b) => a - b),
   });
-}
-
-export function publishCardChosen(level: number): void {
-  const state = levelRewards.current();
-  if (state === null) return;
-  levelRewards.publish({ ...state, cardChoices: state.cardChoices.filter((l) => l !== level) });
 }
 
 /** The player changed (sign-in, sign-out): every screen reads the account's state afresh. */

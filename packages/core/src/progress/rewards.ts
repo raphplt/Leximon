@@ -3,15 +3,15 @@
  * "coffret"). Nothing is drawn at random: what a level gives is known in advance.
  *
  * Ordinary levels alternate a bonus booster and a refill of the free stock. Every 5 levels: a
- * "garni" booster (at least one Rare) and, up to level 45, a title. Every 10 levels: a card of the
- * player's choice, a reserve slot (up to level 50), an engraved avatar and a pinned card slot (up
- * to level 30); levels 10 and 20 add an avatar frame. Beyond level 50, only bonus boosters and
+ * "garni" booster (at least one Rare); up to level 45, the odd ones add a title. Every 10 levels
+ * also gives a reserve slot (up to level 50), an engraved avatar and a pinned card slot (up to
+ * level 30); levels 10 and 20 add an avatar frame. Beyond level 50, only bonus boosters and
  * cosmetics. Cosmetics are named in the rules: what a level gives is known before it is reached.
  *
  * Concurrency: these functions are pure. Callers apply a claim under the player's wallet lock.
  */
 
-import { type Rarity, rarityRank } from "../booster/rarity";
+import type { Rarity } from "../booster/rarity";
 import type { EpochMs } from "../booster/refill";
 
 export const LEVEL_REWARD_KINDS = [
@@ -19,7 +19,6 @@ export const LEVEL_REWARD_KINDS = [
   "refill",
   "garni_booster",
   "title",
-  "card_choice",
   "reserve_slot",
   "avatar",
   "pinned_slot",
@@ -39,7 +38,7 @@ export interface LevelRewardRules {
   readonly startsAt: EpochMs;
   /** Levels giving a garni booster and, when listed in `titles`, a title. */
   readonly milestoneEvery: number;
-  /** Levels giving a card of the player's choice, a reserve slot, an avatar and a pinned slot. */
+  /** Levels giving a garni booster with a reserve slot, an avatar and a pinned slot. */
   readonly majorEvery: number;
   /** Titles by level. */
   readonly titles: Readonly<Record<number, string>>;
@@ -62,8 +61,6 @@ export interface LevelRewardRules {
   readonly avatarEveryBeyond: number;
   /** A garni booster holds at least one card this rare. */
   readonly garniMinRarity: Rarity;
-  /** The chosen card is at most this rare. */
-  readonly cardChoiceMaxRarity: Rarity;
 }
 
 export type LevelRewardSchedule = readonly [LevelRewardRules, ...LevelRewardRules[]];
@@ -89,7 +86,7 @@ export function levelRewards(rules: LevelRewardRules, level: number): LevelRewar
       : [{ kind: "bonus_booster" }];
   }
   if (level % rules.majorEvery === 0) {
-    const rewards: LevelReward[] = [{ kind: "card_choice" }];
+    const rewards: LevelReward[] = [{ kind: "garni_booster" }];
     if (level <= rules.reserveSlotsUntil) rewards.push({ kind: "reserve_slot" });
     rewards.push(avatarReward(rules, level));
     const frame = rules.frames[level];
@@ -133,11 +130,6 @@ export function currentTitle(rules: LevelRewardRules, claimed: Iterable<number>)
     if (rules.titles[level] !== undefined && (best === null || level > best)) best = level;
   }
   return best === null ? null : (rules.titles[best] ?? null);
-}
-
-/** Whether a card of this rarity can be taken as a card of the player's choice. */
-export function isChoosableRarity(rules: LevelRewardRules, rarity: Rarity): boolean {
-  return rarityRank(rarity) <= rarityRank(rules.cardChoiceMaxRarity);
 }
 
 /** A claimed level and what its coffret gave, as stored. */

@@ -10,16 +10,12 @@ import {
   blocksResponseSchema,
   boosterStockEmptySchema,
   boosterWalletSchema,
-  type CardChoiceRefusal,
-  type CardChoiceResponse,
   type ChallengeAnswerRequest,
   type ChallengeAnswerResponse,
   type ChallengesResponse,
   type ClaimLevelRewardResponse,
   type ClaimRefusal,
   type CreateTradeRequest,
-  cardChoiceRefusalSchema,
-  cardChoiceResponseSchema,
   challengeAnswerResponseSchema,
   challengesResponseSchema,
   claimLevelRewardResponseSchema,
@@ -226,24 +222,6 @@ export async function claimLevelReward(level: number): Promise<ClaimResult> {
   }
   if (!response.ok) throw new ApiError("claim_failed", response.status);
   return { kind: "claimed", ...(await parse(response, claimLevelRewardResponseSchema)) };
-}
-
-export type CardChoiceResult =
-  | ({ readonly kind: "chosen" } & CardChoiceResponse)
-  | { readonly kind: "refused"; readonly reason: CardChoiceRefusal };
-
-/** Takes the card of the player's choice won at `level`. Idempotent for the same card. */
-export async function chooseCard(level: number, cardId: string): Promise<CardChoiceResult> {
-  const response = await sendAsPlayer("/me/card-choices", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ level, cardId }),
-  });
-  if (response.status === 409 || response.status === 422) {
-    return { kind: "refused", reason: (await parse(response, cardChoiceRefusalSchema)).error };
-  }
-  if (!response.ok) throw new ApiError("choice_failed", response.status);
-  return { kind: "chosen", ...(await parse(response, cardChoiceResponseSchema)) };
 }
 
 export async function fetchChallenges(limit = 5): Promise<ChallengesResponse> {

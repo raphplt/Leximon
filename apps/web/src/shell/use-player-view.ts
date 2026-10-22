@@ -24,7 +24,6 @@ export function usePlayerView() {
   const claimed = rewards?.claimed ?? [];
   const coffrets =
     progress === null || rewards === null ? [] : waitingCoffrets(progress.level, claimed);
-  const cardChoices = rewards?.cardChoices ?? [];
   const claimable = clan?.claimable ?? [];
   return {
     progress,
@@ -33,7 +32,6 @@ export function usePlayerView() {
     wallet: currentWallet,
     now,
     coffrets,
-    cardChoices,
     /** The title worn: the one chosen in the atelier, else the latest won. */
     title: me !== null ? me.title : now === 0 ? null : playerTitle(claimed, now),
     guest: who?.kind === "guest",
@@ -47,10 +45,10 @@ export function usePlayerView() {
     /** The mail's first page; `null` until read. */
     mailbox: mail,
     /**
-     * The mail's count: what waits to be done (coffrets, cards to choose, goal boosters) and the
+     * The mail's count: what waits to be done (coffrets, goal boosters) and the
      * letters not read. Words slipping away are left out: they come back every day, and a count
      * that never empties only nags.
      */
-    mail: coffrets.length + cardChoices.length + claimable.length + (mail?.unread ?? 0),
+    mail: coffrets.length + claimable.length + (mail?.unread ?? 0),
   };
 }

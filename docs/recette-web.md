@@ -180,7 +180,7 @@ Compte A : `pnpm dev:player contact@leximon.fr --level 21` pour avoir une série
   - niveau impair : un sachet bonus ;
   - niveau pair : une recharge (« Stock remis au plein. ») ;
   - 5 et 15 : un sachet garni (au moins une Rare, ouvert avant les autres bonus) et un titre ;
-  - 10 et 20 : une carte au choix, une place de plus dans la réserve (« 3 / 12 bonus »), un avatar, une place de carte épinglée, un cadre (« Filet doré », « Encre qui coule »).
+  - 10 et 20 : un sachet garni, une place de plus dans la réserve (« 3 / 12 bonus »), un avatar, une place de carte épinglée, un cadre (« Filet doré », « Encre qui coule »).
 - **Retour :**
 
 ### NIV-05 · Coffret qui ne peut pas servir
@@ -188,8 +188,9 @@ Compte A : `pnpm dev:player contact@leximon.fr --level 21` pour avoir une série
 - **Attendu :** refus clair. Le coffret reste fermé et attend, rien n'est perdu.
 - **Retour :**
 
-### NIV-06 · Carte au choix
-- **Attendu :** choix parmi les Courantes et Peu courantes qui te manquent, par collection, avec recherche. La carte choisie arrive dans l'album, sans XP.
+### NIV-06 · Sachet garni
+- **Faire :** ouvrir le coffret du niveau 10 avec des sachets bonus déjà en réserve, puis ouvrir un sachet.
+- **Attendu :** « 1 garni » dans la réserve ; le sachet ouvert est le garni, avec au moins une Rare.
 - **Retour :**
 
 ### NIV-07 · Écrans fermés par le niveau
@@ -352,8 +353,8 @@ A au niveau 8 au moins.
 - **Retour :**
 
 ### REG-02 · Courrier, à faire
-- **Faire :** ouvrir le courrier avec un coffret à ouvrir, une carte au choix ou des sachets d'objectif, et un mot à réviser.
-- **Attendu :** section « À faire » : « N coffrets à ouvrir », « Une carte au choix t'attend », « Un sachet d'objectif à prendre », « *Abajoue* est en train de t'échapper. » (avec « Et 2 autres mots » s'il y en a). Chaque ligne mène à son écran. La pastille compte ces lignes, pas le mot qui s'échappe.
+- **Faire :** ouvrir le courrier avec un coffret à ouvrir ou des sachets d'objectif, et un mot à réviser.
+- **Attendu :** section « À faire » : « N coffrets à ouvrir », « Un sachet d'objectif à prendre », « *Abajoue* est en train de t'échapper. » (avec « Et 2 autres mots » s'il y en a). Chaque ligne mène à son écran. La pastille compte ces lignes, pas le mot qui s'échappe.
 - **Retour :**
 
 ### REG-03 · Courrier, nouvelles

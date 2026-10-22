@@ -3,7 +3,6 @@ import { LEVEL_REWARD_SCHEDULE } from "../rules";
 import {
   currentTitle,
   defaultAvatar,
-  isChoosableRarity,
   levelRewardRulesAt,
   levelRewards,
   rewardBoosters,
@@ -37,11 +36,11 @@ describe("levelRewards", () => {
     expect(levelRewards(rules, 45)).toContainEqual({ kind: "title", title: "Puits de science" });
   });
 
-  it("gives a card choice, a reserve slot, an avatar and a pinned slot every 10 levels", () => {
-    expect(kinds(10)).toEqual(["card_choice", "reserve_slot", "avatar", "frame", "pinned_slot"]);
-    expect(kinds(30)).toEqual(["card_choice", "reserve_slot", "avatar", "pinned_slot"]);
-    expect(kinds(40)).toEqual(["card_choice", "reserve_slot", "avatar"]);
-    expect(kinds(50)).toEqual(["card_choice", "reserve_slot", "avatar"]);
+  it("gives a garni booster, a reserve slot, an avatar and a pinned slot every 10 levels", () => {
+    expect(kinds(10)).toEqual(["garni_booster", "reserve_slot", "avatar", "frame", "pinned_slot"]);
+    expect(kinds(30)).toEqual(["garni_booster", "reserve_slot", "avatar", "pinned_slot"]);
+    expect(kinds(40)).toEqual(["garni_booster", "reserve_slot", "avatar"]);
+    expect(kinds(50)).toEqual(["garni_booster", "reserve_slot", "avatar"]);
   });
 
   it("caps the reserve at 15 places and the pinned cards at 6", () => {
@@ -107,8 +106,8 @@ describe("rewardBoosters", () => {
   it("counts the boosters that go to the reserve", () => {
     expect(rewardBoosters(levelRewards(rules, 3))).toBe(1);
     expect(rewardBoosters(levelRewards(rules, 5))).toBe(1);
+    expect(rewardBoosters(levelRewards(rules, 10))).toBe(1);
     expect(rewardBoosters(levelRewards(rules, 4))).toBe(0);
-    expect(rewardBoosters(levelRewards(rules, 10))).toBe(0);
   });
 });
 
@@ -124,14 +123,5 @@ describe("currentTitle", () => {
   it("is the title of the highest milestone claimed", () => {
     expect(currentTitle(rules, [2, 3])).toBeNull();
     expect(currentTitle(rules, [5, 15, 12])).toBe("Fine plume");
-  });
-});
-
-describe("isChoosableRarity", () => {
-  it("allows Courant and Peu courant only", () => {
-    expect(isChoosableRarity(rules, "common")).toBe(true);
-    expect(isChoosableRarity(rules, "uncommon")).toBe(true);
-    expect(isChoosableRarity(rules, "rare")).toBe(false);
-    expect(isChoosableRarity(rules, "legendary")).toBe(false);
   });
 });

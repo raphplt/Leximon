@@ -135,7 +135,6 @@ export const LEVEL_REWARD_SCHEDULE: LevelRewardSchedule = [
     cosmeticsOnlyAbove: 50,
     avatarEveryBeyond: 20,
     garniMinRarity: "rare",
-    cardChoiceMaxRarity: "uncommon",
     // Engraved avatars: portraits from the cards' engravings, named by their card id.
     startingAvatars: [
       "metaphraste",

@@ -112,7 +112,7 @@ La maquette montre l'intention, pas la finition. Chaque écran gagne en plus :
 | N-05 | Coffret | Fenêtre avec rayons : « Un coffret pour toi », « Ouvrir le coffret », puis « Niveau 16 ! », les récompenses une à une, ce qu'il ouvre, « Ranger dans ma réserve » | `POST /me/level-rewards/{niveau}` | 1 | fait | à faire |
 | N-06 | Sachet bonus, recharge | Rangés à la réclamation, toast « Stock remis au plein. » | idem | 1 | fait | à faire |
 | N-07 | Sachet garni | Un sachet bonus marqué « garni » dans la réserve, avec au moins une Rare au tirage | garantie de tirage | 1 | fait | à faire |
-| N-08 | Carte au choix | Écran de choix parmi les Courantes et Peu courantes qui manquent, par collection, avec recherche ; contenu connu, aucun hasard | `POST /me/card-choices` ; pas de GET, le client tire les candidates du catalogue et de l'album | 1 | fait | à faire |
+| N-08 | Carte au choix | Abandonnée le 2026-10-22 : les niveaux 10, 20, 30… donnent un sachet garni (P58), l'écran est retiré | — | 1 | retiré | — |
 | N-09 | Réserve agrandie | Le plafond affiché suit (« 3 / 12 bonus ») | portefeuille | 1 | fait | à faire |
 | N-10 | Titre, avatar, place épinglée | Rangés dans l'atelier ; le coffret le dit | lot 3 | 3 | fait (place épinglée, avatar, cadre et titre) | à faire |
 
@@ -191,7 +191,7 @@ La maquette ne montre que le clan du joueur. Les écrans K-08 à K-13 ont été 
 
 | ID | Élément | Ce qu'il faut | Serveur | Lot | Web | Mobile |
 |---|---|---|---|---|---|---|
-| R-01 | Courrier | Liste : offre reçue, coffret à ouvrir, mot qui s'échappe, objectif de clan, offre acceptée ; non lus surlignés ; chaque ligne mène à son écran | lettres écrites par la file (D-039) | 3 | fait (« À faire » tiré de l'état : coffrets, carte au choix, sachets d'objectif, mot qui s'échappe ; « Nouvelles » écrites par la file : offre reçue, acceptée, refusée, citation dans le clan, demande d'entrée ; la pastille compte l'à faire et les lettres non lues, pas les mots qui s'échappent) | à faire |
+| R-01 | Courrier | Liste : offre reçue, coffret à ouvrir, mot qui s'échappe, objectif de clan, offre acceptée ; non lus surlignés ; chaque ligne mène à son écran | lettres écrites par la file (D-039) | 3 | fait (« À faire » tiré de l'état : coffrets, sachets d'objectif, mot qui s'échappe ; « Nouvelles » écrites par la file : offre reçue, acceptée, refusée, citation dans le clan, demande d'entrée ; la pastille compte l'à faire et les lettres non lues, pas les mots qui s'échappent) | à faire |
 | R-02 | Notifications push | Mots qui s'échappent, offres, mentions dans le clan ; demande d'autorisation au bon moment, pas au lancement | file, Expo push | 3 | — | à faire |
 | R-03 | Réglages · Jeu | Son, Vibration | local | 1 | fait | à faire |
 | R-04 | Réglages · Notifications | Mots qui s'échappent, Offres d'échange, Discussion du clan (seulement quand on te cite) | serveur | 3 | fait (préférences gardées, lues par les notifications push à venir ; le courrier reçoit tout) | à faire |

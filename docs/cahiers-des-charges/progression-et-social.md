@@ -76,7 +76,7 @@ Les plafonds des défis (P29) limitent aussi l'XP qu'un tricheur peut en tirer.
 | Pli bonus | 1 pli dans la réserve (P23) | Rien : la réserve existe |
 | Recharge | Le stock gratuit remis au plein tout de suite | Une écriture du portefeuille |
 | Pli garni | Un pli dont au moins une carte est Rare ou mieux | Une garantie de tirage, comme celle du Peu courant (P11) |
-| Carte au choix | Une carte Courante ou Peu courante que le joueur n'a pas, qu'il choisit | Un écran de choix ; contenu connu, aucun hasard |
+| Carte au choix | Une carte Courante ou Peu courante que le joueur n'a pas, qu'il choisit | Abandonnée le 2026-10-22 : un pli garni à la place (P58) |
 | Réserve agrandie | Une place de plus dans la réserve de plis bonus, jusqu'à +5 | Un champ du portefeuille |
 | Cosmétique | Titre, avatar gravé, dos de carte, cadre | Le profil public (partie 2) |
 
@@ -86,7 +86,7 @@ Les plafonds des défis (P29) limitent aussi l'XP qu'un tricheur peut en tirer.
 |---|---|
 | Niveaux ordinaires | Pli bonus et recharge en alternance |
 | Tous les 5 (5, 15, 25…) | Pli garni, et un titre dès que le profil existe |
-| Tous les 10 (10, 20, 30…) | Carte au choix et réserve agrandie (jusqu'au niveau 50), et un avatar gravé dès que le profil existe |
+| Tous les 10 (10, 20, 30…) | Pli garni (carte au choix jusqu'au 2026-10-22) et réserve agrandie (jusqu'au niveau 50), et un avatar gravé dès que le profil existe |
 | Au-delà du 50 | Cosmétiques et plis bonus seulement, paliers plus espacés |
 
 **Fonctionnalités par niveau :** une fonctionnalité fermée reste visible, avec le niveau qui l'ouvre ; c'est une promesse, pas un mur. Les défis ne sont jamais fermés : l'apprentissage est le cœur du jeu.

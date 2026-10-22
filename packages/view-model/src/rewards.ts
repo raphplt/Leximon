@@ -48,12 +48,6 @@ export function rewardItem(reward: LevelRewardView | LevelReward): RewardItem {
       return { icon: "star", title: "Sachet garni", detail: "Au moins une Rare dedans" };
     case "title":
       return { icon: "plume", title: "Titre", detail: `« ${reward.title} »` };
-    case "card_choice":
-      return {
-        icon: "carte",
-        title: "Carte au choix",
-        detail: "Une Courante ou Peu courante qui te manque",
-      };
     case "reserve_slot":
       return {
         icon: "plus",
@@ -119,7 +113,6 @@ export function claimedToast(rewards: readonly LevelRewardView[]): string {
 
 /** The button of an opened coffret: what the player does with it. */
 export function coffretAction(rewards: readonly LevelRewardView[]): string {
-  if (rewards.some((r) => r.kind === "card_choice")) return "Choisir ma carte";
   if (rewards.every((r) => r.kind === "refill")) return "Remplir mon stock";
   return "Ranger dans ma réserve";
 }
@@ -150,7 +143,7 @@ export interface UpcomingReward {
   readonly icon: RewardIcon | "lock";
   /** Every 5 levels: drawn bigger, in kraft. */
   readonly milestone: boolean;
-  /** « Niveau 20 : Carte au choix, ouvre les clans ». */
+  /** « Niveau 20 : Sachet garni, ouvre les clans ». */
   readonly label: string;
 }
 

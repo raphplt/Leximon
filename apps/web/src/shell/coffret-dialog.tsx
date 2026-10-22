@@ -63,10 +63,7 @@ export function CoffretDialog({
         return;
       }
       wallet.publish(result.wallet);
-      publishClaimed(
-        level,
-        result.rewards.some((r) => r.kind === "card_choice"),
-      );
+      publishClaimed(level);
       setStep({ name: "opened", rewards: result.rewards });
     } catch {
       setStep({ name: "failed" });
@@ -75,8 +72,7 @@ export function CoffretDialog({
 
   const store = (rewards: readonly LevelRewardView[]) => {
     onClose();
-    if (rewards.some((r) => r.kind === "card_choice")) router.push("/niveaux/carte");
-    else toast(claimedToast(rewards));
+    toast(claimedToast(rewards));
   };
 
   const opens = level === null ? null : opensAt(level, now);

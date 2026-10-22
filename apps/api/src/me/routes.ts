@@ -2,11 +2,8 @@ import {
   type AccountResponse,
   type BlocksResponse,
   type BoosterWalletResponse,
-  type CardChoiceRefusal,
-  type CardChoiceResponse,
   type ClaimLevelRewardResponse,
   type ClaimRefusal,
-  cardChoiceRequestSchema,
   type DeleteAccountRefusal,
   type LevelRewardsResponse,
   type MailResponse,
@@ -38,7 +35,7 @@ import { leaveClan, touchLastSeen } from "../clans/clans";
 import { sendGameEvents } from "../clans/events";
 import { myClanRoutes } from "../clans/routes";
 import type { AppEnv } from "../context";
-import { chooseCard, claimLevelReward, readLevelRewards, walletView } from "../levels/rewards";
+import { claimLevelReward, readLevelRewards, walletView } from "../levels/rewards";
 import { markMailRead, readMail } from "../mail/mail";
 import { playerRateLimit } from "../middleware/rate-limit";
 import { requireUser } from "../middleware/require-user";
@@ -118,7 +115,7 @@ export function meRoutes() {
     return c.json<MarkMailReadResponse>({ unread });
   });
 
-  /** Level rewards: what was claimed, and the cards of the player's choice left to take. */
+  /** Level rewards: the levels already claimed. */
   routes.get("/level-rewards", async (c) => {
     return c.json<LevelRewardsResponse>(await readLevelRewards(c.var.db, c.var.userId));
   });
@@ -141,27 +138,6 @@ export function meRoutes() {
       rewards: [...result.rewards],
       wallet: result.wallet,
     });
-  });
-
-  routes.post("/card-choices", refuseLockedWrites, async (c) => {
-    const body = cardChoiceRequestSchema.safeParse(await c.req.json().catch(() => null));
-    if (!body.success) {
-      return c.json({ error: "invalid_request" }, 400);
-    }
-    const result = await chooseCard(c.var.db, {
-      userId: c.var.userId,
-      level: body.data.level,
-      cardId: body.data.cardId,
-      now: Date.now(),
-    });
-    if (result.kind === "refused") {
-      return c.json<{ error: CardChoiceRefusal }>(
-        { error: result.reason },
-        result.reason === "card_not_choosable" ? 422 : 409,
-      );
-    }
-    sendGameEvents(c, [{ type: "cards_obtained", userId: c.var.userId }]);
-    return c.json<CardChoiceResponse>({ level: result.level, cardId: result.cardId });
   });
 
   routes.get("/cards", async (c) => {

@@ -14,7 +14,7 @@ import { useNarrow } from "@/lib/use-narrow";
 import { REWARD_ICONS } from "@/shell/reward-icons";
 import { useShell } from "@/shell/shell-context";
 import { usePlayerView } from "@/shell/use-player-view";
-import { Button, ButtonLink } from "@/ui/button";
+import { Button } from "@/ui/button";
 import { Icon } from "@/ui/icon";
 import ui from "@/ui/ui.module.css";
 import styles from "./level-road.module.css";
@@ -79,7 +79,6 @@ export function LevelRoadScreen() {
 
   const chosen = selected ?? view.coffrets[0] ?? progress.level + 1;
   const detail = levelDetail(chosen, progress, claimed, now);
-  const cardWaits = view.cardChoices.includes(chosen);
 
   const pick = (node: RoadNode) => {
     setSelected(node.level);
@@ -206,17 +205,12 @@ export function LevelRoadScreen() {
                   Ouvrir le coffret
                 </Button>
               )}
-              {detail.state === "claimed" &&
-                (cardWaits ? (
-                  <ButtonLink href="/niveaux/carte" wide>
-                    Choisir ma carte
-                  </ButtonLink>
-                ) : (
-                  <p className={styles.done}>
-                    <Icon name="check" size={18} />
-                    Réclamée
-                  </p>
-                ))}
+              {detail.state === "claimed" && (
+                <p className={styles.done}>
+                  <Icon name="check" size={18} />
+                  Réclamée
+                </p>
+              )}
               {detail.xpLeft !== null && <p className={styles.left}>{detail.xpLeft}</p>}
             </div>
           </section>

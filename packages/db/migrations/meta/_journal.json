@@ -120,6 +120,13 @@
       "when": 1792676043058,
       "tag": "0016_mail",
       "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "7",
+      "when": 1792677897729,
+      "tag": "0017_drop_card_choice",
+      "breakpoints": true
     }
   ]
 }

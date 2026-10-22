@@ -7,30 +7,20 @@ import {
   computeRefill,
   createFullWallet,
   type EpochMs,
-  isChoosableRarity,
   LEVEL_REWARD_SCHEDULE,
   type LevelReward,
   levelOf,
   levelRewardRulesAt,
   levelRewards,
-  RARITIES,
   REFILL_SCHEDULE,
   refillToFull,
   reserveCapacity,
   rewardBoosters,
 } from "@leximon/core";
 import { type Database, schema } from "@leximon/db";
-import { and, asc, eq, sql } from "drizzle-orm";
+import { asc, eq, sql } from "drizzle-orm";
 
-const {
-  boosterWallets,
-  cards,
-  collections,
-  guestLinks,
-  userCards,
-  userLevelRewards,
-  userProgress,
-} = schema;
+const { boosterWallets, guestLinks, userLevelRewards, userProgress } = schema;
 
 export type WalletRow = Pick<
   typeof boosterWallets.$inferSelect,
@@ -80,29 +70,19 @@ export async function lockWallet(tx: Transaction, userId: string, now: EpochMs) 
 
 export interface LevelRewardsState {
   readonly claimed: number[];
-  readonly cardChoices: number[];
 }
 
-/** Levels a player claimed, and those whose card of the player's choice is still to take. */
+/** Levels a player claimed, lowest first. */
 export async function readLevelRewards(
   db: Pick<Database, "select">,
   userId: string,
 ): Promise<LevelRewardsState> {
   const rows = await db
-    .select({
-      level: userLevelRewards.level,
-      rewards: userLevelRewards.rewards,
-      chosenCardId: userLevelRewards.chosenCardId,
-    })
+    .select({ level: userLevelRewards.level })
     .from(userLevelRewards)
     .where(eq(userLevelRewards.userId, userId))
     .orderBy(asc(userLevelRewards.level));
-  return {
-    claimed: rows.map((row) => row.level),
-    cardChoices: rows
-      .filter((row) => row.chosenCardId === null && hasCardChoice(row.rewards))
-      .map((row) => row.level),
-  };
+  return { claimed: rows.map((row) => row.level) };
 }
 
 export type ClaimResult =
@@ -205,103 +185,4 @@ export async function claimLevelReward(
       .where(eq(boosterWallets.userId, userId));
     return { kind: "claimed", level, rewards, wallet: walletView(after, now) };
   });
-}
-
-export type CardChoiceResult =
-  | { readonly kind: "chosen"; readonly level: number; readonly cardId: string }
-  | { readonly kind: "refused"; readonly reason: "no_card_choice" | "already_chosen" }
-  | { readonly kind: "refused"; readonly reason: "card_not_choosable" };
-
-/**
- * Takes the card of the player's choice won at a level: a Courant or Peu courant card of a
- * published collection that the player does not own. Contents are known in advance: nothing is
- * drawn. A player who owns every such card may take any of them.
- *
- * Idempotent: the same card again for the same level returns the first result. One transaction:
- * lock the claim row, check the card, then mark the choice and add the copy in one statement.
- * Lock order: the claim row, then the copy (nothing else locks them the other way round).
- */
-export async function chooseCard(
-  db: Database,
-  input: {
-    readonly userId: string;
-    readonly level: number;
-    readonly cardId: string;
-    readonly now: EpochMs;
-  },
-): Promise<CardChoiceResult> {
-  const { userId, level, cardId, now } = input;
-  const rules = levelRewardRulesAt(LEVEL_REWARD_SCHEDULE, now);
-  const choosable = RARITIES.filter((rarity) => isChoosableRarity(rules, rarity));
-
-  return db.transaction(async (tx): Promise<CardChoiceResult> => {
-    const [claim] = await tx
-      .select({ rewards: userLevelRewards.rewards, chosenCardId: userLevelRewards.chosenCardId })
-      .from(userLevelRewards)
-      .where(and(eq(userLevelRewards.userId, userId), eq(userLevelRewards.level, level)))
-      .for("update");
-    if (claim === undefined || !hasCardChoice(claim.rewards)) {
-      return { kind: "refused", reason: "no_card_choice" };
-    }
-    if (claim.chosenCardId !== null) {
-      return claim.chosenCardId === cardId
-        ? { kind: "chosen", level, cardId }
-        : { kind: "refused", reason: "already_chosen" };
-    }
-
-    const isChoosable = sql`${cards.retiredAt} is null and ${collections.publishedAt} <= ${new Date(now)}
-      and ${cards.rarity} in (${sql.join(
-        choosable.map((rarity) => sql`${rarity}`),
-        sql`, `,
-      )})`;
-    const owns = (card: typeof cards.id) => sql`exists (select 1 from ${userCards}
-      where ${userCards.userId} = ${userId} and ${userCards.cardId} = ${card}
-        and ${userCards.quantity} > 0)`;
-    const [card] = await tx
-      .select({
-        choosable: sql<boolean>`${isChoosable}`,
-        owned: owns(cards.id).mapWith(Boolean),
-      })
-      .from(cards)
-      .innerJoin(collections, eq(collections.id, cards.collectionId))
-      .where(eq(cards.id, cardId));
-    if (card === undefined || !card.choosable) {
-      return { kind: "refused", reason: "card_not_choosable" };
-    }
-    if (card.owned) {
-      // Rare: only allowed when nothing choosable is missing. An anti-join over the catalog.
-      const [missing] = await tx
-        .select({ id: cards.id })
-        .from(cards)
-        .innerJoin(collections, eq(collections.id, cards.collectionId))
-        .where(sql`${isChoosable} and not ${owns(cards.id)}`)
-        .limit(1);
-      if (missing !== undefined) return { kind: "refused", reason: "card_not_choosable" };
-    }
-
-    const at = new Date(now);
-    const choiceUpdate = tx.$with("choice_update").as(
-      tx
-        .update(userLevelRewards)
-        .set({ chosenCardId: cardId, chosenAt: at })
-        .where(and(eq(userLevelRewards.userId, userId), eq(userLevelRewards.level, level)))
-        .returning({ level: userLevelRewards.level }),
-    );
-    await tx
-      .with(choiceUpdate)
-      .insert(userCards)
-      .values({ userId, cardId, quantity: 1, firstObtainedAt: at, lastObtainedAt: at })
-      .onConflictDoUpdate({
-        target: [userCards.userId, userCards.cardId, userCards.variant],
-        set: {
-          quantity: sql`${userCards.quantity} + 1`,
-          lastObtainedAt: sql`excluded.last_obtained_at`,
-        },
-      });
-    return { kind: "chosen", level, cardId };
-  });
-}
-
-function hasCardChoice(rewards: readonly LevelReward[]): boolean {
-  return rewards.some((reward) => reward.kind === "card_choice");
 }

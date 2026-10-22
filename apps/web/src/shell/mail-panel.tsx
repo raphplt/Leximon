@@ -49,8 +49,8 @@ interface Row {
 }
 
 /**
- * The mail: what waits to be done, read from the game's state (coffrets, cards to choose, goal
- * boosters, a word slipping away), then the news the queue wrote (offers, mentions, requests).
+ * The mail: what waits to be done, read from the game's state (coffrets, goal boosters, a word
+ * slipping away), then the news the queue wrote (offers, mentions, requests).
  * Opening it marks the letters read; those new to this opening stay highlighted until it closes.
  */
 export function MailPanel({
@@ -120,15 +120,6 @@ export function MailPanel({
       title: `${coffretsLabel(view.coffrets.length)} à ouvrir`,
       detail: "Chemin des niveaux",
       action: () => openCoffret(),
-    });
-  }
-  if (view.cardChoices.length > 0) {
-    todo.push({
-      key: "card-choice",
-      icon: "carte",
-      title: "Une carte au choix t'attend",
-      detail: "Une Courante ou Peu courante qui te manque",
-      href: "/niveaux/carte",
     });
   }
   if (view.claimable.length > 0) {

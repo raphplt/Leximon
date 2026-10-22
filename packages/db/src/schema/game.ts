@@ -198,8 +198,7 @@ export const boosterBonusAwards = pgTable(
 
 /**
  * Level rewards claimed, one row per level: the primary key makes a claim happen once, and
- * `rewards` keeps what it gave under the rules in force. A card of the player's choice is taken
- * later (`chosen_card_id`), once per level that gives one.
+ * `rewards` keeps what it gave under the rules in force.
  */
 export const userLevelRewards = pgTable(
   "user_level_rewards",
@@ -210,16 +209,10 @@ export const userLevelRewards = pgTable(
     level: smallint().notNull(),
     rewards: jsonb().$type<readonly LevelReward[]>().notNull(),
     claimedAt: timestamp({ withTimezone: true }).notNull(),
-    chosenCardId: text().references(() => cards.id),
-    chosenAt: timestamp({ withTimezone: true }),
   },
   (table) => [
     primaryKey({ columns: [table.userId, table.level] }),
     check("user_level_rewards_level_check", sql`${table.level} >= 2`),
-    check(
-      "user_level_rewards_choice_check",
-      sql`(${table.chosenCardId} is null) = (${table.chosenAt} is null)`,
-    ),
   ],
 );
 

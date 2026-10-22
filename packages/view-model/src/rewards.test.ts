@@ -29,7 +29,7 @@ describe("level rewards", () => {
     expect(rewardSummary(3, NOW)).toBe("Sachet bonus");
     expect(rewardSummary(15, NOW)).toBe("Sachet garni · Titre");
     expect(rewardSummary(20, NOW)).toBe(
-      "Carte au choix · Réserve +1 · Avatar gravé · Cadre · Place épinglée +1",
+      "Sachet garni · Réserve +1 · Avatar gravé · Cadre · Place épinglée +1",
     );
   });
 
@@ -45,7 +45,6 @@ describe("level rewards", () => {
     expect(claimedToast([{ kind: "bonus_booster" }])).toBe("Rangé dans ta réserve.");
     expect(reserveLabel({ bonus: 3, bonusCap: 12 })).toBe("3 / 12 bonus");
     expect(coffretAction([{ kind: "refill" }])).toBe("Remplir mon stock");
-    expect(coffretAction([{ kind: "card_choice" }, { kind: "avatar" }])).toBe("Choisir ma carte");
     expect(coffretAction([{ kind: "garni_booster" }, { kind: "title", title: "x" }])).toBe(
       "Ranger dans ma réserve",
     );
