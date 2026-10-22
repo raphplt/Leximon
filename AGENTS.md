@@ -17,6 +17,7 @@ pnpm dev                         # Postgres et Directus (Docker), puis toutes le
 pnpm check                       # lint + typecheck + tests unitaires, à lancer avant de rendre la main
 pnpm test:integration            # tests contre la base leximon_test, vidée à chaque passage (Docker requis)
 pnpm admin:grant <email>         # donne le rôle admin à un compte existant (--revoke pour le retirer)
+pnpm dev:player <email> --level 16 --age-days 4   # base locale seulement : niveau et âge d'un compte, pour la recette
 pnpm format                      # corrige le formatage (Biome)
 ```
 
@@ -52,6 +53,7 @@ Les sources téléchargées vivent dans `content/pipeline/data/` (ignoré par gi
 | `docs/voix.md`              | Voix de Leximon : personnage, ton selon le moment, lexique, boutons               | Oui                           |
 | `docs/rnd/`                 | Rapports des spikes de R&D                                                        | Oui                           |
 | `docs/cahiers-des-charges/` | Spécifications fonctionnelles d'un chantier, avant sa réalisation                 | Oui                           |
+| `docs/recette-web.md`       | Recette du web : chaque test, ce qu'on doit voir, les retours du propriétaire     | Oui                           |
 | `docs/north-star.md`        | Vision produit, marché, monétisation, lancement                                   | Non (local, peut être absent) |
 | `docs/architecture.md`      | Architecture détaillée, charge visée, modèle de données                           | Non (local, peut être absent) |
 
