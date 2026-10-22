@@ -19,10 +19,12 @@ export type SoundCue =
   | "newCard"
   | "recap";
 
-export type FeedbackKind = "sound" | "haptics";
+/** `speech`: the word read aloud as its card settles, apart from the other sounds. */
+export type FeedbackKind = "sound" | "speech" | "haptics";
 
 const STORAGE_KEYS: Readonly<Record<FeedbackKind, string>> = {
   sound: "leximon.sound",
+  speech: "leximon.speech",
   haptics: "leximon.haptics",
 };
 
@@ -44,16 +46,20 @@ export function writePreference(kind: FeedbackKind, enabled: boolean): void {
   preferences[kind] = enabled;
 }
 
-const preferences: Record<FeedbackKind, boolean | null> = { sound: null, haptics: null };
+const preferences: Record<FeedbackKind, boolean | null> = {
+  sound: null,
+  speech: null,
+  haptics: null,
+};
 
 function enabled(kind: FeedbackKind): boolean {
   preferences[kind] ??= readPreference(kind);
   return preferences[kind];
 }
 
-/** Whether sounds play on their own; a sound the player asks for (a button) always plays. */
-export function soundOn(): boolean {
-  return enabled("sound");
+/** Whether a card says its word on its own once it settles; the listen button always works. */
+export function speechOn(): boolean {
+  return enabled("sound") && enabled("speech");
 }
 
 /** Vibration exists on Android browsers only; iPhones ignore it. */

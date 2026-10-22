@@ -140,8 +140,8 @@ Compte A, n'importe quel niveau.
 - **Retour :**
 
 ### JOU-08 · Son et vibration
-- **Faire :** couper le son dans les réglages, ouvrir un sachet.
-- **Attendu :** plus aucun son, ni prononciation automatique.
+- **Faire :** couper « Mots dits à voix haute » dans les réglages, ouvrir un sachet ; puis couper le son, en ouvrir un autre.
+- **Attendu :** d'abord les bruitages sans les mots (le bouton d'écoute marche toujours) ; ensuite plus aucun son, et le réglage des mots disparaît.
 - **Retour :**
 
 ### JOU-09 · Forme « pli »
