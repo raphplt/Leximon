@@ -692,16 +692,56 @@
   transform: rotate(-4deg);
 }
 
-.slippingText {
+/* Card and text are one button: touching the word opens its card. */
+.slippingOpen {
   flex: 1;
-  margin: 0;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 0;
+  border: none;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.slippingBody {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.slippingText {
   font-family: var(--font-text), Georgia, serif;
   font-size: 17px;
   line-height: 1.3;
 }
 
+/* The start of the definition, cut with « … »: enough to want the rest. */
+.slippingDefinition {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  font-family: var(--font-text), Georgia, serif;
+  font-size: 14px;
+  line-height: 1.35;
+  color: var(--lx-color-text-muted);
+}
+
 .slippingText em {
   font-weight: 600;
+}
+
+.slippingOpen:hover .slippingText em {
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 
 /* The next rewards need room: dropped on medium screens. */

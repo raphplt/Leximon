@@ -189,6 +189,49 @@ export function sachetContents(now: EpochMs): string {
 /** « Lucubrateur est en train de t'échapper. », split so that the word can be set in italics. */
 export const SLIPPING_AWAY = { after: " est en train de t'échapper.", action: "Réviser" } as const;
 
+/**
+ * Under the counter, a word slipping away shows its definition but not itself: the review that
+ * follows asks for the word, so the answer is never one touch away from its question.
+ */
+export const SLIPPING_RIDDLE = "Un mot est en train de t'échapper.";
+
+/** Above a word of the album when none is slipping away. */
+export const OWN_WORD = { kicker: "Un de tes mots", action: "Relire" } as const;
+
+export interface WordUnderCounter {
+  readonly cardId: string;
+  /** `slipping`: due for review; `owned`: one of the player's words, to read again. */
+  readonly kind: "slipping" | "owned";
+}
+
+/**
+ * The word shown under the counter, another at each visit: one of the words due for review,
+ * most overdue first, else one of the player's words. `null` without any card.
+ */
+export function wordUnderCounter(
+  memory: ReadonlyMap<string, { readonly due: number }>,
+  owned: ReadonlyMap<string, number>,
+  now: EpochMs,
+  visit: number,
+): WordUnderCounter | null {
+  const due = [...memory.entries()]
+    .filter(([id, word]) => word.due <= now && (owned.get(id) ?? 0) > 0)
+    .sort((a, b) => a[1].due - b[1].due || a[0].localeCompare(b[0]))
+    .map(([id]) => id);
+  const slipping = pickAt(due, visit);
+  if (slipping !== undefined) return { cardId: slipping, kind: "slipping" };
+  const mine = [...owned.entries()]
+    .filter(([, quantity]) => quantity > 0)
+    .map(([id]) => id)
+    .sort();
+  const word = pickAt(mine, visit);
+  return word === undefined ? null : { cardId: word, kind: "owned" };
+}
+
+function pickAt<T>(items: readonly T[], visit: number): T | undefined {
+  return items.length === 0 ? undefined : items[Math.abs(Math.trunc(visit)) % items.length];
+}
+
 // --- Floating buttons -----------------------------------------------------------------------
 
 export type FabId = "clan" | "chat" | "jousts" | "daily" | "coffrets" | "mail" | "settings";

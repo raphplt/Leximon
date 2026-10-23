@@ -13,6 +13,8 @@ import {
   openAgainLabel,
   pickCollection,
   stockView,
+  type WordMemory,
+  wordUnderCounter,
   xpGainLabel,
 } from "@leximon/view-model";
 import Link from "next/link";
@@ -21,7 +23,7 @@ import { type Catalog, cardOrPlaceholder, collectionName, loadCatalog } from "@/
 import { prepareSpokenWords } from "@/cards/use-spoken-word";
 import { Card } from "@/components/card";
 import { RarityName } from "@/components/rarity-icon";
-import { fetchChallenges, type OpenBoosterResult, openBooster } from "@/lib/api";
+import { type OpenBoosterResult, openBooster } from "@/lib/api";
 import type { PackShape } from "@/lib/pack-shape";
 import { usePackShape } from "@/lib/use-pack-shape";
 import { CollectionPicker } from "@/play/collection-picker";
@@ -31,7 +33,7 @@ import { PackPeek } from "@/play/pack-peek";
 import play from "@/play/play.module.css";
 import { PlayFabs } from "@/play/play-fabs";
 import { SlippingWord } from "@/play/slipping-word";
-import { OWNED_CARDS_MAX_AGE_MS, ownedCards } from "@/player/collection";
+import { OWNED_CARDS_MAX_AGE_MS, ownedCards, wordMemory } from "@/player/collection";
 import { account, wallet } from "@/player/player";
 import { useShared } from "@/player/resource";
 import { publishProgress, useProgress } from "@/progress/use-progress";
@@ -77,6 +79,8 @@ const CARD_MARGIN = 56;
 const CARD_MAX_WIDTH = 300;
 /** The sachet chosen last, kept on the device. */
 const CHOICE_KEY = "leximon.sachet";
+/** Visits of the Jouer screen, kept on the device: the word under the counter changes with each. */
+const VISITS_KEY = "leximon.visites";
 
 type Phase =
   | { readonly name: "loading" }
@@ -134,6 +138,17 @@ function readChoice(): string | null {
   }
 }
 
+/** Counts this visit; 0 where the device keeps nothing, the word then staying the same. */
+function countVisit(): number {
+  try {
+    const visit = (Number(window.localStorage.getItem(VISITS_KEY)) || 0) + 1;
+    window.localStorage.setItem(VISITS_KEY, String(visit));
+    return visit;
+  } catch {
+    return 0;
+  }
+}
+
 function writeChoice(id: string): void {
   try {
     window.localStorage.setItem(CHOICE_KEY, id);
@@ -150,8 +165,9 @@ export function BoosterScreen() {
   const [pack, setPack] = useState<Pack | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [wanted, setWanted] = useState<string | null>(null);
-  /** The word most at risk of being forgotten, shown under the counter; null when none is due. */
-  const [slipping, setSlipping] = useState<string | null>(null);
+  /** What the player remembers of each word, for the word shown under the counter. */
+  const [memory, setMemory] = useState<ReadonlyMap<string, WordMemory>>(new Map());
+  const [visit, setVisit] = useState(0);
   const request = useRef<OpenRequest | null>(null);
   const { shape, known } = usePackShape();
   const view = usePlayerView();
@@ -164,23 +180,21 @@ export function BoosterScreen() {
   const guestLeft = who?.kind === "guest" ? who.boostersLeft : null;
 
   // Everything that sizes the counter is awaited together, so that it appears whole: nothing
-  // arriving a moment later (the stock, the word slipping away) pushes the sachet around.
+  // arriving a moment later (the stock, the word under the counter) pushes the sachet around.
   const load = useCallback(async () => {
     try {
-      const [loadedCatalog, copies, slippingId] = await Promise.all([
+      const [loadedCatalog, copies, memories] = await Promise.all([
         loadCatalog(),
         ownedCards.read(OWNED_CARDS_MAX_AGE_MS),
-        fetchChallenges(1).then(
-          (challenges) => challenges.questions[0]?.cardId ?? null,
-          // Only a reminder: the counter goes without it rather than wait for it.
-          () => null,
-        ),
+        // Only a reminder: the counter goes without it rather than wait for it.
+        wordMemory.read().catch(() => new Map<string, WordMemory>()),
         wallet.read(),
         account.read().catch(() => null),
       ]);
       setCatalog(loadedCatalog);
       setOwned(copies);
-      setSlipping(slippingId);
+      setMemory(memories);
+      setVisit(countVisit());
       const ready: Phase =
         loadedCatalog.collections.length > 0 ? { name: "sealed" } : { name: "no_collection" };
       setPhase((current) =>
@@ -400,6 +414,7 @@ export function BoosterScreen() {
   }
 
   const ready = phase.name === "sealed" || phase.name === "opening";
+  const underCounter = now === 0 ? null : wordUnderCounter(memory, owned, now, visit);
   const files = new Map(catalog?.collections.map((c) => [c.id, c]) ?? []);
   const packOfChoice = (c: CollectionChoice): PackCollection => {
     const file = files.get(c.id);
@@ -529,8 +544,8 @@ export function BoosterScreen() {
               </div>
             </section>
           </div>
-          {catalog !== null && slipping !== null && (
-            <SlippingWord catalog={catalog} cardId={slipping} />
+          {catalog !== null && underCounter !== null && (
+            <SlippingWord catalog={catalog} word={underCounter} />
           )}
         </>
       )}

@@ -9,6 +9,7 @@ import {
   sachetContents,
   shortName,
   stockView,
+  wordUnderCounter,
 } from "./play";
 
 const NOW = Date.UTC(2026, 9, 22, 12);
@@ -132,5 +133,41 @@ describe("sachets behind the counter", () => {
     expect(around.left?.id).toBe(choices[choices.length - 1]?.id);
     expect(neighbourChoices(choices.slice(0, 2), first)).toEqual({ left: null, right: second });
     expect(neighbourChoices(choices.slice(0, 1), first)).toEqual({ left: null, right: null });
+  });
+});
+
+describe("word under the counter", () => {
+  const now = 10_000;
+  const owned = new Map([
+    ["a", 1],
+    ["b", 2],
+    ["c", 1],
+    ["gone", 0],
+  ]);
+
+  it("shows the words due, most overdue first, another at each visit", () => {
+    const memory = new Map([
+      ["a", { due: now - 10 }],
+      ["b", { due: now - 500 }],
+      ["c", { due: now + 1 }],
+    ]);
+    expect(wordUnderCounter(memory, owned, now, 0)).toEqual({ cardId: "b", kind: "slipping" });
+    expect(wordUnderCounter(memory, owned, now, 1)).toEqual({ cardId: "a", kind: "slipping" });
+    expect(wordUnderCounter(memory, owned, now, 2)).toEqual({ cardId: "b", kind: "slipping" });
+  });
+
+  it("leaves out a word due that the player no longer owns", () => {
+    const memory = new Map([["gone", { due: now - 10 }]]);
+    expect(wordUnderCounter(memory, owned, now, 0)?.kind).toBe("owned");
+  });
+
+  it("falls back on one of the player's words when none is due", () => {
+    const shown = [0, 1, 2, 3].map((visit) => wordUnderCounter(new Map(), owned, now, visit));
+    expect(shown.map((word) => word?.cardId)).toEqual(["a", "b", "c", "a"]);
+    expect(shown.every((word) => word?.kind === "owned")).toBe(true);
+  });
+
+  it("shows nothing without a card", () => {
+    expect(wordUnderCounter(new Map(), new Map(), now, 0)).toBeNull();
   });
 });

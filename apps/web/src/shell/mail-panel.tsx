@@ -233,7 +233,7 @@ function SlippingRow({
           </>
         ),
         detail: slippingDetail(others),
-        href: "/defis",
+        href: `/defis?mot=${encodeURIComponent(cardId)}`,
       }}
       onClose={onClose}
     />

@@ -150,7 +150,11 @@ Compte A, n'importe quel niveau.
 - **Retour :**
 
 ### JOU-10 · Mot qui s'échappe
-- **Attendu :** quand un mot est dû en révision, « *Mot* est en train de t'échapper. » avec « Réviser », dans un encadré sous le comptoir, bien séparé du sachet. Absent sinon. *Un mot devient dû au plus tôt le lendemain de son premier défi.*
+- **Attendu :** dans un encadré sous le comptoir, bien séparé du sachet :
+  - quand un mot est dû en révision : « Un mot est en train de t'échapper. », le dos de sa carte et le début de sa définition, sans le mot. « Réviser », ou un toucher sur l'encadré, lance la révision de ce seul mot, même si le défi du jour est fait. *Un mot devient dû au plus tôt le lendemain de son premier défi.*
+  - sinon : « Un de tes mots », le mot, le début de sa définition et « Relire », qui ouvre sa fiche.
+  - Le mot change à chaque retour sur Jouer. Sans aucune carte, pas d'encadré.
+  - Au courrier, la ligne « *Mot* est en train de t'échapper. » mène aussi à la révision de ce mot.
 - **Retour :**
 
 ---
