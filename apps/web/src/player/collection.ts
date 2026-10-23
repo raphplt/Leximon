@@ -26,13 +26,18 @@ export function publishTraded(gained: readonly string[], given: readonly string[
   if (current !== null) ownedCards.publish(copiesAfterTrade(current, gained, given));
 }
 
-/** Level, next review and stability of every reviewed word. */
+/** Level, next review, stability and last review of every reviewed word. */
 export const wordMemory = sharedResource<ReadonlyMap<string, WordMemory>>(async () => {
   const words = await fetchMastery();
   return new Map(
     words.map((word) => [
       word.cardId,
-      { level: word.level, due: Date.parse(word.due), stability: word.stability },
+      {
+        level: word.level,
+        due: Date.parse(word.due),
+        stability: word.stability,
+        lastReviewedAt: word.lastReviewedAt === null ? null : Date.parse(word.lastReviewedAt),
+      },
     ]),
   );
 });

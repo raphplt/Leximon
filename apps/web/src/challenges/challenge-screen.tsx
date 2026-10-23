@@ -78,7 +78,7 @@ export function ChallengeScreen() {
   }, []);
   useEffect(loadIt, [loadIt]);
 
-  // « Réviser ce mot » (card sheet, words slipping away): a session of that one word.
+  // A word slipping away, picked in the list: a session of that one word.
   useEffect(() => {
     if (word === null || catalog === null) return;
     router.replace(pathname, { scroll: false });

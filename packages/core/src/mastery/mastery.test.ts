@@ -6,6 +6,8 @@ import {
   type MasteryRules,
   masteryRulesAt,
   newWordMastery,
+  newWordReadyAt,
+  provenLevel,
   reviewWord,
   type WordMastery,
 } from "./mastery";
@@ -16,15 +18,18 @@ const rules: MasteryRules = {
   requestRetention: 0.9,
   maximumIntervalDays: 365,
   levelThresholdDays: { ink: 7, gilded: 30 },
+  levelBy: "stability",
+  newWordDelayMs: 0,
 };
+const proven: MasteryRules = { ...rules, levelBy: "provenRecall", newWordDelayMs: 4 * 3_600_000 };
 
 /** Answers right each time the word comes back; returns the mastery after each answer. */
-function recallEachTime(times: number): WordMastery[] {
+function recallEachTime(times: number, using = rules): WordMastery[] {
   let mastery = newWordMastery(0);
   let now = 0;
   const steps: WordMastery[] = [];
   for (let i = 0; i < times; i++) {
-    mastery = reviewWord(rules, mastery, true, now).mastery;
+    mastery = reviewWord(using, mastery, true, now).mastery;
     steps.push(mastery);
     now = mastery.memory.due;
   }
@@ -84,10 +89,48 @@ describe("mastery", () => {
     expect(levelFor(rules, 1, "ink")).toBe("ink");
   });
 
+  describe("proven recall", () => {
+    it("climbs only once a right answer comes 7, then 30 days after the previous one", () => {
+      const steps = recallEachTime(4, proven);
+      expect(steps.map((m) => m.level)).toEqual(["sketch", "sketch", "ink", "gilded"]);
+      const [, second, third] = steps;
+      const gap = (a?: WordMastery, b?: WordMastery) =>
+        ((b?.memory.lastReviewedAt ?? 0) - (a?.memory.lastReviewedAt ?? 0)) / DAY;
+      expect(gap(second, third)).toBeGreaterThanOrEqual(7);
+    });
+
+    it("climbs one level per answer, however long the word was remembered", () => {
+      const first = reviewWord(proven, newWordMastery(0), true, 0).mastery;
+      const late = reviewWord(proven, first, true, 60 * DAY);
+      expect(late.mastery.level).toBe("ink");
+      expect(late.levelUp).toBe(true);
+    });
+
+    it("never climbs on a wrong answer or a first answer", () => {
+      const first = reviewWord(proven, newWordMastery(0), true, 0).mastery;
+      expect(first.level).toBe("sketch");
+      expect(reviewWord(proven, first, false, 40 * DAY).mastery.level).toBe("sketch");
+    });
+
+    it("reads levels from the days remembered", () => {
+      expect(provenLevel(proven, 6.9, "sketch")).toBe("sketch");
+      expect(provenLevel(proven, 7, "sketch")).toBe("ink");
+      expect(provenLevel(proven, 29, "ink")).toBe("ink");
+      expect(provenLevel(proven, 30, "ink")).toBe("gilded");
+      expect(provenLevel(proven, 0, "gilded")).toBe("gilded");
+    });
+
+    it("lets a new word be asked only a while after its first copy", () => {
+      expect(newWordReadyAt(proven, 1_000)).toBe(1_000 + 4 * 3_600_000);
+      expect(newWordReadyAt(rules, 1_000)).toBe(1_000);
+    });
+  });
+
   it("applies the rules in force at the time", () => {
     const later = { ...rules, startsAt: 100, requestRetention: 0.8 };
     expect(masteryRulesAt([rules, later], 99)).toBe(rules);
     expect(masteryRulesAt([rules, later], 100)).toBe(later);
     expect(masteryRulesAt(MASTERY_SCHEDULE, Date.now()).levelThresholdDays.ink).toBe(7);
+    expect(masteryRulesAt(MASTERY_SCHEDULE, Date.now()).levelBy).toBe("provenRecall");
   });
 });

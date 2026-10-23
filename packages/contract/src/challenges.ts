@@ -80,8 +80,10 @@ export const masteryResponseSchema = z.object({
       level: masteryLevelSchema,
       /** When the word is due again. */
       due: timestampSchema,
-      /** Memory stability in days, which raises the level. */
+      /** Memory stability in days. */
       stability: z.number().nonnegative(),
+      /** The last answer: a right answer long enough after it raises the level. */
+      lastReviewedAt: timestampSchema.nullable(),
     }),
   ),
 });

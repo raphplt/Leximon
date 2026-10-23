@@ -178,10 +178,10 @@ export function memoryCounts(
   return counts;
 }
 
-/** « Un mot retenu 7 jours passe à l'Encre, 30 jours à la Dorure. », with the rules of `now`. */
+/** « Un mot retrouvé 7 jours après… », with the rules of `now`. */
 export function memoryNote(now: number): string {
   const { ink, gilded } = masteryRulesAt(MASTERY_SCHEDULE, now).levelThresholdDays;
-  return `Un mot retenu ${ink} jours passe à l'Encre, ${gilded} jours à la Dorure. Un mot raté revient le lendemain.`;
+  return `Un mot retrouvé ${ink} jours après sa dernière révision passe à l'Encre, ${gilded} jours après à la Dorure. Un mot raté revient le lendemain.`;
 }
 
 export interface EscapingWord {
@@ -235,7 +235,7 @@ export function sessionScore(answers: readonly AnsweredQuestion[]): string {
 export const NOT_THIS_TIME = "Pas encore de bonus. Le défi du jour court jusqu'à minuit.";
 
 /**
- * A one-word session (« Réviser ce mot » on the card sheet): the same question the server would
+ * A one-word session (a word slipping away, on the Défis screen): the same question the server would
  * build, wrong choices from the word's collection first. The server still checks the answer and
  * whether the word is due.
  */

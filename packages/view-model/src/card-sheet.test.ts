@@ -1,22 +1,35 @@
 import { describe, expect, it } from "vitest";
-import { canOfferInTrade, comeBackIn, copiesLabel, masteryView, reviewState } from "./card-sheet";
+import { canOfferInTrade, comeBackIn, copiesLabel, masteryView, reviewLabel } from "./card-sheet";
 
-const NOW = Date.parse("2026-10-21T12:00:00Z");
+const NOW = Date.parse("2026-10-24T12:00:00Z");
 const DAY = 86_400_000;
 
 describe("mastery of a card", () => {
-  it("says what is left before the next level", () => {
-    expect(masteryView(undefined, NOW).text).toBe("Pas encore révisé. Un défi le met en route.");
-    const sketch = masteryView({ level: "sketch", due: NOW, stability: 3.4 }, NOW);
-    expect(sketch.text).toBe("Retenu 3 jours sur 7. Encore 4 pour l'Encre.");
+  const word = (level: "sketch" | "ink" | "gilded", due: number, lastReviewedAt: number) => ({
+    level,
+    due,
+    stability: 1,
+    lastReviewedAt,
+  });
+
+  it("says what it takes to climb the next level", () => {
+    expect(masteryView(undefined, NOW).text).toBe(
+      "Pas encore révisé. Il arrive en défi 4 h après ta trouvaille.",
+    );
+    const sketch = masteryView(word("sketch", NOW + 2 * DAY, NOW - DAY), NOW);
+    expect(sketch.text).toBe("Retrouve-le 7 jours après une révision, et c'est l'Encre.");
     expect(sketch.steps.map((step) => step.reached)).toEqual([true, false, false]);
-    expect(masteryView({ level: "sketch", due: NOW, stability: 0.2 }, NOW).text).toBe(
-      "Retenu moins d'un jour. Encore 7 pour l'Encre.",
+    expect(masteryView(word("sketch", NOW + 4 * DAY, NOW - 3 * DAY), NOW).text).toBe(
+      "Juste à la prochaine révision, et c'est l'Encre.",
     );
-    expect(masteryView({ level: "ink", due: NOW, stability: 12 }, NOW).text).toBe(
-      "Encore 18 jours pour la Dorure.",
+    expect(masteryView(word("ink", NOW + 10 * DAY, NOW - 4 * DAY), NOW).text).toBe(
+      "Retrouve-le 30 jours après une révision, et c'est la Dorure.",
     );
-    const gilded = masteryView({ level: "gilded", due: NOW, stability: 40 }, NOW);
+    // Overdue: the time already waited counts.
+    expect(masteryView(word("ink", NOW - DAY, NOW - 31 * DAY), NOW).text).toBe(
+      "Juste à la prochaine révision, et c'est la Dorure.",
+    );
+    const gilded = masteryView(word("gilded", NOW, NOW - 60 * DAY), NOW);
     expect(gilded.text).toBe("Doré. Il ne bouge plus.");
     expect(gilded.steps.every((step) => step.reached)).toBe(true);
   });
@@ -35,15 +48,11 @@ describe("copies and actions", () => {
     expect(canOfferInTrade(1, 20, NOW)).toBe(false);
   });
 
-  it("reviews a due word, or says when it comes back", () => {
-    expect(reviewState(undefined, NOW)).toEqual({ due: true });
-    expect(reviewState({ level: "sketch", due: NOW - 1, stability: 1 }, NOW)).toEqual({
-      due: true,
-    });
-    expect(reviewState({ level: "ink", due: NOW + 3 * DAY, stability: 9 }, NOW)).toEqual({
-      due: false,
-      label: "Revient dans 3 jours.",
-    });
+  it("says where the word stands in the challenges", () => {
+    expect(reviewLabel(undefined, NOW)).toBeNull();
+    const memory = { level: "sketch" as const, stability: 1, lastReviewedAt: NOW - DAY };
+    expect(reviewLabel({ ...memory, due: NOW - 1 }, NOW)).toBe("Il t'attend dans les défis.");
+    expect(reviewLabel({ ...memory, due: NOW + 3 * DAY }, NOW)).toBe("Revient dans 3 jours.");
     expect(comeBackIn(30 * 60_000)).toBe("dans 30 min");
     expect(comeBackIn(DAY)).toBe("demain");
   });

@@ -22,6 +22,8 @@ export interface WordMemory {
   readonly due: number;
   /** Memory stability in days. */
   readonly stability: number;
+  /** Epoch ms of the last answer. */
+  readonly lastReviewedAt: number | null;
 }
 
 export const ALBUM_FILTERS = ["all", "doubles", "review", "gilded", "missing"] as const;

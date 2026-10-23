@@ -8,7 +8,7 @@ import {
   copiesLabel,
   masteryView,
   pinButtonLabel,
-  reviewState,
+  reviewLabel,
 } from "@leximon/view-model";
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
@@ -99,7 +99,7 @@ function SheetBody({
   const quantity = owned?.get(card.id) ?? 0;
   const word = memory?.get(card.id);
   const mastery = masteryView(word, now);
-  const review = reviewState(word, now);
+  const review = reviewLabel(word, now);
   const tradeable = progress !== null && canOfferInTrade(quantity, progress.level, now);
 
   const sharing = useCardShare(card);
@@ -152,13 +152,8 @@ function SheetBody({
 
         {quantity > 0 && (
           <div className={styles.actions}>
-            {review.due ? (
-              <ButtonLink href={`/defis?mot=${card.id}`} onClick={onClose}>
-                Réviser ce mot
-              </ButtonLink>
-            ) : (
-              <p className={styles.later}>{review.label}</p>
-            )}
+            {/* No shortcut to a question here: the card above shows its answer. */}
+            {review !== null && <p className={styles.later}>{review}</p>}
             {tradeable && (
               <ButtonLink href={`/echanges?donne=${card.id}`} variant="secondary" onClick={onClose}>
                 Proposer en échange

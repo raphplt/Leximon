@@ -50,8 +50,11 @@ const input = {
     ["fouacier", 1],
   ]),
   memory: new Map([
-    ["grigou", { level: "gilded" as const, due: NOW + 1000, stability: 40 }],
-    ["bélître", { level: "sketch" as const, due: NOW - 1000, stability: 1 }],
+    ["grigou", { level: "gilded" as const, due: NOW + 1000, stability: 40, lastReviewedAt: NOW }],
+    [
+      "bélître",
+      { level: "sketch" as const, due: NOW - 1000, stability: 1, lastReviewedAt: NOW - 2000 },
+    ],
   ]),
   now: NOW,
 };

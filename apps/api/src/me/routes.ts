@@ -344,7 +344,7 @@ export function meRoutes() {
     return c.body(null, 204);
   });
 
-  /** The level, next review and stability of every word reviewed at least once. */
+  /** The level, next review, stability and last review of every word reviewed at least once. */
   routes.get("/mastery", async (c) => {
     const rows = await c.var.db
       .select({
@@ -352,13 +352,18 @@ export function meRoutes() {
         level: userMastery.level,
         due: userMastery.due,
         stability: userMastery.stability,
+        lastReviewedAt: userMastery.lastReviewedAt,
       })
       .from(userMastery)
       .where(eq(userMastery.userId, c.var.userId))
       .orderBy(asc(userMastery.cardId));
     c.header("Cache-Control", "no-store");
     return c.json<MasteryResponse>({
-      words: rows.map((row) => ({ ...row, due: row.due.toISOString() })),
+      words: rows.map((row) => ({
+        ...row,
+        due: row.due.toISOString(),
+        lastReviewedAt: row.lastReviewedAt?.toISOString() ?? null,
+      })),
     });
   });
 

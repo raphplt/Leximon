@@ -20,9 +20,9 @@ export interface MasteryView {
 
 const LEVELS: readonly MasteryLevelCode[] = ["sketch", "ink", "gilded"];
 
-/** The three steps of mastery and what is left to climb, from the memory stability. */
+/** The three steps of mastery and what it takes to climb the next one. */
 export function masteryView(memory: WordMemory | undefined, now: number): MasteryView {
-  const { ink, gilded } = masteryRulesAt(MASTERY_SCHEDULE, now).levelThresholdDays;
+  const rules = masteryRulesAt(MASTERY_SCHEDULE, now);
   const level = memory?.level ?? "sketch";
   const reachedIndex = LEVELS.indexOf(level);
   const steps = LEVELS.map((step, index) => ({
@@ -31,23 +31,29 @@ export function masteryView(memory: WordMemory | undefined, now: number): Master
     reached: index <= reachedIndex,
   }));
   if (memory === undefined) {
-    return { steps, text: `Pas encore révisé. Un défi le met en route.` };
+    const hours = Math.round(rules.newWordDelayMs / HOUR);
+    return {
+      steps,
+      text:
+        hours === 0
+          ? "Pas encore révisé. Un défi le met en route."
+          : `Pas encore révisé. Il arrive en défi ${hours} h après ta trouvaille.`,
+    };
   }
-  const held = Math.floor(memory.stability);
-  switch (level) {
-    case "sketch": {
-      const left = Math.max(1, Math.ceil(ink - memory.stability));
-      const retained =
-        held < 1 ? "Retenu moins d'un jour" : `Retenu ${plural(held, "jour", "jours")} sur ${ink}`;
-      return { steps, text: `${retained}. Encore ${left} pour l'Encre.` };
-    }
-    case "ink": {
-      const left = Math.max(1, Math.ceil(gilded - memory.stability));
-      return { steps, text: `Encore ${plural(left, "jour", "jours")} pour la Dorure.` };
-    }
-    case "gilded":
-      return { steps, text: "Doré. Il ne bouge plus." };
-  }
+  if (level === "gilded") return { steps, text: "Doré. Il ne bouge plus." };
+  const next = level === "sketch" ? "ink" : "gilded";
+  const days = rules.levelThresholdDays[next];
+  const name = next === "ink" ? "l'Encre" : "la Dorure";
+  // Answers are never taken early: the next one comes at the due date at the soonest.
+  const nextGap =
+    memory.lastReviewedAt === null ? 0 : (Math.max(memory.due, now) - memory.lastReviewedAt) / DAY;
+  return {
+    steps,
+    text:
+      nextGap >= days
+        ? `Juste à la prochaine révision, et c'est ${name}.`
+        : `Retrouve-le ${days} jours après une révision, et c'est ${name}.`,
+  };
 }
 
 /** « 1 exemplaire », « 3 exemplaires · 2 doubles ». */
@@ -61,13 +67,11 @@ export function canOfferInTrade(quantity: number, level: number, now: number): b
   return quantity > 1 && isFeatureOpen("trade", level, now);
 }
 
-/** When the word can be reviewed: now, or « Revient dans 3 jours. » */
-export function reviewState(
-  memory: WordMemory | undefined,
-  now: number,
-): { readonly due: true } | { readonly due: false; readonly label: string } {
-  if (memory === undefined || memory.due <= now) return { due: true };
-  return { due: false, label: `Revient ${comeBackIn(memory.due - now)}.` };
+/** Where the word stands in the challenges: « Il t'attend dans les défis. », « Revient dans 3 jours. » */
+export function reviewLabel(memory: WordMemory | undefined, now: number): string | null {
+  if (memory === undefined) return null;
+  if (memory.due <= now) return "Il t'attend dans les défis.";
+  return `Revient ${comeBackIn(memory.due - now)}.`;
 }
 
 const HOUR = 3_600_000;

@@ -142,7 +142,7 @@ describe("défis screen", () => {
 
   it("states the level thresholds in force", () => {
     expect(memoryNote(NOW)).toBe(
-      "Un mot retenu 7 jours passe à l'Encre, 30 jours à la Dorure. Un mot raté revient le lendemain.",
+      "Un mot retrouvé 7 jours après sa dernière révision passe à l'Encre, 30 jours après à la Dorure. Un mot raté revient le lendemain.",
     );
   });
 

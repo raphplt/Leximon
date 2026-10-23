@@ -23,6 +23,9 @@ const MINUTE = 60_000;
 const SINCE_LAUNCH = Number.MIN_SAFE_INTEGER;
 /** Midnight in Paris on 2026-10-21, when the owner decided level rewards and features by level. */
 const LEVELS_DECIDED = Date.UTC(2026, 9, 20, 22);
+/** Midnight in Paris on 2026-10-23, when the owner decided proven recall and the new-word delay. */
+const PROVEN_RECALL_DECIDED = Date.UTC(2026, 9, 22, 22);
+const HOUR = 60 * MINUTE;
 
 export const REFILL_SCHEDULE: RefillSchedule = [
   { startsAt: SINCE_LAUNCH, capacity: 6, intervalMs: 30 * MINUTE },
@@ -52,13 +55,24 @@ export const DRAW_SCHEDULE: DrawSchedule = [
 
 const DAY = 24 * 60 * MINUTE;
 
-// FSRS targets 90 % recall; levels follow memory stability.
+// FSRS targets 90 % recall. Since proven recall: a level needs a right answer that many days
+// after the previous review, and a new word waits a few hours after its card showed the answer.
 export const MASTERY_SCHEDULE: MasterySchedule = [
   {
     startsAt: SINCE_LAUNCH,
     requestRetention: 0.9,
     maximumIntervalDays: 365,
     levelThresholdDays: { ink: 7, gilded: 30 },
+    levelBy: "stability",
+    newWordDelayMs: 0,
+  },
+  {
+    startsAt: PROVEN_RECALL_DECIDED,
+    requestRetention: 0.9,
+    maximumIntervalDays: 365,
+    levelThresholdDays: { ink: 7, gilded: 30 },
+    levelBy: "provenRecall",
+    newWordDelayMs: 4 * HOUR,
   },
 ];
 
