@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Logo } from "@/ui/logo";
 import { Collections } from "./collections";
+import { DISCORD_URL, DiscordLink } from "./discord";
 import { HeroWord } from "./hero-word";
 import { HowToPlay } from "./how-to-play";
 import styles from "./landing-page.module.css";
@@ -32,6 +33,7 @@ export async function LandingPage() {
             apprends, et tu les ressors au bon moment.
           </p>
           <JoinOrResume keepRoom />
+          <DiscordLink className={styles.discord} />
         </div>
       </section>
 
@@ -52,6 +54,9 @@ export async function LandingPage() {
           <Link href="/confidentialite">Tes données</Link>
           <Link href="/conditions">Conditions</Link>
           <Link href="/mentions">Mentions</Link>
+          <a href={DISCORD_URL} target="_blank" rel="noopener noreferrer">
+            Discord
+          </a>
           <a href="mailto:contact@leximon.fr">contact@leximon.fr</a>
         </span>
       </footer>

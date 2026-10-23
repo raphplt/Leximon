@@ -524,6 +524,23 @@
   color: var(--lx-color-text);
 }
 
+/* Under the form, quieter than it: the project's hub, for those not ready to leave an address. */
+.discord {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  align-self: flex-start;
+  min-height: 44px;
+  color: var(--lx-color-text-muted);
+  font-size: 15px;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.discord:hover {
+  color: var(--lx-color-text);
+}
+
 /* --- Closing call: the form again, for those who read to the end ---------------------- */
 
 .closing {
