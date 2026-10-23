@@ -5,7 +5,12 @@
 
 import { pseudoKey } from "../account/pseudo";
 import type { EpochMs } from "../booster/refill";
-import { isRefusedName, isRefusedText } from "../moderation/text-filter";
+import {
+  hasContactDetails,
+  isRefusedName,
+  isRefusedText,
+  withoutInvisible,
+} from "../moderation/text-filter";
 
 export interface ClanRules {
   /** Period start; the rules in force at the time of each action apply. */
@@ -74,7 +79,8 @@ export function checkClanName(rules: ClanRules, raw: string): ClanNameCheck {
   return { ok: true, name, key };
 }
 
-export type TextRefusal = "empty" | "too_long" | "refused";
+/** `contact`: a link, an e-mail address or a phone number. */
+export type TextRefusal = "empty" | "too_long" | "refused" | "contact";
 
 export type TextCheck =
   | { readonly ok: true; readonly text: string }
@@ -82,15 +88,14 @@ export type TextCheck =
 
 /** A motto: optional, so empty is fine and comes back as "". */
 export function checkClanMotto(rules: ClanRules, raw: string): TextCheck {
-  const text = collapse(raw);
+  const text = collapse(withoutInvisible(raw));
   if ([...text].length > rules.mottoMaxLength) return { ok: false, reason: "too_long" };
-  if (isRefusedText(text)) return { ok: false, reason: "refused" };
-  return { ok: true, text };
+  return screened(text);
 }
 
 /** A message of the discussion. Line breaks are kept, three at most in a row. */
 export function checkClanMessage(rules: ClanRules, raw: string): TextCheck {
-  const text = raw
+  const text = withoutInvisible(raw)
     .normalize("NFC")
     .replaceAll(/[^\S\n]+/g, " ")
     .replaceAll(/ *\n */g, "\n")
@@ -98,7 +103,12 @@ export function checkClanMessage(rules: ClanRules, raw: string): TextCheck {
     .trim();
   if (text.length === 0) return { ok: false, reason: "empty" };
   if ([...text].length > rules.messageMaxLength) return { ok: false, reason: "too_long" };
+  return screened(text);
+}
+
+function screened(text: string): TextCheck {
   if (isRefusedText(text)) return { ok: false, reason: "refused" };
+  if (hasContactDetails(text)) return { ok: false, reason: "contact" };
   return { ok: true, text };
 }
 

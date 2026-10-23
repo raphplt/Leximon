@@ -33,6 +33,7 @@ import {
   nextChief,
   nextClanUnlock,
   pseudoKey,
+  type TextRefusal,
   TRADE_SCHEDULE,
   UNLOCK_SCHEDULE,
 } from "@leximon/core";
@@ -267,7 +268,7 @@ export async function createClan(
   const name = checkClanName(rules, request.name);
   if (!name.ok) return refuse(`name_${name.reason}`);
   const motto = checkClanMotto(rules, request.motto);
-  if (!motto.ok) return refuse(motto.reason === "refused" ? "motto_refused" : "motto_too_long");
+  if (!motto.ok) return refuse(mottoRefusal(motto.reason));
   if (!isEmblemAllowed(rules, [], request.emblem)) return refuse("emblem_not_allowed");
 
   await ensurePlayer(db, userId);
@@ -611,7 +612,7 @@ export async function updateClan(
   if (name !== null && !name.ok) return refuse(`name_${name.reason}`);
   const motto = changes.motto === undefined ? null : checkClanMotto(rules, changes.motto);
   if (motto !== null && !motto.ok) {
-    return refuse(motto.reason === "refused" ? "motto_refused" : "motto_too_long");
+    return refuse(mottoRefusal(motto.reason));
   }
   try {
     return await db.transaction(async (tx): Promise<ManageResult> => {
@@ -1052,6 +1053,12 @@ export async function clansOf(
   return new Map(rows.map((row) => [row.userId, row]));
 }
 
+function mottoRefusal(reason: TextRefusal): ClanRefusal {
+  if (reason === "refused") return "motto_refused";
+  if (reason === "contact") return "motto_contact";
+  return "motto_too_long";
+}
+
 /** For the routes: refusals that mean "not here" answer 404, the rest 403 or 409. */
 export function refusalStatus(reason: ClanRefusal): 403 | 404 | 409 | 422 {
   switch (reason) {
@@ -1071,10 +1078,12 @@ export function refusalStatus(reason: ClanRefusal): 403 | 404 | 409 | 422 {
     case "name_refused":
     case "motto_too_long":
     case "motto_refused":
+    case "motto_contact":
     case "emblem_not_allowed":
     case "message_empty":
     case "message_too_long":
     case "message_refused":
+    case "message_contact":
     case "mute_duration":
       return 422;
     default:

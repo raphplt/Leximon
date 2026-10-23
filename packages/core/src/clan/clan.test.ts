@@ -63,6 +63,57 @@ describe("checkClanMotto and checkClanMessage", () => {
       expect(checkClanMessage(rules, text).ok, text).toBe(true);
     }
   });
+
+  it("finds a refused word hidden by invisible characters, and drops them from what passes", () => {
+    expect(checkClanMessage(rules, "Espèce de sa\u200Blope")).toEqual({
+      ok: false,
+      reason: "refused",
+    });
+    expect(checkClanMessage(rules, "Bon\u202Ejour \u2060à tous")).toEqual({
+      ok: true,
+      text: "Bonjour à tous",
+    });
+    const family = "\u{1F468}\u200D\u{1F469}\u200D\u{1F467}";
+    expect(checkClanMessage(rules, `La famille ${family}`)).toEqual({
+      ok: true,
+      text: `La famille ${family}`,
+    });
+  });
+
+  it("refuses links, e-mail addresses and phone numbers, in a message as in a motto", () => {
+    for (const text of [
+      "Viens sur https://exemple.org",
+      "www.monsite",
+      "rejoins discord.gg/abcd",
+      "Mon insta : jean.fr",
+      "écris-moi à jean.dupont@gmail.com",
+      "jean@gmail tout court",
+      "06 12 34 56 78",
+      "+33 6.12.34.56.78",
+      "0612345678",
+    ]) {
+      expect(checkClanMessage(rules, text), text).toEqual({ ok: false, reason: "contact" });
+    }
+    expect(checkClanMotto(rules, "Tous sur mondiscord.gg")).toEqual({
+      ok: false,
+      reason: "contact",
+    });
+  });
+
+  it("lets ordinary sentences, dates and scores through", () => {
+    for (const text of [
+      "Fin de partie.Ça marche",
+      "Je l'ai eue le 22.10.2026 à 14 h",
+      "Rendez-vous le 22/10/2026 14 h 30",
+      "1789 et 1815, deux dates",
+      "Score : 120 contre 98",
+      "J'ai 12 Légendaires sur 32",
+      "c'est.ca le truc",
+      "Tu viens ? Moi oui.De rien",
+    ]) {
+      expect(checkClanMessage(rules, text).ok, text).toBe(true);
+    }
+  });
 });
 
 describe("emblem", () => {

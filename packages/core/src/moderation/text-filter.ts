@@ -140,8 +140,41 @@ export function isRefusedText(text: string): boolean {
   return false;
 }
 
+/**
+ * Free text without its invisible characters (zero-width spaces, direction marks): they hide a
+ * refused word inside harmless letters, or turn a line around. The joiner inside an emoji stays.
+ */
+export function withoutInvisible(text: string): string {
+  return text
+    .replaceAll(
+      /(?<!\p{Extended_Pictographic}\uFE0F?)\u200D|\u200D(?!\p{Extended_Pictographic})/gu,
+      "",
+    )
+    .replaceAll(/(?!\u200D)\p{Cf}/gu, "");
+}
+
+/** Domains that pass for words in French ("ça", "de", "me") are left out: a missing space is no link. */
+const LINK =
+  /\bhttps?:\/\/|\bwww\.|\b[a-z0-9][a-z0-9-]*\.(?:com|fr|net|org|io|gg|be|ch|eu|uk|tv|ly|app|xyz|info|link|site|live|gl)\b/;
+const EMAIL =
+  /[a-z0-9._%+-]+@[a-z0-9-]+\.[a-z]{2,}|@(?:gmail|hotmail|outlook|yahoo|icloud|orange|free|sfr|laposte|wanadoo)\b/;
+/** Nine digits or more, a space, dot or dash between them: a phone number, not a date. */
+const PHONE = /(?:\d[ .-]?){8,}\d/;
+
+/**
+ * A link, an e-mail address or a phone number. Players of 15 meet adults in the clans: no way out
+ * of the game to reach one another, as the charter says.
+ */
+export function hasContactDetails(text: string): boolean {
+  const flat = plain(text);
+  return LINK.test(flat) || EMAIL.test(flat) || PHONE.test(flat);
+}
+
 function plain(text: string): string {
-  return text.normalize("NFD").replaceAll(/\p{M}/gu, "").toLowerCase();
+  return text
+    .normalize("NFD")
+    .replaceAll(/[\p{M}\p{Cf}]/gu, "")
+    .toLowerCase();
 }
 
 function unLeet(word: string): string {
