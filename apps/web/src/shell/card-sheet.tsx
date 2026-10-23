@@ -12,9 +12,11 @@ import {
 } from "@leximon/view-model";
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
+import { type PackCollection, packOf } from "@/booster/pack-looks";
 import { CardFacts, CardOrigin } from "@/cards/card-facts";
 import { type Catalog, collectionName, loadCatalog } from "@/cards/catalog";
 import { useCardShare } from "@/cards/share-card";
+import { CollectionSeal } from "@/components/collection-seal";
 import { EngravingCredit } from "@/components/engraving-credit";
 import { HoloCard } from "@/components/holo-card";
 import { useHoloLight } from "@/components/use-holo-light";
@@ -61,6 +63,7 @@ export function CardSheet({
         <SheetBody
           card={card}
           collection={collectionName(catalog, card.collectionId)}
+          seal={sealOf(catalog, card.collectionId)}
           onClose={onClose}
         />
       )}
@@ -68,13 +71,20 @@ export function CardSheet({
   );
 }
 
+function sealOf(catalog: Catalog, collectionId: string): PackCollection | null {
+  const file = catalog.collections.find((c) => c.id === collectionId);
+  return file === undefined ? null : packOf(file);
+}
+
 function SheetBody({
   card,
   collection,
+  seal,
   onClose,
 }: {
   readonly card: CatalogCard;
   readonly collection: string;
+  readonly seal: PackCollection | null;
   readonly onClose: () => void;
 }) {
   const owned = useShared(ownedCards);
@@ -132,7 +142,10 @@ function SheetBody({
           <span className={`${ui.chip} ${styles.chip}`}>
             {quantity > 0 ? copiesLabel(quantity) : "Pas encore dans ton album"}
           </span>
-          <span className={`${ui.chip} ${styles.chip}`}>{collection}</span>
+          <span className={`${ui.chip} ${styles.chip}`}>
+            {seal !== null && <CollectionSeal collection={seal} size={24} />}
+            {collection}
+          </span>
         </p>
 
         <CardOrigin card={card} />

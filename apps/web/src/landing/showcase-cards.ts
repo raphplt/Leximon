@@ -1,5 +1,5 @@
 import type { CatalogCard, CatalogCollectionFile } from "@leximon/contract";
-import type { PackCollection } from "@/booster/pack-looks";
+import { type PackCollection, packOf } from "../booster/pack-looks";
 
 /**
  * Words the home page draws from, one at a time: every published card that has its engraving.
@@ -93,7 +93,7 @@ export function showcaseOf(collections: readonly CatalogCollectionFile[]): Showc
     heroWords: pickShowcase(cardsById, HERO_WORD_IDS),
     ladder: pickShowcase(cardsById, RARITY_LADDER_IDS).map(withCollection),
     shelves,
-    pack: first === undefined ? null : { id: first.id, name: first.name, back: first.back },
+    pack: first === undefined ? null : packOf(first),
     trade: pickShowcase(cardsById, TRADE_CARD_IDS).map(withCollection),
   };
 }

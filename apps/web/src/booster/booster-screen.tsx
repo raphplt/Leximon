@@ -44,7 +44,7 @@ import ui from "@/ui/ui.module.css";
 import styles from "./booster-screen.module.css";
 import { CardStack } from "./card-stack";
 import { play as playSound } from "./feedback";
-import type { PackCollection } from "./pack-looks";
+import { type PackCollection, packOf } from "./pack-looks";
 import { OPEN_HINTS, type PackProps } from "./pack-shape";
 import { Pli } from "./pli";
 import {
@@ -369,9 +369,12 @@ export function BoosterScreen() {
   }
 
   const ready = phase.name === "sealed" || phase.name === "opening";
-  const backs = new Map(catalog?.collections.map((c) => [c.id, c.back]) ?? []);
-  const packCollection: PackCollection | null =
-    choice === null ? null : { id: choice.id, name: choice.name, back: backs.get(choice.id) };
+  const files = new Map(catalog?.collections.map((c) => [c.id, c]) ?? []);
+  const packOfChoice = (c: CollectionChoice): PackCollection => {
+    const file = files.get(c.id);
+    return file === undefined ? { id: c.id, name: c.name, back: undefined } : packOf(file);
+  };
+  const packCollection = choice === null ? null : packOfChoice(choice);
   const around =
     choice === null || phase.name === "opening"
       ? { left: null, right: null }
@@ -417,7 +420,7 @@ export function BoosterScreen() {
                     key={around.left.id}
                     side="left"
                     choice={around.left}
-                    back={backs.get(around.left.id)}
+                    pack={packOfChoice(around.left)}
                     entry={entryOf(around.left.id)}
                     onPick={pick}
                     onLocked={onLocked}
@@ -445,7 +448,7 @@ export function BoosterScreen() {
                     key={around.right.id}
                     side="right"
                     choice={around.right}
-                    back={backs.get(around.right.id)}
+                    pack={packOfChoice(around.right)}
                     entry={entryOf(around.right.id)}
                     onPick={pick}
                     onLocked={onLocked}

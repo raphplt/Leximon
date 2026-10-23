@@ -14,9 +14,11 @@ import {
 } from "@leximon/view-model";
 import Link from "next/link";
 import { type CSSProperties, useEffect, useMemo, useState } from "react";
+import { packOf } from "@/booster/pack-looks";
 import { type Catalog, loadCatalog } from "@/cards/catalog";
 import { collectionTone } from "@/cards/collection-tone";
 import { Card } from "@/components/card";
+import { CollectionSeal } from "@/components/collection-seal";
 import { RarityIcon, RarityName } from "@/components/rarity-icon";
 import { useIncremental } from "@/lib/use-incremental";
 import { useNarrow } from "@/lib/use-narrow";
@@ -150,6 +152,7 @@ export function AlbumScreen() {
       >
         {view.tabs.map((tab) => {
           const selected = !view.searching && tab.id === state.collectionId;
+          const file = catalog?.collections.find((c) => c.id === tab.id);
           return (
             <button
               key={tab.id}
@@ -160,8 +163,13 @@ export function AlbumScreen() {
               onClick={() => pickCollection(tab.id)}
             >
               <span className={styles.tabHead}>
-                <span className={styles.tabName}>{narrow ? shortName(tab.name) : tab.name}</span>
-                <span className={styles.tabCount}>{tab.count}</span>
+                {file !== undefined && (
+                  <CollectionSeal collection={packOf(file)} size={narrow ? 24 : 30} />
+                )}
+                <span className={styles.tabText}>
+                  <span className={styles.tabName}>{narrow ? shortName(tab.name) : tab.name}</span>
+                  <span className={styles.tabCount}>{tab.count}</span>
+                </span>
               </span>
               <span className={styles.tabTrack}>
                 <span

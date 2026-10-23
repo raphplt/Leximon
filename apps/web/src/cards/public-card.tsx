@@ -2,6 +2,8 @@
 
 import type { CatalogCard } from "@leximon/contract";
 import { CARD_PAGE_ACTION } from "@leximon/view-model";
+import type { PackCollection } from "@/booster/pack-looks";
+import { CollectionSeal } from "@/components/collection-seal";
 import { EngravingCredit } from "@/components/engraving-credit";
 import { HoloCard } from "@/components/holo-card";
 import { useHoloLight } from "@/components/use-holo-light";
@@ -15,10 +17,12 @@ import styles from "./public-card.module.css";
 export function PublicCardView({
   card,
   collectionName,
+  seal,
   pitch,
 }: {
   readonly card: CatalogCard;
   readonly collectionName: string;
+  readonly seal: PackCollection | null;
   readonly pitch: string;
 }) {
   const narrow = useNarrow();
@@ -38,7 +42,10 @@ export function PublicCardView({
         <h1 className={`${ui.display} ${styles.word}`}>{card.word}</h1>
         <CardFacts card={card} />
         <p className={styles.chips}>
-          <span className={ui.chip}>{collectionName}</span>
+          <span className={ui.chip}>
+            {seal !== null && <CollectionSeal collection={seal} size={24} />}
+            {collectionName}
+          </span>
         </p>
         <CardOrigin card={card} />
         <div className={styles.pitch}>

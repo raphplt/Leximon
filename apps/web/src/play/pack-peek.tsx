@@ -1,6 +1,7 @@
 "use client";
 
 import type { CollectionChoice } from "@leximon/view-model";
+import type { PackCollection } from "@/booster/pack-looks";
 import { Sachet } from "@/booster/sachet";
 import { Icon } from "@/ui/icon";
 import styles from "./play.module.css";
@@ -14,7 +15,7 @@ const noop = () => undefined;
 export function PackPeek({
   side,
   choice,
-  back,
+  pack,
   entry,
   onPick,
   onLocked,
@@ -26,7 +27,7 @@ export function PackPeek({
    */
   readonly entry: "front" | "outside" | null;
   readonly choice: CollectionChoice;
-  readonly back: string | undefined;
+  readonly pack: PackCollection;
   readonly onPick: (choice: CollectionChoice, from: "left" | "right") => void;
   readonly onLocked: () => void;
 }) {
@@ -45,12 +46,7 @@ export function PackPeek({
       ].join(" ")}
     >
       <div className={styles.peekPack} inert>
-        <Sachet
-          state="sealed"
-          collection={{ id: choice.id, name: choice.name, back }}
-          onTearStart={noop}
-          onOpen={noop}
-        />
+        <Sachet state="sealed" collection={pack} onTearStart={noop} onOpen={noop} />
       </div>
       <button
         type="button"

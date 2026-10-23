@@ -1,5 +1,6 @@
 import type { CatalogCard } from "@leximon/contract";
 import { cache } from "react";
+import { type PackCollection, packOf } from "@/booster/pack-looks";
 import { fetchCollections, fetchManifest } from "./catalog";
 
 /**
@@ -17,6 +18,8 @@ const SERVER_CATALOG_URL =
 export interface PublicCard {
   readonly card: CatalogCard;
   readonly collectionName: string;
+  /** Its collection's sachet, for the seal beside the name. */
+  readonly seal: PackCollection;
   /** Cards in the whole catalogue, for the page's pitch. */
   readonly catalogSize: number;
 }
@@ -46,7 +49,11 @@ const serverCatalog = cache(async (): Promise<ServerCatalog> => {
   const cards = new Map(
     collections.flatMap((collection) =>
       collection.cards.map(
-        (card) => [card.id, { card, collectionName: collection.name, catalogSize }] as const,
+        (card) =>
+          [
+            card.id,
+            { card, collectionName: collection.name, seal: packOf(collection), catalogSize },
+          ] as const,
       ),
     ),
   );

@@ -1,5 +1,7 @@
+import type { CatalogCollectionFile } from "@leximon/contract";
 import { backTone } from "@leximon/tokens";
 import { type CSSProperties, useId } from "react";
+import { catalogFileUrl } from "../cards/catalog";
 
 /** The collection a sachet holds, as the sachet draws it. */
 export interface PackCollection {
@@ -7,6 +9,18 @@ export interface PackCollection {
   readonly name: string;
   /** The `back` tone of the collection; night when absent. */
   readonly back: string | undefined;
+  /** Ink of the engraving in its seal, relative to the catalogue; its drawn emblem when absent. */
+  readonly engraving?: string | undefined;
+}
+
+/** How a published collection's sachet looks, without its cards. */
+export function packOf(collection: CatalogCollectionFile): PackCollection {
+  return {
+    id: collection.id,
+    name: collection.name,
+    back: collection.back,
+    engraving: collection.engraving?.ink,
+  };
 }
 
 interface PackLook {
@@ -106,9 +120,12 @@ const BEADS = Array.from({ length: 36 }, (_, k) => {
  */
 export function PackSeal({
   collectionId,
+  engraving,
   className,
 }: {
   readonly collectionId: string;
+  /** Ink of the collection's engraving, relative to the catalogue. */
+  readonly engraving?: string | undefined;
   readonly className?: string | undefined;
 }) {
   // One gradient per seal: several sachets can share a page.
@@ -128,6 +145,28 @@ export function PackSeal({
           <stop offset="0" stopColor="var(--tone-light)" />
           <stop offset="1" stopColor="var(--tone-dark)" />
         </radialGradient>
+        {engraving !== undefined && (
+          <>
+            <linearGradient id={`${id}-ink`} x1="0" y1="0" x2="0.6" y2="1">
+              <stop offset="0" stopColor="#fff3cf" />
+              <stop offset="1" stopColor="#e0b04e" />
+            </linearGradient>
+            {/* The ink is black on transparent: its alpha, not its colour, draws the lines. */}
+            <mask id={`${id}-engraving`} style={{ maskType: "alpha" }}>
+              <image
+                href={catalogFileUrl(engraving)}
+                x={22}
+                y={21}
+                width={76}
+                height={78}
+                preserveAspectRatio="xMidYMid meet"
+              />
+            </mask>
+            <clipPath id={`${id}-round`}>
+              <circle cx={60} cy={60} r={40} />
+            </clipPath>
+          </>
+        )}
       </defs>
       <path d={SCALLOP_PATH} fill={gold} />
       <path d={SCALLOP_PATH} fill="none" stroke="#5a3a0c" strokeOpacity={0.45} strokeWidth={1} />
@@ -145,22 +184,35 @@ export function PackSeal({
         strokeOpacity={0.6}
         strokeWidth={2}
       />
-      <g
-        transform="translate(32 32) scale(0.875)"
-        stroke="#f3d58a"
-        strokeWidth={3.4}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      >
-        {look.emblem.map((d, index) => (
-          <path
-            key={d}
-            d={d}
-            fill={index < look.solid ? gold : "none"}
-            fillOpacity={index < look.solid ? 0.28 : undefined}
+      {engraving !== undefined ? (
+        <g clipPath={`url(#${id}-round)`}>
+          <rect
+            x={18}
+            y={18}
+            width={84}
+            height={84}
+            fill={`url(#${id}-ink)`}
+            mask={`url(#${id}-engraving)`}
           />
-        ))}
-      </g>
+        </g>
+      ) : (
+        <g
+          transform="translate(32 32) scale(0.875)"
+          stroke="#f3d58a"
+          strokeWidth={3.4}
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          {look.emblem.map((d, index) => (
+            <path
+              key={d}
+              d={d}
+              fill={index < look.solid ? gold : "none"}
+              fillOpacity={index < look.solid ? 0.28 : undefined}
+            />
+          ))}
+        </g>
+      )}
     </svg>
   );
 }

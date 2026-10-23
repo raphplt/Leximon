@@ -59,6 +59,7 @@ async function CardContent({ params }: Pick<PageProps<"/carte/[id]">, "params">)
     <PublicCardView
       card={found.card}
       collectionName={found.collectionName}
+      seal={found.seal}
       pitch={cardPagePitch(found.catalogSize)}
     />
   );

@@ -81,6 +81,12 @@ export default function MentionsPage() {
           l'auteur et la licence de chacune sont sous la carte, dans sa fiche. Les lettrines sont
           tirées de l'édition Marty-Laveaux de Rabelais (Lemerre, 1868, domaine public).
         </p>
+        <p>
+          Les sceaux des collections : l'olivier de Robert Estienne, d'après les Marques
+          typographiques de Silvestre (1867, domaine public) ; le Mépris d'après Charles Le Brun
+          (Wellcome Collection, CC BY 4.0) ; le Chaudronnier auvergnat des Cris de Paris, d'après
+          Edme Bouchardon (1737, domaine public).
+        </p>
       </section>
 
       <section className={styles.section}>

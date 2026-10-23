@@ -78,7 +78,11 @@ export function Sachet({ state, onTearStart, onOpen, collection, refill = null }
               <span className={styles.brand} aria-hidden="true">
                 Leximon
               </span>
-              <PackSeal collectionId={collection.id} className={styles.seal} />
+              <PackSeal
+                collectionId={collection.id}
+                engraving={collection.engraving}
+                className={styles.seal}
+              />
               <span className={styles.ribbon} aria-hidden="true">
                 <span className={styles.name}>{collection.name}</span>
               </span>
