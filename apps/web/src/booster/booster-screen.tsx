@@ -4,6 +4,7 @@ import type { ProgressGain } from "@leximon/contract";
 import type { Rarity } from "@leximon/core";
 import { motion, rarityStyles } from "@leximon/tokens";
 import {
+  CHOOSE_COLLECTION_HINT,
   type CollectionChoice,
   collectionChoices,
   levelRatio,
@@ -47,6 +48,7 @@ import { publishProgress, useProgress } from "@/progress/use-progress";
 import { useShell } from "@/shell/shell-context";
 import { usePlayerView } from "@/shell/use-player-view";
 import { Button, ButtonLink } from "@/ui/button";
+import { Icon } from "@/ui/icon";
 import { XpBar } from "@/ui/level-bits";
 import { useToast } from "@/ui/toast";
 import ui from "@/ui/ui.module.css";
@@ -88,6 +90,8 @@ const CARD_MAX_WIDTH = 300;
 const CHOICE_KEY = "leximon.sachet";
 /** Visits of the Jouer screen, kept on the device: the word under the counter changes with each. */
 const VISITS_KEY = "leximon.visites";
+/** Set once the player has been shown that the sachet's collection can be chosen. */
+const CHOOSE_SEEN_KEY = "leximon.choix-vu";
 
 type Phase =
   | { readonly name: "loading" }
@@ -156,6 +160,23 @@ function countVisit(): number {
   }
 }
 
+function readChooseSeen(): boolean {
+  try {
+    return window.localStorage.getItem(CHOOSE_SEEN_KEY) !== null;
+  } catch {
+    // Nowhere to remember it: better not shown than shown at every visit.
+    return true;
+  }
+}
+
+function writeChooseSeen(): void {
+  try {
+    window.localStorage.setItem(CHOOSE_SEEN_KEY, "1");
+  } catch {
+    // Shown again next visit, at worst.
+  }
+}
+
 function writeChoice(id: string): void {
   try {
     window.localStorage.setItem(CHOICE_KEY, id);
@@ -172,6 +193,8 @@ export function BoosterScreen() {
   const [pack, setPack] = useState<Pack | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [wanted, setWanted] = useState<string | null>(null);
+  /** `null` until read from the device. */
+  const [chooseSeen, setChooseSeen] = useState<boolean | null>(null);
   /** What the player remembers of each word, for the word shown under the counter. */
   const [memory, setMemory] = useState<ReadonlyMap<string, WordMemory>>(new Map());
   const [visit, setVisit] = useState(0);
@@ -215,6 +238,7 @@ export function BoosterScreen() {
 
   useEffect(() => {
     setWanted(readChoice());
+    setChooseSeen(readChooseSeen());
     void load();
   }, [load]);
 
@@ -242,6 +266,11 @@ export function BoosterScreen() {
     );
     setWanted(next.id);
     writeChoice(next.id);
+    if (next.id !== choice?.id) dismissChooseHint();
+  };
+  const dismissChooseHint = () => {
+    setChooseSeen(true);
+    writeChooseSeen();
   };
   const entryOf = (id: string) =>
     swap === null ? null : id === swap.previous ? ("front" as const) : ("outside" as const);
@@ -441,6 +470,12 @@ export function BoosterScreen() {
       ? { left: null, right: null }
       : neighbourChoices(choices, choice);
   const onLocked = () => toast(lockedToast("choose_collection", now));
+  const chooseHint =
+    chooseSeen === false &&
+    ready &&
+    known &&
+    phase.name !== "opening" &&
+    choices.filter((c) => c.lock === null).length > 1;
   // The counter is drawn once its size is known, whole: drawn empty first, it would shrink
   // under the eye when the word slipping away takes its place below.
   const waiting = phase.name === "loading" || (ready && !known);
@@ -456,6 +491,14 @@ export function BoosterScreen() {
             <section className={play.counter} aria-label="Le comptoir">
               <div className={play.counterHead}>
                 {choice !== null && (
+                  <div className={play.counterTitle}>
+                    <span className={play.counterName}>{choice.name}</span>
+                    {choice.tagline !== null && (
+                      <span className={play.counterTagline}>{choice.tagline}</span>
+                    )}
+                  </div>
+                )}
+                {choice !== null && (
                   <CollectionPicker
                     choices={choices}
                     current={choice}
@@ -464,6 +507,13 @@ export function BoosterScreen() {
                   />
                 )}
                 {stock !== null && <StockRing stock={stock} />}
+                {chooseHint && (
+                  <button type="button" className={play.chooseBubble} onClick={dismissChooseHint}>
+                    <Icon name="back" size={14} />
+                    {CHOOSE_COLLECTION_HINT}
+                    <Icon name="chev" size={14} />
+                  </button>
+                )}
               </div>
 
               <div className={play.stage}>
@@ -487,6 +537,7 @@ export function BoosterScreen() {
                         choice={around.left}
                         pack={packOfChoice(around.left)}
                         entry={entryOf(around.left.id)}
+                        nudge={chooseHint}
                         onPick={pick}
                         onLocked={onLocked}
                       />
@@ -517,6 +568,7 @@ export function BoosterScreen() {
                         choice={around.right}
                         pack={packOfChoice(around.right)}
                         entry={entryOf(around.right.id)}
+                        nudge={chooseHint}
                         onPick={pick}
                         onLocked={onLocked}
                       />

@@ -107,6 +107,8 @@ export const catalogCollectionFileSchema = z.object({
    * Absent from releases made before it.
    */
   back: z.string().min(1).exactOptional(),
+  /** One line under its name: what it holds. Absent from releases made before it. */
+  tagline: z.string().min(1).exactOptional(),
   /** The engraving of its seal. Absent from releases made before it, and while none is chosen. */
   engraving: catalogSealEngravingSchema.exactOptional(),
   cards: z.array(catalogCardSchema),

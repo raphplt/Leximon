@@ -17,6 +17,7 @@ export function PackPeek({
   choice,
   pack,
   entry,
+  nudge = false,
   onPick,
   onLocked,
 }: {
@@ -28,16 +29,19 @@ export function PackPeek({
   readonly entry: "front" | "outside" | null;
   readonly choice: CollectionChoice;
   readonly pack: PackCollection;
+  /** Steps forward once, to show it can be taken. */
+  readonly nudge?: boolean;
   readonly onPick: (choice: CollectionChoice, from: "left" | "right") => void;
   readonly onLocked: () => void;
 }) {
   const locked = choice.lock !== null;
-  return (
+  const peek = (
     <div
       className={[
         styles.peek,
         side === "left" ? styles.peekLeft : styles.peekRight,
         locked ? styles.peekLocked : "",
+        nudge && entry === null ? styles.peekNudge : "",
         entry === "front"
           ? styles.peekFromFront
           : entry === "outside"
@@ -66,5 +70,17 @@ export function PackPeek({
         </span>
       )}
     </div>
+  );
+  return (
+    <>
+      {peek}
+      <span
+        className={`${styles.peekCaption} ${side === "left" ? styles.captionLeft : styles.captionRight}`}
+        aria-hidden="true"
+      >
+        <span className={styles.peekName}>{choice.short}</span>
+        {choice.tagline !== null && <span className={styles.peekTagline}>{choice.tagline}</span>}
+      </span>
+    </>
   );
 }

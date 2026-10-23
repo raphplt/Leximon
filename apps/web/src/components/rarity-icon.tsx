@@ -1,5 +1,5 @@
 import { RARITY_LABELS } from "@leximon/contract";
-import type { Rarity } from "@leximon/core";
+import { RARITIES, type Rarity } from "@leximon/core";
 import { cssFill, rarityIconGrid, rarityIcons, rarityStyles } from "@leximon/tokens";
 import { type CSSProperties, useId } from "react";
 import styles from "./rarity-icon.module.css";
@@ -75,6 +75,35 @@ export function RarityName({
         <RarityIcon rarity={rarity} size="1.1em" />
       </span>
       {text}
+    </span>
+  );
+}
+
+/**
+ * The six rarities in order, from Courant to Légendaire, the card's one lit: where it stands,
+ * at a glance. Each gem gives its name on hover.
+ */
+export function RarityLadder({ rarity }: { readonly rarity: Rarity }) {
+  const rank = RARITIES.indexOf(rarity);
+  return (
+    <span
+      className={styles.ladder}
+      role="img"
+      aria-label={`${RARITY_LABELS[rarity]} : ${rank + 1}e rareté sur ${RARITIES.length}, de ${RARITY_LABELS.common} à ${RARITY_LABELS.legendary}`}
+    >
+      {RARITIES.map((step) => {
+        const style = rarityStyles[step];
+        return (
+          <span
+            key={step}
+            className={step === rarity ? styles.stepOn : styles.step}
+            style={{ background: cssFill(style.band), color: style.bandInk } as CSSProperties}
+            title={RARITY_LABELS[step]}
+          >
+            <RarityIcon rarity={step} size="0.8em" />
+          </span>
+        );
+      })}
     </span>
   );
 }

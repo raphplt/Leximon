@@ -1,6 +1,6 @@
 # Cahier des charges · Retours du premier testeur
 
-- **Statut :** validé par le propriétaire le 2026-10-23, avec les recommandations de la fin du document. Lots 1 à 4 faits le 2026-10-23.
+- **Statut :** validé par le propriétaire le 2026-10-23, avec les recommandations de la fin du document. Les cinq lots faits le 2026-10-23.
 - **Source :** les retours d'un ami du propriétaire, le 2026-10-23, en bêta sur leximon.fr : messages écrits, captures et sept vocaux. Il a commencé en invité, puis a créé son compte. Les arbitrages du propriétaire sont indiqués à chaque point.
 - **Règles liées :** P45 (mise en scène), P57 (prononciation), P58 (coffrets), P59 (fonctionnalités par niveau), P44 (affichage de la rareté). Cahiers liés : [ouverture.md](ouverture.md) (§6 et §7, à mettre à jour), [interface-v1.md](interface-v1.md).
 
@@ -170,6 +170,8 @@ Le plus important : sans lui, on peut ouvrir des sachets sans jamais lire un mot
 - **Code :** `apps/web/src/play/level-strip.tsx`, `packages/view-model/src/rewards.ts`.
 
 ## Lot 5 · Collections et raretés
+
+*Fait le 2026-10-23, avec les lignes validées par le propriétaire, publiées dans la version `2026-10-23.2` du catalogue (seules les lignes changent par rapport à la `.1`). Écarts : la ligne vit dans le fichier de la collection, pas dans la base, puisque l'affichage ne lit jamais la base ; sur ordinateur, la ligne et le nom du sachet du comptoir sont en haut du comptoir, et ceux des sachets voisins sur leur côté extérieur (dessous, ils passaient sous le sachet du comptoir) ; sur téléphone, les sachets fermés sont des pastilles à cadenas sous le nom, des puces avec les noms ne tenaient pas entre les boutons flottants.*
 
 ### Une ligne par collection
 

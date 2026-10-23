@@ -106,6 +106,7 @@ export function AlbumScreen() {
   );
   const { shown, sentinel } = useIncremental(view?.items.length ?? 0, BATCH, JSON.stringify(state));
   const cardWidth = narrow ? 104 : 168;
+  const tagline = catalog?.collections.find((c) => c.id === state.collectionId)?.tagline;
 
   if (failed) {
     return (
@@ -199,6 +200,7 @@ export function AlbumScreen() {
 
       {!view.searching && (
         <>
+          {tagline !== undefined && <p className={styles.tagline}>{tagline}</p>}
           <div className={styles.row}>
             {view.rarities.map((chip) => (
               <RarityChip
@@ -410,6 +412,7 @@ function RarityChip({
       className={`${ui.chip} ${styles.rarityChip}`}
       aria-pressed={on}
       aria-label={aria}
+      title={aria}
       onClick={onPick}
     >
       <span

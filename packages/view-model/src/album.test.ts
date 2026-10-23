@@ -100,11 +100,11 @@ describe("album", () => {
     expect(more).toMatchObject({ left: 2, label: "mots à trouver" });
   });
 
-  it("counts by rarity, rarest first, only the rarities present", () => {
+  it("counts by rarity, from Courant to Légendaire, only the rarities present", () => {
     expect(albumView(input, STATE).rarities.map((chip) => chip.count)).toEqual([
-      "0/1",
-      "1/1",
       "1/2",
+      "1/1",
+      "0/1",
     ]);
   });
 

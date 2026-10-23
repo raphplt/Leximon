@@ -23,7 +23,7 @@ const wallet = (stored: number, bonus = 0) => ({
   nextRefillAt: stored >= 6 ? null : new Date(NOW + 18 * 60_000).toISOString(),
 });
 const collections = [
-  { id: "caracteres", name: "Caractères et travers" },
+  { id: "caracteres", name: "Caractères et travers", tagline: "Manies, défauts et tempéraments." },
   { id: "fondateurs", name: "Les Fondateurs" },
   { id: "metiers", name: "Métiers oubliés" },
 ];
@@ -105,6 +105,7 @@ describe("collection of the sachet", () => {
       ["Métiers", "Niv. 3"],
     ]);
     expect(pickCollection(choices, "metiers").id).toBe("fondateurs");
+    expect(choices.map((c) => c.tagline)).toEqual([null, "Manies, défauts et tempéraments.", null]);
   });
 
   it("lets the player choose from level 3", () => {

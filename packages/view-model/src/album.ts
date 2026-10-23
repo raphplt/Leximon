@@ -322,7 +322,7 @@ export function albumView(input: AlbumInput, state: AlbumState): AlbumView {
         aria: `${RARITY_LABELS[rarity]}, ${found} sur ${cards.length}`,
       },
     ];
-  }).reverse();
+  });
 
   const themes = [...new Set(pool.flatMap(({ card }) => card.themes))]
     .map((id) => ({ id, label: themeLabel(id) }))

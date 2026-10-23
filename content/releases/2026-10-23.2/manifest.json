@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "version": "2026-10-23.2",
+  "releasedAt": "2026-10-23T20:32:38.851Z",
+  "collections": [
+    {
+      "id": "fondateurs",
+      "name": "Les Fondateurs",
+      "cardCount": 519,
+      "file": "collections/fondateurs.786657d5b810.json"
+    },
+    {
+      "id": "caracteres",
+      "name": "Caractères et travers",
+      "cardCount": 539,
+      "file": "collections/caracteres.34081a03009d.json"
+    },
+    {
+      "id": "metiers",
+      "name": "Métiers et objets disparus",
+      "cardCount": 503,
+      "file": "collections/metiers.9d2c22cf2ded.json"
+    }
+  ]
+}

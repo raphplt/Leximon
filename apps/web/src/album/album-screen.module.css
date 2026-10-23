@@ -481,3 +481,11 @@
     gap: 16px 10px;
   }
 }
+
+/* What the collection holds, under its tab. */
+.tagline {
+  margin: 0;
+  font-family: var(--font-text), Georgia, serif;
+  font-size: 16px;
+  color: var(--lx-color-text-muted);
+}

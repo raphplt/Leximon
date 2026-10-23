@@ -2,6 +2,7 @@
 # (content/pipeline/data/runs/<run>, reviewed in Directus). A card belongs to one collection only.
 # Ids are stable slugs: never rename or reuse one once published.
 # `domains`: the pre-screen domains new runs of the collection select from (any if absent).
+# `tagline`: one line under the name, on the sachet and in the album: what the collection holds.
 # `back`: tone of the card back for the collection's packs, one of `backTones` in @leximon/tokens
 # (night if absent or unknown).
 # `engraving`: the engraving of the collection's seal, chosen by hand by the owner: a Commons file
@@ -12,6 +13,7 @@
 [[collection]]
 id = "fondateurs"
 name = "Les Fondateurs"
+tagline = "La nature, la table et tout le reste. Par là qu'on commence."
 runs = ["lot-1", "fondateurs-2"]
 domains = ["nature", "table", "autre"]
 back = "night"
@@ -21,6 +23,7 @@ engraving = { title = "File:Marques typographiques, ou, Recueil des monogrammes,
 [[collection]]
 id = "caracteres"
 name = "Caractères et travers"
+tagline = "Manies, défauts et tempéraments."
 runs = ["caracteres-1"]
 domains = ["caractere"]
 back = "burgundy"
@@ -30,6 +33,7 @@ engraving = { title = "File:\"Scorn\" from Le Brun, Wellcome L0012155.jpg", crop
 [[collection]]
 id = "metiers"
 name = "Métiers et objets disparus"
+tagline = "Ceux qui les faisaient, ce qu'on tenait en main."
 runs = ["metiers-1"]
 domains = ["metiers_objets"]
 back = "green"

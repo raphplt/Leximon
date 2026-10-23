@@ -132,6 +132,8 @@ export interface CollectionChoice {
   readonly id: string;
   readonly name: string;
   readonly short: string;
+  /** What the collection holds, in a line; `null` in catalogues made before taglines. */
+  readonly tagline: string | null;
   readonly source: BoosterSource;
   /** `null` when open, else « Niv. 3 ». */
   readonly lock: string | null;
@@ -142,7 +144,11 @@ export interface CollectionChoice {
  * choice, only the starter sachet opens; the others show their level.
  */
 export function collectionChoices(
-  collections: readonly { readonly id: string; readonly name: string }[],
+  collections: readonly {
+    readonly id: string;
+    readonly name: string;
+    readonly tagline?: string | undefined;
+  }[],
   level: number,
   now: EpochMs,
 ): CollectionChoice[] {
@@ -156,6 +162,7 @@ export function collectionChoices(
     id: c.id,
     name: c.name,
     short: shortName(c.name),
+    tagline: c.tagline ?? null,
     source: { kind: "collection", collectionId: c.id } as const,
     lock: canOpenCollection(rules, c.id, level) ? null : lock,
   }));
@@ -168,6 +175,9 @@ export function shortName(name: string): string {
   const words = name.split(/\s+/);
   return words.find((w) => !ARTICLES.has(w.toLowerCase())) ?? name;
 }
+
+/** Once, when the choice of collection opens: the bubble over the sachets. */
+export const CHOOSE_COLLECTION_HINT = "Choisis ta collection";
 
 /** The choice kept when the one asked for is closed or gone: the starter sachet. */
 export function pickCollection(

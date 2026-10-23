@@ -172,6 +172,20 @@ def test_the_back_tone_goes_into_the_collection_file() -> None:
     assert "back" not in json.loads(plain[manifest["collections"][0]["file"]])
 
 
+def test_the_tagline_goes_into_the_collection_file() -> None:
+    lined = Collection(
+        id="fondateurs", name="Les Fondateurs", runs=("lot-1",), tagline="Par là qu'on commence."
+    )
+    files = build([row("billevesee")], collections=(lined,))
+    manifest = json.loads(files["manifest.json"])
+    assert json.loads(files[manifest["collections"][0]["file"]])["tagline"] == (
+        "Par là qu'on commence."
+    )
+    plain = build([row("billevesee")])
+    manifest = json.loads(plain["manifest.json"])
+    assert "tagline" not in json.loads(plain[manifest["collections"][0]["file"]])
+
+
 def test_the_seal_engraving_goes_into_the_collection_file() -> None:
     seal = {"ink": "gravures/collection-fondateurs.0123456789ab.ink.webp", "width": 420}
     files = release.build(

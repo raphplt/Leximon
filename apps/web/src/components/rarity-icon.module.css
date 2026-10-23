@@ -22,3 +22,45 @@
   box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.18);
   font-size: 1em;
 }
+
+.ladder {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35em;
+  vertical-align: middle;
+}
+
+/* The thread the gems sit on. */
+.ladder::before {
+  content: "";
+  position: absolute;
+  left: 0.5em;
+  right: 0.5em;
+  top: 50%;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.step,
+.stepOn {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  width: 1.3em;
+  height: 1.3em;
+  border-radius: 50%;
+}
+
+.step {
+  filter: saturate(0.45);
+  opacity: 0.6;
+}
+
+.stepOn {
+  width: 1.6em;
+  height: 1.6em;
+  box-shadow:
+    0 0 0 2px var(--lx-color-text),
+    0 0 12px rgba(255, 255, 255, 0.35);
+}

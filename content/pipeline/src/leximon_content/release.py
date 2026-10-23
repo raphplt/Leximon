@@ -40,6 +40,8 @@ class Collection:
     domains: tuple[str, ...] = ()
     #: Tone of the card back for this collection's packs (`backTones` in @leximon/tokens).
     back: str | None = None
+    #: One line under its name, on the sachet and in the album: what it holds.
+    tagline: str | None = None
     #: The engraving of its seal, chosen by hand: {"title": "File:…", "crop": [x0, y0, x1, y1]}.
     engraving: Mapping[str, object] | None = None
 
@@ -57,6 +59,7 @@ def load_collections(path: Path = COLLECTIONS_FILE) -> list[Collection]:
             runs=tuple(item["runs"]),
             domains=tuple(item.get("domains", ())),
             back=item.get("back"),
+            tagline=item.get("tagline"),
             engraving=item.get("engraving"),
         )
         for item in data["collection"]
@@ -199,6 +202,8 @@ def build(
         header: dict[str, object] = {"id": collection.id, "name": collection.name}
         if collection.back is not None:
             header["back"] = collection.back
+        if collection.tagline is not None:
+            header["tagline"] = collection.tagline
         if collection.id in seals:
             header["engraving"] = dict(seals[collection.id])
         content = _json({**header, "cards": cards})

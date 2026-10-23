@@ -67,7 +67,7 @@ Arbitrés par le propriétaire le 2026-10-20 : jeu grand public (B2C), pas de ve
 | Mobile (Expo) | À faire | Builds de développement et EAS prêts depuis le 2026-10-21, aucun écran de jeu. Charger les polices demandera `expo-font` |
 | Animations et reflets | À faire | R&D D-009 pour le mobile. Sur le web, du CSS |
 | Ouverture : peaufinage | Fait sur le web | Cahier : [ouverture.md](cahiers-des-charges/ouverture.md). Déchirure au doigt, pile, mise en scène par rareté, sons synthétisés, vibration, récapitulatif, reflets par rareté, sachet bombé au sceau doré, mot dit quand la carte se pose, aperçu en glissant. Récapitulatif lisible en cascade, fiche au toucher (2026-10-23). Reste : mobile |
-| Retours du premier testeur | En cours | Cahier : [retours-premier-testeur.md](cahiers-des-charges/retours-premier-testeur.md), validé le 2026-10-23. Lots 1 à 4 faits (relire ce qu'on vient d'ouvrir, « Nouveau » dans l'album, mot qui s'échappe, signaux de Jouer). Reste : lot 5 (collections et raretés). La migration `0025` part avec le prochain `pnpm deploy:prod` |
+| Retours du premier testeur | Fait | Cahier : [retours-premier-testeur.md](cahiers-des-charges/retours-premier-testeur.md), validé le 2026-10-23. Les cinq lots faits le 2026-10-23 (relire ce qu'on vient d'ouvrir, « Nouveau » dans l'album, mot qui s'échappe, signaux de Jouer, collections et raretés). La migration `0025` et le catalogue `2026-10-23.2` (lignes des collections) partent avec le prochain `pnpm deploy:prod` |
 | Ouverture : forme du paquet | Fait | Le sachet (P47, P53), un par collection. Le pli reste à l'essai (`/jouer?paquet=pli`) |
 | Numéro de collection sur la carte | À décider | Par exemple « 040/160 ». Dénominateur à choisir (taille annoncée ou cartes publiées) |
 

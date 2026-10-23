@@ -2,7 +2,7 @@
 
 import type { CatalogCard } from "@leximon/contract";
 import { frequencyLine } from "@leximon/view-model";
-import { RarityName } from "@/components/rarity-icon";
+import { RarityLadder, RarityName } from "@/components/rarity-icon";
 import { Icon } from "@/ui/icon";
 import ui from "@/ui/ui.module.css";
 import styles from "./card-facts.module.css";
@@ -14,6 +14,7 @@ export function CardFacts({ card }: { readonly card: CatalogCard }) {
     <>
       <p className={styles.rarity}>
         <RarityName rarity={card.rarity} />
+        <RarityLadder rarity={card.rarity} />
       </p>
       <Pronunciation card={card} />
       <p className={styles.frequency}>{frequencyLine(card.perBillion)}</p>

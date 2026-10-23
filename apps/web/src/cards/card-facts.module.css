@@ -1,6 +1,10 @@
 /* Rarity, sound, frequency and origin of a card: its sheet and its public page. */
 
 .rarity {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 14px;
   margin: 0;
   font-weight: 800;
 }
