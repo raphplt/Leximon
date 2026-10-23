@@ -157,7 +157,7 @@
 .floor {
   flex: 1;
   display: grid;
-  grid-template-columns: 78px minmax(0, 600px) 78px;
+  grid-template-columns: 78px minmax(0, 680px) 78px;
   justify-content: center;
   gap: 36px;
 }
@@ -291,9 +291,14 @@
 }
 
 /* The sachet on the counter, in front; a new one slides in when the collection changes. */
+/*
+ * The slot spans the whole counter: only the pouch in it takes clicks (`sachet.module.css`), the
+ * sachets behind get the rest.
+ */
 .front {
   position: relative;
   z-index: 1;
+  pointer-events: none;
   flex: 1 1 0;
   min-height: 0;
   display: flex;
@@ -327,12 +332,13 @@
 }
 
 .peekLeft {
-  left: calc(50% - 118 * var(--front-u) - var(--peek-width) * 0.74);
+  /* Never past the counter's edge, tilt included: on a narrow one, they tuck further behind. */
+  left: max(36px, calc(50% - 118 * var(--front-u) - var(--peek-width) * 0.74));
   transform: rotate(-8deg);
 }
 
 .peekRight {
-  right: calc(50% - 118 * var(--front-u) - var(--peek-width) * 0.74);
+  right: max(36px, calc(50% - 118 * var(--front-u) - var(--peek-width) * 0.74));
   transform: rotate(8deg);
 }
 

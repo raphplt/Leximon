@@ -22,6 +22,8 @@
 
 .scene {
   position: relative;
+  /* Only the pouch catches the pointer, never the empty slot around it. */
+  pointer-events: auto;
   /*
    * Every measure of the pouch is a multiple of --u: 1px at the reference size (236 × 410, the
    * proportions of a real booster pouch), up to 1.4px on a tall screen, less where it is short.
@@ -296,30 +298,30 @@
   box-sizing: border-box;
   display: grid;
   place-items: center;
-  width: calc(208 * var(--u));
-  min-height: calc(46 * var(--u));
-  margin-top: calc(-34 * var(--u));
-  padding: calc(7 * var(--u)) calc(24 * var(--u));
+  width: calc(176 * var(--u));
+  min-height: calc(36 * var(--u));
+  margin-top: calc(-30 * var(--u));
+  padding: calc(5 * var(--u)) calc(20 * var(--u));
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.28), transparent 45%),
     linear-gradient(160deg, #ecd1a6, var(--lx-color-kraft) 55%, #b88f5c);
   clip-path: polygon(
     0 0,
     100% 0,
-    calc(100% - 12 * var(--u)) 50%,
+    calc(100% - 10 * var(--u)) 50%,
     100% 100%,
     0 100%,
-    calc(12 * var(--u)) 50%
+    calc(10 * var(--u)) 50%
   );
   rotate: -2.5deg;
 }
 
 .name {
-  max-width: calc(170 * var(--u));
+  max-width: calc(140 * var(--u));
   font-family: var(--font-display), Georgia, serif;
   font-variation-settings: "SOFT" 100;
   font-weight: 800;
-  font-size: calc(19 * var(--u));
+  font-size: calc(15 * var(--u));
   line-height: 1.05;
   color: var(--lx-color-kraft-title);
   text-align: center;
