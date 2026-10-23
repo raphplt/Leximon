@@ -3,6 +3,7 @@
 import { cssFill, rarityStyles } from "@leximon/tokens";
 import { type CSSProperties, useEffect, useState } from "react";
 import { CardBack } from "@/booster/card-back";
+import { Sachet } from "@/booster/sachet";
 import { type Catalog, collectionName, loadCatalog } from "@/cards/catalog";
 import { Card } from "@/components/card";
 import { capitalize, DEFAULT_PACK_NOUN } from "@/lib/pack-shape";
@@ -14,6 +15,7 @@ const PAPER = rarityStyles.common;
 
 /** The game in three pictures, printed like a plate of an old encyclopedia. */
 export function HowToPlay() {
+  const catalog = useCatalog();
   const variables = {
     "--paper": PAPER.paper,
     "--ink": PAPER.ink,
@@ -30,7 +32,7 @@ export function HowToPlay() {
         <ol className={styles.figures}>
           <li className={styles.figure}>
             <div className={styles.figureArt}>
-              <PackFigure />
+              <PackFigure catalog={catalog} />
             </div>
             <p className={styles.figureLabel}>{capitalize(many)}</p>
             <p className={styles.figureText}>
@@ -44,13 +46,13 @@ export function HowToPlay() {
             </div>
             <p className={styles.figureLabel}>Défis</p>
             <p className={styles.figureText}>
-              Une question revient juste avant que tu oublies le mot. Tu réponds, la carte passe à
-              l'Encre, puis à la Dorure.
+              Une question revient juste avant que tu oublies le mot. Chaque bonne réponse le grave
+              un peu plus : la carte passe à l'encre, puis à la dorure.
             </p>
           </li>
           <li className={styles.figure}>
             <div className={styles.figureArt}>
-              <TradeFigure />
+              <TradeFigure catalog={catalog} />
             </div>
             <p className={styles.figureLabel}>Échanges</p>
             <p className={styles.figureText}>
@@ -63,8 +65,51 @@ export function HowToPlay() {
   );
 }
 
-/** Three card backs fanned out, their edges giving away a common, a rare and a legendary. */
-function PackFigure() {
+/** The catalogue, or `null` while it loads or if it cannot be read: the figures only show it. */
+function useCatalog(): Catalog | null {
+  const [catalog, setCatalog] = useState<Catalog | null>(null);
+  useEffect(() => {
+    let live = true;
+    loadCatalog()
+      .then((loaded) => {
+        if (live) setCatalog(loaded);
+      })
+      .catch(() => {
+        // The captions say it; the pictures only show it.
+      });
+    return () => {
+      live = false;
+    };
+  }, []);
+  return catalog;
+}
+
+const noop = () => undefined;
+
+/**
+ * A sachet of the first collection, as in the game, with three card backs rising out of it: their
+ * edges give away a common, a rare and a legendary. Only to look at: `inert` keeps it from tearing.
+ */
+function PackFigure({ catalog }: { readonly catalog: Catalog | null }) {
+  const collection = catalog?.collections[0];
+  return (
+    <div className={styles.packScene}>
+      <Backs />
+      {collection !== undefined && (
+        <div className={styles.pack} inert>
+          <Sachet
+            state="sealed"
+            collection={{ id: collection.id, name: collection.name, back: collection.back }}
+            onTearStart={noop}
+            onOpen={noop}
+          />
+        </div>
+      )}
+    </div>
+  );
+}
+
+function Backs() {
   return (
     <div className={styles.backs}>
       <div className={styles.backLeft}>
@@ -93,23 +138,7 @@ function ChallengeFigure() {
 }
 
 /** Two real cards crossing hands. */
-function TradeFigure() {
-  const [catalog, setCatalog] = useState<Catalog | null>(null);
-
-  useEffect(() => {
-    let live = true;
-    loadCatalog()
-      .then((loaded) => {
-        if (live) setCatalog(loaded);
-      })
-      .catch(() => {
-        // The caption says it; the cards only show it.
-      });
-    return () => {
-      live = false;
-    };
-  }, []);
-
+function TradeFigure({ catalog }: { readonly catalog: Catalog | null }) {
   const cards = catalog === null ? [] : pickShowcase(catalog.cardsById, TRADE_CARD_IDS);
   const [left, right] = cards;
   if (catalog === null || left === undefined || right === undefined) return null;

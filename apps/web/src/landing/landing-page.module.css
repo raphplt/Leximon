@@ -35,6 +35,24 @@
   white-space: nowrap;
 }
 
+.signIn {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 18px;
+  border: 2px solid rgba(246, 240, 226, 0.35);
+  border-radius: var(--lx-radius-pill);
+  color: var(--lx-color-text);
+  font-size: 15px;
+  font-weight: 800;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.signIn:hover {
+  border-color: var(--lx-color-text);
+}
+
 .resume {
   display: inline-flex;
   align-items: center;
@@ -582,11 +600,35 @@
   text-wrap: pretty;
 }
 
-/* Sachets */
+/* Sachets: the backs fan out behind the pouch, as if they came out of it. */
 .backs {
   position: relative;
   width: 200px;
   height: 150px;
+}
+
+.packScene {
+  position: relative;
+  width: 220px;
+  height: 200px;
+}
+
+.packScene .backs {
+  position: absolute;
+  top: -24px;
+  left: 10px;
+}
+
+.pack {
+  position: absolute;
+  left: 50%;
+  bottom: -6px;
+  translate: -50% 0;
+  display: flex;
+  flex-direction: column;
+  width: 110px;
+  height: 170px;
+  --sachet-min-height: 0px;
 }
 
 .backLeft,
@@ -704,6 +746,11 @@
     grid-template-columns: minmax(0, 1fr);
     gap: 40px;
     padding: 24px 0 56px;
+  }
+
+  /* On one column, what Leximon is and the form come first; the word shows it just below. */
+  .pitch {
+    order: -1;
   }
 
   .figures {

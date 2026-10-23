@@ -4,7 +4,7 @@ import { Collections } from "./collections";
 import { HeroWord } from "./hero-word";
 import { HowToPlay } from "./how-to-play";
 import styles from "./landing-page.module.css";
-import { JoinOrResume, ResumeLink } from "./player-access";
+import { Closing, JoinOrResume, TopAction } from "./player-access";
 
 /**
  * The public home page: a real word first, what Leximon is and a way to hear when it opens, then
@@ -16,7 +16,7 @@ export function LandingPage() {
     <main className={styles.page}>
       <header className={styles.top}>
         <Logo size="md" />
-        <ResumeLink />
+        <TopAction />
       </header>
 
       <section className={styles.hero} aria-labelledby="landing-title">
@@ -26,7 +26,7 @@ export function LandingPage() {
             La langue a jeté des mots superbes. On les a ramassés.
           </h1>
           <p className={styles.lead}>
-            Plus de 1 500 vrais mots du français, en cartes à collectionner. Tu les ouvres, tu les
+            Plus de 1 500 vrais mots du français, en cartes à collectionner. Tu les ouvres, tu les
             apprends, et tu les ressors au bon moment.
           </p>
           <JoinOrResume />
@@ -37,12 +37,7 @@ export function LandingPage() {
 
       <HowToPlay />
 
-      <section className={styles.closing} aria-labelledby="closing-title">
-        <h2 id="closing-title" className={styles.closingTitle}>
-          Les premiers sachets partent bientôt.
-        </h2>
-        <JoinOrResume />
-      </section>
+      <Closing />
 
       <footer className={styles.footer}>
         <span className={styles.footerBrand}>

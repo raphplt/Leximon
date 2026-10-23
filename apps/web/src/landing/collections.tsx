@@ -24,6 +24,14 @@ function shelves(catalog: Catalog): Shelf[] {
   });
 }
 
+/**
+ * At display size the narrow space between thousands looks like no space at all: the title
+ * takes a full no-break space.
+ */
+function displayCount(value: number): string {
+  return formatCount(value).replaceAll("\u202f", "\u00a0");
+}
+
 /** The launch collections, each shown by three real cards. */
 export function Collections() {
   const [catalog, setCatalog] = useState<Catalog | null>(null);
@@ -49,7 +57,7 @@ export function Collections() {
   return (
     <section className={styles.collections} aria-labelledby="collections-title">
       <h2 id="collections-title" className={styles.collectionsTitle}>
-        {formatCount(total)} mots pour commencer.
+        {displayCount(total)} mots pour commencer.
       </h2>
       <ul className={styles.shelves}>
         {found.map((shelf) => (

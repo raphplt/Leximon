@@ -20,12 +20,17 @@ const hasGame = sharedResource<boolean>(async () => {
 
 const RESUME = "Reprendre la partie";
 
-/** In the top bar, for those who already play. */
-export function ResumeLink() {
-  if (useShared(hasGame) !== true) return null;
-  return (
+/** In the top bar: the way back for those who play, the sign-in for those who have an account elsewhere. */
+export function TopAction() {
+  const playing = useShared(hasGame);
+  if (playing === null) return null;
+  return playing ? (
     <Link href="/jouer" className={styles.resumeSmall}>
       {RESUME}
+    </Link>
+  ) : (
+    <Link href="/compte" className={styles.signIn}>
+      Me connecter
     </Link>
   );
 }
@@ -41,4 +46,17 @@ export function JoinOrResume() {
     );
   }
   return <WaitlistForm />;
+}
+
+/** The end of the page: the waitlist again, or the game for those already in it. */
+export function Closing() {
+  const playing = useShared(hasGame);
+  return (
+    <section className={styles.closing} aria-labelledby="closing-title">
+      <h2 id="closing-title" className={styles.closingTitle}>
+        {playing === true ? "Tes sachets t'attendent." : "Les premiers sachets partent bientôt."}
+      </h2>
+      <JoinOrResume />
+    </section>
+  );
 }
