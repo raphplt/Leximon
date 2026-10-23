@@ -443,9 +443,47 @@
 
 .empty .back,
 .empty .slice,
-.empty .pouch,
 .empty .strip {
   filter: saturate(0.4) brightness(0.75);
+}
+
+/*
+ * Empty, the pouch waits in grey, and its color comes back up from the bottom as the next one
+ * nears: a grey layer blended in saturation, above the share still to wait, with the level of
+ * the color marked by a thin gold line. The time ticks every few seconds; the slide hides it.
+ */
+.waiting {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.waiting::before,
+.waiting::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  clip-path: inset(0 0 calc(var(--refill) * 100%) 0);
+  transition: clip-path 15s linear;
+}
+
+.waiting::before {
+  background: #808080;
+  mix-blend-mode: saturation;
+}
+
+.waiting::after {
+  background: rgba(10, 12, 24, 0.3);
+}
+
+.waitingLine {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: calc(var(--refill) * 100%);
+  height: calc(2 * var(--u));
+  background: linear-gradient(90deg, transparent, rgba(255, 224, 138, 0.75), transparent);
+  transition: bottom 15s linear;
 }
 
 /* --- Opening -------------------------------------------------------------------------- */

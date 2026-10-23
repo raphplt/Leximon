@@ -7,6 +7,7 @@ import {
   createFullWallet,
   type EpochMs,
   fixedSchedule,
+  intervalAt,
   type RefillSchedule,
   refillToFull,
 } from "./refill";
@@ -357,5 +358,9 @@ describe("refillToFull", () => {
 
   it("reads the capacity of the period in force", () => {
     expect(capacityAt(schedule, 0)).toBe(6);
+  });
+
+  it("reads the refill interval of the period in force", () => {
+    expect(intervalAt(fixedSchedule(6, 30 * 60_000), 0)).toBe(30 * 60_000);
   });
 });

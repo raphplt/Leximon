@@ -69,6 +69,12 @@ export function capacityAt(schedule: RefillSchedule, now: EpochMs): number {
   return periodAt(schedule, periodIndexAt(schedule, now)).capacity;
 }
 
+/** Time to regain one booster at `now`, in milliseconds. */
+export function intervalAt(schedule: RefillSchedule, now: EpochMs): number {
+  assertValidSchedule(schedule);
+  return periodAt(schedule, periodIndexAt(schedule, now)).intervalMs;
+}
+
 /**
  * Fills the free stock to its capacity at `now` (a level reward), or `null` when it is
  * already full: a refill is never wasted.

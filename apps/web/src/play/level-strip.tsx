@@ -4,6 +4,7 @@ import {
   coffretsLabel,
   levelDescription,
   levelRatio,
+  nextRewardLine,
   upcomingRewards,
   xpProgressLabel,
 } from "@leximon/view-model";
@@ -23,12 +24,19 @@ export function LevelStrip() {
   const { progress } = view;
   if (progress === null) return <div className={`${styles.strip} ${styles.stripLoading}`} />;
   const next = view.now === 0 ? [] : upcomingRewards(progress.level, view.now);
+  const line = view.now === 0 ? null : nextRewardLine(progress.level, view.now);
   return (
     <div className={styles.strip}>
       <Link href="/niveaux" className={styles.medalLink} aria-label="Chemin des niveaux">
         <LevelMedal level={progress.level} size={64} />
       </Link>
-      <Link href="/niveaux" className={styles.xp} aria-label={levelDescription(progress)}>
+      <Link
+        href="/niveaux"
+        className={styles.xp}
+        aria-label={
+          line === null ? levelDescription(progress) : `${levelDescription(progress)}. ${line}`
+        }
+      >
         <span className={styles.xpHead}>
           <span className={styles.headline}>
             Niveau {progress.level}
@@ -37,6 +45,7 @@ export function LevelStrip() {
           <span className={styles.xpNumbers}>{xpProgressLabel(progress)}</span>
         </span>
         <XpBar ratio={levelRatio(progress)} />
+        {line !== null && <span className={styles.nextLine}>{line}</span>}
       </Link>
       <ol className={styles.next} aria-label="Prochaines récompenses">
         {next.map((reward) => (

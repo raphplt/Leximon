@@ -71,6 +71,13 @@
   font-weight: 600;
 }
 
+/* The next reward, said plainly under the bar. */
+.nextLine {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--lx-color-text-muted);
+}
+
 .xpNumbers {
   font-size: 13px;
   font-weight: 700;
@@ -215,17 +222,18 @@
     inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
 
-/* The beam of the lamp hanging over the counter. */
+/* The lamp over the counter: a soft glow from above, no edge to it. */
 .counter::before {
   content: "";
   position: absolute;
-  left: 50%;
-  top: 0;
-  width: 90%;
-  height: 82%;
-  translate: -50% 0;
-  background: linear-gradient(180deg, rgba(255, 220, 140, 0.09), rgba(255, 220, 140, 0) 85%);
-  clip-path: polygon(40% 0, 60% 0, 100% 100%, 0 100%);
+  inset: 0 0 auto;
+  height: 75%;
+  background: radial-gradient(
+    ellipse 60% 75% at 50% 0%,
+    rgba(255, 222, 150, 0.1),
+    rgba(255, 222, 150, 0.03) 55%,
+    transparent 80%
+  );
   pointer-events: none;
 }
 
@@ -233,7 +241,7 @@
   position: relative;
   z-index: 2;
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-end;
   align-items: center;
   gap: 12px;
   padding: 20px 22px 0;
@@ -267,7 +275,7 @@
 
 /*
  * The pouch takes the height of its slot (`sachet.module.css`): the room the counter has left,
- * with a ceiling so that it never takes over the screen.
+ * with a ceiling so that it never takes over the screen, a little higher on a tall one.
  */
 .sachet {
   position: relative;
@@ -276,9 +284,116 @@
   flex-direction: column;
   width: 100%;
   min-height: 300px;
-  max-height: 460px;
+  max-height: clamp(460px, 52dvh, 580px);
+  container-type: size;
   --sachet-min-height: 0px;
-  --sachet-max-unit: 1.05px;
+  --sachet-max-unit: 1.3px;
+}
+
+/* The sachet on the counter, in front; a new one slides in when the collection changes. */
+.front {
+  position: relative;
+  z-index: 1;
+  flex: 1 1 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  animation: front-in 280ms ease-out both;
+}
+
+@keyframes front-in {
+  from {
+    opacity: 0;
+    scale: 0.97;
+  }
+}
+
+/*
+ * The other collections' sachets, smaller and in the shade, tucked behind the front one. Sized
+ * from the front sachet's unit, worked out as in `sachet.module.css`.
+ */
+.peek {
+  --front-u: min(var(--sachet-max-unit, 1.4px), (100cqh - 24px) / 410, 100cqw / 236);
+  --peek-width: calc(236 * var(--front-u) * 0.7);
+  position: absolute;
+  top: 50%;
+  width: var(--peek-width);
+  height: calc(410 * var(--front-u) * 0.7 + 24px);
+  translate: 0 -46%;
+  filter: brightness(0.5) saturate(0.85);
+  transition:
+    filter 180ms ease-out,
+    transform 220ms ease-out;
+}
+
+.peekLeft {
+  left: calc(50% - 118 * var(--front-u) - var(--peek-width) * 0.74);
+  transform: rotate(-8deg);
+}
+
+.peekRight {
+  right: calc(50% - 118 * var(--front-u) - var(--peek-width) * 0.74);
+  transform: rotate(8deg);
+}
+
+.peek:hover,
+.peek:has(:focus-visible) {
+  filter: brightness(0.85);
+}
+
+.peekLeft:hover,
+.peekLeft:has(:focus-visible) {
+  transform: rotate(-10deg) translateX(-12px);
+}
+
+.peekRight:hover,
+.peekRight:has(:focus-visible) {
+  transform: rotate(10deg) translateX(12px);
+}
+
+.peekLocked,
+.peekLocked:hover {
+  filter: grayscale(1) brightness(0.45);
+}
+
+.peekPack {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.peekHit {
+  position: absolute;
+  inset: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 10px;
+  background: none;
+  cursor: pointer;
+}
+
+.peekHit:focus-visible {
+  outline: 2px solid var(--lx-color-accent);
+  outline-offset: 4px;
+}
+
+.peekLock {
+  position: absolute;
+  left: 50%;
+  bottom: 22%;
+  translate: -50% 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 3px 9px;
+  border-radius: var(--lx-radius-pill);
+  background: var(--lx-color-well);
+  color: var(--lx-color-text);
+  font-size: 12px;
+  font-weight: 800;
+  white-space: nowrap;
+  pointer-events: none;
 }
 
 /* The tablet in front of the counter, where the button lies. */
@@ -314,52 +429,6 @@
 }
 
 /* --- Collection of the sachet --- */
-
-.chips {
-  margin: 0;
-  padding: 0;
-  border: 0;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  min-width: 0;
-}
-
-.legend {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  clip-path: inset(50%);
-  white-space: nowrap;
-}
-
-.chip {
-  min-height: 34px;
-  padding: 0 13px 0 9px;
-  font-size: 13px;
-}
-
-/* The tone of the collection's sachet. */
-.chipTone {
-  width: 14px;
-  height: 14px;
-  border-radius: 50%;
-  background: radial-gradient(circle at 35% 30%, var(--tone-light), var(--tone-dark));
-  box-shadow: 0 0 0 1.5px rgba(246, 240, 226, 0.35);
-}
-
-.chipLocked {
-  opacity: 0.6;
-}
-
-.chipLock {
-  display: inline-flex;
-  align-items: center;
-  gap: 2px;
-  font-size: 11px;
-  color: var(--lx-color-text-muted);
-}
 
 .arrows {
   display: none;
@@ -595,9 +664,9 @@
     padding: 12px 14px 0;
   }
 
-  /* The phone top bar carries the stock. */
-  .chips,
-  .stockRing {
+  /* The phone top bar carries the stock; the arrows change the collection. */
+  .stockRing,
+  .peek {
     display: none;
   }
 

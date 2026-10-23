@@ -9,6 +9,7 @@ import {
   levelRatio,
   levelUpLabel,
   lockedToast,
+  neighbourChoices,
   openAgainLabel,
   pickCollection,
   stockView,
@@ -25,6 +26,7 @@ import { usePackShape } from "@/lib/use-pack-shape";
 import { CollectionPicker } from "@/play/collection-picker";
 import { noteSachetOpened, StockRing, TearHint } from "@/play/counter-bits";
 import { LevelStrip } from "@/play/level-strip";
+import { PackPeek } from "@/play/pack-peek";
 import play from "@/play/play.module.css";
 import { PlayFabs } from "@/play/play-fabs";
 import { SlippingWord } from "@/play/slipping-word";
@@ -351,6 +353,11 @@ export function BoosterScreen() {
   const backs = new Map(catalog?.collections.map((c) => [c.id, c.back]) ?? []);
   const packCollection: PackCollection | null =
     choice === null ? null : { id: choice.id, name: choice.name, back: backs.get(choice.id) };
+  const around =
+    choice === null || phase.name === "opening"
+      ? { left: null, right: null }
+      : neighbourChoices(choices, choice);
+  const onLocked = () => toast(lockedToast("choose_collection", now));
   return (
     <main className={play.page}>
       <LevelStrip />
@@ -361,10 +368,9 @@ export function BoosterScreen() {
             {choice !== null && (
               <CollectionPicker
                 choices={choices}
-                backs={backs}
                 current={choice}
                 onPick={pick}
-                onLocked={() => toast(lockedToast("choose_collection", now))}
+                onLocked={onLocked}
               />
             )}
             {stock !== null && <StockRing stock={stock} />}
@@ -387,15 +393,36 @@ export function BoosterScreen() {
             )}
             {ready && known && packCollection !== null && (
               <div className={play.sachet}>
-                <PackView
-                  shape={shape}
-                  collection={packCollection}
-                  state={phase.name === "opening" ? "opening" : canOpen ? "sealed" : "empty"}
-                  onTearStart={() => {
-                    startRequest();
-                  }}
-                  onOpen={() => void openPack()}
-                />
+                {around.left !== null && (
+                  <PackPeek
+                    side="left"
+                    choice={around.left}
+                    back={backs.get(around.left.id)}
+                    onPick={pick}
+                    onLocked={onLocked}
+                  />
+                )}
+                <div key={packCollection.id} className={play.front}>
+                  <PackView
+                    shape={shape}
+                    collection={packCollection}
+                    state={phase.name === "opening" ? "opening" : canOpen ? "sealed" : "empty"}
+                    refill={stock?.refill}
+                    onTearStart={() => {
+                      startRequest();
+                    }}
+                    onOpen={() => void openPack()}
+                  />
+                </div>
+                {around.right !== null && (
+                  <PackPeek
+                    side="right"
+                    choice={around.right}
+                    back={backs.get(around.right.id)}
+                    onPick={pick}
+                    onLocked={onLocked}
+                  />
+                )}
               </div>
             )}
             {ready && known && canOpen && phase.name === "sealed" && (

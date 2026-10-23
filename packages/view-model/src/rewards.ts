@@ -7,13 +7,14 @@ import type {
 import {
   type EpochMs,
   FIRST_REWARDED_LEVEL,
+  featuresOpenedAt,
   LEVEL_REWARD_SCHEDULE,
   type LevelReward,
   levelRewardRulesAt,
   levelRewards,
   unclaimedLevels,
 } from "@leximon/core";
-import { opensAt } from "./features";
+import { FEATURE_NAMES, levelsOfFeatures, opensAt } from "./features";
 import { formatCount, plural } from "./format";
 import { xpBefore } from "./level";
 import { avatarName, frameName } from "./profile";
@@ -149,6 +150,48 @@ export interface UpcomingReward {
   readonly opens: string | null;
   /** « Niveau 20 : Sachet garni, ouvre les clans ». */
   readonly label: string;
+}
+
+/** « un sachet garni », the reward as said in a sentence. */
+function rewardPhrase(reward: LevelReward): string {
+  switch (reward.kind) {
+    case "bonus_booster":
+      return "un sachet bonus";
+    case "refill":
+      return "une recharge";
+    case "garni_booster":
+      return "un sachet garni";
+    case "title":
+      return `le titre « ${reward.title} »`;
+    case "reserve_slot":
+      return "une place de plus en réserve";
+    case "avatar":
+      return "un avatar gravé";
+    case "frame":
+      return "un cadre";
+    case "pinned_slot":
+      return "une place épinglée de plus";
+  }
+}
+
+/**
+ * « Au niveau 4, une recharge. », under the XP bar. A level that opens a part of the game says
+ * that instead: it is the bigger news.
+ */
+export function nextRewardLine(level: number, now: EpochMs): string {
+  const next = level + 1;
+  const opened = featuresOpenedAt(levelsOfFeatures(now), next).map((f) => FEATURE_NAMES[f]);
+  if (opened.length > 0) {
+    const names =
+      opened.length === 1
+        ? opened[0]
+        : `${opened.slice(0, -1).join(", ")} et ${opened[opened.length - 1]}`;
+    return `Au niveau ${next}, ${names}.`;
+  }
+  const first = rewardsOfLevel(next, now)[0];
+  return first === undefined
+    ? `Niveau ${next} en vue.`
+    : `Au niveau ${next}, ${rewardPhrase(first)}.`;
 }
 
 /** The next `count` levels after the player's, with the main thing each gives. */

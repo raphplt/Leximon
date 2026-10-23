@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   collectionChoices,
+  neighbourChoices,
   openAgainLabel,
   pickCollection,
   playFabs,
@@ -68,6 +69,11 @@ describe("stock", () => {
     });
     expect(openAgainLabel(wallet(0), NOW)).toBe("Plus de sachet, 18 min");
   });
+
+  it("measures how much of the wait for the next sachet is gone", () => {
+    expect(stockView(wallet(0), NOW).refill).toBeCloseTo(0.4);
+    expect(stockView(wallet(6), NOW).refill).toBeNull();
+  });
 });
 
 describe("collection of the sachet", () => {
@@ -113,5 +119,18 @@ describe("floating buttons", () => {
 describe("sachet", () => {
   it("prints how many cards it holds", () => {
     expect(sachetContents(NOW)).toBe("5 cartes");
+  });
+});
+
+describe("sachets behind the counter", () => {
+  it("puts the previous collection on the left and the next on the right, going round", () => {
+    const choices = collectionChoices(collections, 5, NOW);
+    const [first, second] = choices;
+    if (first === undefined || second === undefined) throw new Error("two collections at least");
+    const around = neighbourChoices(choices, first);
+    expect(around.right?.id).toBe(second.id);
+    expect(around.left?.id).toBe(choices[choices.length - 1]?.id);
+    expect(neighbourChoices(choices.slice(0, 2), first)).toEqual({ left: null, right: second });
+    expect(neighbourChoices(choices.slice(0, 1), first)).toEqual({ left: null, right: null });
   });
 });

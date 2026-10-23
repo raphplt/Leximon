@@ -4,6 +4,8 @@ import {
   DRAW_SCHEDULE,
   drawRulesAt,
   type EpochMs,
+  intervalAt,
+  REFILL_SCHEDULE,
   UNLOCK_SCHEDULE,
   unlockRulesAt,
 } from "@leximon/core";
@@ -28,6 +30,8 @@ export interface StockView {
   readonly refillShort: string;
   /** « 4 sachets sur 6, 2 bonus en réserve », for screen readers. */
   readonly description: string;
+  /** Share of the wait for the next sachet already gone, 0 to 1; `null` when the stock is full. */
+  readonly refill: number | null;
 }
 
 export function stockView(wallet: BoosterWalletResponse, now: EpochMs): StockView {
@@ -50,6 +54,16 @@ export function stockView(wallet: BoosterWalletResponse, now: EpochMs): StockVie
           : `Prochain dans ${wait}`,
     refillShort: wait ?? "plein",
     description: `${stored} ${stored > 1 ? "sachets" : "sachet"} sur ${capacity}, ${bonus} bonus en réserve`,
+    refill:
+      wallet.nextRefillAt === null
+        ? null
+        : Math.min(
+            1,
+            Math.max(
+              0,
+              1 - (Date.parse(wallet.nextRefillAt) - now) / intervalAt(REFILL_SCHEDULE, now),
+            ),
+          ),
   };
 }
 
@@ -147,6 +161,22 @@ export function pickCollection(
   const found = choices.find((c) => c.id === wanted && c.lock === null);
   // The starter sachet is always first and always open.
   return found ?? (choices[0] as CollectionChoice);
+}
+
+/**
+ * The sachets tucked behind the one on the counter: the previous collection on its left, the
+ * next on its right, going round; with two collections, only the other one, on the right.
+ */
+export function neighbourChoices(
+  choices: readonly CollectionChoice[],
+  current: CollectionChoice,
+): { readonly left: CollectionChoice | null; readonly right: CollectionChoice | null } {
+  const count = choices.length;
+  const index = choices.findIndex((c) => c.id === current.id);
+  if (count < 2 || index < 0) return { left: null, right: null };
+  const right = choices[(index + 1) % count] ?? null;
+  if (count === 2) return { left: null, right };
+  return { left: choices[(index - 1 + count) % count] ?? null, right };
 }
 
 /** « 5 cartes », printed on the sachet as on a real booster. */

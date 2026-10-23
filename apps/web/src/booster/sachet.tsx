@@ -21,7 +21,7 @@ const SLICES = [-4, -2, 0, 2, 4] as const;
  * The pouch is a small 3D object: a back, a few slices for its thickness and a front, tilted by
  * the light of `useHoloLight` like a held card, swaying on its own until the pointer takes it.
  */
-export function Sachet({ state, onTearStart, onOpen, collection }: PackProps) {
+export function Sachet({ state, onTearStart, onOpen, collection, refill = null }: PackProps) {
   const sealed = state === "sealed";
   const tear = useTear({ enabled: sealed, onTearStart, onOpen });
   // While the strip is pulled, the pouch holds still under the finger.
@@ -93,6 +93,15 @@ export function Sachet({ state, onTearStart, onOpen, collection }: PackProps) {
                 height={64}
                 className={styles.mark}
               />
+              {state === "empty" && (
+                <span
+                  className={styles.waiting}
+                  style={{ "--refill": refill ?? 0 } as CSSProperties}
+                  aria-hidden="true"
+                >
+                  <span className={styles.waitingLine} />
+                </span>
+              )}
               <span className={styles.glare} aria-hidden="true" />
             </button>
             <div ref={tear.strip} className={styles.strip} {...tear.handlers} aria-hidden="true">

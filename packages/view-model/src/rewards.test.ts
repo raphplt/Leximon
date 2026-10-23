@@ -6,6 +6,7 @@ import {
   coffretHint,
   coffretsLabel,
   levelDetail,
+  nextRewardLine,
   plateauLayout,
   quarterAt,
   quarterNodes,
@@ -65,6 +66,12 @@ describe("level rewards", () => {
     );
     expect(next[1]).toMatchObject({ icon: "bolt", opens: null, label: "Niveau 4 : Recharge" });
     expect(next[2]).toMatchObject({ milestone: true, icon: "lock" });
+  });
+
+  it("says the next reward in a sentence, an opening first", () => {
+    expect(nextRewardLine(1, NOW)).toBe("Au niveau 2, une recharge.");
+    expect(nextRewardLine(2, NOW)).toBe("Au niveau 3, choisir la collection de ton sachet.");
+    expect(nextRewardLine(3, NOW)).toBe("Au niveau 4, une recharge.");
   });
 });
 
