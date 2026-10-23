@@ -3,6 +3,7 @@
 import type { ClanMember, ClanMessage, ClanRefusal, ClanRole } from "@leximon/contract";
 import { canAct } from "@leximon/core";
 import {
+  chatPollDelay,
   clanRefusalMessage,
   EMPTY_DISCUSSION,
   eventText,
@@ -34,8 +35,6 @@ import ui from "@/ui/ui.module.css";
 import { deleteMessage, fetchMessages, postMessage, reportMessage, searchMembers } from "./api";
 import styles from "./clan.module.css";
 
-/** The open discussion asks for what came since every few seconds (no WebSockets). */
-const POLL_MS = 4_000;
 /** Typing after an "@" asks for members once the keys pause this long. */
 const MENTION_DELAY_MS = 150;
 
@@ -94,18 +93,48 @@ export function ClanChat({
     void load();
   }, [load]);
 
-  // What came since the last message received, while the page is in view.
+  // What came since the last message received, while the page is in view: often while the
+  // discussion moves, less and less when it is quiet. A new message (`lastId`) starts over.
   useEffect(() => {
     if (!loaded) return;
-    const timer = setInterval(async () => {
-      if (document.visibilityState !== "visible") return;
+    let quietPolls = 0;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    let polling = false;
+    let stopped = false;
+    const schedule = () => {
+      clearTimeout(timer);
+      timer = setTimeout(poll, chatPollDelay(quietPolls));
+    };
+    const poll = async () => {
+      if (polling) return;
+      if (document.visibilityState !== "visible") return schedule();
+      polling = true;
       const page = await fetchMessages(clanId, lastId === undefined ? {} : { after: lastId }).catch(
         () => null,
       );
-      if (page === null || page.messages.length === 0) return;
-      setMessages((current) => merge(current ?? [], [...page.messages].reverse()));
-    }, POLL_MS);
-    return () => clearInterval(timer);
+      polling = false;
+      if (stopped) return;
+      if (page !== null && page.messages.length > 0) {
+        quietPolls = 0;
+        setMessages((current) => merge(current ?? [], [...page.messages].reverse()));
+      } else {
+        quietPolls++;
+      }
+      schedule();
+    };
+    // Back on the tab: ask at once, then at the quick pace.
+    const onVisible = () => {
+      if (document.visibilityState !== "visible") return;
+      quietPolls = 0;
+      void poll();
+    };
+    schedule();
+    document.addEventListener("visibilitychange", onVisible);
+    return () => {
+      stopped = true;
+      clearTimeout(timer);
+      document.removeEventListener("visibilitychange", onVisible);
+    };
   }, [clanId, lastId, loaded]);
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: scrolls when a message arrives

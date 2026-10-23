@@ -147,6 +147,11 @@ export const clanMessages = pgTable(
       .on(table.clanId, table.eventKey)
       .where(sql`${table.eventKey} is not null`),
     index("clan_messages_created_idx").on(table.createdAt),
+    // Deleting an account clears its name from messages: without these, a scan of them all.
+    index("clan_messages_author_idx").on(table.authorId).where(sql`${table.authorId} is not null`),
+    index("clan_messages_deleted_by_idx")
+      .on(table.deletedBy)
+      .where(sql`${table.deletedBy} is not null`),
     check("clan_messages_kind_check", sql`(${table.kind} = 'message') = (${table.event} is null)`),
   ],
 );

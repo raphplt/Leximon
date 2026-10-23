@@ -1,8 +1,9 @@
 import { createDb, schema } from "@leximon/db";
 import { testDatabaseUrl } from "@leximon/db/testing";
-import { eq } from "drizzle-orm";
+import { eq, lt, sql } from "drizzle-orm";
 import { afterAll, describe, expect, it } from "vitest";
 import { IDEMPOTENCY_RETENTION_MS, runMaintenance } from "./maintenance";
+import { purgeRows } from "./purge";
 
 const { db, close } = createDb(testDatabaseUrl(), { maxConnections: 1 });
 afterAll(close);
@@ -51,6 +52,27 @@ describe("runMaintenance", () => {
       .from(schema.boosterOpens)
       .where(eq(schema.boosterOpens.userId, userId));
     expect(journal.map((row) => row.id).sort()).toEqual([oldOpen, recentOpen].sort());
+  });
+
+  it("purges a batch at a time and counts what went", async () => {
+    const userId = `maintenance-${crypto.randomUUID()}`;
+    await db
+      .insert(schema.users)
+      .values({ id: userId, name: "Test", email: `${userId}@test.invalid` });
+    const now = Date.now();
+    for (let i = 0; i < 5; i++) await insertOpenWithRequest(userId, new Date(now - (i + 1) * 1000));
+    await insertOpenWithRequest(userId, new Date(now + 60_000));
+    const requests = schema.boosterOpenRequests;
+    const mine = eq(requests.userId, userId);
+
+    const purged = await purgeRows(
+      db,
+      requests,
+      sql`${mine} and ${lt(requests.openedAt, new Date(now))}`,
+      2,
+    );
+    expect(purged).toBe(5);
+    expect(await db.select().from(requests).where(mine)).toHaveLength(1);
   });
 
   it("is idempotent", async () => {

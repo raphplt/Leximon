@@ -2,6 +2,7 @@ export * from "./album";
 export * from "./card-sheet";
 export * from "./cards";
 export * from "./challenges";
+export * from "./chat-poll";
 export * from "./clan";
 export * from "./features";
 export * from "./format";

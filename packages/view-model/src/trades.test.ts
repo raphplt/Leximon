@@ -2,6 +2,7 @@ import type { Trade } from "@leximon/contract";
 import { describe, expect, it } from "vitest";
 import {
   boxTabLabel,
+  copiesAfterTrade,
   effectiveStatus,
   formatPlayerCode,
   heldLabel,
@@ -216,5 +217,21 @@ describe("échanges screen", () => {
     expect(historyLine(named, "incoming", now, upper)).toMatch(/^Conclue avec Raph :/);
     const gone = trade({ status: "completed", proposerCode: "", proposer: null });
     expect(historyLine(gone, "incoming", now, upper)).toMatch(/^Conclue avec Un joueur parti :/);
+  });
+});
+
+describe("copies after a trade", () => {
+  it("moves one copy each way, and forgets a card given away for good", () => {
+    const before = new Map([
+      ["aigrefin", 2],
+      ["baguenaude", 1],
+    ]);
+    expect(copiesAfterTrade(before, ["capon", "aigrefin"], ["baguenaude", "aigrefin"])).toEqual(
+      new Map([
+        ["aigrefin", 2],
+        ["capon", 1],
+      ]),
+    );
+    expect(before.get("baguenaude")).toBe(1);
   });
 });

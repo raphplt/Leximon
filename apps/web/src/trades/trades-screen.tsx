@@ -22,9 +22,10 @@ import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { type Catalog, loadCatalog } from "@/cards/catalog";
-import { ApiError, fetchProfile, fetchTrades, resolveTrade } from "@/lib/api";
+import { ApiError, fetchTrades, resolveTrade } from "@/lib/api";
 import { useNow } from "@/lib/use-now";
-import { ownedCards, refreshIfRead } from "@/player/collection";
+import { publishTraded } from "@/player/collection";
+import { profile as ownProfile } from "@/player/player";
 import { useProgress } from "@/progress/use-progress";
 import { useShell } from "@/shell/shell-context";
 import { Button } from "@/ui/button";
@@ -89,7 +90,7 @@ export function TradesScreen() {
     try {
       const [loadedCatalog, loadedProfile, incoming, outgoing] = await Promise.all([
         loadCatalog(),
-        fetchProfile(),
+        ownProfile.read(),
         fetchTrades("incoming"),
         fetchTrades("outgoing"),
       ]);
@@ -130,7 +131,8 @@ export function TradesScreen() {
       const result = await resolveTrade(trade.id, action);
       if (result.kind === "ok") {
         replaceTrade(box, result.trade);
-        if (action === "accept") refreshIfRead(ownedCards);
+        // The recipient accepts: they get what was given and give what was wanted.
+        if (action === "accept") publishTraded(result.trade.give, result.trade.want);
         setNotice({ tone: "success", text: DONE_MESSAGES[action], albumLink: action === "accept" });
       } else {
         setNotice({ tone: "error", text: refusalMessage(result.reason) });

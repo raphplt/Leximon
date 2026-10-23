@@ -37,7 +37,7 @@ import {
   UNLOCK_SCHEDULE,
 } from "@leximon/core";
 import { type ClanEventPayload, type Database, schema } from "@leximon/db";
-import { and, asc, count, desc, eq, inArray, isNull, like, lt, or, sql } from "drizzle-orm";
+import { and, asc, desc, eq, inArray, isNull, like, lt, or, sql } from "drizzle-orm";
 import { readBadges } from "../profile/profile";
 import { generatePlayerCode } from "../trades/player-code";
 import { ensurePlayer } from "../trades/players";
@@ -678,7 +678,8 @@ export async function renewInviteCode(
 
 /**
  * A chief away for 14 days hands the role over, checked when the clan's page is read rather
- * than by a scheduled task. The absent chief stays, as a member.
+ * than by a scheduled task (the page's own query tells whether it is due). The absent chief
+ * stays, as a member.
  */
 export async function handOverIfChiefAway(
   db: Database,
@@ -932,62 +933,75 @@ export async function readMembers(
   };
 }
 
+/**
+ * The clan, the viewer's place in it and when its chief was last seen, in one query: the page is
+ * polled while it is open.
+ */
+async function readViewHeader(db: Reader, clanId: string, viewerId: string) {
+  const [row] = await db
+    .select({
+      clan: clans,
+      role: clanMembers.role,
+      mutedUntil: clanMembers.mutedUntil,
+      chiefSeenAt: sql<Date | null>`(select coalesce(p.last_seen_at, m.joined_at)
+        from ${clanMembers} m join ${players} p on p.user_id = m.user_id
+        where m.clan_id = ${clans.id} and m.role = 'chief')`.mapWith(players.lastSeenAt),
+      requested: sql<boolean>`exists (select 1 from ${clanJoinRequests} r
+        where r.clan_id = ${clans.id} and r.user_id = ${viewerId})`,
+      pendingRequests: sql<number>`(select count(*)::int from ${clanJoinRequests} r
+        where r.clan_id = ${clans.id})`,
+    })
+    .from(clans)
+    .leftJoin(clanMembers, and(eq(clanMembers.clanId, clans.id), eq(clanMembers.userId, viewerId)))
+    .where(eq(clans.id, clanId));
+  return row ?? null;
+}
+
 /** `GET /clans/:id`. Visitors see the header and the members only. */
 export async function readClanView(
   db: Database,
   input: { readonly viewerId: string; readonly clanId: string; readonly now: EpochMs },
 ): Promise<ClanView | null> {
   const { viewerId, clanId, now } = input;
-  await handOverIfChiefAway(db, clanId, now);
-  const [clan] = await db.select().from(clans).where(eq(clans.id, clanId));
-  if (clan === undefined) return null;
-  const me = await db
-    .select({ role: clanMembers.role, mutedUntil: clanMembers.mutedUntil })
-    .from(clanMembers)
-    .where(and(eq(clanMembers.clanId, clanId), eq(clanMembers.userId, viewerId)))
-    .then((rows) => rows[0] ?? null);
-  const [requested] = await db
-    .select({ count: count() })
-    .from(clanJoinRequests)
-    .where(and(eq(clanJoinRequests.clanId, clanId), eq(clanJoinRequests.userId, viewerId)));
-  const { members } = await readMembers(db, { clanId, after: null, limit: VIEW_MEMBERS, now });
-
-  let pendingRequests = 0;
-  if (me !== null && me.role !== "member") {
-    const [pending] = await db
-      .select({ count: count() })
-      .from(clanJoinRequests)
-      .where(eq(clanJoinRequests.clanId, clanId));
-    pendingRequests = pending?.count ?? 0;
+  let header = await readViewHeader(db, clanId, viewerId);
+  if (header === null) return null;
+  const { chiefSeenAt } = header;
+  if (chiefSeenAt !== null && isChiefAway(rulesAt(now), chiefSeenAt.getTime(), now)) {
+    await handOverIfChiefAway(db, clanId, now);
+    header = await readViewHeader(db, clanId, viewerId);
+    if (header === null) return null;
   }
+  const { clan, role, mutedUntil } = header;
+  const [{ members }, goal, library] = await Promise.all([
+    readMembers(db, { clanId, after: null, limit: VIEW_MEMBERS, now }),
+    role === null ? null : readGoal(db, { clanId, userId: viewerId, now }),
+    role === null
+      ? []
+      : db
+          .select({ collectionId: clanLibrary.collectionId, owned: clanLibrary.owned })
+          .from(clanLibrary)
+          .where(eq(clanLibrary.clanId, clanId))
+          .orderBy(asc(clanLibrary.collectionId)),
+  ]);
   const level = clanLevelOf(CLAN_LEVEL, clan.xp);
   const choices = emblemChoices(rulesAt(now), clanUnlocks(CLAN_LEVEL, level.level).emblemItems);
   return {
     clan: toSummary(clan),
     me:
-      me === null
+      role === null
         ? null
         : {
-            role: me.role,
+            role,
             mutedUntil:
-              me.mutedUntil !== null && me.mutedUntil.getTime() > now
-                ? me.mutedUntil.toISOString()
-                : null,
+              mutedUntil !== null && mutedUntil.getTime() > now ? mutedUntil.toISOString() : null,
             inviteCode: clan.inviteCode,
           },
-    requested: (requested?.count ?? 0) > 0,
-    goal: me === null ? null : await readGoal(db, { clanId, userId: viewerId, now }),
+    requested: header.requested,
+    goal,
     progress: { ...level, next: nextClanUnlock(CLAN_LEVEL, level.level) },
-    library:
-      me === null
-        ? []
-        : await db
-            .select({ collectionId: clanLibrary.collectionId, owned: clanLibrary.owned })
-            .from(clanLibrary)
-            .where(eq(clanLibrary.clanId, clanId))
-            .orderBy(asc(clanLibrary.collectionId)),
+    library,
     members,
-    pendingRequests,
+    pendingRequests: role === null || role === "member" ? 0 : header.pendingRequests,
     emblemChoices: { engravings: [...choices.engravings], colors: [...choices.colors] },
   };
 }

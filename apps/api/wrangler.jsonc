@@ -51,6 +51,9 @@
         "max_batch_size": 50,
         "max_batch_timeout": 2,
         "max_retries": 3,
+        // Left unset, consumers scale out with the backlog and each one recounts the same clans:
+        // two at a time keep the database's load flat, and fuller batches fold more events.
+        "max_concurrency": 2,
         "dead_letter_queue": "leximon-game-events-dlq"
       }
     ]
@@ -161,6 +164,7 @@
             "max_batch_size": 50,
             "max_batch_timeout": 2,
             "max_retries": 3,
+            "max_concurrency": 2,
             "dead_letter_queue": "leximon-game-events-dlq"
           }
         ]

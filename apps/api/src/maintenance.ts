@@ -1,9 +1,10 @@
 import { CLAN_SCHEDULE, clanRulesAt } from "@leximon/core";
 import { type Database, schema } from "@leximon/db";
-import { and, inArray, isNotNull, lt, sql } from "drizzle-orm";
+import { inArray, isNotNull, lt, sql } from "drizzle-orm";
 import { recountActiveClans } from "./clans/events";
 import { purgeMail } from "./mail/mail";
 import { SIGN_IN_CODE_DAILY_QUOTA } from "./middleware/rate-limit";
+import { inBatches, purgeRows } from "./purge";
 
 /** How long a client may retry an open with the same idempotency key. */
 export const IDEMPOTENCY_RETENTION_MS = 48 * 60 * 60 * 1000;
@@ -23,6 +24,7 @@ export interface MaintenanceReport {
 
 /**
  * Daily housekeeping, run by the Worker's cron trigger. Idempotent: running it twice is harmless.
+ * Purges go a batch at a time and only count what they erase.
  * - creates the upcoming monthly partitions of `booster_opens` and `review_logs`;
  * - purges idempotency keys too old to be retried;
  * - erases the addresses of campaigns ended more than 30 days ago (the suppression list stays);
@@ -33,51 +35,46 @@ export interface MaintenanceReport {
 export async function runMaintenance(db: Database, now: number): Promise<MaintenanceReport> {
   await db.execute(sql`select leximon_ensure_booster_open_partitions(${PARTITION_MONTHS_AHEAD})`);
   await db.execute(sql`select leximon_ensure_review_log_partitions(${PARTITION_MONTHS_AHEAD})`);
-  const purged = await db
-    .delete(schema.boosterOpenRequests)
-    .where(lt(schema.boosterOpenRequests.openedAt, new Date(now - IDEMPOTENCY_RETENTION_MS)))
-    .returning({ openId: schema.boosterOpenRequests.openId });
+  const { boosterOpenRequests: requests } = schema;
+  const purged = await purgeRows(
+    db,
+    requests,
+    lt(requests.openedAt, new Date(now - IDEMPOTENCY_RETENTION_MS)),
+  );
   const { emailCampaignSends: sends, emailCampaigns: campaigns } = schema;
-  const erased = await db
-    .update(sends)
-    .set({ email: null })
-    .where(
-      and(
-        isNotNull(sends.email),
-        inArray(
-          sends.campaignId,
-          db
-            .select({ id: campaigns.id })
-            .from(campaigns)
-            .where(lt(campaigns.completedAt, new Date(now - CAMPAIGN_ADDRESS_RETENTION_MS))),
-        ),
-      ),
-    )
-    .returning({ id: sends.id });
+  const ended = sql`${isNotNull(sends.email)} and ${inArray(
+    sends.campaignId,
+    db
+      .select({ id: campaigns.id })
+      .from(campaigns)
+      .where(lt(campaigns.completedAt, new Date(now - CAMPAIGN_ADDRESS_RETENTION_MS))),
+  )}`;
+  const erased = await inBatches((limit) =>
+    db.execute(sql`update ${sends} set email = null where ctid = any(array(
+      select ctid from ${sends} where ${ended} limit ${limit}))`),
+  );
   const retention = clanRulesAt(CLAN_SCHEDULE, now).messageRetentionMs;
   const { clanMessages, moderationReports } = schema;
-  const erasedMessages = await db
-    .delete(clanMessages)
-    .where(
-      and(
-        lt(clanMessages.createdAt, new Date(now - retention)),
-        sql`not exists (select 1 from ${moderationReports}
-          where ${moderationReports.messageId} = ${clanMessages.id}
-            and ${moderationReports.resolvedAt} is null)`,
-      ),
-    )
-    .returning({ id: clanMessages.id });
+  const erasedMessages = await purgeRows(
+    db,
+    clanMessages,
+    sql`${lt(clanMessages.createdAt, new Date(now - retention))}
+      and not exists (select 1 from ${moderationReports}
+        where ${moderationReports.messageId} = ${clanMessages.id}
+          and ${moderationReports.resolvedAt} is null)`,
+  );
   const { signInCodeQuotas: quotas } = schema;
-  const erasedQuotas = await db
-    .delete(quotas)
-    .where(lt(quotas.windowStart, new Date(now - SIGN_IN_CODE_DAILY_QUOTA.windowMs)))
-    .returning({ emailKey: quotas.emailKey });
+  const erasedQuotas = await purgeRows(
+    db,
+    quotas,
+    lt(quotas.windowStart, new Date(now - SIGN_IN_CODE_DAILY_QUOTA.windowMs)),
+  );
   return {
-    purgedRequests: purged.length,
-    erasedCampaignAddresses: erased.length,
-    erasedClanMessages: erasedMessages.length,
+    purgedRequests: purged,
+    erasedCampaignAddresses: erased,
+    erasedClanMessages: erasedMessages,
     erasedLetters: await purgeMail(db, now),
-    erasedCodeQuotas: erasedQuotas.length,
+    erasedCodeQuotas: erasedQuotas,
     recountedClans: await recountActiveClans(db, now),
   };
 }

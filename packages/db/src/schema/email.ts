@@ -109,6 +109,8 @@ export const emailCampaignSends = pgTable(
       .on(table.claimedAt)
       .where(sql`${table.status} in ('queued', 'sending')`),
     index("email_campaign_sends_provider_idx").on(table.providerMessageId),
+    // Deleting an account unlinks its sends.
+    index("email_campaign_sends_user_idx").on(table.userId).where(sql`${table.userId} is not null`),
     check(
       "email_campaign_sends_status_check",
       sql`${table.status} in ('pending', 'queued', 'sending', 'sent', 'failed', 'bounced', 'complained', 'suppressed', 'cancelled')`,

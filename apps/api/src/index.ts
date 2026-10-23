@@ -1,3 +1,4 @@
+import type { GameEvent } from "@leximon/contract";
 import { createDb } from "@leximon/db";
 import { createApp } from "./app";
 import {
@@ -46,6 +47,17 @@ export default {
           Date.now(),
         );
         if (report.invalid > 0) console.error("Game events dropped: invalid body", report);
+        if (report.deferred.length > 0) {
+          // Not sent: the daily maintenance recounts the library anyway.
+          await env.GAME_EVENTS.sendBatch(
+            report.deferred.map(({ clanId, delaySeconds }) => ({
+              body: { type: "library_due", clanId } satisfies GameEvent,
+              delaySeconds,
+            })),
+          ).catch((error: unknown) => {
+            console.error("Library recounts not put off", errorSummary(error));
+          });
+        }
         batch.ackAll();
       } catch (error) {
         // Recounts are idempotent: the whole batch is tried again.

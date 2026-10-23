@@ -21,7 +21,18 @@ const { clanMembers, clanMessages, clans, moderationReports, players, userBlocks
 
 const refuse = (reason: Refused["reason"]): Refused => ({ kind: "refused", reason });
 
-type MessageRow = typeof clanMessages.$inferSelect;
+const messageFields = {
+  id: clanMessages.id,
+  kind: clanMessages.kind,
+  authorId: clanMessages.authorId,
+  body: clanMessages.body,
+  event: clanMessages.event,
+  mentions: clanMessages.mentions,
+  createdAt: clanMessages.createdAt,
+  deletedAt: clanMessages.deletedAt,
+  hiddenAt: clanMessages.hiddenAt,
+};
+type MessageRow = Pick<typeof clanMessages.$inferSelect, keyof typeof messageFields>;
 type Reader = Pick<Database, "select">;
 
 /** Players the viewer blocked or who blocked them: they vanish from the discussion. */
@@ -50,14 +61,8 @@ export async function listMessages(
   },
 ): Promise<ListMessagesResult> {
   const { viewerId, clanId, after, before, limit, now } = input;
-  const [member] = await db
-    .select({ clanId: clanMembers.clanId })
-    .from(clanMembers)
-    .where(and(eq(clanMembers.userId, viewerId), eq(clanMembers.clanId, clanId)));
-  if (member === undefined) return refuse("not_member");
-
-  const rows = await db
-    .select()
+  const latest = db
+    .select(messageFields)
     .from(clanMessages)
     .where(
       and(
@@ -71,7 +76,30 @@ export async function listMessages(
       ),
     )
     .orderBy(desc(clanMessages.id))
-    .limit(limit + 1);
+    .limit(limit + 1)
+    .as("latest");
+  // One round trip for the membership and the page: the discussion is polled every few seconds.
+  // No row: not a member; one row with no message: nothing new.
+  const joined = await db
+    .select({
+      message: {
+        id: latest.id,
+        kind: latest.kind,
+        authorId: latest.authorId,
+        body: latest.body,
+        event: latest.event,
+        mentions: latest.mentions,
+        createdAt: latest.createdAt,
+        deletedAt: latest.deletedAt,
+        hiddenAt: latest.hiddenAt,
+      },
+    })
+    .from(clanMembers)
+    .leftJoinLateral(latest, sql`true`)
+    .where(and(eq(clanMembers.userId, viewerId), eq(clanMembers.clanId, clanId)))
+    .orderBy(desc(latest.id));
+  if (joined.length === 0) return refuse("not_member");
+  const rows = joined.flatMap((row) => (row.message === null ? [] : [row.message]));
   const page = rows.slice(0, limit);
   const badges = await readBadges(db, page.flatMap(involvedPlayers), now);
   return {

@@ -13,22 +13,27 @@ const timestamps = {
     .notNull(),
 };
 
-export const users = pgTable("users", {
-  id: text().primaryKey(),
-  name: text().notNull(),
-  email: text().notNull().unique(),
-  emailVerified: boolean().default(false).notNull(),
-  image: text(),
-  /** Guest account created by the anonymous plugin, before any sign-up. */
-  isAnonymous: boolean().default(false).notNull(),
-  /** "admin" opens the back office; granted only by `pnpm admin:grant`, never by a request. */
-  role: text(),
-  /** A banned player can no longer sign in (admin plugin); their sessions are revoked. */
-  banned: boolean().default(false),
-  banReason: text(),
-  banExpires: timestamp({ withTimezone: true }),
-  ...timestamps,
-});
+export const users = pgTable(
+  "users",
+  {
+    id: text().primaryKey(),
+    name: text().notNull(),
+    email: text().notNull().unique(),
+    emailVerified: boolean().default(false).notNull(),
+    image: text(),
+    /** Guest account created by the anonymous plugin, before any sign-up. */
+    isAnonymous: boolean().default(false).notNull(),
+    /** "admin" opens the back office; granted only by `pnpm admin:grant`, never by a request. */
+    role: text(),
+    /** A banned player can no longer sign in (admin plugin); their sessions are revoked. */
+    banned: boolean().default(false),
+    banReason: text(),
+    banExpires: timestamp({ withTimezone: true }),
+    ...timestamps,
+  },
+  // The back office's player list: read backwards, it gives `created_at desc, id desc`.
+  (table) => [index("users_created_idx").on(table.createdAt, table.id)],
+);
 
 export const sessions = pgTable(
   "sessions",

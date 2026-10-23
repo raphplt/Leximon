@@ -1,7 +1,7 @@
 import { type GameEvent, gameEventSchema } from "@leximon/contract";
 import { type EpochMs, gameWeekOf } from "@leximon/core";
 import { type Database, schema } from "@leximon/db";
-import { sql } from "drizzle-orm";
+import { inArray, sql } from "drizzle-orm";
 import type { Context } from "hono";
 import type { AppEnv } from "../context";
 import { errorSummary } from "../error-summary";
@@ -38,12 +38,28 @@ export function sendGameEvents(c: Context<AppEnv>, events: readonly GameEvent[])
 export interface GameEventsReport {
   readonly clans: number;
   readonly invalid: number;
+  /** Library recounts put off: a `library_due` message is sent for each, after its delay. */
+  readonly deferred: readonly LibraryDeferral[];
+}
+
+export interface LibraryDeferral {
+  readonly clanId: string;
+  readonly delaySeconds: number;
 }
 
 /**
+ * The consumer's batches are small and frequent: a clan's library (every member's cards) is
+ * recounted at most this often, and what comes in between waits for the next count.
+ */
+export const LIBRARY_RECOUNT_INTERVAL_MS = 5 * 60 * 1000;
+/** Room for the clocks of the queue and of the consumer, which are not quite the same. */
+const CLOCK_MARGIN_MS = 2_000;
+
+/**
  * The queue's consumer. Trusts nothing in the messages but ids: the goal, the library and the
- * journal are recounted from the database, once per clan for the whole batch, and letters are
- * written from what the database says now. Replaying a batch changes nothing.
+ * journal are recounted from the database, once per clan for the whole batch (the library at
+ * most every 5 minutes), and letters are written from what the database says now. Replaying a
+ * batch changes nothing.
  */
 export async function handleGameEvents(
   db: Database,
@@ -51,13 +67,15 @@ export async function handleGameEvents(
   sentAt: readonly EpochMs[],
   now: EpochMs,
 ): Promise<GameEventsReport> {
-  const userIds = new Set<string>();
   const answerIds = new Set<string>();
-  const clanIds = new Set<string>();
+  const changedClans = new Set<string>();
   const tradeIds = new Set<string>();
   const messageIds = new Set<number>();
   const requests = new Map<string, { clanId: string; userId: string }>();
   const weeks = new Set<string>([gameWeekOf(now).key]);
+  // When the newest event that moves a player's cards, or a clan's library, was sent.
+  const cardsSentAt = new Map<string, EpochMs>();
+  const librarySentAt = new Map<string, EpochMs>();
   let invalid = 0;
   bodies.forEach((body, index) => {
     const event = gameEventSchema.safeParse(body);
@@ -65,15 +83,22 @@ export async function handleGameEvents(
       invalid++;
       return;
     }
+    const at = sentAt[index] ?? now;
     switch (event.data.type) {
       case "cards_obtained":
       case "answer_given":
       case "clan_changed":
-        if (event.data.type === "cards_obtained") userIds.add(event.data.userId);
+        if (event.data.type === "cards_obtained") latest(cardsSentAt, event.data.userId, at);
         else if (event.data.type === "answer_given") answerIds.add(event.data.userId);
-        else clanIds.add(event.data.clanId);
+        else {
+          changedClans.add(event.data.clanId);
+          latest(librarySentAt, event.data.clanId, at);
+        }
         // An answer given on Sunday night and counted on Monday still counts for its week.
-        weeks.add(gameWeekOf(sentAt[index] ?? now).key);
+        weeks.add(gameWeekOf(at).key);
+        break;
+      case "library_due":
+        latest(librarySentAt, event.data.clanId, at);
         break;
       case "trade_changed":
         tradeIds.add(event.data.tradeId);
@@ -93,22 +118,68 @@ export async function handleGameEvents(
   await writeMentionLetters(db, [...messageIds]);
   await writeRequestLetters(db, [...requests.values()]);
 
-  const memberships = await clansOf(db, [...userIds]);
-  const libraries = new Set(clanIds);
-  for (const membership of memberships.values()) libraries.add(membership.clanId);
+  const memberships = await clansOf(db, [...cardsSentAt.keys()]);
   for (const [userId, membership] of memberships) {
+    latest(librarySentAt, membership.clanId, cardsSentAt.get(userId) ?? now);
     await announceLegendaries(db, { userId, ...membership, now });
   }
-  const goals = new Set(clanIds);
-  for (const membership of (await clansOf(db, [...answerIds])).values()) {
-    goals.add(membership.clanId);
-  }
   // The goal counts answers only: new cards move the library and the journal, not the goal.
-  for (const clanId of goals) {
-    for (const week of weeks) await recountClanWeek(db, clanId, week, now);
+  // Members came or went: everyone's share is recounted; otherwise only the players who answered.
+  const goals = new Map<string, Set<string> | null>();
+  for (const clanId of changedClans) goals.set(clanId, null);
+  for (const [userId, { clanId }] of await clansOf(db, [...answerIds])) {
+    const answered = goals.get(clanId);
+    if (answered === null) continue;
+    goals.set(clanId, (answered ?? new Set<string>()).add(userId));
   }
-  for (const clanId of libraries) await recountLibrary(db, clanId, now);
-  return { clans: new Set([...goals, ...libraries]).size, invalid };
+  for (const [clanId, answered] of goals) {
+    const only = answered === null ? undefined : [...answered];
+    for (const week of weeks) await recountClanWeek(db, clanId, week, now, only);
+  }
+
+  const deferred: LibraryDeferral[] = [];
+  for (const [clanId, step] of await libraryRecounts(db, librarySentAt, now)) {
+    if (step === "count") await recountLibrary(db, clanId, now);
+    else if (step !== "skip") deferred.push({ clanId, delaySeconds: step.delaySeconds });
+  }
+  return { clans: new Set([...goals.keys(), ...librarySentAt.keys()]).size, invalid, deferred };
+}
+
+function latest<K>(times: Map<K, EpochMs>, key: K, at: EpochMs): void {
+  times.set(key, Math.max(times.get(key) ?? at, at));
+}
+
+type LibraryStep = "count" | "skip" | { readonly delaySeconds: number };
+
+/**
+ * What to do with each library an event moved. Counted after the newest event was sent: it
+ * already holds those cards, nothing to do. Counted too recently: put off until the interval
+ * is over. Otherwise, counted now.
+ */
+async function libraryRecounts(
+  db: Database,
+  newestEvent: ReadonlyMap<string, EpochMs>,
+  now: EpochMs,
+): Promise<Map<string, LibraryStep>> {
+  if (newestEvent.size === 0) return new Map();
+  const rows = await db
+    .select({ id: clans.id, countedAt: clans.libraryCountedAt })
+    .from(clans)
+    .where(inArray(clans.id, [...newestEvent.keys()]));
+  const steps = new Map<string, LibraryStep>();
+  for (const { id, countedAt } of rows) {
+    const sent = newestEvent.get(id) ?? now;
+    const counted = countedAt?.getTime() ?? null;
+    if (counted !== null && counted >= sent + CLOCK_MARGIN_MS) {
+      steps.set(id, "skip");
+    } else if (counted === null || now - counted >= LIBRARY_RECOUNT_INTERVAL_MS) {
+      steps.set(id, "count");
+    } else {
+      const wait = counted + LIBRARY_RECOUNT_INTERVAL_MS - now;
+      steps.set(id, { delaySeconds: Math.max(1, Math.ceil(wait / 1000)) });
+    }
+  }
+  return steps;
 }
 
 /**

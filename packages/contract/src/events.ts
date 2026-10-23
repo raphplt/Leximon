@@ -14,6 +14,8 @@ export const gameEventSchema = z.discriminatedUnion("type", [
   z.object({ type: z.literal("answer_given"), userId: z.string().min(1) }),
   /** Members came or went: the library is recounted. */
   z.object({ type: z.literal("clan_changed"), clanId: z.uuid() }),
+  /** A library recount put off because the last one was too recent: it is due now. */
+  z.object({ type: z.literal("library_due"), clanId: z.uuid() }),
   /** An offer was made or answered: the mail of the player who waits for it gets a letter. */
   z.object({ type: z.literal("trade_changed"), tradeId: z.uuid() }),
   /** A message named members: each one gets a letter. */

@@ -14,33 +14,49 @@ export interface SharedResource<T> {
   current(): T | null;
   /** Reads it if it was never read, or failed last time. */
   ensure(): void;
+  /**
+   * The value for a screen that needs it now: the copy in hand if the API was read less than
+   * `maxAgeMs` ago (actions keep it current in between), the API's otherwise.
+   */
+  read(maxAgeMs?: number): Promise<T>;
   subscribe(listener: () => void): () => void;
 }
 
 export function sharedResource<T>(load: () => Promise<T>): SharedResource<T> {
   let value: T | null = null;
-  let loading: Promise<void> | null = null;
+  let loading: Promise<T> | null = null;
   let stale = true;
+  /** When the API was last read, as opposed to updated from an action's answer. */
+  let readAt = 0;
   const listeners = new Set<() => void>();
 
   const emit = () => {
     for (const listener of listeners) listener();
   };
-  const fetchIt = () => {
-    if (loading !== null) return;
+  const fetchIt = (): Promise<T> => {
+    if (loading !== null) return loading;
     stale = false;
-    loading = load()
+    const request = load()
       .then((loaded) => {
         value = loaded;
+        readAt = Date.now();
         emit();
+        return loaded;
       })
-      .catch(() => {
+      .catch((error: unknown) => {
         // Left as it was; the next screen that mounts tries again.
         stale = true;
+        throw error;
       })
       .finally(() => {
         loading = null;
       });
+    loading = request;
+    return request;
+  };
+  const fetchQuietly = () => {
+    // A screen that needs the answer uses `read`, which reports the failure.
+    fetchIt().catch(() => {});
   };
 
   return {
@@ -51,11 +67,17 @@ export function sharedResource<T>(load: () => Promise<T>): SharedResource<T> {
     },
     refresh() {
       stale = true;
-      fetchIt();
+      fetchQuietly();
     },
     current: () => value,
     ensure() {
-      if (stale) fetchIt();
+      if (stale) fetchQuietly();
+    },
+    read(maxAgeMs = Number.POSITIVE_INFINITY) {
+      if (value !== null && !stale && loading === null && Date.now() - readAt < maxAgeMs) {
+        return Promise.resolve(value);
+      }
+      return fetchIt();
     },
     subscribe(listener) {
       listeners.add(listener);

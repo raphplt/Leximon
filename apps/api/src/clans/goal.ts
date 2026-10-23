@@ -110,13 +110,15 @@ export interface RecountReport {
  * weeks. A newly reached tier or level enters the journal once (unique event key).
  *
  * The current week is created if needed; a past week only recounted if it exists. Lock order: the
- * week's row, then the clan's.
+ * week's row, then the clan's. With `only`, just those members' shares are counted again (they
+ * answered): the others' have not moved, and the totals are summed from every share.
  */
 export async function recountClanWeek(
   db: Database,
   clanId: string,
   weekKey: string,
   now: EpochMs,
+  only?: readonly string[],
 ): Promise<RecountReport | null> {
   const week = weekOfKey(weekKey);
   if (week === null || week.start > now) return null;
@@ -145,6 +147,7 @@ export async function recountClanWeek(
         ${new Date(now)}
       from clan_members m
       where m.clan_id = ${clanId} and m.joined_at < ${end}
+        ${only === undefined ? sql`` : sql`and m.user_id in ${only}`}
       on conflict (clan_id, week, user_id) do update
         set answers = greatest(clan_week_members.answers, excluded.answers),
             updated_at = excluded.updated_at`);

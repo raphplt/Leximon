@@ -19,7 +19,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { type Catalog, cardOrPlaceholder, collectionName, loadCatalog } from "@/cards/catalog";
 import { Card } from "@/components/card";
 import { RarityName } from "@/components/rarity-icon";
-import { fetchOwnedCards, type OpenBoosterResult, openBooster } from "@/lib/api";
+import { type OpenBoosterResult, openBooster } from "@/lib/api";
 import type { PackShape } from "@/lib/pack-shape";
 import { usePackShape } from "@/lib/use-pack-shape";
 import { CollectionPicker } from "@/play/collection-picker";
@@ -28,7 +28,7 @@ import { LevelStrip } from "@/play/level-strip";
 import play from "@/play/play.module.css";
 import { PlayFabs } from "@/play/play-fabs";
 import { SlippingWord } from "@/play/slipping-word";
-import { ownedCards } from "@/player/collection";
+import { OWNED_CARDS_MAX_AGE_MS, ownedCards } from "@/player/collection";
 import { account, wallet } from "@/player/player";
 import { useShared } from "@/player/resource";
 import { publishProgress, useProgress } from "@/progress/use-progress";
@@ -107,12 +107,6 @@ function delay(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-function quantities(owned: readonly { cardId: string; quantity: number }[]): Map<string, number> {
-  const byId = new Map<string, number>();
-  for (const { cardId, quantity } of owned) byId.set(cardId, (byId.get(cardId) ?? 0) + quantity);
-  return byId;
-}
-
 function readChoice(): string | null {
   try {
     return window.localStorage.getItem(CHOICE_KEY);
@@ -150,9 +144,12 @@ export function BoosterScreen() {
 
   const load = useCallback(async () => {
     try {
-      const [loadedCatalog, ownedList] = await Promise.all([loadCatalog(), fetchOwnedCards()]);
+      const [loadedCatalog, copies] = await Promise.all([
+        loadCatalog(),
+        ownedCards.read(OWNED_CARDS_MAX_AGE_MS),
+      ]);
       setCatalog(loadedCatalog);
-      setOwned(quantities(ownedList));
+      setOwned(copies);
       const ready: Phase =
         loadedCatalog.collections.length > 0 ? { name: "sealed" } : { name: "no_collection" };
       setPhase((current) =>

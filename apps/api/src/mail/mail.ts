@@ -3,6 +3,7 @@ import type { EpochMs } from "@leximon/core";
 import { type Database, type MailPayload, schema } from "@leximon/db";
 import { and, desc, eq, inArray, isNull, lt, lte, or, sql } from "drizzle-orm";
 import { readBadges } from "../profile/profile";
+import { purgeRows } from "../purge";
 
 const { clanMessages, mailLetters, trades } = schema;
 
@@ -337,10 +338,6 @@ export async function markMailRead(
 }
 
 /** The daily maintenance: letters older than the retention go, read or not. */
-export async function purgeMail(db: Database, now: EpochMs): Promise<number> {
-  const erased = await db
-    .delete(mailLetters)
-    .where(lt(mailLetters.createdAt, new Date(now - MAIL_RETENTION_MS)))
-    .returning({ id: mailLetters.id });
-  return erased.length;
+export function purgeMail(db: Database, now: EpochMs): Promise<number> {
+  return purgeRows(db, mailLetters, lt(mailLetters.createdAt, new Date(now - MAIL_RETENTION_MS)));
 }

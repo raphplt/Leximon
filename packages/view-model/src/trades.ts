@@ -237,3 +237,19 @@ export function historyLine(
   const sides = tradeSides(trade, box);
   return `${statusLabel(effectiveStatus(trade, now))} avec ${playerName(sides.counterpart)} : ${wordList(sides.mine, wordOf)} contre ${wordList(sides.theirs, wordOf)}.`;
 }
+
+/** Copies by card after a trade: one more of each card gained, one less of each card given. */
+export function copiesAfterTrade(
+  copies: ReadonlyMap<string, number>,
+  gained: readonly string[],
+  given: readonly string[],
+): Map<string, number> {
+  const next = new Map(copies);
+  for (const cardId of gained) next.set(cardId, (next.get(cardId) ?? 0) + 1);
+  for (const cardId of given) {
+    const left = (next.get(cardId) ?? 0) - 1;
+    if (left > 0) next.set(cardId, left);
+    else next.delete(cardId);
+  }
+  return next;
+}

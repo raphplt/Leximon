@@ -282,6 +282,11 @@ describe("entering and leaving", () => {
     await db.update(clans).set({ memberCount: 2 }).where(eq(clans.id, clanId));
     const asker = await player(10);
     await send(asker, "POST", `/clans/${clanId}/join`);
+    // Only the chief and the deputies learn how many wait; the asker sees their own request.
+    expect((await view(chief, clanId)).pendingRequests).toBe(1);
+    expect((await view(member, clanId)).pendingRequests).toBe(0);
+    expect(await view(asker, clanId)).toMatchObject({ me: null, requested: true, goal: null });
+    expect((await view(member, clanId)).requested).toBe(false);
 
     expect(
       (await send(member, "POST", `/clans/${clanId}/requests/${asker.code}/accept`)).status,
@@ -395,12 +400,17 @@ describe("entering and leaving", () => {
     const clanId = await createClan(chief);
     const member = await player(10);
     await send(member, "POST", `/clans/${clanId}/join`);
-    await db
-      .update(players)
-      .set({ lastSeenAt: new Date(Date.now() - 15 * DAY) })
-      .where(eq(players.userId, chief.userId));
+    const away = (days: number) =>
+      db
+        .update(players)
+        .set({ lastSeenAt: new Date(Date.now() - days * DAY) })
+        .where(eq(players.userId, chief.userId));
 
+    await away(13);
+    expect((await view(member, clanId)).me?.role).toBe("member");
+    await away(15);
     expect((await view(member, clanId)).me?.role).toBe("chief");
+    expect((await view(chief, clanId)).me?.role).toBe("member");
   });
 });
 
@@ -552,12 +562,12 @@ describe("the weekly goal", () => {
     await giveAnswers(member.userId, 30, new Date(), false);
     await giveAnswers(member.userId, 30, new Date(Date.now() - DAY * 10));
 
-    const bodies = [
-      { type: "answer_given", userId: chief.userId },
-      { type: "answer_given", userId: member.userId },
-    ];
+    const bodies = [chief, member, idle].map((who) => ({
+      type: "answer_given",
+      userId: who.userId,
+    }));
     for (let i = 0; i < 2; i++) {
-      await handleGameEvents(db, bodies, [Date.now(), Date.now()], Date.now());
+      await handleGameEvents(db, bodies, [Date.now(), Date.now(), Date.now()], Date.now());
     }
 
     const page = await view(chief, clanId);
@@ -706,6 +716,90 @@ describe("the weekly goal", () => {
     expect(legendaries.length).toBe(
       ids.slice(0, 15).filter((id) => id.includes("legendary")).length,
     );
+  });
+});
+
+describe("the game events' recounts", () => {
+  it("recounts only the shares of the players who answered, everyone's when members change", async () => {
+    const chief = await player();
+    const clanId = await createClan(chief);
+    const member = await player(10);
+    await send(member, "POST", `/clans/${clanId}/join`);
+    await view(chief, clanId);
+    await giveAnswers(chief.userId, 20);
+    await giveAnswers(member.userId, 7);
+    const answered = (userId: string) => ({ type: "answer_given", userId });
+
+    await handleGameEvents(db, [answered(chief.userId)], [Date.now()], Date.now());
+    expect((await view(chief, clanId)).goal?.answers).toBe(20);
+    await handleGameEvents(db, [{ type: "clan_changed", clanId }], [Date.now()], Date.now());
+    expect((await view(chief, clanId)).goal?.answers).toBe(27);
+    await giveAnswers(member.userId, 3);
+    await handleGameEvents(db, [answered(member.userId)], [Date.now()], Date.now());
+    expect((await view(member, clanId)).goal).toMatchObject({ answers: 30, myAnswers: 10 });
+  });
+
+  it("recounts a library at most every 5 minutes, and puts off what comes in between", async () => {
+    const chief = await player();
+    const clanId = await createClan(chief);
+    const ids = await cardIds();
+    const owned = async () =>
+      (await view(chief, clanId)).library.reduce((sum, row) => sum + row.owned, 0);
+    const countedAt = async () => {
+      const [row] = await db
+        .select({ at: clans.libraryCountedAt })
+        .from(clans)
+        .where(eq(clans.id, clanId));
+      return row?.at?.getTime() ?? null;
+    };
+    const obtained = { type: "cards_obtained", userId: chief.userId };
+    const start = Date.now();
+
+    await giveNewCards(chief.userId, ids.slice(0, 4));
+    const first = await handleGameEvents(db, [obtained], [start], start);
+    expect(first.deferred).toEqual([]);
+    expect(await owned()).toBe(4);
+
+    // A minute later: the library waits for the end of the 5 minutes.
+    await giveNewCards(chief.userId, ids.slice(4, 6));
+    const later = await handleGameEvents(db, [obtained], [start + 60_000], start + 61_000);
+    expect(later.deferred).toEqual([{ clanId, delaySeconds: 239 }]);
+    expect(await owned()).toBe(4);
+
+    // The message put off comes back once they are over.
+    const due = { type: "library_due", clanId };
+    const back = await handleGameEvents(db, [due], [start + 61_000], start + 300_000);
+    expect(back.deferred).toEqual([]);
+    expect(await owned()).toBe(6);
+    expect(await countedAt()).toBe(start + 300_000);
+
+    // Events already counted change nothing, even late: no count, nothing put off.
+    const replay = await handleGameEvents(
+      db,
+      [obtained, due],
+      [start + 60_000, start + 61_000],
+      start + 302_000,
+    );
+    expect(replay.deferred).toEqual([]);
+    expect(await countedAt()).toBe(start + 300_000);
+  });
+
+  it("counts a library right when consumers run at once", async () => {
+    const chief = await player();
+    const clanId = await createClan(chief);
+    const member = await player(10);
+    await send(member, "POST", `/clans/${clanId}/join`);
+    const ids = await cardIds();
+    await giveNewCards(chief.userId, ids.slice(0, 3));
+    await giveNewCards(member.userId, ids.slice(2, 6));
+    const now = Date.now();
+    await Promise.all(
+      [chief, member, chief, member].map((who) =>
+        handleGameEvents(db, [{ type: "cards_obtained", userId: who.userId }], [now], now),
+      ),
+    );
+    const page = await view(chief, clanId);
+    expect(page.library.reduce((sum, row) => sum + row.owned, 0)).toBe(6);
   });
 });
 

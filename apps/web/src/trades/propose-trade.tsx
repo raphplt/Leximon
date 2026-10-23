@@ -17,9 +17,10 @@ import Link from "next/link";
 import { type FormEvent, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { type Catalog, collectionName } from "@/cards/catalog";
 import { Card } from "@/components/card";
-import { createTrade, fetchOwnedCards, fetchTradeable } from "@/lib/api";
+import { createTrade, fetchTradeable } from "@/lib/api";
 import { useNow } from "@/lib/use-now";
 import { usePackShape } from "@/lib/use-pack-shape";
+import { ownedCards } from "@/player/collection";
 import { CardRow, cardLabel, catalogCard } from "./card-thumb";
 import { Counterpart } from "./counterpart";
 import styles from "./trades.module.css";
@@ -171,10 +172,10 @@ export function ProposeTrade({
     setBusy(true);
     setCodeError(null);
     try {
-      const [theirs, mineNow, ownedCards] = await Promise.all([
+      const [theirs, mineNow, copies] = await Promise.all([
         fetchTradeable(code),
         fetchTradeable(),
-        fetchOwnedCards(),
+        ownedCards.read(),
       ]);
       if (theirs === null) {
         setCodeError(refusalMessage("player_not_found"));
@@ -190,7 +191,7 @@ export function ProposeTrade({
       });
       setMine(myIds);
       setHeld(mineNow?.held ?? []);
-      setOwned(new Set(ownedCards.map((card) => card.cardId)));
+      setOwned(new Set(copies.keys()));
       // Coming back to the same player keeps the choice, minus what can no longer move.
       setWant((current) =>
         code === partner?.code ? current.filter((id) => theirs.cardIds.includes(id)) : [],

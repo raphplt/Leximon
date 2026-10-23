@@ -1,7 +1,7 @@
 "use client";
 
 import type { DailyChallengeResponse } from "@leximon/contract";
-import type { WordMemory } from "@leximon/view-model";
+import { copiesAfterTrade, type WordMemory } from "@leximon/view-model";
 import { fetchDaily, fetchMastery, fetchOwnedCards } from "@/lib/api";
 import { type SharedResource, sharedResource } from "./resource";
 
@@ -13,6 +13,18 @@ export const ownedCards = sharedResource<ReadonlyMap<string, number>>(async () =
   }
   return byCard;
 });
+
+/**
+ * The Jouer screen reuses the copies in hand this long: an open or a trade made here updates
+ * them, and only a trade the other player accepted meanwhile could be missing.
+ */
+export const OWNED_CARDS_MAX_AGE_MS = 10 * 60 * 1000;
+
+/** The player accepted a trade: one copy of each card changed hands, no need to read them all. */
+export function publishTraded(gained: readonly string[], given: readonly string[]): void {
+  const current = ownedCards.current();
+  if (current !== null) ownedCards.publish(copiesAfterTrade(current, gained, given));
+}
 
 /** Level, next review and stability of every reviewed word. */
 export const wordMemory = sharedResource<ReadonlyMap<string, WordMemory>>(async () => {
