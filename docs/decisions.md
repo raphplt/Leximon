@@ -245,6 +245,8 @@ Pour ajouter ou modifier une décision, utiliser le skill `decision`.
   - une carte publiée garde son identifiant et sa rareté pour toujours (D-020). Une carte retirée d'une version quitte les boosters, les exemplaires possédés restent ;
   - en local, les fichiers vont dans `apps/web/public/catalog/`. La copie vers R2 sera ajoutée avec l'hébergement de production (D-005) ;
   - le catalogue de démo et le seed de dev des cartes disparaissent : le jeu local lit la dernière version publiée.
+  - la publication écrit aussi `engravings.json` (la gravure de chaque carte, par identifiant, à cache court comme le manifeste) : avatars, emblèmes et bannières s'affichent sans charger les collections. Elle supprime les fichiers de collection que ne citent ni le nouveau manifeste ni le précédent (2026-10-23) ;
+  - l'accueil est construit à partir du catalogue présent dans `apps/web/public/catalog` : ses cartes arrivent avec la page. Publier le catalogue avant de construire le site, ce que fait déjà `pnpm deploy:prod`.
   - les scripts TypeScript de `packages/db` tournent avec Node 24 directement (suppression des types), aidé d'un petit crochet de résolution (`packages/config/node/resolve-ts.mjs`) qui retrouve les imports sans extension. Aucune dépendance ajoutée.
 
 ## D-024 · Collections de lancement : trois collections thématiques, domaine tiré du pré-tri

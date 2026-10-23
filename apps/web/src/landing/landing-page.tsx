@@ -5,13 +5,15 @@ import { HeroWord } from "./hero-word";
 import { HowToPlay } from "./how-to-play";
 import styles from "./landing-page.module.css";
 import { Closing, JoinOrResume, TopAction } from "./player-access";
+import { readShowcase } from "./showcase-server";
 
 /**
  * The public home page: a real word first, what Leximon is and a way to hear when it opens, then
  * the launch collections, the rules, and the form again for those who read to the end. Someone
  * who already plays finds the way back to the game instead of the form.
  */
-export function LandingPage() {
+export async function LandingPage() {
+  const showcase = await readShowcase();
   return (
     <main className={styles.page}>
       <header className={styles.top}>
@@ -20,7 +22,7 @@ export function LandingPage() {
       </header>
 
       <section className={styles.hero} aria-labelledby="landing-title">
-        <HeroWord />
+        <HeroWord words={showcase.heroWords} />
         <div className={styles.pitch}>
           <h1 id="landing-title" className={styles.title}>
             La langue a jeté des mots superbes. On les a ramassés.
@@ -33,9 +35,9 @@ export function LandingPage() {
         </div>
       </section>
 
-      <Collections />
+      <Collections shelves={showcase.shelves} />
 
-      <HowToPlay />
+      <HowToPlay pack={showcase.pack} trade={showcase.trade} />
 
       <Closing />
 

@@ -112,12 +112,25 @@ export const catalogManifestEntrySchema = z.object({
   file: z.string().regex(/^collections\/[a-z0-9-]+\.[0-9a-f]{12}\.json$/),
 });
 
-/** `manifest.json`: the only catalogue file with a short cache. */
+/** e.g. "2026-10-19.1". */
+const catalogVersionSchema = z.string().regex(/^\d{4}-\d{2}-\d{2}\.\d+$/);
+
+/** `manifest.json`: the only catalogue file with a short cache, with `engravings.json`. */
 export const catalogManifestSchema = z.object({
   schemaVersion: z.literal(CATALOG_SCHEMA_VERSION),
-  /** e.g. "2026-10-19.1". */
-  version: z.string().regex(/^\d{4}-\d{2}-\d{2}\.\d+$/),
+  version: catalogVersionSchema,
   releasedAt: timestampSchema,
   collections: z.array(catalogManifestEntrySchema),
 });
 export type CatalogManifest = z.infer<typeof catalogManifestSchema>;
+
+/**
+ * `engravings.json`, written by `catalog:publish` beside the manifest and cached as briefly: the
+ * ink of every engraved card, by card id. Enough to draw an avatar or an emblem without reading
+ * the collections.
+ */
+export const catalogEngravingIndexSchema = z.object({
+  version: catalogVersionSchema,
+  inks: z.record(slugSchema, engravingFileSchema),
+});
+export type CatalogEngravingIndex = z.infer<typeof catalogEngravingIndexSchema>;

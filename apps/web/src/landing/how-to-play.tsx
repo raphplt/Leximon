@@ -1,21 +1,26 @@
 "use client";
 
 import { cssFill, rarityStyles } from "@leximon/tokens";
-import { type CSSProperties, useEffect, useState } from "react";
+import type { CSSProperties } from "react";
 import { CardBack } from "@/booster/card-back";
+import type { PackCollection } from "@/booster/pack-looks";
 import { Sachet } from "@/booster/sachet";
-import { type Catalog, collectionName, loadCatalog } from "@/cards/catalog";
 import { Card } from "@/components/card";
 import { capitalize, DEFAULT_PACK_NOUN } from "@/lib/pack-shape";
 import styles from "./landing-page.module.css";
-import { pickShowcase, TRADE_CARD_IDS } from "./showcase-cards";
+import type { ShowcaseCard } from "./showcase-cards";
 
 const { many } = DEFAULT_PACK_NOUN;
 const PAPER = rarityStyles.common;
 
 /** The game in three pictures, printed like a plate of an old encyclopedia. */
-export function HowToPlay() {
-  const catalog = useCatalog();
+export function HowToPlay({
+  pack,
+  trade,
+}: {
+  readonly pack: PackCollection | null;
+  readonly trade: readonly ShowcaseCard[];
+}) {
   const variables = {
     "--paper": PAPER.paper,
     "--ink": PAPER.ink,
@@ -32,7 +37,7 @@ export function HowToPlay() {
         <ol className={styles.figures}>
           <li className={styles.figure}>
             <div className={styles.figureArt}>
-              <PackFigure catalog={catalog} />
+              <PackFigure collection={pack} />
             </div>
             <p className={styles.figureLabel}>{capitalize(many)}</p>
             <p className={styles.figureText}>
@@ -52,7 +57,7 @@ export function HowToPlay() {
           </li>
           <li className={styles.figure}>
             <div className={styles.figureArt}>
-              <TradeFigure catalog={catalog} />
+              <TradeFigure cards={trade} />
             </div>
             <p className={styles.figureLabel}>Échanges</p>
             <p className={styles.figureText}>
@@ -65,44 +70,19 @@ export function HowToPlay() {
   );
 }
 
-/** The catalogue, or `null` while it loads or if it cannot be read: the figures only show it. */
-function useCatalog(): Catalog | null {
-  const [catalog, setCatalog] = useState<Catalog | null>(null);
-  useEffect(() => {
-    let live = true;
-    loadCatalog()
-      .then((loaded) => {
-        if (live) setCatalog(loaded);
-      })
-      .catch(() => {
-        // The captions say it; the pictures only show it.
-      });
-    return () => {
-      live = false;
-    };
-  }, []);
-  return catalog;
-}
-
 const noop = () => undefined;
 
 /**
  * A sachet of the first collection, as in the game, with three card backs rising out of it: their
  * edges give away a common, a rare and a legendary. Only to look at: `inert` keeps it from tearing.
  */
-function PackFigure({ catalog }: { readonly catalog: Catalog | null }) {
-  const collection = catalog?.collections[0];
+function PackFigure({ collection }: { readonly collection: PackCollection | null }) {
   return (
     <div className={styles.packScene}>
       <Backs />
-      {collection !== undefined && (
+      {collection !== null && (
         <div className={styles.pack} inert>
-          <Sachet
-            state="sealed"
-            collection={{ id: collection.id, name: collection.name, back: collection.back }}
-            onTearStart={noop}
-            onOpen={noop}
-          />
+          <Sachet state="sealed" collection={collection} onTearStart={noop} onOpen={noop} />
         </div>
       )}
     </div>
@@ -138,24 +118,19 @@ function ChallengeFigure() {
 }
 
 /** Two real cards crossing hands. */
-function TradeFigure({ catalog }: { readonly catalog: Catalog | null }) {
-  const cards = catalog === null ? [] : pickShowcase(catalog.cardsById, TRADE_CARD_IDS);
+function TradeFigure({ cards }: { readonly cards: readonly ShowcaseCard[] }) {
   const [left, right] = cards;
-  if (catalog === null || left === undefined || right === undefined) return null;
+  if (left === undefined || right === undefined) return null;
   return (
     <div className={styles.trade}>
       <div className={styles.tradeLeft}>
-        <Card card={left} collectionName={collectionName(catalog, left.collectionId)} width={104} />
+        <Card card={left.card} collectionName={left.collectionName} width={104} />
       </div>
       <span className={styles.tradeArrows} aria-hidden="true">
         ⇄
       </span>
       <div className={styles.tradeRight}>
-        <Card
-          card={right}
-          collectionName={collectionName(catalog, right.collectionId)}
-          width={104}
-        />
+        <Card card={right.card} collectionName={right.collectionName} width={104} />
       </div>
     </div>
   );

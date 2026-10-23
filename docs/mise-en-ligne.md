@@ -150,7 +150,7 @@ Le domaine `api.leximon.fr` est créé par le déploiement (enregistrement DNS e
 pnpm deploy:web
 ```
 
-Construit le site avec `NEXT_PUBLIC_API_URL=https://api.leximon.fr`, puis le déploie avec le catalogue et les en-têtes de cache (`apps/web/public/_headers` : un an pour les fichiers nommés par leur empreinte, une minute pour `manifest.json`). Refuse de partir si `public/catalog` est vide.
+Construit le site avec `NEXT_PUBLIC_API_URL=https://api.leximon.fr`, puis le déploie avec le catalogue et les en-têtes de cache (`apps/web/public/_headers` : un an pour les fichiers nommés par leur empreinte, une minute pour `manifest.json` et `engravings.json`). Refuse de partir si `public/catalog` est vide.
 
 Le domaine `leximon.fr` est créé par le déploiement. Toi : supprimer avant tout enregistrement `A`, `AAAA` ou `CNAME` existant sur `leximon.fr` (une page d'attente, par exemple). Ne pas toucher aux `MX` ni aux `TXT`.
 

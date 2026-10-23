@@ -4,11 +4,13 @@ import { describe, expect, it } from "vitest";
 import { planCatalog } from "./plan";
 import {
   engravingFiles,
+  engravingIndex,
   engravingProblems,
   parseRelease,
   pronunciationFiles,
   pronunciationProblems,
   type Release,
+  staleCollectionFiles,
 } from "./release";
 
 const encoder = new TextEncoder();
@@ -125,6 +127,10 @@ describe("engraving files", () => {
       ],
     };
     expect(engravingFiles(release)).toEqual([engraving.fill, engraving.ink]);
+    expect(engravingIndex(release)).toEqual({
+      version: "2026-10-19.1",
+      inks: { poue: engraving.ink },
+    });
   });
 
   it("refuses a missing file and a file whose content no longer matches its name", () => {
@@ -139,6 +145,42 @@ describe("engraving files", () => {
       expect.stringMatching(/poue\.0123456789ab\.fill\.webp does not match its content/),
       expect.stringMatching(/raclure\.0123456789ab\.ink\.webp is referenced by a card but missing/),
     ]);
+  });
+});
+
+describe("stale collection files", () => {
+  const manifest = (version: string, files: string[]) => ({
+    schemaVersion: 1 as const,
+    version,
+    releasedAt: "2026-10-19T20:00:00.000Z",
+    collections: files.map((file, index) => ({
+      id: `c${index}`,
+      name: "Une collection",
+      cardCount: 1,
+      file,
+    })),
+  });
+
+  it("keeps the files of the current and the previous manifest, lists the others", () => {
+    const stale = staleCollectionFiles(
+      [
+        "collections/a.000000000003.json",
+        "collections/a.000000000001.json",
+        "collections/a.000000000002.json",
+        "collections/b.000000000001.json",
+      ],
+      [
+        manifest("2026-10-19.2", [
+          "collections/a.000000000003.json",
+          "collections/b.000000000001.json",
+        ]),
+        manifest("2026-10-19.1", [
+          "collections/a.000000000002.json",
+          "collections/b.000000000001.json",
+        ]),
+      ],
+    );
+    expect(stale).toEqual(["collections/a.000000000001.json"]);
   });
 });
 

@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { cardOrPlaceholder, fetchCatalog } from "./catalog";
+import { cardOrPlaceholder, fetchCatalog, fetchEngravingInks } from "./catalog";
 
 const card = {
   id: "poue",
@@ -71,5 +71,23 @@ describe("fetchCatalog", () => {
       word: "palsambleu",
       rarity: "legendary",
     });
+  });
+});
+
+describe("fetchEngravingInks", () => {
+  const ink = "gravures/poue.0123456789ab.ink.webp";
+
+  it("reads the ink of each card, revalidated like the manifest", async () => {
+    const requests = serve({ "engravings.json": { version: "2026-10-19.1", inks: { poue: ink } } });
+    const inks = await fetchEngravingInks("/catalog");
+    expect(inks.get("poue")).toBe(ink);
+    expect(requests.map(([url, init]) => [url, init?.cache])).toEqual([
+      ["/catalog/engravings.json", "no-cache"],
+    ]);
+  });
+
+  it("refuses a path that leaves the engravings folder", async () => {
+    serve({ "engravings.json": { version: "2026-10-19.1", inks: { poue: "../secret.webp" } } });
+    await expect(fetchEngravingInks("/catalog")).rejects.toThrow("invalid_engravings");
   });
 });

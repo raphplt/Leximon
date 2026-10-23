@@ -4,39 +4,24 @@ import type { CatalogCard } from "@leximon/contract";
 import { cssFill, rarityStyles } from "@leximon/tokens";
 import { frequencyLine } from "@leximon/view-model";
 import { type CSSProperties, useEffect, useState } from "react";
-import { catalogFileUrl, loadCatalog } from "@/cards/catalog";
+import { catalogFileUrl } from "@/cards/catalog";
 import { creditLine, cssUrl, engravingOf, hasPlate } from "@/cards/engraving";
 import { RarityName } from "@/components/rarity-icon";
 import styles from "./landing-page.module.css";
-import { HERO_WORD_IDS, pickShowcase } from "./showcase-cards";
 
 /**
  * One word of the catalogue printed large, like a dictionary slip in the colours of its rarity,
- * and another one on demand. Decoration only: if the catalogue cannot be read, the page stands
- * without it.
+ * and another one on demand. The page is the same for everyone, so the first word is drawn in
+ * the browser: the slip keeps its place until then. Without words, the page stands without it.
  */
-export function HeroWord() {
-  const [words, setWords] = useState<readonly CatalogCard[]>([]);
-  const [index, setIndex] = useState(0);
+export function HeroWord({ words }: { readonly words: readonly CatalogCard[] }) {
+  const [index, setIndex] = useState<number | null>(null);
 
   useEffect(() => {
-    let live = true;
-    loadCatalog()
-      .then((catalog) => {
-        if (!live) return;
-        const found = pickShowcase(catalog.cardsById, HERO_WORD_IDS);
-        setWords(found);
-        setIndex(Math.floor(Math.random() * found.length));
-      })
-      .catch(() => {
-        // The pitch says it all; the word only shows it.
-      });
-    return () => {
-      live = false;
-    };
-  }, []);
+    setIndex(Math.floor(Math.random() * words.length));
+  }, [words.length]);
 
-  const card = words[index];
+  const card = index === null ? undefined : words[index];
   if (card === undefined) return <div className={styles.slipPlaceholder} aria-hidden="true" />;
 
   const style = rarityStyles[card.rarity];
@@ -67,7 +52,7 @@ export function HeroWord() {
         <button
           className={styles.again}
           type="button"
-          onClick={() => setIndex((current) => (current + 1) % words.length)}
+          onClick={() => setIndex((current) => ((current ?? 0) + 1) % words.length)}
         >
           Encore un mot
         </button>

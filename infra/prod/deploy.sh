@@ -45,10 +45,11 @@ else
   echo "En ligne : ${live:-inconnue}, dernière version : $latest. Publication."
   pnpm catalog:publish:prod
 fi
-# The web ships whatever sits in public/catalog: it must be the latest release, not a dev one.
+# The web ships whatever sits in public/catalog: it must be the latest release, not a dev one,
+# with the engraving index that publications write since 2026-10-23.
 shipped=$(sed -n 's/.*"version": *"\([^"]*\)".*/\1/p' apps/web/public/catalog/manifest.json | head -1)
-[ "$shipped" = "$latest" ] || {
-  echo "public/catalog contient $shipped au lieu de $latest : republication."
+[ "$shipped" = "$latest" ] && [ -f apps/web/public/catalog/engravings.json ] || {
+  echo "public/catalog contient ${shipped:-rien} (dernière version : $latest, ou sans engravings.json) : republication."
   pnpm catalog:publish:prod
 }
 

@@ -1,6 +1,7 @@
 import { createHash } from "node:crypto";
 import {
   type CatalogCollectionFile,
+  type CatalogEngravingIndex,
   type CatalogManifest,
   catalogCollectionFileSchema,
   catalogManifestSchema,
@@ -93,6 +94,30 @@ export function engravingFiles(release: Release): string[] {
     }
   }
   return [...paths].sort();
+}
+
+/** The ink of every engraved card of the release, by card id: `engravings.json`. */
+export function engravingIndex(release: Release): CatalogEngravingIndex {
+  const inks: Record<string, string> = {};
+  for (const collection of release.collections) {
+    for (const card of collection.cards) {
+      if (card.engraving) inks[card.id] = card.engraving.ink;
+    }
+  }
+  return { version: release.manifest.version, inks };
+}
+
+/**
+ * Collection files, relative to the catalogue root, that none of the given manifests lists. The
+ * previous manifest is kept among them: a page opened before the publication may still ask for its
+ * files.
+ */
+export function staleCollectionFiles(
+  present: readonly string[],
+  kept: readonly CatalogManifest[],
+): string[] {
+  const listed = new Set(kept.flatMap((manifest) => manifest.collections.map((c) => c.file)));
+  return present.filter((path) => !listed.has(path)).sort();
 }
 
 /** Audio files the release refers to, relative to the catalogue root, each once, sorted. */

@@ -30,15 +30,22 @@ const display = Fraunces({
   variable: "--font-display",
 });
 const ui = Bricolage_Grotesque({ subsets: ["latin"], variable: "--font-ui" });
-const text = Newsreader({
+const text = Newsreader({ subsets: ["latin"], style: "normal", variable: "--font-text" });
+// The same family name, so `--font-text` gets its italic from here. Only quotes use it: it is not
+// preloaded with the fonts of the first screen.
+const textItalic = Newsreader({
   subsets: ["latin"],
-  style: ["normal", "italic"],
-  variable: "--font-text",
+  style: "italic",
+  variable: "--font-text-italic",
+  preload: false,
 });
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="fr" className={`${display.variable} ${ui.variable} ${text.variable}`}>
+    <html
+      lang="fr"
+      className={`${display.variable} ${ui.variable} ${text.variable} ${textItalic.variable}`}
+    >
       <head>
         <style>{cssRootRule()}</style>
       </head>

@@ -1,5 +1,6 @@
-import type { CatalogCard, CatalogCollectionFile } from "@leximon/contract";
-import { fetchCatalog } from "./catalog";
+import type { CatalogCard } from "@leximon/contract";
+import { cache } from "react";
+import { fetchCollections, fetchManifest } from "./catalog";
 
 /**
  * The published catalogue, read by the server for a card's public page and its shared image.
@@ -20,23 +21,40 @@ export interface PublicCard {
   readonly catalogSize: number;
 }
 
-/**
- * The collections for a card page. Collection files are immutable and fetched with
- * `force-cache`: only the small manifest is read on each request, so a new release shows at once.
- */
-async function serverCollections(): Promise<readonly CatalogCollectionFile[]> {
-  return (await fetchCatalog(SERVER_CATALOG_URL)).collections;
+interface ServerCatalog {
+  readonly version: string;
+  readonly cards: ReadonlyMap<string, PublicCard>;
 }
+
+/**
+ * The last version parsed, kept by the instance between requests: a release never changes once
+ * published, so parsing and validating its 2 MB again for each shared card would only cost time.
+ * Only the resolved value is kept, never a pending promise, which a Worker may not share between
+ * requests.
+ */
+let parsed: ServerCatalog | null = null;
+
+/**
+ * The catalogue for this request. Only the small manifest is read each time, so a new release
+ * shows at once; the page and its metadata share one read.
+ */
+const serverCatalog = cache(async (): Promise<ServerCatalog> => {
+  const manifest = await fetchManifest(SERVER_CATALOG_URL);
+  if (parsed?.version === manifest.version) return parsed;
+  const collections = await fetchCollections(manifest, SERVER_CATALOG_URL);
+  const catalogSize = collections.reduce((sum, collection) => sum + collection.cards.length, 0);
+  const cards = new Map(
+    collections.flatMap((collection) =>
+      collection.cards.map(
+        (card) => [card.id, { card, collectionName: collection.name, catalogSize }] as const,
+      ),
+    ),
+  );
+  parsed = { version: manifest.version, cards };
+  return parsed;
+});
 
 /** A card and what its page says around it; `null` when no published card has this id. */
 export async function readCatalogCard(cardId: string): Promise<PublicCard | null> {
-  const collections = await serverCollections();
-  let catalogSize = 0;
-  let found: PublicCard | null = null;
-  for (const collection of collections) {
-    catalogSize += collection.cards.length;
-    const card = collection.cards.find((candidate) => candidate.id === cardId);
-    if (card !== undefined) found = { card, collectionName: collection.name, catalogSize: 0 };
-  }
-  return found === null ? null : { ...found, catalogSize };
+  return (await serverCatalog()).cards.get(cardId) ?? null;
 }

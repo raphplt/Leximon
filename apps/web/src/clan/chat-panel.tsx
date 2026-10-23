@@ -2,7 +2,7 @@
 
 import type { ClanView } from "@leximon/contract";
 import { onlineCountLabel } from "@leximon/view-model";
-import { useEffect, useState } from "react";
+import { type ComponentProps, useEffect, useState } from "react";
 import { useCatalog } from "@/cards/use-catalog";
 import { useNow } from "@/lib/use-now";
 import { myClan } from "@/player/clan";
@@ -23,7 +23,6 @@ export function ChatPanel({
 }) {
   const mine = useShared(myClan);
   const [view, setView] = useState<ClanView | null>(null);
-  const catalog = useCatalog();
   const now = useNow(30_000);
   const clanId = mine?.clanId ?? null;
 
@@ -49,16 +48,23 @@ export function ChatPanel({
       ) : view === null || me === null ? (
         <p className={styles.faint}>Un instant…</p>
       ) : (
-        <ClanChat
+        <ChatWithWords
           clanId={clanId}
           role={me.role}
           mutedUntil={me.mutedUntil}
           online={onlineCountLabel(view.members)}
           now={now}
-          wordOf={(cardId) => catalog?.cardsById.get(cardId)?.word ?? cardId}
           compact
         />
       )}
     </Dialog>
+  );
+}
+
+/** The words of the chat's events come from the catalogue, read only once the panel is open. */
+function ChatWithWords(props: Omit<ComponentProps<typeof ClanChat>, "wordOf">) {
+  const catalog = useCatalog();
+  return (
+    <ClanChat {...props} wordOf={(cardId) => catalog?.cardsById.get(cardId)?.word ?? cardId} />
   );
 }

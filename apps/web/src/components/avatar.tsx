@@ -2,9 +2,8 @@
 
 import { avatarName } from "@leximon/view-model";
 import type { CSSProperties } from "react";
-import { catalogFileUrl } from "@/cards/catalog";
 import { cssUrl } from "@/cards/engraving";
-import { useCatalog } from "@/cards/use-catalog";
+import { useEngravingInk } from "@/cards/use-engraving-ink";
 import { Icon } from "@/ui/icon";
 import styles from "./avatar.module.css";
 
@@ -14,7 +13,7 @@ const FRAMES = new Set(["simple", "gilded", "ink"]);
 /**
  * The player's avatar: a card's engraving printed in a medallion, inside the frame worn.
  * Decorative unless `label` is given; `frame: null` draws none. The silhouette stands in until
- * the catalogue is there.
+ * the engraving is known.
  */
 export function Avatar({
   avatar,
@@ -29,12 +28,11 @@ export function Avatar({
   readonly label?: string | undefined;
   readonly className?: string | undefined;
 }) {
-  const catalog = useCatalog();
-  const engraving = avatar === null ? null : (catalog?.cardsById.get(avatar)?.engraving ?? null);
+  const ink = useEngravingInk(avatar);
   const style = {
     "--size": `${size}px`,
     "--k": size / 84,
-    ...(engraving === null ? {} : { "--ink-src": cssUrl(catalogFileUrl(engraving.ink)) }),
+    ...(ink === null ? {} : { "--ink-src": cssUrl(ink) }),
   } as CSSProperties;
   const accessible =
     label === undefined
@@ -47,7 +45,7 @@ export function Avatar({
       style={style}
       {...accessible}
     >
-      {engraving === null ? (
+      {ink === null ? (
         <Icon name="profil" size={Math.round(size * 0.6)} />
       ) : (
         <span className={styles.ink} />

@@ -6,22 +6,28 @@
  * collection files go first and the manifest last, so that a reader never sees a manifest
  * pointing at a missing file. Engravings and audio come from the content pipeline's output
  * (git-ignored binaries, never in content/releases): a release referring to a missing one is
- * refused.
+ * refused. `engravings.json`, the ink of each card by id, is written from the release beside the
+ * manifest. Collection files listed by neither the new manifest nor the one it replaces are
+ * deleted, so that each deployment does not carry every past release.
  */
 
-import { copyFile, mkdir, readdir, readFile, rename, writeFile } from "node:fs/promises";
+import { copyFile, mkdir, readdir, readFile, rename, rm, writeFile } from "node:fs/promises";
 import { dirname, join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 import { parseArgs } from "node:util";
+import { type CatalogManifest, catalogManifestSchema } from "@leximon/contract";
 import {
   applyCatalog,
   engravingFiles,
+  engravingIndex,
   engravingProblems,
   loadPublishedCards,
   parseRelease,
   planCatalog,
   pronunciationFiles,
   pronunciationProblems,
+  type Release,
+  staleCollectionFiles,
 } from "../src/catalog/index";
 import { createDb } from "../src/client";
 
@@ -84,15 +90,51 @@ async function copyAssets(target: string, files: ReadonlyMap<string, Uint8Array 
   }
 }
 
-async function copyRelease(source: string, target: string, files: Iterable<string>) {
+async function writeAtomically(path: string, content: Uint8Array | string) {
+  const temporary = `${path}.tmp`;
+  await writeFile(temporary, content);
+  await rename(temporary, path);
+}
+
+async function copyRelease(
+  source: string,
+  target: string,
+  release: Release,
+  files: Iterable<string>,
+) {
   const collectionFiles = [...files].filter((path) => path !== "manifest.json");
   for (const path of collectionFiles) {
     await mkdir(dirname(join(target, path)), { recursive: true });
     await copyFile(join(source, path), join(target, path));
   }
-  const temporary = join(target, "manifest.json.tmp");
-  await writeFile(temporary, await readFile(join(source, "manifest.json")));
-  await rename(temporary, join(target, "manifest.json"));
+  await writeAtomically(join(target, "engravings.json"), JSON.stringify(engravingIndex(release)));
+  await writeAtomically(
+    join(target, "manifest.json"),
+    await readFile(join(source, "manifest.json")),
+  );
+}
+
+/** The manifest currently published in the target, if any. */
+async function publishedManifest(target: string): Promise<CatalogManifest | null> {
+  const content = await readFile(join(target, "manifest.json"), "utf8").catch(() => null);
+  if (content === null) return null;
+  try {
+    const parsed = catalogManifestSchema.safeParse(JSON.parse(content));
+    return parsed.success ? parsed.data : null;
+  } catch {
+    return null;
+  }
+}
+
+/** Deletes the collection files of releases older than the previous one. */
+async function pruneCollections(target: string, kept: readonly CatalogManifest[]): Promise<number> {
+  const names = await readdir(join(target, "collections")).catch(() => [] as string[]);
+  const stale = staleCollectionFiles(
+    names.map((name) => `collections/${name}`),
+    kept,
+  );
+  for (const path of stale) await rm(join(target, path));
+  return stale.length;
 }
 
 async function main(): Promise<void> {
@@ -149,10 +191,15 @@ async function main(): Promise<void> {
     if (values["dry-run"]) return;
     await applyCatalog(db, plan, new Date());
     const target = values.target ?? DEFAULT_TARGET;
+    const previous = await publishedManifest(target);
     await copyAssets(target, engravings);
     await copyAssets(target, audio);
-    await copyRelease(source, target, files.keys());
-    console.info(`Database updated, files copied to ${target}`);
+    await copyRelease(source, target, parsed.release, files.keys());
+    const kept = [parsed.release.manifest, ...(previous === null ? [] : [previous])];
+    const pruned = await pruneCollections(target, kept);
+    console.info(
+      `Database updated, files copied to ${target}, ${pruned} old collection files deleted`,
+    );
   } finally {
     await close();
   }

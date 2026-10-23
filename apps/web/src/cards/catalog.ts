@@ -1,7 +1,9 @@
 import {
   type CatalogCard,
   type CatalogCollectionFile,
+  type CatalogManifest,
   catalogCollectionFileSchema,
+  catalogEngravingIndexSchema,
   catalogManifestSchema,
 } from "@leximon/contract";
 import type { Rarity } from "@leximon/core";
@@ -44,13 +46,22 @@ async function fetchJson(url: string, init: RequestInit): Promise<unknown> {
   return response.json().catch(() => null);
 }
 
-export async function fetchCatalog(baseUrl: string = CATALOG_URL): Promise<Catalog> {
+/** The manifest, read again on each call: it is the only file that changes in place. */
+export async function fetchManifest(baseUrl: string = CATALOG_URL): Promise<CatalogManifest> {
   const manifest = catalogManifestSchema.safeParse(
     await fetchJson(`${baseUrl}/manifest.json`, { cache: "no-cache" }),
   );
   if (!manifest.success) throw new CatalogError("invalid_manifest");
-  const collections = await Promise.all(
-    manifest.data.collections.map(async (entry) => {
+  return manifest.data;
+}
+
+/** The collection files a manifest lists, immutable, so taken from the cache when there. */
+export function fetchCollections(
+  manifest: CatalogManifest,
+  baseUrl: string = CATALOG_URL,
+): Promise<CatalogCollectionFile[]> {
+  return Promise.all(
+    manifest.collections.map(async (entry) => {
       const file = catalogCollectionFileSchema.safeParse(
         await fetchJson(`${baseUrl}/${entry.file}`, { cache: "force-cache" }),
       );
@@ -58,10 +69,26 @@ export async function fetchCatalog(baseUrl: string = CATALOG_URL): Promise<Catal
       return file.data;
     }),
   );
+}
+
+export async function fetchCatalog(baseUrl: string = CATALOG_URL): Promise<Catalog> {
+  const manifest = await fetchManifest(baseUrl);
+  const collections = await fetchCollections(manifest, baseUrl);
   const cardsById = new Map(
     collections.flatMap((collection) => collection.cards.map((card) => [card.id, card] as const)),
   );
-  return { version: manifest.data.version, collections, cardsById };
+  return { version: manifest.version, collections, cardsById };
+}
+
+/** The ink of each engraved card, by id: a fraction of the catalogue, for avatars and emblems. */
+export async function fetchEngravingInks(
+  baseUrl: string = CATALOG_URL,
+): Promise<ReadonlyMap<string, string>> {
+  const index = catalogEngravingIndexSchema.safeParse(
+    await fetchJson(`${baseUrl}/engravings.json`, { cache: "no-cache" }),
+  );
+  if (!index.success) throw new CatalogError("invalid_engravings");
+  return new Map(Object.entries(index.data.inks));
 }
 
 let loading: Promise<Catalog> | null = null;
