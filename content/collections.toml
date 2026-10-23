@@ -4,6 +4,10 @@
 # `domains`: the pre-screen domains new runs of the collection select from (any if absent).
 # `back`: tone of the card back for the collection's packs, one of `backTones` in @leximon/tokens
 # (night if absent or unknown).
+# `engraving`: the engraving of the collection's seal, chosen by hand by the owner: a Commons file
+# and its crop (x0, y0, x1, y1 in fractions), rendered by `gravures-render`, with the author and
+# year of the credit when Commons gets them wrong. An isolated, dense subject that still reads in
+# a small round.
 
 [[collection]]
 id = "fondateurs"
@@ -11,6 +15,8 @@ name = "Les Fondateurs"
 runs = ["lot-1", "fondateurs-2"]
 domains = ["nature", "table", "autre"]
 back = "night"
+# Robert Estienne's olive tree, « Noli altum sapere », from Silvestre's printers' marks (no. 958).
+engraving = { title = "File:Marques typographiques, ou, Recueil des monogrammes, chiffres, enseignes, emblèmes, devises, rébus et fleurons des libraires et imprimeurs qui ont exercé en France depuis l'introduction de (14597556587).jpg", crop = [0.08, 0.04, 0.44, 0.34], author = "Robert Estienne", year = "XVIe s." }
 
 [[collection]]
 id = "caracteres"
@@ -18,6 +24,8 @@ name = "Caractères et travers"
 runs = ["caracteres-1"]
 domains = ["caractere"]
 back = "burgundy"
+# Scorn, a head after Charles Le Brun's passions.
+engraving = { title = "File:\"Scorn\" from Le Brun, Wellcome L0012155.jpg", crop = [0, 0.06, 1, 0.88], author = "Charles Le Brun" }
 
 [[collection]]
 id = "metiers"
@@ -25,3 +33,5 @@ name = "Métiers et objets disparus"
 runs = ["metiers-1"]
 domains = ["metiers_objets"]
 back = "green"
+# The Chaudronnier auvergnat of the Cris de Paris (Bouchardon, engraved by Caylus), head and cauldron.
+engraving = { title = "File:Études prises dans le bas peuple ou les Cris de Paris - Chaudronier Auvergnat.jpg", crop = [0.12, 0.06, 0.9, 0.6], author = "Edme Bouchardon", year = 1737 }

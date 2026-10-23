@@ -40,6 +40,8 @@ class Collection:
     domains: tuple[str, ...] = ()
     #: Tone of the card back for this collection's packs (`backTones` in @leximon/tokens).
     back: str | None = None
+    #: The engraving of its seal, chosen by hand: {"title": "File:…", "crop": [x0, y0, x1, y1]}.
+    engraving: Mapping[str, object] | None = None
 
 
 class ReleaseError(Exception):
@@ -55,6 +57,7 @@ def load_collections(path: Path = COLLECTIONS_FILE) -> list[Collection]:
             runs=tuple(item["runs"]),
             domains=tuple(item.get("domains", ())),
             back=item.get("back"),
+            engraving=item.get("engraving"),
         )
         for item in data["collection"]
     ]
@@ -153,11 +156,14 @@ def build(
     engravings: Mapping[str, Mapping[str, object]] | None = None,
     pronunciations: Mapping[str, Mapping[str, object]] | None = None,
     initials: Mapping[str, Mapping[str, object]] | None = None,
+    seals: Mapping[str, Mapping[str, object]] | None = None,
 ) -> dict[str, bytes]:
     """Every file of the release, keyed by path relative to the release folder. `engravings`
     holds the rendered engraving of each card that has one (data/gravures/out/rendered.json),
     `pronunciations` its spoken word (data/prononciation/out/rendered.json). A card without an
-    engraving shows the decorated initial of its word, from `initials`, when there is one."""
+    engraving shows the decorated initial of its word, from `initials`, when there is one.
+    `seals` holds the rendered engraving of each collection, by collection id."""
+    seals = seals or {}
     engravings = engravings or {}
     initials = initials or {}
     pronunciations = pronunciations or {}
@@ -193,6 +199,8 @@ def build(
         header: dict[str, object] = {"id": collection.id, "name": collection.name}
         if collection.back is not None:
             header["back"] = collection.back
+        if collection.id in seals:
+            header["engraving"] = dict(seals[collection.id])
         content = _json({**header, "cards": cards})
         digest = hashlib.sha256(content).hexdigest()[:HASH_LENGTH]
         path = f"collections/{collection.id}.{digest}.json"

@@ -270,3 +270,23 @@ def test_engraving_entry_and_loaded_engraving_follow_the_contract(tmp_path) -> N
 
 def test_no_rendered_file_means_no_engraving(tmp_path) -> None:
     assert engraving.load_engravings(tmp_path / "missing.json") == {}
+    assert engraving.load_seals(tmp_path / "missing.json") == {}
+
+
+def test_a_collection_seal_has_its_ink_and_credit_but_no_fill(tmp_path) -> None:
+    rendered = engraving.Rendered(ink=b"ink", fill=b"fill", size=(420, 480), fill_size=(210, 240))
+    entry = engraving.seal_entry("metiers", rendered, hit(), {"author": "Edme Bouchardon"})
+    path = tmp_path / "rendered.json"
+    path.write_text(
+        json.dumps({"renderVersion": 1, "cards": {}, "collections": {"metiers": entry}})
+    )
+    assert engraving.load_seals(path) == {
+        "metiers": {
+            "ink": engraving.published_path("collection-metiers", b"ink", "ink"),
+            "width": 420,
+            "height": 480,
+            "credit": "D'après Edme Bouchardon, 1880 · Wikimedia Commons (domaine public)",
+            "sourceUrl": "https://commons.wikimedia.org/wiki/File:Casuarius_plate.jpg",
+            "licence": "domaine public",
+        }
+    }

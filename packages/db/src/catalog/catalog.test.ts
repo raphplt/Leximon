@@ -133,6 +133,29 @@ describe("engraving files", () => {
     });
   });
 
+  it("lists the seal of a collection, which stays out of the index of cards", () => {
+    const { fill: _fill, ...rest } = engraving;
+    const seal = { ...rest, ink: "gravures/collection-fondateurs.0123456789ab.ink.webp" };
+    const release: Release = {
+      manifest: {
+        schemaVersion: 1,
+        version: "2026-10-19.1",
+        releasedAt: "2026-10-19T20:00:00.000Z",
+        collections: [],
+      },
+      collections: [
+        {
+          id: "fondateurs",
+          name: "Les Fondateurs",
+          engraving: seal,
+          cards: [card("poue", { engraving })],
+        },
+      ],
+    };
+    expect(engravingFiles(release)).toEqual([seal.ink, engraving.fill, engraving.ink]);
+    expect(engravingIndex(release).inks).toEqual({ poue: engraving.ink });
+  });
+
   it("refuses a missing file and a file whose content no longer matches its name", () => {
     const problems = engravingProblems(
       new Map<string, Uint8Array | undefined>([

@@ -225,6 +225,7 @@ def command_release() -> None:
             engravings,
             pronunciations,
             engraving.load_initials(),
+            engraving.load_seals(),
         )
     except release.ReleaseError as error:
         raise SystemExit(f"Version refusée : {error}") from error

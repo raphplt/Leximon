@@ -11,6 +11,9 @@ For each card approved in data/gravures/validation.json:
      plate of Rare cards and above);
 3. write data/gravures/out/rendered.json, which `release` reads to attach the engravings.
 
+The decorated initials (data/gravures/lettrines.json) and the seal of each collection (its
+`engraving` in content/collections.toml) are chosen by hand, then rendered the same way.
+
 Files are named after their content (`gravures/<card>.<hash12>.ink.webp`), like the catalogue
 : a published file never changes. Rendering is deterministic and fast, so it is always
 redone; only the downloads are kept. Port of rnd/gravures/render_trial.py, never imported."""
@@ -20,7 +23,7 @@ import io
 import json
 import re
 import time
-from collections.abc import Mapping, Sequence
+from collections.abc import Iterable, Mapping, Sequence
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -28,7 +31,7 @@ import httpx
 import numpy as np
 from PIL import Image, ImageFilter, ImageOps
 
-from . import gravures
+from . import gravures, release
 from .gravures import GRAVURES_DIR
 
 VALIDATION_FILE = GRAVURES_DIR / "validation.json"
@@ -37,6 +40,8 @@ VALIDATION_FILE = GRAVURES_DIR / "validation.json"
 INITIALS_FILE = GRAVURES_DIR / "lettrines.json"
 #: Commons fields of those files, fetched once.
 INITIALS_FILES_FILE = GRAVURES_DIR / "lettrines-files.json"
+#: Commons fields of the collections' seal engravings, fetched once.
+SEAL_FILES_FILE = GRAVURES_DIR / "sceaux-files.json"
 ORIGINALS_DIR = GRAVURES_DIR / "originals"
 OUT_DIR = GRAVURES_DIR / "out"
 RENDERED_FILE = OUT_DIR / "rendered.json"
@@ -63,6 +68,8 @@ HASH_LENGTH = 12
 DOWNLOAD_PAUSE_S = 5.0
 #: The fields of a card's `engraving` in the catalogue (packages/contract/src/catalog.ts).
 CONTRACT_FIELDS = ("ink", "fill", "width", "height", "credit", "sourceUrl", "licence")
+#: A collection's seal is drawn in one colour: its `engraving` has no fill.
+SEAL_FIELDS = tuple(field for field in CONTRACT_FIELDS if field != "fill")
 
 Box = tuple[float, float, float, float]
 
@@ -359,6 +366,17 @@ def load_initials(path: Path = RENDERED_FILE) -> dict[str, dict[str, object]]:
     }
 
 
+def load_seals(path: Path = RENDERED_FILE) -> dict[str, dict[str, object]]:
+    """The rendered seal engraving of each collection, by collection id, catalogue fields only."""
+    if not path.exists():
+        return {}
+    data = json.loads(path.read_text(encoding="utf-8"))
+    return {
+        collection: {field: entry[field] for field in SEAL_FIELDS}
+        for collection, entry in data.get("collections", {}).items()
+    }
+
+
 def load_engravings(path: Path = RENDERED_FILE) -> dict[str, dict[str, object]]:
     """The `engraving` of every rendered card, with the catalogue fields only. Empty before the
     first `gravures-render`: every card is then released without an engraving."""
@@ -426,22 +444,19 @@ def run_render() -> None:
                 flush=True,
             )
         initials = render_initials(http, files)
-    write_out(entries, files, initials)
+        seals = render_seals(http, files)
+    write_out(entries, files, initials, seals)
     total = sum(len(b) for b in files.values())
     print(
-        f"{len(entries)} gravures et {len(initials)} lettrines, {total / 1024:.1f} Ko en tout, "
-        f"dans {OUT_DIR}"
+        f"{len(entries)} gravures, {len(initials)} lettrines et {len(seals)} sceaux, "
+        f"{total / 1024:.1f} Ko en tout, dans {OUT_DIR}"
     )
 
 
-def initial_files(letters: Mapping[str, Mapping[str, object]]) -> dict[str, dict]:
-    """Commons fields of every initial, fetched once and kept in INITIALS_FILES_FILE."""
-    known = (
-        json.loads(INITIALS_FILES_FILE.read_text(encoding="utf-8"))
-        if INITIALS_FILES_FILE.exists()
-        else {}
-    )
-    missing = sorted({str(e["title"]) for e in letters.values()} - known.keys())
+def commons_files(titles: Iterable[str], cache: Path) -> dict[str, dict]:
+    """Commons fields of files chosen by hand, fetched once and kept in `cache`."""
+    known = json.loads(cache.read_text(encoding="utf-8")) if cache.exists() else {}
+    missing = sorted(set(titles) - known.keys())
     if missing:
         wiki = gravures.Wikimedia()
         try:
@@ -449,10 +464,54 @@ def initial_files(letters: Mapping[str, Mapping[str, object]]) -> dict[str, dict
                 known.update(wiki.files(missing[start : start + 50]))
         finally:
             wiki.close()
-        INITIALS_FILES_FILE.write_text(
-            json.dumps(known, ensure_ascii=False, indent=1), encoding="utf-8"
-        )
+        cache.write_text(json.dumps(known, ensure_ascii=False, indent=1), encoding="utf-8")
     return known
+
+
+def initial_files(letters: Mapping[str, Mapping[str, object]]) -> dict[str, dict]:
+    """Commons fields of every initial, fetched once and kept in INITIALS_FILES_FILE."""
+    return commons_files((str(e["title"]) for e in letters.values()), INITIALS_FILES_FILE)
+
+
+def seal_entry(
+    collection_id: str,
+    rendered: Rendered,
+    hit: Mapping[str, object],
+    choice: Mapping[str, object] | None = None,
+) -> dict:
+    """One collection of rendered.json: its seal's catalogue fields, then its source. `choice`
+    may name the author and year by hand, like validation.json."""
+    return {
+        "ink": published_path(f"collection-{collection_id}", rendered.ink, "ink"),
+        "width": rendered.size[0],
+        "height": rendered.size[1],
+        "credit": credit_line(hit, choice),
+        "sourceUrl": str(hit["page_url"]),
+        "licence": licence_label(hit),
+        "inkBytes": len(rendered.ink),
+        "title": hit["title"],
+    }
+
+
+def render_seals(http: httpx.Client, files: dict[str, bytes]) -> dict[str, dict[str, object]]:
+    """The seal engraving of each collection that names one; `files` gets their ink."""
+    chosen = [c for c in release.load_collections() if c.engraving is not None]
+    commons = commons_files((str(c.engraving["title"]) for c in chosen), SEAL_FILES_FILE)  # type: ignore[index]
+    entries: dict[str, dict[str, object]] = {}
+    for collection in chosen:
+        choice = collection.engraving or {}
+        hit = commons.get(str(choice["title"]))
+        if hit is None:
+            raise RuntimeError(f"sceau {collection.id} : {choice['title']} introuvable sur Commons")
+        original = original_for(http, f"collection-{collection.id}", {**hit, "n": 1})
+        with Image.open(original) as image:
+            grey = prepare(image, choice.get("crop"))  # type: ignore[arg-type]
+        rendered = render(grey)
+        row = seal_entry(collection.id, rendered, hit, choice)
+        entries[collection.id] = row
+        files[str(row["ink"])] = rendered.ink
+        print(f"sceau {collection.id} : {rendered.size[0]}x{rendered.size[1]} · {row['credit']}")
+    return entries
 
 
 def render_initials(http: httpx.Client, files: dict[str, bytes]) -> dict[str, dict[str, object]]:
@@ -483,8 +542,9 @@ def write_out(
     entries: Mapping[str, Mapping[str, object]],
     files: Mapping[str, bytes],
     initials: Mapping[str, Mapping[str, object]] | None = None,
+    seals: Mapping[str, Mapping[str, object]] | None = None,
 ) -> None:
-    """Writes the files, drops those no card refers to any more, then the manifest."""
+    """Writes the files, drops those nothing refers to any more, then the manifest."""
     folder = OUT_DIR / PUBLISHED_FOLDER
     folder.mkdir(parents=True, exist_ok=True)
     for path, content in files.items():
@@ -498,6 +558,7 @@ def write_out(
                 "renderVersion": RENDER_VERSION,
                 "cards": dict(sorted(entries.items())),
                 "initials": dict(sorted((initials or {}).items())),
+                "collections": dict(sorted((seals or {}).items())),
             },
             ensure_ascii=False,
             indent=1,

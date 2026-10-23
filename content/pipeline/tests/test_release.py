@@ -172,6 +172,32 @@ def test_the_back_tone_goes_into_the_collection_file() -> None:
     assert "back" not in json.loads(plain[manifest["collections"][0]["file"]])
 
 
+def test_the_seal_engraving_goes_into_the_collection_file() -> None:
+    seal = {"ink": "gravures/collection-fondateurs.0123456789ab.ink.webp", "width": 420}
+    files = release.build(
+        [FONDATEURS], {"lot-1": [row("billevesee")]}, frequency, "2026-10-19.1", NOW,
+        seals={"fondateurs": seal},
+    )  # fmt: skip
+    manifest = json.loads(files["manifest.json"])
+    assert json.loads(files[manifest["collections"][0]["file"]])["engraving"] == seal
+    plain = build([row("billevesee")])
+    manifest = json.loads(plain["manifest.json"])
+    assert "engraving" not in json.loads(plain[manifest["collections"][0]["file"]])
+
+
+def test_a_collection_reads_its_seal_engraving_from_the_toml(tmp_path) -> None:
+    path = tmp_path / "collections.toml"
+    path.write_text(
+        '[[collection]]\nid = "metiers"\nname = "Métiers"\nruns = ["metiers-1"]\n'
+        'engraving = { title = "File:Chaudronnier.jpg", crop = [0, 0, 1, 0.5] }\n'
+        '[[collection]]\nid = "caracteres"\nname = "Caractères"\nruns = ["caracteres-1"]\n',
+        encoding="utf-8",
+    )
+    metiers, caracteres = release.load_collections(path)
+    assert metiers.engraving == {"title": "File:Chaudronnier.jpg", "crop": [0, 0, 1, 0.5]}
+    assert caracteres.engraving is None
+
+
 def test_a_card_without_engraving_shows_the_initial_of_its_word() -> None:
     def initial(letter: str) -> dict[str, object]:
         return {"ink": f"gravures/lettrine-{letter.lower()}.0123456789ab.ink.webp"}

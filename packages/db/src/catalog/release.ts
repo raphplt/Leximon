@@ -87,6 +87,7 @@ export function parseRelease(files: ReadonlyMap<string, Uint8Array>): ParsedRele
 export function engravingFiles(release: Release): string[] {
   const paths = new Set<string>();
   for (const collection of release.collections) {
+    if (collection.engraving) paths.add(collection.engraving.ink);
     for (const card of collection.cards) {
       if (!card.engraving) continue;
       paths.add(card.engraving.ink);

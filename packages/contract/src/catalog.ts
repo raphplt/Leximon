@@ -47,6 +47,13 @@ export const catalogEngravingSchema = z.object({
 });
 export type CatalogEngraving = z.infer<typeof catalogEngravingSchema>;
 
+/**
+ * Engraving of a collection's seal, chosen by hand: its ink only, drawn in one colour in a round
+ * (`gravures/collection-<id>.<hash12>.ink.webp`).
+ */
+export const catalogSealEngravingSchema = catalogEngravingSchema.omit({ fill: true });
+export type CatalogSealEngraving = z.infer<typeof catalogSealEngravingSchema>;
+
 /** `prononciation/<card>.<hash12>.mp3`: one segment, named after its content, so immutable. */
 const pronunciationFileSchema = z.string().regex(/^prononciation\/[a-z0-9][a-z0-9.-]*\.mp3$/);
 
@@ -100,6 +107,8 @@ export const catalogCollectionFileSchema = z.object({
    * Absent from releases made before it.
    */
   back: z.string().min(1).exactOptional(),
+  /** The engraving of its seal. Absent from releases made before it, and while none is chosen. */
+  engraving: catalogSealEngravingSchema.exactOptional(),
   cards: z.array(catalogCardSchema),
 });
 export type CatalogCollectionFile = z.infer<typeof catalogCollectionFileSchema>;
