@@ -182,6 +182,7 @@ a.clan:hover {
 }
 
 .pin {
+  position: relative;
   width: 150px;
 }
 
@@ -225,9 +226,81 @@ a.clan:hover {
   text-decoration: none;
 }
 
-.emptySlot:hover {
+.emptySlot:hover:not(:disabled),
+.emptySlot:focus-visible {
   border-color: var(--lx-color-accent);
   color: var(--lx-color-text);
+}
+
+button.emptySlot {
+  background: none;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+/* On the corner of each of the player's own pinned cards: take it off the profile. */
+.pinRemove {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 2px solid var(--lx-color-outline);
+  border-radius: var(--lx-radius-pill);
+  background: var(--lx-color-sunken);
+  color: var(--lx-color-text);
+  cursor: pointer;
+}
+
+.pinRemove:hover,
+.pinRemove:focus-visible {
+  border-color: var(--lx-color-danger);
+  color: var(--lx-color-danger);
+}
+
+/* Under each of the player's own pinned cards: earlier, change, later. */
+.pinTools {
+  display: flex;
+  justify-content: space-between;
+  gap: 4px;
+  margin-top: 10px;
+}
+
+.pinTool {
+  display: grid;
+  place-items: center;
+  min-width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--lx-radius-pill);
+  background: rgba(246, 240, 226, 0.08);
+  color: var(--lx-color-text);
+  font: inherit;
+  cursor: pointer;
+}
+
+.pinTool:hover:not(:disabled),
+.pinTool:focus-visible {
+  background: rgba(246, 240, 226, 0.18);
+}
+
+.pinTool:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+
+.pinToolText {
+  flex: 1;
+  padding: 0 2px;
+  font-size: 13px;
+  font-weight: 800;
 }
 
 .tiles {

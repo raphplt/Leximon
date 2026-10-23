@@ -1,0 +1,138 @@
+.picker {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: min(440px, 100%);
+}
+
+.search {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 14px;
+  border-radius: var(--lx-radius-pill);
+  background: var(--lx-color-well);
+  color: var(--lx-color-text-muted);
+}
+
+.search input {
+  flex: 1;
+  min-width: 0;
+  min-height: 46px;
+  border: 0;
+  background: none;
+  color: var(--lx-color-text);
+  font: inherit;
+  font-size: 16px;
+  outline: none;
+}
+
+.search:focus-within {
+  box-shadow: 0 0 0 2px var(--lx-color-accent);
+}
+
+/* Tall enough for a dozen words, then it scrolls inside the window. */
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  max-height: min(52vh, 460px);
+  margin: 0;
+  padding: 0;
+  overflow-y: auto;
+  list-style: none;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  min-height: 46px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 12px;
+  background: none;
+  color: var(--lx-color-text);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.row:hover:not(:disabled),
+.row:focus-visible {
+  background: rgba(246, 240, 226, 0.08);
+}
+
+.row:disabled {
+  cursor: default;
+  opacity: 0.55;
+}
+
+.word {
+  overflow: hidden;
+  font-family: var(--font-text), Georgia, serif;
+  font-size: 18px;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.rarity {
+  flex-shrink: 0;
+  font-size: 13px;
+}
+
+.already {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: 700;
+  color: var(--lx-color-text-muted);
+}
+
+.note,
+.lead {
+  margin: 0;
+  color: var(--lx-color-text-muted);
+}
+
+.lead {
+  color: var(--lx-color-text);
+}
+
+.faces {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 14px;
+  margin: 0;
+  padding: 4px 0;
+  list-style: none;
+}
+
+.face {
+  display: block;
+  padding: 0;
+  border: 0;
+  border-radius: 12px;
+  background: none;
+  cursor: pointer;
+  transition: transform 120ms;
+}
+
+.face:hover,
+.face:focus-visible {
+  transform: translateY(-4px);
+  outline: 2px solid var(--lx-color-accent);
+  outline-offset: 3px;
+}
+
+.facePlaceholder {
+  display: block;
+  width: 112px;
+  aspect-ratio: 300 / 420;
+  border-radius: 10px;
+  background: var(--lx-color-sunken);
+}

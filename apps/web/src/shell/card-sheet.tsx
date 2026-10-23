@@ -7,8 +7,10 @@ import {
   cardShareRefused,
   copiesLabel,
   masteryView,
-  pinButtonLabel,
+  PIN_TEXTS,
+  placePin,
   reviewLabel,
+  unpin,
 } from "@leximon/view-model";
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
@@ -24,6 +26,7 @@ import { useNarrow } from "@/lib/use-narrow";
 import { useNow } from "@/lib/use-now";
 import { noteCardRead, ownedCards, wordMemory } from "@/player/collection";
 import { useShared } from "@/player/resource";
+import { ReplacePin } from "@/profile/pin-picker";
 import { useProfileActions } from "@/profile/use-profile-actions";
 import { useProgress } from "@/progress/use-progress";
 import { ButtonLink } from "@/ui/button";
@@ -95,6 +98,27 @@ function SheetBody({
   const light = useHoloLight(true);
   const toast = useToast();
   const pins = useProfileActions();
+  /** Every place was taken: the player picks which pinned card this one replaces. */
+  const [replacing, setReplacing] = useState(false);
+  const pinnedNow = pins.profile?.pinned ?? [];
+  const togglePin = () => {
+    const me = pins.profile;
+    if (me === null) return;
+    if (pins.isPinned(card.id)) {
+      void pins.setPins(unpin(me.pinned, card.id), PIN_TEXTS.removed);
+      return;
+    }
+    const change = placePin(me.pinned, me.pinnedSlots, card.id, null);
+    if (change.ok) void pins.setPins(change.cardIds, PIN_TEXTS.pinned);
+    else setReplacing(true);
+  };
+  const replacePin = (index: number) => {
+    setReplacing(false);
+    const me = pins.profile;
+    if (me === null) return;
+    const change = placePin(me.pinned, me.pinnedSlots, card.id, index);
+    if (change.ok) void pins.setPins(change.cardIds, PIN_TEXTS.pinned);
+  };
 
   const quantity = owned?.get(card.id) ?? 0;
   // Opening the sheet is reading the card: the album stops calling it new.
@@ -168,14 +192,20 @@ function SheetBody({
               <button
                 type="button"
                 className={ui.ghost}
-                onClick={() => void pins.togglePin(card.id)}
-                disabled={pins.busy}
+                onClick={togglePin}
                 aria-pressed={pins.isPinned(card.id)}
               >
                 <Icon name="pin" size={17} />
-                {pinButtonLabel(pins.isPinned(card.id))}
+                {pins.isPinned(card.id) ? PIN_TEXTS.unpin : PIN_TEXTS.pin}
               </button>
             )}
+            <ReplacePin
+              open={replacing}
+              word={card.word}
+              pinned={pinnedNow}
+              onPick={replacePin}
+              onClose={() => setReplacing(false)}
+            />
             <button
               type="button"
               className={ui.ghost}

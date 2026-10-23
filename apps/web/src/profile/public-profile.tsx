@@ -126,7 +126,7 @@ function PublicProfileBody({
       )}
       {shown.visibility === "public" ? (
         <div className={styles.layout}>
-          <PinnedCards pinned={shown.pinned} slots={null} />
+          <PinnedCards pinned={shown.pinned} />
           <StatsPanel stats={shown.stats} />
         </div>
       ) : (

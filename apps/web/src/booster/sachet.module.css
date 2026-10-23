@@ -45,15 +45,6 @@
   animation: sway 12s ease-in-out infinite;
 }
 
-.still .stage {
-  animation: none;
-}
-
-/* Under a finger or a tilted phone, the light comes from there and the sway stops. */
-:global([data-holo="live"]) .stage {
-  animation: none;
-}
-
 .sachet {
   position: absolute;
   inset: 0;
@@ -68,6 +59,7 @@
   transform-style: preserve-3d;
   /* A pouch is lighter than a card: it leans further under the same light. */
   transform: rotateX(calc(var(--holo-rx) * 1.6)) rotateY(calc(var(--holo-ry) * 1.6));
+  animation: bob 7s ease-in-out infinite;
 }
 
 /* On the table, under the pouch: it slides against the tilt and shrinks as the pouch rises. */
@@ -81,6 +73,19 @@
   background: radial-gradient(closest-side, rgba(0, 0, 0, 0.6), transparent);
   filter: blur(calc(5 * var(--u)));
   translate: calc(sin(var(--holo-ry)) * calc(-120 * var(--u))) 0;
+  animation: shadow 7s ease-in-out infinite;
+}
+
+/* A sachet waiting behind another holds still. */
+.still .stage,
+.still .sachet,
+.still .shadow {
+  animation: none;
+}
+
+/* Under a finger or a tilted phone, the light comes from there and the sway stops. */
+:global([data-holo="live"]) .stage {
+  animation: none;
 }
 
 /* --- Layers in depth ------------------------------------------------------------------ */
@@ -671,6 +676,29 @@
 
 .opening .burstCardB {
   animation: burst 1.2s ease-out 0.08s forwards;
+}
+
+/* A slight breath: the pouch rises a little and comes back down. */
+@keyframes bob {
+  0%,
+  100% {
+    translate: 0 0;
+  }
+  50% {
+    translate: 0 calc(-4 * var(--u));
+  }
+}
+
+@keyframes shadow {
+  0%,
+  100% {
+    scale: 1;
+    opacity: 1;
+  }
+  50% {
+    scale: 0.94;
+    opacity: 0.85;
+  }
 }
 
 /* Slow and slight: the light moves across the foil more than the pouch moves. */

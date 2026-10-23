@@ -142,36 +142,6 @@ export function statTiles(stats: ProfileStats, totalWords: number | null): StatT
   ];
 }
 
-/** « 3 places », next to the pinned cards. */
-export function pinnedSlotsLabel(slots: number): string {
-  return plural(slots, "place", "places");
-}
-
-export type PinChange =
-  | { readonly ok: true; readonly cardIds: string[]; readonly pinned: boolean }
-  | { readonly ok: false; readonly reason: "full" };
-
-/** Pins the card at the end, or unpins it. The order of the others is kept. */
-export function togglePin(pinned: readonly string[], cardId: string, slots: number): PinChange {
-  if (pinned.includes(cardId)) {
-    return { ok: true, cardIds: pinned.filter((id) => id !== cardId), pinned: false };
-  }
-  if (pinned.length >= slots) return { ok: false, reason: "full" };
-  return { ok: true, cardIds: [...pinned, cardId], pinned: true };
-}
-
-export function pinButtonLabel(pinned: boolean): string {
-  return pinned ? "Désépingler" : "Épingler";
-}
-
-export function pinToast(change: Extract<PinChange, { ok: true }>): string {
-  return change.pinned ? "Épinglée à ton profil." : "Retirée de ton profil.";
-}
-
-export function pinsFullMessage(slots: number): string {
-  return `Tes ${pinnedSlotsLabel(slots)} sont prises. Retire une carte d'abord.`;
-}
-
 export type AtelierTab = "avatars" | "frames" | "titles";
 
 export const ATELIER_TABS: readonly { readonly tab: AtelierTab; readonly label: string }[] = [

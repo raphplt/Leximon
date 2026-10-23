@@ -17,8 +17,9 @@ import { Icon } from "@/ui/icon";
 import { LoadFailed } from "@/ui/load-failed";
 import { Bone, WaitingScreen } from "@/ui/skeleton";
 import { useToast } from "@/ui/toast";
+import { PinnedCardsEditor } from "./pinned-editor";
 import styles from "./profile.module.css";
-import { PinnedCards, ProfileHeader, StatsPanel } from "./profile-view";
+import { ProfileHeader, StatsPanel } from "./profile-view";
 import { PseudoDialog } from "./pseudo-dialog";
 
 /** The player's own profile, also before others can see it. */
@@ -103,7 +104,7 @@ export function ProfileScreen() {
       )}
       <div className={styles.layout}>
         {me.member ? (
-          <PinnedCards pinned={me.pinned} slots={me.pinnedSlots} onOpen={openCard} />
+          <PinnedCardsEditor pinned={me.pinned} slots={me.pinnedSlots} onOpen={openCard} />
         ) : (
           <section className={styles.panel}>
             <p className={styles.muted}>

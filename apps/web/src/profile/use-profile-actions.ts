@@ -1,7 +1,7 @@
 "use client";
 
 import type { UpdateProfileRequest } from "@leximon/contract";
-import { pinsFullMessage, pinToast, profileRefusalMessage, togglePin } from "@leximon/view-model";
+import { profileRefusalMessage } from "@leximon/view-model";
 import { useState } from "react";
 import { ApiError, type ProfileResult, setPinnedCards, updateProfile } from "@/lib/api";
 import { profile } from "@/player/player";
@@ -58,17 +58,9 @@ export function useProfileActions() {
     profile: me,
     busy,
     isPinned: (cardId: string) => me?.pinned.includes(cardId) ?? false,
-    /** Pins or unpins a card, at the end of the profile's row. */
-    togglePin: (cardId: string): Promise<string | null> => {
-      if (me === null) return Promise.resolve(null);
-      const change = togglePin(me.pinned, cardId, me.pinnedSlots);
-      if (!change.ok) {
-        const problem = pinsFullMessage(me.pinnedSlots);
-        toast(problem);
-        return Promise.resolve(problem);
-      }
-      return run(() => setPinnedCards(change.cardIds), { success: pinToast(change) });
-    },
+    /** Sends the pinned cards, all of them, in their new order. */
+    setPins: (cardIds: readonly string[], success: string | null): Promise<string | null> =>
+      run(() => setPinnedCards(cardIds), { success }),
     update: (changes: UpdateProfileRequest, options: Options): Promise<string | null> =>
       run(() => updateProfile(changes), options),
   };

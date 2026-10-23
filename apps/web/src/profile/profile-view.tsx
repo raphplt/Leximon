@@ -4,7 +4,6 @@ import type { ProfileClan, ProfileStats } from "@leximon/contract";
 import {
   formatPlayerCode,
   memberSinceLabel,
-  pinnedSlotsLabel,
   profileHeadline,
   statTiles,
 } from "@leximon/view-model";
@@ -16,7 +15,6 @@ import { Emblem } from "@/clan/emblem";
 import { Avatar } from "@/components/avatar";
 import { Card } from "@/components/card";
 import { useNarrow } from "@/lib/use-narrow";
-import { Icon } from "@/ui/icon";
 import ui from "@/ui/ui.module.css";
 import styles from "./profile.module.css";
 
@@ -94,28 +92,24 @@ function ClanLine({
   );
 }
 
-/** Pinned cards, and on the player's own profile the empty places left. */
+/** Someone's pinned cards, as others see them (the player's own: `PinnedCardsEditor`). */
 export function PinnedCards({
   pinned,
-  slots,
   onOpen,
 }: {
   readonly pinned: readonly string[];
-  /** The player's own places, shown empty; `null` on someone else's profile. */
-  readonly slots: number | null;
   readonly onOpen?: (cardId: string) => void;
 }) {
   const catalog = useCatalog();
-  const empty = slots === null ? 0 : Math.max(0, slots - pinned.length);
+  const narrow = useNarrow();
   return (
     <section className={`${ui.panel} ${styles.panel}`} aria-labelledby="pinned-title">
       <div className={styles.panelHead}>
         <h2 id="pinned-title" className={`${ui.display} ${styles.panelTitle}`}>
           Cartes épinglées
         </h2>
-        {slots !== null && <span className={styles.panelMeta}>{pinnedSlotsLabel(slots)}</span>}
       </div>
-      {pinned.length === 0 && slots === null ? (
+      {pinned.length === 0 ? (
         <p className={styles.muted}>Vitrine vide.</p>
       ) : (
         <ul className={styles.pins}>
@@ -129,7 +123,7 @@ export function PinnedCards({
                 <Card
                   card={card}
                   collectionName={collectionName(catalog, card.collectionId)}
-                  width={150}
+                  width={narrow ? 130 : 150}
                 />
               );
             return (
@@ -149,15 +143,6 @@ export function PinnedCards({
               </li>
             );
           })}
-          {Array.from({ length: empty }, (_, index) => (
-            // biome-ignore lint/suspicious/noArrayIndexKey: empty places have no identity
-            <li key={`empty-${index}`} className={styles.pin}>
-              <Link href="/album" className={styles.emptySlot}>
-                <Icon name="pin" size={22} />
-                <span>Épingle une carte depuis ton album</span>
-              </Link>
-            </li>
-          ))}
         </ul>
       )}
     </section>

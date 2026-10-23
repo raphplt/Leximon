@@ -10,13 +10,11 @@ import {
   deleteAccountLabel,
   frameName,
   memberSinceLabel,
-  pinsFullMessage,
   profileHeadline,
   profilePath,
   profileSubline,
   pseudoHint,
   statTiles,
-  togglePin,
   visibilityNote,
 } from "./profile";
 import { rewardItem } from "./rewards";
@@ -119,23 +117,6 @@ describe("profile header", () => {
       { value: "18 j", label: "de jeu" },
     ]);
     expect(statTiles(profile().stats, null)[0]?.label).toBe("mots");
-  });
-});
-
-describe("togglePin", () => {
-  it("pins at the end, unpins in place, and refuses past the slots", () => {
-    expect(togglePin(["a", "b"], "c", 3)).toEqual({
-      ok: true,
-      cardIds: ["a", "b", "c"],
-      pinned: true,
-    });
-    expect(togglePin(["a", "b", "c"], "b", 3)).toEqual({
-      ok: true,
-      cardIds: ["a", "c"],
-      pinned: false,
-    });
-    expect(togglePin(["a", "b", "c"], "d", 3)).toEqual({ ok: false, reason: "full" });
-    expect(pinsFullMessage(3)).toBe("Tes 3 places sont prises. Retire une carte d'abord.");
   });
 });
 
