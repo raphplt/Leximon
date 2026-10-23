@@ -12,7 +12,7 @@ import {
 } from "./level";
 
 const NOW = Date.UTC(2026, 9, 22);
-const at16 = { xp: xpToReach(16) + 260, level: 16, xpIntoLevel: 260, xpForNextLevel: 775 };
+const at16 = { xp: xpToReach(16) + 260, level: 16, xpIntoLevel: 260, xpForNextLevel: 825 };
 
 describe("level", () => {
   it("labels a gain only when something was earned", () => {
@@ -25,9 +25,9 @@ describe("level", () => {
   it("measures the current level", () => {
     expect(levelRatio({ xpIntoLevel: 100, xpForNextLevel: 400 })).toBe(0.25);
     expect(levelRatio({ xpIntoLevel: 500, xpForNextLevel: 400 })).toBe(1);
-    expect(xpProgressLabel(at16)).toBe("260 / 775 XP");
-    expect(levelDescription(at16)).toBe("Niveau 16, 260 sur 775 XP");
-    expect(roadSubtitle(at16)).toBe("Niveau 16 · encore 515 XP avant le 17");
+    expect(xpProgressLabel(at16)).toBe("260 / 825 XP");
+    expect(levelDescription(at16)).toBe("Niveau 16, 260 sur 825 XP");
+    expect(roadSubtitle(at16)).toBe("Niveau 16 · encore 565 XP avant le 17");
   });
 
   it("carries the title of the highest milestone claimed", () => {

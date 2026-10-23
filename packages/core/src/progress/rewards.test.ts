@@ -20,11 +20,9 @@ describe("levelRewards", () => {
     expect(levelRewards(rules, 2.5)).toEqual([]);
   });
 
-  it("alternates a refill and a bonus booster on ordinary levels", () => {
-    expect(kinds(2)).toEqual(["refill"]);
-    expect(kinds(3)).toEqual(["bonus_booster"]);
-    expect(kinds(4)).toEqual(["refill"]);
-    expect(kinds(17)).toEqual(["bonus_booster"]);
+  it("gives a bonus booster on ordinary levels, never a refill", () => {
+    for (const level of [2, 3, 4, 17]) expect(kinds(level)).toEqual(["bonus_booster"]);
+    for (let level = 2; level <= 200; level++) expect(kinds(level)).not.toContain("refill");
   });
 
   it("gives a garni booster and a title every 5 levels", () => {
@@ -107,7 +105,7 @@ describe("rewardBoosters", () => {
     expect(rewardBoosters(levelRewards(rules, 3))).toBe(1);
     expect(rewardBoosters(levelRewards(rules, 5))).toBe(1);
     expect(rewardBoosters(levelRewards(rules, 10))).toBe(1);
-    expect(rewardBoosters(levelRewards(rules, 4))).toBe(0);
+    expect(rewardBoosters(levelRewards(rules, 1))).toBe(0);
   });
 });
 

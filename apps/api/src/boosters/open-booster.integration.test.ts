@@ -18,6 +18,7 @@ import {
   isAtLeast,
   REFILL_SCHEDULE,
   XP_SCHEDULE,
+  xpToReach,
 } from "@leximon/core";
 import { createDb, schema } from "@leximon/db";
 import { testDatabaseUrl } from "@leximon/db/testing";
@@ -47,8 +48,8 @@ beforeAll(() => seedTestCatalog(db));
 afterAll(close);
 
 const STARTER: BoosterSource = { kind: "collection", collectionId: STARTER_COLLECTION };
-/** Total XP at the start of level 3 (level curve), which opens the choice of collection. */
-const LEVEL_3_XP = 245;
+/** Level 3 opens the choice of collection. */
+const LEVEL_3_XP = xpToReach(3);
 const signInAsPlayer = () => signInAsMember(app, env, db);
 
 function openBooster(
@@ -203,7 +204,7 @@ describe("experience", () => {
           )
         ).json(),
       );
-    expect(await read()).toEqual({ xp: 0, level: 1, xpIntoLevel: 0, xpForNextLevel: 100 });
+    expect(await read()).toEqual({ xp: 0, level: 1, xpIntoLevel: 0, xpForNextLevel: xpToReach(2) });
 
     const opened = openBoosterResponseSchema.parse(await (await openBooster(guest)).json());
     const { xpGained: _gained, levelUp: _levelUp, ...progress } = opened.progress;

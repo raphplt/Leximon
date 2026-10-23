@@ -13,7 +13,6 @@ import {
   levelRewardRulesAt,
   levelRewards,
   REFILL_SCHEDULE,
-  refillToFull,
   reserveCapacity,
   rewardBoosters,
 } from "@leximon/core";
@@ -94,18 +93,14 @@ export type ClaimResult =
     }
   | { readonly kind: "refused"; readonly reason: ClaimRefusalReason };
 
-export type ClaimRefusalReason =
-  | "level_not_reached"
-  | "reserve_full"
-  | "stock_full"
-  | "guest_archived";
+export type ClaimRefusalReason = "level_not_reached" | "reserve_full" | "guest_archived";
 
 /**
  * Claims the reward of a level: the coffret. Idempotent by nature: the level is the key, a
  * second claim of the same level returns what the first one gave.
  *
  * A coffret that would waste something stays closed, to be claimed later: boosters that do not
- * fit in the reserve (`reserve_full`), a refill of a full stock (`stock_full`).
+ * fit in the reserve (`reserve_full`).
  *
  * One transaction that locks the player's wallet, as an open or an answer does (lock order: the
  * wallet first): BEGIN, lock (or create) the wallet, read the XP and the claim, one combined
@@ -145,15 +140,6 @@ export async function claimLevelReward(
     const rewards = levelRewards(rules, level);
     const has = (kind: LevelReward["kind"]) => rewards.some((reward) => reward.kind === kind);
 
-    let refill: BoosterWallet | null = null;
-    if (has("refill")) {
-      refill = refillToFull(
-        { stored: locked.stored, progressMs: locked.progressMs, asOf: locked.asOf.getTime() },
-        REFILL_SCHEDULE,
-        now,
-      );
-      if (refill === null) return { kind: "refused", reason: "stock_full" };
-    }
     const reserveSlots = locked.reserveSlots + (has("reserve_slot") ? 1 : 0);
     const boosters = rewardBoosters(rewards);
     const garni = rewards.filter((reward) => reward.kind === "garni_booster").length;
@@ -165,9 +151,9 @@ export async function claimLevelReward(
     }
 
     const after: WalletRow = {
-      stored: refill?.stored ?? locked.stored,
-      progressMs: refill?.progressMs ?? locked.progressMs,
-      asOf: refill === null ? locked.asOf : new Date(refill.asOf),
+      stored: locked.stored,
+      progressMs: locked.progressMs,
+      asOf: locked.asOf,
       bonusBoosters: locked.bonusBoosters + boosters,
       garniBoosters: locked.garniBoosters + garni,
       reserveSlots,

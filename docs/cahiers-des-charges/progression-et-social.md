@@ -74,7 +74,7 @@ Les plafonds des défis (P29) limitent aussi l'XP qu'un tricheur peut en tirer.
 | Récompense | Contenu | Ce qu'il faut construire |
 |---|---|---|
 | Pli bonus | 1 pli dans la réserve (P23) | Rien : la réserve existe |
-| Recharge | Le stock gratuit remis au plein tout de suite | Une écriture du portefeuille |
+| Recharge | Le stock gratuit remis au plein tout de suite | Retirée le 2026-10-23 : elle s'auto-alimentait (P58) |
 | Pli garni | Un pli dont au moins une carte est Rare ou mieux | Une garantie de tirage, comme celle du Peu courant (P11) |
 | Carte au choix | Une carte Courante ou Peu courante que le joueur n'a pas, qu'il choisit | Abandonnée le 2026-10-22 : un pli garni à la place (P58) |
 | Réserve agrandie | Une place de plus dans la réserve de plis bonus, jusqu'à +5 | Un champ du portefeuille |

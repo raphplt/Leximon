@@ -107,7 +107,7 @@ Compte A, n'importe quel niveau.
 
 ### JOU-01 · Écran Jouer
 - **Faire :** ouvrir `/jouer` en 1440 px puis en 390 px.
-- **Attendu :** en 1440 px, en haut, le bandeau du niveau : médaille, « Niveau 16 · titre », barre d'XP et « 260 / 775 XP », sous la barre la prochaine récompense en clair (« Au niveau 17, une recharge. », ou ce que le niveau ouvre : « Au niveau 3, choisir la collection de ton sachet. »), les 4 prochaines récompenses reliées par un trait, « N coffrets » s'il y en a (les récompenses disparaissent sous 1060 px). Dessous, le comptoir, plus clair que la page, qui descend jusqu'au bas de la fenêtre : une lumière douce venue d'en haut, sans bord net, le sachet dans sa flaque de lumière avec de l'air au-dessus et en dessous, et le bouton sur une tablette sombre. Tout tient sans défiler, en 1440 × 900 comme en 1280 × 720 (marges resserrées). De part et d'autre, des boutons ronds : à gauche Clan (avec l'emblème de ton clan si tu en as un), Discussion, Joutes, creux et en pointillés tant que le niveau ne les ouvre pas ; à droite Défi du jour avec son anneau, Réglages. Ni courrier ni coffrets dans ces boutons : la barre du haut et le bandeau les ont déjà. En 390 px, la coque mobile : onglets en bas, bandeau en haut, boutons flottants de part et d'autre du sachet, avec Coffrets en plus. Les panneaux apparaissent en fondu, sans glisser.
+- **Attendu :** en 1440 px, en haut, le bandeau du niveau : médaille, « Niveau 16 · titre », barre d'XP et « 260 / 825 XP », sous la barre la prochaine récompense en clair (« Au niveau 17, un sachet bonus. », ou ce que le niveau ouvre : « Au niveau 3, choisir la collection de ton sachet. »), les 4 prochaines récompenses reliées par un trait, « N coffrets » s'il y en a (les récompenses disparaissent sous 1060 px). Dessous, le comptoir, plus clair que la page, qui descend jusqu'au bas de la fenêtre : une lumière douce venue d'en haut, sans bord net, le sachet dans sa flaque de lumière avec de l'air au-dessus et en dessous, et le bouton sur une tablette sombre. Tout tient sans défiler, en 1440 × 900 comme en 1280 × 720 (marges resserrées). De part et d'autre, des boutons ronds : à gauche Clan (avec l'emblème de ton clan si tu en as un), Discussion, Joutes, creux et en pointillés tant que le niveau ne les ouvre pas ; à droite Défi du jour avec son anneau, Réglages. Ni courrier ni coffrets dans ces boutons : la barre du haut et le bandeau les ont déjà. En 390 px, la coque mobile : onglets en bas, bandeau en haut, boutons flottants de part et d'autre du sachet, avec Coffrets en plus. Les panneaux apparaissent en fondu, sans glisser.
 - **Retour :**
 
 ### JOU-02 · Stock
@@ -176,14 +176,13 @@ Compte A : `pnpm dev:player contact@leximon.fr --level 21` pour avoir une série
 ### NIV-04 · Chaque type de récompense
 - **Faire :** ouvrir les coffrets jusqu'au niveau 21.
 - **Attendu :**
-  - niveau impair : un sachet bonus ;
-  - niveau pair : une recharge (« Stock remis au plein. ») ;
+  - niveau ordinaire : un sachet bonus, jamais de recharge ;
   - 5 et 15 : un sachet garni (au moins une Rare, ouvert avant les autres bonus) et un titre ;
   - 10 et 20 : un sachet garni, une place de plus dans la réserve (« 3 / 12 bonus »), un avatar, une place de carte épinglée, un cadre (« Filet doré », « Encre qui coule »).
 - **Retour :**
 
 ### NIV-05 · Coffret qui ne peut pas servir
-- **Faire :** réserve pleine, ouvrir un coffret de sachet bonus ; stock plein, ouvrir un coffret de recharge.
+- **Faire :** réserve pleine, ouvrir un coffret de sachet bonus.
 - **Attendu :** refus clair. Le coffret reste fermé et attend, rien n'est perdu.
 - **Retour :**
 

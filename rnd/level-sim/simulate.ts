@@ -42,8 +42,6 @@ export interface Profile {
   readonly challengeDaysPerWeek: number;
   readonly correctPerSession: number;
   readonly tradesPerWeek: number;
-  /** Opens enough to drain the stock: a refill coffret adds boosters. */
-  readonly drainsStock: boolean;
 }
 
 export const PROFILES: readonly Profile[] = [
@@ -53,7 +51,6 @@ export const PROFILES: readonly Profile[] = [
     challengeDaysPerWeek: 3,
     correctPerSession: 4,
     tradesPerWeek: 0,
-    drainsStock: false,
   },
   {
     name: "régulier",
@@ -61,7 +58,6 @@ export const PROFILES: readonly Profile[] = [
     challengeDaysPerWeek: 7,
     correctPerSession: 8,
     tradesPerWeek: 1,
-    drainsStock: false,
   },
   {
     name: "assidu",
@@ -69,7 +65,6 @@ export const PROFILES: readonly Profile[] = [
     challengeDaysPerWeek: 7,
     correctPerSession: 20,
     tradesPerWeek: 3,
-    drainsStock: true,
   },
 ];
 
@@ -79,7 +74,6 @@ const NEW_COLLECTION_EVERY_DAYS = 28;
 const SHELF_SIZE = 4;
 const LAUNCH_WINDOW_DAYS = 28;
 const CHOOSE_COLLECTION_LEVEL = 3;
-const REFILL_BOOSTERS = 6;
 /** No mastery level before a word's memory holds a week. */
 const FIRST_MASTERY_DAY = 8;
 /** Steady state: about one level (Encre, then Dorure) for every four correct answers. */
@@ -143,9 +137,6 @@ export function simulatePlayer(
       level++;
       const rewards = levelRewards(rewardRules, level);
       pendingBoosters += rewardBoosters(rewards);
-      if (profile.drainsStock && rewards.some((r) => r.kind === "refill")) {
-        pendingBoosters += REFILL_BOOSTERS;
-      }
       if (reached.has(level) && reached.get(level) === null) reached.set(level, day);
     }
   };

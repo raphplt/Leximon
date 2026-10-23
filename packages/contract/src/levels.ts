@@ -29,9 +29,9 @@ export type ClaimLevelRewardResponse = z.infer<typeof claimLevelRewardResponseSc
 
 /**
  * `POST /me/level-rewards/:level`, 409: the coffret stays closed and can be claimed later.
- * `reserve_full`: its boosters do not fit in the reserve; `stock_full`: its refill would be lost.
+ * `reserve_full`: its boosters do not fit in the reserve.
  */
 export const claimRefusalSchema = z.object({
-  error: z.enum(["level_not_reached", "reserve_full", "stock_full", "guest_archived"]),
+  error: z.enum(["level_not_reached", "reserve_full", "guest_archived"]),
 });
 export type ClaimRefusal = z.infer<typeof claimRefusalSchema>["error"];

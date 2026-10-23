@@ -5,25 +5,25 @@ import { answerXp, boosterXp, levelOf, progressGain, xpRulesAt, xpToReach } from
 const rules = xpRulesAt(XP_SCHEDULE, 0);
 
 describe("xpToReach", () => {
-  it("follows 100 + 45 × (n − 1) per level", () => {
+  it("follows 150 + 45 × (n − 1) per level", () => {
     expect(xpToReach(1)).toBe(0);
-    expect(xpToReach(2)).toBe(100);
-    expect(xpToReach(3)).toBe(245);
-    expect(xpToReach(10)).toBe(2520);
-    expect(xpToReach(30)).toBe(21_170);
+    expect(xpToReach(2)).toBe(150);
+    expect(xpToReach(3)).toBe(345);
+    expect(xpToReach(10)).toBe(2970);
+    expect(xpToReach(30)).toBe(22_620);
   });
 });
 
 describe("levelOf", () => {
   it("starts everyone at level 1", () => {
-    expect(levelOf(0)).toEqual({ level: 1, xpIntoLevel: 0, xpForNextLevel: 100 });
+    expect(levelOf(0)).toEqual({ level: 1, xpIntoLevel: 0, xpForNextLevel: 150 });
   });
 
   it("changes level exactly at the threshold", () => {
-    expect(levelOf(99).level).toBe(1);
-    expect(levelOf(100)).toEqual({ level: 2, xpIntoLevel: 0, xpForNextLevel: 145 });
-    expect(levelOf(2519).level).toBe(9);
-    expect(levelOf(2520).level).toBe(10);
+    expect(levelOf(149).level).toBe(1);
+    expect(levelOf(150)).toEqual({ level: 2, xpIntoLevel: 0, xpForNextLevel: 195 });
+    expect(levelOf(2969).level).toBe(9);
+    expect(levelOf(2970).level).toBe(10);
   });
 
   it("agrees with xpToReach on every level up to 500", () => {
@@ -40,7 +40,7 @@ describe("levelOf", () => {
 
   it("treats a negative or fractional total as what was really earned", () => {
     expect(levelOf(-5).level).toBe(1);
-    expect(levelOf(100.9).xpIntoLevel).toBe(0);
+    expect(levelOf(150.9).xpIntoLevel).toBe(0);
   });
 });
 
@@ -69,8 +69,8 @@ describe("answerXp", () => {
 
 describe("progressGain", () => {
   it("tells whether the gain crossed a level", () => {
-    expect(progressGain(110, 20)).toMatchObject({ level: 2, xpGained: 20, levelUp: true });
-    expect(progressGain(130, 20)).toMatchObject({ level: 2, xpIntoLevel: 30, levelUp: false });
+    expect(progressGain(160, 20)).toMatchObject({ level: 2, xpGained: 20, levelUp: true });
+    expect(progressGain(180, 20)).toMatchObject({ level: 2, xpIntoLevel: 30, levelUp: false });
     expect(progressGain(0, 0)).toMatchObject({ level: 1, levelUp: false });
   });
 });

@@ -116,17 +116,12 @@ describe("POST /me/level-rewards/:level", () => {
     expect(rows).toHaveLength(1);
   });
 
-  it("refills the free stock, and keeps the coffret closed while the stock is full", async () => {
-    const full = await playerAt(2, { stored: CAPACITY });
-    const refused = await claim(full, 2);
-    expect(refused.status).toBe(409);
-    expect(await refused.json()).toEqual({ error: "stock_full" });
-
+  it("leaves the free stock alone: a level never refills it", async () => {
     const guest = await playerAt(2, { stored: 1 });
     const body = claimLevelRewardResponseSchema.parse(await (await claim(guest, 2)).json());
-    expect(body.rewards).toEqual([{ kind: "refill" }]);
-    expect(body.wallet).toMatchObject({ stored: CAPACITY, nextRefillAt: null });
-    expect((await walletOf(guest.userId))?.stored).toBe(CAPACITY);
+    expect(body.rewards).toEqual([{ kind: "bonus_booster" }]);
+    expect(body.wallet).toMatchObject({ stored: 1, bonus: 1 });
+    expect((await walletOf(guest.userId))?.stored).toBe(1);
   });
 
   it("keeps the coffret closed when its boosters do not fit in the reserve", async () => {

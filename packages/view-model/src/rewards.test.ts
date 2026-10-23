@@ -2,7 +2,6 @@ import { xpToReach } from "@leximon/core";
 import { describe, expect, it } from "vitest";
 import {
   claimedToast,
-  coffretAction,
   coffretHint,
   coffretsLabel,
   levelDetail,
@@ -22,13 +21,13 @@ const progress = (level: number, extra = 0) => ({
   xp: xpToReach(level) + extra,
   level,
   xpIntoLevel: extra,
-  xpForNextLevel: 100 + 45 * (level - 1),
+  xpForNextLevel: 150 + 45 * (level - 1),
 });
 
 describe("level rewards", () => {
   it("sums up what each level gives", () => {
     expect(rewardSummary(1, NOW)).toBe("Départ");
-    expect(rewardSummary(2, NOW)).toBe("Recharge");
+    expect(rewardSummary(2, NOW)).toBe("Sachet bonus");
     expect(rewardSummary(3, NOW)).toBe("Sachet bonus");
     expect(rewardSummary(15, NOW)).toBe("Sachet garni · Titre");
     expect(rewardSummary(20, NOW)).toBe(
@@ -47,10 +46,6 @@ describe("level rewards", () => {
     expect(claimedToast([{ kind: "refill" }])).toBe("Stock remis au plein.");
     expect(claimedToast([{ kind: "bonus_booster" }])).toBe("Rangé dans ta réserve.");
     expect(reserveLabel({ bonus: 3, bonusCap: 12 })).toBe("3 / 12 bonus");
-    expect(coffretAction([{ kind: "refill" }])).toBe("Remplir mon stock");
-    expect(coffretAction([{ kind: "garni_booster" }, { kind: "title", title: "x" }])).toBe(
-      "Ranger dans ma réserve",
-    );
   });
 
   it("shows the next four levels, milestones and openings marked", () => {
@@ -64,14 +59,18 @@ describe("level rewards", () => {
     expect(next[0]?.label).toBe(
       "Niveau 3 : Sachet bonus, ouvre choisir la collection de ton sachet",
     );
-    expect(next[1]).toMatchObject({ icon: "bolt", opens: null, label: "Niveau 4 : Recharge" });
+    expect(next[1]).toMatchObject({
+      icon: "sachet",
+      opens: null,
+      label: "Niveau 4 : Sachet bonus",
+    });
     expect(next[2]).toMatchObject({ milestone: true, icon: "lock" });
   });
 
   it("says the next reward in a sentence, an opening first", () => {
-    expect(nextRewardLine(1, NOW)).toBe("Au niveau 2, une recharge.");
+    expect(nextRewardLine(1, NOW)).toBe("Au niveau 2, un sachet bonus.");
     expect(nextRewardLine(2, NOW)).toBe("Au niveau 3, choisir la collection de ton sachet.");
-    expect(nextRewardLine(3, NOW)).toBe("Au niveau 4, une recharge.");
+    expect(nextRewardLine(3, NOW)).toBe("Au niveau 4, un sachet bonus.");
   });
 });
 

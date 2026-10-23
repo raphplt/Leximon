@@ -2,7 +2,7 @@
  * Level rewards: every level from 2 on gives a free reward, claimed by the player (the
  * "coffret"). Nothing is drawn at random: what a level gives is known in advance.
  *
- * Ordinary levels alternate a bonus booster and a refill of the free stock. Every 5 levels: a
+ * Ordinary levels give a bonus booster. Every 5 levels: a
  * "garni" booster (at least one Rare); up to level 45, the odd ones add a title. Every 10 levels
  * also gives a reserve slot (up to level 50), an engraved avatar and a pinned card slot (up to
  * level 30); levels 10 and 20 add an avatar frame. Beyond level 50, only bonus boosters and
@@ -16,6 +16,8 @@ import type { EpochMs } from "../booster/refill";
 
 export const LEVEL_REWARD_KINDS = [
   "bonus_booster",
+  // No level gives a refill any more: it fed the XP of the next levels. Kept for coffrets
+  // claimed before.
   "refill",
   "garni_booster",
   "title",
@@ -100,8 +102,7 @@ export function levelRewards(rules: LevelRewardRules, level: number): LevelRewar
       ? [{ kind: "garni_booster" }]
       : [{ kind: "garni_booster" }, { kind: "title", title }];
   }
-  // Odd levels a bonus booster, even levels a refill: level 2 refills what the first opens spent.
-  return level % 2 === 1 ? [{ kind: "bonus_booster" }] : [{ kind: "refill" }];
+  return [{ kind: "bonus_booster" }];
 }
 
 /** The avatar of a level; unnamed when the rules list none for it (beyond the engraved ones). */

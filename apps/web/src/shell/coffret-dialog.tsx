@@ -2,9 +2,9 @@
 
 import type { ClaimRefusal, LevelRewardView } from "@leximon/contract";
 import {
+  COFFRET_ACTION,
   claimedToast,
   claimRefusalMessage,
-  coffretAction,
   coffretHint,
   opensAt,
   rewardItem,
@@ -119,7 +119,7 @@ export function CoffretDialog({
                 </p>
               )}
               <Button wide className={styles.action} onClick={() => store(step.rewards)}>
-                {coffretAction(step.rewards)}
+                {COFFRET_ACTION}
               </Button>
             </>
           ) : (
@@ -145,8 +145,7 @@ export function CoffretDialog({
               ) : (
                 <p className={styles.hint}>{level === null ? "" : coffretHint(level, now)}</p>
               )}
-              {step.name === "refused" &&
-              (step.reason === "reserve_full" || step.reason === "stock_full") ? (
+              {step.name === "refused" && step.reason === "reserve_full" ? (
                 <Button
                   wide
                   onClick={() => {

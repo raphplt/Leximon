@@ -113,18 +113,13 @@ export function claimedToast(rewards: readonly LevelRewardView[]): string {
 }
 
 /** The button of an opened coffret: what the player does with it. */
-export function coffretAction(rewards: readonly LevelRewardView[]): string {
-  if (rewards.every((r) => r.kind === "refill")) return "Remplir mon stock";
-  return "Ranger dans ma réserve";
-}
+export const COFFRET_ACTION = "Ranger dans ma réserve";
 
 /** Why a coffret stays closed, and what to do; it waits to be claimed later. */
 export function claimRefusalMessage(reason: ClaimRefusal, level: number): string {
   switch (reason) {
     case "reserve_full":
       return "Ta réserve est pleine. Ouvre un sachet bonus, le coffret t'attend.";
-    case "stock_full":
-      return "Ton stock est plein, la recharge serait perdue. Ouvre un sachet, le coffret t'attend.";
     case "level_not_reached":
       return `Pas encore. Ce coffret s'ouvre au niveau ${level}.`;
     case "guest_archived":

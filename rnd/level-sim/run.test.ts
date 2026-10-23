@@ -16,6 +16,7 @@ const CURVES: readonly LevelCurve[] = [
   { base: 150, step: 40 },
   { base: 100, step: 45 },
   { base: 125, step: 45 },
+  { base: 150, step: 45 },
 ];
 const LEVELS = [5, 10, 15, 20, 30, 50, 75, 100];
 const DAYS = 730;
