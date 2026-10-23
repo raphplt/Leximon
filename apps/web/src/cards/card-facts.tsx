@@ -21,6 +21,17 @@ export function CardFacts({ card }: { readonly card: CatalogCard }) {
   );
 }
 
+/** The quote in full: the card face may have to shorten it. */
+export function CardQuoteInFull({ card }: { readonly card: CatalogCard }) {
+  if (card.quote === null) return null;
+  return (
+    <figure className={styles.quote}>
+      <blockquote className={styles.quoteText}>« {card.quote.text} »</blockquote>
+      <figcaption className={styles.quoteAuthor}>{card.quote.author}</figcaption>
+    </figure>
+  );
+}
+
 /** The word's origin, when the card has one. */
 export function CardOrigin({ card }: { readonly card: CatalogCard }) {
   if (card.etymology === null) return null;

@@ -14,6 +14,7 @@ import {
   hasPlate,
 } from "@/cards/engraving";
 import styles from "./card.module.css";
+import { CardQuote } from "./card-quote";
 import { RarityIcon } from "./rarity-icon";
 
 interface CardProps {
@@ -73,9 +74,12 @@ export function Card({ card, collectionName, width = cardSize.width }: CardProps
         </p>
         <p className={styles.definition}>{card.definition}</p>
         {card.quote !== null && (
-          <p className={styles.quote}>
-            « {card.quote.text} » <span className={styles.author}>{card.quote.author}</span>
-          </p>
+          <CardQuote
+            text={card.quote.text}
+            author={card.quote.author}
+            className={styles.quote}
+            authorClassName={styles.author}
+          />
         )}
         <footer className={styles.footer}>
           <span>{collectionName}</span>

@@ -230,13 +230,18 @@
   line-height: 1.27;
 }
 
+/* Only the quote gives way when the face is full: `CardQuote` counts the lines left for it. */
+.inner > * {
+  flex-shrink: 0;
+}
+
 .quote {
   display: -webkit-box;
+  flex-shrink: 1;
+  min-height: 0;
   margin: 0;
   overflow: hidden;
   -webkit-box-orient: vertical;
-  -webkit-line-clamp: 3;
-  line-clamp: 3;
   font-size: calc(12.5 * var(--u));
   font-style: italic;
   line-height: 1.3;

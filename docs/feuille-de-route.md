@@ -66,7 +66,8 @@ Arbitrés par le propriétaire le 2026-10-20 : jeu grand public (B2C), pas de ve
 | Web : page d'accueil publique | Fait | P55 : accueil sur `/`, le jeu sous `/jouer`, connexion depuis l'accueil, lien vers le Discord du projet. Liste d'attente, image de partage, pages `/confidentialite`, `/mentions`, `/conditions`, `/charte`, 404 et page d'erreur en français. Reste : la relecture des textes par un juriste |
 | Mobile (Expo) | À faire | Builds de développement et EAS prêts depuis le 2026-10-21, aucun écran de jeu. Charger les polices demandera `expo-font` |
 | Animations et reflets | À faire | R&D D-009 pour le mobile. Sur le web, du CSS |
-| Ouverture : peaufinage | Fait sur le web | Cahier : [ouverture.md](cahiers-des-charges/ouverture.md). Déchirure au doigt, pile, mise en scène par rareté, sons synthétisés, vibration, récapitulatif, reflets par rareté, sachet bombé au sceau doré, mot dit quand la carte se pose, aperçu en glissant. Reste : mobile |
+| Ouverture : peaufinage | Fait sur le web | Cahier : [ouverture.md](cahiers-des-charges/ouverture.md). Déchirure au doigt, pile, mise en scène par rareté, sons synthétisés, vibration, récapitulatif, reflets par rareté, sachet bombé au sceau doré, mot dit quand la carte se pose, aperçu en glissant. Récapitulatif lisible en cascade, fiche au toucher (2026-10-23). Reste : mobile |
+| Retours du premier testeur | En cours | Cahier : [retours-premier-testeur.md](cahiers-des-charges/retours-premier-testeur.md), validé le 2026-10-23. Lot 1 fait (relire ce qu'on vient d'ouvrir). Reste : lots 2 à 5 (« Nouveau » dans l'album, mot qui s'échappe, signaux de Jouer, collections et raretés) |
 | Ouverture : forme du paquet | Fait | Le sachet (P47, P53), un par collection. Le pli reste à l'essai (`/jouer?paquet=pli`) |
 | Numéro de collection sur la carte | À décider | Par exemple « 040/160 ». Dénominateur à choisir (taille annoncée ou cartes publiées) |
 

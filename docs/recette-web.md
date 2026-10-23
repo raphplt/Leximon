@@ -130,7 +130,8 @@ Compte A, n'importe quel niveau.
 - **Retour :**
 
 ### JOU-06 · Bilan
-- **Attendu :** « Ton sachet », meilleure rareté, mots nouveaux, éventail des cinq cartes avec « Nouveau », « +N XP », barre d'XP, progression de la collection.
+- **Faire :** ouvrir un sachet carte par carte, puis un autre avec « Tout révéler » ; sur ordinateur et sur téléphone.
+- **Attendu :** « Ton sachet », meilleure rareté, mots nouveaux. Les cinq cartes arrivent l'une après l'autre, côte à côte sur ordinateur, en carrousel sur téléphone (des points disent où on en est), lisibles, avec « Nouveau ». Une carte de Rare et au-dessus luit en arrivant ; après « Tout révéler », une Rare ou une Précieuse sautée joue son carillon. Toucher une carte ouvre sa fiche, citation entière comprise. Puis « +N XP », barre d'XP, progression de la collection, boutons. Sur la face d'une carte, la citation n'est jamais coupée au milieu d'une ligne : elle finit par « … ».
 - **Retour :**
 
 ### JOU-07 · Passage de niveau

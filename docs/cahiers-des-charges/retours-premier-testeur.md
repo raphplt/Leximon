@@ -1,6 +1,6 @@
 # Cahier des charges · Retours du premier testeur
 
-- **Statut :** à valider par le propriétaire. Rien n'est commencé.
+- **Statut :** validé par le propriétaire le 2026-10-23, avec les recommandations de la fin du document. Lot 1 fait le 2026-10-23.
 - **Source :** les retours d'un ami du propriétaire, le 2026-10-23, en bêta sur leximon.fr : messages écrits, captures et sept vocaux. Il a commencé en invité, puis a créé son compte. Les arbitrages du propriétaire sont indiqués à chaque point.
 - **Règles liées :** P45 (mise en scène), P57 (prononciation), P58 (coffrets), P59 (fonctionnalités par niveau), P44 (affichage de la rareté). Cahiers liés : [ouverture.md](ouverture.md) (§6 et §7, à mettre à jour), [interface-v1.md](interface-v1.md).
 
@@ -12,7 +12,7 @@ Le potentiel, l'aspect visuel des cartes (gravures, description, niveaux) et le 
 
 | # | Retour | Arbitrage | Lot |
 |---|---|---|---|
-| 1 | Après « Tout révéler », aucun résumé : il ne sait pas ce qu'il a eu, ni ce que disent les cartes, et le quiz arrive sans qu'il les ait lues | Retenu : cascade vers une grille de lecture | 1 |
+| 1 | Après « Tout révéler », aucun résumé : il ne sait pas ce qu'il a eu, ni ce que disent les cartes, et le quiz arrive sans qu'il les ait lues | Retenu : les Épiques et Légendaires restent montrées, puis le résumé arrive en cascade dans une grille de lecture | 1 |
 | 2 | L'écran de fin propose « Créer mon compte / Voir mon album » au lieu de ses cartes | Retenu : le résumé passe avant les boutons | 1 |
 | 3 | La citation est coupée en bas de la carte agrandie | Retenu | 1 |
 | 4 | Pas de tag « Nouveau » dans l'album, pas de filtre sur ce qu'on vient d'ouvrir, ni de façon de savoir ce qu'on a lu | Retenu | 2 |
@@ -38,15 +38,14 @@ Le potentiel, l'aspect visuel des cartes (gravures, description, niveaux) et le 
 
 Le plus important : sans lui, on peut ouvrir des sachets sans jamais lire un mot.
 
-### « Tout révéler » devient une cascade
+### « Tout révéler » et la cascade du résumé
 
-- **Aujourd'hui :** le bouton saute les cartes de Courant à Précieux, montre seulement les Épiques et Légendaires (en version courte), puis passe au résumé.
-- **Demain :** le bouton pose aussitôt les cinq cartes face visible dans la grille du résumé, l'une après l'autre, avec environ 80 ms d'écart.
-  - Chaque carte de Rare à Précieux a un bref reflet de sa couleur en arrivant, avec son carillon.
-  - Une Épique ou une Légendaire a un éclat plus long sur sa case (fond assombri autour d'elle, environ 600 ms), avec sa fanfare, sans quitter la grille. C'est le reste du moment fort.
-  - Avec « réduire les animations », les cartes apparaissent toutes ensemble, sans effet.
-- **L'ouverture carte par carte ne change pas :** elle reste le chemin normal, et elle aboutit au même résumé.
-- **Code :** `apps/web/src/booster/booster-screen.tsx` (`revealAll`, phase `recap`), `staging.ts` (durées). La logique d'ordre et de cadence va dans `packages/view-model`, avec des tests.
+- **Ce qui reste :** le bouton montre encore les Épiques et Légendaires du sachet, en version courte, puis passe au résumé. Arbitrage du propriétaire (2026-10-23) : le moment fort de ces cartes ne se joue pas dans une grille.
+- **Ce qui s'ajoute :** le résumé pose les cinq cartes face visible, l'une après l'autre, avec 80 ms d'écart. Il le fait toujours, qu'on ait tout révélé ou retourné les cartes une par une.
+  - Chaque carte de Rare à Légendaire a un bref reflet de sa couleur en arrivant.
+  - Une carte que le joueur n'a pas vue retournée (une Rare ou une Précieuse sautée par « Tout révéler ») joue aussi son carillon : elle ne passe jamais inaperçue.
+  - Avec « réduire les animations », les cartes apparaissent toutes ensemble, sans effet ni son.
+- **Code :** `recapCascade` dans `apps/web/src/booster/staging.ts` (testée), `RecapCards` dans `booster-screen.tsx`. La logique reste à côté de l'ouverture du web, comme le reste de la mise en scène (`reveal.ts`, `staging.ts`).
 
 ### Le résumé devient une grille de lecture
 
@@ -71,7 +70,7 @@ Le plus important : sans lui, on peut ouvrir des sachets sans jamais lire un mot
   - aucune ligne n'est coupée en deux ;
   - si la définition seule remplit la carte, la citation disparaît de la face.
 - **Dans la fiche :** la citation entière, avec sa source, sous la définition (`cards/card-facts.tsx`). Aujourd'hui, la fiche ne la montre pas du tout.
-- **Contrôle :** une page de dev affiche les 30 cartes du catalogue dont la définition et la citation sont les plus longues, pour vérifier à l'œil.
+- **Contrôle, fait le 2026-10-23 :** les 1 561 cartes mesurées dans le navigateur, à 300 px. Aucune définition ne déborde. Les 552 citations tiennent en lignes entières (de 1 à 7 lignes) : 76 entières, 476 finies par « … », aucune retirée. Pas de page de dev, la mesure suffit.
 
 ## Lot 2 · « Nouveau » dans l'album
 

@@ -81,7 +81,7 @@ Chaque rareté a sa montée en intensité, et l'annonce vient **avant** la face 
 
 ### 6. Le récapitulatif
 
-- Les cinq cartes en éventail, les nouvelles marquées.
+- Les cinq cartes côte à côte (en carrousel sur téléphone), assez grandes pour être lues, les nouvelles marquées. Elles arrivent en cascade, 80 ms d'écart ; toucher une carte ouvre sa fiche, avec la citation entière (2026-10-23, [retours du premier testeur](retours-premier-testeur.md)).
 - La progression de la collection : « Les Fondateurs · 41/160 (+3) ».
 - Plus tard : l'expérience gagnée et la barre de niveau (voir [progression-et-social.md](progression-et-social.md)).
 - Boutons « Ouvrir un autre pli » et « Voir mon album ».
@@ -89,7 +89,7 @@ Chaque rareté a sa montée en intensité, et l'annonce vient **avant** la face 
 ### 7. Rythme et confort
 
 - **Durée cible :** moins de 8 s pour un pli sans carte rare, geste compris. Les raretés hautes peuvent prendre leur temps.
-- **« Tout révéler » :** un bouton permet de passer directement au récapitulatif. Les raretés hautes gardent alors une version courte de leur annonce.
+- **« Tout révéler » :** un bouton permet de passer directement au récapitulatif. Les Épiques et Légendaires restent montrées avant, avec une version courte de leur annonce. Une Rare ou une Précieuse sautée garde son carillon et un reflet en arrivant dans le récapitulatif.
 - **Son :** coupé par défaut sur le web (les navigateurs l'imposent jusqu'au premier toucher), réglable dans les paramètres. Le site ne peut pas savoir si le téléphone est en mode silencieux.
 
 ### 8. Son et vibration

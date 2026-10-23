@@ -10,7 +10,7 @@ import { useHoloLight } from "@/components/use-holo-light";
 import { useNarrow } from "@/lib/use-narrow";
 import { ButtonLink } from "@/ui/button";
 import ui from "@/ui/ui.module.css";
-import { CardFacts, CardOrigin } from "./card-facts";
+import { CardFacts, CardOrigin, CardQuoteInFull } from "./card-facts";
 import styles from "./public-card.module.css";
 
 /** A card as anyone sees it from a shared link: the card, what it says, and the way in. */
@@ -47,6 +47,7 @@ export function PublicCardView({
             {collectionName}
           </span>
         </p>
+        <CardQuoteInFull card={card} />
         <CardOrigin card={card} />
         <div className={styles.pitch}>
           <p>{pitch}</p>

@@ -2,7 +2,7 @@
 
 import type { ProgressGain } from "@leximon/contract";
 import type { Rarity } from "@leximon/core";
-import { motion } from "@leximon/tokens";
+import { motion, rarityStyles } from "@leximon/tokens";
 import {
   type CollectionChoice,
   collectionChoices,
@@ -16,7 +16,7 @@ import {
   xpGainLabel,
 } from "@leximon/view-model";
 import Link from "next/link";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { type CSSProperties, useCallback, useEffect, useRef, useState } from "react";
 import { type Catalog, cardOrPlaceholder, collectionName, loadCatalog } from "@/cards/catalog";
 import { prepareSpokenWords } from "@/cards/use-spoken-word";
 import { Card } from "@/components/card";
@@ -58,9 +58,20 @@ import {
 } from "./reveal";
 import { RevealCard } from "./reveal-card";
 import { Sachet } from "./sachet";
-import { keepsAnnouncementWhenHurried, stagingFor } from "./staging";
+import { keepsAnnouncementWhenHurried, recapCascade, stagingFor } from "./staging";
 
-const FAN_ANGLES = [-10, -5, 0, 5, 10];
+/** Widest the recap's screen gets, in px: `.wide` in the stylesheet. */
+const RECAP_SCREEN_MAX = 1180;
+/** The screen's and the panel's padding around the recap's cards, in px. */
+const RECAP_CHROME = 90;
+const RECAP_GAP = 14;
+/** Below this width a card's definition no longer reads: the recap turns into a carousel. */
+const RECAP_CARD_MIN = 150;
+const RECAP_CARD_MAX = 210;
+/** Room left in the carousel for the next card to show at the edge, in px. */
+const RECAP_PEEK = 96;
+/** A skipped card chimes once it has landed, a little after its slot starts moving. */
+const CHIME_AT_MS = 220;
 /** Room left around a revealed card on a narrow phone, in px. */
 const CARD_MARGIN = 56;
 const CARD_MAX_WIDTH = 300;
@@ -74,8 +85,13 @@ type Phase =
   | { readonly name: "sealed" }
   | { readonly name: "opening" }
   | { readonly name: "stack" }
-  | { readonly name: "revealing"; readonly index: number; readonly hurried: boolean }
-  | { readonly name: "recap" };
+  | {
+      readonly name: "revealing";
+      readonly index: number;
+      /** Where the player asked to reveal everything; null while turning cards one by one. */
+      readonly hurriedFrom: number | null;
+    }
+  | { readonly name: "recap"; readonly hurriedFrom: number | null };
 
 interface Pack {
   /** In reveal order: the rarest card comes last. */
@@ -292,29 +308,31 @@ export function BoosterScreen() {
     setOwned(after);
     ownedCards.publish(after);
     if (reduced) {
-      setPhase({ name: "revealing", index: 0, hurried: false });
+      setPhase({ name: "revealing", index: 0, hurriedFrom: null });
     } else {
       playSound("cardSlide");
       setPhase({ name: "stack" });
     }
   };
 
-  const toRecap = () => {
+  const toRecap = (hurriedFrom: number | null) => {
     playSound("recap");
-    setPhase({ name: "recap" });
+    setPhase({ name: "recap", hurriedFrom });
   };
 
   /** Next card, or, once the player asked to reveal everything, the next Épique or Légendaire. */
   const next = () => {
     if (phase.name !== "revealing" || pack === null) return;
     const from = phase.index + 1;
-    const index = phase.hurried
-      ? pack.cards.findIndex((card, i) => i >= from && keepsAnnouncementWhenHurried(card.rarity))
-      : from < pack.cards.length
-        ? from
-        : -1;
-    if (index === -1) toRecap();
-    else setPhase({ name: "revealing", index, hurried: phase.hurried });
+    const { hurriedFrom } = phase;
+    const index =
+      hurriedFrom !== null
+        ? pack.cards.findIndex((card, i) => i >= from && keepsAnnouncementWhenHurried(card.rarity))
+        : from < pack.cards.length
+          ? from
+          : -1;
+    if (index === -1) toRecap(hurriedFrom);
+    else setPhase({ name: "revealing", index, hurriedFrom });
   };
 
   const revealAll = () => {
@@ -323,8 +341,8 @@ export function BoosterScreen() {
     const index = pack.cards.findIndex(
       (card, i) => i >= from && keepsAnnouncementWhenHurried(card.rarity),
     );
-    if (index === -1) toRecap();
-    else setPhase({ name: "revealing", index, hurried: true });
+    if (index === -1) toRecap(from);
+    else setPhase({ name: "revealing", index, hurriedFrom: from });
   };
 
   const stock = currentWallet === null || now === 0 ? null : stockView(currentWallet, now);
@@ -334,7 +352,7 @@ export function BoosterScreen() {
 
   if (phase.name === "stack" || phase.name === "revealing" || phase.name === "recap") {
     return (
-      <main className={styles.screen}>
+      <main className={phase.name === "recap" ? `${styles.screen} ${styles.wide}` : styles.screen}>
         {phase.name === "stack" && pack !== null && (
           <div className={styles.center}>
             <CardStack
@@ -343,7 +361,7 @@ export function BoosterScreen() {
               tone={pack.back}
               onReveal={() => {
                 playSound("cardSlide");
-                setPhase({ name: "revealing", index: 0, hurried: false });
+                setPhase({ name: "revealing", index: 0, hurriedFrom: null });
               }}
             />
             <div className={styles.revealBar}>
@@ -359,7 +377,7 @@ export function BoosterScreen() {
             catalog={catalog}
             pack={pack}
             index={phase.index}
-            hurried={phase.hurried}
+            hurried={phase.hurriedFrom !== null}
             width={cardWidth}
             onNext={next}
             onRevealAll={revealAll}
@@ -369,6 +387,7 @@ export function BoosterScreen() {
           <Recap
             catalog={catalog}
             pack={pack}
+            hurriedFrom={phase.hurriedFrom}
             mustSignUp={mustSignUp}
             onOpen={() => {
               setPack(null);
@@ -604,11 +623,13 @@ function Revealing({
 function Recap({
   catalog,
   pack,
+  hurriedFrom,
   mustSignUp,
   onOpen,
 }: {
   readonly catalog: Catalog | null;
   readonly pack: Pack;
+  readonly hurriedFrom: number | null;
   readonly mustSignUp: boolean;
   readonly onOpen: () => void;
 }) {
@@ -622,35 +643,10 @@ function Recap({
   const coffretWaits = pack.progress.levelUp && view.coffrets.length > 0;
   const canOpen = view.wallet !== null && (view.wallet.stored > 0 || view.wallet.bonus > 0);
   return (
-    <div className={`${ui.panel} ${ui.pop} ${styles.recap}`}>
+    <div className={`${ui.panel} ${styles.recap}`}>
       <p className={ui.kicker}>Ton sachet</p>
       <RecapLine pack={pack} />
-      <ul className={styles.fan}>
-        {pack.cards.map((drawn, index) => {
-          const isNew =
-            !pack.quantitiesBefore.has(drawn.cardId) &&
-            pack.cards.findIndex((c) => c.cardId === drawn.cardId) === index;
-          return (
-            <li
-              // biome-ignore lint/suspicious/noArrayIndexKey: a pack can hold the same card twice
-              key={index}
-              className={styles.fanCard}
-              style={{
-                transform: `translateX(${(index - (pack.cards.length - 1) / 2) * 34}px) rotate(${FAN_ANGLES[index] ?? 0}deg)`,
-              }}
-            >
-              {catalog !== null && (
-                <Card
-                  card={cardOrPlaceholder(catalog, drawn.cardId, drawn.rarity)}
-                  collectionName={pack.collectionName}
-                  width={140}
-                />
-              )}
-              {isNew && <span className={styles.fanNew}>Nouveau</span>}
-            </li>
-          );
-        })}
-      </ul>
+      {catalog !== null && <RecapCards catalog={catalog} pack={pack} hurriedFrom={hurriedFrom} />}
       {xp !== null && <p className={`${ui.display} ${styles.recapXp}`}>{xp}</p>}
       {progressNow !== null && (
         <XpBar ratio={levelRatio(progressNow)} className={styles.recapBar} />
@@ -693,6 +689,107 @@ function Recap({
   );
 }
 
+/**
+ * The pack's cards, large enough to be read, landing one after the other: in a row on a wide
+ * screen, in a carousel on a phone. Touching one opens its sheet.
+ */
+function RecapCards({
+  catalog,
+  pack,
+  hurriedFrom,
+}: {
+  readonly catalog: Catalog;
+  readonly pack: Pack;
+  readonly hurriedFrom: number | null;
+}) {
+  const { openCard } = useShell();
+  const layout = useRecapLayout(pack.cards.length);
+  const [active, setActive] = useState(0);
+  // Computed once: the cascade plays when the recap appears, not again on a resize.
+  const [steps] = useState(() =>
+    recapCascade(
+      pack.cards,
+      (index) => {
+        const card = pack.cards[index];
+        return (
+          hurriedFrom === null ||
+          index < hurriedFrom ||
+          (card !== undefined && keepsAnnouncementWhenHurried(card.rarity))
+        );
+      },
+      { reducedMotion: prefersReducedMotion() },
+    ),
+  );
+  useEffect(() => {
+    const timers = steps.flatMap((step) =>
+      step.cue === null ? [] : [setTimeout(() => playSound(step.cue), step.delayMs + CHIME_AT_MS)],
+    );
+    return () => {
+      for (const timer of timers) clearTimeout(timer);
+    };
+  }, [steps]);
+
+  const carousel = layout.mode === "carousel";
+  return (
+    <>
+      <ul
+        className={`${styles.recapCards} ${carousel ? styles.recapCarousel : styles.recapRow}`}
+        style={{ "--w": `${layout.width}px`, "--gap": `${RECAP_GAP}px` } as CSSProperties}
+        onScroll={
+          carousel
+            ? (event) =>
+                setActive(Math.round(event.currentTarget.scrollLeft / (layout.width + RECAP_GAP)))
+            : undefined
+        }
+      >
+        {pack.cards.map((drawn, index) => {
+          const card = cardOrPlaceholder(catalog, drawn.cardId, drawn.rarity);
+          const step = steps[index];
+          const isNew =
+            !pack.quantitiesBefore.has(drawn.cardId) &&
+            pack.cards.findIndex((c) => c.cardId === drawn.cardId) === index;
+          const look = rarityStyles[drawn.rarity];
+          return (
+            <li
+              // biome-ignore lint/suspicious/noArrayIndexKey: a pack can hold the same card twice
+              key={index}
+              className={styles.recapSlot}
+              style={
+                {
+                  "--delay": `${step?.delayMs ?? 0}ms`,
+                  "--glint": look.glow ?? look.spot,
+                } as CSSProperties
+              }
+            >
+              <button
+                type="button"
+                className={`${styles.recapCard} ${step?.glint === true ? styles.glint : ""}`}
+                onClick={() => openCard(drawn.cardId)}
+                aria-label={`Lire ${card.word}`}
+              >
+                <Card card={card} collectionName={pack.collectionName} width={layout.width} />
+              </button>
+              {isNew && <span className={styles.recapNew}>Nouveau</span>}
+            </li>
+          );
+        })}
+      </ul>
+      {carousel && (
+        <p className={styles.dots} aria-hidden="true">
+          {pack.cards.map((_, index) => (
+            <span
+              // biome-ignore lint/suspicious/noArrayIndexKey: a pack can hold the same card twice
+              key={index}
+              className={index === active ? styles.dotOn : styles.dot}
+            />
+          ))}
+        </p>
+      )}
+      <p className={styles.recapHint}>Touche une carte pour la lire.</p>
+    </>
+  );
+}
+
 function RecapLine({ pack }: { readonly pack: Pack }) {
   const { best, fresh } = recap(pack.cards, pack.quantitiesBefore);
   return (
@@ -718,4 +815,28 @@ function useCardWidth(): number {
     return () => window.removeEventListener("resize", measure);
   }, []);
   return width;
+}
+
+interface RecapLayout {
+  readonly mode: "row" | "carousel";
+  /** Width of each card, in px. */
+  readonly width: number;
+}
+
+/** Cards side by side when each can still be read, otherwise one per screen width. */
+function recapLayout(windowWidth: number, count: number): RecapLayout {
+  const room = Math.min(windowWidth, RECAP_SCREEN_MAX) - RECAP_CHROME;
+  const inRow = Math.floor((room - RECAP_GAP * (count - 1)) / count);
+  if (inRow >= RECAP_CARD_MIN) return { mode: "row", width: Math.min(inRow, RECAP_CARD_MAX) };
+  return { mode: "carousel", width: Math.min(CARD_MAX_WIDTH, windowWidth - RECAP_PEEK) };
+}
+
+function useRecapLayout(count: number): RecapLayout {
+  const [layout, setLayout] = useState(() => recapLayout(window.innerWidth, count));
+  useEffect(() => {
+    const measure = () => setLayout(recapLayout(window.innerWidth, count));
+    window.addEventListener("resize", measure);
+    return () => window.removeEventListener("resize", measure);
+  }, [count]);
+  return layout;
 }

@@ -13,7 +13,7 @@ import {
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { type PackCollection, packOf } from "@/booster/pack-looks";
-import { CardFacts, CardOrigin } from "@/cards/card-facts";
+import { CardFacts, CardOrigin, CardQuoteInFull } from "@/cards/card-facts";
 import { type Catalog, collectionName, loadCatalog } from "@/cards/catalog";
 import { useCardShare } from "@/cards/share-card";
 import { CollectionSeal } from "@/components/collection-seal";
@@ -148,6 +148,7 @@ function SheetBody({
           </span>
         </p>
 
+        <CardQuoteInFull card={card} />
         <CardOrigin card={card} />
 
         {quantity > 0 && (

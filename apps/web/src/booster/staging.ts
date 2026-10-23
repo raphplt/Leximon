@@ -136,3 +136,36 @@ export function stagingFor(rarity: Rarity, mode: StagingMode): RarityStaging {
 export function keepsAnnouncementWhenHurried(rarity: Rarity): boolean {
   return rarityRank(rarity) >= rarityRank("epic");
 }
+
+/** Gap between two cards landing in the recap. */
+export const CASCADE_STEP_MS = 80;
+
+export interface CascadeStep {
+  /** When the card lands, from the recap's start. */
+  readonly delayMs: number;
+  /** A brief shine of the rarity's colour as it lands: from Rare up. */
+  readonly glint: boolean;
+  /** Played as the card lands: the chime of a card the player has not seen turned over. */
+  readonly cue: SoundCue | null;
+}
+
+/**
+ * How the pack's cards land in the recap, one after the other. `seen` tells the cards already
+ * turned over one by one: they land quietly, while a card skipped by « Tout révéler » keeps its
+ * chime, so that a Rare or a Précieux is never missed.
+ */
+export function recapCascade(
+  cards: readonly { readonly rarity: Rarity }[],
+  seen: (index: number) => boolean,
+  mode: Pick<StagingMode, "reducedMotion">,
+): CascadeStep[] {
+  return cards.map((card, index) => {
+    if (mode.reducedMotion) return { delayMs: 0, glint: false, cue: null };
+    const shines = rarityRank(card.rarity) >= rarityRank("rare");
+    return {
+      delayMs: index * CASCADE_STEP_MS,
+      glint: shines,
+      cue: shines && !seen(index) ? STAGING[card.rarity].revealCue : null,
+    };
+  });
+}
