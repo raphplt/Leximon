@@ -341,7 +341,7 @@ Pour ajouter ou modifier une décision, utiliser le skill `decision`.
 
 ## D-035 · Campagnes : file Queues alimentée chaque minute, une ligne et une clé par destinataire
 
-- **Statut :** Acceptée (2026-10-21), choisie par le propriétaire. Règles P55 et P61.
+- **Statut :** Acceptée (2026-10-21), choisie par le propriétaire. Règles P55 et P61. La tâche planifiée chaque minute est remplacée par D-044 ; le reste tient.
 - **Choix :** une campagne confirmée crée une ligne par destinataire (`email_campaign_sends`, unique par campagne et adresse), audience moins la liste de suppression (`email_suppressions`). Une tâche planifiée chaque minute met en file Cloudflare Queues la part de la minute, par messages de 100 identifiants ; le consommateur réserve ses lignes par une mise à jour conditionnelle, puis les envoie avec l'identifiant de la ligne pour clé d'idempotence chez Lettermint. Le consentement des joueurs vit dans `email_consents`.
 - **Pourquoi :** la base reste la seule source de vérité. Un message perdu, rejoué ou en double, ou deux consommateurs qui se chevauchent, n'envoient jamais deux fois : la réservation ne réussit qu'une fois, et la clé couvre le consommateur mort entre l'envoi et l'écriture.
 - **Conséquences :**
@@ -415,3 +415,10 @@ Pour ajouter ou modifier une décision, utiliser le skill `decision`.
 - **Choix :** `cacheComponents` et `partialPrefetching` sont coupés. Le catalogue côté serveur repose sur le cache des fichiers de collection immuables (`force-cache`), le profil public sur un `fetch` gardé 60 s.
 - **Pourquoi :** avec Next 16.4 et `@opennextjs/cloudflare` 1.20.13, le rendu serveur se bloque après la première requête d'un isolat (tickets OpenNext 1450 et 1464). Sans ces options, toutes les pages passent.
 - **Conséquences :** pages publiques rendues à chaque requête, sans coquille préchargée. À réactiver quand OpenNext prend en charge Next 16.4, procédure dans [mise-en-ligne.md](mise-en-ligne.md).
+
+## D-044 · Campagnes : une pompe relancée par la file, plus de tâche chaque minute
+
+- **Statut :** Acceptée (2026-10-23), suite au bilan du site, à la demande du propriétaire. Remplace la tâche chaque minute de D-035.
+- **Choix :** la pompe est un message `pump` sur la file des campagnes, qui se renvoie toutes les 60 s tant qu'une campagne part, attend le début d'une campagne programmée (sauts de 12 h au plus), et s'arrête sinon. Un lancement ou une reprise la démarre ; la maintenance quotidienne la relance si une campagne part ou démarre dans les 25 h.
+- **Pourquoi :** une requête chaque minute empêchait Neon de se mettre en veille : environ 180 heures de calcul par mois, au-delà de l'offre gratuite (D-040).
+- **Conséquences :** aucune brique de plus, la même file sert. Deux pompes peuvent coexister un moment (lancement et maintenance) : sans effet, la pompe tolère les passages qui se chevauchent. Un message perdu retarde une campagne jusqu'à la maintenance suivante au pire.

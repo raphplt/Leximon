@@ -8,9 +8,9 @@
   // Runs the Worker close to the database rather than close to the player: an open makes
   // several sequential database round trips, which would be slow from far away.
   "placement": { "mode": "smart" },
-  // Daily maintenance (partitions, purges) at 03:17 UTC, and every minute the campaign pump that
-  // feeds the e-mail queue. `scheduled()` tells them apart by their expression.
-  "triggers": { "crons": ["17 3 * * *", "* * * * *"] },
+  // Daily maintenance (partitions, purges) at 03:17 UTC. No trigger every minute: it would keep
+  // the database awake; the campaign pump runs through the campaign queue, only when needed.
+  "triggers": { "crons": ["17 3 * * *"] },
   "vars": {
     "APP_ENV": "development",
     "BETTER_AUTH_URL": "http://localhost:8787",

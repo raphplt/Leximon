@@ -18,6 +18,7 @@ import { and, eq, isNull, sql } from "drizzle-orm";
 import { type Context, Hono } from "hono";
 import { readAdminEmail } from "../admin/queries";
 import type { AppEnv } from "../context";
+import { errorSummary } from "../error-summary";
 import { clientIp, rateLimit } from "../middleware/rate-limit";
 import {
   type CampaignControl,
@@ -32,7 +33,7 @@ import {
   readCampaignRow,
   updateDraft,
 } from "./campaigns";
-import { type DeliveryConfig, unsubscribeLinks } from "./delivery";
+import { type DeliveryConfig, startCampaignPump, unsubscribeLinks } from "./delivery";
 import type { CampaignMailerFactory } from "./mailer";
 import { applyLettermintEvent, unsubscribe } from "./opt-out";
 import { prepareCampaignEmail } from "./render";
@@ -157,6 +158,7 @@ export function campaignAdminRoutes(createMailer: CampaignMailerFactory) {
     });
     switch (result.kind) {
       case "launched":
+        await startPump(c);
         return c.json<AdminCampaign>(await mustRead(c, id));
       case "campaign_not_found":
         return c.json({ error: "campaign_not_found" }, 404);
@@ -181,6 +183,7 @@ export function campaignAdminRoutes(createMailer: CampaignMailerFactory) {
       });
       switch (result.kind) {
         case "done":
+          if (control === "resume") await startPump(c);
           return c.json<AdminCampaign>(await mustRead(c, id));
         case "campaign_not_found":
           return c.json({ error: "campaign_not_found" }, 404);
@@ -191,6 +194,18 @@ export function campaignAdminRoutes(createMailer: CampaignMailerFactory) {
   }
 
   return routes;
+}
+
+/**
+ * Starts the pump after a launch or a resume. The campaign is saved whatever happens here: if the
+ * message cannot leave, the daily maintenance starts the pump instead.
+ */
+async function startPump(c: Context<AppEnv>): Promise<void> {
+  try {
+    await startCampaignPump(c.env.CAMPAIGN_QUEUE);
+  } catch (error) {
+    console.error("Campaign pump not started", errorSummary(error));
+  }
 }
 
 /** `POST /admin/waitlist/erase`, mounted with the admin routes. */

@@ -10,6 +10,11 @@ import { createUnsubscribeSigner } from "./signatures";
  * Sending a launched campaign. Every minute the pump hands up to `rate_per_minute` rows to
  * the queue; the consumer claims them, sends them in one batch, and records what became of each.
  *
+ * The pump is itself a queue message that sends the next one, and only while a campaign is
+ * sending or about to start: a cron every minute would keep the database awake day and night
+ * (Neon suspends a compute after a few idle minutes, and bills it while awake). A launch or a
+ * resume starts it; the daily maintenance starts it again in case a message was lost.
+ *
  * No e-mail leaves twice: a row is claimed by one conditional update (`queued` → `sending`), so a
  * replayed or duplicated message finds nothing to claim; and the row id is the provider's
  * idempotency key, so a batch retried after a crash or a timeout is not sent again.
@@ -36,15 +41,89 @@ export const MAX_ATTEMPTS = 5;
 /** Pause after a temporary refusal that did not say how long to wait. */
 const DEFAULT_HOLD_S = 60;
 
+/** Time between two pumps while a campaign is sending. */
+export const PUMP_INTERVAL_S = 60;
+/** Longest wait given to one pump message (a queue allows 24 hours), so a long wait takes hops. */
+const MAX_QUEUE_DELAY_S = 12 * 60 * 60;
+/**
+ * The daily maintenance starts the pump for campaigns due before this: the next maintenance is a
+ * day away, and the pump then waits on its own until the start.
+ */
+export const PUMP_LOOKAHEAD_MS = 25 * 60 * 60 * 1000;
+
 export const campaignJobSchema = z.object({
   campaignId: z.uuid(),
   sendIds: z.array(z.uuid()).min(1).max(SENDS_PER_MESSAGE),
 });
 export type CampaignJob = z.infer<typeof campaignJobSchema>;
 
+export const campaignPumpSchema = z.object({ kind: z.literal("pump") });
+export type CampaignPump = z.infer<typeof campaignPumpSchema>;
+
+/** What travels on the campaign queue: rows to send, or the next run of the pump. */
+export const campaignMessageSchema = z.union([campaignPumpSchema, campaignJobSchema]);
+export type CampaignQueueMessage = z.infer<typeof campaignMessageSchema>;
+
 /** The part of the queue the pump uses; the Worker's `CAMPAIGN_QUEUE` binding fits it. */
 export interface CampaignQueue {
+  send(body: CampaignPump, options?: QueueSendOptions): Promise<unknown>;
   sendBatch(messages: Iterable<MessageSendRequest<CampaignJob>>): Promise<unknown>;
+}
+
+/** Starts the pump now. Harmless when it already runs: overlapping pumps are safe. */
+export async function startCampaignPump(queue: CampaignQueue): Promise<void> {
+  await queue.send({ kind: "pump" });
+}
+
+/**
+ * One run of the pump, then the next one if a campaign still needs it: a minute later while one
+ * is sending, at the start of the next scheduled one, or never.
+ */
+export async function pumpAndReschedule(
+  db: Database,
+  queue: CampaignQueue,
+  now: EpochMs,
+): Promise<PumpReport & { readonly nextInS: number | null }> {
+  const report = await pumpCampaigns(db, queue, now);
+  const nextInS = await nextPumpDelayS(db, now);
+  if (nextInS !== null) await queue.send({ kind: "pump" }, { delaySeconds: nextInS });
+  return { ...report, nextInS };
+}
+
+/**
+ * Seconds until the pump is needed again, or `null` when no campaign is sending or starts before
+ * the next daily maintenance, which takes over. A start further than a message can wait is
+ * reached in several hops.
+ */
+export async function nextPumpDelayS(db: Database, now: EpochMs): Promise<number | null> {
+  const [next] = await db
+    .select({
+      sending: sql<boolean>`bool_or(${campaigns.status} = 'sending')`,
+      firstStart: sql<
+        string | null
+      >`min(${campaigns.scheduledAt}) filter (where ${campaigns.status} = 'scheduled')`,
+    })
+    .from(campaigns)
+    .where(inArray(campaigns.status, ["sending", "scheduled"]));
+  if (next === undefined) return null;
+  if (next.sending === true) return PUMP_INTERVAL_S;
+  if (next.firstStart === null) return null;
+  const untilStartMs = Date.parse(next.firstStart) - now;
+  if (untilStartMs >= PUMP_LOOKAHEAD_MS) return null;
+  return Math.min(Math.max(Math.ceil(untilStartMs / 1000), 1), MAX_QUEUE_DELAY_S);
+}
+
+/** Whether a campaign is sending or starts before the next daily maintenance. */
+export async function campaignPumpNeeded(db: Database, now: EpochMs): Promise<boolean> {
+  const [row] = await db
+    .select({ id: campaigns.id })
+    .from(campaigns)
+    .where(
+      sql`${campaigns.status} = 'sending' or (${campaigns.status} = 'scheduled'
+        and ${campaigns.scheduledAt} < ${new Date(now + PUMP_LOOKAHEAD_MS)})`,
+    )
+    .limit(1);
+  return row !== undefined;
 }
 
 export interface PumpReport {
@@ -55,7 +134,7 @@ export interface PumpReport {
 }
 
 /**
- * Run every minute by the cron trigger. Idempotent, and safe if two runs overlap: a campaign is
+ * Run every minute while a campaign needs it (`pumpAndReschedule`). Idempotent, and safe if two runs overlap: a campaign is
  * handed over once per tick, and rows are taken with `SKIP LOCKED`.
  */
 export async function pumpCampaigns(

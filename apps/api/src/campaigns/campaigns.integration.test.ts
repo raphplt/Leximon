@@ -13,14 +13,25 @@ import { and, eq, inArray } from "drizzle-orm";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { createApp } from "../app";
 import { runMaintenance } from "../maintenance";
-import { TEST_LINK_SECRET, TEST_ORIGIN, TEST_WEBHOOK_SECRET, testEnv } from "../test-env";
+import {
+  recordingQueue,
+  TEST_LINK_SECRET,
+  TEST_ORIGIN,
+  TEST_WEBHOOK_SECRET,
+  testEnv,
+} from "../test-env";
 import { type Guest, signInAsGuest, signInAsMember } from "../test-support";
 import {
   type CampaignJob,
+  type CampaignPump,
   type CampaignQueue,
+  campaignPumpNeeded,
   type DeliveryConfig,
   deliverCampaignJob,
   MAX_ATTEMPTS,
+  nextPumpDelayS,
+  PUMP_INTERVAL_S,
+  pumpAndReschedule,
   pumpCampaigns,
   STALE_CLAIM_MS,
 } from "./delivery";
@@ -28,7 +39,9 @@ import type { BatchOutcome, CampaignMailer, CampaignMessage } from "./mailer";
 import { createUnsubscribeSigner } from "./signatures";
 
 const url = testDatabaseUrl();
-const env = testEnv(url);
+/** Where the launch and resume routes start the pump. */
+const pumpStarts = recordingQueue<CampaignPump>();
+const env: Env = { ...testEnv(url), CAMPAIGN_QUEUE: pumpStarts };
 const { db, close } = createDb(url, { maxConnections: 8 });
 
 const {
@@ -61,12 +74,16 @@ function fakeMailer() {
 
 function fakeQueue() {
   const jobs: CampaignJob[] = [];
+  const pumps: { body: CampaignPump; delaySeconds: number | undefined }[] = [];
   const queue: CampaignQueue = {
+    async send(body, options) {
+      pumps.push({ body, delaySeconds: options?.delaySeconds });
+    },
     async sendBatch(messages) {
       for (const message of messages) jobs.push(message.body);
     },
   };
-  return { queue, jobs };
+  return { queue, jobs, pumps };
 }
 
 const provider = fakeMailer();
@@ -326,6 +343,55 @@ describe("campaign launch", () => {
     await pumpCampaigns(db, queue, Date.now());
     expect(jobs.filter((job) => job.campaignId === created.id)).toHaveLength(1);
     await db.update(campaigns).set({ status: "cancelled" }).where(eq(campaigns.id, created.id));
+  });
+
+  it("runs the pump only while a campaign is sending or about to start", async () => {
+    // Campaigns left by earlier tests would keep the pump going.
+    await db
+      .update(campaigns)
+      .set({ status: "cancelled" })
+      .where(inArray(campaigns.status, ["scheduled", "sending"]));
+    const now = Date.now();
+    expect(await nextPumpDelayS(db, now)).toBeNull();
+    expect(await campaignPumpNeeded(db, now)).toBe(false);
+
+    const created = await createCampaign({ testRecipients: ["pompe@example.com"] });
+    const before = pumpStarts.sent.length;
+    const at = new Date(now + 2 * 3_600_000);
+    await launch(created.id, 1, at.toISOString());
+    expect(pumpStarts.sent.slice(before)).toEqual([{ kind: "pump" }]);
+
+    // Waits for the start, in hops of at most 12 hours.
+    const waiting = fakeQueue();
+    const report = await pumpAndReschedule(db, waiting.queue, now);
+    expect(report.nextInS).toBeGreaterThan(7190);
+    expect(report.nextInS).toBeLessThanOrEqual(7200);
+    expect(waiting.pumps).toEqual([{ body: { kind: "pump" }, delaySeconds: report.nextInS }]);
+    const setStart = (ms: number) =>
+      db
+        .update(campaigns)
+        .set({ scheduledAt: new Date(ms) })
+        .where(eq(campaigns.id, created.id));
+    await setStart(now + 20 * 3_600_000);
+    expect(await nextPumpDelayS(db, now)).toBe(12 * 3600);
+    expect(await campaignPumpNeeded(db, now)).toBe(true);
+
+    // Too far ahead: the pump stops, the daily maintenance starts it again the day before.
+    await setStart(now + 3 * 86_400_000);
+    expect(await nextPumpDelayS(db, now)).toBeNull();
+    expect(await campaignPumpNeeded(db, now)).toBe(false);
+
+    // Due: the campaign starts sending and the pump comes back every minute.
+    await setStart(now - 1000);
+    const sending = fakeQueue();
+    const started = await pumpAndReschedule(db, sending.queue, now);
+    expect(started).toMatchObject({ started: 1, nextInS: PUMP_INTERVAL_S });
+    expect(sending.jobs.filter((job) => job.campaignId === created.id)).toHaveLength(1);
+
+    await db.update(campaigns).set({ status: "cancelled" }).where(eq(campaigns.id, created.id));
+    const stopped = fakeQueue();
+    expect((await pumpAndReschedule(db, stopped.queue, now + 60_000)).nextInS).toBeNull();
+    expect(stopped.pumps).toEqual([]);
   });
 
   it("writes to consenting members only", async () => {
