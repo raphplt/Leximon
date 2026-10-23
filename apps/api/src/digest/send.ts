@@ -2,6 +2,7 @@ import type { Database } from "@leximon/db";
 import { readOverview } from "../admin/queries";
 import { composeDigest, postToDiscord } from "./digest";
 import { type ErrorReport, readErrors } from "./errors";
+import { type LatencyReport, readLatency } from "./latency";
 
 export type DigestOutcome = "sent" | "not_configured" | "not_delivered";
 
@@ -21,11 +22,15 @@ export async function sendDailyDigest(
   if (webhookUrl === null) return "not_configured";
   const accountId = configured(env.CLOUDFLARE_ACCOUNT_ID);
   const token = configured(env.OBSERVABILITY_TOKEN);
-  const errors: ErrorReport =
-    accountId === null || token === null
-      ? { kind: "unavailable", status: null }
-      : await readErrors({ accountId, token }, now, fetcher);
-  const content = composeDigest({ now, errors, overview: await readOverview(db, now) });
+  const config = accountId === null || token === null ? null : { accountId, token };
+  const [errors, latency]: [ErrorReport, LatencyReport] =
+    config === null
+      ? [
+          { kind: "unavailable", status: null },
+          { kind: "unavailable", status: null },
+        ]
+      : await Promise.all([readErrors(config, now, fetcher), readLatency(config, now, fetcher)]);
+  const content = composeDigest({ now, errors, latency, overview: await readOverview(db, now) });
   return (await postToDiscord(webhookUrl, content, fetcher)) ? "sent" : "not_delivered";
 }
 

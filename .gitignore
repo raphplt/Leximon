@@ -40,3 +40,7 @@ __pycache__/
 
 # Catalogue copié par `pnpm catalog:publish` pour le web local (D-023)
 apps/web/public/catalog/
+
+# Test de charge : cookies des comptes de test et résultats
+infra/load/players*.json
+infra/load/results/

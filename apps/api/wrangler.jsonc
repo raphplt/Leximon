@@ -222,6 +222,105 @@
           "id": "43b07b65f2ab4ed797bc424b4e32e632"
         }
       ]
+    },
+
+    // Load tests only (docs/rnd/charge.md): `wrangler deploy --env staging`, on workers.dev. A
+    // Neon branch of its own, its own queues (the `-staging` suffix keeps its messages away from
+    // the production consumers) and its own rate limit ids. No daily task: the branch sleeps
+    // between two runs. Secrets: BETTER_AUTH_SECRET and EMAIL_LINK_SECRET, random, its own.
+    "staging": {
+      "workers_dev": true,
+      "preview_urls": false,
+      "triggers": { "crons": [] },
+      "vars": {
+        "APP_ENV": "staging",
+        "BETTER_AUTH_URL": "https://leximon-api-staging.leximon.workers.dev",
+        // The Origin the load test sends; no browser ever calls this API.
+        "TRUSTED_ORIGINS": "https://leximon.fr",
+        // No sign-in code nor campaign leaves staging.
+        "EMAIL_CODE_FROM": "",
+        "EMAIL_REPLY_TO": "contact@leximon.fr",
+        "EMAIL_CAMPAIGN_FROM": "",
+        "LETTERMINT_BROADCAST_ROUTE": "broadcast",
+        "PUBLIC_WEB_URL": "https://leximon.fr",
+        "BETA_INVITES": "off"
+      },
+      "queues": {
+        "producers": [
+          { "binding": "CAMPAIGN_QUEUE", "queue": "leximon-email-campaigns-staging" },
+          { "binding": "GAME_EVENTS", "queue": "leximon-game-events-staging" }
+        ],
+        "consumers": [
+          {
+            "queue": "leximon-email-campaigns-staging",
+            "max_batch_size": 1,
+            "max_batch_timeout": 1,
+            "max_retries": 5,
+            "max_concurrency": 4,
+            "dead_letter_queue": "leximon-email-campaigns-staging-dlq"
+          },
+          {
+            "queue": "leximon-game-events-staging",
+            "max_batch_size": 50,
+            "max_batch_timeout": 2,
+            "max_retries": 3,
+            "max_concurrency": 2,
+            "dead_letter_queue": "leximon-game-events-staging-dlq"
+          }
+        ]
+      },
+      "send_email": [
+        {
+          "name": "EMAIL",
+          "allowed_sender_addresses": ["code@mail.leximon.fr"]
+        }
+      ],
+      // Same limits as production, except guest creation: the whole load comes from one address,
+      // where a stream brings players from thousands.
+      "ratelimits": [
+        {
+          "name": "SIGNUP_RATE_LIMITER",
+          "namespace_id": "2001",
+          "simple": { "limit": 10000, "period": 60 }
+        },
+        {
+          "name": "PLAYER_RATE_LIMITER",
+          "namespace_id": "2002",
+          "simple": { "limit": 120, "period": 60 }
+        },
+        {
+          "name": "OTP_SEND_IP_RATE_LIMITER",
+          "namespace_id": "2003",
+          "simple": { "limit": 5, "period": 60 }
+        },
+        {
+          "name": "OTP_SEND_EMAIL_RATE_LIMITER",
+          "namespace_id": "2004",
+          "simple": { "limit": 1, "period": 60 }
+        },
+        {
+          "name": "OTP_VERIFY_IP_RATE_LIMITER",
+          "namespace_id": "2005",
+          "simple": { "limit": 10, "period": 60 }
+        },
+        {
+          "name": "WAITLIST_RATE_LIMITER",
+          "namespace_id": "2006",
+          "simple": { "limit": 10, "period": 60 }
+        },
+        {
+          "name": "EMAIL_LINK_RATE_LIMITER",
+          "namespace_id": "2007",
+          "simple": { "limit": 30, "period": 60 }
+        }
+      ],
+      "hyperdrive": [
+        {
+          "binding": "HYPERDRIVE",
+          // leximon-db-staging, on the Neon branch `charge`, created with --caching-disabled.
+          "id": "00000000000000000000000000000000"
+        }
+      ]
     }
   }
 }

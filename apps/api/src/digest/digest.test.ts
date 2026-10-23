@@ -2,6 +2,7 @@ import type { AdminOverview } from "@leximon/contract";
 import { describe, expect, it } from "vitest";
 import { composeDigest, postToDiscord } from "./digest";
 import { readErrors } from "./errors";
+import { type LatencyReport, readLatency } from "./latency";
 
 const overview: AdminOverview = {
   players: { members: 1204, guests: 310, banned: 1, newMembers7d: 42, newGuests7d: 90 },
@@ -11,6 +12,14 @@ const overview: AdminOverview = {
   waitlist: { total: 50, last7d: 4 },
 };
 const NOW = Date.parse("2026-10-23T03:17:00Z");
+const latency: LatencyReport = {
+  kind: "read",
+  routes: [
+    { label: "ouverture", requests: 1230, p95Ms: 84 },
+    { label: "défi", requests: 410, p95Ms: 61 },
+    { label: "collection", requests: 0, p95Ms: null },
+  ],
+};
 
 function stubFetch(status: number, body: unknown) {
   const calls: { url: string; init: RequestInit | undefined }[] = [];
@@ -70,11 +79,54 @@ describe("readErrors", () => {
   });
 });
 
+describe("readLatency", () => {
+  it("gives the requests and p95 of each key route of the production API", async () => {
+    const row = (path: string, value: number) => ({
+      count: value,
+      value,
+      groups: [{ key: "$workers.event.request.path", value: path }],
+    });
+    const { fetcher, calls } = stubFetch(200, {
+      success: true,
+      result: {
+        calculations: [
+          { alias: "requests", aggregates: [row("/boosters/open", 1230), row("/me/wallet", 900)] },
+          { alias: "p95", aggregates: [row("/boosters/open", 83.6), row("/me/wallet", 20)] },
+        ],
+      },
+    });
+
+    const report = await readLatency({ accountId: "acc", token: "tok" }, NOW, fetcher);
+
+    expect(report).toEqual({
+      kind: "read",
+      routes: [
+        { label: "ouverture", requests: 1230, p95Ms: 84 },
+        { label: "défi", requests: 0, p95Ms: null },
+        { label: "collection", requests: 0, p95Ms: null },
+      ],
+    });
+    const sent = JSON.parse(String(calls[0]?.init?.body));
+    expect(sent.parameters.filters).toContainEqual(
+      expect.objectContaining({ key: "$metadata.service", value: "leximon-api-production" }),
+    );
+  });
+
+  it("says the times are unread when the API refuses", async () => {
+    const { fetcher } = stubFetch(401, { success: false, errors: [] });
+    expect(await readLatency({ accountId: "acc", token: "bad" }, NOW, fetcher)).toEqual({
+      kind: "unavailable",
+      status: 401,
+    });
+  });
+});
+
 describe("composeDigest", () => {
   it("lists the errors, then the day's play", () => {
     const text = composeDigest({
       now: NOW,
       overview,
+      latency,
       errors: {
         kind: "read",
         total: 7,
@@ -87,16 +139,24 @@ describe("composeDigest", () => {
     expect(text).toContain("**Leximon · vendredi 23 octobre**");
     expect(text).toContain("**7 erreurs sur 24 h**");
     expect(text).toContain("· 7 × leximon-api-production — Unhandled error everyone");
+    expect(text).toContain(
+      "p95 sur 24 h : ouverture 84 ms (1 230) · défi 61 ms (410) · collection —",
+    );
     expect(text).toContain("Sur 24 h : 230 sachets ouverts, 410 réponses aux défis.");
     expect(text).toContain("1 204 comptes (+42 en 7 jours)");
   });
 
   it("says so when the day had no error, or when they could not be read", () => {
     expect(
-      composeDigest({ now: NOW, overview, errors: { kind: "read", total: 0, groups: [] } }),
+      composeDigest({
+        now: NOW,
+        overview,
+        latency,
+        errors: { kind: "read", total: 0, groups: [] },
+      }),
     ).toContain("Aucune erreur sur 24 h.");
     expect(
-      composeDigest({ now: NOW, overview, errors: { kind: "unavailable", status: 401 } }),
+      composeDigest({ now: NOW, overview, latency, errors: { kind: "unavailable", status: 401 } }),
     ).toContain("lecture impossible (HTTP 401)");
   });
 
@@ -106,7 +166,12 @@ describe("composeDigest", () => {
       message: "x".repeat(500),
       count: i + 1,
     }));
-    const text = composeDigest({ now: NOW, overview, errors: { kind: "read", total: 36, groups } });
+    const text = composeDigest({
+      now: NOW,
+      overview,
+      latency,
+      errors: { kind: "read", total: 36, groups },
+    });
     expect(text.length).toBeLessThanOrEqual(2000);
   });
 });

@@ -1,5 +1,6 @@
 import type { AdminOverview } from "@leximon/contract";
 import type { ErrorReport } from "./errors";
+import type { LatencyReport } from "./latency";
 
 /** Discord refuses a message over 2,000 characters. */
 const MAX_LENGTH = 2000;
@@ -17,9 +18,10 @@ const numberFormat = new Intl.NumberFormat("fr-FR");
 export function composeDigest(input: {
   readonly now: number;
   readonly errors: ErrorReport;
+  readonly latency: LatencyReport;
   readonly overview: AdminOverview;
 }): string {
-  const { errors, overview } = input;
+  const { errors, latency, overview } = input;
   const n = (value: number) => numberFormat.format(value);
   const lines = [`**Leximon · ${dayFormat.format(input.now)}**`, ""];
 
@@ -35,6 +37,8 @@ export function composeDigest(input: {
     }
   }
 
+  lines.push("", latencyLine(latency));
+
   const { players, boosters, answers, trades } = overview;
   lines.push(
     "",
@@ -43,6 +47,20 @@ export function composeDigest(input: {
     `Échanges conclus en 7 jours : ${n(trades.completed7d)}.`,
   );
   return lines.join("\n").slice(0, MAX_LENGTH);
+}
+
+/** One line: requests and 95th percentile of each key route, from the API's own logs. */
+function latencyLine(latency: LatencyReport): string {
+  if (latency.kind === "unavailable") {
+    const status = latency.status === null ? "pas de réponse" : `HTTP ${latency.status}`;
+    return `Temps de réponse : lecture impossible (${status}).`;
+  }
+  const routes = latency.routes.map((route) =>
+    route.p95Ms === null
+      ? `${route.label} —`
+      : `${route.label} ${numberFormat.format(route.p95Ms)} ms (${numberFormat.format(route.requests)})`,
+  );
+  return `p95 sur 24 h : ${routes.join(" · ")}`;
 }
 
 /** Keeps a logged message from formatting the post or pinging anyone. */

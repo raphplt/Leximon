@@ -18,7 +18,10 @@ import { runMaintenance } from "./maintenance";
 
 const app = createApp();
 
-/** The queue of game events; the other one carries campaign e-mails. */
+/**
+ * The queue of game events; the other one carries campaign e-mails. Staging adds a suffix to
+ * both names, so that its messages never reach the production consumers.
+ */
 const GAME_EVENTS_QUEUE = "leximon-game-events";
 
 export default {
@@ -44,7 +47,7 @@ export default {
   },
 
   async queue(batch, env, ctx) {
-    if (batch.queue === GAME_EVENTS_QUEUE) {
+    if (batch.queue.startsWith(GAME_EVENTS_QUEUE)) {
       const { db, close } = createDb(env.HYPERDRIVE.connectionString, { maxConnections: 1 });
       try {
         const report = await handleGameEvents(
