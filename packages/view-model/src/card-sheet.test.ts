@@ -13,9 +13,7 @@ describe("mastery of a card", () => {
   });
 
   it("says what it takes to climb the next level", () => {
-    expect(masteryView(undefined, NOW).text).toBe(
-      "Pas encore révisé. Il arrive en défi 4 h après ta trouvaille.",
-    );
+    expect(masteryView(undefined, NOW).text).toBe("Pas encore révisé. Un défi le met en route.");
     const sketch = masteryView(word("sketch", NOW + 2 * DAY, NOW - DAY), NOW);
     expect(sketch.text).toBe("Retrouve-le 7 jours après une révision, et c'est l'Encre.");
     expect(sketch.steps.map((step) => step.reached)).toEqual([true, false, false]);

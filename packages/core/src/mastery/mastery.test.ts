@@ -6,7 +6,6 @@ import {
   type MasteryRules,
   masteryRulesAt,
   newWordMastery,
-  newWordReadyAt,
   provenLevel,
   reviewWord,
   type WordMastery,
@@ -19,9 +18,8 @@ const rules: MasteryRules = {
   maximumIntervalDays: 365,
   levelThresholdDays: { ink: 7, gilded: 30 },
   levelBy: "stability",
-  newWordDelayMs: 0,
 };
-const proven: MasteryRules = { ...rules, levelBy: "provenRecall", newWordDelayMs: 4 * 3_600_000 };
+const proven: MasteryRules = { ...rules, levelBy: "provenRecall" };
 
 /** Answers right each time the word comes back; returns the mastery after each answer. */
 function recallEachTime(times: number, using = rules): WordMastery[] {
@@ -118,11 +116,6 @@ describe("mastery", () => {
       expect(provenLevel(proven, 29, "ink")).toBe("ink");
       expect(provenLevel(proven, 30, "ink")).toBe("gilded");
       expect(provenLevel(proven, 0, "gilded")).toBe("gilded");
-    });
-
-    it("lets a new word be asked only a while after its first copy", () => {
-      expect(newWordReadyAt(proven, 1_000)).toBe(1_000 + 4 * 3_600_000);
-      expect(newWordReadyAt(rules, 1_000)).toBe(1_000);
     });
   });
 

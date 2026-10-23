@@ -31,14 +31,7 @@ export function masteryView(memory: WordMemory | undefined, now: number): Master
     reached: index <= reachedIndex,
   }));
   if (memory === undefined) {
-    const hours = Math.round(rules.newWordDelayMs / HOUR);
-    return {
-      steps,
-      text:
-        hours === 0
-          ? "Pas encore révisé. Un défi le met en route."
-          : `Pas encore révisé. Il arrive en défi ${hours} h après ta trouvaille.`,
-    };
+    return { steps, text: "Pas encore révisé. Un défi le met en route." };
   }
   if (level === "gilded") return { steps, text: "Doré. Il ne bouge plus." };
   const next = level === "sketch" ? "ink" : "gilded";

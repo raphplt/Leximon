@@ -17,7 +17,6 @@ import {
   type MemoryState,
   masteryRulesAt,
   newWordMastery,
-  newWordReadyAt,
   type ProgressGain,
   planSession,
   progressGain,
@@ -29,7 +28,7 @@ import {
   xpRulesAt,
 } from "@leximon/core";
 import { type Database, schema } from "@leximon/db";
-import { and, eq, sql, type WithSubquery } from "drizzle-orm";
+import { and, asc, eq, sql, type WithSubquery } from "drizzle-orm";
 import { addXp } from "../progress/progress";
 import type { CatalogIndex } from "./catalog-index";
 
@@ -44,8 +43,7 @@ export interface ChallengeSession {
 
 /**
  * Picks the words of a challenge session: owned words due for review (most overdue first), then
- * owned words never reviewed (oldest first) whose first copy is old enough, and builds one
- * question per word.
+ * owned words never reviewed (oldest first), and builds one question per word.
  *
  * Reads only: nothing is written until an answer arrives, so abandoning a session costs nothing.
  */
@@ -55,8 +53,6 @@ export async function nextChallenges(
   input: { userId: string; now: EpochMs; limit: number; seed: string },
 ): Promise<ChallengeSession> {
   const { userId, now, limit } = input;
-  const rules = masteryRulesAt(MASTERY_SCHEDULE, now);
-  const freshBefore = new Date(now - rules.newWordDelayMs);
   const owned = sql`exists (select 1 from ${userCards} where ${userCards.userId} = ${userId}
     and ${userCards.cardId} = candidates.card_id and ${userCards.quantity} > 0)`;
   // One round trip: due words and never-reviewed words, each list bounded by the session size.
@@ -75,7 +71,6 @@ export async function nextChallenges(
         and not exists (select 1 from ${userMastery} where ${userMastery.userId} = ${userId}
           and ${userMastery.cardId} = ${userCards.cardId})
       group by ${userCards.cardId}
-      having min(${userCards.firstObtainedAt}) <= ${freshBefore}
       order by min(${userCards.firstObtainedAt}), ${userCards.cardId}
       limit ${limit})
   `);
@@ -96,24 +91,19 @@ export async function nextChallenges(
   if (questions.length > 0) {
     return { questions, nextDueAt: null };
   }
-  // The next owned word to come back, or the next new word to become askable.
-  const next = await db.execute<{ due: Date | string | null; obtained: Date | string | null }>(sql`
-    select
-      (select min(${userMastery.due}) from ${userMastery}
-        where ${userMastery.userId} = ${userId}
-          and exists (select 1 from ${userCards} where ${userCards.userId} = ${userId}
-            and ${userCards.cardId} = ${userMastery.cardId} and ${userCards.quantity} > 0)) as due,
-      (select min(${userCards.firstObtainedAt}) from ${userCards}
-        where ${userCards.userId} = ${userId} and ${userCards.quantity} > 0
-          and not exists (select 1 from ${userMastery} where ${userMastery.userId} = ${userId}
-            and ${userMastery.cardId} = ${userCards.cardId})) as obtained
-  `);
-  const row = next.rows[0];
-  const times = [
-    row?.due == null ? null : new Date(row.due).getTime(),
-    row?.obtained == null ? null : newWordReadyAt(rules, new Date(row.obtained).getTime()),
-  ].filter((time): time is number => time !== null);
-  return { questions, nextDueAt: times.length === 0 ? null : Math.min(...times) };
+  const [next] = await db
+    .select({ due: userMastery.due })
+    .from(userMastery)
+    .where(
+      and(
+        eq(userMastery.userId, userId),
+        sql`exists (select 1 from ${userCards} where ${userCards.userId} = ${userId}
+          and ${userCards.cardId} = ${userMastery.cardId} and ${userCards.quantity} > 0)`,
+      ),
+    )
+    .orderBy(asc(userMastery.due))
+    .limit(1);
+  return { questions, nextDueAt: next === undefined ? null : next.due.getTime() };
 }
 
 export interface AnswerInput {
@@ -154,8 +144,7 @@ export type AnswerResult =
  *
  * The answer is right when the chosen card is the card asked about. The server does not keep the
  * questions it served (stateless API): it only accepts answers on owned words that are due, once
- * per idempotency key, and a word never reviewed only once its first copy is old enough. A client
- * could always look the answer up in the public catalogue.
+ * per idempotency key. A client could always look the answer up in the public catalogue.
  *
  * Lock order: the player's wallet first, then the word's mastery row. Opening a booster also locks
  * the wallet first (then copies), so the two never wait on each other in a cycle. Holding the
@@ -167,22 +156,6 @@ export type AnswerResult =
  * already given, one combined write, COMMIT.
  */
 export async function answerChallenge(db: Database, input: AnswerInput): Promise<AnswerResult> {
-  try {
-    return await applyAnswer(db, input);
-  } catch (error) {
-    if (error instanceof NewWordNotReady) return { kind: "not_due", nextReviewAt: error.readyAt };
-    throw error;
-  }
-}
-
-/** Rolls back the answer to a word whose first copy is too recent to be asked. */
-class NewWordNotReady extends Error {
-  constructor(readonly readyAt: EpochMs) {
-    super("New word not ready for a challenge");
-  }
-}
-
-async function applyAnswer(db: Database, input: AnswerInput): Promise<AnswerResult> {
   const { userId, cardId, now } = input;
   const rules = masteryRulesAt(MASTERY_SCHEDULE, now);
   const bonusRules = bonusRulesAt(BONUS_SCHEDULE, now);
@@ -233,9 +206,6 @@ async function applyAnswer(db: Database, input: AnswerInput): Promise<AnswerResu
           from ${reviewLogs}
           where ${reviewLogs.userId} = ${userId} and ${reviewLogs.challengeId} = ${input.idempotencyKey}
           limit 1) as previous,
-        (select min(${userCards.firstObtainedAt}) from ${userCards}
-          where ${userCards.userId} = ${userId} and ${userCards.cardId} = ${cardId}
-            and ${userCards.quantity} > 0) as first_obtained_at,
         tally.day_answers, tally.day_correct, awards.awards,
         coalesce((select ${userProgress.xp} from ${userProgress}
           where ${userProgress.userId} = ${userId}), 0) as xp
@@ -280,11 +250,6 @@ async function applyAnswer(db: Database, input: AnswerInput): Promise<AnswerResu
 
     if (current.memory.lastReviewedAt !== null && !isDue(current.memory, now)) {
       return { kind: "not_due", nextReviewAt: current.memory.due };
-    }
-    if (current.memory.lastReviewedAt === null) {
-      const readyAt = newWordReadyAt(rules, new Date(row.first_obtained_at).getTime());
-      // Undoes the mastery row created above: a word never reviewed has none.
-      if (readyAt > now) throw new NewWordNotReady(readyAt);
     }
 
     const correct = input.chosenCardId === cardId;
@@ -419,7 +384,6 @@ function summarize(awards: readonly StoredAward[], reserve: number): AnswerBonus
 }
 
 interface AnswerLookupRow extends MasteryRow, Record<string, unknown> {
-  first_obtained_at: Date | string;
   previous: { correct: boolean; levelAfter: MasteryLevel } | null;
   day_answers: number;
   day_correct: number;

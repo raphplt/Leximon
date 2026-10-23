@@ -32,11 +32,6 @@ export interface MasteryRules {
    */
   readonly levelThresholdDays: Readonly<Record<Exclude<MasteryLevel, "sketch">, number>>;
   readonly levelBy: "stability" | "provenRecall";
-  /**
-   * How long after its first copy a word can be asked: its card has just shown the answer, so
-   * an answer right away would measure nothing.
-   */
-  readonly newWordDelayMs: number;
 }
 
 export type MasterySchedule = readonly [MasteryRules, ...MasteryRules[]];
@@ -84,11 +79,6 @@ export function newWordMastery(now: EpochMs): WordMastery {
 
 export function isDue(memory: MemoryState, now: EpochMs): boolean {
   return memory.due <= now;
-}
-
-/** When a word never reviewed can first be asked. */
-export function newWordReadyAt(rules: MasteryRules, firstObtainedAt: EpochMs): EpochMs {
-  return firstObtainedAt + rules.newWordDelayMs;
 }
 
 const DAY_MS = 86_400_000;

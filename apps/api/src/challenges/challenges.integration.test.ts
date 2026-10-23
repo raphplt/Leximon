@@ -24,17 +24,10 @@ const DAY = 86_400_000;
 beforeAll(() => seedTestCatalog(db));
 afterAll(close);
 
-/** Gives cards found a day ago: long enough for a new word to be asked. */
 async function give(guest: Guest, ...cardIds: string[]) {
-  await giveAt(new Date(Date.now() - DAY), guest, ...cardIds);
-}
-
-async function giveAt(firstObtainedAt: Date, guest: Guest, ...cardIds: string[]) {
   await db
     .insert(schema.userCards)
-    .values(
-      cardIds.map((cardId) => ({ userId: guest.userId, cardId, quantity: 1, firstObtainedAt })),
-    );
+    .values(cardIds.map((cardId) => ({ userId: guest.userId, cardId, quantity: 1 })));
 }
 
 function get(guest: Guest | null, path: string) {
@@ -104,18 +97,6 @@ describe("GET /challenges", () => {
     }
   });
 
-  it("waits a few hours before asking a word just found", async () => {
-    const guest = await signInAsGuest(app, env);
-    const found = Date.now() - 60_000;
-    await giveAt(new Date(found), guest, "test-a-common-1");
-    const { newWordDelayMs } = masteryRulesAt(MASTERY_SCHEDULE, Date.now());
-    expect(newWordDelayMs).toBe(4 * 3_600_000);
-
-    const body = await questions(guest);
-    expect(body.questions).toEqual([]);
-    expect(Date.parse(body.nextDueAt ?? "")).toBe(found + newWordDelayMs);
-  });
-
   it("limits the session size", async () => {
     const guest = await signInAsGuest(app, env);
     await give(guest, "test-a-common-1", "test-a-common-2", "test-a-common-3");
@@ -144,21 +125,6 @@ describe("POST /challenges/answer", () => {
     expect(after.questions).toEqual([]);
     expect(after.nextDueAt).toBe(body.nextReviewAt);
     expect(await logCount(guest, "test-a-common-1")).toBe(1);
-  });
-
-  it("refuses an answer on a word just found, and keeps it new", async () => {
-    const guest = await signInAsGuest(app, env);
-    await giveAt(new Date(), guest, "test-a-common-1");
-    const response = await answer(guest, "test-a-common-1", "test-a-common-1");
-
-    expect(response.status).toBe(409);
-    expect(await response.json()).toMatchObject({ error: "challenge_not_due" });
-    expect(await logCount(guest, "test-a-common-1")).toBe(0);
-    const mastery = await db
-      .select()
-      .from(schema.userMastery)
-      .where(eq(schema.userMastery.userId, guest.userId));
-    expect(mastery).toEqual([]);
   });
 
   it("records a wrong answer", async () => {
@@ -477,12 +443,7 @@ describe("answer latency budget", () => {
     await db
       .insert(schema.users)
       .values({ id: userId, name: "Budget", email: `${userId}@test.invalid` });
-    await db.insert(schema.userCards).values({
-      userId,
-      cardId: "test-a-common-1",
-      quantity: 1,
-      firstObtainedAt: new Date(Date.now() - DAY),
-    });
+    await db.insert(schema.userCards).values({ userId, cardId: "test-a-common-1", quantity: 1 });
     try {
       const result = await answerChallenge(counted.db, {
         userId,
