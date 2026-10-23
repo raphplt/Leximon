@@ -391,8 +391,21 @@ describe("DELETE /me/account", () => {
       ]);
     }
 
+    const [account] = await db
+      .select({ email: schema.users.email })
+      .from(schema.users)
+      .where(eq(schema.users.id, leaving.userId));
+    if (account === undefined) throw new Error("No account");
+    await db.insert(schema.waitlistSignups).values({ email: account.email.toLowerCase() });
+
     const response = await call(leaving, "DELETE", "/me/account");
     expect(response.status).toBe(204);
+    expect(
+      await db
+        .select()
+        .from(schema.waitlistSignups)
+        .where(eq(schema.waitlistSignups.email, account.email.toLowerCase())),
+    ).toEqual([]);
     expect(response.headers.getSetCookie().join("\n")).toContain("session_token=;");
 
     expect(await db.select().from(schema.users).where(eq(schema.users.id, leaving.userId))).toEqual(

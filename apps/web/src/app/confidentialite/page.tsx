@@ -43,6 +43,16 @@ export default function PrivacyPage() {
           Ton adresse e-mail sert à te connecter. Ta partie (cartes, progression, échanges) est
           gardée tant que ton compte existe. Il faut avoir 15 ans ou plus pour créer un compte.
         </p>
+        <p>
+          Sans compte, tu joues en invité : pas d'adresse, juste une partie liée à ton navigateur.
+          Si tu ne reviens pas, la partie devient inaccessible au bout de 7 jours, et on l'efface 6
+          mois après ta première visite.
+        </p>
+        <p>
+          Chaque connexion garde l'adresse IP et le navigateur d'où elle vient, pour repérer un
+          compte volé ou un abus. On les efface quand la connexion expire, 7 jours après ta dernière
+          visite.
+        </p>
       </section>
 
       <section className={styles.section}>
@@ -65,7 +75,12 @@ export default function PrivacyPage() {
         <p>
           Ton pseudo, ton avatar, ton niveau, tes cartes épinglées et tes chiffres de jeu forment
           ton profil. Dès le niveau 8, il est visible par un lien, sauf si tu le caches dans les
-          réglages. Quand tu signales un pseudo, on garde qui a signalé qui, pour la modération.
+          réglages. Quand tu signales un pseudo ou un message, on garde qui a signalé qui, pour la
+          modération, jusqu'à un an après qu'on l'a traité.
+        </p>
+        <p>
+          Les messages de ton clan sont effacés au bout de 90 jours. Un message signalé est gardé
+          jusqu'à ce qu'on l'ait traité.
         </p>
       </section>
 
@@ -91,18 +106,40 @@ export default function PrivacyPage() {
       </section>
 
       <section className={styles.section}>
+        <h2>Pourquoi on a le droit</h2>
+        <p>
+          Ton compte, ta partie, les connexions : pour te faire jouer, c'est le contrat que tu
+          acceptes en créant ton compte. Les nouvelles, la liste d'attente, la tranche d'âge : parce
+          que tu l'as choisi, et tu peux revenir dessus. La sécurité, la modération et la mesure de
+          la bêta : notre intérêt légitime à garder un jeu sûr, et à savoir s'il plaît.
+        </p>
+      </section>
+
+      <section className={styles.section}>
         <h2>Où elles vivent</h2>
         <p>
-          Le site et les codes de connexion passent par Cloudflare. Les nouvelles passent par
-          Lettermint, un service européen. La base de données est hébergée dans l'Union européenne.
+          La base de données est chez Neon, à Francfort. Le site, l'API, les codes de connexion et
+          les journaux techniques (gardés 7 jours) passent par Cloudflare. Les nouvelles passent par
+          Lettermint, un service européen.
+        </p>
+        <p>
+          Neon et Cloudflare sont des sociétés américaines : une donnée peut passer par les
+          États-Unis. Ces transferts sont encadrés par les clauses types de la Commission
+          européenne, et pour Cloudflare par le Data Privacy Framework.
+        </p>
+        <p>
+          Les sauvegardes de la base sont gardées 30 jours au plus. Ce que tu effaces en sort au
+          bout de ces 30 jours.
         </p>
       </section>
 
       <section className={styles.section}>
         <h2>Tes droits</h2>
         <p>
-          Réglages, puis « Supprimer mon compte » : tout est effacé sur-le-champ. Tes échanges
-          passés restent chez les autres joueurs, signés « Un joueur parti ». Pour le reste, tu peux
+          Réglages, puis « Supprimer mon compte » : ton compte, ta partie et ton adresse, y compris
+          sur la liste d'attente, sont effacés sur-le-champ. Tes échanges passés restent chez les
+          autres joueurs, signés « Un joueur parti ». Tes messages de clan restent, sans ton nom,
+          jusqu'à leurs 90 jours. Les sauvegardes t'oublient en 30 jours. Pour le reste, tu peux
           voir, corriger ou effacer ce qu'on a sur toi, ou t'opposer à son usage. Écris à{" "}
           <a href={`mailto:${CONTACT}`}>{CONTACT}</a>, on répond sous un mois. Si ça ne va pas, tu
           peux saisir la <a href="https://www.cnil.fr/fr/plaintes">CNIL</a>.

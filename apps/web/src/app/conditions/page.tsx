@@ -173,10 +173,10 @@ export default function TermsPage() {
       <section className={styles.section}>
         <h2>Partir</h2>
         <p>
-          Tu peux supprimer ton compte quand tu veux : Réglages, puis « Supprimer mon compte ». Tout
-          est effacé sur-le-champ. Tes échanges passés restent chez les autres joueurs, signés « Un
-          joueur parti ». Ce qu'on garde et pourquoi :{" "}
-          <Link href="/confidentialite">Tes données</Link>.
+          Tu peux supprimer ton compte quand tu veux : Réglages, puis « Supprimer mon compte ». Ton
+          compte et ta partie sont effacés sur-le-champ. Tes échanges passés restent chez les autres
+          joueurs, signés « Un joueur parti », et tes messages de clan, sans ton nom, jusqu'à leurs
+          90 jours. Ce qu'on garde et pourquoi : <Link href="/confidentialite">Tes données</Link>.
         </p>
       </section>
 

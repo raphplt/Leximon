@@ -12,7 +12,7 @@ import { testDatabaseUrl } from "@leximon/db/testing";
 import { and, eq, inArray } from "drizzle-orm";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { createApp } from "../app";
-import { runMaintenance } from "../maintenance";
+import { eraseCampaignAddresses } from "../maintenance";
 import {
   recordingQueue,
   TEST_LINK_SECRET,
@@ -593,7 +593,7 @@ describe("campaign delivery", () => {
   it("erases the addresses 30 days after the campaign ends", async () => {
     const campaignId = await sendingCampaign(1);
     await sendAll(campaignId);
-    await runMaintenance(db, Date.now() + 31 * 86_400_000);
+    await eraseCampaignAddresses(db, Date.now() + 31 * 86_400_000);
     const [row] = await db
       .select({ email: sends.email })
       .from(sends)

@@ -51,6 +51,7 @@ const {
   userPreferences,
   userProgress,
   users,
+  waitlistSignups,
 } = schema;
 
 type Transaction = Parameters<Parameters<Database["transaction"]>[0]>[0];
@@ -650,7 +651,7 @@ export async function deleteAccount(
   const { userId, now } = input;
   return db.transaction(async (tx): Promise<DeleteAccountResult> => {
     const [me] = await tx
-      .select({ role: users.role })
+      .select({ role: users.role, email: users.email })
       .from(users)
       .where(eq(users.id, userId))
       .for("update");
@@ -678,6 +679,8 @@ export async function deleteAccount(
         ),
       );
     await tx.delete(users).where(inArray(users.id, erased));
+    // "Tout part": the waitlist address too, the one place the account's address lives on.
+    await tx.delete(waitlistSignups).where(eq(waitlistSignups.email, me.email.toLowerCase()));
     return { kind: "deleted" };
   });
 }
