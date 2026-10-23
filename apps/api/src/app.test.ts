@@ -43,6 +43,19 @@ describe("api", () => {
     expect(other.headers.get("access-control-allow-origin")).toBeNull();
   });
 
+  it("lets browsers keep a preflight answer for two hours", async () => {
+    const response = await createApp().request(
+      "/boosters/open",
+      {
+        method: "OPTIONS",
+        headers: { origin: TEST_ORIGIN, "access-control-request-method": "POST" },
+      },
+      testEnv(),
+    );
+    expect(response.status).toBe(204);
+    expect(response.headers.get("access-control-max-age")).toBe("7200");
+  });
+
   it("returns a JSON 404 for unknown routes", async () => {
     const response = await createApp().request("/nope", {}, testEnv());
     expect(response.status).toBe(404);

@@ -12,6 +12,12 @@
       "runtimeExecutable": "pnpm",
       "runtimeArgs": ["--filter", "@leximon/web", "dev"],
       "port": 3000
+    },
+    {
+      "name": "web-start",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["--filter", "@leximon/web", "exec", "next", "start", "-p", "3100"],
+      "port": 3100
     }
   ]
 }

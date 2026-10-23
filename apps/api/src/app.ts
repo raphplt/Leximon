@@ -72,6 +72,9 @@ export function createApp(options: AppOptions = {}) {
       credentials: true,
       allowHeaders: ["Content-Type", "Idempotency-Key", INVITE_HEADER, SOURCE_HEADER],
       allowMethods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+      // Browsers otherwise ask again within seconds: one more round trip before each write.
+      // Two hours is Chrome's ceiling.
+      maxAge: 7200,
     })(c, next),
   );
 
