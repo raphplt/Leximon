@@ -60,7 +60,7 @@
   /* Crimped edges: teeth of this width at the top and bottom of the pouch. */
   --tooth: calc(9 * var(--u));
   /* The front face stands this far before the middle of the pouch, the back as far behind. */
-  --face: calc(6 * var(--u));
+  --face: calc(9 * var(--u));
   transform-style: preserve-3d;
   /* A pouch is lighter than a card: it leans further under the same light. */
   transform: rotateX(calc(var(--holo-rx) * 1.6)) rotateY(calc(var(--holo-ry) * 1.6));
@@ -91,12 +91,26 @@
   right: 0;
   top: var(--strip);
   bottom: 0;
+  /*
+   * Teeth along the bottom crimp, and a body whose sides draw in towards the middle, as a pouch
+   * does once it is stuffed: the crimps, flat, stick out past it.
+   */
+  --crimp: calc(22 * var(--u));
+  --body: top / 100% calc(100% - var(--crimp)) no-repeat;
   -webkit-mask:
     conic-gradient(from -45deg at bottom, #0000, #000 1deg 89deg, #0000 90deg) 50% / var(--tooth)
-    100%;
+    100%,
+    linear-gradient(#000 0 0) bottom / 100% var(--crimp) no-repeat,
+    radial-gradient(calc(6 * var(--u)) 62% at 0% 50%, #0000 97%, #000) var(--body),
+    radial-gradient(calc(6 * var(--u)) 62% at 100% 50%, #0000 97%, #000) var(--body);
   mask:
     conic-gradient(from -45deg at bottom, #0000, #000 1deg 89deg, #0000 90deg) 50% / var(--tooth)
-    100%;
+    100%,
+    linear-gradient(#000 0 0) bottom / 100% var(--crimp) no-repeat,
+    radial-gradient(calc(6 * var(--u)) 62% at 0% 50%, #0000 97%, #000) var(--body),
+    radial-gradient(calc(6 * var(--u)) 62% at 100% 50%, #0000 97%, #000) var(--body);
+  -webkit-mask-composite: source-in, source-over, source-in;
+  mask-composite: intersect, add, intersect;
 }
 
 .back {
@@ -223,6 +237,55 @@
 
 .pouch:disabled {
   cursor: default;
+}
+
+/*
+ * The pouch is full of cards: it bulges. Laid over the print too, so that the seal and the ribbon
+ * follow the curve instead of floating on it. The sides fall away into shadow, both ends flatten
+ * into their crimps, and the foil creases diagonally where the crimps pinch the corners.
+ */
+.volume {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  --crease-top:
+    transparent 44%, rgba(0, 0, 0, 0.22) 49%, rgba(255, 255, 255, 0.07) 52%, transparent 57%;
+  background:
+    linear-gradient(to bottom left, var(--crease-top)) 0 0 / 32% 15% no-repeat,
+    linear-gradient(to bottom right, var(--crease-top)) 100% 0 / 32% 15% no-repeat,
+    linear-gradient(to bottom right, var(--crease-top)) 0 calc(100% - 22 * var(--u)) / 32% 15%
+    no-repeat,
+    linear-gradient(to bottom left, var(--crease-top)) 100% calc(100% - 22 * var(--u)) / 32% 15%
+    no-repeat,
+    linear-gradient(
+      180deg,
+      rgba(0, 0, 0, 0.3),
+      transparent 13%,
+      transparent 80%,
+      rgba(0, 0, 0, 0.38) 94%
+    ),
+    linear-gradient(
+      90deg,
+      rgba(0, 0, 0, 0.42) 2%,
+      rgba(0, 0, 0, 0.16) 13%,
+      transparent 30%,
+      transparent 70%,
+      rgba(0, 0, 0, 0.16) 87%,
+      rgba(0, 0, 0, 0.42) 98%
+    );
+}
+
+/* The crown of the bulge catches the light, a little towards where it comes from. */
+.volume::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    ellipse 34% 40% at calc(25% + var(--holo-x) * 0.5) 40%,
+    rgba(255, 255, 255, 0.14),
+    transparent 70%
+  );
+  mix-blend-mode: screen;
 }
 
 /*

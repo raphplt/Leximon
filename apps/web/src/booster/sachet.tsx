@@ -11,7 +11,7 @@ import styles from "./sachet.module.css";
 import { useTear } from "./use-tear";
 
 /** Depth of the layers between the back and the front of the pouch, in units: its thickness. */
-const SLICES = [-4, -2, 0, 2, 4] as const;
+const SLICES = [-7, -3.5, 0, 3.5, 7] as const;
 
 /**
  * The pack as a classic booster: a soft foil pouch crimped at both ends, torn across the top.
@@ -102,6 +102,7 @@ export function Sachet({ state, onTearStart, onOpen, collection, refill = null }
                   <span className={styles.waitingLine} />
                 </span>
               )}
+              <span className={styles.volume} aria-hidden="true" />
               <span className={styles.glare} aria-hidden="true" />
             </button>
             <div ref={tear.strip} className={styles.strip} {...tear.handlers} aria-hidden="true">
