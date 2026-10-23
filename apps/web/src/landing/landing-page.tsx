@@ -31,11 +31,11 @@ export async function LandingPage() {
             Plus de 1 500 vrais mots du français, en cartes à collectionner. Tu les ouvres, tu les
             apprends, et tu les ressors au bon moment.
           </p>
-          <JoinOrResume />
+          <JoinOrResume keepRoom />
         </div>
       </section>
 
-      <Collections shelves={showcase.shelves} />
+      <Collections ladder={showcase.ladder} shelves={showcase.shelves} />
 
       <HowToPlay pack={showcase.pack} trade={showcase.trade} />
 

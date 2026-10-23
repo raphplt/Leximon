@@ -23,7 +23,8 @@
   display: flex;
   align-items: center;
   gap: 18px;
-  min-height: 92px;
+  /* The band's height once loaded: the page below does not move when it fills. */
+  min-height: 97px;
   padding: 14px 20px;
   border-radius: 24px;
   background: linear-gradient(180deg, #313859, #2a3050);
@@ -244,6 +245,8 @@
   justify-content: flex-end;
   align-items: center;
   gap: 12px;
+  /* Room for the stock ring before it is known. */
+  min-height: 38px;
   padding: 20px 22px 0;
 }
 
@@ -404,10 +407,13 @@
 
 /* The tablet in front of the counter, where the button lies. */
 .shelf {
+  box-sizing: border-box;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 10px;
+  /* Room for the button before the stock is known. */
+  min-height: 96px;
   padding: 20px 20px 22px;
   background: linear-gradient(180deg, #1f243c, #1a1e33);
   /* The dotted tear line of the sachet, between the counter and its tablet. */
@@ -593,7 +599,7 @@
   }
 
   .strip {
-    min-height: 0;
+    min-height: 89px;
     padding-block: 10px;
   }
 
@@ -611,6 +617,7 @@
   }
 
   .shelf {
+    min-height: 84px;
     padding: 14px 20px 16px;
   }
 
@@ -667,6 +674,7 @@
 
   .counterHead {
     justify-content: center;
+    min-height: 44px;
     padding: 12px 14px 0;
   }
 
@@ -680,7 +688,10 @@
     display: flex;
   }
 
+  /* The sachet and its hint, before they load: nothing below moves when they come. */
   .stage {
+    box-sizing: border-box;
+    min-height: 405px;
     padding: 22px 0 20px;
   }
 
@@ -698,6 +709,7 @@
   }
 
   .shelf {
+    min-height: 92px;
     padding: 18px 16px 20px;
   }
 

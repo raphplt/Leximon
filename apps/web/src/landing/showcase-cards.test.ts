@@ -20,7 +20,7 @@ describe("showcaseOf", () => {
       id: "fondateurs",
       name: "Les Fondateurs",
       back: "night",
-      cards: [card("aliboron", "fondateurs"), card("poue", "fondateurs")],
+      cards: [card("jobard", "fondateurs"), card("poue", "fondateurs")],
     },
     {
       id: "metiers",
@@ -32,8 +32,12 @@ describe("showcaseOf", () => {
   it("keeps only the showcased cards, with what the page says around them", () => {
     const showcase = showcaseOf(collections);
     expect(showcase.heroWords.map((found) => found.id)).toEqual(["antitonnerre", "griviere"]);
+    expect(
+      showcase.ladder.map(({ card: found, collectionName }) => [found.id, collectionName]),
+    ).toEqual([["jobard", "Les Fondateurs"]]);
     expect(showcase.shelves).toEqual([
-      { id: "fondateurs", name: "Les Fondateurs", count: 2, cards: [collections[0]?.cards[0]] },
+      { id: "fondateurs", name: "Les Fondateurs", count: 2 },
+      { id: "metiers", name: "Métiers et objets disparus", count: 2 },
     ]);
     expect(showcase.pack).toEqual({ id: "fondateurs", name: "Les Fondateurs", back: "night" });
     expect(
@@ -45,6 +49,12 @@ describe("showcaseOf", () => {
   });
 
   it("shows nothing from an empty catalogue", () => {
-    expect(showcaseOf([])).toEqual({ heroWords: [], shelves: [], pack: null, trade: [] });
+    expect(showcaseOf([])).toEqual({
+      heroWords: [],
+      ladder: [],
+      shelves: [],
+      pack: null,
+      trade: [],
+    });
   });
 });

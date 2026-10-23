@@ -315,7 +315,7 @@ function Header({ subtitle }: { readonly subtitle: string | null }) {
       </Link>
       <div>
         <h1 className={`${ui.display} ${styles.title}`}>Chemin des niveaux</h1>
-        <p className={styles.subtitle}>{subtitle ?? " "}</p>
+        <p className={styles.subtitle}>{subtitle ?? "\u00a0"}</p>
       </div>
     </header>
   );

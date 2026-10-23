@@ -30,9 +30,10 @@ export default function PrivacyPage() {
       <section className={styles.section}>
         <h2>Liste d'attente</h2>
         <p>
-          On garde ton adresse e-mail, et rien d'autre. Elle sert à t'écrire une fois, le jour de
-          l'ouverture. Ensuite, la liste est close et on l'efface. Tu nous l'as donnée pour ça,
-          c'est notre seule raison de la garder.
+          On garde ton adresse e-mail, et rien d'autre. Elle sert à te prévenir de l'ouverture, puis
+          à t'envoyer les nouvelles de Leximon. Chaque e-mail a un lien pour te désinscrire en un
+          clic. Sinon, on la garde au plus 3 ans après ton inscription ou ton dernier clic dans un
+          de nos e-mails.
         </p>
       </section>
 

@@ -1,7 +1,7 @@
 "use client";
 
 import { cssFill, rarityStyles } from "@leximon/tokens";
-import type { CSSProperties } from "react";
+import { type CSSProperties, useState } from "react";
 import { CardBack } from "@/booster/card-back";
 import type { PackCollection } from "@/booster/pack-looks";
 import { Sachet } from "@/booster/sachet";
@@ -25,8 +25,9 @@ export function HowToPlay({
     "--paper": PAPER.paper,
     "--ink": PAPER.ink,
     "--muted": PAPER.muted,
-    // The challenges mark a right answer with this green too.
+    // The challenges mark a right answer with this green, a wrong one with this red.
     "--right": cssFill(rarityStyles.uncommon.frame),
+    "--wrong": cssFill(rarityStyles.rare.frame),
   } as CSSProperties;
   return (
     <section className={styles.plate} style={variables} aria-labelledby="how-to-play">
@@ -105,16 +106,43 @@ function Backs() {
   );
 }
 
-/** A question as the challenges ask it, the right answer already ticked. */
+const CHOICES = [
+  { word: "fouacier", verdict: "Raté. Lui, c'est les galettes." },
+  { word: "lucubrateur", verdict: "Bien vu." },
+  { word: "canéphore", verdict: "Raté. Elle, c'est les corbeilles." },
+] as const;
+const RIGHT = "lucubrateur";
+
+/** A question as the challenges ask it, to answer for real: one try, as in the game. */
 function ChallengeFigure() {
+  const [picked, setPicked] = useState<string | null>(null);
+  const verdict = CHOICES.find((choice) => choice.word === picked)?.verdict ?? "Devine.";
   return (
-    <div className={styles.quiz} aria-hidden="true">
+    <div className={styles.quiz}>
       <p className={styles.quizQuestion}>Celui qui travaille la nuit, à la lueur de la lampe.</p>
-      <span className={styles.quizChoice}>fouacier</span>
-      <span className={`${styles.quizChoice} ${styles.quizRight}`}>lucubrateur</span>
-      <span className={styles.quizChoice}>canéphore</span>
+      {CHOICES.map(({ word }) => (
+        <button
+          key={word}
+          type="button"
+          className={choiceClass(word, picked)}
+          disabled={picked !== null}
+          onClick={() => setPicked(word)}
+        >
+          {word}
+        </button>
+      ))}
+      <p className={styles.quizVerdict} role="status">
+        {verdict}
+      </p>
     </div>
   );
+}
+
+function choiceClass(word: string, picked: string | null): string {
+  if (picked === null) return styles.quizChoice ?? "";
+  if (word === RIGHT) return `${styles.quizChoice} ${styles.quizRight}`;
+  if (word === picked) return `${styles.quizChoice} ${styles.quizWrong}`;
+  return styles.quizChoice ?? "";
 }
 
 /** Two real cards crossing hands. */

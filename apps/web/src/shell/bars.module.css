@@ -1,10 +1,12 @@
 /* --- Web top bar, from 760 px --- */
 
+/* Three columns: the tabs stay centred whatever loads on the right. */
 .top {
   position: sticky;
   top: 0;
   z-index: 30;
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(max-content, 1fr) auto minmax(max-content, 1fr);
   align-items: center;
   gap: 20px;
   height: 70px;
@@ -15,6 +17,7 @@
 }
 
 .logoLink {
+  justify-self: start;
   text-decoration: none;
   display: inline-flex;
   align-items: center;
@@ -24,7 +27,6 @@
 .nav {
   display: flex;
   gap: 4px;
-  margin: 0 auto;
 }
 
 .navLink {
@@ -50,6 +52,14 @@
   color: var(--lx-color-background);
 }
 
+/* Lock and badge sit on the tab's corner: they come with the player's data and must not widen it. */
+.navLock,
+.navBadge {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+}
+
 .navLock {
   opacity: 0.7;
 }
@@ -57,20 +67,24 @@
 .navBadge {
   display: grid;
   place-items: center;
-  min-width: 20px;
-  height: 20px;
-  padding: 0 6px;
+  box-sizing: border-box;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
   border-radius: var(--lx-radius-pill);
   background: var(--lx-color-badge);
   color: #fff;
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 800;
 }
 
 .side {
+  justify-self: end;
   display: flex;
   align-items: center;
   gap: 10px;
+  /* The level ring's height, before it loads. */
+  min-height: 48px;
 }
 
 .num {

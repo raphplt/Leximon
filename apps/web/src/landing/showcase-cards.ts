@@ -21,13 +21,16 @@ export const HERO_WORD_IDS = [
 ] as const;
 
 /**
- * Three cards fanned out for each launch collection, the rarest in the middle. A few insults of
- * old slipped into « Caractères et travers ».
+ * One card of each rarity, from the most printed word to one no book prints any more: the
+ * rarity of a card is the word's. Mostly insults of old, the page's best argument.
  */
-export const COLLECTION_SHOWCASE = [
-  { collectionId: "fondateurs", cardIds: ["aliboron", "talpinette", "cochenillier"] },
-  { collectionId: "caracteres", cardIds: ["grigou", "charivarieur", "carabas"] },
-  { collectionId: "metiers", cardIds: ["fouacier", "trouillotte", "claymore"] },
+export const RARITY_LADDER_IDS = [
+  "jobard",
+  "venette",
+  "coquefredouille",
+  "grippeur",
+  "batonnable",
+  "pendardeau",
 ] as const;
 
 /** The two cards swapped in the trade figure, both in the public domain. */
@@ -44,11 +47,11 @@ export function pickShowcase(
   });
 }
 
+/** A launch collection, named with its size. */
 export interface Shelf {
   readonly id: string;
   readonly name: string;
   readonly count: number;
-  readonly cards: readonly CatalogCard[];
 }
 
 export interface ShowcaseCard {
@@ -59,13 +62,20 @@ export interface ShowcaseCard {
 /** What the home page shows of the catalogue: a few cards, not the 2 MB of collections. */
 export interface Showcase {
   readonly heroWords: readonly CatalogCard[];
+  readonly ladder: readonly ShowcaseCard[];
   readonly shelves: readonly Shelf[];
   /** The first collection, for the sachet of the rules. */
   readonly pack: PackCollection | null;
   readonly trade: readonly ShowcaseCard[];
 }
 
-export const EMPTY_SHOWCASE: Showcase = { heroWords: [], shelves: [], pack: null, trade: [] };
+export const EMPTY_SHOWCASE: Showcase = {
+  heroWords: [],
+  ladder: [],
+  shelves: [],
+  pack: null,
+  trade: [],
+};
 
 export function showcaseOf(collections: readonly CatalogCollectionFile[]): Showcase {
   const cardsById = new Map(
@@ -73,20 +83,17 @@ export function showcaseOf(collections: readonly CatalogCollectionFile[]): Showc
   );
   const nameOf = (collectionId: string) =>
     collections.find((c) => c.id === collectionId)?.name ?? collectionId;
-  const shelves = COLLECTION_SHOWCASE.flatMap(({ collectionId, cardIds }) => {
-    const collection = collections.find((c) => c.id === collectionId);
-    const cards = pickShowcase(cardsById, cardIds);
-    if (collection === undefined || cards.length === 0) return [];
-    return [{ id: collection.id, name: collection.name, count: collection.cards.length, cards }];
+  const withCollection = (card: CatalogCard): ShowcaseCard => ({
+    card,
+    collectionName: nameOf(card.collectionId),
   });
+  const shelves = collections.map((c) => ({ id: c.id, name: c.name, count: c.cards.length }));
   const first = collections[0];
   return {
     heroWords: pickShowcase(cardsById, HERO_WORD_IDS),
+    ladder: pickShowcase(cardsById, RARITY_LADDER_IDS).map(withCollection),
     shelves,
     pack: first === undefined ? null : { id: first.id, name: first.name, back: first.back },
-    trade: pickShowcase(cardsById, TRADE_CARD_IDS).map((card) => ({
-      card,
-      collectionName: nameOf(card.collectionId),
-    })),
+    trade: pickShowcase(cardsById, TRADE_CARD_IDS).map(withCollection),
   };
 }

@@ -20,7 +20,22 @@
   padding: 20px 0 0;
 }
 
+.topAction {
+  display: grid;
+}
+
+.topAction > * {
+  grid-area: 1 / 1;
+  justify-self: end;
+}
+
+/* Keeps its room, unseen: the other state of the same place. */
+.away {
+  visibility: hidden;
+}
+
 .resumeSmall {
+  box-sizing: border-box;
   display: inline-flex;
   align-items: center;
   min-height: 44px;
@@ -36,6 +51,7 @@
 }
 
 .signIn {
+  box-sizing: border-box;
   display: inline-flex;
   align-items: center;
   min-height: 44px;
@@ -121,10 +137,6 @@
   border: 1px solid color-mix(in srgb, var(--ink) 22%, transparent);
   border-radius: 3px;
   pointer-events: none;
-}
-
-.slipPlaceholder {
-  min-height: 400px;
 }
 
 .slipText {
@@ -386,7 +398,7 @@
   color: var(--lx-color-accent);
 }
 
-/* --- Launch collections: three fans of real cards ----------------------------------- */
+/* --- Rarities: one real card of each, climbing like a ladder ------------------------ */
 
 .collections {
   box-sizing: border-box;
@@ -395,90 +407,121 @@
   padding: 24px 0 96px;
 }
 
+.collectionsHead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px 40px;
+}
+
 .collectionsTitle {
   margin: 0;
+  max-width: 16ch;
   font-family: var(--font-display), Georgia, serif;
   font-variation-settings: "SOFT" 100;
   font-weight: 900;
-  font-size: clamp(36px, 6vw, 72px);
+  font-size: clamp(34px, 5vw, 60px);
   line-height: 1;
   text-wrap: balance;
 }
 
-.shelves {
+.collectionsLead {
+  margin: 0;
+  max-width: 30ch;
+  font-family: var(--font-text), Georgia, serif;
+  font-size: 20px;
+  line-height: 1.45;
+  color: var(--lx-color-text-muted);
+  text-wrap: pretty;
+}
+
+/* Six steps: the rarer the word, the higher its card stands. */
+.ladder {
+  --step: 18px;
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 48px;
-  margin: 56px 0 0;
-  padding: 0;
+  grid-template-columns: repeat(6, 168px);
+  justify-content: space-between;
+  align-items: end;
+  gap: 20px;
+  margin: 48px 0 0;
+  padding: calc(var(--step) * 5) 0 0;
   list-style: none;
 }
 
-.shelf {
+.rung {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  text-align: center;
+  gap: 6px;
 }
 
-.fanned {
-  position: relative;
-  width: 290px;
-  height: 250px;
-  margin-bottom: 24px;
+.rung:nth-child(1) {
+  margin-bottom: 0;
 }
 
-.fan0,
-.fan1,
-.fan2 {
-  position: absolute;
-  left: 50%;
-  bottom: 0;
-  margin-left: -75px;
-  transform-origin: 50% 120%;
-  transition: transform 200ms ease-out;
+.rung:nth-child(2) {
+  margin-bottom: var(--step);
 }
 
-.fan0 {
-  transform: translateX(-62px) rotate(-11deg);
+.rung:nth-child(3) {
+  margin-bottom: calc(var(--step) * 2);
 }
 
-.fan1 {
-  z-index: 1;
-  transform: translateY(-14px);
+.rung:nth-child(4) {
+  margin-bottom: calc(var(--step) * 3);
 }
 
-.fan2 {
-  transform: translateX(62px) rotate(11deg);
+.rung:nth-child(5) {
+  margin-bottom: calc(var(--step) * 4);
 }
 
-.shelf:hover .fan0 {
-  transform: translateX(-84px) rotate(-15deg);
+.rung:nth-child(6) {
+  margin-bottom: calc(var(--step) * 5);
 }
 
-.shelf:hover .fan1 {
-  transform: translateY(-24px);
+.rungCard {
+  margin-bottom: 8px;
+  filter: drop-shadow(0 14px 22px rgba(0, 0, 0, 0.35));
+  transition: translate 200ms ease-out;
 }
 
-.shelf:hover .fan2 {
-  transform: translateX(84px) rotate(15deg);
+.rung:hover .rungCard {
+  translate: 0 -8px;
+}
+
+.rungRarity {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.rungFrequency {
+  margin: 0;
+  min-height: 2.8em;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.4;
+  color: var(--lx-color-text-muted);
+  text-wrap: pretty;
+}
+
+.shelves {
+  margin: 48px 0 0;
+  max-width: 60ch;
+  font-family: var(--font-text), Georgia, serif;
+  font-size: 20px;
+  line-height: 1.5;
+  color: var(--lx-color-text-muted);
+  text-wrap: pretty;
+}
+
+.shelves strong {
+  color: var(--lx-color-text);
 }
 
 .shelfName {
-  margin: 0;
-  font-family: var(--font-display), Georgia, serif;
-  font-variation-settings: "SOFT" 100;
-  font-weight: 900;
-  font-size: 26px;
-  line-height: 1.1;
-  color: var(--lx-color-accent);
-}
-
-.shelfCount {
-  margin: 6px 0 0;
-  font-size: 15px;
-  font-weight: 700;
-  color: var(--lx-color-text-muted);
+  font-style: italic;
+  color: var(--lx-color-text);
 }
 
 /* --- Closing call: the form again, for those who read to the end ---------------------- */
@@ -514,9 +557,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .fan0,
-  .fan1,
-  .fan2 {
+  .rungCard {
     transition: none;
   }
 }
@@ -655,7 +696,7 @@
   flex-direction: column;
   align-items: stretch;
   gap: 6px;
-  width: 230px;
+  width: 250px;
 }
 
 .quizQuestion {
@@ -669,11 +710,22 @@
   padding: 5px 14px;
   border: 2px solid color-mix(in srgb, var(--ink) 22%, transparent);
   border-radius: var(--lx-radius-pill);
+  background: transparent;
+  color: var(--ink);
   font-family: var(--font-display), Georgia, serif;
   font-variation-settings: "SOFT" 100;
   font-weight: 800;
   font-size: 17px;
   text-align: left;
+  cursor: pointer;
+}
+
+.quizChoice:not(:disabled):hover {
+  border-color: var(--ink);
+}
+
+.quizChoice:disabled {
+  cursor: default;
 }
 
 .quizRight {
@@ -684,6 +736,22 @@
 
 .quizRight::after {
   content: " ✓";
+}
+
+.quizWrong {
+  border-color: var(--wrong);
+  color: color-mix(in srgb, var(--wrong) 70%, var(--ink));
+  text-decoration: line-through;
+}
+
+.quizVerdict {
+  margin: 4px 0 0;
+  min-height: 1.4em;
+  white-space: nowrap;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.4;
+  color: var(--muted);
 }
 
 /* Échanges */
@@ -757,10 +825,24 @@
     grid-template-columns: minmax(0, 1fr);
     gap: 40px;
   }
+}
 
-  .shelves {
-    grid-template-columns: minmax(0, 1fr);
-    gap: 40px;
+/* Too narrow for six cards: the ladder scrolls sideways, still climbing. */
+@media (max-width: 1180px) {
+  .ladder {
+    --step: 12px;
+    justify-content: start;
+    margin-inline: -16px;
+    padding-inline: 16px;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x mandatory;
+    scroll-padding-inline: 16px;
+    scrollbar-width: none;
+  }
+
+  .rung {
+    scroll-snap-align: start;
   }
 }
 
@@ -784,20 +866,45 @@
     margin-bottom: -16px;
   }
 
-  .slipDefinition {
-    font-size: 18px;
+  .slipPrint {
+    width: min(100%, calc(150px * var(--ratio)));
   }
 
-  .slipPlaceholder {
-    min-height: 480px;
+  .slipDefinition {
+    font-size: 18px;
   }
 
   .fields {
     flex-direction: column;
   }
+}
 
-  .fanned {
-    scale: 0.85;
-    margin-block: -18px 6px;
-  }
+/* --- Waitlist or way back: both in one cell, so the answer never moves the page ------- */
+
+.join {
+  display: grid;
+}
+
+.joinResume,
+.joinForm {
+  grid-area: 1 / 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.joinResume {
+  justify-content: center;
+}
+
+.joinResume[hidden] {
+  display: none;
+}
+
+/* Every slip in one cell: the cell is as tall as the tallest word. */
+.slipStack {
+  display: grid;
+}
+
+.slipStack > .slip {
+  grid-area: 1 / 1;
 }

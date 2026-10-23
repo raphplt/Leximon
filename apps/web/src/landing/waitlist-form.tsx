@@ -82,7 +82,7 @@ export function WaitlistForm() {
         {state.kind === "error" ? state.message : ""}
       </p>
       <p id={`${id}-note`} className={styles.note}>
-        On t'écrit le jour de l'ouverture, puis on oublie ton adresse.{" "}
+        On t'écrit à l'ouverture, puis pour les nouvelles. Un clic pour arrêter.{" "}
         <Link href="/confidentialite">Tes données</Link>
       </p>
     </form>

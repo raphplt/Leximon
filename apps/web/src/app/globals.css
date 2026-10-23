@@ -1,6 +1,8 @@
 html {
   color-scheme: dark;
   -webkit-text-size-adjust: 100%;
+  /* The scrollbar's room is kept even on a short page: content arriving never narrows the page. */
+  scrollbar-gutter: stable;
 }
 
 body {

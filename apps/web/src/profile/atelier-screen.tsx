@@ -58,7 +58,7 @@ export function AtelierScreen() {
         Retour au profil
       </Link>
       <div className={styles.atelierHead}>
-        {me !== null && <Avatar avatar={me.avatar} frame={me.frame} size={72} />}
+        <Avatar avatar={me?.avatar ?? null} frame={me?.frame ?? null} size={72} />
         <h1 className={`${ui.display} ${styles.title}`}>Atelier</h1>
       </div>
       <div className={styles.tabs} role="tablist" aria-label="Rayons de l'atelier">

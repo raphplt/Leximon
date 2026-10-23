@@ -3,7 +3,7 @@
 import type { CatalogCard } from "@leximon/contract";
 import { cssFill, rarityStyles } from "@leximon/tokens";
 import { frequencyLine } from "@leximon/view-model";
-import { type CSSProperties, useEffect, useState } from "react";
+import { type CSSProperties, useState } from "react";
 import { catalogFileUrl } from "@/cards/catalog";
 import { creditLine, cssUrl, engravingOf, hasPlate } from "@/cards/engraving";
 import { RarityName } from "@/components/rarity-icon";
@@ -11,19 +11,32 @@ import styles from "./landing-page.module.css";
 
 /**
  * One word of the catalogue printed large, like a dictionary slip in the colours of its rarity,
- * and another one on demand. The page is the same for everyone, so the first word is drawn in
- * the browser: the slip keeps its place until then. Without words, the page stands without it.
+ * and another one on demand. The first word comes with the page. Every slip is laid in the same
+ * cell, only the current one shown and inked: the cell takes the tallest, so changing word never
+ * moves the page. Without words, the page stands without it.
  */
 export function HeroWord({ words }: { readonly words: readonly CatalogCard[] }) {
-  const [index, setIndex] = useState<number | null>(null);
+  const [index, setIndex] = useState(0);
+  if (words.length === 0) return null;
+  const another = () => setIndex((current) => anotherIndex(current, words.length));
+  return (
+    <div className={styles.slipStack}>
+      {words.map((card, i) => (
+        <Slip key={card.id} card={card} current={i === index} onAnother={another} />
+      ))}
+    </div>
+  );
+}
 
-  useEffect(() => {
-    setIndex(Math.floor(Math.random() * words.length));
-  }, [words.length]);
-
-  const card = index === null ? undefined : words[index];
-  if (card === undefined) return <div className={styles.slipPlaceholder} aria-hidden="true" />;
-
+function Slip({
+  card,
+  current,
+  onAnother,
+}: {
+  readonly card: CatalogCard;
+  readonly current: boolean;
+  readonly onAnother: () => void;
+}) {
   const style = rarityStyles[card.rarity];
   const gradient = typeof style.word !== "string";
   const variables = {
@@ -35,7 +48,12 @@ export function HeroWord({ words }: { readonly words: readonly CatalogCard[] }) 
   } as CSSProperties;
 
   return (
-    <article className={styles.slip} style={variables} aria-live="polite">
+    <article
+      className={current ? styles.slip : `${styles.slip} ${styles.away}`}
+      style={variables}
+      aria-hidden={current ? undefined : true}
+      inert={!current}
+    >
       <p className={styles.slipMeta}>
         <RarityName rarity={card.rarity} />
         <span>{card.partOfSpeech}</span>
@@ -49,28 +67,43 @@ export function HeroWord({ words }: { readonly words: readonly CatalogCard[] }) 
           </p>
         )}
         <p className={styles.slipFrequency}>{frequencyLine(card.perBillion)}</p>
-        <button
-          className={styles.again}
-          type="button"
-          onClick={() => setIndex((current) => ((current ?? 0) + 1) % words.length)}
-        >
+        <button className={styles.again} type="button" onClick={onAnother}>
           Encore un mot
         </button>
       </div>
-      <SlipEngraving card={card} night={gradient} />
+      <SlipEngraving card={card} night={gradient} inked={current} />
     </article>
   );
 }
 
-/** The engraving inked like on the card: same masks, printed bigger, with the credit beneath. */
-function SlipEngraving({ card, night }: { readonly card: CatalogCard; readonly night: boolean }) {
+/** Any word but the one on the slip. */
+function anotherIndex(current: number, length: number): number {
+  if (length < 2) return current;
+  return (current + 1 + Math.floor(Math.random() * (length - 1))) % length;
+}
+
+/**
+ * The engraving inked like on the card: same masks, printed bigger, with the credit beneath.
+ * A slip not shown keeps the engraving's room but loads no image.
+ */
+function SlipEngraving({
+  card,
+  night,
+  inked,
+}: {
+  readonly card: CatalogCard;
+  readonly night: boolean;
+  readonly inked: boolean;
+}) {
   const engraving = engravingOf(card);
   if (engraving === null) return null;
   const variables = {
     aspectRatio: `${engraving.width} / ${engraving.height}`,
     "--ratio": `${engraving.width / engraving.height}`,
-    "--ink-src": cssUrl(catalogFileUrl(engraving.ink)),
-    "--fill-src": cssUrl(catalogFileUrl(engraving.fill)),
+    ...(inked && {
+      "--ink-src": cssUrl(catalogFileUrl(engraving.ink)),
+      "--fill-src": cssUrl(catalogFileUrl(engraving.fill)),
+    }),
   } as CSSProperties;
   return (
     <figure className={styles.slipFigure}>

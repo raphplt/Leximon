@@ -131,7 +131,9 @@ export function TopBar({
       <div className={styles.side}>
         <StockChips view={view} compact={false} />
         <MailButton view={view} compact={false} />
-        {view.progress !== null && (
+        {view.progress === null ? (
+          <span className={styles.ring} aria-hidden="true" />
+        ) : (
           <Link
             href="/niveaux"
             className={styles.ring}
