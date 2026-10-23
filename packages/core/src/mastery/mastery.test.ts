@@ -3,6 +3,7 @@ import { MASTERY_SCHEDULE } from "../rules";
 import {
   isDue,
   levelFor,
+  levelUpPossible,
   type MasteryRules,
   masteryRulesAt,
   newWordMastery,
@@ -18,7 +19,11 @@ const rules: MasteryRules = {
   maximumIntervalDays: 365,
   levelThresholdDays: { ink: 7, gilded: 30 },
   levelBy: "stability",
+  slipToleranceFromLetters: 6,
 };
+const typed = { grade: "good", typed: true } as const;
+const picked = { grade: "good", typed: false } as const;
+const wrong = { grade: "again", typed: true } as const;
 const proven: MasteryRules = { ...rules, levelBy: "provenRecall" };
 
 /** Answers right each time the word comes back; returns the mastery after each answer. */
@@ -27,7 +32,7 @@ function recallEachTime(times: number, using = rules): WordMastery[] {
   let now = 0;
   const steps: WordMastery[] = [];
   for (let i = 0; i < times; i++) {
-    mastery = reviewWord(using, mastery, true, now).mastery;
+    mastery = reviewWord(using, mastery, typed, now).mastery;
     steps.push(mastery);
     now = mastery.memory.due;
   }
@@ -61,7 +66,7 @@ describe("mastery", () => {
   it("never lowers a level after a forgotten word", () => {
     const [, , gilded] = recallEachTime(3);
     if (gilded === undefined) throw new Error("missing step");
-    const outcome = reviewWord(rules, gilded, false, gilded.memory.due);
+    const outcome = reviewWord(rules, gilded, wrong, gilded.memory.due);
     expect(outcome.mastery.level).toBe("gilded");
     expect(outcome.mastery.memory.lapses).toBe(1);
     expect(outcome.rating).toBe(1);
@@ -71,12 +76,12 @@ describe("mastery", () => {
   it("reports a level up", () => {
     const [first] = recallEachTime(1);
     if (first === undefined) throw new Error("missing step");
-    expect(reviewWord(rules, first, true, first.memory.due).levelUp).toBe(true);
+    expect(reviewWord(rules, first, typed, first.memory.due).levelUp).toBe(true);
   });
 
   it("is deterministic", () => {
-    const a = reviewWord(rules, newWordMastery(0), true, 5 * DAY);
-    const b = reviewWord(rules, newWordMastery(0), true, 5 * DAY);
+    const a = reviewWord(rules, newWordMastery(0), typed, 5 * DAY);
+    const b = reviewWord(rules, newWordMastery(0), typed, 5 * DAY);
     expect(a).toEqual(b);
   });
 
@@ -98,16 +103,41 @@ describe("mastery", () => {
     });
 
     it("climbs one level per answer, however long the word was remembered", () => {
-      const first = reviewWord(proven, newWordMastery(0), true, 0).mastery;
-      const late = reviewWord(proven, first, true, 60 * DAY);
+      const first = reviewWord(proven, newWordMastery(0), picked, 0).mastery;
+      const late = reviewWord(proven, first, typed, 60 * DAY);
       expect(late.mastery.level).toBe("ink");
       expect(late.levelUp).toBe(true);
     });
 
     it("never climbs on a wrong answer or a first answer", () => {
-      const first = reviewWord(proven, newWordMastery(0), true, 0).mastery;
+      const first = reviewWord(proven, newWordMastery(0), picked, 0).mastery;
       expect(first.level).toBe("sketch");
-      expect(reviewWord(proven, first, false, 40 * DAY).mastery.level).toBe("sketch");
+      expect(reviewWord(proven, first, wrong, 40 * DAY).mastery.level).toBe("sketch");
+    });
+
+    it("climbs only on a typed answer", () => {
+      const first = reviewWord(proven, newWordMastery(0), picked, 0).mastery;
+      expect(reviewWord(proven, first, picked, 10 * DAY).mastery.level).toBe("sketch");
+      expect(reviewWord(proven, first, typed, 10 * DAY).mastery.level).toBe("ink");
+    });
+
+    it("climbs on a typed answer with a slip, rated hard", () => {
+      const first = reviewWord(proven, newWordMastery(0), picked, 0).mastery;
+      const slip = reviewWord(proven, first, { grade: "hard", typed: true }, 10 * DAY);
+      expect(slip.mastery.level).toBe("ink");
+      expect(slip.rating).toBe(2);
+      const good = reviewWord(proven, first, typed, 10 * DAY);
+      expect(slip.mastery.memory.due).toBeLessThan(good.mastery.memory.due);
+    });
+
+    it("asks for the word typed only when a right answer can raise the level", () => {
+      expect(levelUpPossible(proven, "sketch", null, 60 * DAY)).toBe(false);
+      expect(levelUpPossible(proven, "sketch", 0, 6 * DAY)).toBe(false);
+      expect(levelUpPossible(proven, "sketch", 0, 7 * DAY)).toBe(true);
+      expect(levelUpPossible(proven, "ink", 0, 29 * DAY)).toBe(false);
+      expect(levelUpPossible(proven, "ink", 0, 30 * DAY)).toBe(true);
+      expect(levelUpPossible(proven, "gilded", 0, 365 * DAY)).toBe(false);
+      expect(levelUpPossible(rules, "sketch", 0, 60 * DAY)).toBe(false);
     });
 
     it("reads levels from the days remembered", () => {

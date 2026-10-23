@@ -13,6 +13,7 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { createApp } from "../app";
 import { TEST_ORIGIN, testEnv } from "../test-env";
 import { type Guest, seedTestCatalog, signInAsGuest } from "../test-support";
+import { createCatalogIndexLoader } from "./catalog-index";
 import { answerChallenge } from "./challenges";
 
 const url = testDatabaseUrl();
@@ -37,6 +38,14 @@ function get(guest: Guest | null, path: string) {
 }
 
 function answer(guest: Guest, cardId: string, chosenCardId: string, key = crypto.randomUUID()) {
+  return post(guest, { cardId, format: "definition", chosenCardId }, key);
+}
+
+function typeWord(guest: Guest, cardId: string, typed: string, key = crypto.randomUUID()) {
+  return post(guest, { cardId, format: "typed", typed }, key);
+}
+
+function post(guest: Guest, body: object, key: string) {
   return app.request(
     "/challenges/answer",
     {
@@ -47,10 +56,35 @@ function answer(guest: Guest, cardId: string, chosenCardId: string, key = crypto
         "content-type": "application/json",
         [IDEMPOTENCY_KEY_HEADER]: key,
       },
-      body: JSON.stringify({ cardId, format: "definition", chosenCardId }),
+      body: JSON.stringify(body),
     },
     env,
   );
+}
+
+/** A due word of `level`, last reviewed `daysAgo` days ago. */
+async function reviewedWord(
+  guest: Guest,
+  cardId: string,
+  level: "sketch" | "ink",
+  daysAgo: number,
+) {
+  const now = Date.now();
+  const { memory } = newWordMastery(now);
+  await db.insert(schema.userMastery).values({
+    userId: guest.userId,
+    cardId,
+    level,
+    due: new Date(now - 1_000),
+    stability: daysAgo,
+    difficulty: 5,
+    scheduledDays: daysAgo,
+    learningSteps: memory.learningSteps,
+    reps: 3,
+    lapses: 0,
+    state: 2,
+    lastReviewedAt: new Date(now - daysAgo * DAY),
+  });
 }
 
 async function questions(guest: Guest) {
@@ -89,12 +123,29 @@ describe("GET /challenges", () => {
       "test-b-epic-3",
     ]);
     for (const question of body.questions) {
+      if (question.format === "typed") throw new Error("a new word is asked with choices");
       expect(new Set(question.choices).size).toBe(4);
       expect(question.choices).toContain(question.cardId);
       // Wrong choices come from the same collection when it has enough cards.
       const collection = question.cardId.slice(0, "test-a".length);
       expect(question.choices.every((id) => id.startsWith(collection))).toBe(true);
     }
+  });
+
+  it("asks for the word typed when a right answer can raise its level", async () => {
+    const guest = await signInAsGuest(app, env);
+    await give(guest, "test-a-common-1", "test-a-common-2", "test-a-common-3");
+    await reviewedWord(guest, "test-a-common-1", "sketch", 8);
+    await reviewedWord(guest, "test-a-common-2", "ink", 10);
+    const body = await questions(guest);
+    const formats = Object.fromEntries(body.questions.map((q) => [q.cardId, q.format]));
+    expect(formats["test-a-common-1"]).toBe("typed");
+    expect(formats["test-a-common-2"]).not.toBe("typed");
+    expect(formats["test-a-common-3"]).not.toBe("typed");
+    expect(body.questions.find((q) => q.format === "typed")).toEqual({
+      cardId: "test-a-common-1",
+      format: "typed",
+    });
   });
 
   it("limits the session size", async () => {
@@ -173,6 +224,63 @@ describe("POST /challenges/answer", () => {
     expect((await answer(guest, "test-a-common-1", "test-a-common-1")).status).toBe(200);
   });
 
+  it("raises the level on the word typed, never on a choice", async () => {
+    const guest = await signInAsGuest(app, env);
+    await give(guest, "test-a-common-1", "test-a-common-2");
+    await reviewedWord(guest, "test-a-common-1", "sketch", 8);
+    await reviewedWord(guest, "test-a-common-2", "sketch", 8);
+
+    const picked = challengeAnswerResponseSchema.parse(
+      await (await answer(guest, "test-a-common-1", "test-a-common-1")).json(),
+    );
+    expect(picked).toMatchObject({ correct: true, slip: false, level: "sketch", levelUp: false });
+
+    const typed = challengeAnswerResponseSchema.parse(
+      await (await typeWord(guest, "test-a-common-2", " COMMON 2 ")).json(),
+    );
+    expect(typed).toMatchObject({ correct: true, slip: false, level: "ink", levelUp: true });
+    const [log] = await db
+      .select({ format: schema.reviewLogs.format, rating: schema.reviewLogs.rating })
+      .from(schema.reviewLogs)
+      .where(
+        and(
+          eq(schema.reviewLogs.userId, guest.userId),
+          eq(schema.reviewLogs.cardId, "test-a-common-2"),
+        ),
+      );
+    expect(log).toEqual({ format: "typed", rating: 3 });
+  });
+
+  it("forgives one slip in the word typed, rated hard", async () => {
+    const guest = await signInAsGuest(app, env);
+    await give(guest, "test-a-legendary-1");
+    await reviewedWord(guest, "test-a-legendary-1", "sketch", 8);
+    const key = crypto.randomUUID();
+    const body = challengeAnswerResponseSchema.parse(
+      await (await typeWord(guest, "test-a-legendary-1", "legnedary 1", key)).json(),
+    );
+    expect(body).toMatchObject({ correct: true, slip: true, level: "ink", levelUp: true });
+    const replay = challengeAnswerResponseSchema.parse(
+      await (await typeWord(guest, "test-a-legendary-1", "legnedary 1", key)).json(),
+    );
+    expect(replay.slip).toBe(true);
+  });
+
+  it("counts a word typed as another card, or no word at all, as wrong", async () => {
+    const guest = await signInAsGuest(app, env);
+    await give(guest, "test-a-common-1", "test-a-common-2");
+    await reviewedWord(guest, "test-a-common-1", "sketch", 8);
+    await reviewedWord(guest, "test-a-common-2", "sketch", 8);
+    const other = challengeAnswerResponseSchema.parse(
+      await (await typeWord(guest, "test-a-common-1", "common 2")).json(),
+    );
+    expect(other).toMatchObject({ correct: false, slip: false, level: "sketch" });
+    const none = challengeAnswerResponseSchema.parse(
+      await (await typeWord(guest, "test-a-common-2", "")).json(),
+    );
+    expect(none.correct).toBe(false);
+  });
+
   it("refuses a word the player does not own", async () => {
     const guest = await signInAsGuest(app, env);
     const response = await answer(guest, "test-a-common-1", "test-a-common-1");
@@ -191,6 +299,12 @@ describe("POST /challenges/answer", () => {
       { key: true },
       { cardId: "test-a-common-1", format: "x", chosenCardId: "x" },
     ],
+    [
+      "word typed too long",
+      { key: true },
+      { cardId: "test-a-common-1", format: "typed", typed: "x".repeat(61) },
+    ],
+    ["choice without a card", { key: true }, { cardId: "test-a-common-1", format: "word" }],
   ])("rejects an invalid request: %s", async (_label, options, body) => {
     const guest = await signInAsGuest(app, env);
     const headers: Record<string, string> = {
@@ -368,26 +482,13 @@ describe("bonus boosters", () => {
   it("awards a bonus when a card reaches the gilded level", async () => {
     const guest = await signInAsGuest(app, env);
     await give(guest, "test-a-epic-1");
-    // An ink word last reviewed 30 days ago: a right answer now proves 30 days of recall.
-    const now = Date.now();
-    const { memory } = newWordMastery(now);
-    await db.insert(schema.userMastery).values({
-      userId: guest.userId,
-      cardId: "test-a-epic-1",
-      level: "ink",
-      due: new Date(now - 1_000),
-      stability: 30,
-      difficulty: 5,
-      scheduledDays: 30,
-      learningSteps: memory.learningSteps,
-      reps: 3,
-      lapses: 0,
-      state: 2,
-      lastReviewedAt: new Date(now - 30 * DAY),
-    });
-    expect(masteryRulesAt(MASTERY_SCHEDULE, now).levelThresholdDays.gilded).toBe(30);
+    // An ink word last reviewed 30 days ago: typed right now, it proves 30 days of recall.
+    await reviewedWord(guest, "test-a-epic-1", "ink", 30);
+    expect(masteryRulesAt(MASTERY_SCHEDULE, Date.now()).levelThresholdDays.gilded).toBe(30);
 
-    const body = await reply(guest, "test-a-epic-1", true);
+    const response = await typeWord(guest, "test-a-epic-1", "epic 1");
+    expect(response.status).toBe(200);
+    const body = challengeAnswerResponseSchema.parse(await response.json());
     expect(body).toMatchObject({ level: "gilded", levelUp: true });
     expect(body.bonus).toEqual({ daily: 0, gilded: 1, credited: 1, reserve: 1 });
     expect(await awards(guest)).toEqual([
@@ -445,7 +546,8 @@ describe("answer latency budget", () => {
       .values({ id: userId, name: "Budget", email: `${userId}@test.invalid` });
     await db.insert(schema.userCards).values({ userId, cardId: "test-a-common-1", quantity: 1 });
     try {
-      const result = await answerChallenge(counted.db, {
+      const catalog = await createCatalogIndexLoader()(db, Date.now());
+      const result = await answerChallenge(counted.db, catalog, {
         userId,
         idempotencyKey: crypto.randomUUID(),
         cardId: "test-a-common-1",

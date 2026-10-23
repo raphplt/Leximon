@@ -39,11 +39,11 @@ export function challengeRoutes(loadCatalogIndex: CatalogIndexLoader) {
     });
     c.header("Cache-Control", "no-store");
     return c.json<ChallengesResponse>({
-      questions: session.questions.map(({ cardId, format, choices }) => ({
-        cardId,
-        format,
-        choices: [...choices],
-      })),
+      questions: session.questions.map((question) =>
+        question.format === "typed"
+          ? { cardId: question.cardId, format: question.format }
+          : { cardId: question.cardId, format: question.format, choices: [...question.choices] },
+      ),
       nextDueAt: session.nextDueAt === null ? null : new Date(session.nextDueAt).toISOString(),
     });
   });
@@ -63,7 +63,8 @@ export function challengeRoutes(loadCatalogIndex: CatalogIndexLoader) {
     if (!body.success) {
       return c.json({ error: "invalid_request" }, 400);
     }
-    const result = await answerChallenge(c.var.db, {
+    const catalog = await loadCatalogIndex(c.var.db, Date.now());
+    const result = await answerChallenge(c.var.db, catalog, {
       userId: c.var.userId,
       idempotencyKey: key.data,
       ...body.data,
@@ -74,6 +75,7 @@ export function challengeRoutes(loadCatalogIndex: CatalogIndexLoader) {
         if (result.correct) sendGameEvents(c, [{ type: "answer_given", userId: c.var.userId }]);
         return c.json<ChallengeAnswerResponse>({
           correct: result.correct,
+          slip: result.slip,
           level: result.level,
           levelUp: result.levelUp,
           nextReviewAt: new Date(result.nextReviewAt).toISOString(),

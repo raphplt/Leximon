@@ -261,7 +261,17 @@ Compte A : `pnpm dev:player contact@leximon.fr --level 21` pour avoir une série
 - **Retour :**
 
 ### DEF-05 · Rien à réviser
-- **Attendu :** « Tes mots tiennent bon. Le prochain revient dans 3 h. ». *L'Encre (7 jours) et la Dorure (30 jours) ne se testent pas en une séance.*
+- **Attendu :** « Tes mots tiennent bon. Le prochain revient dans 3 h. ». *L'Encre (7 jours) et la Dorure (30 jours) ne se testent pas en une séance : voir DEF-06.*
+- **Retour :**
+
+### DEF-06 · Mot à écrire
+- **Faire :** sur la base locale, vieillir de 8 jours un mot déjà révisé (ici *équanimité*), puis « Commencer le défi » et écrire le mot : sans accent, puis avec une faute, puis faux, puis « Je sèche » (refaire la commande entre deux essais).
+
+```bash
+docker compose exec postgres psql -U leximon -d leximon -c "update user_mastery set due = now(), last_reviewed_at = now() - interval '8 days' where card_id = 'equanimite' and user_id = (select id from users where email = 'contact@leximon.fr')"
+```
+
+- **Attendu :** « Écris le mot », la définition, « Trouvé de tête, il passe à l'Encre. Les accents ne comptent pas, une faute de frappe passe. », un champ « Le mot », « Valider le mot » et « Je sèche ». *equanimite* : « Juste. », « Ça s'écrit équanimité. », « équanimité passe à l'Encre ! ». *equanimte* : « Juste, à une lettre près. », la même montée. Faux ou « Je sèche » : « Raté. », « C'était : équanimité ». Les autres mots restent en QCM. « Ta mémoire » dit qu'un mot monte quand on l'écrit de tête.
 - **Retour :**
 
 ---

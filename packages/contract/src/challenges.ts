@@ -1,4 +1,10 @@
-import { CHALLENGE_FORMATS, CHOICES_PER_QUESTION, MASTERY_LEVELS } from "@leximon/core";
+import {
+  CHALLENGE_FORMATS,
+  CHOICE_FORMATS,
+  CHOICES_PER_QUESTION,
+  MASTERY_LEVELS,
+  TYPED_ANSWER_MAX_LENGTH,
+} from "@leximon/core";
 import { z } from "zod";
 import { slugSchema, timestampSchema } from "./common";
 import { progressGainSchema } from "./progress";
@@ -20,16 +26,20 @@ export const challengesQuerySchema = z.object({
 });
 
 /**
- * One multiple-choice question. "definition": show the word of `cardId`, the choices are
- * definitions; "word": show the definition of `cardId`, the choices are words. Texts come from
- * the catalogue.
+ * One question. Multiple choice, "definition": show the word of `cardId`, the choices are
+ * definitions; "word": show the definition of `cardId`, the choices are words. "typed": show the
+ * definition of `cardId`, the player types the word; asked when a right answer can raise the
+ * level. Texts come from the catalogue.
  */
-export const challengeQuestionSchema = z.object({
-  cardId: slugSchema,
-  format: challengeFormatSchema,
-  /** Card ids in display order, the answer among them. */
-  choices: z.array(slugSchema).length(CHOICES_PER_QUESTION),
-});
+export const challengeQuestionSchema = z.discriminatedUnion("format", [
+  z.object({
+    cardId: slugSchema,
+    format: z.enum(CHOICE_FORMATS),
+    /** Card ids in display order, the answer among them. */
+    choices: z.array(slugSchema).length(CHOICES_PER_QUESTION),
+  }),
+  z.object({ cardId: slugSchema, format: z.literal("typed") }),
+]);
 export type ChallengeQuestion = z.infer<typeof challengeQuestionSchema>;
 
 /** `GET /challenges`, 200: words due for review first, then words never reviewed. */
@@ -40,12 +50,19 @@ export const challengesResponseSchema = z.object({
 });
 export type ChallengesResponse = z.infer<typeof challengesResponseSchema>;
 
-/** `POST /challenges/answer` body, with an `Idempotency-Key` header. */
-export const challengeAnswerRequestSchema = z.object({
-  cardId: slugSchema,
-  format: challengeFormatSchema,
-  chosenCardId: slugSchema,
-});
+/**
+ * `POST /challenges/answer` body, with an `Idempotency-Key` header: the card picked among the
+ * choices, or the word typed (empty when the player gives up). Only a typed answer can raise the
+ * level, whatever question was served.
+ */
+export const challengeAnswerRequestSchema = z.discriminatedUnion("format", [
+  z.object({ cardId: slugSchema, format: z.enum(CHOICE_FORMATS), chosenCardId: slugSchema }),
+  z.object({
+    cardId: slugSchema,
+    format: z.literal("typed"),
+    typed: z.string().max(TYPED_ANSWER_MAX_LENGTH),
+  }),
+]);
 export type ChallengeAnswerRequest = z.infer<typeof challengeAnswerRequestSchema>;
 
 /** Bonus boosters earned by one answer. */
@@ -64,6 +81,8 @@ export type AnswerBonus = z.infer<typeof answerBonusSchema>;
 /** `POST /challenges/answer`, 200. Errors: 409 `challenge_not_due`, 404 `card_not_owned`. */
 export const challengeAnswerResponseSchema = z.object({
   correct: z.boolean(),
+  /** Right, but typed with one slip: the card shows the spelling. */
+  slip: z.boolean(),
   level: masteryLevelSchema,
   levelUp: z.boolean(),
   nextReviewAt: timestampSchema,

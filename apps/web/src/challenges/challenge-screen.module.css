@@ -272,6 +272,47 @@
   line-height: 1.35;
 }
 
+.promptHint {
+  margin: 14px 0 0;
+  color: var(--lx-color-text-muted);
+  font-size: 15px;
+}
+
+.typed {
+  display: grid;
+  gap: 14px;
+  margin-top: 18px;
+}
+
+.typedField {
+  min-height: 64px;
+  font-size: 26px;
+  text-align: center;
+}
+
+.typedField:disabled {
+  opacity: 1;
+}
+
+.typedRight {
+  border-color: #1f9e7a;
+  background: #1f9e7a;
+  color: #fff;
+}
+
+.typedWrong {
+  border-color: #c23d1b;
+  background: #c23d1b;
+  color: #fff;
+}
+
+.typedActions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+}
+
 .choices {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));

@@ -1,0 +1,1 @@
+ALTER TYPE "public"."challenge_format" ADD VALUE 'typed';

@@ -54,8 +54,8 @@ export const DRAW_SCHEDULE: DrawSchedule = [
 
 const DAY = 24 * 60 * MINUTE;
 
-// FSRS targets 90 % recall. Since proven recall, a level needs a right answer that many days
-// after the previous review.
+// FSRS targets 90 % recall. Since proven recall, a level needs a right answer typed from memory
+// that many days after the previous review; a word of 6 letters or more forgives one slip.
 export const MASTERY_SCHEDULE: MasterySchedule = [
   {
     startsAt: SINCE_LAUNCH,
@@ -63,6 +63,7 @@ export const MASTERY_SCHEDULE: MasterySchedule = [
     maximumIntervalDays: 365,
     levelThresholdDays: { ink: 7, gilded: 30 },
     levelBy: "stability",
+    slipToleranceFromLetters: 6,
   },
   {
     startsAt: PROVEN_RECALL_DECIDED,
@@ -70,6 +71,7 @@ export const MASTERY_SCHEDULE: MasterySchedule = [
     maximumIntervalDays: 365,
     levelThresholdDays: { ink: 7, gilded: 30 },
     levelBy: "provenRecall",
+    slipToleranceFromLetters: 6,
   },
 ];
 

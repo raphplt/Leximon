@@ -5,7 +5,14 @@ import {
   type MasteryLevelCode,
   type ProgressGain,
 } from "@leximon/contract";
-import { buildQuestion, MASTERY_SCHEDULE, masteryRulesAt, type RandomSource } from "@leximon/core";
+import {
+  buildQuestion,
+  type ChallengeFormat,
+  levelUpPossible,
+  MASTERY_SCHEDULE,
+  masteryRulesAt,
+  type RandomSource,
+} from "@leximon/core";
 import { type PackNoun, SACHET_NOUN } from "./format";
 
 /** Outcome of one answered question, kept for the recap. */
@@ -178,10 +185,10 @@ export function memoryCounts(
   return counts;
 }
 
-/** « Un mot retrouvé 7 jours après… », with the rules of `now`. */
+/** How a word climbs, with the rules of `now`: written from memory, long enough after. */
 export function memoryNote(now: number): string {
   const { ink, gilded } = masteryRulesAt(MASTERY_SCHEDULE, now).levelThresholdDays;
-  return `Un mot retrouvé ${ink} jours après sa dernière révision passe à l'Encre, ${gilded} jours après à la Dorure. Un mot raté revient le lendemain.`;
+  return `Un mot monte quand tu l'écris de tête, ${ink} jours après sa dernière révision pour l'Encre, ${gilded} jours après pour la Dorure. Entre-temps, des questions à choix l'entretiennent. Un mot raté revient le lendemain.`;
 }
 
 export interface EscapingWord {
@@ -216,14 +223,28 @@ export function escapingWords(
 }
 
 /** The question line. */
-export function questionKicker(format: "definition" | "word"): string {
+export function questionKicker(format: ChallengeFormat): string {
+  if (format === "typed") return "Écris le mot";
   return format === "definition" ? "Que veut dire ce mot ?" : "Quel mot se cache là-dessous ?";
 }
 
-/** « Juste. +15 XP » or « Raté. » */
-export function answerTitle(correct: boolean, xpGained: number): string {
+/** Under a word to type: what it is worth, and what is forgiven. */
+export function typedQuestionHint(level: MasteryLevelCode): string {
+  const next = level === "sketch" ? "l'Encre" : "la Dorure";
+  return `Trouvé de tête, il passe à ${next}. Les accents ne comptent pas, une faute de frappe passe.`;
+}
+
+/** « Juste. +15 XP », « Juste, à une lettre près. +15 XP » or « Raté. » */
+export function answerTitle(correct: boolean, xpGained: number, slip = false): string {
   if (!correct) return "Raté.";
-  return xpGained > 0 ? `Juste. +${xpGained} XP` : "Juste.";
+  const title = slip ? "Juste, à une lettre près." : "Juste.";
+  return xpGained > 0 ? `${title} +${xpGained} XP` : title;
+}
+
+/** « Ça s'écrit écornifleur. » when the word typed was right but not spelled like the card. */
+export function spellingLine(typed: string, word: string): string | null {
+  const same = typed.trim().toLocaleLowerCase("fr") === word.toLocaleLowerCase("fr");
+  return same ? null : `Ça s'écrit ${word}.`;
 }
 
 /** The score of a finished session, « 4/5 ». */
@@ -236,16 +257,22 @@ export const NOT_THIS_TIME = "Pas encore de bonus. Le défi du jour court jusqu'
 
 /**
  * A one-word session (a word slipping away, on the Défis screen): the same question the server would
- * build, wrong choices from the word's collection first. The server still checks the answer and
- * whether the word is due.
+ * build, the word to type when a right answer can raise its level, wrong choices from the word's
+ * collection first otherwise. The server still checks the answer and whether the word is due.
  */
 export function reviewQuestion(
   random: RandomSource,
   cardId: string,
   collections: readonly { readonly cards: readonly { readonly id: string }[] }[],
+  memory: { readonly level: MasteryLevelCode; readonly lastReviewedAt: number | null } | undefined,
+  now: number,
 ): ChallengeQuestion | null {
   const home = collections.find((collection) => collection.cards.some((c) => c.id === cardId));
   if (home === undefined) return null;
+  const rules = masteryRulesAt(MASTERY_SCHEDULE, now);
+  if (memory !== undefined && levelUpPossible(rules, memory.level, memory.lastReviewedAt, now)) {
+    return { cardId, format: "typed" };
+  }
   const all = collections.flatMap((collection) => collection.cards.map((card) => card.id));
   const question = buildQuestion(
     random,

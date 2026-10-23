@@ -1,19 +1,23 @@
 import {
+  type Answer,
   answerBonuses,
   answerXp,
   BONUS_SCHEDULE,
   type BonusKind,
   bonusRulesAt,
   buildQuestion,
-  type ChallengeFormat,
+  type ChoiceFormat,
   createFullWallet,
   createSeededRandom,
   creditReserve,
   type EpochMs,
   gameDayOf,
+  gradeTyped,
   isDue,
+  levelUpPossible,
   MASTERY_SCHEDULE,
   type MasteryLevel,
+  type MasteryRules,
   type MemoryState,
   masteryRulesAt,
   newWordMastery,
@@ -43,7 +47,8 @@ export interface ChallengeSession {
 
 /**
  * Picks the words of a challenge session: owned words due for review (most overdue first), then
- * owned words never reviewed (oldest first), and builds one question per word.
+ * owned words never reviewed (oldest first), and builds one question per word: the word to type
+ * when a right answer can raise its level, a multiple choice otherwise.
  *
  * Reads only: nothing is written until an answer arrives, so abandoning a session costs nothing.
  */
@@ -53,19 +58,27 @@ export async function nextChallenges(
   input: { userId: string; now: EpochMs; limit: number; seed: string },
 ): Promise<ChallengeSession> {
   const { userId, now, limit } = input;
+  const rules = masteryRulesAt(MASTERY_SCHEDULE, now);
   const owned = sql`exists (select 1 from ${userCards} where ${userCards.userId} = ${userId}
     and ${userCards.cardId} = candidates.card_id and ${userCards.quantity} > 0)`;
   // One round trip: due words and never-reviewed words, each list bounded by the session size.
-  const result = await db.execute<{ card_id: string; due: boolean }>(sql`
-    select card_id, true as due from (
-      select ${userMastery.cardId} as card_id, ${userMastery.due} as sort_key
+  const result = await db.execute<{
+    card_id: string;
+    due: boolean;
+    level: MasteryLevel | null;
+    last_reviewed_at: Date | string | null;
+  }>(sql`
+    select card_id, true as due, level, last_reviewed_at from (
+      select ${userMastery.cardId} as card_id, ${userMastery.level}::text as level,
+        ${userMastery.lastReviewedAt} as last_reviewed_at
       from ${userMastery}
       where ${userMastery.userId} = ${userId} and ${userMastery.due} <= ${new Date(now)}
       order by ${userMastery.due}
       limit ${limit * 2}
     ) candidates where ${owned}
     union all
-    (select ${userCards.cardId} as card_id, false as due
+    (select ${userCards.cardId} as card_id, false as due, null::text as level,
+        null::timestamptz as last_reviewed_at
       from ${userCards}
       where ${userCards.userId} = ${userId} and ${userCards.quantity} > 0
         and not exists (select 1 from ${userMastery} where ${userMastery.userId} = ${userId}
@@ -77,10 +90,22 @@ export async function nextChallenges(
   const due = result.rows.filter((row) => row.due).map((row) => row.card_id);
   const fresh = result.rows.filter((row) => !row.due).map((row) => row.card_id);
   const words = planSession(due, fresh, limit);
+  const reviewed = new Map(result.rows.map((row) => [row.card_id, row]));
 
   const random = createSeededRandom(input.seed);
   const questions: Question[] = [];
   for (const cardId of words) {
+    const row = reviewed.get(cardId);
+    const lastReviewedAt =
+      row?.last_reviewed_at == null ? null : new Date(row.last_reviewed_at).getTime();
+    if (
+      row?.level != null &&
+      catalog.wordOf.has(cardId) &&
+      levelUpPossible(rules, row.level, lastReviewedAt, now)
+    ) {
+      questions.push({ cardId, format: "typed" });
+      continue;
+    }
     const collectionId = catalog.collectionOf.get(cardId);
     const sameCollection =
       collectionId === undefined ? [] : (catalog.byCollection.get(collectionId) ?? []);
@@ -106,14 +131,17 @@ export async function nextChallenges(
   return { questions, nextDueAt: next === undefined ? null : next.due.getTime() };
 }
 
-export interface AnswerInput {
+/** The card picked among the choices, or the word typed. */
+export type GivenAnswer =
+  | { readonly format: ChoiceFormat; readonly chosenCardId: string }
+  | { readonly format: "typed"; readonly typed: string };
+
+export type AnswerInput = GivenAnswer & {
   readonly userId: string;
   readonly idempotencyKey: string;
   readonly cardId: string;
-  readonly format: ChallengeFormat;
-  readonly chosenCardId: string;
   readonly now: EpochMs;
-}
+};
 
 /** Bonus boosters earned by one answer (see `answerBonuses` in core). */
 export interface AnswerBonus {
@@ -129,6 +157,8 @@ export type AnswerResult =
   | {
       readonly kind: "answered";
       readonly correct: boolean;
+      /** Right, but typed with one slip. */
+      readonly slip: boolean;
       readonly level: MasteryLevel;
       readonly levelUp: boolean;
       readonly nextReviewAt: EpochMs;
@@ -142,9 +172,12 @@ export type AnswerResult =
  * Applies a challenge answer to the word's mastery, and awards the bonus boosters and the XP
  * it earns.
  *
- * The answer is right when the chosen card is the card asked about. The server does not keep the
- * questions it served (stateless API): it only accepts answers on owned words that are due, once
- * per idempotency key. A client could always look the answer up in the public catalogue.
+ * The answer is right when the chosen card is the card asked about, or when the word typed matches
+ * (see `gradeTyped`). The server does not keep the questions it served (stateless API): it only
+ * accepts answers on owned words that are due, once per idempotency key. The format is read from
+ * the answer itself, so nothing is taken on trust: only a typed answer can raise the level, and a
+ * client that sends a choice to a typed question only gives that up. A client could always look
+ * the answer up in the public catalogue.
  *
  * Lock order: the player's wallet first, then the word's mastery row. Opening a booster also locks
  * the wallet first (then copies), so the two never wait on each other in a cycle. Holding the
@@ -155,7 +188,11 @@ export type AnswerResult =
  * mastery row of an owned word along with the idempotency lookup, today's tally and the awards
  * already given, one combined write, COMMIT.
  */
-export async function answerChallenge(db: Database, input: AnswerInput): Promise<AnswerResult> {
+export async function answerChallenge(
+  db: Database,
+  catalog: CatalogIndex,
+  input: AnswerInput,
+): Promise<AnswerResult> {
   const { userId, cardId, now } = input;
   const rules = masteryRulesAt(MASTERY_SCHEDULE, now);
   const bonusRules = bonusRulesAt(BONUS_SCHEDULE, now);
@@ -202,7 +239,8 @@ export async function answerChallenge(db: Database, input: AnswerInput): Promise
           state, last_reviewed_at
       )
       select locked.*,
-        (select json_build_object('correct', ${reviewLogs.correct}, 'levelAfter', ${reviewLogs.levelAfter})
+        (select json_build_object('correct', ${reviewLogs.correct}, 'rating', ${reviewLogs.rating},
+            'levelAfter', ${reviewLogs.levelAfter})
           from ${reviewLogs}
           where ${reviewLogs.userId} = ${userId} and ${reviewLogs.challengeId} = ${input.idempotencyKey}
           limit 1) as previous,
@@ -240,6 +278,7 @@ export async function answerChallenge(db: Database, input: AnswerInput): Promise
       return {
         kind: "answered",
         correct: row.previous.correct,
+        slip: row.previous.rating === SLIP_RATING,
         level: row.previous.levelAfter,
         levelUp: false,
         nextReviewAt: current.memory.due,
@@ -252,8 +291,9 @@ export async function answerChallenge(db: Database, input: AnswerInput): Promise
       return { kind: "not_due", nextReviewAt: current.memory.due };
     }
 
-    const correct = input.chosenCardId === cardId;
-    const outcome = reviewWord(rules, current, correct, now);
+    const answer = gradeAnswer(rules, catalog, input);
+    const correct = answer.grade !== "again";
+    const outcome = reviewWord(rules, current, answer, now);
     const { memory } = outcome.mastery;
     const reviewedAt = new Date(now);
 
@@ -356,6 +396,7 @@ export async function answerChallenge(db: Database, input: AnswerInput): Promise
     return {
       kind: "answered",
       correct,
+      slip: answer.grade === "hard",
       level: outcome.mastery.level,
       levelUp: outcome.levelUp,
       nextReviewAt: memory.due,
@@ -363,6 +404,20 @@ export async function answerChallenge(db: Database, input: AnswerInput): Promise
       progress: progressGain(progress.xp, xpGained),
     };
   });
+}
+
+/** FSRS rating of a right answer typed with a slip. */
+const SLIP_RATING = 2;
+
+function gradeAnswer(rules: MasteryRules, catalog: CatalogIndex, input: AnswerInput): Answer {
+  if (input.format !== "typed") {
+    return { grade: input.chosenCardId === input.cardId ? "good" : "again", typed: false };
+  }
+  const word = catalog.wordOf.get(input.cardId);
+  if (word === undefined) {
+    throw new Error(`Owned card ${input.cardId} missing from the published catalog`);
+  }
+  return { grade: gradeTyped(rules, input.typed, word, catalog.words), typed: true };
 }
 
 interface StoredAward {
@@ -384,7 +439,7 @@ function summarize(awards: readonly StoredAward[], reserve: number): AnswerBonus
 }
 
 interface AnswerLookupRow extends MasteryRow, Record<string, unknown> {
-  previous: { correct: boolean; levelAfter: MasteryLevel } | null;
+  previous: { correct: boolean; rating: number; levelAfter: MasteryLevel } | null;
   day_answers: number;
   day_correct: number;
   awards: (StoredAward & { challengeId: string })[];

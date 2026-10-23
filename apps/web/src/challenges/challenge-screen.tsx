@@ -1,7 +1,7 @@
 "use client";
 
 import type { ChallengeQuestion, MasteryLevelCode } from "@leximon/contract";
-import { createSeededRandom } from "@leximon/core";
+import { createSeededRandom, TYPED_ANSWER_MAX_LENGTH } from "@leximon/core";
 import {
   type AnsweredQuestion,
   answerTitle,
@@ -21,9 +21,11 @@ import {
   sessionBonusLine,
   sessionScore,
   sessionXpLine,
+  spellingLine,
+  typedQuestionHint,
 } from "@leximon/view-model";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useCallback, useEffect, useState } from "react";
+import { type FormEvent, useCallback, useEffect, useState } from "react";
 import { type Catalog, cardOrPlaceholder, collectionName, loadCatalog } from "@/cards/catalog";
 import { Card } from "@/components/card";
 import { answerChallenge, fetchChallenges } from "@/lib/api";
@@ -39,10 +41,11 @@ import { Icon, type IconName } from "@/ui/icon";
 import ui from "@/ui/ui.module.css";
 import styles from "./challenge-screen.module.css";
 
+/** `chosen`: the card picked, or the word typed. */
 type Step =
   | { readonly name: "asking" }
   | { readonly name: "sending"; readonly chosen: string }
-  | { readonly name: "answered"; readonly chosen: string }
+  | { readonly name: "answered"; readonly chosen: string; readonly slip: boolean }
   | { readonly name: "recap" };
 
 interface Session {
@@ -53,8 +56,8 @@ interface Session {
 }
 
 /**
- * Défis: the daily goal, the player's memory, the words slipping away, and
- * the sessions of multiple-choice questions that raise the words' level.
+ * Défis: the daily goal, the player's memory, the words slipping away, and the sessions of
+ * questions: multiple choice to keep words in memory, the word to type to raise its level.
  */
 export function ChallengeScreen() {
   const [catalog, setCatalog] = useState<Catalog | null>(null);
@@ -67,6 +70,7 @@ export function ChallengeScreen() {
   const { noun } = usePackShape();
   const now = useNow(60_000);
   const word = useSearchParams().get("mot");
+  const memory = useShared(wordMemory);
   const router = useRouter();
   const pathname = usePathname();
 
@@ -80,17 +84,23 @@ export function ChallengeScreen() {
 
   // A word slipping away, picked in the list: a session of that one word.
   useEffect(() => {
-    if (word === null || catalog === null) return;
+    if (word === null || catalog === null || memory === null) return;
     router.replace(pathname, { scroll: false });
     const seed = Array.from(crypto.getRandomValues(new Uint8Array(16)), (byte) =>
       byte.toString(16).padStart(2, "0"),
     ).join("");
-    const question = reviewQuestion(createSeededRandom(seed), word, catalog.collections);
+    const question = reviewQuestion(
+      createSeededRandom(seed),
+      word,
+      catalog.collections,
+      memory.get(word),
+      Date.now(),
+    );
     if (question !== null) {
       setNotice(null);
       setSession({ questions: [question], answers: [], index: 0, step: { name: "asking" } });
     }
-  }, [word, catalog, router, pathname]);
+  }, [word, catalog, memory, router, pathname]);
 
   const start = async () => {
     setStarting(true);
@@ -125,7 +135,9 @@ export function ChallengeScreen() {
     setSession({ ...session, step: { name: "sending", chosen } });
     try {
       const result = await answerChallenge(
-        { cardId: question.cardId, format: question.format, chosenCardId: chosen },
+        question.format === "typed"
+          ? { cardId: question.cardId, format: question.format, typed: chosen }
+          : { cardId: question.cardId, format: question.format, chosenCardId: chosen },
         key,
       );
       setPendingKey(null);
@@ -149,7 +161,7 @@ export function ChallengeScreen() {
             progress: result.progress,
           },
         ],
-        step: { name: "answered", chosen },
+        step: { name: "answered", chosen, slip: result.slip },
       });
     } catch {
       setError("Ta réponse n'est pas partie. Vérifie ta connexion.");
@@ -362,13 +374,21 @@ function QuestionView({
   readonly onQuit: () => void;
 }) {
   const { noun } = usePackShape();
+  const memory = useShared(wordMemory);
   const question = session.questions[session.index];
   if (question === undefined) return null;
   const card = cardOrPlaceholder(catalog, question.cardId, "common");
   const asksDefinition = question.format === "definition";
+  const level = memory?.get(question.cardId)?.level ?? "sketch";
   const total = session.questions.length;
   const last = session.index + 1 === total;
-  const result = session.step.name === "answered" ? (session.answers.at(-1) ?? null) : null;
+  const step = session.step;
+  const result = step.name === "answered" ? (session.answers.at(-1) ?? null) : null;
+  const slip = step.name === "answered" && step.slip;
+  const spelling =
+    result?.correct && question.format === "typed" && step.name === "answered"
+      ? spellingLine(step.chosen, card.word)
+      : null;
 
   return (
     <section className={styles.quiz} aria-labelledby="prompt">
@@ -406,26 +426,38 @@ function QuestionView({
             {card.definition}
           </h2>
         )}
+        {question.format === "typed" && result === null && (
+          <p className={styles.promptHint}>{typedQuestionHint(level)}</p>
+        )}
       </div>
 
-      <ul className={styles.choices}>
-        {question.choices.map((choiceId) => {
-          const choice = cardOrPlaceholder(catalog, choiceId, "common");
-          const state = choiceState(choiceId, question.cardId, session.step);
-          return (
-            <li key={choiceId}>
-              <button
-                type="button"
-                className={`${styles.choice} ${styles[state]} ${asksDefinition ? styles.choiceDefinition : `${ui.display} ${styles.choiceWord}`}`}
-                disabled={session.step.name !== "asking"}
-                onClick={() => onChoose(choiceId)}
-              >
-                {asksDefinition ? choice.definition : choice.word}
-              </button>
-            </li>
-          );
-        })}
-      </ul>
+      {question.format === "typed" ? (
+        <TypedAnswer
+          key={question.cardId}
+          step={step}
+          correct={result?.correct ?? null}
+          onAnswer={onChoose}
+        />
+      ) : (
+        <ul className={styles.choices}>
+          {question.choices.map((choiceId) => {
+            const choice = cardOrPlaceholder(catalog, choiceId, "common");
+            const state = choiceState(choiceId, question.cardId, session.step);
+            return (
+              <li key={choiceId}>
+                <button
+                  type="button"
+                  className={`${styles.choice} ${styles[state]} ${asksDefinition ? styles.choiceDefinition : `${ui.display} ${styles.choiceWord}`}`}
+                  disabled={session.step.name !== "asking"}
+                  onClick={() => onChoose(choiceId)}
+                >
+                  {asksDefinition ? choice.definition : choice.word}
+                </button>
+              </li>
+            );
+          })}
+        </ul>
+      )}
 
       <div aria-live="polite">
         {error !== null && (
@@ -437,11 +469,11 @@ function QuestionView({
           <div className={`${styles.feedback} ${result.correct ? styles.good : styles.bad}`}>
             <div>
               <p className={styles.feedbackTitle}>
-                {answerTitle(result.correct, result.progress.xpGained)}
+                {answerTitle(result.correct, result.progress.xpGained, slip)}
               </p>
               <p className={styles.feedbackText}>
                 {result.correct
-                  ? frequencyLine(card.perBillion)
+                  ? (spelling ?? frequencyLine(card.perBillion))
                   : `C'était : ${asksDefinition ? card.definition : card.word}`}
               </p>
               {[
@@ -462,6 +494,54 @@ function QuestionView({
         )}
       </div>
     </section>
+  );
+}
+
+/** The word typed from memory: sent with the button, or empty with « Je sèche ». */
+function TypedAnswer({
+  step,
+  correct,
+  onAnswer,
+}: {
+  readonly step: Step;
+  readonly correct: boolean | null;
+  readonly onAnswer: (typed: string) => void;
+}) {
+  const [typed, setTyped] = useState("");
+  const asking = step.name === "asking";
+  const state = correct === null ? "" : correct ? styles.typedRight : styles.typedWrong;
+  const submit = (event: FormEvent) => {
+    event.preventDefault();
+    if (typed.trim() !== "") onAnswer(typed);
+  };
+  return (
+    <form className={styles.typed} onSubmit={submit}>
+      <input
+        className={`${ui.field} ${ui.display} ${styles.typedField} ${state}`}
+        value={step.name === "answered" ? step.chosen : typed}
+        maxLength={TYPED_ANSWER_MAX_LENGTH}
+        aria-label="Le mot"
+        placeholder="Le mot"
+        autoComplete="off"
+        autoCapitalize="none"
+        autoCorrect="off"
+        spellCheck={false}
+        // biome-ignore lint/a11y/noAutofocus: the field is the whole question
+        autoFocus
+        disabled={!asking}
+        onChange={(event) => setTyped(event.target.value)}
+      />
+      {asking && (
+        <div className={styles.typedActions}>
+          <Button type="submit" disabled={typed.trim() === ""}>
+            Valider le mot
+          </Button>
+          <Button type="button" variant="ghost" onClick={() => onAnswer("")}>
+            Je sèche
+          </Button>
+        </div>
+      )}
+    </form>
   );
 }
 

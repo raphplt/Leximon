@@ -15,6 +15,8 @@ import {
   reviewQuestion,
   sessionBonusLine,
   sessionXpLine,
+  spellingLine,
+  typedQuestionHint,
 } from "./challenges";
 import { SACHET_NOUN } from "./format";
 
@@ -142,7 +144,7 @@ describe("défis screen", () => {
 
   it("states the level thresholds in force", () => {
     expect(memoryNote(NOW)).toBe(
-      "Un mot retrouvé 7 jours après sa dernière révision passe à l'Encre, 30 jours après à la Dorure. Un mot raté revient le lendemain.",
+      "Un mot monte quand tu l'écris de tête, 7 jours après sa dernière révision pour l'Encre, 30 jours après pour la Dorure. Entre-temps, des questions à choix l'entretiennent. Un mot raté revient le lendemain.",
     );
   });
 
@@ -150,12 +152,28 @@ describe("défis screen", () => {
     const random = createSeededRandom("0123456789abcdef0123456789abcdef");
     const home = { cards: ["a", "b", "c", "d", "e"].map((id) => ({ id })) };
     const other = { cards: ["x", "y"].map((id) => ({ id })) };
-    const question = reviewQuestion(random, "a", [other, home]);
-    expect(question?.cardId).toBe("a");
-    expect(question?.choices).toHaveLength(4);
-    expect(question?.choices).toContain("a");
-    expect(question?.choices.every((id) => home.cards.some((card) => card.id === id))).toBe(true);
-    expect(reviewQuestion(random, "unknown", [home])).toBeNull();
+    const question = reviewQuestion(random, "a", [other, home], undefined, NOW);
+    if (question?.format !== "definition" && question?.format !== "word") {
+      throw new Error("expected a multiple choice question");
+    }
+    expect(question.cardId).toBe("a");
+    expect(question.choices).toHaveLength(4);
+    expect(question.choices).toContain("a");
+    expect(question.choices.every((id) => home.cards.some((card) => card.id === id))).toBe(true);
+    expect(reviewQuestion(random, "unknown", [home], undefined, NOW)).toBeNull();
+  });
+
+  it("asks for a word typed when a right answer can raise its level", () => {
+    const random = createSeededRandom("0123456789abcdef0123456789abcdef");
+    const home = { cards: ["a", "b", "c", "d", "e"].map((id) => ({ id })) };
+    const now = Date.UTC(2026, 10, 2, 12);
+    const lastWeek = { level: "sketch" as const, lastReviewedAt: now - 8 * 86_400_000 };
+    expect(reviewQuestion(random, "a", [home], lastWeek, now)).toEqual({
+      cardId: "a",
+      format: "typed",
+    });
+    const yesterday = { level: "sketch" as const, lastReviewedAt: now - 86_400_000 };
+    expect(reviewQuestion(random, "a", [home], yesterday, now)?.format).not.toBe("typed");
   });
 
   it("counts words at each level, owned words starting as sketches", () => {
@@ -187,5 +205,12 @@ describe("défis screen", () => {
     expect(questionKicker("word")).toBe("Quel mot se cache là-dessous ?");
     expect(answerTitle(true, 15)).toBe("Juste. +15 XP");
     expect(answerTitle(false, 0)).toBe("Raté.");
+    expect(answerTitle(true, 15, true)).toBe("Juste, à une lettre près. +15 XP");
+    expect(questionKicker("typed")).toBe("Écris le mot");
+    expect(typedQuestionHint("ink")).toBe(
+      "Trouvé de tête, il passe à la Dorure. Les accents ne comptent pas, une faute de frappe passe.",
+    );
+    expect(spellingLine(" Écornifleur ", "écornifleur")).toBeNull();
+    expect(spellingLine("ecornifleur", "écornifleur")).toBe("Ça s'écrit écornifleur.");
   });
 });
