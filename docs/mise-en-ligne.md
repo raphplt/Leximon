@@ -275,6 +275,8 @@ Le retour en arrière ne touche que le code. Les migrations sont additives, donc
 
 ## Après la mise en ligne
 
+**Mettre en prod : `pnpm deploy:prod`.** Le script ([infra/prod/deploy.sh](../infra/prod/deploy.sh)) refuse de partir hors de `main` ou avec des fichiers non commités, qui partiraient en ligne. Il lance ensuite `pnpm check`, les migrations, le catalogue si une version plus récente que celle en ligne existe, l'API, le web, puis contrôle que les deux répondent. La chaîne Neon vient de `DATABASE_URL`, sinon de `~/.config/leximon/neon-url` (droits 600). Les commandes ci-dessous restent pour un geste isolé.
+
 - Ajouter un réglage ou une liaison à l'API : l'écrire en haut de `apps/api/wrangler.jsonc` (local) **et** dans `env.production`. Wrangler ne recopie ni les variables ni les liaisons dans un environnement.
 - Nouvelle version du catalogue : `pnpm catalog:publish:prod` puis `pnpm deploy:web`, dans cet ordre et dans la foulée.
 - Nouvelle migration : `pnpm db:migrate:prod` avant `pnpm deploy:api`.

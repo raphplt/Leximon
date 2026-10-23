@@ -19,6 +19,7 @@ pnpm test:integration            # tests contre la base leximon_test, vidée à 
 pnpm admin:grant <email>         # donne le rôle admin à un compte existant (--revoke pour le retirer)
 pnpm dev:player <email> --level 16   # base locale seulement : niveau d'un compte, pour la recette
 pnpm format                      # corrige le formatage (Biome)
+pnpm deploy:prod                 # met main en production (docs/mise-en-ligne.md), arbre propre exigé
 ```
 
 Chaîne de contenu (Python, `content/pipeline/`, voir D-019 et D-021) :
