@@ -51,6 +51,9 @@ export function testEnv(connectionString = "postgres://unused@127.0.0.1:1/unused
     BETA_INVITES: "off",
     EMAIL_LINK_SECRET: TEST_LINK_SECRET,
     LETTERMINT_WEBHOOK_SECRET: TEST_WEBHOOK_SECRET,
+    DISCORD_WEBHOOK_URL: "",
+    CLOUDFLARE_ACCOUNT_ID: "",
+    OBSERVABILITY_TOKEN: "",
     CAMPAIGN_QUEUE: unusedQueue,
     // Game events are hints: tests that need them pass a recording queue.
     GAME_EVENTS: recordingQueue() as Queue,

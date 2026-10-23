@@ -114,6 +114,19 @@ Vérifier : `pnpm exec wrangler secret list --env production`.
 
 `BETTER_AUTH_SECRET` signe les sessions : le changer déconnecte tout le monde. `EMAIL_LINK_SECRET` signe les liens de désinscription : le changer casse ceux déjà envoyés.
 
+Le résumé du matin sur Discord (D-045), facultatif ; sans le webhook, rien ne part :
+
+1. Discord → le salon → **Paramètres du salon** → **Intégrations** → **Webhooks** → **Nouveau webhook**, copier son URL.
+2. Cloudflare → **Mon profil** → **Jetons d'API** → **Créer un jeton** → modèle personnalisé, permission **Compte · Workers Observability · Modifier** (l'API de requête est en écriture, elle ne modifie rien). L'identifiant du compte est dans la barre de droite de **Workers et Pages**.
+
+```bash
+pnpm exec wrangler secret put DISCORD_WEBHOOK_URL --env production
+pnpm exec wrangler secret put CLOUDFLARE_ACCOUNT_ID --env production
+pnpm exec wrangler secret put OBSERVABILITY_TOKEN --env production
+```
+
+Il part chaque matin après la maintenance (3 h 17 UTC) : erreurs des dernières 24 h groupées par Worker et message, puis l'activité du jour. Sans le jeton, il dit que les erreurs n'ont pas pu être lues. Pour être prévenu sur le moment d'une nouvelle erreur, Cloudflare → **Workers** → **Issues** permet d'ajouter une alerte par webhook.
+
 ## 7. Migrations · toi (la chaîne), agent (la commande)
 
 Dans le terminal qui lance les commandes de production :
@@ -230,6 +243,8 @@ Pour ouvrir la bêta à tous : passer `BETA_INVITES` à `"off"` dans `env.produc
 | Carte publique | https://leximon.fr/carte/accastillage, deux fois | La carte s'affiche, l'image de partage aussi |
 | Erreurs | `pnpm --filter @leximon/api exec wrangler tail --env production` pendant les tests | Aucune erreur |
 | Maintenance | Le lendemain, **Workers** → `leximon-api-production` → **Logs** | Une ligne « Maintenance done » après 3 h 17 UTC |
+| Résumé | Le lendemain matin, le salon Discord | Un message « Leximon · <jour> », sans « lecture impossible » |
+| En-têtes | `curl -I https://leximon.fr` | `content-security-policy` et `strict-transport-security` présents |
 
 ## 15. Sauvegardes sur le NAS · toi
 

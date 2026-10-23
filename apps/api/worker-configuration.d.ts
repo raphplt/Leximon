@@ -26,6 +26,9 @@ interface __BaseEnv_Env {
 	EMAIL_LINK_SECRET: string;
 	LETTERMINT_SENDING_TOKEN: string;
 	LETTERMINT_WEBHOOK_SECRET: string;
+	DISCORD_WEBHOOK_URL: string;
+	CLOUDFLARE_ACCOUNT_ID: string;
+	OBSERVABILITY_TOKEN: string;
 }
 declare namespace Cloudflare {
 	interface GlobalProps {
@@ -38,7 +41,7 @@ type StringifyValues<EnvType extends Record<string, unknown>> = {
 	[Binding in keyof EnvType]: EnvType[Binding] extends string ? EnvType[Binding] : string;
 };
 declare namespace NodeJS {
-	interface ProcessEnv extends StringifyValues<Pick<Cloudflare.Env, "APP_ENV" | "BETTER_AUTH_URL" | "TRUSTED_ORIGINS" | "EMAIL_CODE_FROM" | "EMAIL_REPLY_TO" | "EMAIL_CAMPAIGN_FROM" | "LETTERMINT_BROADCAST_ROUTE" | "PUBLIC_WEB_URL" | "BETA_INVITES" | "BETTER_AUTH_SECRET" | "EMAIL_LINK_SECRET" | "LETTERMINT_SENDING_TOKEN" | "LETTERMINT_WEBHOOK_SECRET">> {}
+	interface ProcessEnv extends StringifyValues<Pick<Cloudflare.Env, "APP_ENV" | "BETTER_AUTH_URL" | "TRUSTED_ORIGINS" | "EMAIL_CODE_FROM" | "EMAIL_REPLY_TO" | "EMAIL_CAMPAIGN_FROM" | "LETTERMINT_BROADCAST_ROUTE" | "PUBLIC_WEB_URL" | "BETA_INVITES" | "BETTER_AUTH_SECRET" | "EMAIL_LINK_SECRET" | "LETTERMINT_SENDING_TOKEN" | "LETTERMINT_WEBHOOK_SECRET" | "DISCORD_WEBHOOK_URL" | "CLOUDFLARE_ACCOUNT_ID" | "OBSERVABILITY_TOKEN">> {}
 }
 declare module "*.txt" {
 	const value: string;

@@ -424,3 +424,10 @@ Pour ajouter ou modifier une décision, utiliser le skill `decision`.
 - **Choix :** la pompe est un message `pump` sur la file des campagnes, qui se renvoie toutes les 60 s tant qu'une campagne part, attend le début d'une campagne programmée (sauts de 12 h au plus), et s'arrête sinon. Un lancement ou une reprise la démarre ; la maintenance quotidienne la relance si une campagne part ou démarre dans les 25 h.
 - **Pourquoi :** une requête chaque minute empêchait Neon de se mettre en veille : environ 180 heures de calcul par mois, au-delà de l'offre gratuite (D-040).
 - **Conséquences :** aucune brique de plus, la même file sert. Deux pompes peuvent coexister un moment (lancement et maintenance) : sans effet, la pompe tolère les passages qui se chevauchent. Un message perdu retarde une campagne jusqu'à la maintenance suivante au pire.
+
+## D-045 · Suivi des erreurs : Cloudflare, avec un résumé quotidien sur Discord
+
+- **Statut :** Acceptée (2026-10-23), choix du propriétaire après le bilan du site.
+- **Choix :** les erreurs sont celles que Cloudflare relève déjà (Workers Logs et Issues : exceptions, réponses 5xx, `console.error`), sans outil tiers. Chaque matin, la tâche de maintenance lit les erreurs des 24 h par l'API d'observabilité de Cloudflare et poste un résumé sur un webhook Discord, avec quelques chiffres d'activité tirés de l'admin (D-042).
+- **Pourquoi :** gratuit, déjà en place, aucune donnée de joueur envoyée à un tiers. Un Sentry n'apporterait que les erreurs du navigateur, pas assez pour une bêta fermée.
+- **Conséquences :** trois secrets facultatifs (`DISCORD_WEBHOOK_URL`, `CLOUDFLARE_ACCOUNT_ID`, `OBSERVABILITY_TOKEN`). Les journaux d'erreur ne portent jamais de donnée personnelle : le message d'une requête SQL ratée est réduit à son texte, sans paramètres. Les erreurs du navigateur ne sont pas suivies.

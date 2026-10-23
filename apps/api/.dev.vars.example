@@ -6,3 +6,8 @@ EMAIL_LINK_SECRET=
 # Lettermint (campaigns, D-034). Empty in local development: campaigns go to the console.
 LETTERMINT_SENDING_TOKEN=
 LETTERMINT_WEBHOOK_SECRET=
+# Morning summary on Discord, after the daily maintenance. Empty: no summary.
+DISCORD_WEBHOOK_URL=
+# Errors of the summary: account id and an API token with "Workers Observability" access.
+CLOUDFLARE_ACCOUNT_ID=
+OBSERVABILITY_TOKEN=

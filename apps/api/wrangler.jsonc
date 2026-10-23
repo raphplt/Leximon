@@ -124,7 +124,8 @@
   // level above stays the local configuration and is never deployed. Wrangler does not inherit
   // vars and bindings into an environment: a binding added above must be copied here too.
   // Secrets (`wrangler secret put … --env production`): BETTER_AUTH_SECRET, EMAIL_LINK_SECRET,
-  // LETTERMINT_SENDING_TOKEN, LETTERMINT_WEBHOOK_SECRET. See docs/mise-en-ligne.md.
+  // LETTERMINT_SENDING_TOKEN, LETTERMINT_WEBHOOK_SECRET, and for the morning summary
+  // DISCORD_WEBHOOK_URL, CLOUDFLARE_ACCOUNT_ID, OBSERVABILITY_TOKEN. See docs/mise-en-ligne.md.
   "env": {
     "production": {
       "routes": [{ "pattern": "api.leximon.fr", "custom_domain": true }],

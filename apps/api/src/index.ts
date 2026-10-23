@@ -12,6 +12,7 @@ import {
 import { createCampaignMailer } from "./campaigns/mailer";
 import { deliveryConfig } from "./campaigns/routes";
 import { handleGameEvents } from "./clans/events";
+import { sendDailyDigest } from "./digest/send";
 import { errorSummary } from "./error-summary";
 import { runMaintenance } from "./maintenance";
 
@@ -31,6 +32,12 @@ export default {
       console.info("Maintenance done", report);
       // Restarts the campaign pump in case its last message was lost.
       if (await campaignPumpNeeded(db, now)) await startCampaignPump(env.CAMPAIGN_QUEUE);
+      // The summary never fails the maintenance.
+      const digest = await sendDailyDigest(db, env, now).catch((error: unknown) => {
+        console.error("Daily digest failed", errorSummary(error));
+        return "failed";
+      });
+      if (digest === "not_delivered") console.error("Daily digest refused by Discord");
     } finally {
       ctx.waitUntil(close());
     }
