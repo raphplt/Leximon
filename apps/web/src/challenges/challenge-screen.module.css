@@ -49,6 +49,31 @@
   color: #d9d3e6;
 }
 
+/*
+ * Text on its way: shapes set in the lines like words, so each line keeps the height of the text
+ * it stands for and the bars below stay put.
+ */
+.titleBone,
+.lineBone {
+  border-radius: var(--lx-radius-pill);
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.titleBone {
+  width: min(300px, 100%);
+  height: 0.8em;
+}
+
+.lineBone {
+  width: 100%;
+  height: 0.7em;
+}
+
+.shortLine {
+  width: 60%;
+}
+
 .dailyIcon {
   flex-shrink: 0;
   display: grid;

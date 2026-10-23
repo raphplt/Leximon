@@ -31,6 +31,7 @@ import { ownedCards } from "@/player/collection";
 import { useShared } from "@/player/resource";
 import { Button } from "@/ui/button";
 import { Icon } from "@/ui/icon";
+import { Bone, WaitingScreen } from "@/ui/skeleton";
 import { useToast } from "@/ui/toast";
 import ui from "@/ui/ui.module.css";
 import { fetchClan, fetchMembers } from "./api";
@@ -125,9 +126,14 @@ export function ClanPage({
   }
   if (view === null || view.me === null || catalog === null) {
     return (
-      <main className={styles.screen}>
-        <p className={styles.hint}>Un instant…</p>
-      </main>
+      <WaitingScreen className={styles.screen}>
+        <Bone className={styles.heroBone} />
+        <div className={styles.clanTabs}>
+          {TABS.map((entry) => (
+            <Bone key={entry.id} className={styles.clanTabBone} />
+          ))}
+        </div>
+      </WaitingScreen>
     );
   }
 

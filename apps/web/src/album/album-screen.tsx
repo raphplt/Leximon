@@ -24,10 +24,12 @@ import { useIncremental } from "@/lib/use-incremental";
 import { useNarrow } from "@/lib/use-narrow";
 import { useNow } from "@/lib/use-now";
 import { ownedCards, wordMemory } from "@/player/collection";
-import { useShared } from "@/player/resource";
+import { useShared, useSharedFailed } from "@/player/resource";
 import { useShell } from "@/shell/shell-context";
 import { Button } from "@/ui/button";
 import { Icon } from "@/ui/icon";
+import { LoadFailed } from "@/ui/load-failed";
+import { Bone, WaitingScreen } from "@/ui/skeleton";
 import ui from "@/ui/ui.module.css";
 import styles from "./album-screen.module.css";
 
@@ -57,6 +59,7 @@ export function AlbumScreen() {
   const [catalog, setCatalog] = useState<Catalog | null>(null);
   const [failed, setFailed] = useState(false);
   const owned = useShared(ownedCards);
+  const ownedFailed = useSharedFailed(ownedCards);
   const memory = useShared(wordMemory);
   const now = useNow(60_000);
   const narrow = useNarrow();
@@ -95,6 +98,7 @@ export function AlbumScreen() {
     [catalog, owned, memory, now, state],
   );
   const { shown, sentinel } = useIncremental(view?.items.length ?? 0, BATCH, JSON.stringify(state));
+  const cardWidth = narrow ? 104 : 168;
 
   if (failed) {
     return (
@@ -107,19 +111,20 @@ export function AlbumScreen() {
     );
   }
 
-  if (view === null) {
+  if (owned === null && ownedFailed) {
     return (
       <main className={styles.page}>
-        <p className={styles.empty}>Un instant…</p>
+        <LoadFailed onRetry={() => ownedCards.ensure()} />
       </main>
     );
   }
+
+  if (view === null) return <AlbumWaiting cardWidth={cardWidth} />;
 
   const pickCollection = (id: string) => {
     writeCollection(id);
     setState((s) => ({ ...s, collectionId: id, rarity: null, theme: null, search: "" }));
   };
-  const cardWidth = narrow ? 104 : 168;
 
   return (
     <main className={styles.page}>
@@ -247,6 +252,58 @@ export function AlbumScreen() {
         </>
       )}
     </main>
+  );
+}
+
+/** Shapes for the wait: as many as the first screen shows, never as many as the real album. */
+const WAITING_TABS = 4;
+const WAITING_RARITIES = 6;
+const WAITING_FILTERS = [72, 82, 88, 74, 110, 74, 58, 66];
+const WAITING_CARDS = 12;
+
+/** The album's frame while the catalogue and the player's cards arrive, laid out as they will be. */
+function AlbumWaiting({ cardWidth }: { readonly cardWidth: number }) {
+  return (
+    <WaitingScreen className={styles.page}>
+      <header className={styles.header}>
+        <div>
+          <h1 className={`${ui.display} ${styles.title}`}>Album</h1>
+          <Bone className={styles.headlineBone} />
+        </div>
+        <Bone className={`${styles.search} ${styles.searchBone}`} />
+      </header>
+      <div className={styles.tabs}>
+        {Array.from({ length: WAITING_TABS }, (_, index) => (
+          // biome-ignore lint/suspicious/noArrayIndexKey: shapes without identity
+          <Bone key={index} className={styles.tabBone} />
+        ))}
+      </div>
+      <div className={styles.row}>
+        {Array.from({ length: WAITING_RARITIES }, (_, index) => (
+          // biome-ignore lint/suspicious/noArrayIndexKey: shapes without identity
+          <Bone key={index} className={styles.rarityBone} />
+        ))}
+      </div>
+      <div className={styles.row}>
+        {WAITING_FILTERS.map((width, index) => (
+          // biome-ignore lint/suspicious/noArrayIndexKey: shapes without identity
+          <Bone key={index} className={styles.filterBone} style={{ width }} />
+        ))}
+      </div>
+      <ul
+        className={styles.grid}
+        style={{ "--card": `${cardWidth}px` } as CSSProperties}
+        aria-hidden="true"
+      >
+        {Array.from({ length: WAITING_CARDS }, (_, index) => (
+          // biome-ignore lint/suspicious/noArrayIndexKey: shapes without identity
+          <li key={index} className={`${styles.slot} ${styles.tileBone}`}>
+            <Bone className={styles.cardBone} />
+            <Bone className={styles.labelBone} />
+          </li>
+        ))}
+      </ul>
+    </WaitingScreen>
   );
 }
 

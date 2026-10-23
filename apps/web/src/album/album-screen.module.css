@@ -357,6 +357,60 @@
   line-height: 1.2;
 }
 
+/* --- Waiting: the same places, empty --- */
+
+.headlineBone {
+  border-radius: var(--lx-radius-pill);
+  width: 130px;
+  height: 12px;
+  margin: 8px 0 3px;
+}
+
+.searchBone {
+  border-radius: var(--lx-radius-pill);
+  height: 48px;
+}
+
+.tabBone {
+  border-radius: 16px;
+  flex: 1 0 168px;
+  height: 70px;
+}
+
+.rarityBone,
+.filterBone {
+  border-radius: var(--lx-radius-pill);
+  flex-shrink: 0;
+}
+
+.rarityBone {
+  width: 92px;
+  height: 38px;
+}
+
+.filterBone {
+  height: 34px;
+}
+
+.tileBone {
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.cardBone {
+  border-radius: calc(var(--card) * 16 / 300);
+  width: var(--card);
+  height: calc(var(--card) * 1.4);
+}
+
+.labelBone {
+  border-radius: var(--lx-radius-pill);
+  width: 64px;
+  height: 10px;
+  margin: 2px 0;
+}
+
 /* --- Empty --- */
 
 .empty {
@@ -388,6 +442,11 @@
     flex: 0 0 auto;
     min-width: 128px;
     padding: 10px;
+  }
+
+  .tabBone {
+    flex: 0 0 128px;
+    height: 64px;
   }
 
   .tabName {

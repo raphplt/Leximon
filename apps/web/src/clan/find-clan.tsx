@@ -22,6 +22,7 @@ import { myClan } from "@/player/clan";
 import { Button } from "@/ui/button";
 import { Dialog } from "@/ui/dialog";
 import { Icon } from "@/ui/icon";
+import { Bone } from "@/ui/skeleton";
 import { useToast } from "@/ui/toast";
 import ui from "@/ui/ui.module.css";
 import {
@@ -44,6 +45,9 @@ const ENTRY_FILTERS: readonly (ClanEntryMode | undefined)[] = [
   "request",
   "invite",
 ];
+
+/** Rows standing in for the first clans while they arrive. */
+const WAITING_ROWS = [1, 2, 3];
 
 /**
  * Without a clan: find one by its name, enter by an invitation code, or found
@@ -205,7 +209,16 @@ export function FindClan({
             ))}
           </div>
           {clans === null ? (
-            <p className={styles.faint}>Un instant…</p>
+            <div aria-busy="true">
+              <span className={styles.visuallyHidden}>Un instant…</span>
+              <ul className={styles.clanList} aria-hidden="true">
+                {WAITING_ROWS.map((row) => (
+                  <li key={row}>
+                    <Bone className={styles.clanRowBone} />
+                  </li>
+                ))}
+              </ul>
+            </div>
           ) : clans.length === 0 ? (
             <p className={styles.emptyThread}>
               <em>{query.trim() === "" ? NO_CLAN_YET : NO_CLAN_FOUND}</em>

@@ -15,6 +15,7 @@ import { useShell } from "@/shell/shell-context";
 import { Button, ButtonLink } from "@/ui/button";
 import { Icon } from "@/ui/icon";
 import { LoadFailed } from "@/ui/load-failed";
+import { Bone, WaitingScreen } from "@/ui/skeleton";
 import { useToast } from "@/ui/toast";
 import styles from "./profile.module.css";
 import { PinnedCards, ProfileHeader, StatsPanel } from "./profile-view";
@@ -35,15 +36,7 @@ export function ProfileScreen() {
       </main>
     );
   }
-  if (me === null) {
-    return (
-      <main className={styles.page}>
-        <div className={styles.banner}>
-          <div className={styles.bannerArt} />
-        </div>
-      </main>
-    );
-  }
+  if (me === null) return <ProfileWaiting />;
 
   const share = async () => {
     if (me.pseudo === null) return;
@@ -123,5 +116,27 @@ export function ProfileScreen() {
       </div>
       <PseudoDialog open={choosing} onClose={() => setChoosing(false)} />
     </main>
+  );
+}
+
+/** The banner while the profile arrives: the avatar, the name and the button in their places. */
+function ProfileWaiting() {
+  return (
+    <WaitingScreen className={styles.page}>
+      <div className={styles.banner}>
+        <div className={styles.bannerArt} />
+        <div className={styles.identity}>
+          <Bone className={styles.avatarBone} />
+          <div className={styles.names}>
+            <Bone className={styles.nameBone} />
+            <Bone className={styles.headlineBone} />
+            <Bone className={styles.sublineBone} />
+          </div>
+          <div className={styles.actions}>
+            <Bone className={styles.actionBone} />
+          </div>
+        </div>
+      </div>
+    </WaitingScreen>
   );
 }

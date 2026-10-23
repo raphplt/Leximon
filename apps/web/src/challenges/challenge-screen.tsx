@@ -38,6 +38,7 @@ import { publishProgress } from "@/progress/use-progress";
 import { useShell } from "@/shell/shell-context";
 import { Button, ButtonLink, RoundButton } from "@/ui/button";
 import { Icon, type IconName } from "@/ui/icon";
+import { Bone } from "@/ui/skeleton";
 import ui from "@/ui/ui.module.css";
 import styles from "./challenge-screen.module.css";
 
@@ -239,9 +240,18 @@ function DailyCard({
         <div>
           <p className={`${ui.kicker} ${styles.dailyKicker}`}>Défi du jour</p>
           <h2 id="daily-title" className={`${ui.display} ${styles.dailyTitle}`}>
-            {view?.title ?? "Défi du jour"}
+            {view === null ? <Bone className={styles.titleBone} /> : view.title}
           </h2>
-          <p className={styles.dailyText}>{view?.text ?? " "}</p>
+          <p className={styles.dailyText}>
+            {view === null ? (
+              <>
+                <Bone className={styles.lineBone} />
+                <Bone className={`${styles.lineBone} ${styles.shortLine}`} />
+              </>
+            ) : (
+              view.text
+            )}
+          </p>
         </div>
         <span className={styles.dailyIcon} aria-hidden="true">
           <Icon name="sachet" size={30} />

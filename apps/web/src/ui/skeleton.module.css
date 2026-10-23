@@ -1,0 +1,54 @@
+/*
+ * Shapes standing in for content on its way. Without weight (`:where`): the screen's own class
+ * sets size, corner and display, whatever the order the stylesheets load in.
+ */
+:where(.bone) {
+  position: relative;
+  display: block;
+  border-radius: 12px;
+  background: var(--lx-color-background-raised);
+  /* Held back a moment: an answer that comes quickly replaces nothing the eye has seen. */
+  animation: appear 200ms ease-out 240ms backwards;
+}
+
+/* A slow breath in opacity alone: the compositor runs it, the page repaints nothing. */
+:where(.bone)::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: rgba(246, 240, 226, 0.06);
+  animation: breathe 1.6s ease-in-out 440ms infinite both;
+}
+
+.spoken {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+@keyframes appear {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes breathe {
+  0%,
+  100% {
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bone,
+  :where(.bone)::after {
+    animation: none;
+  }
+}

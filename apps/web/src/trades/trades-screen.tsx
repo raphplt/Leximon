@@ -30,6 +30,7 @@ import { useProgress } from "@/progress/use-progress";
 import { useShell } from "@/shell/shell-context";
 import { Button } from "@/ui/button";
 import { Icon } from "@/ui/icon";
+import { Bone, WaitingScreen } from "@/ui/skeleton";
 import { useToast } from "@/ui/toast";
 import ui from "@/ui/ui.module.css";
 import { CardRow, catalogCard } from "./card-thumb";
@@ -197,13 +198,7 @@ export function TradesScreen() {
     );
   }
 
-  if (catalog === null || profile === null || inboxes === null) {
-    return (
-      <main className={styles.screen}>
-        <p className={styles.hint}>Un instant…</p>
-      </main>
-    );
-  }
+  if (catalog === null || profile === null || inboxes === null) return <TradesWaiting />;
 
   const tooLow = progress === null ? null : tradeLevelLabel(progress.level, profile.tradeMinLevel);
   const waiting = {
@@ -311,6 +306,29 @@ export function TradesScreen() {
         )}
       </div>
     </main>
+  );
+}
+
+/** Widths of the three tabs, « Reçues », « Envoyées », « Nouvelle offre ». */
+const WAITING_TABS = [82, 98, 132];
+
+/**
+ * The frame while the offers arrive: the title, the code, the tabs. Below them, nothing: an
+ * empty box and a list of offers are too far apart for one shape to stand for both.
+ */
+function TradesWaiting() {
+  return (
+    <WaitingScreen className={styles.screen}>
+      <header className={styles.header}>
+        <h1 className={`${ui.display} ${styles.title}`}>Échanges</h1>
+        <Bone className={styles.codeBone} />
+      </header>
+      <div className={styles.tabs}>
+        {WAITING_TABS.map((width) => (
+          <Bone key={width} className={styles.tabBone} style={{ width }} />
+        ))}
+      </div>
+    </WaitingScreen>
   );
 }
 

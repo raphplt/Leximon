@@ -98,6 +98,45 @@ a.clan:hover {
 
 /* --- Panels --- */
 
+/* --- Waiting: the banner's places, empty --- */
+
+.avatarBone {
+  border-radius: 50%;
+  width: 116px;
+  height: 116px;
+}
+
+.nameBone,
+.headlineBone,
+.sublineBone,
+.actionBone {
+  border-radius: var(--lx-radius-pill);
+}
+
+/* Each shape centred on the line it stands for; top margins only, so that none collapses. */
+.nameBone {
+  width: min(240px, 100%);
+  height: 32px;
+  margin-top: 5px;
+}
+
+.headlineBone {
+  width: 90px;
+  height: 13px;
+  margin-top: 14px;
+}
+
+.sublineBone {
+  width: 150px;
+  height: 10px;
+  margin: 10px 0 3px;
+}
+
+.actionBone {
+  width: 102px;
+  height: 42px;
+}
+
 .layout {
   display: grid;
   grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
@@ -305,6 +344,11 @@ a.clan:hover {
   border-color: #3bd3a5;
 }
 
+.itemBone {
+  border-radius: 20px;
+  height: 178px;
+}
+
 .itemLocked {
   filter: grayscale(1);
   opacity: 0.6;
@@ -370,6 +414,26 @@ a.clan:hover {
 
   .name {
     font-size: 30px;
+  }
+
+  .avatarBone {
+    width: 92px;
+    height: 92px;
+  }
+
+  .nameBone,
+  .headlineBone,
+  .sublineBone {
+    margin-inline: auto;
+  }
+
+  .nameBone {
+    height: 24px;
+    margin-top: 4px;
+  }
+
+  .headlineBone {
+    margin-top: 13px;
   }
 
   .actions {

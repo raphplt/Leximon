@@ -81,6 +81,18 @@
   background: linear-gradient(120deg, rgba(94, 33, 48, 0.85), rgba(52, 59, 92, 0.8));
 }
 
+/* The clan's page while it arrives: the hero's place, and the tabs on a phone. */
+.heroBone {
+  border-radius: 22px;
+  height: 170px;
+  margin-bottom: 16px;
+}
+
+.clanTabBone {
+  border-radius: var(--lx-radius-pill);
+  height: 40px;
+}
+
 .heroText {
   flex: 1;
   min-width: 0;
@@ -770,6 +782,11 @@
   padding: 14px 16px;
 }
 
+.clanRowBone {
+  border-radius: 22px;
+  height: 74px;
+}
+
 .clanRowText {
   flex: 1;
   min-width: 0;
@@ -965,6 +982,10 @@
   .heroActions {
     width: 100%;
     flex-wrap: wrap;
+  }
+
+  .heroBone {
+    height: 300px;
   }
 
   .clanTabs {

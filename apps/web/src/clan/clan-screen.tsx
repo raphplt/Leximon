@@ -8,6 +8,7 @@ import { profile } from "@/player/player";
 import { useShared, useSharedFailed } from "@/player/resource";
 import { retryProgress, useProgress, useProgressFailed } from "@/progress/use-progress";
 import { LoadFailed } from "@/ui/load-failed";
+import { WaitingScreen } from "@/ui/skeleton";
 import styles from "./clan.module.css";
 import { ClanPage } from "./clan-page";
 import { FindClan } from "./find-clan";
@@ -56,12 +57,9 @@ export function ClanScreen() {
       </main>
     );
   }
+  // Either the clan's page or the search for one: no shape fits both.
   if (mine === null || progress === null || now === 0) {
-    return (
-      <main className={styles.screen}>
-        <p className={styles.hint}>Un instant…</p>
-      </main>
-    );
+    return <WaitingScreen className={styles.screen} />;
   }
   const clanId = mine.clanId ?? joined;
   if (clanId === null) {

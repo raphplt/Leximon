@@ -608,6 +608,11 @@ En local, aucun e-mail ne part : chaque envoi s'écrit dans le terminal de `pnpm
 - **Attendu :** au fil de la recette, note toute phrase qui sonne faux par rapport à [voix.md](voix.md) : trop longue, trop polie, gabarit d'appli, « ! » hors récompense.
 - **Retour :**
 
+### TRA-06 · D'un écran à l'autre
+- **Faire :** passer d'un onglet à l'autre (Jouer, Album, Défis, Échanges, Clan, Profil) ; puis recharger l'album, le profil et l'atelier avec le réseau ralenti (outils du navigateur, onglet Réseau, « 3G lente »).
+- **Attendu :** chaque écran arrive en fondu court, les barres du haut et les onglets ne bougent pas. Pendant l'attente, des formes grises à la place exacte du contenu, qui n'apparaissent que si l'attente dure ; quand le contenu arrive, rien ne saute. Avec « réduire les animations », ni fondu ni pulsation.
+- **Retour :**
+
 ---
 
 ## Retours du 2026-10-22

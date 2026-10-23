@@ -166,6 +166,23 @@
   cursor: pointer;
 }
 
+/* --- Waiting: the same places, empty --- */
+
+.codeBone,
+.tabBone {
+  border-radius: var(--lx-radius-pill);
+  flex-shrink: 0;
+}
+
+.codeBone {
+  width: 190px;
+  height: 38px;
+}
+
+.tabBone {
+  height: 40px;
+}
+
 /* --- Offers received --- */
 
 .offers {

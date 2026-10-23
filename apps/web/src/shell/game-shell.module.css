@@ -1,3 +1,23 @@
+/*
+ * The screen arriving: a fade in opacity alone, quick enough never to make the player wait.
+ * No fill once it ends, so the wrapper holds no stacking context for what the screen puts on top.
+ */
+.screen {
+  animation: screen-in 180ms ease-out backwards;
+}
+
+@keyframes screen-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .screen {
+    animation: none;
+  }
+}
+
 /* Room under the phone tabs, so that nothing hides behind them. */
 @media (max-width: 759px) {
   .content {

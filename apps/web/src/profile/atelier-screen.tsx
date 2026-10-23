@@ -13,7 +13,11 @@ import Link from "next/link";
 import { useState } from "react";
 import { Avatar } from "@/components/avatar";
 import { useNow } from "@/lib/use-now";
+import { profile } from "@/player/player";
+import { useSharedFailed } from "@/player/resource";
 import { Icon } from "@/ui/icon";
+import { LoadFailed } from "@/ui/load-failed";
+import { Bone } from "@/ui/skeleton";
 import { useToast } from "@/ui/toast";
 import ui from "@/ui/ui.module.css";
 import styles from "./profile.module.css";
@@ -26,10 +30,14 @@ const STATE_CLASS = {
   locked: styles.closed,
 } as const;
 
+/** The first row of the shelf, while the profile arrives. */
+const WAITING_ITEMS = [1, 2, 3, 4, 5];
+
 /** The atelier: what the coffrets gave, worn on the profile with one tap. */
 export function AtelierScreen() {
   const actions = useProfileActions();
   const me = actions.profile;
+  const failed = useSharedFailed(profile);
   const now = useNow(60_000);
   const toast = useToast();
   const [tab, setTab] = useState<AtelierTab>("avatars");
@@ -77,35 +85,46 @@ export function AtelierScreen() {
           </button>
         ))}
       </div>
-      <ul
-        id="atelier-items"
-        className={styles.items}
-        role="tabpanel"
-        aria-labelledby={`tab-${tab}`}
-      >
-        {items.map((item) => {
-          const closed = item.state === "locked" || item.state === "in_coffret";
-          return (
-            <li key={item.id}>
-              <button
-                type="button"
-                className={`${styles.item} ${closed ? styles.itemLocked : ""}`}
-                aria-pressed={item.state === "worn"}
-                aria-disabled={item.state !== "owned" ? true : undefined}
-                disabled={actions.busy}
-                onClick={() => choose(item)}
-              >
-                <Preview tab={tab} item={item} wornAvatar={me?.avatar ?? null} />
-                {tab !== "titles" && <span className={styles.itemName}>{item.name}</span>}
-                <span className={`${styles.itemState} ${STATE_CLASS[item.state]}`}>
-                  {item.state === "worn" && <Icon name="check" size={14} />}{" "}
-                  {cosmeticStateLabel(item)}
-                </span>
-              </button>
-            </li>
-          );
-        })}
-      </ul>
+      {me === null && failed ? (
+        <LoadFailed onRetry={() => profile.ensure()} />
+      ) : (
+        <ul
+          id="atelier-items"
+          className={styles.items}
+          role="tabpanel"
+          aria-labelledby={`tab-${tab}`}
+          aria-busy={me === null}
+        >
+          {me === null &&
+            WAITING_ITEMS.map((slot) => (
+              <li key={slot} aria-hidden="true">
+                <Bone className={styles.itemBone} />
+              </li>
+            ))}
+          {items.map((item) => {
+            const closed = item.state === "locked" || item.state === "in_coffret";
+            return (
+              <li key={item.id}>
+                <button
+                  type="button"
+                  className={`${styles.item} ${closed ? styles.itemLocked : ""}`}
+                  aria-pressed={item.state === "worn"}
+                  aria-disabled={item.state !== "owned" ? true : undefined}
+                  disabled={actions.busy}
+                  onClick={() => choose(item)}
+                >
+                  <Preview tab={tab} item={item} wornAvatar={me?.avatar ?? null} />
+                  {tab !== "titles" && <span className={styles.itemName}>{item.name}</span>}
+                  <span className={`${styles.itemState} ${STATE_CLASS[item.state]}`}>
+                    {item.state === "worn" && <Icon name="check" size={14} />}{" "}
+                    {cosmeticStateLabel(item)}
+                  </span>
+                </button>
+              </li>
+            );
+          })}
+        </ul>
+      )}
     </main>
   );
 }

@@ -24,7 +24,7 @@ export function LockedScreen({
   readonly ratio?: number;
 }) {
   return (
-    <main className={`${ui.panel} ${ui.enter} ${styles.screen}`}>
+    <main className={`${ui.panel} ${styles.screen}`}>
       <span className={styles.icon}>
         <Icon name={icon} size={38} />
       </span>
