@@ -54,6 +54,7 @@ describe("database", () => {
       "review_logs",
       "sanctions",
       "sessions",
+      "sign_in_code_quotas",
       "themes",
       "trade_items",
       "trades",
