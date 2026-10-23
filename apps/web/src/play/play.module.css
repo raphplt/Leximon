@@ -155,6 +155,28 @@
 
 /* --- The floor: the counter between its two rows of buttons --- */
 
+/* Before the counter: said only if the wait lasts, in the room the counter will take. */
+.waiting {
+  flex: 1;
+  display: grid;
+  place-items: center;
+  min-height: 300px;
+  margin: 0;
+  font-size: 14px;
+  color: var(--lx-color-text-muted);
+  animation: arrive 200ms ease-out 400ms backwards;
+}
+
+.arrived {
+  animation: arrive 200ms ease-out backwards;
+}
+
+@keyframes arrive {
+  from {
+    opacity: 0;
+  }
+}
+
 .floor {
   flex: 1;
   display: grid;
@@ -450,6 +472,11 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .waiting,
+  .arrived {
+    animation: none;
+  }
+
   .fromRight,
   .fromLeft {
     animation: front-in 200ms ease-out both;

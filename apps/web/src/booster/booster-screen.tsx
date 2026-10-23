@@ -21,7 +21,7 @@ import { type Catalog, cardOrPlaceholder, collectionName, loadCatalog } from "@/
 import { prepareSpokenWords } from "@/cards/use-spoken-word";
 import { Card } from "@/components/card";
 import { RarityName } from "@/components/rarity-icon";
-import { type OpenBoosterResult, openBooster } from "@/lib/api";
+import { fetchChallenges, type OpenBoosterResult, openBooster } from "@/lib/api";
 import type { PackShape } from "@/lib/pack-shape";
 import { usePackShape } from "@/lib/use-pack-shape";
 import { CollectionPicker } from "@/play/collection-picker";
@@ -134,6 +134,8 @@ export function BoosterScreen() {
   const [pack, setPack] = useState<Pack | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [wanted, setWanted] = useState<string | null>(null);
+  /** The word most at risk of being forgotten, shown under the counter; null when none is due. */
+  const [slipping, setSlipping] = useState<string | null>(null);
   const request = useRef<OpenRequest | null>(null);
   const { shape, known } = usePackShape();
   const view = usePlayerView();
@@ -145,14 +147,24 @@ export function BoosterScreen() {
   /** Boosters a guest may still open before creating an account; null for a member. */
   const guestLeft = who?.kind === "guest" ? who.boostersLeft : null;
 
+  // Everything that sizes the counter is awaited together, so that it appears whole: nothing
+  // arriving a moment later (the stock, the word slipping away) pushes the sachet around.
   const load = useCallback(async () => {
     try {
-      const [loadedCatalog, copies] = await Promise.all([
+      const [loadedCatalog, copies, slippingId] = await Promise.all([
         loadCatalog(),
         ownedCards.read(OWNED_CARDS_MAX_AGE_MS),
+        fetchChallenges(1).then(
+          (challenges) => challenges.questions[0]?.cardId ?? null,
+          // Only a reminder: the counter goes without it rather than wait for it.
+          () => null,
+        ),
+        wallet.read(),
+        account.read().catch(() => null),
       ]);
       setCatalog(loadedCatalog);
       setOwned(copies);
+      setSlipping(slippingId);
       const ready: Phase =
         loadedCatalog.collections.length > 0 ? { name: "sealed" } : { name: "no_collection" };
       setPhase((current) =>
@@ -380,119 +392,129 @@ export function BoosterScreen() {
       ? { left: null, right: null }
       : neighbourChoices(choices, choice);
   const onLocked = () => toast(lockedToast("choose_collection", now));
+  // The counter is drawn once its size is known, whole: drawn empty first, it would shrink
+  // under the eye when the word slipping away takes its place below.
+  const waiting = phase.name === "loading" || (ready && !known);
   return (
     <main className={play.page}>
       <LevelStrip />
-      <div className={play.floor}>
-        <PlayFabs />
-        <section className={play.counter} aria-label="Le comptoir">
-          <div className={play.counterHead}>
-            {choice !== null && (
-              <CollectionPicker
-                choices={choices}
-                current={choice}
-                onPick={pick}
-                onLocked={onLocked}
-              />
-            )}
-            {stock !== null && <StockRing stock={stock} />}
-          </div>
-
-          <div className={play.stage}>
-            {(phase.name === "loading" || (ready && !known)) && (
-              <p className={play.message}>On fouille les rayons…</p>
-            )}
-            {phase.name === "unavailable" && (
-              <>
-                <p className={play.message}>Le serveur lambine.</p>
-                <Button variant="secondary" onClick={() => void load()}>
-                  Réessayer
-                </Button>
-              </>
-            )}
-            {phase.name === "no_collection" && (
-              <p className={play.message}>Aucune collection n'est encore publiée.</p>
-            )}
-            {ready && known && packCollection !== null && (
-              <div className={play.sachet}>
-                {around.left !== null && (
-                  <PackPeek
-                    key={around.left.id}
-                    side="left"
-                    choice={around.left}
-                    pack={packOfChoice(around.left)}
-                    entry={entryOf(around.left.id)}
+      {waiting ? (
+        <p className={play.waiting}>On fouille les rayons…</p>
+      ) : (
+        <>
+          <div className={`${play.floor} ${play.arrived}`}>
+            <PlayFabs />
+            <section className={play.counter} aria-label="Le comptoir">
+              <div className={play.counterHead}>
+                {choice !== null && (
+                  <CollectionPicker
+                    choices={choices}
+                    current={choice}
                     onPick={pick}
                     onLocked={onLocked}
                   />
                 )}
-                <div
-                  key={packCollection.id}
-                  className={`${play.front} ${
-                    swap === null ? "" : swap.from === "right" ? play.fromRight : play.fromLeft
-                  }`}
-                >
-                  <PackView
-                    shape={shape}
-                    collection={packCollection}
-                    state={phase.name === "opening" ? "opening" : canOpen ? "sealed" : "empty"}
-                    refill={stock?.refill}
-                    onTearStart={() => {
-                      startRequest();
-                    }}
-                    onOpen={() => void openPack()}
-                  />
-                </div>
-                {around.right !== null && (
-                  <PackPeek
-                    key={around.right.id}
-                    side="right"
-                    choice={around.right}
-                    pack={packOfChoice(around.right)}
-                    entry={entryOf(around.right.id)}
-                    onPick={pick}
-                    onLocked={onLocked}
-                  />
+                {stock !== null && <StockRing stock={stock} />}
+              </div>
+
+              <div className={play.stage}>
+                {phase.name === "unavailable" && (
+                  <>
+                    <p className={play.message}>Le serveur lambine.</p>
+                    <Button variant="secondary" onClick={() => void load()}>
+                      Réessayer
+                    </Button>
+                  </>
+                )}
+                {phase.name === "no_collection" && (
+                  <p className={play.message}>Aucune collection n'est encore publiée.</p>
+                )}
+                {ready && known && packCollection !== null && (
+                  <div className={play.sachet}>
+                    {around.left !== null && (
+                      <PackPeek
+                        key={around.left.id}
+                        side="left"
+                        choice={around.left}
+                        pack={packOfChoice(around.left)}
+                        entry={entryOf(around.left.id)}
+                        onPick={pick}
+                        onLocked={onLocked}
+                      />
+                    )}
+                    <div
+                      key={packCollection.id}
+                      className={`${play.front} ${
+                        swap === null ? "" : swap.from === "right" ? play.fromRight : play.fromLeft
+                      }`}
+                    >
+                      <PackView
+                        shape={shape}
+                        collection={packCollection}
+                        state={phase.name === "opening" ? "opening" : canOpen ? "sealed" : "empty"}
+                        refill={stock?.refill}
+                        onTearStart={() => {
+                          startRequest();
+                        }}
+                        onOpen={() => void openPack()}
+                      />
+                    </div>
+                    {around.right !== null && (
+                      <PackPeek
+                        key={around.right.id}
+                        side="right"
+                        choice={around.right}
+                        pack={packOfChoice(around.right)}
+                        entry={entryOf(around.right.id)}
+                        onPick={pick}
+                        onLocked={onLocked}
+                      />
+                    )}
+                  </div>
+                )}
+                {ready && known && canOpen && phase.name === "sealed" && (
+                  <TearHint text={OPEN_HINTS[shape]} />
                 )}
               </div>
-            )}
-            {ready && known && canOpen && phase.name === "sealed" && (
-              <TearHint text={OPEN_HINTS[shape]} />
-            )}
-          </div>
 
-          <div className={play.shelf}>
-            {ready && known && mustSignUp && (
-              <>
-                <p className={play.message}>{SIGN_UP_HINT}</p>
-                <ButtonLink href="/compte">Créer mon compte</ButtonLink>
-              </>
-            )}
-            {ready && known && !mustSignUp && (
-              <Button
-                className={play.openButton}
-                disabled={!canOpen || phase.name === "opening"}
-                onClick={() => {
-                  startRequest();
-                  playSound("tearFinish");
-                  void openPack();
-                }}
-              >
-                {phase.name === "opening" ? "Ouverture…" : (stock?.action ?? "Ouvrir le sachet")}
-              </Button>
-            )}
-            {error !== null ? (
-              <p className={play.error} role="alert">
-                {error}
-              </p>
-            ) : (
-              canOpen &&
-              guestLeft === 1 && <p className={play.message}>Dernier sachet sans compte.</p>
-            )}
+              <div className={play.shelf}>
+                {ready && known && mustSignUp && (
+                  <>
+                    <p className={play.message}>{SIGN_UP_HINT}</p>
+                    <ButtonLink href="/compte">Créer mon compte</ButtonLink>
+                  </>
+                )}
+                {ready && known && !mustSignUp && (
+                  <Button
+                    className={play.openButton}
+                    disabled={!canOpen || phase.name === "opening"}
+                    onClick={() => {
+                      startRequest();
+                      playSound("tearFinish");
+                      void openPack();
+                    }}
+                  >
+                    {phase.name === "opening"
+                      ? "Ouverture…"
+                      : (stock?.action ?? "Ouvrir le sachet")}
+                  </Button>
+                )}
+                {error !== null ? (
+                  <p className={play.error} role="alert">
+                    {error}
+                  </p>
+                ) : (
+                  canOpen &&
+                  guestLeft === 1 && <p className={play.message}>Dernier sachet sans compte.</p>
+                )}
+              </div>
+            </section>
           </div>
-        </section>
-      </div>
-      {catalog !== null && <SlippingWord catalog={catalog} />}
+          {catalog !== null && slipping !== null && (
+            <SlippingWord catalog={catalog} cardId={slipping} />
+          )}
+        </>
+      )}
     </main>
   );
 }

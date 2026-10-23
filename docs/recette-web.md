@@ -609,8 +609,8 @@ En local, aucun e-mail ne part : chaque envoi s'écrit dans le terminal de `pnpm
 - **Retour :**
 
 ### TRA-06 · D'un écran à l'autre
-- **Faire :** passer d'un onglet à l'autre (Jouer, Album, Défis, Échanges, Clan, Profil) ; puis recharger l'album, le profil et l'atelier avec le réseau ralenti (outils du navigateur, onglet Réseau, « 3G lente »).
-- **Attendu :** chaque écran arrive en fondu court, les barres du haut et les onglets ne bougent pas. Pendant l'attente, des formes grises à la place exacte du contenu, qui n'apparaissent que si l'attente dure ; quand le contenu arrive, rien ne saute. Avec « réduire les animations », ni fondu ni pulsation.
+- **Faire :** passer d'un onglet à l'autre (Jouer, Album, Défis, Échanges, Clan, Profil) ; puis recharger Jouer, l'album, le profil et l'atelier avec le réseau ralenti (outils du navigateur, onglet Réseau, « 3G lente »).
+- **Attendu :** la pastille claire de la barre du haut glisse vers l'onglet cliqué dès le clic ; sur une page hors onglets (profil, niveaux), elle s'efface. Chaque écran arrive en fondu court. Sur Jouer, le comptoir apparaît entier, à sa taille finale : le sachet ne rétrécit pas après coup, l'étagère du bas ne remonte pas. Le groupe de droite de la barre du haut (sachets, courrier, niveau, avatar) apparaît d'un bloc. Ailleurs, pendant l'attente, des formes grises à la place exacte du contenu, qui n'apparaissent que si l'attente dure ; quand le contenu arrive, rien ne saute. Avec « réduire les animations », ni fondu, ni glissement, ni pulsation.
 - **Retour :**
 
 ---

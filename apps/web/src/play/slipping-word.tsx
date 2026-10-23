@@ -1,22 +1,20 @@
 "use client";
 
 import { capitalize, SLIPPING_AWAY } from "@leximon/view-model";
-import { useEffect, useState } from "react";
 import { type Catalog, collectionName } from "@/cards/catalog";
 import { Card } from "@/components/card";
-import { fetchChallenges } from "@/lib/api";
 import { ButtonLink } from "@/ui/button";
 import styles from "./play.module.css";
 
-/** The word most at risk of being forgotten; nothing when no word is due. */
-export function SlippingWord({ catalog }: { readonly catalog: Catalog }) {
-  const [cardId, setCardId] = useState<string | null>(null);
-  useEffect(() => {
-    fetchChallenges(1)
-      .then((challenges) => setCardId(challenges.questions[0]?.cardId ?? null))
-      .catch(() => undefined);
-  }, []);
-  const card = cardId === null ? undefined : catalog.cardsById.get(cardId);
+/** The word most at risk of being forgotten, read by the screen with the rest of the counter. */
+export function SlippingWord({
+  catalog,
+  cardId,
+}: {
+  readonly catalog: Catalog;
+  readonly cardId: string;
+}) {
+  const card = catalog.cardsById.get(cardId);
   if (card === undefined) return null;
   return (
     <div className={styles.slipping}>

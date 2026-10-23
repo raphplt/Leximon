@@ -1,7 +1,7 @@
 "use client";
 
 import type { StockView } from "@leximon/view-model";
-import { type CSSProperties, useEffect, useState } from "react";
+import { type CSSProperties, useState } from "react";
 import styles from "./play.module.css";
 
 /** The free stock in a ring, with its next refill: the count stays at hand, quietly. */
@@ -46,8 +46,8 @@ export function noteSachetOpened(): void {
 
 /** How to open the sachet, beside it, until the player closes it or has opened a few. */
 export function TearHint({ text }: { readonly text: string }) {
-  const [shown, setShown] = useState(false);
-  useEffect(() => setShown(readHint() < HINT_OPENS), []);
+  // Read at once: drawn only in the browser, with the sachet, it must not push it a moment later.
+  const [shown, setShown] = useState(() => readHint() < HINT_OPENS);
   if (!shown) return null;
   return (
     <p className={styles.tearHint}>
