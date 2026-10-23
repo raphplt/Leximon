@@ -101,14 +101,14 @@
     conic-gradient(from -45deg at bottom, #0000, #000 1deg 89deg, #0000 90deg) 50% / var(--tooth)
     100%,
     linear-gradient(#000 0 0) bottom / 100% var(--crimp) no-repeat,
-    radial-gradient(calc(6 * var(--u)) 62% at 0% 50%, #0000 97%, #000) var(--body),
-    radial-gradient(calc(6 * var(--u)) 62% at 100% 50%, #0000 97%, #000) var(--body);
+    radial-gradient(calc(3.5 * var(--u)) 62% at 0% 50%, #0000 97%, #000) var(--body),
+    radial-gradient(calc(3.5 * var(--u)) 62% at 100% 50%, #0000 97%, #000) var(--body);
   mask:
     conic-gradient(from -45deg at bottom, #0000, #000 1deg 89deg, #0000 90deg) 50% / var(--tooth)
     100%,
     linear-gradient(#000 0 0) bottom / 100% var(--crimp) no-repeat,
-    radial-gradient(calc(6 * var(--u)) 62% at 0% 50%, #0000 97%, #000) var(--body),
-    radial-gradient(calc(6 * var(--u)) 62% at 100% 50%, #0000 97%, #000) var(--body);
+    radial-gradient(calc(3.5 * var(--u)) 62% at 0% 50%, #0000 97%, #000) var(--body),
+    radial-gradient(calc(3.5 * var(--u)) 62% at 100% 50%, #0000 97%, #000) var(--body);
   -webkit-mask-composite: source-in, source-over, source-in;
   mask-composite: intersect, add, intersect;
 }
