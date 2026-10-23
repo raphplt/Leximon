@@ -78,7 +78,7 @@ Arbitrés par le propriétaire le 2026-10-20 : jeu grand public (B2C), pas de ve
 | Bêta fermée sur invitation | En ligne, aucun lien encore | D-041 : liens par groupe dans `/admin/invitations`, page `/invitation/<code>`, porte tenue par l'API (`BETA_INVITES`), `?src=` gardé avec le joueur. Une invitation rejouée par un invité ne rouvre plus la porte |
 | Mesure | En ligne | D-042 : `/admin/mesure` (rétention J1/J7/J30, entonnoir, testeurs, fausse porte mécène), `/admin/retours` (« Un retour ? » dans le menu), tranche d'âge facultative à l'inscription |
 | Suivi des erreurs | Fait | D-045 : erreurs relevées par Cloudflare (Workers Logs), résumé chaque matin sur Discord avec les chiffres de la veille. Pas de suivi des erreurs du navigateur |
-| Test de charge | En cours | Avant d'ouvrir au public. Budget : ouverture d'un sachet sous 150 ms au 95e centile |
+| Test de charge | En cours | D-047 : scénarios k6 dans `infra/load/`, staging sur une branche Neon. Mesuré le 2026-10-23 ([rnd/charge.md](rnd/charge.md)) : 572 requêtes/s sans une erreur, mais l'ouverture tient 125 ms en médiane et 370 à 670 ms au p95, loin du budget de 150 ms. API placée à Francfort près de la base (au prochain déploiement). Reste : moins d'allers-retours SQL par ouverture, puis remesurer |
 | Marque, domaines, comptes réseaux | En cours | Domaine leximon.fr (OVH, DNS chez Cloudflare, renouvellement automatique à activer), contact@leximon.fr routé par Cloudflare, Discord du projet. Marque : dépôt INPI repoussé (P7). Autres comptes réseaux à faire |
 
 ## Ce qui attend ta décision
@@ -93,5 +93,5 @@ Dans l'ordre où elles débloquent le plus :
 ## Prochaines étapes conseillées
 
 1. Envoyer les premiers liens d'invitation, puis suivre `/admin/mesure` et `/admin/retours`.
-2. Test de charge, avant d'ouvrir au-delà du premier cercle.
+2. Ouverture d'un sachet sous 150 ms au p95 : moins d'allers-retours SQL, puis remesurer sur le staging ([rnd/charge.md](rnd/charge.md)), avant d'ouvrir au-delà du premier cercle.
 3. Le mobile, construit avec les retours de la bêta. Puis Apple et Google, et la quatrième collection.

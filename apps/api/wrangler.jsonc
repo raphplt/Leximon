@@ -5,9 +5,10 @@
   "compatibility_date": "2026-10-01",
   "compatibility_flags": ["nodejs_compat"],
   "observability": { "enabled": true },
-  // Runs the Worker close to the database rather than close to the player: an open makes
-  // several sequential database round trips, which would be slow from far away.
-  "placement": { "mode": "smart" },
+  // Runs the Worker next to the database (Neon, Frankfurt) rather than close to the player: an
+  // open makes several sequential database round trips. Smart placement never moved it, since it
+  // only picks locations that already get traffic, and players are in France.
+  "placement": { "region": "aws:eu-central-1" },
   // Daily maintenance (partitions, purges) at 03:17 UTC. No trigger every minute: it would keep
   // the database awake; the campaign pump runs through the campaign queue, only when needed.
   "triggers": { "crons": ["17 3 * * *"] },
@@ -234,7 +235,7 @@
       "triggers": { "crons": [] },
       "vars": {
         "APP_ENV": "staging",
-        "BETTER_AUTH_URL": "https://leximon-api-staging.leximon.workers.dev",
+        "BETTER_AUTH_URL": "https://leximon-api-staging.raphael-plassart.workers.dev",
         // The Origin the load test sends; no browser ever calls this API.
         "TRUSTED_ORIGINS": "https://leximon.fr",
         // No sign-in code nor campaign leaves staging.
@@ -318,7 +319,7 @@
         {
           "binding": "HYPERDRIVE",
           // leximon-db-staging, on the Neon branch `charge`, created with --caching-disabled.
-          "id": "00000000000000000000000000000000"
+          "id": "21dcf38e1f8142bf90e65d8ff1d2b9b9"
         }
       ]
     }

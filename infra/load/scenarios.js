@@ -82,14 +82,26 @@ function nextPlayer() {
   return players[exec.scenario.iterationInTest % players.length];
 }
 
+/** This VU's cookie jar of each player, as a browser keeps it between two requests. */
+const jars = new Map();
+
 /**
- * A member's request: its cookie only, in an empty jar, so that cookies set for the player of a
- * previous iteration never go with it.
+ * A member's request with the player's own jar: Better Auth's signed session cookie, refreshed
+ * by the responses, spares most requests the session lookup, as in a browser.
  */
-function asPlayer(cookie, name, extra = {}) {
+function asPlayer(player, name, extra = {}) {
+  let jar = jars.get(player.userId);
+  if (jar === undefined) {
+    jar = new http.CookieJar();
+    for (const pair of player.cookie.split("; ")) {
+      const separator = pair.indexOf("=");
+      jar.set(BASE_URL, pair.slice(0, separator), pair.slice(separator + 1));
+    }
+    jars.set(player.userId, jar);
+  }
   return {
-    headers: { Origin: ORIGIN, Cookie: cookie, "Content-Type": "application/json", ...extra },
-    jar: new http.CookieJar(),
+    headers: { Origin: ORIGIN, "Content-Type": "application/json", ...extra },
+    jar,
     tags: { name },
   };
 }
@@ -98,7 +110,7 @@ export function openBooster() {
   const response = http.post(
     `${BASE_URL}/boosters/open`,
     JSON.stringify({ kind: "collection", collectionId: STARTER }),
-    asPlayer(nextPlayer().cookie, "open", { "Idempotency-Key": uuidV4() }),
+    asPlayer(nextPlayer(), "open", { "Idempotency-Key": uuidV4() }),
   );
   check(response, {
     "booster opened": (r) => r.status === 200,
@@ -106,8 +118,8 @@ export function openBooster() {
 }
 
 export function answerChallenges() {
-  const { cookie } = nextPlayer();
-  const session = http.get(`${BASE_URL}/challenges?limit=5`, asPlayer(cookie, "challenges"));
+  const player = nextPlayer();
+  const session = http.get(`${BASE_URL}/challenges?limit=5`, asPlayer(player, "challenges"));
   check(session, { "session given": (r) => r.status === 200 });
   if (session.status !== 200) return;
   for (const question of session.json("questions")) {
@@ -119,22 +131,22 @@ export function answerChallenges() {
     const response = http.post(
       `${BASE_URL}/challenges/answer`,
       JSON.stringify(answer),
-      asPlayer(cookie, "answer", { "Idempotency-Key": uuidV4() }),
+      asPlayer(player, "answer", { "Idempotency-Key": uuidV4() }),
     );
     check(response, { "answer taken": (r) => r.status === 200 });
   }
 }
 
 export function readCollection() {
-  const { cookie } = nextPlayer();
+  const player = nextPlayer();
   let cursor = null;
   do {
     const query = cursor === null ? "limit=500" : `limit=500&cursor=${encodeURIComponent(cursor)}`;
-    const page = http.get(`${BASE_URL}/me/cards?${query}`, asPlayer(cookie, "cards"));
+    const page = http.get(`${BASE_URL}/me/cards?${query}`, asPlayer(player, "cards"));
     check(page, { "cards read": (r) => r.status === 200 });
     cursor = page.status === 200 ? page.json("nextCursor") : null;
   } while (cursor !== null);
-  const mastery = http.get(`${BASE_URL}/me/mastery`, asPlayer(cookie, "mastery"));
+  const mastery = http.get(`${BASE_URL}/me/mastery`, asPlayer(player, "mastery"));
   check(mastery, { "mastery read": (r) => r.status === 200 });
 }
 
