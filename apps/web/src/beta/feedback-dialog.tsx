@@ -2,10 +2,12 @@
 
 import { usePathname } from "next/navigation";
 import { type FormEvent, useId, useState } from "react";
-import styles from "@/account/account-screen.module.css";
 import { sendFeedback } from "@/lib/api";
+import { Button } from "@/ui/button";
 import { Dialog } from "@/ui/dialog";
 import { useToast } from "@/ui/toast";
+import ui from "@/ui/ui.module.css";
+import styles from "./feedback-dialog.module.css";
 
 /** A note to the team, from the screen the tester is on. Read by us only. */
 export function FeedbackDialog({
@@ -40,22 +42,22 @@ export function FeedbackDialog({
 
   return (
     <Dialog open={open} title="Un retour ?" onClose={onClose} variant="center">
-      <form className={styles.panel} onSubmit={submit}>
+      <form className={styles.form} onSubmit={submit}>
         <label htmlFor={id} className={styles.label}>
           Un bug, une idée, un mot qui cloche : dis-le.
         </label>
         <textarea
           id={id}
-          className={styles.input}
+          className={`${ui.field} ${styles.text}`}
           rows={5}
           maxLength={1000}
           required
           value={body}
           onChange={(event) => setBody(event.target.value)}
         />
-        <button type="submit" className={styles.primary} disabled={busy || body.trim().length < 3}>
+        <Button type="submit" wide disabled={busy || body.trim().length < 3}>
           {busy ? "Envoi…" : "Envoyer"}
-        </button>
+        </Button>
         <p className={styles.error} role="alert">
           {error}
         </p>
