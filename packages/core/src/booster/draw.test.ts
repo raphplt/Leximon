@@ -97,7 +97,7 @@ describe("drawBooster", () => {
     };
     const { cards } = drawBooster(
       allPrecious,
-      poolWith({ precious: [] }),
+      poolWith({ precious: [], rare: ["rare-1", "rare-2", "rare-3", "rare-4", "rare-5"] }),
       {},
       createSeededRandom(SEED),
     );
@@ -112,11 +112,50 @@ describe("drawBooster", () => {
     };
     const { cards } = drawBooster(
       onlyCommon,
-      poolWith({ common: [], uncommon: [] }),
+      poolWith({
+        common: [],
+        uncommon: [],
+        rare: ["rare-1", "rare-2", "rare-3", "rare-4", "rare-5"],
+      }),
       {},
       createSeededRandom(SEED),
     );
     expect(cards.every((card) => card.rarity === "rare")).toBe(true);
+  });
+
+  it("never puts the same card twice in a booster", () => {
+    const random = createSeededRandom(SEED);
+    for (let n = 0; n < 2000; n++) {
+      const { cards } = drawBooster(rules, fullPool, {}, random);
+      expect(new Set(cards.map((card) => card.cardId)).size).toBe(cards.length);
+    }
+  });
+
+  it("falls back to another rarity once the booster holds every card of the drawn one", () => {
+    const allCommon: DrawRules = {
+      ...rules,
+      weights: { common: 1, uncommon: 0, rare: 0, precious: 0, epic: 0, legendary: 0 },
+      guaranteedMinRarity: "common",
+    };
+    const { cards } = drawBooster(allCommon, fullPool, {}, createSeededRandom(SEED));
+    expect(cards.map((card) => card.rarity)).toEqual([
+      "common",
+      "common",
+      "common",
+      "uncommon",
+      "uncommon",
+    ]);
+  });
+
+  it("repeats cards only when the pool is smaller than a booster", () => {
+    const tinyPool = byRarity((rarity) =>
+      rarity === "uncommon" ? ["uncommon-1", "uncommon-2"] : [],
+    );
+    const { cards } = drawBooster(rules, tinyPool, {}, createSeededRandom(SEED));
+    expect(cards).toHaveLength(5);
+    expect(new Set(cards.map((card) => card.cardId))).toEqual(
+      new Set(["uncommon-1", "uncommon-2"]),
+    );
   });
 
   it.each<[string, DrawRules]>([
@@ -162,6 +201,8 @@ describe("drawBooster", () => {
 
 describe("drawBooster statistics", () => {
   const BOOSTERS = 100_000;
+  /** Enough cards per rarity that no booster runs out of one, which would skew the counts. */
+  const largePool = byRarity((rarity) => Array.from({ length: 20 }, (_, n) => `${rarity}-${n}`));
 
   it("follows the weights on regular cards", () => {
     const random = createSeededRandom(SEED);
@@ -169,7 +210,7 @@ describe("drawBooster statistics", () => {
     let regularCards = 0;
     for (let i = 0; i < BOOSTERS; i++) {
       // Counters at 0: no guarantee triggers, only the last slot is constrained.
-      const { cards } = drawBooster(rules, fullPool, {}, random);
+      const { cards } = drawBooster(rules, largePool, {}, random);
       for (const card of cards.slice(0, -1)) {
         counts[card.rarity]++;
         regularCards++;
@@ -190,7 +231,7 @@ describe("drawBooster statistics", () => {
     const drought = { epic: 0, legendary: 0 };
     const longest = { epic: 0, legendary: 0 };
     for (let i = 0; i < BOOSTERS; i++) {
-      const draw = drawBooster(rules, fullPool, counters, random);
+      const draw = drawBooster(rules, largePool, counters, random);
       counters = draw.pityCounters;
       for (const rarity of ["epic", "legendary"] as const) {
         drought[rarity] = draw.cards.some((card) => isAtLeast(card.rarity, rarity))

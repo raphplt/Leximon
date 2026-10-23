@@ -85,8 +85,9 @@ export function drawRulesAt(schedule: DrawSchedule, time: EpochMs): DrawRules {
  *
  * All cards but the last follow `weights`. The last one is at least `guaranteedMinRarity`, or at
  * least the rarest guarantee that is due. A guarantee is met, and its counter reset, by any card
- * of the booster at least that rare: a Legendary also resets the Epic counter. If the pool has no
- * card of the drawn rarity, the nearest more common rarity is used, then the nearest rarer one.
+ * of the booster at least that rare: a Legendary also resets the Epic counter. A card appears at
+ * most once per booster. If the pool has no card of the drawn rarity left, the nearest more common
+ * rarity is used, then the nearest rarer one; a pool smaller than a booster repeats cards.
  *
  * @throws {RangeError} on invalid rules, pool or counters: a programming error, not a game outcome.
  */
@@ -109,10 +110,17 @@ export function drawBooster(
   }
 
   const cards: DrawnCard[] = [];
+  const taken = new Set<string>();
   for (let slot = 0; slot < rules.cardsPerBooster; slot++) {
     const isLastSlot = slot === rules.cardsPerBooster - 1;
     const rarity = pickRarity(rules.weights, isLastSlot ? lastSlotMinimum : RARITIES[0], random);
-    cards.push(pickCard(pool, rarity, random));
+    const card = pickCard(pool, rarity, taken, random) ?? pickCard(pool, rarity, NONE, random);
+    if (card === undefined) {
+      // Unreachable: the pool was checked to contain at least one card.
+      throw new Error("Invariant violated: empty card pool");
+    }
+    cards.push(card);
+    taken.add(card.cardId);
   }
 
   const nextCounters: Partial<Record<Rarity, number>> = {};
@@ -146,10 +154,22 @@ function pickRarity(
   throw new Error("Invariant violated: weighted pick out of range");
 }
 
-/** Uniform pick of a card of `rarity`, falling back to the nearest rarity that has cards. */
-function pickCard(pool: CardPool, rarity: Rarity, random: RandomSource): DrawnCard {
+const NONE: ReadonlySet<string> = new Set();
+
+/**
+ * Uniform pick of a card of `rarity` not in `taken`, falling back to the nearest rarity that has
+ * one. A rarity runs out only once the booster holds all its cards, so falling back to a more
+ * common one never breaks a guarantee: the booster already has a card that rare.
+ * Undefined when every card of the pool is taken.
+ */
+function pickCard(
+  pool: CardPool,
+  rarity: Rarity,
+  taken: ReadonlySet<string>,
+  random: RandomSource,
+): DrawnCard | undefined {
   for (const candidate of fallbackOrder(rarity)) {
-    const ids = pool[candidate];
+    const ids = pool[candidate].filter((id) => !taken.has(id));
     if (ids.length > 0) {
       const cardId = ids[randomInt(random, ids.length)];
       if (cardId !== undefined) {
@@ -157,8 +177,7 @@ function pickCard(pool: CardPool, rarity: Rarity, random: RandomSource): DrawnCa
       }
     }
   }
-  // Unreachable: the pool was checked to contain at least one card.
-  throw new Error("Invariant violated: empty card pool");
+  return undefined;
 }
 
 /** `rarity`, then more common rarities from nearest to farthest, then rarer ones. */

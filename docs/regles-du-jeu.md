@@ -42,7 +42,7 @@
 | P11 | Probabilités par carte | Courant 60 %, Peu courant 25 %, Rare 10 %, Précieux 4 %, Épique 0,9 %, Légendaire 0,1 %. Au moins une carte Peu courant ou mieux par booster. | Provisoire |
 | P12 | Garanties | Une Épique garantie au 40e booster d'affilée sans en obtenir, une Légendaire au 150e (simulation : `docs/rnd/collection-sim.md`). | Provisoire |
 | P14 | Structure | Un booster par collection, chacun avec son propre dessin. Une carte appartient toujours à sa collection. Pas de booster « découverte » tiré dans tout le catalogue : les Fondateurs, collection généraliste, servent de sachet de départ (P59). | Tranché ; booster découverte retiré le 2026-10-22 |
-| P15 | Doublons | Pas de protection anti-doublons. La complétion repose sur les échanges et les plis bonus. | Tranché |
+| P15 | Doublons | Pas de protection anti-doublons d'un booster à l'autre. La complétion repose sur les échanges et les plis bonus. Dans un même booster, une carte ne sort qu'une fois. | Tranché ; pas de doublon dans un booster le 2026-10-23 |
 | P17 | Transparence | Probabilités et garanties ne sont jamais affichées aux joueurs (légal tant que les boosters sont gratuits). | Tranché |
 | P18 | Stock unique | Un seul stock pour toutes les collections : chaque booster ouvert consomme le même stock, quelle que soit sa collection. | Tranché |
 | P19 | Garanties partagées | Les compteurs Épique et Légendaire comptent tous les boosters du joueur, quelle que soit leur source. | Tranché |
