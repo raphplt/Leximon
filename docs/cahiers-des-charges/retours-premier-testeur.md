@@ -1,6 +1,6 @@
 # Cahier des charges · Retours du premier testeur
 
-- **Statut :** validé par le propriétaire le 2026-10-23, avec les recommandations de la fin du document. Lots 1 et 3 faits le 2026-10-23.
+- **Statut :** validé par le propriétaire le 2026-10-23, avec les recommandations de la fin du document. Lots 1, 2 et 3 faits le 2026-10-23.
 - **Source :** les retours d'un ami du propriétaire, le 2026-10-23, en bêta sur leximon.fr : messages écrits, captures et sept vocaux. Il a commencé en invité, puis a créé son compte. Les arbitrages du propriétaire sont indiqués à chaque point.
 - **Règles liées :** P45 (mise en scène), P57 (prononciation), P58 (coffrets), P59 (fonctionnalités par niveau), P44 (affichage de la rareté). Cahiers liés : [ouverture.md](ouverture.md) (§6 et §7, à mettre à jour), [interface-v1.md](interface-v1.md).
 
@@ -74,6 +74,8 @@ Le plus important : sans lui, on peut ouvrir des sachets sans jamais lire un mot
 
 ## Lot 2 · « Nouveau » dans l'album
 
+*Fait le 2026-10-23, comme décrit ci-dessous : migration `0025_user_cards_read_at` (les cartes déjà possédées comptent comme lues), route testée avec des appels concurrents, filtres et tag dans l'album. L'encart sous le comptoir préfère maintenant un mot jamais lu quand aucun n'est dû, avec « Lire » au lieu de « Relire ».*
+
 ### Ce que voit le joueur
 
 - **Le tag « Nouveau »** reste sur une carte de l'album tant qu'il n'a pas ouvert sa fiche.
@@ -124,7 +126,7 @@ Le plus important : sans lui, on peut ouvrir des sachets sans jamais lire un mot
 - **Un mot dû se montre en devinette** : « Un mot est en train de t'échapper. », le dos de sa carte et le début de sa définition, coupé à deux lignes avec « … ». Toucher l'encart ou « Réviser » lance la révision de ce mot.
   - **Écart avec la première version de ce cahier,** relevé à la réalisation : montrer le mot et sa définition à côté de « Réviser » donnait la réponse une seconde avant la question. Or l'Encre et la Dorure se gagnent en écrivant le mot de tête à partir de sa définition (P33). La fiche d'une carte évitait déjà ce raccourci ; l'encart fait de même en cachant le mot, pas la définition.
 - **Le mot change à chaque visite de Jouer,** parmi les mots dus, le plus en retard d'abord. Pas de minuterie : un texte qui bouge seul pendant qu'on regarde le sachet distrait. Le compte des visites reste sur l'appareil.
-- **Sans mot dû,** l'encart montre un mot de l'album (« Un de tes mots »), avec son nom, le début de sa définition et « Relire ». Toucher l'encart ouvre sa fiche. Sans aucune carte, il ne s'affiche pas. La préférence pour les mots nouveaux viendra avec le lot 2.
+- **Sans mot dû,** l'encart montre un mot de l'album (« Un de tes mots »), avec son nom, le début de sa définition et « Relire ». Toucher l'encart ouvre sa fiche. Sans aucune carte, il ne s'affiche pas. Il préfère un mot jamais lu (lot 2), avec « Lire » au lieu de « Relire ».
 - **Pas de nouvelle route :** les mots dus se calculent sur le web à partir de ce qu'il lit déjà (`GET /me/mastery`, `GET /me/cards`), avec les mêmes conditions que le courrier : dus maintenant, encore possédés.
 - **Code :** `wordUnderCounter`, `SLIPPING_RIDDLE` et `OWN_WORD` dans `packages/view-model/src/play.ts` (testés), `apps/web/src/play/slipping-word.tsx`.
 

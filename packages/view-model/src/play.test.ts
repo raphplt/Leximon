@@ -138,6 +138,7 @@ describe("sachets behind the counter", () => {
 
 describe("word under the counter", () => {
   const now = 10_000;
+  const none = () => false;
   const owned = new Map([
     ["a", 1],
     ["b", 2],
@@ -151,23 +152,45 @@ describe("word under the counter", () => {
       ["b", { due: now - 500 }],
       ["c", { due: now + 1 }],
     ]);
-    expect(wordUnderCounter(memory, owned, now, 0)).toEqual({ cardId: "b", kind: "slipping" });
-    expect(wordUnderCounter(memory, owned, now, 1)).toEqual({ cardId: "a", kind: "slipping" });
-    expect(wordUnderCounter(memory, owned, now, 2)).toEqual({ cardId: "b", kind: "slipping" });
+    expect(wordUnderCounter(memory, owned, none, now, 0)).toEqual({
+      cardId: "b",
+      kind: "slipping",
+      fresh: false,
+    });
+    expect(wordUnderCounter(memory, owned, none, now, 1)).toEqual({
+      cardId: "a",
+      kind: "slipping",
+      fresh: false,
+    });
+    expect(wordUnderCounter(memory, owned, none, now, 2)).toEqual({
+      cardId: "b",
+      kind: "slipping",
+      fresh: false,
+    });
   });
 
   it("leaves out a word due that the player no longer owns", () => {
     const memory = new Map([["gone", { due: now - 10 }]]);
-    expect(wordUnderCounter(memory, owned, now, 0)?.kind).toBe("owned");
+    expect(wordUnderCounter(memory, owned, none, now, 0)?.kind).toBe("owned");
   });
 
   it("falls back on one of the player's words when none is due", () => {
-    const shown = [0, 1, 2, 3].map((visit) => wordUnderCounter(new Map(), owned, now, visit));
+    const shown = [0, 1, 2, 3].map((visit) => wordUnderCounter(new Map(), owned, none, now, visit));
     expect(shown.map((word) => word?.cardId)).toEqual(["a", "b", "c", "a"]);
     expect(shown.every((word) => word?.kind === "owned")).toBe(true);
   });
 
+  it("prefers the words never read when none is due", () => {
+    const unread = (id: string) => id === "c";
+    expect(wordUnderCounter(new Map(), owned, unread, now, 0)).toEqual({
+      cardId: "c",
+      kind: "owned",
+      fresh: true,
+    });
+    expect(wordUnderCounter(new Map(), owned, unread, now, 1)?.cardId).toBe("c");
+  });
+
   it("shows nothing without a card", () => {
-    expect(wordUnderCounter(new Map(), new Map(), now, 0)).toBeNull();
+    expect(wordUnderCounter(new Map(), new Map(), none, now, 0)).toBeNull();
   });
 });

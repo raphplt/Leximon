@@ -16,6 +16,8 @@ export const ownedCardSchema = z.object({
   variant: z.string().min(1),
   quantity: z.int().positive(),
   firstObtainedAt: timestampSchema,
+  /** When the player first opened the card's sheet; `null` while it is new to them. */
+  readAt: timestampSchema.nullable().optional(),
 });
 
 /** `GET /me/cards`, 200. Cards are sorted by `cardId`, then `variant`. */
@@ -25,3 +27,6 @@ export const ownedCardsResponseSchema = z.object({
   nextCursor: z.string().nullable(),
 });
 export type OwnedCardsResponse = z.infer<typeof ownedCardsResponseSchema>;
+
+/** `POST /me/cards/:cardId/read`: the card is no longer new. 204, even for a card not owned. */
+export const cardReadParamSchema = slugSchema;

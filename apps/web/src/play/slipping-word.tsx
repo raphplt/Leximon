@@ -76,7 +76,7 @@ export function SlippingWord({
         </span>
       </button>
       <Button variant="secondary" small onClick={open}>
-        {OWN_WORD.action}
+        {word.fresh ? OWN_WORD.first : OWN_WORD.action}
       </Button>
     </div>
   );

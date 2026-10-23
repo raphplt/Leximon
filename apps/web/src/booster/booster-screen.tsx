@@ -33,7 +33,13 @@ import { PackPeek } from "@/play/pack-peek";
 import play from "@/play/play.module.css";
 import { PlayFabs } from "@/play/play-fabs";
 import { SlippingWord } from "@/play/slipping-word";
-import { OWNED_CARDS_MAX_AGE_MS, ownedCards, wordMemory } from "@/player/collection";
+import {
+  cardDates,
+  noteGained,
+  OWNED_CARDS_MAX_AGE_MS,
+  ownedCards,
+  wordMemory,
+} from "@/player/collection";
 import { account, wallet } from "@/player/player";
 import { useShared } from "@/player/resource";
 import { publishProgress, useProgress } from "@/progress/use-progress";
@@ -172,6 +178,7 @@ export function BoosterScreen() {
   const { shape, known } = usePackShape();
   const view = usePlayerView();
   const who = useShared(account);
+  const dates = useShared(cardDates);
   const toast = useToast();
   const cardWidth = useCardWidth();
   const { now } = view;
@@ -320,6 +327,10 @@ export function BoosterScreen() {
     const after = new Map(owned);
     for (const card of result.cards) after.set(card.cardId, (after.get(card.cardId) ?? 0) + 1);
     setOwned(after);
+    noteGained(
+      result.cards.map((card) => card.cardId),
+      owned,
+    );
     ownedCards.publish(after);
     if (reduced) {
       setPhase({ name: "revealing", index: 0, hurriedFrom: null });
@@ -414,7 +425,10 @@ export function BoosterScreen() {
   }
 
   const ready = phase.name === "sealed" || phase.name === "opening";
-  const underCounter = now === 0 ? null : wordUnderCounter(memory, owned, now, visit);
+  const underCounter =
+    now === 0
+      ? null
+      : wordUnderCounter(memory, owned, (id) => dates?.get(id)?.read === false, now, visit);
   const files = new Map(catalog?.collections.map((c) => [c.id, c]) ?? []);
   const packOfChoice = (c: CollectionChoice): PackCollection => {
     const file = files.get(c.id);

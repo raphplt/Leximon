@@ -23,7 +23,7 @@ import { RarityIcon, RarityName } from "@/components/rarity-icon";
 import { useIncremental } from "@/lib/use-incremental";
 import { useNarrow } from "@/lib/use-narrow";
 import { useNow } from "@/lib/use-now";
-import { ownedCards, wordMemory } from "@/player/collection";
+import { cardDates, ownedCards, wordMemory } from "@/player/collection";
 import { useShared, useSharedFailed } from "@/player/resource";
 import { useShell } from "@/shell/shell-context";
 import { Button } from "@/ui/button";
@@ -61,6 +61,7 @@ export function AlbumScreen() {
   const owned = useShared(ownedCards);
   const ownedFailed = useSharedFailed(ownedCards);
   const memory = useShared(wordMemory);
+  const dates = useShared(cardDates);
   const now = useNow(60_000);
   const narrow = useNarrow();
   const { openCard } = useShell();
@@ -92,10 +93,16 @@ export function AlbumScreen() {
       catalog === null || owned === null
         ? null
         : albumView(
-            { collections: catalog.collections, owned, memory: memory ?? new Map(), now },
+            {
+              collections: catalog.collections,
+              owned,
+              memory: memory ?? new Map(),
+              dates: dates ?? new Map(),
+              now,
+            },
             state,
           ),
-    [catalog, owned, memory, now, state],
+    [catalog, owned, memory, dates, now, state],
   );
   const { shown, sentinel } = useIncremental(view?.items.length ?? 0, BATCH, JSON.stringify(state));
   const cardWidth = narrow ? 104 : 168;
@@ -211,6 +218,7 @@ export function AlbumScreen() {
               <FilterChip
                 key={filter.id}
                 label={filter.label}
+                count={filter.count}
                 on={state.filter === filter.id}
                 onPick={() => setState((s) => ({ ...s, filter: filter.id as AlbumFilter }))}
               />
@@ -354,6 +362,7 @@ function OwnedTile({
       aria-label={item.aria}
     >
       <Card card={item.card} collectionName={item.collectionName} width={width} />
+      {item.fresh && <span className={styles.fresh}>Nouveau</span>}
       {item.quantity > 1 && <span className={styles.quantity}>×{item.quantity}</span>}
       <span className={`${styles.mastery} ${styles[item.level]}`}>
         <span className={styles.dot} />
@@ -417,11 +426,14 @@ function RarityChip({
 
 function FilterChip({
   label,
+  count = null,
   on,
   muted = false,
   onPick,
 }: {
   readonly label: string;
+  /** Shown beside the label when there is something to count. */
+  readonly count?: number | null;
   readonly on: boolean;
   readonly muted?: boolean;
   readonly onPick: () => void;
@@ -435,6 +447,7 @@ function FilterChip({
       onClick={onPick}
     >
       {label}
+      {count !== null && count > 0 && <span className={styles.filterCount}>{count}</span>}
     </button>
   );
 }

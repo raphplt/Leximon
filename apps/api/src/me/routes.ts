@@ -4,6 +4,7 @@ import {
   type BoosterWalletResponse,
   type ClaimLevelRewardResponse,
   type ClaimRefusal,
+  cardReadParamSchema,
   type DeleteAccountRefusal,
   type LevelRewardsResponse,
   type MailResponse,
@@ -25,7 +26,7 @@ import {
 } from "@leximon/contract";
 import { GUEST_SCHEDULE, guestBoostersLeft, guestRulesAt, levelOf } from "@leximon/core";
 import { schema } from "@leximon/db";
-import { and, asc, eq, gt, or, sql } from "drizzle-orm";
+import { and, asc, eq, gt, isNull, or, sql } from "drizzle-orm";
 import { type Context, Hono } from "hono";
 import { z } from "zod";
 import { ADMIN_ROLE } from "../auth";
@@ -160,6 +161,7 @@ export function meRoutes() {
         variant: userCards.variant,
         quantity: userCards.quantity,
         firstObtainedAt: userCards.firstObtainedAt,
+        readAt: userCards.readAt,
       })
       .from(userCards)
       .innerJoin(cards, eq(cards.id, userCards.cardId))
@@ -183,12 +185,38 @@ export function meRoutes() {
     const page = rows.slice(0, limit);
     const last = page.at(-1);
     return c.json<OwnedCardsResponse>({
-      cards: page.map((row) => ({ ...row, firstObtainedAt: row.firstObtainedAt.toISOString() })),
+      cards: page.map((row) => ({
+        ...row,
+        firstObtainedAt: row.firstObtainedAt.toISOString(),
+        readAt: row.readAt?.toISOString() ?? null,
+      })),
       nextCursor:
         rows.length > limit && last !== undefined
           ? encodeCursor({ cardId: last.cardId, variant: last.variant })
           : null,
     });
+  });
+
+  /**
+   * The player opened the card's sheet: it is no longer new. A single update with nothing read
+   * first, so a retry or two tabs at once change nothing; a card not owned has no row to mark.
+   */
+  routes.post("/cards/:cardId/read", async (c) => {
+    const cardId = cardReadParamSchema.safeParse(c.req.param("cardId"));
+    if (!cardId.success) {
+      return c.json({ error: "invalid_request" }, 400);
+    }
+    await c.var.db
+      .update(userCards)
+      .set({ readAt: new Date() })
+      .where(
+        and(
+          eq(userCards.userId, c.var.userId),
+          eq(userCards.cardId, cardId.data),
+          isNull(userCards.readAt),
+        ),
+      );
+    return c.body(null, 204);
   });
 
   // The player code is created on first request: guests who never trade never get one.

@@ -232,6 +232,11 @@ export const userCards = pgTable(
     firstObtainedAt: timestamp({ withTimezone: true }).defaultNow().notNull(),
     /** Last copy gained (booster or trade): rare cards are tradeable only a while after. */
     lastObtainedAt: timestamp({ withTimezone: true }).defaultNow().notNull(),
+    /**
+     * When the player first opened the card's sheet; `null` while the card is new to them. Kept
+     * when the last copy leaves: a card read once never turns new again.
+     */
+    readAt: timestamp({ withTimezone: true }),
   },
   (table) => [
     primaryKey({ columns: [table.userId, table.cardId, table.variant] }),

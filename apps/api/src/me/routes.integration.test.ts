@@ -156,6 +156,71 @@ describe("GET /me/cards", () => {
   });
 });
 
+describe("POST /me/cards/:cardId/read", () => {
+  function markRead(guest: Guest | null, cardId: string) {
+    const headers: Record<string, string> = { origin: TEST_ORIGIN };
+    if (guest !== null) headers["cookie"] = guest.cookie;
+    return app.request(`/me/cards/${cardId}/read`, { method: "POST", headers }, env);
+  }
+
+  async function ownedCards(guest: Guest) {
+    return ownedCardsResponseSchema.parse(await (await get(guest, "/me/cards")).json()).cards;
+  }
+
+  it("requires a session", async () => {
+    expect((await markRead(null, "test-a-common-1")).status).toBe(401);
+  });
+
+  it("lists the cards of a booster as new, until their sheet is opened", async () => {
+    const guest = await signInAsGuest(app, env);
+    await open(guest);
+    const before = await ownedCards(guest);
+    expect(before.length).toBeGreaterThan(0);
+    expect(before.every((card) => card.readAt === null)).toBe(true);
+
+    const [first] = before;
+    if (first === undefined) throw new Error("no card");
+    expect((await markRead(guest, first.cardId)).status).toBe(204);
+
+    const after = await ownedCards(guest);
+    for (const card of after) {
+      if (card.cardId === first.cardId) expect(card.readAt).not.toBeNull();
+      else expect(card.readAt).toBeNull();
+    }
+  });
+
+  it("keeps the first read mark when asked again, even at the same time", async () => {
+    const guest = await signInAsGuest(app, env);
+    await setOwnedCards(db, guest.userId, [{ cardId: "test-a-common-1", quantity: 1 }]);
+
+    const answers = await Promise.all(
+      Array.from({ length: 5 }, () => markRead(guest, "test-a-common-1")),
+    );
+    expect(answers.map((answer) => answer.status)).toEqual([204, 204, 204, 204, 204]);
+    const [first] = await ownedCards(guest);
+    expect(first?.readAt).not.toBeNull();
+
+    await markRead(guest, "test-a-common-1");
+    const [again] = await ownedCards(guest);
+    expect(again?.readAt).toBe(first?.readAt);
+  });
+
+  it("writes nothing for a card the player does not own", async () => {
+    const guest = await signInAsGuest(app, env);
+    expect((await markRead(guest, "test-a-common-1")).status).toBe(204);
+    const [row] = await db
+      .select({ total: count() })
+      .from(schema.userCards)
+      .where(eq(schema.userCards.userId, guest.userId));
+    expect(row?.total).toBe(0);
+  });
+
+  it("rejects a malformed card id", async () => {
+    const guest = await signInAsGuest(app, env);
+    expect((await markRead(guest, "Not%20A%20Slug")).status).toBe(400);
+  });
+});
+
 describe("GET /me/profile", () => {
   it("requires a session", async () => {
     expect((await get(null, "/me/profile")).status).toBe(401);

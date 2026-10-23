@@ -4,7 +4,7 @@ import {
   type MasteryLevelCode,
   RARITY_LABELS,
 } from "@leximon/contract";
-import { RARITIES, type Rarity, rarityRank } from "@leximon/core";
+import { gameDayOf, RARITIES, type Rarity, rarityRank } from "@leximon/core";
 import { formatCount } from "./format";
 
 /** The album: what the player owns, collection by collection. */
@@ -26,11 +26,27 @@ export interface WordMemory {
   readonly lastReviewedAt: number | null;
 }
 
-export const ALBUM_FILTERS = ["all", "doubles", "review", "gilded", "missing"] as const;
+/** When the player first got a card, and whether they have opened its sheet since. */
+export interface CardDate {
+  readonly firstObtainedAt: number;
+  readonly read: boolean;
+}
+
+export const ALBUM_FILTERS = [
+  "all",
+  "new",
+  "today",
+  "doubles",
+  "review",
+  "gilded",
+  "missing",
+] as const;
 export type AlbumFilter = (typeof ALBUM_FILTERS)[number];
 
 const FILTER_LABELS: Readonly<Record<AlbumFilter, string>> = {
   all: "Toutes",
+  new: "Nouveaux",
+  today: "Aujourd'hui",
   doubles: "Doubles",
   review: "À réviser",
   gilded: "Dorure",
@@ -74,6 +90,8 @@ export interface AlbumInput {
   /** Copies owned, by card id. */
   readonly owned: ReadonlyMap<string, number>;
   readonly memory: ReadonlyMap<string, WordMemory>;
+  /** Unknown cards (not read yet from the server) are neither new nor from today. */
+  readonly dates: ReadonlyMap<string, CardDate>;
   readonly now: number;
 }
 
@@ -101,6 +119,8 @@ export interface OwnedItem {
   readonly quantity: number;
   readonly level: MasteryLevelCode;
   readonly levelLabel: string;
+  /** Its sheet was never opened: tagged « Nouveau ». */
+  readonly fresh: boolean;
   readonly aria: string;
 }
 
@@ -125,7 +145,12 @@ export interface AlbumView {
   readonly headline: { readonly owned: string; readonly total: string };
   readonly tabs: readonly AlbumTab[];
   readonly rarities: readonly RarityChip[];
-  readonly filters: readonly { readonly id: AlbumFilter; readonly label: string }[];
+  readonly filters: readonly {
+    readonly id: AlbumFilter;
+    readonly label: string;
+    /** Cards it would show, for the filters worth a count (« Nouveaux »); `null` otherwise. */
+    readonly count: number | null;
+  }[];
   readonly themes: readonly { readonly id: string; readonly label: string }[];
   readonly items: readonly AlbumItem[];
   /** A search runs through every collection; the tabs then stand aside. */
@@ -153,15 +178,24 @@ export function isToReview(memory: WordMemory | undefined, now: number): boolean
   return memory === undefined || memory.due <= now;
 }
 
+export function isFresh(date: CardDate | undefined): boolean {
+  return date !== undefined && !date.read;
+}
+
 function matchesFilter(
   filter: AlbumFilter,
   quantity: number,
   memory: WordMemory | undefined,
+  date: CardDate | undefined,
   now: number,
 ): boolean {
   switch (filter) {
     case "all":
       return true;
+    case "new":
+      return isFresh(date);
+    case "today":
+      return date !== undefined && gameDayOf(date.firstObtainedAt).key === gameDayOf(now).key;
     case "doubles":
       return quantity > 1;
     case "review":
@@ -178,10 +212,12 @@ function ownedItem(
   collectionName: string,
   quantity: number,
   memory: WordMemory | undefined,
+  date: CardDate | undefined,
 ): OwnedItem {
   const level = memory?.level ?? "sketch";
   const levelLabel = MASTERY_LEVEL_LABELS[level];
   const copies = quantity > 1 ? `, ${quantity} exemplaires` : "";
+  const fresh = isFresh(date);
   return {
     kind: "owned",
     card,
@@ -189,12 +225,13 @@ function ownedItem(
     quantity,
     level,
     levelLabel,
-    aria: `${card.word}, ${RARITY_LABELS[card.rarity]}, ${levelLabel}${copies}`,
+    fresh,
+    aria: `${card.word}, ${RARITY_LABELS[card.rarity]}, ${levelLabel}${copies}${fresh ? ", nouveau" : ""}`,
   };
 }
 
 export function albumView(input: AlbumInput, state: AlbumState): AlbumView {
-  const { collections, owned, memory, now } = input;
+  const { collections, owned, memory, dates, now } = input;
   const collectionTabs = collections.map((collection) => {
     const found = collection.cards.filter((card) => owned.has(card.id)).length;
     const total = collection.cards.length;
@@ -222,7 +259,12 @@ export function albumView(input: AlbumInput, state: AlbumState): AlbumView {
     ...collectionTabs,
   ];
 
-  const filters = ALBUM_FILTERS.map((id) => ({ id, label: FILTER_LABELS[id] }));
+  const freshCount = [...owned.keys()].filter((id) => isFresh(dates.get(id))).length;
+  const filters = ALBUM_FILTERS.map((id) => ({
+    id,
+    label: FILTER_LABELS[id],
+    count: id === "new" ? freshCount : null,
+  }));
   const query = foldSearch(state.search);
 
   if (query !== "") {
@@ -234,7 +276,9 @@ export function albumView(input: AlbumInput, state: AlbumState): AlbumView {
           .map((card) => ({ card, name: collection.name })),
       )
       .sort((a, b) => albumOrder(a.card, b.card))
-      .map(({ card, name }) => ownedItem(card, name, owned.get(card.id) ?? 1, memory.get(card.id)));
+      .map(({ card, name }) =>
+        ownedItem(card, name, owned.get(card.id) ?? 1, memory.get(card.id), dates.get(card.id)),
+      );
     return {
       headline,
       tabs,
@@ -298,10 +342,11 @@ export function albumView(input: AlbumInput, state: AlbumState): AlbumView {
       : inView.flatMap(({ card, name }) => {
           const quantity = owned.get(card.id);
           const word = memory.get(card.id);
-          if (quantity === undefined || !matchesFilter(state.filter, quantity, word, now)) {
+          const date = dates.get(card.id);
+          if (quantity === undefined || !matchesFilter(state.filter, quantity, word, date, now)) {
             return [];
           }
-          return [ownedItem(card, name, quantity, word)];
+          return [ownedItem(card, name, quantity, word, date)];
         });
 
   const missing =

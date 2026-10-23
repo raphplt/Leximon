@@ -176,6 +176,13 @@
       "when": 1792765466105,
       "tag": "0024_challenge_typed_format",
       "breakpoints": true
+    },
+    {
+      "idx": 25,
+      "version": "7",
+      "when": 1792785848372,
+      "tag": "0025_user_cards_read_at",
+      "breakpoints": true
     }
   ]
 }

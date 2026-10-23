@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import { ALL_COLLECTIONS, type AlbumState, albumView, foldSearch, themeLabel } from "./album";
 
 const NOW = Date.parse("2026-10-21T12:00:00Z");
+const DAY = 24 * 60 * 60 * 1000;
 
 function card(id: string, rarity: CatalogCard["rarity"], themes: string[] = []): CatalogCard {
   return {
@@ -56,6 +57,11 @@ const input = {
       { level: "sketch" as const, due: NOW - 1000, stability: 1, lastReviewedAt: NOW - 2000 },
     ],
   ]),
+  dates: new Map([
+    ["grigou", { firstObtainedAt: NOW - 3 * DAY, read: true }],
+    ["bélître", { firstObtainedAt: NOW - 3 * DAY, read: false }],
+    ["fouacier", { firstObtainedAt: NOW - 60_000, read: true }],
+  ]),
   now: NOW,
 };
 
@@ -100,6 +106,32 @@ describe("album", () => {
       "1/1",
       "1/2",
     ]);
+  });
+
+  it("tags the cards whose sheet was never opened, and counts them on their filter", () => {
+    const view = albumView(input, { ...STATE, collectionId: ALL_COLLECTIONS });
+    const fresh = view.items.flatMap((item) =>
+      item.kind === "owned" && item.fresh ? [item.card.id] : [],
+    );
+    expect(fresh).toEqual(["bélître"]);
+    expect(view.filters.find((filter) => filter.id === "new")?.count).toBe(1);
+    expect(view.filters.find((filter) => filter.id === "all")?.count).toBeNull();
+  });
+
+  it("filters the new cards, and those first got today in Paris", () => {
+    const ids = (filter: AlbumState["filter"], now = NOW) =>
+      albumView({ ...input, now }, { ...STATE, collectionId: ALL_COLLECTIONS, filter }).items.map(
+        (item) => (item.kind === "owned" ? item.card.id : item.kind),
+      );
+    expect(ids("new")).toEqual(["bélître"]);
+    expect(ids("today")).toEqual(["fouacier"]);
+    // 23 h 30 in Paris the next day, 21 h 30 in UTC: no longer today.
+    expect(ids("today", Date.parse("2026-10-22T21:30:00Z"))).toEqual([]);
+  });
+
+  it("knows nothing new before the dates are read", () => {
+    const view = albumView({ ...input, dates: new Map() }, { ...STATE, filter: "new" });
+    expect(view.items).toEqual([]);
   });
 
   it("filters doubles, words to review, gilded words, missing ones, rarity and theme", () => {

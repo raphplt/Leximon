@@ -210,8 +210,13 @@ Compte A : `pnpm dev:player contact@leximon.fr --level 21` pour avoir une série
 - **Retour :**
 
 ### ALB-02 · Filtres
-- **Faire :** essayer Toutes, Doubles, À réviser, Dorure, Manquantes, et quelques thèmes.
+- **Faire :** essayer Toutes, Nouveaux, Aujourd'hui, Doubles, À réviser, Dorure, Manquantes, et quelques thèmes.
 - **Attendu :** la grille suit. Manquantes : emplacements « ? ». Une tuile « N mots à trouver » mène à Jouer.
+- **Retour :**
+
+### ALB-09 · Nouveaux et Aujourd'hui
+- **Faire :** ouvrir un sachet, puis aller dans l'album sans toucher les cartes du résumé. Ouvrir ensuite la fiche d'une des cartes nouvelles, la fermer, recharger la page.
+- **Attendu :** les cartes du sachet jamais vues avant portent « Nouveau » ; le filtre « Nouveaux » montre leur nombre et ne garde qu'elles, « Aujourd'hui » garde les cartes obtenues pour la première fois aujourd'hui (heure de Paris). Une fiche ouverte (depuis l'album, le résumé du sachet ou ailleurs) retire le tag, aussitôt et après rechargement. Un deuxième exemplaire d'une carte lue ne la remet pas en « Nouveau ». Les cartes possédées avant cette version ne sont pas marquées.
 - **Retour :**
 
 ### ALB-03 · Défilement

@@ -22,7 +22,7 @@ import { HoloCard } from "@/components/holo-card";
 import { useHoloLight } from "@/components/use-holo-light";
 import { useNarrow } from "@/lib/use-narrow";
 import { useNow } from "@/lib/use-now";
-import { ownedCards, wordMemory } from "@/player/collection";
+import { noteCardRead, ownedCards, wordMemory } from "@/player/collection";
 import { useShared } from "@/player/resource";
 import { useProfileActions } from "@/profile/use-profile-actions";
 import { useProgress } from "@/progress/use-progress";
@@ -97,6 +97,10 @@ function SheetBody({
   const pins = useProfileActions();
 
   const quantity = owned?.get(card.id) ?? 0;
+  // Opening the sheet is reading the card: the album stops calling it new.
+  useEffect(() => {
+    if (quantity > 0) noteCardRead(card.id);
+  }, [card.id, quantity]);
   const word = memory?.get(card.id);
   const mastery = masteryView(word, now);
   const review = reviewLabel(word, now);

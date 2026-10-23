@@ -255,6 +255,30 @@
   transform: translateY(-4px);
 }
 
+/* Same tag as in the sachet's recap: the card waits to be read. */
+.fresh {
+  position: absolute;
+  top: -8px;
+  left: -6px;
+  padding: 1px 7px;
+  border-radius: var(--lx-radius-pill);
+  background: var(--lx-color-accent);
+  color: var(--lx-color-accent-ink);
+  font-size: 11px;
+  font-weight: 800;
+  pointer-events: none;
+}
+
+.filterCount {
+  margin-left: 6px;
+  padding: 0 6px;
+  border-radius: var(--lx-radius-pill);
+  background: var(--lx-color-accent);
+  color: var(--lx-color-accent-ink);
+  font-size: 11px;
+  font-weight: 800;
+}
+
 .quantity {
   position: absolute;
   top: -6px;

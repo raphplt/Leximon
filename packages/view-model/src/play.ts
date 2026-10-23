@@ -195,22 +195,26 @@ export const SLIPPING_AWAY = { after: " est en train de t'échapper.", action: "
  */
 export const SLIPPING_RIDDLE = "Un mot est en train de t'échapper.";
 
-/** Above a word of the album when none is slipping away. */
-export const OWN_WORD = { kicker: "Un de tes mots", action: "Relire" } as const;
+/** Above a word of the album when none is slipping away; « Lire » for a card never opened. */
+export const OWN_WORD = { kicker: "Un de tes mots", action: "Relire", first: "Lire" } as const;
 
 export interface WordUnderCounter {
   readonly cardId: string;
-  /** `slipping`: due for review; `owned`: one of the player's words, to read again. */
+  /** `slipping`: due for review; `owned`: one of the player's words, to read (again). */
   readonly kind: "slipping" | "owned";
+  /** A card whose sheet was never opened. */
+  readonly fresh: boolean;
 }
 
 /**
  * The word shown under the counter, another at each visit: one of the words due for review,
- * most overdue first, else one of the player's words. `null` without any card.
+ * most overdue first, else one of the player's words, those never read first. `null` without
+ * any card.
  */
 export function wordUnderCounter(
   memory: ReadonlyMap<string, { readonly due: number }>,
   owned: ReadonlyMap<string, number>,
+  fresh: (cardId: string) => boolean,
   now: EpochMs,
   visit: number,
 ): WordUnderCounter | null {
@@ -219,13 +223,14 @@ export function wordUnderCounter(
     .sort((a, b) => a[1].due - b[1].due || a[0].localeCompare(b[0]))
     .map(([id]) => id);
   const slipping = pickAt(due, visit);
-  if (slipping !== undefined) return { cardId: slipping, kind: "slipping" };
+  if (slipping !== undefined) return { cardId: slipping, kind: "slipping", fresh: fresh(slipping) };
   const mine = [...owned.entries()]
     .filter(([, quantity]) => quantity > 0)
     .map(([id]) => id)
     .sort();
-  const word = pickAt(mine, visit);
-  return word === undefined ? null : { cardId: word, kind: "owned" };
+  const unread = mine.filter(fresh);
+  const word = pickAt(unread.length > 0 ? unread : mine, visit);
+  return word === undefined ? null : { cardId: word, kind: "owned", fresh: fresh(word) };
 }
 
 function pickAt<T>(items: readonly T[], visit: number): T | undefined {

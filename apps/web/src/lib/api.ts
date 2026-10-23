@@ -299,6 +299,14 @@ export async function fetchMail(before?: number): Promise<MailResponse> {
   return parse(response, mailResponseSchema);
 }
 
+/** The player opened the card's sheet: it is no longer new. */
+export async function markCardRead(cardId: string): Promise<void> {
+  const response = await sendAsPlayer(`/me/cards/${encodeURIComponent(cardId)}/read`, {
+    method: "POST",
+  });
+  if (!response.ok) throw new ApiError("card_not_marked", response.status);
+}
+
 /** Marks every letter up to `upTo` read; returns how many stay unread. */
 export async function markMailRead(upTo: number): Promise<number> {
   const response = await sendAsPlayer("/me/mail/read", {
