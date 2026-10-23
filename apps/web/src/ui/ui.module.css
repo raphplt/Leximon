@@ -316,7 +316,11 @@ a.chip:hover {
   color: var(--lx-color-accent-ink);
 }
 
+/* Closed by the level: hollow and quiet, so that what is open stands out. */
 .fabLocked {
+  border-style: dashed;
+  background: rgba(27, 31, 51, 0.45);
+  box-shadow: none;
   color: var(--lx-color-text-muted);
 }
 
@@ -325,6 +329,10 @@ a.chip:hover {
   font-weight: 800;
   text-shadow: 0 1px 0 rgba(0, 0, 0, 0.5);
   white-space: nowrap;
+}
+
+.fab:has(.fabLocked) .fabLabel {
+  color: var(--lx-color-text-muted);
 }
 
 .glow {

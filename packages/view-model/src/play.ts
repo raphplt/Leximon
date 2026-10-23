@@ -1,5 +1,12 @@
 import type { BoosterSource, BoosterWalletResponse } from "@leximon/contract";
-import { canOpenCollection, type EpochMs, UNLOCK_SCHEDULE, unlockRulesAt } from "@leximon/core";
+import {
+  canOpenCollection,
+  DRAW_SCHEDULE,
+  drawRulesAt,
+  type EpochMs,
+  UNLOCK_SCHEDULE,
+  unlockRulesAt,
+} from "@leximon/core";
 import { levelBadge, levelsOfFeatures } from "./features";
 import { formatWait } from "./format";
 
@@ -140,6 +147,11 @@ export function pickCollection(
   const found = choices.find((c) => c.id === wanted && c.lock === null);
   // The starter sachet is always first and always open.
   return found ?? (choices[0] as CollectionChoice);
+}
+
+/** « 5 cartes », printed on the sachet as on a real booster. */
+export function sachetContents(now: EpochMs): string {
+  return `${drawRulesAt(DRAW_SCHEDULE, now).cardsPerBooster} cartes`;
 }
 
 // --- Word slipping away --------------------------------------------------------------------

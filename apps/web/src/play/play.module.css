@@ -10,8 +10,10 @@
   flex-direction: column;
   gap: 22px;
   max-width: 1120px;
+  /* The whole window under the top bar (70 px and its border): the counter takes what is left. */
+  min-height: max(600px, calc(100dvh - 71px));
   margin: 0 auto;
-  padding: 24px 32px 48px;
+  padding: 24px 32px 32px;
 }
 
 /* --- Level band --- */
@@ -146,10 +148,10 @@
 /* --- The floor: the counter between its two rows of buttons --- */
 
 .floor {
+  flex: 1;
   display: grid;
   grid-template-columns: 78px minmax(0, 600px) 78px;
   justify-content: center;
-  align-items: start;
   gap: 36px;
 }
 
@@ -159,7 +161,8 @@
   display: flex;
   flex-direction: column;
   gap: 18px;
-  padding-top: 26px;
+  /* Level with the top of the sachet, on both sides. */
+  padding-top: 96px;
 }
 
 .fabsLeft {
@@ -212,6 +215,20 @@
     inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
 
+/* The beam of the lamp hanging over the counter. */
+.counter::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 0;
+  width: 90%;
+  height: 82%;
+  translate: -50% 0;
+  background: linear-gradient(180deg, rgba(255, 220, 140, 0.09), rgba(255, 220, 140, 0) 85%);
+  clip-path: polygon(40% 0, 60% 0, 100% 100%, 0 100%);
+  pointer-events: none;
+}
+
 .counterHead {
   position: relative;
   z-index: 2;
@@ -219,41 +236,49 @@
   justify-content: space-between;
   align-items: center;
   gap: 12px;
-  padding: 18px 20px 0;
+  padding: 20px 22px 0;
 }
 
 .stage {
   position: relative;
+  flex: 1;
+  min-height: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 12px;
-  padding: 8px 0 18px;
+  gap: 18px;
+  padding: 36px 0 28px;
 }
 
-/* The lamp over the counter. */
+/* The pool of light on the counter, where the pouch lies. */
 .stage::before {
   content: "";
   position: absolute;
   left: 50%;
-  top: 46%;
-  width: 420px;
-  height: 420px;
+  top: 48%;
+  width: 440px;
+  height: 440px;
   translate: -50% -50%;
   border-radius: 50%;
   background: radial-gradient(circle, rgba(255, 210, 77, 0.12), rgba(255, 210, 77, 0) 66%);
   pointer-events: none;
 }
 
-/* The pouch takes the height of its slot (`sachet.module.css`): a little more on a tall screen. */
+/*
+ * The pouch takes the height of its slot (`sachet.module.css`): the room the counter has left,
+ * with a ceiling so that it never takes over the screen.
+ */
 .sachet {
   position: relative;
+  flex: 1 1 0;
   display: flex;
   flex-direction: column;
   width: 100%;
-  height: clamp(330px, 100dvh - 520px, 420px);
+  min-height: 300px;
+  max-height: 460px;
   --sachet-min-height: 0px;
+  --sachet-max-unit: 1.05px;
 }
 
 /* The tablet in front of the counter, where the button lies. */
@@ -484,9 +509,47 @@
   }
 }
 
+/* Short windows (a laptop): everything tightens so that the button stays in sight. */
+@media (min-width: 760px) and (max-height: 820px) {
+  .page {
+    gap: 14px;
+    padding-top: 14px;
+    padding-bottom: 18px;
+  }
+
+  .strip {
+    min-height: 0;
+    padding-block: 10px;
+  }
+
+  .counterHead {
+    padding-top: 14px;
+  }
+
+  .stage {
+    gap: 12px;
+    padding: 18px 0 14px;
+  }
+
+  .sachet {
+    min-height: 240px;
+  }
+
+  .shelf {
+    padding: 14px 20px 16px;
+  }
+
+  .fabsLeft,
+  .fabsRight {
+    padding-top: 60px;
+    gap: 12px;
+  }
+}
+
 /* Phones. */
 @media (max-width: 759px) {
   .page {
+    min-height: 0;
     gap: 14px;
     padding: 8px 14px 28px;
   }
@@ -542,7 +605,12 @@
     display: flex;
   }
 
+  .stage {
+    padding: 22px 0 20px;
+  }
+
   .sachet {
+    flex: none;
     max-width: 220px;
     height: 300px;
   }

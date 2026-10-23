@@ -5,6 +5,7 @@ import {
   pickCollection,
   playFabs,
   reserveView,
+  sachetContents,
   shortName,
   stockView,
 } from "./play";
@@ -106,5 +107,11 @@ describe("floating buttons", () => {
     const later = playFabs({ level: 15, coffrets: 0, mail: 0 }, NOW);
     expect(later.left.every((f) => f.lock === null)).toBe(true);
     expect(later.right.find((f) => f.id === "coffrets")?.glow).toBe(false);
+  });
+});
+
+describe("sachet", () => {
+  it("prints how many cards it holds", () => {
+    expect(sachetContents(NOW)).toBe("5 cartes");
   });
 });

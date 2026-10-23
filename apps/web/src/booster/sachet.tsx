@@ -1,10 +1,11 @@
 "use client";
 
+import { sachetContents } from "@leximon/view-model";
 import Image from "next/image";
 import type { CSSProperties } from "react";
 import { useHoloLight } from "@/components/use-holo-light";
 import { play, vibrate } from "./feedback";
-import { PackEmblem, packVariables } from "./pack-looks";
+import { PackSeal, packVariables } from "./pack-looks";
 import type { PackProps } from "./pack-shape";
 import styles from "./sachet.module.css";
 import { useTear } from "./use-tear";
@@ -14,8 +15,8 @@ const SLICES = [-4, -2, 0, 2, 4] as const;
 
 /**
  * The pack as a classic booster: a soft foil pouch crimped at both ends, torn across the top.
- * Touching the pouch opens it too. Each collection prints its own colors, motif and emblem;
- * the house seal stays the same on all of them.
+ * Touching the pouch opens it too. Each collection prints its own colors, motif and gold seal,
+ * its name on a kraft ribbon; the house seal stays the same on all of them.
  *
  * The pouch is a small 3D object: a back, a few slices for its thickness and a front, tilted by
  * the light of `useHoloLight` like a held card, swaying on its own until the pointer takes it.
@@ -77,11 +78,12 @@ export function Sachet({ state, onTearStart, onOpen, collection }: PackProps) {
               <span className={styles.brand} aria-hidden="true">
                 Leximon
               </span>
-              <span className={styles.medal} aria-hidden="true">
-                <PackEmblem collectionId={collection.id} className={styles.emblem} />
+              <PackSeal collectionId={collection.id} className={styles.seal} />
+              <span className={styles.ribbon} aria-hidden="true">
+                <span className={styles.name}>{collection.name}</span>
               </span>
-              <span className={styles.name} aria-hidden="true">
-                {collection.name}
+              <span className={styles.contents} aria-hidden="true">
+                {sachetContents(Date.now())}
               </span>
               <Image
                 src="/logo-mark.svg"

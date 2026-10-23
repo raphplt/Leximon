@@ -107,7 +107,7 @@ Compte A, n'importe quel niveau.
 
 ### JOU-01 · Écran Jouer
 - **Faire :** ouvrir `/jouer` en 1440 px puis en 390 px.
-- **Attendu :** en 1440 px, en haut, le bandeau du niveau : médaille, « Niveau 16 · titre », barre d'XP et « 260 / 775 XP », les 4 prochaines récompenses reliées par un trait, « N coffrets » s'il y en a (les récompenses disparaissent sous 1060 px). Dessous, le comptoir, plus clair que la page : le sachet sous une lampe, assez petit pour que l'écran tienne sans défiler en 1440 × 900, et le bouton sur une tablette sombre. De part et d'autre, des boutons ronds : à gauche Clan (avec l'emblème de ton clan si tu en as un), Discussion, Joutes, avec le niveau qui les ouvre ; à droite Défi du jour avec son anneau, Réglages. Ni courrier ni coffrets dans ces boutons : la barre du haut et le bandeau les ont déjà. En 390 px, la coque mobile : onglets en bas, bandeau en haut, boutons flottants de part et d'autre du sachet, avec Coffrets en plus. Les panneaux apparaissent en fondu, sans glisser.
+- **Attendu :** en 1440 px, en haut, le bandeau du niveau : médaille, « Niveau 16 · titre », barre d'XP et « 260 / 775 XP », les 4 prochaines récompenses reliées par un trait, « N coffrets » s'il y en a (les récompenses disparaissent sous 1060 px). Dessous, le comptoir, plus clair que la page, qui descend jusqu'au bas de la fenêtre : le faisceau d'une lampe, le sachet dans sa flaque de lumière avec de l'air au-dessus et en dessous, et le bouton sur une tablette sombre. Tout tient sans défiler, en 1440 × 900 comme en 1280 × 720 (marges resserrées). De part et d'autre, des boutons ronds : à gauche Clan (avec l'emblème de ton clan si tu en as un), Discussion, Joutes, creux et en pointillés tant que le niveau ne les ouvre pas ; à droite Défi du jour avec son anneau, Réglages. Ni courrier ni coffrets dans ces boutons : la barre du haut et le bandeau les ont déjà. En 390 px, la coque mobile : onglets en bas, bandeau en haut, boutons flottants de part et d'autre du sachet, avec Coffrets en plus. Les panneaux apparaissent en fondu, sans glisser.
 - **Retour :**
 
 ### JOU-02 · Stock
@@ -116,7 +116,7 @@ Compte A, n'importe quel niveau.
 
 ### JOU-03 · Choix de la collection
 - **Faire :** avec un compte de niveau 1 ou 2, puis de niveau 3 ou plus.
-- **Attendu :** avant le niveau 3, seul le sachet des Fondateurs, en premier ; les autres collections portent « Niv. 3 ». Ensuite, les pastilles en haut à gauche du comptoir, chacune avec un rond à la couleur de sa collection, changent le sachet : celle choisie est claire, les fermées grisées avec leur niveau. Chaque collection a son sachet : couleur de son dos de carte, motif, emblème (livre et plume pour les Fondateurs, masques pour Caractères, outils pour Métiers), son nom, et le sceau du logo sur le flanc.
+- **Attendu :** avant le niveau 3, seul le sachet des Fondateurs, en premier ; les autres collections portent « Niv. 3 ». Ensuite, les pastilles en haut à gauche du comptoir, chacune avec un rond à la couleur de sa collection, changent le sachet : celle choisie est claire, les fermées grisées avec leur niveau. Chaque collection a son sachet : couleur de son dos de carte, motif, un sceau doré à festons avec l'emblème gravé (livre et plume pour les Fondateurs, masques pour Caractères, outils pour Métiers), son nom sur un ruban kraft, « 5 cartes », et le sceau du logo en bas à droite.
 - **Retour :**
 
 ### JOU-04 · Ouverture
