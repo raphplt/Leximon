@@ -100,9 +100,9 @@ Noms des raretés : Courant (encore compris de beaucoup), Peu courant (vieilli),
 
 | # | Sujet | Règle | Statut |
 |---|---|---|---|
-| P31 | Ce qu'on révise | Seulement les mots que le joueur possède. La révision espacée (FSRS) choisit quand un mot revient ; un mot oublié revient le lendemain. | Tranché le 2026-10-20 |
+| P31 | Ce qu'on révise | Seulement les mots que le joueur possède. La révision espacée (FSRS) choisit quand un mot revient ; un mot oublié revient le lendemain. Un mot neuf n'est demandé que 4 h après sa première obtention, et la fiche d'une carte ne lance pas de question : la carte vient d'en montrer la réponse. | Tranché le 2026-10-20 ; délai de 4 h et fiche sans révision le 2026-10-23, durée provisoire |
 | P32 | Formats | QCM à 4 choix : « trouver la définition » ou « trouver le mot ». Les mauvais choix viennent de la même collection. | Tranché le 2026-10-20 |
-| P33 | Niveaux | Esquisse au départ, Encre quand le mot est retenu sur 7 jours, Dorure sur 30 jours (stabilité mémoire FSRS, objectif 90 % de rappel, intervalle maximal 365 jours). Un niveau ne redescend jamais. La maîtrise est rangée par mot : un échange ne la touche pas. | Provisoire |
+| P33 | Niveaux | Esquisse au départ. Encre sur une bonne réponse donnée au moins 7 jours après la révision précédente, Dorure au moins 30 jours après, un niveau par réponse : la rétention est prouvée, pas prédite, et un coup de chance ne saute pas deux niveaux. FSRS choisit quand le mot revient (objectif 90 % de rappel, intervalle maximal 365 jours). Un niveau ne redescend jamais. La maîtrise est rangée par mot : un échange ne la touche pas. | Provisoire ; rétention prouvée au lieu de la stabilité FSRS le 2026-10-23 |
 | P29 | Plis bonus | 1 pli bonus le premier jour (heure de Paris) où le joueur répond à au moins 5 questions de défi avec au moins 3 bonnes réponses, une fois par jour ; 1 pli bonus chaque fois qu'une carte atteint la Dorure. Ils vont dans la réserve (P23). | Tranché le 2026-10-20 |
 
 Le catalogue étant public, un tricheur peut trouver les bonnes réponses : ce sont les plafonds (une fois par jour, Dorure espacée de semaines par FSRS) qui limitent ce qu'il gagne, pas le secret des réponses.

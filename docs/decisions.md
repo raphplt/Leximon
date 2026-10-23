@@ -261,7 +261,7 @@ Pour ajouter ou modifier une décision, utiliser le skill `decision`.
 
 ## D-025 · Défis : révision espacée FSRS (ts-fsrs), niveau tiré de la stabilité
 
-- **Statut :** Acceptée (2026-10-20), choisie par le propriétaire.
+- **Statut :** Acceptée (2026-10-20), choisie par le propriétaire ; niveau tiré de la stabilité remplacé par D-046.
 - **Choix :** la dépendance `ts-fsrs` (MIT, sans dépendance) planifie les révisions dans `packages/core`, sans flou aléatoire ni étapes de quelques minutes : un mot oublié revient le lendemain. Le niveau d'une carte suit la stabilité mémoire mesurée par FSRS : Encre à 7 jours, Dorure à 30 jours, sans jamais redescendre. Formats du MVP : QCM à quatre choix, « trouver la définition » ou « trouver le mot », les mauvais choix venant de la même collection. Réglages datés dans `MASTERY_SCHEDULE`.
 - **Pourquoi :** FSRS est la référence actuelle de la révision espacée ; une stabilité mémoire mesurée donne un niveau qui veut dire « je connais ce mot », pas « j'ai beaucoup joué ».
 - **Conséquences :**
@@ -432,3 +432,10 @@ Pour ajouter ou modifier une décision, utiliser le skill `decision`.
 - **Choix :** les erreurs sont celles que Cloudflare relève déjà (Workers Logs et Issues : exceptions, réponses 5xx, `console.error`), sans outil tiers. Chaque matin, la tâche de maintenance lit les erreurs des 24 h par l'API d'observabilité de Cloudflare et poste un résumé sur un webhook Discord, avec quelques chiffres d'activité tirés de l'admin (D-042).
 - **Pourquoi :** gratuit, déjà en place, aucune donnée de joueur envoyée à un tiers. Un Sentry n'apporterait que les erreurs du navigateur, pas assez pour une bêta fermée.
 - **Conséquences :** trois secrets facultatifs (`DISCORD_WEBHOOK_URL`, `CLOUDFLARE_ACCOUNT_ID`, `OBSERVABILITY_TOKEN`). Les journaux d'erreur ne portent jamais de donnée personnelle : le message d'une requête SQL ratée est réduit à son texte, sans paramètres. Les erreurs du navigateur ne sont pas suivies.
+
+## D-046 · Défis : niveau gagné sur une rétention prouvée, délai avant un mot neuf
+
+- **Statut :** Acceptée (2026-10-23), choix du propriétaire ; remplace le niveau tiré de la stabilité de D-025.
+- **Choix :** FSRS choisit toujours quand un mot revient, mais un niveau se gagne sur une bonne réponse donnée au moins 7 jours (Encre), puis 30 jours (Dorure), après la révision précédente, un niveau par réponse. Un mot jamais révisé n'est demandé que 4 h après sa première obtention (P31, P33). Nouvelle période datée de `MASTERY_SCHEDULE` (`levelBy`, `newWordDelayMs`).
+- **Pourquoi :** FSRS est calibré pour un rappel de tête, pas pour un QCM où l'on devine juste une fois sur quatre : la stabilité prédite donnait la Dorure au 17e jour, sur une rétention jamais vérifiée, et un mot venait d'être lu sur sa carte quand on le révisait.
+- **Conséquences :** Dorure vers 2 mois et demi au lieu de 17 jours, donc moins de plis bonus. Une réponse trop tôt sur un mot neuf est refusée (409 `challenge_not_due`) sans rien écrire. `GET /me/mastery` donne en plus `lastReviewedAt`. La fiche d'une carte ne lance plus de question.

@@ -230,7 +230,7 @@ Compte A : `pnpm dev:player contact@leximon.fr --level 21` pour avoir une série
 - **Retour :**
 
 ### ALB-07 · Actions de la fiche
-- **Attendu :** « Réviser ce mot » lance une révision ; « Proposer en échange » seulement avec un double et le niveau 5, et ouvre la nouvelle offre avec la carte choisie ; « Épingler » la met sur le profil ; « Partager » donne le texte (« Talpinette. Introuvable dans les livres d'aujourd'hui. Moi, je l'ai. ») et le lien de la page de la carte. Sur ordinateur : « Copié, avec le lien de la carte. » ; sur téléphone : la feuille de partage, avec l'image de la carte quand l'appli l'accepte.
+- **Attendu :** pas de bouton de révision, la fiche dit où en est le mot (« Il t'attend dans les défis. », « Revient dans 3 jours. ») ; « Proposer en échange » seulement avec un double et le niveau 5, et ouvre la nouvelle offre avec la carte choisie ; « Épingler » la met sur le profil ; « Partager » donne le texte (« Talpinette. Introuvable dans les livres d'aujourd'hui. Moi, je l'ai. ») et le lien de la page de la carte. Sur ordinateur : « Copié, avec le lien de la carte. » ; sur téléphone : la feuille de partage, avec l'image de la carte quand l'appli l'accepte.
 - **Retour :**
 
 ### ALB-08 · Page publique d'une carte
