@@ -31,6 +31,7 @@ export function Sachet({
   collection,
   refill = null,
   refillLabel = null,
+  still = false,
 }: PackProps) {
   const sealed = state === "sealed";
   const refilled = useRefilled(state, refill);
@@ -58,7 +59,7 @@ export function Sachet({
     <div className={styles.slot}>
       <div
         ref={light.ref}
-        className={styles.scene}
+        className={`${styles.scene} ${still ? styles.still : ""}`}
         style={packVariables(collection)}
         onPointerMove={light.onPointerMove}
         onPointerLeave={light.onPointerLeave}

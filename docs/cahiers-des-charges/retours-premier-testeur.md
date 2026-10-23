@@ -173,6 +173,8 @@ Le plus important : sans lui, on peut ouvrir des sachets sans jamais lire un mot
 
 *Fait le 2026-10-23, avec les lignes validées par le propriétaire, publiées dans la version `2026-10-23.2` du catalogue (seules les lignes changent par rapport à la `.1`). Écarts : la ligne vit dans le fichier de la collection, pas dans la base, puisque l'affichage ne lit jamais la base ; sur ordinateur, la ligne et le nom du sachet du comptoir sont en haut du comptoir, et ceux des sachets voisins sur leur côté extérieur (dessous, ils passaient sous le sachet du comptoir) ; sur téléphone, les sachets fermés sont des pastilles à cadenas sous le nom, des puces avec les noms ne tenaient pas entre les boutons flottants.*
 
+*Repris le 2026-10-23 après la relecture du propriétaire : la bulle « Choisis ta collection » et les sachets qui grossissaient deux fois à l'arrivée sont retirés, comme les légendes à côté des sachets voisins (coupées sur un grand écran). À la place, deux flèches qui restent sur les bords du comptoir avec le nom de la collection qu'elles amènent, et les touches ← → du clavier. Les sachets ne flottent plus : celui du comptoir penche à peine, ceux de derrière sont immobiles. L'anneau du stock devient une rangée de points qui se remplissent, avec « +1 dans 30 min » sans le mot « sachets ». Les mots sous les prochains niveaux tiennent sur une ligne.*
+
 ### Une ligne par collection
 
 - **Données :** un champ `tagline` dans `content/collections.toml`. Il passe dans le manifeste du catalogue (champ facultatif, additif) et dans la base.

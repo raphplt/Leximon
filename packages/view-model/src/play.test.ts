@@ -85,11 +85,6 @@ describe("stock", () => {
     expect(openButtonLabel(stockView(wallet(6), NOW), 1)).toBe("Ouvrir le sachet · 1 restant");
   });
 
-  it("names what the ring counts", () => {
-    expect(stockView(wallet(4), NOW).unit).toBe("sachets");
-    expect(stockView(wallet(1), NOW).unit).toBe("sachet");
-  });
-
   it("measures how much of the wait for the next sachet is gone", () => {
     expect(stockView(wallet(0), NOW).refill).toBeCloseTo(0.4);
     expect(stockView(wallet(6), NOW).refill).toBeNull();

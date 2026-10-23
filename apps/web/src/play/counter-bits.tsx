@@ -4,17 +4,27 @@ import type { StockView } from "@leximon/view-model";
 import { type CSSProperties, useState } from "react";
 import styles from "./play.module.css";
 
-/** The free stock in a ring, with its next refill: the count stays at hand, quietly. */
-export function StockRing({ stock }: { readonly stock: StockView }) {
-  const degrees = Math.round((Math.min(stock.stored, stock.capacity) / stock.capacity) * 360);
+/**
+ * The free stock as a row of dots, one per sachet it holds: full ones lit, the next one filling
+ * as it comes, with when it comes. The count stays at hand, quietly.
+ */
+export function StockDots({ stock }: { readonly stock: StockView }) {
   return (
-    <span className={styles.stockRing} role="img" aria-label={stock.description}>
-      <span className={styles.ring} style={{ "--done": `${degrees}deg` } as CSSProperties}>
-        <span className={styles.ringCount}>{stock.stored}</span>
+    <span className={styles.stockDots} role="img" aria-label={stock.description}>
+      <span className={styles.dots}>
+        {Array.from({ length: stock.capacity }, (_, slot) => {
+          const share = slot < stock.stored ? 1 : slot === stock.stored ? (stock.refill ?? 0) : 0;
+          return (
+            <span
+              // biome-ignore lint/suspicious/noArrayIndexKey: a slot of the stock is its place.
+              key={slot}
+              className={share === 1 ? styles.dotFull : styles.dotSlot}
+              style={{ "--share": `${Math.round(share * 360)}deg` } as CSSProperties}
+            />
+          );
+        })}
       </span>
-      <span className={styles.ringNote}>
-        {stock.unit} · {stock.note}
-      </span>
+      <span className={styles.stockNote}>{stock.note}</span>
     </span>
   );
 }

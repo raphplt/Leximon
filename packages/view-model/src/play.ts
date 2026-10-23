@@ -22,10 +22,8 @@ export interface StockView {
   readonly bonus: number;
   /** Nothing to open: the sachet turns grey and still. */
   readonly empty: boolean;
-  /** « +1 dans 18 min », « plein », « 2 bonus »: the note beside the count. */
+  /** « +1 dans 18 min », « plein », « 2 bonus »: the note beside the dots. */
   readonly note: string;
-  /** « sachets »: what the count in the ring counts, printed beside it. */
-  readonly unit: string;
   /** « Ouvrir le sachet », « Ouvrir un sachet bonus », « Prochain dans 18 min ». */
   readonly action: string;
   /** « 18 min », « plein »: the short form of the top bar chip. */
@@ -48,7 +46,6 @@ export function stockView(wallet: BoosterWalletResponse, now: EpochMs): StockVie
     bonus,
     empty: stored === 0 && bonus === 0,
     note,
-    unit: stored > 1 ? "sachets" : "sachet",
     action:
       stored > 0
         ? "Ouvrir le sachet"
@@ -175,9 +172,6 @@ export function shortName(name: string): string {
   const words = name.split(/\s+/);
   return words.find((w) => !ARTICLES.has(w.toLowerCase())) ?? name;
 }
-
-/** Once, when the choice of collection opens: the bubble over the sachets. */
-export const CHOOSE_COLLECTION_HINT = "Choisis ta collection";
 
 /** The choice kept when the one asked for is closed or gone: the starter sachet. */
 export function pickCollection(

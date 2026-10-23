@@ -17,6 +17,8 @@ export interface PackProps {
   readonly refill?: number | null | undefined;
   /** Empty, the time left before the next one (« 12 min »), written on the pack. */
   readonly refillLabel?: string | null | undefined;
+  /** Held still: a sachet waiting behind the counter's does not sway. */
+  readonly still?: boolean | undefined;
 }
 
 /** What the screen tells the player to do with a sealed pack, until they close the hint. */
