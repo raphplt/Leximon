@@ -40,6 +40,8 @@ export default function MentionsPage() {
           <br />
           {PUBLISHER.address}
           <br />
+          {PUBLISHER.phone}
+          <br />
           Directeur de la publication : {PUBLISHER.name}
         </p>
       </section>

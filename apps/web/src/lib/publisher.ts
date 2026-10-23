@@ -4,6 +4,7 @@ export const PUBLISHER = {
   status: "entrepreneur individuel",
   siren: "942 906 157",
   address: "18 rue de l'Abreuvoir, 91370 Verrières-le-Buisson, France",
+  phone: "07 69 89 28 62",
   contact: "contact@leximon.fr",
 } as const;
 
