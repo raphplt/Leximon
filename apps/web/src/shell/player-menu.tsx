@@ -6,6 +6,7 @@ import { useEffect, useRef, useState } from "react";
 import { FeedbackDialog } from "@/beta/feedback-dialog";
 import { Avatar } from "@/components/avatar";
 import { useNarrow } from "@/lib/use-narrow";
+import { SignOutDialog } from "@/profile/sign-out-dialog";
 import { Dialog } from "@/ui/dialog";
 import { Icon, type IconName } from "@/ui/icon";
 import ui from "@/ui/ui.module.css";
@@ -34,7 +35,13 @@ export function PlayerMenu({
   const { openSettings } = useShell();
   const list = useRef<HTMLUListElement>(null);
   const [feedbackOpen, setFeedbackOpen] = useState(false);
+  const [signOutOpen, setSignOutOpen] = useState(false);
 
+  const admin: Item[] = view.admin ? [{ label: "Admin", icon: "cle", href: "/admin" }] : [];
+  // Until the account is read, the account page: it knows what to offer either way.
+  const account: Item = view.member
+    ? { label: "Déconnexion", icon: "logout", action: () => setSignOutOpen(true) }
+    : { label: "Créer mon compte", icon: "cle", href: "/compte" };
   const joustLevel = view.now === 0 ? null : levelsOfFeatures(view.now).jousts;
   const items: Item[] = [
     { label: "Mon profil", icon: "profil", href: "/profil" },
@@ -52,7 +59,8 @@ export function PlayerMenu({
     { label: "Réglages", icon: "reglages", action: openSettings },
     { label: "Devenir mécène", icon: "crown", href: "/mecene" },
     { label: "Un retour ?", icon: "chat", action: () => setFeedbackOpen(true) },
-    { label: view.guest ? "Créer mon compte" : "Mon compte", icon: "cle", href: "/compte" },
+    ...admin,
+    account,
   ];
 
   // Web: Escape and a click beside it close the menu; the first entry takes the focus, and the
@@ -108,8 +116,13 @@ export function PlayerMenu({
     </ul>
   );
 
-  // The note window outlives the menu, which closes as it opens.
-  const feedback = <FeedbackDialog open={feedbackOpen} onClose={() => setFeedbackOpen(false)} />;
+  // These windows outlive the menu, which closes as they open.
+  const windows = (
+    <>
+      <FeedbackDialog open={feedbackOpen} onClose={() => setFeedbackOpen(false)} />
+      <SignOutDialog open={signOutOpen} onClose={() => setSignOutOpen(false)} />
+    </>
+  );
 
   if (narrow) {
     return (
@@ -132,14 +145,14 @@ export function PlayerMenu({
           )}
           {entries}
         </Dialog>
-        {feedback}
+        {windows}
       </>
     );
   }
-  if (!open) return feedback;
+  if (!open) return windows;
   return (
     <>
-      {feedback}
+      {windows}
       <button
         type="button"
         className={styles.scrim}

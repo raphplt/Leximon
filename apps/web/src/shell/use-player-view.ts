@@ -35,6 +35,10 @@ export function usePlayerView() {
     /** The title worn: the one chosen in the atelier, else the latest won. */
     title: me !== null ? me.title : now === 0 ? null : playerTitle(claimed, now),
     guest: who?.kind === "guest",
+    /** Signed in to an account; `false` until read. */
+    member: who?.kind === "member",
+    /** Shows the link to the back office; the server checks the role on every admin route. */
+    admin: who?.kind === "member" && who.isAdmin,
     /** `null` until read. */
     profile: me,
     /** The pseudo, else « Invité » or « Toi » before one is chosen. */
