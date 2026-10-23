@@ -15,13 +15,19 @@ export function PackPeek({
   side,
   choice,
   back,
+  entry,
   onPick,
   onLocked,
 }: {
   readonly side: "left" | "right";
+  /**
+   * How it arrived on a change of sachet: `front` when it was the sachet on the counter and steps
+   * back, `outside` when it comes round from the far side.
+   */
+  readonly entry: "front" | "outside" | null;
   readonly choice: CollectionChoice;
   readonly back: string | undefined;
-  readonly onPick: (choice: CollectionChoice) => void;
+  readonly onPick: (choice: CollectionChoice, from: "left" | "right") => void;
   readonly onLocked: () => void;
 }) {
   const locked = choice.lock !== null;
@@ -31,6 +37,11 @@ export function PackPeek({
         styles.peek,
         side === "left" ? styles.peekLeft : styles.peekRight,
         locked ? styles.peekLocked : "",
+        entry === "front"
+          ? styles.peekFromFront
+          : entry === "outside"
+            ? styles.peekFromOutside
+            : "",
       ].join(" ")}
     >
       <div className={styles.peekPack} inert>
@@ -50,7 +61,7 @@ export function PackPeek({
             ? `Sachet ${choice.name}, ${choice.lock?.replace("Niv.", "niveau")}`
             : `Prendre le sachet ${choice.name}`
         }
-        onClick={() => (locked ? onLocked() : onPick(choice))}
+        onClick={() => (locked ? onLocked() : onPick(choice, side))}
       />
       {locked && (
         <span className={styles.peekLock}>

@@ -17,7 +17,8 @@ export function CollectionPicker({
 }: {
   readonly choices: readonly CollectionChoice[];
   readonly current: CollectionChoice;
-  readonly onPick: (choice: CollectionChoice) => void;
+  /** `from`: the side the new sachet comes in from. */
+  readonly onPick: (choice: CollectionChoice, from: "left" | "right") => void;
   readonly onLocked: () => void;
 }) {
   const open = choices.filter((c) => c.lock === null);
@@ -28,7 +29,7 @@ export function CollectionPicker({
     }
     const index = open.findIndex((c) => c.id === current.id);
     const next = open[(index + step + open.length) % open.length];
-    if (next !== undefined) onPick(next);
+    if (next !== undefined) onPick(next, step > 0 ? "right" : "left");
   };
   return (
     <div className={styles.arrows}>

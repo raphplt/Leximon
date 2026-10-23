@@ -291,6 +291,13 @@
   container-type: size;
   --sachet-min-height: 0px;
   --sachet-max-unit: 1.3px;
+  /* The front sachet's unit, worked out as in `sachet.module.css`, for what sits around it. */
+  --front-u: min(var(--sachet-max-unit), (100cqh - 24px) / 410, 100cqw / 236);
+  --peek-width: calc(236 * var(--front-u) * 0.7);
+  /* From the middle of the counter to the middle of a sachet behind. */
+  --peek-shift: calc(118 * var(--front-u) + var(--peek-width) * 0.24);
+  /* A swap of sachets: quick to start, settling softly. */
+  --swap: 620ms cubic-bezier(0.3, 0.8, 0.3, 1);
 }
 
 /* The sachet on the counter, in front; a new one slides in when the collection changes. */
@@ -317,12 +324,41 @@
 }
 
 /*
+ * A change of sachet turns the counter like a carousel: the sachet taken comes from its place
+ * behind to the front, growing and coming into the light; the one it replaces steps back into
+ * the place left free; the third comes round from the far side.
+ */
+.fromRight {
+  animation: front-from-right var(--swap) both;
+}
+
+.fromLeft {
+  animation: front-from-left var(--swap) both;
+}
+
+@keyframes front-from-right {
+  from {
+    translate: var(--peek-shift) 2%;
+    scale: 0.7;
+    rotate: 8deg;
+    filter: brightness(0.5) saturate(0.85);
+  }
+}
+
+@keyframes front-from-left {
+  from {
+    translate: calc(-1 * var(--peek-shift)) 2%;
+    scale: 0.7;
+    rotate: -8deg;
+    filter: brightness(0.5) saturate(0.85);
+  }
+}
+
+/*
  * The other collections' sachets, smaller and in the shade, tucked behind the front one. Sized
  * from the front sachet's unit, worked out as in `sachet.module.css`.
  */
 .peek {
-  --front-u: min(var(--sachet-max-unit, 1.4px), (100cqh - 24px) / 410, 100cqw / 236);
-  --peek-width: calc(236 * var(--front-u) * 0.7);
   position: absolute;
   top: 50%;
   width: var(--peek-width);
@@ -363,6 +399,68 @@
 .peekLocked,
 .peekLocked:hover {
   filter: grayscale(1) brightness(0.45);
+}
+
+.peekLeft.peekFromFront {
+  animation: peek-left-from-front var(--swap) both;
+}
+
+.peekRight.peekFromFront {
+  animation: peek-right-from-front var(--swap) both;
+}
+
+.peekLeft.peekFromOutside {
+  animation: peek-left-from-outside var(--swap) both;
+}
+
+.peekRight.peekFromOutside {
+  animation: peek-right-from-outside var(--swap) both;
+}
+
+@keyframes peek-left-from-front {
+  from {
+    translate: var(--peek-shift) -49%;
+    scale: 1.43;
+    transform: rotate(0deg);
+    filter: none;
+  }
+}
+
+@keyframes peek-right-from-front {
+  from {
+    translate: calc(-1 * var(--peek-shift)) -49%;
+    scale: 1.43;
+    transform: rotate(0deg);
+    filter: none;
+  }
+}
+
+@keyframes peek-left-from-outside {
+  from {
+    translate: -48px -46%;
+    opacity: 0;
+  }
+}
+
+@keyframes peek-right-from-outside {
+  from {
+    translate: 48px -46%;
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fromRight,
+  .fromLeft {
+    animation: front-in 200ms ease-out both;
+  }
+
+  .peekLeft.peekFromFront,
+  .peekRight.peekFromFront,
+  .peekLeft.peekFromOutside,
+  .peekRight.peekFromOutside {
+    animation: none;
+  }
 }
 
 .peekPack {

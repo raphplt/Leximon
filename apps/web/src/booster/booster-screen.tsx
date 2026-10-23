@@ -179,10 +179,21 @@ export function BoosterScreen() {
     catalog === null || now === 0 ? [] : collectionChoices(catalog.collections, level, now);
   const choice = choices.length === 0 ? null : pickCollection(choices, wanted);
 
-  const pick = (next: CollectionChoice) => {
+  /** The last change of sachet: where the new one came from, and which one it replaced. */
+  const [swap, setSwap] = useState<{ from: "left" | "right"; previous: string } | null>(null);
+
+  /** `from`: the side the new sachet comes in from; without it, no swap to play. */
+  const pick = (next: CollectionChoice, from: "left" | "right" | null = null) => {
+    setSwap(
+      choice !== null && from !== null && next.id !== choice.id
+        ? { from, previous: choice.id }
+        : null,
+    );
     setWanted(next.id);
     writeChoice(next.id);
   };
+  const entryOf = (id: string) =>
+    swap === null ? null : id === swap.previous ? ("front" as const) : ("outside" as const);
 
   /** Sends the request as soon as the tear begins: the server answers while the player tears. */
   const startRequest = (): OpenRequest | null => {
@@ -395,14 +406,21 @@ export function BoosterScreen() {
               <div className={play.sachet}>
                 {around.left !== null && (
                   <PackPeek
+                    key={around.left.id}
                     side="left"
                     choice={around.left}
                     back={backs.get(around.left.id)}
+                    entry={entryOf(around.left.id)}
                     onPick={pick}
                     onLocked={onLocked}
                   />
                 )}
-                <div key={packCollection.id} className={play.front}>
+                <div
+                  key={packCollection.id}
+                  className={`${play.front} ${
+                    swap === null ? "" : swap.from === "right" ? play.fromRight : play.fromLeft
+                  }`}
+                >
                   <PackView
                     shape={shape}
                     collection={packCollection}
@@ -416,9 +434,11 @@ export function BoosterScreen() {
                 </div>
                 {around.right !== null && (
                   <PackPeek
+                    key={around.right.id}
                     side="right"
                     choice={around.right}
                     back={backs.get(around.right.id)}
+                    entry={entryOf(around.right.id)}
                     onPick={pick}
                     onLocked={onLocked}
                   />
