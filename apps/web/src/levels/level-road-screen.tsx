@@ -14,12 +14,16 @@ import {
 } from "@leximon/view-model";
 import Link from "next/link";
 import { type CSSProperties, useEffect, useState } from "react";
+import { levelRewards } from "@/player/player";
+import { useSharedFailed } from "@/player/resource";
+import { retryProgress, useProgressFailed } from "@/progress/use-progress";
 import { REWARD_ICONS } from "@/shell/reward-icons";
 import { useShell } from "@/shell/shell-context";
 import { usePlayerView } from "@/shell/use-player-view";
 import { Button } from "@/ui/button";
 import { Icon } from "@/ui/icon";
 import { LevelMedal } from "@/ui/level-bits";
+import { LoadFailed } from "@/ui/load-failed";
 import ui from "@/ui/ui.module.css";
 import styles from "./level-road.module.css";
 import { PlateauDecor, TileBlock } from "./plateau-art";
@@ -40,6 +44,8 @@ export function LevelRoadScreen() {
   const [selected, setSelected] = useState<number | null>(null);
   const [shown, setShown] = useState<number | null>(null);
   const { progress, now, claimed } = view;
+  const progressFailed = useProgressFailed();
+  const rewardsFailed = useSharedFailed(levelRewards);
 
   useEffect(() => {
     const asked = levelFromHash();
@@ -48,6 +54,19 @@ export function LevelRoadScreen() {
     setShown(quarterOfLevel(asked).index);
   }, []);
 
+  if ((progress === null && progressFailed) || (claimed === null && rewardsFailed)) {
+    return (
+      <main className={styles.page}>
+        <Header subtitle={null} />
+        <LoadFailed
+          onRetry={() => {
+            retryProgress();
+            levelRewards.ensure();
+          }}
+        />
+      </main>
+    );
+  }
   if (progress === null || claimed === null || now === 0) {
     return (
       <main className={styles.page}>

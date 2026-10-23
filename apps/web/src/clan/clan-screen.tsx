@@ -5,8 +5,9 @@ import { useCallback, useEffect, useState } from "react";
 import { useNow } from "@/lib/use-now";
 import { myClan } from "@/player/clan";
 import { profile } from "@/player/player";
-import { useShared } from "@/player/resource";
-import { useProgress } from "@/progress/use-progress";
+import { useShared, useSharedFailed } from "@/player/resource";
+import { retryProgress, useProgress, useProgressFailed } from "@/progress/use-progress";
+import { LoadFailed } from "@/ui/load-failed";
 import styles from "./clan.module.css";
 import { ClanPage } from "./clan-page";
 import { FindClan } from "./find-clan";
@@ -15,6 +16,8 @@ import { FindClan } from "./find-clan";
 export function ClanScreen() {
   const mine = useShared(myClan);
   const progress = useProgress();
+  const clanFailed = useSharedFailed(myClan);
+  const progressFailed = useProgressFailed();
   const now = useNow(30_000);
   const params = useSearchParams();
   const router = useRouter();
@@ -41,6 +44,18 @@ export function ClanScreen() {
     profile.refresh();
   }, []);
 
+  if ((mine === null && clanFailed) || (progress === null && progressFailed)) {
+    return (
+      <main className={styles.screen}>
+        <LoadFailed
+          onRetry={() => {
+            myClan.ensure();
+            retryProgress();
+          }}
+        />
+      </main>
+    );
+  }
   if (mine === null || progress === null || now === 0) {
     return (
       <main className={styles.screen}>

@@ -53,4 +53,22 @@ describe("a shared resource's read", () => {
     fail = false;
     expect(await resource.read()).toBe("back");
   });
+
+  it("says it failed until a retry starts, and tells the screens each time", async () => {
+    let fail = true;
+    const resource = sharedResource(async () => {
+      if (fail) throw new Error("down");
+      return "back";
+    });
+    const seen: boolean[] = [];
+    resource.subscribe(() => seen.push(resource.failed()));
+    await resource.read().catch(() => {});
+    expect(resource.failed()).toBe(true);
+
+    fail = false;
+    resource.ensure();
+    expect(resource.failed()).toBe(false);
+    expect(await resource.read()).toBe("back");
+    expect(seen).toEqual([true, false, false]);
+  });
 });

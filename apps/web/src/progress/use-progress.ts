@@ -11,6 +11,7 @@ import { fetchProgress } from "@/lib/api";
 
 let current: Progress | null = null;
 let loading: Promise<void> | null = null;
+let failed = false;
 const listeners = new Set<() => void>();
 
 function emit() {
@@ -19,6 +20,7 @@ function emit() {
 
 /** The progress returned by an action (open, answer): the freshest the client has. */
 export function publishProgress(progress: Progress): void {
+  failed = false;
   current = {
     xp: progress.xp,
     level: progress.level,
@@ -37,13 +39,19 @@ export function forgetProgress(): void {
 
 function load(): void {
   if (current !== null || loading !== null) return;
+  if (failed) {
+    failed = false;
+    emit();
+  }
   loading = fetchProgress()
     .then((progress) => {
       // An action may have answered meanwhile, with a more recent total.
       if (current === null || current.xp < progress.xp) publishProgress(progress);
     })
     .catch(() => {
-      // The badge stays hidden; the next screen that mounts tries again.
+      // The badge stays hidden; the next screen that mounts, or a retry, tries again.
+      failed = true;
+      emit();
     })
     .finally(() => {
       loading = null;
@@ -64,3 +72,15 @@ export function useProgress(): Progress | null {
     () => null,
   );
 }
+
+/** Whether the level could not be read; a screen waiting for it offers `retryProgress`. */
+export function useProgressFailed(): boolean {
+  return useSyncExternalStore(
+    subscribe,
+    () => failed,
+    () => false,
+  );
+}
+
+/** Reads the level again after a failure. */
+export const retryProgress = load;

@@ -10,10 +10,11 @@ import {
 import Link from "next/link";
 import { useState } from "react";
 import { profile } from "@/player/player";
-import { useShared } from "@/player/resource";
+import { useShared, useSharedFailed } from "@/player/resource";
 import { useShell } from "@/shell/shell-context";
 import { Button, ButtonLink } from "@/ui/button";
 import { Icon } from "@/ui/icon";
+import { LoadFailed } from "@/ui/load-failed";
 import { useToast } from "@/ui/toast";
 import styles from "./profile.module.css";
 import { PinnedCards, ProfileHeader, StatsPanel } from "./profile-view";
@@ -22,10 +23,18 @@ import { PseudoDialog } from "./pseudo-dialog";
 /** The player's own profile, also before others can see it. */
 export function ProfileScreen() {
   const me = useShared(profile);
+  const failed = useSharedFailed(profile);
   const { openCard } = useShell();
   const toast = useToast();
   const [choosing, setChoosing] = useState(false);
 
+  if (me === null && failed) {
+    return (
+      <main className={styles.page}>
+        <LoadFailed onRetry={() => profile.ensure()} />
+      </main>
+    );
+  }
   if (me === null) {
     return (
       <main className={styles.page}>

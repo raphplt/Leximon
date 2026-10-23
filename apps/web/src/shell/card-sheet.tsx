@@ -11,7 +11,7 @@ import {
   reviewState,
 } from "@leximon/view-model";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { CardFacts, CardOrigin } from "@/cards/card-facts";
 import { type Catalog, collectionName, loadCatalog } from "@/cards/catalog";
 import { useCardShare } from "@/cards/share-card";
@@ -27,6 +27,7 @@ import { useProgress } from "@/progress/use-progress";
 import { ButtonLink } from "@/ui/button";
 import { Dialog } from "@/ui/dialog";
 import { Icon } from "@/ui/icon";
+import { LoadFailed } from "@/ui/load-failed";
 import { useToast } from "@/ui/toast";
 import ui from "@/ui/ui.module.css";
 import styles from "./card-sheet.module.css";
@@ -40,18 +41,22 @@ export function CardSheet({
   readonly onClose: () => void;
 }) {
   const [catalog, setCatalog] = useState<Catalog | null>(null);
-  useEffect(() => {
-    if (cardId === null || catalog !== null) return;
+  const [failed, setFailed] = useState(false);
+  const load = useCallback(() => {
+    setFailed(false);
     loadCatalog()
       .then(setCatalog)
-      .catch(() => {
-        // The sheet stays empty; closing and opening it again retries.
-      });
-  }, [cardId, catalog]);
+      .catch(() => setFailed(true));
+  }, []);
+  useEffect(() => {
+    if (cardId === null || catalog !== null) return;
+    load();
+  }, [cardId, catalog, load]);
   const card = cardId === null ? undefined : catalog?.cardsById.get(cardId);
 
   return (
     <Dialog open={cardId !== null} title={card?.word ?? "Carte"} onClose={onClose} variant="wide">
+      {catalog === null && failed && <LoadFailed onRetry={load} />}
       {card !== undefined && catalog !== null && (
         <SheetBody
           card={card}
