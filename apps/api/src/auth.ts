@@ -10,7 +10,8 @@ import {
   EmailSenderNotConfiguredError,
 } from "./account/email-sender";
 import { linkGuestOnSignIn, readBodyFlag } from "./account/link-on-sign-in";
-import { type Arrival, admitNewPlayer, recordArrival } from "./beta/arrival";
+import { type Arrival, admitNewPlayer, recordArrival, wouldAdmitNewPlayer } from "./beta/arrival";
+import { invitesRequired } from "./beta/invites";
 
 export const AUTH_BASE_PATH = "/api/auth";
 
@@ -21,6 +22,9 @@ export const ADMIN_ROLE = "admin";
 export const SIGN_IN_CODE = { length: 6, expiresInS: 10 * 60, allowedAttempts: 3 } as const;
 
 const SEND_CODE_PATH = "/email-otp/send-verification-otp";
+
+/** The request context Better Auth hands to its callbacks. */
+type EndpointContext = Parameters<typeof getSessionFromCtx>[0];
 
 /**
  * Better Auth for one request. Built per request because the database client is, so the
@@ -36,6 +40,30 @@ export function createAuth(env: Env, db: Database, emailSender: EmailSender) {
   let sendFailure: unknown = null;
   // Who let the new user in (invitation, source), noted before the row exists, written after.
   let arrival: Arrival | null = null;
+
+  /**
+   * A code to an address without an account, asked without a guest session nor an open invitation,
+   * would end in a refusal once typed: such an address gets the invitation e-mail instead. The
+   * answer to the request stays the same, so it tells nobody whether the address has an account.
+   */
+  async function closedBetaWouldRefuse(
+    email: string,
+    ctx: EndpointContext | undefined,
+  ): Promise<boolean> {
+    if (!invitesRequired(env) || ctx === undefined) return false;
+    if ((await ctx.context.internalAdapter.findUserByEmail(email)) !== null) return false;
+    // From the database, as when the user is created: a replayed guest cookie lets nobody in.
+    const session = await getSessionFromCtx(ctx, {
+      disableRefresh: true,
+      disableCookieCache: true,
+    });
+    const admitted = await wouldAdmitNewPlayer(db, env, {
+      headers: ctx.headers,
+      fromGuest: session?.user["isAnonymous"] === true,
+      now: Date.now(),
+    });
+    return !admitted;
+  }
 
   return betterAuth({
     secret: env.BETTER_AUTH_SECRET,
@@ -70,8 +98,12 @@ export function createAuth(env: Env, db: Database, emailSender: EmailSender) {
         allowedAttempts: SIGN_IN_CODE.allowedAttempts,
         // A database leak must not reveal codes still valid.
         storeOTP: "hashed",
-        async sendVerificationOTP({ email, otp }) {
+        async sendVerificationOTP({ email, otp }, ctx) {
           try {
+            if (await closedBetaWouldRefuse(email, ctx)) {
+              await emailSender.sendInvitationOnly({ to: email });
+              return;
+            }
             await emailSender.sendSignInCode({
               to: email,
               code: otp,

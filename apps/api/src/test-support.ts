@@ -6,6 +6,7 @@ import { type Database, schema } from "@leximon/db";
 import { eq, sql } from "drizzle-orm";
 import { expect } from "vitest";
 import type { EmailSender, EmailSenderFactory } from "./account/email-sender";
+import type { MailDomainResolver } from "./account/mail-domain";
 import type { createApp } from "./app";
 import { TEST_ORIGIN } from "./test-env";
 
@@ -144,12 +145,16 @@ export async function setOwnedCards(
     });
 }
 
-/** Keeps the sign-in codes "sent" by the API, by address. */
+/** Keeps the e-mails "sent" by the API, by address: sign-in codes, and invitation e-mails. */
 export function createOutbox() {
   const codes = new Map<string, string>();
+  const invitationOnly = new Set<string>();
   const sender: EmailSender = {
     async sendSignInCode({ to, code }) {
       codes.set(to, code);
+    },
+    async sendInvitationOnly({ to }) {
+      invitationOnly.add(to);
     },
   };
   const emailSender: EmailSenderFactory = () => sender;
@@ -160,8 +165,18 @@ export function createOutbox() {
       if (code === undefined) throw new Error(`No code sent to ${email}`);
       return code;
     },
+    hasCodeFor(email: string): boolean {
+      return codes.has(email);
+    },
+    /** Whether the address got the invitation e-mail in place of a code. */
+    toldInvitationOnly(email: string): boolean {
+      return invitationOnly.has(email);
+    },
   };
 }
+
+/** Every domain takes e-mail: tests never reach DNS (`example.com` publishes a null MX). */
+export const anyMailDomain: MailDomainResolver = async () => "deliverable";
 
 type App = ReturnType<typeof createApp>;
 
@@ -174,12 +189,18 @@ function authHeaders(cookie: string | null): Record<string, string> {
   return headers;
 }
 
-export function requestCode(app: App, env: Env, email: string, cookie: string | null = null) {
+export function requestCode(
+  app: App,
+  env: Env,
+  email: string,
+  cookie: string | null = null,
+  extra: Record<string, string> = {},
+) {
   return app.request(
     "/api/auth/email-otp/send-verification-otp",
     {
       method: "POST",
-      headers: authHeaders(cookie),
+      headers: { ...authHeaders(cookie), ...extra },
       body: JSON.stringify({ email, type: "sign-in" }),
     },
     env,

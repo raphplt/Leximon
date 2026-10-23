@@ -30,6 +30,9 @@ export const MONOSPACE = "'Courier New', Courier, monospace";
 
 export const SITE_URL = "https://leximon.fr";
 
+/** Leximon's Discord, where the beta's invitations are given. */
+export const DISCORD_URL = "https://discord.gg/WtrkBZKpJP";
+
 const HTML_ESCAPES: Readonly<Record<string, string>> = {
   "&": "&amp;",
   "<": "&lt;",
@@ -93,4 +96,16 @@ export function renderTextLayout(bodyText: string, footerText: string): string {
 /** Footer link to the site, without tracking parameters. */
 export function siteLinkHtml(): string {
   return `Leximon · <a href="${SITE_URL}" style="color:${EMAIL_COLORS.muted};">leximon.fr</a>`;
+}
+
+/** A button made of a table cell: Outlook ignores the padding of a styled link. */
+export function buttonHtml({
+  label,
+  url,
+}: {
+  readonly label: string;
+  readonly url: string;
+}): string {
+  const c = EMAIL_COLORS;
+  return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:8px 0 8px;"><tr><td style="background-color:${c.ink};border-radius:999px;"><a href="${escapeHtml(url)}" style="display:inline-block;padding:12px 24px;font-family:${SERIF};font-size:17px;font-weight:bold;color:${c.paper};text-decoration:none;">${escapeHtml(label)}</a></td></tr></table>`;
 }

@@ -71,6 +71,7 @@ import {
   tradeRefusalSchema,
   tradeSchema,
   tradesResponseSchema,
+  UNDELIVERABLE_EMAIL_ERROR,
   type UpdateEmailPreferencesRequest,
   type UpdateProfileRequest,
 } from "@leximon/contract";
@@ -543,17 +544,30 @@ export type SendCodeResult =
   | { readonly kind: "sent" }
   | {
       readonly kind: "refused";
-      readonly reason: "invalid_email" | "rate_limited" | "daily_limit" | "unavailable";
+      readonly reason:
+        | "invalid_email"
+        | "undeliverable_email"
+        | "rate_limited"
+        | "daily_limit"
+        | "unavailable";
     };
 
-/** Sends a 6-digit sign-in code to the address. */
+/**
+ * Sends a 6-digit sign-in code to the address. It brings the invitation, if any: during the closed
+ * beta, an address without an account gets a code only with one.
+ */
 export async function sendSignInCode(email: string): Promise<SendCodeResult> {
-  const response = await postJson("/api/auth/email-otp/send-verification-otp", {
-    email,
-    type: "sign-in",
-  });
+  const response = await postJson(
+    "/api/auth/email-otp/send-verification-otp",
+    { email, type: "sign-in" },
+    arrivalHeaders(),
+  );
   if (response.ok) return { kind: "sent" };
-  if (response.status === 400) return { kind: "refused", reason: "invalid_email" };
+  if (response.status === 400) {
+    const body = errorResponseSchema.safeParse(await response.json().catch(() => null));
+    const undeliverable = body.success && body.data.error === UNDELIVERABLE_EMAIL_ERROR;
+    return { kind: "refused", reason: undeliverable ? "undeliverable_email" : "invalid_email" };
+  }
   if (response.status === 429) {
     const body = errorResponseSchema.safeParse(await response.json().catch(() => null));
     const daily = body.success && body.data.error === SIGN_IN_CODE_QUOTA_ERROR;

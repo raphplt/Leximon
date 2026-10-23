@@ -18,6 +18,7 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { createApp } from "../app";
 import { TEST_ORIGIN, testEnv } from "../test-env";
 import {
+  anyMailDomain,
   applySetCookies,
   createOutbox,
   type Guest,
@@ -30,7 +31,7 @@ const url = testDatabaseUrl();
 const openEnv = testEnv(url);
 const env: Env = { ...openEnv, BETA_INVITES: "required" };
 const outbox = createOutbox();
-const app = createApp({ emailSender: outbox.emailSender });
+const app = createApp({ emailSender: outbox.emailSender, mailDomain: anyMailDomain });
 const { db, close } = createDb(url, { maxConnections: 4 });
 
 const { invites, playerAgeBrackets, playerDays, playerSignups, users } = schema;
@@ -171,9 +172,33 @@ describe("closed beta", () => {
     expect(signup).toMatchObject({ inviteId: null, source: "reddit" });
   });
 
-  it("refuses an account created without a guest nor an invitation", async () => {
+  it("tells an address the beta would refuse so, in place of a code", async () => {
+    const withdrawn = await newInvite(1);
+    await app.request(
+      `/admin/invites/${withdrawn.id}/revoke`,
+      { method: "POST", headers: headers({ cookie: admin.cookie }) },
+      env,
+    );
+    for (const extra of [{}, { [INVITE_HEADER]: withdrawn.code }]) {
+      const email = newEmail();
+      expect((await requestCode(app, env, email, null, extra)).status).toBe(200);
+      expect(outbox.toldInvitationOnly(email)).toBe(true);
+      expect(outbox.hasCodeFor(email)).toBe(false);
+    }
+  });
+
+  it("sends a code when invitations are off", async () => {
     const email = newEmail();
-    expect((await requestCode(app, env, email)).status).toBe(200);
+    expect((await requestCode(app, openEnv, email)).status).toBe(200);
+    expect(outbox.hasCodeFor(email)).toBe(true);
+    expect(outbox.toldInvitationOnly(email)).toBe(false);
+  });
+
+  it("refuses an account created without a guest nor an invitation", async () => {
+    const invite = await newInvite(1);
+    const email = newEmail();
+    // The code was asked with the invitation, the sign-in comes without it.
+    await requestCode(app, env, email, null, { [INVITE_HEADER]: invite.code });
 
     const preview = await app.request(
       "/account/link-preview",
@@ -195,7 +220,7 @@ describe("closed beta", () => {
   it("creates an account with an invitation, keeps its age bracket and lets it back in", async () => {
     const invite = await newInvite(2);
     const email = newEmail();
-    await requestCode(app, env, email);
+    await requestCode(app, env, email, null, { [INVITE_HEADER]: invite.code });
     const created = await codeSignIn({
       email,
       cookie: null,
@@ -210,7 +235,8 @@ describe("closed beta", () => {
       .where(eq(playerAgeBrackets.userId, userId));
     expect(bracket?.bracket).toBe("18-24");
 
-    // Another device, no guest, no invitation: the account exists, nothing is created.
+    // Another device, no guest, no invitation: the account exists, it gets a code.
+    expect(outbox.toldInvitationOnly(email)).toBe(false);
     await requestCode(app, env, email);
     const again = await codeSignIn({ email, cookie: null });
     expect(again.status).toBe(200);
@@ -266,7 +292,8 @@ describe("closed beta", () => {
   });
 
   it("refuses a new account to a guest cookie replayed after the guest became an account", async () => {
-    const invite = await newInvite(1);
+    // The guest takes one place, the other one only gets a code sent below.
+    const invite = await newInvite(2);
     const guestCookie = cookieOf(await guestSignIn({ [INVITE_HEADER]: invite.code }));
     const first = newEmail();
     await requestCode(app, env, first, guestCookie);
@@ -275,6 +302,8 @@ describe("closed beta", () => {
     // The guest's session is gone from the database, but its signed cookie still reads as valid.
     const second = newEmail();
     await requestCode(app, env, second, guestCookie);
+    expect(outbox.toldInvitationOnly(second)).toBe(true);
+    await requestCode(app, env, second, guestCookie, { [INVITE_HEADER]: invite.code });
     const replayed = await codeSignIn({ email: second, cookie: guestCookie });
 
     expect(replayed.status).toBe(403);

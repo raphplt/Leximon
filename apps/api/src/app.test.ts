@@ -1,3 +1,4 @@
+import { UNDELIVERABLE_EMAIL_ERROR } from "@leximon/contract";
 import { describe, expect, it } from "vitest";
 import { createApp } from "./app";
 import { emailKey } from "./middleware/rate-limit";
@@ -131,6 +132,28 @@ describe("api", () => {
     const hashed = await emailKey(env.BETTER_AUTH_SECRET, "joueur@example.com");
     expect(address.keys).toEqual([`OTP_SEND_EMAIL_RATE_LIMITER:${hashed}`]);
     expect(address.keys[0]).not.toContain("example");
+  });
+
+  it("refuses an address whose domain takes no e-mail, before touching the database", async () => {
+    const looked: string[] = [];
+    const app = createApp({
+      mailDomain: async (domain) => {
+        looked.push(domain);
+        return "undeliverable";
+      },
+    });
+    const response = await app.request(
+      "/api/auth/email-otp/send-verification-otp",
+      {
+        method: "POST",
+        headers: { origin: TEST_ORIGIN, "content-type": "application/json" },
+        body: JSON.stringify({ email: "Joueur@Gmail.con", type: "sign-in" }),
+      },
+      testEnv(),
+    );
+    expect(response.status).toBe(400);
+    expect(await response.json()).toEqual({ error: UNDELIVERABLE_EMAIL_ERROR });
+    expect(looked).toEqual(["gmail.con"]);
   });
 
   it("sends codes to sign in only", async () => {

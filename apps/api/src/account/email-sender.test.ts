@@ -114,6 +114,18 @@ describe("cloudflareEmailSender", () => {
     expect(email).not.toHaveProperty("replyTo");
   });
 
+  it("sends the invitation e-mail in place of a code, from the same sender", async () => {
+    const { binding, sent } = fakeBinding();
+
+    await cloudflareEmailSender(binding, options).sendInvitationOnly({ to: "raphael@example.com" });
+
+    expect(sent[0]).toMatchObject({
+      from: options.from,
+      to: "raphael@example.com",
+      subject: "Leximon, c'est sur invitation",
+    });
+  });
+
   it("classes limits and outages as temporary", async () => {
     for (const code of [
       "E_RATE_LIMIT_EXCEEDED",

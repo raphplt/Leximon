@@ -1,10 +1,10 @@
 import {
+  buttonHtml,
   EMAIL_COLORS,
   escapeHtml,
   type RenderedEmail,
   renderHtmlLayout,
   renderTextLayout,
-  SERIF,
   SITE_URL,
 } from "../email/layout";
 import { firstParagraphText, markdownToHtml, markdownToText } from "./markdown";
@@ -59,10 +59,4 @@ export function prepareCampaignEmail(
       },
     };
   };
-}
-
-/** A button made of a table cell: Outlook ignores the padding of a styled link. */
-function buttonHtml({ label, url }: { readonly label: string; readonly url: string }): string {
-  const c = EMAIL_COLORS;
-  return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:8px 0 8px;"><tr><td style="background-color:${c.ink};border-radius:999px;"><a href="${escapeHtml(url)}" style="display:inline-block;padding:12px 24px;font-family:${SERIF};font-size:17px;font-weight:bold;color:${c.paper};text-decoration:none;">${escapeHtml(label)}</a></td></tr></table>`;
 }

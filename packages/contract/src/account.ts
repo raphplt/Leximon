@@ -89,6 +89,9 @@ export const ACCOUNT_ERROR_CODES = {
 /** `error` of a 429 on a code request once the address got all its codes for the day. */
 export const SIGN_IN_CODE_QUOTA_ERROR = "too_many_codes";
 
+/** `error` of a 400 on a code request when the address's domain receives no e-mail. */
+export const UNDELIVERABLE_EMAIL_ERROR = "undeliverable_email";
+
 /** Errors of Better Auth's routes, ours included. */
 export const authErrorResponseSchema = z.object({ code: z.string() });
 export type AuthErrorResponse = z.infer<typeof authErrorResponseSchema>;

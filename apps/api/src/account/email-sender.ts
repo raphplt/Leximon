@@ -1,3 +1,5 @@
+import { renderInvitationOnlyEmail } from "../email/invitation-only";
+import type { RenderedEmail } from "../email/layout";
 import { renderSignInCodeEmail } from "../email/sign-in-code";
 
 /**
@@ -18,6 +20,8 @@ export interface SignInCodeEmail {
 export interface EmailSender {
   /** Resolves once the provider accepted the message; throws otherwise. */
   sendSignInCode(email: SignInCodeEmail): Promise<void>;
+  /** In place of a code, to an address the closed beta would refuse. Same contract. */
+  sendInvitationOnly(email: { readonly to: string }): Promise<void>;
 }
 
 /** No provider is configured for this environment: no code can be sent. */
@@ -82,38 +86,42 @@ const consoleEmailSender: EmailSender = {
     // The address is masked even here: logs must never hold personal data.
     console.info(`[dev] Code de connexion pour ${maskEmail(to)} : ${code}`);
   },
+  async sendInvitationOnly({ to }) {
+    console.info(`[dev] Pas de code pour ${maskEmail(to)} : la bêta est sur invitation`);
+  },
 };
 
 function notConfiguredSender(appEnv: string): EmailSender {
-  return {
-    async sendSignInCode() {
-      throw new EmailSenderNotConfiguredError(appEnv);
-    },
+  const refuse = async () => {
+    throw new EmailSenderNotConfiguredError(appEnv);
   };
+  return { sendSignInCode: refuse, sendInvitationOnly: refuse };
 }
 
 export function cloudflareEmailSender(
   binding: SendEmail,
   options: { readonly from: string; readonly replyTo: string | null },
 ): EmailSender {
+  const send = async (to: string, email: RenderedEmail) => {
+    try {
+      await binding.send({
+        from: options.from,
+        to,
+        ...(options.replyTo === null ? {} : { replyTo: options.replyTo }),
+        subject: email.subject,
+        text: email.text,
+        html: email.html,
+        // Tells mail servers not to answer with an out-of-office reply.
+        headers: { "Auto-Submitted": "auto-generated", "Content-Language": "fr" },
+      });
+    } catch (error) {
+      throw toSendError(error);
+    }
+  };
   return {
-    async sendSignInCode({ to, code, validMinutes }) {
-      const email = renderSignInCodeEmail({ code, validMinutes });
-      try {
-        await binding.send({
-          from: options.from,
-          to,
-          ...(options.replyTo === null ? {} : { replyTo: options.replyTo }),
-          subject: email.subject,
-          text: email.text,
-          html: email.html,
-          // Tells mail servers not to answer with an out-of-office reply.
-          headers: { "Auto-Submitted": "auto-generated", "Content-Language": "fr" },
-        });
-      } catch (error) {
-        throw toSendError(error);
-      }
-    },
+    sendSignInCode: ({ to, code, validMinutes }) =>
+      send(to, renderSignInCodeEmail({ code, validMinutes })),
+    sendInvitationOnly: ({ to }) => send(to, renderInvitationOnlyEmail()),
   };
 }
 

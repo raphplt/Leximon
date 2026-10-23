@@ -8,7 +8,7 @@ import {
 import type { EpochMs } from "@leximon/core";
 import { type Database, schema } from "@leximon/db";
 import { APIError } from "better-auth/api";
-import { claimInvite, invitesRequired, parseInviteCode } from "./invites";
+import { claimInvite, invitesRequired, parseInviteCode, readInviteStatus } from "./invites";
 
 /** What a sign-in that creates a player brings with it, noted before the user row exists. */
 export interface Arrival {
@@ -55,6 +55,25 @@ export async function admitNewPlayer(
   throw inviteRefusal(
     claim.kind === "closed" ? ACCOUNT_ERROR_CODES.inviteClosed : ACCOUNT_ERROR_CODES.inviteRequired,
   );
+}
+
+/**
+ * Whether `admitNewPlayer` would let this new player in, without taking a place: read when a code
+ * is asked for, so that someone the beta would refuse gets told so instead of a useless code. The
+ * place is only taken once the code is typed.
+ */
+export async function wouldAdmitNewPlayer(
+  db: Database,
+  env: Pick<Env, "BETA_INVITES">,
+  input: {
+    readonly headers: Headers | undefined;
+    readonly fromGuest: boolean;
+    readonly now: EpochMs;
+  },
+): Promise<boolean> {
+  if (input.fromGuest || !invitesRequired(env)) return true;
+  const code = parseInviteCode(input.headers?.get(INVITE_HEADER));
+  return code !== null && (await readInviteStatus(db, code, input.now)) === "open";
 }
 
 function inviteRefusal(code: string): APIError {

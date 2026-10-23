@@ -18,6 +18,7 @@ import { SIGN_IN_CODE_DAILY_QUOTA } from "../middleware/rate-limit";
 import { TEST_ORIGIN, testEnv } from "../test-env";
 import {
   ageAccount,
+  anyMailDomain,
   applySetCookies,
   createOutbox,
   previewLink,
@@ -33,7 +34,7 @@ import { linkGuest, USER_REFERENCES } from "./link-guest";
 const url = testDatabaseUrl();
 const env = testEnv(url);
 const outbox = createOutbox();
-const app = createApp({ emailSender: outbox.emailSender });
+const app = createApp({ emailSender: outbox.emailSender, mailDomain: anyMailDomain });
 const { db, close } = createDb(url, { maxConnections: 4 });
 const DAY = 86_400_000;
 
@@ -631,7 +632,7 @@ describe("codes", () => {
   });
 
   it("fails closed when no e-mail provider is configured", async () => {
-    const response = await createApp().request(
+    const response = await createApp({ mailDomain: anyMailDomain }).request(
       "/api/auth/email-otp/send-verification-otp",
       {
         method: "POST",

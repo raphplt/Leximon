@@ -308,7 +308,7 @@ Pour ajouter ou modifier une décision, utiliser le skill `decision`.
 - **Statut :** Acceptée (2026-10-20), après la R&D ([docs/rnd/inscription.md](rnd/inscription.md)). Règles P37 et P54. Fournisseur d'envoi des codes : D-034.
 - **Choix :** plugin `emailOTP` de Better Auth (code à 6 chiffres) plutôt que `magicLink`, à côté de `anonymous`, Apple et Google. Le sort de l'invité (transfert vers un nouveau compte, abandon vers un compte qui joue déjà, P54) se règle dans `onLinkAccount`, dans une transaction à nous, avec `disableDeleteAnonymousUser: true` : l'invité est archivé, jamais supprimé, et chaque connexion depuis un invité est journalisée dans `guest_links`.
 - **Pourquoi :** un lien ouvert sur un autre appareil, ou consommé par l'antivirus d'une messagerie, crée un compte vide et perd l'invité ; un code marche partout. Toutes les tables de jeu sont en cascade sur `users.id` : la suppression par défaut de l'invité effacerait ses cartes et l'historique des échanges des autres joueurs.
-- **Conséquences :** changement additif, l'invité actuel continue de marcher. Un test liste toutes les clés étrangères vers `users.id` et échoue si l'une n'est pas traitée par le transfert. L'envoi des codes a ses propres limites de débit (D-018).
+- **Conséquences :** changement additif, l'invité actuel continue de marcher. Un test liste toutes les clés étrangères vers `users.id` et échoue si l'une n'est pas traitée par le transfert. L'envoi des codes a ses propres limites de débit (D-018). Avant l'envoi, le domaine de l'adresse est demandé au DNS de Cloudflare (DNS over HTTPS) : un domaine inexistant ou qui refuse le courrier (MX nul) est refusé tout de suite ; si le DNS ne répond pas, le code part.
 
 ## D-031 · Administration : pages `/admin` à nous, rôle donné en ligne de commande, chaque action journalisée
 
@@ -402,7 +402,7 @@ Pour ajouter ou modifier une décision, utiliser le skill `decision`.
 - **Statut :** Acceptée (2026-10-22), choisie par le propriétaire.
 - **Choix :** l'admin crée dans `/admin/invitations` un lien par groupe (`/invitation/<code>`), avec un nombre de places. Quand `BETA_INVITES` vaut `"required"`, Better Auth refuse de créer un joueur (invité, ou compte sans invité) sans code ouvert, et la place se prend par une mise à jour conditionnelle (`uses < max_uses`), sans verrou tenu pendant l'inscription. Un compte créé depuis un invité n'a pas besoin de lien.
 - **Pourquoi :** la porte est tenue par le serveur, sur la seule action qui crée un joueur, et un lien par groupe dit d'où vient chaque testeur.
-- **Conséquences :** le lien et le `?src=` d'arrivée restent dans le navigateur jusqu'à la création du joueur, puis vivent dans `player_signups`, qui suit la partie de l'invité vers son compte. Une inscription qui échoue après avoir pris sa place la perd. Ouvrir à tous : `BETA_INVITES` à `"off"`.
+- **Conséquences :** le lien et le `?src=` d'arrivée restent dans le navigateur jusqu'à la création du joueur, puis vivent dans `player_signups`, qui suit la partie de l'invité vers son compte. Une inscription qui échoue après avoir pris sa place la perd. Une adresse sans compte qui demande un code sans lien ouvert ni session d'invité reçoit à la place un e-mail qui renvoie au Discord : même réponse de l'API, donc rien n'apprend si l'adresse a un compte ; le web envoie le lien dès la demande de code. Ouvrir à tous : `BETA_INVITES` à `"off"`.
 
 ## D-042 · Mesure : calculée depuis la base, dans l'admin, sans outil tiers
 

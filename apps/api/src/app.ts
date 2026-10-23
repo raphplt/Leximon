@@ -1,10 +1,16 @@
-import { INVITE_HEADER, SOURCE_HEADER, sendSignInCodeRequestSchema } from "@leximon/contract";
+import {
+  INVITE_HEADER,
+  SOURCE_HEADER,
+  sendSignInCodeRequestSchema,
+  UNDELIVERABLE_EMAIL_ERROR,
+} from "@leximon/contract";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { createMiddleware } from "hono/factory";
 import { requestId } from "hono/request-id";
 import { secureHeaders } from "hono/secure-headers";
 import { createEmailSender, type EmailSenderFactory } from "./account/email-sender";
+import { dnsOverHttpsResolver, type MailDomainResolver, mailDomainOf } from "./account/mail-domain";
 import { accountRoutes } from "./account/routes";
 import { adminRoutes } from "./admin/routes";
 import { AUTH_BASE_PATH, parseOrigins } from "./auth";
@@ -50,6 +56,8 @@ export interface AppOptions {
   readonly emailSender?: EmailSenderFactory;
   /** Builds the campaign sender, used here for test sends; tests pass a fake. */
   readonly campaignMailer?: CampaignMailerFactory;
+  /** Checks that an address's domain takes e-mail before a code goes; tests pass one without DNS. */
+  readonly mailDomain?: MailDomainResolver;
 }
 
 /**
@@ -91,6 +99,7 @@ export function createApp(options: AppOptions = {}) {
     onlySignInCodes,
     codeSendIpRateLimit,
     codeSendEmailRateLimit,
+    rejectUndeliverableAddress(options.mailDomain ?? dnsOverHttpsResolver),
   );
   app.post(`${AUTH_BASE_PATH}/sign-in/email-otp`, codeVerifyIpRateLimit);
   app.use(`${AUTH_BASE_PATH}/*`, withDatabase);
@@ -150,3 +159,19 @@ const onlySignInCodes = createMiddleware<AppEnv>(async (c, next) => {
   await readAuthEmail(c);
   return next();
 });
+
+/**
+ * Refuses an address whose domain takes no e-mail (a typo, a made-up domain) before a code goes:
+ * the player learns it at once, and the sending domain keeps its reputation. Says nothing about
+ * accounts. Runs after the limits, which also cap the lookups.
+ */
+function rejectUndeliverableAddress(resolve: MailDomainResolver) {
+  return createMiddleware<AppEnv>(async (c, next) => {
+    const email = await readAuthEmail(c);
+    const domain = email === null ? null : mailDomainOf(email);
+    if (domain !== null && (await resolve(domain)) === "undeliverable") {
+      return c.json({ error: UNDELIVERABLE_EMAIL_ERROR }, 400);
+    }
+    return next();
+  });
+}

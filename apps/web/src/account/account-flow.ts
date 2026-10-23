@@ -121,6 +121,8 @@ export function sendErrorMessage(reason: Extract<SendCodeResult, { kind: "refuse
   switch (reason) {
     case "invalid_email":
       return "Il manque quelque chose à cette adresse.";
+    case "undeliverable_email":
+      return "Ce domaine ne reçoit pas d'e-mails. Vérifie l'adresse.";
     case "rate_limited":
       return "Attends une minute avant de redemander un code.";
     case "daily_limit":
