@@ -155,6 +155,13 @@
       "when": 1792701639301,
       "tag": "0021_drop_clan_words",
       "breakpoints": true
+    },
+    {
+      "idx": 22,
+      "version": "7",
+      "when": 1792744567162,
+      "tag": "0022_sign_in_code_quotas",
+      "breakpoints": true
     }
   ]
 }

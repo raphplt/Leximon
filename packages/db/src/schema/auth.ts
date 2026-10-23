@@ -3,7 +3,7 @@
  * Changes here must follow Better Auth's schema for the plugins in use (anonymous, admin).
  */
 
-import { boolean, index, pgTable, text, timestamp } from "drizzle-orm/pg-core";
+import { boolean, index, integer, pgTable, text, timestamp } from "drizzle-orm/pg-core";
 
 const timestamps = {
   createdAt: timestamp({ withTimezone: true }).defaultNow().notNull(),
@@ -80,3 +80,15 @@ export const verifications = pgTable(
   },
   (table) => [index().on(table.identifier)],
 );
+
+/**
+ * Sign-in codes sent per address over a 24-hour window, ours rather than Better Auth's. The
+ * per-minute limits are counted per Cloudflare location; this one holds wherever the requests come
+ * from, so nobody can try code after code on one address. Keyed on a keyed hash of the address,
+ * never the address itself; rows are purged once their window is over.
+ */
+export const signInCodeQuotas = pgTable("sign_in_code_quotas", {
+  emailKey: text().primaryKey(),
+  windowStart: timestamp({ withTimezone: true }).notNull(),
+  sent: integer().notNull(),
+});

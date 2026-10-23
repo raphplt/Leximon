@@ -102,10 +102,13 @@ export function createAuth(env: Env, db: Database, emailSender: EmailSender) {
           // Only the address is kept: no name or picture, whatever the client or provider sends.
           async before(user, ctx) {
             const isGuest = user["isAnonymous"] === true;
+            // From the database, not the signed cookie: a guest that already became an account
+            // has no session left, but its cookie would still read as a guest for minutes and
+            // let new accounts in without an invitation.
             const session =
               isGuest || ctx === null
                 ? null
-                : await getSessionFromCtx(ctx, { disableRefresh: true });
+                : await getSessionFromCtx(ctx, { disableRefresh: true, disableCookieCache: true });
             arrival = await admitNewPlayer(db, env, {
               headers: ctx?.headers,
               fromGuest: session?.user["isAnonymous"] === true,

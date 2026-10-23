@@ -4,6 +4,7 @@ import { type Database, schema } from "@leximon/db";
 import { sql } from "drizzle-orm";
 import type { Context } from "hono";
 import type { AppEnv } from "../context";
+import { errorSummary } from "../error-summary";
 import { writeMentionLetters, writeRequestLetters, writeTradeLetters } from "../mail/mail";
 import { clansOf } from "./clans";
 import { recountClanWeek } from "./goal";
@@ -23,7 +24,7 @@ export function sendGameEvents(c: Context<AppEnv>, events: readonly GameEvent[])
     (error: unknown) => {
       console.error("Game events not sent", {
         count: events.length,
-        message: error instanceof Error ? error.message : String(error),
+        ...errorSummary(error),
       });
     },
   );

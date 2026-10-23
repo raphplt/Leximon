@@ -9,6 +9,7 @@ import {
 import { createCampaignMailer } from "./campaigns/mailer";
 import { deliveryConfig } from "./campaigns/routes";
 import { handleGameEvents } from "./clans/events";
+import { errorSummary } from "./error-summary";
 import { runMaintenance } from "./maintenance";
 
 const app = createApp();
@@ -52,9 +53,7 @@ export default {
         batch.ackAll();
       } catch (error) {
         // Recounts are idempotent: the whole batch is tried again.
-        console.error("Game events failed", {
-          message: error instanceof Error ? error.message : String(error),
-        });
+        console.error("Game events failed", errorSummary(error));
         batch.retryAll({ delaySeconds: 30 });
       } finally {
         ctx.waitUntil(close());

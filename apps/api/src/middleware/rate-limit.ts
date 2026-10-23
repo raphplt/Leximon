@@ -1,3 +1,6 @@
+import { SIGN_IN_CODE_QUOTA_ERROR } from "@leximon/contract";
+import { schema } from "@leximon/db";
+import { sql } from "drizzle-orm";
 import type { Context } from "hono";
 import { createMiddleware } from "hono/factory";
 import type { AppEnv } from "../context";
@@ -54,6 +57,45 @@ export const codeSendIpRateLimit = rateLimit("OTP_SEND_IP_RATE_LIMITER", clientI
 export const codeSendEmailRateLimit = rateLimit("OTP_SEND_EMAIL_RATE_LIMITER", async (c) => {
   const email = await readAuthEmail(c);
   return email === null ? null : emailKey(c.env.BETTER_AUTH_SECRET, email);
+});
+
+/** Sign-in codes one address may receive over a 24-hour window, wherever the requests come from. */
+export const SIGN_IN_CODE_DAILY_QUOTA = { codes: 10, windowMs: 24 * 60 * 60 * 1000 } as const;
+
+/**
+ * Sign-in codes sent, per address, over 24 hours. Each code allows 3 wrong attempts and a new code
+ * starts a new count: without this ceiling, requests spread over many Cloudflare locations could
+ * try code after code on one address. Counted in the database, in one statement; a request over
+ * the ceiling is counted too, so retrying does not help. Must run after `withDatabase`.
+ */
+export const codeSendDailyQuota = createMiddleware<AppEnv>(async (c, next) => {
+  const email = await readAuthEmail(c);
+  if (email === null) return next();
+  const key = await emailKey(c.env.BETTER_AUTH_SECRET, email);
+  const now = new Date();
+  const windowOver = new Date(now.getTime() - SIGN_IN_CODE_DAILY_QUOTA.windowMs);
+  const quotas = schema.signInCodeQuotas;
+  const [row] = await c.var.db
+    .insert(quotas)
+    .values({ emailKey: key, windowStart: now, sent: 1 })
+    .onConflictDoUpdate({
+      target: quotas.emailKey,
+      set: {
+        windowStart: sql`case when ${quotas.windowStart} <= ${windowOver} then excluded.window_start
+          else ${quotas.windowStart} end`,
+        sent: sql`case when ${quotas.windowStart} <= ${windowOver} then 1
+          else ${quotas.sent} + 1 end`,
+      },
+    })
+    .returning({ sent: quotas.sent, windowStart: quotas.windowStart });
+  if (row !== undefined && row.sent > SIGN_IN_CODE_DAILY_QUOTA.codes) {
+    const retryAfterS = Math.ceil(
+      (row.windowStart.getTime() + SIGN_IN_CODE_DAILY_QUOTA.windowMs - now.getTime()) / 1000,
+    );
+    c.header("Retry-After", String(Math.max(retryAfterS, 1)));
+    return c.json({ error: SIGN_IN_CODE_QUOTA_ERROR }, 429);
+  }
+  return next();
 });
 
 /** Code checks (preview and sign-in), per IP, on top of the attempts allowed per code. */

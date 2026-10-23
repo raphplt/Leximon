@@ -6,6 +6,7 @@ import {
   linkPreviewResponseSchema,
   openBoosterResponseSchema,
   profileResponseSchema,
+  SIGN_IN_CODE_QUOTA_ERROR,
 } from "@leximon/contract";
 import type { MasteryLevel } from "@leximon/core";
 import { createDb, schema } from "@leximon/db";
@@ -13,6 +14,7 @@ import { testDatabaseUrl } from "@leximon/db/testing";
 import { eq, sql } from "drizzle-orm";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { createApp } from "../app";
+import { SIGN_IN_CODE_DAILY_QUOTA } from "../middleware/rate-limit";
 import { TEST_ORIGIN, testEnv } from "../test-env";
 import {
   ageAccount,
@@ -41,6 +43,7 @@ const {
   boosterWallets,
   guestLinks,
   sessions,
+  signInCodeQuotas,
   tradeItems,
   trades,
   userCards,
@@ -600,6 +603,31 @@ describe("codes", () => {
       ageConfirmed: true,
     });
     expect(signedIn.status).toBe(400);
+  });
+
+  it("sends an address 10 codes a day at most, even when requests race", async () => {
+    const email = newEmail();
+    const requests = await Promise.all(
+      Array.from({ length: SIGN_IN_CODE_DAILY_QUOTA.codes + 3 }, () =>
+        requestCode(app, env, email),
+      ),
+    );
+    const statuses = requests.map((response) => response.status);
+    expect(statuses.filter((status) => status === 200)).toHaveLength(
+      SIGN_IN_CODE_DAILY_QUOTA.codes,
+    );
+    expect(statuses.filter((status) => status === 429)).toHaveLength(3);
+    const refused = requests.find((response) => response.status === 429);
+    expect(await refused?.json()).toEqual({ error: SIGN_IN_CODE_QUOTA_ERROR });
+    expect(Number(refused?.headers.get("retry-after"))).toBeGreaterThan(23 * 3600);
+
+    // A new window opens a day after the first code.
+    await db
+      .update(signInCodeQuotas)
+      .set({ windowStart: sql`${signInCodeQuotas.windowStart} - interval '1 day'` });
+    expect((await requestCode(app, env, email)).status).toBe(200);
+    // Another address keeps its own count.
+    expect((await requestCode(app, env, newEmail())).status).toBe(200);
   });
 
   it("fails closed when no e-mail provider is configured", async () => {

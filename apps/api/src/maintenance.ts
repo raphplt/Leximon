@@ -3,6 +3,7 @@ import { type Database, schema } from "@leximon/db";
 import { and, inArray, isNotNull, lt, sql } from "drizzle-orm";
 import { recountActiveClans } from "./clans/events";
 import { purgeMail } from "./mail/mail";
+import { SIGN_IN_CODE_DAILY_QUOTA } from "./middleware/rate-limit";
 
 /** How long a client may retry an open with the same idempotency key. */
 export const IDEMPOTENCY_RETENTION_MS = 48 * 60 * 60 * 1000;
@@ -16,6 +17,7 @@ export interface MaintenanceReport {
   readonly erasedCampaignAddresses: number;
   readonly erasedClanMessages: number;
   readonly erasedLetters: number;
+  readonly erasedCodeQuotas: number;
   readonly recountedClans: number;
 }
 
@@ -25,6 +27,7 @@ export interface MaintenanceReport {
  * - purges idempotency keys too old to be retried;
  * - erases the addresses of campaigns ended more than 30 days ago (the suppression list stays);
  * - erases clan messages older than 90 days, except those reported and not yet handled;
+ * - erases the counters of sign-in codes whose 24-hour window is over;
  * - recounts the clans of this week and the last, in case an event was lost.
  */
 export async function runMaintenance(db: Database, now: number): Promise<MaintenanceReport> {
@@ -64,11 +67,17 @@ export async function runMaintenance(db: Database, now: number): Promise<Mainten
       ),
     )
     .returning({ id: clanMessages.id });
+  const { signInCodeQuotas: quotas } = schema;
+  const erasedQuotas = await db
+    .delete(quotas)
+    .where(lt(quotas.windowStart, new Date(now - SIGN_IN_CODE_DAILY_QUOTA.windowMs)))
+    .returning({ emailKey: quotas.emailKey });
   return {
     purgedRequests: purged.length,
     erasedCampaignAddresses: erased.length,
     erasedClanMessages: erasedMessages.length,
     erasedLetters: await purgeMail(db, now),
+    erasedCodeQuotas: erasedQuotas.length,
     recountedClans: await recountActiveClans(db, now),
   };
 }

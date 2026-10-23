@@ -17,10 +17,12 @@ import { createCatalogIndexLoader } from "./challenges/catalog-index";
 import { challengeRoutes } from "./challenges/routes";
 import { clanRoutes } from "./clans/routes";
 import type { AppEnv } from "./context";
+import { errorSummary } from "./error-summary";
 import { meRoutes } from "./me/routes";
 import { readAuthEmail, serializeCodeChecks } from "./middleware/auth-email";
 import { databaseMiddleware } from "./middleware/database";
 import {
+  codeSendDailyQuota,
   codeSendEmailRateLimit,
   codeSendIpRateLimit,
   codeVerifyIpRateLimit,
@@ -89,6 +91,7 @@ export function createApp(options: AppOptions = {}) {
   );
   app.post(`${AUTH_BASE_PATH}/sign-in/email-otp`, codeVerifyIpRateLimit);
   app.use(`${AUTH_BASE_PATH}/*`, withDatabase);
+  app.post(`${AUTH_BASE_PATH}/email-otp/send-verification-otp`, codeSendDailyQuota);
   app.post(`${AUTH_BASE_PATH}/sign-in/email-otp`, serializeCodeChecks);
   app.on(["GET", "POST"], `${AUTH_BASE_PATH}/*`, (c) => c.var.auth.handler(c.req.raw));
   app.use("/account/*", withDatabase);
@@ -122,7 +125,7 @@ export function createApp(options: AppOptions = {}) {
 
   app.notFound((c) => c.json({ error: "not_found" }, 404));
   app.onError((error, c) => {
-    console.error("Unhandled error", { requestId: c.get("requestId"), message: error.message });
+    console.error("Unhandled error", { requestId: c.get("requestId"), ...errorSummary(error) });
     return c.json({ error: "internal_error" }, 500);
   });
 

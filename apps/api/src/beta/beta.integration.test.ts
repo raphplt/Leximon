@@ -265,6 +265,23 @@ describe("closed beta", () => {
     });
   });
 
+  it("refuses a new account to a guest cookie replayed after the guest became an account", async () => {
+    const invite = await newInvite(1);
+    const guestCookie = cookieOf(await guestSignIn({ [INVITE_HEADER]: invite.code }));
+    const first = newEmail();
+    await requestCode(app, env, first, guestCookie);
+    expect((await codeSignIn({ email: first, cookie: guestCookie })).status).toBe(200);
+
+    // The guest's session is gone from the database, but its signed cookie still reads as valid.
+    const second = newEmail();
+    await requestCode(app, env, second, guestCookie);
+    const replayed = await codeSignIn({ email: second, cookie: guestCookie });
+
+    expect(replayed.status).toBe(403);
+    expect(await errorCode(replayed)).toBe(ACCOUNT_ERROR_CODES.inviteRequired);
+    expect(await db.select().from(users).where(eq(users.email, second))).toHaveLength(0);
+  });
+
   it("keeps a tester's note for the back office, until read", async () => {
     const invite = await newInvite(1);
     const cookie = cookieOf(await guestSignIn({ [INVITE_HEADER]: invite.code }));

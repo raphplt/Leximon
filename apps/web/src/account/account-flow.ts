@@ -123,6 +123,8 @@ export function sendErrorMessage(reason: Extract<SendCodeResult, { kind: "refuse
       return "Il manque quelque chose à cette adresse.";
     case "rate_limited":
       return "Attends une minute avant de redemander un code.";
+    case "daily_limit":
+      return "Assez de codes pour aujourd'hui. Prends celui du dernier e-mail, ou reviens demain.";
     case "unavailable":
       return "Les e-mails ne partent plus. Réessaie tout à l'heure.";
   }

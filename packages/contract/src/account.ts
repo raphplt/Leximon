@@ -86,6 +86,9 @@ export const ACCOUNT_ERROR_CODES = {
   inviteClosed: "INVITE_CLOSED",
 } as const;
 
+/** `error` of a 429 on a code request once the address got all its codes for the day. */
+export const SIGN_IN_CODE_QUOTA_ERROR = "too_many_codes";
+
 /** Errors of Better Auth's routes, ours included. */
 export const authErrorResponseSchema = z.object({ code: z.string() });
 export type AuthErrorResponse = z.infer<typeof authErrorResponseSchema>;

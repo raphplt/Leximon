@@ -3,6 +3,7 @@ import type { Database } from "@leximon/db";
 import { APIError } from "better-auth/api";
 import { expireCookie, setSessionCookie } from "better-auth/cookies";
 import type { AnonymousOptions } from "better-auth/plugins";
+import { errorSummary } from "../error-summary";
 import { linkGuest } from "./link-guest";
 
 type LinkAccountData = Parameters<NonNullable<AnonymousOptions["onLinkAccount"]>>[0];
@@ -40,7 +41,7 @@ export async function linkGuestOnSignIn(db: Database, data: LinkAccountData): Pr
     });
   } catch (error) {
     // Identifiers and addresses stay out of the logs.
-    console.error("Guest link failed", { message: error instanceof Error ? error.message : "" });
+    console.error("Guest link failed", errorSummary(error));
     failure = new APIError("INTERNAL_SERVER_ERROR", {
       code: ACCOUNT_ERROR_CODES.accountLinkFailed,
       message: "The guest's game could not be moved: the player is still the guest",

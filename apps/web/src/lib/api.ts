@@ -61,6 +61,7 @@ import {
   progressResponseSchema,
   publicProfileSchema,
   type SendFeedbackRequest,
+  SIGN_IN_CODE_QUOTA_ERROR,
   signupRequiredSchema,
   type Trade,
   type TradeableCardsResponse,
@@ -540,7 +541,10 @@ async function authErrorCode(response: Response): Promise<string | null> {
 
 export type SendCodeResult =
   | { readonly kind: "sent" }
-  | { readonly kind: "refused"; readonly reason: "invalid_email" | "rate_limited" | "unavailable" };
+  | {
+      readonly kind: "refused";
+      readonly reason: "invalid_email" | "rate_limited" | "daily_limit" | "unavailable";
+    };
 
 /** Sends a 6-digit sign-in code to the address. */
 export async function sendSignInCode(email: string): Promise<SendCodeResult> {
@@ -550,7 +554,11 @@ export async function sendSignInCode(email: string): Promise<SendCodeResult> {
   });
   if (response.ok) return { kind: "sent" };
   if (response.status === 400) return { kind: "refused", reason: "invalid_email" };
-  if (response.status === 429) return { kind: "refused", reason: "rate_limited" };
+  if (response.status === 429) {
+    const body = errorResponseSchema.safeParse(await response.json().catch(() => null));
+    const daily = body.success && body.data.error === SIGN_IN_CODE_QUOTA_ERROR;
+    return { kind: "refused", reason: daily ? "daily_limit" : "rate_limited" };
+  }
   if (response.status === 503) return { kind: "refused", reason: "unavailable" };
   throw new ApiError("code_not_sent", response.status);
 }
