@@ -37,7 +37,6 @@ export function SignOutDialog({
   return (
     <Dialog open={open} title="Te déconnecter ?" onClose={onClose} variant="center">
       <div className={styles.pad}>
-        <p className={styles.warning}>Pour revenir, un code par e-mail.</p>
         <div className={styles.buttons}>
           <Button disabled={busy} onClick={() => void leave()}>
             {busy ? "Déconnexion…" : "Me déconnecter"}
