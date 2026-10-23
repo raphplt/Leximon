@@ -18,6 +18,7 @@ import {
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { type Catalog, cardOrPlaceholder, collectionName, loadCatalog } from "@/cards/catalog";
+import { prepareSpokenWords } from "@/cards/use-spoken-word";
 import { Card } from "@/components/card";
 import { RarityName } from "@/components/rarity-icon";
 import { type OpenBoosterResult, openBooster } from "@/lib/api";
@@ -217,6 +218,13 @@ export function BoosterScreen() {
     setError(null);
     setPhase({ name: "opening" });
     const reduced = prefersReducedMotion();
+    // The words start loading while the seal still breaks.
+    void started.outcome.then((answer) => {
+      if (answer.kind !== "answered" || answer.result.kind !== "opened") return;
+      prepareSpokenWords(
+        answer.result.cards.flatMap((drawn) => catalog.cardsById.get(drawn.cardId) ?? []),
+      );
+    });
     const [outcome] = await Promise.all([started.outcome, delay(reduced ? 0 : motion.sealBreak)]);
     if (outcome.kind === "failed") {
       // Same key next time: if the server did open the booster, it answers with the same cards.

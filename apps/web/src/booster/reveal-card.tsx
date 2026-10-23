@@ -25,9 +25,8 @@ import type { RarityStaging } from "./staging";
 /** A touch during the first moments of an announcement is ignored: it may be a double tap. */
 const TOUCH_GUARD_MS = 350;
 const EXIT_MS = 180;
-/** The word is said once the face has settled, after the « Nouveau ! » chime when there is one. */
-const SPEAK_AFTER_MS = 150;
-const SPEAK_AFTER_CHIME_MS = 450;
+/** The word is said as the face settles, just after the « Nouveau ! » chime when there is one. */
+const SPEAK_AFTER_CHIME_MS = 220;
 
 interface RevealCardProps {
   readonly card: CatalogCard;
@@ -110,7 +109,9 @@ export function RevealCard({
     later(staging.flipMs, () => {
       setSettled(true);
       if (isNew) play("newCard");
-      if (speechOn()) later(isNew ? SPEAK_AFTER_CHIME_MS : SPEAK_AFTER_MS, word.play);
+      if (!speechOn()) return;
+      if (isNew) later(SPEAK_AFTER_CHIME_MS, word.play);
+      else word.play();
     });
   }
 
