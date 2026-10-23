@@ -124,7 +124,8 @@
   text-align: left;
 }
 
-.action {
+/* Above the buttons' own `margin: 0`, which loads after this file on some pages. */
+.inner .action {
   margin-top: 20px;
 }
 
