@@ -11,6 +11,7 @@ import {
   lockedToast,
   neighbourChoices,
   openAgainLabel,
+  openButtonLabel,
   pickCollection,
   stockView,
   type WordMemory,
@@ -500,7 +501,9 @@ export function BoosterScreen() {
                         shape={shape}
                         collection={packCollection}
                         state={phase.name === "opening" ? "opening" : canOpen ? "sealed" : "empty"}
-                        refill={stock?.refill}
+                        // A guest out of sachets waits for an account, not for time.
+                        refill={mustSignUp ? null : stock?.refill}
+                        refillLabel={stock?.refillShort}
                         onTearStart={() => {
                           startRequest();
                         }}
@@ -544,7 +547,9 @@ export function BoosterScreen() {
                   >
                     {phase.name === "opening"
                       ? "Ouverture…"
-                      : (stock?.action ?? "Ouvrir le sachet")}
+                      : stock === null
+                        ? "Ouvrir le sachet"
+                        : openButtonLabel(stock, guestLeft)}
                   </Button>
                 )}
                 {error !== null ? (

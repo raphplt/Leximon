@@ -3,6 +3,7 @@ import {
   collectionChoices,
   neighbourChoices,
   openAgainLabel,
+  openButtonLabel,
   pickCollection,
   playFabs,
   reserveView,
@@ -69,6 +70,24 @@ describe("stock", () => {
       note: "+1 dans 18 min",
     });
     expect(openAgainLabel(wallet(0), NOW)).toBe("Plus de sachet, 18 min");
+  });
+
+  it("counts on the button what is left to open", () => {
+    expect(openButtonLabel(stockView(wallet(4), NOW), null)).toBe("Ouvrir le sachet · 4 restants");
+    expect(openButtonLabel(stockView(wallet(1), NOW), null)).toBe("Ouvrir le sachet · 1 restant");
+    expect(openButtonLabel(stockView(wallet(0, 2), NOW), null)).toBe(
+      "Ouvrir un sachet bonus · 2 en réserve",
+    );
+    expect(openButtonLabel(stockView(wallet(0), NOW), null)).toBe("Prochain dans 18 min");
+  });
+
+  it("counts for a guest only the sachets it may open without an account", () => {
+    expect(openButtonLabel(stockView(wallet(6), NOW), 1)).toBe("Ouvrir le sachet · 1 restant");
+  });
+
+  it("names what the ring counts", () => {
+    expect(stockView(wallet(4), NOW).unit).toBe("sachets");
+    expect(stockView(wallet(1), NOW).unit).toBe("sachet");
   });
 
   it("measures how much of the wait for the next sachet is gone", () => {

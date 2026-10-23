@@ -12,7 +12,9 @@ export function StockRing({ stock }: { readonly stock: StockView }) {
       <span className={styles.ring} style={{ "--done": `${degrees}deg` } as CSSProperties}>
         <span className={styles.ringCount}>{stock.stored}</span>
       </span>
-      <span className={styles.ringNote}>{stock.note}</span>
+      <span className={styles.ringNote}>
+        {stock.unit} · {stock.note}
+      </span>
     </span>
   );
 }

@@ -24,6 +24,8 @@ export interface StockView {
   readonly empty: boolean;
   /** « +1 dans 18 min », « plein », « 2 bonus »: the note beside the count. */
   readonly note: string;
+  /** « sachets »: what the count in the ring counts, printed beside it. */
+  readonly unit: string;
   /** « Ouvrir le sachet », « Ouvrir un sachet bonus », « Prochain dans 18 min ». */
   readonly action: string;
   /** « 18 min », « plein »: the short form of the top bar chip. */
@@ -46,6 +48,7 @@ export function stockView(wallet: BoosterWalletResponse, now: EpochMs): StockVie
     bonus,
     empty: stored === 0 && bonus === 0,
     note,
+    unit: stored > 1 ? "sachets" : "sachet",
     action:
       stored > 0
         ? "Ouvrir le sachet"
@@ -65,6 +68,19 @@ export function stockView(wallet: BoosterWalletResponse, now: EpochMs): StockVie
             ),
           ),
   };
+}
+
+/**
+ * The button under the sachet, with what is left to open: « Ouvrir le sachet · 4 restants ». A
+ * guest counts only the sachets it may still open before it needs an account.
+ */
+export function openButtonLabel(stock: StockView, guestLeft: number | null): string {
+  if (stock.stored > 0) {
+    const left = guestLeft === null ? stock.stored : Math.min(stock.stored, guestLeft);
+    return `${stock.action} · ${left} ${left > 1 ? "restants" : "restant"}`;
+  }
+  if (stock.bonus > 0) return `${stock.action} · ${stock.bonus} en réserve`;
+  return stock.action;
 }
 
 /** The recap's button once the cards are seen: open another, a bonus, or wait. */

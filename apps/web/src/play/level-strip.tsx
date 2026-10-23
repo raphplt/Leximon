@@ -60,6 +60,7 @@ export function LevelStrip() {
               <span className={reward.milestone ? styles.nextIconKraft : styles.nextIcon}>
                 <Icon name={REWARD_ICONS[reward.icon]} size={22} />
               </span>
+              <span className={styles.nextWord}>{reward.word}</span>
               <span className={styles.nextLevel}>Niv. {reward.level}</span>
             </Link>
           </li>

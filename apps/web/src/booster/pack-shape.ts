@@ -15,6 +15,8 @@ export interface PackProps {
   readonly collection: PackCollection;
   /** Empty, the share of the wait for the next one already gone: the color comes back up. */
   readonly refill?: number | null | undefined;
+  /** Empty, the time left before the next one (« 12 min »), written on the pack. */
+  readonly refillLabel?: string | null | undefined;
 }
 
 /** What the screen tells the player to do with a sealed pack, until they close the hint. */

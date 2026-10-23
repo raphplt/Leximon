@@ -538,17 +538,95 @@
 }
 
 .waiting::after {
-  background: rgba(10, 12, 24, 0.3);
+  background: rgba(10, 12, 24, 0.55);
 }
 
-.waitingLine {
+/*
+ * What has filled glows warm, whatever the pouch's own colors: a dark pouch barely changes when
+ * it comes back from grey, so the share already waited is lit from below.
+ */
+.waitingFill {
   position: absolute;
   left: 0;
   right: 0;
+  bottom: 0;
+  height: calc(var(--refill) * 100%);
+  background: linear-gradient(0deg, rgba(255, 210, 90, 0.34), rgba(255, 210, 90, 0.1));
+  transition: height 15s linear;
+}
+
+/* The level of the color: a gold edge that glows and shimmers, so it reads as a filling. */
+.waitingLine {
+  position: absolute;
+  left: calc(4 * var(--u));
+  right: calc(4 * var(--u));
   bottom: calc(var(--refill) * 100%);
-  height: calc(2 * var(--u));
-  background: linear-gradient(90deg, transparent, rgba(255, 224, 138, 0.75), transparent);
+  height: calc(3 * var(--u));
+  border-radius: calc(2 * var(--u));
+  background:
+    linear-gradient(
+      90deg,
+      rgba(255, 224, 138, 0.55),
+      #ffe08a 40%,
+      #fff6d6 50%,
+      #ffe08a 60%,
+      rgba(255, 224, 138, 0.55)
+    )
+    0 0 / 200% 100%;
+  box-shadow: 0 0 calc(10 * var(--u)) rgba(255, 210, 90, 0.7);
   transition: bottom 15s linear;
+  animation: shimmer 2.4s linear infinite;
+}
+
+/* The time left rides just above the edge, never off the pouch. */
+.waitingTime {
+  position: absolute;
+  left: 50%;
+  bottom: clamp(
+    calc(14 * var(--u)),
+    calc(var(--refill) * 100% + 10 * var(--u)),
+    calc(100% - 60 * var(--u))
+  );
+  translate: -50% 0;
+  padding: calc(3 * var(--u)) calc(10 * var(--u));
+  border-radius: 999px;
+  background: #ffe08a;
+  color: #2a1d05;
+  font-family: var(--font-ui), sans-serif;
+  font-size: calc(15 * var(--u));
+  font-weight: 800;
+  white-space: nowrap;
+  box-shadow: 0 calc(3 * var(--u)) calc(10 * var(--u)) rgba(0, 0, 0, 0.35);
+  transition: bottom 15s linear;
+}
+
+/* The wait is over: the pouch glows once as it comes back. */
+.refilled .pouch {
+  animation: refilled 900ms ease-out;
+}
+
+@keyframes shimmer {
+  to {
+    background-position: -200% 0;
+  }
+}
+
+@keyframes refilled {
+  0% {
+    filter: brightness(1.6) saturate(1.3);
+    scale: 1.04;
+  }
+  100% {
+    filter: none;
+    scale: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .waitingLine,
+  .refilled .pouch {
+    animation: none;
+  }
 }
 
 /* --- Opening -------------------------------------------------------------------------- */

@@ -4,7 +4,7 @@ import type { MailKind, MailLetter } from "@leximon/contract";
 import {
   capitalize,
   claimableMailTitle,
-  coffretsLabel,
+  coffretsMailTitle,
   letterView,
   MAIL_EMPTY,
   MAIL_NEWS,
@@ -117,7 +117,7 @@ export function MailPanel({
     todo.push({
       key: "coffrets",
       icon: "coffret",
-      title: `${coffretsLabel(view.coffrets.length)} à ouvrir`,
+      title: coffretsMailTitle(view.coffrets),
       detail: "Chemin des niveaux",
       action: () => openCoffret(),
     });

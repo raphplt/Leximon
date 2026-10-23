@@ -1,6 +1,6 @@
 # Cahier des charges · Retours du premier testeur
 
-- **Statut :** validé par le propriétaire le 2026-10-23, avec les recommandations de la fin du document. Lots 1, 2 et 3 faits le 2026-10-23.
+- **Statut :** validé par le propriétaire le 2026-10-23, avec les recommandations de la fin du document. Lots 1 à 4 faits le 2026-10-23.
 - **Source :** les retours d'un ami du propriétaire, le 2026-10-23, en bêta sur leximon.fr : messages écrits, captures et sept vocaux. Il a commencé en invité, puis a créé son compte. Les arbitrages du propriétaire sont indiqués à chaque point.
 - **Règles liées :** P45 (mise en scène), P57 (prononciation), P58 (coffrets), P59 (fonctionnalités par niveau), P44 (affichage de la rareté). Cahiers liés : [ouverture.md](ouverture.md) (§6 et §7, à mettre à jour), [interface-v1.md](interface-v1.md).
 
@@ -131,6 +131,8 @@ Le plus important : sans lui, on peut ouvrir des sachets sans jamais lire un mot
 - **Code :** `wordUnderCounter`, `SLIPPING_RIDDLE` et `OWN_WORD` dans `packages/view-model/src/play.ts` (testés), `apps/web/src/play/slipping-word.tsx`.
 
 ## Lot 4 · Les signaux de l'écran Jouer
+
+*Fait le 2026-10-23, comme décrit ci-dessous. Écarts : un invité qui doit créer son compte ne voit pas de jauge (il n'attend pas le temps) et son bouton compte les plis qu'il peut encore ouvrir sans compte ; le texte « recharge » reste pour l'historique des coffrets ouverts quand les niveaux en donnaient, sans plus jamais être proposé. La jauge n'a pas pu être reproduite à plusieurs moments en capture (le panneau du navigateur ralentit les animations) : à regarder pendant la recette (JOU-02).*
 
 ### Le nombre de sachets dans le bouton
 

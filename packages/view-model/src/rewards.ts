@@ -14,7 +14,7 @@ import {
   levelRewards,
   unclaimedLevels,
 } from "@leximon/core";
-import { FEATURE_NAMES, levelsOfFeatures, opensAt } from "./features";
+import { FEATURE_NAMES, FEATURE_WORDS, levelsOfFeatures, opensAt } from "./features";
 import { formatCount, plural } from "./format";
 import { xpBefore } from "./level";
 import { avatarName, frameName } from "./profile";
@@ -43,6 +43,7 @@ export function rewardItem(reward: LevelRewardView | LevelReward): RewardItem {
   switch (reward.kind) {
     case "bonus_booster":
       return { icon: "sachet", title: "Sachet bonus", detail: "Il attend en réserve" };
+    // Only in the history of coffrets claimed when levels still gave one.
     case "refill":
       return { icon: "bolt", title: "Recharge", detail: "Ton stock remis au plein" };
     case "garni_booster":
@@ -100,6 +101,29 @@ export function coffretsLabel(count: number): string {
   return plural(count, "coffret", "coffrets");
 }
 
+/** « Coffret du niveau 4 », « Coffrets des niveaux 3 et 5 », « 3 coffrets, niveaux 3 à 6 ». */
+export function coffretsMailTitle(levels: readonly number[]): string {
+  const [first] = levels;
+  const last = levels[levels.length - 1];
+  if (first === undefined || last === undefined) return "";
+  if (levels.length === 1) return `Coffret du niveau ${first}`;
+  if (levels.length === 2) return `Coffrets des niveaux ${first} et ${last}`;
+  return `${levels.length} coffrets, niveaux ${first} à ${last}`;
+}
+
+/** Above a closed coffret: where it comes from. */
+export function coffretReached(level: number): string {
+  return `Niveau ${level} atteint`;
+}
+
+/** Under an opened coffret that gave sachets: where they went. */
+export function reserveAfterClaim(wallet: Pick<BoosterWalletResponse, "bonus">): string {
+  return `Dans ta réserve : ${plural(wallet.bonus, "sachet bonus", "sachets bonus")}`;
+}
+
+/** The second button of an opened coffret. */
+export const COFFRET_ROAD = "Voir le chemin des niveaux";
+
 /** « 2 récompenses dedans. », under a closed coffret. */
 export function coffretHint(level: number, now: EpochMs): string {
   const count = rewardsOfLevel(level, now).length;
@@ -108,8 +132,9 @@ export function coffretHint(level: number, now: EpochMs): string {
 
 /** The toast once a coffret is put away. */
 export function claimedToast(rewards: readonly LevelRewardView[]): string {
-  if (rewards.some((r) => r.kind === "refill")) return "Stock remis au plein.";
-  return "Rangé dans ta réserve.";
+  return rewards.some((r) => r.kind === "bonus_booster" || r.kind === "garni_booster")
+    ? "Rangé dans ta réserve."
+    : "Rangé dans ton atelier.";
 }
 
 /** The button of an opened coffret: what the player does with it. */
@@ -141,10 +166,34 @@ export interface UpcomingReward {
   readonly milestone: boolean;
   /** « Sachet garni », the main thing the level gives. */
   readonly title: string;
+  /** « Sachet », « Échanges »: one or two words under the icon, the opening first. */
+  readonly word: string;
   /** « Ouvre les clans », when the level opens a part of the game. */
   readonly opens: string | null;
   /** « Niveau 20 : Sachet garni, ouvre les clans ». */
   readonly label: string;
+}
+
+/** The reward in one or two words, under its icon. */
+function rewardWord(reward: LevelReward): string {
+  switch (reward.kind) {
+    case "bonus_booster":
+      return "Sachet";
+    case "refill":
+      return "Recharge";
+    case "garni_booster":
+      return "Sachet garni";
+    case "title":
+      return "Titre";
+    case "reserve_slot":
+      return "Réserve";
+    case "avatar":
+      return "Avatar";
+    case "frame":
+      return "Cadre";
+    case "pinned_slot":
+      return "Épingle";
+  }
 }
 
 /** « un sachet garni », the reward as said in a sentence. */
@@ -152,6 +201,7 @@ function rewardPhrase(reward: LevelReward): string {
   switch (reward.kind) {
     case "bonus_booster":
       return "un sachet bonus";
+    // No level gives one any more.
     case "refill":
       return "une recharge";
     case "garni_booster":
@@ -198,11 +248,18 @@ export function upcomingRewards(level: number, now: EpochMs, count = 4): Upcomin
     const item = first === undefined ? null : rewardItem(first);
     const opens = opensAt(n, now);
     const opening = opens === null ? null : `${opens.charAt(0).toLowerCase()}${opens.slice(1)}`;
+    const [feature] = featuresOpenedAt(levelsOfFeatures(now), n);
     return {
       level: n,
       icon: opens !== null ? "lock" : (item?.icon ?? "star"),
       milestone: n % rules.milestoneEvery === 0,
       title: item?.title ?? "Départ",
+      word:
+        feature !== undefined
+          ? FEATURE_WORDS[feature]
+          : first === undefined
+            ? "Départ"
+            : rewardWord(first),
       opens: opening === null ? null : `Ouvre ${opening}`,
       label: `Niveau ${n} : ${item?.title ?? "Départ"}${opening === null ? "" : `, ouvre ${opening}`}`,
     };

@@ -1,16 +1,20 @@
 "use client";
 
-import type { ClaimRefusal, LevelRewardView } from "@leximon/contract";
+import type { BoosterWalletResponse, ClaimRefusal, LevelRewardView } from "@leximon/contract";
 import {
   COFFRET_ACTION,
+  COFFRET_ROAD,
   claimedToast,
   claimRefusalMessage,
   coffretHint,
+  coffretReached,
   opensAt,
+  reserveAfterClaim,
   rewardItem,
 } from "@leximon/view-model";
 import { useRouter } from "next/navigation";
 import { type CSSProperties, useState } from "react";
+import { Avatar } from "@/components/avatar";
 import { claimLevelReward } from "@/lib/api";
 import { publishClaimed, wallet } from "@/player/player";
 import { Button } from "@/ui/button";
@@ -24,7 +28,11 @@ import { REWARD_ICONS } from "./reward-icons";
 type Step =
   | { readonly name: "closed" }
   | { readonly name: "claiming" }
-  | { readonly name: "opened"; readonly rewards: readonly LevelRewardView[] }
+  | {
+      readonly name: "opened";
+      readonly rewards: readonly LevelRewardView[];
+      readonly wallet: BoosterWalletResponse;
+    }
   | { readonly name: "refused"; readonly reason: ClaimRefusal }
   | { readonly name: "failed" };
 
@@ -64,7 +72,7 @@ export function CoffretDialog({
       }
       wallet.publish(result.wallet);
       publishClaimed(level);
-      setStep({ name: "opened", rewards: result.rewards });
+      setStep({ name: "opened", rewards: result.rewards, wallet: result.wallet });
     } catch {
       setStep({ name: "failed" });
     }
@@ -73,6 +81,12 @@ export function CoffretDialog({
   const store = (rewards: readonly LevelRewardView[]) => {
     onClose();
     toast(claimedToast(rewards));
+  };
+
+  const toRoad = () => {
+    if (step.name === "opened") toast(claimedToast(step.rewards));
+    onClose();
+    router.push("/niveaux");
   };
 
   const opens = level === null ? null : opensAt(level, now);
@@ -88,7 +102,6 @@ export function CoffretDialog({
       <div className={styles.coffret}>
         <span className={styles.rays} aria-hidden="true" />
         <div className={styles.inner}>
-          <p className={`${ui.kicker} ${styles.kicker}`}>Niveau {level}</p>
           {step.name === "opened" ? (
             <>
               <h2 className={`${ui.display} ${ui.pop} ${styles.levelUp}`}>Niveau {level} !</h2>
@@ -101,17 +114,26 @@ export function CoffretDialog({
                       className={`${styles.item} ${ui.pop}`}
                       style={{ animationDelay: `${120 + index * 140}ms` } as CSSProperties}
                     >
-                      <span className={styles.itemIcon}>
-                        <Icon name={REWARD_ICONS[item.icon]} size={26} />
-                      </span>
+                      <RewardVisual reward={reward} />
                       <span>
                         <span className={styles.itemTitle}>{item.title}</span>
-                        <span className={styles.itemDetail}>{item.detail}</span>
+                        {reward.kind === "title" ? (
+                          <span className={styles.plaque}>{reward.title}</span>
+                        ) : (
+                          <span className={styles.itemDetail}>{item.detail}</span>
+                        )}
                       </span>
                     </li>
                   );
                 })}
               </ul>
+              {step.rewards.some(
+                (r) => r.kind === "bonus_booster" || r.kind === "garni_booster",
+              ) && (
+                <p className={`${styles.stored} ${ui.pop}`} style={{ animationDelay: "320ms" }}>
+                  {reserveAfterClaim(step.wallet)}
+                </p>
+              )}
               {opens !== null && (
                 <p className={`${styles.opens} ${ui.pop}`} style={{ animationDelay: "400ms" }}>
                   Ouvre : {opens.charAt(0).toLowerCase()}
@@ -121,9 +143,15 @@ export function CoffretDialog({
               <Button wide className={styles.action} onClick={() => store(step.rewards)}>
                 {COFFRET_ACTION}
               </Button>
+              <Button wide variant="ghost" className={styles.road} onClick={toRoad}>
+                {COFFRET_ROAD}
+              </Button>
             </>
           ) : (
             <>
+              {level !== null && (
+                <p className={`${ui.kicker} ${styles.kicker}`}>{coffretReached(level)}</p>
+              )}
               <button
                 type="button"
                 className={`${styles.box} ${ui.float}`}
@@ -170,4 +198,41 @@ export function CoffretDialog({
       </div>
     </Dialog>
   );
+}
+
+/** What a reward looks like: the sachet itself, the engraving, the frame; an icon otherwise. */
+function RewardVisual({ reward }: { readonly reward: LevelRewardView }) {
+  switch (reward.kind) {
+    case "bonus_booster":
+    case "garni_booster":
+      return (
+        <span className={styles.visual} aria-hidden="true">
+          <span className={reward.kind === "garni_booster" ? styles.miniGarni : styles.mini}>
+            <span className={styles.miniSeal}>
+              <Icon name={reward.kind === "garni_booster" ? "star" : "sachet"} size={12} />
+            </span>
+          </span>
+        </span>
+      );
+    case "avatar":
+      return (
+        <span className={styles.visual}>
+          <Avatar avatar={reward.avatar ?? null} frame="simple" size={52} />
+        </span>
+      );
+    case "frame":
+      return (
+        <span className={styles.visual}>
+          <Avatar avatar={null} frame={reward.frame} size={52} />
+        </span>
+      );
+    default: {
+      const item = rewardItem(reward);
+      return (
+        <span className={styles.itemIcon}>
+          <Icon name={REWARD_ICONS[item.icon]} size={26} />
+        </span>
+      );
+    }
+  }
 }

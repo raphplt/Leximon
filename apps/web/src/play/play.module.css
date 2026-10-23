@@ -112,7 +112,7 @@
   flex-direction: column;
   align-items: center;
   gap: 3px;
-  width: 58px;
+  width: 64px;
   color: inherit;
   text-decoration: none;
 }
@@ -141,6 +141,14 @@
 .nextReward:hover .nextIcon,
 .nextReward:hover .nextIconKraft {
   translate: 0 -2px;
+}
+
+.nextWord {
+  max-width: 100%;
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1.15;
+  text-align: center;
 }
 
 .nextLevel {

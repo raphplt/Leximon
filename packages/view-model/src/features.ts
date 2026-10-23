@@ -27,6 +27,17 @@ export const FEATURE_NAMES: Readonly<Record<Feature, string>> = {
   jousts: "les joutes",
 };
 
+/** A feature in one or two words, under its level in the next rewards: « Échanges ». */
+export const FEATURE_WORDS: Readonly<Record<Feature, string>> = {
+  choose_collection: "Collections",
+  trade: "Échanges",
+  public_profile: "Profil",
+  trade_three: "Échanges ×3",
+  join_clan: "Clans",
+  create_clan: "Ton clan",
+  jousts: "Joutes",
+};
+
 export function levelsOfFeatures(now: EpochMs): Readonly<Record<Feature, number>> {
   return featureLevels(UNLOCK_SCHEDULE, TRADE_SCHEDULE, now);
 }

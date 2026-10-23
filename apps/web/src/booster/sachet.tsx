@@ -2,7 +2,7 @@
 
 import { sachetContents } from "@leximon/view-model";
 import Image from "next/image";
-import type { CSSProperties } from "react";
+import { type CSSProperties, useEffect, useRef, useState } from "react";
 import { useHoloLight } from "@/components/use-holo-light";
 import { play, vibrate } from "./feedback";
 import { PackSeal, packVariables } from "./pack-looks";
@@ -21,8 +21,19 @@ const SLICES = [-7, -3.5, 0, 3.5, 7] as const;
  * The pouch is a small 3D object: a back, a few slices for its thickness and a front, tilted by
  * the light of `useHoloLight` like a held card, swaying on its own until the pointer takes it.
  */
-export function Sachet({ state, onTearStart, onOpen, collection, refill = null }: PackProps) {
+/** How long the pouch glows once its wait is over. */
+const REFILLED_MS = 900;
+
+export function Sachet({
+  state,
+  onTearStart,
+  onOpen,
+  collection,
+  refill = null,
+  refillLabel = null,
+}: PackProps) {
   const sealed = state === "sealed";
+  const refilled = useRefilled(state, refill);
   const tear = useTear({ enabled: sealed, onTearStart, onOpen });
   // While the strip is pulled, the pouch holds still under the finger.
   const light = useHoloLight(sealed && !tear.dragging);
@@ -38,6 +49,7 @@ export function Sachet({ state, onTearStart, onOpen, collection, refill = null }
     styles.sachet,
     state === "opening" ? styles.opening : "",
     state === "empty" ? styles.empty : "",
+    refilled ? styles.refilled : "",
     tear.dragging ? styles.dragging : "",
     tear.fromRight ? styles.fromRight : "",
   ].join(" ");
@@ -103,7 +115,11 @@ export function Sachet({ state, onTearStart, onOpen, collection, refill = null }
                   style={{ "--refill": refill ?? 0 } as CSSProperties}
                   aria-hidden="true"
                 >
+                  <span className={styles.waitingFill} />
                   <span className={styles.waitingLine} />
+                  {refill !== null && refillLabel !== null && (
+                    <span className={styles.waitingTime}>{refillLabel}</span>
+                  )}
                 </span>
               )}
               <span className={styles.volume} aria-hidden="true" />
@@ -122,4 +138,26 @@ export function Sachet({ state, onTearStart, onOpen, collection, refill = null }
       </div>
     </div>
   );
+}
+
+/**
+ * True for a moment once a pouch that was filling up becomes sealed: the wait is over. A pouch
+ * that arrives sealed, or one waiting for an account rather than for time, does not glow.
+ */
+function useRefilled(state: PackProps["state"], refill: number | null): boolean {
+  const wasFilling = useRef(false);
+  const [refilled, setRefilled] = useState(false);
+  useEffect(() => {
+    if (state === "empty") {
+      wasFilling.current = refill !== null;
+      return;
+    }
+    if (state !== "sealed" || !wasFilling.current) return;
+    wasFilling.current = false;
+    setRefilled(true);
+    play("newCard");
+    const timer = setTimeout(() => setRefilled(false), REFILLED_MS);
+    return () => clearTimeout(timer);
+  }, [state, refill]);
+  return refilled;
 }

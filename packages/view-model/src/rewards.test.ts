@@ -3,13 +3,16 @@ import { describe, expect, it } from "vitest";
 import {
   claimedToast,
   coffretHint,
+  coffretReached,
   coffretsLabel,
+  coffretsMailTitle,
   levelDetail,
   nextRewardLine,
   plateauLayout,
   quarterAt,
   quarterNodes,
   quarterOfLevel,
+  reserveAfterClaim,
   reserveLabel,
   rewardSummary,
   upcomingRewards,
@@ -40,11 +43,20 @@ describe("level rewards", () => {
     expect(coffretsLabel(1)).toBe("1 coffret");
     expect(coffretHint(15, NOW)).toBe("2 récompenses dedans.");
     expect(coffretHint(3, NOW)).toBe("1 récompense dedans.");
+    expect(coffretReached(4)).toBe("Niveau 4 atteint");
+  });
+
+  it("names the coffrets of the mail by their levels", () => {
+    expect(coffretsMailTitle([4])).toBe("Coffret du niveau 4");
+    expect(coffretsMailTitle([3, 5])).toBe("Coffrets des niveaux 3 et 5");
+    expect(coffretsMailTitle([3, 4, 6])).toBe("3 coffrets, niveaux 3 à 6");
   });
 
   it("tells what was put away", () => {
-    expect(claimedToast([{ kind: "refill" }])).toBe("Stock remis au plein.");
     expect(claimedToast([{ kind: "bonus_booster" }])).toBe("Rangé dans ta réserve.");
+    expect(claimedToast([{ kind: "title", title: "Fine plume" }])).toBe("Rangé dans ton atelier.");
+    expect(reserveAfterClaim({ bonus: 3 })).toBe("Dans ta réserve : 3 sachets bonus");
+    expect(reserveAfterClaim({ bonus: 1 })).toBe("Dans ta réserve : 1 sachet bonus");
     expect(reserveLabel({ bonus: 3, bonusCap: 12 })).toBe("3 / 12 bonus");
   });
 
@@ -59,6 +71,7 @@ describe("level rewards", () => {
     expect(next[0]?.label).toBe(
       "Niveau 3 : Sachet bonus, ouvre choisir la collection de ton sachet",
     );
+    expect(next.map((r) => r.word)).toEqual(["Collections", "Sachet", "Échanges", "Sachet"]);
     expect(next[1]).toMatchObject({
       icon: "sachet",
       opens: null,
