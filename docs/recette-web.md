@@ -271,7 +271,7 @@ Compte A : `pnpm dev:player contact@leximon.fr --level 21` pour avoir une série
 docker compose exec postgres psql -U leximon -d leximon -c "update user_mastery set due = now(), last_reviewed_at = now() - interval '8 days' where card_id = 'equanimite' and user_id = (select id from users where email = 'contact@leximon.fr')"
 ```
 
-- **Attendu :** « Écris le mot », la définition, « Trouvé de tête, il passe à l'Encre. Les accents ne comptent pas, une faute de frappe passe. », un champ « Le mot », « Valider le mot » et « Je sèche ». *equanimite* : « Juste. », « Ça s'écrit équanimité. », « équanimité passe à l'Encre ! ». *equanimte* : « Juste, à une lettre près. », la même montée. Faux ou « Je sèche » : « Raté. », « C'était : équanimité ». Les autres mots restent en QCM. « Ta mémoire » dit qu'un mot monte quand on l'écrit de tête.
+- **Attendu :** « Écris le mot », la définition (les mots de la même famille remplacés par « … », par exemple « Petit du …, jeune … » pour *renardeau*, en entier après la réponse), « Trouvé de tête, il passe à l'Encre. Les accents ne comptent pas, une faute de frappe passe. », un champ « Le mot », « Valider le mot » et « Je sèche ». *equanimite* : « Juste. », « Ça s'écrit équanimité. », « équanimité passe à l'Encre ! ». *equanimte* : « Juste, à une lettre près. », la même montée. Faux ou « Je sèche » : « Raté. », « C'était : équanimité ». Les autres mots restent en QCM. « Ta mémoire » dit qu'un mot monte quand on l'écrit de tête.
 - **Retour :**
 
 ---

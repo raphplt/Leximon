@@ -11,6 +11,7 @@ import {
   levelUpPossible,
   MASTERY_SCHEDULE,
   masteryRulesAt,
+  normalizeWord,
   type RandomSource,
 } from "@leximon/core";
 import { type PackNoun, SACHET_NOUN } from "./format";
@@ -232,6 +233,28 @@ export function questionKicker(format: ChallengeFormat): string {
 export function typedQuestionHint(level: MasteryLevelCode): string {
   const next = level === "sketch" ? "l'Encre" : "la Dorure";
   return `Trouvé de tête, il passe à ${next}. Les accents ne comptent pas, une faute de frappe passe.`;
+}
+
+const HIDDEN = "…";
+
+/**
+ * The definition shown when the word is to be found: words of the same family hidden, so that
+ * « Petit du renard » does not give away *renardeau*. A word of the definition is hidden when it
+ * starts like the card's word over 5 letters or 60 % of it, whichever is longer, or over all of a
+ * shorter word.
+ */
+export function hideWordIn(definition: string, word: string): string {
+  const target = normalizeWord(word);
+  const needed = Math.min(target.length, Math.max(5, Math.ceil(target.length * 0.6)));
+  return definition.replaceAll(/[\p{L}\p{M}]+/gu, (token) =>
+    sharedPrefix(normalizeWord(token), target) >= needed ? HIDDEN : token,
+  );
+}
+
+function sharedPrefix(a: string, b: string): number {
+  let length = 0;
+  while (length < a.length && length < b.length && a[length] === b[length]) length++;
+  return length;
 }
 
 /** « Juste. +15 XP », « Juste, à une lettre près. +15 XP » or « Raté. » */

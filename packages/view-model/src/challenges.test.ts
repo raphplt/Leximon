@@ -6,6 +6,7 @@ import {
   dailyView,
   escapingWords,
   feedbackLine,
+  hideWordIn,
   levelUpLine,
   memoryCounts,
   memoryNote,
@@ -212,5 +213,17 @@ describe("défis screen", () => {
     );
     expect(spellingLine(" Écornifleur ", "écornifleur")).toBeNull();
     expect(spellingLine("ecornifleur", "écornifleur")).toBe("Ça s'écrit écornifleur.");
+  });
+
+  it("hides the words of the same family in a definition", () => {
+    expect(hideWordIn("Petit du renard, jeune renard.", "renardeau")).toBe("Petit du …, jeune ….");
+    expect(hideWordIn("Charge de tribun dans la Rome antique.", "tribunat")).toBe(
+      "Charge de … dans la Rome antique.",
+    );
+    expect(hideWordIn("Faire la bobe, bouder.", "bobe")).toBe("Faire la …, bouder.");
+    expect(hideWordIn("Marchand d'Éventails.", "éventaillier")).toBe("Marchand d'….");
+    expect(hideWordIn("Espace compris entre la poupe et le banc.", "espale")).toBe(
+      "Espace compris entre la poupe et le banc.",
+    );
   });
 });

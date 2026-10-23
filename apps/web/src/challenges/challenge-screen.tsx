@@ -10,6 +10,7 @@ import {
   dailyView,
   escapingWords,
   frequencyLine,
+  hideWordIn,
   levelUpLabel,
   levelUpLine,
   memoryCounts,
@@ -433,7 +434,7 @@ function QuestionView({
           </h2>
         ) : (
           <h2 id="prompt" className={styles.promptDefinition}>
-            {card.definition}
+            {result === null ? hideWordIn(card.definition, card.word) : card.definition}
           </h2>
         )}
         {question.format === "typed" && result === null && (
