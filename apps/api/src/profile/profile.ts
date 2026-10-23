@@ -9,8 +9,10 @@ import type {
   UpdateProfileRequest,
 } from "@leximon/contract";
 import {
+  CLAN_LEVEL,
   type ClaimedReward,
   checkPseudo,
+  clanLevelOf,
   currentTitle,
   defaultAvatar,
   type EpochMs,
@@ -435,6 +437,7 @@ async function readProfileClan(db: Reader, userId: string): Promise<ProfileClan 
       engraving: clans.emblemEngraving,
       color: clans.emblemColor,
       accent: clans.emblemAccent,
+      xp: clans.xp,
     })
     .from(clanMembers)
     .innerJoin(clans, eq(clans.id, clanMembers.clanId))
@@ -444,6 +447,7 @@ async function readProfileClan(db: Reader, userId: string): Promise<ProfileClan 
     id: row.id,
     name: row.name,
     emblem: { engraving: row.engraving, colors: [row.color, row.accent] },
+    level: clanLevelOf(CLAN_LEVEL, row.xp).level,
   };
 }
 

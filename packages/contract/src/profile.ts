@@ -30,11 +30,12 @@ export const profileStatsSchema = z.object({
 });
 export type ProfileStats = z.infer<typeof profileStatsSchema>;
 
-/** The clan a public profile shows: its name and emblem. */
+/** The clan a public profile shows: its name, emblem and level. */
 export const profileClanSchema = z.object({
   id: z.uuid(),
   name: z.string(),
   emblem: emblemSchema,
+  level: z.int().positive(),
 });
 export type ProfileClan = z.infer<typeof profileClanSchema>;
 

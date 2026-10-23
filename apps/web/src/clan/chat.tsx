@@ -193,11 +193,8 @@ export function ClanChat({
     <section className={compact ? styles.chatCompact : `${ui.panel} ${styles.chat}`}>
       {!compact && (
         <header className={styles.chatHead}>
-          <div>
-            <h2 className={styles.chatTitle}>Discussion et journal</h2>
-            {online !== null && <p className={styles.small}>{online}</p>}
-          </div>
-          <span className={styles.faint}>Modérée</span>
+          <h2 className={styles.chatTitle}>Discussion et journal</h2>
+          {online !== null && <p className={styles.small}>{online}</p>}
         </header>
       )}
       <div

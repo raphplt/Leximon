@@ -264,8 +264,8 @@ export function goalRewardLine(
   return `${at[0]?.toUpperCase()}${at.slice(1)}, ${reward}.`;
 }
 
-/** The Jouer screen's row: the ring's share of the next target and « 96 / 150 », or the cheer. */
-export function todayGoalRow(goal: GoalCounts): { readonly ratio: number; readonly text: string } {
+/** The ring around the clan button: its share of the next target and « 96 / 150 », or the cheer. */
+export function goalRing(goal: GoalCounts): { readonly ratio: number; readonly text: string } {
   const next = nextOf(goal);
   if (next === null) return { ratio: 1, text: "Objectif rempli !" };
   return {

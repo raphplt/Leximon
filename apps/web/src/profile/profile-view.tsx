@@ -81,7 +81,7 @@ function ClanLine({
 }) {
   const content = (
     <>
-      <Emblem emblem={clan.emblem} size={22} />
+      <Emblem emblem={clan.emblem} size={28} level={clan.level} />
       <span>{clan.name}</span>
     </>
   );

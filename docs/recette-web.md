@@ -107,7 +107,7 @@ Compte A, n'importe quel niveau.
 
 ### JOU-01 · Écran Jouer
 - **Faire :** ouvrir `/jouer` en 1440 px puis en 390 px.
-- **Attendu :** en 1440 px, trois colonnes qui tiennent dans la fenêtre, sans défiler. Au centre, le comptoir sur toute la hauteur, plus clair que la page, avec le sachet sous une lampe (plus grand sur un écran haut) et le bouton sur une tablette sombre. À gauche, en haut, la carte du niveau (médaille, titre, barre d'XP, « 260 / 775 XP » au niveau 16, les 5 prochaines récompenses, « N coffrets ») ; en bas, les raccourcis en liste : Clan, avec l'emblème de ton clan si tu en as un, Discussion, Joutes, Réglages, avec le niveau qui les ouvre. À droite, en haut, « Aujourd'hui » : défi du jour avec son anneau, mot qui s'échappe, courrier ; en bas, « Ta collection » : le sachet choisi, mots trouvés sur le total, rareté par rareté, « Voir l'album ». Entre 760 et 1180 px, le comptoir en haut, les deux cartes dessous. En 390 px, la coque mobile : onglets en bas, bandeau en haut, boutons flottants de part et d'autre du sachet. Les panneaux apparaissent en fondu, sans glisser.
+- **Attendu :** en 1440 px, en haut, le bandeau du niveau : médaille, « Niveau 16 · titre », barre d'XP et « 260 / 775 XP », les 4 prochaines récompenses reliées par un trait, « N coffrets » s'il y en a (les récompenses disparaissent sous 1060 px). Dessous, le comptoir, plus clair que la page : le sachet sous une lampe, assez petit pour que l'écran tienne sans défiler en 1440 × 900, et le bouton sur une tablette sombre. De part et d'autre, des boutons ronds : à gauche Clan (avec l'emblème de ton clan si tu en as un), Discussion, Joutes, avec le niveau qui les ouvre ; à droite Défi du jour avec son anneau, Réglages. Ni courrier ni coffrets dans ces boutons : la barre du haut et le bandeau les ont déjà. En 390 px, la coque mobile : onglets en bas, bandeau en haut, boutons flottants de part et d'autre du sachet, avec Coffrets en plus. Les panneaux apparaissent en fondu, sans glisser.
 - **Retour :**
 
 ### JOU-02 · Stock
@@ -116,7 +116,7 @@ Compte A, n'importe quel niveau.
 
 ### JOU-03 · Choix de la collection
 - **Faire :** avec un compte de niveau 1 ou 2, puis de niveau 3 ou plus.
-- **Attendu :** avant le niveau 3, seul le sachet des Fondateurs, en premier ; les autres collections portent « Niv. 3 ». Ensuite, les petits sachets en haut à gauche du comptoir changent le sachet : celui choisi est soulevé et cerclé d'or, les autres en retrait, les fermés grisés avec leur niveau ; la carte « Ta collection » suit. Chaque collection a le sien : couleur de son dos de carte, motif, emblème (livre et plume pour les Fondateurs, masques pour Caractères, outils pour Métiers), son nom, et le sceau du logo sur le flanc.
+- **Attendu :** avant le niveau 3, seul le sachet des Fondateurs, en premier ; les autres collections portent « Niv. 3 ». Ensuite, les pastilles en haut à gauche du comptoir, chacune avec un rond à la couleur de sa collection, changent le sachet : celle choisie est claire, les fermées grisées avec leur niveau. Chaque collection a son sachet : couleur de son dos de carte, motif, emblème (livre et plume pour les Fondateurs, masques pour Caractères, outils pour Métiers), son nom, et le sceau du logo sur le flanc.
 - **Retour :**
 
 ### JOU-04 · Ouverture
@@ -149,7 +149,7 @@ Compte A, n'importe quel niveau.
 - **Retour :**
 
 ### JOU-10 · Mot qui s'échappe
-- **Attendu :** quand un mot est dû en révision, « *Mot* est en train de t'échapper. » avec « Réviser », dans la carte « Aujourd'hui » (sous le comptoir en 390 px). Absent sinon. *Un mot devient dû au plus tôt le lendemain de son premier défi.*
+- **Attendu :** quand un mot est dû en révision, « *Mot* est en train de t'échapper. » avec « Réviser », dans un encadré sous le comptoir, bien séparé du sachet. Absent sinon. *Un mot devient dû au plus tôt le lendemain de son premier défi.*
 - **Retour :**
 
 ---
@@ -446,8 +446,8 @@ pnpm dev:player recette-c@example.com --level 9
 - **Retour :**
 
 ### CLA-12b · Niveau du clan
-- **Faire :** regarder l'en-tête du clan après l'objectif de CLA-12, puis la recherche de clans depuis B (ou un compte sans clan), puis la fin d'un défi et « Aujourd'hui » sur Jouer.
-- **Attendu :** l'emblème porte une médaille avec le niveau ; sous le nom, « Niveau N · X / Y XP », une barre dorée et le prochain déblocage (« Au niveau 3, la couleur … »). Le passage de niveau s'écrit au journal, « Le clan passe au niveau 2 ! », et la nouvelle couleur ou gravure se choisit dans les réglages du clan. La recherche montre la médaille sur chaque emblème. Les membres sont triés par bonnes réponses de la semaine, « 23 cette semaine ». En fin de défi, « +N pour le clan » sous le score ; sur Jouer en 1440 px, une ligne « Objectif du clan » avec son anneau et « 12 / 30 ». *Bannière (niveau 10) et palier Enluminure (niveau 5) : pas atteignables à la main en recette.*
+- **Faire :** regarder l'en-tête du clan après l'objectif de CLA-12, puis la recherche de clans depuis B (ou un compte sans clan), puis la fin d'un défi, le bouton Clan sur Jouer et le profil de A.
+- **Attendu :** l'emblème porte une médaille avec le niveau ; sous le nom, « Niveau N · X / Y XP », une barre dorée et le prochain déblocage (« Au niveau 3, la couleur … »). Le passage de niveau s'écrit au journal, « Le clan passe au niveau 2 ! », et la nouvelle couleur ou gravure se choisit dans les réglages du clan. La recherche montre la médaille sur chaque emblème. Les membres sont triés par bonnes réponses de la semaine, « 23 cette semaine ». En fin de défi, « +N pour le clan » sous le score ; sur Jouer, en 1440 px comme en 390 px, un anneau doré autour du bouton Clan, rempli vers le prochain palier. Sur le profil public et son image de partage, la médaille du clan avec son niveau, devant le nom du clan. Dans la discussion du clan, plus de « Modérée » en tête. *Bannière (niveau 10) et palier Enluminure (niveau 5) : pas atteignables à la main en recette.*
 - **Retour :**
 
 ### CLA-13 · Bibliothèque
@@ -628,6 +628,8 @@ Retours généraux du propriétaire après une première prise en main, classés
 6. **Animations d'arrivée** sur l'écran : la façon dont certains éléments apparaissent fait bizarre.
 
 *Repris le 2026-10-22 : comptoir au centre entre la carte du niveau et « Aujourd'hui », un sachet par collection avec le vrai sceau, le stock dans un anneau, l'astuce qui se ferme, le mot qui s'échappe dans « Aujourd'hui », un simple fondu (JOU-01 à JOU-04, JOU-10).*
+
+*Revu le 2026-10-23, à la demande du propriétaire (sachet trop gros, la première disposition lui plaisait mieux) : retour au bandeau du niveau en haut et aux boutons ronds de part et d'autre d'un sachet plus petit. Gardés de la reprise : le comptoir plus clair, le sachet par collection, l'anneau du stock, l'astuce qui se ferme, le mot qui s'échappe dans son encadré sous le comptoir. Partis : les cartes « Aujourd'hui » et « Ta collection » (le défi du jour a son anneau, l'objectif du clan le sien sur le bouton Clan, l'album la collection).*
 
 ### 3. Chemin des niveaux
 

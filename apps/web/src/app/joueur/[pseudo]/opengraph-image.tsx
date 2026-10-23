@@ -26,8 +26,9 @@ export default async function Image({ params }: { params: Promise<{ pseudo: stri
   const name = profile?.pseudo ?? "Leximon";
   const headline =
     profile?.visibility === "public" ? profileHeadline(profile.title, profile.level) : "";
-  const clan =
-    profile?.visibility === "public" && profile.clan !== null ? `Clan ${profile.clan.name}` : "";
+  const clanOf = profile?.visibility === "public" ? profile.clan : null;
+  const clan = clanOf === null ? "" : `Clan ${clanOf.name}`;
+  const clanLevel = clanOf === null ? "" : String(clanOf.level);
   const figures =
     profile?.visibility === "public"
       ? [
@@ -43,7 +44,7 @@ export default async function Image({ params }: { params: Promise<{ pseudo: stri
       `${fonts.display.family}:opsz,wght,SOFT@72,${fonts.display.weight},${fonts.display.soft}`,
       `Leximon${name}${initial}`,
     ),
-    googleFont(`${fonts.ui.family}:wght@800`, DOMAIN + headline + clan + figures),
+    googleFont(`${fonts.ui.family}:wght@800`, DOMAIN + headline + clan + clanLevel + figures),
   ]);
 
   return new ImageResponse(
@@ -84,7 +85,28 @@ export default async function Image({ params }: { params: Promise<{ pseudo: stri
           {headline !== "" && (
             <div style={{ fontFamily: "Ui", fontSize: 34, color: colors.accent }}>{headline}</div>
           )}
-          {clan !== "" && <div style={{ fontFamily: "Ui", fontSize: 30 }}>{clan}</div>}
+          {clan !== "" && (
+            <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  minWidth: 44,
+                  height: 44,
+                  padding: "0 10px",
+                  borderRadius: 22,
+                  background: "#d9a233",
+                  color: "#3a2606",
+                  fontFamily: "Ui",
+                  fontSize: 24,
+                }}
+              >
+                {clanLevel}
+              </div>
+              <div style={{ fontFamily: "Ui", fontSize: 30 }}>{clan}</div>
+            </div>
+          )}
           {figures !== "" && (
             <div style={{ fontFamily: "Ui", fontSize: 28, color: colors.textMuted }}>{figures}</div>
           )}

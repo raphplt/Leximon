@@ -1,14 +1,14 @@
 "use client";
 
 import type { CollectionChoice } from "@leximon/view-model";
-import { PackEmblem, packVariables } from "@/booster/pack-looks";
+import { packVariables } from "@/booster/pack-looks";
 import { Icon } from "@/ui/icon";
 import ui from "@/ui/ui.module.css";
 import styles from "./play.module.css";
 
 /**
- * Which sachet to open: small sachets on the web, arrows around the name on a phone. Closed
- * choices stay visible with their level.
+ * Which sachet to open: chips in the collection's tone on the web, arrows around the name on a
+ * phone. Closed choices stay visible with their level.
  */
 export function CollectionPicker({
   choices,
@@ -43,27 +43,25 @@ export function CollectionPicker({
             key={choice.id}
             type="button"
             aria-pressed={choice.id === current.id}
-            className={`${styles.pick} ${choice.lock !== null ? styles.pickLocked : ""}`}
+            className={`${ui.chip} ${styles.chip} ${choice.lock !== null ? styles.chipLocked : ""}`}
             onClick={() => (choice.lock !== null ? onLocked() : onPick(choice))}
           >
             <span
-              className={styles.pickPouch}
+              className={styles.chipTone}
               style={packVariables({
                 id: choice.id,
                 name: choice.name,
                 back: backs.get(choice.id),
               })}
               aria-hidden="true"
-            >
-              <PackEmblem collectionId={choice.id} className={styles.pickEmblem} />
-              {choice.lock !== null && (
-                <span className={styles.pickLock}>
-                  <Icon name="lock" size={11} />
-                  {choice.lock}
-                </span>
-              )}
-            </span>
-            <span className={styles.pickName}>{choice.short}</span>
+            />
+            <span>{choice.short}</span>
+            {choice.lock !== null && (
+              <span className={styles.chipLock}>
+                <Icon name="lock" size={12} />
+                {choice.lock}
+              </span>
+            )}
           </button>
         ))}
       </fieldset>

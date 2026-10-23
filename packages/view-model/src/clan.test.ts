@@ -10,6 +10,7 @@ import {
   goalBar,
   goalCountLine,
   goalRewardLine,
+  goalRing,
   goalTimeLeft,
   goalTitle,
   insertMention,
@@ -24,7 +25,6 @@ import {
   muteChoices,
   nextUnlockLine,
   seenLabel,
-  todayGoalRow,
   unlockLabel,
   weekAnswersLabel,
 } from "./clan";
@@ -146,8 +146,8 @@ describe("the weekly goal", () => {
   });
 
   it("sums up on the Jouer screen", () => {
-    expect(todayGoalRow(goal)).toEqual({ ratio: 0.64, text: "96 / 150" });
-    expect(todayGoalRow({ ...goal, answers: 160 })).toEqual({
+    expect(goalRing(goal)).toEqual({ ratio: 0.64, text: "96 / 150" });
+    expect(goalRing({ ...goal, answers: 160 })).toEqual({
       ratio: 1,
       text: "Objectif rempli !",
     });

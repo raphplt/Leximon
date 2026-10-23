@@ -4,6 +4,7 @@ import {
   dailyView,
   type FabId,
   type Fab as FabModel,
+  goalRing,
   lockedToast,
   playFabs,
 } from "@leximon/view-model";
@@ -16,7 +17,7 @@ import { useShared } from "@/player/resource";
 import { useShell } from "@/shell/shell-context";
 import { usePlayerView } from "@/shell/use-player-view";
 import { Fab } from "@/ui/fab";
-import { Icon, type IconName } from "@/ui/icon";
+import type { IconName } from "@/ui/icon";
 import { useToast } from "@/ui/toast";
 import styles from "./play.module.css";
 
@@ -30,17 +31,37 @@ const ICONS: Readonly<Record<FabId, IconName>> = {
   settings: "reglages",
 };
 
-/** The buttons of the Jouer screen, and what each one does. */
-function useFabs() {
+function Ring({
+  ratio,
+  className,
+}: {
+  readonly ratio: number;
+  readonly className: string | undefined;
+}) {
+  return (
+    <span
+      className={className}
+      style={{ "--done": `${Math.round(ratio * 360)}deg` } as CSSProperties}
+      aria-hidden="true"
+    />
+  );
+}
+
+/**
+ * The round buttons on both sides of the sachet; the clan's carries the weekly goal in its ring.
+ * The mail is left out: the top bar has it. On a wide screen, the level band has the coffrets.
+ */
+export function PlayFabs() {
   const view = usePlayerView();
   const shell = useShell();
   const router = useRouter();
   const toast = useToast();
   const daily = useShared(dailyChallenge);
-  const emblem = useShared(myClan)?.emblem ?? null;
+  const clan = useShared(myClan);
   if (view.now === 0) return null;
   const dailyRatio = daily === null ? 0 : dailyView(daily).ratio;
-  const fabs = playFabs(
+  const goal = clan?.goal == null ? null : goalRing(clan.goal);
+  const { left, right } = playFabs(
     {
       level: view.progress?.level ?? 1,
       coffrets: view.coffrets.length,
@@ -74,75 +95,41 @@ function useFabs() {
     }
   };
 
-  const render = (fab: FabModel) => (
-    <Fab
-      key={fab.id}
-      icon={ICONS[fab.id]}
-      label={fab.label}
-      badge={fab.badge}
-      lock={fab.lock}
-      glow={fab.glow}
-      onClick={() => act(fab)}
-      visual={
-        fab.id === "clan" && emblem !== null ? <Emblem emblem={emblem} size={30} /> : undefined
-      }
-      ring={
-        fab.id === "daily" ? (
-          <span
-            className={styles.dailyRing}
-            style={{ "--done": `${Math.round(dailyRatio * 360)}deg` } as CSSProperties}
-            aria-hidden="true"
-          />
-        ) : undefined
-      }
-    />
-  );
-  return { ...fabs, render, act };
-}
+  const ringOf = (id: FabId) => {
+    if (id === "daily") return <Ring ratio={dailyRatio} className={styles.dailyRing} />;
+    if (id === "clan" && goal !== null)
+      return <Ring ratio={goal.ratio} className={styles.goalRing} />;
+    return undefined;
+  };
 
-/** On a phone, the floating buttons on both sides of the sachet. */
-export function PlayFabs() {
-  const fabs = useFabs();
-  if (fabs === null) return null;
+  const column = (fabs: readonly FabModel[], side: string | undefined) => (
+    <div className={side}>
+      {fabs
+        .filter((fab) => fab.id !== "mail")
+        .map((fab) => (
+          <div key={fab.id} className={fab.id === "coffrets" ? styles.fabCoffrets : undefined}>
+            <Fab
+              icon={ICONS[fab.id]}
+              label={fab.label}
+              badge={fab.badge}
+              lock={fab.lock}
+              glow={fab.glow}
+              onClick={() => act(fab)}
+              visual={
+                fab.id === "clan" && clan?.emblem != null ? (
+                  <Emblem emblem={clan.emblem} size={30} />
+                ) : undefined
+              }
+              ring={ringOf(fab.id)}
+            />
+          </div>
+        ))}
+    </div>
+  );
   return (
     <>
-      <div className={styles.fabsLeft}>{fabs.left.map(fabs.render)}</div>
-      <div className={styles.fabsRight}>{fabs.right.map(fabs.render)}</div>
+      {column(left, styles.fabsLeft)}
+      {column(right, styles.fabsRight)}
     </>
-  );
-}
-
-/**
- * On a wider screen, the places to go from Jouer that the top bar does not have: the clan is a
- * tab, the daily challenge and coffrets have their cards, the mail its button.
- */
-export function Shortcuts() {
-  const fabs = useFabs();
-  if (fabs === null) return null;
-  const shown = [...fabs.left, ...fabs.right].filter(
-    (fab) => fab.id === "chat" || fab.id === "jousts" || fab.id === "settings",
-  );
-  return (
-    <nav className={styles.shortcuts} aria-label="Raccourcis">
-      {shown.map((fab) => (
-        <button
-          key={fab.id}
-          type="button"
-          className={`${styles.shortcut} ${fab.lock !== null ? styles.shortcutLocked : ""}`}
-          onClick={() => fabs.act(fab)}
-          aria-label={
-            fab.lock === null ? fab.label : `${fab.label}, ${fab.lock.replace("Niv.", "niveau")}`
-          }
-        >
-          <span className={styles.shortcutIcon}>
-            <Icon name={ICONS[fab.id]} size={20} />
-          </span>
-          <span className={styles.shortcutText}>
-            <span className={styles.shortcutLabel}>{fab.label}</span>
-            {fab.lock !== null && <span className={styles.shortcutLock}>{fab.lock}</span>}
-          </span>
-        </button>
-      ))}
-    </nav>
   );
 }

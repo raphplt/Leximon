@@ -1,14 +1,7 @@
 import type { BoosterSource, BoosterWalletResponse } from "@leximon/contract";
-import {
-  canOpenCollection,
-  type EpochMs,
-  RARITIES,
-  type Rarity,
-  UNLOCK_SCHEDULE,
-  unlockRulesAt,
-} from "@leximon/core";
+import { canOpenCollection, type EpochMs, UNLOCK_SCHEDULE, unlockRulesAt } from "@leximon/core";
 import { levelBadge, levelsOfFeatures } from "./features";
-import { formatCount, formatWait } from "./format";
+import { formatWait } from "./format";
 
 /** The Jouer screen and the stock shown in the top bar. */
 
@@ -200,58 +193,4 @@ export function playFabs(input: FabInput, now: EpochMs): { left: Fab[]; right: F
       fab("settings", "Réglages"),
     ],
   };
-}
-
-// --- Collection of the sachet, beside the counter -------------------------------------------
-
-export interface ShelfRarity {
-  readonly rarity: Rarity;
-  readonly owned: number;
-  readonly total: number;
-}
-
-export interface CollectionShelf {
-  readonly owned: number;
-  readonly total: number;
-  /** Share of the words found, 0 to 1. */
-  readonly ratio: number;
-  /** « 132 / 520 mots ». */
-  readonly count: string;
-  /** Every rarity of the collection, the most common first; rarities it lacks are left out. */
-  readonly rarities: readonly ShelfRarity[];
-}
-
-/** How much of a collection the player has found, rarity by rarity. */
-export function collectionShelf(
-  cards: readonly { readonly id: string; readonly rarity: Rarity }[],
-  owned: ReadonlyMap<string, number>,
-): CollectionShelf {
-  const rarities = RARITIES.map((rarity) => {
-    const ofRarity = cards.filter((card) => card.rarity === rarity);
-    return {
-      rarity,
-      owned: ofRarity.filter((card) => (owned.get(card.id) ?? 0) > 0).length,
-      total: ofRarity.length,
-    };
-  }).filter((row) => row.total > 0);
-  const found = rarities.reduce((sum, row) => sum + row.owned, 0);
-  return {
-    owned: found,
-    total: cards.length,
-    ratio: cards.length === 0 ? 0 : found / cards.length,
-    count: `${formatCount(found)} / ${formatCount(cards.length)} mots`,
-    rarities,
-  };
-}
-
-/** The rarest words the player found in a collection, rarest first: the pride of the shelf. */
-export function bestFinds<T extends { readonly id: string; readonly rarity: Rarity }>(
-  cards: readonly T[],
-  owned: ReadonlyMap<string, number>,
-  count: number,
-): T[] {
-  return cards
-    .filter((card) => (owned.get(card.id) ?? 0) > 0)
-    .sort((a, b) => RARITIES.indexOf(b.rarity) - RARITIES.indexOf(a.rarity))
-    .slice(0, count);
 }

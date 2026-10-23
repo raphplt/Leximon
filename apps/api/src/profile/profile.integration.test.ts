@@ -257,7 +257,10 @@ describe("GET /players/:pseudo", () => {
     });
     expect(created.status).toBe(201);
     const withClan = publicProfileSchema.parse(await (await call(null, "GET", path)).json());
-    expect(withClan).toMatchObject({ visibility: "public", clan: { name: clanName, emblem } });
+    expect(withClan).toMatchObject({
+      visibility: "public",
+      clan: { name: clanName, emblem, level: 1 },
+    });
 
     await call(member, "PATCH", "/me/profile", { profilePublic: false });
     const hidden = publicProfileSchema.parse(await (await call(null, "GET", path)).json());
