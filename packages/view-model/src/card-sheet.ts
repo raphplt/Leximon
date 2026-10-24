@@ -31,7 +31,7 @@ export function masteryView(memory: WordMemory | undefined, now: number): Master
     reached: index <= reachedIndex,
   }));
   if (memory === undefined) {
-    return { steps, text: "Pas encore révisé. Un défi le met en route." };
+    return { steps, text: "Pas encore révisé." };
   }
   if (level === "gilded") return { steps, text: "Doré. Il ne bouge plus." };
   const next = level === "sketch" ? "ink" : "gilded";

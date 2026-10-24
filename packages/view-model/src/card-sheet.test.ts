@@ -13,7 +13,7 @@ describe("mastery of a card", () => {
   });
 
   it("says what it takes to climb the next level", () => {
-    expect(masteryView(undefined, NOW).text).toBe("Pas encore révisé. Un défi le met en route.");
+    expect(masteryView(undefined, NOW).text).toBe("Pas encore révisé.");
     const sketch = masteryView(word("sketch", NOW + 2 * DAY, NOW - DAY), NOW);
     expect(sketch.text).toBe("Retrouve-le 7 jours après une révision, et c'est l'Encre.");
     expect(sketch.steps.map((step) => step.reached)).toEqual([true, false, false]);
@@ -48,7 +48,11 @@ describe("copies and actions", () => {
 
   it("says where the word stands in the challenges", () => {
     expect(reviewLabel(undefined, NOW)).toBeNull();
-    const memory = { level: "sketch" as const, stability: 1, lastReviewedAt: NOW - DAY };
+    const memory = {
+      level: "sketch" as const,
+      stability: 1,
+      lastReviewedAt: NOW - DAY,
+    };
     expect(reviewLabel({ ...memory, due: NOW - 1 }, NOW)).toBe("Il t'attend dans les défis.");
     expect(reviewLabel({ ...memory, due: NOW + 3 * DAY }, NOW)).toBe("Revient dans 3 jours.");
     expect(comeBackIn(30 * 60_000)).toBe("dans 30 min");
