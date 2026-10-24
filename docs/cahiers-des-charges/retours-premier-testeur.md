@@ -214,8 +214,7 @@ Le plus important : sans lui, on peut ouvrir des sachets sans jamais lire un mot
   - **Coût :** les 1 561 définitions font environ 160 000 caractères. C'est le même ordre que les mots, déjà dans l'offre gratuite de Google (D-032), donc pas un problème de frais. Rien ne change dans l'architecture : fichiers statiques sur le CDN, nommés par leur empreinte, champ facultatif dans le catalogue.
   - **Risque :** la qualité. Les autres mots rares d'une définition ne sont pas guidés par la notation phonétique.
   - **Prochaine étape :** essayer sur 20 cartes, à écouter par le propriétaire, avant de décider.
-- **Les hautes raretés plus spectaculaires (point 14) :** à juger après le lot 1. Le testeur n'en a probablement vu aucune.
-  - Pour la recette, il faudra un moyen de forcer une Épique ou une Légendaire en local (commande de dev, comme `dev:player`).
+- **Les hautes raretés plus spectaculaires (point 14) :** *tranché le 2026-10-24 : le propriétaire a ouvert une Épique, la mise en scène lui suffit. Rien à faire, pas de commande de dev pour forcer une rareté.*
 - **Réglages (point 15) :** lui demander ce qu'il entendait. Piste : Réglages est à la fois dans le menu du joueur et parmi les boutons ronds de Jouer, ce doublon mérite d'être revu.
 - **Rendu plus moderne (point 16) :** lui demander deux ou trois applis ou jeux qu'il trouve modernes, puis une passe de direction artistique (D-022), à proposer au propriétaire.
 
