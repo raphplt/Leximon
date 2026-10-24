@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { type ReactNode, useCallback, useMemo, useState } from "react";
 import { ChatPanel } from "@/clan/chat-panel";
+import { TradeDoneDialog } from "@/trades/trade-done-dialog";
 import { ToastProvider } from "@/ui/toast";
 import { PhoneTabs, PhoneTopBar, TopBar } from "./bars";
 import { CardSheet } from "./card-sheet";
@@ -74,6 +75,7 @@ function Frame({ children }: { readonly children: ReactNode }) {
       <ChatPanel open={overlay === "chat"} onClose={close} />
       <SanctionDialog now={view.now} />
       <CoffretDialog level={coffret} now={view.now} onClose={() => setCoffret(null)} />
+      <TradeDoneDialog />
       <CardSheet cardId={card} onClose={() => setCard(null)} />
     </ShellContext.Provider>
   );

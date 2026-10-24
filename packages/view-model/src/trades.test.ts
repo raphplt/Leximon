@@ -14,9 +14,12 @@ import {
   statusLabel,
   timeLeftLabel,
   toggleCard,
+  tradeDoneAction,
+  tradeDoneTitle,
   tradeLevelLabel,
   tradeRulesNote,
   tradeSides,
+  tradesDone,
 } from "./trades";
 
 const now = Date.parse("2026-10-20T12:00:00.000Z");
@@ -233,5 +236,35 @@ describe("copies after a trade", () => {
       ]),
     );
     expect(before.get("baguenaude")).toBe(1);
+  });
+});
+
+describe("an offer accepted while its sender was away", () => {
+  const lucie = { code: "AAAA1111", pseudo: "Lucie", avatar: "zani", frame: "simple", level: 3 };
+  const letter = (id: number, kind: "offer_completed" | "offer_declined", read = false) => ({
+    id,
+    kind,
+    player: lucie,
+    read,
+    createdAt: "2026-10-24T10:00:00.000Z",
+    tradeId: "6f1c3b8e-1f7a-4e8a-9a51-2a3b4c5d6e7f",
+  });
+
+  it("keeps the unread acceptances not shown yet, oldest first", () => {
+    const letters = [
+      letter(9, "offer_completed"),
+      letter(8, "offer_declined"),
+      letter(7, "offer_completed", true),
+      letter(6, "offer_completed"),
+      letter(5, "offer_completed"),
+    ];
+    expect(tradesDone(letters, new Set([6])).map((t) => t.letterId)).toEqual([5, 9]);
+  });
+
+  it("names who said yes, and leads to the card or the album", () => {
+    expect(tradeDoneTitle(lucie)).toBe("Lucie a dit oui !");
+    expect(tradeDoneTitle(null)).toBe("Échange conclu !");
+    expect(tradeDoneAction(1)).toBe("Lire la carte");
+    expect(tradeDoneAction(3)).toBe("Voir dans l'album");
   });
 });

@@ -1,4 +1,5 @@
 import {
+  type MailLetter,
   type PlayerBadge,
   playerCodeSchema,
   type Trade,
@@ -252,4 +253,38 @@ export function copiesAfterTrade(
     else next.delete(cardId);
   }
   return next;
+}
+
+// --- An offer accepted while its sender was away ------------------------------------------
+
+export interface TradeDone {
+  readonly letterId: number;
+  readonly tradeId: string;
+  readonly player: PlayerBadge | null;
+}
+
+/**
+ * Offers the other player accepted that the sender has not seen yet: unread letters not shown
+ * already in this browser, oldest first, one moment each.
+ */
+export function tradesDone(
+  letters: readonly MailLetter[],
+  shown: ReadonlySet<number>,
+): readonly TradeDone[] {
+  return letters
+    .flatMap((letter) =>
+      letter.kind === "offer_completed" && !letter.read && !shown.has(letter.id)
+        ? [{ letterId: letter.id, tradeId: letter.tradeId, player: letter.player }]
+        : [],
+    )
+    .reverse();
+}
+
+export function tradeDoneTitle(player: PlayerBadge | null): string {
+  return player === null ? "Échange conclu !" : `${playerName(player)} a dit oui !`;
+}
+
+/** The first button: the card itself when there is one, the album when there are several. */
+export function tradeDoneAction(received: number): string {
+  return received === 1 ? "Lire la carte" : "Voir dans l'album";
 }

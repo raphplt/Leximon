@@ -313,6 +313,11 @@ pnpm dev:player recette-b@example.com --level 6
 - **Attendu :** avatar, pseudo, niveau, « Expire dans 71 h », « Tu reçois », « Tu donnes ». La carte ouvre sa fiche. Après acceptation, les cartes ont changé de main des deux côtés, +20 XP chacun, l'échange est dans l'historique.
 - **Retour :**
 
+### ECH-04 bis · Offre acceptée, côté de A
+- **Faire :** A ferme l'onglet avant que B accepte, puis revient sur n'importe quel écran (ou change d'écran, ou revient sur l'onglet après une minute).
+- **Attendu :** une fenêtre « Échange conclu », « B a dit oui ! », les cartes reçues en grand, « Contre … » pour ce que A a donné. « Lire la carte » ouvre sa fiche (« Voir dans l'album » s'il y en a plusieurs). La fenêtre ne revient pas au rechargement ; la lettre reste dans le courrier.
+- **Retour :**
+
 ### ECH-05 · Refuser, annuler
 - **Faire :** B refuse une offre ; A annule une offre envoyée.
 - **Attendu :** l'offre disparaît des deux côtés, sans XP.
@@ -599,6 +604,11 @@ Il faut deux comptes inscrits avec un pseudo, A et B (deux navigateurs, ou une f
 - **Attendu :** la demande attend chez B en haut de l'écran, et une lettre « A te demande en ami » arrive. Une fois acceptée, chacun voit l'autre dans « Tes amis », et A reçoit « B accepte ta demande ».
 - **Retour :**
 
+### AMI-01 bis · Beaucoup d'amis
+- **Faire :** un compte avec plus de 8 amis et plus de 3 demandes reçues ouvre `/amis`.
+- **Attendu :** les demandes au-delà de 3 et les amis au-delà de 8 attendent derrière « Voir les N autres ». « Chercher un ami » et les filtres « Tous », « En ligne · N », « Échanges · N » trient la liste. Dans le fil, seules les réactions données s'affichent, « Réagir » ouvre les quatre.
+- **Retour :**
+
 ### AMI-02 · Refus, annulation, retrait
 - **Faire :** A redemande B après l'avoir retiré, B refuse. A renvoie la demande. Puis A annule une demande en attente (« Demandes envoyées », en bas), et retire un ami depuis sa fiche.
 - **Attendu :** le refus ne prévient pas A : sa demande reste « envoyée », et en renvoyer une répond « Demande déjà envoyée ». Le retrait vaut des deux côtés, sans lettre.
@@ -620,8 +630,8 @@ Il faut deux comptes inscrits avec un pseudo, A et B (deux navigateurs, ou une f
 - **Retour :**
 
 ### AMI-06 · Échanger et comparer
-- **Faire :** depuis la fiche d'un ami, « Proposer un échange » jusqu'à « Ce que tu donnes », puis « Comparer nos albums » et ses trois filtres.
-- **Attendu :** dans l'offre, tes doubles qui lui manquent passent devant, marqués « Il lui manque ». Dans l'album, ce qu'il a et pas toi reste face cachée. Le nombre d'échanges possibles de la liste correspond.
+- **Faire :** depuis la fiche d'un ami, « Proposer un échange » jusqu'à « Ce que tu donnes », puis « Comparer nos albums » et ses trois filtres. Dans Échanges, Nouvelle offre, toucher un ami de « Avec un ami ».
+- **Attendu :** « Proposer un échange » et un ami touché mènent droit à ses cartes. Au-delà de 8 amis, « Chercher un ami » au-dessus de la liste (sans les accents : « heloise » trouve Héloïse). Dans l'offre, tes doubles qui lui manquent passent devant, marqués « Il lui manque ». Dans l'album, ce qu'il a et pas toi reste face cachée. Le nombre d'échanges possibles de la liste correspond.
 - **Retour :**
 
 ### AMI-07 · Podium et fil

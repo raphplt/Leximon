@@ -1,0 +1,103 @@
+/* An offer accepted: the cards that came in, under the same rays as a coffret. */
+
+.moment {
+  position: relative;
+  padding: 30px 24px 24px;
+  border: 2px solid rgba(255, 210, 77, 0.4);
+  border-radius: 30px;
+  text-align: center;
+  /* Clipped, not hidden: the rays overflow, and a hidden box could scroll to them. */
+  overflow: clip;
+}
+
+.rays {
+  position: absolute;
+  left: 50%;
+  top: 220px;
+  width: 640px;
+  height: 640px;
+  margin: -320px 0 0 -320px;
+  border-radius: 50%;
+  background: repeating-conic-gradient(rgba(255, 210, 77, 0.13) 0 9deg, transparent 9deg 20deg);
+  pointer-events: none;
+  animation: spin 18s linear infinite;
+}
+
+.inner {
+  position: relative;
+}
+
+.kicker {
+  color: #ffe08a;
+}
+
+.title {
+  margin: 8px 0 20px;
+  font-size: 34px;
+  line-height: 1.1;
+  color: var(--lx-color-accent);
+}
+
+.cards {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.card {
+  filter: drop-shadow(0 10px 24px rgba(0, 0, 0, 0.45));
+}
+
+.card:nth-child(odd) {
+  rotate: -3deg;
+}
+
+.card:nth-child(even) {
+  rotate: 3deg;
+}
+
+.cardButton {
+  appearance: none;
+  display: block;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+}
+
+.given {
+  margin: 18px 0 0;
+  color: var(--lx-color-text-muted);
+  font-size: 15px;
+}
+
+.given em {
+  font-family: var(--font-text), Georgia, serif;
+  font-weight: 700;
+  color: var(--lx-color-text);
+}
+
+/* Above the buttons' own `margin: 0`, which loads after this file on some pages. */
+.inner .action {
+  margin-top: 22px;
+}
+
+.inner .later {
+  margin-top: 6px;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rays {
+    animation: none;
+  }
+}
