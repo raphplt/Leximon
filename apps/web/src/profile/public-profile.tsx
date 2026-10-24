@@ -6,10 +6,13 @@ import {
   BLOCKED_NOTE,
   BLOCKED_TOAST,
   blockRefusalMessage,
+  friendRefusalText,
   PROFILE_NOT_FOUND,
   REPORTED_TOAST,
+  requestSentToast,
 } from "@leximon/view-model";
 import { useEffect, useState } from "react";
+import { askFriend } from "@/friends/api";
 import { fetchProfileIfSignedIn, fetchPublicProfile, reportPlayer, setBlocked } from "@/lib/api";
 import { Button, ButtonLink } from "@/ui/button";
 import { Dialog } from "@/ui/dialog";
@@ -122,7 +125,13 @@ function PublicProfileBody({
           </ButtonLink>
         </p>
       ) : (
-        <ViewerActions profile={shown} viewer={viewer} onBlocked={() => setBlockedHere(true)} />
+        <ViewerActions
+          // The viewer's own copy of the profile comes after the shared one, with the friendship.
+          key={shown.friendship ?? "unknown"}
+          profile={shown}
+          viewer={viewer}
+          onBlocked={() => setBlockedHere(true)}
+        />
       )}
       {shown.visibility === "public" ? (
         <div className={styles.layout}>
@@ -153,7 +162,25 @@ function ViewerActions({
   const [busy, setBusy] = useState(false);
   const [confirmBlock, setConfirmBlock] = useState(false);
   const [reported, setReported] = useState(false);
+  const [friendship, setFriendship] = useState(profile.friendship ?? null);
   const code = profile.visibility === "public" ? profile.code : null;
+
+  const befriend = async () => {
+    setBusy(true);
+    try {
+      const result = await askFriend({ pseudo: profile.pseudo });
+      if (result.kind === "refused") {
+        toast(friendRefusalText(result.reason));
+        return;
+      }
+      setFriendship(result.value.outcome === "accepted" ? "friends" : "requested");
+      toast(requestSentToast(result.value.outcome, result.value.player));
+    } catch (error) {
+      toast(failureMessage(error));
+    } finally {
+      setBusy(false);
+    }
+  };
 
   const report = async () => {
     setBusy(true);
@@ -197,6 +224,29 @@ function ViewerActions({
           <Icon name="echange" size={17} />
           Proposer un échange
         </ButtonLink>
+      )}
+      {viewer.member && friendship === "none" && (
+        <Button variant="secondary" small disabled={busy} onClick={() => void befriend()}>
+          <Icon name="amis" size={17} />
+          Ajouter en ami
+        </Button>
+      )}
+      {friendship === "requested" && (
+        <Button variant="secondary" small disabled>
+          Demande envoyée
+        </Button>
+      )}
+      {friendship === "incoming" && (
+        <ButtonLink href="/amis" variant="secondary" small>
+          <Icon name="amis" size={17} />
+          Répondre à sa demande
+        </ButtonLink>
+      )}
+      {friendship === "friends" && (
+        <span className={styles.friendTag}>
+          <Icon name="amis" size={17} />
+          Ami
+        </span>
       )}
       {viewer.member && (
         <>

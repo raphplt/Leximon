@@ -122,7 +122,7 @@ export class BetaClosedError extends ApiError {
 }
 
 /** Pages that work without a player: signing in to an account, entering by an invitation. */
-const OPEN_WITHOUT_PLAYER = ["/compte", "/invitation"];
+const OPEN_WITHOUT_PLAYER = ["/compte", "/invitation", "/ami/"];
 
 /**
  * One guest sign-in at a time: screens load several resources in parallel, and each would

@@ -10,6 +10,8 @@ import {
   MAIL_NEWS,
   MAIL_OLDER,
   MAIL_TODO,
+  REFERRAL_CLAIMED,
+  referralRewardTitle,
   SLIPPING_AWAY,
   slippingDetail,
   tierName,
@@ -18,10 +20,13 @@ import Link from "next/link";
 import { type ReactNode, useEffect, useRef, useState } from "react";
 import { useCatalog } from "@/cards/use-catalog";
 import { useClaim } from "@/clan/claim";
+import { claimReferral } from "@/friends/api";
 import { fetchMail, markMailRead } from "@/lib/api";
 import { mailbox } from "@/player/mail";
+import { wallet } from "@/player/player";
 import { Dialog } from "@/ui/dialog";
 import { Icon, type IconName } from "@/ui/icon";
+import { useToast } from "@/ui/toast";
 import styles from "./panels.module.css";
 import { useShell } from "./shell-context";
 import { usePlayerView } from "./use-player-view";
@@ -68,6 +73,7 @@ export function MailPanel({
   const view = usePlayerView();
   const { openCoffret, openChat } = useShell();
   const claim = useClaim();
+  const toast = useToast();
   const box = view.mailbox;
   const [fresh, setFresh] = useState<ReadonlySet<number>>(new Set());
   const [older, setOlder] = useState<{ letters: MailLetter[]; hasMore: boolean } | null>(null);
@@ -125,6 +131,37 @@ export function MailPanel({
       title: coffretsMailTitle(view.coffrets),
       detail: "Chemin des niveaux",
       action: () => openCoffret(),
+    });
+  }
+  for (const reward of box?.referralRewards ?? []) {
+    todo.push({
+      key: `referral-${reward.refereeCode}`,
+      icon: "sachet",
+      title: referralRewardTitle(reward),
+      detail: "Lien d'ami",
+      action: () => {
+        claimReferral(reward.refereeCode)
+          .then((result) => {
+            if (result.kind === "refused" && result.reason === "reserve_full") {
+              toast("Ta réserve est pleine. Ouvre un sachet d'abord.");
+              return;
+            }
+            if (result.kind === "claimed") {
+              wallet.publish(result.wallet);
+              toast(REFERRAL_CLAIMED);
+            }
+            const current = mailbox.current();
+            if (current !== null) {
+              mailbox.publish({
+                ...current,
+                referralRewards: current.referralRewards.filter(
+                  (r) => r.refereeCode !== reward.refereeCode,
+                ),
+              });
+            }
+          })
+          .catch(() => toast("Ça n'a pas marché. Réessaie."));
+      },
     });
   }
   if (view.claimable.length > 0) {

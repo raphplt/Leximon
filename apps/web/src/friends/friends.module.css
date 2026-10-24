@@ -1,0 +1,533 @@
+/* Amis. */
+
+.screen {
+  box-sizing: border-box;
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 26px 32px 64px;
+}
+
+.head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.title {
+  margin: 0;
+  font-size: 44px;
+  line-height: 1;
+}
+
+.titleBone {
+  display: block;
+  width: 180px;
+  height: 44px;
+  margin-bottom: 18px;
+}
+
+.cardBone {
+  display: block;
+  height: 160px;
+  margin-bottom: 16px;
+  border-radius: 22px;
+}
+
+.columns {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 16px;
+  align-items: start;
+}
+
+.column {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 20px;
+}
+
+.cardHead {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 10px;
+}
+
+.cardHead > span {
+  white-space: nowrap;
+}
+
+.lone {
+  align-items: center;
+  max-width: 520px;
+  text-align: center;
+  color: var(--lx-color-accent);
+}
+
+.incoming {
+  box-shadow: inset 0 0 0 2px rgba(255, 210, 77, 0.35);
+}
+
+.hint {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--lx-color-text);
+}
+
+.empty {
+  margin: 0;
+  font-family: var(--font-text), Georgia, serif;
+  font-size: 17px;
+  color: var(--lx-color-text-muted);
+}
+
+.small {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.4;
+  color: var(--lx-color-text-muted);
+}
+
+.faint {
+  font-size: 12px;
+  color: #8d88a3;
+}
+
+.danger {
+  color: #ff9c80;
+}
+
+/* --- Lists --- */
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.row {
+  appearance: none;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 8px;
+  border: 0;
+  border-radius: 12px;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.row:hover {
+  background: rgba(246, 240, 226, 0.05);
+}
+
+.row > svg {
+  flex-shrink: 0;
+  color: var(--lx-color-text-muted);
+}
+
+.rowAvatar {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.online {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background: #2fc79b;
+  box-shadow: 0 0 0 2px var(--lx-color-panel);
+}
+
+.rowText {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.rowName {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  overflow: hidden;
+  font-weight: 800;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.crown {
+  display: inline-flex;
+  color: var(--lx-color-accent);
+}
+
+.trades {
+  flex-shrink: 0;
+  min-height: 30px;
+  padding: 0 11px;
+  font-size: 13px;
+}
+
+.requestRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 6px 0;
+}
+
+.requestActions {
+  display: flex;
+  flex-shrink: 0;
+  gap: 4px;
+}
+
+.outgoing {
+  gap: 0;
+}
+
+.outgoing[open] {
+  gap: 12px;
+}
+
+.summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-weight: 700;
+  color: var(--lx-color-text-muted);
+  cursor: pointer;
+  list-style: none;
+}
+
+.summary::-webkit-details-marker {
+  display: none;
+}
+
+.outgoing[open] .summary svg {
+  transform: rotate(180deg);
+}
+
+/* --- Friend link and adding --- */
+
+.linkLine {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.45;
+}
+
+.linkActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.addForm {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.addRow {
+  display: flex;
+  gap: 8px;
+}
+
+.addRow input {
+  flex: 1;
+  min-width: 0;
+}
+
+/* --- Friend sheet --- */
+
+/* A window in the middle has no padding of its own. */
+.sheet {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 4px 26px 26px;
+}
+
+.sheetHead {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 6px;
+}
+
+.sheetClan {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 6px 0 0;
+  font-weight: 700;
+}
+
+.sheetTrades {
+  margin: 6px 0 0;
+  font-weight: 800;
+  color: var(--lx-color-accent);
+}
+
+/* --- Podium --- */
+
+.podiumBone {
+  display: block;
+  height: 150px;
+  border-radius: 16px;
+}
+
+.steps {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: end;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+}
+
+/* Gold in the middle, silver on the left, bronze on the right. */
+.step[data-place="1"] {
+  order: 2;
+}
+
+.step[data-place="2"] {
+  order: 1;
+}
+
+.step[data-place="3"] {
+  order: 3;
+}
+
+.stepName {
+  max-width: 100%;
+  overflow: hidden;
+  font-weight: 800;
+  font-size: 14px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.step[data-self="true"] .stepName {
+  color: var(--lx-color-accent);
+}
+
+.stepAnswers {
+  font-size: 13px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--lx-color-text-muted);
+}
+
+.stepBlock {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  border-radius: 10px 10px 4px 4px;
+  background: rgba(246, 240, 226, 0.1);
+  font-weight: 800;
+  font-size: 15px;
+}
+
+.step[data-place="1"] .stepBlock {
+  height: 64px;
+  background: rgba(255, 210, 77, 0.2);
+  color: var(--lx-color-accent);
+}
+
+.step[data-place="2"] .stepBlock {
+  height: 46px;
+}
+
+.step[data-place="3"] .stepBlock {
+  height: 32px;
+  background: rgba(214, 140, 80, 0.16);
+}
+
+.mine {
+  margin: 0;
+  font-weight: 800;
+  text-align: center;
+}
+
+.ranking {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ranking li {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+
+.rankNumber {
+  width: 32px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.rankName {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ranking li[data-self="true"] .rankName {
+  color: var(--lx-color-accent);
+}
+
+/* --- Feed --- */
+
+.feedBone {
+  display: block;
+  height: 220px;
+  border-radius: 16px;
+}
+
+.feed {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.event {
+  display: flex;
+  gap: 12px;
+}
+
+.eventBody {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.eventLine {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.4;
+}
+
+.eventWord {
+  appearance: none;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--lx-color-accent);
+  font: inherit;
+  font-family: var(--font-text), Georgia, serif;
+  font-style: italic;
+  font-weight: 700;
+  text-decoration: underline dotted;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+.reactions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 2px;
+}
+
+.reaction {
+  appearance: none;
+  min-height: 30px;
+  padding: 0 11px;
+  border: 0;
+  border-radius: var(--lx-radius-pill);
+  background: rgba(246, 240, 226, 0.08);
+  color: var(--lx-color-text);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 30px;
+  white-space: nowrap;
+}
+
+button.reaction {
+  cursor: pointer;
+}
+
+button.reaction:hover {
+  background: rgba(246, 240, 226, 0.16);
+}
+
+.reaction[aria-pressed="true"] {
+  background: var(--lx-color-text);
+  color: var(--lx-color-background);
+}
+
+@media (max-width: 759px) {
+  .screen {
+    padding: 16px 16px 48px;
+  }
+
+  .title {
+    font-size: 32px;
+  }
+
+  .columns {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .addRow {
+    flex-direction: column;
+  }
+
+  .requestRow {
+    flex-wrap: wrap;
+  }
+
+  /* The trades go under the name, in line with it. */
+  .row {
+    flex-wrap: wrap;
+  }
+
+  .trades {
+    order: 1;
+    margin-left: 56px;
+  }
+}

@@ -49,10 +49,14 @@ export function usePlayerView() {
     /** The mail's first page; `null` until read. */
     mailbox: mail,
     /**
-     * The mail's count: what waits to be done (coffrets, goal boosters) and the
+     * The mail's count: what waits to be done (coffrets, goal boosters, friend links' boosters) and the
      * letters not read. Words slipping away are left out: they come back every day, and a count
      * that never empties only nags.
      */
-    mail: coffrets.length + claimable.length + (mail?.unread ?? 0),
+    mail:
+      coffrets.length +
+      claimable.length +
+      (mail?.referralRewards.length ?? 0) +
+      (mail?.unread ?? 0),
   };
 }

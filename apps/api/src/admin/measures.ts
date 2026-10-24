@@ -9,9 +9,13 @@ import { type EpochMs, gameDayOf, levelOf } from "@leximon/core";
 import { type Database, schema } from "@leximon/db";
 import { eq, isNull, sql } from "drizzle-orm";
 import { z } from "zod";
+import { FRIEND_LINK_SOURCE } from "../beta/arrival";
 import { decodeTimeCursor, nextCursor } from "./cursor";
 import { InvalidCursorError } from "./queries";
 import { type PlayerTrace, retentionBy, weekOf } from "./retention";
+
+/** Where a player came from: their invitation's label, a friend link, or the `?src=` kept. */
+const originSql = sql`coalesce(i.label, case when s.source = ${FRIEND_LINK_SOURCE} then 'Lien d''ami' else 'src:' || s.source end)`;
 
 const {
   boosterOpens,
@@ -84,7 +88,7 @@ export async function readMeasures(db: Database, now: EpochMs): Promise<AdminMea
         where t.status = 'completed' and (t.proposer_id = a.user_id or t.recipient_id = a.user_id)
       ) as traded,
       not u.is_anonymous as member,
-      coalesce(i.label, 'src:' || s.source) as origin,
+      ${originSql} as origin,
       b.bracket as age
     from arrivals a
     join ${users} u on u.id = a.user_id
@@ -190,7 +194,7 @@ export async function listTesters(
     )
     select
       t.id, u.email, u.is_anonymous, p.pseudo,
-      coalesce(i.label, 'src:' || s.source) as origin,
+      ${originSql} as origin,
       b.bracket as age,
       t.first_day::text as first_day, t.last_day::text as last_day, t.days,
       (select count(*)::int from ${boosterOpens} o where o.user_id = t.id) as boosters,

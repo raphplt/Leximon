@@ -45,6 +45,7 @@ export function PlayerMenu({
   const joustLevel = view.now === 0 ? null : levelsOfFeatures(view.now).jousts;
   const items: Item[] = [
     { label: "Mon profil", icon: "profil", href: "/profil" },
+    { label: "Amis", icon: "amis", href: "/amis" },
     {
       label: "Joutes",
       icon: "joutes",

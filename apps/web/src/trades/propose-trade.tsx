@@ -17,6 +17,7 @@ import Link from "next/link";
 import { type FormEvent, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { type Catalog, collectionName } from "@/cards/catalog";
 import { Card } from "@/components/card";
+import { fetchFriendCards } from "@/friends/api";
 import { createTrade, fetchTradeable } from "@/lib/api";
 import { useNow } from "@/lib/use-now";
 import { usePackShape } from "@/lib/use-pack-shape";
@@ -98,6 +99,8 @@ export function ProposeTrade({
   const [held, setHeld] = useState<readonly Held[]>([]);
   const now = useNow(60_000);
   const [owned, setOwned] = useState<ReadonlySet<string>>(new Set());
+  // A friend's whole album: the doubles they lack lead what the player gives.
+  const [friendAlbum, setFriendAlbum] = useState<ReadonlySet<string> | null>(null);
   const [want, setWant] = useState<readonly string[]>([]);
   const [give, setGive] = useState<readonly string[]>([]);
   const [busy, setBusy] = useState(false);
@@ -172,10 +175,11 @@ export function ProposeTrade({
     setBusy(true);
     setCodeError(null);
     try {
-      const [theirs, mineNow, copies] = await Promise.all([
+      const [theirs, mineNow, copies, friendCards] = await Promise.all([
         fetchTradeable(code),
         fetchTradeable(),
         ownedCards.read(),
+        fetchFriendCards(code).catch(() => null),
       ]);
       if (theirs === null) {
         setCodeError(refusalMessage("player_not_found"));
@@ -192,6 +196,7 @@ export function ProposeTrade({
       setMine(myIds);
       setHeld(mineNow?.held ?? []);
       setOwned(new Set(copies.keys()));
+      setFriendAlbum(friendCards === null ? null : new Set(friendCards.cardIds));
       // Coming back to the same player keeps the choice, minus what can no longer move.
       setWant((current) =>
         code === partner?.code ? current.filter((id) => theirs.cardIds.includes(id)) : [],
@@ -406,10 +411,11 @@ export function ProposeTrade({
           ) : (
             <CardPicker
               catalog={catalog}
-              cards={pickOrder(catalog, mine, null)}
+              cards={pickOrder(catalog, mine, friendAlbum)}
               selection={give}
               max={partner.maxCards}
-              owned={null}
+              owned={friendAlbum}
+              missing="Il lui manque"
               onToggle={(id) => toggle(give, id, setGive)}
               onZoom={onZoom}
               held={held.map((h) => ({
@@ -543,14 +549,17 @@ function CardPicker({
   onToggle,
   onZoom,
   held = [],
+  missing = "Il te manque",
 }: {
   readonly catalog: Catalog;
   readonly cards: readonly CatalogCard[];
   readonly selection: readonly string[];
   readonly max: number;
   readonly held?: readonly { readonly card: CatalogCard; readonly label: string }[];
-  /** The player's own cards, to flag the words they lack; `null` to flag nothing. */
+  /** The cards of whoever receives, to flag the words they lack; `null` to flag nothing. */
   readonly owned: ReadonlySet<string> | null;
+  /** The flag on a word the receiver lacks. */
+  readonly missing?: string;
   readonly onToggle: (cardId: string) => void;
   readonly onZoom: (card: CatalogCard) => void;
 }) {
@@ -567,7 +576,7 @@ function CardPicker({
               type="button"
               className={styles.pickButton}
               aria-pressed={selected}
-              aria-label={`${cardLabel(card)}${isNew ? ", il te manque" : ""}`}
+              aria-label={`${cardLabel(card)}${isNew ? `, ${missing.toLowerCase()}` : ""}`}
               onClick={() => onToggle(card.id)}
             >
               <Card
@@ -582,7 +591,7 @@ function CardPicker({
               )}
               {isNew && (
                 <span className={styles.newBadge} aria-hidden="true">
-                  Il te manque
+                  {missing}
                 </span>
               )}
             </button>

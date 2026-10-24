@@ -2,7 +2,7 @@
 
 Où en est Leximon, ce qui reste avant la bêta publique (novembre 2026) et ce qui attend une décision du propriétaire. Mise à jour à chaque étape franchie.
 
-**Dernière mise à jour :** 2026-10-23.
+**Dernière mise à jour :** 2026-10-24.
 
 ## En une phrase
 
@@ -48,6 +48,7 @@ Arbitrés par le propriétaire le 2026-10-20 : jeu grand public (B2C), pas de ve
 | Niveau de compte | En cours | P48, P58, P59 : XP gagnée dans la transaction de chaque action, courbe 150 + 45 × (n − 1) sans maximum, niveau 50 visé en quatre mois environ. Coffrets réclamés, sachet garni tous les 10 niveaux, jamais de recharge du stock en récompense, échanges à 3 cartes au niveau 10. Reste : XP des raretés complétées, cadres et titres des hauts niveaux à dessiner |
 | Profil public | Fait sur le web | Pseudo (P62), avatar gravé et cadre, titre, cartes épinglées (choisies, rangées et remplacées depuis le profil), statistiques, clan, page publique `/joueur/{pseudo}` avec image de partage, atelier, bloquer et signaler (P63), suppression du compte (P64). Public par défaut (P60), dès le niveau 8 |
 | Clans | Fait sur le web | P65 à P68 et P70 (Clan v2, [clan-v2.md](cahiers-des-charges/clan-v2.md)) : sans maximum de membres, emblème, rôles, demandes et code d'invitation, discussion et devises filtrées (ni lien, ni adresse, ni téléphone, ni caractère invisible) et modérées, objectif de la semaine en bonnes réponses de défi, niveau de clan cosmétique (objets d'emblème, Enluminure, bannières), bibliothèque commune, courrier et mentions. On peut rejoindre un autre clan dès qu'on en part. Reste : le mobile, la modération par modèle |
+| Amis | Fait sur le web (pas en ligne) | P75 à P79, cahier [amis.md](cahiers-des-charges/amis.md) : demande acceptée des deux côtés (par pseudo exact, depuis un profil ou par le lien d'ami), écran `/amis` (demandes, lien, liste, retrait), profil entier entre amis, lien `/ami/<code>` qui fait entrer 3 joueurs dans la bêta fermée et rend amis à la création du compte, sachet bonus pour les deux au niveau 5 du filleul (5 par mois), échanges possibles par ami et doubles qui lui manquent mis en avant dans l'offre, albums comparés (`/album?ami=<code>`), podium de la semaine sans récompense, fil des trouvailles avec réactions prédéfinies, lettres du courrier. Migration `0026`. Les joueurs venus par un lien d'ami forment la source « Lien d'ami » de la mesure. Reste : la mise en production, le nombre de filleuls par parrain dans la mesure, le mobile |
 | Modes de jeu entre joueurs | R&D | Plusieurs pistes à prototyper (joute, duplicate, bluff…) |
 | Classements | Plus tard | Pas en v1. Cote globale de type Elo (Glicko-2), modèle du Scrabble duplicate |
 

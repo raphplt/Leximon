@@ -25,6 +25,7 @@ const ICONS: Readonly<Record<FabId, IconName>> = {
   clan: "clan",
   chat: "chat",
   jousts: "joutes",
+  friends: "amis",
   daily: "defi",
   coffrets: "coffret",
   mail: "courrier",
@@ -79,6 +80,9 @@ export function PlayFabs() {
       case "chat":
         if (fab.lock !== null) toast(lockedToast("join_clan", view.now));
         else shell.openChat();
+        return;
+      case "friends":
+        router.push("/amis");
         return;
       case "daily":
         router.push("/defis");

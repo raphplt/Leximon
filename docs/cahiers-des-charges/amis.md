@@ -1,6 +1,6 @@
 # Cahier des charges · Amis
 
-- **Statut :** concept validé par le propriétaire le 2026-10-24 (amitié acceptée, lien d'ami avec places de bêta et récompense, podium de la semaine, réactions prédéfinies). Les réglages chiffrés sont provisoires.
+- **Statut :** concept validé par le propriétaire le 2026-10-24 (amitié acceptée, lien d'ami avec places de bêta et récompense, podium de la semaine, réactions prédéfinies). Les cinq lots sont faits sur le web le 2026-10-24, pas encore en production. Les réglages chiffrés sont provisoires.
 - **Règles concernées :** P75 à P79, et P51, P59, P63, P64 retouchées, dans [regles-du-jeu.md](../regles-du-jeu.md), qui fait foi.
 - **D'où ça vient :** en dehors du clan, rien ne relie deux joueurs. Pour échanger, il faut taper un code à 8 caractères. Et rien n'aide un joueur à faire venir les siens.
 - **Objectif :** le clan est la communauté ; les amis sont le cercle proche. Ils doivent faire trois choses : faire venir de nouveaux joueurs, donner une raison d'échanger, et donner une raison de revenir (voir ce que les autres trouvent, se mesurer à eux).

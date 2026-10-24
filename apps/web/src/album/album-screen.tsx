@@ -8,11 +8,16 @@ import {
   type AlbumItem,
   type AlbumState,
   albumView,
+  type CompareFilter,
+  compareFilters,
+  comparingTitle,
   type MissingItem,
   type OwnedItem,
+  playerName,
   shortName,
 } from "@leximon/view-model";
 import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
 import { type CSSProperties, useEffect, useMemo, useState } from "react";
 import { packOf } from "@/booster/pack-looks";
 import { type Catalog, loadCatalog } from "@/cards/catalog";
@@ -20,6 +25,7 @@ import { collectionTone } from "@/cards/collection-tone";
 import { Card } from "@/components/card";
 import { CollectionSeal } from "@/components/collection-seal";
 import { RarityIcon, RarityName } from "@/components/rarity-icon";
+import { fetchFriendCards } from "@/friends/api";
 import { useIncremental } from "@/lib/use-incremental";
 import { useNarrow } from "@/lib/use-narrow";
 import { useNow } from "@/lib/use-now";
@@ -71,7 +77,34 @@ export function AlbumScreen() {
     filter: "all",
     theme: null,
     search: "",
+    compare: null,
   });
+  // `/album?ami=<code>`: a friend's album beside the player's.
+  const friendCode = useSearchParams().get("ami");
+  const router = useRouter();
+  const [friend, setFriend] = useState<{
+    readonly name: string;
+    readonly cards: ReadonlySet<string>;
+  } | null>(null);
+
+  useEffect(() => {
+    setFriend(null);
+    setState((s) => ({ ...s, compare: null }));
+    if (friendCode === null) return;
+    let live = true;
+    fetchFriendCards(friendCode)
+      .then((found) => {
+        if (!live || found === null) return;
+        setFriend({ name: playerName(found.player), cards: new Set(found.cardIds) });
+        setState((s) => ({ ...s, compare: "theirs" }));
+      })
+      .catch(() => {
+        // The player's own album stays, without the comparison.
+      });
+    return () => {
+      live = false;
+    };
+  }, [friendCode]);
 
   const load = () => {
     setFailed(false);
@@ -99,10 +132,11 @@ export function AlbumScreen() {
               memory: memory ?? new Map(),
               dates: dates ?? new Map(),
               now,
+              ...(friend === null ? {} : { friend: friend.cards }),
             },
             state,
           ),
-    [catalog, owned, memory, dates, now, state],
+    [catalog, owned, memory, dates, now, state, friend],
   );
   const { shown, sentinel } = useIncremental(view?.items.length ?? 0, BATCH, JSON.stringify(state));
   const cardWidth = narrow ? 104 : 168;
@@ -215,7 +249,25 @@ export function AlbumScreen() {
               />
             ))}
           </div>
-          <div className={styles.row}>
+          {friend !== null && state.compare != null && (
+            <div className={styles.compare}>
+              <p className={styles.compareTitle}>{comparingTitle(friend.name)}</p>
+              <div className={styles.row}>
+                {compareFilters(friend.name).map((choice) => (
+                  <FilterChip
+                    key={choice.id}
+                    label={choice.label}
+                    on={state.compare === choice.id}
+                    onPick={() => setState((s) => ({ ...s, compare: choice.id as CompareFilter }))}
+                  />
+                ))}
+                <Button variant="ghost" small onClick={() => router.replace("/album")}>
+                  Fermer la comparaison
+                </Button>
+              </div>
+            </div>
+          )}
+          <div className={styles.row} hidden={friend !== null && state.compare != null}>
             {view.filters.map((filter) => (
               <FilterChip
                 key={filter.id}

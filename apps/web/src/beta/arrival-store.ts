@@ -1,5 +1,5 @@
 /**
- * The invitation and the `?src=` a visitor arrived with, kept in this browser until a player is
+ * The invitation, the friend link and the `?src=` a visitor arrived with, kept in this browser until a player is
  * created: they go with the sign-in, the server decides. Storage can be missing (private window,
  * blocked site data): then nothing is kept, and the invitation page asks again.
  *
@@ -8,6 +8,7 @@
 
 export const INVITE_KEY = "leximon.invite";
 export const SOURCE_KEY = "leximon.source";
+export const REFERRER_KEY = "leximon.referrer";
 
 /** The shape of `sourceCodeSchema`, checked again with the schema before it is sent. */
 const SOURCE_CODE = /^[a-z0-9_-]{1,40}$/;

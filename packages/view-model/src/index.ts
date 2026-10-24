@@ -6,6 +6,7 @@ export * from "./chat-poll";
 export * from "./clan";
 export * from "./features";
 export * from "./format";
+export * from "./friends";
 export * from "./level";
 export * from "./mail";
 export * from "./pins";

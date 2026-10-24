@@ -6,6 +6,7 @@ import {
 } from "@leximon/contract";
 import { gameDayOf, RARITIES, type Rarity, rarityRank } from "@leximon/core";
 import { formatCount } from "./format";
+import type { CompareFilter } from "./friends";
 
 /** The album: what the player owns, collection by collection. */
 
@@ -83,6 +84,8 @@ export interface AlbumState {
   /** A theme slug, or `null` for every theme. */
   readonly theme: string | null;
   readonly search: string;
+  /** Comparing with a friend's album: what only they have, only the player, or both. */
+  readonly compare?: CompareFilter | null;
 }
 
 export interface AlbumInput {
@@ -93,6 +96,8 @@ export interface AlbumInput {
   /** Unknown cards (not read yet from the server) are neither new nor from today. */
   readonly dates: ReadonlyMap<string, CardDate>;
   readonly now: number;
+  /** The cards a friend owns, when comparing albums. */
+  readonly friend?: ReadonlySet<string>;
 }
 
 export interface AlbumTab {
@@ -336,6 +341,28 @@ export function albumView(input: AlbumInput, state: AlbumState): AlbumView {
     )
     .sort((a, b) => albumOrder(a.card, b.card));
 
+  const compare = state.compare ?? null;
+  if (compare !== null && input.friend !== undefined) {
+    const friend = input.friend;
+    const items = inView.flatMap(({ card, name }): AlbumItem[] => {
+      const quantity = owned.get(card.id);
+      const theirs = friend.has(card.id);
+      if (compare === "theirs") return quantity === undefined && theirs ? [missingItem(card)] : [];
+      const keep = quantity !== undefined && (compare === "both" ? theirs : !theirs);
+      return keep ? [ownedItem(card, name, quantity, memory.get(card.id), dates.get(card.id))] : [];
+    });
+    return {
+      headline,
+      tabs,
+      rarities,
+      filters,
+      themes,
+      items,
+      searching: false,
+      empty: items.length === 0 ? ALBUM_EMPTY : null,
+    };
+  }
+
   const ownedItems =
     state.filter === "missing"
       ? []
@@ -353,12 +380,7 @@ export function albumView(input: AlbumInput, state: AlbumState): AlbumView {
     state.filter === "all" || state.filter === "missing"
       ? inView.filter(({ card }) => !owned.has(card.id)).map(({ card }) => card)
       : [];
-  const missingItems: MissingItem[] = missing.map((card) => ({
-    kind: "missing",
-    cardId: card.id,
-    rarity: card.rarity,
-    aria: `Carte ${RARITY_LABELS[card.rarity]} pas encore trouvée`,
-  }));
+  const missingItems = missing.map(missingItem);
   const more: MoreItem[] =
     missing.length > 0 && state.filter === "all"
       ? [
@@ -380,5 +402,14 @@ export function albumView(input: AlbumInput, state: AlbumState): AlbumView {
     items,
     searching: false,
     empty: items.length === 0 ? ALBUM_EMPTY : null,
+  };
+}
+
+function missingItem(card: CatalogCard): MissingItem {
+  return {
+    kind: "missing",
+    cardId: card.id,
+    rarity: card.rarity,
+    aria: `Carte ${RARITY_LABELS[card.rarity]} pas encore trouvée`,
   };
 }

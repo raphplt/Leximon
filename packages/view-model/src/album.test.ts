@@ -163,3 +163,21 @@ describe("album", () => {
     expect(themeLabel("marine")).toBe("Marine");
   });
 });
+
+describe("comparing with a friend's album", () => {
+  const friend = new Set(["talpinette", "grigou"]);
+  const ids = (compare: "theirs" | "mine" | "both") =>
+    albumView({ ...input, friend }, { ...STATE, compare }).items.map((item) =>
+      item.kind === "owned"
+        ? `owned ${item.card.id}`
+        : item.kind === "missing"
+          ? `missing ${item.cardId}`
+          : "more",
+    );
+
+  it("shows what only the friend has face down, what only the player has, and what both have", () => {
+    expect(ids("theirs")).toEqual(["missing talpinette"]);
+    expect(ids("mine")).toEqual(["owned bélître"]);
+    expect(ids("both")).toEqual(["owned grigou"]);
+  });
+});

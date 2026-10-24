@@ -590,6 +590,45 @@ En local, aucun e-mail ne part : chaque envoi s'écrit dans le terminal de `pnpm
 - **Attendu :** une fois lancée, le formulaire de l'accueil n'accepte plus d'adresse. Une seconde campagne liste d'attente est refusée. Après l'effacement, seules les adresses désinscrites restent.
 - **Retour :**
 
+## 13 bis. Amis
+
+Il faut deux comptes inscrits avec un pseudo, A et B (deux navigateurs, ou une fenêtre privée), et un troisième navigateur sans session pour le lien d'ami.
+
+### AMI-01 · Demande et réponse
+- **Faire :** A ouvre `/amis` (menu du joueur ou bouton rond « Amis » sur Jouer), tape le pseudo exact de B, « Envoyer la demande ». B ouvre son courrier, puis `/amis`, et accepte.
+- **Attendu :** la demande attend chez B en haut de l'écran, et une lettre « A te demande en ami » arrive. Une fois acceptée, chacun voit l'autre dans « Tes amis », et A reçoit « B accepte ta demande ».
+- **Retour :**
+
+### AMI-02 · Refus, annulation, retrait
+- **Faire :** A redemande B après l'avoir retiré, B refuse. A renvoie la demande. Puis A annule une demande en attente (« Demandes envoyées », en bas), et retire un ami depuis sa fiche.
+- **Attendu :** le refus ne prévient pas A : sa demande reste « envoyée », et en renvoyer une répond « Demande déjà envoyée ». Le retrait vaut des deux côtés, sans lettre.
+- **Retour :**
+
+### AMI-03 · Profil, réglages
+- **Faire :** A rend son profil privé. B ouvre `/joueur/<pseudo de A>`. Un troisième joueur fait de même et clique « Ajouter en ami ». Puis A règle « Demandes d'ami » sur Personne.
+- **Attendu :** B voit le profil entier, le troisième voit le profil privé et peut demander. Avec « Personne », une demande répond « Ce joueur ne prend pas de demande ».
+- **Retour :**
+
+### AMI-04 · Lien d'ami
+- **Faire :** A clique « Partager mon lien ». Dans le navigateur sans session, ouvrir le lien `/ami/<code>`, « Ouvrir mon premier sachet », jouer, puis créer un compte.
+- **Attendu :** la page montre l'avatar et le pseudo de A. À la création du compte, les deux sont amis sans demande, et A reçoit « … arrive par ton lien ». Bêta fermée (`BETA_INVITES=required`) : trois places par lien, la quatrième arrivée tombe sur « Ce lien a fait le plein ».
+- **Retour :**
+
+### AMI-05 · Sachet du parrainage
+- **Faire :** `pnpm dev:player <e-mail du filleul> --level 5`, puis lui faire gagner de l'XP (un défi) pour franchir un niveau. Ouvrir le courrier de A et du filleul.
+- **Attendu :** chacun a « Un sachet bonus… » dans « À faire » ; un clic le met en réserve. Réserve pleine : il reste dans le courrier.
+- **Retour :**
+
+### AMI-06 · Échanger et comparer
+- **Faire :** depuis la fiche d'un ami, « Proposer un échange » jusqu'à « Ce que tu donnes », puis « Comparer nos albums » et ses trois filtres.
+- **Attendu :** dans l'offre, tes doubles qui lui manquent passent devant, marqués « Il lui manque ». Dans l'album, ce qu'il a et pas toi reste face cachée. Le nombre d'échanges possibles de la liste correspond.
+- **Retour :**
+
+### AMI-07 · Podium et fil
+- **Faire :** A et B répondent à des défis. A ouvre une Épique ou une Légendaire. B réagit dans le fil, change de réaction, la retire.
+- **Attendu :** le podium classe les bonnes réponses de la semaine, sans récompense, « Toi : 4e sur 5 » sous les marches quand tu n'y es pas. La trouvaille de A apparaît dans le fil de B ; A reçoit une seule lettre à la première réaction. « Montrer mes trouvailles à mes amis » éteint chez A, ses trouvailles quittent le fil.
+- **Retour :**
+
 ---
 
 ## 14. Partout

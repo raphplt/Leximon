@@ -174,6 +174,24 @@ export function SettingsPanel({
               </span>
               <Icon name="chev" size={16} />
             </button>
+            {notify !== null && (
+              <>
+                <Switch
+                  label="Demandes d'ami"
+                  detail={
+                    notify.friendRequestsOpen ? "Tout le monde" : "Personne, sauf ton lien d'ami"
+                  }
+                  checked={notify.friendRequestsOpen}
+                  onChange={(on) => void toggleNotify("friendRequestsOpen", on)}
+                />
+                <Switch
+                  label="Montrer mes trouvailles à mes amis"
+                  detail="Épiques, Légendaires, Dorures, niveaux"
+                  checked={notify.shareFinds}
+                  onChange={(on) => void toggleNotify("shareFinds", on)}
+                />
+              </>
+            )}
             <button type="button" className={ui.switchRow} onClick={() => setDialog("blocks")}>
               <span className={ui.switchLabel}>
                 Joueurs bloqués

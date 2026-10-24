@@ -259,7 +259,15 @@ function pickAt<T>(items: readonly T[], visit: number): T | undefined {
 
 // --- Floating buttons -----------------------------------------------------------------------
 
-export type FabId = "clan" | "chat" | "jousts" | "daily" | "coffrets" | "mail" | "settings";
+export type FabId =
+  | "clan"
+  | "chat"
+  | "jousts"
+  | "friends"
+  | "daily"
+  | "coffrets"
+  | "mail"
+  | "settings";
 
 export interface Fab {
   readonly id: FabId;
@@ -295,6 +303,7 @@ export function playFabs(input: FabInput, now: EpochMs): { left: Fab[]; right: F
       fab("clan", "Clan", { lock: lockOf(levels.join_clan) }),
       fab("chat", "Discussion", { lock: lockOf(levels.join_clan) }),
       fab("jousts", "Joutes", { lock: lockOf(levels.jousts) }),
+      fab("friends", "Amis"),
     ],
     right: [
       fab("daily", "Défi du jour"),

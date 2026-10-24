@@ -339,6 +339,19 @@ button.emptySlot {
   margin-top: 16px;
 }
 
+.friendTag {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 42px;
+  padding: 0 16px;
+  border-radius: var(--lx-radius-pill);
+  background: rgba(255, 210, 77, 0.14);
+  color: var(--lx-color-accent);
+  font-weight: 800;
+  font-size: 14px;
+}
+
 .viewer .danger {
   color: var(--lx-color-danger);
 }
