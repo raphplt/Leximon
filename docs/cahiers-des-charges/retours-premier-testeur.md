@@ -177,6 +177,8 @@ Le plus important : sans lui, on peut ouvrir des sachets sans jamais lire un mot
 
 *Repris le soir même, à la demande du propriétaire : le sachet du comptoir flotte de nouveau, doucement (4 unités sur 7 s). Les cartes épinglées, « pas du tout pratiques » (il fallait aller dans l'album, ouvrir une fiche, revenir), se choisissent depuis le profil : une place vide ouvre la liste de ses cartes avec une recherche, chaque carte se déplace, se change ou se retire sur place ; depuis une fiche, places pleines, on choisit celle qu'elle remplace. Aucun changement d'API : le profil envoie la liste entière dans son nouvel ordre.*
 
+*Repris le 2026-10-24 sur téléphone, à la demande du propriétaire : le libellé « Jouer » reste sur la ligne des autres onglets ; le bilan du sachet tient sans défiler (sans cadre, cartes à la taille de l'écran, sans « Ton sachet » ni « Voir mon album ») ; le comptoir rapetisse un peu pour que « Un de tes mots » ne passe plus sous les onglets ; les deux fenêtres d'épinglage reçoivent enfin leurs marges.*
+
 ### Une ligne par collection
 
 - **Données :** un champ `tagline` dans `content/collections.toml`. Il passe dans le manifeste du catalogue (champ facultatif, additif) et dans la base.

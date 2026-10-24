@@ -2,7 +2,7 @@
 
 import type { ProgressGain } from "@leximon/contract";
 import type { Rarity } from "@leximon/core";
-import { motion, rarityStyles } from "@leximon/tokens";
+import { cardSize, motion, rarityStyles } from "@leximon/tokens";
 import {
   type CollectionChoice,
   collectionChoices,
@@ -79,6 +79,16 @@ const RECAP_CARD_MIN = 150;
 const RECAP_CARD_MAX = 210;
 /** Room left in the carousel for the next card to show at the edge, in px. */
 const RECAP_PEEK = 96;
+/**
+ * Height a phone keeps around the carousel's cards, in px: top bar, tabs, the recap's lines and
+ * its button. The cards shrink on a short screen so that the button shows without scrolling.
+ */
+const RECAP_PHONE_CHROME = 430;
+/** The lines a recap shows only sometimes, in px: a level reached, an account to create. */
+const RECAP_LEVEL_UP_LINE = 56;
+const RECAP_SIGN_UP_LINE = 42;
+/** Narrower, a card no longer reads even as a preview. */
+const RECAP_CAROUSEL_MIN = 180;
 /** A skipped card chimes once it has landed, a little after its slot starts moving. */
 const CHIME_AT_MS = 220;
 /** Room left around a revealed card on a narrow phone, in px. */
@@ -727,9 +737,18 @@ function Recap({
   const canOpen = view.wallet !== null && (view.wallet.stored > 0 || view.wallet.bonus > 0);
   return (
     <div className={`${ui.panel} ${styles.recap}`}>
-      <p className={ui.kicker}>Ton sachet</p>
+      <p className={`${ui.kicker} ${styles.recapKicker}`}>Ton sachet</p>
       <RecapLine pack={pack} />
-      {catalog !== null && <RecapCards catalog={catalog} pack={pack} hurriedFrom={hurriedFrom} />}
+      {catalog !== null && (
+        <RecapCards
+          catalog={catalog}
+          pack={pack}
+          hurriedFrom={hurriedFrom}
+          extraLines={
+            (levelUp === null ? 0 : RECAP_LEVEL_UP_LINE) + (mustSignUp ? RECAP_SIGN_UP_LINE : 0)
+          }
+        />
+      )}
       {xp !== null && <p className={`${ui.display} ${styles.recapXp}`}>{xp}</p>}
       {progressNow !== null && (
         <XpBar ratio={levelRatio(progressNow)} className={styles.recapBar} />
@@ -763,7 +782,7 @@ function Recap({
             Créer mon compte
           </ButtonLink>
         ) : (
-          <Link href="/album" className={ui.secondary}>
+          <Link href="/album" className={`${ui.secondary} ${styles.recapAlbum}`}>
             Voir mon album
           </Link>
         )}
@@ -780,13 +799,16 @@ function RecapCards({
   catalog,
   pack,
   hurriedFrom,
+  extraLines,
 }: {
   readonly catalog: Catalog;
   readonly pack: Pack;
   readonly hurriedFrom: number | null;
+  /** Height of the lines shown under the cards this time, in px: the cards make room for them. */
+  readonly extraLines: number;
 }) {
   const { openCard } = useShell();
-  const layout = useRecapLayout(pack.cards.length);
+  const layout = useRecapLayout(pack.cards.length, extraLines);
   const [active, setActive] = useState(0);
   // Computed once: the cascade plays when the recap appears, not again on a resize.
   const [steps] = useState(() =>
@@ -906,20 +928,35 @@ interface RecapLayout {
   readonly width: number;
 }
 
-/** Cards side by side when each can still be read, otherwise one per screen width. */
-function recapLayout(windowWidth: number, count: number): RecapLayout {
+/**
+ * Cards side by side when each can still be read, otherwise one at a time, as wide as the
+ * screen and its height allow.
+ */
+function recapLayout(
+  windowWidth: number,
+  windowHeight: number,
+  count: number,
+  extraLines: number,
+): RecapLayout {
   const room = Math.min(windowWidth, RECAP_SCREEN_MAX) - RECAP_CHROME;
   const inRow = Math.floor((room - RECAP_GAP * (count - 1)) / count);
   if (inRow >= RECAP_CARD_MIN) return { mode: "row", width: Math.min(inRow, RECAP_CARD_MAX) };
-  return { mode: "carousel", width: Math.min(CARD_MAX_WIDTH, windowWidth - RECAP_PEEK) };
+  const cardHeight = windowHeight - RECAP_PHONE_CHROME - extraLines;
+  const byHeight = (cardHeight * cardSize.width) / cardSize.height;
+  const width = Math.min(CARD_MAX_WIDTH, windowWidth - RECAP_PEEK, byHeight);
+  return { mode: "carousel", width: Math.floor(Math.max(RECAP_CAROUSEL_MIN, width)) };
 }
 
-function useRecapLayout(count: number): RecapLayout {
-  const [layout, setLayout] = useState(() => recapLayout(window.innerWidth, count));
+function useRecapLayout(count: number, extraLines: number): RecapLayout {
+  const [layout, setLayout] = useState(() =>
+    recapLayout(window.innerWidth, window.innerHeight, count, extraLines),
+  );
   useEffect(() => {
-    const measure = () => setLayout(recapLayout(window.innerWidth, count));
+    const measure = () =>
+      setLayout(recapLayout(window.innerWidth, window.innerHeight, count, extraLines));
+    measure();
     window.addEventListener("resize", measure);
     return () => window.removeEventListener("resize", measure);
-  }, [count]);
+  }, [count, extraLines]);
   return layout;
 }

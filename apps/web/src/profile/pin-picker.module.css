@@ -1,8 +1,9 @@
+/* A centred window leaves its margins to its content: the same as the title's. */
 .picker {
   display: flex;
   flex-direction: column;
   gap: 12px;
-  min-width: min(440px, 100%);
+  padding: 4px 26px 26px;
 }
 
 .search {
@@ -37,7 +38,8 @@
   flex-direction: column;
   gap: 2px;
   max-height: min(52vh, 460px);
-  margin: 0;
+  /* The rows' own padding lines the words up with the title. */
+  margin: 0 -12px;
   padding: 0;
   overflow-y: auto;
   list-style: none;
@@ -95,10 +97,12 @@
 .note,
 .lead {
   margin: 0;
+  font-size: 14px;
   color: var(--lx-color-text-muted);
 }
 
 .lead {
+  font-size: 16px;
   color: var(--lx-color-text);
 }
 
@@ -135,4 +139,11 @@
   aspect-ratio: 300 / 420;
   border-radius: 10px;
   background: var(--lx-color-sunken);
+}
+
+/* Phones: the window's title moves closer to the edge, its content with it. */
+@media (max-width: 759px) {
+  .picker {
+    padding-inline: 20px;
+  }
 }

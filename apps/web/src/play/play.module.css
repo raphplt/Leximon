@@ -993,14 +993,16 @@
   /* The sachet and its hint, before they load: nothing below moves when they come. */
   .stage {
     box-sizing: border-box;
-    min-height: 405px;
-    padding: 22px 0 20px;
+    min-height: 336px;
+    padding: 8px 0 10px;
   }
 
+  /* Small enough that the word below shows above the tabs on a common phone. */
   .sachet {
     flex: none;
-    max-width: 220px;
-    height: 300px;
+    max-width: 194px;
+    height: 264px;
+    min-height: 0;
   }
 
   /* Between the floating buttons. */
@@ -1011,8 +1013,8 @@
   }
 
   .shelf {
-    min-height: 92px;
-    padding: 18px 16px 20px;
+    min-height: 76px;
+    padding: 12px 16px;
   }
 
   .openButton {
