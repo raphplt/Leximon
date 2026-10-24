@@ -229,6 +229,48 @@
   transform: rotate(180deg);
 }
 
+/* --- Search in a long list --- */
+
+.search {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.searchField {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  box-sizing: border-box;
+  min-height: 46px;
+  padding: 0 16px;
+  border: 2px solid var(--lx-color-outline);
+  border-radius: var(--lx-radius-pill);
+  background: var(--lx-color-background);
+  color: var(--lx-color-text-muted);
+}
+
+.searchField:focus-within {
+  border-color: var(--lx-color-focus);
+}
+
+.searchField input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  background: none;
+  color: var(--lx-color-text);
+  font: inherit;
+  font-size: 16px;
+}
+
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
 /* --- Friend link and adding --- */
 
 .linkLine {
@@ -425,7 +467,7 @@
 .feed {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 14px;
   margin: 0;
   padding: 0;
   list-style: none;
@@ -468,13 +510,17 @@
 .reactions {
   display: flex;
   flex-wrap: wrap;
+  align-items: center;
   gap: 6px;
-  margin-top: 2px;
+}
+
+.reactions .faint {
+  margin-right: 4px;
 }
 
 .reaction {
   appearance: none;
-  min-height: 30px;
+  min-height: 28px;
   padding: 0 11px;
   border: 0;
   border-radius: var(--lx-radius-pill);
@@ -483,8 +529,15 @@
   font: inherit;
   font-size: 13px;
   font-weight: 700;
-  line-height: 30px;
+  line-height: 28px;
   white-space: nowrap;
+}
+
+/* Offers to react without laying out every choice under every event. */
+.react {
+  background: none;
+  box-shadow: inset 0 0 0 1px rgba(246, 240, 226, 0.18);
+  color: var(--lx-color-text-muted);
 }
 
 button.reaction {

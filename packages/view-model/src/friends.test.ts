@@ -3,14 +3,18 @@ import { describe, expect, it } from "vitest";
 import {
   betaPlacesLabel,
   feedLine,
+  feedReactions,
   friendLine,
+  friendListView,
   friendRefusalText,
+  matchesFriend,
   podiumView,
   rankLabel,
   reactionChips,
   referralRewardTitle,
   tradeFriends,
   tradesLabel,
+  unfoldLabel,
   withReaction,
 } from "./friends";
 
@@ -154,5 +158,63 @@ describe("referral rewards", () => {
     expect(
       referralRewardTitle({ player: null, role: "referee", refereeCode: "B", boosters: 1 }),
     ).toBe("Un sachet bonus de bienvenue, grâce à Un joueur parti !");
+  });
+});
+
+describe("a long list of friends", () => {
+  const names = ["Héloïse", "Bastien", "Clémence", "Anatole", "Margot", "Octave", "Firmin"];
+  const many = [...names, "Léonie", "Gaston", "Achille"].map((name, i) => ({
+    player: badge(`CODE000${i}`, name),
+    online: i < 2,
+    trades: i % 3 === 0 ? 2 : 0,
+  }));
+  const all = { query: "", filter: "all" as const, unfolded: false };
+
+  it("stays whole and plain while short", () => {
+    const view = friendListView(many.slice(0, 8), all);
+    expect(view.shown).toHaveLength(8);
+    expect(view.searchable).toBe(false);
+    expect(view.folded).toBe(0);
+  });
+
+  it("folds past eight, and unfolds on demand", () => {
+    expect(friendListView(many, all)).toMatchObject({ folded: 2, searchable: true });
+    expect(friendListView(many, { ...all, unfolded: true }).shown).toHaveLength(10);
+    expect(unfoldLabel(2)).toBe("Voir les 2 autres");
+    expect(unfoldLabel(1)).toBe("Voir le dernier");
+  });
+
+  it("finds a friend without the accents, and shows every match", () => {
+    expect(matchesFriend({ player: badge("X", "Héloïse") }, " heloise ")).toBe(true);
+    const found = friendListView(many, { ...all, query: "E" });
+    expect(found.folded).toBe(0);
+    expect(found.shown.map((f) => f.player.pseudo)).toContain("Héloïse");
+    expect(friendListView(many, { ...all, query: "zut" }).empty).not.toBeNull();
+  });
+
+  it("filters those online or with a trade, and counts them", () => {
+    const view = friendListView(many, all);
+    expect(view.filters.map((f) => f.label)).toEqual(["Tous", "En ligne · 2", "Échanges · 4"]);
+    expect(friendListView(many, { ...all, filter: "online" }).shown).toHaveLength(2);
+    expect(friendListView(many, { ...all, filter: "trades" }).shown).toHaveLength(4);
+  });
+});
+
+describe("the reactions under an event", () => {
+  const event = { reactions: [{ reaction: "hats_off" as const, count: 2 }], mine: null };
+
+  it("shows only those given, and offers to react", () => {
+    const view = feedReactions(event, { self: false, picking: false });
+    expect(view.chips.map((c) => c.id)).toEqual(["hats_off"]);
+    expect(view.canReact).toBe(true);
+  });
+
+  it("lays out every choice while picking", () => {
+    expect(feedReactions(event, { self: false, picking: true }).chips).toHaveLength(4);
+  });
+
+  it("never offers to react to the player's own event", () => {
+    expect(feedReactions(event, { self: true, picking: true })).toMatchObject({ canReact: false });
+    expect(feedReactions(event, { self: true, picking: true }).chips).toHaveLength(1);
   });
 });

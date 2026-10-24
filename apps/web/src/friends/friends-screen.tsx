@@ -7,12 +7,15 @@ import {
   FRIENDS_GUEST,
   FRIENDS_PSEUDO_FIRST,
   FRIENDS_TITLE,
+  type FriendFilter,
   friendLine,
   friendLinkText,
+  friendListView,
   friendsCountLabel,
   playerName,
   requestSentToast,
   tradesLabel,
+  unfoldLabel,
 } from "@leximon/view-model";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { type FormEvent, useEffect, useId, useState } from "react";
@@ -30,6 +33,7 @@ import { useToast } from "@/ui/toast";
 import ui from "@/ui/ui.module.css";
 import { acceptFriend, askFriend, cancelFriendRequest, declineFriend, fetchReferrer } from "./api";
 import { FriendFeed } from "./feed";
+import { FriendSearch } from "./friend-search";
 import { FriendSheet } from "./friend-sheet";
 import styles from "./friends.module.css";
 import { Podium } from "./podium";
@@ -76,6 +80,22 @@ export function FriendsScreen() {
   }
 
   const hasPseudo = view.profile.pseudo !== null;
+  // Once there are friends, they come first; before that, the ways to get some.
+  const hasFriends = data.friends.length > 0;
+  const list = <FriendList friends={data.friends} now={now} onChoose={setChosen} />;
+  const adding = hasPseudo ? (
+    <>
+      <FriendLink code={data.link.code} placesLeft={data.link.betaPlacesLeft} />
+      <AddByPseudo />
+    </>
+  ) : (
+    <section className={`${ui.panel} ${styles.card}`}>
+      <p className={styles.hint}>{FRIENDS_PSEUDO_FIRST}</p>
+      <Button small onClick={() => setPseudoOpen(true)}>
+        Choisir mon pseudo
+      </Button>
+    </section>
+  );
 
   return (
     <main className={styles.screen}>
@@ -91,57 +111,9 @@ export function FriendsScreen() {
           <AddFromLink />
           {data.incoming.length > 0 && <Incoming requests={data.incoming} />}
 
-          {hasPseudo ? (
-            <>
-              <FriendLink code={data.link.code} placesLeft={data.link.betaPlacesLeft} />
-              <AddByPseudo />
-            </>
-          ) : (
-            <section className={`${ui.panel} ${styles.card}`}>
-              <p className={styles.hint}>{FRIENDS_PSEUDO_FIRST}</p>
-              <Button small onClick={() => setPseudoOpen(true)}>
-                Choisir mon pseudo
-              </Button>
-            </section>
-          )}
-
-          <section className={`${ui.panel} ${styles.card}`}>
-            <p className={ui.kicker}>Tes amis</p>
-            {data.friends.length === 0 ? (
-              <p className={styles.empty}>{FRIENDS_EMPTY}</p>
-            ) : (
-              <ul className={styles.list}>
-                {data.friends.map((friend) => (
-                  <li key={friend.player.code}>
-                    <button type="button" className={styles.row} onClick={() => setChosen(friend)}>
-                      <span className={styles.rowAvatar}>
-                        <Avatar avatar={friend.player.avatar} frame={null} size={44} />
-                        {friend.online && <span className={styles.online} />}
-                      </span>
-                      <span className={styles.rowText}>
-                        <span className={styles.rowName}>
-                          {playerName(friend.player)}
-                          {friend.crowned && (
-                            <span className={styles.crown} title="Premier la semaine passée">
-                              <Icon name="crown" size={14} />
-                            </span>
-                          )}
-                        </span>
-                        <span className={styles.small}>{friendLine(friend, now)}</span>
-                      </span>
-                      {tradesLabel(friend.trades) !== null && (
-                        <span className={`${ui.chip} ${ui.chipGold} ${styles.trades}`}>
-                          <Icon name="echange" size={15} />
-                          {tradesLabel(friend.trades)}
-                        </span>
-                      )}
-                      <Icon name="chev" size={16} />
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </section>
+          {hasFriends && list}
+          {adding}
+          {!hasFriends && list}
 
           {data.outgoing.length > 0 && <Outgoing requests={data.outgoing} />}
         </div>
@@ -158,9 +130,92 @@ export function FriendsScreen() {
   );
 }
 
+function FriendList({
+  friends: list,
+  now,
+  onChoose,
+}: {
+  readonly friends: readonly Friend[];
+  readonly now: number;
+  readonly onChoose: (friend: Friend) => void;
+}) {
+  const [query, setQuery] = useState("");
+  const [filter, setFilter] = useState<FriendFilter>("all");
+  const [unfolded, setUnfolded] = useState(false);
+  const view = friendListView(list, { query, filter, unfolded });
+
+  return (
+    <section className={`${ui.panel} ${styles.card}`}>
+      <p className={ui.kicker}>Tes amis</p>
+      {list.length === 0 && <p className={styles.empty}>{FRIENDS_EMPTY}</p>}
+      {view.searchable && (
+        <div className={styles.search}>
+          <FriendSearch value={query} onChange={setQuery} />
+          <div className={styles.filters}>
+            {view.filters.map((f) => (
+              <button
+                key={f.id}
+                type="button"
+                className={styles.reaction}
+                aria-pressed={filter === f.id}
+                onClick={() => setFilter(f.id)}
+              >
+                {f.label}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+      {view.empty !== null && <p className={styles.empty}>{view.empty}</p>}
+      {view.shown.length > 0 && (
+        <ul className={styles.list}>
+          {view.shown.map((friend) => (
+            <li key={friend.player.code}>
+              <button type="button" className={styles.row} onClick={() => onChoose(friend)}>
+                <span className={styles.rowAvatar}>
+                  <Avatar avatar={friend.player.avatar} frame={null} size={44} />
+                  {friend.online && <span className={styles.online} />}
+                </span>
+                <span className={styles.rowText}>
+                  <span className={styles.rowName}>
+                    {playerName(friend.player)}
+                    {friend.crowned && (
+                      <span className={styles.crown} title="Premier la semaine passée">
+                        <Icon name="crown" size={14} />
+                      </span>
+                    )}
+                  </span>
+                  <span className={styles.small}>{friendLine(friend, now)}</span>
+                </span>
+                {tradesLabel(friend.trades) !== null && (
+                  <span className={`${ui.chip} ${ui.chipGold} ${styles.trades}`}>
+                    <Icon name="echange" size={15} />
+                    {tradesLabel(friend.trades)}
+                  </span>
+                )}
+                <Icon name="chev" size={16} />
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+      {view.folded > 0 && (
+        <Button variant="ghost" small onClick={() => setUnfolded(true)}>
+          {unfoldLabel(view.folded)}
+        </Button>
+      )}
+    </section>
+  );
+}
+
+/** Past a few requests, the rest waits behind a button: the page is not a queue. */
+const REQUESTS_SHOWN = 3;
+
 function Incoming({ requests }: { readonly requests: readonly FriendRequest[] }) {
   const act = useFriendAction();
   const [busy, setBusy] = useState<string | null>(null);
+  const [unfolded, setUnfolded] = useState(false);
+  const shown = unfolded ? requests : requests.slice(0, REQUESTS_SHOWN);
 
   const answer = async (request: FriendRequest, accept: boolean) => {
     const code = request.player.code;
@@ -184,7 +239,7 @@ function Incoming({ requests }: { readonly requests: readonly FriendRequest[] })
         {requests.length > 1 ? `${requests.length} demandes d'ami` : "Une demande d'ami"}
       </p>
       <ul className={styles.list}>
-        {requests.map((request) => (
+        {shown.map((request) => (
           <li key={request.player.code} className={styles.requestRow}>
             <Avatar avatar={request.player.avatar} frame={null} size={40} />
             <span className={styles.rowText}>
@@ -207,6 +262,11 @@ function Incoming({ requests }: { readonly requests: readonly FriendRequest[] })
           </li>
         ))}
       </ul>
+      {shown.length < requests.length && (
+        <Button variant="ghost" small onClick={() => setUnfolded(true)}>
+          {unfoldLabel(requests.length - shown.length)}
+        </Button>
+      )}
     </section>
   );
 }

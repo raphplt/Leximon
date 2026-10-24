@@ -8,7 +8,7 @@ import { friendIdsOf } from "./friends";
 
 const { friendFeedEvents, friendReactions, friendships, userProgress } = schema;
 
-const FEED_PAGE = 30;
+const FEED_PAGE = 15;
 /** Finds and answers this recent enter the feed: the queue's delay at most. */
 const FEED_WINDOW_MS = 24 * 60 * 60 * 1000;
 

@@ -4,8 +4,8 @@ import type { FeedEvent, FriendReactionKind } from "@leximon/contract";
 import {
   FEED_EMPTY,
   feedLine,
+  feedReactions,
   messageTime,
-  reactionChips,
   withReaction,
 } from "@leximon/view-model";
 import { useEffect, useState } from "react";
@@ -27,6 +27,7 @@ export function FriendFeed({ now }: { readonly now: number }) {
   const [events, setEvents] = useState<readonly FeedEvent[] | null>(null);
   const [hasMore, setHasMore] = useState(false);
   const [failed, setFailed] = useState(false);
+  const [picking, setPicking] = useState<number | null>(null);
   const me = useShared(profile);
   const catalog = useCatalog();
   const toast = useToast();
@@ -51,6 +52,7 @@ export function FriendFeed({ now }: { readonly now: number }) {
   };
 
   const choose = async (event: FeedEvent, reaction: FriendReactionKind) => {
+    setPicking(null);
     const next = event.mine === reaction ? null : reaction;
     const swap = (to: FeedEvent) =>
       setEvents((current) => current?.map((e) => (e.id === event.id ? to : e)) ?? null);
@@ -85,6 +87,7 @@ export function FriendFeed({ now }: { readonly now: number }) {
                 ? collectionName(catalog, event.collectionId)
                 : null;
             const line = feedLine(event, self, card, collection);
+            const reactions = feedReactions(event, { self, picking: picking === event.id });
             return (
               <li key={event.id} className={styles.event}>
                 <Avatar avatar={event.player.avatar} frame={null} size={36} />
@@ -105,15 +108,13 @@ export function FriendFeed({ now }: { readonly now: number }) {
                       ))}
                     {line.after}
                   </p>
-                  <span className={styles.faint}>{messageTime(event.createdAt, now)}</span>
                   <div className={styles.reactions}>
-                    {reactionChips(event).map((chip) =>
+                    <span className={styles.faint}>{messageTime(event.createdAt, now)}</span>
+                    {reactions.chips.map((chip) =>
                       self ? (
-                        chip.count > 0 && (
-                          <span key={chip.id} className={styles.reaction}>
-                            {chip.label} · {chip.count}
-                          </span>
-                        )
+                        <span key={chip.id} className={styles.reaction}>
+                          {chip.label} · {chip.count}
+                        </span>
                       ) : (
                         <button
                           key={chip.id}
@@ -126,6 +127,15 @@ export function FriendFeed({ now }: { readonly now: number }) {
                           {chip.count > 0 && ` · ${chip.count}`}
                         </button>
                       ),
+                    )}
+                    {reactions.canReact && (
+                      <button
+                        type="button"
+                        className={`${styles.reaction} ${styles.react}`}
+                        onClick={() => setPicking(event.id)}
+                      >
+                        Réagir
+                      </button>
                     )}
                   </div>
                 </div>

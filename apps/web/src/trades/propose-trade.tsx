@@ -3,7 +3,9 @@
 import type { CatalogCard, PlayerBadge, Trade } from "@leximon/contract";
 import { rarityRank } from "@leximon/core";
 import {
+  FRIENDS_FOLD,
   heldLabel,
+  matchesFriend,
   type Notice,
   normalizePlayerCode,
   offerProblem,
@@ -21,6 +23,7 @@ import { type Catalog, collectionName } from "@/cards/catalog";
 import { Avatar } from "@/components/avatar";
 import { Card } from "@/components/card";
 import { fetchFriendCards } from "@/friends/api";
+import { FriendSearch } from "@/friends/friend-search";
 import { createTrade, fetchTradeable } from "@/lib/api";
 import { useNow } from "@/lib/use-now";
 import { usePackShape } from "@/lib/use-pack-shape";
@@ -121,6 +124,10 @@ export function ProposeTrade({
   }, [preset]);
 
   const myFriends = useShared(friends);
+  const [friendQuery, setFriendQuery] = useState("");
+  const pickable = tradeFriends(myFriends?.friends ?? []).filter((friend) =>
+    matchesFriend(friend, friendQuery),
+  );
 
   // A sent offer is done: coming back to the page later starts a fresh one.
   const shouldReset = useRef(false);
@@ -327,8 +334,14 @@ export function ProposeTrade({
       {step === "code" && myFriends !== null && myFriends.friends.length > 0 && (
         <div className={styles.friendPick}>
           <p className={styles.fieldLabel}>Avec un ami</p>
+          {myFriends.friends.length > FRIENDS_FOLD && (
+            <FriendSearch value={friendQuery} onChange={setFriendQuery} />
+          )}
+          {pickable.length === 0 && (
+            <p className={styles.muted}>Personne de ce nom parmi tes amis.</p>
+          )}
           <ul className={styles.friendList}>
-            {tradeFriends(myFriends.friends).map((friend) => {
+            {pickable.map((friend) => {
               const trades = tradesLabel(friend.trades);
               return (
                 <li key={friend.player.code}>

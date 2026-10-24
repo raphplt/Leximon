@@ -41,6 +41,68 @@ export function tradeFriends<T extends Pick<Friend, "player" | "trades">>(
 }
 
 /** « 12 amis sur 200 ». */
+/** Past this many friends, the list folds and a search shows up. */
+export const FRIENDS_FOLD = 8;
+
+export type FriendFilter = "all" | "online" | "trades";
+
+export interface FriendListView<T> {
+  readonly shown: readonly T[];
+  /** How many friends the fold hides. */
+  readonly folded: number;
+  /** Search and filters, only once the list is long. */
+  readonly searchable: boolean;
+  readonly filters: readonly { readonly id: FriendFilter; readonly label: string }[];
+  /** Said when the search or the filter leaves nobody. */
+  readonly empty: string | null;
+}
+
+/** Accents and case aside, so "heloise" finds Héloïse. */
+function searchKey(text: string): string {
+  return text.normalize("NFD").replace(/\p{M}/gu, "").toLowerCase();
+}
+
+export function matchesFriend(friend: Pick<Friend, "player">, query: string): boolean {
+  const key = searchKey(query.trim());
+  return key === "" || searchKey(playerName(friend.player)).includes(key);
+}
+
+/** The friends shown: searched, filtered, or the first ones while the list stays folded. */
+export function friendListView<T extends Pick<Friend, "player" | "online" | "trades">>(
+  friends: readonly T[],
+  { query, filter, unfolded }: { query: string; filter: FriendFilter; unfolded: boolean },
+): FriendListView<T> {
+  if (friends.length <= FRIENDS_FOLD) {
+    return { shown: friends, folded: 0, searchable: false, filters: [], empty: null };
+  }
+  const online = friends.filter((f) => f.online).length;
+  const trades = friends.filter((f) => f.trades > 0).length;
+  const filters = [
+    { id: "all" as const, label: "Tous" },
+    ...(online > 0 ? [{ id: "online" as const, label: `En ligne · ${online}` }] : []),
+    ...(trades > 0 ? [{ id: "trades" as const, label: `Échanges · ${trades}` }] : []),
+  ];
+  const kept = friends.filter(
+    (f) =>
+      (filter !== "online" || f.online) &&
+      (filter !== "trades" || f.trades > 0) &&
+      matchesFriend(f, query),
+  );
+  const narrowed = filter !== "all" || query.trim() !== "";
+  const shown = narrowed || unfolded ? kept : kept.slice(0, FRIENDS_FOLD);
+  return {
+    shown,
+    folded: kept.length - shown.length,
+    searchable: true,
+    filters,
+    empty: kept.length === 0 ? "Personne de ce nom parmi tes amis." : null,
+  };
+}
+
+export function unfoldLabel(hidden: number): string {
+  return hidden === 1 ? "Voir le dernier" : `Voir les ${formatCount(hidden)} autres`;
+}
+
 export function friendsCountLabel(count: number, max: number): string {
   return `${plural(count, "ami", "amis")} sur ${formatCount(max)}`;
 }
@@ -234,6 +296,21 @@ export function reactionChips(event: Pick<FeedEvent, "reactions" | "mine">): rea
     count: event.reactions.find((r) => r.reaction === reaction.id)?.count ?? 0,
     mine: event.mine === reaction.id,
   }));
+}
+
+/**
+ * The reactions an event shows: only those someone gave, unless the player is picking one. A
+ * friend's event the player has not answered offers to react.
+ */
+export function feedReactions(
+  event: Pick<FeedEvent, "reactions" | "mine">,
+  { self, picking }: { self: boolean; picking: boolean },
+) {
+  const chips = reactionChips(event);
+  return {
+    chips: picking && !self ? chips : chips.filter((chip) => chip.count > 0),
+    canReact: !self && !picking && event.mine === null,
+  };
 }
 
 /**
