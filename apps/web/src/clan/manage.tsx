@@ -9,12 +9,16 @@ import {
   muteChoices,
   mutedUntilLabel,
   playerName,
+  requestSentToast,
   roleLabel,
 } from "@leximon/view-model";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Avatar } from "@/components/avatar";
+import { askFriend } from "@/friends/api";
+import { useFriendAction } from "@/friends/use-friend-action";
 import { myClan } from "@/player/clan";
+import { friends } from "@/player/friends";
 import { profile } from "@/player/player";
 import { useShared } from "@/player/resource";
 import { Button } from "@/ui/button";
@@ -109,6 +113,8 @@ function MemberActions({
   readonly onChanged: () => void;
 }) {
   const me = useShared(profile);
+  const myFriends = useShared(friends);
+  const befriend = useFriendAction();
   const act = useAct();
   const [pending, setPending] = useState<Pending>(null);
   const [busy, setBusy] = useState(false);
@@ -116,6 +122,12 @@ function MemberActions({
   const name = playerName(member.player);
   const code = member.player.code;
   const self = me?.playerCode === code;
+  const canBefriend =
+    !self &&
+    myFriends !== null &&
+    ![...myFriends.friends, ...myFriends.outgoing, ...myFriends.incoming].some(
+      (other) => other.player.code === code,
+    );
   const target = member.role;
   const muted = member.mutedUntil !== null && Date.parse(member.mutedUntil) > now;
   const role = roleLabel(target);
@@ -147,6 +159,22 @@ function MemberActions({
         >
           Voir son profil
         </Link>
+      )}
+
+      {canBefriend && (
+        <Button
+          variant="secondary"
+          small
+          disabled={busy}
+          onClick={() =>
+            void befriend(
+              () => askFriend({ code }),
+              (value) => requestSentToast(value.outcome, value.player),
+            )
+          }
+        >
+          Ajouter en ami
+        </Button>
       )}
 
       {!self && canAct(myRole, "appoint_deputy") && target !== "chief" && (
