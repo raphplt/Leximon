@@ -134,6 +134,7 @@ export function tradeRoutes() {
           ...[result.trade.proposerId, result.trade.recipientId].flatMap((userId) =>
             userId === null ? [] : [{ type: "cards_obtained" as const, userId }],
           ),
+          ...result.levelUps.map((userId) => ({ type: "level_up" as const, userId })),
         ]);
         return c.json(await tradeView(c.var.db, result.trade, now));
       case "not_found":

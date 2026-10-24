@@ -49,6 +49,7 @@ const ICONS = {
   dots: "M5.5 12 H5.51 M12 12 H12.01 M18.5 12 H18.51",
   crown: "M4 18 H20 M4 18 L3 7.5 L8.5 11.5 L12 5 L15.5 11.5 L21 7.5 L20 18",
   block: `${circle(12, 12, 8.5)} M6 6 L18 18`,
+  amis: `${circle(9, 8.5, 3.5)} M2.5 20 C3 16 5.5 14 9 14 C12.5 14 15 16 15.5 20 M15 4.8 C17 5 18.5 6.6 18.5 8.5 C18.5 10.4 17 12 15 12.2 M17 14.3 C19.5 15 21 17 21.5 20`,
 } as const;
 
 export type IconName = keyof typeof ICONS;

@@ -38,6 +38,7 @@ import { leaveClan, touchLastSeen } from "../clans/clans";
 import { sendGameEvents } from "../clans/events";
 import { myClanRoutes } from "../clans/routes";
 import type { AppEnv } from "../context";
+import { friendRoutes } from "../friends/routes";
 import { claimLevelReward, readLevelRewards, walletView } from "../levels/rewards";
 import { markMailRead, readMail } from "../mail/mail";
 import { playerRateLimit } from "../middleware/rate-limit";
@@ -78,6 +79,7 @@ export function meRoutes() {
   routes.route("/clan", myClanRoutes());
   routes.route("/sanctions", sanctionRoutes());
   routes.route("/", betaPlayerRoutes());
+  routes.route("/", friendRoutes());
 
   routes.get("/wallet", async (c) => {
     // Asked for on every screen: the player's presence for the clan.

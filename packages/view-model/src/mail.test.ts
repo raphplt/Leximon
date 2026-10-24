@@ -51,6 +51,32 @@ describe("letterView", () => {
   });
 });
 
+describe("friend letters", () => {
+  it("leads every friend letter to the friends' screen", () => {
+    expect(view({ ...base, kind: "friend_request", pending: true })).toEqual({
+      title: "Mirabelle te demande en ami",
+      detail: "Demande d'ami",
+      when: "08:05",
+      target: { kind: "screen", href: "/amis" },
+    });
+    expect(view({ ...base, kind: "friend_request", pending: false }).detail).toBe("Amis");
+    expect(view({ ...base, kind: "friend_accepted", pending: false }).title).toBe(
+      "Mirabelle accepte ta demande",
+    );
+    expect(view({ ...base, kind: "referral_qualified", pending: false }).title).toBe(
+      "Un sachet bonus grâce à Mirabelle !",
+    );
+  });
+
+  it("counts the friends who reacted besides the first one", () => {
+    const reaction = { ...base, kind: "friend_reaction" as const, eventId: 4 };
+    expect(view({ ...reaction, reactions: 1 }).title).toBe("Mirabelle réagit à ta trouvaille");
+    expect(view({ ...reaction, reactions: 3 }).title).toBe(
+      "Mirabelle et 2 autres réagissent à ta trouvaille",
+    );
+  });
+});
+
 describe("slippingDetail", () => {
   it("counts the other words slipping away", () => {
     expect(slippingDetail(0)).toBe("Défis");

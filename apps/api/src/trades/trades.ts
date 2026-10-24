@@ -6,6 +6,7 @@ import {
   type Holding,
   isExpired,
   isLevelHighEnough,
+  levelOf,
   maxCardsBetween,
   TRADE_SCHEDULE,
   type TradeRefusal,
@@ -299,7 +300,12 @@ export type AcceptRefusal =
   | "too_many_cards";
 
 export type AcceptTradeResult =
-  | { readonly kind: "completed"; readonly trade: TradeRecord }
+  | {
+      readonly kind: "completed";
+      readonly trade: TradeRecord;
+      /** Players the trade's experience took to a new level; none when a retry replays it. */
+      readonly levelUps: readonly string[];
+    }
   | { readonly kind: "not_found" }
   | { readonly kind: "refused"; readonly reason: AcceptRefusal };
 
@@ -347,7 +353,7 @@ export async function acceptTrade(
       return { kind: "refused", reason: "trade_not_pending" };
     }
     if (record.status === "completed") {
-      return { kind: "completed", trade: record };
+      return { kind: "completed", trade: record, levelUps: [] };
     }
     if (record.status !== "pending") {
       return { kind: "refused", reason: "trade_not_pending" };
@@ -402,7 +408,17 @@ export async function acceptTrade(
       .update(trades)
       .set({ status: "completed", resolvedAt })
       .where(eq(trades.id, tradeId));
-    return { kind: "completed", trade: { ...record, status: "completed", resolvedAt } };
+    const levelUps = [
+      { id: proposerId, xp: proposerXp ?? 0 },
+      { id: userId, xp: recipientXp ?? 0 },
+    ].flatMap((side) =>
+      levelOf(side.xp + tradeCompleted).level > levelOf(side.xp).level ? [side.id] : [],
+    );
+    return {
+      kind: "completed",
+      trade: { ...record, status: "completed", resolvedAt },
+      levelUps,
+    };
   });
 }
 

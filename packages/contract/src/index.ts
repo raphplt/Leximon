@@ -8,6 +8,7 @@ export * from "./clans";
 export * from "./common";
 export * from "./email";
 export * from "./events";
+export * from "./friends";
 export * from "./levels";
 export * from "./mail";
 export * from "./me";

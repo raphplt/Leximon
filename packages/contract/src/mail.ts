@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { slugSchema, timestampSchema } from "./common";
+import { referralRewardSchema } from "./friends";
 import { playerBadgeSchema } from "./profile";
 
 const letterBase = {
@@ -27,6 +28,22 @@ export const mailLetterSchema = z.discriminatedUnion("kind", [
   }),
   /** A player asks to enter the clan, for its chief and deputies. */
   z.object({ kind: z.literal("clan_request"), ...letterBase, clanId: z.uuid() }),
+  /**
+   * A friend request received (`pending` while it waits for an answer), a request accepted, a
+   * player arrived by the friend link, an invited player who reached the referral level.
+   */
+  z.object({
+    kind: z.enum(["friend_request", "friend_accepted", "referral_arrived", "referral_qualified"]),
+    ...letterBase,
+    pending: z.boolean(),
+  }),
+  /** Friends reacted to one of the player's feed events; `reactions` counts them now. */
+  z.object({
+    kind: z.literal("friend_reaction"),
+    ...letterBase,
+    eventId: z.int().positive(),
+    reactions: z.int().nonnegative(),
+  }),
 ]);
 export type MailLetter = z.infer<typeof mailLetterSchema>;
 export type MailKind = MailLetter["kind"];
@@ -47,6 +64,8 @@ export const mailResponseSchema = z.object({
    */
   slipping: z.object({ cardId: slugSchema, others: z.int().nonnegative() }).nullable(),
   hasMore: z.boolean(),
+  /** Bonus boosters of friend links waiting to be claimed, oldest first. */
+  referralRewards: z.array(referralRewardSchema),
 });
 export type MailResponse = z.infer<typeof mailResponseSchema>;
 

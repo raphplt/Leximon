@@ -5,6 +5,7 @@ import { inArray, sql } from "drizzle-orm";
 import type { Context } from "hono";
 import type { AppEnv } from "../context";
 import { errorSummary } from "../error-summary";
+import { handleFriendEvents } from "../friends/events";
 import { writeMentionLetters, writeRequestLetters, writeTradeLetters } from "../mail/mail";
 import { clansOf } from "./clans";
 import { recountClanWeek } from "./goal";
@@ -72,6 +73,10 @@ export async function handleGameEvents(
   const tradeIds = new Set<string>();
   const messageIds = new Set<number>();
   const requests = new Map<string, { clanId: string; userId: string }>();
+  const levelIds = new Set<string>();
+  const friendRequests = new Map<string, { senderId: string; recipientId: string }>();
+  const accepted = new Map<string, { userId: string; friendId: string }>();
+  const reactions = new Set<number>();
   const weeks = new Set<string>([gameWeekOf(now).key]);
   // When the newest event that moves a player's cards, or a clan's library, was sent.
   const cardsSentAt = new Map<string, EpochMs>();
@@ -111,12 +116,40 @@ export async function handleGameEvents(
         requests.set(`${clanId}:${userId}`, { clanId, userId });
         break;
       }
+      case "level_up":
+        levelIds.add(event.data.userId);
+        break;
+      case "friend_request": {
+        const { senderId, recipientId } = event.data;
+        friendRequests.set(`${senderId}:${recipientId}`, { senderId, recipientId });
+        break;
+      }
+      case "friend_accepted": {
+        const { userId, friendId } = event.data;
+        accepted.set(`${userId}:${friendId}`, { userId, friendId });
+        break;
+      }
+      case "friend_reaction":
+        reactions.add(event.data.eventId);
+        break;
     }
   });
 
   await writeTradeLetters(db, [...tradeIds], now);
   await writeMentionLetters(db, [...messageIds]);
   await writeRequestLetters(db, [...requests.values()]);
+  await handleFriendEvents(
+    db,
+    {
+      cards: [...cardsSentAt.keys()],
+      answers: [...answerIds],
+      levels: [...levelIds],
+      requests: [...friendRequests.values()],
+      accepted: [...accepted.values()],
+      reactions: [...reactions],
+    },
+    now,
+  );
 
   const memberships = await clansOf(db, [...cardsSentAt.keys()]);
   for (const [userId, membership] of memberships) {

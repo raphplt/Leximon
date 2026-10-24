@@ -23,6 +23,7 @@ export interface LetterView {
 }
 
 const trades: LetterTarget = { kind: "screen", href: "/echanges" };
+const friends: LetterTarget = { kind: "screen", href: "/amis" };
 
 /** A letter as the mail lists it. */
 export function letterView(letter: MailLetter, now: EpochMs, timeZone?: string): LetterView {
@@ -49,6 +50,36 @@ export function letterView(letter: MailLetter, now: EpochMs, timeZone?: string):
         when,
         target: { kind: "screen", href: "/clan" },
       };
+    case "friend_request":
+      return {
+        title: `${name} te demande en ami`,
+        detail: letter.pending ? "Demande d'ami" : "Amis",
+        when,
+        target: friends,
+      };
+    case "friend_accepted":
+      return { title: `${name} accepte ta demande`, detail: "Amis", when, target: friends };
+    case "referral_arrived":
+      return { title: `${name} arrive par ton lien`, detail: "Nouvel ami", when, target: friends };
+    case "referral_qualified":
+      return {
+        title: `Un sachet bonus grâce à ${name} !`,
+        detail: "Parrainage",
+        when,
+        target: friends,
+      };
+    case "friend_reaction": {
+      const others = letter.reactions - 1;
+      return {
+        title:
+          others > 0
+            ? `${name} et ${plural(others, "autre", "autres")} réagissent à ta trouvaille`
+            : `${name} réagit à ta trouvaille`,
+        detail: "Fil des amis",
+        when,
+        target: friends,
+      };
+    }
     default:
       throw new Error(`Unknown letter: ${JSON.stringify(letter satisfies never)}`);
   }

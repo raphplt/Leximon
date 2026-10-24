@@ -329,6 +329,8 @@ export const players = pgTable(
     profilePublic: boolean().notNull().default(true),
     /** Last request, to the nearest few minutes: "online" and "seen 2 days ago" in a clan. */
     lastSeenAt: timestamp({ withTimezone: true }),
+    /** Places of the closed beta taken through the player's friend link. */
+    friendPlacesUsed: integer().notNull().default(0),
   },
   (table) => [
     uniqueIndex("players_pseudo_key_idx").on(table.pseudoKey),
@@ -495,6 +497,10 @@ export const userPreferences = pgTable("user_preferences", {
   notifyTrades: boolean().notNull().default(true),
   /** Only when someone names the player in the clan's discussion. */
   notifyClanMentions: boolean().notNull().default(true),
+  /** Anyone may ask the player to be friends, or nobody: only their friend link makes friends. */
+  friendRequestsOpen: boolean().notNull().default(true),
+  /** What the player finds enters their friends' feed. */
+  shareFinds: boolean().notNull().default(true),
 });
 
 /**

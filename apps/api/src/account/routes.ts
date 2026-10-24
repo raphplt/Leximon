@@ -1,5 +1,4 @@
 import {
-  INVITE_HEADER,
   type LinkPreviewError,
   type LinkPreviewResponse,
   linkPreviewRequestSchema,
@@ -7,7 +6,7 @@ import {
 import { APIError } from "better-auth/api";
 import { Hono } from "hono";
 import type { Auth } from "../auth";
-import { invitesRequired, parseInviteCode, readInviteStatus } from "../beta/invites";
+import { wouldAdmitNewPlayer } from "../beta/arrival";
 import type { AppEnv } from "../context";
 import { withCodeLock } from "../middleware/auth-email";
 import { codeVerifyIpRateLimit } from "../middleware/rate-limit";
@@ -43,15 +42,17 @@ export function accountRoutes() {
     const guestId = session?.user.isAnonymous === true ? session.user.id : null;
     const preview = await previewGuestLink(c.var.db, { guestId, email });
     const createsPlayer = guestId === null && !preview.accountExists;
-    const invite = parseInviteCode(c.req.header(INVITE_HEADER));
     return c.json<LinkPreviewResponse>({
       accountExists: preview.accountExists,
       outcome: preview.outcome,
       guestCards: preview.guestCards,
       inviteRequired:
         createsPlayer &&
-        invitesRequired(c.env) &&
-        (invite === null || (await readInviteStatus(c.var.db, invite, Date.now())) !== "open"),
+        !(await wouldAdmitNewPlayer(c.var.db, c.env, {
+          headers: c.req.raw.headers,
+          fromGuest: false,
+          now: Date.now(),
+        })),
     });
   });
 

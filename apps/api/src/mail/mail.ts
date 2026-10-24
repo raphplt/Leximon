@@ -1,11 +1,12 @@
 import type { MailLetter, MailResponse, PlayerBadge } from "@leximon/contract";
-import type { EpochMs } from "@leximon/core";
+import { type EpochMs, FRIEND_SCHEDULE, friendRulesAt } from "@leximon/core";
 import { type Database, type MailPayload, schema } from "@leximon/db";
-import { and, desc, eq, inArray, isNull, lt, lte, or, sql } from "drizzle-orm";
+import { and, desc, eq, gt, inArray, isNull, lt, lte, or, sql } from "drizzle-orm";
+import { readReferralRewards } from "../friends/referrals";
 import { readBadges } from "../profile/profile";
 import { purgeRows } from "../purge";
 
-const { clanMessages, mailLetters, trades } = schema;
+const { clanMessages, friendReactions, friendRequests, mailLetters, trades } = schema;
 
 /** Letters are erased after this long, read or not. */
 export const MAIL_RETENTION_MS = 90 * 24 * 60 * 60 * 1000;
@@ -190,7 +191,7 @@ export async function readMail(
   const parties = await readTradeParties(db, page, userId);
   const playerOf = (row: LetterRow): string | null =>
     "tradeId" in row.payload ? (parties.get(row.payload.tradeId) ?? null) : row.payload.playerId;
-  const [badges, excerpts, counts] = await Promise.all([
+  const [badges, excerpts, friendStates, counts, referralRewards] = await Promise.all([
     readBadges(
       db,
       page.flatMap((row) => {
@@ -200,6 +201,7 @@ export async function readMail(
       now,
     ),
     readExcerpts(db, page),
+    readFriendStates(db, page, userId, now),
     db.execute<{ unread: number; due_words: number; first_due: string | null }>(sql`
       with due as (
         select um.card_id, um.due from user_mastery um
@@ -212,16 +214,73 @@ export async function readMail(
           where user_id = ${userId} and read_at is null) as unread,
         (select count(*)::int from due) as due_words,
         (select card_id from due order by due, card_id limit 1) as first_due`),
+    readReferralRewards(db, userId, now),
   ]);
   const count = counts.rows[0];
   return {
-    letters: page.flatMap((row) => toLetter(row, playerOf(row), badges, excerpts)),
+    letters: page.flatMap((row) =>
+      toLetter(row, playerOf(row), badges, { excerpts, ...friendStates }),
+    ),
     unread: count?.unread ?? 0,
     slipping:
       count === undefined || count.first_due === null
         ? null
         : { cardId: count.first_due, others: Math.max(0, count.due_words - 1) },
     hasMore: rows.length > MAIL_PAGE,
+    referralRewards,
+  };
+}
+
+/**
+ * What friend letters show as it is now: whether each request received still waits for an
+ * answer, and how many reactions each feed event got.
+ */
+async function readFriendStates(
+  db: Database,
+  rows: readonly LetterRow[],
+  userId: string,
+  now: EpochMs,
+): Promise<{
+  readonly pending: ReadonlySet<string>;
+  readonly reactions: ReadonlyMap<number, number>;
+}> {
+  const senders = rows.flatMap((row) =>
+    row.kind === "friend_request" && "playerId" in row.payload && row.payload.playerId !== null
+      ? [row.payload.playerId]
+      : [],
+  );
+  const eventIds = rows.flatMap((row) =>
+    row.kind === "friend_reaction" && "eventId" in row.payload ? [row.payload.eventId] : [],
+  );
+  const rules = friendRulesAt(FRIEND_SCHEDULE, now);
+  const [pending, reactions] = await Promise.all([
+    senders.length === 0
+      ? Promise.resolve([])
+      : db
+          .select({ senderId: friendRequests.senderId })
+          .from(friendRequests)
+          .where(
+            and(
+              eq(friendRequests.recipientId, userId),
+              inArray(friendRequests.senderId, senders),
+              isNull(friendRequests.declinedAt),
+              gt(friendRequests.createdAt, new Date(now - rules.requestTtlMs)),
+            ),
+          ),
+    eventIds.length === 0
+      ? Promise.resolve([])
+      : db
+          .select({
+            eventId: friendReactions.eventId,
+            count: sql<number>`count(*)::int`,
+          })
+          .from(friendReactions)
+          .where(inArray(friendReactions.eventId, eventIds))
+          .groupBy(friendReactions.eventId),
+  ]);
+  return {
+    pending: new Set(pending.map((row) => row.senderId)),
+    reactions: new Map(reactions.map((row) => [row.eventId, row.count])),
   };
 }
 
@@ -286,7 +345,11 @@ function toLetter(
   row: LetterRow,
   playerId: string | null,
   badges: ReadonlyMap<string, PlayerBadge>,
-  excerpts: ReadonlyMap<number, string | null>,
+  now: {
+    readonly excerpts: ReadonlyMap<number, string | null>;
+    readonly pending: ReadonlySet<string>;
+    readonly reactions: ReadonlyMap<number, number>;
+  },
 ): MailLetter[] {
   const payload: MailPayload = row.payload;
   const base = {
@@ -307,12 +370,34 @@ function toLetter(
               kind: row.kind,
               ...base,
               clanId: payload.clanId,
-              excerpt: excerpts.get(payload.messageId) ?? null,
+              excerpt: now.excerpts.get(payload.messageId) ?? null,
             },
           ]
         : [];
     case "clan_request":
       return "clanId" in payload ? [{ kind: row.kind, ...base, clanId: payload.clanId }] : [];
+    case "friend_request":
+    case "friend_accepted":
+    case "referral_arrived":
+    case "referral_qualified":
+      return [
+        {
+          kind: row.kind,
+          ...base,
+          pending: row.kind === "friend_request" && playerId !== null && now.pending.has(playerId),
+        },
+      ];
+    case "friend_reaction":
+      return "eventId" in payload
+        ? [
+            {
+              kind: row.kind,
+              ...base,
+              eventId: payload.eventId,
+              reactions: now.reactions.get(payload.eventId) ?? 0,
+            },
+          ]
+        : [];
     default:
       throw new Error(`Unknown letter: ${JSON.stringify(row.kind satisfies never)}`);
   }

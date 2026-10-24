@@ -72,7 +72,10 @@ export function challengeRoutes(loadCatalogIndex: CatalogIndexLoader) {
     });
     switch (result.kind) {
       case "answered":
-        if (result.correct) sendGameEvents(c, [{ type: "answer_given", userId: c.var.userId }]);
+        sendGameEvents(c, [
+          ...(result.correct ? [{ type: "answer_given" as const, userId: c.var.userId }] : []),
+          ...(result.progress.levelUp ? [{ type: "level_up" as const, userId: c.var.userId }] : []),
+        ]);
         return c.json<ChallengeAnswerResponse>({
           correct: result.correct,
           slip: result.slip,

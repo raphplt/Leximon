@@ -33,6 +33,7 @@ import {
 import { type Database, schema } from "@leximon/db";
 import { and, asc, desc, eq, gt, inArray, or, sql } from "drizzle-orm";
 import { ADMIN_ROLE } from "../auth";
+import { breakFriendship, readFriendship } from "../friends/friends";
 import { ensurePlayer } from "../trades/players";
 
 const {
@@ -387,11 +388,17 @@ export async function readPublicProfile(
     .where(eq(players.pseudoKey, key));
   if (row === undefined || row.pseudo === null || row.isAnonymous) return { kind: "not_found" };
   const badge = toBadge(row, now);
-  if (badge.level < publicLevel(now)) return { kind: "not_found" };
+  const friendship =
+    viewerId === null || viewerId === row.userId
+      ? undefined
+      : await readFriendship(db, viewerId, row.userId, now);
+  // Friends see each other whole: below the public level, and when the profile is private.
+  const friends = friendship === "friends";
+  if (!friends && badge.level < publicLevel(now)) return { kind: "not_found" };
   if (viewerId !== null && (await isBlockedEitherWay(db, viewerId, row.userId))) {
     return { kind: "not_found" };
   }
-  if (!row.profilePublic) {
+  if (!friends && !row.profilePublic) {
     return {
       kind: "found",
       profile: {
@@ -399,6 +406,7 @@ export async function readPublicProfile(
         pseudo: row.pseudo,
         avatar: badge.avatar,
         frame: badge.frame,
+        ...(friendship === undefined ? {} : { friendship }),
       },
     };
   }
@@ -425,14 +433,20 @@ export async function readPublicProfile(
       clan: await readProfileClan(db, row.userId),
       pinned: pinned.map((pin) => pin.cardId),
       stats: await readStats(db, row.userId),
+      ...(friendship === undefined ? {} : { friendship }),
     },
   };
 }
 
-/** The clan a public profile shows, or `null` without one. */
-async function readProfileClan(db: Reader, userId: string): Promise<ProfileClan | null> {
-  const [row] = await db
+/** The clans of several players in one query, by user id; players without a clan are missing. */
+export async function readProfileClans(
+  db: Reader,
+  userIds: readonly string[],
+): Promise<Map<string, ProfileClan>> {
+  if (userIds.length === 0) return new Map();
+  const rows = await db
     .select({
+      userId: clanMembers.userId,
       id: clans.id,
       name: clans.name,
       engraving: clans.emblemEngraving,
@@ -442,14 +456,23 @@ async function readProfileClan(db: Reader, userId: string): Promise<ProfileClan 
     })
     .from(clanMembers)
     .innerJoin(clans, eq(clans.id, clanMembers.clanId))
-    .where(eq(clanMembers.userId, userId));
-  if (row === undefined) return null;
-  return {
-    id: row.id,
-    name: row.name,
-    emblem: { engraving: row.engraving, colors: [row.color, row.accent] },
-    level: clanLevelOf(CLAN_LEVEL, row.xp).level,
-  };
+    .where(inArray(clanMembers.userId, [...new Set(userIds)]));
+  return new Map(
+    rows.map((row) => [
+      row.userId,
+      {
+        id: row.id,
+        name: row.name,
+        emblem: { engraving: row.engraving, colors: [row.color, row.accent] },
+        level: clanLevelOf(CLAN_LEVEL, row.xp).level,
+      },
+    ]),
+  );
+}
+
+/** The clan a public profile shows, or `null` without one. */
+async function readProfileClan(db: Reader, userId: string): Promise<ProfileClan | null> {
+  return (await readProfileClans(db, [userId])).get(userId) ?? null;
 }
 
 // --- Blocks and reports ---------------------------------------------------------------------
@@ -516,6 +539,7 @@ export async function blockPlayer(
       .insert(userBlocks)
       .values({ blockerId: userId, blockedId: target.targetId, createdAt: at })
       .onConflictDoNothing();
+    await breakFriendship(tx, userId, target.targetId);
     await tx
       .update(trades)
       .set({ status: "cancelled", resolvedAt: at })
@@ -597,6 +621,8 @@ const DEFAULT_PREFERENCES: Preferences = {
   notifyReviews: true,
   notifyTrades: true,
   notifyClanMentions: true,
+  friendRequestsOpen: true,
+  shareFinds: true,
 };
 
 export async function readPreferences(db: Reader, userId: string): Promise<Preferences> {
@@ -605,6 +631,8 @@ export async function readPreferences(db: Reader, userId: string): Promise<Prefe
       notifyReviews: userPreferences.notifyReviews,
       notifyTrades: userPreferences.notifyTrades,
       notifyClanMentions: userPreferences.notifyClanMentions,
+      friendRequestsOpen: userPreferences.friendRequestsOpen,
+      shareFinds: userPreferences.shareFinds,
     })
     .from(userPreferences)
     .where(eq(userPreferences.userId, userId));
@@ -628,6 +656,8 @@ export async function updatePreferences(
       notifyReviews: userPreferences.notifyReviews,
       notifyTrades: userPreferences.notifyTrades,
       notifyClanMentions: userPreferences.notifyClanMentions,
+      friendRequestsOpen: userPreferences.friendRequestsOpen,
+      shareFinds: userPreferences.shareFinds,
     });
   if (row === undefined) throw new Error("Preferences upsert returned no row");
   return row;

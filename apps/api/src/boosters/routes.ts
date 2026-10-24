@@ -42,7 +42,10 @@ export function boosterRoutes(loadCardPool: CardPoolLoader) {
 
     switch (result.kind) {
       case "opened":
-        sendGameEvents(c, [{ type: "cards_obtained", userId: c.var.userId }]);
+        sendGameEvents(c, [
+          { type: "cards_obtained", userId: c.var.userId },
+          ...(result.progress.levelUp ? [{ type: "level_up" as const, userId: c.var.userId }] : []),
+        ]);
         return c.json<OpenBoosterResponse>({
           openId: result.openId,
           cards: [...result.cards],

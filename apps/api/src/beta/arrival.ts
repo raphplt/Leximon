@@ -2,17 +2,28 @@ import {
   ACCOUNT_ERROR_CODES,
   ageBracketSchema,
   INVITE_HEADER,
+  playerCodeSchema,
+  REFERRER_HEADER,
   SOURCE_HEADER,
   sourceCodeSchema,
 } from "@leximon/contract";
 import type { EpochMs } from "@leximon/core";
 import { type Database, schema } from "@leximon/db";
 import { APIError } from "better-auth/api";
+import {
+  claimReferrerPlace,
+  readReferrer,
+  recordReferral,
+  referrerOf,
+  welcomeReferee,
+} from "../friends/referrals";
 import { claimInvite, invitesRequired, parseInviteCode, readInviteStatus } from "./invites";
 
 /** What a sign-in that creates a player brings with it, noted before the user row exists. */
 export interface Arrival {
   readonly inviteId: string | null;
+  /** The player whose friend link brought the new player; never with an invitation of the admin. */
+  readonly referrerId: string | null;
   readonly source: string | null;
   /** An account created from a guest session: the guest was let in already, its origin follows. */
   readonly fromGuest: boolean;
@@ -21,6 +32,14 @@ export interface Arrival {
 export function readSource(headers: Headers | undefined): string | null {
   const source = sourceCodeSchema.safeParse(headers?.get(SOURCE_HEADER));
   return source.success ? source.data : null;
+}
+
+/** The source of a player who came by a friend link and no `?src=`, in the measures. */
+export const FRIEND_LINK_SOURCE = "lien-ami";
+
+function readReferrerCode(headers: Headers | undefined): string | null {
+  const code = playerCodeSchema.safeParse(headers?.get(REFERRER_HEADER));
+  return code.success ? code.data : null;
 }
 
 /**
@@ -41,20 +60,42 @@ export async function admitNewPlayer(
   },
 ): Promise<Arrival> {
   const source = readSource(input.headers);
-  if (input.fromGuest) return { inviteId: null, source, fromGuest: true };
+  const nobody = { inviteId: null, referrerId: null };
+  if (input.fromGuest) return { ...nobody, source, fromGuest: true };
 
   const required = invitesRequired(env);
   const code = parseInviteCode(input.headers?.get(INVITE_HEADER));
-  if (code === null) {
-    if (required) throw inviteRefusal(ACCOUNT_ERROR_CODES.inviteRequired);
-    return { inviteId: null, source, fromGuest: false };
+  if (code !== null) {
+    const claim = await claimInvite(db, code, input.now);
+    if (claim.kind === "claimed") {
+      return { ...nobody, inviteId: claim.inviteId, source, fromGuest: false };
+    }
+    if (required) {
+      throw inviteRefusal(
+        claim.kind === "closed"
+          ? ACCOUNT_ERROR_CODES.inviteClosed
+          : ACCOUNT_ERROR_CODES.inviteRequired,
+      );
+    }
   }
-  const claim = await claimInvite(db, code, input.now);
-  if (claim.kind === "claimed") return { inviteId: claim.inviteId, source, fromGuest: false };
-  if (!required) return { inviteId: null, source, fromGuest: false };
-  throw inviteRefusal(
-    claim.kind === "closed" ? ACCOUNT_ERROR_CODES.inviteClosed : ACCOUNT_ERROR_CODES.inviteRequired,
-  );
+
+  // A friend link: one of the inviter's places while the beta is closed, none once it is open.
+  const referrerCode = code === null ? readReferrerCode(input.headers) : null;
+  if (referrerCode !== null) {
+    const fromLink = { inviteId: null, source: source ?? FRIEND_LINK_SOURCE, fromGuest: false };
+    if (!required) {
+      return { ...fromLink, referrerId: await referrerOf(db, referrerCode, input.now) };
+    }
+    const claim = await claimReferrerPlace(db, referrerCode, input.now);
+    if (claim.kind === "claimed") return { ...fromLink, referrerId: claim.referrerId };
+    throw inviteRefusal(
+      claim.kind === "closed"
+        ? ACCOUNT_ERROR_CODES.inviteClosed
+        : ACCOUNT_ERROR_CODES.inviteRequired,
+    );
+  }
+  if (required) throw inviteRefusal(ACCOUNT_ERROR_CODES.inviteRequired);
+  return { ...nobody, source, fromGuest: false };
 }
 
 /**
@@ -73,7 +114,15 @@ export async function wouldAdmitNewPlayer(
 ): Promise<boolean> {
   if (input.fromGuest || !invitesRequired(env)) return true;
   const code = parseInviteCode(input.headers?.get(INVITE_HEADER));
-  return code !== null && (await readInviteStatus(db, code, input.now)) === "open";
+  if (code !== null) return (await readInviteStatus(db, code, input.now)) === "open";
+  const referrerCode = readReferrerCode(input.headers);
+  if (referrerCode === null) return false;
+  const referrer = await readReferrer(db, {
+    code: referrerCode,
+    betaRequired: true,
+    now: input.now,
+  });
+  return referrer?.status === "open";
 }
 
 function inviteRefusal(code: string): APIError {
@@ -91,6 +140,7 @@ export async function recordArrival(
     readonly isGuest: boolean;
     readonly arrival: Arrival;
     readonly body: unknown;
+    readonly now: EpochMs;
   },
 ): Promise<void> {
   const { userId, arrival } = input;
@@ -100,6 +150,14 @@ export async function recordArrival(
       .insert(schema.playerSignups)
       .values({ userId, inviteId: arrival.inviteId, source: arrival.source })
       .onConflictDoNothing();
+  }
+  const { referrerId } = arrival;
+  if (referrerId !== null) {
+    await db.transaction(async (tx) => {
+      await recordReferral(tx, { refereeId: userId, referrerId, now: input.now });
+      // An account made without a guest has its game at once: the friendship too.
+      if (!input.isGuest) await welcomeReferee(tx, { accountId: userId, now: input.now });
+    });
   }
   if (input.isGuest) return;
   const bracket = ageBracketSchema.safeParse(

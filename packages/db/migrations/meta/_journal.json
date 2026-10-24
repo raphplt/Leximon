@@ -183,6 +183,13 @@
       "when": 1792785848372,
       "tag": "0025_user_cards_read_at",
       "breakpoints": true
+    },
+    {
+      "idx": 26,
+      "version": "7",
+      "when": 1792861031538,
+      "tag": "0026_friends",
+      "breakpoints": true
     }
   ]
 }

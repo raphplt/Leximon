@@ -2,6 +2,8 @@ import { CLAN_SCHEDULE, clanRulesAt } from "@leximon/core";
 import { type Database, schema } from "@leximon/db";
 import { and, eq, inArray, isNotNull, lt, sql } from "drizzle-orm";
 import { recountActiveClans } from "./clans/events";
+import { purgeFeed } from "./friends/feed";
+import { purgeFriendRequests } from "./friends/friends";
 import { purgeMail } from "./mail/mail";
 import { SIGN_IN_CODE_DAILY_QUOTA } from "./middleware/rate-limit";
 import { inBatches, purgeRows } from "./purge";
@@ -32,6 +34,8 @@ export interface MaintenanceReport {
   readonly erasedSessions: number;
   readonly erasedGuests: number;
   readonly erasedReports: number;
+  readonly erasedFriendRequests: number;
+  readonly erasedFeedEvents: number;
   readonly recountedClans: number;
 }
 
@@ -88,6 +92,8 @@ export async function runMaintenance(db: Database, now: number): Promise<Mainten
       moderationReports,
       lt(moderationReports.resolvedAt, new Date(now - RESOLVED_REPORT_RETENTION_MS)),
     ),
+    erasedFriendRequests: await purgeFriendRequests(db, now),
+    erasedFeedEvents: await purgeFeed(db, now),
     recountedClans: await recountActiveClans(db, now),
   };
 }

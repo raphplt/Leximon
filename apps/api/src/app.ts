@@ -1,5 +1,6 @@
 import {
   INVITE_HEADER,
+  REFERRER_HEADER,
   SOURCE_HEADER,
   sendSignInCodeRequestSchema,
   UNDELIVERABLE_EMAIL_ERROR,
@@ -24,6 +25,7 @@ import { challengeRoutes } from "./challenges/routes";
 import { clanRoutes } from "./clans/routes";
 import type { AppEnv } from "./context";
 import { errorSummary } from "./error-summary";
+import { referrerRoutes } from "./friends/routes";
 import { meRoutes } from "./me/routes";
 import { readAuthEmail, serializeCodeChecks } from "./middleware/auth-email";
 import { databaseMiddleware } from "./middleware/database";
@@ -78,7 +80,13 @@ export function createApp(options: AppOptions = {}) {
     cors({
       origin: parseOrigins(c.env.TRUSTED_ORIGINS),
       credentials: true,
-      allowHeaders: ["Content-Type", "Idempotency-Key", INVITE_HEADER, SOURCE_HEADER],
+      allowHeaders: [
+        "Content-Type",
+        "Idempotency-Key",
+        INVITE_HEADER,
+        SOURCE_HEADER,
+        REFERRER_HEADER,
+      ],
       allowMethods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
       // Browsers otherwise ask again within seconds: one more round trip before each write.
       // Two hours is Chrome's ceiling.
@@ -134,6 +142,9 @@ export function createApp(options: AppOptions = {}) {
   app.get("/invites/*", waitlistRateLimit);
   app.use("/invites/*", withDatabase);
   app.route("/invites", inviteRoutes());
+  app.get("/referrers/*", waitlistRateLimit);
+  app.use("/referrers/*", withDatabase);
+  app.route("/referrers", referrerRoutes());
 
   app.notFound((c) => c.json({ error: "not_found" }, 404));
   app.onError((error, c) => {

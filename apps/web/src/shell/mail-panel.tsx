@@ -35,6 +35,11 @@ const LETTER_ICONS: Readonly<Record<MailKind, IconName>> = {
   offer_declined: "echange",
   clan_mention: "chat",
   clan_request: "clan",
+  friend_request: "amis",
+  friend_accepted: "amis",
+  referral_arrived: "amis",
+  referral_qualified: "sachet",
+  friend_reaction: "amis",
 };
 
 interface Row {

@@ -156,6 +156,7 @@ export function createAuth(env: Env, db: Database, emailSender: EmailSender) {
               isGuest: user["isAnonymous"] === true,
               arrival,
               body: ctx?.body,
+              now: Date.now(),
             });
           },
         },

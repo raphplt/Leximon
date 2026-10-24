@@ -58,12 +58,15 @@ export const publicProfileSchema = z.discriminatedUnion("visibility", [
     /** In the order of the profile. */
     pinned: z.array(slugSchema),
     stats: profileStatsSchema,
+    /** Where the signed-in viewer stands with this player; missing for a guest or anonymous viewer. */
+    friendship: z.enum(["none", "friends", "requested", "incoming"]).optional(),
   }),
   z.object({
     visibility: z.literal("private"),
     pseudo: z.string(),
     avatar: cosmeticSchema,
     frame: cosmeticSchema,
+    friendship: z.enum(["none", "friends", "requested", "incoming"]).optional(),
   }),
 ]);
 export type PublicProfile = z.infer<typeof publicProfileSchema>;
@@ -128,6 +131,10 @@ export const preferencesSchema = z.object({
   notifyReviews: z.boolean(),
   notifyTrades: z.boolean(),
   notifyClanMentions: z.boolean(),
+  /** Anyone may ask to be friends; otherwise only the friend link makes friends. */
+  friendRequestsOpen: z.boolean(),
+  /** What the player finds enters their friends' feed. */
+  shareFinds: z.boolean(),
 });
 export type Preferences = z.infer<typeof preferencesSchema>;
 

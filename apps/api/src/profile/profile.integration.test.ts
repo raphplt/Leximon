@@ -348,6 +348,8 @@ describe("/me/preferences", () => {
       notifyReviews: true,
       notifyTrades: true,
       notifyClanMentions: true,
+      friendRequestsOpen: true,
+      shareFinds: true,
     });
     expect((await call(member, "PATCH", "/me/preferences", { notifyTrades: false })).status).toBe(
       200,
@@ -356,6 +358,8 @@ describe("/me/preferences", () => {
       notifyReviews: true,
       notifyTrades: false,
       notifyClanMentions: true,
+      friendRequestsOpen: true,
+      shareFinds: true,
     });
     expect((await call(member, "PATCH", "/me/preferences", {})).status).toBe(400);
   });

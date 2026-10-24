@@ -22,5 +22,21 @@ export const gameEventSchema = z.discriminatedUnion("type", [
   z.object({ type: z.literal("clan_mentions"), messageId: z.int().positive() }),
   /** A player asked to enter a clan: its chief and deputies get a letter. */
   z.object({ type: z.literal("clan_request"), clanId: z.uuid(), userId: z.string().min(1) }),
+  /** A player passed a level: their friends' feed, and the reward of the player who invited them. */
+  z.object({ type: z.literal("level_up"), userId: z.string().min(1) }),
+  /** A friend request was sent: the recipient gets a letter while it waits. */
+  z.object({
+    type: z.literal("friend_request"),
+    senderId: z.string().min(1),
+    recipientId: z.string().min(1),
+  }),
+  /** A request was accepted, or a friend link made friends: the other player gets a letter. */
+  z.object({
+    type: z.literal("friend_accepted"),
+    userId: z.string().min(1),
+    friendId: z.string().min(1),
+  }),
+  /** A friend reacted to a feed event: its author gets a letter. */
+  z.object({ type: z.literal("friend_reaction"), eventId: z.int().positive() }),
 ]);
 export type GameEvent = z.infer<typeof gameEventSchema>;

@@ -7,12 +7,14 @@ import {
 } from "@leximon/core";
 import { type Database, schema } from "@leximon/db";
 import { and, eq, gt, or, sql } from "drizzle-orm";
+import { welcomeReferee } from "../friends/referrals";
 
 const {
   boosterBonusAwards,
   boosterOpenRequests,
   boosterOpens,
   boosterWallets,
+  friendFeedEvents,
   guestLinks,
   mailLetters,
   playerDays,
@@ -20,6 +22,7 @@ const {
   playerInterest,
   playerSignups,
   players,
+  referrals,
   reviewLogs,
   sessions,
   trades,
@@ -98,6 +101,16 @@ export const USER_REFERENCES = {
   "player_age_brackets.user_id": { transfer: "kept", abandon: "kept" },
   // Invitations are created by admins, who are never guests.
   "invites.created_by": { transfer: "kept", abandon: "kept" },
+  // Friends need an account with a pseudo: a guest has none, sends and answers no request.
+  "friendships.user_id": { transfer: "kept", abandon: "kept" },
+  "friendships.friend_id": { transfer: "kept", abandon: "kept" },
+  "friend_requests.sender_id": { transfer: "kept", abandon: "kept" },
+  "friend_requests.recipient_id": { transfer: "kept", abandon: "kept" },
+  "friend_reactions.user_id": { transfer: "kept", abandon: "kept" },
+  // The guest's finds and who invited it follow its game; a guest never invites anyone.
+  "friend_feed_events.user_id": { transfer: "moved", abandon: "kept" },
+  "referrals.referee_id": { transfer: "moved", abandon: "kept" },
+  "referrals.referrer_id": { transfer: "kept", abandon: "kept" },
 } as const satisfies Readonly<
   Record<
     string,
@@ -204,6 +217,8 @@ export async function linkGuest(db: Database, input: LinkGuestInput): Promise<Li
     switch (outcome) {
       case "transfer":
         await transferEverything(tx, guestId, accountId);
+        // A guest who came by a friend link becomes the inviter's friend with its new account.
+        await welcomeReferee(tx, { accountId, now });
         break;
       case "abandon":
         await cancelPendingTrades(tx, guestId, at);
@@ -331,6 +346,13 @@ async function transferEverything(tx: Transaction, guestId: string, accountId: s
       proposed as (update ${trades} set proposer_id = ${accountId} where proposer_id = ${guestId} returning 1),
       received as (update ${trades} set recipient_id = ${accountId} where recipient_id = ${guestId} returning 1),
       feedback as (update ${playerFeedback} set user_id = ${accountId} where user_id = ${guestId} returning 1),
+      finds as (update ${friendFeedEvents} set user_id = ${accountId} where user_id = ${guestId} returning 1),
+      invited_by as (
+        update ${referrals} set referee_id = ${accountId}
+        where referee_id = ${guestId}
+          and not exists (select 1 from ${referrals} where referee_id = ${accountId})
+        returning 1
+      ),
       origin as (
         update ${playerSignups} set user_id = ${accountId}
         where user_id = ${guestId}

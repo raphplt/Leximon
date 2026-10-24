@@ -13,6 +13,7 @@ import type { RefillSchedule } from "./booster/refill";
 import type { ClanSchedule } from "./clan/clan";
 import type { ClanGoalSchedule } from "./clan/goal";
 import type { ClanLevelRules } from "./clan/level";
+import type { FriendSchedule } from "./friend/friend";
 import type { MasterySchedule } from "./mastery/mastery";
 import type { XpSchedule } from "./progress/progress";
 import type { LevelRewardSchedule } from "./progress/rewards";
@@ -25,6 +26,8 @@ const SINCE_LAUNCH = Number.MIN_SAFE_INTEGER;
 const LEVELS_DECIDED = Date.UTC(2026, 9, 20, 22);
 /** Midnight in Paris on 2026-10-23, when the owner decided levels on proven recall. */
 const PROVEN_RECALL_DECIDED = Date.UTC(2026, 9, 22, 22);
+/** Midnight in Paris on 2026-10-24, when the owner decided friends and friend links. */
+const FRIENDS_DECIDED = Date.UTC(2026, 9, 23, 22);
 
 export const REFILL_SCHEDULE: RefillSchedule = [
   { startsAt: SINCE_LAUNCH, capacity: 6, intervalMs: 30 * MINUTE },
@@ -268,5 +271,23 @@ export const UNLOCK_SCHEDULE: UnlockSchedule = [
     },
     // A stable slug of the catalog.
     starterCollection: "fondateurs",
+  },
+];
+
+// Friends, friend links and their feed.
+export const FRIEND_SCHEDULE: FriendSchedule = [
+  {
+    startsAt: FRIENDS_DECIDED,
+    maxFriends: 200,
+    requestsPerDay: 20,
+    maxPendingSent: 50,
+    requestTtlMs: 30 * DAY,
+    declinedCooldownMs: 7 * DAY,
+    betaPlacesPerPlayer: 3,
+    referralLevel: 5,
+    referralRewardsPerMonth: 5,
+    referralBoosters: 1,
+    feedLevelStep: 5,
+    feedTtlMs: 30 * DAY,
   },
 ];
