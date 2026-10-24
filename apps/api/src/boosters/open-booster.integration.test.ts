@@ -410,7 +410,9 @@ describe("open latency budget", () => {
         seed: "0123456789abcdef0123456789abcdef",
       });
     try {
-      await open(); // loads the card pool cache
+      // A cold cache adds one statement: the card pool, read in one query.
+      expect((await open()).kind).toBe("opened");
+      expect(queries).toHaveLength(6);
       queries.length = 0;
       expect((await open()).kind).toBe("opened");
       // Each statement is one round trip to the database. Raising this number slows every open.

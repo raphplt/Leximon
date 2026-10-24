@@ -14,10 +14,11 @@ Décision : D-047 (k6 par Docker, temps de réponse dans Workers Logs, staging s
 | `answer` | une série de 5 questions (`GET /challenges`), puis une réponse à chacune | 300 ms par requête |
 | `collection` | l'album : toutes les pages de `GET /me/cards?limit=500`, puis `GET /me/mastery` | 300 ms par requête |
 | `arrival` | un invité arrive d'un lien de stream et ouvre ses deux sachets (`RATE / 5`) | 150 ms |
+| `streak` | `RATE` joueurs à la fois, chacun ouvre un sachet par seconde, 15 de suite | 150 ms |
 
 Les seuils de 300 ms des lectures et des défis sont indicatifs ; seul celui de l'ouverture est un engagement.
 
-Chaque joueur garde, dans chaque VU, son propre bocal de cookies : le cookie de session signé de Better Auth évite la lecture de la session en base sur la plupart des requêtes, comme dans un navigateur.
+Chaque joueur garde, dans chaque VU, son propre bocal de cookies. Le cookie de session signé de Better Auth (cinq minutes) évite la lecture de la session en base, comme dans un navigateur. Mais dans `open`, `answer` et `collection`, un joueur passe d'un VU à l'autre et tombe le plus souvent sur un bocal neuf : presque aucune requête ne profite du cache, et ces scénarios sont pessimistes. `streak` garde un joueur par VU, comme un joueur réel qui enchaîne ses sachets.
 
 Les joueurs viennent de `pnpm load:players` : des invités créés par l'API, passés comptes dans la base (un invité n'ouvre que deux sachets), avec 150 cartes déjà dans l'album et une réserve pleine (6 sachets du stock plus 10 de réserve, soit 16 ouvertures chacun). Les scénarios les prennent à tour de rôle, si bien que deux itérations verrouillent rarement le même portefeuille. Leurs cookies vont dans `infra/load/players.json`, ignoré par git.
 
@@ -108,8 +109,38 @@ Côté serveur (`wrangler tail`, ouverture seule à 10 it/s) : temps passé dans
 **Goulots trouvés :**
 
 1. **Le Worker tournait à Paris, la base est à Francfort** (`cf-placement: local-CDG`, en production aussi). Smart Placement ne déplace un Worker que vers des lieux où il a déjà du trafic : avec des joueurs en France, jamais Francfort. Chaque aller-retour SQL traversait donc Paris-Francfort. Corrigé dans `wrangler.jsonc` : `placement.region` à `aws:eu-central-1` (médiane de l'ouverture de 183 à environ 125 ms). Part en production au prochain `pnpm deploy:prod` ; vérifier ensuite `curl -sI https://api.leximon.fr/health` : `cf-placement: remote-FRA`.
-2. **Huit allers-retours SQL en série par ouverture** : session et utilisateur (sans cookie de session en cache), sanctions, puis la transaction (portefeuille verrouillé, tirage, cartes, validation). À environ 7 ms chacun via Hyperdrive, c'est le plancher de la médiane, et chaque aller-retour ajoute sa variance au p95. Piste : regrouper les lectures d'avant la transaction et les écritures de la transaction en moins de requêtes.
+2. **Huit allers-retours SQL en série par ouverture** (corrigé le 2026-10-24, voir plus bas) : session et utilisateur (sans cookie de session en cache), sanctions, puis la transaction (portefeuille verrouillé, tirage, cartes, validation). À environ 7 ms chacun via Hyperdrive, c'est le plancher de la médiane, et chaque aller-retour ajoute sa variance au p95. Piste : regrouper les lectures d'avant la transaction et les écritures de la transaction en moins de requêtes.
 3. **Neon gratuit démarre à 0,25 unité de calcul** : les p95 s'améliorent quand la charge le fait grandir. Piste à mesurer : un minimum plus haut (Neon payant), à mettre en balance avec le changement de fournisseur prévu avant l'ouverture publique (D-040).
 4. **Le pool d'Hyperdrive** (environ 100 connexions) est proche du maximum de Neon gratuit à 0,25 unité : jamais atteint ici, mais à plafonner (`--origin-connection-limit`) si la base reste petite.
 
 Après la campagne : la branche Neon `charge` s'efface seule au bout d'un jour ; le Worker `leximon-api-staging` reste déployé, sans trafic ni coût, et son Hyperdrive pointera vers une branche absente jusqu'à la prochaine campagne.
+
+### Ouverture allégée, 2026-10-24
+
+**Le cache de session n'a jamais servi, ni en production ni ailleurs.** Better Auth pose le cookie signé `session_data` quand il lit la session, mais l'API lisait la session par `auth.api.getSession` sans renvoyer au navigateur les cookies posés : le cache, et la prolongation de la session, restaient sur le serveur. Chaque requête d'un joueur connecté payait donc deux allers-retours de plus (session, puis utilisateur), environ 16 ms. `requireUser` renvoie maintenant ces cookies (test d'intégration `require-user.integration.test.ts`).
+
+Allers-retours SQL d'une ouverture, en série :
+
+| | Avant | Après |
+|---|---|---|
+| session et utilisateur | 2 | 0 (cookie en cache), 2 toutes les cinq minutes |
+| sanctions | 1 | 0 : lues dans la transaction, avec la clé d'idempotence |
+| pool de cartes (cache froid) | 2 | 1 : collection et cartes en une requête |
+| transaction : début, verrou du portefeuille, lecture, écriture, validation | 5 | 5 |
+| **Total, cache chaud** | **8** | **5** |
+
+Le verrou du portefeuille (`FOR UPDATE`), l'idempotence et leurs tests concurrents ne changent pas. La transaction ne descend pas sous cinq instructions : après le verrou, la lecture doit être une requête à part pour voir ce qu'une ouverture concurrente vient de valider.
+
+**Mesures sur le staging**, temps passé dans le gestionnaire (instrumentation temporaire, lue par `wrangler tail`) et temps jusqu'au premier octet vu par k6 depuis une connexion domestique, en millisecondes, médiane / p95 :
+
+| | Serveur | Joueur (k6) |
+|---|---|---|
+| Avant, `open` à 10 it/s | 79 / 190 | 116 / 173 |
+| Lectures regroupées, `open` à 10 it/s (cache défait par le scénario) | 45 / 65 | 114 / 173 |
+| Cache de session réparé, `streak` à 40 joueurs (600 ouvertures) | 37 / 72 | 103 / 403 |
+
+**Côté serveur, l'ouverture tient le budget** : 37 ms en médiane et 72 ms au p95, 88 % des ouvertures servies par le cookie en cache (la première de chaque joueur lit la session en base). Le premier passage de `streak`, sur un staging resté sans trafic, montait à 760 ms en médiane pendant les deux premières secondes : 40 ouvertures simultanées sur des connexions Hyperdrive à ouvrir et un Neon en veille. Une fois réveillé, plus rien au-dessus de 111 ms.
+
+**Côté joueur, le p95 dépend du réseau.** Les 65 ms d'écart en médiane sont le trajet jusqu'à Cloudflare puis jusqu'à Francfort ; la queue (176 ms au 90e centile, 403 au 95e) suit les pertes de paquets de la connexion domestique qui lance k6, mesurées à 15 % lors de la campagne. Le p95 de production se suit dans le résumé Discord, qui compte le temps serveur.
+
+**Contrepartie :** avec le cache, une session supprimée (bannissement) reste valable jusqu'à cinq minutes. La suppression d'un compte efface déjà les cookies du navigateur, et un invité archivé reste refusé à l'ouverture.

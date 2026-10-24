@@ -52,22 +52,21 @@ async function loadPool(
   const { cards, collections } = schema;
   const published = lte(collections.publishedAt, now);
 
-  const [collection] = await db
-    .select({ id: collections.id })
+  // One round trip: no row when the collection is missing or unpublished, a row without a card
+  // when it has none left to draw.
+  const rows = await db
+    .select({ id: cards.id, rarity: cards.rarity })
     .from(collections)
+    .leftJoin(cards, and(eq(cards.collectionId, collections.id), isNull(cards.retiredAt)))
     .where(and(eq(collections.id, source.collectionId), published));
-  if (collection === undefined) {
+  if (rows.length === 0) {
     return null;
   }
 
-  const rows = await db
-    .select({ id: cards.id, rarity: cards.rarity })
-    .from(cards)
-    .innerJoin(collections, eq(collections.id, cards.collectionId))
-    .where(and(isNull(cards.retiredAt), published, eq(cards.collectionId, source.collectionId)));
-
   return fingerprintPool(
-    byRarity((rarity) => rows.filter((row) => row.rarity === rarity).map((row) => row.id)),
+    byRarity((rarity) =>
+      rows.flatMap((row) => (row.id !== null && row.rarity === rarity ? [row.id] : [])),
+    ),
   );
 }
 

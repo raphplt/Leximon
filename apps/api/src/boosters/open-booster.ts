@@ -27,6 +27,7 @@ import {
   progressGain,
   REFILL_SCHEDULE,
   reserveCapacity,
+  restrictionsAt,
   takeBooster,
   UNLOCK_SCHEDULE,
   unlockRulesAt,
@@ -67,6 +68,8 @@ export type OpenBoosterResult =
       readonly progress: ProgressGain;
     }
   | { readonly kind: "stock_empty"; readonly nextRefillAt: EpochMs }
+  /** A suspended or closed account: the game's writes are refused. */
+  | { readonly kind: "account_locked" }
   | { readonly kind: "collection_not_found" }
   /** Choosing the collection of a booster opens at a level: the starter collection does not. */
   | { readonly kind: "level_required"; readonly level: number }
@@ -81,6 +84,7 @@ const {
   boosterOpens,
   boosterOpenRequests,
   guestLinks,
+  sanctions,
   userCards,
   userProgress,
   users,
@@ -99,9 +103,10 @@ const {
  * Lock order: the wallet first, then the copies (as answering a challenge: wallet, then mastery).
  *
  * Latency: each statement is a database round trip, so the open uses as few as possible:
- * BEGIN, lock (and create) the wallet, look up the idempotency key (with whether the guest was
- * archived by a sign-in, how many boosters a guest opened, and which drawn words the player
- * already owns), one combined write, COMMIT.
+ * BEGIN, lock (and create) the wallet, look up the idempotency key (with the standing sanctions,
+ * whether the guest was archived by a sign-in, how many boosters a guest opened, and which drawn
+ * words the player already owns), one combined write, COMMIT. Nothing is read before BEGIN but
+ * the card pool, cached.
  */
 export async function openBooster(
   db: Database,
@@ -164,6 +169,7 @@ export async function openBooster(
     // this guest meanwhile, and the opens of a guest counted against its limit. A trade does not take the wallet lock: a word received by
     // trade in the meantime would count as new once more, a harmless few XP.
     const lookup = await tx.execute<{
+      sanctions: { kind: "suspend" | "close"; until: string | null }[];
       archived: boolean;
       previous_id: string | null;
       previous_cards: DrawnCard[] | null;
@@ -172,6 +178,12 @@ export async function openBooster(
       guest_opens: number | null;
     }>(sql`
       select
+        coalesce((select json_agg(json_build_object('kind', ${sanctions.kind},
+            'until', ${sanctions.until}))
+          from ${sanctions} where ${sanctions.userId} = ${userId}
+            and ${sanctions.revokedAt} is null
+            and (${sanctions.kind} = 'close' or ${sanctions.until} > ${new Date(now)})),
+          '[]'::json) as sanctions,
         exists (select 1 from ${guestLinks} where ${guestLinks.guestId} = ${userId}) as archived,
         ${guestOpensSql(userId, guestRules.boostersBeforeSignup)} as guest_opens,
         previous.id as previous_id, previous.cards as previous_cards,
@@ -192,6 +204,16 @@ export async function openBooster(
     const state = lookup.rows[0];
     if (state === undefined) {
       throw new Error("Open lookup returned no row");
+    }
+
+    // Checked here rather than before the transaction: one round trip less on every open.
+    const standing = state.sanctions.map((row) => ({
+      kind: row.kind,
+      until: row.until === null ? null : Date.parse(row.until),
+      revokedAt: null,
+    }));
+    if (restrictionsAt(standing, now).locked) {
+      return { kind: "account_locked" };
     }
 
     if (state.previous_id !== null && state.previous_cards !== null) {

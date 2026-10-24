@@ -11,7 +11,9 @@
 //   answer      a member asks for a challenge session, then answers each question
 //   collection  a member opens the album: every page of their cards, then their mastery
 //   arrival     a guest arrives from a stream link and opens its two boosters
-import { check } from "k6";
+//   streak      RATE players at once, each opening a booster every second, 15 in a row: the
+//               only scenario where a player stays in one VU, so its session cookie cache works
+import { check, sleep } from "k6";
 import { SharedArray } from "k6/data";
 import exec from "k6/execution";
 import http from "k6/http";
@@ -48,6 +50,7 @@ const ALL = {
   answer: arrivalRate("answerChallenges", RATE),
   collection: arrivalRate("readCollection", RATE),
   arrival: arrivalRate("guestArrival", Math.max(1, Math.round(RATE / 5))),
+  streak: { executor: "per-vu-iterations", exec: "openStreak", vus: RATE, iterations: 15 },
 };
 
 export const options = {
@@ -104,6 +107,19 @@ function asPlayer(player, name, extra = {}) {
     jar,
     tags: { name },
   };
+}
+
+/** One player per VU, one booster a second: 15 fit in the 16 a test player has. */
+export function openStreak() {
+  const response = http.post(
+    `${BASE_URL}/boosters/open`,
+    JSON.stringify({ kind: "collection", collectionId: STARTER }),
+    asPlayer(players[(exec.vu.idInTest - 1) % players.length], "open", {
+      "Idempotency-Key": uuidV4(),
+    }),
+  );
+  check(response, { "booster opened": (r) => r.status === 200 });
+  sleep(1);
 }
 
 export function openBooster() {

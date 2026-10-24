@@ -13,7 +13,6 @@ import { sendGameEvents } from "../clans/events";
 import type { AppEnv } from "../context";
 import { playerRateLimit } from "../middleware/rate-limit";
 import { requireUser } from "../middleware/require-user";
-import { refuseLockedWrites } from "../moderation/restrictions";
 import type { CardPoolLoader } from "./card-pool";
 import { openBooster } from "./open-booster";
 import { generateSeed } from "./seed";
@@ -21,7 +20,8 @@ import { generateSeed } from "./seed";
 export function boosterRoutes(loadCardPool: CardPoolLoader) {
   const routes = new Hono<AppEnv>();
 
-  routes.post("/open", requireUser, playerRateLimit, refuseLockedWrites, async (c) => {
+  // A locked account is refused by `openBooster` itself, in its transaction: no extra round trip.
+  routes.post("/open", requireUser, playerRateLimit, async (c) => {
     const key = idempotencyKeySchema.safeParse(c.req.header(IDEMPOTENCY_KEY_HEADER));
     if (!key.success) {
       return c.json({ error: "invalid_idempotency_key" }, 400);
@@ -72,6 +72,8 @@ export function boosterRoutes(loadCardPool: CardPoolLoader) {
         return c.json({ error: "guest_archived" }, 409);
       case "signup_required":
         return c.json<SignupRequiredResponse>({ error: "signup_required" }, 403);
+      case "account_locked":
+        return c.json({ error: "account_locked" }, 403);
       case "catalog_empty":
         return c.json({ error: "catalog_unavailable" }, 503);
     }
