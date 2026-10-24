@@ -9,6 +9,7 @@ import {
   rankLabel,
   reactionChips,
   referralRewardTitle,
+  tradeFriends,
   tradesLabel,
   withReaction,
 } from "./friends";
@@ -37,6 +38,18 @@ describe("the friends' list", () => {
     expect(tradesLabel(0)).toBeNull();
     expect(tradesLabel(1)).toBe("1 échange possible");
     expect(tradesLabel(4)).toBe("4 échanges possibles");
+  });
+
+  it("puts first the friends with the most trades possible", () => {
+    const friend = (pseudo: string, trades: number) => ({
+      player: badge(pseudo, pseudo),
+      trades,
+    });
+    expect(
+      tradeFriends([friend("Zoé", 0), friend("Marc", 2), friend("Ada", 0), friend("Luc", 5)]).map(
+        (f) => f.player.pseudo,
+      ),
+    ).toEqual(["Luc", "Marc", "Ada", "Zoé"]);
   });
 
   it("tells the places of the beta left on the link", () => {

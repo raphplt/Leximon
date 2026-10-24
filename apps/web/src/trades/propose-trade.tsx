@@ -12,16 +12,21 @@ import {
   refusalMessage,
   selectionCount,
   toggleCard,
+  tradeFriends,
+  tradesLabel,
 } from "@leximon/view-model";
 import Link from "next/link";
 import { type FormEvent, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { type Catalog, collectionName } from "@/cards/catalog";
+import { Avatar } from "@/components/avatar";
 import { Card } from "@/components/card";
 import { fetchFriendCards } from "@/friends/api";
 import { createTrade, fetchTradeable } from "@/lib/api";
 import { useNow } from "@/lib/use-now";
 import { usePackShape } from "@/lib/use-pack-shape";
 import { ownedCards } from "@/player/collection";
+import { friends } from "@/player/friends";
+import { useShared } from "@/player/resource";
 import { CardRow, cardLabel, catalogCard } from "./card-thumb";
 import { Counterpart } from "./counterpart";
 import styles from "./trades.module.css";
@@ -115,9 +120,7 @@ export function ProposeTrade({
     if (preset !== null) setGive([preset]);
   }, [preset]);
 
-  useEffect(() => {
-    if (presetPartner !== null) setCodeInput(presetPartner);
-  }, [presetPartner]);
+  const myFriends = useShared(friends);
 
   // A sent offer is done: coming back to the page later starts a fresh one.
   const shouldReset = useRef(false);
@@ -165,9 +168,8 @@ export function ProposeTrade({
   };
 
   /** Loads the partner's cards and mine at once, so that the next steps need no waiting. */
-  const findPartner = async (event: FormEvent) => {
-    event.preventDefault();
-    const code = normalizePlayerCode(codeInput);
+  const findPartner = async (typed: string) => {
+    const code = normalizePlayerCode(typed);
     if (code === null || code === ownCode) {
       setCodeError(refusalMessage(code === null ? "invalid_code" : "self_trade"));
       return;
@@ -214,6 +216,16 @@ export function ProposeTrade({
       setBusy(false);
     }
   };
+
+  // « Proposer un échange » from a profile or a friend's sheet: their cards at once.
+  const presetLoaded = useRef<string | null>(null);
+  // biome-ignore lint/correctness/useExhaustiveDependencies: once per player asked for
+  useEffect(() => {
+    if (presetPartner === null || presetLoaded.current === presetPartner) return;
+    presetLoaded.current = presetPartner;
+    setCodeInput(presetPartner);
+    void findPartner(presetPartner);
+  }, [presetPartner]);
 
   /** After a `card_not_tradeable` refusal: drop the cards that cannot move any more. */
   const refreshCards = async (recipient: string) => {
@@ -312,10 +324,48 @@ export function ProposeTrade({
       </h2>
       {step !== "sent" && <Steps step={step} />}
 
+      {step === "code" && myFriends !== null && myFriends.friends.length > 0 && (
+        <div className={styles.friendPick}>
+          <p className={styles.fieldLabel}>Avec un ami</p>
+          <ul className={styles.friendList}>
+            {tradeFriends(myFriends.friends).map((friend) => {
+              const trades = tradesLabel(friend.trades);
+              return (
+                <li key={friend.player.code}>
+                  <button
+                    type="button"
+                    className={styles.friendRow}
+                    disabled={busy}
+                    onClick={() => {
+                      setCodeInput(friend.player.code);
+                      void findPartner(friend.player.code);
+                    }}
+                  >
+                    <Avatar avatar={friend.player.avatar} frame={null} size={36} />
+                    <span className={styles.friendName}>{playerName(friend.player)}</span>
+                    <span className={trades === null ? styles.muted : styles.friendTrades}>
+                      {trades ?? `niv. ${friend.player.level}`}
+                    </span>
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+      )}
+
       {step === "code" && (
-        <form className={styles.codeForm} onSubmit={(event) => void findPartner(event)}>
+        <form
+          className={styles.codeForm}
+          onSubmit={(event: FormEvent) => {
+            event.preventDefault();
+            void findPartner(codeInput);
+          }}
+        >
           <label htmlFor="partner-code" className={styles.fieldLabel}>
-            Code joueur de la personne
+            {myFriends !== null && myFriends.friends.length > 0
+              ? "Ou le code joueur de quelqu'un d'autre"
+              : "Code joueur de la personne"}
           </label>
           <input
             id="partner-code"

@@ -31,6 +31,15 @@ export function tradesLabel(trades: number): string | null {
   return trades > 1 ? `${formatCount(trades)} échanges possibles` : "1 échange possible";
 }
 
+/** Friends to trade with, those with the most trades possible first. */
+export function tradeFriends<T extends Pick<Friend, "player" | "trades">>(
+  friends: readonly T[],
+): readonly T[] {
+  return [...friends].sort(
+    (a, b) => b.trades - a.trades || playerName(a.player).localeCompare(playerName(b.player), "fr"),
+  );
+}
+
 /** « 12 amis sur 200 ». */
 export function friendsCountLabel(count: number, max: number): string {
   return `${plural(count, "ami", "amis")} sur ${formatCount(max)}`;

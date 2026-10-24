@@ -495,6 +495,66 @@
   color: var(--lx-color-text);
 }
 
+/* Friends to trade with, above the code field. */
+.friendPick {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 18px;
+}
+
+.friendList {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  max-height: 264px;
+  margin: 0;
+  padding: 0;
+  overflow-y: auto;
+  list-style: none;
+}
+
+.friendRow {
+  appearance: none;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 8px;
+  border: 0;
+  border-radius: 12px;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.friendRow:hover {
+  background: rgba(246, 240, 226, 0.06);
+}
+
+.friendRow:disabled {
+  cursor: default;
+  opacity: 0.6;
+}
+
+.friendName {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  font-weight: 800;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.friendTrades {
+  flex-shrink: 0;
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--lx-color-accent);
+}
+
 .codeForm {
   display: flex;
   flex-direction: column;
