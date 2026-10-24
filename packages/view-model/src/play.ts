@@ -303,10 +303,10 @@ export function playFabs(input: FabInput, now: EpochMs): { left: Fab[]; right: F
       fab("clan", "Clan", { lock: lockOf(levels.join_clan) }),
       fab("chat", "Discussion", { lock: lockOf(levels.join_clan) }),
       fab("jousts", "Joutes", { lock: lockOf(levels.jousts) }),
-      fab("friends", "Amis"),
     ],
     right: [
       fab("daily", "Défi du jour"),
+      fab("friends", "Amis"),
       fab("coffrets", "Coffrets", { badge: input.coffrets, glow: input.coffrets > 0 }),
       fab("mail", "Courrier", { badge: input.mail }),
       fab("settings", "Réglages"),
