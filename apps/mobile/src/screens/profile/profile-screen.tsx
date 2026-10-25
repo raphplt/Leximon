@@ -42,6 +42,7 @@ const PIN_WIDTH = 116;
 const LINKS: readonly { readonly label: string; readonly icon: IconName; readonly href: Href }[] = [
   { label: "Amis", icon: "amis", href: "/amis" },
   { label: "Chemin des niveaux", icon: "star", href: "/niveaux" },
+  { label: "Réglages", icon: "reglages", href: "/reglages" },
   { label: "Mon compte", icon: "cle", href: "/compte" },
 ];
 

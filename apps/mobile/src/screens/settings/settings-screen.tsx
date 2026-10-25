@@ -1,0 +1,439 @@
+import type { PlayerBadge, Preferences } from "@leximon/contract";
+import { ApiError } from "@leximon/contract/client";
+import {
+  blockedCountLabel,
+  blockRefusalMessage,
+  DELETE_ACCOUNT_ADMIN,
+  DELETE_ACCOUNT_CANCEL,
+  DELETE_ACCOUNT_CONFIRM,
+  DELETE_ACCOUNT_WARNING,
+  deleteAccountLabel,
+  playerName,
+  pseudoSettingLabel,
+  UNBLOCKED_TOAST,
+} from "@leximon/view-model";
+import { router } from "expo-router";
+import * as WebBrowser from "expo-web-browser";
+import { type ReactNode, useEffect, useState } from "react";
+import { Pressable, StyleSheet, Switch, Text, View } from "react-native";
+import { api } from "@/api/client";
+import { WEB_URL } from "@/config";
+import { playFromScratch } from "@/player/session";
+import { useShared } from "@/player/shared";
+import { account, profile } from "@/player/state";
+import { useProfileActions } from "@/profile/profile-actions";
+import { PseudoSheet } from "@/screens/profile/pseudo-sheet";
+import { colors, fonts } from "@/theme";
+import { Avatar } from "@/ui/avatar";
+import { Button } from "@/ui/button";
+import { Icon } from "@/ui/icon";
+import { FormError, Page, Paragraph } from "@/ui/page";
+import { Sheet } from "@/ui/sheet";
+import { toast } from "@/ui/toast";
+
+function failureMessage(error: unknown): string {
+  return error instanceof ApiError && error.status === null
+    ? "Pas de connexion. Réessaie."
+    : "Ça n'a pas marché. Réessaie.";
+}
+
+/** « r••••@gmail.com »: enough to recognize the address, not to read it over a shoulder. */
+function maskEmail(email: string): string {
+  const [name = "", domain = ""] = email.split("@");
+  return `${name.slice(0, 1)}••••@${domain}`;
+}
+
+function openWebPage(path: string): void {
+  void WebBrowser.openBrowserAsync(`${WEB_URL}${path}`);
+}
+
+type SheetName = "pseudo" | "blocks" | "delete" | null;
+
+/**
+ * Settings: notifications and the profile's openness, kept on the server; the account. Sound
+ * and vibration wait for the phone to make them.
+ */
+export function SettingsScreen() {
+  const who = useShared(account);
+  const me = useShared(profile);
+  const profileActions = useProfileActions();
+  const [notify, setNotify] = useState<Preferences | null>(null);
+  const [blocked, setBlocked] = useState<number | null>(null);
+  const [sheet, setSheet] = useState<SheetName>(null);
+  const [error, setError] = useState<string | null>(null);
+  const member = who?.kind === "member";
+
+  useEffect(() => {
+    api
+      .fetchPreferences()
+      .then(setNotify)
+      .catch(() => setNotify(null));
+  }, []);
+
+  useEffect(() => {
+    if (!member) return;
+    api
+      .fetchBlocks()
+      .then((players) => setBlocked(players.length))
+      .catch(() => setBlocked(null));
+  }, [member]);
+
+  const toggleNotify = async (key: keyof Preferences, enabled: boolean) => {
+    if (notify === null) return;
+    const before = notify;
+    setNotify({ ...notify, [key]: enabled });
+    setError(null);
+    try {
+      setNotify(await api.updatePreferences({ [key]: enabled }));
+    } catch (caught) {
+      setNotify(before);
+      setError(failureMessage(caught));
+    }
+  };
+
+  return (
+    <Page title="Réglages">
+      {notify !== null && (
+        <Group title="NOTIFICATIONS">
+          <Toggle
+            label="Mots qui s'échappent"
+            detail="Quand un mot attend sa révision"
+            value={notify.notifyReviews}
+            onChange={(on) => void toggleNotify("notifyReviews", on)}
+          />
+          <Toggle
+            label="Offres d'échange"
+            value={notify.notifyTrades}
+            onChange={(on) => void toggleNotify("notifyTrades", on)}
+          />
+          <Toggle
+            label="Discussion du clan"
+            detail="Seulement quand on te cite"
+            value={notify.notifyClanMentions}
+            onChange={(on) => void toggleNotify("notifyClanMentions", on)}
+          />
+        </Group>
+      )}
+
+      {member && me !== null && (
+        <Group title="PROFIL">
+          <Toggle
+            label="Profil public"
+            detail={
+              me.level < me.publicFromLevel
+                ? `Visible par un lien dès le niveau ${me.publicFromLevel}`
+                : "Visible par un lien"
+            }
+            value={me.profilePublic}
+            onChange={(on) =>
+              void profileActions.update(
+                { profilePublic: on },
+                { success: on ? "Profil visible." : "Profil caché." },
+              )
+            }
+          />
+          <Row
+            label="Pseudo"
+            detail={pseudoSettingLabel(me.pseudo)}
+            onPress={() => setSheet("pseudo")}
+          />
+          {notify !== null && (
+            <>
+              <Toggle
+                label="Demandes d'ami"
+                detail={
+                  notify.friendRequestsOpen ? "Tout le monde" : "Personne, sauf ton lien d'ami"
+                }
+                value={notify.friendRequestsOpen}
+                onChange={(on) => void toggleNotify("friendRequestsOpen", on)}
+              />
+              <Toggle
+                label="Montrer mes trouvailles à mes amis"
+                detail="Épiques, Légendaires, Dorures, niveaux"
+                value={notify.shareFinds}
+                onChange={(on) => void toggleNotify("shareFinds", on)}
+              />
+            </>
+          )}
+          <Row
+            label="Joueurs bloqués"
+            detail={blocked === null ? null : blockedCountLabel(blocked)}
+            onPress={() => setSheet("blocks")}
+          />
+        </Group>
+      )}
+
+      <Group title="COMPTE">
+        {who?.kind === "member" ? (
+          <>
+            <Row
+              label="Adresse e-mail"
+              detail={maskEmail(who.email)}
+              onPress={() => router.push("/compte")}
+            />
+            <Row label="Tes données" onPress={() => openWebPage("/confidentialite")} />
+            <Row label="Supprimer mon compte" danger onPress={() => setSheet("delete")} />
+          </>
+        ) : (
+          <>
+            <Row
+              label="Créer mon compte"
+              detail="Pour garder tes cartes"
+              onPress={() => router.push("/compte")}
+            />
+            <Row label="Tes données" onPress={() => openWebPage("/confidentialite")} />
+          </>
+        )}
+      </Group>
+      <FormError message={error} />
+
+      <Text style={styles.footnote}>
+        <Text style={styles.link} onPress={() => openWebPage("/mentions")}>
+          Contact et mentions
+        </Text>
+        {" · "}
+        <Text style={styles.link} onPress={() => openWebPage("/conditions")}>
+          Conditions
+        </Text>
+        {" · contact@leximon.fr"}
+      </Text>
+
+      <PseudoSheet open={sheet === "pseudo"} onClose={() => setSheet(null)} />
+      <BlocksSheet open={sheet === "blocks"} onClose={() => setSheet(null)} onCount={setBlocked} />
+      <DeleteAccountSheet open={sheet === "delete"} onClose={() => setSheet(null)} />
+    </Page>
+  );
+}
+
+function Group({ title, children }: { readonly title: string; readonly children: ReactNode }) {
+  return (
+    <View style={styles.group}>
+      <Text style={styles.kicker}>{title}</Text>
+      <View style={styles.rows}>{children}</View>
+    </View>
+  );
+}
+
+function Toggle({
+  label,
+  detail,
+  value,
+  onChange,
+}: {
+  readonly label: string;
+  readonly detail?: string;
+  readonly value: boolean;
+  readonly onChange: (value: boolean) => void;
+}) {
+  return (
+    <View style={styles.row}>
+      <View style={styles.rowText}>
+        <Text style={styles.label}>{label}</Text>
+        {detail !== undefined && <Text style={styles.detail}>{detail}</Text>}
+      </View>
+      <Switch
+        value={value}
+        onValueChange={onChange}
+        accessibilityLabel={label}
+        trackColor={{ false: colors.track, true: colors.success }}
+        thumbColor={colors.text}
+      />
+    </View>
+  );
+}
+
+function Row({
+  label,
+  detail = null,
+  danger = false,
+  onPress,
+}: {
+  readonly label: string;
+  readonly detail?: string | null;
+  readonly danger?: boolean;
+  readonly onPress: () => void;
+}) {
+  return (
+    <Pressable
+      onPress={onPress}
+      accessibilityRole="button"
+      style={({ pressed }) => [styles.row, pressed && styles.pressed]}
+    >
+      <View style={styles.rowText}>
+        <Text style={[styles.label, danger && styles.danger]}>{label}</Text>
+        {detail !== null && <Text style={styles.detail}>{detail}</Text>}
+      </View>
+      <Icon name="chev" size={16} color={danger ? colors.danger : colors.textMuted} />
+    </Pressable>
+  );
+}
+
+/** The players the player blocked, each one unblocked with a tap. */
+function BlocksSheet({
+  open,
+  onClose,
+  onCount,
+}: {
+  readonly open: boolean;
+  readonly onClose: () => void;
+  readonly onCount: (count: number) => void;
+}) {
+  const [players, setPlayers] = useState<readonly PlayerBadge[] | null>(null);
+  const [busy, setBusy] = useState(false);
+
+  useEffect(() => {
+    if (!open) return;
+    setPlayers(null);
+    api
+      .fetchBlocks()
+      .then((list) => {
+        setPlayers(list);
+        onCount(list.length);
+      })
+      .catch((error: unknown) => toast(failureMessage(error)));
+  }, [open, onCount]);
+
+  const unblock = async (player: PlayerBadge) => {
+    setBusy(true);
+    try {
+      const result = await api.setBlocked(player.code, false);
+      if (result.kind === "refused") {
+        toast(blockRefusalMessage(result.reason));
+        return;
+      }
+      const rest = (players ?? []).filter((p) => p.code !== player.code);
+      setPlayers(rest);
+      onCount(rest.length);
+      toast(UNBLOCKED_TOAST);
+    } catch (error) {
+      toast(failureMessage(error));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <Sheet open={open} title="Joueurs bloqués" onClose={onClose}>
+      {players === null ? (
+        <Paragraph muted>Un instant…</Paragraph>
+      ) : players.length === 0 ? (
+        <Paragraph muted>Personne.</Paragraph>
+      ) : (
+        players.map((player) => (
+          <View key={player.code} style={styles.blocked}>
+            <Avatar avatar={player.avatar} frame={player.frame} size={40} />
+            <Text style={[styles.label, styles.rowText]}>{playerName(player)}</Text>
+            <Button
+              label="Débloquer"
+              secondary
+              disabled={busy}
+              onPress={() => void unblock(player)}
+            />
+          </View>
+        ))
+      )}
+    </Sheet>
+  );
+}
+
+/**
+ * Deleting the account: erased at once, for good. Two steps: the button that names what goes,
+ * then the confirmation.
+ */
+function DeleteAccountSheet({
+  open,
+  onClose,
+}: {
+  readonly open: boolean;
+  readonly onClose: () => void;
+}) {
+  const me = useShared(profile);
+  const [confirming, setConfirming] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    setConfirming(false);
+    setError(null);
+  }, [open]);
+
+  const erase = async () => {
+    setBusy(true);
+    setError(null);
+    try {
+      const result = await api.deleteAccount();
+      if (result.kind === "refused") {
+        setError(DELETE_ACCOUNT_ADMIN);
+        setBusy(false);
+        return;
+      }
+      // The session died with the account: drop the cookie the phone still keeps.
+      await api.signOut().catch(() => undefined);
+      onClose();
+      playFromScratch();
+    } catch (caught) {
+      setError(failureMessage(caught));
+      setBusy(false);
+    }
+  };
+
+  return (
+    <Sheet open={open} title="Supprimer mon compte" onClose={onClose}>
+      <Text style={styles.warning}>{DELETE_ACCOUNT_WARNING}</Text>
+      {confirming ? (
+        <>
+          <Button
+            danger
+            label={busy ? "Effacement…" : DELETE_ACCOUNT_CONFIRM}
+            disabled={busy}
+            onPress={() => void erase()}
+          />
+          <Button label={DELETE_ACCOUNT_CANCEL} secondary disabled={busy} onPress={onClose} />
+        </>
+      ) : (
+        <Button
+          danger
+          label={deleteAccountLabel(me?.stats.words ?? 0)}
+          onPress={() => setConfirming(true)}
+        />
+      )}
+      <FormError message={error} />
+    </Sheet>
+  );
+}
+
+const styles = StyleSheet.create({
+  group: { gap: 8 },
+  kicker: {
+    fontFamily: fonts.ui.extrabold,
+    fontSize: 12,
+    letterSpacing: 2,
+    color: colors.textMuted,
+  },
+  rows: { borderRadius: 18, backgroundColor: colors.panel, paddingHorizontal: 16 },
+  row: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    minHeight: 58,
+    paddingVertical: 10,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: colors.outline,
+  },
+  pressed: { opacity: 0.6 },
+  rowText: { flex: 1, gap: 2 },
+  label: { fontFamily: fonts.ui.bold, fontSize: 15, color: colors.text },
+  detail: { fontFamily: fonts.ui.medium, fontSize: 13, color: colors.textMuted },
+  danger: { color: colors.danger },
+  blocked: { flexDirection: "row", alignItems: "center", gap: 12 },
+  warning: { fontFamily: fonts.text.regular, fontSize: 18, lineHeight: 25, color: colors.text },
+  footnote: {
+    fontFamily: fonts.ui.medium,
+    fontSize: 13,
+    lineHeight: 20,
+    color: colors.textMuted,
+    textAlign: "center",
+  },
+  link: { textDecorationLine: "underline" },
+});
