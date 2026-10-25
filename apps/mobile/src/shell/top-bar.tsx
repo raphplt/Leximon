@@ -11,6 +11,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useNow } from "@/player/shared";
 import { usePlayerView } from "@/player/use-player-view";
 import { colors, fonts } from "@/theme";
+import { Avatar } from "@/ui/avatar";
 import { Badge } from "@/ui/badge";
 import { Icon } from "@/ui/icon";
 import { LevelMedal, LevelRing, XpBar } from "@/ui/level";
@@ -28,15 +29,15 @@ export function TopBar() {
     <View style={[styles.bar, { paddingTop: insets.top + 8 }]}>
       <Pressable
         style={styles.avatar}
-        onPress={() => router.push("/compte")}
+        onPress={() => router.push("/profil")}
         accessibilityRole="button"
         accessibilityLabel={
-          progress === null ? "Ton compte" : `${levelDescription(progress)}. Ton compte`
+          progress === null ? "Ton profil" : `${levelDescription(progress)}. Ton profil`
         }
       >
         {progress !== null && <LevelRing ratio={levelRatio(progress)} size={AVATAR} />}
         <View style={styles.avatarInner}>
-          <Icon name="profil" size={24} color={colors.textMuted} />
+          <Avatar avatar={view.profile?.avatar ?? null} frame={null} size={AVATAR - 8} />
         </View>
         {progress !== null && (
           <View style={styles.level}>

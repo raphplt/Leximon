@@ -9,9 +9,12 @@ import {
   engravingOf,
   frequencyLine,
   masteryView,
+  PIN_TEXTS,
+  placePin,
   reviewLabel,
   safeSourceUrl,
   shareText,
+  unpin,
 } from "@leximon/view-model";
 import { router } from "expo-router";
 import * as WebBrowser from "expo-web-browser";
@@ -23,6 +26,8 @@ import { WEB_URL } from "@/config";
 import { noteCardRead, ownedCards, wordMemory } from "@/player/collection";
 import { useNow, useShared } from "@/player/shared";
 import { progress as progressResource } from "@/player/state";
+import { useProfileActions } from "@/profile/profile-actions";
+import { ReplacePin } from "@/screens/profile/pin-picker";
 import { colors, fonts } from "@/theme";
 import { Button } from "@/ui/button";
 import { Icon } from "@/ui/icon";
@@ -87,6 +92,28 @@ function SheetBody({
   useEffect(() => {
     if (quantity > 0) noteCardRead(card.id);
   }, [card.id, quantity]);
+
+  const pins = useProfileActions();
+  /** Every place was taken: the player picks which pinned card this one replaces. */
+  const [replacing, setReplacing] = useState(false);
+  const togglePin = () => {
+    const me = pins.profile;
+    if (me === null) return;
+    if (pins.isPinned(card.id)) {
+      void pins.setPins(unpin(me.pinned, card.id), PIN_TEXTS.removed);
+      return;
+    }
+    const change = placePin(me.pinned, me.pinnedSlots, card.id, null);
+    if (change.ok) void pins.setPins(change.cardIds, PIN_TEXTS.pinned);
+    else setReplacing(true);
+  };
+  const replacePin = (index: number) => {
+    setReplacing(false);
+    const me = pins.profile;
+    if (me === null) return;
+    const change = placePin(me.pinned, me.pinnedSlots, card.id, index);
+    if (change.ok) void pins.setPins(change.cardIds, PIN_TEXTS.pinned);
+  };
 
   const word = memory?.get(card.id);
   const mastery = masteryView(word, now);
@@ -172,10 +199,34 @@ function SheetBody({
               }
             />
           )}
-          <Pressable onPress={share} accessibilityRole="button" style={styles.ghost}>
-            <Icon name="share" size={17} color={colors.text} />
-            <Text style={styles.ghostText}>Partager</Text>
-          </Pressable>
+          <View style={styles.ghosts}>
+            {pins.profile?.member === true && (
+              <Pressable
+                onPress={togglePin}
+                disabled={pins.busy}
+                accessibilityRole="button"
+                accessibilityState={{ selected: pins.isPinned(card.id) }}
+                style={styles.ghost}
+              >
+                <Icon name="pin" size={17} color={colors.text} />
+                <Text style={styles.ghostText}>
+                  {pins.isPinned(card.id) ? PIN_TEXTS.unpin : PIN_TEXTS.pin}
+                </Text>
+              </Pressable>
+            )}
+            <Pressable onPress={share} accessibilityRole="button" style={styles.ghost}>
+              <Icon name="share" size={17} color={colors.text} />
+              <Text style={styles.ghostText}>Partager</Text>
+            </Pressable>
+          </View>
+          <ReplacePin
+            open={replacing}
+            word={card.word}
+            catalog={catalogInHand()}
+            pinned={pins.profile?.pinned ?? []}
+            onPick={replacePin}
+            onClose={() => setReplacing(false)}
+          />
         </View>
       ) : (
         <Text style={styles.note}>
@@ -256,6 +307,7 @@ const styles = StyleSheet.create({
   etymology: { fontFamily: fonts.text.regular, fontSize: 17, lineHeight: 25, color: colors.text },
   actions: { gap: 10, alignItems: "flex-start" },
   later: { fontFamily: fonts.ui.bold, fontSize: 15, color: colors.text },
+  ghosts: { flexDirection: "row", justifyContent: "center", gap: 10 },
   ghost: {
     flexDirection: "row",
     alignItems: "center",
