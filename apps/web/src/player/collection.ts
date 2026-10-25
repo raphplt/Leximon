@@ -4,6 +4,10 @@ import type { DailyChallengeResponse, OwnedCardsResponse } from "@leximon/contra
 import {
   type CardDate,
   copiesAfterTrade,
+  copiesByCard,
+  datesAfterGain,
+  datesByCard,
+  memoriesByCard,
   type SharedResource,
   sharedResource,
   type WordMemory,
@@ -21,55 +25,25 @@ function fetchOwnedOnce(): Promise<OwnedCopy[]> {
   return ownedInFlight;
 }
 
-function copiesOf(owned: readonly OwnedCopy[]): Map<string, number> {
-  const byCard = new Map<string, number>();
-  for (const card of owned) {
-    byCard.set(card.cardId, (byCard.get(card.cardId) ?? 0) + card.quantity);
-  }
-  return byCard;
-}
-
-/** A card is read once any of its variants is: a new variant of a word read is not new. */
-function datesOf(owned: readonly OwnedCopy[]): Map<string, CardDate> {
-  const byCard = new Map<string, CardDate>();
-  for (const card of owned) {
-    const known = byCard.get(card.cardId);
-    const firstObtainedAt = Date.parse(card.firstObtainedAt);
-    const read = card.readAt != null;
-    byCard.set(card.cardId, {
-      firstObtainedAt: Math.min(firstObtainedAt, known?.firstObtainedAt ?? firstObtainedAt),
-      read: read || (known?.read ?? false),
-    });
-  }
-  return byCard;
-}
-
 /** Copies owned, by card id (the album, the card sheet, the trades). */
 export const ownedCards = sharedResource<ReadonlyMap<string, number>>(async () => {
   const owned = await fetchOwnedOnce();
-  cardDates.publish(datesOf(owned));
-  return copiesOf(owned);
+  cardDates.publish(datesByCard(owned));
+  return copiesByCard(owned);
 });
 
 /** When each owned card was first got, and whether its sheet was opened since (the album). */
 export const cardDates = sharedResource<ReadonlyMap<string, CardDate>>(async () => {
   const owned = await fetchOwnedOnce();
-  ownedCards.publish(copiesOf(owned));
-  return datesOf(owned);
+  ownedCards.publish(copiesByCard(owned));
+  return datesByCard(owned);
 });
 
 /** Cards just got that the player did not own: new until their sheet is opened. */
 export function noteGained(cardIds: readonly string[], ownedBefore: ReadonlyMap<string, number>) {
   const current = cardDates.current();
   if (current === null) return;
-  const now = Date.now();
-  const next = new Map(current);
-  for (const id of cardIds) {
-    if ((ownedBefore.get(id) ?? 0) === 0 && !next.has(id)) {
-      next.set(id, { firstObtainedAt: now, read: false });
-    }
-  }
-  cardDates.publish(next);
+  cardDates.publish(datesAfterGain(current, cardIds, ownedBefore, Date.now()));
 }
 
 /**
@@ -103,18 +77,7 @@ export function publishTraded(gained: readonly string[], given: readonly string[
 
 /** Level, next review, stability and last review of every reviewed word. */
 export const wordMemory = sharedResource<ReadonlyMap<string, WordMemory>>(async () => {
-  const words = await api.fetchMastery();
-  return new Map(
-    words.map((word) => [
-      word.cardId,
-      {
-        level: word.level,
-        due: Date.parse(word.due),
-        stability: word.stability,
-        lastReviewedAt: word.lastReviewedAt === null ? null : Date.parse(word.lastReviewedAt),
-      },
-    ]),
-  );
+  return memoriesByCard(await api.fetchMastery());
 });
 
 /** Today's answers towards the daily goal. */
