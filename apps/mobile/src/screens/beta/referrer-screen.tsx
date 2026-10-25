@@ -6,12 +6,14 @@ import {
   REFERRER_UNKNOWN,
   referrerTitle,
 } from "@leximon/view-model";
+import { router } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import { rememberReferrer } from "@/api/arrival";
 import { api } from "@/api/client";
 import { playFromScratch } from "@/player/session";
 import { Button } from "@/ui/button";
 import { Page, Paragraph } from "@/ui/page";
+import { TextButton } from "@/ui/text-button";
 import { SignInLink } from "./sign-in-link";
 import { WaitlistForm } from "./waitlist-form";
 
@@ -63,6 +65,10 @@ export function ReferrerScreen({ code }: { readonly code: string | null }) {
         <>
           <Paragraph>{REFERRER_PITCH}</Paragraph>
           <Button label={REFERRER_ACTION} onPress={enter} />
+          <TextButton
+            label={`Déjà joueur ? Ajouter ${referrer.player.pseudo} en ami`}
+            onPress={() => router.replace({ pathname: "/amis", params: { ajouter: code ?? "" } })}
+          />
         </>
       )}
       {referrer !== null && referrer.status === "full" && (
