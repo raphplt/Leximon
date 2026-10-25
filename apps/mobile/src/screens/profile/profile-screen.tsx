@@ -3,17 +3,13 @@ import { type Catalog, collectionName } from "@leximon/contract/client";
 import type { IconName } from "@leximon/tokens";
 import {
   canShareProfile,
-  formatPlayerCode,
-  memberSinceLabel,
   movePin,
   PIN_TEXTS,
   pinnedSlotsLabel,
   placePin,
   playerName,
-  profileHeadline,
   profilePath,
   replaceTitle,
-  statTiles,
   unpin,
   visibilityNote,
 } from "@leximon/view-model";
@@ -22,19 +18,18 @@ import { useEffect, useState } from "react";
 import { Pressable, ScrollView, Share, StyleSheet, Text, View } from "react-native";
 import { Card } from "@/cards/card";
 import { catalogInHand, loadCatalog } from "@/cards/catalog";
-import { Emblem } from "@/clan/emblem";
 import { WEB_URL } from "@/config";
 import { useShared, useSharedFailed } from "@/player/shared";
 import { profile } from "@/player/state";
 import { useProfileActions } from "@/profile/profile-actions";
 import { openCard } from "@/screens/trades/card-row";
 import { colors, fonts } from "@/theme";
-import { Avatar } from "@/ui/avatar";
 import { Button } from "@/ui/button";
 import { Icon } from "@/ui/icon";
 import { Page, Paragraph } from "@/ui/page";
 import { Panel } from "@/ui/panel";
 import { PinPicker } from "./pin-picker";
+import { ProfileHeader, StatsPanel } from "./profile-view";
 import { PseudoSheet } from "./pseudo-sheet";
 
 const PIN_WIDTH = 116;
@@ -74,10 +69,6 @@ export function ProfileScreen() {
 
   const name = me.member ? playerName({ code: me.playerCode, pseudo: me.pseudo }) : "Invité";
   const note = visibilityNote(me);
-  const subline = [
-    `Code joueur ${formatPlayerCode(me.playerCode)}`,
-    me.member ? memberSinceLabel(me.memberSince) : null,
-  ].filter((part) => part !== null);
 
   const share = () => {
     if (me.pseudo === null) return;
@@ -87,23 +78,18 @@ export function ProfileScreen() {
 
   return (
     <Page title={name}>
-      <View style={styles.identity}>
-        <Avatar avatar={me.avatar} frame={me.frame} size={92} label="Avatar" />
-        <View style={styles.names}>
-          <Text style={styles.headline}>{profileHeadline(me.title, me.level)}</Text>
-          {me.clan !== null && (
-            <Pressable
-              onPress={() => router.dismissTo("/clan")}
-              accessibilityRole="link"
-              style={styles.clan}
-            >
-              <Emblem emblem={me.clan.emblem} size={26} level={me.clan.level} />
-              <Text style={styles.clanName}>{me.clan.name}</Text>
-            </Pressable>
-          )}
-          <Text style={styles.subline}>{subline.join(" · ")}</Text>
-        </View>
-      </View>
+      <ProfileHeader
+        face={{
+          avatar: me.avatar,
+          frame: me.frame,
+          title: me.title,
+          level: me.level,
+          code: me.playerCode,
+          memberSince: me.member ? me.memberSince : null,
+          clan: me.clan,
+        }}
+        onClan={() => router.dismissTo("/clan")}
+      />
 
       <View style={styles.actions}>
         <View style={styles.grow}>
@@ -134,7 +120,7 @@ export function ProfileScreen() {
         </Panel>
       )}
 
-      <Stats me={me} catalog={catalog} />
+      <StatsPanel stats={me.stats} catalog={catalog} />
 
       <Panel style={styles.links}>
         {LINKS.map((link) => (
@@ -296,37 +282,7 @@ function PinnedCards({
   );
 }
 
-/** The profile in figures. */
-function Stats({
-  me,
-  catalog,
-}: {
-  readonly me: ProfileResponse;
-  readonly catalog: Catalog | null;
-}) {
-  const tiles = statTiles(me.stats, catalog === null ? null : catalog.cardsById.size);
-  return (
-    <Panel>
-      <Text style={styles.panelTitle}>En chiffres</Text>
-      <View style={styles.tiles}>
-        {tiles.map((tile) => (
-          <View key={tile.label} style={styles.tile}>
-            <Text style={styles.tileValue}>{tile.value}</Text>
-            <Text style={styles.tileLabel}>{tile.label}</Text>
-          </View>
-        ))}
-      </View>
-    </Panel>
-  );
-}
-
 const styles = StyleSheet.create({
-  identity: { flexDirection: "row", alignItems: "center", gap: 16, marginTop: -6 },
-  names: { flex: 1, gap: 4 },
-  headline: { fontFamily: fonts.ui.extrabold, fontSize: 16, color: colors.accent },
-  clan: { flexDirection: "row", alignItems: "center", gap: 8 },
-  clanName: { fontFamily: fonts.ui.bold, fontSize: 15, color: colors.text },
-  subline: { fontFamily: fonts.ui.medium, fontSize: 13, lineHeight: 18, color: colors.textMuted },
   actions: { flexDirection: "row", gap: 10 },
   grow: { flex: 1 },
   note: { fontFamily: fonts.text.regular, fontSize: 17, lineHeight: 24, color: colors.text },
@@ -385,17 +341,6 @@ const styles = StyleSheet.create({
     color: colors.textMuted,
     textAlign: "center",
   },
-  tiles: { flexDirection: "row", flexWrap: "wrap", gap: 10 },
-  tile: {
-    flexGrow: 1,
-    flexBasis: "45%",
-    gap: 2,
-    padding: 12,
-    borderRadius: 14,
-    backgroundColor: colors.background,
-  },
-  tileValue: { fontFamily: fonts.display, fontSize: 24, color: colors.text },
-  tileLabel: { fontFamily: fonts.ui.semibold, fontSize: 13, color: colors.textMuted },
   links: { gap: 0, paddingVertical: 6 },
   link: { flexDirection: "row", alignItems: "center", gap: 14, minHeight: 52 },
   linkText: { flex: 1, fontFamily: fonts.ui.bold, fontSize: 16, color: colors.text },

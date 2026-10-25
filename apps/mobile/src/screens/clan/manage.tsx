@@ -11,6 +11,7 @@ import {
   requestSentToast,
   roleLabel,
 } from "@leximon/view-model";
+import { router } from "expo-router";
 import { useEffect, useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
 import { api } from "@/api/client";
@@ -59,6 +60,7 @@ export function MemberSheet({
           member={member}
           now={now}
           onChanged={onChanged}
+          onClose={onClose}
         />
       )}
     </Sheet>
@@ -71,12 +73,14 @@ function MemberActions({
   member,
   now,
   onChanged,
+  onClose,
 }: {
   readonly clanId: string;
   readonly myRole: ClanRole;
   readonly member: ClanMember;
   readonly now: number;
   readonly onChanged: () => void;
+  readonly onClose: () => void;
 }) {
   const me = useShared(profile);
   const myFriends = useShared(friends);
@@ -115,6 +119,18 @@ function MemberActions({
           )}
         </View>
       </View>
+
+      {!self && member.player.pseudo !== null && (
+        <Button
+          label="Voir son profil"
+          secondary
+          onPress={() => {
+            const { pseudo } = member.player;
+            onClose();
+            if (pseudo !== null) router.push({ pathname: "/joueur/[pseudo]", params: { pseudo } });
+          }}
+        />
+      )}
 
       {canBefriend && (
         <Button

@@ -452,6 +452,17 @@ function FriendActions({
           {trades !== null && <Text style={styles.tradesText}>{trades}</Text>}
         </View>
       </View>
+      {friend.player.pseudo !== null && (
+        <Button
+          label="Voir son profil"
+          secondary
+          onPress={() => {
+            const { pseudo } = friend.player;
+            onDone();
+            if (pseudo !== null) router.push({ pathname: "/joueur/[pseudo]", params: { pseudo } });
+          }}
+        />
+      )}
       <Button
         label="Proposer un échange"
         onPress={() => {
