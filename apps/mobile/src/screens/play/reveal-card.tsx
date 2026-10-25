@@ -13,8 +13,8 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 import Svg, { Defs, Ellipse, Polyline, RadialGradient, Stop } from "react-native-svg";
-import { Card } from "@/cards/card";
 import { CardBack } from "@/cards/card-back";
+import { HoloCard } from "@/cards/holo-card";
 import { useSpokenWord } from "@/cards/spoken-word";
 import { play, speechOn, vibrate } from "@/feedback/feedback";
 import { fonts } from "@/theme";
@@ -272,7 +272,12 @@ export function RevealCard({
             {staging.announce === "crack" && <Cracks width={width} height={height} />}
           </Animated.View>
           <Animated.View style={[StyleSheet.absoluteFill, face]}>
-            <Card card={card} collectionName={collectionName} width={width} />
+            <HoloCard
+              card={card}
+              collectionName={collectionName}
+              width={width}
+              touchable={settled}
+            />
           </Animated.View>
         </View>
         {settled && (

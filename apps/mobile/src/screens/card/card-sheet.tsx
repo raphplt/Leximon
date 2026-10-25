@@ -20,8 +20,8 @@ import { router } from "expo-router";
 import * as WebBrowser from "expo-web-browser";
 import { useCallback, useEffect, useState } from "react";
 import { Pressable, Share, StyleSheet, Text, useWindowDimensions, View } from "react-native";
-import { Card } from "@/cards/card";
 import { catalogInHand, loadCatalog } from "@/cards/catalog";
+import { HoloCard } from "@/cards/holo-card";
 import { WEB_URL } from "@/config";
 import { noteCardRead, ownedCards, wordMemory } from "@/player/collection";
 import { useNow, useShared } from "@/player/shared";
@@ -129,7 +129,7 @@ function SheetBody({
   return (
     <Page title={card.word}>
       <View style={styles.cardSide}>
-        <Card
+        <HoloCard
           card={card}
           collectionName={collection}
           width={Math.min(CARD_MAX, window.width - 48)}

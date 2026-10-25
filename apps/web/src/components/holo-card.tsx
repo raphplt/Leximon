@@ -1,7 +1,7 @@
 import type { CatalogCard } from "@leximon/contract";
 import { cardSize } from "@leximon/tokens";
+import { holoLayers } from "@leximon/view-model";
 import type { CSSProperties } from "react";
-import { holoLayers } from "@/cards/holo";
 import { Card } from "./card";
 import styles from "./holo-card.module.css";
 

@@ -1,7 +1,7 @@
 "use client";
 
+import { type HoloLight, holoFromOrientation, holoFromPointer } from "@leximon/view-model";
 import { type PointerEvent, useCallback, useEffect, useRef } from "react";
-import { type HoloLight, holoFromOrientation, holoFromPointer } from "@/cards/holo";
 
 /** After a pointer move, the phone's tilt waits this long before taking the light back. */
 const POINTER_PRIORITY_MS = 1500;

@@ -2,7 +2,8 @@ import { type Rarity, rarityRank } from "@leximon/core";
 
 /**
  * Light on a card held in the hand: where the light falls, how far the card tilts, and which
- * layers each rarity gets. Pure functions; the components turn them into CSS variables.
+ * layers each rarity gets. Pure functions: the web turns them into CSS variables, the app into
+ * animated values.
  */
 
 /** Steepest tilt of a card under the finger or with the phone, in degrees. */

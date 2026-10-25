@@ -81,6 +81,7 @@ Pour ajouter ou modifier une décision, utiliser le skill `decision`.
   - un seul fichier pour web et mobile ou non ;
   - confort pour un designer.
 - **Rapport attendu :** dans `docs/rnd/` (skill `spike`).
+- **Point d'étape (2026-10-25) :** sans attendre la R&D, le mobile reprend les reflets du web couche pour couche, en code : `react-native-svg` animé par Reanimated et les modes de fusion de React Native (Android 10 et plus), donc sans dépendance nouvelle. Restent ouverts : Rive ou Lottie pour un designer, Skia si un téléphone d'entrée de gamme peine, l'inclinaison du téléphone (`expo-sensors`).
 
 ## D-010 · Chaîne de contenu : Python, exécutée en local
 
