@@ -2,7 +2,6 @@
 
 import type { CatalogCard, PlayerBadge, Trade } from "@leximon/contract";
 import { type Catalog, collectionName } from "@leximon/contract/client";
-import { rarityRank } from "@leximon/core";
 import {
   FRIENDS_FOLD,
   heldLabel,
@@ -11,6 +10,7 @@ import {
   normalizePlayerCode,
   offerProblem,
   pickHint,
+  pickOrder,
   playerName,
   refusalMessage,
   selectionCount,
@@ -56,21 +56,16 @@ const PICK_THUMB = 104;
 const REVIEW_THUMB = 92;
 const CONNECTION_ERROR = "Ça n'a pas marché. Vérifie ta connexion.";
 
-/** Rarest first, then alphabetical; for the partner's cards, words the player lacks lead. */
-function pickOrder(
+/** The cards behind the ids, in the order to pick them. */
+function pickCards(
   catalog: Catalog,
   cardIds: readonly string[],
   owned: ReadonlySet<string> | null,
 ): CatalogCard[] {
-  const isNew = (card: CatalogCard) => (owned !== null && !owned.has(card.id) ? 0 : 1);
-  return cardIds
-    .map((id) => catalogCard(catalog, id))
-    .sort(
-      (a, b) =>
-        isNew(a) - isNew(b) ||
-        rarityRank(b.rarity) - rarityRank(a.rarity) ||
-        a.word.localeCompare(b.word, "fr"),
-    );
+  return pickOrder(
+    cardIds.map((id) => catalogCard(catalog, id)),
+    owned,
+  );
 }
 
 export function ProposeTrade({
@@ -440,7 +435,7 @@ export function ProposeTrade({
           ) : (
             <CardPicker
               catalog={catalog}
-              cards={pickOrder(catalog, partner.cardIds, owned)}
+              cards={pickCards(catalog, partner.cardIds, owned)}
               selection={want}
               max={partner.maxCards}
               owned={owned}
@@ -476,7 +471,7 @@ export function ProposeTrade({
           ) : (
             <CardPicker
               catalog={catalog}
-              cards={pickOrder(catalog, mine, friendAlbum)}
+              cards={pickCards(catalog, mine, friendAlbum)}
               selection={give}
               max={partner.maxCards}
               owned={friendAlbum}

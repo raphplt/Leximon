@@ -6,7 +6,8 @@ import {
   type TradeRefusalCode,
   type TradeStatus,
 } from "@leximon/contract";
-import { TRADE_SCHEDULE, tradeRulesAt } from "@leximon/core";
+import { type Rarity, rarityRank, TRADE_SCHEDULE, tradeRulesAt } from "@leximon/core";
+import { compareFrench } from "./format";
 
 /**
  * Pure rules of the trades screen: what a trade means for the player looking at it, how long it
@@ -143,6 +144,22 @@ export function toggleCard(
   if (selection.includes(cardId)) return selection.filter((id) => id !== cardId);
   if (max === 1) return [cardId];
   return selection.length < max ? [...selection, cardId] : selection;
+}
+
+/**
+ * Order of the cards to pick: words the receiver lacks lead (`owned` is their album, `null` when
+ * unknown), then the rarest, then alphabetical.
+ */
+export function pickOrder<
+  T extends { readonly id: string; readonly rarity: Rarity; readonly word: string },
+>(cards: readonly T[], owned: ReadonlySet<string> | null): T[] {
+  const isNew = (card: T) => (owned !== null && !owned.has(card.id) ? 0 : 1);
+  return [...cards].sort(
+    (a, b) =>
+      isNew(a) - isNew(b) ||
+      rarityRank(b.rarity) - rarityRank(a.rarity) ||
+      compareFrench(a.word, b.word),
+  );
 }
 
 /** « Échangeable dans 3 j », « dans 5 h »: when a held Épique or Légendaire can move. */

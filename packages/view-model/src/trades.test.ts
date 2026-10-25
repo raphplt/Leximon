@@ -9,6 +9,7 @@ import {
   historyLine,
   normalizePlayerCode,
   offerProblem,
+  pickOrder,
   refusalMessage,
   splitTrades,
   statusLabel,
@@ -139,6 +140,28 @@ describe("toggleCard", () => {
   it("swaps the card when only one goes on each side", () => {
     expect(toggleCard(["a"], "b", 1)).toEqual(["b"]);
     expect(toggleCard(["a"], "a", 1)).toEqual([]);
+  });
+});
+
+describe("pickOrder", () => {
+  const card = (id: string, rarity: "common" | "rare" | "epic", word: string) => ({
+    id,
+    rarity,
+    word,
+  });
+  const cards = [
+    card("a", "common", "écu"),
+    card("b", "rare", "zéphyr"),
+    card("c", "common", "abaque"),
+    card("d", "epic", "obole"),
+  ];
+
+  it("puts the rarest first, then sorts words as a French reader would", () => {
+    expect(pickOrder(cards, null).map((c) => c.id)).toEqual(["d", "b", "c", "a"]);
+  });
+
+  it("leads with the words the receiver lacks", () => {
+    expect(pickOrder(cards, new Set(["b", "d"])).map((c) => c.id)).toEqual(["c", "a", "d", "b"]);
   });
 });
 
