@@ -5,7 +5,7 @@ import { blockedCountLabel, pseudoSettingLabel } from "@leximon/view-model";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { canVibrate, type FeedbackKind, readPreference, writePreference } from "@/booster/feedback";
-import { fetchBlocks, fetchPreferences, signOut, updatePreferences } from "@/lib/api";
+import { api } from "@/lib/api";
 import { account, profile } from "@/player/player";
 import { useShared } from "@/player/resource";
 import { BlocksDialog } from "@/profile/blocks-dialog";
@@ -56,14 +56,16 @@ export function SettingsPanel({
     });
     setVibrates(canVibrate());
     setError(null);
-    fetchPreferences()
+    api
+      .fetchPreferences()
       .then(setNotify)
       .catch(() => setNotify(null));
   }, [open]);
 
   useEffect(() => {
     if (!open || !member) return;
-    fetchBlocks()
+    api
+      .fetchBlocks()
       .then((players) => setBlockedCount(players.length))
       .catch(() => setBlockedCount(null));
   }, [open, member]);
@@ -73,7 +75,7 @@ export function SettingsPanel({
     const before = notify;
     setNotify({ ...notify, [key]: enabled });
     try {
-      setNotify(await updatePreferences({ [key]: enabled }));
+      setNotify(await api.updatePreferences({ [key]: enabled }));
     } catch (caught) {
       setNotify(before);
       setError(failureMessage(caught));
@@ -88,7 +90,7 @@ export function SettingsPanel({
   const leave = async () => {
     setLeaving(true);
     try {
-      await signOut();
+      await api.signOut();
       // A full load: the next screen starts a new guest from scratch.
       window.location.assign("/jouer");
     } catch {

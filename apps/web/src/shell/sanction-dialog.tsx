@@ -3,7 +3,7 @@
 import type { Sanction } from "@leximon/contract";
 import { CONTEST_HINT, contestState, sanctionTitle, sanctionUntil } from "@leximon/view-model";
 import { type FormEvent, useState } from "react";
-import { contestSanction, markSanctionsSeen } from "@/clan/api";
+import { api } from "@/lib/api";
 import { sanctions } from "@/player/clan";
 import { useShared } from "@/player/resource";
 import { Button } from "@/ui/button";
@@ -24,7 +24,7 @@ export function SanctionDialog({ now }: { readonly now: number }) {
   const close = () => {
     setClosed(true);
     if (all !== null) sanctions.publish(all.map((sanction) => ({ ...sanction, seen: true })));
-    void markSanctionsSeen().catch(() => undefined);
+    void api.markSanctionsSeen().catch(() => undefined);
   };
 
   return (
@@ -65,7 +65,7 @@ export function SanctionCard({
     if (text.trim() === "") return;
     setBusy(true);
     try {
-      const sent = await contestSanction(sanction.id, text.trim());
+      const sent = await api.contestSanction(sanction.id, text.trim());
       toast(sent ? "Contestation envoyée." : "Cette sanction ne se conteste plus.");
       const current = sanctions.current();
       if (current !== null) {

@@ -1,18 +1,18 @@
 "use client";
 
 import Link from "next/link";
-import { send } from "@/lib/api";
+import { api } from "@/lib/api";
 import { sharedResource, useShared } from "@/player/resource";
 import styles from "./landing-page.module.css";
 import { WaitlistForm } from "./waitlist-form";
 
 /**
- * Whether this browser already has a game, guest or member. Asked without `sendAsPlayer`: a
- * visitor who only reads the page must not get a guest account.
+ * Whether this browser already has a game, guest or member. A visitor who only reads the page
+ * must not get a guest account.
  */
 const hasGame = sharedResource<boolean>(async () => {
   try {
-    return (await send("/me/account")).ok;
+    return await api.hasSession();
   } catch {
     return false;
   }

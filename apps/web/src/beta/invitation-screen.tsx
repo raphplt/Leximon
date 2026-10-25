@@ -6,7 +6,7 @@ import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import styles from "@/app/confidentialite/privacy.module.css";
 import { WaitlistForm } from "@/landing/waitlist-form";
-import { fetchInviteStatus } from "@/lib/api";
+import { api } from "@/lib/api";
 import { Button } from "@/ui/button";
 import { rememberInvite } from "./arrival";
 
@@ -26,7 +26,8 @@ export function InvitationScreen() {
 
   useEffect(() => {
     let live = true;
-    fetchInviteStatus(code)
+    api
+      .fetchInviteStatus(code)
       .then((status) => {
         if (live) setState({ status });
       })

@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useState } from "react";
 import styles from "@/app/confidentialite/privacy.module.css";
-import { unsubscribeFromLink } from "@/lib/api";
+import { api } from "@/lib/api";
 import { Button } from "@/ui/button";
 
 type State = "ready" | "sending" | "done" | "invalid" | "failed";
@@ -21,7 +21,7 @@ export function UnsubscribeFromAddress() {
   const confirm = async () => {
     setState("sending");
     try {
-      setState((await unsubscribeFromLink(token)) === "done" ? "done" : "invalid");
+      setState((await api.unsubscribeFromLink(token)) === "done" ? "done" : "invalid");
     } catch {
       setState("failed");
     }

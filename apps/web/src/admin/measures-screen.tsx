@@ -3,8 +3,8 @@
 import type { AdminTester, RetentionRow } from "@leximon/contract";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { adminApi, adminErrorMessage } from "@/admin/admin-api";
 import styles from "./admin.module.css";
-import { adminErrorMessage, fetchMeasures, fetchTesters } from "./admin-api";
 import { formatNumber } from "./format";
 import { Stat } from "./overview-screen";
 import { useLoad } from "./use-load";
@@ -21,7 +21,7 @@ function rate(value: RetentionRow["d1"]): string {
 
 /** Retention and funnel of the beta, computed from the game's own database. Admins excluded. */
 export function MeasuresScreen() {
-  const { state, reload } = useLoad(fetchMeasures);
+  const { state, reload } = useLoad(adminApi.fetchMeasures);
   return (
     <>
       <div className={styles.toolbar}>
@@ -158,7 +158,8 @@ function Testers() {
 
   useEffect(() => {
     let live = true;
-    fetchTesters()
+    adminApi
+      .fetchTesters()
       .then((page) => {
         if (!live) return;
         setTesters(page.testers);
@@ -176,7 +177,7 @@ function Testers() {
     if (cursor === null) return;
     setBusy(true);
     try {
-      const page = await fetchTesters(cursor);
+      const page = await adminApi.fetchTesters(cursor);
       setTesters((current) => [...current, ...page.testers]);
       setCursor(page.nextCursor);
     } catch (caught) {

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { type FormEvent, useId, useState } from "react";
-import { joinWaitlist } from "@/lib/api";
+import { api } from "@/lib/api";
 import styles from "./landing-page.module.css";
 
 type FormState =
@@ -30,7 +30,7 @@ export function WaitlistForm() {
     if (state.kind === "sending") return;
     setState({ kind: "sending" });
     try {
-      const result = await joinWaitlist(email);
+      const result = await api.joinWaitlist(email);
       setState(
         result.kind === "refused" ? { kind: "error", message: ERRORS[result.reason] } : result,
       );

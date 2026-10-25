@@ -3,8 +3,8 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { type ReactNode, Suspense, useEffect, useState } from "react";
+import { adminApi } from "@/admin/admin-api";
 import styles from "./admin.module.css";
-import { fetchAdminAccess } from "./admin-api";
 
 const LINKS = [
   { href: "/admin", label: "Tableau de bord" },
@@ -37,7 +37,8 @@ export function AdminShell({ children }: { readonly children: ReactNode }) {
   const [access, setAccess] = useState<Access>({ kind: "loading" });
 
   useEffect(() => {
-    fetchAdminAccess()
+    adminApi
+      .fetchAdminAccess()
       .then(setAccess)
       .catch(() => setAccess({ kind: "failed" }));
   }, []);

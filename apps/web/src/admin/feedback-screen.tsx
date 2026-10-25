@@ -3,8 +3,8 @@
 import type { AdminFeedback } from "@leximon/contract";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { adminApi, adminErrorMessage } from "@/admin/admin-api";
 import styles from "./admin.module.css";
-import { adminErrorMessage, fetchFeedback, markFeedbackRead } from "./admin-api";
 import { formatDateTime, formatNumber } from "./format";
 
 /** Testers' notes, written from the game (« Un retour ? » in the player's menu). */
@@ -17,7 +17,8 @@ export function FeedbackScreen() {
 
   useEffect(() => {
     let live = true;
-    fetchFeedback()
+    adminApi
+      .fetchFeedback()
       .then((page) => {
         if (!live) return;
         setItems(page.feedback);
@@ -36,7 +37,7 @@ export function FeedbackScreen() {
     if (cursor === null) return;
     setBusy(true);
     try {
-      const page = await fetchFeedback(cursor);
+      const page = await adminApi.fetchFeedback(cursor);
       setItems((current) => [...current, ...page.feedback]);
       setCursor(page.nextCursor);
     } catch (caught) {
@@ -48,7 +49,7 @@ export function FeedbackScreen() {
 
   const read = async (id: string) => {
     try {
-      await markFeedbackRead(id);
+      await adminApi.markFeedbackRead(id);
       const at = new Date().toISOString();
       setItems((current) =>
         current.map((item) => (item.id === id ? { ...item, readAt: at } : item)),

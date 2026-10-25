@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { adminErrorMessage } from "./admin-api";
+import { adminErrorMessage } from "@/admin/admin-api";
 
 export type Loaded<T> =
   | { readonly kind: "loading" }

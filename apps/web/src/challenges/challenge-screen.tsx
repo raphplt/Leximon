@@ -29,7 +29,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { type FormEvent, useCallback, useEffect, useState } from "react";
 import { type Catalog, cardOrPlaceholder, collectionName, loadCatalog } from "@/cards/catalog";
 import { Card } from "@/components/card";
-import { answerChallenge, fetchChallenges } from "@/lib/api";
+import { api } from "@/lib/api";
 import { useNow } from "@/lib/use-now";
 import { usePackShape } from "@/lib/use-pack-shape";
 import { myClan } from "@/player/clan";
@@ -109,7 +109,7 @@ export function ChallengeScreen() {
     setNotice(null);
     setError(null);
     try {
-      const next = await fetchChallenges();
+      const next = await api.fetchChallenges();
       if (next.questions.length === 0) {
         const when = nextDueLabel(next.nextDueAt, Date.now());
         setNotice(
@@ -136,7 +136,7 @@ export function ChallengeScreen() {
     setError(null);
     setSession({ ...session, step: { name: "sending", chosen } });
     try {
-      const result = await answerChallenge(
+      const result = await api.answerChallenge(
         question.format === "typed"
           ? { cardId: question.cardId, format: question.format, typed: chosen }
           : { cardId: question.cardId, format: question.format, chosenCardId: chosen },

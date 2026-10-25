@@ -2,7 +2,7 @@
 
 import type { DailyChallengeResponse, OwnedCardsResponse } from "@leximon/contract";
 import { type CardDate, copiesAfterTrade, type WordMemory } from "@leximon/view-model";
-import { fetchDaily, fetchMastery, fetchOwnedCards, markCardRead } from "@/lib/api";
+import { api } from "@/lib/api";
 import { type SharedResource, sharedResource } from "./resource";
 
 type OwnedCopy = OwnedCardsResponse["cards"][number];
@@ -10,7 +10,7 @@ type OwnedCopy = OwnedCardsResponse["cards"][number];
 /** One request for both resources below, when they are read together. */
 let ownedInFlight: Promise<OwnedCopy[]> | null = null;
 function fetchOwnedOnce(): Promise<OwnedCopy[]> {
-  ownedInFlight ??= fetchOwnedCards().finally(() => {
+  ownedInFlight ??= api.fetchOwnedCards().finally(() => {
     ownedInFlight = null;
   });
   return ownedInFlight;
@@ -79,7 +79,7 @@ export function noteCardRead(cardId: string): void {
   if (current !== null && known !== undefined) {
     cardDates.publish(new Map(current).set(cardId, { ...known, read: true }));
   }
-  markCardRead(cardId).catch(() => cardDates.refresh());
+  api.markCardRead(cardId).catch(() => cardDates.refresh());
 }
 
 /**
@@ -98,7 +98,7 @@ export function publishTraded(gained: readonly string[], given: readonly string[
 
 /** Level, next review, stability and last review of every reviewed word. */
 export const wordMemory = sharedResource<ReadonlyMap<string, WordMemory>>(async () => {
-  const words = await fetchMastery();
+  const words = await api.fetchMastery();
   return new Map(
     words.map((word) => [
       word.cardId,
@@ -113,7 +113,7 @@ export const wordMemory = sharedResource<ReadonlyMap<string, WordMemory>>(async 
 });
 
 /** Today's answers towards the daily goal. */
-export const dailyChallenge = sharedResource<DailyChallengeResponse>(fetchDaily);
+export const dailyChallenge = sharedResource<DailyChallengeResponse>(api.fetchDaily);
 
 /**
  * Reads a resource again after an action changed it on the server (a booster, an answer, a

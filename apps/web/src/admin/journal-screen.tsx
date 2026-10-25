@@ -2,8 +2,8 @@
 
 import type { AdminAction } from "@leximon/contract";
 import { useEffect, useState } from "react";
+import { adminApi, adminErrorMessage } from "@/admin/admin-api";
 import styles from "./admin.module.css";
-import { adminErrorMessage, fetchActions } from "./admin-api";
 import { ActionsTable } from "./player-screen";
 
 export function JournalScreen() {
@@ -14,7 +14,8 @@ export function JournalScreen() {
 
   useEffect(() => {
     let live = true;
-    fetchActions()
+    adminApi
+      .fetchActions()
       .then((page) => {
         if (!live) return;
         setActions(page.actions);
@@ -32,7 +33,7 @@ export function JournalScreen() {
     if (cursor === null) return;
     setBusy(true);
     try {
-      const page = await fetchActions(cursor);
+      const page = await adminApi.fetchActions(cursor);
       setActions((current) => [...(current ?? []), ...page.actions]);
       setCursor(page.nextCursor);
     } catch (caught) {

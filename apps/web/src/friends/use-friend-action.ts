@@ -1,10 +1,10 @@
 "use client";
 
+import type { FriendResult } from "@leximon/contract/client";
 import { friendRefusalText } from "@leximon/view-model";
 import { friends } from "@/player/friends";
 import { mailbox } from "@/player/mail";
 import { useToast } from "@/ui/toast";
-import type { FriendResult } from "./api";
 
 /** Runs a friend action and says how it went; `true` when it went through. */
 export function useFriendAction() {

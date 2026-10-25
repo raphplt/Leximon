@@ -1,0 +1,51 @@
+import { accountRoutes } from "./account";
+import { adminRoutes } from "./admin";
+import { clanRoutes } from "./clans";
+import { friendRoutes } from "./friends";
+import { gameRoutes } from "./game";
+import { type ApiClientOptions, createHttp } from "./http";
+
+/**
+ * Client of the game API, shared by the web and the mobile app. Every response is validated
+ * against the contract; an expected refusal is a result, anything else an `ApiError`.
+ */
+export function createApiClient(options: ApiClientOptions) {
+  const http = createHttp(options);
+  return {
+    ...gameRoutes(http),
+    ...accountRoutes(http),
+    ...friendRoutes(http),
+    ...clanRoutes(http),
+  };
+}
+
+export type ApiClient = ReturnType<typeof createApiClient>;
+
+/** Client of the back office, on the same session as the game. */
+export function createAdminClient(options: ApiClientOptions) {
+  return adminRoutes(createHttp(options));
+}
+
+export type AdminClient = ReturnType<typeof createAdminClient>;
+
+export type { JoinWaitlistResult, PreviewResult, SendCodeResult, SignInResult } from "./account";
+export type { AdminAccess, EraseResult, LaunchResult } from "./admin";
+export type { ClanResult } from "./clans";
+export type { ClaimReferralResult, FriendResult } from "./friends";
+export type {
+  AnswerResult,
+  BlockResult,
+  ClaimResult,
+  DeleteAccountResult,
+  OpenBoosterResult,
+  ProfileResult,
+  TradeResult,
+} from "./game";
+export {
+  type ApiClientOptions,
+  ApiError,
+  type ApiTransport,
+  type Arrival,
+  BetaClosedError,
+  type BetaClosedReason,
+} from "./http";

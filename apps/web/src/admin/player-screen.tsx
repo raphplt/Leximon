@@ -4,9 +4,9 @@ import type { AdminAction, AdminPlayerDetail } from "@leximon/contract";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { type FormEvent, useCallback, useState } from "react";
+import { adminApi, adminErrorMessage } from "@/admin/admin-api";
 import { Select } from "@/components/select";
 import styles from "./admin.module.css";
-import { adminErrorMessage, banPlayer, fetchPlayer, grantBonus, unbanPlayer } from "./admin-api";
 import {
   ACTION_LABELS,
   actionSummary,
@@ -24,7 +24,7 @@ export function PlayerFromAddress() {
 }
 
 function PlayerScreen({ id }: { readonly id: string }) {
-  const fetcher = useCallback(() => fetchPlayer(id), [id]);
+  const fetcher = useCallback(() => adminApi.fetchPlayer(id), [id]);
   const { state, reload } = useLoad(fetcher);
   return (
     <>
@@ -210,7 +210,7 @@ function BonusForm({
     setPendingKey(key);
     setStatus({ kind: "busy" });
     try {
-      const result = await grantBonus(detail.player.id, amount, reason.trim(), key);
+      const result = await adminApi.grantBonus(detail.player.id, amount, reason.trim(), key);
       setPendingKey(null);
       setReason("");
       setStatus({
@@ -293,7 +293,10 @@ function BanForm({
     if (!window.confirm(`Bannir ce joueur ${label} ? Ses sessions seront fermées.`)) return;
     setStatus({ kind: "busy" });
     try {
-      await banPlayer(id, { reason: reason.trim(), days: days === "" ? null : Number(days) });
+      await adminApi.banPlayer(id, {
+        reason: reason.trim(),
+        days: days === "" ? null : Number(days),
+      });
       setStatus({ kind: "done", message: "Joueur banni." });
       onChange();
     } catch (error) {
@@ -361,7 +364,7 @@ function UnbanForm({ id, onChange }: { readonly id: string; readonly onChange: (
   const lift = async () => {
     setStatus({ kind: "busy" });
     try {
-      await unbanPlayer(id);
+      await adminApi.unbanPlayer(id);
       setStatus({ kind: "done", message: "Bannissement levé." });
       onChange();
     } catch (error) {

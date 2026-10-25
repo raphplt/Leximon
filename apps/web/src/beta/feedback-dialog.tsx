@@ -2,7 +2,7 @@
 
 import { usePathname } from "next/navigation";
 import { type FormEvent, useId, useState } from "react";
-import { sendFeedback } from "@/lib/api";
+import { api } from "@/lib/api";
 import { Button } from "@/ui/button";
 import { Dialog } from "@/ui/dialog";
 import { useToast } from "@/ui/toast";
@@ -29,7 +29,7 @@ export function FeedbackDialog({
     setBusy(true);
     setError(null);
     try {
-      await sendFeedback({ body: body.trim(), screen: pathname });
+      await api.sendFeedback({ body: body.trim(), screen: pathname });
       setBody("");
       onClose();
       toast("Bien reçu. Merci.");

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import styles from "@/account/account-screen.module.css";
-import { recordInterest } from "@/lib/api";
+import { api } from "@/lib/api";
 
 /**
  * The patron offer, announced before it is sold: opening the page and asking to be told are
@@ -13,12 +13,12 @@ export function PatronScreen() {
 
   useEffect(() => {
     // A lost signal only skews the count: the page works without it.
-    recordInterest("patron_door").catch(() => undefined);
+    api.recordInterest("patron_door").catch(() => undefined);
   }, []);
 
   const ask = () => {
     setAsked(true);
-    recordInterest("patron_notify").catch(() => undefined);
+    api.recordInterest("patron_notify").catch(() => undefined);
   };
 
   return (

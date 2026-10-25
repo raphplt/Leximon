@@ -3,7 +3,7 @@ import {
   type LinkPreviewError,
   type LinkPreviewResponse,
 } from "@leximon/contract";
-import type { SendCodeResult } from "../lib/api";
+import type { SendCodeResult } from "@leximon/contract/client";
 import type { PackNoun } from "../lib/pack-shape";
 
 /**

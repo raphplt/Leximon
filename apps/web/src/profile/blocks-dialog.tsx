@@ -4,7 +4,7 @@ import type { PlayerBadge } from "@leximon/contract";
 import { blockRefusalMessage, playerName, UNBLOCKED_TOAST } from "@leximon/view-model";
 import { useEffect, useState } from "react";
 import { Avatar } from "@/components/avatar";
-import { fetchBlocks, setBlocked } from "@/lib/api";
+import { api } from "@/lib/api";
 import { Button } from "@/ui/button";
 import { Dialog } from "@/ui/dialog";
 import { useToast } from "@/ui/toast";
@@ -28,7 +28,8 @@ export function BlocksDialog({
   useEffect(() => {
     if (!open) return;
     setPlayers(null);
-    fetchBlocks()
+    api
+      .fetchBlocks()
       .then((list) => {
         setPlayers(list);
         onCount(list.length);
@@ -39,7 +40,7 @@ export function BlocksDialog({
   const unblock = async (player: PlayerBadge) => {
     setBusy(player.code);
     try {
-      const result = await setBlocked(player.code, false);
+      const result = await api.setBlocked(player.code, false);
       if (result.kind === "refused") {
         toast(blockRefusalMessage(result.reason));
         return;

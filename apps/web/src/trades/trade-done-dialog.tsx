@@ -8,7 +8,7 @@ import { keep, readKept } from "@/beta/arrival-store";
 import { collectionName } from "@/cards/catalog";
 import { useCatalog } from "@/cards/use-catalog";
 import { Card } from "@/components/card";
-import { fetchTrades } from "@/lib/api";
+import { api } from "@/lib/api";
 import { ownedCards, refreshIfRead } from "@/player/collection";
 import { mailbox } from "@/player/mail";
 import { useShared } from "@/player/resource";
@@ -65,7 +65,8 @@ export function TradeDoneDialog() {
     if (tradeId === undefined || trades.has(tradeId)) return;
     // The sender's copies changed on the other side: the album reads them again.
     refreshIfRead(ownedCards);
-    fetchTrades("outgoing")
+    api
+      .fetchTrades("outgoing")
       .then((page) => page.trades)
       .catch(() => [])
       .then((found) => {

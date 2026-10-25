@@ -1,6 +1,7 @@
 "use client";
 
 import type { ProgressGain } from "@leximon/contract";
+import type { OpenBoosterResult } from "@leximon/contract/client";
 import type { Rarity } from "@leximon/core";
 import { cardSize, motion, rarityStyles } from "@leximon/tokens";
 import {
@@ -24,7 +25,7 @@ import { type Catalog, cardOrPlaceholder, collectionName, loadCatalog } from "@/
 import { prepareSpokenWords } from "@/cards/use-spoken-word";
 import { Card } from "@/components/card";
 import { RarityName } from "@/components/rarity-icon";
-import { type OpenBoosterResult, openBooster } from "@/lib/api";
+import { api } from "@/lib/api";
 import type { PackShape } from "@/lib/pack-shape";
 import { usePackShape } from "@/lib/use-pack-shape";
 import { CollectionPicker } from "@/play/collection-picker";
@@ -263,7 +264,7 @@ export function BoosterScreen() {
     if (current.outcome !== null) return current;
     const started: OpenRequest = {
       key: current.key,
-      outcome: openBooster(choice.source, current.key).then(
+      outcome: api.openBooster(choice.source, current.key).then(
         (result): Outcome => ({ kind: "answered", result }),
         (): Outcome => ({ kind: "failed" }),
       ),

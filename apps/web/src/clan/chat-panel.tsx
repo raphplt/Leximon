@@ -4,12 +4,12 @@ import type { ClanView } from "@leximon/contract";
 import { onlineCountLabel } from "@leximon/view-model";
 import { type ComponentProps, useEffect, useState } from "react";
 import { useCatalog } from "@/cards/use-catalog";
+import { api } from "@/lib/api";
 import { useNow } from "@/lib/use-now";
 import { myClan } from "@/player/clan";
 import { useShared } from "@/player/resource";
 import { ButtonLink } from "@/ui/button";
 import { Dialog } from "@/ui/dialog";
-import { fetchClan } from "./api";
 import { ClanChat } from "./chat";
 import styles from "./clan.module.css";
 
@@ -28,7 +28,8 @@ export function ChatPanel({
 
   useEffect(() => {
     if (!open || clanId === null) return;
-    fetchClan(clanId)
+    api
+      .fetchClan(clanId)
       .then(setView)
       .catch(() => setView(null));
   }, [open, clanId]);

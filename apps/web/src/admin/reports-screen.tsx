@@ -4,9 +4,9 @@ import type { AdminReport, SanctionKind } from "@leximon/contract";
 import { TIMED_SANCTIONS } from "@leximon/core";
 import Link from "next/link";
 import { type FormEvent, useState } from "react";
+import { adminApi, adminErrorMessage } from "@/admin/admin-api";
 import { Select } from "@/components/select";
 import styles from "./admin.module.css";
-import { adminErrorMessage, createSanction, dismissReport, fetchReports } from "./admin-api";
 import { formatDateTime, SANCTION_LABELS } from "./format";
 import { useLoad } from "./use-load";
 
@@ -33,7 +33,7 @@ const DAY_MS = 24 * 60 * 60 * 1000;
 
 /** Reports grouped by what they point at, oldest first. */
 export function ReportsScreen() {
-  const { state, reload } = useLoad(fetchReports);
+  const { state, reload } = useLoad(adminApi.fetchReports);
   const [notice, setNotice] = useState<string | null>(null);
 
   return (
@@ -92,7 +92,7 @@ function ReportCard({
     setBusy(true);
     setError(null);
     try {
-      await createSanction(
+      await adminApi.createSanction(
         {
           userId: report.reportedUserId,
           kind,
@@ -121,7 +121,7 @@ function ReportCard({
     setBusy(true);
     setError(null);
     try {
-      await dismissReport(report.id);
+      await adminApi.dismissReport(report.id);
       onDone("Signalement classé sans suite.");
     } catch (caught) {
       setError(adminErrorMessage(caught));

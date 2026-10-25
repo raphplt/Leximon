@@ -26,6 +26,7 @@ import { type CSSProperties, useCallback, useEffect, useMemo, useState } from "r
 import { type Catalog, loadCatalog } from "@/cards/catalog";
 import { collectionTone } from "@/cards/collection-tone";
 import { Avatar } from "@/components/avatar";
+import { api } from "@/lib/api";
 import { myClan } from "@/player/clan";
 import { ownedCards } from "@/player/collection";
 import { useShared } from "@/player/resource";
@@ -34,7 +35,6 @@ import { Icon } from "@/ui/icon";
 import { Bone, WaitingScreen } from "@/ui/skeleton";
 import { useToast } from "@/ui/toast";
 import ui from "@/ui/ui.module.css";
-import { fetchClan, fetchMembers } from "./api";
 import { Banner } from "./banner";
 import { ClanChat } from "./chat";
 import { useClaim } from "./claim";
@@ -81,7 +81,7 @@ export function ClanPage({
 
   const load = useCallback(async () => {
     try {
-      const [loaded, loadedCatalog] = await Promise.all([fetchClan(clanId), loadCatalog()]);
+      const [loaded, loadedCatalog] = await Promise.all([api.fetchClan(clanId), loadCatalog()]);
       setCatalog(loadedCatalog);
       if (loaded === null || loaded.me === null) {
         onLeft();
@@ -170,7 +170,7 @@ export function ClanPage({
     const cursor = extra === null ? null : extra.cursor;
     if (extra !== null && cursor === null) return;
     // The first page of the list starts after the members the page shows.
-    const page = await fetchMembers(clanId, cursor).catch(() => null);
+    const page = await api.fetchMembers(clanId, cursor).catch(() => null);
     if (page === null) return;
     const shown = new Set(members.map((m) => m.player.code));
     setExtra({

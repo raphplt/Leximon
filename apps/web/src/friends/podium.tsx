@@ -12,10 +12,10 @@ import {
 } from "@leximon/view-model";
 import { useEffect, useState } from "react";
 import { Avatar } from "@/components/avatar";
+import { api } from "@/lib/api";
 import { Button } from "@/ui/button";
 import { Bone } from "@/ui/skeleton";
 import ui from "@/ui/ui.module.css";
-import { fetchPodium } from "./api";
 import styles from "./friends.module.css";
 
 /** The week's podium among friends, on correct challenge answers. No reward. */
@@ -25,7 +25,8 @@ export function Podium({ alone, now }: { readonly alone: boolean; readonly now: 
   const [unfolded, setUnfolded] = useState(false);
 
   useEffect(() => {
-    fetchPodium()
+    api
+      .fetchPodium()
       .then(setPodium)
       .catch(() => setFailed(true));
   }, []);

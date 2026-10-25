@@ -2,8 +2,8 @@
 
 import type { AdminCampaignSummary, CampaignAudience, CampaignStatus } from "@leximon/contract";
 import Link from "next/link";
+import { adminApi } from "@/admin/admin-api";
 import styles from "./admin.module.css";
-import { fetchCampaigns } from "./admin-api";
 import { formatDateTime, formatNumber } from "./format";
 import { useLoad } from "./use-load";
 
@@ -23,7 +23,7 @@ export const STATUS_LABELS: Readonly<Record<CampaignStatus, string>> = {
 };
 
 export function CampaignsScreen() {
-  const { state } = useLoad(fetchCampaigns);
+  const { state } = useLoad(adminApi.fetchCampaigns);
   return (
     <>
       <div className={styles.toolbar}>

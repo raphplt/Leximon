@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { signOut } from "@/lib/api";
+import { api } from "@/lib/api";
 import { Button } from "@/ui/button";
 import { Dialog } from "@/ui/dialog";
 import styles from "./settings.module.css";
@@ -25,7 +25,7 @@ export function SignOutDialog({
     setBusy(true);
     setError(null);
     try {
-      await signOut();
+      await api.signOut();
       // A full load: the next screen starts a new guest from scratch.
       window.location.assign("/jouer");
     } catch {

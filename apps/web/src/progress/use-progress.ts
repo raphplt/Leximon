@@ -2,7 +2,7 @@
 
 import type { Progress } from "@leximon/contract";
 import { useEffect, useSyncExternalStore } from "react";
-import { fetchProgress } from "@/lib/api";
+import { api } from "@/lib/api";
 
 /**
  * The player's level, shared by every screen of the page: read once from the API, then updated
@@ -43,7 +43,8 @@ function load(): void {
     failed = false;
     emit();
   }
-  loading = fetchProgress()
+  loading = api
+    .fetchProgress()
     .then((progress) => {
       // An action may have answered meanwhile, with a more recent total.
       if (current === null || current.xp < progress.xp) publishProgress(progress);

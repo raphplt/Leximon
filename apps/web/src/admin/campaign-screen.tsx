@@ -10,18 +10,9 @@ import {
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { type FormEvent, useCallback, useEffect, useState } from "react";
+import { adminApi, adminErrorMessage } from "@/admin/admin-api";
 import { Select } from "@/components/select";
 import styles from "./admin.module.css";
-import {
-  adminErrorMessage,
-  controlCampaign,
-  fetchCampaign,
-  fetchCampaignAudience,
-  launchCampaign,
-  previewCampaign,
-  saveCampaign,
-  sendCampaignTest,
-} from "./admin-api";
 import { AUDIENCE_LABELS, STATUS_LABELS } from "./campaigns-screen";
 import { formatDateTime, formatNumber } from "./format";
 import { useLoad } from "./use-load";
@@ -30,7 +21,7 @@ import { useLoad } from "./use-load";
 export function CampaignFromAddress() {
   const params = useParams<{ id: string }>();
   const id = decodeURIComponent(params.id);
-  const fetcher = useCallback(() => fetchCampaign(id), [id]);
+  const fetcher = useCallback(() => adminApi.fetchCampaign(id), [id]);
   const { state, reload } = useLoad(fetcher);
   const live = state.kind === "ready" && ["scheduled", "sending"].includes(state.data.status);
 
@@ -147,7 +138,7 @@ function CampaignEditor({
     event.preventDefault();
     setStatus({ kind: "busy" });
     try {
-      const saved = await saveCampaign(campaign?.id ?? null, {
+      const saved = await adminApi.saveCampaign(campaign?.id ?? null, {
         name: draft.name,
         ...contentOf(draft),
         audience: draft.audience,
@@ -174,7 +165,7 @@ function CampaignEditor({
   const sendTest = async () => {
     setTestStatus({ kind: "busy" });
     try {
-      await sendCampaignTest(contentOf(draft));
+      await adminApi.sendCampaignTest(contentOf(draft));
       setTestStatus({ kind: "done", message: "Test envoyé à ton adresse." });
     } catch (error) {
       setTestStatus({ kind: "failed", message: adminErrorMessage(error) });
@@ -318,7 +309,8 @@ function PreviewPanel({ content }: { readonly content: AdminCampaignContent }) {
     if (parsed.subject.trim() === "" || parsed.bodyMarkdown.trim() === "") return;
     let live = true;
     const timer = setTimeout(() => {
-      previewCampaign(parsed)
+      adminApi
+        .previewCampaign(parsed)
         .then((result) => {
           if (!live) return;
           setPreview(result);
@@ -391,7 +383,7 @@ function LaunchPanel({
   const count = useCallback(async () => {
     setStatus({ kind: "idle" });
     try {
-      setRecipients(await fetchCampaignAudience(campaign.id));
+      setRecipients(await adminApi.fetchCampaignAudience(campaign.id));
       setTyped("");
     } catch (error) {
       setStatus({ kind: "failed", message: adminErrorMessage(error) });
@@ -405,7 +397,7 @@ function LaunchPanel({
     setPendingKey(key);
     setStatus({ kind: "busy" });
     try {
-      const result = await launchCampaign(
+      const result = await adminApi.launchCampaign(
         campaign.id,
         {
           expectedRecipients: recipients,
@@ -525,7 +517,7 @@ function CampaignTracking({
   const act = async (control: "pause" | "resume" | "cancel") => {
     setStatus({ kind: "busy" });
     try {
-      await controlCampaign(campaign.id, control);
+      await adminApi.controlCampaign(campaign.id, control);
       setStatus({ kind: "idle" });
       setConfirmCancel(false);
       onChange();

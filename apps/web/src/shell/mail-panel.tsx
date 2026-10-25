@@ -20,8 +20,7 @@ import Link from "next/link";
 import { type ReactNode, useEffect, useRef, useState } from "react";
 import { useCatalog } from "@/cards/use-catalog";
 import { useClaim } from "@/clan/claim";
-import { claimReferral } from "@/friends/api";
-import { fetchMail, markMailRead } from "@/lib/api";
+import { api } from "@/lib/api";
 import { mailbox } from "@/player/mail";
 import { wallet } from "@/player/player";
 import { Dialog } from "@/ui/dialog";
@@ -106,7 +105,8 @@ export function MailPanel({
     const top = box.letters[0]?.id;
     if (unread.length === 0 || top === undefined) return;
     setFresh((current) => new Set([...current, ...unread]));
-    markMailRead(top)
+    api
+      .markMailRead(top)
       .then((left) => {
         const current = mailbox.current();
         if (current === null) return;
@@ -140,7 +140,8 @@ export function MailPanel({
       title: referralRewardTitle(reward),
       detail: "Lien d'ami",
       action: () => {
-        claimReferral(reward.refereeCode)
+        api
+          .claimReferral(reward.refereeCode)
           .then((result) => {
             if (result.kind === "refused" && result.reason === "reserve_full") {
               toast("Ta réserve est pleine. Ouvre un sachet d'abord.");
@@ -196,7 +197,7 @@ export function MailPanel({
   const loadOlder = async () => {
     const last = letters.at(-1);
     if (last === undefined) return;
-    const page = await fetchMail(last.id).catch(() => null);
+    const page = await api.fetchMail(last.id).catch(() => null);
     if (page === null) return;
     setOlder((current) => ({
       letters: [...(current?.letters ?? []), ...page.letters],

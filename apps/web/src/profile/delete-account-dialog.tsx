@@ -8,7 +8,7 @@ import {
   deleteAccountLabel,
 } from "@leximon/view-model";
 import { useEffect, useState } from "react";
-import { deleteAccount } from "@/lib/api";
+import { api } from "@/lib/api";
 import { profile } from "@/player/player";
 import { useShared } from "@/player/resource";
 import { Button } from "@/ui/button";
@@ -42,7 +42,7 @@ export function DeleteAccountDialog({
     setBusy(true);
     setError(null);
     try {
-      const result = await deleteAccount();
+      const result = await api.deleteAccount();
       if (result.kind === "refused") {
         setError(DELETE_ACCOUNT_ADMIN);
         setBusy(false);

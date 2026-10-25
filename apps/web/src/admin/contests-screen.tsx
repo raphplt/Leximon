@@ -3,8 +3,8 @@
 import type { AdminContestsResponse } from "@leximon/contract";
 import Link from "next/link";
 import { useState } from "react";
+import { adminApi, adminErrorMessage } from "@/admin/admin-api";
 import styles from "./admin.module.css";
-import { adminErrorMessage, fetchContests, resolveContest } from "./admin-api";
 import { formatDateTime, SANCTION_LABELS } from "./format";
 import { useLoad } from "./use-load";
 
@@ -12,7 +12,7 @@ type Contest = AdminContestsResponse["contests"][number];
 
 /** Contested sanctions waiting for a human answer (DSA). */
 export function ContestsScreen() {
-  const { state, reload } = useLoad(fetchContests);
+  const { state, reload } = useLoad(adminApi.fetchContests);
   const [notice, setNotice] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -22,7 +22,7 @@ export function ContestsScreen() {
     setError(null);
     setNotice(null);
     try {
-      await resolveContest(contest.sanction.id, outcome);
+      await adminApi.resolveContest(contest.sanction.id, outcome);
       setNotice(outcome === "revoked" ? "Sanction levée." : "Sanction maintenue.");
       reload();
     } catch (caught) {

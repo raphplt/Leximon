@@ -20,6 +20,7 @@ import {
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { type FormEvent, useEffect, useId, useState } from "react";
 import { Avatar } from "@/components/avatar";
+import { api } from "@/lib/api";
 import { useNow } from "@/lib/use-now";
 import { friends } from "@/player/friends";
 import { useShared, useSharedFailed } from "@/player/resource";
@@ -31,7 +32,6 @@ import { LoadFailed } from "@/ui/load-failed";
 import { Bone, WaitingScreen } from "@/ui/skeleton";
 import { useToast } from "@/ui/toast";
 import ui from "@/ui/ui.module.css";
-import { acceptFriend, askFriend, cancelFriendRequest, declineFriend, fetchReferrer } from "./api";
 import { FriendFeed } from "./feed";
 import { FriendSearch } from "./friend-search";
 import { FriendSheet } from "./friend-sheet";
@@ -223,11 +223,11 @@ function Incoming({ requests }: { readonly requests: readonly FriendRequest[] })
     const name = playerName(request.player);
     await (accept
       ? act(
-          () => acceptFriend(code),
+          () => api.acceptFriend(code),
           () => `${name} et toi, vous êtes amis.`,
         )
       : act(
-          () => declineFriend(code),
+          () => api.declineFriend(code),
           () => null,
         ));
     setBusy(null);
@@ -291,7 +291,7 @@ function Outgoing({ requests }: { readonly requests: readonly FriendRequest[] })
               small
               onClick={() =>
                 void act(
-                  () => cancelFriendRequest(request.player.code),
+                  () => api.cancelFriendRequest(request.player.code),
                   () => "Demande annulée.",
                 )
               }
@@ -362,7 +362,7 @@ function AddByPseudo() {
     if (typed === "") return;
     setBusy(true);
     const sent = await act(
-      () => askFriend({ pseudo: typed }),
+      () => api.askFriend({ pseudo: typed }),
       (value) => requestSentToast(value.outcome, value.player),
     );
     setBusy(false);
@@ -411,7 +411,8 @@ function AddFromLink() {
 
   useEffect(() => {
     if (code === null) return;
-    fetchReferrer(code)
+    api
+      .fetchReferrer(code)
       .then((referrer) => setPseudo(referrer?.player.pseudo ?? null))
       .catch(() => setPseudo(null));
   }, [code]);
@@ -425,7 +426,7 @@ function AddFromLink() {
           small
           onClick={() =>
             void act(
-              () => askFriend({ code }),
+              () => api.askFriend({ code }),
               (value) => requestSentToast(value.outcome, value.player),
             ).then(() => setDone(true))
           }

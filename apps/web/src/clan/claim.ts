@@ -3,10 +3,10 @@
 import type { ClaimableGoal } from "@leximon/contract";
 import { goalClaimedToast } from "@leximon/view-model";
 import { useCallback } from "react";
+import { api } from "@/lib/api";
 import { myClan } from "@/player/clan";
 import { wallet } from "@/player/player";
 import { useToast } from "@/ui/toast";
-import { claimGoal } from "./api";
 import { refusalText } from "./chat";
 
 /**
@@ -18,7 +18,7 @@ export function useClaim(): (claim: ClaimableGoal) => Promise<boolean> {
   return useCallback(
     async (claim) => {
       try {
-        const result = await claimGoal(claim.week, claim.tier);
+        const result = await api.claimGoal(claim.week, claim.tier);
         const mine = myClan.current();
         // Taken or refused, the claim leaves the mail; a full reserve keeps it for later.
         const keep = result.kind === "refused" && result.reason === "reserve_full";

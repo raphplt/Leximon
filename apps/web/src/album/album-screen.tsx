@@ -25,7 +25,7 @@ import { collectionTone } from "@/cards/collection-tone";
 import { Card } from "@/components/card";
 import { CollectionSeal } from "@/components/collection-seal";
 import { RarityIcon, RarityName } from "@/components/rarity-icon";
-import { fetchFriendCards } from "@/friends/api";
+import { api } from "@/lib/api";
 import { useIncremental } from "@/lib/use-incremental";
 import { useNarrow } from "@/lib/use-narrow";
 import { useNow } from "@/lib/use-now";
@@ -92,7 +92,8 @@ export function AlbumScreen() {
     setState((s) => ({ ...s, compare: null }));
     if (friendCode === null) return;
     let live = true;
-    fetchFriendCards(friendCode)
+    api
+      .fetchFriendCards(friendCode)
       .then((found) => {
         if (!live || found === null) return;
         setFriend({ name: playerName(found.player), cards: new Set(found.cardIds) });

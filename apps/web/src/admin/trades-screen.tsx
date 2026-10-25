@@ -3,9 +3,9 @@
 import { type AdminTrade, type TradeStatus, tradeStatusSchema } from "@leximon/contract";
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
+import { adminApi, adminErrorMessage } from "@/admin/admin-api";
 import { Select } from "@/components/select";
 import styles from "./admin.module.css";
-import { adminErrorMessage, cancelTrade, fetchTrades } from "./admin-api";
 import { formatDateTime } from "./format";
 
 const STATUS_LABELS: Readonly<Record<TradeStatus, string>> = {
@@ -28,7 +28,8 @@ export function TradesScreen() {
     let live = true;
     setTrades(null);
     setError(null);
-    fetchTrades(status === undefined ? {} : { status })
+    adminApi
+      .fetchTrades(status === undefined ? {} : { status })
       .then((page) => {
         if (!live) return;
         setTrades(page.trades);
@@ -47,7 +48,9 @@ export function TradesScreen() {
     if (cursor === null) return;
     setBusy(true);
     try {
-      const page = await fetchTrades(status === undefined ? { cursor } : { status, cursor });
+      const page = await adminApi.fetchTrades(
+        status === undefined ? { cursor } : { status, cursor },
+      );
       setTrades((current) => [...(current ?? []), ...page.trades]);
       setCursor(page.nextCursor);
     } catch (caught) {
@@ -63,7 +66,7 @@ export function TradesScreen() {
     setBusy(true);
     setNotice(null);
     try {
-      await cancelTrade(trade.id, reason.trim());
+      await adminApi.cancelTrade(trade.id, reason.trim());
       setNotice("Échange annulé.");
       load();
     } catch (caught) {

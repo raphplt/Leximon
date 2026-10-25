@@ -1,6 +1,7 @@
 "use client";
 
 import type { ProfileResponse, Trade } from "@leximon/contract";
+import { ApiError } from "@leximon/contract/client";
 import {
   boxTabLabel,
   formatPlayerCode,
@@ -22,7 +23,7 @@ import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { type Catalog, loadCatalog } from "@/cards/catalog";
-import { ApiError, fetchTrades, resolveTrade } from "@/lib/api";
+import { api } from "@/lib/api";
 import { useNow } from "@/lib/use-now";
 import { publishTraded } from "@/player/collection";
 import { profile as ownProfile } from "@/player/player";
@@ -92,8 +93,8 @@ export function TradesScreen() {
       const [loadedCatalog, loadedProfile, incoming, outgoing] = await Promise.all([
         loadCatalog(),
         ownProfile.read(),
-        fetchTrades("incoming"),
-        fetchTrades("outgoing"),
+        api.fetchTrades("incoming"),
+        api.fetchTrades("outgoing"),
       ]);
       setCatalog(loadedCatalog);
       setProfile(loadedProfile);
@@ -108,7 +109,7 @@ export function TradesScreen() {
   }, [load]);
 
   const reloadBox = async (box: TradeBox) => {
-    const page = await fetchTrades(box).catch(() => null);
+    const page = await api.fetchTrades(box).catch(() => null);
     if (page !== null) setInboxes((current) => current && { ...current, [box]: page });
   };
 
@@ -129,7 +130,7 @@ export function TradesScreen() {
     setBusyTradeId(trade.id);
     setNotice(null);
     try {
-      const result = await resolveTrade(trade.id, action);
+      const result = await api.resolveTrade(trade.id, action, crypto.randomUUID());
       if (result.kind === "ok") {
         replaceTrade(box, result.trade);
         // The recipient accepts: they get what was given and give what was wanted.
@@ -156,7 +157,7 @@ export function TradesScreen() {
     const cursor = inboxes?.[box].nextCursor ?? null;
     if (cursor === null) return;
     try {
-      const page = await fetchTrades(box, cursor);
+      const page = await api.fetchTrades(box, cursor);
       setInboxes(
         (current) =>
           current && {

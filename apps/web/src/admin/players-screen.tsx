@@ -8,9 +8,9 @@ import {
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { type FormEvent, useEffect, useState } from "react";
+import { adminApi, adminErrorMessage } from "@/admin/admin-api";
 import { Select } from "@/components/select";
 import styles from "./admin.module.css";
-import { adminErrorMessage, fetchPlayers } from "./admin-api";
 import { formatDateTime } from "./format";
 
 const KIND_LABELS: Readonly<Record<AdminPlayerKind, string>> = {
@@ -36,7 +36,8 @@ export function PlayersScreen() {
     let live = true;
     setPlayers(null);
     setError(null);
-    fetchPlayers({ q, kind })
+    adminApi
+      .fetchPlayers({ q, kind })
       .then((page) => {
         if (!live) return;
         setPlayers(page.players);
@@ -69,7 +70,7 @@ export function PlayersScreen() {
     if (cursor === null) return;
     setBusy(true);
     try {
-      const page = await fetchPlayers({ q, kind, cursor });
+      const page = await adminApi.fetchPlayers({ q, kind, cursor });
       setPlayers((current) => [...(current ?? []), ...page.players]);
       setCursor(page.nextCursor);
     } catch (caught) {

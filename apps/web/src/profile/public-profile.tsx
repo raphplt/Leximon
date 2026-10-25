@@ -12,8 +12,7 @@ import {
   requestSentToast,
 } from "@leximon/view-model";
 import { useEffect, useState } from "react";
-import { askFriend } from "@/friends/api";
-import { fetchProfileIfSignedIn, fetchPublicProfile, reportPlayer, setBlocked } from "@/lib/api";
+import { api } from "@/lib/api";
 import { Button, ButtonLink } from "@/ui/button";
 import { Dialog } from "@/ui/dialog";
 import { Icon } from "@/ui/icon";
@@ -54,12 +53,13 @@ function PublicProfileBody({
 
   useEffect(() => {
     let cancelled = false;
-    fetchProfileIfSignedIn()
+    api
+      .fetchProfileIfSignedIn()
       .then(async (me) => {
         if (cancelled) return;
         setViewer(me);
         if (me === null) return;
-        const seen = await fetchPublicProfile(pseudo);
+        const seen = await api.fetchPublicProfile(pseudo);
         if (!cancelled) setShown(seen);
       })
       .catch(() => {
@@ -168,7 +168,7 @@ function ViewerActions({
   const befriend = async () => {
     setBusy(true);
     try {
-      const result = await askFriend({ pseudo: profile.pseudo });
+      const result = await api.askFriend({ pseudo: profile.pseudo });
       if (result.kind === "refused") {
         toast(friendRefusalText(result.reason));
         return;
@@ -185,7 +185,7 @@ function ViewerActions({
   const report = async () => {
     setBusy(true);
     try {
-      const result = await reportPlayer(profile.pseudo);
+      const result = await api.reportPlayer(profile.pseudo);
       if (result.kind === "refused") toast(blockRefusalMessage(result.reason));
       else {
         setReported(true);
@@ -202,7 +202,7 @@ function ViewerActions({
     if (code === null) return;
     setBusy(true);
     try {
-      const result = await setBlocked(code, true);
+      const result = await api.setBlocked(code, true);
       if (result.kind === "refused") {
         toast(blockRefusalMessage(result.reason));
         return;

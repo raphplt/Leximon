@@ -22,9 +22,8 @@ import { type FormEvent, useEffect, useLayoutEffect, useRef, useState } from "re
 import { type Catalog, collectionName } from "@/cards/catalog";
 import { Avatar } from "@/components/avatar";
 import { Card } from "@/components/card";
-import { fetchFriendCards } from "@/friends/api";
 import { FriendSearch } from "@/friends/friend-search";
-import { createTrade, fetchTradeable } from "@/lib/api";
+import { api } from "@/lib/api";
 import { useNow } from "@/lib/use-now";
 import { usePackShape } from "@/lib/use-pack-shape";
 import { ownedCards } from "@/player/collection";
@@ -185,10 +184,10 @@ export function ProposeTrade({
     setCodeError(null);
     try {
       const [theirs, mineNow, copies, friendCards] = await Promise.all([
-        fetchTradeable(code),
-        fetchTradeable(),
+        api.fetchTradeable(code),
+        api.fetchTradeable(),
         ownedCards.read(),
-        fetchFriendCards(code).catch(() => null),
+        api.fetchFriendCards(code).catch(() => null),
       ]);
       if (theirs === null) {
         setCodeError(refusalMessage("player_not_found"));
@@ -236,7 +235,10 @@ export function ProposeTrade({
 
   /** After a `card_not_tradeable` refusal: drop the cards that cannot move any more. */
   const refreshCards = async (recipient: string) => {
-    const [theirs, mineNow] = await Promise.all([fetchTradeable(recipient), fetchTradeable()]);
+    const [theirs, mineNow] = await Promise.all([
+      api.fetchTradeable(recipient),
+      api.fetchTradeable(),
+    ]);
     const theirIds = theirs?.cardIds ?? [];
     const myIds = mineNow?.cardIds ?? [];
     const keptWant = want.filter((id) => theirIds.includes(id));
@@ -276,7 +278,7 @@ export function ProposeTrade({
     setBusy(true);
     notify(null);
     try {
-      const result = await createTrade(
+      const result = await api.createTrade(
         { recipientCode: partner.code, give: [...give], want: [...want] },
         key,
       );

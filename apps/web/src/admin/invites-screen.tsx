@@ -2,8 +2,8 @@
 
 import type { AdminInvite } from "@leximon/contract";
 import { type FormEvent, useState } from "react";
+import { adminApi, adminErrorMessage } from "@/admin/admin-api";
 import styles from "./admin.module.css";
-import { adminErrorMessage, createInvite, fetchInvites, revokeInvite } from "./admin-api";
 import { formatDateTime, formatNumber } from "./format";
 import { useLoad } from "./use-load";
 
@@ -19,7 +19,7 @@ function stateOf(invite: AdminInvite): string {
 
 /** Invitation links of the closed beta: one per group, with a number of places. */
 export function InvitesScreen() {
-  const { state, reload } = useLoad(fetchInvites);
+  const { state, reload } = useLoad(adminApi.fetchInvites);
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState<string | null>(null);
 
@@ -37,7 +37,7 @@ export function InvitesScreen() {
       return;
     }
     try {
-      await revokeInvite(invite.id);
+      await adminApi.revokeInvite(invite.id);
       reload();
     } catch (caught) {
       setError(adminErrorMessage(caught));
@@ -128,7 +128,7 @@ function NewInvite({ onCreated }: { readonly onCreated: () => void }) {
     setBusy(true);
     setError(null);
     try {
-      await createInvite({
+      await adminApi.createInvite({
         label: label.trim(),
         maxUses: Number(maxUses),
         ...(code.trim() === "" ? {} : { code: code.trim().toLowerCase() }),

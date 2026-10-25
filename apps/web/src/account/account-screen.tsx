@@ -1,19 +1,11 @@
 "use client";
 
 import { AGE_BRACKETS, type AgeBracket, type LinkPreviewResponse } from "@leximon/contract";
+import { BetaClosedError } from "@leximon/contract/client";
 import Link from "next/link";
 import { type FormEvent, useCallback, useEffect, useId, useState } from "react";
 import { Select, type SelectOption } from "@/components/select";
-import {
-  BetaClosedError,
-  fetchAccount,
-  fetchEmailPreferences,
-  previewSignIn,
-  sendSignInCode,
-  setEmailPreferences,
-  signInWithCode,
-  signOut,
-} from "@/lib/api";
+import { api } from "@/lib/api";
 import { usePackShape } from "@/lib/use-pack-shape";
 import { forgetProgress } from "@/progress/use-progress";
 import { Switch } from "@/ui/switch";
@@ -56,7 +48,7 @@ export function AccountScreen() {
   const load = useCallback(async () => {
     setStep({ kind: "loading" });
     try {
-      const account = await fetchAccount();
+      const account = await api.fetchAccount();
       setStep(
         account.kind === "member"
           ? { kind: "member", email: account.email, isAdmin: account.isAdmin }
@@ -92,14 +84,14 @@ export function AccountScreen() {
 
   const sendCode = (email: string) =>
     run(async () => {
-      const result = await sendSignInCode(email);
+      const result = await api.sendSignInCode(email);
       if (result.kind === "sent") go({ kind: "code", email });
       else setError(sendErrorMessage(result.reason));
     });
 
   const checkCode = (email: string, code: string) =>
     run(async () => {
-      const result = await previewSignIn(email, code);
+      const result = await api.previewSignIn(email, code);
       if (result.kind !== "ok") showCodeError(result.reason, email);
       else if (needsConfirmation(result)) go({ kind: "confirm", email, code, preview: result });
       else await signIn(email, code, result, false);
@@ -120,7 +112,7 @@ export function AccountScreen() {
     ageConfirmed: boolean,
     ageBracket: AgeBracket | null = null,
   ) => {
-    const result = await signInWithCode({
+    const result = await api.signInWithCode({
       email,
       otp: code,
       ...(ageConfirmed ? { ageConfirmed: true } : {}),
@@ -130,7 +122,7 @@ export function AccountScreen() {
     if (result.kind === "signed_in") {
       if (newsOptIn) {
         // Missing consent is the safe failure: the player can still tick it in their account.
-        await setEmailPreferences({ newsOptIn: true, source: "signup" }).catch(() => undefined);
+        await api.setEmailPreferences({ newsOptIn: true, source: "signup" }).catch(() => undefined);
       }
       forgetProgress();
       // Straight back to the game, with a full load: every screen then reads the account afresh.
@@ -145,7 +137,7 @@ export function AccountScreen() {
 
   const leave = () =>
     run(async () => {
-      await signOut();
+      await api.signOut();
       // A full load: the next screen starts a new guest from scratch.
       window.location.assign("/jouer");
     });
@@ -290,7 +282,8 @@ function NewsToggle() {
 
   useEffect(() => {
     let live = true;
-    fetchEmailPreferences()
+    api
+      .fetchEmailPreferences()
       .then((preferences) => {
         if (live) setValue(preferences.newsOptIn);
       })
@@ -307,7 +300,7 @@ function NewsToggle() {
     setValue(next);
     setFailed(false);
     try {
-      setValue((await setEmailPreferences({ newsOptIn: next, source: "settings" })).newsOptIn);
+      setValue((await api.setEmailPreferences({ newsOptIn: next, source: "settings" })).newsOptIn);
     } catch {
       setValue(previous);
       setFailed(true);

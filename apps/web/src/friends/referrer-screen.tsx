@@ -15,8 +15,8 @@ import styles from "@/app/confidentialite/privacy.module.css";
 import { rememberReferrer } from "@/beta/arrival";
 import { Avatar } from "@/components/avatar";
 import { WaitlistForm } from "@/landing/waitlist-form";
+import { api } from "@/lib/api";
 import { Button } from "@/ui/button";
-import { fetchReferrer } from "./api";
 
 type State =
   | { readonly kind: "loading" | "failed" | "unknown" }
@@ -30,7 +30,8 @@ export function ReferrerScreen() {
 
   useEffect(() => {
     let live = true;
-    fetchReferrer(code)
+    api
+      .fetchReferrer(code)
       .then((referrer) => {
         if (live) setState(referrer === null ? { kind: "unknown" } : { kind: "found", referrer });
       })

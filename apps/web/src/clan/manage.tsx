@@ -1,6 +1,7 @@
 "use client";
 
 import type { ClanMember, ClanRole, ClanView } from "@leximon/contract";
+import type { ClanResult } from "@leximon/contract/client";
 import { canAct } from "@leximon/core";
 import {
   formatPlayerCode,
@@ -15,8 +16,8 @@ import {
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Avatar } from "@/components/avatar";
-import { askFriend } from "@/friends/api";
 import { useFriendAction } from "@/friends/use-friend-action";
+import { api } from "@/lib/api";
 import { myClan } from "@/player/clan";
 import { friends } from "@/player/friends";
 import { profile } from "@/player/player";
@@ -25,19 +26,6 @@ import { Button } from "@/ui/button";
 import { Dialog } from "@/ui/dialog";
 import { useToast } from "@/ui/toast";
 import ui from "@/ui/ui.module.css";
-import {
-  answerRequest,
-  type ClanResult,
-  fetchRequests,
-  handOver,
-  kickMember,
-  leaveClan,
-  muteMember,
-  renewInviteCode,
-  reportClanName,
-  setRole,
-  updateClan,
-} from "./api";
 import { refusalText } from "./chat";
 import styles from "./clan.module.css";
 import { ClanForm } from "./clan-form";
@@ -168,7 +156,7 @@ function MemberActions({
           disabled={busy}
           onClick={() =>
             void befriend(
-              () => askFriend({ code }),
+              () => api.askFriend({ code }),
               (value) => requestSentToast(value.outcome, value.player),
             )
           }
@@ -184,7 +172,7 @@ function MemberActions({
           disabled={busy}
           onClick={() =>
             void run(
-              () => setRole(clanId, code, target === "deputy" ? "member" : "deputy"),
+              () => api.setRole(clanId, code, target === "deputy" ? "member" : "deputy"),
               target === "deputy" ? `${name} n'est plus adjoint.` : `${name} devient adjoint.`,
             )
           }
@@ -205,7 +193,7 @@ function MemberActions({
                 disabled={busy}
                 onClick={() =>
                   void run(
-                    () => muteMember(clanId, code, choice.durationMs),
+                    () => api.muteMember(clanId, code, choice.durationMs),
                     `${name} se tait pour ${choice.label}.`,
                   )
                 }
@@ -219,7 +207,7 @@ function MemberActions({
                 className={ui.chip}
                 disabled={busy}
                 onClick={() =>
-                  void run(() => muteMember(clanId, code, null), `${name} peut reparler.`)
+                  void run(() => api.muteMember(clanId, code, null), `${name} peut reparler.`)
                 }
               >
                 Lever le silence
@@ -236,7 +224,7 @@ function MemberActions({
           disabled={busy}
           onClick={() =>
             pending === "hand_over"
-              ? void run(() => handOver(clanId, code), `${name} prend la tête du clan.`)
+              ? void run(() => api.handOver(clanId, code), `${name} prend la tête du clan.`)
               : setPending("hand_over")
           }
         >
@@ -252,7 +240,7 @@ function MemberActions({
           disabled={busy}
           onClick={() =>
             pending === "kick"
-              ? void run(() => kickMember(clanId, code), `${name} est exclu.`)
+              ? void run(() => api.kickMember(clanId, code), `${name} est exclu.`)
               : setPending("kick")
           }
         >
@@ -276,7 +264,7 @@ export function RequestsDialog({
   readonly onChanged: () => void;
 }) {
   const [requests, setRequests] = useState<
-    Awaited<ReturnType<typeof fetchRequests>>["requests"] | null
+    Awaited<ReturnType<typeof api.fetchRequests>>["requests"] | null
   >(null);
   const [busy, setBusy] = useState(false);
   const act = useAct();
@@ -284,7 +272,8 @@ export function RequestsDialog({
   useEffect(() => {
     if (!open) return;
     setRequests(null);
-    fetchRequests(clanId)
+    api
+      .fetchRequests(clanId)
       .then((page) => setRequests(page.requests))
       .catch(() => setRequests([]));
   }, [open, clanId]);
@@ -292,7 +281,7 @@ export function RequestsDialog({
   const answer = async (code: string, name: string, accept: boolean) => {
     setBusy(true);
     const ok = await act(
-      () => answerRequest(clanId, code, accept),
+      () => api.answerRequest(clanId, code, accept),
       accept ? `${name} entre dans le clan.` : "Demande refusée.",
     );
     setBusy(false);
@@ -377,11 +366,11 @@ export function ClanSettings({
   if (me === null) return null;
   const clanId = view.clan.id;
 
-  const save = async (value: Parameters<typeof updateClan>[1]) => {
+  const save = async (value: Parameters<typeof api.updateClan>[1]) => {
     setBusy(true);
     setError(null);
     try {
-      const result = await updateClan(clanId, value);
+      const result = await api.updateClan(clanId, value);
       if (result.kind === "ok") {
         toast("C'est changé.");
         profile.refresh();
@@ -400,7 +389,10 @@ export function ClanSettings({
 
   const renew = async () => {
     setBusy(true);
-    const ok = await act(() => renewInviteCode(clanId), "Nouveau code. L'ancien ne marche plus.");
+    const ok = await act(
+      () => api.renewInviteCode(clanId),
+      "Nouveau code. L'ancien ne marche plus.",
+    );
     setBusy(false);
     if (ok) onChanged();
   };
@@ -408,7 +400,7 @@ export function ClanSettings({
   const leave = async () => {
     setBusy(true);
     const ok = await act(
-      () => leaveClan(),
+      () => api.leaveClan(),
       view.clan.memberCount <= 1 ? "Clan dissous." : "Tu as quitté le clan.",
     );
     setBusy(false);
@@ -456,7 +448,7 @@ export function ClanSettings({
             variant="ghost"
             small
             disabled={busy}
-            onClick={() => void act(() => reportClanName(clanId), "Signalé. On regarde.")}
+            onClick={() => void act(() => api.reportClanName(clanId), "Signalé. On regarde.")}
           >
             Signaler le nom du clan
           </Button>

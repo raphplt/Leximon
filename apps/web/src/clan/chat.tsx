@@ -26,13 +26,12 @@ import {
   useState,
 } from "react";
 import { Avatar } from "@/components/avatar";
-import { setBlocked } from "@/lib/api";
+import { api } from "@/lib/api";
 import { sanctions } from "@/player/clan";
 import { useShared } from "@/player/resource";
 import { Icon } from "@/ui/icon";
 import { useToast } from "@/ui/toast";
 import ui from "@/ui/ui.module.css";
-import { deleteMessage, fetchMessages, postMessage, reportMessage, searchMembers } from "./api";
 import styles from "./clan.module.css";
 
 /** Typing after an "@" asks for members once the keys pause this long. */
@@ -83,7 +82,7 @@ export function ClanChat({
   const loaded = messages !== null;
 
   const load = useCallback(async () => {
-    const page = await fetchMessages(clanId).catch(() => null);
+    const page = await api.fetchMessages(clanId).catch(() => null);
     if (page === null) return;
     setMessages([...page.messages].reverse());
     setHasMore(page.hasMore);
@@ -109,9 +108,9 @@ export function ClanChat({
       if (polling) return;
       if (document.visibilityState !== "visible") return schedule();
       polling = true;
-      const page = await fetchMessages(clanId, lastId === undefined ? {} : { after: lastId }).catch(
-        () => null,
-      );
+      const page = await api
+        .fetchMessages(clanId, lastId === undefined ? {} : { after: lastId })
+        .catch(() => null);
       polling = false;
       if (stopped) return;
       if (page !== null && page.messages.length > 0) {
@@ -146,7 +145,7 @@ export function ClanChat({
   const loadOlder = async () => {
     const first = messages?.[0];
     if (first === undefined) return;
-    const page = await fetchMessages(clanId, { before: first.id }).catch(() => null);
+    const page = await api.fetchMessages(clanId, { before: first.id }).catch(() => null);
     if (page === null) return;
     setMessages((current) => [...[...page.messages].reverse(), ...(current ?? [])]);
     setHasMore(page.hasMore);
@@ -159,7 +158,7 @@ export function ClanChat({
     setSending(true);
     setError(null);
     try {
-      const result = await postMessage(clanId, body);
+      const result = await api.postMessage(clanId, body);
       if (result.kind === "ok") {
         stickToBottom.current = true;
         setMessages((current) => merge(current ?? [], [result.value]));
@@ -176,7 +175,7 @@ export function ClanChat({
 
   const remove = async (message: MessageItem) => {
     setMenu(null);
-    const result = await deleteMessage(clanId, message.id).catch(() => null);
+    const result = await api.deleteMessage(clanId, message.id).catch(() => null);
     if (result?.kind !== "ok") {
       toast(result === null ? "Ça n'a pas marché. Réessaie." : refusalText(result.reason));
       return;
@@ -193,7 +192,7 @@ export function ClanChat({
 
   const report = async (message: MessageItem) => {
     setMenu(null);
-    const result = await reportMessage(clanId, message.id).catch(() => null);
+    const result = await api.reportMessage(clanId, message.id).catch(() => null);
     toast(result?.kind === "ok" ? "Signalé. On regarde." : "Ça n'a pas marché. Réessaie.");
   };
 
@@ -201,7 +200,7 @@ export function ClanChat({
     setMenu(null);
     const author = message.author;
     if (author === null) return;
-    const result = await setBlocked(author.code, true).catch(() => null);
+    const result = await api.setBlocked(author.code, true).catch(() => null);
     if (result?.kind !== "ok") {
       toast("Ça n'a pas marché. Réessaie.");
       return;
@@ -424,7 +423,7 @@ function useMentions(clanId: string, onInsert: (text: string, caret: number) => 
     if (timer.current !== null) clearTimeout(timer.current);
     const request = ++asked.current;
     timer.current = setTimeout(async () => {
-      const members = await searchMembers(clanId, found.query.trim()).catch(() => []);
+      const members = await api.searchMembers(clanId, found.query.trim()).catch(() => []);
       if (request !== asked.current) return;
       setSuggestions(members.filter((member) => member.player.pseudo !== null));
       setActive(0);

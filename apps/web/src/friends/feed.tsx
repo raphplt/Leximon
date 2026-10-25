@@ -12,6 +12,7 @@ import { useEffect, useState } from "react";
 import { collectionName } from "@/cards/catalog";
 import { useCatalog } from "@/cards/use-catalog";
 import { Avatar } from "@/components/avatar";
+import { api } from "@/lib/api";
 import { profile } from "@/player/player";
 import { useShared } from "@/player/resource";
 import { useShell } from "@/shell/shell-context";
@@ -19,7 +20,6 @@ import { Button } from "@/ui/button";
 import { Bone } from "@/ui/skeleton";
 import { useToast } from "@/ui/toast";
 import ui from "@/ui/ui.module.css";
-import { fetchFeed, react } from "./api";
 import styles from "./friends.module.css";
 
 /** What friends found lately, with the reactions they got. */
@@ -34,7 +34,8 @@ export function FriendFeed({ now }: { readonly now: number }) {
   const { openCard } = useShell();
 
   useEffect(() => {
-    fetchFeed()
+    api
+      .fetchFeed()
       .then((page) => {
         setEvents(page.events);
         setHasMore(page.hasMore);
@@ -45,7 +46,7 @@ export function FriendFeed({ now }: { readonly now: number }) {
   const loadOlder = async () => {
     const last = events?.at(-1);
     if (last === undefined) return;
-    const page = await fetchFeed(last.id).catch(() => null);
+    const page = await api.fetchFeed(last.id).catch(() => null);
     if (page === null) return;
     setEvents((current) => [...(current ?? []), ...page.events]);
     setHasMore(page.hasMore);
@@ -58,7 +59,7 @@ export function FriendFeed({ now }: { readonly now: number }) {
       setEvents((current) => current?.map((e) => (e.id === event.id ? to : e)) ?? null);
     swap(withReaction(event, next));
     try {
-      const result = await react(event.id, next);
+      const result = await api.react(event.id, next);
       if (result.kind === "refused") throw new Error(result.reason);
     } catch {
       swap(event);

@@ -3,14 +3,14 @@
 import { RARITY_LABELS } from "@leximon/contract";
 import { RARITIES } from "@leximon/core";
 import Link from "next/link";
+import { adminApi } from "@/admin/admin-api";
 import { RarityName } from "@/components/rarity-icon";
 import styles from "./admin.module.css";
-import { fetchCatalog } from "./admin-api";
 import { formatNumber } from "./format";
 import { useLoad } from "./use-load";
 
 export function CatalogScreen() {
-  const { state } = useLoad(fetchCatalog);
+  const { state } = useLoad(adminApi.fetchCatalog);
   return (
     <>
       <h1 className={styles.title}>Collections</h1>

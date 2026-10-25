@@ -1,13 +1,13 @@
 "use client";
 
 import Link from "next/link";
+import { adminApi } from "@/admin/admin-api";
 import styles from "./admin.module.css";
-import { fetchOverview } from "./admin-api";
 import { formatNumber } from "./format";
 import { useLoad } from "./use-load";
 
 export function OverviewScreen() {
-  const { state, reload } = useLoad(fetchOverview);
+  const { state, reload } = useLoad(adminApi.fetchOverview);
   return (
     <>
       <div className={styles.toolbar}>

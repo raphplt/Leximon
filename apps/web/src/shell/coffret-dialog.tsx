@@ -15,7 +15,7 @@ import {
 import { useRouter } from "next/navigation";
 import { type CSSProperties, useState } from "react";
 import { Avatar } from "@/components/avatar";
-import { claimLevelReward } from "@/lib/api";
+import { api } from "@/lib/api";
 import { publishClaimed, wallet } from "@/player/player";
 import { Button } from "@/ui/button";
 import { Dialog } from "@/ui/dialog";
@@ -65,7 +65,7 @@ export function CoffretDialog({
     if (level === null) return;
     setStep({ name: "claiming" });
     try {
-      const result = await claimLevelReward(level);
+      const result = await api.claimLevelReward(level);
       if (result.kind === "refused") {
         setStep({ name: "refused", reason: result.reason });
         return;

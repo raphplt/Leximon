@@ -3,8 +3,8 @@
 import type { AdminWaitlistOpening, AdminWaitlistResponse } from "@leximon/contract";
 import Link from "next/link";
 import { type FormEvent, useEffect, useState } from "react";
+import { adminApi, adminErrorMessage } from "@/admin/admin-api";
 import styles from "./admin.module.css";
-import { adminErrorMessage, downloadWaitlist, eraseWaitlist, fetchWaitlist } from "./admin-api";
 import { STATUS_LABELS } from "./campaigns-screen";
 import { formatDateTime, formatNumber } from "./format";
 
@@ -20,7 +20,8 @@ export function WaitlistScreen() {
 
   useEffect(() => {
     let live = true;
-    fetchWaitlist()
+    adminApi
+      .fetchWaitlist()
       .then((page) => {
         if (!live) return;
         setTotal(page.total);
@@ -40,7 +41,7 @@ export function WaitlistScreen() {
     if (cursor === null) return;
     setBusy(true);
     try {
-      const page = await fetchWaitlist(cursor);
+      const page = await adminApi.fetchWaitlist(cursor);
       setEntries((current) => [...current, ...page.entries]);
       setCursor(page.nextCursor);
     } catch (caught) {
@@ -53,7 +54,7 @@ export function WaitlistScreen() {
   const download = async () => {
     setBusy(true);
     try {
-      const blob = await downloadWaitlist();
+      const blob = await adminApi.downloadWaitlist();
       const url = URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = url;
@@ -159,7 +160,7 @@ function OpeningPanel({
     setBusy(true);
     setError(null);
     try {
-      const result = await eraseWaitlist(count);
+      const result = await adminApi.eraseWaitlist(count);
       if (result.kind === "count_changed") {
         setCount(result.count);
         setTyped("");

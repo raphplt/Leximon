@@ -5,12 +5,12 @@ import { formatOdds } from "@leximon/view-model";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useCallback } from "react";
+import { adminApi } from "@/admin/admin-api";
 import { collectionName, loadCatalog } from "@/cards/catalog";
 import { Card } from "@/components/card";
 import { EngravingCredit } from "@/components/engraving-credit";
 import { RarityName } from "@/components/rarity-icon";
 import styles from "./admin.module.css";
-import { fetchCardStats } from "./admin-api";
 import { formatNumber } from "./format";
 import { useLoad } from "./use-load";
 
@@ -90,7 +90,7 @@ function CardDetail({
 }
 
 function CardStats({ id }: { readonly id: string }) {
-  const fetcher = useCallback(() => fetchCardStats(id), [id]);
+  const fetcher = useCallback(() => adminApi.fetchCardStats(id), [id]);
   const { state } = useLoad(fetcher);
   if (state.kind === "loading") return <p className={styles.muted}>Chargement des chiffres…</p>;
   if (state.kind === "failed") return <p className={styles.error}>{state.message}</p>;

@@ -1,9 +1,10 @@
 "use client";
 
 import type { UpdateProfileRequest } from "@leximon/contract";
+import { ApiError, type ProfileResult } from "@leximon/contract/client";
 import { profileRefusalMessage } from "@leximon/view-model";
 import { useState } from "react";
-import { ApiError, type ProfileResult, setPinnedCards, updateProfile } from "@/lib/api";
+import { api } from "@/lib/api";
 import { profile } from "@/player/player";
 import { useShared } from "@/player/resource";
 import { useToast } from "@/ui/toast";
@@ -60,8 +61,8 @@ export function useProfileActions() {
     isPinned: (cardId: string) => me?.pinned.includes(cardId) ?? false,
     /** Sends the pinned cards, all of them, in their new order. */
     setPins: (cardIds: readonly string[], success: string | null): Promise<string | null> =>
-      run(() => setPinnedCards(cardIds), { success }),
+      run(() => api.setPinnedCards(cardIds), { success }),
     update: (changes: UpdateProfileRequest, options: Options): Promise<string | null> =>
-      run(() => updateProfile(changes), options),
+      run(() => api.updateProfile(changes), options),
   };
 }

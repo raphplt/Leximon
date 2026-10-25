@@ -5,10 +5,10 @@ import { friendLine, playerName, tradesLabel } from "@leximon/view-model";
 import { useState } from "react";
 import { Emblem } from "@/clan/emblem";
 import { Avatar } from "@/components/avatar";
+import { api } from "@/lib/api";
 import { Button, ButtonLink } from "@/ui/button";
 import { Dialog } from "@/ui/dialog";
 import ui from "@/ui/ui.module.css";
-import { removeFriend } from "./api";
 import styles from "./friends.module.css";
 import { useFriendAction } from "./use-friend-action";
 
@@ -55,7 +55,7 @@ function FriendActions({
   const remove = async () => {
     setBusy(true);
     const done = await act(
-      () => removeFriend(code),
+      () => api.removeFriend(code),
       () => `${name} n'est plus ton ami.`,
     );
     setBusy(false);

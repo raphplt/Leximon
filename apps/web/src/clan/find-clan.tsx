@@ -6,6 +6,7 @@ import type {
   CreateClanRequest,
   MyClanResponse,
 } from "@leximon/contract";
+import type { ClanResult } from "@leximon/contract/client";
 import { CLAN_SCHEDULE, clanRulesAt } from "@leximon/core";
 import {
   capitalize,
@@ -18,6 +19,7 @@ import {
   NO_CLAN_YET,
 } from "@leximon/view-model";
 import { type FormEvent, useCallback, useEffect, useState } from "react";
+import { api } from "@/lib/api";
 import { myClan } from "@/player/clan";
 import { Button } from "@/ui/button";
 import { Dialog } from "@/ui/dialog";
@@ -25,14 +27,6 @@ import { Icon } from "@/ui/icon";
 import { Bone } from "@/ui/skeleton";
 import { useToast } from "@/ui/toast";
 import ui from "@/ui/ui.module.css";
-import {
-  type ClanResult,
-  createClan,
-  fetchClans,
-  joinByCode,
-  joinClan,
-  withdrawRequest,
-} from "./api";
 import { Banner } from "./banner";
 import { refusalText } from "./chat";
 import styles from "./clan.module.css";
@@ -90,7 +84,7 @@ export function FindClan({
   useEffect(() => {
     const timer = setTimeout(
       async () => {
-        const page = await fetchClans(filter(null)).catch(() => null);
+        const page = await api.fetchClans(filter(null)).catch(() => null);
         setClans(page?.clans ?? []);
         setCursor(page?.nextCursor ?? null);
       },
@@ -101,7 +95,7 @@ export function FindClan({
 
   const more = async () => {
     if (cursor === null) return;
-    const page = await fetchClans(filter(cursor)).catch(() => null);
+    const page = await api.fetchClans(filter(cursor)).catch(() => null);
     if (page === null) return;
     setClans((current) => [...(current ?? []), ...page.clans]);
     setCursor(page.nextCursor);
@@ -133,7 +127,7 @@ export function FindClan({
 
   const withdraw = async (clanId: string) => {
     setBusy(clanId);
-    const result = await withdrawRequest(clanId).catch(() => null);
+    const result = await api.withdrawRequest(clanId).catch(() => null);
     setBusy(null);
     if (result?.kind !== "ok") {
       toast("Ça n'a pas marché. Réessaie.");
@@ -145,14 +139,14 @@ export function FindClan({
   const enterByCode = (event: FormEvent) => {
     event.preventDefault();
     if (code.trim() === "") return;
-    void settle("code", () => joinByCode(code.trim()));
+    void settle("code", () => api.joinByCode(code.trim()));
   };
 
   const found = async (value: CreateClanRequest) => {
     setBusy("create");
     setCreateError(null);
     try {
-      const result = await createClan(value);
+      const result = await api.createClan(value);
       if (result.kind === "ok") {
         setCreating(false);
         onJoined(result.value.clanId);
@@ -249,7 +243,7 @@ export function FindClan({
                         small
                         variant={clan.entryMode === "open" ? "primary" : "secondary"}
                         disabled={busy !== null || clan.entryMode === "invite"}
-                        onClick={() => void settle(clan.id, () => joinClan(clan.id))}
+                        onClick={() => void settle(clan.id, () => api.joinClan(clan.id))}
                       >
                         {joinLabel(clan.entryMode, false)}
                       </Button>
