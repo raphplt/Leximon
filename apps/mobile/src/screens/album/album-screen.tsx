@@ -7,8 +7,12 @@ import {
   type AlbumItem,
   type AlbumState,
   albumView,
+  type CompareFilter,
+  compareFilters,
+  comparingTitle,
   type MissingItem,
   type OwnedItem,
+  playerName,
   shortName,
 } from "@leximon/view-model";
 import { router } from "expo-router";
@@ -24,6 +28,7 @@ import {
   useWindowDimensions,
   View,
 } from "react-native";
+import { api } from "@/api/client";
 import { Card } from "@/cards/card";
 import { catalogInHand, loadCatalog } from "@/cards/catalog";
 import { cardDates, ownedCards, wordMemory } from "@/player/collection";
@@ -63,7 +68,7 @@ function writeCollection(id: string): void {
 }
 
 /** The album: collection tabs, rarity and filters, the grid of cards. */
-export function AlbumScreen() {
+export function AlbumScreen({ friendCode }: { readonly friendCode: string | null }) {
   const window = useWindowDimensions();
   const [catalog, setCatalog] = useState<Catalog | null>(catalogInHand);
   const [failed, setFailed] = useState(false);
@@ -78,7 +83,32 @@ export function AlbumScreen() {
     filter: "all",
     theme: null,
     search: "",
+    compare: null,
   }));
+  const [friend, setFriend] = useState<{
+    readonly name: string;
+    readonly cards: ReadonlySet<string>;
+  } | null>(null);
+
+  useEffect(() => {
+    setFriend(null);
+    setState((s) => ({ ...s, compare: null }));
+    if (friendCode === null) return;
+    let live = true;
+    api
+      .fetchFriendCards(friendCode)
+      .then((found) => {
+        if (!live || found === null) return;
+        setFriend({ name: playerName(found.player), cards: new Set(found.cardIds) });
+        setState((s) => ({ ...s, compare: "theirs" }));
+      })
+      .catch(() => {
+        // The player's own album stays, without the comparison.
+      });
+    return () => {
+      live = false;
+    };
+  }, [friendCode]);
 
   const load = useCallback(() => {
     setFailed(false);
@@ -105,10 +135,11 @@ export function AlbumScreen() {
               memory: memory ?? new Map(),
               dates: dates ?? new Map(),
               now,
+              ...(friend === null ? {} : { friend: friend.cards }),
             },
             state,
           ),
-    [catalog, owned, memory, dates, now, state],
+    [catalog, owned, memory, dates, now, state, friend],
   );
 
   const cardWidth = Math.floor((window.width - GUTTER * 2 - GAP * (COLUMNS - 1)) / COLUMNS);
@@ -144,6 +175,7 @@ export function AlbumScreen() {
     setState((s) => ({ ...s, collectionId: id, rarity: null, theme: null, search: "" }));
   };
   const tagline = catalog?.collections.find((c) => c.id === state.collectionId)?.tagline;
+  const comparing = friend !== null && state.compare != null;
 
   const header = (
     <View style={styles.header}>
@@ -240,34 +272,65 @@ export function AlbumScreen() {
               />
             ))}
           </ScrollView>
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.row}
-            style={styles.bleed}
-          >
-            {view.filters.map((filter) => (
-              <FilterChip
-                key={filter.id}
-                label={filter.label}
-                count={filter.count}
-                on={state.filter === filter.id}
-                onPick={() => setState((s) => ({ ...s, filter: filter.id as AlbumFilter }))}
-              />
-            ))}
-            <View style={styles.divider} />
-            {view.themes.map((theme) => (
-              <FilterChip
-                key={theme.id}
-                label={theme.label}
-                on={state.theme === theme.id}
-                muted
-                onPick={() =>
-                  setState((s) => ({ ...s, theme: s.theme === theme.id ? null : theme.id }))
-                }
-              />
-            ))}
-          </ScrollView>
+          {comparing ? (
+            <View style={styles.compare}>
+              <View style={styles.compareHead}>
+                <Text style={styles.compareTitle}>{comparingTitle(friend.name)}</Text>
+                <Pressable
+                  onPress={() => router.setParams({ ami: undefined })}
+                  hitSlop={10}
+                  accessibilityRole="button"
+                  accessibilityLabel="Fermer la comparaison"
+                >
+                  <Icon name="close" size={18} color={colors.textMuted} />
+                </Pressable>
+              </View>
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={styles.row}
+                style={styles.bleed}
+              >
+                {compareFilters(friend.name).map((choice) => (
+                  <FilterChip
+                    key={choice.id}
+                    label={choice.label}
+                    on={state.compare === choice.id}
+                    onPick={() => setState((s) => ({ ...s, compare: choice.id as CompareFilter }))}
+                  />
+                ))}
+              </ScrollView>
+            </View>
+          ) : (
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.row}
+              style={styles.bleed}
+            >
+              {view.filters.map((filter) => (
+                <FilterChip
+                  key={filter.id}
+                  label={filter.label}
+                  count={filter.count}
+                  on={state.filter === filter.id}
+                  onPick={() => setState((s) => ({ ...s, filter: filter.id as AlbumFilter }))}
+                />
+              ))}
+              <View style={styles.divider} />
+              {view.themes.map((theme) => (
+                <FilterChip
+                  key={theme.id}
+                  label={theme.label}
+                  on={state.theme === theme.id}
+                  muted
+                  onPick={() =>
+                    setState((s) => ({ ...s, theme: s.theme === theme.id ? null : theme.id }))
+                  }
+                />
+              ))}
+            </ScrollView>
+          )}
         </>
       )}
       {view.empty !== null && <Text style={styles.emptyLine}>{view.empty}</Text>}
@@ -450,6 +513,9 @@ const styles = StyleSheet.create({
   },
   bleed: { marginHorizontal: -GUTTER, flexGrow: 0 },
   row: { gap: 8, paddingHorizontal: GUTTER, alignItems: "center" },
+  compare: { gap: 8 },
+  compareHead: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
+  compareTitle: { fontFamily: fonts.ui.extrabold, fontSize: 15, color: colors.accent },
   dimmed: { opacity: 0.4 },
   tab: {
     minWidth: 110,

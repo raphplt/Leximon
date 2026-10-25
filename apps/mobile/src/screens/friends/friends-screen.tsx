@@ -471,6 +471,14 @@ function FriendActions({
         }}
       />
       <Button
+        label="Comparer nos albums"
+        secondary
+        onPress={() => {
+          onDone();
+          router.dismissTo({ pathname: "/album", params: { ami: code } });
+        }}
+      />
+      <Button
         danger
         label={confirming ? `Oui, retirer ${name}` : "Retirer de mes amis"}
         disabled={busy}
