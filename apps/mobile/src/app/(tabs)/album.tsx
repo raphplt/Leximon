@@ -1,5 +1,3 @@
-import { Placeholder } from "@/screens/placeholder";
+import { AlbumScreen } from "@/screens/album/album-screen";
 
-export default function Screen() {
-  return <Placeholder title="Album" />;
-}
+export default AlbumScreen;

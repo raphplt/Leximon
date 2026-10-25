@@ -42,6 +42,17 @@ export function noteGained(cardIds: readonly string[], ownedBefore: ReadonlyMap<
     cardDates.publish(datesAfterGain(current, cardIds, ownedBefore, Date.now()));
 }
 
+/** Opening a card's sheet is reading it: the album stops calling it new. */
+export function noteCardRead(cardId: string): void {
+  const current = cardDates.current();
+  const known = current?.get(cardId);
+  if (current !== null && (known === undefined || known.read)) return;
+  if (current !== null && known !== undefined) {
+    cardDates.publish(new Map(current).set(cardId, { ...known, read: true }));
+  }
+  api.markCardRead(cardId).catch(() => cardDates.refresh());
+}
+
 /**
  * The Jouer screen reuses the copies in hand this long: an open made here updates them, and only
  * a trade the other player accepted meanwhile could be missing.

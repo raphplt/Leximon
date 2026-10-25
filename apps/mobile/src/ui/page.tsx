@@ -53,6 +53,8 @@ export function Page({
         </Text>
         <View style={styles.body}>{children}</View>
       </ScrollView>
+      {/* The content scrolls under the status bar: a band of background keeps the clock legible. */}
+      <View style={[styles.statusBand, { height: insets.top }]} />
     </KeyboardAvoidingView>
   );
 }
@@ -80,6 +82,13 @@ export function FormError({ message }: { readonly message: string | null }) {
 
 const styles = StyleSheet.create({
   page: { flex: 1, backgroundColor: colors.background },
+  statusBand: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: colors.background,
+  },
   content: { paddingHorizontal: 24 },
   top: { height: 44, flexDirection: "row", alignItems: "center", marginBottom: 12 },
   back: {
