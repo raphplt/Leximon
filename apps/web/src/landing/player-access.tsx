@@ -1,8 +1,9 @@
 "use client";
 
+import { sharedResource } from "@leximon/view-model";
 import Link from "next/link";
 import { api } from "@/lib/api";
-import { sharedResource, useShared } from "@/player/resource";
+import { useShared } from "@/player/resource";
 import styles from "./landing-page.module.css";
 import { WaitlistForm } from "./waitlist-form";
 

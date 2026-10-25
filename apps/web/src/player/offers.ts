@@ -1,7 +1,7 @@
 "use client";
 
+import { sharedResource } from "@leximon/view-model";
 import { api } from "@/lib/api";
-import { sharedResource } from "./resource";
 
 /** Offers received and still pending: the red count of Échanges and of the mail. */
 export const incomingOffers = sharedResource<number>(async () => {

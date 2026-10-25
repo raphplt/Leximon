@@ -6,12 +6,12 @@ import type {
   LevelRewardsResponse,
   ProfileResponse,
 } from "@leximon/contract";
+import { sharedResource } from "@leximon/view-model";
 import { api } from "@/lib/api";
 import { forgetProgress } from "@/progress/use-progress";
 import { myClan, sanctions } from "./clan";
 import { dailyChallenge, ownedCards, refreshIfRead, wordMemory } from "./collection";
 import { mailbox } from "./mail";
-import { sharedResource } from "./resource";
 
 /** The player's wallet: free stock and bonus reserve. */
 export const wallet = sharedResource<BoosterWalletResponse>(api.fetchWallet);

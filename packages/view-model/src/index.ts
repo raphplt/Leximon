@@ -12,6 +12,8 @@ export * from "./mail";
 export * from "./pins";
 export * from "./play";
 export * from "./profile";
+export * from "./resource";
 export * from "./rewards";
 export * from "./sanctions";
+export * from "./shell";
 export * from "./trades";

@@ -1,6 +1,7 @@
 "use client";
 
-import { sharedResource, useShared } from "@/player/resource";
+import { sharedResource } from "@leximon/view-model";
+import { useShared } from "@/player/resource";
 import { type Catalog, loadCatalog } from "./catalog";
 
 const catalog = sharedResource<Catalog>(loadCatalog);

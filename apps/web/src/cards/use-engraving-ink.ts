@@ -1,6 +1,7 @@
 "use client";
 
-import { sharedResource, useShared } from "@/player/resource";
+import { sharedResource } from "@leximon/view-model";
+import { useShared } from "@/player/resource";
 import { catalogFileUrl, fetchEngravingInks } from "./catalog";
 
 const inks = sharedResource<ReadonlyMap<string, string>>(() => fetchEngravingInks());

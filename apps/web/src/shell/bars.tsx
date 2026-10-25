@@ -1,10 +1,13 @@
 "use client";
 
 import {
+  closedTabs,
   levelDescription,
   levelRatio,
-  levelsOfFeatures,
+  mailLabel,
+  PHONE_TAB_ORDER,
   stockView,
+  tabBadge,
   xpProgressLabel,
 } from "@leximon/view-model";
 import Link from "next/link";
@@ -18,27 +21,19 @@ import { LevelMedal, ringStyle, XpBar } from "@/ui/level-bits";
 import { Logo } from "@/ui/logo";
 import ui from "@/ui/ui.module.css";
 import styles from "./bars.module.css";
-import { isCurrent, PHONE_ORDER, TABS, type TabId } from "./nav";
+import { isCurrent, TABS, type TabId } from "./nav";
 import { ReserveDialog } from "./reserve-dialog";
 import { useShell } from "./shell-context";
 import { usePlayerView } from "./use-player-view";
 
 type PlayerView = ReturnType<typeof usePlayerView>;
 
-/** Which tabs a level still closes: shown with a padlock, never hidden. */
-function closedTabs(view: PlayerView): ReadonlySet<TabId> {
-  if (view.progress === null || view.now === 0) return new Set();
-  const levels = levelsOfFeatures(view.now);
-  const closed = new Set<TabId>();
-  if (view.progress.level < levels.trade) closed.add("echanges");
-  if (view.progress.level < levels.join_clan) closed.add("clan");
-  return closed;
+function closedTabsOf(view: PlayerView): ReadonlySet<TabId> {
+  return closedTabs(view.progress?.level ?? null, view.now);
 }
 
 function badgeOf(id: TabId, view: PlayerView): number {
-  if (id === "echanges") return view.offers;
-  if (id === "jouer") return view.coffrets.length;
-  return 0;
+  return tabBadge(id, { offers: view.offers, coffrets: view.coffrets.length });
 }
 
 /** Stock and bonus chips, shared by both bars. */
@@ -87,7 +82,7 @@ function MailButton({ view, compact }: { readonly view: PlayerView; readonly com
       type="button"
       className={`${ui.round} ${compact ? styles.roundCompact : ""}`}
       onClick={openMail}
-      aria-label={view.mail > 0 ? `Courrier, ${view.mail} en attente` : "Courrier"}
+      aria-label={mailLabel(view.mail)}
     >
       <Icon name="courrier" size={compact ? 19 : 21} />
       {view.mail > 0 && <span className={`${ui.badge} ${styles.badgeBar}`}>{view.mail}</span>}
@@ -153,7 +148,7 @@ export function TopBar({
   const pathname = usePathname();
   const view = usePlayerView();
   const profileFailed = useSharedFailed(profile);
-  const closed = closedTabs(view);
+  const closed = closedTabsOf(view);
   // The group on the right waits for the profile, then comes whole: the name beside the avatar
   // widens its button, which would push the mail and the level aside under the eye.
   const me = view.profile;
@@ -297,10 +292,10 @@ export function PhoneTopBar({ onMenu }: { readonly onMenu: () => void }) {
 export function PhoneTabs() {
   const pathname = usePathname();
   const view = usePlayerView();
-  const closed = closedTabs(view);
+  const closed = closedTabsOf(view);
   return (
     <nav aria-label="Navigation principale" className={styles.tabs}>
-      {PHONE_ORDER.map((id) => {
+      {PHONE_TAB_ORDER.map((id) => {
         const tab = TABS.find((t) => t.id === id);
         if (tab === undefined) return null;
         const current = isCurrent(pathname, tab.href);

@@ -1,7 +1,7 @@
 "use client";
 
 import type { Progress } from "@leximon/contract";
-import { playerTitle, waitingCoffrets } from "@leximon/view-model";
+import { mailCount, playerTitle, waitingCoffrets } from "@leximon/view-model";
 import { useNow } from "@/lib/use-now";
 import { myClan } from "@/player/clan";
 import { mailbox } from "@/player/mail";
@@ -48,15 +48,11 @@ export function usePlayerView() {
     claimable,
     /** The mail's first page; `null` until read. */
     mailbox: mail,
-    /**
-     * The mail's count: what waits to be done (coffrets, goal boosters, friend links' boosters) and the
-     * letters not read. Words slipping away are left out: they come back every day, and a count
-     * that never empties only nags.
-     */
-    mail:
-      coffrets.length +
-      claimable.length +
-      (mail?.referralRewards.length ?? 0) +
-      (mail?.unread ?? 0),
+    mail: mailCount({
+      coffrets: coffrets.length,
+      goalSachets: claimable.length,
+      referralSachets: mail?.referralRewards.length ?? 0,
+      unread: mail?.unread ?? 0,
+    }),
   };
 }

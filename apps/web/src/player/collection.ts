@@ -1,9 +1,14 @@
 "use client";
 
 import type { DailyChallengeResponse, OwnedCardsResponse } from "@leximon/contract";
-import { type CardDate, copiesAfterTrade, type WordMemory } from "@leximon/view-model";
+import {
+  type CardDate,
+  copiesAfterTrade,
+  type SharedResource,
+  sharedResource,
+  type WordMemory,
+} from "@leximon/view-model";
 import { api } from "@/lib/api";
-import { type SharedResource, sharedResource } from "./resource";
 
 type OwnedCopy = OwnedCardsResponse["cards"][number];
 
