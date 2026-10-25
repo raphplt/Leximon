@@ -28,6 +28,7 @@ import { Button } from "@/ui/button";
 import { Icon } from "@/ui/icon";
 import { Page, Paragraph } from "@/ui/page";
 import { Panel } from "@/ui/panel";
+import { FeedbackSheet } from "./feedback-sheet";
 import { PinPicker } from "./pin-picker";
 import { ProfileHeader, StatsPanel } from "./profile-view";
 import { PseudoSheet } from "./pseudo-sheet";
@@ -46,6 +47,7 @@ export function ProfileScreen() {
   const me = useShared(profile);
   const failed = useSharedFailed(profile);
   const [choosing, setChoosing] = useState(false);
+  const [feedback, setFeedback] = useState(false);
   const [catalog, setCatalog] = useState<Catalog | null>(catalogInHand);
 
   useEffect(() => {
@@ -146,9 +148,19 @@ export function ProfileScreen() {
             <Icon name="chev" size={16} color={colors.textMuted} />
           </Pressable>
         )}
+        <Pressable
+          onPress={() => setFeedback(true)}
+          accessibilityRole="button"
+          style={({ pressed }) => [styles.link, pressed && styles.pressed]}
+        >
+          <Icon name="send" size={20} color={colors.text} />
+          <Text style={styles.linkText}>Un retour ?</Text>
+          <Icon name="chev" size={16} color={colors.textMuted} />
+        </Pressable>
       </Panel>
 
       <PseudoSheet open={choosing} onClose={() => setChoosing(false)} />
+      <FeedbackSheet open={feedback} onClose={() => setFeedback(false)} />
     </Page>
   );
 }

@@ -1,6 +1,7 @@
 import { PHONE_TAB_ORDER } from "@leximon/view-model";
 import { Tabs } from "expo-router/js-tabs";
 import { View } from "react-native";
+import { SanctionHost } from "@/moderation/sanction-host";
 import { TradeDoneMoment } from "@/screens/trades/trade-done";
 import { TAB_ROUTES, TabBar } from "@/shell/tab-bar";
 import { TopBar } from "@/shell/top-bar";
@@ -28,6 +29,7 @@ export default function TabsLayout() {
         ))}
       </Tabs>
       <TradeDoneMoment />
+      <SanctionHost />
     </View>
   );
 }
