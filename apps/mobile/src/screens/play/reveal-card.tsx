@@ -1,8 +1,8 @@
 import type { CatalogCard } from "@leximon/contract";
 import { cardSize, colors, rarityStyles } from "@leximon/tokens";
-import { frequencyLine, type RarityStaging } from "@leximon/view-model";
+import { cardRelease, frequencyLine, type RarityStaging } from "@leximon/view-model";
 import { useEffect, useRef, useState } from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { PanResponder, StyleSheet, Text, View } from "react-native";
 import Animated, {
   Easing,
   interpolate,
@@ -21,9 +21,12 @@ import { fonts } from "@/theme";
 const TOUCH_GUARD_MS = 350;
 const EXIT_MS = 180;
 const EDGE_MS = 250;
+/** Below this many points, a touch on the card is a tap. */
+const TAP_SLOP = 8;
 
 /**
- * One card of the pack: its announcement on the back, then its face, then a touch for the next.
+ * One card of the pack: its announcement on the back, then its face, then a touch or a swipe
+ * sideways for the next.
  * Each rarity gets its own staging: the rarer the card, the longer the wait for its face.
  */
 export function RevealCard({
@@ -61,6 +64,9 @@ export function RevealCard({
   const shake = useSharedValue(0);
   const float = useSharedValue(0);
   const exit = useSharedValue(0);
+  /** -1 when the card leaves to the left, +1 to the right. */
+  const exitSide = useSharedValue(-1);
+  const drag = useSharedValue(0);
   const dim = useSharedValue(0);
   const height = (width * cardSize.height) / cardSize.width;
   const glow = rarityStyles[card.rarity].glow;
@@ -121,24 +127,61 @@ export function RevealCard({
     }
   }
 
-  const press = () => {
-    if (!flipped) {
-      if (staging.flip === "touch" && touchable) flip();
-      return;
-    }
-    if (!settled || leaving.current) return;
+  const leave = (side: -1 | 1) => {
+    if (leaving.current) return;
     leaving.current = true;
+    exitSide.value = side;
     exit.value = withTiming(1, { duration: EXIT_MS, easing: Easing.in(Easing.quad) });
     dim.value = withTiming(0, { duration: EXIT_MS });
     later(EXIT_MS, onNext);
   };
 
+  const press = () => {
+    if (!flipped) {
+      if (staging.flip === "touch" && touchable) flip();
+      return;
+    }
+    if (settled) leave(-1);
+  };
+
+  // The responder is made once: it reads the latest state through this.
+  const latest = useRef({ press, leave, settled });
+  latest.current = { press, leave, settled };
+  const moved = useRef(false);
+  const responder = useRef(
+    PanResponder.create({
+      onStartShouldSetPanResponder: () => true,
+      onMoveShouldSetPanResponder: () => true,
+      onPanResponderTerminationRequest: () => false,
+      onPanResponderGrant: () => {
+        moved.current = false;
+      },
+      onPanResponderMove: (_event, { dx, dy }) => {
+        if (Math.hypot(dx, dy) >= TAP_SLOP) moved.current = true;
+        // Only a face up card follows the finger: a back keeps its announcement.
+        if (latest.current.settled) drag.value = dx;
+      },
+      onPanResponderRelease: (_event, { dx, dy }) => {
+        const { press: tap, leave: away, settled: ready } = latest.current;
+        if (!moved.current) {
+          tap();
+          return;
+        }
+        if (ready && cardRelease(dx, dy, width) === "next") away(dx < 0 ? -1 : 1);
+        else drag.value = withTiming(0, { duration: 220, easing: Easing.out(Easing.back(1.6)) });
+      },
+      onPanResponderTerminate: () => {
+        drag.value = withTiming(0, { duration: 220 });
+      },
+    }),
+  ).current;
+
   const stage = useAnimatedStyle(() => ({
     opacity: 1 - exit.value,
     transform: [
-      { translateX: -width * 0.6 * exit.value + shake.value * 3 },
+      { translateX: drag.value + exitSide.value * width * 0.6 * exit.value + shake.value * 3 },
       { translateY: -8 * float.value },
-      { rotate: `${shake.value * 1.2 - exit.value * 8}deg` },
+      { rotate: `${shake.value * 1.2 + drag.value / 20 + exitSide.value * exit.value * 8}deg` },
       { scale: staging.spotlight ? 1 + 0.06 * turn.value : 1 },
     ],
   }));
@@ -194,11 +237,15 @@ export function RevealCard({
             </Svg>
           </Animated.View>
         )}
-        <Pressable
-          onPress={press}
+        <View
+          style={StyleSheet.absoluteFill}
+          collapsable={false}
+          accessible
           accessibilityRole="button"
           accessibilityLabel={flipped ? `${card.word}, carte suivante` : "Retourner la carte"}
-          style={StyleSheet.absoluteFill}
+          accessibilityActions={[{ name: "activate" }]}
+          onAccessibilityAction={press}
+          {...responder.panHandlers}
         >
           <Animated.View style={[StyleSheet.absoluteFill, back]}>
             <CardBack rarity={card.rarity} width={width} tone={tone} />
@@ -210,7 +257,7 @@ export function RevealCard({
           <Animated.View style={[StyleSheet.absoluteFill, face]}>
             <Card card={card} collectionName={collectionName} width={width} />
           </Animated.View>
-        </Pressable>
+        </View>
         {settled && (
           <Text style={[styles.badge, isNew ? styles.newBadge : styles.copies]}>
             {isNew ? "Nouveau !" : `×${copies}`}

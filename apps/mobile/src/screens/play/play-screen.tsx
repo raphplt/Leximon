@@ -35,6 +35,7 @@ import { fonts } from "@/theme";
 import { Button } from "@/ui/button";
 import { Icon } from "@/ui/icon";
 import { RarityName } from "@/ui/rarity-icon";
+import { CardStack } from "./card-stack";
 import { isNewAt, type Pack } from "./pack";
 import { PlayFabs } from "./play-fabs";
 import { Recap } from "./recap";
@@ -57,6 +58,8 @@ type Phase =
   | { readonly name: "no_collection" }
   | { readonly name: "sealed" }
   | { readonly name: "opening" }
+  /** The cards out of the pack, face down, until the player touches them. */
+  | { readonly name: "stack" }
   | {
       readonly name: "revealing";
       readonly index: number;
@@ -231,7 +234,7 @@ export function PlayScreen() {
       owned,
     );
     ownedCards.publish(after);
-    setPhase({ name: "revealing", index: 0, hurriedFrom: null });
+    setPhase(reduced ? { name: "revealing", index: 0, hurriedFrom: null } : { name: "stack" });
   };
 
   /** Next card, or, once the player asked to reveal everything, the next Épique or Légendaire. */
@@ -249,8 +252,8 @@ export function PlayScreen() {
   };
 
   const revealAll = () => {
-    if (pack === null || phase.name !== "revealing") return;
-    const from = phase.index + 1;
+    if (pack === null || (phase.name !== "revealing" && phase.name !== "stack")) return;
+    const from = phase.name === "revealing" ? phase.index + 1 : 0;
     const index = pack.cards.findIndex(
       (card, i) => i >= from && keepsAnnouncementWhenHurried(card.rarity),
     );
@@ -261,6 +264,42 @@ export function PlayScreen() {
   const mustSignUp = guestLeft === 0;
   // Bonus boosters are opened once the free stock is empty (the server decides which is spent).
   const canOpen = !mustSignUp && stock !== null && !stock.empty;
+
+  const revealWidth = Math.floor(
+    Math.min(
+      CARD_MAX_WIDTH,
+      window.width - 56,
+      ((stageHeight || window.height) - REVEAL_CHROME) * (cardSize.width / cardSize.height),
+    ),
+  );
+
+  if (phase.name === "stack" && pack !== null) {
+    return (
+      <View
+        style={styles.screen}
+        onLayout={(event) => setStageHeight(event.nativeEvent.layout.height)}
+      >
+        <View style={styles.stackStage}>
+          <CardStack
+            cards={pack.cards}
+            width={revealWidth}
+            tone={pack.back}
+            onReveal={() => setPhase({ name: "revealing", index: 0, hurriedFrom: null })}
+          />
+        </View>
+        <View style={styles.revealBar}>
+          <View style={styles.revealInfo}>
+            <Text style={styles.position}>Touche la pile pour révéler tes mots</Text>
+          </View>
+          <View style={styles.revealActions}>
+            <Pressable onPress={revealAll} accessibilityRole="button" style={styles.skip}>
+              <Text style={styles.skipText}>Tout révéler</Text>
+            </Pressable>
+          </View>
+        </View>
+      </View>
+    );
+  }
 
   if (phase.name === "revealing" && pack !== null && catalog !== null) {
     const drawn = pack.cards[phase.index];
@@ -274,13 +313,6 @@ export function PlayScreen() {
     );
     const last = phase.index === pack.cards.length - 1;
     const hurried = phase.hurriedFrom !== null;
-    const width = Math.floor(
-      Math.min(
-        CARD_MAX_WIDTH,
-        window.width - 56,
-        ((stageHeight || window.height) - REVEAL_CHROME) * (cardSize.width / cardSize.height),
-      ),
-    );
     return (
       <View
         style={styles.screen}
@@ -291,7 +323,7 @@ export function PlayScreen() {
           card={card}
           collectionName={collectionName(catalog, card.collectionId)}
           staging={stagingFor(drawn.rarity, { reducedMotion: reduced, hurried })}
-          width={width}
+          width={revealWidth}
           isNew={isNewAt(pack, phase.index)}
           copies={copiesAt(pack.cards, phase.index, pack.quantitiesBefore)}
           firstLabel={
@@ -620,6 +652,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   error: { fontFamily: fonts.ui.bold, fontSize: 15, color: colors.danger, textAlign: "center" },
+  stackStage: { flex: 1, alignItems: "center", justifyContent: "center" },
   revealBar: { paddingHorizontal: 20, paddingBottom: 12 + TAB_BAR_RISE, gap: 12 },
   revealInfo: { alignItems: "center", gap: 6 },
   position: { fontFamily: fonts.ui.semibold, fontSize: 13, color: colors.textMuted },
