@@ -3,6 +3,7 @@ import { StatusBar } from "expo-status-bar";
 import { Fragment } from "react";
 import { CoffretHost } from "@/levels/coffret";
 import { useSessionGeneration } from "@/player/session";
+import { UpdateGate } from "@/shell/update-gate";
 import { colors } from "@/theme";
 import { ToastHost } from "@/ui/toast";
 
@@ -22,6 +23,7 @@ export default function RootLayout() {
         <CoffretHost />
       </Fragment>
       <ToastHost />
+      <UpdateGate />
     </>
   );
 }

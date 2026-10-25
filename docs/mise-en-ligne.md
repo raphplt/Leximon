@@ -228,6 +228,8 @@ curl -s -X POST https://api.leximon.fr/api/auth/sign-in/anonymous -H 'Origin: ht
 
 Pour ouvrir la bêta à tous : passer `BETA_INVITES` à `"off"` dans `env.production` de `apps/api/wrangler.jsonc`, puis `pnpm deploy:api`.
 
+Pour forcer la mise à jour de l'app mobile (quand l'API cesse de servir ce dont une vieille version a besoin) : passer `MOBILE_MIN_VERSION` à la version voulue (`"1.2.0"`) dans `env.production`, puis `pnpm deploy:api`. Une app plus ancienne affiche « Leximon a changé » à son prochain lancement ou retour au premier plan, avec un bouton vers le store.
+
 ## 14. Vérifications · toi et agent
 
 | Test | Comment | Attendu |

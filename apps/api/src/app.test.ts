@@ -22,6 +22,24 @@ describe("api", () => {
     expect(await response.json()).toEqual({ status: "ok" });
   });
 
+  it("tells the oldest mobile version it serves", async () => {
+    const response = await createApp().request(
+      "/app",
+      {},
+      { ...testEnv(), MOBILE_MIN_VERSION: "1.2.0" },
+    );
+    expect(await response.json()).toEqual({ mobileMinVersion: "1.2.0" });
+  });
+
+  it("locks nobody out on a malformed minimum version", async () => {
+    const response = await createApp().request(
+      "/app",
+      {},
+      { ...testEnv(), MOBILE_MIN_VERSION: "1.2" },
+    );
+    expect(await response.json()).toEqual({ mobileMinVersion: "0.0.0" });
+  });
+
   it("sets security headers", async () => {
     const response = await createApp().request("/health", {}, testEnv());
     expect(response.headers.get("x-content-type-options")).toBe("nosniff");

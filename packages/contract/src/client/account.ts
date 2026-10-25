@@ -1,6 +1,8 @@
 import {
   type AccountResponse,
+  type AppStatusResponse,
   accountResponseSchema,
+  appStatusResponseSchema,
   type EmailPreferences,
   type EmailSignInRequest,
   emailPreferencesSchema,
@@ -45,6 +47,13 @@ export function accountRoutes(http: Http) {
   const { send, sendAsPlayer, arrival } = http;
 
   return {
+    /** The oldest app version the API still serves. Asked without a session. */
+    async fetchAppStatus(): Promise<AppStatusResponse> {
+      const response = await send("/app");
+      if (!response.ok) throw new ApiError("app_status_unavailable", response.status);
+      return parse(response, appStatusResponseSchema);
+    },
+
     /** Who is playing: a guest (created on the first visit) or a member. */
     async fetchAccount(): Promise<AccountResponse> {
       const response = await sendAsPlayer("/me/account");

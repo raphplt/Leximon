@@ -28,7 +28,10 @@
     // Web app, for the unsubscribe page linked from every campaign.
     "PUBLIC_WEB_URL": "http://localhost:3000",
     // "required": a new player needs an invitation code (closed beta). "off": anyone plays.
-    "BETA_INVITES": "off"
+    "BETA_INVITES": "off",
+    // Oldest mobile app version still served: raised when the API drops what an old app needs,
+    // the app then asks to be updated.
+    "MOBILE_MIN_VERSION": "0.0.0"
   },
   // Campaign e-mails: the pump queues row ids, the consumer sends them in batches.
   // Game events: cards obtained and clan changes, recounted from the database.
@@ -144,7 +147,8 @@
         "EMAIL_CAMPAIGN_FROM": "Leximon <bonjour@infos.leximon.fr>",
         "LETTERMINT_BROADCAST_ROUTE": "broadcast",
         "PUBLIC_WEB_URL": "https://leximon.fr",
-        "BETA_INVITES": "required"
+        "BETA_INVITES": "required",
+        "MOBILE_MIN_VERSION": "0.0.0"
       },
       // Same queue names as above: `queue()` recognises the game events queue by its name.
       "queues": {
@@ -244,7 +248,8 @@
         "EMAIL_CAMPAIGN_FROM": "",
         "LETTERMINT_BROADCAST_ROUTE": "broadcast",
         "PUBLIC_WEB_URL": "https://leximon.fr",
-        "BETA_INVITES": "off"
+        "BETA_INVITES": "off",
+        "MOBILE_MIN_VERSION": "0.0.0"
       },
       "queues": {
         "producers": [

@@ -1,4 +1,5 @@
 import {
+  appVersionSchema,
   INVITE_HEADER,
   REFERRER_HEADER,
   SOURCE_HEADER,
@@ -95,6 +96,12 @@ export function createApp(options: AppOptions = {}) {
   );
 
   app.get("/health", (c) => c.json({ status: "ok" }));
+  app.get("/app", (c) => {
+    // A malformed setting never locks every player out.
+    const minimum = appVersionSchema.safeParse(c.env.MOBILE_MIN_VERSION);
+    c.header("Cache-Control", "public, max-age=60");
+    return c.json({ mobileMinVersion: minimum.success ? minimum.data : "0.0.0" });
+  });
 
   // Limits run before the database is opened. Hono runs every matching handler in order.
   app.on(["GET", "POST"], `${AUTH_BASE_PATH}/*`, async (c, next) => {

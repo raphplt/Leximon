@@ -1,5 +1,6 @@
 export * from "./account";
 export * from "./admin";
+export * from "./app";
 export * from "./beta";
 export * from "./boosters";
 export * from "./catalog";
