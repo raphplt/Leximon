@@ -1,5 +1,3 @@
-import { Placeholder } from "@/screens/placeholder";
+import { ChallengeScreen } from "@/screens/challenges/challenge-screen";
 
-export default function Screen() {
-  return <Placeholder title="Défis" />;
-}
+export default ChallengeScreen;

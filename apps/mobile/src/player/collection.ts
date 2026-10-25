@@ -1,10 +1,11 @@
-import type { OwnedCardsResponse } from "@leximon/contract";
+import type { DailyChallengeResponse, OwnedCardsResponse } from "@leximon/contract";
 import {
   type CardDate,
   copiesByCard,
   datesAfterGain,
   datesByCard,
   memoriesByCard,
+  type SharedResource,
   sharedResource,
   type WordMemory,
 } from "@leximon/view-model";
@@ -64,10 +65,22 @@ export const wordMemory = sharedResource<ReadonlyMap<string, WordMemory>>(async 
   memoriesByCard(await api.fetchMastery()),
 );
 
+/** Today's challenge: answers given, right ones, and whether its bonus was won. */
+export const dailyChallenge = sharedResource<DailyChallengeResponse>(api.fetchDaily);
+
+/**
+ * Reads a resource again after an action changed it on the server (a booster, an answer, a
+ * trade), but only if a screen already read it: nobody pays for a list nobody looks at.
+ */
+export function refreshIfRead<T>(resource: SharedResource<T>): void {
+  if (resource.current() !== null) resource.refresh();
+}
+
 /** Forgets the cards of the player who left: the next read is the new player's. */
 export function resetCollection(): void {
   ownedInFlight = null;
   ownedCards.reset();
   cardDates.reset();
   wordMemory.reset();
+  dailyChallenge.reset();
 }
