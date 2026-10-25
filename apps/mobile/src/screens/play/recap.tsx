@@ -13,8 +13,10 @@ import { useState } from "react";
 import { ScrollView, StyleSheet, Text, useWindowDimensions, View } from "react-native";
 import Animated, { FadeInRight } from "react-native-reanimated";
 import { Card } from "@/cards/card";
+import { openCoffret } from "@/levels/coffret";
 import { useNow, useShared } from "@/player/shared";
 import { progress as progressResource, wallet as walletResource } from "@/player/state";
+import { usePlayerView } from "@/player/use-player-view";
 import { TAB_BAR_RISE } from "@/shell/tab-bar";
 import { fonts } from "@/theme";
 import { Button } from "@/ui/button";
@@ -47,6 +49,8 @@ export function Recap({
   const now = useNow(15_000);
   const progressNow = useShared(progressResource);
   const wallet = useShared(walletResource);
+  // The sachet raised the level: its coffret comes before the next sachet.
+  const coffretWaits = usePlayerView().coffrets.length > 0;
   const width = Math.floor(
     Math.max(
       160,
@@ -112,7 +116,9 @@ export function Recap({
         {progress.gained > 0 && <Text style={styles.gained}> (+{progress.gained})</Text>}
       </Text>
       <View style={styles.actions}>
-        {mustSignUp ? (
+        {coffretWaits ? (
+          <Button label="Ouvrir le coffret" onPress={() => openCoffret()} />
+        ) : mustSignUp ? (
           <Button label="Créer mon compte" onPress={() => router.push("/compte")} />
         ) : (
           <Button

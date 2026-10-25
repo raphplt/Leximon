@@ -41,6 +41,13 @@ export function publishProgress(next: Progress): void {
   if (current === null || current.xp <= next.xp) progress.publish(next);
 }
 
+/** A coffret just opened: the level joins the claimed ones, the profile may have new pieces. */
+export function publishClaimed(level: number): void {
+  if (profile.current() !== null) profile.refresh();
+  const claimed = levelRewards.current()?.claimed ?? [];
+  levelRewards.publish({ claimed: [...new Set([...claimed, level])].sort((a, b) => a - b) });
+}
+
 /** Forgets the state of the player who left: the next read is the new player's. */
 export function resetPlayerState(): void {
   for (const resource of [

@@ -45,10 +45,16 @@ export function TopBar() {
         )}
       </Pressable>
       {progress !== null && (
-        <View style={styles.xp}>
+        <Pressable
+          style={styles.xp}
+          onPress={() => router.push("/niveaux")}
+          accessibilityRole="button"
+          accessibilityLabel={`Chemin des niveaux, ${levelDescription(progress)}`}
+          hitSlop={8}
+        >
           <Text style={styles.xpText}>{xpProgressLabel(progress)}</Text>
           <XpBar ratio={levelRatio(progress)} thin />
-        </View>
+        </Pressable>
       )}
       <View style={styles.spacer} />
       {stock !== null && (

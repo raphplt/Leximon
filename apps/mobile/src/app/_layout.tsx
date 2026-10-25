@@ -1,6 +1,7 @@
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { Fragment } from "react";
+import { CoffretHost } from "@/levels/coffret";
 import { useSessionGeneration } from "@/player/session";
 import { colors } from "@/theme";
 import { ToastHost } from "@/ui/toast";
@@ -18,6 +19,7 @@ export default function RootLayout() {
             contentStyle: { backgroundColor: colors.background },
           }}
         />
+        <CoffretHost />
       </Fragment>
       <ToastHost />
     </>

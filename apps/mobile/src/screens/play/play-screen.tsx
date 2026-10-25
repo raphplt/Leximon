@@ -36,6 +36,7 @@ import { Button } from "@/ui/button";
 import { Icon } from "@/ui/icon";
 import { RarityName } from "@/ui/rarity-icon";
 import { isNewAt, type Pack } from "./pack";
+import { PlayFabs } from "./play-fabs";
 import { Recap } from "./recap";
 import { RevealCard } from "./reveal-card";
 import { Sachet } from "./sachet";
@@ -45,6 +46,8 @@ const CHOICE_KEY = "leximon_sachet";
 const NOTICE_MS = 2600;
 const SACHET_MAX_WIDTH = 230;
 const CARD_MAX_WIDTH = 300;
+/** Kept on both sides of the sachet for the round buttons. */
+const FABS_ROOM = 150;
 /** Room kept around a revealed card: the banner above, the bar below. */
 const REVEAL_CHROME = 210;
 
@@ -323,7 +326,11 @@ export function PlayScreen() {
   const collection =
     choice === null ? null : (catalog?.collections.find((c) => c.id === choice.id) ?? null);
   const sachetWidth = Math.floor(
-    Math.min(SACHET_MAX_WIDTH, window.width - 120, Math.max(0, stageHeight - 24) * (236 / 410)),
+    Math.min(
+      SACHET_MAX_WIDTH,
+      window.width - FABS_ROOM,
+      Math.max(0, stageHeight - 24) * (236 / 410),
+    ),
   );
   return (
     <View style={styles.screen}>
@@ -365,6 +372,7 @@ export function PlayScreen() {
                 onOpen={() => void openPack()}
               />
             )}
+            {ready && <PlayFabs />}
             {notice !== null && (
               <Text style={styles.notice} accessibilityLiveRegion="polite">
                 {notice}
