@@ -2,6 +2,8 @@ import {
   type CatalogCard,
   MASTERY_LEVEL_LABELS,
   type MasteryLevelCode,
+  type MasteryResponse,
+  type OwnedCardsResponse,
   RARITY_LABELS,
 } from "@leximon/contract";
 import { gameDayOf, RARITIES, type Rarity, rarityRank } from "@leximon/core";
@@ -31,6 +33,63 @@ export interface WordMemory {
 export interface CardDate {
   readonly firstObtainedAt: number;
   readonly read: boolean;
+}
+
+type OwnedCopy = OwnedCardsResponse["cards"][number];
+
+/** Copies owned, by card id: the API counts each variant apart. */
+export function copiesByCard(owned: readonly OwnedCopy[]): Map<string, number> {
+  const byCard = new Map<string, number>();
+  for (const card of owned) {
+    byCard.set(card.cardId, (byCard.get(card.cardId) ?? 0) + card.quantity);
+  }
+  return byCard;
+}
+
+/** A card is read once any of its variants is: a new variant of a word read is not new. */
+export function datesByCard(owned: readonly OwnedCopy[]): Map<string, CardDate> {
+  const byCard = new Map<string, CardDate>();
+  for (const card of owned) {
+    const known = byCard.get(card.cardId);
+    const firstObtainedAt = Date.parse(card.firstObtainedAt);
+    const read = card.readAt != null;
+    byCard.set(card.cardId, {
+      firstObtainedAt: Math.min(firstObtainedAt, known?.firstObtainedAt ?? firstObtainedAt),
+      read: read || (known?.read ?? false),
+    });
+  }
+  return byCard;
+}
+
+/** What the player remembers of each reviewed word, by card id. */
+export function memoriesByCard(words: MasteryResponse["words"]): Map<string, WordMemory> {
+  return new Map(
+    words.map((word) => [
+      word.cardId,
+      {
+        level: word.level,
+        due: Date.parse(word.due),
+        stability: word.stability,
+        lastReviewedAt: word.lastReviewedAt === null ? null : Date.parse(word.lastReviewedAt),
+      },
+    ]),
+  );
+}
+
+/** Cards just got that the player did not own: new until their sheet is opened. */
+export function datesAfterGain(
+  dates: ReadonlyMap<string, CardDate>,
+  cardIds: readonly string[],
+  ownedBefore: ReadonlyMap<string, number>,
+  now: number,
+): Map<string, CardDate> {
+  const next = new Map(dates);
+  for (const id of cardIds) {
+    if ((ownedBefore.get(id) ?? 0) === 0 && !next.has(id)) {
+      next.set(id, { firstObtainedAt: now, read: false });
+    }
+  }
+  return next;
 }
 
 export const ALBUM_FILTERS = [

@@ -1,6 +1,15 @@
 import type { CatalogCard } from "@leximon/contract";
 import { describe, expect, it } from "vitest";
-import { ALL_COLLECTIONS, type AlbumState, albumView, foldSearch, themeLabel } from "./album";
+import {
+  ALL_COLLECTIONS,
+  type AlbumState,
+  albumView,
+  copiesByCard,
+  datesAfterGain,
+  datesByCard,
+  foldSearch,
+  themeLabel,
+} from "./album";
 
 const NOW = Date.parse("2026-10-21T12:00:00Z");
 const DAY = 24 * 60 * 60 * 1000;
@@ -179,5 +188,49 @@ describe("comparing with a friend's album", () => {
     expect(ids("theirs")).toEqual(["missing talpinette"]);
     expect(ids("mine")).toEqual(["owned bélître"]);
     expect(ids("both")).toEqual(["owned grigou"]);
+  });
+});
+
+describe("owned cards", () => {
+  const owned = [
+    { cardId: "a", variant: "base", quantity: 2, firstObtainedAt: "2026-10-20T10:00:00Z" },
+    {
+      cardId: "a",
+      variant: "dore",
+      quantity: 1,
+      firstObtainedAt: "2026-10-19T10:00:00Z",
+      readAt: "2026-10-21T10:00:00Z",
+    },
+    {
+      cardId: "b",
+      variant: "base",
+      quantity: 1,
+      firstObtainedAt: "2026-10-21T10:00:00Z",
+      readAt: null,
+    },
+  ];
+
+  it("counts every variant of a card together", () => {
+    expect(copiesByCard(owned)).toEqual(
+      new Map([
+        ["a", 3],
+        ["b", 1],
+      ]),
+    );
+  });
+
+  it("dates a card from its first variant, read once any variant is", () => {
+    const dates = datesByCard(owned);
+    expect(dates.get("a")).toEqual({
+      firstObtainedAt: Date.parse("2026-10-19T10:00:00Z"),
+      read: true,
+    });
+    expect(dates.get("b")?.read).toBe(false);
+  });
+
+  it("marks new only the cards the player did not own", () => {
+    const dates = datesAfterGain(datesByCard(owned), ["b", "c"], copiesByCard(owned), NOW);
+    expect(dates.get("c")).toEqual({ firstObtainedAt: NOW, read: false });
+    expect(dates.get("b")?.firstObtainedAt).toBe(Date.parse("2026-10-21T10:00:00Z"));
   });
 });

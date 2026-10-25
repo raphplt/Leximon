@@ -6,7 +6,7 @@ import { TopBar } from "@/shell/top-bar";
 import { colors } from "@/theme";
 
 // A link straight to a tab still leaves Jouer behind it, for the back button.
-export const unstable_settings = { initialRouteName: "index" };
+export const unstable_settings = { anchor: "index" };
 
 export default function TabsLayout() {
   return (

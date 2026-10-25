@@ -6,7 +6,7 @@ Où en est Leximon, ce qui reste avant la bêta publique (novembre 2026) et ce q
 
 ## En une phrase
 
-Le cœur du jeu tourne de bout en bout sur le web : on ouvre un sachet, on révèle ses cartes, on les retrouve dans l'album, on les fait monter de niveau par des défis (le mot écrit de tête pour monter) qui rapportent des sachets bonus, on les échange, on les épingle sur son profil public et on joue en clan. Le catalogue de lancement compte 1 561 cartes en trois collections, toutes gravées et prononcées. Le site est en ligne sur leximon.fr depuis le 2026-10-22, porte fermée : personne n'entre sans lien d'invitation, et aucun lien n'est encore parti.
+Le cœur du jeu tourne de bout en bout sur le web : on ouvre un sachet, on révèle ses cartes, on les retrouve dans l'album, on les fait monter de niveau par des défis (le mot écrit de tête pour monter) qui rapportent des sachets bonus, on les échange, on les épingle sur son profil public et on joue en clan. Le catalogue de lancement compte 1 561 cartes en trois collections, toutes gravées et prononcées. Le site est en ligne sur leximon.fr depuis le 2026-10-22, porte fermée : personne n'entre sans lien d'invitation ; les premiers liens sont partis le 2026-10-25. Le mobile a commencé : coque et écran Jouer jouables sur Android.
 
 ## État par chantier
 
@@ -62,13 +62,13 @@ Arbitrés par le propriétaire le 2026-10-20 : jeu grand public (B2C), pas de ve
 
 | Étape | Statut | Détail |
 |---|---|---|
-| Interface v1, web et mobile | En cours | Inventaire de chaque écran : [interface-v1.md](cahiers-des-charges/interface-v1.md). Logique d'écran commune dans `packages/view-model` (D-033). Lots 0 à 4 faits sur le web, retours de la première recette traités ([recette-web.md](recette-web.md#retours-du-2026-10-22)). Jouer revenu le 2026-10-23 au bandeau du niveau et aux boutons ronds autour d'un sachet plus petit, les sachets des autres collections derrière le comptoir. Les écrans entrent en fondu et attendent leurs données sous la forme de leur contenu, sans saut de mise en page ; un écran dont le chargement échoue propose de réessayer. Prochain : le mobile |
+| Interface v1, web et mobile | En cours | Inventaire de chaque écran : [interface-v1.md](cahiers-des-charges/interface-v1.md). Logique d'écran commune dans `packages/view-model` (D-033). Lots 0 à 4 faits sur le web, retours de la première recette traités ([recette-web.md](recette-web.md#retours-du-2026-10-22)). Jouer revenu le 2026-10-23 au bandeau du niveau et aux boutons ronds autour d'un sachet plus petit, les sachets des autres collections derrière le comptoir. Les écrans entrent en fondu et attendent leurs données sous la forme de leur contenu, sans saut de mise en page ; un écran dont le chargement échoue propose de réessayer. Le mobile suit, écran par écran |
 | Direction artistique et tokens | Fait | D-022 « Planche populaire », `packages/tokens`, logo et favicon |
 | Web : page d'accueil publique | Fait | P55 : accueil sur `/`, le jeu sous `/jouer`, connexion depuis l'accueil, lien vers le Discord du projet. Liste d'attente, image de partage, pages `/confidentialite`, `/mentions`, `/conditions`, `/charte`, 404 et page d'erreur en français. Reste : la relecture des textes par un juriste |
-| Mobile (Expo) | À faire | Builds de développement et EAS prêts depuis le 2026-10-21, aucun écran de jeu. Charger les polices demandera `expo-font` |
+| Mobile (Expo) | En cours | D-048 : client API partagé (`@leximon/contract/client`), session gardée dans le trousseau par `@better-auth/expo`. Coque (bandeau du haut, onglets avec Jouer en relief, cadenas), polices embarquées par `expo-font`, icône et écran de lancement. Jouer : choix de la collection, stock, sachet au sceau gravé, ouverture, mise en scène par rareté, récapitulatif. Comptes Apple et Google ouverts. Reste : écran de compte et d'invitation, album, défis, échanges, clan, fiche de carte, sons et vibrations, déchirure au doigt, encre dégradée des gravures Épique et Légendaire, version minimale imposée avant la première publication |
 | Animations et reflets | À faire | R&D D-009 pour le mobile. Sur le web, du CSS |
 | Ouverture : peaufinage | Fait sur le web | Cahier : [ouverture.md](cahiers-des-charges/ouverture.md). Déchirure au doigt, pile, mise en scène par rareté, sons synthétisés, vibration, récapitulatif, reflets par rareté, sachet bombé au sceau doré, mot dit quand la carte se pose, aperçu en glissant. Récapitulatif lisible en cascade, fiche au toucher (2026-10-23). Reste : mobile |
-| Retours du premier testeur | Fait | Cahier : [retours-premier-testeur.md](cahiers-des-charges/retours-premier-testeur.md), validé le 2026-10-23. Les cinq lots faits le 2026-10-23 (relire ce qu'on vient d'ouvrir, « Nouveau » dans l'album, mot qui s'échappe, signaux de Jouer, collections et raretés). La migration `0025` et le catalogue `2026-10-23.2` (lignes des collections) partent avec le prochain `pnpm deploy:prod` |
+| Retours du premier testeur | Fait | Cahier : [retours-premier-testeur.md](cahiers-des-charges/retours-premier-testeur.md), validé le 2026-10-23. Les cinq lots faits le 2026-10-23 (relire ce qu'on vient d'ouvrir, « Nouveau » dans l'album, mot qui s'échappe, signaux de Jouer, collections et raretés). La migration `0025` et le catalogue `2026-10-23.2` (lignes des collections) sont en production |
 | Ouverture : forme du paquet | Fait | Le sachet (P47, P53), un par collection. Le pli reste à l'essai (`/jouer?paquet=pli`) |
 | Numéro de collection sur la carte | À décider | Par exemple « 040/160 ». Dénominateur à choisir (taille annoncée ou cartes publiées) |
 
@@ -77,23 +77,23 @@ Arbitrés par le propriétaire le 2026-10-20 : jeu grand public (B2C), pas de ve
 | Étape | Statut | Détail |
 |---|---|---|
 | Hébergement de production | En cours | En ligne depuis le 2026-10-22 : `leximon.fr` et `api.leximon.fr`, base Neon gratuite, catalogue servi par le Worker web (D-040, D-043). Mise en production en une commande (`pnpm deploy:prod`). En-têtes de sécurité, préflights CORS en cache, première visite allégée (ni catalogue sur l'accueil, ni dans la coque du jeu). Procédure : [mise-en-ligne.md](mise-en-ligne.md). Reste : redirection de `www`, Lettermint, sauvegarde nocturne sur le NAS, ton compte admin si ce n'est pas fait |
-| Bêta fermée sur invitation | En ligne, aucun lien encore | D-041 : liens par groupe dans `/admin/invitations`, page `/invitation/<code>`, porte tenue par l'API (`BETA_INVITES`), `?src=` gardé avec le joueur. Une invitation rejouée par un invité ne rouvre plus la porte |
+| Bêta fermée sur invitation | En ligne, premiers liens envoyés (2026-10-25) | D-041 : liens par groupe dans `/admin/invitations`, page `/invitation/<code>`, porte tenue par l'API (`BETA_INVITES`), `?src=` gardé avec le joueur. Une invitation rejouée par un invité ne rouvre plus la porte |
 | Mesure | En ligne | D-042 : `/admin/mesure` (rétention J1/J7/J30, entonnoir, testeurs, fausse porte mécène), `/admin/retours` (« Un retour ? » dans le menu), tranche d'âge facultative à l'inscription |
 | Suivi des erreurs | Fait | D-045 : erreurs relevées par Cloudflare (Workers Logs), résumé chaque matin sur Discord avec les chiffres de la veille. Pas de suivi des erreurs du navigateur |
-| Test de charge | Fait (pas en ligne) | D-047 : scénarios k6 dans `infra/load/`, staging sur une branche Neon ([rnd/charge.md](rnd/charge.md)). 572 requêtes/s sans une erreur (2026-10-23). Ouverture d'un sachet ramenée de 8 à 5 allers-retours SQL et cache de session réparé (il ne servait pas) : 37 ms en médiane et 72 ms au p95 côté serveur (2026-10-24). API placée à Francfort près de la base. Part avec le prochain `pnpm deploy:prod` |
+| Test de charge | Fait (pas en ligne) | D-047 : scénarios k6 dans `infra/load/`, staging sur une branche Neon ([rnd/charge.md](rnd/charge.md)). 572 requêtes/s sans une erreur (2026-10-23). Ouverture d'un sachet ramenée de 8 à 5 allers-retours SQL et cache de session réparé (il ne servait pas) : 37 ms en médiane et 72 ms au p95 côté serveur (2026-10-24). API placée à Francfort près de la base. En production |
 | Marque, domaines, comptes réseaux | En cours | Domaine leximon.fr (OVH, DNS chez Cloudflare, renouvellement automatique à activer), contact@leximon.fr routé par Cloudflare, Discord du projet. Marque : dépôt INPI repoussé (P7). Autres comptes réseaux à faire |
 
 ## Ce qui attend ta décision
 
 Dans l'ordre où elles débloquent le plus :
 
-1. **Ouvrir la bêta :** finir les étapes « toi » de [mise-en-ligne.md](mise-en-ligne.md) (compte admin, `www`, sauvegarde sur le NAS), puis envoyer les premiers liens depuis `/admin/invitations`. Lettermint peut attendre la première campagne.
+1. **Finir la mise en ligne :** les étapes « toi » de [mise-en-ligne.md](mise-en-ligne.md) qui restent (`www`, sauvegarde sur le NAS). Lettermint peut attendre la première campagne.
 2. **Avatars gravés (P49) :** valider les seize gravures choisies et leurs noms.
 3. **Mécène (P73) :** l'exemplaire de la carte dénichée, non échangeable et sans XP, reste à confirmer.
 4. **Questions ouvertes** de [regles-du-jeu.md](regles-du-jeu.md#à-décider) : numéro de collection, sons de l'ouverture, notation phonétique.
 
 ## Prochaines étapes conseillées
 
-1. Envoyer les premiers liens d'invitation, puis suivre `/admin/mesure` et `/admin/retours`.
-2. Mettre en production l'ouverture allégée et le placement à Francfort (`pnpm deploy:prod`), puis vérifier `cf-placement: remote-FRA` et le p95 de l'ouverture dans le résumé Discord ([rnd/charge.md](rnd/charge.md)).
-3. Le mobile, construit avec les retours de la bêta. Puis Apple et Google, et la quatrième collection.
+1. Suivre `/admin/mesure` et `/admin/retours` à mesure que les invités arrivent ; vérifier `cf-placement: remote-FRA` et le p95 de l'ouverture dans le résumé Discord ([rnd/charge.md](rnd/charge.md)).
+2. Le mobile : écran de compte et d'invitation, puis album et fiche de carte, défis, échanges, clan. Avant la première publication sur les stores : version minimale imposée et variables `EXPO_PUBLIC_*` des profils EAS.
+3. La quatrième collection.

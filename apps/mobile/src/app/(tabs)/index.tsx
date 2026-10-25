@@ -1,5 +1,3 @@
-import { Placeholder } from "@/screens/placeholder";
+import { PlayScreen } from "@/screens/play/play-screen";
 
-export default function Screen() {
-  return <Placeholder title="Jouer" />;
-}
+export default PlayScreen;

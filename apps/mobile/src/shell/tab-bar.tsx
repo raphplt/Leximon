@@ -28,6 +28,10 @@ const TAB_ICONS: Readonly<Record<TabId, IconName>> = {
 };
 
 const PLAY = 66;
+const PLAY_LIFT = 34;
+
+/** How far the raised Jouer button rises above the bar: what a screen keeps clear at its foot. */
+export const TAB_BAR_RISE = PLAY_LIFT - 8 + 4;
 
 /** Five tabs, Jouer raised in the middle; a padlock on what a level still closes. */
 export function TabBar({ state, emitter, navigateToTab }: BottomTabBarProps) {
@@ -110,7 +114,7 @@ const styles = StyleSheet.create({
   },
   tab: { flex: 1, alignItems: "center", gap: 4 },
   // It rises above the bar without making the row taller: its label stays on the others' line.
-  play: { marginTop: -34 },
+  play: { marginTop: -PLAY_LIFT },
   playCircle: {
     width: PLAY + 10,
     height: PLAY + 10,

@@ -44,7 +44,7 @@ const LETTER_WIDTHS: Readonly<Record<string, number>> = {
 const DEFAULT_LETTER_WIDTH = 0.678;
 
 /** Width of `word` set in the card's display font, in em. Accents do not change the width. */
-function wordWidthEm(word: string): number {
+export function wordWidthEm(word: string): number {
   let width = 0;
   for (const letter of word.toLowerCase()) {
     const base = letter.normalize("NFD").replace(/\p{M}/gu, "");
