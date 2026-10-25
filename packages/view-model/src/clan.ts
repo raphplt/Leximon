@@ -4,6 +4,7 @@ import type {
   ClanEvent,
   ClanGoal,
   ClanMember,
+  ClanMessage,
   ClanRefusal,
   ClanRole,
   ClanUnlock,
@@ -410,6 +411,17 @@ export function mentionQuery(
   const match = MENTION_BEFORE_CARET.exec(text.slice(0, caret));
   if (match?.[1] === undefined || match[1].length > 30) return null;
   return { start: caret - match[1].length - 1, query: match[1] };
+}
+
+/** Adds what is new, by id, in order: a poll and a message just sent may bring the same one. */
+export function mergeMessages(
+  current: readonly ClanMessage[],
+  incoming: readonly ClanMessage[],
+): ClanMessage[] {
+  const known = new Set(current.map((message) => message.id));
+  return [...current, ...incoming.filter((message) => !known.has(message.id))].sort(
+    (a, b) => a.id - b.id,
+  );
 }
 
 /** Puts the chosen pseudo in place of what was typed after the "@", followed by a space. */

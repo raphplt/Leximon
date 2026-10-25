@@ -1,4 +1,4 @@
-import type { ClanMember } from "@leximon/contract";
+import type { ClanMember, ClanMessage } from "@leximon/contract";
 import { describe, expect, it } from "vitest";
 import {
   clanLevelLine,
@@ -19,6 +19,7 @@ import {
   libraryHeadline,
   libraryRows,
   mentionQuery,
+  mergeMessages,
   messageSegments,
   messageTime,
   moreMembersLabel,
@@ -287,5 +288,15 @@ describe("mentions", () => {
     expect(messageSegments("court", [{ start: 2, end: 40, me: false }])).toEqual([
       { kind: "text", text: "court" },
     ]);
+  });
+});
+
+describe("mergeMessages", () => {
+  const event = (id: number) =>
+    ({ kind: "event", id, createdAt: "2026-10-25T10:00:00Z" }) as unknown as ClanMessage;
+
+  it("adds only the messages not already in the thread, in order of id", () => {
+    const merged = mergeMessages([event(1), event(3)], [event(3), event(2), event(4)]);
+    expect(merged.map((message) => message.id)).toEqual([1, 2, 3, 4]);
   });
 });

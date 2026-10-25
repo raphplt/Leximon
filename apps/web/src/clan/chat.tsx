@@ -10,6 +10,7 @@ import {
   insertMention,
   MESSAGE_PLACEHOLDER,
   mentionQuery,
+  mergeMessages,
   messageSegments,
   messageTime,
   mutedUntilLabel,
@@ -115,7 +116,7 @@ export function ClanChat({
       if (stopped) return;
       if (page !== null && page.messages.length > 0) {
         quietPolls = 0;
-        setMessages((current) => merge(current ?? [], [...page.messages].reverse()));
+        setMessages((current) => mergeMessages(current ?? [], [...page.messages].reverse()));
       } else {
         quietPolls++;
       }
@@ -161,7 +162,7 @@ export function ClanChat({
       const result = await api.postMessage(clanId, body);
       if (result.kind === "ok") {
         stickToBottom.current = true;
-        setMessages((current) => merge(current ?? [], [result.value]));
+        setMessages((current) => mergeMessages(current ?? [], [result.value]));
         setDraft("");
       } else {
         setError(refusalText(result.reason));
@@ -491,14 +492,6 @@ function MentionSuggestions({
         </div>
       ))}
     </div>
-  );
-}
-
-/** Adds what is new, by id, in order: a poll and a message just sent may bring the same one. */
-function merge(current: readonly ClanMessage[], incoming: readonly ClanMessage[]): ClanMessage[] {
-  const known = new Set(current.map((message) => message.id));
-  return [...current, ...incoming.filter((message) => !known.has(message.id))].sort(
-    (a, b) => a.id - b.id,
   );
 }
 
