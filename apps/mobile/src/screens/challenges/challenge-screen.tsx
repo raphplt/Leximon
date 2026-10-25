@@ -10,6 +10,7 @@ import {
   noChallengeNotice,
   PACK_NOUNS,
   reviewQuestion,
+  type WordMemory,
 } from "@leximon/view-model";
 import { randomUUID } from "expo-crypto";
 import { router } from "expo-router";
@@ -32,11 +33,27 @@ import { advance, type Session, startSession } from "./session";
 
 const NOUN = PACK_NOUNS.sachet;
 
+function reviewSession(
+  cardId: string,
+  catalog: Catalog,
+  memory: ReadonlyMap<string, WordMemory>,
+): Session | null {
+  const question = reviewQuestion(
+    // A UUID without its dashes: the 32 hexadecimal digits a seed takes.
+    createSeededRandom(randomUUID().replaceAll("-", "")),
+    cardId,
+    catalog.collections,
+    memory.get(cardId),
+    Date.now(),
+  );
+  return question === null ? null : startSession([question]);
+}
+
 /**
  * Défis: the daily goal, the player's memory, the words slipping away, and the sessions of
  * questions: multiple choice to keep words in memory, the word to type to raise its level.
  */
-export function ChallengeScreen() {
+export function ChallengeScreen({ word }: { readonly word: string | null }) {
   const [catalog, setCatalog] = useState<Catalog | null>(catalogInHand);
   const [session, setSession] = useState<Session | null>(null);
   const [starting, setStarting] = useState(false);
@@ -74,18 +91,23 @@ export function ChallengeScreen() {
   /** A word slipping away, picked in the list: a session of that one word. */
   const review = (cardId: string) => {
     if (catalog === null || memory === null) return;
-    const question = reviewQuestion(
-      createSeededRandom(randomUUID()),
-      cardId,
-      catalog.collections,
-      memory.get(cardId),
-      Date.now(),
-    );
-    if (question !== null) {
+    const one = reviewSession(cardId, catalog, memory);
+    if (one !== null) {
       setNotice(null);
-      setSession(startSession([question]));
+      setSession(one);
     }
   };
+
+  // A word asked from elsewhere (the mail): its session, once.
+  useEffect(() => {
+    if (word === null || catalog === null || memory === null) return;
+    router.setParams({ mot: undefined });
+    const one = reviewSession(word, catalog, memory);
+    if (one !== null) {
+      setNotice(null);
+      setSession(one);
+    }
+  }, [word, catalog, memory]);
 
   const choose = async (chosen: string) => {
     if (session === null) return;
