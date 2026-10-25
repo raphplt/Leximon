@@ -1,3 +1,4 @@
+import { expo } from "@better-auth/expo";
 import { ACCOUNT_ERROR_CODES } from "@leximon/contract";
 import { type Database, schema } from "@leximon/db";
 import { betterAuth } from "better-auth";
@@ -14,6 +15,12 @@ import { type Arrival, admitNewPlayer, recordArrival, wouldAdmitNewPlayer } from
 import { invitesRequired } from "./beta/invites";
 
 export const AUTH_BASE_PATH = "/api/auth";
+
+/**
+ * Origin the mobile app declares (its URL scheme), in a header Better Auth's Expo plugin reads only
+ * when a request has no Origin: browsers always send one, so a web page cannot claim it.
+ */
+export const MOBILE_APP_ORIGIN = "leximon://";
 
 /** Role that opens the back office, granted only from the command line (`pnpm admin:grant`). */
 export const ADMIN_ROLE = "admin";
@@ -69,7 +76,7 @@ export function createAuth(env: Env, db: Database, emailSender: EmailSender) {
     secret: env.BETTER_AUTH_SECRET,
     baseURL: env.BETTER_AUTH_URL,
     basePath: AUTH_BASE_PATH,
-    trustedOrigins: parseOrigins(env.TRUSTED_ORIGINS),
+    trustedOrigins: [...parseOrigins(env.TRUSTED_ORIGINS), MOBILE_APP_ORIGIN],
     database: drizzleAdapter(db, {
       provider: "pg",
       usePlural: true,
@@ -81,6 +88,8 @@ export function createAuth(env: Env, db: Database, emailSender: EmailSender) {
       },
     }),
     plugins: [
+      // The mobile app's session: a cookie it keeps in the device keychain and sends itself.
+      expo(),
       anonymous({
         disableDeleteAnonymousUser: true,
         onLinkAccount: (data) => linkGuestOnSignIn(db, data),

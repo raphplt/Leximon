@@ -12,6 +12,7 @@
     "test:integration": "vitest run --config vitest.integration.config.ts"
   },
   "dependencies": {
+    "@better-auth/expo": "1.7.11",
     "@leximon/contract": "workspace:*",
     "@leximon/core": "workspace:*",
     "@leximon/db": "workspace:*",

@@ -18,6 +18,20 @@
       "runtimeExecutable": "pnpm",
       "runtimeArgs": ["--filter", "@leximon/web", "exec", "next", "start", "-p", "3100"],
       "port": 3100
+    },
+    {
+      "name": "mobile",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": [
+        "--filter",
+        "@leximon/mobile",
+        "exec",
+        "expo",
+        "start",
+        "--dev-client",
+        "--localhost"
+      ],
+      "port": 8081
     }
   ]
 }

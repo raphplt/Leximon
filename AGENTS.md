@@ -14,6 +14,7 @@ docker compose up -d             # Postgres local sur le port 54329
 pnpm db:migrate                  # applique les migrations à la base de dev
 pnpm catalog:publish             # publie la dernière version du catalogue (base de dev et fichiers du web, D-023)
 pnpm dev                         # Postgres et Directus (Docker), puis toutes les apps (ou --filter @leximon/api, /web, /mobile)
+pnpm --filter @leximon/mobile reverse   # téléphone ou émulateur branché : Metro, API et catalogue locaux joignables
 pnpm check                       # lint + typecheck + tests unitaires, à lancer avant de rendre la main
 pnpm test:integration            # tests contre la base leximon_test, vidée à chaque passage (Docker requis)
 pnpm admin:grant <email>         # donne le rôle admin à un compte existant (--revoke pour le retirer)
