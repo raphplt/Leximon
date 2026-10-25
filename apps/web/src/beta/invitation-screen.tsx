@@ -1,6 +1,15 @@
 "use client";
 
 import type { InviteStatus } from "@leximon/contract";
+import {
+  CLOSED_TITLE,
+  INVITATION_REQUIRED_TEXT,
+  INVITATION_REQUIRED_TITLE,
+  INVITE_CLOSED_TEXT,
+  INVITED_ACTION,
+  INVITED_PITCH,
+  INVITED_TITLE,
+} from "@leximon/view-model";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -11,12 +20,6 @@ import { Button } from "@/ui/button";
 import { rememberInvite } from "./arrival";
 
 type State = { readonly kind: "loading" } | { readonly kind: "failed" } | InviteStatus;
-
-const CLOSED_TEXT = {
-  full: "Ce lien a fait le plein. Laisse ton adresse, on te prévient à l'ouverture.",
-  expired: "Ce lien a fait son temps. Laisse ton adresse, on te prévient à l'ouverture.",
-  unknown: "Ce lien ne mène nulle part. Recopie-le en entier, ou laisse ton adresse.",
-} as const;
 
 /** Where an invitation link leads: it opens the closed beta to whoever holds it. */
 export function InvitationScreen() {
@@ -50,25 +53,22 @@ export function InvitationScreen() {
         Leximon
       </Link>
       <h1 className={styles.title}>
-        {"status" in state && state.status !== "open" ? "Porte close" : "Tu es invité"}
+        {"status" in state && state.status !== "open" ? CLOSED_TITLE : INVITED_TITLE}
       </h1>
       <section className={styles.section}>
         {"kind" in state && state.kind === "loading" && <p>Un instant…</p>}
         {"kind" in state && state.kind === "failed" && <p>Le serveur lambine. Réessaie.</p>}
         {"status" in state && state.status === "open" && (
           <>
-            <p>
-              Des mots que plus personne ne dit, en cartes à collectionner. La bêta est fermée, ce
-              lien t'ouvre la porte.
-            </p>
+            <p>{INVITED_PITCH}</p>
             <div style={{ marginTop: 24 }}>
-              <Button onClick={enter}>Ouvrir mon premier sachet</Button>
+              <Button onClick={enter}>{INVITED_ACTION}</Button>
             </div>
           </>
         )}
         {"status" in state && state.status !== "open" && (
           <>
-            <p>{CLOSED_TEXT[state.status]}</p>
+            <p>{INVITE_CLOSED_TEXT[state.status]}</p>
             <div style={{ marginTop: 24 }}>
               <WaitlistForm />
             </div>
@@ -89,9 +89,9 @@ export function InvitationRequiredScreen() {
       <Link href="/" className={styles.logo}>
         Leximon
       </Link>
-      <h1 className={styles.title}>Sur invitation</h1>
+      <h1 className={styles.title}>{INVITATION_REQUIRED_TITLE}</h1>
       <section className={styles.section}>
-        <p>La bêta est fermée. Il te faut un lien d'invitation.</p>
+        <p>{INVITATION_REQUIRED_TEXT}</p>
         <div style={{ marginTop: 24 }}>
           <WaitlistForm />
         </div>

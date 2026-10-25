@@ -1,15 +1,33 @@
 import {
   ACCOUNT_ERROR_CODES,
+  type AgeBracket,
   type LinkPreviewError,
   type LinkPreviewResponse,
+  type SendCodeRefusal,
 } from "@leximon/contract";
-import type { SendCodeResult } from "@leximon/contract/client";
-import type { PackNoun } from "@leximon/view-model";
+import { capitalize, type PackNoun } from "./format";
 
 /**
  * Texts of the sign-in flow, kept apart from the screen so that they are tested: what the
  * player reads before signing in decides whether a guest's cards are lost knowingly.
  */
+
+/** The title of each step of the account screen. */
+export const ACCOUNT_TITLES = {
+  email: "Garde ta collection",
+  code: "Vérifie tes e-mails",
+  confirm: "Presque fini",
+  member: "Tu es connecté",
+} as const;
+
+export const NEWS_OPT_IN = "M'écrire quand il y a du nouveau";
+
+/** The age is optional: this choice sends none. */
+export const AGE_UNSAID = "Je préfère ne pas dire";
+
+export function ageBracketLabel(bracket: AgeBracket): string {
+  return bracket === "50+" ? "50 ans et plus" : `${bracket.replace("-", " à ")} ans`;
+}
 
 export function cardCount(count: number): string {
   if (count === 0) return "aucune carte";
@@ -117,7 +135,7 @@ function withGame(guestCards: number, noun: PackNoun): string {
     : `tes ${cardCount(guestCards)}, tes ${noun.many} et ta progression`;
 }
 
-export function sendErrorMessage(reason: Extract<SendCodeResult, { kind: "refused" }>["reason"]) {
+export function sendErrorMessage(reason: SendCodeRefusal): string {
   switch (reason) {
     case "invalid_email":
       return "Il manque quelque chose à cette adresse.";
@@ -166,8 +184,4 @@ export function codeErrorMessage(error: CodeError): string {
 /** Errors after which the code can no longer work: the player goes back to ask for a new one. */
 export function needsNewCode(error: CodeError): boolean {
   return error !== "invalid_code" && error !== "INVALID_OTP" && error !== "rate_limited";
-}
-
-function capitalize(text: string): string {
-  return text.charAt(0).toUpperCase() + text.slice(1);
 }

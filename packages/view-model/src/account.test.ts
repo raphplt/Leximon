@@ -1,13 +1,14 @@
 import { ACCOUNT_ERROR_CODES, type LinkPreviewResponse } from "@leximon/contract";
-import { DEFAULT_PACK_NOUN } from "@leximon/view-model";
 import { describe, expect, it } from "vitest";
 import {
+  ageBracketLabel,
   cardCount,
   codeErrorMessage,
   confirmStep,
   needsConfirmation,
   needsNewCode,
-} from "./account-flow";
+} from "./account";
+import { DEFAULT_PACK_NOUN } from "./pack";
 
 function preview(overrides: Partial<LinkPreviewResponse> = {}): LinkPreviewResponse {
   return {
@@ -84,5 +85,12 @@ describe("code errors", () => {
     expect(codeErrorMessage(ACCOUNT_ERROR_CODES.accountLinkFailed)).toContain(
       "Tes cartes n'ont pas bougé",
     );
+  });
+});
+
+describe("ageBracketLabel", () => {
+  it("reads the bracket as words", () => {
+    expect(ageBracketLabel("15-17")).toBe("15 à 17 ans");
+    expect(ageBracketLabel("50+")).toBe("50 ans et plus");
   });
 });

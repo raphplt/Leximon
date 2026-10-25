@@ -1,5 +1,6 @@
 "use client";
 
+import { WAITLIST_ERRORS } from "@leximon/view-model";
 import Link from "next/link";
 import { type FormEvent, useId, useState } from "react";
 import { api } from "@/lib/api";
@@ -11,12 +12,6 @@ type FormState =
   | { readonly kind: "joined" }
   | { readonly kind: "closed" }
   | { readonly kind: "error"; readonly message: string };
-
-const ERRORS = {
-  invalid_email: "Il manque quelque chose à cette adresse.",
-  rate_limited: "Doucement. Réessaie dans une minute.",
-  unavailable: "Le serveur lambine. Réessaie.",
-} as const;
 
 /** Leaves an address to be warned when the game opens. Nothing else is asked or promised. */
 export function WaitlistForm() {
@@ -32,10 +27,12 @@ export function WaitlistForm() {
     try {
       const result = await api.joinWaitlist(email);
       setState(
-        result.kind === "refused" ? { kind: "error", message: ERRORS[result.reason] } : result,
+        result.kind === "refused"
+          ? { kind: "error", message: WAITLIST_ERRORS[result.reason] }
+          : result,
       );
     } catch {
-      setState({ kind: "error", message: ERRORS.unavailable });
+      setState({ kind: "error", message: WAITLIST_ERRORS.unavailable });
     }
   };
 

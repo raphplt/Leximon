@@ -72,3 +72,29 @@ describe("a shared resource's read", () => {
     expect(seen).toEqual([true, false, false]);
   });
 });
+
+describe("a shared resource after another player signs in", () => {
+  it("forgets the old player's value and reads the API again", async () => {
+    const { resource, calls } = counting(["guest", "member"]);
+    await resource.read();
+    resource.reset();
+    expect(resource.current()).toBeNull();
+    expect(await resource.read()).toBe("member");
+    expect(calls()).toBe(2);
+  });
+
+  it("drops a read that was on its way when it was reset", async () => {
+    let resolve: (value: string) => void = () => {};
+    const resource = sharedResource(
+      () =>
+        new Promise<string>((done) => {
+          resolve = done;
+        }),
+    );
+    const late = resource.read();
+    resource.reset();
+    resolve("guest");
+    await late;
+    expect(resource.current()).toBeNull();
+  });
+});

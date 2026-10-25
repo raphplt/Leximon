@@ -18,6 +18,11 @@ export interface SharedResource<T> {
    */
   read(maxAgeMs?: number): Promise<T>;
   subscribe(listener: () => void): () => void;
+  /**
+   * Forgets the value, as if never read: another player signed in on this device. A read
+   * still on its way is dropped when it lands.
+   */
+  reset(): void;
 }
 
 export function sharedResource<T>(load: () => Promise<T>): SharedResource<T> {
@@ -27,6 +32,8 @@ export function sharedResource<T>(load: () => Promise<T>): SharedResource<T> {
   let failed = false;
   /** When the API was last read, as opposed to updated from an action's answer. */
   let readAt = 0;
+  /** Bumped by `reset`: a read started before it no longer counts. */
+  let generation = 0;
   const listeners = new Set<() => void>();
 
   const emit = () => {
@@ -39,14 +46,17 @@ export function sharedResource<T>(load: () => Promise<T>): SharedResource<T> {
       failed = false;
       emit();
     }
+    const started = generation;
     const request = load()
       .then((loaded) => {
+        if (started !== generation) return loaded;
         value = loaded;
         readAt = Date.now();
         emit();
         return loaded;
       })
       .catch((error: unknown) => {
+        if (started !== generation) throw error;
         // Left as it was; the next screen that mounts, or a retry, tries again.
         stale = true;
         failed = true;
@@ -54,7 +64,7 @@ export function sharedResource<T>(load: () => Promise<T>): SharedResource<T> {
         throw error;
       })
       .finally(() => {
-        loading = null;
+        if (started === generation) loading = null;
       });
     loading = request;
     return request;
@@ -85,6 +95,15 @@ export function sharedResource<T>(load: () => Promise<T>): SharedResource<T> {
         return Promise.resolve(value);
       }
       return fetchIt();
+    },
+    reset() {
+      generation += 1;
+      value = null;
+      loading = null;
+      stale = true;
+      failed = false;
+      readAt = 0;
+      emit();
     },
     subscribe(listener) {
       listeners.add(listener);

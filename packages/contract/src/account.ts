@@ -111,3 +111,11 @@ export const accountResponseSchema = z.discriminatedUnion("kind", [
   }),
 ]);
 export type AccountResponse = z.infer<typeof accountResponseSchema>;
+
+/** Why a sign-in code was not sent. */
+export type SendCodeRefusal =
+  | "invalid_email"
+  | "undeliverable_email"
+  | "rate_limited"
+  | "daily_limit"
+  | "unavailable";

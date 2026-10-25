@@ -11,6 +11,7 @@ import {
   type LinkPreviewResponse,
   linkPreviewErrorSchema,
   linkPreviewResponseSchema,
+  type SendCodeRefusal,
   SIGN_IN_CODE_QUOTA_ERROR,
   UNDELIVERABLE_EMAIL_ERROR,
   type UpdateEmailPreferencesRequest,
@@ -21,12 +22,7 @@ export type SendCodeResult =
   | { readonly kind: "sent" }
   | {
       readonly kind: "refused";
-      readonly reason:
-        | "invalid_email"
-        | "undeliverable_email"
-        | "rate_limited"
-        | "daily_limit"
-        | "unavailable";
+      readonly reason: SendCodeRefusal;
     };
 
 export type PreviewResult =

@@ -2,6 +2,18 @@
 
 import { AGE_BRACKETS, type AgeBracket, type LinkPreviewResponse } from "@leximon/contract";
 import { BetaClosedError } from "@leximon/contract/client";
+import {
+  ACCOUNT_TITLES,
+  AGE_UNSAID,
+  ageBracketLabel,
+  type CodeError,
+  codeErrorMessage,
+  confirmStep,
+  NEWS_OPT_IN,
+  needsConfirmation,
+  needsNewCode,
+  sendErrorMessage,
+} from "@leximon/view-model";
 import Link from "next/link";
 import { type FormEvent, useCallback, useEffect, useId, useState } from "react";
 import { Select, type SelectOption } from "@/components/select";
@@ -9,14 +21,6 @@ import { api } from "@/lib/api";
 import { usePackShape } from "@/lib/use-pack-shape";
 import { forgetProgress } from "@/progress/use-progress";
 import { Switch } from "@/ui/switch";
-import {
-  type CodeError,
-  codeErrorMessage,
-  confirmStep,
-  needsConfirmation,
-  needsNewCode,
-  sendErrorMessage,
-} from "./account-flow";
 import styles from "./account-screen.module.css";
 
 type Step =
@@ -217,13 +221,11 @@ export function AccountScreen() {
 function titleOf(step: Step): string {
   switch (step.kind) {
     case "member":
-      return "Tu es connecté";
     case "code":
-      return "Vérifie tes e-mails";
     case "confirm":
-      return "Presque fini";
+      return ACCOUNT_TITLES[step.kind];
     default:
-      return "Garde ta collection";
+      return ACCOUNT_TITLES.email;
   }
 }
 
@@ -266,7 +268,7 @@ function EmailForm({
           checked={newsOptIn}
           onChange={(event) => onNewsOptIn(event.target.checked)}
         />
-        <span>M'écrire quand il y a du nouveau</span>
+        <span>{NEWS_OPT_IN}</span>
       </label>
       <button type="submit" className={styles.primary} disabled={busy || email.trim() === ""}>
         {busy ? "Envoi…" : "Recevoir un code"}
@@ -311,11 +313,7 @@ function NewsToggle() {
   return (
     <>
       {value !== null && (
-        <Switch
-          label="M'écrire quand il y a du nouveau"
-          checked={value}
-          onChange={(next) => void change(next)}
-        />
+        <Switch label={NEWS_OPT_IN} checked={value} onChange={(next) => void change(next)} />
       )}
       {failed && <p className={styles.hint}>Pas enregistré. Réessaie.</p>}
     </>
@@ -377,11 +375,8 @@ function CodeForm({
 }
 
 const AGE_OPTIONS: readonly SelectOption<AgeBracket | "">[] = [
-  { value: "", label: "Je préfère ne pas dire" },
-  ...AGE_BRACKETS.map((bracket) => ({
-    value: bracket,
-    label: bracket === "50+" ? "50 ans et plus" : `${bracket.replace("-", " à ")} ans`,
-  })),
+  { value: "", label: AGE_UNSAID },
+  ...AGE_BRACKETS.map((bracket) => ({ value: bracket, label: ageBracketLabel(bracket) })),
 ];
 
 function Confirm({
