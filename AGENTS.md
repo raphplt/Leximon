@@ -2,7 +2,7 @@
 
 Jeu de cartes à collectionner pour découvrir les mots rares et anciens du français. Boosters gratuits, collection, défis qui font monter les cartes en niveau, échanges entre joueurs. Web, iOS et Android.
 
-**État :** le web joue de bout en bout (plis, album, défis avec plis bonus, échanges, profil public et atelier, clans) sur le catalogue de lancement publié (1 561 cartes, trois collections) ; le mobile joue presque tout le jeu sur Android (restent sons, vibrations, liens universels et publication sur les stores). Le site est en ligne (leximon.fr), en bêta fermée sur invitation. Le détail est dans `docs/feuille-de-route.md`.
+**État :** le web joue de bout en bout (plis, album, défis avec plis bonus, échanges, profil public et atelier, clans) sur le catalogue de lancement publié (1 561 cartes, trois collections) ; le mobile joue presque tout le jeu sur Android, sons et vibrations compris (restent liens universels et publication sur les stores). Le site est en ligne (leximon.fr), en bêta fermée sur invitation. Le détail est dans `docs/feuille-de-route.md`.
 
 ## Commandes
 
@@ -124,7 +124,7 @@ Objectif : un code lisible et facile à maintenir, performant et sûr, pensé po
 
 ## Stack
 
-pnpm + Turborepo · Node 24 · Biome · Vitest · Next.js (web) · Expo (mobile) · Hono + Drizzle + Postgres via node-postgres (API) · Cloudflare + Postgres managé UE (Neon pour la bêta) · Better Auth · Cloudflare Email Service (codes) et Lettermint (campagnes) · ts-fsrs (révision espacée) · k6 (test de charge, par Docker) · Directus · chaîne de contenu Python en local. Le détail et les raisons sont dans `docs/decisions.md`.
+pnpm + Turborepo · Node 24 · Biome · Vitest · Next.js (web) · Expo (mobile) · Hono + Drizzle + Postgres via node-postgres (API) · Cloudflare + Postgres managé UE (Neon pour la bêta) · Better Auth · Cloudflare Email Service (codes) et Lettermint (campagnes) · ts-fsrs (révision espacée) · expo-audio et expo-haptics (sons et vibrations du mobile) · k6 (test de charge, par Docker) · Directus · chaîne de contenu Python en local. Le détail et les raisons sont dans `docs/decisions.md`.
 
 ## Structure prévue
 

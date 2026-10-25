@@ -18,6 +18,7 @@ import { type ReactNode, useEffect, useState } from "react";
 import { Pressable, StyleSheet, Switch, Text, View } from "react-native";
 import { api } from "@/api/client";
 import { WEB_URL } from "@/config";
+import { type FeedbackKind, readPreference, writePreference } from "@/feedback/feedback";
 import { playFromScratch } from "@/player/session";
 import { useShared } from "@/player/shared";
 import { account, profile } from "@/player/state";
@@ -50,8 +51,8 @@ function openWebPage(path: string): void {
 type SheetName = "pseudo" | "blocks" | "delete" | null;
 
 /**
- * Settings: notifications and the profile's openness, kept on the server; the account. Sound
- * and vibration wait for the phone to make them.
+ * Settings: sound and vibration, kept on the phone; notifications and the profile's openness,
+ * kept on the server; the account.
  */
 export function SettingsScreen() {
   const who = useShared(account);
@@ -61,7 +62,17 @@ export function SettingsScreen() {
   const [blocked, setBlocked] = useState<number | null>(null);
   const [sheet, setSheet] = useState<SheetName>(null);
   const [error, setError] = useState<string | null>(null);
+  const [feedback, setFeedback] = useState<Record<FeedbackKind, boolean>>(() => ({
+    sound: readPreference("sound"),
+    speech: readPreference("speech"),
+    haptics: readPreference("haptics"),
+  }));
   const member = who?.kind === "member";
+
+  const toggleFeedback = (kind: FeedbackKind, enabled: boolean) => {
+    writePreference(kind, enabled);
+    setFeedback((current) => ({ ...current, [kind]: enabled }));
+  };
 
   useEffect(() => {
     api
@@ -93,6 +104,23 @@ export function SettingsScreen() {
 
   return (
     <Page title="Réglages">
+      <Group title="JEU">
+        <Toggle label="Son" value={feedback.sound} onChange={(on) => toggleFeedback("sound", on)} />
+        {feedback.sound && (
+          <Toggle
+            label="Mots dits à voix haute"
+            detail="Quand la carte se pose"
+            value={feedback.speech}
+            onChange={(on) => toggleFeedback("speech", on)}
+          />
+        )}
+        <Toggle
+          label="Vibration"
+          value={feedback.haptics}
+          onChange={(on) => toggleFeedback("haptics", on)}
+        />
+      </Group>
+
       {notify !== null && (
         <Group title="NOTIFICATIONS">
           <Toggle

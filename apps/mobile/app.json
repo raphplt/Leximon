@@ -35,6 +35,7 @@
             "./assets/fonts/BricolageGrotesque-Bold.ttf",
             "./assets/fonts/BricolageGrotesque-ExtraBold.ttf",
             "./assets/fonts/Fraunces-Black.ttf",
+            "./assets/fonts/Fraunces-ExtraBold.ttf",
             "./assets/fonts/Newsreader-Regular.ttf",
             "./assets/fonts/Newsreader-Medium.ttf",
             "./assets/fonts/Newsreader-Italic.ttf"
@@ -47,6 +48,14 @@
           "backgroundColor": "#262B40",
           "image": "./assets/images/splash-icon.png",
           "imageWidth": 120
+        }
+      ],
+      [
+        "expo-audio",
+        {
+          "microphonePermission": false,
+          "recordAudioAndroid": false,
+          "enableBackgroundPlayback": false
         }
       ]
     ],

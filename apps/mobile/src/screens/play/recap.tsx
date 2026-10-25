@@ -2,17 +2,20 @@ import { type Catalog, cardOrPlaceholder } from "@leximon/contract/client";
 import { cardSize, colors } from "@leximon/tokens";
 import {
   collectionProgress,
+  keepsAnnouncementWhenHurried,
   levelRatio,
   levelUpLabel,
   openAgainLabel,
   recap,
+  recapCascade,
   xpGainLabel,
 } from "@leximon/view-model";
 import { router } from "expo-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ScrollView, StyleSheet, Text, useWindowDimensions, View } from "react-native";
-import Animated, { FadeInRight } from "react-native-reanimated";
+import Animated, { FadeInRight, useReducedMotion } from "react-native-reanimated";
 import { Card } from "@/cards/card";
+import { play } from "@/feedback/feedback";
 import { openCoffret } from "@/levels/coffret";
 import { useNow, useShared } from "@/player/shared";
 import { progress as progressResource, wallet as walletResource } from "@/player/state";
@@ -31,16 +34,21 @@ const CARD_MAX = 260;
 /** Height kept around the cards: the recap's lines and buttons. */
 const CHROME = 300;
 const STEP_MS = 80;
+/** A card's chime rings once it has slid in. */
+const CHIME_AT_MS = 220;
 
 /** What the sachet gave, one card after the other, and the level it raised. */
 export function Recap({
   catalog,
   pack,
+  hurriedFrom,
   mustSignUp,
   onOpen,
 }: {
   readonly catalog: Catalog;
   readonly pack: Pack;
+  /** Where the player asked to reveal everything; null when every card was turned. */
+  readonly hurriedFrom: number | null;
   readonly mustSignUp: boolean;
   readonly onOpen: () => void;
 }) {
@@ -58,6 +66,30 @@ export function Recap({
     ),
   );
   const [active, setActive] = useState(0);
+  const reducedMotion = useReducedMotion();
+  // Computed once: the cascade plays when the recap appears.
+  const [steps] = useState(() =>
+    recapCascade(
+      pack.cards,
+      (index) => {
+        const card = pack.cards[index];
+        return (
+          hurriedFrom === null ||
+          index < hurriedFrom ||
+          (card !== undefined && keepsAnnouncementWhenHurried(card.rarity))
+        );
+      },
+      { reducedMotion },
+    ),
+  );
+  useEffect(() => {
+    const timers = steps.flatMap((step) =>
+      step.cue === null ? [] : [setTimeout(() => play(step.cue), step.delayMs + CHIME_AT_MS)],
+    );
+    return () => {
+      for (const timer of timers) clearTimeout(timer);
+    };
+  }, [steps]);
   const { best, fresh } = recap(pack.cards, pack.quantitiesBefore);
   const progress = collectionProgress(pack.collectionCardIds, pack.quantitiesBefore, pack.cards);
   const xp = xpGainLabel(pack.progress);

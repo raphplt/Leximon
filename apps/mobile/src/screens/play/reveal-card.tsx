@@ -2,7 +2,7 @@ import type { CatalogCard } from "@leximon/contract";
 import { cardSize, colors, rarityStyles } from "@leximon/tokens";
 import { cardRelease, frequencyLine, type RarityStaging } from "@leximon/view-model";
 import { useEffect, useRef, useState } from "react";
-import { PanResponder, StyleSheet, Text, View } from "react-native";
+import { PanResponder, Pressable, StyleSheet, Text, View } from "react-native";
 import Animated, {
   Easing,
   interpolate,
@@ -15,7 +15,10 @@ import Animated, {
 import Svg, { Defs, Ellipse, Polyline, RadialGradient, Stop } from "react-native-svg";
 import { Card } from "@/cards/card";
 import { CardBack } from "@/cards/card-back";
+import { useSpokenWord } from "@/cards/spoken-word";
+import { play, speechOn, vibrate } from "@/feedback/feedback";
 import { fonts } from "@/theme";
+import { Icon } from "@/ui/icon";
 
 /** A touch during the first moments of an announcement is ignored: it may be a double tap. */
 const TOUCH_GUARD_MS = 350;
@@ -23,6 +26,8 @@ const EXIT_MS = 180;
 const EDGE_MS = 250;
 /** Below this many points, a touch on the card is a tap. */
 const TAP_SLOP = 8;
+/** The word is said as the face settles, just after the « Nouveau ! » chime when there is one. */
+const SPEAK_AFTER_CHIME_MS = 220;
 
 /**
  * One card of the pack: its announcement on the back, then its face, then a touch or a swipe
@@ -70,6 +75,7 @@ export function RevealCard({
   const dim = useSharedValue(0);
   const height = (width * cardSize.height) / cardSize.width;
   const glow = rarityStyles[card.rarity].glow;
+  const word = useSpokenWord(card);
 
   const later = (ms: number, action: () => void) => {
     timers.current.push(setTimeout(action, ms));
@@ -85,7 +91,15 @@ export function RevealCard({
       duration: staging.flipMs,
       easing: Easing.inOut(Easing.cubic),
     });
-    later(staging.flipMs, () => setSettled(true));
+    play(staging.revealCue);
+    vibrate(staging.revealHaptic);
+    later(staging.flipMs, () => {
+      setSettled(true);
+      if (isNew) play("newCard");
+      if (!speechOn()) return;
+      if (isNew) later(SPEAK_AFTER_CHIME_MS, word.play);
+      else word.play();
+    });
   };
 
   // The staging is read once: a card keeps the one it started with.
@@ -97,6 +111,8 @@ export function RevealCard({
     } else {
       edge.value = withTiming(1, { duration: EDGE_MS });
       announce(staging.announce);
+      play(staging.announceCue);
+      vibrate(staging.announceHaptic);
       if (staging.flip === "auto") later(staging.announceMs, flip);
       else later(Math.min(staging.announceMs, TOUCH_GUARD_MS), () => setTouchable(true));
     }
@@ -130,6 +146,7 @@ export function RevealCard({
   const leave = (side: -1 | 1) => {
     if (leaving.current) return;
     leaving.current = true;
+    play("cardSlide");
     exitSide.value = side;
     exit.value = withTiming(1, { duration: EXIT_MS, easing: Easing.in(Easing.quad) });
     dim.value = withTiming(0, { duration: EXIT_MS });
@@ -268,6 +285,16 @@ export function RevealCard({
         {!flipped && staging.flip === "touch" && touchable && (
           <Text style={styles.touchHint}>Touche la carte</Text>
         )}
+        {settled && word.available && (
+          <Pressable
+            onPress={word.play}
+            accessibilityRole="button"
+            accessibilityLabel={`Écouter ${card.word}`}
+            style={[styles.listen, word.playing && styles.listening]}
+          >
+            <Icon name="sound" size={18} color={word.playing ? colors.accentInk : colors.text} />
+          </Pressable>
+        )}
         {settled && isNew && <Text style={styles.frequency}>{frequencyLine(card.perBillion)}</Text>}
       </View>
     </View>
@@ -324,9 +351,26 @@ const styles = StyleSheet.create({
   },
   newBadge: { backgroundColor: colors.sticker, color: "#fff" },
   copies: { backgroundColor: colors.sheet, color: colors.text },
-  under: { minHeight: 24, alignItems: "center", paddingHorizontal: 24 },
+  under: {
+    minHeight: 36,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 10,
+    paddingHorizontal: 24,
+  },
+  listen: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: colors.backgroundRaised,
+  },
+  listening: { backgroundColor: colors.accent },
   touchHint: { fontFamily: fonts.ui.bold, fontSize: 15, color: colors.textMuted },
   frequency: {
+    flexShrink: 1,
     fontFamily: fonts.text.italic,
     fontSize: 15,
     color: colors.textMuted,

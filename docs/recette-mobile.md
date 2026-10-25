@@ -87,9 +87,14 @@ A sur le web sert de deuxième joueur : amis, échanges, clan, sanctions. `pnpm 
 - **Attendu :** sachet gravé de la collection, stock en pastilles et temps avant le suivant, boutons ronds autour du sachet (clan, discussion, joutes fermées, défi du jour avec son anneau, amis, coffrets avec leur nombre). Une collection fermée dit le niveau requis.
 - **Retour :**
 
+### MJO-08 · Le même sachet que sur le web
+- **Faire :** ouvrir `/jouer` sur le web à côté du téléphone, sur la même collection ; regarder le sachet quelques secondes ; vider son stock et regarder le sachet vide.
+- **Attendu :** même sachet au détail près : dents des sertissages, bande « déchirer ici ▸ » et son pointillé, « LEXIMON » doré, sceau gravé, ruban kraft (un nom long passe sur deux lignes équilibrées), « 5 CARTES », sceau de cire rouge en bas à droite, plis aux coins. Il se balance lentement, la lumière glisse sur la feuille et son ombre suit. Vide, il est gris au-dessus d'un trait doré qui monte, avec le temps restant au-dessus du trait.
+- **Retour :**
+
 ### MJO-02 · Déchirer au doigt
 - **Faire :** glisser le doigt le long du pointillé, d'un bout ou de l'autre ; une fois en s'arrêtant à mi-chemin et en revenant, une fois jusqu'au bout.
-- **Attendu :** la bande suit le doigt et se soulève depuis l'endroit où elle tient encore. Relâchée avant 60 %, elle se recolle ; au-delà, elle s'envole et le sachet s'ouvre. Toucher le sachet ou le bouton l'ouvre aussi.
+- **Attendu :** la bande suit le doigt et se soulève depuis l'endroit où elle tient encore, avec un crépitement de papier. Relâchée avant 60 %, elle se recolle ; au-delà, elle s'envole en tournant, deux cartes sortent du sachet, avec un bruit de déchirure et une vibration. Toucher le sachet ou le bouton l'ouvre aussi.
 - **Retour :**
 
 ### MJO-03 · Astuce d'ouverture
@@ -110,6 +115,11 @@ A sur le web sert de deuxième joueur : amis, échanges, clan, sanctions. `pnpm 
 ### MJO-06 · Bilan (JOU-06, JOU-07)
 - **Faire :** finir les cartes.
 - **Attendu :** les cartes du sachet en défilement, XP gagnée, progression de la collection. Un coffret qui attend fait du bouton principal « Ouvrir le coffret ».
+- **Retour :**
+
+### MJO-09 · Sons, voix et vibrations (JOU-08)
+- **Faire :** son du téléphone monté, mode silencieux coupé ; ouvrir des sachets jusqu'à une Rare au moins ; toucher le haut-parleur sous une carte ; dans Réglages, couper « Mots dits à voix haute », puis « Son », puis « Vibration », et rouvrir un sachet à chaque fois ; enfin passer le téléphone en silencieux.
+- **Attendu :** les mêmes sons que sur le web : glissement des cartes, retournement, carillon des Rares et au-delà, grondement, fissure, fanfares, « Nouveau ! », accord du bilan avec un carillon par carte rare. Le mot est dit quand la carte se pose ; le haut-parleur le redit. Les Rares et au-delà vibrent, plus fort quand elles sont plus rares. Chaque réglage coupe ce qu'il dit et tient après un relancement. En silencieux, aucun son. La musique d'une autre app continue.
 - **Retour :**
 
 ### MJO-07 · Gravures Épique et Légendaire
@@ -253,4 +263,4 @@ A sur le web sert de deuxième joueur : amis, échanges, clan, sanctions. `pnpm 
 
 ## Pas encore sur le mobile
 
-Sons, vibrations et mot prononcé à la révélation (dépendances à valider), copie du lien d'ami dans le presse-papiers, reflets des cartes, liens universels `https://leximon.fr/…`, page Mécène, joutes.
+Copie du lien d'ami dans le presse-papiers, reflets des cartes, liens universels `https://leximon.fr/…`, page Mécène, joutes.

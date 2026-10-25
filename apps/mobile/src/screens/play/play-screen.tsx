@@ -26,6 +26,8 @@ import { Pressable, StyleSheet, Text, useWindowDimensions, View } from "react-na
 import { useReducedMotion } from "react-native-reanimated";
 import { api } from "@/api/client";
 import { loadCatalog } from "@/cards/catalog";
+import { prepareSpokenWords } from "@/cards/spoken-word";
+import { play, prepareSounds } from "@/feedback/feedback";
 import { noteGained, OWNED_CARDS_MAX_AGE_MS, ownedCards } from "@/player/collection";
 import { useNow, useShared } from "@/player/shared";
 import { account, publishProgress, wallet } from "@/player/state";
@@ -67,7 +69,11 @@ type Phase =
       /** Where the player asked to reveal everything; null while turning cards one by one. */
       readonly hurriedFrom: number | null;
     }
-  | { readonly name: "recap" };
+  | {
+      readonly name: "recap";
+      /** Where the player asked to reveal everything: the cards skipped chime in the recap. */
+      readonly hurriedFrom: number | null;
+    };
 
 type Outcome =
   | { readonly kind: "answered"; readonly result: OpenBoosterResult }
@@ -131,6 +137,7 @@ export function PlayScreen() {
   useEffect(() => {
     SecureStore.getItemAsync(CHOICE_KEY).then(setWanted, () => undefined);
     void load();
+    prepareSounds();
   }, [load]);
 
   useEffect(() => {
@@ -178,6 +185,13 @@ export function PlayScreen() {
     if (started?.outcome == null) return;
     setError(null);
     setPhase({ name: "opening" });
+    // The words start loading while the seal still breaks.
+    void started.outcome.then((answer) => {
+      if (answer.kind !== "answered" || answer.result.kind !== "opened") return;
+      prepareSpokenWords(
+        answer.result.cards.flatMap((drawn) => catalog.cardsById.get(drawn.cardId) ?? []),
+      );
+    });
     const [outcome] = await Promise.all([started.outcome, delay(reduced ? 0 : motion.sealBreak)]);
     if (outcome.kind === "failed") {
       // Same key next time: if the server did open the booster, it answers with the same cards.
@@ -236,7 +250,17 @@ export function PlayScreen() {
       owned,
     );
     ownedCards.publish(after);
-    setPhase(reduced ? { name: "revealing", index: 0, hurriedFrom: null } : { name: "stack" });
+    if (reduced) {
+      setPhase({ name: "revealing", index: 0, hurriedFrom: null });
+    } else {
+      play("cardSlide");
+      setPhase({ name: "stack" });
+    }
+  };
+
+  const toRecap = (hurriedFrom: number | null) => {
+    play("recap");
+    setPhase({ name: "recap", hurriedFrom });
   };
 
   /** Next card, or, once the player asked to reveal everything, the next Épique or Légendaire. */
@@ -250,7 +274,8 @@ export function PlayScreen() {
         : from < pack.cards.length
           ? from
           : -1;
-    setPhase(index === -1 ? { name: "recap" } : { name: "revealing", index, hurriedFrom });
+    if (index === -1) toRecap(hurriedFrom);
+    else setPhase({ name: "revealing", index, hurriedFrom });
   };
 
   const revealAll = () => {
@@ -259,7 +284,8 @@ export function PlayScreen() {
     const index = pack.cards.findIndex(
       (card, i) => i >= from && keepsAnnouncementWhenHurried(card.rarity),
     );
-    setPhase(index === -1 ? { name: "recap" } : { name: "revealing", index, hurriedFrom: from });
+    if (index === -1) toRecap(from);
+    else setPhase({ name: "revealing", index, hurriedFrom: from });
   };
 
   const stock = currentWallet === null ? null : stockView(currentWallet, now);
@@ -286,7 +312,10 @@ export function PlayScreen() {
             cards={pack.cards}
             width={revealWidth}
             tone={pack.back}
-            onReveal={() => setPhase({ name: "revealing", index: 0, hurriedFrom: null })}
+            onReveal={() => {
+              play("cardSlide");
+              setPhase({ name: "revealing", index: 0, hurriedFrom: null });
+            }}
           />
         </View>
         <View style={styles.revealBar}>
@@ -365,6 +394,7 @@ export function PlayScreen() {
         <Recap
           catalog={catalog}
           pack={pack}
+          hurriedFrom={phase.hurriedFrom}
           mustSignUp={mustSignUp}
           onOpen={() => {
             setPack(null);
@@ -453,7 +483,11 @@ export function PlayScreen() {
                       : openButtonLabel(stock, guestLeft)
                 }
                 disabled={!canOpen || phase.name === "opening"}
-                onPress={() => void openPack()}
+                onPress={() => {
+                  startRequest();
+                  play("tearFinish");
+                  void openPack();
+                }}
               />
             )}
             {error !== null ? (

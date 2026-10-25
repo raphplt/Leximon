@@ -9,6 +9,8 @@ export { colors };
 export const fonts = {
   /** The word and titles: Fraunces 900, SOFT 100. */
   display: "Fraunces-Black",
+  /** The sachet's print: Fraunces 800, SOFT 100. */
+  displayBold: "Fraunces-ExtraBold",
   ui: {
     medium: "BricolageGrotesque-Medium",
     semibold: "BricolageGrotesque-SemiBold",

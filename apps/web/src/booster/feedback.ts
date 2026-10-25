@@ -4,6 +4,9 @@ import type { SoundCue } from "@leximon/view-model";
  * Sound and vibration of the opening. Sounds are synthesized with the Web Audio API rather than
  * recorded: no file to load or license to track, and the tear can follow the finger grain by
  * grain. They can be swapped for designed samples later without touching the screens.
+ *
+ * The app plays the same cues from files rendered by apps/mobile/scripts/render_sounds.py: a cue
+ * changed here is changed there too, then rendered again.
  */
 
 /** `speech`: the word read aloud as its card settles, apart from the other sounds. */
