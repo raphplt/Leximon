@@ -14,6 +14,8 @@ export default function TabsLayout() {
       <TopBar />
       <Tabs
         tabBar={(props) => <TabBar {...props} />}
+        // Back from a tab returns to Jouer, and from Jouer leaves the app.
+        backBehavior="initialRoute"
         screenOptions={{
           headerShown: false,
           sceneStyle: { backgroundColor: colors.background },

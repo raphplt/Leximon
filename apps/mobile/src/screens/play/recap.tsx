@@ -112,7 +112,9 @@ export function Recap({
         {progress.gained > 0 && <Text style={styles.gained}> (+{progress.gained})</Text>}
       </Text>
       <View style={styles.actions}>
-        {!mustSignUp && (
+        {mustSignUp ? (
+          <Button label="Créer mon compte" onPress={() => router.push("/compte")} />
+        ) : (
           <Button
             label={wallet === null ? "Ouvrir un autre sachet" : openAgainLabel(wallet, now)}
             disabled={!canOpen}

@@ -34,3 +34,19 @@ export function publishProgress(next: Progress): void {
   const current = progress.current();
   if (current === null || current.xp <= next.xp) progress.publish(next);
 }
+
+/** Forgets the state of the player who left: the next read is the new player's. */
+export function resetPlayerState(): void {
+  for (const resource of [
+    wallet,
+    levelRewards,
+    account,
+    profile,
+    progress,
+    mailbox,
+    myClan,
+    incomingOffers,
+  ]) {
+    resource.reset();
+  }
+}

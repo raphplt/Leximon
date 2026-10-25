@@ -1,0 +1,37 @@
+import { Pressable, StyleSheet, Text } from "react-native";
+import { colors, fonts } from "@/theme";
+
+/** A minor action, written as an underlined link. */
+export function TextButton({
+  label,
+  onPress,
+  disabled = false,
+}: {
+  readonly label: string;
+  readonly onPress: () => void;
+  readonly disabled?: boolean;
+}) {
+  return (
+    <Pressable
+      onPress={onPress}
+      disabled={disabled}
+      accessibilityRole="button"
+      accessibilityState={{ disabled }}
+      hitSlop={6}
+      style={({ pressed }) => [styles.button, (pressed || disabled) && styles.dim]}
+    >
+      <Text style={styles.label}>{label}</Text>
+    </Pressable>
+  );
+}
+
+const styles = StyleSheet.create({
+  button: { alignSelf: "center", paddingVertical: 8 },
+  dim: { opacity: 0.5 },
+  label: {
+    fontFamily: fonts.ui.bold,
+    fontSize: 15,
+    color: colors.accent,
+    textDecorationLine: "underline",
+  },
+});

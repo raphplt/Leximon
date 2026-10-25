@@ -1,14 +1,23 @@
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
+import { Fragment } from "react";
+import { useSessionGeneration } from "@/player/session";
 import { colors } from "@/theme";
 
 export default function RootLayout() {
+  // Another player: every screen mounts again and reads the new player's state.
+  const generation = useSessionGeneration();
   return (
     <>
       <StatusBar style="light" />
-      <Stack
-        screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.background } }}
-      />
+      <Fragment key={generation}>
+        <Stack
+          screenOptions={{
+            headerShown: false,
+            contentStyle: { backgroundColor: colors.background },
+          }}
+        />
+      </Fragment>
     </>
   );
 }

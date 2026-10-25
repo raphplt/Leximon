@@ -19,6 +19,7 @@ import {
   stockView,
 } from "@leximon/view-model";
 import { randomUUID } from "expo-crypto";
+import { router } from "expo-router";
 import * as SecureStore from "expo-secure-store";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Pressable, StyleSheet, Text, useWindowDimensions, View } from "react-native";
@@ -371,7 +372,12 @@ export function PlayScreen() {
             )}
           </View>
           <View style={styles.shelf}>
-            {ready && mustSignUp && <Text style={styles.message}>{SIGN_UP_HINT}</Text>}
+            {ready && mustSignUp && (
+              <>
+                <Text style={styles.message}>{SIGN_UP_HINT}</Text>
+                <Button label="Créer mon compte" onPress={() => router.push("/compte")} />
+              </>
+            )}
             {ready && !mustSignUp && (
               <Button
                 label={

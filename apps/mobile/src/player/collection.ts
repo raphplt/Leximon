@@ -52,3 +52,11 @@ export const OWNED_CARDS_MAX_AGE_MS = 10 * 60 * 1000;
 export const wordMemory = sharedResource<ReadonlyMap<string, WordMemory>>(async () =>
   memoriesByCard(await api.fetchMastery()),
 );
+
+/** Forgets the cards of the player who left: the next read is the new player's. */
+export function resetCollection(): void {
+  ownedInFlight = null;
+  ownedCards.reset();
+  cardDates.reset();
+  wordMemory.reset();
+}

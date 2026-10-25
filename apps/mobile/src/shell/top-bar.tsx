@@ -5,6 +5,7 @@ import {
   stockView,
   xpProgressLabel,
 } from "@leximon/view-model";
+import { router } from "expo-router";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useNow } from "@/player/shared";
@@ -25,10 +26,13 @@ export function TopBar() {
   const stock = view.wallet === null ? null : stockView(view.wallet, now);
   return (
     <View style={[styles.bar, { paddingTop: insets.top + 8 }]}>
-      <View
+      <Pressable
         style={styles.avatar}
-        accessible
-        accessibilityLabel={progress === null ? "Joueur" : levelDescription(progress)}
+        onPress={() => router.push("/compte")}
+        accessibilityRole="button"
+        accessibilityLabel={
+          progress === null ? "Ton compte" : `${levelDescription(progress)}. Ton compte`
+        }
       >
         {progress !== null && <LevelRing ratio={levelRatio(progress)} size={AVATAR} />}
         <View style={styles.avatarInner}>
@@ -39,7 +43,7 @@ export function TopBar() {
             <LevelMedal level={progress.level} size={24} />
           </View>
         )}
-      </View>
+      </Pressable>
       {progress !== null && (
         <View style={styles.xp}>
           <Text style={styles.xpText}>{xpProgressLabel(progress)}</Text>
