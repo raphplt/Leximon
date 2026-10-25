@@ -13,7 +13,7 @@ import {
 } from "@leximon/view-model";
 import { useState } from "react";
 import { Image, StyleSheet, Text, View } from "react-native";
-import Svg, { Defs, Rect, Text as SvgText } from "react-native-svg";
+import Svg, { Defs, Mask, Rect, Image as SvgImage, Text as SvgText } from "react-native-svg";
 import { fonts } from "@/theme";
 import { FillGradient, paintOf } from "@/ui/fill";
 import { RarityIcon } from "@/ui/rarity-icon";
@@ -205,11 +205,34 @@ function EngravingPrint({
             resizeMode="stretch"
           />
         )}
-        <Image
-          source={{ uri: catalogFileUrl(engraving.ink) }}
-          style={[StyleSheet.absoluteFill, { tintColor: solidColor(style.word) }]}
-          resizeMode="stretch"
-        />
+        {typeof style.word === "string" ? (
+          <Image
+            source={{ uri: catalogFileUrl(engraving.ink) }}
+            style={[StyleSheet.absoluteFill, { tintColor: style.word }]}
+            resizeMode="stretch"
+          />
+        ) : (
+          // A gradient cannot tint an image: the ink file masks a rectangle painted with it.
+          <Svg width={size.width} height={size.height} style={StyleSheet.absoluteFill}>
+            <Defs>
+              <FillGradient id="ink" fill={style.word} />
+              <Mask id="engraving" maskType="alpha">
+                <SvgImage
+                  href={catalogFileUrl(engraving.ink)}
+                  width={size.width}
+                  height={size.height}
+                  preserveAspectRatio="none"
+                />
+              </Mask>
+            </Defs>
+            <Rect
+              width={size.width}
+              height={size.height}
+              fill={paintOf("ink", style.word)}
+              mask="url(#engraving)"
+            />
+          </Svg>
+        )}
       </View>
     </View>
   );
