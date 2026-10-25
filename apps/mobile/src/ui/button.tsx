@@ -1,18 +1,24 @@
 import { Pressable, StyleSheet, Text } from "react-native";
 import { colors, fonts } from "@/theme";
 
-/** The gold button of the main action, raised on its darker edge; `secondary` is outlined. */
+/**
+ * The gold button of the main action, raised on its darker edge; `secondary` is outlined, and
+ * `danger` outlined in the warning colour, for what cannot be undone.
+ */
 export function Button({
   label,
   onPress,
   disabled = false,
   secondary = false,
+  danger = false,
 }: {
   readonly label: string;
   readonly onPress: () => void;
   readonly disabled?: boolean;
   readonly secondary?: boolean;
+  readonly danger?: boolean;
 }) {
+  const outlined = secondary || danger;
   return (
     <Pressable
       accessibilityRole="button"
@@ -21,12 +27,17 @@ export function Button({
       onPress={onPress}
       style={({ pressed }) => [
         styles.button,
-        secondary ? styles.secondary : styles.primary,
+        danger ? styles.danger : outlined ? styles.secondary : styles.primary,
         disabled && styles.disabled,
-        pressed && !secondary && styles.pressed,
+        pressed && !outlined && styles.pressed,
       ]}
     >
-      <Text style={[styles.label, { color: secondary ? colors.text : colors.accentInk }]}>
+      <Text
+        style={[
+          styles.label,
+          { color: danger ? colors.danger : outlined ? colors.text : colors.accentInk },
+        ]}
+      >
         {label}
       </Text>
     </Pressable>
@@ -47,6 +58,7 @@ const styles = StyleSheet.create({
     borderBottomColor: colors.accentShadow,
   },
   secondary: { borderWidth: 2, borderColor: colors.track },
+  danger: { borderWidth: 2, borderColor: colors.danger },
   pressed: { borderBottomWidth: 1, marginTop: 3 },
   disabled: { opacity: 0.45 },
   label: { fontFamily: fonts.ui.extrabold, fontSize: 16 },

@@ -7,6 +7,7 @@ import type {
   MyClanResponse,
   ProfileResponse,
   Progress,
+  Sanction,
 } from "@leximon/contract";
 import { sharedResource } from "@leximon/view-model";
 import { api } from "@/api/client";
@@ -23,6 +24,8 @@ export const profile = sharedResource<ProfileResponse>(api.fetchProfile);
 export const progress = sharedResource<Progress>(api.fetchProgress);
 export const mailbox = sharedResource<MailResponse>(() => api.fetchMail());
 export const myClan = sharedResource<MyClanResponse>(api.fetchMyClan);
+/** Sanctions received, newest first: a writing ban closes the clan's discussion. */
+export const sanctions = sharedResource<readonly Sanction[]>(api.fetchSanctions);
 /** The player's friends, requests and friend link. */
 export const friends = sharedResource<FriendsResponse>(api.fetchFriends);
 
@@ -49,6 +52,7 @@ export function resetPlayerState(): void {
     mailbox,
     myClan,
     friends,
+    sanctions,
     incomingOffers,
   ]) {
     resource.reset();

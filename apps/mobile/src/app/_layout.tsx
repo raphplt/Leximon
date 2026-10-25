@@ -3,6 +3,7 @@ import { StatusBar } from "expo-status-bar";
 import { Fragment } from "react";
 import { useSessionGeneration } from "@/player/session";
 import { colors } from "@/theme";
+import { ToastHost } from "@/ui/toast";
 
 export default function RootLayout() {
   // Another player: every screen mounts again and reads the new player's state.
@@ -18,6 +19,7 @@ export default function RootLayout() {
           }}
         />
       </Fragment>
+      <ToastHost />
     </>
   );
 }
