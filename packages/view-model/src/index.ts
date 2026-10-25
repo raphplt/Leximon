@@ -10,6 +10,7 @@ export * from "./engraving";
 export * from "./features";
 export * from "./format";
 export * from "./friends";
+export * from "./gesture";
 export * from "./invitation";
 export * from "./level";
 export * from "./mail";

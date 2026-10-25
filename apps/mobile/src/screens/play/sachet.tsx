@@ -10,12 +10,25 @@ import {
   sealGold,
   sealScallopPath,
 } from "@leximon/tokens";
-import { sachetContents } from "@leximon/view-model";
-import { useEffect } from "react";
-import { Image, Pressable, StyleSheet, View } from "react-native";
+import {
+  sachetContents,
+  TEAR_COMPLETE_AT,
+  TEAR_STARTED_AT,
+  tearProgress,
+} from "@leximon/view-model";
+import { useEffect, useRef, useState } from "react";
+import {
+  Image,
+  PanResponder,
+  type PanResponderInstance,
+  Pressable,
+  StyleSheet,
+  View,
+} from "react-native";
 import Animated, {
   cancelAnimation,
   Easing,
+  type SharedValue,
   useAnimatedStyle,
   useReducedMotion,
   useSharedValue,
@@ -37,6 +50,7 @@ import Svg, {
   Stop,
   Text as SvgText,
 } from "react-native-svg";
+import { scheduleOnRN } from "react-native-worklets";
 import { catalogFileUrl } from "@/cards/catalog";
 import { fonts } from "@/theme";
 
@@ -46,12 +60,18 @@ const CRIMP = 22;
 const TOOTH = 9;
 /** Where the seal sits on the pouch, and how large. */
 const SEAL = { x: 43, y: 150, size: 150 } as const;
+/** The strip torn off: the top crimp down to the dotted line. */
+const STRIP = 62;
+/** Below this many points, a touch on the strip is a tap, not a pull. */
+const TAP_SLOP = 8;
 
 export type SachetState = "sealed" | "empty" | "opening";
 
 /**
  * The pack as a classic booster: a foil pouch crimped at both ends, the collection's colours,
- * motif and gold seal, its name on a kraft ribbon. Touching it opens it.
+ * motif and gold seal, its name on a kraft ribbon. Touching it opens it, and so does tearing its
+ * strip along the dotted line: the strip follows the finger, opens past 60 % and sticks back
+ * below.
  */
 export function Sachet({
   collection,
@@ -59,6 +79,7 @@ export function Sachet({
   width,
   refill,
   refillLabel,
+  onTearStart,
   onOpen,
 }: {
   readonly collection: CatalogCollectionFile;
@@ -68,6 +89,8 @@ export function Sachet({
   readonly refill: number | null;
   /** Empty, the time left before the next one (« 12 min »). */
   readonly refillLabel: string | null;
+  /** The tear has really begun: time to ask the server for the cards. */
+  readonly onTearStart: () => void;
   readonly onOpen: () => void;
 }) {
   const u = width / GRID.width;
@@ -99,6 +122,8 @@ export function Sachet({
         : 0;
   }, [state, reduced, burst]);
 
+  const tear = useTear({ enabled: state === "sealed", width, onTearStart, onOpen });
+
   const animated = useAnimatedStyle(() => {
     const shake = burst.value < 0.4 ? Math.sin(burst.value * 60) * 3 : 0;
     return {
@@ -120,13 +145,177 @@ export function Sachet({
       accessibilityState={{ disabled: state !== "sealed" }}
     >
       <Animated.View style={[{ width, height }, animated]}>
-        <Pouch collection={collection} u={u} />
+        {tear.layered ? (
+          <TornPouch collection={collection} u={u} tear={tear} />
+        ) : (
+          <Pouch collection={collection} u={u} />
+        )}
         {collection.engraving !== undefined && (
           <SealEngraving ink={collection.engraving.ink} u={u} />
         )}
         {state === "empty" && <Waiting refill={refill} label={refillLabel} u={u} />}
+        {state === "sealed" && (
+          <View
+            style={[styles.strip, { height: STRIP * u }]}
+            // Without it, the empty view is flattened away and never receives the finger.
+            collapsable={false}
+            {...tear.handlers}
+            importantForAccessibility="no-hide-descendants"
+          />
+        )}
       </Animated.View>
     </Pressable>
+  );
+}
+
+interface Tear {
+  readonly layered: boolean;
+  readonly progress: SharedValue<number>;
+  /** +1 when the strip tears from its left end, -1 from its right end. */
+  readonly direction: SharedValue<number>;
+  readonly handlers: PanResponderInstance["panHandlers"];
+}
+
+/** Pulling the strip: its progress drives the pouch's layers, the request leaves at 5 %. */
+function useTear({
+  enabled,
+  width,
+  onTearStart,
+  onOpen,
+}: {
+  readonly enabled: boolean;
+  readonly width: number;
+  readonly onTearStart: () => void;
+  readonly onOpen: () => void;
+}): Tear {
+  const progress = useSharedValue(0);
+  const direction = useSharedValue(1);
+  const [layered, setLayered] = useState(false);
+  // The responder is made once: it reads the latest props through this.
+  const latest = useRef({ enabled, width, onTearStart, onOpen });
+  latest.current = { enabled, width, onTearStart, onOpen };
+  const started = useRef(false);
+  /** Whether the finger went past the tap slop at any point of this touch. */
+  const moved = useRef(false);
+
+  useEffect(() => {
+    // Sealed again (an opening that failed): a whole strip, ready to pull.
+    if (!enabled) return;
+    started.current = false;
+    progress.value = 0;
+    setLayered(false);
+  }, [enabled, progress]);
+
+  const responder = useRef(
+    PanResponder.create({
+      onStartShouldSetPanResponder: () => latest.current.enabled,
+      onMoveShouldSetPanResponder: () => latest.current.enabled,
+      onPanResponderTerminationRequest: () => false,
+      onPanResponderGrant: () => {
+        started.current = false;
+        moved.current = false;
+        progress.value = 0;
+        setLayered(true);
+      },
+      onPanResponderMove: (_event, gesture) => {
+        if (Math.hypot(gesture.dx, gesture.dy) >= TAP_SLOP) moved.current = true;
+        const next = tearProgress(gesture.dx, latest.current.width);
+        if (!started.current) direction.value = gesture.dx < 0 ? -1 : 1;
+        if (!started.current && next >= TEAR_STARTED_AT) {
+          started.current = true;
+          latest.current.onTearStart();
+        }
+        progress.value = next;
+      },
+      onPanResponderRelease: () => {
+        const { onTearStart: start, onOpen: open } = latest.current;
+        if (!moved.current) {
+          // A tap on the strip opens the pouch like a tap anywhere else.
+          setLayered(false);
+          start();
+          open();
+          return;
+        }
+        if (progress.value >= TEAR_COMPLETE_AT) {
+          progress.value = withTiming(1, { duration: 160, easing: Easing.out(Easing.quad) });
+          start();
+          open();
+          return;
+        }
+        // The strip sticks back. A request already sent is kept for the next try.
+        progress.value = withTiming(0, { duration: 180 }, (finished) => {
+          if (finished) scheduleOnRN(setLayered, false);
+        });
+      },
+      onPanResponderTerminate: () => {
+        progress.value = withTiming(0, { duration: 180 });
+        setLayered(false);
+      },
+    }),
+  ).current;
+
+  return { layered, progress, direction, handlers: responder.panHandlers };
+}
+
+/**
+ * The pouch cut in three while its strip is pulled: the body, the strip still on, and the piece
+ * torn off, which lifts from where it still holds.
+ */
+function TornPouch({
+  collection,
+  u,
+  tear,
+}: {
+  readonly collection: CatalogCollectionFile;
+  readonly u: number;
+  readonly tear: Tear;
+}) {
+  const width = GRID.width * u;
+  const strip = STRIP * u;
+  const { progress, direction } = tear;
+
+  const kept = useAnimatedStyle(() => {
+    const torn = progress.value * width;
+    return { left: direction.value === 1 ? torn : 0, width: width - torn };
+  });
+  const keptInner = useAnimatedStyle(() => ({
+    transform: [{ translateX: direction.value === 1 ? -progress.value * width : 0 }],
+  }));
+  const torn = useAnimatedStyle(() => {
+    const share = progress.value;
+    return {
+      left: direction.value === 1 ? 0 : width * (1 - share),
+      width: width * share,
+      opacity: share >= 1 ? 0 : 1,
+      transformOrigin: direction.value === 1 ? "right bottom" : "left bottom",
+      transform: [
+        { translateY: -share * 8 * u },
+        { rotate: `${-direction.value * share * 14}deg` },
+      ],
+    };
+  });
+  const tornInner = useAnimatedStyle(() => ({
+    transform: [{ translateX: direction.value === 1 ? 0 : -width * (1 - progress.value) }],
+  }));
+
+  return (
+    <>
+      <View style={[styles.layer, { top: strip, height: GRID.height * u - strip, width }]}>
+        <View style={{ marginTop: -strip }}>
+          <Pouch collection={collection} u={u} />
+        </View>
+      </View>
+      <Animated.View style={[styles.layer, { top: 0, height: strip }, kept]}>
+        <Animated.View style={keptInner}>
+          <Pouch collection={collection} u={u} />
+        </Animated.View>
+      </Animated.View>
+      <Animated.View style={[styles.layer, { top: 0, height: strip }, torn]}>
+        <Animated.View style={tornInner}>
+          <Pouch collection={collection} u={u} />
+        </Animated.View>
+      </Animated.View>
+    </>
   );
 }
 
@@ -467,4 +656,6 @@ function Waiting({
 
 const styles = StyleSheet.create({
   field: { position: "absolute", overflow: "hidden" },
+  layer: { position: "absolute", left: 0, overflow: "hidden" },
+  strip: { position: "absolute", top: 0, left: 0, right: 0 },
 });

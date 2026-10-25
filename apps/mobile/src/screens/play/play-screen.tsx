@@ -69,6 +69,12 @@ type Outcome =
   | { readonly kind: "answered"; readonly result: OpenBoosterResult }
   | { readonly kind: "failed" };
 
+/** The request of the pack being opened, kept from the start of the tear to the server's answer. */
+interface OpenRequest {
+  readonly key: string;
+  readonly outcome: Promise<Outcome> | null;
+}
+
 /** Shown once a guest opened all its boosters. */
 const SIGN_UP_HINT = "Crée ton compte pour garder tes cartes et ouvrir d'autres sachets.";
 
@@ -86,7 +92,7 @@ export function PlayScreen() {
   const [wanted, setWanted] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   /** Kept until the server answers, so that a retry never opens a second booster. */
-  const requestKey = useRef<string | null>(null);
+  const request = useRef<OpenRequest | null>(null);
   const view = usePlayerView();
   const who = useShared(account);
   const now = useNow(15_000);
@@ -146,24 +152,37 @@ export function PlayScreen() {
   };
   const onLocked = () => setNotice(lockedToast("choose_collection", now));
 
+  /** Sends the request as soon as the tear begins: the server answers while the player tears. */
+  const startRequest = (): OpenRequest | null => {
+    if (choice === null) return null;
+    const current = request.current ?? { key: randomUUID(), outcome: null };
+    if (current.outcome !== null) return current;
+    const started: OpenRequest = {
+      key: current.key,
+      outcome: api.openBooster(choice.source, current.key).then(
+        (result): Outcome => ({ kind: "answered", result }),
+        (): Outcome => ({ kind: "failed" }),
+      ),
+    };
+    request.current = started;
+    return started;
+  };
+
   const openPack = async () => {
     if (catalog === null || choice === null || phase.name !== "sealed") return;
+    const started = startRequest();
+    if (started?.outcome == null) return;
     setError(null);
     setPhase({ name: "opening" });
-    const key = requestKey.current ?? randomUUID();
-    requestKey.current = key;
-    const request = api.openBooster(choice.source, key).then(
-      (result): Outcome => ({ kind: "answered", result }),
-      (): Outcome => ({ kind: "failed" }),
-    );
-    const [outcome] = await Promise.all([request, delay(reduced ? 0 : motion.sealBreak)]);
+    const [outcome] = await Promise.all([started.outcome, delay(reduced ? 0 : motion.sealBreak)]);
     if (outcome.kind === "failed") {
       // Same key next time: if the server did open the booster, it answers with the same cards.
+      request.current = { key: started.key, outcome: null };
       setError("Le sachet ne s'est pas ouvert. Vérifie ta connexion.");
       setPhase({ name: "sealed" });
       return;
     }
-    requestKey.current = null;
+    request.current = null;
     const { result } = outcome;
     if (result.kind === "stock_empty") {
       wallet.refresh();
@@ -369,6 +388,9 @@ export function PlayScreen() {
                 // A guest out of sachets waits for an account, not for time.
                 refill={mustSignUp ? null : (stock?.refill ?? null)}
                 refillLabel={stock?.refillShort ?? null}
+                onTearStart={() => {
+                  startRequest();
+                }}
                 onOpen={() => void openPack()}
               />
             )}

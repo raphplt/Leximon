@@ -1,8 +1,8 @@
 "use client";
 
+import { TEAR_COMPLETE_AT, TEAR_STARTED_AT, tearProgress } from "@leximon/view-model";
 import { type CSSProperties, type PointerEvent, useRef, useState } from "react";
 import { play, playTearGrain, vibrate } from "./feedback";
-import { TEAR_COMPLETE_AT, TEAR_STARTED_AT, tearProgress } from "./gesture";
 
 interface Tear {
   readonly pointerId: number;

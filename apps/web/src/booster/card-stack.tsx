@@ -1,10 +1,9 @@
 "use client";
 
-import type { DrawnCard } from "@leximon/view-model";
+import { type DrawnCard, peekAmount, stackRelease } from "@leximon/view-model";
 import { type CSSProperties, type PointerEvent, useRef, useState } from "react";
 import { CardBack } from "./card-back";
 import styles from "./card-stack.module.css";
-import { peekAmount, stackRelease } from "./gesture";
 
 /** How far apart two cards of the stack drift at a full peek, in px. */
 const FAN_STEP = 22;

@@ -3,7 +3,7 @@
 import type { CatalogCard } from "@leximon/contract";
 import { rarityStyles } from "@leximon/tokens";
 import type { RarityStaging } from "@leximon/view-model";
-import { frequencyLine } from "@leximon/view-model";
+import { cardRelease, frequencyLine } from "@leximon/view-model";
 import {
   type CSSProperties,
   type KeyboardEvent,
@@ -19,7 +19,6 @@ import { useHoloLight } from "@/components/use-holo-light";
 import { Icon } from "@/ui/icon";
 import { CardBack } from "./card-back";
 import { play, speechOn, vibrate } from "./feedback";
-import { cardRelease } from "./gesture";
 import styles from "./reveal-card.module.css";
 
 /** A touch during the first moments of an announcement is ignored: it may be a double tap. */
