@@ -1,6 +1,7 @@
 import { PHONE_TAB_ORDER } from "@leximon/view-model";
 import { Tabs } from "expo-router/js-tabs";
 import { View } from "react-native";
+import { TradeDoneMoment } from "@/screens/trades/trade-done";
 import { TAB_ROUTES, TabBar } from "@/shell/tab-bar";
 import { TopBar } from "@/shell/top-bar";
 import { colors } from "@/theme";
@@ -26,6 +27,7 @@ export default function TabsLayout() {
           <Tabs.Screen key={id} name={TAB_ROUTES[id]} />
         ))}
       </Tabs>
+      <TradeDoneMoment />
     </View>
   );
 }
