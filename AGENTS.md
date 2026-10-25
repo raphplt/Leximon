@@ -56,6 +56,7 @@ Les sources téléchargées vivent dans `content/pipeline/data/` (ignoré par gi
 | `docs/rnd/`                 | Rapports des spikes de R&D                                                        | Oui                           |
 | `docs/cahiers-des-charges/` | Spécifications fonctionnelles d'un chantier, avant sa réalisation                 | Oui                           |
 | `docs/recette-web.md`       | Recette du web : chaque test, ce qu'on doit voir, les retours du propriétaire     | Oui                           |
+| `docs/recette-mobile.md`    | Recette de l'app Android : ce qui est propre au téléphone, renvoie au web         | Oui                           |
 | `docs/north-star.md`        | Vision produit, marché, monétisation, lancement                                   | Non (local, peut être absent) |
 | `docs/architecture.md`      | Architecture détaillée, charge visée, modèle de données                           | Non (local, peut être absent) |
 
