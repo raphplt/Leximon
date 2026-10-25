@@ -30,6 +30,9 @@ export function usePlayerView() {
     coffrets,
     guest: who?.kind === "guest",
     profile: me,
+    /** Weekly goal boosters waiting, even from a clan the player left. */
+    claimable,
+    mailbox: mail,
     offers: offers ?? 0,
     mail: mailCount({
       coffrets: coffrets.length,

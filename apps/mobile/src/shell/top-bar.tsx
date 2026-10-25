@@ -76,6 +76,7 @@ export function TopBar() {
       )}
       <Pressable
         style={styles.round}
+        onPress={() => router.push("/courrier")}
         accessibilityRole="button"
         accessibilityLabel={mailLabel(view.mail)}
       >
