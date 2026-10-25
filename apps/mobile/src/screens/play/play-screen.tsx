@@ -41,6 +41,7 @@ import { PlayFabs } from "./play-fabs";
 import { Recap } from "./recap";
 import { RevealCard } from "./reveal-card";
 import { Sachet } from "./sachet";
+import { noteSachetOpened, TearHint } from "./tear-hint";
 
 /** The sachet chosen last, kept on the device. */
 const CHOICE_KEY = "leximon_sachet";
@@ -212,6 +213,7 @@ export function PlayScreen() {
       const rarity = catalog.cardsById.get(id)?.rarity;
       if (rarity !== undefined) raritiesBefore.add(rarity);
     }
+    noteSachetOpened();
     wallet.publish(result.wallet);
     publishProgress(result.progress);
     const collection = catalog.collections.find((c) => c.id === choice.id);
@@ -434,6 +436,7 @@ export function PlayScreen() {
             )}
           </View>
           <View style={styles.shelf}>
+            {phase.name === "sealed" && canOpen && <TearHint />}
             {ready && mustSignUp && (
               <>
                 <Text style={styles.message}>{SIGN_UP_HINT}</Text>

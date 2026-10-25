@@ -19,6 +19,7 @@ import {
   levelUpLabel,
   lockedToast,
   neighbourChoices,
+  OPEN_HINTS,
   openAgainLabel,
   openButtonLabel,
   pickCollection,
@@ -66,7 +67,7 @@ import styles from "./booster-screen.module.css";
 import { CardStack } from "./card-stack";
 import { play as playSound } from "./feedback";
 import { type PackCollection, packOf } from "./pack-looks";
-import { OPEN_HINTS, type PackProps } from "./pack-shape";
+import type { PackProps } from "./pack-shape";
 import { Pli } from "./pli";
 import { RevealCard } from "./reveal-card";
 import { Sachet } from "./sachet";

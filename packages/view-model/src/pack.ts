@@ -24,3 +24,9 @@ export const DEFAULT_PACK_NOUN = PACK_NOUNS[PACK_SHAPE];
 export function countPacks(count: number, noun: PackNoun): string {
   return `${count} ${count > 1 ? noun.many : noun.one}`;
 }
+
+/** What the screen tells the player to do with a sealed pack, until they close the hint. */
+export const OPEN_HINTS: Readonly<Record<PackShape, string>> = {
+  pli: "Tire sur la bande, ou touche le sceau.",
+  sachet: "Tire sur le pointillé, ou touche le sachet.",
+};

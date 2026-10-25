@@ -1,4 +1,3 @@
-import type { PackShape } from "@leximon/view-model";
 import type { PackCollection } from "./pack-looks";
 
 /**
@@ -20,9 +19,3 @@ export interface PackProps {
   /** Held still: a sachet waiting behind the counter's does not sway. */
   readonly still?: boolean | undefined;
 }
-
-/** What the screen tells the player to do with a sealed pack, until they close the hint. */
-export const OPEN_HINTS: Readonly<Record<PackShape, string>> = {
-  pli: "Tire sur la bande, ou touche le sceau.",
-  sachet: "Tire sur le pointillé, ou touche le sachet.",
-};
