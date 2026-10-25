@@ -237,7 +237,7 @@ A sur le web sert de deuxième joueur : amis, échanges, clan, sanctions. `pnpm 
 
 ### MMO-01 · Avis de sanction
 - **Faire :** A sanctionne B depuis `/admin/signalements` (rendre muet une heure) ; B relance l'app ou revient dessus.
-- **Attendu :** une fenêtre par-dessus le jeu : la sanction, sa raison, jusqu'à quand. « Contester » ouvre un champ que le clavier ne cache pas ; l'envoi dit « Contestation envoyée. ». « J'ai lu » ferme, et la fenêtre ne revient pas.
+- **Attendu :** une fenêtre par-dessus le jeu : la sanction, sa raison, jusqu'à quand. « Contester » ouvre un champ que le clavier ne cache pas ; l'envoi dit « Contestation envoyée. ». « J'ai lu » ferme, et la fenêtre ne revient pas. Dans la discussion du clan, le champ est fermé et dit pourquoi.
 - **Retour :**
 
 ---
