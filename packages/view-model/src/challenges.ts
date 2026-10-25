@@ -276,6 +276,18 @@ export function sessionScore(answers: readonly AnsweredQuestion[]): string {
 }
 
 /** When the session ends and the day's goal is still open: it adds up over the day. */
+/** Said when a challenge was asked for and no word is due. */
+export function noChallengeNotice(
+  nextDueAt: string | null,
+  now: number,
+  noun: PackNoun = SACHET_NOUN,
+): string {
+  if (nextDueAt === null) {
+    return `Rien à réviser. Ouvre des ${noun.many}, chaque mot trouvé deviendra un défi.`;
+  }
+  return `Tes mots tiennent bon. Le prochain revient ${nextDueLabel(nextDueAt, now) ?? "bientôt"}.`;
+}
+
 export const NOT_THIS_TIME = "Pas encore de bonus. Le défi du jour court jusqu'à minuit.";
 
 /**

@@ -17,7 +17,7 @@ import {
   memoryCounts,
   memoryNote,
   NOT_THIS_TIME,
-  nextDueLabel,
+  noChallengeNotice,
   questionKicker,
   reviewQuestion,
   sessionBonusLine,
@@ -112,12 +112,7 @@ export function ChallengeScreen() {
     try {
       const next = await api.fetchChallenges();
       if (next.questions.length === 0) {
-        const when = nextDueLabel(next.nextDueAt, Date.now());
-        setNotice(
-          next.nextDueAt === null
-            ? `Rien à réviser. Ouvre des ${noun.many}, chaque mot trouvé deviendra un défi.`
-            : `Tes mots tiennent bon. Le prochain revient ${when ?? "bientôt"}.`,
-        );
+        setNotice(noChallengeNotice(next.nextDueAt, Date.now(), noun));
       } else {
         setSession({ questions: next.questions, answers: [], index: 0, step: { name: "asking" } });
       }

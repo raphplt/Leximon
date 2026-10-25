@@ -11,6 +11,7 @@ import {
   memoryCounts,
   memoryNote,
   nextDueLabel,
+  noChallengeNotice,
   questionKicker,
   recapLine,
   reviewQuestion,
@@ -225,5 +226,19 @@ describe("défis screen", () => {
     expect(hideWordIn("Espace compris entre la poupe et le banc.", "espale")).toBe(
       "Espace compris entre la poupe et le banc.",
     );
+  });
+});
+
+describe("noChallengeNotice", () => {
+  const now = Date.parse("2026-10-25T10:00:00Z");
+
+  it("sends a player without words to the sachets", () => {
+    expect(noChallengeNotice(null, now)).toBe(
+      "Rien à réviser. Ouvre des sachets, chaque mot trouvé deviendra un défi.",
+    );
+  });
+
+  it("says when the next word comes back", () => {
+    expect(noChallengeNotice("2026-10-25T13:00:00Z", now)).toMatch(/^Tes mots tiennent bon\. /);
   });
 });
