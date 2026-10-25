@@ -237,6 +237,24 @@ export function backTone(name: string | undefined): BackTone {
 }
 
 /** Durations in ms. Screens skip them when the player asks for reduced motion. */
+/** A word's mastery, from the dot on an album tile to the steps of its sheet. */
+export const masteryColors = {
+  sketch: colors.textMuted,
+  ink: "#7C9BFF",
+  gilded: "#FFD978",
+} as const;
+
+/** The progress bar of each launch collection (album, clan library). */
+const COLLECTION_TONES: Readonly<Record<string, string>> = {
+  fondateurs: "#7C9BFF",
+  caracteres: "#FF8462",
+  metiers: "#3BD3A5",
+};
+
+export function collectionTone(collectionId: string): string {
+  return COLLECTION_TONES[collectionId] ?? colors.accent;
+}
+
 export const motion = {
   sealBreak: 700,
   envelopeOpen: 1150,

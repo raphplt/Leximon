@@ -7,7 +7,7 @@ import {
   RARITY_LABELS,
 } from "@leximon/contract";
 import { gameDayOf, RARITIES, type Rarity, rarityRank } from "@leximon/core";
-import { formatCount } from "./format";
+import { compareFrench, formatCount } from "./format";
 import type { CompareFilter } from "./friends";
 
 /** The album: what the player owns, collection by collection. */
@@ -234,7 +234,7 @@ export function foldSearch(text: string): string {
 
 /** Rarest first, then alphabetical: the prizes lead the page. */
 function albumOrder(a: CatalogCard, b: CatalogCard): number {
-  return rarityRank(b.rarity) - rarityRank(a.rarity) || a.word.localeCompare(b.word, "fr");
+  return rarityRank(b.rarity) - rarityRank(a.rarity) || compareFrench(a.word, b.word);
 }
 
 /** Whether a challenge would ask this word now: due again, or never reviewed. */
@@ -390,7 +390,7 @@ export function albumView(input: AlbumInput, state: AlbumState): AlbumView {
 
   const themes = [...new Set(pool.flatMap(({ card }) => card.themes))]
     .map((id) => ({ id, label: themeLabel(id) }))
-    .sort((a, b) => a.label.localeCompare(b.label, "fr"));
+    .sort((a, b) => compareFrench(a.label, b.label));
 
   const inView = pool
     .filter(

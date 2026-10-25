@@ -8,7 +8,7 @@ import type {
 } from "@leximon/contract";
 import type { EpochMs, Rarity } from "@leximon/core";
 import { seenLabel } from "./clan";
-import { formatCount, plural } from "./format";
+import { compareFrench, formatCount, plural } from "./format";
 import { playerName } from "./trades";
 
 /** Friends: the list, requests, the friend link, the weekly podium and the feed. */
@@ -36,7 +36,7 @@ export function tradeFriends<T extends Pick<Friend, "player" | "trades">>(
   friends: readonly T[],
 ): readonly T[] {
   return [...friends].sort(
-    (a, b) => b.trades - a.trades || playerName(a.player).localeCompare(playerName(b.player), "fr"),
+    (a, b) => b.trades - a.trades || compareFrench(playerName(a.player), playerName(b.player)),
   );
 }
 

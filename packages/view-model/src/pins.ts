@@ -1,6 +1,6 @@
 import { type Rarity, rarityRank } from "@leximon/core";
 import { foldSearch } from "./album";
-import { plural } from "./format";
+import { compareFrench, plural } from "./format";
 
 /**
  * The cards pinned on the player's profile: which to pin, in which place, in which order.
@@ -92,7 +92,7 @@ export function pinCandidates(
       (a, b) =>
         Number(a.pinned) - Number(b.pinned) ||
         rarityRank(b.rarity) - rarityRank(a.rarity) ||
-        a.word.localeCompare(b.word, "fr"),
+        compareFrench(a.word, b.word),
     );
   return {
     items: matching.slice(0, limit),

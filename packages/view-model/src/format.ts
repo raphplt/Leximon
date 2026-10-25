@@ -2,6 +2,16 @@
 
 const COUNT = new Intl.NumberFormat("fr-FR");
 
+/**
+ * French alphabetical order. One collator for every sort: `localeCompare` with a locale builds its
+ * rules again on each comparison, which takes seconds over the catalogue on a phone's engine.
+ */
+const frenchCollator = new Intl.Collator("fr");
+
+export function compareFrench(a: string, b: string): number {
+  return frenchCollator.compare(a, b);
+}
+
 /** "1 240", with the narrow no-break space French uses between thousands. */
 export function formatCount(value: number): string {
   return COUNT.format(value);
