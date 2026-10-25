@@ -3,7 +3,6 @@ import { RARITIES } from "@leximon/core";
 import { describe, expect, it } from "vitest";
 import {
   creditLine,
-  cssUrl,
   ENGRAVING_SLOT,
   engravingBox,
   engravingOf,
@@ -94,16 +93,6 @@ describe("engravingBox", () => {
   });
 });
 
-describe("cssUrl", () => {
-  it("quotes a plain path", () => {
-    expect(cssUrl("/catalog/gravures/a.ink.webp")).toBe('url("/catalog/gravures/a.ink.webp")');
-  });
-
-  it("escapes what could close the url", () => {
-    expect(cssUrl('/a"b\\c\nd')).toBe('url("/a\\22 b\\5c c\\a d")');
-  });
-});
-
 describe("credits", () => {
   it("shows the catalogue's credit line as it is: it already names the licence", () => {
     expect(creditLine(engraving)).toBe(engraving.credit);
@@ -113,5 +102,7 @@ describe("credits", () => {
     expect(safeSourceUrl(engraving)).toBe("https://wellcomecollection.org/works/abc");
     expect(safeSourceUrl({ sourceUrl: "javascript:alert(1)" })).toBeNull();
     expect(safeSourceUrl({ sourceUrl: "pas une adresse" })).toBeNull();
+    expect(safeSourceUrl({ sourceUrl: "https://" })).toBeNull();
+    expect(safeSourceUrl({ sourceUrl: 'https://a.org/" onclick="x' })).toBeNull();
   });
 });

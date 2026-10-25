@@ -1,5 +1,20 @@
 import { type Rarity, rarityRank } from "@leximon/core";
-import type { SoundCue } from "./feedback";
+
+/** The sounds of an opening; each platform plays them its own way. */
+export type SoundCue =
+  | "sealBreak"
+  | "tearFinish"
+  | "cardSlide"
+  | "flip"
+  | "chimeRare"
+  | "rumble"
+  | "chimePrecious"
+  | "crack"
+  | "fanfareEpic"
+  | "shimmer"
+  | "fanfareLegendary"
+  | "newCard"
+  | "recap";
 
 /**
  * How each rarity is revealed. The announcement always comes before the face: the rarer the

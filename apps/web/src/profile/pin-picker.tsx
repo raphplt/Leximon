@@ -1,9 +1,9 @@
 "use client";
 
 import { RARITY_LABELS } from "@leximon/contract";
+import { collectionName } from "@leximon/contract/client";
 import { fullPinsLine, morePinsLine, PIN_TEXTS, pinCandidates } from "@leximon/view-model";
 import { useEffect, useMemo, useState } from "react";
-import { collectionName } from "@/cards/catalog";
 import { useCatalog } from "@/cards/use-catalog";
 import { Card } from "@/components/card";
 import { RarityName } from "@/components/rarity-icon";

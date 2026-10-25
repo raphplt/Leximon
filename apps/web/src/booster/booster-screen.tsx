@@ -2,11 +2,19 @@
 
 import type { ProgressGain } from "@leximon/contract";
 import type { OpenBoosterResult } from "@leximon/contract/client";
+import { type Catalog, cardOrPlaceholder, collectionName } from "@leximon/contract/client";
 import type { Rarity } from "@leximon/core";
 import { cardSize, motion, rarityStyles } from "@leximon/tokens";
+import type { PackShape } from "@leximon/view-model";
 import {
   type CollectionChoice,
   collectionChoices,
+  collectionProgress,
+  copiesAt,
+  type DrawnCard,
+  firstOfRarityLabel,
+  isFirstOfRarity,
+  keepsAnnouncementWhenHurried,
   levelRatio,
   levelUpLabel,
   lockedToast,
@@ -14,6 +22,10 @@ import {
   openAgainLabel,
   openButtonLabel,
   pickCollection,
+  recap,
+  recapCascade,
+  revealOrder,
+  stagingFor,
   stockView,
   type WordMemory,
   wordUnderCounter,
@@ -21,12 +33,11 @@ import {
 } from "@leximon/view-model";
 import Link from "next/link";
 import { type CSSProperties, useCallback, useEffect, useRef, useState } from "react";
-import { type Catalog, cardOrPlaceholder, collectionName, loadCatalog } from "@/cards/catalog";
+import { loadCatalog } from "@/cards/catalog";
 import { prepareSpokenWords } from "@/cards/use-spoken-word";
 import { Card } from "@/components/card";
 import { RarityName } from "@/components/rarity-icon";
 import { api } from "@/lib/api";
-import type { PackShape } from "@/lib/pack-shape";
 import { usePackShape } from "@/lib/use-pack-shape";
 import { CollectionPicker } from "@/play/collection-picker";
 import { noteSachetOpened, StockDots, TearHint } from "@/play/counter-bits";
@@ -57,18 +68,8 @@ import { play as playSound } from "./feedback";
 import { type PackCollection, packOf } from "./pack-looks";
 import { OPEN_HINTS, type PackProps } from "./pack-shape";
 import { Pli } from "./pli";
-import {
-  collectionProgress,
-  copiesAt,
-  type DrawnCard,
-  firstOfRarityLabel,
-  isFirstOfRarity,
-  recap,
-  revealOrder,
-} from "./reveal";
 import { RevealCard } from "./reveal-card";
 import { Sachet } from "./sachet";
-import { keepsAnnouncementWhenHurried, recapCascade, stagingFor } from "./staging";
 
 /** Widest the recap's screen gets, in px: `.wide` in the stylesheet. */
 const RECAP_SCREEN_MAX = 1180;

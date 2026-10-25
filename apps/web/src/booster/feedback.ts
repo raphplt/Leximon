@@ -1,23 +1,10 @@
+import type { SoundCue } from "@leximon/view-model";
+
 /**
  * Sound and vibration of the opening. Sounds are synthesized with the Web Audio API rather than
  * recorded: no file to load or license to track, and the tear can follow the finger grain by
  * grain. They can be swapped for designed samples later without touching the screens.
  */
-
-export type SoundCue =
-  | "sealBreak"
-  | "tearFinish"
-  | "cardSlide"
-  | "flip"
-  | "chimeRare"
-  | "rumble"
-  | "chimePrecious"
-  | "crack"
-  | "fanfareEpic"
-  | "shimmer"
-  | "fanfareLegendary"
-  | "newCard"
-  | "recap";
 
 /** `speech`: the word read aloud as its card settles, apart from the other sounds. */
 export type FeedbackKind = "sound" | "speech" | "haptics";

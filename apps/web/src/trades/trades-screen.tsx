@@ -1,7 +1,7 @@
 "use client";
 
 import type { ProfileResponse, Trade } from "@leximon/contract";
-import { ApiError } from "@leximon/contract/client";
+import { ApiError, type Catalog } from "@leximon/contract/client";
 import {
   boxTabLabel,
   formatPlayerCode,
@@ -22,7 +22,7 @@ import {
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
-import { type Catalog, loadCatalog } from "@/cards/catalog";
+import { loadCatalog } from "@/cards/catalog";
 import { api } from "@/lib/api";
 import { useNow } from "@/lib/use-now";
 import { publishTraded } from "@/player/collection";

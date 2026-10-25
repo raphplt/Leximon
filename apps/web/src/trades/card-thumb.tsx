@@ -1,7 +1,7 @@
 "use client";
 
 import { type CatalogCard, RARITY_LABELS } from "@leximon/contract";
-import { type Catalog, cardOrPlaceholder, collectionName } from "@/cards/catalog";
+import { type Catalog, cardOrPlaceholder, collectionName } from "@leximon/contract/client";
 import { Card } from "@/components/card";
 import styles from "./trades.module.css";
 

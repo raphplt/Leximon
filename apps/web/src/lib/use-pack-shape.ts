@@ -1,13 +1,8 @@
 "use client";
 
+import { PACK_NOUNS, PACK_SHAPE, type PackNoun, type PackShape } from "@leximon/view-model";
 import { useEffect, useState } from "react";
-import {
-  PACK_NOUNS,
-  PACK_SHAPE,
-  type PackNoun,
-  type PackShape,
-  packShapeFromSearch,
-} from "./pack-shape";
+import { packShapeFromSearch } from "./pack-shape";
 
 const TRY_KEY = "leximon.paquet";
 

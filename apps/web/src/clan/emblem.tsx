@@ -1,9 +1,8 @@
 "use client";
 
 import type { EmblemView } from "@leximon/contract";
-import { emblemColor } from "@leximon/tokens";
+import { cssUrl, emblemColor } from "@leximon/tokens";
 import type { CSSProperties } from "react";
-import { cssUrl } from "@/cards/engraving";
 import { useEngravingInk } from "@/cards/use-engraving-ink";
 import { Icon } from "@/ui/icon";
 import styles from "./emblem.module.css";

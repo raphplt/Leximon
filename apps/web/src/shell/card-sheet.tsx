@@ -1,6 +1,7 @@
 "use client";
 
 import type { CatalogCard } from "@leximon/contract";
+import { type Catalog, collectionName } from "@leximon/contract/client";
 import {
   CARD_SHARE_COPIED,
   canOfferInTrade,
@@ -16,7 +17,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { type PackCollection, packOf } from "@/booster/pack-looks";
 import { CardFacts, CardOrigin, CardQuoteInFull } from "@/cards/card-facts";
-import { type Catalog, collectionName, loadCatalog } from "@/cards/catalog";
+import { loadCatalog } from "@/cards/catalog";
 import { useCardShare } from "@/cards/share-card";
 import { CollectionSeal } from "@/components/collection-seal";
 import { EngravingCredit } from "@/components/engraving-credit";

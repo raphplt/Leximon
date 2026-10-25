@@ -1,7 +1,7 @@
 import type { CatalogCard } from "@leximon/contract";
+import { fetchCollections, fetchManifest } from "@leximon/contract/client";
 import { cache } from "react";
 import { type PackCollection, packOf } from "@/booster/pack-looks";
-import { fetchCollections, fetchManifest } from "./catalog";
 
 /**
  * The published catalogue, read by the server for a card's public page and its shared image.

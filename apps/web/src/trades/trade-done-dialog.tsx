@@ -1,11 +1,11 @@
 "use client";
 
 import type { Trade } from "@leximon/contract";
+import { collectionName } from "@leximon/contract/client";
 import { type TradeDone, tradeDoneAction, tradeDoneTitle, tradesDone } from "@leximon/view-model";
 import { usePathname, useRouter } from "next/navigation";
 import { type CSSProperties, useEffect, useState } from "react";
 import { keep, readKept } from "@/beta/arrival-store";
-import { collectionName } from "@/cards/catalog";
 import { useCatalog } from "@/cards/use-catalog";
 import { Card } from "@/components/card";
 import { api } from "@/lib/api";

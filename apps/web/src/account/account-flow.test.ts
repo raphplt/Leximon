@@ -1,6 +1,6 @@
 import { ACCOUNT_ERROR_CODES, type LinkPreviewResponse } from "@leximon/contract";
+import { DEFAULT_PACK_NOUN } from "@leximon/view-model";
 import { describe, expect, it } from "vitest";
-import { DEFAULT_PACK_NOUN } from "../lib/pack-shape";
 import {
   cardCount,
   codeErrorMessage,

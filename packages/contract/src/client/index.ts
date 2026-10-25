@@ -30,6 +30,7 @@ export type AdminClient = ReturnType<typeof createAdminClient>;
 
 export type { JoinWaitlistResult, PreviewResult, SendCodeResult, SignInResult } from "./account";
 export type { AdminAccess, EraseResult, LaunchResult } from "./admin";
+export * from "./catalog";
 export type { ClanResult } from "./clans";
 export type { ClaimReferralResult, FriendResult } from "./friends";
 export type {

@@ -1,5 +1,6 @@
 "use client";
 
+import { type Catalog, collectionName } from "@leximon/contract/client";
 import {
   capitalize,
   OWN_WORD,
@@ -9,7 +10,6 @@ import {
 } from "@leximon/view-model";
 import Link from "next/link";
 import { CardBack } from "@/booster/card-back";
-import { type Catalog, collectionName } from "@/cards/catalog";
 import { Card } from "@/components/card";
 import { useShell } from "@/shell/shell-context";
 import { Button, ButtonLink } from "@/ui/button";

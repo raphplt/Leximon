@@ -1,6 +1,7 @@
 "use client";
 
 import type { FeedEvent, FriendReactionKind } from "@leximon/contract";
+import { collectionName } from "@leximon/contract/client";
 import {
   FEED_EMPTY,
   feedLine,
@@ -9,7 +10,6 @@ import {
   withReaction,
 } from "@leximon/view-model";
 import { useEffect, useState } from "react";
-import { collectionName } from "@/cards/catalog";
 import { useCatalog } from "@/cards/use-catalog";
 import { Avatar } from "@/components/avatar";
 import { api } from "@/lib/api";

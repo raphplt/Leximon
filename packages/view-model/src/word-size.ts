@@ -1,4 +1,4 @@
-/** How the word is set on a card: font metrics of the web display font. */
+/** How the word is set on a card: font metrics of the display font, the same on web and mobile. */
 
 const WORD_MAX_SIZE = 34;
 const WORD_MIN_SIZE = 18;

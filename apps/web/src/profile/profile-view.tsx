@@ -1,6 +1,7 @@
 "use client";
 
 import type { ProfileClan, ProfileStats } from "@leximon/contract";
+import { collectionName } from "@leximon/contract/client";
 import {
   formatPlayerCode,
   memberSinceLabel,
@@ -9,7 +10,6 @@ import {
 } from "@leximon/view-model";
 import Link from "next/link";
 import type { ReactNode } from "react";
-import { collectionName } from "@/cards/catalog";
 import { useCatalog } from "@/cards/use-catalog";
 import { Emblem } from "@/clan/emblem";
 import { Avatar } from "@/components/avatar";

@@ -1,6 +1,7 @@
 "use client";
 
 import type { CatalogCard, PlayerBadge, Trade } from "@leximon/contract";
+import { type Catalog, collectionName } from "@leximon/contract/client";
 import { rarityRank } from "@leximon/core";
 import {
   FRIENDS_FOLD,
@@ -19,7 +20,6 @@ import {
 } from "@leximon/view-model";
 import Link from "next/link";
 import { type FormEvent, useEffect, useLayoutEffect, useRef, useState } from "react";
-import { type Catalog, collectionName } from "@/cards/catalog";
 import { Avatar } from "@/components/avatar";
 import { Card } from "@/components/card";
 import { FriendSearch } from "@/friends/friend-search";

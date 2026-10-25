@@ -1,4 +1,4 @@
-import type { PackShape } from "@/lib/pack-shape";
+import type { PackShape } from "@leximon/view-model";
 import type { PackCollection } from "./pack-looks";
 
 /**

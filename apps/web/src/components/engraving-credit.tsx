@@ -1,5 +1,5 @@
 import type { CatalogCard } from "@leximon/contract";
-import { creditLine, engravingOf, safeSourceUrl } from "@/cards/engraving";
+import { creditLine, engravingOf, safeSourceUrl } from "@leximon/view-model";
 import styles from "./engraving-credit.module.css";
 
 /**

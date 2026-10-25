@@ -1,5 +1,6 @@
 "use client";
 
+import type { Catalog } from "@leximon/contract/client";
 import type { Rarity } from "@leximon/core";
 import { cssFill, rarityStyles } from "@leximon/tokens";
 import {
@@ -20,7 +21,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { type CSSProperties, useEffect, useMemo, useState } from "react";
 import { packOf } from "@/booster/pack-looks";
-import { type Catalog, loadCatalog } from "@/cards/catalog";
+import { loadCatalog } from "@/cards/catalog";
 import { collectionTone } from "@/cards/collection-tone";
 import { Card } from "@/components/card";
 import { CollectionSeal } from "@/components/collection-seal";

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { wordFontSize } from "./display";
+import { wordFontSize } from "./word-size";
 
 describe("wordFontSize", () => {
   it("keeps short words at full size", () => {

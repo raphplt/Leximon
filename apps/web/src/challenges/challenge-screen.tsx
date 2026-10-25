@@ -1,6 +1,7 @@
 "use client";
 
 import type { ChallengeQuestion, MasteryLevelCode } from "@leximon/contract";
+import { type Catalog, cardOrPlaceholder, collectionName } from "@leximon/contract/client";
 import { createSeededRandom, TYPED_ANSWER_MAX_LENGTH } from "@leximon/core";
 import {
   type AnsweredQuestion,
@@ -27,7 +28,7 @@ import {
 } from "@leximon/view-model";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { type FormEvent, useCallback, useEffect, useState } from "react";
-import { type Catalog, cardOrPlaceholder, collectionName, loadCatalog } from "@/cards/catalog";
+import { loadCatalog } from "@/cards/catalog";
 import { Card } from "@/components/card";
 import { api } from "@/lib/api";
 import { useNow } from "@/lib/use-now";

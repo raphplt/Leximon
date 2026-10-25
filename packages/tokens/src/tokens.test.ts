@@ -1,6 +1,6 @@
 import { RARITIES } from "@leximon/core";
 import { describe, expect, it } from "vitest";
-import { cssFill, cssRootRule, cssVariables, solidColor } from "./css";
+import { cssFill, cssRootRule, cssUrl, cssVariables, solidColor } from "./css";
 import { backTone, backTones, colors, rarityStyles } from "./tokens";
 
 /** WCAG relative luminance of a `#RRGGBB` color. */
@@ -69,5 +69,15 @@ describe("backTone", () => {
     expect(backTone(undefined)).toBe(backTones.night);
     expect(backTone("ochre")).toBe(backTones.night);
     expect(backTone("toString")).toBe(backTones.night);
+  });
+});
+
+describe("cssUrl", () => {
+  it("quotes a plain path", () => {
+    expect(cssUrl("/catalog/gravures/a.ink.webp")).toBe('url("/catalog/gravures/a.ink.webp")');
+  });
+
+  it("escapes what could close the url", () => {
+    expect(cssUrl('/a"b\\c\nd')).toBe('url("/a\\22 b\\5c c\\a d")');
   });
 });

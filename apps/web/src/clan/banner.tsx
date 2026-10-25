@@ -1,7 +1,7 @@
 "use client";
 
+import { cssUrl } from "@leximon/tokens";
 import type { CSSProperties } from "react";
-import { cssUrl } from "@/cards/engraving";
 import { useEngravingInk } from "@/cards/use-engraving-ink";
 import styles from "./emblem.module.css";
 

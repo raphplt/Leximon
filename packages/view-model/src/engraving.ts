@@ -52,23 +52,16 @@ export function engravingBox(engraving: Pick<Engraving, "width" | "height">): En
   return { tall, width: engraving.width * scale, height: engraving.height * scale };
 }
 
-/** A CSS `url()` that a quote, backslash or line break in the path cannot break out of. */
-export function cssUrl(url: string): string {
-  return `url("${url.replace(/[\\"\n\r]/g, (character) => `\\${character.charCodeAt(0).toString(16)} `)}")`;
-}
-
 /** Credit shown to the player (CC BY requires it): the catalogue's line already holds author,
  * source and licence ("D'après X, 1849 · fonds (licence)"); `licence` alone is for filtering. */
 export function creditLine(engraving: Pick<Engraving, "credit">): string {
   return engraving.credit;
 }
 
+/** A web address with a host and nothing a link could be tricked with: no space, no quote. */
+const WEB_ADDRESS = /^https?:\/\/[^\s/?#"'<>]+[^\s"'<>]*$/i;
+
 /** The source link, only if it is a plain web address (catalogue data is still external input). */
 export function safeSourceUrl(engraving: Pick<Engraving, "sourceUrl">): string | null {
-  try {
-    const url = new URL(engraving.sourceUrl);
-    return url.protocol === "https:" || url.protocol === "http:" ? url.href : null;
-  } catch {
-    return null;
-  }
+  return WEB_ADDRESS.test(engraving.sourceUrl) ? engraving.sourceUrl : null;
 }

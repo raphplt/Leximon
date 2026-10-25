@@ -1,12 +1,12 @@
 "use client";
 
 import { cssFill, rarityStyles } from "@leximon/tokens";
+import { capitalize, DEFAULT_PACK_NOUN } from "@leximon/view-model";
 import { type CSSProperties, useState } from "react";
 import { CardBack } from "@/booster/card-back";
 import type { PackCollection } from "@/booster/pack-looks";
 import { Sachet } from "@/booster/sachet";
 import { Card } from "@/components/card";
-import { capitalize, DEFAULT_PACK_NOUN } from "@/lib/pack-shape";
 import styles from "./landing-page.module.css";
 import type { ShowcaseCard } from "./showcase-cards";
 

@@ -1,6 +1,7 @@
 "use client";
 
 import type { ClaimableGoal, ClanMember, ClanView } from "@leximon/contract";
+import type { Catalog } from "@leximon/contract/client";
 import { canAct } from "@leximon/core";
 import {
   claimLabel,
@@ -23,7 +24,7 @@ import {
   weekAnswersLabel,
 } from "@leximon/view-model";
 import { type CSSProperties, useCallback, useEffect, useMemo, useState } from "react";
-import { type Catalog, loadCatalog } from "@/cards/catalog";
+import { loadCatalog } from "@/cards/catalog";
 import { collectionTone } from "@/cards/collection-tone";
 import { Avatar } from "@/components/avatar";
 import { api } from "@/lib/api";

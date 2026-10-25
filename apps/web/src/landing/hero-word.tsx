@@ -1,11 +1,10 @@
 "use client";
 
 import type { CatalogCard } from "@leximon/contract";
-import { cssFill, rarityStyles } from "@leximon/tokens";
-import { frequencyLine } from "@leximon/view-model";
+import { cssFill, cssUrl, rarityStyles } from "@leximon/tokens";
+import { creditLine, engravingOf, frequencyLine, hasPlate } from "@leximon/view-model";
 import { type CSSProperties, useState } from "react";
 import { catalogFileUrl } from "@/cards/catalog";
-import { creditLine, cssUrl, engravingOf, hasPlate } from "@/cards/engraving";
 import { RarityName } from "@/components/rarity-icon";
 import styles from "./landing-page.module.css";
 

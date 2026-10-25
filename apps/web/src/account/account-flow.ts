@@ -4,7 +4,7 @@ import {
   type LinkPreviewResponse,
 } from "@leximon/contract";
 import type { SendCodeResult } from "@leximon/contract/client";
-import type { PackNoun } from "../lib/pack-shape";
+import type { PackNoun } from "@leximon/view-model";
 
 /**
  * Texts of the sign-in flow, kept apart from the screen so that they are tested: what the

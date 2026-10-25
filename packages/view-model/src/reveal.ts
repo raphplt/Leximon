@@ -1,6 +1,7 @@
 import { RARITY_LABELS } from "@leximon/contract";
 import { type Rarity, rarityRank } from "@leximon/core";
-import { countPacks, DEFAULT_PACK_NOUN, type PackNoun } from "../lib/pack-shape";
+import type { PackNoun } from "./format";
+import { countPacks, DEFAULT_PACK_NOUN } from "./pack";
 
 export interface DrawnCard {
   readonly cardId: string;

@@ -1,5 +1,6 @@
 "use client";
 
+import { collectionName } from "@leximon/contract/client";
 import {
   movePin,
   PIN_TEXTS,
@@ -9,7 +10,6 @@ import {
   unpin,
 } from "@leximon/view-model";
 import { type RefObject, useEffect, useRef, useState } from "react";
-import { collectionName } from "@/cards/catalog";
 import { useCatalog } from "@/cards/use-catalog";
 import { Card } from "@/components/card";
 import { useNarrow } from "@/lib/use-narrow";

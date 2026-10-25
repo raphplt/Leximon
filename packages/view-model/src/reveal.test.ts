@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { PACK_NOUNS } from "../lib/pack-shape";
+import { PACK_NOUNS } from "./pack";
 import {
   bonusLabel,
   collectionProgress,

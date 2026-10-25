@@ -43,3 +43,8 @@ function kebab(name: string): string {
 function round(value: number): number {
   return Math.round(value * 100) / 100;
 }
+
+/** A CSS `url()` that a quote, backslash or line break in the path cannot break out of. */
+export function cssUrl(url: string): string {
+  return `url("${url.replace(/[\\"\n\r]/g, (character) => `\\${character.charCodeAt(0).toString(16)} `)}")`;
+}
