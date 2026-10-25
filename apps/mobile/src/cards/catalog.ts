@@ -1,5 +1,12 @@
-import { type Catalog, fetchCatalog, catalogFileUrl as fileUrl } from "@leximon/contract/client";
+import {
+  type Catalog,
+  fetchCatalog,
+  fetchEngravingInks as fetchInks,
+  catalogFileUrl as fileUrl,
+} from "@leximon/contract/client";
+import { sharedResource } from "@leximon/view-model";
 import { CATALOG_URL } from "@/config";
+import { useShared } from "@/player/shared";
 
 /** URL of a file published with the catalogue (an engraving), from its path in a collection file. */
 export function catalogFileUrl(path: string): string {
@@ -27,4 +34,16 @@ export function loadCatalog(): Promise<Catalog> {
 /** The catalogue if already fetched: a screen opened later shows it at once, without waiting. */
 export function catalogInHand(): Catalog | null {
   return loaded;
+}
+
+const inks = sharedResource<ReadonlyMap<string, string>>(() => fetchInks(CATALOG_URL));
+
+/**
+ * The address of a card's engraving ink, `null` while the index loads or when the card has none:
+ * enough for an avatar or an emblem, without loading the catalogue.
+ */
+export function useEngravingInk(cardId: string | null): string | null {
+  const known = useShared(inks);
+  const path = cardId === null ? undefined : known?.get(cardId);
+  return path === undefined ? null : catalogFileUrl(path);
 }

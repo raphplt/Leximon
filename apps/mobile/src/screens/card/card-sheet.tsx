@@ -2,6 +2,7 @@ import type { CatalogCard } from "@leximon/contract";
 import { type Catalog, collectionName } from "@leximon/contract/client";
 import { masteryColors } from "@leximon/tokens";
 import {
+  canOfferInTrade,
   cardPath,
   copiesLabel,
   creditLine,
@@ -21,6 +22,7 @@ import { catalogInHand, loadCatalog } from "@/cards/catalog";
 import { WEB_URL } from "@/config";
 import { noteCardRead, ownedCards, wordMemory } from "@/player/collection";
 import { useNow, useShared } from "@/player/shared";
+import { progress as progressResource } from "@/player/state";
 import { colors, fonts } from "@/theme";
 import { Button } from "@/ui/button";
 import { Icon } from "@/ui/icon";
@@ -76,8 +78,10 @@ function SheetBody({
   const window = useWindowDimensions();
   const owned = useShared(ownedCards);
   const memory = useShared(wordMemory);
+  const progress = useShared(progressResource);
   const now = useNow(60_000);
   const quantity = owned?.get(card.id) ?? 0;
+  const tradeable = progress !== null && canOfferInTrade(quantity, progress.level, now);
 
   // Opening the sheet is reading the card: the album stops calling it new.
   useEffect(() => {
@@ -159,6 +163,15 @@ function SheetBody({
         <View style={styles.actions}>
           {/* No shortcut to a question here: the card above shows its answer. */}
           {review !== null && <Text style={styles.later}>{review}</Text>}
+          {tradeable && (
+            <Button
+              label="Proposer en échange"
+              secondary
+              onPress={() =>
+                router.dismissTo({ pathname: "/echanges", params: { donne: card.id } })
+              }
+            />
+          )}
           <Pressable onPress={share} accessibilityRole="button" style={styles.ghost}>
             <Icon name="share" size={17} color={colors.text} />
             <Text style={styles.ghostText}>Partager</Text>

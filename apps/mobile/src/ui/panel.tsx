@@ -1,16 +1,9 @@
-import type { ReactNode } from "react";
-import { type StyleProp, StyleSheet, View, type ViewStyle } from "react-native";
+import { StyleSheet, View, type ViewProps } from "react-native";
 import { colors } from "@/theme";
 
 /** A block of a screen, raised on the background. */
-export function Panel({
-  children,
-  style,
-}: {
-  readonly children: ReactNode;
-  readonly style?: StyleProp<ViewStyle>;
-}) {
-  return <View style={[styles.panel, style]}>{children}</View>;
+export function Panel({ style, ...view }: ViewProps) {
+  return <View {...view} style={[styles.panel, style]} />;
 }
 
 const styles = StyleSheet.create({

@@ -1,6 +1,7 @@
 import type {
   AccountResponse,
   BoosterWalletResponse,
+  FriendsResponse,
   LevelRewardsResponse,
   MailResponse,
   MyClanResponse,
@@ -22,6 +23,8 @@ export const profile = sharedResource<ProfileResponse>(api.fetchProfile);
 export const progress = sharedResource<Progress>(api.fetchProgress);
 export const mailbox = sharedResource<MailResponse>(() => api.fetchMail());
 export const myClan = sharedResource<MyClanResponse>(api.fetchMyClan);
+/** The player's friends, requests and friend link. */
+export const friends = sharedResource<FriendsResponse>(api.fetchFriends);
 
 /** Offers received and still pending: the red count of Échanges. */
 export const incomingOffers = sharedResource<number>(async () => {
@@ -45,6 +48,7 @@ export function resetPlayerState(): void {
     progress,
     mailbox,
     myClan,
+    friends,
     incomingOffers,
   ]) {
     resource.reset();

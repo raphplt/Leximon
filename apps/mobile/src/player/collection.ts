@@ -1,6 +1,7 @@
 import type { DailyChallengeResponse, OwnedCardsResponse } from "@leximon/contract";
 import {
   type CardDate,
+  copiesAfterTrade,
   copiesByCard,
   datesAfterGain,
   datesByCard,
@@ -41,6 +42,14 @@ export function noteGained(cardIds: readonly string[], ownedBefore: ReadonlyMap<
   const current = cardDates.current();
   if (current !== null)
     cardDates.publish(datesAfterGain(current, cardIds, ownedBefore, Date.now()));
+}
+
+/** A trade went through: the copies follow without another request. */
+export function publishTraded(gained: readonly string[], given: readonly string[]): void {
+  const current = ownedCards.current();
+  if (current === null) return;
+  noteGained(gained, current);
+  ownedCards.publish(copiesAfterTrade(current, gained, given));
 }
 
 /** Opening a card's sheet is reading it: the album stops calling it new. */
