@@ -7,15 +7,14 @@
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "leximon",
-    "userInterfaceStyle": "automatic",
+    "userInterfaceStyle": "dark",
     "ios": {
-      "bundleIdentifier": "fr.leximon.app",
-      "icon": "./assets/expo.icon"
+      "bundleIdentifier": "fr.leximon.app"
     },
     "android": {
       "package": "fr.leximon.app",
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
+        "backgroundColor": "#262B40",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
         "backgroundImage": "./assets/images/android-icon-background.png",
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
@@ -24,16 +23,31 @@
     },
     "plugins": [
       "expo-router",
+      "expo-secure-store",
+      "expo-web-browser",
+      [
+        "expo-font",
+        {
+          "fonts": [
+            "./assets/fonts/BricolageGrotesque-Medium.ttf",
+            "./assets/fonts/BricolageGrotesque-SemiBold.ttf",
+            "./assets/fonts/BricolageGrotesque-Bold.ttf",
+            "./assets/fonts/BricolageGrotesque-ExtraBold.ttf",
+            "./assets/fonts/Fraunces-Black.ttf",
+            "./assets/fonts/Newsreader-Regular.ttf",
+            "./assets/fonts/Newsreader-Medium.ttf",
+            "./assets/fonts/Newsreader-Italic.ttf"
+          ]
+        }
+      ],
       [
         "expo-splash-screen",
         {
-          "backgroundColor": "#208AEF",
+          "backgroundColor": "#262B40",
           "image": "./assets/images/splash-icon.png",
-          "imageWidth": 76
+          "imageWidth": 120
         }
-      ],
-      "expo-secure-store",
-      "expo-web-browser"
+      ]
     ],
     "experiments": {
       "typedRoutes": true,
@@ -48,6 +62,7 @@
       "eas": {
         "projectId": "e6c7ad61-577e-4c31-965c-aeeea542e60e"
       }
-    }
+    },
+    "backgroundColor": "#262B40"
   }
 }
