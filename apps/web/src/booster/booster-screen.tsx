@@ -1,6 +1,6 @@
 "use client";
 
-import type { ProgressGain } from "@leximon/contract";
+import type { ProgressGain, RarityCompletionResponse } from "@leximon/contract";
 import type { OpenBoosterResult } from "@leximon/contract/client";
 import { type Catalog, cardOrPlaceholder, collectionName } from "@leximon/contract/client";
 import type { Rarity } from "@leximon/core";
@@ -23,6 +23,7 @@ import {
   openAgainLabel,
   openButtonLabel,
   pickCollection,
+  rarityCompletedLabel,
   recap,
   recapCascade,
   revealOrder,
@@ -90,6 +91,7 @@ const RECAP_PHONE_CHROME = 430;
 /** The lines a recap shows only sometimes, in px: a level reached, an account to create. */
 const RECAP_LEVEL_UP_LINE = 56;
 const RECAP_SIGN_UP_LINE = 42;
+const RECAP_COMPLETION_LINE = 32;
 /** Narrower, a card no longer reads even as a preview. */
 const RECAP_CAROUSEL_MIN = 180;
 /** A skipped card chimes once it has landed, a little after its slot starts moving. */
@@ -129,6 +131,8 @@ interface Pack {
   readonly collectionCardIds: ReadonlySet<string>;
   /** XP this pack earned. */
   readonly progress: ProgressGain;
+  /** Rarities of the collection this pack completed. */
+  readonly completions: readonly RarityCompletionResponse[];
 }
 
 type Outcome =
@@ -337,6 +341,7 @@ export function BoosterScreen() {
         collection === undefined ? catalog.cardsById.keys() : collection.cards.map((c) => c.id),
       ),
       progress: result.progress,
+      completions: result.completions,
     });
     const after = new Map(owned);
     for (const card of result.cards) after.set(card.cardId, (after.get(card.cardId) ?? 0) + 1);
@@ -748,11 +753,18 @@ function Recap({
           pack={pack}
           hurriedFrom={hurriedFrom}
           extraLines={
-            (levelUp === null ? 0 : RECAP_LEVEL_UP_LINE) + (mustSignUp ? RECAP_SIGN_UP_LINE : 0)
+            (levelUp === null ? 0 : RECAP_LEVEL_UP_LINE) +
+            (mustSignUp ? RECAP_SIGN_UP_LINE : 0) +
+            pack.completions.length * RECAP_COMPLETION_LINE
           }
         />
       )}
       {xp !== null && <p className={`${ui.display} ${styles.recapXp}`}>{xp}</p>}
+      {pack.completions.map((completion) => (
+        <p key={completion.rarity} className={`${ui.pop} ${styles.completed}`}>
+          {rarityCompletedLabel(completion)}
+        </p>
+      ))}
       {progressNow !== null && (
         <XpBar ratio={levelRatio(progressNow)} className={styles.recapBar} />
       )}

@@ -46,12 +46,22 @@ export type BoosterSource = z.infer<typeof boosterSourceSchema>;
 export const openBoosterRequestSchema = boosterSourceSchema;
 export type OpenBoosterRequest = z.infer<typeof openBoosterRequestSchema>;
 
+/** Every card of a rarity in a collection owned at least once: XP earned once. */
+export const rarityCompletionSchema = z.object({
+  collectionId: slugSchema,
+  rarity: raritySchema,
+  xp: z.int().positive(),
+});
+export type RarityCompletionResponse = z.infer<typeof rarityCompletionSchema>;
+
 /** `POST /boosters/open`, 200. */
 export const openBoosterResponseSchema = z.object({
   openId: z.uuid(),
   cards: z.array(drawnCardSchema).min(1),
   wallet: boosterWalletSchema,
   progress: progressGainSchema,
+  /** Rarities this booster completed, included in `progress.xpGained`. Absent from older APIs. */
+  completions: z.array(rarityCompletionSchema).default([]),
 });
 export type OpenBoosterResponse = z.infer<typeof openBoosterResponseSchema>;
 

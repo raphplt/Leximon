@@ -37,6 +37,12 @@ import {
 import { type Database, schema } from "@leximon/db";
 import { eq, inArray, sql } from "drizzle-orm";
 import { addXp } from "../progress/progress";
+import {
+  completionsJson,
+  completionXpOf,
+  type RarityCompletion,
+  rarityCompletions,
+} from "../progress/rarity-completions";
 import { type CardPoolLoader, isEmptyPool } from "./card-pool";
 
 export interface OpenBoosterInput {
@@ -66,6 +72,8 @@ export type OpenBoosterResult =
       readonly cards: readonly DrawnCard[];
       readonly wallet: WalletView;
       readonly progress: ProgressGain;
+      /** Rarities of a collection this booster completed: none when a retry replays it. */
+      readonly completions: readonly RarityCompletion[];
     }
   | { readonly kind: "stock_empty"; readonly nextRefillAt: EpochMs }
   /** A suspended or closed account: the game's writes are refused. */
@@ -99,7 +107,8 @@ const {
  *
  * The free stock is spent first; once it is empty, a booster comes from the bonus reserve, garni
  * boosters first. A collection's booster needs its level; the starter collection's never.
- * The open earns XP, more for words the player never owned and for the first open of the day.
+ * The open earns XP, more for words the player never owned, for the first open of the day and for
+ * a rarity of the collection the new words complete.
  * Lock order: the wallet first, then the copies (as answering a challenge: wallet, then mastery).
  *
  * Latency: each statement is a database round trip, so the open uses as few as possible:
@@ -231,6 +240,7 @@ export async function openBooster(
         },
         // The XP was counted by the first request; a retry shows the total without a new gain.
         progress: progressGain(state.xp, 0),
+        completions: [],
       };
     }
 
@@ -255,12 +265,24 @@ export async function openBooster(
     const day = gameDayOf(now).key;
     const owned = new Set(state.owned);
     const rarities = new Map(draw.cards.map((card) => [card.cardId, card.rarity]));
-    const xpGained = boosterXp(xpRulesAt(XP_SCHEDULE, now), {
-      newWords: drawnIds.filter((id) => !owned.has(id)).flatMap((id) => rarities.get(id) ?? []),
+    const newIds = drawnIds.filter((id) => !owned.has(id));
+    const xpRules = xpRulesAt(XP_SCHEDULE, now);
+    const xpGained = boosterXp(xpRules, {
+      newWords: newIds.flatMap((id) => rarities.get(id) ?? []),
       firstOfDay: locked.lastOpenedDay !== day,
     });
     const openId = crypto.randomUUID();
     const openedAt = new Date(now);
+    // Only a new word can complete a rarity: a booster of duplicates skips the check.
+    const completions =
+      newIds.length === 0
+        ? null
+        : rarityCompletions(
+            tx,
+            xpRules,
+            newIds.map((cardId) => ({ userId, cardId })),
+            openedAt,
+          );
 
     // All writes in one statement (data-modifying CTEs). Foreign keys are checked at the end of
     // the statement, so the request row may reference the open inserted alongside it.
@@ -326,15 +348,27 @@ export async function openBooster(
           .values({ userId, idempotencyKey, openId, openedAt })
           .returning({ openId: boosterOpenRequests.openId }),
       );
-    const progressUpsert = addXp(tx, "progress_upsert", userId, xpGained);
+    const progressUpsert = addXp(
+      tx,
+      "progress_upsert",
+      userId,
+      completions === null ? xpGained : sql<number>`${xpGained}::int + ${completionXpOf(userId)}`,
+    );
     // Every data-modifying CTE runs, read or not; the statement returns the new XP total.
-    const [progress] = await tx
-      .with(cardsUpsert, walletUpdate, openInsert, requestInsert, progressUpsert)
-      .select({ xp: progressUpsert.xp })
+    const writes = [cardsUpsert, walletUpdate, openInsert, requestInsert] as const;
+    const [progress] = await (completions === null
+      ? tx.with(...writes, progressUpsert)
+      : tx.with(...writes, completions, progressUpsert)
+    )
+      .select({
+        xp: progressUpsert.xp,
+        completions: completions === null ? sql<RarityCompletion[]>`'[]'::json` : completionsJson,
+      })
       .from(progressUpsert);
     if (progress === undefined) {
       throw new Error(`XP missing for user ${userId} right after the open`);
     }
+    const completionXp = progress.completions.reduce((sum, completion) => sum + completion.xp, 0);
 
     return {
       kind: "opened",
@@ -347,7 +381,8 @@ export async function openBooster(
         garni: consumed.reserve.garni,
         bonusCap,
       },
-      progress: progressGain(progress.xp, xpGained),
+      progress: progressGain(progress.xp, xpGained + completionXp),
+      completions: progress.completions,
     };
   });
 }

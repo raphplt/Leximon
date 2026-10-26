@@ -28,7 +28,13 @@ describe("booster contract", () => {
         levelUp: true,
       },
     };
-    expect(openBoosterResponseSchema.parse(response)).toEqual(response);
+    // An older API sends no completions: none were made.
+    expect(openBoosterResponseSchema.parse(response)).toEqual({ ...response, completions: [] });
+    const completed = {
+      ...response,
+      completions: [{ collectionId: "fondateurs", rarity: "common", xp: 100 }],
+    };
+    expect(openBoosterResponseSchema.parse(completed)).toEqual(completed);
   });
 
   it("rejects an unknown rarity", () => {

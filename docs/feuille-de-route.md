@@ -2,7 +2,7 @@
 
 Où en est Leximon, ce qui reste avant la bêta publique (novembre 2026) et ce qui attend une décision du propriétaire. Mise à jour à chaque étape franchie.
 
-**Dernière mise à jour :** 2026-10-25.
+**Dernière mise à jour :** 2026-10-26.
 
 ## En une phrase
 
@@ -45,10 +45,10 @@ Arbitrés par le propriétaire le 2026-10-20 : jeu grand public (B2C), pas de ve
 
 | Étape | Statut | Détail |
 |---|---|---|
-| Niveau de compte | En cours | P48, P58, P59 : XP gagnée dans la transaction de chaque action, courbe 150 + 45 × (n − 1) sans maximum, niveau 50 visé en quatre mois environ. Coffrets réclamés, sachet garni tous les 10 niveaux, jamais de recharge du stock en récompense, échanges à 3 cartes au niveau 10. Reste : XP des raretés complétées, cadres et titres des hauts niveaux à dessiner |
+| Niveau de compte | Fait | P48, P58, P59 : XP gagnée dans la transaction de chaque action, courbe 150 + 45 × (n − 1) sans maximum, niveau 50 visé en quatre mois environ. Coffrets réclamés, sachet garni tous les 10 niveaux, jamais de recharge du stock en récompense, échanges à 3 cartes au niveau 10. Raretés complétées (100 à 1 000 XP, par sachet ou échange, dites dans le bilan du sachet), titres jusqu'au 135 et dix cadres de plus jusqu'au 150 (2026-10-26, noms provisoires). Les cadres Or vif, Irisé et Soleil royal tournent sur le web, pas sur le mobile |
 | Profil public | Fait sur le web | Pseudo (P62), avatar gravé et cadre, titre, cartes épinglées (choisies, rangées et remplacées depuis le profil), statistiques, clan, page publique `/joueur/{pseudo}` avec image de partage, atelier, bloquer et signaler (P63), suppression du compte (P64). Public par défaut (P60), dès le niveau 8 |
 | Clans | Fait sur le web et le mobile | P65 à P68 et P70 (Clan v2, [clan-v2.md](cahiers-des-charges/clan-v2.md)) : sans maximum de membres, emblème, rôles, demandes et code d'invitation, discussion et devises filtrées (ni lien, ni adresse, ni téléphone, ni caractère invisible) et modérées, objectif de la semaine en bonnes réponses de défi, niveau de clan cosmétique (objets d'emblème, Enluminure, bannières), bibliothèque commune, courrier et mentions. On peut rejoindre un autre clan dès qu'on en part. Reste : la modération par modèle |
-| Amis | Fait sur le web (pas en ligne) | P75 à P79, cahier [amis.md](cahiers-des-charges/amis.md) : demande acceptée des deux côtés (par pseudo exact, depuis un profil ou par le lien d'ami), écran `/amis` (demandes, lien, liste, retrait), profil entier entre amis, lien `/ami/<code>` qui fait entrer 3 joueurs dans la bêta fermée et rend amis à la création du compte, sachet bonus pour les deux au niveau 5 du filleul (5 par mois), échanges possibles par ami et doubles qui lui manquent mis en avant dans l'offre, albums comparés (`/album?ami=<code>`), podium de la semaine sans récompense, fil des trouvailles avec réactions prédéfinies, lettres du courrier. Migration `0026`. Les joueurs venus par un lien d'ami forment la source « Lien d'ami » de la mesure. Reste : la mise en production, le nombre de filleuls par parrain dans la mesure. Porté sur le mobile |
+| Amis | Fait sur le web et le mobile, en ligne | P75 à P79, cahier [amis.md](cahiers-des-charges/amis.md) : demande acceptée des deux côtés (par pseudo exact, depuis un profil ou par le lien d'ami), écran `/amis` (demandes, lien, liste, retrait), profil entier entre amis, lien `/ami/<code>` qui fait entrer 3 joueurs dans la bêta fermée et rend amis à la création du compte, sachet bonus pour les deux au niveau 5 du filleul (5 par mois), échanges possibles par ami et doubles qui lui manquent mis en avant dans l'offre, albums comparés (`/album?ami=<code>`), podium de la semaine sans récompense, fil des trouvailles avec réactions prédéfinies, lettres du courrier. Migration `0026`. Les joueurs venus par un lien d'ami forment la source « Lien d'ami » de la mesure. Reste : le nombre de filleuls par parrain dans la mesure |
 | Modes de jeu entre joueurs | R&D | Plusieurs pistes à prototyper (joute, duplicate, bluff…) |
 | Classements | Plus tard | Pas en v1. Cote globale de type Elo (Glicko-2), modèle du Scrabble duplicate |
 
@@ -76,7 +76,7 @@ Arbitrés par le propriétaire le 2026-10-20 : jeu grand public (B2C), pas de ve
 
 | Étape | Statut | Détail |
 |---|---|---|
-| Hébergement de production | En cours | En ligne depuis le 2026-10-22 : `leximon.fr` et `api.leximon.fr`, base Neon gratuite, catalogue servi par le Worker web (D-040, D-043). Mise en production en une commande (`pnpm deploy:prod`). En-têtes de sécurité, préflights CORS en cache, première visite allégée (ni catalogue sur l'accueil, ni dans la coque du jeu). Procédure : [mise-en-ligne.md](mise-en-ligne.md). Reste : redirection de `www`, Lettermint, sauvegarde nocturne sur le NAS, ton compte admin si ce n'est pas fait |
+| Hébergement de production | En cours | En ligne depuis le 2026-10-22 : `leximon.fr` et `api.leximon.fr`, base Neon gratuite, catalogue servi par le Worker web (D-040, D-043). Mise en production en une commande (`pnpm deploy:prod`). En-têtes de sécurité, préflights CORS en cache, première visite allégée (ni catalogue sur l'accueil, ni dans la coque du jeu). Procédure : [mise-en-ligne.md](mise-en-ligne.md). Sauvegarde nocturne sur le serveur maison, restauration vérifiée (2026-10-26). Codes de connexion vérifiés en production. Reste : redirection de `www`, hausse du quota d'envoi des codes, Lettermint |
 | Bêta fermée sur invitation | En ligne, premiers liens envoyés (2026-10-25) | D-041 : liens par groupe dans `/admin/invitations`, page `/invitation/<code>`, porte tenue par l'API (`BETA_INVITES`), `?src=` gardé avec le joueur. Une invitation rejouée par un invité ne rouvre plus la porte |
 | Mesure | En ligne | D-042 : `/admin/mesure` (rétention J1/J7/J30, entonnoir, testeurs, fausse porte mécène), `/admin/retours` (« Un retour ? » dans le menu), tranche d'âge facultative à l'inscription |
 | Suivi des erreurs | Fait | D-045 : erreurs relevées par Cloudflare (Workers Logs), résumé chaque matin sur Discord avec les chiffres de la veille. Pas de suivi des erreurs du navigateur |
@@ -87,7 +87,7 @@ Arbitrés par le propriétaire le 2026-10-20 : jeu grand public (B2C), pas de ve
 
 Dans l'ordre où elles débloquent le plus :
 
-1. **Finir la mise en ligne :** les étapes « toi » de [mise-en-ligne.md](mise-en-ligne.md) qui restent (`www`, sauvegarde sur le NAS). Lettermint peut attendre la première campagne.
+1. **Finir la mise en ligne :** la redirection de `www` et la demande de hausse du quota d'Email Service ([mise-en-ligne.md](mise-en-ligne.md), étapes 11 et 12). Lettermint peut attendre la première campagne.
 2. **Avatars gravés (P49) :** valider les seize gravures choisies et leurs noms.
 3. **Mécène (P73) :** l'exemplaire de la carte dénichée, non échangeable et sans XP, reste à confirmer.
 4. **Questions ouvertes** de [regles-du-jeu.md](regles-du-jeu.md#à-décider) : numéro de collection, sons de l'ouverture, notation phonétique.

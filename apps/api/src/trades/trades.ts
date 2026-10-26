@@ -19,6 +19,12 @@ import { and, asc, desc, eq, gt, inArray, lt, or, type SQL, sql } from "drizzle-
 import { alias } from "drizzle-orm/pg-core";
 import { isBlockedEitherWay, readBadges } from "../profile/profile";
 import { addXpToPlayers } from "../progress/progress";
+import {
+  completionsJson,
+  completionXpOf,
+  type RarityCompletion,
+  rarityCompletions,
+} from "../progress/rarity-completions";
 import type { TradeCursor } from "./cursor";
 import {
   ensurePlayer,
@@ -397,23 +403,45 @@ export async function acceptTrade(
     }
 
     const resolvedAt = new Date(now);
-    const { tradeCompleted } = xpRulesAt(XP_SCHEDULE, now);
-    const xpUpsert = addXpToPlayers(tx, "xp_upsert", [
-      { userId: proposerId, amount: tradeCompleted },
-      { userId, amount: tradeCompleted },
-    ]);
+    const xpRules = xpRulesAt(XP_SCHEDULE, now);
+    const { tradeCompleted } = xpRules;
     const sides = { ...record, proposerId, recipientId: userId };
-    await tx
-      .with(...moveCards(tx, planTransfers(sides), resolvedAt), xpUpsert)
+    const plan = planTransfers(sides);
+    // A card a player never held is a new word: it may complete its rarity.
+    const newWords = plan.credits.filter(
+      (credit) => holdings.get(credit.userId)?.has(credit.cardId) !== true,
+    );
+    const completions =
+      newWords.length === 0 ? null : rarityCompletions(tx, xpRules, newWords, resolvedAt);
+    const gain = (id: string) =>
+      completions === null
+        ? tradeCompleted
+        : sql<number>`${tradeCompleted}::int + ${completionXpOf(id)}`;
+    const xpUpsert = addXpToPlayers(tx, "xp_upsert", [
+      { userId: proposerId, amount: gain(proposerId) },
+      { userId, amount: gain(userId) },
+    ]);
+    const moves = moveCards(tx, plan, resolvedAt);
+    const [written] = await (completions === null
+      ? tx.with(...moves, xpUpsert)
+      : tx.with(...moves, completions, xpUpsert)
+    )
       .update(trades)
       .set({ status: "completed", resolvedAt })
-      .where(eq(trades.id, tradeId));
+      .where(eq(trades.id, tradeId))
+      .returning({
+        completions: completions === null ? sql<RarityCompletion[]>`'[]'::json` : completionsJson,
+      });
+    const completed = written?.completions ?? [];
     const levelUps = [
       { id: proposerId, xp: proposerXp ?? 0 },
       { id: userId, xp: recipientXp ?? 0 },
-    ].flatMap((side) =>
-      levelOf(side.xp + tradeCompleted).level > levelOf(side.xp).level ? [side.id] : [],
-    );
+    ].flatMap((side) => {
+      const earned = completed
+        .filter((completion) => completion.userId === side.id)
+        .reduce((sum, completion) => sum + completion.xp, tradeCompleted);
+      return levelOf(side.xp + earned).level > levelOf(side.xp).level ? [side.id] : [];
+    });
     return {
       kind: "completed",
       trade: { ...record, status: "completed", resolvedAt },

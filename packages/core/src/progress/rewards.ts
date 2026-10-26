@@ -3,10 +3,11 @@
  * "coffret"). Nothing is drawn at random: what a level gives is known in advance.
  *
  * Ordinary levels give a bonus booster. Every 5 levels: a
- * "garni" booster (at least one Rare); up to level 45, the odd ones add a title. Every 10 levels
- * also gives a reserve slot (up to level 50), an engraved avatar and a pinned card slot (up to
- * level 30); levels 10 and 20 add an avatar frame. Beyond level 50, only bonus boosters and
- * cosmetics. Cosmetics are named in the rules: what a level gives is known before it is reached.
+ * "garni" booster (at least one Rare); the odd ones add a title. Every 10 levels also gives a
+ * reserve slot (up to level 50), an engraved avatar and a pinned card slot (up to level 30), and
+ * the levels the rules list add an avatar frame. Beyond level 50, only bonus boosters and the
+ * cosmetics the rules list. Cosmetics are named in the rules: what a level gives is known before
+ * it is reached.
  *
  * Concurrency: these functions are pure. Callers apply a claim under the player's wallet lock.
  */
@@ -83,9 +84,13 @@ export const FIRST_REWARDED_LEVEL = 2;
 export function levelRewards(rules: LevelRewardRules, level: number): LevelReward[] {
   if (!Number.isSafeInteger(level) || level < FIRST_REWARDED_LEVEL) return [];
   if (level > rules.cosmeticsOnlyAbove) {
-    return level % rules.avatarEveryBeyond === 0
-      ? [{ kind: "bonus_booster" }, avatarReward(rules, level)]
-      : [{ kind: "bonus_booster" }];
+    const rewards: LevelReward[] = [{ kind: "bonus_booster" }];
+    if (level % rules.avatarEveryBeyond === 0) rewards.push(avatarReward(rules, level));
+    const frame = rules.frames[level];
+    if (frame !== undefined) rewards.push({ kind: "frame", frame });
+    const title = rules.titles[level];
+    if (title !== undefined) rewards.push({ kind: "title", title });
+    return rewards;
   }
   if (level % rules.majorEvery === 0) {
     const rewards: LevelReward[] = [{ kind: "garni_booster" }];

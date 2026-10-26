@@ -245,6 +245,27 @@ export const userCards = pgTable(
 );
 
 /**
+ * Rarities of a collection whose every drawable card the player owned at least once. One row per
+ * collection and rarity, never deleted when copies leave: its XP is earned once.
+ */
+export const userRarityCompletions = pgTable(
+  "user_rarity_completions",
+  {
+    userId: text()
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    collectionId: text()
+      .notNull()
+      .references(() => collections.id),
+    rarity: rarity().notNull(),
+    /** XP the completion earned, under the rules of its day. */
+    xp: integer().notNull(),
+    completedAt: timestamp({ withTimezone: true }).notNull(),
+  },
+  (table) => [primaryKey({ columns: [table.userId, table.collectionId, table.rarity] })],
+);
+
+/**
  * Audit log of every booster opened, partitioned by month on `opened_at` (see the migrations):
  * old months can be archived and dropped without touching recent data.
  */

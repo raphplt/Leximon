@@ -1,4 +1,4 @@
-import type { ProgressGain } from "@leximon/contract";
+import type { ProgressGain, RarityCompletionResponse } from "@leximon/contract";
 import type { Rarity } from "@leximon/core";
 import type { DrawnCard } from "@leximon/view-model";
 
@@ -15,6 +15,8 @@ export interface Pack {
   readonly collectionCardIds: ReadonlySet<string>;
   /** XP this pack earned. */
   readonly progress: ProgressGain;
+  /** Rarities of the collection this pack completed. */
+  readonly completions: readonly RarityCompletionResponse[];
 }
 
 /** Whether the card at `index` is the first copy the player ever got of it. */

@@ -6,10 +6,20 @@
   place-items: center;
   width: var(--size);
   height: var(--size);
-  overflow: hidden;
+  /* The patterned frames draw behind the medallion, outside it. */
+  isolation: isolate;
+  border-radius: 50%;
+  color: var(--lx-color-kraft-ink, #5a3d18);
+}
+
+/* The paper of the medallion, and the rings of the frame: above a frame's pattern. */
+.avatar::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: 0;
   border-radius: 50%;
   background: #fbf5e8;
-  color: var(--lx-color-kraft-ink, #5a3d18);
 }
 
 .ink {
@@ -23,18 +33,130 @@
 }
 
 /* The frame worn is drawn outside the medallion, so every frame keeps the same engraving size. */
-.avatar[data-frame="simple"] {
+.avatar[data-frame="simple"]::after {
   box-shadow: 0 0 0 calc(3px * var(--k) + 1px) #bdb6cc;
 }
 
-.avatar[data-frame="gilded"] {
+.avatar[data-frame="gilded"]::after {
   box-shadow:
     0 0 0 calc(5px * var(--k)) #d9a233,
     0 0 0 calc(8px * var(--k)) #ffe08a;
 }
 
-.avatar[data-frame="ink"] {
+.avatar[data-frame="ink"]::after {
   box-shadow:
     0 0 0 calc(5px * var(--k)) #2449c4,
     0 0 calc(18px * var(--k)) #7c9bff;
+}
+
+/* Patterned frames: a disc of the pattern under the paper, which covers its centre. */
+.avatar::before {
+  content: none;
+  position: absolute;
+  z-index: -1;
+  inset: calc(-7px * var(--k));
+  border-radius: 50%;
+}
+
+.avatar[data-frame="pearls"]::after {
+  box-shadow: 0 0 0 calc(2px * var(--k) + 1px) #8a5a14;
+}
+
+.avatar[data-frame="pearls"]::before {
+  content: "";
+  background: repeating-conic-gradient(#ffe7a3 0 4deg, #d9a233 4deg 8deg, transparent 8deg 11deg);
+}
+
+.avatar[data-frame="verdigris"]::after {
+  box-shadow:
+    0 0 0 calc(3px * var(--k)) #2e5a50,
+    0 0 0 calc(6px * var(--k)) #6fae9c,
+    0 0 0 calc(8px * var(--k)) #2e5a50;
+}
+
+.avatar[data-frame="twist"]::after {
+  box-shadow: 0 0 0 calc(1px * var(--k) + 1px) #5a1d10;
+}
+
+.avatar[data-frame="twist"]::before {
+  content: "";
+  background: repeating-conic-gradient(#c8321e 0 9deg, #f0b04a 9deg 18deg);
+  box-shadow: 0 0 0 calc(1px * var(--k) + 1px) #5a1d10;
+}
+
+.avatar[data-frame="lace"]::after {
+  box-shadow: 0 0 0 calc(3px * var(--k)) #bdb6cc;
+}
+
+.avatar[data-frame="lace"]::before {
+  content: "";
+  inset: calc(-10px * var(--k));
+  background: repeating-conic-gradient(#fbf5e8 0 7deg, transparent 7deg 12deg);
+  filter: drop-shadow(0 0 calc(1px * var(--k)) #8a8299);
+}
+
+.avatar[data-frame="indigo"]::after {
+  box-shadow:
+    0 0 0 calc(2px * var(--k)) #f3ead6,
+    0 0 0 calc(6px * var(--k)) #2a3a8c,
+    0 0 0 calc(8px * var(--k)) #f3ead6,
+    0 0 0 calc(10px * var(--k)) #2a3a8c;
+}
+
+.avatar[data-frame="wax"]::before {
+  content: "";
+  inset: calc(-9px * var(--k));
+  background: radial-gradient(circle at 32% 24%, #ef7a63, #a3201b 52%, #5e0f0c);
+}
+
+.avatar[data-frame="rays"]::after {
+  box-shadow: 0 0 0 calc(3px * var(--k)) #d9a233;
+}
+
+.avatar[data-frame="rays"]::before {
+  content: "";
+  inset: calc(-13px * var(--k));
+  background: repeating-conic-gradient(#e6b84a 0 3deg, transparent 3deg 10deg);
+  mask-image: radial-gradient(closest-side, #000 72%, transparent);
+}
+
+.avatar[data-frame="bright-gold"]::before {
+  content: "";
+  background: conic-gradient(#b8862a, #ffe08a, #d9a233, #fff6d0, #b8862a, #ffe08a, #b8862a);
+  box-shadow: 0 0 calc(10px * var(--k)) #ffd76a;
+  animation: frame-turn 9s linear infinite;
+}
+
+.avatar[data-frame="iridescent"]::before {
+  content: "";
+  background: conic-gradient(#ff8fb1, #ffd36e, #8ef0c4, #7cc7ff, #c59bff, #ff8fb1);
+  box-shadow: 0 0 calc(12px * var(--k)) #c59bff;
+  animation: frame-turn 14s linear infinite;
+}
+
+.avatar[data-frame="royal-sun"]::after {
+  box-shadow:
+    0 0 0 calc(4px * var(--k)) #d9a233,
+    0 0 0 calc(6px * var(--k)) #fff0b8;
+}
+
+.avatar[data-frame="royal-sun"]::before {
+  content: "";
+  inset: calc(-16px * var(--k));
+  background: repeating-conic-gradient(#ffd76a 0 5deg, #e6862a 5deg 6deg, transparent 6deg 12deg);
+  mask-image: radial-gradient(closest-side, #000 70%, transparent);
+  filter: drop-shadow(0 0 calc(4px * var(--k)) #ffb347);
+  animation: frame-turn 40s linear infinite;
+}
+
+@keyframes frame-turn {
+  to {
+    transform: rotate(1turn);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .avatar::before {
+    animation: none;
+  }
 }

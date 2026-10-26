@@ -138,11 +138,13 @@ describe("atelierItems", () => {
 
   it("lists frames and titles, and keeps what older rules gave", () => {
     const frames = atelierItems("frames", profile({ frame: "gilded" }), NOW);
-    expect(frames.map((i) => [i.id, cosmeticStateLabel(i)])).toEqual([
+    expect(frames.slice(0, 4).map((i) => [i.id, cosmeticStateLabel(i)])).toEqual([
       ["simple", "Mettre"],
       ["gilded", "Porté"],
       ["ink", "Niveau 20"],
+      ["pearls", "Niveau 30"],
     ]);
+    expect(frames.at(-1)).toMatchObject({ id: "royal-sun", name: "Soleil royal", level: 150 });
     const titles = atelierItems(
       "titles",
       profile({

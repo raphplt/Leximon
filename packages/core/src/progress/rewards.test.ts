@@ -36,9 +36,9 @@ describe("levelRewards", () => {
 
   it("gives a garni booster, a reserve slot, an avatar and a pinned slot every 10 levels", () => {
     expect(kinds(10)).toEqual(["garni_booster", "reserve_slot", "avatar", "frame", "pinned_slot"]);
-    expect(kinds(30)).toEqual(["garni_booster", "reserve_slot", "avatar", "pinned_slot"]);
-    expect(kinds(40)).toEqual(["garni_booster", "reserve_slot", "avatar"]);
-    expect(kinds(50)).toEqual(["garni_booster", "reserve_slot", "avatar"]);
+    expect(kinds(30)).toEqual(["garni_booster", "reserve_slot", "avatar", "frame", "pinned_slot"]);
+    expect(kinds(40)).toEqual(["garni_booster", "reserve_slot", "avatar", "frame"]);
+    expect(kinds(50)).toEqual(["garni_booster", "reserve_slot", "avatar", "frame"]);
   });
 
   it("caps the reserve at 15 places and the pinned cards at 6", () => {
@@ -53,11 +53,17 @@ describe("levelRewards", () => {
   });
 
   it("only gives bonus boosters and cosmetics beyond level 50", () => {
+    const cosmetics = ["bonus_booster", "avatar", "frame", "title"];
     for (let level = 51; level <= 200; level++) {
-      for (const kind of kinds(level)) expect(["bonus_booster", "avatar"]).toContain(kind);
+      for (const kind of kinds(level)) expect(cosmetics).toContain(kind);
     }
-    expect(kinds(60)).toEqual(["bonus_booster", "avatar"]);
-    expect(kinds(70)).toEqual(["bonus_booster"]);
+    expect(kinds(60)).toEqual(["bonus_booster", "avatar", "frame"]);
+    expect(kinds(70)).toEqual(["bonus_booster", "frame"]);
+    expect(kinds(71)).toEqual(["bonus_booster"]);
+    expect(levelRewards(rules, 95)).toEqual([
+      { kind: "bonus_booster" },
+      { kind: "title", title: "Immortel" },
+    ]);
   });
 });
 
@@ -70,10 +76,18 @@ describe("cosmetics", () => {
     expect(levelRewards(rules, 200)).toContainEqual({ kind: "avatar" });
   });
 
-  it("adds a frame at levels 10 and 20", () => {
+  it("adds a frame at the levels the rules list, ten beyond level 20", () => {
     expect(levelRewards(later, 10)).toContainEqual({ kind: "frame", frame: "gilded" });
     expect(levelRewards(later, 20)).toContainEqual({ kind: "frame", frame: "ink" });
-    expect(levelRewards(later, 30).map((reward) => reward.kind)).not.toContain("frame");
+    expect(levelRewards(later, 30)).toContainEqual({ kind: "frame", frame: "pearls" });
+    expect(levelRewards(later, 150)).toContainEqual({ kind: "frame", frame: "royal-sun" });
+    const frames = [];
+    for (let level = 21; level <= 200; level++) {
+      for (const reward of levelRewards(later, level)) {
+        if (reward.kind === "frame") frames.push(reward.frame);
+      }
+    }
+    expect(frames).toHaveLength(10);
   });
 
   it("dresses a player with the starting set and their claimed coffrets", () => {

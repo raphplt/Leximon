@@ -23,6 +23,11 @@ export interface XpRules {
   readonly masteryLevelUp: number;
   /** A trade concluded, for each of the two players. */
   readonly tradeCompleted: number;
+  /**
+   * Every drawable card of a rarity in a collection owned at least once, by rarity. Earned once
+   * per collection and rarity, and kept when copies leave by trade.
+   */
+  readonly rarityCompleted: Readonly<Record<Rarity, number>>;
 }
 
 export type XpSchedule = readonly [XpRules, ...XpRules[]];

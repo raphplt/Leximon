@@ -315,6 +315,19 @@
   font-size: 18px;
 }
 
+/* A rarity of the collection complete: quieter than a level, but a sticker of its own. */
+.completed {
+  width: 100%;
+  max-width: 360px;
+  margin: 8px 0 0;
+  padding: 6px 12px;
+  box-sizing: border-box;
+  border: 2px dashed var(--lx-color-badge);
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 15px;
+}
+
 .actions {
   display: flex;
   flex-wrap: wrap;

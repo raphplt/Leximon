@@ -7,6 +7,7 @@ import {
   firstOfRarityLabel,
   isFirstOfRarity,
   nextRefillLabel,
+  rarityCompletedLabel,
   recap,
   revealOrder,
 } from "./reveal";
@@ -88,6 +89,17 @@ describe("isFirstOfRarity", () => {
 
   it("stays quiet when the player already had one", () => {
     expect(isFirstOfRarity(cards, 3, new Set(["epic"] as const))).toBe(false);
+  });
+});
+
+describe("rarityCompletedLabel", () => {
+  it("says the rarity is complete and what it earned", () => {
+    expect(rarityCompletedLabel({ rarity: "legendary", xp: 1000 })).toBe(
+      `Plus une Légendaire ne te manque. +1${"\u202f"}000 XP`,
+    );
+    expect(rarityCompletedLabel({ rarity: "precious", xp: 400 })).toBe(
+      "Plus un Précieux ne te manque. +400 XP",
+    );
   });
 });
 

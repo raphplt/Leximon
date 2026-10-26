@@ -6,6 +6,7 @@ import {
   levelRatio,
   levelUpLabel,
   openAgainLabel,
+  rarityCompletedLabel,
   recap,
   recapCascade,
   xpGainLabel,
@@ -163,6 +164,11 @@ export function Recap({
           <XpBar ratio={levelRatio(progressNow)} thin />
         </View>
       )}
+      {pack.completions.map((completion) => (
+        <Text key={completion.rarity} style={styles.completed}>
+          {rarityCompletedLabel(completion)}
+        </Text>
+      ))}
       {levelUp !== null && <Text style={styles.levelUp}>{levelUp}</Text>}
       <Text style={styles.progress}>
         {pack.collectionName} · {progress.owned} / {progress.total}
@@ -281,6 +287,17 @@ const styles = StyleSheet.create({
   xp: { fontFamily: fonts.display, fontSize: 26, color: colors.accent, marginTop: 4 },
   bar: { width: 200 },
   levelUp: { fontFamily: fonts.ui.extrabold, fontSize: 16, color: colors.text },
+  completed: {
+    fontFamily: fonts.ui.bold,
+    fontSize: 14,
+    color: colors.text,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderWidth: 2,
+    borderStyle: "dashed",
+    borderColor: colors.badge,
+    borderRadius: 10,
+  },
   progress: { fontFamily: fonts.ui.semibold, fontSize: 14, color: colors.textMuted },
   gained: { color: colors.success },
   actions: {

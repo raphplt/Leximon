@@ -69,6 +69,7 @@ describe("database", () => {
       "user_mastery",
       "user_preferences",
       "user_progress",
+      "user_rarity_completions",
       "users",
       "verifications",
       "waitlist_signups",

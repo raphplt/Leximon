@@ -8,7 +8,21 @@ import { Icon } from "@/ui/icon";
 import styles from "./avatar.module.css";
 
 /** Frames drawn by this component; another id (a newer catalogue) falls back on the simple one. */
-const FRAMES = new Set(["simple", "gilded", "ink"]);
+const FRAMES = new Set([
+  "simple",
+  "gilded",
+  "ink",
+  "pearls",
+  "verdigris",
+  "twist",
+  "lace",
+  "indigo",
+  "wax",
+  "rays",
+  "bright-gold",
+  "iridescent",
+  "royal-sun",
+]);
 
 /**
  * The player's avatar: a card's engraving printed in a medallion, inside the frame worn.

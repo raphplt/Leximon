@@ -16,6 +16,7 @@ import {
   drawRulesAt,
   GUEST_SCHEDULE,
   isAtLeast,
+  RARITIES,
   REFILL_SCHEDULE,
   XP_SCHEDULE,
   xpToReach,
@@ -30,6 +31,7 @@ import {
   type Guest,
   STARTER_COLLECTION,
   seedTestCatalog,
+  setOwnedCards,
   setXp,
   signInAsGuest,
   signInAsMember,
@@ -177,10 +179,13 @@ describe("experience", () => {
     const guest = await signInAsPlayer();
     const first = openBoosterResponseSchema.parse(await (await openBooster(guest)).json());
     const firstWords = new Map(first.cards.map((card) => [card.cardId, card.rarity]));
+    const completed = (body: { completions: { xp: number }[] }) =>
+      body.completions.reduce((sum, completion) => sum + completion.xp, 0);
     const expected =
       XP.boosterOpened +
       XP.firstBoosterOfDay +
-      [...firstWords.values()].reduce((sum, rarity) => sum + XP.newWord[rarity], 0);
+      [...firstWords.values()].reduce((sum, rarity) => sum + XP.newWord[rarity], 0) +
+      completed(first);
     expect(first.progress).toMatchObject({ xp: expected, xpGained: expected });
 
     const second = openBoosterResponseSchema.parse(await (await openBooster(guest)).json());
@@ -188,7 +193,9 @@ describe("experience", () => {
       ([cardId]) => !firstWords.has(cardId),
     );
     const gained =
-      XP.boosterOpened + newWords.reduce((sum, [, rarity]) => sum + XP.newWord[rarity], 0);
+      XP.boosterOpened +
+      newWords.reduce((sum, [, rarity]) => sum + XP.newWord[rarity], 0) +
+      completed(second);
     expect(second.progress).toMatchObject({ xp: expected + gained, xpGained: gained });
   });
 
@@ -225,6 +232,80 @@ describe("experience", () => {
       .where(eq(schema.userProgress.userId, guest.userId));
     expect(row?.xp).toBe(gained);
     expect(Math.max(...responses.map((response) => response.progress.xp))).toBe(gained);
+  });
+});
+
+describe("rarities completed", () => {
+  const XP = XP_SCHEDULE[0];
+  /** One card of each rarity left to find in the starter collection. */
+  const missing = (rarity: string) => `${STARTER_COLLECTION}-${rarity}-1`;
+
+  async function playerMissingOnePerRarity() {
+    const guest = await signInAsPlayer();
+    await setOwnedCards(
+      db,
+      guest.userId,
+      RARITIES.flatMap((rarity) =>
+        [2, 3].map((n) => ({ cardId: `${STARTER_COLLECTION}-${rarity}-${n}`, quantity: 1 })),
+      ),
+    );
+    return guest;
+  }
+
+  async function openAll(guest: Guest) {
+    const bodies = [];
+    for (let n = 0; n < CAPACITY; n++) {
+      bodies.push(openBoosterResponseSchema.parse(await (await openBooster(guest)).json()));
+    }
+    return bodies;
+  }
+
+  it("pay each rarity once, when its last new word arrives", async () => {
+    const guest = await playerMissingOnePerRarity();
+    const bodies = await openAll(guest);
+
+    const owned = await db
+      .select({ cardId: schema.userCards.cardId })
+      .from(schema.userCards)
+      .where(eq(schema.userCards.userId, guest.userId));
+    const found = RARITIES.filter((rarity) => owned.some((row) => row.cardId === missing(rarity)));
+    expect(found.length).toBeGreaterThan(0);
+    const completions = bodies.flatMap((body) => body.completions);
+    expect(completions.map((completion) => completion.rarity).sort()).toEqual([...found].sort());
+    for (const completion of completions) {
+      expect(completion).toEqual({
+        collectionId: STARTER_COLLECTION,
+        rarity: completion.rarity,
+        xp: XP.rarityCompleted[completion.rarity],
+      });
+    }
+
+    const [row] = await db
+      .select({ xp: schema.userProgress.xp })
+      .from(schema.userProgress)
+      .where(eq(schema.userProgress.userId, guest.userId));
+    expect(row?.xp).toBe(bodies.reduce((sum, body) => sum + body.progress.xpGained, 0));
+  });
+
+  it("are never paid twice", async () => {
+    const guest = await playerMissingOnePerRarity();
+    const earlier = new Date("2026-01-01T00:00:00Z");
+    await db.insert(schema.userRarityCompletions).values(
+      RARITIES.map((rarity) => ({
+        userId: guest.userId,
+        collectionId: STARTER_COLLECTION,
+        rarity,
+        xp: 1,
+        completedAt: earlier,
+      })),
+    );
+    const bodies = await openAll(guest);
+    expect(bodies.flatMap((body) => body.completions)).toEqual([]);
+    const rows = await db
+      .select({ completedAt: schema.userRarityCompletions.completedAt })
+      .from(schema.userRarityCompletions)
+      .where(eq(schema.userRarityCompletions.userId, guest.userId));
+    expect(rows.map((completion) => completion.completedAt)).toEqual(RARITIES.map(() => earlier));
   });
 });
 

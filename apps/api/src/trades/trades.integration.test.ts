@@ -459,6 +459,44 @@ describe("POST /trades/:id/accept", () => {
     expect(mastery?.total).toBe(0);
   });
 
+  it("pays a rarity the received card completes, to its receiver only", async () => {
+    const alice = await player([
+      { cardId: COMMON_1, quantity: 2 },
+      { cardId: COMMON_2, quantity: 1 },
+    ]);
+    const bob = await player([
+      { cardId: COMMON_3, quantity: 2 },
+      { cardId: COMMON_1, quantity: 1 },
+    ]);
+    const trade = await offer(alice, bob, [COMMON_1], [COMMON_3]);
+    expect((await post(bob, `/trades/${trade.id}/accept`)).status).toBe(200);
+
+    const completions = await db
+      .select()
+      .from(schema.userRarityCompletions)
+      .where(inArray(schema.userRarityCompletions.userId, [alice.userId, bob.userId]));
+    expect(completions).toEqual([
+      expect.objectContaining({
+        userId: alice.userId,
+        collectionId: "test-a",
+        rarity: "common",
+        xp: XP_SCHEDULE[0].rarityCompleted.common,
+      }),
+    ]);
+    const xpRows = await db
+      .select({ userId: schema.userProgress.userId, xp: schema.userProgress.xp })
+      .from(schema.userProgress)
+      .where(inArray(schema.userProgress.userId, [alice.userId, bob.userId]));
+    const levelXp = xpToReach(RULES.minLevel);
+    const { tradeCompleted, rarityCompleted } = XP_SCHEDULE[0];
+    expect(new Map(xpRows.map((row) => [row.userId, row.xp]))).toEqual(
+      new Map([
+        [alice.userId, levelXp + tradeCompleted + rarityCompleted.common],
+        [bob.userId, levelXp + tradeCompleted],
+      ]),
+    );
+  });
+
   it("returns the concluded offer when accepted again, without moving anything", async () => {
     const { alice, bob, trade } = await pendingTrade();
     const first = tradeSchema.parse(await (await post(bob, `/trades/${trade.id}/accept`)).json());

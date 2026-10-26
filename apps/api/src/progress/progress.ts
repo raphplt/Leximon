@@ -1,5 +1,5 @@
 import { type Database, schema } from "@leximon/db";
-import { eq, sql } from "drizzle-orm";
+import { eq, type SQL, sql } from "drizzle-orm";
 
 const { userProgress } = schema;
 
@@ -8,8 +8,9 @@ type Writer = Pick<Database, "$with" | "insert">;
 /**
  * Data-modifying CTE adding XP to a player, creating their row on the first gain. An atomic
  * increment: it needs no lock of its own, and runs in the statement of the action that earns it.
+ * An amount may read another CTE of the statement (the rarities it completes).
  */
-export function addXp(tx: Writer, name: string, userId: string, amount: number) {
+export function addXp(tx: Writer, name: string, userId: string, amount: number | SQL<number>) {
   return addXpToPlayers(tx, name, [{ userId, amount }]);
 }
 
@@ -20,7 +21,7 @@ export function addXp(tx: Writer, name: string, userId: string, amount: number) 
 export function addXpToPlayers(
   tx: Writer,
   name: string,
-  gains: readonly { readonly userId: string; readonly amount: number }[],
+  gains: readonly { readonly userId: string; readonly amount: number | SQL<number> }[],
 ) {
   const sorted = [...gains].sort((a, b) =>
     a.userId < b.userId ? -1 : a.userId > b.userId ? 1 : 0,

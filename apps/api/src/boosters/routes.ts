@@ -58,6 +58,11 @@ export function boosterRoutes(loadCardPool: CardPoolLoader) {
             capacity: capacityAt(REFILL_SCHEDULE, now),
           },
           progress: result.progress,
+          completions: result.completions.map(({ collectionId, rarity, xp }) => ({
+            collectionId,
+            rarity,
+            xp,
+          })),
         });
       case "stock_empty":
         return c.json<BoosterStockEmptyResponse>(

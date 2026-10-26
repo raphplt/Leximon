@@ -241,6 +241,7 @@ export function PlayScreen() {
         collection === undefined ? catalog.cardsById.keys() : collection.cards.map((c) => c.id),
       ),
       progress: result.progress,
+      completions: result.completions,
     });
     const after = new Map(owned);
     for (const card of result.cards) after.set(card.cardId, (after.get(card.cardId) ?? 0) + 1);

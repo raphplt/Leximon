@@ -42,6 +42,16 @@ const FRAME_NAMES: Readonly<Record<string, string>> = {
   simple: "Filet simple",
   gilded: "Filet doré",
   ink: "Encre qui coule",
+  pearls: "Filet perlé",
+  verdigris: "Vert-de-gris",
+  twist: "Torsade",
+  lace: "Dentelle",
+  indigo: "Indigo",
+  wax: "Sceau de cire",
+  rays: "Gloire",
+  "bright-gold": "Or vif",
+  iridescent: "Irisé",
+  "royal-sun": "Soleil royal",
 };
 
 function fallbackName(id: string): string {
