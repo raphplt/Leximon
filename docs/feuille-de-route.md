@@ -18,7 +18,7 @@ Statuts : **Fait**, **En cours**, **À faire**, **À décider** (attend le propr
 |---|---|---|
 | Choix des mots et calcul de la rareté | Fait | D-020 : fréquence Google Ngram, environ 28 000 candidats dans le Littré |
 | Rédaction et contrôle automatique | Fait | D-019, D-021 : lot-1 de 300 mots, 178 cartes gardées, 10 % à relire |
-| Publication du catalogue | Fait | D-023 : `release` puis `pnpm catalog:publish`. Version en ligne : 2026-10-23.1 |
+| Publication du catalogue | Fait | D-023 : `release` puis `pnpm catalog:publish`. Dernière version : 2026-10-26.1 (lignes des collections réécrites) |
 | Collections de lancement | Fait | D-024 : Les Fondateurs (519), Caractères et travers (539), Métiers et objets disparus (503), pour 20,68 $ de génération. Les 143 cartes signalées ont été pré-relues par Claude, et 358 définitions qui donnaient le mot ont été reformulées (P41) ; chaque carte touchée porte une note dans Directus |
 | Gravures | Fait | D-028, P42-P43. Les 1 561 cartes ont la leur depuis la version 2026-10-21.6 : 1 541 gravures, et 20 lettrines ornées (initiales Rabelais de Marty-Laveaux, 1868) pour les mots restés sans image. Chaque collection a la gravure de son sceau (P74, version 2026-10-23.1) |
 | Prononciation | Fait | D-032, P57 : une voix de synthèse guidée par la notation du Littré, sur toutes les cartes depuis la version 2026-10-21.5 |

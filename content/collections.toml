@@ -13,7 +13,7 @@
 [[collection]]
 id = "fondateurs"
 name = "Les Fondateurs"
-tagline = "La nature, la table et tout le reste. Par là qu'on commence."
+tagline = "De l'abajoue à la logodiarrhée."
 runs = ["lot-1", "fondateurs-2"]
 domains = ["nature", "table", "autre"]
 back = "night"
@@ -23,7 +23,7 @@ engraving = { title = "File:Marques typographiques, ou, Recueil des monogrammes,
 [[collection]]
 id = "caracteres"
 name = "Caractères et travers"
-tagline = "Manies, défauts et tempéraments."
+tagline = "Sacripants, médicastres et pendardeaux."
 runs = ["caracteres-1"]
 domains = ["caractere"]
 back = "burgundy"
@@ -33,7 +33,7 @@ engraving = { title = "File:\"Scorn\" from Le Brun, Wellcome L0012155.jpg", crop
 [[collection]]
 id = "metiers"
 name = "Métiers et objets disparus"
-tagline = "Ceux qui les faisaient, ce qu'on tenait en main."
+tagline = "Maltôtiers, barillards et leurs outils."
 runs = ["metiers-1"]
 domains = ["metiers_objets"]
 back = "green"
