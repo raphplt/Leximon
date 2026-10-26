@@ -162,7 +162,7 @@ A sur le web sert de deuxième joueur : amis, échanges, clan, sanctions. `pnpm 
 
 ### MAL-02 · Fiche d'une carte (ALB-05, ALB-07)
 - **Faire :** toucher une carte ; Partager, Épingler, Désépingler.
-- **Attendu :** carte en grand, crédit de la gravure, prononciation écrite, maîtrise, exemplaires, origine. Partager ouvre la feuille de partage d'Android. Épingler toutes places prises propose de remplacer une carte.
+- **Attendu :** carte en grand, crédit de la gravure, prononciation écrite, maîtrise, exemplaires, origine. Partager ouvre la feuille de partage d'Android. Épingler toutes places prises propose de remplacer une carte. « Signaler une erreur », tout en bas, envoie un retour rangé dans `/admin/retours` sous `/mobile/carte/<mot>`.
 - **Retour :**
 
 ### MAL-03 · Comparer avec un ami

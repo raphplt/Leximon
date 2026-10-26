@@ -2,6 +2,7 @@ import type { CatalogCard } from "@leximon/contract";
 import { type Catalog, collectionName } from "@leximon/contract/client";
 import { masteryColors } from "@leximon/tokens";
 import {
+  CARD_REPORT,
   canOfferInTrade,
   cardPath,
   copiesLabel,
@@ -27,6 +28,7 @@ import { noteCardRead, ownedCards, wordMemory } from "@/player/collection";
 import { useNow, useShared } from "@/player/shared";
 import { progress as progressResource } from "@/player/state";
 import { useProfileActions } from "@/profile/profile-actions";
+import { FeedbackSheet } from "@/screens/profile/feedback-sheet";
 import { ReplacePin } from "@/screens/profile/pin-picker";
 import { colors, fonts } from "@/theme";
 import { Button } from "@/ui/button";
@@ -96,6 +98,7 @@ function SheetBody({
   const pins = useProfileActions();
   /** Every place was taken: the player picks which pinned card this one replaces. */
   const [replacing, setReplacing] = useState(false);
+  const [reporting, setReporting] = useState(false);
   const togglePin = () => {
     const me = pins.profile;
     if (me === null) return;
@@ -236,6 +239,22 @@ function SheetBody({
           pour la trouver, ou demande-la en échange.
         </Text>
       )}
+
+      <Pressable
+        onPress={() => setReporting(true)}
+        accessibilityRole="button"
+        hitSlop={8}
+        style={styles.report}
+      >
+        <Text style={styles.reportText}>{CARD_REPORT.button}</Text>
+      </Pressable>
+      <FeedbackSheet
+        open={reporting}
+        onClose={() => setReporting(false)}
+        screen={`/mobile${cardPath(card.id)}`}
+        title={CARD_REPORT.title}
+        label={CARD_REPORT.label}
+      />
     </Page>
   );
 }
@@ -320,4 +339,11 @@ const styles = StyleSheet.create({
   },
   ghostText: { fontFamily: fonts.ui.bold, fontSize: 15, color: colors.text },
   link: { color: colors.accent, textDecorationLine: "underline" },
+  report: { alignSelf: "flex-start", paddingVertical: 6 },
+  reportText: {
+    fontFamily: fonts.ui.medium,
+    fontSize: 14,
+    color: colors.textFaint,
+    textDecorationLine: "underline",
+  },
 });

@@ -77,3 +77,10 @@ export function comeBackIn(wait: number): string {
   const days = Math.round(wait / DAY);
   return days <= 1 ? "demain" : `dans ${days} jours`;
 }
+
+/** A mistake spotted on a card: sent as feedback from the card's page, so we know which. */
+export const CARD_REPORT = {
+  button: "Signaler une erreur",
+  title: "Une erreur sur cette carte ?",
+  label: "Définition, citation, gravure ou son : dis ce qui cloche.",
+} as const;

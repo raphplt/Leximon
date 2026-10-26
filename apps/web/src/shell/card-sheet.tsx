@@ -3,8 +3,10 @@
 import type { CatalogCard } from "@leximon/contract";
 import { type Catalog, collectionName } from "@leximon/contract/client";
 import {
+  CARD_REPORT,
   CARD_SHARE_COPIED,
   canOfferInTrade,
+  cardPath,
   cardShareRefused,
   copiesLabel,
   masteryView,
@@ -15,6 +17,7 @@ import {
 } from "@leximon/view-model";
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
+import { FeedbackDialog } from "@/beta/feedback-dialog";
 import { type PackCollection, packOf } from "@/booster/pack-looks";
 import { CardFacts, CardOrigin, CardQuoteInFull } from "@/cards/card-facts";
 import { loadCatalog } from "@/cards/catalog";
@@ -101,6 +104,7 @@ function SheetBody({
   const pins = useProfileActions();
   /** Every place was taken: the player picks which pinned card this one replaces. */
   const [replacing, setReplacing] = useState(false);
+  const [reporting, setReporting] = useState(false);
   const pinnedNow = pins.profile?.pinned ?? [];
   const togglePin = () => {
     const me = pins.profile;
@@ -228,6 +232,17 @@ function SheetBody({
             pour la trouver, ou demande-la en échange.
           </p>
         )}
+
+        <button type="button" className={styles.report} onClick={() => setReporting(true)}>
+          {CARD_REPORT.button}
+        </button>
+        <FeedbackDialog
+          open={reporting}
+          onClose={() => setReporting(false)}
+          screen={cardPath(card.id)}
+          title={CARD_REPORT.title}
+          label={CARD_REPORT.label}
+        />
       </div>
     </div>
   );

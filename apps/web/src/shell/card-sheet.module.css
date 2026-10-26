@@ -105,3 +105,20 @@
     gap: 18px;
   }
 }
+
+.report {
+  display: block;
+  margin: 18px 0 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-size: 13px;
+  color: var(--lx-color-text-faint);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.report:hover {
+  color: var(--lx-color-text-muted);
+}

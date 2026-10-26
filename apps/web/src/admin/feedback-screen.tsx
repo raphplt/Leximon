@@ -96,7 +96,9 @@ export function FeedbackScreen() {
                       {item.email ?? "Invité"}
                     </Link>
                   </td>
-                  <td className={styles.mono}>{item.screen}</td>
+                  <td className={styles.mono}>
+                    <Screen screen={item.screen} />
+                  </td>
                   <td
                     style={{ whiteSpace: "pre-wrap", fontWeight: item.readAt === null ? 700 : 400 }}
                   >
@@ -125,5 +127,16 @@ export function FeedbackScreen() {
         </button>
       )}
     </>
+  );
+}
+
+/** A card report names its card: the link opens the card's page to check what was reported. */
+function Screen({ screen }: { readonly screen: string }) {
+  const card = /\/carte\/([a-z0-9_-]+)$/.exec(screen)?.[1];
+  if (card === undefined) return screen;
+  return (
+    <a href={`/carte/${card}`} target="_blank" rel="noreferrer">
+      {screen}
+    </a>
   );
 }

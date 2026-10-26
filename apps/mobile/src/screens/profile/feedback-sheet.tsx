@@ -7,15 +7,22 @@ import { FormError } from "@/ui/page";
 import { Sheet } from "@/ui/sheet";
 import { toast } from "@/ui/toast";
 
-const LABEL = "Un bug, une idée, un mot qui cloche : dis-le.";
-
-/** A note to the team, marked as sent from the phone. Read by us only. */
+/**
+ * A note to the team, marked as sent from the phone, from `screen` when it names one, such as the
+ * card a mistake was spotted on. Read by us only.
+ */
 export function FeedbackSheet({
   open,
   onClose,
+  screen = "/mobile",
+  title = "Un retour ?",
+  label = "Un bug, une idée, un mot qui cloche : dis-le.",
 }: {
   readonly open: boolean;
   readonly onClose: () => void;
+  readonly screen?: `/mobile${string}`;
+  readonly title?: string;
+  readonly label?: string;
 }) {
   const [body, setBody] = useState("");
   const [busy, setBusy] = useState(false);
@@ -25,7 +32,7 @@ export function FeedbackSheet({
     setBusy(true);
     setError(null);
     try {
-      await api.sendFeedback({ body: body.trim(), screen: "/mobile" });
+      await api.sendFeedback({ body: body.trim(), screen });
       setBody("");
       onClose();
       toast("Bien reçu. Merci.");
@@ -37,8 +44,8 @@ export function FeedbackSheet({
   };
 
   return (
-    <Sheet open={open} title="Un retour ?" onClose={onClose}>
-      <Text style={styles.label}>{LABEL}</Text>
+    <Sheet open={open} title={title} onClose={onClose}>
+      <Text style={styles.label}>{label}</Text>
       <TextInput
         style={styles.field}
         value={body}
@@ -47,7 +54,7 @@ export function FeedbackSheet({
         numberOfLines={5}
         textAlignVertical="top"
         selectionColor={colors.accent}
-        accessibilityLabel={LABEL}
+        accessibilityLabel={label}
         onChangeText={setBody}
       />
       <Button
