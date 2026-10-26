@@ -51,8 +51,8 @@ function openWebPage(path: string): void {
 type SheetName = "pseudo" | "blocks" | "delete" | null;
 
 /**
- * Settings: sound and vibration, kept on the phone; notifications and the profile's openness,
- * kept on the server; the account.
+ * Settings: sound and vibration, kept on the phone; notifications, e-mails and the profile's
+ * openness, kept on the server; the account.
  */
 export function SettingsScreen() {
   const who = useShared(account);
@@ -139,6 +139,23 @@ export function SettingsScreen() {
             detail="Seulement quand on te cite"
             value={notify.notifyClanMentions}
             onChange={(on) => void toggleNotify("notifyClanMentions", on)}
+          />
+        </Group>
+      )}
+
+      {member && notify !== null && (
+        <Group title="E-MAILS">
+          <Toggle
+            label="Lettres en attente"
+            detail="Si tu ne viens pas les lire"
+            value={notify.emailNews}
+            onChange={(on) => void toggleNotify("emailNews", on)}
+          />
+          <Toggle
+            label="Sachets pleins"
+            detail="Si tu t'absentes"
+            value={notify.emailReminders}
+            onChange={(on) => void toggleNotify("emailReminders", on)}
           />
         </Group>
       )}

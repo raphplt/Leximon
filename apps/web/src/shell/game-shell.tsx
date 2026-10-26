@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { type ReactNode, useCallback, useMemo, useState } from "react";
+import { type ReactNode, useCallback, useEffect, useMemo, useState } from "react";
 import { ChatPanel } from "@/clan/chat-panel";
 import { TradeDoneDialog } from "@/trades/trade-done-dialog";
 import { ToastProvider } from "@/ui/toast";
@@ -60,6 +60,14 @@ function Frame({ children }: { readonly children: ReactNode }) {
     }),
     [openCoffret],
   );
+  // `?courrier` in an e-mail's link opens the mail over the screen, once.
+  useEffect(() => {
+    const url = new URL(window.location.href);
+    if (!url.searchParams.has("courrier")) return;
+    setOverlay("mail");
+    url.searchParams.delete("courrier");
+    window.history.replaceState(window.history.state, "", url);
+  }, []);
   const close = useCallback(() => setOverlay(null), []);
   const toggleMenu = useCallback(() => setOverlay((o) => (o === "menu" ? null : "menu")), []);
 

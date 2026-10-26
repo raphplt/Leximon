@@ -461,3 +461,15 @@ Pour ajouter ou modifier une décision, utiliser le skill `decision`.
 - **Choix :** les sons de l'ouverture sont ceux du web, calculés une fois en fichiers WAV par `apps/mobile/scripts/render_sounds.py` (mêmes bruits, filtres, oscillateurs et enveloppes que la synthèse WebAudio de `feedback.ts`), et joués par `expo-audio` ; le mot dit à voix haute lit le fichier du catalogue. Sur Android, les vibrations jouent les motifs du web à la milliseconde (`Vibration` de React Native) ; sur iPhone, chaque impulsion devient un coup du moteur haptique (`expo-haptics`).
 - **Pourquoi :** le téléphone n'a pas de WebAudio : des fichiers rendus depuis les mêmes réglages donnent le même son sans dépendance de synthèse. Les modules Expo suivent le SDK.
 - **Conséquences :** un son changé dans `apps/web/src/booster/feedback.ts` se change aussi dans le script, puis se rend à nouveau (1,1 Mo de fichiers). Les sons respectent le mode silencieux et ne coupent pas la musique du joueur (`mixWithOthers`). Le plugin `expo-audio` est configuré sans micro ni lecture en arrière-plan : aucune permission en plus. Son, voix et vibration se règlent sur le téléphone (réglages « Jeu »), comme sur le web.
+
+## D-050 · E-mails sur la partie : Email Service sur un sous-domaine à part, envoyés par la file des événements
+
+- **Statut :** Acceptée (2026-10-26), choisie par le propriétaire. Met en œuvre P80 ; précise D-034 et D-039.
+- **Choix :** les e-mails « lettres en attente » et « sachets pleins » partent par Cloudflare Email Service, sur une seconde liaison (`NOTIFY_EMAIL`) qui n'envoie que depuis `facteur@avis.leximon.fr`. Le consommateur de `leximon-game-events` repère les nouvelles lettres et se renvoie un `news_due` 30 minutes plus tard ; une tâche planifiée à 18 h (Paris) met en file des `reminders_due`. À l'envoi, tout est relu en base, et une ligne `notification_emails` est réservée avant l'envoi : clé unique par joueur, sorte et jour de Paris, plafond quotidien global (`NOTIFY_DAILY_LIMIT`).
+- **Pourquoi :** ce sont des e-mails de service, permis par Email Service et déjà payés (3 000 par mois avec Workers Paid). Un sous-domaine à part garde la réputation des codes de connexion. La base empêche le doublon et le dépassement, quel que soit le nombre de messages rejoués ; le plafond laisse le quota du jour aux codes, qui le partagent.
+- **Conséquences :**
+  - un e-mail réservé puis refusé n'est pas renvoyé : mieux vaut un e-mail manqué qu'un doublon, et les lettres restent dans le jeu ;
+  - deux déclencheurs (16 h et 17 h UTC) couvrent l'heure d'été et d'hiver ; celui qui ne tombe pas à 18 h à Paris s'arrête avant de réveiller la base ;
+  - le lien de désinscription signe l'id de la ligne avec `EMAIL_LINK_SECRET`, sur la route des campagnes, qui répond ce qui s'arrête ; les lignes sont effacées après 90 jours ;
+  - les rebonds durs et les plaintes de la liste de suppression bloquent aussi ces e-mails ; l'API importe `@leximon/view-model` pour nommer les lettres comme le courrier ;
+  - avant la production : enregistrer `avis.leximon.fr` dans Email Service ([mise-en-ligne.md](mise-en-ligne.md), étape 12).

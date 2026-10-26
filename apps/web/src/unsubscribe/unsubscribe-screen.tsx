@@ -1,5 +1,6 @@
 "use client";
 
+import type { UnsubscribeStopped } from "@leximon/contract";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useState } from "react";
@@ -7,10 +8,16 @@ import styles from "@/app/confidentialite/privacy.module.css";
 import { api } from "@/lib/api";
 import { Button } from "@/ui/button";
 
-type State = "ready" | "sending" | "done" | "invalid" | "failed";
+type State = "ready" | "sending" | UnsubscribeStopped | "invalid" | "failed";
+
+const STOPPED: Readonly<Record<UnsubscribeStopped, string>> = {
+  campaigns: "Plus de nouvelles de notre part.",
+  news: "Plus d'e-mail quand on t'écrit. Le courrier reste dans le jeu.",
+  reminders: "Plus de rappel pour tes sachets.",
+};
 
 /**
- * Where the link at the bottom of a campaign e-mail leads. Opening it changes nothing (mail
+ * Where the link at the bottom of a campaign or notification e-mail leads. Opening it changes nothing (mail
  * scanners open links too): the button does. Mail clients use the one-click header instead.
  */
 export function UnsubscribeFromAddress() {
@@ -21,20 +28,21 @@ export function UnsubscribeFromAddress() {
   const confirm = async () => {
     setState("sending");
     try {
-      setState((await api.unsubscribeFromLink(token)) === "done" ? "done" : "invalid");
+      setState(await api.unsubscribeFromLink(token));
     } catch {
       setState("failed");
     }
   };
 
+  const done = state === "campaigns" || state === "news" || state === "reminders";
   return (
     <main className={styles.page}>
       <Link href="/" className={styles.logo}>
         Leximon
       </Link>
-      <h1 className={styles.title}>{state === "done" ? "C'est fait" : "Plus d'e-mails ?"}</h1>
+      <h1 className={styles.title}>{done ? "C'est fait" : "Plus d'e-mails ?"}</h1>
       <section className={styles.section}>
-        {state === "done" && <p>Plus de nouvelles de notre part.</p>}
+        {done && <p>{STOPPED[state]}</p>}
         {state === "invalid" && (
           <p>Ce lien ne mène nulle part. Recopie-le en entier depuis l'e-mail.</p>
         )}

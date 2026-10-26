@@ -168,6 +168,17 @@ export const updateEmailPreferencesRequestSchema = z.object({
 });
 export type UpdateEmailPreferencesRequest = z.input<typeof updateEmailPreferencesRequestSchema>;
 
+/**
+ * `POST /email/unsubscribe/:token`, 200: what stopped. The token of a campaign withdraws the news;
+ * the token of a notification turns off that kind of e-mail, the game keeps its letters.
+ */
+export const unsubscribeResponseSchema = z.object({
+  ok: z.literal(true),
+  stopped: z.enum(["campaigns", "news", "reminders"]),
+});
+export type UnsubscribeResponse = z.infer<typeof unsubscribeResponseSchema>;
+export type UnsubscribeStopped = UnsubscribeResponse["stopped"];
+
 /** Unsubscribe token: a send id and its HMAC, base64url. Never the address. */
 export const unsubscribeTokenSchema = z
   .string()

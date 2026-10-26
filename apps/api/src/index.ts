@@ -15,6 +15,14 @@ import { handleGameEvents } from "./clans/events";
 import { sendDailyDigest } from "./digest/send";
 import { errorSummary } from "./error-summary";
 import { runMaintenance } from "./maintenance";
+import {
+  deliverNews,
+  deliverReminders,
+  isReminderHour,
+  newsChecks,
+  notifyContext,
+  remindersDue,
+} from "./notifications/notifications";
 
 const app = createApp();
 
@@ -23,11 +31,48 @@ const app = createApp();
  * both names, so that its messages never reach the production consumers.
  */
 const GAME_EVENTS_QUEUE = "leximon-game-events";
+/** The evening reminders' triggers, as written in `wrangler.jsonc`; any other runs maintenance. */
+const REMINDER_CRONS: ReadonlySet<string> = new Set(["0 16 * * *", "0 17 * * *"]);
+/** The most messages Queues takes in one `sendBatch`. */
+const SEND_BATCH_MAX = 100;
+
+/** Sends follow-up messages; a failure is logged, the daily runs catch up. */
+async function sendFollowUps(
+  queue: Queue,
+  messages: readonly MessageSendRequest<GameEvent>[],
+  what: string,
+): Promise<void> {
+  for (let i = 0; i < messages.length; i += SEND_BATCH_MAX) {
+    await queue.sendBatch(messages.slice(i, i + SEND_BATCH_MAX)).catch((error: unknown) => {
+      console.error(`${what} not sent`, errorSummary(error));
+    });
+  }
+}
 
 export default {
   fetch: app.fetch,
 
-  async scheduled(_controller, env, ctx) {
+  async scheduled(controller, env, ctx) {
+    if (REMINDER_CRONS.has(controller.cron)) {
+      // The evening reminders: two triggers, one per offset of Paris from UTC. The one that does
+      // not strike 18:00 in Paris stops here, before waking the database.
+      const now = controller.scheduledTime;
+      if (!isReminderHour(now)) return;
+      const { db, close } = createDb(env.HYPERDRIVE.connectionString, { maxConnections: 1 });
+      try {
+        if (notifyContext(env, db) === null) return;
+        const messages = await remindersDue(db, now);
+        await sendFollowUps(
+          env.GAME_EVENTS,
+          messages.map((body) => ({ body })),
+          "Reminders",
+        );
+        console.info("Reminders queued", { messages: messages.length });
+      } finally {
+        ctx.waitUntil(close());
+      }
+      return;
+    }
     const { db, close } = createDb(env.HYPERDRIVE.connectionString, { maxConnections: 1 });
     try {
       const now = Date.now();
@@ -57,16 +102,38 @@ export default {
           Date.now(),
         );
         if (report.invalid > 0) console.error("Game events dropped: invalid body", report);
-        if (report.deferred.length > 0) {
-          // Not sent: the daily maintenance recounts the library anyway.
-          await env.GAME_EVENTS.sendBatch(
-            report.deferred.map(({ clanId, delaySeconds }) => ({
-              body: { type: "library_due", clanId } satisfies GameEvent,
-              delaySeconds,
-            })),
-          ).catch((error: unknown) => {
-            console.error("Library recounts not put off", errorSummary(error));
-          });
+        // Not sent: the daily maintenance recounts the library anyway.
+        await sendFollowUps(
+          env.GAME_EVENTS,
+          report.deferred.map(({ clanId, delaySeconds }) => ({
+            body: { type: "library_due", clanId } satisfies GameEvent,
+            delaySeconds,
+          })),
+          "Library recounts",
+        );
+        const notify = notifyContext(env, db);
+        if (notify !== null) {
+          const now = Date.now();
+          // Not sent: the letters stay in the game, and the evening reminder names them.
+          await sendFollowUps(env.GAME_EVENTS, newsChecks(report.news, now), "News checks");
+          if (report.newsDue.length > 0) {
+            const news = await deliverNews(notify, report.newsDue, now);
+            if (news.deferred !== null) {
+              const { userIds, delaySeconds } = news.deferred;
+              await sendFollowUps(
+                env.GAME_EVENTS,
+                userIds.map((userId) => ({ body: { type: "news_due", userId }, delaySeconds })),
+                "News checks",
+              );
+            }
+            if (news.sent + news.failed + news.capped > 0) console.info("News e-mails", news);
+          }
+          if (report.remindersDue.length > 0) {
+            console.info(
+              "Reminder e-mails",
+              await deliverReminders(notify, report.remindersDue, now),
+            );
+          }
         }
         batch.ackAll();
       } catch (error) {

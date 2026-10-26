@@ -6,6 +6,7 @@ import { purgeFeed } from "./friends/feed";
 import { purgeFriendRequests } from "./friends/friends";
 import { purgeMail } from "./mail/mail";
 import { SIGN_IN_CODE_DAILY_QUOTA } from "./middleware/rate-limit";
+import { purgeNotifications } from "./notifications/notifications";
 import { inBatches, purgeRows } from "./purge";
 
 /** How long a client may retry an open with the same idempotency key. */
@@ -30,6 +31,7 @@ export interface MaintenanceReport {
   readonly erasedCampaignAddresses: number;
   readonly erasedClanMessages: number;
   readonly erasedLetters: number;
+  readonly erasedNotifications: number;
   readonly erasedCodeQuotas: number;
   readonly erasedSessions: number;
   readonly erasedGuests: number;
@@ -84,6 +86,7 @@ export async function runMaintenance(db: Database, now: number): Promise<Mainten
     erasedCampaignAddresses: erased,
     erasedClanMessages: erasedMessages,
     erasedLetters: await purgeMail(db, now),
+    erasedNotifications: await purgeNotifications(db, now),
     erasedCodeQuotas: erasedQuotas,
     erasedSessions,
     erasedGuests: await eraseAbandonedGuests(db, now),

@@ -38,5 +38,12 @@ export const gameEventSchema = z.discriminatedUnion("type", [
   }),
   /** A friend reacted to a feed event: its author gets a letter. */
   z.object({ type: z.literal("friend_reaction"), eventId: z.int().positive() }),
+  /** Letters came in a while ago: an e-mail if they are still unread and the player away. */
+  z.object({ type: z.literal("news_due"), userId: z.string().min(1) }),
+  /** The evening's reminders, for players away while their sachets are full. */
+  z.object({
+    type: z.literal("reminders_due"),
+    userIds: z.array(z.string().min(1)).min(1).max(100),
+  }),
 ]);
 export type GameEvent = z.infer<typeof gameEventSchema>;

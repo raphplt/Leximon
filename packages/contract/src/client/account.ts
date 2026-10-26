@@ -16,7 +16,9 @@ import {
   type SendCodeRefusal,
   SIGN_IN_CODE_QUOTA_ERROR,
   UNDELIVERABLE_EMAIL_ERROR,
+  type UnsubscribeStopped,
   type UpdateEmailPreferencesRequest,
+  unsubscribeResponseSchema,
 } from "../index";
 import { ApiError, authErrorCode, errorCode, type Http, json, parse, segment } from "./http";
 
@@ -132,10 +134,10 @@ export function accountRoutes(http: Http) {
       return parse(response, emailPreferencesSchema);
     },
 
-    /** Unsubscribes the recipient of a campaign e-mail, from the token of its link. No session. */
-    async unsubscribeFromLink(token: string): Promise<"done" | "invalid"> {
+    /** Unsubscribes the recipient of an e-mail, from the token of its link. No session. */
+    async unsubscribeFromLink(token: string): Promise<UnsubscribeStopped | "invalid"> {
       const response = await send(`/email/unsubscribe/${segment(token)}`, { method: "POST" });
-      if (response.ok) return "done";
+      if (response.ok) return (await parse(response, unsubscribeResponseSchema)).stopped;
       if (response.status === 400) return "invalid";
       throw new ApiError("unsubscribe_unavailable", response.status);
     },

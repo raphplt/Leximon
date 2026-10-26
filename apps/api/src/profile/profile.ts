@@ -623,6 +623,8 @@ const DEFAULT_PREFERENCES: Preferences = {
   notifyClanMentions: true,
   friendRequestsOpen: true,
   shareFinds: true,
+  emailNews: true,
+  emailReminders: true,
 };
 
 export async function readPreferences(db: Reader, userId: string): Promise<Preferences> {
@@ -633,6 +635,8 @@ export async function readPreferences(db: Reader, userId: string): Promise<Prefe
       notifyClanMentions: userPreferences.notifyClanMentions,
       friendRequestsOpen: userPreferences.friendRequestsOpen,
       shareFinds: userPreferences.shareFinds,
+      emailNews: userPreferences.emailNews,
+      emailReminders: userPreferences.emailReminders,
     })
     .from(userPreferences)
     .where(eq(userPreferences.userId, userId));
@@ -658,6 +662,8 @@ export async function updatePreferences(
       notifyClanMentions: userPreferences.notifyClanMentions,
       friendRequestsOpen: userPreferences.friendRequestsOpen,
       shareFinds: userPreferences.shareFinds,
+      emailNews: userPreferences.emailNews,
+      emailReminders: userPreferences.emailReminders,
     });
   if (row === undefined) throw new Error("Preferences upsert returned no row");
   return row;

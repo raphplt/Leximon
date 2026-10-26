@@ -639,6 +639,11 @@ Il faut deux comptes inscrits avec un pseudo, A et B (deux navigateurs, ou une f
 - **Attendu :** le podium classe les bonnes réponses de la semaine, sans récompense, « Toi : 4e sur 5 » sous les marches quand tu n'y es pas. La trouvaille de A apparaît dans le fil de B ; A reçoit une seule lettre à la première réaction. « Montrer mes trouvailles à mes amis » éteint chez A, ses trouvailles quittent le fil.
 - **Retour :**
 
+### AMI-08 · E-mails sur la partie
+- **Faire :** en local, l'API écrit les e-mails dans sa console. A demande B en ami ; B ne touche à rien pendant 30 minutes (entre 8 h et 21 h). Ensuite, B ouvre « Réglages » puis « E-mails ». Pour le rappel : `wrangler dev --test-scheduled`, puis `curl "http://localhost:8787/__scheduled?cron=0+17+*+*+*"` vers 18 h, avec un compte dont `players.last_seen_at` remonte à la veille.
+- **Attendu :** un seul e-mail « A te demande en ami » pour B, avec « Répondre à la demande » vers `/amis`, et rien si B est revenu entre-temps. Le rappel dit « Tes 6 sachets t'attendent ». Le lien du bas mène à `/desinscription/…`, qui coupe ce seul e-mail ; « Lettres en attente » et « Sachets pleins » se coupent aussi dans les réglages, web et mobile. `/jouer?courrier` ouvre le courrier.
+- **Retour :**
+
 ---
 
 ## 14. Partout

@@ -7,6 +7,7 @@ import type { AppEnv } from "../context";
 import { errorSummary } from "../error-summary";
 import { handleFriendEvents } from "../friends/events";
 import { writeMentionLetters, writeRequestLetters, writeTradeLetters } from "../mail/mail";
+import { lastLetterId, playersWithNews } from "../notifications/notifications";
 import { clansOf } from "./clans";
 import { recountClanWeek } from "./goal";
 
@@ -41,6 +42,11 @@ export interface GameEventsReport {
   readonly invalid: number;
   /** Library recounts put off: a `library_due` message is sent for each, after its delay. */
   readonly deferred: readonly LibraryDeferral[];
+  /** Players who got a letter worth an e-mail: a `news_due` message is sent for each. */
+  readonly news: readonly string[];
+  /** E-mails due now, sent by the caller, which holds the mailer. */
+  readonly newsDue: readonly string[];
+  readonly remindersDue: readonly string[];
 }
 
 export interface LibraryDeferral {
@@ -77,6 +83,8 @@ export async function handleGameEvents(
   const friendRequests = new Map<string, { senderId: string; recipientId: string }>();
   const accepted = new Map<string, { userId: string; friendId: string }>();
   const reactions = new Set<number>();
+  const newsDue = new Set<string>();
+  const remindersDue = new Set<string>();
   const weeks = new Set<string>([gameWeekOf(now).key]);
   // When the newest event that moves a player's cards, or a clan's library, was sent.
   const cardsSentAt = new Map<string, EpochMs>();
@@ -132,9 +140,17 @@ export async function handleGameEvents(
       case "friend_reaction":
         reactions.add(event.data.eventId);
         break;
+      case "news_due":
+        newsDue.add(event.data.userId);
+        break;
+      case "reminders_due":
+        for (const userId of event.data.userIds) remindersDue.add(userId);
+        break;
     }
   });
 
+  // Letters written from here on are this batch's: their players may get an e-mail.
+  const lettersBefore = await lastLetterId(db);
   await writeTradeLetters(db, [...tradeIds], now);
   await writeMentionLetters(db, [...messageIds]);
   await writeRequestLetters(db, [...requests.values()]);
@@ -175,7 +191,14 @@ export async function handleGameEvents(
     if (step === "count") await recountLibrary(db, clanId, now);
     else if (step !== "skip") deferred.push({ clanId, delaySeconds: step.delaySeconds });
   }
-  return { clans: new Set([...goals.keys(), ...librarySentAt.keys()]).size, invalid, deferred };
+  return {
+    clans: new Set([...goals.keys(), ...librarySentAt.keys()]).size,
+    invalid,
+    deferred,
+    news: await playersWithNews(db, lettersBefore),
+    newsDue: [...newsDue],
+    remindersDue: [...remindersDue],
+  };
 }
 
 function latest<K>(times: Map<K, EpochMs>, key: K, at: EpochMs): void {

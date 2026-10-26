@@ -11,7 +11,9 @@
   "placement": { "region": "aws:eu-central-1" },
   // Daily maintenance (partitions, purges) at 03:17 UTC. No trigger every minute: it would keep
   // the database awake; the campaign pump runs through the campaign queue, only when needed.
-  "triggers": { "crons": ["17 3 * * *"] },
+  // Evening reminders at 18:00 in Paris: 17:00 UTC in winter, 16:00 in summer. Each run checks the
+  // hour in Paris first and the wrong one stops before touching the database.
+  "triggers": { "crons": ["17 3 * * *", "0 16 * * *", "0 17 * * *"] },
   "vars": {
     "APP_ENV": "development",
     "BETTER_AUTH_URL": "http://localhost:8787",
@@ -25,6 +27,12 @@
     // in local development, and refused elsewhere.
     "EMAIL_CAMPAIGN_FROM": "",
     "LETTERMINT_BROADCAST_ROUTE": "broadcast",
+    // Sender of notification e-mails (letters waiting, sachets full). Empty: they are only
+    // printed in the console in local development, and never sent elsewhere.
+    "EMAIL_NOTIFY_FROM": "",
+    // Notification e-mails per day in Paris, all players together: keeps the provider's daily
+    // quota for sign-in codes, which share it.
+    "NOTIFY_DAILY_LIMIT": "200",
     // Web app, for the unsubscribe page linked from every campaign.
     "PUBLIC_WEB_URL": "http://localhost:3000",
     // "required": a new player needs an invitation code (closed beta). "off": anyone plays.
@@ -62,12 +70,17 @@
       }
     ]
   },
-  // Cloudflare Email Service, sign-in codes only: the binding cannot send from any other
-  // address. `wrangler dev` simulates it.
+  // Cloudflare Email Service: one binding per sender, which cannot send from any other address.
+  // Notifications have their own subdomain, so that a complaint about them never touches the
+  // reputation of sign-in codes. `wrangler dev` simulates both.
   "send_email": [
     {
       "name": "EMAIL",
       "allowed_sender_addresses": ["code@mail.leximon.fr"]
+    },
+    {
+      "name": "NOTIFY_EMAIL",
+      "allowed_sender_addresses": ["facteur@avis.leximon.fr"]
     }
   ],
   // Counted per Cloudflare location. Namespace ids are unique per account: never reuse one.
@@ -146,6 +159,8 @@
         // Campaigns stay refused until LETTERMINT_SENDING_TOKEN is set.
         "EMAIL_CAMPAIGN_FROM": "Leximon <bonjour@infos.leximon.fr>",
         "LETTERMINT_BROADCAST_ROUTE": "broadcast",
+        "EMAIL_NOTIFY_FROM": "Leximon <facteur@avis.leximon.fr>",
+        "NOTIFY_DAILY_LIMIT": "200",
         "PUBLIC_WEB_URL": "https://leximon.fr",
         "BETA_INVITES": "required",
         "MOBILE_MIN_VERSION": "0.0.0"
@@ -179,6 +194,10 @@
         {
           "name": "EMAIL",
           "allowed_sender_addresses": ["code@mail.leximon.fr"]
+        },
+        {
+          "name": "NOTIFY_EMAIL",
+          "allowed_sender_addresses": ["facteur@avis.leximon.fr"]
         }
       ],
       // Same limits and ids as above: the local ones are simulated and never reach the account.
@@ -242,11 +261,13 @@
         "BETTER_AUTH_URL": "https://leximon-api-staging.raphael-plassart.workers.dev",
         // The Origin the load test sends; no browser ever calls this API.
         "TRUSTED_ORIGINS": "https://leximon.fr",
-        // No sign-in code nor campaign leaves staging.
+        // No sign-in code, campaign nor notification leaves staging.
         "EMAIL_CODE_FROM": "",
         "EMAIL_REPLY_TO": "contact@leximon.fr",
         "EMAIL_CAMPAIGN_FROM": "",
         "LETTERMINT_BROADCAST_ROUTE": "broadcast",
+        "EMAIL_NOTIFY_FROM": "",
+        "NOTIFY_DAILY_LIMIT": "0",
         "PUBLIC_WEB_URL": "https://leximon.fr",
         "BETA_INVITES": "off",
         "MOBILE_MIN_VERSION": "0.0.0"
@@ -279,6 +300,10 @@
         {
           "name": "EMAIL",
           "allowed_sender_addresses": ["code@mail.leximon.fr"]
+        },
+        {
+          "name": "NOTIFY_EMAIL",
+          "allowed_sender_addresses": ["facteur@avis.leximon.fr"]
         }
       ],
       // Same limits as production, except guest creation: the whole load comes from one address,

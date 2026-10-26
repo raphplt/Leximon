@@ -48,6 +48,7 @@ describe("database", () => {
       "invites",
       "mail_letters",
       "moderation_reports",
+      "notification_emails",
       "pinned_cards",
       "player_age_brackets",
       "player_days",

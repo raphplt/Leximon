@@ -15,6 +15,7 @@ import type { ClanGoalSchedule } from "./clan/goal";
 import type { ClanLevelRules } from "./clan/level";
 import type { FriendSchedule } from "./friend/friend";
 import type { MasterySchedule } from "./mastery/mastery";
+import type { NotifySchedule } from "./notify/notify";
 import type { XpSchedule } from "./progress/progress";
 import type { LevelRewardSchedule } from "./progress/rewards";
 import type { UnlockSchedule } from "./progress/unlocks";
@@ -28,6 +29,8 @@ const LEVELS_DECIDED = Date.UTC(2026, 9, 20, 22);
 const PROVEN_RECALL_DECIDED = Date.UTC(2026, 9, 22, 22);
 /** Midnight in Paris on 2026-10-24, when the owner decided friends and friend links. */
 const FRIENDS_DECIDED = Date.UTC(2026, 9, 23, 22);
+/** Midnight in Paris on 2026-10-26, when the owner decided e-mail notifications. */
+const NOTIFY_DECIDED = Date.UTC(2026, 9, 25, 23);
 
 export const REFILL_SCHEDULE: RefillSchedule = [
   { startsAt: SINCE_LAUNCH, capacity: 6, intervalMs: 30 * MINUTE },
@@ -317,5 +320,16 @@ export const FRIEND_SCHEDULE: FriendSchedule = [
     referralBoosters: 1,
     feedLevelStep: 5,
     feedTtlMs: 30 * DAY,
+  },
+];
+
+export const NOTIFY_SCHEDULE: NotifySchedule = [
+  {
+    startsAt: NOTIFY_DECIDED,
+    reminderDays: [1, 3, 7, 14, 30],
+    reminderHour: 18,
+    newsDelayMs: 30 * MINUTE,
+    quietFromHour: 21,
+    quietUntilHour: 8,
   },
 ];

@@ -17,6 +17,7 @@
     "@leximon/core": "workspace:*",
     "@leximon/db": "workspace:*",
     "@leximon/tokens": "workspace:*",
+    "@leximon/view-model": "workspace:*",
     "better-auth": "1.7.11",
     "drizzle-orm": "catalog:",
     "hono": "4.13.13",

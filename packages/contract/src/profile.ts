@@ -135,6 +135,10 @@ export const preferencesSchema = z.object({
   friendRequestsOpen: z.boolean(),
   /** What the player finds enters their friends' feed. */
   shareFinds: z.boolean(),
+  /** An e-mail when letters wait unread: friends, offers, the clan. */
+  emailNews: z.boolean(),
+  /** An e-mail when the player stays away while their sachets are full. */
+  emailReminders: z.boolean(),
 });
 export type Preferences = z.infer<typeof preferencesSchema>;
 

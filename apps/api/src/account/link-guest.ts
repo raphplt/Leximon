@@ -90,9 +90,10 @@ export const USER_REFERENCES = {
   "sanctions.created_by": { transfer: "kept", abandon: "kept" },
   "email_campaigns.created_by": { transfer: "kept", abandon: "kept" },
   "email_campaigns.launched_by": { transfer: "kept", abandon: "kept" },
-  // Campaigns and their consent need an address: a guest never has either.
+  // Campaigns, their consent and notification e-mails need an address: a guest never has one.
   "email_campaign_sends.user_id": { transfer: "kept", abandon: "kept" },
   "email_consents.user_id": { transfer: "kept", abandon: "kept" },
+  "notification_emails.user_id": { transfer: "kept", abandon: "kept" },
   // Where the guest came from and the days it played: the account's first days are the guest's.
   // An account that already has its own origin keeps it.
   "player_signups.user_id": { transfer: "moved", abandon: "kept" },

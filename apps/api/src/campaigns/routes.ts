@@ -11,6 +11,7 @@ import {
   IDEMPOTENCY_KEY_HEADER,
   idempotencyKeySchema,
   lettermintWebhookSchema,
+  type UnsubscribeResponse,
   updateEmailPreferencesRequestSchema,
 } from "@leximon/contract";
 import { schema } from "@leximon/db";
@@ -20,6 +21,7 @@ import { readAdminEmail } from "../admin/queries";
 import type { AppEnv } from "../context";
 import { errorSummary } from "../error-summary";
 import { clientIp, rateLimit } from "../middleware/rate-limit";
+import { unsubscribeNotification } from "../notifications/notifications";
 import {
   type CampaignControl,
   controlCampaign,
@@ -280,8 +282,13 @@ export function emailPublicRoutes() {
     if (secret === "") return c.json({ error: "email_not_configured" }, 503);
     const sendId = await verifyUnsubscribeToken(secret, c.req.param("token"));
     if (sendId === null) return c.json({ error: "invalid_token" }, 400);
-    await unsubscribe(c.var.db, sendId, Date.now());
-    return c.json({ ok: true });
+    // Notification e-mails sign their own row's id with the same secret.
+    const stopped = await unsubscribeNotification(c.var.db, sendId);
+    if (stopped === null) await unsubscribe(c.var.db, sendId, Date.now());
+    return c.json({
+      ok: true,
+      stopped: stopped ?? "campaigns",
+    } satisfies UnsubscribeResponse);
   });
 
   routes.post("/webhooks/lettermint", async (c) => {

@@ -25,8 +25,8 @@ function maskEmail(email: string): string {
 }
 
 /**
- * Settings: sound, spoken words and vibration, kept on the device; notifications, kept on the
- * server (nothing is sent before the queue exists); the profile; the account.
+ * Settings: sound, spoken words and vibration, kept on the device; notifications and e-mails,
+ * kept on the server; the profile; the account.
  */
 export function SettingsPanel({
   open,
@@ -146,6 +146,25 @@ export function SettingsPanel({
               detail="Seulement quand on te cite"
               checked={notify.notifyClanMentions}
               onChange={(on) => void toggleNotify("notifyClanMentions", on)}
+            />
+          </div>
+        </section>
+      )}
+      {member && notify !== null && (
+        <section className={ui.group}>
+          <h3 className={ui.kicker}>E-mails</h3>
+          <div className={ui.groupRows}>
+            <Switch
+              label="Lettres en attente"
+              detail="Si tu ne viens pas les lire"
+              checked={notify.emailNews}
+              onChange={(on) => void toggleNotify("emailNews", on)}
+            />
+            <Switch
+              label="Sachets pleins"
+              detail="Si tu t'absentes"
+              checked={notify.emailReminders}
+              onChange={(on) => void toggleNotify("emailReminders", on)}
             />
           </div>
         </section>

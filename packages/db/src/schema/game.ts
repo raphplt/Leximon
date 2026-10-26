@@ -507,8 +507,8 @@ export const sanctions = pgTable(
 );
 
 /**
- * What the player wants to be told. Read by the notifications once the queue exists; a
- * player without a row gets everything.
+ * What the player wants to be told, and how: a player without a row gets everything. The
+ * `notify*` choices sort the letters an e-mail names; `email*` choose whether e-mails leave.
  */
 export const userPreferences = pgTable("user_preferences", {
   userId: text()
@@ -522,6 +522,10 @@ export const userPreferences = pgTable("user_preferences", {
   friendRequestsOpen: boolean().notNull().default(true),
   /** What the player finds enters their friends' feed. */
   shareFinds: boolean().notNull().default(true),
+  /** An e-mail when a letter waits and the player has not come to read it. */
+  emailNews: boolean().notNull().default(true),
+  /** An e-mail when the player stays away while their sachets are full. */
+  emailReminders: boolean().notNull().default(true),
 });
 
 /**

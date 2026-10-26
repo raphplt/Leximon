@@ -14,6 +14,7 @@ export * from "./mastery/challenge";
 export * from "./mastery/mastery";
 export * from "./moderation/sanction";
 export * from "./moderation/text-filter";
+export * from "./notify/notify";
 export * from "./progress/progress";
 export * from "./progress/rewards";
 export * from "./progress/unlocks";

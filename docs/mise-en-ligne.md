@@ -182,6 +182,12 @@ Détail dans le [cahier des e-mails](cahiers-des-charges/e-mails.md).
 2. Attendre l'état vérifié.
 3. **Demander une hausse du quota quotidien**, dès maintenant : un compte neuf démarre avec un quota prudent. Formulaire « Need a higher limit? » en bas de la page Limits d'Email Service (developers.cloudflare.com/email-service/platform/limits). Préciser : codes de connexion seulement, bêta de 40 personnes puis ouverture publique avec des pics pendant des streams.
 
+**E-mails sur la partie (Cloudflare Email Service, D-050)**
+
+1. **Onboard Domain** → `avis.leximon.fr`, comme `mail.leximon.fr` : un sous-domaine à part, pour que les rappels ne pèsent pas sur la réputation des codes.
+2. Attendre l'état vérifié. Tant qu'il ne l'est pas, les envois sont refusés et journalisés, sans effet sur le jeu.
+3. Le quota du jour est partagé avec les codes : `NOTIFY_DAILY_LIMIT` (200 par défaut, dans `wrangler.jsonc`) en garde pour eux. À relever avec la hausse de quota.
+
 **Campagnes (Lettermint)**
 
 1. Créer le compte sur lettermint.co, passer leur vérification de conformité.

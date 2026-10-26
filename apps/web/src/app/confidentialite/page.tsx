@@ -87,11 +87,14 @@ export default function PrivacyPage() {
       <section className={styles.section}>
         <h2>E-mails</h2>
         <p>
-          Les codes de connexion partent par Cloudflare, seulement quand tu en demandes un. Les
-          nouvelles du jeu partent par Lettermint, et seulement si tu as coché « M'écrire quand il y
-          a du nouveau ». Chaque nouvelle porte un lien pour arrêter, et la case se décoche dans ton
-          compte. Si tu te désinscris, on garde ton adresse sur la liste des gens à ne plus
-          contacter, rien de plus. L'historique d'un envoi perd les adresses 30 jours après.
+          Les codes de connexion partent par Cloudflare, seulement quand tu en demandes un.
+          Cloudflare envoie aussi les e-mails sur ta partie : une lettre qui t'attend, tes sachets
+          pleins quand tu t'absentes. Au plus un de chaque par jour, et chacun se coupe dans les
+          réglages ou par son lien en bas de l'e-mail. Les nouvelles du jeu partent par Lettermint,
+          et seulement si tu as coché « M'écrire quand il y a du nouveau ». Chaque nouvelle porte un
+          lien pour arrêter, et la case se décoche dans ton compte. Si tu te désinscris, on garde
+          ton adresse sur la liste des gens à ne plus contacter, rien de plus. L'historique d'un
+          envoi perd les adresses 30 jours après.
         </p>
       </section>
 
@@ -111,16 +114,17 @@ export default function PrivacyPage() {
           Ton compte, ta partie, les connexions : pour te faire jouer, c'est le contrat que tu
           acceptes en créant ton compte. Les nouvelles, la liste d'attente, la tranche d'âge : parce
           que tu l'as choisi, et tu peux revenir dessus. La sécurité, la modération et la mesure de
-          la bêta : notre intérêt légitime à garder un jeu sûr, et à savoir s'il plaît.
+          la bêta : notre intérêt légitime à garder un jeu sûr, et à savoir s'il plaît. Les e-mails
+          sur ta partie : notre intérêt légitime à te dire qu'on t'attend, que tu peux couper.
         </p>
       </section>
 
       <section className={styles.section}>
         <h2>Où elles vivent</h2>
         <p>
-          La base de données est chez Neon, à Francfort. Le site, l'API, les codes de connexion et
-          les journaux techniques (gardés 7 jours) passent par Cloudflare. Les nouvelles passent par
-          Lettermint, un service européen.
+          La base de données est chez Neon, à Francfort. Le site, l'API, les codes de connexion, les
+          e-mails sur ta partie et les journaux techniques (gardés 7 jours) passent par Cloudflare.
+          Les nouvelles passent par Lettermint, un service européen.
         </p>
         <p>
           Neon et Cloudflare sont des sociétés américaines : une donnée peut passer par les

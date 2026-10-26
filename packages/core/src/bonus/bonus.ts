@@ -82,6 +82,19 @@ export function gameWeekOf(time: EpochMs): GameDay {
   };
 }
 
+/** The hour, 0 to 23, on the clocks of Paris at `time`. */
+export function gameHourOf(time: EpochMs): number {
+  return zonedParts(time).hour;
+}
+
+/** The instant the clocks of Paris strike `hour` on the calendar day `dayKey` ("2026-10-20"). */
+export function gameTimeOn(dayKey: string, hour: number): EpochMs {
+  const [year = 0, month = 0, day = 0] = dayKey.split("-").map(Number);
+  const wall = Date.UTC(year, month - 1, day, hour);
+  const guess = wall - zoneOffset(wall);
+  return wall - zoneOffset(guess);
+}
+
 /** Answers given during the current day, including the one being applied. */
 export interface DailyTally {
   readonly answers: number;

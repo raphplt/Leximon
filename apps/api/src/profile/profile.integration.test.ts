@@ -350,16 +350,21 @@ describe("/me/preferences", () => {
       notifyClanMentions: true,
       friendRequestsOpen: true,
       shareFinds: true,
+      emailNews: true,
+      emailReminders: true,
     });
-    expect((await call(member, "PATCH", "/me/preferences", { notifyTrades: false })).status).toBe(
-      200,
-    );
+    expect(
+      (await call(member, "PATCH", "/me/preferences", { notifyTrades: false, emailNews: false }))
+        .status,
+    ).toBe(200);
     expect(await read()).toEqual({
       notifyReviews: true,
       notifyTrades: false,
       notifyClanMentions: true,
       friendRequestsOpen: true,
       shareFinds: true,
+      emailNews: false,
+      emailReminders: true,
     });
     expect((await call(member, "PATCH", "/me/preferences", {})).status).toBe(400);
   });

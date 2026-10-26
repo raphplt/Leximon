@@ -126,7 +126,7 @@ export function cloudflareEmailSender(
 }
 
 /** The binding throws an `Error` with a `code` property. Anything else is an outage. */
-function toSendError(error: unknown): EmailSendError {
+export function toSendError(error: unknown): EmailSendError {
   const code =
     typeof error === "object" &&
     error !== null &&
