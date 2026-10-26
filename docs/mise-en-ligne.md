@@ -167,7 +167,7 @@ Construit le site avec `NEXT_PUBLIC_API_URL=https://api.leximon.fr`, puis le dé
 
 Le domaine `leximon.fr` est créé par le déploiement. Toi : supprimer avant tout enregistrement `A`, `AAAA` ou `CNAME` existant sur `leximon.fr` (une page d'attente, par exemple). Ne pas toucher aux `MX` ni aux `TXT`.
 
-## 11. Redirection de www · toi
+## 11. Redirection de www · fait
 
 1. **DNS** → **Records** → ajouter `AAAA`, nom `www`, contenu `100::`, proxy **activé** (nuage orange).
 2. **Rules** → **Redirect Rules** → modèle **Redirect from WWW to root** : `https://www.leximon.fr/*` vers `https://leximon.fr/${1}`, code 301, garder la query string.

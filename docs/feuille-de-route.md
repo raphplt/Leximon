@@ -76,7 +76,7 @@ Arbitrés par le propriétaire le 2026-10-20 : jeu grand public (B2C), pas de ve
 
 | Étape | Statut | Détail |
 |---|---|---|
-| Hébergement de production | En cours | En ligne depuis le 2026-10-22 : `leximon.fr` et `api.leximon.fr`, base Neon gratuite, catalogue servi par le Worker web (D-040, D-043). Mise en production en une commande (`pnpm deploy:prod`). En-têtes de sécurité, préflights CORS en cache, première visite allégée (ni catalogue sur l'accueil, ni dans la coque du jeu). Procédure : [mise-en-ligne.md](mise-en-ligne.md). Sauvegarde nocturne sur le serveur maison, restauration vérifiée (2026-10-26). Codes de connexion vérifiés en production. Reste : redirection de `www`, hausse du quota d'envoi des codes, Lettermint |
+| Hébergement de production | En cours | En ligne depuis le 2026-10-22 : `leximon.fr` et `api.leximon.fr`, base Neon gratuite, catalogue servi par le Worker web (D-040, D-043). Mise en production en une commande (`pnpm deploy:prod`). En-têtes de sécurité, préflights CORS en cache, première visite allégée (ni catalogue sur l'accueil, ni dans la coque du jeu). Procédure : [mise-en-ligne.md](mise-en-ligne.md). Sauvegarde nocturne sur le serveur maison, restauration vérifiée (2026-10-26). Codes de connexion vérifiés en production. `www` redirigé vers `leximon.fr` (2026-10-26). Reste : hausse du quota d'envoi des codes, Lettermint |
 | Bêta fermée sur invitation | En ligne, premiers liens envoyés (2026-10-25) | D-041 : liens par groupe dans `/admin/invitations`, page `/invitation/<code>`, porte tenue par l'API (`BETA_INVITES`), `?src=` gardé avec le joueur. Une invitation rejouée par un invité ne rouvre plus la porte |
 | Mesure | En ligne | D-042 : `/admin/mesure` (rétention J1/J7/J30, entonnoir, testeurs, fausse porte mécène), `/admin/retours` (« Un retour ? » dans le menu), tranche d'âge facultative à l'inscription |
 | Suivi des erreurs | Fait | D-045 : erreurs relevées par Cloudflare (Workers Logs), résumé chaque matin sur Discord avec les chiffres de la veille. Pas de suivi des erreurs du navigateur |
@@ -87,7 +87,7 @@ Arbitrés par le propriétaire le 2026-10-20 : jeu grand public (B2C), pas de ve
 
 Dans l'ordre où elles débloquent le plus :
 
-1. **Finir la mise en ligne :** la redirection de `www` et la demande de hausse du quota d'Email Service ([mise-en-ligne.md](mise-en-ligne.md), étapes 11 et 12). Lettermint peut attendre la première campagne.
+1. **Finir la mise en ligne :** la demande de hausse du quota d'Email Service ([mise-en-ligne.md](mise-en-ligne.md), étape 12). Lettermint peut attendre la première campagne.
 2. **Avatars gravés (P49) :** valider les seize gravures choisies et leurs noms.
 3. **Mécène (P73) :** l'exemplaire de la carte dénichée, non échangeable et sans XP, reste à confirmer.
 4. **Questions ouvertes** de [regles-du-jeu.md](regles-du-jeu.md#à-décider) : numéro de collection, sons de l'ouverture, notation phonétique.
