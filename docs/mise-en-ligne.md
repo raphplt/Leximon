@@ -248,9 +248,11 @@ Pour forcer la mise à jour de l'app mobile (quand l'API cesse de servir ce dont
 | Résumé | Le lendemain matin, le salon Discord | Un message « Leximon · <jour> », sans « lecture impossible » |
 | En-têtes | `curl -I https://leximon.fr` | `content-security-policy` et `strict-transport-security` présents |
 
-## 15. Sauvegardes sur le NAS · toi
+## 15. Sauvegardes sur le NAS · fait
 
 Neon gratuit ne garde que 6 heures d'historique. La vraie sauvegarde est un `pg_dump` chaque nuit, gardé 30 jours. Les fichiers sont dans `infra/backup/`.
+
+**En place depuis le 2026-10-26** sur le serveur maison : VM `docker` (Proxmox `pve`, joignable par Tailscale), dossier `~/apps/leximon-backup/`, sauvegardes dans `/mnt/media/backups/leximon` (pool ZFS `tank`, hors du disque de la VM). Après une modification de `infra/backup/`, recopier les scripts dans ce dossier.
 
 1. Copier `infra/backup/` sur le NAS (par exemple `/volume1/docker/leximon-backup/`).
 2. Y créer `.env` depuis `.env.example`, avec la chaîne directe de Neon et le dossier de destination (`BACKUP_PATH`). Restreindre le fichier : `chmod 600 .env`.

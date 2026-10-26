@@ -17,7 +17,8 @@ su postgres -c "initdb -D '$data' --auth=trust --no-locale --encoding=UTF8" > /d
 su postgres -c "pg_ctl -D '$data' -o '-c listen_addresses= -k /tmp' -w start" > /dev/null
 su postgres -c "createdb -h /tmp leximon_restore"
 
-su postgres -c "pg_restore -h /tmp --no-owner --no-privileges --exit-on-error -d leximon_restore '$dump'"
+# The client stays root: the dumps folder may be closed to the `postgres` user.
+pg_restore -h /tmp -U postgres --no-owner --no-privileges --exit-on-error -d leximon_restore "$dump"
 
 echo "Restored $dump"
 su postgres -c "psql -h /tmp -d leximon_restore -At -c \"
