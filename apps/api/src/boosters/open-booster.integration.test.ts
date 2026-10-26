@@ -37,6 +37,7 @@ import {
   signInAsMember,
 } from "../test-support";
 import { createCardPoolLoader, fingerprintPool } from "./card-pool";
+import { DEMO_WANT_HEADER } from "./demo-seed";
 import { openBooster as openBoosterService } from "./open-booster";
 
 const url = testDatabaseUrl();
@@ -590,6 +591,46 @@ describe("booster sources", () => {
       env,
     );
     expect(response.status).toBe(400);
+  });
+});
+
+describe("demonstration draws", () => {
+  const WANTED = `${STARTER_COLLECTION}-common-2`;
+  const local = { ...env, APP_ENV: "development" } as Env;
+
+  function openWanting(guest: Guest, target: Env) {
+    return app.request(
+      "/boosters/open",
+      {
+        method: "POST",
+        headers: {
+          origin: TEST_ORIGIN,
+          cookie: guest.cookie,
+          "content-type": "application/json",
+          [IDEMPOTENCY_KEY_HEADER]: crypto.randomUUID(),
+          [DEMO_WANT_HEADER]: WANTED,
+        },
+        body: JSON.stringify(STARTER),
+      },
+      target,
+    );
+  }
+
+  async function lastCard(response: Response): Promise<string | undefined> {
+    expect(response.status).toBe(200);
+    return openBoosterResponseSchema.parse(await response.json()).cards.at(-1)?.cardId;
+  }
+
+  it("end on the wanted card in local development", async () => {
+    const guest = await signInAsPlayer();
+    expect(await lastCard(await openWanting(guest, local))).toBe(WANTED);
+  });
+
+  it("ignore the header anywhere else", async () => {
+    const guest = await signInAsPlayer();
+    const lasts = [];
+    for (let i = 0; i < 5; i++) lasts.push(await lastCard(await openWanting(guest, env)));
+    expect(lasts.filter((id) => id === WANTED).length).toBeLessThan(5);
   });
 });
 

@@ -9,11 +9,13 @@ import {
 } from "@leximon/contract";
 import { capacityAt, REFILL_SCHEDULE } from "@leximon/core";
 import { Hono } from "hono";
+import { isLocalDevelopment } from "../account/email-sender";
 import { sendGameEvents } from "../clans/events";
 import type { AppEnv } from "../context";
 import { playerRateLimit } from "../middleware/rate-limit";
 import { requireUser } from "../middleware/require-user";
 import type { CardPoolLoader } from "./card-pool";
+import { DEMO_WANT_HEADER, findDemoSeed } from "./demo-seed";
 import { openBooster } from "./open-booster";
 import { generateSeed } from "./seed";
 
@@ -32,12 +34,22 @@ export function boosterRoutes(loadCardPool: CardPoolLoader) {
     }
 
     const now = Date.now();
+    const wanted = isLocalDevelopment(c.env) ? c.req.header(DEMO_WANT_HEADER) : undefined;
+    const demoSeed =
+      wanted === undefined
+        ? null
+        : await findDemoSeed(c.var.db, loadCardPool, {
+            userId: c.var.userId,
+            source: body.data,
+            wanted: wanted.split(",").map((id) => id.trim()),
+            now,
+          });
     const result = await openBooster(c.var.db, loadCardPool, {
       userId: c.var.userId,
       idempotencyKey: key.data,
       source: body.data,
       now,
-      seed: generateSeed(),
+      seed: demoSeed ?? generateSeed(),
     });
 
     switch (result.kind) {

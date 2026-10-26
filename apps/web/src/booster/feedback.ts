@@ -250,14 +250,24 @@ const CUES: Readonly<Record<SoundCue, (ctx: AudioContext) => void>> = {
   },
 };
 
+/**
+ * Each cue is also announced as a `leximon:cue` event on the window, so that a recording of the
+ * game (demonstration videos) can lay the sounds on their own track.
+ */
+function announce(cue: SoundCue | "tearGrain"): void {
+  window.dispatchEvent(new CustomEvent("leximon:cue", { detail: cue }));
+}
+
 export function play(cue: SoundCue | null): void {
   if (cue === null) return;
+  announce(cue);
   const ctx = audio();
   if (ctx !== null) CUES[cue](ctx);
 }
 
 /** A grain of torn paper, played while the finger moves along the strip. */
 export function playTearGrain(speed: number): void {
+  announce("tearGrain");
   const ctx = audio();
   if (ctx === null) return;
   noiseBurst(ctx, {

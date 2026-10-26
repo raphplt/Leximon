@@ -8,6 +8,23 @@
       "port": 8787
     },
     {
+      "name": "api-demo",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": [
+        "--filter",
+        "@leximon/api",
+        "exec",
+        "wrangler",
+        "dev",
+        "--test-scheduled",
+        "--var",
+        "TRUSTED_ORIGINS:http://localhost:3100",
+        "--var",
+        "PUBLIC_WEB_URL:http://localhost:3100"
+      ],
+      "port": 8787
+    },
+    {
       "name": "web",
       "runtimeExecutable": "pnpm",
       "runtimeArgs": ["--filter", "@leximon/web", "dev"],
