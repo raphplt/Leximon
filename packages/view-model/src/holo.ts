@@ -50,12 +50,13 @@ const RESTING_BETA = 45;
 
 /**
  * Light from the phone's tilt (`deviceorientation`): `beta` front to back, `gamma` left to
- * right, both in degrees.
+ * right, both in degrees. Only the light moves: the hand already tilts the card, and turning it
+ * on screen as well would keep its text blurred.
  */
 export function holoFromOrientation(beta: number, gamma: number): HoloLight {
   const x = 0.5 + clamp(gamma / ORIENTATION_RANGE, -1, 1) / 2;
   const y = 0.5 + clamp((beta - RESTING_BETA) / ORIENTATION_RANGE, -1, 1) / 2;
-  return light(x, y);
+  return { ...light(x, y), rotateX: 0, rotateY: 0 };
 }
 
 export interface HoloLayers {

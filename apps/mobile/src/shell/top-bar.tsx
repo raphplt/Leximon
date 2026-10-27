@@ -1,9 +1,9 @@
 import {
   levelDescription,
+  levelLabel,
   levelRatio,
   mailLabel,
   stockView,
-  xpProgressLabel,
 } from "@leximon/view-model";
 import { router } from "expo-router";
 import { Pressable, StyleSheet, Text, View } from "react-native";
@@ -14,7 +14,7 @@ import { colors, fonts } from "@/theme";
 import { Avatar } from "@/ui/avatar";
 import { Badge } from "@/ui/badge";
 import { Icon } from "@/ui/icon";
-import { LevelMedal, LevelRing, XpBar } from "@/ui/level";
+import { XpBar } from "@/ui/level";
 
 const AVATAR = 46;
 
@@ -31,19 +31,11 @@ export function TopBar() {
         style={styles.avatar}
         onPress={() => router.push("/profil")}
         accessibilityRole="button"
-        accessibilityLabel={
-          progress === null ? "Ton profil" : `${levelDescription(progress)}. Ton profil`
-        }
+        accessibilityLabel="Ton profil"
       >
-        {progress !== null && <LevelRing ratio={levelRatio(progress)} size={AVATAR} />}
         <View style={styles.avatarInner}>
           <Avatar avatar={view.profile?.avatar ?? null} frame={null} size={AVATAR - 8} />
         </View>
-        {progress !== null && (
-          <View style={styles.level}>
-            <LevelMedal level={progress.level} size={24} />
-          </View>
-        )}
       </Pressable>
       {progress !== null && (
         <Pressable
@@ -53,7 +45,7 @@ export function TopBar() {
           accessibilityLabel={`Chemin des niveaux, ${levelDescription(progress)}`}
           hitSlop={8}
         >
-          <Text style={styles.xpText}>{xpProgressLabel(progress)}</Text>
+          <Text style={styles.xpText}>{levelLabel(progress.level)}</Text>
           <XpBar ratio={levelRatio(progress)} thin />
         </Pressable>
       )}
@@ -97,7 +89,14 @@ const styles = StyleSheet.create({
     paddingBottom: 6,
     backgroundColor: colors.background,
   },
-  avatar: { width: AVATAR, height: AVATAR, alignItems: "center", justifyContent: "center" },
+  avatar: {
+    width: AVATAR,
+    height: AVATAR,
+    borderRadius: 999,
+    backgroundColor: colors.track,
+    alignItems: "center",
+    justifyContent: "center",
+  },
   avatarInner: {
     width: AVATAR - 8,
     height: AVATAR - 8,
@@ -106,16 +105,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  level: {
-    position: "absolute",
-    right: -7,
-    bottom: -5,
-    borderRadius: 999,
-    borderWidth: 2,
-    borderColor: colors.background,
-  },
   xp: { width: 84, gap: 4, marginLeft: 4 },
-  xpText: { fontFamily: fonts.ui.extrabold, fontSize: 11, color: colors.textMuted },
+  xpText: { fontFamily: fonts.ui.extrabold, fontSize: 13, color: colors.text },
   spacer: { flex: 1 },
   chip: {
     flexDirection: "row",

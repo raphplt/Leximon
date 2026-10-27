@@ -2,6 +2,7 @@ import { xpToReach } from "@leximon/core";
 import { describe, expect, it } from "vitest";
 import {
   levelDescription,
+  levelLabel,
   levelRatio,
   levelUpLabel,
   playerTitle,
@@ -26,6 +27,7 @@ describe("level", () => {
     expect(levelRatio({ xpIntoLevel: 100, xpForNextLevel: 400 })).toBe(0.25);
     expect(levelRatio({ xpIntoLevel: 500, xpForNextLevel: 400 })).toBe(1);
     expect(xpProgressLabel(at16)).toBe("260 / 825 XP");
+    expect(levelLabel(at16.level)).toBe("Niveau 16");
     expect(levelDescription(at16)).toBe("Niveau 16, 260 sur 825 XP");
     expect(roadSubtitle(at16)).toBe("Niveau 16 · encore 565 XP avant le 17");
   });

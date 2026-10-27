@@ -3,12 +3,12 @@
 import {
   closedTabs,
   levelDescription,
+  levelLabel,
   levelRatio,
   mailLabel,
   PHONE_TAB_ORDER,
   stockView,
   tabBadge,
-  xpProgressLabel,
 } from "@leximon/view-model";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -259,17 +259,11 @@ export function PhoneTopBar({ onMenu }: { readonly onMenu: () => void }) {
       <button
         type="button"
         className={styles.phoneAvatar}
-        style={progress === null ? undefined : ringStyle(levelRatio(progress))}
         onClick={onMenu}
         aria-label="Menu du joueur"
         aria-haspopup="dialog"
       >
         <Avatar avatar={view.profile?.avatar ?? null} frame={null} size={38} />
-        {progress !== null && (
-          <span className={styles.phoneLevel}>
-            <LevelMedal level={progress.level} size={24} small />
-          </span>
-        )}
       </button>
       {progress !== null && (
         <Link
@@ -277,7 +271,7 @@ export function PhoneTopBar({ onMenu }: { readonly onMenu: () => void }) {
           className={styles.phoneXp}
           aria-label={`Chemin des niveaux, ${levelDescription(progress)}`}
         >
-          <span className={styles.phoneXpText}>{xpProgressLabel(progress)}</span>
+          <span className={styles.phoneXpText}>{levelLabel(progress.level)}</span>
           <XpBar ratio={levelRatio(progress)} thin />
         </Link>
       )}

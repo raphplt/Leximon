@@ -281,15 +281,6 @@
   cursor: pointer;
 }
 
-.phoneLevel {
-  position: absolute;
-  right: -7px;
-  bottom: -5px;
-  display: grid;
-  border-radius: 50%;
-  box-shadow: 0 0 0 2px var(--lx-color-background);
-}
-
 .phoneXp {
   display: flex;
   flex-direction: column;
@@ -299,9 +290,9 @@
 }
 
 .phoneXpText {
-  font-size: 11px;
+  font-size: 13px;
   font-weight: 800;
-  color: var(--lx-color-text-muted);
+  color: var(--lx-color-text);
   white-space: nowrap;
 }
 

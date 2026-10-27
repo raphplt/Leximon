@@ -485,8 +485,9 @@ export function HoloCard({
   };
   const tilt = useAnimatedStyle(() => {
     if (reduced) return { transform: [] };
-    const rotateX = resting(2.5 - 5 * drift.value, phone.rotateX.value, finger.rotateX.value);
-    const rotateY = resting(-3 + 6 * drift.value, phone.rotateY.value, finger.rotateY.value);
+    // The light alone drifts: a card left turning would keep its text blurred.
+    const rotateX = resting(0, phone.rotateX.value, finger.rotateX.value);
+    const rotateY = resting(0, phone.rotateY.value, finger.rotateY.value);
     return {
       transform: [
         { perspective: PERSPECTIVE },

@@ -29,6 +29,10 @@ describe("holoFromOrientation", () => {
     expect(holoFromOrientation(45, 90).x).toBe(100);
     expect(holoFromOrientation(-30, 0).y).toBe(0);
   });
+
+  it("moves the light only, so that the card's text stays sharp", () => {
+    expect(holoFromOrientation(80, -40)).toMatchObject({ rotateX: 0, rotateY: 0 });
+  });
 });
 
 describe("holoLayers", () => {

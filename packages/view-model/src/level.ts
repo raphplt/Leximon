@@ -32,6 +32,11 @@ export function levelDescription(progress: Progress): string {
   return `Niveau ${progress.level}, ${formatCount(progress.xpIntoLevel)} sur ${formatCount(progress.xpForNextLevel)} XP`;
 }
 
+/** "Niveau 4", over the XP bar of the top band: said in words, so it reads as no notification. */
+export function levelLabel(level: number): string {
+  return `Niveau ${level}`;
+}
+
 /** "260 / 400 XP". */
 export function xpProgressLabel(progress: Progress): string {
   return `${formatCount(progress.xpIntoLevel)} / ${formatCount(progress.xpForNextLevel)} XP`;

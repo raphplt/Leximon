@@ -194,19 +194,17 @@
   animation: sweep 5s ease-in-out infinite;
 }
 
+/* The light alone drifts: a card left turning would keep its text blurred, sharp only as it
+   passes flat. */
 @keyframes drift {
   0%,
   100% {
     --holo-x: 35%;
     --holo-y: 30%;
-    --holo-rx: 2.5deg;
-    --holo-ry: -3deg;
   }
   50% {
     --holo-x: 65%;
     --holo-y: 65%;
-    --holo-rx: -2.5deg;
-    --holo-ry: 3deg;
   }
 }
 

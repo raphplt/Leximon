@@ -59,43 +59,6 @@ export function XpBar({
   );
 }
 
-/** A ring around the avatar: the share of the level already earned, in gold. */
-export function LevelRing({
-  ratio,
-  size,
-  width = 3,
-}: {
-  readonly ratio: number;
-  readonly size: number;
-  readonly width?: number;
-}) {
-  const r = (size - width) / 2;
-  const length = 2 * Math.PI * r;
-  return (
-    <Svg width={size} height={size} style={StyleSheet.absoluteFill}>
-      <Circle
-        cx={size / 2}
-        cy={size / 2}
-        r={r}
-        stroke={colors.track}
-        strokeWidth={width}
-        fill="none"
-      />
-      <Circle
-        cx={size / 2}
-        cy={size / 2}
-        r={r}
-        stroke={colors.accent}
-        strokeWidth={width}
-        fill="none"
-        strokeDasharray={`${length * clamp(ratio)} ${length}`}
-        strokeLinecap="round"
-        transform={`rotate(-90 ${size / 2} ${size / 2})`}
-      />
-    </Svg>
-  );
-}
-
 const styles = StyleSheet.create({
   center: { ...StyleSheet.absoluteFill, alignItems: "center", justifyContent: "center" },
   medalText: { fontFamily: fonts.display, color: "#FFF4E8", includeFontPadding: false },
