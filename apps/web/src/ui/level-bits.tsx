@@ -1,4 +1,4 @@
-import { levelBadge, levelBadgeBox, levelBadgeInkRing, levelBadgeText } from "@leximon/tokens";
+import { levelBadge, levelBadgeBox, levelBadgeLip, levelBadgeText } from "@leximon/tokens";
 import { levelLabel } from "@leximon/view-model";
 import { useId } from "react";
 import styles from "./ui.module.css";
@@ -49,28 +49,35 @@ export function LevelMedal({
       aria-hidden="true"
     >
       <defs>
-        <linearGradient id={`${id}rim`} x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stopColor={colors.rimTop} />
-          <stop offset="1" stopColor={colors.rimBottom} />
+        <linearGradient id={`${id}rim`} x1="0" y1="0" x2="1" y2="1">
+          {levelBadge.rimGold.map(([color, offset]) => (
+            <stop key={offset} offset={offset} stopColor={color} />
+          ))}
         </linearGradient>
         <linearGradient id={`${id}face`} x1="0" y1="0" x2="0" y2="1">
           <stop offset="0" stopColor={colors.faceTop} />
           <stop offset="1" stopColor={colors.faceBottom} />
         </linearGradient>
       </defs>
-      <path d={levelBadge.outline} fill={colors.outline} />
+      <path d={levelBadge.edge} fill={colors.edge} />
       <path d={levelBadge.rim} fill={`url(#${id}rim)`} />
-      <path d={levelBadge.seam} fill={colors.seam} />
+      <path d={levelBadge.groove} fill={colors.groove} />
       <path d={levelBadge.face} fill={`url(#${id}face)`} />
-      <path d={levelBadge.gloss} fill={colors.gloss} />
+      <text
+        className={styles.medalNumber}
+        x={text.x}
+        y={text.y + levelBadgeLip}
+        fontSize={text.fontSize}
+        fill={colors.inkLip}
+      >
+        {level}
+      </text>
       <text
         className={styles.medalNumber}
         x={text.x}
         y={text.y}
         fontSize={text.fontSize}
         fill={colors.ink}
-        stroke={colors.inkRing}
-        strokeWidth={levelBadgeInkRing}
       >
         {level}
       </text>

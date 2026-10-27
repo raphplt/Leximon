@@ -260,8 +260,6 @@ a.chip:hover {
   font-variation-settings: "SOFT" 100;
   font-weight: 900;
   text-anchor: middle;
-  paint-order: stroke;
-  stroke-linejoin: round;
 }
 
 /* --- Floating buttons of the Jouer screen --- */

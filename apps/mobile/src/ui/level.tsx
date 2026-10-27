@@ -1,4 +1,4 @@
-import { levelBadge, levelBadgeBox, levelBadgeInkRing, levelBadgeText } from "@leximon/tokens";
+import { levelBadge, levelBadgeBox, levelBadgeLip, levelBadgeText } from "@leximon/tokens";
 import { levelLabel } from "@leximon/view-model";
 import { StyleSheet, View } from "react-native";
 import Svg, { Defs, LinearGradient, Path, Rect, Stop, Text as SvgText } from "react-native-svg";
@@ -41,28 +41,21 @@ export function LevelMedal({
     >
       <Svg width={size} height={size} viewBox={`0 0 ${levelBadgeBox} ${levelBadgeBox}`}>
         <Defs>
-          <LinearGradient id="rim" x1="0" y1="0" x2="0" y2="1">
-            <Stop offset="0" stopColor={badge.rimTop} />
-            <Stop offset="1" stopColor={badge.rimBottom} />
+          <LinearGradient id="rim" x1="0" y1="0" x2="1" y2="1">
+            {levelBadge.rimGold.map(([color, offset]) => (
+              <Stop key={offset} offset={offset} stopColor={color} />
+            ))}
           </LinearGradient>
           <LinearGradient id="face" x1="0" y1="0" x2="0" y2="1">
             <Stop offset="0" stopColor={badge.faceTop} />
             <Stop offset="1" stopColor={badge.faceBottom} />
           </LinearGradient>
         </Defs>
-        <Path d={levelBadge.outline} fill={badge.outline} />
+        <Path d={levelBadge.edge} fill={badge.edge} />
         <Path d={levelBadge.rim} fill="url(#rim)" />
-        <Path d={levelBadge.seam} fill={badge.seam} />
+        <Path d={levelBadge.groove} fill={badge.groove} />
         <Path d={levelBadge.face} fill="url(#face)" />
-        <Path d={levelBadge.gloss} fill={badge.gloss} />
-        {/* The ring first, the white over it: react-native-svg has no paint order. */}
-        <SvgText
-          {...number}
-          fill={badge.inkRing}
-          stroke={badge.inkRing}
-          strokeWidth={levelBadgeInkRing}
-          strokeLinejoin="round"
-        >
+        <SvgText {...number} y={number.y + levelBadgeLip} fill={badge.inkLip}>
           {level}
         </SvgText>
         <SvgText {...number} fill={badge.ink}>

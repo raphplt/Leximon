@@ -84,9 +84,10 @@ describe("cssUrl", () => {
 });
 
 describe("level badge", () => {
-  it("rings the number in ink dark enough to read on the light rim", () => {
-    expect(contrast(levelBadge.colors.ink, levelBadge.colors.inkRing)).toBeGreaterThanOrEqual(7);
-    expect(contrast(levelBadge.colors.rimTop, levelBadge.colors.inkRing)).toBeGreaterThanOrEqual(7);
+  it("engraves the number dark enough to read on the whole face", () => {
+    const { ink, faceTop, faceBottom } = levelBadge.colors;
+    expect(contrast(ink, faceTop)).toBeGreaterThanOrEqual(4.5);
+    expect(contrast(ink, faceBottom)).toBeGreaterThanOrEqual(4.5);
   });
 
   it("shrinks three digits to stay inside the face", () => {
