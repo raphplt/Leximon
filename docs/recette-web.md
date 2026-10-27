@@ -90,8 +90,8 @@ Sans être connecté.
 - **Retour :**
 
 ### INS-04 · Mauvais code
-- **Faire :** se déconnecter, se reconnecter avec un code faux, puis avec le bon.
-- **Attendu :** le code faux est refusé avec un message clair et on peut réessayer sans retaper l'adresse.
+- **Faire :** se déconnecter, demander un code, recharger la page. Puis entrer un code faux, et enfin le bon.
+- **Attendu :** après le rechargement, on est toujours sur la saisie du code, comme au retour de l'app mail sur un téléphone (pendant les 10 minutes du code ; « Changer d'adresse » l'oublie). Le code faux est refusé avec un message clair et on peut réessayer sans retaper l'adresse.
 - **Retour :**
 
 ### INS-05 · Invité vers un compte qui joue déjà

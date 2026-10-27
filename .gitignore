@@ -44,3 +44,4 @@ apps/web/public/catalog/
 # Test de charge : cookies des comptes de test et résultats
 infra/load/players*.json
 infra/load/results/
+docs/reecriture-*.md

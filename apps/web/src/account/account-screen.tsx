@@ -22,6 +22,7 @@ import { usePackShape } from "@/lib/use-pack-shape";
 import { forgetProgress } from "@/progress/use-progress";
 import { Switch } from "@/ui/switch";
 import styles from "./account-screen.module.css";
+import { forgetPendingCode, keepPendingCode, readPendingCode } from "./pending-code";
 
 type Step =
   | { readonly kind: "loading" }
@@ -50,17 +51,23 @@ export function AccountScreen() {
   const [newsOptIn, setNewsOptIn] = useState(false);
 
   const load = useCallback(async () => {
+    /** Back from the mail app with a code still valid: straight to the code. */
+    const resumeOrStart = (): Step => {
+      const pending = readPendingCode(Date.now());
+      if (pending === null) return { kind: "email" };
+      setNewsOptIn(pending.newsOptIn);
+      return { kind: "code", email: pending.email };
+    };
     setStep({ kind: "loading" });
     try {
       const account = await api.fetchAccount();
-      setStep(
-        account.kind === "member"
-          ? { kind: "member", email: account.email, isAdmin: account.isAdmin }
-          : { kind: "email" },
-      );
+      if (account.kind === "member") {
+        forgetPendingCode();
+        setStep({ kind: "member", email: account.email, isAdmin: account.isAdmin });
+      } else setStep(resumeOrStart());
     } catch (error) {
       // No guest can start here without an invitation: signing in to an account still works.
-      setStep(error instanceof BetaClosedError ? { kind: "email" } : { kind: "failed" });
+      setStep(error instanceof BetaClosedError ? resumeOrStart() : { kind: "failed" });
     }
   }, []);
 
@@ -89,8 +96,10 @@ export function AccountScreen() {
   const sendCode = (email: string) =>
     run(async () => {
       const result = await api.sendSignInCode(email);
-      if (result.kind === "sent") go({ kind: "code", email });
-      else setError(sendErrorMessage(result.reason));
+      if (result.kind === "sent") {
+        keepPendingCode({ email, newsOptIn }, Date.now());
+        go({ kind: "code", email });
+      } else setError(sendErrorMessage(result.reason));
     });
 
   const checkCode = (email: string, code: string) =>
@@ -124,6 +133,7 @@ export function AccountScreen() {
       ...(preview.outcome === "abandon" ? { acceptGuestLoss: true } : {}),
     });
     if (result.kind === "signed_in") {
+      forgetPendingCode();
       if (newsOptIn) {
         // Missing consent is the safe failure: the player can still tick it in their account.
         await api.setEmailPreferences({ newsOptIn: true, source: "signup" }).catch(() => undefined);
@@ -196,7 +206,10 @@ export function AccountScreen() {
           busy={busy}
           onSubmit={(code) => void checkCode(step.email, code)}
           onResend={() => void sendCode(step.email)}
-          onChangeEmail={() => go({ kind: "email" })}
+          onChangeEmail={() => {
+            forgetPendingCode();
+            go({ kind: "email" });
+          }}
         />
       )}
 
@@ -207,7 +220,10 @@ export function AccountScreen() {
           onConfirm={(ageConfirmed, ageBracket) =>
             void confirm(step.email, step.code, step.preview, ageConfirmed, ageBracket)
           }
-          onCancel={() => go({ kind: "email" })}
+          onCancel={() => {
+            forgetPendingCode();
+            go({ kind: "email" });
+          }}
         />
       )}
 
