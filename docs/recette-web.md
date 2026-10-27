@@ -723,7 +723,7 @@ Des textes en trop ou mal sentis, qui « sentent l'IA ». Exemple, l'objectif de
 
 ### 5. Petites incohérences (corrigées le 2026-10-22)
 
-1. Le niveau s'affiche de deux façons différentes : la pastille de l'en-tête et le bandeau « Niveau 10 » de l'écran Jouer. *Corrigé : la médaille rouge partout, entourée de l'anneau d'XP dans l'en-tête, posée sur l'avatar sur téléphone.* *Revu le 2026-10-27 après un retour de testeur : sur téléphone, la médaille posée sur l'avatar passait pour une notification ; elle laisse la place à « Niveau N » au-dessus de la barre d'XP.*
+1. Le niveau s'affiche de deux façons différentes : la pastille de l'en-tête et le bandeau « Niveau 10 » de l'écran Jouer. *Corrigé : la médaille rouge partout, entourée de l'anneau d'XP dans l'en-tête, posée sur l'avatar sur téléphone.* *Revu le 2026-10-27 après un retour de testeur : la médaille rouge à côté de l'avatar ou posée dessus passait pour une notification ; dans les deux bandeaux, ordinateur et téléphone, elle laisse la place à « Niveau N » au-dessus de la barre d'XP. La médaille reste sur l'écran Jouer et la route des niveaux.*
 2. « +3 bonus » dans l'en-tête : on peut cliquer dessus, mais il ne se passe rien. *Corrigé : il ouvre la réserve (JOU-02).*
 3. Sur l'écran Jouer, le bouton Clan devrait montrer l'emblème de son clan, une fois membre, au lieu de l'icône par défaut. *Corrigé (JOU-01).*
 

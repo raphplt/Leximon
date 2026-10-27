@@ -17,7 +17,7 @@ import { Avatar } from "@/components/avatar";
 import { profile } from "@/player/player";
 import { useSharedFailed } from "@/player/resource";
 import { Icon } from "@/ui/icon";
-import { LevelMedal, ringStyle, XpBar } from "@/ui/level-bits";
+import { XpBar } from "@/ui/level-bits";
 import { Logo } from "@/ui/logo";
 import ui from "@/ui/ui.module.css";
 import styles from "./bars.module.css";
@@ -219,16 +219,16 @@ function TopBarSide({
       <StockChips view={view} compact={false} />
       <MailButton view={view} compact={false} />
       {view.progress === null ? (
-        <span className={styles.ring} aria-hidden="true" />
+        <span className={`${ui.chip} ${styles.level}`} aria-hidden="true" />
       ) : (
         <Link
           href="/niveaux"
-          className={styles.ring}
-          style={ringStyle(levelRatio(view.progress))}
+          className={`${ui.chip} ${styles.level}`}
           aria-label={`Chemin des niveaux, ${levelDescription(view.progress)}`}
           title={levelDescription(view.progress)}
         >
-          <LevelMedal level={view.progress.level} size={38} small />
+          {levelLabel(view.progress.level)}
+          <XpBar ratio={levelRatio(view.progress)} thin />
         </Link>
       )}
       <button

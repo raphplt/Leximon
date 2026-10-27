@@ -152,13 +152,21 @@
   box-shadow: 0 0 0 3px var(--lx-color-sunken);
 }
 
-.ring {
-  display: grid;
-  place-items: center;
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
+/* The level said in words, over its XP bar: a red medal by the avatar read as a notification. */
+.level {
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: center;
+  gap: 5px;
+  width: 112px;
+  min-height: 44px;
+  font-size: 13px;
+  font-weight: 800;
   text-decoration: none;
+}
+
+.level:hover {
+  background: var(--lx-color-track);
 }
 
 .chipButton {

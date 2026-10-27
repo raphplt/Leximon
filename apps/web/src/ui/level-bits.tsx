@@ -44,11 +44,3 @@ export function LevelMedal({
     </span>
   );
 }
-
-/** Ring around the level or the avatar: the share of the level already earned, in gold. */
-export function ringStyle(ratio: number): CSSProperties {
-  const degrees = Math.round(Math.min(1, Math.max(0, ratio)) * 360);
-  return {
-    background: `conic-gradient(var(--lx-color-accent) ${degrees}deg, var(--lx-color-track) 0)`,
-  };
-}
