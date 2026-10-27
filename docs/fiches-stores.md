@@ -51,8 +51,9 @@ Tant que la bêta est fermée, ajouter en tête : « Leximon est en bêta. On y 
 |---|---|
 | Nom (30 signes) | Leximon : mots rares en cartes |
 | Description courte (80 signes) | Chaque carte est un mot oublié du français. Ouvre, collectionne, échange. |
-| Catégorie | Jeux › Cartes |
-| Tags | Collection, Mots, Cartes à collectionner |
+| Catégorie | Jeux › Mots (le classement « Cartes » est occupé par le solitaire et le poker) |
+| Tags | Cartes à collectionner, Mots, Culture, Solo, pris dans la liste de Google. Jamais « Hors ligne » : le jeu a besoin du réseau |
+| Coordonnées publiques | contact@leximon.fr, https://leximon.fr, pas de téléphone |
 | Contient des annonces | Non |
 | Achats dans l'appli | Non |
 | Public cible | 16-17 ans et 18 ans et plus. Ne pas cocher les moins de 13 ans : le règlement Familles s'appliquerait |
