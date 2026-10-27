@@ -36,6 +36,7 @@ import Svg, {
   Stop,
 } from "react-native-svg";
 import { scheduleOnRN } from "react-native-worklets";
+import { useTiltLight } from "@/cards/use-tilt-light";
 import { play, playTearGrain, vibrate } from "@/feedback/feedback";
 import { fonts } from "@/theme";
 import {
@@ -122,14 +123,20 @@ export function Sachet({
     bob.value = withRepeat(withTiming(1, { duration: 3500, easing: EASE_IN_OUT }), -1, true);
   }, [reduced, sway, bob]);
 
+  // Once the phone's tilt is read, it moves the light and the sway stops.
+  const phone = useTiltLight(state === "sealed");
+  const swayed = (swaying: number, tilted: number) => {
+    "worklet";
+    return swaying + (tilted - swaying) * phone.held.value;
+  };
   // Without the sway, the light rests in the middle and the pouch faces the player.
   const light: Light = {
-    x: useDerivedValue(() => (reduced ? 50 : 35 + 30 * sway.value)),
-    y: useDerivedValue(() => (reduced ? 50 : 30 + 10 * sway.value)),
+    x: useDerivedValue(() => (reduced ? 50 : swayed(35 + 30 * sway.value, phone.x.value))),
+    y: useDerivedValue(() => (reduced ? 50 : swayed(30 + 10 * sway.value, phone.y.value))),
   };
   const tilt: Tilt = {
-    x: useDerivedValue(() => (reduced ? 0 : 1.5 - 2 * sway.value)),
-    y: useDerivedValue(() => (reduced ? 0 : -2.5 + 5 * sway.value)),
+    x: useDerivedValue(() => (reduced ? 0 : swayed(1.5 - 2 * sway.value, phone.rotateX.value))),
+    y: useDerivedValue(() => (reduced ? 0 : swayed(-2.5 + 5 * sway.value, phone.rotateY.value))),
   };
 
   useEffect(() => {

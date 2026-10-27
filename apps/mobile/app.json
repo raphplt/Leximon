@@ -57,6 +57,12 @@
           "recordAudioAndroid": false,
           "enableBackgroundPlayback": false
         }
+      ],
+      [
+        "expo-sensors",
+        {
+          "motionPermission": "Leximon suit l'inclinaison du téléphone pour faire jouer la lumière sur les cartes."
+        }
       ]
     ],
     "experiments": {

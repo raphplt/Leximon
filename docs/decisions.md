@@ -81,7 +81,7 @@ Pour ajouter ou modifier une décision, utiliser le skill `decision`.
   - un seul fichier pour web et mobile ou non ;
   - confort pour un designer.
 - **Rapport attendu :** dans `docs/rnd/` (skill `spike`).
-- **Point d'étape (2026-10-25) :** sans attendre la R&D, le mobile reprend les reflets du web couche pour couche, en code : `react-native-svg` animé par Reanimated et les modes de fusion de React Native (Android 10 et plus), donc sans dépendance nouvelle. Restent ouverts : Rive ou Lottie pour un designer, Skia si un téléphone d'entrée de gamme peine, l'inclinaison du téléphone (`expo-sensors`).
+- **Point d'étape (2026-10-25) :** sans attendre la R&D, le mobile reprend les reflets du web couche pour couche, en code : `react-native-svg` animé par Reanimated et les modes de fusion de React Native (Android 10 et plus), donc sans dépendance nouvelle. Restent ouverts : Rive ou Lottie pour un designer, Skia si un téléphone d'entrée de gamme peine. L'inclinaison du téléphone suit le 2026-10-27 (D-051).
 
 ## D-010 · Chaîne de contenu : Python, exécutée en local
 
@@ -473,3 +473,13 @@ Pour ajouter ou modifier une décision, utiliser le skill `decision`.
   - le lien de désinscription signe l'id de la ligne avec `EMAIL_LINK_SECRET`, sur la route des campagnes, qui répond ce qui s'arrête ; les lignes sont effacées après 90 jours ;
   - les rebonds durs et les plaintes de la liste de suppression bloquent aussi ces e-mails ; l'API importe `@leximon/view-model` pour nommer les lettres comme le courrier ;
   - avant la production : enregistrer `avis.leximon.fr` dans Email Service ([mise-en-ligne.md](mise-en-ligne.md), étape 12).
+
+## D-051 · Mobile : inclinaison du téléphone par `expo-sensors`
+
+- **Statut :** Acceptée (2026-10-27), choisie par le propriétaire.
+- **Choix :** `DeviceMotion` d'`expo-sensors` donne l'inclinaison du téléphone ; elle déplace la lumière et penche la carte révélée, la fiche ouverte et le sachet scellé, avec les mêmes règles que le web (`holoFromOrientation` dans `@leximon/view-model`).
+- **Pourquoi :** module Expo officiel ; c'est ce que le web fait déjà sur Android, et l'effet qui donne envie de tenir sa carte.
+- **Conséquences :**
+  - le doigt passe avant l'inclinaison, l'inclinaison avant la dérive automatique ; rien n'écoute le capteur avec « réduire les animations » ni sur une carte qu'on ne regarde pas ;
+  - aucune autorisation sur Android ; sur iPhone, la phrase `NSMotionUsageDescription` est posée par le plugin dans `app.json`, et la lecture est à vérifier à la recette iPhone ;
+  - nouveau module natif : l'app de développement se reconstruit (D-009, point d'étape).

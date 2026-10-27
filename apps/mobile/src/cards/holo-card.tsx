@@ -29,6 +29,7 @@ import Svg, {
 } from "react-native-svg";
 import { cssLinearInShape, stopColor } from "@/screens/play/sachet-paint";
 import { Card } from "./card";
+import { useTiltLight } from "./use-tilt-light";
 
 /*
  * The web's holographic card, layer for layer: same gradients, same blend modes, same light.
@@ -430,8 +431,8 @@ function Foils({ layers, width, light }: { readonly layers: HoloLayers } & Layer
 }
 
 /**
- * A card that catches the light: it tilts and its foils move under the finger, and drift on
- * their own until then. Meant for the one card the player is looking at (revealed, opened);
+ * A card that catches the light: it tilts and its foils move under the finger or with the phone,
+ * and drift on their own until then. Meant for the one card the player is looking at (revealed, opened);
  * lists keep the plain `Card`, so that a single card is ever redrawn on every frame.
  */
 export function HoloCard({
@@ -463,19 +464,29 @@ export function HoloCard({
     drift.value = withRepeat(withTiming(1, { duration: DRIFT_MS, easing: EASE_IN_OUT }), -1, true);
   }, [reduced, drift]);
 
-  // Without the drift, the light rests in the middle and the card faces the player.
-  const between = (idle: number, live: number) => {
+  // The finger comes first, then the phone's tilt, then the drift.
+  const phone = useTiltLight(true);
+  const mix = (from: number, to: number, share: number) => {
     "worklet";
-    return idle + (live - idle) * held.value;
+    return from + (to - from) * share;
   };
+  const resting = (drifting: number, tilted: number, touched: number) => {
+    "worklet";
+    return mix(mix(drifting, tilted, phone.held.value), touched, held.value);
+  };
+  // Without the drift, the light rests in the middle and the card faces the player.
   const light: Light = {
-    x: useDerivedValue(() => between(reduced ? 50 : 35 + 30 * drift.value, finger.x.value)),
-    y: useDerivedValue(() => between(reduced ? 50 : 30 + 35 * drift.value, finger.y.value)),
+    x: useDerivedValue(() =>
+      resting(reduced ? 50 : 35 + 30 * drift.value, phone.x.value, finger.x.value),
+    ),
+    y: useDerivedValue(() =>
+      resting(reduced ? 50 : 30 + 35 * drift.value, phone.y.value, finger.y.value),
+    ),
   };
   const tilt = useAnimatedStyle(() => {
     if (reduced) return { transform: [] };
-    const rotateX = between(2.5 - 5 * drift.value, finger.rotateX.value);
-    const rotateY = between(-3 + 6 * drift.value, finger.rotateY.value);
+    const rotateX = resting(2.5 - 5 * drift.value, phone.rotateX.value, finger.rotateX.value);
+    const rotateY = resting(-3 + 6 * drift.value, phone.rotateY.value, finger.rotateY.value);
     return {
       transform: [
         { perspective: PERSPECTIVE },

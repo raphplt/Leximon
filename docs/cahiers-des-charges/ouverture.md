@@ -178,7 +178,7 @@ Plus tard, `user_cards.variant` permet des variantes du même mot, par exemple u
    - **Fait le 2026-10-20.** Reflets sur la carte révélée et sur la carte agrandie de l'album, la grille restant statique (`HoloCard`, `useHoloLight`). La lumière suit la souris ou le doigt, et l'inclinaison du téléphone sur Android. Sur iPhone, l'inclinaison demande une autorisation système, pas encore demandée : la lumière y suit le doigt, et la carte dérive doucement d'elle-même tant qu'on ne la touche pas.
    - Le sachet partage le geste du pli (`useTear`). On l'essaie avec l'adresse `/jouer?paquet=sachet`, et le mot de l'interface suit la forme (P53).
 3. **Lot C :** portage mobile une fois la R&D D-009 conclue. Le test A/B prévu ici est abandonné : le propriétaire choisit la forme lui-même.
-   - **Fait le 2026-10-25,** sans attendre la R&D : sachet, gestes, sons, vibrations et reflets du web, en code (D-009, point d'étape). La lumière suit le doigt ; l'inclinaison du téléphone attend `expo-sensors`.
+   - **Fait le 2026-10-25,** sans attendre la R&D : sachet, gestes, sons, vibrations et reflets du web, en code (D-009, point d'étape). La lumière suit le doigt, et l'inclinaison du téléphone depuis le 2026-10-27 (D-051).
 
 ## Décisions
 
