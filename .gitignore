@@ -45,3 +45,4 @@ apps/web/public/catalog/
 infra/load/players*.json
 infra/load/results/
 docs/reecriture-*.md
+docs/revue-wording*
