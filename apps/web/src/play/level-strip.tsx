@@ -28,7 +28,7 @@ export function LevelStrip() {
   return (
     <div className={styles.strip}>
       <Link href="/niveaux" className={styles.medalLink} aria-label="Chemin des niveaux">
-        <LevelMedal level={progress.level} size={64} />
+        <LevelMedal level={progress.level} size={72} />
       </Link>
       <Link
         href="/niveaux"

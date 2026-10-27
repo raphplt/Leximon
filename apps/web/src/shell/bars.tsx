@@ -3,7 +3,6 @@
 import {
   closedTabs,
   levelDescription,
-  levelLabel,
   levelRatio,
   mailLabel,
   PHONE_TAB_ORDER,
@@ -17,7 +16,7 @@ import { Avatar } from "@/components/avatar";
 import { profile } from "@/player/player";
 import { useSharedFailed } from "@/player/resource";
 import { Icon } from "@/ui/icon";
-import { XpBar } from "@/ui/level-bits";
+import { LevelMedal, XpBar } from "@/ui/level-bits";
 import { Logo } from "@/ui/logo";
 import ui from "@/ui/ui.module.css";
 import styles from "./bars.module.css";
@@ -227,8 +226,8 @@ function TopBarSide({
           aria-label={`Chemin des niveaux, ${levelDescription(view.progress)}`}
           title={levelDescription(view.progress)}
         >
-          {levelLabel(view.progress.level)}
-          <XpBar ratio={levelRatio(view.progress)} thin />
+          <LevelMedal level={view.progress.level} size={36} />
+          <XpBar ratio={levelRatio(view.progress)} thin className={styles.levelBar} />
         </Link>
       )}
       <button
@@ -271,8 +270,8 @@ export function PhoneTopBar({ onMenu }: { readonly onMenu: () => void }) {
           className={styles.phoneXp}
           aria-label={`Chemin des niveaux, ${levelDescription(progress)}`}
         >
-          <span className={styles.phoneXpText}>{levelLabel(progress.level)}</span>
-          <XpBar ratio={levelRatio(progress)} thin />
+          <LevelMedal level={progress.level} size={34} />
+          <XpBar ratio={levelRatio(progress)} thin className={styles.levelBar} />
         </Link>
       )}
       <span className={styles.spacer} />

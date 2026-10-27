@@ -216,7 +216,7 @@ a.chip:hover {
   font-weight: 900;
 }
 
-/* --- XP bar and medal --- */
+/* --- XP bar and level badge --- */
 
 .bar {
   position: relative;
@@ -244,28 +244,24 @@ a.chip:hover {
 }
 
 .medal {
-  display: grid;
-  place-items: center;
+  display: block;
   flex-shrink: 0;
-  border-radius: 50%;
-  background: radial-gradient(
-    circle at 35% 30%,
-    #ff8a65,
-    var(--lx-color-badge) 55%,
-    var(--lx-color-seal-dark)
-  );
-  color: #fff4e8;
-  box-shadow:
-    0 4px 0 #7a1f0a,
-    inset 0 0 0 4px rgba(255, 255, 255, 0.18),
-    inset 0 0 0 7px rgba(0, 0, 0, 0.12);
-  line-height: 1;
+  overflow: visible;
 }
 
-.medalSmall {
-  box-shadow:
-    0 2px 0 #7a1f0a,
-    inset 0 0 0 2px rgba(255, 255, 255, 0.18);
+.medalLabelled {
+  display: inline-flex;
+  flex-shrink: 0;
+  line-height: 0;
+}
+
+.medalNumber {
+  font-family: var(--font-display), Georgia, serif;
+  font-variation-settings: "SOFT" 100;
+  font-weight: 900;
+  text-anchor: middle;
+  paint-order: stroke;
+  stroke-linejoin: round;
 }
 
 /* --- Floating buttons of the Jouer screen --- */

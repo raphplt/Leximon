@@ -24,6 +24,7 @@ import { profile } from "@/player/player";
 import { useShared } from "@/player/resource";
 import { Button } from "@/ui/button";
 import { Dialog } from "@/ui/dialog";
+import { LevelMedal } from "@/ui/level-bits";
 import { useToast } from "@/ui/toast";
 import ui from "@/ui/ui.module.css";
 import { refusalText } from "./chat";
@@ -308,7 +309,7 @@ export function RequestsDialog({
                 <Avatar avatar={request.player.avatar} frame={null} size={40} />
                 <span className={styles.memberText}>
                   <span className={styles.memberName}>{name}</span>
-                  <span className={styles.small}>niv. {request.player.level}</span>
+                  <LevelMedal level={request.player.level} size={24} labelled />
                 </span>
                 <Button
                   small

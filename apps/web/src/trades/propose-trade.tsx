@@ -29,6 +29,7 @@ import { usePackShape } from "@/lib/use-pack-shape";
 import { ownedCards } from "@/player/collection";
 import { friends } from "@/player/friends";
 import { useShared } from "@/player/resource";
+import { LevelMedal } from "@/ui/level-bits";
 import { CardRow, cardLabel, catalogCard } from "./card-thumb";
 import { Counterpart } from "./counterpart";
 import styles from "./trades.module.css";
@@ -353,9 +354,11 @@ export function ProposeTrade({
                   >
                     <Avatar avatar={friend.player.avatar} frame={null} size={36} />
                     <span className={styles.friendName}>{playerName(friend.player)}</span>
-                    <span className={trades === null ? styles.muted : styles.friendTrades}>
-                      {trades ?? `niv. ${friend.player.level}`}
-                    </span>
+                    {trades === null ? (
+                      <LevelMedal level={friend.player.level} size={26} labelled />
+                    ) : (
+                      <span className={styles.friendTrades}>{trades}</span>
+                    )}
                   </button>
                 </li>
               );

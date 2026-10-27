@@ -4,6 +4,7 @@ import type { PlayerBadge } from "@leximon/contract";
 import { playerName, profilePath } from "@leximon/view-model";
 import Link from "next/link";
 import { Avatar } from "@/components/avatar";
+import { LevelMedal } from "@/ui/level-bits";
 import styles from "./trades.module.css";
 
 /** The other player of an offer: avatar, pseudo or code, level; « Un joueur parti » once gone. */
@@ -28,7 +29,7 @@ export function Counterpart({
           name
         )}
       </span>
-      {player !== null && <span className={styles.counterpartLevel}>niv. {player.level}</span>}
+      {player !== null && <LevelMedal level={player.level} size={26} labelled />}
     </p>
   );
 }

@@ -258,7 +258,7 @@ function Plateau({
           style={{ left: share(here.x, width), top: share(here.y - tile.height / 2, height) }}
           aria-hidden="true"
         >
-          <LevelMedal level={level} size={46} />
+          <LevelMedal level={level} size={52} />
         </span>
       )}
     </div>

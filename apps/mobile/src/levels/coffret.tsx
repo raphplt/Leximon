@@ -42,6 +42,7 @@ import { colors, fonts } from "@/theme";
 import { Avatar } from "@/ui/avatar";
 import { Button } from "@/ui/button";
 import { Icon } from "@/ui/icon";
+import { LevelMedal } from "@/ui/level";
 import { TextButton } from "@/ui/text-button";
 import { toast } from "@/ui/toast";
 import { REWARD_ICONS } from "./reward-icons";
@@ -151,6 +152,11 @@ export function CoffretHost() {
           <ScrollView contentContainerStyle={styles.inner} bounces={false}>
             {step.name === "opened" ? (
               <>
+                {level !== null && (
+                  <Animated.View entering={ZoomIn.duration(320)}>
+                    <LevelMedal level={level} size={96} />
+                  </Animated.View>
+                )}
                 <Animated.Text entering={ZoomIn.duration(320)} style={styles.levelUp}>
                   Niveau {level} !
                 </Animated.Text>

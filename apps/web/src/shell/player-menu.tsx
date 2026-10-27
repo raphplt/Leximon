@@ -1,6 +1,6 @@
 "use client";
 
-import { levelBadge, levelsOfFeatures, profileHeadline } from "@leximon/view-model";
+import { levelBadge, levelsOfFeatures } from "@leximon/view-model";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { FeedbackDialog } from "@/beta/feedback-dialog";
@@ -9,6 +9,7 @@ import { useNarrow } from "@/lib/use-narrow";
 import { SignOutDialog } from "@/profile/sign-out-dialog";
 import { Dialog } from "@/ui/dialog";
 import { Icon, type IconName } from "@/ui/icon";
+import { LevelMedal } from "@/ui/level-bits";
 import ui from "@/ui/ui.module.css";
 import styles from "./player-menu.module.css";
 import { useShell } from "./shell-context";
@@ -139,7 +140,8 @@ export function PlayerMenu({
               <div>
                 <div className={`${ui.display} ${styles.whoName}`}>{view.name}</div>
                 <div className={styles.whoLevel}>
-                  {profileHeadline(view.title, view.progress.level)}
+                  <LevelMedal level={view.progress.level} size={26} labelled />
+                  {view.title}
                 </div>
               </div>
             </div>

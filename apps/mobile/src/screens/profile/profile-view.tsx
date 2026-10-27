@@ -1,17 +1,13 @@
 import type { ProfileClan, ProfileStats } from "@leximon/contract";
 import { type Catalog, collectionName } from "@leximon/contract/client";
-import {
-  formatPlayerCode,
-  memberSinceLabel,
-  profileHeadline,
-  statTiles,
-} from "@leximon/view-model";
+import { formatPlayerCode, memberSinceLabel, statTiles } from "@leximon/view-model";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { Card } from "@/cards/card";
 import { Emblem } from "@/clan/emblem";
 import { openCard } from "@/screens/trades/card-row";
 import { colors, fonts } from "@/theme";
 import { Avatar } from "@/ui/avatar";
+import { LevelMedal } from "@/ui/level";
 import { Panel } from "@/ui/panel";
 
 export interface ProfileFace {
@@ -50,7 +46,10 @@ export function ProfileHeader({
       <Avatar avatar={face.avatar} frame={face.frame} size={92} label="Avatar" />
       <View style={styles.names}>
         {face.code !== null && (
-          <Text style={styles.headline}>{profileHeadline(face.title, face.level)}</Text>
+          <View style={styles.headline}>
+            <LevelMedal level={face.level} size={32} labelled />
+            {face.title !== null && <Text style={styles.headlineText}>{face.title}</Text>}
+          </View>
         )}
         {clan !== null &&
           (onClan === undefined ? (
@@ -142,7 +141,8 @@ export function StatsPanel({
 const styles = StyleSheet.create({
   identity: { flexDirection: "row", alignItems: "center", gap: 16, marginTop: -6 },
   names: { flex: 1, gap: 4 },
-  headline: { fontFamily: fonts.ui.extrabold, fontSize: 16, color: colors.accent },
+  headline: { flexDirection: "row", alignItems: "center", gap: 8 },
+  headlineText: { fontFamily: fonts.ui.extrabold, fontSize: 16, color: colors.accent },
   clan: { flexDirection: "row", alignItems: "center", gap: 8 },
   clanName: { fontFamily: fonts.ui.bold, fontSize: 15, color: colors.text },
   subline: { fontFamily: fonts.ui.medium, fontSize: 13, lineHeight: 18, color: colors.textMuted },

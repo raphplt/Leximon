@@ -5,6 +5,7 @@ import { cssUrl, emblemColor } from "@leximon/tokens";
 import type { CSSProperties } from "react";
 import { useEngravingInk } from "@/cards/use-engraving-ink";
 import { Icon } from "@/ui/icon";
+import { LevelMedal } from "@/ui/level-bits";
 import styles from "./emblem.module.css";
 
 /**
@@ -34,7 +35,11 @@ export function Emblem({
       ) : (
         <span className={styles.ink} />
       )}
-      {level !== undefined && <span className={styles.medal}>{level}</span>}
+      {level !== undefined && (
+        <span className={styles.medal}>
+          <LevelMedal level={level} size={Math.max(24, Math.round(size * 0.5))} />
+        </span>
+      )}
     </span>
   );
 }

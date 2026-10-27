@@ -106,6 +106,10 @@
 }
 
 .whoLevel {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 2px;
   font-size: 13px;
   color: var(--lx-color-text-muted);
 }

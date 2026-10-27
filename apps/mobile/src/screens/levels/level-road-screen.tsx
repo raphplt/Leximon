@@ -45,7 +45,7 @@ import {
 
 /** Quarters the player may look at beyond their own. */
 const QUARTERS_AHEAD = 2;
-const MEDAL = 40;
+const MEDAL = 46;
 
 /** The level road, ten levels at a time: tiles climbing a plateau, the fog ahead. */
 export function LevelRoadScreen({ asked }: { readonly asked: number | null }) {

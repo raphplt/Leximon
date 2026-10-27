@@ -1,6 +1,7 @@
 import { RARITIES } from "@leximon/core";
 import { describe, expect, it } from "vitest";
 import { cssFill, cssRootRule, cssUrl, cssVariables, solidColor } from "./css";
+import { levelBadge, levelBadgeText } from "./level-badge";
 import { backTone, backTones, colors, rarityStyles } from "./tokens";
 
 /** WCAG relative luminance of a `#RRGGBB` color. */
@@ -79,5 +80,17 @@ describe("cssUrl", () => {
 
   it("escapes what could close the url", () => {
     expect(cssUrl('/a"b\\c\nd')).toBe('url("/a\\22 b\\5c c\\a d")');
+  });
+});
+
+describe("level badge", () => {
+  it("rings the number in ink dark enough to read on the light rim", () => {
+    expect(contrast(levelBadge.colors.ink, levelBadge.colors.inkRing)).toBeGreaterThanOrEqual(7);
+    expect(contrast(levelBadge.colors.rimTop, levelBadge.colors.inkRing)).toBeGreaterThanOrEqual(7);
+  });
+
+  it("shrinks three digits to stay inside the face", () => {
+    expect(levelBadgeText(9).fontSize).toBeGreaterThan(levelBadgeText(42).fontSize);
+    expect(levelBadgeText(42).fontSize).toBeGreaterThan(levelBadgeText(120).fontSize);
   });
 });

@@ -152,17 +152,17 @@
   box-shadow: 0 0 0 3px var(--lx-color-sunken);
 }
 
-/* The level said in words, over its XP bar: a red medal by the avatar read as a notification. */
+/* The level badge leads its XP bar, away from the avatar: on its corner it read as a notification. */
 .level {
-  flex-direction: column;
-  align-items: stretch;
-  justify-content: center;
-  gap: 5px;
-  width: 112px;
+  gap: 6px;
+  width: 132px;
   min-height: 44px;
-  font-size: 13px;
-  font-weight: 800;
+  padding: 0 14px 0 4px;
   text-decoration: none;
+}
+
+.levelBar {
+  flex: 1;
 }
 
 .level:hover {
@@ -291,17 +291,10 @@
 
 .phoneXp {
   display: flex;
-  flex-direction: column;
-  gap: 4px;
-  width: 84px;
+  align-items: center;
+  gap: 5px;
+  width: 96px;
   text-decoration: none;
-}
-
-.phoneXpText {
-  font-size: 13px;
-  font-weight: 800;
-  color: var(--lx-color-text);
-  white-space: nowrap;
 }
 
 .spacer {

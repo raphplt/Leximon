@@ -1,34 +1,74 @@
-import { StyleSheet, Text, View } from "react-native";
-import Svg, { Circle, Defs, LinearGradient, RadialGradient, Rect, Stop } from "react-native-svg";
+import { levelBadge, levelBadgeBox, levelBadgeInkRing, levelBadgeText } from "@leximon/tokens";
+import { levelLabel } from "@leximon/view-model";
+import { StyleSheet, View } from "react-native";
+import Svg, { Defs, LinearGradient, Path, Rect, Stop, Text as SvgText } from "react-native-svg";
 import { colors, fonts } from "@/theme";
 
 const clamp = (ratio: number) => Math.min(1, Math.max(0, ratio));
 
-/** The red level medal, the one look of the level everywhere. */
-export function LevelMedal({ level, size }: { readonly level: number; readonly size: number }) {
+/**
+ * The level badge, the one look of a level everywhere: a player's or a clan's. Decorative unless
+ * `labelled`, for the lists where the number stands alone.
+ */
+export function LevelMedal({
+  level,
+  size,
+  labelled = false,
+}: {
+  readonly level: number;
+  readonly size: number;
+  readonly labelled?: boolean;
+}) {
+  const { colors: badge } = levelBadge;
+  const text = levelBadgeText(level);
+  const number = {
+    x: text.x,
+    y: text.y,
+    fontSize: text.fontSize,
+    fontFamily: fonts.display,
+    textAnchor: "middle" as const,
+  };
   return (
-    <View style={{ width: size, height: size }} importantForAccessibility="no-hide-descendants">
-      <Svg width={size} height={size} style={StyleSheet.absoluteFill}>
+    <View
+      style={{ width: size, height: size }}
+      {...(labelled
+        ? {
+            accessible: true,
+            accessibilityRole: "image" as const,
+            accessibilityLabel: levelLabel(level),
+          }
+        : { importantForAccessibility: "no-hide-descendants" as const })}
+    >
+      <Svg width={size} height={size} viewBox={`0 0 ${levelBadgeBox} ${levelBadgeBox}`}>
         <Defs>
-          <RadialGradient id="medal" cx="35%" cy="30%" r="75%">
-            <Stop offset="0" stopColor="#FF8A65" />
-            <Stop offset="0.55" stopColor={colors.badge} />
-            <Stop offset="1" stopColor={colors.sealDark} />
-          </RadialGradient>
+          <LinearGradient id="rim" x1="0" y1="0" x2="0" y2="1">
+            <Stop offset="0" stopColor={badge.rimTop} />
+            <Stop offset="1" stopColor={badge.rimBottom} />
+          </LinearGradient>
+          <LinearGradient id="face" x1="0" y1="0" x2="0" y2="1">
+            <Stop offset="0" stopColor={badge.faceTop} />
+            <Stop offset="1" stopColor={badge.faceBottom} />
+          </LinearGradient>
         </Defs>
-        <Circle cx={size / 2} cy={size / 2} r={size / 2} fill="url(#medal)" />
-        <Circle
-          cx={size / 2}
-          cy={size / 2}
-          r={size / 2 - 1}
-          fill="none"
-          stroke="rgba(255, 255, 255, 0.18)"
-          strokeWidth={2}
-        />
+        <Path d={levelBadge.outline} fill={badge.outline} />
+        <Path d={levelBadge.rim} fill="url(#rim)" />
+        <Path d={levelBadge.seam} fill={badge.seam} />
+        <Path d={levelBadge.face} fill="url(#face)" />
+        <Path d={levelBadge.gloss} fill={badge.gloss} />
+        {/* The ring first, the white over it: react-native-svg has no paint order. */}
+        <SvgText
+          {...number}
+          fill={badge.inkRing}
+          stroke={badge.inkRing}
+          strokeWidth={levelBadgeInkRing}
+          strokeLinejoin="round"
+        >
+          {level}
+        </SvgText>
+        <SvgText {...number} fill={badge.ink}>
+          {level}
+        </SvgText>
       </Svg>
-      <View style={styles.center}>
-        <Text style={[styles.medalText, { fontSize: Math.round(size * 0.44) }]}>{level}</Text>
-      </View>
     </View>
   );
 }
@@ -60,8 +100,6 @@ export function XpBar({
 }
 
 const styles = StyleSheet.create({
-  center: { ...StyleSheet.absoluteFill, alignItems: "center", justifyContent: "center" },
-  medalText: { fontFamily: fonts.display, color: "#FFF4E8", includeFontPadding: false },
   well: { borderRadius: 999, backgroundColor: colors.well, overflow: "hidden" },
   fill: { height: "100%", borderRadius: 999, overflow: "hidden" },
 });

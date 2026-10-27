@@ -29,6 +29,7 @@ import { friends } from "@/player/state";
 import { colors, fonts } from "@/theme";
 import { Avatar } from "@/ui/avatar";
 import { Button } from "@/ui/button";
+import { LevelMedal } from "@/ui/level";
 import { FormError } from "@/ui/page";
 import { TextButton } from "@/ui/text-button";
 import { TextField } from "@/ui/text-field";
@@ -350,9 +351,11 @@ export function ProposeTrade({
                 <Text style={styles.friendName} numberOfLines={1}>
                   {playerName(friend.player)}
                 </Text>
-                <Text style={trades === null ? styles.muted : styles.friendTrades}>
-                  {trades ?? `niv. ${friend.player.level}`}
-                </Text>
+                {trades === null ? (
+                  <LevelMedal level={friend.player.level} size={26} labelled />
+                ) : (
+                  <Text style={styles.friendTrades}>{trades}</Text>
+                )}
               </Pressable>
             );
           })}

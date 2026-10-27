@@ -1,10 +1,10 @@
 import type { EmblemView } from "@leximon/contract";
 import { emblemColor } from "@leximon/tokens";
-import { Image, StyleSheet, Text, View } from "react-native";
+import { Image, StyleSheet, View } from "react-native";
 import Svg, { Path } from "react-native-svg";
 import { useEngravingInk } from "@/cards/catalog";
-import { fonts } from "@/theme";
 import { Icon } from "@/ui/icon";
+import { LevelMedal } from "@/ui/level";
 
 const RIM = "#D9A233";
 const RIM_SHADOW = "#7A5410";
@@ -29,7 +29,7 @@ export function Emblem({
   const inkColor = emblemColor(emblem.colors[1]);
   const height = size * 1.15;
   const rim = Math.max(2, size * 0.045);
-  const medal = Math.max(18, size * 0.4);
+  const medal = Math.max(24, Math.round(size * 0.5));
   return (
     <View
       style={{ width: size, height: height + rim }}
@@ -57,19 +57,8 @@ export function Emblem({
         )}
       </View>
       {level !== undefined && (
-        <View
-          style={[
-            styles.medal,
-            {
-              minWidth: medal,
-              height: medal,
-              borderRadius: medal / 2,
-              right: -size * 0.16,
-              bottom: -size * 0.08,
-            },
-          ]}
-        >
-          <Text style={[styles.medalText, { fontSize: Math.max(11, size * 0.2) }]}>{level}</Text>
+        <View style={[styles.medal, { right: -size * 0.22, bottom: -size * 0.14 }]}>
+          <LevelMedal level={level} size={medal} />
         </View>
       )}
     </View>
@@ -104,16 +93,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     paddingBottom: "8%",
   },
-  medal: {
-    position: "absolute",
-    alignItems: "center",
-    justifyContent: "center",
-    paddingHorizontal: 4,
-    backgroundColor: RIM,
-    borderWidth: 2,
-    borderColor: RIM_SHADOW,
-  },
-  medalText: { fontFamily: fonts.display, color: "#3A2606" },
+  medal: { position: "absolute" },
   banner: {
     position: "absolute",
     top: "-12%",

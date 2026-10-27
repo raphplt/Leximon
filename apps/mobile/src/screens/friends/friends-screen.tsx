@@ -31,6 +31,7 @@ import { Avatar } from "@/ui/avatar";
 import { Button } from "@/ui/button";
 import { Chip } from "@/ui/chip";
 import { Icon } from "@/ui/icon";
+import { LevelMedal } from "@/ui/level";
 import { Page, Paragraph } from "@/ui/page";
 import { Panel } from "@/ui/panel";
 import { Sheet } from "@/ui/sheet";
@@ -234,7 +235,7 @@ function Incoming({ requests }: { readonly requests: readonly FriendRequest[] })
             <Avatar avatar={request.player.avatar} frame={null} size={40} />
             <View style={styles.rowText}>
               <Text style={styles.name}>{playerName(request.player)}</Text>
-              <Text style={styles.small}>niv. {request.player.level}</Text>
+              <LevelMedal level={request.player.level} size={24} labelled />
             </View>
           </View>
           <View style={styles.requestActions}>

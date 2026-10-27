@@ -20,6 +20,7 @@ import { publishClaimed, wallet } from "@/player/player";
 import { Button } from "@/ui/button";
 import { Dialog } from "@/ui/dialog";
 import { Icon } from "@/ui/icon";
+import { LevelMedal } from "@/ui/level-bits";
 import { useToast } from "@/ui/toast";
 import ui from "@/ui/ui.module.css";
 import styles from "./coffret-dialog.module.css";
@@ -104,6 +105,11 @@ export function CoffretDialog({
         <div className={styles.inner}>
           {step.name === "opened" ? (
             <>
+              {level !== null && (
+                <span className={`${ui.pop} ${styles.levelBadge}`}>
+                  <LevelMedal level={level} size={104} />
+                </span>
+              )}
               <h2 className={`${ui.display} ${ui.pop} ${styles.levelUp}`}>Niveau {level} !</h2>
               <ul className={styles.items}>
                 {step.rewards.map((reward, index) => {

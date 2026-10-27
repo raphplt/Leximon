@@ -23,6 +23,7 @@ import { colors, fonts } from "@/theme";
 import { Avatar } from "@/ui/avatar";
 import { Button } from "@/ui/button";
 import { Chip } from "@/ui/chip";
+import { LevelMedal } from "@/ui/level";
 import { Sheet } from "@/ui/sheet";
 import { TextButton } from "@/ui/text-button";
 import { toast } from "@/ui/toast";
@@ -275,7 +276,7 @@ export function RequestsSheet({
                 <Avatar avatar={request.player.avatar} frame={null} size={40} />
                 <View style={styles.headText}>
                   <Text style={styles.name}>{name}</Text>
-                  <Text style={styles.small}>niv. {request.player.level}</Text>
+                  <LevelMedal level={request.player.level} size={24} labelled />
                 </View>
               </View>
               <Button

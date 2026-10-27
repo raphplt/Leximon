@@ -1,10 +1,4 @@
-import {
-  levelDescription,
-  levelLabel,
-  levelRatio,
-  mailLabel,
-  stockView,
-} from "@leximon/view-model";
+import { levelDescription, levelRatio, mailLabel, stockView } from "@leximon/view-model";
 import { router } from "expo-router";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -14,7 +8,7 @@ import { colors, fonts } from "@/theme";
 import { Avatar } from "@/ui/avatar";
 import { Badge } from "@/ui/badge";
 import { Icon } from "@/ui/icon";
-import { XpBar } from "@/ui/level";
+import { LevelMedal, XpBar } from "@/ui/level";
 
 const AVATAR = 46;
 
@@ -45,8 +39,10 @@ export function TopBar() {
           accessibilityLabel={`Chemin des niveaux, ${levelDescription(progress)}`}
           hitSlop={8}
         >
-          <Text style={styles.xpText}>{levelLabel(progress.level)}</Text>
-          <XpBar ratio={levelRatio(progress)} thin />
+          <LevelMedal level={progress.level} size={34} />
+          <View style={styles.xpBar}>
+            <XpBar ratio={levelRatio(progress)} thin />
+          </View>
         </Pressable>
       )}
       <View style={styles.spacer} />
@@ -105,8 +101,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  xp: { width: 84, gap: 4, marginLeft: 4 },
-  xpText: { fontFamily: fonts.ui.extrabold, fontSize: 13, color: colors.text },
+  xp: { width: 100, flexDirection: "row", alignItems: "center", gap: 5, marginLeft: 4 },
+  xpBar: { flex: 1 },
   spacer: { flex: 1 },
   chip: {
     flexDirection: "row",

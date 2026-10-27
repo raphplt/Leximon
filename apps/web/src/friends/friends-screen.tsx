@@ -28,6 +28,7 @@ import { PseudoDialog } from "@/profile/pseudo-dialog";
 import { usePlayerView } from "@/shell/use-player-view";
 import { Button, ButtonLink } from "@/ui/button";
 import { Icon } from "@/ui/icon";
+import { LevelMedal } from "@/ui/level-bits";
 import { LoadFailed } from "@/ui/load-failed";
 import { Bone, WaitingScreen } from "@/ui/skeleton";
 import { useToast } from "@/ui/toast";
@@ -244,7 +245,7 @@ function Incoming({ requests }: { readonly requests: readonly FriendRequest[] })
             <Avatar avatar={request.player.avatar} frame={null} size={40} />
             <span className={styles.rowText}>
               <span className={styles.rowName}>{playerName(request.player)}</span>
-              <span className={styles.small}>niv. {request.player.level}</span>
+              <LevelMedal level={request.player.level} size={24} labelled />
             </span>
             <span className={styles.requestActions}>
               <Button small disabled={busy !== null} onClick={() => void answer(request, true)}>

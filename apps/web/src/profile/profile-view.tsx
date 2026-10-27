@@ -2,12 +2,7 @@
 
 import type { ProfileClan, ProfileStats } from "@leximon/contract";
 import { collectionName } from "@leximon/contract/client";
-import {
-  formatPlayerCode,
-  memberSinceLabel,
-  profileHeadline,
-  statTiles,
-} from "@leximon/view-model";
+import { formatPlayerCode, memberSinceLabel, statTiles } from "@leximon/view-model";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { useCatalog } from "@/cards/use-catalog";
@@ -15,6 +10,7 @@ import { Emblem } from "@/clan/emblem";
 import { Avatar } from "@/components/avatar";
 import { Card } from "@/components/card";
 import { useNarrow } from "@/lib/use-narrow";
+import { LevelMedal } from "@/ui/level-bits";
 import ui from "@/ui/ui.module.css";
 import styles from "./profile.module.css";
 
@@ -59,7 +55,10 @@ export function ProfileHeader({
         <div className={styles.names}>
           <h1 className={`${ui.display} ${styles.name}`}>{face.name}</h1>
           {face.code !== null && (
-            <p className={styles.headline}>{profileHeadline(face.title, face.level)}</p>
+            <p className={styles.headline}>
+              <LevelMedal level={face.level} size={34} labelled />
+              {face.title}
+            </p>
           )}
           {face.clan !== null && <ClanLine clan={face.clan} href={face.clanHref} />}
           {subline.length > 0 && <p className={styles.subline}>{subline.join(" · ")}</p>}

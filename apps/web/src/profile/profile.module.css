@@ -48,6 +48,9 @@
 }
 
 .headline {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
   margin: 6px 0 0;
   font-weight: 800;
   color: var(--lx-color-accent);

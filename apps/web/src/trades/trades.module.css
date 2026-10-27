@@ -225,13 +225,6 @@
   text-decoration: underline;
 }
 
-.counterpartLevel {
-  font-size: 12px;
-  font-weight: 700;
-  color: var(--lx-color-text-muted);
-  letter-spacing: 0;
-}
-
 .timeLeft {
   display: inline-flex;
   align-items: center;

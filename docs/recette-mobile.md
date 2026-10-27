@@ -46,7 +46,7 @@ A sur le web sert de deuxième joueur : amis, échanges, clan, sanctions. `pnpm 
 
 ### COQ-02 · Onglets et bandeau
 - **Faire :** passer par Album, Défis, Jouer, Échanges, Clan ; toucher l'avatar, le bloc XP, le courrier.
-- **Attendu :** Jouer en relief au centre ; les onglets fermés par le niveau portent un cadenas et disent le niveau requis. Avatar → profil, XP → chemin des niveaux, enveloppe → courrier, avec le nombre de lettres non lues. L'avatar seul, sans médaille ni anneau, et à côté « Niveau N » en toutes lettres au-dessus de la barre d'XP.
+- **Attendu :** Jouer en relief au centre ; les onglets fermés par le niveau portent un cadenas et disent le niveau requis. Avatar → profil, XP → chemin des niveaux, enveloppe → courrier, avec le nombre de lettres non lues. L'avatar seul, sans rien sur son coin ; à côté, la pastille de niveau (rosette bleue, chiffre blanc cerclé d'encre, la même que sur le web) devant la barre d'XP.
 - **Retour :**
 
 ### COQ-03 · Bouton retour d'Android
@@ -138,7 +138,7 @@ A sur le web sert de deuxième joueur : amis, échanges, clan, sanctions. `pnpm 
 
 ### MNI-01 · Chemin des niveaux (NIV-01, NIV-02)
 - **Faire :** toucher le bloc XP ; changer de quartier, toucher des tuiles.
-- **Attendu :** plateau du quartier, tuiles à réclamer qui pulsent, médaille sur le niveau actuel, brouillard au-delà ; détail d'un niveau sous le plateau, tableau « D'où vient l'XP ».
+- **Attendu :** plateau du quartier, tuiles à réclamer qui pulsent, pastille de niveau sur le niveau actuel, brouillard au-delà ; détail d'un niveau sous le plateau, tableau « D'où vient l'XP ».
 - **Retour :**
 
 ### MNI-02 · Coffret (NIV-03 à NIV-05)
