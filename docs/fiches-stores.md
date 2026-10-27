@@ -77,7 +77,8 @@ On s'attend à PEGI 12 au plus, avec la mention « Interactions entre utilisateu
 | Type de données | Collectée | Obligatoire | Finalités |
 |---|---|---|---|
 | Infos personnelles › Adresse e-mail | Oui | Oui | Fonctionnement de l'appli, gestion du compte, communications du développeur |
-| Infos personnelles › Identifiants utilisateur (pseudo, code joueur) | Oui | Oui | Fonctionnement de l'appli, gestion du compte |
+| Infos personnelles › Nom (le pseudo : Google y range les surnoms) | Oui | Oui | Fonctionnement de l'appli, gestion du compte |
+| Infos personnelles › ID utilisateur (identifiant du compte, code joueur) | Oui | Oui | Fonctionnement de l'appli, gestion du compte |
 | Infos personnelles › Autres infos (tranche d'âge) | Oui | Non | Analyses |
 | Messages › Autres messages dans l'appli (discussion de clan) | Oui | Non | Fonctionnement de l'appli, prévention des fraudes et sécurité (modération) |
 | Activité dans l'appli › Interactions avec l'appli (jours d'ouverture, partie) | Oui | Oui | Fonctionnement de l'appli, analyses |
