@@ -9,7 +9,10 @@
     "scheme": "leximon",
     "userInterfaceStyle": "dark",
     "ios": {
-      "bundleIdentifier": "fr.leximon.app"
+      "bundleIdentifier": "fr.leximon.app",
+      "config": {
+        "usesNonExemptEncryption": false
+      }
     },
     "android": {
       "package": "fr.leximon.app",

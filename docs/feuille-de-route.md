@@ -96,5 +96,5 @@ Dans l'ordre où elles débloquent le plus :
 ## Prochaines étapes conseillées
 
 1. Suivre `/admin/mesure` et `/admin/retours` à mesure que les invités arrivent ; vérifier `cf-placement: remote-FRA` et le p95 de l'ouverture dans le résumé Discord ([rnd/charge.md](rnd/charge.md)).
-2. Le mobile : recette complète sur Android et iPhone ([recette-mobile.md](recette-mobile.md)). Avant la première publication sur les stores : variables `EXPO_PUBLIC_*` des profils EAS, adresse App Store, liens universels.
+2. Le mobile : recette complète sur Android et iPhone ([recette-mobile.md](recette-mobile.md)). Avant la première publication sur les stores : un compte de démonstration pour l'examen (la connexion par code l'empêche), les captures et l'image de présentation, l'adresse App Store et les liens universels. Les textes et réponses sont prêts ([fiches-stores.md](fiches-stores.md)), premier build de production Android le 2026-10-27.
 3. La quatrième collection.
