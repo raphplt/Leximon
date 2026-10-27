@@ -59,7 +59,9 @@ export function BlocksDialog({
   return (
     <Dialog open={open} title="Joueurs bloqués" onClose={onClose} variant="center">
       <div className={styles.pad}>
-        {players !== null && players.length === 0 && <p className={styles.muted}>Personne.</p>}
+        {players !== null && players.length === 0 && (
+          <p className={styles.muted}>Aucun joueur bloqué.</p>
+        )}
         {players !== null && players.length > 0 && (
           <ul className={styles.list}>
             {players.map((player) => (

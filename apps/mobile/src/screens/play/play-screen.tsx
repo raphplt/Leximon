@@ -381,7 +381,7 @@ export function PlayScreen() {
               </Pressable>
             )}
             <Pressable onPress={next} accessibilityRole="button" style={styles.next}>
-              <Text style={styles.nextText}>{last ? "Voir mon sachet" : "Suivante"}</Text>
+              <Text style={styles.nextText}>{last ? "Voir le bilan" : "Suivante"}</Text>
             </Pressable>
           </View>
         </View>
@@ -497,7 +497,9 @@ export function PlayScreen() {
               </Text>
             ) : (
               canOpen &&
-              guestLeft === 1 && <Text style={styles.message}>Dernier sachet sans compte.</Text>
+              guestLeft === 1 && (
+                <Text style={styles.message}>C'est ton dernier sachet sans compte.</Text>
+              )
             )}
           </View>
         </View>

@@ -146,7 +146,7 @@ export function AlbumScreen() {
   if (failed) {
     return (
       <main className={styles.page}>
-        <p className={styles.empty}>Le catalogue ne répond pas.</p>
+        <p className={styles.empty}>Les cartes n'ont pas pu être chargées. Réessaie.</p>
         <Button variant="secondary" onClick={load}>
           Réessayer
         </Button>

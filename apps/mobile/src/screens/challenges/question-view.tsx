@@ -180,7 +180,7 @@ export function QuestionView({
             <Text style={styles.feedbackText}>
               {result.correct
                 ? (spelling ?? frequencyLine(card.perBillion))
-                : `C'était : ${asksDefinition ? card.definition : card.word}`}
+                : `La bonne réponse était « ${asksDefinition ? card.definition : card.word} »`}
             </Text>
             {[
               result.levelUp ? levelUpLine(card.word, result.level) : null,

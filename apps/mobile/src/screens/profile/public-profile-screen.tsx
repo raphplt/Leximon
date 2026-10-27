@@ -102,7 +102,7 @@ export function PublicProfileScreen({ pseudo }: { readonly pseudo: string }) {
       <ProfileHeader face={face} />
       {own ? (
         <Panel>
-          <Text style={styles.note}>C'est toi.</Text>
+          <Text style={styles.note}>Tu vois ton profil comme les autres le voient.</Text>
           <Button label="Mon profil" secondary onPress={() => router.replace("/profil")} />
         </Panel>
       ) : (
@@ -243,12 +243,7 @@ function ViewerActions({
       >
         <Text style={styles.note}>{BLOCK_CONFIRM}</Text>
         <Button danger label="Bloquer" disabled={busy} onPress={() => void block()} />
-        <Button
-          label="Pas encore"
-          secondary
-          disabled={busy}
-          onPress={() => setConfirmBlock(false)}
-        />
+        <Button label="Annuler" secondary disabled={busy} onPress={() => setConfirmBlock(false)} />
       </Sheet>
     </View>
   );

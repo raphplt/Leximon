@@ -13,7 +13,7 @@ describe("mastery of a card", () => {
   });
 
   it("says what it takes to climb the next level", () => {
-    expect(masteryView(undefined, NOW).text).toBe("Pas encore révisé.");
+    expect(masteryView(undefined, NOW).text).toBe("Tu n'as pas encore révisé ce mot.");
     const sketch = masteryView(word("sketch", NOW + 2 * DAY, NOW - DAY), NOW);
     expect(sketch.text).toBe(
       "Écris ce mot de mémoire 7 jours après une révision pour passer à l'Encre.",
@@ -30,7 +30,7 @@ describe("mastery of a card", () => {
       "Écris-le de mémoire à la prochaine révision pour passer à la Dorure.",
     );
     const gilded = masteryView(word("gilded", NOW, NOW - 60 * DAY), NOW);
-    expect(gilded.text).toBe("Carte dorée : tu maîtrises ce mot.");
+    expect(gilded.text).toBe("Ce mot a atteint la Dorure, le dernier palier. Il y reste.");
     expect(gilded.steps.every((step) => step.reached)).toBe(true);
   });
 });
@@ -55,8 +55,12 @@ describe("copies and actions", () => {
       stability: 1,
       lastReviewedAt: NOW - DAY,
     };
-    expect(reviewLabel({ ...memory, due: NOW - 1 }, NOW)).toBe("Il t'attend dans les défis.");
-    expect(reviewLabel({ ...memory, due: NOW + 3 * DAY }, NOW)).toBe("Revient dans 3 jours.");
+    expect(reviewLabel({ ...memory, due: NOW - 1 }, NOW)).toBe(
+      "Ce mot est à réviser dans les défis.",
+    );
+    expect(reviewLabel({ ...memory, due: NOW + 3 * DAY }, NOW)).toBe(
+      "Prochaine révision dans 3 jours.",
+    );
     expect(comeBackIn(30 * 60_000)).toBe("dans 30 min");
     expect(comeBackIn(DAY)).toBe("demain");
   });

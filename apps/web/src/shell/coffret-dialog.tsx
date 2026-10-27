@@ -142,7 +142,7 @@ export function CoffretDialog({
               )}
               {opens !== null && (
                 <p className={`${styles.opens} ${ui.pop}`} style={{ animationDelay: "400ms" }}>
-                  Ouvre : {opens.charAt(0).toLowerCase()}
+                  Débloque {opens.charAt(0).toLowerCase()}
                   {opens.slice(1)}
                 </p>
               )}

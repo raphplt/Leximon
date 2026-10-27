@@ -47,7 +47,7 @@ export function WaitlistForm() {
   if (state.kind === "closed") {
     return (
       <p className={styles.joined} role="status">
-        Le jeu est ouvert ! <Link href="/jouer">Viens jouer.</Link>
+        Le jeu est ouvert. <Link href="/jouer">Viens jouer.</Link>
       </p>
     );
   }
@@ -55,7 +55,7 @@ export function WaitlistForm() {
   return (
     <form className={styles.form} onSubmit={submit} noValidate>
       <label className={styles.label} htmlFor={`${id}-email`}>
-        Sois là à l'ouverture
+        Ton adresse e-mail
       </label>
       <div className={styles.fields}>
         <input
@@ -79,7 +79,7 @@ export function WaitlistForm() {
         {state.kind === "error" ? state.message : ""}
       </p>
       <p id={`${id}-note`} className={styles.note}>
-        On t'écrit à l'ouverture, puis pour les nouvelles.{" "}
+        On t'écrit à l'ouverture, puis quand le jeu a du nouveau.{" "}
         <Link href="/confidentialite">Tes données</Link>
       </p>
     </form>

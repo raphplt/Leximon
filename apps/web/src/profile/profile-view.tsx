@@ -109,7 +109,7 @@ export function PinnedCards({
         </h2>
       </div>
       {pinned.length === 0 ? (
-        <p className={styles.muted}>Vitrine vide.</p>
+        <p className={styles.muted}>Aucune carte épinglée.</p>
       ) : (
         <ul className={styles.pins}>
           {pinned.map((cardId, index) => {

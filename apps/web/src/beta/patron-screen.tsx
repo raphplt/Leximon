@@ -33,18 +33,22 @@ export function PatronScreen() {
           de soutenir le jeu.
         </p>
         <ul className={styles.text}>
-          <li>Un cosmétique par mois, annoncé d'avance et gardé à vie.</li>
+          <li>
+            Un avatar, un cadre ou un titre exclusif chaque mois, annoncé à l'avance et gardé à vie.
+          </li>
           <li>Le titre de mécène sur ton profil, ton pseudo dans les crédits.</li>
-          <li>Le carnet : les statistiques de tes mots et ton album à imprimer.</li>
+          <li>Un carnet avec les statistiques de tes mots et ton album à imprimer.</li>
           <li>Ta voix sur l'ordre des prochaines collections.</li>
         </ul>
-        <p className={styles.text}>Aucun avantage en jeu : ni sachet, ni carte, ni XP en plus.</p>
+        <p className={styles.text}>
+          Aucun avantage dans le jeu. Un mécène n'a ni sachet, ni carte, ni XP en plus.
+        </p>
         <p className={styles.text}>
           <strong>3,99 € par mois</strong> ou <strong>29,99 € par an</strong>.
         </p>
         {asked ? (
           <p className={styles.text} role="status">
-            Noté. Tu seras dans les premiers.
+            C'est noté. On te préviendra à l'ouverture des abonnements.
           </p>
         ) : (
           <button type="button" className={styles.primary} onClick={ask}>

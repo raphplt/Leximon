@@ -56,7 +56,7 @@ export function CardSheet({ cardId }: { readonly cardId: string }) {
       <Page title="Carte">
         {failed ? (
           <>
-            <Paragraph muted>Le catalogue ne répond pas.</Paragraph>
+            <Paragraph muted>Les cartes n'ont pas pu être chargées. Réessaie.</Paragraph>
             <Button label="Réessayer" secondary onPress={load} />
           </>
         ) : (

@@ -39,7 +39,7 @@ describe("level", () => {
   });
 
   it("reads the XP table from the rules in force", () => {
-    expect(xpSources(NOW)).toContainEqual({ action: "Mot nouveau", xp: "5 à 50" });
+    expect(xpSources(NOW)).toContainEqual({ action: "Nouveau mot", xp: "5 à 50" });
     expect(xpSources(NOW)[0]).toEqual({ action: "Ouvrir un sachet", xp: "10" });
   });
 });

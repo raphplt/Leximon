@@ -36,7 +36,7 @@ Les grands moments du jeu méritent plus de mots que les écrans fonctionnels, p
 - **On dit, on ne rassure pas.** Pas de promesse défensive (« et ça le restera », « rien n'est perdu »), pas de « pour l'instant » ni « dans un moment ».
 - **Pas de détail technique qui ne sert pas l'action** : nombre de chiffres d'un code, licence d'une image en plein écran, nom d'un service.
 - **Le « ! » se mérite.** Il est réservé aux récompenses.
-- **Les chiffres plutôt que les adjectifs.** « Un mot imprimé sur 29 milliards » vaut mieux que « un mot très rare ».
+- **Les chiffres plutôt que les adjectifs.** « Imprimé une fois sur 29 milliards de mots » vaut mieux que « un mot très rare ».
 
 ## Vendre le bénéfice
 

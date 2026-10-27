@@ -34,15 +34,15 @@ describe("level rewards", () => {
     expect(rewardSummary(3, NOW)).toBe("Sachet bonus");
     expect(rewardSummary(15, NOW)).toBe("Sachet garni · Titre");
     expect(rewardSummary(20, NOW)).toBe(
-      "Sachet garni · Réserve +1 · Avatar gravé · Cadre · Place épinglée +1",
+      "Sachet garni · Réserve agrandie · Avatar gravé · Cadre · Une épingle de plus",
     );
   });
 
   it("lists the coffrets waiting, lowest first", () => {
     expect(waitingCoffrets(6, [2, 4])).toEqual([3, 5, 6]);
     expect(coffretsLabel(1)).toBe("1 coffret");
-    expect(coffretHint(15, NOW)).toBe("2 récompenses dedans.");
-    expect(coffretHint(3, NOW)).toBe("1 récompense dedans.");
+    expect(coffretHint(15, NOW)).toBe("Il contient 2 récompenses.");
+    expect(coffretHint(3, NOW)).toBe("Il contient 1 récompense.");
     expect(coffretReached(4)).toBe("Niveau 4 atteint");
   });
 
@@ -53,10 +53,12 @@ describe("level rewards", () => {
   });
 
   it("tells what was put away", () => {
-    expect(claimedToast([{ kind: "bonus_booster" }])).toBe("Rangé dans ta réserve.");
-    expect(claimedToast([{ kind: "title", title: "Fine plume" }])).toBe("Rangé dans ton atelier.");
-    expect(reserveAfterClaim({ bonus: 3 })).toBe("Dans ta réserve : 3 sachets bonus");
-    expect(reserveAfterClaim({ bonus: 1 })).toBe("Dans ta réserve : 1 sachet bonus");
+    expect(claimedToast([{ kind: "bonus_booster" }])).toBe("Les sachets sont dans ta réserve.");
+    expect(claimedToast([{ kind: "title", title: "Fine plume" }])).toBe(
+      "À retrouver dans ton profil.",
+    );
+    expect(reserveAfterClaim({ bonus: 3 })).toBe("Tu as maintenant 3 sachets bonus en réserve.");
+    expect(reserveAfterClaim({ bonus: 1 })).toBe("Tu as maintenant 1 sachet bonus en réserve.");
     expect(reserveLabel({ bonus: 3, bonusCap: 12 })).toBe("3 / 12 bonus");
   });
 
@@ -66,24 +68,26 @@ describe("level rewards", () => {
     expect(next[0]).toMatchObject({
       icon: "lock",
       milestone: false,
-      opens: "Ouvre choisir la collection de ton sachet",
+      opens: "Débloque le choix de la collection de ton sachet",
     });
     expect(next[0]?.label).toBe(
-      "Niveau 3 : Sachet bonus, ouvre choisir la collection de ton sachet",
+      "Niveau 3, Sachet bonus, débloque le choix de la collection de ton sachet",
     );
     expect(next.map((r) => r.word)).toEqual(["Collections", "Sachet", "Échanges", "Sachet"]);
     expect(next[1]).toMatchObject({
       icon: "sachet",
       opens: null,
-      label: "Niveau 4 : Sachet bonus",
+      label: "Niveau 4, Sachet bonus",
     });
     expect(next[2]).toMatchObject({ milestone: true, icon: "lock" });
   });
 
   it("says the next reward in a sentence, an opening first", () => {
-    expect(nextRewardLine(1, NOW)).toBe("Au niveau 2, un sachet bonus.");
-    expect(nextRewardLine(2, NOW)).toBe("Au niveau 3, choisir la collection de ton sachet.");
-    expect(nextRewardLine(3, NOW)).toBe("Au niveau 4, un sachet bonus.");
+    expect(nextRewardLine(1, NOW)).toBe("Au niveau 2, tu gagnes un sachet bonus.");
+    expect(nextRewardLine(2, NOW)).toBe(
+      "Au niveau 3, tu débloques le choix de la collection de ton sachet.",
+    );
+    expect(nextRewardLine(3, NOW)).toBe("Au niveau 4, tu gagnes un sachet bonus.");
   });
 });
 
@@ -123,11 +127,11 @@ describe("level road", () => {
   it("details a level", () => {
     const p = progress(16, 260);
     expect(levelDetail(16, p, [], NOW)).toMatchObject({
-      title: "Un coffret t'attend",
+      title: "Un coffret à ouvrir",
       state: "claimable",
       xpLeft: null,
     });
-    expect(levelDetail(15, p, [15], NOW).title).toBe("Déjà dans ta poche");
+    expect(levelDetail(15, p, [15], NOW).title).toBe("Coffret ouvert");
     expect(levelDetail(18, p, [], NOW)).toMatchObject({
       state: "locked",
       xpLeft: `Encore ${(xpToReach(18) - p.xp).toLocaleString("fr-FR")} XP.`,

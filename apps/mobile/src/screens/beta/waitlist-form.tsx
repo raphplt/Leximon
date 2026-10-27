@@ -49,7 +49,7 @@ export function WaitlistForm() {
     return (
       <View style={styles.form}>
         <Text style={styles.done} accessibilityLiveRegion="polite">
-          Le jeu est ouvert !
+          Le jeu est ouvert.
         </Text>
         <Button label="Viens jouer" onPress={playFromScratch} />
       </View>
@@ -59,7 +59,7 @@ export function WaitlistForm() {
   return (
     <View style={styles.form}>
       <TextField
-        label="Sois là à l'ouverture"
+        label="Ton adresse e-mail"
         placeholder="ton@adresse.fr"
         value={email}
         onChangeText={setEmail}
@@ -80,7 +80,7 @@ export function WaitlistForm() {
       />
       <FormError message={state.kind === "error" ? state.message : null} />
       <Text style={styles.note}>
-        On t'écrit à l'ouverture, puis pour les nouvelles.{" "}
+        On t'écrit à l'ouverture, puis quand le jeu a du nouveau.{" "}
         <Text
           style={styles.link}
           accessibilityRole="link"

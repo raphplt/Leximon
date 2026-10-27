@@ -108,8 +108,8 @@ export function SettingsScreen() {
         <Toggle label="Son" value={feedback.sound} onChange={(on) => toggleFeedback("sound", on)} />
         {feedback.sound && (
           <Toggle
-            label="Mots dits à voix haute"
-            detail="Quand la carte se pose"
+            label="Prononciation des mots"
+            detail="Le mot est lu quand sa carte apparaît"
             value={feedback.speech}
             onChange={(on) => toggleFeedback("speech", on)}
           />
@@ -146,14 +146,14 @@ export function SettingsScreen() {
       {member && notify !== null && (
         <Group title="E-MAILS">
           <Toggle
-            label="Lettres en attente"
-            detail="Si tu ne viens pas les lire"
+            label="Courrier non lu"
+            detail="Un e-mail si tu ne viens pas le lire"
             value={notify.emailNews}
             onChange={(on) => void toggleNotify("emailNews", on)}
           />
           <Toggle
-            label="Sachets pleins"
-            detail="Si tu t'absentes"
+            label="Stock de sachets plein"
+            detail="Un rappel quand tu t'absentes"
             value={notify.emailReminders}
             onChange={(on) => void toggleNotify("emailReminders", on)}
           />
@@ -187,14 +187,14 @@ export function SettingsScreen() {
               <Toggle
                 label="Demandes d'ami"
                 detail={
-                  notify.friendRequestsOpen ? "Tout le monde" : "Personne, sauf ton lien d'ami"
+                  notify.friendRequestsOpen ? "Tout le monde" : "Seulement par ton lien d'ami"
                 }
                 value={notify.friendRequestsOpen}
                 onChange={(on) => void toggleNotify("friendRequestsOpen", on)}
               />
               <Toggle
                 label="Montrer mes trouvailles à mes amis"
-                detail="Épiques, Légendaires, Dorures, niveaux"
+                detail="Tes Épiques et Légendaires, tes mots à la Dorure, tes niveaux"
                 value={notify.shareFinds}
                 onChange={(on) => void toggleNotify("shareFinds", on)}
               />
@@ -362,7 +362,7 @@ function BlocksSheet({
       {players === null ? (
         <Paragraph muted>Un instant…</Paragraph>
       ) : players.length === 0 ? (
-        <Paragraph muted>Personne.</Paragraph>
+        <Paragraph muted>Aucun joueur bloqué.</Paragraph>
       ) : (
         players.map((player) => (
           <View key={player.code} style={styles.blocked}>

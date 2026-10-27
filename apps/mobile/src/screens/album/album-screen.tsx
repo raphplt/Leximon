@@ -147,7 +147,7 @@ export function AlbumScreen({ friendCode }: { readonly friendCode: string | null
   if (failed) {
     return (
       <View style={styles.center}>
-        <Text style={styles.empty}>Le catalogue ne répond pas.</Text>
+        <Text style={styles.empty}>Les cartes n'ont pas pu être chargées. Réessaie.</Text>
         <Button label="Réessayer" secondary onPress={load} />
       </View>
     );

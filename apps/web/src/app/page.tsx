@@ -5,7 +5,7 @@ const DESCRIPTION =
   "Un jeu de cartes à collectionner où chaque carte est un mot oublié du français.";
 
 export const metadata: Metadata = {
-  title: "Leximon · Les mots oubliés, en cartes",
+  title: "Leximon · Le jeu de cartes des mots oubliés",
   description: DESCRIPTION,
   openGraph: {
     title: "Leximon",

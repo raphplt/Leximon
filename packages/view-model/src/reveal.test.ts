@@ -34,14 +34,14 @@ describe("recap", () => {
     ] as const;
     expect(recap(cards, new Set(["c"]))).toEqual({
       best: { rarity: "epic", label: "1 Épique" },
-      fresh: "2 mots nouveaux",
+      fresh: "2 nouveaux mots",
     });
   });
 
   it("stays quiet about common boosters", () => {
     const cards = [{ cardId: "b", rarity: "uncommon" }] as const;
-    expect(recap(cards, new Set(["b"]))).toEqual({ best: null, fresh: "aucun mot nouveau" });
-    expect(recap(cards, new Set())).toEqual({ best: null, fresh: "1 mot nouveau" });
+    expect(recap(cards, new Set(["b"]))).toEqual({ best: null, fresh: "aucun nouveau mot" });
+    expect(recap(cards, new Set())).toEqual({ best: null, fresh: "1 nouveau mot" });
   });
 
   it("counts every card of the best rarity", () => {
@@ -52,7 +52,7 @@ describe("recap", () => {
     ] as const;
     expect(recap(cards, new Set(["a", "b", "c"])).best).toEqual({
       rarity: "rare",
-      label: "2 Rare",
+      label: "2 Rares",
     });
   });
 });

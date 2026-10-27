@@ -31,9 +31,11 @@ export function masteryView(memory: WordMemory | undefined, now: number): Master
     reached: index <= reachedIndex,
   }));
   if (memory === undefined) {
-    return { steps, text: "Pas encore révisé." };
+    return { steps, text: "Tu n'as pas encore révisé ce mot." };
   }
-  if (level === "gilded") return { steps, text: "Carte dorée : tu maîtrises ce mot." };
+  if (level === "gilded") {
+    return { steps, text: "Ce mot a atteint la Dorure, le dernier palier. Il y reste." };
+  }
   const next = level === "sketch" ? "ink" : "gilded";
   const days = rules.levelThresholdDays[next];
   const name = next === "ink" ? "l'Encre" : "la Dorure";
@@ -60,11 +62,11 @@ export function canOfferInTrade(quantity: number, level: number, now: number): b
   return quantity > 1 && isFeatureOpen("trade", level, now);
 }
 
-/** Where the word stands in the challenges: « Il t'attend dans les défis. », « Revient dans 3 jours. » */
+/** Where the word stands in the challenges: « Ce mot est à réviser dans les défis. », « Prochaine révision dans 3 jours. » */
 export function reviewLabel(memory: WordMemory | undefined, now: number): string | null {
   if (memory === undefined) return null;
-  if (memory.due <= now) return "Il t'attend dans les défis.";
-  return `Revient ${comeBackIn(memory.due - now)}.`;
+  if (memory.due <= now) return "Ce mot est à réviser dans les défis.";
+  return `Prochaine révision ${comeBackIn(memory.due - now)}.`;
 }
 
 const HOUR = 3_600_000;

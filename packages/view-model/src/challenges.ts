@@ -56,7 +56,7 @@ export function recapLine(answers: readonly AnsweredQuestion[]): string {
   const ups = answers.filter((answer) => answer.levelUp).length;
   return ups === 0
     ? score
-    : `${score}, ${ups} carte${ups > 1 ? "s" : ""} montée${ups > 1 ? "s" : ""} de niveau`;
+    : `${score}, ${ups} mot${ups > 1 ? "s" : ""} ${ups > 1 ? "montent" : "monte"} d'un palier`;
 }
 
 export function feedbackLine(correct: boolean): string {
@@ -71,11 +71,15 @@ function bonusCount(count: number, noun: PackNoun): string {
 export function bonusLines(bonus: AnswerBonus, noun: PackNoun = SACHET_NOUN): string[] {
   const lines: string[] = [];
   if (bonus.daily > 0) lines.push(`${bonusCount(bonus.daily, noun)} pour le défi du jour !`);
-  if (bonus.gilded > 0) lines.push(`${bonusCount(bonus.gilded, noun)} pour la Dorure !`);
+  if (bonus.gilded > 0) {
+    lines.push(
+      `${bonusCount(bonus.gilded, noun)} pour ${bonus.gilded === 1 ? "ce mot passé" : "ces mots passés"} à la Dorure !`,
+    );
+  }
   const lost = bonus.daily + bonus.gilded - bonus.credited;
   if (lost > 0) {
     lines.push(
-      `Réserve pleine, ${lost === 1 ? `ce ${noun.one} bonus est perdu` : `${lost} ${noun.many} bonus perdus`}.`,
+      `Ta réserve est pleine, ${lost === 1 ? `ce ${noun.one} bonus est perdu` : `${lost} ${noun.many} bonus sont perdus`}.`,
     );
   }
   return lines;
@@ -89,7 +93,7 @@ export function sessionBonusLine(
   const won = answers.reduce((sum, answer) => sum + answer.bonus.credited, 0);
   if (won === 0) return null;
   const count = won === 1 ? `1 ${noun.one} bonus gagné` : `${won} ${noun.many} bonus gagnés`;
-  return `${count}, en réserve.`;
+  return `${count}, rangé${won > 1 ? "s" : ""} dans ta réserve.`;
 }
 
 /** "+75 XP gagnés pendant ce défi" for the recap, or `null` when the session earned none. */
@@ -129,7 +133,7 @@ export function dailyView(tally: DailyTally, noun: PackNoun = SACHET_NOUN): Dail
     { length: goal.answers },
     (_, index): DailyBar => (index < right ? "right" : index < filled ? "wrong" : "empty"),
   );
-  const title = `${goal.answers} questions, ${goal.correct} bonnes`;
+  const title = `${goal.correct} bonnes réponses sur ${goal.answers}`;
   if (awarded) {
     return {
       title: `${capitalize(noun.one)} gagné`,
@@ -195,7 +199,7 @@ export function memoryNote(now: number): string {
 export interface EscapingWord {
   readonly cardId: string;
   readonly due: boolean;
-  /** « À revoir maintenant », « Revient dans 3 h » */
+  /** « À réviser maintenant », « À réviser dans 3 h » */
   readonly when: string;
 }
 
@@ -218,15 +222,17 @@ export function escapingWords(
       due: word.due <= now,
       when:
         word.due <= now
-          ? "À revoir maintenant"
-          : `Revient ${nextDueLabel(new Date(word.due).toISOString(), now) ?? "bientôt"}`,
+          ? "À réviser maintenant"
+          : `À réviser ${nextDueLabel(new Date(word.due).toISOString(), now) ?? "bientôt"}`,
     }));
 }
 
 /** The question line. */
 export function questionKicker(format: ChallengeFormat): string {
   if (format === "typed") return "Écris le mot";
-  return format === "definition" ? "Que veut dire ce mot ?" : "Quel mot se cache là-dessous ?";
+  return format === "definition"
+    ? "Que veut dire ce mot ?"
+    : "Quel mot correspond à cette définition ?";
 }
 
 /** Under a word to type: what it is worth, and what is forgiven. */
@@ -283,7 +289,7 @@ export function noChallengeNotice(
   noun: PackNoun = SACHET_NOUN,
 ): string {
   if (nextDueAt === null) {
-    return `Aucun mot à réviser pour l'instant. Ouvre des ${noun.many} pour découvrir tes premiers mots.`;
+    return `Aucun mot à réviser. Ouvre des ${noun.many} pour découvrir tes premiers mots.`;
   }
   return `Tes mots tiennent bon. Le prochain revient ${nextDueLabel(nextDueAt, now) ?? "bientôt"}.`;
 }

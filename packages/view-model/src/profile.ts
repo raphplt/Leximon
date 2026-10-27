@@ -106,7 +106,9 @@ export function visibilityNote(
     return `Ton profil devient public au niveau ${profile.publicFromLevel}.`;
   }
   if (profile.pseudo === null) return "Choisis un pseudo : ce sera l'adresse de ton profil.";
-  if (!profile.profilePublic) return "Profil caché.";
+  if (!profile.profilePublic) {
+    return "Ton profil est caché. Tu peux le rendre public dans les réglages.";
+  }
   return null;
 }
 
@@ -235,11 +237,11 @@ export function atelierItems(
 export function cosmeticStateLabel(item: AtelierItem): string {
   switch (item.state) {
     case "worn":
-      return "Porté";
+      return "Choisi";
     case "owned":
-      return "Mettre";
+      return "Choisir";
     case "in_coffret":
-      return "Au coffret";
+      return "Dans un coffret";
     case "locked":
       return `Niveau ${item.level}`;
   }
@@ -248,31 +250,31 @@ export function cosmeticStateLabel(item: AtelierItem): string {
 /** Toast when a closed item is tapped. */
 export function cosmeticLockedToast(item: AtelierItem): string {
   return item.state === "in_coffret"
-    ? `Ouvre ton coffret du niveau ${item.level}, c'est dedans.`
-    : `Ça se gagne au niveau ${item.level}.`;
+    ? `Il est dans ton coffret du niveau ${item.level}. Ouvre-le d'abord.`
+    : `Tu le gagnes au niveau ${item.level}.`;
 }
 
 export function wornToast(tab: AtelierTab): string {
   switch (tab) {
     case "avatars":
-      return "Nouvel avatar porté.";
+      return "Avatar changé.";
     case "frames":
-      return "Nouveau cadre posé.";
+      return "Cadre changé.";
     case "titles":
-      return "Nouveau titre porté.";
+      return "Titre changé.";
   }
 }
 
 const PROFILE_REFUSALS: Readonly<Record<ProfileRefusal, string>> = {
-  account_required: "Crée d'abord un compte : ta collection et ta progression seront conservées.",
-  pseudo_too_short: "Trop court. Trois caractères au moins.",
-  pseudo_too_long: "Trop long. Vingt caractères au plus.",
+  account_required: "Crée d'abord un compte, ta partie y sera conservée.",
+  pseudo_too_short: "Le pseudo doit faire au moins 3 caractères.",
+  pseudo_too_long: "Le pseudo doit faire au plus 20 caractères.",
   pseudo_invalid:
-    "Lettres, chiffres, et un seul séparateur entre deux mots (espace, point, tiret).",
+    "Utilise des lettres et des chiffres, avec au plus un espace, un point ou un tiret entre deux mots.",
   pseudo_refused: "Ce pseudo n'est pas autorisé. Choisis-en un autre.",
-  pseudo_taken: "Déjà pris. Un autre ?",
-  pseudo_too_soon: "Un changement par mois, pas plus.",
-  cosmetic_locked: "Pas encore à toi.",
+  pseudo_taken: "Ce pseudo est déjà pris.",
+  pseudo_too_soon: "Le pseudo ne change qu'une fois par mois.",
+  cosmetic_locked: "Tu n'as pas encore débloqué celui-ci.",
   too_many_pins: "Plus de place sur ton profil. Retire une carte d'abord.",
   card_not_owned: "Cette carte n'est plus dans ton album.",
   duplicate_card: "Cette carte est déjà épinglée.",
@@ -316,7 +318,7 @@ export function blockedCountLabel(count: number): string {
 
 const BLOCK_REFUSALS: Readonly<Record<BlockRefusal, string>> = {
   account_required: "Il faut un compte pour ça.",
-  player_not_found: "Ce joueur n'existe pas, ou plus.",
+  player_not_found: "Ce joueur n'existe plus.",
   self: "Tu ne peux pas te bloquer toi-même.",
 };
 
@@ -328,10 +330,10 @@ export const BLOCK_CONFIRM =
   "Vous ne verrez plus vos profils et ne pourrez plus échanger. Les offres en cours entre vous seront annulées.";
 export const BLOCKED_TOAST = "Bloqué.";
 export const BLOCKED_NOTE =
-  "Ce joueur est bloqué. Tu peux le débloquer dans Réglages > Joueurs bloqués.";
-export const PROFILE_NOT_FOUND = "Personne à ce nom, ou son profil n'est pas encore public.";
+  "Ce joueur est bloqué. Tu peux le débloquer dans les réglages, rubrique Joueurs bloqués.";
+export const PROFILE_NOT_FOUND = "Aucun joueur ne porte ce nom, ou son profil n'est pas public.";
 export const UNBLOCKED_TOAST = "Débloqué.";
-export const REPORTED_TOAST = "Signalé. On regarde ça.";
+export const REPORTED_TOAST = "Signalement envoyé. L'équipe va le lire.";
 export const PROFILE_LINK_COPIED = "Lien du profil copié.";
 
 /** The button that deletes the account: the consequence is in it. */
@@ -345,4 +347,5 @@ export const DELETE_ACCOUNT_WARNING =
   "Ton compte et toute ta collection seront définitivement effacés.";
 export const DELETE_ACCOUNT_CONFIRM = "Oui, tout effacer";
 export const DELETE_ACCOUNT_CANCEL = "Annuler";
-export const DELETE_ACCOUNT_ADMIN = "Rends d'abord ton rôle d'admin. Écris-nous.";
+export const DELETE_ACCOUNT_ADMIN =
+  "Un compte admin ne peut pas se supprimer. Écris-nous pour rendre ton rôle d'abord.";

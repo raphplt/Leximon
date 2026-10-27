@@ -298,7 +298,7 @@ function NewsToggle() {
           />
         </View>
       )}
-      {failed && <Paragraph muted>Pas enregistré. Réessaie.</Paragraph>}
+      {failed && <Paragraph muted>Le réglage n'a pas été enregistré. Réessaie.</Paragraph>}
     </>
   );
 }
@@ -400,7 +400,7 @@ function Confirm({
       )}
       {step.acceptsLoss ? (
         <>
-          <Button label="Rester en invité" disabled={busy} onPress={onCancel} />
+          <Button label="Garder ma partie" disabled={busy} onPress={onCancel} />
           <Button
             label={busy ? "Connexion…" : step.confirmLabel}
             secondary
@@ -436,7 +436,7 @@ function AgeChoice({
   ];
   return (
     <View style={styles.age} accessibilityRole="radiogroup">
-      <Text style={styles.ageLabel}>Ton âge, si tu veux bien</Text>
+      <Text style={styles.ageLabel}>Ta tranche d'âge (facultatif)</Text>
       <View style={styles.chips}>
         {options.map((option) => {
           const selected = option.value === value;

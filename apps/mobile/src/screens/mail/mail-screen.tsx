@@ -143,7 +143,7 @@ export function MailScreen() {
       key: "coffrets",
       icon: "coffret",
       title: coffretsMailTitle(view.coffrets),
-      detail: "Chemin des niveaux",
+      detail: "Niveaux",
       onPress: () => openCoffret(),
     });
   }

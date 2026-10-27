@@ -3,9 +3,9 @@ import { inviteCodeSchema, playerCodeSchema } from "@leximon/contract";
 /** The doors of the closed beta: an invitation link, and the screen of those who have none. */
 
 export const INVITED_TITLE = "Tu es invité";
-export const CLOSED_TITLE = "Porte close";
+export const CLOSED_TITLE = "Ce lien ne fonctionne pas";
 export const INVITED_PITCH =
-  "Des mots que plus personne ne dit, en cartes à collectionner. La bêta est fermée, ce lien t'ouvre la porte.";
+  "Leximon est un jeu de cartes à collectionner sur les mots rares et oubliés du français. La bêta est fermée, mais ce lien t'y fait entrer.";
 export const INVITED_ACTION = "Ouvrir mon premier sachet";
 
 export const INVITATION_REQUIRED_TITLE = "Sur invitation";
@@ -15,12 +15,13 @@ export const INVITATION_REQUIRED_TEXT = "La bêta est fermée. Il te faut un lie
 export const INVITE_CLOSED_TEXT = {
   full: "Toutes les places de ce lien ont été prises. Laisse ton adresse, on te préviendra à l'ouverture.",
   expired: "Ce lien d'invitation a expiré. Laisse ton adresse, on te préviendra à l'ouverture.",
-  unknown: "Ce lien d'invitation est invalide. Recopie-le en entier, ou laisse ton adresse.",
+  unknown:
+    "On ne connaît pas ce lien d'invitation. Vérifie que tu l'as recopié en entier, ou laisse ton adresse.",
 } as const;
 
 export const WAITLIST_ERRORS = {
-  invalid_email: "Il manque quelque chose à cette adresse.",
-  rate_limited: "Doucement. Réessaie dans une minute.",
+  invalid_email: "Cette adresse e-mail n'est pas valide.",
+  rate_limited: "Trop de tentatives. Réessaie dans une minute.",
   unavailable: "Le serveur lambine. Réessaie.",
 } as const;
 

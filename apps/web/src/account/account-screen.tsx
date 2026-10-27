@@ -333,7 +333,7 @@ function NewsToggle() {
       {value !== null && (
         <Switch label={NEWS_OPT_IN} checked={value} onChange={(next) => void change(next)} />
       )}
-      {failed && <p className={styles.hint}>Pas enregistré. Réessaie.</p>}
+      {failed && <p className={styles.hint}>Le réglage n'a pas été enregistré. Réessaie.</p>}
     </>
   );
 }
@@ -431,10 +431,10 @@ function Confirm({
       {step.warning !== null && <p className={styles.warning}>{step.warning}</p>}
       {step.needsAge && (
         <>
-          <span className={styles.label}>Ton âge, si tu veux bien</span>
+          <span className={styles.label}>Ta tranche d'âge (facultatif)</span>
           <Select
             className={styles.ageSelect ?? ""}
-            ariaLabel="Ton âge, si tu veux bien"
+            ariaLabel="Ta tranche d'âge (facultatif)"
             value={ageBracket ?? ""}
             options={AGE_OPTIONS}
             onChange={(value) => setAgeBracket(value === "" ? null : value)}
@@ -459,7 +459,7 @@ function Confirm({
       {step.acceptsLoss ? (
         <div className={styles.actions}>
           <button type="button" className={styles.primary} disabled={busy} onClick={onCancel}>
-            Rester en invité
+            Garder ma partie
           </button>
           <button
             type="button"

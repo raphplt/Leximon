@@ -200,15 +200,17 @@ describe("refusalMessage", () => {
   it("explains each refusal", () => {
     expect(refusalMessage("daily_limit_reached")).toContain("10 offres");
     expect(refusalMessage("card_not_tradeable")).toContain("7 jours");
-    expect(refusalMessage("player_not_found")).toBe("Personne n'a ce code.");
+    expect(refusalMessage("player_not_found")).toBe("Aucun joueur n'a ce code.");
     expect(refusalMessage("trade_not_found")).toBe("Cette offre n'existe plus.");
   });
 });
 
 describe("tradeLevelLabel", () => {
   it("says how many levels are left, and nothing once the level is reached", () => {
-    expect(tradeLevelLabel(4, 5)).toBe("Les échanges ouvrent au niveau 5. Encore 1 niveau.");
-    expect(tradeLevelLabel(1, 5)).toContain("Encore 4 niveaux");
+    expect(tradeLevelLabel(4, 5)).toBe(
+      "Les échanges se débloquent au niveau 5. Il te manque encore 1 niveau.",
+    );
+    expect(tradeLevelLabel(1, 5)).toContain("Il te manque encore 4 niveaux");
     expect(tradeLevelLabel(5, 5)).toBeNull();
   });
 });
@@ -220,7 +222,9 @@ describe("échanges screen", () => {
   });
 
   it("states the limits in force", () => {
-    expect(tradeRulesNote(now)).toBe("10 offres par 24 h. Une offre expire après 72 h.");
+    expect(tradeRulesNote(now)).toBe(
+      "Tu peux envoyer 10 offres par jour. Une offre sans réponse expire après 72 h.",
+    );
   });
 
   it("sums up a past offer, the player's cards first", () => {

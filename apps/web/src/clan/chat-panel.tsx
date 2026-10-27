@@ -40,7 +40,7 @@ export function ChatPanel({
       {clanId === null ? (
         <div className={styles.sheet}>
           <p className={styles.emptyThread}>
-            <em>Pas encore de clan, pas encore de bavardage.</em>
+            <em>Rejoins un clan pour discuter ici.</em>
           </p>
           <ButtonLink href="/clan" onClick={onClose}>
             Trouver un clan

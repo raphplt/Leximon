@@ -24,11 +24,11 @@ export function revealOrder<T extends DrawnCard>(cards: readonly T[]): T[] {
 export interface Recap {
   /** The best rarity of the pack and how many cards of it, from Rare up; `null` below. */
   readonly best: { readonly rarity: Rarity; readonly label: string } | null;
-  /** "3 mots nouveaux", "1 mot nouveau", "aucun mot nouveau". */
+  /** "3 nouveaux mots", "1 nouveau mot", "aucun nouveau mot". */
   readonly fresh: string;
 }
 
-/** The line under "Ton pli", e.g. "1 Épique · 3 mots nouveaux", the rarity shown with its gem. */
+/** The line under "Ton sachet", e.g. "2 Épiques · 3 nouveaux mots", the rarity shown with its gem. */
 export function recap(cards: readonly DrawnCard[], ownedBefore: OwnedLookup): Recap {
   const top = cards.reduce<DrawnCard | undefined>(
     (best, card) =>
@@ -38,16 +38,17 @@ export function recap(cards: readonly DrawnCard[], ownedBefore: OwnedLookup): Re
   let best: Recap["best"] = null;
   if (top !== undefined && rarityRank(top.rarity) >= rarityRank("rare")) {
     const count = cards.filter((card) => card.rarity === top.rarity).length;
-    best = { rarity: top.rarity, label: `${count} ${RARITY_LABELS[top.rarity]}` };
+    const label = count > 1 ? RARITY_PLURAL[top.rarity] : RARITY_LABELS[top.rarity];
+    best = { rarity: top.rarity, label: `${count} ${label}` };
   }
   const freshCount = new Set(cards.map((card) => card.cardId).filter((id) => !ownedBefore.has(id)))
     .size;
   const fresh =
     freshCount === 0
-      ? "aucun mot nouveau"
+      ? "aucun nouveau mot"
       : freshCount === 1
-        ? "1 mot nouveau"
-        : `${freshCount} mots nouveaux`;
+        ? "1 nouveau mot"
+        : `${freshCount} nouveaux mots`;
   return { best, fresh };
 }
 

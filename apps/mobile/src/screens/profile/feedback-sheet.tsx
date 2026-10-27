@@ -15,7 +15,7 @@ export function FeedbackSheet({
   open,
   onClose,
   screen = "/mobile",
-  title = "Un retour ?",
+  title = "Écrire à l'équipe",
   label = "Signale un bug, une erreur sur une carte ou partage une idée.",
 }: {
   readonly open: boolean;
@@ -35,7 +35,7 @@ export function FeedbackSheet({
       await api.sendFeedback({ body: body.trim(), screen });
       setBody("");
       onClose();
-      toast("Bien reçu. Merci.");
+      toast("Message envoyé. Merci.");
     } catch {
       setError("L'envoi a échoué. Réessaie.");
     } finally {

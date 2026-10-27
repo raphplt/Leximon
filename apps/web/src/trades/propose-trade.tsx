@@ -311,7 +311,7 @@ export function ProposeTrade({
         </h2>
         <p className={styles.hint}>{blocked}</p>
         <p className={styles.muted}>
-          En attendant, ouvre des {noun.many}. Seuls les doubles s'échangent.
+          En attendant, ouvre des {noun.many}. Tu pourras échanger tes doubles.
         </p>
         <Link href="/jouer" className={styles.secondary}>
           Ouvrir un {noun.one}
@@ -431,7 +431,7 @@ export function ProposeTrade({
           <PickHeading
             title={`Ce que tu veux de ${partnerCode}`}
             count={selectionCount(want, partner.maxCards)}
-            hint={`${pickHint(partner.maxCards)} parmi ses doubles échangeables.${partner.maxCards === 1 ? " Trois cartes quand vous serez tous les deux niveau 10." : ""}`}
+            hint={`${pickHint(partner.maxCards)} parmi ses doubles échangeables.${partner.maxCards === 1 ? " Vous pourrez échanger trois cartes à la fois quand vous serez tous les deux niveau 10." : ""}`}
           />
           {partner.cardIds.length === 0 ? (
             <p className={styles.hint}>Ce joueur n'a aucun double à échanger.</p>

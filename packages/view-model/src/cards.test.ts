@@ -28,11 +28,11 @@ describe("formatOdds", () => {
 
 describe("frequencyLine", () => {
   it("says how rare the word is in today's books", () => {
-    expect(frequencyLine(0.0585)).toBe("Un mot imprimé sur 17\u00a0milliards.");
-    expect(frequencyLine(1)).toBe("Un mot imprimé sur 1\u00a0milliard.");
-    expect(frequencyLine(0.67)).toBe("Un mot imprimé sur 1,5\u00a0milliard.");
-    expect(frequencyLine(48.4)).toBe("Un mot imprimé sur 21\u00a0millions.");
-    expect(frequencyLine(2000)).toBe("Un mot imprimé sur 500\u00a0000.");
+    expect(frequencyLine(0.0585)).toBe("Imprimé une fois sur 17\u00a0milliards de mots.");
+    expect(frequencyLine(1)).toBe("Imprimé une fois sur 1\u00a0milliard de mots.");
+    expect(frequencyLine(0.67)).toBe("Imprimé une fois sur 1,5\u00a0milliard de mots.");
+    expect(frequencyLine(48.4)).toBe("Imprimé une fois sur 21\u00a0millions de mots.");
+    expect(frequencyLine(2000)).toBe("Imprimé une fois sur 500\u00a0000 mots.");
   });
 
   it("says when the word is no longer found at all", () => {
@@ -43,7 +43,7 @@ describe("frequencyLine", () => {
 describe("shareText", () => {
   it("puts the word first and the game nowhere", () => {
     expect(shareText("talpinette", null)).toBe(
-      "Talpinette — Introuvable dans les livres d'aujourd'hui.",
+      "Talpinette. Introuvable dans les livres d'aujourd'hui.",
     );
   });
 });
@@ -53,7 +53,7 @@ describe("card page", () => {
     expect(cardPath("abajoue")).toBe("/carte/abajoue");
     expect(cardPath("a b")).toBe("/carte/a%20b");
     expect(cardShareRefused("https://leximon.fr/carte/abajoue")).toBe(
-      "Le navigateur refuse la copie. Le lien : https://leximon.fr/carte/abajoue",
+      "Le navigateur a bloqué la copie. Lien de la carte : https://leximon.fr/carte/abajoue",
     );
   });
 
@@ -63,7 +63,7 @@ describe("card page", () => {
 
   it("counts the catalogue in the pitch", () => {
     expect(cardPagePitch(1561)).toBe(
-      `${formatCount(1561)} mots rares et anciens à collectionner gratuitement, chaque jour en sachets.`,
+      `Leximon en a ${formatCount(1561)} comme celui-là, à collectionner en ouvrant des sachets gratuits chaque jour.`,
     );
   });
 });

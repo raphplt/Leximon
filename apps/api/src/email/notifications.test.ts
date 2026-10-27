@@ -20,7 +20,7 @@ describe("renderNewsEmail", () => {
       "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
     });
     expect(email.text).toContain(
-      "Plus d'e-mail quand on m'écrit : https://leximon.fr/desinscription/abc.def",
+      "Ne plus recevoir ces e-mails : https://leximon.fr/desinscription/abc.def",
     );
   });
 
@@ -38,7 +38,7 @@ describe("renderNewsEmail", () => {
     );
     expect(email.subject).toBe("5 lettres t'attendent");
     expect(email.text).toContain("Paul parle de toi : « On attend @Lise »");
-    expect(email.text).toContain("Et 3 autres.");
+    expect(email.text).toContain("Et 3 autres lettres t'attendent.");
   });
 
   it("escapes what players wrote", () => {
@@ -65,12 +65,12 @@ describe("renderReminderEmail", () => {
     expect(email.text).toContain("Lucubrateur et 2 autres mots attendent d'être révisés.");
     expect(email.text).toContain("Une lettre t'attend au courrier.");
     expect(email.text).not.toContain("Dernier rappel");
-    expect(email.text).toContain("Plus de rappel pour mes sachets");
+    expect(email.text).toContain("Ne plus recevoir ces rappels");
   });
 
   it("says when it is the last one", () => {
     const email = renderReminderEmail({ stock: 6, slipping: null, letters: 0, last: true }, links);
-    expect(email.text).toContain("Dernier rappel. On ne t'écrira plus pour tes sachets.");
+    expect(email.text).toContain("Dernier rappel, on ne t'écrira plus pour tes sachets.");
     expect(email.text).not.toContain("courrier");
   });
 });

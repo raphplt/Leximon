@@ -51,7 +51,7 @@ export function Collections({
       </ol>
       {shelves.length > 0 && (
         <p className={styles.shelves}>
-          <strong>{displayCount(total)} mots</strong> pour commencer :{" "}
+          <strong>{displayCount(total)} mots</strong> au lancement, dans trois collections,{" "}
           {shelves.map((shelf, index) => (
             <span key={shelf.id}>
               {index > 0 && (index === shelves.length - 1 ? " et " : ", ")}

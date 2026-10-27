@@ -68,7 +68,7 @@ export function ChallengeScreen({ word }: { readonly word: string | null }) {
     setError(null);
     loadCatalog()
       .then(setCatalog)
-      .catch(() => setError("Le catalogue ne répond pas."));
+      .catch(() => setError("Les cartes n'ont pas pu être chargées. Réessaie."));
   }, []);
   useEffect(loadIt, [loadIt]);
 
@@ -285,7 +285,7 @@ function Escaping({
   return (
     <View style={styles.escaping}>
       <Text style={styles.subtitle} accessibilityRole="header">
-        Ces mots t'échappent
+        Mots à réviser
       </Text>
       {words.map((entry) => {
         const card = cardOrPlaceholder(catalog, entry.cardId, "common");

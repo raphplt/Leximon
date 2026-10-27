@@ -18,7 +18,7 @@ function parts(version: string): readonly number[] | null {
 }
 
 export const UPDATE_COPY = {
-  title: "Leximon a changé",
-  body: "Ta version ne suit plus. Mets l'app à jour pour reprendre la partie.",
+  title: "Mise à jour nécessaire",
+  body: "Cette version de l'app est trop ancienne pour continuer à jouer. Mets-la à jour pour reprendre la partie.",
   action: "Mettre à jour",
 } as const;

@@ -80,7 +80,7 @@ export function Closing() {
   return (
     <section className={styles.closing} aria-labelledby="closing-title">
       <h2 id="closing-title" className={styles.closingTitle}>
-        {playing === true ? "Tes sachets t'attendent." : "Les premiers sachets partent bientôt."}
+        {playing === true ? "Tes sachets sont prêts." : "Laisse ton adresse pour l'ouverture."}
       </h2>
       <JoinOrResume />
     </section>

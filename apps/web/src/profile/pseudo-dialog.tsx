@@ -39,7 +39,7 @@ export function PseudoDialog({
     if (chosen === "" || chosen === me?.pseudo) return;
     const failed = await actions.update(
       { pseudo: chosen },
-      { success: `Te voilà ${chosen}.`, quiet: true },
+      { success: `Tu t'appelles maintenant ${chosen}.`, quiet: true },
     );
     setProblem(failed);
     if (failed === null) onClose();

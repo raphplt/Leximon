@@ -17,17 +17,19 @@ export function sanctionTitle(kind: SanctionKind): string {
   return TITLES[kind];
 }
 
-/** « Jusqu'au 29 octobre à 14:00 », « Définitive », or null for a one-off measure. */
+/** « Jusqu'au 29 octobre à 14:00 », « Sanction définitive », or null for a one-off measure. */
 export function sanctionUntil(
   sanction: Pick<Sanction, "kind" | "until">,
   now: EpochMs,
   timeZone?: string,
 ): string | null {
   if (sanction.until === null) {
-    return sanction.kind === "close" || sanction.kind === "trade_ban" ? "Définitive" : null;
+    return sanction.kind === "close" || sanction.kind === "trade_ban"
+      ? "Sanction définitive"
+      : null;
   }
   const until = Date.parse(sanction.until);
-  if (until <= now) return "Terminée";
+  if (until <= now) return "Sanction terminée";
   const parts = new Intl.DateTimeFormat("fr-FR", {
     timeZone,
     day: "numeric",
@@ -45,15 +47,16 @@ export function contestState(
   sanction: Pick<Sanction, "contestedAt" | "contestOutcome" | "revokedAt">,
 ): string | null {
   if (sanction.revokedAt !== null || sanction.contestOutcome === "revoked") {
-    return "Contestation acceptée : la sanction est levée.";
+    return "Ta contestation a été acceptée. La sanction est levée.";
   }
-  if (sanction.contestOutcome === "upheld")
-    return "Contestation examinée : la sanction est maintenue.";
-  if (sanction.contestedAt !== null) return "Contestation enregistrée. L'équipe va la relire.";
+  if (sanction.contestOutcome === "upheld") {
+    return "Ta contestation a été examinée. La sanction est maintenue.";
+  }
+  if (sanction.contestedAt !== null) return "Ta contestation a été envoyée. L'équipe va la lire.";
   return null;
 }
 
-export const CONTEST_HINT = "Pas d'accord ? Explique pourquoi.";
+export const CONTEST_HINT = "Explique pourquoi tu contestes cette sanction.";
 
 const WRITE_BLOCKING: readonly SanctionKind[] = ["mute", "suspend", "close"];
 
@@ -71,6 +74,6 @@ export function writingBlock(
   if (active === undefined) return null;
   const until = sanctionUntil(active, now);
   if (until === null) return "Une sanction t'empêche d'écrire.";
-  if (until === "Définitive") return "Une sanction définitive t'empêche d'écrire.";
+  if (until === "Sanction définitive") return "Une sanction définitive t'empêche d'écrire.";
   return `Une sanction t'empêche d'écrire (${until.charAt(0).toLowerCase()}${until.slice(1)}).`;
 }

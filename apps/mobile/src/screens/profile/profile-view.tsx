@@ -79,7 +79,7 @@ export function PinnedCards({
     <Panel>
       <Text style={styles.panelTitle}>Cartes épinglées</Text>
       {pinned.length === 0 ? (
-        <Text style={styles.muted}>Vitrine vide.</Text>
+        <Text style={styles.muted}>Aucune carte épinglée.</Text>
       ) : (
         <ScrollView
           horizontal

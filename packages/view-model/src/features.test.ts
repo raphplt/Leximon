@@ -33,7 +33,7 @@ describe("features by level", () => {
 
   it("says the level of a closed control", () => {
     expect(lockedToast("choose_collection", NOW)).toBe(
-      "Choisir la collection de ton sachet, c'est au niveau 3.",
+      "Tu pourras choisir la collection de ton sachet au niveau 3.",
     );
   });
 });

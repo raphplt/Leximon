@@ -55,7 +55,7 @@ export function AtelierScreen() {
   const previewSize = tab === "titles" ? 72 : itemWidth - 28;
 
   return (
-    <Page title="Atelier">
+    <Page title="Apparence">
       <View style={styles.head}>
         <Avatar avatar={me?.avatar ?? null} frame={me?.frame ?? null} size={72} />
         {me?.title != null && <Text style={styles.wornTitle}>{me.title}</Text>}

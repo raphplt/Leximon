@@ -112,14 +112,14 @@ function PublicProfileBody({
       <ProfileHeader face={face} />
       {viewer === undefined ? null : own ? (
         <p className={styles.note}>
-          C'est toi.
+          Tu vois ton profil comme les autres le voient.
           <ButtonLink href="/profil" small variant="secondary">
             Mon profil
           </ButtonLink>
         </p>
       ) : viewer === null ? (
         <p className={styles.note}>
-          Des mots rares, en cartes à collectionner.
+          Leximon, le jeu de cartes des mots rares et oubliés du français.
           <ButtonLink href="/jouer" small>
             Jouer à Leximon
           </ButtonLink>
@@ -280,7 +280,7 @@ function ViewerActions({
               Bloquer
             </Button>
             <Button variant="secondary" disabled={busy} onClick={() => setConfirmBlock(false)}>
-              Pas encore
+              Annuler
             </Button>
           </div>
         </div>

@@ -28,7 +28,7 @@ export async function generateMetadata({ params }: PageProps<"/carte/[id]">): Pr
 export default function CardPage(props: PageProps<"/carte/[id]">) {
   return (
     <div className={styles.page}>
-      <Link href="/" aria-label="Leximon, l'accueil" className={styles.back}>
+      <Link href="/" aria-label="Accueil de Leximon" className={styles.back}>
         <Logo size="md" />
       </Link>
       <Suspense fallback={null}>

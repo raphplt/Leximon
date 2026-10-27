@@ -13,7 +13,7 @@ export default function ErrorPage({
   return (
     <StrayScreen
       title="Une erreur est survenue."
-      text="Recharge la page. Si ça recommence, écris-nous."
+      text="Recharge la page. Si l'erreur revient, écris-nous."
     >
       <Button onClick={retry}>Recharger la page</Button>
       <ButtonLink href="/" variant="secondary">

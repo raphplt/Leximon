@@ -73,13 +73,13 @@ describe("names", () => {
 
   it("says what a coffret puts in the atelier", () => {
     expect(rewardItem({ kind: "avatar", avatar: "cuistre" }).detail).toBe(
-      "Le Cuistre, rangé dans l'atelier",
+      "Le Cuistre, à choisir depuis ton profil",
     );
     expect(rewardItem({ kind: "avatar" }).detail).toBe("Pour ton profil");
     expect(rewardItem({ kind: "frame", frame: "gilded" })).toEqual({
       icon: "cadre",
       title: "Cadre",
-      detail: "Filet doré, rangé dans l'atelier",
+      detail: "Filet doré, à choisir depuis ton profil",
     });
   });
 });
@@ -101,7 +101,9 @@ describe("profile header", () => {
     expect(visibilityNote(profile({ member: false }))).toMatch(/^Crée un compte/);
     expect(visibilityNote(profile({ level: 4 }))).toBe("Ton profil devient public au niveau 8.");
     expect(visibilityNote(profile({ pseudo: null }))).toMatch(/^Choisis un pseudo/);
-    expect(visibilityNote(profile({ profilePublic: false }))).toBe("Profil caché.");
+    expect(visibilityNote(profile({ profilePublic: false }))).toBe(
+      "Ton profil est caché. Tu peux le rendre public dans les réglages.",
+    );
     expect(visibilityNote(profile())).toBeNull();
     expect(canShareProfile(profile())).toBe(true);
     expect(canShareProfile(profile({ level: 4 }))).toBe(false);
@@ -132,15 +134,17 @@ describe("atelierItems", () => {
     const fanfreluche = reached.find((i) => i.id === "fanfreluche");
     expect(fanfreluche?.state).toBe("in_coffret");
     if (fanfreluche === undefined) throw new Error("missing");
-    expect(cosmeticStateLabel(fanfreluche)).toBe("Au coffret");
-    expect(cosmeticLockedToast(fanfreluche)).toBe("Ouvre ton coffret du niveau 20, c'est dedans.");
+    expect(cosmeticStateLabel(fanfreluche)).toBe("Dans un coffret");
+    expect(cosmeticLockedToast(fanfreluche)).toBe(
+      "Il est dans ton coffret du niveau 20. Ouvre-le d'abord.",
+    );
   });
 
   it("lists frames and titles, and keeps what older rules gave", () => {
     const frames = atelierItems("frames", profile({ frame: "gilded" }), NOW);
     expect(frames.slice(0, 4).map((i) => [i.id, cosmeticStateLabel(i)])).toEqual([
-      ["simple", "Mettre"],
-      ["gilded", "Porté"],
+      ["simple", "Choisir"],
+      ["gilded", "Choisi"],
       ["ink", "Niveau 20"],
       ["pearls", "Niveau 30"],
     ]);

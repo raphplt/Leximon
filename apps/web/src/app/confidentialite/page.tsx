@@ -20,7 +20,7 @@ export default function PrivacyPage() {
       <h1 className={styles.title}>Tes données</h1>
 
       <section className={styles.section}>
-        <h2>Qui en répond</h2>
+        <h2>Responsable des données</h2>
         <p>
           {PUBLISHER.name}, {PUBLISHER.status} (SIREN {PUBLISHER.siren}), {PUBLISHER.address}. Pour
           toute question sur tes données : <a href={`mailto:${CONTACT}`}>{CONTACT}</a>.
@@ -32,8 +32,7 @@ export default function PrivacyPage() {
         <p>
           On garde ton adresse e-mail, et rien d'autre. Elle sert à te prévenir de l'ouverture, puis
           à t'envoyer les nouvelles de Leximon. Chaque e-mail a un lien pour te désinscrire en un
-          clic. Sinon, on la garde au plus 3 ans après ton inscription ou ton dernier clic dans un
-          de nos e-mails.
+          clic. Sinon, on la garde au plus 3 ans après ton inscription.
         </p>
       </section>
 
@@ -44,19 +43,19 @@ export default function PrivacyPage() {
           gardée tant que ton compte existe. Il faut avoir 15 ans ou plus pour créer un compte.
         </p>
         <p>
-          Sans compte, tu joues en invité : pas d'adresse, juste une partie liée à ton navigateur.
-          Si tu ne reviens pas, la partie devient inaccessible au bout de 7 jours, et on l'efface 6
-          mois après ta première visite.
+          Sans compte, tu joues en invité. On ne garde aucune adresse, seulement une partie liée à
+          ton navigateur. Si tu ne reviens pas, la partie devient inaccessible au bout de 7 jours,
+          et on l'efface 6 mois après ta première visite.
         </p>
         <p>
-          Chaque connexion garde l'adresse IP et le navigateur d'où elle vient, pour repérer un
+          À chaque connexion, on enregistre l'adresse IP et le navigateur utilisés, pour repérer un
           compte volé ou un abus. On les efface quand la connexion expire, 7 jours après ta dernière
           visite.
         </p>
       </section>
 
       <section className={styles.section}>
-        <h2>Bêta et mesure</h2>
+        <h2>Statistiques de la bêta</h2>
         <p>
           On conserve le lien d'invitation par lequel tu es entré ainsi que le code d'origine du
           lien (par exemple une vidéo ou un post), et les jours où tu ouvres le jeu. Tout est
@@ -65,18 +64,18 @@ export default function PrivacyPage() {
         </p>
         <p>
           À la création du compte, tu peux donner ta tranche d'âge. C'est facultatif. Elle sert à
-          comparer comment chaque âge joue. Ce que tu écris dans « Un retour ? » est lu par
-          l'équipe, avec l'écran d'où tu l'as envoyé.
+          comparer la façon de jouer selon l'âge. Ce que tu écris dans « Écrire à l'équipe » est lu
+          par l'équipe, avec l'écran d'où tu l'as envoyé.
         </p>
       </section>
 
       <section className={styles.section}>
         <h2>Profil</h2>
         <p>
-          Ton pseudo, ton avatar, ton niveau, tes cartes épinglées et tes chiffres de jeu forment
-          ton profil. Dès le niveau 8, il est visible par un lien, sauf si tu le caches dans les
-          réglages. Quand tu signales un pseudo ou un message, on garde qui a signalé qui, pour la
-          modération, jusqu'à un an après qu'on l'a traité.
+          Ton pseudo, ton avatar, ton niveau, tes cartes épinglées et tes statistiques de jeu
+          forment ton profil. Dès le niveau 8, il est visible par un lien, sauf si tu le caches dans
+          les réglages. Quand tu signales un pseudo ou un message, on garde la trace de l'auteur et
+          de la cible du signalement, pour la modération, jusqu'à un an après son traitement.
         </p>
         <p>
           Les messages de ton clan sont effacés au bout de 90 jours. Un message signalé est gardé
@@ -101,15 +100,15 @@ export default function PrivacyPage() {
       <section className={styles.section}>
         <h2>Ce qu'on ne fait pas</h2>
         <p>
-          Pas de publicité, pas de revente, pas de traceur, ni dans le site ni dans les e-mails (pas
-          de pixel, pas de lien pisté). Le seul cookie est celui qui te garde connecté. Tes réglages
-          de son et de vibration restent dans ton navigateur, comme ton lien d'invitation et ton
-          code d'arrivée jusqu'à ta première partie.
+          Il n'y a ni publicité, ni revente de données, ni traceur, ni dans le site ni dans les
+          e-mails (aucun pixel, aucun lien pisté). Le seul cookie est celui qui te garde connecté.
+          Tes réglages de son et de vibration restent dans ton navigateur, comme ton lien
+          d'invitation et le code de la vidéo ou du post qui t'a amené, jusqu'à ta première partie.
         </p>
       </section>
 
       <section className={styles.section}>
-        <h2>Pourquoi on a le droit</h2>
+        <h2>Bases légales</h2>
         <p>
           La gestion de ton compte, de ta partie et de tes connexions repose sur l'exécution du
           contrat (les conditions d'utilisation acceptées à la création du compte). L'envoi des
@@ -134,18 +133,18 @@ export default function PrivacyPage() {
           européenne, et pour Cloudflare par le Data Privacy Framework.
         </p>
         <p>
-          Les sauvegardes de la base sont gardées 30 jours au plus. Ce que tu effaces en sort au
-          bout de ces 30 jours.
+          Les sauvegardes de la base sont gardées 30 jours au plus. Ce que tu effaces disparaît
+          aussi des sauvegardes au bout de ces 30 jours.
         </p>
       </section>
 
       <section className={styles.section}>
         <h2>Tes droits</h2>
         <p>
-          Depuis Réglages &gt; « Supprimer mon compte », ton compte, ta partie et ton adresse e-mail
-          (y compris sur la liste d'attente) sont effacés immédiatement. Tes échanges passés restent
-          visibles chez les autres joueurs sous le nom « Un joueur parti », et tes messages de clan
-          restent anonymisés jusqu'à leur suppression au bout de 90 jours. Les sauvegardes
+          Depuis les réglages, bouton « Supprimer mon compte », ton compte, ta partie et ton adresse
+          e-mail (y compris sur la liste d'attente) sont effacés immédiatement. Tes échanges passés
+          restent visibles chez les autres joueurs sous le nom « Un joueur parti », et tes messages
+          de clan restent anonymisés jusqu'à leur suppression au bout de 90 jours. Les sauvegardes
           automatiques sont purgées sous 30 jours. Tu peux aussi demander à consulter, corriger ou
           effacer tes données, ou t'opposer à leur traitement en écrivant à{" "}
           <a href={`mailto:${CONTACT}`}>{CONTACT}</a> (réponse sous un mois). En cas de difficulté,

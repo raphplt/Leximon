@@ -61,7 +61,7 @@ export function FriendFeed({ now }: { readonly now: number }) {
       if (result.kind === "refused") throw new Error(result.reason);
     } catch {
       swap(event);
-      toast("Réaction perdue en route. Réessaie.");
+      toast("La réaction n'a pas été envoyée. Réessaie.");
     }
   };
 

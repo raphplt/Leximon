@@ -84,9 +84,8 @@ export function openButtonLabel(stock: StockView, guestLeft: number | null): str
 export function openAgainLabel(wallet: BoosterWalletResponse, now: EpochMs): string {
   if (wallet.stored > 0) return "Ouvrir un autre sachet";
   if (wallet.bonus > 0) return "Ouvrir un sachet bonus";
-  const wait =
-    wallet.nextRefillAt === null ? "" : `, ${formatWait(Date.parse(wallet.nextRefillAt) - now)}`;
-  return `Plus de sachet${wait}`;
+  if (wallet.nextRefillAt === null) return "Plus de sachet";
+  return `Prochain sachet dans ${formatWait(Date.parse(wallet.nextRefillAt) - now)}`;
 }
 
 // --- Reserve of bonus sachets ---------------------------------------------------------------
@@ -96,7 +95,7 @@ export interface ReserveView {
   readonly headline: string;
   /** « Dont 1 garni, ouvert en premier. », or nothing without a garni. */
   readonly garni: string | null;
-  /** « 3 places prises sur 12. » */
+  /** « Ta réserve en garde jusqu'à 12. » */
   readonly places: string;
   readonly rule: string;
   readonly sources: string;
@@ -115,10 +114,10 @@ export function reserveView(wallet: BoosterWalletResponse): ReserveView {
         : garni > 1
           ? `Dont ${garni} sachets garnis (au moins une carte Rare), ouverts en premier.`
           : "Dont 1 sachet garni (au moins une carte Rare), ouvert en premier.",
-    places: `${bonus} ${bonus > 1 ? "places prises" : "place prise"} sur ${bonusCap}.`,
-    rule: "Ils s'ouvrent quand ton stock gratuit est vide.",
+    places: `Ta réserve en garde jusqu'à ${bonusCap}.`,
+    rule: "Tu les ouvres quand tu n'as plus de sachet gratuit.",
     sources:
-      "Ils viennent des coffrets, du défi du jour, des cartes dorées et des objectifs de clan.",
+      "Tu en gagnes avec les coffrets de niveau, le défi du jour, les mots qui atteignent la Dorure et les objectifs de clan.",
     openNow: stored === 0 && bonus > 0,
   };
 }

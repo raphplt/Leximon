@@ -168,7 +168,7 @@ export function ClanChat({
         setError(refusalText(result.reason));
       }
     } catch {
-      setError("Pas envoyé. Réessaie.");
+      setError("Message non envoyé. Réessaie.");
     } finally {
       setSending(false);
     }
@@ -194,7 +194,11 @@ export function ClanChat({
   const report = async (message: MessageItem) => {
     setMenu(null);
     const result = await api.reportMessage(clanId, message.id).catch(() => null);
-    toast(result?.kind === "ok" ? "Signalé. On regarde." : "Ça n'a pas marché. Réessaie.");
+    toast(
+      result?.kind === "ok"
+        ? "Signalement envoyé. L'équipe va le lire."
+        : "Le signalement a échoué. Réessaie.",
+    );
   };
 
   const block = async (message: MessageItem) => {

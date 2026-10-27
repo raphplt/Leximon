@@ -67,9 +67,9 @@ export function AtelierScreen() {
       </Link>
       <div className={styles.atelierHead}>
         <Avatar avatar={me?.avatar ?? null} frame={me?.frame ?? null} size={72} />
-        <h1 className={`${ui.display} ${styles.title}`}>Atelier</h1>
+        <h1 className={`${ui.display} ${styles.title}`}>Apparence</h1>
       </div>
-      <div className={styles.tabs} role="tablist" aria-label="Rayons de l'atelier">
+      <div className={styles.tabs} role="tablist" aria-label="Avatars, cadres et titres">
         {ATELIER_TABS.map((entry) => (
           <button
             key={entry.tab}

@@ -83,7 +83,7 @@ describe("code errors", () => {
 
   it("says the cards stayed when the transfer failed", () => {
     expect(codeErrorMessage(ACCOUNT_ERROR_CODES.accountLinkFailed)).toContain(
-      "tes cartes sont intactes",
+      "tes cartes sont toujours là",
     );
   });
 });

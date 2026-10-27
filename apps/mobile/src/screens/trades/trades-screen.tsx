@@ -186,7 +186,7 @@ export function TradesScreen({
           },
       );
     } catch {
-      setNotice({ tone: "error", text: "Les offres plus anciennes ne se chargent pas." });
+      setNotice({ tone: "error", text: "Les offres plus anciennes n'ont pas pu être chargées." });
     }
   };
 
@@ -451,11 +451,7 @@ function ReceivedOffer({
               disabled={disabled}
               onPress={() => onResolve("accept")}
             />
-            <TextButton
-              label="Pas encore"
-              disabled={disabled}
-              onPress={() => setConfirming(false)}
-            />
+            <TextButton label="Annuler" disabled={disabled} onPress={() => setConfirming(false)} />
           </>
         ) : (
           <>

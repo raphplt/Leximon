@@ -162,7 +162,7 @@ export function FindClan({
   return (
     <ScrollView contentContainerStyle={styles.page} keyboardShouldPersistTaps="handled">
       <Text style={styles.title} accessibilityRole="header">
-        Trouve ton clan
+        Rejoindre un clan
       </Text>
 
       <View style={styles.search}>

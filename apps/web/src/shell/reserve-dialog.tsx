@@ -20,7 +20,7 @@ export function ReserveDialog({
 }) {
   const reserve = reserveView(wallet);
   return (
-    <Dialog open={open} title="Réserve" onClose={onClose} variant="center">
+    <Dialog open={open} title="Ta réserve de sachets bonus" onClose={onClose} variant="center">
       <div className={styles.reserve}>
         <span className={styles.sachet} aria-hidden="true">
           <Icon name="sachet" size={34} />

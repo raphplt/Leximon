@@ -15,21 +15,21 @@ export function formatOdds(perBillion: number | null): string {
 }
 
 /**
- * The same figure as a sentence, for the reveal and the share text: "Un mot imprimé sur
- * 17 milliards." Below what Ngram measures, the word is simply not found in today's books.
+ * The same figure as a sentence, for the reveal and the share text: "Imprimé une fois sur
+ * 17 milliards de mots." Below what Ngram measures, the word is simply not found in today's books.
  */
 export function frequencyLine(perBillion: number | null): string {
   if (perBillion === null || perBillion <= 0) return "Introuvable dans les livres d'aujourd'hui.";
   const oneIn = 1e9 / perBillion;
-  if (oneIn >= 1e9) return `Un mot imprimé sur ${largeCount(oneIn / 1e9, "milliard")}.`;
-  if (oneIn >= 1e6) return `Un mot imprimé sur ${largeCount(oneIn / 1e6, "million")}.`;
+  if (oneIn >= 1e9) return `Imprimé une fois sur ${largeCount(oneIn / 1e9, "milliard")} de mots.`;
+  if (oneIn >= 1e6) return `Imprimé une fois sur ${largeCount(oneIn / 1e6, "million")} de mots.`;
   const rounded = Number(oneIn.toPrecision(2)).toLocaleString("fr-FR").replace(/\s/g, "\u00a0");
-  return `Un mot imprimé sur ${rounded}.`;
+  return `Imprimé une fois sur ${rounded} mots.`;
 }
 
 /** What a player shares on a Légendaire: the word and its rarity. */
 export function shareText(word: string, perBillion: number | null): string {
-  return `${capitalize(word)} — ${frequencyLine(perBillion)}`;
+  return `${capitalize(word)}. ${frequencyLine(perBillion)}`;
 }
 
 /** URL path of a card's public page, the link a share carries. */
@@ -42,12 +42,12 @@ export const CARD_SHARE_COPIED = "Copié, avec le lien de la carte.";
 
 /** The browser refused the clipboard: the link, to copy by hand. */
 export function cardShareRefused(url: string): string {
-  return `Le navigateur refuse la copie. Le lien : ${url}`;
+  return `Le navigateur a bloqué la copie. Lien de la carte : ${url}`;
 }
 
 /** Under a card's public page, for someone who does not play yet. */
 export function cardPagePitch(cardCount: number): string {
-  return `${formatCount(cardCount)} mots rares et anciens à collectionner gratuitement, chaque jour en sachets.`;
+  return `Leximon en a ${formatCount(cardCount)} comme celui-là, à collectionner en ouvrant des sachets gratuits chaque jour.`;
 }
 export const CARD_PAGE_ACTION = "Ouvrir mon premier sachet";
 export const CARD_NOT_FOUND = "Cette carte est introuvable.";

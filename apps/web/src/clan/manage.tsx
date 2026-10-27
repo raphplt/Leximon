@@ -298,7 +298,7 @@ export function RequestsDialog({
         <p className={styles.faint}>Un instant…</p>
       ) : requests.length === 0 ? (
         <p className={styles.emptyThread}>
-          <em>Personne ne frappe. Partage ton lien.</em>
+          <em>Aucune demande en attente. Partage ton lien pour recruter.</em>
         </p>
       ) : (
         <ul className={styles.requests}>
@@ -449,7 +449,9 @@ export function ClanSettings({
             variant="ghost"
             small
             disabled={busy}
-            onClick={() => void act(() => api.reportClanName(clanId), "Signalé. On regarde.")}
+            onClick={() =>
+              void act(() => api.reportClanName(clanId), "Signalement envoyé. L'équipe va le lire.")
+            }
           >
             Signaler le nom du clan
           </Button>

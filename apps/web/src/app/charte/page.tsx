@@ -5,7 +5,7 @@ import styles from "../confidentialite/privacy.module.css";
 
 export const metadata: Metadata = {
   title: "Charte de la discussion · Leximon",
-  description: "Ce qu'on peut écrire dans Leximon, et ce qui arrive quand ça dérape.",
+  description: "Ce qu'on peut écrire dans Leximon, et ce qui arrive en cas d'abus.",
 };
 
 /**
@@ -24,8 +24,9 @@ export default function CharterPage() {
       <section className={styles.section}>
         <h2>Où elle s'applique</h2>
         <p>
-          Partout où un joueur écrit : son pseudo, le nom de son clan et la discussion du clan. Le
-          jeu est ouvert à partir de 15 ans : chacun doit pouvoir y lire et y écrire sereinement.
+          Elle s'applique partout où un joueur écrit, c'est-à-dire son pseudo, le nom de son clan et
+          la discussion du clan. Le jeu est ouvert à partir de 15 ans, et chacun doit pouvoir y lire
+          et y écrire tranquillement.
         </p>
       </section>
 
@@ -41,10 +42,10 @@ export default function CharterPage() {
       <section className={styles.section}>
         <h2>Ce qui est interdit</h2>
         <ul>
-          <li>Insulter, humilier, harceler un joueur, même en le citant sans le nommer.</li>
+          <li>Insulter, humilier ou harceler un joueur, même sans le nommer.</li>
           <li>
-            La haine : racisme, antisémitisme, sexisme, homophobie, transphobie, moquerie d'un
-            handicap ou d'une religion.
+            Les propos haineux, comme le racisme, l'antisémitisme, le sexisme, l'homophobie, la
+            transphobie, ou la moquerie d'un handicap ou d'une religion.
           </li>
           <li>Menacer, ou encourager la violence, contre autrui ou contre soi.</li>
           <li>Tout contenu sexuel, et toute approche d'un joueur dans ce sens.</li>
@@ -56,7 +57,10 @@ export default function CharterPage() {
           <li>Publicité, liens, messages répétés.</li>
           <li>Vendre ou acheter des cartes ou des comptes contre de l'argent.</li>
           <li>Se faire passer pour un autre joueur, une personne connue ou l'équipe de Leximon.</li>
-          <li>Tout ce que la loi interdit : apologie de crimes, drogues, contenus volés.</li>
+          <li>
+            Tout ce que la loi interdit, comme l'apologie de crimes, le trafic de drogues ou le
+            partage de contenus piratés.
+          </li>
         </ul>
       </section>
 
@@ -73,7 +77,7 @@ export default function CharterPage() {
       <section className={styles.section}>
         <h2>Ce que tu peux faire</h2>
         <ul>
-          <li>Bloquer un joueur : vous ne vous voyez plus, nulle part.</li>
+          <li>Bloquer un joueur. Vous ne voyez plus ni le profil ni les offres de l'autre.</li>
           <li>
             Signaler un pseudo ou un message. Celui que tu signales ne sait pas que c'est toi.
           </li>
@@ -94,7 +98,7 @@ export default function CharterPage() {
         <p>
           Selon la gravité, on efface le texte, on remplace le pseudo, on empêche d'écrire pour un
           temps, on suspend ou on ferme le compte. Un contenu illégal grave peut être transmis aux
-          autorités. Chaque sanction est motivée et se conteste, comme le disent les{" "}
+          autorités. Chaque sanction est expliquée et peut être contestée, comme le disent les{" "}
           <Link href="/conditions">conditions d'utilisation</Link>.
         </p>
       </section>

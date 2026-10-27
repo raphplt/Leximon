@@ -48,7 +48,7 @@ describe("recapLine", () => {
     expect(recapLine([answer(true), answer(false)])).toBe("1 bonne réponse sur 2");
     expect(recapLine([answer(false)])).toBe("Aucune bonne réponse sur 1");
     expect(recapLine([answer(true, true), answer(true, true), answer(true)])).toBe(
-      "3 bonnes réponses sur 3, 2 cartes montées de niveau",
+      "3 bonnes réponses sur 3, 2 mots montent d'un palier",
     );
   });
 });
@@ -73,14 +73,14 @@ describe("bonus lines", () => {
     ]);
     expect(bonusLines({ daily: 1, gilded: 2, credited: 3, reserve: 4 }, PLI)).toEqual([
       "Un pli bonus pour le défi du jour !",
-      "2 plis bonus pour la Dorure !",
+      "2 plis bonus pour ces mots passés à la Dorure !",
     ]);
   });
 
   it("says when the full reserve lost a bonus", () => {
     expect(bonusLines({ daily: 0, gilded: 1, credited: 0, reserve: 10 }, PLI)).toEqual([
-      "Un pli bonus pour la Dorure !",
-      "Réserve pleine, ce pli bonus est perdu.",
+      "Un pli bonus pour ce mot passé à la Dorure !",
+      "Ta réserve est pleine, ce pli bonus est perdu.",
     ]);
   });
 
@@ -96,7 +96,9 @@ describe("bonus lines", () => {
     expect(sessionBonusLine([answer(0), answer(0)])).toBeNull();
     expect(sessionBonusLine([answer(1)], PLI)).toMatch(/^1 pli bonus gagné,/);
     expect(sessionBonusLine([answer(1), answer(1)], PLI)).toMatch(/^2 plis bonus gagnés,/);
-    expect(sessionBonusLine([answer(1)], SACHET_NOUN)).toBe("1 sachet bonus gagné, en réserve.");
+    expect(sessionBonusLine([answer(1)], SACHET_NOUN)).toBe(
+      "1 sachet bonus gagné, rangé dans ta réserve.",
+    );
   });
 });
 
@@ -122,7 +124,7 @@ describe("défis screen", () => {
   it("shows the daily goal and what is left", () => {
     const fresh = dailyView({ goal, answers: 0, correct: 0, awarded: false });
     expect(fresh).toMatchObject({
-      title: "5 questions, 3 bonnes",
+      title: "3 bonnes réponses sur 5",
       action: "Commencer le défi",
       done: false,
       ratio: 0,
@@ -197,14 +199,14 @@ describe("défis screen", () => {
     ]);
     const words = escapingWords(memory, new Set(["late", "later", "soon", "far"]), now);
     expect(words).toEqual([
-      { cardId: "late", due: true, when: "À revoir maintenant" },
-      { cardId: "later", due: true, when: "À revoir maintenant" },
-      { cardId: "soon", due: false, when: "Revient dans 3 h" },
+      { cardId: "late", due: true, when: "À réviser maintenant" },
+      { cardId: "later", due: true, when: "À réviser maintenant" },
+      { cardId: "soon", due: false, when: "À réviser dans 3 h" },
     ]);
   });
 
   it("words the question and the answer", () => {
-    expect(questionKicker("word")).toBe("Quel mot se cache là-dessous ?");
+    expect(questionKicker("word")).toBe("Quel mot correspond à cette définition ?");
     expect(answerTitle(true, 15)).toBe("Juste. +15 XP");
     expect(answerTitle(false, 0)).toBe("Raté.");
     expect(answerTitle(true, 15, true)).toBe("Juste, à une lettre près. +15 XP");
@@ -234,7 +236,7 @@ describe("noChallengeNotice", () => {
 
   it("sends a player without words to the sachets", () => {
     expect(noChallengeNotice(null, now)).toBe(
-      "Aucun mot à réviser pour l'instant. Ouvre des sachets pour découvrir tes premiers mots.",
+      "Aucun mot à réviser. Ouvre des sachets pour découvrir tes premiers mots.",
     );
   });
 

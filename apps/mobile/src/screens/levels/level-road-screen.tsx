@@ -62,10 +62,10 @@ export function LevelRoadScreen({ asked }: { readonly asked: number | null }) {
   if (progress === null || rewards === null) {
     const failed = (progress === null && progressFailed) || (rewards === null && rewardsFailed);
     return (
-      <Page title="Chemin des niveaux">
+      <Page title="Niveaux">
         {failed ? (
           <>
-            <Paragraph muted>Le chemin ne se charge pas.</Paragraph>
+            <Paragraph muted>Les niveaux n'ont pas pu être chargés. Réessaie.</Paragraph>
             <Button
               label="Réessayer"
               secondary
@@ -100,7 +100,7 @@ export function LevelRoadScreen({ asked }: { readonly asked: number | null }) {
   };
 
   return (
-    <Page title="Chemin des niveaux">
+    <Page title="Niveaux">
       <Paragraph muted>{roadSubtitle(progress)}</Paragraph>
 
       <View style={styles.board}>
@@ -165,7 +165,7 @@ export function LevelRoadScreen({ asked }: { readonly asked: number | null }) {
         {detail.state === "claimed" && (
           <View style={styles.done}>
             <Icon name="check" size={18} color={colors.success} />
-            <Text style={styles.doneText}>Réclamée</Text>
+            <Text style={styles.doneText}>Coffret ouvert</Text>
           </View>
         )}
         {detail.xpLeft !== null && <Text style={styles.left}>{detail.xpLeft}</Text>}

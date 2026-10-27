@@ -496,7 +496,7 @@ export function BoosterScreen() {
         <>
           <div className={`${play.floor} ${play.arrived}`}>
             <PlayFabs />
-            <section className={play.counter} aria-label="Le comptoir">
+            <section className={play.counter} aria-label="Ton sachet">
               <div className={play.counterHead}>
                 {choice !== null && (
                   <div className={play.counterTitle}>
@@ -625,7 +625,9 @@ export function BoosterScreen() {
                   </p>
                 ) : (
                   canOpen &&
-                  guestLeft === 1 && <p className={play.message}>Dernier sachet sans compte.</p>
+                  guestLeft === 1 && (
+                    <p className={play.message}>C'est ton dernier sachet sans compte.</p>
+                  )
                 )}
               </div>
             </section>
@@ -712,7 +714,7 @@ function Revealing({
             </button>
           )}
           <button type="button" className={styles.next} onClick={onNext}>
-            {last ? "Voir mon sachet" : "Suivante"}
+            {last ? "Voir le bilan" : "Suivante"}
           </button>
         </div>
       </div>
@@ -768,11 +770,7 @@ function Recap({
       {progressNow !== null && (
         <XpBar ratio={levelRatio(progressNow)} className={styles.recapBar} />
       )}
-      {levelUp !== null && (
-        <p className={`${ui.pop} ${styles.levelUp}`}>
-          {levelUp} {coffretWaits ? "Une récompense t'attend." : ""}
-        </p>
-      )}
+      {levelUp !== null && <p className={`${ui.pop} ${styles.levelUp}`}>{levelUp}</p>}
       <p className={styles.recapProgress}>
         {pack.collectionName} · {progress.owned} / {progress.total}
         {progress.gained > 0 && <span className={styles.gained}> (+{progress.gained})</span>}
@@ -905,7 +903,7 @@ function RecapCards({
           ))}
         </p>
       )}
-      <p className={styles.recapHint}>Touche une carte pour la lire.</p>
+      <p className={styles.recapHint}>Ouvre une carte pour la lire.</p>
     </>
   );
 }

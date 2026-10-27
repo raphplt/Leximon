@@ -5,7 +5,8 @@ import styles from "../confidentialite/privacy.module.css";
 
 export const metadata: Metadata = {
   title: "Conditions d'utilisation · Leximon",
-  description: "Les règles du jeu entre toi et Leximon : compte, cartes, échanges, modération.",
+  description:
+    "Les règles qui s'appliquent entre toi et Leximon pour le compte, les cartes, les échanges et la modération.",
 };
 
 /**
@@ -22,10 +23,10 @@ export default function TermsPage() {
       <p className={styles.updated}>Version du 22 octobre 2026.</p>
 
       <section className={styles.section}>
-        <h2>Qui est derrière Leximon</h2>
+        <h2>L'éditeur</h2>
         <p>
           Leximon est édité par {PUBLISHER.name}, {PUBLISHER.status} (SIREN {PUBLISHER.siren}),{" "}
-          {PUBLISHER.address}. Pour tout :{" "}
+          {PUBLISHER.address}. Pour toute question, écris à{" "}
           <a href={`mailto:${PUBLISHER.contact}`}>{PUBLISHER.contact}</a>.
         </p>
         <p>
@@ -44,7 +45,7 @@ export default function TermsPage() {
         <p>
           Le jeu est gratuit. Aucun sachet ne s'achète, ni directement ni avec une monnaie achetée.
           Si une offre payante arrive un jour (abonnement, objets d'apparence), son contenu sera
-          connu avant l'achat, et ces conditions le diront.
+          connu avant l'achat, et ces conditions seront mises à jour.
         </p>
       </section>
 
@@ -81,9 +82,8 @@ export default function TermsPage() {
       <section className={styles.section}>
         <h2>Les échanges</h2>
         <p>
-          Un échange, c'est une carte contre une carte (jusqu'à trois de chaque côté selon le
-          niveau), proposé par une offre, sans message. Une offre acceptée est définitive : il n'y a
-          pas de retour en arrière.
+          Un échange se fait carte contre carte (jusqu'à trois de chaque côté selon le niveau), par
+          une offre, sans message. Une offre acceptée est définitive.
         </p>
         <p>
           Il est interdit de faire payer un échange, en argent ou en quoi que ce soit hors du jeu.
@@ -93,14 +93,20 @@ export default function TermsPage() {
       <section className={styles.section}>
         <h2>Ce qui est interdit</h2>
         <ul>
-          <li>Tricher : robots, scripts, logiciels qui jouent à ta place.</li>
           <li>
-            Profiter d'un bug. Si tu en trouves un, écris-nous : on corrige, et on peut retirer ce
+            Tricher, par exemple avec des robots, des scripts ou des logiciels qui jouent à ta
+            place.
+          </li>
+          <li>
+            Profiter d'un bug. Si tu en trouves un, écris-nous. On le corrige, et on peut retirer ce
             qu'il a rapporté.
           </li>
           <li>Ouvrir d'autres comptes pour s'envoyer des cartes ou contourner une sanction.</li>
           <li>Se faire passer pour un autre joueur ou pour l'équipe de Leximon.</li>
-          <li>Gêner le service : le surcharger, s'y introduire, en copier le contenu en masse.</li>
+          <li>
+            Gêner le service, par exemple en le surchargeant, en s'y introduisant ou en copiant son
+            contenu en masse.
+          </li>
           <li>
             Écrire quelque chose que la <Link href="/charte">charte de la discussion</Link>{" "}
             interdit, dans un pseudo, un nom de clan ou un message.
@@ -114,16 +120,16 @@ export default function TermsPage() {
           Ton pseudo, le nom de ton clan et tes messages sont visibles par d'autres joueurs. Tu en
           es responsable. Ils passent par un filtre à l'envoi et suivent la{" "}
           <Link href="/charte">charte de la discussion</Link>. Tu nous autorises à les afficher dans
-          le jeu tant qu'ils y sont.
+          le jeu tant que tu ne les as pas effacés.
         </p>
       </section>
 
       <section className={styles.section}>
         <h2>Signaler, bloquer</h2>
         <p>
-          Depuis le profil d'un joueur, tu peux le bloquer : vous ne vous voyez plus, et vous ne
-          pouvez plus vous faire d'offre. Tu peux signaler un pseudo, et plus tard un message. Pour
-          tout contenu qui te paraît illégal, écris à{" "}
+          Depuis le profil d'un joueur, tu peux le bloquer. Vous ne voyez plus vos profils et vous
+          ne pouvez plus vous faire d'offre. Tu peux signaler un pseudo ou un message. Pour tout
+          contenu qui te paraît illégal, écris à{" "}
           <a href={`mailto:${PUBLISHER.contact}`}>{PUBLISHER.contact}</a> en disant où il se trouve
           et pourquoi. C'est aussi notre point de contact pour les autorités.
         </p>
@@ -140,29 +146,29 @@ export default function TermsPage() {
           <li>suspendre ou fermer ton compte</li>
         </ul>
         <p>
-          Chaque sanction est motivée : tu sais ce qu'on te reproche et sur quoi on se fonde. Tu
-          peux la contester en écrivant à{" "}
+          Chaque sanction est expliquée. Tu sais ce qu'on te reproche et sur quelle règle on
+          s'appuie. Tu peux la contester en écrivant à{" "}
           <a href={`mailto:${PUBLISHER.contact}`}>{PUBLISHER.contact}</a> dans les six mois. Une
-          personne relit ta demande et te répond.
+          personne de l'équipe lit ta demande et te répond.
         </p>
       </section>
 
       <section className={styles.section}>
-        <h2>Les mots, les images, le nom</h2>
+        <h2>Propriété intellectuelle</h2>
         <p>
-          Le nom Leximon, son logo, ses écrans et les textes des cartes sont à nous. Les sources
-          (Littré, gravures, fréquences) sont dans le domaine public ou sous licence libre, et
-          citées dans <Link href="/mentions">Contact et mentions</Link>. Tu peux partager tes cartes
-          et ton profil avec les boutons du jeu.
+          Le nom Leximon, son logo, ses écrans et les textes des cartes appartiennent à l'éditeur.
+          Les sources (Littré, gravures, fréquences) sont dans le domaine public ou sous licence
+          libre, et citées dans <Link href="/mentions">Contact et mentions</Link>. Tu peux partager
+          tes cartes et ton profil avec les boutons du jeu.
         </p>
       </section>
 
       <section className={styles.section}>
         <h2>Le service</h2>
         <p>
-          On fait tourner Leximon du mieux qu'on peut, sans garantir qu'il soit toujours disponible
-          ni sans erreur. Il peut s'interrompre pour une mise à jour ou une panne. Comme le jeu est
-          gratuit, une interruption ne donne pas droit à une compensation.
+          On fait de notre mieux pour que Leximon fonctionne, sans garantir qu'il soit toujours
+          disponible ni sans erreur. Il peut s'interrompre pour une mise à jour ou une panne. Comme
+          le jeu est gratuit, une interruption ne donne pas droit à une compensation.
         </p>
         <p>
           Si Leximon devait s'arrêter, on te prévient au moins un mois avant, par e-mail et dans le
@@ -171,13 +177,13 @@ export default function TermsPage() {
       </section>
 
       <section className={styles.section}>
-        <h2>Partir</h2>
+        <h2>Supprimer ton compte</h2>
         <p>
-          Tu peux supprimer ton compte à tout moment depuis Réglages &gt; « Supprimer mon compte ».
-          Ton compte et ta partie sont effacés immédiatement. Tes échanges passés restent visibles
-          chez les autres joueurs sous le nom « Un joueur parti », et tes messages de clan restent
-          anonymisés jusqu'à leur suppression automatique au bout de 90 jours. Plus de détails dans{" "}
-          <Link href="/confidentialite">Tes données</Link>.
+          Tu peux supprimer ton compte à tout moment depuis les réglages, bouton « Supprimer mon
+          compte ». Ton compte et ta partie sont effacés immédiatement. Tes échanges passés restent
+          visibles chez les autres joueurs sous le nom « Un joueur parti », et tes messages de clan
+          restent anonymisés jusqu'à leur suppression automatique au bout de 90 jours. Plus de
+          détails dans <Link href="/confidentialite">Tes données</Link>.
         </p>
       </section>
 

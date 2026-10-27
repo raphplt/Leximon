@@ -109,8 +109,8 @@ export function SettingsPanel({
               <Switch label="Son" checked={prefs.sound} onChange={(on) => toggle("sound", on)} />
               {prefs.sound && (
                 <Switch
-                  label="Mots dits à voix haute"
-                  detail="Quand la carte se pose"
+                  label="Prononciation des mots"
+                  detail="Le mot est lu quand sa carte apparaît"
                   checked={prefs.speech}
                   onChange={(on) => toggle("speech", on)}
                 />
@@ -155,14 +155,14 @@ export function SettingsPanel({
           <h3 className={ui.kicker}>E-mails</h3>
           <div className={ui.groupRows}>
             <Switch
-              label="Lettres en attente"
-              detail="Si tu ne viens pas les lire"
+              label="Courrier non lu"
+              detail="Un e-mail si tu ne viens pas le lire"
               checked={notify.emailNews}
               onChange={(on) => void toggleNotify("emailNews", on)}
             />
             <Switch
-              label="Sachets pleins"
-              detail="Si tu t'absentes"
+              label="Stock de sachets plein"
+              detail="Un rappel quand tu t'absentes"
               checked={notify.emailReminders}
               onChange={(on) => void toggleNotify("emailReminders", on)}
             />
@@ -200,14 +200,14 @@ export function SettingsPanel({
                 <Switch
                   label="Demandes d'ami"
                   detail={
-                    notify.friendRequestsOpen ? "Tout le monde" : "Personne, sauf ton lien d'ami"
+                    notify.friendRequestsOpen ? "Tout le monde" : "Seulement par ton lien d'ami"
                   }
                   checked={notify.friendRequestsOpen}
                   onChange={(on) => void toggleNotify("friendRequestsOpen", on)}
                 />
                 <Switch
                   label="Montrer mes trouvailles à mes amis"
-                  detail="Épiques, Légendaires, Dorures, niveaux"
+                  detail="Tes Épiques et Légendaires, tes mots à la Dorure, tes niveaux"
                   checked={notify.shareFinds}
                   onChange={(on) => void toggleNotify("shareFinds", on)}
                 />

@@ -14,9 +14,9 @@ describe("a sanction", () => {
       "Jusqu'au 29 octobre à 13:00",
     );
     expect(sanctionUntil({ kind: "mute", until: "2026-10-21T13:00:00.000Z" }, now)).toBe(
-      "Terminée",
+      "Sanction terminée",
     );
-    expect(sanctionUntil({ kind: "close", until: null }, now)).toBe("Définitive");
+    expect(sanctionUntil({ kind: "close", until: null }, now)).toBe("Sanction définitive");
     expect(sanctionUntil({ kind: "hide_message", until: null }, now)).toBeNull();
   });
 
@@ -32,7 +32,7 @@ describe("a sanction", () => {
   it("follows its contest", () => {
     expect(contestState(none)).toBeNull();
     expect(contestState({ ...none, contestedAt: "2026-10-22T10:00:00.000Z" })).toBe(
-      "Contestation enregistrée. L'équipe va la relire.",
+      "Ta contestation a été envoyée. L'équipe va la lire.",
     );
     expect(
       contestState({
@@ -40,6 +40,6 @@ describe("a sanction", () => {
         contestOutcome: "revoked",
         revokedAt: "2026-10-22T11:00:00.000Z",
       }),
-    ).toBe("Contestation acceptée : la sanction est levée.");
+    ).toBe("Ta contestation a été acceptée. La sanction est levée.");
   });
 });

@@ -122,7 +122,7 @@ describe("cloudflareEmailSender", () => {
     expect(sent[0]).toMatchObject({
       from: options.from,
       to: "raphael@example.com",
-      subject: "Leximon, c'est sur invitation",
+      subject: "Leximon est sur invitation",
     });
   });
 

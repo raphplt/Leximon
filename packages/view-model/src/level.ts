@@ -67,12 +67,17 @@ export interface XpSource {
 export function xpSources(now: EpochMs): XpSource[] {
   const rules = xpRulesAt(XP_SCHEDULE, now);
   const newWord = Object.values(rules.newWord);
+  const completed = Object.values(rules.rarityCompleted);
   return [
     { action: "Ouvrir un sachet", xp: String(rules.boosterOpened) },
     { action: "Premier sachet du jour", xp: `+${rules.firstBoosterOfDay}` },
-    { action: "Mot nouveau", xp: `${Math.min(...newWord)} à ${Math.max(...newWord)}` },
+    { action: "Nouveau mot", xp: `${Math.min(...newWord)} à ${Math.max(...newWord)}` },
     { action: "Bonne réponse", xp: String(rules.correctAnswer) },
-    { action: "Mot à l'Encre ou à la Dorure", xp: String(rules.masteryLevelUp) },
+    { action: "Mot qui passe à l'Encre ou à la Dorure", xp: String(rules.masteryLevelUp) },
     { action: "Échange conclu", xp: String(rules.tradeCompleted) },
+    {
+      action: "Toutes les cartes d'une rareté réunies",
+      xp: `${formatCount(Math.min(...completed))} à ${formatCount(Math.max(...completed))}`,
+    },
   ];
 }

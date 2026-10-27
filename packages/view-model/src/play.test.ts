@@ -37,13 +37,13 @@ describe("reserve", () => {
     expect(reserveView(wallet(4, 1))).toMatchObject({
       headline: "1 sachet bonus",
       garni: null,
-      places: "1 place prise sur 10.",
+      places: "Ta réserve en garde jusqu'à 10.",
       openNow: false,
     });
     expect(reserveView({ ...wallet(0, 3), garni: 2 })).toMatchObject({
       headline: "3 sachets bonus",
       garni: "Dont 2 sachets garnis (au moins une carte Rare), ouverts en premier.",
-      places: "3 places prises sur 10.",
+      places: "Ta réserve en garde jusqu'à 10.",
       openNow: true,
     });
     expect(reserveView({ ...wallet(0, 1), garni: 1 }).garni).toBe(
@@ -73,7 +73,7 @@ describe("stock", () => {
       action: "Prochain dans 18 min",
       note: "+1 dans 18 min",
     });
-    expect(openAgainLabel(wallet(0), NOW)).toBe("Plus de sachet, 18 min");
+    expect(openAgainLabel(wallet(0), NOW)).toBe("Prochain sachet dans 18 min");
   });
 
   it("counts on the button what is left to open", () => {

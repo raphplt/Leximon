@@ -17,7 +17,7 @@ export function FeedbackDialog({
   open,
   onClose,
   screen,
-  title = "Un retour ?",
+  title = "Écrire à l'équipe",
   label = "Signale un bug, une erreur sur une carte ou partage une idée.",
 }: {
   readonly open: boolean;
@@ -41,7 +41,7 @@ export function FeedbackDialog({
       await api.sendFeedback({ body: body.trim(), screen: screen ?? pathname });
       setBody("");
       onClose();
-      toast("Bien reçu. Merci.");
+      toast("Message envoyé. Merci.");
     } catch {
       setError("L'envoi a échoué. Réessaie.");
     } finally {

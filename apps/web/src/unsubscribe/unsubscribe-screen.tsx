@@ -40,11 +40,11 @@ export function UnsubscribeFromAddress() {
       <Link href="/" className={styles.logo}>
         Leximon
       </Link>
-      <h1 className={styles.title}>{done ? "C'est fait" : "Plus d'e-mails ?"}</h1>
+      <h1 className={styles.title}>{done ? "C'est fait" : "Se désinscrire"}</h1>
       <section className={styles.section}>
         {done && <p>{STOPPED[state]}</p>}
         {state === "invalid" && (
-          <p>Ce lien ne mène nulle part. Recopie-le en entier depuis l'e-mail.</p>
+          <p>Ce lien de désinscription n'est pas valide. Recopie-le en entier depuis l'e-mail.</p>
         )}
         {state === "failed" && <p>Le serveur lambine. Réessaie.</p>}
         {(state === "ready" || state === "sending" || state === "failed") && (

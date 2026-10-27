@@ -81,7 +81,7 @@ export function unlockLabel(unlock: ClanUnlock, wordOf: (cardId: string) => stri
     case "banner":
       return `la bannière ${wordOf(unlock.id)}`;
     case "illuminated":
-      return "le palier Enluminure";
+      return "le palier Enluminure de l'objectif de la semaine";
   }
 }
 
@@ -281,7 +281,7 @@ export function contributionHint(
 ): string | null {
   const missing = goal.minContribution - goal.myAnswers;
   if (missing <= 0) return null;
-  return `Encore ${plural(missing, "bonne réponse", "bonnes réponses")}, et tu touches les sachets.`;
+  return `Encore ${plural(missing, "bonne réponse", "bonnes réponses")} en défi pour avoir ta part des sachets.`;
 }
 
 /** « Prendre le sachet de l'or ». */
@@ -295,7 +295,9 @@ export function goalClaimedToast(claim: Pick<ClaimableGoal, "tier">): string {
 
 /** The mail's line: boosters of a weekly goal waiting. */
 export function claimableMailTitle(count: number): string {
-  return count > 1 ? `${count} sachets d'objectif à prendre` : "Un sachet d'objectif à prendre";
+  return count > 1
+    ? `${count} sachets bonus du clan à prendre`
+    : "Un sachet bonus du clan à prendre";
 }
 
 /** The end of a challenge, for a clan member: « +8 pour le clan », `null` with nothing right. */
@@ -393,7 +395,7 @@ export const REMOVED_MESSAGE: Readonly<Record<"deleted" | "hidden", string>> = {
   hidden: "Message masqué par la modération",
 };
 
-export const EMPTY_DISCUSSION = "Aucun message pour le moment. Écris le premier !";
+export const EMPTY_DISCUSSION = "Personne n'a encore écrit. Lance la discussion.";
 export const MESSAGE_PLACEHOLDER = "Écris au clan";
 
 /** An "@" not inside a word, then words joined by single separators, the last one maybe begun. */
@@ -490,36 +492,36 @@ export function leaveLabel(memberCount: number): string {
 const REFUSALS: Readonly<Record<ClanRefusal, string>> = {
   account_required: "Il faut un compte pour entrer dans un clan.",
   pseudo_required: "Choisis d'abord un pseudo.",
-  level_too_low: "Pas encore le niveau.",
+  level_too_low: "Tu n'as pas encore le niveau pour les clans.",
   already_in_clan: "Tu es déjà dans un clan.",
   not_member: "Tu n'es plus dans ce clan.",
-  not_allowed: "Ce n'est pas dans ton rôle.",
+  not_allowed: "Seul le chef ou un adjoint peut faire ça.",
   clan_not_found: "Ce clan n'existe plus.",
-  player_not_found: "Introuvable.",
-  invite_only: "Ce clan n'entre que sur invitation.",
+  player_not_found: "Ce joueur n'existe plus.",
+  invite_only: "On n'entre dans ce clan que sur invitation.",
   name_taken: "Ce nom est déjà pris.",
-  name_too_short: "Trois caractères au moins.",
-  name_too_long: "Trente caractères au plus.",
+  name_too_short: "Le nom doit faire au moins 3 caractères.",
+  name_too_long: "Le nom doit faire au plus 30 caractères.",
   name_invalid_characters:
-    "Lettres, chiffres, et une espace, un tiret ou une apostrophe entre eux.",
-  name_refused: "Ce nom ne passe pas. Trouves-en un autre.",
-  motto_too_long: "Quatre-vingts caractères au plus.",
-  motto_refused: "Cette devise ne passe pas. Reformule.",
-  motto_contact: "Pas de lien, d'e-mail ni de numéro dans une devise.",
-  emblem_not_allowed: "Cet emblème n'est pas encore à vous.",
-  message_empty: "Rien à envoyer.",
-  message_too_long: "Cinq cents caractères au plus.",
-  message_refused: "Pas envoyé : un mot interdit. Reformule.",
-  message_contact: "Pas envoyé : pas de lien, d'e-mail ni de numéro ici.",
-  too_soon: "Doucement. Un message toutes les 2 secondes.",
+    "Utilise des lettres et des chiffres, avec un espace, un tiret ou une apostrophe entre eux.",
+  name_refused: "Ce nom n'est pas autorisé. Choisis-en un autre.",
+  motto_too_long: "La devise doit faire au plus 80 caractères.",
+  motto_refused: "Cette devise n'est pas autorisée. Reformule-la.",
+  motto_contact: "Une devise ne peut pas contenir de lien, d'adresse e-mail ni de numéro.",
+  emblem_not_allowed: "Votre clan n'a pas encore débloqué cet emblème.",
+  message_empty: "Le message est vide.",
+  message_too_long: "Le message doit faire au plus 500 caractères.",
+  message_refused: "Message refusé, il contient un mot interdit. Reformule-le.",
+  message_contact: "Message refusé. Pas de lien, d'adresse e-mail ni de numéro dans la discussion.",
+  too_soon: "Attends 2 secondes entre deux messages.",
   muted: "Tu es muet dans ce clan.",
   sanctioned: "Une sanction t'empêche d'écrire.",
   mute_duration: "Cette durée n'existe pas.",
-  goal_not_reached: "Pas de sachet pour toi à ce palier.",
-  already_claimed: "Déjà pris.",
+  goal_not_reached: "Tu n'as pas assez de bonnes réponses cette semaine pour ce palier.",
+  already_claimed: "Tu as déjà pris ce sachet.",
   claim_expired: "Trop tard, la semaine est passée.",
-  reserve_full: "Ta réserve est pleine. Ouvre un sachet d'abord.",
-  self: "Pas sur toi-même.",
+  reserve_full: "Ta réserve de sachets bonus est pleine. Ouvre-en un d'abord.",
+  self: "Tu ne peux pas faire ça sur toi-même.",
 };
 
 export function clanRefusalMessage(reason: ClanRefusal): string {

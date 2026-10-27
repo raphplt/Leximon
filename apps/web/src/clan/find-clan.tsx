@@ -166,7 +166,7 @@ export function FindClan({
   return (
     <main className={styles.screen}>
       <header className={styles.findHeader}>
-        <h1 className={`${ui.display} ${styles.title}`}>Trouve ton clan</h1>
+        <h1 className={`${ui.display} ${styles.title}`}>Rejoindre un clan</h1>
         <Button
           variant={canCreate ? "primary" : "secondary"}
           onClick={() => (canCreate ? setCreating(true) : toast(lockedToast("create_clan", now)))}

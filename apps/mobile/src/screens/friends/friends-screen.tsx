@@ -64,7 +64,7 @@ export function FriendsScreen({ adding }: { readonly adding: string | null }) {
       <Page title={FRIENDS_TITLE}>
         {data === null && failed ? (
           <>
-            <Paragraph muted>Tes amis ne se chargent pas.</Paragraph>
+            <Paragraph muted>La liste d'amis n'a pas pu être chargée. Réessaie.</Paragraph>
             <Button label="Réessayer" secondary onPress={() => friends.refresh()} />
           </>
         ) : (
@@ -310,7 +310,8 @@ function FriendLink({
     <Panel>
       <Text style={styles.kicker}>TON LIEN D'AMI</Text>
       <Text style={styles.line}>
-        Qui arrive par ton lien devient ton ami. Au niveau 5, un sachet bonus pour chacun.
+        Ceux qui entrent par ton lien deviennent tes amis. Quand l'un d'eux atteint le niveau 5,
+        vous gagnez chacun un sachet bonus.
       </Text>
       {places !== null && <Text style={styles.small}>{places}</Text>}
       <Button

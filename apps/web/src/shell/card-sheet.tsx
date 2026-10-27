@@ -158,7 +158,7 @@ function SheetBody({
 
         {quantity > 0 && (
           <div className={styles.block}>
-            <p className={ui.kicker}>Maîtrise</p>
+            <p className={ui.kicker}>Mémorisation</p>
             <ol className={styles.steps}>
               {mastery.steps.map((step) => (
                 <li key={step.level} className={step.reached ? styles[step.level] : styles.stepOff}>

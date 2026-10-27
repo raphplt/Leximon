@@ -141,7 +141,7 @@ describe("the weekly goal", () => {
 
   it("tells a member under the minimum what is missing", () => {
     expect(contributionHint({ myAnswers: 12, minContribution: 15 })).toBe(
-      "Encore 3 bonnes réponses, et tu touches les sachets.",
+      "Encore 3 bonnes réponses en défi pour avoir ta part des sachets.",
     );
     expect(contributionHint({ myAnswers: 15, minContribution: 15 })).toBeNull();
   });
@@ -175,7 +175,9 @@ describe("the clan level", () => {
 
   it("shows the level and the way to the next", () => {
     expect(clanLevelLine(progress)).toBe("Niveau 4 · 240 / 1\u202f250 XP");
-    expect(nextUnlockLine(progress, wordOf)).toBe("Au niveau 5, le palier Enluminure.");
+    expect(nextUnlockLine(progress, wordOf)).toBe(
+      "Au niveau 5, le palier Enluminure de l'objectif de la semaine.",
+    );
     expect(nextUnlockLine({ ...progress, next: null }, wordOf)).toBeNull();
   });
 
@@ -243,7 +245,9 @@ describe("joining and leaving", () => {
   });
 
   it("explains each refusal", () => {
-    expect(clanRefusalMessage("message_refused")).toBe("Pas envoyé : un mot interdit. Reformule.");
+    expect(clanRefusalMessage("message_refused")).toBe(
+      "Message refusé, il contient un mot interdit. Reformule-le.",
+    );
   });
 });
 

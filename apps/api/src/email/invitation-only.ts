@@ -15,7 +15,7 @@ import {
  * answer as a code, so nobody learns from it whether an address has an account.
  */
 export function renderInvitationOnlyEmail(): RenderedEmail {
-  const subject = "Leximon, c'est sur invitation";
+  const subject = "Leximon est sur invitation";
   const noAccount =
     "Tu as demandé un code pour entrer dans Leximon, mais on n'a aucun compte à cette adresse. " +
     "Et pendant la bêta, on n'entre que sur invitation.";

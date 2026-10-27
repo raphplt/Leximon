@@ -149,7 +149,7 @@ export function LevelRoadScreen() {
             </ul>
             {detail.opens !== null && (
               <div className={styles.opensBox}>
-                <p className={`${ui.kicker} ${styles.opensKicker}`}>Ouvre</p>
+                <p className={`${ui.kicker} ${styles.opensKicker}`}>Débloque</p>
                 <p className={styles.opensText}>{detail.opens}</p>
               </div>
             )}
@@ -162,7 +162,7 @@ export function LevelRoadScreen() {
               {detail.state === "claimed" && (
                 <p className={styles.done}>
                   <Icon name="check" size={18} />
-                  Réclamée
+                  Coffret ouvert
                 </p>
               )}
               {detail.xpLeft !== null && <p className={styles.left}>{detail.xpLeft}</p>}
@@ -333,7 +333,7 @@ function Header({ subtitle }: { readonly subtitle: string | null }) {
         <Icon name="back" size={20} />
       </Link>
       <div>
-        <h1 className={`${ui.display} ${styles.title}`}>Chemin des niveaux</h1>
+        <h1 className={`${ui.display} ${styles.title}`}>Niveaux</h1>
         <p className={styles.subtitle}>{subtitle ?? "\u00a0"}</p>
       </div>
     </header>

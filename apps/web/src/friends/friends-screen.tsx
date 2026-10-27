@@ -338,7 +338,8 @@ function FriendLink({
     <section className={`${ui.panel} ${styles.card}`}>
       <p className={ui.kicker}>Ton lien d'ami</p>
       <p className={styles.linkLine}>
-        Qui arrive par ton lien devient ton ami. Au niveau 5, un sachet bonus pour chacun.
+        Ceux qui entrent par ton lien deviennent tes amis. Quand l'un d'eux atteint le niveau 5,
+        vous gagnez chacun un sachet bonus.
       </p>
       {places !== null && <p className={styles.small}>{places}</p>}
       <div className={styles.linkActions}>

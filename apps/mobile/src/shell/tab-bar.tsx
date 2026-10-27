@@ -59,7 +59,7 @@ export function TabBar({ state, emitter, navigateToTab }: BottomTabBarProps) {
         const a11y = {
           accessibilityRole: "tab" as const,
           accessibilityState: { selected: focused },
-          accessibilityLabel: closed.has(id) ? `${TAB_LABELS[id]}, fermé` : TAB_LABELS[id],
+          accessibilityLabel: closed.has(id) ? `${TAB_LABELS[id]}, verrouillé` : TAB_LABELS[id],
         };
         if (id === "jouer") {
           return (

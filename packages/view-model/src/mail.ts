@@ -4,7 +4,7 @@ import { messageTime } from "./clan";
 import { plural } from "./format";
 import { playerName } from "./trades";
 
-export const MAIL_EMPTY = "Boîte vide. Le facteur repassera.";
+export const MAIL_EMPTY = "Aucune lettre en attente.";
 export const MAIL_TODO = "À faire";
 export const MAIL_NEWS = "Nouvelles";
 export const MAIL_OLDER = "Lettres plus anciennes";
@@ -85,7 +85,7 @@ export function letterView(letter: MailLetter, now: EpochMs, timeZone?: string):
   }
 }
 
-/** Under « Lucubrateur est en train de t'échapper. »: the others due with it. */
+/** Under « Lucubrateur est à réviser. »: the others due with it. */
 export function slippingDetail(others: number): string {
   return others === 0 ? "Défis" : `Et ${plural(others, "autre mot", "autres mots")}`;
 }

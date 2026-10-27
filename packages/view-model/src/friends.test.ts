@@ -154,7 +154,7 @@ describe("referral rewards", () => {
   it("names the other player of the invitation", () => {
     expect(
       referralRewardTitle({ player: lucie, role: "referrer", refereeCode: "B", boosters: 1 }),
-    ).toBe("Un sachet bonus : Lucie atteint le niveau 5 !");
+    ).toBe("Lucie atteint le niveau 5, un sachet bonus pour toi !");
     expect(
       referralRewardTitle({ player: null, role: "referee", refereeCode: "B", boosters: 1 }),
     ).toBe("Un sachet bonus de bienvenue, grâce à Un joueur parti !");

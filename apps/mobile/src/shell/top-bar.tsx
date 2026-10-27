@@ -36,7 +36,7 @@ export function TopBar() {
           style={styles.xp}
           onPress={() => router.push("/niveaux")}
           accessibilityRole="button"
-          accessibilityLabel={`Chemin des niveaux, ${levelDescription(progress)}`}
+          accessibilityLabel={`Niveaux, ${levelDescription(progress)}`}
           hitSlop={8}
         >
           <LevelMedal level={progress.level} size={34} />

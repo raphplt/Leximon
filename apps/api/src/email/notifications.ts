@@ -44,14 +44,19 @@ export function renderNewsEmail(content: NewsContent, links: RecipientLinks): No
   const lines = content.lines.map((line) =>
     line.quote === null ? `${line.title}.` : `${line.title} : « ${line.quote} »`,
   );
-  if (content.more > 0)
-    lines.push(content.more === 1 ? "Et une autre." : `Et ${content.more} autres.`);
+  if (content.more > 0) {
+    lines.push(
+      content.more === 1
+        ? "Et une autre lettre t'attend."
+        : `Et ${content.more} autres lettres t'attendent.`,
+    );
+  }
   return notificationEmail({
     subject,
     paragraphs: lines,
     button: content.button,
     links,
-    stopLabel: "Plus d'e-mail quand on m'écrit",
+    stopLabel: "Ne plus recevoir ces e-mails",
   });
 }
 
@@ -72,7 +77,7 @@ export function renderReminderEmail(
   links: RecipientLinks,
 ): NotificationEmail {
   const paragraphs = [
-    `Tu as ${content.stock} sachets prêts à être ouverts. Ton stock est plein : ouvre-les pour que la recharge reprenne.`,
+    `Tu as ${content.stock} sachets à ouvrir. Tant que ton stock est plein, il ne se recharge plus.`,
   ];
   if (content.slipping !== null) {
     const { word, others } = content.slipping;
@@ -89,13 +94,13 @@ export function renderReminderEmail(
         : `${content.letters} lettres t'attendent au courrier.`,
     );
   }
-  if (content.last) paragraphs.push("Dernier rappel. On ne t'écrira plus pour tes sachets.");
+  if (content.last) paragraphs.push("Dernier rappel, on ne t'écrira plus pour tes sachets.");
   return notificationEmail({
     subject: `Tes ${content.stock} sachets t'attendent`,
     paragraphs,
     button: { label: "Ouvrir mes sachets", url: `${SITE_URL}/jouer` },
     links,
-    stopLabel: "Plus de rappel pour mes sachets",
+    stopLabel: "Ne plus recevoir ces rappels",
   });
 }
 

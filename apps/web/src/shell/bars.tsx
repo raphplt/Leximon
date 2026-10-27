@@ -223,7 +223,7 @@ function TopBarSide({
         <Link
           href="/niveaux"
           className={`${ui.chip} ${styles.level}`}
-          aria-label={`Chemin des niveaux, ${levelDescription(view.progress)}`}
+          aria-label={`Niveaux, ${levelDescription(view.progress)}`}
           title={levelDescription(view.progress)}
         >
           <LevelMedal level={view.progress.level} size={36} />
@@ -268,7 +268,7 @@ export function PhoneTopBar({ onMenu }: { readonly onMenu: () => void }) {
         <Link
           href="/niveaux"
           className={styles.phoneXp}
-          aria-label={`Chemin des niveaux, ${levelDescription(progress)}`}
+          aria-label={`Niveaux, ${levelDescription(progress)}`}
         >
           <LevelMedal level={progress.level} size={34} />
           <XpBar ratio={levelRatio(progress)} thin className={styles.levelBar} />

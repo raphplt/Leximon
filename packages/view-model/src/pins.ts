@@ -107,7 +107,7 @@ export const PIN_TEXTS = {
   pickerTitle: "Épingler une carte",
   search: "Chercher un de tes mots",
   noMatch: "Aucun de tes mots ne correspond.",
-  noCards: "Pas encore de carte. Ouvre un sachet.",
+  noCards: "Tu n'as encore aucune carte. Ouvre un sachet pour en épingler une.",
   alreadyPinned: "Épinglée",
   change: "Changer",
   remove: "Retirer",
@@ -116,7 +116,7 @@ export const PIN_TEXTS = {
   pinned: "Épinglée à ton profil.",
   replaced: "Remplacée.",
   removed: "Retirée de ton profil.",
-  fullTitle: "Tes places sont prises",
+  fullTitle: "Plus de place sur ton profil",
 } as const;
 
 /** The picker's title when it fills a taken place. */
@@ -126,10 +126,10 @@ export function replaceTitle(word: string): string {
 
 /** Under the cards listed when the limit leaves some out. */
 export function morePinsLine(more: number): string {
-  return `Et ${plural(more, "autre carte", "autres cartes")} — utilise la recherche pour tout voir.`;
+  return `Et ${plural(more, "autre carte", "autres cartes")} de plus. Cherche un mot pour les retrouver.`;
 }
 
 /** Pinning from a card's sheet with every place taken: which one it pushes out. */
 export function fullPinsLine(word: string): string {
-  return `Laquelle laisse sa place à ${word} ?`;
+  return `Quelle carte veux-tu remplacer par ${word} ?`;
 }

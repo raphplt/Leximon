@@ -37,7 +37,7 @@ const PIN_WIDTH = 116;
 
 const LINKS: readonly { readonly label: string; readonly icon: IconName; readonly href: Href }[] = [
   { label: "Amis", icon: "amis", href: "/amis" },
-  { label: "Chemin des niveaux", icon: "star", href: "/niveaux" },
+  { label: "Niveaux", icon: "star", href: "/niveaux" },
   { label: "Réglages", icon: "reglages", href: "/reglages" },
   { label: "Mon compte", icon: "cle", href: "/compte" },
 ];
@@ -95,7 +95,7 @@ export function ProfileScreen() {
 
       <View style={styles.actions}>
         <View style={styles.grow}>
-          <Button label="Atelier" secondary onPress={() => router.push("/atelier")} />
+          <Button label="Apparence" secondary onPress={() => router.push("/atelier")} />
         </View>
         {canShareProfile(me) && (
           <View style={styles.grow}>
@@ -156,7 +156,7 @@ export function ProfileScreen() {
           style={({ pressed }) => [styles.link, pressed && styles.pressed]}
         >
           <Icon name="send" size={20} color={colors.text} />
-          <Text style={styles.linkText}>Un retour ?</Text>
+          <Text style={styles.linkText}>Écrire à l'équipe</Text>
           <Icon name="chev" size={16} color={colors.textMuted} />
         </Pressable>
       </Panel>

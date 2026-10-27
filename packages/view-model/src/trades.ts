@@ -129,7 +129,7 @@ export function timeLeftLabel(expiresAt: string, now: number): string {
 export function tradeLevelLabel(level: number, minLevel: number): string | null {
   if (level >= minLevel) return null;
   const left = minLevel - level;
-  return `Les échanges ouvrent au niveau ${minLevel}. Encore ${left} niveau${left > 1 ? "x" : ""}.`;
+  return `Les échanges se débloquent au niveau ${minLevel}. Il te manque encore ${left} niveau${left > 1 ? "x" : ""}.`;
 }
 
 /**
@@ -196,16 +196,16 @@ export function offerProblem(offer: {
 }
 
 const REFUSAL_MESSAGES: Readonly<Record<TradeRefusalCode | OfferProblem, string>> = {
-  invalid_code: "Un code joueur fait 8 caractères, sans I, L, O ni U.",
-  player_not_found: "Personne n'a ce code.",
-  self_trade: "C'est ton code à toi.",
+  invalid_code: "Ce n'est pas un code joueur. Un code fait 8 caractères.",
+  player_not_found: "Aucun joueur n'a ce code.",
+  self_trade: "C'est ton propre code.",
   empty_side: "Il faut au moins une carte de chaque côté.",
   too_many_cards: "Avant le niveau 10, vous ne pouvez échanger qu'une carte de chaque côté.",
   duplicate_card: "Une même carte apparaît deux fois.",
-  level_too_low: "Il faut être niveau 5, toi comme l'autre joueur.",
-  daily_limit_reached: "10 offres en 24 heures, c'est le maximum. Reviens demain.",
+  level_too_low: "Vous devez tous les deux être au moins niveau 5.",
+  daily_limit_reached: "Tu as déjà envoyé 10 offres en 24 heures. Réessaie demain.",
   card_not_tradeable:
-    "L'une des cartes n'est plus échangeable : elle n'est plus en double, ou c'est une Épique ou Légendaire tirée il y a moins de 7 jours.",
+    "Une des cartes ne peut plus être échangée. Soit tu ne l'as plus en double, soit c'est une Épique ou une Légendaire tirée il y a moins de 7 jours.",
   trade_not_pending: "Cette offre est déjà close.",
   trade_expired: "Trop tard, l'offre a expiré.",
   trade_not_found: "Cette offre n'existe plus.",
@@ -228,13 +228,13 @@ export function boxTabLabel(box: TradeBox, pending: number): string {
   return pending > 0 ? `${name} (${pending})` : name;
 }
 
-export const NO_OFFER_RECEIVED = "Aucune offre reçue pour le moment.";
-export const NO_OFFER_SENT = "Aucune offre en route.";
+export const NO_OFFER_RECEIVED = "Personne ne t'a envoyé d'offre.";
+export const NO_OFFER_SENT = "Tu n'as aucune offre en attente.";
 
-/** « 10 offres par 24 h. Une offre expire après 72 h. », with the rules of `now`. */
+/** « Tu peux envoyer 10 offres par jour. Une offre sans réponse expire après 72 h. », with the rules of `now`. */
 export function tradeRulesNote(now: number): string {
   const rules = tradeRulesAt(TRADE_SCHEDULE, now);
-  return `${rules.offersPerDay} offres par 24 h. Une offre expire après ${Math.round(rules.offerTtlMs / HOUR)} h.`;
+  return `Tu peux envoyer ${rules.offersPerDay} offres par jour. Une offre sans réponse expire après ${Math.round(rules.offerTtlMs / HOUR)} h.`;
 }
 
 /** « baloise, talle »: the words of one side of an offer. */

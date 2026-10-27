@@ -36,7 +36,7 @@ export async function generateMetadata({
 export default function PlayerPage(props: PageProps<"/joueur/[pseudo]">) {
   return (
     <div className={styles.page}>
-      <Link href="/" aria-label="Leximon, l'accueil" className={styles.back}>
+      <Link href="/" aria-label="Accueil de Leximon" className={styles.back}>
         <Logo size="md" />
       </Link>
       <Suspense

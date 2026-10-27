@@ -14,11 +14,11 @@ import { playerName } from "./trades";
 /** Friends: the list, requests, the friend link, the weekly podium and the feed. */
 
 export const FRIENDS_TITLE = "Amis";
-export const FRIENDS_GUEST =
-  "Les amis, c'est pour les comptes. Crée le tien, et ramène les copains.";
-export const FRIENDS_PSEUDO_FIRST = "Choisis d'abord un pseudo : c'est lui que tes amis cherchent.";
-export const FRIENDS_EMPTY = "Pas encore d'ami ici. Envoie ton lien, la boutique est grande.";
-export const FEED_EMPTY = "Rien dans le fil. Tes amis cherchent encore.";
+export const FRIENDS_GUEST = "Il te faut un compte pour ajouter des amis.";
+export const FRIENDS_PSEUDO_FIRST =
+  "Choisis d'abord un pseudo. C'est avec lui que tes amis te retrouveront.";
+export const FRIENDS_EMPTY = "Tu n'as pas encore d'ami. Envoie ton lien pour en ajouter.";
+export const FEED_EMPTY = "Le fil est vide. Il montrera les trouvailles de tes amis.";
 
 /** « niv. 12 · vu hier ». */
 export function friendLine(friend: Pick<Friend, "player" | "online" | "lastSeenAt">, now: EpochMs) {
@@ -134,20 +134,20 @@ export function friendRefusalText(reason: FriendRefusal | "account_locked"): str
     case "pseudo_required":
       return "Choisis d'abord un pseudo.";
     case "player_not_found":
-      return "Personne sous ce pseudo.";
+      return "Aucun joueur n'a ce pseudo.";
     case "request_not_found":
       return "Cette demande n'existe plus.";
     case "self":
-      return "C'est toi, ça.";
+      return "C'est ton propre pseudo.";
     case "already_friends":
       return "Vous êtes déjà amis.";
     case "already_requested":
     case "recently_declined":
       return "Demande déjà envoyée.";
     case "requests_closed":
-      return "Ce joueur ne prend pas de demande.";
+      return "Ce joueur n'accepte pas les demandes d'ami.";
     case "daily_limit_reached":
-      return "Assez de demandes pour aujourd'hui. Reprends demain.";
+      return "Tu as envoyé toutes tes demandes du jour. Réessaie demain.";
     case "too_many_pending":
       return "Trop de demandes en attente. Laisse-leur le temps de répondre.";
     case "friend_limit_reached":
@@ -166,7 +166,7 @@ export function requestSentToast(
   player: { readonly code: string; readonly pseudo: string | null },
 ): string {
   const name = playerName(player);
-  return outcome === "sent" ? `Demande envoyée à ${name}.` : `${name} et toi, vous êtes amis.`;
+  return outcome === "sent" ? `Demande envoyée à ${name}.` : `${name} et toi êtes maintenant amis.`;
 }
 
 // --- Podium --------------------------------------------------------------------------------
@@ -209,9 +209,8 @@ export function podiumView(entries: readonly PodiumEntry[]): PodiumView {
   };
 }
 
-export const PODIUM_EMPTY =
-  "Personne n'a encore répondu cette semaine. La première marche est libre.";
-export const PODIUM_ALONE = "Un podium, ça se fait à plusieurs. Invite un ami.";
+export const PODIUM_EMPTY = "Personne n'a encore répondu à un défi cette semaine.";
+export const PODIUM_ALONE = "Invite des amis pour remplir le podium.";
 
 // --- Feed ----------------------------------------------------------------------------------
 
@@ -345,13 +344,13 @@ export const REFERRER_PITCH =
 export const REFERRER_ACTION = "Ouvrir mon premier sachet";
 export const REFERRER_FULL =
   "Toutes les places de bêta de ce lien ont été prises. Laisse ton adresse, on te préviendra à l'ouverture.";
-export const REFERRER_UNKNOWN = "Ce lien d'ami est invalide.";
+export const REFERRER_UNKNOWN = "Ce lien d'ami ne mène à aucun joueur.";
 
 /** The mail's line for a bonus booster earned by a friend link. */
 export function referralRewardTitle(reward: ReferralReward): string {
   const name = playerName(reward.player);
   return reward.role === "referrer"
-    ? `Un sachet bonus : ${name} atteint le niveau 5 !`
+    ? `${name} atteint le niveau 5, un sachet bonus pour toi !`
     : `Un sachet bonus de bienvenue, grâce à ${name} !`;
 }
 

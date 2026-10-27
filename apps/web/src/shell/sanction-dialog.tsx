@@ -66,7 +66,7 @@ export function SanctionCard({
     setBusy(true);
     try {
       const sent = await api.contestSanction(sanction.id, text.trim());
-      toast(sent ? "Contestation envoyée." : "Cette sanction ne se conteste plus.");
+      toast(sent ? "Contestation envoyée." : "Cette sanction ne peut plus être contestée.");
       const current = sanctions.current();
       if (current !== null) {
         sanctions.publish(
@@ -83,7 +83,7 @@ export function SanctionCard({
       }
       setWriting(false);
     } catch {
-      toast("Pas envoyé. Réessaie.");
+      toast("La contestation n'a pas été envoyée. Réessaie.");
     } finally {
       setBusy(false);
     }

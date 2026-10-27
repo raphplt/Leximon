@@ -16,14 +16,14 @@ import { capitalize, plural } from "./format";
  * a badge « Niv. 10 », and a screen that says what opens it. A promise, not a wall.
  */
 
-/** How a feature is named in a sentence: « Ouvre : les échanges ». */
+/** How a feature is named in a sentence: « Le niveau 5 débloque les échanges ». */
 export const FEATURE_NAMES: Readonly<Record<Feature, string>> = {
-  choose_collection: "choisir la collection de ton sachet",
+  choose_collection: "le choix de la collection de ton sachet",
   trade: "les échanges",
   public_profile: "le profil public",
   trade_three: "les échanges à 3 cartes",
   join_clan: "les clans",
-  create_clan: "créer un clan",
+  create_clan: "la création de clan",
   jousts: "les joutes",
 };
 
@@ -70,7 +70,7 @@ export type LockedFeature = "trade" | "join_clan" | "jousts";
 const LOCKED_COPY: Readonly<Record<LockedFeature, { title: string; text: string }>> = {
   trade: {
     title: "Les échanges ouvrent au niveau",
-    text: "Une carte contre une carte, avec les autres joueurs.",
+    text: "Échange tes doubles avec d'autres joueurs, une carte contre une carte.",
   },
   join_clan: {
     title: "Les clans ouvrent au niveau",
@@ -78,7 +78,7 @@ const LOCKED_COPY: Readonly<Record<LockedFeature, { title: string; text: string 
   },
   jousts: {
     title: "Les joutes ouvrent au niveau",
-    text: "Tes mots les plus rares contre ceux des autres.",
+    text: "Affronte d'autres joueurs avec tes mots les plus rares.",
   },
 };
 
@@ -110,16 +110,25 @@ export function lockedScreen(
   };
 }
 
-/** Said when a closed control without its own screen is touched: « Les clans, c'est au niveau 10. » */
+/** Said when a closed control without its own screen is touched: « Les clans se débloquent au niveau 10. » */
 export function lockedToast(feature: Feature, now: EpochMs): string {
   const level = levelsOfFeatures(now)[feature];
-  return `${capitalize(FEATURE_NAMES[feature])}, c'est au niveau ${level}.`;
+  switch (feature) {
+    case "choose_collection":
+      return `Tu pourras choisir la collection de ton sachet au niveau ${level}.`;
+    case "create_clan":
+      return `Tu pourras créer un clan au niveau ${level}.`;
+    case "public_profile":
+      return `Ton profil devient public au niveau ${level}.`;
+    default:
+      return `${capitalize(FEATURE_NAMES[feature])} se débloquent au niveau ${level}.`;
+  }
 }
 
 /** Open, but not built yet: the jousts, once decided. */
 export const NOT_BUILT_COPY: Readonly<Record<"jousts", { title: string; text: string }>> = {
   jousts: {
     title: "Les joutes se préparent",
-    text: "On en affûte les règles.",
+    text: "Elles ne sont pas encore ouvertes. On est encore en train d'en écrire les règles.",
   },
 };

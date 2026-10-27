@@ -266,7 +266,7 @@ export function RequestsSheet({
       {requests === null ? (
         <Text style={styles.small}>Un instant…</Text>
       ) : requests.length === 0 ? (
-        <Text style={styles.empty}>Personne ne frappe. Partage ton lien.</Text>
+        <Text style={styles.empty}>Aucune demande en attente. Partage ton lien pour recruter.</Text>
       ) : (
         requests.map((request) => {
           const name = playerName(request.player);
@@ -405,7 +405,9 @@ export function ClanSettings({
         <TextButton
           label="Signaler le nom du clan"
           disabled={busy}
-          onPress={() => void act(() => api.reportClanName(clanId), "Signalé. On regarde.")}
+          onPress={() =>
+            void act(() => api.reportClanName(clanId), "Signalement envoyé. L'équipe va le lire.")
+          }
         />
       )}
 

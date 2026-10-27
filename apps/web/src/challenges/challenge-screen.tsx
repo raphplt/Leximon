@@ -81,7 +81,7 @@ export function ChallengeScreen() {
     setError(null);
     loadCatalog()
       .then(setCatalog)
-      .catch(() => setError("Le catalogue ne répond pas."));
+      .catch(() => setError("Les cartes n'ont pas pu être chargées. Réessaie."));
   }, []);
   useEffect(loadIt, [loadIt]);
 
@@ -289,7 +289,7 @@ function MemoryPanel({ now }: { readonly now: number }) {
   return (
     <section className={`${ui.panel} ${styles.memory}`} aria-labelledby="memory-title">
       <p id="memory-title" className={ui.kicker}>
-        Ta mémoire
+        Tes mots par palier
       </p>
       <ul className={styles.levels}>
         {LEVELS.map(({ level, label, icon }) => (
@@ -320,7 +320,7 @@ function Escaping({ catalog, now }: { readonly catalog: Catalog; readonly now: n
   return (
     <section aria-labelledby="escaping-title">
       <h2 id="escaping-title" className={`${ui.display} ${styles.subtitle}`}>
-        Ces mots t'échappent
+        Mots à réviser
       </h2>
       <ul className={styles.escaping}>
         {words.map((entry) => {
@@ -481,7 +481,7 @@ function QuestionView({
               <p className={styles.feedbackText}>
                 {result.correct
                   ? (spelling ?? frequencyLine(card.perBillion))
-                  : `C'était : ${asksDefinition ? card.definition : card.word}`}
+                  : `La bonne réponse était « ${asksDefinition ? card.definition : card.word} »`}
               </p>
               {[
                 result.levelUp ? levelUpLine(card.word, result.level) : null,

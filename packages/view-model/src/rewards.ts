@@ -42,19 +42,23 @@ export interface RewardItem {
 export function rewardItem(reward: LevelRewardView | LevelReward): RewardItem {
   switch (reward.kind) {
     case "bonus_booster":
-      return { icon: "sachet", title: "Sachet bonus", detail: "Il attend en réserve" };
+      return {
+        icon: "sachet",
+        title: "Sachet bonus",
+        detail: "À ouvrir quand ton stock gratuit est vide",
+      };
     // Only in the history of coffrets claimed when levels still gave one.
     case "refill":
-      return { icon: "bolt", title: "Recharge", detail: "Ton stock remis au plein" };
+      return { icon: "bolt", title: "Recharge", detail: "Ton stock de sachets est rempli" };
     case "garni_booster":
-      return { icon: "star", title: "Sachet garni", detail: "Au moins une Rare dedans" };
+      return { icon: "star", title: "Sachet garni", detail: "Au moins une carte Rare garantie" };
     case "title":
       return { icon: "plume", title: "Titre", detail: `« ${reward.title} »` };
     case "reserve_slot":
       return {
         icon: "plus",
-        title: "Réserve +1",
-        detail: "Une place de plus pour tes sachets bonus",
+        title: "Réserve agrandie",
+        detail: "Ta réserve garde un sachet bonus de plus",
       };
     case "avatar":
       return {
@@ -63,19 +67,19 @@ export function rewardItem(reward: LevelRewardView | LevelReward): RewardItem {
         detail:
           reward.avatar === undefined
             ? "Pour ton profil"
-            : `${avatarName(reward.avatar)}, rangé dans l'atelier`,
+            : `${avatarName(reward.avatar)}, à choisir depuis ton profil`,
       };
     case "frame":
       return {
         icon: "cadre",
         title: "Cadre",
-        detail: `${frameName(reward.frame)}, rangé dans l'atelier`,
+        detail: `${frameName(reward.frame)}, à choisir depuis ton profil`,
       };
     case "pinned_slot":
       return {
         icon: "pin",
-        title: "Place épinglée +1",
-        detail: "Une carte de plus sur ton profil",
+        title: "Une épingle de plus",
+        detail: "Une carte de plus à mettre en avant sur ton profil",
       };
   }
 }
@@ -118,27 +122,27 @@ export function coffretReached(level: number): string {
 
 /** Under an opened coffret that gave sachets: where they went. */
 export function reserveAfterClaim(wallet: Pick<BoosterWalletResponse, "bonus">): string {
-  return `Dans ta réserve : ${plural(wallet.bonus, "sachet bonus", "sachets bonus")}`;
+  return `Tu as maintenant ${plural(wallet.bonus, "sachet bonus", "sachets bonus")} en réserve.`;
 }
 
 /** The second button of an opened coffret. */
-export const COFFRET_ROAD = "Voir le chemin des niveaux";
+export const COFFRET_ROAD = "Voir les niveaux";
 
-/** « 2 récompenses dedans. », under a closed coffret. */
+/** « Il contient 2 récompenses. », under a closed coffret. */
 export function coffretHint(level: number, now: EpochMs): string {
   const count = rewardsOfLevel(level, now).length;
-  return `${plural(count, "récompense", "récompenses")} dedans.`;
+  return `Il contient ${plural(count, "récompense", "récompenses")}.`;
 }
 
 /** The toast once a coffret is put away. */
 export function claimedToast(rewards: readonly LevelRewardView[]): string {
   return rewards.some((r) => r.kind === "bonus_booster" || r.kind === "garni_booster")
-    ? "Rangé dans ta réserve."
-    : "Rangé dans ton atelier.";
+    ? "Les sachets sont dans ta réserve."
+    : "À retrouver dans ton profil.";
 }
 
 /** The button of an opened coffret: what the player does with it. */
-export const COFFRET_ACTION = "Ranger dans ma réserve";
+export const COFFRET_ACTION = "Prendre les récompenses";
 
 /** Why a coffret stays closed, and what to do; it waits to be claimed later. */
 export function claimRefusalMessage(reason: ClaimRefusal, level: number): string {
@@ -146,7 +150,7 @@ export function claimRefusalMessage(reason: ClaimRefusal, level: number): string
     case "reserve_full":
       return "Ta réserve de sachets bonus est pleine. Ouvre un sachet bonus pour pouvoir récupérer ce coffret.";
     case "level_not_reached":
-      return `Pas encore. Ce coffret s'ouvre au niveau ${level}.`;
+      return `Ce coffret s'ouvre au niveau ${level}.`;
     case "guest_archived":
       return "Ta partie est passée sur ton compte. Recharge la page.";
   }
@@ -170,7 +174,7 @@ export interface UpcomingReward {
   readonly word: string;
   /** « Ouvre les clans », when the level opens a part of the game. */
   readonly opens: string | null;
-  /** « Niveau 20 : Sachet garni, ouvre les clans ». */
+  /** « Niveau 20, sachet garni, débloque les clans ». */
   readonly label: string;
 }
 
@@ -209,19 +213,19 @@ function rewardPhrase(reward: LevelReward): string {
     case "title":
       return `le titre « ${reward.title} »`;
     case "reserve_slot":
-      return "une place de plus en réserve";
+      return "une place de plus dans ta réserve de sachets bonus";
     case "avatar":
       return "un avatar gravé";
     case "frame":
       return "un cadre";
     case "pinned_slot":
-      return "une place épinglée de plus";
+      return "une carte épinglée de plus sur ton profil";
   }
 }
 
 /**
- * « Au niveau 4, une recharge. », under the XP bar. A level that opens a part of the game says
- * that instead: it is the bigger news.
+ * « Au niveau 4, tu gagnes un sachet bonus. », under the XP bar. A level that opens a part of the
+ * game says that instead: it is the bigger news.
  */
 export function nextRewardLine(level: number, now: EpochMs): string {
   const next = level + 1;
@@ -231,12 +235,12 @@ export function nextRewardLine(level: number, now: EpochMs): string {
       opened.length === 1
         ? opened[0]
         : `${opened.slice(0, -1).join(", ")} et ${opened[opened.length - 1]}`;
-    return `Au niveau ${next}, ${names}.`;
+    return `Au niveau ${next}, tu débloques ${names}.`;
   }
   const first = rewardsOfLevel(next, now)[0];
   return first === undefined
-    ? `Niveau ${next} en vue.`
-    : `Au niveau ${next}, ${rewardPhrase(first)}.`;
+    ? `Le niveau ${next} approche.`
+    : `Au niveau ${next}, tu gagnes ${rewardPhrase(first)}.`;
 }
 
 /** The next `count` levels after the player's, with the main thing each gives. */
@@ -260,8 +264,8 @@ export function upcomingRewards(level: number, now: EpochMs, count = 4): Upcomin
           : first === undefined
             ? "Départ"
             : rewardWord(first),
-      opens: opening === null ? null : `Ouvre ${opening}`,
-      label: `Niveau ${n} : ${item?.title ?? "Départ"}${opening === null ? "" : `, ouvre ${opening}`}`,
+      opens: opening === null ? null : `Débloque ${opening}`,
+      label: `Niveau ${n}, ${item?.title ?? "Départ"}${opening === null ? "" : `, débloque ${opening}`}`,
     };
   });
 }
@@ -435,10 +439,10 @@ export function levelDetail(
     level,
     title:
       state === "claimable"
-        ? "Un coffret t'attend"
+        ? "Un coffret à ouvrir"
         : state === "claimed"
-          ? "Déjà dans ta poche"
-          : "Ce qui t'attend",
+          ? "Coffret ouvert"
+          : "Ce que donne ce niveau",
     items:
       rewards.length === 0
         ? [{ icon: "star", title: "Niveau de départ", detail: "Tes premiers sachets gratuits" }]

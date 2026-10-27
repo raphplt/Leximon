@@ -87,7 +87,7 @@ function stepOf(preview: LinkPreviewResponse, noun: PackNoun): Omit<ConfirmStep,
     case "abandon":
       return {
         title: "Tu vas perdre cette partie",
-        text: "Cette adresse a déjà un compte, avec sa propre collection. Pour garder celle-ci, prends une autre adresse.",
+        text: "Cette adresse a déjà un compte avec sa propre collection. Pour garder la partie que tu joues ici, utilise une autre adresse.",
         warning: `Si tu te connectes, ${lostGame(preview.guestCards)}.`,
         confirmLabel: "Perdre cette partie et me connecter",
         needsAge: false,
@@ -97,7 +97,7 @@ function stepOf(preview: LinkPreviewResponse, noun: PackNoun): Omit<ConfirmStep,
       return preview.accountExists
         ? {
             title: "Connecte-toi",
-            text: "Ta collection t'attend.",
+            text: "Tu retrouves ta collection telle que tu l'as laissée.",
             warning: null,
             confirmLabel: "Me connecter",
             needsAge: false,
@@ -105,7 +105,7 @@ function stepOf(preview: LinkPreviewResponse, noun: PackNoun): Omit<ConfirmStep,
           }
         : {
             title: "Crée ton compte",
-            text: "Ta collection sera sur tous tes appareils.",
+            text: "Tu retrouveras ta collection sur tous tes appareils.",
             warning: null,
             confirmLabel: "Créer mon compte",
             needsAge: true,
@@ -138,15 +138,15 @@ function withGame(guestCards: number, noun: PackNoun): string {
 export function sendErrorMessage(reason: SendCodeRefusal): string {
   switch (reason) {
     case "invalid_email":
-      return "Il manque quelque chose à cette adresse.";
+      return "Cette adresse e-mail n'est pas valide.";
     case "undeliverable_email":
-      return "Ce domaine ne reçoit pas d'e-mails. Vérifie l'adresse.";
+      return "Cette adresse ne peut pas recevoir d'e-mails. Vérifie-la.";
     case "rate_limited":
       return "Attends une minute avant de redemander un code.";
     case "daily_limit":
-      return "Tu as atteint la limite de codes pour aujourd'hui. Utilise celui du dernier e-mail ou réessaie demain.";
+      return "Tu as demandé trop de codes aujourd'hui. Utilise celui du dernier e-mail, ou réessaie demain.";
     case "unavailable":
-      return "L'envoi d'e-mails est temporairement indisponible. Réessaie dans quelques minutes.";
+      return "L'envoi des e-mails est en panne. Réessaie dans quelques minutes.";
   }
 }
 
@@ -157,27 +157,27 @@ export function codeErrorMessage(error: CodeError): string {
   switch (error) {
     case "invalid_code":
     case "INVALID_OTP":
-      return "Mauvais code. Prends celui du dernier e-mail.";
+      return "Ce code est faux. Vérifie celui du dernier e-mail.";
     case "code_expired":
     case "OTP_EXPIRED":
-      return "Code expiré. Demandes-en un autre.";
+      return "Ce code a expiré. Demande un nouveau code.";
     case "too_many_attempts":
     case "TOO_MANY_ATTEMPTS":
-      return "Trop d'essais. Demande un autre code.";
+      return "Trop d'essais avec ce code. Demande un nouveau code.";
     case "rate_limited":
-      return "Doucement. Réessaie dans une minute.";
+      return "Trop de tentatives. Réessaie dans une minute.";
     case ACCOUNT_ERROR_CODES.ageConfirmationRequired:
-      return "Coche la case de l'âge, puis demande un autre code.";
+      return "Il faut cocher la case de l'âge. Demande un nouveau code et recommence.";
     case ACCOUNT_ERROR_CODES.guestLossNotAcknowledged:
-      return "Ton compte a changé entre-temps. Demande un autre code.";
+      return "Ton compte a changé entre-temps. Demande un nouveau code.";
     case ACCOUNT_ERROR_CODES.accountLinkFailed:
-      return "Le transfert n'a pas pu aboutir, mais tes cartes sont intactes. Demande un nouveau code pour réessayer.";
+      return "Le transfert de ta partie a échoué, mais tes cartes sont toujours là. Demande un nouveau code pour réessayer.";
     case ACCOUNT_ERROR_CODES.inviteRequired:
-      return "La bêta est sur invitation. Passe d'abord par ton lien.";
+      return "La bêta est sur invitation. Ouvre d'abord ton lien d'invitation.";
     case ACCOUNT_ERROR_CODES.inviteClosed:
-      return "Ce lien d'invitation est fermé.";
+      return "Ce lien d'invitation n'est plus valable.";
     default:
-      return "Ça n'a pas marché. Réessaie.";
+      return "La connexion a échoué. Réessaie.";
   }
 }
 

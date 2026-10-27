@@ -303,7 +303,7 @@ export function ProposeTrade({
         <Text style={styles.sectionTitle}>Proposer un échange</Text>
         <Text style={styles.hint}>{blocked}</Text>
         <Text style={styles.muted}>
-          En attendant, ouvre des {NOUN.many}. Seuls les doubles s'échangent.
+          En attendant, ouvre des {NOUN.many}. Tu pourras échanger tes doubles.
         </Text>
         <Button label={`Ouvrir un ${NOUN.one}`} secondary onPress={() => router.navigate("/")} />
       </View>
@@ -402,7 +402,7 @@ export function ProposeTrade({
           <PickHeading
             title={`Ce que tu veux de ${partnerName}`}
             count={selectionCount(want, partner.maxCards)}
-            hint={`${pickHint(partner.maxCards)} parmi ses doubles échangeables.${partner.maxCards === 1 ? " Trois cartes quand vous serez tous les deux niveau 10." : ""}`}
+            hint={`${pickHint(partner.maxCards)} parmi ses doubles échangeables.${partner.maxCards === 1 ? " Vous pourrez échanger trois cartes à la fois quand vous serez tous les deux niveau 10." : ""}`}
           />
           {partner.cardIds.length === 0 ? (
             <Text style={styles.hint}>Ce joueur n'a aucun double à échanger.</Text>

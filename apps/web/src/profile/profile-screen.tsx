@@ -75,7 +75,7 @@ export function ProfileScreen() {
           <>
             <ButtonLink href="/atelier" variant="secondary" small>
               <Icon name="palette" size={17} />
-              Atelier
+              Apparence
             </ButtonLink>
             {canShareProfile(me) && (
               <Button variant="secondary" small onClick={() => void share()}>

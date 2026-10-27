@@ -187,7 +187,7 @@ export function CoffretHost() {
                 ) && <Text style={styles.stored}>{reserveAfterClaim(step.wallet)}</Text>}
                 {opens !== null && (
                   <Text style={styles.opens}>
-                    Ouvre : {opens.charAt(0).toLowerCase()}
+                    Débloque {opens.charAt(0).toLowerCase()}
                     {opens.slice(1)}
                   </Text>
                 )}

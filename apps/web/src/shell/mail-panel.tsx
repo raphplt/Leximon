@@ -129,7 +129,7 @@ export function MailPanel({
       key: "coffrets",
       icon: "coffret",
       title: coffretsMailTitle(view.coffrets),
-      detail: "Chemin des niveaux",
+      detail: "Niveaux",
       action: () => openCoffret(),
     });
   }

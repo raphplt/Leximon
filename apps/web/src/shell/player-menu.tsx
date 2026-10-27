@@ -56,11 +56,11 @@ export function PlayerMenu({
           ? levelBadge(joustLevel)
           : null,
     },
-    { label: "Atelier", icon: "palette", href: "/atelier" },
-    { label: "Chemin des niveaux", icon: "star", href: "/niveaux" },
+    { label: "Apparence", icon: "palette", href: "/atelier" },
+    { label: "Niveaux", icon: "star", href: "/niveaux" },
     { label: "Réglages", icon: "reglages", action: openSettings },
     { label: "Devenir mécène", icon: "crown", href: "/mecene" },
-    { label: "Un retour ?", icon: "chat", action: () => setFeedbackOpen(true) },
+    { label: "Écrire à l'équipe", icon: "chat", action: () => setFeedbackOpen(true) },
     ...admin,
     account,
   ];

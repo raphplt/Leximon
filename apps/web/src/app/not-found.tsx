@@ -6,7 +6,7 @@ export const metadata: Metadata = { title: "Page introuvable · Leximon" };
 
 export default function NotFound() {
   return (
-    <StrayScreen title="Ce rayon n'existe pas." text="L'adresse est fausse, ou la page a déménagé.">
+    <StrayScreen title="Cette page n'existe pas." text="Vérifie l'adresse, ou repars de l'accueil.">
       <ButtonLink href="/jouer">Ouvrir un sachet</ButtonLink>
       <ButtonLink href="/" variant="secondary">
         Revenir à l'accueil
