@@ -59,15 +59,14 @@ Tant que la bêta est fermée, ajouter en tête : « Leximon est en bêta. On y 
 
 **Classification du contenu (questionnaire IARC), catégorie « Jeu » :**
 
-- Violence, sexe, drogue, jeux d'argent : non.
-- Langage grossier : non. Les insultes d'antan sont des mots du dictionnaire, sans grossièreté moderne.
-- Humour grossier : non.
-- Les utilisateurs peuvent interagir ou échanger des contenus : **oui** (discussion de clan, pseudos, échanges de cartes). Elle est filtrée, et on peut signaler et bloquer.
+- Violence, sexualité, langue : **oui**, au niveau le plus léger, en texte seulement. Des définitions y font allusion (*sicaire*, *garrotte*, *gourgandine*, *ribauderie*), et *Caractères et travers* est faite d'insultes d'antan.
+- Peur, jeux d'argent, humour grossier, symboles nazis : non.
+- Interactions entre utilisateurs : **oui** (discussion de clan, pseudos, échanges de cartes). On peut bloquer, signaler, et la discussion est modérée.
+- Interactions limitées aux amis : non. Aucun réglage ne le permet.
 - Partage de la position : non.
-- Achats numériques : non.
-- Objets aléatoires achetables (lootbox) : **non**. Les sachets ne s'achètent pas.
+- Achats numériques, récompenses convertibles, NFT : non. Les sachets ne s'achètent pas.
 
-On s'attend à PEGI 3 ou 7, avec la mention « Interactions entre utilisateurs ».
+On s'attend à PEGI 12 au plus, avec la mention « Interactions entre utilisateurs ». L'inscription demande 15 ans : la note ne restreint personne.
 
 **Sécurité des données :**
 
@@ -108,7 +107,8 @@ Rien d'autre : ni position, ni contacts, ni photos, ni identifiant publicitaire,
 
 **Classification par âge :**
 
-- Grossièretés ou humour grossier : aucun.
+- Grossièretés ou humour grossier : rare ou léger (les insultes d'antan).
+- Thèmes adultes, violence : rare ou léger, en texte seulement.
 - Contenu généré par les utilisateurs, messagerie : **oui**. Elle est filtrée et modérée, avec signalement, blocage et suppression du compte dans l'app.
 - Jeux d'argent, contenu simulé de jeux d'argent : non.
 - Accès web sans restriction : non.
