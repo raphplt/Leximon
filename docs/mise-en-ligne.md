@@ -127,6 +127,13 @@ pnpm exec wrangler secret put OBSERVABILITY_TOKEN --env production
 
 Il part chaque matin après la maintenance (3 h 17 UTC) : erreurs des dernières 24 h groupées par Worker et message, puis l'activité du jour. Sans le jeton, il dit que les erreurs n'ont pas pu être lues. Pour être prévenu sur le moment d'une nouvelle erreur, Cloudflare → **Workers** → **Issues** permet d'ajouter une alerte par webhook.
 
+Le compte des examinateurs de Google et d'Apple, facultatif : sans ces deux secrets, il n'existe pas. Cette adresse se connecte avec un code fixe de 6 chiffres, et aucun e-mail ne part. La mise en place est dans [fiches-stores.md](fiches-stores.md#compte-de-démonstration).
+
+```bash
+pnpm exec wrangler secret put REVIEW_ACCOUNT_EMAIL --env production
+pnpm exec wrangler secret put REVIEW_ACCOUNT_CODE --env production
+```
+
 ## 7. Migrations · toi (la chaîne), agent (la commande)
 
 Dans le terminal qui lance les commandes de production :

@@ -11,3 +11,7 @@ DISCORD_WEBHOOK_URL=
 # Errors of the summary: account id and an API token with "Workers Observability" access.
 CLOUDFLARE_ACCOUNT_ID=
 OBSERVABILITY_TOKEN=
+# Store reviewers' account: one address that signs in with a fixed 6-digit code, no e-mail sent.
+# Empty: no such account. See docs/fiches-stores.md.
+REVIEW_ACCOUNT_EMAIL=
+REVIEW_ACCOUNT_CODE=

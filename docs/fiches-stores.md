@@ -130,7 +130,16 @@ On s'attend à 13+. L'inscription demande 15 ans, ce qui ne contredit pas la not
 
 ## Compte de démonstration
 
-Les deux stores exigent un accès complet pour l'examen. La connexion par code e-mail l'empêche : l'examinateur ne lit pas notre boîte. Tant que ce point n'est pas réglé, aucune soumission ne passe.
+Les deux stores exigent un accès complet pour l'examen. L'examinateur ne lit pas notre boîte, donc une seule adresse se connecte avec un code fixe, et aucun e-mail ne part vers elle. Le code expire et ne tolère que 3 erreurs, comme les autres. Sans les deux secrets, ce compte n'existe pas.
+
+Mise en place, une fois :
+
+1. Choisir l'adresse (par exemple `examen@leximon.fr`, qui n'a pas besoin de boîte) et un code de 6 chiffres tiré au hasard : `shuf -i 100000-999999 -n 1`.
+2. Les poser en secrets de production (voir [mise-en-ligne.md](mise-en-ligne.md), étape 6), puis `pnpm deploy:prod`.
+3. Créer le compte par un lien d'invitation, avec cette adresse et ce code, comme un joueur.
+4. Le garnir : ouvrir quelques sachets, faire un défi, pour que l'examinateur voie l'album rempli.
+
+Changer le code après chaque examen n'est pas nécessaire. Le retirer (`wrangler secret delete`) ferme le compte d'un coup.
 
 **Notes pour l'examen** (une fois le compte prêt) :
 

@@ -142,7 +142,8 @@
   // vars and bindings into an environment: a binding added above must be copied here too.
   // Secrets (`wrangler secret put … --env production`): BETTER_AUTH_SECRET, EMAIL_LINK_SECRET,
   // LETTERMINT_SENDING_TOKEN, LETTERMINT_WEBHOOK_SECRET, and for the morning summary
-  // DISCORD_WEBHOOK_URL, CLOUDFLARE_ACCOUNT_ID, OBSERVABILITY_TOKEN. See docs/mise-en-ligne.md.
+  // DISCORD_WEBHOOK_URL, CLOUDFLARE_ACCOUNT_ID, OBSERVABILITY_TOKEN, and for the store reviewers
+  // REVIEW_ACCOUNT_EMAIL, REVIEW_ACCOUNT_CODE. See docs/mise-en-ligne.md.
   "env": {
     "production": {
       "routes": [{ "pattern": "api.leximon.fr", "custom_domain": true }],

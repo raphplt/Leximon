@@ -11,6 +11,7 @@ import {
   EmailSenderNotConfiguredError,
 } from "./account/email-sender";
 import { linkGuestOnSignIn, readBodyFlag } from "./account/link-on-sign-in";
+import { reviewSignInCode } from "./account/review-account";
 import { type Arrival, admitNewPlayer, recordArrival, wouldAdmitNewPlayer } from "./beta/arrival";
 import { invitesRequired } from "./beta/invites";
 
@@ -107,7 +108,11 @@ export function createAuth(env: Env, db: Database, emailSender: EmailSender) {
         allowedAttempts: SIGN_IN_CODE.allowedAttempts,
         // A database leak must not reveal codes still valid.
         storeOTP: "hashed",
-        async sendVerificationOTP({ email, otp }, ctx) {
+        generateOTP: ({ email, type }) =>
+          type === "sign-in" ? reviewSignInCode(env, email, SIGN_IN_CODE.length) : undefined,
+        async sendVerificationOTP({ email, otp, type }, ctx) {
+          // The reviewers know their code: no e-mail to an inbox nobody reads.
+          if (type === "sign-in" && reviewSignInCode(env, email, SIGN_IN_CODE.length)) return;
           try {
             if (await closedBetaWouldRefuse(email, ctx)) {
               await emailSender.sendInvitationOnly({ to: email });
