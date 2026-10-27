@@ -29,10 +29,11 @@ export function Collections({
     <section className={styles.collections} aria-labelledby="collections-title">
       <div className={styles.collectionsHead}>
         <h2 id="collections-title" className={styles.collectionsTitle}>
-          Plus le mot est rare, plus la carte l'est.
+          Six raretés, selon la fréquence du mot dans les livres.
         </h2>
         <p className={styles.collectionsLead}>
-          Un jobard, ça se croise encore. Un pendardeau, plus jamais.
+          De Courant, pour les mots qu'on croise encore, jusqu'à Légendaire, pour ceux qui ont
+          presque disparu.
         </p>
       </div>
       <ol className={styles.ladder}>

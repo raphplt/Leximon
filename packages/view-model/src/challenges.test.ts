@@ -127,7 +127,7 @@ describe("défis screen", () => {
       done: false,
       ratio: 0,
     });
-    expect(fresh.text).toBe("Trois bonnes réponses sur cinq, et un sachet bonus file en réserve.");
+    expect(fresh.text).toBe("Trouve trois bonnes réponses sur cinq pour gagner un sachet bonus.");
     const going = dailyView({ goal, answers: 2, correct: 1, awarded: false });
     expect(going.bars).toEqual(["right", "wrong", "empty", "empty", "empty"]);
     expect(going.text).toBe("Encore 3 questions.");
@@ -146,7 +146,7 @@ describe("défis screen", () => {
 
   it("states the level thresholds in force", () => {
     expect(memoryNote(NOW)).toBe(
-      "Un mot monte quand tu l'écris de tête, 7 jours après sa dernière révision pour l'Encre, 30 jours après pour la Dorure. Entre-temps, des questions à choix l'entretiennent. Un mot raté revient le lendemain.",
+      "Entre deux paliers, des questions à choix multiples t'aident à retenir le mot. Pour passer à l'Encre, écris-le de mémoire 7 jours après ta dernière révision (30 jours pour la Dorure). Si tu te trompes, il revient le lendemain.",
     );
   });
 
@@ -210,7 +210,7 @@ describe("défis screen", () => {
     expect(answerTitle(true, 15, true)).toBe("Juste, à une lettre près. +15 XP");
     expect(questionKicker("typed")).toBe("Écris le mot");
     expect(typedQuestionHint("ink")).toBe(
-      "Trouvé de tête, il passe à la Dorure. Les accents ne comptent pas, une faute de frappe passe.",
+      "Écris le mot de mémoire pour passer à la Dorure. Les accents ne comptent pas et une faute de frappe est tolérée.",
     );
     expect(spellingLine(" Écornifleur ", "écornifleur")).toBeNull();
     expect(spellingLine("ecornifleur", "écornifleur")).toBe("Ça s'écrit écornifleur.");
@@ -234,7 +234,7 @@ describe("noChallengeNotice", () => {
 
   it("sends a player without words to the sachets", () => {
     expect(noChallengeNotice(null, now)).toBe(
-      "Rien à réviser. Ouvre des sachets, chaque mot trouvé deviendra un défi.",
+      "Aucun mot à réviser pour l'instant. Ouvre des sachets pour découvrir tes premiers mots.",
     );
   });
 

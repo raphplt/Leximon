@@ -74,7 +74,7 @@ const LOCKED_COPY: Readonly<Record<LockedFeature, { title: string; text: string 
   },
   join_clan: {
     title: "Les clans ouvrent au niveau",
-    text: "Trouve ta bande. Chaque semaine, un objectif à tenir ensemble.",
+    text: "Rejoins d'autres joueurs pour remplir un objectif commun chaque semaine et gagner des sachets bonus.",
   },
   jousts: {
     title: "Les joutes ouvrent au niveau",

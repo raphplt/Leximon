@@ -126,7 +126,7 @@ export function replaceTitle(word: string): string {
 
 /** Under the cards listed when the limit leaves some out. */
 export function morePinsLine(more: number): string {
-  return `Et ${plural(more, "autre", "autres")} : cherche un mot.`;
+  return `Et ${plural(more, "autre carte", "autres cartes")} — utilise la recherche pour tout voir.`;
 }
 
 /** Pinning from a card's sheet with every place taken: which one it pushes out. */

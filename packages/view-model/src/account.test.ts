@@ -49,13 +49,13 @@ describe("confirmStep", () => {
       DEFAULT_PACK_NOUN,
     );
     expect(step).toMatchObject({ needsAge: false, acceptsLoss: true });
-    expect(step.warning).toContain("les 5 cartes jouées ici seront perdues");
+    expect(step.warning).toContain("les 5 cartes obtenues ici seront perdues");
 
     const one = confirmStep(
       preview({ accountExists: true, outcome: "abandon", guestCards: 1 }),
       DEFAULT_PACK_NOUN,
     );
-    expect(one.warning).toContain("la carte jouée ici sera perdue");
+    expect(one.warning).toContain("la carte obtenue ici sera perdue");
   });
 });
 
@@ -83,7 +83,7 @@ describe("code errors", () => {
 
   it("says the cards stayed when the transfer failed", () => {
     expect(codeErrorMessage(ACCOUNT_ERROR_CODES.accountLinkFailed)).toContain(
-      "Tes cartes n'ont pas bougé",
+      "tes cartes sont intactes",
     );
   });
 });

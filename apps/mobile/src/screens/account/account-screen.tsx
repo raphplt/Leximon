@@ -230,7 +230,7 @@ function EmailForm({
   };
   return (
     <>
-      <Paragraph>Sans compte, ta collection reste coincée sur ce téléphone.</Paragraph>
+      <Paragraph>Sans compte, ta collection n'est enregistrée que sur ce téléphone.</Paragraph>
       <TextField
         label="Ton adresse e-mail"
         value={email}

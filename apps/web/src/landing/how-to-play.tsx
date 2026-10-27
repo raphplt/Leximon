@@ -52,8 +52,8 @@ export function HowToPlay({
             </div>
             <p className={styles.figureLabel}>Défis</p>
             <p className={styles.figureText}>
-              Une question revient juste avant que tu oublies le mot. Chaque bonne réponse le grave
-              un peu plus : la carte passe à l'encre, puis à la dorure.
+              Des questions courtes te font réviser les mots que tu as tirés. À mesure que tu les
+              retiens, leurs cartes passent à l'encre, puis à la dorure.
             </p>
           </li>
           <li className={styles.figure}>

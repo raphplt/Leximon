@@ -84,11 +84,18 @@ export function firstOfRarityLabel(rarity: Rarity): string {
   return rarity === "precious" ? `Ton premier ${label} !` : `Ta première ${label} !`;
 }
 
-/** A rarity of the collection now complete: « Plus une Légendaire ne te manque. +1 000 XP ». */
+const RARITY_PLURAL: Readonly<Record<Rarity, string>> = {
+  common: "Courantes",
+  uncommon: "Peu courantes",
+  rare: "Rares",
+  precious: "Précieuses",
+  epic: "Épiques",
+  legendary: "Légendaires",
+};
+
+/** A rarity of the collection now complete: « Toutes les cartes Légendaires réunies ! +1 000 XP ». */
 export function rarityCompletedLabel(completion: { rarity: Rarity; xp: number }): string {
-  const label = RARITY_LABELS[completion.rarity];
-  const one = completion.rarity === "precious" ? "un" : "une";
-  return `Plus ${one} ${label} ne te manque. +${formatCount(completion.xp)} XP`;
+  return `Toutes les cartes ${RARITY_PLURAL[completion.rarity]} réunies ! +${formatCount(completion.xp)} XP`;
 }
 
 export interface CollectionProgress {

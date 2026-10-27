@@ -29,8 +29,8 @@ export function PatronScreen() {
       </header>
       <div className={styles.panel}>
         <p className={styles.text}>
-          Leximon reste gratuit, sans pub et sans sachet à vendre. Les mécènes le font vivre, et ça
-          se voit.
+          Leximon est gratuit, sans publicité et sans achat de sachets. L'abonnement mécène permet
+          de soutenir le jeu.
         </p>
         <ul className={styles.text}>
           <li>Un cosmétique par mois, annoncé d'avance et gardé à vie.</li>
@@ -38,9 +38,7 @@ export function PatronScreen() {
           <li>Le carnet : les statistiques de tes mots et ton album à imprimer.</li>
           <li>Ta voix sur l'ordre des prochaines collections.</li>
         </ul>
-        <p className={styles.text}>
-          Pas de sachet, pas de carte, pas d'XP : rien qui fasse gagner.
-        </p>
+        <p className={styles.text}>Aucun avantage en jeu : ni sachet, ni carte, ni XP en plus.</p>
         <p className={styles.text}>
           <strong>3,99 € par mois</strong> ou <strong>29,99 € par an</strong>.
         </p>

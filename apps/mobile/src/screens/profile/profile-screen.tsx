@@ -118,7 +118,9 @@ export function ProfileScreen() {
         <PinnedCards me={me} catalog={catalog} />
       ) : (
         <Panel>
-          <Text style={styles.note}>Avec un compte, tu épingles tes plus belles cartes ici.</Text>
+          <Text style={styles.note}>
+            Avec un compte, tu peux épingler tes plus belles cartes ici.
+          </Text>
         </Panel>
       )}
 

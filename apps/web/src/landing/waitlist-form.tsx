@@ -47,7 +47,7 @@ export function WaitlistForm() {
   if (state.kind === "closed") {
     return (
       <p className={styles.joined} role="status">
-        Trop tard pour attendre : c'est ouvert. <Link href="/jouer">Viens jouer.</Link>
+        Le jeu est ouvert ! <Link href="/jouer">Viens jouer.</Link>
       </p>
     );
   }

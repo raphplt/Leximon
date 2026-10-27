@@ -222,7 +222,7 @@ export interface AlbumView {
   readonly empty: string | null;
 }
 
-export const ALBUM_EMPTY = "Rien de ce côté. Pas pour longtemps.";
+export const ALBUM_EMPTY = "Aucune carte ne correspond à ce filtre.";
 
 /** The tab that gathers every collection. */
 export const ALL_COLLECTIONS = "tout";

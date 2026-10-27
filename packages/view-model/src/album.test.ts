@@ -162,7 +162,7 @@ describe("album", () => {
     expect(view.searching).toBe(true);
     expect(view.items.map((item) => item.kind === "owned" && item.card.id)).toEqual(["bélître"]);
     expect(albumView(input, { ...STATE, search: "ecrou" }).empty).toBe(
-      "Rien de ce côté. Pas pour longtemps.",
+      "Aucune carte ne correspond à ce filtre.",
     );
     expect(albumView(input, { ...STATE, search: "fouac" }).items).toHaveLength(1);
   });

@@ -38,8 +38,8 @@ export default function TermsPage() {
         <h2>Le jeu</h2>
         <p>
           Leximon est un jeu de cartes à collectionner autour des mots rares et anciens du français.
-          Tu ouvres des sachets, tu ranges les cartes dans ton album, tu fais monter les mots par
-          des défis, tu échanges tes doubles avec d'autres joueurs.
+          Tu ouvres des sachets gratuits, tu ranges les cartes dans ton album, tu révises les mots
+          dans des défis et tu échanges tes doubles avec d'autres joueurs.
         </p>
         <p>
           Le jeu est gratuit. Aucun sachet ne s'achète, ni directement ni avec une monnaie achetée.
@@ -58,9 +58,9 @@ export default function TermsPage() {
           <li>Il faut avoir 15 ans ou plus pour créer un compte.</li>
           <li>Un compte par personne.</li>
           <li>
-            Ton compte est à toi seul. Tu ne le prêtes pas, tu ne le vends pas, tu ne l'achètes pas.
+            Ton compte est personnel : il est interdit de le prêter, de le vendre ou de l'acheter.
           </li>
-          <li>Tu gardes l'accès à ton adresse e-mail : c'est elle qui t'ouvre ton compte.</li>
+          <li>Garde l'accès à ton adresse e-mail, car c'est elle qui te permet de te connecter.</li>
         </ul>
       </section>
 
@@ -72,9 +72,9 @@ export default function TermsPage() {
           ni en dehors. Tu as le droit de t'en servir dans Leximon, tant que ton compte existe.
         </p>
         <p>
-          Le jeu évolue : le rythme des sachets, les récompenses ou les défis peuvent changer. Une
-          carte peut être corrigée, par exemple une définition fausse. Sa rareté, elle, ne change
-          jamais.
+          L'équilibrage du jeu peut évoluer (rythme des sachets, récompenses ou défis), et une carte
+          peut être corrigée si elle contient une erreur. En revanche, la rareté d'une carte publiée
+          ne change jamais.
         </p>
       </section>
 
@@ -173,10 +173,11 @@ export default function TermsPage() {
       <section className={styles.section}>
         <h2>Partir</h2>
         <p>
-          Tu peux supprimer ton compte quand tu veux : Réglages, puis « Supprimer mon compte ». Ton
-          compte et ta partie sont effacés sur-le-champ. Tes échanges passés restent chez les autres
-          joueurs, signés « Un joueur parti », et tes messages de clan, sans ton nom, jusqu'à leurs
-          90 jours. Ce qu'on garde et pourquoi : <Link href="/confidentialite">Tes données</Link>.
+          Tu peux supprimer ton compte à tout moment depuis Réglages &gt; « Supprimer mon compte ».
+          Ton compte et ta partie sont effacés immédiatement. Tes échanges passés restent visibles
+          chez les autres joueurs sous le nom « Un joueur parti », et tes messages de clan restent
+          anonymisés jusqu'à leur suppression automatique au bout de 90 jours. Plus de détails dans{" "}
+          <Link href="/confidentialite">Tes données</Link>.
         </p>
       </section>
 

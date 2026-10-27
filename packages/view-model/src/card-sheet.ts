@@ -33,7 +33,7 @@ export function masteryView(memory: WordMemory | undefined, now: number): Master
   if (memory === undefined) {
     return { steps, text: "Pas encore révisé." };
   }
-  if (level === "gilded") return { steps, text: "Doré. Il ne bouge plus." };
+  if (level === "gilded") return { steps, text: "Carte dorée : tu maîtrises ce mot." };
   const next = level === "sketch" ? "ink" : "gilded";
   const days = rules.levelThresholdDays[next];
   const name = next === "ink" ? "l'Encre" : "la Dorure";
@@ -44,8 +44,8 @@ export function masteryView(memory: WordMemory | undefined, now: number): Master
     steps,
     text:
       nextGap >= days
-        ? `Juste à la prochaine révision, et c'est ${name}.`
-        : `Retrouve-le ${days} jours après une révision, et c'est ${name}.`,
+        ? `Écris-le de mémoire à la prochaine révision pour passer à ${name}.`
+        : `Écris ce mot de mémoire ${days} jours après une révision pour passer à ${name}.`,
   };
 }
 
@@ -82,5 +82,5 @@ export function comeBackIn(wait: number): string {
 export const CARD_REPORT = {
   button: "Signaler une erreur",
   title: "Une erreur sur cette carte ?",
-  label: "Définition, citation, gravure ou son : dis ce qui cloche.",
+  label: "Indique ce qui est à corriger (définition, citation, gravure ou prononciation).",
 } as const;

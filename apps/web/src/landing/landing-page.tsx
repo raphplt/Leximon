@@ -29,8 +29,8 @@ export async function LandingPage() {
             La langue a jeté des mots superbes. On les a ramassés.
           </h1>
           <p className={styles.lead}>
-            Plus de 1 500 vrais mots du français, en cartes à collectionner. Tu les ouvres, tu les
-            apprends, et tu les ressors au bon moment.
+            Plus de 1 500 vrais mots du français, en cartes à collectionner. Ouvre tes sachets
+            gratuits du jour, complète ton album et échange tes doubles.
           </p>
           <JoinOrResume keepRoom />
           <DiscordLink className={styles.discord} />

@@ -58,10 +58,10 @@ export default function PrivacyPage() {
       <section className={styles.section}>
         <h2>Bêta et mesure</h2>
         <p>
-          On garde le lien d'invitation par lequel tu es entré, et le code du lien qui t'a amené
-          (une vidéo, un post), pour savoir ce qui fait venir les joueurs. On note les jours où tu
-          ouvres le jeu, pour savoir si les joueurs reviennent. Tout se calcule dans notre base,
-          sans outil extérieur, et part avec ton compte.
+          On conserve le lien d'invitation par lequel tu es entré ainsi que le code d'origine du
+          lien (par exemple une vidéo ou un post), et les jours où tu ouvres le jeu. Tout est
+          calculé directement dans notre base, sans outil d'analyse externe, et supprimé avec ton
+          compte.
         </p>
         <p>
           À la création du compte, tu peux donner ta tranche d'âge. C'est facultatif. Elle sert à
@@ -87,14 +87,14 @@ export default function PrivacyPage() {
       <section className={styles.section}>
         <h2>E-mails</h2>
         <p>
-          Les codes de connexion partent par Cloudflare, seulement quand tu en demandes un.
-          Cloudflare envoie aussi les e-mails sur ta partie : une lettre qui t'attend, tes sachets
-          pleins quand tu t'absentes. Au plus un de chaque par jour, et chacun se coupe dans les
-          réglages ou par son lien en bas de l'e-mail. Les nouvelles du jeu partent par Lettermint,
-          et seulement si tu as coché « M'écrire quand il y a du nouveau ». Chaque nouvelle porte un
-          lien pour arrêter, et la case se décoche dans ton compte. Si tu te désinscris, on garde
-          ton adresse sur la liste des gens à ne plus contacter, rien de plus. L'historique d'un
-          envoi perd les adresses 30 jours après.
+          Les codes de connexion sont envoyés via Cloudflare uniquement quand tu en demandes un.
+          Cloudflare envoie aussi les notifications liées à ta partie (courrier en attente, rappel
+          de sachets pleins quand tu t'absentes), au maximum une fois par jour chacune ; tu peux les
+          désactiver dans les réglages ou depuis le lien en bas de chaque e-mail. Les nouvelles du
+          jeu sont envoyées via Lettermint uniquement si tu as coché « M'écrire quand il y a du
+          nouveau », avec un lien de désinscription dans chaque message. Si tu te désinscris d'une
+          campagne, on conserve uniquement ton adresse sur la liste d'opposition, et les adresses de
+          l'historique d'envoi sont effacées au bout de 30 jours.
         </p>
       </section>
 
@@ -111,16 +111,18 @@ export default function PrivacyPage() {
       <section className={styles.section}>
         <h2>Pourquoi on a le droit</h2>
         <p>
-          Ton compte, ta partie, les connexions : pour te faire jouer, c'est le contrat que tu
-          acceptes en créant ton compte. Les nouvelles, la liste d'attente, la tranche d'âge : parce
-          que tu l'as choisi, et tu peux revenir dessus. La sécurité, la modération et la mesure de
-          la bêta : notre intérêt légitime à garder un jeu sûr, et à savoir s'il plaît. Les e-mails
-          sur ta partie : notre intérêt légitime à te dire qu'on t'attend, que tu peux couper.
+          La gestion de ton compte, de ta partie et de tes connexions repose sur l'exécution du
+          contrat (les conditions d'utilisation acceptées à la création du compte). L'envoi des
+          nouvelles, l'inscription sur la liste d'attente et la tranche d'âge reposent sur ton
+          consentement, que tu peux retirer à tout moment. La sécurité, la modération, les
+          statistiques de la bêta et les rappels liés à ta partie reposent sur notre intérêt
+          légitime à assurer le bon fonctionnement du jeu ; tu peux désactiver ces rappels à tout
+          moment.
         </p>
       </section>
 
       <section className={styles.section}>
-        <h2>Où elles vivent</h2>
+        <h2>Où tes données sont hébergées</h2>
         <p>
           La base de données est chez Neon, à Francfort. Le site, l'API, les codes de connexion, les
           e-mails sur ta partie et les journaux techniques (gardés 7 jours) passent par Cloudflare.
@@ -140,13 +142,14 @@ export default function PrivacyPage() {
       <section className={styles.section}>
         <h2>Tes droits</h2>
         <p>
-          Réglages, puis « Supprimer mon compte » : ton compte, ta partie et ton adresse, y compris
-          sur la liste d'attente, sont effacés sur-le-champ. Tes échanges passés restent chez les
-          autres joueurs, signés « Un joueur parti ». Tes messages de clan restent, sans ton nom,
-          jusqu'à leurs 90 jours. Les sauvegardes t'oublient en 30 jours. Pour le reste, tu peux
-          voir, corriger ou effacer ce qu'on a sur toi, ou t'opposer à son usage. Écris à{" "}
-          <a href={`mailto:${CONTACT}`}>{CONTACT}</a>, on répond sous un mois. Si ça ne va pas, tu
-          peux saisir la <a href="https://www.cnil.fr/fr/plaintes">CNIL</a>.
+          Depuis Réglages &gt; « Supprimer mon compte », ton compte, ta partie et ton adresse e-mail
+          (y compris sur la liste d'attente) sont effacés immédiatement. Tes échanges passés restent
+          visibles chez les autres joueurs sous le nom « Un joueur parti », et tes messages de clan
+          restent anonymisés jusqu'à leur suppression au bout de 90 jours. Les sauvegardes
+          automatiques sont purgées sous 30 jours. Tu peux aussi demander à consulter, corriger ou
+          effacer tes données, ou t'opposer à leur traitement en écrivant à{" "}
+          <a href={`mailto:${CONTACT}`}>{CONTACT}</a> (réponse sous un mois). En cas de difficulté,
+          tu peux saisir la <a href="https://www.cnil.fr/fr/plaintes">CNIL</a>.
         </p>
       </section>
 

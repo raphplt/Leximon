@@ -18,7 +18,7 @@ export function FeedbackDialog({
   onClose,
   screen,
   title = "Un retour ?",
-  label = "Un bug, une idée, un mot qui cloche : dis-le.",
+  label = "Signale un bug, une erreur sur une carte ou partage une idée.",
 }: {
   readonly open: boolean;
   readonly onClose: () => void;
@@ -43,7 +43,7 @@ export function FeedbackDialog({
       onClose();
       toast("Bien reçu. Merci.");
     } catch {
-      setError("Pas parti. Réessaie.");
+      setError("L'envoi a échoué. Réessaie.");
     } finally {
       setBusy(false);
     }

@@ -63,6 +63,6 @@ describe("cards to pin", () => {
       "ecrouelles",
     ]);
     expect(pinCandidates(cards, owned, [], "", 2)).toMatchObject({ more: 2 });
-    expect(morePinsLine(2)).toBe("Et 2 autres : cherche un mot.");
+    expect(morePinsLine(2)).toBe("Et 2 autres cartes — utilise la recherche pour tout voir.");
   });
 });

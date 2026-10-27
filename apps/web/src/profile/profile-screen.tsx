@@ -108,8 +108,8 @@ export function ProfileScreen() {
         ) : (
           <section className={styles.panel}>
             <p className={styles.muted}>
-              Avec un compte, tu épingles tes plus belles cartes ici.{" "}
-              <Link href="/compte">C'est par là.</Link>
+              Avec un compte, tu peux épingler tes plus belles cartes ici.{" "}
+              <Link href="/compte">Créer mon compte</Link>
             </p>
           </section>
         )}

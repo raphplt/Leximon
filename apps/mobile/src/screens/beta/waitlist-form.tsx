@@ -49,7 +49,7 @@ export function WaitlistForm() {
     return (
       <View style={styles.form}>
         <Text style={styles.done} accessibilityLiveRegion="polite">
-          Trop tard pour attendre : c'est ouvert.
+          Le jeu est ouvert !
         </Text>
         <Button label="Viens jouer" onPress={playFromScratch} />
       </View>

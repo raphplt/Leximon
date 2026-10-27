@@ -113,8 +113,8 @@ export function reserveView(wallet: BoosterWalletResponse): ReserveView {
       garni === 0
         ? null
         : garni > 1
-          ? `Dont ${garni} garnis, ouverts en premier.`
-          : "Dont 1 garni, ouvert en premier.",
+          ? `Dont ${garni} sachets garnis (au moins une carte Rare), ouverts en premier.`
+          : "Dont 1 sachet garni (au moins une carte Rare), ouvert en premier.",
     places: `${bonus} ${bonus > 1 ? "places prises" : "place prise"} sur ${bonusCap}.`,
     rule: "Ils s'ouvrent quand ton stock gratuit est vide.",
     sources:
@@ -206,14 +206,14 @@ export function sachetContents(now: EpochMs): string {
 
 // --- Word slipping away --------------------------------------------------------------------
 
-/** « Lucubrateur est en train de t'échapper. », split so that the word can be set in italics. */
-export const SLIPPING_AWAY = { after: " est en train de t'échapper.", action: "Réviser" } as const;
+/** « Lucubrateur est à réviser. », split so that the word can be set in italics. */
+export const SLIPPING_AWAY = { after: " est à réviser.", action: "Réviser" } as const;
 
 /**
  * Under the counter, a word slipping away shows its definition but not itself: the review that
  * follows asks for the word, so the answer is never one touch away from its question.
  */
-export const SLIPPING_RIDDLE = "Un mot est en train de t'échapper.";
+export const SLIPPING_RIDDLE = "Un de tes mots est à réviser.";
 
 /** Above a word of the album when none is slipping away; « Lire » for a card never opened. */
 export const OWN_WORD = { kicker: "Un de tes mots", action: "Relire", first: "Lire" } as const;

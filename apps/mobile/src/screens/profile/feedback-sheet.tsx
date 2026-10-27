@@ -16,7 +16,7 @@ export function FeedbackSheet({
   onClose,
   screen = "/mobile",
   title = "Un retour ?",
-  label = "Un bug, une idée, un mot qui cloche : dis-le.",
+  label = "Signale un bug, une erreur sur une carte ou partage une idée.",
 }: {
   readonly open: boolean;
   readonly onClose: () => void;
@@ -37,7 +37,7 @@ export function FeedbackSheet({
       onClose();
       toast("Bien reçu. Merci.");
     } catch {
-      setError("Pas parti. Réessaie.");
+      setError("L'envoi a échoué. Réessaie.");
     } finally {
       setBusy(false);
     }

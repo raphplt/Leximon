@@ -124,7 +124,7 @@ export function SettingsScreen() {
       {notify !== null && (
         <Group title="NOTIFICATIONS">
           <Toggle
-            label="Mots qui s'échappent"
+            label="Mots à réviser"
             detail="Quand un mot attend sa révision"
             value={notify.notifyReviews}
             onChange={(on) => void toggleNotify("notifyReviews", on)}

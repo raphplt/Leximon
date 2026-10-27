@@ -11,9 +11,9 @@ import { Button } from "@/ui/button";
 type State = "ready" | "sending" | UnsubscribeStopped | "invalid" | "failed";
 
 const STOPPED: Readonly<Record<UnsubscribeStopped, string>> = {
-  campaigns: "Plus de nouvelles de notre part.",
-  news: "Plus d'e-mail quand on t'écrit. Le courrier reste dans le jeu.",
-  reminders: "Plus de rappel pour tes sachets.",
+  campaigns: "Tu ne recevras plus nos nouvelles par e-mail.",
+  news: "Tu ne recevras plus d'e-mail pour ton courrier en jeu. Tes messages restent dans le jeu.",
+  reminders: "Tu ne recevras plus de rappel pour tes sachets.",
 };
 
 /**
@@ -49,7 +49,7 @@ export function UnsubscribeFromAddress() {
         {state === "failed" && <p>Le serveur lambine. Réessaie.</p>}
         {(state === "ready" || state === "sending" || state === "failed") && (
           <>
-            <p>Un clic, et on arrête de t'écrire.</p>
+            <p>Confirme ci-dessous pour ne plus recevoir ces e-mails.</p>
             <div style={{ marginTop: 24 }}>
               <Button disabled={state === "sending"} onClick={() => void confirm()}>
                 {state === "sending" ? "Un instant…" : "Me désinscrire"}

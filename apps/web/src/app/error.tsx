@@ -11,7 +11,10 @@ export default function ErrorPage({
   readonly retry: () => void;
 }) {
   return (
-    <StrayScreen title="La page s'est coincée." text="Recharge-la. Si ça recommence, écris-nous.">
+    <StrayScreen
+      title="Une erreur est survenue."
+      text="Recharge la page. Si ça recommence, écris-nous."
+    >
       <Button onClick={retry}>Recharger la page</Button>
       <ButtonLink href="/" variant="secondary">
         Revenir à l'accueil

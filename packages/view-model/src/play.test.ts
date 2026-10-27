@@ -42,12 +42,12 @@ describe("reserve", () => {
     });
     expect(reserveView({ ...wallet(0, 3), garni: 2 })).toMatchObject({
       headline: "3 sachets bonus",
-      garni: "Dont 2 garnis, ouverts en premier.",
+      garni: "Dont 2 sachets garnis (au moins une carte Rare), ouverts en premier.",
       places: "3 places prises sur 10.",
       openNow: true,
     });
     expect(reserveView({ ...wallet(0, 1), garni: 1 }).garni).toBe(
-      "Dont 1 garni, ouvert en premier.",
+      "Dont 1 sachet garni (au moins une carte Rare), ouvert en premier.",
     );
   });
 });

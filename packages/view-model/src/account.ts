@@ -123,16 +123,16 @@ export function needsConfirmation(preview: LinkPreviewResponse): boolean {
 }
 
 function lostGame(guestCards: number): string {
-  if (guestCards === 0) return "ta progression jouée ici sera perdue";
+  if (guestCards === 0) return "la progression de cette partie sera perdue";
   return guestCards === 1
-    ? "la carte jouée ici sera perdue"
-    : `les ${guestCards} cartes jouées ici seront perdues`;
+    ? "la carte obtenue ici sera perdue"
+    : `les ${guestCards} cartes obtenues ici seront perdues`;
 }
 
 function withGame(guestCards: number, noun: PackNoun): string {
-  return guestCards === 0
-    ? `tes ${noun.many} et ta progression`
-    : `tes ${cardCount(guestCards)}, tes ${noun.many} et ta progression`;
+  if (guestCards === 0) return `tes ${noun.many} et ta progression`;
+  const cards = guestCards === 1 ? "ta carte" : `tes ${guestCards} cartes`;
+  return `${cards}, tes ${noun.many} et ta progression`;
 }
 
 export function sendErrorMessage(reason: SendCodeRefusal): string {
@@ -144,9 +144,9 @@ export function sendErrorMessage(reason: SendCodeRefusal): string {
     case "rate_limited":
       return "Attends une minute avant de redemander un code.";
     case "daily_limit":
-      return "Assez de codes pour aujourd'hui. Prends celui du dernier e-mail, ou reviens demain.";
+      return "Tu as atteint la limite de codes pour aujourd'hui. Utilise celui du dernier e-mail ou réessaie demain.";
     case "unavailable":
-      return "Les e-mails ne partent plus. Réessaie tout à l'heure.";
+      return "L'envoi d'e-mails est temporairement indisponible. Réessaie dans quelques minutes.";
   }
 }
 
@@ -171,7 +171,7 @@ export function codeErrorMessage(error: CodeError): string {
     case ACCOUNT_ERROR_CODES.guestLossNotAcknowledged:
       return "Ton compte a changé entre-temps. Demande un autre code.";
     case ACCOUNT_ERROR_CODES.accountLinkFailed:
-      return "Le transfert a raté. Tes cartes n'ont pas bougé. Demande un autre code.";
+      return "Le transfert n'a pas pu aboutir, mais tes cartes sont intactes. Demande un nouveau code pour réessayer.";
     case ACCOUNT_ERROR_CODES.inviteRequired:
       return "La bêta est sur invitation. Passe d'abord par ton lien.";
     case ACCOUNT_ERROR_CODES.inviteClosed:

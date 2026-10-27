@@ -113,7 +113,7 @@ export function friendLink(origin: string, code: string): string {
 
 /** What the friend link says when it is shared: the pleasure first, the link last. */
 export function friendLinkText(origin: string, code: string): string {
-  return `Des mots que plus personne ne dit, gratuits tous les jours. Viens jouer avec moi : ${friendLink(origin, code)}`;
+  return `Rejoins-moi sur Leximon, le jeu de cartes des mots rares et oubliés du français : ${friendLink(origin, code)}`;
 }
 
 /** Places of the closed beta left on the link; nothing when the beta is open to all. */
@@ -341,10 +341,11 @@ export function referrerTitle(pseudo: string): string {
 }
 
 export const REFERRER_PITCH =
-  "Des mots que plus personne ne dit, à collectionner. Un sachet gratuit t'attend, et un ami.";
+  "Collectionne les mots rares et oubliés du français. Entre par ce lien pour l'ajouter en ami et ouvrir ton premier sachet gratuit.";
 export const REFERRER_ACTION = "Ouvrir mon premier sachet";
-export const REFERRER_FULL = "Ce lien a fait le plein. La bêta reste sur invitation.";
-export const REFERRER_UNKNOWN = "Ce lien ne mène à personne.";
+export const REFERRER_FULL =
+  "Toutes les places de bêta de ce lien ont été prises. Laisse ton adresse, on te préviendra à l'ouverture.";
+export const REFERRER_UNKNOWN = "Ce lien d'ami est invalide.";
 
 /** The mail's line for a bonus booster earned by a friend link. */
 export function referralRewardTitle(reward: ReferralReward): string {

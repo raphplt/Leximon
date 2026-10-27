@@ -264,7 +264,9 @@ function EmailForm({
   };
   return (
     <form className={styles.panel} onSubmit={submit}>
-      <p className={styles.text}>Sans compte, ta collection reste coincée dans ce navigateur.</p>
+      <p className={styles.text}>
+        Sans compte, ta collection n'est enregistrée que dans ce navigateur.
+      </p>
       <label htmlFor={id} className={styles.label}>
         Ton adresse e-mail
       </label>

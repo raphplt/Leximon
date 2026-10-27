@@ -49,7 +49,7 @@ export function contestState(
   }
   if (sanction.contestOutcome === "upheld")
     return "Contestation examinée : la sanction est maintenue.";
-  if (sanction.contestedAt !== null) return "Contestation reçue. Un humain la relit.";
+  if (sanction.contestedAt !== null) return "Contestation enregistrée. L'équipe va la relire.";
   return null;
 }
 
@@ -70,7 +70,7 @@ export function writingBlock(
   );
   if (active === undefined) return null;
   const until = sanctionUntil(active, now);
-  return until === null
-    ? "Une sanction t'empêche d'écrire."
-    : `Une sanction t'empêche d'écrire. ${until}.`;
+  if (until === null) return "Une sanction t'empêche d'écrire.";
+  if (until === "Définitive") return "Une sanction définitive t'empêche d'écrire.";
+  return `Une sanction t'empêche d'écrire (${until.charAt(0).toLowerCase()}${until.slice(1)}).`;
 }

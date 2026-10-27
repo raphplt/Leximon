@@ -20,8 +20,8 @@ export default function GlobalError({
       </head>
       <body>
         <StrayScreen
-          title="La page s'est coincée."
-          text="Recharge-la. Si ça recommence, écris-nous."
+          title="Une erreur est survenue."
+          text="Recharge la page. Si ça recommence, écris-nous."
         >
           <Button onClick={retry}>Recharger la page</Button>
         </StrayScreen>

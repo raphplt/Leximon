@@ -72,14 +72,14 @@ export function renderReminderEmail(
   links: RecipientLinks,
 ): NotificationEmail {
   const paragraphs = [
-    `Tes ${content.stock} sachets t'attendent. La besace est pleine, la recharge s'arrête là.`,
+    `Tu as ${content.stock} sachets prêts à être ouverts. Ton stock est plein : ouvre-les pour que la recharge reprenne.`,
   ];
   if (content.slipping !== null) {
     const { word, others } = content.slipping;
     paragraphs.push(
       others === 0
-        ? `${capitalize(word)} est en train de t'échapper.`
-        : `${capitalize(word)} est en train de t'échapper, et ${others === 1 ? "un autre mot" : `${others} autres mots`} avec lui.`,
+        ? `${capitalize(word)} attend d'être révisé.`
+        : `${capitalize(word)} et ${others === 1 ? "un autre mot attendent" : `${others} autres mots attendent`} d'être révisés.`,
     );
   }
   if (content.letters > 0) {

@@ -342,7 +342,7 @@ export function libraryHeadline(rows: readonly LibraryRow[]): string {
     .map((row) => ({ row, missing: row.total - row.owned }))
     .filter((entry) => entry.missing > 0)
     .sort((a, b) => a.missing - b.missing)[0];
-  if (open === undefined) return "Pas une carte ne vous manque. Chapeau.";
+  if (open === undefined) return "Votre clan a réuni toutes les cartes du catalogue !";
   return `Il vous manque ${plural(open.missing, "carte", "cartes")} ${ofName(open.row.name)}.`;
 }
 
@@ -393,7 +393,7 @@ export const REMOVED_MESSAGE: Readonly<Record<"deleted" | "hidden", string>> = {
   hidden: "Message masqué par la modération",
 };
 
-export const EMPTY_DISCUSSION = "Silence de cathédrale. Lance la conversation.";
+export const EMPTY_DISCUSSION = "Aucun message pour le moment. Écris le premier !";
 export const MESSAGE_PLACEHOLDER = "Écris au clan";
 
 /** An "@" not inside a word, then words joined by single separators, the last one maybe begun. */

@@ -144,7 +144,7 @@ export function dailyView(tally: DailyTally, noun: PackNoun = SACHET_NOUN): Dail
   if (answers === 0) {
     return {
       title,
-      text: `${numberWord(goal.correct)} bonnes réponses sur ${numberWord(goal.answers).toLowerCase()}, et un ${noun.one} bonus file en réserve.`,
+      text: `Trouve ${numberWord(goal.correct).toLowerCase()} bonnes réponses sur ${numberWord(goal.answers).toLowerCase()} pour gagner un ${noun.one} bonus.`,
       bars,
       action: "Commencer le défi",
       done: false,
@@ -189,7 +189,7 @@ export function memoryCounts(
 /** How a word climbs, with the rules of `now`: written from memory, long enough after. */
 export function memoryNote(now: number): string {
   const { ink, gilded } = masteryRulesAt(MASTERY_SCHEDULE, now).levelThresholdDays;
-  return `Un mot monte quand tu l'écris de tête, ${ink} jours après sa dernière révision pour l'Encre, ${gilded} jours après pour la Dorure. Entre-temps, des questions à choix l'entretiennent. Un mot raté revient le lendemain.`;
+  return `Entre deux paliers, des questions à choix multiples t'aident à retenir le mot. Pour passer à l'Encre, écris-le de mémoire ${ink} jours après ta dernière révision (${gilded} jours pour la Dorure). Si tu te trompes, il revient le lendemain.`;
 }
 
 export interface EscapingWord {
@@ -232,7 +232,7 @@ export function questionKicker(format: ChallengeFormat): string {
 /** Under a word to type: what it is worth, and what is forgiven. */
 export function typedQuestionHint(level: MasteryLevelCode): string {
   const next = level === "sketch" ? "l'Encre" : "la Dorure";
-  return `Trouvé de tête, il passe à ${next}. Les accents ne comptent pas, une faute de frappe passe.`;
+  return `Écris le mot de mémoire pour passer à ${next}. Les accents ne comptent pas et une faute de frappe est tolérée.`;
 }
 
 const HIDDEN = "…";
@@ -283,12 +283,13 @@ export function noChallengeNotice(
   noun: PackNoun = SACHET_NOUN,
 ): string {
   if (nextDueAt === null) {
-    return `Rien à réviser. Ouvre des ${noun.many}, chaque mot trouvé deviendra un défi.`;
+    return `Aucun mot à réviser pour l'instant. Ouvre des ${noun.many} pour découvrir tes premiers mots.`;
   }
   return `Tes mots tiennent bon. Le prochain revient ${nextDueLabel(nextDueAt, now) ?? "bientôt"}.`;
 }
 
-export const NOT_THIS_TIME = "Pas encore de bonus. Le défi du jour court jusqu'à minuit.";
+export const NOT_THIS_TIME =
+  "Tu peux continuer le défi du jour jusqu'à minuit pour gagner ton sachet bonus.";
 
 /**
  * A one-word session (a word slipping away, on the Défis screen): the same question the server would

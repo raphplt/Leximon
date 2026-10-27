@@ -23,7 +23,7 @@ describe("a sanction", () => {
   it("forbids writing while a mute, a suspension or a closing runs", () => {
     const mute = { kind: "mute" as const, until: "2026-10-23T12:00:00.000Z", revokedAt: null };
     expect(writingBlock([mute], now)).toMatch(
-      /^Une sanction t'empêche d'écrire\. Jusqu'au 23 octobre/,
+      /^Une sanction t'empêche d'écrire \(jusqu'au 23 octobre/,
     );
     expect(writingBlock([{ ...mute, revokedAt: "2026-10-22T11:00:00.000Z" }], now)).toBeNull();
     expect(writingBlock([{ ...mute, kind: "trade_ban" }], now)).toBeNull();
@@ -32,7 +32,7 @@ describe("a sanction", () => {
   it("follows its contest", () => {
     expect(contestState(none)).toBeNull();
     expect(contestState({ ...none, contestedAt: "2026-10-22T10:00:00.000Z" })).toBe(
-      "Contestation reçue. Un humain la relit.",
+      "Contestation enregistrée. L'équipe va la relire.",
     );
     expect(
       contestState({

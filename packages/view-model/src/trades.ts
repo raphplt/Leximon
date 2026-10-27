@@ -200,12 +200,12 @@ const REFUSAL_MESSAGES: Readonly<Record<TradeRefusalCode | OfferProblem, string>
   player_not_found: "Personne n'a ce code.",
   self_trade: "C'est ton code à toi.",
   empty_side: "Il faut au moins une carte de chaque côté.",
-  too_many_cards: "Trop de cartes pour vos niveaux. Une de chaque côté avant le niveau 10.",
+  too_many_cards: "Avant le niveau 10, vous ne pouvez échanger qu'une carte de chaque côté.",
   duplicate_card: "Une même carte apparaît deux fois.",
   level_too_low: "Il faut être niveau 5, toi comme l'autre joueur.",
   daily_limit_reached: "10 offres en 24 heures, c'est le maximum. Reviens demain.",
   card_not_tradeable:
-    "Une carte n'est plus échangeable. Plus en double, ou Épique ou Légendaire de moins de 7 jours.",
+    "L'une des cartes n'est plus échangeable : elle n'est plus en double, ou c'est une Épique ou Légendaire tirée il y a moins de 7 jours.",
   trade_not_pending: "Cette offre est déjà close.",
   trade_expired: "Trop tard, l'offre a expiré.",
   trade_not_found: "Cette offre n'existe plus.",
@@ -228,7 +228,7 @@ export function boxTabLabel(box: TradeBox, pending: number): string {
   return pending > 0 ? `${name} (${pending})` : name;
 }
 
-export const NO_OFFER_RECEIVED = "Personne ne frappe à la porte. Fais le premier pas.";
+export const NO_OFFER_RECEIVED = "Aucune offre reçue pour le moment.";
 export const NO_OFFER_SENT = "Aucune offre en route.";
 
 /** « 10 offres par 24 h. Une offre expire après 72 h. », with the rules of `now`. */

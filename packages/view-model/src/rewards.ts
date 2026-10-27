@@ -144,7 +144,7 @@ export const COFFRET_ACTION = "Ranger dans ma réserve";
 export function claimRefusalMessage(reason: ClaimRefusal, level: number): string {
   switch (reason) {
     case "reserve_full":
-      return "Ta réserve est pleine. Ouvre un sachet bonus, le coffret t'attend.";
+      return "Ta réserve de sachets bonus est pleine. Ouvre un sachet bonus pour pouvoir récupérer ce coffret.";
     case "level_not_reached":
       return `Pas encore. Ce coffret s'ouvre au niveau ${level}.`;
     case "guest_archived":
@@ -441,7 +441,7 @@ export function levelDetail(
           : "Ce qui t'attend",
     items:
       rewards.length === 0
-        ? [{ icon: "star", title: "Bienvenue", detail: "Tout commence ici" }]
+        ? [{ icon: "star", title: "Niveau de départ", detail: "Tes premiers sachets gratuits" }]
         : rewards.map(rewardItem),
     opens: opensAt(level, now),
     state,

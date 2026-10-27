@@ -101,11 +101,11 @@ export function visibilityNote(
     "member" | "pseudo" | "level" | "publicFromLevel" | "profilePublic"
   >,
 ): string | null {
-  if (!profile.member) return "Pas de compte, pas de profil. Crée-le, ta partie suit.";
+  if (!profile.member) return "Crée un compte pour avoir un profil public et garder ta partie.";
   if (profile.level < profile.publicFromLevel) {
     return `Ton profil devient public au niveau ${profile.publicFromLevel}.`;
   }
-  if (profile.pseudo === null) return "Choisis un pseudo. Il fera l'adresse de ton profil.";
+  if (profile.pseudo === null) return "Choisis un pseudo : ce sera l'adresse de ton profil.";
   if (!profile.profilePublic) return "Profil caché.";
   return null;
 }
@@ -264,12 +264,12 @@ export function wornToast(tab: AtelierTab): string {
 }
 
 const PROFILE_REFUSALS: Readonly<Record<ProfileRefusal, string>> = {
-  account_required: "Il faut un compte pour ça. Crée-le, ta partie suit.",
+  account_required: "Crée d'abord un compte : ta collection et ta progression seront conservées.",
   pseudo_too_short: "Trop court. Trois caractères au moins.",
   pseudo_too_long: "Trop long. Vingt caractères au plus.",
   pseudo_invalid:
     "Lettres, chiffres, et un seul séparateur entre deux mots (espace, point, tiret).",
-  pseudo_refused: "Pas ce pseudo-là. Trouve autre chose.",
+  pseudo_refused: "Ce pseudo n'est pas autorisé. Choisis-en un autre.",
   pseudo_taken: "Déjà pris. Un autre ?",
   pseudo_too_soon: "Un changement par mois, pas plus.",
   cosmetic_locked: "Pas encore à toi.",
@@ -291,7 +291,9 @@ export function pseudoHint(
   now: EpochMs,
   timeZone?: string,
 ): string {
-  if (profile.pseudo === null) return "Il fait l'adresse de ton profil. Un changement par mois.";
+  if (profile.pseudo === null) {
+    return "Il servira d'adresse pour ton profil public. Tu pourras le changer une fois par mois.";
+  }
   const from =
     profile.pseudoChangeableFrom === null ? null : Date.parse(profile.pseudoChangeableFrom);
   if (from === null || from <= now) return "Modifiable une fois par mois.";
@@ -315,16 +317,18 @@ export function blockedCountLabel(count: number): string {
 const BLOCK_REFUSALS: Readonly<Record<BlockRefusal, string>> = {
   account_required: "Il faut un compte pour ça.",
   player_not_found: "Ce joueur n'existe pas, ou plus.",
-  self: "Toi-même ? Non.",
+  self: "Tu ne peux pas te bloquer toi-même.",
 };
 
 export function blockRefusalMessage(reason: BlockRefusal): string {
   return BLOCK_REFUSALS[reason];
 }
 
-export const BLOCK_CONFIRM = "Plus de profil ni d'offre entre vous. Celles en cours tombent.";
+export const BLOCK_CONFIRM =
+  "Vous ne verrez plus vos profils et ne pourrez plus échanger. Les offres en cours entre vous seront annulées.";
 export const BLOCKED_TOAST = "Bloqué.";
-export const BLOCKED_NOTE = "Bloqué. Ça se défait dans Réglages, Joueurs bloqués.";
+export const BLOCKED_NOTE =
+  "Ce joueur est bloqué. Tu peux le débloquer dans Réglages > Joueurs bloqués.";
 export const PROFILE_NOT_FOUND = "Personne à ce nom, ou son profil n'est pas encore public.";
 export const UNBLOCKED_TOAST = "Débloqué.";
 export const REPORTED_TOAST = "Signalé. On regarde ça.";
@@ -332,12 +336,13 @@ export const PROFILE_LINK_COPIED = "Lien du profil copié.";
 
 /** The button that deletes the account: the consequence is in it. */
 export function deleteAccountLabel(words: number): string {
-  return words === 0
-    ? "Supprimer mon compte"
-    : `Supprimer mon compte et mes ${plural(words, "mot", "mots")}`;
+  if (words === 0) return "Supprimer mon compte";
+  if (words === 1) return "Supprimer mon compte et mon mot";
+  return `Supprimer mon compte et mes ${formatCount(words)} mots`;
 }
 
-export const DELETE_ACCOUNT_WARNING = "Tout part, sans retour.";
+export const DELETE_ACCOUNT_WARNING =
+  "Ton compte et toute ta collection seront définitivement effacés.";
 export const DELETE_ACCOUNT_CONFIRM = "Oui, tout effacer";
-export const DELETE_ACCOUNT_CANCEL = "Pas encore";
+export const DELETE_ACCOUNT_CANCEL = "Annuler";
 export const DELETE_ACCOUNT_ADMIN = "Rends d'abord ton rôle d'admin. Écris-nous.";

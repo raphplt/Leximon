@@ -15,20 +15,22 @@ describe("mastery of a card", () => {
   it("says what it takes to climb the next level", () => {
     expect(masteryView(undefined, NOW).text).toBe("Pas encore révisé.");
     const sketch = masteryView(word("sketch", NOW + 2 * DAY, NOW - DAY), NOW);
-    expect(sketch.text).toBe("Retrouve-le 7 jours après une révision, et c'est l'Encre.");
+    expect(sketch.text).toBe(
+      "Écris ce mot de mémoire 7 jours après une révision pour passer à l'Encre.",
+    );
     expect(sketch.steps.map((step) => step.reached)).toEqual([true, false, false]);
     expect(masteryView(word("sketch", NOW + 4 * DAY, NOW - 3 * DAY), NOW).text).toBe(
-      "Juste à la prochaine révision, et c'est l'Encre.",
+      "Écris-le de mémoire à la prochaine révision pour passer à l'Encre.",
     );
     expect(masteryView(word("ink", NOW + 10 * DAY, NOW - 4 * DAY), NOW).text).toBe(
-      "Retrouve-le 30 jours après une révision, et c'est la Dorure.",
+      "Écris ce mot de mémoire 30 jours après une révision pour passer à la Dorure.",
     );
     // Overdue: the time already waited counts.
     expect(masteryView(word("ink", NOW - DAY, NOW - 31 * DAY), NOW).text).toBe(
-      "Juste à la prochaine révision, et c'est la Dorure.",
+      "Écris-le de mémoire à la prochaine révision pour passer à la Dorure.",
     );
     const gilded = masteryView(word("gilded", NOW, NOW - 60 * DAY), NOW);
-    expect(gilded.text).toBe("Doré. Il ne bouge plus.");
+    expect(gilded.text).toBe("Carte dorée : tu maîtrises ce mot.");
     expect(gilded.steps.every((step) => step.reached)).toBe(true);
   });
 });

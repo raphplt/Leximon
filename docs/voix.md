@@ -24,7 +24,7 @@ Tous les textes n'ont pas le même ton. La voix monte quand le joueur a de la pl
 |---|---|---|
 | Fonctionnel : formulaires, réglages, navigation | Neutre et sec. Pas de clin d'œil. | « Recevoir un code », « Me déconnecter » |
 | Erreur | Sec. Ce qui s'est passé, puis quoi faire. Un clin d'œil de temps en temps, jamais sur une erreur qui fait perdre quelque chose. | « Mauvais code. », « Le serveur lambine. Réessaie. » |
-| Attente, écran vide, chargement | Voix pleine. C'est là qu'elle a de la place. | « Album vide. Pas pour longtemps. » |
+| Attente, écran vide, chargement | Voix pleine. C'est là qu'elle a de la place. | « On fouille les rayons… » |
 | Récompense : première rareté, Dorure, niveau, Légendaire | La fête. L'emphase et le « ! » sont permis ici, et presque seulement ici. | « Ta première Légendaire ! », « Niveau 6 ! » |
 
 Les grands moments du jeu méritent plus de mots que les écrans fonctionnels, pas moins.
@@ -54,7 +54,7 @@ La mécanique (sachets, défis, échanges) s'explique une fois, brièvement, apr
 Ils sont lus par des gens qui ne jouent pas encore : ils font venir les joueurs.
 
 - **Partage** : le mot d'abord, la rareté chiffrée ensuite, le jeu en dernier. Jamais de phrase de notification système (« J'ai trouvé une carte X sur Leximon ! »).
-- **Notifications de révision** : on parle du mot qui s'échappe, pas du nombre de défis en attente. « *Lucubrateur* est en train de t'échapper. »
+- **Notifications de révision** : on parle du mot à réviser, pas du nombre de défis en attente. « *Lucubrateur* est à réviser. »
 - **E-mails** : un objet de cinq mots au plus, une seule action par e-mail. Pas d'image, pas de pixel, pas de lien pisté.
 
 ### Exemples d'e-mails
@@ -65,9 +65,9 @@ Ils sont lus par des gens qui ne jouent pas encore : ils font venir les joueurs.
 >
 > 482913
 >
-> Ton code pour entrer dans Leximon. Il vaut 10 minutes.
+> Voici ton code de connexion Leximon, valable 10 minutes.
 >
-> Pas demandé ? Ignore ce message.
+> Si tu n'as pas demandé ce code, ignore simplement cet e-mail.
 
 **Ouverture** (le premier e-mail de la liste d'attente, P55, écrit dans l'admin). Le bénéfice, puis un seul bouton.
 
@@ -79,7 +79,7 @@ Ils sont lus par des gens qui ne jouent pas encore : ils font venir les joueurs.
 >
 > *Leximon · leximon.fr — Ne plus recevoir ces e-mails*
 
-**Désinscription** : la page ne retient personne. « Plus d'e-mails ? Un clic, et on arrête de t'écrire. » Bouton « Me désinscrire », puis « C'est fait ».
+**Désinscription** : la page ne retient personne. « Plus d'e-mails ? Confirme ci-dessous pour ne plus recevoir ces e-mails. » Bouton « Me désinscrire », puis « C'est fait ».
 
 ## Lexique
 

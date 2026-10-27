@@ -26,8 +26,8 @@ export default function MentionsPage() {
       <section className={styles.section}>
         <h2>Nous écrire</h2>
         <p>
-          Une question, un mot mal défini, un pseudo qui dérape :{" "}
-          <a href={`mailto:${CONTACT}`}>{CONTACT}</a>. On lit tout.
+          Pour toute question, erreur sur une carte ou signalement :{" "}
+          <a href={`mailto:${CONTACT}`}>{CONTACT}</a>.
         </p>
       </section>
 

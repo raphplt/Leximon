@@ -131,7 +131,7 @@ export function SettingsPanel({
           <h3 className={ui.kicker}>Notifications</h3>
           <div className={ui.groupRows}>
             <Switch
-              label="Mots qui s'échappent"
+              label="Mots à réviser"
               detail="Quand un mot attend sa révision"
               checked={notify.notifyReviews}
               onChange={(on) => void toggleNotify("notifyReviews", on)}

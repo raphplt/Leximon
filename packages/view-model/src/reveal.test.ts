@@ -95,10 +95,10 @@ describe("isFirstOfRarity", () => {
 describe("rarityCompletedLabel", () => {
   it("says the rarity is complete and what it earned", () => {
     expect(rarityCompletedLabel({ rarity: "legendary", xp: 1000 })).toBe(
-      `Plus une Légendaire ne te manque. +1${"\u202f"}000 XP`,
+      `Toutes les cartes Légendaires réunies ! +1${"\u202f"}000 XP`,
     );
     expect(rarityCompletedLabel({ rarity: "precious", xp: 400 })).toBe(
-      "Plus un Précieux ne te manque. +400 XP",
+      "Toutes les cartes Précieuses réunies ! +400 XP",
     );
   });
 });

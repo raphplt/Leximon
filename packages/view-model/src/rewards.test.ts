@@ -132,6 +132,6 @@ describe("level road", () => {
       state: "locked",
       xpLeft: `Encore ${(xpToReach(18) - p.xp).toLocaleString("fr-FR")} XP.`,
     });
-    expect(levelDetail(1, p, [], NOW).items[0]?.title).toBe("Bienvenue");
+    expect(levelDetail(1, p, [], NOW).items[0]?.title).toBe("Niveau de départ");
   });
 });

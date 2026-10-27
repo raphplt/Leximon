@@ -37,7 +37,7 @@ export function SignOutDialog({
   return (
     <Dialog open={open} title="Te déconnecter ?" onClose={onClose} variant="center">
       <div className={styles.pad}>
-        <p className={styles.warning}>Tes cartes restent au chaud dans ton compte.</p>
+        <p className={styles.warning}>Tu pourras retrouver ta collection en te reconnectant.</p>
         <div className={styles.buttons}>
           <Button disabled={busy} onClick={() => void leave()}>
             {busy ? "Déconnexion…" : "Me déconnecter"}

@@ -98,7 +98,7 @@ describe("profile header", () => {
   });
 
   it("says who sees the profile until others do", () => {
-    expect(visibilityNote(profile({ member: false }))).toMatch(/^Pas de compte/);
+    expect(visibilityNote(profile({ member: false }))).toMatch(/^Crée un compte/);
     expect(visibilityNote(profile({ level: 4 }))).toBe("Ton profil devient public au niveau 8.");
     expect(visibilityNote(profile({ pseudo: null }))).toMatch(/^Choisis un pseudo/);
     expect(visibilityNote(profile({ profilePublic: false }))).toBe("Profil caché.");
@@ -172,7 +172,7 @@ describe("settings", () => {
 
   it("puts the consequence in the delete button", () => {
     expect(deleteAccountLabel(412)).toBe("Supprimer mon compte et mes 412 mots");
-    expect(deleteAccountLabel(1)).toBe("Supprimer mon compte et mes 1 mot");
+    expect(deleteAccountLabel(1)).toBe("Supprimer mon compte et mon mot");
     expect(deleteAccountLabel(0)).toBe("Supprimer mon compte");
   });
 });

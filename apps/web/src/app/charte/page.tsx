@@ -24,17 +24,17 @@ export default function CharterPage() {
       <section className={styles.section}>
         <h2>Où elle s'applique</h2>
         <p>
-          Partout où un joueur écrit : son pseudo, le nom de son clan, la discussion du clan. On y
-          croise des joueurs de 15 ans comme de 80. On écrit pour tous.
+          Partout où un joueur écrit : son pseudo, le nom de son clan et la discussion du clan. Le
+          jeu est ouvert à partir de 15 ans : chacun doit pouvoir y lire et y écrire sereinement.
         </p>
       </section>
 
       <section className={styles.section}>
         <h2>L'esprit</h2>
         <p>
-          On est là pour les mots. Les vieilles insultes du catalogue font rire parce qu'elles
-          visent des travers d'un autre siècle, pas la personne en face. Taquiner, oui. Blesser,
-          non.
+          On est là pour le plaisir des mots. Les vieilles insultes du catalogue font sourire parce
+          qu'elles décrivent des travers d'un autre siècle, mais elles ne doivent jamais servir à
+          s'en prendre à un joueur.
         </p>
       </section>
 
@@ -65,8 +65,8 @@ export default function CharterPage() {
         <p>
           Ils suivent les mêmes règles, avec une de plus : ils ne contiennent ni le vrai nom d'une
           autre personne, ni « Leximon », ni rien qui ressemble à un rôle de l'équipe (modérateur,
-          admin). Un pseudo refusé par le filtre ne part pas. Un pseudo qui passe le filtre peut
-          quand même être signalé et remplacé.
+          admin). Un pseudo refusé par le filtre automatique ne peut pas être enregistré, et un
+          pseudo validé peut quand même être signalé puis remplacé par la modération.
         </p>
       </section>
 

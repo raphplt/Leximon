@@ -27,9 +27,9 @@ export function frequencyLine(perBillion: number | null): string {
   return `Un mot imprimé sur ${rounded}.`;
 }
 
-/** What a player shares on a Légendaire: the word first, its rarity, then the boast. */
+/** What a player shares on a Légendaire: the word and its rarity. */
 export function shareText(word: string, perBillion: number | null): string {
-  return `${capitalize(word)}. ${frequencyLine(perBillion)} Moi, je l'ai.`;
+  return `${capitalize(word)} — ${frequencyLine(perBillion)}`;
 }
 
 /** URL path of a card's public page, the link a share carries. */
@@ -47,10 +47,10 @@ export function cardShareRefused(url: string): string {
 
 /** Under a card's public page, for someone who does not play yet. */
 export function cardPagePitch(cardCount: number): string {
-  return `Des mots comme celui-là, il en dort ${formatCount(cardCount)} dans des sachets. Gratuits, tous les jours.`;
+  return `${formatCount(cardCount)} mots rares et anciens à collectionner gratuitement, chaque jour en sachets.`;
 }
 export const CARD_PAGE_ACTION = "Ouvrir mon premier sachet";
-export const CARD_NOT_FOUND = "Cette carte n'existe pas. Ou plus.";
+export const CARD_NOT_FOUND = "Cette carte est introuvable.";
 
 /** The title of a card's public page and of its shared link. */
 export function cardPageTitle(word: string): string {

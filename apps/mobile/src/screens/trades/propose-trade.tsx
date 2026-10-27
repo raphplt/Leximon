@@ -432,7 +432,7 @@ export function ProposeTrade({
           <PickHeading
             title="Ce que tu donnes"
             count={selectionCount(give, partner.maxCards)}
-            hint="Seulement tes doubles. Une Épique ou une Légendaire attend 7 jours avant de partir."
+            hint="Choisis parmi tes doubles. Les cartes Épiques et Légendaires peuvent être échangées 7 jours après avoir été tirées."
           />
           {mine.length === 0 && held.length === 0 ? (
             <View style={styles.empty}>

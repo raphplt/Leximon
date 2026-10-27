@@ -13,9 +13,9 @@ export const INVITATION_REQUIRED_TEXT = "La bêta est fermée. Il te faut un lie
 
 /** Why an invitation link no longer opens the door, and what is left to do. */
 export const INVITE_CLOSED_TEXT = {
-  full: "Ce lien a fait le plein. Laisse ton adresse, on te prévient à l'ouverture.",
-  expired: "Ce lien a fait son temps. Laisse ton adresse, on te prévient à l'ouverture.",
-  unknown: "Ce lien ne mène nulle part. Recopie-le en entier, ou laisse ton adresse.",
+  full: "Toutes les places de ce lien ont été prises. Laisse ton adresse, on te préviendra à l'ouverture.",
+  expired: "Ce lien d'invitation a expiré. Laisse ton adresse, on te préviendra à l'ouverture.",
+  unknown: "Ce lien d'invitation est invalide. Recopie-le en entier, ou laisse ton adresse.",
 } as const;
 
 export const WAITLIST_ERRORS = {

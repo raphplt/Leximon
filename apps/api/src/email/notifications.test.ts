@@ -62,9 +62,7 @@ describe("renderReminderEmail", () => {
       links,
     );
     expect(email.subject).toBe("Tes 6 sachets t'attendent");
-    expect(email.text).toContain(
-      "Lucubrateur est en train de t'échapper, et 2 autres mots avec lui.",
-    );
+    expect(email.text).toContain("Lucubrateur et 2 autres mots attendent d'être révisés.");
     expect(email.text).toContain("Une lettre t'attend au courrier.");
     expect(email.text).not.toContain("Dernier rappel");
     expect(email.text).toContain("Plus de rappel pour mes sachets");

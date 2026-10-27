@@ -43,7 +43,7 @@ describe("frequencyLine", () => {
 describe("shareText", () => {
   it("puts the word first and the game nowhere", () => {
     expect(shareText("talpinette", null)).toBe(
-      "Talpinette. Introuvable dans les livres d'aujourd'hui. Moi, je l'ai.",
+      "Talpinette — Introuvable dans les livres d'aujourd'hui.",
     );
   });
 });
@@ -63,7 +63,7 @@ describe("card page", () => {
 
   it("counts the catalogue in the pitch", () => {
     expect(cardPagePitch(1561)).toBe(
-      `Des mots comme celui-là, il en dort ${formatCount(1561)} dans des sachets. Gratuits, tous les jours.`,
+      `${formatCount(1561)} mots rares et anciens à collectionner gratuitement, chaque jour en sachets.`,
     );
   });
 });
