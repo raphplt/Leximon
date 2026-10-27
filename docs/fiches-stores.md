@@ -88,11 +88,11 @@ Rien d'autre : ni position, ni contacts, ni photos, ni identifiant publicitaire,
 
 **Accès à l'appli :** tout ou partie de l'app est restreinte. Il faut un compte de démonstration (voir plus bas).
 
-**Visuels à fournir :**
+**Visuels**, dans [apps/mobile/store/](../apps/mobile/store/) :
 
-- icône 512 × 512 : [store/icon-512.png](../apps/mobile/store/icon-512.png) ;
-- image de présentation 1024 × 500 ;
-- 2 à 8 captures de téléphone en 9:16, par exemple 1080 × 1920 : sachet scellé, déchirure, carte Légendaire révélée, album, défi, échange.
+- icône 512 × 512 : `icon-512.png` ;
+- image de présentation 1024 × 500 : `presentation-1024x500.png` ;
+- 7 captures de téléphone en 1080 × 1920, à envoyer dans l'ordre : `android/01-sachet.jpg` à `android/07-fiche-precieux.jpg`. Elles ont été prises sur l'émulateur le 2026-10-27, barre d'état figée à 9:41.
 
 ## App Store
 
