@@ -1,8 +1,9 @@
 # Umami, the page-view counter of leximon.fr, on the home server (docs/mise-en-ligne.md, step 12 bis).
 #   cp .env.example .env    # then fill the secrets and the tunnel token
 #   docker compose up -d
-# The dashboard is on port 3000 of this machine, through Tailscale only. Only the script and the
-# collect endpoint reach the internet, through the Cloudflare tunnel (path rule set in Cloudflare).
+# The dashboard listens on this machine only, served on the tailnet by `tailscale serve`. Only the
+# script and the collect endpoint reach the internet, through the Cloudflare tunnel (path rule set
+# in Cloudflare).
 services:
   umami:
     image: ghcr.io/umami-software/umami:3.4.1
@@ -15,7 +16,7 @@ services:
       CLIENT_IP_HEADER: cf-connecting-ip
       DISABLE_TELEMETRY: 1
     ports:
-      - "${DASHBOARD_PORT:-3000}:3000"
+      - "127.0.0.1:${DASHBOARD_PORT:-3000}:3000"
     depends_on:
       db:
         condition: service_healthy
