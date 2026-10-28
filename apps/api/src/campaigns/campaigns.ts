@@ -58,6 +58,9 @@ function audienceSource(campaign: Pick<CampaignRow, "id" | "audience">) {
     case "waitlist":
       return sql`select lower(${waitlistSignups.email}) as email, null::text as user_id
         from ${waitlistSignups}`;
+    case "waitlist_invite":
+      return sql`select lower(${waitlistSignups.email}) as email, null::text as user_id
+        from ${waitlistSignups} where ${waitlistSignups.inviteCampaignId} = ${campaign.id}`;
     case "players":
       // Explicit consent, still standing. Guests have no address of their own.
       return sql`select lower(${users.email}) as email, ${users.id} as user_id

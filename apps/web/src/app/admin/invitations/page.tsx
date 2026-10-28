@@ -1,5 +1,11 @@
-import { InvitesScreen } from "@/admin/invites-screen";
+import { Suspense } from "react";
+import { InvitationsScreen } from "@/admin/invitations-screen";
 
 export default function AdminInvitesPage() {
-  return <InvitesScreen />;
+  // The tab is read from the address: a client-side read, suspended at build time.
+  return (
+    <Suspense>
+      <InvitationsScreen />
+    </Suspense>
+  );
 }

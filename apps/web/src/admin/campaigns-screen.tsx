@@ -9,6 +9,7 @@ import { useLoad } from "./use-load";
 
 export const AUDIENCE_LABELS: Readonly<Record<CampaignAudience, string>> = {
   waitlist: "Liste d'attente",
+  waitlist_invite: "Invités de la liste d'attente",
   players: "Joueurs inscrits aux nouvelles",
   test: "Adresses de test",
 };

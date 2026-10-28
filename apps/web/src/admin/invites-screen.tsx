@@ -70,9 +70,6 @@ export function InvitesScreen() {
 
   return (
     <>
-      <div className={styles.toolbar}>
-        <h1 className={styles.title}>Invitations</h1>
-      </div>
       <p className={styles.muted}>
         Tant que la bêta est fermée, un nouveau joueur n'entre que par un de ces liens. Ceux déjà
         entrés restent, même si le lien est retiré.

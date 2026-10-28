@@ -1,5 +1,5 @@
-import { WaitlistScreen } from "@/admin/waitlist-screen";
+import { redirect } from "next/navigation";
 
 export default function AdminWaitlistPage() {
-  return <WaitlistScreen />;
+  redirect("/admin/invitations?onglet=attente");
 }

@@ -13,7 +13,6 @@ const LINKS = [
   { href: "/admin/mesure", label: "Mesure" },
   { href: "/admin/emails", label: "E-mails" },
   { href: "/admin/retours", label: "Retours" },
-  { href: "/admin/attente", label: "Liste d'attente" },
   { href: "/admin/campagnes", label: "Campagnes" },
   { href: "/admin/echanges", label: "Échanges" },
   { href: "/admin/signalements", label: "Signalements" },

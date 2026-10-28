@@ -34,6 +34,8 @@ export function adminErrorMessage(error: unknown): string {
       return "Campagne introuvable.";
     case "not_a_draft":
       return "Cette campagne est déjà lancée : elle ne change plus.";
+    case "nobody_to_invite":
+      return "Personne à inviter : toutes ces adresses sont déjà invitées, désinscrites ou ont un compte.";
     case "waitlist_closed":
       return "La liste d'attente a déjà reçu son e-mail. Une seule fois.";
     case "no_recipients":

@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { emailSchema } from "./account";
 import { raritySchema } from "./boosters";
 import { slugSchema, timestampSchema } from "./common";
 import { adminWaitlistOpeningSchema } from "./email";
@@ -180,12 +181,49 @@ export type AdminBanRequest = z.infer<typeof adminBanRequestSchema>;
 /** `GET /admin/waitlist`, 200. The CSV export is `GET /admin/waitlist/export`. */
 export const adminWaitlistResponseSchema = z.object({
   total: z.int().nonnegative(),
-  entries: z.array(z.object({ email: z.string(), createdAt: timestampSchema })),
+  /** Addresses an invitation can still go to: not invited, not unsubscribed, without an account. */
+  invitable: z.int().nonnegative(),
+  entries: z.array(
+    z.object({
+      email: z.string(),
+      createdAt: timestampSchema,
+      invitedAt: timestampSchema.nullable(),
+      /** The address already has an account: it needs no invitation. */
+      hasAccount: z.boolean(),
+    }),
+  ),
   nextCursor: z.string().nullable(),
   /** The opening e-mail, once a campaign to the list exists. */
   opening: adminWaitlistOpeningSchema.nullable(),
 });
 export type AdminWaitlistResponse = z.infer<typeof adminWaitlistResponseSchema>;
+
+/** The subject of the invitation e-mail, shown to the admin before it leaves. */
+export const WAITLIST_INVITE_SUBJECT = "Ta place dans Leximon";
+
+/** At most this many addresses invited at once: one campaign, one invitation link. */
+export const MAX_WAITLIST_INVITES = 1000;
+
+/**
+ * `POST /admin/waitlist/invite` body, with an `Idempotency-Key` header: the oldest addresses still
+ * invitable, or chosen ones. Each gets the e-mail with a link whose places match their number.
+ */
+export const adminWaitlistInviteRequestSchema = z.discriminatedUnion("target", [
+  z.object({ target: z.literal("oldest"), count: z.int().min(1).max(MAX_WAITLIST_INVITES) }),
+  z.object({
+    target: z.literal("chosen"),
+    emails: z.array(emailSchema).min(1).max(MAX_WAITLIST_INVITES),
+  }),
+]);
+export type AdminWaitlistInviteRequest = z.infer<typeof adminWaitlistInviteRequestSchema>;
+
+/** `POST /admin/waitlist/invite`, 200. 409 `nobody_to_invite` when no address qualifies. */
+export const adminWaitlistInviteResponseSchema = z.object({
+  invited: z.int().positive(),
+  campaignId: z.uuid(),
+  inviteCode: z.string(),
+});
+export type AdminWaitlistInviteResponse = z.infer<typeof adminWaitlistInviteResponseSchema>;
 
 export const adminTradesQuerySchema = z.object({
   status: tradeStatusSchema.optional(),
@@ -274,6 +312,7 @@ export const ADMIN_ACTIONS = {
   resumeCampaign: "resume_campaign",
   cancelCampaign: "cancel_campaign",
   eraseWaitlist: "erase_waitlist",
+  inviteWaitlist: "invite_waitlist",
   dismissReport: "dismiss_report",
   sanction: "sanction",
   resolveContest: "resolve_contest",

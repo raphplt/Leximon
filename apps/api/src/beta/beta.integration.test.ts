@@ -250,16 +250,21 @@ describe("closed beta", () => {
       ).json(),
     );
     expect(after.daily).toHaveLength(30);
-    expect(after.daily.at(-1)?.codes).toBe((before.daily.at(-1)?.codes ?? 0) + 1);
-    expect(after.daily.at(-1)?.invitationOnly).toBe((before.daily.at(-1)?.invitationOnly ?? 0) + 1);
-    expect(after.quota).toMatchObject({ included: 3000, sent: before.quota.sent + 2 });
-    expect(
-      after.recent
-        .slice(0, 2)
-        .map((email) => email.kind)
-        .sort(),
-    ).toEqual(["code", "invitation_only"]);
-    expect(after.recent[0]).toMatchObject({ status: "sent", userId: null, label: null });
+    // Other test files send e-mails at the same time: the counts move by at least ours.
+    const [last, first] = [after.daily.at(-1), before.daily.at(-1)];
+    expect(last?.codes).toBeGreaterThanOrEqual((first?.codes ?? 0) + 1);
+    expect(last?.invitationOnly).toBeGreaterThanOrEqual((first?.invitationOnly ?? 0) + 1);
+    expect(after.quota.included).toBe(3000);
+    expect(after.quota.sent).toBeGreaterThanOrEqual(before.quota.sent + 2);
+    const signIns = after.recent.filter(
+      (email) => email.kind === "code" || email.kind === "invitation_only",
+    );
+    expect(new Set(signIns.map((email) => email.kind))).toEqual(
+      new Set(["code", "invitation_only"]),
+    );
+    for (const email of signIns) {
+      expect(email).toMatchObject({ status: "sent", userId: null, label: null });
+    }
     const reversed = await app.request(
       "/admin/emails?from=2026-10-20&to=2026-10-10",
       { headers: headers({ cookie: admin.cookie }) },

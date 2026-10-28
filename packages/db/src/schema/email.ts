@@ -27,7 +27,10 @@ export const emailCampaigns = pgTable(
     /** One action per e-mail (`docs/voix.md`): an optional button, `https://` only. */
     buttonLabel: text(),
     buttonUrl: text(),
-    /** `waitlist`, `players` (consenting players) or `test`. */
+    /**
+     * `waitlist`, `waitlist_invite` (the addresses this campaign invites to the beta), `players`
+     * (consenting players) or `test`.
+     */
     audience: text().notNull(),
     /** Addresses of a `test` audience, lowercase. */
     testRecipients: text().array().default(sql`'{}'::text[]`).notNull(),
@@ -63,7 +66,7 @@ export const emailCampaigns = pgTable(
       .where(sql`${table.audience} = 'waitlist' and ${table.launchedAt} is not null`),
     check(
       "email_campaigns_audience_check",
-      sql`${table.audience} in ('waitlist', 'players', 'test')`,
+      sql`${table.audience} in ('waitlist', 'waitlist_invite', 'players', 'test')`,
     ),
     check(
       "email_campaigns_status_check",

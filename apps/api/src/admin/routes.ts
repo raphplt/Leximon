@@ -8,12 +8,14 @@ import {
   type AdminPlayerDetail,
   type AdminPlayersResponse,
   type AdminTradesResponse,
+  type AdminWaitlistInviteResponse,
   type AdminWaitlistResponse,
   adminBanRequestSchema,
   adminCancelTradeRequestSchema,
   adminGrantBonusRequestSchema,
   adminPlayersQuerySchema,
   adminTradesQuerySchema,
+  adminWaitlistInviteRequestSchema,
   IDEMPOTENCY_KEY_HEADER,
   idempotencyKeySchema,
 } from "@leximon/contract";
@@ -24,6 +26,7 @@ import type { AppEnv } from "../context";
 import { playerRateLimit } from "../middleware/rate-limit";
 import { requireAdmin } from "../middleware/require-admin";
 import { adminModerationRoutes } from "../moderation/routes";
+import { inviteFromWaitlist } from "../waitlist/invite";
 import { banPlayer, cancelTrade, grantBonus, logExport, unbanPlayer } from "./actions";
 import { adminBetaRoutes } from "./beta-routes";
 import {
@@ -146,6 +149,23 @@ export function adminRoutes(createMailer: CampaignMailerFactory) {
     c.header("Content-Type", "text/csv; charset=utf-8");
     c.header("Content-Disposition", 'attachment; filename="liste-attente.csv"');
     return c.body(csv);
+  });
+
+  routes.post("/waitlist/invite", async (c) => {
+    const key = idempotencyKeySchema.safeParse(c.req.header(IDEMPOTENCY_KEY_HEADER));
+    if (!key.success) return c.json({ error: "invalid_idempotency_key" }, 400);
+    const body = adminWaitlistInviteRequestSchema.safeParse(await c.req.json().catch(() => null));
+    if (!body.success) return c.json({ error: "invalid_request" }, 400);
+    const result = await inviteFromWaitlist(c.var.db, {
+      adminId: c.var.userId,
+      request: body.data,
+      webUrl: c.env.PUBLIC_WEB_URL,
+      idempotencyKey: key.data,
+      now: Date.now(),
+    });
+    if (result.kind === "nobody_to_invite") return c.json({ error: "nobody_to_invite" }, 409);
+    const { kind: _, ...invited } = result;
+    return c.json<AdminWaitlistInviteResponse>(invited);
   });
 
   routes.route("/waitlist/erase", waitlistEraseRoute());

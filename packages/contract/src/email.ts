@@ -7,9 +7,16 @@ import { timestampSchema } from "./common";
  * public unsubscribe flow. Sign-in codes are not campaigns: they live in `account.ts`.
  */
 
-export const CAMPAIGN_AUDIENCES = ["waitlist", "players", "test"] as const;
+/**
+ * `waitlist_invite` is never written by hand: inviting addresses of the waiting list creates the
+ * campaign, already launched, with its own recipients.
+ */
+export const CAMPAIGN_AUDIENCES = ["waitlist", "waitlist_invite", "players", "test"] as const;
 export const campaignAudienceSchema = z.enum(CAMPAIGN_AUDIENCES);
 export type CampaignAudience = z.infer<typeof campaignAudienceSchema>;
+
+/** The audiences a draft can pick. */
+export const DRAFT_AUDIENCES = ["waitlist", "players", "test"] as const;
 
 export const CAMPAIGN_STATUSES = [
   "draft",
@@ -56,7 +63,7 @@ export const adminCampaignInputSchema = z
   .object({
     name: z.string().trim().min(1).max(120),
     ...campaignContentFields,
-    audience: campaignAudienceSchema,
+    audience: z.enum(DRAFT_AUDIENCES),
     testRecipients: z.array(emailSchema).max(MAX_TEST_RECIPIENTS),
     ratePerMinute: z.int().min(CAMPAIGN_RATE.min).max(CAMPAIGN_RATE.max),
   })

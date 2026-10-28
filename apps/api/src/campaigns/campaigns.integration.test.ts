@@ -3,6 +3,7 @@ import {
   adminCampaignPreviewSchema,
   adminCampaignSchema,
   adminCampaignsResponseSchema,
+  adminWaitlistInviteResponseSchema,
   adminWaitlistResponseSchema,
   emailPreferencesSchema,
   IDEMPOTENCY_KEY_HEADER,
@@ -754,6 +755,110 @@ describe("Lettermint webhook", () => {
     expect(await (await deliver({ id: "evt-4", event: "message.opened" })).json()).toEqual({
       result: "ignored",
     });
+  });
+});
+
+describe("inviting the waiting list", () => {
+  const invite = (body: unknown, key = crypto.randomUUID()) =>
+    post(admin, "/admin/waitlist/invite", body, { [IDEMPOTENCY_KEY_HEADER]: key });
+
+  it("invites the oldest addresses left, once each, with a link of as many places", async () => {
+    const tag = crypto.randomUUID().slice(0, 8);
+    const address = (name: string) => `${name}-${tag}@example.com`;
+    // Older than anything the other tests write: they are the oldest of the list.
+    const signedUp = (minute: number) => new Date(Date.UTC(2001, 0, 1, 0, minute));
+    await db.insert(waitlistSignups).values([
+      { email: address("desinscrit"), createdAt: signedUp(0) },
+      { email: adminEmail, createdAt: signedUp(1) },
+      ...[1, 2, 3, 4].map((n) => ({
+        email: address(`ancien-${n}`),
+        createdAt: signedUp(10 + n),
+      })),
+    ]);
+    await db
+      .insert(emailSuppressions)
+      .values({ email: address("desinscrit"), reason: "unsubscribed", source: "test" });
+
+    const key = crypto.randomUUID();
+    const first = await invite({ target: "oldest", count: 2 }, key);
+    expect(first.status).toBe(200);
+    const result = adminWaitlistInviteResponseSchema.parse(await first.json());
+    expect(result.invited).toBe(2);
+
+    const [link] = await db
+      .select()
+      .from(schema.invites)
+      .where(eq(schema.invites.code, result.inviteCode));
+    expect(link).toMatchObject({ maxUses: 2, uses: 0 });
+    expect(link?.label).toMatch(/^Liste d'attente · \d{2}\/\d{2}$/);
+    const [campaign] = await db.select().from(campaigns).where(eq(campaigns.id, result.campaignId));
+    expect(campaign).toMatchObject({
+      audience: "waitlist_invite",
+      status: "sending",
+      recipientCount: 2,
+      buttonUrl: `${env.PUBLIC_WEB_URL}/invitation/${result.inviteCode}`,
+    });
+    const recipients = await db
+      .select({ email: sends.email })
+      .from(sends)
+      .where(eq(sends.campaignId, result.campaignId));
+    expect(recipients.map((r) => r.email).sort()).toEqual([
+      address("ancien-1"),
+      address("ancien-2"),
+    ]);
+
+    // A retried click gives the first answer back, and nothing more.
+    const again = await invite({ target: "oldest", count: 2 }, key);
+    expect(adminWaitlistInviteResponseSchema.parse(await again.json())).toEqual(result);
+    const logged = await db
+      .select()
+      .from(adminActions)
+      .where(and(eq(adminActions.adminId, admin.userId), eq(adminActions.idempotencyKey, key)));
+    expect(logged).toHaveLength(1);
+
+    // Two clicks at once never pick the same address.
+    const racing = await Promise.all([
+      invite({ target: "oldest", count: 1 }),
+      invite({ target: "oldest", count: 1 }),
+    ]);
+    const raced = await Promise.all(
+      racing.map(async (response) => {
+        expect(response.status).toBe(200);
+        const { campaignId } = adminWaitlistInviteResponseSchema.parse(await response.json());
+        const [row] = await db
+          .select({ email: sends.email })
+          .from(sends)
+          .where(eq(sends.campaignId, campaignId));
+        return row?.email;
+      }),
+    );
+    expect(raced.sort()).toEqual([address("ancien-3"), address("ancien-4")]);
+
+    // Invited, unsubscribed, or already a player: nobody left among these.
+    const nobody = await invite({
+      target: "chosen",
+      emails: [address("ancien-1"), address("desinscrit"), adminEmail.toUpperCase()],
+    });
+    expect(nobody.status).toBe(409);
+    expect(await nobody.json()).toEqual({ error: "nobody_to_invite" });
+
+    const invited = await db
+      .select({ email: waitlistSignups.email, invitedAt: waitlistSignups.invitedAt })
+      .from(waitlistSignups)
+      .where(inArray(waitlistSignups.email, [address("ancien-1"), address("desinscrit")]));
+    expect(invited.find((r) => r.email === address("ancien-1"))?.invitedAt).not.toBeNull();
+    expect(invited.find((r) => r.email === address("desinscrit"))?.invitedAt).toBeNull();
+
+    await sendAll(result.campaignId);
+    expect(await statusesOf(result.campaignId)).toEqual({ sent: 2 });
+  });
+
+  it("refuses a request without a key or out of bounds", async () => {
+    expect(
+      (await post(admin, "/admin/waitlist/invite", { target: "oldest", count: 1 })).status,
+    ).toBe(400);
+    expect((await invite({ target: "oldest", count: 0 })).status).toBe(400);
+    expect((await invite({ target: "chosen", emails: [] })).status).toBe(400);
   });
 });
 

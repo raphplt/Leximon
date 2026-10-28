@@ -26,6 +26,8 @@ import {
   type AdminSetInvitePlacesRequest,
   type AdminTestersResponse,
   type AdminTradesResponse,
+  type AdminWaitlistInviteRequest,
+  type AdminWaitlistInviteResponse,
   type AdminWaitlistResponse,
   adminActionsResponseSchema,
   adminCampaignAudienceSchema,
@@ -49,6 +51,7 @@ import {
   adminReportsResponseSchema,
   adminTestersResponseSchema,
   adminTradesResponseSchema,
+  adminWaitlistInviteResponseSchema,
   adminWaitlistResponseSchema,
   type CreateSanctionRequest,
   IDEMPOTENCY_KEY_HEADER,
@@ -155,6 +158,17 @@ export function adminRoutes(http: Http) {
 
     fetchWaitlist: (cursor?: string): Promise<AdminWaitlistResponse> =>
       getJson(withQuery("/admin/waitlist", { cursor }), adminWaitlistResponseSchema),
+
+    /** The caller keeps `idempotencyKey` until it gets an answer: a retry never sends twice. */
+    async inviteWaitlist(
+      request: AdminWaitlistInviteRequest,
+      idempotencyKey: string,
+    ): Promise<AdminWaitlistInviteResponse> {
+      const response = await postJson("/admin/waitlist/invite", request, {
+        [IDEMPOTENCY_KEY_HEADER]: idempotencyKey,
+      });
+      return parse(response, adminWaitlistInviteResponseSchema);
+    },
 
     /** The CSV of the whole list, as a file to save. */
     async downloadWaitlist(): Promise<Blob> {

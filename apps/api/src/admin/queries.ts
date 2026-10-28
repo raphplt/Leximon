@@ -30,6 +30,7 @@ import { type Database, schema } from "@leximon/db";
 import { eq, type SQL, sql } from "drizzle-orm";
 import { ADMIN_ROLE } from "../auth";
 import { readWaitlistOpening } from "../campaigns/campaigns";
+import { invitableAddress } from "../waitlist/invite";
 import {
   decodeCursor,
   decodeTimeCursor,
@@ -490,21 +491,34 @@ export async function listWaitlist(
     after === null
       ? sql`true`
       : sql`(${waitlistSignups.createdAt}, ${waitlistSignups.email}) < (${new Date(after.at)}, ${after.id})`;
-  const [entries, total, opening] = await Promise.all([
-    db.execute<{ email: string; created_at: string }>(sql`
-      select ${waitlistSignups.email} as email, ${waitlistSignups.createdAt} as created_at
+  const [entries, counts, opening] = await Promise.all([
+    db.execute<{
+      email: string;
+      created_at: string;
+      invited_at: string | null;
+      has_account: boolean;
+    }>(sql`
+      select ${waitlistSignups.email} as email, ${waitlistSignups.createdAt} as created_at,
+        ${waitlistSignups.invitedAt} as invited_at,
+        exists (select 1 from ${users} where ${users.email} = ${waitlistSignups.email}) as has_account
       from ${waitlistSignups} where ${where}
       order by ${waitlistSignups.createdAt} desc, ${waitlistSignups.email} desc
       limit ${PAGE_SIZE + 1}`),
-    db.execute<{ total: number }>(sql`select count(*)::int as total from ${waitlistSignups}`),
+    db.execute<{ total: number; invitable: number }>(sql`
+      select count(*)::int as total, (count(*) filter (where ${invitableAddress}))::int as invitable
+      from ${waitlistSignups}`),
     readWaitlistOpening(db),
   ]);
   return {
-    total: total.rows[0]?.total ?? 0,
+    total: counts.rows[0]?.total ?? 0,
+    invitable: counts.rows[0]?.invitable ?? 0,
     opening,
-    entries: entries.rows
-      .slice(0, PAGE_SIZE)
-      .map((entry) => ({ email: entry.email, createdAt: iso(entry.created_at) })),
+    entries: entries.rows.slice(0, PAGE_SIZE).map((entry) => ({
+      email: entry.email,
+      createdAt: iso(entry.created_at),
+      invitedAt: entry.invited_at === null ? null : iso(entry.invited_at),
+      hasAccount: entry.has_account,
+    })),
     nextCursor: nextCursor(entries.rows, PAGE_SIZE, (entry) => ({
       at: iso(entry.created_at),
       id: entry.email,

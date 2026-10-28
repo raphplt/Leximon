@@ -57,7 +57,7 @@ Sans être connecté.
 
 ### PUB-02 · Liste d'attente
 - **Faire :** laisser une adresse dans le formulaire, puis la même une seconde fois.
-- **Attendu :** confirmation courte, pas de doublon (l'adresse apparaît une seule fois dans `/admin/attente`). Une adresse invalide est refusée avec un message clair.
+- **Attendu :** confirmation courte, pas de doublon (l'adresse apparaît une seule fois dans `/admin/invitations`, onglet « Liste d'attente »). Une adresse invalide est refusée avec un message clair.
 - **Retour :**
 
 ### PUB-03 · Pages légales
@@ -589,9 +589,14 @@ En local, aucun e-mail ne part : chaque envoi s'écrit dans le terminal de `pnpm
 - **Attendu :** la page `/desinscription` confirme ; le joueur n'est plus dans l'audience « joueurs », et son consentement est retiré dans son compte.
 - **Retour :**
 
+### CAM-05 bis · Inviter la liste d'attente
+- **Faire :** laisser trois adresses sur l'accueil, dont celle d'un compte existant. `/admin/invitations`, onglet « Liste d'attente » : « Inviter les 1 plus anciens », puis cocher une autre adresse et « Inviter la sélection ». Ouvrir le lien reçu dans une fenêtre privée et créer le compte.
+- **Attendu :** l'adresse d'un compte est marquée « Déjà un compte » et n'est jamais invitée. Chaque clic crée dans l'onglet des liens un lien « Liste d'attente · jj/mm » à une place par adresse, et une campagne « Invités de la liste d'attente » ; les adresses invitées affichent leur date. Le lien fait entrer dans la bêta fermée.
+- **Retour :**
+
 ### CAM-06 · E-mail de la liste d'attente (à faire en dernier)
 - **Attention :** lancer cet e-mail ferme la liste d'attente pour toujours dans ta base de dev (P55). Ne le fais qu'à la fin.
-- **Faire :** campagne audience « liste d'attente », lancer, passages. Puis `/admin/attente` : taper le nombre d'adresses et « Effacer la liste ».
+- **Faire :** campagne audience « liste d'attente », lancer, passages. Puis `/admin/invitations`, onglet « Liste d'attente » : taper le nombre d'adresses et « Effacer la liste ».
 - **Attendu :** une fois lancée, le formulaire de l'accueil n'accepte plus d'adresse. Une seconde campagne liste d'attente est refusée. Après l'effacement, seules les adresses désinscrites restent.
 - **Retour :**
 

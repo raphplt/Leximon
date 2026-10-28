@@ -5,7 +5,7 @@ import {
   type AdminCampaignContent,
   type AdminCampaignPreview,
   CAMPAIGN_RATE,
-  type CampaignAudience,
+  type DRAFT_AUDIENCES,
 } from "@leximon/contract";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
@@ -86,7 +86,7 @@ interface Draft {
   bodyMarkdown: string;
   buttonLabel: string;
   buttonUrl: string;
-  audience: CampaignAudience;
+  audience: (typeof DRAFT_AUDIENCES)[number];
   testRecipients: string;
   ratePerMinute: number;
 }
@@ -98,7 +98,9 @@ function draftOf(campaign: AdminCampaign | null): Draft {
     bodyMarkdown: campaign?.bodyMarkdown ?? "",
     buttonLabel: campaign?.buttonLabel ?? "",
     buttonUrl: campaign?.buttonUrl ?? "",
-    audience: campaign?.audience ?? "test",
+    // A waiting list invitation is created launched: it never comes back as a draft.
+    audience:
+      campaign === null || campaign.audience === "waitlist_invite" ? "test" : campaign.audience,
     testRecipients: campaign?.testRecipients.join("\n") ?? "",
     ratePerMinute: campaign?.ratePerMinute ?? CAMPAIGN_RATE.default,
   };

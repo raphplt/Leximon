@@ -513,7 +513,19 @@
   background: rgba(255, 255, 255, 0.04);
 }
 
-.segment[aria-pressed="true"] {
+/* Tabs of a page: as wide as their labels, not the column. */
+.tabs {
+  align-self: flex-start;
+}
+
+a.segment {
+  display: inline-flex;
+  align-items: center;
+  text-decoration: none;
+}
+
+.segment[aria-pressed="true"],
+.segment[aria-current="page"] {
   background: var(--lx-color-background-raised);
   color: var(--lx-color-text);
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);

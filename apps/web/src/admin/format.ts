@@ -37,6 +37,7 @@ export const ACTION_LABELS: Readonly<Record<string, string>> = {
   resume_campaign: "Campagne reprise",
   cancel_campaign: "Campagne annulée",
   erase_waitlist: "Liste d'attente effacée",
+  invite_waitlist: "Liste d'attente invitée",
   dismiss_report: "Signalement classé",
   sanction: "Sanction",
   resolve_contest: "Contestation tranchée",
@@ -70,6 +71,9 @@ export function actionSummary(details: Record<string, unknown>): string {
   if (typeof details["maxUses"] === "number") {
     const from = typeof details["from"] === "number" ? `${formatNumber(details["from"])} → ` : "";
     parts.push(`${from}${formatNumber(details["maxUses"])} place(s)`);
+  }
+  if (typeof details["invited"] === "number") {
+    parts.push(`${formatNumber(details["invited"])} adresse(s) invitée(s)`);
   }
   if (typeof details["erased"] === "number") {
     parts.push(`${formatNumber(details["erased"])} adresse(s)`);
