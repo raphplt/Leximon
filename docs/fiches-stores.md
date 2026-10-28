@@ -133,7 +133,9 @@ Apple calcule 13+. On remplace par **16+** : les conditions d'utilisation impose
 | Données d'utilisation › Interaction avec le produit | Analyse, fonctionnalités de l'app |
 | Autres données (tranche d'âge) | Analyse |
 
-**Captures :** 7 captures iPhone 6,9 pouces (1320 × 2868), dans [apps/mobile/store/ios/](../apps/mobile/store/ios/), à envoyer dans l'ordre. Elles ont été prises le 2026-10-28 sur l'émulateur Android réglé comme un iPhone 16 Pro Max (440 × 956 points, ×3), barre d'état effacée. À refaire sur un vrai iPhone si l'app y diffère. L'iPad n'est pas visé.
+**Captures :** 7 captures iPhone « écran moyen » (1206 × 2622, la taille qu'App Store Connect demande en 2026), dans [apps/mobile/store/ios/](../apps/mobile/store/ios/), à envoyer dans l'ordre. Elles ont été prises le 2026-10-28 sur l'émulateur Android réglé comme un iPhone 16 Pro Max (440 × 956 points), barre d'état effacée, puis réduites. À refaire sur un vrai iPhone si l'app y diffère. L'iPad n'est pas visé.
+
+**En-tête et résultats de recherche :** `en-tete-5244x2950.jpg` et `en-tete-3840x1646.jpg`, deux cartes sans texte (le nom de l'app s'affiche par-dessus).
 
 ## Compte de démonstration
 
