@@ -219,12 +219,18 @@ D-052. Le site sert déjà `robots.txt` et `sitemap.xml`.
 
 Les fichiers sont dans `infra/umami/` : Umami, sa base Postgres et un tunnel Cloudflare, qui publie `stats.leximon.fr` sans ouvrir de port chez toi.
 
-1. **Tunnel** : Cloudflare → **Zero Trust** → **Networks** → **Tunnels** → **Create a tunnel** → type **Cloudflared**, nom `leximon-stats`. Choisir **Docker** et copier le jeton (la valeur après `--token`).
-2. **Route publique** du tunnel : sous-domaine `stats`, domaine `leximon.fr`, **Path** `^/(script\.js|api/send)$`, service **HTTP** `umami:3000`. Rien d'autre : toute autre adresse répond 404, et le tableau de bord reste privé.
-3. Sur la VM `docker` : copier `infra/umami/` dans `~/apps/leximon-umami/`, créer `.env` depuis `.env.example` (deux secrets par `openssl rand -hex 32`, le jeton du tunnel, `DATA_PATH` sur le pool ZFS, par exemple `/mnt/media/apps/umami/db`), puis `chmod 600 .env` et `docker compose up -d`.
-4. Vérifier : `curl -s https://stats.leximon.fr/script.js | head -c 80` répond du JavaScript, et `https://stats.leximon.fr/` répond 404.
-5. **Tableau de bord** : `http://docker:3000` par Tailscale. Se connecter avec `admin` / `umami`, **changer le mot de passe tout de suite**, puis **Settings** → **Websites** → **Add website** : nom `Leximon`, domaine `leximon.fr`.
-6. Donner l'identifiant du site (`Website ID`) à l'agent : il l'ajoute à `deploy:production` (`NEXT_PUBLIC_UMAMI_WEBSITE_ID`, lu au build, public par nature), puis `pnpm deploy:web`. Ouvrir leximon.fr sans bloqueur et regarder **Realtime**.
+**En place depuis le 2026-10-28** sur la VM `docker`, dossier `~/apps/leximon-umami/` : Umami et sa base tournent, la base sur le disque de la VM (`./data`, pas sur le partage virtiofs). Le mot de passe `admin` du tableau de bord est dans `admin-password` (droits 600), le site `Leximon` est créé et son identifiant est dans `deploy:production`. Le tunnel `leximon-stats` est créé (`wrangler tunnel create`). Après une modification de `infra/umami/`, recopier les fichiers dans ce dossier.
+
+Reste, toi :
+
+1. **Route du tunnel** : Cloudflare → **Networking** → **Tunnels** → `leximon-stats` → **Published application routes** (ou **Public hostname**) → **Add**. Sous-domaine `stats`, domaine `leximon.fr`, **Path** `^/(script\.js|api/send)$`, service **HTTP**, URL `umami:3000`. La route crée elle-même l'enregistrement DNS. Rien d'autre : toute autre adresse répond 404, et le tableau de bord reste privé.
+2. **Jeton du tunnel** : sur la même page, la commande d'installation contient le jeton (la longue suite après `--token`). Le coller ici, sans qu'il passe par le chat :
+
+```bash
+ssh -t docker 'cd ~/apps/leximon-umami && read -rsp "Jeton du tunnel : " t && echo && sed -i "s|^TUNNEL_TOKEN=.*|TUNNEL_TOKEN=$t|" .env && docker compose up -d tunnel'
+```
+
+3. Vérifier : `curl -s https://stats.leximon.fr/script.js | head -c 80` répond du JavaScript, et `https://stats.leximon.fr/` répond 404. Puis `pnpm deploy:prod`, ouvrir leximon.fr sans bloqueur et regarder **Realtime** dans le tableau de bord (`http://docker:3000` par Tailscale).
 
 La base d'Umami n'est pas sauvegardée : perdre les visites n'empêche pas de jouer.
 
