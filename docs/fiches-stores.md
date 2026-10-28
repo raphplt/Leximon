@@ -106,6 +106,7 @@ Rien d'autre : ni position, ni contacts, ni photos, ni identifiant publicitaire,
 | Catégories | Jeux, sous-catégories Cartes et Mots |
 | Copyright | 2026 Raphaël Plassart |
 | Chiffrement | Aucun hors HTTPS. Déclaré dans `app.json`, la question ne revient pas à chaque build |
+| Droits relatifs au contenu | Oui, contenus tiers avec les droits : définitions, citations et gravures viennent du domaine public ou de licences libres |
 
 **Classification par âge :**
 
@@ -122,7 +123,7 @@ Rien d'autre : ni position, ni contacts, ni photos, ni identifiant publicitaire,
 
 Apple calcule 13+. On remplace par **16+** : les conditions d'utilisation imposent 15 ans, et Apple demande une note qui respecte ce minimum. L'app n'est pas proposée en Afghanistan ni au Maroc (lois locales sur les apps sociales).
 
-**Confidentialité de l'app (étiquettes) :** aucun suivi entre apps. Toutes les données sont liées à l'utilisateur.
+**Confidentialité de l'app (étiquettes) :** aucun suivi entre apps (« Non » à la question du suivi pour chaque donnée). Toutes les données sont liées à l'utilisateur. Le pseudo n'est pas un « Nom » au sens d'Apple (prénom, nom de famille).
 
 | Catégorie Apple | Finalités |
 |---|---|
