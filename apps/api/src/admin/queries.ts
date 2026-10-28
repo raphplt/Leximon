@@ -6,11 +6,13 @@ import type {
   AdminOverview,
   AdminPlayerDetail,
   AdminPlayerKind,
+  AdminPlayerSort,
   AdminPlayerSummary,
   AdminPlayersResponse,
   AdminTrade,
   AdminTradesResponse,
   AdminWaitlistResponse,
+  SortDirection,
   TradeStatus,
 } from "@leximon/contract";
 import {
@@ -28,7 +30,13 @@ import { type Database, schema } from "@leximon/db";
 import { eq, type SQL, sql } from "drizzle-orm";
 import { ADMIN_ROLE } from "../auth";
 import { readWaitlistOpening } from "../campaigns/campaigns";
-import { decodeTimeCursor, nextCursor, type TimeCursor } from "./cursor";
+import {
+  decodeCursor,
+  decodeTimeCursor,
+  encodeCursor,
+  nextCursor,
+  type TimeCursor,
+} from "./cursor";
 
 /**
  * Reads of the back office. Off the players' critical path and rare: a few round trips per page
@@ -42,6 +50,7 @@ const {
   cards,
   collections,
   guestLinks,
+  playerDays,
   players,
   reviewLogs,
   tradeItems,
@@ -130,13 +139,14 @@ type PlayerRow = {
   banned: boolean | null;
   created_at: string;
   code: string | null;
+  pseudo: string | null;
   xp: number;
 };
 
 const playerColumns = sql`
   ${users.id} as id, ${users.email} as email, ${users.isAnonymous} as is_anonymous,
   ${users.role} as role, ${users.banned} as banned, ${users.createdAt} as created_at,
-  ${players.code} as code, coalesce(${userProgress.xp}, 0) as xp`;
+  ${players.code} as code, ${players.pseudo} as pseudo, coalesce(${userProgress.xp}, 0) as xp`;
 
 const playerJoins = sql`
   from ${users}
@@ -148,6 +158,7 @@ function toSummary(row: PlayerRow): AdminPlayerSummary {
     id: row.id,
     // A guest's address is a placeholder made up by the anonymous plugin.
     email: row.is_anonymous ? null : row.email,
+    pseudo: row.pseudo,
     isGuest: row.is_anonymous,
     isAdmin: row.role === ADMIN_ROLE,
     banned: row.banned === true,
@@ -158,6 +169,7 @@ function toSummary(row: PlayerRow): AdminPlayerSummary {
 }
 
 const KIND_FILTERS: Record<AdminPlayerKind, SQL> = {
+  all: sql`true`,
   member: sql`not ${users.isAnonymous}`,
   guest: sql`${users.isAnonymous}`,
   banned: sql`${users.banned}`,
@@ -169,31 +181,136 @@ function likePattern(text: string): string {
   return `%${text.replace(/[\\%_]/g, (char) => `\\${char}`)}%`;
 }
 
+type PlayerListRow = PlayerRow & {
+  pseudo: string | null;
+  cards: number;
+  boosters: number;
+  answers: number;
+  days: number;
+  last_day: string | null;
+  total: number;
+  sort_value: string;
+};
+
+/**
+ * How each column sorts: a value never null, so that the cursor can compare it, and the shape the
+ * cursor's copy of it must have before it goes back to the database.
+ */
+const PLAYER_SORTS: Record<
+  AdminPlayerSort,
+  { readonly key: SQL; readonly cast: (value: string) => SQL; readonly valid: RegExp }
+> = {
+  created: {
+    key: sql`p.created_at`,
+    cast: (value) => sql`${value}::timestamptz`,
+    valid: /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}(\.\d+)?[+-]\d{2}(:\d{2})?$/,
+  },
+  lastDay: {
+    key: sql`coalesce(p.last_day::date, '0001-01-01'::date)`,
+    cast: (value) => sql`${value}::date`,
+    valid: /^\d{4}-\d{2}-\d{2}$/,
+  },
+  // Players without a pseudo come after the others, whichever the direction of the letters.
+  pseudo: {
+    key: sql`(coalesce(p.pseudo_key, '~') collate "C")`,
+    cast: (value) => sql`(${value}::text collate "C")`,
+    valid: /^[^\n]{1,64}$/,
+  },
+  level: { key: sql`p.xp`, cast: (value) => sql`${value}::int`, valid: /^\d{1,10}$/ },
+  cards: { key: sql`p.cards`, cast: (value) => sql`${value}::int`, valid: /^\d{1,10}$/ },
+  boosters: { key: sql`p.boosters`, cast: (value) => sql`${value}::int`, valid: /^\d{1,10}$/ },
+  answers: { key: sql`p.answers`, cast: (value) => sql`${value}::int`, valid: /^\d{1,10}$/ },
+  days: { key: sql`p.days`, cast: (value) => sql`${value}::int`, valid: /^\d{1,10}$/ },
+};
+
+/** The page after a cursor of the same sort; `null` without a cursor. */
+function sortCursorFrom(
+  value: string | undefined,
+  order: string,
+  valid: RegExp,
+): { readonly key: string; readonly id: string } | null {
+  if (value === undefined) return null;
+  const parts = decodeCursor(value, 3);
+  const [cursorOrder, key = "", id = ""] = parts ?? [];
+  if (cursorOrder !== order || !valid.test(key)) throw new InvalidCursorError();
+  return { key, id };
+}
+
 export async function listPlayers(
   db: Database,
-  input: { readonly q?: string | undefined; kind: AdminPlayerKind; cursor?: string | undefined },
+  input: {
+    readonly q?: string | undefined;
+    readonly kind: AdminPlayerKind;
+    readonly sort: AdminPlayerSort;
+    readonly dir: SortDirection;
+    readonly cursor?: string | undefined;
+  },
 ): Promise<AdminPlayersResponse> {
-  const after = cursorFrom(input.cursor);
+  const sort = PLAYER_SORTS[input.sort];
+  const order = `${input.sort}:${input.dir}`;
+  const after = sortCursorFrom(input.cursor, order, sort.valid);
   const filters: SQL[] = [KIND_FILTERS[input.kind]];
   const q = input.q?.trim();
   if (q !== undefined && q.length > 0) {
-    filters.push(sql`(${users.email} ilike ${likePattern(q)}
+    const pattern = likePattern(q);
+    filters.push(sql`(${users.email} ilike ${pattern} or ${players.pseudo} ilike ${pattern}
       or ${players.code} = ${q.toUpperCase()} or ${users.id} = ${q})`);
   }
-  if (after !== null) {
-    filters.push(sql`(${users.createdAt}, ${users.id}) < (${new Date(after.at)}, ${after.id})`);
-  }
-  const result = await db.execute<PlayerRow>(sql`
-    select ${playerColumns} ${playerJoins}
-    where ${sql.join(filters, sql` and `)}
-    order by ${users.createdAt} desc, ${users.id} desc
+  const descending = input.dir === "desc";
+  const direction = descending ? sql`desc` : sql`asc`;
+  const page =
+    after === null
+      ? sql`true`
+      : descending
+        ? sql`(sort_key, id) < (${sort.cast(after.key)}, ${after.id})`
+        : sql`(sort_key, id) > (${sort.cast(after.key)}, ${after.id})`;
+  const result = await db.execute<PlayerListRow>(sql`
+    with p as (
+      select ${playerColumns}, ${players.pseudo} as pseudo, ${players.pseudoKey} as pseudo_key,
+        (select count(*)::int from ${userCards}
+          where ${userCards.userId} = ${users.id} and ${userCards.quantity} > 0) as cards,
+        (select count(*)::int from ${boosterOpens} where ${boosterOpens.userId} = ${users.id}) as boosters,
+        (select count(*)::int from ${reviewLogs} where ${reviewLogs.userId} = ${users.id}) as answers,
+        (select count(*)::int from ${playerDays} where ${playerDays.userId} = ${users.id}) as days,
+        (select max(${playerDays.day})::text from ${playerDays} where ${playerDays.userId} = ${users.id}) as last_day
+      ${playerJoins}
+      where ${sql.join(filters, sql` and `)}
+    ),
+    sorted as (
+      select p.*, ${sort.key} as sort_key, (count(*) over ())::int as total from p
+    )
+    select *, sort_key::text as sort_value
+    from sorted
+    where ${page}
+    order by sort_key ${direction}, id ${direction}
     limit ${PAGE_SIZE + 1}
   `);
   const rows = result.rows;
+  const last = rows[PAGE_SIZE - 1];
   return {
-    players: rows.slice(0, PAGE_SIZE).map(toSummary),
-    nextCursor: nextCursor(rows, PAGE_SIZE, (row) => ({ at: iso(row.created_at), id: row.id })),
+    players: rows.slice(0, PAGE_SIZE).map((row) => ({
+      ...toSummary(row),
+      pseudo: row.pseudo,
+      cards: row.cards,
+      boosters: row.boosters,
+      answers: row.answers,
+      days: row.days,
+      lastDay: row.last_day,
+    })),
+    // Past the last page, the count is read on an empty result: ask it without the cursor.
+    total: rows[0]?.total ?? (after === null ? 0 : await countPlayers(db, filters)),
+    nextCursor:
+      rows.length > PAGE_SIZE && last !== undefined
+        ? encodeCursor([order, last.sort_value, last.id])
+        : null,
   };
+}
+
+async function countPlayers(db: Database, filters: SQL[]): Promise<number> {
+  const result = await db.execute<{ total: number }>(sql`
+    select count(*)::int as total ${playerJoins} where ${sql.join(filters, sql` and `)}
+  `);
+  return result.rows[0]?.total ?? 0;
 }
 
 type ActionRow = {

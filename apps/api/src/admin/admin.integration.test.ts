@@ -20,6 +20,7 @@ import { createApp } from "../app";
 import { TEST_ORIGIN, testEnv } from "../test-env";
 import {
   type Guest,
+  STARTER_COLLECTION,
   seedTestCatalog,
   setOwnedCards,
   signInAsGuest,
@@ -33,7 +34,7 @@ const { db, close } = createDb(url, { maxConnections: 4 });
 const DAY = 86_400_000;
 const BONUS_CAP = BONUS_SCHEDULE[0].reserveCap;
 
-const { boosterWallets, sessions, tradeItems, trades, users, waitlistSignups } = schema;
+const { boosterWallets, players, sessions, tradeItems, trades, users, waitlistSignups } = schema;
 
 beforeAll(() => seedTestCatalog(db));
 afterAll(close);
@@ -50,6 +51,18 @@ async function signInAsNamedMember(): Promise<Guest & { email: string }> {
   const email = `joueur-${crypto.randomUUID().slice(0, 8)}@example.com`;
   await db.update(users).set({ email }).where(eq(users.id, member.userId));
   return { ...member, email };
+}
+
+async function namePlayer(userId: string, pseudo: string): Promise<void> {
+  const name = {
+    pseudo,
+    pseudoKey: pseudo.toLowerCase(),
+    pseudoChangedAt: new Date(),
+  };
+  await db
+    .insert(players)
+    .values({ userId, code: crypto.randomUUID().slice(0, 8).toUpperCase(), ...name })
+    .onConflictDoUpdate({ target: players.userId, set: name });
 }
 
 function request(who: Guest | null, path: string, init: RequestInit = {}) {
@@ -177,6 +190,72 @@ describe("players", () => {
       const seen = new Set(first.players.map((player) => player.id));
       expect(second.players.some((player) => seen.has(player.id))).toBe(false);
     }
+  });
+
+  it("finds players by pseudo and sorts them by any column", async () => {
+    const admin = await signInAsAdmin();
+    const tag = crypto.randomUUID().slice(0, 6);
+    const first = await signInAsNamedMember();
+    const second = await signInAsNamedMember();
+    await namePlayer(first.userId, `Tri${tag}a`);
+    await namePlayer(second.userId, `Tri${tag}b`);
+    const card = `${STARTER_COLLECTION}-common-1`;
+    await setOwnedCards(db, first.userId, [{ cardId: card, quantity: 2 }]);
+    const list = async (query: string) =>
+      adminPlayersResponseSchema.parse(
+        await (await request(admin, `/admin/players?q=tri${tag}&${query}`)).json(),
+      );
+
+    const byPseudo = await list("sort=pseudo&dir=asc");
+    expect(byPseudo.total).toBe(2);
+    expect(byPseudo.players.map((player) => player.pseudo)).toEqual([`Tri${tag}a`, `Tri${tag}b`]);
+    expect((await list("sort=pseudo&dir=desc")).players[0]?.id).toBe(second.userId);
+    const byCards = await list("sort=cards&dir=desc");
+    expect(byCards.players[0]).toMatchObject({ id: first.userId, cards: 1, boosters: 0 });
+    expect((await list("sort=cards&dir=asc")).players[0]?.id).toBe(second.userId);
+    expect((await request(admin, "/admin/players?sort=nope")).status).toBe(400);
+  });
+
+  it("pages through a sort, players without a pseudo last, and refuses a cursor of another sort", async () => {
+    const admin = await signInAsAdmin();
+    const tag = `page${crypto.randomUUID().slice(0, 6)}`;
+    const ids = Array.from({ length: 60 }, (_, n) => `${tag}-${String(n).padStart(2, "0")}`);
+    await db.insert(users).values(ids.map((id) => ({ id, name: id, email: `${id}@example.com` })));
+    // Every other player has a pseudo, written backwards so that ids and pseudos disagree.
+    await db.insert(players).values(
+      ids.flatMap((id, n) =>
+        n % 2 === 0
+          ? [
+              {
+                userId: id,
+                code: crypto.randomUUID().slice(0, 8).toUpperCase(),
+                pseudo: `P${tag}${99 - n}`,
+                pseudoKey: `p${tag}${99 - n}`,
+                pseudoChangedAt: new Date(),
+              },
+            ]
+          : [],
+      ),
+    );
+    const path = `/admin/players?q=${tag}&sort=pseudo&dir=asc`;
+    const first = adminPlayersResponseSchema.parse(await (await request(admin, path)).json());
+    expect(first.total).toBe(60);
+    expect(first.nextCursor).not.toBeNull();
+    const second = adminPlayersResponseSchema.parse(
+      await (await request(admin, `${path}&cursor=${first.nextCursor}`)).json(),
+    );
+    expect(second.total).toBe(60);
+    expect(second.nextCursor).toBeNull();
+
+    const seen = [...first.players, ...second.players];
+    expect(new Set(seen.map((player) => player.id)).size).toBe(60);
+    const pseudos = seen.map((player) => player.pseudo);
+    const named = pseudos.slice(0, 30);
+    expect(named).toEqual([...named].sort());
+    expect(pseudos.slice(30).every((pseudo) => pseudo === null)).toBe(true);
+    expect(
+      (await request(admin, `/admin/players?q=${tag}&cursor=${first.nextCursor}`)).status,
+    ).toBe(400);
   });
 
   it("shows a player's game", async () => {

@@ -14,7 +14,7 @@ import {
   formatNumber,
   rarityBreakdown,
 } from "./format";
-import { PlayerBadges } from "./players-screen";
+import { PlayerBadges, playerName } from "./players-screen";
 import { useLoad } from "./use-load";
 
 /** The player of the address `/admin/joueurs/[id]`. */
@@ -50,10 +50,16 @@ function PlayerDetail({
   return (
     <>
       <div className={styles.toolbar}>
-        <h1 className={styles.title}>{player.email ?? `Invité ${player.id.slice(0, 8)}`}</h1>
+        <h1 className={styles.title}>{playerName(player)}</h1>
         <PlayerBadges player={player} />
       </div>
       <dl className={styles.facts}>
+        {player.pseudo !== null && (
+          <>
+            <dt>Adresse</dt>
+            <dd>{player.email ?? "Invité, sans adresse"}</dd>
+          </>
+        )}
         <dt>Identifiant</dt>
         <dd className={styles.mono}>{player.id}</dd>
         <dt>Code joueur</dt>

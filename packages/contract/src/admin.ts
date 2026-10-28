@@ -36,20 +36,44 @@ export const adminOverviewSchema = z.object({
 });
 export type AdminOverview = z.infer<typeof adminOverviewSchema>;
 
-export const adminPlayerKindSchema = z.enum(["member", "guest", "banned", "admin"]);
+export const adminPlayerKindSchema = z.enum(["member", "guest", "banned", "admin", "all"]);
 export type AdminPlayerKind = z.infer<typeof adminPlayerKindSchema>;
 
-/** `GET /admin/players` query: `q` matches part of an address, a player code or an id. */
+/** Columns the player list sorts by. */
+export const adminPlayerSortSchema = z.enum([
+  "created",
+  "lastDay",
+  "pseudo",
+  "level",
+  "cards",
+  "boosters",
+  "answers",
+  "days",
+]);
+export type AdminPlayerSort = z.infer<typeof adminPlayerSortSchema>;
+
+export const sortDirectionSchema = z.enum(["asc", "desc"]);
+export type SortDirection = z.infer<typeof sortDirectionSchema>;
+
+/**
+ * `GET /admin/players` query: `q` matches part of an address or a pseudo, a player code or an id.
+ * A cursor only reads with the sort it was made with.
+ */
 export const adminPlayersQuerySchema = z.object({
   q: z.string().trim().max(200).optional(),
   kind: adminPlayerKindSchema.default("member"),
+  sort: adminPlayerSortSchema.default("created"),
+  dir: sortDirectionSchema.default("desc"),
   cursor: cursorQuery,
 });
+export type AdminPlayersQuery = z.input<typeof adminPlayersQuerySchema>;
 
 export const adminPlayerSummarySchema = z.object({
   id: z.string(),
   /** null for a guest. */
   email: z.string().nullable(),
+  /** null until the player picks one. */
+  pseudo: z.string().nullable(),
   isGuest: z.boolean(),
   isAdmin: z.boolean(),
   banned: z.boolean(),
@@ -59,9 +83,24 @@ export const adminPlayerSummarySchema = z.object({
 });
 export type AdminPlayerSummary = z.infer<typeof adminPlayerSummarySchema>;
 
+/** A row of the player list: the summary and what the player has done. */
+export const adminPlayerRowSchema = adminPlayerSummarySchema.extend({
+  /** Distinct cards owned. */
+  cards: z.int().nonnegative(),
+  boosters: z.int().nonnegative(),
+  answers: z.int().nonnegative(),
+  /** Days the player opened the game. */
+  days: z.int().nonnegative(),
+  /** Last day they opened the game, Paris time; null if never. */
+  lastDay: z.iso.date().nullable(),
+});
+export type AdminPlayerRow = z.infer<typeof adminPlayerRowSchema>;
+
 /** `GET /admin/players`, 200. */
 export const adminPlayersResponseSchema = z.object({
-  players: z.array(adminPlayerSummarySchema),
+  players: z.array(adminPlayerRowSchema),
+  /** Players matching the search and the kind, all pages together. */
+  total: z.int().nonnegative(),
   nextCursor: z.string().nullable(),
 });
 export type AdminPlayersResponse = z.infer<typeof adminPlayersResponseSchema>;

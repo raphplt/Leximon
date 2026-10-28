@@ -155,12 +155,12 @@ function PeriodPicker({
   };
   return (
     <div className={m.picker}>
-      <fieldset className={m.segmented} aria-label="Période">
+      <fieldset className={styles.segmented} aria-label="Période">
         {PRESETS.map((preset) => (
           <button
             key={preset.key}
             type="button"
-            className={m.segment}
+            className={styles.segment}
             aria-pressed={active === preset.key}
             onClick={() => onChoose(presetRange(preset.key, period.today, period.firstDay))}
           >
@@ -468,12 +468,12 @@ function Activity({ days }: { readonly days: AdminMeasures["daily"] }) {
   return (
     <section className={m.panel}>
       <PanelHead title="Activité par jour">
-        <fieldset className={m.segmented} aria-label="Mesure affichée">
+        <fieldset className={styles.segmented} aria-label="Mesure affichée">
           {METRICS.map((candidate) => (
             <button
               key={candidate.key}
               type="button"
-              className={m.segment}
+              className={styles.segment}
               aria-pressed={metric === candidate.key}
               onClick={() => setMetric(candidate.key)}
             >
@@ -592,7 +592,7 @@ function Cohorts({
         title="Cohortes"
         hint="Joueurs arrivés le même jour ou la même semaine, et la part revenue pile N jours après."
       >
-        <fieldset className={m.segmented} aria-label="Regrouper par">
+        <fieldset className={styles.segmented} aria-label="Regrouper par">
           {(
             [
               ["day", "Par jour"],
@@ -602,7 +602,7 @@ function Cohorts({
             <button
               key={key}
               type="button"
-              className={m.segment}
+              className={styles.segment}
               aria-pressed={grain === key}
               onClick={() => setChosen(key)}
             >

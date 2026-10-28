@@ -7,30 +7,38 @@ export interface TimeCursor {
   readonly id: string;
 }
 
-export function encodeTimeCursor(cursor: TimeCursor): string {
-  return btoa(JSON.stringify([cursor.at, cursor.id]))
-    .replaceAll("+", "-")
-    .replaceAll("/", "_")
-    .replaceAll("=", "");
+/** A cursor made of a few strings: base64url of their JSON. */
+export function encodeCursor(parts: readonly string[]): string {
+  return btoa(JSON.stringify(parts)).replaceAll("+", "-").replaceAll("/", "_").replaceAll("=", "");
 }
 
-/** `undefined` when the cursor is malformed. */
-export function decodeTimeCursor(value: string): TimeCursor | undefined {
+/** The `length` strings of a cursor; `undefined` when it is malformed. */
+export function decodeCursor(value: string, length: number): string[] | undefined {
   try {
     const parsed: unknown = JSON.parse(atob(value.replaceAll("-", "+").replaceAll("_", "/")));
     if (
       Array.isArray(parsed) &&
-      parsed.length === 2 &&
-      typeof parsed[0] === "string" &&
-      typeof parsed[1] === "string" &&
-      !Number.isNaN(Date.parse(parsed[0]))
+      parsed.length === length &&
+      parsed.every((part) => typeof part === "string")
     ) {
-      return { at: parsed[0], id: parsed[1] };
+      return parsed;
     }
   } catch {
     // Falls through: malformed.
   }
   return undefined;
+}
+
+export function encodeTimeCursor(cursor: TimeCursor): string {
+  return encodeCursor([cursor.at, cursor.id]);
+}
+
+/** `undefined` when the cursor is malformed. */
+export function decodeTimeCursor(value: string): TimeCursor | undefined {
+  const parts = decodeCursor(value, 2);
+  if (parts === undefined) return undefined;
+  const [at = "", id = ""] = parts;
+  return Number.isNaN(Date.parse(at)) ? undefined : { at, id };
 }
 
 /** The cursor of the next page, when the query fetched one row more than the page. */
