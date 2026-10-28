@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { AnalyticsOptOut } from "@/analytics/opt-out";
 import { PUBLISHER } from "@/lib/publisher";
 import styles from "./privacy.module.css";
 
@@ -70,6 +71,20 @@ export default function PrivacyPage() {
       </section>
 
       <section className={styles.section}>
+        <h2>Visites du site</h2>
+        <p>
+          On compte les pages vues avec Umami, pour savoir combien de personnes passent sur le site
+          et par quel lien elles arrivent. Umami ne dépose aucun cookie. Il voit passer ton adresse
+          IP pour en déduire ton pays, sans la garder. Il ne reçoit ni ton adresse e-mail, ni les
+          codes des liens d'invitation et d'ami. Si ton navigateur demande à ne pas être suivi, tes
+          visites ne sont pas comptées.
+        </p>
+        <div className={styles.optOut}>
+          <AnalyticsOptOut />
+        </div>
+      </section>
+
+      <section className={styles.section}>
         <h2>Profil</h2>
         <p>
           Ton pseudo, ton avatar, ton niveau, tes cartes épinglées et tes statistiques de jeu
@@ -100,10 +115,11 @@ export default function PrivacyPage() {
       <section className={styles.section}>
         <h2>Ce qu'on ne fait pas</h2>
         <p>
-          Il n'y a ni publicité, ni revente de données, ni traceur, ni dans le site ni dans les
-          e-mails (aucun pixel, aucun lien pisté). Le seul cookie est celui qui te garde connecté.
-          Tes réglages de son et de vibration restent dans ton navigateur, comme ton lien
-          d'invitation et le code de la vidéo ou du post qui t'a amené, jusqu'à ta première partie.
+          Il n'y a ni publicité, ni revente de données, ni traceur publicitaire, ni dans le site ni
+          dans les e-mails (aucun pixel, aucun lien pisté). Le seul cookie est celui qui te garde
+          connecté. Tes réglages de son et de vibration restent dans ton navigateur, comme ton refus
+          d'être compté, ton lien d'invitation et le code de la vidéo ou du post qui t'a amené,
+          jusqu'à ta première partie.
         </p>
       </section>
 
@@ -114,9 +130,9 @@ export default function PrivacyPage() {
           contrat (les conditions d'utilisation acceptées à la création du compte). L'envoi des
           nouvelles, l'inscription sur la liste d'attente et la tranche d'âge reposent sur ton
           consentement, que tu peux retirer à tout moment. La sécurité, la modération, les
-          statistiques de la bêta et les rappels liés à ta partie reposent sur notre intérêt
-          légitime à assurer le bon fonctionnement du jeu ; tu peux désactiver ces rappels à tout
-          moment.
+          statistiques de la bêta, le comptage des visites et les rappels liés à ta partie reposent
+          sur notre intérêt légitime à assurer le bon fonctionnement du jeu ; tu peux désactiver ces
+          rappels à tout moment.
         </p>
       </section>
 
@@ -125,7 +141,8 @@ export default function PrivacyPage() {
         <p>
           La base de données est chez Neon, à Francfort. Le site, l'API, les codes de connexion, les
           e-mails sur ta partie et les journaux techniques (gardés 7 jours) passent par Cloudflare.
-          Les nouvelles passent par Lettermint, un service européen.
+          Les nouvelles passent par Lettermint, un service européen. Le comptage des visites passe
+          par Umami.
         </p>
         <p>
           Neon et Cloudflare sont des sociétés américaines : une donnée peut passer par les

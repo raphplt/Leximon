@@ -205,6 +205,23 @@ Détail dans le [cahier des e-mails](cahiers-des-charges/e-mails.md).
 
 **Domaine principal** : s'il n'existe pas, `TXT` `_dmarc` = `v=DMARC1; p=none; rua=mailto:contact@leximon.fr`. Le `MX` existant de `leximon.fr` ne bouge pas.
 
+## 12 bis. Visites et recherche · toi, puis agent
+
+D-052. Le site sert déjà `robots.txt` et `sitemap.xml`.
+
+**Google Search Console**
+
+1. Sur search.google.com/search-console, **Ajouter une propriété** → type **Domaine** → `leximon.fr`.
+2. Google donne un `TXT` (`google-site-verification=…`). L'ajouter chez Cloudflare sur `leximon.fr` (nom `@`), puis **Valider**. Ne pas toucher aux autres `TXT`.
+3. **Sitemaps** → `https://leximon.fr/sitemap.xml` → **Envoyer**.
+
+**Umami**
+
+1. Créer le compte sur cloud.umami.is, en région UE si elle est proposée, puis **Add website** : nom `Leximon`, domaine `leximon.fr`.
+2. Dans les réglages du site, couper le partage public et toute option qui garderait l'adresse IP.
+3. Donner l'identifiant du site (`Website ID`) à l'agent : il l'ajoute à `deploy:production` (`NEXT_PUBLIC_UMAMI_WEBSITE_ID`, lu au build, public par nature), puis `pnpm deploy:web`.
+4. Si un filtre DNS (Pi-hole, AdGuard, NextDNS) ou un bloqueur bloque `cloud.umami.is` chez toi, l'autoriser pour ouvrir le tableau de bord. Pour vérifier que le site envoie bien, ouvrir leximon.fr sans bloqueur et regarder **Realtime**.
+
 ## 13. Ton compte admin · toi
 
 L'API exige un lien d'invitation pour tout nouveau joueur, et seul un admin crée des liens. Pour le premier compte, on ouvre la porte quelques minutes :

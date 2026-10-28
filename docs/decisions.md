@@ -408,7 +408,7 @@ Pour ajouter ou modifier une décision, utiliser le skill `decision`.
 
 ## D-042 · Mesure : calculée depuis la base, dans l'admin, sans outil tiers
 
-- **Statut :** Acceptée (2026-10-22), choisie par le propriétaire (PostHog et Cloudflare Web Analytics écartés).
+- **Statut :** Remplacée par D-052 (2026-10-28). Acceptée le 2026-10-22, choisie par le propriétaire (PostHog et Cloudflare Web Analytics écartés).
 - **Choix :** une ligne `player_days` par joueur et par jour où il ouvre le jeu (heure de Paris), notée par `GET /me/progress` en parallèle de sa lecture. `/admin/mesure` en tire la rétention J1, J7 et J30 (revenu ce jour-là exactement, parmi les joueurs pour qui ce jour est passé) par semaine, par lien ou source, par tranche d'âge déclarée, l'entonnoir et la liste des testeurs. Les retours (« Un retour ? ») et la fausse porte mécène s'y ajoutent.
 - **Pourquoi :** la promesse « pas de traceur » tient, rien ne part chez un tiers, et les chiffres sont ceux du jeu, pas d'un échantillon.
 - **Conséquences :** admins et invités devenus comptes ne comptent pas. Les agrégats se calculent à la lecture : assez pour la bêta, à revoir au-delà de quelques milliers de joueurs. Les retours ne sont pas filtrés, car seule l'équipe les lit. Pas de visites de pages non jouées (accueil) : l'acquisition se lit par `?src=` sur les joueurs.
@@ -483,3 +483,14 @@ Pour ajouter ou modifier une décision, utiliser le skill `decision`.
   - le doigt passe avant l'inclinaison, l'inclinaison avant la dérive automatique ; rien n'écoute le capteur avec « réduire les animations » ni sur une carte qu'on ne regarde pas ;
   - aucune autorisation sur Android ; sur iPhone, la phrase `NSMotionUsageDescription` est posée par le plugin dans `app.json`, et la lecture est à vérifier à la recette iPhone ;
   - nouveau module natif : l'app de développement se reconstruit (D-009, point d'étape).
+
+## D-052 · Mesure : les joueurs depuis la base, les visites du site par Umami, la recherche par Search Console
+
+- **Statut :** Acceptée (2026-10-28), choisie par le propriétaire (Google Analytics écarté). Remplace D-042.
+- **Choix :** la mesure des joueurs reste celle de D-042 (`player_days`, `/admin/mesure`). Les pages vues du site s'ajoutent, comptées par Umami Cloud, sans cookie, sur `leximon.fr` seulement, admin exclu ; Google Search Console donne les recherches qui mènent au site, vérifié par un enregistrement DNS.
+- **Pourquoi :** voir les visites de l'accueil et les sources d'arrivée avant l'inscription, sans bandeau de consentement ni traceur publicitaire, ce que Google Analytics aurait imposé.
+- **Conséquences :**
+  - avant l'envoi, un crochet du web masque les codes des liens d'invitation, d'ami et de désinscription, et ne garde que le paramètre `src` ;
+  - la page « Tes données » le dit, respecte « Ne pas me suivre » et offre un bouton pour ne plus être compté ;
+  - sans `NEXT_PUBLIC_UMAMI_WEBSITE_ID` au build, rien n'est chargé ; la CSP ouvre l'hôte d'Umami seulement dans ce cas ;
+  - les bloqueurs de publicité et les filtres DNS bloquent souvent Umami : les visites sont un ordre de grandeur, les chiffres des joueurs restent ceux de la base.

@@ -1,6 +1,7 @@
 import { cssRootRule } from "@leximon/tokens";
 import type { Metadata, Viewport } from "next";
 import { Bricolage_Grotesque, Fraunces, Newsreader } from "next/font/google";
+import { Umami } from "@/analytics/umami";
 import { SourceCapture } from "@/beta/source-capture";
 import "./globals.css";
 
@@ -52,6 +53,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <body>
         {children}
         <SourceCapture />
+        <Umami />
       </body>
     </html>
   );
