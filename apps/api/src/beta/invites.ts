@@ -1,6 +1,7 @@
 import {
   type AdminInvite,
   type adminCreateInviteRequestSchema,
+  type adminSetInvitePlacesRequestSchema,
   type InviteStatus,
   inviteCodeSchema,
 } from "@leximon/contract";
@@ -165,5 +166,41 @@ export async function revokeInvite(
       details: { inviteId },
     });
     return toAdminInvite(row);
+  });
+}
+
+export type SetInvitePlacesResult =
+  | { readonly kind: "set"; readonly invite: AdminInvite }
+  | { readonly kind: "not_found" }
+  /** Fewer places than players already in by this link. */
+  | { readonly kind: "below_uses" };
+
+/**
+ * Changes the number of places of an invitation, and logs it. The row stays locked until the
+ * end, so a sign-up taking a place at the same moment counts against the new number or waits.
+ */
+export async function setInvitePlaces(
+  db: Database,
+  adminId: string,
+  inviteId: string,
+  request: z.output<typeof adminSetInvitePlacesRequestSchema>,
+): Promise<SetInvitePlacesResult> {
+  return db.transaction(async (tx) => {
+    const [current] = await tx.select().from(invites).where(eq(invites.id, inviteId)).for("update");
+    if (current === undefined) return { kind: "not_found" };
+    if (request.maxUses < current.uses) return { kind: "below_uses" };
+    if (request.maxUses === current.maxUses) return { kind: "set", invite: toAdminInvite(current) };
+    const [row] = await tx
+      .update(invites)
+      .set({ maxUses: request.maxUses })
+      .where(eq(invites.id, inviteId))
+      .returning();
+    if (row === undefined) return { kind: "not_found" };
+    await tx.insert(schema.adminActions).values({
+      adminId,
+      action: "invite_places",
+      details: { inviteId, label: row.label, from: current.maxUses, maxUses: row.maxUses },
+    });
+    return { kind: "set", invite: toAdminInvite(row) };
   });
 }

@@ -92,6 +92,18 @@ export type AdminCreateInviteRequest = z.input<typeof adminCreateInviteRequestSc
 /** `POST /admin/invites` refusal (`{ error }`), besides `invalid_request`. */
 export const adminCreateInviteRefusalSchema = z.enum(["code_taken"]);
 
+/**
+ * `POST /admin/invites/{id}/places` body: the new number of places, not a difference, so that a
+ * request sent twice gives the same result.
+ */
+export const adminSetInvitePlacesRequestSchema = z.object({
+  maxUses: z.int().min(1).max(10_000),
+});
+export type AdminSetInvitePlacesRequest = z.input<typeof adminSetInvitePlacesRequestSchema>;
+
+/** `POST /admin/invites/{id}/places` refusal (`{ error }`), besides `invalid_request`. */
+export const adminSetInvitePlacesRefusalSchema = z.enum(["invite_not_found", "below_uses"]);
+
 /** Players of a cohort back on a given day, out of those for whom that day has come. */
 const rateSchema = z.object({
   players: z.int().nonnegative(),

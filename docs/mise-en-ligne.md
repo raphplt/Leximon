@@ -235,6 +235,7 @@ curl -s -X POST https://api.leximon.fr/api/auth/sign-in/anonymous -H 'Origin: ht
 
 1. `/admin/invitations` : un lien par groupe (« Amis », « LinkedIn », « Prof de Lyon »), avec un nombre de places. Le code est tiré au hasard, ou lisible si ça ne gêne pas qu'on le devine.
 2. « Copier le lien » donne `https://leximon.fr/invitation/<code>`, à envoyer comme tu veux (message, mail, campagne à la liste d'attente).
+   Un lien plein qui circule encore (post public) : « Ajouter des places » le rouvre sans changer d'adresse. Ceux qui tombent dessus quand il est plein laissent leur adresse dans la liste d'attente.
 3. Sur ce lien, le testeur clique « Ouvrir mon premier sachet » et joue. Il crée son compte plus tard, sans nouveau lien.
 4. Pour mesurer un canal, ajoute `?src=<code>` à tout lien posté (`https://leximon.fr/?src=tiktok-insultes`). Le premier code vu est gardé avec le joueur.
 5. Suivi : `/admin/mesure` (rétention J1, J7, J30 par semaine, par lien ou source, par âge ; entonnoir ; fausse porte mécène ; liste des testeurs) et `/admin/retours` (le bouton « Un retour ? » du menu du joueur).

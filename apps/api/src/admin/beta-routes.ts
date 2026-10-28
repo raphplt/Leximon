@@ -6,11 +6,12 @@ import {
   type AdminTestersResponse,
   adminCreateInviteRequestSchema,
   adminFeedbackQuerySchema,
+  adminSetInvitePlacesRequestSchema,
   adminTestersQuerySchema,
 } from "@leximon/contract";
 import { Hono } from "hono";
 import { z } from "zod";
-import { createInvite, listInvites, revokeInvite } from "../beta/invites";
+import { createInvite, listInvites, revokeInvite, setInvitePlaces } from "../beta/invites";
 import type { AppEnv } from "../context";
 import { listFeedback, listTesters, markFeedbackRead, readMeasures } from "./measures";
 
@@ -38,6 +39,17 @@ export function adminBetaRoutes() {
     const invite = await revokeInvite(c.var.db, c.var.userId, id.data, Date.now());
     if (invite === null) return c.json({ error: "invite_not_found" }, 404);
     return c.json<AdminInvite>(invite);
+  });
+
+  routes.post("/invites/:id/places", async (c) => {
+    const id = idSchema.safeParse(c.req.param("id"));
+    if (!id.success) return c.json({ error: "invite_not_found" }, 404);
+    const body = adminSetInvitePlacesRequestSchema.safeParse(await c.req.json().catch(() => null));
+    if (!body.success) return c.json({ error: "invalid_request" }, 400);
+    const result = await setInvitePlaces(c.var.db, c.var.userId, id.data, body.data);
+    if (result.kind === "not_found") return c.json({ error: "invite_not_found" }, 404);
+    if (result.kind === "below_uses") return c.json({ error: "below_uses" }, 409);
+    return c.json<AdminInvite>(result.invite);
   });
 
   routes.get("/measures", async (c) =>
