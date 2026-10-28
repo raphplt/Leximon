@@ -12,6 +12,7 @@ import {
 } from "./account/email-sender";
 import { linkGuestOnSignIn, readBodyFlag } from "./account/link-on-sign-in";
 import { reviewSignInCode } from "./account/review-account";
+import { recordingEmailSender } from "./account/sign-in-log";
 import { type Arrival, admitNewPlayer, recordArrival, wouldAdmitNewPlayer } from "./beta/arrival";
 import { invitesRequired } from "./beta/invites";
 
@@ -42,7 +43,8 @@ type EndpointContext = Parameters<typeof getSessionFromCtx>[0];
  * in with a code then archives the guest and moves its game in our own transaction: the
  * plugin's default would delete the guest, and its cards with it, by cascade.
  */
-export function createAuth(env: Env, db: Database, emailSender: EmailSender) {
+export function createAuth(env: Env, db: Database, provider: EmailSender) {
+  const emailSender = recordingEmailSender(provider, db);
   // Better Auth logs and swallows errors thrown while sending (`runInBackgroundOrAwait`): the
   // failure is noted here and turned into an error response by the hook below (fails closed).
   let sendFailure: unknown = null;

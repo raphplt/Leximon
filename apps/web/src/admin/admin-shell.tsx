@@ -11,6 +11,7 @@ const LINKS = [
   { href: "/admin/joueurs", label: "Joueurs" },
   { href: "/admin/invitations", label: "Invitations" },
   { href: "/admin/mesure", label: "Mesure" },
+  { href: "/admin/emails", label: "E-mails" },
   { href: "/admin/retours", label: "Retours" },
   { href: "/admin/attente", label: "Liste d'attente" },
   { href: "/admin/campagnes", label: "Campagnes" },

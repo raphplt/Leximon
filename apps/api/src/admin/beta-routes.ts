@@ -1,10 +1,12 @@
 import {
+  type AdminEmailsResponse,
   type AdminFeedbackResponse,
   type AdminInvite,
   type AdminInvitesResponse,
   type AdminMeasures,
   type AdminTestersResponse,
   adminCreateInviteRequestSchema,
+  adminEmailsQuerySchema,
   adminFeedbackQuerySchema,
   adminMeasuresQuerySchema,
   adminSetInvitePlacesRequestSchema,
@@ -14,11 +16,12 @@ import { Hono } from "hono";
 import { z } from "zod";
 import { createInvite, listInvites, revokeInvite, setInvitePlaces } from "../beta/invites";
 import type { AppEnv } from "../context";
+import { readEmails } from "./emails";
 import { listFeedback, listTesters, markFeedbackRead, readMeasures } from "./measures";
 
 const idSchema = z.uuid();
 
-/** Invitations, measures and testers' notes, under `/admin` (admins only, checked there). */
+/** Invitations, measures, e-mails and testers' notes, under `/admin` (admins only, checked there). */
 export function adminBetaRoutes() {
   const routes = new Hono<AppEnv>();
 
@@ -59,6 +62,20 @@ export function adminBetaRoutes() {
     const measures = await readMeasures(c.var.db, Date.now(), query.data);
     if (measures === null) return c.json({ error: "invalid_request" }, 400);
     return c.json<AdminMeasures>(measures);
+  });
+
+  routes.get("/emails", async (c) => {
+    const query = adminEmailsQuerySchema.safeParse(c.req.query());
+    if (!query.success) return c.json({ error: "invalid_request" }, 400);
+    const dailyLimit = Number.parseInt(c.env.NOTIFY_DAILY_LIMIT, 10);
+    const emails = await readEmails(
+      c.var.db,
+      Date.now(),
+      query.data,
+      Number.isFinite(dailyLimit) && dailyLimit > 0 ? dailyLimit : 0,
+    );
+    if (emails === null) return c.json({ error: "invalid_request" }, 400);
+    return c.json<AdminEmailsResponse>(emails);
   });
 
   routes.get("/testers", async (c) => {

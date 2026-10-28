@@ -1,5 +1,6 @@
 import {
   ACCOUNT_ERROR_CODES,
+  adminEmailsResponseSchema,
   adminFeedbackResponseSchema,
   adminInviteSchema,
   adminMeasuresSchema,
@@ -232,6 +233,39 @@ describe("closed beta", () => {
     expect((await requestCode(app, openEnv, email)).status).toBe(200);
     expect(outbox.hasCodeFor(email)).toBe(true);
     expect(outbox.toldInvitationOnly(email)).toBe(false);
+  });
+
+  it("counts the sign-in e-mails sent, against the month's quota, without their address", async () => {
+    const before = adminEmailsResponseSchema.parse(
+      await (
+        await app.request("/admin/emails", { headers: headers({ cookie: admin.cookie }) }, env)
+      ).json(),
+    );
+    expect((await requestCode(app, openEnv, newEmail())).status).toBe(200);
+    expect((await requestCode(app, env, newEmail())).status).toBe(200);
+
+    const after = adminEmailsResponseSchema.parse(
+      await (
+        await app.request("/admin/emails", { headers: headers({ cookie: admin.cookie }) }, env)
+      ).json(),
+    );
+    expect(after.daily).toHaveLength(30);
+    expect(after.daily.at(-1)?.codes).toBe((before.daily.at(-1)?.codes ?? 0) + 1);
+    expect(after.daily.at(-1)?.invitationOnly).toBe((before.daily.at(-1)?.invitationOnly ?? 0) + 1);
+    expect(after.quota).toMatchObject({ included: 3000, sent: before.quota.sent + 2 });
+    expect(
+      after.recent
+        .slice(0, 2)
+        .map((email) => email.kind)
+        .sort(),
+    ).toEqual(["code", "invitation_only"]);
+    expect(after.recent[0]).toMatchObject({ status: "sent", userId: null, label: null });
+    const reversed = await app.request(
+      "/admin/emails?from=2026-10-20&to=2026-10-10",
+      { headers: headers({ cookie: admin.cookie }) },
+      env,
+    );
+    expect(reversed.status).toBe(400);
   });
 
   it("refuses an account created without a guest nor an invitation", async () => {

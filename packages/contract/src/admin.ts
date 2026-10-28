@@ -278,3 +278,69 @@ export const ADMIN_ACTIONS = {
   sanction: "sanction",
   resolveContest: "resolve_contest",
 } as const;
+
+// --- E-mails ---------------------------------------------------------------------------------
+
+/** `GET /admin/emails` query: the period, both days included, Paris time; the last 30 days by default. */
+export const adminEmailsQuerySchema = z.object({
+  from: z.iso.date().optional(),
+  to: z.iso.date().optional(),
+});
+export type AdminEmailsQuery = z.infer<typeof adminEmailsQuerySchema>;
+
+/**
+ * What an e-mail was: a sign-in code, the invitation-only answer, a player's news or reminder, a
+ * campaign. All but campaigns go through Cloudflare and count against its monthly quota.
+ */
+export const adminEmailKindSchema = z.enum([
+  "code",
+  "invitation_only",
+  "news",
+  "reminder",
+  "campaign",
+]);
+export type AdminEmailKind = z.infer<typeof adminEmailKindSchema>;
+
+export const adminEmailDaySchema = z.object({
+  day: z.iso.date(),
+  /** Accepted by the provider, by kind. */
+  codes: z.int().nonnegative(),
+  invitationOnly: z.int().nonnegative(),
+  notifications: z.int().nonnegative(),
+  campaigns: z.int().nonnegative(),
+  /** Refused by the provider, all kinds together. */
+  failed: z.int().nonnegative(),
+});
+export type AdminEmailDay = z.infer<typeof adminEmailDaySchema>;
+
+export const adminEmailSchema = z.object({
+  at: timestampSchema,
+  kind: adminEmailKindSchema,
+  /** `sent`, `failed`, or for a campaign `bounced` or `complained`. */
+  status: z.string(),
+  /** The provider's error code. */
+  error: z.string().nullable(),
+  /** The player, when the e-mail was theirs. */
+  userId: z.string().nullable(),
+  /** The player's pseudo or the campaign's name. */
+  label: z.string().nullable(),
+});
+export type AdminEmail = z.infer<typeof adminEmailSchema>;
+
+/** `GET /admin/emails`, 200. Sign-in e-mails and notifications are kept 90 days. */
+export const adminEmailsResponseSchema = z.object({
+  period: z.object({ from: z.iso.date(), to: z.iso.date(), today: z.iso.date() }),
+  /** Every day of the period, empty days included. */
+  daily: z.array(adminEmailDaySchema),
+  /** E-mails sent through Cloudflare since the first of the month, against the included quota. */
+  quota: z.object({
+    since: z.iso.date(),
+    sent: z.int().nonnegative(),
+    included: z.int().positive(),
+    /** The most notifications sent in a day, set by the server. */
+    notificationDailyLimit: z.int().nonnegative(),
+  }),
+  /** The latest e-mails of the period, newest first. */
+  recent: z.array(adminEmailSchema),
+});
+export type AdminEmailsResponse = z.infer<typeof adminEmailsResponseSchema>;

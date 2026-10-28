@@ -157,3 +157,27 @@ export const emailConsents = pgTable("email_consents", {
   /** `settings`, `unsubscribe_link`, `complaint`… */
   revokedSource: text(),
 });
+
+/**
+ * Sign-in e-mails sent through Cloudflare Email Service: a code, or the invitation-only answer to
+ * an address the closed beta refuses. Kept to follow the monthly quota, without the address: the
+ * back office counts them, it never needs to know to whom. Erased after 90 days.
+ */
+export const signInEmails = pgTable(
+  "sign_in_emails",
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    /** `code` or `invitation_only`. */
+    kind: text().notNull(),
+    /** `sent` (accepted by the provider) or `failed`. */
+    status: text().notNull(),
+    /** The provider's error code, never its message nor the address. */
+    lastError: text(),
+    createdAt: timestamp({ withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [
+    index("sign_in_emails_created_idx").on(table.createdAt),
+    check("sign_in_emails_kind_check", sql`${table.kind} in ('code', 'invitation_only')`),
+    check("sign_in_emails_status_check", sql`${table.status} in ('sent', 'failed')`),
+  ],
+);

@@ -204,6 +204,13 @@
       "when": 1793019126187,
       "tag": "0028_notification_emails",
       "breakpoints": true
+    },
+    {
+      "idx": 29,
+      "version": "7",
+      "when": 1793181846229,
+      "tag": "0029_sign_in_emails",
+      "breakpoints": true
     }
   ]
 }

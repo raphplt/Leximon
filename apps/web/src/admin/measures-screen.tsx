@@ -6,16 +6,8 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { adminApi, adminErrorMessage } from "@/admin/admin-api";
 import styles from "./admin.module.css";
-import {
-  Bar,
-  ColumnChart,
-  heat,
-  Legend,
-  LineChart,
-  SERIES,
-  type Series,
-  Sparkline,
-} from "./charts";
+import { Bar, ColumnChart, heat, Legend, LineChart, SERIES, type Series } from "./charts";
+import { type Delta, Kpi, PanelHead } from "./dashboard";
 import { formatNumber } from "./format";
 import m from "./measures.module.css";
 import {
@@ -24,9 +16,6 @@ import {
   type DayMetric,
   daysBetween,
   type Grain,
-  PRESETS,
-  presetOf,
-  presetRange,
   type Range,
   type Rate,
   retentionCurve,
@@ -34,6 +23,7 @@ import {
   share,
   total,
 } from "./measures-model";
+import { dayParam, PeriodPicker } from "./period-picker";
 
 const DAY_FORMAT = new Intl.DateTimeFormat("fr-FR", {
   day: "numeric",
@@ -60,12 +50,6 @@ const fullDay = (day: string) => FULL_DAY_FORMAT.format(asDate(day));
 
 function percent(value: number | null, digits = 0): string {
   return value === null ? "—" : `${(value * 100).toFixed(digits).replace(".", ",")} %`;
-}
-
-const DAY_PARAM = /^\d{4}-\d{2}-\d{2}$/;
-
-function dayParam(value: string | null): string | undefined {
-  return value !== null && DAY_PARAM.test(value) ? value : undefined;
 }
 
 /**
@@ -116,6 +100,7 @@ export function MeasuresScreen() {
         {data !== null && (
           <PeriodPicker
             period={data.period}
+            firstDay={data.period.firstDay}
             busy={busy}
             onChoose={choose}
             onRefresh={() => setNonce((n) => n + 1)}
@@ -132,66 +117,6 @@ export function MeasuresScreen() {
       )}
       <Testers />
     </>
-  );
-}
-
-function PeriodPicker({
-  period,
-  busy,
-  onChoose,
-  onRefresh,
-}: {
-  readonly period: AdminMeasures["period"];
-  readonly busy: boolean;
-  readonly onChoose: (range: Range) => void;
-  readonly onRefresh: () => void;
-}) {
-  const active = presetOf(period, period.today, period.firstDay);
-  const pickDay = (key: "from" | "to", value: string) => {
-    if (!DAY_PARAM.test(value)) return;
-    const next = { from: period.from, to: period.to, [key]: value };
-    if (next.from > next.to) return;
-    onChoose(next);
-  };
-  return (
-    <div className={m.picker}>
-      <fieldset className={styles.segmented} aria-label="Période">
-        {PRESETS.map((preset) => (
-          <button
-            key={preset.key}
-            type="button"
-            className={styles.segment}
-            aria-pressed={active === preset.key}
-            onClick={() => onChoose(presetRange(preset.key, period.today, period.firstDay))}
-          >
-            {preset.label}
-          </button>
-        ))}
-      </fieldset>
-      <div className={m.dates}>
-        <input
-          type="date"
-          className={styles.input}
-          aria-label="Du"
-          value={period.from}
-          max={period.to}
-          onChange={(event) => pickDay("from", event.target.value)}
-        />
-        <span aria-hidden="true">→</span>
-        <input
-          type="date"
-          className={styles.input}
-          aria-label="Au"
-          value={period.to}
-          min={period.from}
-          max={period.today}
-          onChange={(event) => pickDay("to", event.target.value)}
-        />
-      </div>
-      <button type="button" className={styles.button} onClick={onRefresh} disabled={busy}>
-        {busy ? "Lecture…" : "Actualiser"}
-      </button>
-    </div>
   );
 }
 
@@ -344,11 +269,6 @@ function Dashboard({ data }: { readonly data: AdminMeasures }) {
   );
 }
 
-interface Delta {
-  readonly text: string;
-  readonly direction: "up" | "down" | "flat";
-}
-
 function ratioDelta(current: number, previous: number): Delta | null {
   const ratio = change(current, previous);
   if (ratio === null) return null;
@@ -368,66 +288,6 @@ function pointsDelta(current: Rate, previous: Rate): Delta | null {
     text: `${points > 0 ? "+" : ""}${points} pt${Math.abs(points) > 1 ? "s" : ""}`,
     direction: points > 0 ? "up" : points < 0 ? "down" : "flat",
   };
-}
-
-const ARROWS = { up: "▲", down: "▼", flat: "■" } as const;
-
-function Kpi({
-  label,
-  value,
-  delta,
-  note,
-  trend,
-  color,
-}: {
-  readonly label: string;
-  readonly value: string;
-  readonly delta?: Delta | null;
-  readonly note?: string;
-  readonly trend?: readonly number[];
-  readonly color?: string;
-}) {
-  return (
-    <div className={m.kpi}>
-      <span className={m.kpiLabel}>{label}</span>
-      <div className={m.kpiLine}>
-        <span className={m.kpiValue}>{value}</span>
-        {delta != null && (
-          <span
-            className={m.delta}
-            data-direction={delta.direction}
-            title="Par rapport à la période d'avant"
-          >
-            <span aria-hidden="true">{ARROWS[delta.direction]}</span> {delta.text}
-          </span>
-        )}
-      </div>
-      {note !== undefined && <span className={m.kpiNote}>{note}</span>}
-      {trend !== undefined && (
-        <Sparkline values={trend} {...(color === undefined ? {} : { color })} />
-      )}
-    </div>
-  );
-}
-
-function PanelHead({
-  title,
-  hint,
-  children,
-}: {
-  readonly title: string;
-  readonly hint?: string;
-  readonly children?: React.ReactNode;
-}) {
-  return (
-    <div className={m.panelHead}>
-      <div>
-        <h2 className={styles.subtitle}>{title}</h2>
-        {hint !== undefined && <p className={m.hint}>{hint}</p>}
-      </div>
-      {children}
-    </div>
-  );
 }
 
 const METRICS = [

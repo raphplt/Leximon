@@ -6,7 +6,7 @@ import { purgeFeed } from "./friends/feed";
 import { purgeFriendRequests } from "./friends/friends";
 import { purgeMail } from "./mail/mail";
 import { SIGN_IN_CODE_DAILY_QUOTA } from "./middleware/rate-limit";
-import { purgeNotifications } from "./notifications/notifications";
+import { NOTIFICATION_RETENTION_MS, purgeNotifications } from "./notifications/notifications";
 import { inBatches, purgeRows } from "./purge";
 
 /** How long a client may retry an open with the same idempotency key. */
@@ -32,6 +32,7 @@ export interface MaintenanceReport {
   readonly erasedClanMessages: number;
   readonly erasedLetters: number;
   readonly erasedNotifications: number;
+  readonly erasedSignInEmails: number;
   readonly erasedCodeQuotas: number;
   readonly erasedSessions: number;
   readonly erasedGuests: number;
@@ -48,7 +49,8 @@ export interface MaintenanceReport {
  * - purges idempotency keys too old to be retried;
  * - erases the addresses of campaigns ended more than 30 days ago (the suppression list stays);
  * - erases clan messages older than 90 days, except those reported and not yet handled;
- * - erases the counters of sign-in codes whose 24-hour window is over;
+ * - erases the counters of sign-in codes whose 24-hour window is over, and the record of sign-in
+ *   e-mails after 90 days;
  * - erases expired sessions (with their address and browser) and expired sign-in codes;
  * - erases guests no session can reach any more, 180 days after they came;
  * - erases reports handled more than a year ago;
@@ -87,6 +89,11 @@ export async function runMaintenance(db: Database, now: number): Promise<Mainten
     erasedClanMessages: erasedMessages,
     erasedLetters: await purgeMail(db, now),
     erasedNotifications: await purgeNotifications(db, now),
+    erasedSignInEmails: await purgeRows(
+      db,
+      schema.signInEmails,
+      lt(schema.signInEmails.createdAt, new Date(now - NOTIFICATION_RETENTION_MS)),
+    ),
     erasedCodeQuotas: erasedQuotas,
     erasedSessions,
     erasedGuests: await eraseAbandonedGuests(db, now),

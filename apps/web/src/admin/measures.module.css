@@ -8,26 +8,6 @@
   gap: 12px 20px;
 }
 
-.picker {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 10px;
-}
-
-.dates {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  color: var(--lx-color-text-faint);
-}
-
-.dates input {
-  min-height: 38px;
-  font-size: 14px;
-  color-scheme: dark;
-}
-
 .dashboard {
   display: flex;
   flex-direction: column;

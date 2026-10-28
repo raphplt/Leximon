@@ -11,6 +11,8 @@ import {
   type AdminCatalog,
   type AdminContestsResponse,
   type AdminCreateInviteRequest,
+  type AdminEmailsQuery,
+  type AdminEmailsResponse,
   type AdminFeedbackResponse,
   type AdminGrantBonusResponse,
   type AdminInvite,
@@ -34,6 +36,7 @@ import {
   adminCardStatsSchema,
   adminCatalogSchema,
   adminContestsResponseSchema,
+  adminEmailsResponseSchema,
   adminFeedbackResponseSchema,
   adminGrantBonusResponseSchema,
   adminInviteSchema,
@@ -269,6 +272,9 @@ export function adminRoutes(http: Http) {
 
     fetchMeasures: (query: AdminMeasuresQuery = {}): Promise<AdminMeasures> =>
       getJson(withQuery("/admin/measures", query), adminMeasuresSchema),
+
+    fetchEmails: (query: AdminEmailsQuery = {}): Promise<AdminEmailsResponse> =>
+      getJson(withQuery("/admin/emails", query), adminEmailsResponseSchema),
 
     fetchTesters: (cursor?: string): Promise<AdminTestersResponse> =>
       getJson(withQuery("/admin/testers", { cursor }), adminTestersResponseSchema),
