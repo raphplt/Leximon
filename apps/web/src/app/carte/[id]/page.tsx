@@ -15,12 +15,18 @@ async function cardOf(params: Promise<{ id: string }>): Promise<PublicCard | nul
 }
 
 export async function generateMetadata({ params }: PageProps<"/carte/[id]">): Promise<Metadata> {
-  const found = await cardOf(params).catch(() => null);
+  let found: PublicCard | null;
+  try {
+    found = await cardOf(params);
+  } catch {
+    // The catalogue did not answer: the card may well exist, so no noindex that would drop it.
+    return {};
+  }
   if (found === null) return { title: "Carte introuvable · Leximon", robots: { index: false } };
   return {
     title: cardPageTitle(found.card.word),
     description: found.card.definition,
-    robots: { index: false },
+    alternates: { canonical: `/carte/${found.card.id}` },
   };
 }
 

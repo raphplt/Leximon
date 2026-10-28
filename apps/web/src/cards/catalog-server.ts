@@ -61,6 +61,11 @@ const serverCatalog = cache(async (): Promise<ServerCatalog> => {
   return parsed;
 });
 
+/** Every published card id, for the sitemap. */
+export async function readCatalogCardIds(): Promise<readonly string[]> {
+  return [...(await serverCatalog()).cards.keys()];
+}
+
 /** A card and what its page says around it; `null` when no published card has this id. */
 export async function readCatalogCard(cardId: string): Promise<PublicCard | null> {
   return (await serverCatalog()).cards.get(cardId) ?? null;
