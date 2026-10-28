@@ -133,7 +133,7 @@ Apple calcule 13+. On remplace par **16+** : les conditions d'utilisation impose
 | Données d'utilisation › Interaction avec le produit | Analyse, fonctionnalités de l'app |
 | Autres données (tranche d'âge) | Analyse |
 
-**Captures :** iPhone 6,9 pouces (1320 × 2868), de 3 à 10, les mêmes scènes que sur Play. L'iPad n'est pas visé : à décocher si EAS le propose.
+**Captures :** 7 captures iPhone 6,9 pouces (1320 × 2868), dans [apps/mobile/store/ios/](../apps/mobile/store/ios/), à envoyer dans l'ordre. Elles ont été prises le 2026-10-28 sur l'émulateur Android réglé comme un iPhone 16 Pro Max (440 × 956 points, ×3), barre d'état effacée. À refaire sur un vrai iPhone si l'app y diffère. L'iPad n'est pas visé.
 
 ## Compte de démonstration
 
