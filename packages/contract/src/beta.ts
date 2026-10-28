@@ -121,8 +121,71 @@ export const retentionRowSchema = z.object({
 });
 export type RetentionRow = z.infer<typeof retentionRowSchema>;
 
+/** Longest period the measures cover at once, in days. */
+export const MEASURES_MAX_DAYS = 366;
+
+/** Days returned per cohort: J0 (the arrival, every player) to J30. */
+export const COHORT_DAYS = 31;
+
+/** `GET /admin/measures` query: the period, both days included, Paris time. By default, the last 30 days. */
+export const adminMeasuresQuerySchema = z.object({
+  from: z.iso.date().optional(),
+  to: z.iso.date().optional(),
+});
+export type AdminMeasuresQuery = z.infer<typeof adminMeasuresQuerySchema>;
+
+/** One day of activity. */
+export const measuresDaySchema = z.object({
+  day: z.iso.date(),
+  /** Players who opened the game that day. */
+  active: z.int().nonnegative(),
+  /** Players whose first day it was. */
+  arrived: z.int().nonnegative(),
+  boosters: z.int().nonnegative(),
+  answers: z.int().nonnegative(),
+  /** Accounts created (a guest who keeps their progress counts here). */
+  accounts: z.int().nonnegative(),
+});
+export type MeasuresDay = z.infer<typeof measuresDaySchema>;
+
+/** Players arrived on `day`, and how many played again on each of the 30 days after. */
+export const measuresCohortSchema = z.object({
+  day: z.iso.date(),
+  players: z.int().nonnegative(),
+  /** `back[n]`: players of the cohort who played on day `day + n`; `back[0]` is `players`. */
+  back: z.array(z.int().nonnegative()).length(COHORT_DAYS),
+});
+export type MeasuresCohort = z.infer<typeof measuresCohortSchema>;
+
 /** `GET /admin/measures`, 200: retention and funnel, admins excluded. */
 export const adminMeasuresSchema = z.object({
+  /**
+   * The period asked, the one just before it (same length) for comparison, and today. Cohorts,
+   * funnel, breakdowns and interest cover players arrived in the period.
+   */
+  period: z.object({
+    from: z.iso.date(),
+    to: z.iso.date(),
+    previousFrom: z.iso.date(),
+    previousTo: z.iso.date(),
+    today: z.iso.date(),
+    /** First day a counted player was seen; null before anyone came. */
+    firstDay: z.iso.date().nullable(),
+  }),
+  /** Every day from `previousFrom` to `to`, empty days included. */
+  daily: z.array(measuresDaySchema),
+  /** Distinct players active in the period and in the previous one. */
+  uniqueActive: z.object({ current: z.int().nonnegative(), previous: z.int().nonnegative() }),
+  /** Cohorts by day of arrival, from `previousFrom` to `to`; days without arrivals left out. */
+  cohorts: z.array(measuresCohortSchema),
+  /** Boosters opened and challenges answered in the period, by weekday (0 Monday) and hour (Paris). */
+  hours: z.array(
+    z.object({
+      weekday: z.int().min(0).max(6),
+      hour: z.int().min(0).max(23),
+      events: z.int().nonnegative(),
+    }),
+  ),
   funnel: z.object({
     /** Players seen at least one day. */
     arrived: z.int().nonnegative(),

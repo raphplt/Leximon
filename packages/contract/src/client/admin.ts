@@ -15,6 +15,7 @@ import {
   type AdminGrantBonusResponse,
   type AdminInvite,
   type AdminMeasures,
+  type AdminMeasuresQuery,
   type AdminOverview,
   type AdminPlayerDetail,
   type AdminPlayerKind,
@@ -270,7 +271,8 @@ export function adminRoutes(http: Http) {
       );
     },
 
-    fetchMeasures: (): Promise<AdminMeasures> => getJson("/admin/measures", adminMeasuresSchema),
+    fetchMeasures: (query: AdminMeasuresQuery = {}): Promise<AdminMeasures> =>
+      getJson(withQuery("/admin/measures", query), adminMeasuresSchema),
 
     fetchTesters: (cursor?: string): Promise<AdminTestersResponse> =>
       getJson(withQuery("/admin/testers", { cursor }), adminTestersResponseSchema),

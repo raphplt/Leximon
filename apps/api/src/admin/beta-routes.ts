@@ -6,6 +6,7 @@ import {
   type AdminTestersResponse,
   adminCreateInviteRequestSchema,
   adminFeedbackQuerySchema,
+  adminMeasuresQuerySchema,
   adminSetInvitePlacesRequestSchema,
   adminTestersQuerySchema,
 } from "@leximon/contract";
@@ -52,9 +53,13 @@ export function adminBetaRoutes() {
     return c.json<AdminInvite>(result.invite);
   });
 
-  routes.get("/measures", async (c) =>
-    c.json<AdminMeasures>(await readMeasures(c.var.db, Date.now())),
-  );
+  routes.get("/measures", async (c) => {
+    const query = adminMeasuresQuerySchema.safeParse(c.req.query());
+    if (!query.success) return c.json({ error: "invalid_request" }, 400);
+    const measures = await readMeasures(c.var.db, Date.now(), query.data);
+    if (measures === null) return c.json({ error: "invalid_request" }, 400);
+    return c.json<AdminMeasures>(measures);
+  });
 
   routes.get("/testers", async (c) => {
     const query = adminTestersQuerySchema.safeParse(c.req.query());

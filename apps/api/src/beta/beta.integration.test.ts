@@ -318,6 +318,21 @@ describe("closed beta", () => {
     );
     expect(measures.byOrigin.find((group) => group.key === "Prof")?.players).toBe(1);
     expect(measures.byAge.find((group) => group.key === "15-17")?.players).toBeGreaterThan(0);
+    const today = gameDayOf(Date.now()).key;
+    expect(measures.period.to).toBe(today);
+    expect(measures.daily).toHaveLength(60);
+    expect(measures.daily.at(-1)).toMatchObject({ day: today });
+    expect(measures.daily.at(-1)?.active).toBeGreaterThan(0);
+    expect(measures.daily.at(-1)?.accounts).toBeGreaterThan(0);
+    expect(measures.cohorts.find((cohort) => cohort.day === today)?.players).toBeGreaterThan(0);
+    expect(measures.uniqueActive.current).toBeGreaterThan(0);
+
+    const reversed = await app.request(
+      "/admin/measures?from=2026-10-20&to=2026-10-10",
+      { headers: headers({ cookie: admin.cookie }) },
+      env,
+    );
+    expect(reversed.status).toBe(400);
     const testers = adminTestersResponseSchema.parse(
       await (
         await app.request("/admin/testers", { headers: headers({ cookie: admin.cookie }) }, env)

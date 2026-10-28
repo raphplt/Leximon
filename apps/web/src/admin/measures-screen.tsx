@@ -1,102 +1,693 @@
 "use client";
 
-import type { AdminTester, RetentionRow } from "@leximon/contract";
+import type { AdminMeasures, AdminTester, RetentionRow } from "@leximon/contract";
 import Link from "next/link";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { adminApi, adminErrorMessage } from "@/admin/admin-api";
 import styles from "./admin.module.css";
+import {
+  Bar,
+  ColumnChart,
+  heat,
+  Legend,
+  LineChart,
+  SERIES,
+  type Series,
+  Sparkline,
+} from "./charts";
 import { formatNumber } from "./format";
-import { Stat } from "./overview-screen";
-import { useLoad } from "./use-load";
+import m from "./measures.module.css";
+import {
+  change,
+  cohortTable,
+  type DayMetric,
+  daysBetween,
+  type Grain,
+  PRESETS,
+  presetOf,
+  presetRange,
+  type Range,
+  type Rate,
+  retentionCurve,
+  retentionOn,
+  share,
+  total,
+} from "./measures-model";
 
-function percent(part: number, whole: number): string {
-  return whole === 0 ? "—" : `${Math.round((part / whole) * 100)} %`;
+const DAY_FORMAT = new Intl.DateTimeFormat("fr-FR", {
+  day: "numeric",
+  month: "short",
+  timeZone: "UTC",
+});
+const LONG_DAY_FORMAT = new Intl.DateTimeFormat("fr-FR", {
+  weekday: "short",
+  day: "numeric",
+  month: "short",
+  timeZone: "UTC",
+});
+const FULL_DAY_FORMAT = new Intl.DateTimeFormat("fr-FR", {
+  day: "numeric",
+  month: "long",
+  year: "numeric",
+  timeZone: "UTC",
+});
+
+const asDate = (day: string) => new Date(`${day}T00:00:00Z`);
+const shortDay = (day: string) => DAY_FORMAT.format(asDate(day));
+const longDay = (day: string) => LONG_DAY_FORMAT.format(asDate(day));
+const fullDay = (day: string) => FULL_DAY_FORMAT.format(asDate(day));
+
+function percent(value: number | null, digits = 0): string {
+  return value === null ? "—" : `${(value * 100).toFixed(digits).replace(".", ",")} %`;
 }
 
-function rate(value: RetentionRow["d1"]): string {
-  return value.eligible === 0
-    ? "—"
-    : `${percent(value.players, value.eligible)} (${value.players}/${value.eligible})`;
+const DAY_PARAM = /^\d{4}-\d{2}-\d{2}$/;
+
+function dayParam(value: string | null): string | undefined {
+  return value !== null && DAY_PARAM.test(value) ? value : undefined;
 }
 
-/** Retention and funnel of the beta, computed from the game's own database. Admins excluded. */
+/**
+ * Retention, activity and funnel of the beta over a period, computed from the game's own database.
+ * The period lives in the address, so that a view can be shared or reloaded.
+ */
 export function MeasuresScreen() {
-  const { state, reload } = useLoad(adminApi.fetchMeasures);
+  const router = useRouter();
+  const pathname = usePathname();
+  const params = useSearchParams();
+  const from = dayParam(params.get("du"));
+  const to = dayParam(params.get("au"));
+  const [data, setData] = useState<AdminMeasures | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [busy, setBusy] = useState(true);
+  const [nonce, setNonce] = useState(0);
+
+  // biome-ignore lint/correctness/useExhaustiveDependencies: `nonce` asks for a fresh read.
+  useEffect(() => {
+    let live = true;
+    setBusy(true);
+    adminApi
+      .fetchMeasures({ from, to })
+      .then((measures) => {
+        if (!live) return;
+        setData(measures);
+        setError(null);
+      })
+      .catch((caught: unknown) => {
+        if (live) setError(adminErrorMessage(caught));
+      })
+      .finally(() => {
+        if (live) setBusy(false);
+      });
+    return () => {
+      live = false;
+    };
+  }, [from, to, nonce]);
+
+  const choose = (range: Range) => {
+    router.replace(`${pathname}?du=${range.from}&au=${range.to}`, { scroll: false });
+  };
+
   return (
     <>
-      <div className={styles.toolbar}>
+      <div className={m.header}>
         <h1 className={styles.title}>Mesure</h1>
-        <button type="button" className={styles.button} onClick={reload}>
-          Actualiser
-        </button>
+        {data !== null && (
+          <PeriodPicker
+            period={data.period}
+            busy={busy}
+            onChoose={choose}
+            onRefresh={() => setNonce((n) => n + 1)}
+          />
+        )}
       </div>
-      <p className={styles.muted}>
-        Un joueur compte le jour où il ouvre le jeu (heure de Paris). J7 : revenu le 7e jour
-        exactement, parmi ceux arrivés il y a 7 jours ou plus. Les admins ne comptent pas.
-      </p>
-      {state.kind === "loading" && <p className={styles.muted}>Chargement…</p>}
-      {state.kind === "failed" && <p className={styles.error}>{state.message}</p>}
-      {state.kind === "ready" && (
-        <>
-          <h2 className={styles.subtitle}>Joueurs actifs</h2>
-          <div className={styles.stats}>
-            <Stat label="Aujourd'hui" value={state.data.activeToday} />
-            <Stat label="7 derniers jours" value={state.data.active7d} />
-            <Stat label="30 derniers jours" value={state.data.active30d} />
-          </div>
-          <h2 className={styles.subtitle}>Entonnoir</h2>
-          <Funnel funnel={state.data.funnel} />
-          <RetentionTable title="Par semaine d'arrivée" rows={state.data.byWeek} />
-          <RetentionTable title="Par invitation ou source" rows={state.data.byOrigin} />
-          <RetentionTable title="Par âge déclaré" rows={state.data.byAge} />
-          <h2 className={styles.subtitle}>Fausse porte « Devenir mécène »</h2>
-          <div className={styles.stats}>
-            <Stat
-              label="Ont ouvert la page"
-              value={state.data.interest.patronDoor}
-              note={
-                percent(state.data.interest.patronDoor, state.data.active30d) +
-                " des actifs à 30 jours"
-              }
-            />
-            <Stat label="Ont demandé à être prévenus" value={state.data.interest.patronNotify} />
-          </div>
-        </>
+      {error !== null && <p className={styles.error}>{error}</p>}
+      {data === null ? (
+        error === null && <p className={styles.muted}>Chargement…</p>
+      ) : (
+        <div className={m.dashboard} data-busy={busy}>
+          <Dashboard data={data} />
+        </div>
       )}
       <Testers />
     </>
   );
 }
 
-function Funnel({
-  funnel,
+function PeriodPicker({
+  period,
+  busy,
+  onChoose,
+  onRefresh,
 }: {
-  readonly funnel: {
-    readonly arrived: number;
-    readonly openedBooster: number;
-    readonly answeredChallenge: number;
-    readonly tradedOnce: number;
-    readonly createdAccount: number;
-    readonly cameBack: number;
-  };
+  readonly period: AdminMeasures["period"];
+  readonly busy: boolean;
+  readonly onChoose: (range: Range) => void;
+  readonly onRefresh: () => void;
 }) {
-  const steps = [
-    ["Arrivés", funnel.arrived],
-    ["Un sachet ouvert", funnel.openedBooster],
-    ["Un défi répondu", funnel.answeredChallenge],
-    ["Un échange conclu", funnel.tradedOnce],
-    ["Compte créé", funnel.createdAccount],
-    ["Revenus un autre jour", funnel.cameBack],
-  ] as const;
+  const active = presetOf(period, period.today, period.firstDay);
+  const pickDay = (key: "from" | "to", value: string) => {
+    if (!DAY_PARAM.test(value)) return;
+    const next = { from: period.from, to: period.to, [key]: value };
+    if (next.from > next.to) return;
+    onChoose(next);
+  };
   return (
-    <div className={styles.tableWrap}>
-      <table className={styles.table}>
+    <div className={m.picker}>
+      <fieldset className={m.segmented} aria-label="Période">
+        {PRESETS.map((preset) => (
+          <button
+            key={preset.key}
+            type="button"
+            className={m.segment}
+            aria-pressed={active === preset.key}
+            onClick={() => onChoose(presetRange(preset.key, period.today, period.firstDay))}
+          >
+            {preset.label}
+          </button>
+        ))}
+      </fieldset>
+      <div className={m.dates}>
+        <input
+          type="date"
+          className={styles.input}
+          aria-label="Du"
+          value={period.from}
+          max={period.to}
+          onChange={(event) => pickDay("from", event.target.value)}
+        />
+        <span aria-hidden="true">→</span>
+        <input
+          type="date"
+          className={styles.input}
+          aria-label="Au"
+          value={period.to}
+          min={period.from}
+          max={period.today}
+          onChange={(event) => pickDay("to", event.target.value)}
+        />
+      </div>
+      <button type="button" className={styles.button} onClick={onRefresh} disabled={busy}>
+        {busy ? "Lecture…" : "Actualiser"}
+      </button>
+    </div>
+  );
+}
+
+function Dashboard({ data }: { readonly data: AdminMeasures }) {
+  const { period } = data;
+  const current: Range = { from: period.from, to: period.to };
+  const previous: Range = { from: period.previousFrom, to: period.previousTo };
+  const days = daysBetween(period.from, period.to) + 1;
+  const currentDays = data.daily.filter((day) => day.day >= period.from);
+  const series = (metric: DayMetric) => currentDays.map((day) => day[metric]);
+  const sum = (metric: DayMetric, range: Range) => total(data.daily, metric, range);
+  const d1 = retentionOn(data.cohorts, current, 1, period.today);
+  const d1Before = retentionOn(data.cohorts, previous, 1, period.today);
+  const d7 = retentionOn(data.cohorts, current, 7, period.today);
+  const d7Before = retentionOn(data.cohorts, previous, 7, period.today);
+
+  return (
+    <>
+      <p className={styles.muted}>
+        Du {fullDay(period.from)} au {fullDay(period.to)} ({days} jour{days > 1 ? "s" : ""}),
+        comparé aux {days} jours d'avant. Un joueur compte le jour où il ouvre le jeu, heure de
+        Paris. Les admins ne comptent pas.
+      </p>
+      <div className={m.live}>
+        <span className={m.liveDot} aria-hidden="true" />
+        En ce moment : <strong>{formatNumber(data.activeToday)}</strong> aujourd'hui ·{" "}
+        <strong>{formatNumber(data.active7d)}</strong> sur 7 jours ·{" "}
+        <strong>{formatNumber(data.active30d)}</strong> sur 30 jours
+      </div>
+
+      <div className={m.kpis}>
+        <Kpi
+          label="Joueurs actifs"
+          value={formatNumber(data.uniqueActive.current)}
+          delta={ratioDelta(data.uniqueActive.current, data.uniqueActive.previous)}
+          trend={series("active")}
+        />
+        <Kpi
+          label="Nouveaux joueurs"
+          value={formatNumber(sum("arrived", current))}
+          delta={ratioDelta(sum("arrived", current), sum("arrived", previous))}
+          trend={series("arrived")}
+          color={SERIES.yellow}
+        />
+        <Kpi
+          label="Actifs par jour, en moyenne"
+          value={(sum("active", current) / days).toFixed(1).replace(".", ",")}
+          delta={ratioDelta(sum("active", current), sum("active", previous))}
+          trend={series("active")}
+        />
+        <Kpi
+          label="Comptes créés"
+          value={formatNumber(sum("accounts", current))}
+          delta={ratioDelta(sum("accounts", current), sum("accounts", previous))}
+          trend={series("accounts")}
+        />
+        <Kpi
+          label="Sachets ouverts"
+          value={formatNumber(sum("boosters", current))}
+          delta={ratioDelta(sum("boosters", current), sum("boosters", previous))}
+          trend={series("boosters")}
+        />
+        <Kpi
+          label="Défis répondus"
+          value={formatNumber(sum("answers", current))}
+          delta={ratioDelta(sum("answers", current), sum("answers", previous))}
+          trend={series("answers")}
+        />
+        <Kpi
+          label="Revenus à J1"
+          value={percent(share(d1))}
+          note={`${formatNumber(d1.players)} sur ${formatNumber(d1.eligible)}`}
+          delta={pointsDelta(d1, d1Before)}
+        />
+        <Kpi
+          label="Revenus à J7"
+          value={percent(share(d7))}
+          note={`${formatNumber(d7.players)} sur ${formatNumber(d7.eligible)}`}
+          delta={pointsDelta(d7, d7Before)}
+        />
+      </div>
+
+      <Activity days={currentDays} />
+
+      <div className={m.split}>
+        <section className={m.panel}>
+          <PanelHead
+            title="Entonnoir"
+            hint="Joueurs arrivés sur la période, et ce qu'ils ont fait depuis."
+          />
+          <Funnel funnel={data.funnel} />
+        </section>
+        <section className={m.panel}>
+          <PanelHead
+            title="Courbe de rétention"
+            hint="Part des joueurs revenus pile N jours après leur arrivée, parmi ceux pour qui ce jour est passé."
+          />
+          <Legend
+            items={[
+              { label: "Arrivés sur la période", color: SERIES.blue },
+              { label: "Arrivés la période d'avant", color: SERIES.gray },
+            ]}
+          />
+          <RetentionCurve data={data} current={current} previous={previous} />
+        </section>
+      </div>
+
+      <Cohorts data={data} current={current} days={days} />
+
+      <div className={m.split}>
+        <section className={m.panel}>
+          <PanelHead title="Par invitation ou source" hint="Arrivés sur la période." />
+          <Breakdown rows={data.byOrigin} />
+        </section>
+        <section className={m.panel}>
+          <PanelHead title="Par âge déclaré" hint="Arrivés sur la période." />
+          <Breakdown rows={data.byAge} labels={AGE_LABELS} />
+        </section>
+      </div>
+
+      <Hours hours={data.hours} />
+
+      <section className={m.panel}>
+        <PanelHead
+          title="Fausse porte « Devenir mécène »"
+          hint="Signaux d'intérêt reçus sur la période, pour une offre pas encore en vente."
+        />
+        <div className={m.kpis}>
+          <Kpi
+            label="Ont ouvert la page"
+            value={formatNumber(data.interest.patronDoor)}
+            note={`${percent(
+              data.uniqueActive.current === 0
+                ? null
+                : data.interest.patronDoor / data.uniqueActive.current,
+            )} des joueurs actifs`}
+          />
+          <Kpi
+            label="Ont demandé à être prévenus"
+            value={formatNumber(data.interest.patronNotify)}
+            note={`${percent(
+              data.interest.patronDoor === 0
+                ? null
+                : data.interest.patronNotify / data.interest.patronDoor,
+            )} de ceux qui ont ouvert`}
+          />
+        </div>
+      </section>
+    </>
+  );
+}
+
+interface Delta {
+  readonly text: string;
+  readonly direction: "up" | "down" | "flat";
+}
+
+function ratioDelta(current: number, previous: number): Delta | null {
+  const ratio = change(current, previous);
+  if (ratio === null) return null;
+  const rounded = Math.round(ratio * 100);
+  return {
+    text: `${rounded > 0 ? "+" : ""}${formatNumber(rounded)} %`,
+    direction: rounded > 0 ? "up" : rounded < 0 ? "down" : "flat",
+  };
+}
+
+function pointsDelta(current: Rate, previous: Rate): Delta | null {
+  const now = share(current);
+  const before = share(previous);
+  if (now === null || before === null) return null;
+  const points = Math.round((now - before) * 100);
+  return {
+    text: `${points > 0 ? "+" : ""}${points} pt${Math.abs(points) > 1 ? "s" : ""}`,
+    direction: points > 0 ? "up" : points < 0 ? "down" : "flat",
+  };
+}
+
+const ARROWS = { up: "▲", down: "▼", flat: "■" } as const;
+
+function Kpi({
+  label,
+  value,
+  delta,
+  note,
+  trend,
+  color,
+}: {
+  readonly label: string;
+  readonly value: string;
+  readonly delta?: Delta | null;
+  readonly note?: string;
+  readonly trend?: readonly number[];
+  readonly color?: string;
+}) {
+  return (
+    <div className={m.kpi}>
+      <span className={m.kpiLabel}>{label}</span>
+      <div className={m.kpiLine}>
+        <span className={m.kpiValue}>{value}</span>
+        {delta != null && (
+          <span
+            className={m.delta}
+            data-direction={delta.direction}
+            title="Par rapport à la période d'avant"
+          >
+            <span aria-hidden="true">{ARROWS[delta.direction]}</span> {delta.text}
+          </span>
+        )}
+      </div>
+      {note !== undefined && <span className={m.kpiNote}>{note}</span>}
+      {trend !== undefined && (
+        <Sparkline values={trend} {...(color === undefined ? {} : { color })} />
+      )}
+    </div>
+  );
+}
+
+function PanelHead({
+  title,
+  hint,
+  children,
+}: {
+  readonly title: string;
+  readonly hint?: string;
+  readonly children?: React.ReactNode;
+}) {
+  return (
+    <div className={m.panelHead}>
+      <div>
+        <h2 className={styles.subtitle}>{title}</h2>
+        {hint !== undefined && <p className={m.hint}>{hint}</p>}
+      </div>
+      {children}
+    </div>
+  );
+}
+
+const METRICS = [
+  { key: "players", label: "Joueurs" },
+  { key: "boosters", label: "Sachets" },
+  { key: "answers", label: "Défis" },
+  { key: "accounts", label: "Comptes" },
+] as const;
+type Metric = (typeof METRICS)[number]["key"];
+
+function Activity({ days }: { readonly days: AdminMeasures["daily"] }) {
+  const [metric, setMetric] = useState<Metric>("players");
+  const labels = days.map((day) => day.day);
+  const series: Series[] =
+    metric === "players"
+      ? [
+          {
+            key: "back",
+            label: "Revenus",
+            color: SERIES.blue,
+            values: days.map((day) => day.active - day.arrived),
+          },
+          {
+            key: "new",
+            label: "Nouveaux",
+            color: SERIES.yellow,
+            values: days.map((day) => day.arrived),
+          },
+        ]
+      : [
+          {
+            key: metric,
+            label: METRICS.find((candidate) => candidate.key === metric)?.label ?? "",
+            color: SERIES.blue,
+            values: days.map((day) => day[metric]),
+          },
+        ];
+  return (
+    <section className={m.panel}>
+      <PanelHead title="Activité par jour">
+        <fieldset className={m.segmented} aria-label="Mesure affichée">
+          {METRICS.map((candidate) => (
+            <button
+              key={candidate.key}
+              type="button"
+              className={m.segment}
+              aria-pressed={metric === candidate.key}
+              onClick={() => setMetric(candidate.key)}
+            >
+              {candidate.label}
+            </button>
+          ))}
+        </fieldset>
+      </PanelHead>
+      {metric === "players" && (
+        <Legend
+          items={[
+            { label: "Nouveaux", color: SERIES.yellow },
+            { label: "Revenus", color: SERIES.blue },
+          ]}
+        />
+      )}
+      <ColumnChart labels={labels} tickLabel={shortDay} tooltipTitle={longDay} series={series} />
+    </section>
+  );
+}
+
+const FUNNEL_STEPS = [
+  ["arrived", "Arrivés"],
+  ["openedBooster", "Un sachet ouvert"],
+  ["answeredChallenge", "Un défi répondu"],
+  ["createdAccount", "Compte créé"],
+  ["cameBack", "Revenus un autre jour"],
+  ["tradedOnce", "Un échange conclu"],
+] as const;
+
+function Funnel({ funnel }: { readonly funnel: AdminMeasures["funnel"] }) {
+  if (funnel.arrived === 0)
+    return <p className={styles.muted}>Personne d'arrivé sur la période.</p>;
+  return (
+    <div className={m.funnel}>
+      {FUNNEL_STEPS.map(([key, label]) => {
+        const value = funnel[key];
+        const part = value / funnel.arrived;
+        return (
+          <div key={key} className={m.funnelStep}>
+            <span className={m.funnelLabel}>{label}</span>
+            <Bar share={part}>
+              <span className={m.funnelValue}>
+                <strong>{formatNumber(value)}</strong> {percent(part)}
+              </span>
+            </Bar>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+const CURVE_DAYS = 30;
+/** J1, J7, J14, J21 and J30, as positions on the curve. */
+const CURVE_TICKS = [0, 6, 13, 20, 29];
+
+function RetentionCurve({
+  data,
+  current,
+  previous,
+}: {
+  readonly data: AdminMeasures;
+  readonly current: Range;
+  readonly previous: Range;
+}) {
+  const now = retentionCurve(data.cohorts, current, CURVE_DAYS, data.period.today);
+  const before = retentionCurve(data.cohorts, previous, CURVE_DAYS, data.period.today);
+  if (now.every((rate) => rate.eligible === 0) && before.every((rate) => rate.eligible === 0)) {
+    return <p className={styles.muted}>Personne n'a encore eu de lendemain.</p>;
+  }
+  const detail = (rate: Rate) => `${rate.players}/${rate.eligible}`;
+  return (
+    <LineChart
+      labels={now.map((_, i) => `J${i + 1}`)}
+      ticks={CURVE_TICKS}
+      format={(value) => percent(value)}
+      maxValue={1}
+      series={[
+        {
+          key: "previous",
+          label: "Période d'avant",
+          color: SERIES.gray,
+          values: before.map(share),
+          details: before.map(detail),
+        },
+        {
+          key: "current",
+          label: "Période",
+          color: SERIES.blue,
+          values: now.map(share),
+          details: now.map(detail),
+        },
+      ]}
+    />
+  );
+}
+
+const COHORT_OFFSETS = [1, 2, 3, 4, 5, 6, 7, 14, 21, 30] as const;
+
+function Cohorts({
+  data,
+  current,
+  days,
+}: {
+  readonly data: AdminMeasures;
+  readonly current: Range;
+  readonly days: number;
+}) {
+  const [chosen, setChosen] = useState<Grain | null>(null);
+  const grain = chosen ?? (days > 31 ? "week" : "day");
+  const rows = cohortTable(data.cohorts, current, grain, COHORT_OFFSETS, data.period.today);
+  return (
+    <section className={m.panel}>
+      <PanelHead
+        title="Cohortes"
+        hint="Joueurs arrivés le même jour ou la même semaine, et la part revenue pile N jours après."
+      >
+        <fieldset className={m.segmented} aria-label="Regrouper par">
+          {(
+            [
+              ["day", "Par jour"],
+              ["week", "Par semaine"],
+            ] as const
+          ).map(([key, label]) => (
+            <button
+              key={key}
+              type="button"
+              className={m.segment}
+              aria-pressed={grain === key}
+              onClick={() => setChosen(key)}
+            >
+              {label}
+            </button>
+          ))}
+        </fieldset>
+      </PanelHead>
+      {rows.length === 0 ? (
+        <p className={styles.muted}>Personne d'arrivé sur la période.</p>
+      ) : (
+        <div className={m.heatWrap}>
+          <table className={m.heat}>
+            <thead>
+              <tr>
+                <th>{grain === "day" ? "Arrivés le" : "Semaine du"}</th>
+                <th>Joueurs</th>
+                {COHORT_OFFSETS.map((offset) => (
+                  <th key={offset}>J{offset}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {rows.map((row) => (
+                <tr key={row.key}>
+                  <th scope="row">{grain === "day" ? longDay(row.key) : shortDay(row.key)}</th>
+                  <td className={m.count}>{formatNumber(row.players)}</td>
+                  {row.rates.map((rate, i) => (
+                    <HeatCell key={COHORT_OFFSETS[i]} rate={rate} />
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </section>
+  );
+}
+
+function HeatCell({ rate }: { readonly rate: Rate }) {
+  const value = share(rate);
+  if (value === null) return <td className={m.pending} />;
+  return (
+    <td style={heat(value)} title={`${rate.players} sur ${rate.eligible}`}>
+      {percent(value)}
+    </td>
+  );
+}
+
+const AGE_LABELS: Readonly<Record<string, string>> = { "50+": "50 et +" };
+
+function Breakdown({
+  rows,
+  labels = {},
+}: {
+  readonly rows: readonly RetentionRow[];
+  readonly labels?: Readonly<Record<string, string>>;
+}) {
+  if (rows.length === 0) return <p className={styles.muted}>Personne d'arrivé sur la période.</p>;
+  const most = Math.max(...rows.map((row) => row.players));
+  return (
+    <div className={m.heatWrap}>
+      <table className={m.heat}>
+        <thead>
+          <tr>
+            <th />
+            <th className={m.wide}>Joueurs</th>
+            <th>J1</th>
+            <th>J7</th>
+            <th>J30</th>
+          </tr>
+        </thead>
         <tbody>
-          {steps.map(([label, value]) => (
-            <tr key={label}>
-              <td>{label}</td>
-              <td>{formatNumber(value)}</td>
-              <td>{percent(value, funnel.arrived)}</td>
+          {rows.map((row) => (
+            <tr key={row.key}>
+              <th scope="row">{labels[row.key] ?? row.key}</th>
+              <td className={m.wide}>
+                <Bar share={row.players / most}>
+                  <span className={m.count}>{formatNumber(row.players)}</span>
+                </Bar>
+              </td>
+              <HeatCell rate={row.d1} />
+              <HeatCell rate={row.d7} />
+              <HeatCell rate={row.d30} />
             </tr>
           ))}
         </tbody>
@@ -105,49 +696,90 @@ function Funnel({
   );
 }
 
-function RetentionTable({
-  title,
-  rows,
-}: {
-  readonly title: string;
-  readonly rows: readonly RetentionRow[];
-}) {
+const HOURS = Array.from({ length: 24 }, (_, hour) => hour);
+const WEEKDAYS = ["Lun.", "Mar.", "Mer.", "Jeu.", "Ven.", "Sam.", "Dim."] as const;
+const LONG_WEEKDAYS = [
+  "lundi",
+  "mardi",
+  "mercredi",
+  "jeudi",
+  "vendredi",
+  "samedi",
+  "dimanche",
+] as const;
+
+function Hours({ hours }: { readonly hours: AdminMeasures["hours"] }) {
+  const [hover, setHover] = useState<{ weekday: number; hour: number } | null>(null);
+  const grid = new Map(hours.map((cell) => [`${cell.weekday}-${cell.hour}`, cell.events]));
+  const most = Math.max(0, ...hours.map((cell) => cell.events));
+  const all = hours.reduce((sum, cell) => sum + cell.events, 0);
+  const hovered =
+    hover === null ? null : { ...hover, events: grid.get(`${hover.weekday}-${hover.hour}`) ?? 0 };
   return (
-    <>
-      <h2 className={styles.subtitle}>{title}</h2>
-      {rows.length === 0 ? (
-        <p className={styles.muted}>Personne encore.</p>
+    <section className={m.panel}>
+      <PanelHead
+        title="Heures de jeu"
+        hint="Sachets ouverts et défis répondus sur la période, par jour de la semaine et heure de Paris."
+      />
+      {all === 0 ? (
+        <p className={styles.muted}>Aucune partie sur la période.</p>
       ) : (
-        <div className={styles.tableWrap}>
-          <table className={styles.table}>
-            <thead>
-              <tr>
-                <th />
-                <th>Joueurs</th>
-                <th>J1</th>
-                <th>J7</th>
-                <th>J30</th>
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map((row) => (
-                <tr key={row.key}>
-                  <td>{row.key}</td>
-                  <td>{formatNumber(row.players)}</td>
-                  <td>{rate(row.d1)}</td>
-                  <td>{rate(row.d7)}</td>
-                  <td>{rate(row.d30)}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <>
+          <div className={m.hours} onPointerLeave={() => setHover(null)}>
+            <span />
+            {HOURS.map((hour) => (
+              <span key={hour} className={m.hourLabel}>
+                {hour % 3 === 0 ? `${hour} h` : ""}
+              </span>
+            ))}
+            {WEEKDAYS.map((weekday, day) => (
+              <HoursRow
+                key={weekday}
+                label={weekday}
+                values={HOURS.map((hour) => grid.get(`${day}-${hour}`) ?? 0)}
+                most={most}
+                onHover={(hour) => setHover({ weekday: day, hour })}
+              />
+            ))}
+          </div>
+          <p className={m.hint} aria-live="polite">
+            {hovered === null
+              ? `${formatNumber(all)} actions en tout. Survolez une case pour le détail.`
+              : `Le ${LONG_WEEKDAYS[hovered.weekday]} entre ${hovered.hour} h et ${hovered.hour + 1} h : ${formatNumber(hovered.events)} action${hovered.events > 1 ? "s" : ""} (${percent(hovered.events / all, 1)}).`}
+          </p>
+        </>
       )}
-    </>
+    </section>
   );
 }
 
-const AGE_LABELS: Readonly<Record<string, string>> = { "50+": "50 et +" };
+function HoursRow({
+  label,
+  values,
+  most,
+  onHover,
+}: {
+  readonly label: string;
+  readonly values: readonly number[];
+  readonly most: number;
+  readonly onHover: (hour: number) => void;
+}) {
+  return (
+    <>
+      <span className={m.dayLabel}>{label}</span>
+      {values.map((events, hour) => (
+        <span
+          // biome-ignore lint/suspicious/noArrayIndexKey: the hour is the identity of the cell.
+          key={hour}
+          className={m.hourCell}
+          // A square root keeps the quiet hours visible beside one very busy player.
+          style={events === 0 ? undefined : heat(most === 0 ? 0 : Math.sqrt(events / most))}
+          onPointerEnter={() => onHover(hour)}
+        />
+      ))}
+    </>
+  );
+}
 
 /** Each tester, by the last day they played. */
 function Testers() {
@@ -189,7 +821,7 @@ function Testers() {
 
   return (
     <>
-      <h2 className={styles.subtitle}>Testeurs</h2>
+      <h2 className={styles.subtitle}>Testeurs, du dernier venu au plus ancien</h2>
       {error !== null && <p className={styles.error}>{error}</p>}
       {testers.length > 0 && (
         <div className={styles.tableWrap}>
@@ -221,8 +853,8 @@ function Testers() {
                       ? "—"
                       : (AGE_LABELS[tester.ageBracket] ?? tester.ageBracket)}
                   </td>
-                  <td>{tester.firstDay}</td>
-                  <td>{tester.lastDay}</td>
+                  <td>{shortDay(tester.firstDay)}</td>
+                  <td>{shortDay(tester.lastDay)}</td>
                   <td>{formatNumber(tester.daysPlayed)}</td>
                   <td>{formatNumber(tester.boosters)}</td>
                   <td>{formatNumber(tester.answers)}</td>

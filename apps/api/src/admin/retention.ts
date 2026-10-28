@@ -59,3 +59,52 @@ function tally(rate: RetentionRow["d1"], eligible: boolean, back: boolean): Rete
   if (!eligible) return rate;
   return { players: rate.players + (back ? 1 : 0), eligible: rate.eligible + 1 };
 }
+
+/** `day` moved by `days`, both `YYYY-MM-DD`. */
+export function addDays(day: string, days: number): string {
+  return new Date(Date.parse(`${day}T00:00:00Z`) + days * DAY_MS).toISOString().slice(0, 10);
+}
+
+export interface MeasuresPeriod {
+  readonly from: string;
+  readonly to: string;
+  readonly previousFrom: string;
+  readonly previousTo: string;
+}
+
+const DEFAULT_DAYS = 30;
+
+/**
+ * The period the measures cover, and the one of the same length just before it. Without bounds,
+ * the last 30 days; a period ending after today stops at today. `null` when the bounds are
+ * reversed or the period too long.
+ */
+export function resolvePeriod(
+  query: { readonly from?: string | undefined; readonly to?: string | undefined },
+  today: string,
+  maxDays: number,
+): MeasuresPeriod | null {
+  const to = query.to === undefined || query.to > today ? today : query.to;
+  const from = query.from ?? addDays(to, 1 - DEFAULT_DAYS);
+  if (from > to) return null;
+  const length = daysBetween(from, to) + 1;
+  if (length > maxDays) return null;
+  return { from, to, previousFrom: addDays(from, -length), previousTo: addDays(from, -1) };
+}
+
+/** Each cohort's size and returns, from rows of (arrival day, days since arrival, players). */
+export function cohortsFrom(
+  rows: readonly { readonly day: string; readonly offset: number; readonly players: number }[],
+  days: number,
+): { day: string; players: number; back: number[] }[] {
+  const cohorts = new Map<string, number[]>();
+  for (const row of rows) {
+    if (row.offset < 0 || row.offset >= days) continue;
+    const back = cohorts.get(row.day) ?? new Array<number>(days).fill(0);
+    back[row.offset] = row.players;
+    cohorts.set(row.day, back);
+  }
+  return [...cohorts.entries()]
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([day, back]) => ({ day, players: back[0] ?? 0, back }));
+}

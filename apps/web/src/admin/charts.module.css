@@ -1,0 +1,152 @@
+/* Charts of the back office: thin marks, quiet axes, the data alone is loud. */
+
+.chart {
+  position: relative;
+  width: 100%;
+  min-width: 0;
+  border-radius: 10px;
+}
+
+.chart:focus-visible {
+  outline: 2px solid var(--lx-color-focus);
+  outline-offset: 4px;
+}
+
+.svg {
+  display: block;
+  overflow: visible;
+}
+
+.grid {
+  stroke: rgba(255, 255, 255, 0.07);
+  stroke-width: 1;
+}
+
+.baseline {
+  stroke: rgba(255, 255, 255, 0.22);
+  stroke-width: 1;
+}
+
+.crosshair {
+  stroke: rgba(255, 255, 255, 0.35);
+  stroke-width: 1;
+  pointer-events: none;
+}
+
+.wash {
+  fill: rgba(255, 255, 255, 0.05);
+  pointer-events: none;
+}
+
+.yTick,
+.xTick {
+  fill: var(--lx-color-text-faint);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+
+.yTick {
+  text-anchor: end;
+  dominant-baseline: middle;
+}
+
+.xTick {
+  text-anchor: middle;
+}
+
+.dot {
+  stroke: var(--lx-color-background-raised);
+  stroke-width: 2;
+  pointer-events: none;
+}
+
+.tooltip {
+  position: absolute;
+  top: 8px;
+  z-index: 2;
+  min-width: 140px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: var(--lx-color-sunken);
+  border: 1px solid var(--lx-color-outline);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+  font-size: 13px;
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+.tooltipTitle {
+  margin-bottom: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--lx-color-text-muted);
+}
+
+.tooltipRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  line-height: 1.6;
+  color: var(--lx-color-text-muted);
+}
+
+.tooltipRow strong {
+  min-width: 32px;
+  color: var(--lx-color-text);
+  font-variant-numeric: tabular-nums;
+}
+
+.key {
+  width: 12px;
+  height: 3px;
+  border-radius: 2px;
+  flex: none;
+}
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 16px;
+  font-size: 13px;
+  color: var(--lx-color-text-muted);
+}
+
+.legendItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.swatch {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+}
+
+.spark {
+  display: block;
+  width: 100%;
+  height: 32px;
+  overflow: visible;
+}
+
+.barRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.barTrack {
+  flex: 1;
+  min-width: 60px;
+  height: 10px;
+  border-radius: 5px;
+  background: rgba(255, 255, 255, 0.06);
+  overflow: hidden;
+}
+
+.barFill {
+  height: 100%;
+  border-radius: 0 5px 5px 0;
+}
