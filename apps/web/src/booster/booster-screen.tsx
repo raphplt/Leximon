@@ -520,7 +520,7 @@ export function BoosterScreen() {
               <div className={play.stage}>
                 {phase.name === "unavailable" && (
                   <>
-                    <p className={play.message}>Le serveur lambine.</p>
+                    <p className={play.message}>Le serveur ne répond pas.</p>
                     <Button variant="secondary" onClick={() => void load()}>
                       Réessayer
                     </Button>

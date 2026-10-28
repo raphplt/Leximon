@@ -13,16 +13,14 @@ describe("renderSignInCodeEmail", () => {
   it("writes the approved text, code first", () => {
     expect(email.text).toBe(
       "482913\n\nVoici ton code de connexion Leximon, valable 10 minutes.\n\n" +
-        "Si tu n'as pas demandé ce code, ignore simplement cet e-mail.\n\n-- \nLeximon · leximon.fr\n",
+        "Si tu n'as pas demandé ce code, ignore cet e-mail.\n\n-- \nLeximon · leximon.fr\n",
     );
   });
 
   it("shows the code and the same sentences in the HTML part", () => {
     expect(email.html).toContain(">482913</span>");
     expect(email.html).toContain("valable 10 minutes.");
-    expect(email.html).toContain(
-      "Si tu n&#39;as pas demandé ce code, ignore simplement cet e-mail.",
-    );
+    expect(email.html).toContain("Si tu n&#39;as pas demandé ce code, ignore cet e-mail.");
     expect(email.html).toContain('<html lang="fr">');
   });
 

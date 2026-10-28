@@ -215,7 +215,7 @@ export function CoffretHost() {
                   </Text>
                 ) : step.name === "failed" ? (
                   <Text style={styles.refused} accessibilityRole="alert">
-                    Le serveur lambine. Réessaie.
+                    Le serveur ne répond pas. Réessaie.
                   </Text>
                 ) : (
                   <Text style={styles.hint}>{level === null ? "" : coffretHint(level, now)}</Text>

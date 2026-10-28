@@ -167,7 +167,7 @@ export function AccountScreen() {
 
       {step.kind === "failed" && (
         <div className={styles.panel}>
-          <p className={styles.hint}>Le serveur lambine.</p>
+          <p className={styles.hint}>Le serveur ne répond pas.</p>
           <button type="button" className={styles.secondary} onClick={() => void load()}>
             Réessayer
           </button>

@@ -105,8 +105,8 @@ describe("rarityCompletedLabel", () => {
 
 describe("firstOfRarityLabel", () => {
   it("agrees with the rarity name", () => {
-    expect(firstOfRarityLabel("legendary")).toBe("Ta première Légendaire !");
-    expect(firstOfRarityLabel("precious")).toBe("Ton premier Précieux !");
+    expect(firstOfRarityLabel("legendary")).toBe("Ta première carte Légendaire !");
+    expect(firstOfRarityLabel("precious")).toBe("Ta première carte Précieuse !");
   });
 });
 

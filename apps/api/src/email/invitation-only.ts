@@ -23,7 +23,7 @@ export function renderInvitationOnlyEmail(): RenderedEmail {
   const button = "Rejoindre le Discord";
   const haveOne =
     "Quelqu'un t'a déjà envoyé un lien d'invitation ? Ouvre-le, puis redemande ton code.";
-  const ignore = "Si tu n'es pas à l'origine de cette demande, ignore simplement cet e-mail.";
+  const ignore = "Si tu n'es pas à l'origine de cette demande, ignore cet e-mail.";
   const c = EMAIL_COLORS;
 
   const bodyHtml = [

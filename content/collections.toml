@@ -23,7 +23,7 @@ engraving = { title = "File:Marques typographiques, ou, Recueil des monogrammes,
 [[collection]]
 id = "caracteres"
 name = "Caractères et travers"
-tagline = "Sacripants, médicastres et pendardeaux."
+tagline = "Des mots pour railler les défauts de chacun."
 runs = ["caracteres-1"]
 domains = ["caractere"]
 back = "burgundy"
@@ -33,7 +33,7 @@ engraving = { title = "File:\"Scorn\" from Le Brun, Wellcome L0012155.jpg", crop
 [[collection]]
 id = "metiers"
 name = "Métiers et objets disparus"
-tagline = "Maltôtiers, barillards et leurs outils."
+tagline = "Les métiers qu'on n'exerce plus, et leurs outils."
 runs = ["metiers-1"]
 domains = ["metiers_objets"]
 back = "green"

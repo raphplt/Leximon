@@ -57,7 +57,7 @@ export function InvitationScreen() {
       </h1>
       <section className={styles.section}>
         {"kind" in state && state.kind === "loading" && <p>Un instant…</p>}
-        {"kind" in state && state.kind === "failed" && <p>Le serveur lambine. Réessaie.</p>}
+        {"kind" in state && state.kind === "failed" && <p>Le serveur ne répond pas. Réessaie.</p>}
         {"status" in state && state.status === "open" && (
           <>
             <p>{INVITED_PITCH}</p>

@@ -95,7 +95,7 @@ export function SettingsPanel({
       window.location.assign("/jouer");
     } catch {
       setLeaving(false);
-      setError("Le serveur lambine. Réessaie.");
+      setError("Le serveur ne répond pas. Réessaie.");
     }
   };
 

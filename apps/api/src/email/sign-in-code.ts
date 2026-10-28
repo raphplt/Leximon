@@ -22,7 +22,7 @@ export interface SignInCodeContent {
 export function renderSignInCodeEmail({ code, validMinutes }: SignInCodeContent): RenderedEmail {
   const subject = `${code}, ton code Leximon`;
   const sentence = `Voici ton code de connexion Leximon, valable ${validMinutes} minutes.`;
-  const ignore = "Si tu n'as pas demandé ce code, ignore simplement cet e-mail.";
+  const ignore = "Si tu n'as pas demandé ce code, ignore cet e-mail.";
   const c = EMAIL_COLORS;
 
   const bodyHtml = [

@@ -29,8 +29,8 @@ export function PatronScreen() {
       </header>
       <div className={styles.panel}>
         <p className={styles.text}>
-          Leximon est gratuit, sans publicité et sans achat de sachets. L'abonnement mécène permet
-          de soutenir le jeu.
+          Leximon est gratuit, sans publicité et sans sachet à acheter. Avec l'abonnement mécène, tu
+          soutiens le jeu.
         </p>
         <ul className={styles.text}>
           <li>

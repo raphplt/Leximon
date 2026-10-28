@@ -82,7 +82,7 @@ export function ChallengeScreen({ word }: { readonly word: string | null }) {
         setNotice(noChallengeNotice(next.nextDueAt, Date.now(), NOUN));
       else setSession(startSession(next.questions));
     } catch {
-      setError("Le serveur lambine. Réessaie.");
+      setError("Le serveur ne répond pas. Réessaie.");
     } finally {
       setStarting(false);
     }

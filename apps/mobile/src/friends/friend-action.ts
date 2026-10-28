@@ -21,7 +21,7 @@ export async function friendAction<T>(
     mailbox.refresh();
     return true;
   } catch {
-    toast("Le serveur lambine. Réessaie.");
+    toast("Le serveur ne répond pas. Réessaie.");
     return false;
   }
 }

@@ -117,7 +117,7 @@ export function ChallengeScreen() {
         setSession({ questions: next.questions, answers: [], index: 0, step: { name: "asking" } });
       }
     } catch {
-      setError("Le serveur lambine. Réessaie.");
+      setError("Le serveur ne répond pas. Réessaie.");
     } finally {
       setStarting(false);
     }

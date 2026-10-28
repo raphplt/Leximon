@@ -79,11 +79,19 @@ export function isFirstOfRarity(
   return !cards.slice(0, index).some((c) => c.rarity === card.rarity);
 }
 
-/** Banner over a first card of its rarity. Précieux is a masculine noun, the others feminine. */
+/** Banner over a first card of its rarity: « Ta première carte Précieuse ! ». */
 export function firstOfRarityLabel(rarity: Rarity): string {
-  const label = RARITY_LABELS[rarity];
-  return rarity === "precious" ? `Ton premier ${label} !` : `Ta première ${label} !`;
+  return `Ta première carte ${RARITY_SINGULAR_FEMININE[rarity]} !`;
 }
+
+const RARITY_SINGULAR_FEMININE: Readonly<Record<Rarity, string>> = {
+  common: "Courante",
+  uncommon: "Peu courante",
+  rare: "Rare",
+  precious: "Précieuse",
+  epic: "Épique",
+  legendary: "Légendaire",
+};
 
 const RARITY_PLURAL: Readonly<Record<Rarity, string>> = {
   common: "Courantes",

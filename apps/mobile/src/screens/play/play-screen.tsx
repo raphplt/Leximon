@@ -437,7 +437,7 @@ export function PlayScreen() {
           >
             {phase.name === "unavailable" && (
               <>
-                <Text style={styles.message}>Le serveur lambine.</Text>
+                <Text style={styles.message}>Le serveur ne répond pas.</Text>
                 <Button label="Réessayer" secondary onPress={() => void load()} />
               </>
             )}

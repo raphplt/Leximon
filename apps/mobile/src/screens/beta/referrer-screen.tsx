@@ -56,7 +56,7 @@ export function ReferrerScreen({ code }: { readonly code: string | null }) {
       {state.kind === "loading" && <Paragraph muted>Un instant…</Paragraph>}
       {state.kind === "failed" && (
         <>
-          <Paragraph muted>Le serveur lambine.</Paragraph>
+          <Paragraph muted>Le serveur ne répond pas.</Paragraph>
           <Button label="Réessayer" secondary onPress={() => void load()} />
         </>
       )}

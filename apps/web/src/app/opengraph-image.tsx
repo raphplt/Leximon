@@ -3,8 +3,7 @@ import { frequencyLine } from "@leximon/view-model";
 import { ImageResponse } from "next/og";
 import { googleFont } from "@/lib/og-fonts";
 
-export const alt =
-  "Leximon, jeu de cartes à collectionner. La langue a jeté des mots superbes. On les a ramassés.";
+export const alt = "Leximon, le jeu de cartes des mots rares et oubliés du français.";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 

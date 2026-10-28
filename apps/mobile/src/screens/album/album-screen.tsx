@@ -156,7 +156,7 @@ export function AlbumScreen({ friendCode }: { readonly friendCode: string | null
   if (owned === null && ownedFailed) {
     return (
       <View style={styles.center}>
-        <Text style={styles.empty}>Le serveur lambine.</Text>
+        <Text style={styles.empty}>Le serveur ne répond pas.</Text>
         <Button label="Réessayer" secondary onPress={() => ownedCards.ensure()} />
       </View>
     );

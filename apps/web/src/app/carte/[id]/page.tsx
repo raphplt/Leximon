@@ -43,7 +43,7 @@ async function CardContent({ params }: Pick<PageProps<"/carte/[id]">, "params">)
   try {
     found = await cardOf(params);
   } catch {
-    return <p className={styles.missing}>Le serveur lambine. Recharge la page.</p>;
+    return <p className={styles.missing}>Le serveur ne répond pas. Recharge la page.</p>;
   }
   if (found === null) {
     return (

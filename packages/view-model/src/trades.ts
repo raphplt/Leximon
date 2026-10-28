@@ -228,7 +228,7 @@ export function boxTabLabel(box: TradeBox, pending: number): string {
   return pending > 0 ? `${name} (${pending})` : name;
 }
 
-export const NO_OFFER_RECEIVED = "Personne ne t'a envoyé d'offre.";
+export const NO_OFFER_RECEIVED = "Personne ne t'a envoyé d'offre pour l'instant.";
 export const NO_OFFER_SENT = "Tu n'as aucune offre en attente.";
 
 /** « Tu peux envoyer 10 offres par jour. Une offre sans réponse expire après 72 h. », with the rules of `now`. */

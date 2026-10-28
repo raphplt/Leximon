@@ -8,7 +8,7 @@ import styles from "./load-failed.module.css";
 export function LoadFailed({ onRetry }: { readonly onRetry: () => void }) {
   return (
     <div className={styles.failed} role="alert">
-      <p className={styles.text}>Le serveur lambine.</p>
+      <p className={styles.text}>Le serveur ne répond pas.</p>
       <Button variant="secondary" onClick={onRetry}>
         Réessayer
       </Button>

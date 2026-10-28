@@ -306,7 +306,7 @@ export function playFabs(input: FabInput, now: EpochMs): { left: Fab[]; right: F
     right: [
       fab("daily", "Défi du jour"),
       fab("friends", "Amis"),
-      fab("coffrets", "Coffrets", { badge: input.coffrets, glow: input.coffrets > 0 }),
+      fab("coffrets", "Récompenses", { badge: input.coffrets, glow: input.coffrets > 0 }),
       fab("mail", "Courrier", { badge: input.mail }),
       fab("settings", "Réglages"),
     ],

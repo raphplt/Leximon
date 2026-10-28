@@ -21,7 +21,7 @@ pnpm dev
 pnpm --filter @leximon/mobile reverse
 ```
 
-- `reverse` rend l'API, le catalogue et Metro de l'ordi joignables depuis le téléphone. **À refaire chaque fois que le câble est rebranché.** « Le serveur lambine » ou un écran vide : c'est presque toujours ça.
+- `reverse` rend l'API, le catalogue et Metro de l'ordi joignables depuis le téléphone. **À refaire chaque fois que le câble est rebranché.** « Le serveur ne répond pas » ou un écran vide : c'est presque toujours ça.
 - Une modification du code arrive sur le téléphone sans réinstaller. Après une nouvelle dépendance native, relancer la commande `android`.
 - Code de connexion : il s'affiche dans le terminal de `pnpm dev`, comme pour le web.
 

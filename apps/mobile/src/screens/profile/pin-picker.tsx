@@ -62,7 +62,7 @@ export function PinPicker({
         />
       </View>
       {list === null ? (
-        <Text style={styles.note}>On fouille ton album…</Text>
+        <Text style={styles.note}>Chargement de tes cartes…</Text>
       ) : list.items.length === 0 ? (
         <Text style={styles.note}>{search === "" ? PIN_TEXTS.noCards : PIN_TEXTS.noMatch}</Text>
       ) : (

@@ -19,10 +19,7 @@ export default function GlobalError({
         <style>{cssRootRule()}</style>
       </head>
       <body>
-        <StrayScreen
-          title="Une erreur est survenue."
-          text="Recharge la page. Si l'erreur revient, écris-nous."
-        >
+        <StrayScreen title="Cette page a planté." text="Recharge-la. Si ça recommence, écris-nous.">
           <Button onClick={retry}>Recharger la page</Button>
         </StrayScreen>
       </body>

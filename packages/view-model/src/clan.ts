@@ -395,7 +395,7 @@ export const REMOVED_MESSAGE: Readonly<Record<"deleted" | "hidden", string>> = {
   hidden: "Message masqué par la modération",
 };
 
-export const EMPTY_DISCUSSION = "Personne n'a encore écrit. Lance la discussion.";
+export const EMPTY_DISCUSSION = "Silence de cathédrale. Lance la conversation.";
 export const MESSAGE_PLACEHOLDER = "Écris au clan";
 
 /** An "@" not inside a word, then words joined by single separators, the last one maybe begun. */

@@ -46,7 +46,7 @@ export function UnsubscribeFromAddress() {
         {state === "invalid" && (
           <p>Ce lien de désinscription n'est pas valide. Recopie-le en entier depuis l'e-mail.</p>
         )}
-        {state === "failed" && <p>Le serveur lambine. Réessaie.</p>}
+        {state === "failed" && <p>Le serveur ne répond pas. Réessaie.</p>}
         {(state === "ready" || state === "sending" || state === "failed") && (
           <>
             <p>Confirme ci-dessous pour ne plus recevoir ces e-mails.</p>

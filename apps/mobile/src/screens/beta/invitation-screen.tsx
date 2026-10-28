@@ -58,7 +58,7 @@ export function InvitationScreen({ code }: { readonly code: string | null }) {
       {"kind" in state && state.kind === "loading" && <Paragraph muted>Un instant…</Paragraph>}
       {"kind" in state && state.kind === "failed" && (
         <>
-          <Paragraph muted>Le serveur lambine.</Paragraph>
+          <Paragraph muted>Le serveur ne répond pas.</Paragraph>
           <Button label="Réessayer" secondary onPress={() => void load()} />
         </>
       )}

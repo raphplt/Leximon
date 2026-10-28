@@ -30,7 +30,7 @@ describe("mastery of a card", () => {
       "Écris-le de mémoire à la prochaine révision pour passer à la Dorure.",
     );
     const gilded = masteryView(word("gilded", NOW, NOW - 60 * DAY), NOW);
-    expect(gilded.text).toBe("Ce mot a atteint la Dorure, le dernier palier. Il y reste.");
+    expect(gilded.text).toBe("Ce mot a atteint la Dorure, le dernier palier.");
     expect(gilded.steps.every((step) => step.reached)).toBe(true);
   });
 });

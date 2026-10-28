@@ -69,7 +69,7 @@ export function ReferrerScreen() {
       </h1>
       <section className={styles.section}>
         {state.kind === "loading" && <p>Un instant…</p>}
-        {state.kind === "failed" && <p>Le serveur lambine. Réessaie.</p>}
+        {state.kind === "failed" && <p>Le serveur ne répond pas. Réessaie.</p>}
         {state.kind === "unknown" && <p>{REFERRER_UNKNOWN}</p>}
         {referrer !== null && referrer.status === "open" && (
           <>

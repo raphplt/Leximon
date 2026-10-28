@@ -174,7 +174,7 @@ export function CoffretDialog({
                 </p>
               ) : step.name === "failed" ? (
                 <p className={styles.refused} role="alert">
-                  Le serveur lambine. Réessaie.
+                  Le serveur ne répond pas. Réessaie.
                 </p>
               ) : (
                 <p className={styles.hint}>{level === null ? "" : coffretHint(level, now)}</p>

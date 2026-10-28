@@ -35,7 +35,7 @@ interface RevealCardProps {
   readonly isNew: boolean;
   /** Copies owned once this one is added. */
   readonly copies: number;
-  /** « Ta première Légendaire ! », or `null`. */
+  /** « Ta première carte Légendaire ! », or `null`. */
   readonly firstLabel: string | null;
   readonly onNext: () => void;
   /** The `back` of the pack's collection. */

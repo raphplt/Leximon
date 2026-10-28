@@ -146,7 +146,7 @@ export function AccountScreen() {
 
       {step.kind === "failed" && (
         <>
-          <Paragraph muted>Le serveur lambine.</Paragraph>
+          <Paragraph muted>Le serveur ne répond pas.</Paragraph>
           <Button label="Réessayer" secondary onPress={() => void load()} />
         </>
       )}

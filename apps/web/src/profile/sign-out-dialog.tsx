@@ -30,7 +30,7 @@ export function SignOutDialog({
       window.location.assign("/jouer");
     } catch {
       setBusy(false);
-      setError("Le serveur lambine. Réessaie.");
+      setError("Le serveur ne répond pas. Réessaie.");
     }
   };
 

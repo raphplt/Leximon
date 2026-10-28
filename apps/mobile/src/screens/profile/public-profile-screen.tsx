@@ -66,7 +66,7 @@ export function PublicProfileScreen({ pseudo }: { readonly pseudo: string }) {
         {state.kind === "blocked" && <Paragraph>{BLOCKED_NOTE}</Paragraph>}
         {state.kind === "failed" && (
           <>
-            <Paragraph muted>Le serveur lambine.</Paragraph>
+            <Paragraph muted>Le serveur ne répond pas.</Paragraph>
             <Button label="Réessayer" secondary onPress={() => void load()} />
           </>
         )}

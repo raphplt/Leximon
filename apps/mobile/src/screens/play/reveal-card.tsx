@@ -52,7 +52,7 @@ export function RevealCard({
   readonly isNew: boolean;
   /** Copies owned once this one is added. */
   readonly copies: number;
-  /** « Ta première Légendaire ! », or `null`. */
+  /** « Ta première carte Légendaire ! », or `null`. */
   readonly firstLabel: string | null;
   /** The `back` of the pack's collection. */
   readonly tone: string | undefined;

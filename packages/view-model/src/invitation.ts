@@ -22,7 +22,7 @@ export const INVITE_CLOSED_TEXT = {
 export const WAITLIST_ERRORS = {
   invalid_email: "Cette adresse e-mail n'est pas valide.",
   rate_limited: "Trop de tentatives. Réessaie dans une minute.",
-  unavailable: "Le serveur lambine. Réessaie.",
+  unavailable: "Le serveur ne répond pas. Réessaie.",
 } as const;
 
 /** A way in: an invitation code, or the code of the friend whose link was followed. */

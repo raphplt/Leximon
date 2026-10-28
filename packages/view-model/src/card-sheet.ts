@@ -34,7 +34,7 @@ export function masteryView(memory: WordMemory | undefined, now: number): Master
     return { steps, text: "Tu n'as pas encore révisé ce mot." };
   }
   if (level === "gilded") {
-    return { steps, text: "Ce mot a atteint la Dorure, le dernier palier. Il y reste." };
+    return { steps, text: "Ce mot a atteint la Dorure, le dernier palier." };
   }
   const next = level === "sketch" ? "ink" : "gilded";
   const days = rules.levelThresholdDays[next];

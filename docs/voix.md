@@ -10,7 +10,6 @@ Il tutoie toujours. Il ne fait pas la leçon, ne rassure pas, ne s'excuse pas tr
 
 **Sa signature : les mots du jeu dans l'interface.** De temps en temps, un mot rare du catalogue glisse dans une phrase banale. Le joueur le reconnaît, ou le découvre.
 
-- « Le serveur lambine. Réessaie. »
 - « Raté. Tu t'es fait refiler un orviétan. »
 - « Plus rien dans la besace. Prochain sachet dans 3 h. »
 
@@ -23,9 +22,9 @@ Tous les textes n'ont pas le même ton. La voix monte quand le joueur a de la pl
 | Moment | Ton | Exemples |
 |---|---|---|
 | Fonctionnel : formulaires, réglages, navigation | Neutre et sec. Pas de clin d'œil. | « Recevoir un code », « Me déconnecter » |
-| Erreur | Sec. Ce qui s'est passé, puis quoi faire. Un clin d'œil de temps en temps, jamais sur une erreur qui fait perdre quelque chose. | « Mauvais code. », « Le serveur lambine. Réessaie. » |
+| Erreur | Sec. Ce qui s'est passé, puis quoi faire. Un clin d'œil de temps en temps, jamais sur une erreur qui fait perdre quelque chose. | « Mauvais code. », « Le serveur ne répond pas. Réessaie. » |
 | Attente, écran vide, chargement | Voix pleine. C'est là qu'elle a de la place. | « On fouille les rayons… » |
-| Récompense : première rareté, Dorure, niveau, Légendaire | La fête. L'emphase et le « ! » sont permis ici, et presque seulement ici. | « Ta première Légendaire ! », « Niveau 6 ! » |
+| Récompense : première rareté, Dorure, niveau, Légendaire | La fête. L'emphase et le « ! » sont permis ici, et presque seulement ici. | « Ta première carte Légendaire ! », « Niveau 6 ! » |
 
 Les grands moments du jeu méritent plus de mots que les écrans fonctionnels, pas moins.
 
@@ -122,7 +121,7 @@ Un objet a un seul nom dans l'interface.
 | « J'ai trouvé une carte Légendaire sur Leximon : « talpinette » ! » | « Talpinette. Introuvable dans les livres d'aujourd'hui. Moi, je l'ai. » |
 | « Rien à réviser. Prochain mot dans 3 h. » | « Tes mots tiennent bon. Le prochain revient dans 3 h. » |
 | « Défi du jour réussi : un sachet bonus ! » | « Un sachet bonus pour le défi du jour ! » |
-| « Impossible de joindre le serveur. » | « Le serveur lambine. » |
+| « Impossible de joindre le serveur. » | « Le serveur ne répond pas. » |
 | « Continuer » (écran du code) | « Valider le code » |
 | « Voir le récapitulatif » (offre d'échange) | « Vérifier l'offre » |
 | « Me connecter quand même » | « Perdre cette partie et me connecter » |
