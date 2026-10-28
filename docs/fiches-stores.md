@@ -115,7 +115,12 @@ Rien d'autre : ni position, ni contacts, ni photos, ni identifiant publicitaire,
 - Jeux d'argent, contenu simulé de jeux d'argent : non.
 - Accès web sans restriction : non.
 
-On s'attend à 13+. L'inscription demande 15 ans, ce qui ne contredit pas la note.
+- Validation de l'âge : **oui** (la case « 15 ans ou plus », obligatoire pour créer un compte). Apple l'exige dès qu'il y a réseaux sociaux.
+- Réseaux sociaux : **oui** (amis, fil des trouvailles, discussion de clan).
+- Concours : peu fréquent (podium de la semaine, objectif du clan). Simulation de jeux de hasard : aucune. Jeux d'argent, coffres à butin : non, rien ne s'achète.
+- Contenus à caractère sexuel ou nudité : aucun (des mots, pas de représentation).
+
+Apple calcule 13+. On remplace par **16+** : les conditions d'utilisation imposent 15 ans, et Apple demande une note qui respecte ce minimum. L'app n'est pas proposée en Afghanistan ni au Maroc (lois locales sur les apps sociales).
 
 **Confidentialité de l'app (étiquettes) :** aucun suivi entre apps. Toutes les données sont liées à l'utilisateur.
 
