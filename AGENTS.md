@@ -143,7 +143,7 @@ docs/        voir le tableau ci-dessus
 - **Le propriétaire pilote.** Pour tout choix structurant (dépendance, schéma, architecture, direction artistique), proposer les options avec une recommandation et le laisser trancher. Consigner ensuite la décision avec le skill `decision`.
 - **Par défaut, l'agent implémente.** Le propriétaire relit : dans le résumé de fin, expliquer les choix non évidents (règles du jeu, sécurité, performance) pour qu'il garde la main sur le code. S'il demande à coder une partie lui-même, fournir l'interface et les tests, pas l'implémentation.
 - **Langues :** code, identifiants et messages de commit en anglais. Docs, contenu des cartes et interface en français.
-- **Voix de l'interface :** `docs/voix.md` (qui parle, ton selon le moment, lexique, boutons), à lire avant d'écrire un texte que le joueur lit. En bref : court, direct, avec du caractère ; on dit les choses, on ne rassure pas. Si une phrase peut sauter sans que le joueur soit perdu, elle saute.
+- **Voix de l'interface :** `docs/voix.md` (qui parle, ton selon le moment, lexique, boutons), à lire avant d'écrire un texte que le joueur lit. En bref : d'abord clair, ensuite court, et le caractère seulement là où il a de la place (attente, récompense, landing). Des phrases complètes avec un verbe, la règle dite en clair avec ses chiffres, aucune sentence, fausse chute, gouaille plaquée ni chaîne « X : Y ». Les accords avec les variables sont justes pour 0, 1 et plusieurs.
 - **Documentation en Markdown simple**, pas de pages HTML élaborées.
 - **Toujours commiter à la fin d'une session de travail sauf si demande explicite inverse.**
 
