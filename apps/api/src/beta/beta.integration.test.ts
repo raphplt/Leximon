@@ -14,7 +14,7 @@ import {
 import { gameDayOf } from "@leximon/core";
 import { createDb, schema } from "@leximon/db";
 import { testDatabaseUrl } from "@leximon/db/testing";
-import { eq } from "drizzle-orm";
+import { eq, gte } from "drizzle-orm";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { createApp } from "../app";
 import { TEST_ORIGIN, testEnv } from "../test-env";
@@ -236,6 +236,7 @@ describe("closed beta", () => {
   });
 
   it("counts the sign-in e-mails sent, against the month's quota, without their address", async () => {
+    const startedAt = new Date();
     const before = adminEmailsResponseSchema.parse(
       await (
         await app.request("/admin/emails", { headers: headers({ cookie: admin.cookie }) }, env)
@@ -256,14 +257,17 @@ describe("closed beta", () => {
     expect(last?.invitationOnly).toBeGreaterThanOrEqual((first?.invitationOnly ?? 0) + 1);
     expect(after.quota.included).toBe(3000);
     expect(after.quota.sent).toBeGreaterThanOrEqual(before.quota.sent + 2);
-    const signIns = after.recent.filter(
-      (email) => email.kind === "code" || email.kind === "invitation_only",
-    );
-    expect(new Set(signIns.map((email) => email.kind))).toEqual(
-      new Set(["code", "invitation_only"]),
-    );
-    for (const email of signIns) {
-      expect(email).toMatchObject({ status: "sent", userId: null, label: null });
+    // The latest list may be all campaign e-mails sent meanwhile: the log is read directly.
+    const logged = await db
+      .select({ kind: schema.signInEmails.kind, status: schema.signInEmails.status })
+      .from(schema.signInEmails)
+      .where(gte(schema.signInEmails.createdAt, startedAt));
+    const sent = logged.filter((row) => row.status === "sent").map((row) => row.kind);
+    expect(new Set(sent)).toEqual(new Set(["code", "invitation_only"]));
+    for (const email of after.recent) {
+      if (email.kind === "code" || email.kind === "invitation_only") {
+        expect(email).toMatchObject({ userId: null, label: null });
+      }
     }
     const reversed = await app.request(
       "/admin/emails?from=2026-10-20&to=2026-10-10",
