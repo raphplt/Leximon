@@ -2,7 +2,7 @@
 
 Où en est Leximon, ce qui reste avant la bêta publique (novembre 2026) et ce qui attend une décision du propriétaire. Mise à jour à chaque étape franchie.
 
-**Dernière mise à jour :** 2026-10-26.
+**Dernière mise à jour :** 2026-10-28.
 
 ## En une phrase
 
@@ -84,11 +84,23 @@ Arbitrés par le propriétaire le 2026-10-20 : jeu grand public (B2C), pas de ve
 | Test de charge | Fait (pas en ligne) | D-047 : scénarios k6 dans `infra/load/`, staging sur une branche Neon ([rnd/charge.md](rnd/charge.md)). 572 requêtes/s sans une erreur (2026-10-23). Ouverture d'un sachet ramenée de 8 à 5 allers-retours SQL et cache de session réparé (il ne servait pas) : 37 ms en médiane et 72 ms au p95 côté serveur (2026-10-24). API placée à Francfort près de la base. En production |
 | Marque, domaines, comptes réseaux | En cours | Domaine leximon.fr (OVH, DNS chez Cloudflare, renouvellement automatique à activer), contact@leximon.fr routé par Cloudflare, Discord du projet. Marque : dépôt INPI repoussé (P7). Autres comptes réseaux à faire |
 
+## Avant la bêta ouverte
+
+La bêta reste fermée au moins jusqu'au 2026-11-04, une semaine de plus (décidé le 2026-10-28), pour avoir la rétention à J7 des premiers testeurs et corriger leurs retours. On ouvre quand tout ceci est fait :
+
+1. **Base de données :** quitter Neon gratuit (D-040). Ses 100 heures de calcul par mois s'épuisent en deux à trois semaines quand la base ne se met plus en veille. Fournisseur à choisir avec le propriétaire.
+2. **Codes de connexion :** quota d'Email Service relevé ([mise-en-ligne.md](mise-en-ligne.md), étape 12). Sans lui, une vague d'inscriptions bloque les connexions.
+3. **Liste d'attente prévenue :** Lettermint prêt (étape 12), pour tenir la promesse de P55.
+4. **Stores :** publication manuelle sur l'App Store et Google Play. Tant que la porte est fermée, l'app refuse tout nouveau joueur sans lien : elle sort le jour de l'ouverture, pas avant.
+5. **Mesure de l'arrivée :** Umami et Search Console installés (étape 12 bis), pour lire les sources dès le premier jour.
+
+Le jour de l'ouverture : `BETA_INVITES` à `"off"` dans `env.production` de `apps/api/wrangler.jsonc`, puis `pnpm deploy:prod` ; publier les deux apps ; envoyer la campagne à la liste d'attente.
+
 ## Ce qui attend ta décision
 
 Dans l'ordre où elles débloquent le plus :
 
-1. **Finir la mise en ligne :** la demande de hausse du quota d'Email Service ([mise-en-ligne.md](mise-en-ligne.md), étape 12). Lettermint peut attendre la première campagne.
+1. **Bêta ouverte :** les préalables ci-dessus, d'abord le fournisseur de la base.
 2. **Avatars gravés (P49) :** valider les seize gravures choisies et leurs noms.
 3. **Mécène (P73) :** l'exemplaire de la carte dénichée, non échangeable et sans XP, reste à confirmer.
 4. **Questions ouvertes** de [regles-du-jeu.md](regles-du-jeu.md#à-décider) : numéro de collection, sons de l'ouverture, notation phonétique.
