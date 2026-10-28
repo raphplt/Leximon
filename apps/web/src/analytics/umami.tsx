@@ -3,8 +3,8 @@
 import Script from "next/script";
 import { cleanPayload } from "./clean-url";
 
-/** Also allowed by the Content-Security-Policy in `next.config.ts`. */
-const UMAMI_SCRIPT = "https://cloud.umami.is/script.js";
+/** Our own Umami, on the home server (`infra/umami`); its host is allowed by the CSP in `next.config.ts`. */
+const UMAMI_SCRIPT = "https://stats.leximon.fr/script.js";
 
 // Dot access only: Next.js inlines NEXT_PUBLIC_ variables at build time, not bracket access.
 const WEBSITE_ID = process.env.NEXT_PUBLIC_UMAMI_WEBSITE_ID ?? "";

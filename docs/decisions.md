@@ -486,11 +486,13 @@ Pour ajouter ou modifier une décision, utiliser le skill `decision`.
 
 ## D-052 · Mesure : les joueurs depuis la base, les visites du site par Umami, la recherche par Search Console
 
-- **Statut :** Acceptée (2026-10-28), choisie par le propriétaire (Google Analytics écarté). Remplace D-042.
-- **Choix :** la mesure des joueurs reste celle de D-042 (`player_days`, `/admin/mesure`). Les pages vues du site s'ajoutent, comptées par Umami Cloud, sans cookie, sur `leximon.fr` seulement, admin exclu ; Google Search Console donne les recherches qui mènent au site, vérifié par un enregistrement DNS.
+- **Statut :** Acceptée (2026-10-28), choisie par le propriétaire (Google Analytics écarté, Umami hébergé chez nous plutôt qu'Umami Cloud). Remplace D-042.
+- **Choix :** la mesure des joueurs reste celle de D-042 (`player_days`, `/admin/mesure`). Les pages vues du site s'ajoutent, comptées par Umami 3, sans cookie, sur `leximon.fr` seulement, admin exclu. Umami tourne sur le serveur maison (`infra/umami` : Umami, Postgres et un tunnel Cloudflare), sous `stats.leximon.fr` ; Google Search Console donne les recherches qui mènent au site, vérifié par un enregistrement DNS.
 - **Pourquoi :** voir les visites de l'accueil et les sources d'arrivée avant l'inscription, sans bandeau de consentement ni traceur publicitaire, ce que Google Analytics aurait imposé.
 - **Conséquences :**
   - avant l'envoi, un crochet du web masque les codes des liens d'invitation, d'ami et de désinscription, et ne garde que le paramètre `src` ;
   - la page « Tes données » le dit, respecte « Ne pas me suivre » et offre un bouton pour ne plus être compté ;
-  - sans `NEXT_PUBLIC_UMAMI_WEBSITE_ID` au build, rien n'est chargé ; la CSP ouvre l'hôte d'Umami seulement dans ce cas ;
+  - sans `NEXT_PUBLIC_UMAMI_WEBSITE_ID` au build, rien n'est chargé ; la CSP ouvre `stats.leximon.fr` seulement dans ce cas ;
+  - le tunnel ne laisse passer que `/script.js` et `/api/send` ; le tableau de bord ne s'ouvre que par Tailscale ; Umami lit le visiteur dans `cf-connecting-ip` et ne garde pas son IP ;
+  - si le serveur maison tombe, les visites de la panne sont perdues, sans effet sur le site, qui charge le script sans l'attendre ;
   - les bloqueurs de publicité et les filtres DNS bloquent souvent Umami : les visites sont un ordre de grandeur, les chiffres des joueurs restent ceux de la base.

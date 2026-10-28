@@ -215,12 +215,18 @@ D-052. Le site sert déjà `robots.txt` et `sitemap.xml`.
 2. Google donne un `TXT` (`google-site-verification=…`). L'ajouter chez Cloudflare sur `leximon.fr` (nom `@`), puis **Valider**. Ne pas toucher aux autres `TXT`.
 3. **Sitemaps** → `https://leximon.fr/sitemap.xml` → **Envoyer**.
 
-**Umami**
+**Umami, sur le serveur maison**
 
-1. Créer le compte sur cloud.umami.is, en région UE si elle est proposée, puis **Add website** : nom `Leximon`, domaine `leximon.fr`.
-2. Dans les réglages du site, couper le partage public et toute option qui garderait l'adresse IP.
-3. Donner l'identifiant du site (`Website ID`) à l'agent : il l'ajoute à `deploy:production` (`NEXT_PUBLIC_UMAMI_WEBSITE_ID`, lu au build, public par nature), puis `pnpm deploy:web`.
-4. Si un filtre DNS (Pi-hole, AdGuard, NextDNS) ou un bloqueur bloque `cloud.umami.is` chez toi, l'autoriser pour ouvrir le tableau de bord. Pour vérifier que le site envoie bien, ouvrir leximon.fr sans bloqueur et regarder **Realtime**.
+Les fichiers sont dans `infra/umami/` : Umami, sa base Postgres et un tunnel Cloudflare, qui publie `stats.leximon.fr` sans ouvrir de port chez toi.
+
+1. **Tunnel** : Cloudflare → **Zero Trust** → **Networks** → **Tunnels** → **Create a tunnel** → type **Cloudflared**, nom `leximon-stats`. Choisir **Docker** et copier le jeton (la valeur après `--token`).
+2. **Route publique** du tunnel : sous-domaine `stats`, domaine `leximon.fr`, **Path** `^/(script\.js|api/send)$`, service **HTTP** `umami:3000`. Rien d'autre : toute autre adresse répond 404, et le tableau de bord reste privé.
+3. Sur la VM `docker` : copier `infra/umami/` dans `~/apps/leximon-umami/`, créer `.env` depuis `.env.example` (deux secrets par `openssl rand -hex 32`, le jeton du tunnel, `DATA_PATH` sur le pool ZFS, par exemple `/mnt/media/apps/umami/db`), puis `chmod 600 .env` et `docker compose up -d`.
+4. Vérifier : `curl -s https://stats.leximon.fr/script.js | head -c 80` répond du JavaScript, et `https://stats.leximon.fr/` répond 404.
+5. **Tableau de bord** : `http://docker:3000` par Tailscale. Se connecter avec `admin` / `umami`, **changer le mot de passe tout de suite**, puis **Settings** → **Websites** → **Add website** : nom `Leximon`, domaine `leximon.fr`.
+6. Donner l'identifiant du site (`Website ID`) à l'agent : il l'ajoute à `deploy:production` (`NEXT_PUBLIC_UMAMI_WEBSITE_ID`, lu au build, public par nature), puis `pnpm deploy:web`. Ouvrir leximon.fr sans bloqueur et regarder **Realtime**.
+
+La base d'Umami n'est pas sauvegardée : perdre les visites n'empêche pas de jouer.
 
 ## 13. Ton compte admin · toi
 

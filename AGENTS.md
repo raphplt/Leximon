@@ -125,7 +125,7 @@ Objectif : un code lisible et facile à maintenir, performant et sûr, pensé po
 
 ## Stack
 
-pnpm + Turborepo · Node 24 · Biome · Vitest · Next.js (web) · Expo (mobile) · Hono + Drizzle + Postgres via node-postgres (API) · Cloudflare + Postgres managé UE (Neon pour la bêta) · Better Auth · Cloudflare Email Service (codes) et Lettermint (campagnes) · ts-fsrs (révision espacée) · expo-audio, expo-haptics et expo-sensors (sons, vibrations et inclinaison du mobile) · k6 (test de charge, par Docker) · Umami Cloud et Google Search Console (visites et recherche du site) · Directus · chaîne de contenu Python en local. Le détail et les raisons sont dans `docs/decisions.md`.
+pnpm + Turborepo · Node 24 · Biome · Vitest · Next.js (web) · Expo (mobile) · Hono + Drizzle + Postgres via node-postgres (API) · Cloudflare + Postgres managé UE (Neon pour la bêta) · Better Auth · Cloudflare Email Service (codes) et Lettermint (campagnes) · ts-fsrs (révision espacée) · expo-audio, expo-haptics et expo-sensors (sons, vibrations et inclinaison du mobile) · k6 (test de charge, par Docker) · Umami auto-hébergé et Google Search Console (visites et recherche du site) · Directus · chaîne de contenu Python en local. Le détail et les raisons sont dans `docs/decisions.md`.
 
 ## Structure prévue
 

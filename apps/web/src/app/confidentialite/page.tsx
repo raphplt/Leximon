@@ -73,9 +73,10 @@ export default function PrivacyPage() {
       <section className={styles.section}>
         <h2>Visites du site</h2>
         <p>
-          On compte les pages vues avec Umami, pour savoir combien de personnes passent sur le site
-          et par quel lien elles arrivent. Umami ne dépose aucun cookie. Il voit passer ton adresse
-          IP pour en déduire ton pays, sans la garder. Il ne reçoit ni ton adresse e-mail, ni les
+          On compte les pages vues avec Umami, un outil libre installé sur notre propre serveur,
+          pour savoir combien de personnes passent sur le site et par quel lien elles arrivent.
+          Umami ne dépose aucun cookie et ne garde pas ton adresse IP. Il garde la page vue, ton
+          pays, ton navigateur et la taille de ton écran. Il ne reçoit ni ton adresse e-mail, ni les
           codes des liens d'invitation et d'ami. Si ton navigateur demande à ne pas être suivi, tes
           visites ne sont pas comptées.
         </p>
@@ -141,8 +142,8 @@ export default function PrivacyPage() {
         <p>
           La base de données est chez Neon, à Francfort. Le site, l'API, les codes de connexion, les
           e-mails sur ta partie et les journaux techniques (gardés 7 jours) passent par Cloudflare.
-          Les nouvelles passent par Lettermint, un service européen. Le comptage des visites passe
-          par Umami.
+          Les nouvelles passent par Lettermint, un service européen. Le comptage des visites est
+          gardé sur notre propre serveur, en France, et passe lui aussi par Cloudflare.
         </p>
         <p>
           Neon et Cloudflare sont des sociétés américaines : une donnée peut passer par les
