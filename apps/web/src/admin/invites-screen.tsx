@@ -11,6 +11,9 @@ function inviteUrl(code: string): string {
   return `${window.location.origin}/invitation/${code}`;
 }
 
+/** Places of one invitation at most, as the server holds them. */
+const MAX_PLACES = 10_000;
+
 function stateOf(invite: AdminInvite): string {
   if (invite.revokedAt !== null) return "Retirée";
   if (invite.expiresAt !== null && Date.parse(invite.expiresAt) <= Date.now()) return "Expirée";
@@ -38,6 +41,27 @@ export function InvitesScreen() {
     }
     try {
       await adminApi.revokeInvite(invite.id);
+      reload();
+    } catch (caught) {
+      setError(adminErrorMessage(caught));
+    }
+  };
+
+  const addPlaces = async (invite: AdminInvite) => {
+    const answer = window.prompt(
+      `Combien de places ajouter à « ${invite.label} » ? ${formatNumber(invite.uses)} / ${formatNumber(invite.maxUses)} prises.`,
+      "50",
+    );
+    if (answer === null) return;
+    const added = Number(answer.trim());
+    const maxUses = invite.maxUses + added;
+    if (!Number.isInteger(added) || added < 1 || maxUses > MAX_PLACES) {
+      setError(`Un nombre entier, pour ${formatNumber(MAX_PLACES)} places au plus en tout.`);
+      return;
+    }
+    setError(null);
+    try {
+      await adminApi.setInvitePlaces(invite.id, { maxUses });
       reload();
     } catch (caught) {
       setError(adminErrorMessage(caught));
@@ -94,6 +118,15 @@ export function InvitesScreen() {
                       >
                         {copied === invite.code ? "Copié" : "Copier le lien"}
                       </button>
+                      {invite.revokedAt === null && (
+                        <button
+                          type="button"
+                          className={styles.button}
+                          onClick={() => void addPlaces(invite)}
+                        >
+                          Ajouter des places
+                        </button>
+                      )}
                       {invite.revokedAt === null && (
                         <button
                           type="button"

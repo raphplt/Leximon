@@ -20,6 +20,7 @@ import {
   type AdminPlayerKind,
   type AdminPlayersResponse,
   type AdminReportsResponse,
+  type AdminSetInvitePlacesRequest,
   type AdminTestersResponse,
   type AdminTradesResponse,
   type AdminWaitlistResponse,
@@ -260,6 +261,13 @@ export function adminRoutes(http: Http) {
 
     async revokeInvite(id: string): Promise<AdminInvite> {
       return parse(await postJson(`/admin/invites/${segment(id)}/revoke`, {}), adminInviteSchema);
+    },
+
+    async setInvitePlaces(id: string, request: AdminSetInvitePlacesRequest): Promise<AdminInvite> {
+      return parse(
+        await postJson(`/admin/invites/${segment(id)}/places`, request),
+        adminInviteSchema,
+      );
     },
 
     fetchMeasures: (): Promise<AdminMeasures> => getJson("/admin/measures", adminMeasuresSchema),

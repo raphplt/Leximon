@@ -10,6 +10,10 @@ export function adminErrorMessage(error: unknown): string {
   switch (code) {
     case "code_taken":
       return "Ce code sert déjà à une autre invitation.";
+    case "invite_not_found":
+      return "Invitation introuvable.";
+    case "below_uses":
+      return "Plus de joueurs sont déjà entrés par ce lien.";
     case "network_error":
       return "Pas de connexion à l'API.";
     case "forbidden":

@@ -143,6 +143,46 @@ describe("closed beta", () => {
     expect(row?.uses).toBe(3);
   });
 
+  it("reopens a full invitation with more places, without ever passing the new number", async () => {
+    const invite = await newInvite(1);
+    expect((await guestSignIn({ [INVITE_HEADER]: invite.code })).status).toBe(200);
+    expect((await guestSignIn({ [INVITE_HEADER]: invite.code })).status).toBe(403);
+
+    const setPlaces = (id: string, maxUses: number) =>
+      app.request(
+        `/admin/invites/${id}/places`,
+        {
+          method: "POST",
+          headers: headers({ cookie: admin.cookie }),
+          body: JSON.stringify({ maxUses }),
+        },
+        env,
+      );
+    const raised = await setPlaces(invite.id, 4);
+    expect(raised.status).toBe(200);
+    expect(adminInviteSchema.parse(await raised.json())).toMatchObject({ uses: 1, maxUses: 4 });
+    expect((await setPlaces(invite.id, 4)).status).toBe(200);
+
+    const responses = await Promise.all(
+      Array.from({ length: 6 }, () => guestSignIn({ [INVITE_HEADER]: invite.code })),
+    );
+    expect(responses.filter((response) => response.status === 200)).toHaveLength(3);
+    const [row] = await db.select().from(invites).where(eq(invites.id, invite.id));
+    expect(row).toMatchObject({ uses: 4, maxUses: 4 });
+
+    const below = await setPlaces(invite.id, 3);
+    expect(below.status).toBe(409);
+    expect(await below.json()).toEqual({ error: "below_uses" });
+    expect((await setPlaces(crypto.randomUUID(), 10)).status).toBe(404);
+    expect((await setPlaces(invite.id, 0)).status).toBe(400);
+
+    const logged = await db
+      .select()
+      .from(schema.adminActions)
+      .where(eq(schema.adminActions.action, "invite_places"));
+    expect(logged.filter((action) => action.details["inviteId"] === invite.id)).toHaveLength(1);
+  });
+
   it("closes a withdrawn invitation and says so on its page", async () => {
     const invite = await newInvite(5);
     const status = async (code: string) => {

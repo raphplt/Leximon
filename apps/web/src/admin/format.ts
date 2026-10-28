@@ -42,6 +42,7 @@ export const ACTION_LABELS: Readonly<Record<string, string>> = {
   resolve_contest: "Contestation tranchée",
   invite_create: "Invitation créée",
   invite_revoke: "Invitation retirée",
+  invite_places: "Places d'une invitation",
 };
 
 /** What the team does, as the sanction form and the contests name it. */
@@ -65,6 +66,10 @@ export function actionSummary(details: Record<string, unknown>): string {
   if (typeof details["name"] === "string") parts.push(`« ${details["name"]} »`);
   if (typeof details["recipients"] === "number") {
     parts.push(`${formatNumber(details["recipients"])} destinataire(s)`);
+  }
+  if (typeof details["maxUses"] === "number") {
+    const from = typeof details["from"] === "number" ? `${formatNumber(details["from"])} → ` : "";
+    parts.push(`${from}${formatNumber(details["maxUses"])} place(s)`);
   }
   if (typeof details["erased"] === "number") {
     parts.push(`${formatNumber(details["erased"])} adresse(s)`);
