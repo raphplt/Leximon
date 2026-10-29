@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   collectionChoices,
   neighbourChoices,
+  nextSachetLine,
   openAgainLabel,
   openButtonLabel,
   pickCollection,
@@ -73,7 +74,10 @@ describe("stock", () => {
       action: "Prochain dans 18 min",
       note: "+1 dans 18 min",
     });
-    expect(openAgainLabel(wallet(0), NOW)).toBe("Prochain sachet dans 18 min");
+    expect(openAgainLabel(wallet(0))).toBe("Retour à l'accueil");
+    expect(nextSachetLine(wallet(0), NOW)).toBe("Ton prochain sachet arrive dans 18 min.");
+    expect(openAgainLabel(wallet(2))).toBe("Ouvrir un autre sachet");
+    expect(nextSachetLine(wallet(2), NOW)).toBeNull();
   });
 
   it("counts on the button what is left to open", () => {

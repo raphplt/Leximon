@@ -80,12 +80,20 @@ export function openButtonLabel(stock: StockView, guestLeft: number | null): str
   return stock.action;
 }
 
-/** The recap's button once the cards are seen: open another, a bonus, or wait. */
-export function openAgainLabel(wallet: BoosterWalletResponse, now: EpochMs): string {
+/**
+ * The recap's button once the cards are seen: open another, a bonus, or, with nothing left, go
+ * back to the counter, where the day's challenge and the other screens wait.
+ */
+export function openAgainLabel(wallet: BoosterWalletResponse): string {
   if (wallet.stored > 0) return "Ouvrir un autre sachet";
   if (wallet.bonus > 0) return "Ouvrir un sachet bonus";
-  if (wallet.nextRefillAt === null) return "Plus de sachet";
-  return `Prochain sachet dans ${formatWait(Date.parse(wallet.nextRefillAt) - now)}`;
+  return "Retour à l'accueil";
+}
+
+/** Under the recap's button when nothing is left to open: « Ton prochain sachet arrive dans 18 min. » */
+export function nextSachetLine(wallet: BoosterWalletResponse, now: EpochMs): string | null {
+  if (wallet.stored > 0 || wallet.bonus > 0 || wallet.nextRefillAt === null) return null;
+  return `Ton prochain sachet arrive dans ${formatWait(Date.parse(wallet.nextRefillAt) - now)}.`;
 }
 
 // --- Reserve of bonus sachets ---------------------------------------------------------------

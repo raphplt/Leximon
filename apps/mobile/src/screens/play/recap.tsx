@@ -5,6 +5,7 @@ import {
   keepsAnnouncementWhenHurried,
   levelRatio,
   levelUpLabel,
+  nextSachetLine,
   openAgainLabel,
   rarityCompletedLabel,
   recap,
@@ -109,7 +110,7 @@ export function Recap({
   const progress = collectionProgress(pack.collectionCardIds, pack.quantitiesBefore, pack.cards);
   const xp = xpGainLabel(pack.progress);
   const levelUp = levelUpLabel(pack.progress);
-  const canOpen = wallet !== null && (wallet.stored > 0 || wallet.bonus > 0);
+  const nextSachet = wallet === null ? null : nextSachetLine(wallet, now);
   return (
     <View style={styles.recap} onLayout={(event) => setRoom(event.nativeEvent.layout.height)}>
       <Text style={styles.kicker}>TON SACHET</Text>
@@ -174,6 +175,9 @@ export function Recap({
         {pack.collectionName} · {progress.owned} / {progress.total}
         {progress.gained > 0 && <Text style={styles.gained}> (+{progress.gained})</Text>}
       </Text>
+      {!mustSignUp && !coffretWaits && nextSachet !== null && (
+        <Text style={styles.progress}>{nextSachet}</Text>
+      )}
       <View style={styles.actions}>
         {coffretWaits ? (
           <Button label="Ouvrir le coffret" onPress={() => openCoffret()} />
@@ -181,8 +185,7 @@ export function Recap({
           <Button label="Créer mon compte" onPress={() => router.push("/compte")} />
         ) : (
           <Button
-            label={wallet === null ? "Ouvrir un autre sachet" : openAgainLabel(wallet, now)}
-            disabled={!canOpen}
+            label={wallet === null ? "Ouvrir un autre sachet" : openAgainLabel(wallet)}
             onPress={onOpen}
           />
         )}

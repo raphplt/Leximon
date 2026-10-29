@@ -19,6 +19,7 @@ import {
   levelUpLabel,
   lockedToast,
   neighbourChoices,
+  nextSachetLine,
   OPEN_HINTS,
   openAgainLabel,
   openButtonLabel,
@@ -744,7 +745,8 @@ function Recap({
   const levelUp = levelUpLabel(pack.progress);
   // The coffret replaces « open another » while it waits.
   const coffretWaits = pack.progress.levelUp && view.coffrets.length > 0;
-  const canOpen = view.wallet !== null && (view.wallet.stored > 0 || view.wallet.bonus > 0);
+  const nextSachet =
+    view.wallet === null || view.now === 0 ? null : nextSachetLine(view.wallet, view.now);
   return (
     <div className={`${ui.panel} ${styles.recap}`}>
       <p className={`${ui.kicker} ${styles.recapKicker}`}>Ton sachet</p>
@@ -776,6 +778,9 @@ function Recap({
         {progress.gained > 0 && <span className={styles.gained}> (+{progress.gained})</span>}
       </p>
       {mustSignUp && <p className={styles.hint}>{SIGN_UP_HINT}</p>}
+      {!mustSignUp && !coffretWaits && nextSachet !== null && (
+        <p className={styles.hint}>{nextSachet}</p>
+      )}
       <div className={styles.actions}>
         {coffretWaits ? (
           <Button glow onClick={() => openCoffret()}>
@@ -784,10 +789,8 @@ function Recap({
         ) : mustSignUp ? (
           <ButtonLink href="/compte">Créer mon compte</ButtonLink>
         ) : (
-          <Button disabled={!canOpen} onClick={onOpen}>
-            {view.wallet === null || view.now === 0
-              ? "Ouvrir un autre sachet"
-              : openAgainLabel(view.wallet, view.now)}
+          <Button onClick={onOpen}>
+            {view.wallet === null ? "Ouvrir un autre sachet" : openAgainLabel(view.wallet)}
           </Button>
         )}
         {mustSignUp && coffretWaits ? (
