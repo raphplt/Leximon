@@ -30,7 +30,7 @@ Les chiffres (1 561 cartes, trois collections) suivent le catalogue publié : à
 >
 > Inscription à partir de 15 ans.
 
-Tant que la bêta est fermée, ajouter en tête : « Leximon est en bêta. On y entre par un lien d'invitation. »
+Tant que l'inscription passe par une invitation, ajouter en tête : « Pendant le lancement, on s'inscrit sur invitation. Demande la tienne sur leximon.fr. » Jamais le mot « bêta » dans une fiche : Apple refuse les versions bêta sur l'App Store (règle 2.2) et les renvoie à TestFlight.
 
 **Nouveautés de la version 1.0.0** (500 signes au plus) :
 
@@ -151,6 +151,20 @@ Mise en place, une fois :
 
 Changer le code après chaque examen n'est pas nécessaire. Le retirer (`wrangler secret delete`) ferme le compte d'un coup.
 
-**Notes pour l'examen** (une fois le compte prêt) :
+**Notes pour l'examen**, en anglais, à coller dans le champ Notes d'App Store Connect et dans les réponses à l'équipe d'examen. Elles répondent à ce qu'Apple a demandé au premier envoi (2026-10-29), parce que le compte développeur avait peu d'historique : une vidéo et les points 2 à 6 ci-dessous.
 
-> Leximon se joue avec un compte. Sur l'écran d'accueil, « Me connecter », puis l'adresse et le code ci-dessous. Le compte est déjà entré dans la bêta, il a des sachets et des cartes. Ouvrir un sachet : onglet Jouer, toucher le sachet ou déchirer sa bande le long du pointillé.
+La vidéo (point 1) se filme sur un vrai iPhone à jour, l'app installée par TestFlight. Elle part du lancement de l'app et montre l'inscription, la connexion, l'ouverture d'un sachet, la discussion de clan, le signalement et le blocage d'un joueur, puis la suppression du compte (sur un compte jetable). Apple demande un appareil physique, pas le simulateur.
+
+> **1. Screen recording.** Attached: recorded on an iPhone running the latest iOS, from app launch through sign-up, sign-in, opening a pack, a challenge, clan chat, reporting and blocking a player, and account deletion. The app has no paid content.
+>
+> **2. Purpose and audience.** Leximon is a free collectible card game about rare and forgotten French words. Each card is a word, with its definition, etymology, pronunciation and a period engraving. Players open free packs that refill during the day, take challenges that help them remember the words (spaced repetition), and trade duplicate cards one for one. It is for French speakers aged 15 and over who enjoy words, literature and quizzes. Nothing is sold: no packs, no currency, no ads.
+>
+> **3. Access.** Sign-up is by invitation during the launch phase. Please use the demo account: on the home screen tap « Me connecter », enter the e-mail address below, then the 6-digit code below as the password (no e-mail is needed for this account). The account already has packs and cards. To open a pack: Jouer tab, tap the pack or tear its strip. Report and block: open a player's profile from Amis or a clan. Account deletion: Réglages → Supprimer mon compte.
+>
+> **4. External services.** Cloudflare (hosting of the API and website, delivery of the card catalogue, sending of sign-in codes by e-mail), Neon (managed PostgreSQL database, EU region), Lettermint (news e-mails, only for players who opt in). Sign-in uses our own e-mail one-time code, with no third-party login. No payment processor, no advertising, no analytics SDK, no AI service in the app.
+>
+> **5. Regions.** The app is in French and works the same in every region where it is offered.
+>
+> **6. Third-party material.** Definitions are written in-house from public-domain dictionaries (mainly Littré, 1863–1872). Quotations come from public-domain authors. Engravings are public domain or CC0, from museum open-access collections (The Met, Rijksmuseum, Paris Musées), and each card credits its source. The app does not operate in a regulated industry.
+
+L'adresse et le code vont dans les champs « Nom d'utilisateur » et « Mot de passe » de la section, pas dans ce fichier.
