@@ -58,7 +58,7 @@ export function DeleteAccountDialog({
 
   return (
     <Dialog open={open} title="Supprimer mon compte" onClose={onClose} variant="center">
-      <div className={styles.pad}>
+      <div>
         <p className={styles.warning}>{DELETE_ACCOUNT_WARNING}</p>
         {confirming ? (
           <div className={styles.buttons}>

@@ -359,10 +359,6 @@ button.emptySlot {
   color: var(--lx-color-danger);
 }
 
-.dialogPad {
-  padding: 4px 26px 26px;
-}
-
 /* --- Atelier --- */
 
 .back {

@@ -3,7 +3,6 @@
   display: flex;
   flex-direction: column;
   gap: 12px;
-  padding: 4px 26px 26px;
 }
 
 .search {
@@ -139,11 +138,4 @@
   aspect-ratio: 300 / 420;
   border-radius: 10px;
   background: var(--lx-color-sunken);
-}
-
-/* Phones: the window's title moves closer to the edge, its content with it. */
-@media (max-width: 759px) {
-  .picker {
-    padding-inline: 20px;
-  }
 }

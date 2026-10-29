@@ -273,7 +273,7 @@ function ViewerActions({
         onClose={() => setConfirmBlock(false)}
         variant="center"
       >
-        <div className={styles.dialogPad}>
+        <div>
           <p className={styles.muted}>{BLOCK_CONFIRM}</p>
           <div className={styles.viewer}>
             <Button disabled={busy} onClick={() => void block()}>

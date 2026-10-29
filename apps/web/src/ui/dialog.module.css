@@ -125,6 +125,11 @@
 }
 
 .center .body {
+  padding: 4px 26px 26px;
+}
+
+/* Without its title the content draws to the edges itself (a coffret, a trade done). */
+.center .headFloating + .body {
   padding: 0;
 }
 
@@ -165,6 +170,14 @@
 
   .body {
     padding: 4px 18px 28px;
+  }
+
+  .center .body {
+    padding-inline: 20px;
+  }
+
+  .center .headFloating + .body {
+    padding: 0;
   }
 }
 

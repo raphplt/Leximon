@@ -54,8 +54,3 @@
   color: var(--lx-color-danger);
   font-weight: 700;
 }
-
-/* Centred dialogs draw their own margins. */
-.pad {
-  padding: 4px 26px 26px;
-}
