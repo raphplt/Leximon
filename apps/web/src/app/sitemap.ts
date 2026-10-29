@@ -8,7 +8,7 @@ export const dynamic = "force-dynamic";
 
 /** The pages open to search engines; every other page is behind sign-in or kept out of the index. */
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const pages = ["", "/charte", "/conditions", "/confidentialite", "/mentions"];
+  const pages = ["", "/charte", "/conditions", "/confidentialite", "/mentions", "/nouveautes"];
   const cards = (await readCatalogCardIds()).map((id) => `/carte/${id}`);
   return [...pages, ...cards].map((path) => ({ url: `${SITE}${path}` }));
 }

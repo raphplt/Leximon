@@ -10,6 +10,7 @@ import { CardSheet } from "./card-sheet";
 import { CoffretDialog } from "./coffret-dialog";
 import styles from "./game-shell.module.css";
 import { MailPanel } from "./mail-panel";
+import { NewsDialog } from "./news-dialog";
 import { PlayerMenu } from "./player-menu";
 import { SanctionDialog } from "./sanction-dialog";
 import { SettingsPanel } from "./settings-panel";
@@ -82,6 +83,7 @@ function Frame({ children }: { readonly children: ReactNode }) {
       <MailPanel open={overlay === "mail"} onClose={close} />
       <ChatPanel open={overlay === "chat"} onClose={close} />
       <SanctionDialog now={view.now} />
+      <NewsDialog level={view.progress?.level ?? null} />
       <CoffretDialog level={coffret} now={view.now} onClose={() => setCoffret(null)} />
       <TradeDoneDialog />
       <CardSheet cardId={card} onClose={() => setCard(null)} />

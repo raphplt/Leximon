@@ -4,6 +4,7 @@ export * from "./app-version";
 export * from "./card-sheet";
 export * from "./cards";
 export * from "./challenges";
+export * from "./changelog";
 export * from "./chat-poll";
 export * from "./clan";
 export * from "./engraving";

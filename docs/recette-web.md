@@ -70,6 +70,11 @@ Sans être connecté.
 - **Attendu :** une image propre, au nom de Leximon.
 - **Retour :**
 
+### PUB-05 · Nouveautés
+- **Faire :** avec un compte de niveau 5 ou plus, vider la clé `leximon.news-seen` du stockage du navigateur, puis ouvrir le jeu ; fermer la fenêtre et recharger. Refaire avec un compte de niveau 1. Ouvrir `/nouveautes`, depuis le menu de l'avatar et depuis le pied de l'accueil.
+- **Attendu :** au niveau 5 et plus, la fenêtre « Nouveautés » avec la dernière entrée, « Retour au jeu » et « Toutes les nouveautés » ; elle ne revient pas au rechargement. Au niveau 1, aucune fenêtre. La page liste toutes les entrées, la plus récente en haut.
+- **Retour :**
+
 ---
 
 ## 2. Invité et inscription

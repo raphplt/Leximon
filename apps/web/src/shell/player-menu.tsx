@@ -58,6 +58,7 @@ export function PlayerMenu({
     },
     { label: "Apparence", icon: "palette", href: "/atelier" },
     { label: "Niveaux", icon: "star", href: "/niveaux" },
+    { label: "Nouveautés", icon: "bolt", href: "/nouveautes" },
     { label: "Réglages", icon: "reglages", action: openSettings },
     { label: "Devenir mécène", icon: "crown", href: "/mecene" },
     { label: "Écrire à l'équipe", icon: "chat", action: () => setFeedbackOpen(true) },

@@ -336,6 +336,8 @@ Le retour en arrière ne touche que le code. Les migrations sont additives, donc
 
 **Mettre en prod : `pnpm deploy:prod`.** Le script ([infra/prod/deploy.sh](../infra/prod/deploy.sh)) refuse de partir hors de `main` ou avec des fichiers non commités, qui partiraient en ligne. Il lance ensuite `pnpm check`, les migrations, le catalogue si une version plus récente que celle en ligne existe, l'API, le web, puis contrôle que les deux répondent. La chaîne Neon vient de `DATABASE_URL`, sinon de `~/.config/leximon/neon-url` (droits 600). Les commandes ci-dessous restent pour un geste isolé.
 
+**Nouveautés :** un changement que les joueurs voient s'annonce dans `CHANGELOG`, en tête de `packages/view-model/src/changelog.ts`, daté du jour de la mise en ligne et commité avant `pnpm deploy:prod`. Le web montre l'entrée une fois à chaque joueur (niveau 5 et plus, une fois par appareil) et la garde sur `/nouveautes`. L'app ne la montre qu'avec le build suivant, puisqu'elle embarque le journal : une entrée qui ne concerne que le web le dit dans son texte.
+
 - Ajouter un réglage ou une liaison à l'API : l'écrire en haut de `apps/api/wrangler.jsonc` (local) **et** dans `env.production`. Wrangler ne recopie ni les variables ni les liaisons dans un environnement.
 - Nouvelle version du catalogue : `pnpm catalog:publish:prod` puis `pnpm deploy:web`, dans cet ordre et dans la foulée.
 - Nouvelle migration : `pnpm db:migrate:prod` avant `pnpm deploy:api`.

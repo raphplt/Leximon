@@ -57,6 +57,7 @@ export async function LandingPage() {
           <Link href="/confidentialite">Tes données</Link>
           <Link href="/conditions">Conditions</Link>
           <Link href="/mentions">Mentions</Link>
+          <Link href="/nouveautes">Nouveautés</Link>
           <a href={DISCORD_URL} target="_blank" rel="noopener noreferrer">
             Discord
           </a>

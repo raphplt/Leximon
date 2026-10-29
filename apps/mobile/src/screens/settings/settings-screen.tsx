@@ -240,6 +240,10 @@ export function SettingsScreen() {
         <Text style={styles.link} onPress={() => openWebPage("/conditions")}>
           Conditions
         </Text>
+        {" · "}
+        <Text style={styles.link} onPress={() => router.push("/nouveautes")}>
+          Nouveautés
+        </Text>
         {" · contact@leximon.fr"}
       </Text>
 
