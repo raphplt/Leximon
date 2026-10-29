@@ -7,10 +7,11 @@ import { HowToPlay } from "./how-to-play";
 import styles from "./landing-page.module.css";
 import { Closing, JoinOrResume, TopAction } from "./player-access";
 import { readShowcase } from "./showcase-server";
+import { Testimonials } from "./testimonials";
 
 /**
  * The public home page: a real word first, what Leximon is and a way to hear when it opens, then
- * the launch collections, the rules, and the form again for those who read to the end. Someone
+ * the launch collections, the rules, what players said, and the form again for those who read to the end. Someone
  * who already plays finds the way back to the game instead of the form.
  */
 export async function LandingPage() {
@@ -40,6 +41,8 @@ export async function LandingPage() {
       <Collections ladder={showcase.ladder} shelves={showcase.shelves} />
 
       <HowToPlay pack={showcase.pack} trade={showcase.trade} />
+
+      <Testimonials />
 
       <Closing />
 
