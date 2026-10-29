@@ -104,6 +104,7 @@ Dans l'ordre où elles débloquent le plus :
 2. **Avatars gravés (P49) :** valider les seize gravures choisies et leurs noms.
 3. **Mécène (P73) :** l'exemplaire de la carte dénichée, non échangeable et sans XP, reste à confirmer.
 4. **Questions ouvertes** de [regles-du-jeu.md](regles-du-jeu.md#à-décider) : numéro de collection, sons de l'ouverture, notation phonétique.
+5. **Révisions choisies et nouveaux modes :** les quatre choix de [revisions-et-modes-de-jeu.md](cahiers-des-charges/revisions-et-modes-de-jeu.md#décisions-à-prendre) (ce que compte une révision choisie, son niveau d'ouverture, la carte de l'énigme du jour, l'ordre des chantiers).
 
 ## Prochaines étapes conseillées
 
