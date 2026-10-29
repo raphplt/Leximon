@@ -247,14 +247,32 @@ const HIDDEN = "…";
  * The definition shown when the word is to be found: words of the same family hidden, so that
  * « Petit du renard » does not give away *renardeau*. A word of the definition is hidden when it
  * starts like the card's word over 5 letters or 60 % of it, whichever is longer, or over all of a
- * shorter word.
+ * shorter word. Prefixed words are caught too: « Apaiser de nouveau » for *rapaiser*, « contraire
+ * d'impeccable » for *peccable*.
  */
 export function hideWordIn(definition: string, word: string): string {
   const target = normalizeWord(word);
   const needed = Math.min(target.length, Math.max(5, Math.ceil(target.length * 0.6)));
-  return definition.replaceAll(/[\p{L}\p{M}]+/gu, (token) =>
-    sharedPrefix(normalizeWord(token), target) >= needed ? HIDDEN : token,
-  );
+  return definition.replaceAll(/[\p{L}\p{M}]+/gu, (token) => {
+    const normalized = normalizeWord(token);
+    const family =
+      sharedPrefix(normalized, target) >= needed ||
+      stemInside(normalized, target) ||
+      (target.length >= 5 && normalized.includes(target));
+    return family ? HIDDEN : token;
+  });
+}
+
+/**
+ * The token, or its stem cut of one or two final letters (*menottes* in *emmenotter*), stands
+ * inside the word over 5 letters at least and half of the word.
+ */
+function stemInside(token: string, word: string): boolean {
+  const shortest = Math.max(5, token.length - 2, Math.ceil(word.length / 2));
+  for (let length = token.length; length >= shortest; length--) {
+    if (word.includes(token.slice(0, length))) return true;
+  }
+  return false;
 }
 
 function sharedPrefix(a: string, b: string): number {

@@ -229,6 +229,24 @@ describe("défis screen", () => {
       "Espace compris entre la poupe et le banc.",
     );
   });
+
+  it("hides the word under a prefix, and the word inside a longer one", () => {
+    expect(hideWordIn("Apaiser de nouveau.", "rapaiser")).toBe("… de nouveau.");
+    expect(hideWordIn("Passer des menottes aux poignets.", "emmenotter")).toBe(
+      "Passer des … aux poignets.",
+    );
+    expect(hideWordIn("Couvrir d'une ombre.", "obombrer")).toBe("Couvrir d'une ….");
+    expect(hideWordIn("Sujet au péché, par opposition à impeccable.", "peccable")).toBe(
+      "Sujet au péché, par opposition à ….",
+    );
+    expect(hideWordIn("Ouvrier qui lie le foin en bottes.", "botteleur")).toBe(
+      "Ouvrier qui lie le foin en ….",
+    );
+    expect(hideWordIn("Faire le mal.", "méfaire")).toBe("… le mal.");
+    expect(hideWordIn("Petit fossé creusé au fond d'un grand fossé.", "cunette")).toBe(
+      "Petit fossé creusé au fond d'un grand fossé.",
+    );
+  });
 });
 
 describe("noChallengeNotice", () => {
