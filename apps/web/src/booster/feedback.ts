@@ -248,6 +248,15 @@ const CUES: Readonly<Record<SoundCue, (ctx: AudioContext) => void>> = {
       tone(ctx, { frequency: note, duration: 0.9, gain: 0.05, type: "triangle" });
     }
   },
+  // A challenge's answers: a bright fifth when right, a soft low fall when wrong, never a buzzer.
+  answerRight: (ctx) => {
+    bell(ctx, C6, 0, 0.06, 0.3);
+    bell(ctx, G6, 0.08, 0.06, 0.5);
+  },
+  answerWrong: (ctx) => {
+    tone(ctx, { frequency: 220, frequencyTo: 150, duration: 0.24, gain: 0.12, type: "triangle" });
+    noiseBurst(ctx, { duration: 0.08, filter: "lowpass", frequency: 400, gain: 0.06 });
+  },
 };
 
 /**

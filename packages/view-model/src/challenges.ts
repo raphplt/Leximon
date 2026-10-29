@@ -15,6 +15,7 @@ import {
   type RandomSource,
 } from "@leximon/core";
 import { type PackNoun, SACHET_NOUN } from "./format";
+import type { SoundCue } from "./staging";
 
 /** Outcome of one answered question, kept for the recap. */
 export interface AnsweredQuestion {
@@ -196,26 +197,108 @@ export function memoryNote(now: number): string {
   return `Entre deux paliers, des questions à choix multiples t'aident à retenir le mot. Pour passer à l'Encre, écris-le de mémoire ${ink} jours après ta dernière révision (${gilded} jours pour la Dorure). Si tu te trompes, il revient le lendemain.`;
 }
 
+/** What the memory needs to tell how a word stands. */
+interface Remembered {
+  readonly level: MasteryLevelCode;
+  readonly due: number;
+  readonly lastReviewedAt: number | null;
+}
+
+/** Whether the next challenge asks this word typed, to raise it a level. */
+function risesNow(word: Remembered, now: number): boolean {
+  const rules = masteryRulesAt(MASTERY_SCHEDULE, now);
+  return word.due <= now && levelUpPossible(rules, word.level, word.lastReviewedAt, now);
+}
+
+export interface ChallengeOutlook {
+  /** Reviewed words due now. */
+  readonly due: number;
+  /** Of those, the ones a right typed answer raises a level. */
+  readonly rising: number;
+  /** Owned words never asked yet. */
+  readonly fresh: number;
+}
+
+/** What the next challenges hold: words due, words that can climb, words never asked. */
+export function challengeOutlook(
+  memory: ReadonlyMap<string, Remembered>,
+  owned: Iterable<string>,
+  now: number,
+): ChallengeOutlook {
+  let due = 0;
+  let rising = 0;
+  let fresh = 0;
+  for (const id of owned) {
+    const word = memory.get(id);
+    if (word === undefined) fresh += 1;
+    else if (word.due <= now) {
+      due += 1;
+      if (risesNow(word, now)) rising += 1;
+    }
+  }
+  return { due, rising, fresh };
+}
+
+/** « 8 mots à revoir, dont 2 peuvent monter de palier. 5 nouveaux mots attendent leur première question. » */
+export function outlookLine({ due, rising, fresh }: ChallengeOutlook): string | null {
+  const lines: string[] = [];
+  if (due > 0) {
+    const words = due > 1 ? `${due} mots à revoir` : "1 mot à revoir";
+    const climb =
+      rising === 0
+        ? ""
+        : rising > 1
+          ? `, dont ${rising} peuvent monter de palier`
+          : ", dont 1 peut monter de palier";
+    lines.push(`${words}${climb}.`);
+  }
+  if (fresh > 0) {
+    lines.push(
+      fresh > 1
+        ? `${fresh} nouveaux mots attendent leur première question.`
+        : "1 nouveau mot attend sa première question.",
+    );
+  }
+  return lines.length === 0 ? null : lines.join(" ");
+}
+
+/** Each level's share of the owned words, for the bar under the counts. */
+export function levelShares(
+  counts: Readonly<Record<MasteryLevelCode, number>>,
+): Readonly<Record<MasteryLevelCode, number>> {
+  const total = counts.sketch + counts.ink + counts.gilded;
+  if (total === 0) return { sketch: 0, ink: 0, gilded: 0 };
+  return {
+    sketch: counts.sketch / total,
+    ink: counts.ink / total,
+    gilded: counts.gilded / total,
+  };
+}
+
 export interface EscapingWord {
   readonly cardId: string;
   readonly due: boolean;
   /** « À réviser maintenant », « À réviser dans 3 h » */
   readonly when: string;
+  /** « Peut passer à l'Encre » when the next challenge asks it typed, to climb. */
+  readonly rise: string | null;
 }
 
 /**
- * Words slipping away: reviewed words due now, most overdue first, then those due
- * within a day, up to `limit`.
+ * Words slipping away: reviewed words due now, those that can climb a level first, then the most
+ * overdue, then those due within a day, up to `limit`.
  */
 export function escapingWords(
-  memory: ReadonlyMap<string, { readonly due: number }>,
+  memory: ReadonlyMap<string, Remembered>,
   owned: ReadonlySet<string>,
   now: number,
   limit = 6,
 ): EscapingWord[] {
   return [...memory.entries()]
     .filter(([id, word]) => owned.has(id) && word.due <= now + DAY)
-    .sort((a, b) => a[1].due - b[1].due)
+    .sort(
+      (a, b) => Number(risesNow(b[1], now)) - Number(risesNow(a[1], now)) || a[1].due - b[1].due,
+    )
     .slice(0, limit)
     .map(([cardId, word]) => ({
       cardId,
@@ -224,6 +307,9 @@ export function escapingWords(
         word.due <= now
           ? "À réviser maintenant"
           : `À réviser ${nextDueLabel(new Date(word.due).toISOString(), now) ?? "bientôt"}`,
+      rise: risesNow(word, now)
+        ? `Peut passer ${word.level === "sketch" ? "à l'Encre" : "à la Dorure"}`
+        : null,
     }));
 }
 
@@ -279,6 +365,31 @@ function sharedPrefix(a: string, b: string): number {
   let length = 0;
   while (length < a.length && length < b.length && a[length] === b[length]) length++;
   return length;
+}
+
+export interface AnswerFeedback {
+  readonly cue: SoundCue;
+  readonly vibration: readonly number[];
+  /** Played `AFTER_ANSWER_MS` later, once the answer has sounded: the bigger news. */
+  readonly followUp: SoundCue | null;
+}
+
+export const AFTER_ANSWER_MS = 350;
+
+/** In a session's recap, the sachet won lands after the score has counted up; its chime waits for it. */
+export const RECAP_BONUS_MS = 700;
+
+/** What an answer sounds and feels like; a level or a sachet won rings after it. */
+export function answerFeedback(
+  answer: Pick<AnsweredQuestion, "correct" | "levelUp" | "bonus">,
+): AnswerFeedback {
+  const won = answer.bonus.daily + answer.bonus.gilded > 0;
+  if (!answer.correct) return { cue: "answerWrong", vibration: [10, 60, 10], followUp: null };
+  return {
+    cue: "answerRight",
+    vibration: answer.levelUp ? [12, 120, 40] : [12],
+    followUp: answer.levelUp ? "chimeRare" : won ? "chimePrecious" : null,
+  };
 }
 
 /** « Juste. +15 XP », « Juste, à une lettre près. +15 XP » or « Raté. » */

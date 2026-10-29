@@ -172,11 +172,11 @@ A sur le web sert de deuxième joueur : amis, échanges, clan, sanctions. `pnpm 
 
 ---
 
-## 6. Défis (DEF-01 à DEF-06)
+## 6. Défis (DEF-01 à DEF-08)
 
 ### MDE-01 · Session
 - **Faire :** lancer une session, répondre juste et faux, taper un mot quand il le demande, arrêter en cours.
-- **Attendu :** comme sur le web ; le clavier ne cache ni la question ni le champ. Bilan et sachet bonus du jour.
+- **Attendu :** comme sur le web, progression, sons, vibrations et réactions compris (DEF-07, DEF-08) ; le clavier ne cache ni la question ni le champ. Bilan et sachet bonus du jour.
 - **Retour :**
 
 ### MDE-02 · Réviser un mot

@@ -12,7 +12,7 @@ import {
   spellingLine,
   typedQuestionHint,
 } from "@leximon/view-model";
-import { useEffect, useRef, useState } from "react";
+import { type ReactNode, useEffect, useRef, useState } from "react";
 import {
   KeyboardAvoidingView,
   Pressable,
@@ -23,6 +23,14 @@ import {
   TextInput,
   View,
 } from "react-native";
+import Animated, {
+  FadeInUp,
+  useAnimatedStyle,
+  useReducedMotion,
+  useSharedValue,
+  withSequence,
+  withTiming,
+} from "react-native-reanimated";
 import { wordMemory } from "@/player/collection";
 import { useShared } from "@/player/shared";
 import { TAB_BAR_RISE } from "@/shell/tab-bar";
@@ -110,9 +118,14 @@ export function QuestionView({
               return <View key={q.cardId} style={[styles.dot, { backgroundColor: tone }]} />;
             })}
           </View>
-          <Text style={styles.position}>
-            {session.index + 1}/{total}
-          </Text>
+          <View>
+            <Text style={styles.position}>
+              {session.index + 1}/{total}
+            </Text>
+            {result?.correct && result.progress.xpGained > 0 && (
+              <XpFloat key={session.answers.length} xp={result.progress.xpGained} />
+            )}
+          </View>
         </View>
 
         <Panel>
@@ -144,21 +157,22 @@ export function QuestionView({
               const choice = cardOrPlaceholder(catalog, choiceId, "common");
               const state = choiceState(choiceId, question.cardId, step);
               return (
-                <Pressable
-                  key={choiceId}
-                  disabled={step.name !== "asking"}
-                  onPress={() => onChoose(choiceId)}
-                  accessibilityRole="button"
-                  style={({ pressed }) => [
-                    styles.choice,
-                    choiceStyles[state],
-                    pressed && styles.choicePressed,
-                  ]}
-                >
-                  <Text style={asksDefinition ? styles.choiceDefinition : styles.choiceWord}>
-                    {asksDefinition ? choice.definition : choice.word}
-                  </Text>
-                </Pressable>
+                <Reaction key={choiceId} kind={state}>
+                  <Pressable
+                    disabled={step.name !== "asking"}
+                    onPress={() => onChoose(choiceId)}
+                    accessibilityRole="button"
+                    style={({ pressed }) => [
+                      styles.choice,
+                      choiceStyles[state],
+                      pressed && styles.choicePressed,
+                    ]}
+                  >
+                    <Text style={asksDefinition ? styles.choiceDefinition : styles.choiceWord}>
+                      {asksDefinition ? choice.definition : choice.word}
+                    </Text>
+                  </Pressable>
+                </Reaction>
               );
             })}
           </View>
@@ -170,7 +184,8 @@ export function QuestionView({
           </Text>
         )}
         {result !== null && (
-          <View
+          <Animated.View
+            entering={FadeInUp.duration(200)}
             style={[styles.feedback, result.correct ? styles.good : styles.bad]}
             accessibilityLiveRegion="polite"
           >
@@ -182,11 +197,15 @@ export function QuestionView({
                 ? (spelling ?? frequencyLine(card.perBillion))
                 : `La bonne réponse était « ${asksDefinition ? card.definition : card.word} »`}
             </Text>
-            {[
-              result.levelUp ? levelUpLine(card.word, result.level) : null,
-              levelUpLabel(result.progress),
-              ...bonusLines(result.bonus, PACK_NOUNS.sachet),
-            ].map(
+            {result.levelUp && (
+              <Animated.Text
+                entering={FadeInUp.delay(200).duration(240)}
+                style={[styles.feedbackExtra, styles.risen]}
+              >
+                {levelUpLine(card.word, result.level)}
+              </Animated.Text>
+            )}
+            {[levelUpLabel(result.progress), ...bonusLines(result.bonus, PACK_NOUNS.sachet)].map(
               (line) =>
                 line !== null && (
                   <Text key={line} style={styles.feedbackExtra}>
@@ -195,10 +214,67 @@ export function QuestionView({
                 ),
             )}
             <Button label={last ? "Voir le résultat" : "Question suivante"} onPress={onNext} />
-          </View>
+          </Animated.View>
         )}
       </ScrollView>
     </KeyboardAvoidingView>
+  );
+}
+
+/** A right choice swells for a moment, a wrong one shakes once; nothing with reduced motion. */
+function Reaction({
+  kind,
+  children,
+}: {
+  readonly kind: ChoiceState;
+  readonly children: ReactNode;
+}) {
+  const reduced = useReducedMotion();
+  const scale = useSharedValue(1);
+  const shift = useSharedValue(0);
+  useEffect(() => {
+    if (reduced) return;
+    if (kind === "right") {
+      scale.value = withSequence(
+        withTiming(1.04, { duration: 130 }),
+        withTiming(1, { duration: 130 }),
+      );
+    } else if (kind === "wrong") {
+      shift.value = withSequence(
+        withTiming(-6, { duration: 60 }),
+        withTiming(6, { duration: 70 }),
+        withTiming(-6, { duration: 70 }),
+        withTiming(6, { duration: 70 }),
+        withTiming(0, { duration: 50 }),
+      );
+    }
+  }, [kind, reduced, scale, shift]);
+  const style = useAnimatedStyle(() => ({
+    transform: [{ scale: scale.value }, { translateX: shift.value }],
+  }));
+  return <Animated.View style={style}>{children}</Animated.View>;
+}
+
+/** « +15 XP » leaves the counter upwards and fades. */
+function XpFloat({ xp }: { readonly xp: number }) {
+  const reduced = useReducedMotion();
+  const rise = useSharedValue(0);
+  useEffect(() => {
+    rise.value = withTiming(1, { duration: 900 });
+  }, [rise]);
+  const style = useAnimatedStyle(() => ({
+    opacity: rise.value < 0.2 ? rise.value * 5 : 1 - (rise.value - 0.2) / 0.8,
+    transform: [{ translateY: -22 * rise.value }],
+  }));
+  if (reduced) return null;
+  return (
+    <Animated.Text
+      style={[styles.xpFloat, style]}
+      importantForAccessibility="no"
+      accessibilityElementsHidden
+    >
+      +{xp} XP
+    </Animated.Text>
   );
 }
 
@@ -332,6 +408,17 @@ const styles = StyleSheet.create({
     fontSize: 17,
     lineHeight: 24,
     color: colors.text,
+  },
+  risen: { fontFamily: fonts.ui.extrabold },
+  xpFloat: {
+    position: "absolute",
+    right: 0,
+    bottom: "100%",
+    width: 80,
+    textAlign: "right",
+    fontFamily: fonts.ui.extrabold,
+    fontSize: 14,
+    color: colors.accent,
   },
   feedbackExtra: { fontFamily: fonts.ui.bold, fontSize: 15, lineHeight: 21, color: colors.accent },
 });

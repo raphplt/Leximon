@@ -14,7 +14,9 @@ export type SoundCue =
   | "shimmer"
   | "fanfareLegendary"
   | "newCard"
-  | "recap";
+  | "recap"
+  | "answerRight"
+  | "answerWrong";
 
 /**
  * How each rarity is revealed. The announcement always comes before the face: the rarer the

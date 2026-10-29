@@ -4,21 +4,27 @@ import type { ChallengeQuestion, MasteryLevelCode } from "@leximon/contract";
 import { type Catalog, cardOrPlaceholder, collectionName } from "@leximon/contract/client";
 import { createSeededRandom, TYPED_ANSWER_MAX_LENGTH } from "@leximon/core";
 import {
+  AFTER_ANSWER_MS,
   type AnsweredQuestion,
+  answerFeedback,
   answerTitle,
   bonusLines,
+  challengeOutlook,
   clanShareLine,
   dailyView,
   escapingWords,
   frequencyLine,
   hideWordIn,
+  levelShares,
   levelUpLabel,
   levelUpLine,
   memoryCounts,
   memoryNote,
   NOT_THIS_TIME,
   noChallengeNotice,
+  outlookLine,
   questionKicker,
+  RECAP_BONUS_MS,
   reviewQuestion,
   sessionBonusLine,
   sessionScore,
@@ -28,6 +34,7 @@ import {
 } from "@leximon/view-model";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { type FormEvent, useCallback, useEffect, useState } from "react";
+import { play, vibrate } from "@/booster/feedback";
 import { loadCatalog } from "@/cards/catalog";
 import { Card } from "@/components/card";
 import { api } from "@/lib/api";
@@ -146,6 +153,11 @@ export function ChallengeScreen() {
         return;
       }
       publishProgress(result.progress);
+      const feel = answerFeedback(result);
+      play(feel.cue);
+      vibrate(feel.vibration);
+      const { followUp } = feel;
+      if (followUp !== null) window.setTimeout(() => play(followUp), AFTER_ANSWER_MS);
       setSession({
         ...session,
         answers: [
@@ -203,7 +215,7 @@ export function ChallengeScreen() {
     <main className={styles.page}>
       <h1 className={`${ui.display} ${styles.title}`}>Défis</h1>
       <div className={styles.columns}>
-        <DailyCard starting={starting} onStart={() => void start()} />
+        <DailyCard starting={starting} now={now} onStart={() => void start()} />
         <MemoryPanel now={now} />
       </div>
       {notice !== null && (
@@ -223,14 +235,22 @@ export function ChallengeScreen() {
 
 function DailyCard({
   starting,
+  now,
   onStart,
 }: {
   readonly starting: boolean;
+  readonly now: number;
   readonly onStart: () => void;
 }) {
   const tally = useShared(dailyChallenge);
+  const owned = useShared(ownedCards);
+  const memory = useShared(wordMemory);
   const { noun } = usePackShape();
   const view = tally === null ? null : dailyView(tally, noun);
+  const outlook =
+    owned === null || memory === null || now === 0
+      ? null
+      : outlookLine(challengeOutlook(memory, owned.keys(), now));
   return (
     <section className={`${ui.panel} ${styles.daily}`} aria-labelledby="daily-title">
       <div className={styles.dailyHead}>
@@ -260,6 +280,7 @@ function DailyCard({
           <span key={index} className={`${styles.bar} ${styles[bar]}`} />
         ))}
       </div>
+      {outlook !== null && <p className={styles.outlook}>{outlook}</p>}
       {view?.done ? (
         <Button variant="secondary" disabled={starting} onClick={onStart}>
           Réviser encore
@@ -286,6 +307,7 @@ function MemoryPanel({ now }: { readonly now: number }) {
     [...(memory ?? new Map()).entries()].map(([id, word]) => [id, word.level]),
   );
   const counts = memoryCounts(owned?.keys() ?? [], levels);
+  const shares = levelShares(counts);
   return (
     <section className={`${ui.panel} ${styles.memory}`} aria-labelledby="memory-title">
       <p id="memory-title" className={ui.kicker}>
@@ -304,6 +326,17 @@ function MemoryPanel({ now }: { readonly now: number }) {
           </li>
         ))}
       </ul>
+      {owned !== null && owned.size > 0 && (
+        <div className={styles.shares} aria-hidden="true">
+          {LEVELS.map(({ level }) => (
+            <span
+              key={level}
+              className={`${styles.share} ${styles[level]}`}
+              style={{ flexGrow: shares[level] }}
+            />
+          ))}
+        </div>
+      )}
       <p className={styles.memoryNote}>{memoryNote(now)}</p>
     </section>
   );
@@ -342,6 +375,7 @@ function Escaping({ catalog, now }: { readonly catalog: Catalog; readonly now: n
               <div className={styles.slippingText}>
                 <p className={styles.slippingWord}>{card.word}</p>
                 <p className={styles.slippingWhen}>{entry.when}</p>
+                {entry.rise !== null && <p className={styles.slippingRise}>{entry.rise}</p>}
               </div>
               {entry.due && (
                 <ButtonLink variant="ghost" small href={`/defis?mot=${card.id}`}>
@@ -419,6 +453,11 @@ function QuestionView({
         </div>
         <span className={styles.position}>
           {session.index + 1}/{total}
+          {result?.correct && result.progress.xpGained > 0 && (
+            <span key={session.answers.length} className={styles.xpFloat} aria-hidden="true">
+              +{result.progress.xpGained} XP
+            </span>
+          )}
         </span>
       </div>
 
@@ -483,11 +522,12 @@ function QuestionView({
                   ? (spelling ?? frequencyLine(card.perBillion))
                   : `La bonne réponse était « ${asksDefinition ? card.definition : card.word} »`}
               </p>
-              {[
-                result.levelUp ? levelUpLine(card.word, result.level) : null,
-                levelUpLabel(result.progress),
-                ...bonusLines(result.bonus, noun),
-              ].map(
+              {result.levelUp && (
+                <p className={`${styles.feedbackExtra} ${styles.risen}`}>
+                  {levelUpLine(card.word, result.level)}
+                </p>
+              )}
+              {[levelUpLabel(result.progress), ...bonusLines(result.bonus, noun)].map(
                 (line) =>
                   line !== null && (
                     <p key={line} className={styles.feedbackExtra}>
@@ -552,6 +592,27 @@ function TypedAnswer({
   );
 }
 
+/** Counts from 0 up to `target` over `ms`, at once when the system asks for less motion. */
+function useCountUp(target: number, ms: number): number {
+  const [shown, setShown] = useState(0);
+  useEffect(() => {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      setShown(target);
+      return;
+    }
+    const start = performance.now();
+    let frame = 0;
+    const step = (time: number) => {
+      const share = Math.min(1, (time - start) / ms);
+      setShown(Math.round(target * share));
+      if (share < 1) frame = requestAnimationFrame(step);
+    };
+    frame = requestAnimationFrame(step);
+    return () => cancelAnimationFrame(frame);
+  }, [target, ms]);
+  return shown;
+}
+
 function Recap({
   catalog,
   answers,
@@ -570,6 +631,13 @@ function Recap({
   // The Jouer screen's clan row counts these answers too.
   useEffect(() => refreshIfRead(myClan), []);
   const bonus = sessionBonusLine(answers, noun);
+  const right = useCountUp(answers.filter((answer) => answer.correct).length, 500);
+  useEffect(() => {
+    play("recap");
+    if (bonus === null) return;
+    const timer = window.setTimeout(() => play("chimePrecious"), RECAP_BONUS_MS);
+    return () => window.clearTimeout(timer);
+  }, [bonus]);
   const ups = answers
     .filter((answer) => answer.levelUp)
     .map((answer) =>
@@ -580,7 +648,13 @@ function Recap({
       <p id="recap-title" className={ui.kicker}>
         Défi terminé
       </p>
-      <p className={`${ui.display} ${styles.score}`}>{sessionScore(answers)}</p>
+      {/* Screen readers get the final score, not the count on its way. */}
+      <p className={`${ui.display} ${styles.score}`}>
+        <span aria-hidden="true">
+          {right}/{answers.length}
+        </span>
+        <span className={styles.spoken}>{sessionScore(answers)}</span>
+      </p>
       {xp !== null && <p className={styles.xp}>{xp}</p>}
       {clanShare !== null && (
         <p className={styles.clanShare}>
@@ -589,7 +663,7 @@ function Recap({
         </p>
       )}
       {bonus !== null ? (
-        <p className={styles.won}>
+        <p className={styles.won} style={{ animationDelay: `${RECAP_BONUS_MS}ms` }}>
           <Icon name="sachet" size={28} />
           {bonus}
         </p>

@@ -193,6 +193,16 @@ def recap(cue):
         cue.tone(note, 0.9, 0.05, type="triangle")
 
 
+def answer_right(cue):
+    cue.bell(C6, 0, 0.06, 0.3)
+    cue.bell(G6, 0.08, 0.06, 0.5)
+
+
+def answer_wrong(cue):
+    cue.tone(220, 0.24, 0.12, type="triangle", frequency_to=150)
+    cue.noise(0.08, "lowpass", 400, 0.06)
+
+
 CUES = {
     "seal-break": seal_break,
     "tear-finish": tear_finish,
@@ -207,6 +217,8 @@ CUES = {
     "fanfare-legendary": fanfare_legendary,
     "new-card": new_card,
     "recap": recap,
+    "answer-right": answer_right,
+    "answer-wrong": answer_wrong,
 }
 GRAINS = 6
 """The loudest grain the web plays: the app lowers each grain's volume from there."""

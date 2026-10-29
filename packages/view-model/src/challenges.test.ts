@@ -1,17 +1,21 @@
 import { createSeededRandom } from "@leximon/core";
 import { describe, expect, it } from "vitest";
 import {
+  answerFeedback,
   answerTitle,
   bonusLines,
+  challengeOutlook,
   dailyView,
   escapingWords,
   feedbackLine,
   hideWordIn,
+  levelShares,
   levelUpLine,
   memoryCounts,
   memoryNote,
   nextDueLabel,
   noChallengeNotice,
+  outlookLine,
   questionKicker,
   recapLine,
   reviewQuestion,
@@ -28,6 +32,8 @@ const PLI = { one: "pli", many: "plis" };
 const NO_BONUS = { daily: 0, gilded: 0, credited: 0, reserve: 0 };
 const PROGRESS = { xp: 0, level: 1, xpIntoLevel: 0, xpForNextLevel: 100, levelUp: false };
 const NO_XP = { ...PROGRESS, xpGained: 0 };
+
+const DAY = 86_400_000;
 
 describe("nextDueLabel", () => {
   it("says when the next word comes back", () => {
@@ -188,21 +194,63 @@ describe("défis screen", () => {
     });
   });
 
-  it("lists the words slipping away, most overdue first", () => {
-    const now = Date.parse("2026-10-21T12:00:00Z");
+  it("lists the words slipping away, those that can climb first, then the most overdue", () => {
+    const now = Date.parse("2026-10-29T12:00:00Z");
+    const word = (due: number, lastReviewedAt: number | null = now - DAY) => ({
+      level: "sketch" as const,
+      due,
+      lastReviewedAt,
+    });
     const memory = new Map([
-      ["late", { due: now - 3_600_000 }],
-      ["later", { due: now - 60_000 }],
-      ["soon", { due: now + 3 * 3_600_000 }],
-      ["far", { due: now + 5 * 86_400_000 }],
-      ["traded", { due: now - 1 }],
+      ["late", word(now - 3_600_000)],
+      ["later", word(now - 60_000, now - 8 * DAY)],
+      ["soon", word(now + 3 * 3_600_000)],
+      ["far", word(now + 5 * DAY)],
+      ["traded", word(now - 1)],
     ]);
     const words = escapingWords(memory, new Set(["late", "later", "soon", "far"]), now);
     expect(words).toEqual([
-      { cardId: "late", due: true, when: "À réviser maintenant" },
-      { cardId: "later", due: true, when: "À réviser maintenant" },
-      { cardId: "soon", due: false, when: "À réviser dans 3 h" },
+      { cardId: "later", due: true, when: "À réviser maintenant", rise: "Peut passer à l'Encre" },
+      { cardId: "late", due: true, when: "À réviser maintenant", rise: null },
+      { cardId: "soon", due: false, when: "À réviser dans 3 h", rise: null },
     ]);
+  });
+
+  it("tells what the next challenges hold", () => {
+    const now = Date.parse("2026-10-29T12:00:00Z");
+    const memory = new Map([
+      ["climbs", { level: "sketch" as const, due: now - 1, lastReviewedAt: now - 8 * DAY }],
+      ["due", { level: "ink" as const, due: now - 1, lastReviewedAt: now - 8 * DAY }],
+      ["later", { level: "sketch" as const, due: now + DAY, lastReviewedAt: now - 9 * DAY }],
+    ]);
+    const outlook = challengeOutlook(memory, ["climbs", "due", "later", "new1", "new2"], now);
+    expect(outlook).toEqual({ due: 2, rising: 1, fresh: 2 });
+    expect(outlookLine(outlook)).toBe(
+      "2 mots à revoir, dont 1 peut monter de palier. 2 nouveaux mots attendent leur première question.",
+    );
+    expect(outlookLine({ due: 1, rising: 0, fresh: 1 })).toBe(
+      "1 mot à revoir. 1 nouveau mot attend sa première question.",
+    );
+    expect(outlookLine({ due: 0, rising: 0, fresh: 0 })).toBeNull();
+    expect(levelShares({ sketch: 3, ink: 1, gilded: 0 })).toEqual({
+      sketch: 0.75,
+      ink: 0.25,
+      gilded: 0,
+    });
+  });
+
+  it("rings louder for a level or a sachet than for a plain answer", () => {
+    const bonus = { daily: 0, gilded: 0, credited: 0, reserve: 0 };
+    expect(answerFeedback({ correct: false, levelUp: false, bonus })).toEqual({
+      cue: "answerWrong",
+      vibration: [10, 60, 10],
+      followUp: null,
+    });
+    expect(answerFeedback({ correct: true, levelUp: false, bonus }).followUp).toBeNull();
+    expect(answerFeedback({ correct: true, levelUp: true, bonus }).followUp).toBe("chimeRare");
+    expect(
+      answerFeedback({ correct: true, levelUp: false, bonus: { ...bonus, daily: 1 } }).followUp,
+    ).toBe("chimePrecious");
   });
 
   it("words the question and the answer", () => {

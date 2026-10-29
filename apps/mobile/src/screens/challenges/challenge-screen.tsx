@@ -3,11 +3,16 @@ import { type Catalog, cardOrPlaceholder, collectionName } from "@leximon/contra
 import { createSeededRandom } from "@leximon/core";
 import { type IconName, masteryColors } from "@leximon/tokens";
 import {
+  AFTER_ANSWER_MS,
+  answerFeedback,
+  challengeOutlook,
   dailyView,
   escapingWords,
+  levelShares,
   memoryCounts,
   memoryNote,
   noChallengeNotice,
+  outlookLine,
   PACK_NOUNS,
   reviewQuestion,
   type WordMemory,
@@ -19,6 +24,7 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { api } from "@/api/client";
 import { Card } from "@/cards/card";
 import { catalogInHand, loadCatalog } from "@/cards/catalog";
+import { play, vibrate } from "@/feedback/feedback";
 import { dailyChallenge, ownedCards, refreshIfRead, wordMemory } from "@/player/collection";
 import { useNow, useShared } from "@/player/shared";
 import { publishProgress, wallet } from "@/player/state";
@@ -132,6 +138,11 @@ export function ChallengeScreen({ word }: { readonly word: string | null }) {
         return;
       }
       publishProgress(result.progress);
+      const feel = answerFeedback(result);
+      play(feel.cue);
+      vibrate(feel.vibration);
+      const { followUp } = feel;
+      if (followUp !== null) setTimeout(() => play(followUp), AFTER_ANSWER_MS);
       // A bonus sachet went to the reserve: the top bar's count follows.
       if (result.bonus.credited > 0) refreshIfRead(wallet);
       setSession({
@@ -180,7 +191,7 @@ export function ChallengeScreen({ word }: { readonly word: string | null }) {
       <Text style={styles.title} accessibilityRole="header">
         Défis
       </Text>
-      <DailyCard starting={starting} onStart={() => void start()} />
+      <DailyCard starting={starting} now={now} onStart={() => void start()} />
       {notice !== null && (
         <Text style={styles.notice} accessibilityLiveRegion="polite">
           {notice}
@@ -199,13 +210,21 @@ export function ChallengeScreen({ word }: { readonly word: string | null }) {
 
 function DailyCard({
   starting,
+  now,
   onStart,
 }: {
   readonly starting: boolean;
+  readonly now: number;
   readonly onStart: () => void;
 }) {
   const tally = useShared(dailyChallenge);
+  const owned = useShared(ownedCards);
+  const memory = useShared(wordMemory);
   const view = tally === null ? null : dailyView(tally, NOUN);
+  const outlook =
+    owned === null || memory === null
+      ? null
+      : outlookLine(challengeOutlook(memory, owned.keys(), now));
   return (
     <Panel style={styles.daily}>
       <View style={styles.dailyHead}>
@@ -224,6 +243,7 @@ function DailyCard({
           <View key={index} style={[styles.bar, styles[bar]]} />
         ))}
       </View>
+      {outlook !== null && <Text style={styles.dailyText}>{outlook}</Text>}
       {view?.done ? (
         <Button label="Réviser encore" secondary disabled={starting} onPress={onStart} />
       ) : (
@@ -250,6 +270,7 @@ function MemoryPanel({ now }: { readonly now: number }) {
     [...(memory ?? new Map()).entries()].map(([id, word]) => [id, word.level]),
   );
   const counts = memoryCounts(owned?.keys() ?? [], levels);
+  const shares = levelShares(counts);
   return (
     <Panel>
       <Text style={styles.kicker}>TA MÉMOIRE</Text>
@@ -262,6 +283,19 @@ function MemoryPanel({ now }: { readonly now: number }) {
           </View>
         ))}
       </View>
+      {owned !== null && owned.size > 0 && (
+        <View style={styles.shares} importantForAccessibility="no-hide-descendants">
+          {LEVELS.map(({ level }) => (
+            <View
+              key={level}
+              style={{
+                flexGrow: shares[level],
+                backgroundColor: level === "sketch" ? colors.track : masteryColors[level],
+              }}
+            />
+          ))}
+        </View>
+      )}
       <Text style={styles.note}>{memoryNote(now)}</Text>
     </Panel>
   );
@@ -307,6 +341,7 @@ function Escaping({
             <View style={styles.slippingText}>
               <Text style={styles.slippingWord}>{card.word}</Text>
               <Text style={styles.slippingWhen}>{entry.when}</Text>
+              {entry.rise !== null && <Text style={styles.slippingRise}>{entry.rise}</Text>}
             </View>
             {entry.due && (
               <Pressable
@@ -357,6 +392,7 @@ const styles = StyleSheet.create({
   level: { flex: 1, alignItems: "center", gap: 4 },
   levelCount: { fontFamily: fonts.display, fontSize: 26, color: colors.text },
   levelLabel: { fontFamily: fonts.ui.bold, fontSize: 13, color: colors.textMuted },
+  shares: { flexDirection: "row", gap: 3, height: 8, borderRadius: 4, overflow: "hidden" },
   note: { fontFamily: fonts.ui.medium, fontSize: 14, lineHeight: 20, color: colors.textMuted },
   escaping: { gap: 10 },
   subtitle: { fontFamily: fonts.display, fontSize: 22, color: colors.text, marginTop: 4 },
@@ -364,6 +400,7 @@ const styles = StyleSheet.create({
   slippingText: { flex: 1, gap: 2 },
   slippingWord: { fontFamily: fonts.display, fontSize: 19, color: colors.text },
   slippingWhen: { fontFamily: fonts.ui.semibold, fontSize: 13, color: colors.textMuted },
+  slippingRise: { fontFamily: fonts.ui.bold, fontSize: 13, color: colors.accent },
   reviewButton: {
     minHeight: 38,
     paddingHorizontal: 14,

@@ -5,13 +5,16 @@ import {
   levelUpLine,
   NOT_THIS_TIME,
   PACK_NOUNS,
+  RECAP_BONUS_MS,
   sessionBonusLine,
   sessionScore,
   sessionXpLine,
 } from "@leximon/view-model";
 import { router } from "expo-router";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
+import Animated, { FadeInUp, useReducedMotion } from "react-native-reanimated";
+import { play } from "@/feedback/feedback";
 import { dailyChallenge, refreshIfRead } from "@/player/collection";
 import { useShared } from "@/player/shared";
 import { myClan } from "@/player/state";
@@ -22,6 +25,28 @@ import { Icon } from "@/ui/icon";
 import { Panel } from "@/ui/panel";
 
 const NOUN = PACK_NOUNS.sachet;
+
+/** Counts from 0 up to `target` over `ms`, at once when the system asks for less motion. */
+function useCountUp(target: number, ms: number): number {
+  const reduced = useReducedMotion();
+  const [shown, setShown] = useState(reduced ? target : 0);
+  useEffect(() => {
+    if (reduced) {
+      setShown(target);
+      return;
+    }
+    const start = Date.now();
+    let frame = 0;
+    const step = () => {
+      const share = Math.min(1, (Date.now() - start) / ms);
+      setShown(Math.round(target * share));
+      if (share < 1) frame = requestAnimationFrame(step);
+    };
+    frame = requestAnimationFrame(step);
+    return () => cancelAnimationFrame(frame);
+  }, [target, ms, reduced]);
+  return shown;
+}
 
 /** The end of a session: the score, the XP, what the clan and the daily goal got from it. */
 export function ChallengeRecap({
@@ -41,6 +66,13 @@ export function ChallengeRecap({
   // The clan's goal counts these answers too.
   useEffect(() => refreshIfRead(myClan), []);
   const bonus = sessionBonusLine(answers, NOUN);
+  const right = useCountUp(answers.filter((answer) => answer.correct).length, 500);
+  useEffect(() => {
+    play("recap");
+    if (bonus === null) return;
+    const timer = setTimeout(() => play("chimePrecious"), RECAP_BONUS_MS);
+    return () => clearTimeout(timer);
+  }, [bonus]);
   const ups = answers
     .filter((answer) => answer.levelUp)
     .map((answer) =>
@@ -50,7 +82,9 @@ export function ChallengeRecap({
     <ScrollView contentContainerStyle={styles.page}>
       <Panel style={styles.recap}>
         <Text style={styles.kicker}>DÉFI TERMINÉ</Text>
-        <Text style={styles.score}>{sessionScore(answers)}</Text>
+        <Text style={styles.score} accessibilityLabel={sessionScore(answers)}>
+          {right}/{answers.length}
+        </Text>
         {xp !== null && <Text style={styles.xp}>{xp}</Text>}
         {clanShare !== null && (
           <View style={styles.line}>
@@ -59,10 +93,13 @@ export function ChallengeRecap({
           </View>
         )}
         {bonus !== null ? (
-          <View style={styles.line}>
+          <Animated.View
+            entering={FadeInUp.delay(RECAP_BONUS_MS).duration(320)}
+            style={styles.line}
+          >
             <Icon name="sachet" size={26} color={colors.accent} />
             <Text style={[styles.lineText, styles.won]}>{bonus}</Text>
-          </View>
+          </Animated.View>
         ) : (
           tally !== null && !tally.awarded && <Text style={styles.lost}>{NOT_THIS_TIME}</Text>
         )}

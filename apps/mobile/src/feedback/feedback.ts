@@ -87,6 +87,8 @@ const FILES: Readonly<Record<SoundCue, number>> = {
   fanfareLegendary: require("../../assets/sounds/fanfare-legendary.wav"),
   newCard: require("../../assets/sounds/new-card.wav"),
   recap: require("../../assets/sounds/recap.wav"),
+  answerRight: require("../../assets/sounds/answer-right.wav"),
+  answerWrong: require("../../assets/sounds/answer-wrong.wav"),
 };
 
 const GRAINS: readonly number[] = [

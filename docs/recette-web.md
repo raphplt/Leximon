@@ -281,7 +281,17 @@ Compte A : `pnpm dev:player contact@leximon.fr --level 21` pour avoir une série
 docker compose exec postgres psql -U leximon -d leximon -c "update user_mastery set due = now(), last_reviewed_at = now() - interval '8 days' where card_id = 'equanimite' and user_id = (select id from users where email = 'contact@leximon.fr')"
 ```
 
-- **Attendu :** « Écris le mot », la définition (les mots de la même famille remplacés par « … », par exemple « Petit du …, jeune … » pour *renardeau*, en entier après la réponse), « Trouvé de tête, il passe à l'Encre. Les accents ne comptent pas, une faute de frappe passe. », un champ « Le mot », « Valider le mot » et « Je sèche ». *equanimite* : « Juste. », « Ça s'écrit équanimité. », « équanimité passe à l'Encre ! ». *equanimte* : « Juste, à une lettre près. », la même montée. Faux ou « Je sèche » : « Raté. », « C'était : équanimité ». Les autres mots restent en QCM. « Ta mémoire » dit qu'un mot monte quand on l'écrit de tête.
+- **Attendu :** « Écris le mot », la définition (les mots de la même famille remplacés par « … », par exemple « Petit du …, jeune … » pour *renardeau* ou « … de nouveau » pour *rapaiser*, en entier après la réponse), « Trouvé de tête, il passe à l'Encre. Les accents ne comptent pas, une faute de frappe passe. », un champ « Le mot », « Valider le mot » et « Je sèche ». *equanimite* : « Juste. », « Ça s'écrit équanimité. », « équanimité passe à l'Encre ! ». *equanimte* : « Juste, à une lettre près. », la même montée. Faux ou « Je sèche » : « Raté. », « C'était : équanimité ». Les autres mots restent en QCM. « Ta mémoire » dit qu'un mot monte quand on l'écrit de tête.
+- **Retour :**
+
+### DEF-07 · Progression sur l'écran Défis
+- **Faire :** avec le mot vieilli de DEF-06 et quelques mots à revoir, ouvrir Défis.
+- **Attendu :** sous les barres du défi du jour, « N mots à revoir, dont 1 peut monter de palier. N nouveaux mots attendent leur première question. » (accords justes à 1). Sous les paliers, une barre partagée Esquisse, Encre, Dorure en proportion des mots possédés. Dans « Mots à réviser », le mot qui peut monter vient en tête avec « Peut passer à l'Encre ».
+- **Retour :**
+
+### DEF-08 · Sons et réactions
+- **Faire :** son et vibration activés (sur un téléphone Android pour la vibration), une session avec une bonne réponse, une fausse, un mot écrit qui monte (DEF-06), jusqu'au sachet du défi du jour. Puis la même chose avec « réduire les animations » du système.
+- **Attendu :** bonne réponse : deux notes claires, le choix se gonfle un instant, « +15 XP » monte au-dessus du compteur et s'efface. Fausse : un son sourd et bref, pas de buzzer, le choix tremble une fois. Mot qui monte : le carillon des Rares juste après, la ligne « … passe à l'Encre ! » avec un reflet doré. Bilan : l'accord de fin, le score compte jusqu'à sa valeur, le sachet gagné arrive en dernier avec son carillon. Avec moins d'animations : les sons restent, rien ne bouge. Son coupé dans les réglages : rien ne sonne.
 - **Retour :**
 
 ---
