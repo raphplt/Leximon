@@ -128,6 +128,8 @@
       "simple": { "limit": 30, "period": 60 }
     }
   ],
+  "kv_namespaces": [{ "binding": "WATCHDOG", "id": "2489775cf74c429a87fe03d407bc8d5e" }],
+  "r2_buckets": [{ "binding": "BACKUPS", "bucket_name": "leximon-backups", "jurisdiction": "eu" }],
   "hyperdrive": [
     {
       "binding": "HYPERDRIVE",
@@ -239,6 +241,10 @@
           "simple": { "limit": 30, "period": 60 }
         }
       ],
+      "kv_namespaces": [{ "binding": "WATCHDOG", "id": "2489775cf74c429a87fe03d407bc8d5e" }],
+      "r2_buckets": [
+        { "binding": "BACKUPS", "bucket_name": "leximon-backups", "jurisdiction": "eu" }
+      ],
       "hyperdrive": [
         {
           "binding": "HYPERDRIVE",
@@ -348,6 +354,10 @@
       ],
       // Paris: the tunnel of the home database lands there.
       "placement": { "region": "aws:eu-west-3" },
+      "kv_namespaces": [{ "binding": "WATCHDOG", "id": "2489775cf74c429a87fe03d407bc8d5e" }],
+      "r2_buckets": [
+        { "binding": "BACKUPS", "bucket_name": "leximon-backups", "jurisdiction": "eu" }
+      ],
       "hyperdrive": [
         {
           "binding": "HYPERDRIVE",

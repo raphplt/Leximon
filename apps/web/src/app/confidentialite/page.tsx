@@ -140,15 +140,16 @@ export default function PrivacyPage() {
       <section className={styles.section}>
         <h2>Où tes données sont hébergées</h2>
         <p>
-          La base de données est chez Neon, à Francfort. Le site, l'API, les codes de connexion, les
-          e-mails sur ta partie et les journaux techniques (gardés 7 jours) passent par Cloudflare.
-          Les nouvelles passent par Lettermint, un service européen. Le comptage des visites est
-          gardé sur notre propre serveur, en France, et passe lui aussi par Cloudflare.
+          La base de données est sur notre propre serveur, en France, et ses sauvegardes sont
+          gardées chez Cloudflare, dans l'Union européenne. Le site, l'API, les codes de connexion,
+          les e-mails sur ta partie et les journaux techniques (gardés 7 jours) passent par
+          Cloudflare. Les nouvelles passent par Lettermint, un service européen. Le comptage des
+          visites est gardé sur ce même serveur et passe lui aussi par Cloudflare.
         </p>
         <p>
-          Neon et Cloudflare sont des sociétés américaines : une donnée peut passer par les
-          États-Unis. Ces transferts sont encadrés par les clauses types de la Commission
-          européenne, et pour Cloudflare par le Data Privacy Framework.
+          Cloudflare est une société américaine : une donnée peut passer par les États-Unis. Ces
+          transferts sont encadrés par les clauses types de la Commission européenne et par le Data
+          Privacy Framework.
         </p>
         <p>
           Les sauvegardes de la base sont gardées 30 jours au plus. Ce que tu effaces disparaît

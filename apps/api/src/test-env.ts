@@ -46,6 +46,8 @@ export function testEnv(connectionString = "postgres://unused@127.0.0.1:1/unused
     EMAIL_REPLY_TO: "contact@leximon.fr",
     EMAIL: unusedEmailBinding,
     NOTIFY_EMAIL: unusedEmailBinding,
+    WATCHDOG: {} as KVNamespace,
+    BACKUPS: {} as R2Bucket,
     EMAIL_NOTIFY_FROM: "",
     NOTIFY_DAILY_LIMIT: "200",
     EMAIL_CAMPAIGN_FROM: "",

@@ -73,7 +73,7 @@ On s'attend à PEGI 12 au plus, avec la mention « Interactions entre utilisateu
 
 - Données chiffrées en transit : oui.
 - Suppression possible : oui, dans l'app et par l'adresse ci-dessus.
-- Partage avec des tiers : aucun. Neon, Cloudflare et Lettermint sont des sous-traitants, et Google ne compte pas leur usage comme un partage.
+- Partage avec des tiers : aucun. Cloudflare et Lettermint sont des sous-traitants, et Google ne compte pas leur usage comme un partage.
 
 | Type de données | Collectée | Obligatoire | Finalités |
 |---|---|---|---|
@@ -161,7 +161,7 @@ La vidéo (point 1) se filme sur un vrai iPhone à jour, l'app installée par Te
 >
 > **3. Access.** Sign-up is by invitation during the launch phase. Please use the demo account: on the home screen tap « Me connecter », enter the e-mail address below, then the 6-digit code below as the password (no e-mail is needed for this account). The account already has packs and cards. To open a pack: Jouer tab, tap the pack or tear its strip. Report and block: open a player's profile from Amis or a clan. Account deletion: Réglages → Supprimer mon compte.
 >
-> **4. External services.** Cloudflare (hosting of the API and website, delivery of the card catalogue, sending of sign-in codes by e-mail), Neon (managed PostgreSQL database, EU region), Lettermint (news e-mails, only for players who opt in). Sign-in uses our own e-mail one-time code, with no third-party login. No payment processor, no advertising, no analytics SDK, no AI service in the app.
+> **4. External services.** Cloudflare (hosting of the API and website, delivery of the card catalogue, sending of sign-in codes by e-mail), Lettermint (news e-mails, only for players who opt in). Sign-in uses our own e-mail one-time code, with no third-party login. No payment processor, no advertising, no analytics SDK, no AI service in the app.
 >
 > **5. Regions.** The app is in French and works the same in every region where it is offered.
 >

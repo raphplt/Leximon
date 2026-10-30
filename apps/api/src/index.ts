@@ -23,6 +23,7 @@ import {
   notifyContext,
   remindersDue,
 } from "./notifications/notifications";
+import { runWatchdog, WATCHDOG_CRON } from "./watchdog";
 
 const app = createApp();
 
@@ -53,6 +54,10 @@ export default {
   fetch: app.fetch,
 
   async scheduled(controller, env, ctx) {
+    if (controller.cron === WATCHDOG_CRON) {
+      await runWatchdog(env, controller.scheduledTime);
+      return;
+    }
     if (REMINDER_CRONS.has(controller.cron)) {
       // The evening reminders: two triggers, one per offset of Paris from UTC. The one that does
       // not strike 18:00 in Paris stops here, before waking the database.
