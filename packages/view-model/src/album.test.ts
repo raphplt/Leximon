@@ -3,12 +3,15 @@ import { describe, expect, it } from "vitest";
 import {
   ALL_COLLECTIONS,
   type AlbumState,
+  activeFilterCount,
   albumView,
   copiesByCard,
   datesAfterGain,
   datesByCard,
+  filterButtonLabel,
   foldSearch,
   themeLabel,
+  withoutFilters,
 } from "./album";
 
 const NOW = Date.parse("2026-10-21T12:00:00Z");
@@ -232,5 +235,53 @@ describe("owned cards", () => {
     const dates = datesAfterGain(datesByCard(owned), ["b", "c"], copiesByCard(owned), NOW);
     expect(dates.get("c")).toEqual({ firstObtainedAt: NOW, read: false });
     expect(dates.get("b")?.firstObtainedAt).toBe(Date.parse("2026-10-21T10:00:00Z"));
+  });
+});
+
+describe("the album's filters", () => {
+  it("counts the filters in use", () => {
+    expect(activeFilterCount(STATE)).toBe(0);
+    expect(activeFilterCount({ ...STATE, rarity: "rare", filter: "new", theme: "droit" })).toBe(3);
+  });
+
+  it("leaves « Afficher » out of a comparison, which sets it aside", () => {
+    expect(activeFilterCount({ ...STATE, filter: "new", compare: "theirs" })).toBe(0);
+  });
+
+  it("says how many are on, for 0, 1 and several", () => {
+    expect(filterButtonLabel(0)).toBe("Filtres");
+    expect(filterButtonLabel(1)).toBe("Filtres, 1 actif");
+    expect(filterButtonLabel(2)).toBe("Filtres, 2 actifs");
+  });
+
+  it("clears the filters and keeps the collection and the search", () => {
+    const state = {
+      ...STATE,
+      rarity: "rare",
+      filter: "new",
+      theme: "droit",
+      search: "ver",
+    } as const;
+    expect(withoutFilters(state)).toEqual({ ...STATE, search: "ver" });
+  });
+
+  it("keeps French order, accents included, whichever list the cards come from", () => {
+    const card = (word: string) => ({ ...collections[0]?.cards[0], id: word, word }) as CatalogCard;
+    const cards = ["zinzin", "écrouelle", "abbé", "Émeute", "eider"].map(card);
+    const shown = albumView(
+      {
+        ...input,
+        collections: [{ id: "x", name: "X", cards }],
+        owned: new Map(cards.map((c) => [c.id, 1])),
+      },
+      { ...STATE, collectionId: "x" },
+    );
+    expect(shown.items.map((item) => (item.kind === "owned" ? item.card.word : ""))).toEqual([
+      "abbé",
+      "écrouelle",
+      "eider",
+      "Émeute",
+      "zinzin",
+    ]);
   });
 });

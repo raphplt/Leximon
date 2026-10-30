@@ -7,7 +7,7 @@ import {
   RARITY_LABELS,
 } from "@leximon/contract";
 import { gameDayOf, RARITIES, type Rarity, rarityRank } from "@leximon/core";
-import { compareFrench, formatCount } from "./format";
+import { compareFrench, formatCount, plural } from "./format";
 import type { CompareFilter } from "./friends";
 
 /** The album: what the player owns, collection by collection. */
@@ -224,6 +224,33 @@ export interface AlbumView {
 
 export const ALBUM_EMPTY = "Aucune carte ne correspond à ce filtre.";
 
+/** The album's panel of filters, on the phone. */
+export const ALBUM_FILTER_TEXTS = {
+  button: "Filtres",
+  rarity: "Rareté",
+  show: "Afficher",
+  themes: "Thèmes",
+  apply: "Voir les cartes",
+  clear: "Effacer les filtres",
+} as const;
+
+/** Filters in use, shown on the button that opens them. A comparison sets aside « Afficher ». */
+export function activeFilterCount(state: AlbumState): number {
+  const shown = state.compare == null && state.filter !== "all";
+  return [state.rarity !== null, shown, state.theme !== null].filter(Boolean).length;
+}
+
+/** « Filtres, 2 actifs » */
+export function filterButtonLabel(count: number): string {
+  if (count === 0) return ALBUM_FILTER_TEXTS.button;
+  return `${ALBUM_FILTER_TEXTS.button}, ${plural(count, "actif", "actifs")}`;
+}
+
+/** The same album with no filter on. The collection, the search and a comparison stay. */
+export function withoutFilters(state: AlbumState): AlbumState {
+  return { ...state, rarity: null, filter: "all", theme: null };
+}
+
 /** The tab that gathers every collection. */
 export const ALL_COLLECTIONS = "tout";
 
@@ -232,9 +259,40 @@ export function foldSearch(text: string): string {
   return text.normalize("NFD").replace(/\p{M}/gu, "").toLowerCase().trim();
 }
 
+const WORD_PLACES = new WeakMap<readonly AlbumCollection[], ReadonlyMap<string, number>>();
+
+/**
+ * Each card's place in French order, worked out once per catalogue: the album sorts again on
+ * every filter and every letter typed, and a collator's comparison is slow on a phone.
+ */
+function wordPlaces(collections: readonly AlbumCollection[]): ReadonlyMap<string, number> {
+  const known = WORD_PLACES.get(collections);
+  if (known !== undefined) return known;
+  const places = new Map(
+    collections
+      .flatMap((collection) => collection.cards)
+      .sort((a, b) => compareFrench(a.word, b.word))
+      .map((card, place) => [card.id, place]),
+  );
+  WORD_PLACES.set(collections, places);
+  return places;
+}
+
 /** Rarest first, then alphabetical: the prizes lead the page. */
-function albumOrder(a: CatalogCard, b: CatalogCard): number {
-  return rarityRank(b.rarity) - rarityRank(a.rarity) || compareFrench(a.word, b.word);
+function albumOrder(a: CatalogCard, b: CatalogCard, places: ReadonlyMap<string, number>): number {
+  return (
+    rarityRank(b.rarity) - rarityRank(a.rarity) || (places.get(a.id) ?? 0) - (places.get(b.id) ?? 0)
+  );
+}
+
+const FOLDED_WORDS = new WeakMap<CatalogCard, string>();
+
+function foldedWord(card: CatalogCard): string {
+  const known = FOLDED_WORDS.get(card);
+  if (known !== undefined) return known;
+  const folded = foldSearch(card.word);
+  FOLDED_WORDS.set(card, folded);
+  return folded;
 }
 
 /** Whether a challenge would ask this word now: due again, or never reviewed. */
@@ -296,6 +354,7 @@ function ownedItem(
 
 export function albumView(input: AlbumInput, state: AlbumState): AlbumView {
   const { collections, owned, memory, dates, now } = input;
+  const places = wordPlaces(collections);
   const collectionTabs = collections.map((collection) => {
     const found = collection.cards.filter((card) => owned.has(card.id)).length;
     const total = collection.cards.length;
@@ -336,10 +395,10 @@ export function albumView(input: AlbumInput, state: AlbumState): AlbumView {
     const items = collections
       .flatMap((collection) =>
         collection.cards
-          .filter((card) => owned.has(card.id) && foldSearch(card.word).includes(query))
+          .filter((card) => owned.has(card.id) && foldedWord(card).includes(query))
           .map((card) => ({ card, name: collection.name })),
       )
-      .sort((a, b) => albumOrder(a.card, b.card))
+      .sort((a, b) => albumOrder(a.card, b.card, places))
       .map(({ card, name }) =>
         ownedItem(card, name, owned.get(card.id) ?? 1, memory.get(card.id), dates.get(card.id)),
       );
@@ -398,7 +457,7 @@ export function albumView(input: AlbumInput, state: AlbumState): AlbumView {
         (state.rarity === null || card.rarity === state.rarity) &&
         (state.theme === null || card.themes.includes(state.theme)),
     )
-    .sort((a, b) => albumOrder(a.card, b.card));
+    .sort((a, b) => albumOrder(a.card, b.card, places));
 
   const compare = state.compare ?? null;
   if (compare !== null && input.friend !== undefined) {

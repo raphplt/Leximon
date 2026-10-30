@@ -2,24 +2,28 @@ import type { Catalog } from "@leximon/contract/client";
 import { PRACTICE_SCHEDULE, practiceRulesAt, type Rarity } from "@leximon/core";
 import { collectionTone, masteryColors, rarityStyles, solidColor } from "@leximon/tokens";
 import {
+  ALBUM_FILTER_TEXTS,
   ALL_COLLECTIONS,
   type AlbumFilter,
   type AlbumItem,
   type AlbumState,
+  activeFilterCount,
   albumPracticeCards,
   albumView,
   type CompareFilter,
   compareFilters,
   comparingTitle,
+  filterButtonLabel,
   isFeatureOpen,
   type MissingItem,
   type OwnedItem,
   playerName,
   shortName,
+  withoutFilters,
 } from "@leximon/view-model";
 import { router } from "expo-router";
 import * as SecureStore from "expo-secure-store";
-import { memo, useCallback, useEffect, useMemo, useState } from "react";
+import { memo, type ReactNode, useCallback, useEffect, useMemo, useState } from "react";
 import {
   FlatList,
   Pressable,
@@ -42,6 +46,8 @@ import { colors, fonts } from "@/theme";
 import { Button } from "@/ui/button";
 import { Icon } from "@/ui/icon";
 import { RarityChip, RarityName } from "@/ui/rarity-icon";
+import { Sheet } from "@/ui/sheet";
+import { TextButton } from "@/ui/text-button";
 
 /** The collection tab chosen last, kept on the device. */
 const STORED_COLLECTION = "leximon_album";
@@ -71,7 +77,7 @@ function writeCollection(id: string): void {
   });
 }
 
-/** The album: collection tabs, rarity and filters, the grid of cards. */
+/** The album: search, collection tabs, the grid of cards; the filters wait behind their button. */
 export function AlbumScreen({ friendCode }: { readonly friendCode: string | null }) {
   const window = useWindowDimensions();
   const [catalog, setCatalog] = useState<Catalog | null>(catalogInHand);
@@ -94,6 +100,7 @@ export function AlbumScreen({ friendCode }: { readonly friendCode: string | null
     readonly name: string;
     readonly cards: ReadonlySet<string>;
   } | null>(null);
+  const [filtering, setFiltering] = useState(false);
 
   useEffect(() => {
     setFriend(null);
@@ -185,6 +192,7 @@ export function AlbumScreen({ friendCode }: { readonly friendCode: string | null
   };
   const tagline = catalog?.collections.find((c) => c.id === state.collectionId)?.tagline;
   const comparing = friend !== null && state.compare != null;
+  const filtersOn = activeFilterCount(state);
 
   const header = (
     <View style={styles.header}>
@@ -197,27 +205,42 @@ export function AlbumScreen({ friendCode }: { readonly friendCode: string | null
           {view.headline.total}
         </Text>
       </View>
-      <View style={styles.search}>
-        <Icon name="search" size={18} color={colors.textMuted} />
-        <TextInput
-          style={styles.searchInput}
-          placeholder="Chercher un mot"
-          placeholderTextColor={colors.textFaint}
-          selectionColor={colors.accent}
-          value={state.search}
-          onChangeText={(search) => setState((s) => ({ ...s, search }))}
-          autoCorrect={false}
-          returnKeyType="search"
-          accessibilityLabel="Chercher un mot"
-        />
-        {state.search !== "" && (
+      <View style={styles.searchRow}>
+        <View style={styles.search}>
+          <Icon name="search" size={18} color={colors.textMuted} />
+          <TextInput
+            style={styles.searchInput}
+            placeholder="Chercher un mot"
+            placeholderTextColor={colors.textFaint}
+            selectionColor={colors.accent}
+            value={state.search}
+            onChangeText={(search) => setState((s) => ({ ...s, search }))}
+            autoCorrect={false}
+            returnKeyType="search"
+            accessibilityLabel="Chercher un mot"
+          />
+          {state.search !== "" && (
+            <Pressable
+              onPress={() => setState((s) => ({ ...s, search: "" }))}
+              accessibilityRole="button"
+              accessibilityLabel="Effacer la recherche"
+              hitSlop={8}
+            >
+              <Icon name="close" size={18} color={colors.textMuted} />
+            </Pressable>
+          )}
+        </View>
+        {!view.searching && (
           <Pressable
-            onPress={() => setState((s) => ({ ...s, search: "" }))}
+            onPress={() => setFiltering(true)}
             accessibilityRole="button"
-            accessibilityLabel="Effacer la recherche"
-            hitSlop={8}
+            accessibilityLabel={filterButtonLabel(filtersOn)}
+            style={[styles.filtersButton, filtersOn > 0 && styles.chipOn]}
           >
-            <Icon name="close" size={18} color={colors.textMuted} />
+            <Text style={[styles.chipText, filtersOn > 0 && styles.chipTextOn]}>
+              {ALBUM_FILTER_TEXTS.button}
+            </Text>
+            {filtersOn > 0 && <Text style={styles.filtersCount}>{filtersOn}</Text>}
           </Pressable>
         )}
       </View>
@@ -259,88 +282,36 @@ export function AlbumScreen({ friendCode }: { readonly friendCode: string | null
         })}
       </ScrollView>
 
-      {!view.searching && (
-        <>
-          {tagline !== undefined && <Text style={styles.tagline}>{tagline}</Text>}
+      {!view.searching && tagline !== undefined && <Text style={styles.tagline}>{tagline}</Text>}
+      {!view.searching && comparing && (
+        <View style={styles.compare}>
+          <View style={styles.compareHead}>
+            <Text style={styles.compareTitle}>{comparingTitle(friend.name)}</Text>
+            <Pressable
+              onPress={() => router.setParams({ ami: undefined })}
+              hitSlop={10}
+              accessibilityRole="button"
+              accessibilityLabel="Fermer la comparaison"
+            >
+              <Icon name="close" size={18} color={colors.textMuted} />
+            </Pressable>
+          </View>
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={styles.row}
             style={styles.bleed}
           >
-            {view.rarities.map((chip) => (
-              <RarityFilter
-                key={chip.rarity}
-                rarity={chip.rarity}
-                count={chip.count}
-                label={chip.aria}
-                on={state.rarity === chip.rarity}
-                onPick={() =>
-                  setState((s) => ({ ...s, rarity: s.rarity === chip.rarity ? null : chip.rarity }))
-                }
+            {compareFilters(friend.name).map((choice) => (
+              <FilterChip
+                key={choice.id}
+                label={choice.label}
+                on={state.compare === choice.id}
+                onPick={() => setState((s) => ({ ...s, compare: choice.id as CompareFilter }))}
               />
             ))}
           </ScrollView>
-          {comparing ? (
-            <View style={styles.compare}>
-              <View style={styles.compareHead}>
-                <Text style={styles.compareTitle}>{comparingTitle(friend.name)}</Text>
-                <Pressable
-                  onPress={() => router.setParams({ ami: undefined })}
-                  hitSlop={10}
-                  accessibilityRole="button"
-                  accessibilityLabel="Fermer la comparaison"
-                >
-                  <Icon name="close" size={18} color={colors.textMuted} />
-                </Pressable>
-              </View>
-              <ScrollView
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                contentContainerStyle={styles.row}
-                style={styles.bleed}
-              >
-                {compareFilters(friend.name).map((choice) => (
-                  <FilterChip
-                    key={choice.id}
-                    label={choice.label}
-                    on={state.compare === choice.id}
-                    onPick={() => setState((s) => ({ ...s, compare: choice.id as CompareFilter }))}
-                  />
-                ))}
-              </ScrollView>
-            </View>
-          ) : (
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={styles.row}
-              style={styles.bleed}
-            >
-              {view.filters.map((filter) => (
-                <FilterChip
-                  key={filter.id}
-                  label={filter.label}
-                  count={filter.count}
-                  on={state.filter === filter.id}
-                  onPick={() => setState((s) => ({ ...s, filter: filter.id as AlbumFilter }))}
-                />
-              ))}
-              <View style={styles.divider} />
-              {view.themes.map((theme) => (
-                <FilterChip
-                  key={theme.id}
-                  label={theme.label}
-                  on={state.theme === theme.id}
-                  muted
-                  onPick={() =>
-                    setState((s) => ({ ...s, theme: s.theme === theme.id ? null : theme.id }))
-                  }
-                />
-              ))}
-            </ScrollView>
-          )}
-        </>
+        </View>
       )}
       {practiceCards !== null && (
         <View style={styles.revise}>
@@ -359,21 +330,93 @@ export function AlbumScreen({ friendCode }: { readonly friendCode: string | null
   );
 
   return (
-    <FlatList
-      data={view.empty === null ? view.items : []}
-      keyExtractor={itemKey}
-      numColumns={COLUMNS}
-      ListHeaderComponent={header}
-      renderItem={({ item }) => <Tile item={item} width={cardWidth} />}
-      columnWrapperStyle={styles.gridRow}
-      contentContainerStyle={styles.grid}
-      keyboardShouldPersistTaps="handled"
-      keyboardDismissMode="on-drag"
-      initialNumToRender={9}
-      maxToRenderPerBatch={9}
-      windowSize={5}
-      removeClippedSubviews
-    />
+    <>
+      <FlatList
+        data={view.empty === null ? view.items : []}
+        keyExtractor={itemKey}
+        numColumns={COLUMNS}
+        ListHeaderComponent={header}
+        renderItem={({ item }) => <Tile item={item} width={cardWidth} />}
+        columnWrapperStyle={styles.gridRow}
+        contentContainerStyle={styles.grid}
+        keyboardShouldPersistTaps="handled"
+        keyboardDismissMode="on-drag"
+        initialNumToRender={9}
+        maxToRenderPerBatch={9}
+        windowSize={5}
+        removeClippedSubviews
+      />
+      <Sheet open={filtering} title={ALBUM_FILTER_TEXTS.button} onClose={() => setFiltering(false)}>
+        {view.rarities.length > 0 && (
+          <FilterGroup title={ALBUM_FILTER_TEXTS.rarity}>
+            {view.rarities.map((chip) => (
+              <RarityFilter
+                key={chip.rarity}
+                rarity={chip.rarity}
+                count={chip.count}
+                label={chip.aria}
+                on={state.rarity === chip.rarity}
+                onPick={() =>
+                  setState((s) => ({ ...s, rarity: s.rarity === chip.rarity ? null : chip.rarity }))
+                }
+              />
+            ))}
+          </FilterGroup>
+        )}
+        {!comparing && (
+          <FilterGroup title={ALBUM_FILTER_TEXTS.show}>
+            {view.filters.map((filter) => (
+              <FilterChip
+                key={filter.id}
+                label={filter.label}
+                count={filter.count}
+                on={state.filter === filter.id}
+                onPick={() => setState((s) => ({ ...s, filter: filter.id as AlbumFilter }))}
+              />
+            ))}
+          </FilterGroup>
+        )}
+        {!comparing && view.themes.length > 0 && (
+          <FilterGroup title={ALBUM_FILTER_TEXTS.themes}>
+            {view.themes.map((theme) => (
+              <FilterChip
+                key={theme.id}
+                label={theme.label}
+                on={state.theme === theme.id}
+                muted
+                onPick={() =>
+                  setState((s) => ({ ...s, theme: s.theme === theme.id ? null : theme.id }))
+                }
+              />
+            ))}
+          </FilterGroup>
+        )}
+        <Button label={ALBUM_FILTER_TEXTS.apply} onPress={() => setFiltering(false)} />
+        {filtersOn > 0 && (
+          <TextButton
+            label={ALBUM_FILTER_TEXTS.clear}
+            onPress={() => setState((s) => withoutFilters(s))}
+          />
+        )}
+      </Sheet>
+    </>
+  );
+}
+
+function FilterGroup({
+  title,
+  children,
+}: {
+  readonly title: string;
+  readonly children: ReactNode;
+}) {
+  return (
+    <View style={styles.group}>
+      <Text style={styles.groupTitle} accessibilityRole="header">
+        {title}
+      </Text>
+      <View style={styles.groupChips}>{children}</View>
+    </View>
   );
 }
 
@@ -516,7 +559,9 @@ const styles = StyleSheet.create({
   title: { fontFamily: fonts.display, fontSize: 30, color: colors.text },
   headline: { fontFamily: fonts.ui.semibold, fontSize: 14, color: colors.textMuted },
   headlineStrong: { fontFamily: fonts.ui.extrabold, color: colors.text },
+  searchRow: { flexDirection: "row", alignItems: "center", gap: 8 },
   search: {
+    flex: 1,
     flexDirection: "row",
     alignItems: "center",
     gap: 8,
@@ -569,6 +614,29 @@ const styles = StyleSheet.create({
     borderRadius: 18,
     backgroundColor: colors.backgroundRaised,
   },
+  filtersButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    minHeight: 44,
+    paddingHorizontal: 14,
+    borderRadius: 22,
+    backgroundColor: colors.backgroundRaised,
+  },
+  filtersCount: {
+    overflow: "hidden",
+    minWidth: 20,
+    paddingHorizontal: 6,
+    borderRadius: 10,
+    backgroundColor: colors.accentInk,
+    color: colors.accent,
+    fontFamily: fonts.ui.extrabold,
+    fontSize: 12,
+    textAlign: "center",
+  },
+  group: { gap: 8 },
+  groupTitle: { fontFamily: fonts.ui.extrabold, fontSize: 15, color: colors.text },
+  groupChips: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
   chipMuted: { backgroundColor: "transparent", borderWidth: 1, borderColor: colors.outline },
   chipOn: { backgroundColor: colors.accent, borderColor: colors.accent },
   chipText: { fontFamily: fonts.ui.bold, fontSize: 14, color: colors.text },
@@ -585,7 +653,6 @@ const styles = StyleSheet.create({
     fontSize: 11,
     textAlign: "center",
   },
-  divider: { width: 1, height: 22, marginHorizontal: 4, backgroundColor: colors.outline },
   revise: { marginTop: 12 },
   emptyLine: {
     fontFamily: fonts.text.italic,

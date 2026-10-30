@@ -156,7 +156,7 @@ A sur le web sert de deuxième joueur : amis, échanges, clan, sanctions. `pnpm 
 ## 5. Album et fiche
 
 ### MAL-01 · Album (ALB-01 à ALB-04, ALB-09)
-- **Faire :** onglets de collection, raretés, filtres, thèmes, recherche ; défiler vite jusqu'en bas.
+- **Faire :** onglets de collection, recherche ; bouton « Filtres » : raretés, « Afficher », thèmes, « Effacer les filtres » ; défiler vite jusqu'en bas.
 - **Attendu :** comme sur le web, en trois colonnes ; l'onglet choisi est retenu au prochain lancement ; le défilement reste fluide.
 - **Retour :**
 
