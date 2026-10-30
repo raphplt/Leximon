@@ -10,7 +10,7 @@ import Animated, {
   withDelay,
   withTiming,
 } from "react-native-reanimated";
-import { CardBack } from "@/cards/card-back";
+import { CardBack, CardEdge } from "@/cards/card-back";
 
 /** How far apart two cards of the stack drift at a full peek. */
 const FAN_STEP = 22;
@@ -176,9 +176,9 @@ function StackCard({
 
   return (
     <Animated.View style={[StyleSheet.absoluteFill, placed]} pointerEvents="none">
-      <CardBack rarity={card.rarity} width={width} tone={tone} />
+      <CardBack width={width} tone={tone} />
       <Animated.View style={[StyleSheet.absoluteFill, edge]}>
-        <CardBack rarity={card.rarity} width={width} edge={1} tone={tone} />
+        <CardEdge rarity={card.rarity} width={width} />
       </Animated.View>
     </Animated.View>
   );

@@ -17,26 +17,18 @@ import { FillGradient, paintOf } from "@/ui/fill";
 
 const GILT = colors.kraft;
 
-/**
- * The back of a card, the same for every word: a printer's mark on domino paper. Only its edge
- * can betray the rarity, from 0 (plain kraft) to 1.
- */
+/** The back of a card, the same for every word: a printer's mark on domino paper. */
 export function CardBack({
-  rarity,
   width = cardSize.width,
-  edge = 0,
   tone,
 }: {
-  readonly rarity: Rarity;
   readonly width?: number;
-  readonly edge?: number;
   /** The `back` of the pack's collection; night when absent. */
   readonly tone?: string | undefined;
 }) {
   const u = width / cardSize.width;
   const height = cardSize.height * u;
   const cloth = backTone(tone);
-  const frame = rarityStyles[rarity].frame;
   const inner = { x: 4 * u, y: 4 * u, w: width - 8 * u, h: height - 8 * u };
   const mark = 160 * u;
   return (
@@ -46,7 +38,6 @@ export function CardBack({
     >
       <Svg width={width} height={height} style={StyleSheet.absoluteFill}>
         <Defs>
-          <FillGradient id="edge" fill={frame} />
           <RadialGradient id="cloth" cx="50%" cy="40%" rx="80%" ry="80%">
             <Stop offset="0" stopColor={cloth.light} />
             <Stop offset="1" stopColor={cloth.dark} />
@@ -63,8 +54,7 @@ export function CardBack({
             <Circle cx={12 * u} cy={12 * u} r={1.6 * u} fill={GILT} fillOpacity={0.3} />
           </Pattern>
         </Defs>
-        <Rect width={width} height={height} rx={16 * u} fill={paintOf("edge", frame)} />
-        <Rect width={width} height={height} rx={16 * u} fill={GILT} opacity={1 - edge} />
+        <Rect width={width} height={height} rx={16 * u} fill={GILT} />
         <Rect
           x={inner.x}
           y={inner.y}
@@ -145,6 +135,39 @@ export function CardBack({
         </Text>
       </View>
     </View>
+  );
+}
+
+/**
+ * The rarity on the edge of a back, laid over it: the only thing a back can betray. A ring is all
+ * it takes, where a second back would draw everything again for each card of the pile.
+ */
+export function CardEdge({
+  rarity,
+  width = cardSize.width,
+}: {
+  readonly rarity: Rarity;
+  readonly width?: number;
+}) {
+  const u = width / cardSize.width;
+  const height = cardSize.height * u;
+  const frame = rarityStyles[rarity].frame;
+  return (
+    <Svg width={width} height={height} pointerEvents="none">
+      <Defs>
+        <FillGradient id="edge" fill={frame} />
+      </Defs>
+      <Rect
+        x={2 * u}
+        y={2 * u}
+        width={width - 4 * u}
+        height={height - 4 * u}
+        rx={14 * u}
+        fill="none"
+        stroke={paintOf("edge", frame)}
+        strokeWidth={4 * u}
+      />
+    </Svg>
   );
 }
 

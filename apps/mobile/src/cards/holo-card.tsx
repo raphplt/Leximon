@@ -1,9 +1,11 @@
 import type { CatalogCard } from "@leximon/contract";
 import { cardSize } from "@leximon/tokens";
 import { type HoloLayers, holoFromPointer, holoLayers } from "@leximon/view-model";
+import { useIsFocused } from "expo-router";
 import { type ReactNode, useEffect } from "react";
 import { type GestureResponderEvent, Platform, StyleSheet, View } from "react-native";
 import Animated, {
+  cancelAnimation,
   type DerivedValue,
   Easing,
   useAnimatedProps,
@@ -29,7 +31,7 @@ import Svg, {
 } from "react-native-svg";
 import { cssLinearInShape, stopColor } from "@/screens/play/sachet-paint";
 import { Card } from "./card";
-import { useTiltLight } from "./use-tilt-light";
+import { steppedLight, useTiltLight } from "./use-tilt-light";
 
 /*
  * The web's holographic card, layer for layer: same gradients, same blend modes, same light.
@@ -46,6 +48,8 @@ const EASE_IN_OUT = Easing.bezier(0.42, 0, 0.58, 1);
 /** Half the web's idle drift: there and back takes 7 s. */
 const DRIFT_MS = 3500;
 const SWEEP = { wait: 2750, cross: 2250 } as const;
+/** How long the drift takes to come back to its start when the player returns to the card. */
+const SETTLE_MS = 400;
 /** Before Android 10, views cannot blend: the foils would print as flat colour patches. */
 const CAN_BLEND = Platform.OS !== "android" || Platform.Version >= 29;
 
@@ -187,6 +191,10 @@ interface SheenProps {
 
 type Blend = "overlay" | "hard-light" | "screen" | "color-dodge";
 
+/**
+ * Android paints an SVG into a new bitmap each time it moves: soft light loses nothing at half
+ * the size, and the bitmap costs a quarter of the work.
+ */
 function Layer({
   width,
   blend,
@@ -196,12 +204,13 @@ function Layer({
   readonly blend: Blend;
   readonly children: ReactNode;
 }) {
+  const half = width / 2;
   return (
     <Svg
-      width={width}
-      height={(width * H) / W}
+      width={half}
+      height={(half * H) / W}
       viewBox={`0 0 ${W} ${H}`}
-      style={[StyleSheet.absoluteFill, { mixBlendMode: blend }]}
+      style={[styles.layer, { mixBlendMode: blend }]}
       pointerEvents="none"
     >
       <Defs>
@@ -382,12 +391,16 @@ function Rainbow({ width, light }: LayerProps) {
   );
 }
 
-/** A flash crossing the card every 5 s, untouched or not. */
-function Sweep({ width }: { readonly width: number }) {
+/** A flash crossing the card every 5 s, untouched or not: drawn once, then only slid across. */
+function Sweep({ width, active }: { readonly width: number; readonly active: boolean }) {
   const reduced = useReducedMotion();
   const along = useSharedValue(1);
   useEffect(() => {
     if (reduced) return;
+    if (!active) {
+      cancelAnimation(along);
+      return;
+    }
     along.value = withRepeat(
       withSequence(
         withTiming(1, { duration: SWEEP.wait }),
@@ -396,17 +409,26 @@ function Sweep({ width }: { readonly width: number }) {
       ),
       -1,
     );
-  }, [reduced, along]);
-  const moved = useAnimatedProps(() => ({ x: -2 * W * along.value }));
+  }, [reduced, active, along]);
+  const moved = useAnimatedStyle(() => ({
+    transform: [{ translateX: -2 * width * along.value }],
+  }));
+  const wide = (width * 3) / 2;
+  const tall = (width * H) / W / 2;
   return (
-    <Layer width={width} blend="overlay">
-      <Defs>
-        <Sheen id="sweep" list={SWEEP_LINE} width={W * 3} height={H} />
-      </Defs>
-      <G clipPath="url(#card)">
-        <AnimatedRect animatedProps={moved} width={W * 3} height={H} fill="url(#sweep)" />
-      </G>
-    </Layer>
+    <View
+      style={[styles.sweep, { borderRadius: (16 * width) / W, mixBlendMode: "overlay" }]}
+      pointerEvents="none"
+    >
+      <Animated.View style={moved}>
+        <Svg width={wide} height={tall} viewBox={`0 0 ${W * 3} ${H}`} style={styles.layer}>
+          <Defs>
+            <Sheen id="sweep" list={SWEEP_LINE} width={W * 3} height={H} />
+          </Defs>
+          <Rect width={W * 3} height={H} fill="url(#sweep)" />
+        </Svg>
+      </Animated.View>
+    </View>
   );
 }
 
@@ -415,7 +437,12 @@ interface LayerProps {
   readonly light: Light;
 }
 
-function Foils({ layers, width, light }: { readonly layers: HoloLayers } & LayerProps) {
+function Foils({
+  layers,
+  width,
+  light,
+  active,
+}: { readonly layers: HoloLayers; readonly active: boolean } & LayerProps) {
   return (
     <>
       {layers.glare !== "none" && (
@@ -425,7 +452,7 @@ function Foils({ layers, width, light }: { readonly layers: HoloLayers } & Layer
       {layers.frame !== "none" && <FrameFoil width={width} light={light} foil={layers.frame} />}
       {layers.glitter !== "none" && <Glitter width={width} light={light} tone={layers.glitter} />}
       {layers.rainbow && <Rainbow width={width} light={light} />}
-      {layers.sweep && <Sweep width={width} />}
+      {layers.sweep && <Sweep width={width} active={active} />}
     </>
   );
 }
@@ -449,6 +476,8 @@ export function HoloCard({
 }) {
   const height = (width * H) / W;
   const reduced = useReducedMotion();
+  // The foils of a card under another screen keep still.
+  const active = useIsFocused();
   const drift = useSharedValue(0);
   /** 1 while a finger holds the light, easing back to the drift once it lifts. */
   const held = useSharedValue(0);
@@ -461,11 +490,18 @@ export function HoloCard({
 
   useEffect(() => {
     if (reduced) return;
-    drift.value = withRepeat(withTiming(1, { duration: DRIFT_MS, easing: EASE_IN_OUT }), -1, true);
-  }, [reduced, drift]);
+    if (!active) {
+      cancelAnimation(drift);
+      return;
+    }
+    drift.value = withSequence(
+      withTiming(0, { duration: SETTLE_MS, easing: EASE_IN_OUT }),
+      withRepeat(withTiming(1, { duration: DRIFT_MS, easing: EASE_IN_OUT }), -1, true),
+    );
+  }, [active, reduced, drift]);
 
   // The finger comes first, then the phone's tilt, then the drift.
-  const phone = useTiltLight(true);
+  const phone = useTiltLight(active);
   const mix = (from: number, to: number, share: number) => {
     "worklet";
     return from + (to - from) * share;
@@ -477,10 +513,10 @@ export function HoloCard({
   // Without the drift, the light rests in the middle and the card faces the player.
   const light: Light = {
     x: useDerivedValue(() =>
-      resting(reduced ? 50 : 35 + 30 * drift.value, phone.x.value, finger.x.value),
+      steppedLight(resting(reduced ? 50 : 35 + 30 * drift.value, phone.x.value, finger.x.value)),
     ),
     y: useDerivedValue(() =>
-      resting(reduced ? 50 : 30 + 35 * drift.value, phone.y.value, finger.y.value),
+      steppedLight(resting(reduced ? 50 : 30 + 35 * drift.value, phone.y.value, finger.y.value)),
     ),
   };
   const tilt = useAnimatedStyle(() => {
@@ -515,7 +551,9 @@ export function HoloCard({
   return (
     <Animated.View style={[{ width, height, borderRadius: (16 * width) / W }, styles.tilt, tilt]}>
       <Card card={card} collectionName={collectionName} width={width} />
-      {CAN_BLEND && <Foils layers={holoLayers(card.rarity)} width={width} light={light} />}
+      {CAN_BLEND && (
+        <Foils layers={holoLayers(card.rarity)} width={width} light={light} active={active} />
+      )}
       {/* On top of the layers so that its touches always come in the card's own coordinates;
           they still reach whatever holds the card. */}
       <View
@@ -532,4 +570,12 @@ export function HoloCard({
 const styles = StyleSheet.create({
   // The foils blend with the card, never with what lies behind it.
   tilt: { isolation: "isolate" },
+  layer: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    transformOrigin: "left top",
+    transform: [{ scale: 2 }],
+  },
+  sweep: { ...StyleSheet.absoluteFill, overflow: "hidden" },
 });

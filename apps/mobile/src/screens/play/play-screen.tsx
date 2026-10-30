@@ -19,11 +19,23 @@ import {
   stockView,
 } from "@leximon/view-model";
 import { randomUUID } from "expo-crypto";
-import { router } from "expo-router";
+import { router, useIsFocused } from "expo-router";
 import * as SecureStore from "expo-secure-store";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Pressable, StyleSheet, Text, useWindowDimensions, View } from "react-native";
-import { useReducedMotion } from "react-native-reanimated";
+import {
+  type LayoutChangeEvent,
+  Pressable,
+  StyleSheet,
+  Text,
+  useWindowDimensions,
+  View,
+} from "react-native";
+import Animated, {
+  useAnimatedStyle,
+  useReducedMotion,
+  useSharedValue,
+  withTiming,
+} from "react-native-reanimated";
 import { api } from "@/api/client";
 import { loadCatalog } from "@/cards/catalog";
 import { prepareSpokenWords } from "@/cards/spoken-word";
@@ -54,6 +66,7 @@ const CARD_MAX_WIDTH = 300;
 const FABS_ROOM = 150;
 /** Room kept around a revealed card: the banner above, the bar below. */
 const REVEAL_CHROME = 210;
+const CHROME_FADE_MS = 160;
 
 type Phase =
   | { readonly name: "loading" }
@@ -107,8 +120,14 @@ export function PlayScreen() {
   const who = useShared(account);
   const now = useNow(15_000);
   const reduced = useReducedMotion();
+  const focused = useIsFocused();
   const window = useWindowDimensions();
+  /** The whole screen, which sizes a revealed card. */
+  const [screenHeight, setScreenHeight] = useState(0);
+  /** The room left for the sachet between its picker and its shelf. */
   const [stageHeight, setStageHeight] = useState(0);
+  const measureScreen = (event: LayoutChangeEvent) =>
+    setScreenHeight(event.nativeEvent.layout.height);
   const currentWallet = view.wallet;
   /** Boosters a guest may still open before creating an account; null for a member. */
   const guestLeft = who?.kind === "guest" ? who.boostersLeft : null;
@@ -139,6 +158,15 @@ export function PlayScreen() {
     void load();
     prepareSounds();
   }, [load]);
+
+  // During the opening the sachet stays alone on a plain background.
+  const opening = phase.name === "opening";
+  const chrome = useSharedValue(1);
+  useEffect(() => {
+    const target = opening ? 0 : 1;
+    chrome.value = reduced ? target : withTiming(target, { duration: CHROME_FADE_MS });
+  }, [opening, reduced, chrome]);
+  const chromeStyle = useAnimatedStyle(() => ({ opacity: chrome.value }));
 
   useEffect(() => {
     if (notice === null) return;
@@ -298,16 +326,13 @@ export function PlayScreen() {
     Math.min(
       CARD_MAX_WIDTH,
       window.width - 56,
-      ((stageHeight || window.height) - REVEAL_CHROME) * (cardSize.width / cardSize.height),
+      ((screenHeight || window.height) - REVEAL_CHROME) * (cardSize.width / cardSize.height),
     ),
   );
 
   if (phase.name === "stack" && pack !== null) {
     return (
-      <View
-        style={styles.screen}
-        onLayout={(event) => setStageHeight(event.nativeEvent.layout.height)}
-      >
+      <View style={styles.screen} onLayout={measureScreen}>
         <View style={styles.stackStage}>
           <CardStack
             cards={pack.cards}
@@ -346,10 +371,7 @@ export function PlayScreen() {
     const last = phase.index === pack.cards.length - 1;
     const hurried = phase.hurriedFrom !== null;
     return (
-      <View
-        style={styles.screen}
-        onLayout={(event) => setStageHeight(event.nativeEvent.layout.height)}
-      >
+      <View style={styles.screen} onLayout={measureScreen}>
         <RevealCard
           key={phase.index}
           card={card}
@@ -391,7 +413,7 @@ export function PlayScreen() {
 
   if (phase.name === "recap" && pack !== null && catalog !== null) {
     return (
-      <View style={styles.screen}>
+      <View style={styles.screen} onLayout={measureScreen}>
         <Recap
           catalog={catalog}
           pack={pack}
@@ -417,20 +439,22 @@ export function PlayScreen() {
     ),
   );
   return (
-    <View style={styles.screen}>
+    <View style={styles.screen} onLayout={measureScreen}>
       {phase.name === "loading" ? (
         <Text style={styles.waiting}>On fouille les rayons…</Text>
       ) : (
         <View style={styles.counter}>
-          {choice !== null && (
-            <CollectionPicker
-              choices={choices}
-              current={choice}
-              onPick={pick}
-              onLocked={onLocked}
-            />
-          )}
-          {stock !== null && <StockDots stock={stock} />}
+          <Animated.View style={chromeStyle}>
+            {choice !== null && (
+              <CollectionPicker
+                choices={choices}
+                current={choice}
+                onPick={pick}
+                onLocked={onLocked}
+              />
+            )}
+            {stock !== null && <StockDots stock={stock} />}
+          </Animated.View>
           <View
             style={styles.stage}
             onLayout={(event) => setStageHeight(event.nativeEvent.layout.height)}
@@ -448,7 +472,8 @@ export function PlayScreen() {
               <Sachet
                 key={collection.id}
                 collection={collection}
-                state={phase.name === "opening" ? "opening" : canOpen ? "sealed" : "empty"}
+                state={opening ? "opening" : canOpen ? "sealed" : "empty"}
+                active={focused}
                 width={sachetWidth}
                 // A guest out of sachets waits for an account, not for time.
                 refill={mustSignUp ? null : (stock?.refill ?? null)}
@@ -459,14 +484,21 @@ export function PlayScreen() {
                 onOpen={() => void openPack()}
               />
             )}
-            {ready && <PlayFabs />}
+            {ready && (
+              <Animated.View
+                style={[StyleSheet.absoluteFill, chromeStyle]}
+                pointerEvents={opening ? "none" : "box-none"}
+              >
+                <PlayFabs />
+              </Animated.View>
+            )}
             {notice !== null && (
               <Text style={styles.notice} accessibilityLiveRegion="polite">
                 {notice}
               </Text>
             )}
           </View>
-          <View style={styles.shelf}>
+          <Animated.View style={[styles.shelf, chromeStyle]}>
             {phase.name === "sealed" && canOpen && <TearHint />}
             {ready && mustSignUp && (
               <>
@@ -477,13 +509,13 @@ export function PlayScreen() {
             {ready && !mustSignUp && (
               <Button
                 label={
-                  phase.name === "opening"
+                  opening
                     ? "Ouverture…"
                     : stock === null
                       ? "Ouvrir le sachet"
                       : openButtonLabel(stock, guestLeft)
                 }
-                disabled={!canOpen || phase.name === "opening"}
+                disabled={!canOpen || opening}
                 onPress={() => {
                   startRequest();
                   play("tearFinish");
@@ -501,7 +533,7 @@ export function PlayScreen() {
                 <Text style={styles.message}>C'est ton dernier sachet sans compte.</Text>
               )
             )}
-          </View>
+          </Animated.View>
         </View>
       )}
     </View>

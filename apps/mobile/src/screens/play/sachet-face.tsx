@@ -239,6 +239,25 @@ function Layer({ width, children }: { readonly width: number; readonly children:
   );
 }
 
+/**
+ * A layer redrawn as the light moves. Android paints an SVG into a new bitmap each time: soft
+ * light loses nothing at half the size, and the bitmap costs a quarter of the work.
+ */
+function LitLayer({ width, children }: { readonly width: number; readonly children: ReactNode }) {
+  const half = width / 2;
+  return (
+    <Svg
+      width={half}
+      height={(half * GRID.height) / GRID.width}
+      viewBox={`0 0 ${GRID.width} ${GRID.height}`}
+      style={styles.lit}
+      pointerEvents="none"
+    >
+      {children}
+    </Svg>
+  );
+}
+
 /** Which parts of the front a drawing holds, and how each is painted. */
 export interface Region {
   readonly strip: Paint | null;
@@ -358,7 +377,7 @@ export function BandLayer({
   readonly region: Region;
 }) {
   return (
-    <Layer width={width}>
+    <LitLayer width={width}>
       <Defs>
         <Outlines />
       </Defs>
@@ -368,7 +387,7 @@ export function BandLayer({
       {region.body !== null && (
         <Band box={BODY_BOX} light={light} paint={region.body} name="body" />
       )}
-    </Layer>
+    </LitLayer>
   );
 }
 
@@ -845,7 +864,7 @@ export function PrintLayer({
 
 const BRAND = { text: "LEXIMON", size: 17, spacing: 3.4 } as const;
 /** The web's `--holo-x` steps the brand's gold follows: a re-render per step, not per frame. */
-const BRAND_STEP = 1;
+const BRAND_STEP = 3;
 
 /** « Leximon » in gold, its shine following the light. */
 export function BrandLayer({
@@ -1005,7 +1024,7 @@ export function LightLayer({
     </G>
   );
   return (
-    <Layer width={width}>
+    <LitLayer width={width}>
       <Defs>
         <Outlines />
         <RadialGradient id="crown" cx="0.5" cy="0.5" r="0.5">
@@ -1031,7 +1050,7 @@ export function LightLayer({
       )}
       {region.strip !== null && glare("strip", region.strip)}
       {region.body !== null && glare("body", region.body)}
-    </Layer>
+    </LitLayer>
   );
 }
 
@@ -1057,3 +1076,13 @@ export function RibsLayer({ width, region }: { readonly width: number; readonly 
     </Layer>
   );
 }
+
+const styles = StyleSheet.create({
+  lit: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    transformOrigin: "left top",
+    transform: [{ scale: 2 }],
+  },
+});

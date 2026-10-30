@@ -9,10 +9,21 @@ import {
   withTiming,
 } from "react-native-reanimated";
 
-/** About 50 readings a second: smooth under the eye, light on the battery. */
-const READING_MS = 20;
+/** About 30 readings a second, eased between them: smooth under the eye, light on the JS thread. */
+const READING_MS = 33;
 const TURN = { duration: 100, easing: Easing.linear } as const;
 const DEGREES = 180 / Math.PI;
+/** In % of the card: the light never needs finer, and a held phone's tremor stays below it. */
+const LIGHT_STEP = 0.25;
+
+/**
+ * The light on a step of its own: redrawing an SVG is what costs, so a foil is drawn again only
+ * when the light has really moved, about 20 times a second instead of on every frame.
+ */
+export function steppedLight(value: number): number {
+  "worklet";
+  return Math.round(value / LIGHT_STEP) * LIGHT_STEP;
+}
 
 /** The light of a held card or pouch, from the phone's tilt. */
 export interface TiltLight {
@@ -49,10 +60,15 @@ export function useTiltLight(enabled: boolean): TiltLight {
       .then((available) => {
         if (!available || stopped) return;
         DeviceMotion.setUpdateInterval(READING_MS);
+        let last = { x: Number.NaN, y: Number.NaN };
         subscription = DeviceMotion.addListener(({ rotation }) => {
           // Radians, with the web's conventions: `beta` front to back, `gamma` side to side.
           if (rotation == null) return;
           const next = holoFromOrientation(rotation.beta * DEGREES, rotation.gamma * DEGREES);
+          if (Math.abs(next.x - last.x) < LIGHT_STEP && Math.abs(next.y - last.y) < LIGHT_STEP) {
+            return;
+          }
+          last = next;
           x.value = next.x;
           y.value = next.y;
           rotateX.value = withTiming(next.rotateX, TURN);

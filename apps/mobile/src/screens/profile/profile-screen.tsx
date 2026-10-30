@@ -28,6 +28,7 @@ import { Button } from "@/ui/button";
 import { Icon } from "@/ui/icon";
 import { Page, Paragraph } from "@/ui/page";
 import { Panel } from "@/ui/panel";
+import { TextButton } from "@/ui/text-button";
 import { FeedbackSheet } from "./feedback-sheet";
 import { PinPicker } from "./pin-picker";
 import { ProfileHeader, StatsPanel } from "./profile-view";
@@ -107,7 +108,12 @@ export function ProfileScreen() {
       {note !== null && (
         <Panel>
           <Text style={styles.note}>{note}</Text>
-          {!me.member && <Button label="Créer mon compte" onPress={() => router.push("/compte")} />}
+          {!me.member && (
+            <>
+              <Button label="Créer mon compte" onPress={() => router.push("/compte")} />
+              <TextButton label="Me connecter" onPress={() => router.push("/compte")} />
+            </>
+          )}
           {me.member && me.pseudo === null && (
             <Button label="Choisir mon pseudo" onPress={() => setChoosing(true)} />
           )}

@@ -22,6 +22,8 @@ import { catalogFileUrl } from "./catalog";
 /** Room for the word on the reference card: its width less the frame and the paper's margins. */
 const TEXT_WIDTH = 258;
 const QUOTE_LINE = 1.3;
+/** Below this width the paper's chain lines fall under a point: a grid draws them for nothing. */
+const CHAIN_LINES_FROM = 180;
 
 /**
  * A card face drawn from the rarity tokens at any width, every measure a multiple of one pixel
@@ -60,18 +62,19 @@ export function Card({
           fill={style.paper}
         />
         {/* Laid paper: sparse chain lines in the ink's tone. */}
-        {Array.from({ length: 9 }, (_, i) => (
-          <Rect
-            // biome-ignore lint/suspicious/noArrayIndexKey: a line of the paper is its place.
-            key={i}
-            x={(7 + 30 * (i + 1)) * u}
-            y={7 * u}
-            width={0.7 * u}
-            height={height - 14 * u}
-            fill={style.ink}
-            opacity={0.06}
-          />
-        ))}
+        {width >= CHAIN_LINES_FROM &&
+          Array.from({ length: 9 }, (_, i) => (
+            <Rect
+              // biome-ignore lint/suspicious/noArrayIndexKey: a line of the paper is its place.
+              key={i}
+              x={(7 + 30 * (i + 1)) * u}
+              y={7 * u}
+              width={0.7 * u}
+              height={height - 14 * u}
+              fill={style.ink}
+              opacity={0.06}
+            />
+          ))}
         {/* The double rule inside the frame, in the frame's own fill. */}
         <Rect
           x={11.15 * u}

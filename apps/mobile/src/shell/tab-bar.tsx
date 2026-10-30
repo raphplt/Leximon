@@ -84,7 +84,8 @@ export function TabBar({ state, emitter, navigateToTab }: BottomTabBarProps) {
         }
         return (
           <Pressable key={id} style={styles.tab} onPress={onPress} {...a11y}>
-            <View style={[styles.pill, focused && styles.pillFocused]}>
+            {/* Without a colour this view is flattened away, and Android brings it back square. */}
+            <View collapsable={false} style={[styles.pill, focused && styles.pillFocused]}>
               <Icon name={TAB_ICONS[id]} size={22} color={color} />
               {closed.has(id) ? (
                 <View style={styles.lock}>

@@ -11,6 +11,7 @@ import {
   View,
 } from "react-native";
 import Animated, {
+  cancelAnimation,
   type DerivedValue,
   Easing,
   type SharedValue,
@@ -21,6 +22,7 @@ import Animated, {
   useSharedValue,
   withDelay,
   withRepeat,
+  withSequence,
   withTiming,
 } from "react-native-reanimated";
 import Svg, {
@@ -36,7 +38,7 @@ import Svg, {
   Stop,
 } from "react-native-svg";
 import { scheduleOnRN } from "react-native-worklets";
-import { useTiltLight } from "@/cards/use-tilt-light";
+import { steppedLight, useTiltLight } from "@/cards/use-tilt-light";
 import { play, playTearGrain, vibrate } from "@/feedback/feedback";
 import { fonts } from "@/theme";
 import {
@@ -66,6 +68,8 @@ const SLICES = [-7, -3.5, 0, 3.5, 7] as const;
 const EASE_IN_OUT = Easing.bezier(0.42, 0, 0.58, 1);
 const EASE_IN = Easing.bezier(0.42, 0, 1, 1);
 const EASE_OUT = Easing.bezier(0, 0, 0.58, 1);
+/** How long the pouch takes to come back to rest when the player returns to it. */
+const SETTLE_MS = 400;
 /** How long the pouch glows once its wait is over. */
 const REFILLED_MS = 900;
 /** The level of an empty pouch climbs as slowly as the web's. */
@@ -92,6 +96,7 @@ interface Tilt {
 export function Sachet({
   collection,
   state,
+  active,
   width,
   refill,
   refillLabel,
@@ -100,6 +105,8 @@ export function Sachet({
 }: {
   readonly collection: CatalogCollectionFile;
   readonly state: SachetState;
+  /** False while another screen covers it: nothing moves, nothing listens to the sensor. */
+  readonly active: boolean;
   readonly width: number;
   /** Empty, the share of the wait for the next one already gone; `null` waiting for an account. */
   readonly refill: number | null;
@@ -119,21 +126,38 @@ export function Sachet({
 
   useEffect(() => {
     if (reduced) return;
-    sway.value = withRepeat(withTiming(1, { duration: 6000, easing: EASE_IN_OUT }), -1, true);
-    bob.value = withRepeat(withTiming(1, { duration: 3500, easing: EASE_IN_OUT }), -1, true);
-  }, [reduced, sway, bob]);
+    if (!active) {
+      cancelAnimation(sway);
+      cancelAnimation(bob);
+      return;
+    }
+    const swing = (value: SharedValue<number>, duration: number) => {
+      value.value = withSequence(
+        withTiming(0, { duration: SETTLE_MS, easing: EASE_IN_OUT }),
+        withRepeat(withTiming(1, { duration, easing: EASE_IN_OUT }), -1, true),
+      );
+    };
+    swing(sway, 6000);
+    swing(bob, 3500);
+  }, [active, reduced, sway, bob]);
 
   // Once the phone's tilt is read, it moves the light and the sway stops.
-  const phone = useTiltLight(state === "sealed");
+  const phone = useTiltLight(state === "sealed" && active);
   const swayed = (swaying: number, tilted: number) => {
     "worklet";
     return swaying + (tilted - swaying) * phone.held.value;
   };
   // Without the sway, the light rests in the middle and the pouch faces the player.
   const light: Light = {
-    x: useDerivedValue(() => (reduced ? 50 : swayed(35 + 30 * sway.value, phone.x.value))),
-    y: useDerivedValue(() => (reduced ? 50 : swayed(30 + 10 * sway.value, phone.y.value))),
+    x: useDerivedValue(() =>
+      reduced ? 50 : steppedLight(swayed(35 + 30 * sway.value, phone.x.value)),
+    ),
+    y: useDerivedValue(() =>
+      reduced ? 50 : steppedLight(swayed(30 + 10 * sway.value, phone.y.value)),
+    ),
   };
+  // A strip torn off no longer catches the moving light: its drawings stay still.
+  const stripLight: Light = { x: useSharedValue(50), y: useSharedValue(30) };
   const tilt: Tilt = {
     x: useDerivedValue(() => (reduced ? 0 : swayed(1.5 - 2 * sway.value, phone.rotateX.value))),
     y: useDerivedValue(() => (reduced ? 0 : swayed(-2.5 + 5 * sway.value, phone.rotateY.value))),
@@ -175,15 +199,6 @@ export function Sachet({
   const empty = state === "empty";
   const edges: Paint = empty ? dimmed : asIs;
   const layered = tear.layered || state === "opening";
-  const face = (region: Region, waiting: ReactNode = null) => (
-    <FaceStack
-      collection={collection}
-      width={width}
-      light={light}
-      region={region}
-      waiting={waiting}
-    />
-  );
 
   return (
     <Pressable
@@ -206,26 +221,40 @@ export function Sachet({
         ))}
         {state === "opening" && !reduced && <Burst u={u} />}
         <Animated.View style={[StyleSheet.absoluteFill, front]} pointerEvents="box-none">
-          {layered ? (
-            <>
-              {face({ strip: null, body: asIs })}
-              <Strip u={u} tear={tear} fly={fly}>
-                {face({ strip: edges, body: null })}
-              </Strip>
-            </>
-          ) : (
-            face(
-              { strip: edges, body: asIs },
-              empty ? (
-                <Waiting
-                  collection={collection}
-                  width={width}
-                  light={light}
-                  refill={refill}
-                  label={refillLabel}
-                />
-              ) : null,
-            )
+          {/* Torn, the drawing stays mounted and only loses its strip: redrawing a whole pouch
+              at that moment would freeze the gesture. */}
+          <View collapsable={false} style={[styles.cut, { top: layered ? STRIP * u : 0 }]}>
+            <View collapsable={false} style={{ marginTop: layered ? -STRIP * u : 0 }}>
+              <FaceStack
+                collection={collection}
+                width={width}
+                light={light}
+                region={{ strip: edges, body: asIs }}
+                waiting={
+                  empty ? (
+                    <Waiting
+                      collection={collection}
+                      width={width}
+                      light={light}
+                      refill={refill}
+                      label={refillLabel}
+                      active={active}
+                    />
+                  ) : null
+                }
+              />
+            </View>
+          </View>
+          {layered && (
+            <Strip u={u} tear={tear} fly={fly} pulled={tear.layered}>
+              <FaceStack
+                collection={collection}
+                width={width}
+                light={stripLight}
+                region={{ strip: edges, body: null }}
+                waiting={null}
+              />
+            </Strip>
           )}
           <Glow u={u} glow={glow} />
           {state === "sealed" && (
@@ -521,12 +550,14 @@ function Waiting({
   light,
   refill,
   label,
+  active,
 }: {
   readonly collection: CatalogCollectionFile;
   readonly width: number;
   readonly light: Light;
   readonly refill: number | null;
   readonly label: string | null;
+  readonly active: boolean;
 }) {
   const u = width / GRID.width;
   const level = useSharedValue(refill ?? 0);
@@ -540,8 +571,13 @@ function Waiting({
     level.value = withTiming(refill ?? 0, { duration: LEVEL_MS, easing: Easing.linear });
   }, [refill, level]);
   useEffect(() => {
+    if (!active) {
+      cancelAnimation(shimmer);
+      return;
+    }
+    shimmer.value = 0;
     shimmer.value = withRepeat(withTiming(1, { duration: 2400, easing: Easing.linear }), -1);
-  }, [shimmer]);
+  }, [active, shimmer]);
 
   const grey: Region = { strip: null, body: greyed };
   const cover = useAnimatedStyle(() => ({
@@ -785,11 +821,14 @@ function Strip({
   u,
   tear,
   fly,
+  pulled,
   children,
 }: {
   readonly u: number;
   readonly tear: Tear;
   readonly fly: SharedValue<number>;
+  /** A finger pulled it: a tap opens the pouch whole, with no torn piece to draw. */
+  readonly pulled: boolean;
   readonly children: ReactNode;
 }) {
   const width = GRID.width * u;
@@ -831,16 +870,19 @@ function Strip({
       <Animated.View style={[styles.piece, kept]}>
         <Animated.View style={keptInner}>{children}</Animated.View>
       </Animated.View>
-      <Animated.View
-        style={[styles.piece, { boxShadow: `0 ${4 * u}px ${4 * u}px rgba(0, 0, 0, 0.35)` }, torn]}
-      >
-        <Animated.View style={tornInner}>{children}</Animated.View>
-      </Animated.View>
+      {pulled && (
+        <Animated.View
+          style={[styles.piece, { boxShadow: `0 ${4 * u}px ${4 * u}px rgba(0, 0, 0, 0.35)` }, torn]}
+        >
+          <Animated.View style={tornInner}>{children}</Animated.View>
+        </Animated.View>
+      )}
     </Animated.View>
   );
 }
 
 const styles = StyleSheet.create({
+  cut: { position: "absolute", left: 0, right: 0, bottom: 0, overflow: "hidden" },
   strip: { position: "absolute", top: 0, left: 0, right: 0 },
   piece: { position: "absolute", top: 0, bottom: 0, overflow: "hidden" },
   handle: { position: "absolute", left: 0, right: 0 },

@@ -13,7 +13,7 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 import Svg, { Defs, Ellipse, Polyline, RadialGradient, Stop } from "react-native-svg";
-import { CardBack } from "@/cards/card-back";
+import { CardBack, CardEdge } from "@/cards/card-back";
 import { HoloCard } from "@/cards/holo-card";
 import { useSpokenWord } from "@/cards/spoken-word";
 import { play, speechOn, vibrate } from "@/feedback/feedback";
@@ -265,9 +265,9 @@ export function RevealCard({
           {...responder.panHandlers}
         >
           <Animated.View style={[StyleSheet.absoluteFill, back]}>
-            <CardBack rarity={card.rarity} width={width} tone={tone} />
+            <CardBack width={width} tone={tone} />
             <Animated.View style={[StyleSheet.absoluteFill, edgeOn]}>
-              <CardBack rarity={card.rarity} width={width} edge={1} tone={tone} />
+              <CardEdge rarity={card.rarity} width={width} />
             </Animated.View>
             {staging.announce === "crack" && <Cracks width={width} height={height} />}
           </Animated.View>
