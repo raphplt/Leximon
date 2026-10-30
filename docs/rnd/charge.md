@@ -144,3 +144,19 @@ Le verrou du portefeuille (`FOR UPDATE`), l'idempotence et leurs tests concurren
 **Côté joueur, le p95 dépend du réseau.** Les 65 ms d'écart en médiane sont le trajet jusqu'à Cloudflare puis jusqu'à Francfort ; la queue (176 ms au 90e centile, 403 au 95e) suit les pertes de paquets de la connexion domestique qui lance k6, mesurées à 15 % lors de la campagne. Le p95 de production se suit dans le résumé Discord, qui compte le temps serveur.
 
 **Contrepartie :** avec le cache, une session supprimée (bannissement) reste valable jusqu'à cinq minutes. La suppression d'un compte efface déjà les cookies du navigateur, et un invité archivé reste refusé à l'ouverture.
+
+### Base sur le serveur maison, 2026-10-30
+
+API de staging à Paris (`cf-placement: local-CDG`), Hyperdrive sans cache, Workers VPC et tunnel Cloudflare jusqu'au conteneur `leximon-db` (2 cœurs, 1,5 Go), copie de la production plus 400 joueurs de test. k6 tourne sur la même connexion que la base, à 4 ms de Cloudflare : un joueur plus loin du réseau aura quelques millisecondes de plus. Médiane / p95, en millisecondes, 18 407 requêtes et aucune erreur.
+
+| Palier | Requêtes/s | Ouverture | Défi (réponse) | Album (`/me/cards`) |
+|---|---|---|---|---|
+| ouverture seule, 10 it/s pendant 2 min | 9 | 103 / 147 | — | — |
+| 5 it/s | 38 | 107 / 188 | 89 / 121 | 60 / 129 |
+| 20 it/s, trois scénarios | 151 | 105 / 375 | 88 / 134 | 60 / 109 |
+
+Les chiffres de Neon viennent d'avant les corrections du 2026-10-24, sauf l'ouverture seule, qui y faisait 114 / 173. **Le budget de 150 ms tient sur l'ouverture seule, pas quand les scénarios se mélangent** (188 et 375 ms au p95). La cause de cette queue n'est pas établie : le conteneur reste loin de sa limite (charge de 1,2 au plus sur 2 cœurs, 326 Mo de mémoire, 39 connexions).
+
+Pour la capacité brute, `pgbench` donne 1 763 écritures par seconde à 16 clients, 2 678 à 50 clients, et 38 961 lectures à 16 clients, dans le conteneur, sans le tunnel. Une écriture durable coûte environ 3 ms sur le SSD.
+
+**Redémarrage du conteneur :** Postgres, le tunnel et le résolveur repartent seuls, et l'API répond de nouveau au bout de 2 minutes. Pendant ce temps, elle renvoie des erreurs 500.

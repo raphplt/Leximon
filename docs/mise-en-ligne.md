@@ -328,7 +328,9 @@ Neon gratuit devient trop juste pour une bêta ouverte, et le propriétaire ne v
 
 - Conteneur Proxmox `leximon-db` (LXC 102, Debian 13, 2 cœurs, 1,5 Go), séparé de la VM `docker`, sur le SSD. Il démarre avec la machine.
 - Postgres 18.6, réglé par `infra/home-db/postgres.conf`. La base `leximon` contient une copie de la production du 2026-10-30 (restaurée en 1 seconde).
-- Tunnel Cloudflare `leximon-db` (service `cloudflared` du conteneur), et service Workers VPC `leximon-db`. Workers VPC est gratuit pendant sa bêta. Aucun port n'est ouvert et la base n'a aucun nom public.
+- Tunnel Cloudflare `leximon-db` (service `cloudflared` du conteneur), service Workers VPC `leximon-db` et configuration Hyperdrive `leximon-db-nas`, sans cache. Workers VPC est gratuit pendant sa bêta. Aucun port n'est ouvert et la base n'a aucun nom public.
+- Certificat Cloudflare Origin pour `db.leximon.fr`, valable jusqu'en 2041 et vérifié par Workers VPC. Sa clé n'a jamais quitté le conteneur. Le nom n'existant pas en public, le petit résolveur `leximon-dns` du conteneur le donne à `cloudflared`.
+- L'API de staging tourne sur cette base, Worker à Paris (`docs/rnd/charge.md`).
 - Bucket R2 `leximon-backups`, en juridiction UE : `hourly/` gardé 3 jours, `daily/` gardé 30 jours.
 - Mot de passe de la base : `~/.config/leximon/nas-db-url` sur le PC du propriétaire.
 
@@ -336,12 +338,9 @@ Neon gratuit devient trop juste pour une bêta ouverte, et le propriétaire ne v
 
 **Reste à faire avant de basculer :**
 
-1. Certificat Cloudflare Origin pour `db.leximon.fr`, créé dans le tableau de bord à partir de la clé du conteneur. Workers VPC vérifie le certificat de la base.
-2. Configuration Hyperdrive `leximon-db-nas`, sans cache.
-3. Clés R2 : `ssh -t pve pct exec 102 -- leximon-set-r2-keys`, puis `systemctl enable --now leximon-backup.timer` dans le conteneur.
-4. Test de charge à travers le tunnel, Worker de staging à Paris, à comparer avec `docs/rnd/charge.md`.
-5. Page de confidentialité : retirer Neon et décrire l'hébergement. Chiffrement du disque à prévoir.
-6. Bascule : API coupée le temps d'un `pg_dump` puis d'une restauration, Hyperdrive de production repointé, placement du Worker revu.
+1. Clés R2 : `ssh -t pve pct exec 102 -- leximon-set-r2-keys`, puis `systemctl enable --now leximon-backup.timer` dans le conteneur, et un test de restauration depuis R2.
+2. Page de confidentialité : retirer Neon et décrire l'hébergement. Chiffrement du disque à prévoir.
+3. Bascule : API coupée le temps d'un `pg_dump` puis d'une restauration, Hyperdrive de production repointé, placement du Worker revu.
 
 **Si le serveur tombe :** restaurer le dernier fichier de R2 sur Neon, resté gratuit et en sommeil (voir « Restaurer pour de vrai »), puis repointer Hyperdrive. On perd au plus une heure de parties.
 

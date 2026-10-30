@@ -346,11 +346,13 @@
           "simple": { "limit": 30, "period": 60 }
         }
       ],
+      // Paris: the tunnel of the home database lands there.
+      "placement": { "region": "aws:eu-west-3" },
       "hyperdrive": [
         {
           "binding": "HYPERDRIVE",
-          // leximon-db-staging, on the Neon branch `charge`, created with --caching-disabled.
-          "id": "21dcf38e1f8142bf90e65d8ff1d2b9b9"
+          // leximon-db-nas, on the home server through Workers VPC, created with --caching-disabled.
+          "id": "217ed0d8d32b4184a7a3491884afe5db"
         }
       ]
     }
