@@ -5,7 +5,7 @@ Première mise en production, pour la bêta fermée (20 à 40 testeurs, début n
 - **Toi** : compte, paiement, secret, clic dans un tableau de bord. Personne d'autre.
 - **Agent** : une commande qu'un agent peut lancer une fois `wrangler login` fait. Tu peux aussi la lancer toi-même.
 
-Décisions liées : D-005 (Cloudflare, Postgres en UE), D-015 (web par OpenNext), D-023 (catalogue), D-034 et D-035 (e-mails). Le choix de Neon vient de [rnd/postgres.md](rnd/postgres.md).
+Décisions liées : D-005 (Cloudflare, Postgres en UE), D-015 (web par OpenNext), D-023 (catalogue), D-034 et D-035 (e-mails). La base de production est sur le serveur maison depuis le 2026-10-30 (D-053, étape 15 bis).
 
 ## Ce qui part où
 
@@ -14,15 +14,15 @@ Décisions liées : D-005 (Cloudflare, Postgres en UE), D-015 (web par OpenNext)
 | Web (Next.js) | Worker `leximon-web-production`, par OpenNext | `leximon.fr` (`www` redirigé) |
 | Catalogue (fichiers immuables) | Fichiers statiques du Worker web | `leximon.fr/catalog/…` |
 | API (Hono) | Worker `leximon-api-production` | `api.leximon.fr` |
-| Base | Neon gratuit, Francfort, derrière Hyperdrive sans cache | — |
+| Base | Postgres sur le serveur maison, joint par Workers VPC et un tunnel, derrière Hyperdrive sans cache | — |
 | Cache de Next.js | R2 `leximon-web-cache` | — |
 | Codes de connexion | Cloudflare Email Service | `code@mail.leximon.fr` |
 | Campagnes | Lettermint | `bonjour@infos.leximon.fr` |
-| Sauvegardes | `pg_dump` chaque nuit sur le NAS, 30 jours | — |
+| Sauvegardes | Un dump chaque heure sur R2 en UE, un `pg_dump` chaque nuit sur le disque `tank` | — |
 
 Le cookie de session est posé par `api.leximon.fr`, sur ce seul hôte. `leximon.fr` et `api.leximon.fr` sont le même site, donc le navigateur l'envoie avec chaque requête de l'app, sans cookie partagé entre sous-domaines. Les pages rendues par le serveur web (carte publique, profil public) lisent l'API sans session.
 
-Coût : 5 $ par mois (Workers Paid). Neon, R2, Lettermint et Email Service restent dans leur offre gratuite ou incluse à cette échelle.
+Coût : 5 $ par mois (Workers Paid). R2, Lettermint et Email Service restent dans leur offre gratuite ou incluse à cette échelle, et Workers VPC est gratuit pendant sa bêta.
 
 ## Le web sur Workers : sans `cacheComponents`
 
@@ -52,6 +52,8 @@ pnpm --filter @leximon/api exec wrangler whoami   # doit afficher ton compte
 wrangler n'est pas installé pour tout le système : il passe par pnpm, depuis la racine du dépôt. La session vaut pour toutes les commandes `wrangler` de la machine, y compris celles d'un agent.
 
 ## 3. Base Neon · toi
+
+La production a quitté Neon le 2026-10-30 (étape 15 bis). Les étapes 3 et 4 restent pour le staging et pour un repli.
 
 1. https://console.neon.tech → créer un compte (sans carte bancaire).
 2. **New project** : nom `leximon`, Postgres **18** (la version locale), région **AWS Europe Central 1 (Frankfurt)**.
@@ -136,10 +138,11 @@ pnpm exec wrangler secret put REVIEW_ACCOUNT_CODE --env production
 
 ## 7. Migrations · toi (la chaîne), agent (la commande)
 
-Dans le terminal qui lance les commandes de production :
+`pnpm deploy:prod` fait tout cela seul. Pour un geste isolé, dans le terminal qui lance les commandes de production, ouvrir un tunnel SSH vers le conteneur de la base, puis :
 
 ```bash
-read -rs DATABASE_URL && export DATABASE_URL   # coller la chaîne directe, puis Entrée
+ssh -N -L 54330:192.168.0.53:5432 pve &
+export DATABASE_URL="$(cat ~/.config/leximon/home-db-url)"
 pnpm db:migrate:prod
 ```
 
@@ -153,7 +156,7 @@ Même terminal, `DATABASE_URL` toujours exportée :
 pnpm catalog:publish:prod
 ```
 
-Met à jour les tables `collections` et `cards` de Neon, puis copie les fichiers dans `apps/web/public/catalog/`, d'où le déploiement du web les envoie. **Après chaque publication, redéployer le web (étape 10) dans la foulée** : tant que ce n'est pas fait, les plis peuvent tirer des cartes que le site n'a pas encore.
+Met à jour les tables `collections` et `cards` de la base, puis copie les fichiers dans `apps/web/public/catalog/`, d'où le déploiement du web les envoie. **Après chaque publication, redéployer le web (étape 10) dans la foulée** : tant que ce n'est pas fait, les plis peuvent tirer des cartes que le site n'a pas encore.
 
 ## 9. API · agent
 
@@ -288,15 +291,14 @@ Pour forcer la mise à jour de l'app mobile (quand l'API cesse de servir ce dont
 | Résumé | Le lendemain matin, le salon Discord | Un message « Leximon · <jour> », sans « lecture impossible » |
 | En-têtes | `curl -I https://leximon.fr` | `content-security-policy` et `strict-transport-security` présents |
 
-## 15. Sauvegardes sur le NAS · fait
+## 15. Sauvegardes · fait
 
-Neon gratuit ne garde que 6 heures d'historique. La vraie sauvegarde est un `pg_dump` chaque nuit, gardé 30 jours. Les fichiers sont dans `infra/backup/`.
+La copie qui survit à la perte du serveur est celle de R2, chaque heure (étape 15 bis). Cette étape décrit la seconde : un `pg_dump` chaque nuit sur le pool ZFS `tank`, donc sur un autre disque que la base, gardé 30 jours. Les fichiers sont dans `infra/backup/`.
 
-**En place depuis le 2026-10-26** sur le serveur maison : VM `docker` (Proxmox `pve`, joignable par Tailscale), dossier `~/apps/leximon-backup/`, sauvegardes dans `/mnt/media/backups/leximon` (pool ZFS `tank`, hors du disque de la VM). Après une modification de `infra/backup/`, recopier les scripts dans ce dossier.
+**En place depuis le 2026-10-26** sur le serveur maison : VM `docker` (Proxmox `pve`, joignable par Tailscale), dossier `~/apps/leximon-backup/`, sauvegardes dans `/mnt/media/backups/leximon`. Après une modification de `infra/backup/`, recopier les scripts dans ce dossier.
 
-1. Copier `infra/backup/` sur le NAS (par exemple `/volume1/docker/leximon-backup/`).
-2. Y créer `.env` depuis `.env.example`, avec la chaîne directe de Neon et le dossier de destination (`BACKUP_PATH`). Restreindre le fichier : `chmod 600 .env`.
-3. Lancer :
+1. Y créer `.env` depuis `.env.example`, avec la chaîne de la base et le dossier de destination (`BACKUP_PATH`). Restreindre le fichier : `chmod 600 .env`.
+2. Lancer :
 
 ```bash
 docker compose up -d                                   # une sauvegarde chaque nuit à 4 h 30
@@ -304,45 +306,52 @@ docker compose run --rm backup /scripts/backup.sh      # une tout de suite
 docker compose logs backup                             # « backup ok: … »
 ```
 
-4. **Test de restauration**, maintenant puis une fois par mois :
+3. **Test de restauration**, une fois par mois :
 
 ```bash
 docker compose run --rm backup /scripts/restore-test.sh
 ```
 
-Il restaure le dernier fichier dans un Postgres jetable, à l'intérieur du conteneur, et compte les joueurs, les exemplaires, les cartes et les migrations. Il ne touche ni à Neon ni aux sauvegardes.
+Il restaure le dernier fichier dans un Postgres jetable, à l'intérieur du conteneur, et compte les joueurs, les exemplaires, les cartes et les migrations. Il ne touche ni à la base ni aux sauvegardes.
 
-Une sauvegarde ratée ne supprime aucune ancienne : la rotation ne passe qu'après un fichier vérifié. Le réveil nocturne de la base consomme quelques minutes des 100 heures de calcul mensuelles de Neon.
+Une sauvegarde ratée ne supprime aucune ancienne : la rotation ne passe qu'après un fichier vérifié.
 
 ### Restaurer pour de vrai
 
-1. Neon → **Branches** → créer une branche vide (ou un nouveau projet), récupérer sa chaîne directe.
-2. Sur le NAS : `docker compose run --rm backup sh -c 'pg_restore --no-owner --no-privileges --exit-on-error -d "postgresql://…nouvelle chaîne…" /backups/leximon-AAAAMMJJ-HHMMSS.dump'`.
-3. Vérifier les données, puis faire pointer Hyperdrive dessus : `pnpm --filter @leximon/api exec wrangler hyperdrive update <id> --connection-string="…"`.
+Si le serveur est perdu, le jeu repart sur Neon, en sommeil et gratuit, depuis le dernier fichier de R2. Le projet garde la base `neondb` d'avant la bascule, gelée en lecture seule : la nouvelle copie va dans une base vide.
 
-## 15 bis. Base sur le serveur maison · en essai
+1. Cloudflare → **R2** → `leximon-backups` → `hourly/` → télécharger le fichier le plus récent.
+2. Neon → **Databases** → **New database**, nommée `leximon`, puis récupérer sa chaîne directe.
+3. Restaurer : `docker run --rm -v "$PWD:/backups" postgres:18.6-alpine pg_restore --no-owner --no-privileges --exit-on-error -d "postgresql://…nouvelle chaîne…" /backups/leximon-AAAAMMJJ-HHMMSS.dump`.
+4. Vérifier les données, puis faire pointer l'ancienne configuration Hyperdrive dessus : `pnpm --filter @leximon/api exec wrangler hyperdrive update 43b07b65f2ab4ed797bc424b4e32e632 --connection-string="…"`.
+5. Dans `apps/api/wrangler.jsonc`, section `production` : remettre cet identifiant dans `hyperdrive` et ajouter `"placement": { "region": "aws:eu-central-1" }`, puis `pnpm deploy:api`.
 
-Neon gratuit devient trop juste pour une bêta ouverte, et le propriétaire ne veut pas payer tant que le jeu ne rapporte rien. Un essai est en cours pour héberger la base chez lui, jusqu'à ce que les mécènes couvrent une offre cloud. **La production reste sur Neon tant que le test de charge n'a pas conclu.**
+## 15 bis. Base sur le serveur maison · fait
 
-**En place depuis le 2026-10-30 :**
+La production tourne ici depuis le 2026-10-30 (D-053), jusqu'à ce que les mécènes couvrent une offre cloud.
 
-- Conteneur Proxmox `leximon-db` (LXC 102, Debian 13, 2 cœurs, 1,5 Go), séparé de la VM `docker`, sur le SSD. Il démarre avec la machine.
-- Postgres 18.6, réglé par `infra/home-db/postgres.conf`. La base `leximon` contient une copie de la production du 2026-10-30 (restaurée en 1 seconde).
-- Tunnel Cloudflare `leximon-db` (service `cloudflared` du conteneur), service Workers VPC `leximon-db` et configuration Hyperdrive `leximon-db-nas`, sans cache. Workers VPC est gratuit pendant sa bêta. Aucun port n'est ouvert et la base n'a aucun nom public.
-- Certificat Cloudflare Origin pour `db.leximon.fr`, valable jusqu'en 2041 et vérifié par Workers VPC. Sa clé n'a jamais quitté le conteneur. Le nom n'existant pas en public, le petit résolveur `leximon-dns` du conteneur le donne à `cloudflared`.
-- L'API de staging tourne sur cette base, Worker à Paris (`docs/rnd/charge.md`).
-- Bucket R2 `leximon-backups`, en juridiction UE : `hourly/` gardé 3 jours, `daily/` gardé 30 jours.
-- Mot de passe de la base : `~/.config/leximon/nas-db-url` sur le PC du propriétaire.
+**Ce qui est en place :**
 
-**Migrations :** elles passent par un tunnel SSH vers le conteneur, `ssh -N -L 54330:192.168.0.20:5432 pve`. L'adresse du conteneur vient du DHCP, à fixer avant la bascule.
+- Conteneur Proxmox `leximon-db` (LXC 102, Debian 13, 2 cœurs, 1,5 Go, `192.168.0.53`), séparé de la VM `docker`, sur le SSD. Il démarre avec la machine.
+- Postgres 18.6, réglé par `infra/home-db/postgres.conf`. Hors du conteneur, `pg_hba.conf` n'accepte `leximon_app` qu'en TLS, depuis `pve` (tunnel SSH, `192.168.0.8`) et la VM `docker` (`192.168.0.51`).
+- Tunnel Cloudflare `leximon-db` (service `cloudflared` du conteneur), service Workers VPC `leximon-db` et configuration Hyperdrive `leximon-db-nas`, sans cache. Aucun port n'est ouvert et la base n'a aucun nom public.
+- Certificat Cloudflare Origin pour `db.leximon.fr`, valable jusqu'en 2041 et vérifié par Workers VPC. Sa clé n'a jamais quitté le conteneur. Le nom n'existant pas en public, le petit résolveur `leximon-dns` du conteneur (`infra/home-db/leximon-dns.service`) le donne à `cloudflared`.
+- Bucket R2 `leximon-backups`, en juridiction UE, rempli par `leximon-backup.timer` : `hourly/` gardé 3 jours, et `daily/` gardé 30 jours pour le dump de 3 h UTC.
+- Toutes les 5 minutes, le Worker de production essaie la base et regarde l'âge du dernier dump. Il prévient sur Discord à la deuxième base muette ou au-delà de 3 heures sans dump, puis au retour à la normale. Son état vit dans le KV `leximon-watchdog`.
+- L'API de staging reste sur la branche Neon `charge` ([rnd/charge.md](rnd/charge.md)), pour qu'un test de charge ne touche jamais la production.
+- Mot de passe de la base : `~/.config/leximon/home-db-url` sur le PC du propriétaire, écrit pour le tunnel SSH de l'étape 7.
 
-**Reste à faire avant de basculer :**
+**Gestes courants :**
 
-1. Clés R2 : `ssh -t pve pct exec 102 -- leximon-set-r2-keys`, puis `systemctl enable --now leximon-backup.timer` dans le conteneur, et un test de restauration depuis R2.
-2. Page de confidentialité : retirer Neon et décrire l'hébergement. Chiffrement du disque à prévoir.
-3. Bascule : API coupée le temps d'un `pg_dump` puis d'une restauration, Hyperdrive de production repointé, placement du Worker revu.
+```bash
+ssh pve pct exec 102 -- systemctl start leximon-backup.service        # une sauvegarde tout de suite
+ssh pve pct exec 102 -- journalctl -u leximon-backup.service -n 20    # « backup ok: … »
+ssh -t pve pct exec 102 -- /usr/local/bin/leximon-set-r2-keys         # changer les clés R2
+```
 
-**Si le serveur tombe :** restaurer le dernier fichier de R2 sur Neon, resté gratuit et en sommeil (voir « Restaurer pour de vrai »), puis repointer Hyperdrive. On perd au plus une heure de parties.
+**Si le serveur tombe :** l'alerte arrive sur Discord en 10 minutes environ. Un redémarrage rend l'API en 2 minutes, sans rien à faire. Si le serveur ne revient pas, suivre « Restaurer pour de vrai » : on perd au plus une heure de parties.
+
+**Limites connues :** un seul SSD d'entrée de gamme, pas d'onduleur, disque non chiffré (à faire), Workers VPC encore en bêta. À 5 itérations par seconde, le p95 de l'ouverture d'un sachet est à 188 ms, au-dessus du budget de 150 ms, sans cause établie.
 
 **Matériel à acheter plus tard**, par ordre d'utilité, pour le HP ProDesk 600 G6 Microtower (4 emplacements de mémoire dont 1 occupé, 2 emplacements M.2 2280 de stockage dont 1 occupé d'après HP) :
 
@@ -365,16 +374,16 @@ pnpm exec wrangler rollback --env production            # version précédente
 cd ../web && pnpm exec wrangler rollback --env production
 ```
 
-Le retour en arrière ne touche que le code. Les migrations sont additives, donc l'ancienne version de l'API marche sur la nouvelle base : on ne défait jamais une migration en production. Une donnée abîmée se répare depuis une sauvegarde (étape 15).
+Le retour en arrière ne touche que le code. Les migrations sont additives, donc l'ancienne version de l'API marche sur la nouvelle base : on ne défait jamais une migration en production. Une donnée abîmée se répare depuis une sauvegarde (étapes 15 et 15 bis).
 
 ## Après la mise en ligne
 
-**Mettre en prod : `pnpm deploy:prod`.** Le script ([infra/prod/deploy.sh](../infra/prod/deploy.sh)) refuse de partir hors de `main` ou avec des fichiers non commités, qui partiraient en ligne. Il lance ensuite `pnpm check`, les migrations, le catalogue si une version plus récente que celle en ligne existe, l'API, le web, puis contrôle que les deux répondent. La chaîne Neon vient de `DATABASE_URL`, sinon de `~/.config/leximon/neon-url` (droits 600). Les commandes ci-dessous restent pour un geste isolé.
+**Mettre en prod : `pnpm deploy:prod`.** Le script ([infra/prod/deploy.sh](../infra/prod/deploy.sh)) refuse de partir hors de `main` ou avec des fichiers non commités, qui partiraient en ligne. Il lance ensuite `pnpm check`, les migrations, le catalogue si une version plus récente que celle en ligne existe, l'API, le web, puis contrôle que les deux répondent. La chaîne de la base vient de `DATABASE_URL`, sinon de `~/.config/leximon/home-db-url` (droits 600), et le script ouvre seul le tunnel SSH vers le conteneur. Les commandes ci-dessous restent pour un geste isolé.
 
 **Thèmes des cartes :** le serveur lit les thèmes dans `card_themes`, écrits à la publication du catalogue. Le déploiement ne republie que si une version plus récente existe : après l'ajout de cette écriture, lancer une fois `pnpm catalog:publish:prod`, sans quoi les révisions par thème restent vides jusqu'au prochain catalogue.
 
 **Nouveautés :** un changement que les joueurs voient s'annonce dans `CHANGELOG`, en tête de `packages/view-model/src/changelog.ts`, daté du jour de la mise en ligne et commité avant `pnpm deploy:prod`. Le web montre l'entrée une fois à chaque joueur (niveau 5 et plus, une fois par appareil) et la garde sur `/nouveautes`. L'app ne la montre qu'avec le build suivant, puisqu'elle embarque le journal : une entrée qui ne concerne que le web le dit dans son texte.
 
 - Ajouter un réglage ou une liaison à l'API : l'écrire en haut de `apps/api/wrangler.jsonc` (local) **et** dans `env.production`. Wrangler ne recopie ni les variables ni les liaisons dans un environnement.
-- Nouvelle version du catalogue : `pnpm catalog:publish:prod` puis `pnpm deploy:web`, dans cet ordre et dans la foulée.
-- Nouvelle migration : `pnpm db:migrate:prod` avant `pnpm deploy:api`.
+- Nouvelle version du catalogue : `pnpm catalog:publish:prod` (tunnel de l'étape 7) puis `pnpm deploy:web`, dans cet ordre et dans la foulée.
+- Nouvelle migration : `pnpm db:migrate:prod` (tunnel de l'étape 7) avant `pnpm deploy:api`.

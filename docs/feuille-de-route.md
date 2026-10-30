@@ -78,7 +78,7 @@ Arbitrés par le propriétaire le 2026-10-20 : jeu grand public (B2C), pas de ve
 
 | Étape | Statut | Détail |
 |---|---|---|
-| Hébergement de production | En cours | En ligne depuis le 2026-10-22 : `leximon.fr` et `api.leximon.fr`, base Neon gratuite, catalogue servi par le Worker web (D-040, D-043). Mise en production en une commande (`pnpm deploy:prod`). En-têtes de sécurité, préflights CORS en cache, première visite allégée (ni catalogue sur l'accueil, ni dans la coque du jeu). Procédure : [mise-en-ligne.md](mise-en-ligne.md). Sauvegarde nocturne sur le serveur maison, restauration vérifiée (2026-10-26). Codes de connexion vérifiés en production. `www` redirigé vers `leximon.fr` (2026-10-26). Reste : hausse du quota d'envoi des codes, Lettermint |
+| Hébergement de production | En cours | En ligne depuis le 2026-10-22 : `leximon.fr` et `api.leximon.fr`, base sur le serveur maison depuis le 2026-10-30 (D-053), catalogue servi par le Worker web (D-043). Mise en production en une commande (`pnpm deploy:prod`). En-têtes de sécurité, préflights CORS en cache, première visite allégée (ni catalogue sur l'accueil, ni dans la coque du jeu). Procédure : [mise-en-ligne.md](mise-en-ligne.md). Sauvegarde chaque heure sur R2 et chaque nuit sur le disque `tank`, restauration vérifiée, alerte Discord si la base ou les sauvegardes s'arrêtent. Codes de connexion vérifiés en production. `www` redirigé vers `leximon.fr` (2026-10-26). Reste : hausse du quota d'envoi des codes, Lettermint |
 | Bêta fermée sur invitation | En ligne, premiers liens envoyés (2026-10-25) | D-041 : liens par groupe dans `/admin/invitations`, page `/invitation/<code>`, porte tenue par l'API (`BETA_INVITES`), `?src=` gardé avec le joueur. Une invitation rejouée par un invité ne rouvre plus la porte |
 | Mesure | En ligne | D-042 et D-052 : `/admin/mesure`, tableau de bord sur une période choisie (7, 30, 90 jours, depuis le début ou dates libres, gardée dans l'adresse) comparée à la période d'avant : chiffres clés avec tendance, activité par jour, entonnoir, courbe de rétention, cohortes par jour ou semaine, origine et âge, heures de jeu, fausse porte mécène, testeurs, `/admin/retours` (« Un retour ? » dans le menu, « Signaler une erreur » sur la fiche de carte, avec un lien vers la carte), tranche d'âge facultative à l'inscription. Visites du site par Umami (sans cookie, codes des liens masqués, refus sur « Tes données ») et `robots.txt`, `sitemap.xml` (pages publiques et toutes les cartes, ouvertes aux moteurs de recherche) pour Search Console. Umami installé sur le serveur maison et publié sur `stats.leximon.fr` le 2026-10-28. Reste : déployer le web, Search Console ([mise-en-ligne.md](mise-en-ligne.md), étape 12 bis) |
 | Suivi des erreurs | Fait | D-045 : erreurs relevées par Cloudflare (Workers Logs), résumé chaque matin sur Discord avec les chiffres de la veille. Pas de suivi des erreurs du navigateur |
@@ -89,11 +89,10 @@ Arbitrés par le propriétaire le 2026-10-20 : jeu grand public (B2C), pas de ve
 
 La bêta reste fermée au moins jusqu'au 2026-11-04, une semaine de plus (décidé le 2026-10-28), pour avoir la rétention à J7 des premiers testeurs et corriger leurs retours. On ouvre quand tout ceci est fait :
 
-1. **Base de données :** quitter Neon gratuit (D-040). Ses 100 heures de calcul par mois s'épuisent en deux à trois semaines quand la base ne se met plus en veille. Fournisseur à choisir avec le propriétaire.
-2. **Codes de connexion :** quota d'Email Service relevé ([mise-en-ligne.md](mise-en-ligne.md), étape 12). Sans lui, une vague d'inscriptions bloque les connexions.
-3. **Liste d'attente prévenue :** Lettermint prêt (étape 12), pour tenir la promesse de P55.
-4. **Stores :** publication manuelle sur l'App Store et Google Play. Tant que la porte est fermée, l'app refuse tout nouveau joueur sans lien : elle sort le jour de l'ouverture, pas avant.
-5. **Mesure de l'arrivée :** Umami et Search Console installés (étape 12 bis), pour lire les sources dès le premier jour.
+1. **Codes de connexion :** quota d'Email Service relevé ([mise-en-ligne.md](mise-en-ligne.md), étape 12). Sans lui, une vague d'inscriptions bloque les connexions.
+2. **Liste d'attente prévenue :** Lettermint prêt (étape 12), pour tenir la promesse de P55.
+3. **Stores :** publication manuelle sur l'App Store et Google Play. Tant que la porte est fermée, l'app refuse tout nouveau joueur sans lien : elle sort le jour de l'ouverture, pas avant.
+4. **Mesure de l'arrivée :** Umami et Search Console installés (étape 12 bis), pour lire les sources dès le premier jour.
 
 Le jour de l'ouverture : `BETA_INVITES` à `"off"` dans `env.production` de `apps/api/wrangler.jsonc`, puis `pnpm deploy:prod` ; publier les deux apps ; envoyer la campagne à la liste d'attente.
 

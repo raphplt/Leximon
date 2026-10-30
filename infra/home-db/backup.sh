@@ -17,10 +17,12 @@ pg_dump --format=custom --compress=9 --no-owner --no-privileges --file="$dump" "
 # A dump that pg_restore cannot list is a failed backup, not a backup.
 pg_restore --list "$dump" > /dev/null
 
-rclone copyto "$dump" "$remote/hourly/leximon-$stamp.dump"
+# R2 answers 501 to the HEAD with a versionId that rclone sends after a successful PUT.
+upload="rclone copyto --s3-no-head $dump"
+$upload "$remote/hourly/leximon-$stamp.dump"
 # The quietest hour gives the copy kept for 30 days.
 if [ "$(date -u +%H)" = "03" ]; then
-  rclone copyto "$dump" "$remote/daily/leximon-$stamp.dump"
+  $upload "$remote/daily/leximon-$stamp.dump"
 fi
 
 size=$(du -h "$dump" | cut -f1)

@@ -1,0 +1,10 @@
+[Unit]
+Description=Resolves db.leximon.fr for cloudflared, the name has no public record
+After=network.target
+
+[Service]
+ExecStart=/usr/sbin/dnsmasq --keep-in-foreground --no-hosts --no-resolv --listen-address=127.0.0.1 --bind-interfaces --address=/db.leximon.fr/127.0.0.1
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

@@ -394,7 +394,7 @@ Pour ajouter ou modifier une décision, utiliser le skill `decision`.
 
 ## D-040 · Postgres de la bêta : Neon, sauvegardé chaque nuit sur le NAS
 
-- **Statut :** Acceptée (2026-10-22), choisie par le propriétaire. Complète D-005 (fournisseur). R&D : [rnd/postgres.md](rnd/postgres.md), dont la recommandation OVH est écartée par le propriétaire.
+- **Statut :** Remplacée par D-053 (2026-10-30). Acceptée le 2026-10-22, choisie par le propriétaire. Complète D-005 (fournisseur). R&D : [rnd/postgres.md](rnd/postgres.md), dont la recommandation OVH est écartée par le propriétaire.
 - **Choix :** Neon gratuit, région Francfort, Postgres 18, joint par Hyperdrive sans cache sur la connexion directe (pas le pooler). Un `pg_dump` part chaque nuit vers le NAS du propriétaire, 30 jours gardés, avec un test de restauration (`infra/backup/`).
 - **Pourquoi :** 0 € pour 40 testeurs, en UE, sans rien à administrer. Le NAS n'héberge pas la base (le jeu dépendrait d'une box et d'un courant domestiques), il garde une copie hors du fournisseur.
 - **Conséquences :** réveil d'environ 300 ms après 5 minutes sans requête, acceptable en bêta. Avant l'ouverture publique, revoir le fournisseur (Neon payant, Scaleway, Supabase). Procédure : [mise-en-ligne.md](mise-en-ligne.md).
@@ -496,3 +496,15 @@ Pour ajouter ou modifier une décision, utiliser le skill `decision`.
   - le tunnel ne laisse passer que `/script.js` et `/api/send` ; le tableau de bord ne s'ouvre que par Tailscale ; Umami lit le visiteur dans `cf-connecting-ip` et ne garde pas son IP ;
   - si le serveur maison tombe, les visites de la panne sont perdues, sans effet sur le site, qui charge le script sans l'attendre ;
   - les bloqueurs de publicité et les filtres DNS bloquent souvent Umami : les visites sont un ordre de grandeur, les chiffres des joueurs restent ceux de la base.
+
+## D-053 · Postgres de production : le serveur maison, joint par Workers VPC, jusqu'aux mécènes
+
+- **Statut :** Acceptée (2026-10-30), choisie par le propriétaire. Remplace D-040.
+- **Choix :** Postgres 18 dans un conteneur Proxmox dédié (`leximon-db`, `infra/home-db/`), joint par Hyperdrive sans cache à travers un service Workers VPC et un tunnel Cloudflare, Worker placé à Paris. Aucun port n'est ouvert et Workers VPC vérifie le certificat de la base. Un dump part chaque heure sur R2 en UE ; le `pg_dump` nocturne de la VM reste, comme seconde copie.
+- **Pourquoi :** Neon gratuit ne tient plus quand la base ne dort plus (80 à 120 heures de calcul par mois pour un quota de 100, et la base s'arrête au quota), et le propriétaire ne veut pas payer environ 20 € par mois tant que le jeu ne rapporte rien. Le test de charge sur cette base passe 151 requêtes par seconde sans erreur ([rnd/charge.md](rnd/charge.md)).
+- **Conséquences :**
+  - le jeu dépend de la box et du courant du propriétaire : un redémarrage coupe environ 2 minutes, et une perte du serveur coûte au plus une heure de parties ;
+  - le Worker contrôle la base et les sauvegardes toutes les 5 minutes depuis Cloudflare, et prévient sur Discord (`apps/api/src/watchdog.ts`) ;
+  - le staging reste sur une branche Neon, pour qu'un test de charge ne touche jamais la production ;
+  - les commandes `*:prod` passent par un tunnel SSH vers le conteneur, donc depuis le réseau du propriétaire ou Tailscale ;
+  - retour à une offre cloud quand les mécènes couvrent son coût. Procédure : [mise-en-ligne.md](mise-en-ligne.md), étape 15 bis.

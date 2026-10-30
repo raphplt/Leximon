@@ -1,5 +1,5 @@
 # Nightly backup of the production database, on the NAS (docs/mise-en-ligne.md, step 13).
-#   cp .env.example .env    # then paste the direct Neon connection string
+#   cp .env.example .env    # then paste the database connection string
 #   docker compose up -d    # runs every night at BACKUP_HOUR
 # A one-off dump: docker compose run --rm backup /scripts/backup.sh
 # A restore test:  docker compose run --rm backup /scripts/restore-test.sh
