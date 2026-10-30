@@ -68,10 +68,10 @@ describe("level rewards", () => {
     expect(next[0]).toMatchObject({
       icon: "lock",
       milestone: false,
-      opens: "Débloque le choix de la collection de ton sachet",
+      opens: "Débloque le choix de la collection de ton sachet, les révisions par thème",
     });
     expect(next[0]?.label).toBe(
-      "Niveau 3, Sachet bonus, débloque le choix de la collection de ton sachet",
+      "Niveau 3, Sachet bonus, débloque le choix de la collection de ton sachet, les révisions par thème",
     );
     expect(next.map((r) => r.word)).toEqual(["Collections", "Sachet", "Échanges", "Sachet"]);
     expect(next[1]).toMatchObject({
@@ -85,7 +85,7 @@ describe("level rewards", () => {
   it("says the next reward in a sentence, an opening first", () => {
     expect(nextRewardLine(1, NOW)).toBe("Au niveau 2, tu gagnes un sachet bonus.");
     expect(nextRewardLine(2, NOW)).toBe(
-      "Au niveau 3, tu débloques le choix de la collection de ton sachet.",
+      "Au niveau 3, tu débloques le choix de la collection de ton sachet et les révisions par thème.",
     );
     expect(nextRewardLine(3, NOW)).toBe("Au niveau 4, tu gagnes un sachet bonus.");
   });

@@ -19,6 +19,7 @@ import { capitalize, plural } from "./format";
 /** How a feature is named in a sentence: « Le niveau 5 débloque les échanges ». */
 export const FEATURE_NAMES: Readonly<Record<Feature, string>> = {
   choose_collection: "le choix de la collection de ton sachet",
+  practice_choice: "les révisions par thème",
   trade: "les échanges",
   public_profile: "le profil public",
   trade_three: "les échanges à 3 cartes",
@@ -30,6 +31,7 @@ export const FEATURE_NAMES: Readonly<Record<Feature, string>> = {
 /** A feature in one or two words, under its level in the next rewards: « Échanges ». */
 export const FEATURE_WORDS: Readonly<Record<Feature, string>> = {
   choose_collection: "Collections",
+  practice_choice: "Thèmes",
   trade: "Échanges",
   public_profile: "Profil",
   trade_three: "Échanges ×3",

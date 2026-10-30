@@ -4,6 +4,7 @@ import {
   answerXp,
   BONUS_SCHEDULE,
   type BonusKind,
+  type BoosterWallet,
   bonusRulesAt,
   buildQuestion,
   type ChoiceFormat,
@@ -201,24 +202,7 @@ export async function answerChallenge(
   const day = gameDayOf(now);
 
   return db.transaction(async (tx) => {
-    // Creates the wallet of a player who never opened a booster (a full stock, as when it is
-    // missing), or locks the existing one: on conflict, the no-op update takes the row lock.
-    const [locked] = await tx
-      .insert(boosterWallets)
-      .values({
-        userId,
-        stored: wallet.stored,
-        progressMs: wallet.progressMs,
-        asOf: new Date(wallet.asOf),
-      })
-      .onConflictDoUpdate({ target: boosterWallets.userId, set: { userId: sql`excluded.user_id` } })
-      .returning({
-        bonusBoosters: boosterWallets.bonusBoosters,
-        reserveSlots: boosterWallets.reserveSlots,
-      });
-    if (locked === undefined) {
-      throw new Error(`Wallet missing for user ${userId} right after its creation`);
-    }
+    const locked = await lockWallet(tx, userId, wallet);
 
     // Runs after the wallet lock, as a separate statement: its snapshot sees every answer and
     // award committed by the player's earlier requests. Creates the mastery row of a word
@@ -404,6 +388,34 @@ export async function answerChallenge(
       progress: progressGain(progress.xp, xpGained),
     };
   });
+}
+
+/**
+ * Creates the wallet of a player who never opened a booster (a full stock, as when it is
+ * missing), or locks the existing one: on conflict, the no-op update takes the row lock.
+ */
+export async function lockWallet(
+  tx: Pick<Database, "insert">,
+  userId: string,
+  wallet: BoosterWallet,
+): Promise<{ readonly bonusBoosters: number; readonly reserveSlots: number }> {
+  const [locked] = await tx
+    .insert(boosterWallets)
+    .values({
+      userId,
+      stored: wallet.stored,
+      progressMs: wallet.progressMs,
+      asOf: new Date(wallet.asOf),
+    })
+    .onConflictDoUpdate({ target: boosterWallets.userId, set: { userId: sql`excluded.user_id` } })
+    .returning({
+      bonusBoosters: boosterWallets.bonusBoosters,
+      reserveSlots: boosterWallets.reserveSlots,
+    });
+  if (locked === undefined) {
+    throw new Error(`Wallet missing for user ${userId} right after its creation`);
+  }
+  return locked;
 }
 
 /** FSRS rating of a right answer typed with a slip. */

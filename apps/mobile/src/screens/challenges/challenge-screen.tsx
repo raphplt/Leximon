@@ -1,4 +1,4 @@
-import type { MasteryLevelCode } from "@leximon/contract";
+import type { MasteryLevelCode, PracticeScope } from "@leximon/contract";
 import { type Catalog, cardOrPlaceholder, collectionName } from "@leximon/contract/client";
 import { createSeededRandom } from "@leximon/core";
 import { type IconName, masteryColors } from "@leximon/tokens";
@@ -8,13 +8,16 @@ import {
   challengeOutlook,
   dailyView,
   escapingWords,
+  freeAnswerOutcome,
   levelShares,
   memoryCounts,
   memoryNote,
   noChallengeNotice,
   outlookLine,
   PACK_NOUNS,
+  PRACTICE_REFUSED,
   reviewQuestion,
+  type SessionQuestion,
   type WordMemory,
 } from "@leximon/view-model";
 import { randomUUID } from "expo-crypto";
@@ -34,6 +37,8 @@ import { Button } from "@/ui/button";
 import { Icon } from "@/ui/icon";
 import { Panel } from "@/ui/panel";
 import { ChallengeRecap } from "./challenge-recap";
+import { takeAlbumPractice } from "./pending-practice";
+import { PracticeSection } from "./practice-section";
 import { QuestionView } from "./question-view";
 import { advance, type Session, startSession } from "./session";
 
@@ -59,7 +64,13 @@ function reviewSession(
  * Défis: the daily goal, the player's memory, the words slipping away, and the sessions of
  * questions: multiple choice to keep words in memory, the word to type to raise its level.
  */
-export function ChallengeScreen({ word }: { readonly word: string | null }) {
+export function ChallengeScreen({
+  word,
+  fromAlbum,
+}: {
+  readonly word: string | null;
+  readonly fromAlbum: boolean;
+}) {
   const [catalog, setCatalog] = useState<Catalog | null>(catalogInHand);
   const [session, setSession] = useState<Session | null>(null);
   const [starting, setStarting] = useState(false);
@@ -77,6 +88,29 @@ export function ChallengeScreen({ word }: { readonly word: string | null }) {
       .catch(() => setError("Les cartes n'ont pas pu être chargées. Réessaie."));
   }, []);
   useEffect(loadIt, [loadIt]);
+
+  const practise = useCallback(async (scope: PracticeScope) => {
+    setStarting(true);
+    setNotice(null);
+    setError(null);
+    try {
+      const series = await api.startPractice(scope);
+      if (series.kind === "refused" || series.questions.length === 0) setNotice(PRACTICE_REFUSED);
+      else setSession(startSession(series.questions, true));
+    } catch {
+      setError("Le serveur ne répond pas. Réessaie.");
+    } finally {
+      setStarting(false);
+    }
+  }, []);
+
+  // A filter of the album, reviewed from there.
+  useEffect(() => {
+    if (!fromAlbum || catalog === null) return;
+    router.setParams({ revision: undefined });
+    const cardIds = takeAlbumPractice();
+    if (cardIds !== null) void practise({ kind: "cards", cardIds: [...cardIds] });
+  }, [fromAlbum, catalog, practise]);
 
   const start = async () => {
     setStarting(true);
@@ -115,6 +149,28 @@ export function ChallengeScreen({ word }: { readonly word: string | null }) {
     }
   }, [word, catalog, memory]);
 
+  /** A word that counts goes through the review; free practice only earns its XP. */
+  const sendAnswer = async (question: SessionQuestion, chosen: string, key: string) => {
+    if (question.format === "typed") {
+      return api.answerChallenge(
+        { cardId: question.cardId, format: question.format, typed: chosen },
+        key,
+      );
+    }
+    if (question.counted !== false) {
+      return api.answerChallenge(
+        { cardId: question.cardId, format: question.format, chosenCardId: chosen },
+        key,
+      );
+    }
+    const free = await api.answerPractice({ cardId: question.cardId, chosenCardId: chosen }, key);
+    if (free.kind === "not_owned") return { kind: "not_due" as const };
+    return {
+      ...free,
+      ...freeAnswerOutcome(memory?.get(question.cardId)?.level ?? "sketch"),
+    };
+  };
+
   const choose = async (chosen: string) => {
     if (session === null) return;
     const question = session.questions[session.index];
@@ -124,12 +180,7 @@ export function ChallengeScreen({ word }: { readonly word: string | null }) {
     setError(null);
     setSession({ ...session, step: { name: "sending", chosen } });
     try {
-      const result = await api.answerChallenge(
-        question.format === "typed"
-          ? { cardId: question.cardId, format: question.format, typed: chosen }
-          : { cardId: question.cardId, format: question.format, chosenCardId: chosen },
-        key,
-      );
+      const result = await sendAnswer(question, chosen, key);
       setPendingKey(null);
       refreshIfRead(wordMemory);
       dailyChallenge.refresh();
@@ -156,6 +207,7 @@ export function ChallengeScreen({ word }: { readonly word: string | null }) {
             level: result.level,
             bonus: result.bonus,
             progress: result.progress,
+            free: question.counted === false,
           },
         ],
         step: { name: "answered", chosen, slip: result.slip },
@@ -173,7 +225,12 @@ export function ChallengeScreen({ word }: { readonly word: string | null }) {
 
   if (session !== null && catalog !== null) {
     return session.step.name === "recap" ? (
-      <ChallengeRecap catalog={catalog} answers={session.answers} onBack={quit} />
+      <ChallengeRecap
+        catalog={catalog}
+        answers={session.answers}
+        practice={session.practice}
+        onBack={quit}
+      />
     ) : (
       <QuestionView
         catalog={catalog}
@@ -204,6 +261,14 @@ export function ChallengeScreen({ word }: { readonly word: string | null }) {
       )}
       <MemoryPanel now={now} />
       {catalog !== null && <Escaping catalog={catalog} now={now} onReview={review} />}
+      {catalog !== null && (
+        <PracticeSection
+          catalog={catalog}
+          now={now}
+          busy={starting}
+          onPick={(scope) => void practise(scope)}
+        />
+      )}
     </ScrollView>
   );
 }

@@ -9,6 +9,15 @@ export interface ChangelogEntry {
 /** Newest first. An entry is added the day a change players can see goes live. */
 export const CHANGELOG: readonly ChangelogEntry[] = [
   {
+    date: "2026-10-30",
+    title: "Révise ce que tu veux",
+    items: [
+      "La page Défis a une nouvelle section, S'entraîner : lance une série de 10 questions sur une collection, tes mots ratés ou tes mots récents.",
+      "Dès le niveau 3, tu peux aussi réviser un thème, ou les mots d'un filtre de l'album avec le bouton Réviser ces mots.",
+      "Les mots à revoir passent en premier et comptent pour ta mémoire. Les autres servent à t'entraîner : 5 XP par bonne réponse, 100 XP par jour au plus.",
+    ],
+  },
+  {
     date: "2026-10-29",
     title: "Des défis plus vivants",
     items: [

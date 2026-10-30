@@ -1,5 +1,4 @@
-import type { ChallengeQuestion } from "@leximon/contract";
-import type { AnsweredQuestion } from "@leximon/view-model";
+import type { AnsweredQuestion, SessionQuestion } from "@leximon/view-model";
 
 /** `chosen`: the card picked, or the word typed. */
 export type Step =
@@ -9,14 +8,16 @@ export type Step =
   | { readonly name: "recap" };
 
 export interface Session {
-  readonly questions: readonly ChallengeQuestion[];
+  readonly questions: readonly SessionQuestion[];
   readonly answers: readonly AnsweredQuestion[];
   readonly index: number;
   readonly step: Step;
+  /** A series on a scope the player picked, not the daily challenge. */
+  readonly practice: boolean;
 }
 
-export function startSession(questions: readonly ChallengeQuestion[]): Session {
-  return { questions, answers: [], index: 0, step: { name: "asking" } };
+export function startSession(questions: readonly SessionQuestion[], practice = false): Session {
+  return { questions, answers: [], index: 0, step: { name: "asking" }, practice };
 }
 
 /** The next question, or the recap after the last one. */

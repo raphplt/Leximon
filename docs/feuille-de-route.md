@@ -32,6 +32,7 @@ Statuts : **Fait**, **En cours**, **À faire**, **À décider** (attend le propr
 | Compte invité, stock de sachets, tirage, garanties | Fait | D-006, D-016, D-017, P10 à P12. Une carte au plus une fois par sachet |
 | Collection du joueur | Fait | `GET /me/cards` |
 | Défis et niveaux de maîtrise | Fait | D-025, D-046 : FSRS (ts-fsrs) choisit quand un mot revient ; un niveau se gagne sur une rétention prouvée (bonne réponse 7 jours, puis 30 jours après la révision précédente), par le mot écrit de tête (P32, P33). Le reste du temps, QCM d'entretien. La définition cache la famille du mot à trouver, préfixes compris. Progression, sons et réactions sur le web et le mobile ([defis-progression-et-sensation.md](cahiers-des-charges/defis-progression-et-sensation.md), 2026-10-29) |
+| Révisions choisies | Fait, mobile à recetter | P81, [cahier](cahiers-des-charges/revisions-et-modes-de-jeu.md) : séries sur une collection, un thème, ses mots ratés ou récents, un filtre de l'album. Suite du cahier : énigme du jour, contre la montre, citation à trous, joutes |
 | Sachets bonus des défis | Fait | D-027, règles P23 et P29 : défi du jour et Dorure, réserve plafonnée à 10 |
 | Échanges carte contre carte | Fait | D-026 : offres directes par code joueur, doublons seulement, ouverts au niveau 5 sans condition d'ancienneté |
 | Inscription par code e-mail | En cours | D-030, P37, P54 : code à 6 chiffres, invité limité à 2 sachets avant de créer un compte, transfert de la partie invitée vers un nouveau compte, écran `/compte`. Codes plafonnés par adresse, refusés aux domaines morts et aux adresses que la bêta refuserait. `mail.leximon.fr` enregistré chez Cloudflare Email Service (D-034). Reste : vérifier l'envoi en production, la hausse du quota, puis Apple et Google |
@@ -104,7 +105,7 @@ Dans l'ordre où elles débloquent le plus :
 2. **Avatars gravés (P49) :** valider les seize gravures choisies et leurs noms.
 3. **Mécène (P73) :** l'exemplaire de la carte dénichée, non échangeable et sans XP, reste à confirmer.
 4. **Questions ouvertes** de [regles-du-jeu.md](regles-du-jeu.md#à-décider) : numéro de collection, sons de l'ouverture, notation phonétique.
-5. **Révisions choisies et nouveaux modes :** les quatre choix de [revisions-et-modes-de-jeu.md](cahiers-des-charges/revisions-et-modes-de-jeu.md#décisions-à-prendre) (ce que compte une révision choisie, son niveau d'ouverture, la carte de l'énigme du jour, l'ordre des chantiers).
+5. **Le social arrive trop tard :** retours du 2026-10-30, rejoindre un clan et se faire des amis viennent trop tard dans le jeu. Aujourd'hui, les amis sont ouverts au niveau 1 avec un compte inscrit mais rien ne les met en avant, le profil public s'ouvre au niveau 8, rejoindre un clan au niveau 10 et en créer un au niveau 15 (P59, P50). À revoir : baisser ces niveaux, ou faire découvrir les amis plus tôt.
 
 ## Prochaines étapes conseillées
 

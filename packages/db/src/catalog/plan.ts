@@ -1,7 +1,7 @@
 import type { Rarity } from "@leximon/core";
 import { inArray, sql } from "drizzle-orm";
 import type { Database } from "../client";
-import { cards, collections } from "../schema/index";
+import { cards, cardThemes, collections, themes } from "../schema/index";
 import type { Release } from "./release";
 
 export interface PublishedCard {
@@ -19,6 +19,9 @@ export interface CatalogPlan {
     readonly rarity: Rarity;
     readonly collectionId: string;
   }[];
+  /** The themes of the release's cards, which replace those the cards had. */
+  readonly themes: readonly string[];
+  readonly cardThemes: readonly { readonly cardId: string; readonly themeId: string }[];
   /** Published cards missing from the release: they leave the boosters, owned copies stay. */
   readonly retire: readonly string[];
   /** A published card's rarity never changes: any of these blocks the publication. */
@@ -42,6 +45,10 @@ export function planCatalog(release: Release, published: readonly PublishedCard[
       rarity: card.rarity,
       collectionId: card.collectionId,
     })),
+    themes: [...new Set(releaseCards.flatMap((card) => card.themes))],
+    cardThemes: releaseCards.flatMap((card) =>
+      card.themes.map((themeId) => ({ cardId: card.id, themeId })),
+    ),
     retire: published
       .filter((card) => card.retiredAt === null && !inRelease.has(card.id))
       .map((card) => card.id),
@@ -102,6 +109,24 @@ export async function applyCatalog(db: Database, plan: CatalogPlan, now: Date): 
             retiredAt: null,
           },
         });
+    }
+    if (plan.themes.length > 0) {
+      // Their names are shown from the view models: the table only holds their slugs.
+      await tx
+        .insert(themes)
+        .values(plan.themes.map((id) => ({ id, name: id })))
+        .onConflictDoNothing();
+    }
+    for (const batch of batches(plan.cards)) {
+      await tx.delete(cardThemes).where(
+        inArray(
+          cardThemes.cardId,
+          batch.map((card) => card.id),
+        ),
+      );
+    }
+    for (const batch of batches(plan.cardThemes)) {
+      await tx.insert(cardThemes).values(batch);
     }
     for (const batch of batches(plan.retire)) {
       await tx.update(cards).set({ retiredAt: now }).where(inArray(cards.id, batch));

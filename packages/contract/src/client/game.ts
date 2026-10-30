@@ -37,11 +37,19 @@ import {
   type OwnedCardsResponse,
   openBoosterResponseSchema,
   ownedCardsResponseSchema,
+  type PracticeAnswerRequest,
+  type PracticeAnswerResponse,
+  type PracticeQuestion,
+  type PracticeScope,
+  type PracticeSummaryResponse,
   type Preferences,
   type ProfileRefusal,
   type ProfileResponse,
   type ProgressResponse,
   type PublicProfile,
+  practiceAnswerResponseSchema,
+  practiceResponseSchema,
+  practiceSummaryResponseSchema,
   preferencesSchema,
   profileRefusalSchema,
   profileResponseSchema,
@@ -77,6 +85,16 @@ export type AnswerResult =
   | ({ readonly kind: "answered" } & ChallengeAnswerResponse)
   /** Already answered elsewhere (another tab, another device): the question is simply skipped. */
   | { readonly kind: "not_due" };
+
+export type PracticeStart =
+  | { readonly kind: "ready"; readonly questions: readonly PracticeQuestion[] }
+  /** The scope shrank or stays closed: its list is out of date. */
+  | { readonly kind: "refused" };
+
+export type PracticeAnswerResult =
+  | ({ readonly kind: "answered" } & PracticeAnswerResponse)
+  /** The card left in a trade since the question was served: the question is simply skipped. */
+  | { readonly kind: "not_owned" };
 
 export type ProfileResult =
   | { readonly kind: "ok"; readonly profile: ProfileResponse }
@@ -221,6 +239,31 @@ export function gameRoutes(http: Http) {
       if (response.status === 409 || response.status === 404) return { kind: "not_due" };
       if (!response.ok) throw new ApiError("answer_failed", response.status);
       return { kind: "answered", ...(await parse(response, challengeAnswerResponseSchema)) };
+    },
+
+    fetchPracticeSummary: (): Promise<PracticeSummaryResponse> =>
+      getJson("/challenges/practice", practiceSummaryResponseSchema, "practice_unavailable"),
+
+    async startPractice(scope: PracticeScope): Promise<PracticeStart> {
+      const response = await sendAsPlayer("/challenges/practice", json("POST", { scope }));
+      if (response.status === 403 || response.status === 422) return { kind: "refused" };
+      if (!response.ok) throw new ApiError("practice_failed", response.status);
+      const { questions } = await parse(response, practiceResponseSchema);
+      return { kind: "ready", questions };
+    },
+
+    /** Sends a free practice answer; the caller keeps `idempotencyKey` until it gets a result. */
+    async answerPractice(
+      answer: PracticeAnswerRequest,
+      idempotencyKey: string,
+    ): Promise<PracticeAnswerResult> {
+      const response = await sendAsPlayer(
+        "/challenges/practice/answer",
+        json("POST", answer, { [IDEMPOTENCY_KEY_HEADER]: idempotencyKey }),
+      );
+      if (response.status === 404) return { kind: "not_owned" };
+      if (!response.ok) throw new ApiError("answer_failed", response.status);
+      return { kind: "answered", ...(await parse(response, practiceAnswerResponseSchema)) };
     },
 
     /** Today's answers towards the daily goal. */

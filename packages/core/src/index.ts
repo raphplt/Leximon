@@ -12,6 +12,7 @@ export * from "./clan/mentions";
 export * from "./friend/friend";
 export * from "./mastery/challenge";
 export * from "./mastery/mastery";
+export * from "./mastery/practice";
 export * from "./moderation/sanction";
 export * from "./moderation/text-filter";
 export * from "./notify/notify";

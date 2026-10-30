@@ -1,6 +1,6 @@
 "use client";
 
-import type { ChallengeQuestion, MasteryLevelCode } from "@leximon/contract";
+import type { MasteryLevelCode, PracticeScope } from "@leximon/contract";
 import { type Catalog, cardOrPlaceholder, collectionName } from "@leximon/contract/client";
 import { createSeededRandom, TYPED_ANSWER_MAX_LENGTH } from "@leximon/core";
 import {
@@ -10,9 +10,11 @@ import {
   answerTitle,
   bonusLines,
   challengeOutlook,
+  clanAnswers,
   clanShareLine,
   dailyView,
   escapingWords,
+  freeAnswerOutcome,
   frequencyLine,
   hideWordIn,
   levelShares,
@@ -23,9 +25,12 @@ import {
   NOT_THIS_TIME,
   noChallengeNotice,
   outlookLine,
+  PRACTICE_FREE_HINT,
+  PRACTICE_REFUSED,
   questionKicker,
   RECAP_BONUS_MS,
   reviewQuestion,
+  type SessionQuestion,
   sessionBonusLine,
   sessionScore,
   sessionXpLine,
@@ -50,6 +55,8 @@ import { Icon, type IconName } from "@/ui/icon";
 import { Bone } from "@/ui/skeleton";
 import ui from "@/ui/ui.module.css";
 import styles from "./challenge-screen.module.css";
+import { takeAlbumPractice } from "./pending-practice";
+import { PracticeSection } from "./practice-section";
 
 /** `chosen`: the card picked, or the word typed. */
 type Step =
@@ -59,10 +66,12 @@ type Step =
   | { readonly name: "recap" };
 
 interface Session {
-  readonly questions: readonly ChallengeQuestion[];
+  readonly questions: readonly SessionQuestion[];
   readonly answers: readonly AnsweredQuestion[];
   readonly index: number;
   readonly step: Step;
+  /** A series on a scope the player picked, not the daily challenge. */
+  readonly practice?: boolean;
 }
 
 /**
@@ -79,7 +88,9 @@ export function ChallengeScreen() {
   const [pendingKey, setPendingKey] = useState<string | null>(null);
   const { noun } = usePackShape();
   const now = useNow(60_000);
-  const word = useSearchParams().get("mot");
+  const params = useSearchParams();
+  const word = params.get("mot");
+  const fromAlbum = params.has("revision");
   const memory = useShared(wordMemory);
   const router = useRouter();
   const pathname = usePathname();
@@ -112,6 +123,38 @@ export function ChallengeScreen() {
     }
   }, [word, catalog, memory, router, pathname]);
 
+  const practise = useCallback(async (scope: PracticeScope) => {
+    setStarting(true);
+    setNotice(null);
+    setError(null);
+    try {
+      const series = await api.startPractice(scope);
+      if (series.kind === "refused" || series.questions.length === 0) {
+        setNotice(PRACTICE_REFUSED);
+      } else {
+        setSession({
+          questions: series.questions,
+          answers: [],
+          index: 0,
+          step: { name: "asking" },
+          practice: true,
+        });
+      }
+    } catch {
+      setError("Le serveur ne répond pas. Réessaie.");
+    } finally {
+      setStarting(false);
+    }
+  }, []);
+
+  // A filter of the album, reviewed from there.
+  useEffect(() => {
+    if (!fromAlbum || catalog === null) return;
+    router.replace(pathname, { scroll: false });
+    const cardIds = takeAlbumPractice();
+    if (cardIds !== null) void practise({ kind: "cards", cardIds: [...cardIds] });
+  }, [fromAlbum, catalog, router, pathname, practise]);
+
   const start = async () => {
     setStarting(true);
     setNotice(null);
@@ -130,6 +173,28 @@ export function ChallengeScreen() {
     }
   };
 
+  /** A word that counts goes through the review; free practice only earns its XP. */
+  const sendAnswer = async (question: SessionQuestion, chosen: string, key: string) => {
+    if (question.format === "typed") {
+      return api.answerChallenge(
+        { cardId: question.cardId, format: question.format, typed: chosen },
+        key,
+      );
+    }
+    if (question.counted !== false) {
+      return api.answerChallenge(
+        { cardId: question.cardId, format: question.format, chosenCardId: chosen },
+        key,
+      );
+    }
+    const free = await api.answerPractice({ cardId: question.cardId, chosenCardId: chosen }, key);
+    if (free.kind === "not_owned") return { kind: "not_due" as const };
+    return {
+      ...free,
+      ...freeAnswerOutcome(memory?.get(question.cardId)?.level ?? "sketch"),
+    };
+  };
+
   const choose = async (chosen: string) => {
     if (session === null) return;
     const question = session.questions[session.index];
@@ -139,12 +204,7 @@ export function ChallengeScreen() {
     setError(null);
     setSession({ ...session, step: { name: "sending", chosen } });
     try {
-      const result = await api.answerChallenge(
-        question.format === "typed"
-          ? { cardId: question.cardId, format: question.format, typed: chosen }
-          : { cardId: question.cardId, format: question.format, chosenCardId: chosen },
-        key,
-      );
+      const result = await sendAnswer(question, chosen, key);
       setPendingKey(null);
       refreshIfRead(wordMemory);
       dailyChallenge.refresh();
@@ -169,6 +229,7 @@ export function ChallengeScreen() {
             level: result.level,
             bonus: result.bonus,
             progress: result.progress,
+            free: question.counted === false,
           },
         ],
         step: { name: "answered", chosen, slip: result.slip },
@@ -196,7 +257,12 @@ export function ChallengeScreen() {
     return (
       <main className={styles.page}>
         {session.step.name === "recap" ? (
-          <Recap catalog={catalog} answers={session.answers} onBack={quit} />
+          <Recap
+            catalog={catalog}
+            answers={session.answers}
+            practice={session.practice === true}
+            onBack={quit}
+          />
         ) : (
           <QuestionView
             catalog={catalog}
@@ -229,6 +295,14 @@ export function ChallengeScreen() {
         </p>
       )}
       {catalog !== null && <Escaping catalog={catalog} now={now} />}
+      {catalog !== null && (
+        <PracticeSection
+          catalog={catalog}
+          now={now}
+          busy={starting}
+          onPick={(scope) => void practise(scope)}
+        />
+      )}
     </main>
   );
 }
@@ -475,6 +549,9 @@ function QuestionView({
         {question.format === "typed" && result === null && (
           <p className={styles.promptHint}>{typedQuestionHint(level)}</p>
         )}
+        {question.counted === false && result === null && (
+          <p className={styles.promptHint}>{PRACTICE_FREE_HINT}</p>
+        )}
       </div>
 
       {question.format === "typed" ? (
@@ -616,18 +693,19 @@ function useCountUp(target: number, ms: number): number {
 function Recap({
   catalog,
   answers,
+  practice,
   onBack,
 }: {
   readonly catalog: Catalog;
   readonly answers: readonly AnsweredQuestion[];
+  readonly practice: boolean;
   readonly onBack: () => void;
 }) {
   const { noun } = usePackShape();
   const tally = useShared(dailyChallenge);
   const clan = useShared(myClan);
   const xp = sessionXpLine(answers);
-  const clanShare =
-    clan?.clanId == null ? null : clanShareLine(answers.filter((answer) => answer.correct).length);
+  const clanShare = clan?.clanId == null ? null : clanShareLine(clanAnswers(answers));
   // The Jouer screen's clan row counts these answers too.
   useEffect(() => refreshIfRead(myClan), []);
   const bonus = sessionBonusLine(answers, noun);
@@ -646,7 +724,7 @@ function Recap({
   return (
     <section className={`${ui.panel} ${styles.recap}`} aria-labelledby="recap-title">
       <p id="recap-title" className={ui.kicker}>
-        Défi terminé
+        {practice ? "Entraînement terminé" : "Défi terminé"}
       </p>
       {/* Screen readers get the final score, not the count on its way. */}
       <p className={`${ui.display} ${styles.score}`}>
@@ -668,6 +746,7 @@ function Recap({
           {bonus}
         </p>
       ) : (
+        !practice &&
         tally !== null &&
         !tally.awarded && (
           <p className={styles.lost}>

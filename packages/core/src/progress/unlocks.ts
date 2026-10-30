@@ -12,6 +12,7 @@ import { type TradeSchedule, tradeRulesAt } from "../trade/trade";
 
 export const FEATURES = [
   "choose_collection",
+  "practice_choice",
   "trade",
   "public_profile",
   "trade_three",

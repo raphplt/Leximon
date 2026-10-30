@@ -5,14 +5,15 @@ import { eq, lte } from "drizzle-orm";
 const CACHE_TTL_MS = 60_000;
 
 /**
- * Published cards grouped by collection, to pick the wrong choices of a question, and the words
- * of every published card, retired ones included, to grade a typed answer.
+ * Published cards grouped by collection, to pick the wrong choices of a question, the words of
+ * every published card, retired ones included, to grade a typed answer, and the themes of a card.
  */
 export interface CatalogIndex {
   readonly collectionOf: ReadonlyMap<string, string>;
   readonly byCollection: ReadonlyMap<string, readonly string[]>;
   readonly all: readonly string[];
   readonly wordOf: ReadonlyMap<string, string>;
+  readonly themesOf: ReadonlyMap<string, readonly string[]>;
   /** Every word, normalized: a typed slip that spells another card is no slip. */
   readonly words: ReadonlySet<string>;
 }
@@ -28,7 +29,7 @@ export function createCatalogIndexLoader(ttlMs = CACHE_TTL_MS) {
     if (cached !== null && cached.expiresAt > now) {
       return cached.index;
     }
-    const { cards, collections } = schema;
+    const { cardThemes, cards, collections } = schema;
     const rows = await db
       .select({
         id: cards.id,
@@ -41,6 +42,13 @@ export function createCatalogIndexLoader(ttlMs = CACHE_TTL_MS) {
       .where(lte(collections.publishedAt, new Date(now)))
       .orderBy(cards.id);
     const drawable = rows.filter((row) => row.retiredAt === null);
+    const themes = await db
+      .select({ cardId: cardThemes.cardId, themeId: cardThemes.themeId })
+      .from(cardThemes);
+    const themesOf = new Map<string, string[]>();
+    for (const { cardId, themeId } of themes) {
+      themesOf.set(cardId, [...(themesOf.get(cardId) ?? []), themeId]);
+    }
 
     const byCollection = new Map<string, string[]>();
     for (const row of drawable) {
@@ -53,6 +61,7 @@ export function createCatalogIndexLoader(ttlMs = CACHE_TTL_MS) {
       byCollection,
       all: drawable.map((row) => row.id),
       wordOf: new Map(rows.map((row) => [row.id, row.lemma])),
+      themesOf,
       words: new Set(rows.map((row) => normalizeWord(row.lemma))),
     };
     cached = { index, expiresAt: now + ttlMs };

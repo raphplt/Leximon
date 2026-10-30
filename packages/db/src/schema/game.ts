@@ -590,6 +590,29 @@ export const reviewLogs = pgTable(
 );
 
 /**
+ * Free practice answers: an answer sent twice is applied once, and the day's XP is their sum.
+ * Kept a few days only: they feed no memory, no statistic, and review_logs stays the journal of
+ * what the player really reviewed.
+ */
+export const practiceAnswers = pgTable(
+  "practice_answers",
+  {
+    userId: text()
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    idempotencyKey: uuid().notNull(),
+    correct: boolean().notNull(),
+    xp: smallint().notNull(),
+    answeredAt: timestamp({ withTimezone: true }).notNull(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.userId, table.idempotencyKey] }),
+    index("practice_answers_user_answered_idx").on(table.userId, table.answeredAt.desc()),
+    index("practice_answers_answered_idx").on(table.answeredAt),
+  ],
+);
+
+/**
  * Trade offers: a proposer gives some duplicates to a recipient for some of theirs.
  * Nothing is reserved while the offer waits; acceptance checks and moves everything at once.
  * A deleted account leaves its side `null`: the other player keeps their history. Its

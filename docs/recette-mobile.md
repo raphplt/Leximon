@@ -174,6 +174,11 @@ A sur le web sert de deuxième joueur : amis, échanges, clan, sanctions. `pnpm 
 
 ## 6. Défis (DEF-01 à DEF-08)
 
+### MDE-02 · Révisions choisies
+- **Faire :** suivre DEF-09 de [recette-web.md](recette-web.md) sur le téléphone, bouton de l'album compris.
+- **Attendu :** comme sur le web ; le bouton de l'album ouvre la série dans l'onglet Défis.
+- **Retour :**
+
 ### MDE-01 · Session
 - **Faire :** lancer une session, répondre juste et faux, taper un mot quand il le demande, arrêter en cours.
 - **Attendu :** comme sur le web, progression, sons, vibrations et réactions compris (DEF-07, DEF-08) ; le clavier ne cache ni la question ni le champ. Bilan et sachet bonus du jour.

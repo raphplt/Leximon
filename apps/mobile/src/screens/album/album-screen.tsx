@@ -1,15 +1,17 @@
 import type { Catalog } from "@leximon/contract/client";
-import type { Rarity } from "@leximon/core";
+import { PRACTICE_SCHEDULE, practiceRulesAt, type Rarity } from "@leximon/core";
 import { collectionTone, masteryColors, rarityStyles, solidColor } from "@leximon/tokens";
 import {
   ALL_COLLECTIONS,
   type AlbumFilter,
   type AlbumItem,
   type AlbumState,
+  albumPracticeCards,
   albumView,
   type CompareFilter,
   compareFilters,
   comparingTitle,
+  isFeatureOpen,
   type MissingItem,
   type OwnedItem,
   playerName,
@@ -33,6 +35,8 @@ import { Card } from "@/cards/card";
 import { catalogInHand, loadCatalog } from "@/cards/catalog";
 import { cardDates, ownedCards, wordMemory } from "@/player/collection";
 import { useNow, useShared, useSharedFailed } from "@/player/shared";
+import { progress } from "@/player/state";
+import { askAlbumPractice } from "@/screens/challenges/pending-practice";
 import { TAB_BAR_RISE } from "@/shell/tab-bar";
 import { colors, fonts } from "@/theme";
 import { Button } from "@/ui/button";
@@ -77,6 +81,7 @@ export function AlbumScreen({ friendCode }: { readonly friendCode: string | null
   const memory = useShared(wordMemory);
   const dates = useShared(cardDates);
   const now = useNow(60_000);
+  const player = useShared(progress);
   const [state, setState] = useState<AlbumState>(() => ({
     collectionId: catalog === null ? "" : rememberedCollection(catalog),
     rarity: null,
@@ -143,6 +148,10 @@ export function AlbumScreen({ friendCode }: { readonly friendCode: string | null
   );
 
   const cardWidth = Math.floor((window.width - GUTTER * 2 - GAP * (COLUMNS - 1)) / COLUMNS);
+  const practiceCards =
+    view !== null && player !== null && isFeatureOpen("practice_choice", player.level, now)
+      ? albumPracticeCards(view, state, practiceRulesAt(PRACTICE_SCHEDULE, now).minWords)
+      : null;
 
   if (failed) {
     return (
@@ -332,6 +341,18 @@ export function AlbumScreen({ friendCode }: { readonly friendCode: string | null
             </ScrollView>
           )}
         </>
+      )}
+      {practiceCards !== null && (
+        <View style={styles.revise}>
+          <Button
+            label="Réviser ces mots"
+            secondary
+            onPress={() => {
+              askAlbumPractice(practiceCards);
+              router.navigate({ pathname: "/defis", params: { revision: "album" } });
+            }}
+          />
+        </View>
       )}
       {view.empty !== null && <Text style={styles.emptyLine}>{view.empty}</Text>}
     </View>
@@ -565,6 +586,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   divider: { width: 1, height: 22, marginHorizontal: 4, backgroundColor: colors.outline },
+  revise: { marginTop: 12 },
   emptyLine: {
     fontFamily: fonts.text.italic,
     fontSize: 17,

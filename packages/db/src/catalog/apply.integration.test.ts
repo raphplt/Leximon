@@ -1,7 +1,7 @@
 import { eq, inArray } from "drizzle-orm";
 import { afterAll, describe, expect, it } from "vitest";
 import { createDb } from "../client";
-import { cards, collections } from "../schema/index";
+import { cards, cardThemes, collections } from "../schema/index";
 import { testDatabaseUrl } from "../testing";
 import { applyCatalog, loadPublishedCards, planCatalog } from "./plan";
 import type { Release } from "./release";
@@ -9,7 +9,10 @@ import type { Release } from "./release";
 const { db, close } = createDb(testDatabaseUrl(), { maxConnections: 1 });
 afterAll(close);
 
-function release(ids: readonly [string, "common" | "rare"][]): Release {
+function release(
+  ids: readonly [string, "common" | "rare"][],
+  cardTheme: string | null = null,
+): Release {
   return {
     manifest: {
       schemaVersion: 1,
@@ -31,7 +34,7 @@ function release(ids: readonly [string, "common" | "rare"][]): Release {
           quote: null,
           rarity,
           collectionId: "publish-tests",
-          themes: [],
+          themes: cardTheme === null ? [] : [cardTheme],
           perBillion: null,
         })),
       },
@@ -39,8 +42,12 @@ function release(ids: readonly [string, "common" | "rare"][]): Release {
   };
 }
 
-async function publish(ids: readonly [string, "common" | "rare"][], now: Date) {
-  const plan = planCatalog(release(ids), await loadPublishedCards(db));
+async function publish(
+  ids: readonly [string, "common" | "rare"][],
+  now: Date,
+  cardTheme: string | null = null,
+) {
+  const plan = planCatalog(release(ids, cardTheme), await loadPublishedCards(db));
   await applyCatalog(db, plan, now);
   return plan;
 }
@@ -92,6 +99,18 @@ describe("catalog publication", () => {
       second,
     );
     expect(await rows(["pub-raclure"])).toEqual([{ id: "pub-raclure", retiredAt: null }]);
+  });
+
+  it("gives the cards the themes of the release, and replaces their old ones", async () => {
+    const themesOf = () =>
+      db
+        .select({ themeId: cardThemes.themeId })
+        .from(cardThemes)
+        .where(eq(cardThemes.cardId, "pub-poue"));
+    await publish([["pub-poue", "common"]], second, "publish-theme-a");
+    expect(await themesOf()).toEqual([{ themeId: "publish-theme-a" }]);
+    await publish([["pub-poue", "common"]], second, "publish-theme-b");
+    expect(await themesOf()).toEqual([{ themeId: "publish-theme-b" }]);
   });
 
   it("refuses to change a published rarity", async () => {

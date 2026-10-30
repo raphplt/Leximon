@@ -19,6 +19,7 @@ export * from "./mail";
 export * from "./pack";
 export * from "./pins";
 export * from "./play";
+export * from "./practice";
 export * from "./profile";
 export * from "./resource";
 export * from "./reveal";

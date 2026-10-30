@@ -3,6 +3,7 @@ import {
   CHOICE_FORMATS,
   CHOICES_PER_QUESTION,
   MASTERY_LEVELS,
+  PRACTICE_MAX_CARDS,
   TYPED_ANSWER_MAX_LENGTH,
 } from "@leximon/core";
 import { z } from "zod";
@@ -64,6 +65,67 @@ export const challengeAnswerRequestSchema = z.discriminatedUnion("format", [
   }),
 ]);
 export type ChallengeAnswerRequest = z.infer<typeof challengeAnswerRequestSchema>;
+
+/** What a practice series draws from. `cards` comes from a filter of the album. */
+export const practiceScopeSchema = z.discriminatedUnion("kind", [
+  z.object({ kind: z.literal("collection"), id: slugSchema }),
+  z.object({ kind: z.literal("theme"), id: slugSchema }),
+  z.object({ kind: z.literal("missed") }),
+  z.object({ kind: z.literal("recent") }),
+  z.object({
+    kind: z.literal("cards"),
+    cardIds: z.array(slugSchema).min(1).max(PRACTICE_MAX_CARDS),
+  }),
+]);
+export type PracticeScope = z.infer<typeof practiceScopeSchema>;
+
+/** `GET /challenges/practice`, 200: the scopes large enough to practise, and today's XP. */
+export const practiceSummaryResponseSchema = z.object({
+  scopes: z.array(
+    z.object({
+      scope: practiceScopeSchema,
+      words: z.int().nonnegative(),
+      /** Words of the scope that count as a review: due, or never reviewed. */
+      due: z.int().nonnegative(),
+    }),
+  ),
+  xp: z.object({ today: z.int().nonnegative(), cap: z.int().positive() }),
+});
+export type PracticeSummaryResponse = z.infer<typeof practiceSummaryResponseSchema>;
+
+/** `POST /challenges/practice` body. */
+export const practiceRequestSchema = z.object({ scope: practiceScopeSchema });
+export type PracticeRequest = z.infer<typeof practiceRequestSchema>;
+
+/**
+ * One question of a series. `counted`: a word due or never reviewed, answered through
+ * `POST /challenges/answer` like any review. Otherwise free practice, answered through
+ * `POST /challenges/practice/answer`, always a multiple choice.
+ */
+export const practiceQuestionSchema = challengeQuestionSchema.and(
+  z.object({ counted: z.boolean() }),
+);
+export type PracticeQuestion = z.infer<typeof practiceQuestionSchema>;
+
+/** `POST /challenges/practice`, 200. Errors: 403 `level_required`, 422 `scope_too_small`. */
+export const practiceResponseSchema = z.object({ questions: z.array(practiceQuestionSchema) });
+export type PracticeResponse = z.infer<typeof practiceResponseSchema>;
+
+/** `POST /challenges/practice/answer` body, with an `Idempotency-Key` header. */
+export const practiceAnswerRequestSchema = z.object({
+  cardId: slugSchema,
+  chosenCardId: slugSchema,
+});
+export type PracticeAnswerRequest = z.infer<typeof practiceAnswerRequestSchema>;
+
+/** `POST /challenges/practice/answer`, 200. Error: 404 `card_not_owned`. */
+export const practiceAnswerResponseSchema = z.object({
+  correct: z.boolean(),
+  /** Free practice XP earned today, this answer included. */
+  xpToday: z.int().nonnegative(),
+  progress: progressGainSchema,
+});
+export type PracticeAnswerResponse = z.infer<typeof practiceAnswerResponseSchema>;
 
 /** Bonus boosters earned by one answer. */
 export const answerBonusSchema = z.object({

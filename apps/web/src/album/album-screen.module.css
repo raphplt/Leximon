@@ -437,6 +437,10 @@
 
 /* --- Empty --- */
 
+.revise {
+  margin: 12px 0 0;
+}
+
 .empty {
   margin: 40px 0;
   font-family: var(--font-text), Georgia, serif;

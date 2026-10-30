@@ -39,6 +39,7 @@ export interface MaintenanceReport {
   readonly erasedReports: number;
   readonly erasedFriendRequests: number;
   readonly erasedFeedEvents: number;
+  readonly erasedPracticeAnswers: number;
   readonly recountedClans: number;
 }
 
@@ -54,6 +55,7 @@ export interface MaintenanceReport {
  * - erases expired sessions (with their address and browser) and expired sign-in codes;
  * - erases guests no session can reach any more, 180 days after they came;
  * - erases reports handled more than a year ago;
+ * - erases free practice answers past the day they count for;
  * - recounts the clans of this week and the last, in case an event was lost.
  */
 export async function runMaintenance(db: Database, now: number): Promise<MaintenanceReport> {
@@ -104,6 +106,11 @@ export async function runMaintenance(db: Database, now: number): Promise<Mainten
     ),
     erasedFriendRequests: await purgeFriendRequests(db, now),
     erasedFeedEvents: await purgeFeed(db, now),
+    erasedPracticeAnswers: await purgeRows(
+      db,
+      schema.practiceAnswers,
+      lt(schema.practiceAnswers.answeredAt, new Date(now - IDEMPOTENCY_RETENTION_MS)),
+    ),
     recountedClans: await recountActiveClans(db, now),
   };
 }

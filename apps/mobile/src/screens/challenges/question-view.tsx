@@ -8,6 +8,7 @@ import {
   levelUpLabel,
   levelUpLine,
   PACK_NOUNS,
+  PRACTICE_FREE_HINT,
   questionKicker,
   spellingLine,
   typedQuestionHint,
@@ -141,6 +142,9 @@ export function QuestionView({
           )}
           {question.format === "typed" && result === null && (
             <Text style={styles.hint}>{typedQuestionHint(level)}</Text>
+          )}
+          {question.counted === false && result === null && (
+            <Text style={styles.hint}>{PRACTICE_FREE_HINT}</Text>
           )}
         </Panel>
 

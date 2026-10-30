@@ -1,17 +1,19 @@
 "use client";
 
 import type { Catalog } from "@leximon/contract/client";
-import type { Rarity } from "@leximon/core";
+import { PRACTICE_SCHEDULE, practiceRulesAt, type Rarity } from "@leximon/core";
 import { collectionTone, cssFill, rarityStyles } from "@leximon/tokens";
 import {
   ALL_COLLECTIONS,
   type AlbumFilter,
   type AlbumItem,
   type AlbumState,
+  albumPracticeCards,
   albumView,
   type CompareFilter,
   compareFilters,
   comparingTitle,
+  isFeatureOpen,
   type MissingItem,
   type OwnedItem,
   playerName,
@@ -22,6 +24,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { type CSSProperties, useEffect, useMemo, useState } from "react";
 import { packOf } from "@/booster/pack-looks";
 import { loadCatalog } from "@/cards/catalog";
+import { askAlbumPractice } from "@/challenges/pending-practice";
 import { Card } from "@/components/card";
 import { CollectionSeal } from "@/components/collection-seal";
 import { RarityIcon, RarityName } from "@/components/rarity-icon";
@@ -31,6 +34,7 @@ import { useNarrow } from "@/lib/use-narrow";
 import { useNow } from "@/lib/use-now";
 import { cardDates, ownedCards, wordMemory } from "@/player/collection";
 import { useShared, useSharedFailed } from "@/player/resource";
+import { useProgress } from "@/progress/use-progress";
 import { useShell } from "@/shell/shell-context";
 import { Button } from "@/ui/button";
 import { Icon } from "@/ui/icon";
@@ -71,6 +75,7 @@ export function AlbumScreen() {
   const now = useNow(60_000);
   const narrow = useNarrow();
   const { openCard } = useShell();
+  const progress = useProgress();
   const [state, setState] = useState<AlbumState>({
     collectionId: "",
     rarity: null,
@@ -163,6 +168,11 @@ export function AlbumScreen() {
   }
 
   if (view === null) return <AlbumWaiting cardWidth={cardWidth} />;
+
+  const practiceCards =
+    progress !== null && isFeatureOpen("practice_choice", progress.level, now)
+      ? albumPracticeCards(view, state, practiceRulesAt(PRACTICE_SCHEDULE, now).minWords)
+      : null;
 
   const pickCollection = (id: string) => {
     writeCollection(id);
@@ -292,6 +302,21 @@ export function AlbumScreen() {
             ))}
           </div>
         </>
+      )}
+
+      {practiceCards !== null && (
+        <div className={styles.revise}>
+          <Button
+            variant="secondary"
+            small
+            onClick={() => {
+              askAlbumPractice(practiceCards);
+              router.push("/defis?revision=album");
+            }}
+          >
+            Réviser ces mots
+          </Button>
+        </div>
       )}
 
       {view.empty !== null ? (

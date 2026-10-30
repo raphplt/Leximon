@@ -8,6 +8,7 @@ describe("featureLevels", () => {
   it("opens each feature at the level of the rules", () => {
     expect(featureLevels(UNLOCK_SCHEDULE, TRADE_SCHEDULE, NOW)).toEqual({
       choose_collection: 3,
+      practice_choice: 3,
       trade: 5,
       public_profile: 8,
       trade_three: 10,

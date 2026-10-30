@@ -294,6 +294,11 @@ docker compose exec postgres psql -U leximon -d leximon -c "update user_mastery 
 - **Attendu :** sous les barres du défi du jour, « N mots à revoir, dont 1 peut monter de palier. N nouveaux mots attendent leur première question. » (accords justes à 1). Sous les paliers, une barre partagée Esquisse, Encre, Dorure en proportion des mots possédés. Dans « Mots à réviser », le mot qui peut monter vient en tête avec « Peut passer à l'Encre ».
 - **Retour :**
 
+### DEF-09 · Révisions choisies
+- **Faire :** avec au moins 4 mots, ouvrir Défis, section « S'entraîner », et lancer une série sur une collection. Recommencer jusqu'à n'avoir que des mots déjà revus dans cette collection. Sous le niveau 3, regarder la ligne sur les thèmes ; au niveau 3 ou plus, lancer un thème, puis dans l'album poser un filtre et cliquer sur « Réviser ces mots ».
+- **Attendu :** chaque portée dit son nombre de mots et combien sont à revoir ; une portée de moins de 4 mots n'apparaît pas. Une série compte 10 questions au plus, les mots à revoir d'abord, puis une phrase sous la question annonce les mots d'entraînement (« Ce mot n'est pas à revoir »). Un mot d'entraînement rapporte 5 XP, ne change ni son palier, ni sa date de retour, ni le défi du jour, ni l'objectif du clan. Le bilan dit « Entraînement terminé ». La ligne d'XP de la section suit la journée, et à 100 XP par jour une bonne réponse d'entraînement ne rapporte plus rien. Sans filtre, l'album ne propose pas le bouton.
+- **Retour :**
+
 ### DEF-08 · Sons et réactions
 - **Faire :** son et vibration activés (sur un téléphone Android pour la vibration), une session avec une bonne réponse, une fausse, un mot écrit qui monte (DEF-06), jusqu'au sachet du défi du jour. Puis la même chose avec « réduire les animations » du système.
 - **Attendu :** bonne réponse : deux notes claires, le choix se gonfle un instant, « +15 XP » monte au-dessus du compteur et s'efface. Fausse : un son sourd et bref, pas de buzzer, le choix tremble une fois. Mot qui monte : le carillon des Rares juste après, la ligne « … passe à l'Encre ! » avec un reflet doré. Bilan : l'accord de fin, le score compte jusqu'à sa valeur, le sachet gagné arrive en dernier avec son carillon. Avec moins d'animations : les sons restent, rien ne bouge. Son coupé dans les réglages : rien ne sonne.

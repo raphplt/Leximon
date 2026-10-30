@@ -26,6 +26,8 @@ export interface AnsweredQuestion {
   readonly bonus: AnswerBonus;
   /** XP the answer earned. */
   readonly progress: ProgressGain;
+  /** Free practice: it counts for neither the word's memory nor the clan. */
+  readonly free?: boolean;
 }
 
 const HOUR = 3_600_000;

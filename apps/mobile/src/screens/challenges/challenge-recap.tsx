@@ -1,6 +1,7 @@
 import { type Catalog, cardOrPlaceholder } from "@leximon/contract/client";
 import {
   type AnsweredQuestion,
+  clanAnswers,
   clanShareLine,
   levelUpLine,
   NOT_THIS_TIME,
@@ -52,17 +53,18 @@ function useCountUp(target: number, ms: number): number {
 export function ChallengeRecap({
   catalog,
   answers,
+  practice,
   onBack,
 }: {
   readonly catalog: Catalog;
   readonly answers: readonly AnsweredQuestion[];
+  readonly practice: boolean;
   readonly onBack: () => void;
 }) {
   const tally = useShared(dailyChallenge);
   const clan = useShared(myClan);
   const xp = sessionXpLine(answers);
-  const clanShare =
-    clan?.clanId == null ? null : clanShareLine(answers.filter((answer) => answer.correct).length);
+  const clanShare = clan?.clanId == null ? null : clanShareLine(clanAnswers(answers));
   // The clan's goal counts these answers too.
   useEffect(() => refreshIfRead(myClan), []);
   const bonus = sessionBonusLine(answers, NOUN);
@@ -81,7 +83,7 @@ export function ChallengeRecap({
   return (
     <ScrollView contentContainerStyle={styles.page}>
       <Panel style={styles.recap}>
-        <Text style={styles.kicker}>DÉFI TERMINÉ</Text>
+        <Text style={styles.kicker}>{practice ? "ENTRAÎNEMENT TERMINÉ" : "DÉFI TERMINÉ"}</Text>
         <Text style={styles.score} accessibilityLabel={sessionScore(answers)}>
           {right}/{answers.length}
         </Text>
@@ -101,7 +103,9 @@ export function ChallengeRecap({
             <Text style={[styles.lineText, styles.won]}>{bonus}</Text>
           </Animated.View>
         ) : (
-          tally !== null && !tally.awarded && <Text style={styles.lost}>{NOT_THIS_TIME}</Text>
+          !practice &&
+          tally !== null &&
+          !tally.awarded && <Text style={styles.lost}>{NOT_THIS_TIME}</Text>
         )}
         {ups.map((line) => (
           <Text key={line} style={styles.up}>

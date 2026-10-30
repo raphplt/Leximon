@@ -15,6 +15,7 @@ import type { ClanGoalSchedule } from "./clan/goal";
 import type { ClanLevelRules } from "./clan/level";
 import type { FriendSchedule } from "./friend/friend";
 import type { MasterySchedule } from "./mastery/mastery";
+import type { PracticeSchedule } from "./mastery/practice";
 import type { NotifySchedule } from "./notify/notify";
 import type { XpSchedule } from "./progress/progress";
 import type { LevelRewardSchedule } from "./progress/rewards";
@@ -31,6 +32,8 @@ const PROVEN_RECALL_DECIDED = Date.UTC(2026, 9, 22, 22);
 const FRIENDS_DECIDED = Date.UTC(2026, 9, 23, 22);
 /** Midnight in Paris on 2026-10-26, when the owner decided e-mail notifications. */
 const NOTIFY_DECIDED = Date.UTC(2026, 9, 25, 23);
+/** Midnight in Paris on 2026-10-30, when the owner decided practice series. */
+const PRACTICE_DECIDED = Date.UTC(2026, 9, 29, 23);
 
 export const REFILL_SCHEDULE: RefillSchedule = [
   { startsAt: SINCE_LAUNCH, capacity: 6, intervalMs: 30 * MINUTE },
@@ -295,6 +298,7 @@ export const UNLOCK_SCHEDULE: UnlockSchedule = [
     startsAt: LEVELS_DECIDED,
     levels: {
       choose_collection: 3,
+      practice_choice: 3,
       public_profile: 8,
       join_clan: 10,
       create_clan: 15,
@@ -302,6 +306,19 @@ export const UNLOCK_SCHEDULE: UnlockSchedule = [
     },
     // A stable slug of the catalog.
     starterCollection: "fondateurs",
+  },
+];
+
+// Practice series: a scope the player picks, free practice for the words not due.
+export const PRACTICE_SCHEDULE: PracticeSchedule = [
+  {
+    startsAt: PRACTICE_DECIDED,
+    seriesSize: 10,
+    minWords: 4,
+    missedWindowMs: 30 * 24 * 60 * MINUTE,
+    recentWords: 30,
+    xpPerAnswer: 5,
+    dailyXpCap: 100,
   },
 ];
 
