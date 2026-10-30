@@ -6,7 +6,7 @@
  *
  * The database comes from `LOAD_DATABASE_URL`, else from `~/.config/leximon/neon-load-url` (the
  * Neon branch), never from .env. The production API and the production database
- * (`~/.config/leximon/neon-url`) are refused. The output file holds session cookies of test
+ * (`~/.config/leximon/home-db-url`, `neon-url`) are refused. The output file holds session cookies of test
  * accounts: keep it out of git.
  */
 
@@ -54,9 +54,10 @@ const databaseUrl = process.env["LOAD_DATABASE_URL"] || (await savedUrl("neon-lo
 if (!databaseUrl) {
   throw new Error("Neither LOAD_DATABASE_URL nor ~/.config/leximon/neon-load-url is set.");
 }
-const productionUrl = await savedUrl("neon-url");
-if (productionUrl && new URL(productionUrl).hostname === new URL(databaseUrl).hostname) {
-  throw new Error("LOAD_DATABASE_URL is the production database: refused.");
+for (const productionUrl of [await savedUrl("home-db-url"), await savedUrl("neon-url")]) {
+  if (productionUrl && new URL(productionUrl).host === new URL(databaseUrl).host) {
+    throw new Error("LOAD_DATABASE_URL is the production database: refused.");
+  }
 }
 
 interface Player {

@@ -5,15 +5,15 @@
   "compatibility_date": "2026-10-01",
   "compatibility_flags": ["nodejs_compat"],
   "observability": { "enabled": true },
-  // Runs the Worker next to the database (Neon, Frankfurt) rather than close to the player: an
-  // open makes several sequential database round trips. Smart placement never moved it, since it
-  // only picks locations that already get traffic, and players are in France.
-  "placement": { "region": "aws:eu-central-1" },
-  // Daily maintenance (partitions, purges) at 03:17 UTC. No trigger every minute: it would keep
-  // the database awake; the campaign pump runs through the campaign queue, only when needed.
+  // Runs the Worker next to the database, in Paris where the home server's tunnel lands: an open
+  // makes several sequential database round trips.
+  "placement": { "region": "aws:eu-west-3" },
+  // Daily maintenance (partitions, purges) at 03:17 UTC. The campaign pump runs through the
+  // campaign queue, only when needed. The watchdog checks the database and its backups every five
+  // minutes: on a database that sleeps when idle, like Neon, it would burn the compute quota.
   // Evening reminders at 18:00 in Paris: 17:00 UTC in winter, 16:00 in summer. Each run checks the
   // hour in Paris first and the wrong one stops before touching the database.
-  "triggers": { "crons": ["17 3 * * *", "0 16 * * *", "0 17 * * *"] },
+  "triggers": { "crons": ["17 3 * * *", "0 16 * * *", "0 17 * * *", "*/5 * * * *"] },
   "vars": {
     "APP_ENV": "development",
     "BETTER_AUTH_URL": "http://localhost:8787",
@@ -248,9 +248,9 @@
       "hyperdrive": [
         {
           "binding": "HYPERDRIVE",
-          // leximon-db, created with --caching-disabled: a cached read could show a collection
-          // from before the pack just opened.
-          "id": "43b07b65f2ab4ed797bc424b4e32e632"
+          // leximon-db-nas, on the home server through Workers VPC, created with --caching-disabled:
+          // a cached read could show a collection from before the pack just opened.
+          "id": "217ed0d8d32b4184a7a3491884afe5db"
         }
       ]
     },
@@ -352,8 +352,8 @@
           "simple": { "limit": 30, "period": 60 }
         }
       ],
-      // Paris: the tunnel of the home database lands there.
-      "placement": { "region": "aws:eu-west-3" },
+      // Frankfurt: staging stays on Neon, so that a load test never touches the production server.
+      "placement": { "region": "aws:eu-central-1" },
       "kv_namespaces": [{ "binding": "WATCHDOG", "id": "2489775cf74c429a87fe03d407bc8d5e" }],
       "r2_buckets": [
         { "binding": "BACKUPS", "bucket_name": "leximon-backups", "jurisdiction": "eu" }
@@ -361,8 +361,8 @@
       "hyperdrive": [
         {
           "binding": "HYPERDRIVE",
-          // leximon-db-nas, on the home server through Workers VPC, created with --caching-disabled.
-          "id": "217ed0d8d32b4184a7a3491884afe5db"
+          // leximon-db-staging, on the Neon branch `charge`, created with --caching-disabled.
+          "id": "21dcf38e1f8142bf90e65d8ff1d2b9b9"
         }
       ]
     }

@@ -2,7 +2,7 @@
 
 Décision : D-047 (k6 par Docker, temps de réponse dans Workers Logs, staging sur une branche Neon). Budget : ouverture d'un sachet sous 150 ms au 95e centile.
 
-**Jamais de charge contre la production sans l'accord explicite du propriétaire.** `run.sh` et `load:players` refusent `api.leximon.fr` et la base de `~/.config/leximon/neon-url`.
+**Jamais de charge contre la production sans l'accord explicite du propriétaire.** `run.sh` et `load:players` refusent `api.leximon.fr` et les bases de `~/.config/leximon/home-db-url` et `neon-url`.
 
 ## Les scénarios
 

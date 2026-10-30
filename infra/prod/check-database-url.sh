@@ -11,6 +11,10 @@ fi
 
 # Host only: never print the password.
 host=$(printf '%s' "$DATABASE_URL" | sed -E 's#^[a-z]+://([^@/]*@)?([^:/?]+).*#\2#')
+# Port 54330 is the SSH tunnel to the home database, never the local one.
+case "$DATABASE_URL" in
+  *@127.0.0.1:54330/*) host="home server" ;;
+esac
 case "$host" in
   localhost | 127.0.0.1 | "[::1]" | "")
     echo "DATABASE_URL points at the local database ($host): refused for a production script." >&2

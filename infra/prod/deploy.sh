@@ -3,7 +3,7 @@
 # API, then web. Order matters: migrations are additive, so the running API keeps working while
 # they apply, and the web goes last so it never calls an API that does not exist yet.
 #
-# The Neon connection string comes from DATABASE_URL, or else from ~/.config/leximon/neon-url.
+# The connection string comes from DATABASE_URL, or else from ~/.config/leximon/home-db-url.
 set -eu
 
 cd "$(dirname "$0")/../.."
@@ -26,11 +26,21 @@ step "Vérifications"
 pnpm check
 
 if [ -z "${DATABASE_URL:-}" ]; then
-  url_file="$HOME/.config/leximon/neon-url"
+  url_file="$HOME/.config/leximon/home-db-url"
   [ -s "$url_file" ] || fail "Ni DATABASE_URL ni $url_file : la base de production est introuvable."
   DATABASE_URL=$(cat "$url_file")
 fi
 export DATABASE_URL
+
+# The home database has no public address: the scripts reach it through an SSH tunnel.
+case "$DATABASE_URL" in
+  *127.0.0.1:54330*)
+    ssh -o BatchMode=yes -o ExitOnForwardFailure=yes -N -L 54330:192.168.0.53:5432 pve &
+    tunnel=$!
+    trap 'kill "$tunnel" 2>/dev/null || true' EXIT
+    sleep 2
+    ;;
+esac
 
 step "Migrations"
 pnpm db:migrate:prod
