@@ -1,0 +1,10 @@
+[Unit]
+Description=Leximon database dump to R2
+After=postgresql.service network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=postgres
+EnvironmentFile=/etc/leximon/backup.env
+ExecStart=/usr/local/bin/leximon-backup

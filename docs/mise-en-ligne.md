@@ -320,6 +320,42 @@ Une sauvegarde ratée ne supprime aucune ancienne : la rotation ne passe qu'apr�
 2. Sur le NAS : `docker compose run --rm backup sh -c 'pg_restore --no-owner --no-privileges --exit-on-error -d "postgresql://…nouvelle chaîne…" /backups/leximon-AAAAMMJJ-HHMMSS.dump'`.
 3. Vérifier les données, puis faire pointer Hyperdrive dessus : `pnpm --filter @leximon/api exec wrangler hyperdrive update <id> --connection-string="…"`.
 
+## 15 bis. Base sur le serveur maison · en essai
+
+Neon gratuit devient trop juste pour une bêta ouverte, et le propriétaire ne veut pas payer tant que le jeu ne rapporte rien. Un essai est en cours pour héberger la base chez lui, jusqu'à ce que les mécènes couvrent une offre cloud. **La production reste sur Neon tant que le test de charge n'a pas conclu.**
+
+**En place depuis le 2026-10-30 :**
+
+- Conteneur Proxmox `leximon-db` (LXC 102, Debian 13, 2 cœurs, 1,5 Go), séparé de la VM `docker`, sur le SSD. Il démarre avec la machine.
+- Postgres 18.6, réglé par `infra/home-db/postgres.conf`. La base `leximon` contient une copie de la production du 2026-10-30 (restaurée en 1 seconde).
+- Tunnel Cloudflare `leximon-db` (service `cloudflared` du conteneur), et service Workers VPC `leximon-db`. Workers VPC est gratuit pendant sa bêta. Aucun port n'est ouvert et la base n'a aucun nom public.
+- Bucket R2 `leximon-backups`, en juridiction UE : `hourly/` gardé 3 jours, `daily/` gardé 30 jours.
+- Mot de passe de la base : `~/.config/leximon/nas-db-url` sur le PC du propriétaire.
+
+**Migrations :** elles passent par un tunnel SSH vers le conteneur, `ssh -N -L 54330:192.168.0.20:5432 pve`. L'adresse du conteneur vient du DHCP, à fixer avant la bascule.
+
+**Reste à faire avant de basculer :**
+
+1. Certificat Cloudflare Origin pour `db.leximon.fr`, créé dans le tableau de bord à partir de la clé du conteneur. Workers VPC vérifie le certificat de la base.
+2. Configuration Hyperdrive `leximon-db-nas`, sans cache.
+3. Clés R2 : `ssh -t pve pct exec 102 -- leximon-set-r2-keys`, puis `systemctl enable --now leximon-backup.timer` dans le conteneur.
+4. Test de charge à travers le tunnel, Worker de staging à Paris, à comparer avec `docs/rnd/charge.md`.
+5. Page de confidentialité : retirer Neon et décrire l'hébergement. Chiffrement du disque à prévoir.
+6. Bascule : API coupée le temps d'un `pg_dump` puis d'une restauration, Hyperdrive de production repointé, placement du Worker revu.
+
+**Si le serveur tombe :** restaurer le dernier fichier de R2 sur Neon, resté gratuit et en sommeil (voir « Restaurer pour de vrai »), puis repointer Hyperdrive. On perd au plus une heure de parties.
+
+**Matériel à acheter plus tard**, par ordre d'utilité, pour le HP ProDesk 600 G6 Microtower (4 emplacements de mémoire dont 1 occupé, 2 emplacements M.2 2280 de stockage dont 1 occupé d'après HP) :
+
+| Priorité | Matériel | Référence | Pourquoi |
+|---|---|---|---|
+| 1 | Barrette DDR4-3200 UDIMM 16 Go, non ECC | SK Hynix HMA82GU6DJR8N-XN (la même), ou Crucial CT16G4DFRA32A, ou Kingston KVR32N22D8/16 | Double canal, et de la marge pour la VM et le conteneur |
+| 2 | Second SSD NVMe M.2 2280, 500 Go | WD Red SN700 (WDS500G1R0C) | Miroir du SSD actuel, d'entrée de gamme : une panne de disque n'arrête plus le jeu |
+| 3 | Onduleur avec USB | Eaton Ellipse ECO 650 FR (EL650USBFR) ou APC BX950MI-FR | Arrêt propre de Postgres et de Proxmox lors d'une coupure |
+| 4 | Second disque 8 To | Seagate IronWolf ST8000VN004 (le même) | Miroir du pool `tank`, qui ne tient aujourd'hui que sur un disque |
+
+Le processeur plafonne la mémoire à 2 666 MT/s : inutile de payer plus que du DDR4-3200.
+
 ## 16. Revenir en arrière · agent
 
 Un déploiement raté :
