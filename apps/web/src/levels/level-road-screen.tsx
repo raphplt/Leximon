@@ -1,9 +1,8 @@
 "use client";
 
+import type { Progress } from "@leximon/contract";
 import {
   levelDetail,
-  type PlateauLayout,
-  plateauLayout,
   type Quarter,
   quarterAt,
   quarterNodes,
@@ -13,7 +12,7 @@ import {
   xpSources,
 } from "@leximon/view-model";
 import Link from "next/link";
-import { type CSSProperties, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { levelRewards } from "@/player/player";
 import { useSharedFailed } from "@/player/resource";
 import { retryProgress, useProgressFailed } from "@/progress/use-progress";
@@ -22,13 +21,12 @@ import { useShell } from "@/shell/shell-context";
 import { usePlayerView } from "@/shell/use-player-view";
 import { Button } from "@/ui/button";
 import { Icon } from "@/ui/icon";
-import { LevelMedal } from "@/ui/level-bits";
+import { LevelMedal, XpBar } from "@/ui/level-bits";
 import { LoadFailed } from "@/ui/load-failed";
 import ui from "@/ui/ui.module.css";
 import styles from "./level-road.module.css";
-import { PlateauDecor, TileBlock } from "./plateau-art";
 
-/** Quarters the player may look at beyond their own. */
+/** Chapters the player may look at beyond their own. */
 const QUARTERS_AHEAD = 2;
 
 /** A level asked for in the address (`#niveau-12`, from the next rewards of Jouer). */
@@ -37,7 +35,7 @@ function levelFromHash(): number | null {
   return match?.[1] === undefined ? null : Number(match[1]);
 }
 
-/** The level road, ten levels at a time: tiles climbing a plateau, the fog ahead. */
+/** The levels, ten at a time: a page of contents, each line a level and what it gives. */
 export function LevelRoadScreen() {
   const view = usePlayerView();
   const { openCoffret } = useShell();
@@ -71,7 +69,7 @@ export function LevelRoadScreen() {
     return (
       <main className={styles.page}>
         <Header subtitle={null} />
-        <div className={`${styles.board} ${styles.loading}`} />
+        <div className={`${styles.folio} ${styles.loading}`} />
       </main>
     );
   }
@@ -80,10 +78,6 @@ export function LevelRoadScreen() {
   const last = own.index + QUARTERS_AHEAD;
   const quarter = quarterAt(Math.min(last, shown ?? own.index));
   const nodes = quarterNodes(quarter, progress.level, claimed, now);
-  const layout = plateauLayout(
-    nodes.map((n) => n.level),
-    progress.level,
-  );
   const chosen = selected ?? view.coffrets[0] ?? progress.level + 1;
   const detail = levelDetail(chosen, progress, claimed, now);
 
@@ -96,38 +90,45 @@ export function LevelRoadScreen() {
     <main className={styles.page}>
       <Header subtitle={roadSubtitle(progress)} />
       <div className={styles.layout}>
-        <section className={styles.board} aria-label={`${quarter.name}, ${quarter.range}`}>
-          <div className={styles.boardHead}>
+        <section className={styles.folio} aria-label={`${quarter.name}, ${quarter.range}`}>
+          <div className={styles.folioHead}>
             <button
               type="button"
-              className={ui.round}
-              aria-label="Quartier précédent"
+              className={styles.turn}
+              aria-label="Chapitre précédent"
               disabled={quarter.index === 1}
               onClick={() => setShown(quarter.index - 1)}
             >
               <Icon name="back" size={18} />
             </button>
             <div className={styles.quarterName}>
-              <span className={styles.quarterRange}>{quarter.range}</span>
+              <span className={styles.quarterRange}>
+                {quarter.chapter} · {quarter.range}
+              </span>
               <h2 className={`${ui.display} ${styles.quarterTitle}`}>{quarter.name}</h2>
             </div>
             <button
               type="button"
-              className={ui.round}
-              aria-label="Quartier suivant"
+              className={styles.turn}
+              aria-label="Chapitre suivant"
               disabled={quarter.index >= last}
               onClick={() => setShown(quarter.index + 1)}
             >
               <Icon name="chev" size={18} />
             </button>
           </div>
-          <Plateau
-            nodes={nodes}
-            layout={layout}
-            level={progress.level}
-            chosen={chosen}
-            onPick={pick}
-          />
+          <ol className={styles.lines}>
+            {nodes.map((node) => (
+              <li key={node.level} id={`niveau-${node.level}`}>
+                <Line
+                  node={node}
+                  progress={progress}
+                  chosen={node.level === chosen}
+                  onPick={() => pick(node)}
+                />
+              </li>
+            ))}
+          </ol>
         </section>
 
         <div className={styles.side}>
@@ -188,95 +189,54 @@ export function LevelRoadScreen() {
   );
 }
 
-/** Share of the plateau's width or height, for a position that scales with it. */
-function share(value: number, total: number): string {
-  return `${(value / total) * 100}%`;
-}
-
-function Plateau({
-  nodes,
-  layout,
-  level,
+/** A line of the contents: what the level gives, then its number across the dots. */
+function Line({
+  node,
+  progress,
   chosen,
   onPick,
 }: {
-  readonly nodes: readonly RoadNode[];
-  readonly layout: PlateauLayout;
-  readonly level: number;
-  readonly chosen: number;
-  readonly onPick: (node: RoadNode) => void;
+  readonly node: RoadNode;
+  readonly progress: Progress;
+  readonly chosen: boolean;
+  readonly onPick: () => void;
 }) {
-  const { width, height, tile } = layout;
-  const fogged = layout.points.filter((_, index) => nodes[index]?.fog === true);
-  // The fog reaches down to the lowest tile it hides.
-  const fogLine = fogged.length === 0 ? null : Math.max(...fogged.map((p) => p.y)) + tile.height;
-  const here = layout.points.find((p) => p.level === level);
   return (
-    <div className={styles.plateau} style={{ aspectRatio: `${width} / ${height}` }}>
-      <PlateauDecor layout={layout} />
-      <ol className={styles.tiles}>
-        {/* Highest first: a tile lower on the screen stands in front of the ones above it. */}
-        {[...nodes].reverse().map((node) => {
-          const point = layout.points.find((p) => p.level === node.level);
-          if (point === undefined) return null;
-          return (
-            <li key={node.level} id={`niveau-${node.level}`}>
-              <button
-                type="button"
-                className={`${styles.tile} ${node.fog ? styles.fog : ""}`}
-                style={
-                  {
-                    left: share(point.x - tile.width / 2, width),
-                    top: share(point.y - tile.height / 2, height),
-                    width: share(tile.width, width),
-                    height: share(tile.height + tile.depth, height),
-                  } as CSSProperties
-                }
-                aria-label={node.label}
-                aria-pressed={node.level === chosen}
-                onClick={() => onPick(node)}
-              >
-                <TileBlock look={tileLook(node)} glow={node.state === "claimable"} />
-                <span className={styles.tileFace}>
-                  <TileMark node={node} last={node === nodes[nodes.length - 1]} />
-                </span>
-              </button>
-            </li>
-          );
-        })}
-      </ol>
-      {fogLine !== null && (
-        <div
-          className={styles.fogBank}
-          style={{ height: share(fogLine, height) }}
-          aria-hidden="true"
-        />
-      )}
-      {here !== undefined && (
-        <span
-          className={styles.here}
-          style={{ left: share(here.x, width), top: share(here.y - tile.height / 2, height) }}
-          aria-hidden="true"
-        >
-          <LevelMedal level={level} size={52} />
-        </span>
-      )}
-    </div>
+    <button
+      type="button"
+      className={styles.line}
+      data-state={node.state}
+      data-milestone={node.milestone}
+      aria-label={node.label}
+      aria-pressed={chosen}
+      onClick={onPick}
+    >
+      <span className={styles.lineMark}>
+        <LineMark node={node} level={progress.level} />
+      </span>
+      <span className={styles.lineText}>
+        <span className={styles.lineTitle}>{node.summary}</span>
+        {node.opensLine !== null && <span className={styles.lineOpens}>{node.opensLine}</span>}
+        {node.state === "next" && (
+          <XpBar
+            thin
+            className={styles.lineBar}
+            ratio={progress.xpIntoLevel / progress.xpForNextLevel}
+          />
+        )}
+      </span>
+      <span className={styles.leader} aria-hidden="true" />
+      {node.state === "claimable" && <span className={styles.toOpen}>À ouvrir</span>}
+      <span className={`${ui.display} ${styles.lineLevel}`}>{node.level}</span>
+    </button>
   );
 }
 
-type TileLook = "gold" | "cream" | "kraft" | "slate";
-
-function tileLook(node: RoadNode): TileLook {
-  if (node.state === "claimed" || node.state === "claimable") return "gold";
-  if (node.milestone) return "kraft";
-  return node.state === "next" ? "cream" : "slate";
-}
-
-function TileMark({ node, last }: { readonly node: RoadNode; readonly last: boolean }) {
-  if (node.state === "claimed") return <Icon name="check" size={22} />;
-  if (node.state === "claimable" || last) return <Icon name="coffret" size={22} />;
-  return <span className={ui.display}>{node.level}</span>;
+function LineMark({ node, level }: { readonly node: RoadNode; readonly level: number }) {
+  if (node.level === level) return <LevelMedal level={level} size={34} />;
+  if (node.state === "claimed") return <Icon name="check" size={18} />;
+  if (node.state === "claimable") return <Icon name="coffret" size={20} />;
+  return null;
 }
 
 function Quarters({
@@ -293,7 +253,7 @@ function Quarters({
   const quarters = Array.from({ length: last }, (_, k) => quarterAt(k + 1));
   return (
     <section className={`${ui.panel} ${styles.quarters}`}>
-      <h2 className={ui.kicker}>Les quartiers</h2>
+      <h2 className={ui.kicker}>Les chapitres</h2>
       <ol className={styles.quarterList}>
         {quarters.map((q) => (
           <li key={q.index}>

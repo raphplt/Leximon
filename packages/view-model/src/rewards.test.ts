@@ -97,6 +97,8 @@ describe("level road", () => {
     expect(quarterOfLevel(10).index).toBe(1);
     expect(quarterOfLevel(16)).toMatchObject({ name: "Le Scriptorium", range: "Niveaux 11 à 20" });
     expect(quarterAt(12).name).toBe("Quartier 12");
+    expect(quarterAt(2).chapter).toBe("Chapitre II");
+    expect(quarterAt(14).chapter).toBe("Chapitre XIV");
   });
 
   it("marks each level claimed, to claim, next, closed or in the fog", () => {

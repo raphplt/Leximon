@@ -297,6 +297,32 @@ export interface Quarter {
   readonly last: number;
   /** « Niveaux 11 à 20 ». */
   readonly range: string;
+  /** « Chapitre II ». */
+  readonly chapter: string;
+}
+
+const ROMAN_DIGITS: readonly (readonly [number, string])[] = [
+  [100, "C"],
+  [90, "XC"],
+  [50, "L"],
+  [40, "XL"],
+  [10, "X"],
+  [9, "IX"],
+  [5, "V"],
+  [4, "IV"],
+  [1, "I"],
+];
+
+function romanNumeral(value: number): string {
+  let left = value;
+  let numeral = "";
+  for (const [worth, digit] of ROMAN_DIGITS) {
+    while (left >= worth) {
+      numeral += digit;
+      left -= worth;
+    }
+  }
+  return numeral;
 }
 
 export function quarterAt(index: number): Quarter {
@@ -308,6 +334,7 @@ export function quarterAt(index: number): Quarter {
     first,
     last,
     range: `Niveaux ${first} à ${last}`,
+    chapter: `Chapitre ${romanNumeral(index)}`,
   };
 }
 
@@ -326,6 +353,8 @@ export interface RoadNode {
   readonly summary: string;
   /** « Les échanges », what the level opens. */
   readonly opens: string | null;
+  /** « Débloque les échanges ». */
+  readonly opensLine: string | null;
   readonly label: string;
 }
 
@@ -352,13 +381,16 @@ export function quarterNodes(
           ? "claimed"
           : "claimable";
     const summary = rewardSummary(n, now);
+    const opens = opensAt(n, now);
     nodes.push({
       level: n,
       state,
       milestone: n % rules.milestoneEvery === 0,
       fog: n > level + CLEAR_AHEAD,
       summary,
-      opens: opensAt(n, now),
+      opens,
+      opensLine:
+        opens === null ? null : `Débloque ${opens.charAt(0).toLowerCase()}${opens.slice(1)}`,
       label: `Niveau ${n}, ${summary}${state === "claimable" ? ", à réclamer" : ""}`,
     });
   }

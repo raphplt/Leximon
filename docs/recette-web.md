@@ -170,12 +170,12 @@ Compte A : `pnpm dev:player contact@leximon.fr --level 21` pour avoir une série
 
 ### NIV-01 · Chemin des niveaux
 - **Faire :** menu de l'avatar, « Chemin des niveaux ».
-- **Attendu :** le quartier de ton niveau, dix dalles en relief qui montent en zigzag sur un plateau (au niveau 16 : « Le Scriptorium », niveaux 11 à 20). Ta pastille de niveau posée sur ta dalle. Dalles dorées avec une coche (réclamées) ou un coffret qui luit (à réclamer), crème pour la suivante, kraft pour les paliers de 5, ardoise pour les autres ; au-delà des deux suivantes, le brouillard. Pierres de gué dorées jusqu'à ton niveau. Livres, encrier, bougie, lanterne en décor. Les flèches et la liste « Les quartiers » changent de quartier, jusqu'à deux quartiers d'avance. Le plateau tient dans la fenêtre, sans défiler.
+- **Attendu :** une page de papier, façon table des matières, sur le chapitre de ton niveau (au niveau 16 : « Chapitre II · Niveaux 11 à 20 », « Le Scriptorium »). Dix lignes : la récompense à gauche, des pointillés, le numéro du niveau à droite. Coche pour un coffret ouvert, coffret et « À ouvrir » pour un coffret à réclamer, ta médaille sur ton niveau, barre d'XP sur le niveau suivant. Les paliers de 5 sont en gras, avec leur numéro en rouge, et « Débloque… » annonce une fonction. Les flèches et la liste « Les chapitres » changent de chapitre, jusqu'à deux chapitres d'avance. Aucun plateau ni décor en relief.
 - **Retour :**
 
 ### NIV-02 · Détail d'un niveau
 - **Faire :** toucher un niveau passé, un niveau à réclamer, un niveau futur. Depuis Jouer, toucher une des prochaines récompenses.
-- **Attendu :** la dalle choisie est cerclée de blanc ; depuis Jouer, le chemin s'ouvre sur le quartier de ce niveau. Ses récompenses, ce qu'il ouvre, et « Ouvrir le coffret », « Réclamée » ou « Encore 1 240 XP. ». Le barème de l'XP (« D'où vient l'XP ») est affiché.
+- **Attendu :** la ligne choisie est surlignée ; depuis Jouer, la page s'ouvre sur le chapitre de ce niveau. Ses récompenses, ce qu'il ouvre, et « Ouvrir le coffret », « Réclamée » ou « Encore 1 240 XP. ». Le barème de l'XP (« D'où vient l'XP ») est affiché.
 - **Retour :**
 
 ### NIV-03 · Coffret
@@ -534,7 +534,7 @@ pnpm dev:player recette-c@example.com --level 9
 
 ### COM-02 · Les joueurs
 - **Faire :** ouvre Joueurs. Essaie Actifs, Nouveaux, Proches de mon niveau et Sans clan. Cherche le début d'un pseudo, en majuscules et sans accent.
-- **Attendu :** des cartes avec avatar, niveau, clan et jusqu'à 3 cartes épinglées, ou « Aucune carte épinglée ». Proches de mon niveau garde les joueurs à 2 niveaux au plus du tien, sans personne sous le niveau 8. Sans clan se combine avec les tris. Aucun résultat : « Aucun joueur ne correspond à ce choix pour l'instant. ». « Voir plus de joueurs » charge la suite sans doublon, et toucher une carte ouvre le profil.
+- **Attendu :** une liste en colonnes (Joueur, Clan, Cartes épinglées) : avatar, pseudo, niveau, emblème et nom du clan, mots des 3 premières cartes épinglées. En 390 px, l'emblème seul reste et les colonnes de texte disparaissent. Proches de mon niveau garde les joueurs à 2 niveaux au plus du tien, sans personne sous le niveau 8. Sans clan se combine avec les tris. Aucun résultat : « Aucun joueur ne correspond à ce choix pour l'instant. ». « Voir plus de joueurs » charge la suite sans doublon, et toucher une ligne ouvre le profil.
 - **Retour :**
 
 ### COM-03 · Qui n'y est pas
@@ -770,7 +770,7 @@ Retours généraux du propriétaire après une première prise en main, classés
 
 Le principe est le bon, mais le rendu n'est pas assez travaillé. Il doit faire plus jeu, à la façon du chemin des problèmes de Chess.com (cases en relief, décor, étapes marquées), sans le copier.
 
-*Repris le 2026-10-22 : un plateau de dalles en relief par quartier de dix niveaux, décor, brouillard au-delà (NIV-01). Les noms des quartiers sont provisoires.*
+*Repris le 2026-10-31 : le plateau en relief laisse la place à une page de table des matières sur le web (NIV-01). Le mobile garde le plateau en attendant. Les noms des chapitres sont provisoires.*
 
 ### 4. Textes
 
