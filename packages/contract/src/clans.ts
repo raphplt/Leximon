@@ -45,9 +45,15 @@ export const clanSummarySchema = z.object({
 export type ClanSummary = z.infer<typeof clanSummarySchema>;
 
 /** `GET /clans?q=&entry=&cursor=`: by name prefix, the biggest clans first. */
+/** `big`: the most members first. `new`: the latest founded first. */
+export const clanSortSchema = z.enum(["big", "new"]);
+export type ClanSort = z.infer<typeof clanSortSchema>;
+
 export const clansQuerySchema = z.object({
   q: z.string().trim().max(30).optional(),
   entry: clanEntryModeSchema.optional(),
+  /** A cursor belongs to its sort. */
+  sort: clanSortSchema.default("big"),
   cursor: z.string().max(200).optional(),
   limit: z.coerce.number().int().min(1).max(50).default(20),
 });

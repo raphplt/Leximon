@@ -4,6 +4,7 @@ import type {
   ClanMember,
   ClanRefusal,
   ClanRole,
+  ClanSort,
   ClanSummary,
   ClanView,
   CreateClanRequest,
@@ -797,22 +798,25 @@ export async function readMyClan(
 }
 
 export interface ClanListCursor {
-  readonly memberCount: number;
+  /** Members, or founding time for the `new` sort. */
+  readonly rank: number;
   readonly id: string;
 }
 
-/** `GET /clans`: by name prefix and entry mode, the biggest clans first. */
+/** `GET /clans`: by name prefix and entry mode. */
 export async function listClans(
   db: Reader,
   input: {
     readonly q: string | undefined;
     readonly entry: ClanEntryMode | undefined;
+    readonly sort: ClanSort;
     readonly after: ClanListCursor | null;
     readonly limit: number;
   },
 ): Promise<{ readonly clans: ClanSummary[]; readonly last: ClanListCursor | null }> {
-  const { q, entry, after, limit } = input;
+  const { q, entry, sort, after, limit } = input;
   const prefix = q === undefined ? "" : pseudoKey(q.normalize("NFC").trim());
+  const byAge = sort === "new";
   const rows = await db
     .select()
     .from(clans)
@@ -822,10 +826,12 @@ export async function listClans(
         entry === undefined ? undefined : eq(clans.entryMode, entry),
         after === null
           ? undefined
-          : sql`(${clans.memberCount}, ${clans.id}) < (${after.memberCount}, ${after.id}::uuid)`,
+          : byAge
+            ? sql`(${clans.createdAt}, ${clans.id}) < (${new Date(after.rank)}, ${after.id}::uuid)`
+            : sql`(${clans.memberCount}, ${clans.id}) < (${after.rank}, ${after.id}::uuid)`,
       ),
     )
-    .orderBy(desc(clans.memberCount), desc(clans.id))
+    .orderBy(desc(byAge ? clans.createdAt : clans.memberCount), desc(clans.id))
     .limit(limit + 1);
   const page = rows.slice(0, limit);
   const last = page.at(-1);
@@ -833,7 +839,7 @@ export async function listClans(
     clans: page.map(toSummary),
     last:
       rows.length > limit && last !== undefined
-        ? { memberCount: last.memberCount, id: last.id }
+        ? { rank: byAge ? last.createdAt.getTime() : last.memberCount, id: last.id }
         : null,
   };
 }

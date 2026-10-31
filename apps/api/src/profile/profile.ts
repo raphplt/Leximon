@@ -1,6 +1,7 @@
 import type {
   DirectoryPlayer,
   PlayerBadge,
+  PlayerSort,
   Preferences,
   ProfileClan,
   ProfileRefusal,
@@ -22,6 +23,7 @@ import {
   type LevelRewardRules,
   levelOf,
   levelRewardRulesAt,
+  NEAR_LEVEL_SPREAD,
   nextPseudoChange,
   PSEUDO_SCHEDULE,
   pseudoKey,
@@ -44,6 +46,7 @@ import {
   inArray,
   isNotNull,
   like,
+  lt,
   ne,
   or,
   type SQL,
@@ -495,29 +498,74 @@ async function readProfileClan(db: Reader, userId: string): Promise<ProfileClan 
 // --- The list of players -------------------------------------------------------------------------
 
 export interface PlayerListCursor {
-  readonly lastSeenAt: number;
+  /** Last seen, or arrival for the `new` sort. */
+  readonly at: number;
   readonly code: string;
 }
 
+/** Cards a row of the list shows. */
+const PINNED_IN_LIST = 3;
+
+/** The levels of `near`, as XP: from the public level on, as nobody below it is listed. */
+async function nearLevelCondition(
+  db: Reader,
+  viewerId: string,
+  lowest: number,
+): Promise<SQL | undefined> {
+  const [viewer] = await db
+    .select({ xp: userProgress.xp })
+    .from(userProgress)
+    .where(eq(userProgress.userId, viewerId));
+  const { level } = levelOf(viewer?.xp ?? 0);
+  return and(
+    gte(userProgress.xp, xpToReach(Math.max(lowest, level - NEAR_LEVEL_SPREAD))),
+    lt(userProgress.xp, xpToReach(level + NEAR_LEVEL_SPREAD + 1)),
+  );
+}
+
+async function readPinnedInList(
+  db: Reader,
+  userIds: readonly string[],
+): Promise<ReadonlyMap<string, readonly string[]>> {
+  const pinnedOf = new Map<string, string[]>();
+  if (userIds.length === 0) return pinnedOf;
+  const rows = await db
+    .select({ userId: pinnedCards.userId, cardId: pinnedCards.cardId })
+    .from(pinnedCards)
+    .where(and(inArray(pinnedCards.userId, [...userIds]), lt(pinnedCards.position, PINNED_IN_LIST)))
+    .orderBy(asc(pinnedCards.position));
+  for (const row of rows) {
+    const cards = pinnedOf.get(row.userId);
+    if (cards === undefined) pinnedOf.set(row.userId, [row.cardId]);
+    else cards.push(row.cardId);
+  }
+  return pinnedOf;
+}
+
 /**
- * `GET /players`: the public profiles, by pseudo prefix, the latest seen first. The order follows
- * activity rather than level: a list by level would be a ranking. It moves while it is read, so a
- * client may meet a player twice. Seen once at least: every screen of the game records it.
+ * `GET /players`: the public profiles, by pseudo prefix. No sort follows the level: it would be a
+ * ranking. The list moves while it is read, so a client may meet a player twice. Seen once at
+ * least: every screen of the game records it.
  */
 export async function listPublicPlayers(
   db: Reader,
   input: {
     readonly viewerId: string;
     readonly q: string | undefined;
+    readonly sort: PlayerSort;
+    readonly clanless: boolean;
     readonly after: PlayerListCursor | null;
     readonly limit: number;
     readonly now: EpochMs;
   },
 ): Promise<{ readonly players: DirectoryPlayer[]; readonly last: PlayerListCursor | null }> {
-  const { viewerId, q, after, limit, now } = input;
+  const { viewerId, q, sort, clanless, after, limit, now } = input;
   const prefix = q === undefined ? "" : pseudoKey(q.normalize("NFC").trim());
+  const lowest = publicLevel(now);
+  const near = sort === "near" ? await nearLevelCondition(db, viewerId, lowest) : undefined;
+  const order = sort === "new" ? players.createdAt : players.lastSeenAt;
   const rows = await db
-    .select({ ...badgeFields, lastSeenAt: players.lastSeenAt })
+    .select({ ...badgeFields, at: order })
     .from(players)
     .innerJoin(users, eq(users.id, players.userId))
     .innerJoin(userProgress, eq(userProgress.userId, players.userId))
@@ -527,33 +575,37 @@ export async function listPublicPlayers(
         isNotNull(players.pseudoKey),
         isNotNull(players.lastSeenAt),
         sql`${users.isAnonymous} is not true`,
-        gte(userProgress.xp, xpToReach(publicLevel(now))),
+        gte(userProgress.xp, xpToReach(lowest)),
+        near,
+        clanless
+          ? sql`not exists (select 1 from ${clanMembers} m where m.user_id = ${players.userId})`
+          : undefined,
         ne(players.userId, viewerId),
         prefix === "" ? undefined : like(players.pseudoKey, `${prefix.replaceAll(/[\\%_]/g, "")}%`),
         after === null
           ? undefined
-          : sql`(${players.lastSeenAt}, ${players.code}) < (${new Date(after.lastSeenAt)}, ${after.code})`,
+          : sql`(${order}, ${players.code}) < (${new Date(after.at)}, ${after.code})`,
         notBlockedEitherWay(viewerId, players.userId),
         notLocked(players.userId, now),
       ),
     )
-    .orderBy(desc(players.lastSeenAt), desc(players.code))
+    .orderBy(desc(order), desc(players.code))
     .limit(limit + 1);
   const page = rows.slice(0, limit);
-  const clansOf = await readProfileClans(
-    db,
-    page.map((row) => row.userId),
-  );
+  const userIds = page.map((row) => row.userId);
+  const [clansOf, pinnedOf] = await Promise.all([
+    readProfileClans(db, userIds),
+    readPinnedInList(db, userIds),
+  ]);
   const last = page.at(-1);
   return {
     players: page.map((row) => ({
       player: toBadge(row, now),
       clan: clansOf.get(row.userId) ?? null,
+      pinned: [...(pinnedOf.get(row.userId) ?? [])],
     })),
     last:
-      rows.length > limit && last?.lastSeenAt != null
-        ? { lastSeenAt: last.lastSeenAt.getTime(), code: last.code }
-        : null,
+      rows.length > limit && last?.at != null ? { at: last.at.getTime(), code: last.code } : null,
   };
 }
 

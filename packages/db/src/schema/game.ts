@@ -365,6 +365,9 @@ export const players = pgTable(
     index("players_public_seen_idx")
       .on(table.lastSeenAt.desc(), table.code.desc())
       .where(sql`${table.profilePublic} and ${table.pseudoKey} is not null`),
+    index("players_public_created_idx")
+      .on(table.createdAt.desc(), table.code.desc())
+      .where(sql`${table.profilePublic} and ${table.pseudoKey} is not null`),
     check(
       "players_pseudo_check",
       sql`(${table.pseudo} is null) = (${table.pseudoKey} is null) and (${table.pseudo} is null) = (${table.pseudoChangedAt} is null)`,

@@ -51,6 +51,7 @@ export const clans = pgTable(
     // "Trouver un clan": by name prefix, and the biggest first.
     index("clans_name_prefix_idx").using("btree", sql`${table.nameKey} text_pattern_ops`),
     index("clans_members_idx").on(table.memberCount.desc(), table.id),
+    index("clans_created_idx").on(table.createdAt.desc(), table.id.desc()),
     check("clans_member_count_check", sql`${table.memberCount} >= 0`),
   ],
 );

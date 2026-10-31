@@ -1,0 +1,2 @@
+CREATE INDEX "clans_created_idx" ON "clans" USING btree ("created_at" DESC NULLS LAST,"id" DESC NULLS LAST);--> statement-breakpoint
+CREATE INDEX "players_public_created_idx" ON "players" USING btree ("created_at" DESC NULLS LAST,"code" DESC NULLS LAST) WHERE "players"."profile_public" and "players"."pseudo_key" is not null;

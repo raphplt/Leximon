@@ -311,6 +311,89 @@ describe("GET /players", () => {
     expect(second.nextCursor).toBeNull();
   });
 
+  it("sorts by arrival with its own cursor, the latest arrived first", async () => {
+    const prefix = tag();
+    const first = await listedPlayer(prefix, 60_000);
+    const latest = await listedPlayer(prefix, 3_600_000);
+    await db
+      .update(schema.players)
+      .set({ createdAt: new Date(Date.now() - 86_400_000) })
+      .where(eq(schema.players.userId, first.userId));
+    const viewer = await signInAsGuest(app, env);
+
+    const page = await search(viewer, prefix, "&sort=new&limit=1");
+    expect(pseudos(page)).toEqual([latest.name]);
+    const next = await search(viewer, prefix, `&sort=new&limit=1&cursor=${page.nextCursor}`);
+    expect(pseudos(next)).toEqual([first.name]);
+  });
+
+  it("keeps the players around the viewer's level for the near sort", async () => {
+    const prefix = tag();
+    const viewer = await listedPlayer(prefix, 0, 12);
+    const below = await listedPlayer(prefix, 0, 10);
+    const above = await listedPlayer(prefix, 0, 14);
+    await listedPlayer(prefix, 0, 9);
+    await listedPlayer(prefix, 0, 15);
+
+    const near = await search(viewer, prefix, "&sort=near");
+    expect(pseudos(near).sort()).toEqual([below.name, above.name].sort());
+  });
+
+  it("keeps the players without a clan on request", async () => {
+    const prefix = tag();
+    const free = await listedPlayer(prefix);
+    const taken = await listedPlayer(prefix);
+    const clanId = crypto.randomUUID();
+    await db.insert(schema.clans).values({
+      id: clanId,
+      name: `Clan ${clanId.slice(0, 8)}`,
+      nameKey: `clan${clanId.slice(0, 8)}`,
+      entryMode: "open",
+      inviteCode: clanId.slice(0, 8).toUpperCase(),
+      emblemEngraving: "lion",
+      emblemColor: "sang",
+      emblemAccent: "or",
+      memberCount: 1,
+      createdAt: new Date(),
+    });
+    await db
+      .insert(schema.clanMembers)
+      .values({ userId: taken.userId, clanId, role: "chief", joinedAt: new Date() });
+    const viewer = await signInAsGuest(app, env);
+
+    expect(pseudos(await search(viewer, prefix)).sort()).toEqual([free.name, taken.name].sort());
+    expect(pseudos(await search(viewer, prefix, "&clanless=1"))).toEqual([free.name]);
+  });
+
+  it("shows the first pinned cards of a row, in their order", async () => {
+    const prefix = tag();
+    const member = await listedPlayer(prefix);
+    const [one, two, three, four] = await db
+      .select({ id: schema.cards.id })
+      .from(schema.cards)
+      .limit(4);
+    if (four === undefined || one === undefined || two === undefined || three === undefined) {
+      throw new Error("Catalogue de test trop court");
+    }
+    await db.insert(schema.pinnedCards).values(
+      [two, one, three, four].map((card, position) => ({
+        userId: member.userId,
+        cardId: card.id,
+        position,
+      })),
+    );
+    const viewer = await signInAsGuest(app, env);
+
+    const page = await search(viewer, prefix);
+    expect(page.players[0]?.pinned).toEqual([two.id, one.id, three.id]);
+  });
+
+  it("refuses an unknown sort", async () => {
+    const viewer = await signInAsGuest(app, env);
+    expect((await call(viewer, "GET", "/players?sort=level")).status).toBe(400);
+    expect((await call(viewer, "GET", "/clans?sort=level")).status).toBe(400);
+  });
+
   it("finds a pseudo whatever its accents, capitals and separators", async () => {
     const prefix = tag();
     const member = await listedPlayer(prefix);

@@ -44,12 +44,20 @@ export const directoryPlayerSchema = z.object({
   player: playerBadgeSchema,
   /** `null` without a clan. */
   clan: profileClanSchema.nullable(),
+  /** The first cards of the profile, in its order. */
+  pinned: z.array(slugSchema),
 });
 export type DirectoryPlayer = z.infer<typeof directoryPlayerSchema>;
 
-/** `GET /players?q=&cursor=`: by pseudo prefix, the latest seen first. */
+/** `active`: the latest seen first. `new`: the latest arrived first. `near`: `active`, around the viewer's level. */
+export const playerSortSchema = z.enum(["active", "new", "near"]);
+export type PlayerSort = z.infer<typeof playerSortSchema>;
+
+/** `GET /players?q=&sort=&clanless=1&cursor=`: by pseudo prefix. A cursor belongs to its sort. */
 export const playersQuerySchema = z.object({
   q: z.string().trim().max(30).optional(),
+  sort: playerSortSchema.default("active"),
+  clanless: z.literal("1").optional(),
   cursor: z.string().max(200).optional(),
   limit: z.coerce.number().int().min(1).max(50).default(20),
 });

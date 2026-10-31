@@ -111,6 +111,7 @@ export function clanRoutes() {
     const page = await listClans(c.var.db, {
       q: query.data.q,
       entry: query.data.entry,
+      sort: query.data.sort,
       after,
       limit: query.data.limit,
     });

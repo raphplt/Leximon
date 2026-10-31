@@ -384,3 +384,6 @@ export const NOTIFY_SCHEDULE: NotifySchedule = [
     quietUntilHour: 8,
   },
 ];
+
+/** "Proches de mon niveau" in the list of players: this many levels on each side. */
+export const NEAR_LEVEL_SPREAD = 2;

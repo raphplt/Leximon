@@ -9,6 +9,7 @@ import {
   type ClanMessagesResponse,
   type ClanRefusal,
   type ClanRequestsResponse,
+  type ClanSort,
   type ClansResponse,
   type ClanView,
   type CreateClanRequest,
@@ -70,6 +71,7 @@ export function clanRoutes(http: Http) {
     async fetchClans(query: {
       readonly q?: string;
       readonly entry?: ClanEntryMode;
+      readonly sort?: ClanSort;
       readonly cursor?: string | null;
     }): Promise<ClansResponse> {
       const response = await sendAsPlayer(withQuery("/clans", query));

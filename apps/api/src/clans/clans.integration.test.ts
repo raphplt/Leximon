@@ -241,6 +241,25 @@ describe("creating a clan", () => {
     expect(visitor.members).toHaveLength(2);
   });
 
+  it("lists the latest founded clans first, page by page", async () => {
+    const tag = crypto.randomUUID().slice(0, 6);
+    const older = await createClan(await player(), "open", `Zr${tag} Ancien`);
+    expect((await send(await player(10), "POST", `/clans/${older}/join`)).status).toBe(200);
+    const newer = await createClan(await player(), "open", `Zr${tag} Neuf`);
+
+    const searcher = await player(10);
+    const first = clansResponseSchema.parse(
+      await (await request(searcher, `/clans?q=zr${tag}&sort=new&limit=1`)).json(),
+    );
+    expect(first.clans.map((clan) => clan.id)).toEqual([newer]);
+    const second = clansResponseSchema.parse(
+      await (
+        await request(searcher, `/clans?q=zr${tag}&sort=new&limit=1&cursor=${first.nextCursor}`)
+      ).json(),
+    );
+    expect(second.clans.map((clan) => clan.id)).toEqual([older]);
+  });
+
   it("keeps the members' presence and silences from a visitor, and leaves out blocked players", async () => {
     const chief = await player();
     const clanId = await createClan(chief);

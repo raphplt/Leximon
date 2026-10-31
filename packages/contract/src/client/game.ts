@@ -37,6 +37,7 @@ import {
   type OwnedCardsResponse,
   openBoosterResponseSchema,
   ownedCardsResponseSchema,
+  type PlayerSort,
   type PlayersResponse,
   type PracticeAnswerRequest,
   type PracticeAnswerResponse,
@@ -380,6 +381,8 @@ export function gameRoutes(http: Http) {
 
     async fetchPublicPlayers(query: {
       readonly q?: string;
+      readonly sort?: PlayerSort;
+      readonly clanless?: "1";
       readonly cursor?: string | null;
     }): Promise<PlayersResponse> {
       return getJson(withQuery("/players", query), playersResponseSchema, "players_unavailable");

@@ -192,6 +192,8 @@ export function playerRoutes() {
     const page = await listPublicPlayers(c.var.db, {
       viewerId: c.var.userId,
       q: query.data.q,
+      sort: query.data.sort,
+      clanless: query.data.clanless !== undefined,
       after,
       limit: query.data.limit,
       now: Date.now(),

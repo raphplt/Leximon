@@ -25,13 +25,13 @@ function decode<T>(schema: z.ZodType<T>, value: string): T | undefined {
 }
 
 export function encodeClanCursor(cursor: ClanListCursor): string {
-  return encode([cursor.memberCount, cursor.id]);
+  return encode([cursor.rank, cursor.id]);
 }
 
 /** `undefined` when the cursor is malformed. */
 export function decodeClanCursor(value: string): ClanListCursor | undefined {
   const parsed = decode(clanCursorSchema, value);
-  return parsed === undefined ? undefined : { memberCount: parsed[0], id: parsed[1] };
+  return parsed === undefined ? undefined : { rank: parsed[0], id: parsed[1] };
 }
 
 export function encodeMemberCursor(cursor: MemberCursor): string {
