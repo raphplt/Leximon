@@ -2,6 +2,7 @@ import {
   boosterWalletSchema,
   claimGoalResponseSchema,
   clanJoinResultSchema,
+  clanMembersResponseSchema,
   clanMessageSchema,
   clanMessagesResponseSchema,
   clanRequestsResponseSchema,
@@ -238,6 +239,42 @@ describe("creating a clan", () => {
     expect(visitor.me).toBeNull();
     expect(visitor.goal).toBeNull();
     expect(visitor.members).toHaveLength(2);
+  });
+
+  it("keeps the members' presence and silences from a visitor, and leaves out blocked players", async () => {
+    const chief = await player();
+    const clanId = await createClan(chief);
+    const muted = await player(10);
+    expect((await send(muted, "POST", `/clans/${clanId}/join`)).status).toBe(200);
+    expect(
+      (
+        await send(chief, "PUT", `/clans/${clanId}/members/${muted.code}/mute`, {
+          durationMs: HOUR,
+        })
+      ).status,
+    ).toBe(204);
+    await db.update(players).set({ lastSeenAt: new Date() }).where(eq(players.code, muted.code));
+
+    const seenBy = async (viewer: Player) =>
+      clanMembersResponseSchema
+        .parse(await (await request(viewer, `/clans/${clanId}/members`)).json())
+        .members.find((member) => member.player.code === muted.code);
+
+    expect(await seenBy(chief)).toMatchObject({ online: true, mutedUntil: expect.any(String) });
+
+    const visitor = await player(10);
+    expect(await seenBy(visitor)).toMatchObject({
+      online: false,
+      lastSeenAt: null,
+      mutedUntil: null,
+    });
+    const page = await view(visitor, clanId);
+    expect(page.members.every((member) => !member.online && member.lastSeenAt === null)).toBe(true);
+    expect(page.members.every((member) => member.mutedUntil === null)).toBe(true);
+
+    expect((await send(muted, "PUT", `/me/blocks/${visitor.code}`)).status).toBe(204);
+    expect(await seenBy(visitor)).toBeUndefined();
+    expect((await seenBy(chief))?.player.code).toBe(muted.code);
   });
 });
 

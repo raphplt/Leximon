@@ -37,6 +37,7 @@ import {
   type OwnedCardsResponse,
   openBoosterResponseSchema,
   ownedCardsResponseSchema,
+  type PlayersResponse,
   type PracticeAnswerRequest,
   type PracticeAnswerResponse,
   type PracticeQuestion,
@@ -48,6 +49,7 @@ import {
   type ProgressResponse,
   type PublicProfile,
   type PublicRiddle,
+  playersResponseSchema,
   practiceAnswerResponseSchema,
   practiceResponseSchema,
   practiceSummaryResponseSchema,
@@ -374,6 +376,13 @@ export function gameRoutes(http: Http) {
       if (response.status === 404) return null;
       if (!response.ok) throw new ApiError("profile_unavailable", response.status);
       return parse(response, publicProfileSchema);
+    },
+
+    async fetchPublicPlayers(query: {
+      readonly q?: string;
+      readonly cursor?: string | null;
+    }): Promise<PlayersResponse> {
+      return getJson(withQuery("/players", query), playersResponseSchema, "players_unavailable");
     },
 
     async fetchBlocks(): Promise<BlocksResponse["players"]> {

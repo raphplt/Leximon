@@ -1,4 +1,5 @@
 import type {
+  DirectoryPlayer,
   PlayerBadge,
   Preferences,
   ProfileClan,
@@ -29,11 +30,27 @@ import {
   tradeRulesAt,
   UNLOCK_SCHEDULE,
   wardrobe,
+  xpToReach,
 } from "@leximon/core";
 import { type Database, schema } from "@leximon/db";
-import { and, asc, desc, eq, gt, inArray, or, sql } from "drizzle-orm";
+import {
+  type AnyColumn,
+  and,
+  asc,
+  desc,
+  eq,
+  gt,
+  gte,
+  inArray,
+  isNotNull,
+  like,
+  ne,
+  or,
+  type SQL,
+  sql,
+} from "drizzle-orm";
 import { ADMIN_ROLE } from "../auth";
-import { breakFriendship, readFriendship } from "../friends/friends";
+import { breakFriendship, notLocked, readFriendship } from "../friends/friends";
 import { ensurePlayer } from "../trades/players";
 
 const {
@@ -475,7 +492,79 @@ async function readProfileClan(db: Reader, userId: string): Promise<ProfileClan 
   return (await readProfileClans(db, [userId])).get(userId) ?? null;
 }
 
+// --- The list of players -------------------------------------------------------------------------
+
+export interface PlayerListCursor {
+  readonly lastSeenAt: number;
+  readonly code: string;
+}
+
+/**
+ * `GET /players`: the public profiles, by pseudo prefix, the latest seen first. The order follows
+ * activity rather than level: a list by level would be a ranking. It moves while it is read, so a
+ * client may meet a player twice. Seen once at least: every screen of the game records it.
+ */
+export async function listPublicPlayers(
+  db: Reader,
+  input: {
+    readonly viewerId: string;
+    readonly q: string | undefined;
+    readonly after: PlayerListCursor | null;
+    readonly limit: number;
+    readonly now: EpochMs;
+  },
+): Promise<{ readonly players: DirectoryPlayer[]; readonly last: PlayerListCursor | null }> {
+  const { viewerId, q, after, limit, now } = input;
+  const prefix = q === undefined ? "" : pseudoKey(q.normalize("NFC").trim());
+  const rows = await db
+    .select({ ...badgeFields, lastSeenAt: players.lastSeenAt })
+    .from(players)
+    .innerJoin(users, eq(users.id, players.userId))
+    .innerJoin(userProgress, eq(userProgress.userId, players.userId))
+    .where(
+      and(
+        sql`${players.profilePublic}`,
+        isNotNull(players.pseudoKey),
+        isNotNull(players.lastSeenAt),
+        sql`${users.isAnonymous} is not true`,
+        gte(userProgress.xp, xpToReach(publicLevel(now))),
+        ne(players.userId, viewerId),
+        prefix === "" ? undefined : like(players.pseudoKey, `${prefix.replaceAll(/[\\%_]/g, "")}%`),
+        after === null
+          ? undefined
+          : sql`(${players.lastSeenAt}, ${players.code}) < (${new Date(after.lastSeenAt)}, ${after.code})`,
+        notBlockedEitherWay(viewerId, players.userId),
+        notLocked(players.userId, now),
+      ),
+    )
+    .orderBy(desc(players.lastSeenAt), desc(players.code))
+    .limit(limit + 1);
+  const page = rows.slice(0, limit);
+  const clansOf = await readProfileClans(
+    db,
+    page.map((row) => row.userId),
+  );
+  const last = page.at(-1);
+  return {
+    players: page.map((row) => ({
+      player: toBadge(row, now),
+      clan: clansOf.get(row.userId) ?? null,
+    })),
+    last:
+      rows.length > limit && last?.lastSeenAt != null
+        ? { lastSeenAt: last.lastSeenAt.getTime(), code: last.code }
+        : null,
+  };
+}
+
 // --- Blocks and reports ---------------------------------------------------------------------
+
+/** For a list seen by `viewerId`: leaves out the players blocked either way. */
+export function notBlockedEitherWay(viewerId: string, userId: AnyColumn | SQL): SQL {
+  return sql`not exists (select 1 from ${userBlocks} b
+    where (b.blocker_id = ${viewerId} and b.blocked_id = ${userId})
+      or (b.blocker_id = ${userId} and b.blocked_id = ${viewerId}))`;
+}
 
 export async function isBlockedEitherWay(db: Reader, a: string, b: string): Promise<boolean> {
   const rows = await db

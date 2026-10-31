@@ -1,5 +1,6 @@
 import {
   blocksResponseSchema,
+  playersResponseSchema,
   preferencesSchema,
   profileResponseSchema,
   publicProfileSchema,
@@ -267,6 +268,98 @@ describe("GET /players/:pseudo", () => {
     expect(Object.keys(hidden).sort()).toEqual(["avatar", "frame", "pseudo", "visibility"]);
 
     expect((await call(null, "GET", "/players/personne-ici")).status).toBe(404);
+  });
+});
+
+describe("GET /players", () => {
+  /** A member seen `seenAgo` ms ago, with a pseudo and the level of the public profile. */
+  async function listedPlayer(tag: string, seenAgo = 0, level = 8) {
+    const member = await signInAsMember(app, env, db);
+    const name = `${tag} ${crypto.randomUUID().slice(0, 6)}`;
+    expect((await call(member, "PATCH", "/me/profile", { pseudo: name })).status).toBe(200);
+    await setXp(db, member.userId, xpToReach(level));
+    await db
+      .update(schema.players)
+      .set({ lastSeenAt: new Date(Date.now() - seenAgo) })
+      .where(eq(schema.players.userId, member.userId));
+    return { ...member, name, code: (await profile(member)).playerCode };
+  }
+
+  async function search(viewer: Guest, tag: string, extra = "") {
+    const response = await call(viewer, "GET", `/players?q=${tag}${extra}`);
+    expect(response.status).toBe(200);
+    return playersResponseSchema.parse(await response.json());
+  }
+
+  const pseudos = (page: { players: readonly { player: { pseudo: string | null } }[] }) =>
+    page.players.map((entry) => entry.player.pseudo);
+
+  const tag = () => `Zy${crypto.randomUUID().slice(0, 6)}`;
+
+  it("lists public profiles from a pseudo prefix, the latest seen first, page by page", async () => {
+    const prefix = tag();
+    const old = await listedPlayer(prefix, 3_600_000);
+    const recent = await listedPlayer(prefix, 60_000);
+    const viewer = await signInAsGuest(app, env);
+
+    const first = await search(viewer, prefix, "&limit=1");
+    expect(pseudos(first)).toEqual([recent.name]);
+    expect(first.players[0]?.clan).toBeNull();
+
+    const second = await search(viewer, prefix, `&limit=1&cursor=${first.nextCursor}`);
+    expect(pseudos(second)).toEqual([old.name]);
+    expect(second.nextCursor).toBeNull();
+  });
+
+  it("finds a pseudo whatever its accents, capitals and separators", async () => {
+    const prefix = tag();
+    const member = await listedPlayer(prefix);
+    const viewer = await signInAsGuest(app, env);
+    expect(pseudos(await search(viewer, prefix.toUpperCase()))).toEqual([member.name]);
+    expect(pseudos(await search(viewer, `${prefix.slice(0, 2)}%25`))).toContain(member.name);
+    expect(pseudos(await search(viewer, "%25_%25"))).not.toEqual([]);
+  });
+
+  it("leaves out private profiles, low levels, blocked and locked players, and the viewer", async () => {
+    const prefix = tag();
+    const viewer = await listedPlayer(prefix);
+    const shown = await listedPlayer(prefix);
+    const hidden = await listedPlayer(prefix);
+    await call(hidden, "PATCH", "/me/profile", { profilePublic: false });
+    await listedPlayer(prefix, 0, 7);
+    const blocked = await listedPlayer(prefix);
+    await call(viewer, "PUT", `/me/blocks/${blocked.code}`);
+    const blocking = await listedPlayer(prefix);
+    await call(blocking, "PUT", `/me/blocks/${(await profile(viewer)).playerCode}`);
+    const suspended = await listedPlayer(prefix);
+    await db.insert(schema.sanctions).values({
+      id: crypto.randomUUID(),
+      userId: suspended.userId,
+      kind: "suspend",
+      reason: "Test",
+      until: new Date(Date.now() + 3_600_000),
+      createdBy: viewer.userId,
+      createdAt: new Date(),
+    });
+    const closed = await listedPlayer(prefix);
+    await db.insert(schema.sanctions).values({
+      id: crypto.randomUUID(),
+      userId: closed.userId,
+      kind: "close",
+      reason: "Test",
+      createdBy: viewer.userId,
+      createdAt: new Date(),
+    });
+
+    expect(pseudos(await search(viewer, prefix))).toEqual([shown.name]);
+  });
+
+  it("needs a session and refuses a malformed cursor", async () => {
+    expect((await call(null, "GET", "/players")).status).toBe(401);
+    const viewer = await signInAsGuest(app, env);
+    const response = await call(viewer, "GET", "/players?cursor=nope");
+    expect(response.status).toBe(400);
+    expect(await errorOf(response)).toBe("invalid_cursor");
   });
 });
 

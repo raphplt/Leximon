@@ -94,11 +94,13 @@ export const clanMemberSchema = z.object({
   player: playerBadgeSchema,
   role: clanRoleSchema,
   joinedAt: timestampSchema,
-  /** Seen within the last few minutes. */
+  /** Seen within the last few minutes; `false` for a visitor. */
   online: z.boolean(),
+  /** `null` for a visitor too. */
   lastSeenAt: timestampSchema.nullable(),
   /** Correct answers given to this week's goal. */
   weekAnswers: z.int().nonnegative(),
+  /** `null` for a visitor too. */
   mutedUntil: timestampSchema.nullable(),
 });
 export type ClanMember = z.infer<typeof clanMemberSchema>;

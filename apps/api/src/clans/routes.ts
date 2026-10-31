@@ -35,6 +35,7 @@ import {
   declineRequest,
   findClanByCode,
   handOver,
+  isClanMember,
   joinClan,
   kickMember,
   leaveClan,
@@ -179,6 +180,9 @@ export function clanRoutes() {
     const { cursor, q } = query.data;
     const after = cursor === undefined ? null : decodeMemberCursor(cursor);
     if (after === undefined) return c.json({ error: "invalid_cursor" }, 400);
+    const viewer = (await isClanMember(c.var.db, clanId.data, c.var.userId))
+      ? {}
+      : { visitorId: c.var.userId };
     if (q !== undefined) {
       const prefix = pseudoKey(q);
       const page =
@@ -190,6 +194,7 @@ export function clanRoutes() {
               limit: MENTION_SUGGESTIONS,
               now: Date.now(),
               pseudoPrefix: prefix,
+              ...viewer,
             });
       return c.json<ClanMembersResponse>({ members: page.members, nextCursor: null });
     }
@@ -198,6 +203,7 @@ export function clanRoutes() {
       after,
       limit: MEMBERS_PAGE,
       now: Date.now(),
+      ...viewer,
     });
     return c.json<ClanMembersResponse>({
       members: page.members,

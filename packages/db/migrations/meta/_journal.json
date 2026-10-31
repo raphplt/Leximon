@@ -232,6 +232,13 @@
       "when": 1793442472259,
       "tag": "0032_riddles",
       "breakpoints": true
+    },
+    {
+      "idx": 33,
+      "version": "7",
+      "when": 1793449409594,
+      "tag": "0033_player_list",
+      "breakpoints": true
     }
   ]
 }

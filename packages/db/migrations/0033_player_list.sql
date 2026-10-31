@@ -1,0 +1,2 @@
+CREATE INDEX "players_pseudo_prefix_idx" ON "players" USING btree ("pseudo_key" text_pattern_ops) WHERE "players"."profile_public";--> statement-breakpoint
+CREATE INDEX "players_public_seen_idx" ON "players" USING btree ("last_seen_at" DESC NULLS LAST,"code" DESC NULLS LAST) WHERE "players"."profile_public" and "players"."pseudo_key" is not null;

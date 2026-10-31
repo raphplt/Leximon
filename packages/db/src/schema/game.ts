@@ -358,6 +358,13 @@ export const players = pgTable(
   },
   (table) => [
     uniqueIndex("players_pseudo_key_idx").on(table.pseudoKey),
+    // The list of public profiles: by pseudo prefix, and the latest seen first.
+    index("players_pseudo_prefix_idx")
+      .using("btree", sql`${table.pseudoKey} text_pattern_ops`)
+      .where(sql`${table.profilePublic}`),
+    index("players_public_seen_idx")
+      .on(table.lastSeenAt.desc(), table.code.desc())
+      .where(sql`${table.profilePublic} and ${table.pseudoKey} is not null`),
     check(
       "players_pseudo_check",
       sql`(${table.pseudo} is null) = (${table.pseudoKey} is null) and (${table.pseudo} is null) = (${table.pseudoChangedAt} is null)`,

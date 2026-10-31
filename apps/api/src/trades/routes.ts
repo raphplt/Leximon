@@ -3,8 +3,10 @@ import {
   createTradeRequestSchema,
   IDEMPOTENCY_KEY_HEADER,
   idempotencyKeySchema,
+  type PlayersResponse,
   type PublicProfile,
   playerCodeSchema,
+  playersQuerySchema,
   type Trade,
   type TradeableCardsResponse,
   type TradesResponse,
@@ -19,9 +21,11 @@ import type { AppEnv } from "../context";
 import { playerRateLimit } from "../middleware/rate-limit";
 import { requireUser } from "../middleware/require-user";
 import { readRestrictions, refuseLockedWrites } from "../moderation/restrictions";
+import { decodePlayerListCursor, encodePlayerListCursor } from "../profile/cursor";
 import {
   type BlockResult,
   isBlockedEitherWay,
+  listPublicPlayers,
   readPublicProfile,
   reportPlayer,
 } from "../profile/profile";
@@ -173,10 +177,30 @@ export function tradeRoutes() {
 }
 
 /**
- * Other players: what one can offer, by code, and public profiles by pseudo.
+ * Other players: the list of public profiles, what one can offer, by code, and public profiles by
+ * pseudo.
  */
 export function playerRoutes() {
   const routes = new Hono<AppEnv>();
+
+  routes.get("/", requireUser, playerRateLimit, noStore, async (c) => {
+    const query = playersQuerySchema.safeParse(c.req.query());
+    if (!query.success) return c.json({ error: "invalid_request" }, 400);
+    const after =
+      query.data.cursor === undefined ? null : decodePlayerListCursor(query.data.cursor);
+    if (after === undefined) return c.json({ error: "invalid_cursor" }, 400);
+    const page = await listPublicPlayers(c.var.db, {
+      viewerId: c.var.userId,
+      q: query.data.q,
+      after,
+      limit: query.data.limit,
+      now: Date.now(),
+    });
+    return c.json<PlayersResponse>({
+      players: page.players,
+      nextCursor: page.last === null ? null : encodePlayerListCursor(page.last),
+    });
+  });
 
   routes.get("/:code/tradeable", requireUser, playerRateLimit, noStore, async (c) => {
     const code = playerCodeSchema.safeParse(c.req.param("code"));

@@ -39,7 +39,7 @@ import {
 } from "@leximon/core";
 import { type ClanEventPayload, type Database, schema } from "@leximon/db";
 import { and, asc, desc, eq, inArray, isNull, like, lt, or, sql } from "drizzle-orm";
-import { readBadges } from "../profile/profile";
+import { notBlockedEitherWay, readBadges } from "../profile/profile";
 import { generatePlayerCode } from "../trades/player-code";
 import { ensurePlayer } from "../trades/players";
 import { readClaimable, readGoal } from "./goal";
@@ -848,7 +848,8 @@ const weekAnswers = sql<number>`coalesce(${clanWeekMembers.answers}, 0)`;
 
 /**
  * Members in order of their share of the week, then by arrival. With `pseudoPrefix`, only those
- * whose pseudo key starts with it.
+ * whose pseudo key starts with it. With `visitorId`, a player outside the clan: their presence and
+ * silences stay inside the clan, and nobody blocked either way is listed.
  */
 export async function readMembers(
   db: Reader,
@@ -858,9 +859,10 @@ export async function readMembers(
     readonly limit: number;
     readonly now: EpochMs;
     readonly pseudoPrefix?: string;
+    readonly visitorId?: string;
   },
 ): Promise<{ readonly members: ClanMember[]; readonly last: MemberCursor | null }> {
-  const { clanId, after, limit, now, pseudoPrefix } = input;
+  const { clanId, after, limit, now, pseudoPrefix, visitorId } = input;
   const week = gameWeekOf(now).key;
   const rows = await db
     .select({
@@ -887,6 +889,7 @@ export async function readMembers(
         pseudoPrefix === undefined
           ? undefined
           : sql`starts_with(${players.pseudoKey}, ${pseudoPrefix})`,
+        visitorId === undefined ? undefined : notBlockedEitherWay(visitorId, clanMembers.userId),
         after === null
           ? undefined
           : sql`(-${weekAnswers}, ${clanMembers.joinedAt}, ${clanMembers.userId})
@@ -905,19 +908,24 @@ export async function readMembers(
     const player = badges.get(row.userId);
     if (player === undefined) return [];
     const seen = row.lastSeenAt?.getTime() ?? null;
+    const member = {
+      player,
+      role: row.role,
+      joinedAt: row.joinedAt.toISOString(),
+      weekAnswers: Number(row.weekAnswers),
+    };
     return [
-      {
-        player,
-        role: row.role,
-        joinedAt: row.joinedAt.toISOString(),
-        online: seen !== null && now - seen < ONLINE_WINDOW_MS,
-        lastSeenAt: row.lastSeenAt?.toISOString() ?? null,
-        weekAnswers: Number(row.weekAnswers),
-        mutedUntil:
-          row.mutedUntil !== null && row.mutedUntil.getTime() > now
-            ? row.mutedUntil.toISOString()
-            : null,
-      },
+      visitorId !== undefined
+        ? { ...member, online: false, lastSeenAt: null, mutedUntil: null }
+        : {
+            ...member,
+            online: seen !== null && now - seen < ONLINE_WINDOW_MS,
+            lastSeenAt: row.lastSeenAt?.toISOString() ?? null,
+            mutedUntil:
+              row.mutedUntil !== null && row.mutedUntil.getTime() > now
+                ? row.mutedUntil.toISOString()
+                : null,
+          },
     ];
   });
   const last = page.at(-1);
@@ -958,6 +966,15 @@ async function readViewHeader(db: Reader, clanId: string, viewerId: string) {
   return row ?? null;
 }
 
+/** Whether the player is in this clan. */
+export async function isClanMember(db: Reader, clanId: string, userId: string): Promise<boolean> {
+  const [row] = await db
+    .select({ userId: clanMembers.userId })
+    .from(clanMembers)
+    .where(and(eq(clanMembers.clanId, clanId), eq(clanMembers.userId, userId)));
+  return row !== undefined;
+}
+
 /** `GET /clans/:id`. Visitors see the header and the members only. */
 export async function readClanView(
   db: Database,
@@ -974,7 +991,13 @@ export async function readClanView(
   }
   const { clan, role, mutedUntil } = header;
   const [{ members }, goal, library] = await Promise.all([
-    readMembers(db, { clanId, after: null, limit: VIEW_MEMBERS, now }),
+    readMembers(db, {
+      clanId,
+      after: null,
+      limit: VIEW_MEMBERS,
+      now,
+      ...(role === null ? { visitorId: viewerId } : {}),
+    }),
     role === null ? null : readGoal(db, { clanId, userId: viewerId, now }),
     role === null
       ? []

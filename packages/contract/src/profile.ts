@@ -39,6 +39,27 @@ export const profileClanSchema = z.object({
 });
 export type ProfileClan = z.infer<typeof profileClanSchema>;
 
+/** A player in the list of public profiles. */
+export const directoryPlayerSchema = z.object({
+  player: playerBadgeSchema,
+  /** `null` without a clan. */
+  clan: profileClanSchema.nullable(),
+});
+export type DirectoryPlayer = z.infer<typeof directoryPlayerSchema>;
+
+/** `GET /players?q=&cursor=`: by pseudo prefix, the latest seen first. */
+export const playersQuerySchema = z.object({
+  q: z.string().trim().max(30).optional(),
+  cursor: z.string().max(200).optional(),
+  limit: z.coerce.number().int().min(1).max(50).default(20),
+});
+
+export const playersResponseSchema = z.object({
+  players: z.array(directoryPlayerSchema),
+  nextCursor: z.string().nullable(),
+});
+export type PlayersResponse = z.infer<typeof playersResponseSchema>;
+
 /**
  * `GET /players/:pseudo`, 200. A private profile shows only the pseudo and
  * the avatar. A profile below the public level, or of a player blocked either way, answers 404.
