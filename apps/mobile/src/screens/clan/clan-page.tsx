@@ -3,6 +3,7 @@ import type { Catalog } from "@leximon/contract/client";
 import { canAct } from "@leximon/core";
 import { collectionTone } from "@leximon/tokens";
 import {
+  ALL_CLANS_LABEL,
   claimLabel,
   clanLevelLine,
   clanSubline,
@@ -22,7 +23,7 @@ import {
   roleLabel,
   weekAnswersLabel,
 } from "@leximon/view-model";
-import { useFocusEffect } from "expo-router";
+import { router, useFocusEffect } from "expo-router";
 import { useCallback, useMemo, useState } from "react";
 import { Pressable, ScrollView, Share, StyleSheet, Text, View } from "react-native";
 import { api } from "@/api/client";
@@ -200,6 +201,14 @@ export function ClanPage({
               <Badge count={view.pendingRequests} ring={colors.background} />
             </Pressable>
           )}
+          <Pressable
+            onPress={() => router.push({ pathname: "/communaute", params: { onglet: "clans" } })}
+            style={styles.round}
+            accessibilityRole="link"
+            accessibilityLabel={ALL_CLANS_LABEL}
+          >
+            <Icon name="search" size={19} color={colors.text} />
+          </Pressable>
           <Pressable
             onPress={invite}
             style={styles.round}

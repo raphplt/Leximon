@@ -2,6 +2,7 @@ import type { ProfileResponse } from "@leximon/contract";
 import { type Catalog, collectionName } from "@leximon/contract/client";
 import type { IconName } from "@leximon/tokens";
 import {
+  COMMUNITY_TITLE,
   canShareProfile,
   movePin,
   PIN_TEXTS,
@@ -38,6 +39,7 @@ const PIN_WIDTH = 116;
 
 const LINKS: readonly { readonly label: string; readonly icon: IconName; readonly href: Href }[] = [
   { label: "Amis", icon: "amis", href: "/amis" },
+  { label: COMMUNITY_TITLE, icon: "clan", href: "/communaute" },
   { label: "Niveaux", icon: "star", href: "/niveaux" },
   { label: "Réglages", icon: "reglages", href: "/reglages" },
   { label: "Mon compte", icon: "cle", href: "/compte" },

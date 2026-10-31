@@ -33,6 +33,8 @@ function failureMessage(error: unknown): string {
     : "Ça n'a pas marché. Réessaie.";
 }
 
+const openClan = (id: string) => () => router.push({ pathname: "/clan/[id]", params: { id } });
+
 type State =
   | { readonly kind: "loading" | "failed" | "missing" | "blocked" }
   | { readonly kind: "shown"; readonly profile: PublicProfile };
@@ -96,10 +98,11 @@ export function PublicProfileScreen({ pseudo }: { readonly pseudo: string }) {
           clan: null,
         };
   const own = viewer !== null && shown.visibility === "public" && viewer.playerCode === shown.code;
+  const clanId = shown.visibility === "public" ? (shown.clan?.id ?? null) : null;
 
   return (
     <Page title={shown.pseudo}>
-      <ProfileHeader face={face} />
+      <ProfileHeader face={face} {...(clanId === null ? {} : { onClan: openClan(clanId) })} />
       {own ? (
         <Panel>
           <Text style={styles.note}>Tu vois ton profil comme les autres le voient.</Text>

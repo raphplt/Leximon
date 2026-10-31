@@ -27,7 +27,7 @@ export function ProfileHeader({
   onClan,
 }: {
   readonly face: ProfileFace;
-  /** Where the clan's name leads: the player's own clan page, else nowhere. */
+  /** Where the clan's name leads. */
   readonly onClan?: () => void;
 }) {
   const subline = [

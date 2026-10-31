@@ -10,6 +10,7 @@ import {
   deleteAccountLabel,
   playerName,
   pseudoSettingLabel,
+  publicProfileDetail,
   UNBLOCKED_TOAST,
 } from "@leximon/view-model";
 import { router } from "expo-router";
@@ -164,11 +165,7 @@ export function SettingsScreen() {
         <Group title="PROFIL">
           <Toggle
             label="Profil public"
-            detail={
-              me.level < me.publicFromLevel
-                ? `Visible par un lien dès le niveau ${me.publicFromLevel}`
-                : "Visible par un lien"
-            }
+            detail={publicProfileDetail(me)}
             value={me.profilePublic}
             onChange={(on) =>
               void profileActions.update(
