@@ -1,7 +1,13 @@
-import type { Rarity } from "@leximon/core";
+import {
+  type Rarity,
+  RIDDLE_SCHEDULE,
+  type RiddleClues,
+  riddleCluesOf,
+  riddleRulesAt,
+} from "@leximon/core";
 import { inArray, sql } from "drizzle-orm";
 import type { Database } from "../client";
-import { cards, cardThemes, collections, themes } from "../schema/index";
+import { cards, cardThemes, collections, riddleWords, themes } from "../schema/index";
 import type { Release } from "./release";
 
 export interface PublishedCard {
@@ -22,6 +28,8 @@ export interface CatalogPlan {
   /** The themes of the release's cards, which replace those the cards had. */
   readonly themes: readonly string[];
   readonly cardThemes: readonly { readonly cardId: string; readonly themeId: string }[];
+  /** The words fit for a riddle, under the rules to come: they replace the previous pool. */
+  readonly riddleWords: readonly { readonly cardId: string; readonly clues: RiddleClues }[];
   /** Published cards missing from the release: they leave the boosters, owned copies stay. */
   readonly retire: readonly string[];
   /** A published card's rarity never changes: any of these blocks the publication. */
@@ -37,6 +45,7 @@ export function planCatalog(release: Release, published: readonly PublishedCard[
   const releaseCards = release.collections.flatMap((collection) => collection.cards);
   const inRelease = new Set(releaseCards.map((card) => card.id));
   const publishedById = new Map(published.map((card) => [card.id, card]));
+  const riddleRules = riddleRulesAt(RIDDLE_SCHEDULE, Number.MAX_SAFE_INTEGER);
   return {
     collections: release.collections.map(({ id, name }) => ({ id, name })),
     cards: releaseCards.map((card) => ({
@@ -49,6 +58,10 @@ export function planCatalog(release: Release, published: readonly PublishedCard[
     cardThemes: releaseCards.flatMap((card) =>
       card.themes.map((themeId) => ({ cardId: card.id, themeId })),
     ),
+    riddleWords: releaseCards.flatMap((card) => {
+      const clues = riddleCluesOf(riddleRules, card);
+      return clues === null ? [] : [{ cardId: card.id, clues }];
+    }),
     retire: published
       .filter((card) => card.retiredAt === null && !inRelease.has(card.id))
       .map((card) => card.id),
@@ -127,6 +140,10 @@ export async function applyCatalog(db: Database, plan: CatalogPlan, now: Date): 
     }
     for (const batch of batches(plan.cardThemes)) {
       await tx.insert(cardThemes).values(batch);
+    }
+    await tx.delete(riddleWords);
+    for (const batch of batches(plan.riddleWords)) {
+      await tx.insert(riddleWords).values(batch);
     }
     for (const batch of batches(plan.retire)) {
       await tx.update(cards).set({ retiredAt: now }).where(inArray(cards.id, batch));

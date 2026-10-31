@@ -16,5 +16,6 @@ export * from "./me";
 export * from "./moderation";
 export * from "./profile";
 export * from "./progress";
+export * from "./riddles";
 export * from "./trades";
 export * from "./waitlist";

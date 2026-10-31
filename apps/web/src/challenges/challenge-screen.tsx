@@ -49,6 +49,7 @@ import { myClan } from "@/player/clan";
 import { dailyChallenge, ownedCards, refreshIfRead, wordMemory } from "@/player/collection";
 import { useShared } from "@/player/resource";
 import { publishProgress } from "@/progress/use-progress";
+import { RiddleEntry } from "@/riddle/riddle-entry";
 import { useShell } from "@/shell/shell-context";
 import { Button, ButtonLink, RoundButton } from "@/ui/button";
 import { Icon, type IconName } from "@/ui/icon";
@@ -294,6 +295,7 @@ export function ChallengeScreen() {
           {error}
         </p>
       )}
+      <RiddleEntry now={now} />
       {catalog !== null && <Escaping catalog={catalog} now={now} />}
       {catalog !== null && (
         <PracticeSection

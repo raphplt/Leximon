@@ -31,6 +31,7 @@ import { play, vibrate } from "@/feedback/feedback";
 import { dailyChallenge, ownedCards, refreshIfRead, wordMemory } from "@/player/collection";
 import { useNow, useShared } from "@/player/shared";
 import { publishProgress, wallet } from "@/player/state";
+import { RiddleEntry } from "@/screens/riddle/riddle-entry";
 import { TAB_BAR_RISE } from "@/shell/tab-bar";
 import { colors, fonts } from "@/theme";
 import { Button } from "@/ui/button";
@@ -260,6 +261,7 @@ export function ChallengeScreen({
         </Text>
       )}
       <MemoryPanel now={now} />
+      <RiddleEntry now={now} />
       {catalog !== null && <Escaping catalog={catalog} now={now} onReview={review} />}
       {catalog !== null && (
         <PracticeSection

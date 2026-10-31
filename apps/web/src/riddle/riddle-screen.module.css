@@ -1,0 +1,145 @@
+/* Énigme du jour. */
+
+.page {
+  box-sizing: border-box;
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 26px 32px 64px;
+}
+
+.title {
+  margin: 0 0 18px;
+  font-size: 44px;
+  line-height: 1;
+}
+
+.riddle {
+  display: grid;
+  gap: 18px;
+}
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 20px;
+}
+
+.line {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.45;
+  color: var(--lx-color-text-muted);
+}
+
+.cells {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  margin: 6px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.cell {
+  display: grid;
+  place-items: center;
+  box-sizing: border-box;
+  flex: 0 1 44px;
+  min-width: 0;
+  height: 52px;
+  border: 1px solid var(--lx-color-outline);
+  border-radius: 10px;
+  font-size: 26px;
+  text-transform: uppercase;
+}
+
+.nature {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 800;
+  text-align: center;
+}
+
+.clue {
+  display: grid;
+  gap: 4px;
+}
+
+.clueText {
+  margin: 0;
+  font-size: 17px;
+  line-height: 1.45;
+}
+
+.field {
+  min-height: 60px;
+  font-size: 24px;
+  text-align: center;
+}
+
+.notice {
+  margin: 0;
+  font-weight: 800;
+  text-align: center;
+  color: #c23d1b;
+}
+
+.error {
+  margin: 0;
+  text-align: center;
+  color: #c23d1b;
+}
+
+.tries {
+  margin: 0;
+  font-size: 15px;
+  text-align: center;
+  color: var(--lx-color-text-muted);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+}
+
+.headline {
+  margin: 0;
+  font-size: 30px;
+  line-height: 1.15;
+}
+
+.result {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 800;
+}
+
+.back {
+  align-self: center;
+  font-size: 15px;
+  color: var(--lx-color-text-muted);
+}
+
+@media (max-width: 640px) {
+  .page {
+    padding: 18px 16px 48px;
+  }
+
+  .title {
+    font-size: 34px;
+  }
+
+  .cells {
+    gap: 4px;
+  }
+
+  .cell {
+    flex-basis: 34px;
+    height: 42px;
+    border-radius: 8px;
+    font-size: min(21px, 4.6vw);
+  }
+}

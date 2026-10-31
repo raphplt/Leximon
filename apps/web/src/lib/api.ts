@@ -8,8 +8,8 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8787";
 export const browserTransport: ApiTransport = (path, init) =>
   fetch(`${API_URL}${path}`, { ...init, credentials: "include" });
 
-/** Pages that work without a player: signing in to an account, entering by an invitation. */
-const OPEN_WITHOUT_PLAYER = ["/compte", "/invitation", "/ami/"];
+/** Pages that work without a player: signing in to an account, entering by an invitation, a shared riddle. */
+const OPEN_WITHOUT_PLAYER = ["/compte", "/invitation", "/ami/", "/enigme/"];
 
 export const api = createApiClient({
   transport: browserTransport,

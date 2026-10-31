@@ -1,0 +1,303 @@
+import type { RiddleResponse } from "@leximon/contract";
+import { TYPED_ANSWER_MAX_LENGTH } from "@leximon/core";
+import {
+  RIDDLE_NEW_DAY,
+  RIDDLE_SEND_FAILED,
+  RIDDLE_UNAVAILABLE,
+  RIDDLE_WRONG,
+  riddleAskLabel,
+  riddleCells,
+  riddleClueLines,
+  riddleHeadline,
+  riddleNature,
+  riddleNextLine,
+  riddleResultLine,
+  riddleRewardLines,
+  riddleRule,
+  riddleShareText,
+  riddleSquares,
+  riddleTriesLine,
+} from "@leximon/view-model";
+import { randomUUID } from "expo-crypto";
+import { router } from "expo-router";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { Share, StyleSheet, Text, TextInput, View } from "react-native";
+import { api } from "@/api/client";
+import { play, vibrate } from "@/feedback/feedback";
+import {
+  cardDates,
+  dailyChallenge,
+  ownedCards,
+  refreshIfRead,
+  wordMemory,
+} from "@/player/collection";
+import { useNow } from "@/player/shared";
+import { publishProgress } from "@/player/state";
+import { colors, fonts } from "@/theme";
+import { Button } from "@/ui/button";
+import { FormError, Page, Paragraph } from "@/ui/page";
+import { Panel } from "@/ui/panel";
+import { TextButton } from "@/ui/text-button";
+
+type Loaded =
+  | { readonly state: "loading" }
+  | { readonly state: "failed" }
+  | { readonly state: "none" }
+  | { readonly state: "ready"; readonly riddle: RiddleResponse };
+
+export function RiddleScreen() {
+  const [loaded, setLoaded] = useState<Loaded>({ state: "loading" });
+  const [typed, setTyped] = useState("");
+  const [sending, setSending] = useState(false);
+  const [notice, setNotice] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  // Kept until the server answers: a retry of the same answer must not cost another try.
+  const pendingKey = useRef<string | null>(null);
+
+  const load = useCallback(() => {
+    setLoaded({ state: "loading" });
+    api
+      .fetchRiddle()
+      .then((riddle) => setLoaded(riddle === null ? { state: "none" } : { state: "ready", riddle }))
+      .catch(() => setLoaded({ state: "failed" }));
+  }, []);
+  useEffect(load, [load]);
+
+  const send = async (riddle: RiddleResponse, guess: string | null) => {
+    const key = pendingKey.current ?? randomUUID();
+    pendingKey.current = key;
+    setSending(true);
+    setError(null);
+    setNotice(null);
+    try {
+      const result = await api.answerRiddle({ number: riddle.number, guess }, key);
+      pendingKey.current = null;
+      if (result.kind === "over") {
+        setNotice(RIDDLE_NEW_DAY);
+        load();
+        return;
+      }
+      publishProgress(result.progress);
+      setLoaded({ state: "ready", riddle: result.riddle });
+      setTyped("");
+      if (result.riddle.cardGiven) {
+        refreshIfRead(ownedCards);
+        refreshIfRead(cardDates);
+        refreshIfRead(wordMemory);
+        refreshIfRead(dailyChallenge);
+      }
+      if (result.riddle.outcome === "found") {
+        play("answerRight");
+        vibrate([12, 120, 40]);
+      } else if (guess !== null) {
+        play("answerWrong");
+        vibrate([10, 60, 10]);
+        if (result.riddle.outcome === null) setNotice(RIDDLE_WRONG);
+      }
+    } catch {
+      setError(RIDDLE_SEND_FAILED);
+    } finally {
+      setSending(false);
+    }
+  };
+
+  return (
+    <Page title="Énigme du jour">
+      {loaded.state === "loading" && <Paragraph muted>Un instant…</Paragraph>}
+      {loaded.state === "failed" && (
+        <>
+          <Paragraph muted>L'énigme n'a pas pu être chargée. Réessaie.</Paragraph>
+          <Button label="Réessayer" secondary onPress={load} />
+        </>
+      )}
+      {loaded.state === "none" && <Paragraph muted>{RIDDLE_UNAVAILABLE}</Paragraph>}
+      {loaded.state === "ready" && (
+        <Riddle
+          riddle={loaded.riddle}
+          typed={typed}
+          sending={sending}
+          notice={notice}
+          error={error}
+          onType={setTyped}
+          onSend={(guess) => void send(loaded.riddle, guess)}
+        />
+      )}
+    </Page>
+  );
+}
+
+function Riddle({
+  riddle,
+  typed,
+  sending,
+  notice,
+  error,
+  onType,
+  onSend,
+}: {
+  readonly riddle: RiddleResponse;
+  readonly typed: string;
+  readonly sending: boolean;
+  readonly notice: string | null;
+  readonly error: string | null;
+  readonly onType: (typed: string) => void;
+  readonly onSend: (guess: string | null) => void;
+}) {
+  const playing = riddle.outcome === null;
+  const submit = () => {
+    if (typed.trim() !== "" && !sending) onSend(typed);
+  };
+  // Twelve boxes hold on the narrowest phones only with smaller letters.
+  const letterSize = riddle.letters > 9 ? 16 : 21;
+  return (
+    <>
+      <Panel style={styles.panel}>
+        <Text style={styles.kicker}>ÉNIGME N° {riddle.number}</Text>
+        {playing && <Text style={styles.line}>{riddleRule(riddle.lastStep)}</Text>}
+        <View
+          style={styles.cells}
+          accessible
+          accessibilityLabel={`Mot de ${riddle.letters} lettres`}
+        >
+          {riddleCells(riddle).map((letter, index) => (
+            // biome-ignore lint/suspicious/noArrayIndexKey: a letter's place is its identity
+            <View key={index} style={styles.cell}>
+              <Text style={[styles.letter, { fontSize: letterSize }]}>{letter}</Text>
+            </View>
+          ))}
+        </View>
+        <Text style={styles.nature}>{riddleNature(riddle.partOfSpeech, riddle.letters)}</Text>
+        {riddleClueLines(riddle).map((clue) => (
+          <View key={clue.label} style={styles.clue}>
+            <Text style={styles.kicker}>{clue.label.toUpperCase()}</Text>
+            <Text style={styles.clueText}>{clue.text}</Text>
+          </View>
+        ))}
+      </Panel>
+      {playing ? (
+        <Panel style={styles.panel}>
+          <TextInput
+            style={styles.field}
+            value={typed}
+            onChangeText={onType}
+            maxLength={TYPED_ANSWER_MAX_LENGTH}
+            accessibilityLabel="Le mot"
+            placeholder="Le mot"
+            placeholderTextColor={colors.textFaint}
+            selectionColor={colors.accent}
+            autoComplete="off"
+            autoCapitalize="none"
+            autoCorrect={false}
+            spellCheck={false}
+            editable={!sending}
+            returnKeyType="send"
+            onSubmitEditing={submit}
+          />
+          {notice !== null && (
+            <Text style={styles.notice} accessibilityLiveRegion="polite">
+              {notice}
+            </Text>
+          )}
+          <FormError message={error} />
+          <Text style={styles.tries}>{riddleTriesLine(riddle)}</Text>
+          <Button
+            label="Proposer ce mot"
+            disabled={sending || typed.trim() === ""}
+            onPress={submit}
+          />
+          <TextButton
+            label={riddleAskLabel(riddle)}
+            disabled={sending}
+            onPress={() => onSend(null)}
+          />
+        </Panel>
+      ) : (
+        <Result riddle={riddle} />
+      )}
+    </>
+  );
+}
+
+function Result({ riddle }: { readonly riddle: RiddleResponse }) {
+  const now = useNow(60_000);
+  const answer = riddle.answer;
+  return (
+    <Panel style={styles.panel}>
+      <Text style={styles.headline} accessibilityLiveRegion="polite">
+        {riddleHeadline(riddle)}
+      </Text>
+      <Text style={styles.result}>{riddleResultLine(riddle)}</Text>
+      <Text style={styles.squares} importantForAccessibility="no" accessibilityElementsHidden>
+        {riddleSquares(riddle)}
+      </Text>
+      {riddleRewardLines(riddle).map((line) => (
+        <Text key={line} style={styles.line}>
+          {line}
+        </Text>
+      ))}
+      <Text style={styles.line}>{riddleNextLine(riddle, now)}</Text>
+      <View style={styles.actions}>
+        <Button
+          label="Partager mon résultat"
+          onPress={() => void Share.share({ message: riddleShareText(riddle) })}
+        />
+        {answer !== null && (
+          <Button
+            label="Voir la carte"
+            secondary
+            onPress={() => router.push(`/carte/${answer.cardId}`)}
+          />
+        )}
+      </View>
+    </Panel>
+  );
+}
+
+const styles = StyleSheet.create({
+  panel: { gap: 12 },
+  kicker: {
+    fontFamily: fonts.ui.extrabold,
+    fontSize: 12,
+    letterSpacing: 2,
+    color: colors.textMuted,
+  },
+  line: { fontFamily: fonts.ui.medium, fontSize: 15, lineHeight: 21, color: colors.textMuted },
+  cells: { flexDirection: "row", justifyContent: "center", gap: 4, marginTop: 4 },
+  cell: {
+    flex: 1,
+    maxWidth: 36,
+    height: 44,
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 1,
+    borderColor: colors.outline,
+    borderRadius: 8,
+  },
+  letter: { fontFamily: fonts.display, color: colors.text, textTransform: "uppercase" },
+  nature: { fontFamily: fonts.ui.bold, fontSize: 15, color: colors.text, textAlign: "center" },
+  clue: { gap: 2 },
+  clueText: { fontFamily: fonts.text.regular, fontSize: 17, lineHeight: 24, color: colors.text },
+  field: {
+    minHeight: 60,
+    paddingHorizontal: 18,
+    borderRadius: 16,
+    borderWidth: 2,
+    borderColor: colors.track,
+    backgroundColor: colors.well,
+    color: colors.text,
+    fontFamily: fonts.display,
+    fontSize: 26,
+    textAlign: "center",
+  },
+  notice: { fontFamily: fonts.ui.bold, fontSize: 15, color: colors.danger, textAlign: "center" },
+  tries: {
+    fontFamily: fonts.ui.medium,
+    fontSize: 14,
+    color: colors.textMuted,
+    textAlign: "center",
+  },
+  headline: { fontFamily: fonts.display, fontSize: 26, lineHeight: 32, color: colors.text },
+  result: { fontFamily: fonts.ui.bold, fontSize: 16, color: colors.text },
+  squares: { fontSize: 16, lineHeight: 22 },
+  actions: { gap: 10, marginTop: 4 },
+});

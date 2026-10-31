@@ -20,6 +20,7 @@ import type { NotifySchedule } from "./notify/notify";
 import type { XpSchedule } from "./progress/progress";
 import type { LevelRewardSchedule } from "./progress/rewards";
 import type { UnlockSchedule } from "./progress/unlocks";
+import type { RiddleSchedule } from "./riddle/riddle";
 import type { TradeSchedule } from "./trade/trade";
 
 const MINUTE = 60_000;
@@ -34,6 +35,8 @@ const FRIENDS_DECIDED = Date.UTC(2026, 9, 23, 22);
 const NOTIFY_DECIDED = Date.UTC(2026, 9, 25, 23);
 /** Midnight in Paris on 2026-10-30, when the owner decided practice series. */
 const PRACTICE_DECIDED = Date.UTC(2026, 9, 29, 23);
+/** Midnight in Paris on 2026-10-31, when the owner decided the riddle of the day. */
+const RIDDLE_DECIDED = Date.UTC(2026, 9, 30, 23);
 
 export const REFILL_SCHEDULE: RefillSchedule = [
   { startsAt: SINCE_LAUNCH, capacity: 6, intervalMs: 30 * MINUTE },
@@ -319,6 +322,22 @@ export const PRACTICE_SCHEDULE: PracticeSchedule = [
     recentWords: 30,
     xpPerAnswer: 5,
     dailyXpCap: 100,
+  },
+];
+
+/** The day of riddle number 1, in Paris. */
+export const RIDDLE_FIRST_DAY = "2026-10-31";
+
+// The riddle of the day.
+export const RIDDLE_SCHEDULE: RiddleSchedule = [
+  {
+    startsAt: RIDDLE_DECIDED,
+    rarities: ["common", "uncommon"],
+    minLetters: 5,
+    maxLetters: 12,
+    minDefinitionWords: 8,
+    lettersShown: 3,
+    xp: 50,
   },
 ];
 

@@ -6,6 +6,8 @@ import {
   MASTERY_LEVELS,
   type PityCounters,
   RARITIES,
+  RIDDLE_OUTCOMES,
+  type RiddleClues,
   SANCTION_KINDS,
 } from "@leximon/core";
 import { sql } from "drizzle-orm";
@@ -33,6 +35,7 @@ export const rarity = pgEnum("rarity", RARITIES);
 export const masteryLevel = pgEnum("mastery_level", MASTERY_LEVELS);
 export const challengeFormat = pgEnum("challenge_format", CHALLENGE_FORMATS);
 export const boosterBonusKind = pgEnum("booster_bonus_kind", BONUS_KINDS);
+export const riddleOutcome = pgEnum("riddle_outcome", RIDDLE_OUTCOMES);
 /** "expired" is never stored: a pending offer past `expires_at` is expired (no scheduled task). */
 export const tradeStatus = pgEnum("trade_status", [
   "pending",
@@ -609,6 +612,60 @@ export const practiceAnswers = pgTable(
     primaryKey({ columns: [table.userId, table.idempotencyKey] }),
     index("practice_answers_user_answered_idx").on(table.userId, table.answeredAt.desc()),
     index("practice_answers_answered_idx").on(table.answeredAt),
+  ],
+);
+
+/**
+ * Words a riddle can ask, rewritten at each publication: the API needs their clues, and sending a
+ * card from the catalogue would give the word away. The other card texts stay out of the database.
+ */
+export const riddleWords = pgTable("riddle_words", {
+  cardId: text()
+    .primaryKey()
+    .references(() => cards.id, { onDelete: "cascade" }),
+  clues: jsonb().$type<RiddleClues>().notNull(),
+});
+
+/**
+ * One riddle per day in Paris, chosen by the first request of the day. Its clues are copied: a
+ * publication during the day must not change a riddle under the players.
+ */
+export const dailyRiddles = pgTable(
+  "daily_riddles",
+  {
+    day: date({ mode: "string" }).primaryKey(),
+    cardId: text()
+      .notNull()
+      .references(() => cards.id),
+    clues: jsonb().$type<RiddleClues>().notNull(),
+    createdAt: timestamp({ withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [index("daily_riddles_card_idx").on(table.cardId)],
+);
+
+/** A player's game of a day's riddle. `outcome` stays `null` while it goes on. */
+export const riddlePlays = pgTable(
+  "riddle_plays",
+  {
+    userId: text()
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    day: date({ mode: "string" })
+      .notNull()
+      .references(() => dailyRiddles.day),
+    /** Clues and letters uncovered so far. */
+    step: smallint().notNull(),
+    outcome: riddleOutcome(),
+    /** What finding the word earned, the word's own rarity bonus included. */
+    xp: smallint().notNull().default(0),
+    cardGiven: boolean().notNull().default(false),
+    /** The last answer's key: a retry of it must not cost another step. */
+    idempotencyKey: uuid().notNull(),
+    answeredAt: timestamp({ withTimezone: true }).notNull(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.userId, table.day] }),
+    index("riddle_plays_day_outcome_idx").on(table.day, table.outcome),
   ],
 );
 

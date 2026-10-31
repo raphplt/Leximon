@@ -20,5 +20,6 @@ export * from "./progress/progress";
 export * from "./progress/rewards";
 export * from "./progress/unlocks";
 export * from "./random";
+export * from "./riddle/riddle";
 export * from "./rules";
 export * from "./trade/trade";

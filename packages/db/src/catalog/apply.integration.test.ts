@@ -1,7 +1,7 @@
 import { eq, inArray } from "drizzle-orm";
 import { afterAll, describe, expect, it } from "vitest";
 import { createDb } from "../client";
-import { cards, cardThemes, collections } from "../schema/index";
+import { cards, cardThemes, collections, riddleWords } from "../schema/index";
 import { testDatabaseUrl } from "../testing";
 import { applyCatalog, loadPublishedCards, planCatalog } from "./plan";
 import type { Release } from "./release";
@@ -117,5 +117,34 @@ describe("catalog publication", () => {
     const plan = planCatalog(release([["pub-poue", "rare"]]), await loadPublishedCards(db));
     expect(plan.rarityConflicts).toHaveLength(1);
     await expect(applyCatalog(db, plan, second)).rejects.toThrow(/rarity/);
+  });
+
+  it("replaces the riddle words with those of the release", async () => {
+    const riddle = release([["pubralingue", "common"]]);
+    const [card] = riddle.collections[0]?.cards ?? [];
+    if (card === undefined) throw new Error("Fixture without a card");
+    const fit = {
+      ...card,
+      definition: "Cordage cousu en ourlet sur le pourtour d'une voile.",
+      etymology: "Mot que l'on retrouve en italien.",
+    };
+    const fitRelease = {
+      ...riddle,
+      collections: riddle.collections.map((c) => ({ ...c, cards: [fit] })),
+    };
+    await applyCatalog(db, planCatalog(fitRelease, await loadPublishedCards(db)), new Date());
+    expect(await db.select().from(riddleWords)).toEqual([
+      {
+        cardId: "pubralingue",
+        clues: {
+          partOfSpeech: "n. f.",
+          opening: "Cordage cousu en ourlet…",
+          definition: fit.definition,
+          etymology: fit.etymology,
+        },
+      },
+    ]);
+    await applyCatalog(db, planCatalog(riddle, await loadPublishedCards(db)), new Date());
+    expect(await db.select().from(riddleWords)).toEqual([]);
   });
 });

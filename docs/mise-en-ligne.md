@@ -382,6 +382,8 @@ Le retour en arrière ne touche que le code. Les migrations sont additives, donc
 
 **Thèmes des cartes :** le serveur lit les thèmes dans `card_themes`, écrits à la publication du catalogue. Le déploiement ne republie que si une version plus récente existe : après l'ajout de cette écriture, lancer une fois `pnpm catalog:publish:prod`, sans quoi les révisions par thème restent vides jusqu'au prochain catalogue.
 
+**Énigme du jour :** le serveur choisit le mot dans `riddle_words`, écrit à la publication du catalogue. Après la migration qui crée cette table, lancer une fois `pnpm catalog:publish:prod` (tunnel de l'étape 7), sinon l'écran dit qu'il n'y a pas d'énigme. `RIDDLE_FIRST_DAY` (`packages/core/src/rules.ts`) donne le jour de l'énigme n° 1 : le caler sur le jour de la mise en ligne.
+
 **Nouveautés :** un changement que les joueurs voient s'annonce dans `CHANGELOG`, en tête de `packages/view-model/src/changelog.ts`, daté du jour de la mise en ligne et commité avant `pnpm deploy:prod`. Le web montre l'entrée une fois à chaque joueur (niveau 5 et plus, une fois par appareil) et la garde sur `/nouveautes`. L'app ne la montre qu'avec le build suivant, puisqu'elle embarque le journal : une entrée qui ne concerne que le web le dit dans son texte.
 
 - Ajouter un réglage ou une liaison à l'API : l'écrire en haut de `apps/api/wrangler.jsonc` (local) **et** dans `env.production`. Wrangler ne recopie ni les variables ni les liaisons dans un environnement.

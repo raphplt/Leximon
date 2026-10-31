@@ -9,6 +9,16 @@ export interface ChangelogEntry {
 /** Newest first. An entry is added the day a change players can see goes live. */
 export const CHANGELOG: readonly ChangelogEntry[] = [
   {
+    date: "2026-10-31",
+    title: "L'énigme du jour",
+    items: [
+      "La page Défis propose chaque jour un nouveau mot à deviner, le même pour tout le monde, en 7 essais.",
+      "Chaque mauvaise réponse dévoile un indice, puis une lettre. Tu peux aussi demander un indice, au prix d'un essai.",
+      "Trouver le mot rapporte 50 XP, et la carte si tu ne l'as pas.",
+      "Tu peux partager ton résultat sans dévoiler le mot.",
+    ],
+  },
+  {
     date: "2026-10-30",
     title: "Révise ce que tu veux",
     items: [

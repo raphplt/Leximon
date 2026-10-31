@@ -225,6 +225,13 @@
       "when": 1793353314490,
       "tag": "0031_practice_answers",
       "breakpoints": true
+    },
+    {
+      "idx": 32,
+      "version": "7",
+      "when": 1793442472259,
+      "tag": "0032_riddles",
+      "breakpoints": true
     }
   ]
 }

@@ -38,6 +38,7 @@ import {
   signupRateLimit,
   waitlistRateLimit,
 } from "./middleware/rate-limit";
+import { riddleRoutes } from "./riddles/routes";
 import { playerRoutes, tradeRoutes } from "./trades/routes";
 import { waitlistRoutes } from "./waitlist/routes";
 
@@ -130,6 +131,8 @@ export function createApp(options: AppOptions = {}) {
   app.use("/challenges", withDatabase);
   app.use("/challenges/*", withDatabase);
   app.route("/challenges", challengeRoutes(loadCatalogIndex));
+  app.use("/riddles/*", withDatabase);
+  app.route("/riddles", riddleRoutes(loadCatalogIndex));
   app.use("/trades/*", withDatabase);
   app.use("/trades", withDatabase);
   app.route("/trades", tradeRoutes());

@@ -24,6 +24,7 @@ export * from "./profile";
 export * from "./resource";
 export * from "./reveal";
 export * from "./rewards";
+export * from "./riddle";
 export * from "./sanctions";
 export * from "./shell";
 export * from "./staging";

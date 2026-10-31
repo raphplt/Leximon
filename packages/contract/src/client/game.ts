@@ -47,6 +47,7 @@ import {
   type ProfileResponse,
   type ProgressResponse,
   type PublicProfile,
+  type PublicRiddle,
   practiceAnswerResponseSchema,
   practiceResponseSchema,
   practiceSummaryResponseSchema,
@@ -55,6 +56,12 @@ import {
   profileResponseSchema,
   progressResponseSchema,
   publicProfileSchema,
+  publicRiddleSchema,
+  type RiddleAnswerRequest,
+  type RiddleAnswerResponse,
+  type RiddleResponse,
+  riddleAnswerResponseSchema,
+  riddleResponseSchema,
   type SendFeedbackRequest,
   signupRequiredSchema,
   type Trade,
@@ -95,6 +102,11 @@ export type PracticeAnswerResult =
   | ({ readonly kind: "answered" } & PracticeAnswerResponse)
   /** The card left in a trade since the question was served: the question is simply skipped. */
   | { readonly kind: "not_owned" };
+
+export type RiddleAnswerResult =
+  | ({ readonly kind: "answered" } & RiddleAnswerResponse)
+  /** The day changed while the player was on it: there is a new riddle to read. */
+  | { readonly kind: "over" };
 
 export type ProfileResult =
   | { readonly kind: "ok"; readonly profile: ProfileResponse }
@@ -266,6 +278,28 @@ export function gameRoutes(http: Http) {
       return { kind: "answered", ...(await parse(response, practiceAnswerResponseSchema)) };
     },
 
+    /** Today's riddle as this player stands; `null` when there is none. */
+    async fetchRiddle(): Promise<RiddleResponse | null> {
+      const response = await sendAsPlayer("/riddles/today");
+      if (response.status === 404) return null;
+      if (!response.ok) throw new ApiError("riddle_unavailable", response.status);
+      return parse(response, riddleResponseSchema);
+    },
+
+    /** Sends a word, or asks for a clue; the caller keeps `idempotencyKey` until it gets a result. */
+    async answerRiddle(
+      answer: RiddleAnswerRequest,
+      idempotencyKey: string,
+    ): Promise<RiddleAnswerResult> {
+      const response = await sendAsPlayer(
+        "/riddles/today/answer",
+        json("POST", answer, { [IDEMPOTENCY_KEY_HEADER]: idempotencyKey }),
+      );
+      if (response.status === 409) return { kind: "over" };
+      if (!response.ok) throw new ApiError("answer_failed", response.status);
+      return { kind: "answered", ...(await parse(response, riddleAnswerResponseSchema)) };
+    },
+
     /** Today's answers towards the daily goal. */
     fetchDaily: (): Promise<DailyChallengeResponse> =>
       getJson("/challenges/daily", dailyChallengeResponseSchema, "daily_unavailable"),
@@ -328,6 +362,13 @@ export function gameRoutes(http: Http) {
     },
 
     /** A public profile by pseudo; `null` when there is none to show. */
+    async fetchPublicRiddle(number: number): Promise<PublicRiddle | null> {
+      const response = await send(`/riddles/${number}`);
+      if (response.status === 404) return null;
+      if (!response.ok) throw new ApiError("riddle_unavailable", response.status);
+      return parse(response, publicRiddleSchema);
+    },
+
     async fetchPublicProfile(pseudo: string): Promise<PublicProfile | null> {
       const response = await send(`/players/${segment(pseudo)}`);
       if (response.status === 404) return null;

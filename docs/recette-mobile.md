@@ -179,6 +179,11 @@ A sur le web sert de deuxième joueur : amis, échanges, clan, sanctions. `pnpm 
 - **Attendu :** comme sur le web ; le bouton de l'album ouvre la série dans l'onglet Défis.
 - **Retour :**
 
+### MDE-03 · Énigme du jour
+- **Faire :** suivre DEF-10 de [recette-web.md](recette-web.md) sur le téléphone, depuis la carte « Énigme du jour » de l'onglet Défis.
+- **Attendu :** comme sur le web, sons et vibrations compris ; le clavier ne cache pas le champ, le partage ouvre la feuille du système, et la carte de l'onglet Défis montre le résultat au retour.
+- **Retour :**
+
 ### MDE-01 · Session
 - **Faire :** lancer une session, répondre juste et faux, taper un mot quand il le demande, arrêter en cours.
 - **Attendu :** comme sur le web, progression, sons, vibrations et réactions compris (DEF-07, DEF-08) ; le clavier ne cache ni la question ni le champ. Bilan et sachet bonus du jour.

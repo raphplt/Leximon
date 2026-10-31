@@ -1,6 +1,6 @@
 # Cahier des charges · Révisions choisies et nouveaux modes de jeu
 
-- **Statut :** choix tranchés par le propriétaire le 2026-10-30, tous selon les recommandations : R1 mixte, R2 niveaux 1 et 3, R3 oui, ordre A, énigme du jour, contre la montre, citation à trous, joutes. Partie A faite le 2026-10-30 (règle P81, recette DEF-09 et MDE-02), web vérifié dans le navigateur, mobile à recetter sur téléphone ; la partie B reste à faire.
+- **Statut :** choix tranchés par le propriétaire le 2026-10-30, tous selon les recommandations : R1 mixte, R2 niveaux 1 et 3, R3 oui, ordre A, énigme du jour, contre la montre, citation à trous, joutes. Partie A faite le 2026-10-30 (règle P81, recette DEF-09 et MDE-02), web vérifié dans le navigateur, mobile à recetter sur téléphone. Énigme du jour faite le 2026-10-31 (règle P82, recette DEF-10 et MDE-03), vérifiée dans le navigateur et sur un émulateur Android ; le reste de la partie B reste à faire.
 - **Source :** retours du propriétaire du 2026-10-28 : « rajouter plus de défis, pouvoir faire des révisions thématiques que sur certains mots, ou certaines collections, et rajouter plus de modes de jeu, notamment des modes de jeu défis plus fun ». Public adulte : du jeu, pas de surenchère.
 - **Règles liées :** P16 (thèmes), P31 (ce qu'on révise), P32 et P33 (formats, paliers), P29 (plis bonus), P48 (XP), P52 (modes entre joueurs, en R&D), P59 (fonctionnalités par niveau). Cahier lié : [defis-progression-et-sensation.md](defis-progression-et-sensation.md).
 

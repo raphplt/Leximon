@@ -1,0 +1,22 @@
+.panel {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin-top: 18px;
+  padding: 20px;
+}
+
+.title {
+  margin: 0 0 4px;
+  font-size: 24px;
+}
+
+.line {
+  margin: 0;
+  max-width: 60ch;
+  font-size: 15px;
+  line-height: 1.45;
+  color: var(--lx-color-text-muted);
+}
