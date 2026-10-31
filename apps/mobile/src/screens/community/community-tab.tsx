@@ -39,7 +39,7 @@ export function CommunityTab({
   return (
     <View style={styles.tab}>
       <View style={styles.nav}>
-        <Segmented options={SECTIONS} value={section} onChange={open} />
+        <Segmented light options={SECTIONS} value={section} onChange={open} />
       </View>
       <View style={styles.tab}>
         {section === "clan" && (

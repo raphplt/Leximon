@@ -78,7 +78,14 @@ export function TabBar({ state, emitter, navigateToTab }: BottomTabBarProps) {
                 <Icon name="sachet" size={30} color={colors.accentInk} />
                 {badge > 0 && <Badge count={badge} ring={TAB_BAR_COLOR} />}
               </View>
-              <Text style={[styles.label, { color }]}>{TAB_LABELS[id]}</Text>
+              <Text
+                style={[styles.label, { color }]}
+                numberOfLines={1}
+                adjustsFontSizeToFit
+                minimumFontScale={0.8}
+              >
+                {TAB_LABELS[id]}
+              </Text>
             </Pressable>
           );
         }
@@ -95,7 +102,14 @@ export function TabBar({ state, emitter, navigateToTab }: BottomTabBarProps) {
                 badge > 0 && <Badge count={badge} ring={TAB_BAR_COLOR} />
               )}
             </View>
-            <Text style={[styles.label, { color }]}>{TAB_LABELS[id]}</Text>
+            <Text
+              style={[styles.label, { color }]}
+              numberOfLines={1}
+              adjustsFontSizeToFit
+              minimumFontScale={0.8}
+            >
+              {TAB_LABELS[id]}
+            </Text>
           </Pressable>
         );
       })}

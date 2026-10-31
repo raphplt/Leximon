@@ -189,13 +189,13 @@ function FriendList({
                 )}
               </View>
               <Text style={styles.small}>{friendLine(friend, now)}</Text>
+              {trades !== null && (
+                <View style={styles.trades}>
+                  <Icon name="echange" size={14} color={colors.accent} />
+                  <Text style={styles.tradesText}>{trades}</Text>
+                </View>
+              )}
             </View>
-            {trades !== null && (
-              <View style={styles.trades}>
-                <Icon name="echange" size={14} color={colors.accent} />
-                <Text style={styles.tradesText}>{trades}</Text>
-              </View>
-            )}
             <Icon name="chev" size={16} color={colors.textMuted} />
           </Pressable>
         );
@@ -549,6 +549,7 @@ const styles = StyleSheet.create({
   nameLine: { flexDirection: "row", alignItems: "center", gap: 6 },
   name: { flexShrink: 1, fontFamily: fonts.ui.extrabold, fontSize: 15, color: colors.text },
   trades: {
+    alignSelf: "flex-start",
     flexDirection: "row",
     alignItems: "center",
     gap: 4,
