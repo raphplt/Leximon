@@ -10,6 +10,7 @@ import {
   isFeatureOpen,
   lockedToast,
   moreMembersLabel,
+  playerName,
   profilePath,
   REPORT_CLAN_LABEL,
   roleLabel,
@@ -237,7 +238,7 @@ function VisitedMember({ member }: { readonly member: ClanMember }) {
         <Avatar avatar={member.player.avatar} frame={null} size={40} />
       </span>
       <span className={styles.memberText}>
-        <span className={styles.memberName}>{member.player.pseudo}</span>
+        <span className={styles.memberName}>{playerName(member.player)}</span>
       </span>
       {role !== null && (
         <span className={styles.role} data-role={member.role}>

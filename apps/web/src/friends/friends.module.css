@@ -2,7 +2,7 @@
 
 .screen {
   box-sizing: border-box;
-  max-width: 1180px;
+  max-width: 1360px;
   margin: 0 auto;
   padding: 26px 32px 64px;
 }
@@ -11,14 +11,13 @@
   display: flex;
   align-items: baseline;
   flex-wrap: wrap;
-  justify-content: space-between;
   gap: 12px;
-  margin-bottom: 18px;
+  margin-bottom: 16px;
 }
 
 .title {
   margin: 0;
-  font-size: 44px;
+  font-size: 34px;
   line-height: 1;
 }
 
@@ -38,7 +37,7 @@
 
 .columns {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1fr) 380px;
   gap: 16px;
   align-items: start;
 }
@@ -49,11 +48,24 @@
   gap: 16px;
 }
 
+/* Stays in sight while the feed scrolls under the top bar. */
+.aside {
+  position: sticky;
+  top: 86px;
+}
+
 .card {
   display: flex;
   flex-direction: column;
   gap: 12px;
   padding: 20px;
+}
+
+.rule {
+  width: 100%;
+  margin: 6px 0;
+  border: 0;
+  border-top: 1px solid rgba(246, 240, 226, 0.1);
 }
 
 .cardHead {
@@ -359,15 +371,18 @@
 
 /* Gold in the middle, silver on the left, bronze on the right. */
 .step[data-place="1"] {
-  order: 2;
+  grid-column: 2;
+  grid-row: 1;
 }
 
 .step[data-place="2"] {
-  order: 1;
+  grid-column: 1;
+  grid-row: 1;
 }
 
 .step[data-place="3"] {
-  order: 3;
+  grid-column: 3;
+  grid-row: 1;
 }
 
 .stepName {
@@ -413,6 +428,12 @@
 .step[data-place="3"] .stepBlock {
   height: 32px;
   background: rgba(214, 140, 80, 0.16);
+}
+
+/* A step nobody stands on yet keeps the podium whole. */
+.step[data-free="true"] .stepBlock {
+  background: none;
+  box-shadow: inset 0 0 0 1px rgba(246, 240, 226, 0.14);
 }
 
 .mine {
@@ -463,10 +484,26 @@
   border-radius: 16px;
 }
 
+.feedDay {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.feedDay + .feedDay {
+  margin-top: 10px;
+}
+
+.dayLabel {
+  margin: 0 0 2px;
+  color: var(--lx-color-text-muted);
+  font-size: 12px;
+  font-weight: 800;
+}
+
 .feed {
   display: flex;
   flex-direction: column;
-  gap: 14px;
   margin: 0;
   padding: 0;
   list-style: none;
@@ -474,18 +511,22 @@
 
 .event {
   display: flex;
+  align-items: center;
   gap: 12px;
+  min-height: 46px;
 }
 
 .eventBody {
   display: flex;
   flex: 1;
-  flex-direction: column;
-  gap: 4px;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 12px;
   min-width: 0;
 }
 
 .eventLine {
+  flex: 1 1 260px;
   margin: 0;
   font-size: 15px;
   line-height: 1.4;
@@ -514,7 +555,20 @@
 }
 
 .reactions .faint {
-  margin-right: 4px;
+  order: 1;
+  margin-left: 4px;
+}
+
+/* On a screen with a pointer, the offer shows on the event it would answer. */
+@media (hover: hover) {
+  .react {
+    opacity: 0;
+  }
+
+  .event:hover .react,
+  .react:focus-visible {
+    opacity: 1;
+  }
 }
 
 .reaction {
@@ -552,6 +606,34 @@ button.reaction:hover {
   color: var(--lx-color-background);
 }
 
+@media (max-width: 1039px) {
+  .columns {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .column {
+    display: contents;
+  }
+
+  .addingSlot {
+    order: 1;
+  }
+
+  .columns[data-alone="true"] .addingSlot {
+    order: -1;
+  }
+
+  .podiumSlot {
+    order: 2;
+  }
+
+  .feedSlot {
+    order: 3;
+  }
+}
+
 @media (max-width: 759px) {
   .screen {
     padding: 16px 16px 48px;
@@ -559,10 +641,6 @@ button.reaction:hover {
 
   .title {
     font-size: 32px;
-  }
-
-  .columns {
-    grid-template-columns: minmax(0, 1fr);
   }
 
   .addRow {

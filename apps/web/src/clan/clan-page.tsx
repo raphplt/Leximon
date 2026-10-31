@@ -21,6 +21,7 @@ import {
   moreMembersLabel,
   nextUnlockLine,
   onlineCountLabel,
+  playerName,
   roleLabel,
   weekAnswersLabel,
 } from "@leximon/view-model";
@@ -263,7 +264,7 @@ export function ClanPage({
       <div className={styles.columns}>
         <div className={styles.column}>
           {goal !== null && bar !== null && (
-            <section className={`${ui.panel} ${styles.card} ${styles.onClan}`}>
+            <section className={`${ui.panel} ${styles.card} ${styles.onClan} ${styles.goalCard}`}>
               <div className={styles.cardHead}>
                 <div>
                   <p className={ui.kicker}>Objectif de la semaine</p>
@@ -362,7 +363,7 @@ export function ClanPage({
                         {entry.online && <span className={styles.online} />}
                       </span>
                       <span className={styles.memberText}>
-                        <span className={styles.memberName}>{entry.player.pseudo}</span>
+                        <span className={styles.memberName}>{playerName(entry.player)}</span>
                         <span className={styles.small}>{now > 0 && memberLine(entry, now)}</span>
                       </span>
                       {role !== null && (

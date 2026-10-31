@@ -4,6 +4,7 @@ import type { FeedEvent, FriendReactionKind } from "@leximon/contract";
 import { collectionName } from "@leximon/contract/client";
 import {
   FEED_EMPTY,
+  feedByDay,
   feedLine,
   feedReactions,
   messageTime,
@@ -79,71 +80,79 @@ export function FriendFeed({ now }: { readonly now: number }) {
       ) : events.length === 0 ? (
         <p className={styles.empty}>{FEED_EMPTY}</p>
       ) : (
-        <ul className={styles.feed}>
-          {events.map((event) => {
-            const self = me !== null && event.player.code === me.playerCode;
-            const card = "cardId" in event ? (catalog?.cardsById.get(event.cardId) ?? null) : null;
-            const collection =
-              event.kind === "collection_complete" && catalog !== null
-                ? collectionName(catalog, event.collectionId)
-                : null;
-            const line = feedLine(event, self, card, collection);
-            const reactions = feedReactions(event, { self, picking: picking === event.id });
-            return (
-              <li key={event.id} className={styles.event}>
-                <Avatar avatar={event.player.avatar} frame={null} size={36} />
-                <div className={styles.eventBody}>
-                  <p className={styles.eventLine}>
-                    {line.before}
-                    {line.word !== null &&
-                      (card !== null ? (
-                        <button
-                          type="button"
-                          className={styles.eventWord}
-                          onClick={() => openCard(card.id)}
-                        >
-                          {line.word}
-                        </button>
-                      ) : (
-                        <em>{line.word}</em>
-                      ))}
-                    {line.after}
-                  </p>
-                  <div className={styles.reactions}>
-                    <span className={styles.faint}>{messageTime(event.createdAt, now)}</span>
-                    {reactions.chips.map((chip) =>
-                      self ? (
-                        <span key={chip.id} className={styles.reaction}>
-                          {chip.label} · {chip.count}
-                        </span>
-                      ) : (
-                        <button
-                          key={chip.id}
-                          type="button"
-                          className={styles.reaction}
-                          aria-pressed={chip.mine}
-                          onClick={() => void choose(event, chip.id)}
-                        >
-                          {chip.label}
-                          {chip.count > 0 && ` · ${chip.count}`}
-                        </button>
-                      ),
-                    )}
-                    {reactions.canReact && (
-                      <button
-                        type="button"
-                        className={`${styles.reaction} ${styles.react}`}
-                        onClick={() => setPicking(event.id)}
-                      >
-                        Réagir
-                      </button>
-                    )}
-                  </div>
-                </div>
-              </li>
-            );
-          })}
-        </ul>
+        feedByDay(events, now).map(({ day, today, events: ofDay }) => (
+          <section key={day} className={styles.feedDay}>
+            <h3 className={styles.dayLabel}>{day}</h3>
+            <ul className={styles.feed}>
+              {ofDay.map((event) => {
+                const self = me !== null && event.player.code === me.playerCode;
+                const card =
+                  "cardId" in event ? (catalog?.cardsById.get(event.cardId) ?? null) : null;
+                const collection =
+                  event.kind === "collection_complete" && catalog !== null
+                    ? collectionName(catalog, event.collectionId)
+                    : null;
+                const line = feedLine(event, self, card, collection);
+                const reactions = feedReactions(event, { self, picking: picking === event.id });
+                return (
+                  <li key={event.id} className={styles.event}>
+                    <Avatar avatar={event.player.avatar} frame={null} size={32} />
+                    <div className={styles.eventBody}>
+                      <p className={styles.eventLine}>
+                        {line.before}
+                        {line.word !== null &&
+                          (card !== null ? (
+                            <button
+                              type="button"
+                              className={styles.eventWord}
+                              onClick={() => openCard(card.id)}
+                            >
+                              {line.word}
+                            </button>
+                          ) : (
+                            <em>{line.word}</em>
+                          ))}
+                        {line.after}
+                      </p>
+                      <div className={styles.reactions}>
+                        {today && (
+                          <span className={styles.faint}>{messageTime(event.createdAt, now)}</span>
+                        )}
+                        {reactions.chips.map((chip) =>
+                          self ? (
+                            <span key={chip.id} className={styles.reaction}>
+                              {chip.label} · {chip.count}
+                            </span>
+                          ) : (
+                            <button
+                              key={chip.id}
+                              type="button"
+                              className={styles.reaction}
+                              aria-pressed={chip.mine}
+                              onClick={() => void choose(event, chip.id)}
+                            >
+                              {chip.label}
+                              {chip.count > 0 && ` · ${chip.count}`}
+                            </button>
+                          ),
+                        )}
+                        {reactions.canReact && (
+                          <button
+                            type="button"
+                            className={`${styles.reaction} ${styles.react}`}
+                            onClick={() => setPicking(event.id)}
+                          >
+                            Réagir
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
+          </section>
+        ))
       )}
       {hasMore && (
         <Button variant="ghost" small onClick={() => void loadOlder()}>

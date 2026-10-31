@@ -18,6 +18,8 @@ import { Bone } from "@/ui/skeleton";
 import ui from "@/ui/ui.module.css";
 import styles from "./friends.module.css";
 
+const FREE_STEPS = [1, 2, 3];
+
 /** The week's podium among friends, on correct challenge answers. No reward. */
 export function Podium({ alone, now }: { readonly alone: boolean; readonly now: number }) {
   const [podium, setPodium] = useState<PodiumResponse | null>(null);
@@ -66,6 +68,11 @@ export function Podium({ alone, now }: { readonly alone: boolean; readonly now: 
                 </span>
                 <span className={styles.stepAnswers}>{entry.answers}</span>
                 <span className={styles.stepBlock}>{rankLabel(entry.rank)}</span>
+              </li>
+            ))}
+            {FREE_STEPS.slice(view.steps.length).map((place) => (
+              <li key={place} className={styles.step} data-place={place} data-free="true">
+                <span className={styles.stepBlock} />
               </li>
             ))}
           </ol>

@@ -7,7 +7,7 @@ import type {
   ReferralReward,
 } from "@leximon/contract";
 import type { EpochMs, Rarity } from "@leximon/core";
-import { seenLabel } from "./clan";
+import { messageTime, seenLabel } from "./clan";
 import { compareFrench, formatCount, plural } from "./format";
 import { playerName } from "./trades";
 
@@ -281,6 +281,30 @@ export function feedLine(
     default:
       throw new Error(`Unknown event: ${JSON.stringify(event satisfies never)}`);
   }
+}
+
+/** Events of the same day together, the feed's order kept: « Aujourd'hui », « Hier », « 29 oct. ». */
+export function feedByDay(
+  events: readonly FeedEvent[],
+  now: EpochMs,
+  timeZone?: string,
+): readonly { readonly day: string; readonly today: boolean; readonly events: FeedEvent[] }[] {
+  const dayOf = (time: string | number) =>
+    new Intl.DateTimeFormat("fr-FR", { timeZone, dateStyle: "short" }).format(new Date(time));
+  const days: { day: string; today: boolean; key: string; events: FeedEvent[] }[] = [];
+  for (const event of events) {
+    const key = dayOf(event.createdAt);
+    const last = days[days.length - 1];
+    if (last?.key === key) {
+      last.events.push(event);
+      continue;
+    }
+    const today = key === dayOf(now);
+    const when = messageTime(event.createdAt, now, timeZone);
+    const day = today ? "Aujourd'hui" : when === "hier" ? "Hier" : when;
+    days.push({ day, today, key, events: [event] });
+  }
+  return days;
 }
 
 /** Each reaction with its count, in the set order, and whether it is the player's. */

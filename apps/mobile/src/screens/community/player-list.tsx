@@ -1,8 +1,6 @@
 import type { DirectoryPlayer, PlayerSort } from "@leximon/contract";
-import { type Catalog, collectionName } from "@leximon/contract/client";
 import {
   CLANLESS_LABEL,
-  NO_PINNED_CARD,
   NO_PLAYER_FOR_FILTER,
   NO_PLAYER_FOUND,
   noPlayerYet,
@@ -14,8 +12,6 @@ import { router } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import { api } from "@/api/client";
-import { Card } from "@/cards/card";
-import { catalogInHand, loadCatalog } from "@/cards/catalog";
 import { Emblem } from "@/clan/emblem";
 import { useShared } from "@/player/shared";
 import { profile } from "@/player/state";
@@ -26,12 +22,6 @@ import { Chip } from "@/ui/chip";
 import { Icon } from "@/ui/icon";
 import { Panel } from "@/ui/panel";
 import { TextButton } from "@/ui/text-button";
-
-const CARD_WIDTH = 86;
-const CARD_HEIGHT = 120;
-
-/** The fan of a player's cards, the last ones turning away from the middle. */
-const CARD_TILTS = [-5, 0, 5];
 
 interface Filter {
   readonly q: string;
@@ -46,17 +36,12 @@ function asQuery({ q, sort, clanless }: Filter, cursor: string | null) {
 /** Every public profile, by the sort the player chose. */
 export function PlayerList() {
   const me = useShared(profile);
-  const [catalog, setCatalog] = useState<Catalog | null>(catalogInHand);
   const [query, setQuery] = useState("");
   const [sort, setSort] = useState<PlayerSort>("active");
   const [clanless, setClanless] = useState(false);
   const [players, setPlayers] = useState<readonly DirectoryPlayer[] | null>(null);
   const [cursor, setCursor] = useState<string | null>(null);
   const [failed, setFailed] = useState(false);
-
-  useEffect(() => {
-    loadCatalog().then(setCatalog, () => undefined);
-  }, []);
 
   const read = useCallback(async (filter: Filter, isCurrent: () => boolean) => {
     const page = await api.fetchPublicPlayers(asQuery(filter, null)).catch(() => null);
@@ -149,26 +134,23 @@ export function PlayerList() {
       ) : players.length === 0 ? (
         <Text style={styles.empty}>{empty}</Text>
       ) : (
-        players.map((entry) => (
-          <PlayerCard key={entry.player.code} entry={entry} catalog={catalog} />
-        ))
+        <Panel style={styles.players}>
+          {players.map((entry, index) => (
+            <PlayerRow key={entry.player.code} entry={entry} first={index === 0} />
+          ))}
+        </Panel>
       )}
       {cursor !== null && <TextButton label="Voir plus de joueurs" onPress={() => void more()} />}
     </>
   );
 }
 
-/** The card leads to the profile, where everything one can do with a player already is. */
-function PlayerCard({
-  entry,
-  catalog,
-}: {
-  readonly entry: DirectoryPlayer;
-  readonly catalog: Catalog | null;
-}) {
-  const { player, clan, pinned } = entry;
+/** The row leads to the profile, where everything one can do with a player already is. */
+function PlayerRow({ entry, first }: { readonly entry: DirectoryPlayer; readonly first: boolean }) {
+  const { player, clan } = entry;
   return (
     <Pressable
+      style={[styles.player, !first && styles.playerRule]}
       onPress={() => {
         if (player.pseudo !== null) {
           router.push({ pathname: "/joueur/[pseudo]", params: { pseudo: player.pseudo } });
@@ -177,53 +159,17 @@ function PlayerCard({
       accessibilityRole="link"
       accessibilityLabel={`${player.pseudo}, niveau ${player.level}`}
     >
-      <Panel style={styles.player}>
-        <View style={styles.shelf}>
-          {pinned.length === 0 ? (
-            <>
-              {CARD_TILTS.map((tilt) => (
-                <View key={tilt} style={[styles.slot, { transform: [{ rotate: `${tilt}deg` }] }]} />
-              ))}
-              <View style={styles.shelfEmpty}>
-                <Text style={styles.shelfEmptyText}>{NO_PINNED_CARD}</Text>
-              </View>
-            </>
-          ) : (
-            pinned.map((cardId, index) => {
-              const card = catalog?.cardsById.get(cardId);
-              const tilt = CARD_TILTS[pinned.length === 1 ? 1 : index] ?? 0;
-              return (
-                <View
-                  key={cardId}
-                  style={[styles.shelfCard, { transform: [{ rotate: `${tilt}deg` }] }]}
-                >
-                  {card === undefined || catalog === null ? (
-                    <View style={styles.placeholder} />
-                  ) : (
-                    <Card
-                      card={card}
-                      collectionName={collectionName(catalog, card.collectionId)}
-                      width={CARD_WIDTH}
-                    />
-                  )}
-                </View>
-              );
-            })
-          )}
-        </View>
-        <View style={styles.identity}>
-          <Avatar avatar={player.avatar} frame={player.frame} size={48} />
-          <View style={styles.text}>
-            <Text style={styles.name} numberOfLines={1}>
-              {player.pseudo}
-            </Text>
-            <Text style={styles.small} numberOfLines={1}>
-              {clan === null ? `Niveau ${player.level}` : `Niveau ${player.level} · ${clan.name}`}
-            </Text>
-          </View>
-          {clan !== null && <Emblem emblem={clan.emblem} size={30} level={clan.level} />}
-        </View>
-      </Panel>
+      <Avatar avatar={player.avatar} frame={player.frame} size={44} />
+      <View style={styles.text}>
+        <Text style={styles.name} numberOfLines={1}>
+          {player.pseudo}
+        </Text>
+        <Text style={styles.small} numberOfLines={1}>
+          {clan === null ? `Niveau ${player.level}` : `Niveau ${player.level} · ${clan.name}`}
+        </Text>
+      </View>
+      {clan !== null && <Emblem emblem={clan.emblem} size={28} level={clan.level} />}
+      <Icon name="chev" size={16} color={colors.textMuted} />
     </Pressable>
   );
 }
@@ -257,36 +203,10 @@ const styles = StyleSheet.create({
   },
   chips: { gap: 8 },
   chipsGap: { width: 1, marginVertical: 8, backgroundColor: colors.track },
-  player: { padding: 0, gap: 0, overflow: "hidden" },
-  // The cards stand on a shelf and overflow its bottom, tucked behind the player's name.
-  shelf: {
-    flexDirection: "row",
-    justifyContent: "center",
-    height: 142,
-    paddingTop: 16,
-    overflow: "hidden",
-    backgroundColor: colors.well,
-  },
-  shelfCard: { marginHorizontal: -6 },
-  placeholder: {
-    width: CARD_WIDTH,
-    height: CARD_HEIGHT,
-    borderRadius: 8,
-    backgroundColor: colors.track,
-  },
-  slot: {
-    width: CARD_WIDTH,
-    height: CARD_HEIGHT,
-    marginHorizontal: -6,
-    borderWidth: 2,
-    borderStyle: "dashed",
-    borderColor: colors.track,
-    borderRadius: 8,
-  },
-  shelfEmpty: { ...StyleSheet.absoluteFill, alignItems: "center", justifyContent: "center" },
-  shelfEmptyText: { fontFamily: fonts.text.italic, fontSize: 15, color: colors.textMuted },
-  identity: { flexDirection: "row", alignItems: "center", gap: 14, padding: 14 },
+  players: { paddingVertical: 4, paddingHorizontal: 14, gap: 0 },
+  player: { flexDirection: "row", alignItems: "center", gap: 12, minHeight: 66 },
+  playerRule: { borderTopWidth: 1, borderTopColor: colors.track },
   text: { flex: 1, gap: 2 },
-  name: { fontFamily: fonts.display, fontSize: 18, color: colors.text },
+  name: { fontFamily: fonts.ui.extrabold, fontSize: 16, color: colors.text },
   small: { fontFamily: fonts.ui.medium, fontSize: 14, color: colors.textMuted },
 });

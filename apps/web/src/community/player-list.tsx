@@ -1,10 +1,10 @@
 "use client";
 
 import type { DirectoryPlayer, PlayerSort } from "@leximon/contract";
-import { type Catalog, collectionName } from "@leximon/contract/client";
+import type { Catalog } from "@leximon/contract/client";
 import {
   CLANLESS_LABEL,
-  NO_PINNED_CARD,
+  levelLabel,
   NO_PLAYER_FOR_FILTER,
   NO_PLAYER_FOUND,
   noPlayerYet,
@@ -20,25 +20,18 @@ import { useCatalog } from "@/cards/use-catalog";
 import clanStyles from "@/clan/clan.module.css";
 import { Emblem } from "@/clan/emblem";
 import { Avatar } from "@/components/avatar";
-import { Card } from "@/components/card";
 import { api } from "@/lib/api";
 import { profile } from "@/player/player";
 import { useShared } from "@/player/resource";
 import { Button } from "@/ui/button";
 import { Icon } from "@/ui/icon";
-import { LevelMedal } from "@/ui/level-bits";
 import { LoadFailed } from "@/ui/load-failed";
 import { Bone } from "@/ui/skeleton";
 import ui from "@/ui/ui.module.css";
 import styles from "./community.module.css";
 
-/** Cards standing in for the first players while they arrive. */
-const WAITING_CARDS = [1, 2, 3, 4, 5, 6];
-
-const CARD_WIDTH = 86;
-
-/** The fan of a player's cards, the last ones turning away from the middle. */
-const CARD_TILTS = [-5, 0, 5];
+/** Rows standing in for the first players while they arrive. */
+const WAITING_ROWS = [1, 2, 3, 4, 5, 6];
 
 interface Filter {
   readonly q: string;
@@ -149,8 +142,8 @@ export function PlayerList() {
       ) : players === null ? (
         <div aria-busy="true">
           <span className={clanStyles.visuallyHidden}>Un instant…</span>
-          <ul className={styles.players} aria-hidden="true">
-            {WAITING_CARDS.map((row) => (
+          <ul className={`${ui.panel} ${styles.players}`} aria-hidden="true">
+            {WAITING_ROWS.map((row) => (
               <li key={row}>
                 <Bone className={styles.playerBone} />
               </li>
@@ -162,13 +155,20 @@ export function PlayerList() {
           <em>{empty}</em>
         </p>
       ) : (
-        <ul className={styles.players}>
-          {players.map((entry) => (
-            <li key={entry.player.code}>
-              <PlayerCard entry={entry} catalog={catalog} />
-            </li>
-          ))}
-        </ul>
+        <div className={`${ui.panel} ${styles.players}`}>
+          <p className={styles.playersHead} aria-hidden="true">
+            <span>Joueur</span>
+            <span>Clan</span>
+            <span>Cartes épinglées</span>
+          </p>
+          <ul className={styles.playerRows}>
+            {players.map((entry) => (
+              <li key={entry.player.code}>
+                <PlayerRow entry={entry} catalog={catalog} />
+              </li>
+            ))}
+          </ul>
+        </div>
       )}
       {cursor !== null && (
         <Button variant="ghost" onClick={() => void more()}>
@@ -179,8 +179,8 @@ export function PlayerList() {
   );
 }
 
-/** The card leads to the profile, where everything one can do with a player already is. */
-function PlayerCard({
+/** The row leads to the profile, where everything one can do with a player already is. */
+function PlayerRow({
   entry,
   catalog,
 }: {
@@ -188,54 +188,26 @@ function PlayerCard({
   readonly catalog: Catalog | null;
 }) {
   const { player, clan, pinned } = entry;
+  const words = pinned.flatMap((cardId) => catalog?.cardsById.get(cardId)?.word ?? []);
   return (
-    <Link href={profilePath(player.pseudo ?? "")} className={`${ui.panel} ${styles.player}`}>
-      <span className={styles.shelf} aria-hidden="true">
-        {pinned.length === 0 ? (
-          <>
-            {CARD_TILTS.map((tilt) => (
-              <span key={tilt} className={styles.shelfSlot} style={{ rotate: `${tilt}deg` }} />
-            ))}
-            <span className={styles.shelfEmpty}>{NO_PINNED_CARD}</span>
-          </>
-        ) : (
-          pinned.map((cardId, index) => {
-            const card = catalog?.cardsById.get(cardId);
-            return (
-              <span
-                key={cardId}
-                className={styles.shelfCard}
-                style={{ rotate: `${CARD_TILTS[pinned.length === 1 ? 1 : index] ?? 0}deg` }}
-              >
-                {card === undefined || catalog === null ? (
-                  <span className={styles.shelfPlaceholder} />
-                ) : (
-                  <Card
-                    card={card}
-                    collectionName={collectionName(catalog, card.collectionId)}
-                    width={CARD_WIDTH}
-                  />
-                )}
-              </span>
-            );
-          })
-        )}
-      </span>
-      <span className={styles.identity}>
-        <Avatar avatar={player.avatar} frame={player.frame} size={52} />
+    <Link href={profilePath(player.pseudo ?? "")} className={styles.player}>
+      <span className={styles.playerWho}>
+        <Avatar avatar={player.avatar} frame={player.frame} size={44} />
         <span className={styles.playerText}>
           <span className={styles.playerName}>{player.pseudo}</span>
-          <span className={styles.playerLevel}>
-            <LevelMedal level={player.level} size={24} labelled />
-            {clan !== null && <span className={styles.playerClanName}>{clan.name}</span>}
-          </span>
+          <span className={styles.playerLevel}>{levelLabel(player.level)}</span>
         </span>
+      </span>
+      <span className={styles.playerClan}>
         {clan !== null && (
-          <span className={styles.playerClan} title={clan.name}>
-            <Emblem emblem={clan.emblem} size={34} level={clan.level} />
-          </span>
+          <>
+            <Emblem emblem={clan.emblem} size={30} level={clan.level} />
+            <span className={styles.playerClanName}>{clan.name}</span>
+          </>
         )}
       </span>
+      <span className={styles.playerWords}>{words.join(", ")}</span>
+      <Icon name="chev" size={16} />
     </Link>
   );
 }

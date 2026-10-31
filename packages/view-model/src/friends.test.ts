@@ -2,6 +2,7 @@ import type { FeedEvent, PodiumEntry } from "@leximon/contract";
 import { describe, expect, it } from "vitest";
 import {
   betaPlacesLabel,
+  feedByDay,
   feedLine,
   feedReactions,
   friendLine,
@@ -108,6 +109,25 @@ describe("the feed", () => {
     mine: null,
   };
   const find: FeedEvent = { ...base, kind: "rare_find", cardId: "talpinette" };
+
+  it("gathers the events of a day under its name", () => {
+    const at = (createdAt: string) => ({ ...find, createdAt });
+    const days = feedByDay(
+      [
+        at("2026-10-24T11:00:00.000Z"),
+        at("2026-10-24T09:00:00.000Z"),
+        at("2026-10-23T09:00:00.000Z"),
+        at("2026-10-20T09:00:00.000Z"),
+      ],
+      now,
+      "Europe/Paris",
+    );
+    expect(days.map((d) => [d.day, d.today, d.events.length])).toEqual([
+      ["Aujourd'hui", true, 2],
+      ["Hier", false, 1],
+      ["20 oct.", false, 1],
+    ]);
+  });
 
   it("says what a friend found, and what the player found", () => {
     const card = { word: "talpinette", rarity: "legendary" as const };

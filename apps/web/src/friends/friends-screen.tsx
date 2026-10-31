@@ -81,22 +81,6 @@ export function FriendsScreen() {
   }
 
   const hasPseudo = view.profile.pseudo !== null;
-  // Once there are friends, they come first; before that, the ways to get some.
-  const hasFriends = data.friends.length > 0;
-  const list = <FriendList friends={data.friends} now={now} onChoose={setChosen} />;
-  const adding = hasPseudo ? (
-    <>
-      <FriendLink code={data.link.code} placesLeft={data.link.betaPlacesLeft} />
-      <AddByPseudo />
-    </>
-  ) : (
-    <section className={`${ui.panel} ${styles.card}`}>
-      <p className={styles.hint}>{FRIENDS_PSEUDO_FIRST}</p>
-      <Button small onClick={() => setPseudoOpen(true)}>
-        Choisir mon pseudo
-      </Button>
-    </section>
-  );
 
   return (
     <main className={styles.screen}>
@@ -107,21 +91,40 @@ export function FriendsScreen() {
         </span>
       </header>
 
-      <div className={styles.columns}>
+      {/* On a phone everything stacks: before any friend, the ways to get some come first. */}
+      <div className={styles.columns} data-alone={data.friends.length === 0}>
         <div className={styles.column}>
           <AddFromLink />
           {data.incoming.length > 0 && <Incoming requests={data.incoming} />}
-
-          {hasFriends && list}
-          {adding}
-          {!hasFriends && list}
-
+          <FriendList friends={data.friends} now={now} onChoose={setChosen} />
           {data.outgoing.length > 0 && <Outgoing requests={data.outgoing} />}
+          <div className={styles.feedSlot}>
+            <FriendFeed now={now} />
+          </div>
         </div>
 
-        <div className={styles.column}>
-          <Podium alone={data.friends.length === 0} now={now} />
-          <FriendFeed now={now} />
+        <div className={`${styles.column} ${styles.aside}`}>
+          <div className={styles.addingSlot}>
+            <section className={`${ui.panel} ${styles.card}`}>
+              {hasPseudo ? (
+                <>
+                  <FriendLink code={data.link.code} placesLeft={data.link.betaPlacesLeft} />
+                  <hr className={styles.rule} />
+                  <AddByPseudo />
+                </>
+              ) : (
+                <>
+                  <p className={styles.hint}>{FRIENDS_PSEUDO_FIRST}</p>
+                  <Button small onClick={() => setPseudoOpen(true)}>
+                    Choisir mon pseudo
+                  </Button>
+                </>
+              )}
+            </section>
+          </div>
+          <div className={styles.podiumSlot}>
+            <Podium alone={data.friends.length === 0} now={now} />
+          </div>
         </div>
       </div>
 
@@ -335,7 +338,7 @@ function FriendLink({
   };
 
   return (
-    <section className={`${ui.panel} ${styles.card}`}>
+    <>
       <p className={ui.kicker}>Ton lien d'ami</p>
       <p className={styles.linkLine}>
         Ceux qui entrent par ton lien deviennent tes amis. Quand l'un d'eux atteint le niveau 5,
@@ -348,7 +351,7 @@ function FriendLink({
           Partager mon lien
         </Button>
       </div>
-    </section>
+    </>
   );
 }
 
@@ -372,28 +375,26 @@ function AddByPseudo() {
   };
 
   return (
-    <section className={`${ui.panel} ${styles.card}`}>
-      <form className={styles.addForm} onSubmit={(event) => void submit(event)}>
-        <label htmlFor={id} className={ui.kicker}>
-          Ajouter par pseudo
-        </label>
-        <div className={styles.addRow}>
-          <input
-            id={id}
-            className={ui.field}
-            type="text"
-            autoComplete="off"
-            maxLength={40}
-            placeholder="Le pseudo exact"
-            value={pseudo}
-            onChange={(event) => setPseudo(event.target.value)}
-          />
-          <Button type="submit" small disabled={busy || pseudo.trim() === ""}>
-            {busy ? "Envoi…" : "Envoyer la demande"}
-          </Button>
-        </div>
-      </form>
-    </section>
+    <form className={styles.addForm} onSubmit={(event) => void submit(event)}>
+      <label htmlFor={id} className={ui.kicker}>
+        Ajouter par pseudo
+      </label>
+      <div className={styles.addRow}>
+        <input
+          id={id}
+          className={ui.field}
+          type="text"
+          autoComplete="off"
+          maxLength={40}
+          placeholder="Le pseudo exact"
+          value={pseudo}
+          onChange={(event) => setPseudo(event.target.value)}
+        />
+        <Button type="submit" small disabled={busy || pseudo.trim() === ""}>
+          {busy ? "Envoi…" : "Envoyer"}
+        </Button>
+      </div>
+    </form>
   );
 }
 

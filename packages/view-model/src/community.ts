@@ -52,7 +52,6 @@ export const CLAN_SORTS: readonly { readonly id: ClanSort; readonly label: strin
 export const PLAYERS_TITLE = "Joueurs";
 export const CLANS_TITLE = "Clans";
 export const PLAYER_SEARCH_LABEL = "Début du pseudo";
-export const NO_PINNED_CARD = "Aucune carte épinglée";
 
 export const NO_PLAYER_FOUND = "Aucun joueur à ce nom, ou son profil n'est pas public.";
 export const NO_PLAYER_FOR_FILTER = "Aucun joueur ne correspond à ce choix pour l'instant.";
