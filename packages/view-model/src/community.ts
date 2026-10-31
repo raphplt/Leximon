@@ -31,6 +31,11 @@ export function communitySectionOf(
   return tab === "clans" ? "clans" : "joueurs";
 }
 
+/** The section a link names; without one, the player's clan. */
+export function communitySectionFrom(value: string | null | undefined): CommunitySection {
+  return COMMUNITY_SECTIONS.find((section) => section.id === value)?.id ?? "clan";
+}
+
 export const PLAYER_SORTS: readonly { readonly id: PlayerSort; readonly label: string }[] = [
   { id: "active", label: "Actifs" },
   { id: "new", label: "Nouveaux" },

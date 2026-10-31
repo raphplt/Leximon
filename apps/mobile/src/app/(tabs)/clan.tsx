@@ -1,13 +1,9 @@
+import { communitySectionFrom } from "@leximon/view-model";
 import { useLocalSearchParams } from "expo-router";
-import { FeatureGate } from "@/levels/feature-gate";
-import { ClanScreen } from "@/screens/clan/clan-screen";
+import { CommunityTab } from "@/screens/community/community-tab";
 
 export default function Screen() {
-  // `code`: an invitation link to a clan.
-  const { code } = useLocalSearchParams<{ code?: string }>();
-  return (
-    <FeatureGate feature="join_clan" icon="clan">
-      <ClanScreen code={code ?? null} />
-    </FeatureGate>
-  );
+  // `code`: an invitation link to a clan. `section`: a link to the friends or a list.
+  const { code, section } = useLocalSearchParams<{ code?: string; section?: string }>();
+  return <CommunityTab section={communitySectionFrom(section)} code={code ?? null} />;
 }

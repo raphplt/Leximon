@@ -1,6 +1,5 @@
 import type { Friend, FriendRequest } from "@leximon/contract";
 import {
-  ALL_PLAYERS_LABEL,
   betaPlacesLabel,
   FRIENDS_EMPTY,
   FRIENDS_GUEST,
@@ -42,7 +41,14 @@ import { FriendFeed } from "./feed";
 import { Podium } from "./podium";
 
 /** Amis: requests, the friend link, the weekly podium, the list and the feed. */
-export function FriendsScreen({ adding }: { readonly adding: string | null }) {
+export function FriendsScreen({
+  adding,
+  inTab = false,
+}: {
+  readonly adding: string | null;
+  /** In the community tab, rather than a page of its own. */
+  readonly inTab?: boolean;
+}) {
   const view = usePlayerView();
   const data = useShared(friends);
   const failed = useSharedFailed(friends);
@@ -54,16 +60,15 @@ export function FriendsScreen({ adding }: { readonly adding: string | null }) {
 
   if (view.guest) {
     return (
-      <Page title={FRIENDS_TITLE}>
+      <Page inTab={inTab} title={FRIENDS_TITLE}>
         <Paragraph>{FRIENDS_GUEST}</Paragraph>
         <Button label="Créer mon compte" onPress={() => router.push("/compte")} />
-        <TextButton label={ALL_PLAYERS_LABEL} onPress={() => router.push("/communaute")} />
       </Page>
     );
   }
   if (data === null || view.profile === null) {
     return (
-      <Page title={FRIENDS_TITLE}>
+      <Page inTab={inTab} title={FRIENDS_TITLE}>
         {data === null && failed ? (
           <>
             <Paragraph muted>La liste d'amis n'a pas pu être chargée. Réessaie.</Paragraph>
@@ -93,9 +98,8 @@ export function FriendsScreen({ adding }: { readonly adding: string | null }) {
   );
 
   return (
-    <Page title={FRIENDS_TITLE}>
+    <Page inTab={inTab} title={FRIENDS_TITLE}>
       <Text style={styles.count}>{friendsCountLabel(data.friends.length, data.maxFriends)}</Text>
-      <TextButton label={ALL_PLAYERS_LABEL} onPress={() => router.push("/communaute")} />
       {adding !== null && <AddFromLink code={adding} />}
       {data.incoming.length > 0 && <Incoming requests={data.incoming} />}
 

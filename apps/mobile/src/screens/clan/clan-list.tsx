@@ -1,11 +1,12 @@
-import type { ClanEntryMode, ClanSummary } from "@leximon/contract";
+import type { ClanEntryMode, ClanSort, ClanSummary } from "@leximon/contract";
 import {
+  CLAN_SORTS,
   capitalize,
-  clanSubline,
   entryModeLabel,
   joinLabel,
   NO_CLAN_FOUND,
   NO_CLAN_YET,
+  plural,
 } from "@leximon/view-model";
 import { router } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
@@ -34,6 +35,7 @@ const ENTRY_FILTERS: readonly (ClanEntryMode | undefined)[] = [
 export function ClanList({ join }: { readonly join: ClanJoin | null }) {
   const [query, setQuery] = useState("");
   const [entry, setEntry] = useState<ClanEntryMode | undefined>(undefined);
+  const [sort, setSort] = useState<ClanSort>("big");
   const [clans, setClans] = useState<readonly ClanSummary[] | null>(null);
   const [cursor, setCursor] = useState<string | null>(null);
 
@@ -41,9 +43,10 @@ export function ClanList({ join }: { readonly join: ClanJoin | null }) {
     (cursorValue: string | null) => ({
       q: query.trim(),
       cursor: cursorValue,
+      sort,
       ...(entry === undefined ? {} : { entry }),
     }),
-    [query, entry],
+    [query, entry, sort],
   );
 
   // Searches as the name is typed, once the player pauses.
@@ -88,6 +91,15 @@ export function ClanList({ join }: { readonly join: ClanJoin | null }) {
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={styles.chips}
       >
+        {CLAN_SORTS.map((option) => (
+          <Chip
+            key={option.id}
+            label={option.label}
+            on={sort === option.id}
+            onPress={() => setSort(option.id)}
+          />
+        ))}
+        <View style={styles.chipsGap} />
         {ENTRY_FILTERS.map((mode) => (
           <Chip
             key={mode ?? "all"}
@@ -111,10 +123,13 @@ export function ClanList({ join }: { readonly join: ClanJoin | null }) {
               onPress={() => router.push({ pathname: "/clan/[id]", params: { id: clan.id } })}
               accessibilityRole="link"
             >
-              <Emblem emblem={clan.emblem} size={44} level={clan.level} />
+              <Emblem emblem={clan.emblem} size={56} level={clan.level} />
               <View style={styles.clanText}>
                 <Text style={styles.clanName}>{clan.name}</Text>
-                <Text style={styles.small}>{clanSubline(clan)}</Text>
+                <Text style={styles.small}>
+                  {plural(clan.memberCount, "membre", "membres")}, {entryModeLabel(clan.entryMode)}
+                </Text>
+                {clan.motto !== "" && <Text style={styles.motto}>« {clan.motto} »</Text>}
               </View>
             </Pressable>
             {join !== null && <JoinButton clan={clan} join={join} />}
@@ -171,6 +186,7 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
   },
   chips: { gap: 8 },
+  chipsGap: { width: 1, marginVertical: 8, backgroundColor: colors.track },
   faint: { fontFamily: fonts.ui.medium, fontSize: 15, color: colors.textFaint },
   empty: {
     fontFamily: fonts.text.italic,
@@ -185,4 +201,11 @@ const styles = StyleSheet.create({
   clanText: { flex: 1, gap: 2 },
   clanName: { fontFamily: fonts.display, fontSize: 19, color: colors.text },
   small: { fontFamily: fonts.ui.medium, fontSize: 14, lineHeight: 20, color: colors.textMuted },
+  motto: {
+    marginTop: 4,
+    fontFamily: fonts.text.italic,
+    fontSize: 15,
+    lineHeight: 20,
+    color: colors.text,
+  },
 });

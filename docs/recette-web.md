@@ -527,22 +527,27 @@ pnpm dev:player recette-c@example.com --level 9
 
 ## 10 bis. Communauté
 
-### COM-01 · La liste des joueurs
-- **Faire :** ouvre `/communaute` depuis le menu du joueur, puis depuis Amis (« Voir tous les joueurs »). Cherche le début d'un pseudo, en majuscules et sans accent.
-- **Attendu :** onglets Joueurs et Clans. Les derniers actifs en tête, avec avatar, niveau et clan ; « Voir plus de joueurs » charge la suite sans doublon. Toucher une ligne ouvre le profil.
+### COM-01 · L'onglet et le menu
+- **Faire :** ouvre l'onglet Communauté à un niveau inférieur à 10, puis à un niveau supérieur. Passe par Mon clan, Amis, Joueurs et Clans. Ouvre le menu du joueur et touche son en-tête.
+- **Attendu :** pas de cadenas sur l'onglet, qui reste allumé dans les quatre parties. Sous le niveau 10, Mon clan dit à quel niveau les clans ouvrent. Le menu compte Apparence, Réglages, Nouveautés, Devenir mécène, Écrire à l'équipe et la déconnexion, et l'en-tête mène au profil. Joutes reste sur Jouer et Niveaux sur la médaille de la barre du haut.
 - **Retour :**
 
-### COM-02 · Qui n'y est pas
+### COM-02 · Les joueurs
+- **Faire :** ouvre Joueurs. Essaie Actifs, Nouveaux, Proches de mon niveau et Sans clan. Cherche le début d'un pseudo, en majuscules et sans accent.
+- **Attendu :** des cartes avec avatar, niveau, clan et jusqu'à 3 cartes épinglées, ou « Aucune carte épinglée ». Proches de mon niveau garde les joueurs à 2 niveaux au plus du tien, sans personne sous le niveau 8. Sans clan se combine avec les tris. Aucun résultat : « Aucun joueur ne correspond à ce choix pour l'instant. ». « Voir plus de joueurs » charge la suite sans doublon, et toucher une carte ouvre le profil.
+- **Retour :**
+
+### COM-03 · Qui n'y est pas
 - **Faire :** A passe son profil en privé ; B bloque C ; un compte passe sous le niveau 8 (`pnpm dev:player`), ou reste invité.
 - **Attendu :** ni A, ni le compte sous le niveau 8, ni l'invité dans la liste de personne. B et C ne se voient plus. Chacun lit pourquoi il n'y est pas : « Ton profil est caché… », « Tu apparaîtras dans cette liste au niveau 8. », « Crée un compte… ». Le réglage dit « Visible dans la liste des joueurs et par un lien ».
 - **Retour :**
 
-### COM-03 · Les clans quand on en a un
-- **Faire :** B, membre d'un clan, touche « Voir les clans » sur la page de son clan, puis ouvre un autre clan. Il revient ensuite à son propre clan depuis la liste.
-- **Attendu :** tous les clans, avec recherche et filtres, sans bouton pour entrer. La page de l'autre clan dit « Tu es déjà dans un clan. Quitte-le pour rejoindre celui-ci. ». Son propre clan ramène à `/clan`.
+### COM-04 · Les clans quand on en a un
+- **Faire :** B, membre d'un clan, ouvre Clans, essaie Les plus grands et Les plus récents, puis ouvre un autre clan et revient à son propre clan depuis la liste.
+- **Attendu :** tous les clans avec leur devise, sans bouton pour entrer. La page de l'autre clan dit « Tu es déjà dans un clan. Quitte-le pour rejoindre celui-ci. ». Son propre clan ramène à `/clan`.
 - **Retour :**
 
-### COM-04 · La page d'un clan vue de l'extérieur
+### COM-05 · La page d'un clan vue de l'extérieur
 - **Faire :** C, sans clan, ouvre un clan depuis la liste ou depuis le nom du clan sur un profil. Refaire avec un compte de niveau 9.
 - **Attendu :** emblème, niveau, devise, membres, « Signaler le nom de ce clan ». Ni discussion, ni objectif, ni bibliothèque, ni « en ligne ». Un membre mène à son profil. Au niveau 10, le bouton suit le mode d'entrée et entrer mène à `/clan` ; au niveau 9, un cadenas et le niveau requis. Un lien vers un clan dissous dit « Ce clan n'existe plus. ».
 - **Retour :**

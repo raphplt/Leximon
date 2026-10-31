@@ -1,8 +1,8 @@
 import type { ClanMember, ClanSummary, ClanView, MyClanResponse } from "@leximon/contract";
 import {
-  ALL_CLANS_LABEL,
   ALREADY_IN_CLAN,
   CLAN_GONE,
+  CLANS_TITLE,
   clanSubline,
   isFeatureOpen,
   lockedToast,
@@ -29,7 +29,7 @@ import { TextButton } from "@/ui/text-button";
 import { toast } from "@/ui/toast";
 import { JoinButton } from "./clan-list";
 
-const allClans = () => router.push({ pathname: "/communaute", params: { onglet: "clans" } });
+const allClans = () => router.navigate({ pathname: "/clan", params: { section: "clans" } });
 
 /** A clan seen from outside: who it is and who is in it. Its own members go to their clan page. */
 export function ClanVisitScreen({ clanId }: { readonly clanId: string }) {
@@ -78,7 +78,7 @@ export function ClanVisitScreen({ clanId }: { readonly clanId: string }) {
     return (
       <Page title="Clan">
         <Paragraph>{CLAN_GONE}</Paragraph>
-        <Button label={ALL_CLANS_LABEL} secondary onPress={allClans} />
+        <Button label={CLANS_TITLE} secondary onPress={allClans} />
       </Page>
     );
   }
@@ -163,7 +163,6 @@ function ClanVisit({
         {moreLabel !== null && <TextButton label={moreLabel} onPress={() => void loadMore()} />}
       </Panel>
 
-      <TextButton label={ALL_CLANS_LABEL} onPress={allClans} />
       <TextButton
         label={REPORT_CLAN_LABEL}
         onPress={() =>

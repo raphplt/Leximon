@@ -2,6 +2,7 @@ import { router } from "expo-router";
 import type { ReactNode } from "react";
 import { KeyboardAvoidingView, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { TAB_BAR_RISE } from "@/shell/tab-bar";
 import { colors, fonts } from "@/theme";
 import { Icon } from "./icon";
 
@@ -17,12 +18,15 @@ export function Page({
   title,
   children,
   closable = true,
+  inTab = false,
 }: {
   readonly kicker?: string;
   readonly title: string;
   readonly children: ReactNode;
   /** False where there is nowhere to go back to: the closed beta's door. */
   readonly closable?: boolean;
+  /** Under the top bar and above the tabs, which already leave room and the way out. */
+  readonly inTab?: boolean;
 }) {
   const insets = useSafeAreaInsets();
   return (
@@ -31,22 +35,26 @@ export function Page({
         keyboardShouldPersistTaps="handled"
         contentContainerStyle={[
           styles.content,
-          { paddingTop: insets.top + 8, paddingBottom: insets.bottom + 32 },
+          inTab
+            ? { paddingTop: 12, paddingBottom: TAB_BAR_RISE + 24 }
+            : { paddingTop: insets.top + 8, paddingBottom: insets.bottom + 32 },
         ]}
       >
-        <View style={styles.top}>
-          {closable && (
-            <Pressable
-              onPress={back}
-              style={styles.back}
-              accessibilityRole="button"
-              accessibilityLabel="Retour"
-              hitSlop={8}
-            >
-              <Icon name="back" size={22} color={colors.text} />
-            </Pressable>
-          )}
-        </View>
+        {!inTab && (
+          <View style={styles.top}>
+            {closable && (
+              <Pressable
+                onPress={back}
+                style={styles.back}
+                accessibilityRole="button"
+                accessibilityLabel="Retour"
+                hitSlop={8}
+              >
+                <Icon name="back" size={22} color={colors.text} />
+              </Pressable>
+            )}
+          </View>
+        )}
         {kicker !== undefined && <Text style={styles.kicker}>{kicker.toUpperCase()}</Text>}
         <Text style={styles.title} accessibilityRole="header">
           {title}
@@ -54,7 +62,7 @@ export function Page({
         <View style={styles.body}>{children}</View>
       </ScrollView>
       {/* The content scrolls under the status bar: a band of background keeps the clock legible. */}
-      <View style={[styles.statusBand, { height: insets.top }]} />
+      {!inTab && <View style={[styles.statusBand, { height: insets.top }]} />}
     </KeyboardAvoidingView>
   );
 }

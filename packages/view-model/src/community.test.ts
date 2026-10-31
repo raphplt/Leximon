@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { communitySectionOf, noPlayerYet, playerListNote, publicProfileDetail } from "./community";
+import {
+  communitySectionFrom,
+  communitySectionOf,
+  noPlayerYet,
+  playerListNote,
+  publicProfileDetail,
+} from "./community";
 
 const seen = {
   member: true,
@@ -8,6 +14,14 @@ const seen = {
   publicFromLevel: 8,
   profilePublic: true,
 };
+
+describe("communitySectionFrom", () => {
+  it("opens the section a link names, the clan otherwise", () => {
+    expect(communitySectionFrom("clans")).toBe("clans");
+    expect(communitySectionFrom("autre")).toBe("clan");
+    expect(communitySectionFrom(undefined)).toBe("clan");
+  });
+});
 
 describe("communitySectionOf", () => {
   it("follows the address", () => {

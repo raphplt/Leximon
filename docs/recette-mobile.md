@@ -259,8 +259,8 @@ A sur le web sert de deuxième joueur : amis, échanges, clan, sanctions. `pnpm 
 ---
 
 ### MCL-03 · Communauté
-- **Faire :** ouvrir Communauté depuis le profil, puis depuis Amis ; chercher un pseudo ; ouvrir un joueur et un clan. Dans un clan, toucher la loupe de l'en-tête, puis ouvrir un autre clan.
-- **Attendu :** comme COM-01 à COM-04. Le retour ramène à la liste. La page d'un clan se ferme sans barre d'onglets, et entrer dans un clan mène à l'onglet Clan.
+- **Faire :** ouvrir l'onglet Communauté à un niveau inférieur à 10, puis supérieur. Passer par Mon clan, Amis, Joueurs et Clans. Essayer les tris, chercher un pseudo, ouvrir un joueur et un clan, puis revenir.
+- **Attendu :** comme COM-01 à COM-05. La barre des quatre parties reste en haut et la barre d'onglets en bas. Le retour depuis un joueur ou un clan ramène à la même partie. Les cartes épinglées tiennent dans la carte du joueur, et rien ne passe sous la barre d'onglets en bas de liste.
 
 ## 10. Modération (MOD-01 à MOD-04)
 
