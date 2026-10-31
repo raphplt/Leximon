@@ -89,9 +89,10 @@ export default function PrivacyPage() {
         <h2>Profil</h2>
         <p>
           Ton pseudo, ton avatar, ton niveau, tes cartes épinglées et tes statistiques de jeu
-          forment ton profil. Dès le niveau 8, il est visible par un lien, sauf si tu le caches dans
-          les réglages. Quand tu signales un pseudo ou un message, on garde la trace de l'auteur et
-          de la cible du signalement, pour la modération, jusqu'à un an après son traitement.
+          forment ton profil. Dès le niveau 8, il est visible par un lien et dans la liste des
+          joueurs du jeu, sauf si tu le caches dans les réglages. Quand tu signales un pseudo ou un
+          message, on garde la trace de l'auteur et de la cible du signalement, pour la modération,
+          jusqu'à un an après son traitement.
         </p>
         <p>
           Les messages de ton clan sont effacés au bout de 90 jours. Un message signalé est gardé

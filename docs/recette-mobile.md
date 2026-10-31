@@ -258,6 +258,10 @@ A sur le web sert de deuxième joueur : amis, échanges, clan, sanctions. `pnpm 
 
 ---
 
+### MCL-03 · Communauté
+- **Faire :** ouvrir Communauté depuis le profil, puis depuis Amis ; chercher un pseudo ; ouvrir un joueur et un clan. Dans un clan, toucher la loupe de l'en-tête, puis ouvrir un autre clan.
+- **Attendu :** comme COM-01 à COM-04. Le retour ramène à la liste. La page d'un clan se ferme sans barre d'onglets, et entrer dans un clan mène à l'onglet Clan.
+
 ## 10. Modération (MOD-01 à MOD-04)
 
 ### MMO-01 · Avis de sanction

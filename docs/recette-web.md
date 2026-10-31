@@ -525,6 +525,28 @@ pnpm dev:player recette-c@example.com --level 9
 
 ---
 
+## 10 bis. Communauté
+
+### COM-01 · La liste des joueurs
+- **Faire :** ouvre `/communaute` depuis le menu du joueur, puis depuis Amis (« Voir tous les joueurs »). Cherche le début d'un pseudo, en majuscules et sans accent.
+- **Attendu :** onglets Joueurs et Clans. Les derniers actifs en tête, avec avatar, niveau et clan ; « Voir plus de joueurs » charge la suite sans doublon. Toucher une ligne ouvre le profil.
+- **Retour :**
+
+### COM-02 · Qui n'y est pas
+- **Faire :** A passe son profil en privé ; B bloque C ; un compte passe sous le niveau 8 (`pnpm dev:player`), ou reste invité.
+- **Attendu :** ni A, ni le compte sous le niveau 8, ni l'invité dans la liste de personne. B et C ne se voient plus. Chacun lit pourquoi il n'y est pas : « Ton profil est caché… », « Tu apparaîtras dans cette liste au niveau 8. », « Crée un compte… ». Le réglage dit « Visible dans la liste des joueurs et par un lien ».
+- **Retour :**
+
+### COM-03 · Les clans quand on en a un
+- **Faire :** B, membre d'un clan, touche « Voir les clans » sur la page de son clan, puis ouvre un autre clan. Il revient ensuite à son propre clan depuis la liste.
+- **Attendu :** tous les clans, avec recherche et filtres, sans bouton pour entrer. La page de l'autre clan dit « Tu es déjà dans un clan. Quitte-le pour rejoindre celui-ci. ». Son propre clan ramène à `/clan`.
+- **Retour :**
+
+### COM-04 · La page d'un clan vue de l'extérieur
+- **Faire :** C, sans clan, ouvre un clan depuis la liste ou depuis le nom du clan sur un profil. Refaire avec un compte de niveau 9.
+- **Attendu :** emblème, niveau, devise, membres, « Signaler le nom de ce clan ». Ni discussion, ni objectif, ni bibliothèque, ni « en ligne ». Un membre mène à son profil. Au niveau 10, le bouton suit le mode d'entrée et entrer mène à `/clan` ; au niveau 9, un cadenas et le niveau requis. Un lien vers un clan dissous dit « Ce clan n'existe plus. ».
+- **Retour :**
+
 ## 11. Modération et sanctions
 
 ### MOD-01 · Signalements dans l'admin

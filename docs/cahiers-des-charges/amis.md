@@ -20,7 +20,8 @@
 - **Comptes inscrits seulement, dès le niveau 1.** Un invité n'a pas de pseudo et peut disparaître. Pour envoyer ou accepter une demande, il faut un pseudo : l'écran Amis le demande s'il manque.
 - **Où l'on envoie une demande :**
   - depuis le profil public d'un joueur (« Ajouter en ami ») ;
-  - par son pseudo exact, dans l'écran Amis (pas d'annuaire, pas de recherche approchée) ;
+  - par son pseudo exact, dans l'écran Amis ;
+  - depuis la liste des joueurs de la communauté (P83), qui mène à son profil ;
   - depuis un membre de son clan ;
   - après un échange conclu, depuis la lettre du courrier ;
   - par le lien d'ami (§ 2), sans demande à accepter.
@@ -114,7 +115,7 @@ Et sur la lettre d'un échange conclu, « Ajouter en ami » si l'autre ne l'est 
 
 - **Aucun cadeau de carte.** Il contournerait l'échange carte contre carte et permettrait de vider un second compte dans le premier.
 - **Aucun message privé.** Pas de texte libre entre deux joueurs sans modération par modèle.
-- **Aucun annuaire de joueurs**, aucune suggestion d'amis : on ajoute quelqu'un qu'on connaît.
+- **Aucune suggestion d'amis.** Le joueur choisit lui-même qui il ajoute. L'annuaire, d'abord écarté ici, existe depuis le 2026-10-31 pour les profils publics (P83).
 
 ## 10. Suppression du compte et sanctions
 

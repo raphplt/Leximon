@@ -508,3 +508,10 @@ Pour ajouter ou modifier une décision, utiliser le skill `decision`.
   - le staging reste sur une branche Neon, pour qu'un test de charge ne touche jamais la production ;
   - les commandes `*:prod` passent par un tunnel SSH vers le conteneur, donc depuis le réseau du propriétaire ou Tailscale ;
   - retour à une offre cloud quand les mécènes couvrent son coût. Procédure : [mise-en-ligne.md](mise-en-ligne.md), étape 15 bis.
+
+## D-054 · Communauté : liste des profils publics par activité, clans lisibles de l'extérieur
+
+- **Statut :** Acceptée (2026-10-31), choisie par le propriétaire. Met en œuvre P83.
+- **Choix :** `GET /players` liste les profils publics par préfixe de pseudo, les derniers vus en tête, avec un curseur sur `last_seen_at` et le code joueur. La migration `0033` ajoute deux index partiels sur `players`, limités aux profils publics : le préfixe de `pseudo_key` et l'ordre d'activité. Pour un joueur hors du clan, `GET /clans/:id` et `/members` masquent la présence et les silences des membres, et retirent les joueurs bloqués dans un sens ou dans l'autre.
+- **Pourquoi :** trier par niveau ferait un classement, écarté par P51, et l'activité montre des joueurs qu'on peut croiser. Passer par la session garde la route hors du cache du CDN, puisque le résultat dépend des blocages de chacun. La présence d'un membre ne regarde que son clan.
+- **Conséquences :** la liste bouge pendant qu'on la lit, donc un client retire les doublons de ses pages. Le tri suit la dernière visite, notée à une minute près, sans l'afficher. Un membre de profil privé reste nommé sur la page de son clan, par son pseudo et son avatar. La route ne donne ni titre ni statistiques, pour rester en une requête par page.
