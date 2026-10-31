@@ -28,6 +28,10 @@ export interface StockView {
   readonly action: string;
   /** « 18 min », « plein »: the short form of the top bar chip. */
   readonly refillShort: string;
+  /** « 4 sachets sur 6 ». */
+  readonly count: string;
+  /** « Le prochain arrive dans 18 min. », « Ton stock est plein. » */
+  readonly refillLine: string;
   /** « 4 sachets sur 6, 2 bonus en réserve », for screen readers. */
   readonly description: string;
   /** Share of the wait for the next sachet already gone, 0 to 1; `null` when the stock is full. */
@@ -38,6 +42,7 @@ export function stockView(wallet: BoosterWalletResponse, now: EpochMs): StockVie
   const wait =
     wallet.nextRefillAt === null ? null : formatWait(Date.parse(wallet.nextRefillAt) - now);
   const { stored, capacity, bonus } = wallet;
+  const count = `${stored} ${stored > 1 ? "sachets" : "sachet"} sur ${capacity}`;
   const note =
     stored >= capacity ? "plein" : stored === 0 && bonus > 0 ? `${bonus} bonus` : `+1 dans ${wait}`;
   return {
@@ -53,7 +58,9 @@ export function stockView(wallet: BoosterWalletResponse, now: EpochMs): StockVie
           ? "Ouvrir un sachet bonus"
           : `Prochain dans ${wait}`,
     refillShort: wait ?? "plein",
-    description: `${stored} ${stored > 1 ? "sachets" : "sachet"} sur ${capacity}, ${bonus} bonus en réserve`,
+    count,
+    refillLine: wait === null ? "Ton stock est plein." : `Le prochain arrive dans ${wait}.`,
+    description: `${count}, ${bonus} bonus en réserve`,
     refill:
       wallet.nextRefillAt === null
         ? null
@@ -99,23 +106,25 @@ export function nextSachetLine(wallet: BoosterWalletResponse, now: EpochMs): str
 // --- Reserve of bonus sachets ---------------------------------------------------------------
 
 export interface ReserveView {
-  /** « 3 sachets bonus ». */
+  /** « 3 sachets bonus », « Aucun sachet bonus ». */
   readonly headline: string;
   /** « Dont 1 garni, ouvert en premier. », or nothing without a garni. */
   readonly garni: string | null;
   /** « Ta réserve en garde jusqu'à 12. » */
   readonly places: string;
-  readonly rule: string;
+  /** When they open, or nothing with an empty reserve. */
+  readonly rule: string | null;
   readonly sources: string;
-  /** The free stock is empty: a bonus opens now. */
-  readonly openNow: boolean;
 }
 
-/** What the top bar's bonus chip opens: the reserve, when it serves, where it fills from. */
+/** The second half of the stock chip's detail: the reserve, when it serves, where it fills from. */
 export function reserveView(wallet: BoosterWalletResponse): ReserveView {
-  const { bonus, garni, bonusCap, stored } = wallet;
+  const { bonus, garni, bonusCap } = wallet;
   return {
-    headline: `${bonus} ${bonus > 1 ? "sachets bonus" : "sachet bonus"}`,
+    headline:
+      bonus === 0
+        ? "Aucun sachet bonus"
+        : `${bonus} ${bonus > 1 ? "sachets bonus" : "sachet bonus"}`,
     garni:
       garni === 0
         ? null
@@ -123,10 +132,9 @@ export function reserveView(wallet: BoosterWalletResponse): ReserveView {
           ? `Dont ${garni} sachets garnis (au moins une carte Rare), ouverts en premier.`
           : "Dont 1 sachet garni (au moins une carte Rare), ouvert en premier.",
     places: `Ta réserve en garde jusqu'à ${bonusCap}.`,
-    rule: "Tu les ouvres quand tu n'as plus de sachet gratuit.",
+    rule: bonus === 0 ? null : "Tu les ouvres quand tu n'as plus de sachet gratuit.",
     sources:
       "Tu en gagnes avec les coffrets de niveau, le défi du jour, les mots qui atteignent la Dorure et les objectifs de clan.",
-    openNow: stored === 0 && bonus > 0,
   };
 }
 

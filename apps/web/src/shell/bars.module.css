@@ -138,6 +138,10 @@
   }
 }
 
+.stockAnchor {
+  position: relative;
+}
+
 .num {
   font-variant-numeric: tabular-nums;
 }
@@ -167,14 +171,6 @@
 
 .level:hover {
   background: var(--lx-color-track);
-}
-
-.chipButton {
-  cursor: pointer;
-}
-
-.chipButton:hover {
-  background: rgba(255, 210, 77, 0.24);
 }
 
 .avatarButton {

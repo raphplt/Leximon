@@ -11,21 +11,24 @@ import {
 } from "@leximon/view-model";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { Avatar } from "@/components/avatar";
 import { profile } from "@/player/player";
 import { useSharedFailed } from "@/player/resource";
+import { Dialog } from "@/ui/dialog";
 import { Icon } from "@/ui/icon";
 import { LevelMedal, XpBar } from "@/ui/level-bits";
 import { Logo } from "@/ui/logo";
 import ui from "@/ui/ui.module.css";
 import styles from "./bars.module.css";
 import { isCurrent, TABS, type TabId } from "./nav";
-import { ReserveDialog } from "./reserve-dialog";
 import { useShell } from "./shell-context";
+import { StockDetail, StockPopover } from "./stock-detail";
 import { usePlayerView } from "./use-player-view";
 
 type PlayerView = ReturnType<typeof usePlayerView>;
+
+const STOCK_TITLE = "Tes sachets";
 
 function closedTabsOf(view: PlayerView): ReadonlySet<TabId> {
   return closedTabs(view.progress?.level ?? null, view.now);
@@ -35,42 +38,42 @@ function badgeOf(id: TabId, view: PlayerView): number {
   return tabBadge(id, { offers: view.offers, coffrets: view.coffrets.length });
 }
 
-/** Stock and bonus chips, shared by both bars. */
-function StockChips({ view, compact }: { readonly view: PlayerView; readonly compact: boolean }) {
-  const [reserveOpen, setReserveOpen] = useState(false);
+/** The stock chip, shared by both bars: it opens the stock and the reserve. */
+function StockChip({ view, compact }: { readonly view: PlayerView; readonly compact: boolean }) {
+  const [open, setOpen] = useState(false);
+  const anchor = useRef<HTMLDivElement>(null);
+  const close = useCallback(() => setOpen(false), []);
   if (view.wallet === null || view.now === 0) return null;
   const stock = stockView(view.wallet, view.now);
+  const detail = <StockDetail wallet={view.wallet} now={view.now} onClose={close} />;
   return (
-    <>
-      <Link
-        href="/jouer"
+    <div ref={anchor} className={styles.stockAnchor}>
+      <button
+        type="button"
         className={`${ui.chip} ${compact ? styles.chipCompact : ""}`}
+        onClick={() => setOpen((current) => !current)}
         aria-label={stock.description}
+        aria-haspopup="dialog"
+        aria-expanded={open}
       >
         <Icon name="sachet" size={compact ? 16 : 18} />
         <span className={styles.num}>
           {stock.stored}/{stock.capacity}
         </span>
         {!compact && <span className={styles.chipMuted}>{stock.refillShort}</span>}
-      </Link>
-      {stock.bonus > 0 && (
-        <>
-          <button
-            type="button"
-            className={`${ui.chip} ${ui.chipGold} ${styles.chipButton} ${compact ? styles.chipCompact : ""}`}
-            onClick={() => setReserveOpen(true)}
-            aria-label={`Réserve, ${stock.bonus} sur ${view.wallet.bonusCap} sachets bonus`}
-          >
-            {compact ? `+${stock.bonus}` : `+${stock.bonus} bonus`}
-          </button>
-          <ReserveDialog
-            wallet={view.wallet}
-            open={reserveOpen}
-            onClose={() => setReserveOpen(false)}
-          />
-        </>
+      </button>
+      {compact ? (
+        <Dialog open={open} title={STOCK_TITLE} onClose={close} variant="center">
+          {detail}
+        </Dialog>
+      ) : (
+        open && (
+          <StockPopover title={STOCK_TITLE} anchor={anchor} onClose={close}>
+            {detail}
+          </StockPopover>
+        )
       )}
-    </>
+    </div>
   );
 }
 
@@ -215,7 +218,7 @@ function TopBarSide({
 }) {
   return (
     <>
-      <StockChips view={view} compact={false} />
+      <StockChip view={view} compact={false} />
       <MailButton view={view} compact={false} />
       {view.progress === null ? (
         <span className={`${ui.chip} ${styles.level}`} aria-hidden="true" />
@@ -275,7 +278,7 @@ export function PhoneTopBar({ onMenu }: { readonly onMenu: () => void }) {
         </Link>
       )}
       <span className={styles.spacer} />
-      <StockChips view={view} compact />
+      <StockChip view={view} compact />
       <MailButton view={view} compact />
     </header>
   );

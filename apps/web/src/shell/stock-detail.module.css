@@ -1,0 +1,77 @@
+.popover {
+  position: absolute;
+  top: calc(100% + 12px);
+  left: 50%;
+  width: 310px;
+  margin-left: -155px;
+  padding: 16px;
+  box-sizing: border-box;
+  border: 1px solid rgba(246, 240, 226, 0.1);
+  border-radius: 18px;
+  background: var(--lx-color-sunken);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+}
+
+.popover:focus {
+  outline: none;
+}
+
+.detail {
+  display: grid;
+  gap: 12px;
+  font-size: 14px;
+}
+
+.detail p {
+  margin: 0;
+}
+
+.line {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.sachet {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 42px;
+  height: 42px;
+  border-radius: 14px;
+  background: var(--lx-color-background-raised);
+  color: var(--lx-color-text);
+}
+
+.sachetGold {
+  background: linear-gradient(160deg, #ffe08a, #d9a233);
+  color: var(--lx-color-accent-ink);
+}
+
+.detail .lineText {
+  display: grid;
+  gap: 1px;
+  min-width: 0;
+}
+
+.headline {
+  font-size: 16px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.muted {
+  color: var(--lx-color-text-muted);
+}
+
+.notes {
+  display: grid;
+  gap: 6px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(246, 240, 226, 0.1);
+}
+
+.garni {
+  color: var(--lx-color-accent);
+  font-weight: 800;
+}

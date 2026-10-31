@@ -1,5 +1,6 @@
 import { levelDescription, levelRatio, mailLabel, stockView } from "@leximon/view-model";
 import { router } from "expo-router";
+import { useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useNow } from "@/player/shared";
@@ -9,14 +10,16 @@ import { Avatar } from "@/ui/avatar";
 import { Badge } from "@/ui/badge";
 import { Icon } from "@/ui/icon";
 import { LevelMedal, XpBar } from "@/ui/level";
+import { StockSheet } from "./stock-sheet";
 
 const AVATAR = 46;
 
-/** The band at the top of every tab: avatar and level, XP, stock, bonus, mail. */
+/** The band at the top of every tab: avatar and level, XP, stock, mail. */
 export function TopBar() {
   const insets = useSafeAreaInsets();
   const view = usePlayerView();
   const now = useNow(15_000);
+  const [stockOpen, setStockOpen] = useState(false);
   const { progress } = view;
   const stock = view.wallet === null ? null : stockView(view.wallet, now);
   return (
@@ -47,21 +50,17 @@ export function TopBar() {
       )}
       <View style={styles.spacer} />
       {stock !== null && (
-        <View style={styles.chip} accessible accessibilityLabel={stock.description}>
+        <Pressable
+          style={styles.chip}
+          onPress={() => setStockOpen(true)}
+          accessibilityRole="button"
+          accessibilityLabel={stock.description}
+        >
           <Icon name="sachet" size={16} color={colors.text} />
           <Text style={styles.chipText}>
             {stock.stored}/{stock.capacity}
           </Text>
-        </View>
-      )}
-      {stock !== null && stock.bonus > 0 && (
-        <View
-          style={[styles.chip, styles.chipGold]}
-          accessible
-          accessibilityLabel={`Réserve, ${stock.bonus} sachets bonus`}
-        >
-          <Text style={[styles.chipText, styles.chipGoldText]}>+{stock.bonus}</Text>
-        </View>
+        </Pressable>
       )}
       <Pressable
         style={styles.round}
@@ -72,6 +71,14 @@ export function TopBar() {
         <Icon name="courrier" size={19} color={colors.text} />
         {view.mail > 0 && <Badge count={view.mail} ring={colors.background} />}
       </Pressable>
+      {view.wallet !== null && (
+        <StockSheet
+          wallet={view.wallet}
+          now={now}
+          open={stockOpen}
+          onClose={() => setStockOpen(false)}
+        />
+      )}
     </View>
   );
 }
@@ -114,8 +121,6 @@ const styles = StyleSheet.create({
     backgroundColor: colors.backgroundRaised,
   },
   chipText: { fontFamily: fonts.ui.bold, fontSize: 14, color: colors.text },
-  chipGold: { backgroundColor: "rgba(255, 210, 77, 0.14)" },
-  chipGoldText: { color: colors.accent },
   round: {
     width: 40,
     height: 40,
