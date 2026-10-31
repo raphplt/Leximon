@@ -7,6 +7,7 @@ export * from "./challenges";
 export * from "./changelog";
 export * from "./chat-poll";
 export * from "./clan";
+export * from "./community";
 export * from "./engraving";
 export * from "./features";
 export * from "./format";

@@ -718,6 +718,33 @@
   cursor: default;
 }
 
+/* --- A clan seen from outside --- */
+
+.memberLink {
+  text-decoration: none;
+}
+
+.visitActions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+.visitNote {
+  max-width: 240px;
+  margin: 0;
+  text-align: right;
+}
+
+.visitFoot {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 16px;
+}
+
 /* --- Without a clan --- */
 
 .findHeader {
@@ -782,13 +809,25 @@
   padding: 14px 16px;
 }
 
+.clanRowLink {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: 16px;
+  min-width: 0;
+  color: inherit;
+  text-decoration: none;
+}
+
 .clanRowBone {
   border-radius: 22px;
   height: 74px;
 }
 
 .clanRowText {
+  display: flex;
   flex: 1;
+  flex-direction: column;
   min-width: 0;
 }
 
@@ -982,6 +1021,15 @@
   .heroActions {
     width: 100%;
     flex-wrap: wrap;
+  }
+
+  .visitActions {
+    align-items: flex-start;
+  }
+
+  .visitNote {
+    max-width: none;
+    text-align: left;
   }
 
   .heroBone {

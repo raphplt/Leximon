@@ -1,6 +1,6 @@
 "use client";
 
-import { levelBadge, levelsOfFeatures } from "@leximon/view-model";
+import { COMMUNITY_PATH, COMMUNITY_TITLE, levelBadge, levelsOfFeatures } from "@leximon/view-model";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { FeedbackDialog } from "@/beta/feedback-dialog";
@@ -47,6 +47,7 @@ export function PlayerMenu({
   const items: Item[] = [
     { label: "Mon profil", icon: "profil", href: "/profil" },
     { label: "Amis", icon: "amis", href: "/amis" },
+    { label: COMMUNITY_TITLE, icon: "clan", href: COMMUNITY_PATH },
     {
       label: "Joutes",
       icon: "joutes",

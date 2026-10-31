@@ -1,47 +1,20 @@
 "use client";
 
-import type {
-  ClanEntryMode,
-  ClanSummary,
-  CreateClanRequest,
-  MyClanResponse,
-} from "@leximon/contract";
-import type { ClanResult } from "@leximon/contract/client";
+import type { CreateClanRequest, MyClanResponse } from "@leximon/contract";
 import { CLAN_SCHEDULE, clanRulesAt } from "@leximon/core";
-import {
-  capitalize,
-  clanSubline,
-  entryModeLabel,
-  isFeatureOpen,
-  joinLabel,
-  lockedToast,
-  NO_CLAN_FOUND,
-  NO_CLAN_YET,
-} from "@leximon/view-model";
-import { type FormEvent, useCallback, useEffect, useState } from "react";
+import { isFeatureOpen, lockedToast } from "@leximon/view-model";
+import { type FormEvent, useState } from "react";
 import { api } from "@/lib/api";
-import { myClan } from "@/player/clan";
 import { Button } from "@/ui/button";
 import { Dialog } from "@/ui/dialog";
 import { Icon } from "@/ui/icon";
-import { Bone } from "@/ui/skeleton";
 import { useToast } from "@/ui/toast";
 import ui from "@/ui/ui.module.css";
-import { Banner } from "./banner";
 import { refusalText } from "./chat";
 import styles from "./clan.module.css";
 import { ClanForm } from "./clan-form";
-import { Emblem } from "./emblem";
-
-const ENTRY_FILTERS: readonly (ClanEntryMode | undefined)[] = [
-  undefined,
-  "open",
-  "request",
-  "invite",
-];
-
-/** Rows standing in for the first clans while they arrive. */
-const WAITING_ROWS = [1, 2, 3];
+import { ClanList } from "./clan-list";
+import { useJoinClan } from "./use-join-clan";
 
 /**
  * Without a clan: find one by its name, enter by an invitation code, or found
@@ -61,89 +34,21 @@ export function FindClan({
   readonly presetCode: string | null;
   readonly onJoined: (clanId: string) => void;
 }) {
-  const [query, setQuery] = useState("");
-  const [entry, setEntry] = useState<ClanEntryMode | undefined>(undefined);
-  const [clans, setClans] = useState<readonly ClanSummary[] | null>(null);
-  const [cursor, setCursor] = useState<string | null>(null);
   const [code, setCode] = useState(presetCode ?? "");
-  const [busy, setBusy] = useState<string | null>(null);
+  const [founding, setFounding] = useState(false);
   const [creating, setCreating] = useState(false);
   const [createError, setCreateError] = useState<string | null>(null);
   const toast = useToast();
-
-  const filter = useCallback(
-    (cursorValue: string | null) => ({
-      q: query.trim(),
-      cursor: cursorValue,
-      ...(entry === undefined ? {} : { entry }),
-    }),
-    [query, entry],
-  );
-
-  // Searches as the name is typed, once the player pauses.
-  useEffect(() => {
-    const timer = setTimeout(
-      async () => {
-        const page = await api.fetchClans(filter(null)).catch(() => null);
-        setClans(page?.clans ?? []);
-        setCursor(page?.nextCursor ?? null);
-      },
-      query === "" ? 0 : 300,
-    );
-    return () => clearTimeout(timer);
-  }, [query, filter]);
-
-  const more = async () => {
-    if (cursor === null) return;
-    const page = await api.fetchClans(filter(cursor)).catch(() => null);
-    if (page === null) return;
-    setClans((current) => [...(current ?? []), ...page.clans]);
-    setCursor(page.nextCursor);
-  };
-
-  const settle = async (
-    key: string,
-    action: () => Promise<ClanResult<{ outcome: "joined" | "requested"; clanId: string }>>,
-  ) => {
-    setBusy(key);
-    try {
-      const result = await action();
-      if (result.kind === "refused") {
-        toast(refusalText(result.reason));
-        return;
-      }
-      if (result.value.outcome === "joined") {
-        onJoined(result.value.clanId);
-        return;
-      }
-      toast("Demande envoyée.");
-      myClan.publish({ ...mine, requests: [...mine.requests, result.value.clanId] });
-    } catch {
-      toast("Ça n'a pas marché. Réessaie.");
-    } finally {
-      setBusy(null);
-    }
-  };
-
-  const withdraw = async (clanId: string) => {
-    setBusy(clanId);
-    const result = await api.withdrawRequest(clanId).catch(() => null);
-    setBusy(null);
-    if (result?.kind !== "ok") {
-      toast("Ça n'a pas marché. Réessaie.");
-      return;
-    }
-    myClan.publish({ ...mine, requests: mine.requests.filter((id) => id !== clanId) });
-  };
+  const join = useJoinClan(mine, onJoined);
 
   const enterByCode = (event: FormEvent) => {
     event.preventDefault();
     if (code.trim() === "") return;
-    void settle("code", () => api.joinByCode(code.trim()));
+    void join.enterByCode(code.trim());
   };
 
   const found = async (value: CreateClanRequest) => {
-    setBusy("create");
+    setFounding(true);
     setCreateError(null);
     try {
       const result = await api.createClan(value);
@@ -156,7 +61,7 @@ export function FindClan({
     } catch {
       setCreateError("Ça n'a pas marché. Réessaie.");
     } finally {
-      setBusy(null);
+      setFounding(false);
     }
   };
 
@@ -177,88 +82,7 @@ export function FindClan({
       </header>
 
       <div className={styles.findGrid}>
-        <section>
-          <label className={styles.search}>
-            <Icon name="search" size={18} />
-            <span className={styles.visuallyHidden}>Nom du clan</span>
-            <input
-              className={styles.searchInput}
-              value={query}
-              maxLength={30}
-              placeholder="Nom du clan"
-              onChange={(event) => setQuery(event.target.value)}
-            />
-          </label>
-          <div className={`${styles.chips} ${styles.entryFilter}`}>
-            {ENTRY_FILTERS.map((mode) => (
-              <button
-                key={mode ?? "all"}
-                type="button"
-                className={ui.chip}
-                aria-pressed={entry === mode}
-                onClick={() => setEntry(mode)}
-              >
-                {mode === undefined ? "Tous" : capitalize(entryModeLabel(mode))}
-              </button>
-            ))}
-          </div>
-          {clans === null ? (
-            <div aria-busy="true">
-              <span className={styles.visuallyHidden}>Un instant…</span>
-              <ul className={styles.clanList} aria-hidden="true">
-                {WAITING_ROWS.map((row) => (
-                  <li key={row}>
-                    <Bone className={styles.clanRowBone} />
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ) : clans.length === 0 ? (
-            <p className={styles.emptyThread}>
-              <em>{query.trim() === "" ? NO_CLAN_YET : NO_CLAN_FOUND}</em>
-            </p>
-          ) : (
-            <ul className={styles.clanList}>
-              {clans.map((clan) => {
-                const requested = mine.requests.includes(clan.id);
-                return (
-                  <li key={clan.id} className={`${ui.panel} ${styles.clanRow}`}>
-                    <Banner cardId={clan.banner} />
-                    <Emblem emblem={clan.emblem} size={44} level={clan.level} />
-                    <div className={styles.clanRowText}>
-                      <p className={styles.clanRowName}>{clan.name}</p>
-                      <p className={styles.small}>{clanSubline(clan)}</p>
-                    </div>
-                    {requested ? (
-                      <Button
-                        small
-                        variant="ghost"
-                        disabled={busy !== null}
-                        onClick={() => void withdraw(clan.id)}
-                      >
-                        Retirer ma demande
-                      </Button>
-                    ) : (
-                      <Button
-                        small
-                        variant={clan.entryMode === "open" ? "primary" : "secondary"}
-                        disabled={busy !== null || clan.entryMode === "invite"}
-                        onClick={() => void settle(clan.id, () => api.joinClan(clan.id))}
-                      >
-                        {joinLabel(clan.entryMode, false)}
-                      </Button>
-                    )}
-                  </li>
-                );
-              })}
-            </ul>
-          )}
-          {cursor !== null && (
-            <Button variant="ghost" onClick={() => void more()}>
-              Voir plus de clans
-            </Button>
-          )}
-        </section>
+        <ClanList join={join} />
 
         <aside className={`${ui.panel} ${styles.codePanel}`}>
           <p className={ui.kicker}>Un code d'invitation</p>
@@ -272,7 +96,7 @@ export function FindClan({
               aria-label="Code d'invitation"
               onChange={(event) => setCode(event.target.value.toUpperCase())}
             />
-            <Button type="submit" disabled={busy !== null || code.trim() === ""}>
+            <Button type="submit" disabled={join.busy !== null || code.trim() === ""}>
               Entrer
             </Button>
           </form>
@@ -292,7 +116,7 @@ export function FindClan({
           }}
           choices={{ engravings: rules.emblemEngravings, colors: rules.emblemColors }}
           submitLabel="Fonder le clan"
-          busy={busy === "create"}
+          busy={founding}
           error={createError}
           onSubmit={(value) => void found(value)}
         />

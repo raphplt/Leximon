@@ -94,6 +94,8 @@ function PublicProfileBody({
           code: shown.code,
           memberSince: shown.memberSince,
           clan: shown.clan,
+          // The clan's page is in the game: a visitor without a session stays here.
+          ...(shown.clan === null || viewer == null ? {} : { clanHref: `/clan/${shown.clan.id}` }),
         }
       : {
           name: shown.pseudo,

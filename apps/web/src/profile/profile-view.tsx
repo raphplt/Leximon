@@ -24,7 +24,7 @@ export interface ProfileFace {
   readonly code: string | null;
   readonly memberSince: string | null;
   readonly clan: ProfileClan | null;
-  /** Where the clan's name leads: the player's own clan page, else nowhere. */
+  /** Where the clan's name leads, for a player in the game. */
   readonly clanHref?: string;
 }
 

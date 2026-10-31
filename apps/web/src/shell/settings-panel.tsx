@@ -1,7 +1,7 @@
 "use client";
 
 import type { Preferences } from "@leximon/contract";
-import { blockedCountLabel, pseudoSettingLabel } from "@leximon/view-model";
+import { blockedCountLabel, pseudoSettingLabel, publicProfileDetail } from "@leximon/view-model";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { canVibrate, type FeedbackKind, readPreference, writePreference } from "@/booster/feedback";
@@ -175,11 +175,7 @@ export function SettingsPanel({
           <div className={ui.groupRows}>
             <Switch
               label="Profil public"
-              detail={
-                me.level < me.publicFromLevel
-                  ? `Visible par un lien dès le niveau ${me.publicFromLevel}`
-                  : "Visible par un lien"
-              }
+              detail={publicProfileDetail(me)}
               checked={me.profilePublic}
               onChange={(on) =>
                 void profileActions.update(
