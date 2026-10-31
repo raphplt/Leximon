@@ -31,7 +31,7 @@ function tries(lastStep: number): number {
 }
 
 export function riddleRule(lastStep: number): string {
-  return `Trouve le mot du jour en ${tries(lastStep)} essais. Chaque mauvaise réponse dévoile un indice, puis une lettre, et demander un indice coûte aussi un essai.`;
+  return `Trouve le mot du jour en ${tries(lastStep)} essais. Chaque mauvaise réponse dévoile un indice, puis des lettres, et demander un indice coûte aussi un essai.`;
 }
 
 /** The line of the Défis screen, before the player starts. */
@@ -46,8 +46,7 @@ export function riddleResultLine(riddle: Pick<RiddleResponse, "step" | "outcome"
   if (outcome !== "found") return "Pas trouvé";
   if (step === 0) return "Trouvé sans indice";
   if (step === 1) return "Trouvé au 1er indice";
-  if (step <= RIDDLE_CLUES) return `Trouvé au ${step}e indice`;
-  return `Trouvé avec ${plural(step - RIDDLE_CLUES, "lettre", "lettres")}`;
+  return `Trouvé au ${step}e indice`;
 }
 
 /** One square per try, the last one green when the word was found. The word stays hidden. */
@@ -103,7 +102,7 @@ export function riddleTriesLine(riddle: Pick<RiddleResponse, "step" | "lastStep"
 /** The button that spends a try on the next clue. On the last try it gives the word away. */
 export function riddleAskLabel(riddle: Pick<RiddleResponse, "step" | "lastStep">): string {
   if (riddle.step >= riddle.lastStep) return "Abandonner et voir le mot";
-  return riddle.step < RIDDLE_CLUES ? "Demander un indice" : "Demander une lettre";
+  return riddle.step < RIDDLE_CLUES ? "Demander un indice" : "Demander des lettres";
 }
 
 export const RIDDLE_WRONG = "Ce n'est pas ce mot.";

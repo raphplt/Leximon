@@ -8,6 +8,7 @@ import {
   gameDayOf,
   RIDDLE_FIRST_DAY,
   RIDDLE_SCHEDULE,
+  riddleLettersShown,
   riddleNumber,
   riddleRulesAt,
   XP_SCHEDULE,
@@ -20,7 +21,7 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { createApp } from "../app";
 import { TEST_ORIGIN, testEnv } from "../test-env";
 import { type Guest, seedTestCatalog, setXp, signInAsGuest } from "../test-support";
-import { publicRiddle } from "./riddles";
+import { publicRiddle, todayRiddle } from "./riddles";
 
 const url = testDatabaseUrl();
 const env = testEnv(url);
@@ -38,6 +39,8 @@ const CLUES = {
   etymology: "Mot que l'on retrouve en italien.",
 };
 const today = () => gameDayOf(Date.now()).key;
+const shownOf = (step: number) =>
+  [...WORD].slice(0, riddleLettersShown(rules, [...WORD].length, step)).join("");
 const number = () => riddleNumber(RIDDLE_FIRST_DAY, today());
 
 beforeAll(async () => {
@@ -126,7 +129,7 @@ describe("GET /riddles/today", () => {
       outcome: null,
       answer: null,
       clues: { opening: null, definition: null, etymology: null },
-      shownLetters: "",
+      shownLetters: shownOf(0),
     });
     expect(JSON.stringify(seen)).not.toContain(WORD);
     expect(JSON.stringify(seen)).not.toContain("mailloche");
@@ -194,10 +197,19 @@ describe("POST /riddles/today/answer", () => {
     expect((await readToday(guest)).step).toBe(1);
   });
 
+  it("shows the first letter from the day the rules gave more letters", async () => {
+    const riddle = await todayRiddle(db, {
+      userId: "player-without-a-game",
+      now: Date.UTC(2026, 10, 1, 12),
+      seed: "0".repeat(32),
+    });
+    expect(riddle?.shownLetters).toBe([...WORD][0]);
+  });
+
   it("gives letters after the clues", async () => {
     const guest = await signInAsGuest(app, env);
     for (let i = 0; i < 5; i++) await answer(guest, null);
-    expect((await readToday(guest)).shownLetters).toBe("ra");
+    expect((await readToday(guest)).shownLetters).toBe(shownOf(5));
   });
 
   it("gives the XP and the card to a player who finds a new word", async () => {

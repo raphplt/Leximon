@@ -1,6 +1,6 @@
 /**
  * The riddle of the day: the same word for everyone, to be typed. Its nature and length are shown
- * at once; each wrong answer, or a request, then uncovers a clue, then a letter. The last wrong
+ * at once; each wrong answer, or a request, then uncovers a clue, then letters. The last wrong
  * answer ends the game. Found, it earns XP and the card, a gift known in advance, not a draw.
  */
 
@@ -18,8 +18,12 @@ export interface RiddleRules {
   readonly maxLetters: number;
   /** A shorter definition cannot be cut into a clue. */
   readonly minDefinitionWords: number;
-  /** Letters uncovered, from the first one, once the clues have run out. */
-  readonly lettersShown: number;
+  /** Letters shown before any clue. */
+  readonly startLetters: number;
+  /** Steps that uncover letters, from the first one on, once the clues have run out. */
+  readonly letterSteps: number;
+  /** What the last of them leaves hidden; `null`: each uncovers one letter, whatever the length. */
+  readonly hiddenLetters: number | null;
   readonly xp: number;
 }
 
@@ -141,7 +145,7 @@ export function riddleDay(firstDay: string, number: number): string {
 
 /** The highest step: every clue and letter uncovered. One more wrong answer ends the game. */
 export function lastRiddleStep(rules: RiddleRules): number {
-  return RIDDLE_CLUES + rules.lettersShown;
+  return RIDDLE_CLUES + rules.letterSteps;
 }
 
 /** One answer: `found`, or a wrong answer or a request for a clue, which cost the same. */
@@ -155,6 +159,20 @@ export function advanceRiddle(
   return { step: step + 1, outcome: null };
 }
 
+/**
+ * How many letters a step shows. A long word gains more at each step, so that all end as close to
+ * found; a short one still gains a letter at each step, or the try would buy nothing.
+ */
+export function riddleLettersShown(rules: RiddleRules, length: number, step: number): number {
+  const letterStep = Math.max(0, step - RIDDLE_CLUES);
+  if (letterStep === 0) return rules.startLetters;
+  const gain =
+    rules.hiddenLetters === null
+      ? rules.letterSteps
+      : Math.max(rules.letterSteps, length - rules.startLetters - rules.hiddenLetters);
+  return rules.startLetters + Math.ceil((gain * letterStep) / rules.letterSteps);
+}
+
 export interface RiddleReveal {
   readonly opening: string | null;
   readonly definition: string | null;
@@ -165,16 +183,20 @@ export interface RiddleReveal {
 
 /** What the player may read at this step. A finished game shows every clue. */
 export function riddleReveal(
+  rules: RiddleRules,
   clues: RiddleClues,
   word: string,
   step: number,
   finished: boolean,
 ): RiddleReveal {
   const seen = (clue: number) => finished || step >= clue;
+  const letters = [...word];
   return {
     opening: seen(1) ? clues.opening : null,
     definition: seen(2) ? clues.definition : null,
     etymology: seen(3) ? clues.etymology : null,
-    letters: finished ? word : [...word].slice(0, Math.max(0, step - RIDDLE_CLUES)).join(""),
+    letters: finished
+      ? word
+      : letters.slice(0, riddleLettersShown(rules, letters.length, step)).join(""),
   };
 }

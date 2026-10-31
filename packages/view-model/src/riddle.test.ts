@@ -73,8 +73,8 @@ describe("riddleResultLine", () => {
     [1, "found", "Trouvé au 1er indice"],
     [2, "found", "Trouvé au 2e indice"],
     [3, "found", "Trouvé au 3e indice"],
-    [4, "found", "Trouvé avec 1 lettre"],
-    [6, "found", "Trouvé avec 3 lettres"],
+    [4, "found", "Trouvé au 4e indice"],
+    [6, "found", "Trouvé au 6e indice"],
     [6, "lost", "Pas trouvé"],
   ] as const)("step %i, %s", (step, outcome, line) => {
     expect(riddleResultLine({ step, outcome })).toBe(line);
@@ -148,7 +148,7 @@ describe("tries", () => {
 
   it("names what the button gives", () => {
     expect(riddleAskLabel({ step: 2, lastStep: 6 })).toBe("Demander un indice");
-    expect(riddleAskLabel({ step: 3, lastStep: 6 })).toBe("Demander une lettre");
+    expect(riddleAskLabel({ step: 3, lastStep: 6 })).toBe("Demander des lettres");
     expect(riddleAskLabel({ step: 6, lastStep: 6 })).toBe("Abandonner et voir le mot");
   });
 });

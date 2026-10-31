@@ -9,6 +9,7 @@ import {
   type RiddleRules,
   riddleCluesOf,
   riddleDay,
+  riddleLettersShown,
   riddleNumber,
   riddleReveal,
   riddleRulesAt,
@@ -20,9 +21,13 @@ const RULES: RiddleRules = {
   minLetters: 5,
   maxLetters: 12,
   minDefinitionWords: 8,
-  lettersShown: 3,
+  startLetters: 0,
+  letterSteps: 3,
+  hiddenLetters: null,
   xp: 50,
 };
+
+const MORE_LETTERS: RiddleRules = { ...RULES, startLetters: 1, hiddenLetters: 2 };
 
 const RALINGUE: RiddleCandidate = {
   word: "ralingue",
@@ -199,12 +204,49 @@ describe("advanceRiddle", () => {
   });
 });
 
+describe("riddleLettersShown", () => {
+  it("gives one letter a step when nothing else is set", () => {
+    expect([0, 3, 4, 5, 6].map((step) => riddleLettersShown(RULES, 9, step))).toEqual([
+      0, 0, 1, 2, 3,
+    ]);
+  });
+
+  it("shows the first letter before any clue", () => {
+    expect([0, 1, 2, 3].map((step) => riddleLettersShown(MORE_LETTERS, 9, step))).toEqual([
+      1, 1, 1, 1,
+    ]);
+  });
+
+  it.each([
+    [5, [2, 3, 4]],
+    [6, [2, 3, 4]],
+    [7, [3, 4, 5]],
+    [8, [3, 5, 6]],
+    [9, [3, 5, 7]],
+    [10, [4, 6, 8]],
+    [11, [4, 7, 9]],
+    [12, [4, 7, 10]],
+  ])("spreads the letters of a word of %i", (length, shown) => {
+    expect([4, 5, 6].map((step) => riddleLettersShown(MORE_LETTERS, length, step))).toEqual(shown);
+  });
+
+  it("never gives the word away, and every step gives a letter", () => {
+    for (let length = MORE_LETTERS.minLetters; length <= MORE_LETTERS.maxLetters; length++) {
+      const shown = [3, 4, 5, 6].map((step) => riddleLettersShown(MORE_LETTERS, length, step));
+      expect(shown.at(-1)).toBeLessThan(length);
+      for (let i = 1; i < shown.length; i++) {
+        expect(shown[i]).toBeGreaterThan(shown[i - 1] ?? 0);
+      }
+    }
+  });
+});
+
 describe("riddleReveal", () => {
   const clues = riddleCluesOf(RULES, RALINGUE);
   if (clues === null) throw new Error("Fixture refused");
 
   it("shows no clue at the start", () => {
-    expect(riddleReveal(clues, RALINGUE.word, 0, false)).toEqual({
+    expect(riddleReveal(RULES, clues, RALINGUE.word, 0, false)).toEqual({
       opening: null,
       definition: null,
       etymology: null,
@@ -213,25 +255,30 @@ describe("riddleReveal", () => {
   });
 
   it("uncovers clues one step at a time", () => {
-    expect(riddleReveal(clues, RALINGUE.word, 1, false).opening).toBe(clues.opening);
-    expect(riddleReveal(clues, RALINGUE.word, 1, false).definition).toBeNull();
-    expect(riddleReveal(clues, RALINGUE.word, 2, false).definition).toBe(clues.definition);
-    expect(riddleReveal(clues, RALINGUE.word, 2, false).etymology).toBeNull();
-    expect(riddleReveal(clues, RALINGUE.word, 3, false).etymology).toBe(clues.etymology);
-    expect(riddleReveal(clues, RALINGUE.word, 3, false).letters).toBe("");
+    expect(riddleReveal(RULES, clues, RALINGUE.word, 1, false).opening).toBe(clues.opening);
+    expect(riddleReveal(RULES, clues, RALINGUE.word, 1, false).definition).toBeNull();
+    expect(riddleReveal(RULES, clues, RALINGUE.word, 2, false).definition).toBe(clues.definition);
+    expect(riddleReveal(RULES, clues, RALINGUE.word, 2, false).etymology).toBeNull();
+    expect(riddleReveal(RULES, clues, RALINGUE.word, 3, false).etymology).toBe(clues.etymology);
+    expect(riddleReveal(RULES, clues, RALINGUE.word, 3, false).letters).toBe("");
   });
 
   it("then uncovers letters", () => {
-    expect(riddleReveal(clues, RALINGUE.word, 4, false).letters).toBe("r");
-    expect(riddleReveal(clues, RALINGUE.word, 6, false).letters).toBe("ral");
+    expect(riddleReveal(RULES, clues, RALINGUE.word, 4, false).letters).toBe("r");
+    expect(riddleReveal(RULES, clues, RALINGUE.word, 6, false).letters).toBe("ral");
+  });
+
+  it("shows the letters the rules give at the start", () => {
+    expect(riddleReveal(MORE_LETTERS, clues, RALINGUE.word, 0, false).letters).toBe("r");
+    expect(riddleReveal(MORE_LETTERS, clues, RALINGUE.word, 6, false).letters).toBe("raling");
   });
 
   it("keeps a whole letter when the word starts with an accent", () => {
-    expect(riddleReveal(clues, "équité", 4, false).letters).toBe("é");
+    expect(riddleReveal(RULES, clues, "équité", 4, false).letters).toBe("é");
   });
 
   it("shows everything once the game is over, even when found early", () => {
-    expect(riddleReveal(clues, RALINGUE.word, 0, true)).toEqual({
+    expect(riddleReveal(RULES, clues, RALINGUE.word, 0, true)).toEqual({
       opening: clues.opening,
       definition: clues.definition,
       etymology: clues.etymology,

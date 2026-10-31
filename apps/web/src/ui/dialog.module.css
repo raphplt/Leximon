@@ -66,8 +66,12 @@
 .box {
   display: flex;
   flex-direction: column;
-  height: 100%;
   max-height: inherit;
+}
+
+/* Only here: under a window sized by its content, Safari 16 resolves this to 0 and the window vanishes. */
+.side .box {
+  height: 100%;
 }
 
 /* Focused on opening so that the cross is not; the window itself needs no ring. */

@@ -37,6 +37,8 @@ const NOTIFY_DECIDED = Date.UTC(2026, 9, 25, 23);
 const PRACTICE_DECIDED = Date.UTC(2026, 9, 29, 23);
 /** Midnight in Paris on 2026-10-31, when the owner decided the riddle of the day. */
 const RIDDLE_DECIDED = Date.UTC(2026, 9, 30, 23);
+/** Midnight in Paris on 2026-11-01, when the owner gave the riddle more letters. */
+const RIDDLE_MORE_LETTERS = Date.UTC(2026, 9, 31, 23);
 
 export const REFILL_SCHEDULE: RefillSchedule = [
   { startsAt: SINCE_LAUNCH, capacity: 6, intervalMs: 30 * MINUTE },
@@ -336,7 +338,20 @@ export const RIDDLE_SCHEDULE: RiddleSchedule = [
     minLetters: 5,
     maxLetters: 12,
     minDefinitionWords: 8,
-    lettersShown: 3,
+    startLetters: 0,
+    letterSteps: 3,
+    hiddenLetters: null,
+    xp: 50,
+  },
+  {
+    startsAt: RIDDLE_MORE_LETTERS,
+    rarities: ["common", "uncommon"],
+    minLetters: 5,
+    maxLetters: 12,
+    minDefinitionWords: 8,
+    startLetters: 1,
+    letterSteps: 3,
+    hiddenLetters: 2,
     xp: 50,
   },
 ];

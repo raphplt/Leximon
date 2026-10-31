@@ -102,7 +102,7 @@ function riddleView(
   nextAt: EpochMs,
 ): RiddleResponse {
   const finished = play.outcome !== null;
-  const { letters, ...clues } = riddleReveal(riddle.clues, riddle.word, play.step, finished);
+  const { letters, ...clues } = riddleReveal(rules, riddle.clues, riddle.word, play.step, finished);
   return {
     number: riddleNumber(RIDDLE_FIRST_DAY, riddle.day),
     partOfSpeech: riddle.clues.partOfSpeech,

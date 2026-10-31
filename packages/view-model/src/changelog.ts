@@ -13,7 +13,7 @@ export const CHANGELOG: readonly ChangelogEntry[] = [
     title: "L'énigme du jour",
     items: [
       "La page Défis propose chaque jour un nouveau mot à deviner, le même pour tout le monde, en 7 essais.",
-      "Chaque mauvaise réponse dévoile un indice, puis une lettre. Tu peux aussi demander un indice, au prix d'un essai.",
+      "Chaque mauvaise réponse dévoile un indice, puis des lettres. Tu peux aussi demander un indice, au prix d'un essai.",
       "Trouver le mot rapporte 50 XP, et la carte si tu ne l'as pas.",
       "Tu peux partager ton résultat sans dévoiler le mot.",
     ],
