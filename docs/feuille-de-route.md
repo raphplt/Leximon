@@ -2,7 +2,7 @@
 
 Où en est Leximon, ce qui reste avant la bêta publique (novembre 2026) et ce qui attend une décision du propriétaire. Mise à jour à chaque étape franchie.
 
-**Dernière mise à jour :** 2026-10-28.
+**Dernière mise à jour :** 2026-10-31.
 
 ## En une phrase
 
@@ -82,7 +82,7 @@ Arbitrés par le propriétaire le 2026-10-20 : jeu grand public (B2C), pas de ve
 | Bêta fermée sur invitation | En ligne, premiers liens envoyés (2026-10-25) | D-041 : liens par groupe dans `/admin/invitations`, page `/invitation/<code>`, porte tenue par l'API (`BETA_INVITES`), `?src=` gardé avec le joueur. Une invitation rejouée par un invité ne rouvre plus la porte |
 | Mesure | En ligne | D-042 et D-052 : `/admin/mesure`, tableau de bord sur une période choisie (7, 30, 90 jours, depuis le début ou dates libres, gardée dans l'adresse) comparée à la période d'avant : chiffres clés avec tendance, activité par jour, entonnoir, courbe de rétention, cohortes par jour ou semaine, origine et âge, heures de jeu, fausse porte mécène, testeurs, `/admin/retours` (« Un retour ? » dans le menu, « Signaler une erreur » sur la fiche de carte, avec un lien vers la carte), tranche d'âge facultative à l'inscription. Visites du site par Umami (sans cookie, codes des liens masqués, refus sur « Tes données ») et `robots.txt`, `sitemap.xml` (pages publiques et toutes les cartes, ouvertes aux moteurs de recherche) pour Search Console. Umami installé sur le serveur maison et publié sur `stats.leximon.fr` le 2026-10-28. Reste : déployer le web, Search Console ([mise-en-ligne.md](mise-en-ligne.md), étape 12 bis) |
 | Suivi des erreurs | Fait | D-045 : erreurs relevées par Cloudflare (Workers Logs), résumé chaque matin sur Discord avec les chiffres de la veille. Pas de suivi des erreurs du navigateur |
-| Test de charge | Fait (pas en ligne) | D-047 : scénarios k6 dans `infra/load/`, staging sur une branche Neon ([rnd/charge.md](rnd/charge.md)). 572 requêtes/s sans une erreur (2026-10-23). Ouverture d'un sachet ramenée de 8 à 5 allers-retours SQL et cache de session réparé (il ne servait pas) : 37 ms en médiane et 72 ms au p95 côté serveur (2026-10-24). API placée à Francfort près de la base. En production |
+| Test de charge | Fait (pas en ligne) | D-047 : scénarios k6 dans `infra/load/`, staging sur une branche Neon ([rnd/charge.md](rnd/charge.md)). 572 requêtes/s sans une erreur (2026-10-23). Ouverture d'un sachet ramenée de 8 à 5 allers-retours SQL et cache de session réparé (il ne servait pas) : 37 ms en médiane et 72 ms au p95 côté serveur (2026-10-24). API placée à Paris depuis que la base est sur le serveur maison (D-053). En production |
 | Marque, domaines, comptes réseaux | En cours | Domaine leximon.fr (OVH, DNS chez Cloudflare, renouvellement automatique à activer), contact@leximon.fr routé par Cloudflare, Discord du projet. Marque : dépôt INPI repoussé (P7). Autres comptes réseaux à faire |
 
 ## Avant la bêta ouverte
@@ -100,7 +100,7 @@ Le jour de l'ouverture : `BETA_INVITES` à `"off"` dans `env.production` de `app
 
 Dans l'ordre où elles débloquent le plus :
 
-1. **Bêta ouverte :** les préalables ci-dessus, d'abord le fournisseur de la base.
+1. **Bêta ouverte :** les préalables ci-dessus, d'abord la hausse du quota d'envoi des codes.
 2. **Avatars gravés (P49) :** valider les seize gravures choisies et leurs noms.
 3. **Mécène (P73) :** l'exemplaire de la carte dénichée, non échangeable et sans XP, reste à confirmer.
 4. **Questions ouvertes** de [regles-du-jeu.md](regles-du-jeu.md#à-décider) : numéro de collection, sons de l'ouverture, notation phonétique.
@@ -108,6 +108,6 @@ Dans l'ordre où elles débloquent le plus :
 
 ## Prochaines étapes conseillées
 
-1. Suivre `/admin/mesure` et `/admin/retours` à mesure que les invités arrivent ; vérifier `cf-placement: remote-FRA` et le p95 de l'ouverture dans le résumé Discord ([rnd/charge.md](rnd/charge.md)).
+1. Suivre `/admin/mesure` et `/admin/retours` à mesure que les invités arrivent ; vérifier `cf-placement: local-CDG` et le p95 de l'ouverture dans le résumé Discord ([rnd/charge.md](rnd/charge.md)).
 2. Le mobile : recette complète sur Android et iPhone ([recette-mobile.md](recette-mobile.md)). Avant la première publication sur les stores : un compte de démonstration pour l'examen (la connexion par code l'empêche), les captures et l'image de présentation, l'adresse App Store et les liens universels. Les textes et réponses sont prêts ([fiches-stores.md](fiches-stores.md)), premier build de production Android le 2026-10-27.
 3. La quatrième collection.
