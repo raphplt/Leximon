@@ -1,14 +1,7 @@
 "use client";
 
 import type { MyClanResponse } from "@leximon/contract";
-import {
-  COMMUNITY_PATH,
-  COMMUNITY_TABS,
-  COMMUNITY_TITLE,
-  communityTabOf,
-  isFeatureOpen,
-} from "@leximon/view-model";
-import Link from "next/link";
+import { CLANS_TITLE, communitySectionOf, isFeatureOpen } from "@leximon/view-model";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback } from "react";
 import clanStyles from "@/clan/clan.module.css";
@@ -28,27 +21,8 @@ import { PlayerList } from "./player-list";
 /** Everyone in the game: the public profiles and the clans, at every level, in a clan or not. */
 export function CommunityScreen() {
   const params = useSearchParams();
-  const tab = communityTabOf(params.get("onglet"));
-  return (
-    <main className={styles.screen}>
-      <h1 className={`${ui.display} ${styles.title}`}>{COMMUNITY_TITLE}</h1>
-      <nav className={styles.tabs} aria-label={COMMUNITY_TITLE}>
-        {COMMUNITY_TABS.map((entry) => (
-          <Link
-            key={entry.id}
-            href={entry.id === "joueurs" ? COMMUNITY_PATH : `${COMMUNITY_PATH}?onglet=${entry.id}`}
-            className={styles.tab}
-            aria-current={tab === entry.id ? "page" : undefined}
-            replace
-            scroll={false}
-          >
-            {entry.label}
-          </Link>
-        ))}
-      </nav>
-      {tab === "joueurs" ? <PlayerList /> : <ClansTab />}
-    </main>
-  );
+  const clans = communitySectionOf("/communaute", params.get("onglet")) === "clans";
+  return <main className={styles.screen}>{clans ? <ClansTab /> : <PlayerList />}</main>;
 }
 
 function ClansTab() {
@@ -56,12 +30,23 @@ function ClansTab() {
   const failed = useSharedFailed(myClan);
   const progress = useProgress();
   const now = useNow(30_000);
+  const title = <h1 className={`${ui.display} ${styles.title}`}>{CLANS_TITLE}</h1>;
   if (mine === null && failed) return <LoadFailed onRetry={() => myClan.ensure()} />;
   if (mine === null || progress === null || now === 0) {
-    return <Bone className={clanStyles.clanRowBone} />;
+    return (
+      <>
+        {title}
+        <Bone className={clanStyles.clanRowBone} />
+      </>
+    );
   }
   const canJoin = mine.clanId === null && isFeatureOpen("join_clan", progress.level, now);
-  return canJoin ? <JoinableClans mine={mine} /> : <ClanList join={null} />;
+  return (
+    <>
+      {title}
+      {canJoin ? <JoinableClans mine={mine} /> : <ClanList join={null} />}
+    </>
+  );
 }
 
 /** The list with its buttons: a player free to join goes straight to their new clan. */

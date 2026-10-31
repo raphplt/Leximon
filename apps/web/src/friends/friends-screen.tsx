@@ -2,9 +2,7 @@
 
 import type { Friend, FriendRequest } from "@leximon/contract";
 import {
-  ALL_PLAYERS_LABEL,
   betaPlacesLabel,
-  COMMUNITY_PATH,
   FRIENDS_EMPTY,
   FRIENDS_GUEST,
   FRIENDS_PSEUDO_FIRST,
@@ -61,9 +59,6 @@ export function FriendsScreen() {
           <Icon name="amis" size={40} />
           <p className={styles.hint}>{FRIENDS_GUEST}</p>
           <ButtonLink href="/compte">Créer mon compte</ButtonLink>
-          <ButtonLink href={COMMUNITY_PATH} variant="ghost" small>
-            {ALL_PLAYERS_LABEL}
-          </ButtonLink>
         </section>
       </main>
     );
@@ -110,9 +105,6 @@ export function FriendsScreen() {
         <span className={styles.small}>
           {friendsCountLabel(data.friends.length, data.maxFriends)}
         </span>
-        <ButtonLink href={COMMUNITY_PATH} variant="ghost" small>
-          {ALL_PLAYERS_LABEL}
-        </ButtonLink>
       </header>
 
       <div className={styles.columns}>

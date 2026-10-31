@@ -1,6 +1,5 @@
 "use client";
 
-import { COMMUNITY_PATH, COMMUNITY_TITLE, levelBadge, levelsOfFeatures } from "@leximon/view-model";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { FeedbackDialog } from "@/beta/feedback-dialog";
@@ -20,7 +19,6 @@ interface Item {
   readonly icon: IconName;
   readonly href?: string;
   readonly action?: () => void;
-  readonly lock?: string | null;
 }
 
 /** The player's menu: under the avatar on the web, a sheet on phones. */
@@ -43,28 +41,18 @@ export function PlayerMenu({
   const account: Item = view.member
     ? { label: "Déconnexion", icon: "logout", action: () => setSignOutOpen(true) }
     : { label: "Créer mon compte", icon: "cle", href: "/compte" };
-  const joustLevel = view.now === 0 ? null : levelsOfFeatures(view.now).jousts;
-  const items: Item[] = [
-    { label: "Mon profil", icon: "profil", href: "/profil" },
-    { label: "Amis", icon: "amis", href: "/amis" },
-    { label: COMMUNITY_TITLE, icon: "clan", href: COMMUNITY_PATH },
-    {
-      label: "Joutes",
-      icon: "joutes",
-      href: "/joutes",
-      lock:
-        joustLevel !== null && view.progress !== null && view.progress.level < joustLevel
-          ? levelBadge(joustLevel)
-          : null,
-    },
-    { label: "Apparence", icon: "palette", href: "/atelier" },
-    { label: "Niveaux", icon: "star", href: "/niveaux" },
-    { label: "Nouveautés", icon: "bolt", href: "/nouveautes" },
-    { label: "Réglages", icon: "reglages", action: openSettings },
-    { label: "Devenir mécène", icon: "crown", href: "/mecene" },
-    { label: "Écrire à l'équipe", icon: "chat", action: () => setFeedbackOpen(true) },
-    ...admin,
-    account,
+  const groups: readonly (readonly Item[])[] = [
+    [
+      { label: "Apparence", icon: "palette", href: "/atelier" },
+      { label: "Réglages", icon: "reglages", action: openSettings },
+    ],
+    [
+      { label: "Nouveautés", icon: "bolt", href: "/nouveautes" },
+      { label: "Devenir mécène", icon: "crown", href: "/mecene" },
+      { label: "Écrire à l'équipe", icon: "chat", action: () => setFeedbackOpen(true) },
+      ...admin,
+    ],
+    [account],
   ];
 
   // Web: Escape and a click beside it close the menu; the first entry takes the focus, and the
@@ -85,38 +73,62 @@ export function PlayerMenu({
 
   const entries = (
     <ul ref={list} className={narrow ? styles.sheetList : styles.list}>
-      {items.map((item) => {
-        const content = (
-          <>
-            <span className={narrow ? styles.sheetIcon : styles.icon}>
-              <Icon name={item.icon} size={narrow ? 20 : 19} />
-            </span>
-            <span className={styles.label}>{item.label}</span>
-            {item.lock != null && <span className={styles.lock}>{item.lock}</span>}
-            {narrow && <Icon name="chev" size={16} />}
-          </>
-        );
-        return (
-          <li key={item.label}>
-            {item.href !== undefined ? (
-              <Link href={item.href} className={styles.row} onClick={onClose}>
-                {content}
-              </Link>
-            ) : (
-              <button
-                type="button"
-                className={styles.row}
-                onClick={() => {
-                  onClose();
-                  item.action?.();
-                }}
-              >
-                {content}
-              </button>
+      <li>
+        <Link href="/profil" className={styles.who} onClick={onClose}>
+          <Avatar
+            avatar={view.profile?.avatar ?? null}
+            frame={view.profile?.frame ?? null}
+            size={narrow ? 56 : 44}
+          />
+          <span className={styles.whoText}>
+            <span className={`${ui.display} ${styles.whoName}`}>{view.name}</span>
+            {view.progress !== null && (
+              <span className={styles.whoLevel}>
+                <LevelMedal level={view.progress.level} size={26} labelled />
+                {view.title}
+              </span>
             )}
-          </li>
-        );
-      })}
+          </span>
+          <Icon name="chev" size={16} />
+        </Link>
+      </li>
+      {groups.map((group) => (
+        <li key={group[0]?.label} className={styles.group}>
+          <ul className={styles.groupList}>
+            {group.map((item) => {
+              const content = (
+                <>
+                  <span className={narrow ? styles.sheetIcon : styles.icon}>
+                    <Icon name={item.icon} size={narrow ? 20 : 19} />
+                  </span>
+                  <span className={styles.label}>{item.label}</span>
+                  {narrow && <Icon name="chev" size={16} />}
+                </>
+              );
+              return (
+                <li key={item.label}>
+                  {item.href !== undefined ? (
+                    <Link href={item.href} className={styles.row} onClick={onClose}>
+                      {content}
+                    </Link>
+                  ) : (
+                    <button
+                      type="button"
+                      className={styles.row}
+                      onClick={() => {
+                        onClose();
+                        item.action?.();
+                      }}
+                    >
+                      {content}
+                    </button>
+                  )}
+                </li>
+              );
+            })}
+          </ul>
+        </li>
+      ))}
     </ul>
   );
 
@@ -132,22 +144,6 @@ export function PlayerMenu({
     return (
       <>
         <Dialog open={open} title="Menu" onClose={onClose}>
-          {view.progress !== null && (
-            <div className={styles.who}>
-              <Avatar
-                avatar={view.profile?.avatar ?? null}
-                frame={view.profile?.frame ?? null}
-                size={56}
-              />
-              <div>
-                <div className={`${ui.display} ${styles.whoName}`}>{view.name}</div>
-                <div className={styles.whoLevel}>
-                  <LevelMedal level={view.progress.level} size={26} labelled />
-                  {view.title}
-                </div>
-              </div>
-            </div>
-          )}
           {entries}
         </Dialog>
         {windows}

@@ -196,7 +196,7 @@
 }
 
 /* Medium widths: the bar tightens, then the tabs keep only their icon. */
-@media (max-width: 1240px) {
+@media (max-width: 1340px) {
   .top {
     gap: 12px;
     padding: 0 18px;
@@ -216,7 +216,7 @@
   }
 }
 
-@media (max-width: 1040px) {
+@media (max-width: 1140px) {
   .navLabel {
     position: absolute;
     width: 1px;

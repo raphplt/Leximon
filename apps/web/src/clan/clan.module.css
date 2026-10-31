@@ -791,9 +791,9 @@
 }
 
 .clanList {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(340px, 100%), 1fr));
+  gap: 12px;
   margin: 0 0 12px;
   padding: 0;
   list-style: none;
@@ -806,7 +806,8 @@
   display: flex;
   align-items: center;
   gap: 16px;
-  padding: 14px 16px;
+  min-height: 116px;
+  padding: 16px 18px;
 }
 
 .clanRowLink {
@@ -821,7 +822,22 @@
 
 .clanRowBone {
   border-radius: 22px;
-  height: 74px;
+  height: 116px;
+}
+
+.clanRowMotto {
+  margin-top: 6px;
+  color: var(--lx-color-text);
+  font-size: 14px;
+  font-style: italic;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+.chipsGap {
+  width: 1px;
+  margin: 6px 4px;
+  background: rgba(246, 240, 226, 0.14);
 }
 
 .clanRowText {

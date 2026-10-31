@@ -1,13 +1,14 @@
 "use client";
 
-import type { ClanEntryMode, ClanSummary } from "@leximon/contract";
+import type { ClanEntryMode, ClanSort, ClanSummary } from "@leximon/contract";
 import {
+  CLAN_SORTS,
   capitalize,
-  clanSubline,
   entryModeLabel,
   joinLabel,
   NO_CLAN_FOUND,
   NO_CLAN_YET,
+  plural,
 } from "@leximon/view-model";
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
@@ -29,7 +30,7 @@ const ENTRY_FILTERS: readonly (ClanEntryMode | undefined)[] = [
 ];
 
 /** Rows standing in for the first clans while they arrive. */
-const WAITING_ROWS = [1, 2, 3];
+const WAITING_ROWS = [1, 2, 3, 4];
 
 /**
  * Every clan, by name and way in. Each row leads to the clan's page. `join` adds the button that
@@ -38,6 +39,7 @@ const WAITING_ROWS = [1, 2, 3];
 export function ClanList({ join }: { readonly join: ClanJoin | null }) {
   const [query, setQuery] = useState("");
   const [entry, setEntry] = useState<ClanEntryMode | undefined>(undefined);
+  const [sort, setSort] = useState<ClanSort>("big");
   const [clans, setClans] = useState<readonly ClanSummary[] | null>(null);
   const [cursor, setCursor] = useState<string | null>(null);
 
@@ -45,9 +47,10 @@ export function ClanList({ join }: { readonly join: ClanJoin | null }) {
     (cursorValue: string | null) => ({
       q: query.trim(),
       cursor: cursorValue,
+      sort,
       ...(entry === undefined ? {} : { entry }),
     }),
-    [query, entry],
+    [query, entry, sort],
   );
 
   // Searches as the name is typed, once the player pauses.
@@ -85,6 +88,18 @@ export function ClanList({ join }: { readonly join: ClanJoin | null }) {
         />
       </label>
       <div className={`${styles.chips} ${styles.entryFilter}`}>
+        {CLAN_SORTS.map((option) => (
+          <button
+            key={option.id}
+            type="button"
+            className={ui.chip}
+            aria-pressed={sort === option.id}
+            onClick={() => setSort(option.id)}
+          >
+            {option.label}
+          </button>
+        ))}
+        <span className={styles.chipsGap} aria-hidden="true" />
         {ENTRY_FILTERS.map((mode) => (
           <button
             key={mode ?? "all"}
@@ -118,10 +133,16 @@ export function ClanList({ join }: { readonly join: ClanJoin | null }) {
             <li key={clan.id} className={`${ui.panel} ${styles.clanRow}`}>
               <Banner cardId={clan.banner} />
               <Link href={`/clan/${clan.id}`} className={styles.clanRowLink}>
-                <Emblem emblem={clan.emblem} size={44} level={clan.level} />
+                <Emblem emblem={clan.emblem} size={60} level={clan.level} />
                 <span className={styles.clanRowText}>
                   <span className={styles.clanRowName}>{clan.name}</span>
-                  <span className={styles.small}>{clanSubline(clan)}</span>
+                  <span className={styles.small}>
+                    {plural(clan.memberCount, "membre", "membres")},{" "}
+                    {entryModeLabel(clan.entryMode)}
+                  </span>
+                  {clan.motto !== "" && (
+                    <span className={styles.clanRowMotto}>« {clan.motto} »</span>
+                  )}
                 </span>
               </Link>
               {join !== null && <JoinButton clan={clan} join={join} />}

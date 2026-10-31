@@ -2,10 +2,10 @@
 
 import type { ClanMember, ClanSummary, ClanView, MyClanResponse } from "@leximon/contract";
 import {
-  ALL_CLANS_LABEL,
   ALREADY_IN_CLAN,
   CLAN_GONE,
   CLANS_PATH,
+  CLANS_TITLE,
   clanSubline,
   isFeatureOpen,
   lockedToast,
@@ -83,7 +83,7 @@ export function ClanVisitScreen({ clanId }: { readonly clanId: string }) {
       <main className={styles.screen}>
         <p className={styles.hint}>{CLAN_GONE}</p>
         <ButtonLink href={CLANS_PATH} variant="secondary">
-          {ALL_CLANS_LABEL}
+          {CLANS_TITLE}
         </ButtonLink>
       </main>
     );
@@ -191,9 +191,6 @@ function ClanVisit({
       </section>
 
       <div className={styles.visitFoot}>
-        <ButtonLink href={CLANS_PATH} variant="ghost" small>
-          {ALL_CLANS_LABEL}
-        </ButtonLink>
         <Button variant="ghost" small onClick={() => void report()}>
           {REPORT_CLAN_LABEL}
         </Button>

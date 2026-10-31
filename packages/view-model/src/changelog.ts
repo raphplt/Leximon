@@ -12,8 +12,8 @@ export const CHANGELOG: readonly ChangelogEntry[] = [
     date: "2026-11-01",
     title: "Tous les joueurs, tous les clans",
     items: [
-      "La nouvelle page Communauté liste les joueurs au profil public et tous les clans, même si tu as déjà un clan. Elle s'ouvre depuis ton menu, la page Amis et la page de ton clan.",
-      "Tu peux ouvrir la page de n'importe quel clan pour voir ses membres.",
+      "Le nouvel onglet Communauté réunit ton clan, tes amis, les joueurs au profil public et tous les clans, même si tu as déjà un clan.",
+      "Tu peux trier les joueurs, voir leurs cartes épinglées et ouvrir la page de n'importe quel clan pour voir ses membres.",
       "Si ton profil est public, tu apparais dans cette liste. Pour ne plus y figurer, cache ton profil dans les réglages.",
     ],
   },

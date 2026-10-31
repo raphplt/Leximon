@@ -1,29 +1,56 @@
-import type { ProfileResponse } from "@leximon/contract";
+import type { ClanSort, PlayerSort, ProfileResponse } from "@leximon/contract";
 
-/** The community: the public profiles and the clans, open to every player. */
+/** The community tab: the player's clan, their friends, the public profiles and the clans. */
 
 export const COMMUNITY_TITLE = "Communauté";
 
-export type CommunityTab = "joueurs" | "clans";
-
-export const COMMUNITY_TABS: readonly { readonly id: CommunityTab; readonly label: string }[] = [
-  { id: "joueurs", label: "Joueurs" },
-  { id: "clans", label: "Clans" },
-];
+export type CommunitySection = "clan" | "amis" | "joueurs" | "clans";
 
 export const COMMUNITY_PATH = "/communaute";
 export const CLANS_PATH = `${COMMUNITY_PATH}?onglet=clans`;
 
-/** The tab named by the address; an unknown one falls back on the players. */
-export function communityTabOf(value: string | null | undefined): CommunityTab {
-  return value === "clans" ? "clans" : "joueurs";
+export const COMMUNITY_SECTIONS: readonly {
+  readonly id: CommunitySection;
+  readonly label: string;
+  readonly href: string;
+}[] = [
+  { id: "clan", label: "Mon clan", href: "/clan" },
+  { id: "amis", label: "Amis", href: "/amis" },
+  { id: "joueurs", label: "Joueurs", href: COMMUNITY_PATH },
+  { id: "clans", label: "Clans", href: CLANS_PATH },
+];
+
+/** The section of an address. A clan seen from outside belongs to the list of clans. */
+export function communitySectionOf(
+  pathname: string,
+  tab: string | null | undefined,
+): CommunitySection {
+  if (pathname === "/clan") return "clan";
+  if (pathname.startsWith("/clan/")) return "clans";
+  if (pathname === "/amis") return "amis";
+  return tab === "clans" ? "clans" : "joueurs";
 }
 
+export const PLAYER_SORTS: readonly { readonly id: PlayerSort; readonly label: string }[] = [
+  { id: "active", label: "Actifs" },
+  { id: "new", label: "Nouveaux" },
+  { id: "near", label: "Proches de mon niveau" },
+];
+
+export const CLANLESS_LABEL = "Sans clan";
+
+export const CLAN_SORTS: readonly { readonly id: ClanSort; readonly label: string }[] = [
+  { id: "big", label: "Les plus grands" },
+  { id: "new", label: "Les plus récents" },
+];
+
+export const PLAYERS_TITLE = "Joueurs";
+export const CLANS_TITLE = "Clans";
 export const PLAYER_SEARCH_LABEL = "Début du pseudo";
-export const ALL_PLAYERS_LABEL = "Voir tous les joueurs";
-export const ALL_CLANS_LABEL = "Voir les clans";
+export const NO_PINNED_CARD = "Aucune carte épinglée";
 
 export const NO_PLAYER_FOUND = "Aucun joueur à ce nom, ou son profil n'est pas public.";
+export const NO_PLAYER_FOR_FILTER = "Aucun joueur ne correspond à ce choix pour l'instant.";
 
 /** The list before anyone is in it. */
 export function noPlayerYet(publicFromLevel: number): string {

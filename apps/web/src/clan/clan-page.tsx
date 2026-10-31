@@ -5,8 +5,6 @@ import type { Catalog } from "@leximon/contract/client";
 import { canAct } from "@leximon/core";
 import { collectionTone } from "@leximon/tokens";
 import {
-  ALL_CLANS_LABEL,
-  CLANS_PATH,
   claimLabel,
   clanLevelLine,
   clanSubline,
@@ -33,7 +31,7 @@ import { api } from "@/lib/api";
 import { myClan } from "@/player/clan";
 import { ownedCards } from "@/player/collection";
 import { useShared } from "@/player/resource";
-import { Button, ButtonLink } from "@/ui/button";
+import { Button } from "@/ui/button";
 import { Icon } from "@/ui/icon";
 import { Bone, WaitingScreen } from "@/ui/skeleton";
 import { useToast } from "@/ui/toast";
@@ -232,9 +230,6 @@ export function ClanPage({
               <span className={ui.badge}>{view.pendingRequests}</span>
             </button>
           )}
-          <ButtonLink href={CLANS_PATH} variant="ghost" small>
-            {ALL_CLANS_LABEL}
-          </ButtonLink>
           <Button variant="secondary" small onClick={() => void invite()}>
             <Icon name="share" size={17} />
             Inviter

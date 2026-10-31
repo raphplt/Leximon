@@ -88,21 +88,57 @@
   flex: 1;
 }
 
-.lock {
-  font-size: 11px;
-  font-weight: 800;
-  color: var(--lx-color-text-muted);
+.group {
+  margin-top: 6px;
+  padding-top: 6px;
+  border-top: 1px solid rgba(246, 240, 226, 0.1);
+}
+
+.groupList {
+  margin: 0;
+  padding: 0;
+  list-style: none;
 }
 
 .who {
+  box-sizing: border-box;
   display: flex;
   align-items: center;
-  gap: 14px;
-  padding: 4px 4px 16px;
+  gap: 12px;
+  width: 100%;
+  padding: 10px;
+  border-radius: 12px;
+  color: var(--lx-color-text);
+  text-decoration: none;
+}
+
+.who:hover {
+  background: rgba(246, 240, 226, 0.05);
+}
+
+.who:focus-visible {
+  outline: none;
+  background: rgba(246, 240, 226, 0.08);
+  box-shadow: inset 0 0 0 2px var(--lx-color-focus);
+}
+
+.list:hover .who:focus-visible:not(:hover) {
+  background: none;
+  box-shadow: none;
+}
+
+.whoText {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
 }
 
 .whoName {
-  font-size: 22px;
+  overflow: hidden;
+  font-size: 20px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .whoLevel {

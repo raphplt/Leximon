@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { communityTabOf, noPlayerYet, playerListNote, publicProfileDetail } from "./community";
+import { communitySectionOf, noPlayerYet, playerListNote, publicProfileDetail } from "./community";
 
 const seen = {
   member: true,
@@ -9,12 +9,17 @@ const seen = {
   profilePublic: true,
 };
 
-describe("communityTabOf", () => {
-  it("opens the clans on demand, the players otherwise", () => {
-    expect(communityTabOf("clans")).toBe("clans");
-    expect(communityTabOf("joueurs")).toBe("joueurs");
-    expect(communityTabOf("autre")).toBe("joueurs");
-    expect(communityTabOf(null)).toBe("joueurs");
+describe("communitySectionOf", () => {
+  it("follows the address", () => {
+    expect(communitySectionOf("/clan", null)).toBe("clan");
+    expect(communitySectionOf("/amis", null)).toBe("amis");
+    expect(communitySectionOf("/communaute", null)).toBe("joueurs");
+    expect(communitySectionOf("/communaute", "clans")).toBe("clans");
+    expect(communitySectionOf("/communaute", "autre")).toBe("joueurs");
+  });
+
+  it("keeps a clan seen from outside under the clans", () => {
+    expect(communitySectionOf("/clan/0190-abc", null)).toBe("clans");
   });
 });
 

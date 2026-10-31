@@ -10,7 +10,7 @@ export const TAB_LABELS: Readonly<Record<TabId, string>> = {
   album: "Album",
   defis: "Défis",
   echanges: "Échanges",
-  clan: "Clan",
+  clan: "Communauté",
 };
 
 /** The order of the web top bar. */
@@ -22,11 +22,7 @@ export const PHONE_TAB_ORDER: readonly TabId[] = ["album", "defis", "jouer", "ec
 /** Which tabs a level still closes: shown with a padlock, never hidden. */
 export function closedTabs(level: number | null, now: EpochMs): ReadonlySet<TabId> {
   if (level === null || now === 0) return new Set();
-  const levels = levelsOfFeatures(now);
-  const closed = new Set<TabId>();
-  if (level < levels.trade) closed.add("echanges");
-  if (level < levels.join_clan) closed.add("clan");
-  return closed;
+  return new Set(level < levelsOfFeatures(now).trade ? (["echanges"] as const) : []);
 }
 
 /** The red count on a tab: offers received on Échanges, coffrets waiting on Jouer. */
