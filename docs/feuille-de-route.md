@@ -1,8 +1,10 @@
 # Feuille de route
 
-Où en est Leximon, ce qui reste avant la bêta publique (novembre 2026) et ce qui attend une décision du propriétaire. Mise à jour à chaque étape franchie.
+Où en est Leximon, ce qui reste avant la bêta publique (début décembre 2026 visé, janvier en repli) et ce qui attend une décision du propriétaire. Mise à jour à chaque étape franchie.
 
-**Dernière mise à jour :** 2026-10-31.
+**Dernière mise à jour :** 2026-11-01.
+
+**Le prochain grand chantier :** les retours du game designer et la refonte « Le Livre », tous arbitrés le 2026-11-01. L'ordre est dans [retours-game-designer.md](cahiers-des-charges/retours-game-designer.md) : six corrections immédiates, puis la direction artistique ([direction-artistique-le-livre.md](cahiers-des-charges/direction-artistique-le-livre.md)), puis lisibilité, économie, social et duel. Rien n'est construit.
 
 ## En une phrase
 
@@ -52,8 +54,9 @@ Arbitrés par le propriétaire le 2026-10-20 : jeu grand public (B2C), pas de ve
 | Profil public | Fait sur le web | Pseudo (P62), avatar gravé et cadre, titre, cartes épinglées (choisies, rangées et remplacées depuis le profil), statistiques, clan, page publique `/joueur/{pseudo}` avec image de partage, atelier, bloquer et signaler (P63), suppression du compte (P64). Public par défaut (P60), dès le niveau 8 |
 | Clans | Fait sur le web et le mobile | P65 à P68 et P70 (Clan v2, [clan-v2.md](cahiers-des-charges/clan-v2.md)) : sans maximum de membres, emblème, rôles, demandes et code d'invitation, discussion et devises filtrées (ni lien, ni adresse, ni téléphone, ni caractère invisible) et modérées, objectif de la semaine en bonnes réponses de défi, niveau de clan cosmétique (objets d'emblème, Enluminure, bannières), bibliothèque commune, courrier et mentions. On peut rejoindre un autre clan dès qu'on en part. Reste : la modération par modèle |
 | Amis | Fait sur le web et le mobile, en ligne | P75 à P79, cahier [amis.md](cahiers-des-charges/amis.md) : demande acceptée des deux côtés (par pseudo exact, depuis un profil ou par le lien d'ami), écran `/amis` (demandes, lien, liste, retrait), profil entier entre amis, lien `/ami/<code>` qui fait entrer 3 joueurs dans la bêta fermée et rend amis à la création du compte, sachet bonus pour les deux au niveau 5 du filleul (5 par mois), échanges possibles par ami et doubles qui lui manquent mis en avant dans l'offre, albums comparés (`/album?ami=<code>`), podium de la semaine sans récompense, fil des trouvailles avec réactions prédéfinies, lettres du courrier. Migration `0026`. Les joueurs venus par un lien d'ami forment la source « Lien d'ami » de la mesure. Reste : le nombre de filleuls par parrain dans la mesure |
-| Communauté | Liste et pages de clans en ligne ; onglet et tris faits, pas encore en ligne | P83, D-054 : l'onglet Clan devient Communauté (Mon clan, Amis, Joueurs, Clans), liste de joueurs en lignes avec les mots de leurs cartes épinglées, tris et filtre Sans clan, menu du joueur réduit à 6 entrées. Migration `0034`. Mon clan et Amis repris le 2026-10-31 (page plus large, liste, fil par jour), et Niveaux passe du plateau à une table des matières sur le web, pas encore en ligne. Reste : décider du portage de Niveaux sur le mobile, la recette MCL-03 sur un vrai téléphone |
-| Modes de jeu entre joueurs | R&D | Plusieurs pistes à prototyper (joute, duplicate, bluff…) |
+| Communauté | Liste et pages de clans en ligne ; onglet et tris faits, pas encore en ligne | P83, D-054 : l'onglet Clan devient Communauté (Mon clan, Amis, Joueurs, Clans), liste de joueurs en lignes avec les mots de leurs cartes épinglées, tris et filtre Sans clan, menu du joueur réduit à 6 entrées. Migration `0034`. Mon clan et Amis repris le 2026-10-31 (page plus large, liste, fil par jour), et Niveaux passe du plateau à une table des matières sur le web, pas encore en ligne. Le mobile suivra pendant la refonte. Reste : la recette MCL-03 sur un vrai téléphone |
+| Social plus tôt | À faire | Tranché le 2026-11-01 (P50, P59, P77) : profil public et rejoindre un clan au niveau 5, créer un clan au 10, doubles visibles, échanges suggérés, liste de souhaits. Phase 6 du cahier |
+| Duel en direct | R&D | P91, tranché le 2026-11-01 : en direct, fantôme après 20 s, niveau 8, sans mise. Attend la R&D temps réel (D-007), puis un prototype. Autres pistes (duplicate, bluff…) après lui. Phase 7 |
 | Classements | Plus tard | Pas en v1. Cote globale de type Elo (Glicko-2), modèle du Scrabble duplicate |
 
 ### Modèle économique
@@ -61,13 +64,16 @@ Arbitrés par le propriétaire le 2026-10-20 : jeu grand public (B2C), pas de ve
 | Étape | Statut | Détail |
 |---|---|---|
 | Abonnement Mécène | À faire | P72, P73 : tout le jeu gratuit, une offre Mécène au contenu dévoilé le 1er du mois, dont « ton mot dans le jeu ». Fausse porte sur `/mecene`, mesurée dans `/admin/mesure`. Le paiement n'est pas construit, et attend les chiffres de la bêta |
+| Économie du jeu | À faire | P84 à P90, tranchés le 2026-11-01 : écus, recyclage en un bouton, mot manquant, tampons, série qui pardonne, 40 succès, codes. Étude : [rnd/doublons.md](rnd/doublons.md). Phase 5 du cahier |
 
 ### Interface
 
 | Étape | Statut | Détail |
 |---|---|---|
 | Interface v1, web et mobile | En cours | Inventaire de chaque écran : [interface-v1.md](cahiers-des-charges/interface-v1.md). Logique d'écran commune dans `packages/view-model` (D-033). Lots 0 à 4 faits sur le web, retours de la première recette traités ([recette-web.md](recette-web.md#retours-du-2026-10-22)). Jouer revenu le 2026-10-23 au bandeau du niveau et aux boutons ronds autour d'un sachet plus petit, les sachets des autres collections derrière le comptoir. Les écrans entrent en fondu et attendent leurs données sous la forme de leur contenu, sans saut de mise en page ; un écran dont le chargement échoue propose de réessayer. Le mobile suit, écran par écran |
-| Direction artistique et tokens | Fait | D-022 « Planche populaire », `packages/tokens`, logo et favicon |
+| Direction artistique et tokens | Fait, à remplacer | D-022 « Planche populaire », `packages/tokens`, logo et favicon |
+| Refonte « Le Livre » | À faire, priorité | D-055 : reliure, page imprimée, enluminure, clair et nuit, sur tout le web et le mobile, bascule unique. Phases 1 à 3, [cahier](cahiers-des-charges/direction-artistique-le-livre.md) |
+| Retours du game designer | Tranchés, à faire | [Cahier](cahiers-des-charges/retours-game-designer.md) : six corrections immédiates (phase 0), récompenses lisibles et album alphabétique (phase 4) |
 | Web : page d'accueil publique | Fait | P55 : accueil sur `/`, le jeu sous `/jouer`, connexion depuis l'accueil, lien vers le Discord du projet. Liste d'attente, image de partage, pages `/confidentialite`, `/mentions`, `/conditions`, `/charte`, 404 et page d'erreur en français. Nouveautés : une fenêtre à l'arrivée pour chaque changement (web et mobile) et la page `/nouveautes` (2026-10-29). Reste : la relecture des textes par un juriste |
 | Mobile (Expo) | En cours, jouable de bout en bout sur Android | D-048 : client API partagé (`@leximon/contract/client`), session gardée dans le trousseau par `@better-auth/expo`. Coque (bandeau du haut, onglets avec Jouer en relief, cadenas), polices embarquées, icône et écran de lancement. Jouer : choix de la collection, sachet dessiné comme celui du web (mêmes couches, balancement, lumière, ombre, envol de la bande et cartes qui sortent, attente grisée), déchirure au doigt (la requête part dès le début du geste), mise en scène par rareté, récapitulatif, boutons ronds (clan, discussion, défi du jour, amis, coffrets). Sons, mot dit à voix haute et vibrations du web (D-049), réglables. Reflets des cartes du web sur la carte révélée et la fiche, éclat des Rares dans le bilan ; la lumière suit le doigt et l'inclinaison du téléphone (D-051). Album (filtres, recherche, albums comparés avec un ami), fiche de carte (épingler), défis (révision, mot écrit, plis bonus), échanges, clan (discussion, objectif, gestion), amis (podium, fil, réactions, lien d'ami), courrier, chemin des niveaux et coffrets, profil, atelier, profils publics (signaler, bloquer), réglages (notifications, joueurs bloqués, suppression du compte), avis de sanction avec contestation, « Un retour ? » et « Signaler une erreur » sur la fiche de carte. Encre en dégradé des gravures Épique et Légendaire. Compte et portes de la bêta par le schéma `leximon://`. Version minimale imposée : `MOBILE_MIN_VERSION` côté API (`GET /app`), écran « Leximon a changé » en dessous. Reste : copie du lien d'ami (`expo-clipboard`), liens universels `https://leximon.fr/…` (identifiant d'équipe Apple et empreinte de la clé Android), adresse App Store (`ios.appStoreUrl`), page Mécène (prix d'abonnement hors achat intégré : à trancher avant iOS), joutes (pas construites), recette sur iPhone |
 | Animations et reflets | Fait | Sur le web, du CSS. Sur le mobile (2026-10-25), les mêmes couches en SVG animé avec les modes de fusion natifs, sans dépendance nouvelle ; la lumière suit le doigt et l'inclinaison du téléphone (D-051, 2026-10-27). Allégées sur Android le 2026-10-30 : couches de reflet en demi-taille, lumière par paliers, animations en pause hors de l'écran. Clore ou non la R&D D-009 reste à trancher |
@@ -89,12 +95,14 @@ Arbitrés par le propriétaire le 2026-10-20 : jeu grand public (B2C), pas de ve
 
 ## Avant la bêta ouverte
 
-La bêta reste fermée au moins jusqu'au 2026-11-04, une semaine de plus (décidé le 2026-10-28), pour avoir la rétention à J7 des premiers testeurs et corriger leurs retours. On ouvre quand tout ceci est fait :
+La bêta reste fermée jusqu'à ce que le jeu soit prêt (décidé le 2026-11-01) : début décembre visé, janvier en repli. On ouvre quand tout ceci est fait :
 
 1. **Codes de connexion :** quota d'Email Service relevé ([mise-en-ligne.md](mise-en-ligne.md), étape 12). Sans lui, une vague d'inscriptions bloque les connexions.
 2. **Liste d'attente prévenue :** Lettermint prêt (étape 12), pour tenir la promesse de P55.
 3. **Stores :** publication manuelle sur l'App Store et Google Play. Tant que la porte est fermée, l'app refuse tout nouveau joueur sans lien : elle sort le jour de l'ouverture, pas avant.
 4. **Mesure de l'arrivée :** Umami et Search Console installés (étape 12 bis), pour lire les sources dès le premier jour.
+5. **Le Livre en ligne :** phases 0 à 3 finies, sur le web et sur les stores.
+6. **Rétention :** les objectifs de 35 % à J1 et de 12 % à J7 tenus par les joueurs arrivés après la bascule. Sinon, l'économie (phase 5) passe avant l'ouverture.
 
 Le jour de l'ouverture : `BETA_INVITES` à `"off"` dans `env.production` de `apps/api/wrangler.jsonc`, puis `pnpm deploy:prod` ; publier les deux apps ; envoyer la campagne à la liste d'attente.
 
@@ -105,11 +113,14 @@ Dans l'ordre où elles débloquent le plus :
 1. **Bêta ouverte :** les préalables ci-dessus, d'abord la hausse du quota d'envoi des codes.
 2. **Avatars gravés (P49) :** valider les seize gravures choisies et leurs noms.
 3. **Mécène (P73) :** l'exemplaire de la carte dénichée, non échangeable et sans XP, reste à confirmer.
-4. **Questions ouvertes** de [regles-du-jeu.md](regles-du-jeu.md#à-décider) : numéro de collection, sons de l'ouverture, notation phonétique.
-5. **Le social arrive trop tard :** retours du 2026-10-30, rejoindre un clan et se faire des amis viennent trop tard dans le jeu. Aujourd'hui, les amis sont ouverts au niveau 1 avec un compte inscrit mais rien ne les met en avant, le profil public s'ouvre au niveau 8, rejoindre un clan au niveau 10 et en créer un au niveau 15 (P59, P50). À revoir : baisser ces niveaux, ou faire découvrir les amis plus tôt.
+4. **Questions ouvertes** de [regles-du-jeu.md](regles-du-jeu.md#à-décider) : numéro de collection, sons de l'ouverture, notation phonétique, forme du paquet.
+5. **Réécriture des textes :** donner dix phrases aimées et dix phrases détestées, avant la phase 3.
+6. **Choix sur pièces de la refonte :** [la liste du cahier](cahiers-des-charges/retours-game-designer.md#ce-qui-reste-à-décider-et-quand), avec le moment de chacun.
 
 ## Prochaines étapes conseillées
 
-1. Suivre `/admin/mesure` et `/admin/retours` à mesure que les invités arrivent ; vérifier `cf-placement: local-CDG` et le p95 de l'ouverture dans le résumé Discord ([rnd/charge.md](rnd/charge.md)).
-2. Le mobile : recette complète sur Android et iPhone ([recette-mobile.md](recette-mobile.md)). Avant la première publication sur les stores : un compte de démonstration pour l'examen (la connexion par code l'empêche), les captures et l'image de présentation, l'adresse App Store et les liens universels. Les textes et réponses sont prêts ([fiches-stores.md](fiches-stores.md)), premier build de production Android le 2026-10-27.
-3. La quatrième collection.
+1. La phase 0 : les six corrections immédiates, sur le web et le mobile.
+2. La phase 1 : les fondations de la refonte.
+3. Suivre `/admin/mesure` et `/admin/retours` à mesure que les invités arrivent ; vérifier `cf-placement: local-CDG` et le p95 de l'ouverture dans le résumé Discord ([rnd/charge.md](rnd/charge.md)).
+4. Le mobile : recette complète sur Android et iPhone ([recette-mobile.md](recette-mobile.md)). Avant la première publication sur les stores : un compte de démonstration pour l'examen (la connexion par code l'empêche), les captures et l'image de présentation dans la nouvelle allure, l'adresse App Store et les liens universels. Les textes et réponses sont prêts ([fiches-stores.md](fiches-stores.md)), premier build de production Android le 2026-10-27.
+5. La quatrième collection, après la bascule.

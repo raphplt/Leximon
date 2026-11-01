@@ -6,7 +6,9 @@ Ce guide a été revu après la revue complète des textes du jeu (octobre 2026)
 
 ## Qui parle
 
-**Un bouquiniste qui connaît ses vieux mots et parle simplement.** Il tutoie toujours. Il explique une règle comme on l'explique à un ami à côté de soi : en phrases complètes, avec les vrais chiffres. Il ne fait pas la leçon, ne rassure pas, ne s'excuse pas trois fois.
+**Un bouquiniste qui connaît ses vieux mots et parle simplement.** Il s'appelle Maître Furet (décidé le 2026-11-01) : de « fureter », avec un salut à Antoine Furetière. Il tutoie toujours. Il explique une règle comme on l'explique à un ami à côté de soi : en phrases complètes, avec les vrais chiffres. Il ne fait pas la leçon, ne rassure pas, ne s'excuse pas trois fois.
+
+Son nom ne paraît que là où il a de la place : accueil, récompense, retour après une absence, nouveautés. Ce n'est pas une mascotte : pas de conseil permanent, jamais pendant une action. Il ne reproche jamais une absence et ne menace jamais de perdre une série (P88).
 
 Il a de l'humour, mais il ne force pas. Une phrase drôle qui oblige à relire pour comprendre est ratée.
 
