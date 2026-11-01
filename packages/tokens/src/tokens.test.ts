@@ -2,7 +2,8 @@ import { RARITIES } from "@leximon/core";
 import { describe, expect, it } from "vitest";
 import { cssFill, cssRootRule, cssUrl, cssVariables, solidColor } from "./css";
 import { levelBadge, levelBadgeText } from "./level-badge";
-import { alpha, backTone, backTones, colors, rarityStyles } from "./tokens";
+import { livreDay, livreNight } from "./livre";
+import { alpha, backTone, backTones, colors, type Palette, rarityStyles } from "./tokens";
 
 /** WCAG relative luminance of a `#RRGGBB` color. */
 function luminance(hex: string): number {
@@ -62,7 +63,43 @@ describe("css helpers", () => {
     expect(cssVariables()["--lx-radius-card"]).toBe("16px");
     expect(cssVariables()["--lx-size-body"]).toBe("15px");
     expect(cssVariables()["--lx-s6"]).toBe("12px");
-    expect(cssRootRule()).toMatch(/^:root\{--lx-color-page:#262B40;/);
+    expect(cssRootRule()).toMatch(/^:root\{color-scheme:dark;--lx-color-page:#262B40;/);
+  });
+});
+
+describe.each<[string, Palette]>([
+  ["the day", livreDay],
+  ["the night", livreNight],
+])("the look of the book, in %s", (_, palette) => {
+  it("keeps reading text at 7:1", () => {
+    expect(contrast(palette.pageInk, palette.page)).toBeGreaterThanOrEqual(7);
+    expect(contrast(palette.pageInk, palette.pageRaised)).toBeGreaterThanOrEqual(7);
+    expect(contrast(palette.pageInk, palette.sheet)).toBeGreaterThanOrEqual(7);
+  });
+
+  it("keeps every other text at 4.5:1", () => {
+    const pairs = [
+      [palette.pageInkSoft, palette.page],
+      [palette.pageInkMuted, palette.page],
+      [palette.pageInkMuted, palette.sheet],
+      [palette.pageInkFaint, palette.page],
+      [palette.rubric, palette.page],
+      [palette.rubric, palette.sheet],
+      [palette.success, palette.page],
+      [palette.danger, palette.page],
+      [palette.bindingInk, palette.binding],
+      [palette.bindingInkMuted, palette.binding],
+      [palette.actionInk, palette.action],
+      [palette.pageInk, palette.control],
+      [palette.inkOnColor, palette.successDeep],
+      [palette.inkOnColor, palette.dangerDeep],
+      [palette.inkOnColor, palette.badge],
+      [palette.dangerInk, palette.danger],
+      [palette.mentionInk, palette.mention],
+    ] as const;
+    for (const [ink, surface] of pairs) {
+      expect(contrast(ink, surface)).toBeGreaterThanOrEqual(4.5);
+    }
   });
 });
 

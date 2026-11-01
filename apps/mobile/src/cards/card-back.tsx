@@ -1,5 +1,5 @@
 import type { Rarity } from "@leximon/core";
-import { backTone, cardSize, colors, rarityStyles } from "@leximon/tokens";
+import { backTone, cardSize, rarityStyles } from "@leximon/tokens";
 import { StyleSheet, Text, View } from "react-native";
 import Svg, {
   Circle,
@@ -12,7 +12,7 @@ import Svg, {
   Text as SvgText,
   TextPath,
 } from "react-native-svg";
-import { fonts } from "@/theme";
+import { colors, fonts } from "@/theme";
 import { FillGradient, paintOf } from "@/ui/fill";
 
 const GILT = colors.kraft;

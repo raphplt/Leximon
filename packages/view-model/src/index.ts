@@ -29,5 +29,6 @@ export * from "./riddle";
 export * from "./sanctions";
 export * from "./shell";
 export * from "./staging";
+export * from "./theme";
 export * from "./trades";
 export * from "./word-size";

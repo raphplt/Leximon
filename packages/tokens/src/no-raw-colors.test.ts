@@ -64,6 +64,14 @@ describe("colors", () => {
     expect(offenders).toEqual([]);
   });
 
+  it("reach the phone through its theme, which picks the look at launch", () => {
+    const direct = sourceFiles(join(ROOT, "apps/mobile/src"))
+      .filter((path) => !path.endsWith("theme.ts"))
+      .filter((path) => /\bcolors\b[^;]*from "@leximon\/tokens"/.test(readFileSync(path, "utf8")))
+      .map((path) => relative(ROOT, path));
+    expect(direct).toEqual([]);
+  });
+
   it("match the page in the native configuration of the app", () => {
     const appJson = readFileSync(join(ROOT, "apps/mobile/app.json"), "utf8");
     const declared = appJson.match(/"backgroundColor": "#[0-9A-Fa-f]{6}"/g) ?? [];

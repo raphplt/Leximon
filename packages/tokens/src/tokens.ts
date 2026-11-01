@@ -126,6 +126,9 @@ export const colors = {
   focus: "#FFD24D",
 } as const;
 
+/** Every role, with the value a look gives it. */
+export type Palette = Readonly<Record<keyof typeof colors, string>>;
+
 /** A `#RRGGBB` role at the given opacity, from 0 to 1. */
 export function alpha(color: string, opacity: number): string {
   const [r, g, b] = [1, 3, 5].map((start) => Number.parseInt(color.slice(start, start + 2), 16));
@@ -133,22 +136,24 @@ export function alpha(color: string, opacity: number): string {
 }
 
 /** Written as CSS `box-shadow` values, which React Native reads too. */
-export const shadows = {
-  /** The thickness of what can be pressed, high then low, then pressed down. */
-  action: `0 4px 0 ${colors.actionEdge}`,
-  actionLow: `0 3px 0 ${colors.actionEdge}`,
-  actionPressed: `0 1px 0 ${colors.actionEdge}`,
-  control: `0 5px 0 ${colors.controlEdge}`,
-  controlLow: `0 4px 0 ${colors.controlEdge}`,
-  controlPressed: `0 2px 0 ${colors.controlEdge}`,
-  /** What floats over the page, from a tooltip to a dialog. */
-  raised: `0 8px 24px ${alpha(colors.shade, 0.4)}`,
-  floating: `0 10px 30px ${alpha(colors.shade, 0.45)}`,
-  menu: `0 20px 50px ${alpha(colors.shade, 0.5)}`,
-  dialog: `0 30px 80px ${alpha(colors.shade, 0.55)}`,
-  sidePanel: `-24px 0 60px ${alpha(colors.shade, 0.45)}`,
-  bottomSheet: `0 -20px 60px ${alpha(colors.shade, 0.45)}`,
-} as const;
+export function shadowsOf(palette: Palette) {
+  return {
+    /** The thickness of what can be pressed, high then low, then pressed down. */
+    action: `0 4px 0 ${palette.actionEdge}`,
+    actionLow: `0 3px 0 ${palette.actionEdge}`,
+    actionPressed: `0 1px 0 ${palette.actionEdge}`,
+    control: `0 5px 0 ${palette.controlEdge}`,
+    controlLow: `0 4px 0 ${palette.controlEdge}`,
+    controlPressed: `0 2px 0 ${palette.controlEdge}`,
+    /** What floats over the page, from a tooltip to a dialog. */
+    raised: `0 8px 24px ${alpha(palette.shade, 0.4)}`,
+    floating: `0 10px 30px ${alpha(palette.shade, 0.45)}`,
+    menu: `0 20px 50px ${alpha(palette.shade, 0.5)}`,
+    dialog: `0 30px 80px ${alpha(palette.shade, 0.55)}`,
+    sidePanel: `-24px 0 60px ${alpha(palette.shade, 0.45)}`,
+    bottomSheet: `0 -20px 60px ${alpha(palette.shade, 0.45)}`,
+  } as const;
+}
 
 const gold: LinearGradient = {
   angle: 125,

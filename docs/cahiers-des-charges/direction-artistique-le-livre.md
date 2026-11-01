@@ -1,6 +1,6 @@
 # Cahier des charges · Direction artistique « Le Livre »
 
-- **Statut :** direction choisie par le propriétaire le 2026-11-01 sur maquettes (D-055, qui remplace D-022). Chantier 1.1 fait le 2026-11-01, le reste à faire.
+- **Statut :** direction choisie par le propriétaire le 2026-11-01 sur maquettes (D-055, qui remplace D-022). Chantiers 1.1 et 1.2 faits le 2026-11-01, le reste à faire.
 - **Source :** demande du propriétaire du 2026-11-01 : « tout doit vraiment être revu intégralement pour que ça fasse plus littérature ancienne, c'est trop minimaliste, trop moderne, ça manque d'âme », et retours du game designer.
 - **Maquettes :** `rnd/da-refonte/` (`python3 build.py` produit `maquettes.html` et `maquettes-livre.html`). Ce sont des essais de ton, pas des écrans finis.
 - **Cahier lié :** [retours-game-designer.md](retours-game-designer.md), qui donne l'ordre général. Ce cahier couvre ses phases 1 à 3.
@@ -79,9 +79,13 @@ Aujourd'hui, il y a environ 281 couleurs hexadécimales et 195 rayons hors token
 ### 1.2 Les thèmes et le réglage
 
 - **Web :** variables par `:root[data-theme]`, avec `prefers-color-scheme`, et un script en tête de page pour éviter tout flash.
-- **Mobile :** un contexte de thème branché sur `useColorScheme`, et `userInterfaceStyle: "automatic"` dans `app.json`. Le changement demande un nouveau build natif.
-- **Préférence joueur :** gardée sur l'appareil.
-- **Réglage de bascule :** `data-look="livre"` sur le web, activé par cookie pour le propriétaire et les testeurs choisis, et une variable d'environnement sur le mobile. Le réglage se retire au moment de la bascule, avec l'ancien style.
+- **Mobile :** le thème est lu une fois au lancement (choix du propriétaire, le 2026-11-01), avant que les feuilles de style soient créées, et tient jusqu'au lancement suivant. Pas de contexte ni de réécriture des styles. `userInterfaceStyle: "automatic"` dans `app.json` demande un nouveau build natif ; d'ici là, le téléphone se dit toujours en nuit.
+- **Préférence joueur :** gardée sur l'appareil, dans les réglages (`Comme l'appareil`, `Clair`, `Nuit`). Elle n'apparaît que dans Le Livre.
+- **Réglage de bascule :** sur le web, `?look=livre` dans l'adresse, retenu par le navigateur jusqu'à `?look=planche` (dans `localStorage` et pas dans un cookie : la page Tes données promet qu'il n'y en a qu'un). Sur le mobile, `EXPO_PUBLIC_LOOK=livre` au build. Le réglage se retire au moment de la bascule, avec l'ancien style.
+
+**Fait le 2026-11-01.** Les palettes sont dans `packages/tokens/src/livre.ts`, avec les contrastes contrôlés dans `tokens.test.ts` (7:1 pour la lecture, 4,5:1 ailleurs, sans texture pour l'instant). Le jeu s'affiche déjà en Le Livre derrière le réglage, avec ses formes actuelles : seules les couleurs changent, et les écrans à palette propre restent dans leurs teintes.
+
+**À trancher avant la bascule :** sans `expo-updates`, l'app ne peut pas se recharger seule, donc un changement de thème attend le prochain lancement, et le dit dans les réglages. Ajouter cette dépendance permettrait de recharger, et d'envoyer des corrections sans passer par les stores.
 
 ### 1.3 Les matières
 

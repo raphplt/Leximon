@@ -1,5 +1,5 @@
 import type { CatalogCollectionFile } from "@leximon/contract";
-import { backTone, colors } from "@leximon/tokens";
+import { backTone } from "@leximon/tokens";
 import { TEAR_COMPLETE_AT, TEAR_STARTED_AT, tearProgress } from "@leximon/view-model";
 import { type ReactNode, useEffect, useRef, useState } from "react";
 import {
@@ -40,7 +40,7 @@ import Svg, {
 import { scheduleOnRN } from "react-native-worklets";
 import { steppedLight, useTiltLight } from "@/cards/use-tilt-light";
 import { play, playTearGrain, vibrate } from "@/feedback/feedback";
-import { fonts } from "@/theme";
+import { colors, fonts } from "@/theme";
 import {
   BandLayer,
   BaseLayer,

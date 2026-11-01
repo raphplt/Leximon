@@ -1,7 +1,7 @@
 import type { OpenBoosterResult } from "@leximon/contract/client";
 import { type Catalog, cardOrPlaceholder, collectionName } from "@leximon/contract/client";
 import type { Rarity } from "@leximon/core";
-import { cardSize, colors, motion } from "@leximon/tokens";
+import { cardSize, motion } from "@leximon/tokens";
 import {
   type CollectionChoice,
   collectionChoices,
@@ -46,7 +46,7 @@ import { useNow, useShared } from "@/player/shared";
 import { account, publishProgress, wallet } from "@/player/state";
 import { usePlayerView } from "@/player/use-player-view";
 import { TAB_BAR_RISE } from "@/shell/tab-bar";
-import { fontSizes, fonts, radii, space } from "@/theme";
+import { colors, fontSizes, fonts, radii, space } from "@/theme";
 import { Button } from "@/ui/button";
 import { Icon } from "@/ui/icon";
 import { RarityName } from "@/ui/rarity-icon";

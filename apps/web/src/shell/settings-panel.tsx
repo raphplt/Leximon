@@ -1,10 +1,18 @@
 "use client";
 
 import type { Preferences } from "@leximon/contract";
-import { blockedCountLabel, pseudoSettingLabel, publicProfileDetail } from "@leximon/view-model";
+import {
+  blockedCountLabel,
+  pseudoSettingLabel,
+  publicProfileDetail,
+  THEME_CHOICES,
+  THEME_LABEL,
+  type ThemeChoice,
+} from "@leximon/view-model";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { canVibrate, type FeedbackKind, readPreference, writePreference } from "@/booster/feedback";
+import { Select } from "@/components/select";
 import { api } from "@/lib/api";
 import { account, profile } from "@/player/player";
 import { useShared } from "@/player/resource";
@@ -12,6 +20,7 @@ import { BlocksDialog } from "@/profile/blocks-dialog";
 import { DeleteAccountDialog } from "@/profile/delete-account-dialog";
 import { PseudoDialog } from "@/profile/pseudo-dialog";
 import { failureMessage, useProfileActions } from "@/profile/use-profile-actions";
+import { readThemeChoice, showsThemeChoice, writeThemeChoice } from "@/theme/look";
 import { Dialog } from "@/ui/dialog";
 import { Icon } from "@/ui/icon";
 import { Switch } from "@/ui/switch";
@@ -37,6 +46,7 @@ export function SettingsPanel({
 }) {
   const [prefs, setPrefs] = useState<Record<FeedbackKind, boolean> | null>(null);
   const [vibrates, setVibrates] = useState(false);
+  const [theme, setTheme] = useState<ThemeChoice | null>(null);
   const [leaving, setLeaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const who = useShared(account);
@@ -55,6 +65,7 @@ export function SettingsPanel({
       haptics: readPreference("haptics"),
     });
     setVibrates(canVibrate());
+    setTheme(showsThemeChoice() ? readThemeChoice() : null);
     setError(null);
     api
       .fetchPreferences()
@@ -85,6 +96,11 @@ export function SettingsPanel({
   const toggle = (kind: FeedbackKind, enabled: boolean) => {
     writePreference(kind, enabled);
     setPrefs((current) => (current === null ? current : { ...current, [kind]: enabled }));
+  };
+
+  const chooseTheme = (choice: ThemeChoice) => {
+    writeThemeChoice(choice);
+    setTheme(choice);
   };
 
   const leave = async () => {
@@ -126,6 +142,17 @@ export function SettingsPanel({
           )}
         </div>
       </section>
+      {theme !== null && (
+        <section className={ui.group}>
+          <h3 className={ui.kicker}>{THEME_LABEL}</h3>
+          <Select
+            value={theme}
+            options={THEME_CHOICES}
+            onChange={chooseTheme}
+            ariaLabel={THEME_LABEL}
+          />
+        </section>
+      )}
       {notify !== null && (
         <section className={ui.group}>
           <h3 className={ui.kicker}>Notifications</h3>

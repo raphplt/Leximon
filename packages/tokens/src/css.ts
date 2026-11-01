@@ -1,4 +1,14 @@
-import { colors, type Fill, fontSizes, masteryColors, radii, shadows, space } from "./tokens";
+import { livreDay, livreNight } from "./livre";
+import {
+  colors,
+  type Fill,
+  fontSizes,
+  masteryColors,
+  type Palette,
+  radii,
+  shadowsOf,
+  space,
+} from "./tokens";
 
 /** CSS value of a fill: the color itself, or a `linear-gradient()`. */
 export function cssFill(fill: Fill): string {
@@ -21,17 +31,12 @@ export function solidColor(fill: Fill): string {
  */
 export function cssVariables(): Record<string, string> {
   const variables: Record<string, string> = {};
-  for (const [name, value] of Object.entries(colors)) {
-    variables[`--lx-color-${kebab(name)}`] = value;
-  }
+  Object.assign(variables, paletteVariables(colors));
   for (const [name, value] of Object.entries(masteryColors)) {
     variables[`--lx-mastery-${kebab(name)}`] = value;
   }
   for (const [name, value] of Object.entries(radii)) {
     variables[`--lx-radius-${kebab(name)}`] = `${value}px`;
-  }
-  for (const [name, value] of Object.entries(shadows)) {
-    variables[`--lx-shadow-${kebab(name)}`] = value;
   }
   for (const [name, value] of Object.entries(fontSizes)) {
     variables[`--lx-size-${kebab(name)}`] = `${value}px`;
@@ -42,10 +47,33 @@ export function cssVariables(): Record<string, string> {
   return variables;
 }
 
-/** `:root { … }` rule declaring `cssVariables()`. */
+/** What changes from one look or theme to another: its colors and the shadows made of them. */
+function paletteVariables(palette: Palette): Record<string, string> {
+  const variables: Record<string, string> = {};
+  for (const [name, value] of Object.entries(palette)) {
+    variables[`--lx-color-${kebab(name)}`] = value;
+  }
+  for (const [name, value] of Object.entries(shadowsOf(palette))) {
+    variables[`--lx-shadow-${kebab(name)}`] = value;
+  }
+  return variables;
+}
+
+function rule(selector: string, variables: Record<string, string>, scheme: string): string {
+  const declarations = Object.entries(variables).map(([name, value]) => `${name}:${value}`);
+  return `${selector}{color-scheme:${scheme};${declarations.join(";")}}`;
+}
+
+/**
+ * The rules declaring the tokens: the current look, then « Le Livre » in its two themes, which the
+ * script of the page turns on with `data-look` and `data-theme`.
+ */
 export function cssRootRule(): string {
-  const declarations = Object.entries(cssVariables()).map(([name, value]) => `${name}:${value}`);
-  return `:root{${declarations.join(";")}}`;
+  return [
+    rule(":root", cssVariables(), "dark"),
+    rule(':root[data-look="livre"]', paletteVariables(livreDay), "light"),
+    rule(':root[data-look="livre"][data-theme="dark"]', paletteVariables(livreNight), "dark"),
+  ].join("");
 }
 
 function kebab(name: string): string {

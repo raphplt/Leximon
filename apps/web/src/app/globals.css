@@ -1,5 +1,4 @@
 html {
-  color-scheme: dark;
   /* Fraunces is always this soft; the fonts without this axis ignore it. */
   font-variation-settings: "SOFT" 100;
   -webkit-text-size-adjust: 100%;

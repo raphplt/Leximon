@@ -1,5 +1,5 @@
 import { type Catalog, cardOrPlaceholder } from "@leximon/contract/client";
-import { cardSize, colors, rarityStyles } from "@leximon/tokens";
+import { cardSize, rarityStyles } from "@leximon/tokens";
 import {
   BACK_HOME_LABEL,
   canOpenAgain,
@@ -35,7 +35,7 @@ import { useNow, useShared } from "@/player/shared";
 import { progress as progressResource, wallet as walletResource } from "@/player/state";
 import { usePlayerView } from "@/player/use-player-view";
 import { TAB_BAR_RISE } from "@/shell/tab-bar";
-import { fontSizes, fonts, radii, space } from "@/theme";
+import { colors, fontSizes, fonts, radii, space } from "@/theme";
 import { Button } from "@/ui/button";
 import { XpBar } from "@/ui/level";
 import { RarityName } from "@/ui/rarity-icon";

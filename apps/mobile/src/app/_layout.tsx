@@ -4,7 +4,7 @@ import { Fragment } from "react";
 import { CoffretHost } from "@/levels/coffret";
 import { useSessionGeneration } from "@/player/session";
 import { UpdateGate } from "@/shell/update-gate";
-import { colors } from "@/theme";
+import { colors, theme } from "@/theme";
 import { ToastHost } from "@/ui/toast";
 
 export default function RootLayout() {
@@ -12,7 +12,7 @@ export default function RootLayout() {
   const generation = useSessionGeneration();
   return (
     <>
-      <StatusBar style="light" />
+      <StatusBar style={theme === "dark" ? "light" : "dark"} />
       <Fragment key={generation}>
         <Stack
           screenOptions={{

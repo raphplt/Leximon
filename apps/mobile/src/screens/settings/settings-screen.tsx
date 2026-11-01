@@ -11,6 +11,10 @@ import {
   playerName,
   pseudoSettingLabel,
   publicProfileDetail,
+  THEME_CHOICES,
+  THEME_LABEL,
+  THEME_NEXT_LAUNCH,
+  type ThemeChoice,
   UNBLOCKED_TOAST,
 } from "@leximon/view-model";
 import { router } from "expo-router";
@@ -26,11 +30,21 @@ import { account, profile } from "@/player/state";
 import { useProfileActions } from "@/profile/profile-actions";
 import { forgetLastEmail } from "@/screens/account/last-email";
 import { PseudoSheet } from "@/screens/profile/pseudo-sheet";
-import { colors, fontSizes, fonts, radii, space } from "@/theme";
+import {
+  colors,
+  fontSizes,
+  fonts,
+  radii,
+  readThemeChoice,
+  SHOWS_THEME_CHOICE,
+  space,
+  writeThemeChoice,
+} from "@/theme";
 import { Avatar } from "@/ui/avatar";
 import { Button } from "@/ui/button";
 import { Icon } from "@/ui/icon";
 import { FormError, Page, Paragraph } from "@/ui/page";
+import { Segmented } from "@/ui/segmented";
 import { Sheet } from "@/ui/sheet";
 import { toast } from "@/ui/toast";
 
@@ -64,12 +78,18 @@ export function SettingsScreen() {
   const [blocked, setBlocked] = useState<number | null>(null);
   const [sheet, setSheet] = useState<SheetName>(null);
   const [error, setError] = useState<string | null>(null);
+  const [theme, setTheme] = useState(readThemeChoice);
   const [feedback, setFeedback] = useState<Record<FeedbackKind, boolean>>(() => ({
     sound: readPreference("sound"),
     speech: readPreference("speech"),
     haptics: readPreference("haptics"),
   }));
   const member = who?.kind === "member";
+
+  const chooseTheme = (choice: ThemeChoice) => {
+    writeThemeChoice(choice);
+    setTheme(choice);
+  };
 
   const toggleFeedback = (kind: FeedbackKind, enabled: boolean) => {
     writePreference(kind, enabled);
@@ -122,6 +142,13 @@ export function SettingsScreen() {
           onChange={(on) => toggleFeedback("haptics", on)}
         />
       </Group>
+
+      {SHOWS_THEME_CHOICE && (
+        <Group title={THEME_LABEL.toUpperCase()}>
+          <Segmented options={THEME_CHOICES} value={theme} onChange={chooseTheme} />
+          <Text style={styles.themeNote}>{THEME_NEXT_LAUNCH}</Text>
+        </Group>
+      )}
 
       {notify !== null && (
         <Group title="NOTIFICATIONS">
@@ -453,6 +480,11 @@ function DeleteAccountSheet({
 
 const styles = StyleSheet.create({
   group: { gap: space.s4 },
+  themeNote: {
+    fontFamily: fonts.ui.medium,
+    fontSize: fontSizes.small,
+    color: colors.pageInkMuted,
+  },
   kicker: {
     fontFamily: fonts.ui.extrabold,
     fontSize: fontSizes.caption,

@@ -1,5 +1,5 @@
 import type { CatalogCard } from "@leximon/contract";
-import { cardSize, colors, rarityStyles } from "@leximon/tokens";
+import { cardSize, rarityStyles } from "@leximon/tokens";
 import {
   cardRelease,
   frequencyLine,
@@ -22,7 +22,7 @@ import { CardBack, CardEdge } from "@/cards/card-back";
 import { HoloCard } from "@/cards/holo-card";
 import { type SpokenWord, useSpokenWord } from "@/cards/spoken-word";
 import { play, readPreference, speechOn, vibrate, writePreference } from "@/feedback/feedback";
-import { fontSizes, fonts, radii, space } from "@/theme";
+import { colors, fontSizes, fonts, radii, space } from "@/theme";
 import { Icon } from "@/ui/icon";
 
 /** A touch during the first moments of an announcement is ignored: it may be a double tap. */
