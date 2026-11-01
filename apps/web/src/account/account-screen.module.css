@@ -27,7 +27,7 @@
 .title {
   margin: 0;
   font-family: var(--font-display), Georgia, serif;
-  font-weight: 900;
+  font-weight: var(--lx-weight-display);
   font-size: var(--lx-size-heading);
   line-height: 1;
 }
@@ -35,7 +35,7 @@
 .subtitle {
   margin: 0;
   font-family: var(--font-display), Georgia, serif;
-  font-weight: 900;
+  font-weight: var(--lx-weight-display);
   font-size: var(--lx-size-title);
 }
 
@@ -128,7 +128,7 @@
 
 .code {
   font-family: var(--font-display), Georgia, serif;
-  font-weight: 900;
+  font-weight: var(--lx-weight-display);
   font-size: var(--lx-size-heading);
   letter-spacing: 0.3em;
   font-variant-numeric: tabular-nums;

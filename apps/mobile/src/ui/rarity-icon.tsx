@@ -3,7 +3,7 @@ import type { Rarity } from "@leximon/core";
 import { rarityIconGrid, rarityIcons, rarityStyles } from "@leximon/tokens";
 import { StyleSheet, Text, View } from "react-native";
 import Svg, { Circle, Defs, G, Mask, Path, Rect } from "react-native-svg";
-import { fonts } from "@/theme";
+import { cardFonts as fonts } from "@/theme";
 import { FillGradient, paintOf } from "./fill";
 
 /** The rarity's gem, its cut lines knocked out. Decorative: what holds it names the rarity. */

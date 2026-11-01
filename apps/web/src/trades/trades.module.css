@@ -386,7 +386,7 @@
 .sectionTitle {
   margin: 0 0 var(--lx-s5);
   font-family: var(--font-display), Georgia, serif;
-  font-weight: 900;
+  font-weight: var(--lx-weight-display);
   font-size: var(--lx-size-title);
 }
 

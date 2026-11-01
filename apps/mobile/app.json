@@ -47,7 +47,13 @@
             "./assets/fonts/Fraunces-ExtraBold.ttf",
             "./assets/fonts/Newsreader-Regular.ttf",
             "./assets/fonts/Newsreader-Medium.ttf",
-            "./assets/fonts/Newsreader-Italic.ttf"
+            "./assets/fonts/Newsreader-Italic.ttf",
+            "./assets/fonts/Spectral-Regular.ttf",
+            "./assets/fonts/Spectral-Italic.ttf",
+            "./assets/fonts/Spectral-Medium.ttf",
+            "./assets/fonts/Spectral-SemiBold.ttf",
+            "./assets/fonts/LeximonCanon-Regular.ttf",
+            "./assets/fonts/LeximonCanon-Italic.ttf"
           ]
         }
       ],

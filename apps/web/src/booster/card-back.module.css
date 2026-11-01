@@ -85,14 +85,14 @@
 .motto {
   fill: var(--gilt);
   stroke: none;
-  font-family: var(--font-text), Georgia, serif;
+  font-family: var(--font-newsreader), Georgia, serif;
   font-size: 10px;
 }
 
 .letter {
   fill: var(--gilt);
   stroke: none;
-  font-family: var(--font-display), Georgia, serif;
+  font-family: var(--font-fraunces), Georgia, serif;
   font-variation-settings: "SOFT" 0;
   font-weight: 700;
   font-size: 58px;
@@ -105,7 +105,7 @@
   padding: calc(2 * var(--u)) calc(8 * var(--u));
   border-radius: calc(3 * var(--u));
   background: var(--cloth-dark);
-  font-family: var(--font-text), Georgia, serif;
+  font-family: var(--font-newsreader), Georgia, serif;
   font-size: calc(11 * var(--u));
   letter-spacing: 0.35em;
   text-transform: uppercase;

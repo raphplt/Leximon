@@ -12,7 +12,7 @@ import Svg, {
   Text as SvgText,
   TextPath,
 } from "react-native-svg";
-import { colors, fonts } from "@/theme";
+import { colors, cardFonts as fonts } from "@/theme";
 import { FillGradient, paintOf } from "@/ui/fill";
 
 const GILT = colors.kraft;

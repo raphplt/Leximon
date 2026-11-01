@@ -1,6 +1,6 @@
 # Cahier des charges · Direction artistique « Le Livre »
 
-- **Statut :** direction choisie par le propriétaire le 2026-11-01 sur maquettes (D-055, qui remplace D-022). Chantiers 1.1 et 1.2 faits le 2026-11-01, 1.3 commencé, le reste à faire.
+- **Statut :** direction choisie par le propriétaire le 2026-11-01 sur maquettes (D-055, qui remplace D-022). Chantiers 1.1, 1.2 et 1.4 faits le 2026-11-01, 1.3 commencé, le reste à faire.
 - **Source :** demande du propriétaire du 2026-11-01 : « tout doit vraiment être revu intégralement pour que ça fasse plus littérature ancienne, c'est trop minimaliste, trop moderne, ça manque d'âme », et retours du game designer.
 - **Maquettes :** `rnd/da-refonte/` (`python3 build.py` produit `maquettes.html` et `maquettes-livre.html`). Ce sont des essais de ton, pas des écrans finis.
 - **Cahier lié :** [retours-game-designer.md](retours-game-designer.md), qui donne l'ordre général. Ce cahier couvre ses phases 1 à 3.
@@ -106,6 +106,12 @@ Aujourd'hui, il y a environ 281 couleurs hexadécimales et 195 rayons hors token
 - Les tableaux de largeurs de glyphes (`word-size.ts`, `glyph-widths.ts`) ne bougent pas tant que la carte garde Fraunces.
 - Aucun appel de police externe : la CSP impose `font-src 'self'`.
 - Budget : ajouter au plus 80 Ko de polices à la première visite.
+
+**Fait le 2026-11-01.** Sous-ensembles par `packages/tokens/scripts/subset_fonts.py`, petites capitales, chiffres elzéviriens et alphabet phonétique gardés : Spectral pèse 16 à 17 Ko par graisse, le titrage 37 Ko, soit 70 Ko pour une première visite (texte, gras, titres). Sur le web, ces polices ne se téléchargent que dans Le Livre. Sur le mobile, elles entrent au prochain build natif.
+
+**La licence d'IM Fell** est bien l'OFL, mais elle réserve le nom « IM FELL French Canon ». Une version découpée ne peut pas le porter : elle s'appelle ici Leximon Canon, et garde son copyright et sa licence à côté des fichiers. Spectral ne réserve aucun nom.
+
+**Un seul corps pour les titres :** le titrage n'a qu'une graisse. `--lx-weight-display` passe de 900 à 400 dans Le Livre, et la graisse synthétique est interdite. Le choix final reste à faire sur écran réel, sur téléphone compris.
 
 ### 1.5 Les ornements
 

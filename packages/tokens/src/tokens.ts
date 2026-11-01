@@ -290,6 +290,13 @@ export const fonts = {
   text: { family: "Newsreader", weights: [400, 500] },
 } as const;
 
+/** The fonts of Le Livre, cut by scripts/subset_fonts.py. Cards keep the fonts above. */
+export const bookFonts = {
+  /** IM Fell French Canon under another name, as its licence asks of a cut version. */
+  display: { family: "Leximon Canon", weight: 400 },
+  text: { family: "Spectral", weights: [400, 500, 600] },
+} as const;
+
 export const radii = {
   /** The art of a card and a sachet. */
   card: 16,
@@ -356,7 +363,7 @@ export const space = {
  */
 export const matter = {
   size: 128,
-  paper: { dark: "#140C06", darkest: 0.06, light: "#FFF6E2", lightest: 0.04 },
+  paper: { dark: "#140C06", darkest: 0.05, light: "#FFF6E2", lightest: 0.04 },
 } as const;
 
 /** The reference card is drawn at this size; smaller cards are scaled from it. */

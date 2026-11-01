@@ -8,7 +8,7 @@
 }
 
 .text {
-  font-family: var(--font-display), Georgia, serif;
+  font-family: var(--font-fraunces), Georgia, serif;
   font-weight: 900;
   letter-spacing: -0.01em;
   color: inherit;

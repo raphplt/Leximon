@@ -80,7 +80,7 @@
 .logo,
 .logoSmall {
   font-family: var(--font-display), Georgia, serif;
-  font-weight: 900;
+  font-weight: var(--lx-weight-display);
 }
 
 .logo {
@@ -162,7 +162,7 @@
   grid-area: word;
   margin: 0;
   font-family: var(--font-display), Georgia, serif;
-  font-weight: 900;
+  font-weight: var(--lx-weight-display);
   /* The longest words of the pool (12 letters) still hold on one line of the slip. */
   font-size: clamp(40px, 12cqi, 110px);
   line-height: 0.92;
@@ -292,7 +292,7 @@
 .title {
   margin: 0;
   font-family: var(--font-display), Georgia, serif;
-  font-weight: 900;
+  font-weight: var(--lx-weight-display);
   font-size: clamp(34px, 4.4vw, 50px);
   line-height: 1.02;
   text-wrap: balance;
@@ -388,7 +388,7 @@
 .joined {
   margin: var(--lx-s3) 0 0;
   font-family: var(--font-display), Georgia, serif;
-  font-weight: 900;
+  font-weight: var(--lx-weight-display);
   font-size: var(--lx-size-title-large);
   line-height: 1.15;
   color: var(--lx-color-rubric);
@@ -415,7 +415,7 @@
   margin: 0;
   max-width: 16ch;
   font-family: var(--font-display), Georgia, serif;
-  font-weight: 900;
+  font-weight: var(--lx-weight-display);
   font-size: clamp(34px, 5vw, 60px);
   line-height: 1;
   text-wrap: balance;
@@ -552,7 +552,7 @@
 .closingTitle {
   margin: 0 0 var(--lx-s14);
   font-family: var(--font-display), Georgia, serif;
-  font-weight: 900;
+  font-weight: var(--lx-weight-display);
   font-size: clamp(30px, 4.4vw, 44px);
   line-height: 1.05;
   text-wrap: balance;
@@ -593,7 +593,7 @@
   gap: var(--lx-s10);
   margin: 0 0 var(--lx-s24);
   font-family: var(--font-display), Georgia, serif;
-  font-weight: 900;
+  font-weight: var(--lx-weight-display);
   font-size: clamp(30px, 4vw, 44px);
   white-space: nowrap;
 }
@@ -635,7 +635,7 @@
 .figureLabel {
   margin: 0;
   font-family: var(--font-display), Georgia, serif;
-  font-weight: 900;
+  font-weight: var(--lx-weight-display);
   font-size: var(--lx-size-title-large);
   line-height: 1.1;
 }
@@ -661,7 +661,7 @@
 .voicesTitle {
   margin: 0 0 var(--lx-s16);
   font-family: var(--font-display), Georgia, serif;
-  font-weight: 900;
+  font-weight: var(--lx-weight-display);
   font-size: clamp(28px, 3.6vw, 40px);
   text-align: center;
 }
@@ -829,7 +829,7 @@
 
 .tradeArrows {
   font-family: var(--font-display), Georgia, serif;
-  font-weight: 900;
+  font-weight: var(--lx-weight-display);
   font-size: var(--lx-size-heading);
 }
 

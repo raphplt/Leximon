@@ -7,7 +7,7 @@
 
 .logo {
   font-family: var(--font-display), Georgia, serif;
-  font-weight: 900;
+  font-weight: var(--lx-weight-display);
   font-size: var(--lx-size-heading);
   text-decoration: none;
 }
@@ -15,7 +15,7 @@
 .title {
   margin: var(--lx-s24) 0 var(--lx-s4);
   font-family: var(--font-display), Georgia, serif;
-  font-weight: 900;
+  font-weight: var(--lx-weight-display);
   font-size: clamp(40px, 7vw, 64px);
   line-height: 1;
 }

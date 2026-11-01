@@ -101,7 +101,7 @@
   flex: 1;
   margin: 0;
   font-family: var(--font-display), Georgia, serif;
-  font-weight: 900;
+  font-weight: var(--lx-weight-display);
   font-size: var(--lx-size-title-large);
   line-height: 1.1;
 }

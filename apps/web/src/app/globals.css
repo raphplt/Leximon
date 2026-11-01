@@ -1,3 +1,21 @@
+/* The interface goes by role; cards, sachets and the logo name their fonts and never change. */
+:root {
+  --font-display: var(--font-fraunces);
+  --font-ui: var(--font-bricolage);
+  --font-text: var(--font-newsreader);
+  --lx-weight-display: 900;
+}
+
+:root[data-look="livre"] {
+  --font-display: var(--font-canon);
+  --font-ui: var(--font-spectral);
+  --font-text: var(--font-spectral);
+  /* The title type has one weight: anything heavier would be smeared by the browser. */
+  --lx-weight-display: 400;
+  font-feature-settings: "onum";
+  font-synthesis-weight: none;
+}
+
 html {
   /* Fraunces is always this soft; the fonts without this axis ignore it. */
   font-variation-settings: "SOFT" 100;

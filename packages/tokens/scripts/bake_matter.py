@@ -57,10 +57,10 @@ def translucent(field: np.ndarray, darkest: float, lightest: float) -> Image.Ima
 
 
 def paper() -> Image.Image:
-    fibres = stretched_noise(9, 0.8)
-    mottling = smooth_noise(14)
+    # On so small a tile, anything long or slow would show its repeat: fine fibres and grain only.
+    fibres = stretched_noise(3, 0.7)
     grain = smooth_noise(0.7)
-    return translucent(0.65 * fibres + 0.3 * mottling + 0.5 * grain, 0.05, 0.03)
+    return translucent(0.45 * fibres + 0.8 * grain, 0.045, 0.03)
 
 
 def leather() -> Image.Image:

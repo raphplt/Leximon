@@ -213,7 +213,7 @@ a.chip:hover {
 
 .display {
   font-family: var(--font-display), Georgia, serif;
-  font-weight: 900;
+  font-weight: var(--lx-weight-display);
 }
 
 /* --- XP bar and level badge --- */
@@ -261,7 +261,7 @@ a.chip:hover {
 
 .medalNumber {
   font-family: var(--font-display), Georgia, serif;
-  font-weight: 900;
+  font-weight: var(--lx-weight-display);
   text-anchor: middle;
 }
 

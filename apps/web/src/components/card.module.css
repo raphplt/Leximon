@@ -12,7 +12,7 @@
   background: var(--frame);
   box-shadow: 0 calc(12 * var(--u)) calc(30 * var(--u)) rgba(0, 0, 0, 0.35);
   color: var(--ink);
-  font-family: var(--font-text), Georgia, serif;
+  font-family: var(--font-newsreader), Georgia, serif;
   text-align: left;
 }
 
@@ -177,7 +177,7 @@
 
 /* Stands in for the engraving on cards that have none. */
 .initial {
-  font-family: var(--font-display), Georgia, serif;
+  font-family: var(--font-fraunces), Georgia, serif;
   font-variation-settings: "SOFT" 100;
   font-weight: 900;
   font-size: calc(88 * var(--u));
@@ -190,7 +190,7 @@
 .word,
 .wordGradient {
   margin: calc(2 * var(--u)) 0 0;
-  font-family: var(--font-display), Georgia, serif;
+  font-family: var(--font-fraunces), Georgia, serif;
   font-variation-settings: "SOFT" 100;
   font-weight: 900;
   font-size: calc(var(--word-size) * var(--u));
@@ -211,7 +211,7 @@
   display: flex;
   gap: calc(5 * var(--u));
   margin: 0;
-  font-family: var(--font-ui), sans-serif;
+  font-family: var(--font-bricolage), sans-serif;
   font-size: calc(10.5 * var(--u));
   font-weight: 700;
 }
@@ -249,7 +249,7 @@
 }
 
 .author {
-  font-family: var(--font-ui), sans-serif;
+  font-family: var(--font-bricolage), sans-serif;
   font-size: calc(10 * var(--u));
   font-style: normal;
   font-weight: 700;
@@ -260,7 +260,7 @@
   justify-content: space-between;
   align-items: center;
   margin-top: auto;
-  font-family: var(--font-ui), sans-serif;
+  font-family: var(--font-bricolage), sans-serif;
   font-size: calc(10 * var(--u));
   font-weight: 700;
   letter-spacing: 0.04em;

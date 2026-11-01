@@ -59,7 +59,7 @@ export const colors = startingColors();
  * Font families embedded at build time (expo-font plugin): one static instance per weight, named
  * by its PostScript name, so no `fontWeight` is set alongside them.
  */
-export const fonts = {
+export const cardFonts = {
   /** The word and titles: Fraunces 900, SOFT 100. */
   display: "Fraunces-Black",
   /** The sachet's print: Fraunces 800, SOFT 100. */
@@ -76,3 +76,22 @@ export const fonts = {
     italic: "Newsreader-Italic",
   },
 } as const;
+
+const bookFonts = {
+  display: "LeximonCanon-Regular",
+  displayBold: "LeximonCanon-Regular",
+  ui: {
+    medium: "Spectral-Medium",
+    semibold: "Spectral-SemiBold",
+    bold: "Spectral-SemiBold",
+    extrabold: "Spectral-SemiBold",
+  },
+  text: {
+    regular: "Spectral-Regular",
+    medium: "Spectral-Medium",
+    italic: "Spectral-Italic",
+  },
+} as const;
+
+/** The interface's fonts. Cards, sachets and rarity marks keep `cardFonts` in every look. */
+export const fonts = SHOWS_THEME_CHOICE ? bookFonts : cardFonts;

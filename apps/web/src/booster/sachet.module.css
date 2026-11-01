@@ -321,7 +321,7 @@
 
 .brand {
   position: relative;
-  font-family: var(--font-display), Georgia, serif;
+  font-family: var(--font-fraunces), Georgia, serif;
   font-variation-settings: "SOFT" 100;
   font-weight: 800;
   font-size: calc(17 * var(--u));
@@ -388,7 +388,7 @@
 
 .name {
   max-width: calc(140 * var(--u));
-  font-family: var(--font-display), Georgia, serif;
+  font-family: var(--font-fraunces), Georgia, serif;
   font-variation-settings: "SOFT" 100;
   font-weight: 800;
   font-size: calc(15 * var(--u));
@@ -402,7 +402,7 @@
 .contents {
   position: relative;
   margin-top: calc(-4 * var(--u));
-  font-family: var(--font-ui), sans-serif;
+  font-family: var(--font-bricolage), sans-serif;
   font-size: calc(10 * var(--u));
   font-weight: 800;
   letter-spacing: 0.22em;
@@ -457,7 +457,7 @@
   align-items: center;
   justify-content: flex-end;
   border-bottom: calc(2 * var(--u)) dashed rgba(255, 224, 138, 0.55);
-  font-family: var(--font-ui), sans-serif;
+  font-family: var(--font-bricolage), sans-serif;
   font-size: calc(10 * var(--u));
   font-weight: 700;
   letter-spacing: 0.04em;
@@ -599,7 +599,7 @@
   border-radius: 999px;
   background: #ffe08a;
   color: #2a1d05;
-  font-family: var(--font-ui), sans-serif;
+  font-family: var(--font-bricolage), sans-serif;
   font-size: calc(15 * var(--u));
   font-weight: 800;
   white-space: nowrap;
