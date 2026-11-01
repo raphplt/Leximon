@@ -59,12 +59,12 @@ export function LevelMedal({
           <stop offset="1" stopColor={colors.faceBottom} />
         </linearGradient>
       </defs>
-      <path d={levelBadge.edge} fill={colors.edge} />
-      <path d={levelBadge.rim} fill={`url(#${id}rim)`} />
-      <path d={levelBadge.groove} fill={colors.groove} />
-      <path d={levelBadge.face} fill={`url(#${id}face)`} />
+      <path className={styles.medalEdge} d={levelBadge.edge} fill={colors.edge} />
+      <path className={styles.medalRim} d={levelBadge.rim} fill={`url(#${id}rim)`} />
+      <path className={styles.medalGroove} d={levelBadge.groove} fill={colors.groove} />
+      <path className={styles.medalFace} d={levelBadge.face} fill={`url(#${id}face)`} />
       <text
-        className={styles.medalNumber}
+        className={`${styles.medalNumber} ${styles.medalLip}`}
         x={text.x}
         y={text.y + levelBadgeLip}
         fontSize={text.fontSize}
@@ -73,7 +73,7 @@ export function LevelMedal({
         {level}
       </text>
       <text
-        className={styles.medalNumber}
+        className={`${styles.medalNumber} ${styles.medalInk}`}
         x={text.x}
         y={text.y}
         fontSize={text.fontSize}

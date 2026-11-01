@@ -21,6 +21,10 @@
   animation: breathe 1.6s ease-in-out 440ms infinite both;
 }
 
+[data-look="livre"] :where(.bone) {
+  background: var(--lx-color-track);
+}
+
 .spoken {
   position: absolute;
   width: 1px;

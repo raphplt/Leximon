@@ -1,18 +1,19 @@
 import {
   alpha,
+  bookRadii,
   colors as currentLook,
+  radii as currentRadii,
   fontSizes,
   livreDay,
   livreNight,
   type Palette,
-  radii,
   space,
 } from "@leximon/tokens";
 import { parseThemeChoice, resolveTheme, type ThemeChoice } from "@leximon/view-model";
 import * as SecureStore from "expo-secure-store";
 import { Appearance } from "react-native";
 
-export { alpha, fontSizes, radii, space };
+export { alpha, fontSizes, space };
 
 const THEME_KEY = "leximon_theme";
 
@@ -54,6 +55,11 @@ function startingColors(): Palette {
 }
 
 export const colors = startingColors();
+
+export const radii = SHOWS_THEME_CHOICE ? bookRadii : currentRadii;
+
+/** What stays a circle in every look: an avatar, a dot, a round handle. */
+export const ROUND = 999;
 
 /**
  * Font families embedded at build time (expo-font plugin): one static instance per weight, named

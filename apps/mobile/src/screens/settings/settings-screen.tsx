@@ -20,7 +20,7 @@ import {
 import { router } from "expo-router";
 import * as WebBrowser from "expo-web-browser";
 import { type ReactNode, useEffect, useState } from "react";
-import { Pressable, StyleSheet, Switch, Text, View } from "react-native";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 import { api } from "@/api/client";
 import { WEB_URL } from "@/config";
 import { type FeedbackKind, readPreference, writePreference } from "@/feedback/feedback";
@@ -47,6 +47,7 @@ import { FormError, Page, Paragraph } from "@/ui/page";
 import { Segmented } from "@/ui/segmented";
 import { Sheet } from "@/ui/sheet";
 import { toast } from "@/ui/toast";
+import { Toggle } from "@/ui/toggle";
 
 function failureMessage(error: unknown): string {
   return error instanceof ApiError && error.status === null
@@ -127,16 +128,20 @@ export function SettingsScreen() {
   return (
     <Page title="Réglages">
       <Group title="JEU">
-        <Toggle label="Son" value={feedback.sound} onChange={(on) => toggleFeedback("sound", on)} />
+        <ToggleRow
+          label="Son"
+          value={feedback.sound}
+          onChange={(on) => toggleFeedback("sound", on)}
+        />
         {feedback.sound && (
-          <Toggle
+          <ToggleRow
             label="Prononciation des mots"
             detail="Le mot est lu quand sa carte apparaît"
             value={feedback.speech}
             onChange={(on) => toggleFeedback("speech", on)}
           />
         )}
-        <Toggle
+        <ToggleRow
           label="Vibration"
           value={feedback.haptics}
           onChange={(on) => toggleFeedback("haptics", on)}
@@ -147,23 +152,24 @@ export function SettingsScreen() {
         <Group title={THEME_LABEL.toUpperCase()}>
           <Segmented options={THEME_CHOICES} value={theme} onChange={chooseTheme} />
           <Text style={styles.themeNote}>{THEME_NEXT_LAUNCH}</Text>
+          <Row label="Planches du Livre" onPress={() => router.push("/planches")} />
         </Group>
       )}
 
       {notify !== null && (
         <Group title="NOTIFICATIONS">
-          <Toggle
+          <ToggleRow
             label="Mots à réviser"
             detail="Quand un mot attend sa révision"
             value={notify.notifyReviews}
             onChange={(on) => void toggleNotify("notifyReviews", on)}
           />
-          <Toggle
+          <ToggleRow
             label="Offres d'échange"
             value={notify.notifyTrades}
             onChange={(on) => void toggleNotify("notifyTrades", on)}
           />
-          <Toggle
+          <ToggleRow
             label="Discussion du clan"
             detail="Seulement quand on te cite"
             value={notify.notifyClanMentions}
@@ -174,13 +180,13 @@ export function SettingsScreen() {
 
       {member && notify !== null && (
         <Group title="E-MAILS">
-          <Toggle
+          <ToggleRow
             label="Courrier non lu"
             detail="Un e-mail si tu ne viens pas le lire"
             value={notify.emailNews}
             onChange={(on) => void toggleNotify("emailNews", on)}
           />
-          <Toggle
+          <ToggleRow
             label="Stock de sachets plein"
             detail="Un rappel quand tu t'absentes"
             value={notify.emailReminders}
@@ -191,7 +197,7 @@ export function SettingsScreen() {
 
       {member && me !== null && (
         <Group title="PROFIL">
-          <Toggle
+          <ToggleRow
             label="Profil public"
             detail={publicProfileDetail(me)}
             value={me.profilePublic}
@@ -209,7 +215,7 @@ export function SettingsScreen() {
           />
           {notify !== null && (
             <>
-              <Toggle
+              <ToggleRow
                 label="Demandes d'ami"
                 detail={
                   notify.friendRequestsOpen ? "Tout le monde" : "Seulement par ton lien d'ami"
@@ -217,7 +223,7 @@ export function SettingsScreen() {
                 value={notify.friendRequestsOpen}
                 onChange={(on) => void toggleNotify("friendRequestsOpen", on)}
               />
-              <Toggle
+              <ToggleRow
                 label="Montrer mes trouvailles à mes amis"
                 detail="Tes Épiques et Légendaires, tes mots à la Dorure, tes niveaux"
                 value={notify.shareFinds}
@@ -288,7 +294,7 @@ function Group({ title, children }: { readonly title: string; readonly children:
   );
 }
 
-function Toggle({
+function ToggleRow({
   label,
   detail,
   value,
@@ -305,13 +311,7 @@ function Toggle({
         <Text style={styles.label}>{label}</Text>
         {detail !== undefined && <Text style={styles.detail}>{detail}</Text>}
       </View>
-      <Switch
-        value={value}
-        onValueChange={onChange}
-        accessibilityLabel={label}
-        trackColor={{ false: colors.track, true: colors.success }}
-        thumbColor={colors.pageInk}
-      />
+      <Toggle label={label} value={value} onChange={onChange} />
     </View>
   );
 }

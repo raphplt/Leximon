@@ -5,14 +5,30 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useNow } from "@/player/shared";
 import { usePlayerView } from "@/player/use-player-view";
-import { colors, fontSizes, fonts, radii, space } from "@/theme";
+import {
+  alpha,
+  SHOWS_THEME_CHOICE as BOOK,
+  colors,
+  fontSizes,
+  fonts,
+  ROUND,
+  radii,
+  space,
+} from "@/theme";
 import { Avatar } from "@/ui/avatar";
 import { Badge } from "@/ui/badge";
 import { Icon } from "@/ui/icon";
 import { LevelMedal, XpBar } from "@/ui/level";
+import { Matter } from "@/ui/matter";
 import { StockSheet } from "./stock-sheet";
 
 const AVATAR = 46;
+
+const INK = BOOK ? colors.bindingInk : colors.pageInk;
+const BAR = BOOK ? colors.binding : colors.page;
+const BOUND_CONTROL = BOOK
+  ? { borderWidth: StyleSheet.hairlineWidth, borderColor: alpha(colors.gilt, 0.55) }
+  : { backgroundColor: colors.pageRaised };
 
 /** The band at the top of every tab: avatar and level, XP, stock, mail. */
 export function TopBar() {
@@ -24,6 +40,8 @@ export function TopBar() {
   const stock = view.wallet === null ? null : stockView(view.wallet, now);
   return (
     <View style={[styles.bar, { paddingTop: insets.top + 8 }]}>
+      <Matter kind="leather" />
+      {BOOK && <View style={styles.gilding} />}
       <Pressable
         style={styles.avatar}
         onPress={() => router.push("/profil")}
@@ -44,7 +62,7 @@ export function TopBar() {
         >
           <LevelMedal level={progress.level} size={34} />
           <View style={styles.xpBar}>
-            <XpBar ratio={levelRatio(progress)} thin />
+            <XpBar ratio={levelRatio(progress)} thin onBinding />
           </View>
         </Pressable>
       )}
@@ -56,7 +74,7 @@ export function TopBar() {
           accessibilityRole="button"
           accessibilityLabel={stock.description}
         >
-          <Icon name="sachet" size={16} color={colors.pageInk} />
+          <Icon name="sachet" size={16} color={INK} />
           <Text style={styles.chipText}>
             {stock.stored}/{stock.capacity}
           </Text>
@@ -68,8 +86,8 @@ export function TopBar() {
         accessibilityRole="button"
         accessibilityLabel={mailLabel(view.mail)}
       >
-        <Icon name="courrier" size={19} color={colors.pageInk} />
-        {view.mail > 0 && <Badge count={view.mail} ring={colors.page} />}
+        <Icon name="courrier" size={19} color={INK} />
+        {view.mail > 0 && <Badge count={view.mail} ring={BAR} />}
       </Pressable>
       {view.wallet !== null && (
         <StockSheet
@@ -89,21 +107,32 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: space.s4,
     paddingHorizontal: space.s6,
-    paddingBottom: space.s3,
-    backgroundColor: colors.page,
+    paddingBottom: BOOK ? space.s4 : space.s3,
+    backgroundColor: BAR,
+  },
+  /** The two gilt rules along the leather's edge. */
+  gilding: {
+    position: "absolute",
+    left: 0,
+    right: 0,
+    bottom: 0,
+    height: 4,
+    borderTopWidth: 1,
+    borderBottomWidth: 1,
+    borderColor: colors.gilt,
   },
   avatar: {
     width: AVATAR,
     height: AVATAR,
-    borderRadius: radii.pill,
-    backgroundColor: colors.track,
+    borderRadius: ROUND,
+    backgroundColor: BOOK ? alpha(colors.gilt, 0.35) : colors.track,
     alignItems: "center",
     justifyContent: "center",
   },
   avatarInner: {
     width: AVATAR - 8,
     height: AVATAR - 8,
-    borderRadius: radii.pill,
+    borderRadius: ROUND,
     backgroundColor: colors.pageRaised,
     alignItems: "center",
     justifyContent: "center",
@@ -118,15 +147,15 @@ const styles = StyleSheet.create({
     minHeight: 36,
     paddingHorizontal: 11,
     borderRadius: radii.pill,
-    backgroundColor: colors.pageRaised,
+    ...BOUND_CONTROL,
   },
-  chipText: { fontFamily: fonts.ui.bold, fontSize: fontSizes.label, color: colors.pageInk },
+  chipText: { fontFamily: fonts.ui.bold, fontSize: fontSizes.label, color: INK },
   round: {
     width: 40,
     height: 40,
     borderRadius: radii.pill,
-    backgroundColor: colors.pageRaised,
     alignItems: "center",
     justifyContent: "center",
+    ...BOUND_CONTROL,
   },
 });

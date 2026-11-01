@@ -394,3 +394,104 @@
     0 5px 0 var(--lx-color-action-edge-deep),
     0 0 0 5px var(--lx-color-binding-deep);
 }
+
+/* --- Le Livre: the bars are the binding --- */
+
+/* On leather, what the screens call ink is the binding's own, so that a chip needs no exception. */
+[data-look="livre"] .top,
+[data-look="livre"] .phoneTop,
+[data-look="livre"] .tabs {
+  --lx-color-page-ink: var(--lx-color-binding-ink);
+  --lx-color-page-ink-muted: var(--lx-color-binding-ink-muted);
+  --lx-color-page-raised: transparent;
+  --lx-color-rule: color-mix(in srgb, var(--lx-color-gilt) 55%, transparent);
+  --lx-color-rubric: var(--lx-color-gilt-light);
+  --lx-color-well: var(--lx-color-binding-deep);
+  background-color: var(--lx-color-binding);
+  background-image: var(--lx-matter-leather);
+  background-size: var(--lx-matter-size);
+}
+
+[data-look="livre"] .top,
+[data-look="livre"] .phoneTop {
+  border-bottom: 0;
+  backdrop-filter: none;
+  box-shadow:
+    inset 0 -1px 0 var(--lx-color-gilt),
+    inset 0 -4px 0 -2px var(--lx-color-gilt),
+    0 2px 6px color-mix(in srgb, var(--lx-color-shade) 35%, transparent);
+}
+
+[data-look="livre"] .navPill {
+  display: none;
+}
+
+[data-look="livre"] .navLink {
+  border-radius: 0;
+  font-weight: 500;
+  font-size: var(--lx-size-body-large);
+  font-variant-caps: small-caps;
+  letter-spacing: 0.04em;
+}
+
+[data-look="livre"] .navLink[data-active="true"],
+[data-look="livre"] .nav:not([data-pill="true"]) .navLink[data-active="true"] {
+  background: none;
+  color: var(--lx-color-gilt-light);
+}
+
+[data-look="livre"] .chipMuted,
+[data-look="livre"] .tabLabel,
+[data-look="livre"] .avatarName {
+  font-weight: 500;
+}
+
+[data-look="livre"] .avatarButton {
+  border-radius: 0;
+  background: none;
+}
+
+[data-look="livre"] .level:hover {
+  background: none;
+}
+
+[data-look="livre"] .phoneTop {
+  height: 58px;
+  padding: 0 var(--lx-s5) var(--lx-s2);
+}
+
+[data-look="livre"] .phoneAvatar {
+  background: none;
+  color: var(--lx-color-binding-ink);
+  box-shadow: inset 0 0 0 1px var(--lx-color-rule);
+}
+
+[data-look="livre"] .tabs {
+  border-top: 0;
+  box-shadow:
+    inset 0 1px 0 var(--lx-color-gilt),
+    inset 0 4px 0 -2px var(--lx-color-gilt);
+}
+
+[data-look="livre"] .tab[aria-current="page"] .tabPill {
+  background: none;
+}
+
+[data-look="livre"] .tabLabel {
+  font-size: var(--lx-size-caption);
+  font-variant-caps: small-caps;
+  white-space: nowrap;
+}
+
+/* The one round thing of the bar, as the seal on a letter: no flat edge under it. */
+[data-look="livre"] .tabPlayCircle {
+  background: var(--lx-color-action);
+  background-image: var(--lx-matter-leather);
+  background-size: var(--lx-matter-size);
+  box-shadow:
+    inset 0 0 0 1px var(--lx-color-gilt),
+    inset 0 0 0 3px var(--lx-color-action),
+    inset 0 0 0 4px var(--lx-color-gilt),
+    0 0 0 4px var(--lx-color-binding),
+    0 0 0 5px var(--lx-color-gilt);
+}

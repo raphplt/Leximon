@@ -1,6 +1,6 @@
 # Cahier des charges · Direction artistique « Le Livre »
 
-- **Statut :** direction choisie par le propriétaire le 2026-11-01 sur maquettes (D-055, qui remplace D-022). Chantiers 1.1, 1.2 et 1.4 faits le 2026-11-01, 1.3 commencé, le reste à faire.
+- **Statut :** direction choisie par le propriétaire le 2026-11-01 sur maquettes (D-055, qui remplace D-022). Chantiers 1.1 à 1.4 faits le 2026-11-01, 1.5 et 1.6 réalisés, en attente de la validation du propriétaire sur `/planches`.
 - **Source :** demande du propriétaire du 2026-11-01 : « tout doit vraiment être revu intégralement pour que ça fasse plus littérature ancienne, c'est trop minimaliste, trop moderne, ça manque d'âme », et retours du game designer.
 - **Maquettes :** `rnd/da-refonte/` (`python3 build.py` produit `maquettes.html` et `maquettes-livre.html`). Ce sont des essais de ton, pas des écrans finis.
 - **Cahier lié :** [retours-game-designer.md](retours-game-designer.md), qui donne l'ordre général. Ce cahier couvre ses phases 1 à 3.
@@ -95,7 +95,9 @@ Aujourd'hui, il y a environ 281 couleurs hexadécimales et 195 rayons hors token
 - `mix-blend-mode` évité en dehors des cartes : l'effet se cuit dans l'image.
 - Test sur un Android modeste avant de généraliser.
 
-**Commencé le 2026-11-01.** Une tuile de papier et une de cuir, 128 px et 12 Ko chacune, transparentes pour servir aux deux thèmes (`packages/tokens/scripts/bake_matter.py`). Le papier passe sous les pages, le cuir sous les barres. La tenue du texte sur le grain le plus marqué entre dans `tokens.test.ts`. Restent les cadres et la dorure, qui attendent les ornements (1.5) et les composants (1.6), et l'essai sur un Android modeste.
+**Fait le 2026-11-01.** Quatre tuiles de 128 px, de 10 à 14 Ko, transparentes pour servir aux deux thèmes (`packages/tokens/scripts/bake_matter.py`) : papier, garde, carnet et cuir. Le papier passe sous les pages, le cuir sous les barres, et une seule tuile de cuir donne le vert et le bordeaux, teintés par la couleur de reliure. La tenue du texte sur le grain le plus marqué entre dans `tokens.test.ts`.
+
+Le cadre vit dans `packages/tokens/src/ornaments.ts`. Sur le web, il devient une image `border-image` par couleur de thème, déclarée en variable CSS. Sur le mobile, `Frame` pose quatre coins en `react-native-svg` et des bords en vues simples. Le reflet doré (`Gilt`) déplace une bande par `transform`, à raison d'une surface par écran. Reste l'essai sur un Android modeste, à faire par le propriétaire.
 
 ### 1.4 Les polices
 
@@ -137,6 +139,19 @@ Pour chaque ornement : sa source, sa licence et son crédit dans un fichier vers
 
 Le propriétaire valide une planche par famille.
 
+**Fait le 2026-11-01, à valider.** Les ornements dessinés sont dans `packages/tokens/src/ornaments.ts`, en données de tracé partagées : quatre filets (maigre, gras-maigre, perlé, à fleuron), un coin de cadre à redans, quatre fers (rosette, losange, étoile, lys). Les 39 icônes gardent leur tracé, leur grille et leur nom : Le Livre les affine, leur donne une ligne plus grasse du côté de l'ombre et des hachures. Les planches sont sur `/planches`.
+
+**Ornements anciens :** 90 candidats à licence vérifiée sont dans `rnd/ornements/` (`planche-sources.html`, `sources.json`) : 20 fleurons, 14 bandeaux et trois alphabets. Une présélection de 8 fleurons, 6 bandeaux et 20 lettrines s'affiche sur `/planches`, numérotée. La changer revient à modifier une ligne de `packages/tokens/scripts/bake_ornaments.py`, qui récrit les images et les crédits dans [ornements.md](../ornements.md). Les images, 880 Ko en tout, sont de l'encre sur fond transparent, teintée par le thème.
+
+À trancher par le propriétaire :
+
+- **Les choix :** la présélection vient de moi, pas de lui.
+- **Les lettrines :** seul l'alphabet de Rabelais (Lemerre, 1868) a ses 20 lettres et tient en nuit. Son scan n'a pas de licence explicite, ce qui en fait le point le plus faible de la liste. Mellan est plus fin, à licence nette, mais il lui manque le Z et il se lit mal en nuit.
+- **La nuit :** les gravures denses y passent en négatif. Les rinceaux au trait tiennent, les visages moins.
+- **L'époque :** la plupart des pièces datent du XVIIe siècle, plus tôt que la page visée. Il n'y a pas de petit fleuron typographique du XVIIIe.
+
+Papiers et cuirs sont cuits (1.3). Paris Musées n'a pas répondu et aucune édition Kelmscott n'a été retenue.
+
 ### 1.6 La bibliothèque de composants
 
 Web d'abord dans une page interne, mobile en parallèle :
@@ -151,6 +166,10 @@ Web d'abord dans une page interne, mobile en parallèle :
 Le web n'a pas de composant `Panel`, `Chip` ni `Tabs`, seulement des classes : ils deviennent de vrais composants, comme sur le mobile.
 
 **Fin de phase :** une page montre tous les composants, en clair et en nuit, sur le web et sur téléphone. Le propriétaire la valide avant de continuer.
+
+**Fait le 2026-11-01, à valider.** Sur le web, `/planches` montre les deux thèmes côte à côte, quel que soit le réglage du navigateur, et n'est ni indexée ni liée. Sur le mobile, un build Le Livre l'ouvre par Réglages, Planches du Livre, dans le thème du lancement.
+
+Les composants restent les mêmes, avec une forme Le Livre sous `[data-look="livre"]` sur le web et sous `SHOWS_THEME_CHOICE` sur le mobile : l'ancien style reste intact jusqu'à la bascule. Coins, ombres plates et couleurs passent par les tokens, donc tous les écrans changent à la fois derrière le réglage. Dans les barres, les variables de couleur sont redéfinies : ce qui s'appelle encre sur une page devient l'encre de la reliure, sans exception écran par écran. `Panel`, `Chip`, `Tabs`, `Segmented`, `RuledList`, `Leaders` et `EmptyState` existent sur le web. Les 90 appels aux anciennes classes passeront à ces composants écran par écran, en phases 2 et 3. Ces classes gardent déjà la forme Le Livre.
 
 ## Phase 2 · La coque et le cœur du jeu
 

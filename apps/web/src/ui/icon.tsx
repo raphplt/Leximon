@@ -1,4 +1,5 @@
-import { type IconName, iconGrid, iconStroke, icons } from "@leximon/tokens";
+import { engravings, type IconName, iconGrid, iconStroke, icons } from "@leximon/tokens";
+import styles from "./ui.module.css";
 
 export type { IconName };
 
@@ -12,6 +13,7 @@ export function Icon({
   readonly size?: number;
   readonly className?: string | undefined;
 }) {
+  const { shade, hatch } = engravings[name];
   return (
     <svg
       width={size}
@@ -23,6 +25,7 @@ export function Icon({
       style={{ flexShrink: 0 }}
     >
       <path
+        className={styles.iconLine}
         d={icons[name]}
         fill="none"
         stroke="currentColor"
@@ -30,6 +33,12 @@ export function Icon({
         strokeLinecap="round"
         strokeLinejoin="round"
       />
+      {shade !== undefined && (
+        <path className={styles.iconShade} d={shade} fill="none" stroke="currentColor" />
+      )}
+      {hatch !== undefined && (
+        <path className={styles.iconHatch} d={hatch} fill="none" stroke="currentColor" />
+      )}
     </svg>
   );
 }

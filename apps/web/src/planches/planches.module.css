@@ -1,0 +1,198 @@
+.page {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.sheet {
+  display: flex;
+  flex-direction: column;
+  gap: var(--lx-s20);
+  min-width: 0;
+  padding: var(--lx-s16) var(--lx-s14);
+  background:
+    var(--lx-matter-paper) 0 0 / var(--lx-matter-size),
+    var(--lx-color-page);
+  color: var(--lx-color-page-ink);
+  font-family: var(--font-ui), serif;
+}
+
+.title {
+  margin: 0;
+  font-family: var(--font-display), serif;
+  font-weight: var(--lx-weight-display);
+  font-size: var(--lx-size-heading-large);
+}
+
+.plate {
+  display: flex;
+  flex-direction: column;
+  gap: var(--lx-s8);
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--lx-s6);
+}
+
+.text {
+  margin: 0;
+  font-family: var(--font-text), serif;
+  font-size: var(--lx-size-body-large);
+  line-height: 1.5;
+}
+
+.panel {
+  padding: var(--lx-s9);
+}
+
+.framedPanel {
+  padding: var(--lx-s16);
+}
+
+.bones {
+  display: flex;
+  flex-direction: column;
+  gap: var(--lx-s5);
+}
+
+.tools {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--lx-s10);
+  color: var(--lx-color-page-ink);
+}
+
+.leather {
+  padding: var(--lx-s3);
+  background-color: var(--lx-color-binding);
+  background-image: var(--lx-matter-leather);
+  background-size: var(--lx-matter-size);
+}
+
+.leatherFrame {
+  display: flex;
+  justify-content: center;
+  gap: var(--lx-s10);
+  padding: var(--lx-s16);
+  border: 1px solid transparent;
+  border-image: var(--lx-frame-gilt) 28 / 28px stretch;
+  color: var(--lx-color-gilt);
+}
+
+.plates {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--lx-s10);
+}
+
+.capitals {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--lx-s5);
+}
+
+.numbered {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--lx-s2);
+  max-width: 100%;
+  margin: 0;
+}
+
+.number {
+  color: var(--lx-color-page-ink-muted);
+  font-size: var(--lx-size-nano);
+}
+
+.matters {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: var(--lx-s6);
+}
+
+.matters > span {
+  display: grid;
+  place-items: center;
+  height: 120px;
+  box-shadow: inset 0 0 0 1px var(--lx-color-rule);
+}
+
+.paper {
+  background:
+    var(--lx-matter-paper) 0 0 / var(--lx-matter-size),
+    var(--lx-color-page);
+}
+
+.garde {
+  background:
+    var(--lx-matter-garde) 0 0 / var(--lx-matter-size),
+    var(--lx-color-page);
+}
+
+.carnet {
+  background:
+    var(--lx-matter-carnet) 0 0 / var(--lx-matter-size),
+    var(--lx-color-page);
+}
+
+.matters > .leather {
+  padding: 0;
+  color: var(--lx-color-binding-ink);
+}
+
+.icons {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(52px, 1fr));
+  gap: var(--lx-s8) var(--lx-s4);
+  justify-items: center;
+}
+
+.iconsSmall {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(34px, 1fr));
+  gap: var(--lx-s5) var(--lx-s2);
+  justify-items: center;
+  color: var(--lx-color-page-ink-muted);
+}
+
+/* The bars of the shell, out of their place: they show here at every width. */
+.wideBar.wideBar {
+  position: static;
+  height: 70px;
+}
+
+.narrowBar.narrowBar {
+  position: static;
+  display: flex;
+}
+
+.staticTabs.staticTabs {
+  position: static;
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  align-items: end;
+  height: 84px;
+  margin-top: var(--lx-s12);
+  padding: 0 var(--lx-s3) var(--lx-s9);
+  box-sizing: border-box;
+}
+
+@media (max-width: 1500px) {
+  .wideBar.wideBar {
+    display: none;
+  }
+}
+
+@media (max-width: 900px) {
+  .page {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .sheet {
+    padding: var(--lx-s12) var(--lx-s8);
+  }
+}

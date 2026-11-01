@@ -6,7 +6,7 @@
   --lx-weight-display: 900;
 }
 
-:root[data-look="livre"] {
+[data-look="livre"] {
   --font-display: var(--font-canon);
   --font-ui: var(--font-spectral);
   --font-text: var(--font-spectral);
