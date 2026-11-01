@@ -20,6 +20,12 @@ body {
   font-family: var(--font-ui), system-ui, sans-serif;
 }
 
+:root[data-look="livre"] body {
+  background:
+    var(--lx-matter-paper) 0 0 / var(--lx-matter-size) fixed,
+    var(--lx-color-page);
+}
+
 a {
   color: inherit;
 }

@@ -8,6 +8,9 @@
 # Catalogue: every file is named after the hash of its content, except the manifest, which
 # points at the current ones, and the engraving index: both must change within a minute of a
 # publication.
+/matter/*
+  Cache-Control: public, max-age=86400
+
 /catalog/collections/*
   Cache-Control: public, max-age=31536000, immutable
 

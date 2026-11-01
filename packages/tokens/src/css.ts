@@ -4,6 +4,7 @@ import {
   type Fill,
   fontSizes,
   masteryColors,
+  matter,
   type Palette,
   radii,
   shadowsOf,
@@ -59,6 +60,12 @@ function paletteVariables(palette: Palette): Record<string, string> {
   return variables;
 }
 
+const MATTER_VARIABLES = {
+  "--lx-matter-paper": 'url("/matter/paper.webp")',
+  "--lx-matter-leather": 'url("/matter/leather.webp")',
+  "--lx-matter-size": `${matter.size}px`,
+};
+
 function rule(selector: string, variables: Record<string, string>, scheme: string): string {
   const declarations = Object.entries(variables).map(([name, value]) => `${name}:${value}`);
   return `${selector}{color-scheme:${scheme};${declarations.join(";")}}`;
@@ -71,7 +78,11 @@ function rule(selector: string, variables: Record<string, string>, scheme: strin
 export function cssRootRule(): string {
   return [
     rule(":root", cssVariables(), "dark"),
-    rule(':root[data-look="livre"]', paletteVariables(livreDay), "light"),
+    rule(
+      ':root[data-look="livre"]',
+      { ...paletteVariables(livreDay), ...MATTER_VARIABLES },
+      "light",
+    ),
     rule(':root[data-look="livre"][data-theme="dark"]', paletteVariables(livreNight), "dark"),
   ].join("");
 }

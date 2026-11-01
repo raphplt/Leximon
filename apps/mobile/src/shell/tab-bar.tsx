@@ -9,6 +9,7 @@ import { usePlayerView } from "@/player/use-player-view";
 import { alpha, colors, fontSizes, fonts, radii, space } from "@/theme";
 import { Badge } from "@/ui/badge";
 import { Icon } from "@/ui/icon";
+import { Matter } from "@/ui/matter";
 
 /** The route of each tab in `app/(tabs)`. */
 export const TAB_ROUTES: Readonly<Record<TabId, string>> = {
@@ -42,12 +43,13 @@ export function TabBar({ state, emitter, navigateToTab }: BottomTabBarProps) {
   const current = state.routes[state.index]?.name;
   return (
     <View style={[styles.bar, { paddingBottom: insets.bottom + 10 }]}>
+      <Matter kind="leather" />
       {PHONE_TAB_ORDER.map((id) => {
         const route = state.routes.find((r) => r.name === TAB_ROUTES[id]);
         if (route === undefined) return null;
         const focused = current === route.name;
         const badge = tabBadge(id, { offers: view.offers, coffrets: view.coffrets.length });
-        const color = focused ? colors.rubric : colors.pageInkMuted;
+        const color = focused ? colors.rubric : colors.bindingInkMuted;
         const onPress = () => {
           const event = emitter.emit({
             type: "tabPress",

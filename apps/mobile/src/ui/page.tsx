@@ -4,6 +4,7 @@ import { KeyboardAvoidingView, Pressable, ScrollView, StyleSheet, Text, View } f
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { TAB_BAR_RISE } from "@/shell/tab-bar";
 import { colors, fontSizes, fonts, space } from "@/theme";
+import { Matter } from "@/ui/matter";
 import { Icon } from "./icon";
 
 /** Leaves the page; a page opened from a link, with nothing behind it, leads to the game. */
@@ -31,6 +32,7 @@ export function Page({
   const insets = useSafeAreaInsets();
   return (
     <KeyboardAvoidingView style={styles.page} behavior="padding">
+      <Matter kind="paper" />
       <ScrollView
         keyboardShouldPersistTaps="handled"
         contentContainerStyle={[

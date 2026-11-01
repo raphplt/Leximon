@@ -13,6 +13,8 @@
   padding: 0 var(--lx-s14);
   border-bottom: 1px solid color-mix(in srgb, var(--lx-color-page-ink) 8%, transparent);
   background: color-mix(in srgb, var(--lx-color-binding) 86%, transparent);
+  background-image: var(--lx-matter-leather, none);
+  background-size: var(--lx-matter-size, auto);
   backdrop-filter: blur(10px);
 }
 
@@ -268,6 +270,8 @@
     box-sizing: border-box;
     border-top: 1px solid color-mix(in srgb, var(--lx-color-page-ink) 8%, transparent);
     background: var(--lx-color-binding-deep);
+    background-image: var(--lx-matter-leather, none);
+    background-size: var(--lx-matter-size, auto);
   }
 }
 

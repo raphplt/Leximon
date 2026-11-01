@@ -1,6 +1,6 @@
 # Cahier des charges · Direction artistique « Le Livre »
 
-- **Statut :** direction choisie par le propriétaire le 2026-11-01 sur maquettes (D-055, qui remplace D-022). Chantiers 1.1 et 1.2 faits le 2026-11-01, le reste à faire.
+- **Statut :** direction choisie par le propriétaire le 2026-11-01 sur maquettes (D-055, qui remplace D-022). Chantiers 1.1 et 1.2 faits le 2026-11-01, 1.3 commencé, le reste à faire.
 - **Source :** demande du propriétaire du 2026-11-01 : « tout doit vraiment être revu intégralement pour que ça fasse plus littérature ancienne, c'est trop minimaliste, trop moderne, ça manque d'âme », et retours du game designer.
 - **Maquettes :** `rnd/da-refonte/` (`python3 build.py` produit `maquettes.html` et `maquettes-livre.html`). Ce sont des essais de ton, pas des écrans finis.
 - **Cahier lié :** [retours-game-designer.md](retours-game-designer.md), qui donne l'ordre général. Ce cahier couvre ses phases 1 à 3.
@@ -94,6 +94,8 @@ Aujourd'hui, il y a environ 281 couleurs hexadécimales et 195 rayons hors token
 - Dorure en translation d'un reflet par `transform` : une seule surface animée à la fois.
 - `mix-blend-mode` évité en dehors des cartes : l'effet se cuit dans l'image.
 - Test sur un Android modeste avant de généraliser.
+
+**Commencé le 2026-11-01.** Une tuile de papier et une de cuir, 128 px et 12 Ko chacune, transparentes pour servir aux deux thèmes (`packages/tokens/scripts/bake_matter.py`). Le papier passe sous les pages, le cuir sous les barres. La tenue du texte sur le grain le plus marqué entre dans `tokens.test.ts`. Restent les cadres et la dorure, qui attendent les ornements (1.5) et les composants (1.6), et l'essai sur un Android modeste.
 
 ### 1.4 Les polices
 

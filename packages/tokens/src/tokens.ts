@@ -350,6 +350,15 @@ export const space = {
   s32: 64,
 } as const;
 
+/**
+ * The baked tiles of paper and leather (scripts/bake_matter.py), size in px, and how far their
+ * grain darkens or lightens a color at its strongest.
+ */
+export const matter = {
+  size: 128,
+  paper: { dark: "#140C06", darkest: 0.06, light: "#FFF6E2", lightest: 0.04 },
+} as const;
+
 /** The reference card is drawn at this size; smaller cards are scaled from it. */
 export const cardSize = { width: 300, height: 420 } as const;
 

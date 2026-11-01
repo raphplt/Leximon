@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import { cssFill, cssRootRule, cssUrl, cssVariables, solidColor } from "./css";
 import { levelBadge, levelBadgeText } from "./level-badge";
 import { livreDay, livreNight } from "./livre";
-import { alpha, backTone, backTones, colors, type Palette, rarityStyles } from "./tokens";
+import { alpha, backTone, backTones, colors, matter, type Palette, rarityStyles } from "./tokens";
 
 /** WCAG relative luminance of a `#RRGGBB` color. */
 function luminance(hex: string): number {
@@ -13,6 +13,15 @@ function luminance(hex: string): number {
   });
   const [r = 0, g = 0, b = 0] = channels;
   return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+}
+
+/** `color` under an opaque-to-a-degree `layer`, as a tile's pixel covers its background. */
+function under(color: string, layer: string, opacity: number): string {
+  const channel = (hex: string, start: number) => Number.parseInt(hex.slice(start, start + 2), 16);
+  const mixed = [1, 3, 5].map((start) =>
+    Math.round(channel(color, start) * (1 - opacity) + channel(layer, start) * opacity),
+  );
+  return `#${mixed.map((value) => value.toString(16).padStart(2, "0")).join("")}`;
 }
 
 function contrast(a: string, b: string): number {
@@ -75,6 +84,14 @@ describe.each<[string, Palette]>([
     expect(contrast(palette.pageInk, palette.page)).toBeGreaterThanOrEqual(7);
     expect(contrast(palette.pageInk, palette.pageRaised)).toBeGreaterThanOrEqual(7);
     expect(contrast(palette.pageInk, palette.sheet)).toBeGreaterThanOrEqual(7);
+  });
+
+  it("keeps reading text at 7:1 on the darkest and the lightest grain of the paper", () => {
+    const { dark, darkest, light, lightest } = matter.paper;
+    for (const surface of [palette.page, palette.sheet]) {
+      expect(contrast(palette.pageInk, under(surface, dark, darkest))).toBeGreaterThanOrEqual(7);
+      expect(contrast(palette.pageInk, under(surface, light, lightest))).toBeGreaterThanOrEqual(7);
+    }
   });
 
   it("keeps every other text at 4.5:1", () => {
