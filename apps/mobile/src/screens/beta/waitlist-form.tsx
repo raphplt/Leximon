@@ -5,7 +5,7 @@ import { StyleSheet, Text, View } from "react-native";
 import { api } from "@/api/client";
 import { WEB_URL } from "@/config";
 import { playFromScratch } from "@/player/session";
-import { colors, fonts } from "@/theme";
+import { colors, fontSizes, fonts, space } from "@/theme";
 import { Button } from "@/ui/button";
 import { FormError } from "@/ui/page";
 import { TextField } from "@/ui/text-field";
@@ -94,8 +94,18 @@ export function WaitlistForm() {
 }
 
 const styles = StyleSheet.create({
-  form: { gap: 12 },
-  done: { fontFamily: fonts.ui.bold, fontSize: 17, lineHeight: 24, color: colors.success },
-  note: { fontFamily: fonts.ui.medium, fontSize: 13, lineHeight: 19, color: colors.textFaint },
-  link: { color: colors.accent, textDecorationLine: "underline" },
+  form: { gap: space.s6 },
+  done: {
+    fontFamily: fonts.ui.bold,
+    fontSize: fontSizes.lead,
+    lineHeight: 24,
+    color: colors.success,
+  },
+  note: {
+    fontFamily: fonts.ui.medium,
+    fontSize: fontSizes.small,
+    lineHeight: 19,
+    color: colors.pageInkFaint,
+  },
+  link: { color: colors.rubric, textDecorationLine: "underline" },
 });

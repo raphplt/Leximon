@@ -4,7 +4,7 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 8px 14px;
+  gap: var(--lx-s4) var(--lx-s7);
   margin: 0;
   font-weight: 800;
 }
@@ -12,57 +12,57 @@
 .spoken {
   display: flex;
   align-items: center;
-  gap: 12px;
-  margin: 14px 0 0;
+  gap: var(--lx-s6);
+  margin: var(--lx-s7) 0 0;
 }
 
 .playing {
-  background: var(--lx-color-accent);
-  color: var(--lx-color-accent-ink);
+  background: var(--lx-color-action);
+  color: var(--lx-color-action-ink);
 }
 
 .ipa {
   font-family: var(--font-text), Georgia, serif;
-  font-size: 19px;
-  color: var(--lx-color-text-muted);
+  font-size: var(--lx-size-subtitle);
+  color: var(--lx-color-page-ink-muted);
 }
 
 .frequency {
-  margin: 12px 0 0;
+  margin: var(--lx-s6) 0 0;
   font-family: var(--font-text), Georgia, serif;
   font-style: italic;
-  font-size: 17px;
-  color: #d9d3e6;
+  font-size: var(--lx-size-lead);
+  color: var(--lx-color-page-ink-soft);
 }
 
 .quote {
-  margin: 18px 0 0;
-  padding-left: 14px;
-  border-left: 2px solid rgba(246, 240, 226, 0.18);
+  margin: var(--lx-s9) 0 0;
+  padding-left: var(--lx-s7);
+  border-left: 2px solid color-mix(in srgb, var(--lx-color-page-ink) 18%, transparent);
 }
 
 .quoteText {
   margin: 0;
   font-family: var(--font-text), Georgia, serif;
   font-style: italic;
-  font-size: 16px;
+  font-size: var(--lx-size-body-large);
   line-height: 1.45;
 }
 
 .quoteAuthor {
-  margin: 6px 0 0;
-  font-size: 13px;
+  margin: var(--lx-s3) 0 0;
+  font-size: var(--lx-size-small);
   font-weight: 700;
-  color: var(--lx-color-text-muted);
+  color: var(--lx-color-page-ink-muted);
 }
 
 .origin {
-  margin-top: 18px;
+  margin-top: var(--lx-s9);
 }
 
 .etymology {
-  margin: 6px 0 0;
+  margin: var(--lx-s3) 0 0;
   font-family: var(--font-text), Georgia, serif;
-  font-size: 16px;
+  font-size: var(--lx-size-body-large);
   line-height: 1.45;
 }

@@ -7,7 +7,7 @@ import { api } from "@/api/client";
 import { refusalText } from "@/clan/act";
 import { useJoinClan } from "@/clan/use-join-clan";
 import { TAB_BAR_RISE } from "@/shell/tab-bar";
-import { colors, fonts } from "@/theme";
+import { colors, fontSizes, fonts, space } from "@/theme";
 import { Button } from "@/ui/button";
 import { Icon } from "@/ui/icon";
 import { Panel } from "@/ui/panel";
@@ -101,7 +101,7 @@ export function FindClan({
         accessibilityRole="button"
         style={styles.found}
       >
-        <Icon name={canCreate ? "plus" : "lock"} size={18} color={colors.text} />
+        <Icon name={canCreate ? "plus" : "lock"} size={18} color={colors.pageInk} />
         <Text style={styles.foundText}>Fonder un clan</Text>
       </Pressable>
 
@@ -128,24 +128,38 @@ export function FindClan({
 }
 
 const styles = StyleSheet.create({
-  page: { gap: 14, paddingHorizontal: 16, paddingTop: 8, paddingBottom: TAB_BAR_RISE + 24 },
-  title: { fontFamily: fonts.display, fontSize: 30, color: colors.text },
-  small: { fontFamily: fonts.ui.medium, fontSize: 14, lineHeight: 20, color: colors.textMuted },
+  page: {
+    gap: space.s7,
+    paddingHorizontal: space.s8,
+    paddingTop: space.s4,
+    paddingBottom: TAB_BAR_RISE + 24,
+  },
+  title: { fontFamily: fonts.display, fontSize: fontSizes.heading, color: colors.pageInk },
+  small: {
+    fontFamily: fonts.ui.medium,
+    fontSize: fontSizes.label,
+    lineHeight: 20,
+    color: colors.pageInkMuted,
+  },
   kicker: {
     fontFamily: fonts.ui.extrabold,
-    fontSize: 12,
+    fontSize: fontSizes.caption,
     letterSpacing: 2,
-    color: colors.textMuted,
+    color: colors.pageInkMuted,
   },
   found: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    gap: 8,
+    gap: space.s4,
     minHeight: 52,
     borderRadius: 26,
     borderWidth: 2,
     borderColor: colors.track,
   },
-  foundText: { fontFamily: fonts.ui.extrabold, fontSize: 16, color: colors.text },
+  foundText: {
+    fontFamily: fonts.ui.extrabold,
+    fontSize: fontSizes.bodyLarge,
+    color: colors.pageInk,
+  },
 });

@@ -1,26 +1,26 @@
 .title {
-  margin: 0 0 12px;
-  font-size: 24px;
+  margin: 0 0 var(--lx-s6);
+  font-size: var(--lx-size-title-large);
 }
 
 .panel {
   display: flex;
   flex-direction: column;
-  gap: 14px;
-  padding: 20px;
+  gap: var(--lx-s7);
+  padding: var(--lx-s10);
 }
 
 .line {
   margin: 0;
-  font-size: 15px;
+  font-size: var(--lx-size-body);
   line-height: 1.45;
-  color: var(--lx-color-text-muted);
+  color: var(--lx-color-page-ink-muted);
 }
 
 .choices {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
-  gap: 8px;
+  gap: var(--lx-s4);
   margin: 0;
   padding: 0;
   list-style: none;
@@ -29,21 +29,21 @@
 .choice {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: var(--lx-s1);
   width: 100%;
   height: 100%;
-  padding: 12px 14px;
-  border: 1px solid var(--lx-color-outline);
-  border-radius: 14px;
+  padding: var(--lx-s6) var(--lx-s7);
+  border: 1px solid var(--lx-color-rule);
+  border-radius: var(--lx-radius-xl);
   background: none;
-  color: var(--lx-color-text);
+  color: var(--lx-color-page-ink);
   font: inherit;
   text-align: left;
   cursor: pointer;
 }
 
 .choice:hover:not(:disabled) {
-  border-color: var(--lx-color-accent);
+  border-color: var(--lx-color-gilt);
 }
 
 .choice:disabled {
@@ -53,17 +53,17 @@
 
 .label {
   font-weight: 800;
-  font-size: 15px;
+  font-size: var(--lx-size-body);
 }
 
 .detail {
-  font-size: 13px;
-  color: var(--lx-color-text-muted);
+  font-size: var(--lx-size-small);
+  color: var(--lx-color-page-ink-muted);
 }
 
 .closed,
 .xp {
   margin: 0;
-  font-size: 13px;
-  color: var(--lx-color-text-faint);
+  font-size: var(--lx-size-small);
+  color: var(--lx-color-page-ink-faint);
 }

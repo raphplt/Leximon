@@ -9,7 +9,7 @@ import {
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { colors, fonts } from "@/theme";
+import { alpha, colors, fontSizes, fonts, space } from "@/theme";
 import { Icon } from "./icon";
 import { ToastHost } from "./toast";
 
@@ -47,7 +47,7 @@ export function Sheet({
               accessibilityRole="button"
               accessibilityLabel="Fermer"
             >
-              <Icon name="close" size={20} color={colors.text} />
+              <Icon name="close" size={20} color={colors.pageInk} />
             </Pressable>
           </View>
           <ScrollView
@@ -65,7 +65,7 @@ export function Sheet({
 }
 
 const styles = StyleSheet.create({
-  backdrop: { flex: 1, justifyContent: "flex-end", backgroundColor: "rgba(10, 12, 24, 0.6)" },
+  backdrop: { flex: 1, justifyContent: "flex-end", backgroundColor: alpha(colors.scrim, 0.6) },
   sheet: {
     maxHeight: "88%",
     borderTopLeftRadius: 24,
@@ -75,19 +75,19 @@ const styles = StyleSheet.create({
   head: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 12,
-    paddingHorizontal: 20,
-    paddingTop: 18,
-    paddingBottom: 6,
+    gap: space.s6,
+    paddingHorizontal: space.s10,
+    paddingTop: space.s9,
+    paddingBottom: space.s3,
   },
-  title: { flex: 1, fontFamily: fonts.display, fontSize: 22, color: colors.text },
+  title: { flex: 1, fontFamily: fonts.display, fontSize: fontSizes.title, color: colors.pageInk },
   close: {
     width: 36,
     height: 36,
     borderRadius: 18,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: colors.backgroundRaised,
+    backgroundColor: colors.pageRaised,
   },
-  body: { gap: 14, paddingHorizontal: 20, paddingTop: 10 },
+  body: { gap: space.s7, paddingHorizontal: space.s10, paddingTop: space.s5 },
 });

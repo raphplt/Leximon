@@ -3,11 +3,11 @@
   max-width: 440px;
   min-height: calc(100dvh - 68px);
   margin: 0 auto;
-  padding: 8px 16px 48px;
+  padding: var(--lx-s4) var(--lx-s8) var(--lx-s24);
   display: flex;
   flex-direction: column;
   justify-content: center;
-  gap: 16px;
+  gap: var(--lx-s8);
 }
 
 .header {
@@ -16,51 +16,49 @@
 }
 
 .kicker {
-  margin: 0 0 2px;
-  font-size: 11px;
+  margin: 0 0 var(--lx-s1);
+  font-size: var(--lx-size-micro);
   font-weight: 700;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: var(--lx-color-text-muted);
+  color: var(--lx-color-page-ink-muted);
 }
 
 .title {
   margin: 0;
   font-family: var(--font-display), Georgia, serif;
-  font-variation-settings: "SOFT" 100;
   font-weight: 900;
-  font-size: 30px;
+  font-size: var(--lx-size-heading);
   line-height: 1;
 }
 
 .subtitle {
   margin: 0;
   font-family: var(--font-display), Georgia, serif;
-  font-variation-settings: "SOFT" 100;
   font-weight: 900;
-  font-size: 22px;
+  font-size: var(--lx-size-title);
 }
 
 .panel {
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  padding: 16px;
+  gap: var(--lx-s6);
+  padding: var(--lx-s8);
   border-radius: var(--lx-radius-card);
-  background: var(--lx-color-background-raised);
-  box-shadow: 0 4px 0 rgba(0, 0, 0, 0.25);
+  background: var(--lx-color-page-raised);
+  box-shadow: 0 4px 0 color-mix(in srgb, var(--lx-color-shade) 25%, transparent);
 }
 
 .hint {
   margin: 0;
-  font-size: 16px;
+  font-size: var(--lx-size-body-large);
   font-weight: 700;
   line-height: 1.35;
 }
 
 .text {
   margin: 0;
-  font-size: 16px;
+  font-size: var(--lx-size-body-large);
   font-weight: 600;
   line-height: 1.45;
 }
@@ -72,29 +70,29 @@
 
 .muted {
   margin: 0;
-  font-size: 13px;
+  font-size: var(--lx-size-small);
   font-weight: 500;
   line-height: 1.4;
-  color: var(--lx-color-text-muted);
+  color: var(--lx-color-page-ink-muted);
 }
 
 .warning {
   margin: 0;
-  padding: 10px 12px;
+  padding: var(--lx-s5) var(--lx-s6);
   border-radius: var(--lx-radius-chip);
-  background: var(--lx-color-background);
-  font-size: 15px;
+  background: var(--lx-color-page);
+  font-size: var(--lx-size-body);
   font-weight: 700;
   line-height: 1.4;
-  color: var(--lx-color-accent);
+  color: var(--lx-color-rubric);
 }
 
 .error {
   margin: 0;
-  font-size: 15px;
+  font-size: var(--lx-size-body);
   font-weight: 700;
   line-height: 1.35;
-  color: var(--lx-color-accent);
+  color: var(--lx-color-rubric);
 }
 
 .error:empty {
@@ -104,8 +102,8 @@
 /* --- Fields --------------------------------------------------------------------------- */
 
 .label {
-  margin-top: 4px;
-  font-size: 14px;
+  margin-top: var(--lx-s2);
+  font-size: var(--lx-size-label);
   font-weight: 700;
 }
 
@@ -113,13 +111,13 @@
   box-sizing: border-box;
   width: 100%;
   min-height: 56px;
-  padding: 0 18px;
-  border: 2px solid var(--lx-color-outline);
+  padding: 0 var(--lx-s9);
+  border: 2px solid var(--lx-color-rule);
   border-radius: var(--lx-radius-pill);
-  background: var(--lx-color-background);
-  color: var(--lx-color-text);
+  background: var(--lx-color-page);
+  color: var(--lx-color-page-ink);
   font: inherit;
-  font-size: 18px;
+  font-size: var(--lx-size-subtitle);
   font-weight: 700;
 }
 
@@ -130,9 +128,8 @@
 
 .code {
   font-family: var(--font-display), Georgia, serif;
-  font-variation-settings: "SOFT" 100;
   font-weight: 900;
-  font-size: 28px;
+  font-size: var(--lx-size-heading);
   letter-spacing: 0.3em;
   font-variant-numeric: tabular-nums;
   text-align: center;
@@ -141,9 +138,9 @@
 .check {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: var(--lx-s6);
   min-height: 44px;
-  font-size: 16px;
+  font-size: var(--lx-size-body-large);
   font-weight: 700;
   cursor: pointer;
 }
@@ -152,7 +149,7 @@
   width: 22px;
   height: 22px;
   margin: 0;
-  accent-color: var(--lx-color-accent);
+  accent-color: var(--lx-color-rubric);
 }
 
 /* --- Buttons -------------------------------------------------------------------------- */
@@ -160,7 +157,7 @@
 .actions {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: var(--lx-s5);
 }
 
 .primary,
@@ -170,10 +167,10 @@
   align-items: center;
   justify-content: center;
   min-height: 52px;
-  padding: 0 20px;
+  padding: 0 var(--lx-s10);
   border-radius: var(--lx-radius-pill);
   font: inherit;
-  font-size: 16px;
+  font-size: var(--lx-size-body-large);
   text-align: center;
   text-decoration: none;
   cursor: pointer;
@@ -181,24 +178,24 @@
 
 .primary {
   border: none;
-  background: var(--lx-color-accent);
-  box-shadow: 0 4px 0 var(--lx-color-accent-shadow);
-  color: var(--lx-color-accent-ink);
+  background: var(--lx-color-action);
+  box-shadow: var(--lx-shadow-action);
+  color: var(--lx-color-action-ink);
   font-weight: 800;
 }
 
 .secondary {
-  border: 2px solid var(--lx-color-text);
+  border: 2px solid var(--lx-color-page-ink);
   background: none;
-  color: var(--lx-color-text);
+  color: var(--lx-color-page-ink);
   font-weight: 700;
 }
 
 .primary:disabled {
   cursor: default;
-  background: var(--lx-color-outline);
+  background: var(--lx-color-rule);
   box-shadow: none;
-  color: var(--lx-color-text);
+  color: var(--lx-color-page-ink);
 }
 
 .secondary:disabled {
@@ -210,17 +207,17 @@
   display: flex;
   flex-wrap: wrap;
   justify-content: space-between;
-  gap: 8px;
+  gap: var(--lx-s4);
 }
 
 .link {
   min-height: 40px;
-  padding: 0 4px;
+  padding: 0 var(--lx-s2);
   border: none;
   background: none;
-  color: var(--lx-color-text-muted);
+  color: var(--lx-color-page-ink-muted);
   font: inherit;
-  font-size: 14px;
+  font-size: var(--lx-size-label);
   font-weight: 700;
   text-decoration: underline;
   cursor: pointer;
@@ -233,7 +230,7 @@
 
 .leave {
   align-self: center;
-  margin-top: 28px;
+  margin-top: var(--lx-s14);
 }
 
 .ageSelect {
@@ -243,19 +240,19 @@
 
 .ageSelect > button {
   min-height: 56px;
-  padding: 0 18px;
+  padding: 0 var(--lx-s9);
   border-width: 2px;
   border-radius: var(--lx-radius-pill);
-  font-size: 18px;
+  font-size: var(--lx-size-subtitle);
   font-weight: 700;
 }
 
 .ageSelect ul {
-  border-radius: 18px;
+  border-radius: var(--lx-radius-x3);
 }
 
 .ageSelect li > button {
-  padding: 10px 14px;
-  border-radius: 12px;
-  font-size: 16px;
+  padding: var(--lx-s5) var(--lx-s7);
+  border-radius: var(--lx-radius-lg);
+  font-size: var(--lx-size-body-large);
 }

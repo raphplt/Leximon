@@ -5,13 +5,13 @@
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: 12px 20px;
+  gap: var(--lx-s6) var(--lx-s10);
 }
 
 .dashboard {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: var(--lx-s10);
   transition: opacity 0.2s ease;
 }
 
@@ -23,13 +23,13 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 6px;
-  font-size: 14px;
-  color: var(--lx-color-text-muted);
+  gap: var(--lx-s3);
+  font-size: var(--lx-size-label);
+  color: var(--lx-color-page-ink-muted);
 }
 
 .live strong {
-  color: var(--lx-color-text);
+  color: var(--lx-color-page-ink);
 }
 
 .liveDot {
@@ -37,13 +37,13 @@
   height: 8px;
   border-radius: 50%;
   background: var(--lx-color-success);
-  box-shadow: 0 0 0 3px rgba(47, 199, 155, 0.2);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--lx-color-success) 20%, transparent);
 }
 
 .kpis {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 12px;
+  gap: var(--lx-s6);
 }
 
 @media (max-width: 1100px) {
@@ -55,48 +55,48 @@
 .kpi {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: var(--lx-s2);
   min-width: 0;
-  padding: 14px 16px;
-  border-radius: 14px;
-  background: var(--lx-color-background-raised);
-  border: 1px solid var(--lx-color-outline);
+  padding: var(--lx-s7) var(--lx-s8);
+  border-radius: var(--lx-radius-xl);
+  background: var(--lx-color-page-raised);
+  border: 1px solid var(--lx-color-rule);
 }
 
 .kpiLabel {
-  font-size: 13px;
+  font-size: var(--lx-size-small);
   font-weight: 700;
-  color: var(--lx-color-text-muted);
+  color: var(--lx-color-page-ink-muted);
 }
 
 .kpiLine {
   display: flex;
   flex-wrap: wrap;
   align-items: baseline;
-  gap: 4px 10px;
+  gap: var(--lx-s2) var(--lx-s5);
 }
 
 .kpiValue {
-  font-size: 28px;
+  font-size: var(--lx-size-heading);
   font-weight: 800;
   line-height: 1.15;
 }
 
 .kpiNote {
-  font-size: 12px;
-  color: var(--lx-color-text-faint);
+  font-size: var(--lx-size-caption);
+  color: var(--lx-color-page-ink-faint);
 }
 
 .kpi svg {
   margin-top: auto;
-  padding-top: 6px;
+  padding-top: var(--lx-s3);
 }
 
 .delta {
-  font-size: 13px;
+  font-size: var(--lx-size-small);
   font-weight: 800;
   white-space: nowrap;
-  color: var(--lx-color-text-muted);
+  color: var(--lx-color-page-ink-muted);
 }
 
 .delta[data-direction="up"] {
@@ -108,18 +108,18 @@
 }
 
 .delta span {
-  font-size: 10px;
+  font-size: var(--lx-size-nano);
 }
 
 .panel {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: var(--lx-s7);
   min-width: 0;
-  padding: 18px 20px;
-  border-radius: 14px;
-  background: var(--lx-color-background-raised);
-  border: 1px solid var(--lx-color-outline);
+  padding: var(--lx-s9) var(--lx-s10);
+  border-radius: var(--lx-radius-xl);
+  background: var(--lx-color-page-raised);
+  border: 1px solid var(--lx-color-rule);
 }
 
 .panelHead {
@@ -127,51 +127,51 @@
   flex-wrap: wrap;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 10px 16px;
+  gap: var(--lx-s5) var(--lx-s8);
 }
 
 .hint {
-  margin: 4px 0 0;
-  font-size: 13px;
-  color: var(--lx-color-text-faint);
+  margin: var(--lx-s2) 0 0;
+  font-size: var(--lx-size-small);
+  color: var(--lx-color-page-ink-faint);
 }
 
 .split {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 440px), 1fr));
-  gap: 20px;
+  gap: var(--lx-s10);
 }
 
 .funnel {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: var(--lx-s6);
 }
 
 .funnelStep {
   display: grid;
   grid-template-columns: minmax(120px, 0.6fr) minmax(0, 1fr);
   align-items: center;
-  gap: 12px;
-  font-size: 14px;
+  gap: var(--lx-s6);
+  font-size: var(--lx-size-label);
 }
 
 .funnelLabel {
-  color: var(--lx-color-text-muted);
+  color: var(--lx-color-page-ink-muted);
   font-weight: 700;
 }
 
 .funnelValue {
   min-width: 84px;
-  font-size: 13px;
-  color: var(--lx-color-text-faint);
+  font-size: var(--lx-size-small);
+  color: var(--lx-color-page-ink-faint);
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
 
 .funnelValue strong {
-  color: var(--lx-color-text);
-  margin-right: 4px;
+  color: var(--lx-color-page-ink);
+  margin-right: var(--lx-s2);
 }
 
 .heatWrap {
@@ -183,14 +183,14 @@
   width: 100%;
   border-collapse: separate;
   border-spacing: 2px;
-  font-size: 13px;
+  font-size: var(--lx-size-small);
   font-variant-numeric: tabular-nums;
 }
 
 .heat th,
 .heat td {
-  padding: 7px 8px;
-  border-radius: 6px;
+  padding: 7px var(--lx-s4);
+  border-radius: var(--lx-radius-xs);
   text-align: center;
   white-space: nowrap;
 }
@@ -199,18 +199,18 @@
   position: sticky;
   top: 0;
   z-index: 1;
-  background: var(--lx-color-background-raised);
-  font-size: 11px;
+  background: var(--lx-color-page-raised);
+  font-size: var(--lx-size-micro);
   font-weight: 800;
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  color: var(--lx-color-text-faint);
+  color: var(--lx-color-page-ink-faint);
 }
 
 .heat tbody th {
   text-align: left;
   font-weight: 700;
-  color: var(--lx-color-text-muted);
+  color: var(--lx-color-page-ink-muted);
 }
 
 .heat td {
@@ -224,7 +224,7 @@
 
 .count {
   min-width: 32px;
-  color: var(--lx-color-text);
+  color: var(--lx-color-page-ink);
   font-weight: 700;
 }
 
@@ -232,7 +232,7 @@
   background: repeating-linear-gradient(
     135deg,
     transparent 0 4px,
-    rgba(255, 255, 255, 0.035) 4px 8px
+    color-mix(in srgb, var(--lx-color-glint) 3.5%, transparent) 4px 8px
   );
 }
 
@@ -244,27 +244,27 @@
 }
 
 .hourLabel {
-  font-size: 11px;
-  color: var(--lx-color-text-faint);
+  font-size: var(--lx-size-micro);
+  color: var(--lx-color-page-ink-faint);
   white-space: nowrap;
 }
 
 .dayLabel {
-  font-size: 12px;
+  font-size: var(--lx-size-caption);
   font-weight: 700;
-  color: var(--lx-color-text-muted);
+  color: var(--lx-color-page-ink-muted);
   align-self: center;
 }
 
 .hourCell {
   aspect-ratio: 1.4;
   min-height: 14px;
-  border-radius: 4px;
-  background: rgba(255, 255, 255, 0.04);
+  border-radius: var(--lx-radius-xxs);
+  background: color-mix(in srgb, var(--lx-color-glint) 4%, transparent);
 }
 
 .hourCell:hover {
-  outline: 2px solid var(--lx-color-text);
+  outline: 2px solid var(--lx-color-page-ink);
   outline-offset: -1px;
 }
 
@@ -274,11 +274,11 @@
   }
 
   .panel {
-    padding: 14px;
+    padding: var(--lx-s7);
   }
 
   .funnelStep {
     grid-template-columns: minmax(0, 1fr);
-    gap: 4px;
+    gap: var(--lx-s2);
   }
 }

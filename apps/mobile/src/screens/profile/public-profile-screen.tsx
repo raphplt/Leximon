@@ -17,7 +17,7 @@ import { api } from "@/api/client";
 import { catalogInHand, loadCatalog } from "@/cards/catalog";
 import { useShared } from "@/player/shared";
 import { friends, profile } from "@/player/state";
-import { colors, fonts } from "@/theme";
+import { colors, fontSizes, fonts, space } from "@/theme";
 import { Button } from "@/ui/button";
 import { Icon } from "@/ui/icon";
 import { Page, Paragraph } from "@/ui/page";
@@ -126,7 +126,7 @@ export function PublicProfileScreen({ pseudo }: { readonly pseudo: string }) {
         </>
       ) : (
         <View style={styles.private}>
-          <Icon name="lock" size={18} color={colors.textMuted} />
+          <Icon name="lock" size={18} color={colors.pageInkMuted} />
           <Text style={styles.note}>Profil privé.</Text>
         </View>
       )}
@@ -253,10 +253,20 @@ function ViewerActions({
 }
 
 const styles = StyleSheet.create({
-  note: { fontFamily: fonts.text.regular, fontSize: 17, lineHeight: 24, color: colors.text },
-  private: { flexDirection: "row", alignItems: "center", gap: 8 },
-  actions: { gap: 10 },
-  friendTag: { flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 6 },
-  friendText: { fontFamily: fonts.ui.extrabold, fontSize: 15, color: colors.success },
-  minor: { flexDirection: "row", justifyContent: "center", gap: 24 },
+  note: {
+    fontFamily: fonts.text.regular,
+    fontSize: fontSizes.lead,
+    lineHeight: 24,
+    color: colors.pageInk,
+  },
+  private: { flexDirection: "row", alignItems: "center", gap: space.s4 },
+  actions: { gap: space.s5 },
+  friendTag: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: space.s3,
+  },
+  friendText: { fontFamily: fonts.ui.extrabold, fontSize: fontSizes.body, color: colors.success },
+  minor: { flexDirection: "row", justifyContent: "center", gap: space.s12 },
 });

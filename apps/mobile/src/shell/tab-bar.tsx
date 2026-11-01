@@ -6,7 +6,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Svg, { Defs, RadialGradient, Stop, Circle as SvgCircle } from "react-native-svg";
 import { useNow } from "@/player/shared";
 import { usePlayerView } from "@/player/use-player-view";
-import { colors, fonts, TAB_BAR_COLOR } from "@/theme";
+import { alpha, colors, fontSizes, fonts, radii, space } from "@/theme";
 import { Badge } from "@/ui/badge";
 import { Icon } from "@/ui/icon";
 
@@ -47,7 +47,7 @@ export function TabBar({ state, emitter, navigateToTab }: BottomTabBarProps) {
         if (route === undefined) return null;
         const focused = current === route.name;
         const badge = tabBadge(id, { offers: view.offers, coffrets: view.coffrets.length });
-        const color = focused ? colors.accent : colors.textMuted;
+        const color = focused ? colors.rubric : colors.pageInkMuted;
         const onPress = () => {
           const event = emitter.emit({
             type: "tabPress",
@@ -68,15 +68,15 @@ export function TabBar({ state, emitter, navigateToTab }: BottomTabBarProps) {
                 <Svg width={PLAY} height={PLAY} style={StyleSheet.absoluteFill}>
                   <Defs>
                     <RadialGradient id="play" cx="35%" cy="30%" r="75%">
-                      <Stop offset="0" stopColor="#FFE48A" />
-                      <Stop offset="0.55" stopColor={colors.accent} />
-                      <Stop offset="1" stopColor="#E0A91C" />
+                      <Stop offset="0" stopColor={colors.actionLight} />
+                      <Stop offset="0.55" stopColor={colors.rubric} />
+                      <Stop offset="1" stopColor={colors.actionDeep} />
                     </RadialGradient>
                   </Defs>
                   <SvgCircle cx={PLAY / 2} cy={PLAY / 2} r={PLAY / 2} fill="url(#play)" />
                 </Svg>
-                <Icon name="sachet" size={30} color={colors.accentInk} />
-                {badge > 0 && <Badge count={badge} ring={TAB_BAR_COLOR} />}
+                <Icon name="sachet" size={30} color={colors.actionInk} />
+                {badge > 0 && <Badge count={badge} ring={colors.bindingDeep} />}
               </View>
               <Text
                 style={[styles.label, { color }]}
@@ -96,10 +96,10 @@ export function TabBar({ state, emitter, navigateToTab }: BottomTabBarProps) {
               <Icon name={TAB_ICONS[id]} size={22} color={color} />
               {closed.has(id) ? (
                 <View style={styles.lock}>
-                  <Icon name="lock" size={10} color={colors.text} />
+                  <Icon name="lock" size={10} color={colors.pageInk} />
                 </View>
               ) : (
-                badge > 0 && <Badge count={badge} ring={TAB_BAR_COLOR} />
+                badge > 0 && <Badge count={badge} ring={colors.bindingDeep} />
               )}
             </View>
             <Text
@@ -121,21 +121,21 @@ const styles = StyleSheet.create({
   bar: {
     flexDirection: "row",
     alignItems: "flex-end",
-    paddingHorizontal: 6,
-    paddingTop: 8,
+    paddingHorizontal: space.s3,
+    paddingTop: space.s4,
     borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: "rgba(246, 240, 226, 0.12)",
-    backgroundColor: TAB_BAR_COLOR,
+    borderTopColor: alpha(colors.pageInk, 0.12),
+    backgroundColor: colors.bindingDeep,
   },
-  tab: { flex: 1, alignItems: "center", gap: 4 },
+  tab: { flex: 1, alignItems: "center", gap: space.s2 },
   // It rises above the bar without making the row taller: its label stays on the others' line.
   play: { marginTop: -PLAY_LIFT },
   playCircle: {
     width: PLAY + 10,
     height: PLAY + 10,
-    borderRadius: 999,
+    borderRadius: radii.pill,
     borderWidth: 5,
-    borderColor: TAB_BAR_COLOR,
+    borderColor: colors.bindingDeep,
     alignItems: "center",
     justifyContent: "center",
     overflow: "visible",
@@ -147,16 +147,16 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  pillFocused: { backgroundColor: "rgba(255, 210, 77, 0.16)" },
-  label: { fontFamily: fonts.ui.extrabold, fontSize: 11 },
+  pillFocused: { backgroundColor: alpha(colors.gilt, 0.16) },
+  label: { fontFamily: fonts.ui.extrabold, fontSize: fontSizes.micro },
   lock: {
     position: "absolute",
     top: -4,
     right: -2,
     width: 17,
     height: 17,
-    borderRadius: 999,
-    backgroundColor: colors.outline,
+    borderRadius: radii.pill,
+    backgroundColor: colors.rule,
     alignItems: "center",
     justifyContent: "center",
   },

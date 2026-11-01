@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { StyleSheet, Text, TextInput } from "react-native";
 import { api } from "@/api/client";
-import { colors, fonts } from "@/theme";
+import { colors, fontSizes, fonts, radii, space } from "@/theme";
 import { Button } from "@/ui/button";
 import { FormError } from "@/ui/page";
 import { Sheet } from "@/ui/sheet";
@@ -53,7 +53,7 @@ export function FeedbackSheet({
         multiline
         numberOfLines={5}
         textAlignVertical="top"
-        selectionColor={colors.accent}
+        selectionColor={colors.rubric}
         accessibilityLabel={label}
         onChangeText={setBody}
       />
@@ -68,16 +68,21 @@ export function FeedbackSheet({
 }
 
 const styles = StyleSheet.create({
-  label: { fontFamily: fonts.ui.semibold, fontSize: 15, lineHeight: 21, color: colors.text },
+  label: {
+    fontFamily: fonts.ui.semibold,
+    fontSize: fontSizes.body,
+    lineHeight: 21,
+    color: colors.pageInk,
+  },
   field: {
     minHeight: 120,
-    padding: 12,
-    borderRadius: 14,
+    padding: space.s6,
+    borderRadius: radii.xl,
     borderWidth: 2,
     borderColor: colors.track,
     backgroundColor: colors.well,
-    color: colors.text,
+    color: colors.pageInk,
     fontFamily: fonts.ui.medium,
-    fontSize: 15,
+    fontSize: fontSizes.body,
   },
 });

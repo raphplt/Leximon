@@ -23,7 +23,7 @@ import { useShared, useSharedFailed } from "@/player/shared";
 import { profile } from "@/player/state";
 import { useProfileActions } from "@/profile/profile-actions";
 import { openCard } from "@/screens/trades/card-row";
-import { colors, fonts } from "@/theme";
+import { colors, fontSizes, fonts, radii, space } from "@/theme";
 import { Button } from "@/ui/button";
 import { Icon } from "@/ui/icon";
 import { Page, Paragraph } from "@/ui/page";
@@ -139,9 +139,9 @@ export function ProfileScreen() {
             accessibilityRole="link"
             style={({ pressed }) => [styles.link, pressed && styles.pressed]}
           >
-            <Icon name={link.icon} size={20} color={colors.text} />
+            <Icon name={link.icon} size={20} color={colors.pageInk} />
             <Text style={styles.linkText}>{link.label}</Text>
-            <Icon name="chev" size={16} color={colors.textMuted} />
+            <Icon name="chev" size={16} color={colors.pageInkMuted} />
           </Pressable>
         ))}
         {me.member && me.pseudo !== null && (
@@ -150,9 +150,9 @@ export function ProfileScreen() {
             accessibilityRole="button"
             style={({ pressed }) => [styles.link, pressed && styles.pressed]}
           >
-            <Icon name="plume" size={20} color={colors.text} />
+            <Icon name="plume" size={20} color={colors.pageInk} />
             <Text style={styles.linkText}>Changer de pseudo</Text>
-            <Icon name="chev" size={16} color={colors.textMuted} />
+            <Icon name="chev" size={16} color={colors.pageInkMuted} />
           </Pressable>
         )}
         <Pressable
@@ -160,9 +160,9 @@ export function ProfileScreen() {
           accessibilityRole="button"
           style={({ pressed }) => [styles.link, pressed && styles.pressed]}
         >
-          <Icon name="send" size={20} color={colors.text} />
+          <Icon name="send" size={20} color={colors.pageInk} />
           <Text style={styles.linkText}>Écrire à l'équipe</Text>
-          <Icon name="chev" size={16} color={colors.textMuted} />
+          <Icon name="chev" size={16} color={colors.pageInkMuted} />
         </Pressable>
       </Panel>
 
@@ -239,7 +239,7 @@ function PinnedCards({
                 accessibilityLabel={`${PIN_TEXTS.remove} ${word}`}
                 hitSlop={6}
               >
-                <Icon name="close" size={14} color={colors.text} />
+                <Icon name="close" size={14} color={colors.pageInk} />
               </Pressable>
               <View style={styles.tools}>
                 <Pressable
@@ -249,7 +249,7 @@ function PinnedCards({
                   accessibilityRole="button"
                   accessibilityLabel={`${PIN_TEXTS.earlier} ${word}`}
                 >
-                  <Icon name="back" size={16} color={colors.text} />
+                  <Icon name="back" size={16} color={colors.pageInk} />
                 </Pressable>
                 <Pressable
                   style={styles.toolText}
@@ -266,7 +266,7 @@ function PinnedCards({
                   accessibilityRole="button"
                   accessibilityLabel={`${PIN_TEXTS.later} ${word}`}
                 >
-                  <Icon name="chev" size={16} color={colors.text} />
+                  <Icon name="chev" size={16} color={colors.pageInk} />
                 </Pressable>
               </View>
             </View>
@@ -280,7 +280,7 @@ function PinnedCards({
             onPress={() => setPicking({ at: null })}
             accessibilityRole="button"
           >
-            <Icon name="plus" size={24} color={colors.textMuted} />
+            <Icon name="plus" size={24} color={colors.pageInkMuted} />
             <Text style={styles.emptyText}>{PIN_TEXTS.emptySlot}</Text>
           </Pressable>
         ))}
@@ -302,20 +302,25 @@ function PinnedCards({
 }
 
 const styles = StyleSheet.create({
-  actions: { flexDirection: "row", gap: 10 },
+  actions: { flexDirection: "row", gap: space.s5 },
   grow: { flex: 1 },
-  note: { fontFamily: fonts.text.regular, fontSize: 17, lineHeight: 24, color: colors.text },
+  note: {
+    fontFamily: fonts.text.regular,
+    fontSize: fontSizes.lead,
+    lineHeight: 24,
+    color: colors.pageInk,
+  },
   panelHead: { flexDirection: "row", alignItems: "baseline", justifyContent: "space-between" },
-  panelTitle: { fontFamily: fonts.display, fontSize: 22, color: colors.text },
-  meta: { fontFamily: fonts.ui.semibold, fontSize: 13, color: colors.textMuted },
+  panelTitle: { fontFamily: fonts.display, fontSize: fontSizes.title, color: colors.pageInk },
+  meta: { fontFamily: fonts.ui.semibold, fontSize: fontSizes.small, color: colors.pageInkMuted },
   pinsScroll: { marginHorizontal: -18 },
-  pins: { gap: 14, paddingHorizontal: 18, paddingTop: 8 },
-  pin: { width: PIN_WIDTH, gap: 8 },
+  pins: { gap: space.s7, paddingHorizontal: space.s9, paddingTop: space.s4 },
+  pin: { width: PIN_WIDTH, gap: space.s4 },
   placeholder: {
     width: PIN_WIDTH,
     height: PIN_WIDTH * 1.4,
-    borderRadius: 10,
-    backgroundColor: colors.backgroundRaised,
+    borderRadius: radii.md,
+    backgroundColor: colors.pageRaised,
   },
   remove: {
     position: "absolute",
@@ -326,7 +331,7 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     borderWidth: 2,
     borderColor: colors.sheet,
-    backgroundColor: colors.backgroundRaised,
+    backgroundColor: colors.pageRaised,
     alignItems: "center",
     justifyContent: "center",
   },
@@ -335,33 +340,38 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: colors.backgroundRaised,
+    backgroundColor: colors.pageRaised,
     alignItems: "center",
     justifyContent: "center",
   },
   toolOff: { opacity: 0.35 },
-  toolText: { paddingHorizontal: 6, paddingVertical: 6 },
-  toolLabel: { fontFamily: fonts.ui.extrabold, fontSize: 13, color: colors.text },
+  toolText: { paddingHorizontal: space.s3, paddingVertical: space.s3 },
+  toolLabel: { fontFamily: fonts.ui.extrabold, fontSize: fontSizes.small, color: colors.pageInk },
   emptySlot: {
     width: PIN_WIDTH,
     height: PIN_WIDTH * 1.4,
-    borderRadius: 12,
+    borderRadius: radii.lg,
     borderWidth: 2,
     borderStyle: "dashed",
-    borderColor: colors.outline,
+    borderColor: colors.rule,
     alignItems: "center",
     justifyContent: "center",
-    gap: 6,
-    padding: 8,
+    gap: space.s3,
+    padding: space.s4,
   },
   emptyText: {
     fontFamily: fonts.ui.bold,
-    fontSize: 13,
-    color: colors.textMuted,
+    fontSize: fontSizes.small,
+    color: colors.pageInkMuted,
     textAlign: "center",
   },
-  links: { gap: 0, paddingVertical: 6 },
-  link: { flexDirection: "row", alignItems: "center", gap: 14, minHeight: 52 },
-  linkText: { flex: 1, fontFamily: fonts.ui.bold, fontSize: 16, color: colors.text },
+  links: { gap: 0, paddingVertical: space.s3 },
+  link: { flexDirection: "row", alignItems: "center", gap: space.s7, minHeight: 52 },
+  linkText: {
+    flex: 1,
+    fontFamily: fonts.ui.bold,
+    fontSize: fontSizes.bodyLarge,
+    color: colors.pageInk,
+  },
   pressed: { opacity: 0.6 },
 });

@@ -1,20 +1,20 @@
 .form {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: var(--lx-s5);
 }
 
 .label {
-  font-size: 14px;
+  font-size: var(--lx-size-label);
   font-weight: 700;
 }
 
 .hint,
 .problem {
   min-height: 1.4em;
-  margin: 0 0 6px;
-  font-size: 13px;
-  color: var(--lx-color-text-muted);
+  margin: 0 0 var(--lx-s3);
+  font-size: var(--lx-size-small);
+  color: var(--lx-color-page-ink-muted);
 }
 
 .problem {

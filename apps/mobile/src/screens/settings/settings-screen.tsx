@@ -26,7 +26,7 @@ import { account, profile } from "@/player/state";
 import { useProfileActions } from "@/profile/profile-actions";
 import { forgetLastEmail } from "@/screens/account/last-email";
 import { PseudoSheet } from "@/screens/profile/pseudo-sheet";
-import { colors, fonts } from "@/theme";
+import { colors, fontSizes, fonts, radii, space } from "@/theme";
 import { Avatar } from "@/ui/avatar";
 import { Button } from "@/ui/button";
 import { Icon } from "@/ui/icon";
@@ -283,7 +283,7 @@ function Toggle({
         onValueChange={onChange}
         accessibilityLabel={label}
         trackColor={{ false: colors.track, true: colors.success }}
-        thumbColor={colors.text}
+        thumbColor={colors.pageInk}
       />
     </View>
   );
@@ -310,7 +310,7 @@ function Row({
         <Text style={[styles.label, danger && styles.danger]}>{label}</Text>
         {detail !== null && <Text style={styles.detail}>{detail}</Text>}
       </View>
-      <Icon name="chev" size={16} color={danger ? colors.danger : colors.textMuted} />
+      <Icon name="chev" size={16} color={danger ? colors.danger : colors.pageInkMuted} />
     </Pressable>
   );
 }
@@ -452,35 +452,40 @@ function DeleteAccountSheet({
 }
 
 const styles = StyleSheet.create({
-  group: { gap: 8 },
+  group: { gap: space.s4 },
   kicker: {
     fontFamily: fonts.ui.extrabold,
-    fontSize: 12,
+    fontSize: fontSizes.caption,
     letterSpacing: 2,
-    color: colors.textMuted,
+    color: colors.pageInkMuted,
   },
-  rows: { borderRadius: 18, backgroundColor: colors.panel, paddingHorizontal: 16 },
+  rows: { borderRadius: radii.x3, backgroundColor: colors.panel, paddingHorizontal: space.s8 },
   row: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 12,
+    gap: space.s6,
     minHeight: 58,
-    paddingVertical: 10,
+    paddingVertical: space.s5,
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: colors.outline,
+    borderBottomColor: colors.rule,
   },
   pressed: { opacity: 0.6 },
-  rowText: { flex: 1, gap: 2 },
-  label: { fontFamily: fonts.ui.bold, fontSize: 15, color: colors.text },
-  detail: { fontFamily: fonts.ui.medium, fontSize: 13, color: colors.textMuted },
+  rowText: { flex: 1, gap: space.s1 },
+  label: { fontFamily: fonts.ui.bold, fontSize: fontSizes.body, color: colors.pageInk },
+  detail: { fontFamily: fonts.ui.medium, fontSize: fontSizes.small, color: colors.pageInkMuted },
   danger: { color: colors.danger },
-  blocked: { flexDirection: "row", alignItems: "center", gap: 12 },
-  warning: { fontFamily: fonts.text.regular, fontSize: 18, lineHeight: 25, color: colors.text },
+  blocked: { flexDirection: "row", alignItems: "center", gap: space.s6 },
+  warning: {
+    fontFamily: fonts.text.regular,
+    fontSize: fontSizes.subtitle,
+    lineHeight: 25,
+    color: colors.pageInk,
+  },
   footnote: {
     fontFamily: fonts.ui.medium,
-    fontSize: 13,
+    fontSize: fontSizes.small,
     lineHeight: 20,
-    color: colors.textMuted,
+    color: colors.pageInkMuted,
     textAlign: "center",
   },
   link: { textDecorationLine: "underline" },

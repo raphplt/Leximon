@@ -1,6 +1,6 @@
-import { colors } from "@leximon/tokens";
+import { alpha, colors, fontSizes, radii, space } from "@leximon/tokens";
 
-export { colors };
+export { alpha, colors, fontSizes, radii, space };
 
 /**
  * Font families embedded at build time (expo-font plugin): one static instance per weight, named
@@ -23,6 +23,3 @@ export const fonts = {
     italic: "Newsreader-Italic",
   },
 } as const;
-
-/** The bar under the tabs, darker than the background. */
-export const TAB_BAR_COLOR = "#1C2033";

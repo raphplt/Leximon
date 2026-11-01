@@ -5,7 +5,7 @@ import { useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { catalogInHand } from "@/cards/catalog";
 import { Emblem } from "@/clan/emblem";
-import { colors, fonts } from "@/theme";
+import { colors, fontSizes, fonts, radii, space } from "@/theme";
 import { Button } from "@/ui/button";
 import { Chip } from "@/ui/chip";
 import { FormError } from "@/ui/page";
@@ -130,23 +130,23 @@ export function ClanForm({
 }
 
 const styles = StyleSheet.create({
-  form: { gap: 14 },
-  preview: { flexDirection: "row", alignItems: "center", gap: 16 },
-  previewText: { flex: 1, gap: 2 },
-  previewName: { fontFamily: fonts.display, fontSize: 22, color: colors.text },
-  small: { fontFamily: fonts.ui.medium, fontSize: 14, color: colors.textMuted },
-  label: { fontFamily: fonts.ui.bold, fontSize: 14, color: colors.textMuted },
-  chips: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
-  group: { gap: 8 },
-  engravings: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+  form: { gap: space.s7 },
+  preview: { flexDirection: "row", alignItems: "center", gap: space.s8 },
+  previewText: { flex: 1, gap: space.s1 },
+  previewName: { fontFamily: fonts.display, fontSize: fontSizes.title, color: colors.pageInk },
+  small: { fontFamily: fonts.ui.medium, fontSize: fontSizes.label, color: colors.pageInkMuted },
+  label: { fontFamily: fonts.ui.bold, fontSize: fontSizes.label, color: colors.pageInkMuted },
+  chips: { flexDirection: "row", flexWrap: "wrap", gap: space.s4 },
+  group: { gap: space.s4 },
+  engravings: { flexDirection: "row", flexWrap: "wrap", gap: space.s4 },
   engraving: {
-    padding: 6,
-    borderRadius: 12,
+    padding: space.s3,
+    borderRadius: radii.lg,
     borderWidth: 2,
     borderColor: "transparent",
   },
-  picked: { borderColor: colors.accent },
-  swatches: { flexDirection: "row", flexWrap: "wrap", gap: 10 },
-  swatch: { width: 34, height: 34, borderRadius: 17, borderWidth: 2, borderColor: colors.outline },
-  swatchPicked: { borderWidth: 3, borderColor: colors.accent },
+  picked: { borderColor: colors.gilt },
+  swatches: { flexDirection: "row", flexWrap: "wrap", gap: space.s5 },
+  swatch: { width: 34, height: 34, borderRadius: 17, borderWidth: 2, borderColor: colors.rule },
+  swatchPicked: { borderWidth: 3, borderColor: colors.gilt },
 });

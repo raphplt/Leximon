@@ -31,7 +31,7 @@ import { api } from "@/api/client";
 import { refusalText } from "@/clan/act";
 import { useShared } from "@/player/shared";
 import { sanctions } from "@/player/state";
-import { colors, fonts } from "@/theme";
+import { colors, fontSizes, fonts, radii, space } from "@/theme";
 import { Avatar } from "@/ui/avatar";
 import { Button } from "@/ui/button";
 import { Icon } from "@/ui/icon";
@@ -272,7 +272,7 @@ export function ClanChat({
           messages.map((message) =>
             message.kind === "event" ? (
               <View key={message.id} style={styles.event}>
-                <Icon name="star" size={14} color={colors.accent} />
+                <Icon name="star" size={14} color={colors.rubric} />
                 <Text style={styles.eventText}>{eventText(message.event, wordOf)}</Text>
               </View>
             ) : (
@@ -317,9 +317,9 @@ export function ClanChat({
             style={styles.field}
             maxLength={500}
             placeholder={MESSAGE_PLACEHOLDER}
-            placeholderTextColor={colors.textFaint}
-            selectionColor={colors.accent}
-            cursorColor={colors.accent}
+            placeholderTextColor={colors.pageInkFaint}
+            selectionColor={colors.rubric}
+            cursorColor={colors.rubric}
             accessibilityLabel="Message au clan"
             value={draft}
             editable={!muted}
@@ -357,7 +357,7 @@ export function ClanChat({
             accessibilityRole="button"
             accessibilityLabel="Envoyer"
           >
-            <Icon name="send" size={20} color={colors.accentInk} />
+            <Icon name="send" size={20} color={colors.actionInk} />
           </Pressable>
         </View>
       </View>
@@ -434,7 +434,7 @@ function MessageRow({
           accessibilityRole="button"
           accessibilityLabel={`Actions sur le message de ${playerName(message.author)}`}
         >
-          <Icon name="dots" size={16} color={colors.textFaint} />
+          <Icon name="dots" size={16} color={colors.pageInkFaint} />
         </Pressable>
       )}
     </Pressable>
@@ -488,100 +488,100 @@ function useMentions(clanId: string, onInsert: (text: string, caret: number) => 
 const styles = StyleSheet.create({
   chat: { flex: 1 },
   thread: { flex: 1 },
-  threadContent: { gap: 12, paddingHorizontal: 16, paddingVertical: 12 },
-  older: { alignSelf: "center", paddingVertical: 6 },
+  threadContent: { gap: space.s6, paddingHorizontal: space.s8, paddingVertical: space.s6 },
+  older: { alignSelf: "center", paddingVertical: space.s3 },
   olderText: {
     fontFamily: fonts.ui.bold,
-    fontSize: 14,
-    color: colors.accent,
+    fontSize: fontSizes.label,
+    color: colors.rubric,
     textDecorationLine: "underline",
   },
-  faint: { fontFamily: fonts.ui.medium, fontSize: 15, color: colors.textFaint },
+  faint: { fontFamily: fonts.ui.medium, fontSize: fontSizes.body, color: colors.pageInkFaint },
   empty: {
     fontFamily: fonts.text.italic,
-    fontSize: 18,
+    fontSize: fontSizes.subtitle,
     lineHeight: 25,
-    color: colors.textMuted,
+    color: colors.pageInkMuted,
     textAlign: "center",
-    paddingVertical: 24,
+    paddingVertical: space.s12,
   },
   event: {
     flexDirection: "row",
     alignItems: "flex-start",
     justifyContent: "center",
-    gap: 6,
-    paddingHorizontal: 12,
+    gap: space.s3,
+    paddingHorizontal: space.s6,
   },
   eventText: {
     flexShrink: 1,
     fontFamily: fonts.ui.semibold,
-    fontSize: 13,
+    fontSize: fontSizes.small,
     lineHeight: 19,
-    color: colors.textMuted,
+    color: colors.pageInkMuted,
     textAlign: "center",
   },
-  row: { flexDirection: "row", alignItems: "flex-end", gap: 8 },
+  row: { flexDirection: "row", alignItems: "flex-end", gap: space.s4 },
   rowMine: { justifyContent: "flex-end" },
   bubbleWrap: { flexShrink: 1, gap: 3, maxWidth: "80%" },
   bubbleWrapMine: { alignItems: "flex-end" },
-  who: { fontFamily: fonts.ui.semibold, fontSize: 12, color: colors.textFaint },
+  who: { fontFamily: fonts.ui.semibold, fontSize: fontSizes.caption, color: colors.pageInkFaint },
   bubble: {
     overflow: "hidden",
-    paddingHorizontal: 14,
+    paddingHorizontal: space.s7,
     paddingVertical: 9,
-    borderRadius: 18,
-    borderBottomLeftRadius: 6,
-    backgroundColor: colors.backgroundRaised,
-    color: colors.text,
+    borderRadius: radii.x3,
+    borderBottomLeftRadius: radii.xs,
+    backgroundColor: colors.pageRaised,
+    color: colors.pageInk,
     fontFamily: fonts.ui.medium,
-    fontSize: 16,
+    fontSize: fontSizes.bodyLarge,
     lineHeight: 22,
   },
   bubbleMine: {
-    borderBottomLeftRadius: 18,
-    borderBottomRightRadius: 6,
-    backgroundColor: "#4A5490",
+    borderBottomLeftRadius: radii.x3,
+    borderBottomRightRadius: radii.xs,
+    backgroundColor: colors.mention,
   },
   removed: {
     fontFamily: fonts.text.italic,
-    fontSize: 15,
-    color: colors.textFaint,
+    fontSize: fontSizes.body,
+    color: colors.pageInkFaint,
   },
-  mention: { fontFamily: fonts.ui.extrabold, color: "#9FB4FF" },
-  mentionMe: { fontFamily: fonts.ui.extrabold, color: colors.accent },
-  dots: { paddingBottom: 8 },
+  mention: { fontFamily: fonts.ui.extrabold, color: colors.mentionInk },
+  mentionMe: { fontFamily: fonts.ui.extrabold, color: colors.rubric },
+  dots: { paddingBottom: space.s4 },
   compose: {
-    gap: 8,
-    paddingHorizontal: 12,
-    paddingTop: 8,
-    paddingBottom: 10,
+    gap: space.s4,
+    paddingHorizontal: space.s6,
+    paddingTop: space.s4,
+    paddingBottom: space.s5,
     borderTopWidth: 1,
     borderTopColor: colors.track,
-    backgroundColor: colors.background,
+    backgroundColor: colors.page,
   },
-  composeError: { fontFamily: fonts.ui.bold, fontSize: 14, color: colors.danger },
-  mentions: { borderRadius: 14, backgroundColor: colors.sheet, overflow: "hidden" },
+  composeError: { fontFamily: fonts.ui.bold, fontSize: fontSizes.label, color: colors.danger },
+  mentions: { borderRadius: radii.xl, backgroundColor: colors.sheet, overflow: "hidden" },
   mentionOption: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 10,
+    gap: space.s5,
     minHeight: 44,
-    paddingHorizontal: 12,
+    paddingHorizontal: space.s6,
   },
-  mentionName: { fontFamily: fonts.ui.bold, fontSize: 15, color: colors.text },
-  composeRow: { flexDirection: "row", alignItems: "flex-end", gap: 8 },
+  mentionName: { fontFamily: fonts.ui.bold, fontSize: fontSizes.body, color: colors.pageInk },
+  composeRow: { flexDirection: "row", alignItems: "flex-end", gap: space.s4 },
   field: {
     flex: 1,
     minHeight: 46,
     maxHeight: 120,
-    paddingHorizontal: 16,
-    paddingTop: 12,
-    paddingBottom: 12,
+    paddingHorizontal: space.s8,
+    paddingTop: space.s6,
+    paddingBottom: space.s6,
     borderRadius: 23,
     backgroundColor: colors.well,
-    color: colors.text,
+    color: colors.pageInk,
     fontFamily: fonts.ui.medium,
-    fontSize: 16,
+    fontSize: fontSizes.bodyLarge,
   },
   send: {
     width: 46,
@@ -589,7 +589,7 @@ const styles = StyleSheet.create({
     borderRadius: 23,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: colors.accent,
+    backgroundColor: colors.action,
   },
   sendOff: { opacity: 0.4 },
   sendPressed: { opacity: 0.8 },

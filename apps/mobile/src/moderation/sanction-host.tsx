@@ -13,7 +13,7 @@ import {
 import { api } from "@/api/client";
 import { useNow, useShared } from "@/player/shared";
 import { sanctions } from "@/player/state";
-import { colors, fonts } from "@/theme";
+import { alpha, colors, fontSizes, fonts, radii, space } from "@/theme";
 import { Button } from "@/ui/button";
 import { KeyboardLift } from "@/ui/keyboard-lift";
 import { ToastHost, toast } from "@/ui/toast";
@@ -116,7 +116,7 @@ function SanctionCard({ sanction, now }: { readonly sanction: Sanction; readonly
               multiline
               numberOfLines={4}
               textAlignVertical="top"
-              selectionColor={colors.accent}
+              selectionColor={colors.rubric}
               accessibilityLabel={CONTEST_HINT}
               onChangeText={setText}
             />
@@ -134,30 +134,59 @@ function SanctionCard({ sanction, now }: { readonly sanction: Sanction; readonly
 }
 
 const styles = StyleSheet.create({
-  backdrop: { flex: 1, backgroundColor: "rgba(12, 14, 26, 0.82)" },
+  backdrop: { flex: 1, backgroundColor: alpha(colors.scrim, 0.82) },
   centered: {
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
-    paddingVertical: 48,
+    paddingVertical: space.s24,
   },
   card: { maxHeight: "100%", borderRadius: 24, backgroundColor: colors.sheet },
-  inner: { gap: 14, padding: 22 },
-  title: { fontFamily: fonts.display, fontSize: 24, lineHeight: 29, color: colors.text },
-  sanction: { gap: 8, padding: 14, borderRadius: 16, backgroundColor: colors.panel },
-  sanctionTitle: { fontFamily: fonts.ui.extrabold, fontSize: 16, color: colors.danger },
-  reason: { fontFamily: fonts.ui.semibold, fontSize: 15, lineHeight: 21, color: colors.text },
-  content: { fontFamily: fonts.text.italic, fontSize: 16, lineHeight: 22, color: colors.textMuted },
-  detail: { fontFamily: fonts.ui.medium, fontSize: 13, lineHeight: 18, color: colors.textMuted },
+  inner: { gap: space.s7, padding: 22 },
+  title: {
+    fontFamily: fonts.display,
+    fontSize: fontSizes.titleLarge,
+    lineHeight: 29,
+    color: colors.pageInk,
+  },
+  sanction: {
+    gap: space.s4,
+    padding: space.s7,
+    borderRadius: radii.xxl,
+    backgroundColor: colors.panel,
+  },
+  sanctionTitle: {
+    fontFamily: fonts.ui.extrabold,
+    fontSize: fontSizes.bodyLarge,
+    color: colors.danger,
+  },
+  reason: {
+    fontFamily: fonts.ui.semibold,
+    fontSize: fontSizes.body,
+    lineHeight: 21,
+    color: colors.pageInk,
+  },
+  content: {
+    fontFamily: fonts.text.italic,
+    fontSize: fontSizes.bodyLarge,
+    lineHeight: 22,
+    color: colors.pageInkMuted,
+  },
+  detail: {
+    fontFamily: fonts.ui.medium,
+    fontSize: fontSizes.small,
+    lineHeight: 18,
+    color: colors.pageInkMuted,
+  },
   field: {
     minHeight: 96,
-    padding: 12,
-    borderRadius: 14,
+    padding: space.s6,
+    borderRadius: radii.xl,
     borderWidth: 2,
     borderColor: colors.track,
     backgroundColor: colors.well,
-    color: colors.text,
+    color: colors.pageInk,
     fontFamily: fonts.ui.medium,
-    fontSize: 15,
+    fontSize: fontSizes.body,
   },
 });

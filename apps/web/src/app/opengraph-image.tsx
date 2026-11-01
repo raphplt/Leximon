@@ -1,4 +1,4 @@
-import { colors, cssFill, type Fill, fonts, rarityStyles } from "@leximon/tokens";
+import { alpha, colors, cssFill, type Fill, fonts, rarityStyles } from "@leximon/tokens";
 import { frequencyLine } from "@leximon/view-model";
 import { ImageResponse } from "next/og";
 import { googleFont } from "@/lib/og-fonts";
@@ -42,9 +42,9 @@ export default async function Image() {
         height: "100%",
         display: "flex",
         alignItems: "center",
-        backgroundColor: colors.background,
-        backgroundImage: `radial-gradient(ellipse at 70% 40%, ${colors.backgroundRaised} 0%, ${colors.background} 70%)`,
-        color: colors.text,
+        backgroundColor: colors.page,
+        backgroundImage: `radial-gradient(ellipse at 70% 40%, ${colors.pageRaised} 0%, ${colors.page} 70%)`,
+        color: colors.pageInk,
       }}
     >
       <div
@@ -59,7 +59,7 @@ export default async function Image() {
       >
         <div style={{ fontFamily: "Display", fontSize: 48 }}>Leximon</div>
         <div style={{ fontFamily: "Display", fontSize: 58, lineHeight: 1.04 }}>{TAGLINE}</div>
-        <div style={{ fontFamily: "Ui", fontSize: 24, color: colors.textMuted }}>{DOMAIN}</div>
+        <div style={{ fontFamily: "Ui", fontSize: 24, color: colors.pageInkMuted }}>{DOMAIN}</div>
       </div>
       <div
         style={{
@@ -72,7 +72,7 @@ export default async function Image() {
           borderRadius: 8,
           backgroundColor: style.paper,
           color: style.ink,
-          boxShadow: "0 28px 60px rgba(0, 0, 0, 0.45)",
+          boxShadow: `0 28px 60px ${alpha(colors.shade, 0.45)}`,
           transform: "rotate(-2deg)",
         }}
       >

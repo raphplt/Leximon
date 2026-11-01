@@ -1,6 +1,6 @@
 import { type ChangelogEntry, changelogDate } from "@leximon/view-model";
 import { StyleSheet, Text, View } from "react-native";
-import { colors, fonts } from "@/theme";
+import { colors, fontSizes, fonts, space } from "@/theme";
 
 /** Entries of the changelog: a title, the day, what changed. */
 export function NewsEntries({ entries }: { readonly entries: readonly ChangelogEntry[] }) {
@@ -26,10 +26,31 @@ export function NewsEntries({ entries }: { readonly entries: readonly ChangelogE
 
 const styles = StyleSheet.create({
   list: { gap: 22 },
-  entry: { gap: 8 },
-  title: { fontFamily: fonts.display, fontSize: 20, lineHeight: 25, color: colors.text },
-  date: { fontFamily: fonts.ui.semibold, fontSize: 13, color: colors.textMuted, marginBottom: 2 },
-  item: { flexDirection: "row", gap: 8 },
-  bullet: { fontFamily: fonts.ui.bold, fontSize: 15, lineHeight: 21, color: colors.accent },
-  text: { flex: 1, fontFamily: fonts.ui.medium, fontSize: 15, lineHeight: 21, color: colors.text },
+  entry: { gap: space.s4 },
+  title: {
+    fontFamily: fonts.display,
+    fontSize: fontSizes.titleSmall,
+    lineHeight: 25,
+    color: colors.pageInk,
+  },
+  date: {
+    fontFamily: fonts.ui.semibold,
+    fontSize: fontSizes.small,
+    color: colors.pageInkMuted,
+    marginBottom: space.s1,
+  },
+  item: { flexDirection: "row", gap: space.s4 },
+  bullet: {
+    fontFamily: fonts.ui.bold,
+    fontSize: fontSizes.body,
+    lineHeight: 21,
+    color: colors.rubric,
+  },
+  text: {
+    flex: 1,
+    fontFamily: fonts.ui.medium,
+    fontSize: fontSizes.body,
+    lineHeight: 21,
+    color: colors.pageInk,
+  },
 });

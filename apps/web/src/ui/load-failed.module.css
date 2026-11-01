@@ -2,13 +2,13 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 16px;
-  padding: 64px 16px;
+  gap: var(--lx-s8);
+  padding: var(--lx-s32) var(--lx-s8);
   text-align: center;
 }
 
 .text {
   margin: 0;
-  color: var(--lx-color-text-muted);
-  font-size: 16px;
+  color: var(--lx-color-page-ink-muted);
+  font-size: var(--lx-size-body-large);
 }

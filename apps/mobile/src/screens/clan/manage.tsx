@@ -19,7 +19,7 @@ import { act, refusalText } from "@/clan/act";
 import { friendAction } from "@/friends/friend-action";
 import { useShared } from "@/player/shared";
 import { friends, myClan, profile } from "@/player/state";
-import { colors, fonts } from "@/theme";
+import { colors, fontSizes, fonts, radii, space } from "@/theme";
 import { Avatar } from "@/ui/avatar";
 import { Button } from "@/ui/button";
 import { Chip } from "@/ui/chip";
@@ -426,32 +426,42 @@ export function ClanSettings({
 }
 
 const styles = StyleSheet.create({
-  head: { flexDirection: "row", alignItems: "center", gap: 16 },
-  headText: { flex: 1, gap: 4 },
-  small: { fontFamily: fonts.ui.medium, fontSize: 14, lineHeight: 20, color: colors.textMuted },
-  role: { fontFamily: fonts.ui.extrabold, fontSize: 15, color: colors.accent },
-  name: { fontFamily: fonts.ui.extrabold, fontSize: 16, color: colors.text },
-  group: { gap: 10 },
+  head: { flexDirection: "row", alignItems: "center", gap: space.s8 },
+  headText: { flex: 1, gap: space.s2 },
+  small: {
+    fontFamily: fonts.ui.medium,
+    fontSize: fontSizes.label,
+    lineHeight: 20,
+    color: colors.pageInkMuted,
+  },
+  role: { fontFamily: fonts.ui.extrabold, fontSize: fontSizes.body, color: colors.rubric },
+  name: { fontFamily: fonts.ui.extrabold, fontSize: fontSizes.bodyLarge, color: colors.pageInk },
+  group: { gap: space.s5 },
   kicker: {
     fontFamily: fonts.ui.extrabold,
-    fontSize: 12,
+    fontSize: fontSizes.caption,
     letterSpacing: 2,
-    color: colors.textMuted,
+    color: colors.pageInkMuted,
   },
-  chips: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+  chips: { flexDirection: "row", flexWrap: "wrap", gap: space.s4 },
   empty: {
     fontFamily: fonts.text.italic,
-    fontSize: 18,
+    fontSize: fontSizes.subtitle,
     lineHeight: 25,
-    color: colors.textMuted,
+    color: colors.pageInkMuted,
     textAlign: "center",
   },
   request: {
-    gap: 8,
-    padding: 14,
-    borderRadius: 16,
+    gap: space.s4,
+    padding: space.s7,
+    borderRadius: radii.xxl,
     backgroundColor: colors.panel,
   },
-  requestHead: { flexDirection: "row", alignItems: "center", gap: 12 },
-  inviteCode: { fontFamily: fonts.display, fontSize: 28, letterSpacing: 2, color: colors.text },
+  requestHead: { flexDirection: "row", alignItems: "center", gap: space.s6 },
+  inviteCode: {
+    fontFamily: fonts.display,
+    fontSize: fontSizes.heading,
+    letterSpacing: 2,
+    color: colors.pageInk,
+  },
 });

@@ -3,6 +3,7 @@ import { type Catalog, cardOrPlaceholder, collectionName } from "@leximon/contra
 import { router } from "expo-router";
 import { Pressable, StyleSheet, View } from "react-native";
 import { Card } from "@/cards/card";
+import { space } from "@/theme";
 
 /** The card behind an id from the API; a placeholder if this catalogue does not know it. */
 export function catalogCard(catalog: Catalog, cardId: string): CatalogCard {
@@ -53,5 +54,5 @@ export function CardRow({
 }
 
 const styles = StyleSheet.create({
-  row: { flexDirection: "row", flexWrap: "wrap", justifyContent: "center", gap: 8 },
+  row: { flexDirection: "row", flexWrap: "wrap", justifyContent: "center", gap: space.s4 },
 });

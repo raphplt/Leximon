@@ -16,6 +16,7 @@ import { myClan, profile, progress as progressResource } from "@/player/state";
 import { ClanList } from "@/screens/clan/clan-list";
 import { ClanScreen } from "@/screens/clan/clan-screen";
 import { FriendsScreen } from "@/screens/friends/friends-screen";
+import { space } from "@/theme";
 import { Button } from "@/ui/button";
 import { Page, Paragraph } from "@/ui/page";
 import { Segmented } from "@/ui/segmented";
@@ -92,5 +93,5 @@ function JoinableClans({ mine }: { readonly mine: MyClanResponse }) {
 
 const styles = StyleSheet.create({
   tab: { flex: 1 },
-  nav: { paddingHorizontal: 16, paddingTop: 8 },
+  nav: { paddingHorizontal: space.s8, paddingTop: space.s4 },
 });

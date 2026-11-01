@@ -2,50 +2,50 @@
   box-sizing: border-box;
   max-width: 1180px;
   margin: 0 auto;
-  padding: 26px 32px 64px;
+  padding: 26px var(--lx-s16) var(--lx-s32);
 }
 
 .header {
   display: flex;
   align-items: center;
-  gap: 12px;
-  margin-bottom: 18px;
+  gap: var(--lx-s6);
+  margin-bottom: var(--lx-s9);
 }
 
 .title {
   margin: 0;
-  font-size: 44px;
+  font-size: var(--lx-size-display-large);
   line-height: 1;
 }
 
 .subtitle {
-  margin: 4px 0 0;
-  font-size: 14px;
-  color: var(--lx-color-text-muted);
+  margin: var(--lx-s2) 0 0;
+  font-size: var(--lx-size-label);
+  color: var(--lx-color-page-ink-muted);
 }
 
 .layout {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 360px;
-  gap: 24px;
+  gap: var(--lx-s12);
   align-items: start;
 }
 
 /* --- The page of contents: paper among the night panels, as a card is --- */
 
 .folio {
-  --paper: #fbf5e8;
-  --ink: #1e1b16;
-  --ink-muted: #625a4e;
+  --paper: var(--lx-color-paper);
+  --ink: var(--lx-color-paper-ink);
+  --ink-muted: var(--lx-color-paper-ink-muted);
   --rubric: #a8341c;
   --gilt: #8a5c0a;
 
   position: relative;
   padding: 26px 34px 30px;
-  border-radius: 10px;
+  border-radius: var(--lx-radius-md);
   background: var(--paper);
   color: var(--ink);
-  box-shadow: 0 18px 44px rgba(8, 10, 22, 0.4);
+  box-shadow: 0 18px 44px color-mix(in srgb, var(--lx-color-scrim) 40%, transparent);
 }
 
 /* The double rule of an old title page. */
@@ -53,11 +53,11 @@
   content: "";
   position: absolute;
   inset: 9px;
-  border: 1px solid rgba(30, 27, 22, 0.22);
+  border: 1px solid color-mix(in srgb, var(--lx-color-paper-ink) 22%, transparent);
   border-radius: 5px;
   box-shadow:
     inset 0 0 0 2px var(--paper),
-    inset 0 0 0 3px rgba(30, 27, 22, 0.12);
+    inset 0 0 0 3px color-mix(in srgb, var(--lx-color-paper-ink) 12%, transparent);
   pointer-events: none;
 }
 
@@ -71,9 +71,9 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
-  padding-bottom: 16px;
-  border-bottom: 1px solid rgba(30, 27, 22, 0.22);
+  gap: var(--lx-s6);
+  padding-bottom: var(--lx-s8);
+  border-bottom: 1px solid color-mix(in srgb, var(--lx-color-paper-ink) 22%, transparent);
 }
 
 .turn {
@@ -83,7 +83,7 @@
   flex: none;
   width: 40px;
   height: 40px;
-  border: 1px solid rgba(30, 27, 22, 0.25);
+  border: 1px solid color-mix(in srgb, var(--lx-color-paper-ink) 25%, transparent);
   border-radius: 50%;
   background: none;
   color: var(--ink);
@@ -91,7 +91,7 @@
 }
 
 .turn:hover:not(:disabled) {
-  background: rgba(30, 27, 22, 0.06);
+  background: color-mix(in srgb, var(--lx-color-paper-ink) 6%, transparent);
 }
 
 .turn:disabled {
@@ -107,7 +107,7 @@
 }
 
 .quarterRange {
-  font-size: 12px;
+  font-size: var(--lx-size-caption);
   font-weight: 800;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -115,15 +115,15 @@
 }
 
 .quarterTitle {
-  margin: 4px 0 0;
+  margin: var(--lx-s2) 0 0;
   color: var(--ink);
-  font-size: 32px;
+  font-size: var(--lx-size-heading-large);
   line-height: 1.05;
 }
 
 .lines {
   position: relative;
-  margin: 8px 0 0;
+  margin: var(--lx-s4) 0 0;
   padding: 0;
   list-style: none;
 }
@@ -132,12 +132,12 @@
   appearance: none;
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: var(--lx-s6);
   width: 100%;
   min-height: 58px;
-  padding: 7px 10px;
+  padding: 7px var(--lx-s5);
   border: 0;
-  border-radius: 8px;
+  border-radius: var(--lx-radius-sm);
   background: none;
   color: var(--ink-muted);
   font: inherit;
@@ -147,7 +147,7 @@
 
 .line:hover,
 .line[aria-pressed="true"] {
-  background: rgba(30, 27, 22, 0.06);
+  background: color-mix(in srgb, var(--lx-color-paper-ink) 6%, transparent);
 }
 
 .line:focus-visible {
@@ -179,7 +179,7 @@
 
 .lineTitle {
   font-family: var(--font-text), Georgia, serif;
-  font-size: 18px;
+  font-size: var(--lx-size-subtitle);
   line-height: 1.25;
 }
 
@@ -190,7 +190,7 @@
 }
 
 .lineOpens {
-  font-size: 13px;
+  font-size: var(--lx-size-small);
   font-weight: 700;
   line-height: 1.3;
   color: var(--rubric);
@@ -200,7 +200,7 @@
   width: 200px;
   max-width: 100%;
   margin-top: 5px;
-  background: rgba(30, 27, 22, 0.14);
+  background: color-mix(in srgb, var(--lx-color-paper-ink) 14%, transparent);
 }
 
 /* The dots of a table of contents, from the title to the number. */
@@ -208,17 +208,17 @@
   flex: 1 1 24px;
   min-width: 24px;
   height: 1px;
-  margin-top: 8px;
-  border-bottom: 2px dotted rgba(30, 27, 22, 0.28);
+  margin-top: var(--lx-s4);
+  border-bottom: 2px dotted color-mix(in srgb, var(--lx-color-paper-ink) 28%, transparent);
 }
 
 .toOpen {
   flex: none;
-  padding: 3px 10px;
+  padding: 3px var(--lx-s5);
   border-radius: var(--lx-radius-pill);
-  background: var(--lx-color-accent);
-  color: var(--lx-color-accent-ink);
-  font-size: 13px;
+  background: var(--lx-color-action);
+  color: var(--lx-color-action-ink);
+  font-size: var(--lx-size-small);
   font-weight: 800;
 }
 
@@ -226,7 +226,7 @@
   flex: none;
   min-width: 30px;
   color: inherit;
-  font-size: 20px;
+  font-size: var(--lx-size-title-small);
   font-variant-numeric: tabular-nums;
   text-align: right;
 }
@@ -238,18 +238,18 @@
 /* --- Quarters --- */
 
 .quarters {
-  padding: 18px 16px 12px;
+  padding: var(--lx-s9) var(--lx-s8) var(--lx-s6);
 }
 
 .quarters > h2 {
-  padding: 0 4px;
+  padding: 0 var(--lx-s2);
 }
 
 .quarterList {
   display: flex;
   flex-direction: column;
-  gap: 2px;
-  margin: 10px 0 0;
+  gap: var(--lx-s1);
+  margin: var(--lx-s5) 0 0;
   padding: 0;
   list-style: none;
 }
@@ -257,26 +257,26 @@
 .quarter {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: var(--lx-s6);
   width: 100%;
-  padding: 8px;
+  padding: var(--lx-s4);
   border: 0;
-  border-radius: 14px;
+  border-radius: var(--lx-radius-xl);
   background: none;
-  color: var(--lx-color-text);
+  color: var(--lx-color-page-ink);
   font: inherit;
-  font-size: 14px;
+  font-size: var(--lx-size-label);
   font-weight: 700;
   text-align: left;
   cursor: pointer;
 }
 
 .quarter:hover {
-  background: rgba(246, 240, 226, 0.05);
+  background: color-mix(in srgb, var(--lx-color-page-ink) 5%, transparent);
 }
 
 .quarter[aria-current="true"] {
-  background: var(--lx-color-background-raised);
+  background: var(--lx-color-page-raised);
 }
 
 .quarterDone,
@@ -288,23 +288,23 @@
   width: 28px;
   height: 28px;
   border-radius: 9px;
-  font-size: 12px;
+  font-size: var(--lx-size-caption);
   font-weight: 800;
 }
 
 .quarterDone {
-  background: var(--lx-color-accent);
-  color: var(--lx-color-accent-ink);
+  background: var(--lx-color-action);
+  color: var(--lx-color-action-ink);
 }
 
 .quarterHere {
   background: var(--lx-color-badge);
-  color: #ffffff;
+  color: var(--lx-color-ink-on-color);
 }
 
 .quarterAhead {
-  background: var(--lx-color-sunken);
-  color: var(--lx-color-text-faint);
+  background: var(--lx-color-binding);
+  color: var(--lx-color-page-ink-faint);
 }
 
 .quarterLabel {
@@ -313,8 +313,8 @@
 }
 
 .quarterLevels {
-  font-size: 13px;
-  color: var(--lx-color-text-faint);
+  font-size: var(--lx-size-small);
+  color: var(--lx-color-page-ink-faint);
   white-space: nowrap;
 }
 
@@ -323,7 +323,7 @@
 .side {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: var(--lx-s8);
 }
 
 .detail {
@@ -331,15 +331,15 @@
 }
 
 .detailTitle {
-  margin: 6px 0 14px;
-  font-size: 28px;
+  margin: var(--lx-s3) 0 var(--lx-s7);
+  font-size: var(--lx-size-heading);
   line-height: 1.05;
 }
 
 .items {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: var(--lx-s5);
   margin: 0;
   padding: 0;
   list-style: none;
@@ -348,7 +348,7 @@
 .item {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: var(--lx-s6);
 }
 
 .itemIcon {
@@ -357,9 +357,9 @@
   flex-shrink: 0;
   width: 44px;
   height: 44px;
-  border-radius: 14px;
-  background: var(--lx-color-background);
-  color: var(--lx-color-accent);
+  border-radius: var(--lx-radius-xl);
+  background: var(--lx-color-page);
+  color: var(--lx-color-rubric);
 }
 
 .itemTitle {
@@ -369,16 +369,16 @@
 
 .itemDetail {
   display: block;
-  font-size: 13px;
-  color: var(--lx-color-text-muted);
+  font-size: var(--lx-size-small);
+  color: var(--lx-color-page-ink-muted);
 }
 
 .opensBox {
-  margin-top: 14px;
-  padding: 12px 14px;
-  border: 1px solid rgba(217, 180, 134, 0.4);
-  border-radius: 14px;
-  background: rgba(217, 180, 134, 0.16);
+  margin-top: var(--lx-s7);
+  padding: var(--lx-s6) var(--lx-s7);
+  border: 1px solid color-mix(in srgb, var(--lx-color-kraft) 40%, transparent);
+  border-radius: var(--lx-radius-xl);
+  background: color-mix(in srgb, var(--lx-color-kraft) 16%, transparent);
 }
 
 .opensKicker {
@@ -386,18 +386,18 @@
 }
 
 .opensText {
-  margin: 2px 0 0;
+  margin: var(--lx-s1) 0 0;
   font-weight: 800;
 }
 
 .detailAction {
-  margin-top: 18px;
+  margin-top: var(--lx-s9);
 }
 
 .done {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--lx-s3);
   margin: 0;
   color: var(--lx-color-success);
   font-weight: 800;
@@ -405,20 +405,20 @@
 
 .left {
   margin: 0;
-  color: var(--lx-color-text-muted);
+  color: var(--lx-color-page-ink-muted);
   font-weight: 700;
 }
 
 .xpTable {
-  padding: 18px 20px;
+  padding: var(--lx-s9) var(--lx-s10);
 }
 
 .sources {
   display: grid;
   grid-template-columns: 1fr auto;
-  gap: 7px 12px;
-  margin: 10px 0 0;
-  font-size: 14px;
+  gap: 7px var(--lx-s6);
+  margin: var(--lx-s5) 0 0;
+  font-size: var(--lx-size-label);
 }
 
 .source {
@@ -426,7 +426,7 @@
 }
 
 .source dt {
-  color: var(--lx-color-text-muted);
+  color: var(--lx-color-page-ink-muted);
 }
 
 .source dd {
@@ -438,17 +438,17 @@
 
 @media (max-width: 759px) {
   .page {
-    padding: 8px 14px 28px;
+    padding: var(--lx-s4) var(--lx-s7) var(--lx-s14);
   }
 
   .title {
-    font-size: 32px;
+    font-size: var(--lx-size-heading-large);
   }
 
   .layout {
     display: flex;
     flex-direction: column;
-    gap: 14px;
+    gap: var(--lx-s7);
   }
 
   .side {
@@ -456,16 +456,16 @@
   }
 
   .folio {
-    padding: 20px 14px 18px;
+    padding: var(--lx-s10) var(--lx-s7) var(--lx-s9);
   }
 
   .quarterTitle {
-    font-size: 24px;
+    font-size: var(--lx-size-title-large);
   }
 
   .line {
-    gap: 8px;
-    padding: 6px 4px;
+    gap: var(--lx-s4);
+    padding: var(--lx-s3) var(--lx-s2);
   }
 
   .lineMark {
@@ -473,11 +473,11 @@
   }
 
   .lineTitle {
-    font-size: 16px;
+    font-size: var(--lx-size-body-large);
   }
 
   .lineLevel {
     min-width: 24px;
-    font-size: 18px;
+    font-size: var(--lx-size-subtitle);
   }
 }

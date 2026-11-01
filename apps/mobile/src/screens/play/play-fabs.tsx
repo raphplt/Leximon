@@ -27,7 +27,7 @@ import { dailyChallenge } from "@/player/collection";
 import { useNow, useShared } from "@/player/shared";
 import { myClan } from "@/player/state";
 import { usePlayerView } from "@/player/use-player-view";
-import { colors, fonts } from "@/theme";
+import { alpha, colors, fontSizes, fonts, space } from "@/theme";
 import { Badge } from "@/ui/badge";
 import { Icon } from "@/ui/icon";
 import { toast } from "@/ui/toast";
@@ -47,7 +47,7 @@ const ICONS: Readonly<Record<FabId, IconName>> = {
 const HIDDEN: ReadonlySet<FabId> = new Set(["mail", "settings"]);
 
 const CIRCLE = 50;
-const DAILY_RING = "#3BD3A5";
+const DAILY_RING = colors.successBright;
 
 /**
  * The round buttons on both sides of the sachet; the clan's carries the weekly goal in its ring,
@@ -94,7 +94,7 @@ export function PlayFabs() {
 
   const ringOf = (id: FabId) => {
     if (id === "daily") return <Ring ratio={dailyRatio} color={DAILY_RING} />;
-    if (id === "clan" && goal !== null) return <Ring ratio={goal.ratio} color={colors.accent} />;
+    if (id === "clan" && goal !== null) return <Ring ratio={goal.ratio} color={colors.rubric} />;
     return null;
   };
 
@@ -160,10 +160,10 @@ function Fab({
           <Icon
             name={icon}
             size={23}
-            color={fab.glow ? colors.accentInk : locked ? colors.textMuted : colors.text}
+            color={fab.glow ? colors.actionInk : locked ? colors.pageInkMuted : colors.pageInk}
           />
         )}
-        {fab.badge > 0 && !locked && <Badge count={fab.badge} ring={colors.background} />}
+        {fab.badge > 0 && !locked && <Badge count={fab.badge} ring={colors.page} />}
         {locked && <Text style={styles.lock}>{fab.lock}</Text>}
       </View>
       <Text style={[styles.label, locked && styles.labelLocked]} numberOfLines={1}>
@@ -224,7 +224,7 @@ function Pulse() {
 }
 
 const styles = StyleSheet.create({
-  column: { position: "absolute", top: 4, zIndex: 3, gap: 12 },
+  column: { position: "absolute", top: 4, zIndex: 3, gap: space.s6 },
   left: { left: 8 },
   right: { right: 8 },
   fab: { width: 62, alignItems: "center", gap: 5 },
@@ -234,15 +234,15 @@ const styles = StyleSheet.create({
     height: CIRCLE,
     borderRadius: CIRCLE / 2,
     borderWidth: 2,
-    borderColor: "rgba(246, 240, 226, 0.16)",
-    backgroundColor: colors.backgroundRaised,
+    borderColor: alpha(colors.pageInk, 0.16),
+    backgroundColor: colors.pageRaised,
     alignItems: "center",
     justifyContent: "center",
   },
-  gold: { borderColor: "#FFF0B8", backgroundColor: colors.accent },
+  gold: { borderColor: colors.giltPale, backgroundColor: colors.action },
   locked: {
     borderStyle: "dashed",
-    backgroundColor: "rgba(27, 31, 51, 0.45)",
+    backgroundColor: alpha(colors.well, 0.45),
   },
   ring: { position: "absolute", top: -4, left: -4 },
   pulse: {
@@ -252,7 +252,7 @@ const styles = StyleSheet.create({
     width: CIRCLE,
     height: CIRCLE,
     borderRadius: CIRCLE / 2,
-    backgroundColor: colors.accent,
+    backgroundColor: colors.action,
   },
   lock: {
     position: "absolute",
@@ -261,11 +261,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 5,
     paddingVertical: 1,
     borderRadius: 7,
-    backgroundColor: colors.sunken,
+    backgroundColor: colors.binding,
     fontFamily: fonts.ui.extrabold,
-    fontSize: 9,
-    color: colors.textMuted,
+    fontSize: fontSizes.nano,
+    color: colors.pageInkMuted,
   },
-  label: { fontFamily: fonts.ui.extrabold, fontSize: 10, color: colors.text },
-  labelLocked: { color: colors.textMuted },
+  label: { fontFamily: fonts.ui.extrabold, fontSize: fontSizes.nano, color: colors.pageInk },
+  labelLocked: { color: colors.pageInkMuted },
 });

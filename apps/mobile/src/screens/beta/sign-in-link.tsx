@@ -1,6 +1,6 @@
 import { router } from "expo-router";
 import { StyleSheet, Text, View } from "react-native";
-import { colors, fonts } from "@/theme";
+import { colors, fontSizes, fonts, space } from "@/theme";
 import { TextButton } from "@/ui/text-button";
 
 /** For a player who already has an account: the closed beta lets members in. */
@@ -14,6 +14,6 @@ export function SignInLink() {
 }
 
 const styles = StyleSheet.create({
-  row: { flexDirection: "row", alignItems: "center", gap: 8, marginTop: 16 },
-  text: { fontFamily: fonts.ui.semibold, fontSize: 15, color: colors.textMuted },
+  row: { flexDirection: "row", alignItems: "center", gap: space.s4, marginTop: space.s8 },
+  text: { fontFamily: fonts.ui.semibold, fontSize: fontSizes.body, color: colors.pageInkMuted },
 });

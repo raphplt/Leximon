@@ -42,7 +42,7 @@ import { useNow, useShared, useSharedFailed } from "@/player/shared";
 import { progress } from "@/player/state";
 import { askAlbumPractice } from "@/screens/challenges/pending-practice";
 import { TAB_BAR_RISE } from "@/shell/tab-bar";
-import { colors, fonts } from "@/theme";
+import { alpha, colors, fontSizes, fonts, radii, space } from "@/theme";
 import { Button } from "@/ui/button";
 import { Icon } from "@/ui/icon";
 import { RarityChip, RarityName } from "@/ui/rarity-icon";
@@ -207,12 +207,12 @@ export function AlbumScreen({ friendCode }: { readonly friendCode: string | null
       </View>
       <View style={styles.searchRow}>
         <View style={styles.search}>
-          <Icon name="search" size={18} color={colors.textMuted} />
+          <Icon name="search" size={18} color={colors.pageInkMuted} />
           <TextInput
             style={styles.searchInput}
             placeholder="Chercher un mot"
-            placeholderTextColor={colors.textFaint}
-            selectionColor={colors.accent}
+            placeholderTextColor={colors.pageInkFaint}
+            selectionColor={colors.rubric}
             value={state.search}
             onChangeText={(search) => setState((s) => ({ ...s, search }))}
             autoCorrect={false}
@@ -226,7 +226,7 @@ export function AlbumScreen({ friendCode }: { readonly friendCode: string | null
               accessibilityLabel="Effacer la recherche"
               hitSlop={8}
             >
-              <Icon name="close" size={18} color={colors.textMuted} />
+              <Icon name="close" size={18} color={colors.pageInkMuted} />
             </Pressable>
           )}
         </View>
@@ -293,7 +293,7 @@ export function AlbumScreen({ friendCode }: { readonly friendCode: string | null
               accessibilityRole="button"
               accessibilityLabel="Fermer la comparaison"
             >
-              <Icon name="close" size={18} color={colors.textMuted} />
+              <Icon name="close" size={18} color={colors.pageInkMuted} />
             </Pressable>
           </View>
           <ScrollView
@@ -489,7 +489,7 @@ function MissingTile({ item, width }: { readonly item: MissingItem; readonly wid
         <Text style={[styles.question, { fontSize: width * 0.32 }]}>?</Text>
       </View>
       <View style={styles.missingLabel}>
-        <RarityName rarity={item.rarity} color={colors.textFaint} />
+        <RarityName rarity={item.rarity} color={colors.pageInkFaint} />
       </View>
     </View>
   );
@@ -552,118 +552,137 @@ function FilterChip({
 }
 
 const styles = StyleSheet.create({
-  center: { flex: 1, alignItems: "center", justifyContent: "center", gap: 16, padding: 24 },
-  empty: { fontFamily: fonts.ui.semibold, fontSize: 16, color: colors.textMuted },
-  header: { gap: 12, paddingTop: 8, paddingBottom: 16 },
+  center: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    gap: space.s8,
+    padding: space.s12,
+  },
+  empty: {
+    fontFamily: fonts.ui.semibold,
+    fontSize: fontSizes.bodyLarge,
+    color: colors.pageInkMuted,
+  },
+  header: { gap: space.s6, paddingTop: space.s4, paddingBottom: space.s8 },
   titleRow: { flexDirection: "row", alignItems: "baseline", justifyContent: "space-between" },
-  title: { fontFamily: fonts.display, fontSize: 30, color: colors.text },
-  headline: { fontFamily: fonts.ui.semibold, fontSize: 14, color: colors.textMuted },
-  headlineStrong: { fontFamily: fonts.ui.extrabold, color: colors.text },
-  searchRow: { flexDirection: "row", alignItems: "center", gap: 8 },
+  title: { fontFamily: fonts.display, fontSize: fontSizes.heading, color: colors.pageInk },
+  headline: {
+    fontFamily: fonts.ui.semibold,
+    fontSize: fontSizes.label,
+    color: colors.pageInkMuted,
+  },
+  headlineStrong: { fontFamily: fonts.ui.extrabold, color: colors.pageInk },
+  searchRow: { flexDirection: "row", alignItems: "center", gap: space.s4 },
   search: {
     flex: 1,
     flexDirection: "row",
     alignItems: "center",
-    gap: 8,
+    gap: space.s4,
     minHeight: 44,
-    paddingHorizontal: 14,
-    borderRadius: 22,
+    paddingHorizontal: space.s7,
+    borderRadius: radii.x4,
     backgroundColor: colors.well,
   },
   searchInput: {
     flex: 1,
-    paddingVertical: 8,
-    color: colors.text,
+    paddingVertical: space.s4,
+    color: colors.pageInk,
     fontFamily: fonts.ui.semibold,
-    fontSize: 16,
+    fontSize: fontSizes.bodyLarge,
   },
   bleed: { marginHorizontal: -GUTTER, flexGrow: 0 },
-  row: { gap: 8, paddingHorizontal: GUTTER, alignItems: "center" },
-  compare: { gap: 8 },
+  row: { gap: space.s4, paddingHorizontal: GUTTER, alignItems: "center" },
+  compare: { gap: space.s4 },
   compareHead: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
-  compareTitle: { fontFamily: fonts.ui.extrabold, fontSize: 15, color: colors.accent },
+  compareTitle: { fontFamily: fonts.ui.extrabold, fontSize: fontSizes.body, color: colors.rubric },
   dimmed: { opacity: 0.4 },
   tab: {
     minWidth: 110,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    gap: 8,
-    borderRadius: 14,
-    backgroundColor: colors.backgroundRaised,
+    paddingHorizontal: space.s6,
+    paddingVertical: space.s5,
+    gap: space.s4,
+    borderRadius: radii.xl,
+    backgroundColor: colors.pageRaised,
     borderWidth: 2,
     borderColor: "transparent",
   },
-  tabOn: { borderColor: colors.accent },
+  tabOn: { borderColor: colors.gilt },
   tabHead: {
     flexDirection: "row",
     alignItems: "baseline",
     justifyContent: "space-between",
-    gap: 10,
+    gap: space.s5,
   },
-  tabName: { fontFamily: fonts.ui.extrabold, fontSize: 14, color: colors.text },
-  tabCount: { fontFamily: fonts.ui.bold, fontSize: 12, color: colors.textMuted },
+  tabName: { fontFamily: fonts.ui.extrabold, fontSize: fontSizes.label, color: colors.pageInk },
+  tabCount: { fontFamily: fonts.ui.bold, fontSize: fontSizes.caption, color: colors.pageInkMuted },
   tabTrack: { height: 5, borderRadius: 3, backgroundColor: colors.well, overflow: "hidden" },
   tabFill: { height: 5, borderRadius: 3 },
-  tagline: { fontFamily: fonts.text.italic, fontSize: 16, lineHeight: 22, color: colors.textMuted },
+  tagline: {
+    fontFamily: fonts.text.italic,
+    fontSize: fontSizes.bodyLarge,
+    lineHeight: 22,
+    color: colors.pageInkMuted,
+  },
   chip: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 6,
+    gap: space.s3,
     minHeight: 36,
-    paddingHorizontal: 12,
-    borderRadius: 18,
-    backgroundColor: colors.backgroundRaised,
+    paddingHorizontal: space.s6,
+    borderRadius: radii.x3,
+    backgroundColor: colors.pageRaised,
   },
   filtersButton: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 6,
+    gap: space.s3,
     minHeight: 44,
-    paddingHorizontal: 14,
-    borderRadius: 22,
-    backgroundColor: colors.backgroundRaised,
+    paddingHorizontal: space.s7,
+    borderRadius: radii.x4,
+    backgroundColor: colors.pageRaised,
   },
   filtersCount: {
     overflow: "hidden",
     minWidth: 20,
-    paddingHorizontal: 6,
-    borderRadius: 10,
-    backgroundColor: colors.accentInk,
-    color: colors.accent,
+    paddingHorizontal: space.s3,
+    borderRadius: radii.md,
+    backgroundColor: colors.actionInk,
+    color: colors.rubric,
     fontFamily: fonts.ui.extrabold,
-    fontSize: 12,
+    fontSize: fontSizes.caption,
     textAlign: "center",
   },
-  group: { gap: 8 },
-  groupTitle: { fontFamily: fonts.ui.extrabold, fontSize: 15, color: colors.text },
-  groupChips: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
-  chipMuted: { backgroundColor: "transparent", borderWidth: 1, borderColor: colors.outline },
-  chipOn: { backgroundColor: colors.accent, borderColor: colors.accent },
-  chipText: { fontFamily: fonts.ui.bold, fontSize: 14, color: colors.text },
-  chipTextMuted: { color: colors.textMuted },
-  chipTextOn: { color: colors.accentInk },
+  group: { gap: space.s4 },
+  groupTitle: { fontFamily: fonts.ui.extrabold, fontSize: fontSizes.body, color: colors.pageInk },
+  groupChips: { flexDirection: "row", flexWrap: "wrap", gap: space.s4 },
+  chipMuted: { backgroundColor: "transparent", borderWidth: 1, borderColor: colors.rule },
+  chipOn: { backgroundColor: colors.action, borderColor: colors.gilt },
+  chipText: { fontFamily: fonts.ui.bold, fontSize: fontSizes.label, color: colors.pageInk },
+  chipTextMuted: { color: colors.pageInkMuted },
+  chipTextOn: { color: colors.actionInk },
   chipCount: {
     overflow: "hidden",
     minWidth: 20,
-    paddingHorizontal: 6,
-    borderRadius: 10,
-    backgroundColor: colors.accent,
-    color: colors.accentInk,
+    paddingHorizontal: space.s3,
+    borderRadius: radii.md,
+    backgroundColor: colors.action,
+    color: colors.actionInk,
     fontFamily: fonts.ui.extrabold,
-    fontSize: 11,
+    fontSize: fontSizes.micro,
     textAlign: "center",
   },
-  revise: { marginTop: 12 },
+  revise: { marginTop: space.s6 },
   emptyLine: {
     fontFamily: fonts.text.italic,
-    fontSize: 17,
-    color: colors.textMuted,
+    fontSize: fontSizes.lead,
+    color: colors.pageInkMuted,
     textAlign: "center",
-    marginTop: 32,
+    marginTop: space.s16,
   },
   grid: { paddingHorizontal: GUTTER, paddingBottom: TAB_BAR_RISE + 24 },
-  gridRow: { gap: GAP, marginBottom: 18 },
-  tile: { alignItems: "center", gap: 6 },
+  gridRow: { gap: GAP, marginBottom: space.s9 },
+  tile: { alignItems: "center", gap: space.s3 },
   fresh: {
     position: "absolute",
     top: -8,
@@ -671,53 +690,53 @@ const styles = StyleSheet.create({
     overflow: "hidden",
     paddingHorizontal: 7,
     paddingVertical: 1,
-    borderRadius: 10,
-    backgroundColor: colors.accent,
-    color: colors.accentInk,
+    borderRadius: radii.md,
+    backgroundColor: colors.action,
+    color: colors.actionInk,
     fontFamily: fonts.ui.extrabold,
-    fontSize: 11,
+    fontSize: fontSizes.micro,
   },
   quantity: {
     position: "absolute",
     top: -6,
     right: -4,
     overflow: "hidden",
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 10,
-    backgroundColor: colors.text,
-    color: colors.background,
+    paddingHorizontal: space.s4,
+    paddingVertical: space.s1,
+    borderRadius: radii.md,
+    backgroundColor: colors.pageInk,
+    color: colors.page,
     fontFamily: fonts.ui.extrabold,
-    fontSize: 12,
+    fontSize: fontSizes.caption,
   },
   mastery: { flexDirection: "row", alignItems: "center", gap: 5 },
   dot: { width: 8, height: 8, borderRadius: 4 },
-  masteryText: { fontFamily: fonts.ui.bold, fontSize: 12 },
+  masteryText: { fontFamily: fonts.ui.bold, fontSize: fontSizes.caption },
   missingBox: {
     alignItems: "center",
     justifyContent: "center",
     borderWidth: 2,
     borderStyle: "dashed",
-    borderRadius: 12,
-    backgroundColor: "rgba(27, 31, 51, 0.5)",
+    borderRadius: radii.lg,
+    backgroundColor: alpha(colors.well, 0.5),
   },
-  question: { fontFamily: fonts.display, color: colors.outline },
+  question: { fontFamily: fonts.display, color: colors.rule },
   missingLabel: { transform: [{ scale: 0.85 }] },
   more: {
     alignItems: "center",
     justifyContent: "center",
-    gap: 8,
-    padding: 10,
-    borderRadius: 12,
+    gap: space.s4,
+    padding: space.s5,
+    borderRadius: radii.lg,
     borderWidth: 2,
-    borderColor: colors.accent,
+    borderColor: colors.gilt,
     borderStyle: "dashed",
   },
-  moreCount: { fontFamily: fonts.display, fontSize: 30, color: colors.accent },
+  moreCount: { fontFamily: fonts.display, fontSize: fontSizes.heading, color: colors.rubric },
   moreLabel: {
     fontFamily: fonts.ui.bold,
-    fontSize: 13,
-    color: colors.text,
+    fontSize: fontSizes.small,
+    color: colors.pageInk,
     textAlign: "center",
   },
 });

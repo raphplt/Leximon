@@ -3,20 +3,20 @@
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: 14px;
-  margin-top: 18px;
-  padding: 20px;
+  gap: var(--lx-s7);
+  margin-top: var(--lx-s9);
+  padding: var(--lx-s10);
 }
 
 .title {
-  margin: 0 0 4px;
-  font-size: 24px;
+  margin: 0 0 var(--lx-s2);
+  font-size: var(--lx-size-title-large);
 }
 
 .line {
   margin: 0;
   max-width: 60ch;
-  font-size: 15px;
+  font-size: var(--lx-size-body);
   line-height: 1.45;
-  color: var(--lx-color-text-muted);
+  color: var(--lx-color-page-ink-muted);
 }

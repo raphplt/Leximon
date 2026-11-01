@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
-import { colors, fonts } from "@/theme";
+import { colors, fontSizes, fonts, space } from "@/theme";
 import { Icon } from "./icon";
 
 /** A box to tick, with its sentence beside it; the whole row toggles it. */
@@ -25,7 +25,7 @@ export function Check({
       {...(label === undefined ? {} : { accessibilityLabel: label })}
     >
       <View style={[styles.box, checked && styles.boxOn]}>
-        {checked && <Icon name="check" size={16} color={colors.accentInk} />}
+        {checked && <Icon name="check" size={16} color={colors.actionInk} />}
       </View>
       <Text style={styles.text}>{children}</Text>
     </Pressable>
@@ -33,7 +33,7 @@ export function Check({
 }
 
 const styles = StyleSheet.create({
-  row: { flexDirection: "row", alignItems: "flex-start", gap: 12, paddingVertical: 4 },
+  row: { flexDirection: "row", alignItems: "flex-start", gap: space.s6, paddingVertical: space.s2 },
   box: {
     width: 26,
     height: 26,
@@ -43,12 +43,12 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  boxOn: { backgroundColor: colors.accent, borderColor: colors.accent },
+  boxOn: { backgroundColor: colors.action, borderColor: colors.gilt },
   text: {
     flex: 1,
     fontFamily: fonts.ui.semibold,
-    fontSize: 15,
+    fontSize: fontSizes.body,
     lineHeight: 22,
-    color: colors.text,
+    color: colors.pageInk,
   },
 });

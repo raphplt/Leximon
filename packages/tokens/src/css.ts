@@ -1,4 +1,4 @@
-import { colors, type Fill, radii } from "./tokens";
+import { colors, type Fill, fontSizes, masteryColors, radii, shadows, space } from "./tokens";
 
 /** CSS value of a fill: the color itself, or a `linear-gradient()`. */
 export function cssFill(fill: Fill): string {
@@ -24,8 +24,20 @@ export function cssVariables(): Record<string, string> {
   for (const [name, value] of Object.entries(colors)) {
     variables[`--lx-color-${kebab(name)}`] = value;
   }
+  for (const [name, value] of Object.entries(masteryColors)) {
+    variables[`--lx-mastery-${kebab(name)}`] = value;
+  }
   for (const [name, value] of Object.entries(radii)) {
     variables[`--lx-radius-${kebab(name)}`] = `${value}px`;
+  }
+  for (const [name, value] of Object.entries(shadows)) {
+    variables[`--lx-shadow-${kebab(name)}`] = value;
+  }
+  for (const [name, value] of Object.entries(fontSizes)) {
+    variables[`--lx-size-${kebab(name)}`] = `${value}px`;
+  }
+  for (const [name, value] of Object.entries(space)) {
+    variables[`--lx-${name}`] = `${value}px`;
   }
   return variables;
 }

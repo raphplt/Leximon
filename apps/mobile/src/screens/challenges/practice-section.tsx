@@ -14,7 +14,7 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 import { api } from "@/api/client";
 import { useShared } from "@/player/shared";
 import { progress } from "@/player/state";
-import { colors, fonts } from "@/theme";
+import { colors, fontSizes, fonts, radii, space } from "@/theme";
 import { Panel } from "@/ui/panel";
 
 /** Series on a scope the player picks. Read on arrival: the screen comes back after each series. */
@@ -79,23 +79,33 @@ export function PracticeSection({
 }
 
 const styles = StyleSheet.create({
-  panel: { gap: 10 },
+  panel: { gap: space.s5 },
   kicker: {
     fontFamily: fonts.ui.extrabold,
-    fontSize: 12,
+    fontSize: fontSizes.caption,
     letterSpacing: 2,
-    color: colors.textMuted,
+    color: colors.pageInkMuted,
   },
-  line: { fontFamily: fonts.ui.medium, fontSize: 15, lineHeight: 21, color: colors.textMuted },
+  line: {
+    fontFamily: fonts.ui.medium,
+    fontSize: fontSizes.body,
+    lineHeight: 21,
+    color: colors.pageInkMuted,
+  },
   choice: {
-    paddingVertical: 12,
-    paddingHorizontal: 14,
+    paddingVertical: space.s6,
+    paddingHorizontal: space.s7,
     borderWidth: 1,
-    borderColor: colors.outline,
-    borderRadius: 14,
+    borderColor: colors.rule,
+    borderRadius: radii.xl,
   },
-  pressed: { borderColor: colors.accent },
-  label: { fontFamily: fonts.ui.extrabold, fontSize: 15, color: colors.text },
-  detail: { fontFamily: fonts.ui.medium, fontSize: 13, color: colors.textMuted },
-  note: { fontFamily: fonts.ui.medium, fontSize: 13, lineHeight: 18, color: colors.textFaint },
+  pressed: { borderColor: colors.gilt },
+  label: { fontFamily: fonts.ui.extrabold, fontSize: fontSizes.body, color: colors.pageInk },
+  detail: { fontFamily: fonts.ui.medium, fontSize: fontSizes.small, color: colors.pageInkMuted },
+  note: {
+    fontFamily: fonts.ui.medium,
+    fontSize: fontSizes.small,
+    lineHeight: 18,
+    color: colors.pageInkFaint,
+  },
 });

@@ -35,7 +35,7 @@ import { useNow, useShared } from "@/player/shared";
 import { progress as progressResource, wallet as walletResource } from "@/player/state";
 import { usePlayerView } from "@/player/use-player-view";
 import { TAB_BAR_RISE } from "@/shell/tab-bar";
-import { fonts } from "@/theme";
+import { fontSizes, fonts, radii, space } from "@/theme";
 import { Button } from "@/ui/button";
 import { XpBar } from "@/ui/level";
 import { RarityName } from "@/ui/rarity-icon";
@@ -122,7 +122,9 @@ export function Recap({
     <View style={styles.recap} onLayout={(event) => setRoom(event.nativeEvent.layout.height)}>
       <Text style={styles.kicker}>TON SACHET</Text>
       <View style={styles.line}>
-        {best !== null && <RarityName rarity={best.rarity} text={best.label} color={colors.text} />}
+        {best !== null && (
+          <RarityName rarity={best.rarity} text={best.label} color={colors.pageInk} />
+        )}
         {best !== null && <Text style={styles.lineText}>·</Text>}
         <Text style={styles.lineText}>{fresh}</Text>
       </View>
@@ -253,9 +255,9 @@ function Glint({
                 x2={line.x2}
                 y2={line.y2}
               >
-                <Stop offset={0.3} stopColor="#fff" stopOpacity={0} />
-                <Stop offset={0.48} stopColor="#fff" stopOpacity={0.55} />
-                <Stop offset={0.66} stopColor="#fff" stopOpacity={0} />
+                <Stop offset={0.3} stopColor={colors.glint} stopOpacity={0} />
+                <Stop offset={0.48} stopColor={colors.glint} stopOpacity={0.55} />
+                <Stop offset={0.66} stopColor={colors.glint} stopOpacity={0} />
               </LinearGradient>
             </Defs>
             <Rect width="100%" height="100%" fill="url(#glint)" />
@@ -268,53 +270,62 @@ function Glint({
 
 const styles = StyleSheet.create({
   glint: { ...StyleSheet.absoluteFill, opacity: 0 },
-  recap: { flex: 1, alignItems: "center", paddingTop: 12, gap: 8 },
+  recap: { flex: 1, alignItems: "center", paddingTop: space.s6, gap: space.s4 },
   kicker: {
     fontFamily: fonts.ui.extrabold,
-    fontSize: 12,
+    fontSize: fontSizes.caption,
     letterSpacing: 2,
-    color: colors.textMuted,
+    color: colors.pageInkMuted,
   },
-  line: { flexDirection: "row", alignItems: "center", gap: 8 },
-  lineText: { fontFamily: fonts.ui.bold, fontSize: 15, color: colors.text },
-  carousel: { flexGrow: 0, paddingVertical: 14 },
+  line: { flexDirection: "row", alignItems: "center", gap: space.s4 },
+  lineText: { fontFamily: fonts.ui.bold, fontSize: fontSizes.body, color: colors.pageInk },
+  carousel: { flexGrow: 0, paddingVertical: space.s7 },
   new: {
     position: "absolute",
     top: -10,
     right: -6,
     overflow: "hidden",
-    paddingHorizontal: 10,
+    paddingHorizontal: space.s5,
     paddingVertical: 3,
-    borderRadius: 12,
+    borderRadius: radii.lg,
     backgroundColor: colors.sticker,
-    color: "#fff",
+    color: colors.inkOnColor,
     fontFamily: fonts.ui.extrabold,
-    fontSize: 12,
+    fontSize: fontSizes.caption,
   },
-  dots: { flexDirection: "row", gap: 6 },
-  dot: { width: 7, height: 7, borderRadius: 4, backgroundColor: colors.outline },
-  dotOn: { backgroundColor: colors.accent },
-  xp: { fontFamily: fonts.display, fontSize: 26, color: colors.accent, marginTop: 4 },
+  dots: { flexDirection: "row", gap: space.s3 },
+  dot: { width: 7, height: 7, borderRadius: radii.xxs, backgroundColor: colors.rule },
+  dotOn: { backgroundColor: colors.action },
+  xp: {
+    fontFamily: fonts.display,
+    fontSize: fontSizes.titleLarge,
+    color: colors.rubric,
+    marginTop: space.s2,
+  },
   bar: { width: 200 },
-  levelUp: { fontFamily: fonts.ui.extrabold, fontSize: 16, color: colors.text },
+  levelUp: { fontFamily: fonts.ui.extrabold, fontSize: fontSizes.bodyLarge, color: colors.pageInk },
   completed: {
     fontFamily: fonts.ui.bold,
-    fontSize: 14,
-    color: colors.text,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
+    fontSize: fontSizes.label,
+    color: colors.pageInk,
+    paddingHorizontal: space.s5,
+    paddingVertical: space.s2,
     borderWidth: 2,
     borderStyle: "dashed",
     borderColor: colors.badge,
-    borderRadius: 10,
+    borderRadius: radii.md,
   },
-  progress: { fontFamily: fonts.ui.semibold, fontSize: 14, color: colors.textMuted },
+  progress: {
+    fontFamily: fonts.ui.semibold,
+    fontSize: fontSizes.label,
+    color: colors.pageInkMuted,
+  },
   gained: { color: colors.success },
   actions: {
     alignSelf: "stretch",
-    paddingHorizontal: 24,
+    paddingHorizontal: space.s12,
     paddingBottom: TAB_BAR_RISE,
-    gap: 10,
-    marginTop: 6,
+    gap: space.s5,
+    marginTop: space.s3,
   },
 });

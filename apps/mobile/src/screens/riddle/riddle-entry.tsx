@@ -4,7 +4,7 @@ import { router, useFocusEffect } from "expo-router";
 import { useCallback, useState } from "react";
 import { StyleSheet, Text } from "react-native";
 import { api } from "@/api/client";
-import { colors, fonts } from "@/theme";
+import { colors, fontSizes, fonts, space } from "@/theme";
 import { Button } from "@/ui/button";
 import { Panel } from "@/ui/panel";
 
@@ -41,7 +41,12 @@ export function RiddleEntry({ now }: { readonly now: number }) {
 }
 
 const styles = StyleSheet.create({
-  panel: { gap: 10 },
-  title: { fontFamily: fonts.display, fontSize: 22, color: colors.text },
-  line: { fontFamily: fonts.ui.medium, fontSize: 15, lineHeight: 21, color: colors.textMuted },
+  panel: { gap: space.s5 },
+  title: { fontFamily: fonts.display, fontSize: fontSizes.title, color: colors.pageInk },
+  line: {
+    fontFamily: fonts.ui.medium,
+    fontSize: fontSizes.body,
+    lineHeight: 21,
+    color: colors.pageInkMuted,
+  },
 });

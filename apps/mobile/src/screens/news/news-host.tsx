@@ -4,7 +4,7 @@ import * as SecureStore from "expo-secure-store";
 import { useEffect, useMemo, useState } from "react";
 import { Modal, ScrollView, StyleSheet, Text, useWindowDimensions, View } from "react-native";
 import { usePlayerView } from "@/player/use-player-view";
-import { colors, fonts } from "@/theme";
+import { alpha, colors, fontSizes, fonts, space } from "@/theme";
 import { Button } from "@/ui/button";
 import { TextButton } from "@/ui/text-button";
 import { NewsEntries } from "./news-entries";
@@ -83,10 +83,15 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
-    paddingVertical: 48,
-    backgroundColor: "rgba(12, 14, 26, 0.82)",
+    paddingVertical: space.s24,
+    backgroundColor: alpha(colors.scrim, 0.82),
   },
   card: { maxHeight: "100%", borderRadius: 24, backgroundColor: colors.sheet },
-  inner: { gap: 18, padding: 22 },
-  title: { fontFamily: fonts.display, fontSize: 26, lineHeight: 31, color: colors.text },
+  inner: { gap: space.s9, padding: 22 },
+  title: {
+    fontFamily: fonts.display,
+    fontSize: fontSizes.titleLarge,
+    lineHeight: 31,
+    color: colors.pageInk,
+  },
 });

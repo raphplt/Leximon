@@ -2,7 +2,7 @@ import type { IconName } from "@leximon/tokens";
 import { router } from "expo-router";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
 import { TAB_BAR_RISE } from "@/shell/tab-bar";
-import { colors, fonts } from "@/theme";
+import { alpha, colors, fontSizes, fonts, space } from "@/theme";
 import { Button } from "./button";
 import { Icon } from "./icon";
 import { XpBar } from "./level";
@@ -31,7 +31,7 @@ export function LockedScreen({
     <ScrollView contentContainerStyle={styles.page}>
       <Panel style={styles.panel}>
         <View style={styles.icon}>
-          <Icon name={icon} size={38} color={colors.accent} />
+          <Icon name={icon} size={38} color={colors.rubric} />
         </View>
         {level !== undefined && <Text style={styles.kicker}>NIVEAU {level}</Text>}
         <Text style={styles.title} accessibilityRole="header">
@@ -57,41 +57,41 @@ const styles = StyleSheet.create({
   page: {
     flexGrow: 1,
     justifyContent: "center",
-    paddingHorizontal: 16,
-    paddingVertical: 24,
+    paddingHorizontal: space.s8,
+    paddingVertical: space.s12,
     paddingBottom: TAB_BAR_RISE + 24,
   },
-  panel: { alignItems: "center", paddingVertical: 32, gap: 10 },
+  panel: { alignItems: "center", paddingVertical: space.s16, gap: space.s5 },
   icon: {
     width: 76,
     height: 76,
     borderRadius: 38,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "rgba(255, 210, 77, 0.14)",
-    marginBottom: 6,
+    backgroundColor: alpha(colors.gilt, 0.14),
+    marginBottom: space.s3,
   },
   kicker: {
     fontFamily: fonts.ui.extrabold,
-    fontSize: 12,
+    fontSize: fontSizes.caption,
     letterSpacing: 2,
-    color: colors.textMuted,
+    color: colors.pageInkMuted,
   },
   title: {
     fontFamily: fonts.display,
-    fontSize: 26,
+    fontSize: fontSizes.titleLarge,
     lineHeight: 32,
-    color: colors.text,
+    color: colors.pageInk,
     textAlign: "center",
   },
   text: {
     fontFamily: fonts.text.regular,
-    fontSize: 17,
+    fontSize: fontSizes.lead,
     lineHeight: 24,
-    color: colors.textMuted,
+    color: colors.pageInkMuted,
     textAlign: "center",
   },
-  progress: { alignSelf: "stretch", gap: 6, marginTop: 8, alignItems: "center" },
-  left: { fontFamily: fonts.ui.bold, fontSize: 14, color: colors.textMuted },
-  actions: { alignSelf: "stretch", gap: 10, marginTop: 14 },
+  progress: { alignSelf: "stretch", gap: space.s3, marginTop: space.s4, alignItems: "center" },
+  left: { fontFamily: fonts.ui.bold, fontSize: fontSizes.label, color: colors.pageInkMuted },
+  actions: { alignSelf: "stretch", gap: space.s5, marginTop: space.s7 },
 });

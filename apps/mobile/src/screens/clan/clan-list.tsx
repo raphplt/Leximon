@@ -14,7 +14,7 @@ import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-
 import { api } from "@/api/client";
 import { Banner, Emblem } from "@/clan/emblem";
 import type { ClanJoin } from "@/clan/use-join-clan";
-import { colors, fonts } from "@/theme";
+import { colors, fontSizes, fonts, space } from "@/theme";
 import { Button } from "@/ui/button";
 import { Chip } from "@/ui/chip";
 import { Icon } from "@/ui/icon";
@@ -73,14 +73,14 @@ export function ClanList({ join }: { readonly join: ClanJoin | null }) {
   return (
     <>
       <View style={styles.search}>
-        <Icon name="search" size={18} color={colors.textMuted} />
+        <Icon name="search" size={18} color={colors.pageInkMuted} />
         <TextInput
           style={styles.searchInput}
           value={query}
           maxLength={30}
           placeholder="Nom du clan"
-          placeholderTextColor={colors.textFaint}
-          selectionColor={colors.accent}
+          placeholderTextColor={colors.pageInkFaint}
+          selectionColor={colors.rubric}
           accessibilityLabel="Nom du clan"
           autoCorrect={false}
           onChangeText={setQuery}
@@ -172,40 +172,45 @@ const styles = StyleSheet.create({
   search: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 10,
+    gap: space.s5,
     minHeight: 50,
-    paddingHorizontal: 16,
+    paddingHorizontal: space.s8,
     borderRadius: 25,
     backgroundColor: colors.well,
   },
   searchInput: {
     flex: 1,
-    color: colors.text,
+    color: colors.pageInk,
     fontFamily: fonts.ui.semibold,
-    fontSize: 16,
-    paddingVertical: 10,
+    fontSize: fontSizes.bodyLarge,
+    paddingVertical: space.s5,
   },
-  chips: { gap: 8 },
-  chipsGap: { width: 1, marginVertical: 8, backgroundColor: colors.track },
-  faint: { fontFamily: fonts.ui.medium, fontSize: 15, color: colors.textFaint },
+  chips: { gap: space.s4 },
+  chipsGap: { width: 1, marginVertical: space.s4, backgroundColor: colors.track },
+  faint: { fontFamily: fonts.ui.medium, fontSize: fontSizes.body, color: colors.pageInkFaint },
   empty: {
     fontFamily: fonts.text.italic,
-    fontSize: 18,
+    fontSize: fontSizes.subtitle,
     lineHeight: 25,
-    color: colors.textMuted,
+    color: colors.pageInkMuted,
     textAlign: "center",
-    paddingVertical: 12,
+    paddingVertical: space.s6,
   },
   clanRow: { overflow: "hidden" },
-  clanHead: { flexDirection: "row", alignItems: "center", gap: 16 },
-  clanText: { flex: 1, gap: 2 },
-  clanName: { fontFamily: fonts.display, fontSize: 19, color: colors.text },
-  small: { fontFamily: fonts.ui.medium, fontSize: 14, lineHeight: 20, color: colors.textMuted },
-  motto: {
-    marginTop: 4,
-    fontFamily: fonts.text.italic,
-    fontSize: 15,
+  clanHead: { flexDirection: "row", alignItems: "center", gap: space.s8 },
+  clanText: { flex: 1, gap: space.s1 },
+  clanName: { fontFamily: fonts.display, fontSize: fontSizes.subtitle, color: colors.pageInk },
+  small: {
+    fontFamily: fonts.ui.medium,
+    fontSize: fontSizes.label,
     lineHeight: 20,
-    color: colors.text,
+    color: colors.pageInkMuted,
+  },
+  motto: {
+    marginTop: space.s2,
+    fontFamily: fonts.text.italic,
+    fontSize: fontSizes.body,
+    lineHeight: 20,
+    color: colors.pageInk,
   },
 });

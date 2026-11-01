@@ -12,7 +12,7 @@ import { Pressable, StyleSheet, Text, useWindowDimensions, View } from "react-na
 import { useNow, useSharedFailed } from "@/player/shared";
 import { profile } from "@/player/state";
 import { useProfileActions } from "@/profile/profile-actions";
-import { colors, fonts } from "@/theme";
+import { colors, fontSizes, fonts, radii, space } from "@/theme";
 import { Avatar } from "@/ui/avatar";
 import { Button } from "@/ui/button";
 import { Icon } from "@/ui/icon";
@@ -103,7 +103,7 @@ export function AtelierScreen() {
                 )}
                 <View style={styles.state}>
                   {item.state === "worn" && <Icon name="check" size={13} color={colors.success} />}
-                  {closed && <Icon name="lock" size={12} color={colors.textFaint} />}
+                  {closed && <Icon name="lock" size={12} color={colors.pageInkFaint} />}
                   <Text
                     style={[
                       styles.stateText,
@@ -150,24 +150,24 @@ function Preview({
 }
 
 const styles = StyleSheet.create({
-  head: { flexDirection: "row", alignItems: "center", gap: 14, marginTop: -6 },
+  head: { flexDirection: "row", alignItems: "center", gap: space.s7, marginTop: -6 },
   wornTitle: {
     overflow: "hidden",
-    paddingHorizontal: 10,
+    paddingHorizontal: space.s5,
     paddingVertical: 3,
-    borderRadius: 8,
+    borderRadius: radii.sm,
     backgroundColor: colors.kraft,
     color: colors.kraftTitle,
     fontFamily: fonts.display,
-    fontSize: 15,
+    fontSize: fontSizes.body,
   },
   grid: { flexDirection: "row", flexWrap: "wrap", gap: GAP },
   item: {
     alignItems: "center",
-    gap: 6,
-    paddingVertical: 12,
-    paddingHorizontal: 6,
-    borderRadius: 16,
+    gap: space.s3,
+    paddingVertical: space.s6,
+    paddingHorizontal: space.s3,
+    borderRadius: radii.xxl,
     backgroundColor: colors.panel,
     borderWidth: 2,
     borderColor: "transparent",
@@ -175,21 +175,25 @@ const styles = StyleSheet.create({
   itemWorn: { borderColor: colors.success },
   pressed: { opacity: 0.7 },
   closed: { opacity: 0.4 },
-  name: { fontFamily: fonts.ui.bold, fontSize: 13, color: colors.text },
-  state: { flexDirection: "row", alignItems: "center", gap: 4 },
-  stateText: { fontFamily: fonts.ui.extrabold, fontSize: 12, color: colors.textFaint },
+  name: { fontFamily: fonts.ui.bold, fontSize: fontSizes.small, color: colors.pageInk },
+  state: { flexDirection: "row", alignItems: "center", gap: space.s2 },
+  stateText: {
+    fontFamily: fonts.ui.extrabold,
+    fontSize: fontSizes.caption,
+    color: colors.pageInkFaint,
+  },
   stateWorn: { color: colors.success },
-  stateOwned: { color: colors.accent },
+  stateOwned: { color: colors.rubric },
   titleBox: { alignSelf: "stretch", alignItems: "center", justifyContent: "center" },
   titlePill: {
     overflow: "hidden",
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 8,
+    paddingHorizontal: space.s4,
+    paddingVertical: space.s2,
+    borderRadius: radii.sm,
     backgroundColor: colors.kraft,
     color: colors.kraftTitle,
     fontFamily: fonts.display,
-    fontSize: 14,
+    fontSize: fontSizes.label,
     textAlign: "center",
   },
 });

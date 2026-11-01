@@ -19,7 +19,7 @@ import { Banner, Emblem } from "@/clan/emblem";
 import { useJoinClan } from "@/clan/use-join-clan";
 import { useNow, useShared, useSharedFailed } from "@/player/shared";
 import { myClan, profile, progress as progressResource } from "@/player/state";
-import { colors, fonts } from "@/theme";
+import { colors, fontSizes, fonts, space } from "@/theme";
 import { Avatar } from "@/ui/avatar";
 import { Button } from "@/ui/button";
 import { Icon } from "@/ui/icon";
@@ -215,7 +215,7 @@ function VisitedMember({ member }: { readonly member: ClanMember }) {
       </Text>
       {role !== null && (
         <View style={styles.role}>
-          <Icon name="crown" size={12} color={colors.accent} />
+          <Icon name="crown" size={12} color={colors.rubric} />
           <Text style={styles.roleText}>{role}</Text>
         </View>
       )}
@@ -225,19 +225,29 @@ function VisitedMember({ member }: { readonly member: ClanMember }) {
 
 const styles = StyleSheet.create({
   hero: { overflow: "hidden" },
-  heroHead: { flexDirection: "row", alignItems: "center", gap: 16 },
+  heroHead: { flexDirection: "row", alignItems: "center", gap: space.s8 },
   heroLine: { flex: 1 },
-  small: { fontFamily: fonts.ui.medium, fontSize: 14, lineHeight: 20, color: colors.textMuted },
+  small: {
+    fontFamily: fonts.ui.medium,
+    fontSize: fontSizes.label,
+    lineHeight: 20,
+    color: colors.pageInkMuted,
+  },
   kicker: {
     fontFamily: fonts.ui.extrabold,
-    fontSize: 12,
+    fontSize: fontSizes.caption,
     letterSpacing: 2,
-    color: colors.textMuted,
+    color: colors.pageInkMuted,
   },
   membersHead: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
-  member: { flexDirection: "row", alignItems: "center", gap: 12, minHeight: 48 },
+  member: { flexDirection: "row", alignItems: "center", gap: space.s6, minHeight: 48 },
   pressed: { opacity: 0.7 },
-  memberName: { flex: 1, fontFamily: fonts.ui.bold, fontSize: 16, color: colors.text },
-  role: { flexDirection: "row", alignItems: "center", gap: 4 },
-  roleText: { fontFamily: fonts.ui.bold, fontSize: 12, color: colors.accent },
+  memberName: {
+    flex: 1,
+    fontFamily: fonts.ui.bold,
+    fontSize: fontSizes.bodyLarge,
+    color: colors.pageInk,
+  },
+  role: { flexDirection: "row", alignItems: "center", gap: space.s2 },
+  roleText: { fontFamily: fonts.ui.bold, fontSize: fontSizes.caption, color: colors.rubric },
 });

@@ -46,7 +46,7 @@ import { useNow, useShared } from "@/player/shared";
 import { account, publishProgress, wallet } from "@/player/state";
 import { usePlayerView } from "@/player/use-player-view";
 import { TAB_BAR_RISE } from "@/shell/tab-bar";
-import { fonts } from "@/theme";
+import { fontSizes, fonts, radii, space } from "@/theme";
 import { Button } from "@/ui/button";
 import { Icon } from "@/ui/icon";
 import { RarityName } from "@/ui/rarity-icon";
@@ -392,7 +392,7 @@ export function PlayScreen() {
         />
         <View style={styles.revealBar}>
           <View style={styles.revealInfo}>
-            <RarityName rarity={drawn.rarity} color={colors.text} />
+            <RarityName rarity={drawn.rarity} color={colors.pageInk} />
             <Text style={styles.position}>
               {phase.index + 1} / {pack.cards.length} · {pack.collectionName} {progress.owned}/
               {progress.total}
@@ -578,7 +578,7 @@ function CollectionPicker({
           accessibilityRole="button"
           accessibilityLabel="Collection précédente"
         >
-          <Icon name="back" size={18} color={colors.text} />
+          <Icon name="back" size={18} color={colors.pageInk} />
         </Pressable>
         <View style={styles.pickerName} accessibilityLiveRegion="polite">
           <Text style={styles.kicker}>SACHET</Text>
@@ -590,7 +590,7 @@ function CollectionPicker({
           accessibilityRole="button"
           accessibilityLabel="Collection suivante"
         >
-          <Icon name="chev" size={18} color={colors.text} />
+          <Icon name="chev" size={18} color={colors.pageInk} />
         </Pressable>
       </View>
       {choices.length > 1 && (
@@ -609,7 +609,7 @@ function CollectionPicker({
               onPress={() => (choice.lock !== null ? onLocked() : onPick(choice))}
               style={[styles.pickerDot, choice.id === current.id && styles.pickerDotOn]}
             >
-              {choice.lock !== null && <Icon name="lock" size={10} color={colors.textMuted} />}
+              {choice.lock !== null && <Icon name="lock" size={10} color={colors.pageInkMuted} />}
             </Pressable>
           ))}
         </View>
@@ -644,12 +644,12 @@ const styles = StyleSheet.create({
     textAlign: "center",
     textAlignVertical: "center",
     fontFamily: fonts.text.italic,
-    fontSize: 17,
-    color: colors.textMuted,
+    fontSize: fontSizes.lead,
+    color: colors.pageInkMuted,
   },
-  counter: { flex: 1, paddingTop: 8 },
-  picker: { alignItems: "center", gap: 8, paddingHorizontal: 20 },
-  arrows: { flexDirection: "row", alignItems: "center", gap: 18 },
+  counter: { flex: 1, paddingTop: space.s4 },
+  picker: { alignItems: "center", gap: space.s4, paddingHorizontal: space.s10 },
+  arrows: { flexDirection: "row", alignItems: "center", gap: space.s9 },
   round: {
     width: 42,
     height: 42,
@@ -661,35 +661,35 @@ const styles = StyleSheet.create({
   pickerName: { alignItems: "center", minWidth: 150 },
   kicker: {
     fontFamily: fonts.ui.extrabold,
-    fontSize: 11,
+    fontSize: fontSizes.micro,
     letterSpacing: 2,
-    color: colors.textMuted,
+    color: colors.pageInkMuted,
   },
-  pickerTitle: { fontFamily: fonts.display, fontSize: 26, color: colors.text },
-  pickerDots: { flexDirection: "row", gap: 10 },
+  pickerTitle: { fontFamily: fonts.display, fontSize: fontSizes.titleLarge, color: colors.pageInk },
+  pickerDots: { flexDirection: "row", gap: space.s5 },
   pickerDot: {
     width: 22,
     height: 22,
     borderRadius: 11,
     borderWidth: 1.5,
-    borderColor: colors.outline,
+    borderColor: colors.rule,
     alignItems: "center",
     justifyContent: "center",
   },
-  pickerDotOn: { backgroundColor: colors.accent, borderColor: colors.accent },
+  pickerDotOn: { backgroundColor: colors.action, borderColor: colors.gilt },
   tagline: {
     fontFamily: fonts.text.regular,
-    fontSize: 16,
+    fontSize: fontSizes.bodyLarge,
     lineHeight: 21,
-    color: colors.textMuted,
+    color: colors.pageInkMuted,
     textAlign: "center",
   },
   stock: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    gap: 10,
-    marginTop: 10,
+    gap: space.s5,
+    marginTop: space.s5,
   },
   stockDots: { flexDirection: "row", gap: 5 },
   stockDot: {
@@ -697,60 +697,69 @@ const styles = StyleSheet.create({
     height: 10,
     borderRadius: 5,
     borderWidth: 1.5,
-    borderColor: colors.outline,
+    borderColor: colors.rule,
   },
-  stockDotFull: { backgroundColor: colors.accent, borderColor: colors.accent },
-  stockNote: { fontFamily: fonts.ui.bold, fontSize: 13, color: colors.textMuted },
-  stage: { flex: 1, alignItems: "center", justifyContent: "center", gap: 14 },
+  stockDotFull: { backgroundColor: colors.action, borderColor: colors.gilt },
+  stockNote: { fontFamily: fonts.ui.bold, fontSize: fontSizes.small, color: colors.pageInkMuted },
+  stage: { flex: 1, alignItems: "center", justifyContent: "center", gap: space.s7 },
   notice: {
     position: "absolute",
     bottom: 8,
     overflow: "hidden",
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderRadius: 18,
+    paddingHorizontal: space.s8,
+    paddingVertical: space.s5,
+    borderRadius: radii.x3,
     backgroundColor: colors.sheet,
     fontFamily: fonts.ui.bold,
-    fontSize: 14,
-    color: colors.text,
+    fontSize: fontSizes.label,
+    color: colors.pageInk,
   },
   shelf: {
-    gap: 8,
-    paddingHorizontal: 24,
-    paddingTop: 14,
+    gap: space.s4,
+    paddingHorizontal: space.s12,
+    paddingTop: space.s7,
     paddingBottom: 18 + TAB_BAR_RISE,
     borderTopWidth: 1,
-    borderTopColor: colors.outline,
+    borderTopColor: colors.rule,
     borderStyle: "dashed",
-    backgroundColor: colors.sunken,
+    backgroundColor: colors.binding,
   },
   message: {
     fontFamily: fonts.ui.medium,
-    fontSize: 15,
-    color: colors.textMuted,
+    fontSize: fontSizes.body,
+    color: colors.pageInkMuted,
     textAlign: "center",
   },
-  error: { fontFamily: fonts.ui.bold, fontSize: 15, color: colors.danger, textAlign: "center" },
+  error: {
+    fontFamily: fonts.ui.bold,
+    fontSize: fontSizes.body,
+    color: colors.danger,
+    textAlign: "center",
+  },
   stackStage: { flex: 1, alignItems: "center", justifyContent: "center" },
-  revealBar: { paddingHorizontal: 20, paddingBottom: 12 + TAB_BAR_RISE, gap: 12 },
-  revealInfo: { alignItems: "center", gap: 6 },
-  position: { fontFamily: fonts.ui.semibold, fontSize: 13, color: colors.textMuted },
-  revealActions: { flexDirection: "row", justifyContent: "center", gap: 12 },
+  revealBar: { paddingHorizontal: space.s10, paddingBottom: 12 + TAB_BAR_RISE, gap: space.s6 },
+  revealInfo: { alignItems: "center", gap: space.s3 },
+  position: {
+    fontFamily: fonts.ui.semibold,
+    fontSize: fontSizes.small,
+    color: colors.pageInkMuted,
+  },
+  revealActions: { flexDirection: "row", justifyContent: "center", gap: space.s6 },
   skip: {
-    paddingHorizontal: 18,
+    paddingHorizontal: space.s9,
     height: 44,
     borderRadius: 22,
     borderWidth: 2,
     borderColor: colors.track,
     justifyContent: "center",
   },
-  skipText: { fontFamily: fonts.ui.extrabold, fontSize: 15, color: colors.text },
+  skipText: { fontFamily: fonts.ui.extrabold, fontSize: fontSizes.body, color: colors.pageInk },
   next: {
     paddingHorizontal: 22,
     height: 44,
     borderRadius: 22,
-    backgroundColor: colors.accent,
+    backgroundColor: colors.action,
     justifyContent: "center",
   },
-  nextText: { fontFamily: fonts.ui.extrabold, fontSize: 15, color: colors.accentInk },
+  nextText: { fontFamily: fonts.ui.extrabold, fontSize: fontSizes.body, color: colors.actionInk },
 });

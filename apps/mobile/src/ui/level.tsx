@@ -2,7 +2,7 @@ import { levelBadge, levelBadgeBox, levelBadgeLip, levelBadgeText } from "@lexim
 import { levelLabel } from "@leximon/view-model";
 import { StyleSheet, View } from "react-native";
 import Svg, { Defs, LinearGradient, Path, Rect, Stop, Text as SvgText } from "react-native-svg";
-import { colors, fonts } from "@/theme";
+import { colors, fonts, radii } from "@/theme";
 
 const clamp = (ratio: number) => Math.min(1, Math.max(0, ratio));
 
@@ -81,8 +81,8 @@ export function XpBar({
         <Svg width="100%" height={height}>
           <Defs>
             <LinearGradient id="xp" x1="0" y1="0" x2="0" y2="1">
-              <Stop offset="0" stopColor="#FFE07A" />
-              <Stop offset="1" stopColor="#F2B829" />
+              <Stop offset="0" stopColor={colors.xpLight} />
+              <Stop offset="1" stopColor={colors.xpDeep} />
             </LinearGradient>
           </Defs>
           <Rect width="100%" height={height} fill="url(#xp)" />
@@ -93,6 +93,6 @@ export function XpBar({
 }
 
 const styles = StyleSheet.create({
-  well: { borderRadius: 999, backgroundColor: colors.well, overflow: "hidden" },
-  fill: { height: "100%", borderRadius: 999, overflow: "hidden" },
+  well: { borderRadius: radii.pill, backgroundColor: colors.well, overflow: "hidden" },
+  fill: { height: "100%", borderRadius: radii.pill, overflow: "hidden" },
 });

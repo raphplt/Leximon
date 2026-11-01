@@ -34,7 +34,7 @@ import { ownedCards } from "@/player/collection";
 import { useShared } from "@/player/shared";
 import { myClan } from "@/player/state";
 import { TAB_BAR_RISE } from "@/shell/tab-bar";
-import { colors, fonts } from "@/theme";
+import { colors, fontSizes, fonts, radii, space } from "@/theme";
 import { Avatar } from "@/ui/avatar";
 import { Badge } from "@/ui/badge";
 import { Button } from "@/ui/button";
@@ -196,8 +196,8 @@ export function ClanPage({
                 view.pendingRequests > 1 ? `${view.pendingRequests} demandes` : "Une demande"
               }
             >
-              <Icon name="amis" size={20} color={colors.text} />
-              <Badge count={view.pendingRequests} ring={colors.background} />
+              <Icon name="amis" size={20} color={colors.pageInk} />
+              <Badge count={view.pendingRequests} ring={colors.page} />
             </Pressable>
           )}
           <Pressable
@@ -206,7 +206,7 @@ export function ClanPage({
             accessibilityRole="button"
             accessibilityLabel="Inviter"
           >
-            <Icon name="share" size={19} color={colors.text} />
+            <Icon name="share" size={19} color={colors.pageInk} />
           </Pressable>
           <Pressable
             onPress={() => setOverlay("settings")}
@@ -214,7 +214,7 @@ export function ClanPage({
             accessibilityRole="button"
             accessibilityLabel={canManage ? "Gérer le clan" : "Options du clan"}
           >
-            <Icon name="reglages" size={20} color={colors.text} />
+            <Icon name="reglages" size={20} color={colors.pageInk} />
           </Pressable>
         </View>
         <Segmented
@@ -332,7 +332,7 @@ export function ClanPage({
                     </Text>
                     {role !== null && (
                       <View style={styles.role}>
-                        <Icon name="crown" size={12} color={colors.accent} />
+                        <Icon name="crown" size={12} color={colors.rubric} />
                         <Text style={styles.roleText}>{role}</Text>
                       </View>
                     )}
@@ -419,7 +419,7 @@ function GoalPanel({
             <Icon
               name={tier.tier === "gold" || tier.tier === "illuminated" ? "star" : "check"}
               size={14}
-              color={tier.reached ? colors.accentInk : colors.textMuted}
+              color={tier.reached ? colors.actionInk : colors.pageInkMuted}
             />
           </View>
         ))}
@@ -442,12 +442,22 @@ function GoalPanel({
 
 const styles = StyleSheet.create({
   screen: { flex: 1 },
-  failed: { flex: 1, justifyContent: "center", gap: 16, paddingHorizontal: 24 },
-  hint: { fontFamily: fonts.ui.semibold, fontSize: 16, color: colors.text, textAlign: "center" },
-  top: { gap: 12, paddingHorizontal: 16, paddingTop: 4, paddingBottom: 8 },
-  hero: { flexDirection: "row", alignItems: "center", gap: 12, overflow: "hidden" },
-  heroText: { flex: 1, gap: 2 },
-  heroName: { fontFamily: fonts.display, fontSize: 24, color: colors.text },
+  failed: { flex: 1, justifyContent: "center", gap: space.s8, paddingHorizontal: space.s12 },
+  hint: {
+    fontFamily: fonts.ui.semibold,
+    fontSize: fontSizes.bodyLarge,
+    color: colors.pageInk,
+    textAlign: "center",
+  },
+  top: {
+    gap: space.s6,
+    paddingHorizontal: space.s8,
+    paddingTop: space.s2,
+    paddingBottom: space.s4,
+  },
+  hero: { flexDirection: "row", alignItems: "center", gap: space.s6, overflow: "hidden" },
+  heroText: { flex: 1, gap: space.s1 },
+  heroName: { fontFamily: fonts.display, fontSize: fontSizes.titleLarge, color: colors.pageInk },
   round: {
     width: 42,
     height: 42,
@@ -457,23 +467,38 @@ const styles = StyleSheet.create({
     backgroundColor: colors.panel,
   },
   chat: { flex: 1, paddingBottom: TAB_BAR_RISE },
-  page: { gap: 14, paddingHorizontal: 16, paddingTop: 4, paddingBottom: TAB_BAR_RISE + 24 },
-  small: { fontFamily: fonts.ui.medium, fontSize: 13, lineHeight: 19, color: colors.textMuted },
-  subline: { fontFamily: fonts.ui.semibold, fontSize: 14, color: colors.textMuted },
+  page: {
+    gap: space.s7,
+    paddingHorizontal: space.s8,
+    paddingTop: space.s2,
+    paddingBottom: TAB_BAR_RISE + 24,
+  },
+  small: {
+    fontFamily: fonts.ui.medium,
+    fontSize: fontSizes.small,
+    lineHeight: 19,
+    color: colors.pageInkMuted,
+  },
+  subline: { fontFamily: fonts.ui.semibold, fontSize: fontSizes.label, color: colors.pageInkMuted },
   kicker: {
     fontFamily: fonts.ui.extrabold,
-    fontSize: 12,
+    fontSize: fontSizes.caption,
     letterSpacing: 2,
-    color: colors.textMuted,
+    color: colors.pageInkMuted,
   },
-  xpHead: { gap: 2 },
-  xpLine: { fontFamily: fonts.ui.extrabold, fontSize: 15, color: colors.text },
+  xpHead: { gap: space.s1 },
+  xpLine: { fontFamily: fonts.ui.extrabold, fontSize: fontSizes.body, color: colors.pageInk },
   track: { height: 8, borderRadius: 4, backgroundColor: colors.well, overflow: "hidden" },
-  fill: { height: 8, borderRadius: 4, backgroundColor: colors.accent },
-  goalHead: { flexDirection: "row", alignItems: "flex-start", gap: 8 },
-  goalTitles: { flex: 1, gap: 4 },
-  goalTitle: { fontFamily: fonts.display, fontSize: 20, lineHeight: 25, color: colors.text },
-  goalBar: { height: 28, justifyContent: "center", marginHorizontal: 8 },
+  fill: { height: 8, borderRadius: 4, backgroundColor: colors.action },
+  goalHead: { flexDirection: "row", alignItems: "flex-start", gap: space.s4 },
+  goalTitles: { flex: 1, gap: space.s2 },
+  goalTitle: {
+    fontFamily: fonts.display,
+    fontSize: fontSizes.titleSmall,
+    lineHeight: 25,
+    color: colors.pageInk,
+  },
+  goalBar: { height: 28, justifyContent: "center", marginHorizontal: space.s4 },
   goalTrack: { height: 10, borderRadius: 5, backgroundColor: colors.well, overflow: "hidden" },
   goalFill: { height: 10, borderRadius: 5, backgroundColor: colors.success },
   tier: {
@@ -484,28 +509,43 @@ const styles = StyleSheet.create({
     borderRadius: 13,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: colors.backgroundRaised,
+    backgroundColor: colors.pageRaised,
     borderWidth: 2,
     borderColor: colors.track,
   },
-  tierReached: { backgroundColor: colors.accent, borderColor: colors.accentShadow },
-  goalFoot: { flexDirection: "row", justifyContent: "space-between", gap: 8, flexWrap: "wrap" },
-  goalHint: { fontFamily: fonts.ui.semibold, fontSize: 14, lineHeight: 20, color: colors.text },
-  libraryLine: { fontFamily: fonts.text.italic, fontSize: 17, lineHeight: 24, color: colors.text },
-  libraryRow: { gap: 6 },
+  tierReached: { backgroundColor: colors.action, borderColor: colors.actionEdge },
+  goalFoot: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    gap: space.s4,
+    flexWrap: "wrap",
+  },
+  goalHint: {
+    fontFamily: fonts.ui.semibold,
+    fontSize: fontSizes.label,
+    lineHeight: 20,
+    color: colors.pageInk,
+  },
+  libraryLine: {
+    fontFamily: fonts.text.italic,
+    fontSize: fontSizes.lead,
+    lineHeight: 24,
+    color: colors.pageInk,
+  },
+  libraryRow: { gap: space.s3 },
   libraryHead: { flexDirection: "row", justifyContent: "space-between" },
-  libraryName: { fontFamily: fonts.ui.bold, fontSize: 14, color: colors.text },
+  libraryName: { fontFamily: fonts.ui.bold, fontSize: fontSizes.label, color: colors.pageInk },
   libraryClan: { position: "absolute", top: 0, bottom: 0, left: 0, opacity: 0.4 },
   libraryMine: { position: "absolute", top: 0, bottom: 0, left: 0 },
   membersHead: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
   member: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 12,
+    gap: space.s6,
     minHeight: 60,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 16,
+    paddingHorizontal: space.s6,
+    paddingVertical: space.s4,
+    borderRadius: radii.xxl,
     backgroundColor: colors.panel,
   },
   pressed: { opacity: 0.7 },
@@ -518,12 +558,17 @@ const styles = StyleSheet.create({
     borderRadius: 6,
     backgroundColor: colors.success,
     borderWidth: 2,
-    borderColor: colors.background,
+    borderColor: colors.page,
   },
-  memberText: { flex: 1, gap: 2 },
-  memberNameRow: { flexDirection: "row", alignItems: "center", gap: 8 },
-  memberName: { flexShrink: 1, fontFamily: fonts.ui.extrabold, fontSize: 16, color: colors.text },
+  memberText: { flex: 1, gap: space.s1 },
+  memberNameRow: { flexDirection: "row", alignItems: "center", gap: space.s4 },
+  memberName: {
+    flexShrink: 1,
+    fontFamily: fonts.ui.extrabold,
+    fontSize: fontSizes.bodyLarge,
+    color: colors.pageInk,
+  },
   role: { flexDirection: "row", alignItems: "center", gap: 3 },
-  roleText: { fontFamily: fonts.ui.bold, fontSize: 12, color: colors.accent },
-  memberWords: { fontFamily: fonts.ui.bold, fontSize: 13, color: colors.textMuted },
+  roleText: { fontFamily: fonts.ui.bold, fontSize: fontSizes.caption, color: colors.rubric },
+  memberWords: { fontFamily: fonts.ui.bold, fontSize: fontSizes.small, color: colors.pageInkMuted },
 });

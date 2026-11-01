@@ -2,7 +2,7 @@ import type { BoosterWalletResponse } from "@leximon/contract";
 import { reserveView, stockView } from "@leximon/view-model";
 import { router } from "expo-router";
 import { StyleSheet, Text, View } from "react-native";
-import { colors, fonts } from "@/theme";
+import { colors, fontSizes, fonts, radii, space } from "@/theme";
 import { Button } from "@/ui/button";
 import { Icon } from "@/ui/icon";
 import { Sheet } from "@/ui/sheet";
@@ -25,7 +25,7 @@ export function StockSheet({
     <Sheet open={open} title="Tes sachets" onClose={onClose}>
       <View style={styles.line}>
         <View style={styles.sachet}>
-          <Icon name="sachet" size={22} color={colors.text} />
+          <Icon name="sachet" size={22} color={colors.pageInk} />
         </View>
         <View style={styles.lineText}>
           <Text style={styles.headline}>{stock.count}</Text>
@@ -34,7 +34,7 @@ export function StockSheet({
       </View>
       <View style={styles.line}>
         <View style={[styles.sachet, styles.sachetGold]}>
-          <Icon name="sachet" size={22} color={colors.accentInk} />
+          <Icon name="sachet" size={22} color={colors.actionInk} />
         </View>
         <View style={styles.lineText}>
           <Text style={styles.headline}>{reserve.headline}</Text>
@@ -60,25 +60,40 @@ export function StockSheet({
 }
 
 const styles = StyleSheet.create({
-  line: { flexDirection: "row", alignItems: "center", gap: 12 },
+  line: { flexDirection: "row", alignItems: "center", gap: space.s6 },
   sachet: {
     width: 42,
     height: 42,
-    borderRadius: 14,
+    borderRadius: radii.xl,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: colors.backgroundRaised,
+    backgroundColor: colors.pageRaised,
   },
-  sachetGold: { backgroundColor: colors.accent },
+  sachetGold: { backgroundColor: colors.action },
   lineText: { flex: 1, gap: 1 },
-  headline: { fontFamily: fonts.ui.bold, fontSize: 16, color: colors.text },
-  muted: { fontFamily: fonts.ui.medium, fontSize: 14, lineHeight: 20, color: colors.textMuted },
-  notes: {
-    gap: 6,
-    paddingTop: 12,
-    borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: colors.outline,
+  headline: { fontFamily: fonts.ui.bold, fontSize: fontSizes.bodyLarge, color: colors.pageInk },
+  muted: {
+    fontFamily: fonts.ui.medium,
+    fontSize: fontSizes.label,
+    lineHeight: 20,
+    color: colors.pageInkMuted,
   },
-  note: { fontFamily: fonts.ui.medium, fontSize: 14, lineHeight: 20, color: colors.text },
-  garni: { fontFamily: fonts.ui.bold, fontSize: 14, lineHeight: 20, color: colors.accent },
+  notes: {
+    gap: space.s3,
+    paddingTop: space.s6,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: colors.rule,
+  },
+  note: {
+    fontFamily: fonts.ui.medium,
+    fontSize: fontSizes.label,
+    lineHeight: 20,
+    color: colors.pageInk,
+  },
+  garni: {
+    fontFamily: fonts.ui.bold,
+    fontSize: fontSizes.label,
+    lineHeight: 20,
+    color: colors.rubric,
+  },
 });

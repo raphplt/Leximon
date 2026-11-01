@@ -22,7 +22,7 @@ import { CardBack, CardEdge } from "@/cards/card-back";
 import { HoloCard } from "@/cards/holo-card";
 import { type SpokenWord, useSpokenWord } from "@/cards/spoken-word";
 import { play, readPreference, speechOn, vibrate, writePreference } from "@/feedback/feedback";
-import { fonts } from "@/theme";
+import { fontSizes, fonts, radii, space } from "@/theme";
 import { Icon } from "@/ui/icon";
 
 /** A touch during the first moments of an announcement is ignored: it may be a double tap. */
@@ -302,7 +302,7 @@ export function RevealCard({
             accessibilityLabel={`Écouter ${card.word}`}
             style={[styles.listen, word.playing && styles.listening]}
           >
-            <Icon name="play" size={18} color={word.playing ? colors.accentInk : colors.text} />
+            <Icon name="play" size={18} color={word.playing ? colors.actionInk : colors.pageInk} />
           </Pressable>
         )}
         {settled && word.available && <SpeechToggle word={word} />}
@@ -331,7 +331,7 @@ function SpeechToggle({ word }: { readonly word: SpokenWord }) {
       accessibilityLabel={speechToggleLabel(on)}
       style={styles.listen}
     >
-      <Icon name={on ? "sound" : "soundOff"} size={18} color={colors.text} />
+      <Icon name={on ? "sound" : "soundOff"} size={18} color={colors.pageInk} />
     </Pressable>
   );
 }
@@ -352,7 +352,7 @@ function Cracks({ width, height }: { readonly width: number; readonly height: nu
           key={points}
           points={points}
           fill="none"
-          stroke="#FFE08A"
+          stroke={colors.giltLight}
           strokeWidth={2.4}
           strokeLinejoin="round"
           strokeLinecap="round"
@@ -363,12 +363,12 @@ function Cracks({ width, height }: { readonly width: number; readonly height: nu
 }
 
 const styles = StyleSheet.create({
-  reveal: { flex: 1, alignItems: "center", justifyContent: "center", gap: 14 },
-  dim: { ...StyleSheet.absoluteFill, backgroundColor: "#06070D" },
+  reveal: { flex: 1, alignItems: "center", justifyContent: "center", gap: space.s7 },
+  dim: { ...StyleSheet.absoluteFill, backgroundColor: colors.dim },
   first: {
     fontFamily: fonts.display,
-    fontSize: 24,
-    color: colors.accent,
+    fontSize: fontSizes.titleLarge,
+    color: colors.rubric,
     textAlign: "center",
   },
   glow: { position: "absolute" },
@@ -377,22 +377,22 @@ const styles = StyleSheet.create({
     top: -12,
     right: -10,
     overflow: "hidden",
-    paddingHorizontal: 12,
+    paddingHorizontal: space.s6,
     paddingVertical: 5,
-    borderRadius: 14,
+    borderRadius: radii.xl,
     fontFamily: fonts.ui.extrabold,
-    fontSize: 14,
+    fontSize: fontSizes.label,
     transform: [{ rotate: "6deg" }],
   },
-  newBadge: { backgroundColor: colors.sticker, color: "#fff" },
-  copies: { backgroundColor: colors.sheet, color: colors.text },
+  newBadge: { backgroundColor: colors.sticker, color: colors.inkOnColor },
+  copies: { backgroundColor: colors.sheet, color: colors.pageInk },
   under: {
     minHeight: 36,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    gap: 10,
-    paddingHorizontal: 24,
+    gap: space.s5,
+    paddingHorizontal: space.s12,
   },
   listen: {
     width: 36,
@@ -400,15 +400,15 @@ const styles = StyleSheet.create({
     borderRadius: 18,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: colors.backgroundRaised,
+    backgroundColor: colors.pageRaised,
   },
-  listening: { backgroundColor: colors.accent },
-  touchHint: { fontFamily: fonts.ui.bold, fontSize: 15, color: colors.textMuted },
+  listening: { backgroundColor: colors.action },
+  touchHint: { fontFamily: fonts.ui.bold, fontSize: fontSizes.body, color: colors.pageInkMuted },
   frequency: {
     flexShrink: 1,
     fontFamily: fonts.text.italic,
-    fontSize: 15,
-    color: colors.textMuted,
+    fontSize: fontSizes.body,
+    color: colors.pageInkMuted,
     textAlign: "center",
   },
 });

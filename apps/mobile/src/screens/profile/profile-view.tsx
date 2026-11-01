@@ -5,7 +5,7 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { Card } from "@/cards/card";
 import { Emblem } from "@/clan/emblem";
 import { openCard } from "@/screens/trades/card-row";
-import { colors, fonts } from "@/theme";
+import { colors, fontSizes, fonts, radii, space } from "@/theme";
 import { Avatar } from "@/ui/avatar";
 import { LevelMedal } from "@/ui/level";
 import { Panel } from "@/ui/panel";
@@ -139,32 +139,45 @@ export function StatsPanel({
 }
 
 const styles = StyleSheet.create({
-  identity: { flexDirection: "row", alignItems: "center", gap: 16, marginTop: -6 },
-  names: { flex: 1, gap: 4 },
-  headline: { flexDirection: "row", alignItems: "center", gap: 8 },
-  headlineText: { fontFamily: fonts.ui.extrabold, fontSize: 16, color: colors.accent },
-  clan: { flexDirection: "row", alignItems: "center", gap: 8 },
-  clanName: { fontFamily: fonts.ui.bold, fontSize: 15, color: colors.text },
-  subline: { fontFamily: fonts.ui.medium, fontSize: 13, lineHeight: 18, color: colors.textMuted },
-  panelTitle: { fontFamily: fonts.display, fontSize: 22, color: colors.text },
-  muted: { fontFamily: fonts.ui.medium, fontSize: 14, color: colors.textMuted },
+  identity: { flexDirection: "row", alignItems: "center", gap: space.s8, marginTop: -6 },
+  names: { flex: 1, gap: space.s2 },
+  headline: { flexDirection: "row", alignItems: "center", gap: space.s4 },
+  headlineText: {
+    fontFamily: fonts.ui.extrabold,
+    fontSize: fontSizes.bodyLarge,
+    color: colors.rubric,
+  },
+  clan: { flexDirection: "row", alignItems: "center", gap: space.s4 },
+  clanName: { fontFamily: fonts.ui.bold, fontSize: fontSizes.body, color: colors.pageInk },
+  subline: {
+    fontFamily: fonts.ui.medium,
+    fontSize: fontSizes.small,
+    lineHeight: 18,
+    color: colors.pageInkMuted,
+  },
+  panelTitle: { fontFamily: fonts.display, fontSize: fontSizes.title, color: colors.pageInk },
+  muted: { fontFamily: fonts.ui.medium, fontSize: fontSizes.label, color: colors.pageInkMuted },
   pinsScroll: { marginHorizontal: -18 },
-  pins: { gap: 14, paddingHorizontal: 18, paddingTop: 4 },
+  pins: { gap: space.s7, paddingHorizontal: space.s9, paddingTop: space.s2 },
   placeholder: {
     width: PIN_WIDTH,
     height: PIN_WIDTH * 1.4,
-    borderRadius: 10,
-    backgroundColor: colors.backgroundRaised,
+    borderRadius: radii.md,
+    backgroundColor: colors.pageRaised,
   },
-  tiles: { flexDirection: "row", flexWrap: "wrap", gap: 10 },
+  tiles: { flexDirection: "row", flexWrap: "wrap", gap: space.s5 },
   tile: {
     flexGrow: 1,
     flexBasis: "45%",
-    gap: 2,
-    padding: 12,
-    borderRadius: 14,
-    backgroundColor: colors.background,
+    gap: space.s1,
+    padding: space.s6,
+    borderRadius: radii.xl,
+    backgroundColor: colors.page,
   },
-  tileValue: { fontFamily: fonts.display, fontSize: 24, color: colors.text },
-  tileLabel: { fontFamily: fonts.ui.semibold, fontSize: 13, color: colors.textMuted },
+  tileValue: { fontFamily: fonts.display, fontSize: fontSizes.titleLarge, color: colors.pageInk },
+  tileLabel: {
+    fontFamily: fonts.ui.semibold,
+    fontSize: fontSizes.small,
+    color: colors.pageInkMuted,
+  },
 });

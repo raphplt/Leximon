@@ -4,7 +4,7 @@ import type { ReactNode } from "react";
 import { StyleSheet, Text, View } from "react-native";
 import { useNow, useShared, useSharedFailed } from "@/player/shared";
 import { progress as progressResource } from "@/player/state";
-import { colors, fonts } from "@/theme";
+import { colors, fontSizes, fonts, space } from "@/theme";
 import { Button } from "@/ui/button";
 import { LockedScreen } from "@/ui/locked-screen";
 
@@ -44,6 +44,11 @@ export function FeatureGate({
 }
 
 const styles = StyleSheet.create({
-  failed: { flex: 1, justifyContent: "center", gap: 16, paddingHorizontal: 24 },
-  text: { fontFamily: fonts.ui.semibold, fontSize: 16, color: colors.text, textAlign: "center" },
+  failed: { flex: 1, justifyContent: "center", gap: space.s8, paddingHorizontal: space.s12 },
+  text: {
+    fontFamily: fonts.ui.semibold,
+    fontSize: fontSizes.bodyLarge,
+    color: colors.pageInk,
+    textAlign: "center",
+  },
 });

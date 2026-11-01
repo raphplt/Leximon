@@ -1,8 +1,8 @@
 .coffret {
   position: relative;
-  padding: 34px 24px 26px;
-  border: 2px solid rgba(255, 210, 77, 0.4);
-  border-radius: 30px;
+  padding: 34px var(--lx-s12) 26px;
+  border: 2px solid color-mix(in srgb, var(--lx-color-gilt) 40%, transparent);
+  border-radius: var(--lx-radius-x5);
   text-align: center;
   /* Clipped, not hidden: the rays overflow, and a hidden box could scroll to them. */
   overflow: clip;
@@ -16,7 +16,10 @@
   height: 640px;
   margin: -320px 0 0 -320px;
   border-radius: 50%;
-  background: repeating-conic-gradient(rgba(255, 210, 77, 0.13) 0 9deg, transparent 9deg 20deg);
+  background: repeating-conic-gradient(
+    color-mix(in srgb, var(--lx-color-gilt) 13%, transparent) 0 9deg,
+    transparent 9deg 20deg
+  );
   pointer-events: none;
   animation: spin 18s linear infinite;
 }
@@ -26,7 +29,7 @@
 }
 
 .kicker {
-  color: #ffe08a;
+  color: var(--lx-color-gilt-light);
 }
 
 .box {
@@ -34,15 +37,15 @@
   place-items: center;
   width: 150px;
   height: 150px;
-  margin: 20px auto;
+  margin: var(--lx-s10) auto;
   padding: 0;
   border: 0;
   border-radius: 36px;
-  background: linear-gradient(160deg, #ffe08a, #d9a233);
+  background: linear-gradient(160deg, var(--lx-color-gilt-light), var(--lx-color-gilt-deep));
   color: var(--lx-color-kraft-ink);
   box-shadow:
     0 8px 0 #8a6512,
-    0 0 60px rgba(255, 210, 77, 0.5);
+    0 0 60px color-mix(in srgb, var(--lx-color-gilt) 50%, transparent);
   cursor: pointer;
 }
 
@@ -51,17 +54,17 @@
 }
 
 .title {
-  margin: 0 0 6px;
-  font-size: 30px;
+  margin: 0 0 var(--lx-s3);
+  font-size: var(--lx-size-heading);
 }
 
 .hint {
-  margin: 0 0 20px;
-  color: #d9d3e6;
+  margin: 0 0 var(--lx-s10);
+  color: var(--lx-color-page-ink-soft);
 }
 
 .refused {
-  margin: 0 0 20px;
+  margin: 0 0 var(--lx-s10);
   color: #ffd9cc;
   font-weight: 700;
   line-height: 1.4;
@@ -71,19 +74,19 @@
   display: flex;
   justify-content: center;
   line-height: 0;
-  filter: drop-shadow(0 10px 14px rgba(0, 0, 0, 0.4));
+  filter: drop-shadow(0 10px 14px color-mix(in srgb, var(--lx-color-shade) 40%, transparent));
 }
 
 .levelUp {
-  margin: 6px 0 18px;
-  font-size: 40px;
-  color: var(--lx-color-accent);
+  margin: var(--lx-s3) 0 var(--lx-s9);
+  font-size: var(--lx-size-display);
+  color: var(--lx-color-rubric);
 }
 
 .items {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: var(--lx-s5);
   margin: 0;
   padding: 0;
   list-style: none;
@@ -93,10 +96,10 @@
 .item {
   display: flex;
   align-items: center;
-  gap: 14px;
-  padding: 12px 14px;
-  border-radius: 18px;
-  background: rgba(27, 31, 51, 0.7);
+  gap: var(--lx-s7);
+  padding: var(--lx-s6) var(--lx-s7);
+  border-radius: var(--lx-radius-x3);
+  background: color-mix(in srgb, var(--lx-color-well) 70%, transparent);
 }
 
 .itemIcon {
@@ -105,9 +108,9 @@
   flex-shrink: 0;
   width: 52px;
   height: 52px;
-  border-radius: 16px;
-  background: linear-gradient(160deg, #ffe08a, #d9a233);
-  color: var(--lx-color-accent-ink);
+  border-radius: var(--lx-radius-xxl);
+  background: linear-gradient(160deg, var(--lx-color-gilt-light), var(--lx-color-gilt-deep));
+  color: var(--lx-color-action-ink);
 }
 
 .visual {
@@ -129,8 +132,8 @@
   border-radius: 5px 5px 7px 7px;
   background: linear-gradient(165deg, #5a4aa8, #231c4a);
   box-shadow:
-    inset 0 0 0 1.5px rgba(255, 210, 77, 0.45),
-    0 4px 10px rgba(0, 0, 0, 0.35);
+    inset 0 0 0 1.5px color-mix(in srgb, var(--lx-color-gilt) 45%, transparent),
+    0 4px 10px color-mix(in srgb, var(--lx-color-shade) 35%, transparent);
   rotate: -6deg;
 }
 
@@ -138,7 +141,7 @@
   background: linear-gradient(165deg, #f1cf7a, #a8761f);
   box-shadow:
     inset 0 0 0 1.5px rgba(255, 246, 214, 0.7),
-    0 0 18px rgba(255, 210, 77, 0.45);
+    0 0 18px color-mix(in srgb, var(--lx-color-gilt) 45%, transparent);
 }
 
 .mini::before,
@@ -148,7 +151,11 @@
   inset: 0 0 auto;
   height: 7px;
   border-radius: 5px 5px 0 0;
-  background: repeating-linear-gradient(90deg, rgba(0, 0, 0, 0.28) 0 2px, transparent 2px 4px);
+  background: repeating-linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--lx-color-shade) 28%, transparent) 0 2px,
+    transparent 2px 4px
+  );
 }
 
 .miniSeal {
@@ -156,56 +163,56 @@
   place-items: center;
   width: 20px;
   height: 20px;
-  margin-top: 4px;
+  margin-top: var(--lx-s2);
   border-radius: 50%;
-  background: linear-gradient(160deg, #ffe08a, #d9a233);
+  background: linear-gradient(160deg, var(--lx-color-gilt-light), var(--lx-color-gilt-deep));
   color: var(--lx-color-kraft-ink);
 }
 
 .miniGarni .miniSeal {
   background: #2a2150;
-  color: #ffe08a;
+  color: var(--lx-color-gilt-light);
 }
 
 /* A title is engraved on a brass plate. */
 .plaque {
   display: inline-block;
-  margin-top: 4px;
-  padding: 4px 12px;
-  border-radius: 6px;
+  margin-top: var(--lx-s2);
+  padding: var(--lx-s2) var(--lx-s6);
+  border-radius: var(--lx-radius-xs);
   background: linear-gradient(170deg, #f3dc9a, #c39237 55%, #e6c678);
   box-shadow:
     inset 0 0 0 1px rgba(90, 60, 10, 0.55),
     0 2px 0 #7a5a1c;
   color: #4a3208;
   font-family: var(--font-display), Georgia, serif;
-  font-size: 15px;
+  font-size: var(--lx-size-body);
   font-weight: 700;
   text-shadow: 0 1px 0 rgba(255, 244, 210, 0.6);
 }
 
 .stored {
-  margin: 14px 0 0;
-  color: #ffe08a;
+  margin: var(--lx-s7) 0 0;
+  color: var(--lx-color-gilt-light);
   font-weight: 800;
 }
 
 .itemTitle {
   display: block;
   font-weight: 800;
-  font-size: 16px;
+  font-size: var(--lx-size-body-large);
 }
 
 .itemDetail {
   display: block;
-  font-size: 13px;
-  color: var(--lx-color-text-muted);
+  font-size: var(--lx-size-small);
+  color: var(--lx-color-page-ink-muted);
 }
 
 .opens {
-  margin: 12px 0 0;
-  padding: 12px 14px;
-  border-radius: 16px;
+  margin: var(--lx-s6) 0 0;
+  padding: var(--lx-s6) var(--lx-s7);
+  border-radius: var(--lx-radius-xxl);
   background: var(--lx-color-kraft);
   color: var(--lx-color-kraft-title);
   font-weight: 800;
@@ -214,11 +221,11 @@
 
 /* Above the buttons' own `margin: 0`, which loads after this file on some pages. */
 .inner .action {
-  margin-top: 20px;
+  margin-top: var(--lx-s10);
 }
 
 .inner .road {
-  margin-top: 6px;
+  margin-top: var(--lx-s3);
 }
 
 @keyframes spin {

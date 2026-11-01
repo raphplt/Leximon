@@ -39,7 +39,7 @@ import {
   progress as progressResource,
 } from "@/player/state";
 import { TAB_BAR_RISE } from "@/shell/tab-bar";
-import { colors, fonts } from "@/theme";
+import { colors, fontSizes, fonts, radii, space } from "@/theme";
 import { Button } from "@/ui/button";
 import { Icon } from "@/ui/icon";
 import { Panel } from "@/ui/panel";
@@ -322,7 +322,7 @@ function NoticeBanner({
         accessibilityRole="button"
         accessibilityLabel="Fermer le message"
       >
-        <Icon name="close" size={18} color={colors.text} />
+        <Icon name="close" size={18} color={colors.pageInk} />
       </Pressable>
     </View>
   );
@@ -344,7 +344,7 @@ function PlayerCode({ code }: { readonly code: string }) {
       <Text style={styles.code} selectable>
         {formatPlayerCode(code)}
       </Text>
-      <Icon name="share" size={15} color={colors.textMuted} />
+      <Icon name="share" size={15} color={colors.pageInkMuted} />
     </Pressable>
   );
 }
@@ -426,7 +426,7 @@ function ReceivedOffer({
       <View style={styles.offerHeader}>
         <Counterpart player={sides.counterpart} />
         <View style={styles.timeLeft}>
-          <Icon name="clock" size={13} color={colors.textMuted} />
+          <Icon name="clock" size={13} color={colors.pageInkMuted} />
           <Text style={styles.timeLeftText}>{timeLeftLabel(trade.expiresAt, now)}</Text>
         </View>
       </View>
@@ -436,7 +436,7 @@ function ReceivedOffer({
           <CardRow catalog={catalog} cardIds={sides.theirs} width={OFFER_THUMB} />
         </View>
         <View style={styles.swap} importantForAccessibility="no-hide-descendants">
-          <Icon name="echange" size={22} color={colors.textMuted} />
+          <Icon name="echange" size={22} color={colors.pageInkMuted} />
         </View>
         <View style={styles.side}>
           <Text style={[styles.kicker, styles.giving]}>TU DONNES</Text>
@@ -552,43 +552,67 @@ function History({
 
 const styles = StyleSheet.create({
   screen: { flex: 1 },
-  page: { gap: 16, paddingHorizontal: 16, paddingTop: 8, paddingBottom: TAB_BAR_RISE + 24 },
-  failed: { flex: 1, justifyContent: "center", gap: 16, paddingHorizontal: 24 },
+  page: {
+    gap: space.s8,
+    paddingHorizontal: space.s8,
+    paddingTop: space.s4,
+    paddingBottom: TAB_BAR_RISE + 24,
+  },
+  failed: { flex: 1, justifyContent: "center", gap: space.s8, paddingHorizontal: space.s12 },
   header: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
     flexWrap: "wrap",
-    gap: 10,
+    gap: space.s5,
   },
-  title: { fontFamily: fonts.display, fontSize: 30, color: colors.text },
+  title: { fontFamily: fonts.display, fontSize: fontSizes.heading, color: colors.pageInk },
   codeChip: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 8,
+    gap: space.s4,
     minHeight: 38,
-    paddingHorizontal: 14,
+    paddingHorizontal: space.s7,
     borderRadius: 19,
     backgroundColor: colors.panel,
   },
-  codeLabel: { fontFamily: fonts.ui.semibold, fontSize: 13, color: colors.textMuted },
-  code: { fontFamily: fonts.display, fontSize: 16, color: colors.text, letterSpacing: 1 },
-  warning: { fontFamily: fonts.ui.bold, fontSize: 15, lineHeight: 21, color: colors.accent },
+  codeLabel: {
+    fontFamily: fonts.ui.semibold,
+    fontSize: fontSizes.small,
+    color: colors.pageInkMuted,
+  },
+  code: {
+    fontFamily: fonts.display,
+    fontSize: fontSizes.bodyLarge,
+    color: colors.pageInk,
+    letterSpacing: 1,
+  },
+  warning: {
+    fontFamily: fonts.ui.bold,
+    fontSize: fontSizes.body,
+    lineHeight: 21,
+    color: colors.rubric,
+  },
   hidden: { display: "none" },
-  hint: { fontFamily: fonts.ui.semibold, fontSize: 16, color: colors.text, textAlign: "center" },
-  empty: { gap: 14, paddingVertical: 12 },
+  hint: {
+    fontFamily: fonts.ui.semibold,
+    fontSize: fontSizes.bodyLarge,
+    color: colors.pageInk,
+    textAlign: "center",
+  },
+  empty: { gap: space.s7, paddingVertical: space.s6 },
   emptyText: {
     fontFamily: fonts.text.italic,
-    fontSize: 18,
+    fontSize: fontSizes.subtitle,
     lineHeight: 25,
-    color: colors.textMuted,
+    color: colors.pageInkMuted,
     textAlign: "center",
   },
   kicker: {
     fontFamily: fonts.ui.extrabold,
-    fontSize: 12,
+    fontSize: fontSizes.caption,
     letterSpacing: 2,
-    color: colors.textMuted,
+    color: colors.pageInkMuted,
   },
   getting: { color: colors.success },
   giving: { color: colors.danger },
@@ -596,25 +620,43 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    gap: 8,
+    gap: space.s4,
   },
-  timeLeft: { flexDirection: "row", alignItems: "center", gap: 4 },
-  timeLeftText: { fontFamily: fonts.ui.semibold, fontSize: 13, color: colors.textMuted },
-  sides: { flexDirection: "row", alignItems: "center", gap: 8 },
-  side: { flex: 1, gap: 8, alignItems: "center" },
-  swap: { alignItems: "center", paddingTop: 20 },
-  offerActions: { gap: 4, marginTop: 4 },
-  sentWords: { fontFamily: fonts.text.regular, fontSize: 17, lineHeight: 24, color: colors.text },
+  timeLeft: { flexDirection: "row", alignItems: "center", gap: space.s2 },
+  timeLeftText: {
+    fontFamily: fonts.ui.semibold,
+    fontSize: fontSizes.small,
+    color: colors.pageInkMuted,
+  },
+  sides: { flexDirection: "row", alignItems: "center", gap: space.s4 },
+  side: { flex: 1, gap: space.s4, alignItems: "center" },
+  swap: { alignItems: "center", paddingTop: space.s10 },
+  offerActions: { gap: space.s2, marginTop: space.s2 },
+  sentWords: {
+    fontFamily: fonts.text.regular,
+    fontSize: fontSizes.lead,
+    lineHeight: 24,
+    color: colors.pageInk,
+  },
   italic: { fontFamily: fonts.text.italic },
-  sentStatus: { fontFamily: fonts.ui.semibold, fontSize: 13, color: colors.textMuted },
-  history: { gap: 8, marginTop: 8 },
+  sentStatus: {
+    fontFamily: fonts.ui.semibold,
+    fontSize: fontSizes.small,
+    color: colors.pageInkMuted,
+  },
+  history: { gap: space.s4, marginTop: space.s4 },
   historyLine: {
     fontFamily: fonts.ui.medium,
-    fontSize: 14,
+    fontSize: fontSizes.label,
     lineHeight: 20,
-    color: colors.textMuted,
+    color: colors.pageInkMuted,
   },
-  rules: { fontFamily: fonts.ui.medium, fontSize: 13, lineHeight: 19, color: colors.textFaint },
+  rules: {
+    fontFamily: fonts.ui.medium,
+    fontSize: fontSizes.small,
+    lineHeight: 19,
+    color: colors.pageInkFaint,
+  },
   notice: {
     position: "absolute",
     top: 8,
@@ -622,14 +664,19 @@ const styles = StyleSheet.create({
     right: 16,
     flexDirection: "row",
     alignItems: "center",
-    gap: 12,
-    padding: 14,
-    borderRadius: 16,
+    gap: space.s6,
+    padding: space.s7,
+    borderRadius: radii.xxl,
     borderWidth: 2,
     borderColor: colors.success,
     backgroundColor: colors.sheet,
   },
   noticeError: { borderColor: colors.danger },
-  noticeText: { flex: 1, fontFamily: fonts.ui.semibold, fontSize: 15, color: colors.text },
-  noticeLink: { color: colors.accent, textDecorationLine: "underline" },
+  noticeText: {
+    flex: 1,
+    fontFamily: fonts.ui.semibold,
+    fontSize: fontSizes.body,
+    color: colors.pageInk,
+  },
+  noticeLink: { color: colors.rubric, textDecorationLine: "underline" },
 });

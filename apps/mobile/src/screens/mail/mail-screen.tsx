@@ -25,7 +25,7 @@ import { openCoffret } from "@/levels/coffret";
 import { useNow } from "@/player/shared";
 import { mailbox, wallet } from "@/player/state";
 import { usePlayerView } from "@/player/use-player-view";
-import { colors, fonts } from "@/theme";
+import { alpha, colors, fontSizes, fonts, radii, space } from "@/theme";
 import { Icon } from "@/ui/icon";
 import { Page, Paragraph } from "@/ui/page";
 import { TextButton } from "@/ui/text-button";
@@ -253,7 +253,7 @@ function RowItem({ row }: { readonly row: Row }) {
       style={({ pressed }) => [styles.row, fresh && styles.fresh, pressed && styles.pressed]}
     >
       <View style={styles.icon}>
-        <Icon name={row.icon} size={20} color={fresh ? colors.accent : colors.text} />
+        <Icon name={row.icon} size={20} color={fresh ? colors.rubric : colors.pageInk} />
       </View>
       <View style={styles.text}>
         <Text style={styles.title}>{row.title}</Text>
@@ -265,37 +265,42 @@ function RowItem({ row }: { readonly row: Row }) {
 }
 
 const styles = StyleSheet.create({
-  section: { gap: 8 },
+  section: { gap: space.s4 },
   heading: {
     fontFamily: fonts.ui.extrabold,
-    fontSize: 12,
+    fontSize: fontSizes.caption,
     letterSpacing: 2,
-    color: colors.textMuted,
-    marginBottom: 2,
+    color: colors.pageInkMuted,
+    marginBottom: space.s1,
   },
   row: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 12,
+    gap: space.s6,
     minHeight: 60,
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    borderRadius: 16,
+    paddingHorizontal: space.s7,
+    paddingVertical: space.s5,
+    borderRadius: radii.xxl,
     backgroundColor: colors.panel,
   },
-  fresh: { borderWidth: 1, borderColor: "rgba(255, 210, 77, 0.45)" },
+  fresh: { borderWidth: 1, borderColor: alpha(colors.gilt, 0.45) },
   pressed: { opacity: 0.7 },
   icon: {
     width: 40,
     height: 40,
-    borderRadius: 12,
-    backgroundColor: colors.background,
+    borderRadius: radii.lg,
+    backgroundColor: colors.page,
     alignItems: "center",
     justifyContent: "center",
   },
-  text: { flex: 1, gap: 2 },
-  title: { fontFamily: fonts.ui.bold, fontSize: 15, lineHeight: 20, color: colors.text },
-  word: { fontFamily: fonts.text.italic, fontSize: 17 },
-  detail: { fontFamily: fonts.ui.medium, fontSize: 13, color: colors.textMuted },
-  when: { fontFamily: fonts.ui.medium, fontSize: 12, color: colors.textFaint },
+  text: { flex: 1, gap: space.s1 },
+  title: {
+    fontFamily: fonts.ui.bold,
+    fontSize: fontSizes.body,
+    lineHeight: 20,
+    color: colors.pageInk,
+  },
+  word: { fontFamily: fonts.text.italic, fontSize: fontSizes.lead },
+  detail: { fontFamily: fonts.ui.medium, fontSize: fontSizes.small, color: colors.pageInkMuted },
+  when: { fontFamily: fonts.ui.medium, fontSize: fontSizes.caption, color: colors.pageInkFaint },
 });

@@ -1,5 +1,5 @@
 import { Pressable, StyleSheet, Text, View } from "react-native";
-import { colors, fonts } from "@/theme";
+import { alpha, colors, fontSizes, fonts, radii, space } from "@/theme";
 
 /** A row of tabs inside one pill: one choice among a few views of a screen. */
 export function Segmented<T extends string>({
@@ -50,25 +50,25 @@ export function Segmented<T extends string>({
 const styles = StyleSheet.create({
   row: {
     flexDirection: "row",
-    padding: 4,
-    gap: 4,
-    borderRadius: 22,
+    padding: space.s2,
+    gap: space.s2,
+    borderRadius: radii.x4,
     backgroundColor: colors.well,
   },
   tab: {
     flex: 1,
     minHeight: 38,
-    paddingHorizontal: 8,
-    borderRadius: 18,
+    paddingHorizontal: space.s4,
+    borderRadius: radii.x3,
     alignItems: "center",
     justifyContent: "center",
   },
-  tabOn: { backgroundColor: colors.backgroundRaised },
-  label: { fontFamily: fonts.ui.bold, fontSize: 14, color: colors.textMuted },
-  labelOn: { color: colors.text },
+  tabOn: { backgroundColor: colors.pageRaised },
+  label: { fontFamily: fonts.ui.bold, fontSize: fontSizes.label, color: colors.pageInkMuted },
+  labelOn: { color: colors.pageInk },
   rowLight: { padding: 0, backgroundColor: "transparent" },
-  tabLight: { paddingHorizontal: 2 },
-  tabOnLight: { backgroundColor: "rgba(255, 210, 77, 0.14)" },
-  labelLight: { fontSize: 14 },
-  labelOnLight: { color: colors.accent },
+  tabLight: { paddingHorizontal: space.s1 },
+  tabOnLight: { backgroundColor: alpha(colors.gilt, 0.14) },
+  labelLight: { fontSize: fontSizes.label },
+  labelOnLight: { color: colors.rubric },
 });

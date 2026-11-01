@@ -2,7 +2,7 @@ import { OPEN_HINTS } from "@leximon/view-model";
 import * as SecureStore from "expo-secure-store";
 import { useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
-import { colors, fonts } from "@/theme";
+import { alpha, colors, fontSizes, fonts, radii, space } from "@/theme";
 
 /** Kept on the device: the hint closed, and how many sachets were opened since it showed. */
 const HINT_KEY = "leximon_tear_hint";
@@ -58,21 +58,26 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     alignSelf: "center",
-    gap: 10,
-    paddingVertical: 6,
-    paddingLeft: 14,
-    paddingRight: 6,
-    borderRadius: 999,
-    backgroundColor: "rgba(246, 240, 226, 0.1)",
+    gap: space.s5,
+    paddingVertical: space.s3,
+    paddingLeft: space.s7,
+    paddingRight: space.s3,
+    borderRadius: radii.pill,
+    backgroundColor: alpha(colors.pageInk, 0.1),
   },
-  text: { fontFamily: fonts.ui.bold, fontSize: 13, color: colors.text },
+  text: { fontFamily: fonts.ui.bold, fontSize: fontSizes.small, color: colors.pageInk },
   close: {
     width: 24,
     height: 24,
     borderRadius: 12,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "rgba(246, 240, 226, 0.12)",
+    backgroundColor: alpha(colors.pageInk, 0.12),
   },
-  closeText: { fontFamily: fonts.ui.extrabold, fontSize: 16, lineHeight: 18, color: colors.text },
+  closeText: {
+    fontFamily: fonts.ui.extrabold,
+    fontSize: fontSizes.bodyLarge,
+    lineHeight: 18,
+    color: colors.pageInk,
+  },
 });

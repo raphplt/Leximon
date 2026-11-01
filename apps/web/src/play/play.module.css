@@ -13,7 +13,7 @@
   /* The whole window under the top bar (70 px and its border): the counter takes what is left. */
   min-height: max(600px, calc(100dvh - 71px));
   margin: 0 auto;
-  padding: 24px 32px 32px;
+  padding: var(--lx-s12) var(--lx-s16) var(--lx-s16);
 }
 
 /* --- Level band --- */
@@ -22,15 +22,15 @@
   box-sizing: border-box;
   display: flex;
   align-items: center;
-  gap: 18px;
+  gap: var(--lx-s9);
   /* The band's height once loaded: the page below does not move when it fills. */
   min-height: 97px;
-  padding: 14px 20px;
+  padding: var(--lx-s7) var(--lx-s10);
   border-radius: 24px;
   background: linear-gradient(180deg, #313859, #2a3050);
   box-shadow:
-    0 12px 30px rgba(10, 12, 24, 0.35),
-    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+    0 12px 30px color-mix(in srgb, var(--lx-color-scrim) 35%, transparent),
+    inset 0 1px 0 color-mix(in srgb, var(--lx-color-glint) 6%, transparent);
 }
 
 .stripLoading {
@@ -47,7 +47,7 @@
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--lx-s4);
   color: inherit;
   text-decoration: none;
 }
@@ -56,33 +56,33 @@
   display: flex;
   justify-content: space-between;
   align-items: baseline;
-  gap: 8px;
+  gap: var(--lx-s4);
 }
 
 .headline {
   overflow: hidden;
   font-weight: 800;
-  font-size: 17px;
+  font-size: var(--lx-size-lead);
   white-space: nowrap;
   text-overflow: ellipsis;
 }
 
 .title {
-  color: var(--lx-color-text-muted);
+  color: var(--lx-color-page-ink-muted);
   font-weight: 600;
 }
 
 /* The next reward, said plainly under the bar. */
 .nextLine {
-  font-size: 13px;
+  font-size: var(--lx-size-small);
   font-weight: 700;
-  color: var(--lx-color-text-muted);
+  color: var(--lx-color-page-ink-muted);
 }
 
 .xpNumbers {
-  font-size: 13px;
+  font-size: var(--lx-size-small);
   font-weight: 700;
-  color: var(--lx-color-text-muted);
+  color: var(--lx-color-page-ink-muted);
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
@@ -91,7 +91,7 @@
   display: flex;
   align-items: center;
   margin: 0;
-  padding: 0 0 0 8px;
+  padding: 0 0 0 var(--lx-s4);
   list-style: none;
 }
 
@@ -128,11 +128,11 @@
 
 .nextIcon {
   background: #3a4268;
-  color: var(--lx-color-accent);
+  color: var(--lx-color-rubric);
 }
 
 .nextIconKraft {
-  border-radius: 12px;
+  border-radius: var(--lx-radius-lg);
   background: linear-gradient(160deg, #e9c98f, #b88a4e);
   color: var(--lx-color-kraft-title);
   box-shadow: 0 3px 0 #7a5a2e;
@@ -145,16 +145,16 @@
 
 /* One line each: the four steps stay level. */
 .nextWord {
-  font-size: 12px;
+  font-size: var(--lx-size-caption);
   font-weight: 800;
   line-height: 1.15;
   white-space: nowrap;
 }
 
 .nextLevel {
-  font-size: 11px;
+  font-size: var(--lx-size-micro);
   font-weight: 800;
-  color: var(--lx-color-text-muted);
+  color: var(--lx-color-page-ink-muted);
 }
 
 .claim {
@@ -170,8 +170,8 @@
   place-items: center;
   min-height: 300px;
   margin: 0;
-  font-size: 14px;
-  color: var(--lx-color-text-muted);
+  font-size: var(--lx-size-label);
+  color: var(--lx-color-page-ink-muted);
   animation: arrive 200ms ease-out 400ms backwards;
 }
 
@@ -198,7 +198,7 @@
   grid-row: 1;
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: var(--lx-s9);
   /* Level with the top of the sachet, on both sides. */
   padding-top: 96px;
 }
@@ -222,18 +222,18 @@
   position: absolute;
   inset: -2px;
   border-radius: 50%;
-  background: conic-gradient(var(--ring) var(--done), #4a5175 0);
+  background: conic-gradient(var(--ring) var(--done), var(--lx-color-track) 0);
   mask: radial-gradient(closest-side, transparent 84%, #000 86%);
   pointer-events: none;
 }
 
 .dailyRing {
-  --ring: #3bd3a5;
+  --ring: var(--lx-color-success-bright);
 }
 
 /* The clan's weekly goal, toward its next tier. */
 .goalRing {
-  --ring: var(--lx-color-accent);
+  --ring: var(--lx-color-rubric);
 }
 
 /* --- The counter --- */
@@ -249,8 +249,8 @@
   border-radius: 32px;
   background: linear-gradient(180deg, #353d65 0%, #2b3253 60%, #242a45 100%);
   box-shadow:
-    0 24px 60px rgba(8, 10, 22, 0.45),
-    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    0 24px 60px color-mix(in srgb, var(--lx-color-scrim) 45%, transparent),
+    inset 0 1px 0 color-mix(in srgb, var(--lx-color-glint) 8%, transparent);
 }
 
 /* The lamp over the counter: a soft glow from above, no edge to it. */
@@ -274,10 +274,10 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 12px;
+  gap: var(--lx-s6);
   /* Room for the stock ring before it is known. */
   min-height: 38px;
-  padding: 20px 22px 0;
+  padding: var(--lx-s10) 22px 0;
 }
 
 .stage {
@@ -288,8 +288,8 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 18px;
-  padding: 36px 0 28px;
+  gap: var(--lx-s9);
+  padding: 36px 0 var(--lx-s14);
 }
 
 /* The pool of light on the counter, where the pouch lies. */
@@ -302,7 +302,11 @@
   height: 440px;
   translate: -50% -50%;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(255, 210, 77, 0.12), rgba(255, 210, 77, 0) 66%);
+  background: radial-gradient(
+    circle,
+    color-mix(in srgb, var(--lx-color-gilt) 12%, transparent),
+    transparent 66%
+  );
   pointer-events: none;
 }
 
@@ -510,13 +514,13 @@
   inset: 0;
   padding: 0;
   border: 0;
-  border-radius: 10px;
+  border-radius: var(--lx-radius-md);
   background: none;
   cursor: pointer;
 }
 
 .peekHit:focus-visible {
-  outline: 2px solid var(--lx-color-accent);
+  outline: 2px solid var(--lx-color-gilt);
   outline-offset: 4px;
 }
 
@@ -527,17 +531,17 @@
   bottom: 10%;
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--lx-s3);
   max-width: calc(50% - 130px);
   min-height: 40px;
-  padding: 0 14px;
+  padding: 0 var(--lx-s7);
   border: 0;
   border-radius: var(--lx-radius-pill);
-  background: rgba(27, 31, 51, 0.82);
-  box-shadow: inset 0 0 0 1px rgba(246, 240, 226, 0.14);
-  color: var(--lx-color-text);
+  background: color-mix(in srgb, var(--lx-color-well) 82%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--lx-color-page-ink) 14%, transparent);
+  color: var(--lx-color-page-ink);
   font: inherit;
-  font-size: 14px;
+  font-size: var(--lx-size-label);
   font-weight: 800;
   white-space: nowrap;
   cursor: pointer;
@@ -545,11 +549,11 @@
 }
 
 .peekArrow:hover {
-  background: rgba(52, 59, 92, 0.95);
+  background: color-mix(in srgb, var(--lx-color-page-raised) 95%, transparent);
 }
 
 .peekArrow:focus-visible {
-  outline: 2px solid var(--lx-color-accent);
+  outline: 2px solid var(--lx-color-gilt);
   outline-offset: 2px;
 }
 
@@ -577,8 +581,8 @@
   padding: 3px 9px;
   border-radius: var(--lx-radius-pill);
   background: var(--lx-color-well);
-  color: var(--lx-color-text);
-  font-size: 12px;
+  color: var(--lx-color-page-ink);
+  font-size: var(--lx-size-caption);
   font-weight: 800;
   white-space: nowrap;
   pointer-events: none;
@@ -590,14 +594,14 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 10px;
+  gap: var(--lx-s5);
   /* Room for the button before the stock is known. */
   min-height: 96px;
-  padding: 20px 20px 22px;
+  padding: var(--lx-s10) var(--lx-s10) 22px;
   background: linear-gradient(180deg, #1f243c, #1a1e33);
   /* The dotted tear line of the sachet, between the counter and its tablet. */
-  border-top: 2px dashed rgba(246, 240, 226, 0.14);
-  box-shadow: inset 0 14px 22px rgba(0, 0, 0, 0.25);
+  border-top: 2px dashed color-mix(in srgb, var(--lx-color-page-ink) 14%, transparent);
+  box-shadow: inset 0 14px 22px color-mix(in srgb, var(--lx-color-shade) 25%, transparent);
 }
 
 .openButton {
@@ -608,8 +612,8 @@
   position: relative;
   max-width: 420px;
   margin: 0;
-  font-size: 14px;
-  color: var(--lx-color-text-muted);
+  font-size: var(--lx-size-label);
+  color: var(--lx-color-page-ink-muted);
   text-align: center;
 }
 
@@ -625,34 +629,34 @@
 .counterTitle {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: var(--lx-s1);
   min-width: 0;
 }
 
 .counterName {
   font-family: var(--font-display), Georgia, serif;
-  font-size: 19px;
+  font-size: var(--lx-size-subtitle);
   font-weight: 700;
   line-height: 1.15;
 }
 
 .counterTagline {
   font-family: var(--font-text), Georgia, serif;
-  font-size: 15px;
-  color: var(--lx-color-text-muted);
+  font-size: var(--lx-size-body);
+  color: var(--lx-color-page-ink-muted);
 }
 
 .picker {
   display: none;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
+  gap: var(--lx-s4);
 }
 
 .arrows {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--lx-s3);
 }
 
 .pickerChips {
@@ -663,7 +667,7 @@
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: 6px;
+  gap: var(--lx-s3);
 }
 
 .pickerChip {
@@ -676,8 +680,8 @@
   border: 0;
   border-radius: 50%;
   background: none;
-  box-shadow: inset 0 0 0 2px var(--lx-color-text-muted);
-  color: var(--lx-color-text-faint);
+  box-shadow: inset 0 0 0 2px var(--lx-color-page-ink-muted);
+  color: var(--lx-color-page-ink-faint);
   cursor: pointer;
 }
 
@@ -689,12 +693,12 @@
 }
 
 .pickerChipOn {
-  background: var(--lx-color-accent);
+  background: var(--lx-color-action);
   box-shadow: none;
 }
 
 .pickerChipLocked {
-  box-shadow: inset 0 0 0 1px var(--lx-color-outline);
+  box-shadow: inset 0 0 0 1px var(--lx-color-rule);
 }
 
 /* Between the floating buttons on each side. */
@@ -702,9 +706,9 @@
   max-width: 200px;
   margin: 0;
   font-family: var(--font-text), Georgia, serif;
-  font-size: 13px;
+  font-size: var(--lx-size-small);
   line-height: 1.3;
-  color: var(--lx-color-text-muted);
+  color: var(--lx-color-page-ink-muted);
   text-align: center;
 }
 
@@ -717,11 +721,11 @@
 }
 
 .arrowName > span:first-child {
-  font-size: 10px;
+  font-size: var(--lx-size-nano);
 }
 
 .arrowTitle {
-  font-size: 18px;
+  font-size: var(--lx-size-subtitle);
   line-height: 1.1;
 }
 
@@ -731,10 +735,10 @@
   flex-shrink: 0;
   display: inline-flex;
   align-items: center;
-  gap: 10px;
-  padding: 8px 12px;
+  gap: var(--lx-s5);
+  padding: var(--lx-s4) var(--lx-s6);
   border-radius: var(--lx-radius-pill);
-  background: rgba(27, 31, 51, 0.55);
+  background: color-mix(in srgb, var(--lx-color-well) 55%, transparent);
 }
 
 .dots {
@@ -751,18 +755,21 @@
 
 /* Empty, or filling clockwise as the next sachet comes. */
 .dotSlot {
-  background: conic-gradient(rgba(255, 210, 77, 0.65) var(--share), var(--lx-color-track) 0);
+  background: conic-gradient(
+    color-mix(in srgb, var(--lx-color-gilt) 65%, transparent) var(--share),
+    var(--lx-color-track) 0
+  );
 }
 
 .dotFull {
-  background: var(--lx-color-accent);
-  box-shadow: 0 0 6px rgba(255, 210, 77, 0.45);
+  background: var(--lx-color-action);
+  box-shadow: 0 0 6px color-mix(in srgb, var(--lx-color-gilt) 45%, transparent);
 }
 
 .stockNote {
-  font-size: 12px;
+  font-size: var(--lx-size-caption);
   font-weight: 700;
-  color: var(--lx-color-text-muted);
+  color: var(--lx-color-page-ink-muted);
   white-space: nowrap;
 }
 
@@ -773,13 +780,13 @@
   z-index: 3;
   display: inline-flex;
   align-items: center;
-  gap: 10px;
+  gap: var(--lx-s5);
   margin: 0;
   padding: 7px 7px 7px 15px;
   border-radius: var(--lx-radius-pill);
-  background: rgba(246, 240, 226, 0.1);
-  color: var(--lx-color-text);
-  font-size: 13px;
+  background: color-mix(in srgb, var(--lx-color-page-ink) 10%, transparent);
+  color: var(--lx-color-page-ink);
+  font-size: var(--lx-size-small);
   font-weight: 700;
 }
 
@@ -792,10 +799,10 @@
   padding: 0;
   border: 0;
   border-radius: 50%;
-  background: rgba(246, 240, 226, 0.12);
+  background: color-mix(in srgb, var(--lx-color-page-ink) 12%, transparent);
   color: inherit;
   font: inherit;
-  font-size: 16px;
+  font-size: var(--lx-size-body-large);
   font-weight: 800;
   line-height: 1;
   cursor: pointer;
@@ -807,16 +814,16 @@
   box-sizing: border-box;
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: var(--lx-s8);
   width: 100%;
   max-width: 560px;
-  margin: 6px auto 0;
-  padding: 12px 16px 12px 20px;
-  border-radius: 22px;
+  margin: var(--lx-s3) auto 0;
+  padding: var(--lx-s6) var(--lx-s8) var(--lx-s6) var(--lx-s10);
+  border-radius: var(--lx-radius-x4);
   background: linear-gradient(180deg, #313859, #2a3050);
   box-shadow:
-    0 12px 30px rgba(10, 12, 24, 0.3),
-    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+    0 12px 30px color-mix(in srgb, var(--lx-color-scrim) 30%, transparent),
+    inset 0 1px 0 color-mix(in srgb, var(--lx-color-glint) 6%, transparent);
 }
 
 .slippingCard {
@@ -830,7 +837,7 @@
   min-width: 0;
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: var(--lx-s8);
   padding: 0;
   border: none;
   background: none;
@@ -850,7 +857,7 @@
 
 .slippingText {
   font-family: var(--font-text), Georgia, serif;
-  font-size: 17px;
+  font-size: var(--lx-size-lead);
   line-height: 1.3;
 }
 
@@ -862,9 +869,9 @@
   -webkit-line-clamp: 2;
   line-clamp: 2;
   font-family: var(--font-text), Georgia, serif;
-  font-size: 14px;
+  font-size: var(--lx-size-label);
   line-height: 1.35;
-  color: var(--lx-color-text-muted);
+  color: var(--lx-color-page-ink-muted);
 }
 
 .slippingText em {
@@ -883,30 +890,30 @@
   }
 
   .floor {
-    gap: 20px;
+    gap: var(--lx-s10);
   }
 }
 
 /* Short windows (a laptop): everything tightens so that the button stays in sight. */
 @media (min-width: 760px) and (max-height: 820px) {
   .page {
-    gap: 14px;
-    padding-top: 14px;
-    padding-bottom: 18px;
+    gap: var(--lx-s7);
+    padding-top: var(--lx-s7);
+    padding-bottom: var(--lx-s9);
   }
 
   .strip {
     min-height: 89px;
-    padding-block: 10px;
+    padding-block: var(--lx-s5);
   }
 
   .counterHead {
-    padding-top: 14px;
+    padding-top: var(--lx-s7);
   }
 
   .stage {
-    gap: 12px;
-    padding: 18px 0 14px;
+    gap: var(--lx-s6);
+    padding: var(--lx-s9) 0 var(--lx-s7);
   }
 
   .sachet {
@@ -915,13 +922,13 @@
 
   .shelf {
     min-height: 84px;
-    padding: 14px 20px 16px;
+    padding: var(--lx-s7) var(--lx-s10) var(--lx-s8);
   }
 
   .fabsLeft,
   .fabsRight {
     padding-top: 60px;
-    gap: 12px;
+    gap: var(--lx-s6);
   }
 }
 
@@ -929,8 +936,8 @@
 @media (max-width: 759px) {
   .page {
     min-height: 0;
-    gap: 14px;
-    padding: 8px 14px 28px;
+    gap: var(--lx-s7);
+    padding: var(--lx-s4) var(--lx-s7) var(--lx-s14);
   }
 
   /* The phone top bar already carries the level and XP; the coffrets keep their button. */
@@ -949,7 +956,7 @@
     position: absolute;
     top: 76px;
     z-index: 3;
-    gap: 12px;
+    gap: var(--lx-s6);
     padding-top: 0;
   }
 
@@ -972,7 +979,7 @@
   .counterHead {
     justify-content: center;
     min-height: 44px;
-    padding: 12px 14px 0;
+    padding: var(--lx-s6) var(--lx-s7) 0;
   }
 
   /* The phone top bar carries the stock; the arrows change the collection. */
@@ -994,7 +1001,7 @@
   .stage {
     box-sizing: border-box;
     min-height: 336px;
-    padding: 8px 0 10px;
+    padding: var(--lx-s4) 0 var(--lx-s5);
   }
 
   /* Small enough that the word below shows above the tabs on a common phone. */
@@ -1008,13 +1015,13 @@
   /* Between the floating buttons. */
   .tearHint {
     max-width: 200px;
-    font-size: 12px;
+    font-size: var(--lx-size-caption);
     line-height: 1.3;
   }
 
   .shelf {
     min-height: 76px;
-    padding: 12px 16px;
+    padding: var(--lx-s6) var(--lx-s8);
   }
 
   .openButton {
@@ -1026,6 +1033,6 @@
   }
 
   .slippingText {
-    font-size: 16px;
+    font-size: var(--lx-size-body-large);
   }
 }

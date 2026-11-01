@@ -2,7 +2,7 @@ import { RARITIES } from "@leximon/core";
 import { describe, expect, it } from "vitest";
 import { cssFill, cssRootRule, cssUrl, cssVariables, solidColor } from "./css";
 import { levelBadge, levelBadgeText } from "./level-badge";
-import { backTone, backTones, colors, rarityStyles } from "./tokens";
+import { alpha, backTone, backTones, colors, rarityStyles } from "./tokens";
 
 /** WCAG relative luminance of a `#RRGGBB` color. */
 function luminance(hex: string): number {
@@ -33,9 +33,9 @@ describe("rarity styles", () => {
   });
 
   it("keep the screen text readable", () => {
-    expect(contrast(colors.text, colors.background)).toBeGreaterThanOrEqual(4.5);
-    expect(contrast(colors.textMuted, colors.background)).toBeGreaterThanOrEqual(4.5);
-    expect(contrast(colors.accentInk, colors.accent)).toBeGreaterThanOrEqual(4.5);
+    expect(contrast(colors.pageInk, colors.page)).toBeGreaterThanOrEqual(4.5);
+    expect(contrast(colors.pageInkMuted, colors.page)).toBeGreaterThanOrEqual(4.5);
+    expect(contrast(colors.actionInk, colors.action)).toBeGreaterThanOrEqual(4.5);
   });
 });
 
@@ -58,9 +58,17 @@ describe("css helpers", () => {
   });
 
   it("declares global tokens as custom properties", () => {
-    expect(cssVariables()["--lx-color-text-muted"]).toBe(colors.textMuted);
+    expect(cssVariables()["--lx-color-page-ink-muted"]).toBe(colors.pageInkMuted);
     expect(cssVariables()["--lx-radius-card"]).toBe("16px");
-    expect(cssRootRule()).toMatch(/^:root\{--lx-color-background:#262B40;/);
+    expect(cssVariables()["--lx-size-body"]).toBe("15px");
+    expect(cssVariables()["--lx-s6"]).toBe("12px");
+    expect(cssRootRule()).toMatch(/^:root\{--lx-color-page:#262B40;/);
+  });
+});
+
+describe("alpha", () => {
+  it("gives a role an opacity", () => {
+    expect(alpha(colors.page, 0.5)).toBe("rgba(38, 43, 64, 0.5)");
   });
 });
 

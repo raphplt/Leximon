@@ -1,5 +1,5 @@
 import { StyleSheet, View, type ViewProps } from "react-native";
-import { colors } from "@/theme";
+import { colors, space } from "@/theme";
 
 /** A block of a screen, raised on the background. */
 export function Panel({ style, ...view }: ViewProps) {
@@ -7,5 +7,5 @@ export function Panel({ style, ...view }: ViewProps) {
 }
 
 const styles = StyleSheet.create({
-  panel: { padding: 18, gap: 12, borderRadius: 20, backgroundColor: colors.panel },
+  panel: { padding: space.s9, gap: space.s6, borderRadius: 20, backgroundColor: colors.panel },
 });

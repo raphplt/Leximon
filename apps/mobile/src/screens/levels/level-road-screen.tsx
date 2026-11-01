@@ -27,7 +27,7 @@ import { openCoffret } from "@/levels/coffret";
 import { REWARD_ICONS } from "@/levels/reward-icons";
 import { useNow, useShared, useSharedFailed } from "@/player/shared";
 import { levelRewards, progress as progressResource } from "@/player/state";
-import { colors, fonts } from "@/theme";
+import { alpha, colors, fontSizes, fonts, radii, space } from "@/theme";
 import { Button } from "@/ui/button";
 import { Icon } from "@/ui/icon";
 import { LevelMedal } from "@/ui/level";
@@ -112,7 +112,7 @@ export function LevelRoadScreen({ asked }: { readonly asked: number | null }) {
             accessibilityRole="button"
             accessibilityLabel="Quartier précédent"
           >
-            <Icon name="back" size={18} color={colors.text} />
+            <Icon name="back" size={18} color={colors.pageInk} />
           </Pressable>
           <View style={styles.quarterName} accessibilityLiveRegion="polite">
             <Text style={styles.quarterRange}>{quarter.range.toUpperCase()}</Text>
@@ -125,7 +125,7 @@ export function LevelRoadScreen({ asked }: { readonly asked: number | null }) {
             accessibilityRole="button"
             accessibilityLabel="Quartier suivant"
           >
-            <Icon name="chev" size={18} color={colors.text} />
+            <Icon name="chev" size={18} color={colors.pageInk} />
           </Pressable>
         </View>
         <Plateau
@@ -144,7 +144,7 @@ export function LevelRoadScreen({ asked }: { readonly asked: number | null }) {
           {detail.items.map((item) => (
             <View key={item.title} style={styles.item}>
               <View style={styles.itemIcon}>
-                <Icon name={REWARD_ICONS[item.icon]} size={22} color={colors.accent} />
+                <Icon name={REWARD_ICONS[item.icon]} size={22} color={colors.rubric} />
               </View>
               <View style={styles.itemText}>
                 <Text style={styles.itemTitle}>{item.title}</Text>
@@ -375,7 +375,7 @@ function Quarters({
               ]}
             >
               {done ? (
-                <Icon name="check" size={14} color={colors.accentInk} />
+                <Icon name="check" size={14} color={colors.actionInk} />
               ) : (
                 <Text style={[styles.quarterIndex, current && styles.quarterIndexHere]}>
                   {q.index}
@@ -400,22 +400,22 @@ const styles = StyleSheet.create({
     marginHorizontal: -12,
     overflow: "hidden",
     borderRadius: 24,
-    backgroundColor: colors.sunken,
+    backgroundColor: colors.binding,
   },
   boardHead: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    gap: 10,
-    paddingHorizontal: 14,
-    paddingTop: 14,
+    gap: space.s5,
+    paddingHorizontal: space.s7,
+    paddingTop: space.s7,
     zIndex: 3,
   },
   round: {
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: colors.backgroundRaised,
+    backgroundColor: colors.pageRaised,
     alignItems: "center",
     justifyContent: "center",
   },
@@ -423,17 +423,17 @@ const styles = StyleSheet.create({
   quarterName: { flex: 1, alignItems: "center" },
   quarterRange: {
     fontFamily: fonts.ui.extrabold,
-    fontSize: 11,
+    fontSize: fontSizes.micro,
     letterSpacing: 1.3,
-    color: colors.textFaint,
+    color: colors.pageInkFaint,
   },
   quarterTitle: {
     fontFamily: fonts.display,
-    fontSize: 22,
-    color: colors.text,
+    fontSize: fontSizes.title,
+    color: colors.pageInk,
     textAlign: "center",
   },
-  plateau: { width: "100%", marginBottom: 8 },
+  plateau: { width: "100%", marginBottom: space.s4 },
   tile: { position: "absolute" },
   fog: { opacity: 0.55 },
   tileFace: {
@@ -449,48 +449,62 @@ const styles = StyleSheet.create({
   here: { position: "absolute" },
   kicker: {
     fontFamily: fonts.ui.extrabold,
-    fontSize: 12,
+    fontSize: fontSizes.caption,
     letterSpacing: 2,
-    color: colors.textMuted,
+    color: colors.pageInkMuted,
   },
-  detailTitle: { fontFamily: fonts.display, fontSize: 26, lineHeight: 30, color: colors.text },
-  items: { gap: 10 },
-  item: { flexDirection: "row", alignItems: "center", gap: 12 },
+  detailTitle: {
+    fontFamily: fonts.display,
+    fontSize: fontSizes.titleLarge,
+    lineHeight: 30,
+    color: colors.pageInk,
+  },
+  items: { gap: space.s5 },
+  item: { flexDirection: "row", alignItems: "center", gap: space.s6 },
   itemIcon: {
     width: 44,
     height: 44,
-    borderRadius: 14,
-    backgroundColor: colors.background,
+    borderRadius: radii.xl,
+    backgroundColor: colors.page,
     alignItems: "center",
     justifyContent: "center",
   },
   itemText: { flex: 1 },
-  itemTitle: { fontFamily: fonts.ui.extrabold, fontSize: 15, color: colors.text },
-  itemDetail: { fontFamily: fonts.ui.medium, fontSize: 13, color: colors.textMuted },
+  itemTitle: { fontFamily: fonts.ui.extrabold, fontSize: fontSizes.body, color: colors.pageInk },
+  itemDetail: {
+    fontFamily: fonts.ui.medium,
+    fontSize: fontSizes.small,
+    color: colors.pageInkMuted,
+  },
   opensBox: {
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    borderRadius: 14,
+    paddingHorizontal: space.s7,
+    paddingVertical: space.s6,
+    borderRadius: radii.xl,
     borderWidth: 1,
-    borderColor: "rgba(217, 180, 134, 0.4)",
-    backgroundColor: "rgba(217, 180, 134, 0.16)",
+    borderColor: alpha(colors.kraft, 0.4),
+    backgroundColor: alpha(colors.kraft, 0.16),
   },
   opensKicker: { color: colors.kraft },
-  opensText: { fontFamily: fonts.ui.extrabold, fontSize: 15, color: colors.text, marginTop: 2 },
-  done: { flexDirection: "row", alignItems: "center", gap: 6 },
-  doneText: { fontFamily: fonts.ui.extrabold, fontSize: 15, color: colors.success },
-  left: { fontFamily: fonts.ui.bold, fontSize: 15, color: colors.textMuted },
-  quarters: { gap: 2, paddingHorizontal: 10 },
-  quartersKicker: { paddingHorizontal: 6, marginBottom: 6 },
+  opensText: {
+    fontFamily: fonts.ui.extrabold,
+    fontSize: fontSizes.body,
+    color: colors.pageInk,
+    marginTop: space.s1,
+  },
+  done: { flexDirection: "row", alignItems: "center", gap: space.s3 },
+  doneText: { fontFamily: fonts.ui.extrabold, fontSize: fontSizes.body, color: colors.success },
+  left: { fontFamily: fonts.ui.bold, fontSize: fontSizes.body, color: colors.pageInkMuted },
+  quarters: { gap: space.s1, paddingHorizontal: space.s5 },
+  quartersKicker: { paddingHorizontal: space.s3, marginBottom: space.s3 },
   quarter: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 12,
+    gap: space.s6,
     minHeight: 44,
-    paddingHorizontal: 8,
+    paddingHorizontal: space.s4,
     borderRadius: 14,
   },
-  quarterOn: { backgroundColor: colors.backgroundRaised },
+  quarterOn: { backgroundColor: colors.pageRaised },
   quarterMark: {
     width: 28,
     height: 28,
@@ -498,14 +512,32 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  quarterDone: { backgroundColor: colors.accent },
+  quarterDone: { backgroundColor: colors.action },
   quarterHere: { backgroundColor: colors.badge },
-  quarterAhead: { backgroundColor: colors.sunken },
-  quarterIndex: { fontFamily: fonts.ui.extrabold, fontSize: 12, color: colors.textFaint },
-  quarterIndexHere: { color: "#FFFFFF" },
-  quarterLabel: { flex: 1, fontFamily: fonts.ui.bold, fontSize: 14, color: colors.text },
-  quarterLevels: { fontFamily: fonts.ui.medium, fontSize: 13, color: colors.textFaint },
-  source: { flexDirection: "row", justifyContent: "space-between", gap: 12 },
-  sourceAction: { flex: 1, fontFamily: fonts.ui.medium, fontSize: 14, color: colors.textMuted },
-  sourceXp: { fontFamily: fonts.ui.extrabold, fontSize: 14, color: colors.text },
+  quarterAhead: { backgroundColor: colors.binding },
+  quarterIndex: {
+    fontFamily: fonts.ui.extrabold,
+    fontSize: fontSizes.caption,
+    color: colors.pageInkFaint,
+  },
+  quarterIndexHere: { color: colors.inkOnColor },
+  quarterLabel: {
+    flex: 1,
+    fontFamily: fonts.ui.bold,
+    fontSize: fontSizes.label,
+    color: colors.pageInk,
+  },
+  quarterLevels: {
+    fontFamily: fonts.ui.medium,
+    fontSize: fontSizes.small,
+    color: colors.pageInkFaint,
+  },
+  source: { flexDirection: "row", justifyContent: "space-between", gap: space.s6 },
+  sourceAction: {
+    flex: 1,
+    fontFamily: fonts.ui.medium,
+    fontSize: fontSizes.label,
+    color: colors.pageInkMuted,
+  },
+  sourceXp: { fontFamily: fonts.ui.extrabold, fontSize: fontSizes.label, color: colors.pageInk },
 });

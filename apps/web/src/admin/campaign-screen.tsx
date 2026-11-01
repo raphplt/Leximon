@@ -1,4 +1,6 @@
-"use client";
+import { colors } from "@leximon/tokens";
+
+("use client");
 
 import {
   type AdminCampaign,
@@ -357,7 +359,7 @@ function PreviewPanel({ content }: { readonly content: AdminCampaignContent }) {
                 height: 560,
                 border: 0,
                 borderRadius: 10,
-                background: "#fff",
+                background: colors.glint,
               }}
             />
           )}

@@ -35,7 +35,7 @@ import Animated, {
 import { wordMemory } from "@/player/collection";
 import { useShared } from "@/player/shared";
 import { TAB_BAR_RISE } from "@/shell/tab-bar";
-import { colors, fonts } from "@/theme";
+import { alpha, colors, fontSizes, fonts, radii, space } from "@/theme";
 import { Button } from "@/ui/button";
 import { Icon } from "@/ui/icon";
 import { Panel } from "@/ui/panel";
@@ -103,7 +103,7 @@ export function QuestionView({
             accessibilityLabel="Arrêter le défi"
             style={styles.round}
           >
-            <Icon name="close" size={20} color={colors.text} />
+            <Icon name="close" size={20} color={colors.pageInk} />
           </Pressable>
           <View style={styles.dots} importantForAccessibility="no-hide-descendants">
             {session.questions.map((q, index) => {
@@ -114,7 +114,7 @@ export function QuestionView({
                     ? colors.success
                     : colors.danger
                   : index === session.index
-                    ? colors.accent
+                    ? colors.rubric
                     : colors.track;
               return <View key={q.cardId} style={[styles.dot, { backgroundColor: tone }]} />;
             })}
@@ -310,8 +310,8 @@ function TypedAnswer({
         maxLength={TYPED_ANSWER_MAX_LENGTH}
         accessibilityLabel="Le mot"
         placeholder="Le mot"
-        placeholderTextColor={colors.textFaint}
-        selectionColor={colors.accent}
+        placeholderTextColor={colors.pageInkFaint}
+        selectionColor={colors.rubric}
         autoComplete="off"
         autoCapitalize="none"
         autoCorrect={false}
@@ -333,85 +333,109 @@ function TypedAnswer({
 
 const choiceStyles = StyleSheet.create({
   idle: {},
-  pending: { borderColor: colors.accent },
-  right: { borderColor: colors.success, backgroundColor: "rgba(47, 199, 155, 0.18)" },
-  wrong: { borderColor: colors.danger, backgroundColor: "rgba(255, 156, 128, 0.16)" },
+  pending: { borderColor: colors.gilt },
+  right: { borderColor: colors.success, backgroundColor: alpha(colors.success, 0.18) },
+  wrong: { borderColor: colors.danger, backgroundColor: alpha(colors.danger, 0.16) },
   faded: { opacity: 0.45 },
 });
 
 const styles = StyleSheet.create({
   screen: { flex: 1 },
-  page: { gap: 14, paddingHorizontal: 16, paddingTop: 8, paddingBottom: TAB_BAR_RISE + 24 },
-  top: { flexDirection: "row", alignItems: "center", gap: 12 },
+  page: {
+    gap: space.s7,
+    paddingHorizontal: space.s8,
+    paddingTop: space.s4,
+    paddingBottom: TAB_BAR_RISE + 24,
+  },
+  top: { flexDirection: "row", alignItems: "center", gap: space.s6 },
   round: {
     width: 40,
     height: 40,
     borderRadius: 20,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: colors.backgroundRaised,
+    backgroundColor: colors.pageRaised,
   },
-  dots: { flex: 1, flexDirection: "row", justifyContent: "center", gap: 6 },
+  dots: { flex: 1, flexDirection: "row", justifyContent: "center", gap: space.s3 },
   dot: { width: 10, height: 10, borderRadius: 5 },
-  position: { fontFamily: fonts.ui.bold, fontSize: 14, color: colors.textMuted },
+  position: { fontFamily: fonts.ui.bold, fontSize: fontSizes.label, color: colors.pageInkMuted },
   kicker: {
     fontFamily: fonts.ui.extrabold,
-    fontSize: 12,
+    fontSize: fontSizes.caption,
     letterSpacing: 2,
-    color: colors.textMuted,
+    color: colors.pageInkMuted,
   },
-  promptWord: { fontFamily: fonts.display, fontSize: 34, lineHeight: 40, color: colors.text },
+  promptWord: {
+    fontFamily: fonts.display,
+    fontSize: fontSizes.headingLarge,
+    lineHeight: 40,
+    color: colors.pageInk,
+  },
   promptDefinition: {
     fontFamily: fonts.text.regular,
-    fontSize: 20,
+    fontSize: fontSizes.titleSmall,
     lineHeight: 28,
-    color: colors.text,
+    color: colors.pageInk,
   },
-  hint: { fontFamily: fonts.ui.medium, fontSize: 13, lineHeight: 19, color: colors.textMuted },
-  choices: { gap: 10 },
+  hint: {
+    fontFamily: fonts.ui.medium,
+    fontSize: fontSizes.small,
+    lineHeight: 19,
+    color: colors.pageInkMuted,
+  },
+  choices: { gap: space.s5 },
   choice: {
     minHeight: 56,
     justifyContent: "center",
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderRadius: 16,
+    paddingHorizontal: space.s8,
+    paddingVertical: space.s6,
+    borderRadius: radii.xxl,
     borderWidth: 2,
     borderColor: colors.track,
-    backgroundColor: colors.backgroundRaised,
+    backgroundColor: colors.pageRaised,
   },
-  choicePressed: { borderColor: colors.accent },
-  choiceWord: { fontFamily: fonts.display, fontSize: 22, color: colors.text },
+  choicePressed: { borderColor: colors.gilt },
+  choiceWord: { fontFamily: fonts.display, fontSize: fontSizes.title, color: colors.pageInk },
   choiceDefinition: {
     fontFamily: fonts.text.regular,
-    fontSize: 16,
+    fontSize: fontSizes.bodyLarge,
     lineHeight: 22,
-    color: colors.text,
+    color: colors.pageInk,
   },
-  typed: { gap: 12 },
+  typed: { gap: space.s6 },
   typedField: {
     minHeight: 60,
-    paddingHorizontal: 18,
-    borderRadius: 16,
+    paddingHorizontal: space.s9,
+    borderRadius: radii.xxl,
     borderWidth: 2,
     borderColor: colors.track,
     backgroundColor: colors.well,
-    color: colors.text,
+    color: colors.pageInk,
     fontFamily: fonts.display,
-    fontSize: 26,
+    fontSize: fontSizes.titleLarge,
     textAlign: "center",
   },
   typedRight: { borderColor: colors.success },
   typedWrong: { borderColor: colors.danger },
-  error: { fontFamily: fonts.ui.bold, fontSize: 15, lineHeight: 21, color: colors.danger },
-  feedback: { gap: 8, padding: 18, borderRadius: 20, borderWidth: 2 },
-  good: { borderColor: colors.success, backgroundColor: "rgba(47, 199, 155, 0.12)" },
-  bad: { borderColor: colors.danger, backgroundColor: "rgba(255, 156, 128, 0.1)" },
-  feedbackTitle: { fontFamily: fonts.display, fontSize: 24, color: colors.text },
+  error: {
+    fontFamily: fonts.ui.bold,
+    fontSize: fontSizes.body,
+    lineHeight: 21,
+    color: colors.danger,
+  },
+  feedback: { gap: space.s4, padding: space.s9, borderRadius: 20, borderWidth: 2 },
+  good: { borderColor: colors.success, backgroundColor: alpha(colors.success, 0.12) },
+  bad: { borderColor: colors.danger, backgroundColor: alpha(colors.danger, 0.1) },
+  feedbackTitle: {
+    fontFamily: fonts.display,
+    fontSize: fontSizes.titleLarge,
+    color: colors.pageInk,
+  },
   feedbackText: {
     fontFamily: fonts.text.regular,
-    fontSize: 17,
+    fontSize: fontSizes.lead,
     lineHeight: 24,
-    color: colors.text,
+    color: colors.pageInk,
   },
   risen: { fontFamily: fonts.ui.extrabold },
   xpFloat: {
@@ -421,8 +445,13 @@ const styles = StyleSheet.create({
     width: 80,
     textAlign: "right",
     fontFamily: fonts.ui.extrabold,
-    fontSize: 14,
-    color: colors.accent,
+    fontSize: fontSizes.label,
+    color: colors.rubric,
   },
-  feedbackExtra: { fontFamily: fonts.ui.bold, fontSize: 15, lineHeight: 21, color: colors.accent },
+  feedbackExtra: {
+    fontFamily: fonts.ui.bold,
+    fontSize: fontSizes.body,
+    lineHeight: 21,
+    color: colors.rubric,
+  },
 });

@@ -30,7 +30,7 @@ import { progress as progressResource } from "@/player/state";
 import { useProfileActions } from "@/profile/profile-actions";
 import { FeedbackSheet } from "@/screens/profile/feedback-sheet";
 import { ReplacePin } from "@/screens/profile/pin-picker";
-import { colors, fonts } from "@/theme";
+import { colors, fontSizes, fonts, radii, space } from "@/theme";
 import { Button } from "@/ui/button";
 import { Icon } from "@/ui/icon";
 import { Page, Paragraph } from "@/ui/page";
@@ -140,7 +140,7 @@ function SheetBody({
         <EngravingCredit card={card} />
       </View>
 
-      <RarityName rarity={card.rarity} color={colors.text} />
+      <RarityName rarity={card.rarity} color={colors.pageInk} />
       {card.pronunciation != null && <Text style={styles.ipa}>/{card.pronunciation.ipa}/</Text>}
       <Text style={styles.frequency}>{frequencyLine(card.perBillion)}</Text>
 
@@ -154,7 +154,7 @@ function SheetBody({
                 <View key={step.level} style={styles.step}>
                   <View style={[styles.stepBar, { backgroundColor: tone }]} />
                   <Text
-                    style={[styles.stepLabel, { color: step.reached ? tone : colors.textFaint }]}
+                    style={[styles.stepLabel, { color: step.reached ? tone : colors.pageInkFaint }]}
                   >
                     {step.label}
                   </Text>
@@ -211,14 +211,14 @@ function SheetBody({
                 accessibilityState={{ selected: pins.isPinned(card.id) }}
                 style={styles.ghost}
               >
-                <Icon name="pin" size={17} color={colors.text} />
+                <Icon name="pin" size={17} color={colors.pageInk} />
                 <Text style={styles.ghostText}>
                   {pins.isPinned(card.id) ? PIN_TEXTS.unpin : PIN_TEXTS.pin}
                 </Text>
               </Pressable>
             )}
             <Pressable onPress={share} accessibilityRole="button" style={styles.ghost}>
-              <Icon name="share" size={17} color={colors.text} />
+              <Icon name="share" size={17} color={colors.pageInk} />
               <Text style={styles.ghostText}>Partager</Text>
             </Pressable>
           </View>
@@ -287,63 +287,92 @@ function EngravingCredit({ card }: { readonly card: CatalogCard }) {
 }
 
 const styles = StyleSheet.create({
-  cardSide: { alignItems: "center", gap: 10, marginBottom: 4 },
+  cardSide: { alignItems: "center", gap: space.s5, marginBottom: space.s2 },
   credit: {
     fontFamily: fonts.ui.medium,
-    fontSize: 12,
+    fontSize: fontSizes.caption,
     lineHeight: 17,
-    color: colors.textFaint,
+    color: colors.pageInkFaint,
     textAlign: "center",
   },
-  ipa: { fontFamily: fonts.text.regular, fontSize: 19, color: colors.textMuted },
-  frequency: { fontFamily: fonts.text.italic, fontSize: 17, lineHeight: 24, color: "#D9D3E6" },
-  block: { gap: 8 },
+  ipa: { fontFamily: fonts.text.regular, fontSize: fontSizes.subtitle, color: colors.pageInkMuted },
+  frequency: {
+    fontFamily: fonts.text.italic,
+    fontSize: fontSizes.lead,
+    lineHeight: 24,
+    color: colors.pageInkSoft,
+  },
+  block: { gap: space.s4 },
   kicker: {
     fontFamily: fonts.ui.extrabold,
-    fontSize: 12,
+    fontSize: fontSizes.caption,
     letterSpacing: 2,
-    color: colors.textMuted,
+    color: colors.pageInkMuted,
   },
-  steps: { flexDirection: "row", gap: 8 },
-  step: { flex: 1, gap: 6 },
+  steps: { flexDirection: "row", gap: space.s4 },
+  step: { flex: 1, gap: space.s3 },
   stepBar: { height: 6, borderRadius: 3 },
-  stepLabel: { fontFamily: fonts.ui.bold, fontSize: 13 },
-  note: { fontFamily: fonts.ui.medium, fontSize: 15, lineHeight: 21, color: colors.textMuted },
-  chips: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+  stepLabel: { fontFamily: fonts.ui.bold, fontSize: fontSizes.small },
+  note: {
+    fontFamily: fonts.ui.medium,
+    fontSize: fontSizes.body,
+    lineHeight: 21,
+    color: colors.pageInkMuted,
+  },
+  chips: { flexDirection: "row", flexWrap: "wrap", gap: space.s4 },
   chip: {
     overflow: "hidden",
-    paddingHorizontal: 12,
+    paddingHorizontal: space.s6,
     paddingVertical: 7,
-    borderRadius: 16,
-    backgroundColor: colors.backgroundRaised,
-    color: colors.text,
+    borderRadius: radii.xxl,
+    backgroundColor: colors.pageRaised,
+    color: colors.pageInk,
     fontFamily: fonts.ui.bold,
-    fontSize: 14,
+    fontSize: fontSizes.label,
   },
-  quote: { paddingLeft: 14, borderLeftWidth: 3, borderLeftColor: colors.track, gap: 6 },
-  quoteText: { fontFamily: fonts.text.italic, fontSize: 18, lineHeight: 26, color: colors.text },
-  quoteAuthor: { fontFamily: fonts.ui.semibold, fontSize: 14, color: colors.textMuted },
-  etymology: { fontFamily: fonts.text.regular, fontSize: 17, lineHeight: 25, color: colors.text },
-  actions: { gap: 10, alignItems: "flex-start" },
-  later: { fontFamily: fonts.ui.bold, fontSize: 15, color: colors.text },
-  ghosts: { flexDirection: "row", justifyContent: "center", gap: 10 },
+  quote: {
+    paddingLeft: space.s7,
+    borderLeftWidth: 3,
+    borderLeftColor: colors.track,
+    gap: space.s3,
+  },
+  quoteText: {
+    fontFamily: fonts.text.italic,
+    fontSize: fontSizes.subtitle,
+    lineHeight: 26,
+    color: colors.pageInk,
+  },
+  quoteAuthor: {
+    fontFamily: fonts.ui.semibold,
+    fontSize: fontSizes.label,
+    color: colors.pageInkMuted,
+  },
+  etymology: {
+    fontFamily: fonts.text.regular,
+    fontSize: fontSizes.lead,
+    lineHeight: 25,
+    color: colors.pageInk,
+  },
+  actions: { gap: space.s5, alignItems: "flex-start" },
+  later: { fontFamily: fonts.ui.bold, fontSize: fontSizes.body, color: colors.pageInk },
+  ghosts: { flexDirection: "row", justifyContent: "center", gap: space.s5 },
   ghost: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 8,
+    gap: space.s4,
     minHeight: 44,
-    paddingHorizontal: 14,
-    borderRadius: 22,
+    paddingHorizontal: space.s7,
+    borderRadius: radii.x4,
     borderWidth: 2,
     borderColor: colors.track,
   },
-  ghostText: { fontFamily: fonts.ui.bold, fontSize: 15, color: colors.text },
-  link: { color: colors.accent, textDecorationLine: "underline" },
-  report: { alignSelf: "flex-start", paddingVertical: 6 },
+  ghostText: { fontFamily: fonts.ui.bold, fontSize: fontSizes.body, color: colors.pageInk },
+  link: { color: colors.rubric, textDecorationLine: "underline" },
+  report: { alignSelf: "flex-start", paddingVertical: space.s3 },
   reportText: {
     fontFamily: fonts.ui.medium,
-    fontSize: 14,
-    color: colors.textFaint,
+    fontSize: fontSizes.label,
+    color: colors.pageInkFaint,
     textDecorationLine: "underline",
   },
 });

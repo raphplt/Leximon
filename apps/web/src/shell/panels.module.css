@@ -3,30 +3,30 @@
 }
 
 .error {
-  margin: 10px 0 0;
+  margin: var(--lx-s5) 0 0;
   color: var(--lx-color-danger);
   font-weight: 700;
-  font-size: 14px;
+  font-size: var(--lx-size-label);
 }
 
 .footnote {
   margin: 0;
-  font-size: 12px;
-  color: var(--lx-color-text-faint);
+  font-size: var(--lx-size-caption);
+  color: var(--lx-color-page-ink-faint);
 }
 
 .empty {
-  margin: 8px 0;
+  margin: var(--lx-s4) 0;
   font-family: var(--font-text), Georgia, serif;
   font-style: italic;
-  font-size: 19px;
-  color: var(--lx-color-text-muted);
+  font-size: var(--lx-size-subtitle);
+  color: var(--lx-color-page-ink-muted);
 }
 
 .letters {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: var(--lx-s3);
   margin: 0;
   padding: 0;
   list-style: none;
@@ -35,13 +35,13 @@
 .letter {
   display: flex;
   align-items: flex-start;
-  gap: 12px;
+  gap: var(--lx-s6);
   width: 100%;
-  padding: 12px;
+  padding: var(--lx-s6);
   border: 0;
-  border-radius: 14px;
-  background: rgba(255, 210, 77, 0.07);
-  color: var(--lx-color-text);
+  border-radius: var(--lx-radius-xl);
+  background: color-mix(in srgb, var(--lx-color-gilt) 7%, transparent);
+  color: var(--lx-color-page-ink);
   font: inherit;
   text-align: left;
   text-decoration: none;
@@ -49,7 +49,7 @@
 }
 
 .letter:hover {
-  background: rgba(255, 210, 77, 0.12);
+  background: color-mix(in srgb, var(--lx-color-gilt) 12%, transparent);
 }
 
 .letterIcon {
@@ -58,9 +58,9 @@
   flex-shrink: 0;
   width: 42px;
   height: 42px;
-  border-radius: 14px;
-  background: var(--lx-color-background);
-  color: var(--lx-color-accent);
+  border-radius: var(--lx-radius-xl);
+  background: var(--lx-color-page);
+  color: var(--lx-color-rubric);
 }
 
 .letterText {
@@ -71,31 +71,31 @@
 .letterTitle {
   display: block;
   font-weight: 800;
-  font-size: 15px;
+  font-size: var(--lx-size-body);
 }
 
 .letterDetail {
   display: block;
-  margin-top: 2px;
-  font-size: 13px;
-  color: var(--lx-color-text-muted);
+  margin-top: var(--lx-s1);
+  font-size: var(--lx-size-small);
+  color: var(--lx-color-page-ink-muted);
   overflow-wrap: anywhere;
 }
 
 /* A letter new to this opening of the mail: a gold edge and its dot. */
 .letterFresh {
-  background: rgba(255, 210, 77, 0.16);
-  box-shadow: inset 3px 0 0 var(--lx-color-accent);
+  background: color-mix(in srgb, var(--lx-color-gilt) 16%, transparent);
+  box-shadow: inset 3px 0 0 var(--lx-color-gilt);
 }
 
 .letterWhen {
   flex-shrink: 0;
-  font-size: 12px;
-  color: var(--lx-color-text-faint);
+  font-size: var(--lx-size-caption);
+  color: var(--lx-color-page-ink-faint);
 }
 
 .letterFresh .letterWhen {
-  color: var(--lx-color-accent);
+  color: var(--lx-color-rubric);
   font-weight: 800;
 }
 
@@ -104,23 +104,23 @@
 }
 
 .mailHeading {
-  margin: 0 0 8px;
-  font-size: 12px;
+  margin: 0 0 var(--lx-s4);
+  font-size: var(--lx-size-caption);
   font-weight: 800;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--lx-color-text-faint);
+  color: var(--lx-color-page-ink-faint);
 }
 
 .mailOlder {
-  margin-top: 10px;
-  padding: 8px 0;
+  margin-top: var(--lx-s5);
+  padding: var(--lx-s4) 0;
   border: 0;
   background: none;
-  color: var(--lx-color-accent);
+  color: var(--lx-color-rubric);
   font: inherit;
   font-weight: 700;
-  font-size: 14px;
+  font-size: var(--lx-size-label);
   cursor: pointer;
 }
 
@@ -139,37 +139,37 @@
 .sanctions {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: var(--lx-s8);
 }
 
 .sanction {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 8px;
-  padding-bottom: 16px;
-  border-bottom: 1px solid rgba(246, 240, 226, 0.08);
+  gap: var(--lx-s4);
+  padding-bottom: var(--lx-s8);
+  border-bottom: 1px solid color-mix(in srgb, var(--lx-color-page-ink) 8%, transparent);
 }
 
 .sanctionTitle {
   margin: 0;
-  font-size: 18px;
+  font-size: var(--lx-size-subtitle);
   font-weight: 800;
 }
 
 .sanctionReason {
   margin: 0;
-  font-size: 15px;
+  font-size: var(--lx-size-body);
   line-height: 1.45;
 }
 
 .sanctionContent {
   margin: 0;
-  padding: 8px 12px;
-  border-left: 3px solid var(--lx-color-outline);
+  padding: var(--lx-s4) var(--lx-s6);
+  border-left: 3px solid var(--lx-color-rule);
   font-family: var(--font-text), Georgia, serif;
   font-style: italic;
-  color: var(--lx-color-text-muted);
+  color: var(--lx-color-page-ink-muted);
   overflow-wrap: anywhere;
 }
 
@@ -177,16 +177,16 @@
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 10px;
+  gap: var(--lx-s5);
   width: 100%;
 }
 
 .contestText {
   display: block;
-  margin-top: 8px;
-  padding: 12px 16px;
-  border-radius: 16px;
-  font-size: 15px;
+  margin-top: var(--lx-s4);
+  padding: var(--lx-s6) var(--lx-s8);
+  border-radius: var(--lx-radius-xxl);
+  font-size: var(--lx-size-body);
   resize: vertical;
 }
 
@@ -195,41 +195,40 @@
 .news {
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: var(--lx-s9);
 }
 
 .newsEntry + .newsEntry {
-  padding-top: 18px;
-  border-top: 1px solid var(--lx-color-outline);
+  padding-top: var(--lx-s9);
+  border-top: 1px solid var(--lx-color-rule);
 }
 
 .newsTitle {
   margin: 0;
   font-family: var(--font-display), Georgia, serif;
-  font-variation-settings: "SOFT" 100;
   font-weight: 900;
-  font-size: 22px;
+  font-size: var(--lx-size-title);
 }
 
 .newsDate {
-  margin: 2px 0 10px;
-  font-size: 13px;
-  color: var(--lx-color-text-muted);
+  margin: var(--lx-s1) 0 var(--lx-s5);
+  font-size: var(--lx-size-small);
+  color: var(--lx-color-page-ink-muted);
 }
 
 .newsItems {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--lx-s4);
   margin: 0;
-  padding-left: 20px;
-  font-size: 15px;
+  padding-left: var(--lx-s10);
+  font-size: var(--lx-size-body);
   line-height: 1.45;
 }
 
 .newsAll {
   align-self: center;
-  font-size: 14px;
+  font-size: var(--lx-size-label);
   font-weight: 700;
-  color: var(--lx-color-text-muted);
+  color: var(--lx-color-page-ink-muted);
 }

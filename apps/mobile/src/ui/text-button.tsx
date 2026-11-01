@@ -1,5 +1,5 @@
 import { Pressable, StyleSheet, Text } from "react-native";
-import { colors, fonts } from "@/theme";
+import { colors, fontSizes, fonts, space } from "@/theme";
 
 /** A minor action, written as an underlined link. */
 export function TextButton({
@@ -26,12 +26,12 @@ export function TextButton({
 }
 
 const styles = StyleSheet.create({
-  button: { alignSelf: "center", paddingVertical: 8 },
+  button: { alignSelf: "center", paddingVertical: space.s4 },
   dim: { opacity: 0.5 },
   label: {
     fontFamily: fonts.ui.bold,
-    fontSize: 15,
-    color: colors.accent,
+    fontSize: fontSizes.body,
+    color: colors.rubric,
     textDecorationLine: "underline",
   },
 });

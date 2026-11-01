@@ -10,7 +10,7 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: var(--lx-s4);
   margin: 0;
   border: 0;
   font: inherit;
@@ -23,29 +23,29 @@
   min-height: 52px;
   padding: 0 26px;
   border-radius: var(--lx-radius-pill);
-  background: var(--lx-color-accent);
-  color: var(--lx-color-accent-ink);
+  background: var(--lx-color-action);
+  color: var(--lx-color-action-ink);
   font-weight: 800;
-  font-size: 16px;
-  box-shadow: 0 4px 0 var(--lx-color-accent-shadow);
+  font-size: var(--lx-size-body-large);
+  box-shadow: var(--lx-shadow-action);
   transition:
     transform 80ms,
     box-shadow 80ms;
 }
 
 .primary:hover {
-  background: #ffdb6e;
+  background: var(--lx-color-action-hover);
 }
 
 .primary:active {
   transform: translateY(3px);
-  box-shadow: 0 1px 0 var(--lx-color-accent-shadow);
+  box-shadow: var(--lx-shadow-action-pressed);
 }
 
 .primary:disabled {
   background: var(--lx-color-track);
   box-shadow: none;
-  color: var(--lx-color-text-muted);
+  color: var(--lx-color-page-ink-muted);
   cursor: default;
   transform: none;
 }
@@ -55,14 +55,14 @@
   padding: 0 22px;
   border-radius: var(--lx-radius-pill);
   background: none;
-  box-shadow: inset 0 0 0 2px rgba(246, 240, 226, 0.85);
-  color: var(--lx-color-text);
+  box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--lx-color-page-ink) 85%, transparent);
+  color: var(--lx-color-page-ink);
   font-weight: 700;
-  font-size: 15px;
+  font-size: var(--lx-size-body);
 }
 
 .secondary:hover {
-  background: rgba(246, 240, 226, 0.08);
+  background: color-mix(in srgb, var(--lx-color-page-ink) 8%, transparent);
 }
 
 .secondary:disabled {
@@ -72,23 +72,23 @@
 
 .ghost {
   min-height: 44px;
-  padding: 0 14px;
+  padding: 0 var(--lx-s7);
   border-radius: var(--lx-radius-pill);
   background: none;
-  color: var(--lx-color-text-muted);
+  color: var(--lx-color-page-ink-muted);
   font-weight: 700;
-  font-size: 14px;
+  font-size: var(--lx-size-label);
 }
 
 .ghost:hover {
-  background: rgba(246, 240, 226, 0.08);
-  color: var(--lx-color-text);
+  background: color-mix(in srgb, var(--lx-color-page-ink) 8%, transparent);
+  color: var(--lx-color-page-ink);
 }
 
 .small {
   min-height: 42px;
-  padding: 0 16px;
-  font-size: 14px;
+  padding: 0 var(--lx-s8);
+  font-size: var(--lx-size-label);
 }
 
 .wide {
@@ -104,12 +104,12 @@
   height: 44px;
   padding: 0;
   border-radius: 50%;
-  background: var(--lx-color-background-raised);
-  color: var(--lx-color-text);
+  background: var(--lx-color-page-raised);
+  color: var(--lx-color-page-ink);
 }
 
 .round:hover {
-  background: #3f4770;
+  background: var(--lx-color-control);
 }
 
 /* --- Chips, badges --- */
@@ -125,11 +125,11 @@
   padding: 0 15px;
   border: 0;
   border-radius: var(--lx-radius-pill);
-  background: var(--lx-color-background-raised);
-  color: var(--lx-color-text);
+  background: var(--lx-color-page-raised);
+  color: var(--lx-color-page-ink);
   font: inherit;
   font-weight: 700;
-  font-size: 14px;
+  font-size: var(--lx-size-label);
   text-decoration: none;
   white-space: nowrap;
 }
@@ -141,20 +141,20 @@ a.chip {
 
 button.chip:hover,
 a.chip:hover {
-  background: #3f4770;
+  background: var(--lx-color-control);
 }
 
 .chip[aria-pressed="true"],
 .chip[aria-checked="true"],
 .chip[aria-selected="true"],
 .chip[aria-current="page"] {
-  background: var(--lx-color-text);
-  color: var(--lx-color-background);
+  background: var(--lx-color-page-ink);
+  color: var(--lx-color-page);
 }
 
 .chipGold {
-  background: rgba(255, 210, 77, 0.14);
-  color: var(--lx-color-accent);
+  background: color-mix(in srgb, var(--lx-color-gilt) 14%, transparent);
+  color: var(--lx-color-rubric);
 }
 
 .badge {
@@ -165,14 +165,14 @@ a.chip:hover {
   place-items: center;
   min-width: 22px;
   height: 22px;
-  padding: 0 6px;
+  padding: 0 var(--lx-s3);
   border-radius: var(--lx-radius-pill);
   background: var(--lx-color-badge);
-  color: #fff;
-  font-size: 12px;
+  color: var(--lx-color-ink-on-color);
+  font-size: var(--lx-size-caption);
   font-weight: 800;
   font-variant-numeric: tabular-nums;
-  box-shadow: 0 0 0 3px var(--lx-color-background);
+  box-shadow: 0 0 0 3px var(--lx-color-page);
 }
 
 /* « Niv. 10 » under a closed control. */
@@ -183,13 +183,13 @@ a.chip:hover {
   transform: translateX(-50%);
   display: inline-flex;
   align-items: center;
-  gap: 2px;
-  padding: 2px 7px;
-  border: 1px solid var(--lx-color-outline);
+  gap: var(--lx-s1);
+  padding: var(--lx-s1) 7px;
+  border: 1px solid var(--lx-color-rule);
   border-radius: var(--lx-radius-pill);
   background: var(--lx-color-well);
-  color: var(--lx-color-text-muted);
-  font-size: 10px;
+  color: var(--lx-color-page-ink-muted);
+  font-size: var(--lx-size-nano);
   font-weight: 800;
   white-space: nowrap;
 }
@@ -197,23 +197,22 @@ a.chip:hover {
 /* --- Surfaces --- */
 
 .panel {
-  border: 1px solid rgba(246, 240, 226, 0.09);
-  border-radius: 22px;
+  border: 1px solid color-mix(in srgb, var(--lx-color-page-ink) 9%, transparent);
+  border-radius: var(--lx-radius-x4);
   background: var(--lx-color-panel);
 }
 
 .kicker {
   margin: 0;
-  font-size: 12px;
+  font-size: var(--lx-size-caption);
   font-weight: 800;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: var(--lx-color-text-muted);
+  color: var(--lx-color-page-ink-muted);
 }
 
 .display {
   font-family: var(--font-display), Georgia, serif;
-  font-variation-settings: "SOFT" 100;
   font-weight: 900;
 }
 
@@ -225,7 +224,7 @@ a.chip:hover {
   height: 16px;
   border-radius: var(--lx-radius-pill);
   background: var(--lx-color-well);
-  box-shadow: inset 0 2px 0 rgba(0, 0, 0, 0.35);
+  box-shadow: inset 0 2px 0 color-mix(in srgb, var(--lx-color-shade) 35%, transparent);
   overflow: hidden;
 }
 
@@ -238,9 +237,13 @@ a.chip:hover {
   height: 100%;
   border-radius: var(--lx-radius-pill);
   background:
-    repeating-linear-gradient(115deg, rgba(255, 255, 255, 0.18) 0 8px, transparent 8px 16px),
-    linear-gradient(#ffe07a, #f2b829);
-  box-shadow: inset 0 -3px 0 rgba(0, 0, 0, 0.15);
+    repeating-linear-gradient(
+      115deg,
+      color-mix(in srgb, var(--lx-color-glint) 18%, transparent) 0 8px,
+      transparent 8px 16px
+    ),
+    linear-gradient(var(--lx-color-xp-light), var(--lx-color-xp-deep));
+  box-shadow: inset 0 -3px 0 color-mix(in srgb, var(--lx-color-shade) 15%, transparent);
   transition: width 600ms cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
@@ -258,7 +261,6 @@ a.chip:hover {
 
 .medalNumber {
   font-family: var(--font-display), Georgia, serif;
-  font-variation-settings: "SOFT" 100;
   font-weight: 900;
   text-anchor: middle;
 }
@@ -288,11 +290,11 @@ a.chip:hover {
   place-items: center;
   width: 60px;
   height: 60px;
-  border: 2px solid rgba(246, 240, 226, 0.16);
+  border: 2px solid color-mix(in srgb, var(--lx-color-page-ink) 16%, transparent);
   border-radius: 50%;
-  background: var(--lx-color-background-raised);
-  box-shadow: 0 5px 0 #191c2e;
-  color: var(--lx-color-text);
+  background: var(--lx-color-page-raised);
+  box-shadow: var(--lx-shadow-control);
+  color: var(--lx-color-page-ink);
   transition: transform 120ms;
 }
 
@@ -302,32 +304,32 @@ a.chip:hover {
 
 .fab:active .fabCircle {
   transform: translateY(3px);
-  box-shadow: 0 2px 0 #191c2e;
+  box-shadow: var(--lx-shadow-control-pressed);
 }
 
 .fabGold {
-  border-color: #fff0b8;
-  background: linear-gradient(160deg, #ffe08a, #d9a233);
-  color: var(--lx-color-accent-ink);
+  border-color: var(--lx-color-gilt-pale);
+  background: linear-gradient(160deg, var(--lx-color-gilt-light), var(--lx-color-gilt-deep));
+  color: var(--lx-color-action-ink);
 }
 
 /* Closed by the level: hollow and quiet, so that what is open stands out. */
 .fabLocked {
   border-style: dashed;
-  background: rgba(27, 31, 51, 0.45);
+  background: color-mix(in srgb, var(--lx-color-well) 45%, transparent);
   box-shadow: none;
-  color: var(--lx-color-text-muted);
+  color: var(--lx-color-page-ink-muted);
 }
 
 .fabLabel {
-  font-size: 12px;
+  font-size: var(--lx-size-caption);
   font-weight: 800;
-  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.5);
+  text-shadow: 0 1px 0 color-mix(in srgb, var(--lx-color-shade) 50%, transparent);
   white-space: nowrap;
 }
 
 .fab:has(.fabLocked) .fabLabel {
-  color: var(--lx-color-text-muted);
+  color: var(--lx-color-page-ink-muted);
 }
 
 .glow {
@@ -338,13 +340,13 @@ a.chip:hover {
   0%,
   100% {
     box-shadow:
-      0 5px 0 #a87e10,
-      0 0 0 0 rgba(255, 210, 77, 0.6);
+      0 5px 0 var(--lx-color-action-edge-deep),
+      0 0 0 0 color-mix(in srgb, var(--lx-color-gilt) 60%, transparent);
   }
   50% {
     box-shadow:
-      0 5px 0 #a87e10,
-      0 0 0 12px rgba(255, 210, 77, 0);
+      0 5px 0 var(--lx-color-action-edge-deep),
+      0 0 0 12px transparent;
   }
 }
 
@@ -359,7 +361,7 @@ a.chip:hover {
   }
 
   .fabLabel {
-    font-size: 10px;
+    font-size: var(--lx-size-nano);
   }
 }
 
@@ -369,13 +371,13 @@ a.chip:hover {
   appearance: none;
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: var(--lx-s6);
   width: 100%;
   min-height: 56px;
   margin: 0;
-  padding: 0 16px;
+  padding: 0 var(--lx-s8);
   border: 0;
-  border-bottom: 1px solid rgba(246, 240, 226, 0.06);
+  border-bottom: 1px solid color-mix(in srgb, var(--lx-color-page-ink) 6%, transparent);
   background: none;
   color: inherit;
   font: inherit;
@@ -389,20 +391,20 @@ a.chip:hover {
 }
 
 .switchRow:hover {
-  background: rgba(246, 240, 226, 0.05);
+  background: color-mix(in srgb, var(--lx-color-page-ink) 5%, transparent);
 }
 
 .switchLabel {
   flex: 1;
   font-weight: 700;
-  font-size: 15px;
+  font-size: var(--lx-size-body);
 }
 
 .switchSub {
   display: block;
-  font-size: 12px;
+  font-size: var(--lx-size-caption);
   font-weight: 600;
-  color: var(--lx-color-text-muted);
+  color: var(--lx-color-page-ink-muted);
 }
 
 .track {
@@ -411,7 +413,7 @@ a.chip:hover {
   width: 48px;
   height: 28px;
   border-radius: var(--lx-radius-pill);
-  background: var(--lx-color-outline);
+  background: var(--lx-color-rule);
 }
 
 .track::after {
@@ -422,12 +424,12 @@ a.chip:hover {
   width: 22px;
   height: 22px;
   border-radius: 50%;
-  background: var(--lx-color-text);
+  background: var(--lx-color-page-ink);
   transition: left 150ms;
 }
 
 [aria-checked="true"] > .track {
-  background: #1f9e7a;
+  background: var(--lx-color-success-deep);
 }
 
 [aria-checked="true"] > .track::after {
@@ -435,13 +437,13 @@ a.chip:hover {
 }
 
 .group {
-  margin-bottom: 18px;
+  margin-bottom: var(--lx-s9);
 }
 
 .groupRows {
-  margin-top: 6px;
-  border-radius: 16px;
-  background: var(--lx-color-background);
+  margin-top: var(--lx-s3);
+  border-radius: var(--lx-radius-xxl);
+  background: var(--lx-color-page);
   overflow: hidden;
 }
 
@@ -505,13 +507,13 @@ a.chip:hover {
   box-sizing: border-box;
   width: 100%;
   min-height: 52px;
-  padding: 0 18px;
-  border: 2px solid var(--lx-color-outline);
+  padding: 0 var(--lx-s9);
+  border: 2px solid var(--lx-color-rule);
   border-radius: var(--lx-radius-pill);
-  background: var(--lx-color-background);
-  color: var(--lx-color-text);
+  background: var(--lx-color-page);
+  color: var(--lx-color-page-ink);
   font: inherit;
-  font-size: 17px;
+  font-size: var(--lx-size-lead);
 }
 
 .field:focus-visible {

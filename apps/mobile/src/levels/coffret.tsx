@@ -38,7 +38,7 @@ import Svg, { Circle, Defs, Path, RadialGradient, Stop } from "react-native-svg"
 import { api } from "@/api/client";
 import { useNow } from "@/player/shared";
 import { levelRewards, progress, publishClaimed, wallet } from "@/player/state";
-import { colors, fonts } from "@/theme";
+import { alpha, colors, fontSizes, fonts, radii, space } from "@/theme";
 import { Avatar } from "@/ui/avatar";
 import { Button } from "@/ui/button";
 import { Icon } from "@/ui/icon";
@@ -297,15 +297,15 @@ function Box({
         <Svg width={BOX} height={BOX}>
           <Defs>
             <RadialGradient id="coffret-glow">
-              <Stop offset="0" stopColor={colors.accent} stopOpacity="0.55" />
-              <Stop offset="1" stopColor={colors.accent} stopOpacity="0" />
+              <Stop offset="0" stopColor={colors.rubric} stopOpacity="0.55" />
+              <Stop offset="1" stopColor={colors.rubric} stopOpacity="0" />
             </RadialGradient>
           </Defs>
           {RAYS.map((angle) => (
             <Path
               key={angle}
               d={`M${c} ${c} L${c - 9} 0 L${c + 9} 0 Z`}
-              fill={colors.accent}
+              fill={colors.action}
               opacity={0.14}
               transform={`rotate(${angle} ${c} ${c})`}
             />
@@ -314,7 +314,7 @@ function Box({
         </Svg>
       </Animated.View>
       <Animated.View style={floating}>
-        <Icon name="coffret" size={88} color={colors.accent} />
+        <Icon name="coffret" size={88} color={colors.rubric} />
       </Animated.View>
     </Pressable>
   );
@@ -351,76 +351,89 @@ function RewardVisual({ reward }: { readonly reward: LevelRewardView }) {
     default:
       return (
         <View style={styles.itemIcon}>
-          <Icon name={REWARD_ICONS[rewardItem(reward).icon]} size={26} color={colors.accent} />
+          <Icon name={REWARD_ICONS[rewardItem(reward).icon]} size={26} color={colors.rubric} />
         </View>
       );
   }
 }
 
 const styles = StyleSheet.create({
-  backdrop: { ...StyleSheet.absoluteFill, backgroundColor: "rgba(12, 14, 26, 0.82)" },
-  center: { flex: 1, alignItems: "center", justifyContent: "center", paddingVertical: 48 },
+  backdrop: { ...StyleSheet.absoluteFill, backgroundColor: alpha(colors.scrim, 0.82) },
+  center: { flex: 1, alignItems: "center", justifyContent: "center", paddingVertical: space.s24 },
   card: {
     maxHeight: "100%",
     borderRadius: 28,
     backgroundColor: colors.sheet,
     borderWidth: 1,
-    borderColor: "rgba(255, 210, 77, 0.25)",
+    borderColor: alpha(colors.gilt, 0.25),
   },
-  inner: { alignItems: "center", gap: 12, padding: 24 },
+  inner: { alignItems: "center", gap: space.s6, padding: space.s12 },
   kicker: {
     fontFamily: fonts.ui.extrabold,
-    fontSize: 12,
+    fontSize: fontSizes.caption,
     letterSpacing: 2,
-    color: colors.accent,
+    color: colors.rubric,
   },
   box: { width: BOX, height: BOX, alignItems: "center", justifyContent: "center" },
-  title: { fontFamily: fonts.display, fontSize: 28, color: colors.text, textAlign: "center" },
-  hint: { fontFamily: fonts.ui.medium, fontSize: 15, color: colors.textMuted },
+  title: {
+    fontFamily: fonts.display,
+    fontSize: fontSizes.heading,
+    color: colors.pageInk,
+    textAlign: "center",
+  },
+  hint: { fontFamily: fonts.ui.medium, fontSize: fontSizes.body, color: colors.pageInkMuted },
   refused: {
     fontFamily: fonts.ui.bold,
-    fontSize: 15,
+    fontSize: fontSizes.body,
     lineHeight: 21,
     color: colors.danger,
     textAlign: "center",
   },
-  actions: { alignSelf: "stretch", gap: 6, marginTop: 6 },
-  levelUp: { fontFamily: fonts.display, fontSize: 36, color: colors.accent },
-  items: { alignSelf: "stretch", gap: 12, marginTop: 4 },
-  item: { flexDirection: "row", alignItems: "center", gap: 14 },
-  itemText: { flex: 1, gap: 2 },
-  itemTitle: { fontFamily: fonts.ui.extrabold, fontSize: 16, color: colors.text },
-  itemDetail: { fontFamily: fonts.ui.medium, fontSize: 14, color: colors.textMuted },
+  actions: { alignSelf: "stretch", gap: space.s3, marginTop: space.s3 },
+  levelUp: { fontFamily: fonts.display, fontSize: fontSizes.headingLarge, color: colors.rubric },
+  items: { alignSelf: "stretch", gap: space.s6, marginTop: space.s2 },
+  item: { flexDirection: "row", alignItems: "center", gap: space.s7 },
+  itemText: { flex: 1, gap: space.s1 },
+  itemTitle: {
+    fontFamily: fonts.ui.extrabold,
+    fontSize: fontSizes.bodyLarge,
+    color: colors.pageInk,
+  },
+  itemDetail: {
+    fontFamily: fonts.ui.medium,
+    fontSize: fontSizes.label,
+    color: colors.pageInkMuted,
+  },
   plaque: {
     alignSelf: "flex-start",
     overflow: "hidden",
-    marginTop: 2,
-    paddingHorizontal: 10,
+    marginTop: space.s1,
+    paddingHorizontal: space.s5,
     paddingVertical: 3,
-    borderRadius: 8,
+    borderRadius: radii.sm,
     backgroundColor: colors.kraft,
     color: colors.kraftTitle,
     fontFamily: fonts.display,
-    fontSize: 15,
+    fontSize: fontSizes.body,
   },
   visual: { width: 56, alignItems: "center" },
   itemIcon: {
     width: 56,
     height: 56,
-    borderRadius: 16,
-    backgroundColor: colors.background,
+    borderRadius: radii.xxl,
+    backgroundColor: colors.page,
     alignItems: "center",
     justifyContent: "center",
   },
   mini: {
     width: 40,
     height: 54,
-    borderRadius: 6,
+    borderRadius: radii.xs,
     backgroundColor: colors.kraft,
     alignItems: "center",
     justifyContent: "center",
   },
-  miniGarni: { backgroundColor: colors.accent },
+  miniGarni: { backgroundColor: colors.action },
   miniSeal: {
     width: 22,
     height: 22,
@@ -429,19 +442,24 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  stored: { fontFamily: fonts.ui.bold, fontSize: 15, color: colors.text, marginTop: 4 },
+  stored: {
+    fontFamily: fonts.ui.bold,
+    fontSize: fontSizes.body,
+    color: colors.pageInk,
+    marginTop: space.s2,
+  },
   opens: {
     alignSelf: "stretch",
     overflow: "hidden",
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    borderRadius: 14,
+    paddingHorizontal: space.s7,
+    paddingVertical: space.s5,
+    borderRadius: radii.xl,
     borderWidth: 1,
-    borderColor: "rgba(217, 180, 134, 0.4)",
-    backgroundColor: "rgba(217, 180, 134, 0.16)",
+    borderColor: alpha(colors.kraft, 0.4),
+    backgroundColor: alpha(colors.kraft, 0.16),
     fontFamily: fonts.ui.extrabold,
-    fontSize: 15,
-    color: colors.text,
+    fontSize: fontSizes.body,
+    color: colors.pageInk,
     textAlign: "center",
   },
 });

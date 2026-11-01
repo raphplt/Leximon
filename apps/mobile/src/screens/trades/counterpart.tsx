@@ -1,7 +1,7 @@
 import type { PlayerBadge } from "@leximon/contract";
 import { playerName } from "@leximon/view-model";
 import { StyleSheet, Text, View } from "react-native";
-import { colors, fonts } from "@/theme";
+import { colors, fontSizes, fonts, space } from "@/theme";
 import { Avatar } from "@/ui/avatar";
 import { LevelMedal } from "@/ui/level";
 
@@ -26,6 +26,11 @@ export function Counterpart({
 }
 
 const styles = StyleSheet.create({
-  row: { flexDirection: "row", alignItems: "center", gap: 10, flexShrink: 1 },
-  name: { fontFamily: fonts.ui.extrabold, fontSize: 16, color: colors.text, flexShrink: 1 },
+  row: { flexDirection: "row", alignItems: "center", gap: space.s5, flexShrink: 1 },
+  name: {
+    fontFamily: fonts.ui.extrabold,
+    fontSize: fontSizes.bodyLarge,
+    color: colors.pageInk,
+    flexShrink: 1,
+  },
 });

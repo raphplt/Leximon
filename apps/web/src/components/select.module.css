@@ -9,17 +9,17 @@
   box-sizing: border-box;
   width: 100%;
   min-height: 40px;
-  padding: 0 12px 0 14px;
+  padding: 0 var(--lx-s6) 0 var(--lx-s7);
   display: inline-flex;
   align-items: center;
   justify-content: space-between;
-  gap: 10px;
-  border: 1px solid var(--lx-color-outline);
-  border-radius: 10px;
-  background: var(--lx-color-background);
-  color: var(--lx-color-text);
+  gap: var(--lx-s5);
+  border: 1px solid var(--lx-color-rule);
+  border-radius: var(--lx-radius-md);
+  background: var(--lx-color-page);
+  color: var(--lx-color-page-ink);
   font: inherit;
-  font-size: 14px;
+  font-size: var(--lx-size-label);
   font-weight: 600;
   cursor: pointer;
   user-select: none;
@@ -33,7 +33,7 @@
 .triggerValue {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--lx-s4);
   overflow: hidden;
   text-overflow: ellipsis;
 }
@@ -42,7 +42,7 @@
   flex-shrink: 0;
   width: 14px;
   height: 14px;
-  color: var(--lx-color-text-muted);
+  color: var(--lx-color-page-ink-muted);
   transition:
     transform 0.18s ease,
     color 0.15s ease;
@@ -50,22 +50,22 @@
 
 .triggerOpen .chevron {
   transform: rotate(180deg);
-  color: var(--lx-color-text);
+  color: var(--lx-color-page-ink);
 }
 
 .trigger:hover {
-  border-color: var(--lx-color-text-muted);
-  background: var(--lx-color-background-raised);
+  border-color: var(--lx-color-page-ink-muted);
+  background: var(--lx-color-page-raised);
 }
 
 .trigger:hover .chevron {
-  color: var(--lx-color-text);
+  color: var(--lx-color-page-ink);
 }
 
 .trigger:focus-visible,
 .triggerOpen {
   border-color: var(--lx-color-focus);
-  background: var(--lx-color-background-raised);
+  background: var(--lx-color-page-raised);
   outline: none;
 }
 
@@ -93,12 +93,12 @@
   margin: 0;
   padding: 5px;
   list-style: none;
-  border: 1px solid var(--lx-color-outline);
-  border-radius: 12px;
-  background: var(--lx-color-background-raised);
+  border: 1px solid var(--lx-color-rule);
+  border-radius: var(--lx-radius-lg);
+  background: var(--lx-color-page-raised);
   box-shadow:
-    0 14px 34px rgba(0, 0, 0, 0.5),
-    0 2px 8px rgba(0, 0, 0, 0.35);
+    0 14px 34px color-mix(in srgb, var(--lx-color-shade) 50%, transparent),
+    0 2px 8px color-mix(in srgb, var(--lx-color-shade) 35%, transparent);
   animation: menuEnter 0.12s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
@@ -106,16 +106,16 @@
   all: unset;
   box-sizing: border-box;
   width: 100%;
-  padding: 8px 10px;
-  border-radius: 8px;
+  padding: var(--lx-s4) var(--lx-s5);
+  border-radius: var(--lx-radius-sm);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 14px;
+  gap: var(--lx-s7);
   font: inherit;
-  font-size: 14px;
+  font-size: var(--lx-size-label);
   font-weight: 600;
-  color: var(--lx-color-text-muted);
+  color: var(--lx-color-page-ink-muted);
   cursor: pointer;
   user-select: none;
   white-space: nowrap;
@@ -127,25 +127,25 @@
 .optionLabel {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--lx-s4);
 }
 
 .check {
   flex-shrink: 0;
   width: 14px;
   height: 14px;
-  color: var(--lx-color-accent);
+  color: var(--lx-color-rubric);
   opacity: 0;
 }
 
 .option:hover,
 .optionActive {
-  background: rgba(255, 255, 255, 0.06);
-  color: var(--lx-color-text);
+  background: color-mix(in srgb, var(--lx-color-glint) 6%, transparent);
+  color: var(--lx-color-page-ink);
 }
 
 .optionSelected {
-  color: var(--lx-color-text);
+  color: var(--lx-color-page-ink);
   font-weight: 700;
 }
 

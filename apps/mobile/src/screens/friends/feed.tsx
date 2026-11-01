@@ -14,7 +14,7 @@ import { catalogInHand, loadCatalog } from "@/cards/catalog";
 import { useShared } from "@/player/shared";
 import { profile } from "@/player/state";
 import { openCard } from "@/screens/trades/card-row";
-import { colors, fonts } from "@/theme";
+import { colors, fontSizes, fonts, space } from "@/theme";
 import { Avatar } from "@/ui/avatar";
 import { Chip } from "@/ui/chip";
 import { Panel } from "@/ui/panel";
@@ -127,17 +127,27 @@ export function FriendFeed({ now }: { readonly now: number }) {
 const styles = StyleSheet.create({
   kicker: {
     fontFamily: fonts.ui.extrabold,
-    fontSize: 12,
+    fontSize: fontSizes.caption,
     letterSpacing: 2,
-    color: colors.textMuted,
+    color: colors.pageInkMuted,
   },
-  small: { fontFamily: fonts.ui.medium, fontSize: 13, color: colors.textMuted },
-  faint: { fontFamily: fonts.ui.medium, fontSize: 12, color: colors.textFaint },
-  empty: { fontFamily: fonts.text.italic, fontSize: 17, lineHeight: 24, color: colors.textMuted },
-  event: { flexDirection: "row", gap: 12 },
-  body: { flex: 1, gap: 6 },
-  line: { fontFamily: fonts.ui.medium, fontSize: 15, lineHeight: 21, color: colors.text },
-  word: { fontFamily: fonts.text.italic, fontSize: 17 },
-  wordLink: { color: colors.accent, textDecorationLine: "underline" },
-  reactions: { flexDirection: "row", flexWrap: "wrap", alignItems: "center", gap: 6 },
+  small: { fontFamily: fonts.ui.medium, fontSize: fontSizes.small, color: colors.pageInkMuted },
+  faint: { fontFamily: fonts.ui.medium, fontSize: fontSizes.caption, color: colors.pageInkFaint },
+  empty: {
+    fontFamily: fonts.text.italic,
+    fontSize: fontSizes.lead,
+    lineHeight: 24,
+    color: colors.pageInkMuted,
+  },
+  event: { flexDirection: "row", gap: space.s6 },
+  body: { flex: 1, gap: space.s3 },
+  line: {
+    fontFamily: fonts.ui.medium,
+    fontSize: fontSizes.body,
+    lineHeight: 21,
+    color: colors.pageInk,
+  },
+  word: { fontFamily: fonts.text.italic, fontSize: fontSizes.lead },
+  wordLink: { color: colors.rubric, textDecorationLine: "underline" },
+  reactions: { flexDirection: "row", flexWrap: "wrap", alignItems: "center", gap: space.s3 },
 });

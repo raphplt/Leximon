@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { StyleSheet, Text, TextInput, type TextInputProps, View } from "react-native";
-import { colors, fonts } from "@/theme";
+import { colors, fontSizes, fonts, radii, space } from "@/theme";
 
 /** A labelled field; `large` spaces out a short code. */
 export function TextField({
@@ -16,9 +16,9 @@ export function TextField({
       </Text>
       <TextInput
         accessibilityLabel={label}
-        placeholderTextColor={colors.textFaint}
-        selectionColor={colors.accent}
-        cursorColor={colors.accent}
+        placeholderTextColor={colors.pageInkFaint}
+        selectionColor={colors.rubric}
+        cursorColor={colors.rubric}
         {...input}
         onFocus={(event) => {
           setFocused(true);
@@ -35,19 +35,24 @@ export function TextField({
 }
 
 const styles = StyleSheet.create({
-  field: { gap: 8 },
-  label: { fontFamily: fonts.ui.bold, fontSize: 14, color: colors.textMuted },
+  field: { gap: space.s4 },
+  label: { fontFamily: fonts.ui.bold, fontSize: fontSizes.label, color: colors.pageInkMuted },
   input: {
     minHeight: 52,
-    paddingHorizontal: 16,
-    borderRadius: 14,
+    paddingHorizontal: space.s8,
+    borderRadius: radii.xl,
     borderWidth: 2,
     borderColor: colors.track,
     backgroundColor: colors.well,
-    color: colors.text,
+    color: colors.pageInk,
     fontFamily: fonts.ui.semibold,
-    fontSize: 17,
+    fontSize: fontSizes.lead,
   },
-  large: { fontFamily: fonts.ui.extrabold, fontSize: 26, letterSpacing: 10, textAlign: "center" },
-  focused: { borderColor: colors.accent },
+  large: {
+    fontFamily: fonts.ui.extrabold,
+    fontSize: fontSizes.titleLarge,
+    letterSpacing: 10,
+    textAlign: "center",
+  },
+  focused: { borderColor: colors.gilt },
 });

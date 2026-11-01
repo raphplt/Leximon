@@ -15,35 +15,105 @@ export interface LinearGradient {
 /** A plain color or a gradient. */
 export type Fill = string | LinearGradient;
 
+/**
+ * Colors by role, not by value: a screen says what a surface is (a page, the binding, a rule) and
+ * each look gives the role its value. Translucent variants derive from a role: `alpha()` here,
+ * `color-mix()` in CSS.
+ */
 export const colors = {
   /** Screen background: a deep blue-grey night, so that every rarity color stands out. */
-  background: "#262B40",
-  backgroundRaised: "#343B5C",
-  /** Panels on the background, slightly see-through. */
+  page: "#262B40",
+  pageRaised: "#343B5C",
+  /** Text and icons on the page. */
+  pageInk: "#F6F0E2",
+  pageInkSoft: "#D9D3E6",
+  pageInkMuted: "#BDB6CC",
+  pageInkFaint: "#8D88A3",
+  /** Panels on the page, slightly see-through. */
   panel: "rgba(52, 59, 92, 0.72)",
   /** Side panels, bottom sheets and dialogs. */
   sheet: "#2B3150",
-  /** Menus and the bars of the shell, darker than the background. */
-  sunken: "#1F2337",
+  /** Top of a dialog's gradient. */
+  sheetLight: "#424B78",
+  /** The gradient of a profile's or a clan's banner. */
+  bannerStart: "#5E2130",
+  bannerEnd: "#2C3459",
+  /** What holds the game: the bars of the shell and their menus, darker than the page. */
+  binding: "#1F2337",
+  /** The last strip of the binding, under the tabs. */
+  bindingDeep: "#1C2033",
+  bindingInk: "#F6F0E2",
+  bindingInkMuted: "#BDB6CC",
   /** Hollow of a progress bar. */
   well: "#1B1F33",
   /** Unfilled part of a ring or a road. */
   track: "#4A5175",
-  text: "#F6F0E2",
-  textMuted: "#BDB6CC",
-  textFaint: "#8D88A3",
+  /** Thin lines and empty markers (stock dots, missing cards) on the page. */
+  rule: "#5A6182",
+  /** The sheet of paper a card or a road is printed on: light in every look. */
+  paper: "#FBF5E8",
+  paperInk: "#1E1B16",
+  paperInkMuted: "#625A4E",
+  /** Main call to action. */
+  action: "#FFD24D",
+  actionHover: "#FFDB6E",
+  actionInk: "#2A1D05",
+  /** The dome of the central tab: its lit side and its shaded side. */
+  actionLight: "#FFE48A",
+  actionDeep: "#E0A91C",
+  /** Thickness under the main action, then under the central tab. */
+  actionEdge: "#C99A12",
+  actionEdgeDeep: "#A87E10",
+  /** Secondary actions and their thickness. */
+  control: "#3F4770",
+  controlHover: "#3D456B",
+  controlEdge: "#191C2E",
+  /** The filled part of an XP bar, top to bottom. */
+  xpLight: "#FFE07A",
+  xpDeep: "#F2B829",
+  /** What the eye must catch in a text: a figure, a current tab, a link. */
+  rubric: "#FFD24D",
+  /** Gold in a thin line or a highlight, and its lights: the first glows, the last lies flat. */
+  gilt: "#FFD24D",
+  giltPale: "#FFF0B8",
+  giltLight: "#FFE08A",
+  giltDeep: "#D9A233",
   /** Done, received: a claimed level, a switch on. */
   success: "#2FC79B",
+  successBright: "#3BD3A5",
+  successLight: "#5FE0B6",
+  successPale: "#7FE3C2",
+  /** Fill of a right answer, and the thickness under it. */
+  successDeep: "#1F9E7A",
+  successEdge: "#126650",
   /** Destructive actions on dark: sign out, block. */
   danger: "#FF9C80",
+  dangerBright: "#FF8462",
+  dangerHover: "#FFB39C",
+  dangerInk: "#2A0D05",
+  /** Thickness under the button that destroys. */
+  dangerShade: "#B45A42",
+  /** Fill of a wrong answer, and the thickness under it. */
+  dangerDeep: "#C23D1B",
+  dangerEdge: "#7A240F",
   /** Red counts of what waits for the player. */
   badge: "#E2431D",
-  /** Empty markers (stock dots, missing cards) on the background. */
-  outline: "#5A6182",
-  /** Main call to action. */
-  accent: "#FFD24D",
-  accentInk: "#2A1D05",
-  accentShadow: "#C99A12",
+  /** The third step of a podium. */
+  bronze: "#D68C50",
+  /** A player named in the clan's discussion: the bubble, then the name. */
+  mention: "#4A5490",
+  mentionInk: "#9FB4FF",
+  /** Figures of the admin charts. */
+  data: "#5598E7",
+  /** Text on a saturated fill. */
+  inkOnColor: "#FFFFFF",
+  /** A light that catches an edge, and the dark that falls behind a floating surface. */
+  glint: "#FFFFFF",
+  shade: "#000000",
+  /** Behind a dialog or a sheet. */
+  scrim: "#0A0C18",
+  /** Behind a card being revealed. */
+  dim: "#06070D",
   /** The kraft envelope of a booster and its wax seal. */
   kraft: "#D9B486",
   kraftInk: "#5A3D18",
@@ -54,6 +124,30 @@ export const colors = {
   sealInk: "#8C2208",
   sticker: "#F0603C",
   focus: "#FFD24D",
+} as const;
+
+/** A `#RRGGBB` role at the given opacity, from 0 to 1. */
+export function alpha(color: string, opacity: number): string {
+  const [r, g, b] = [1, 3, 5].map((start) => Number.parseInt(color.slice(start, start + 2), 16));
+  return `rgba(${r}, ${g}, ${b}, ${opacity})`;
+}
+
+/** Written as CSS `box-shadow` values, which React Native reads too. */
+export const shadows = {
+  /** The thickness of what can be pressed, high then low, then pressed down. */
+  action: `0 4px 0 ${colors.actionEdge}`,
+  actionLow: `0 3px 0 ${colors.actionEdge}`,
+  actionPressed: `0 1px 0 ${colors.actionEdge}`,
+  control: `0 5px 0 ${colors.controlEdge}`,
+  controlLow: `0 4px 0 ${colors.controlEdge}`,
+  controlPressed: `0 2px 0 ${colors.controlEdge}`,
+  /** What floats over the page, from a tooltip to a dialog. */
+  raised: `0 8px 24px ${alpha(colors.shade, 0.4)}`,
+  floating: `0 10px 30px ${alpha(colors.shade, 0.45)}`,
+  menu: `0 20px 50px ${alpha(colors.shade, 0.5)}`,
+  dialog: `0 30px 80px ${alpha(colors.shade, 0.55)}`,
+  sidePanel: `-24px 0 60px ${alpha(colors.shade, 0.45)}`,
+  bottomSheet: `0 -20px 60px ${alpha(colors.shade, 0.45)}`,
 } as const;
 
 const gold: LinearGradient = {
@@ -192,21 +286,63 @@ export const fonts = {
 } as const;
 
 export const radii = {
+  /** The art of a card and a sachet. */
   card: 16,
   cardInner: 10,
   envelope: 14,
   chip: 8,
+  /** The corners of the interface, from a tag to a full-screen panel. */
+  xxs: 4,
+  xs: 6,
+  sm: 8,
+  md: 10,
+  lg: 12,
+  xl: 14,
+  xxl: 16,
+  x3: 18,
+  x4: 22,
+  x5: 30,
   pill: 999,
 } as const;
 
-/** Spacing scale in px. */
+/** Text sizes in px. */
+export const fontSizes = {
+  nano: 10,
+  micro: 11,
+  caption: 12,
+  small: 13,
+  label: 14,
+  body: 15,
+  bodyLarge: 16,
+  lead: 17,
+  subtitle: 18,
+  titleSmall: 20,
+  title: 22,
+  titleLarge: 24,
+  heading: 28,
+  headingLarge: 32,
+  display: 40,
+  displayLarge: 44,
+} as const;
+
+/** Spacing scale: a step is 2 px, so `s6` is 12 px. */
 export const space = {
-  xs: 4,
-  sm: 8,
-  md: 12,
-  lg: 16,
-  xl: 24,
-  xxl: 32,
+  s1: 2,
+  s2: 4,
+  s3: 6,
+  s4: 8,
+  s5: 10,
+  s6: 12,
+  s7: 14,
+  s8: 16,
+  s9: 18,
+  s10: 20,
+  s12: 24,
+  s14: 28,
+  s16: 32,
+  s20: 40,
+  s24: 48,
+  s32: 64,
 } as const;
 
 /** The reference card is drawn at this size; smaller cards are scaled from it. */
@@ -236,11 +372,12 @@ export function backTone(name: string | undefined): BackTone {
     : backTones.night;
 }
 
-/** Durations in ms. Screens skip them when the player asks for reduced motion. */
 /** A word's mastery, from the dot on an album tile to the steps of its sheet. */
 export const masteryColors = {
-  sketch: colors.textMuted,
+  sketch: colors.pageInkMuted,
   ink: "#7C9BFF",
+  /** The ink step filled in, on a mastery ladder. */
+  inkDeep: "#2449C4",
   gilded: "#FFD978",
 } as const;
 
@@ -252,9 +389,10 @@ const COLLECTION_TONES: Readonly<Record<string, string>> = {
 };
 
 export function collectionTone(collectionId: string): string {
-  return COLLECTION_TONES[collectionId] ?? colors.accent;
+  return COLLECTION_TONES[collectionId] ?? colors.rubric;
 }
 
+/** Durations in ms. Screens skip them when the player asks for reduced motion. */
 export const motion = {
   sealBreak: 700,
   envelopeOpen: 1150,

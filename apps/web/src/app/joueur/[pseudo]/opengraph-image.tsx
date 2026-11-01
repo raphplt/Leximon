@@ -56,9 +56,9 @@ export default async function Image({ params }: { params: Promise<{ pseudo: stri
         flexDirection: "column",
         justifyContent: "space-between",
         padding: "56px 72px",
-        backgroundColor: colors.background,
-        backgroundImage: "linear-gradient(110deg, #5E2130 0%, #2C3459 55%, #262B40 100%)",
-        color: colors.text,
+        backgroundColor: colors.page,
+        backgroundImage: `linear-gradient(110deg, ${colors.bannerStart} 0%, ${colors.bannerEnd} 55%, ${colors.page} 100%)`,
+        color: colors.pageInk,
       }}
     >
       <div style={{ fontFamily: "Display", fontSize: 44 }}>Leximon</div>
@@ -71,9 +71,9 @@ export default async function Image({ params }: { params: Promise<{ pseudo: stri
             alignItems: "center",
             justifyContent: "center",
             borderRadius: 110,
-            backgroundColor: "#FBF5E8",
+            backgroundColor: colors.paper,
             color: colors.kraftTitle,
-            border: `10px solid ${colors.accent}`,
+            border: `10px solid ${colors.rubric}`,
             fontFamily: "Display",
             fontSize: 120,
           }}
@@ -83,7 +83,7 @@ export default async function Image({ params }: { params: Promise<{ pseudo: stri
         <div style={{ display: "flex", flexDirection: "column", gap: 14, maxWidth: 760 }}>
           <div style={{ fontFamily: "Display", fontSize: 92, lineHeight: 1 }}>{name}</div>
           {headline !== "" && (
-            <div style={{ fontFamily: "Ui", fontSize: 34, color: colors.accent }}>{headline}</div>
+            <div style={{ fontFamily: "Ui", fontSize: 34, color: colors.rubric }}>{headline}</div>
           )}
           {clan !== "" && (
             <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
@@ -96,7 +96,7 @@ export default async function Image({ params }: { params: Promise<{ pseudo: stri
                   height: 44,
                   padding: "0 10px",
                   borderRadius: 22,
-                  background: "#d9a233",
+                  background: colors.giltDeep,
                   color: "#3a2606",
                   fontFamily: "Ui",
                   fontSize: 24,
@@ -108,11 +108,13 @@ export default async function Image({ params }: { params: Promise<{ pseudo: stri
             </div>
           )}
           {figures !== "" && (
-            <div style={{ fontFamily: "Ui", fontSize: 28, color: colors.textMuted }}>{figures}</div>
+            <div style={{ fontFamily: "Ui", fontSize: 28, color: colors.pageInkMuted }}>
+              {figures}
+            </div>
           )}
         </div>
       </div>
-      <div style={{ fontFamily: "Ui", fontSize: 24, color: colors.textMuted }}>{DOMAIN}</div>
+      <div style={{ fontFamily: "Ui", fontSize: 24, color: colors.pageInkMuted }}>{DOMAIN}</div>
     </div>,
     {
       ...size,

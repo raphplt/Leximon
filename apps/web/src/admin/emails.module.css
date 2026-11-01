@@ -1,14 +1,14 @@
 /* The e-mails page: the month's quota as a meter, then the period. */
 
 .level {
-  font-size: 13px;
+  font-size: var(--lx-size-small);
   font-weight: 800;
   white-space: nowrap;
   color: var(--lx-color-success);
 }
 
 .level[data-level="watch"] {
-  color: var(--lx-color-accent);
+  color: var(--lx-color-rubric);
 }
 
 .level[data-level="over"] {
@@ -19,27 +19,27 @@
   display: flex;
   flex-wrap: wrap;
   align-items: baseline;
-  gap: 4px 10px;
+  gap: var(--lx-s2) var(--lx-s5);
 }
 
 .quotaValue {
-  font-size: 40px;
+  font-size: var(--lx-size-display);
   font-weight: 800;
   line-height: 1.1;
 }
 
 .quotaOf {
-  font-size: 15px;
+  font-size: var(--lx-size-body);
   font-weight: 700;
-  color: var(--lx-color-text-muted);
+  color: var(--lx-color-page-ink-muted);
 }
 
 /* The month so far, over the projected month in a lighter step of the same color. */
 .meter {
   position: relative;
   height: 12px;
-  border-radius: 6px;
-  background: rgba(255, 255, 255, 0.06);
+  border-radius: var(--lx-radius-xs);
+  background: color-mix(in srgb, var(--lx-color-glint) 6%, transparent);
   overflow: hidden;
 }
 
@@ -47,19 +47,19 @@
 .used {
   position: absolute;
   inset: 0 auto 0 0;
-  border-radius: 6px;
+  border-radius: var(--lx-radius-xs);
 }
 
 .projected {
-  background: rgba(85, 152, 231, 0.3);
+  background: color-mix(in srgb, var(--lx-color-data) 30%, transparent);
 }
 
 .used {
-  background: #5598e7;
+  background: var(--lx-color-data);
 }
 
 .used[data-level="watch"] {
-  background: var(--lx-color-accent);
+  background: var(--lx-color-action);
 }
 
 .used[data-level="over"] {
@@ -68,16 +68,16 @@
 
 .facts {
   margin: 0;
-  padding-left: 18px;
+  padding-left: var(--lx-s9);
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  font-size: 14px;
-  color: var(--lx-color-text-muted);
+  gap: var(--lx-s2);
+  font-size: var(--lx-size-label);
+  color: var(--lx-color-page-ink-muted);
 }
 
 .facts strong {
-  color: var(--lx-color-text);
+  color: var(--lx-color-page-ink);
 }
 
 .nowrap {

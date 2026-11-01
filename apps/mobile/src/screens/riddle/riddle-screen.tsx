@@ -33,7 +33,7 @@ import {
 } from "@/player/collection";
 import { useNow } from "@/player/shared";
 import { publishProgress } from "@/player/state";
-import { colors, fonts } from "@/theme";
+import { colors, fontSizes, fonts, radii, space } from "@/theme";
 import { Button } from "@/ui/button";
 import { FormError, Page, Paragraph } from "@/ui/page";
 import { Panel } from "@/ui/panel";
@@ -183,8 +183,8 @@ function Riddle({
             maxLength={TYPED_ANSWER_MAX_LENGTH}
             accessibilityLabel="Le mot"
             placeholder="Le mot"
-            placeholderTextColor={colors.textFaint}
-            selectionColor={colors.accent}
+            placeholderTextColor={colors.pageInkFaint}
+            selectionColor={colors.rubric}
             autoComplete="off"
             autoCapitalize="none"
             autoCorrect={false}
@@ -254,15 +254,20 @@ function Result({ riddle }: { readonly riddle: RiddleResponse }) {
 }
 
 const styles = StyleSheet.create({
-  panel: { gap: 12 },
+  panel: { gap: space.s6 },
   kicker: {
     fontFamily: fonts.ui.extrabold,
-    fontSize: 12,
+    fontSize: fontSizes.caption,
     letterSpacing: 2,
-    color: colors.textMuted,
+    color: colors.pageInkMuted,
   },
-  line: { fontFamily: fonts.ui.medium, fontSize: 15, lineHeight: 21, color: colors.textMuted },
-  cells: { flexDirection: "row", justifyContent: "center", gap: 4, marginTop: 4 },
+  line: {
+    fontFamily: fonts.ui.medium,
+    fontSize: fontSizes.body,
+    lineHeight: 21,
+    color: colors.pageInkMuted,
+  },
+  cells: { flexDirection: "row", justifyContent: "center", gap: space.s2, marginTop: space.s2 },
   cell: {
     flex: 1,
     maxWidth: 36,
@@ -270,34 +275,54 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     borderWidth: 1,
-    borderColor: colors.outline,
-    borderRadius: 8,
+    borderColor: colors.rule,
+    borderRadius: radii.sm,
   },
-  letter: { fontFamily: fonts.display, color: colors.text, textTransform: "uppercase" },
-  nature: { fontFamily: fonts.ui.bold, fontSize: 15, color: colors.text, textAlign: "center" },
-  clue: { gap: 2 },
-  clueText: { fontFamily: fonts.text.regular, fontSize: 17, lineHeight: 24, color: colors.text },
+  letter: { fontFamily: fonts.display, color: colors.pageInk, textTransform: "uppercase" },
+  nature: {
+    fontFamily: fonts.ui.bold,
+    fontSize: fontSizes.body,
+    color: colors.pageInk,
+    textAlign: "center",
+  },
+  clue: { gap: space.s1 },
+  clueText: {
+    fontFamily: fonts.text.regular,
+    fontSize: fontSizes.lead,
+    lineHeight: 24,
+    color: colors.pageInk,
+  },
   field: {
     minHeight: 60,
-    paddingHorizontal: 18,
-    borderRadius: 16,
+    paddingHorizontal: space.s9,
+    borderRadius: radii.xxl,
     borderWidth: 2,
     borderColor: colors.track,
     backgroundColor: colors.well,
-    color: colors.text,
+    color: colors.pageInk,
     fontFamily: fonts.display,
-    fontSize: 26,
+    fontSize: fontSizes.titleLarge,
     textAlign: "center",
   },
-  notice: { fontFamily: fonts.ui.bold, fontSize: 15, color: colors.danger, textAlign: "center" },
+  notice: {
+    fontFamily: fonts.ui.bold,
+    fontSize: fontSizes.body,
+    color: colors.danger,
+    textAlign: "center",
+  },
   tries: {
     fontFamily: fonts.ui.medium,
-    fontSize: 14,
-    color: colors.textMuted,
+    fontSize: fontSizes.label,
+    color: colors.pageInkMuted,
     textAlign: "center",
   },
-  headline: { fontFamily: fonts.display, fontSize: 26, lineHeight: 32, color: colors.text },
-  result: { fontFamily: fonts.ui.bold, fontSize: 16, color: colors.text },
-  squares: { fontSize: 16, lineHeight: 22 },
-  actions: { gap: 10, marginTop: 4 },
+  headline: {
+    fontFamily: fonts.display,
+    fontSize: fontSizes.titleLarge,
+    lineHeight: 32,
+    color: colors.pageInk,
+  },
+  result: { fontFamily: fonts.ui.bold, fontSize: fontSizes.bodyLarge, color: colors.pageInk },
+  squares: { fontSize: fontSizes.bodyLarge, lineHeight: 22 },
+  actions: { gap: space.s5, marginTop: space.s2 },
 });

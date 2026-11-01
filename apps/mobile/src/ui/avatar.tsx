@@ -29,7 +29,7 @@ interface Frame {
 
 const GOLD = ["#B8862A", "#FFE08A", "#D9A233", "#FFF6D0", "#B8862A"];
 
-const SIMPLE: Frame = { footprint: 3, rings: [{ from: 0, to: 3, paint: colors.textMuted }] };
+const SIMPLE: Frame = { footprint: 3, rings: [{ from: 0, to: 3, paint: colors.pageInkMuted }] };
 const FRAMES: Readonly<Record<string, Frame>> = {
   simple: SIMPLE,
   gilded: {

@@ -1,4 +1,4 @@
-import { cssRootRule } from "@leximon/tokens";
+import { colors, cssRootRule } from "@leximon/tokens";
 import type { Metadata, Viewport } from "next";
 import { Bricolage_Grotesque, Fraunces, Newsreader } from "next/font/google";
 import { Umami } from "@/analytics/umami";
@@ -21,7 +21,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#262B40",
+  themeColor: colors.page,
 };
 
 // Font families come from `fonts` in @leximon/tokens; next/font serves them ourselves.

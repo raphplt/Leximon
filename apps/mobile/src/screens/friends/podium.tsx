@@ -11,7 +11,7 @@ import {
 import { useEffect, useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
 import { api } from "@/api/client";
-import { colors, fonts } from "@/theme";
+import { alpha, colors, fontSizes, fonts, radii, space } from "@/theme";
 import { Avatar } from "@/ui/avatar";
 import { Panel } from "@/ui/panel";
 import { TextButton } from "@/ui/text-button";
@@ -95,32 +95,57 @@ export function Podium({ alone, now }: { readonly alone: boolean; readonly now: 
 }
 
 const styles = StyleSheet.create({
-  head: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 8 },
+  head: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: space.s4,
+  },
   kicker: {
     fontFamily: fonts.ui.extrabold,
-    fontSize: 12,
+    fontSize: fontSizes.caption,
     letterSpacing: 2,
-    color: colors.textMuted,
+    color: colors.pageInkMuted,
   },
-  small: { fontFamily: fonts.ui.medium, fontSize: 13, color: colors.textMuted },
-  empty: { fontFamily: fonts.text.italic, fontSize: 17, lineHeight: 24, color: colors.textMuted },
-  steps: { flexDirection: "row", alignItems: "flex-end", gap: 8, marginTop: 6 },
-  step: { flex: 1, alignItems: "center", gap: 4 },
-  stepName: { fontFamily: fonts.ui.extrabold, fontSize: 13, color: colors.text },
-  stepAnswers: { fontFamily: fonts.display, fontSize: 18, color: colors.accent },
+  small: { fontFamily: fonts.ui.medium, fontSize: fontSizes.small, color: colors.pageInkMuted },
+  empty: {
+    fontFamily: fonts.text.italic,
+    fontSize: fontSizes.lead,
+    lineHeight: 24,
+    color: colors.pageInkMuted,
+  },
+  steps: { flexDirection: "row", alignItems: "flex-end", gap: space.s4, marginTop: space.s3 },
+  step: { flex: 1, alignItems: "center", gap: space.s2 },
+  stepName: { fontFamily: fonts.ui.extrabold, fontSize: fontSizes.small, color: colors.pageInk },
+  stepAnswers: { fontFamily: fonts.display, fontSize: fontSizes.subtitle, color: colors.rubric },
   block: {
     alignSelf: "stretch",
     alignItems: "center",
     justifyContent: "center",
-    borderTopLeftRadius: 10,
-    borderTopRightRadius: 10,
-    backgroundColor: colors.backgroundRaised,
+    borderTopLeftRadius: radii.md,
+    borderTopRightRadius: radii.md,
+    backgroundColor: colors.pageRaised,
   },
-  blockSelf: { backgroundColor: "rgba(255, 210, 77, 0.22)" },
-  blockText: { fontFamily: fonts.ui.extrabold, fontSize: 14, color: colors.text },
-  mine: { fontFamily: fonts.ui.bold, fontSize: 14, color: colors.text, textAlign: "center" },
-  rank: { flexDirection: "row", alignItems: "center", gap: 10, minHeight: 30 },
-  rankNumber: { width: 36, fontFamily: fonts.ui.extrabold, fontSize: 13, color: colors.textMuted },
-  rankName: { flex: 1, fontFamily: fonts.ui.bold, fontSize: 14, color: colors.text },
-  rankSelf: { color: colors.accent },
+  blockSelf: { backgroundColor: alpha(colors.gilt, 0.22) },
+  blockText: { fontFamily: fonts.ui.extrabold, fontSize: fontSizes.label, color: colors.pageInk },
+  mine: {
+    fontFamily: fonts.ui.bold,
+    fontSize: fontSizes.label,
+    color: colors.pageInk,
+    textAlign: "center",
+  },
+  rank: { flexDirection: "row", alignItems: "center", gap: space.s5, minHeight: 30 },
+  rankNumber: {
+    width: 36,
+    fontFamily: fonts.ui.extrabold,
+    fontSize: fontSizes.small,
+    color: colors.pageInkMuted,
+  },
+  rankName: {
+    flex: 1,
+    fontFamily: fonts.ui.bold,
+    fontSize: fontSizes.label,
+    color: colors.pageInk,
+  },
+  rankSelf: { color: colors.rubric },
 });

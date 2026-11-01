@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { StyleSheet, Text } from "react-native";
 import { useNow } from "@/player/shared";
 import { useProfileActions } from "@/profile/profile-actions";
-import { colors, fonts } from "@/theme";
+import { colors, fontSizes, fonts } from "@/theme";
 import { Button } from "@/ui/button";
 import { Sheet } from "@/ui/sheet";
 import { TextField } from "@/ui/text-field";
@@ -79,6 +79,16 @@ export function PseudoSheet({
 }
 
 const styles = StyleSheet.create({
-  hint: { fontFamily: fonts.ui.medium, fontSize: 14, lineHeight: 20, color: colors.textMuted },
-  problem: { fontFamily: fonts.ui.bold, fontSize: 14, lineHeight: 20, color: colors.danger },
+  hint: {
+    fontFamily: fonts.ui.medium,
+    fontSize: fontSizes.label,
+    lineHeight: 20,
+    color: colors.pageInkMuted,
+  },
+  problem: {
+    fontFamily: fonts.ui.bold,
+    fontSize: fontSizes.label,
+    lineHeight: 20,
+    color: colors.danger,
+  },
 });

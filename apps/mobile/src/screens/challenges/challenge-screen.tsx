@@ -33,7 +33,7 @@ import { useNow, useShared } from "@/player/shared";
 import { publishProgress, wallet } from "@/player/state";
 import { RiddleEntry } from "@/screens/riddle/riddle-entry";
 import { TAB_BAR_RISE } from "@/shell/tab-bar";
-import { colors, fonts } from "@/theme";
+import { alpha, colors, fontSizes, fonts, space } from "@/theme";
 import { Button } from "@/ui/button";
 import { Icon } from "@/ui/icon";
 import { Panel } from "@/ui/panel";
@@ -301,7 +301,7 @@ function DailyCard({
           <Text style={styles.dailyText}>{view?.text ?? " "}</Text>
         </View>
         <View style={styles.dailyIcon}>
-          <Icon name="sachet" size={30} color={colors.accent} />
+          <Icon name="sachet" size={30} color={colors.rubric} />
         </View>
       </View>
       <View style={styles.bars} importantForAccessibility="no-hide-descendants">
@@ -427,54 +427,93 @@ function Escaping({
 }
 
 const styles = StyleSheet.create({
-  page: { gap: 16, paddingHorizontal: 16, paddingTop: 8, paddingBottom: TAB_BAR_RISE + 24 },
-  title: { fontFamily: fonts.display, fontSize: 30, color: colors.text },
+  page: {
+    gap: space.s8,
+    paddingHorizontal: space.s8,
+    paddingTop: space.s4,
+    paddingBottom: TAB_BAR_RISE + 24,
+  },
+  title: { fontFamily: fonts.display, fontSize: fontSizes.heading, color: colors.pageInk },
   kicker: {
     fontFamily: fonts.ui.extrabold,
-    fontSize: 12,
+    fontSize: fontSizes.caption,
     letterSpacing: 2,
-    color: colors.textMuted,
+    color: colors.pageInkMuted,
   },
-  daily: { gap: 16 },
-  dailyHead: { flexDirection: "row", gap: 12 },
-  dailyTexts: { flex: 1, gap: 6 },
-  dailyTitle: { fontFamily: fonts.display, fontSize: 24, lineHeight: 30, color: colors.text },
-  dailyText: { fontFamily: fonts.ui.medium, fontSize: 15, lineHeight: 21, color: colors.textMuted },
+  daily: { gap: space.s8 },
+  dailyHead: { flexDirection: "row", gap: space.s6 },
+  dailyTexts: { flex: 1, gap: space.s3 },
+  dailyTitle: {
+    fontFamily: fonts.display,
+    fontSize: fontSizes.titleLarge,
+    lineHeight: 30,
+    color: colors.pageInk,
+  },
+  dailyText: {
+    fontFamily: fonts.ui.medium,
+    fontSize: fontSizes.body,
+    lineHeight: 21,
+    color: colors.pageInkMuted,
+  },
   dailyIcon: {
     width: 54,
     height: 54,
     borderRadius: 27,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "rgba(255, 210, 77, 0.14)",
+    backgroundColor: alpha(colors.gilt, 0.14),
   },
-  bars: { flexDirection: "row", gap: 6 },
+  bars: { flexDirection: "row", gap: space.s3 },
   bar: { flex: 1, height: 8, borderRadius: 4 },
   right: { backgroundColor: colors.success },
   wrong: { backgroundColor: colors.danger },
   empty: { backgroundColor: colors.well },
-  notice: { fontFamily: fonts.ui.semibold, fontSize: 15, lineHeight: 21, color: colors.text },
-  error: { fontFamily: fonts.ui.bold, fontSize: 15, lineHeight: 21, color: colors.danger },
+  notice: {
+    fontFamily: fonts.ui.semibold,
+    fontSize: fontSizes.body,
+    lineHeight: 21,
+    color: colors.pageInk,
+  },
+  error: {
+    fontFamily: fonts.ui.bold,
+    fontSize: fontSizes.body,
+    lineHeight: 21,
+    color: colors.danger,
+  },
   levels: { flexDirection: "row", justifyContent: "space-between" },
-  level: { flex: 1, alignItems: "center", gap: 4 },
-  levelCount: { fontFamily: fonts.display, fontSize: 26, color: colors.text },
-  levelLabel: { fontFamily: fonts.ui.bold, fontSize: 13, color: colors.textMuted },
+  level: { flex: 1, alignItems: "center", gap: space.s2 },
+  levelCount: { fontFamily: fonts.display, fontSize: fontSizes.titleLarge, color: colors.pageInk },
+  levelLabel: { fontFamily: fonts.ui.bold, fontSize: fontSizes.small, color: colors.pageInkMuted },
   shares: { flexDirection: "row", gap: 3, height: 8, borderRadius: 4, overflow: "hidden" },
-  note: { fontFamily: fonts.ui.medium, fontSize: 14, lineHeight: 20, color: colors.textMuted },
-  escaping: { gap: 10 },
-  subtitle: { fontFamily: fonts.display, fontSize: 22, color: colors.text, marginTop: 4 },
-  slipping: { flexDirection: "row", alignItems: "center", gap: 14, padding: 12 },
-  slippingText: { flex: 1, gap: 2 },
-  slippingWord: { fontFamily: fonts.display, fontSize: 19, color: colors.text },
-  slippingWhen: { fontFamily: fonts.ui.semibold, fontSize: 13, color: colors.textMuted },
-  slippingRise: { fontFamily: fonts.ui.bold, fontSize: 13, color: colors.accent },
+  note: {
+    fontFamily: fonts.ui.medium,
+    fontSize: fontSizes.label,
+    lineHeight: 20,
+    color: colors.pageInkMuted,
+  },
+  escaping: { gap: space.s5 },
+  subtitle: {
+    fontFamily: fonts.display,
+    fontSize: fontSizes.title,
+    color: colors.pageInk,
+    marginTop: space.s2,
+  },
+  slipping: { flexDirection: "row", alignItems: "center", gap: space.s7, padding: space.s6 },
+  slippingText: { flex: 1, gap: space.s1 },
+  slippingWord: { fontFamily: fonts.display, fontSize: fontSizes.subtitle, color: colors.pageInk },
+  slippingWhen: {
+    fontFamily: fonts.ui.semibold,
+    fontSize: fontSizes.small,
+    color: colors.pageInkMuted,
+  },
+  slippingRise: { fontFamily: fonts.ui.bold, fontSize: fontSizes.small, color: colors.rubric },
   reviewButton: {
     minHeight: 38,
-    paddingHorizontal: 14,
+    paddingHorizontal: space.s7,
     borderRadius: 19,
     borderWidth: 2,
     borderColor: colors.track,
     justifyContent: "center",
   },
-  reviewText: { fontFamily: fonts.ui.bold, fontSize: 14, color: colors.text },
+  reviewText: { fontFamily: fonts.ui.bold, fontSize: fontSizes.label, color: colors.pageInk },
 });

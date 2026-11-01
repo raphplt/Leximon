@@ -50,9 +50,9 @@ export default async function Image({ params }: { params: Promise<{ id: string }
         alignItems: "center",
         gap: 64,
         padding: "48px 80px",
-        backgroundColor: colors.background,
-        backgroundImage: "linear-gradient(110deg, #2C3459 0%, #262B40 60%, #1F2337 100%)",
-        color: colors.text,
+        backgroundColor: colors.page,
+        backgroundImage: `linear-gradient(110deg, ${colors.bannerEnd} 0%, ${colors.page} 60%, ${colors.binding} 100%)`,
+        color: colors.pageInk,
       }}
     >
       <div
@@ -117,10 +117,10 @@ export default async function Image({ params }: { params: Promise<{ id: string }
       <div style={{ display: "flex", flexDirection: "column", gap: 22, flex: 1 }}>
         <div style={{ fontFamily: "Display", fontSize: 44 }}>Leximon</div>
         <div style={{ fontFamily: "Text", fontSize: 46, lineHeight: 1.2 }}>{frequency}</div>
-        <div style={{ fontFamily: "Ui", fontSize: 26, color: colors.textMuted }}>
+        <div style={{ fontFamily: "Ui", fontSize: 26, color: colors.pageInkMuted }}>
           {collectionName}
         </div>
-        <div style={{ marginTop: 30, fontFamily: "Ui", fontSize: 24, color: colors.accent }}>
+        <div style={{ marginTop: 30, fontFamily: "Ui", fontSize: 24, color: colors.rubric }}>
           {DOMAIN}
         </div>
       </div>
@@ -155,8 +155,8 @@ async function fallbackImage() {
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        backgroundColor: colors.background,
-        color: colors.text,
+        backgroundColor: colors.page,
+        color: colors.pageInk,
         fontFamily: "Display",
         fontSize: 120,
       }}

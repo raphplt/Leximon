@@ -4,7 +4,7 @@
   margin: 0;
   padding: 0;
   border: 0;
-  color: var(--lx-color-text);
+  color: var(--lx-color-page-ink);
   background: var(--lx-color-sheet);
   overflow: visible;
 }
@@ -12,7 +12,7 @@
 .side::backdrop,
 .center::backdrop,
 .wide::backdrop {
-  background: rgba(10, 12, 22, 0.6);
+  background: color-mix(in srgb, var(--lx-color-scrim) 60%, transparent);
 }
 
 /* Web: a panel against the right edge. */
@@ -23,7 +23,7 @@
   max-width: 100%;
   height: 100dvh;
   max-height: 100dvh;
-  box-shadow: -24px 0 60px rgba(0, 0, 0, 0.45);
+  box-shadow: var(--lx-shadow-side-panel);
 }
 
 .side[open] {
@@ -36,9 +36,9 @@
   width: min(440px, calc(100% - 32px));
   max-height: calc(100dvh - 32px);
   margin: auto;
-  border-radius: 30px;
-  background: linear-gradient(170deg, #424b78, var(--lx-color-background) 70%);
-  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.55);
+  border-radius: var(--lx-radius-x5);
+  background: linear-gradient(170deg, var(--lx-color-sheet-light), var(--lx-color-page) 70%);
+  box-shadow: var(--lx-shadow-dialog);
   overflow: hidden;
 }
 
@@ -56,7 +56,7 @@
   max-height: calc(100dvh - 48px);
   margin: auto;
   border-radius: 28px;
-  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.55);
+  box-shadow: var(--lx-shadow-dialog);
 }
 
 .wide[open] {
@@ -86,8 +86,8 @@
 .head {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 20px 20px 12px 26px;
+  gap: var(--lx-s5);
+  padding: var(--lx-s10) var(--lx-s10) var(--lx-s6) 26px;
 }
 
 .headFloating {
@@ -101,9 +101,8 @@
   flex: 1;
   margin: 0;
   font-family: var(--font-display), Georgia, serif;
-  font-variation-settings: "SOFT" 100;
   font-weight: 900;
-  font-size: 24px;
+  font-size: var(--lx-size-title-large);
   line-height: 1.1;
 }
 
@@ -115,8 +114,8 @@
   padding: 0;
   border: 0;
   border-radius: 50%;
-  background: var(--lx-color-background-raised);
-  color: var(--lx-color-text);
+  background: var(--lx-color-page-raised);
+  color: var(--lx-color-page-ink);
   cursor: pointer;
 }
 
@@ -124,12 +123,12 @@
   flex: 1;
   min-height: 0;
   overflow-y: auto;
-  padding: 6px 26px 30px;
+  padding: var(--lx-s3) 26px 30px;
   overscroll-behavior: contain;
 }
 
 .center .body {
-  padding: 4px 26px 26px;
+  padding: var(--lx-s2) 26px 26px;
 }
 
 /* Without its title the content draws to the edges itself (a coffret, a trade done). */
@@ -147,7 +146,7 @@
     height: auto;
     max-height: 90dvh;
     border-radius: 26px 26px 0 0;
-    box-shadow: 0 -20px 60px rgba(0, 0, 0, 0.45);
+    box-shadow: var(--lx-shadow-bottom-sheet);
   }
 
   .side[open],
@@ -163,21 +162,21 @@
     display: block;
     width: 44px;
     height: 5px;
-    margin: 10px auto 2px;
+    margin: var(--lx-s5) auto var(--lx-s1);
     border-radius: var(--lx-radius-pill);
-    background: var(--lx-color-outline);
+    background: var(--lx-color-rule);
   }
 
   .head {
-    padding: 6px 16px 10px 20px;
+    padding: var(--lx-s3) var(--lx-s8) var(--lx-s5) var(--lx-s10);
   }
 
   .body {
-    padding: 4px 18px 28px;
+    padding: var(--lx-s2) var(--lx-s9) var(--lx-s14);
   }
 
   .center .body {
-    padding-inline: 20px;
+    padding-inline: var(--lx-s10);
   }
 
   .center .headFloating + .body {

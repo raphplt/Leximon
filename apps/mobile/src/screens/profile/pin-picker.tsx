@@ -6,7 +6,7 @@ import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import { Card } from "@/cards/card";
 import { ownedCards } from "@/player/collection";
 import { useShared } from "@/player/shared";
-import { colors, fonts } from "@/theme";
+import { colors, fontSizes, fonts, radii, space } from "@/theme";
 import { Icon } from "@/ui/icon";
 import { RarityName } from "@/ui/rarity-icon";
 import { Sheet } from "@/ui/sheet";
@@ -48,13 +48,13 @@ export function PinPicker({
   return (
     <Sheet open={open} title={title} onClose={onClose}>
       <View style={styles.search}>
-        <Icon name="search" size={18} color={colors.textMuted} />
+        <Icon name="search" size={18} color={colors.pageInkMuted} />
         <TextInput
           style={styles.searchInput}
           value={search}
           placeholder={PIN_TEXTS.search}
-          placeholderTextColor={colors.textFaint}
-          selectionColor={colors.accent}
+          placeholderTextColor={colors.pageInkFaint}
+          selectionColor={colors.rubric}
           accessibilityLabel={PIN_TEXTS.search}
           autoCorrect={false}
           autoCapitalize="none"
@@ -82,11 +82,11 @@ export function PinPicker({
             <Text style={styles.word}>{item.word}</Text>
             {item.pinned ? (
               <View style={styles.already}>
-                <Icon name="pin" size={14} color={colors.textMuted} />
+                <Icon name="pin" size={14} color={colors.pageInkMuted} />
                 <Text style={styles.alreadyText}>{PIN_TEXTS.alreadyPinned}</Text>
               </View>
             ) : (
-              <RarityName rarity={item.rarity} color={colors.textMuted} />
+              <RarityName rarity={item.rarity} color={colors.pageInkMuted} />
             )}
           </Pressable>
         ))
@@ -149,36 +149,41 @@ const styles = StyleSheet.create({
   search: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 10,
+    gap: space.s5,
     minHeight: 48,
-    paddingHorizontal: 14,
+    paddingHorizontal: space.s7,
     borderRadius: 24,
     backgroundColor: colors.well,
   },
   searchInput: {
     flex: 1,
-    color: colors.text,
+    color: colors.pageInk,
     fontFamily: fonts.ui.semibold,
-    fontSize: 15,
-    paddingVertical: 8,
+    fontSize: fontSizes.body,
+    paddingVertical: space.s4,
   },
-  note: { fontFamily: fonts.ui.medium, fontSize: 14, color: colors.textMuted },
+  note: { fontFamily: fonts.ui.medium, fontSize: fontSizes.label, color: colors.pageInkMuted },
   row: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    gap: 12,
+    gap: space.s6,
     minHeight: 50,
-    paddingHorizontal: 14,
-    borderRadius: 14,
+    paddingHorizontal: space.s7,
+    borderRadius: radii.xl,
     backgroundColor: colors.panel,
   },
   rowPinned: { opacity: 0.55 },
   pressed: { opacity: 0.7 },
-  word: { flex: 1, fontFamily: fonts.display, fontSize: 18, color: colors.text },
-  already: { flexDirection: "row", alignItems: "center", gap: 4 },
-  alreadyText: { fontFamily: fonts.ui.bold, fontSize: 13, color: colors.textMuted },
-  lead: { fontFamily: fonts.text.regular, fontSize: 17, lineHeight: 24, color: colors.text },
-  faces: { flexDirection: "row", flexWrap: "wrap", justifyContent: "center", gap: 12 },
-  placeholder: { width: 104, height: 146, borderRadius: 10, backgroundColor: colors.panel },
+  word: { flex: 1, fontFamily: fonts.display, fontSize: fontSizes.subtitle, color: colors.pageInk },
+  already: { flexDirection: "row", alignItems: "center", gap: space.s2 },
+  alreadyText: { fontFamily: fonts.ui.bold, fontSize: fontSizes.small, color: colors.pageInkMuted },
+  lead: {
+    fontFamily: fonts.text.regular,
+    fontSize: fontSizes.lead,
+    lineHeight: 24,
+    color: colors.pageInk,
+  },
+  faces: { flexDirection: "row", flexWrap: "wrap", justifyContent: "center", gap: space.s6 },
+  placeholder: { width: 104, height: 146, borderRadius: radii.md, backgroundColor: colors.panel },
 });

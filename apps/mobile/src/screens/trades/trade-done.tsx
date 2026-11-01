@@ -12,7 +12,7 @@ import { catalogInHand, loadCatalog } from "@/cards/catalog";
 import { ownedCards, refreshIfRead } from "@/player/collection";
 import { useShared } from "@/player/shared";
 import { mailbox } from "@/player/state";
-import { colors, fonts } from "@/theme";
+import { alpha, colors, fontSizes, fonts, space } from "@/theme";
 import { Button } from "@/ui/button";
 import { TextButton } from "@/ui/text-button";
 import { catalogCard, openCard } from "./card-row";
@@ -194,38 +194,38 @@ const styles = StyleSheet.create({
   backdrop: {
     flex: 1,
     justifyContent: "center",
-    padding: 20,
-    backgroundColor: "rgba(10, 12, 24, 0.78)",
+    padding: space.s10,
+    backgroundColor: alpha(colors.scrim, 0.78),
   },
   moment: {
     alignItems: "center",
-    gap: 14,
-    paddingVertical: 28,
-    paddingHorizontal: 20,
+    gap: space.s7,
+    paddingVertical: space.s14,
+    paddingHorizontal: space.s10,
     borderRadius: 24,
     backgroundColor: colors.sheet,
   },
   kicker: {
     fontFamily: fonts.ui.extrabold,
-    fontSize: 12,
+    fontSize: fontSizes.caption,
     letterSpacing: 2,
     color: colors.success,
   },
   title: {
     fontFamily: fonts.display,
-    fontSize: 28,
+    fontSize: fontSizes.heading,
     lineHeight: 34,
-    color: colors.text,
+    color: colors.pageInk,
     textAlign: "center",
   },
-  cards: { flexDirection: "row", flexWrap: "wrap", justifyContent: "center", gap: 10 },
+  cards: { flexDirection: "row", flexWrap: "wrap", justifyContent: "center", gap: space.s5 },
   given: {
     fontFamily: fonts.text.regular,
-    fontSize: 17,
+    fontSize: fontSizes.lead,
     lineHeight: 24,
-    color: colors.textMuted,
+    color: colors.pageInkMuted,
     textAlign: "center",
   },
-  word: { fontFamily: fonts.text.italic, color: colors.text },
-  actions: { alignSelf: "stretch", gap: 4, marginTop: 6 },
+  word: { fontFamily: fonts.text.italic, color: colors.pageInk },
+  actions: { alignSelf: "stretch", gap: space.s2, marginTop: space.s3 },
 });

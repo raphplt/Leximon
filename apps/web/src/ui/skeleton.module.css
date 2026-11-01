@@ -5,8 +5,8 @@
 :where(.bone) {
   position: relative;
   display: block;
-  border-radius: 12px;
-  background: var(--lx-color-background-raised);
+  border-radius: var(--lx-radius-lg);
+  background: var(--lx-color-page-raised);
   /* Held back a moment: an answer that comes quickly replaces nothing the eye has seen. */
   animation: appear 200ms ease-out 240ms backwards;
 }
@@ -17,7 +17,7 @@
   position: absolute;
   inset: 0;
   border-radius: inherit;
-  background: rgba(246, 240, 226, 0.06);
+  background: color-mix(in srgb, var(--lx-color-page-ink) 6%, transparent);
   animation: breathe 1.6s ease-in-out 440ms infinite both;
 }
 

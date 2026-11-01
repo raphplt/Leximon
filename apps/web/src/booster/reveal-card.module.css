@@ -2,7 +2,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 14px;
+  gap: var(--lx-s7);
 }
 
 .stage {
@@ -19,7 +19,7 @@
   height: 100%;
   padding: 0;
   border: none;
-  border-radius: 16px;
+  border-radius: var(--lx-radius-xxl);
   background: none;
   cursor: pointer;
   touch-action: none;
@@ -46,26 +46,26 @@
 /* --- Announcements --------------------------------------------------------------------- */
 
 .edge .back {
-  border-radius: 16px;
+  border-radius: var(--lx-radius-xxl);
   animation: edgeGlow 0.9s ease-in-out infinite alternate;
 }
 
 .tremble .back {
-  border-radius: 16px;
+  border-radius: var(--lx-radius-xxl);
   animation:
     tremble 0.12s linear infinite,
     cobaltGlow 0.8s ease-in-out infinite alternate;
 }
 
 .crack .back {
-  border-radius: 16px;
+  border-radius: var(--lx-radius-xxl);
   animation:
     tremble 0.18s linear infinite,
     goldGlow 0.7s ease-in-out infinite alternate;
 }
 
 .eclipse .back {
-  border-radius: 16px;
+  border-radius: var(--lx-radius-xxl);
   animation: iriGlow 1.2s linear infinite;
 }
 
@@ -80,11 +80,11 @@
   width: 100%;
   height: 100%;
   fill: none;
-  stroke: #ffe08a;
+  stroke: var(--lx-color-gilt-light);
   stroke-width: 3.5;
   stroke-linecap: round;
   stroke-linejoin: round;
-  filter: drop-shadow(0 0 6px #ffd24d);
+  filter: drop-shadow(0 0 6px var(--lx-color-gilt));
   stroke-dasharray: 220;
   stroke-dashoffset: 220;
   animation: drawCrack 0.9s ease-out 0.15s forwards;
@@ -103,8 +103,8 @@
 .dim {
   background: radial-gradient(
     ellipse at 50% 45%,
-    rgba(10, 12, 24, 0.35) 0%,
-    rgba(10, 12, 24, 0.8) 70%
+    color-mix(in srgb, var(--lx-color-scrim) 35%, transparent) 0%,
+    color-mix(in srgb, var(--lx-color-scrim) 80%, transparent) 70%
   );
 }
 
@@ -119,7 +119,7 @@
   inset: -40px;
   z-index: 1;
   border-radius: 50%;
-  background: conic-gradient(#ff6fb5, #ffd24d, #7cf08a, #4fd8ff, #a77bff, #ff6fb5);
+  background: conic-gradient(#ff6fb5, var(--lx-color-action), #7cf08a, #4fd8ff, #a77bff, #ff6fb5);
   filter: blur(36px);
   opacity: 0;
   pointer-events: none;
@@ -151,7 +151,10 @@
   margin: -380px 0 0 -380px;
   z-index: 1;
   border-radius: 50%;
-  background: repeating-conic-gradient(rgba(255, 255, 255, 0.16) 0deg 6deg, transparent 6deg 18deg);
+  background: repeating-conic-gradient(
+    color-mix(in srgb, var(--lx-color-glint) 16%, transparent) 0deg 6deg,
+    transparent 6deg 18deg
+  );
   mask-image: radial-gradient(circle, #000 0%, transparent 65%);
   pointer-events: none;
   animation:
@@ -176,15 +179,15 @@
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: radial-gradient(circle, #fff0b8 0%, #d9a233 70%);
-  box-shadow: 0 0 6px #ffd24d;
+  background: radial-gradient(circle, var(--lx-color-gilt-pale) 0%, var(--lx-color-gilt-deep) 70%);
+  box-shadow: 0 0 6px var(--lx-color-gilt);
   animation: fall 1.8s ease-in infinite;
 }
 
 .sparkle {
   width: 14px;
   height: 14px;
-  background: #ffffff;
+  background: var(--lx-color-glint);
   clip-path: polygon(50% 0, 60% 40%, 100% 50%, 60% 60%, 50% 100%, 40% 60%, 0 50%, 40% 40%);
   filter: drop-shadow(0 0 4px #8fe6ff);
   animation: twinkle 1.4s ease-in-out infinite;
@@ -196,23 +199,23 @@
   right: -10px;
   top: -12px;
   z-index: 4;
-  padding: 5px 12px;
+  padding: 5px var(--lx-s6);
   border-radius: var(--lx-radius-pill);
-  font-size: 14px;
+  font-size: var(--lx-size-label);
   font-weight: 800;
 }
 
 .newBadge {
-  background: var(--lx-color-accent);
-  box-shadow: 0 3px 0 var(--lx-color-accent-shadow);
+  background: var(--lx-color-action);
+  box-shadow: var(--lx-shadow-action-low);
   transform: rotate(6deg);
-  color: var(--lx-color-accent-ink);
+  color: var(--lx-color-action-ink);
   animation: stamp 0.4s ease-out both;
 }
 
 .copies {
-  background: var(--lx-color-background-raised);
-  color: var(--lx-color-text-muted);
+  background: var(--lx-color-page-raised);
+  color: var(--lx-color-page-ink-muted);
   animation: fadeIn 0.3s ease-out both;
 }
 
@@ -223,10 +226,9 @@
   min-height: 24px;
   margin: 0;
   font-family: var(--font-display), Georgia, serif;
-  font-variation-settings: "SOFT" 100;
   font-weight: 900;
-  font-size: 20px;
-  color: var(--lx-color-accent);
+  font-size: var(--lx-size-title-small);
+  color: var(--lx-color-rubric);
   text-align: center;
 }
 
@@ -242,13 +244,13 @@
   position: relative;
   z-index: 4;
   min-height: 40px;
-  padding: 0 20px;
-  border: 2px solid var(--lx-color-text);
+  padding: 0 var(--lx-s10);
+  border: 2px solid var(--lx-color-page-ink);
   border-radius: var(--lx-radius-pill);
   background: none;
-  color: var(--lx-color-text);
+  color: var(--lx-color-page-ink);
   font: inherit;
-  font-size: 14px;
+  font-size: var(--lx-size-label);
   font-weight: 800;
   cursor: pointer;
   animation: fadeIn 0.4s ease-out both;
@@ -261,7 +263,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
+  gap: var(--lx-s5);
   min-height: 36px;
   margin: 0;
   text-align: center;
@@ -278,34 +280,34 @@
   padding: 0;
   border: 0;
   border-radius: 50%;
-  background: var(--lx-color-background-raised);
-  color: var(--lx-color-text);
+  background: var(--lx-color-page-raised);
+  color: var(--lx-color-page-ink);
   cursor: pointer;
   animation: fadeIn 0.4s ease-out both;
 }
 
 .listen:hover {
-  background: #3f4770;
+  background: var(--lx-color-control);
 }
 
 .listening,
 .listening:hover {
-  background: var(--lx-color-accent);
-  color: var(--lx-color-accent-ink);
+  background: var(--lx-color-action);
+  color: var(--lx-color-action-ink);
 }
 
 .touchHint {
-  font-size: 14px;
+  font-size: var(--lx-size-label);
   font-weight: 700;
-  color: var(--lx-color-text-muted);
+  color: var(--lx-color-page-ink-muted);
   animation: fadeIn 0.4s ease-out both;
 }
 
 .frequency {
   font-family: var(--font-text), Georgia, serif;
   font-style: italic;
-  font-size: 16px;
-  color: var(--lx-color-text-muted);
+  font-size: var(--lx-size-body-large);
+  color: var(--lx-color-page-ink-muted);
   animation: fadeIn 0.4s ease-out both;
 }
 
@@ -334,7 +336,7 @@
     box-shadow: 0 0 14px 4px rgba(255, 210, 90, 0.5);
   }
   to {
-    box-shadow: 0 0 40px 14px rgba(255, 224, 138, 0.95);
+    box-shadow: 0 0 40px 14px color-mix(in srgb, var(--lx-color-gilt-light) 95%, transparent);
   }
 }
 

@@ -1,5 +1,5 @@
 import { Pressable, StyleSheet, Text } from "react-native";
-import { colors, fonts } from "@/theme";
+import { colors, fontSizes, fonts, space } from "@/theme";
 
 /**
  * The gold button of the main action, raised on its darker edge; `secondary` is outlined, and
@@ -35,7 +35,7 @@ export function Button({
       <Text
         style={[
           styles.label,
-          { color: danger ? colors.danger : outlined ? colors.text : colors.accentInk },
+          { color: danger ? colors.danger : outlined ? colors.pageInk : colors.actionInk },
         ]}
       >
         {label}
@@ -47,19 +47,19 @@ export function Button({
 const styles = StyleSheet.create({
   button: {
     minHeight: 52,
-    paddingHorizontal: 24,
+    paddingHorizontal: space.s12,
     borderRadius: 26,
     alignItems: "center",
     justifyContent: "center",
   },
   primary: {
-    backgroundColor: colors.accent,
+    backgroundColor: colors.action,
     borderBottomWidth: 4,
-    borderBottomColor: colors.accentShadow,
+    borderBottomColor: colors.actionEdge,
   },
   secondary: { borderWidth: 2, borderColor: colors.track },
   danger: { borderWidth: 2, borderColor: colors.danger },
   pressed: { borderBottomWidth: 1, marginTop: 3 },
   disabled: { opacity: 0.45 },
-  label: { fontFamily: fonts.ui.extrabold, fontSize: 16 },
+  label: { fontFamily: fonts.ui.extrabold, fontSize: fontSizes.bodyLarge },
 });

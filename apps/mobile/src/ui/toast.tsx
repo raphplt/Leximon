@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
 import Animated, { FadeInUp, FadeOutUp } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { colors, fonts } from "@/theme";
+import { colors, fontSizes, fonts, radii, space } from "@/theme";
 
 /** How long a toast stays. */
 const TOAST_MS = 2600;
@@ -66,10 +66,10 @@ const styles = StyleSheet.create({
   host: { position: "absolute", left: 16, right: 16, alignItems: "center" },
   toast: {
     maxWidth: 420,
-    paddingHorizontal: 18,
-    paddingVertical: 12,
-    borderRadius: 16,
-    backgroundColor: colors.text,
+    paddingHorizontal: space.s9,
+    paddingVertical: space.s6,
+    borderRadius: radii.xxl,
+    backgroundColor: colors.pageInk,
   },
-  text: { fontFamily: fonts.ui.bold, fontSize: 15, lineHeight: 21, color: colors.background },
+  text: { fontFamily: fonts.ui.bold, fontSize: fontSizes.body, lineHeight: 21, color: colors.page },
 });

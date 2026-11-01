@@ -36,10 +36,10 @@ const LOOKS: Readonly<Record<TileLook, Shades>> = {
 
 /** The colour of the mark on each look of tile. */
 export const MARK_COLORS: Readonly<Record<TileLook, string>> = {
-  gold: colors.accentInk,
+  gold: colors.actionInk,
   cream: colors.kraftTitle,
   kraft: colors.kraftTitle,
-  slate: colors.textMuted,
+  slate: colors.pageInkMuted,
 };
 
 /** The tile's box: its top face fills the upper 70 %. */
@@ -68,7 +68,7 @@ export function TileBlock({
       <Polygon
         points={f.top}
         fill={top}
-        stroke={selected ? colors.text : "transparent"}
+        stroke={selected ? colors.pageInk : "transparent"}
         strokeWidth={3}
       />
     </Svg>
@@ -222,8 +222,8 @@ export function FogBank({ width, height }: { readonly width: number; readonly he
       <Defs>
         <LinearGradient id="plateau-fog" x1="0" y1="0" x2="0" y2="1">
           <Stop offset="0" stopColor="#1F2337" stopOpacity="0.96" />
-          <Stop offset="0.55" stopColor="#262B40" stopOpacity="0.82" />
-          <Stop offset="1" stopColor="#262B40" stopOpacity="0" />
+          <Stop offset="0.55" stopColor={colors.page} stopOpacity="0.82" />
+          <Stop offset="1" stopColor={colors.page} stopOpacity="0" />
         </LinearGradient>
       </Defs>
       <Rect width={width} height={height} fill="url(#plateau-fog)" />

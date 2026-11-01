@@ -3,7 +3,7 @@ import type { ReactNode } from "react";
 import { KeyboardAvoidingView, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { TAB_BAR_RISE } from "@/shell/tab-bar";
-import { colors, fonts } from "@/theme";
+import { colors, fontSizes, fonts, space } from "@/theme";
 import { Icon } from "./icon";
 
 /** Leaves the page; a page opened from a link, with nothing behind it, leads to the game. */
@@ -36,7 +36,7 @@ export function Page({
         contentContainerStyle={[
           styles.content,
           inTab
-            ? { paddingTop: 12, paddingBottom: TAB_BAR_RISE + 24 }
+            ? { paddingTop: space.s6, paddingBottom: TAB_BAR_RISE + 24 }
             : { paddingTop: insets.top + 8, paddingBottom: insets.bottom + 32 },
         ]}
       >
@@ -50,7 +50,7 @@ export function Page({
                 accessibilityLabel="Retour"
                 hitSlop={8}
               >
-                <Icon name="back" size={22} color={colors.text} />
+                <Icon name="back" size={22} color={colors.pageInk} />
               </Pressable>
             )}
           </View>
@@ -89,16 +89,16 @@ export function FormError({ message }: { readonly message: string | null }) {
 }
 
 const styles = StyleSheet.create({
-  page: { flex: 1, backgroundColor: colors.background },
+  page: { flex: 1, backgroundColor: colors.page },
   statusBand: {
     position: "absolute",
     top: 0,
     left: 0,
     right: 0,
-    backgroundColor: colors.background,
+    backgroundColor: colors.page,
   },
-  content: { paddingHorizontal: 24 },
-  top: { height: 44, flexDirection: "row", alignItems: "center", marginBottom: 12 },
+  content: { paddingHorizontal: space.s12 },
+  top: { height: 44, flexDirection: "row", alignItems: "center", marginBottom: space.s6 },
   back: {
     width: 40,
     height: 40,
@@ -109,14 +109,29 @@ const styles = StyleSheet.create({
   },
   kicker: {
     fontFamily: fonts.ui.extrabold,
-    fontSize: 12,
+    fontSize: fontSizes.caption,
     letterSpacing: 2,
-    color: colors.textMuted,
-    marginBottom: 6,
+    color: colors.pageInkMuted,
+    marginBottom: space.s3,
   },
-  title: { fontFamily: fonts.display, fontSize: 32, lineHeight: 38, color: colors.text },
-  body: { gap: 16, marginTop: 20 },
-  paragraph: { fontFamily: fonts.text.regular, fontSize: 18, lineHeight: 26, color: colors.text },
-  muted: { color: colors.textMuted },
-  error: { fontFamily: fonts.ui.bold, fontSize: 15, lineHeight: 21, color: colors.danger },
+  title: {
+    fontFamily: fonts.display,
+    fontSize: fontSizes.headingLarge,
+    lineHeight: 38,
+    color: colors.pageInk,
+  },
+  body: { gap: space.s8, marginTop: space.s10 },
+  paragraph: {
+    fontFamily: fonts.text.regular,
+    fontSize: fontSizes.subtitle,
+    lineHeight: 26,
+    color: colors.pageInk,
+  },
+  muted: { color: colors.pageInkMuted },
+  error: {
+    fontFamily: fonts.ui.bold,
+    fontSize: fontSizes.body,
+    lineHeight: 21,
+    color: colors.danger,
+  },
 });

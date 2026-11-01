@@ -3,7 +3,7 @@ import { useCallback, useEffect, useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
 import { useNow, useShared, useSharedFailed } from "@/player/shared";
 import { myClan, profile, progress as progressResource } from "@/player/state";
-import { colors, fonts } from "@/theme";
+import { colors, fontSizes, fonts, space } from "@/theme";
 import { Button } from "@/ui/button";
 import { ClanPage } from "./clan-page";
 import { FindClan } from "./find-clan";
@@ -60,6 +60,11 @@ export function ClanScreen({ code }: { readonly code: string | null }) {
 }
 
 const styles = StyleSheet.create({
-  failed: { flex: 1, justifyContent: "center", gap: 16, paddingHorizontal: 24 },
-  hint: { fontFamily: fonts.ui.semibold, fontSize: 16, color: colors.text, textAlign: "center" },
+  failed: { flex: 1, justifyContent: "center", gap: space.s8, paddingHorizontal: space.s12 },
+  hint: {
+    fontFamily: fonts.ui.semibold,
+    fontSize: fontSizes.bodyLarge,
+    color: colors.pageInk,
+    textAlign: "center",
+  },
 });

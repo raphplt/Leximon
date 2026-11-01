@@ -1,5 +1,5 @@
 import { StyleSheet, Text, View } from "react-native";
-import { colors, fonts } from "@/theme";
+import { colors, fontSizes, fonts, radii } from "@/theme";
 
 /** The red count of what waits for the player, ringed with the colour behind it. */
 export function Badge({ count, ring }: { readonly count: number; readonly ring: string }) {
@@ -18,7 +18,7 @@ const styles = StyleSheet.create({
     minWidth: 21,
     height: 21,
     paddingHorizontal: 5,
-    borderRadius: 999,
+    borderRadius: radii.pill,
     borderWidth: 2,
     backgroundColor: colors.badge,
     alignItems: "center",
@@ -26,8 +26,8 @@ const styles = StyleSheet.create({
   },
   text: {
     fontFamily: fonts.ui.extrabold,
-    fontSize: 11,
-    color: "#FFFFFF",
+    fontSize: fontSizes.micro,
+    color: colors.inkOnColor,
     includeFontPadding: false,
   },
 });

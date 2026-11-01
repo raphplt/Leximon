@@ -26,7 +26,7 @@ import { useNow, useShared, useSharedFailed } from "@/player/shared";
 import { friends } from "@/player/state";
 import { usePlayerView } from "@/player/use-player-view";
 import { PseudoSheet } from "@/screens/profile/pseudo-sheet";
-import { colors, fonts } from "@/theme";
+import { alpha, colors, fontSizes, fonts, radii, space } from "@/theme";
 import { Avatar } from "@/ui/avatar";
 import { Button } from "@/ui/button";
 import { Chip } from "@/ui/chip";
@@ -139,13 +139,13 @@ function FriendList({
       {view.searchable && (
         <>
           <View style={styles.search}>
-            <Icon name="search" size={17} color={colors.textMuted} />
+            <Icon name="search" size={17} color={colors.pageInkMuted} />
             <TextInput
               style={styles.searchInput}
               value={query}
               placeholder="Chercher un ami"
-              placeholderTextColor={colors.textFaint}
-              selectionColor={colors.accent}
+              placeholderTextColor={colors.pageInkFaint}
+              selectionColor={colors.rubric}
               accessibilityLabel="Chercher un ami"
               autoCorrect={false}
               onChangeText={setQuery}
@@ -184,19 +184,19 @@ function FriendList({
                 </Text>
                 {friend.crowned && (
                   <View accessible accessibilityLabel="Premier la semaine passée">
-                    <Icon name="crown" size={14} color={colors.accent} />
+                    <Icon name="crown" size={14} color={colors.rubric} />
                   </View>
                 )}
               </View>
               <Text style={styles.small}>{friendLine(friend, now)}</Text>
               {trades !== null && (
                 <View style={styles.trades}>
-                  <Icon name="echange" size={14} color={colors.accent} />
+                  <Icon name="echange" size={14} color={colors.rubric} />
                   <Text style={styles.tradesText}>{trades}</Text>
                 </View>
               )}
             </View>
-            <Icon name="chev" size={16} color={colors.textMuted} />
+            <Icon name="chev" size={16} color={colors.pageInkMuted} />
           </Pressable>
         );
       })}
@@ -283,7 +283,7 @@ function Outgoing({ requests }: { readonly requests: readonly FriendRequest[] })
         <Text style={styles.summaryText}>
           {requests.length > 1 ? `${requests.length} demandes envoyées` : "Une demande envoyée"}
         </Text>
-        <Icon name={open ? "chevd" : "chev"} size={16} color={colors.textMuted} />
+        <Icon name={open ? "chevd" : "chev"} size={16} color={colors.pageInkMuted} />
       </Pressable>
       {open &&
         requests.map((request) => (
@@ -499,40 +499,60 @@ function FriendActions({
 }
 
 const styles = StyleSheet.create({
-  count: { fontFamily: fonts.ui.semibold, fontSize: 14, color: colors.textMuted, marginTop: -10 },
+  count: {
+    fontFamily: fonts.ui.semibold,
+    fontSize: fontSizes.label,
+    color: colors.pageInkMuted,
+    marginTop: -10,
+  },
   kicker: {
     fontFamily: fonts.ui.extrabold,
-    fontSize: 12,
+    fontSize: fontSizes.caption,
     letterSpacing: 2,
-    color: colors.textMuted,
+    color: colors.pageInkMuted,
   },
-  hint: { fontFamily: fonts.text.regular, fontSize: 17, lineHeight: 24, color: colors.text },
-  line: { fontFamily: fonts.ui.medium, fontSize: 15, lineHeight: 21, color: colors.text },
-  small: { fontFamily: fonts.ui.medium, fontSize: 13, lineHeight: 18, color: colors.textMuted },
+  hint: {
+    fontFamily: fonts.text.regular,
+    fontSize: fontSizes.lead,
+    lineHeight: 24,
+    color: colors.pageInk,
+  },
+  line: {
+    fontFamily: fonts.ui.medium,
+    fontSize: fontSizes.body,
+    lineHeight: 21,
+    color: colors.pageInk,
+  },
+  small: {
+    fontFamily: fonts.ui.medium,
+    fontSize: fontSizes.small,
+    lineHeight: 18,
+    color: colors.pageInkMuted,
+  },
   empty: {
     fontFamily: fonts.text.italic,
-    fontSize: 17,
+    fontSize: fontSizes.lead,
     lineHeight: 24,
-    color: colors.textMuted,
+    color: colors.pageInkMuted,
   },
   search: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 10,
+    gap: space.s5,
     minHeight: 46,
-    paddingHorizontal: 14,
+    paddingHorizontal: space.s7,
     borderRadius: 23,
     backgroundColor: colors.well,
   },
   searchInput: {
     flex: 1,
-    color: colors.text,
+    color: colors.pageInk,
     fontFamily: fonts.ui.semibold,
-    fontSize: 15,
-    paddingVertical: 8,
+    fontSize: fontSizes.body,
+    paddingVertical: space.s4,
   },
-  chips: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
-  row: { flexDirection: "row", alignItems: "center", gap: 12, minHeight: 52 },
+  chips: { flexDirection: "row", flexWrap: "wrap", gap: space.s4 },
+  row: { flexDirection: "row", alignItems: "center", gap: space.s6, minHeight: 52 },
   pressed: { opacity: 0.7 },
   online: {
     position: "absolute",
@@ -545,27 +565,32 @@ const styles = StyleSheet.create({
     borderColor: colors.sheet,
     backgroundColor: colors.success,
   },
-  rowText: { flex: 1, gap: 2 },
-  nameLine: { flexDirection: "row", alignItems: "center", gap: 6 },
-  name: { flexShrink: 1, fontFamily: fonts.ui.extrabold, fontSize: 15, color: colors.text },
+  rowText: { flex: 1, gap: space.s1 },
+  nameLine: { flexDirection: "row", alignItems: "center", gap: space.s3 },
+  name: {
+    flexShrink: 1,
+    fontFamily: fonts.ui.extrabold,
+    fontSize: fontSizes.body,
+    color: colors.pageInk,
+  },
   trades: {
     alignSelf: "flex-start",
     flexDirection: "row",
     alignItems: "center",
-    gap: 4,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 999,
-    backgroundColor: "rgba(255, 210, 77, 0.14)",
+    gap: space.s2,
+    paddingHorizontal: space.s4,
+    paddingVertical: space.s2,
+    borderRadius: radii.pill,
+    backgroundColor: alpha(colors.gilt, 0.14),
   },
-  tradesText: { fontFamily: fonts.ui.bold, fontSize: 13, color: colors.accent },
-  incoming: { borderWidth: 1, borderColor: "rgba(255, 210, 77, 0.35)" },
-  request: { gap: 8 },
-  requestActions: { flexDirection: "row", gap: 10 },
+  tradesText: { fontFamily: fonts.ui.bold, fontSize: fontSizes.small, color: colors.rubric },
+  incoming: { borderWidth: 1, borderColor: alpha(colors.gilt, 0.35) },
+  request: { gap: space.s4 },
+  requestActions: { flexDirection: "row", gap: space.s5 },
   grow: { flex: 1 },
   summary: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
-  summaryText: { fontFamily: fonts.ui.extrabold, fontSize: 15, color: colors.text },
-  sheetHead: { flexDirection: "row", alignItems: "center", gap: 16 },
-  clan: { flexDirection: "row", alignItems: "center", gap: 8 },
-  clanName: { fontFamily: fonts.ui.bold, fontSize: 14, color: colors.text },
+  summaryText: { fontFamily: fonts.ui.extrabold, fontSize: fontSizes.body, color: colors.pageInk },
+  sheetHead: { flexDirection: "row", alignItems: "center", gap: space.s8 },
+  clan: { flexDirection: "row", alignItems: "center", gap: space.s4 },
+  clanName: { fontFamily: fonts.ui.bold, fontSize: fontSizes.label, color: colors.pageInk },
 });

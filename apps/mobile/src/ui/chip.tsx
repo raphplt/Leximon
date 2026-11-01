@@ -1,5 +1,5 @@
 import { Pressable, StyleSheet, Text } from "react-native";
-import { colors, fonts } from "@/theme";
+import { colors, fontSizes, fonts, radii, space } from "@/theme";
 
 /** A small pill: a filter or a choice among a few, gold once picked. */
 export function Chip({
@@ -29,13 +29,13 @@ export function Chip({
 const styles = StyleSheet.create({
   chip: {
     minHeight: 36,
-    paddingHorizontal: 14,
-    borderRadius: 18,
+    paddingHorizontal: space.s7,
+    borderRadius: radii.x3,
     justifyContent: "center",
-    backgroundColor: colors.backgroundRaised,
+    backgroundColor: colors.pageRaised,
   },
-  on: { backgroundColor: colors.accent },
+  on: { backgroundColor: colors.action },
   disabled: { opacity: 0.45 },
-  text: { fontFamily: fonts.ui.bold, fontSize: 14, color: colors.text },
-  textOn: { color: colors.accentInk },
+  text: { fontFamily: fonts.ui.bold, fontSize: fontSizes.label, color: colors.pageInk },
+  textOn: { color: colors.actionInk },
 });

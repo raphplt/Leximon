@@ -5,7 +5,7 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useNow } from "@/player/shared";
 import { usePlayerView } from "@/player/use-player-view";
-import { colors, fonts } from "@/theme";
+import { colors, fontSizes, fonts, radii, space } from "@/theme";
 import { Avatar } from "@/ui/avatar";
 import { Badge } from "@/ui/badge";
 import { Icon } from "@/ui/icon";
@@ -56,7 +56,7 @@ export function TopBar() {
           accessibilityRole="button"
           accessibilityLabel={stock.description}
         >
-          <Icon name="sachet" size={16} color={colors.text} />
+          <Icon name="sachet" size={16} color={colors.pageInk} />
           <Text style={styles.chipText}>
             {stock.stored}/{stock.capacity}
           </Text>
@@ -68,8 +68,8 @@ export function TopBar() {
         accessibilityRole="button"
         accessibilityLabel={mailLabel(view.mail)}
       >
-        <Icon name="courrier" size={19} color={colors.text} />
-        {view.mail > 0 && <Badge count={view.mail} ring={colors.background} />}
+        <Icon name="courrier" size={19} color={colors.pageInk} />
+        {view.mail > 0 && <Badge count={view.mail} ring={colors.page} />}
       </Pressable>
       {view.wallet !== null && (
         <StockSheet
@@ -87,15 +87,15 @@ const styles = StyleSheet.create({
   bar: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 8,
-    paddingHorizontal: 12,
-    paddingBottom: 6,
-    backgroundColor: colors.background,
+    gap: space.s4,
+    paddingHorizontal: space.s6,
+    paddingBottom: space.s3,
+    backgroundColor: colors.page,
   },
   avatar: {
     width: AVATAR,
     height: AVATAR,
-    borderRadius: 999,
+    borderRadius: radii.pill,
     backgroundColor: colors.track,
     alignItems: "center",
     justifyContent: "center",
@@ -103,12 +103,12 @@ const styles = StyleSheet.create({
   avatarInner: {
     width: AVATAR - 8,
     height: AVATAR - 8,
-    borderRadius: 999,
-    backgroundColor: colors.backgroundRaised,
+    borderRadius: radii.pill,
+    backgroundColor: colors.pageRaised,
     alignItems: "center",
     justifyContent: "center",
   },
-  xp: { width: 100, flexDirection: "row", alignItems: "center", gap: 5, marginLeft: 4 },
+  xp: { width: 100, flexDirection: "row", alignItems: "center", gap: 5, marginLeft: space.s2 },
   xpBar: { flex: 1 },
   spacer: { flex: 1 },
   chip: {
@@ -117,15 +117,15 @@ const styles = StyleSheet.create({
     gap: 5,
     minHeight: 36,
     paddingHorizontal: 11,
-    borderRadius: 999,
-    backgroundColor: colors.backgroundRaised,
+    borderRadius: radii.pill,
+    backgroundColor: colors.pageRaised,
   },
-  chipText: { fontFamily: fonts.ui.bold, fontSize: 14, color: colors.text },
+  chipText: { fontFamily: fonts.ui.bold, fontSize: fontSizes.label, color: colors.pageInk },
   round: {
     width: 40,
     height: 40,
-    borderRadius: 999,
-    backgroundColor: colors.backgroundRaised,
+    borderRadius: radii.pill,
+    backgroundColor: colors.pageRaised,
     alignItems: "center",
     justifyContent: "center",
   },

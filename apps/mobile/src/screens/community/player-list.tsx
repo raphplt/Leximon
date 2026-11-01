@@ -15,7 +15,7 @@ import { api } from "@/api/client";
 import { Emblem } from "@/clan/emblem";
 import { useShared } from "@/player/shared";
 import { profile } from "@/player/state";
-import { colors, fonts } from "@/theme";
+import { colors, fontSizes, fonts, space } from "@/theme";
 import { Avatar } from "@/ui/avatar";
 import { Button } from "@/ui/button";
 import { Chip } from "@/ui/chip";
@@ -89,14 +89,14 @@ export function PlayerList() {
   return (
     <>
       <View style={styles.search}>
-        <Icon name="search" size={18} color={colors.textMuted} />
+        <Icon name="search" size={18} color={colors.pageInkMuted} />
         <TextInput
           style={styles.searchInput}
           value={query}
           maxLength={30}
           placeholder={PLAYER_SEARCH_LABEL}
-          placeholderTextColor={colors.textFaint}
-          selectionColor={colors.accent}
+          placeholderTextColor={colors.pageInkFaint}
+          selectionColor={colors.rubric}
           accessibilityLabel={PLAYER_SEARCH_LABEL}
           autoCorrect={false}
           autoCapitalize="none"
@@ -169,44 +169,49 @@ function PlayerRow({ entry, first }: { readonly entry: DirectoryPlayer; readonly
         </Text>
       </View>
       {clan !== null && <Emblem emblem={clan.emblem} size={28} level={clan.level} />}
-      <Icon name="chev" size={16} color={colors.textMuted} />
+      <Icon name="chev" size={16} color={colors.pageInkMuted} />
     </Pressable>
   );
 }
 
 const styles = StyleSheet.create({
-  note: { fontFamily: fonts.ui.medium, fontSize: 15, lineHeight: 21, color: colors.textMuted },
+  note: {
+    fontFamily: fonts.ui.medium,
+    fontSize: fontSizes.body,
+    lineHeight: 21,
+    color: colors.pageInkMuted,
+  },
   search: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 10,
+    gap: space.s5,
     minHeight: 50,
-    paddingHorizontal: 16,
+    paddingHorizontal: space.s8,
     borderRadius: 25,
     backgroundColor: colors.well,
   },
   searchInput: {
     flex: 1,
-    color: colors.text,
+    color: colors.pageInk,
     fontFamily: fonts.ui.semibold,
-    fontSize: 16,
-    paddingVertical: 10,
+    fontSize: fontSizes.bodyLarge,
+    paddingVertical: space.s5,
   },
-  faint: { fontFamily: fonts.ui.medium, fontSize: 15, color: colors.textFaint },
+  faint: { fontFamily: fonts.ui.medium, fontSize: fontSizes.body, color: colors.pageInkFaint },
   empty: {
     fontFamily: fonts.text.italic,
-    fontSize: 18,
+    fontSize: fontSizes.subtitle,
     lineHeight: 25,
-    color: colors.textMuted,
+    color: colors.pageInkMuted,
     textAlign: "center",
-    paddingVertical: 12,
+    paddingVertical: space.s6,
   },
-  chips: { gap: 8 },
-  chipsGap: { width: 1, marginVertical: 8, backgroundColor: colors.track },
-  players: { paddingVertical: 4, paddingHorizontal: 14, gap: 0 },
-  player: { flexDirection: "row", alignItems: "center", gap: 12, minHeight: 66 },
+  chips: { gap: space.s4 },
+  chipsGap: { width: 1, marginVertical: space.s4, backgroundColor: colors.track },
+  players: { paddingVertical: space.s2, paddingHorizontal: space.s7, gap: 0 },
+  player: { flexDirection: "row", alignItems: "center", gap: space.s6, minHeight: 66 },
   playerRule: { borderTopWidth: 1, borderTopColor: colors.track },
-  text: { flex: 1, gap: 2 },
-  name: { fontFamily: fonts.ui.extrabold, fontSize: 16, color: colors.text },
-  small: { fontFamily: fonts.ui.medium, fontSize: 14, color: colors.textMuted },
+  text: { flex: 1, gap: space.s1 },
+  name: { fontFamily: fonts.ui.extrabold, fontSize: fontSizes.bodyLarge, color: colors.pageInk },
+  small: { fontFamily: fonts.ui.medium, fontSize: fontSizes.label, color: colors.pageInkMuted },
 });

@@ -3,27 +3,27 @@
 .form {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: var(--lx-s5);
 }
 
 .label {
-  font-size: 14px;
+  font-size: var(--lx-size-label);
   font-weight: 700;
 }
 
 /* Several lines: a rounded box rather than the pill of a one-line field. */
 .text {
   min-height: 132px;
-  padding: 12px 16px;
-  border-radius: 16px;
-  font-size: 16px;
+  padding: var(--lx-s6) var(--lx-s8);
+  border-radius: var(--lx-radius-xxl);
+  font-size: var(--lx-size-body-large);
   line-height: 1.4;
   resize: vertical;
 }
 
 .error {
   margin: 0;
-  font-size: 14px;
+  font-size: var(--lx-size-label);
   font-weight: 700;
   color: var(--lx-color-danger);
 }

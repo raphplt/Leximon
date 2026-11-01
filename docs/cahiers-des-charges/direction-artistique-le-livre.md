@@ -1,6 +1,6 @@
 # Cahier des charges · Direction artistique « Le Livre »
 
-- **Statut :** direction choisie par le propriétaire le 2026-11-01 sur maquettes (D-055, qui remplace D-022), rien de construit.
+- **Statut :** direction choisie par le propriétaire le 2026-11-01 sur maquettes (D-055, qui remplace D-022). Chantier 1.1 fait le 2026-11-01, le reste à faire.
 - **Source :** demande du propriétaire du 2026-11-01 : « tout doit vraiment être revu intégralement pour que ça fasse plus littérature ancienne, c'est trop minimaliste, trop moderne, ça manque d'âme », et retours du game designer.
 - **Maquettes :** `rnd/da-refonte/` (`python3 build.py` produit `maquettes.html` et `maquettes-livre.html`). Ce sont des essais de ton, pas des écrans finis.
 - **Cahier lié :** [retours-game-designer.md](retours-game-designer.md), qui donne l'ordre général. Ce cahier couvre ses phases 1 à 3.
@@ -73,6 +73,8 @@ Aujourd'hui, il y a environ 281 couleurs hexadécimales et 195 rayons hors token
 - Remplacement dossier par dossier, sans changement visible, vérifié à l'œil et par captures avant et après.
 - Répétition de `"SOFT" 100` retirée du CSS web.
 - Valeurs recopiées (`#262B40` dans `layout.tsx`, `app.json`, images de partage) ramenées à une seule source.
+
+**Fait le 2026-11-01.** Les couleurs, rayons, ombres, tailles de texte et espacements passent par `packages/tokens`. Un test (`no-raw-colors.test.ts`) refuse toute couleur en dur hors des illustrations et des scènes. Restent à leur palette propre, jusqu'à leur refonte en phase 2 ou 3 : cartes, sachets, avatars, sceaux, bannières et médailles de clan, écrans de révélation, coffret, route des niveaux et comptoir. Écarts assumés : les titres de 19, 26, 30, 34 et 36 px descendent d'un cran dans l'échelle, 9 px monte à 10, et quelques ombres voisines se confondent.
 
 ### 1.2 Les thèmes et le réglage
 

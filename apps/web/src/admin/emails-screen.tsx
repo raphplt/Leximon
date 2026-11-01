@@ -1,4 +1,6 @@
-"use client";
+import { colors } from "@leximon/tokens";
+
+("use client");
 
 import type { AdminEmail, AdminEmailKind, AdminEmailsResponse } from "@leximon/contract";
 import Link from "next/link";
@@ -15,7 +17,7 @@ import m from "./measures.module.css";
 import type { Range } from "./measures-model";
 import { dayParam, PeriodPicker } from "./period-picker";
 
-const GREEN = "#2fc79b";
+const GREEN = colors.success;
 
 const KIND_LABELS: Readonly<Record<AdminEmailKind, string>> = {
   code: "Code de connexion",

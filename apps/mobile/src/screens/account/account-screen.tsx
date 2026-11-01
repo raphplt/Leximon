@@ -21,7 +21,7 @@ import { Pressable, StyleSheet, Switch, Text, View } from "react-native";
 import { api } from "@/api/client";
 import { WEB_URL } from "@/config";
 import { playFromScratch } from "@/player/session";
-import { colors, fonts } from "@/theme";
+import { alpha, colors, fontSizes, fonts, space } from "@/theme";
 import { Button } from "@/ui/button";
 import { Check } from "@/ui/check";
 import { FormError, Page, Paragraph } from "@/ui/page";
@@ -302,7 +302,7 @@ function NewsToggle() {
             onValueChange={(next) => void change(next)}
             accessibilityLabel={NEWS_OPT_IN}
             trackColor={{ false: colors.track, true: colors.success }}
-            thumbColor={colors.text}
+            thumbColor={colors.pageInk}
           />
         </View>
       )}
@@ -466,26 +466,40 @@ function AgeChoice({
 }
 
 const styles = StyleSheet.create({
-  leave: { marginTop: 20 },
-  email: { fontFamily: fonts.text.medium, color: colors.accent },
-  subtitle: { fontFamily: fonts.ui.extrabold, fontSize: 20, color: colors.text },
-  warning: { fontFamily: fonts.ui.bold, fontSize: 15, lineHeight: 21, color: colors.danger },
+  leave: { marginTop: space.s10 },
+  email: { fontFamily: fonts.text.medium, color: colors.rubric },
+  subtitle: {
+    fontFamily: fonts.ui.extrabold,
+    fontSize: fontSizes.titleSmall,
+    color: colors.pageInk,
+  },
+  warning: {
+    fontFamily: fonts.ui.bold,
+    fontSize: fontSizes.body,
+    lineHeight: 21,
+    color: colors.danger,
+  },
   links: { flexDirection: "row", justifyContent: "space-around", flexWrap: "wrap" },
-  switchRow: { flexDirection: "row", alignItems: "center", gap: 12 },
-  switchLabel: { flex: 1, fontFamily: fonts.ui.semibold, fontSize: 15, color: colors.text },
-  inlineLink: { color: colors.accent, textDecorationLine: "underline" },
-  age: { gap: 10 },
-  ageLabel: { fontFamily: fonts.ui.bold, fontSize: 14, color: colors.textMuted },
-  chips: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+  switchRow: { flexDirection: "row", alignItems: "center", gap: space.s6 },
+  switchLabel: {
+    flex: 1,
+    fontFamily: fonts.ui.semibold,
+    fontSize: fontSizes.body,
+    color: colors.pageInk,
+  },
+  inlineLink: { color: colors.rubric, textDecorationLine: "underline" },
+  age: { gap: space.s5 },
+  ageLabel: { fontFamily: fonts.ui.bold, fontSize: fontSizes.label, color: colors.pageInkMuted },
+  chips: { flexDirection: "row", flexWrap: "wrap", gap: space.s4 },
   chip: {
     minHeight: 38,
-    paddingHorizontal: 14,
+    paddingHorizontal: space.s7,
     borderRadius: 19,
     borderWidth: 2,
     borderColor: colors.track,
     justifyContent: "center",
   },
-  chipOn: { borderColor: colors.accent, backgroundColor: "rgba(255, 210, 77, 0.14)" },
-  chipText: { fontFamily: fonts.ui.bold, fontSize: 14, color: colors.textMuted },
-  chipTextOn: { color: colors.accent },
+  chipOn: { borderColor: colors.gilt, backgroundColor: alpha(colors.gilt, 0.14) },
+  chipText: { fontFamily: fonts.ui.bold, fontSize: fontSizes.label, color: colors.pageInkMuted },
+  chipTextOn: { color: colors.rubric },
 });

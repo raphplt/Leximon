@@ -3,7 +3,7 @@ import Constants from "expo-constants";
 import { useEffect, useState } from "react";
 import { AppState, Linking, Modal, Platform, StyleSheet, Text, View } from "react-native";
 import { api } from "@/api/client";
-import { colors, fonts } from "@/theme";
+import { colors, fontSizes, fonts, space } from "@/theme";
 import { Button } from "@/ui/button";
 import { Icon } from "@/ui/icon";
 
@@ -39,7 +39,7 @@ export function UpdateGate() {
   return (
     <Modal visible={outdated} animationType="fade" statusBarTranslucent onRequestClose={() => {}}>
       <View style={styles.screen}>
-        <Icon name="sachet" size={44} color={colors.accent} />
+        <Icon name="sachet" size={44} color={colors.rubric} />
         <Text style={styles.title} accessibilityRole="header">
           {UPDATE_COPY.title}
         </Text>
@@ -60,22 +60,22 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
-    gap: 18,
-    paddingHorizontal: 32,
-    backgroundColor: colors.background,
+    gap: space.s9,
+    paddingHorizontal: space.s16,
+    backgroundColor: colors.page,
   },
   title: {
     fontFamily: fonts.display,
-    fontSize: 30,
+    fontSize: fontSizes.heading,
     lineHeight: 36,
-    color: colors.text,
+    color: colors.pageInk,
     textAlign: "center",
   },
   body: {
     fontFamily: fonts.text.regular,
-    fontSize: 18,
+    fontSize: fontSizes.subtitle,
     lineHeight: 26,
-    color: colors.textMuted,
+    color: colors.pageInkMuted,
     textAlign: "center",
   },
 });

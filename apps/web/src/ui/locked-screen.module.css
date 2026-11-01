@@ -1,8 +1,8 @@
 .screen {
   box-sizing: border-box;
   max-width: 640px;
-  margin: 40px auto;
-  padding: 40px 24px 32px;
+  margin: var(--lx-s20) auto;
+  padding: var(--lx-s20) var(--lx-s12) var(--lx-s16);
   text-align: center;
 }
 
@@ -12,55 +12,55 @@
   width: 84px;
   height: 84px;
   border-radius: 50%;
-  background: var(--lx-color-background);
+  background: var(--lx-color-page);
   color: var(--lx-color-kraft);
-  box-shadow: inset 0 0 0 3px var(--lx-color-outline);
+  box-shadow: inset 0 0 0 3px var(--lx-color-rule);
 }
 
 .kicker {
-  margin-top: 16px;
+  margin-top: var(--lx-s8);
 }
 
 .title {
-  margin: 6px 0 10px;
-  font-size: 34px;
+  margin: var(--lx-s3) 0 var(--lx-s5);
+  font-size: var(--lx-size-heading-large);
   line-height: 1.05;
 }
 
 .text {
   max-width: 380px;
   margin: 0 auto;
-  color: #d9d3e6;
-  font-size: 16px;
+  color: var(--lx-color-page-ink-soft);
+  font-size: var(--lx-size-body-large);
   line-height: 1.45;
 }
 
 .bar {
   max-width: 320px;
-  margin: 22px auto 6px;
+  margin: 22px auto var(--lx-s3);
 }
 
 .left {
   margin: 0;
-  font-size: 13px;
-  color: var(--lx-color-text-muted);
+  font-size: var(--lx-size-small);
+  color: var(--lx-color-page-ink-muted);
 }
 
 .actions {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: 10px;
-  margin-top: 24px;
+  gap: var(--lx-s5);
+  margin-top: var(--lx-s12);
 }
 
 @media (max-width: 759px) {
   .screen {
-    margin: 8px 0;
-    padding: 32px 16px 24px;
+    margin: var(--lx-s4) 0;
+    padding: var(--lx-s16) var(--lx-s8) var(--lx-s12);
   }
 
   .title {
-    font-size: 28px;
+    font-size: var(--lx-size-heading);
   }
 }

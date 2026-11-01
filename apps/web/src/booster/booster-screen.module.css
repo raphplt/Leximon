@@ -3,7 +3,7 @@
   max-width: 640px;
   min-height: calc(100dvh - 70px);
   margin: 0 auto;
-  padding: 8px 16px 40px;
+  padding: var(--lx-s4) var(--lx-s8) var(--lx-s20);
   display: flex;
   flex-direction: column;
 }
@@ -14,24 +14,24 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 32px;
+  gap: var(--lx-s16);
 }
 
 .hint,
 .error {
   margin: 0;
   max-width: 320px;
-  font-size: 16px;
+  font-size: var(--lx-size-body-large);
   font-weight: 700;
   text-align: center;
 }
 
 .hint {
-  color: var(--lx-color-text);
+  color: var(--lx-color-page-ink);
 }
 
 .error {
-  color: var(--lx-color-accent);
+  color: var(--lx-color-rubric);
 }
 
 /* --- Revealing ------------------------------------------------------------------------ */
@@ -42,8 +42,8 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 18px;
-  padding-top: 8px;
+  gap: var(--lx-s9);
+  padding-top: var(--lx-s4);
 }
 
 .revealBar {
@@ -52,19 +52,19 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 10px;
+  gap: var(--lx-s5);
 }
 
 .revealActions {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: var(--lx-s6);
 }
 
 .position {
-  font-size: 13px;
+  font-size: var(--lx-size-small);
   font-weight: 700;
-  color: var(--lx-color-text-muted);
+  color: var(--lx-color-page-ink-muted);
 }
 
 .progress {
@@ -72,31 +72,31 @@
 }
 
 .revealRarity {
-  font-size: 14px;
-  color: var(--lx-color-text);
+  font-size: var(--lx-size-label);
+  color: var(--lx-color-page-ink);
 }
 
 .next {
   min-height: 46px;
-  padding: 0 24px;
+  padding: 0 var(--lx-s12);
   border: none;
   border-radius: var(--lx-radius-pill);
-  background: var(--lx-color-text);
-  color: var(--lx-color-background);
+  background: var(--lx-color-page-ink);
+  color: var(--lx-color-page);
   font: inherit;
-  font-size: 15px;
+  font-size: var(--lx-size-body);
   font-weight: 800;
   cursor: pointer;
 }
 
 .skip {
   min-height: 46px;
-  padding: 0 16px;
+  padding: 0 var(--lx-s8);
   border: none;
   background: none;
-  color: var(--lx-color-text-muted);
+  color: var(--lx-color-page-ink-muted);
   font: inherit;
-  font-size: 14px;
+  font-size: var(--lx-size-label);
   font-weight: 700;
   text-decoration: underline;
   text-underline-offset: 3px;
@@ -113,10 +113,10 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin: 24px 0 0;
-  padding: 28px 26px;
+  margin: var(--lx-s12) 0 0;
+  padding: var(--lx-s14) 26px;
   text-align: center;
-  background: rgba(38, 43, 64, 0.92);
+  background: color-mix(in srgb, var(--lx-color-page) 92%, transparent);
   animation: enter 240ms ease-out both;
 }
 
@@ -126,17 +126,17 @@
   justify-content: center;
   align-items: center;
   gap: 0 0.4em;
-  margin: 6px 0 0;
-  font-size: 14px;
+  margin: var(--lx-s3) 0 0;
+  font-size: var(--lx-size-label);
   font-weight: 700;
-  color: var(--lx-color-accent);
+  color: var(--lx-color-rubric);
 }
 
 .recapCards {
   display: flex;
   gap: var(--gap);
-  margin: 24px 0 0;
-  padding: 10px 0 4px;
+  margin: var(--lx-s12) 0 0;
+  padding: var(--lx-s5) 0 var(--lx-s2);
   list-style: none;
 }
 
@@ -182,7 +182,7 @@
 }
 
 .recapCard:focus-visible {
-  outline: 3px solid var(--lx-color-accent);
+  outline: 3px solid var(--lx-color-gilt);
   outline-offset: 4px;
 }
 
@@ -196,7 +196,7 @@
   background: linear-gradient(
       115deg,
       transparent 30%,
-      rgba(255, 255, 255, 0.55) 48%,
+      color-mix(in srgb, var(--lx-color-glint) 55%, transparent) 48%,
       transparent 66%
     )
     no-repeat;
@@ -215,17 +215,17 @@
   top: -8px;
   padding: 1px 7px;
   border-radius: var(--lx-radius-pill);
-  background: var(--lx-color-accent);
-  color: var(--lx-color-accent-ink);
-  font-size: 11px;
+  background: var(--lx-color-action);
+  color: var(--lx-color-action-ink);
+  font-size: var(--lx-size-micro);
   font-weight: 800;
   pointer-events: none;
 }
 
 .dots {
   display: flex;
-  gap: 6px;
-  margin: 6px 0 0;
+  gap: var(--lx-s3);
+  margin: var(--lx-s3) 0 0;
 }
 
 .dot,
@@ -233,7 +233,7 @@
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: var(--lx-color-text);
+  background: var(--lx-color-page-ink);
   opacity: 0.3;
   transition: opacity 160ms;
 }
@@ -243,10 +243,10 @@
 }
 
 .recapHint {
-  margin: 10px 0 0;
-  font-size: 13px;
+  margin: var(--lx-s5) 0 0;
+  font-size: var(--lx-size-small);
   font-weight: 600;
-  color: var(--lx-color-text-muted);
+  color: var(--lx-color-page-ink-muted);
 }
 
 @keyframes land {
@@ -282,20 +282,20 @@
 }
 
 .recapProgress {
-  margin: 14px 0 0;
-  font-size: 14px;
+  margin: var(--lx-s7) 0 0;
+  font-size: var(--lx-size-label);
   font-weight: 700;
-  color: var(--lx-color-text-muted);
+  color: var(--lx-color-page-ink-muted);
 }
 
 .gained {
-  color: var(--lx-color-accent);
+  color: var(--lx-color-rubric);
 }
 
 .recapXp {
-  margin: 14px 0 4px;
-  font-size: 34px;
-  color: var(--lx-color-accent);
+  margin: var(--lx-s7) 0 var(--lx-s2);
+  font-size: var(--lx-size-heading-large);
+  color: var(--lx-color-rubric);
 }
 
 .recapBar {
@@ -306,34 +306,34 @@
 .levelUp {
   width: 100%;
   max-width: 360px;
-  margin: 16px 0 0;
-  padding: 12px;
+  margin: var(--lx-s8) 0 0;
+  padding: var(--lx-s6);
   box-sizing: border-box;
-  border-radius: 16px;
+  border-radius: var(--lx-radius-xxl);
   background: linear-gradient(120deg, var(--lx-color-badge), var(--lx-color-sticker));
   font-weight: 800;
-  font-size: 18px;
+  font-size: var(--lx-size-subtitle);
 }
 
 /* A rarity of the collection complete: quieter than a level, but a sticker of its own. */
 .completed {
   width: 100%;
   max-width: 360px;
-  margin: 8px 0 0;
-  padding: 6px 12px;
+  margin: var(--lx-s4) 0 0;
+  padding: var(--lx-s3) var(--lx-s6);
   box-sizing: border-box;
   border: 2px dashed var(--lx-color-badge);
-  border-radius: 12px;
+  border-radius: var(--lx-radius-lg);
   font-weight: 700;
-  font-size: 15px;
+  font-size: var(--lx-size-body);
 }
 
 .actions {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: 10px;
-  margin-top: 20px;
+  gap: var(--lx-s5);
+  margin-top: var(--lx-s10);
 }
 
 /* A phone: the recap fits between the top bar and the tabs, without a frame, the carousel running
@@ -342,12 +342,12 @@
   /* The shell already keeps room for the top bar and the tabs: the screen fills what is left. */
   .screen {
     min-height: calc(100dvh - 166px - env(safe-area-inset-bottom));
-    padding-bottom: 12px;
+    padding-bottom: var(--lx-s6);
   }
 
   .wide .recap {
     margin: 0;
-    padding: 4px 0 0;
+    padding: var(--lx-s2) 0 0;
     border: 0;
     border-radius: 0;
     background: none;
@@ -364,30 +364,30 @@
   }
 
   .recapCards {
-    margin-top: 8px;
+    margin-top: var(--lx-s4);
   }
 
   .recapCarousel {
     width: calc(100% + 32px);
     margin-inline: -16px;
-    padding-inline: calc(50% + 16px - var(--w) / 2);
+    padding-inline: calc(50% + var(--lx-s8) - var(--w) / 2);
   }
 
   .recapHint {
-    margin-top: 6px;
+    margin-top: var(--lx-s3);
   }
 
   .recapXp {
-    margin: 8px 0 2px;
-    font-size: 28px;
+    margin: var(--lx-s4) 0 var(--lx-s1);
+    font-size: var(--lx-size-heading);
   }
 
   .recapProgress {
-    margin-top: 8px;
+    margin-top: var(--lx-s4);
   }
 
   .actions {
-    margin-top: 12px;
+    margin-top: var(--lx-s6);
   }
 }
 

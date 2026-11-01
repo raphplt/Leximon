@@ -1,12 +1,12 @@
 .muted {
   margin: 0;
-  color: var(--lx-color-text-muted);
+  color: var(--lx-color-page-ink-muted);
 }
 
 .list {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: var(--lx-s5);
   margin: 0;
   padding: 0;
   list-style: none;
@@ -15,7 +15,7 @@
 .row {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: var(--lx-s6);
 }
 
 .rowName {
@@ -26,31 +26,31 @@
 }
 
 .warning {
-  margin: 0 0 18px;
+  margin: 0 0 var(--lx-s9);
   line-height: 1.5;
 }
 
 .buttons {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
+  gap: var(--lx-s5);
 }
 
 /* A destructive button: the danger colour, never the yellow of a main action. */
 .destroy {
   background: var(--lx-color-danger);
-  box-shadow: 0 4px 0 #b45a42;
-  color: #2a0d05;
+  box-shadow: 0 4px 0 var(--lx-color-danger-shade);
+  color: var(--lx-color-danger-ink);
   white-space: normal;
   text-align: center;
 }
 
 .destroy:hover {
-  background: #ffb39c;
+  background: var(--lx-color-danger-hover);
 }
 
 .error {
-  margin: 14px 0 0;
+  margin: var(--lx-s7) 0 0;
   color: var(--lx-color-danger);
   font-weight: 700;
 }

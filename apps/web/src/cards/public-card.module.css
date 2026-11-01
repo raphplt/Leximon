@@ -4,19 +4,19 @@
   box-sizing: border-box;
   max-width: 1000px;
   margin: 0 auto;
-  padding: 26px 32px 64px;
+  padding: 26px var(--lx-s16) var(--lx-s32);
 }
 
 .back {
   display: inline-flex;
-  margin-bottom: 18px;
+  margin-bottom: var(--lx-s9);
   text-decoration: none;
 }
 
 .layout {
   display: flex;
   align-items: flex-start;
-  gap: 48px;
+  gap: var(--lx-s24);
 }
 
 .cardSide {
@@ -24,18 +24,18 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 12px;
+  gap: var(--lx-s6);
 }
 
 .facts {
   flex: 1;
   min-width: 0;
-  padding-top: 8px;
+  padding-top: var(--lx-s4);
 }
 
 .word {
-  margin: 0 0 10px;
-  font-size: 44px;
+  margin: 0 0 var(--lx-s5);
+  font-size: var(--lx-size-display-large);
   line-height: 1.05;
   overflow-wrap: anywhere;
 }
@@ -43,19 +43,19 @@
 .chips {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
-  margin: 14px 0 0;
+  gap: var(--lx-s4);
+  margin: var(--lx-s7) 0 0;
 }
 
 .pitch {
-  margin-top: 32px;
+  margin-top: var(--lx-s16);
   padding-top: 22px;
-  border-top: 1px solid var(--lx-color-outline);
+  border-top: 1px solid var(--lx-color-rule);
 }
 
 .pitch p {
-  margin: 0 0 14px;
-  font-size: 17px;
+  margin: 0 0 var(--lx-s7);
+  font-size: var(--lx-size-lead);
   line-height: 1.45;
 }
 
@@ -63,20 +63,20 @@
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 16px;
-  margin-top: 40px;
-  font-size: 18px;
+  gap: var(--lx-s8);
+  margin-top: var(--lx-s20);
+  font-size: var(--lx-size-subtitle);
 }
 
 @media (max-width: 759px) {
   .page {
-    padding: 16px 16px 48px;
+    padding: var(--lx-s8) var(--lx-s8) var(--lx-s24);
   }
 
   .layout {
     flex-direction: column;
     align-items: center;
-    gap: 24px;
+    gap: var(--lx-s12);
   }
 
   .facts {
@@ -85,6 +85,6 @@
   }
 
   .word {
-    font-size: 34px;
+    font-size: var(--lx-size-heading-large);
   }
 }

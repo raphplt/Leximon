@@ -2,17 +2,17 @@
 .picker {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: var(--lx-s6);
 }
 
 .search {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 0 14px;
+  gap: var(--lx-s5);
+  padding: 0 var(--lx-s7);
   border-radius: var(--lx-radius-pill);
   background: var(--lx-color-well);
-  color: var(--lx-color-text-muted);
+  color: var(--lx-color-page-ink-muted);
 }
 
 .search input {
@@ -21,21 +21,21 @@
   min-height: 46px;
   border: 0;
   background: none;
-  color: var(--lx-color-text);
+  color: var(--lx-color-page-ink);
   font: inherit;
-  font-size: 16px;
+  font-size: var(--lx-size-body-large);
   outline: none;
 }
 
 .search:focus-within {
-  box-shadow: 0 0 0 2px var(--lx-color-accent);
+  box-shadow: 0 0 0 2px var(--lx-color-gilt);
 }
 
 /* Tall enough for a dozen words, then it scrolls inside the window. */
 .list {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: var(--lx-s1);
   max-height: min(52vh, 460px);
   /* The rows' own padding lines the words up with the title. */
   margin: 0 -12px;
@@ -48,14 +48,14 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: var(--lx-s6);
   width: 100%;
   min-height: 46px;
-  padding: 0 12px;
+  padding: 0 var(--lx-s6);
   border: 0;
-  border-radius: 12px;
+  border-radius: var(--lx-radius-lg);
   background: none;
-  color: var(--lx-color-text);
+  color: var(--lx-color-page-ink);
   font: inherit;
   text-align: left;
   cursor: pointer;
@@ -63,7 +63,7 @@
 
 .row:hover:not(:disabled),
 .row:focus-visible {
-  background: rgba(246, 240, 226, 0.08);
+  background: color-mix(in srgb, var(--lx-color-page-ink) 8%, transparent);
 }
 
 .row:disabled {
@@ -74,7 +74,7 @@
 .word {
   overflow: hidden;
   font-family: var(--font-text), Georgia, serif;
-  font-size: 18px;
+  font-size: var(--lx-size-subtitle);
   font-weight: 600;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -82,36 +82,36 @@
 
 .rarity {
   flex-shrink: 0;
-  font-size: 13px;
+  font-size: var(--lx-size-small);
 }
 
 .already {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: var(--lx-s2);
   font-weight: 700;
-  color: var(--lx-color-text-muted);
+  color: var(--lx-color-page-ink-muted);
 }
 
 .note,
 .lead {
   margin: 0;
-  font-size: 14px;
-  color: var(--lx-color-text-muted);
+  font-size: var(--lx-size-label);
+  color: var(--lx-color-page-ink-muted);
 }
 
 .lead {
-  font-size: 16px;
-  color: var(--lx-color-text);
+  font-size: var(--lx-size-body-large);
+  color: var(--lx-color-page-ink);
 }
 
 .faces {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: 14px;
+  gap: var(--lx-s7);
   margin: 0;
-  padding: 4px 0;
+  padding: var(--lx-s2) 0;
   list-style: none;
 }
 
@@ -119,7 +119,7 @@
   display: block;
   padding: 0;
   border: 0;
-  border-radius: 12px;
+  border-radius: var(--lx-radius-lg);
   background: none;
   cursor: pointer;
   transition: transform 120ms;
@@ -128,7 +128,7 @@
 .face:hover,
 .face:focus-visible {
   transform: translateY(-4px);
-  outline: 2px solid var(--lx-color-accent);
+  outline: 2px solid var(--lx-color-gilt);
   outline-offset: 3px;
 }
 
@@ -136,6 +136,6 @@
   display: block;
   width: 112px;
   aspect-ratio: 300 / 420;
-  border-radius: 10px;
-  background: var(--lx-color-sunken);
+  border-radius: var(--lx-radius-md);
+  background: var(--lx-color-binding);
 }

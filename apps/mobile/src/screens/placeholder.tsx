@@ -1,5 +1,5 @@
 import { StyleSheet, Text, View } from "react-native";
-import { colors, fonts } from "@/theme";
+import { colors, fontSizes, fonts } from "@/theme";
 
 /** A tab whose screen is not built on mobile yet. */
 export function Placeholder({ title }: { readonly title: string }) {
@@ -12,5 +12,5 @@ export function Placeholder({ title }: { readonly title: string }) {
 
 const styles = StyleSheet.create({
   screen: { flex: 1, alignItems: "center", justifyContent: "center" },
-  title: { fontFamily: fonts.display, fontSize: 32, color: colors.text },
+  title: { fontFamily: fonts.display, fontSize: fontSizes.headingLarge, color: colors.pageInk },
 });

@@ -13,7 +13,7 @@ export const unstable_settings = { anchor: "index" };
 
 export default function TabsLayout() {
   return (
-    <View style={{ flex: 1, backgroundColor: colors.background }}>
+    <View style={{ flex: 1, backgroundColor: colors.page }}>
       <TopBar />
       <Tabs
         tabBar={(props) => <TabBar {...props} />}
@@ -21,7 +21,7 @@ export default function TabsLayout() {
         backBehavior="initialRoute"
         screenOptions={{
           headerShown: false,
-          sceneStyle: { backgroundColor: colors.background },
+          sceneStyle: { backgroundColor: colors.page },
           animation: "fade",
         }}
       >

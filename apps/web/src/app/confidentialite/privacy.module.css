@@ -2,21 +2,19 @@
   box-sizing: border-box;
   width: min(680px, 100% - 32px);
   margin-inline: auto;
-  padding: 20px 0 64px;
+  padding: var(--lx-s10) 0 var(--lx-s32);
 }
 
 .logo {
   font-family: var(--font-display), Georgia, serif;
-  font-variation-settings: "SOFT" 100;
   font-weight: 900;
-  font-size: 28px;
+  font-size: var(--lx-size-heading);
   text-decoration: none;
 }
 
 .title {
-  margin: 48px 0 8px;
+  margin: var(--lx-s24) 0 var(--lx-s4);
   font-family: var(--font-display), Georgia, serif;
-  font-variation-settings: "SOFT" 100;
   font-weight: 900;
   font-size: clamp(40px, 7vw, 64px);
   line-height: 1;
@@ -27,62 +25,62 @@
 }
 
 .section h2 {
-  margin: 0 0 8px;
-  font-size: 18px;
+  margin: 0 0 var(--lx-s4);
+  font-size: var(--lx-size-subtitle);
   font-weight: 800;
 }
 
 .section p {
   margin: 0;
   font-family: var(--font-text), Georgia, serif;
-  font-size: 19px;
+  font-size: var(--lx-size-subtitle);
   line-height: 1.5;
-  color: var(--lx-color-text-muted);
+  color: var(--lx-color-page-ink-muted);
 }
 
 .section a {
-  color: var(--lx-color-text);
+  color: var(--lx-color-page-ink);
 }
 
 .section ul {
   margin: 0;
   padding-left: 22px;
   font-family: var(--font-text), Georgia, serif;
-  font-size: 19px;
+  font-size: var(--lx-size-subtitle);
   line-height: 1.5;
-  color: var(--lx-color-text-muted);
+  color: var(--lx-color-page-ink-muted);
 }
 
 .section li + li {
-  margin-top: 4px;
+  margin-top: var(--lx-s2);
 }
 
 .section p + p,
 .section p + ul,
 .section ul + p {
-  margin-top: 12px;
+  margin-top: var(--lx-s6);
 }
 
 .updated {
   margin: 0;
-  font-size: 15px;
-  color: var(--lx-color-text-faint);
+  font-size: var(--lx-size-body);
+  color: var(--lx-color-page-ink-faint);
 }
 
 .related {
-  margin-top: 48px;
-  font-size: 15px;
-  color: var(--lx-color-text-faint);
+  margin-top: var(--lx-s24);
+  font-size: var(--lx-size-body);
+  color: var(--lx-color-page-ink-faint);
 }
 
 .related a {
-  color: var(--lx-color-text-muted);
+  color: var(--lx-color-page-ink-muted);
 }
 
 .optOut {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 12px;
-  margin-top: 12px;
+  gap: var(--lx-s6);
+  margin-top: var(--lx-s6);
 }

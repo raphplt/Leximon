@@ -1,4 +1,6 @@
-"use client";
+import { alpha, colors } from "@leximon/tokens";
+
+("use client");
 
 import {
   type CSSProperties,
@@ -14,9 +16,9 @@ import { formatNumber } from "./format";
 
 /** Chart colors: tested for color blindness against the panel background. */
 export const SERIES = {
-  blue: "#5598e7",
-  yellow: "#ffd24d",
-  gray: "#8d88a3",
+  blue: colors.data,
+  yellow: colors.rubric,
+  gray: colors.pageInkFaint,
 } as const;
 
 /** Width of an element, followed as the window resizes. */
@@ -491,8 +493,8 @@ export function heat(share: number | null): CSSProperties {
   if (share === null) return {};
   const strength = Math.min(1, Math.max(0, share));
   return {
-    background: `rgba(85, 152, 231, ${0.08 + strength * 0.82})`,
-    color: strength > 0.55 ? "#1b1f33" : undefined,
+    background: alpha(colors.data, 0.08 + strength * 0.82),
+    color: strength > 0.55 ? colors.well : undefined,
   };
 }
 

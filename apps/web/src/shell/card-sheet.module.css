@@ -11,7 +11,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 12px;
+  gap: var(--lx-s6);
 }
 
 .facts {
@@ -20,20 +20,20 @@
 }
 
 .block {
-  margin-top: 18px;
+  margin-top: var(--lx-s9);
 }
 
 .steps {
   display: flex;
-  gap: 6px;
-  margin: 8px 0 0;
+  gap: var(--lx-s3);
+  margin: var(--lx-s4) 0 0;
   padding: 0;
   list-style: none;
 }
 
 .steps li {
   flex: 1;
-  font-size: 12px;
+  font-size: var(--lx-size-caption);
   font-weight: 800;
 }
 
@@ -46,79 +46,79 @@
 }
 
 .sketch .stepBar {
-  background: var(--lx-color-text-muted);
+  background: var(--lx-color-page-ink-muted);
 }
 
 .ink .stepBar {
-  background: #7c9bff;
+  background: var(--lx-mastery-ink);
 }
 
 .gilded .stepBar {
-  background: #ffd978;
+  background: var(--lx-mastery-gilded);
 }
 
 .stepOff {
-  color: var(--lx-color-text-faint);
+  color: var(--lx-color-page-ink-faint);
 }
 
 .note {
-  margin: 8px 0 0;
-  font-size: 13px;
-  color: var(--lx-color-text-muted);
+  margin: var(--lx-s4) 0 0;
+  font-size: var(--lx-size-small);
+  color: var(--lx-color-page-ink-muted);
   line-height: 1.45;
 }
 
 .note a {
-  color: var(--lx-color-accent);
+  color: var(--lx-color-rubric);
 }
 
 .chips {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
-  margin: 14px 0 0;
+  gap: var(--lx-s4);
+  margin: var(--lx-s7) 0 0;
 }
 
 .chip {
   min-height: 32px;
-  font-size: 13px;
+  font-size: var(--lx-size-small);
 }
 
 .actions {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 8px;
-  margin-top: 20px;
+  gap: var(--lx-s4);
+  margin-top: var(--lx-s10);
 }
 
 .later {
-  margin: 0 8px 0 0;
+  margin: 0 var(--lx-s4) 0 0;
   font-weight: 700;
-  color: var(--lx-color-text-muted);
+  color: var(--lx-color-page-ink-muted);
 }
 
 @media (max-width: 759px) {
   .sheet {
     flex-direction: column;
     align-items: stretch;
-    gap: 18px;
+    gap: var(--lx-s9);
   }
 }
 
 .report {
   display: block;
-  margin: 18px 0 0;
+  margin: var(--lx-s9) 0 0;
   padding: 0;
   border: 0;
   background: none;
   font: inherit;
-  font-size: 13px;
-  color: var(--lx-color-text-faint);
+  font-size: var(--lx-size-small);
+  color: var(--lx-color-page-ink-faint);
   text-decoration: underline;
   cursor: pointer;
 }
 
 .report:hover {
-  color: var(--lx-color-text-muted);
+  color: var(--lx-color-page-ink-muted);
 }
