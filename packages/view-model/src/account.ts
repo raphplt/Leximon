@@ -20,6 +20,9 @@ export const ACCOUNT_TITLES = {
   member: "Tu es connecté",
 } as const;
 
+/** Said over the game once the code is accepted. */
+export const SIGNED_IN_TOAST = "Tu es connecté.";
+
 export const NEWS_OPT_IN = "M'écrire quand il y a du nouveau";
 
 /** The age is optional: this choice sends none. */

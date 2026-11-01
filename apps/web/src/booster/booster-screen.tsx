@@ -7,7 +7,9 @@ import type { Rarity } from "@leximon/core";
 import { cardSize, motion, rarityStyles } from "@leximon/tokens";
 import type { PackShape } from "@leximon/view-model";
 import {
+  BACK_HOME_LABEL,
   type CollectionChoice,
+  canOpenAgain,
   collectionChoices,
   collectionProgress,
   copiesAt,
@@ -27,7 +29,10 @@ import {
   rarityCompletedLabel,
   recap,
   recapCascade,
+  recapOrder,
+  revealNextLabel,
   revealOrder,
+  SIGNED_IN_TOAST,
   stagingFor,
   stockView,
   type WordMemory,
@@ -36,6 +41,7 @@ import {
 } from "@leximon/view-model";
 import Link from "next/link";
 import { type CSSProperties, useCallback, useEffect, useRef, useState } from "react";
+import { takeSignedIn } from "@/account/sign-in-memory";
 import { loadCatalog } from "@/cards/catalog";
 import { prepareSpokenWords } from "@/cards/use-spoken-word";
 import { Card } from "@/components/card";
@@ -92,6 +98,7 @@ const RECAP_PHONE_CHROME = 430;
 /** The lines a recap shows only sometimes, in px: a level reached, an account to create. */
 const RECAP_LEVEL_UP_LINE = 56;
 const RECAP_SIGN_UP_LINE = 42;
+const RECAP_HOME_LINE = 58;
 const RECAP_COMPLETION_LINE = 32;
 /** Narrower, a card no longer reads even as a preview. */
 const RECAP_CAROUSEL_MIN = 180;
@@ -200,6 +207,11 @@ export function BoosterScreen() {
   const dates = useShared(cardDates);
   const toast = useToast();
   const cardWidth = useCardWidth();
+
+  useEffect(() => {
+    if (takeSignedIn()) toast(SIGNED_IN_TOAST);
+  }, [toast]);
+
   const { now } = view;
   const currentWallet = view.wallet;
   /** Boosters a guest may still open before creating an account; null for a member. */
@@ -453,7 +465,12 @@ export function BoosterScreen() {
             pack={pack}
             hurriedFrom={phase.hurriedFrom}
             mustSignUp={mustSignUp}
-            onOpen={() => {
+            onOpenAnother={() => {
+              setPack(null);
+              playSound("tearFinish");
+              void openPack();
+            }}
+            onHome={() => {
               setPack(null);
               setPhase({ name: "sealed" });
             }}
@@ -715,7 +732,7 @@ function Revealing({
             </button>
           )}
           <button type="button" className={styles.next} onClick={onNext}>
-            {last ? "Voir le bilan" : "Suivante"}
+            {revealNextLabel(last)}
           </button>
         </div>
       </div>
@@ -729,13 +746,15 @@ function Recap({
   pack,
   hurriedFrom,
   mustSignUp,
-  onOpen,
+  onOpenAnother,
+  onHome,
 }: {
   readonly catalog: Catalog | null;
   readonly pack: Pack;
   readonly hurriedFrom: number | null;
   readonly mustSignUp: boolean;
-  readonly onOpen: () => void;
+  readonly onOpenAnother: () => void;
+  readonly onHome: () => void;
 }) {
   const view = usePlayerView();
   const { openCoffret } = useShell();
@@ -747,6 +766,7 @@ function Recap({
   const coffretWaits = pack.progress.levelUp && view.coffrets.length > 0;
   const nextSachet =
     view.wallet === null || view.now === 0 ? null : nextSachetLine(view.wallet, view.now);
+  const another = !mustSignUp && !coffretWaits && view.wallet !== null && canOpenAgain(view.wallet);
   return (
     <div className={`${ui.panel} ${styles.recap}`}>
       <p className={`${ui.kicker} ${styles.recapKicker}`}>Ton sachet</p>
@@ -759,6 +779,7 @@ function Recap({
           extraLines={
             (levelUp === null ? 0 : RECAP_LEVEL_UP_LINE) +
             (mustSignUp ? RECAP_SIGN_UP_LINE : 0) +
+            (another ? RECAP_HOME_LINE : 0) +
             pack.completions.length * RECAP_COMPLETION_LINE
           }
         />
@@ -789,8 +810,13 @@ function Recap({
         ) : mustSignUp ? (
           <ButtonLink href="/compte">Créer mon compte</ButtonLink>
         ) : (
-          <Button onClick={onOpen}>
-            {view.wallet === null ? "Ouvrir un autre sachet" : openAgainLabel(view.wallet)}
+          <Button onClick={another ? onOpenAnother : onHome}>
+            {view.wallet === null ? BACK_HOME_LABEL : openAgainLabel(view.wallet)}
+          </Button>
+        )}
+        {another && (
+          <Button variant="secondary" onClick={onHome}>
+            {BACK_HOME_LABEL}
           </Button>
         )}
         {mustSignUp && coffretWaits ? (
@@ -826,16 +852,17 @@ function RecapCards({
   const { openCard } = useShell();
   const layout = useRecapLayout(pack.cards.length, extraLines);
   const [active, setActive] = useState(0);
+  const shown = recapOrder(pack.cards);
   // Computed once: the cascade plays when the recap appears, not again on a resize.
   const [steps] = useState(() =>
     recapCascade(
-      pack.cards,
-      (index) => {
-        const card = pack.cards[index];
+      shown.map((entry) => entry.card),
+      (position) => {
+        const entry = shown[position];
         return (
           hurriedFrom === null ||
-          index < hurriedFrom ||
-          (card !== undefined && keepsAnnouncementWhenHurried(card.rarity))
+          (entry !== undefined &&
+            (entry.index < hurriedFrom || keepsAnnouncementWhenHurried(entry.card.rarity)))
         );
       },
       { reducedMotion: prefersReducedMotion() },
@@ -863,16 +890,15 @@ function RecapCards({
             : undefined
         }
       >
-        {pack.cards.map((drawn, index) => {
+        {shown.map(({ card: drawn, index }, position) => {
           const card = cardOrPlaceholder(catalog, drawn.cardId, drawn.rarity);
-          const step = steps[index];
+          const step = steps[position];
           const isNew =
             !pack.quantitiesBefore.has(drawn.cardId) &&
             pack.cards.findIndex((c) => c.cardId === drawn.cardId) === index;
           const look = rarityStyles[drawn.rarity];
           return (
             <li
-              // biome-ignore lint/suspicious/noArrayIndexKey: a pack can hold the same card twice
               key={index}
               className={styles.recapSlot}
               style={

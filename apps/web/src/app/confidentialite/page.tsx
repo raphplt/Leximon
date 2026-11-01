@@ -45,13 +45,13 @@ export default function PrivacyPage() {
         </p>
         <p>
           Sans compte, tu joues en invité. On ne garde aucune adresse, seulement une partie liée à
-          ton navigateur. Si tu ne reviens pas, la partie devient inaccessible au bout de 7 jours,
+          ton navigateur. Si tu ne reviens pas, la partie devient inaccessible au bout de 90 jours,
           et on l'efface 6 mois après ta première visite.
         </p>
         <p>
           À chaque connexion, on enregistre l'adresse IP et le navigateur utilisés, pour repérer un
-          compte volé ou un abus. On les efface quand la connexion expire, 7 jours après ta dernière
-          visite.
+          compte volé ou un abus. On les efface quand la connexion expire, 90 jours après ta
+          dernière visite.
         </p>
       </section>
 
@@ -119,9 +119,9 @@ export default function PrivacyPage() {
         <p>
           Il n'y a ni publicité, ni revente de données, ni traceur publicitaire, ni dans le site ni
           dans les e-mails (aucun pixel, aucun lien pisté). Le seul cookie est celui qui te garde
-          connecté. Tes réglages de son et de vibration restent dans ton navigateur, comme ton refus
-          d'être compté, ton lien d'invitation et le code de la vidéo ou du post qui t'a amené,
-          jusqu'à ta première partie.
+          connecté. Tes réglages de son et de vibration et l'adresse de ta dernière connexion
+          restent dans ton navigateur, comme ton refus d'être compté, ton lien d'invitation et le
+          code de la vidéo ou du post qui t'a amené, jusqu'à ta première partie.
         </p>
       </section>
 

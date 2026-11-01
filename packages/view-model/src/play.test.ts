@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  canOpenAgain,
   collectionChoices,
   neighbourChoices,
   nextSachetLine,
@@ -8,8 +9,10 @@ import {
   pickCollection,
   playFabs,
   reserveView,
+  revealNextLabel,
   sachetContents,
   shortName,
+  speechToggleLabel,
   stockView,
   wordUnderCounter,
 } from "./play";
@@ -85,6 +88,22 @@ describe("stock", () => {
     expect(nextSachetLine(wallet(0), NOW)).toBe("Ton prochain sachet arrive dans 18 min.");
     expect(openAgainLabel(wallet(2))).toBe("Ouvrir un autre sachet");
     expect(nextSachetLine(wallet(2), NOW)).toBeNull();
+  });
+
+  it("chains the next sachet as long as one can be opened", () => {
+    expect(canOpenAgain(wallet(2))).toBe(true);
+    expect(canOpenAgain(wallet(0, 1))).toBe(true);
+    expect(canOpenAgain(wallet(0))).toBe(false);
+  });
+
+  it("names the last button of the reveal after what it shows", () => {
+    expect(revealNextLabel(false)).toBe("Suivante");
+    expect(revealNextLabel(true)).toBe("Voir mes cartes");
+  });
+
+  it("says what the speaker will do", () => {
+    expect(speechToggleLabel(true)).toBe("Couper la prononciation");
+    expect(speechToggleLabel(false)).toBe("Remettre la prononciation");
   });
 
   it("counts on the button what is left to open", () => {

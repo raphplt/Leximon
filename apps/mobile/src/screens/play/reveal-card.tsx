@@ -1,6 +1,11 @@
 import type { CatalogCard } from "@leximon/contract";
 import { cardSize, colors, rarityStyles } from "@leximon/tokens";
-import { cardRelease, frequencyLine, type RarityStaging } from "@leximon/view-model";
+import {
+  cardRelease,
+  frequencyLine,
+  type RarityStaging,
+  speechToggleLabel,
+} from "@leximon/view-model";
 import { useEffect, useRef, useState } from "react";
 import { PanResponder, Pressable, StyleSheet, Text, View } from "react-native";
 import Animated, {
@@ -15,8 +20,8 @@ import Animated, {
 import Svg, { Defs, Ellipse, Polyline, RadialGradient, Stop } from "react-native-svg";
 import { CardBack, CardEdge } from "@/cards/card-back";
 import { HoloCard } from "@/cards/holo-card";
-import { useSpokenWord } from "@/cards/spoken-word";
-import { play, speechOn, vibrate } from "@/feedback/feedback";
+import { type SpokenWord, useSpokenWord } from "@/cards/spoken-word";
+import { play, readPreference, speechOn, vibrate, writePreference } from "@/feedback/feedback";
 import { fonts } from "@/theme";
 import { Icon } from "@/ui/icon";
 
@@ -297,12 +302,37 @@ export function RevealCard({
             accessibilityLabel={`Écouter ${card.word}`}
             style={[styles.listen, word.playing && styles.listening]}
           >
-            <Icon name="sound" size={18} color={word.playing ? colors.accentInk : colors.text} />
+            <Icon name="play" size={18} color={word.playing ? colors.accentInk : colors.text} />
           </Pressable>
         )}
+        {settled && word.available && <SpeechToggle word={word} />}
         {settled && isNew && <Text style={styles.frequency}>{frequencyLine(card.perBillion)}</Text>}
       </View>
     </View>
+  );
+}
+
+/**
+ * Stops the words from being said, this one included, through the setting of the same name.
+ * With all sounds off nothing is said anyway: nothing to offer.
+ */
+function SpeechToggle({ word }: { readonly word: SpokenWord }) {
+  const [on, setOn] = useState(() => readPreference("speech"));
+  if (!readPreference("sound")) return null;
+  const toggle = () => {
+    writePreference("speech", !on);
+    setOn(!on);
+    if (on) word.stop();
+  };
+  return (
+    <Pressable
+      onPress={toggle}
+      accessibilityRole="button"
+      accessibilityLabel={speechToggleLabel(on)}
+      style={styles.listen}
+    >
+      <Icon name={on ? "sound" : "soundOff"} size={18} color={colors.text} />
+    </Pressable>
   );
 }
 

@@ -17,6 +17,19 @@ function wallet(cookie: string) {
   return app.request("/me/wallet", { headers: { origin: TEST_ORIGIN, cookie } }, env);
 }
 
+describe("session length", () => {
+  it("keeps a player signed in for 90 days", async () => {
+    const guest = await signInAsGuest(app, env);
+    const [session] = await db
+      .select({ expiresAt: schema.sessions.expiresAt })
+      .from(schema.sessions)
+      .where(eq(schema.sessions.userId, guest.userId));
+    const days = ((session?.expiresAt.getTime() ?? 0) - Date.now()) / 86_400_000;
+    expect(days).toBeGreaterThan(89.9);
+    expect(days).toBeLessThanOrEqual(90);
+  });
+});
+
 describe("session cookie cache", () => {
   it("is set again by an authenticated request, then spares the session lookup", async () => {
     const guest = await signInAsGuest(app, env);

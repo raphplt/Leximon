@@ -118,8 +118,8 @@ A sur le web sert de deuxième joueur : amis, échanges, clan, sanctions. `pnpm 
 - **Retour :**
 
 ### MJO-09 · Sons, voix et vibrations (JOU-08)
-- **Faire :** son du téléphone monté, mode silencieux coupé ; ouvrir des sachets jusqu'à une Rare au moins ; toucher le haut-parleur sous une carte ; dans Réglages, couper « Mots dits à voix haute », puis « Son », puis « Vibration », et rouvrir un sachet à chaque fois ; enfin passer le téléphone en silencieux.
-- **Attendu :** les mêmes sons que sur le web : glissement des cartes, retournement, carillon des Rares et au-delà, grondement, fissure, fanfares, « Nouveau ! », accord du bilan avec un carillon par carte rare. Le mot est dit quand la carte se pose ; le haut-parleur le redit. Les Rares et au-delà vibrent, plus fort quand elles sont plus rares. Chaque réglage coupe ce qu'il dit et tient après un relancement. En silencieux, aucun son. La musique d'une autre app continue.
+- **Faire :** son du téléphone monté, mode silencieux coupé ; ouvrir des sachets jusqu'à une Rare au moins ; toucher le bouton de lecture sous une carte, puis le haut-parleur à côté ; dans Réglages, couper « Mots dits à voix haute », puis « Son », puis « Vibration », et rouvrir un sachet à chaque fois ; enfin passer le téléphone en silencieux.
+- **Attendu :** les mêmes sons que sur le web : glissement des cartes, retournement, carillon des Rares et au-delà, grondement, fissure, fanfares, « Nouveau ! », accord du bilan avec un carillon par carte rare. Le mot est dit quand la carte se pose ; le bouton de lecture le redit, et le haut-parleur coupe la prononciation jusqu'à ce qu'on la remette, le réglage suivant le même état. Les Rares et au-delà vibrent, plus fort quand elles sont plus rares. Chaque réglage coupe ce qu'il dit et tient après un relancement. En silencieux, aucun son. La musique d'une autre app continue.
 - **Retour :**
 
 ### MJO-07 · Gravures Épique et Légendaire

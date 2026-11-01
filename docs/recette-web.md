@@ -104,6 +104,11 @@ Sans être connecté.
 - **Attendu :** un avertissement dit combien de cartes l'invité va perdre et demande de confirmer (P54) ; « Annuler » laisse invité. Après confirmation, B est intact, sans les cartes de l'invité.
 - **Retour :**
 
+### INS-06 · Connexion et déconnexion
+- **Faire :** se connecter avec un code, aller sur `/compte`, se déconnecter, puis revenir sur `/compte`.
+- **Attendu :** après le code, on arrive sur `/jouer` avec le message « Tu es connecté. » en bas de l'écran, une seule fois. Sur `/compte`, « Retour au jeu » occupe le centre et « Me déconnecter » est un lien discret sous le panneau. Une fois déconnecté, le champ d'adresse est prérempli avec la dernière adresse. Après « Supprimer mon compte », il est vide. Une session dure 90 jours et se prolonge à chaque visite.
+- **Retour :**
+
 ---
 
 ## 3. Jouer et ouvrir un sachet
@@ -126,7 +131,7 @@ Compte A, n'importe quel niveau.
 
 ### JOU-04 · Ouverture
 - **Faire :** ouvrir plusieurs sachets. Avant, fermer l'astuce avec ×, recharger la page.
-- **Attendu :** l'astuce « Tire sur le pointillé, ou touche le sachet. » est une pastille sous le sachet, jamais coupée par le bord ; fermée, elle ne revient pas, et elle part seule après trois sachets. Déchirure au doigt ou à la souris, pile, cinq cartes à retourner, « Tout révéler ». Annonce « Rare ! », « Légendaire ! » à la couleur de la rareté ; à partir de Précieux, tu retournes la carte toi-même. Le mot est prononcé quand la carte se pose.
+- **Attendu :** l'astuce « Tire sur le pointillé, ou touche le sachet. » est une pastille sous le sachet, jamais coupée par le bord ; fermée, elle ne revient pas, et elle part seule après trois sachets. Déchirure au doigt ou à la souris, pile, cinq cartes à retourner, « Tout révéler ». Annonce « Rare ! », « Légendaire ! » à la couleur de la rareté ; à partir de Précieux, tu retournes la carte toi-même. Le mot est prononcé quand la carte se pose. Sur la dernière carte, le bouton dit « Voir mes cartes ».
 - **Retour :**
 
 ### JOU-05 · Coup d'œil
@@ -136,7 +141,7 @@ Compte A, n'importe quel niveau.
 
 ### JOU-06 · Bilan
 - **Faire :** ouvrir un sachet carte par carte, puis un autre avec « Tout révéler » ; sur ordinateur et sur téléphone.
-- **Attendu :** « Ton sachet », meilleure rareté, mots nouveaux. Les cinq cartes arrivent l'une après l'autre, côte à côte sur ordinateur, en carrousel sur téléphone (des points disent où on en est), lisibles, avec « Nouveau ». Une carte de Rare et au-dessus luit en arrivant ; après « Tout révéler », une Rare ou une Précieuse sautée joue son carillon. Toucher une carte ouvre sa fiche, citation entière comprise. Puis « +N XP », barre d'XP, progression de la collection, boutons. Sur téléphone (390 × 844), tout tient sans défiler entre la barre du haut et les onglets, passage de niveau compris : pas de cadre, pas de « Ton sachet » ni de « Voir mon album » (l'onglet Album est juste dessous), le carrousel va d'un bord à l'autre de l'écran, et la carte suivante dépasse au bord de l'écran, pas coupée par un cadre ; les cartes rapetissent sur un écran court (375 × 667). Sur la face d'une carte, la citation n'est jamais coupée au milieu d'une ligne : elle finit par « … ». Après le dernier sachet disponible, le bouton dit « Retour à l'accueil » et ramène au comptoir des sachets, avec au-dessus « Ton prochain sachet arrive dans N min. ».
+- **Attendu :** « Ton sachet », meilleure rareté, mots nouveaux. Les cinq cartes arrivent l'une après l'autre, de la plus rare à la plus commune, côte à côte sur ordinateur, en carrousel sur téléphone (des points disent où on en est), lisibles, avec « Nouveau ». Une carte de Rare et au-dessus luit en arrivant ; après « Tout révéler », une Rare ou une Précieuse sautée joue son carillon. Toucher une carte ouvre sa fiche, citation entière comprise. Puis « +N XP », barre d'XP, progression de la collection, boutons. Sur téléphone (390 × 844), tout tient sans défiler entre la barre du haut et les onglets, passage de niveau compris : pas de cadre, pas de « Ton sachet » ni de « Voir mon album » (l'onglet Album est juste dessous), le carrousel va d'un bord à l'autre de l'écran, et la carte suivante dépasse au bord de l'écran, pas coupée par un cadre ; les cartes rapetissent sur un écran court (375 × 667). Sur la face d'une carte, la citation n'est jamais coupée au milieu d'une ligne : elle finit par « … ». Tant qu'il reste un sachet, « Ouvrir un autre sachet » enchaîne sur le suivant, déchirure comprise, sans repasser par l'accueil, et « Retour à l'accueil » est juste à côté. Après le dernier sachet disponible, le bouton dit « Retour à l'accueil » et ramène au comptoir des sachets, avec au-dessus « Ton prochain sachet arrive dans N min. ».
 - **Retour :**
 
 ### JOU-07 · Passage de niveau
@@ -145,8 +150,8 @@ Compte A, n'importe quel niveau.
 - **Retour :**
 
 ### JOU-08 · Son et vibration
-- **Faire :** couper « Mots dits à voix haute » dans les réglages, ouvrir un sachet ; puis couper le son, en ouvrir un autre.
-- **Attendu :** d'abord les bruitages sans les mots (le bouton d'écoute marche toujours) ; ensuite plus aucun son, et le réglage des mots disparaît.
+- **Faire :** sous une carte retournée, toucher le bouton de lecture, puis le haut-parleur à côté, et passer aux cartes suivantes. Couper « Mots dits à voix haute » dans les réglages, ouvrir un sachet ; puis couper le son, en ouvrir un autre.
+- **Attendu :** le bouton de lecture redit le mot ; le haut-parleur coupe la prononciation jusqu'à ce qu'on la remette, et le réglage suit le même état. Réglage coupé : les bruitages sans les mots (le bouton de lecture marche toujours). Son coupé : plus aucun son, et ni le réglage des mots ni le haut-parleur ne s'affichent.
 - **Retour :**
 
 ### JOU-09 · Forme « pli »

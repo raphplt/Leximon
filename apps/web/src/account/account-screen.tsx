@@ -23,6 +23,7 @@ import { forgetProgress } from "@/progress/use-progress";
 import { Switch } from "@/ui/switch";
 import styles from "./account-screen.module.css";
 import { forgetPendingCode, keepPendingCode, readPendingCode } from "./pending-code";
+import { keepLastEmail, noteSignedIn, readLastEmail } from "./sign-in-memory";
 
 type Step =
   | { readonly kind: "loading" }
@@ -139,6 +140,8 @@ export function AccountScreen() {
         await api.setEmailPreferences({ newsOptIn: true, source: "signup" }).catch(() => undefined);
       }
       forgetProgress();
+      keepLastEmail(email);
+      noteSignedIn();
       // Straight back to the game, with a full load: every screen then reads the account afresh.
       window.location.assign("/jouer");
     } else showCodeError(result.code, email);
@@ -175,20 +178,30 @@ export function AccountScreen() {
       )}
 
       {step.kind === "member" && (
-        <div className={styles.panel}>
-          <p className={styles.text}>
-            Connecté avec <strong className={styles.email}>{step.email}</strong>.
-          </p>
-          <NewsToggle />
-          {step.isAdmin && (
-            <Link href="/admin" className={styles.secondary}>
-              Administration
+        <>
+          <div className={styles.panel}>
+            <p className={styles.text}>
+              Connecté avec <strong className={styles.email}>{step.email}</strong>.
+            </p>
+            <NewsToggle />
+            <Link href="/jouer" className={styles.primary}>
+              Retour au jeu
             </Link>
-          )}
-          <button type="button" className={styles.secondary} disabled={busy} onClick={leave}>
+            {step.isAdmin && (
+              <Link href="/admin" className={styles.secondary}>
+                Administration
+              </Link>
+            )}
+          </div>
+          <button
+            type="button"
+            className={`${styles.link} ${styles.leave}`}
+            disabled={busy}
+            onClick={leave}
+          >
             {busy ? "Un instant…" : "Me déconnecter"}
           </button>
-        </div>
+        </>
       )}
 
       {step.kind === "email" && (
@@ -256,7 +269,7 @@ function EmailForm({
   readonly onNewsOptIn: (value: boolean) => void;
   readonly onSubmit: (email: string) => void;
 }) {
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState(readLastEmail);
   const id = useId();
   const submit = (event: FormEvent) => {
     event.preventDefault();

@@ -57,7 +57,7 @@ function Pronunciation({ card }: { readonly card: CatalogCard }) {
         onClick={word.play}
         aria-label={`Écouter ${card.word}`}
       >
-        <Icon name="sound" size={20} />
+        <Icon name="play" size={20} />
       </button>
       <span className={styles.ipa} lang="fr-Latn-fonipa">
         /{spoken.ipa}/

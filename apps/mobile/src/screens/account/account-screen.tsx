@@ -11,8 +11,10 @@ import {
   needsConfirmation,
   needsNewCode,
   PACK_NOUNS,
+  SIGNED_IN_TOAST,
   sendErrorMessage,
 } from "@leximon/view-model";
+import { router } from "expo-router";
 import * as WebBrowser from "expo-web-browser";
 import { useCallback, useEffect, useState } from "react";
 import { Pressable, StyleSheet, Switch, Text, View } from "react-native";
@@ -25,6 +27,8 @@ import { Check } from "@/ui/check";
 import { FormError, Page, Paragraph } from "@/ui/page";
 import { TextButton } from "@/ui/text-button";
 import { TextField } from "@/ui/text-field";
+import { toast } from "@/ui/toast";
+import { keepLastEmail, readLastEmail } from "./last-email";
 
 type Step =
   | { readonly kind: "loading" }
@@ -125,7 +129,9 @@ export function AccountScreen() {
         // Missing consent is the safe failure: the player can still tick it in their account.
         await api.setEmailPreferences({ newsOptIn: true, source: "signup" }).catch(() => undefined);
       }
+      keepLastEmail(email);
       playFromScratch();
+      toast(SIGNED_IN_TOAST);
     } else showCodeError(result.code, email);
   };
 
@@ -157,12 +163,14 @@ export function AccountScreen() {
             Connecté avec <Text style={styles.email}>{step.email}</Text>.
           </Paragraph>
           <NewsToggle />
-          <Button
-            label={busy ? "Un instant…" : "Me déconnecter"}
-            secondary
-            disabled={busy}
-            onPress={() => void leave()}
-          />
+          <Button label="Retour au jeu" onPress={() => router.navigate("/")} />
+          <View style={styles.leave}>
+            <TextButton
+              label={busy ? "Un instant…" : "Me déconnecter"}
+              disabled={busy}
+              onPress={() => void leave()}
+            />
+          </View>
         </>
       )}
 
@@ -223,7 +231,7 @@ function EmailForm({
   readonly onNewsOptIn: (value: boolean) => void;
   readonly onSubmit: (email: string) => void;
 }) {
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState(readLastEmail);
   const ready = !busy && email.trim() !== "";
   const submit = () => {
     if (ready) onSubmit(email.trim().toLowerCase());
@@ -458,6 +466,7 @@ function AgeChoice({
 }
 
 const styles = StyleSheet.create({
+  leave: { marginTop: 20 },
   email: { fontFamily: fonts.text.medium, color: colors.accent },
   subtitle: { fontFamily: fonts.ui.extrabold, fontSize: 20, color: colors.text },
   warning: { fontFamily: fonts.ui.bold, fontSize: 15, lineHeight: 21, color: colors.danger },

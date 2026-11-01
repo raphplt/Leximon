@@ -9,6 +9,7 @@ import {
   nextRefillLabel,
   rarityCompletedLabel,
   recap,
+  recapOrder,
   revealOrder,
 } from "./reveal";
 
@@ -21,6 +22,23 @@ describe("revealOrder", () => {
       { cardId: "d", rarity: "common" },
     ] as const;
     expect(revealOrder(cards).map((card) => card.cardId)).toEqual(["b", "d", "c", "a"]);
+  });
+});
+
+describe("recapOrder", () => {
+  it("leads with the rarest card and remembers each card's place in the reveal", () => {
+    const revealed = [
+      { cardId: "b", rarity: "common" },
+      { cardId: "d", rarity: "common" },
+      { cardId: "c", rarity: "uncommon" },
+      { cardId: "a", rarity: "epic" },
+    ] as const;
+    expect(recapOrder(revealed).map(({ card, index }) => [card.cardId, index])).toEqual([
+      ["a", 3],
+      ["c", 2],
+      ["b", 0],
+      ["d", 1],
+    ]);
   });
 });
 

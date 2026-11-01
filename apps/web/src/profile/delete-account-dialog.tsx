@@ -8,6 +8,7 @@ import {
   deleteAccountLabel,
 } from "@leximon/view-model";
 import { useEffect, useState } from "react";
+import { forgetLastEmail } from "@/account/sign-in-memory";
 import { api } from "@/lib/api";
 import { profile } from "@/player/player";
 import { useShared } from "@/player/resource";
@@ -48,6 +49,7 @@ export function DeleteAccountDialog({
         setBusy(false);
         return;
       }
+      forgetLastEmail();
       // A full load: nothing of the erased player stays in memory.
       window.location.assign("/");
     } catch (caught) {

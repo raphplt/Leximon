@@ -87,6 +87,13 @@ export function openButtonLabel(stock: StockView, guestLeft: number | null): str
   return stock.action;
 }
 
+export const BACK_HOME_LABEL = "Retour à l'accueil";
+
+/** Whether the recap can tear the next sachet straight away. */
+export function canOpenAgain(wallet: BoosterWalletResponse): boolean {
+  return wallet.stored > 0 || wallet.bonus > 0;
+}
+
 /**
  * The recap's button once the cards are seen: open another, a bonus, or, with nothing left, go
  * back to the counter, where the day's challenge and the other screens wait.
@@ -94,12 +101,22 @@ export function openButtonLabel(stock: StockView, guestLeft: number | null): str
 export function openAgainLabel(wallet: BoosterWalletResponse): string {
   if (wallet.stored > 0) return "Ouvrir un autre sachet";
   if (wallet.bonus > 0) return "Ouvrir un sachet bonus";
-  return "Retour à l'accueil";
+  return BACK_HOME_LABEL;
+}
+
+/** The button under a revealed card: the next one, or, after the last, all of them. */
+export function revealNextLabel(last: boolean): string {
+  return last ? "Voir mes cartes" : "Suivante";
+}
+
+/** The speaker under a revealed card, which turns the same setting as the settings screen. */
+export function speechToggleLabel(on: boolean): string {
+  return on ? "Couper la prononciation" : "Remettre la prononciation";
 }
 
 /** Under the recap's button when nothing is left to open: « Ton prochain sachet arrive dans 18 min. » */
 export function nextSachetLine(wallet: BoosterWalletResponse, now: EpochMs): string | null {
-  if (wallet.stored > 0 || wallet.bonus > 0 || wallet.nextRefillAt === null) return null;
+  if (canOpenAgain(wallet) || wallet.nextRefillAt === null) return null;
   return `Ton prochain sachet arrive dans ${formatWait(Date.parse(wallet.nextRefillAt) - now)}.`;
 }
 

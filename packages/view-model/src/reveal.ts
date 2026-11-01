@@ -21,6 +21,19 @@ export function revealOrder<T extends DrawnCard>(cards: readonly T[]): T[] {
     .map(({ card }) => card);
 }
 
+export interface RecapEntry<T> {
+  readonly card: T;
+  /** Its place in the reveal, which the new and hurried cards are counted by. */
+  readonly index: number;
+}
+
+/** The recap leads with the best card, the opposite of the reveal's suspense. */
+export function recapOrder<T extends DrawnCard>(cards: readonly T[]): RecapEntry<T>[] {
+  return cards
+    .map((card, index) => ({ card, index }))
+    .sort((a, b) => rarityRank(b.card.rarity) - rarityRank(a.card.rarity) || a.index - b.index);
+}
+
 export interface Recap {
   /** The best rarity of the pack and how many cards of it, from Rare up; `null` below. */
   readonly best: { readonly rarity: Rarity; readonly label: string } | null;

@@ -24,6 +24,7 @@ import { playFromScratch } from "@/player/session";
 import { useShared } from "@/player/shared";
 import { account, profile } from "@/player/state";
 import { useProfileActions } from "@/profile/profile-actions";
+import { forgetLastEmail } from "@/screens/account/last-email";
 import { PseudoSheet } from "@/screens/profile/pseudo-sheet";
 import { colors, fonts } from "@/theme";
 import { Avatar } from "@/ui/avatar";
@@ -416,6 +417,7 @@ function DeleteAccountSheet({
       }
       // The session died with the account: drop the cookie the phone still keeps.
       await api.signOut().catch(() => undefined);
+      forgetLastEmail();
       onClose();
       playFromScratch();
     } catch (caught) {

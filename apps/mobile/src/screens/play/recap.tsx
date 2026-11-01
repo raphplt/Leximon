@@ -1,6 +1,8 @@
 import { type Catalog, cardOrPlaceholder } from "@leximon/contract/client";
 import { cardSize, colors, rarityStyles } from "@leximon/tokens";
 import {
+  BACK_HOME_LABEL,
+  canOpenAgain,
   collectionProgress,
   keepsAnnouncementWhenHurried,
   levelRatio,
@@ -10,6 +12,7 @@ import {
   rarityCompletedLabel,
   recap,
   recapCascade,
+  recapOrder,
   xpGainLabel,
 } from "@leximon/view-model";
 import { router } from "expo-router";
@@ -59,14 +62,16 @@ export function Recap({
   pack,
   hurriedFrom,
   mustSignUp,
-  onOpen,
+  onOpenAnother,
+  onHome,
 }: {
   readonly catalog: Catalog;
   readonly pack: Pack;
   /** Where the player asked to reveal everything; null when every card was turned. */
   readonly hurriedFrom: number | null;
   readonly mustSignUp: boolean;
-  readonly onOpen: () => void;
+  readonly onOpenAnother: () => void;
+  readonly onHome: () => void;
 }) {
   const window = useWindowDimensions();
   const [room, setRoom] = useState(window.height);
@@ -83,16 +88,17 @@ export function Recap({
   );
   const [active, setActive] = useState(0);
   const reducedMotion = useReducedMotion();
+  const shown = recapOrder(pack.cards);
   // Computed once: the cascade plays when the recap appears.
   const [steps] = useState(() =>
     recapCascade(
-      pack.cards,
-      (index) => {
-        const card = pack.cards[index];
+      shown.map((entry) => entry.card),
+      (position) => {
+        const entry = shown[position];
         return (
           hurriedFrom === null ||
-          index < hurriedFrom ||
-          (card !== undefined && keepsAnnouncementWhenHurried(card.rarity))
+          (entry !== undefined &&
+            (entry.index < hurriedFrom || keepsAnnouncementWhenHurried(entry.card.rarity)))
         );
       },
       { reducedMotion },
@@ -111,6 +117,7 @@ export function Recap({
   const xp = xpGainLabel(pack.progress);
   const levelUp = levelUpLabel(pack.progress);
   const nextSachet = wallet === null ? null : nextSachetLine(wallet, now);
+  const another = !mustSignUp && !coffretWaits && wallet !== null && canOpenAgain(wallet);
   return (
     <View style={styles.recap} onLayout={(event) => setRoom(event.nativeEvent.layout.height)}>
       <Text style={styles.kicker}>TON SACHET</Text>
@@ -131,22 +138,18 @@ export function Recap({
         scrollEventThrottle={32}
         style={styles.carousel}
       >
-        {pack.cards.map((drawn, index) => (
-          <Animated.View
-            // biome-ignore lint/suspicious/noArrayIndexKey: a pack can hold the same card twice.
-            key={index}
-            entering={FadeInRight.delay(index * STEP_MS).duration(260)}
-          >
+        {shown.map(({ card: drawn, index }, position) => (
+          <Animated.View key={index} entering={FadeInRight.delay(position * STEP_MS).duration(260)}>
             <Card
               card={cardOrPlaceholder(catalog, drawn.cardId, drawn.rarity)}
               collectionName={pack.collectionName}
               width={width}
             />
-            {steps[index]?.glint === true && (
+            {steps[position]?.glint === true && (
               <Glint
                 color={rarityStyles[drawn.rarity].glow ?? rarityStyles[drawn.rarity].spot}
                 width={width}
-                delayMs={(steps[index]?.delayMs ?? 0) + GLINT_AT_MS}
+                delayMs={(steps[position]?.delayMs ?? 0) + GLINT_AT_MS}
               />
             )}
             {isNewAt(pack, index) && <Text style={styles.new}>Nouveau</Text>}
@@ -185,11 +188,15 @@ export function Recap({
           <Button label="Créer mon compte" onPress={() => router.push("/compte")} />
         ) : (
           <Button
-            label={wallet === null ? "Ouvrir un autre sachet" : openAgainLabel(wallet)}
-            onPress={onOpen}
+            label={wallet === null ? BACK_HOME_LABEL : openAgainLabel(wallet)}
+            onPress={another ? onOpenAnother : onHome}
           />
         )}
-        <Button label="Voir mon album" secondary onPress={() => router.navigate("/album")} />
+        {another ? (
+          <Button label={BACK_HOME_LABEL} secondary onPress={onHome} />
+        ) : (
+          <Button label="Voir mon album" secondary onPress={() => router.navigate("/album")} />
+        )}
       </View>
     </View>
   );

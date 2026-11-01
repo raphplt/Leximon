@@ -3,7 +3,7 @@
 import type { CatalogCard } from "@leximon/contract";
 import { rarityStyles } from "@leximon/tokens";
 import type { RarityStaging } from "@leximon/view-model";
-import { cardRelease, frequencyLine } from "@leximon/view-model";
+import { cardRelease, frequencyLine, speechToggleLabel } from "@leximon/view-model";
 import {
   type CSSProperties,
   type KeyboardEvent,
@@ -13,12 +13,12 @@ import {
   useState,
 } from "react";
 import { useCardShare } from "@/cards/share-card";
-import { useSpokenWord } from "@/cards/use-spoken-word";
+import { type SpokenWord, useSpokenWord } from "@/cards/use-spoken-word";
 import { HoloCard } from "@/components/holo-card";
 import { useHoloLight } from "@/components/use-holo-light";
 import { Icon } from "@/ui/icon";
 import { CardBack } from "./card-back";
-import { play, speechOn, vibrate } from "./feedback";
+import { play, readPreference, speechOn, vibrate, writePreference } from "./feedback";
 import styles from "./reveal-card.module.css";
 
 /** A touch during the first moments of an announcement is ignored: it may be a double tap. */
@@ -253,15 +253,40 @@ export function RevealCard({
             onClick={word.play}
             aria-label={`Écouter ${card.word}`}
           >
-            <Icon name="sound" size={18} />
+            <Icon name="play" size={18} />
           </button>
         )}
+        {settled && word.available && <SpeechToggle word={word} />}
         {settled && isNew && (
           <span className={styles.frequency}>{frequencyLine(card.perBillion)}</span>
         )}
       </p>
       {settled && staging.spotlight && <ShareButton card={card} />}
     </div>
+  );
+}
+
+/**
+ * Stops the words from being said, this one included, through the setting of the same name.
+ * With all sounds off nothing is said anyway: nothing to offer.
+ */
+function SpeechToggle({ word }: { readonly word: SpokenWord }) {
+  const [on, setOn] = useState(() => readPreference("speech"));
+  if (!readPreference("sound")) return null;
+  const toggle = () => {
+    writePreference("speech", !on);
+    setOn(!on);
+    if (on) word.stop();
+  };
+  return (
+    <button
+      type="button"
+      className={styles.listen}
+      onClick={toggle}
+      aria-label={speechToggleLabel(on)}
+    >
+      <Icon name={on ? "sound" : "soundOff"} size={18} />
+    </button>
   );
 }
 

@@ -13,6 +13,7 @@ import {
   lockedToast,
   openButtonLabel,
   pickCollection,
+  revealNextLabel,
   revealOrder,
   type StockView,
   stagingFor,
@@ -208,7 +209,8 @@ export function PlayScreen() {
   };
 
   const openPack = async () => {
-    if (catalog === null || choice === null || phase.name !== "sealed") return;
+    if (catalog === null || choice === null) return;
+    if (phase.name !== "sealed" && phase.name !== "recap") return;
     const started = startRequest();
     if (started?.outcome == null) return;
     setError(null);
@@ -403,7 +405,7 @@ export function PlayScreen() {
               </Pressable>
             )}
             <Pressable onPress={next} accessibilityRole="button" style={styles.next}>
-              <Text style={styles.nextText}>{last ? "Voir le bilan" : "Suivante"}</Text>
+              <Text style={styles.nextText}>{revealNextLabel(last)}</Text>
             </Pressable>
           </View>
         </View>
@@ -419,7 +421,12 @@ export function PlayScreen() {
           pack={pack}
           hurriedFrom={phase.hurriedFrom}
           mustSignUp={mustSignUp}
-          onOpen={() => {
+          onOpenAnother={() => {
+            setPack(null);
+            play("tearFinish");
+            void openPack();
+          }}
+          onHome={() => {
             setPack(null);
             setPhase({ name: "sealed" });
           }}

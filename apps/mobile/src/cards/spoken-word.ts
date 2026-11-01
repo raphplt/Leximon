@@ -9,6 +9,7 @@ export interface SpokenWord {
   readonly playing: boolean;
   /** From the start, even when it is already playing. */
   readonly play: () => void;
+  readonly stop: () => void;
 }
 
 /** Sounds already loading before their card shows, by path: only the latest pack's are kept. */
@@ -75,5 +76,10 @@ export function useSpokenWord(card: CatalogCard): SpokenWord {
     player.play();
   }, [path]);
 
-  return { available: path !== null, playing, play };
+  const stop = useCallback(() => {
+    audio.current?.player.pause();
+    setPlaying(false);
+  }, []);
+
+  return { available: path !== null, playing, play, stop };
 }

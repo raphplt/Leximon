@@ -30,6 +30,8 @@ export const ADMIN_ROLE = "admin";
 /** Sign-in codes: 6 digits, valid 10 minutes, 3 wrong attempts each. */
 export const SIGN_IN_CODE = { length: 6, expiresInS: 10 * 60, allowedAttempts: 3 } as const;
 
+export const SESSION_TTL_S = 90 * 24 * 60 * 60;
+
 const SEND_CODE_PATH = "/email-otp/send-verification-otp";
 
 /** The request context Better Auth hands to its callbacks. */
@@ -194,6 +196,9 @@ export function createAuth(env: Env, db: Database, provider: EmailSender) {
       }),
     },
     session: {
+      // Long enough for the e-mails sent after 7, 14 and 30 days away to bring back a signed-in
+      // player. Each visit pushes the date back, at most once a day.
+      expiresIn: SESSION_TTL_S,
       // Signed cookie that avoids a database lookup on most requests.
       cookieCache: { enabled: true, maxAge: 5 * 60 },
     },

@@ -231,6 +231,11 @@
   opacity: 0.5;
 }
 
+.leave {
+  align-self: center;
+  margin-top: 28px;
+}
+
 .ageSelect {
   display: block;
   width: 100%;
