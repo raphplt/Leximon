@@ -11,6 +11,9 @@
 /matter/*
   Cache-Control: public, max-age=86400
 
+/ornements/*
+  Cache-Control: public, max-age=86400
+
 /catalog/collections/*
   Cache-Control: public, max-age=31536000, immutable
 

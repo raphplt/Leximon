@@ -155,6 +155,19 @@ export function shadowsOf(palette: Palette) {
   } as const;
 }
 
+/** Le Livre has no flat thickness: what is pressed sinks into the leather instead. */
+export function bookShadowsOf(palette: Palette) {
+  return {
+    ...shadowsOf(palette),
+    action: "none",
+    actionLow: "none",
+    actionPressed: "none",
+    control: "none",
+    controlLow: "none",
+    controlPressed: "none",
+  } as const;
+}
+
 const gold: LinearGradient = {
   angle: 125,
   stops: [
@@ -315,6 +328,24 @@ export const radii = {
   x4: 22,
   x5: 30,
   pill: 999,
+} as const;
+
+/** Le Livre's corners are clean: a nick, whatever the current look rounds. Art keeps its own. */
+const BOOK_CORNER = 2;
+
+export const bookRadii = {
+  ...radii,
+  xxs: BOOK_CORNER,
+  xs: BOOK_CORNER,
+  sm: BOOK_CORNER,
+  md: BOOK_CORNER,
+  lg: BOOK_CORNER,
+  xl: BOOK_CORNER,
+  xxl: BOOK_CORNER,
+  x3: BOOK_CORNER,
+  x4: BOOK_CORNER,
+  x5: BOOK_CORNER,
+  pill: BOOK_CORNER,
 } as const;
 
 /** Text sizes in px. */

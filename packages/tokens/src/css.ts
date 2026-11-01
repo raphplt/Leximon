@@ -1,5 +1,8 @@
 import { livreDay, livreNight } from "./livre";
+import { framesOf } from "./ornaments";
 import {
+  bookRadii,
+  bookShadowsOf,
   colors,
   type Fill,
   fontSizes,
@@ -60,11 +63,36 @@ function paletteVariables(palette: Palette): Record<string, string> {
   return variables;
 }
 
-const MATTER_VARIABLES = {
-  "--lx-matter-paper": 'url("/matter/paper.webp")',
-  "--lx-matter-leather": 'url("/matter/leather.webp")',
-  "--lx-matter-size": `${matter.size}px`,
-};
+/** What a theme of Le Livre declares over the current look. */
+function bookThemeVariables(palette: Palette): Record<string, string> {
+  const variables = paletteVariables(palette);
+  for (const [name, value] of Object.entries(bookShadowsOf(palette))) {
+    variables[`--lx-shadow-${kebab(name)}`] = value;
+  }
+  for (const [name, value] of Object.entries(framesOf(palette))) {
+    variables[`--lx-frame-${name}`] = value;
+  }
+  return variables;
+}
+
+function bookVariables(): Record<string, string> {
+  const variables: Record<string, string> = {
+    "--lx-matter-paper": 'url("/matter/paper.webp")',
+    "--lx-matter-garde": 'url("/matter/garde.webp")',
+    "--lx-matter-carnet": 'url("/matter/carnet.webp")',
+    "--lx-matter-leather": 'url("/matter/leather.webp")',
+    "--lx-matter-size": `${matter.size}px`,
+  };
+  for (const [name, value] of Object.entries(bookRadii)) {
+    variables[`--lx-radius-${kebab(name)}`] = `${value}px`;
+  }
+  return variables;
+}
+
+/** All of a theme of Le Livre, for the one page that shows both side by side. */
+export function bookTheme(theme: "light" | "dark"): Record<string, string> {
+  return { ...bookThemeVariables(theme === "dark" ? livreNight : livreDay), ...bookVariables() };
+}
 
 function rule(selector: string, variables: Record<string, string>, scheme: string): string {
   const declarations = Object.entries(variables).map(([name, value]) => `${name}:${value}`);
@@ -78,12 +106,8 @@ function rule(selector: string, variables: Record<string, string>, scheme: strin
 export function cssRootRule(): string {
   return [
     rule(":root", cssVariables(), "dark"),
-    rule(
-      ':root[data-look="livre"]',
-      { ...paletteVariables(livreDay), ...MATTER_VARIABLES },
-      "light",
-    ),
-    rule(':root[data-look="livre"][data-theme="dark"]', paletteVariables(livreNight), "dark"),
+    rule(':root[data-look="livre"]', bookTheme("light"), "light"),
+    rule(':root[data-look="livre"][data-theme="dark"]', bookThemeVariables(livreNight), "dark"),
   ].join("");
 }
 

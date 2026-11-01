@@ -1,8 +1,10 @@
 import { RARITIES } from "@leximon/core";
 import { describe, expect, it } from "vitest";
-import { cssFill, cssRootRule, cssUrl, cssVariables, solidColor } from "./css";
+import { bookTheme, cssFill, cssRootRule, cssUrl, cssVariables, solidColor } from "./css";
+import { icons } from "./icons";
 import { levelBadge, levelBadgeText } from "./level-badge";
 import { livreDay, livreNight } from "./livre";
+import { engravings, framesOf, lettrineFor, tools } from "./ornaments";
 import { alpha, backTone, backTones, colors, matter, type Palette, rarityStyles } from "./tokens";
 
 /** WCAG relative luminance of a `#RRGGBB` color. */
@@ -155,5 +157,51 @@ describe("level badge", () => {
   it("shrinks three digits to stay inside the face", () => {
     expect(levelBadgeText(9).fontSize).toBeGreaterThan(levelBadgeText(42).fontSize);
     expect(levelBadgeText(42).fontSize).toBeGreaterThan(levelBadgeText(120).fontSize);
+  });
+});
+
+describe("the ornaments of Le Livre", () => {
+  it("engraves every icon", () => {
+    expect(Object.keys(engravings).sort()).toEqual(Object.keys(icons).sort());
+  });
+
+  it("draws every shape inside its 24 px grid", () => {
+    const shapes = [
+      ...Object.values(tools),
+      ...Object.values(engravings).flatMap(({ shade, hatch }) => [shade ?? "", hatch ?? ""]),
+    ];
+    for (const shape of shapes) {
+      const numbers = shape.replace(/A[^A-Z]*?(?=[A-Z]|$)/g, " ").match(/-?\d*\.?\d+/g) ?? [];
+      for (const value of numbers) {
+        expect(Number(value)).toBeGreaterThanOrEqual(0);
+        expect(Number(value)).toBeLessThanOrEqual(24);
+      }
+    }
+  });
+
+  it("finds the capital of a word, accents and old letters included", () => {
+    expect(lettrineFor("abat-faim")).toBe("lr01");
+    expect(lettrineFor("Écornifleur")).toBe("lr05");
+    expect(lettrineFor("Jouvence")).toBe("lr09");
+    expect(lettrineFor("Urbanité")).toBe("lr19");
+    expect(lettrineFor("Yeuse")).toBeNull();
+    expect(lettrineFor("")).toBeNull();
+  });
+
+  it("gives each theme frames in its own colors", () => {
+    expect(framesOf(livreDay).gilt).not.toBe(framesOf(livreNight).gilt);
+    expect(decodeURIComponent(framesOf(livreDay).ink)).toContain(livreDay.rule);
+  });
+
+  it("squares the corners of the interface but not those of the art", () => {
+    const theme = bookTheme("light");
+    expect(theme["--lx-radius-pill"]).toBe("2px");
+    expect(theme["--lx-radius-card"]).toBe("16px");
+  });
+
+  it("leaves the current look without frames or square corners", () => {
+    const variables = cssVariables();
+    expect(variables["--lx-radius-pill"]).toBe("999px");
+    expect(variables["--lx-frame-gilt"]).toBeUndefined();
   });
 });

@@ -46,3 +46,7 @@ infra/load/players*.json
 infra/load/results/
 docs/reecriture-*.md
 docs/revue-wording*
+
+# Ornements candidats : originaux et traitements lourds, à retélécharger depuis sources.json
+rnd/ornements/sources/
+rnd/ornements/candidats/
