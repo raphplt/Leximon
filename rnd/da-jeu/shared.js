@@ -84,6 +84,9 @@ const RARITY = {
   },
 };
 
+// A sober direction turns every burst, shake and flash down at once.
+const INTENSITY = DA.intensity ?? 1;
+
 const SPRING = "cubic-bezier(.34,1.56,.64,1)";
 const BIG_SPRING = "cubic-bezier(.2,1.9,.4,1)";
 
@@ -181,6 +184,7 @@ function render() {
     "afterbegin",
     `<nav class="switch">
       <a href="index.html">Les trois</a>
+      <a href="bibliotheque.html" ${DA.id === "bibliotheque" ? "aria-current" : ""}>A2 · La Bibliothèque</a>
       <a href="taverne.html" ${DA.id === "taverne" ? "aria-current" : ""}>A · La Taverne</a>
       <a href="jouet.html" ${DA.id === "jouet" ? "aria-current" : ""}>B · Le Jouet</a>
       <a href="grimoire.html" ${DA.id === "grimoire" ? "aria-current" : ""}>C · Le Grimoire</a>
@@ -309,7 +313,8 @@ class Particles {
   }
 
   burst(x, y, o) {
-    for (let i = 0; i < o.n; i++) {
+    const count = Math.round(o.n * INTENSITY);
+    for (let i = 0; i < count; i++) {
       const angle = rand(o.angle?.[0] ?? 0, o.angle?.[1] ?? Math.PI * 2);
       const speed = rand(o.speed[0], o.speed[1]);
       this.add({
@@ -511,7 +516,7 @@ function centerOf(el) {
 function shake(strength = 8, duration = 420) {
   const frames = [];
   for (let i = 0; i <= 10; i++) {
-    const k = strength * (1 - i / 10);
+    const k = strength * INTENSITY * (1 - i / 10);
     frames.push({
       transform: `translate(${rand(-k, k)}px, ${rand(-k, k)}px) rotate(${rand(-k, k) * 0.12}deg)`,
     });
@@ -521,7 +526,10 @@ function shake(strength = 8, duration = 420) {
 }
 
 function flash(opacity = 0.9, duration = 380) {
-  $(".flash").animate([{ opacity }, { opacity: 0 }], { duration, easing: "ease-out" });
+  $(".flash").animate([{ opacity: opacity * INTENSITY }, { opacity: 0 }], {
+    duration,
+    easing: "ease-out",
+  });
 }
 
 function shockwave(x, y, color, size = 5) {
