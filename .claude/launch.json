@@ -49,6 +49,20 @@
         "--localhost"
       ],
       "port": 8081
+    },
+    {
+      "name": "da-jeu",
+      "runtimeExecutable": "python3",
+      "runtimeArgs": [
+        "-m",
+        "http.server",
+        "4173",
+        "--bind",
+        "127.0.0.1",
+        "--directory",
+        "rnd/da-jeu"
+      ],
+      "port": 4173
     }
   ]
 }

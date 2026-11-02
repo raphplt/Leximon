@@ -4,7 +4,7 @@ Où en est Leximon, ce qui reste avant la bêta publique (début décembre 2026 
 
 **Dernière mise à jour :** 2026-11-01.
 
-**Le prochain grand chantier :** les retours du game designer et la refonte « Le Livre », tous arbitrés le 2026-11-01. L'ordre est dans [retours-game-designer.md](cahiers-des-charges/retours-game-designer.md) : six corrections immédiates, puis la direction artistique ([direction-artistique-le-livre.md](cahiers-des-charges/direction-artistique-le-livre.md)), puis lisibilité, économie, social et duel. Les six corrections et la phase 1 de la direction artistique sont faites sur le web et le mobile (2026-11-01), derrière le réglage : la phase 1 attend la validation du propriétaire sur `/planches`, la phase 2 n'est pas commencée.
+**Le prochain grand chantier :** les retours du game designer et la refonte « Le Livre », tous arbitrés le 2026-11-01. L'ordre est dans [retours-game-designer.md](cahiers-des-charges/retours-game-designer.md) : six corrections immédiates, puis la direction artistique ([direction-artistique-le-livre.md](cahiers-des-charges/direction-artistique-le-livre.md)), puis lisibilité, économie, social et duel. Les six corrections et la phase 1 de la direction artistique sont faites sur le web et le mobile (2026-11-01), derrière le réglage : le propriétaire a refusé ses planches le 2026-11-02 (« ça ne fait pas jeu vidéo, ça fait site web ») : trois directions de jeu sont maquettées dans `rnd/da-jeu/` et attendent son choix, la phase 2 n'est pas commencée.
 
 ## En une phrase
 
