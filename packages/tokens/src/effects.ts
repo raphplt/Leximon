@@ -47,8 +47,8 @@ export const rarityLights: Readonly<Record<Rarity, readonly string[]>> = {
   rare: ["#FF8A5C", "#F0603C", "#FFD2B8"],
   precious: ["#8FB0FF", "#3361E8", "#D6E2FF"],
   epic: ["#FFE08A", "#FFC23D", "#FFF4CF", "#FF9D2E"],
-  // White gold with a pearl sheen: a rainbow of saturated lights reads as a party, not a treasure.
-  legendary: ["#FFFFFF", "#FFF4CF", "#FFE08A", "#DDF6FF", "#FFE1F0"],
+  // Gold first: the aura and the rays take the first light, the sparks take them all.
+  legendary: ["#FFD36E", "#FF9AD5", "#A5FF9A", "#7FE6FF", "#B49CFF", "#FFFFFF"],
 };
 
 /** The band of light that sweeps a card's face as it settles, at its brightest. */

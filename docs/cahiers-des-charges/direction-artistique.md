@@ -95,7 +95,7 @@ Les polices de Le Livre (Leximon Canon et Spectral) sont retirées. Le web ne ch
 | Épique | Le dos doré tremble et attire la lumière | Le joueur la retourne, rayons, flash léger, secousse, quelques feuilles d'or, bandeau « Épique » |
 | Légendaire | Tremblement plus long, la lumière est aspirée | Le joueur la retourne, rayons, flash, forte secousse, pluie de feuilles d'or, bandeau « Légendaire », la carte s'agrandit |
 
-Chaque face qui se retourne est traversée d'un reflet, et la lumière de sa rareté luit derrière la carte pendant l'annonce. La Légendaire brille en or blanc et nacre, pas en arc-en-ciel : une pluie de couleurs vives faisait fête foraine (retour du propriétaire, le 2026-11-02).
+Chaque face qui se retourne est traversée d'un reflet, et la lumière de sa rareté luit derrière la carte pendant l'annonce. La Légendaire jette des étincelles de toutes les couleurs vives, sur une aura et des rayons dorés : un essai en or blanc et nacre a été jugé moins bon que l'arc-en-ciel (retour du propriétaire, le 2026-11-02).
 
 Les durées d'annonce actuelles restent. Les sons synthétisés restent aussi : leur choix est reporté (voir « À décider » dans les règles du jeu).
 
