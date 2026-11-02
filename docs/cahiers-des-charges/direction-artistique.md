@@ -207,11 +207,11 @@ Seulement ce dont l'écran Jouer et l'ouverture ont besoin : bandeau du haut (po
 
 **Fin de phase :** le propriétaire joue une semaine dans La Bibliothèque, sur le web et sur téléphone, derrière le réglage.
 
-**Premier avis du propriétaire (2026-11-02) :** le web est validé. Le mobile est à reprendre, sans que rien soit encore tranché :
+**Premier avis du propriétaire (2026-11-02) :** le web est validé. Sur le mobile, trois reprises faites le même jour :
 
-- la barre d'onglets du bas paraît trop grande ;
-- dans l'album, les collections défilent de côté, ce qui ne plaît pas ;
-- le sous-main de l'album pourrait ne pas avoir de bord en bas, car le cadre laisse peu de place aux cartes.
+- la barre d'onglets du bas est plus basse : icônes, bouton Jouer et marges réduits ;
+- dans l'album, les collections ne défilent plus de côté : elles tiennent toutes à l'écran, deux par rangée ;
+- le sous-main de l'album n'a plus de bord en bas : il passe sous la barre d'onglets et laisse plus de place aux cartes.
 
 ## Phase 3 · Tout le reste, puis la bascule
 

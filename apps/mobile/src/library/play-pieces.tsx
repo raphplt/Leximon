@@ -452,11 +452,11 @@ export function TabBar({
         onPress={() => onTab?.(index)}
       >
         <View style={locked ? styles.tabIconLocked : focused ? styles.tabIconFocused : undefined}>
-          <ToyIcon name={item.icon} size={34} locked={locked} />
+          <ToyIcon name={item.icon} size={28} locked={locked} />
         </View>
         {locked && (
           <View style={styles.tabLock}>
-            <ToyIcon name="lock" size={19} />
+            <ToyIcon name="lock" size={16} />
           </View>
         )}
         {item.badge !== undefined && <CountBadge count={item.badge} style={styles.tabBadge} />}
@@ -467,7 +467,7 @@ export function TabBar({
     );
   };
   return (
-    <View style={[styles.tabs, { paddingBottom: bottomInset + 8 }]}>
+    <View style={[styles.tabs, { paddingBottom: bottomInset + 2 }]}>
       <View style={styles.shelfGilt} />
       {tab(first, 0)}
       {tab(second, 1)}
@@ -483,7 +483,7 @@ export function TabBar({
             accessibilityLabel={playLabel}
             onPress={onPlay}
           >
-            <ToyIcon name="sachet" size={46} />
+            <ToyIcon name="sachet" size={38} />
           </Toy>
         </View>
         <Lettering size={11} color={toyMatters.gold.top}>
@@ -675,7 +675,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "flex-end",
     justifyContent: "space-around",
-    paddingTop: 6,
+    paddingTop: 5,
     paddingHorizontal: 4,
     backgroundImage: `linear-gradient(180deg, ${room.shelf.top}, ${room.shelf.bottom})`,
     boxShadow: `inset 0 5px 0 ${room.shelf.giltShade}, 0 -8px 20px ${toyValues.drop}`,
@@ -688,17 +688,17 @@ const styles = StyleSheet.create({
     height: 3,
     backgroundColor: room.shelf.gilt,
   },
-  tab: { flex: 1, alignItems: "center", gap: 3, paddingBottom: 4 },
+  tab: { flex: 1, alignItems: "center", gap: 2, paddingBottom: 2 },
   tabIconLocked: { opacity: 0.6 },
   tabIconFocused: { transform: [{ translateY: -3 }] },
-  tabLock: { position: "absolute", top: -4, right: 10 },
+  tabLock: { position: "absolute", top: -4, right: 12 },
   tabBadge: { position: "absolute", top: -6, right: 6 },
   playRing: {
-    marginTop: -38,
-    borderRadius: 26,
+    marginTop: -30,
+    borderRadius: 22,
     boxShadow: `0 0 0 4px ${room.shelf.bottom}`,
   },
-  playDisc: { width: 74, height: 74 },
+  playDisc: { width: 62, height: 62 },
   bubble: {
     ...outlined,
     position: "absolute",

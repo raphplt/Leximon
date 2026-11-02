@@ -274,13 +274,7 @@ export function AlbumScreen({ friendCode }: { readonly friendCode: string | null
         )}
       </View>
 
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.row}
-        style={[styles.bleed, view.searching && styles.dimmed]}
-        accessibilityRole="tablist"
-      >
+      <TabRow dimmed={view.searching}>
         {view.tabs.map((tab) => {
           const selected = !view.searching && tab.id === state.collectionId;
           return (
@@ -292,7 +286,11 @@ export function AlbumScreen({ friendCode }: { readonly friendCode: string | null
               style={[
                 styles.tab,
                 selected && styles.tabOn,
-                IS_LIBRARY && [library.tab, toyFace(selected ? "gold" : "paper", "tile")],
+                IS_LIBRARY && [
+                  library.tab,
+                  library.tabCell,
+                  toyFace(selected ? "gold" : "paper", "tile"),
+                ],
               ]}
             >
               <View style={styles.tabHead}>
@@ -317,7 +315,7 @@ export function AlbumScreen({ friendCode }: { readonly friendCode: string | null
             </Pressable>
           );
         })}
-      </ScrollView>
+      </TabRow>
 
       {!view.searching && tagline !== undefined && <Text style={styles.tagline}>{tagline}</Text>}
       {!view.searching && comparing && (
@@ -388,7 +386,10 @@ export function AlbumScreen({ friendCode }: { readonly friendCode: string | null
     <>
       {IS_LIBRARY ? (
         <View style={library.room}>
-          <Desk style={StyleSheet.absoluteFill} />
+          {/* The desk runs on under the tabs: its foot is never seen, and the cards keep the room. */}
+          <View style={library.deskClip}>
+            <Desk style={library.desk} />
+          </View>
           <View style={library.inside}>{list}</View>
         </View>
       ) : (
@@ -617,6 +618,30 @@ function FilterChip({
   );
 }
 
+/**
+ * The collection tabs: in « La Bibliothèque », all in view on rows of two; elsewhere, a row that
+ * scrolls aside.
+ */
+function TabRow({ dimmed, children }: { readonly dimmed: boolean; readonly children: ReactNode }) {
+  if (IS_LIBRARY)
+    return (
+      <View style={[library.tabGrid, dimmed && styles.dimmed]} accessibilityRole="tablist">
+        {children}
+      </View>
+    );
+  return (
+    <ScrollView
+      horizontal
+      showsHorizontalScrollIndicator={false}
+      contentContainerStyle={styles.row}
+      style={[styles.bleed, dimmed && styles.dimmed]}
+      accessibilityRole="tablist"
+    >
+      {children}
+    </ScrollView>
+  );
+}
+
 const styles = StyleSheet.create({
   center: {
     flex: 1,
@@ -807,6 +832,9 @@ const styles = StyleSheet.create({
   },
 });
 
+/** The desk's outline and shadow, kept inside its clip. */
+const DESK_RING = 12;
+
 /** How far the desk's frame takes the cards in from the screen's edges. */
 const LIBRARY_INSET = IS_LIBRARY ? ROOM_MARGIN + room.desk.frameWidth : 0;
 
@@ -814,14 +842,33 @@ const SEARCH_MUTED = IS_LIBRARY ? colors.paperInkMuted : colors.pageInkMuted;
 
 /** « La Bibliothèque »: the cards on the desk, the tabs and the search cut from paper. */
 const library = StyleSheet.create({
-  room: { flex: 1, marginHorizontal: ROOM_MARGIN, marginBottom: TAB_BAR_RISE },
+  room: { flex: 1, marginHorizontal: ROOM_MARGIN },
+  // Wide enough for the frame's outline and shadow on three sides, cut at the foot.
+  deskClip: {
+    ...StyleSheet.absoluteFill,
+    top: -DESK_RING,
+    left: -DESK_RING,
+    right: -DESK_RING,
+    overflow: "hidden",
+  },
+  desk: {
+    position: "absolute",
+    top: DESK_RING,
+    left: DESK_RING,
+    right: DESK_RING,
+    bottom: -room.desk.radius * 2,
+  },
   // The cards slide under the frame, not over it.
   inside: {
     flex: 1,
-    margin: room.desk.frameWidth,
-    borderRadius: room.desk.radius - room.desk.frameWidth,
+    marginTop: room.desk.frameWidth,
+    marginHorizontal: room.desk.frameWidth,
+    borderTopLeftRadius: room.desk.radius - room.desk.frameWidth,
+    borderTopRightRadius: room.desk.radius - room.desk.frameWidth,
     overflow: "hidden",
   },
+  tabGrid: { flexDirection: "row", flexWrap: "wrap", gap: space.s5 },
+  tabCell: { flexBasis: "40%", flexGrow: 1, minWidth: 0 },
   search: {
     borderWidth: toyValues.outlineWidth,
     borderColor: toyValues.outline,
@@ -830,7 +877,8 @@ const library = StyleSheet.create({
     boxShadow: `inset 0 3px 0 ${toyMatters.paper.bottom}`,
   },
   searchInput: { color: colors.paperInk },
-  grid: { paddingBottom: space.s12 },
+  // The raised Jouer button stands over the foot of the list.
+  grid: { paddingBottom: TAB_BAR_RISE + space.s12 },
   paperInk: { color: colors.paperInk },
   paperInkMuted: { color: colors.paperInkMuted },
   tab: { borderWidth: toyValues.outlineWidth, marginBottom: 4 },
