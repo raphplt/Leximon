@@ -1,6 +1,8 @@
+import { toyMatters, toy as toyValues } from "@leximon/tokens";
 import { useState } from "react";
 import { StyleSheet, Text, TextInput, type TextInputProps, View } from "react-native";
-import { colors, fontSizes, fonts, radii, space } from "@/theme";
+import { fontSizes, fonts, IS_LIBRARY, radii, space } from "@/theme";
+import { useInk } from "./ink";
 
 /** A labelled field; `large` spaces out a short code. */
 export function TextField({
@@ -9,16 +11,17 @@ export function TextField({
   ...input
 }: Omit<TextInputProps, "style"> & { readonly label: string; readonly large?: boolean }) {
   const [focused, setFocused] = useState(false);
+  const ink = useInk();
   return (
     <View style={styles.field}>
-      <Text style={styles.label} importantForAccessibility="no">
+      <Text style={[styles.label, { color: ink.pageInkMuted }]} importantForAccessibility="no">
         {label}
       </Text>
       <TextInput
         accessibilityLabel={label}
-        placeholderTextColor={colors.pageInkFaint}
-        selectionColor={colors.rubric}
-        cursorColor={colors.rubric}
+        placeholderTextColor={ink.pageInkFaint}
+        selectionColor={ink.rubric}
+        cursorColor={ink.rubric}
         {...input}
         onFocus={(event) => {
           setFocused(true);
@@ -28,7 +31,13 @@ export function TextField({
           setFocused(false);
           input.onBlur?.(event);
         }}
-        style={[styles.input, large && styles.large, focused && styles.focused]}
+        style={[
+          styles.input,
+          { borderColor: ink.track, backgroundColor: ink.well, color: ink.pageInk },
+          IS_LIBRARY && styles.pressedIn,
+          focused && { borderColor: ink.gilt },
+          large && styles.large,
+        ]}
       />
     </View>
   );
@@ -36,15 +45,12 @@ export function TextField({
 
 const styles = StyleSheet.create({
   field: { gap: space.s4 },
-  label: { fontFamily: fonts.ui.bold, fontSize: fontSizes.label, color: colors.pageInkMuted },
+  label: { fontFamily: fonts.ui.bold, fontSize: fontSizes.label },
   input: {
     minHeight: 52,
     paddingHorizontal: space.s8,
     borderRadius: radii.xl,
     borderWidth: 2,
-    borderColor: colors.track,
-    backgroundColor: colors.well,
-    color: colors.pageInk,
     fontFamily: fonts.ui.semibold,
     fontSize: fontSizes.lead,
   },
@@ -54,5 +60,11 @@ const styles = StyleSheet.create({
     letterSpacing: 10,
     textAlign: "center",
   },
-  focused: { borderColor: colors.gilt },
+  // In « La Bibliothèque », a field is pressed into the paper, under its dark outline.
+  pressedIn: {
+    borderWidth: toyValues.outlineWidth,
+    borderColor: toyValues.outline,
+    backgroundColor: toyMatters.paper.top,
+    boxShadow: `inset 0 3px 0 ${toyMatters.paper.bottom}`,
+  },
 });

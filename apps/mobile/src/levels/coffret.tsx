@@ -1,4 +1,5 @@
 import type { BoosterWalletResponse, ClaimRefusal, LevelRewardView } from "@leximon/contract";
+import { lettering, room, toyMatters } from "@leximon/tokens";
 import {
   COFFRET_ACTION,
   COFFRET_ROAD,
@@ -12,7 +13,7 @@ import {
   waitingCoffrets,
 } from "@leximon/view-model";
 import { router } from "expo-router";
-import { useEffect, useState, useSyncExternalStore } from "react";
+import { type ReactNode, useEffect, useState, useSyncExternalStore } from "react";
 import {
   Modal,
   Pressable,
@@ -36,15 +37,17 @@ import Animated, {
 } from "react-native-reanimated";
 import Svg, { Circle, Defs, Path, RadialGradient, Stop } from "react-native-svg";
 import { api } from "@/api/client";
+import { Desk } from "@/library/play-pieces";
 import { useNow } from "@/player/shared";
 import { levelRewards, progress, publishClaimed, wallet } from "@/player/state";
-import { alpha, colors, fontSizes, fonts, radii, space } from "@/theme";
+import { alpha, colors, fontSizes, fonts, IS_LIBRARY, paperColors, radii, space } from "@/theme";
 import { Avatar } from "@/ui/avatar";
 import { Button } from "@/ui/button";
 import { Icon } from "@/ui/icon";
 import { LevelMedal } from "@/ui/level";
 import { TextButton } from "@/ui/text-button";
 import { toast } from "@/ui/toast";
+import { Leaf, Lettering, ToyBody, ToyIcon } from "@/ui/toy";
 import { REWARD_ICONS } from "./reward-icons";
 
 let shown: number | null = null;
@@ -148,8 +151,19 @@ export function CoffretHost() {
     >
       <Pressable style={styles.backdrop} onPress={close} accessibilityLabel="Fermer" />
       <View style={styles.center} pointerEvents="box-none">
-        <View style={[styles.card, { width: Math.min(380, window.width - 32) }]}>
-          <ScrollView contentContainerStyle={styles.inner} bounces={false}>
+        <View
+          style={[
+            styles.card,
+            IS_LIBRARY && library.card,
+            { width: Math.min(380, window.width - 32) },
+          ]}
+        >
+          {IS_LIBRARY && <Desk style={StyleSheet.absoluteFill} />}
+          <ScrollView
+            style={IS_LIBRARY && library.inside}
+            contentContainerStyle={styles.inner}
+            bounces={false}
+          >
             {step.name === "opened" ? (
               <>
                 {level !== null && (
@@ -157,9 +171,15 @@ export function CoffretHost() {
                     <LevelMedal level={level} size={96} />
                   </Animated.View>
                 )}
-                <Animated.Text entering={ZoomIn.duration(320)} style={styles.levelUp}>
-                  Niveau {level} !
-                </Animated.Text>
+                {IS_LIBRARY ? (
+                  <Animated.View entering={ZoomIn.duration(320)}>
+                    <Lettering size={fontSizes.headingLarge}>{`Niveau ${level} !`}</Lettering>
+                  </Animated.View>
+                ) : (
+                  <Animated.Text entering={ZoomIn.duration(320)} style={styles.levelUp}>
+                    Niveau {level} !
+                  </Animated.Text>
+                )}
                 <View style={styles.items}>
                   {step.rewards.map((reward, index) => {
                     const item = rewardItem(reward);
@@ -167,17 +187,18 @@ export function CoffretHost() {
                       <Animated.View
                         key={item.title}
                         entering={FadeInDown.delay(120 + index * 140).duration(280)}
-                        style={styles.item}
                       >
-                        <RewardVisual reward={reward} />
-                        <View style={styles.itemText}>
-                          <Text style={styles.itemTitle}>{item.title}</Text>
-                          {reward.kind === "title" ? (
-                            <Text style={styles.plaque}>{reward.title}</Text>
-                          ) : (
-                            <Text style={styles.itemDetail}>{item.detail}</Text>
-                          )}
-                        </View>
+                        <Slip>
+                          <RewardVisual reward={reward} />
+                          <View style={styles.itemText}>
+                            <Text style={styles.itemTitle}>{item.title}</Text>
+                            {reward.kind === "title" ? (
+                              <Text style={styles.plaque}>{reward.title}</Text>
+                            ) : (
+                              <Text style={styles.itemDetail}>{item.detail}</Text>
+                            )}
+                          </View>
+                        </Slip>
                       </Animated.View>
                     );
                   })}
@@ -206,9 +227,15 @@ export function CoffretHost() {
                   disabled={step.name === "claiming" || step.name === "refused"}
                   onOpen={() => void open()}
                 />
-                <Text style={styles.title} accessibilityRole="header">
-                  Un coffret pour toi
-                </Text>
+                {IS_LIBRARY ? (
+                  <View accessibilityRole="header">
+                    <Lettering size={fontSizes.heading}>Un coffret pour toi</Lettering>
+                  </View>
+                ) : (
+                  <Text style={styles.title} accessibilityRole="header">
+                    Un coffret pour toi
+                  </Text>
+                )}
                 {step.name === "refused" ? (
                   <Text style={styles.refused} accessibilityRole="alert">
                     {claimRefusalMessage(step.reason, level ?? 0)}
@@ -247,6 +274,8 @@ export function CoffretHost() {
 }
 
 const BOX = 168;
+/** The light behind the closed coffret: gold where gold may shine. */
+const GLOW = IS_LIBRARY ? toyMatters.gold.top : colors.rubric;
 const RAYS = Array.from({ length: 12 }, (_, k) => k * 30);
 
 /** The closed coffret, floating in its turning rays. */
@@ -297,8 +326,8 @@ function Box({
         <Svg width={BOX} height={BOX}>
           <Defs>
             <RadialGradient id="coffret-glow">
-              <Stop offset="0" stopColor={colors.rubric} stopOpacity="0.55" />
-              <Stop offset="1" stopColor={colors.rubric} stopOpacity="0" />
+              <Stop offset="0" stopColor={GLOW} stopOpacity="0.55" />
+              <Stop offset="1" stopColor={GLOW} stopOpacity="0" />
             </RadialGradient>
           </Defs>
           {RAYS.map((angle) => (
@@ -306,7 +335,7 @@ function Box({
               key={angle}
               d={`M${c} ${c} L${c - 9} 0 L${c + 9} 0 Z`}
               fill={colors.action}
-              opacity={0.14}
+              opacity={IS_LIBRARY ? 0.24 : 0.14}
               transform={`rotate(${angle} ${c} ${c})`}
             />
           ))}
@@ -314,10 +343,22 @@ function Box({
         </Svg>
       </Animated.View>
       <Animated.View style={floating}>
-        <Icon name="coffret" size={88} color={colors.rubric} />
+        {IS_LIBRARY ? (
+          <ToyBody matter="gold" large style={library.chest}>
+            <ToyIcon name="chest" size={84} />
+          </ToyBody>
+        ) : (
+          <Icon name="coffret" size={88} color={colors.rubric} />
+        )}
       </Animated.View>
     </Pressable>
   );
+}
+
+/** A reward of the opened coffret: in « La Bibliothèque », on a slip of paper of its own. */
+function Slip({ children }: { readonly children: ReactNode }) {
+  if (IS_LIBRARY) return <Leaf style={[styles.item, library.slip]}>{children}</Leaf>;
+  return <View style={styles.item}>{children}</View>;
 }
 
 /** What a reward looks like: the sachet itself, the engraving, the frame; an icon otherwise. */
@@ -351,11 +392,14 @@ function RewardVisual({ reward }: { readonly reward: LevelRewardView }) {
     default:
       return (
         <View style={styles.itemIcon}>
-          <Icon name={REWARD_ICONS[rewardItem(reward).icon]} size={26} color={colors.rubric} />
+          <Icon name={REWARD_ICONS[rewardItem(reward).icon]} size={26} color={ink.rubric} />
         </View>
       );
   }
 }
+
+/** The rewards are read on paper in « La Bibliothèque ». */
+const ink = paperColors;
 
 const styles = StyleSheet.create({
   backdrop: { ...StyleSheet.absoluteFill, backgroundColor: alpha(colors.scrim, 0.82) },
@@ -372,7 +416,7 @@ const styles = StyleSheet.create({
     fontFamily: fonts.ui.extrabold,
     fontSize: fontSizes.caption,
     letterSpacing: 2,
-    color: colors.rubric,
+    color: IS_LIBRARY ? lettering.kicker : colors.rubric,
   },
   box: { width: BOX, height: BOX, alignItems: "center", justifyContent: "center" },
   title: {
@@ -397,12 +441,12 @@ const styles = StyleSheet.create({
   itemTitle: {
     fontFamily: fonts.ui.extrabold,
     fontSize: fontSizes.bodyLarge,
-    color: colors.pageInk,
+    color: ink.pageInk,
   },
   itemDetail: {
     fontFamily: fonts.ui.medium,
     fontSize: fontSizes.label,
-    color: colors.pageInkMuted,
+    color: ink.pageInkMuted,
   },
   plaque: {
     alignSelf: "flex-start",
@@ -421,7 +465,7 @@ const styles = StyleSheet.create({
     width: 56,
     height: 56,
     borderRadius: radii.xxl,
-    backgroundColor: colors.page,
+    backgroundColor: ink.pageRaised,
     alignItems: "center",
     justifyContent: "center",
   },
@@ -462,4 +506,19 @@ const styles = StyleSheet.create({
     color: colors.pageInk,
     textAlign: "center",
   },
+});
+
+/** « La Bibliothèque »: the coffret lies on the desk, and the chest is a big toy of gold. */
+const library = StyleSheet.create({
+  card: { borderWidth: 0, borderRadius: room.desk.radius, backgroundColor: "transparent" },
+  inside: {
+    margin: room.desk.frameWidth,
+    borderRadius: room.desk.radius - room.desk.frameWidth,
+  },
+  chest: {
+    width: 128,
+    height: 112,
+    boxShadow: `0 0 60px ${alpha(toyMatters.gold.top, 0.55)}`,
+  },
+  slip: { paddingHorizontal: space.s6, paddingVertical: space.s5 },
 });

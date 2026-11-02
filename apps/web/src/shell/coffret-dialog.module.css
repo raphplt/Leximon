@@ -239,3 +239,87 @@
     animation: none;
   }
 }
+
+/* --- « La Bibliothèque » --- */
+
+/* The chest is the moment gold may shine: it lies on the desk, under turning rays of light. */
+:root[data-look="bibliotheque"] .coffret {
+  --lx-color-page-ink: var(--lx-lettering-fill);
+  --lx-color-page-ink-soft: var(--lx-lettering-fill);
+  --lx-color-page-ink-muted: color-mix(in srgb, var(--lx-lettering-fill) 78%, transparent);
+  --lx-color-rubric: var(--lx-toy-gold-top);
+  border: 6px solid transparent;
+  border-radius: var(--lx-toy-radius-large);
+  background:
+    var(--lx-matter-leather) 0 0 / var(--lx-matter-size) padding-box,
+    radial-gradient(
+      ellipse 80% 60% at 50% 35%,
+      var(--lx-desk-center) 0%,
+      var(--lx-desk-middle) 55%,
+      var(--lx-desk-edge) 100%
+    )
+    padding-box,
+    var(--lx-old-gold) border-box;
+  box-shadow:
+    0 0 0 3px var(--lx-toy-outline),
+    inset 0 0 50px var(--lx-desk-hollow);
+  color: var(--lx-lettering-fill);
+}
+
+:root[data-look="bibliotheque"] .rays {
+  background: repeating-conic-gradient(
+    color-mix(in srgb, var(--lx-toy-gold-top) 24%, transparent) 0 9deg,
+    transparent 9deg 20deg
+  );
+}
+
+:root[data-look="bibliotheque"] .coffret .inner :is(.title, .levelUp) {
+  color: var(--lx-lettering-fill);
+  -webkit-text-stroke: var(--lx-lettering-width) var(--lx-lettering-outline);
+  paint-order: stroke fill;
+  text-shadow: 0 var(--lx-lettering-drop) 0 var(--lx-lettering-outline);
+}
+
+:root[data-look="bibliotheque"] .coffret .inner .kicker {
+  color: var(--lx-lettering-kicker);
+}
+
+/* The chest itself is a big toy of old gold, glowing on the leather. */
+:root[data-look="bibliotheque"] .box {
+  border: var(--lx-toy-outline-width) solid var(--lx-toy-outline);
+  border-radius: 34px;
+  background: linear-gradient(
+    180deg,
+    var(--lx-toy-gold-top) 0 47%,
+    var(--lx-toy-gold-bottom) 53% 100%
+  );
+  box-shadow:
+    inset 0 -6px 0 var(--lx-toy-gold-edge),
+    inset 0 2px 0 var(--lx-toy-sheen),
+    0 8px 0 var(--lx-toy-outline),
+    0 0 70px color-mix(in srgb, var(--lx-toy-gold-top) 60%, transparent);
+}
+
+:root[data-look="bibliotheque"] .box:active:not(:disabled) {
+  translate: 0 6px;
+  box-shadow:
+    inset 0 -6px 0 var(--lx-toy-gold-edge),
+    inset 0 2px 0 var(--lx-toy-sheen),
+    0 2px 0 var(--lx-toy-outline),
+    0 0 70px color-mix(in srgb, var(--lx-toy-gold-top) 60%, transparent);
+}
+
+/* What it held, each on a slip of paper. */
+:root[data-look="bibliotheque"] .item {
+  --lx-color-page-ink: var(--lx-color-paper-ink);
+  --lx-color-page-ink-muted: var(--lx-color-paper-ink-muted);
+  border: var(--lx-toy-outline-width) solid var(--lx-toy-outline);
+  border-radius: var(--lx-toy-radius-tile);
+  background:
+    var(--lx-matter-paper) 0 0 / var(--lx-matter-size),
+    var(--lx-color-paper);
+  box-shadow:
+    inset 0 -3px 0 var(--lx-toy-paper-bottom),
+    0 3px 0 var(--lx-toy-outline);
+  color: var(--lx-color-paper-ink);
+}

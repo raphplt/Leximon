@@ -38,6 +38,11 @@ export const paperColors: typeof colors = IS_LIBRARY
     }
   : currentLook;
 
+/** A switch's track, off and on, and its knob: a dark groove, green when on, in « La Bibliothèque ». */
+export const switchColors = IS_LIBRARY
+  ? { off: toyMatters.dark.bottom, on: toyMatters.green.top, knob: toyMatters.paper.top }
+  : { off: currentLook.track, on: currentLook.success, knob: currentLook.pageInk };
+
 /**
  * Font families embedded at build time (expo-font plugin): one static instance per weight, named
  * by its PostScript name, so no `fontWeight` is set alongside them.

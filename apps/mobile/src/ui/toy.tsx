@@ -37,6 +37,7 @@ import Animated, {
 import Svg, { Path } from "react-native-svg";
 import { vibrate } from "@/feedback/feedback";
 import { colors, fonts } from "@/theme";
+import { OnPaperContext } from "./ink";
 import { Matter } from "./matter";
 
 export type ToyShapeName = "box" | "tile" | "round" | "tag";
@@ -254,7 +255,7 @@ export function Leaf({
   return (
     <View style={[styles.leaf, style]}>
       <Matter kind="paper" />
-      {children}
+      <OnPaperContext.Provider value>{children}</OnPaperContext.Provider>
     </View>
   );
 }

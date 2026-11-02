@@ -1,5 +1,6 @@
 import type { RiddleResponse } from "@leximon/contract";
 import { TYPED_ANSWER_MAX_LENGTH } from "@leximon/core";
+import { toyMatters, toy as toyValues } from "@leximon/tokens";
 import {
   RIDDLE_NEW_DAY,
   RIDDLE_SEND_FAILED,
@@ -33,7 +34,7 @@ import {
 } from "@/player/collection";
 import { useNow } from "@/player/shared";
 import { publishProgress } from "@/player/state";
-import { colors, fontSizes, fonts, radii, space } from "@/theme";
+import { alpha, fontSizes, fonts, IS_LIBRARY, paperColors, radii, space } from "@/theme";
 import { Button } from "@/ui/button";
 import { FormError, Page, Paragraph } from "@/ui/page";
 import { Panel } from "@/ui/panel";
@@ -151,7 +152,7 @@ function Riddle({
   const letterSize = riddle.letters > 9 ? 16 : 21;
   return (
     <>
-      <Panel style={styles.panel}>
+      <Panel paper style={styles.panel}>
         <Text style={styles.kicker}>ÉNIGME N° {riddle.number}</Text>
         {playing && <Text style={styles.line}>{riddleRule(riddle.lastStep)}</Text>}
         <View
@@ -159,12 +160,15 @@ function Riddle({
           accessible
           accessibilityLabel={`Mot de ${riddle.letters} lettres`}
         >
-          {riddleCells(riddle).map((letter, index) => (
-            // biome-ignore lint/suspicious/noArrayIndexKey: a letter's place is its identity
-            <View key={index} style={styles.cell}>
-              <Text style={[styles.letter, { fontSize: letterSize }]}>{letter}</Text>
-            </View>
-          ))}
+          {riddleCells(riddle).map((letter, index) => {
+            const tile = IS_LIBRARY && (letter === "" ? library.hollow : library.found);
+            return (
+              // biome-ignore lint/suspicious/noArrayIndexKey: a letter's place is its identity
+              <View key={index} style={[styles.cell, tile]}>
+                <Text style={[styles.letter, { fontSize: letterSize }]}>{letter}</Text>
+              </View>
+            );
+          })}
         </View>
         <Text style={styles.nature}>{riddleNature(riddle.partOfSpeech, riddle.letters)}</Text>
         {riddleClueLines(riddle).map((clue) => (
@@ -175,16 +179,16 @@ function Riddle({
         ))}
       </Panel>
       {playing ? (
-        <Panel style={styles.panel}>
+        <Panel paper style={styles.panel}>
           <TextInput
-            style={styles.field}
+            style={[styles.field, IS_LIBRARY && library.field]}
             value={typed}
             onChangeText={onType}
             maxLength={TYPED_ANSWER_MAX_LENGTH}
             accessibilityLabel="Le mot"
             placeholder="Le mot"
-            placeholderTextColor={colors.pageInkFaint}
-            selectionColor={colors.rubric}
+            placeholderTextColor={ink.pageInkFaint}
+            selectionColor={ink.rubric}
             autoComplete="off"
             autoCapitalize="none"
             autoCorrect={false}
@@ -222,7 +226,7 @@ function Result({ riddle }: { readonly riddle: RiddleResponse }) {
   const now = useNow(60_000);
   const answer = riddle.answer;
   return (
-    <Panel style={styles.panel}>
+    <Panel paper style={styles.panel}>
       <Text style={styles.headline} accessibilityLiveRegion="polite">
         {riddleHeadline(riddle)}
       </Text>
@@ -253,19 +257,22 @@ function Result({ riddle }: { readonly riddle: RiddleResponse }) {
   );
 }
 
+/** What the panels hold is read on paper in « La Bibliothèque ». */
+const ink = paperColors;
+
 const styles = StyleSheet.create({
   panel: { gap: space.s6 },
   kicker: {
     fontFamily: fonts.ui.extrabold,
     fontSize: fontSizes.caption,
     letterSpacing: 2,
-    color: colors.pageInkMuted,
+    color: ink.pageInkMuted,
   },
   line: {
     fontFamily: fonts.ui.medium,
     fontSize: fontSizes.body,
     lineHeight: 21,
-    color: colors.pageInkMuted,
+    color: ink.pageInkMuted,
   },
   cells: { flexDirection: "row", justifyContent: "center", gap: space.s2, marginTop: space.s2 },
   cell: {
@@ -275,14 +282,14 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     borderWidth: 1,
-    borderColor: colors.rule,
+    borderColor: ink.rule,
     borderRadius: radii.sm,
   },
-  letter: { fontFamily: fonts.display, color: colors.pageInk, textTransform: "uppercase" },
+  letter: { fontFamily: fonts.display, color: ink.pageInk, textTransform: "uppercase" },
   nature: {
     fontFamily: fonts.ui.bold,
     fontSize: fontSizes.body,
-    color: colors.pageInk,
+    color: ink.pageInk,
     textAlign: "center",
   },
   clue: { gap: space.s1 },
@@ -290,16 +297,16 @@ const styles = StyleSheet.create({
     fontFamily: fonts.text.regular,
     fontSize: fontSizes.lead,
     lineHeight: 24,
-    color: colors.pageInk,
+    color: ink.pageInk,
   },
   field: {
     minHeight: 60,
     paddingHorizontal: space.s9,
     borderRadius: radii.xxl,
     borderWidth: 2,
-    borderColor: colors.track,
-    backgroundColor: colors.well,
-    color: colors.pageInk,
+    borderColor: ink.track,
+    backgroundColor: ink.well,
+    color: ink.pageInk,
     fontFamily: fonts.display,
     fontSize: fontSizes.titleLarge,
     textAlign: "center",
@@ -307,22 +314,47 @@ const styles = StyleSheet.create({
   notice: {
     fontFamily: fonts.ui.bold,
     fontSize: fontSizes.body,
-    color: colors.danger,
+    color: ink.danger,
     textAlign: "center",
   },
   tries: {
     fontFamily: fonts.ui.medium,
     fontSize: fontSizes.label,
-    color: colors.pageInkMuted,
+    color: ink.pageInkMuted,
     textAlign: "center",
   },
   headline: {
     fontFamily: fonts.display,
     fontSize: fontSizes.titleLarge,
     lineHeight: 32,
-    color: colors.pageInk,
+    color: ink.pageInk,
   },
-  result: { fontFamily: fonts.ui.bold, fontSize: fontSizes.bodyLarge, color: colors.pageInk },
+  result: { fontFamily: fonts.ui.bold, fontSize: fontSizes.bodyLarge, color: ink.pageInk },
   squares: { fontSize: fontSizes.bodyLarge, lineHeight: 22 },
   actions: { gap: space.s5, marginTop: space.s2 },
+});
+
+/** « La Bibliothèque »: each letter has its hollow in the paper, the ones found are tiles of gold. */
+const library = StyleSheet.create({
+  hollow: {
+    borderWidth: 2,
+    borderColor: toyValues.outline,
+    borderRadius: 9,
+    backgroundColor: alpha(toyMatters.paper.bottom, 0.55),
+    boxShadow: `inset 0 3px 0 ${alpha(toyMatters.paper.edge, 0.55)}`,
+  },
+  found: {
+    borderWidth: 2,
+    borderColor: toyValues.outline,
+    borderRadius: 9,
+    backgroundImage: `linear-gradient(180deg, ${toyMatters.gold.top} 0%, ${toyMatters.gold.top} 47%, ${toyMatters.gold.bottom} 53%, ${toyMatters.gold.bottom} 100%)`,
+    boxShadow: `inset 0 -3px 0 ${toyMatters.gold.edge}, 0 3px 0 ${toyValues.outline}`,
+  },
+  field: {
+    borderWidth: toyValues.outlineWidth,
+    borderColor: toyValues.outline,
+    borderRadius: 16,
+    backgroundColor: ink.paper,
+    boxShadow: `inset 0 3px 0 ${toyMatters.paper.bottom}`,
+  },
 });

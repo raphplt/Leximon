@@ -17,11 +17,13 @@ import { type CSSProperties, useState } from "react";
 import { Avatar } from "@/components/avatar";
 import { api } from "@/lib/api";
 import { publishClaimed, wallet } from "@/player/player";
+import { useLibraryLook } from "@/theme/use-library-look";
 import { Button } from "@/ui/button";
 import { Dialog } from "@/ui/dialog";
 import { Icon } from "@/ui/icon";
 import { LevelMedal } from "@/ui/level-bits";
 import { useToast } from "@/ui/toast";
+import { ToyIcon } from "@/ui/toy";
 import ui from "@/ui/ui.module.css";
 import styles from "./coffret-dialog.module.css";
 import { REWARD_ICONS } from "./reward-icons";
@@ -91,6 +93,7 @@ export function CoffretDialog({
   };
 
   const opens = level === null ? null : opensAt(level, now);
+  const library = useLibraryLook();
 
   return (
     <Dialog
@@ -165,7 +168,7 @@ export function CoffretDialog({
                 disabled={step.name === "claiming" || step.name === "refused"}
                 aria-label="Ouvrir le coffret"
               >
-                <Icon name="coffret" size={84} />
+                {library ? <ToyIcon name="chest" size={96} /> : <Icon name="coffret" size={84} />}
               </button>
               <h2 className={`${ui.display} ${styles.title}`}>Un coffret pour toi</h2>
               {step.name === "refused" ? (

@@ -397,50 +397,6 @@ export function quarterNodes(
   return nodes;
 }
 
-export interface RoadPoint {
-  readonly level: number;
-  readonly x: number;
-  readonly y: number;
-}
-
-export interface PlateauLayout {
-  readonly width: number;
-  readonly height: number;
-  /** Size of a tile: its top face, and the depth of its sides. */
-  readonly tile: { readonly width: number; readonly height: number; readonly depth: number };
-  /** Centre of each tile's top face, from the first level up. */
-  readonly points: readonly RoadPoint[];
-  /** The stepping stones between two tiles; `done` once the player has walked past them. */
-  readonly stones: readonly { readonly x: number; readonly y: number; readonly done: boolean }[];
-}
-
-const TILE = { width: 120, height: 60, depth: 24 } as const;
-/** Column of each tile, in tile widths: the road zigzags across four columns. */
-const ZIGZAG = [0, 1, 2, 3, 2, 1] as const;
-const PLATEAU = { width: 660, height: 720, side: 90, bottom: 60 } as const;
-
-/**
- * Where each level of a quarter sits on an isometric plateau, in a fixed space the screen
- * scales: each tile one row up and one column aside from the previous one, a stepping stone
- * between them.
- */
-export function plateauLayout(levels: readonly number[], current: number): PlateauLayout {
-  const points = levels.map((level, index) => ({
-    level,
-    x: PLATEAU.side + TILE.width / 2 + (ZIGZAG[index % ZIGZAG.length] ?? 0) * TILE.width,
-    y: PLATEAU.height - PLATEAU.bottom - index * TILE.height,
-  }));
-  const stones = points.slice(1).map((point, index) => {
-    const previous = points[index] ?? point;
-    return {
-      x: (previous.x + point.x) / 2,
-      y: (previous.y + point.y) / 2,
-      done: point.level <= current,
-    };
-  });
-  return { width: PLATEAU.width, height: PLATEAU.height, tile: TILE, points, stones };
-}
-
 export interface LevelDetail {
   readonly level: number;
   readonly title: string;

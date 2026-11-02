@@ -481,3 +481,9 @@
     font-size: var(--lx-size-subtitle);
   }
 }
+
+/* --- « La Bibliothèque » --- */
+
+:root[data-look="bibliotheque"] .turn {
+  border-radius: 50%;
+}

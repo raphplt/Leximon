@@ -21,10 +21,11 @@ import { Pressable, StyleSheet, Switch, Text, View } from "react-native";
 import { api } from "@/api/client";
 import { WEB_URL } from "@/config";
 import { playFromScratch } from "@/player/session";
-import { alpha, colors, fontSizes, fonts, space } from "@/theme";
+import { alpha, fontSizes, fonts, paperColors, space, switchColors } from "@/theme";
 import { Button } from "@/ui/button";
 import { Check } from "@/ui/check";
 import { FormError, Page, Paragraph } from "@/ui/page";
+import { OnPaper } from "@/ui/panel";
 import { TextButton } from "@/ui/text-button";
 import { TextField } from "@/ui/text-field";
 import { toast } from "@/ui/toast";
@@ -158,7 +159,7 @@ export function AccountScreen() {
       )}
 
       {step.kind === "member" && (
-        <>
+        <OnPaper>
           <Paragraph>
             Connecté avec <Text style={styles.email}>{step.email}</Text>.
           </Paragraph>
@@ -171,37 +172,43 @@ export function AccountScreen() {
               onPress={() => void leave()}
             />
           </View>
-        </>
+        </OnPaper>
       )}
 
       {step.kind === "email" && (
-        <EmailForm
-          busy={busy}
-          newsOptIn={newsOptIn}
-          onNewsOptIn={setNewsOptIn}
-          onSubmit={(email) => void sendCode(email)}
-        />
+        <OnPaper>
+          <EmailForm
+            busy={busy}
+            newsOptIn={newsOptIn}
+            onNewsOptIn={setNewsOptIn}
+            onSubmit={(email) => void sendCode(email)}
+          />
+        </OnPaper>
       )}
 
       {step.kind === "code" && (
-        <CodeForm
-          email={step.email}
-          busy={busy}
-          onSubmit={(code) => void checkCode(step.email, code)}
-          onResend={() => void sendCode(step.email)}
-          onChangeEmail={() => go({ kind: "email" })}
-        />
+        <OnPaper>
+          <CodeForm
+            email={step.email}
+            busy={busy}
+            onSubmit={(code) => void checkCode(step.email, code)}
+            onResend={() => void sendCode(step.email)}
+            onChangeEmail={() => go({ kind: "email" })}
+          />
+        </OnPaper>
       )}
 
       {step.kind === "confirm" && (
-        <Confirm
-          preview={step.preview}
-          busy={busy}
-          onConfirm={(ageConfirmed, ageBracket) =>
-            void run(() => signIn(step.email, step.code, step.preview, ageConfirmed, ageBracket))
-          }
-          onCancel={() => go({ kind: "email" })}
-        />
+        <OnPaper>
+          <Confirm
+            preview={step.preview}
+            busy={busy}
+            onConfirm={(ageConfirmed, ageBracket) =>
+              void run(() => signIn(step.email, step.code, step.preview, ageConfirmed, ageBracket))
+            }
+            onCancel={() => go({ kind: "email" })}
+          />
+        </OnPaper>
       )}
 
       <FormError message={error} />
@@ -301,8 +308,8 @@ function NewsToggle() {
             value={value}
             onValueChange={(next) => void change(next)}
             accessibilityLabel={NEWS_OPT_IN}
-            trackColor={{ false: colors.track, true: colors.success }}
-            thumbColor={colors.pageInk}
+            trackColor={{ false: switchColors.off, true: switchColors.on }}
+            thumbColor={switchColors.knob}
           />
         </View>
       )}
@@ -465,19 +472,22 @@ function AgeChoice({
   );
 }
 
+/** The forms and the member's page are read on paper in « La Bibliothèque ». */
+const ink = paperColors;
+
 const styles = StyleSheet.create({
   leave: { marginTop: space.s10 },
-  email: { fontFamily: fonts.text.medium, color: colors.rubric },
+  email: { fontFamily: fonts.text.medium, color: ink.rubric },
   subtitle: {
     fontFamily: fonts.ui.extrabold,
     fontSize: fontSizes.titleSmall,
-    color: colors.pageInk,
+    color: ink.pageInk,
   },
   warning: {
     fontFamily: fonts.ui.bold,
     fontSize: fontSizes.body,
     lineHeight: 21,
-    color: colors.danger,
+    color: ink.danger,
   },
   links: { flexDirection: "row", justifyContent: "space-around", flexWrap: "wrap" },
   switchRow: { flexDirection: "row", alignItems: "center", gap: space.s6 },
@@ -485,21 +495,21 @@ const styles = StyleSheet.create({
     flex: 1,
     fontFamily: fonts.ui.semibold,
     fontSize: fontSizes.body,
-    color: colors.pageInk,
+    color: ink.pageInk,
   },
-  inlineLink: { color: colors.rubric, textDecorationLine: "underline" },
+  inlineLink: { color: ink.rubric, textDecorationLine: "underline" },
   age: { gap: space.s5 },
-  ageLabel: { fontFamily: fonts.ui.bold, fontSize: fontSizes.label, color: colors.pageInkMuted },
+  ageLabel: { fontFamily: fonts.ui.bold, fontSize: fontSizes.label, color: ink.pageInkMuted },
   chips: { flexDirection: "row", flexWrap: "wrap", gap: space.s4 },
   chip: {
     minHeight: 38,
     paddingHorizontal: space.s7,
     borderRadius: 19,
     borderWidth: 2,
-    borderColor: colors.track,
+    borderColor: ink.track,
     justifyContent: "center",
   },
-  chipOn: { borderColor: colors.gilt, backgroundColor: alpha(colors.gilt, 0.14) },
-  chipText: { fontFamily: fonts.ui.bold, fontSize: fontSizes.label, color: colors.pageInkMuted },
-  chipTextOn: { color: colors.rubric },
+  chipOn: { borderColor: ink.gilt, backgroundColor: alpha(ink.gilt, 0.14) },
+  chipText: { fontFamily: fonts.ui.bold, fontSize: fontSizes.label, color: ink.pageInkMuted },
+  chipTextOn: { color: ink.rubric },
 });

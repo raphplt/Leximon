@@ -184,6 +184,14 @@ Seulement ce dont l'écran Jouer et l'ouverture ont besoin : bandeau du haut (po
 - les questions des défis se posent sur le sous-main : l'énoncé sur une feuille, chaque proposition sur une tuile de papier marquée a, b, c ou d dans une pastille d'or, la bonne en cuir vert (avec son éclat), la mauvaise en cuir rouge, le verdict sur une feuille bordée de vert ou de rouge. L'accueil des défis, l'énigme du jour, l'entraînement et le bilan d'une série sont sur des feuilles posées dans la salle ;
 - la barre de lettres de l'album et la frise des défis n'existent pas encore : leur place est laissée, elles viendront avec leurs chantiers.
 
+**Énigme, niveaux, coffrets, compte et réglages faits le 2026-11-02**, sur le web et le mobile ensemble. Une page du mobile hors des onglets se tient désormais dans la salle, son titre en lettrage, et ce qui est posé sur une feuille (paragraphe, champ, lien, case à cocher) y prend l'encre brune de lui-même. Sur le web, un écran qui a ses propres classes reçoit en plus l'habit commun (feuille, bouton d'or ou de papier, champ, lettrage). Écarts :
+
+- l'énigme pose ses deux feuilles dans la salle : les cases vides sont des creux dans le papier, les lettres trouvées des tuiles d'or ;
+- le plateau des niveaux du mobile est retiré : le mobile prend la table des matières du web, sur une feuille, avec ses flèches de chapitre en papier ;
+- le coffret est posé sur le sous-main, sous des rayons d'or : le coffre est un gros objet d'or, chaque récompense une fiche de papier ;
+- le choix du thème avait déjà disparu des deux plateformes. Les interrupteurs des réglages sont des rainures sombres, vertes une fois allumées ;
+- le profil et l'atelier restent pour la phase 3.
+
 | Écran | Attendu |
 |---|---|
 | Jouer | La maquette A2, avec les vraies données : collections, stock, défi du jour, récompenses, verrous par niveau |

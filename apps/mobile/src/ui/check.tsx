@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { colors, fontSizes, fonts, space } from "@/theme";
 import { Icon } from "./icon";
+import { useInk } from "./ink";
 
 /** A box to tick, with its sentence beside it; the whole row toggles it. */
 export function Check({
@@ -16,6 +17,7 @@ export function Check({
   /** What a screen reader says, when `children` holds more than text. */
   readonly label?: string;
 }) {
+  const ink = useInk();
   return (
     <Pressable
       onPress={() => onChange(!checked)}
@@ -24,10 +26,10 @@ export function Check({
       accessibilityState={{ checked }}
       {...(label === undefined ? {} : { accessibilityLabel: label })}
     >
-      <View style={[styles.box, checked && styles.boxOn]}>
+      <View style={[styles.box, { borderColor: ink.track }, checked && styles.boxOn]}>
         {checked && <Icon name="check" size={16} color={colors.actionInk} />}
       </View>
-      <Text style={styles.text}>{children}</Text>
+      <Text style={[styles.text, { color: ink.pageInk }]}>{children}</Text>
     </Pressable>
   );
 }
@@ -39,7 +41,6 @@ const styles = StyleSheet.create({
     height: 26,
     borderRadius: 7,
     borderWidth: 2,
-    borderColor: colors.track,
     alignItems: "center",
     justifyContent: "center",
   },
@@ -49,6 +50,5 @@ const styles = StyleSheet.create({
     fontFamily: fonts.ui.semibold,
     fontSize: fontSizes.body,
     lineHeight: 22,
-    color: colors.pageInk,
   },
 });

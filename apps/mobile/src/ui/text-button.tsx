@@ -1,5 +1,6 @@
 import { Pressable, StyleSheet, Text } from "react-native";
-import { colors, fontSizes, fonts, space } from "@/theme";
+import { fontSizes, fonts, space } from "@/theme";
+import { useInk } from "./ink";
 
 /** A minor action, written as an underlined link. */
 export function TextButton({
@@ -11,6 +12,7 @@ export function TextButton({
   readonly onPress: () => void;
   readonly disabled?: boolean;
 }) {
+  const ink = useInk();
   return (
     <Pressable
       onPress={onPress}
@@ -20,7 +22,7 @@ export function TextButton({
       hitSlop={6}
       style={({ pressed }) => [styles.button, (pressed || disabled) && styles.dim]}
     >
-      <Text style={styles.label}>{label}</Text>
+      <Text style={[styles.label, { color: ink.rubric }]}>{label}</Text>
     </Pressable>
   );
 }
@@ -31,7 +33,6 @@ const styles = StyleSheet.create({
   label: {
     fontFamily: fonts.ui.bold,
     fontSize: fontSizes.body,
-    color: colors.rubric,
     textDecorationLine: "underline",
   },
 });

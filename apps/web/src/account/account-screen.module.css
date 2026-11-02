@@ -256,3 +256,10 @@
   border-radius: var(--lx-radius-lg);
   font-size: var(--lx-size-body-large);
 }
+
+/* --- « La Bibliothèque » --- */
+
+:root[data-look="bibliotheque"] .kicker {
+  color: var(--lx-lettering-kicker);
+  letter-spacing: 0.24em;
+}

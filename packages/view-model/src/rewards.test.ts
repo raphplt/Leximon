@@ -8,7 +8,6 @@ import {
   coffretsMailTitle,
   levelDetail,
   nextRewardLine,
-  plateauLayout,
   quarterAt,
   quarterNodes,
   quarterOfLevel,
@@ -115,15 +114,6 @@ describe("level road", () => {
     ]);
     expect([6, 7].map((n) => node(n)?.fog)).toEqual([false, true]);
     expect(node(5)?.opens).toBe("Les échanges");
-  });
-
-  it("zigzags the tiles up the plateau, a stone between two of them", () => {
-    const layout = plateauLayout([11, 12, 13, 14, 15], 13);
-    const { points, tile } = layout;
-    expect(points.map((p) => p.level)).toEqual([11, 12, 13, 14, 15]);
-    expect(points[1]?.y).toBe((points[0]?.y ?? 0) - tile.height);
-    expect(points.map((p) => (p.x - (points[0]?.x ?? 0)) / tile.width)).toEqual([0, 1, 2, 3, 2]);
-    expect(layout.stones.map((s) => s.done)).toEqual([true, true, false, false]);
   });
 
   it("details a level", () => {

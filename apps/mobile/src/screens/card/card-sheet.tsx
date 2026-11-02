@@ -19,7 +19,7 @@ import {
 } from "@leximon/view-model";
 import { router } from "expo-router";
 import * as WebBrowser from "expo-web-browser";
-import { type ReactNode, useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Pressable, Share, StyleSheet, Text, useWindowDimensions, View } from "react-native";
 import { catalogInHand, loadCatalog } from "@/cards/catalog";
 import { HoloCard } from "@/cards/holo-card";
@@ -30,12 +30,12 @@ import { progress as progressResource } from "@/player/state";
 import { useProfileActions } from "@/profile/profile-actions";
 import { FeedbackSheet } from "@/screens/profile/feedback-sheet";
 import { ReplacePin } from "@/screens/profile/pin-picker";
-import { colors, fontSizes, fonts, IS_LIBRARY, paperColors, radii, space } from "@/theme";
+import { colors, fontSizes, fonts, paperColors, radii, space } from "@/theme";
 import { Button } from "@/ui/button";
 import { Icon } from "@/ui/icon";
 import { Page, Paragraph } from "@/ui/page";
+import { OnPaper } from "@/ui/panel";
 import { RarityName } from "@/ui/rarity-icon";
-import { Leaf } from "@/ui/toy";
 
 const CARD_MAX = 300;
 
@@ -141,7 +141,7 @@ function SheetBody({
         <EngravingCredit card={card} />
       </View>
 
-      <Facts>
+      <OnPaper>
         <RarityName rarity={card.rarity} color={ink.pageInk} />
         {card.pronunciation != null && <Text style={styles.ipa}>/{card.pronunciation.ipa}/</Text>}
         <Text style={styles.frequency}>{frequencyLine(card.perBillion)}</Text>
@@ -257,14 +257,9 @@ function SheetBody({
           title={CARD_REPORT.title}
           label={CARD_REPORT.label}
         />
-      </Facts>
+      </OnPaper>
     </Page>
   );
-}
-
-/** What the card says beyond its face; in « La Bibliothèque », on a leaf of paper. */
-function Facts({ children }: { readonly children: ReactNode }) {
-  return IS_LIBRARY ? <Leaf style={styles.leaf}>{children}</Leaf> : children;
 }
 
 /**
@@ -298,7 +293,6 @@ function EngravingCredit({ card }: { readonly card: CatalogCard }) {
 const ink = paperColors;
 
 const styles = StyleSheet.create({
-  leaf: { padding: space.s9, gap: space.s8 },
   cardSide: { alignItems: "center", gap: space.s5, marginBottom: space.s2 },
   credit: {
     fontFamily: fonts.ui.medium,

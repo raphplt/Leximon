@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { StyleSheet, View, type ViewProps } from "react-native";
 import { colors, IS_LIBRARY, space } from "@/theme";
 import { Leaf } from "./toy";
@@ -21,7 +22,16 @@ export function Panel({
   );
 }
 
+/**
+ * In « La Bibliothèque », a leaf of paper under what a screen lays straight on the page (a form,
+ * the facts of a card); elsewhere, the content as it is.
+ */
+export function OnPaper({ children }: { readonly children: ReactNode }) {
+  return IS_LIBRARY ? <Leaf style={styles.sheet}>{children}</Leaf> : children;
+}
+
 const styles = StyleSheet.create({
   panel: { padding: space.s9, gap: space.s6, borderRadius: 20, backgroundColor: colors.panel },
   leaf: { borderRadius: 18, backgroundColor: colors.paper },
+  sheet: { padding: space.s9, gap: space.s8 },
 });

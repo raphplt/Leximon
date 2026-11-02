@@ -25,7 +25,6 @@ const OWN_PALETTE = [
   /logo-mark/,
   /emblem/,
   /collection-seal/,
-  /plateau-art/,
   // The medals and banners of a clan.
   /clan\/clan\.module/,
   // Scenes of one moment, each with its own light.

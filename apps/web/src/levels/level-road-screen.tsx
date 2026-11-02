@@ -90,11 +90,15 @@ export function LevelRoadScreen() {
     <main className={styles.page}>
       <Header subtitle={roadSubtitle(progress)} />
       <div className={styles.layout}>
-        <section className={styles.folio} aria-label={`${quarter.name}, ${quarter.range}`}>
+        <section
+          className={styles.folio}
+          aria-label={`${quarter.name}, ${quarter.range}`}
+          data-paper=""
+        >
           <div className={styles.folioHead}>
             <button
               type="button"
-              className={styles.turn}
+              className={`${styles.turn} ${ui.paperToy}`}
               aria-label="Chapitre précédent"
               disabled={quarter.index === 1}
               onClick={() => setShown(quarter.index - 1)}
@@ -109,7 +113,7 @@ export function LevelRoadScreen() {
             </div>
             <button
               type="button"
-              className={styles.turn}
+              className={`${styles.turn} ${ui.paperToy}`}
               aria-label="Chapitre suivant"
               disabled={quarter.index >= last}
               onClick={() => setShown(quarter.index + 1)}

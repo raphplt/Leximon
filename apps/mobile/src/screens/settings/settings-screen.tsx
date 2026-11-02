@@ -26,13 +26,23 @@ import { account, profile } from "@/player/state";
 import { useProfileActions } from "@/profile/profile-actions";
 import { forgetLastEmail } from "@/screens/account/last-email";
 import { PseudoSheet } from "@/screens/profile/pseudo-sheet";
-import { colors, fontSizes, fonts, IS_LIBRARY, radii, space } from "@/theme";
+import {
+  colors,
+  fontSizes,
+  fonts,
+  IS_LIBRARY,
+  paperColors,
+  radii,
+  space,
+  switchColors,
+} from "@/theme";
 import { Avatar } from "@/ui/avatar";
 import { Button } from "@/ui/button";
 import { Icon } from "@/ui/icon";
 import { FormError, Page, Paragraph } from "@/ui/page";
 import { Sheet } from "@/ui/sheet";
 import { toast } from "@/ui/toast";
+import { Leaf } from "@/ui/toy";
 
 function failureMessage(error: unknown): string {
   return error instanceof ApiError && error.status === null
@@ -262,7 +272,11 @@ function Group({ title, children }: { readonly title: string; readonly children:
   return (
     <View style={styles.group}>
       <Text style={styles.kicker}>{title}</Text>
-      <View style={styles.rows}>{children}</View>
+      {IS_LIBRARY ? (
+        <Leaf style={styles.leafRows}>{children}</Leaf>
+      ) : (
+        <View style={styles.rows}>{children}</View>
+      )}
     </View>
   );
 }
@@ -288,8 +302,8 @@ function Toggle({
         value={value}
         onValueChange={onChange}
         accessibilityLabel={label}
-        trackColor={{ false: colors.track, true: colors.success }}
-        thumbColor={colors.pageInk}
+        trackColor={{ false: switchColors.off, true: switchColors.on }}
+        thumbColor={switchColors.knob}
       />
     </View>
   );
@@ -316,7 +330,7 @@ function Row({
         <Text style={[styles.label, danger && styles.danger]}>{label}</Text>
         {detail !== null && <Text style={styles.detail}>{detail}</Text>}
       </View>
-      <Icon name="chev" size={16} color={danger ? colors.danger : colors.pageInkMuted} />
+      <Icon name="chev" size={16} color={danger ? ink.danger : ink.pageInkMuted} />
     </Pressable>
   );
 }
@@ -375,7 +389,7 @@ function BlocksSheet({
         players.map((player) => (
           <View key={player.code} style={styles.blocked}>
             <Avatar avatar={player.avatar} frame={player.frame} size={40} />
-            <Text style={[styles.label, styles.rowText]}>{playerName(player)}</Text>
+            <Text style={[styles.label, styles.rowText, styles.onSheet]}>{playerName(player)}</Text>
             <Button
               label="Débloquer"
               secondary
@@ -457,6 +471,9 @@ function DeleteAccountSheet({
   );
 }
 
+/** The rows are read on paper in « La Bibliothèque ». */
+const ink = paperColors;
+
 const styles = StyleSheet.create({
   group: { gap: space.s4 },
   kicker: {
@@ -466,6 +483,7 @@ const styles = StyleSheet.create({
     color: colors.pageInkMuted,
   },
   rows: { borderRadius: radii.x3, backgroundColor: colors.panel, paddingHorizontal: space.s8 },
+  leafRows: { paddingHorizontal: space.s8 },
   row: {
     flexDirection: "row",
     alignItems: "center",
@@ -473,13 +491,14 @@ const styles = StyleSheet.create({
     minHeight: 58,
     paddingVertical: space.s5,
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: colors.rule,
+    borderBottomColor: ink.rule,
   },
   pressed: { opacity: 0.6 },
   rowText: { flex: 1, gap: space.s1 },
-  label: { fontFamily: fonts.ui.bold, fontSize: fontSizes.body, color: colors.pageInk },
-  detail: { fontFamily: fonts.ui.medium, fontSize: fontSizes.small, color: colors.pageInkMuted },
-  danger: { color: colors.danger },
+  label: { fontFamily: fonts.ui.bold, fontSize: fontSizes.body, color: ink.pageInk },
+  detail: { fontFamily: fonts.ui.medium, fontSize: fontSizes.small, color: ink.pageInkMuted },
+  danger: { color: ink.danger },
+  onSheet: { color: colors.pageInk },
   blocked: { flexDirection: "row", alignItems: "center", gap: space.s6 },
   warning: {
     fontFamily: fonts.text.regular,

@@ -21,6 +21,7 @@ import { api } from "@/lib/api";
 import { usePackShape } from "@/lib/use-pack-shape";
 import { forgetProgress } from "@/progress/use-progress";
 import { Switch } from "@/ui/switch";
+import ui from "@/ui/ui.module.css";
 import styles from "./account-screen.module.css";
 import { forgetPendingCode, keepPendingCode, readPendingCode } from "./pending-code";
 import { keepLastEmail, noteSignedIn, readLastEmail } from "./sign-in-memory";
@@ -163,15 +164,19 @@ export function AccountScreen() {
     <main className={styles.screen}>
       <header className={styles.header}>
         <p className={styles.kicker}>Ton compte</p>
-        <h1 className={styles.title}>{titleOf(step)}</h1>
+        <h1 className={`${styles.title} ${ui.lettered}`}>{titleOf(step)}</h1>
       </header>
 
       {step.kind === "loading" && <p className={styles.hint}>Un instant…</p>}
 
       {step.kind === "failed" && (
-        <div className={styles.panel}>
+        <div className={`${styles.panel} ${ui.leaf}`}>
           <p className={styles.hint}>Le serveur ne répond pas.</p>
-          <button type="button" className={styles.secondary} onClick={() => void load()}>
+          <button
+            type="button"
+            className={`${styles.secondary} ${ui.paperToy}`}
+            onClick={() => void load()}
+          >
             Réessayer
           </button>
         </div>
@@ -179,16 +184,16 @@ export function AccountScreen() {
 
       {step.kind === "member" && (
         <>
-          <div className={styles.panel}>
+          <div className={`${styles.panel} ${ui.leaf}`}>
             <p className={styles.text}>
               Connecté avec <strong className={styles.email}>{step.email}</strong>.
             </p>
             <NewsToggle />
-            <Link href="/jouer" className={styles.primary}>
+            <Link href="/jouer" className={`${styles.primary} ${ui.goldToy}`}>
               Retour au jeu
             </Link>
             {step.isAdmin && (
-              <Link href="/admin" className={styles.secondary}>
+              <Link href="/admin" className={`${styles.secondary} ${ui.paperToy}`}>
                 Administration
               </Link>
             )}
@@ -276,7 +281,7 @@ function EmailForm({
     onSubmit(email.trim().toLowerCase());
   };
   return (
-    <form className={styles.panel} onSubmit={submit}>
+    <form className={`${styles.panel} ${ui.leaf}`} onSubmit={submit}>
       <p className={styles.text}>
         Sans compte, ta collection n'est enregistrée que dans ce navigateur.
       </p>
@@ -285,7 +290,7 @@ function EmailForm({
       </label>
       <input
         id={id}
-        className={styles.input}
+        className={`${styles.input} ${ui.paperField}`}
         type="email"
         autoComplete="email"
         inputMode="email"
@@ -301,7 +306,11 @@ function EmailForm({
         />
         <span>{NEWS_OPT_IN}</span>
       </label>
-      <button type="submit" className={styles.primary} disabled={busy || email.trim() === ""}>
+      <button
+        type="submit"
+        className={`${styles.primary} ${ui.goldToy}`}
+        disabled={busy || email.trim() === ""}
+      >
         {busy ? "Envoi…" : "Recevoir un code"}
       </button>
     </form>
@@ -371,7 +380,7 @@ function CodeForm({
     onSubmit(code);
   };
   return (
-    <form className={styles.panel} onSubmit={submit}>
+    <form className={`${styles.panel} ${ui.leaf}`} onSubmit={submit}>
       <p className={styles.text}>
         Code envoyé à <strong className={styles.email}>{email}</strong>.
       </p>
@@ -380,7 +389,7 @@ function CodeForm({
       </label>
       <input
         id={id}
-        className={`${styles.input} ${styles.code}`}
+        className={`${styles.input} ${ui.paperField} ${styles.code}`}
         type="text"
         inputMode="numeric"
         autoComplete="one-time-code"
@@ -390,7 +399,11 @@ function CodeForm({
         value={code}
         onChange={(event) => setCode(event.target.value.replace(/\D/g, ""))}
       />
-      <button type="submit" className={styles.primary} disabled={busy || code.length !== 6}>
+      <button
+        type="submit"
+        className={`${styles.primary} ${ui.goldToy}`}
+        disabled={busy || code.length !== 6}
+      >
         {busy ? "Vérification…" : "Valider le code"}
       </button>
       <div className={styles.links}>
@@ -428,17 +441,22 @@ function Confirm({
   const ready = !busy && (!step.needsAge || ageConfirmed);
   if (step.closed) {
     return (
-      <div className={styles.panel}>
+      <div className={`${styles.panel} ${ui.leaf}`}>
         <h2 className={styles.subtitle}>{step.title}</h2>
         <p className={styles.text}>{step.text}</p>
-        <button type="button" className={styles.secondary} disabled={busy} onClick={onCancel}>
+        <button
+          type="button"
+          className={`${styles.secondary} ${ui.paperToy}`}
+          disabled={busy}
+          onClick={onCancel}
+        >
           Changer d'adresse
         </button>
       </div>
     );
   }
   return (
-    <div className={styles.panel}>
+    <div className={`${styles.panel} ${ui.leaf}`}>
       <h2 className={styles.subtitle}>{step.title}</h2>
       <p className={styles.text}>{step.text}</p>
       {step.warning !== null && <p className={styles.warning}>{step.warning}</p>}
@@ -471,12 +489,17 @@ function Confirm({
       )}
       {step.acceptsLoss ? (
         <div className={styles.actions}>
-          <button type="button" className={styles.primary} disabled={busy} onClick={onCancel}>
+          <button
+            type="button"
+            className={`${styles.primary} ${ui.goldToy}`}
+            disabled={busy}
+            onClick={onCancel}
+          >
             Garder ma partie
           </button>
           <button
             type="button"
-            className={styles.secondary}
+            className={`${styles.secondary} ${ui.paperToy}`}
             disabled={busy}
             onClick={() => onConfirm(false, null)}
           >
@@ -487,7 +510,7 @@ function Confirm({
         <>
           <button
             type="button"
-            className={styles.primary}
+            className={`${styles.primary} ${ui.goldToy}`}
             disabled={!ready}
             onClick={() => onConfirm(ageConfirmed, ageBracket)}
           >

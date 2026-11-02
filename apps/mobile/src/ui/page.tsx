@@ -1,4 +1,4 @@
-import { room } from "@leximon/tokens";
+import { lettering, room } from "@leximon/tokens";
 import { router } from "expo-router";
 import type { ReactNode } from "react";
 import { KeyboardAvoidingView, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
@@ -7,6 +7,7 @@ import { Desk, Room } from "@/library/play-pieces";
 import { TAB_BAR_RISE } from "@/shell/tab-bar";
 import { colors, fontSizes, fonts, IS_LIBRARY, space } from "@/theme";
 import { Icon } from "./icon";
+import { useInk } from "./ink";
 import { Lettering } from "./toy";
 
 /** Leaves the page; a page opened from a link, with nothing behind it, leads to the game. */
@@ -64,7 +65,7 @@ export function Page({
         </View>
       )}
       {kicker !== undefined && <Text style={styles.kicker}>{kicker.toUpperCase()}</Text>}
-      {onDesk ? (
+      {IS_LIBRARY ? (
         <View accessibilityRole="header">
           <Lettering size={fontSizes.headingLarge}>{title}</Lettering>
         </View>
@@ -88,6 +89,9 @@ export function Page({
             <View style={styles.deskInside}>{scroll}</View>
           </View>
         </Room>
+      ) : IS_LIBRARY && !inTab ? (
+        // The tabs already stand in the reading room; a page of its own brings it along.
+        <Room>{scroll}</Room>
       ) : (
         scroll
       )}
@@ -105,14 +109,24 @@ export function Paragraph({
   readonly children: ReactNode;
   readonly muted?: boolean;
 }) {
-  return <Text style={[styles.paragraph, muted && styles.muted]}>{children}</Text>;
+  const ink = useInk();
+  return (
+    <Text style={[styles.paragraph, { color: muted ? ink.pageInkMuted : ink.pageInk }]}>
+      {children}
+    </Text>
+  );
 }
 
 /** The error under a form, read out when it appears. */
 export function FormError({ message }: { readonly message: string | null }) {
+  const ink = useInk();
   if (message === null) return null;
   return (
-    <Text style={styles.error} accessibilityRole="alert" accessibilityLiveRegion="polite">
+    <Text
+      style={[styles.error, { color: ink.danger }]}
+      accessibilityRole="alert"
+      accessibilityLiveRegion="polite"
+    >
       {message}
     </Text>
   );
@@ -148,7 +162,7 @@ const styles = StyleSheet.create({
     fontFamily: fonts.ui.extrabold,
     fontSize: fontSizes.caption,
     letterSpacing: 2,
-    color: colors.pageInkMuted,
+    color: IS_LIBRARY ? lettering.kicker : colors.pageInkMuted,
     marginBottom: space.s3,
   },
   title: {
@@ -162,13 +176,10 @@ const styles = StyleSheet.create({
     fontFamily: fonts.text.regular,
     fontSize: fontSizes.subtitle,
     lineHeight: 26,
-    color: colors.pageInk,
   },
-  muted: { color: colors.pageInkMuted },
   error: {
     fontFamily: fonts.ui.bold,
     fontSize: fontSizes.body,
     lineHeight: 21,
-    color: colors.danger,
   },
 });

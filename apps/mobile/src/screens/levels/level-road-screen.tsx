@@ -1,7 +1,6 @@
+import type { Progress } from "@leximon/contract";
 import {
   levelDetail,
-  type PlateauLayout,
-  plateauLayout,
   type Quarter,
   quarterAt,
   quarterNodes,
@@ -11,43 +10,24 @@ import {
   waitingCoffrets,
   xpSources,
 } from "@leximon/view-model";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
-import Animated, {
-  cancelAnimation,
-  Easing,
-  useAnimatedStyle,
-  useReducedMotion,
-  useSharedValue,
-  withRepeat,
-  withSequence,
-  withTiming,
-} from "react-native-reanimated";
 import { openCoffret } from "@/levels/coffret";
 import { REWARD_ICONS } from "@/levels/reward-icons";
 import { useNow, useShared, useSharedFailed } from "@/player/shared";
 import { levelRewards, progress as progressResource } from "@/player/state";
-import { alpha, colors, fontSizes, fonts, radii, space } from "@/theme";
+import { alpha, colors, fontSizes, fonts, IS_LIBRARY, paperColors, radii, space } from "@/theme";
 import { Button } from "@/ui/button";
 import { Icon } from "@/ui/icon";
-import { LevelMedal } from "@/ui/level";
+import { LevelMedal, XpBar } from "@/ui/level";
 import { Page, Paragraph } from "@/ui/page";
 import { Panel } from "@/ui/panel";
-import {
-  FogBank,
-  MARK_COLORS,
-  PlateauDecor,
-  TILE_BOX,
-  TileBlock,
-  TileHalo,
-  type TileLook,
-} from "./plateau-art";
+import { Toy } from "@/ui/toy";
 
 /** Quarters the player may look at beyond their own. */
 const QUARTERS_AHEAD = 2;
-const MEDAL = 46;
 
-/** The level road, ten levels at a time: tiles climbing a plateau, the fog ahead. */
+/** The levels, ten at a time: a page of contents, each line a level and what it gives. */
 export function LevelRoadScreen({ asked }: { readonly asked: number | null }) {
   const progress = useShared(progressResource);
   const rewards = useShared(levelRewards);
@@ -87,10 +67,6 @@ export function LevelRoadScreen({ asked }: { readonly asked: number | null }) {
   const last = own.index + QUARTERS_AHEAD;
   const quarter = quarterAt(Math.min(last, shown ?? own.index));
   const nodes = quarterNodes(quarter, progress.level, claimed, now);
-  const layout = plateauLayout(
-    nodes.map((n) => n.level),
-    progress.level,
-  );
   const chosen = selected ?? waitingCoffrets(progress.level, claimed)[0] ?? progress.level + 1;
   const detail = levelDetail(chosen, progress, claimed, now);
 
@@ -103,48 +79,48 @@ export function LevelRoadScreen({ asked }: { readonly asked: number | null }) {
     <Page title="Niveaux">
       <Paragraph muted>{roadSubtitle(progress)}</Paragraph>
 
-      <View style={styles.board}>
-        <View style={styles.boardHead}>
-          <Pressable
-            style={[styles.round, quarter.index === 1 && styles.dim]}
+      <Panel paper style={styles.folio}>
+        <View style={styles.folioHead}>
+          <Turn
+            icon="back"
+            label="Chapitre précédent"
             disabled={quarter.index === 1}
             onPress={() => setShown(quarter.index - 1)}
-            accessibilityRole="button"
-            accessibilityLabel="Quartier précédent"
-          >
-            <Icon name="back" size={18} color={colors.pageInk} />
-          </Pressable>
+          />
           <View style={styles.quarterName} accessibilityLiveRegion="polite">
-            <Text style={styles.quarterRange}>{quarter.range.toUpperCase()}</Text>
+            <Text style={styles.quarterRange} numberOfLines={1} adjustsFontSizeToFit>
+              {`${quarter.chapter} · ${quarter.range}`.toUpperCase()}
+            </Text>
             <Text style={styles.quarterTitle}>{quarter.name}</Text>
           </View>
-          <Pressable
-            style={[styles.round, quarter.index >= last && styles.dim]}
+          <Turn
+            icon="chev"
+            label="Chapitre suivant"
             disabled={quarter.index >= last}
             onPress={() => setShown(quarter.index + 1)}
-            accessibilityRole="button"
-            accessibilityLabel="Quartier suivant"
-          >
-            <Icon name="chev" size={18} color={colors.pageInk} />
-          </Pressable>
+          />
         </View>
-        <Plateau
-          nodes={nodes}
-          layout={layout}
-          level={progress.level}
-          chosen={chosen}
-          onPick={pick}
-        />
-      </View>
+        <View>
+          {nodes.map((node) => (
+            <Line
+              key={node.level}
+              node={node}
+              progress={progress}
+              chosen={node.level === chosen}
+              onPick={() => pick(node)}
+            />
+          ))}
+        </View>
+      </Panel>
 
-      <Panel accessibilityLiveRegion="polite">
+      <Panel paper accessibilityLiveRegion="polite">
         <Text style={styles.kicker}>NIVEAU {detail.level}</Text>
         <Text style={styles.detailTitle}>{detail.title}</Text>
         <View style={styles.items}>
           {detail.items.map((item) => (
             <View key={item.title} style={styles.item}>
               <View style={styles.itemIcon}>
-                <Icon name={REWARD_ICONS[item.icon]} size={22} color={colors.rubric} />
+                <Icon name={REWARD_ICONS[item.icon]} size={22} color={ink.rubric} />
               </View>
               <View style={styles.itemText}>
                 <Text style={styles.itemTitle}>{item.title}</Text>
@@ -155,7 +131,7 @@ export function LevelRoadScreen({ asked }: { readonly asked: number | null }) {
         </View>
         {detail.opens !== null && (
           <View style={styles.opensBox}>
-            <Text style={[styles.kicker, styles.opensKicker]}>OUVRE</Text>
+            <Text style={[styles.kicker, styles.opensKicker]}>DÉBLOQUE</Text>
             <Text style={styles.opensText}>{detail.opens}</Text>
           </View>
         )}
@@ -164,7 +140,7 @@ export function LevelRoadScreen({ asked }: { readonly asked: number | null }) {
         )}
         {detail.state === "claimed" && (
           <View style={styles.done}>
-            <Icon name="check" size={18} color={colors.success} />
+            <Icon name="check" size={18} color={ink.success} />
             <Text style={styles.doneText}>Coffret ouvert</Text>
           </View>
         )}
@@ -173,7 +149,7 @@ export function LevelRoadScreen({ asked }: { readonly asked: number | null }) {
 
       <Quarters own={own} last={last} shown={quarter} onShow={setShown} />
 
-      <Panel>
+      <Panel paper>
         <Text style={styles.kicker}>D'OÙ VIENT L'XP</Text>
         {xpSources(now).map((source) => (
           <View key={source.action} style={styles.source}>
@@ -186,160 +162,104 @@ export function LevelRoadScreen({ asked }: { readonly asked: number | null }) {
   );
 }
 
-function tileLook(node: RoadNode): TileLook {
-  if (node.state === "claimed" || node.state === "claimable") return "gold";
-  if (node.milestone) return "kraft";
-  return node.state === "next" ? "cream" : "slate";
+/** Turns the page of contents to the chapter before or after. */
+function Turn({
+  icon,
+  label,
+  disabled,
+  onPress,
+}: {
+  readonly icon: "back" | "chev";
+  readonly label: string;
+  readonly disabled: boolean;
+  readonly onPress: () => void;
+}) {
+  const glyph = <Icon name={icon} size={18} color={ink.pageInk} />;
+  if (IS_LIBRARY)
+    return (
+      <Toy
+        matter="paper"
+        shape="round"
+        style={styles.turnToy}
+        bodyStyle={styles.turnBody}
+        disabled={disabled}
+        onPress={onPress}
+        accessibilityRole="button"
+        accessibilityLabel={label}
+      >
+        {glyph}
+      </Toy>
+    );
+  return (
+    <Pressable
+      style={[styles.turn, disabled && styles.dim]}
+      disabled={disabled}
+      onPress={onPress}
+      accessibilityRole="button"
+      accessibilityLabel={label}
+    >
+      {glyph}
+    </Pressable>
+  );
 }
 
-function Plateau({
-  nodes,
-  layout,
-  level,
+/** A line of the contents: what the level gives, then its number across the dots. */
+function Line({
+  node,
+  progress,
   chosen,
   onPick,
 }: {
-  readonly nodes: readonly RoadNode[];
-  readonly layout: PlateauLayout;
-  readonly level: number;
-  readonly chosen: number;
-  readonly onPick: (node: RoadNode) => void;
-}) {
-  const [width, setWidth] = useState(0);
-  const scale = width / layout.width;
-  const { tile } = layout;
-  const fogged = layout.points.filter((_, index) => nodes[index]?.fog === true);
-  // The fog reaches down to the lowest tile it hides.
-  const fogLine = fogged.length === 0 ? null : Math.max(...fogged.map((p) => p.y)) + tile.height;
-  const here = layout.points.find((p) => p.level === level);
-  const tileWidth = TILE_BOX.width * scale;
-  return (
-    <View
-      style={[styles.plateau, { aspectRatio: layout.width / layout.height }]}
-      onLayout={(event) => setWidth(event.nativeEvent.layout.width)}
-    >
-      {width > 0 && (
-        <>
-          <PlateauDecor layout={layout} width={width} />
-          {/* Highest first: a tile lower on the screen stands in front of the ones above it. */}
-          {[...nodes].reverse().map((node) => {
-            const point = layout.points.find((p) => p.level === node.level);
-            if (point === undefined) return null;
-            const look = tileLook(node);
-            return (
-              <Pressable
-                key={node.level}
-                onPress={() => onPick(node)}
-                accessibilityRole="button"
-                accessibilityLabel={node.label}
-                accessibilityState={{ selected: node.level === chosen }}
-                style={[
-                  styles.tile,
-                  {
-                    left: (point.x - tile.width / 2) * scale,
-                    top: (point.y - tile.height / 2) * scale,
-                    width: tileWidth,
-                    height: (TILE_BOX.height * tileWidth) / TILE_BOX.width,
-                  },
-                  node.fog && styles.fog,
-                ]}
-              >
-                {node.state === "claimable" && <Halo width={tileWidth} />}
-                <TileBlock look={look} selected={node.level === chosen} width={tileWidth} />
-                <View style={styles.tileFace} pointerEvents="none">
-                  <TileMark
-                    node={node}
-                    last={node === nodes[nodes.length - 1]}
-                    color={MARK_COLORS[look]}
-                    size={Math.max(13, Math.round(tileWidth * 0.26))}
-                  />
-                </View>
-              </Pressable>
-            );
-          })}
-          {fogLine !== null && <FogBank width={width} height={fogLine * scale} />}
-          {here !== undefined && (
-            <Here
-              left={here.x * scale - MEDAL / 2}
-              top={(here.y - tile.height / 2) * scale - MEDAL * 0.78}
-              level={level}
-            />
-          )}
-        </>
-      )}
-    </View>
-  );
-}
-
-/** A coffret waits on this tile: its halo breathes. */
-function Halo({ width }: { readonly width: number }) {
-  const reduced = useReducedMotion();
-  const pulse = useSharedValue(0.6);
-  useEffect(() => {
-    if (reduced) return;
-    pulse.value = withRepeat(
-      withSequence(withTiming(1, { duration: 900 }), withTiming(0.5, { duration: 900 })),
-      -1,
-    );
-    return () => cancelAnimation(pulse);
-  }, [reduced, pulse]);
-  const style = useAnimatedStyle(() => ({ opacity: pulse.value }));
-  return (
-    <Animated.View
-      pointerEvents="none"
-      style={[{ position: "absolute", left: -width * 0.2, top: -width * 0.12 }, style]}
-    >
-      <TileHalo width={width * 1.4} />
-    </Animated.View>
-  );
-}
-
-/** The player's medal, standing on their level. */
-function Here({
-  left,
-  top,
-  level,
-}: {
-  readonly left: number;
-  readonly top: number;
-  readonly level: number;
-}) {
-  const reduced = useReducedMotion();
-  const hover = useSharedValue(0);
-  useEffect(() => {
-    if (reduced) return;
-    hover.value = withRepeat(
-      withSequence(
-        withTiming(1, { duration: 1300, easing: Easing.inOut(Easing.sin) }),
-        withTiming(0, { duration: 1300, easing: Easing.inOut(Easing.sin) }),
-      ),
-      -1,
-    );
-    return () => cancelAnimation(hover);
-  }, [reduced, hover]);
-  const style = useAnimatedStyle(() => ({ transform: [{ translateY: -5 * hover.value }] }));
-  return (
-    <Animated.View pointerEvents="none" style={[styles.here, { left, top }, style]}>
-      <LevelMedal level={level} size={MEDAL} />
-    </Animated.View>
-  );
-}
-
-function TileMark({
-  node,
-  last,
-  color,
-  size,
-}: {
   readonly node: RoadNode;
-  readonly last: boolean;
-  readonly color: string;
-  readonly size: number;
+  readonly progress: Progress;
+  readonly chosen: boolean;
+  readonly onPick: () => void;
 }) {
-  if (node.state === "claimed") return <Icon name="check" size={size + 2} color={color} />;
-  if (node.state === "claimable" || last)
-    return <Icon name="coffret" size={size + 2} color={color} />;
-  return <Text style={[styles.mark, { color, fontSize: size }]}>{node.level}</Text>;
+  const near = node.state === "next" || node.state === "claimable";
+  const strong = near || node.milestone;
+  return (
+    <Pressable
+      onPress={onPick}
+      accessibilityRole="button"
+      accessibilityLabel={node.label}
+      accessibilityState={{ selected: chosen }}
+      style={({ pressed }) => [styles.line, (chosen || pressed) && styles.lineOn]}
+    >
+      <View style={styles.lineMark}>
+        <LineMark node={node} level={progress.level} />
+      </View>
+      <View style={styles.lineText}>
+        <Text style={[styles.lineTitle, near && styles.lineNear, strong && styles.lineStrong]}>
+          {node.summary}
+        </Text>
+        {node.opensLine !== null && <Text style={styles.lineOpens}>{node.opensLine}</Text>}
+        {node.state === "next" && (
+          <View style={styles.lineBar}>
+            <XpBar thin ratio={progress.xpIntoLevel / progress.xpForNextLevel} />
+          </View>
+        )}
+      </View>
+      <Text style={styles.leader} numberOfLines={1} ellipsizeMode="clip" aria-hidden>
+        {LEADER}
+      </Text>
+      {node.state === "claimable" && <Text style={styles.toOpen}>À ouvrir</Text>}
+      <Text
+        style={[styles.lineLevel, near && styles.lineNear, node.milestone && styles.lineMilestone]}
+      >
+        {node.level}
+      </Text>
+    </Pressable>
+  );
+}
+
+/** The dots of a table of contents, cut where the number begins. */
+const LEADER = " ·".repeat(80);
+
+function LineMark({ node, level }: { readonly node: RoadNode; readonly level: number }) {
+  if (node.level === level) return <LevelMedal level={level} size={34} />;
+  if (node.state === "claimed") return <Icon name="check" size={18} color={ink.gilt} />;
+  if (node.state === "claimable") return <Icon name="coffret" size={20} color={ink.gilt} />;
+  return null;
 }
 
 function Quarters({
@@ -355,8 +275,8 @@ function Quarters({
 }) {
   const quarters = Array.from({ length: last }, (_, k) => quarterAt(k + 1));
   return (
-    <Panel style={styles.quarters}>
-      <Text style={[styles.kicker, styles.quartersKicker]}>LES QUARTIERS</Text>
+    <Panel paper style={styles.quarters}>
+      <Text style={[styles.kicker, styles.quartersKicker]}>LES CHAPITRES</Text>
       {quarters.map((q) => {
         const done = q.index < own.index;
         const current = q.index === own.index;
@@ -395,69 +315,115 @@ function Quarters({
   );
 }
 
+/** Every panel of the screen is a leaf of paper in « La Bibliothèque ». */
+const ink = paperColors;
+
 const styles = StyleSheet.create({
-  board: {
-    marginHorizontal: -12,
-    overflow: "hidden",
-    borderRadius: 24,
-    backgroundColor: colors.binding,
-  },
-  boardHead: {
+  folio: { gap: space.s4 },
+  folioHead: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
     gap: space.s5,
-    paddingHorizontal: space.s7,
-    paddingTop: space.s7,
-    zIndex: 3,
+    paddingBottom: space.s7,
+    borderBottomWidth: 1,
+    borderBottomColor: ink.rule,
   },
-  round: {
+  turn: {
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: colors.pageRaised,
+    borderWidth: 1,
+    borderColor: ink.rule,
     alignItems: "center",
     justifyContent: "center",
   },
+  turnToy: { width: 40, height: 40 },
+  turnBody: { alignItems: "center", justifyContent: "center" },
   dim: { opacity: 0.35 },
   quarterName: { flex: 1, alignItems: "center" },
   quarterRange: {
     fontFamily: fonts.ui.extrabold,
     fontSize: fontSizes.micro,
     letterSpacing: 1.3,
-    color: colors.pageInkFaint,
+    color: ink.rubric,
+    textAlign: "center",
   },
   quarterTitle: {
     fontFamily: fonts.display,
     fontSize: fontSizes.title,
-    color: colors.pageInk,
+    lineHeight: 28,
+    color: ink.pageInk,
     textAlign: "center",
+    marginTop: space.s1,
   },
-  plateau: { width: "100%", marginBottom: space.s4 },
-  tile: { position: "absolute" },
-  fog: { opacity: 0.55 },
-  tileFace: {
-    position: "absolute",
-    left: 0,
-    right: 0,
-    top: 0,
-    height: "70%",
+  line: {
+    flexDirection: "row",
     alignItems: "center",
-    justifyContent: "center",
+    gap: space.s4,
+    minHeight: 54,
+    paddingVertical: 6,
+    paddingHorizontal: space.s3,
+    marginHorizontal: -space.s3,
+    borderRadius: radii.sm,
   },
-  mark: { fontFamily: fonts.display, includeFontPadding: false },
-  here: { position: "absolute" },
+  lineOn: { backgroundColor: alpha(ink.pageInk, 0.07) },
+  lineMark: { width: 34, alignItems: "center", justifyContent: "center" },
+  lineText: { flexShrink: 1, gap: 1 },
+  lineTitle: {
+    fontFamily: fonts.text.regular,
+    fontSize: fontSizes.bodyLarge,
+    lineHeight: 21,
+    color: ink.pageInkMuted,
+  },
+  lineNear: { color: ink.pageInk },
+  lineStrong: { fontFamily: fonts.text.medium },
+  lineOpens: {
+    fontFamily: fonts.ui.bold,
+    fontSize: fontSizes.small,
+    lineHeight: 17,
+    color: ink.rubric,
+  },
+  lineBar: { width: 130, marginTop: 5 },
+  leader: {
+    flex: 1,
+    minWidth: 16,
+    alignSelf: "flex-end",
+    marginBottom: 14,
+    fontFamily: fonts.ui.bold,
+    fontSize: fontSizes.small,
+    color: ink.pageInkFaint,
+  },
+  toOpen: {
+    overflow: "hidden",
+    paddingHorizontal: space.s4,
+    paddingVertical: 2,
+    borderRadius: radii.pill,
+    backgroundColor: colors.action,
+    color: colors.actionInk,
+    fontFamily: fonts.ui.extrabold,
+    fontSize: fontSizes.small,
+  },
+  lineLevel: {
+    minWidth: 26,
+    fontFamily: fonts.display,
+    fontSize: fontSizes.titleSmall,
+    color: ink.pageInkMuted,
+    textAlign: "right",
+    fontVariant: ["tabular-nums"],
+  },
+  lineMilestone: { color: ink.rubric },
   kicker: {
     fontFamily: fonts.ui.extrabold,
     fontSize: fontSizes.caption,
     letterSpacing: 2,
-    color: colors.pageInkMuted,
+    color: ink.pageInkMuted,
   },
   detailTitle: {
     fontFamily: fonts.display,
     fontSize: fontSizes.titleLarge,
     lineHeight: 30,
-    color: colors.pageInk,
+    color: ink.pageInk,
   },
   items: { gap: space.s5 },
   item: { flexDirection: "row", alignItems: "center", gap: space.s6 },
@@ -465,16 +431,16 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: radii.xl,
-    backgroundColor: colors.page,
+    backgroundColor: ink.pageRaised,
     alignItems: "center",
     justifyContent: "center",
   },
   itemText: { flex: 1 },
-  itemTitle: { fontFamily: fonts.ui.extrabold, fontSize: fontSizes.body, color: colors.pageInk },
+  itemTitle: { fontFamily: fonts.ui.extrabold, fontSize: fontSizes.body, color: ink.pageInk },
   itemDetail: {
     fontFamily: fonts.ui.medium,
     fontSize: fontSizes.small,
-    color: colors.pageInkMuted,
+    color: ink.pageInkMuted,
   },
   opensBox: {
     paddingHorizontal: space.s7,
@@ -484,16 +450,16 @@ const styles = StyleSheet.create({
     borderColor: alpha(colors.kraft, 0.4),
     backgroundColor: alpha(colors.kraft, 0.16),
   },
-  opensKicker: { color: colors.kraft },
+  opensKicker: { color: ink.rubric },
   opensText: {
     fontFamily: fonts.ui.extrabold,
     fontSize: fontSizes.body,
-    color: colors.pageInk,
+    color: ink.pageInk,
     marginTop: space.s1,
   },
   done: { flexDirection: "row", alignItems: "center", gap: space.s3 },
-  doneText: { fontFamily: fonts.ui.extrabold, fontSize: fontSizes.body, color: colors.success },
-  left: { fontFamily: fonts.ui.bold, fontSize: fontSizes.body, color: colors.pageInkMuted },
+  doneText: { fontFamily: fonts.ui.extrabold, fontSize: fontSizes.body, color: ink.success },
+  left: { fontFamily: fonts.ui.bold, fontSize: fontSizes.body, color: ink.pageInkMuted },
   quarters: { gap: space.s1, paddingHorizontal: space.s5 },
   quartersKicker: { paddingHorizontal: space.s3, marginBottom: space.s3 },
   quarter: {
@@ -504,7 +470,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: space.s4,
     borderRadius: 14,
   },
-  quarterOn: { backgroundColor: colors.pageRaised },
+  quarterOn: { backgroundColor: ink.pageRaised },
   quarterMark: {
     width: 28,
     height: 28,
@@ -514,30 +480,30 @@ const styles = StyleSheet.create({
   },
   quarterDone: { backgroundColor: colors.action },
   quarterHere: { backgroundColor: colors.badge },
-  quarterAhead: { backgroundColor: colors.binding },
+  quarterAhead: { backgroundColor: ink.track },
   quarterIndex: {
     fontFamily: fonts.ui.extrabold,
     fontSize: fontSizes.caption,
-    color: colors.pageInkFaint,
+    color: ink.pageInkFaint,
   },
   quarterIndexHere: { color: colors.inkOnColor },
   quarterLabel: {
     flex: 1,
     fontFamily: fonts.ui.bold,
     fontSize: fontSizes.label,
-    color: colors.pageInk,
+    color: ink.pageInk,
   },
   quarterLevels: {
     fontFamily: fonts.ui.medium,
     fontSize: fontSizes.small,
-    color: colors.pageInkFaint,
+    color: ink.pageInkFaint,
   },
   source: { flexDirection: "row", justifyContent: "space-between", gap: space.s6 },
   sourceAction: {
     flex: 1,
     fontFamily: fonts.ui.medium,
     fontSize: fontSizes.label,
-    color: colors.pageInkMuted,
+    color: ink.pageInkMuted,
   },
-  sourceXp: { fontFamily: fonts.ui.extrabold, fontSize: fontSizes.label, color: colors.pageInk },
+  sourceXp: { fontFamily: fonts.ui.extrabold, fontSize: fontSizes.label, color: ink.pageInk },
 });
