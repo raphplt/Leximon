@@ -168,7 +168,7 @@ export function ToyBody({
   const body = bodyStyle(matter, radius, large);
   const thickness = `0 ${depthOf(shape, large)}px 0 ${toyValues.outline}`;
   return (
-    <View style={[styles.body, body, { boxShadow: `${body.boxShadow}, ${thickness}` }, style]}>
+    <View style={[styles.shown, body, { boxShadow: `${body.boxShadow}, ${thickness}` }, style]}>
       {children}
     </View>
   );
@@ -215,7 +215,8 @@ export function Lettering({
   );
   return (
     <View>
-      {copy("drop", 0, reach + lettering.drop)}
+      {/* A drop deeper than the outline would part from it and read as a second line of text. */}
+      {copy("drop", 0, reach + Math.min(lettering.drop, reach))}
       {RING.map(([x, y]) => copy(`${x}${y}`, x * reach, y * reach))}
       <Text numberOfLines={numberOfLines} style={[text, style, { color }]}>
         {children}
@@ -299,6 +300,8 @@ const styles = StyleSheet.create({
   toy: { position: "relative" },
   fill: { flexGrow: 1 },
   body: { flexGrow: 1, alignItems: "center", justifyContent: "center", overflow: "hidden" },
+  /** A shown body keeps its own size, where a pressed one fills its toy. */
+  shown: { alignItems: "center", justifyContent: "center", overflow: "hidden" },
   outline: {
     ...StyleSheet.absoluteFill,
     color: lettering.outline,

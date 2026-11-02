@@ -48,11 +48,15 @@ export function emit(
   y: number,
   settings: BurstSettings,
   cap: number,
-  strength: number = intensity,
+  strength?: number,
   random: () => number = Math.random,
 ): void {
   "worklet";
-  const count = Math.min(Math.round(settings.count * strength), cap - particles.length);
+  // Read in the body: a worklet does not carry what a parameter's default refers to.
+  const count = Math.min(
+    Math.round(settings.count * (strength ?? intensity)),
+    cap - particles.length,
+  );
   const spread = settings.spread ?? 0;
   const angle = settings.angle ?? [0, Math.PI * 2];
   for (let index = 0; index < count; index++) {

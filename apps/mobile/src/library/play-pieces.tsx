@@ -265,7 +265,7 @@ export function SideTile({
           <Lettering size={11}>{lockedAt}</Lettering>
         </ToyBody>
       )}
-      <Lettering size={12} style={styles.sideLabel}>
+      <Lettering size={11} numberOfLines={1} style={styles.sideLabel}>
         {label}
       </Lettering>
     </View>
@@ -452,7 +452,9 @@ export function TabBar({
           </View>
         )}
         {item.badge !== undefined && <CountBadge count={item.badge} style={styles.tabBadge} />}
-        <Lettering size={11}>{item.label}</Lettering>
+        <Lettering size={10} numberOfLines={1}>
+          {item.label}
+        </Lettering>
       </Pressable>
     );
   };
@@ -599,7 +601,7 @@ const styles = StyleSheet.create({
   stockToy: { height: 42 },
   stock: { flexDirection: "row", gap: 5, paddingLeft: 5, paddingRight: 12 },
   mail: { width: 46, height: 46 },
-  side: { alignItems: "center", width: 72 },
+  side: { alignItems: "center", width: 86 },
   tile: { width: 58, height: 58 },
   tileRule: {
     position: "absolute",
@@ -677,7 +679,7 @@ const styles = StyleSheet.create({
     height: 3,
     backgroundColor: room.shelf.gilt,
   },
-  tab: { alignItems: "center", gap: 3, width: 70, paddingBottom: 4 },
+  tab: { flex: 1, alignItems: "center", gap: 3, paddingBottom: 4 },
   tabIconLocked: { opacity: 0.6 },
   tabLock: { position: "absolute", top: -4, right: 10 },
   tabBadge: { position: "absolute", top: -6, right: 6 },
