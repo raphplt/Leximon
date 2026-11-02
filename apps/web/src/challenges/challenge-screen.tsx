@@ -3,6 +3,7 @@
 import type { MasteryLevelCode, PracticeScope } from "@leximon/contract";
 import { type Catalog, cardOrPlaceholder, collectionName } from "@leximon/contract/client";
 import { createSeededRandom, TYPED_ANSWER_MAX_LENGTH } from "@leximon/core";
+import { effects } from "@leximon/tokens";
 import {
   AFTER_ANSWER_MS,
   type AnsweredQuestion,
@@ -38,22 +39,25 @@ import {
   typedQuestionHint,
 } from "@leximon/view-model";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { type FormEvent, useCallback, useEffect, useState } from "react";
+import { type FormEvent, useCallback, useEffect, useRef, useState } from "react";
 import { play, vibrate } from "@/booster/feedback";
 import { loadCatalog } from "@/cards/catalog";
 import { Card } from "@/components/card";
 import { api } from "@/lib/api";
 import { useNow } from "@/lib/use-now";
 import { usePackShape } from "@/lib/use-pack-shape";
+import { Desk } from "@/library/play-pieces";
 import { myClan } from "@/player/clan";
 import { dailyChallenge, ownedCards, refreshIfRead, wordMemory } from "@/player/collection";
 import { useShared } from "@/player/resource";
 import { publishProgress } from "@/progress/use-progress";
 import { RiddleEntry } from "@/riddle/riddle-entry";
 import { useShell } from "@/shell/shell-context";
+import { useLibraryLook } from "@/theme/use-library-look";
 import { Button, ButtonLink, RoundButton } from "@/ui/button";
 import { Icon, type IconName } from "@/ui/icon";
 import { Bone } from "@/ui/skeleton";
+import { ParticleStage, useOptionalStage } from "@/ui/stage";
 import ui from "@/ui/ui.module.css";
 import styles from "./challenge-screen.module.css";
 import { takeAlbumPractice } from "./pending-practice";
@@ -79,7 +83,19 @@ interface Session {
  * Défis: the daily goal, the player's memory, the words slipping away, and the sessions of
  * questions: multiple choice to keep words in memory, the word to type to raise its level.
  */
+/** The challenges: today's, the memory by level, the words slipping away, and the questions. */
 export function ChallengeScreen() {
+  const library = useLibraryLook();
+  return library ? (
+    <ParticleStage>
+      <ChallengeFlow />
+    </ParticleStage>
+  ) : (
+    <ChallengeFlow />
+  );
+}
+
+function ChallengeFlow() {
   const [catalog, setCatalog] = useState<Catalog | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [starting, setStarting] = useState(false);
@@ -492,6 +508,18 @@ function QuestionView({
 }) {
   const { noun } = usePackShape();
   const memory = useShared(wordMemory);
+  const stage = useOptionalStage();
+  const quizRef = useRef<HTMLElement>(null);
+  const step = session.step;
+  const result = step.name === "answered" ? (session.answers.at(-1) ?? null) : null;
+  const right = result?.correct === true;
+  // Each right answer throws its spark from the answer itself.
+  useEffect(() => {
+    if (!right || stage === null) return;
+    const box = quizRef.current?.querySelector("[data-right]")?.getBoundingClientRect();
+    if (box === undefined) return;
+    stage.burst(box.left + box.width / 2, box.top + box.height / 2, effects.right);
+  }, [right, stage]);
   const question = session.questions[session.index];
   if (question === undefined) return null;
   const card = cardOrPlaceholder(catalog, question.cardId, "common");
@@ -499,8 +527,6 @@ function QuestionView({
   const level = memory?.get(question.cardId)?.level ?? "sketch";
   const total = session.questions.length;
   const last = session.index + 1 === total;
-  const step = session.step;
-  const result = step.name === "answered" ? (session.answers.at(-1) ?? null) : null;
   const slip = step.name === "answered" && step.slip;
   const spelling =
     result?.correct && question.format === "typed" && step.name === "answered"
@@ -508,7 +534,8 @@ function QuestionView({
       : null;
 
   return (
-    <section className={styles.quiz} aria-labelledby="prompt">
+    <section ref={quizRef} className={styles.quiz} aria-labelledby="prompt">
+      <Desk className={styles.quizDesk} />
       <div className={styles.quizTop}>
         <RoundButton label="Arrêter le défi" onClick={onQuit}>
           <Icon name="close" size={20} />
@@ -574,6 +601,7 @@ function QuestionView({
                   type="button"
                   className={`${styles.choice} ${styles[state]} ${asksDefinition ? styles.choiceDefinition : `${ui.display} ${styles.choiceWord}`}`}
                   disabled={session.step.name !== "asking"}
+                  data-right={state === "right" || undefined}
                   onClick={() => onChoose(choiceId)}
                 >
                   {asksDefinition ? choice.definition : choice.word}
@@ -643,6 +671,7 @@ function TypedAnswer({
   return (
     <form className={styles.typed} onSubmit={submit}>
       <input
+        data-right={correct === true || undefined}
         className={`${ui.field} ${ui.display} ${styles.typedField} ${state}`}
         value={step.name === "answered" ? step.chosen : typed}
         maxLength={TYPED_ANSWER_MAX_LENGTH}

@@ -1,5 +1,6 @@
 import { type Catalog, cardOrPlaceholder } from "@leximon/contract/client";
 import { TYPED_ANSWER_MAX_LENGTH } from "@leximon/core";
+import { effects, room, type ToyMatterName, toyMatters, toy as toyValues } from "@leximon/tokens";
 import {
   answerTitle,
   bonusLines,
@@ -23,6 +24,7 @@ import {
   Text,
   TextInput,
   View,
+  type ViewInstance,
 } from "react-native";
 import Animated, {
   FadeInUp,
@@ -32,17 +34,32 @@ import Animated, {
   withSequence,
   withTiming,
 } from "react-native-reanimated";
+import { Desk } from "@/library/play-pieces";
 import { wordMemory } from "@/player/collection";
 import { useShared } from "@/player/shared";
 import { TAB_BAR_RISE } from "@/shell/tab-bar";
-import { alpha, colors, fontSizes, fonts, radii, space } from "@/theme";
+import { alpha, colors, fontSizes, fonts, IS_LIBRARY, paperColors, radii, space } from "@/theme";
 import { Button } from "@/ui/button";
 import { Icon } from "@/ui/icon";
 import { Panel } from "@/ui/panel";
+import { useOptionalStage } from "@/ui/stage";
 import { TextButton } from "@/ui/text-button";
+import { Leaf, Lettering, toyFace } from "@/ui/toy";
 import type { Session, Step } from "./session";
 
 type ChoiceState = "idle" | "pending" | "right" | "wrong" | "faded";
+
+/** In « La Bibliothèque », each answer is a tile of paper, of green or red leather once judged. */
+const CHOICE_MATTERS: Readonly<Record<ChoiceState, ToyMatterName>> = {
+  idle: "paper",
+  pending: "paper",
+  right: "green",
+  wrong: "red",
+  faded: "paper",
+};
+
+/** The prompt, the answers and the verdict are read on paper in « La Bibliothèque ». */
+const ink = paperColors;
 
 function choiceState(choiceId: string, answerId: string, step: Step): ChoiceState {
   if (step.name === "asking" || step.name === "recap") return "idle";
@@ -74,6 +91,17 @@ export function QuestionView({
   useEffect(() => {
     if (answered) scroll.current?.scrollToEnd({ animated: true });
   }, [answered]);
+  // A right answer throws a few sparks of gold and green from its tile.
+  const stage = useOptionalStage();
+  const rightRef = useRef<ViewInstance>(null);
+  const lastAnswer = session.step.name === "answered" ? session.answers.at(-1) : undefined;
+  const right = lastAnswer?.correct === true;
+  useEffect(() => {
+    if (!right || stage === null) return;
+    rightRef.current?.measureInWindow((x, y, width, height) =>
+      stage.burst(x + width / 2, y + height / 2, effects.right),
+    );
+  }, [right, stage]);
   const question = session.questions[session.index];
   if (question === undefined) return null;
   const card = cardOrPlaceholder(catalog, question.cardId, "common");
@@ -89,138 +117,187 @@ export function QuestionView({
       ? spellingLine(step.chosen, card.word)
       : null;
 
-  return (
-    <KeyboardAvoidingView style={styles.screen} behavior="padding">
-      <ScrollView
-        ref={scroll}
-        contentContainerStyle={styles.page}
-        keyboardShouldPersistTaps="handled"
-      >
-        <View style={styles.top}>
-          <Pressable
-            onPress={onQuit}
-            accessibilityRole="button"
-            accessibilityLabel="Arrêter le défi"
-            style={styles.round}
-          >
-            <Icon name="close" size={20} color={colors.pageInk} />
-          </Pressable>
-          <View style={styles.dots} importantForAccessibility="no-hide-descendants">
-            {session.questions.map((q, index) => {
-              const answer = session.answers[index];
-              const tone =
-                answer !== undefined
-                  ? answer.correct
-                    ? colors.success
-                    : colors.danger
-                  : index === session.index
-                    ? colors.rubric
-                    : colors.track;
-              return <View key={q.cardId} style={[styles.dot, { backgroundColor: tone }]} />;
-            })}
-          </View>
-          <View>
+  const prompt = (
+    <>
+      <Text style={styles.kicker}>{questionKicker(question.format).toUpperCase()}</Text>
+      {asksDefinition ? (
+        <Text style={styles.promptWord} accessibilityRole="header">
+          {card.word}
+        </Text>
+      ) : (
+        <Text style={styles.promptDefinition} accessibilityRole="header">
+          {result === null ? hideWordIn(card.definition, card.word) : card.definition}
+        </Text>
+      )}
+      {question.format === "typed" && result === null && (
+        <Text style={styles.hint}>{typedQuestionHint(level)}</Text>
+      )}
+      {question.counted === false && result === null && (
+        <Text style={styles.hint}>{PRACTICE_FREE_HINT}</Text>
+      )}
+    </>
+  );
+
+  const page = (
+    <ScrollView
+      ref={scroll}
+      contentContainerStyle={[styles.page, IS_LIBRARY && library.page]}
+      keyboardShouldPersistTaps="handled"
+    >
+      <View style={styles.top}>
+        <Pressable
+          onPress={onQuit}
+          accessibilityRole="button"
+          accessibilityLabel="Arrêter le défi"
+          style={[styles.round, IS_LIBRARY && [library.round, toyFace("paper", "round")]]}
+        >
+          <Icon name="close" size={20} color={IS_LIBRARY ? ink.pageInk : colors.pageInk} />
+        </Pressable>
+        <View style={styles.dots} importantForAccessibility="no-hide-descendants">
+          {session.questions.map((q, index) => {
+            const answer = session.answers[index];
+            const tone =
+              answer !== undefined
+                ? answer.correct
+                  ? DOTS.right
+                  : DOTS.wrong
+                : index === session.index
+                  ? DOTS.current
+                  : DOTS.waiting;
+            return (
+              <View
+                key={q.cardId}
+                style={[styles.dot, IS_LIBRARY && library.dot, { backgroundColor: tone }]}
+              />
+            );
+          })}
+        </View>
+        <View>
+          {IS_LIBRARY ? (
+            <Lettering size={17}>{`${session.index + 1}/${total}`}</Lettering>
+          ) : (
             <Text style={styles.position}>
               {session.index + 1}/{total}
             </Text>
-            {result?.correct && result.progress.xpGained > 0 && (
-              <XpFloat key={session.answers.length} xp={result.progress.xpGained} />
-            )}
-          </View>
+          )}
+          {result?.correct && result.progress.xpGained > 0 && (
+            <XpFloat key={session.answers.length} xp={result.progress.xpGained} />
+          )}
         </View>
+      </View>
 
-        <Panel>
-          <Text style={styles.kicker}>{questionKicker(question.format).toUpperCase()}</Text>
-          {asksDefinition ? (
-            <Text style={styles.promptWord} accessibilityRole="header">
-              {card.word}
-            </Text>
-          ) : (
-            <Text style={styles.promptDefinition} accessibilityRole="header">
-              {result === null ? hideWordIn(card.definition, card.word) : card.definition}
-            </Text>
-          )}
-          {question.format === "typed" && result === null && (
-            <Text style={styles.hint}>{typedQuestionHint(level)}</Text>
-          )}
-          {question.counted === false && result === null && (
-            <Text style={styles.hint}>{PRACTICE_FREE_HINT}</Text>
-          )}
-        </Panel>
+      {IS_LIBRARY ? <Leaf style={library.prompt}>{prompt}</Leaf> : <Panel>{prompt}</Panel>}
 
-        {question.format === "typed" ? (
-          <TypedAnswer
-            key={question.cardId}
-            step={step}
-            correct={result?.correct ?? null}
-            onAnswer={onChoose}
-          />
-        ) : (
-          <View style={styles.choices}>
-            {question.choices.map((choiceId) => {
-              const choice = cardOrPlaceholder(catalog, choiceId, "common");
-              const state = choiceState(choiceId, question.cardId, step);
-              return (
-                <Reaction key={choiceId} kind={state}>
-                  <Pressable
-                    disabled={step.name !== "asking"}
-                    onPress={() => onChoose(choiceId)}
-                    accessibilityRole="button"
-                    style={({ pressed }) => [
-                      styles.choice,
-                      choiceStyles[state],
-                      pressed && styles.choicePressed,
+      {question.format === "typed" ? (
+        <TypedAnswer
+          key={question.cardId}
+          step={step}
+          correct={result?.correct ?? null}
+          onAnswer={onChoose}
+        />
+      ) : (
+        <View style={styles.choices}>
+          {question.choices.map((choiceId, index) => {
+            const choice = cardOrPlaceholder(catalog, choiceId, "common");
+            const state = choiceState(choiceId, question.cardId, step);
+            const judged = state === "right" || state === "wrong";
+            return (
+              <Reaction key={choiceId} kind={state}>
+                <Pressable
+                  ref={state === "right" ? rightRef : undefined}
+                  disabled={step.name !== "asking"}
+                  onPress={() => onChoose(choiceId)}
+                  accessibilityRole="button"
+                  style={({ pressed }) => [
+                    styles.choice,
+                    choiceStyles[state],
+                    pressed && styles.choicePressed,
+                    IS_LIBRARY && [
+                      library.choice,
+                      toyFace(CHOICE_MATTERS[state], "tile"),
+                      state === "pending" && library.pending,
+                      state === "faded" && library.faded,
+                      pressed && library.pressed,
+                    ],
+                  ]}
+                >
+                  {IS_LIBRARY && (
+                    <View style={[library.disc, toyFace("gold", "round")]}>
+                      <Lettering size={15}>{String.fromCharCode(97 + index)}</Lettering>
+                    </View>
+                  )}
+                  <Text
+                    style={[
+                      asksDefinition ? styles.choiceDefinition : styles.choiceWord,
+                      IS_LIBRARY && library.choiceText,
+                      IS_LIBRARY && judged && library.onLeather,
                     ]}
                   >
-                    <Text style={asksDefinition ? styles.choiceDefinition : styles.choiceWord}>
-                      {asksDefinition ? choice.definition : choice.word}
-                    </Text>
-                  </Pressable>
-                </Reaction>
-              );
-            })}
-          </View>
-        )}
-
-        {error !== null && (
-          <Text style={styles.error} accessibilityRole="alert">
-            {error}
-          </Text>
-        )}
-        {result !== null && (
-          <Animated.View
-            entering={FadeInUp.duration(200)}
-            style={[styles.feedback, result.correct ? styles.good : styles.bad]}
-            accessibilityLiveRegion="polite"
-          >
-            <Text style={styles.feedbackTitle}>
-              {answerTitle(result.correct, result.progress.xpGained, slip)}
-            </Text>
-            <Text style={styles.feedbackText}>
-              {result.correct
-                ? (spelling ?? frequencyLine(card.perBillion))
-                : `La bonne réponse était « ${asksDefinition ? card.definition : card.word} »`}
-            </Text>
-            {result.levelUp && (
-              <Animated.Text
-                entering={FadeInUp.delay(200).duration(240)}
-                style={[styles.feedbackExtra, styles.risen]}
-              >
-                {levelUpLine(card.word, result.level)}
-              </Animated.Text>
-            )}
-            {[levelUpLabel(result.progress), ...bonusLines(result.bonus, PACK_NOUNS.sachet)].map(
-              (line) =>
-                line !== null && (
-                  <Text key={line} style={styles.feedbackExtra}>
-                    {line}
+                    {asksDefinition ? choice.definition : choice.word}
                   </Text>
-                ),
-            )}
-            <Button label={last ? "Voir le résultat" : "Question suivante"} onPress={onNext} />
-          </Animated.View>
-        )}
-      </ScrollView>
+                </Pressable>
+              </Reaction>
+            );
+          })}
+        </View>
+      )}
+
+      {error !== null && (
+        <Text style={styles.error} accessibilityRole="alert">
+          {error}
+        </Text>
+      )}
+      {result !== null && (
+        <Animated.View
+          entering={FadeInUp.duration(200)}
+          style={[
+            styles.feedback,
+            result.correct ? styles.good : styles.bad,
+            IS_LIBRARY && [library.feedback, result.correct ? library.good : library.bad],
+          ]}
+          accessibilityLiveRegion="polite"
+        >
+          <Text style={styles.feedbackTitle}>
+            {answerTitle(result.correct, result.progress.xpGained, slip)}
+          </Text>
+          <Text style={styles.feedbackText}>
+            {result.correct
+              ? (spelling ?? frequencyLine(card.perBillion))
+              : `La bonne réponse était « ${asksDefinition ? card.definition : card.word} »`}
+          </Text>
+          {result.levelUp && (
+            <Animated.Text
+              entering={FadeInUp.delay(200).duration(240)}
+              style={[styles.feedbackExtra, styles.risen]}
+            >
+              {levelUpLine(card.word, result.level)}
+            </Animated.Text>
+          )}
+          {[levelUpLabel(result.progress), ...bonusLines(result.bonus, PACK_NOUNS.sachet)].map(
+            (line) =>
+              line !== null && (
+                <Text key={line} style={styles.feedbackExtra}>
+                  {line}
+                </Text>
+              ),
+          )}
+          <Button label={last ? "Voir le résultat" : "Question suivante"} onPress={onNext} />
+        </Animated.View>
+      )}
+    </ScrollView>
+  );
+
+  return (
+    <KeyboardAvoidingView style={styles.screen} behavior="padding">
+      {IS_LIBRARY ? (
+        <View style={library.room}>
+          <Desk style={StyleSheet.absoluteFill} />
+          {/* The questions slide under the frame, not over it. */}
+          <View style={library.inside}>{page}</View>
+        </View>
+      ) : (
+        page
+      )}
     </KeyboardAvoidingView>
   );
 }
@@ -304,13 +381,19 @@ function TypedAnswer({
           styles.typedField,
           correct === true && styles.typedRight,
           correct === false && styles.typedWrong,
+          IS_LIBRARY && library.typedField,
+          IS_LIBRARY &&
+            correct !== null && [
+              library.onLeather,
+              correct ? library.typedRight : library.typedWrong,
+            ],
         ]}
         value={step.name === "answered" ? step.chosen : typed}
         onChangeText={setTyped}
         maxLength={TYPED_ANSWER_MAX_LENGTH}
         accessibilityLabel="Le mot"
         placeholder="Le mot"
-        placeholderTextColor={colors.pageInkFaint}
+        placeholderTextColor={ink.pageInkFaint}
         selectionColor={colors.rubric}
         autoComplete="off"
         autoCapitalize="none"
@@ -363,25 +446,25 @@ const styles = StyleSheet.create({
     fontFamily: fonts.ui.extrabold,
     fontSize: fontSizes.caption,
     letterSpacing: 2,
-    color: colors.pageInkMuted,
+    color: ink.pageInkMuted,
   },
   promptWord: {
     fontFamily: fonts.display,
     fontSize: fontSizes.headingLarge,
     lineHeight: 40,
-    color: colors.pageInk,
+    color: ink.pageInk,
   },
   promptDefinition: {
     fontFamily: fonts.text.regular,
     fontSize: fontSizes.titleSmall,
     lineHeight: 28,
-    color: colors.pageInk,
+    color: ink.pageInk,
   },
   hint: {
     fontFamily: fonts.ui.medium,
     fontSize: fontSizes.small,
     lineHeight: 19,
-    color: colors.pageInkMuted,
+    color: ink.pageInkMuted,
   },
   choices: { gap: space.s5 },
   choice: {
@@ -395,12 +478,12 @@ const styles = StyleSheet.create({
     backgroundColor: colors.pageRaised,
   },
   choicePressed: { borderColor: colors.gilt },
-  choiceWord: { fontFamily: fonts.display, fontSize: fontSizes.title, color: colors.pageInk },
+  choiceWord: { fontFamily: fonts.display, fontSize: fontSizes.title, color: ink.pageInk },
   choiceDefinition: {
     fontFamily: fonts.text.regular,
     fontSize: fontSizes.bodyLarge,
     lineHeight: 22,
-    color: colors.pageInk,
+    color: ink.pageInk,
   },
   typed: { gap: space.s6 },
   typedField: {
@@ -429,13 +512,13 @@ const styles = StyleSheet.create({
   feedbackTitle: {
     fontFamily: fonts.display,
     fontSize: fontSizes.titleLarge,
-    color: colors.pageInk,
+    color: ink.pageInk,
   },
   feedbackText: {
     fontFamily: fonts.text.regular,
     fontSize: fontSizes.lead,
     lineHeight: 24,
-    color: colors.pageInk,
+    color: ink.pageInk,
   },
   risen: { fontFamily: fonts.ui.extrabold },
   xpFloat: {
@@ -452,6 +535,80 @@ const styles = StyleSheet.create({
     fontFamily: fonts.ui.bold,
     fontSize: fontSizes.body,
     lineHeight: 21,
-    color: colors.rubric,
+    color: ink.rubric,
   },
+});
+
+/** The field once judged, cut in green or red leather like a tile. */
+function leather(matter: "green" | "red") {
+  const { top, bottom, edge } = toyMatters[matter];
+  // A text field on Android draws no gradient: the plain leather shows under it.
+  return {
+    backgroundColor: bottom,
+    backgroundImage: `linear-gradient(180deg, ${top} 0%, ${top} 47%, ${bottom} 53%, ${bottom} 100%)`,
+    boxShadow: `inset 0 -4px 0 ${edge}`,
+  };
+}
+
+const DOTS = IS_LIBRARY
+  ? {
+      right: toyMatters.green.top,
+      wrong: toyMatters.red.top,
+      current: toyMatters.paper.top,
+      waiting: toyMatters.dark.bottom,
+    }
+  : { right: colors.success, wrong: colors.danger, current: colors.rubric, waiting: colors.track };
+
+/** « La Bibliothèque »: the questions asked on the desk, the answers as tiles of paper. */
+const library = StyleSheet.create({
+  room: { flex: 1, marginHorizontal: 6, marginBottom: TAB_BAR_RISE },
+  inside: {
+    flex: 1,
+    margin: room.desk.frameWidth,
+    borderRadius: room.desk.radius - room.desk.frameWidth,
+    overflow: "hidden",
+  },
+  page: { paddingHorizontal: space.s6, paddingTop: space.s7, paddingBottom: space.s12 },
+  round: { borderWidth: toyValues.outlineWidth },
+  dot: { height: 12, borderWidth: 2, borderColor: toyValues.outline },
+  prompt: { padding: space.s9, gap: space.s6 },
+  choice: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: space.s6,
+    paddingHorizontal: space.s6,
+    borderWidth: toyValues.outlineWidth,
+    marginBottom: 4,
+  },
+  pending: { borderColor: toyMatters.gold.top },
+  faded: { opacity: 0.55 },
+  pressed: { transform: [{ translateY: 3 }] },
+  disc: {
+    width: 32,
+    height: 32,
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 2,
+  },
+  choiceText: { flex: 1 },
+  onLeather: { color: colors.inkOnColor },
+  typedField: {
+    borderWidth: toyValues.outlineWidth,
+    borderColor: toyValues.outline,
+    backgroundColor: colors.paper,
+    boxShadow: `inset 0 3px 0 ${toyMatters.paper.bottom}`,
+  },
+  typedRight: leather("green"),
+  typedWrong: leather("red"),
+  feedback: {
+    overflow: "hidden",
+    borderWidth: toyValues.outlineWidth,
+    borderLeftWidth: 10,
+    borderColor: toyValues.outline,
+    borderRadius: 16,
+    backgroundColor: colors.paper,
+    boxShadow: `inset 0 -4px 0 ${toyMatters.paper.bottom}, 0 4px 0 ${toyValues.outline}`,
+  },
+  good: { borderLeftColor: toyMatters.green.bottom },
+  bad: { borderLeftColor: toyMatters.red.bottom },
 });

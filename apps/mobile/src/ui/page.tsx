@@ -1,10 +1,13 @@
+import { room } from "@leximon/tokens";
 import { router } from "expo-router";
 import type { ReactNode } from "react";
 import { KeyboardAvoidingView, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { Desk, Room } from "@/library/play-pieces";
 import { TAB_BAR_RISE } from "@/shell/tab-bar";
-import { colors, fontSizes, fonts, space } from "@/theme";
+import { colors, fontSizes, fonts, IS_LIBRARY, space } from "@/theme";
 import { Icon } from "./icon";
+import { Lettering } from "./toy";
 
 /** Leaves the page; a page opened from a link, with nothing behind it, leads to the game. */
 function back() {
@@ -19,6 +22,7 @@ export function Page({
   children,
   closable = true,
   inTab = false,
+  desk = false,
 }: {
   readonly kicker?: string;
   readonly title: string;
@@ -27,42 +31,68 @@ export function Page({
   readonly closable?: boolean;
   /** Under the top bar and above the tabs, which already leave room and the way out. */
   readonly inTab?: boolean;
+  /** In « La Bibliothèque », the page lies on the desk of the reading room: a card, read up close. */
+  readonly desk?: boolean;
 }) {
   const insets = useSafeAreaInsets();
-  return (
-    <KeyboardAvoidingView style={styles.page} behavior="padding">
-      <ScrollView
-        keyboardShouldPersistTaps="handled"
-        contentContainerStyle={[
-          styles.content,
-          inTab
-            ? { paddingTop: space.s6, paddingBottom: TAB_BAR_RISE + 24 }
+  const onDesk = IS_LIBRARY && desk && !inTab;
+  const scroll = (
+    <ScrollView
+      keyboardShouldPersistTaps="handled"
+      contentContainerStyle={[
+        styles.content,
+        inTab
+          ? { paddingTop: space.s6, paddingBottom: TAB_BAR_RISE + 24 }
+          : onDesk
+            ? { paddingTop: space.s4, paddingBottom: space.s16 }
             : { paddingTop: insets.top + 8, paddingBottom: insets.bottom + 32 },
-        ]}
-      >
-        {!inTab && (
-          <View style={styles.top}>
-            {closable && (
-              <Pressable
-                onPress={back}
-                style={styles.back}
-                accessibilityRole="button"
-                accessibilityLabel="Retour"
-                hitSlop={8}
-              >
-                <Icon name="back" size={22} color={colors.pageInk} />
-              </Pressable>
-            )}
-          </View>
-        )}
-        {kicker !== undefined && <Text style={styles.kicker}>{kicker.toUpperCase()}</Text>}
+      ]}
+    >
+      {!inTab && (
+        <View style={styles.top}>
+          {closable && (
+            <Pressable
+              onPress={back}
+              style={styles.back}
+              accessibilityRole="button"
+              accessibilityLabel="Retour"
+              hitSlop={8}
+            >
+              <Icon name="back" size={22} color={colors.pageInk} />
+            </Pressable>
+          )}
+        </View>
+      )}
+      {kicker !== undefined && <Text style={styles.kicker}>{kicker.toUpperCase()}</Text>}
+      {onDesk ? (
+        <View accessibilityRole="header">
+          <Lettering size={fontSizes.headingLarge}>{title}</Lettering>
+        </View>
+      ) : (
         <Text style={styles.title} accessibilityRole="header">
           {title}
         </Text>
-        <View style={styles.body}>{children}</View>
-      </ScrollView>
+      )}
+      <View style={styles.body}>{children}</View>
+    </ScrollView>
+  );
+  return (
+    <KeyboardAvoidingView style={styles.page} behavior="padding">
+      {onDesk ? (
+        <Room>
+          <View
+            style={[styles.desk, { marginTop: insets.top + 6, marginBottom: insets.bottom + 6 }]}
+          >
+            <Desk style={StyleSheet.absoluteFill} />
+            {/* The page slides under the frame, not over it. */}
+            <View style={styles.deskInside}>{scroll}</View>
+          </View>
+        </Room>
+      ) : (
+        scroll
+      )}
       {/* The content scrolls under the status bar: a band of background keeps the clock legible. */}
-      {!inTab && <View style={[styles.statusBand, { height: insets.top }]} />}
+      {!inTab && !onDesk && <View style={[styles.statusBand, { height: insets.top }]} />}
     </KeyboardAvoidingView>
   );
 }
@@ -98,6 +128,13 @@ const styles = StyleSheet.create({
     backgroundColor: colors.page,
   },
   content: { paddingHorizontal: space.s12 },
+  desk: { flex: 1, marginHorizontal: 6 },
+  deskInside: {
+    flex: 1,
+    margin: room.desk.frameWidth,
+    borderRadius: room.desk.radius - room.desk.frameWidth,
+    overflow: "hidden",
+  },
   top: { height: 44, flexDirection: "row", alignItems: "center", marginBottom: space.s6 },
   back: {
     width: 40,

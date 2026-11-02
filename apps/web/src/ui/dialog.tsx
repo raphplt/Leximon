@@ -45,6 +45,8 @@ export function Dialog({
     <dialog
       ref={ref}
       className={styles[variant]}
+      // A card sheet lies on the desk; every other window is a leaf of paper.
+      data-paper={variant === "wide" ? undefined : ""}
       aria-label={title}
       onCancel={(event) => {
         // Escape: React keeps the state, the dialog closes through it. A dialog opened from

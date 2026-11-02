@@ -33,10 +33,12 @@ import { useNow, useShared } from "@/player/shared";
 import { publishProgress, wallet } from "@/player/state";
 import { RiddleEntry } from "@/screens/riddle/riddle-entry";
 import { TAB_BAR_RISE } from "@/shell/tab-bar";
-import { alpha, colors, fontSizes, fonts, space } from "@/theme";
+import { alpha, colors, fontSizes, fonts, IS_LIBRARY, paperColors, space } from "@/theme";
 import { Button } from "@/ui/button";
 import { Icon } from "@/ui/icon";
 import { Panel } from "@/ui/panel";
+import { ParticleStage } from "@/ui/stage";
+import { Lettering } from "@/ui/toy";
 import { ChallengeRecap } from "./challenge-recap";
 import { takeAlbumPractice } from "./pending-practice";
 import { PracticeSection } from "./practice-section";
@@ -65,7 +67,20 @@ function reviewSession(
  * Défis: the daily goal, the player's memory, the words slipping away, and the sessions of
  * questions: multiple choice to keep words in memory, the word to type to raise its level.
  */
-export function ChallengeScreen({
+export function ChallengeScreen(props: {
+  readonly word: string | null;
+  readonly fromAlbum: boolean;
+}) {
+  return IS_LIBRARY ? (
+    <ParticleStage>
+      <ChallengeFlow {...props} />
+    </ParticleStage>
+  ) : (
+    <ChallengeFlow {...props} />
+  );
+}
+
+function ChallengeFlow({
   word,
   fromAlbum,
 }: {
@@ -246,9 +261,15 @@ export function ChallengeScreen({
 
   return (
     <ScrollView contentContainerStyle={styles.page}>
-      <Text style={styles.title} accessibilityRole="header">
-        Défis
-      </Text>
+      {IS_LIBRARY ? (
+        <View accessibilityRole="header">
+          <Lettering size={fontSizes.heading}>Défis</Lettering>
+        </View>
+      ) : (
+        <Text style={styles.title} accessibilityRole="header">
+          Défis
+        </Text>
+      )}
       <DailyCard starting={starting} now={now} onStart={() => void start()} />
       {notice !== null && (
         <Text style={styles.notice} accessibilityLiveRegion="polite">
@@ -293,7 +314,7 @@ function DailyCard({
       ? null
       : outlookLine(challengeOutlook(memory, owned.keys(), now));
   return (
-    <Panel style={styles.daily}>
+    <Panel paper style={styles.daily}>
       <View style={styles.dailyHead}>
         <View style={styles.dailyTexts}>
           <Text style={styles.kicker}>DÉFI DU JOUR</Text>
@@ -301,7 +322,7 @@ function DailyCard({
           <Text style={styles.dailyText}>{view?.text ?? " "}</Text>
         </View>
         <View style={styles.dailyIcon}>
-          <Icon name="sachet" size={30} color={colors.rubric} />
+          <Icon name="sachet" size={30} color={ink.rubric} />
         </View>
       </View>
       <View style={styles.bars} importantForAccessibility="no-hide-descendants">
@@ -339,7 +360,7 @@ function MemoryPanel({ now }: { readonly now: number }) {
   const counts = memoryCounts(owned?.keys() ?? [], levels);
   const shares = levelShares(counts);
   return (
-    <Panel>
+    <Panel paper>
       <Text style={styles.kicker}>TA MÉMOIRE</Text>
       <View style={styles.levels}>
         {LEVELS.map(({ level, label, icon }) => (
@@ -357,7 +378,7 @@ function MemoryPanel({ now }: { readonly now: number }) {
               key={level}
               style={{
                 flexGrow: shares[level],
-                backgroundColor: level === "sketch" ? colors.track : masteryColors[level],
+                backgroundColor: level === "sketch" ? ink.track : masteryColors[level],
               }}
             />
           ))}
@@ -391,7 +412,7 @@ function Escaping({
       {words.map((entry) => {
         const card = cardOrPlaceholder(catalog, entry.cardId, "common");
         return (
-          <Panel key={entry.cardId} style={styles.slipping}>
+          <Panel key={entry.cardId} paper style={styles.slipping}>
             <Pressable
               onPress={() => router.push({ pathname: "/carte/[id]", params: { id: card.id } })}
               accessibilityRole="button"
@@ -426,6 +447,9 @@ function Escaping({
   );
 }
 
+/** Everything here is read on paper in « La Bibliothèque ». */
+const ink = paperColors;
+
 const styles = StyleSheet.create({
   page: {
     gap: space.s8,
@@ -438,7 +462,7 @@ const styles = StyleSheet.create({
     fontFamily: fonts.ui.extrabold,
     fontSize: fontSizes.caption,
     letterSpacing: 2,
-    color: colors.pageInkMuted,
+    color: ink.pageInkMuted,
   },
   daily: { gap: space.s8 },
   dailyHead: { flexDirection: "row", gap: space.s6 },
@@ -447,13 +471,13 @@ const styles = StyleSheet.create({
     fontFamily: fonts.display,
     fontSize: fontSizes.titleLarge,
     lineHeight: 30,
-    color: colors.pageInk,
+    color: ink.pageInk,
   },
   dailyText: {
     fontFamily: fonts.ui.medium,
     fontSize: fontSizes.body,
     lineHeight: 21,
-    color: colors.pageInkMuted,
+    color: ink.pageInkMuted,
   },
   dailyIcon: {
     width: 54,
@@ -461,13 +485,13 @@ const styles = StyleSheet.create({
     borderRadius: 27,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: alpha(colors.gilt, 0.14),
+    backgroundColor: alpha(ink.gilt, 0.14),
   },
   bars: { flexDirection: "row", gap: space.s3 },
   bar: { flex: 1, height: 8, borderRadius: 4 },
-  right: { backgroundColor: colors.success },
-  wrong: { backgroundColor: colors.danger },
-  empty: { backgroundColor: colors.well },
+  right: { backgroundColor: ink.success },
+  wrong: { backgroundColor: ink.danger },
+  empty: { backgroundColor: ink.well },
   notice: {
     fontFamily: fonts.ui.semibold,
     fontSize: fontSizes.body,
@@ -482,14 +506,14 @@ const styles = StyleSheet.create({
   },
   levels: { flexDirection: "row", justifyContent: "space-between" },
   level: { flex: 1, alignItems: "center", gap: space.s2 },
-  levelCount: { fontFamily: fonts.display, fontSize: fontSizes.titleLarge, color: colors.pageInk },
-  levelLabel: { fontFamily: fonts.ui.bold, fontSize: fontSizes.small, color: colors.pageInkMuted },
+  levelCount: { fontFamily: fonts.display, fontSize: fontSizes.titleLarge, color: ink.pageInk },
+  levelLabel: { fontFamily: fonts.ui.bold, fontSize: fontSizes.small, color: ink.pageInkMuted },
   shares: { flexDirection: "row", gap: 3, height: 8, borderRadius: 4, overflow: "hidden" },
   note: {
     fontFamily: fonts.ui.medium,
     fontSize: fontSizes.label,
     lineHeight: 20,
-    color: colors.pageInkMuted,
+    color: ink.pageInkMuted,
   },
   escaping: { gap: space.s5 },
   subtitle: {
@@ -500,20 +524,20 @@ const styles = StyleSheet.create({
   },
   slipping: { flexDirection: "row", alignItems: "center", gap: space.s7, padding: space.s6 },
   slippingText: { flex: 1, gap: space.s1 },
-  slippingWord: { fontFamily: fonts.display, fontSize: fontSizes.subtitle, color: colors.pageInk },
+  slippingWord: { fontFamily: fonts.display, fontSize: fontSizes.subtitle, color: ink.pageInk },
   slippingWhen: {
     fontFamily: fonts.ui.semibold,
     fontSize: fontSizes.small,
-    color: colors.pageInkMuted,
+    color: ink.pageInkMuted,
   },
-  slippingRise: { fontFamily: fonts.ui.bold, fontSize: fontSizes.small, color: colors.rubric },
+  slippingRise: { fontFamily: fonts.ui.bold, fontSize: fontSizes.small, color: ink.rubric },
   reviewButton: {
     minHeight: 38,
     paddingHorizontal: space.s7,
     borderRadius: 19,
     borderWidth: 2,
-    borderColor: colors.track,
+    borderColor: ink.track,
     justifyContent: "center",
   },
-  reviewText: { fontFamily: fonts.ui.bold, fontSize: fontSizes.label, color: colors.pageInk },
+  reviewText: { fontFamily: fonts.ui.bold, fontSize: fontSizes.label, color: ink.pageInk },
 });

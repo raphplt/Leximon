@@ -14,7 +14,7 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 import { api } from "@/api/client";
 import { useShared } from "@/player/shared";
 import { progress } from "@/player/state";
-import { colors, fontSizes, fonts, radii, space } from "@/theme";
+import { fontSizes, fonts, paperColors, radii, space } from "@/theme";
 import { Panel } from "@/ui/panel";
 
 /** Series on a scope the player picks. Read on arrival: the screen comes back after each series. */
@@ -44,7 +44,7 @@ export function PracticeSection({
   const view = practiceView(summary, (id) => collectionName(catalog, id), themesOpen, now);
   const choices = [...view.mine, ...view.collections, ...view.themes];
   return (
-    <Panel style={styles.panel}>
+    <Panel paper style={styles.panel}>
       <Text style={styles.kicker} accessibilityRole="header">
         S'ENTRAÎNER
       </Text>
@@ -78,34 +78,37 @@ export function PracticeSection({
   );
 }
 
+/** Everything here is read on paper in « La Bibliothèque ». */
+const ink = paperColors;
+
 const styles = StyleSheet.create({
   panel: { gap: space.s5 },
   kicker: {
     fontFamily: fonts.ui.extrabold,
     fontSize: fontSizes.caption,
     letterSpacing: 2,
-    color: colors.pageInkMuted,
+    color: ink.pageInkMuted,
   },
   line: {
     fontFamily: fonts.ui.medium,
     fontSize: fontSizes.body,
     lineHeight: 21,
-    color: colors.pageInkMuted,
+    color: ink.pageInkMuted,
   },
   choice: {
     paddingVertical: space.s6,
     paddingHorizontal: space.s7,
     borderWidth: 1,
-    borderColor: colors.rule,
+    borderColor: ink.rule,
     borderRadius: radii.xl,
   },
-  pressed: { borderColor: colors.gilt },
-  label: { fontFamily: fonts.ui.extrabold, fontSize: fontSizes.body, color: colors.pageInk },
-  detail: { fontFamily: fonts.ui.medium, fontSize: fontSizes.small, color: colors.pageInkMuted },
+  pressed: { borderColor: ink.gilt },
+  label: { fontFamily: fonts.ui.extrabold, fontSize: fontSizes.body, color: ink.pageInk },
+  detail: { fontFamily: fonts.ui.medium, fontSize: fontSizes.small, color: ink.pageInkMuted },
   note: {
     fontFamily: fonts.ui.medium,
     fontSize: fontSizes.small,
     lineHeight: 18,
-    color: colors.pageInkFaint,
+    color: ink.pageInkFaint,
   },
 });

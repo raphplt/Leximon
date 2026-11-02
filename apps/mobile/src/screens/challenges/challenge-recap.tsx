@@ -20,7 +20,7 @@ import { dailyChallenge, refreshIfRead } from "@/player/collection";
 import { useShared } from "@/player/shared";
 import { myClan } from "@/player/state";
 import { TAB_BAR_RISE } from "@/shell/tab-bar";
-import { colors, fontSizes, fonts, space } from "@/theme";
+import { fontSizes, fonts, paperColors, space } from "@/theme";
 import { Button } from "@/ui/button";
 import { Icon } from "@/ui/icon";
 import { Panel } from "@/ui/panel";
@@ -82,7 +82,7 @@ export function ChallengeRecap({
     );
   return (
     <ScrollView contentContainerStyle={styles.page}>
-      <Panel style={styles.recap}>
+      <Panel paper style={styles.recap}>
         <Text style={styles.kicker}>{practice ? "ENTRAÎNEMENT TERMINÉ" : "DÉFI TERMINÉ"}</Text>
         <Text style={styles.score} accessibilityLabel={sessionScore(answers)}>
           {right}/{answers.length}
@@ -90,7 +90,7 @@ export function ChallengeRecap({
         {xp !== null && <Text style={styles.xp}>{xp}</Text>}
         {clanShare !== null && (
           <View style={styles.line}>
-            <Icon name="clan" size={18} color={colors.pageInk} />
+            <Icon name="clan" size={18} color={ink.pageInk} />
             <Text style={styles.lineText}>{clanShare}</Text>
           </View>
         )}
@@ -99,7 +99,7 @@ export function ChallengeRecap({
             entering={FadeInUp.delay(RECAP_BONUS_MS).duration(320)}
             style={styles.line}
           >
-            <Icon name="sachet" size={26} color={colors.rubric} />
+            <Icon name="sachet" size={26} color={ink.rubric} />
             <Text style={[styles.lineText, styles.won]}>{bonus}</Text>
           </Animated.View>
         ) : (
@@ -121,6 +121,9 @@ export function ChallengeRecap({
   );
 }
 
+/** Everything here is read on paper in « La Bibliothèque ». */
+const ink = paperColors;
+
 const styles = StyleSheet.create({
   page: {
     padding: space.s8,
@@ -133,29 +136,29 @@ const styles = StyleSheet.create({
     fontFamily: fonts.ui.extrabold,
     fontSize: fontSizes.caption,
     letterSpacing: 2,
-    color: colors.pageInkMuted,
+    color: ink.pageInkMuted,
   },
   score: {
     fontFamily: fonts.display,
     fontSize: fontSizes.display,
-    color: colors.pageInk,
+    color: ink.pageInk,
     textAlign: "center",
   },
-  xp: { fontFamily: fonts.display, fontSize: fontSizes.titleLarge, color: colors.rubric },
+  xp: { fontFamily: fonts.display, fontSize: fontSizes.titleLarge, color: ink.rubric },
   line: { flexDirection: "row", alignItems: "center", gap: space.s4 },
-  lineText: { fontFamily: fonts.ui.bold, fontSize: fontSizes.bodyLarge, color: colors.pageInk },
-  won: { color: colors.rubric },
+  lineText: { fontFamily: fonts.ui.bold, fontSize: fontSizes.bodyLarge, color: ink.pageInk },
+  won: { color: ink.rubric },
   lost: {
     fontFamily: fonts.text.italic,
     fontSize: fontSizes.bodyLarge,
     lineHeight: 22,
-    color: colors.pageInkMuted,
+    color: ink.pageInkMuted,
     textAlign: "center",
   },
   up: {
     fontFamily: fonts.ui.bold,
     fontSize: fontSizes.body,
-    color: colors.success,
+    color: ink.success,
     textAlign: "center",
   },
   actions: { alignSelf: "stretch", gap: space.s5, marginTop: space.s4 },

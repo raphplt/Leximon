@@ -1,5 +1,6 @@
 import { Pressable, StyleSheet, Text } from "react-native";
-import { colors, fontSizes, fonts, space } from "@/theme";
+import { colors, fontSizes, fonts, IS_LIBRARY, space } from "@/theme";
+import { Lettering, Toy } from "./toy";
 
 /**
  * The gold button of the main action, raised on its darker edge; `secondary` is outlined, and
@@ -19,6 +20,22 @@ export function Button({
   readonly danger?: boolean;
 }) {
   const outlined = secondary || danger;
+  if (IS_LIBRARY) {
+    return (
+      <Toy
+        matter={danger ? "red" : secondary ? "paper" : disabled ? "locked" : "gold"}
+        style={styles.toy}
+        bodyStyle={styles.toyBody}
+        accessibilityRole="button"
+        accessibilityLabel={label}
+        accessibilityState={{ disabled }}
+        disabled={disabled}
+        onPress={onPress}
+      >
+        <Lettering size={17}>{label}</Lettering>
+      </Toy>
+    );
+  }
   return (
     <Pressable
       accessibilityRole="button"
@@ -62,4 +79,6 @@ const styles = StyleSheet.create({
   pressed: { borderBottomWidth: 1, marginTop: 3 },
   disabled: { opacity: 0.45 },
   label: { fontFamily: fonts.ui.extrabold, fontSize: fontSizes.bodyLarge },
+  toy: { minHeight: 52 },
+  toyBody: { paddingHorizontal: space.s12, paddingVertical: space.s4 },
 });

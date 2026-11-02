@@ -177,6 +177,13 @@ Seulement ce dont l'écran Jouer et l'ouverture ont besoin : bandeau du haut (po
 - sur le mobile, pas de tuile des réglages à côté du sachet (le compte en tient lieu), comme dans l'écran actuel ;
 - sur un petit téléphone, les cartes du bilan rapetissent (136 px de large au moins) pour que les boutons tiennent au-dessus des onglets. Le propriétaire les juge en jouant, sur son téléphone, avant qu'on touche aux autres écrans. Les pièces de lecture (feuilles, listes, onglets, champs, fenêtres) naissent ensuite avec les écrans qui les utilisent, et `/planches` les montre au fur et à mesure.
 
+**Album, fiche de carte et défis faits le 2026-11-02**, sur le web (grand écran et téléphone) et le mobile en même temps. Les pièces communes prennent l'allure d'un coup : boutons, puces et onglets deviennent des objets, un panneau devient une feuille où tout s'écrit à l'encre brune (sur le web, tout ce qui porte `data-paper` ; sur le mobile, un panneau `paper` lu avec `paperColors`). Écarts :
+
+- les cartes de l'album sont posées sur le sous-main vert, pas sur une feuille : une feuille crème sous des cartes crème les noyait. Les onglets de collection et la recherche sont en papier, la collection choisie en or ;
+- la fiche de carte est un sous-main : sur le grand écran la carte à gauche et ses renseignements sur une feuille à droite, sur le téléphone la feuille sous la carte ;
+- les questions des défis se posent sur le sous-main : l'énoncé sur une feuille, chaque proposition sur une tuile de papier marquée a, b, c ou d dans une pastille d'or, la bonne en cuir vert (avec son éclat), la mauvaise en cuir rouge, le verdict sur une feuille bordée de vert ou de rouge. L'accueil des défis, l'énigme du jour, l'entraînement et le bilan d'une série sont sur des feuilles posées dans la salle ;
+- la barre de lettres de l'album et la frise des défis n'existent pas encore : leur place est laissée, elles viendront avec leurs chantiers.
+
 | Écran | Attendu |
 |---|---|
 | Jouer | La maquette A2, avec les vraies données : collections, stock, défi du jour, récompenses, verrous par niveau |

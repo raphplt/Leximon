@@ -1,6 +1,14 @@
 import type { Catalog } from "@leximon/contract/client";
 import { PRACTICE_SCHEDULE, practiceRulesAt, type Rarity } from "@leximon/core";
-import { collectionTone, masteryColors, rarityStyles, solidColor } from "@leximon/tokens";
+import {
+  collectionTone,
+  masteryColors,
+  rarityStyles,
+  room,
+  solidColor,
+  toyMatters,
+  toy as toyValues,
+} from "@leximon/tokens";
 import {
   ALBUM_FILTER_TEXTS,
   ALL_COLLECTIONS,
@@ -37,23 +45,26 @@ import {
 import { api } from "@/api/client";
 import { Card } from "@/cards/card";
 import { catalogInHand, loadCatalog } from "@/cards/catalog";
+import { Desk } from "@/library/play-pieces";
 import { cardDates, ownedCards, wordMemory } from "@/player/collection";
 import { useNow, useShared, useSharedFailed } from "@/player/shared";
 import { progress } from "@/player/state";
 import { askAlbumPractice } from "@/screens/challenges/pending-practice";
 import { TAB_BAR_RISE } from "@/shell/tab-bar";
-import { alpha, colors, fontSizes, fonts, radii, space } from "@/theme";
+import { alpha, colors, fontSizes, fonts, IS_LIBRARY, radii, space } from "@/theme";
 import { Button } from "@/ui/button";
 import { Icon } from "@/ui/icon";
 import { RarityChip, RarityName } from "@/ui/rarity-icon";
 import { Sheet } from "@/ui/sheet";
 import { TextButton } from "@/ui/text-button";
+import { Lettering, toyFace } from "@/ui/toy";
 
 /** The collection tab chosen last, kept on the device. */
 const STORED_COLLECTION = "leximon_album";
 const COLUMNS = 3;
 const GUTTER = 16;
 const GAP = 12;
+const ROOM_MARGIN = 6;
 
 function readCollection(): string | null {
   try {
@@ -154,7 +165,9 @@ export function AlbumScreen({ friendCode }: { readonly friendCode: string | null
     [catalog, owned, memory, dates, now, state, friend],
   );
 
-  const cardWidth = Math.floor((window.width - GUTTER * 2 - GAP * (COLUMNS - 1)) / COLUMNS);
+  const cardWidth = Math.floor(
+    (window.width - LIBRARY_INSET * 2 - GUTTER * 2 - GAP * (COLUMNS - 1)) / COLUMNS,
+  );
   const practiceCards =
     view !== null && player !== null && isFeatureOpen("practice_choice", player.level, now)
       ? albumPracticeCards(view, state, practiceRulesAt(PRACTICE_SCHEDULE, now).minWords)
@@ -197,21 +210,27 @@ export function AlbumScreen({ friendCode }: { readonly friendCode: string | null
   const header = (
     <View style={styles.header}>
       <View style={styles.titleRow}>
-        <Text style={styles.title} accessibilityRole="header">
-          Album
-        </Text>
+        {IS_LIBRARY ? (
+          <View accessibilityRole="header">
+            <Lettering size={fontSizes.heading}>Album</Lettering>
+          </View>
+        ) : (
+          <Text style={styles.title} accessibilityRole="header">
+            Album
+          </Text>
+        )}
         <Text style={styles.headline}>
           <Text style={styles.headlineStrong}>{view.headline.owned}</Text> mots sur{" "}
           {view.headline.total}
         </Text>
       </View>
       <View style={styles.searchRow}>
-        <View style={styles.search}>
-          <Icon name="search" size={18} color={colors.pageInkMuted} />
+        <View style={[styles.search, IS_LIBRARY && library.search]}>
+          <Icon name="search" size={18} color={SEARCH_MUTED} />
           <TextInput
-            style={styles.searchInput}
+            style={[styles.searchInput, IS_LIBRARY && library.searchInput]}
             placeholder="Chercher un mot"
-            placeholderTextColor={colors.pageInkFaint}
+            placeholderTextColor={IS_LIBRARY ? colors.paperInkMuted : colors.pageInkFaint}
             selectionColor={colors.rubric}
             value={state.search}
             onChangeText={(search) => setState((s) => ({ ...s, search }))}
@@ -226,7 +245,7 @@ export function AlbumScreen({ friendCode }: { readonly friendCode: string | null
               accessibilityLabel="Effacer la recherche"
               hitSlop={8}
             >
-              <Icon name="close" size={18} color={colors.pageInkMuted} />
+              <Icon name="close" size={18} color={SEARCH_MUTED} />
             </Pressable>
           )}
         </View>
@@ -235,9 +254,19 @@ export function AlbumScreen({ friendCode }: { readonly friendCode: string | null
             onPress={() => setFiltering(true)}
             accessibilityRole="button"
             accessibilityLabel={filterButtonLabel(filtersOn)}
-            style={[styles.filtersButton, filtersOn > 0 && styles.chipOn]}
+            style={[
+              styles.filtersButton,
+              filtersOn > 0 && styles.chipOn,
+              IS_LIBRARY && toyFace(filtersOn > 0 ? "gold" : "paper"),
+            ]}
           >
-            <Text style={[styles.chipText, filtersOn > 0 && styles.chipTextOn]}>
+            <Text
+              style={[
+                styles.chipText,
+                IS_LIBRARY && library.paperInk,
+                filtersOn > 0 && styles.chipTextOn,
+              ]}
+            >
               {ALBUM_FILTER_TEXTS.button}
             </Text>
             {filtersOn > 0 && <Text style={styles.filtersCount}>{filtersOn}</Text>}
@@ -260,13 +289,21 @@ export function AlbumScreen({ friendCode }: { readonly friendCode: string | null
               onPress={() => pickCollection(tab.id)}
               accessibilityRole="tab"
               accessibilityState={{ selected }}
-              style={[styles.tab, selected && styles.tabOn]}
+              style={[
+                styles.tab,
+                selected && styles.tabOn,
+                IS_LIBRARY && [library.tab, toyFace(selected ? "gold" : "paper", "tile")],
+              ]}
             >
               <View style={styles.tabHead}>
-                <Text style={styles.tabName}>{shortName(tab.name)}</Text>
-                <Text style={styles.tabCount}>{tab.count}</Text>
+                <Text style={[styles.tabName, IS_LIBRARY && library.tabName]}>
+                  {shortName(tab.name)}
+                </Text>
+                <Text style={[styles.tabCount, IS_LIBRARY && library.paperInkMuted]}>
+                  {tab.count}
+                </Text>
               </View>
-              <View style={styles.tabTrack}>
+              <View style={[styles.tabTrack, IS_LIBRARY && library.tabTrack]}>
                 <View
                   style={[
                     styles.tabFill,
@@ -329,23 +366,34 @@ export function AlbumScreen({ friendCode }: { readonly friendCode: string | null
     </View>
   );
 
+  const list = (
+    <FlatList
+      data={view.empty === null ? view.items : []}
+      keyExtractor={itemKey}
+      numColumns={COLUMNS}
+      ListHeaderComponent={header}
+      renderItem={({ item }) => <Tile item={item} width={cardWidth} />}
+      columnWrapperStyle={styles.gridRow}
+      contentContainerStyle={[styles.grid, IS_LIBRARY && library.grid]}
+      keyboardShouldPersistTaps="handled"
+      keyboardDismissMode="on-drag"
+      initialNumToRender={9}
+      maxToRenderPerBatch={9}
+      windowSize={5}
+      removeClippedSubviews
+    />
+  );
+
   return (
     <>
-      <FlatList
-        data={view.empty === null ? view.items : []}
-        keyExtractor={itemKey}
-        numColumns={COLUMNS}
-        ListHeaderComponent={header}
-        renderItem={({ item }) => <Tile item={item} width={cardWidth} />}
-        columnWrapperStyle={styles.gridRow}
-        contentContainerStyle={styles.grid}
-        keyboardShouldPersistTaps="handled"
-        keyboardDismissMode="on-drag"
-        initialNumToRender={9}
-        maxToRenderPerBatch={9}
-        windowSize={5}
-        removeClippedSubviews
-      />
+      {IS_LIBRARY ? (
+        <View style={library.room}>
+          <Desk style={StyleSheet.absoluteFill} />
+          <View style={library.inside}>{list}</View>
+        </View>
+      ) : (
+        list
+      )}
       <Sheet open={filtering} title={ALBUM_FILTER_TEXTS.button} onClose={() => setFiltering(false)}>
         {view.rarities.length > 0 && (
           <FilterGroup title={ALBUM_FILTER_TEXTS.rarity}>
@@ -514,10 +562,16 @@ function RarityFilter({
       accessibilityRole="button"
       accessibilityState={{ selected: on }}
       accessibilityLabel={label}
-      style={[styles.chip, on && styles.chipOn]}
+      style={[
+        styles.chip,
+        on && styles.chipOn,
+        IS_LIBRARY && toyFace(on ? "gold" : "paper", "tag"),
+      ]}
     >
       <RarityChip rarity={rarity} size={24} />
-      <Text style={[styles.chipText, on && styles.chipTextOn]}>{count}</Text>
+      <Text style={[styles.chipText, IS_LIBRARY && library.paperInk, on && styles.chipTextOn]}>
+        {count}
+      </Text>
     </Pressable>
   );
 }
@@ -541,9 +595,21 @@ function FilterChip({
       onPress={onPick}
       accessibilityRole="button"
       accessibilityState={{ selected: on }}
-      style={[styles.chip, muted && styles.chipMuted, on && styles.chipOn]}
+      style={[
+        styles.chip,
+        muted && styles.chipMuted,
+        on && styles.chipOn,
+        IS_LIBRARY && toyFace(on ? "gold" : "paper", "tag"),
+      ]}
     >
-      <Text style={[styles.chipText, muted && styles.chipTextMuted, on && styles.chipTextOn]}>
+      <Text
+        style={[
+          styles.chipText,
+          muted && styles.chipTextMuted,
+          IS_LIBRARY && library.paperInk,
+          on && styles.chipTextOn,
+        ]}
+      >
         {label}
       </Text>
       {count !== null && count > 0 && <Text style={styles.chipCount}>{count}</Text>}
@@ -739,4 +805,35 @@ const styles = StyleSheet.create({
     color: colors.pageInk,
     textAlign: "center",
   },
+});
+
+/** How far the desk's frame takes the cards in from the screen's edges. */
+const LIBRARY_INSET = IS_LIBRARY ? ROOM_MARGIN + room.desk.frameWidth : 0;
+
+const SEARCH_MUTED = IS_LIBRARY ? colors.paperInkMuted : colors.pageInkMuted;
+
+/** « La Bibliothèque »: the cards on the desk, the tabs and the search cut from paper. */
+const library = StyleSheet.create({
+  room: { flex: 1, marginHorizontal: ROOM_MARGIN, marginBottom: TAB_BAR_RISE },
+  // The cards slide under the frame, not over it.
+  inside: {
+    flex: 1,
+    margin: room.desk.frameWidth,
+    borderRadius: room.desk.radius - room.desk.frameWidth,
+    overflow: "hidden",
+  },
+  search: {
+    borderWidth: toyValues.outlineWidth,
+    borderColor: toyValues.outline,
+    borderRadius: 14,
+    backgroundColor: colors.paper,
+    boxShadow: `inset 0 3px 0 ${toyMatters.paper.bottom}`,
+  },
+  searchInput: { color: colors.paperInk },
+  grid: { paddingBottom: space.s12 },
+  paperInk: { color: colors.paperInk },
+  paperInkMuted: { color: colors.paperInkMuted },
+  tab: { borderWidth: toyValues.outlineWidth, marginBottom: 4 },
+  tabName: { fontFamily: fonts.display, color: colors.paperInk },
+  tabTrack: { backgroundColor: alpha(colors.paperInk, 0.18) },
 });

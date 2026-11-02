@@ -1,4 +1,12 @@
-import { alpha, colors as currentLook, fontSizes, library, radii, space } from "@leximon/tokens";
+import {
+  alpha,
+  colors as currentLook,
+  fontSizes,
+  library,
+  radii,
+  space,
+  toyMatters,
+} from "@leximon/tokens";
 
 export { alpha, fontSizes, radii, space };
 
@@ -6,6 +14,29 @@ export { alpha, fontSizes, radii, space };
 export const IS_LIBRARY = process.env.EXPO_PUBLIC_LOOK === "bibliotheque";
 
 export const colors = IS_LIBRARY ? library : currentLook;
+
+/** The same roles on a leaf of paper in « La Bibliothèque »: everything reads in brown ink. */
+export const paperColors: typeof colors = IS_LIBRARY
+  ? {
+      ...library,
+      page: library.paper,
+      pageRaised: toyMatters.paper.bottom,
+      pageInk: library.paperInk,
+      pageInkSoft: alpha(library.paperInk, 0.85),
+      pageInkMuted: library.paperInkMuted,
+      pageInkFaint: alpha(library.paperInkMuted, 0.7),
+      panel: toyMatters.paper.top,
+      rule: alpha(library.paperInk, 0.22),
+      well: alpha(toyMatters.paper.bottom, 0.7),
+      track: toyMatters.paper.bottom,
+      control: toyMatters.paper.bottom,
+      controlHover: toyMatters.paper.edge,
+      rubric: toyMatters.red.bottom,
+      gilt: toyMatters.gold.edge,
+      success: library.successDeep,
+      danger: library.dangerDeep,
+    }
+  : currentLook;
 
 /**
  * Font families embedded at build time (expo-font plugin): one static instance per weight, named

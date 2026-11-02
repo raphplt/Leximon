@@ -740,3 +740,214 @@
     font-size: var(--lx-size-title-small);
   }
 }
+
+/* --- « La Bibliothèque » --- */
+
+.quizDesk {
+  display: none;
+}
+
+/* The questions are asked on the desk: the word on a leaf, the answers as paper tiles. */
+:root[data-look="bibliotheque"] .quiz {
+  position: relative;
+  isolation: isolate;
+  padding: 26px 30px 32px;
+}
+
+:root[data-look="bibliotheque"] .quizDesk {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  display: block;
+}
+
+:root[data-look="bibliotheque"] .dot {
+  height: 12px;
+  border: 2px solid var(--lx-toy-outline);
+  box-shadow: inset 0 -2px 0 var(--lx-toy-drop);
+}
+
+:root[data-look="bibliotheque"] .dot.empty {
+  background: var(--lx-toy-dark-bottom);
+}
+
+:root[data-look="bibliotheque"] .dot.current {
+  background: var(--lx-toy-paper-top);
+}
+
+:root[data-look="bibliotheque"] .dot.right {
+  background: var(--lx-toy-green-top);
+}
+
+:root[data-look="bibliotheque"] .dot.wrong {
+  background: var(--lx-toy-red-top);
+}
+
+:root[data-look="bibliotheque"] .position {
+  color: var(--lx-lettering-fill);
+  font-family: var(--font-display), Georgia, serif;
+  font-weight: 900;
+  -webkit-text-stroke: var(--lx-lettering-width) var(--lx-lettering-outline);
+  paint-order: stroke fill;
+}
+
+/* Each answer is a paper tile with its letter, a, b, c or d, in a gold disc. */
+:root[data-look="bibliotheque"] .choices {
+  counter-reset: choice;
+}
+
+:root[data-look="bibliotheque"] .choices li {
+  counter-increment: choice;
+}
+
+:root[data-look="bibliotheque"] .choice {
+  --top: var(--lx-toy-paper-top);
+  --bottom: var(--lx-toy-paper-bottom);
+  --edge: var(--lx-toy-paper-edge);
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  border: var(--lx-toy-outline-width) solid var(--lx-toy-outline);
+  border-radius: var(--lx-toy-radius-tile);
+  background: linear-gradient(180deg, var(--top) 0 47%, var(--bottom) 53% 100%);
+  box-shadow:
+    inset 0 -4px 0 var(--edge),
+    inset 0 2px 0 var(--lx-toy-sheen),
+    0 4px 0 var(--lx-toy-outline),
+    0 8px 12px var(--lx-toy-drop);
+  color: var(--lx-color-paper-ink);
+  transition:
+    translate var(--lx-press-sink) ease-out,
+    box-shadow var(--lx-press-sink) ease-out,
+    filter 120ms ease-out;
+}
+
+:root[data-look="bibliotheque"] .choice::before {
+  content: counter(choice, lower-alpha);
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border: 2px solid var(--lx-toy-outline);
+  border-radius: 50%;
+  background: linear-gradient(
+    180deg,
+    var(--lx-toy-gold-top) 0 47%,
+    var(--lx-toy-gold-bottom) 53% 100%
+  );
+  box-shadow: inset 0 -3px 0 var(--lx-toy-gold-edge);
+  color: var(--lx-lettering-fill);
+  font:
+    900 18px / 1 var(--font-display),
+    Georgia,
+    serif;
+  -webkit-text-stroke: 4px var(--lx-lettering-outline);
+  paint-order: stroke fill;
+}
+
+/* On paper the word is plain ink; it is only lettered once the verdict colors the tile. */
+:root[data-look="bibliotheque"] .choice.choiceWord {
+  justify-content: center;
+  -webkit-text-stroke: 0;
+  text-shadow: none;
+}
+
+:root[data-look="bibliotheque"] .choice:not(:disabled):hover {
+  background: linear-gradient(180deg, var(--top) 0 47%, var(--bottom) 53% 100%);
+  filter: brightness(1.05);
+}
+
+:root[data-look="bibliotheque"] .choice:not(:disabled):active {
+  transform: none;
+  translate: 0 4px;
+  box-shadow:
+    inset 0 -4px 0 var(--edge),
+    inset 0 2px 0 var(--lx-toy-sheen),
+    0 0 0 var(--lx-toy-outline);
+}
+
+:root[data-look="bibliotheque"] .choice.pending {
+  box-shadow:
+    inset 0 -4px 0 var(--edge),
+    0 0 0 3px var(--lx-toy-gold-top),
+    0 4px 0 var(--lx-toy-outline);
+}
+
+:root[data-look="bibliotheque"] .choice.right {
+  --top: var(--lx-toy-green-top);
+  --bottom: var(--lx-toy-green-bottom);
+  --edge: var(--lx-toy-green-edge);
+  color: var(--lx-lettering-fill);
+}
+
+:root[data-look="bibliotheque"] .choice.wrong {
+  --top: var(--lx-toy-red-top);
+  --bottom: var(--lx-toy-red-bottom);
+  --edge: var(--lx-toy-red-edge);
+  color: var(--lx-lettering-fill);
+}
+
+:root[data-look="bibliotheque"] .choice.faded {
+  opacity: 0.55;
+  filter: saturate(0.6);
+}
+
+:root[data-look="bibliotheque"] :is(.choice.right, .choice.wrong).choiceWord {
+  -webkit-text-stroke: var(--lx-lettering-width) var(--lx-lettering-outline);
+  paint-order: stroke fill;
+  text-shadow: 0 2px 0 var(--lx-lettering-outline);
+}
+
+:root[data-look="bibliotheque"] .typedRight {
+  border-color: var(--lx-toy-outline);
+  background: linear-gradient(
+    180deg,
+    var(--lx-toy-green-top) 0 47%,
+    var(--lx-toy-green-bottom) 53% 100%
+  );
+  color: var(--lx-lettering-fill);
+}
+
+:root[data-look="bibliotheque"] .typedWrong {
+  border-color: var(--lx-toy-outline);
+  background: linear-gradient(
+    180deg,
+    var(--lx-toy-red-top) 0 47%,
+    var(--lx-toy-red-bottom) 53% 100%
+  );
+  color: var(--lx-lettering-fill);
+}
+
+/* What the answer was, on a leaf, edged with the green or red of the verdict. */
+:root[data-look="bibliotheque"] .feedback {
+  border: var(--lx-toy-outline-width) solid var(--lx-toy-outline);
+  border-left-width: 10px;
+  border-radius: var(--lx-toy-radius-tile);
+  background:
+    var(--lx-matter-paper) 0 0 / var(--lx-matter-size),
+    var(--lx-color-paper);
+  box-shadow:
+    inset 0 -4px 0 var(--lx-toy-paper-bottom),
+    0 4px 0 var(--lx-toy-outline);
+  color: var(--lx-color-paper-ink);
+}
+
+:root[data-look="bibliotheque"] .good {
+  border-left-color: var(--lx-toy-green-bottom);
+}
+
+:root[data-look="bibliotheque"] .bad {
+  border-left-color: var(--lx-toy-red-bottom);
+}
+
+:root[data-look="bibliotheque"] .feedbackExtra {
+  color: var(--lx-toy-red-bottom);
+}
+
+@media (max-width: 759px) {
+  :root[data-look="bibliotheque"] .quiz {
+    margin: 0 -8px;
+    padding: 18px 14px 22px;
+  }
+}

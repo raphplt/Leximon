@@ -19,7 +19,7 @@ import {
 } from "@leximon/view-model";
 import { router } from "expo-router";
 import * as WebBrowser from "expo-web-browser";
-import { useCallback, useEffect, useState } from "react";
+import { type ReactNode, useCallback, useEffect, useState } from "react";
 import { Pressable, Share, StyleSheet, Text, useWindowDimensions, View } from "react-native";
 import { catalogInHand, loadCatalog } from "@/cards/catalog";
 import { HoloCard } from "@/cards/holo-card";
@@ -30,11 +30,12 @@ import { progress as progressResource } from "@/player/state";
 import { useProfileActions } from "@/profile/profile-actions";
 import { FeedbackSheet } from "@/screens/profile/feedback-sheet";
 import { ReplacePin } from "@/screens/profile/pin-picker";
-import { colors, fontSizes, fonts, radii, space } from "@/theme";
+import { colors, fontSizes, fonts, IS_LIBRARY, paperColors, radii, space } from "@/theme";
 import { Button } from "@/ui/button";
 import { Icon } from "@/ui/icon";
 import { Page, Paragraph } from "@/ui/page";
 import { RarityName } from "@/ui/rarity-icon";
+import { Leaf } from "@/ui/toy";
 
 const CARD_MAX = 300;
 
@@ -130,7 +131,7 @@ function SheetBody({
   };
 
   return (
-    <Page title={card.word}>
+    <Page title={card.word} desk>
       <View style={styles.cardSide}>
         <HoloCard
           card={card}
@@ -140,123 +141,130 @@ function SheetBody({
         <EngravingCredit card={card} />
       </View>
 
-      <RarityName rarity={card.rarity} color={colors.pageInk} />
-      {card.pronunciation != null && <Text style={styles.ipa}>/{card.pronunciation.ipa}/</Text>}
-      <Text style={styles.frequency}>{frequencyLine(card.perBillion)}</Text>
+      <Facts>
+        <RarityName rarity={card.rarity} color={ink.pageInk} />
+        {card.pronunciation != null && <Text style={styles.ipa}>/{card.pronunciation.ipa}/</Text>}
+        <Text style={styles.frequency}>{frequencyLine(card.perBillion)}</Text>
 
-      {quantity > 0 && (
-        <View style={styles.block}>
-          <Text style={styles.kicker}>MAÎTRISE</Text>
-          <View style={styles.steps}>
-            {mastery.steps.map((step) => {
-              const tone = step.reached ? masteryColors[step.level] : colors.track;
-              return (
-                <View key={step.level} style={styles.step}>
-                  <View style={[styles.stepBar, { backgroundColor: tone }]} />
-                  <Text
-                    style={[styles.stepLabel, { color: step.reached ? tone : colors.pageInkFaint }]}
-                  >
-                    {step.label}
-                  </Text>
-                </View>
-              );
-            })}
+        {quantity > 0 && (
+          <View style={styles.block}>
+            <Text style={styles.kicker}>MAÎTRISE</Text>
+            <View style={styles.steps}>
+              {mastery.steps.map((step) => {
+                const tone = step.reached ? masteryColors[step.level] : ink.track;
+                return (
+                  <View key={step.level} style={styles.step}>
+                    <View style={[styles.stepBar, { backgroundColor: tone }]} />
+                    <Text
+                      style={[styles.stepLabel, { color: step.reached ? tone : ink.pageInkFaint }]}
+                    >
+                      {step.label}
+                    </Text>
+                  </View>
+                );
+              })}
+            </View>
+            <Text style={styles.note}>{mastery.text}</Text>
           </View>
-          <Text style={styles.note}>{mastery.text}</Text>
-        </View>
-      )}
+        )}
 
-      <View style={styles.chips}>
-        <Text style={styles.chip}>
-          {quantity > 0 ? copiesLabel(quantity) : "Pas encore dans ton album"}
-        </Text>
-        <Text style={styles.chip}>{collection}</Text>
-      </View>
-
-      {card.quote !== null && (
-        <View style={styles.quote}>
-          <Text style={styles.quoteText}>« {card.quote.text} »</Text>
-          <Text style={styles.quoteAuthor}>{card.quote.author}</Text>
-        </View>
-      )}
-
-      {card.etymology !== null && (
-        <View style={styles.block}>
-          <Text style={styles.kicker}>
-            ORIGINE{card.era !== null ? ` · ${card.era.toUpperCase()}` : ""}
+        <View style={styles.chips}>
+          <Text style={styles.chip}>
+            {quantity > 0 ? copiesLabel(quantity) : "Pas encore dans ton album"}
           </Text>
-          <Text style={styles.etymology}>{card.etymology}</Text>
+          <Text style={styles.chip}>{collection}</Text>
         </View>
-      )}
 
-      {quantity > 0 ? (
-        <View style={styles.actions}>
-          {/* No shortcut to a question here: the card above shows its answer. */}
-          {review !== null && <Text style={styles.later}>{review}</Text>}
-          {tradeable && (
-            <Button
-              label="Proposer en échange"
-              secondary
-              onPress={() =>
-                router.dismissTo({ pathname: "/echanges", params: { donne: card.id } })
-              }
-            />
-          )}
-          <View style={styles.ghosts}>
-            {pins.profile?.member === true && (
-              <Pressable
-                onPress={togglePin}
-                disabled={pins.busy}
-                accessibilityRole="button"
-                accessibilityState={{ selected: pins.isPinned(card.id) }}
-                style={styles.ghost}
-              >
-                <Icon name="pin" size={17} color={colors.pageInk} />
-                <Text style={styles.ghostText}>
-                  {pins.isPinned(card.id) ? PIN_TEXTS.unpin : PIN_TEXTS.pin}
-                </Text>
-              </Pressable>
-            )}
-            <Pressable onPress={share} accessibilityRole="button" style={styles.ghost}>
-              <Icon name="share" size={17} color={colors.pageInk} />
-              <Text style={styles.ghostText}>Partager</Text>
-            </Pressable>
+        {card.quote !== null && (
+          <View style={styles.quote}>
+            <Text style={styles.quoteText}>« {card.quote.text} »</Text>
+            <Text style={styles.quoteAuthor}>{card.quote.author}</Text>
           </View>
-          <ReplacePin
-            open={replacing}
-            word={card.word}
-            catalog={catalogInHand()}
-            pinned={pins.profile?.pinned ?? []}
-            onPick={replacePin}
-            onClose={() => setReplacing(false)}
-          />
-        </View>
-      ) : (
-        <Text style={styles.note}>
-          <Text style={styles.link} accessibilityRole="link" onPress={() => router.navigate("/")}>
-            Ouvre des sachets
-          </Text>{" "}
-          pour la trouver, ou demande-la en échange.
-        </Text>
-      )}
+        )}
 
-      <Pressable
-        onPress={() => setReporting(true)}
-        accessibilityRole="button"
-        hitSlop={8}
-        style={styles.report}
-      >
-        <Text style={styles.reportText}>{CARD_REPORT.button}</Text>
-      </Pressable>
-      <FeedbackSheet
-        open={reporting}
-        onClose={() => setReporting(false)}
-        screen={`/mobile${cardPath(card.id)}`}
-        title={CARD_REPORT.title}
-        label={CARD_REPORT.label}
-      />
+        {card.etymology !== null && (
+          <View style={styles.block}>
+            <Text style={styles.kicker}>
+              ORIGINE{card.era !== null ? ` · ${card.era.toUpperCase()}` : ""}
+            </Text>
+            <Text style={styles.etymology}>{card.etymology}</Text>
+          </View>
+        )}
+
+        {quantity > 0 ? (
+          <View style={styles.actions}>
+            {/* No shortcut to a question here: the card above shows its answer. */}
+            {review !== null && <Text style={styles.later}>{review}</Text>}
+            {tradeable && (
+              <Button
+                label="Proposer en échange"
+                secondary
+                onPress={() =>
+                  router.dismissTo({ pathname: "/echanges", params: { donne: card.id } })
+                }
+              />
+            )}
+            <View style={styles.ghosts}>
+              {pins.profile?.member === true && (
+                <Pressable
+                  onPress={togglePin}
+                  disabled={pins.busy}
+                  accessibilityRole="button"
+                  accessibilityState={{ selected: pins.isPinned(card.id) }}
+                  style={styles.ghost}
+                >
+                  <Icon name="pin" size={17} color={ink.pageInk} />
+                  <Text style={styles.ghostText}>
+                    {pins.isPinned(card.id) ? PIN_TEXTS.unpin : PIN_TEXTS.pin}
+                  </Text>
+                </Pressable>
+              )}
+              <Pressable onPress={share} accessibilityRole="button" style={styles.ghost}>
+                <Icon name="share" size={17} color={ink.pageInk} />
+                <Text style={styles.ghostText}>Partager</Text>
+              </Pressable>
+            </View>
+            <ReplacePin
+              open={replacing}
+              word={card.word}
+              catalog={catalogInHand()}
+              pinned={pins.profile?.pinned ?? []}
+              onPick={replacePin}
+              onClose={() => setReplacing(false)}
+            />
+          </View>
+        ) : (
+          <Text style={styles.note}>
+            <Text style={styles.link} accessibilityRole="link" onPress={() => router.navigate("/")}>
+              Ouvre des sachets
+            </Text>{" "}
+            pour la trouver, ou demande-la en échange.
+          </Text>
+        )}
+
+        <Pressable
+          onPress={() => setReporting(true)}
+          accessibilityRole="button"
+          hitSlop={8}
+          style={styles.report}
+        >
+          <Text style={styles.reportText}>{CARD_REPORT.button}</Text>
+        </Pressable>
+        <FeedbackSheet
+          open={reporting}
+          onClose={() => setReporting(false)}
+          screen={`/mobile${cardPath(card.id)}`}
+          title={CARD_REPORT.title}
+          label={CARD_REPORT.label}
+        />
+      </Facts>
     </Page>
   );
+}
+
+/** What the card says beyond its face; in « La Bibliothèque », on a leaf of paper. */
+function Facts({ children }: { readonly children: ReactNode }) {
+  return IS_LIBRARY ? <Leaf style={styles.leaf}>{children}</Leaf> : children;
 }
 
 /**
@@ -274,7 +282,7 @@ function EngravingCredit({ card }: { readonly card: CatalogCard }) {
         <>
           {" · "}
           <Text
-            style={styles.link}
+            style={styles.creditLink}
             accessibilityRole="link"
             onPress={() => void WebBrowser.openBrowserAsync(source)}
           >
@@ -286,7 +294,11 @@ function EngravingCredit({ card }: { readonly card: CatalogCard }) {
   );
 }
 
+/** The facts are read on paper in « La Bibliothèque »: the same roles, in brown ink. */
+const ink = paperColors;
+
 const styles = StyleSheet.create({
+  leaf: { padding: space.s9, gap: space.s8 },
   cardSide: { alignItems: "center", gap: space.s5, marginBottom: space.s2 },
   credit: {
     fontFamily: fonts.ui.medium,
@@ -295,19 +307,20 @@ const styles = StyleSheet.create({
     color: colors.pageInkFaint,
     textAlign: "center",
   },
-  ipa: { fontFamily: fonts.text.regular, fontSize: fontSizes.subtitle, color: colors.pageInkMuted },
+  creditLink: { color: colors.rubric, textDecorationLine: "underline" },
+  ipa: { fontFamily: fonts.text.regular, fontSize: fontSizes.subtitle, color: ink.pageInkMuted },
   frequency: {
     fontFamily: fonts.text.italic,
     fontSize: fontSizes.lead,
     lineHeight: 24,
-    color: colors.pageInkSoft,
+    color: ink.pageInkSoft,
   },
   block: { gap: space.s4 },
   kicker: {
     fontFamily: fonts.ui.extrabold,
     fontSize: fontSizes.caption,
     letterSpacing: 2,
-    color: colors.pageInkMuted,
+    color: ink.pageInkMuted,
   },
   steps: { flexDirection: "row", gap: space.s4 },
   step: { flex: 1, gap: space.s3 },
@@ -317,7 +330,7 @@ const styles = StyleSheet.create({
     fontFamily: fonts.ui.medium,
     fontSize: fontSizes.body,
     lineHeight: 21,
-    color: colors.pageInkMuted,
+    color: ink.pageInkMuted,
   },
   chips: { flexDirection: "row", flexWrap: "wrap", gap: space.s4 },
   chip: {
@@ -325,36 +338,36 @@ const styles = StyleSheet.create({
     paddingHorizontal: space.s6,
     paddingVertical: 7,
     borderRadius: radii.xxl,
-    backgroundColor: colors.pageRaised,
-    color: colors.pageInk,
+    backgroundColor: ink.pageRaised,
+    color: ink.pageInk,
     fontFamily: fonts.ui.bold,
     fontSize: fontSizes.label,
   },
   quote: {
     paddingLeft: space.s7,
     borderLeftWidth: 3,
-    borderLeftColor: colors.track,
+    borderLeftColor: ink.track,
     gap: space.s3,
   },
   quoteText: {
     fontFamily: fonts.text.italic,
     fontSize: fontSizes.subtitle,
     lineHeight: 26,
-    color: colors.pageInk,
+    color: ink.pageInk,
   },
   quoteAuthor: {
     fontFamily: fonts.ui.semibold,
     fontSize: fontSizes.label,
-    color: colors.pageInkMuted,
+    color: ink.pageInkMuted,
   },
   etymology: {
     fontFamily: fonts.text.regular,
     fontSize: fontSizes.lead,
     lineHeight: 25,
-    color: colors.pageInk,
+    color: ink.pageInk,
   },
   actions: { gap: space.s5, alignItems: "flex-start" },
-  later: { fontFamily: fonts.ui.bold, fontSize: fontSizes.body, color: colors.pageInk },
+  later: { fontFamily: fonts.ui.bold, fontSize: fontSizes.body, color: ink.pageInk },
   ghosts: { flexDirection: "row", justifyContent: "center", gap: space.s5 },
   ghost: {
     flexDirection: "row",
@@ -364,15 +377,15 @@ const styles = StyleSheet.create({
     paddingHorizontal: space.s7,
     borderRadius: radii.x4,
     borderWidth: 2,
-    borderColor: colors.track,
+    borderColor: ink.track,
   },
-  ghostText: { fontFamily: fonts.ui.bold, fontSize: fontSizes.body, color: colors.pageInk },
-  link: { color: colors.rubric, textDecorationLine: "underline" },
+  ghostText: { fontFamily: fonts.ui.bold, fontSize: fontSizes.body, color: ink.pageInk },
+  link: { color: ink.rubric, textDecorationLine: "underline" },
   report: { alignSelf: "flex-start", paddingVertical: space.s3 },
   reportText: {
     fontFamily: fonts.ui.medium,
     fontSize: fontSizes.label,
-    color: colors.pageInkFaint,
+    color: ink.pageInkFaint,
     textDecorationLine: "underline",
   },
 });

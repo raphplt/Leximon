@@ -140,6 +140,16 @@ export const effects = {
     size: [3, 7],
     gravity: 300,
   },
+  /** A right answer in a challenge: a short spray of gold and green from the answer. */
+  right: {
+    count: 14,
+    kinds: ["spark", "star"],
+    colors: ["#F6D47A", "#9ED8AF", "#FFF6D8"],
+    speed: [90, 240],
+    life: [0.35, 0.7],
+    size: [3, 6],
+    gravity: 280,
+  },
   /** Gold leaf falling from the top of the screen, for an epic or legendary card. */
   rain: {
     kinds: ["leaf"],
@@ -158,6 +168,7 @@ export const effects = {
   readonly burst: readonly BurstSettings[];
   readonly land: BurstSettings;
   readonly reward: BurstSettings;
+  readonly right: BurstSettings;
   readonly rain: Omit<BurstSettings, "count">;
 };
 

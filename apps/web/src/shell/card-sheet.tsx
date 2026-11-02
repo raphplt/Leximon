@@ -153,7 +153,7 @@ function SheetBody({
         <HoloCard card={card} collectionName={collection} width={narrow ? 250 : 300} />
         <EngravingCredit card={card} />
       </div>
-      <div className={styles.facts}>
+      <div className={styles.facts} data-paper="">
         <CardFacts card={card} />
 
         {quantity > 0 && (

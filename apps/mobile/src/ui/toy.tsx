@@ -169,14 +169,22 @@ export function ToyBody({
   readonly style?: StyleProp<ViewStyle>;
   readonly children?: ReactNode;
 }) {
+  return <View style={[styles.shown, toyFace(matter, shape, large), style]}>{children}</View>;
+}
+
+/**
+ * The look of a toy's body with its thickness under it, for a piece that already handles its own
+ * press: a tab, a chip.
+ */
+export function toyFace(
+  matter: ToyMatterName,
+  shape: ToyShapeName = "box",
+  large = false,
+): ViewStyle {
   const radius = large && shape === "box" ? toyRadii.large : RADII[shape];
   const body = bodyStyle(matter, radius, large);
   const thickness = `0 ${depthOf(shape, large)}px 0 ${toyValues.outline}`;
-  return (
-    <View style={[styles.shown, body, { boxShadow: `${body.boxShadow}, ${thickness}` }, style]}>
-      {children}
-    </View>
-  );
+  return { ...body, boxShadow: `${body.boxShadow}, ${thickness}` };
 }
 
 /** Directions of the outline's copies: a ring of eight is round enough at these sizes. */

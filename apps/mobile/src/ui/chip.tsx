@@ -1,5 +1,6 @@
 import { Pressable, StyleSheet, Text } from "react-native";
-import { colors, fontSizes, fonts, radii, space } from "@/theme";
+import { colors, fontSizes, fonts, IS_LIBRARY, paperColors, radii, space } from "@/theme";
+import { toyFace } from "./toy";
 
 /** A small pill: a filter or a choice among a few, gold once picked. */
 export function Chip({
@@ -19,9 +20,16 @@ export function Chip({
       disabled={disabled}
       accessibilityRole="button"
       accessibilityState={{ selected: on, disabled }}
-      style={[styles.chip, on && styles.on, disabled && styles.disabled]}
+      style={[
+        styles.chip,
+        on && styles.on,
+        IS_LIBRARY && [styles.toy, toyFace(on ? "gold" : "paper", "tag")],
+        disabled && styles.disabled,
+      ]}
     >
-      <Text style={[styles.text, on && styles.textOn]}>{label}</Text>
+      <Text style={[styles.text, IS_LIBRARY && styles.textOnPaper, on && styles.textOn]}>
+        {label}
+      </Text>
     </Pressable>
   );
 }
@@ -38,4 +46,6 @@ const styles = StyleSheet.create({
   disabled: { opacity: 0.45 },
   text: { fontFamily: fonts.ui.bold, fontSize: fontSizes.label, color: colors.pageInk },
   textOn: { color: colors.actionInk },
+  toy: { marginBottom: 2 },
+  textOnPaper: { color: paperColors.pageInk },
 });

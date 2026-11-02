@@ -122,3 +122,20 @@
 .report:hover {
   color: var(--lx-color-page-ink-muted);
 }
+
+/* --- « La Bibliothèque » --- */
+
+/* What goes with the card is written on a leaf of paper beside it. */
+:root[data-look="bibliotheque"] .facts {
+  align-self: stretch;
+  padding: 18px 20px 20px;
+  border: var(--lx-toy-outline-width) solid var(--lx-toy-outline);
+  border-radius: var(--lx-toy-radius-tile);
+  background:
+    var(--lx-matter-paper) 0 0 / var(--lx-matter-size),
+    var(--lx-color-paper);
+  box-shadow:
+    inset 0 -4px 0 var(--lx-toy-paper-bottom),
+    0 4px 0 var(--lx-toy-outline),
+    0 10px 20px var(--lx-toy-drop);
+}

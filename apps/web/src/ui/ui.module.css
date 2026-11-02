@@ -626,3 +626,231 @@ a.chip:hover {
   color: var(--lx-color-page-ink-muted);
   font-size: var(--lx-size-body-large);
 }
+
+/*
+ * --- « La Bibliothèque » ---
+ *
+ * The same pieces, dressed for the reading room: buttons, chips and tabs become toys that sink
+ * under the finger, a panel becomes a leaf of cream paper, titles on the room take the outlined
+ * lettering. Each screen keeps its layout and only adds what is its own.
+ */
+
+/*
+ * On paper (a panel, or anything marked `data-paper`: a window, the facts beside a card),
+ * everything reads in brown ink, whatever its own roles say.
+ */
+:root[data-look="bibliotheque"] :is(.panel, [data-paper]) {
+  --lx-color-page: var(--lx-color-paper);
+  --lx-color-page-raised: var(--lx-toy-paper-bottom);
+  --lx-color-page-ink: var(--lx-color-paper-ink);
+  --lx-color-page-ink-soft: color-mix(
+    in srgb,
+    var(--lx-color-paper-ink) 85%,
+    var(--lx-color-paper)
+  );
+  --lx-color-page-ink-muted: var(--lx-color-paper-ink-muted);
+  --lx-color-page-ink-faint: color-mix(
+    in srgb,
+    var(--lx-color-paper-ink-muted) 70%,
+    var(--lx-color-paper)
+  );
+  --lx-color-panel: var(--lx-toy-paper-top);
+  --lx-color-rule: color-mix(in srgb, var(--lx-color-paper-ink) 22%, transparent);
+  --lx-color-well: color-mix(in srgb, var(--lx-toy-paper-bottom) 70%, var(--lx-color-paper));
+  --lx-color-track: var(--lx-toy-paper-bottom);
+  --lx-color-control: var(--lx-toy-paper-bottom);
+  --lx-color-control-hover: var(--lx-toy-paper-edge);
+  --lx-color-rubric: var(--lx-toy-red-bottom);
+  --lx-color-gilt: var(--lx-toy-gold-edge);
+  --lx-color-success: var(--lx-color-success-deep);
+  --lx-color-danger: var(--lx-color-danger-deep);
+  --lx-color-focus: var(--lx-toy-red-bottom);
+  color: var(--lx-color-paper-ink);
+}
+
+/* A panel is a leaf of cream paper with a thickness of its own. */
+:root[data-look="bibliotheque"] .panel {
+  border: var(--lx-toy-outline-width) solid var(--lx-toy-outline);
+  border-radius: var(--lx-toy-radius-tile);
+  background:
+    var(--lx-matter-paper) 0 0 / var(--lx-matter-size),
+    var(--lx-color-paper);
+  box-shadow:
+    inset 0 -4px 0 var(--lx-toy-paper-bottom),
+    0 4px 0 var(--lx-toy-outline),
+    0 10px 20px var(--lx-toy-drop);
+  color: var(--lx-color-paper-ink);
+}
+
+/* On the room, a title takes the outlined lettering; on paper, plain ink. */
+:root[data-look="bibliotheque"] .display {
+  font-weight: 900;
+  -webkit-text-stroke: var(--lx-lettering-width) var(--lx-lettering-outline);
+  paint-order: stroke fill;
+  text-shadow: 0 var(--lx-lettering-drop) 0 var(--lx-lettering-outline);
+}
+
+:root[data-look="bibliotheque"] :is(.panel, [data-paper]) .display {
+  -webkit-text-stroke: 0;
+  text-shadow: none;
+}
+
+:root[data-look="bibliotheque"] .kicker {
+  color: var(--lx-lettering-kicker);
+  letter-spacing: 0.24em;
+}
+
+:root[data-look="bibliotheque"] :is(.panel, [data-paper]) .kicker {
+  color: var(--lx-color-paper-ink-muted);
+}
+
+/* Toys: a lit top, a darker bottom, the thickness under them, and they sink when pressed. */
+:root[data-look="bibliotheque"] :is(.primary, .secondary, .round, .chip) {
+  --depth: var(--lx-toy-edge-small);
+  --lip: var(--lx-toy-lip-small);
+  --top: var(--lx-toy-paper-top);
+  --bottom: var(--lx-toy-paper-bottom);
+  --edge: var(--lx-toy-paper-edge);
+  border: var(--lx-toy-outline-width) solid var(--lx-toy-outline);
+  border-radius: var(--lx-toy-radius-small);
+  background: linear-gradient(180deg, var(--top) 0 47%, var(--bottom) 53% 100%);
+  box-shadow:
+    inset 0 calc(-1 * var(--lip)) 0 var(--edge),
+    inset 0 2px 0 var(--lx-toy-sheen),
+    0 var(--depth) 0 var(--lx-toy-outline),
+    0 calc(var(--depth) + 3px) 10px var(--lx-toy-drop);
+  color: var(--lx-color-paper-ink);
+  transform: none;
+  transition:
+    translate var(--lx-press-sink) ease-out,
+    box-shadow var(--lx-press-sink) ease-out,
+    filter 120ms ease-out;
+}
+
+:root[data-look="bibliotheque"] :is(.primary, .secondary, .round, button.chip, a.chip):hover {
+  background: linear-gradient(180deg, var(--top) 0 47%, var(--bottom) 53% 100%);
+  filter: brightness(1.06);
+}
+
+:root[data-look="bibliotheque"]
+  :is(.primary, .secondary, .round, button.chip, a.chip):active:not(:disabled) {
+  translate: 0 var(--depth);
+  box-shadow:
+    inset 0 calc(-1 * var(--lip)) 0 var(--edge),
+    inset 0 2px 0 var(--lx-toy-sheen),
+    0 0 0 var(--lx-toy-outline),
+    0 2px 4px var(--lx-toy-drop);
+}
+
+/* The main action: old gold, thicker, its words in the lettering. */
+:root[data-look="bibliotheque"] .primary {
+  --depth: var(--lx-toy-edge-large);
+  --lip: var(--lx-toy-lip-large);
+  --top: var(--lx-toy-gold-top);
+  --bottom: var(--lx-toy-gold-bottom);
+  --edge: var(--lx-toy-gold-edge);
+  border-radius: var(--lx-toy-radius-large);
+  color: var(--lx-lettering-fill);
+  font-family: var(--font-display), Georgia, serif;
+  font-weight: 900;
+  -webkit-text-stroke: var(--lx-lettering-width) var(--lx-lettering-outline);
+  paint-order: stroke fill;
+  text-shadow: 0 var(--lx-lettering-drop) 0 var(--lx-lettering-outline);
+}
+
+:root[data-look="bibliotheque"] :is(.primary, .secondary):disabled {
+  --top: var(--lx-toy-locked-top);
+  --bottom: var(--lx-toy-locked-bottom);
+  --edge: var(--lx-toy-locked-edge);
+  filter: none;
+  translate: none;
+}
+
+:root[data-look="bibliotheque"] .secondary {
+  font-family: var(--font-display), Georgia, serif;
+  font-weight: 800;
+}
+
+:root[data-look="bibliotheque"] .round {
+  border-radius: 50%;
+}
+
+:root[data-look="bibliotheque"] .ghost {
+  font-family: var(--font-display), Georgia, serif;
+}
+
+/* A chip is a small paper tag; the one chosen is in old gold. */
+:root[data-look="bibliotheque"] .chip {
+  --depth: 3px;
+  --lip: 3px;
+  min-height: 36px;
+  border-radius: var(--lx-toy-radius-small);
+}
+
+:root[data-look="bibliotheque"]
+  :is(
+    .chip[aria-pressed="true"],
+    .chip[aria-checked="true"],
+    .chip[aria-selected="true"],
+    .chip[aria-current="page"]
+  ) {
+  --top: var(--lx-toy-gold-top);
+  --bottom: var(--lx-toy-gold-bottom);
+  --edge: var(--lx-toy-gold-edge);
+  color: var(--lx-toy-outline);
+}
+
+:root[data-look="bibliotheque"] .chipGold {
+  --top: var(--lx-toy-gold-top);
+  --bottom: var(--lx-toy-gold-bottom);
+  --edge: var(--lx-toy-gold-edge);
+  color: var(--lx-toy-outline);
+}
+
+:root[data-look="bibliotheque"] .badge {
+  border: 2px solid var(--lx-toy-outline);
+  background: linear-gradient(
+    180deg,
+    var(--lx-toy-alert-top) 0 47%,
+    var(--lx-toy-alert-bottom) 53% 100%
+  );
+  box-shadow: 0 2px 0 var(--lx-toy-outline);
+}
+
+/* A field is pressed into the paper. */
+:root[data-look="bibliotheque"] .field {
+  border: var(--lx-toy-outline-width) solid var(--lx-toy-outline);
+  border-radius: var(--lx-toy-radius-small);
+  background:
+    var(--lx-matter-paper) 0 0 / var(--lx-matter-size),
+    var(--lx-color-paper);
+  box-shadow: inset 0 3px 0 color-mix(in srgb, var(--lx-toy-paper-edge) 60%, transparent);
+  color: var(--lx-color-paper-ink);
+}
+
+/* Segments sit in a groove of dark leather; the one chosen rises in gold. */
+:root[data-look="bibliotheque"] .segments {
+  border: var(--lx-toy-outline-width) solid var(--lx-toy-outline);
+  border-radius: var(--lx-toy-radius-small);
+  background: var(--lx-toy-dark-bottom);
+  box-shadow: inset 0 3px 0 var(--lx-toy-drop);
+}
+
+:root[data-look="bibliotheque"] :is(.tab, .segment) {
+  border-radius: var(--lx-toy-radius-small);
+  color: var(--lx-lettering-fill);
+  font-family: var(--font-display), Georgia, serif;
+}
+
+:root[data-look="bibliotheque"] :is(.tab[aria-selected="true"], .segment[aria-pressed="true"]) {
+  border: var(--lx-toy-outline-width) solid var(--lx-toy-outline);
+  background: linear-gradient(
+    180deg,
+    var(--lx-toy-gold-top) 0 47%,
+    var(--lx-toy-gold-bottom) 53% 100%
+  );
+  box-shadow:
+    inset 0 -3px 0 var(--lx-toy-gold-edge),
+    0 3px 0 var(--lx-toy-outline);
+  color: var(--lx-toy-outline);
+}

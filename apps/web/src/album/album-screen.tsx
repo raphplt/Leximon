@@ -32,6 +32,7 @@ import { api } from "@/lib/api";
 import { useIncremental } from "@/lib/use-incremental";
 import { useNarrow } from "@/lib/use-narrow";
 import { useNow } from "@/lib/use-now";
+import { Desk } from "@/library/play-pieces";
 import { cardDates, ownedCards, wordMemory } from "@/player/collection";
 import { useShared, useSharedFailed } from "@/player/resource";
 import { useProgress } from "@/progress/use-progress";
@@ -203,142 +204,152 @@ export function AlbumScreen() {
         </label>
       </header>
 
-      <div
-        className={`${styles.tabs} ${view.searching ? styles.dimmed : ""}`}
-        role="tablist"
-        aria-label="Collections"
-      >
-        {view.tabs.map((tab) => {
-          const selected = !view.searching && tab.id === state.collectionId;
-          const file = catalog?.collections.find((c) => c.id === tab.id);
-          return (
-            <button
-              key={tab.id}
-              type="button"
-              role="tab"
-              aria-selected={selected}
-              className={styles.tab}
-              onClick={() => pickCollection(tab.id)}
-            >
-              <span className={styles.tabHead}>
-                {file !== undefined && (
-                  <CollectionSeal collection={packOf(file)} size={narrow ? 24 : 30} />
-                )}
-                <span className={styles.tabText}>
-                  <span className={styles.tabName}>{narrow ? shortName(tab.name) : tab.name}</span>
-                  <span className={styles.tabCount}>{tab.count}</span>
+      <div className={styles.desk}>
+        <Desk className={styles.deskBack} />
+        <div
+          className={`${styles.tabs} ${view.searching ? styles.dimmed : ""}`}
+          role="tablist"
+          aria-label="Collections"
+        >
+          {view.tabs.map((tab) => {
+            const selected = !view.searching && tab.id === state.collectionId;
+            const file = catalog?.collections.find((c) => c.id === tab.id);
+            return (
+              <button
+                key={tab.id}
+                type="button"
+                role="tab"
+                aria-selected={selected}
+                className={styles.tab}
+                onClick={() => pickCollection(tab.id)}
+              >
+                <span className={styles.tabHead}>
+                  {file !== undefined && (
+                    <CollectionSeal collection={packOf(file)} size={narrow ? 24 : 30} />
+                  )}
+                  <span className={styles.tabText}>
+                    <span className={styles.tabName}>
+                      {narrow ? shortName(tab.name) : tab.name}
+                    </span>
+                    <span className={styles.tabCount}>{tab.count}</span>
+                  </span>
                 </span>
-              </span>
-              <span className={styles.tabTrack}>
-                <span
-                  className={styles.tabFill}
-                  style={{
-                    width: `${Math.round(tab.ratio * 100)}%`,
-                    background: collectionTone(tab.id),
-                  }}
-                />
-              </span>
-            </button>
-          );
-        })}
-      </div>
-
-      {!view.searching && (
-        <>
-          {tagline !== undefined && <p className={styles.tagline}>{tagline}</p>}
-          <div className={styles.row}>
-            {view.rarities.map((chip) => (
-              <RarityChip
-                key={chip.rarity}
-                rarity={chip.rarity}
-                count={chip.count}
-                aria={chip.aria}
-                on={state.rarity === chip.rarity}
-                onPick={() =>
-                  setState((s) => ({ ...s, rarity: s.rarity === chip.rarity ? null : chip.rarity }))
-                }
-              />
-            ))}
-          </div>
-          {friend !== null && state.compare != null && (
-            <div className={styles.compare}>
-              <p className={styles.compareTitle}>{comparingTitle(friend.name)}</p>
-              <div className={styles.row}>
-                {compareFilters(friend.name).map((choice) => (
-                  <FilterChip
-                    key={choice.id}
-                    label={choice.label}
-                    on={state.compare === choice.id}
-                    onPick={() => setState((s) => ({ ...s, compare: choice.id as CompareFilter }))}
+                <span className={styles.tabTrack}>
+                  <span
+                    className={styles.tabFill}
+                    style={{
+                      width: `${Math.round(tab.ratio * 100)}%`,
+                      background: collectionTone(tab.id),
+                    }}
                   />
-                ))}
-                <Button variant="ghost" small onClick={() => router.replace("/album")}>
-                  Fermer la comparaison
-                </Button>
-              </div>
-            </div>
-          )}
-          <div className={styles.row} hidden={friend !== null && state.compare != null}>
-            {view.filters.map((filter) => (
-              <FilterChip
-                key={filter.id}
-                label={filter.label}
-                count={filter.count}
-                on={state.filter === filter.id}
-                onPick={() => setState((s) => ({ ...s, filter: filter.id as AlbumFilter }))}
-              />
-            ))}
-            <span className={styles.divider} aria-hidden="true" />
-            {view.themes.map((theme) => (
-              <FilterChip
-                key={theme.id}
-                label={theme.label}
-                on={state.theme === theme.id}
-                muted
-                onPick={() =>
-                  setState((s) => ({ ...s, theme: s.theme === theme.id ? null : theme.id }))
-                }
-              />
-            ))}
-          </div>
-        </>
-      )}
-
-      {practiceCards !== null && (
-        <div className={styles.revise}>
-          <Button
-            variant="secondary"
-            small
-            onClick={() => {
-              askAlbumPractice(practiceCards);
-              router.push("/defis?revision=album");
-            }}
-          >
-            Réviser ces mots
-          </Button>
+                </span>
+              </button>
+            );
+          })}
         </div>
-      )}
 
-      {view.empty !== null ? (
-        <p className={styles.empty}>
-          <em>{view.empty}</em>
-        </p>
-      ) : (
-        <>
-          <ul
-            className={styles.grid}
-            style={{ "--card": `${cardWidth}px` } as CSSProperties}
-            aria-label="Cartes"
-          >
-            {view.items.slice(0, shown).map((item) => (
-              <li key={itemKey(item)} className={styles.slot}>
-                <Tile item={item} width={cardWidth} onOpen={openCard} />
-              </li>
-            ))}
-          </ul>
-          {shown < view.items.length && <div ref={sentinel} aria-hidden="true" />}
-        </>
-      )}
+        {!view.searching && (
+          <>
+            {tagline !== undefined && <p className={styles.tagline}>{tagline}</p>}
+            <div className={styles.row}>
+              {view.rarities.map((chip) => (
+                <RarityChip
+                  key={chip.rarity}
+                  rarity={chip.rarity}
+                  count={chip.count}
+                  aria={chip.aria}
+                  on={state.rarity === chip.rarity}
+                  onPick={() =>
+                    setState((s) => ({
+                      ...s,
+                      rarity: s.rarity === chip.rarity ? null : chip.rarity,
+                    }))
+                  }
+                />
+              ))}
+            </div>
+            {friend !== null && state.compare != null && (
+              <div className={styles.compare}>
+                <p className={styles.compareTitle}>{comparingTitle(friend.name)}</p>
+                <div className={styles.row}>
+                  {compareFilters(friend.name).map((choice) => (
+                    <FilterChip
+                      key={choice.id}
+                      label={choice.label}
+                      on={state.compare === choice.id}
+                      onPick={() =>
+                        setState((s) => ({ ...s, compare: choice.id as CompareFilter }))
+                      }
+                    />
+                  ))}
+                  <Button variant="ghost" small onClick={() => router.replace("/album")}>
+                    Fermer la comparaison
+                  </Button>
+                </div>
+              </div>
+            )}
+            <div className={styles.row} hidden={friend !== null && state.compare != null}>
+              {view.filters.map((filter) => (
+                <FilterChip
+                  key={filter.id}
+                  label={filter.label}
+                  count={filter.count}
+                  on={state.filter === filter.id}
+                  onPick={() => setState((s) => ({ ...s, filter: filter.id as AlbumFilter }))}
+                />
+              ))}
+              <span className={styles.divider} aria-hidden="true" />
+              {view.themes.map((theme) => (
+                <FilterChip
+                  key={theme.id}
+                  label={theme.label}
+                  on={state.theme === theme.id}
+                  muted
+                  onPick={() =>
+                    setState((s) => ({ ...s, theme: s.theme === theme.id ? null : theme.id }))
+                  }
+                />
+              ))}
+            </div>
+          </>
+        )}
+
+        {practiceCards !== null && (
+          <div className={styles.revise}>
+            <Button
+              variant="secondary"
+              small
+              onClick={() => {
+                askAlbumPractice(practiceCards);
+                router.push("/defis?revision=album");
+              }}
+            >
+              Réviser ces mots
+            </Button>
+          </div>
+        )}
+
+        {view.empty !== null ? (
+          <p className={styles.empty}>
+            <em>{view.empty}</em>
+          </p>
+        ) : (
+          <>
+            <ul
+              className={styles.grid}
+              style={{ "--card": `${cardWidth}px` } as CSSProperties}
+              aria-label="Cartes"
+            >
+              {view.items.slice(0, shown).map((item) => (
+                <li key={itemKey(item)} className={styles.slot}>
+                  <Tile item={item} width={cardWidth} onOpen={openCard} />
+                </li>
+              ))}
+            </ul>
+            {shown < view.items.length && <div ref={sentinel} aria-hidden="true" />}
+          </>
+        )}
+      </div>
     </main>
   );
 }

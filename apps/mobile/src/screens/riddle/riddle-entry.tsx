@@ -4,7 +4,7 @@ import { router, useFocusEffect } from "expo-router";
 import { useCallback, useState } from "react";
 import { StyleSheet, Text } from "react-native";
 import { api } from "@/api/client";
-import { colors, fontSizes, fonts, space } from "@/theme";
+import { fontSizes, fonts, paperColors, space } from "@/theme";
 import { Button } from "@/ui/button";
 import { Panel } from "@/ui/panel";
 
@@ -24,7 +24,7 @@ export function RiddleEntry({ now }: { readonly now: number }) {
 
   const started = riddle.step > 0 || riddle.outcome !== null;
   return (
-    <Panel style={styles.panel}>
+    <Panel paper style={styles.panel}>
       <Text style={styles.title} accessibilityRole="header">
         Énigme du jour
       </Text>
@@ -40,13 +40,16 @@ export function RiddleEntry({ now }: { readonly now: number }) {
   );
 }
 
+/** Everything here is read on paper in « La Bibliothèque ». */
+const ink = paperColors;
+
 const styles = StyleSheet.create({
   panel: { gap: space.s5 },
-  title: { fontFamily: fonts.display, fontSize: fontSizes.title, color: colors.pageInk },
+  title: { fontFamily: fonts.display, fontSize: fontSizes.title, color: ink.pageInk },
   line: {
     fontFamily: fonts.ui.medium,
     fontSize: fontSizes.body,
     lineHeight: 21,
-    color: colors.pageInkMuted,
+    color: ink.pageInkMuted,
   },
 });

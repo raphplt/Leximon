@@ -511,3 +511,82 @@
 .row[hidden] {
   display: none;
 }
+
+/* --- « La Bibliothèque » --- */
+
+/* The cards lie on the desk; the title and the search stay on the room above it. */
+.desk {
+  position: relative;
+}
+
+.deskBack {
+  display: none;
+}
+
+:root[data-look="bibliotheque"] .desk {
+  isolation: isolate;
+  margin: 0 -28px;
+  padding: 30px 30px 40px;
+}
+
+:root[data-look="bibliotheque"] .deskBack {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  display: block;
+}
+
+/* A collection is a paper tab; the one open is in old gold. */
+:root[data-look="bibliotheque"] .tab {
+  margin-bottom: 4px;
+  border: var(--lx-toy-outline-width) solid var(--lx-toy-outline);
+  border-radius: var(--lx-toy-radius-small);
+  background: linear-gradient(
+    180deg,
+    var(--lx-toy-paper-top) 0 47%,
+    var(--lx-toy-paper-bottom) 53% 100%
+  );
+  box-shadow:
+    inset 0 -3px 0 var(--lx-toy-paper-edge),
+    inset 0 2px 0 var(--lx-toy-sheen),
+    0 3px 0 var(--lx-toy-outline);
+  color: var(--lx-color-paper-ink);
+}
+
+:root[data-look="bibliotheque"] .tab[aria-selected="true"] {
+  background: linear-gradient(
+    180deg,
+    var(--lx-toy-gold-top) 0 47%,
+    var(--lx-toy-gold-bottom) 53% 100%
+  );
+  box-shadow:
+    inset 0 -3px 0 var(--lx-toy-gold-edge),
+    inset 0 2px 0 var(--lx-toy-sheen),
+    0 3px 0 var(--lx-toy-outline);
+  color: var(--lx-toy-outline);
+}
+
+:root[data-look="bibliotheque"] .tabName {
+  font-family: var(--font-display), Georgia, serif;
+}
+
+:root[data-look="bibliotheque"] .input {
+  border: var(--lx-toy-outline-width) solid var(--lx-toy-outline);
+  border-radius: var(--lx-toy-radius-small);
+  background:
+    var(--lx-matter-paper) 0 0 / var(--lx-matter-size),
+    var(--lx-color-paper);
+  box-shadow: inset 0 3px 0 color-mix(in srgb, var(--lx-toy-paper-edge) 60%, transparent);
+  color: var(--lx-color-paper-ink);
+}
+
+:root[data-look="bibliotheque"] .searchIcon {
+  color: var(--lx-color-paper-ink-muted);
+}
+
+@media (max-width: 759px) {
+  :root[data-look="bibliotheque"] .desk {
+    margin: 0 -10px;
+    padding: 20px 14px 28px;
+  }
+}
