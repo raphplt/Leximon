@@ -78,7 +78,10 @@ export function Page({
     </ScrollView>
   );
   return (
-    <KeyboardAvoidingView style={styles.page} behavior="padding">
+    <KeyboardAvoidingView
+      style={[styles.page, IS_LIBRARY && inTab && styles.inRoom]}
+      behavior="padding"
+    >
       {onDesk ? (
         <Room>
           <View
@@ -134,6 +137,8 @@ export function FormError({ message }: { readonly message: string | null }) {
 
 const styles = StyleSheet.create({
   page: { flex: 1, backgroundColor: colors.page },
+  // A page of a tab lies in the reading room the tabs already stand in.
+  inRoom: { backgroundColor: "transparent" },
   statusBand: {
     position: "absolute",
     top: 0,

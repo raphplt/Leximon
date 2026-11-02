@@ -10,15 +10,15 @@ import {
 } from "@leximon/view-model";
 import { router } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
-import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
+import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { api } from "@/api/client";
 import { Banner, Emblem } from "@/clan/emblem";
 import type { ClanJoin } from "@/clan/use-join-clan";
-import { colors, fontSizes, fonts, space } from "@/theme";
+import { colors, fontSizes, fonts, paperColors, space } from "@/theme";
 import { Button } from "@/ui/button";
 import { Chip } from "@/ui/chip";
-import { Icon } from "@/ui/icon";
 import { Panel } from "@/ui/panel";
+import { SearchField } from "@/ui/search-field";
 import { TextButton } from "@/ui/text-button";
 
 const ENTRY_FILTERS: readonly (ClanEntryMode | undefined)[] = [
@@ -72,20 +72,7 @@ export function ClanList({ join }: { readonly join: ClanJoin | null }) {
 
   return (
     <>
-      <View style={styles.search}>
-        <Icon name="search" size={18} color={colors.pageInkMuted} />
-        <TextInput
-          style={styles.searchInput}
-          value={query}
-          maxLength={30}
-          placeholder="Nom du clan"
-          placeholderTextColor={colors.pageInkFaint}
-          selectionColor={colors.rubric}
-          accessibilityLabel="Nom du clan"
-          autoCorrect={false}
-          onChangeText={setQuery}
-        />
-      </View>
+      <SearchField value={query} label="Nom du clan" maxLength={30} onChange={setQuery} />
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
@@ -116,7 +103,7 @@ export function ClanList({ join }: { readonly join: ClanJoin | null }) {
         <Text style={styles.empty}>{query.trim() === "" ? NO_CLAN_YET : NO_CLAN_FOUND}</Text>
       ) : (
         clans.map((clan) => (
-          <Panel key={clan.id} style={styles.clanRow}>
+          <Panel key={clan.id} paper style={styles.clanRow}>
             <Banner cardId={clan.banner} />
             <Pressable
               style={styles.clanHead}
@@ -168,23 +155,10 @@ export function JoinButton({
   );
 }
 
+/** Each clan is shown on a leaf of paper in « La Bibliothèque ». */
+const ink = paperColors;
+
 const styles = StyleSheet.create({
-  search: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: space.s5,
-    minHeight: 50,
-    paddingHorizontal: space.s8,
-    borderRadius: 25,
-    backgroundColor: colors.well,
-  },
-  searchInput: {
-    flex: 1,
-    color: colors.pageInk,
-    fontFamily: fonts.ui.semibold,
-    fontSize: fontSizes.bodyLarge,
-    paddingVertical: space.s5,
-  },
   chips: { gap: space.s4 },
   chipsGap: { width: 1, marginVertical: space.s4, backgroundColor: colors.track },
   faint: { fontFamily: fonts.ui.medium, fontSize: fontSizes.body, color: colors.pageInkFaint },
@@ -199,18 +173,18 @@ const styles = StyleSheet.create({
   clanRow: { overflow: "hidden" },
   clanHead: { flexDirection: "row", alignItems: "center", gap: space.s8 },
   clanText: { flex: 1, gap: space.s1 },
-  clanName: { fontFamily: fonts.display, fontSize: fontSizes.subtitle, color: colors.pageInk },
+  clanName: { fontFamily: fonts.display, fontSize: fontSizes.subtitle, color: ink.pageInk },
   small: {
     fontFamily: fonts.ui.medium,
     fontSize: fontSizes.label,
     lineHeight: 20,
-    color: colors.pageInkMuted,
+    color: ink.pageInkMuted,
   },
   motto: {
     marginTop: space.s2,
     fontFamily: fonts.text.italic,
     fontSize: fontSizes.body,
     lineHeight: 20,
-    color: colors.pageInk,
+    color: ink.pageInk,
   },
 });

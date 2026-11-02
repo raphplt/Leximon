@@ -17,7 +17,7 @@ import {
 } from "@leximon/view-model";
 import { router } from "expo-router";
 import { useEffect, useState } from "react";
-import { Pressable, Share, StyleSheet, Text, TextInput, View } from "react-native";
+import { Pressable, Share, StyleSheet, Text, View } from "react-native";
 import { api } from "@/api/client";
 import { Emblem } from "@/clan/emblem";
 import { WEB_URL } from "@/config";
@@ -26,7 +26,7 @@ import { useNow, useShared, useSharedFailed } from "@/player/shared";
 import { friends } from "@/player/state";
 import { usePlayerView } from "@/player/use-player-view";
 import { PseudoSheet } from "@/screens/profile/pseudo-sheet";
-import { alpha, colors, fontSizes, fonts, radii, space } from "@/theme";
+import { alpha, colors, fontSizes, fonts, paperColors, radii, space } from "@/theme";
 import { Avatar } from "@/ui/avatar";
 import { Button } from "@/ui/button";
 import { Chip } from "@/ui/chip";
@@ -34,6 +34,7 @@ import { Icon } from "@/ui/icon";
 import { LevelMedal } from "@/ui/level";
 import { Page, Paragraph } from "@/ui/page";
 import { Panel } from "@/ui/panel";
+import { SearchField } from "@/ui/search-field";
 import { Sheet } from "@/ui/sheet";
 import { TextButton } from "@/ui/text-button";
 import { TextField } from "@/ui/text-field";
@@ -91,7 +92,7 @@ export function FriendsScreen({
       <AddByPseudo />
     </>
   ) : (
-    <Panel>
+    <Panel paper>
       <Text style={styles.hint}>{FRIENDS_PSEUDO_FIRST}</Text>
       <Button label="Choisir mon pseudo" onPress={() => setPseudoOpen(true)} />
     </Panel>
@@ -133,24 +134,12 @@ function FriendList({
   const view = friendListView(list, { query, filter, unfolded });
 
   return (
-    <Panel>
+    <Panel paper>
       <Text style={styles.kicker}>TES AMIS</Text>
       {list.length === 0 && <Text style={styles.empty}>{FRIENDS_EMPTY}</Text>}
       {view.searchable && (
         <>
-          <View style={styles.search}>
-            <Icon name="search" size={17} color={colors.pageInkMuted} />
-            <TextInput
-              style={styles.searchInput}
-              value={query}
-              placeholder="Chercher un ami"
-              placeholderTextColor={colors.pageInkFaint}
-              selectionColor={colors.rubric}
-              accessibilityLabel="Chercher un ami"
-              autoCorrect={false}
-              onChangeText={setQuery}
-            />
-          </View>
+          <SearchField compact value={query} label="Chercher un ami" onChange={setQuery} />
           <View style={styles.chips}>
             {view.filters.map((f) => (
               <Chip
@@ -184,19 +173,19 @@ function FriendList({
                 </Text>
                 {friend.crowned && (
                   <View accessible accessibilityLabel="Premier la semaine passée">
-                    <Icon name="crown" size={14} color={colors.rubric} />
+                    <Icon name="crown" size={14} color={ink.rubric} />
                   </View>
                 )}
               </View>
               <Text style={styles.small}>{friendLine(friend, now)}</Text>
               {trades !== null && (
                 <View style={styles.trades}>
-                  <Icon name="echange" size={14} color={colors.rubric} />
+                  <Icon name="echange" size={14} color={ink.rubric} />
                   <Text style={styles.tradesText}>{trades}</Text>
                 </View>
               )}
             </View>
-            <Icon name="chev" size={16} color={colors.pageInkMuted} />
+            <Icon name="chev" size={16} color={ink.pageInkMuted} />
           </Pressable>
         );
       })}
@@ -232,7 +221,7 @@ function Incoming({ requests }: { readonly requests: readonly FriendRequest[] })
   };
 
   return (
-    <Panel style={styles.incoming}>
+    <Panel paper style={styles.incoming}>
       <Text style={styles.kicker}>
         {requests.length > 1 ? `${requests.length} DEMANDES D'AMI` : "UNE DEMANDE D'AMI"}
       </Text>
@@ -273,7 +262,7 @@ function Incoming({ requests }: { readonly requests: readonly FriendRequest[] })
 function Outgoing({ requests }: { readonly requests: readonly FriendRequest[] }) {
   const [open, setOpen] = useState(false);
   return (
-    <Panel>
+    <Panel paper>
       <Pressable
         onPress={() => setOpen((o) => !o)}
         accessibilityRole="button"
@@ -283,7 +272,7 @@ function Outgoing({ requests }: { readonly requests: readonly FriendRequest[] })
         <Text style={styles.summaryText}>
           {requests.length > 1 ? `${requests.length} demandes envoyées` : "Une demande envoyée"}
         </Text>
-        <Icon name={open ? "chevd" : "chev"} size={16} color={colors.pageInkMuted} />
+        <Icon name={open ? "chevd" : "chev"} size={16} color={ink.pageInkMuted} />
       </Pressable>
       {open &&
         requests.map((request) => (
@@ -314,7 +303,7 @@ function FriendLink({
 }) {
   const places = betaPlacesLabel(placesLeft);
   return (
-    <Panel>
+    <Panel paper>
       <Text style={styles.kicker}>TON LIEN D'AMI</Text>
       <Text style={styles.line}>
         Ceux qui entrent par ton lien deviennent tes amis. Quand l'un d'eux atteint le niveau 5,
@@ -346,7 +335,7 @@ function AddByPseudo() {
   };
 
   return (
-    <Panel>
+    <Panel paper>
       <TextField
         label="Ajouter par pseudo"
         value={pseudo}
@@ -382,7 +371,7 @@ function AddFromLink({ code }: { readonly code: string }) {
 
   if (pseudo === null || done) return null;
   return (
-    <Panel style={styles.incoming}>
+    <Panel paper style={styles.incoming}>
       <Text style={styles.hint}>Ajouter {pseudo} en ami ?</Text>
       <Button
         label="Envoyer la demande"
@@ -451,14 +440,14 @@ function FriendActions({
       <View style={styles.sheetHead}>
         <Avatar avatar={friend.player.avatar} frame={friend.player.frame} size={72} />
         <View style={styles.rowText}>
-          <Text style={styles.small}>{friendLine(friend, now)}</Text>
+          <Text style={styles.sheetSmall}>{friendLine(friend, now)}</Text>
           {friend.clan !== null && (
             <View style={styles.clan}>
               <Emblem emblem={friend.clan.emblem} size={22} />
               <Text style={styles.clanName}>{friend.clan.name}</Text>
             </View>
           )}
-          {trades !== null && <Text style={styles.tradesText}>{trades}</Text>}
+          {trades !== null && <Text style={styles.sheetTradesText}>{trades}</Text>}
         </View>
       </View>
       {friend.player.pseudo !== null && (
@@ -493,10 +482,13 @@ function FriendActions({
         disabled={busy}
         onPress={() => (confirming ? void remove() : setConfirming(true))}
       />
-      {confirming && <Text style={styles.small}>Sans prévenir, des deux côtés.</Text>}
+      {confirming && <Text style={styles.sheetSmall}>Sans prévenir, des deux côtés.</Text>}
     </>
   );
 }
+
+/** What the panels hold is read on paper in « La Bibliothèque ». */
+const ink = paperColors;
 
 const styles = StyleSheet.create({
   count: {
@@ -509,47 +501,31 @@ const styles = StyleSheet.create({
     fontFamily: fonts.ui.extrabold,
     fontSize: fontSizes.caption,
     letterSpacing: 2,
-    color: colors.pageInkMuted,
+    color: ink.pageInkMuted,
   },
   hint: {
     fontFamily: fonts.text.regular,
     fontSize: fontSizes.lead,
     lineHeight: 24,
-    color: colors.pageInk,
+    color: ink.pageInk,
   },
   line: {
     fontFamily: fonts.ui.medium,
     fontSize: fontSizes.body,
     lineHeight: 21,
-    color: colors.pageInk,
+    color: ink.pageInk,
   },
   small: {
     fontFamily: fonts.ui.medium,
     fontSize: fontSizes.small,
     lineHeight: 18,
-    color: colors.pageInkMuted,
+    color: ink.pageInkMuted,
   },
   empty: {
     fontFamily: fonts.text.italic,
     fontSize: fontSizes.lead,
     lineHeight: 24,
-    color: colors.pageInkMuted,
-  },
-  search: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: space.s5,
-    minHeight: 46,
-    paddingHorizontal: space.s7,
-    borderRadius: 23,
-    backgroundColor: colors.well,
-  },
-  searchInput: {
-    flex: 1,
-    color: colors.pageInk,
-    fontFamily: fonts.ui.semibold,
-    fontSize: fontSizes.body,
-    paddingVertical: space.s4,
+    color: ink.pageInkMuted,
   },
   chips: { flexDirection: "row", flexWrap: "wrap", gap: space.s4 },
   row: { flexDirection: "row", alignItems: "center", gap: space.s6, minHeight: 52 },
@@ -562,8 +538,8 @@ const styles = StyleSheet.create({
     height: 13,
     borderRadius: 7,
     borderWidth: 2,
-    borderColor: colors.sheet,
-    backgroundColor: colors.success,
+    borderColor: ink.sheet,
+    backgroundColor: ink.success,
   },
   rowText: { flex: 1, gap: space.s1 },
   nameLine: { flexDirection: "row", alignItems: "center", gap: space.s3 },
@@ -571,7 +547,7 @@ const styles = StyleSheet.create({
     flexShrink: 1,
     fontFamily: fonts.ui.extrabold,
     fontSize: fontSizes.body,
-    color: colors.pageInk,
+    color: ink.pageInk,
   },
   trades: {
     alignSelf: "flex-start",
@@ -581,16 +557,23 @@ const styles = StyleSheet.create({
     paddingHorizontal: space.s4,
     paddingVertical: space.s2,
     borderRadius: radii.pill,
-    backgroundColor: alpha(colors.gilt, 0.14),
+    backgroundColor: alpha(ink.gilt, 0.14),
   },
-  tradesText: { fontFamily: fonts.ui.bold, fontSize: fontSizes.small, color: colors.rubric },
-  incoming: { borderWidth: 1, borderColor: alpha(colors.gilt, 0.35) },
+  tradesText: { fontFamily: fonts.ui.bold, fontSize: fontSizes.small, color: ink.rubric },
+  incoming: { borderWidth: 1, borderColor: alpha(ink.gilt, 0.35) },
   request: { gap: space.s4 },
   requestActions: { flexDirection: "row", gap: space.s5 },
   grow: { flex: 1 },
   summary: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
-  summaryText: { fontFamily: fonts.ui.extrabold, fontSize: fontSizes.body, color: colors.pageInk },
+  summaryText: { fontFamily: fonts.ui.extrabold, fontSize: fontSizes.body, color: ink.pageInk },
   sheetHead: { flexDirection: "row", alignItems: "center", gap: space.s8 },
   clan: { flexDirection: "row", alignItems: "center", gap: space.s4 },
+  sheetSmall: {
+    fontFamily: fonts.ui.medium,
+    fontSize: fontSizes.small,
+    lineHeight: 18,
+    color: colors.pageInkMuted,
+  },
+  sheetTradesText: { fontFamily: fonts.ui.bold, fontSize: fontSizes.small, color: colors.rubric },
   clanName: { fontFamily: fonts.ui.bold, fontSize: fontSizes.label, color: colors.pageInk },
 });

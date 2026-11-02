@@ -11,7 +11,7 @@ import {
 import { useEffect, useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
 import { api } from "@/api/client";
-import { alpha, colors, fontSizes, fonts, radii, space } from "@/theme";
+import { alpha, fontSizes, fonts, paperColors, radii, space } from "@/theme";
 import { Avatar } from "@/ui/avatar";
 import { Panel } from "@/ui/panel";
 import { TextButton } from "@/ui/text-button";
@@ -36,7 +36,7 @@ export function Podium({ alone, now }: { readonly alone: boolean; readonly now: 
 
   const view = podium === null ? null : podiumView(podium.entries);
   return (
-    <Panel>
+    <Panel paper>
       <View style={styles.head}>
         <Text style={styles.kicker}>PODIUM DE LA SEMAINE</Text>
         {podium !== null && <Text style={styles.small}>{goalTimeLeft(podium.weekEnd, now)}</Text>}
@@ -94,6 +94,9 @@ export function Podium({ alone, now }: { readonly alone: boolean; readonly now: 
   );
 }
 
+/** What the panels hold is read on paper in « La Bibliothèque ». */
+const ink = paperColors;
+
 const styles = StyleSheet.create({
   head: {
     flexDirection: "row",
@@ -105,33 +108,33 @@ const styles = StyleSheet.create({
     fontFamily: fonts.ui.extrabold,
     fontSize: fontSizes.caption,
     letterSpacing: 2,
-    color: colors.pageInkMuted,
+    color: ink.pageInkMuted,
   },
-  small: { fontFamily: fonts.ui.medium, fontSize: fontSizes.small, color: colors.pageInkMuted },
+  small: { fontFamily: fonts.ui.medium, fontSize: fontSizes.small, color: ink.pageInkMuted },
   empty: {
     fontFamily: fonts.text.italic,
     fontSize: fontSizes.lead,
     lineHeight: 24,
-    color: colors.pageInkMuted,
+    color: ink.pageInkMuted,
   },
   steps: { flexDirection: "row", alignItems: "flex-end", gap: space.s4, marginTop: space.s3 },
   step: { flex: 1, alignItems: "center", gap: space.s2 },
-  stepName: { fontFamily: fonts.ui.extrabold, fontSize: fontSizes.small, color: colors.pageInk },
-  stepAnswers: { fontFamily: fonts.display, fontSize: fontSizes.subtitle, color: colors.rubric },
+  stepName: { fontFamily: fonts.ui.extrabold, fontSize: fontSizes.small, color: ink.pageInk },
+  stepAnswers: { fontFamily: fonts.display, fontSize: fontSizes.subtitle, color: ink.rubric },
   block: {
     alignSelf: "stretch",
     alignItems: "center",
     justifyContent: "center",
     borderTopLeftRadius: radii.md,
     borderTopRightRadius: radii.md,
-    backgroundColor: colors.pageRaised,
+    backgroundColor: ink.pageRaised,
   },
-  blockSelf: { backgroundColor: alpha(colors.gilt, 0.22) },
-  blockText: { fontFamily: fonts.ui.extrabold, fontSize: fontSizes.label, color: colors.pageInk },
+  blockSelf: { backgroundColor: alpha(ink.gilt, 0.22) },
+  blockText: { fontFamily: fonts.ui.extrabold, fontSize: fontSizes.label, color: ink.pageInk },
   mine: {
     fontFamily: fonts.ui.bold,
     fontSize: fontSizes.label,
-    color: colors.pageInk,
+    color: ink.pageInk,
     textAlign: "center",
   },
   rank: { flexDirection: "row", alignItems: "center", gap: space.s5, minHeight: 30 },
@@ -139,13 +142,13 @@ const styles = StyleSheet.create({
     width: 36,
     fontFamily: fonts.ui.extrabold,
     fontSize: fontSizes.small,
-    color: colors.pageInkMuted,
+    color: ink.pageInkMuted,
   },
   rankName: {
     flex: 1,
     fontFamily: fonts.ui.bold,
     fontSize: fontSizes.label,
-    color: colors.pageInk,
+    color: ink.pageInk,
   },
-  rankSelf: { color: colors.rubric },
+  rankSelf: { color: ink.rubric },
 });

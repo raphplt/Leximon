@@ -10,17 +10,18 @@ import {
 } from "@leximon/view-model";
 import { router } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
-import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
+import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { api } from "@/api/client";
 import { Emblem } from "@/clan/emblem";
 import { useShared } from "@/player/shared";
 import { profile } from "@/player/state";
-import { colors, fontSizes, fonts, space } from "@/theme";
+import { colors, fontSizes, fonts, paperColors, space } from "@/theme";
 import { Avatar } from "@/ui/avatar";
 import { Button } from "@/ui/button";
 import { Chip } from "@/ui/chip";
 import { Icon } from "@/ui/icon";
 import { Panel } from "@/ui/panel";
+import { SearchField } from "@/ui/search-field";
 import { TextButton } from "@/ui/text-button";
 
 interface Filter {
@@ -88,21 +89,7 @@ export function PlayerList() {
         : noPlayerYet(me?.publicFromLevel ?? 8);
   return (
     <>
-      <View style={styles.search}>
-        <Icon name="search" size={18} color={colors.pageInkMuted} />
-        <TextInput
-          style={styles.searchInput}
-          value={query}
-          maxLength={30}
-          placeholder={PLAYER_SEARCH_LABEL}
-          placeholderTextColor={colors.pageInkFaint}
-          selectionColor={colors.rubric}
-          accessibilityLabel={PLAYER_SEARCH_LABEL}
-          autoCorrect={false}
-          autoCapitalize="none"
-          onChangeText={setQuery}
-        />
-      </View>
+      <SearchField value={query} label={PLAYER_SEARCH_LABEL} maxLength={30} onChange={setQuery} />
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
@@ -134,7 +121,7 @@ export function PlayerList() {
       ) : players.length === 0 ? (
         <Text style={styles.empty}>{empty}</Text>
       ) : (
-        <Panel style={styles.players}>
+        <Panel paper style={styles.players}>
           {players.map((entry, index) => (
             <PlayerRow key={entry.player.code} entry={entry} first={index === 0} />
           ))}
@@ -169,10 +156,13 @@ function PlayerRow({ entry, first }: { readonly entry: DirectoryPlayer; readonly
         </Text>
       </View>
       {clan !== null && <Emblem emblem={clan.emblem} size={28} level={clan.level} />}
-      <Icon name="chev" size={16} color={colors.pageInkMuted} />
+      <Icon name="chev" size={16} color={ink.pageInkMuted} />
     </Pressable>
   );
 }
+
+/** The players are listed on paper in « La Bibliothèque ». */
+const ink = paperColors;
 
 const styles = StyleSheet.create({
   note: {
@@ -180,22 +170,6 @@ const styles = StyleSheet.create({
     fontSize: fontSizes.body,
     lineHeight: 21,
     color: colors.pageInkMuted,
-  },
-  search: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: space.s5,
-    minHeight: 50,
-    paddingHorizontal: space.s8,
-    borderRadius: 25,
-    backgroundColor: colors.well,
-  },
-  searchInput: {
-    flex: 1,
-    color: colors.pageInk,
-    fontFamily: fonts.ui.semibold,
-    fontSize: fontSizes.bodyLarge,
-    paddingVertical: space.s5,
   },
   faint: { fontFamily: fonts.ui.medium, fontSize: fontSizes.body, color: colors.pageInkFaint },
   empty: {
@@ -210,8 +184,8 @@ const styles = StyleSheet.create({
   chipsGap: { width: 1, marginVertical: space.s4, backgroundColor: colors.track },
   players: { paddingVertical: space.s2, paddingHorizontal: space.s7, gap: 0 },
   player: { flexDirection: "row", alignItems: "center", gap: space.s6, minHeight: 66 },
-  playerRule: { borderTopWidth: 1, borderTopColor: colors.track },
+  playerRule: { borderTopWidth: 1, borderTopColor: ink.track },
   text: { flex: 1, gap: space.s1 },
-  name: { fontFamily: fonts.ui.extrabold, fontSize: fontSizes.bodyLarge, color: colors.pageInk },
-  small: { fontFamily: fonts.ui.medium, fontSize: fontSizes.label, color: colors.pageInkMuted },
+  name: { fontFamily: fonts.ui.extrabold, fontSize: fontSizes.bodyLarge, color: ink.pageInk },
+  small: { fontFamily: fonts.ui.medium, fontSize: fontSizes.label, color: ink.pageInkMuted },
 });

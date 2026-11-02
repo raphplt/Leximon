@@ -17,7 +17,7 @@ export function Segmented<T extends string>({
   readonly light?: boolean;
 }) {
   // In « La Bibliothèque », each tab is a toy of paper, the one chosen in gold.
-  const toys = IS_LIBRARY && !light;
+  const toys = IS_LIBRARY;
   return (
     <View
       style={[styles.row, light && styles.rowLight, toys && styles.rowToys]}

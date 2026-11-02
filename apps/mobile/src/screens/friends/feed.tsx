@@ -14,7 +14,7 @@ import { catalogInHand, loadCatalog } from "@/cards/catalog";
 import { useShared } from "@/player/shared";
 import { profile } from "@/player/state";
 import { openCard } from "@/screens/trades/card-row";
-import { colors, fontSizes, fonts, space } from "@/theme";
+import { fontSizes, fonts, paperColors, space } from "@/theme";
 import { Avatar } from "@/ui/avatar";
 import { Chip } from "@/ui/chip";
 import { Panel } from "@/ui/panel";
@@ -66,7 +66,7 @@ export function FriendFeed({ now }: { readonly now: number }) {
   };
 
   return (
-    <Panel>
+    <Panel paper>
       <Text style={styles.kicker}>LE FIL DES AMIS</Text>
       {events === null ? (
         <Text style={styles.small}>{failed ? "Le fil ne répond pas." : "Un instant…"}</Text>
@@ -124,20 +124,23 @@ export function FriendFeed({ now }: { readonly now: number }) {
   );
 }
 
+/** What the panels hold is read on paper in « La Bibliothèque ». */
+const ink = paperColors;
+
 const styles = StyleSheet.create({
   kicker: {
     fontFamily: fonts.ui.extrabold,
     fontSize: fontSizes.caption,
     letterSpacing: 2,
-    color: colors.pageInkMuted,
+    color: ink.pageInkMuted,
   },
-  small: { fontFamily: fonts.ui.medium, fontSize: fontSizes.small, color: colors.pageInkMuted },
-  faint: { fontFamily: fonts.ui.medium, fontSize: fontSizes.caption, color: colors.pageInkFaint },
+  small: { fontFamily: fonts.ui.medium, fontSize: fontSizes.small, color: ink.pageInkMuted },
+  faint: { fontFamily: fonts.ui.medium, fontSize: fontSizes.caption, color: ink.pageInkFaint },
   empty: {
     fontFamily: fonts.text.italic,
     fontSize: fontSizes.lead,
     lineHeight: 24,
-    color: colors.pageInkMuted,
+    color: ink.pageInkMuted,
   },
   event: { flexDirection: "row", gap: space.s6 },
   body: { flex: 1, gap: space.s3 },
@@ -145,9 +148,9 @@ const styles = StyleSheet.create({
     fontFamily: fonts.ui.medium,
     fontSize: fontSizes.body,
     lineHeight: 21,
-    color: colors.pageInk,
+    color: ink.pageInk,
   },
   word: { fontFamily: fonts.text.italic, fontSize: fontSizes.lead },
-  wordLink: { color: colors.rubric, textDecorationLine: "underline" },
+  wordLink: { color: ink.rubric, textDecorationLine: "underline" },
   reactions: { flexDirection: "row", flexWrap: "wrap", alignItems: "center", gap: space.s3 },
 });

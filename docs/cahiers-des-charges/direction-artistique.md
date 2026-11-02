@@ -221,6 +221,8 @@ Seulement ce dont l'écran Jouer et l'ouverture ont besoin : bandeau du haut (po
 
 **Échanges faits le 2026-11-02**, sur le web et le mobile. Les boîtes d'offres sont des onglets en papier, celui qui est ouvert est en or (sur le mobile, toutes les rangées d'onglets prennent cette allure). Les offres, l'historique, les boîtes vides et la préparation d'une offre sont sur des feuilles, les cartes choisies cerclées d'or. Un échange conclu se montre sur le sous-main, sous des rayons d'or, comme un coffret.
 
+**Communauté faite le 2026-11-02** (joueurs, clans et amis ; le clan et sa discussion suivent). Les sections sont des onglets en papier, celle qui est ouverte est en or. Les recherches sont creusées dans le papier (sur le mobile, un seul champ sert aux joueurs, aux clans et aux amis). La liste des joueurs, chaque clan, les amis, le podium et le fil sont sur des feuilles. Sur le mobile, les pages des onglets laissent voir la salle derrière elles. Écart : les fenêtres qui montent du bas du mobile restent sombres pour l'instant ; les passer en papier touche toutes leurs pages, ce sera un lot à part.
+
 ### Hors du jeu
 
 | Élément | Travail |

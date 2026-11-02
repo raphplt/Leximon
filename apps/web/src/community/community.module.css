@@ -203,3 +203,49 @@
     display: none;
   }
 }
+
+/* --- « La Bibliothèque » --- */
+
+/* The sections are paper tabs; the one open is in old gold. */
+:root[data-look="bibliotheque"] .nav {
+  gap: var(--lx-s4);
+}
+
+:root[data-look="bibliotheque"] .section {
+  margin-bottom: 3px;
+  border: var(--lx-toy-outline-width) solid var(--lx-toy-outline);
+  border-radius: var(--lx-toy-radius-small);
+  background: linear-gradient(
+    180deg,
+    var(--lx-toy-paper-top) 0 47%,
+    var(--lx-toy-paper-bottom) 53% 100%
+  );
+  box-shadow:
+    inset 0 -3px 0 var(--lx-toy-paper-edge),
+    inset 0 2px 0 var(--lx-toy-sheen),
+    0 3px 0 var(--lx-toy-outline);
+  color: var(--lx-color-paper-ink);
+}
+
+:root[data-look="bibliotheque"] .section:hover {
+  color: var(--lx-color-paper-ink);
+  filter: brightness(1.04);
+}
+
+:root[data-look="bibliotheque"] .section[aria-current="page"] {
+  background: linear-gradient(
+    180deg,
+    var(--lx-toy-gold-top) 0 47%,
+    var(--lx-toy-gold-bottom) 53% 100%
+  );
+  box-shadow:
+    inset 0 -3px 0 var(--lx-toy-gold-edge),
+    inset 0 2px 0 var(--lx-toy-sheen),
+    0 3px 0 var(--lx-toy-outline);
+  color: var(--lx-toy-outline);
+}
+
+:root[data-look="bibliotheque"] .note {
+  color: var(--lx-lettering-fill);
+  text-shadow: 0 1px 0 var(--lx-toy-outline);
+}

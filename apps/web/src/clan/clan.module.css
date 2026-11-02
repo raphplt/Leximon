@@ -1112,3 +1112,24 @@
 .cardHead > span {
   white-space: nowrap;
 }
+
+/* --- « La Bibliothèque » --- */
+
+/* A search is cut into the paper, as the other fields are. */
+:root[data-look="bibliotheque"] .search {
+  border: var(--lx-toy-outline-width) solid var(--lx-toy-outline);
+  border-radius: var(--lx-toy-radius-small);
+  background:
+    var(--lx-matter-paper) 0 0 / var(--lx-matter-size),
+    var(--lx-color-paper);
+  box-shadow: inset 0 3px 0 color-mix(in srgb, var(--lx-toy-paper-edge) 60%, transparent);
+  color: var(--lx-color-paper-ink-muted);
+}
+
+:root[data-look="bibliotheque"] .searchInput {
+  color: var(--lx-color-paper-ink);
+}
+
+:root[data-look="bibliotheque"] .searchInput::placeholder {
+  color: var(--lx-color-paper-ink-muted);
+}
