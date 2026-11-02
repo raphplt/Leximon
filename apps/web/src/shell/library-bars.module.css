@@ -23,9 +23,8 @@
     height: 76px;
     padding: 0 24px 6px;
     box-sizing: border-box;
-    background:
-      repeating-linear-gradient(90deg, var(--lx-toy-drop) 0 1px, transparent 1px 90px),
-      linear-gradient(180deg, var(--lx-shelf-bottom), var(--lx-shelf-top));
+    /* Plain wood: planks drawn at fixed steps would never meet the tabs, whose widths vary. */
+    background: linear-gradient(180deg, var(--lx-shelf-bottom), var(--lx-shelf-top));
     box-shadow:
       inset 0 -3px 0 var(--lx-shelf-gilt),
       inset 0 -5px 0 var(--lx-shelf-gilt-shade),
