@@ -30,6 +30,7 @@ import { ownedCards } from "@/player/collection";
 import { friends } from "@/player/friends";
 import { useShared } from "@/player/resource";
 import { LevelMedal } from "@/ui/level-bits";
+import ui from "@/ui/ui.module.css";
 import { CardRow, cardLabel, catalogCard } from "./card-thumb";
 import { Counterpart } from "./counterpart";
 import styles from "./trades.module.css";
@@ -305,7 +306,7 @@ export function ProposeTrade({
 
   if (blocked !== null) {
     return (
-      <section className={styles.panel} aria-labelledby="propose-title">
+      <section className={`${styles.panel} ${ui.leaf}`} aria-labelledby="propose-title">
         <h2 id="propose-title" className={styles.sectionTitle}>
           Proposer un échange
         </h2>
@@ -313,7 +314,7 @@ export function ProposeTrade({
         <p className={styles.muted}>
           En attendant, ouvre des {noun.many}. Tu pourras échanger tes doubles.
         </p>
-        <Link href="/jouer" className={styles.secondary}>
+        <Link href="/jouer" className={`${styles.secondary} ${ui.paperToy}`}>
           Ouvrir un {noun.one}
         </Link>
       </section>
@@ -323,7 +324,7 @@ export function ProposeTrade({
   const partnerCode = partner === null ? "" : playerName(partner.badge);
 
   return (
-    <section className={styles.panel} aria-labelledby="propose-title">
+    <section className={`${styles.panel} ${ui.leaf}`} aria-labelledby="propose-title">
       <h2 id="propose-title" className={styles.sectionTitle}>
         Proposer un échange
       </h2>
@@ -382,7 +383,7 @@ export function ProposeTrade({
           </label>
           <input
             id="partner-code"
-            className={styles.input}
+            className={`${styles.input} ${ui.paperField}`}
             value={codeInput}
             onChange={(event) => {
               setCodeInput(event.target.value);
@@ -415,7 +416,7 @@ export function ProposeTrade({
           </p>
           <button
             type="submit"
-            className={styles.primary}
+            className={`${styles.primary} ${ui.goldToy}`}
             disabled={busy || codeInput.trim() === ""}
           >
             {busy ? "Recherche…" : "Voir ses cartes"}
@@ -467,7 +468,7 @@ export function ProposeTrade({
           {mine.length === 0 && held.length === 0 ? (
             <div className={styles.empty}>
               <p className={styles.hint}>Aucun double à échanger. Ouvre des {noun.many}.</p>
-              <Link href="/jouer" className={styles.secondary}>
+              <Link href="/jouer" className={`${styles.secondary} ${ui.paperToy}`}>
                 Ouvrir un {noun.one}
               </Link>
             </div>
@@ -512,7 +513,7 @@ export function ProposeTrade({
           <div className={styles.stepActions}>
             <button
               type="button"
-              className={styles.secondary}
+              className={`${styles.secondary} ${ui.paperToy}`}
               disabled={busy}
               onClick={() => setStep("give")}
             >
@@ -520,7 +521,7 @@ export function ProposeTrade({
             </button>
             <button
               type="button"
-              className={styles.primary}
+              className={`${styles.primary} ${ui.goldToy}`}
               disabled={busy}
               onClick={() => void send()}
             >
@@ -535,7 +536,7 @@ export function ProposeTrade({
           <p className={styles.hint}>{partnerCode} a 72 heures pour répondre.</p>
           <button
             type="button"
-            className={styles.primary}
+            className={`${styles.primary} ${ui.goldToy}`}
             onClick={() => {
               reset();
               onShowSent();
@@ -543,7 +544,7 @@ export function ProposeTrade({
           >
             Voir mes offres envoyées
           </button>
-          <button type="button" className={styles.secondary} onClick={reset}>
+          <button type="button" className={`${styles.secondary} ${ui.paperToy}`} onClick={reset}>
             Proposer un autre échange
           </button>
         </div>
@@ -702,12 +703,12 @@ function StepActions({
 }) {
   return (
     <div className={styles.stepActions}>
-      <button type="button" className={styles.secondary} onClick={back.onClick}>
+      <button type="button" className={`${styles.secondary} ${ui.paperToy}`} onClick={back.onClick}>
         {back.label}
       </button>
       <button
         type="button"
-        className={styles.primary}
+        className={`${styles.primary} ${ui.goldToy}`}
         disabled={next.disabled}
         onClick={next.onClick}
       >

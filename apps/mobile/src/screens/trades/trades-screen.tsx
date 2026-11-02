@@ -39,12 +39,13 @@ import {
   progress as progressResource,
 } from "@/player/state";
 import { TAB_BAR_RISE } from "@/shell/tab-bar";
-import { colors, fontSizes, fonts, radii, space } from "@/theme";
+import { colors, fontSizes, fonts, IS_LIBRARY, paperColors, radii, space } from "@/theme";
 import { Button } from "@/ui/button";
 import { Icon } from "@/ui/icon";
-import { Panel } from "@/ui/panel";
+import { OnPaper, Panel } from "@/ui/panel";
 import { Segmented } from "@/ui/segmented";
 import { TextButton } from "@/ui/text-button";
+import { Lettering, toyFace } from "@/ui/toy";
 import { CardRow, catalogCard } from "./card-row";
 import { Counterpart } from "./counterpart";
 import { ProposeTrade } from "./propose-trade";
@@ -232,9 +233,15 @@ export function TradesScreen({
         keyboardShouldPersistTaps="handled"
       >
         <View style={styles.header}>
-          <Text style={styles.title} accessibilityRole="header">
-            Échanges
-          </Text>
+          {IS_LIBRARY ? (
+            <View accessibilityRole="header">
+              <Lettering size={fontSizes.heading}>Échanges</Lettering>
+            </View>
+          ) : (
+            <Text style={styles.title} accessibilityRole="header">
+              Échanges
+            </Text>
+          )}
           {profile !== null && <PlayerCode code={profile.playerCode} />}
         </View>
         {tooLow !== null && <Text style={styles.warning}>{tooLow}</Text>}
@@ -336,7 +343,7 @@ function PlayerCode({ code }: { readonly code: string }) {
   return (
     <Pressable
       onPress={share}
-      style={styles.codeChip}
+      style={[styles.codeChip, IS_LIBRARY && [styles.codeToy, toyFace("paper", "tag")]]}
       accessibilityRole="button"
       accessibilityLabel={`Partager mon code joueur, ${code.split("").join(" ")}`}
     >
@@ -344,7 +351,7 @@ function PlayerCode({ code }: { readonly code: string }) {
       <Text style={styles.code} selectable>
         {formatPlayerCode(code)}
       </Text>
-      <Icon name="share" size={15} color={colors.pageInkMuted} />
+      <Icon name="share" size={15} color={ink.pageInkMuted} />
     </Pressable>
   );
 }
@@ -375,10 +382,12 @@ function Received({
   return (
     <>
       {pending.length === 0 ? (
-        <View style={styles.empty}>
-          <Text style={styles.emptyText}>{NO_OFFER_RECEIVED}</Text>
-          <Button label="Proposer un échange" secondary onPress={onPropose} />
-        </View>
+        <OnPaper>
+          <View style={styles.empty}>
+            <Text style={styles.emptyText}>{NO_OFFER_RECEIVED}</Text>
+            <Button label="Proposer un échange" secondary onPress={onPropose} />
+          </View>
+        </OnPaper>
       ) : (
         pending.map((trade) => (
           <ReceivedOffer
@@ -422,11 +431,11 @@ function ReceivedOffer({
   const [confirming, setConfirming] = useState(false);
   const sides = tradeSides(trade, "incoming");
   return (
-    <Panel accessibilityLabel={`Offre de ${playerName(sides.counterpart)}`}>
+    <Panel paper accessibilityLabel={`Offre de ${playerName(sides.counterpart)}`}>
       <View style={styles.offerHeader}>
         <Counterpart player={sides.counterpart} />
         <View style={styles.timeLeft}>
-          <Icon name="clock" size={13} color={colors.pageInkMuted} />
+          <Icon name="clock" size={13} color={ink.pageInkMuted} />
           <Text style={styles.timeLeftText}>{timeLeftLabel(trade.expiresAt, now)}</Text>
         </View>
       </View>
@@ -436,7 +445,7 @@ function ReceivedOffer({
           <CardRow catalog={catalog} cardIds={sides.theirs} width={OFFER_THUMB} />
         </View>
         <View style={styles.swap} importantForAccessibility="no-hide-descendants">
-          <Icon name="echange" size={22} color={colors.pageInkMuted} />
+          <Icon name="echange" size={22} color={ink.pageInkMuted} />
         </View>
         <View style={styles.side}>
           <Text style={[styles.kicker, styles.giving]}>TU DONNES</Text>
@@ -491,12 +500,14 @@ function Sent({
   return (
     <>
       {pending.length === 0 ? (
-        <Text style={styles.emptyText}>{NO_OFFER_SENT}</Text>
+        <OnPaper>
+          <Text style={styles.emptyText}>{NO_OFFER_SENT}</Text>
+        </OnPaper>
       ) : (
         pending.map((trade) => {
           const sides = tradeSides(trade, "outgoing");
           return (
-            <Panel key={trade.id}>
+            <Panel key={trade.id} paper>
               <Counterpart player={sides.counterpart} prefix="À " />
               <Text style={styles.sentWords}>
                 <Text style={styles.italic}>{wordList(sides.mine, wordOf)}</Text> contre{" "}
@@ -537,18 +548,23 @@ function History({
 }) {
   if (trades.length === 0) return null;
   return (
-    <View style={styles.history}>
-      <Text style={styles.kicker} accessibilityRole="header">
-        HISTORIQUE
-      </Text>
-      {trades.map((trade) => (
-        <Text key={trade.id} style={styles.historyLine}>
-          {historyLine(trade, box, now, wordOf)}
+    <OnPaper>
+      <View style={styles.history}>
+        <Text style={styles.kicker} accessibilityRole="header">
+          HISTORIQUE
         </Text>
-      ))}
-    </View>
+        {trades.map((trade) => (
+          <Text key={trade.id} style={styles.historyLine}>
+            {historyLine(trade, box, now, wordOf)}
+          </Text>
+        ))}
+      </View>
+    </OnPaper>
   );
 }
+
+/** The offers, the history and the empty boxes are read on paper in « La Bibliothèque ». */
+const ink = paperColors;
 
 const styles = StyleSheet.create({
   screen: { flex: 1 },
@@ -576,15 +592,16 @@ const styles = StyleSheet.create({
     borderRadius: 19,
     backgroundColor: colors.panel,
   },
+  codeToy: { marginBottom: 3 },
   codeLabel: {
     fontFamily: fonts.ui.semibold,
     fontSize: fontSizes.small,
-    color: colors.pageInkMuted,
+    color: ink.pageInkMuted,
   },
   code: {
     fontFamily: fonts.display,
     fontSize: fontSizes.bodyLarge,
-    color: colors.pageInk,
+    color: ink.pageInk,
     letterSpacing: 1,
   },
   warning: {
@@ -605,17 +622,17 @@ const styles = StyleSheet.create({
     fontFamily: fonts.text.italic,
     fontSize: fontSizes.subtitle,
     lineHeight: 25,
-    color: colors.pageInkMuted,
+    color: ink.pageInkMuted,
     textAlign: "center",
   },
   kicker: {
     fontFamily: fonts.ui.extrabold,
     fontSize: fontSizes.caption,
     letterSpacing: 2,
-    color: colors.pageInkMuted,
+    color: ink.pageInkMuted,
   },
-  getting: { color: colors.success },
-  giving: { color: colors.danger },
+  getting: { color: ink.success },
+  giving: { color: ink.danger },
   offerHeader: {
     flexDirection: "row",
     alignItems: "center",
@@ -626,7 +643,7 @@ const styles = StyleSheet.create({
   timeLeftText: {
     fontFamily: fonts.ui.semibold,
     fontSize: fontSizes.small,
-    color: colors.pageInkMuted,
+    color: ink.pageInkMuted,
   },
   sides: { flexDirection: "row", alignItems: "center", gap: space.s4 },
   side: { flex: 1, gap: space.s4, alignItems: "center" },
@@ -636,20 +653,20 @@ const styles = StyleSheet.create({
     fontFamily: fonts.text.regular,
     fontSize: fontSizes.lead,
     lineHeight: 24,
-    color: colors.pageInk,
+    color: ink.pageInk,
   },
   italic: { fontFamily: fonts.text.italic },
   sentStatus: {
     fontFamily: fonts.ui.semibold,
     fontSize: fontSizes.small,
-    color: colors.pageInkMuted,
+    color: ink.pageInkMuted,
   },
   history: { gap: space.s4, marginTop: space.s4 },
   historyLine: {
     fontFamily: fonts.ui.medium,
     fontSize: fontSizes.label,
     lineHeight: 20,
-    color: colors.pageInkMuted,
+    color: ink.pageInkMuted,
   },
   rules: {
     fontFamily: fonts.ui.medium,

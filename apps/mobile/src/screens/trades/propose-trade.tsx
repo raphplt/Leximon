@@ -26,11 +26,12 @@ import { Card } from "@/cards/card";
 import { ownedCards } from "@/player/collection";
 import { useNow, useShared } from "@/player/shared";
 import { friends } from "@/player/state";
-import { colors, fontSizes, fonts, radii, space } from "@/theme";
+import { fontSizes, fonts, paperColors, radii, space } from "@/theme";
 import { Avatar } from "@/ui/avatar";
 import { Button } from "@/ui/button";
 import { LevelMedal } from "@/ui/level";
 import { FormError } from "@/ui/page";
+import { ON_PAPER_INSET, OnPaper } from "@/ui/panel";
 import { TextButton } from "@/ui/text-button";
 import { TextField } from "@/ui/text-field";
 import { CardRow, cardLabel, catalogCard, openCard } from "./card-row";
@@ -59,7 +60,7 @@ const NOUN = PACK_NOUNS.sachet;
 const COLUMNS = 3;
 const GAP = 10;
 /** The screen's side padding, on each side. */
-const GUTTER = 16;
+const GUTTER = 16 + ON_PAPER_INSET;
 const REVIEW_THUMB = 92;
 const CONNECTION_ERROR = "Ça n'a pas marché. Vérifie ta connexion.";
 
@@ -299,208 +300,212 @@ export function ProposeTrade({
 
   if (blocked !== null) {
     return (
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Proposer un échange</Text>
-        <Text style={styles.hint}>{blocked}</Text>
-        <Text style={styles.muted}>
-          En attendant, ouvre des {NOUN.many}. Tu pourras échanger tes doubles.
-        </Text>
-        <Button label={`Ouvrir un ${NOUN.one}`} secondary onPress={() => router.navigate("/")} />
-      </View>
+      <OnPaper>
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Proposer un échange</Text>
+          <Text style={styles.hint}>{blocked}</Text>
+          <Text style={styles.muted}>
+            En attendant, ouvre des {NOUN.many}. Tu pourras échanger tes doubles.
+          </Text>
+          <Button label={`Ouvrir un ${NOUN.one}`} secondary onPress={() => router.navigate("/")} />
+        </View>
+      </OnPaper>
     );
   }
 
   const partnerName = partner === null ? "" : playerName(partner.badge);
 
   return (
-    <View style={styles.section}>
-      <Text style={styles.sectionTitle} accessibilityRole="header">
-        Proposer un échange
-      </Text>
-      {step !== "sent" && <Steps step={step} />}
+    <OnPaper>
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle} accessibilityRole="header">
+          Proposer un échange
+        </Text>
+        {step !== "sent" && <Steps step={step} />}
 
-      {step === "code" && hasFriends && (
-        <View style={styles.friendPick}>
-          <Text style={styles.fieldLabel}>Avec un ami</Text>
-          {myFriends.friends.length > FRIENDS_FOLD && (
-            <TextField
-              label="Chercher un ami"
-              value={friendQuery}
-              onChangeText={setFriendQuery}
-              autoCapitalize="none"
-              autoCorrect={false}
-            />
-          )}
-          {pickable.length === 0 && (
-            <Text style={styles.muted}>Personne de ce nom parmi tes amis.</Text>
-          )}
-          {pickable.map((friend) => {
-            const trades = tradesLabel(friend.trades);
-            return (
-              <Pressable
-                key={friend.player.code}
-                style={({ pressed }) => [styles.friendRow, pressed && styles.pressed]}
-                disabled={busy}
-                accessibilityRole="button"
-                onPress={() => {
-                  setCodeInput(friend.player.code);
-                  void findPartner(friend.player.code);
-                }}
-              >
-                <Avatar avatar={friend.player.avatar} frame={null} size={36} />
-                <Text style={styles.friendName} numberOfLines={1}>
-                  {playerName(friend.player)}
-                </Text>
-                {trades === null ? (
-                  <LevelMedal level={friend.player.level} size={26} labelled />
-                ) : (
-                  <Text style={styles.friendTrades}>{trades}</Text>
-                )}
-              </Pressable>
-            );
-          })}
-        </View>
-      )}
-
-      {step === "code" && (
-        <View style={styles.codeForm}>
-          <TextField
-            label={
-              hasFriends ? "Ou le code joueur de quelqu'un d'autre" : "Code joueur de la personne"
-            }
-            value={codeInput}
-            onChangeText={(text) => {
-              setCodeInput(text);
-              setCodeError(null);
-            }}
-            placeholder="ABCD EFGH"
-            autoCapitalize="characters"
-            autoCorrect={false}
-            autoComplete="off"
-            maxLength={12}
-            returnKeyType="search"
-            onSubmitEditing={() => void findPartner(codeInput)}
-          />
-          <Text style={styles.muted}>Il est en haut de son écran Échanges.</Text>
-          {give.length > 0 && (
-            <Text style={styles.presetGive}>
-              Tu donnes : {give.map((id) => catalogCard(catalog, id).word).join(", ")}
-            </Text>
-          )}
-          <FormError message={codeError} />
-          <Button
-            label={busy ? "Recherche…" : "Voir ses cartes"}
-            disabled={busy || codeInput.trim() === ""}
-            onPress={() => void findPartner(codeInput)}
-          />
-        </View>
-      )}
-
-      {step === "want" && partner !== null && (
-        <>
-          <Counterpart player={partner.badge} />
-          <PickHeading
-            title={`Ce que tu veux de ${partnerName}`}
-            count={selectionCount(want, partner.maxCards)}
-            hint={`${pickHint(partner.maxCards)} parmi ses doubles échangeables.${partner.maxCards === 1 ? " Vous pourrez échanger trois cartes à la fois quand vous serez tous les deux niveau 10." : ""}`}
-          />
-          {partner.cardIds.length === 0 ? (
-            <Text style={styles.hint}>Ce joueur n'a aucun double à échanger.</Text>
-          ) : (
-            <CardPicker
-              catalog={catalog}
-              cards={pickCards(catalog, partner.cardIds, owned)}
-              selection={want}
-              max={partner.maxCards}
-              owned={owned}
-              onToggle={(id) => toggle(want, id, setWant)}
-            />
-          )}
-          <StepActions
-            back={{ label: "Autre joueur", onPress: () => setStep("code") }}
-            next={{
-              label: "Choisir ce que je donne",
-              disabled: want.length === 0,
-              onPress: () => setStep("give"),
-            }}
-          />
-        </>
-      )}
-
-      {step === "give" && partner !== null && (
-        <>
-          <PickHeading
-            title="Ce que tu donnes"
-            count={selectionCount(give, partner.maxCards)}
-            hint="Choisis parmi tes doubles. Les cartes Épiques et Légendaires peuvent être échangées 7 jours après avoir été tirées."
-          />
-          {mine.length === 0 && held.length === 0 ? (
-            <View style={styles.empty}>
-              <Text style={styles.hint}>Aucun double à échanger. Ouvre des {NOUN.many}.</Text>
-              <Button
-                label={`Ouvrir un ${NOUN.one}`}
-                secondary
-                onPress={() => router.navigate("/")}
+        {step === "code" && hasFriends && (
+          <View style={styles.friendPick}>
+            <Text style={styles.fieldLabel}>Avec un ami</Text>
+            {myFriends.friends.length > FRIENDS_FOLD && (
+              <TextField
+                label="Chercher un ami"
+                value={friendQuery}
+                onChangeText={setFriendQuery}
+                autoCapitalize="none"
+                autoCorrect={false}
               />
-            </View>
-          ) : (
-            <CardPicker
-              catalog={catalog}
-              cards={pickCards(catalog, mine, friendAlbum)}
-              selection={give}
-              max={partner.maxCards}
-              owned={friendAlbum}
-              missing="Il lui manque"
-              onToggle={(id) => toggle(give, id, setGive)}
-              held={held.map((h) => ({
-                card: catalogCard(catalog, h.cardId),
-                label: heldLabel(h.tradeableFrom, now),
-              }))}
+            )}
+            {pickable.length === 0 && (
+              <Text style={styles.muted}>Personne de ce nom parmi tes amis.</Text>
+            )}
+            {pickable.map((friend) => {
+              const trades = tradesLabel(friend.trades);
+              return (
+                <Pressable
+                  key={friend.player.code}
+                  style={({ pressed }) => [styles.friendRow, pressed && styles.pressed]}
+                  disabled={busy}
+                  accessibilityRole="button"
+                  onPress={() => {
+                    setCodeInput(friend.player.code);
+                    void findPartner(friend.player.code);
+                  }}
+                >
+                  <Avatar avatar={friend.player.avatar} frame={null} size={36} />
+                  <Text style={styles.friendName} numberOfLines={1}>
+                    {playerName(friend.player)}
+                  </Text>
+                  {trades === null ? (
+                    <LevelMedal level={friend.player.level} size={26} labelled />
+                  ) : (
+                    <Text style={styles.friendTrades}>{trades}</Text>
+                  )}
+                </Pressable>
+              );
+            })}
+          </View>
+        )}
+
+        {step === "code" && (
+          <View style={styles.codeForm}>
+            <TextField
+              label={
+                hasFriends ? "Ou le code joueur de quelqu'un d'autre" : "Code joueur de la personne"
+              }
+              value={codeInput}
+              onChangeText={(text) => {
+                setCodeInput(text);
+                setCodeError(null);
+              }}
+              placeholder="ABCD EFGH"
+              autoCapitalize="characters"
+              autoCorrect={false}
+              autoComplete="off"
+              maxLength={12}
+              returnKeyType="search"
+              onSubmitEditing={() => void findPartner(codeInput)}
             />
-          )}
-          <StepActions
-            back={{ label: "Retour", onPress: () => setStep("want") }}
-            next={{
-              label: "Vérifier l'offre",
-              disabled: give.length === 0,
-              onPress: () => setStep("review"),
-            }}
-          />
-        </>
-      )}
+            <Text style={styles.muted}>Il est en haut de son écran Échanges.</Text>
+            {give.length > 0 && (
+              <Text style={styles.presetGive}>
+                Tu donnes : {give.map((id) => catalogCard(catalog, id).word).join(", ")}
+              </Text>
+            )}
+            <FormError message={codeError} />
+            <Button
+              label={busy ? "Recherche…" : "Voir ses cartes"}
+              disabled={busy || codeInput.trim() === ""}
+              onPress={() => void findPartner(codeInput)}
+            />
+          </View>
+        )}
 
-      {step === "review" && partner !== null && (
-        <>
-          <Text style={styles.sideLabel}>Tu reçois de {partnerName}</Text>
-          <CardRow catalog={catalog} cardIds={want} width={REVIEW_THUMB} />
-          <Text style={styles.sideLabel}>Tu donnes</Text>
-          <CardRow catalog={catalog} cardIds={give} width={REVIEW_THUMB} />
-          <Text style={styles.muted}>
-            {partnerName} a 72 heures pour répondre. Tu peux annuler d'ici là.
-          </Text>
-          <Button
-            label={busy ? "Envoi…" : "Envoyer l'offre"}
-            disabled={busy}
-            onPress={() => void send()}
-          />
-          <TextButton label="Modifier" disabled={busy} onPress={() => setStep("give")} />
-        </>
-      )}
+        {step === "want" && partner !== null && (
+          <>
+            <Counterpart player={partner.badge} />
+            <PickHeading
+              title={`Ce que tu veux de ${partnerName}`}
+              count={selectionCount(want, partner.maxCards)}
+              hint={`${pickHint(partner.maxCards)} parmi ses doubles échangeables.${partner.maxCards === 1 ? " Vous pourrez échanger trois cartes à la fois quand vous serez tous les deux niveau 10." : ""}`}
+            />
+            {partner.cardIds.length === 0 ? (
+              <Text style={styles.hint}>Ce joueur n'a aucun double à échanger.</Text>
+            ) : (
+              <CardPicker
+                catalog={catalog}
+                cards={pickCards(catalog, partner.cardIds, owned)}
+                selection={want}
+                max={partner.maxCards}
+                owned={owned}
+                onToggle={(id) => toggle(want, id, setWant)}
+              />
+            )}
+            <StepActions
+              back={{ label: "Autre joueur", onPress: () => setStep("code") }}
+              next={{
+                label: "Choisir ce que je donne",
+                disabled: want.length === 0,
+                onPress: () => setStep("give"),
+              }}
+            />
+          </>
+        )}
 
-      {step === "sent" && (
-        <View style={styles.empty}>
-          <Text style={styles.hint}>{partnerName} a 72 heures pour répondre.</Text>
-          <Button
-            label="Voir mes offres envoyées"
-            onPress={() => {
-              reset();
-              onShowSent();
-            }}
-          />
-          <Button label="Proposer un autre échange" secondary onPress={reset} />
-        </View>
-      )}
-    </View>
+        {step === "give" && partner !== null && (
+          <>
+            <PickHeading
+              title="Ce que tu donnes"
+              count={selectionCount(give, partner.maxCards)}
+              hint="Choisis parmi tes doubles. Les cartes Épiques et Légendaires peuvent être échangées 7 jours après avoir été tirées."
+            />
+            {mine.length === 0 && held.length === 0 ? (
+              <View style={styles.empty}>
+                <Text style={styles.hint}>Aucun double à échanger. Ouvre des {NOUN.many}.</Text>
+                <Button
+                  label={`Ouvrir un ${NOUN.one}`}
+                  secondary
+                  onPress={() => router.navigate("/")}
+                />
+              </View>
+            ) : (
+              <CardPicker
+                catalog={catalog}
+                cards={pickCards(catalog, mine, friendAlbum)}
+                selection={give}
+                max={partner.maxCards}
+                owned={friendAlbum}
+                missing="Il lui manque"
+                onToggle={(id) => toggle(give, id, setGive)}
+                held={held.map((h) => ({
+                  card: catalogCard(catalog, h.cardId),
+                  label: heldLabel(h.tradeableFrom, now),
+                }))}
+              />
+            )}
+            <StepActions
+              back={{ label: "Retour", onPress: () => setStep("want") }}
+              next={{
+                label: "Vérifier l'offre",
+                disabled: give.length === 0,
+                onPress: () => setStep("review"),
+              }}
+            />
+          </>
+        )}
+
+        {step === "review" && partner !== null && (
+          <>
+            <Text style={styles.sideLabel}>Tu reçois de {partnerName}</Text>
+            <CardRow catalog={catalog} cardIds={want} width={REVIEW_THUMB} />
+            <Text style={styles.sideLabel}>Tu donnes</Text>
+            <CardRow catalog={catalog} cardIds={give} width={REVIEW_THUMB} />
+            <Text style={styles.muted}>
+              {partnerName} a 72 heures pour répondre. Tu peux annuler d'ici là.
+            </Text>
+            <Button
+              label={busy ? "Envoi…" : "Envoyer l'offre"}
+              disabled={busy}
+              onPress={() => void send()}
+            />
+            <TextButton label="Modifier" disabled={busy} onPress={() => setStep("give")} />
+          </>
+        )}
+
+        {step === "sent" && (
+          <View style={styles.empty}>
+            <Text style={styles.hint}>{partnerName} a 72 heures pour répondre.</Text>
+            <Button
+              label="Voir mes offres envoyées"
+              onPress={() => {
+                reset();
+                onShowSent();
+              }}
+            />
+            <Button label="Proposer un autre échange" secondary onPress={reset} />
+          </View>
+        )}
+      </View>
+    </OnPaper>
   );
 }
 
@@ -690,22 +695,25 @@ function StepActions({
   );
 }
 
+/** The offer is prepared on paper in « La Bibliothèque ». */
+const ink = paperColors;
+
 const styles = StyleSheet.create({
   section: { gap: space.s7 },
-  sectionTitle: { fontFamily: fonts.display, fontSize: fontSizes.title, color: colors.pageInk },
+  sectionTitle: { fontFamily: fonts.display, fontSize: fontSizes.title, color: ink.pageInk },
   hint: {
     fontFamily: fonts.ui.semibold,
     fontSize: fontSizes.bodyLarge,
     lineHeight: 22,
-    color: colors.pageInk,
+    color: ink.pageInk,
   },
   muted: {
     fontFamily: fonts.ui.medium,
     fontSize: fontSizes.label,
     lineHeight: 20,
-    color: colors.pageInkMuted,
+    color: ink.pageInkMuted,
   },
-  fieldLabel: { fontFamily: fonts.ui.bold, fontSize: fontSizes.label, color: colors.pageInkMuted },
+  fieldLabel: { fontFamily: fonts.ui.bold, fontSize: fontSizes.label, color: ink.pageInkMuted },
   friendPick: { gap: space.s4 },
   friendRow: {
     flexDirection: "row",
@@ -714,34 +722,34 @@ const styles = StyleSheet.create({
     minHeight: 56,
     paddingHorizontal: space.s6,
     borderRadius: radii.xxl,
-    backgroundColor: colors.panel,
+    backgroundColor: ink.pageRaised,
   },
   pressed: { opacity: 0.7 },
   friendName: {
     flex: 1,
     fontFamily: fonts.ui.extrabold,
     fontSize: fontSizes.bodyLarge,
-    color: colors.pageInk,
+    color: ink.pageInk,
   },
-  friendTrades: { fontFamily: fonts.ui.bold, fontSize: fontSizes.small, color: colors.success },
+  friendTrades: { fontFamily: fonts.ui.bold, fontSize: fontSizes.small, color: ink.success },
   codeForm: { gap: space.s5 },
-  presetGive: { fontFamily: fonts.ui.bold, fontSize: fontSizes.body, color: colors.rubric },
+  presetGive: { fontFamily: fonts.ui.bold, fontSize: fontSizes.body, color: ink.rubric },
   empty: { gap: space.s6 },
   steps: { flexDirection: "row", gap: space.s3 },
   step: { flex: 1, gap: space.s3 },
-  stepBar: { height: 4, borderRadius: 2, backgroundColor: colors.well },
-  stepBarDone: { backgroundColor: colors.action },
-  stepLabel: { fontFamily: fonts.ui.bold, fontSize: fontSizes.caption, color: colors.pageInkFaint },
-  stepLabelDone: { color: colors.pageInk },
+  stepBar: { height: 4, borderRadius: 2, backgroundColor: ink.well },
+  stepBarDone: { backgroundColor: ink.action },
+  stepLabel: { fontFamily: fonts.ui.bold, fontSize: fontSizes.caption, color: ink.pageInkFaint },
+  stepLabelDone: { color: ink.pageInk },
   pickHeading: { gap: space.s2 },
   pickTitleRow: { flexDirection: "row", alignItems: "baseline", gap: space.s5 },
   pickTitle: {
     flex: 1,
     fontFamily: fonts.display,
     fontSize: fontSizes.subtitle,
-    color: colors.pageInk,
+    color: ink.pageInk,
   },
-  pickCount: { fontFamily: fonts.ui.extrabold, fontSize: fontSizes.body, color: colors.rubric },
+  pickCount: { fontFamily: fonts.ui.extrabold, fontSize: fontSizes.body, color: ink.rubric },
   picker: { flexDirection: "row", flexWrap: "wrap", gap: GAP },
   pick: { gap: space.s2, alignItems: "center" },
   dimmed: { opacity: 0.4 },
@@ -749,7 +757,7 @@ const styles = StyleSheet.create({
   heldLabel: {
     fontFamily: fonts.ui.bold,
     fontSize: fontSizes.caption,
-    color: colors.pageInkMuted,
+    color: ink.pageInkMuted,
     textAlign: "center",
   },
   check: {
@@ -761,11 +769,11 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: colors.action,
+    backgroundColor: ink.action,
     borderWidth: 2,
-    borderColor: colors.page,
+    borderColor: ink.page,
   },
-  checkMark: { fontFamily: fonts.ui.extrabold, fontSize: fontSizes.body, color: colors.actionInk },
+  checkMark: { fontFamily: fonts.ui.extrabold, fontSize: fontSizes.body, color: ink.actionInk },
   flag: {
     position: "absolute",
     bottom: 6,
@@ -774,8 +782,8 @@ const styles = StyleSheet.create({
     overflow: "hidden",
     paddingVertical: space.s1,
     borderRadius: radii.sm,
-    backgroundColor: colors.sticker,
-    color: colors.inkOnColor,
+    backgroundColor: ink.sticker,
+    color: ink.inkOnColor,
     fontFamily: fonts.ui.extrabold,
     fontSize: fontSizes.micro,
     textAlign: "center",
@@ -783,10 +791,10 @@ const styles = StyleSheet.create({
   read: {
     fontFamily: fonts.ui.bold,
     fontSize: fontSizes.small,
-    color: colors.rubric,
+    color: ink.rubric,
     textDecorationLine: "underline",
     paddingVertical: space.s1,
   },
-  sideLabel: { fontFamily: fonts.ui.extrabold, fontSize: fontSizes.body, color: colors.pageInk },
+  sideLabel: { fontFamily: fonts.ui.extrabold, fontSize: fontSizes.body, color: ink.pageInk },
   stepActions: { gap: space.s2, marginTop: space.s2 },
 });

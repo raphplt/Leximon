@@ -1,3 +1,4 @@
+import { toy as toyValues } from "@leximon/tokens";
 import type { ReactNode } from "react";
 import { StyleSheet, View, type ViewProps } from "react-native";
 import { colors, IS_LIBRARY, space } from "@/theme";
@@ -26,6 +27,9 @@ export function Panel({
  * In « La Bibliothèque », a leaf of paper under what a screen lays straight on the page (a form,
  * the facts of a card); elsewhere, the content as it is.
  */
+/** How much a leaf laid by `OnPaper` takes from the width of what it holds, on each side. */
+export const ON_PAPER_INSET = IS_LIBRARY ? space.s9 + toyValues.outlineWidth : 0;
+
 export function OnPaper({ children }: { readonly children: ReactNode }) {
   return IS_LIBRARY ? <Leaf style={styles.sheet}>{children}</Leaf> : children;
 }

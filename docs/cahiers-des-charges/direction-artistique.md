@@ -207,11 +207,19 @@ Seulement ce dont l'écran Jouer et l'ouverture ont besoin : bandeau du haut (po
 
 **Fin de phase :** le propriétaire joue une semaine dans La Bibliothèque, sur le web et sur téléphone, derrière le réglage.
 
+**Premier avis du propriétaire (2026-11-02) :** le web est validé. Le mobile est à reprendre, sans que rien soit encore tranché :
+
+- la barre d'onglets du bas paraît trop grande ;
+- dans l'album, les collections défilent de côté, ce qui ne plaît pas ;
+- le sous-main de l'album pourrait ne pas avoir de bord en bas, car le cadre laisse peu de place aux cartes.
+
 ## Phase 3 · Tout le reste, puis la bascule
 
 ### Les écrans
 
 Échanges, Communauté, clan et discussion, amis, profil et atelier, courrier, nouveautés, sanctions, page de carte publique, énigme publique, invitation, désinscription, écrans fermés, erreurs.
+
+**Échanges faits le 2026-11-02**, sur le web et le mobile. Les boîtes d'offres sont des onglets en papier, celui qui est ouvert est en or (sur le mobile, toutes les rangées d'onglets prennent cette allure). Les offres, l'historique, les boîtes vides et la préparation d'une offre sont sur des feuilles, les cartes choisies cerclées d'or. Un échange conclu se montre sur le sous-main, sous des rayons d'or, comme un coffret.
 
 ### Hors du jeu
 

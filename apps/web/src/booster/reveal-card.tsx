@@ -163,7 +163,10 @@ export function RevealCard({
       // The light of the room is drawn into the card before it turns.
       setDrawing(true);
       stage.drawIn(point.x, point.y, rarityLights[card.rarity], effect.drawInMs);
-      later(effect.drawInMs, flip);
+      later(effect.drawInMs, () => {
+        setDrawing(false);
+        flip();
+      });
       return;
     }
     if (settled) leave(1);

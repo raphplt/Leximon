@@ -385,7 +385,7 @@ function Received({
   return (
     <>
       {pending.length === 0 ? (
-        <div className={styles.empty}>
+        <div className={`${styles.empty} ${ui.leaf}`}>
           <p className={styles.emptyText}>
             <em>{NO_OFFER_RECEIVED}</em>
           </p>
@@ -574,7 +574,7 @@ function History({
 }) {
   if (trades.length === 0) return null;
   return (
-    <section className={styles.history} aria-labelledby={`${box}-history`}>
+    <section className={`${styles.history} ${ui.leaf}`} aria-labelledby={`${box}-history`}>
       <h2 id={`${box}-history`} className={ui.kicker}>
         Historique
       </h2>

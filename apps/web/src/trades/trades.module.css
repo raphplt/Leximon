@@ -772,3 +772,76 @@
 .panel > .secondary {
   align-self: flex-start;
 }
+
+/* --- « La Bibliothèque » --- */
+
+/* Each box of offers is a paper tab; the one open is in old gold. */
+:root[data-look="bibliotheque"] .tabs {
+  gap: var(--lx-s4);
+  padding: 0 0 4px;
+  border-radius: 0;
+  background: none;
+}
+
+:root[data-look="bibliotheque"] .tab {
+  border: var(--lx-toy-outline-width) solid var(--lx-toy-outline);
+  border-radius: var(--lx-toy-radius-small);
+  background: linear-gradient(
+    180deg,
+    var(--lx-toy-paper-top) 0 47%,
+    var(--lx-toy-paper-bottom) 53% 100%
+  );
+  box-shadow:
+    inset 0 -3px 0 var(--lx-toy-paper-edge),
+    inset 0 2px 0 var(--lx-toy-sheen),
+    0 3px 0 var(--lx-toy-outline);
+  color: var(--lx-color-paper-ink);
+}
+
+:root[data-look="bibliotheque"] .tab[aria-selected="true"] {
+  background: linear-gradient(
+    180deg,
+    var(--lx-toy-gold-top) 0 47%,
+    var(--lx-toy-gold-bottom) 53% 100%
+  );
+  box-shadow:
+    inset 0 -3px 0 var(--lx-toy-gold-edge),
+    inset 0 2px 0 var(--lx-toy-sheen),
+    0 3px 0 var(--lx-toy-outline);
+  color: var(--lx-toy-outline);
+}
+
+:root[data-look="bibliotheque"] :is(.panel, .history) {
+  padding: var(--lx-s10);
+}
+
+:root[data-look="bibliotheque"] .empty {
+  width: fit-content;
+  max-width: 100%;
+  margin: var(--lx-s6) auto;
+  padding: var(--lx-s10) var(--lx-s12);
+}
+
+:root[data-look="bibliotheque"] .warning,
+:root[data-look="bibliotheque"] .rules {
+  color: var(--lx-lettering-fill);
+  text-shadow: 0 1px 0 var(--lx-toy-outline);
+}
+
+:root[data-look="bibliotheque"] .getting {
+  color: var(--lx-color-success);
+}
+
+/* A card chosen is ringed with gold, as the toys are. */
+:root[data-look="bibliotheque"] .pickButton[aria-pressed="true"] {
+  outline: 4px solid var(--lx-toy-gold-top);
+  box-shadow: 0 0 0 7px var(--lx-toy-outline);
+}
+
+:root[data-look="bibliotheque"] .toast {
+  border: var(--lx-toy-outline-width) solid var(--lx-toy-outline);
+  background:
+    var(--lx-matter-paper) 0 0 / var(--lx-matter-size),
+    var(--lx-color-paper);
+  color: var(--lx-color-paper-ink);
+}

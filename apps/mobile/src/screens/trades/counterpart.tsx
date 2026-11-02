@@ -1,8 +1,9 @@
 import type { PlayerBadge } from "@leximon/contract";
 import { playerName } from "@leximon/view-model";
 import { StyleSheet, Text, View } from "react-native";
-import { colors, fontSizes, fonts, space } from "@/theme";
+import { fontSizes, fonts, space } from "@/theme";
 import { Avatar } from "@/ui/avatar";
+import { useInk } from "@/ui/ink";
 import { LevelMedal } from "@/ui/level";
 
 /** The other player of an offer: avatar, pseudo or code, level; « Un joueur parti » once gone. */
@@ -13,10 +14,11 @@ export function Counterpart({
   readonly player: PlayerBadge | null;
   readonly prefix?: string;
 }) {
+  const ink = useInk();
   return (
     <View style={styles.row}>
       <Avatar avatar={player?.avatar ?? null} frame={player?.frame ?? null} size={30} />
-      <Text style={styles.name} numberOfLines={1}>
+      <Text style={[styles.name, { color: ink.pageInk }]} numberOfLines={1}>
         {prefix}
         {playerName(player)}
       </Text>
@@ -30,7 +32,6 @@ const styles = StyleSheet.create({
   name: {
     fontFamily: fonts.ui.extrabold,
     fontSize: fontSizes.bodyLarge,
-    color: colors.pageInk,
     flexShrink: 1,
   },
 });
