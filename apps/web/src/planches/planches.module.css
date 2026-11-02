@@ -1,26 +1,48 @@
+/* The plates of « La Bibliothèque »: the room behind, a phone-sized Jouer screen, the pieces. */
+
 .page {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  min-height: 100dvh;
+  padding: var(--lx-s16) var(--lx-s8) var(--lx-s32);
+  box-sizing: border-box;
+  background: var(--lx-room) fixed;
+  color: var(--lx-color-page-ink);
 }
 
-.sheet {
+.header {
   display: flex;
   flex-direction: column;
-  gap: var(--lx-s20);
-  min-width: 0;
-  padding: var(--lx-s16) var(--lx-s14);
-  background:
-    var(--lx-matter-paper) 0 0 / var(--lx-matter-size),
-    var(--lx-color-page);
-  color: var(--lx-color-page-ink);
-  font-family: var(--font-ui), serif;
+  align-items: center;
+  gap: var(--lx-s3);
+  margin: 0 auto var(--lx-s16);
+  max-width: 640px;
+  text-align: center;
 }
 
 .title {
+  font-size: var(--lx-size-display);
+}
+
+.intro {
   margin: 0;
-  font-family: var(--font-display), serif;
-  font-weight: var(--lx-weight-display);
-  font-size: var(--lx-size-heading-large);
+  color: var(--lx-color-page-ink-soft);
+  font:
+    italic 500 var(--lx-size-body-large) / 1.4 var(--font-text),
+    serif;
+}
+
+.columns {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: flex-start;
+  gap: var(--lx-s20);
+}
+
+.plates {
+  display: flex;
+  flex-direction: column;
+  gap: var(--lx-s16);
+  width: min(560px, 100%);
 }
 
 .plate {
@@ -29,170 +51,174 @@
   gap: var(--lx-s8);
 }
 
+.plateTitle {
+  margin: 0;
+  font-size: var(--lx-size-title);
+}
+
 .row {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
+  gap: var(--lx-s8);
+}
+
+/* --- The Jouer screen --- */
+
+.phone {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: 390px;
+  max-width: 100%;
+  height: 844px;
+  overflow: hidden;
+  border-radius: 40px;
+  background: var(--lx-room);
+  box-shadow:
+    0 0 0 10px var(--lx-color-shade),
+    0 40px 90px var(--lx-toy-drop);
+  isolation: isolate;
+  user-select: none;
+}
+
+.desk {
+  position: absolute;
+  inset: 100px 32px 192px;
+}
+
+.top {
+  position: relative;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 22px 14px 4px;
+}
+
+.play {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  padding-top: 32px;
+}
+
+.left,
+.right {
+  position: absolute;
+  top: 128px;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.left {
+  left: 6px;
+}
+
+.right {
+  right: 6px;
+}
+
+.sachet {
+  position: absolute;
+  left: 50%;
+  top: 57%;
+  z-index: 2;
+  translate: -50% -50%;
+  scale: 1.08;
+}
+
+.cta {
+  position: relative;
+  z-index: 4;
+  display: flex;
+  justify-content: center;
+  padding: 0 22px 14px;
+}
+
+/* --- The pieces --- */
+
+.objects {
+  display: flex;
+  flex-direction: column;
+  gap: var(--lx-s10);
+}
+
+.sampleTile {
+  width: 58px;
+  height: 58px;
+}
+
+.sampleBox {
+  height: 44px;
+  padding: 0 16px;
+  font-size: var(--lx-size-body);
+}
+
+.letters {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
   gap: var(--lx-s6);
 }
 
-.text {
-  margin: 0;
-  font-family: var(--font-text), serif;
+.big {
+  font-size: 44px;
+}
+
+.medium {
+  font-size: var(--lx-size-title-large);
+}
+
+.small {
+  font-size: var(--lx-size-caption);
+}
+
+.leaf {
+  max-width: 420px;
+  padding: var(--lx-s8) var(--lx-s10);
   font-size: var(--lx-size-body-large);
-  line-height: 1.5;
+  line-height: 1.45;
 }
 
-.panel {
-  padding: var(--lx-s9);
+.leaf p {
+  margin: 0;
 }
 
-.framedPanel {
-  padding: var(--lx-s16);
+.leaf .leafTitle {
+  margin-bottom: var(--lx-s3);
+  font:
+    900 var(--lx-size-title) / 1.1 var(--font-display),
+    serif;
 }
 
-.bones {
-  display: flex;
-  flex-direction: column;
-  gap: var(--lx-s5);
-}
-
-.tools {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--lx-s10);
-  color: var(--lx-color-page-ink);
-}
-
-.leather {
-  padding: var(--lx-s3);
-  background-color: var(--lx-color-binding);
-  background-image: var(--lx-matter-leather);
-  background-size: var(--lx-matter-size);
-}
-
-.leatherFrame {
-  display: flex;
-  justify-content: center;
-  gap: var(--lx-s10);
-  padding: var(--lx-s16);
-  border: 1px solid transparent;
-  border-image: var(--lx-frame-gilt) 28 / 28px stretch;
-  color: var(--lx-color-gilt);
-}
-
-.plates {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-end;
-  gap: var(--lx-s10);
-}
-
-.capitals {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--lx-s5);
-}
-
-.numbered {
+.effects {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--lx-s2);
-  max-width: 100%;
-  margin: 0;
+  gap: var(--lx-s10);
 }
 
-.number {
-  color: var(--lx-color-page-ink-muted);
-  font-size: var(--lx-size-nano);
-}
-
-.matters {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-  gap: var(--lx-s6);
-}
-
-.matters > span {
+.target {
   display: grid;
   place-items: center;
-  height: 120px;
-  box-shadow: inset 0 0 0 1px var(--lx-color-rule);
+  width: 150px;
+  height: 210px;
+  border: 2px dashed var(--lx-desk-rule);
+  border-radius: var(--lx-radius-card);
+  font-size: var(--lx-size-subtitle);
 }
 
-.paper {
-  background:
-    var(--lx-matter-paper) 0 0 / var(--lx-matter-size),
-    var(--lx-color-page);
-}
-
-.garde {
-  background:
-    var(--lx-matter-garde) 0 0 / var(--lx-matter-size),
-    var(--lx-color-page);
-}
-
-.carnet {
-  background:
-    var(--lx-matter-carnet) 0 0 / var(--lx-matter-size),
-    var(--lx-color-page);
-}
-
-.matters > .leather {
-  padding: 0;
-  color: var(--lx-color-binding-ink);
+.effectButton {
+  height: 40px;
+  padding: 0 12px;
+  font-size: var(--lx-size-small);
 }
 
 .icons {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(52px, 1fr));
-  gap: var(--lx-s8) var(--lx-s4);
-  justify-items: center;
-}
-
-.iconsSmall {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(34px, 1fr));
-  gap: var(--lx-s5) var(--lx-s2);
-  justify-items: center;
-  color: var(--lx-color-page-ink-muted);
-}
-
-/* The bars of the shell, out of their place: they show here at every width. */
-.wideBar.wideBar {
-  position: static;
-  height: 70px;
-}
-
-.narrowBar.narrowBar {
-  position: static;
   display: flex;
-}
-
-.staticTabs.staticTabs {
-  position: static;
-  display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
-  align-items: end;
-  height: 84px;
-  margin-top: var(--lx-s12);
-  padding: 0 var(--lx-s3) var(--lx-s9);
-  box-sizing: border-box;
-}
-
-@media (max-width: 1500px) {
-  .wideBar.wideBar {
-    display: none;
-  }
-}
-
-@media (max-width: 900px) {
-  .page {
-    grid-template-columns: minmax(0, 1fr);
-  }
-
-  .sheet {
-    padding: var(--lx-s12) var(--lx-s8);
-  }
+  flex-wrap: wrap;
+  gap: var(--lx-s8);
 }

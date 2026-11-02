@@ -9,9 +9,8 @@ import {
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { alpha, SHOWS_THEME_CHOICE as BOOK, colors, fontSizes, fonts, space } from "@/theme";
+import { alpha, colors, fontSizes, fonts, space } from "@/theme";
 import { Icon } from "./icon";
-import { Matter } from "./matter";
 import { ToastHost } from "./toast";
 
 /** A panel that rises from the bottom over the screen: a member, the clan's options, a form. */
@@ -37,14 +36,6 @@ export function Sheet({
           accessibilityRole="button"
         />
         <View style={[styles.sheet, { paddingBottom: insets.bottom + 16 }]}>
-          {BOOK && (
-            <>
-              <Matter kind="paper" />
-              <View style={styles.binding}>
-                <Matter kind="leather" />
-              </View>
-            </>
-          )}
           <View style={styles.head}>
             <Text style={styles.title} accessibilityRole="header" numberOfLines={2}>
               {title}
@@ -77,17 +68,9 @@ const styles = StyleSheet.create({
   backdrop: { flex: 1, justifyContent: "flex-end", backgroundColor: alpha(colors.scrim, 0.6) },
   sheet: {
     maxHeight: "88%",
-    borderTopLeftRadius: BOOK ? 0 : 24,
-    borderTopRightRadius: BOOK ? 0 : 24,
-    backgroundColor: BOOK ? colors.page : colors.sheet,
-  },
-  /** The band of leather that holds the sheet. */
-  binding: {
-    height: space.s4,
-    overflow: "hidden",
-    borderBottomWidth: 1,
-    borderBottomColor: colors.gilt,
-    backgroundColor: colors.binding,
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    backgroundColor: colors.sheet,
   },
   head: {
     flexDirection: "row",
@@ -104,7 +87,7 @@ const styles = StyleSheet.create({
     borderRadius: 18,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: BOOK ? "transparent" : colors.pageRaised,
+    backgroundColor: colors.pageRaised,
   },
   body: { gap: space.s7, paddingHorizontal: space.s10, paddingTop: space.s5 },
 });

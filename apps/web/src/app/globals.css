@@ -6,16 +6,6 @@
   --lx-weight-display: 900;
 }
 
-[data-look="livre"] {
-  --font-display: var(--font-canon);
-  --font-ui: var(--font-spectral);
-  --font-text: var(--font-spectral);
-  /* The title type has one weight: anything heavier would be smeared by the browser. */
-  --lx-weight-display: 400;
-  font-feature-settings: "onum";
-  font-synthesis-weight: none;
-}
-
 html {
   /* Fraunces is always this soft; the fonts without this axis ignore it. */
   font-variation-settings: "SOFT" 100;
@@ -38,10 +28,8 @@ body {
   font-family: var(--font-ui), system-ui, sans-serif;
 }
 
-:root[data-look="livre"] body {
-  background:
-    var(--lx-matter-paper) 0 0 / var(--lx-matter-size) fixed,
-    var(--lx-color-page);
+:root[data-look="bibliotheque"] body {
+  background: var(--lx-room) fixed;
 }
 
 a {

@@ -17,7 +17,7 @@ import {
 import { router } from "expo-router";
 import * as WebBrowser from "expo-web-browser";
 import { useCallback, useEffect, useState } from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Pressable, StyleSheet, Switch, Text, View } from "react-native";
 import { api } from "@/api/client";
 import { WEB_URL } from "@/config";
 import { playFromScratch } from "@/player/session";
@@ -28,7 +28,6 @@ import { FormError, Page, Paragraph } from "@/ui/page";
 import { TextButton } from "@/ui/text-button";
 import { TextField } from "@/ui/text-field";
 import { toast } from "@/ui/toast";
-import { Toggle } from "@/ui/toggle";
 import { keepLastEmail, readLastEmail } from "./last-email";
 
 type Step =
@@ -298,7 +297,13 @@ function NewsToggle() {
       {value !== null && (
         <View style={styles.switchRow}>
           <Text style={styles.switchLabel}>{NEWS_OPT_IN}</Text>
-          <Toggle label={NEWS_OPT_IN} value={value} onChange={(next) => void change(next)} />
+          <Switch
+            value={value}
+            onValueChange={(next) => void change(next)}
+            accessibilityLabel={NEWS_OPT_IN}
+            trackColor={{ false: colors.track, true: colors.success }}
+            thumbColor={colors.pageInk}
+          />
         </View>
       )}
       {failed && <Paragraph muted>Le réglage n'a pas été enregistré. Réessaie.</Paragraph>}

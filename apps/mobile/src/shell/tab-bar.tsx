@@ -6,19 +6,9 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Svg, { Defs, RadialGradient, Stop, Circle as SvgCircle } from "react-native-svg";
 import { useNow } from "@/player/shared";
 import { usePlayerView } from "@/player/use-player-view";
-import {
-  alpha,
-  SHOWS_THEME_CHOICE as BOOK,
-  colors,
-  fontSizes,
-  fonts,
-  ROUND,
-  radii,
-  space,
-} from "@/theme";
+import { alpha, colors, fontSizes, fonts, radii, space } from "@/theme";
 import { Badge } from "@/ui/badge";
 import { Icon } from "@/ui/icon";
-import { Matter } from "@/ui/matter";
 
 /** The route of each tab in `app/(tabs)`. */
 export const TAB_ROUTES: Readonly<Record<TabId, string>> = {
@@ -37,7 +27,6 @@ const TAB_ICONS: Readonly<Record<TabId, IconName>> = {
   clan: "clan",
 };
 
-const ON_LEATHER = BOOK ? colors.giltLight : colors.rubric;
 const PLAY = 66;
 const PLAY_LIFT = 34;
 
@@ -53,14 +42,12 @@ export function TabBar({ state, emitter, navigateToTab }: BottomTabBarProps) {
   const current = state.routes[state.index]?.name;
   return (
     <View style={[styles.bar, { paddingBottom: insets.bottom + 10 }]}>
-      <Matter kind="leather" />
-      {BOOK && <View style={styles.gilding} />}
       {PHONE_TAB_ORDER.map((id) => {
         const route = state.routes.find((r) => r.name === TAB_ROUTES[id]);
         if (route === undefined) return null;
         const focused = current === route.name;
         const badge = tabBadge(id, { offers: view.offers, coffrets: view.coffrets.length });
-        const color = focused ? ON_LEATHER : colors.bindingInkMuted;
+        const color = focused ? colors.rubric : colors.pageInkMuted;
         const onPress = () => {
           const event = emitter.emit({
             type: "tabPress",
@@ -78,11 +65,11 @@ export function TabBar({ state, emitter, navigateToTab }: BottomTabBarProps) {
           return (
             <Pressable key={id} style={[styles.tab, styles.play]} onPress={onPress} {...a11y}>
               <View style={styles.playCircle}>
-                <Svg width={PLAY} height={PLAY} style={styles.playDisc}>
+                <Svg width={PLAY} height={PLAY} style={StyleSheet.absoluteFill}>
                   <Defs>
                     <RadialGradient id="play" cx="35%" cy="30%" r="75%">
-                      <Stop offset="0" stopColor={BOOK ? colors.action : colors.actionLight} />
-                      <Stop offset="0.55" stopColor={BOOK ? colors.action : colors.rubric} />
+                      <Stop offset="0" stopColor={colors.actionLight} />
+                      <Stop offset="0.55" stopColor={colors.rubric} />
                       <Stop offset="1" stopColor={colors.actionDeep} />
                     </RadialGradient>
                   </Defs>
@@ -136,24 +123,9 @@ const styles = StyleSheet.create({
     alignItems: "flex-end",
     paddingHorizontal: space.s3,
     paddingTop: space.s4,
-    ...(BOOK
-      ? { backgroundColor: colors.binding }
-      : {
-          borderTopWidth: StyleSheet.hairlineWidth,
-          borderTopColor: alpha(colors.pageInk, 0.12),
-          backgroundColor: colors.bindingDeep,
-        }),
-  },
-  /** The two gilt rules along the leather's edge. */
-  gilding: {
-    position: "absolute",
-    left: 0,
-    right: 0,
-    top: 0,
-    height: 4,
-    borderTopWidth: 1,
-    borderBottomWidth: 1,
-    borderColor: colors.gilt,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: alpha(colors.pageInk, 0.12),
+    backgroundColor: colors.bindingDeep,
   },
   tab: { flex: 1, alignItems: "center", gap: space.s2 },
   // It rises above the bar without making the row taller: its label stays on the others' line.
@@ -161,18 +133,12 @@ const styles = StyleSheet.create({
   playCircle: {
     width: PLAY + 10,
     height: PLAY + 10,
-    borderRadius: ROUND,
-    borderWidth: BOOK ? 1 : 5,
-    borderColor: BOOK ? colors.gilt : colors.bindingDeep,
+    borderRadius: radii.pill,
+    borderWidth: 5,
+    borderColor: colors.bindingDeep,
     alignItems: "center",
     justifyContent: "center",
     overflow: "visible",
-  },
-  // The ring is thinner in Le Livre: the disc stays centred inside it.
-  playDisc: {
-    position: "absolute",
-    top: BOOK ? space.s2 : 0,
-    left: BOOK ? space.s2 : 0,
   },
   pill: {
     width: 44,
@@ -181,15 +147,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  pillFocused: { backgroundColor: BOOK ? "transparent" : alpha(colors.gilt, 0.16) },
-  label: BOOK
-    ? {
-        fontFamily: fonts.ui.medium,
-        fontSize: fontSizes.caption,
-        fontVariant: ["small-caps"],
-        letterSpacing: 0.3,
-      }
-    : { fontFamily: fonts.ui.extrabold, fontSize: fontSizes.micro },
+  pillFocused: { backgroundColor: alpha(colors.gilt, 0.16) },
+  label: { fontFamily: fonts.ui.extrabold, fontSize: fontSizes.micro },
   lock: {
     position: "absolute",
     top: -4,

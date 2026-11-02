@@ -1,11 +1,10 @@
 import { RARITIES } from "@leximon/core";
 import { describe, expect, it } from "vitest";
-import { bookTheme, cssFill, cssRootRule, cssUrl, cssVariables, solidColor } from "./css";
-import { icons } from "./icons";
+import { cssFill, cssRootRule, cssUrl, cssVariables, libraryTheme, solidColor } from "./css";
+import { effects, particleCap, revealEffects } from "./effects";
 import { levelBadge, levelBadgeText } from "./level-badge";
-import { livreDay, livreNight } from "./livre";
-import { engravings, framesOf, lettrineFor, tools } from "./ornaments";
-import { alpha, backTone, backTones, colors, matter, type Palette, rarityStyles } from "./tokens";
+import { lettering, library, toyMatters } from "./library";
+import { alpha, backTone, backTones, colors, matter, rarityStyles } from "./tokens";
 
 /** WCAG relative luminance of a `#RRGGBB` color. */
 function luminance(hex: string): number {
@@ -78,22 +77,24 @@ describe("css helpers", () => {
   });
 });
 
-describe.each<[string, Palette]>([
-  ["the day", livreDay],
-  ["the night", livreNight],
-])("the look of the book, in %s", (_, palette) => {
-  it("keeps reading text at 7:1", () => {
+describe("the look of the library", () => {
+  const palette = library;
+
+  it("keeps reading text at 7:1, on paper as on the room", () => {
     expect(contrast(palette.pageInk, palette.page)).toBeGreaterThanOrEqual(7);
     expect(contrast(palette.pageInk, palette.pageRaised)).toBeGreaterThanOrEqual(7);
     expect(contrast(palette.pageInk, palette.sheet)).toBeGreaterThanOrEqual(7);
+    expect(contrast(palette.paperInk, palette.paper)).toBeGreaterThanOrEqual(7);
   });
 
   it("keeps reading text at 7:1 on the darkest and the lightest grain of the paper", () => {
     const { dark, darkest, light, lightest } = matter.paper;
-    for (const surface of [palette.page, palette.sheet]) {
-      expect(contrast(palette.pageInk, under(surface, dark, darkest))).toBeGreaterThanOrEqual(7);
-      expect(contrast(palette.pageInk, under(surface, light, lightest))).toBeGreaterThanOrEqual(7);
-    }
+    expect(contrast(palette.paperInk, under(palette.paper, dark, darkest))).toBeGreaterThanOrEqual(
+      7,
+    );
+    expect(
+      contrast(palette.paperInk, under(palette.paper, light, lightest)),
+    ).toBeGreaterThanOrEqual(7);
   });
 
   it("keeps every other text at 4.5:1", () => {
@@ -102,6 +103,7 @@ describe.each<[string, Palette]>([
       [palette.pageInkMuted, palette.page],
       [palette.pageInkMuted, palette.sheet],
       [palette.pageInkFaint, palette.page],
+      [palette.paperInkMuted, palette.paper],
       [palette.rubric, palette.page],
       [palette.rubric, palette.sheet],
       [palette.success, palette.page],
@@ -119,6 +121,38 @@ describe.each<[string, Palette]>([
     for (const [ink, surface] of pairs) {
       expect(contrast(ink, surface)).toBeGreaterThanOrEqual(4.5);
     }
+  });
+
+  it("outlines its letters strongly enough to read on any toy", () => {
+    expect(contrast(lettering.fill, lettering.outline)).toBeGreaterThanOrEqual(7);
+  });
+
+  it("turns on over the current look with the page's data-look", () => {
+    expect(cssRootRule()).toContain(':root[data-look="bibliotheque"]{color-scheme:dark;');
+    expect(libraryTheme()["--lx-color-page"]).toBe(library.page);
+    expect(cssVariables()["--lx-toy-gold-top"]).toBe(toyMatters.gold.top);
+  });
+});
+
+describe("effects", () => {
+  it("never ask for more particles at once than the phone may hold", () => {
+    const bursts = [
+      ...effects.burst,
+      ...Object.values(revealEffects).flatMap((effect) => effect.bursts),
+    ];
+    for (const burst of bursts) {
+      expect(burst.count).toBeLessThanOrEqual(particleCap.mobile);
+      expect(burst.speed[0]).toBeLessThanOrEqual(burst.speed[1]);
+      expect(burst.life[0]).toBeLessThanOrEqual(burst.life[1]);
+    }
+  });
+
+  it("grow with the rarity", () => {
+    const order = ["common", "uncommon", "rare", "precious", "epic", "legendary"] as const;
+    const sizes = order.map((rarity) =>
+      revealEffects[rarity].bursts.reduce((sum, burst) => sum + burst.count, 0),
+    );
+    expect(sizes).toEqual([...sizes].sort((a, b) => a - b));
   });
 });
 
@@ -157,51 +191,5 @@ describe("level badge", () => {
   it("shrinks three digits to stay inside the face", () => {
     expect(levelBadgeText(9).fontSize).toBeGreaterThan(levelBadgeText(42).fontSize);
     expect(levelBadgeText(42).fontSize).toBeGreaterThan(levelBadgeText(120).fontSize);
-  });
-});
-
-describe("the ornaments of Le Livre", () => {
-  it("engraves every icon", () => {
-    expect(Object.keys(engravings).sort()).toEqual(Object.keys(icons).sort());
-  });
-
-  it("draws every shape inside its 24 px grid", () => {
-    const shapes = [
-      ...Object.values(tools),
-      ...Object.values(engravings).flatMap(({ shade, hatch }) => [shade ?? "", hatch ?? ""]),
-    ];
-    for (const shape of shapes) {
-      const numbers = shape.replace(/A[^A-Z]*?(?=[A-Z]|$)/g, " ").match(/-?\d*\.?\d+/g) ?? [];
-      for (const value of numbers) {
-        expect(Number(value)).toBeGreaterThanOrEqual(0);
-        expect(Number(value)).toBeLessThanOrEqual(24);
-      }
-    }
-  });
-
-  it("finds the capital of a word, accents and old letters included", () => {
-    expect(lettrineFor("abat-faim")).toBe("lr01");
-    expect(lettrineFor("Écornifleur")).toBe("lr05");
-    expect(lettrineFor("Jouvence")).toBe("lr09");
-    expect(lettrineFor("Urbanité")).toBe("lr19");
-    expect(lettrineFor("Yeuse")).toBeNull();
-    expect(lettrineFor("")).toBeNull();
-  });
-
-  it("gives each theme frames in its own colors", () => {
-    expect(framesOf(livreDay).gilt).not.toBe(framesOf(livreNight).gilt);
-    expect(decodeURIComponent(framesOf(livreDay).ink)).toContain(livreDay.rule);
-  });
-
-  it("squares the corners of the interface but not those of the art", () => {
-    const theme = bookTheme("light");
-    expect(theme["--lx-radius-pill"]).toBe("2px");
-    expect(theme["--lx-radius-card"]).toBe("16px");
-  });
-
-  it("leaves the current look without frames or square corners", () => {
-    const variables = cssVariables();
-    expect(variables["--lx-radius-pill"]).toBe("999px");
-    expect(variables["--lx-frame-gilt"]).toBeUndefined();
   });
 });

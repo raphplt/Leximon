@@ -124,6 +124,8 @@ Rien ne change pour le joueur à la fin de cette phase, sauf derrière le régla
 
 ### 1.2 Retirer Le Livre, garder son socle
 
+**Fait le 2026-11-02.** Le réglage se met avec `?look=bibliotheque` sur le web (gardé par le navigateur, `?look=actuel` l'efface) et `EXPO_PUBLIC_LOOK=bibliotheque` au build mobile.
+
 Le Livre est sur `main` derrière le réglage (commits du 2026-11-01). Le propriétaire a choisi de garder son socle et de retirer sa forme.
 
 | On garde | On retire |
@@ -138,12 +140,16 @@ Le Livre est sur `main` derrière le réglage (commits du 2026-11-01). Le propri
 
 ### 1.3 La salle et les objets
 
+**Fait le 2026-11-02.** Écarts : les rayonnages sont une tuile raccordable cuite par `packages/tokens/scripts/bake_room.py` (16 et 35 Ko sur le web, jusqu'à 57 Ko en 3x sur le mobile) ; la lampe et l'ombre des bords restent des dégradés, pour suivre la taille de l'écran. Le cadre doré du sous-main est un dégradé derrière une marge sur le mobile, sans image en neuf parts. La feuille s'appelle `Leaf` dans le code.
+
 - **La salle :** image cuite (rayonnages et lampe), en WebP, à deux densités, 120 Ko au plus. Le sous-main se dessine en dégradé, avec la tuile de grain de cuir existante.
 - **Les objets :** un composant par plateforme, `Toy` sur le web et sur le mobile, qui prend une matière (rouge, vert, bleu, or, papier, verrouillé) et une taille. Le web le fait en CSS. Le mobile pose le dessus, le dessous et l'épaisseur en vues simples : React Native 0.88 sait dessiner `boxShadow` et les dégradés, à vérifier sur un Android modeste.
 - **Le cadre doré :** dégradé en bordure sur le web, image découpée en neuf parts ou tracé `react-native-svg` sur le mobile.
 - **La feuille :** papier crème cerné, avec épaisseur, pour la lecture.
 
 ### 1.4 Le mouvement et les particules
+
+**Fait le 2026-11-02, sauf la mesure.** Le moteur est écrit une seule fois, en fonctions pures dans `packages/tokens/src/particles.ts`, que le canvas du web et Skia (sur le fil d'interface) appellent tous deux ; les réglages des effets sont dans `effects.ts`. Sur le mobile, une lueur se dessine en trois disques plutôt qu'en flou, trop lent à chaque image. **Reste la mesure sur un Android modeste**, par le propriétaire, sur les planches.
 
 - Courbes, durées et table des vibrations dans `packages/tokens`.
 - Le comportement d'appui dans `Toy` sur les deux plateformes.
@@ -152,6 +158,8 @@ Le Livre est sur `main` derrière le réglage (commits du 2026-11-01). Le propri
 - **Mesure sur un Android modeste** avant d'aller plus loin : 60 images par seconde au repos, pas de saccade visible pendant l'éclatement.
 
 ### 1.5 Les pièces de Jouer
+
+**Fait le 2026-11-02.** Les pièces vivent dans `apps/web/src/library/` et `apps/mobile/src/library/`, sans rien savoir du jeu ; `/planches` les assemble en un écran Jouer qu'on peut toucher, avec l'ouverture du sachet et l'effet de chaque rareté. Écart : React Native ne sait pas cerner un texte, le lettrage du mobile pose donc huit copies sombres autour des lettres.
 
 Seulement ce dont l'écran Jouer et l'ouverture ont besoin : bandeau du haut (portrait, médaille, barre d'XP, stock, courrier), barre d'onglets avec Jouer surélevé, tuiles latérales avec pastilles et cadenas, bouton principal, bulle d'information, sachet, lettrage cerné. Les autres pièces viennent avec leurs écrans.
 

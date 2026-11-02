@@ -1,5 +1,5 @@
 import { Pressable, StyleSheet, Text } from "react-native";
-import { SHOWS_THEME_CHOICE as BOOK, colors, fontSizes, fonts, radii, space } from "@/theme";
+import { colors, fontSizes, fonts, radii, space } from "@/theme";
 
 /** A small pill: a filter or a choice among a few, gold once picked. */
 export function Chip({
@@ -32,16 +32,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: space.s7,
     borderRadius: radii.x3,
     justifyContent: "center",
-    ...(BOOK
-      ? { borderWidth: StyleSheet.hairlineWidth, borderColor: colors.rule }
-      : { backgroundColor: colors.pageRaised }),
+    backgroundColor: colors.pageRaised,
   },
-  on: { backgroundColor: BOOK ? colors.pageInk : colors.action },
+  on: { backgroundColor: colors.action },
   disabled: { opacity: 0.45 },
-  text: {
-    fontFamily: BOOK ? fonts.ui.medium : fonts.ui.bold,
-    fontSize: fontSizes.label,
-    color: colors.pageInk,
-  },
-  textOn: { color: BOOK ? colors.page : colors.actionInk },
+  text: { fontFamily: fonts.ui.bold, fontSize: fontSizes.label, color: colors.pageInk },
+  textOn: { color: colors.actionInk },
 });

@@ -1,0 +1,187 @@
+/*
+ * The toys of « La Bibliothèque »: a lit top, a darker bottom, a lip inside, a thickness under it
+ * and a dark outline. Pressed, a toy sinks by its thickness; released, it springs back (toy.tsx).
+ */
+
+.toy {
+  --depth: var(--lx-toy-edge-small);
+  --lip: var(--lx-toy-lip-small);
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  border: var(--lx-toy-outline-width) solid var(--lx-toy-outline);
+  border-radius: var(--lx-toy-radius-small);
+  background: linear-gradient(180deg, var(--top) 0 47%, var(--bottom) 53% 100%);
+  box-shadow:
+    inset 0 calc(-1 * var(--lip)) 0 var(--edge),
+    inset 0 2px 0 var(--lx-toy-sheen),
+    0 var(--depth) 0 var(--lx-toy-outline),
+    0 calc(var(--depth) + 3px) 10px var(--lx-toy-drop);
+  color: var(--lx-lettering-fill);
+  font: inherit;
+  text-decoration: none;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  transition:
+    translate var(--lx-press-sink) ease-out,
+    box-shadow var(--lx-press-sink) ease-out;
+}
+
+button.toy,
+a.toy {
+  cursor: pointer;
+}
+
+.toy[data-down] {
+  translate: 0 var(--depth);
+  box-shadow:
+    inset 0 calc(-1 * var(--lip)) 0 var(--edge),
+    inset 0 2px 0 var(--lx-toy-sheen),
+    0 0 0 var(--lx-toy-outline),
+    0 2px 4px var(--lx-toy-drop);
+}
+
+.toy:focus-visible {
+  outline: 3px solid var(--lx-color-focus);
+  outline-offset: calc(var(--depth) + 2px);
+}
+
+/* --- Sizes and shapes --- */
+
+.large {
+  --depth: var(--lx-toy-edge-large);
+  --lip: var(--lx-toy-lip-large);
+  border-radius: var(--lx-toy-radius-large);
+}
+
+/* A large toy carries a line of light along its top. */
+.large::after {
+  content: "";
+  position: absolute;
+  inset: 4px 10px auto;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--lx-toy-sheen);
+  pointer-events: none;
+}
+
+.tile {
+  border-radius: var(--lx-toy-radius-tile);
+}
+
+/* A fine gilt rule inside a tile. */
+.tile::after {
+  content: "";
+  position: absolute;
+  inset: 3px 3px calc(var(--lip) + 2px);
+  border-radius: calc(var(--lx-toy-radius-tile) - 5px);
+  border: 1px solid var(--lx-toy-inner-rule);
+  pointer-events: none;
+}
+
+.tag {
+  --depth: 2px;
+  --lip: 2px;
+  border-radius: var(--lx-toy-radius-tag);
+}
+
+.round {
+  border-radius: 50%;
+}
+
+/* --- Matters --- */
+
+.gold {
+  --top: var(--lx-toy-gold-top);
+  --bottom: var(--lx-toy-gold-bottom);
+  --edge: var(--lx-toy-gold-edge);
+}
+
+.red {
+  --top: var(--lx-toy-red-top);
+  --bottom: var(--lx-toy-red-bottom);
+  --edge: var(--lx-toy-red-edge);
+}
+
+.green {
+  --top: var(--lx-toy-green-top);
+  --bottom: var(--lx-toy-green-bottom);
+  --edge: var(--lx-toy-green-edge);
+}
+
+.blue {
+  --top: var(--lx-toy-blue-top);
+  --bottom: var(--lx-toy-blue-bottom);
+  --edge: var(--lx-toy-blue-edge);
+}
+
+.paper {
+  --top: var(--lx-toy-paper-top);
+  --bottom: var(--lx-toy-paper-bottom);
+  --edge: var(--lx-toy-paper-edge);
+}
+
+.locked {
+  --top: var(--lx-toy-locked-top);
+  --bottom: var(--lx-toy-locked-bottom);
+  --edge: var(--lx-toy-locked-edge);
+}
+
+.alert {
+  --top: var(--lx-toy-alert-top);
+  --bottom: var(--lx-toy-alert-bottom);
+  --edge: var(--lx-toy-alert-edge);
+}
+
+.dark {
+  --top: var(--lx-toy-dark-top);
+  --bottom: var(--lx-toy-dark-bottom);
+  --edge: var(--lx-toy-dark-edge);
+}
+
+/* --- Lettering: cream, outlined in the dark of the toys, with a short drop --- */
+
+.lettering {
+  color: var(--lx-lettering-fill);
+  font-family: var(--font-display), Georgia, serif;
+  font-weight: 900;
+  -webkit-text-stroke: var(--lx-lettering-width) var(--lx-lettering-outline);
+  paint-order: stroke fill;
+  text-shadow: 0 var(--lx-lettering-drop) 0 var(--lx-lettering-outline);
+}
+
+/* Small capitals above a title, in the gilt of the frame. */
+.kicker {
+  color: var(--lx-lettering-kicker);
+  font:
+    800 var(--lx-size-micro) / 1 var(--font-ui),
+    sans-serif;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  text-shadow: 0 1px 0 var(--lx-color-shade);
+}
+
+.icon {
+  display: block;
+  flex: none;
+  overflow: visible;
+}
+
+/* --- Paper: what is read lies on a cream leaf with a thickness of its own --- */
+
+.leaf {
+  border: var(--lx-toy-outline-width) solid var(--lx-toy-outline);
+  border-radius: var(--lx-toy-radius-tile);
+  background:
+    var(--lx-matter-paper) 0 0 / var(--lx-matter-size),
+    var(--lx-color-paper);
+  box-shadow:
+    inset 0 -4px 0 var(--lx-toy-paper-bottom),
+    0 4px 0 var(--lx-toy-outline),
+    0 10px 20px var(--lx-toy-drop);
+  color: var(--lx-color-paper-ink);
+  font-family: var(--font-text), Georgia, serif;
+}

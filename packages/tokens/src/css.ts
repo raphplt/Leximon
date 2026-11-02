@@ -1,8 +1,15 @@
-import { livreDay, livreNight } from "./livre";
-import { framesOf } from "./ornaments";
 import {
-  bookRadii,
-  bookShadowsOf,
+  easings,
+  lettering,
+  library,
+  oldGold,
+  press,
+  room,
+  toy,
+  toyMatters,
+  toyRadii,
+} from "./library";
+import {
   colors,
   type Fill,
   fontSizes,
@@ -48,6 +55,7 @@ export function cssVariables(): Record<string, string> {
   for (const [name, value] of Object.entries(space)) {
     variables[`--lx-${name}`] = `${value}px`;
   }
+  Object.assign(variables, libraryParts());
   return variables;
 }
 
@@ -63,35 +71,67 @@ function paletteVariables(palette: Palette): Record<string, string> {
   return variables;
 }
 
-/** What a theme of Le Livre declares over the current look. */
-function bookThemeVariables(palette: Palette): Record<string, string> {
-  const variables = paletteVariables(palette);
-  for (const [name, value] of Object.entries(bookShadowsOf(palette))) {
-    variables[`--lx-shadow-${kebab(name)}`] = value;
-  }
-  for (const [name, value] of Object.entries(framesOf(palette))) {
-    variables[`--lx-frame-${name}`] = value;
-  }
-  return variables;
-}
-
-function bookVariables(): Record<string, string> {
+/**
+ * What « La Bibliothèque » adds: its toys, letters, room and grain. Declared in every look, since
+ * nothing else reads these names, so that a page can show the new pieces beside the current look.
+ */
+function libraryParts(): Record<string, string> {
   const variables: Record<string, string> = {
+    "--lx-toy-outline": toy.outline,
+    "--lx-toy-outline-width": `${toy.outlineWidth}px`,
+    "--lx-toy-edge-small": `${toy.edge.small}px`,
+    "--lx-toy-edge-large": `${toy.edge.large}px`,
+    "--lx-toy-lip-small": `${toy.lip.small}px`,
+    "--lx-toy-lip-large": `${toy.lip.large}px`,
+    "--lx-toy-sheen": toy.sheen,
+    "--lx-toy-inner-rule": toy.innerRule,
+    "--lx-toy-drop": toy.drop,
+    "--lx-lettering-fill": lettering.fill,
+    "--lx-lettering-outline": lettering.outline,
+    "--lx-lettering-drop": `${lettering.drop}px`,
+    "--lx-lettering-width": `max(${lettering.minOutline}px, ${lettering.outlineRatio}em)`,
+    "--lx-lettering-kicker": lettering.kicker,
+    "--lx-old-gold": cssFill(oldGold),
+    "--lx-room": [
+      `radial-gradient(ellipse 90% 80% at 50% 45%, transparent 45%, ${room.vignette} 100%)`,
+      `radial-gradient(ellipse 80% 50% at 50% 40%, ${room.lamp}, transparent 70%)`,
+      `image-set(url("/room/shelves.webp") 1x, url("/room/shelves@2x.webp") 2x) 50% 0 / ${room.shelves.width}px ${room.shelves.height}px`,
+      room.floor,
+    ].join(", "),
+    "--lx-room-floor": room.floor,
+    "--lx-room-lamp": room.lamp,
+    "--lx-room-vignette": room.vignette,
+    "--lx-desk-center": room.desk.center,
+    "--lx-desk-middle": room.desk.middle,
+    "--lx-desk-edge": room.desk.edge,
+    "--lx-desk-rule": room.desk.rule,
+    "--lx-desk-hollow": room.desk.hollow,
+    "--lx-shelf-top": room.shelf.top,
+    "--lx-shelf-bottom": room.shelf.bottom,
+    "--lx-shelf-gilt": room.shelf.gilt,
+    "--lx-shelf-gilt-shade": room.shelf.giltShade,
     "--lx-matter-paper": 'url("/matter/paper.webp")',
-    "--lx-matter-garde": 'url("/matter/garde.webp")',
-    "--lx-matter-carnet": 'url("/matter/carnet.webp")',
     "--lx-matter-leather": 'url("/matter/leather.webp")',
     "--lx-matter-size": `${matter.size}px`,
   };
-  for (const [name, value] of Object.entries(bookRadii)) {
-    variables[`--lx-radius-${kebab(name)}`] = `${value}px`;
+  for (const [name, tone] of Object.entries(toyMatters)) {
+    variables[`--lx-toy-${name}-top`] = tone.top;
+    variables[`--lx-toy-${name}-bottom`] = tone.bottom;
+    variables[`--lx-toy-${name}-edge`] = tone.edge;
+  }
+  for (const [name, curve] of Object.entries(easings)) {
+    variables[`--lx-ease-${name}`] = `cubic-bezier(${curve.join(", ")})`;
+  }
+  variables["--lx-press-sink"] = `${press.sinkMs}ms`;
+  for (const [name, value] of Object.entries(toyRadii)) {
+    variables[`--lx-toy-radius-${name}`] = `${value}px`;
   }
   return variables;
 }
 
-/** All of a theme of Le Livre, for the one page that shows both side by side. */
-export function bookTheme(theme: "light" | "dark"): Record<string, string> {
-  return { ...bookThemeVariables(theme === "dark" ? livreNight : livreDay), ...bookVariables() };
+/** The colors of « La Bibliothèque », for the one page that shows its pieces outside the look. */
+export function libraryTheme(): Record<string, string> {
+  return paletteVariables(library);
 }
 
 function rule(selector: string, variables: Record<string, string>, scheme: string): string {
@@ -100,14 +140,13 @@ function rule(selector: string, variables: Record<string, string>, scheme: strin
 }
 
 /**
- * The rules declaring the tokens: the current look, then « Le Livre » in its two themes, which the
- * script of the page turns on with `data-look` and `data-theme`.
+ * The rules declaring the tokens: the current look, then « La Bibliothèque », which the script of
+ * the page turns on with `data-look`.
  */
 export function cssRootRule(): string {
   return [
     rule(":root", cssVariables(), "dark"),
-    rule(':root[data-look="livre"]', bookTheme("light"), "light"),
-    rule(':root[data-look="livre"][data-theme="dark"]', bookThemeVariables(livreNight), "dark"),
+    rule(':root[data-look="bibliotheque"]', libraryTheme(), "dark"),
   ].join("");
 }
 

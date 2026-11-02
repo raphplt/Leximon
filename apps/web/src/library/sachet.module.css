@@ -1,0 +1,286 @@
+/* The sachet of the library: its own cloth, painted from the collection's tone. */
+
+.zone {
+  position: relative;
+  width: 176px;
+  height: 256px;
+}
+
+.aura {
+  position: absolute;
+  inset: -40%;
+  border-radius: 50%;
+  background: radial-gradient(
+    closest-side,
+    rgba(255, 200, 110, 0.4),
+    rgba(255, 160, 60, 0.1) 60%,
+    transparent
+  );
+  opacity: 0.55;
+  pointer-events: none;
+  animation: breathe 3.2s ease-in-out infinite;
+}
+
+.sachet {
+  position: absolute;
+  inset: 0;
+  display: block;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  filter: drop-shadow(2px 0 0 #2a1608) drop-shadow(-2px 0 0 #2a1608) drop-shadow(0 2px 0 #2a1608)
+    drop-shadow(0 -2px 0 #2a1608) drop-shadow(0 14px 14px rgba(0, 0, 0, 0.55));
+  animation: bob 3.2s ease-in-out infinite;
+}
+
+.top,
+.body {
+  position: absolute;
+  left: 0;
+  right: 0;
+  display: block;
+}
+
+/* The crimped strip that tears off. */
+.top {
+  top: 0;
+  z-index: 2;
+  height: 30px;
+  background: linear-gradient(180deg, var(--cloth-middle), var(--cloth-dark));
+  mask:
+    conic-gradient(from -45deg at bottom, #0000, #000 1deg 89deg, #0000 90deg) top / 12px 8px
+    repeat-x,
+    linear-gradient(#000 0 0) bottom / 100% calc(100% - 7px) no-repeat;
+}
+
+.tear {
+  position: absolute;
+  left: 6px;
+  right: 6px;
+  bottom: 1px;
+  height: 2px;
+  background: repeating-linear-gradient(90deg, #e9c06a 0 6px, transparent 6px 10px);
+  transition:
+    box-shadow 1.1s ease-in,
+    background 1.1s ease-in;
+}
+
+.charging {
+  animation: none;
+}
+
+.charging .tear {
+  background: #fffbe8;
+  box-shadow:
+    0 0 10px 3px #fff2b8,
+    0 0 30px 12px rgba(255, 196, 80, 0.8);
+}
+
+.body {
+  top: 30px;
+  bottom: 0;
+  overflow: hidden;
+  border-radius: 0 0 14px 14px;
+  background:
+    radial-gradient(ellipse 70% 50% at 50% 35%, rgba(255, 255, 255, 0.12), transparent),
+    repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.03) 0 2px, transparent 2px 6px),
+    linear-gradient(170deg, var(--cloth-light), var(--cloth-middle) 60%, var(--cloth-dark));
+  box-shadow:
+    inset 7px 0 12px rgba(255, 255, 255, 0.12),
+    inset -10px 0 16px rgba(0, 0, 0, 0.4),
+    inset 0 -14px 18px rgba(0, 0, 0, 0.3);
+  mask:
+    conic-gradient(from 135deg at top, #0000, #000 1deg 89deg, #0000 90deg) bottom / 12px 8px
+    repeat-x,
+    linear-gradient(#000 0 0) top / 100% calc(100% - 7px) no-repeat;
+}
+
+/* The gilt frame, a line of old gold inside the cloth. */
+.body::before {
+  content: "";
+  position: absolute;
+  inset: 8px 10px 16px;
+  border: 2.5px solid transparent;
+  border-radius: 10px;
+  background: var(--lx-old-gold) border-box;
+  mask:
+    linear-gradient(#000 0 0) padding-box exclude,
+    linear-gradient(#000 0 0);
+}
+
+.brand {
+  position: absolute;
+  top: 18px;
+  left: 0;
+  right: 0;
+  background: var(--lx-old-gold);
+  background-clip: text;
+  color: transparent;
+  font:
+    900 12px / 1 var(--font-display),
+    serif;
+  letter-spacing: 0.32em;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.medallion {
+  position: absolute;
+  top: 40px;
+  left: 50%;
+  display: grid;
+  place-items: center;
+  width: 96px;
+  height: 96px;
+  margin-left: -48px;
+  box-sizing: border-box;
+  border: 4px solid transparent;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 50% 40%, #fbf0d4, #dcc08a) padding-box,
+    var(--lx-old-gold) border-box;
+  box-shadow:
+    0 0 0 2px #2a1608,
+    0 4px 0 rgba(0, 0, 0, 0.35);
+}
+
+.engraving {
+  position: absolute;
+  inset: 9px;
+  background: #3b2414;
+  mask: var(--ink) center / contain no-repeat;
+}
+
+.seal {
+  width: 80px;
+  height: 80px;
+}
+
+.ribbon {
+  position: absolute;
+  top: 148px;
+  left: 4px;
+  right: 4px;
+  padding: 6px 4px 7px;
+  border: 2.5px solid #2a1608;
+  border-radius: 8px;
+  background: linear-gradient(180deg, var(--lx-toy-red-top) 0 50%, var(--lx-toy-red-bottom) 50%);
+  box-shadow:
+    inset 0 -4px 0 var(--lx-toy-red-edge),
+    0 3px 0 #2a1608;
+  color: var(--lx-lettering-fill);
+  font:
+    900 13px / 1.05 var(--font-display),
+    serif;
+  text-align: center;
+  -webkit-text-stroke: 3.5px #2a1608;
+  paint-order: stroke fill;
+}
+
+.count {
+  position: absolute;
+  top: 196px;
+  left: 0;
+  right: 0;
+  color: #e9c06a;
+  font:
+    800 10px / 1 var(--font-ui),
+    sans-serif;
+  letter-spacing: 0.25em;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.wax {
+  position: absolute;
+  right: 12px;
+  bottom: 16px;
+  width: 32px;
+  height: 32px;
+  transform: rotate(-12deg);
+  filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.5));
+}
+
+/* A sheen crosses the cloth now and then. */
+.shine {
+  position: absolute;
+  inset: -40% -60%;
+  background: linear-gradient(
+    105deg,
+    transparent 42%,
+    rgba(255, 255, 255, 0.55) 49%,
+    rgba(255, 255, 255, 0.1) 53%,
+    transparent 58%
+  );
+  transform: translateX(-70%);
+  mix-blend-mode: overlay;
+  pointer-events: none;
+  animation: shine 4.5s ease-in-out infinite 1s;
+}
+
+.shadow {
+  position: absolute;
+  left: 18%;
+  right: 18%;
+  bottom: -26px;
+  height: 18px;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(0, 0, 0, 0.55), transparent);
+  animation: shadow 3.2s ease-in-out infinite;
+}
+
+@keyframes bob {
+  0%,
+  100% {
+    transform: translateY(0) rotate(-1.2deg);
+  }
+  50% {
+    transform: translateY(-10px) rotate(1.2deg);
+  }
+}
+
+@keyframes shadow {
+  0%,
+  100% {
+    transform: scaleX(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scaleX(0.82);
+    opacity: 0.6;
+  }
+}
+
+@keyframes breathe {
+  0%,
+  100% {
+    transform: scale(0.92);
+    opacity: 0.45;
+  }
+  50% {
+    transform: scale(1.05);
+    opacity: 0.7;
+  }
+}
+
+@keyframes shine {
+  0%,
+  60% {
+    transform: translateX(-70%);
+  }
+  85%,
+  100% {
+    transform: translateX(70%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .aura,
+  .sachet,
+  .shine,
+  .shadow {
+    animation: none;
+  }
+}

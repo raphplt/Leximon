@@ -1,5 +1,5 @@
 import { Pressable, StyleSheet, Text } from "react-native";
-import { SHOWS_THEME_CHOICE as BOOK, colors, fontSizes, fonts, space } from "@/theme";
+import { colors, fontSizes, fonts, space } from "@/theme";
 
 /** A minor action, written as an underlined link. */
 export function TextButton({
@@ -29,7 +29,7 @@ const styles = StyleSheet.create({
   button: { alignSelf: "center", paddingVertical: space.s4 },
   dim: { opacity: 0.5 },
   label: {
-    fontFamily: BOOK ? fonts.text.italic : fonts.ui.bold,
+    fontFamily: fonts.ui.bold,
     fontSize: fontSizes.body,
     color: colors.rubric,
     textDecorationLine: "underline",

@@ -1,0 +1,711 @@
+import {
+  cssFill,
+  oldGold,
+  room,
+  stockToyInks,
+  type ToyIconName,
+  type ToyMatterName,
+  toyMatters,
+  toy as toyValues,
+} from "@leximon/tokens";
+import { type ReactNode, useEffect, useState } from "react";
+import {
+  type GestureResponderEvent,
+  Image,
+  type LayoutChangeEvent,
+  Pressable,
+  type StyleProp,
+  StyleSheet,
+  Text,
+  View,
+  type ViewStyle,
+} from "react-native";
+import Animated, {
+  useAnimatedStyle,
+  useReducedMotion,
+  useSharedValue,
+  withDelay,
+  withRepeat,
+  withSequence,
+  withTiming,
+} from "react-native-reanimated";
+import { colors, fontSizes, fonts } from "@/theme";
+import { Matter } from "@/ui/matter";
+import { Kicker, Lettering, Toy, ToyBody, ToyIcon } from "@/ui/toy";
+
+/**
+ * The pieces of the Jouer screen in « La Bibliothèque ». They know nothing of the game: each
+ * screen gives them their words and figures, so that the same pieces serve every state.
+ */
+
+const SHELVES = require("../../assets/room/shelves.webp");
+
+/**
+ * The reading room behind a screen: shelves in the dark, the lamp's light in the middle and the
+ * dark closing in at the edges. The shelves are laid tile by tile: on Android, `repeat` draws a
+ * tile once in the corner.
+ */
+export function Room({ children }: { readonly children?: ReactNode }) {
+  const [columns, setColumns] = useState(1);
+  const measure = ({ nativeEvent: { layout } }: LayoutChangeEvent) =>
+    setColumns(Math.max(1, Math.ceil(layout.width / room.shelves.width)));
+  return (
+    <View style={styles.room} onLayout={measure}>
+      <View style={styles.shelves} pointerEvents="none">
+        {Array.from({ length: columns }, (_, column) => (
+          // biome-ignore lint/suspicious/noArrayIndexKey: identical tiles that never move
+          <Image key={column} source={SHELVES} style={styles.shelf} />
+        ))}
+      </View>
+      <View style={styles.lamp} pointerEvents="none" />
+      <View style={styles.vignette} pointerEvents="none" />
+      {children}
+    </View>
+  );
+}
+
+/** The green leather desk under the lamp, framed in old gold. */
+export function Desk({ style }: { readonly style?: StyleProp<ViewStyle> }) {
+  return (
+    <View style={[styles.deskFrame, style]} pointerEvents="none">
+      <View style={styles.desk}>
+        <Matter kind="leather" />
+        <View style={styles.deskRule} />
+      </View>
+    </View>
+  );
+}
+
+/** Repeats a small motion every `period` ms, unless the player asks for reduced motion. */
+function useNudge(period: number) {
+  const reduced = useReducedMotion();
+  const turn = useSharedValue(0);
+  useEffect(() => {
+    if (reduced) return;
+    turn.value = withRepeat(
+      withSequence(
+        withDelay(period * 0.75, withTiming(-1, { duration: period * 0.06 })),
+        withTiming(1, { duration: period * 0.07 }),
+        withTiming(0, { duration: period * 0.06 }),
+        withTiming(0, { duration: period * 0.06 }),
+      ),
+      -1,
+    );
+  }, [reduced, period, turn]);
+  return turn;
+}
+
+/** A red count of what waits for the player, which nudges now and then. */
+export function CountBadge({
+  count,
+  style,
+}: {
+  readonly count: string;
+  readonly style?: StyleProp<ViewStyle>;
+}) {
+  const turn = useNudge(2600);
+  const nudged = useAnimatedStyle(() => ({
+    transform: [{ translateY: Math.min(0, turn.value) * 4 }, { rotate: `${turn.value * 6}deg` }],
+  }));
+  return (
+    <Animated.View style={[style, nudged]} pointerEvents="none">
+      <ToyBody matter="alert" shape="tag" style={styles.badge}>
+        <Lettering size={13}>{count}</Lettering>
+      </ToyBody>
+    </Animated.View>
+  );
+}
+
+/** The player's portrait, which opens their profile. */
+export function PortraitButton({
+  label,
+  children,
+  onPress,
+}: {
+  readonly label: string;
+  readonly children: ReactNode;
+  readonly onPress?: () => void;
+}) {
+  return (
+    <Toy
+      matter="paper"
+      style={styles.portrait}
+      accessibilityRole="button"
+      accessibilityLabel={label}
+      onPress={onPress}
+    >
+      <View style={styles.portraitFrame}>{children}</View>
+    </Toy>
+  );
+}
+
+/** The level as a blue medal, and the experience toward the next one as a gilt bar. */
+export function LevelGauge({
+  level,
+  progress,
+  label,
+}: {
+  readonly level: number;
+  /** From 0 to 1. */
+  readonly progress: number;
+  readonly label: string;
+}) {
+  const filled = Math.min(1, Math.max(0, progress));
+  return (
+    <View style={styles.level}>
+      <ToyBody matter="blue" shape="round" style={styles.medal}>
+        <Lettering size={22}>{level}</Lettering>
+      </ToyBody>
+      <View style={styles.xp}>
+        <View style={[styles.xpFill, { width: `${filled * 100}%` }]} />
+        <View style={styles.xpText}>
+          <Lettering size={12} font={fonts.ui.extrabold}>
+            {label}
+          </Lettering>
+        </View>
+      </View>
+    </View>
+  );
+}
+
+/** Sachets in stock, which opens their detail. */
+export function StockButton({
+  label,
+  figure,
+  onPress,
+}: {
+  readonly label: string;
+  readonly figure: string;
+  readonly onPress?: () => void;
+}) {
+  return (
+    <Toy
+      matter="paper"
+      style={styles.stockToy}
+      bodyStyle={styles.stock}
+      accessibilityRole="button"
+      accessibilityLabel={label}
+      onPress={onPress}
+    >
+      <ToyIcon name="sachet" size={30} inks={stockToyInks} />
+      <Lettering size={17}>{figure}</Lettering>
+    </Toy>
+  );
+}
+
+/** The mail, with what waits in it. */
+export function MailButton({
+  label,
+  count,
+  onPress,
+}: {
+  readonly label: string;
+  readonly count: number;
+  readonly onPress?: () => void;
+}) {
+  return (
+    <View>
+      <Toy
+        matter="red"
+        style={styles.mail}
+        accessibilityRole="button"
+        accessibilityLabel={label}
+        onPress={onPress}
+      >
+        <ToyIcon name="mail" size={30} />
+      </Toy>
+      {count > 0 && <CountBadge count={String(count)} style={styles.corner} />}
+    </View>
+  );
+}
+
+/** One of the tiles beside the sachet: its leather, its icon, and a lock until its level. */
+export function SideTile({
+  icon,
+  matter,
+  label,
+  badge,
+  lockedAt,
+  onPress,
+}: {
+  readonly icon: ToyIconName;
+  readonly matter: ToyMatterName;
+  readonly label: string;
+  readonly badge?: string | undefined;
+  /** The level that opens it, while it is closed. */
+  readonly lockedAt?: string | undefined;
+  readonly onPress?: (event: GestureResponderEvent) => void;
+}) {
+  const locked = lockedAt !== undefined;
+  return (
+    <View style={styles.side}>
+      <View>
+        <Toy
+          matter={locked ? "locked" : matter}
+          shape="tile"
+          style={styles.tile}
+          accessibilityRole="button"
+          accessibilityLabel={locked ? `${label}, ${lockedAt}` : label}
+          onPress={onPress}
+        >
+          <View style={styles.tileRule} />
+          <View style={locked ? styles.tileIconLocked : undefined}>
+            <ToyIcon name={icon} size={38} locked={locked} />
+          </View>
+        </Toy>
+        {locked && (
+          <View style={styles.lockPin} pointerEvents="none">
+            <ToyIcon name="lock" size={26} />
+          </View>
+        )}
+        {!locked && badge !== undefined && <CountBadge count={badge} style={styles.corner} />}
+      </View>
+      {locked && (
+        <ToyBody matter="dark" shape="tag" style={styles.levelTag}>
+          <Lettering size={11}>{lockedAt}</Lettering>
+        </ToyBody>
+      )}
+      <Lettering size={12} style={styles.sideLabel}>
+        {label}
+      </Lettering>
+    </View>
+  );
+}
+
+/** The collection on the desk, with arrows to the others and a dot for each. */
+export function CollectionTitle({
+  kicker,
+  name,
+  tagline,
+  index,
+  count,
+  previousLabel,
+  nextLabel,
+  onPrevious,
+  onNext,
+}: {
+  readonly kicker: string;
+  readonly name: string;
+  readonly tagline: string;
+  readonly index: number;
+  readonly count: number;
+  readonly previousLabel: string;
+  readonly nextLabel: string;
+  readonly onPrevious?: () => void;
+  readonly onNext?: () => void;
+}) {
+  return (
+    <View style={styles.collection}>
+      <View style={styles.collectionRow}>
+        <Toy
+          matter="paper"
+          style={styles.arrow}
+          accessibilityRole="button"
+          accessibilityLabel={previousLabel}
+          onPress={onPrevious}
+        >
+          <ToyIcon name="arrow" size={26} />
+        </Toy>
+        <View style={styles.collectionName}>
+          <Kicker>{kicker}</Kicker>
+          <Lettering size={24} numberOfLines={2} style={styles.name}>
+            {name}
+          </Lettering>
+          <View style={styles.dots}>
+            {Array.from({ length: count }, (_, dot) => (
+              // biome-ignore lint/suspicious/noArrayIndexKey: one dot per place, which never moves
+              <View key={dot} style={[styles.dot, dot === index && styles.dotOn]} />
+            ))}
+          </View>
+        </View>
+        <Toy
+          matter="paper"
+          style={styles.arrow}
+          accessibilityRole="button"
+          accessibilityLabel={nextLabel}
+          onPress={onNext}
+        >
+          <View style={styles.flipped}>
+            <ToyIcon name="arrow" size={26} />
+          </View>
+        </Toy>
+      </View>
+      <Text style={styles.tagline}>{tagline}</Text>
+    </View>
+  );
+}
+
+/** The main action, in old gold, which invites a press every few seconds while it waits. */
+export function MainAction({
+  label,
+  count,
+  inviting = true,
+  onPress,
+}: {
+  readonly label: string;
+  readonly count?: string | undefined;
+  readonly inviting?: boolean;
+  readonly onPress?: () => void;
+}) {
+  const reduced = useReducedMotion();
+  const squash = useSharedValue(0);
+  useEffect(() => {
+    if (reduced || !inviting) {
+      squash.value = 0;
+      return;
+    }
+    squash.value = withRepeat(
+      withSequence(
+        withDelay(2400, withTiming(1, { duration: 180 })),
+        withTiming(-0.25, { duration: 180 }),
+        withTiming(0, { duration: 240 }),
+      ),
+      -1,
+    );
+  }, [reduced, inviting, squash]);
+  const invite = useAnimatedStyle(() => ({
+    transform: [{ scaleX: 1 + squash.value * 0.04 }, { scaleY: 1 - squash.value * 0.03 }],
+  }));
+  return (
+    <Animated.View style={[styles.mainWrap, invite]}>
+      <Toy
+        matter="gold"
+        large
+        style={styles.main}
+        bodyStyle={styles.mainBody}
+        accessibilityRole="button"
+        accessibilityLabel={label}
+        onPress={onPress}
+      >
+        <View style={styles.sheen} pointerEvents="none" />
+        <Lettering size={22}>{label}</Lettering>
+        {count !== undefined && (
+          <ToyBody matter="red" shape="round" style={styles.mainCount}>
+            <Lettering size={18}>{count}</Lettering>
+          </ToyBody>
+        )}
+      </Toy>
+    </Animated.View>
+  );
+}
+
+/** A secondary action, in paper. */
+export function PaperAction({
+  label,
+  onPress,
+}: {
+  readonly label: string;
+  readonly onPress?: () => void;
+}) {
+  return (
+    <Toy
+      matter="paper"
+      style={styles.paperAction}
+      accessibilityRole="button"
+      accessibilityLabel={label}
+      onPress={onPress}
+    >
+      <Lettering size={17}>{label}</Lettering>
+    </Toy>
+  );
+}
+
+export interface Tab {
+  readonly icon: ToyIconName;
+  readonly label: string;
+  readonly badge?: string | undefined;
+  /** Why it is closed, said when it is touched. */
+  readonly lockedAt?: string | undefined;
+}
+
+/** The shelf of tabs: two on each side and Jouer in the middle, higher than the others, in gold. */
+export function TabBar({
+  tabs,
+  playLabel,
+  bottomInset = 0,
+  onTab,
+  onPlay,
+}: {
+  readonly tabs: readonly [Tab, Tab, Tab, Tab];
+  readonly playLabel: string;
+  readonly bottomInset?: number;
+  readonly onTab?: (index: number) => void;
+  readonly onPlay?: () => void;
+}) {
+  const [first, second, third, fourth] = tabs;
+  const tab = (item: Tab, index: number) => {
+    const locked = item.lockedAt !== undefined;
+    return (
+      <Pressable
+        key={item.label}
+        style={styles.tab}
+        accessibilityRole="tab"
+        accessibilityLabel={locked ? `${item.label}, ${item.lockedAt}` : item.label}
+        onPress={() => onTab?.(index)}
+      >
+        <View style={locked ? styles.tabIconLocked : undefined}>
+          <ToyIcon name={item.icon} size={34} locked={locked} />
+        </View>
+        {locked && (
+          <View style={styles.tabLock}>
+            <ToyIcon name="lock" size={19} />
+          </View>
+        )}
+        {item.badge !== undefined && <CountBadge count={item.badge} style={styles.tabBadge} />}
+        <Lettering size={11}>{item.label}</Lettering>
+      </Pressable>
+    );
+  };
+  return (
+    <View style={[styles.tabs, { paddingBottom: bottomInset + 8 }]}>
+      <View style={styles.shelfGilt} />
+      {tab(first, 0)}
+      {tab(second, 1)}
+      <View style={styles.tab}>
+        <View style={styles.playRing}>
+          <Toy
+            matter="gold"
+            large
+            shape="tile"
+            style={styles.playDisc}
+            accessibilityRole="tab"
+            accessibilityLabel={playLabel}
+            onPress={onPlay}
+          >
+            <ToyIcon name="sachet" size={46} />
+          </Toy>
+        </View>
+        <Lettering size={11} color={toyMatters.gold.top}>
+          {playLabel}
+        </Lettering>
+      </View>
+      {tab(third, 2)}
+      {tab(fourth, 3)}
+    </View>
+  );
+}
+
+/**
+ * A short message on a slip of paper, which pops in and leaves on its own. A new `message`
+ * object shows it again, even with the same words.
+ */
+export function InfoBubble({ message }: { readonly message: { readonly text: string } | null }) {
+  const shown = useSharedValue(0);
+  useEffect(() => {
+    if (message === null) return;
+    shown.value = withSequence(
+      withTiming(0, { duration: 0 }),
+      withTiming(1.08, { duration: 170 }),
+      withTiming(1, { duration: 130 }),
+      withDelay(1550, withTiming(0, { duration: 330 })),
+    );
+  }, [message, shown]);
+  const style = useAnimatedStyle(() => ({
+    opacity: Math.min(1, shown.value * 1.5),
+    transform: [{ scale: 0.6 + Math.min(shown.value, 1.08) * 0.4 }],
+  }));
+  return (
+    <Animated.View style={[styles.bubble, style]} pointerEvents="none">
+      <Text style={styles.bubbleText} accessibilityLiveRegion="polite">
+        {message?.text}
+      </Text>
+    </Animated.View>
+  );
+}
+
+const outlined = {
+  borderWidth: toyValues.outlineWidth,
+  borderColor: toyValues.outline,
+} as const;
+
+const styles = StyleSheet.create({
+  room: { flex: 1, overflow: "hidden", backgroundColor: room.floor },
+  shelves: { ...StyleSheet.absoluteFill, flexDirection: "row" },
+  shelf: { width: room.shelves.width, height: room.shelves.height },
+  lamp: {
+    ...StyleSheet.absoluteFill,
+    backgroundImage: `radial-gradient(ellipse 80% 50% at 50% 40%, ${room.lamp}, transparent 70%)`,
+  },
+  vignette: {
+    ...StyleSheet.absoluteFill,
+    backgroundImage: `radial-gradient(ellipse 90% 80% at 50% 45%, transparent 45%, ${room.vignette} 100%)`,
+  },
+  deskFrame: {
+    padding: room.desk.frameWidth,
+    borderRadius: room.desk.radius,
+    backgroundImage: cssFill(oldGold),
+    boxShadow: `0 0 0 3px ${toyValues.outline}, 0 24px 44px ${toyValues.drop}`,
+  },
+  desk: {
+    flex: 1,
+    overflow: "hidden",
+    borderRadius: room.desk.radius - room.desk.frameWidth,
+    backgroundImage: `radial-gradient(ellipse 80% 60% at 50% 40%, ${room.desk.center} 0%, ${room.desk.middle} 55%, ${room.desk.edge} 100%)`,
+    boxShadow: `inset 0 0 50px ${room.desk.hollow}`,
+  },
+  deskRule: {
+    position: "absolute",
+    top: room.desk.ruleInset - room.desk.frameWidth,
+    left: room.desk.ruleInset - room.desk.frameWidth,
+    right: room.desk.ruleInset - room.desk.frameWidth,
+    bottom: room.desk.ruleInset - room.desk.frameWidth,
+    borderRadius: 17,
+    borderWidth: 1.5,
+    borderColor: room.desk.rule,
+  },
+  badge: { minWidth: 23, height: 23, paddingHorizontal: 5 },
+  corner: { position: "absolute", top: -9, right: -9, zIndex: 2 },
+  portrait: { width: 54, height: 54 },
+  portraitFrame: {
+    position: "absolute",
+    top: 3,
+    left: 3,
+    right: 3,
+    bottom: 5,
+    overflow: "hidden",
+    borderRadius: 11,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  level: { flex: 1, flexDirection: "row", alignItems: "center", minWidth: 0 },
+  medal: { zIndex: 2, width: 46, height: 46 },
+  xp: {
+    ...outlined,
+    flex: 1,
+    maxWidth: 120,
+    height: 20,
+    marginLeft: -14,
+    overflow: "hidden",
+    borderLeftWidth: 0,
+    borderTopRightRadius: 11,
+    borderBottomRightRadius: 11,
+    backgroundColor: colors.well,
+    boxShadow: `0 4px 0 ${toyValues.outline}, inset 0 3px 4px ${toyValues.drop}`,
+  },
+  xpFill: {
+    position: "absolute",
+    left: 0,
+    top: 0,
+    bottom: 0,
+    backgroundImage: `linear-gradient(180deg, ${colors.xpLight} 0%, ${colors.xpLight} 45%, ${colors.xpDeep} 55%, ${colors.xpDeep} 100%)`,
+    boxShadow: `inset 0 -3px 0 ${toyMatters.gold.edge}`,
+  },
+  xpText: {
+    ...StyleSheet.absoluteFill,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingLeft: 10,
+  },
+  stockToy: { height: 42 },
+  stock: { flexDirection: "row", gap: 5, paddingLeft: 5, paddingRight: 12 },
+  mail: { width: 46, height: 46 },
+  side: { alignItems: "center", width: 72 },
+  tile: { width: 58, height: 58 },
+  tileRule: {
+    position: "absolute",
+    top: 1,
+    left: 1,
+    right: 1,
+    bottom: 5,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: toyValues.innerRule,
+  },
+  tileIconLocked: { opacity: 0.7 },
+  lockPin: { position: "absolute", top: -10, right: -10, zIndex: 2 },
+  levelTag: { zIndex: 2, marginTop: -9, paddingHorizontal: 7, paddingBottom: 2 },
+  sideLabel: { marginTop: 5, textAlign: "center" },
+  collection: { alignItems: "center" },
+  collectionRow: { flexDirection: "row", alignItems: "center", gap: 14 },
+  arrow: { width: 42, height: 42 },
+  flipped: { transform: [{ scaleX: -1 }] },
+  collectionName: { alignItems: "center", minWidth: 180 },
+  name: { maxWidth: 200, marginTop: 3, textAlign: "center" },
+  dots: { flexDirection: "row", gap: 7, marginTop: 6 },
+  dot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    borderWidth: 2,
+    borderColor: toyValues.outline,
+    backgroundColor: room.desk.edge,
+  },
+  dotOn: {
+    backgroundColor: toyMatters.gold.top,
+    boxShadow: `inset 0 -2px 0 ${toyMatters.gold.edge}`,
+  },
+  tagline: {
+    marginTop: 6,
+    marginHorizontal: 40,
+    color: colors.pageInkSoft,
+    fontFamily: fonts.text.italic,
+    fontSize: fontSizes.body,
+    lineHeight: 20,
+    textAlign: "center",
+    textShadowColor: colors.shade,
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 2,
+  },
+  mainWrap: { width: "100%", maxWidth: 320 },
+  main: { height: 66 },
+  mainBody: { flexDirection: "row", gap: 12 },
+  sheen: {
+    position: "absolute",
+    top: 2,
+    left: 10,
+    right: 10,
+    height: 3,
+    borderRadius: 2,
+    backgroundColor: toyValues.sheen,
+  },
+  mainCount: { width: 38, height: 38 },
+  paperAction: { height: 48, paddingHorizontal: 24 },
+  tabs: {
+    flexDirection: "row",
+    alignItems: "flex-end",
+    justifyContent: "space-around",
+    paddingTop: 6,
+    paddingHorizontal: 4,
+    backgroundImage: `linear-gradient(180deg, ${room.shelf.top}, ${room.shelf.bottom})`,
+    boxShadow: `inset 0 5px 0 ${room.shelf.giltShade}, 0 -8px 20px ${toyValues.drop}`,
+  },
+  shelfGilt: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    height: 3,
+    backgroundColor: room.shelf.gilt,
+  },
+  tab: { alignItems: "center", gap: 3, width: 70, paddingBottom: 4 },
+  tabIconLocked: { opacity: 0.6 },
+  tabLock: { position: "absolute", top: -4, right: 10 },
+  tabBadge: { position: "absolute", top: -6, right: 6 },
+  playRing: {
+    marginTop: -38,
+    borderRadius: 26,
+    boxShadow: `0 0 0 4px ${room.shelf.bottom}`,
+  },
+  playDisc: { width: 74, height: 74 },
+  bubble: {
+    ...outlined,
+    position: "absolute",
+    alignSelf: "center",
+    top: "22%",
+    maxWidth: 320,
+    marginHorizontal: 24,
+    paddingVertical: 12,
+    paddingHorizontal: 18,
+    borderRadius: 16,
+    backgroundColor: colors.paper,
+    boxShadow: `0 4px 0 ${toyValues.outline}, 0 10px 20px ${toyValues.drop}`,
+    opacity: 0,
+  },
+  bubbleText: {
+    color: colors.paperInk,
+    fontFamily: fonts.text.medium,
+    fontSize: fontSizes.bodyLarge,
+    lineHeight: 21,
+    textAlign: "center",
+  },
+});

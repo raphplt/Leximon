@@ -14,7 +14,7 @@ import {
 import { useState } from "react";
 import { Image, StyleSheet, Text, View } from "react-native";
 import Svg, { Defs, Mask, Rect, Image as SvgImage, Text as SvgText } from "react-native-svg";
-import { cardFonts as fonts } from "@/theme";
+import { fonts } from "@/theme";
 import { FillGradient, paintOf } from "@/ui/fill";
 import { RarityIcon } from "@/ui/rarity-icon";
 import { catalogFileUrl } from "./catalog";

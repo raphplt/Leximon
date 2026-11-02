@@ -40,7 +40,7 @@ import Svg, {
 import { scheduleOnRN } from "react-native-worklets";
 import { steppedLight, useTiltLight } from "@/cards/use-tilt-light";
 import { play, playTearGrain, vibrate } from "@/feedback/feedback";
-import { colors, cardFonts as fonts } from "@/theme";
+import { colors, fonts } from "@/theme";
 import {
   BandLayer,
   BaseLayer,

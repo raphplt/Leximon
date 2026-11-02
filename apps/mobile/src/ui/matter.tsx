@@ -1,12 +1,9 @@
 import { matter } from "@leximon/tokens";
 import { useState } from "react";
 import { Image, type LayoutChangeEvent, StyleSheet, View } from "react-native";
-import { SHOWS_THEME_CHOICE } from "@/theme";
 
 const TILES = {
   paper: require("../../assets/matter/paper.webp"),
-  garde: require("../../assets/matter/garde.webp"),
-  carnet: require("../../assets/matter/carnet.webp"),
   leather: require("../../assets/matter/leather.webp"),
 } as const;
 
@@ -35,9 +32,8 @@ function Tiles({ kind }: { readonly kind: Kind }) {
   );
 }
 
-/** The grain of a surface in Le Livre, over its color. The current look has none. */
+/** The grain of paper or leather, over the color of the surface it fills. */
 export function Matter({ kind }: { readonly kind: Kind }) {
-  if (!SHOWS_THEME_CHOICE) return null;
   return <Tiles kind={kind} />;
 }
 

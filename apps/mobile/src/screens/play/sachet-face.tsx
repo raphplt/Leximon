@@ -38,7 +38,7 @@ import Svg, {
 } from "react-native-svg";
 import { scheduleOnRN } from "react-native-worklets";
 import { catalogFileUrl } from "@/cards/catalog";
-import { colors, cardFonts as fonts } from "@/theme";
+import { colors, fonts } from "@/theme";
 import { LogoMarkShapes } from "@/ui/logo-mark";
 import { displayBoldWidth } from "./glyph-widths";
 import {

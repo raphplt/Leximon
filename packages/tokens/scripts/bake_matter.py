@@ -1,7 +1,7 @@
-"""The paper and leather of Le Livre, baked once as translucent tiles.
+"""The grain of paper and leather, baked once as translucent tiles.
 
-A tile only holds the grain, over whatever color the theme puts behind it: one file serves the
-day and the night, without a blend mode or live noise, which are too slow on a modest phone. The
+A tile only holds the grain, over whatever color lies behind it: one file serves every sheet or
+every leather, without a blend mode or live noise, which are too slow on a modest phone. The
 strengths are limits read by the token tests, which measure text on the tile's darkest and
 lightest pixels (`matterStrength` in tokens.ts must follow them):
 
@@ -19,7 +19,6 @@ from PIL import Image
 ROOT = Path(__file__).resolve().parents[3]
 OUTPUTS = [ROOT / "apps/web/public/matter", ROOT / "apps/mobile/assets/matter"]
 SIZE = 128
-LINE = 32
 DARK = (20, 12, 6)
 LIGHT = (255, 246, 226)
 
@@ -64,23 +63,6 @@ def paper() -> Image.Image:
     return translucent(0.45 * fibres + 0.8 * grain, 0.045, 0.03)
 
 
-def garde() -> Image.Image:
-    # Combed marbling, as on the endpapers that line a window: waves bent by a slow noise.
-    columns = np.arange(SIZE) / SIZE
-    x = np.tile(columns, (SIZE, 1))
-    waves = np.sin(2 * np.pi * (8 * x + 0.22 * smooth_noise(14)))
-    return translucent(waves + 0.25 * smooth_noise(0.7), 0.06, 0.04)
-
-
-def carnet() -> Image.Image:
-    # The paper of a notebook: its grain, and a faint rule every line of text.
-    field = 0.45 * stretched_noise(3, 0.7) + 0.8 * smooth_noise(0.7)
-    limit = np.percentile(np.abs(field), 99.5)
-    field = np.clip(field / limit, -1, 1) * 0.5
-    field[LINE - 1 :: LINE, :] -= 0.8
-    return translucent(field, 0.09, 0.03)
-
-
 def leather() -> Image.Image:
     # Rounded pebbles between darker creases, then a slow variation across the hide.
     pebbles = np.abs(smooth_noise(2.2)) - 0.75
@@ -92,8 +74,6 @@ def leather() -> Image.Image:
 def main() -> None:
     tiles = (
         ("paper", paper()),
-        ("garde", garde()),
-        ("carnet", carnet()),
         ("leather", leather()),
     )
     for name, tile in tiles:

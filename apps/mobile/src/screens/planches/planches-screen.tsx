@@ -1,239 +1,398 @@
+import { RARITIES, type Rarity } from "@leximon/core";
 import {
-  bandeaux,
-  fleurons,
-  type IconName,
-  icons,
-  lettrines,
-  type PlateName,
-  type ToolName,
-  tools,
+  effects,
+  rarityLights,
+  revealEffects,
+  type ToyIconName,
+  type ToyMatterName,
+  toyIcons,
 } from "@leximon/tokens";
-import { type ReactNode, useState } from "react";
-import { StyleSheet, Text, View } from "react-native";
-import { colors, fontSizes, fonts, space, theme } from "@/theme";
-import { Button } from "@/ui/button";
-import { Chip } from "@/ui/chip";
-import { EmptyState } from "@/ui/empty-state";
-import { Icon } from "@/ui/icon";
-import { LevelMedal, XpBar } from "@/ui/level";
-import { Matter } from "@/ui/matter";
-import { Filet, Frame, Gilt, LettrineParagraph, Plate as Ornament, Tool } from "@/ui/ornament";
-import { Page } from "@/ui/page";
-import { Panel } from "@/ui/panel";
-import { Leader, RuledRow } from "@/ui/ruled";
-import { Segmented } from "@/ui/segmented";
-import { Sheet } from "@/ui/sheet";
-import { TextButton } from "@/ui/text-button";
-import { TextField } from "@/ui/text-field";
-import { Toggle } from "@/ui/toggle";
+import { type ReactNode, useRef, useState } from "react";
+import {
+  ScrollView,
+  StyleSheet,
+  Text,
+  useWindowDimensions,
+  View,
+  type ViewInstance,
+} from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import {
+  CollectionTitle,
+  Desk,
+  InfoBubble,
+  LevelGauge,
+  MailButton,
+  MainAction,
+  PaperAction,
+  PortraitButton,
+  Room,
+  SideTile,
+  StockButton,
+  TabBar,
+} from "@/library/play-pieces";
+import { LibrarySachet } from "@/library/sachet";
+import { colors, fontSizes, fonts, space } from "@/theme";
+import { Avatar } from "@/ui/avatar";
+import { ParticleStage, useStage } from "@/ui/stage";
+import { Kicker, Leaf, Lettering, Toy, ToyIcon } from "@/ui/toy";
 
-const ICON_NAMES = Object.keys(icons) as IconName[];
-const TOOL_NAMES = Object.keys(tools) as ToolName[];
-
-const VIEWS = [
-  { value: "toutes", label: "Toutes" },
-  { value: "doubles", label: "Doubles" },
-  { value: "souhaits", label: "Souhaits" },
+const COLLECTIONS = [
+  { name: "Les Fondateurs", back: "night", tagline: "De l'abajoue à la logodiarrhée." },
+  {
+    name: "Caractères et travers",
+    back: "burgundy",
+    tagline: "Des mots pour railler les défauts de chacun.",
+  },
+  {
+    name: "Métiers et objets disparus",
+    back: "green",
+    tagline: "Les gestes et les outils d'avant.",
+  },
 ] as const;
 
-const CAPITALS = Object.values(lettrines) as PlateName[];
+const RARITY_NAMES: Readonly<Record<Rarity, string>> = {
+  common: "Commune",
+  uncommon: "Peu commune",
+  rare: "Rare",
+  precious: "Précieuse",
+  epic: "Épique",
+  legendary: "Légendaire",
+};
+
+const MATTERS: readonly ToyMatterName[] = ["gold", "red", "green", "blue", "paper", "locked"];
+const ICON_NAMES = Object.keys(toyIcons) as ToyIconName[];
+
+type Box = {
+  readonly x: number;
+  readonly y: number;
+  readonly width: number;
+  readonly height: number;
+};
+
+/** Where a view lies in the window, the frame the stage draws in. */
+function measure(view: ViewInstance | null): Promise<Box | null> {
+  return new Promise((resolve) => {
+    if (view === null) resolve(null);
+    else view.measureInWindow((x, y, width, height) => resolve({ x, y, width, height }));
+  });
+}
+
+/**
+ * The pieces of « La Bibliothèque », whatever the look of this build: the Jouer screen put
+ * together, then each piece on its own, and the effects to set off by hand.
+ */
+export function PlanchesScreen() {
+  return (
+    <Room>
+      <ParticleStage dust>
+        <ScrollView contentContainerStyle={styles.scroll}>
+          <PlayScreen />
+          <View style={styles.plates}>
+            <Plate title="Les objets">
+              <Objects />
+            </Plate>
+            <Plate title="Le lettrage et la feuille">
+              <Letters />
+            </Plate>
+            <Plate title="Les effets">
+              <Effects />
+            </Plate>
+            <Plate title="Les icônes">
+              <View style={styles.row}>
+                {ICON_NAMES.map((name) => (
+                  <ToyIcon key={name} name={name} size={44} />
+                ))}
+              </View>
+            </Plate>
+          </View>
+        </ScrollView>
+      </ParticleStage>
+    </Room>
+  );
+}
 
 function Plate({ title, children }: { readonly title: string; readonly children: ReactNode }) {
   return (
     <View style={styles.plate}>
-      <Text style={styles.plateTitle}>{title}</Text>
+      <Lettering size={22}>{title}</Lettering>
       {children}
     </View>
   );
 }
 
-/**
- * Every component of Le Livre, in the theme this launch started with: the bars are around the
- * game's own screens.
- */
-export function PlanchesScreen() {
-  const [view, setView] = useState<(typeof VIEWS)[number]["value"]>("toutes");
-  const [choice, setChoice] = useState<(typeof VIEWS)[number]["value"]>("doubles");
-  const [sound, setSound] = useState(true);
-  const [sheet, setSheet] = useState(false);
+/** The Jouer screen put together, the height of this phone. */
+function PlayScreen() {
+  const stage = useStage();
+  const insets = useSafeAreaInsets();
+  const { height } = useWindowDimensions();
+  const sachet = useRef<ViewInstance>(null);
+  const [index, setIndex] = useState(0);
+  const [charging, setCharging] = useState(false);
+  const [bubble, setBubble] = useState<{ readonly text: string } | null>(null);
+  const collection = COLLECTIONS[index] ?? COLLECTIONS[0];
+
+  const say = (text: string) => setBubble({ text });
+  const turn = (step: number) =>
+    setIndex((current) => (current + step + COLLECTIONS.length) % COLLECTIONS.length);
+
+  const open = async () => {
+    const box = await measure(sachet.current);
+    if (box === null || charging) return;
+    setCharging(true);
+    const seam = { x: box.x + box.width / 2, y: box.y + 30 };
+    let sparks = 0;
+    const timer = setInterval(() => {
+      sparks++;
+      stage.burst(seam.x, seam.y, { ...effects.charge.burst, count: 1 + Math.floor(sparks / 4) });
+    }, effects.charge.everyMs);
+    setTimeout(() => {
+      clearInterval(timer);
+      const center = { x: box.x + box.width / 2, y: box.y + box.height / 2 };
+      for (const settings of effects.burst) stage.burst(center.x, center.y, settings);
+      stage.ring(center.x, center.y, rarityLights.epic[0] ?? colors.pageInk, 6);
+      stage.flash(1, 500);
+      stage.shake(10, 450);
+      setCharging(false);
+    }, 1100);
+  };
+
   return (
-    <Page kicker="Le Livre" title={theme === "dark" ? "Cabinet de nuit" : "Page claire"}>
-      <Plate title="Les boutons">
-        <Button label="Ouvrir le sachet" onPress={() => undefined} />
-        <Button label="Voir la carte" secondary onPress={() => undefined} />
-        <Button label="Sachet vide" disabled onPress={() => undefined} />
-        <TextButton label="Plus tard" onPress={() => undefined} />
-      </Plate>
-
-      <Plate title="Les panneaux et les listes">
-        <Panel>
-          <Text style={styles.text}>
-            Un panneau tient un bloc de l'écran. Il reste sobre pour laisser la place au texte.
-          </Text>
-        </Panel>
-        <Panel framed>
-          <Text style={styles.text}>
-            Le cadre imprimé réserve son effet à ce qui se détache de la page, comme le mot du jour.
-          </Text>
-        </Panel>
-        <View>
-          <RuledRow>
-            <Text style={styles.text}>Abat-faim, n. m. Pièce de résistance d'un repas.</Text>
-          </RuledRow>
-          <RuledRow>
-            <Text style={styles.text}>Aiguail, n. m. Rosée sur les feuilles.</Text>
-          </RuledRow>
-          <RuledRow last>
-            <Text style={styles.text}>
-              Avettes, n. f. pl. Abeilles, dans la langue d'autrefois.
-            </Text>
-          </RuledRow>
-        </View>
-        <View style={styles.leaders}>
-          <Leader label="Cartes rares" value="12" />
-          <Leader label="Défis réussis cette semaine" value="48" />
-          <Leader label="Niveau du clan" value="5" />
-        </View>
-      </Plate>
-
-      <Plate title="Les onglets, les champs et les puces">
-        <Segmented options={VIEWS} value={view} onChange={setView} light />
-        <Segmented options={VIEWS} value={choice} onChange={setChoice} />
-        <TextField label="Pseudo" placeholder="Ton pseudo" />
-        <View style={styles.toggleRow}>
-          <Text style={styles.text}>Sons</Text>
-          <Toggle label="Sons" value={sound} onChange={setSound} />
-        </View>
-        <View style={styles.row}>
-          <Chip label="12 cartes" onPress={() => undefined} />
-          <Chip label="Doubles" on onPress={() => undefined} />
-        </View>
-      </Plate>
-
-      <Plate title="Les fenêtres">
-        <Button label="Ouvrir une fiche" secondary onPress={() => setSheet(true)} />
-        <Sheet open={sheet} title="Le mot du jour" onClose={() => setSheet(false)}>
-          <Text style={styles.text}>Une fenêtre est une feuille tenue dans sa reliure.</Text>
-          <Button label="Fermer" onPress={() => setSheet(false)} />
-        </Sheet>
-      </Plate>
-
-      <Plate title="Le niveau et l'or">
-        <View style={styles.row}>
-          <LevelMedal level={7} size={34} />
-          <LevelMedal level={16} size={48} />
-          <LevelMedal level={120} size={72} />
-        </View>
-        <XpBar ratio={0.62} />
-        <XpBar ratio={0.3} thin />
-        <Gilt label="Coffret du niveau 10" />
-      </Plate>
-
-      <Plate title="Les états">
-        <EmptyState message="Tu n'as encore aucun échange en cours." />
-      </Plate>
-
-      <Plate title="Les filets et les fers">
-        <Filet />
-        <Filet kind="gras-maigre" />
-        <Filet kind="perle" />
-        <Filet kind="fleuron" />
-        <View style={styles.row}>
-          {TOOL_NAMES.map((name) => (
-            <Tool key={name} name={name} size={44} color={colors.pageInk} />
-          ))}
-        </View>
-        <Frame color={colors.gilt} style={styles.bound}>
-          <View style={styles.row}>
-            {TOOL_NAMES.map((name) => (
-              <Tool key={name} name={name} size={24} color={colors.gilt} />
-            ))}
+    <View style={[styles.phone, { minHeight: height, paddingTop: insets.top + space.s4 }]}>
+      <Desk style={[styles.desk, { top: insets.top + 84 }]} />
+      <View style={styles.top}>
+        <PortraitButton label="Mon profil" onPress={() => say("Ton profil s'ouvrirait ici.")}>
+          <Avatar avatar={null} frame={null} size={40} />
+        </PortraitButton>
+        <LevelGauge level={7} progress={0.62} label="62 / 100" />
+        <StockButton
+          label="6 sachets sur 6"
+          figure="6/6"
+          onPress={() => say("Ton stock est plein.")}
+        />
+        <MailButton label="Courrier, 2 messages" count={2} />
+      </View>
+      <View style={styles.play}>
+        <CollectionTitle
+          kicker="Sachet"
+          name={collection.name}
+          tagline={collection.tagline}
+          index={index}
+          count={COLLECTIONS.length}
+          previousLabel="Collection précédente"
+          nextLabel="Collection suivante"
+          onPrevious={() => turn(-1)}
+          onNext={() => turn(1)}
+        />
+        <View style={styles.middle}>
+          <View style={styles.side}>
+            <SideTile
+              icon="clan"
+              matter="blue"
+              label="Clan"
+              lockedAt="Niv. 10"
+              onPress={() => say("Le clan s'ouvre au niveau 10.")}
+            />
+            <SideTile
+              icon="discussion"
+              matter="green"
+              label="Discussion"
+              lockedAt="Niv. 10"
+              onPress={() => say("La discussion s'ouvre au niveau 10.")}
+            />
+            <SideTile
+              icon="jousts"
+              matter="red"
+              label="Joutes"
+              lockedAt="Niv. 15"
+              onPress={() => say("Les joutes s'ouvrent au niveau 15.")}
+            />
           </View>
-        </Frame>
-      </Plate>
-
-      <Plate title="Les ornements anciens">
-        <Ornament name="b01" width={320} />
-        <LettrineParagraph text="Le mot rare se cache dans les vieux livres. Il attend qu'on tourne la page pour reprendre sa place dans la conversation." />
-        <View style={styles.row}>
-          {fleurons.map((name) => (
-            <View key={name} style={styles.numbered}>
-              <Ornament name={name} width={120} />
-              <Text style={styles.number}>{name.toUpperCase()}</Text>
-            </View>
-          ))}
-        </View>
-        {bandeaux.map((name) => (
-          <View key={name} style={styles.numbered}>
-            <Ornament name={name} width={300} />
-            <Text style={styles.number}>{name.toUpperCase()}</Text>
+          <View ref={sachet} style={styles.sachet}>
+            <LibrarySachet
+              name={collection.name}
+              back={collection.back}
+              label="Ouvrir le sachet"
+              countLabel="5 cartes"
+              charging={charging}
+              onOpen={() => void open()}
+            />
           </View>
+          <View style={styles.side}>
+            <SideTile
+              icon="challenge"
+              matter="red"
+              label="Défi du jour"
+              badge="!"
+              onPress={() => say("Le défi du jour t'attend : cinq mots à retrouver.")}
+            />
+            <SideTile
+              icon="friends"
+              matter="green"
+              label="Amis"
+              onPress={() => say("Tu as 3 amis.")}
+            />
+            <SideTile
+              icon="chest"
+              matter="blue"
+              label="Récompenses"
+              badge="1"
+              onPress={({ nativeEvent }) =>
+                stage.burst(nativeEvent.pageX, nativeEvent.pageY, effects.reward)
+              }
+            />
+            <SideTile icon="settings" matter="gold" label="Réglages" />
+          </View>
+        </View>
+        <View style={styles.cta}>
+          <MainAction
+            label="Ouvrir le sachet"
+            count="6"
+            inviting={!charging}
+            onPress={() => void open()}
+          />
+        </View>
+      </View>
+      <TabBar
+        playLabel="Jouer"
+        bottomInset={insets.bottom}
+        tabs={[
+          { icon: "album", label: "Album" },
+          { icon: "challenges", label: "Défis", badge: "1" },
+          { icon: "trades", label: "Échanges", lockedAt: "Niv. 8" },
+          { icon: "community", label: "Communauté" },
+        ]}
+        onTab={(tab) => {
+          if (tab === 2) say("Les échanges s'ouvrent au niveau 8.");
+        }}
+      />
+      <InfoBubble message={bubble} />
+    </View>
+  );
+}
+
+function Objects() {
+  return (
+    <View style={styles.objects}>
+      <View style={styles.row}>
+        {MATTERS.map((matter) => (
+          <Toy key={matter} matter={matter} shape="tile" style={styles.sampleTile}>
+            <ToyIcon name="sachet" size={34} locked={matter === "locked"} />
+          </Toy>
         ))}
-        <View style={styles.row}>
-          {CAPITALS.map((name) => (
-            <Ornament key={name} name={name} width={52} />
-          ))}
-        </View>
-      </Plate>
+      </View>
+      <View style={styles.row}>
+        {MATTERS.map((matter) => (
+          <Toy key={matter} matter={matter} style={styles.sampleBox}>
+            <Lettering size={15}>{matter === "locked" ? "Fermé" : "Toucher"}</Lettering>
+          </Toy>
+        ))}
+      </View>
+      <MainAction label="Ouvrir un autre sachet" count="5" />
+      <PaperAction label="Voir mes cartes" />
+    </View>
+  );
+}
 
-      <Plate title="Les matières">
-        <View style={styles.row}>
-          {(["paper", "garde", "carnet"] as const).map((kind) => (
-            <View key={kind} style={styles.swatch}>
-              <Matter kind={kind} />
-            </View>
-          ))}
-          <View style={[styles.swatch, styles.leather]}>
-            <Matter kind="leather" />
-          </View>
-        </View>
-      </Plate>
+function Letters() {
+  return (
+    <View style={styles.letters}>
+      <Lettering size={40}>Légendaire</Lettering>
+      <Lettering size={24}>Caractères et travers</Lettering>
+      <Lettering size={14}>Niv. 10 · 62 / 100</Lettering>
+      <Kicker>Le mot</Kicker>
+      <Leaf style={styles.leaf}>
+        <Text style={styles.leafTitle}>abajoue</Text>
+        <Text style={styles.leafText}>
+          Poche que certains animaux, comme le hamster, ont dans la joue pour garder leur
+          nourriture. Par plaisanterie, joue pendante d'une personne.
+        </Text>
+      </Leaf>
+    </View>
+  );
+}
 
-      <Plate title="Les icônes">
-        <View style={styles.icons}>
-          {ICON_NAMES.map((name) => (
-            <Icon key={name} name={name} size={32} color={colors.pageInk} />
-          ))}
-        </View>
-        <View style={styles.icons}>
-          {ICON_NAMES.map((name) => (
-            <Icon key={name} name={name} size={20} color={colors.pageInkMuted} />
-          ))}
-        </View>
-      </Plate>
-    </Page>
+/** Each rarity's light, on a card-sized target. */
+function Effects() {
+  const stage = useStage();
+  const target = useRef<ViewInstance>(null);
+  const [shown, setShown] = useState<Rarity | null>(null);
+  const reveal = async (rarity: Rarity) => {
+    const box = await measure(target.current);
+    if (box === null) return;
+    setShown(rarity);
+    const x = box.x + box.width / 2;
+    const y = box.y + box.height / 2;
+    const effect = revealEffects[rarity];
+    const run = () => stage.reveal(x, y, effect, rarityLights[rarity][0] ?? colors.pageInk);
+    if (effect.drawInMs > 0) {
+      stage.drawIn(x, y, rarityLights[rarity], effect.drawInMs);
+      setTimeout(run, effect.drawInMs);
+    } else {
+      run();
+    }
+  };
+  return (
+    <View style={styles.effects}>
+      <View ref={target} style={styles.target}>
+        <Lettering size={18}>{shown === null ? "Une carte" : RARITY_NAMES[shown]}</Lettering>
+      </View>
+      <View style={styles.row}>
+        {RARITIES.map((rarity) => (
+          <Toy
+            key={rarity}
+            matter="paper"
+            style={styles.effectButton}
+            onPress={() => void reveal(rarity)}
+          >
+            <Lettering size={14}>{RARITY_NAMES[rarity]}</Lettering>
+          </Toy>
+        ))}
+      </View>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  plate: { gap: space.s7, marginBottom: space.s12 },
-  plateTitle: {
-    fontFamily: fonts.ui.medium,
-    fontSize: fontSizes.body,
-    fontVariant: ["small-caps"],
-    letterSpacing: 1.2,
-    color: colors.pageInkMuted,
+  scroll: { paddingBottom: space.s16 },
+  phone: { justifyContent: "space-between" },
+  desk: { position: "absolute", left: 14, right: 14, bottom: 150 },
+  top: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    paddingHorizontal: 12,
   },
-  text: {
-    flexShrink: 1,
+  play: { flex: 1, alignItems: "center", paddingTop: 32, gap: 14 },
+  middle: { flexDirection: "row", alignItems: "flex-start", justifyContent: "center" },
+  side: { gap: 6, paddingTop: 10 },
+  sachet: { marginHorizontal: -6, paddingTop: 12 },
+  cta: { width: "100%", alignItems: "center", paddingHorizontal: 32, marginTop: 28 },
+  plates: { gap: space.s16, paddingHorizontal: 16, paddingTop: space.s16 },
+  plate: { gap: space.s6 },
+  row: { flexDirection: "row", flexWrap: "wrap", gap: 12, alignItems: "center" },
+  objects: { gap: 16, alignItems: "center" },
+  sampleTile: { width: 58, height: 58 },
+  sampleBox: { height: 44, paddingHorizontal: 14 },
+  letters: { gap: 10, alignItems: "flex-start" },
+  leaf: { alignSelf: "stretch", padding: 16, gap: 6 },
+  leafTitle: { color: colors.paperInk, fontFamily: fonts.display, fontSize: 24 },
+  leafText: {
+    color: colors.paperInk,
     fontFamily: fonts.text.regular,
     fontSize: fontSizes.bodyLarge,
     lineHeight: 23,
-    color: colors.pageInk,
   },
-  leaders: { gap: space.s3 },
-  row: { flexDirection: "row", flexWrap: "wrap", alignItems: "center", gap: space.s8 },
-  toggleRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
-  bound: { padding: space.s16, alignItems: "center", backgroundColor: colors.binding },
-  numbered: { alignItems: "center", gap: space.s2 },
-  number: { fontFamily: fonts.ui.medium, fontSize: fontSizes.nano, color: colors.pageInkMuted },
-  swatch: {
-    width: 76,
-    height: 76,
-    overflow: "hidden",
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: colors.rule,
+  effects: { gap: 16, alignItems: "center" },
+  target: {
+    width: 150,
+    height: 210,
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: 14,
+    borderWidth: 2.5,
+    borderColor: colors.pageInkFaint,
+    borderStyle: "dashed",
   },
-  leather: { backgroundColor: colors.binding },
-  icons: { flexDirection: "row", flexWrap: "wrap", gap: space.s6 },
+  effectButton: { height: 40, paddingHorizontal: 12 },
 });

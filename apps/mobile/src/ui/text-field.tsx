@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { StyleSheet, Text, TextInput, type TextInputProps, View } from "react-native";
-import { alpha, SHOWS_THEME_CHOICE as BOOK, colors, fontSizes, fonts, radii, space } from "@/theme";
+import { colors, fontSizes, fonts, radii, space } from "@/theme";
 
 /** A labelled field; `large` spaces out a short code. */
 export function TextField({
@@ -41,11 +41,11 @@ const styles = StyleSheet.create({
     minHeight: 52,
     paddingHorizontal: space.s8,
     borderRadius: radii.xl,
-    borderWidth: BOOK ? 1 : 2,
-    borderColor: BOOK ? colors.rule : colors.track,
-    backgroundColor: BOOK ? alpha(colors.panel, 0.6) : colors.well,
+    borderWidth: 2,
+    borderColor: colors.track,
+    backgroundColor: colors.well,
     color: colors.pageInk,
-    fontFamily: BOOK ? fonts.text.regular : fonts.ui.semibold,
+    fontFamily: fonts.ui.semibold,
     fontSize: fontSizes.lead,
   },
   large: {
@@ -54,5 +54,5 @@ const styles = StyleSheet.create({
     letterSpacing: 10,
     textAlign: "center",
   },
-  focused: { borderColor: BOOK ? colors.pageInk : colors.gilt },
+  focused: { borderColor: colors.gilt },
 });
