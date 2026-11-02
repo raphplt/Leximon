@@ -1,37 +1,221 @@
-/* Shown only in « La Bibliothèque », at every width: the current bars give way to them. */
+/*
+ * The bars of « La Bibliothèque », in place of the current ones when the look is on: a shelf
+ * across the top from 760 px, a band and a shelf of tabs on a phone.
+ */
 
+.top,
 .band,
 .tabs {
   display: none;
 }
 
-:root[data-look="bibliotheque"] .band {
-  position: sticky;
-  top: 0;
-  z-index: 30;
-  display: flex;
-  align-items: center;
-  gap: 9px;
-  height: 66px;
-  /* On a wide screen the band keeps a phone's reach, centred over the desk. */
-  padding: 10px max(12px, calc(50% - 360px)) 0;
-  box-sizing: border-box;
-  background: linear-gradient(var(--lx-toy-drop) 40%, transparent);
+/* --- The wide bar --- */
+
+@media (min-width: 760px) {
+  :root[data-look="bibliotheque"] .top {
+    position: sticky;
+    top: 0;
+    z-index: 30;
+    display: grid;
+    grid-template-columns: minmax(max-content, 1fr) auto minmax(max-content, 1fr);
+    align-items: center;
+    gap: 20px;
+    height: 76px;
+    padding: 0 24px 6px;
+    box-sizing: border-box;
+    background:
+      repeating-linear-gradient(90deg, var(--lx-toy-drop) 0 1px, transparent 1px 90px),
+      linear-gradient(180deg, var(--lx-shelf-bottom), var(--lx-shelf-top));
+    box-shadow:
+      inset 0 -3px 0 var(--lx-shelf-gilt),
+      inset 0 -5px 0 var(--lx-shelf-gilt-shade),
+      0 8px 20px var(--lx-toy-drop);
+  }
 }
 
-:root[data-look="bibliotheque"] .tabs {
-  position: fixed;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  z-index: 30;
+.brand {
+  justify-self: start;
   display: flex;
-  /* The shelf runs the whole width; its tabs keep together in the middle. */
-  padding-inline: max(4px, calc(50% - 300px));
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+}
+
+.seal {
+  filter: drop-shadow(0 3px 0 var(--lx-toy-drop));
+}
+
+.brandName {
+  font-size: 26px;
+}
+
+.nav {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.navItem {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 52px;
+  padding: 0 16px 0 12px;
+  box-sizing: border-box;
+  border: var(--lx-toy-outline-width) solid transparent;
+  border-radius: var(--lx-toy-radius-small);
+  text-decoration: none;
+  transition:
+    background-color 160ms ease-out,
+    translate 160ms ease-out;
+}
+
+.navItem:hover {
+  background: color-mix(in srgb, var(--lx-toy-gold-top) 10%, transparent);
+}
+
+/* The place shown is a plate of old gold, raised a little. */
+.navItem[aria-current="page"] {
+  border-color: var(--lx-toy-outline);
+  background: linear-gradient(
+    180deg,
+    var(--lx-toy-gold-top) 0 47%,
+    var(--lx-toy-gold-bottom) 53% 100%
+  );
+  box-shadow:
+    inset 0 -4px 0 var(--lx-toy-gold-edge),
+    inset 0 2px 0 var(--lx-toy-sheen),
+    0 4px 0 var(--lx-toy-outline),
+    0 7px 10px var(--lx-toy-drop);
+  translate: 0 -2px;
+}
+
+.navItem:focus-visible {
+  outline: 3px solid var(--lx-color-focus);
+  outline-offset: 3px;
+}
+
+.navIcon,
+.navIconLocked {
+  position: relative;
+  display: grid;
+  filter: drop-shadow(0 2px 0 var(--lx-toy-drop));
+}
+
+.navIconLocked > svg:first-child {
+  filter: grayscale(1) brightness(0.75);
+}
+
+.navLock {
+  position: absolute;
+  top: -5px;
+  right: -8px;
+}
+
+.navBadge {
+  position: absolute;
+  top: -8px;
+  right: -12px;
+}
+
+.navLabel {
+  font-size: 17px;
+}
+
+.side {
+  justify-self: end;
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
 .gauge {
   flex: 1;
   min-width: 0;
   text-decoration: none;
+}
+
+.side .gauge {
+  flex: none;
+  width: 180px;
+}
+
+.player {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  cursor: pointer;
+}
+
+.playerPortrait {
+  display: grid;
+  padding: 3px;
+  border: var(--lx-toy-outline-width) solid var(--lx-toy-outline);
+  border-radius: var(--lx-toy-radius-small);
+  background: var(--lx-toy-paper-top);
+  box-shadow:
+    inset 0 -3px 0 var(--lx-toy-paper-edge),
+    0 3px 0 var(--lx-toy-outline);
+}
+
+.playerName {
+  font-size: 16px;
+}
+
+/* The player's name needs the widest screens; under 1280 px the labels leave, the icons stay. */
+@media (max-width: 1559px) {
+  .playerName {
+    display: none;
+  }
+}
+
+@media (max-width: 1279px) {
+  .navLabel {
+    display: none;
+  }
+
+  .navItem {
+    padding: 0 12px;
+  }
+}
+
+@media (max-width: 939px) {
+  .brandName {
+    display: none;
+  }
+
+  .side .gauge {
+    width: 150px;
+  }
+}
+
+/* --- The phone band and tabs --- */
+
+@media (max-width: 759px) {
+  :root[data-look="bibliotheque"] .band {
+    position: sticky;
+    top: 0;
+    z-index: 30;
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    height: 66px;
+    padding: 10px 12px 0;
+    box-sizing: border-box;
+    background: linear-gradient(var(--lx-toy-drop) 40%, transparent);
+  }
+
+  :root[data-look="bibliotheque"] .tabs {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 30;
+    display: flex;
+  }
 }

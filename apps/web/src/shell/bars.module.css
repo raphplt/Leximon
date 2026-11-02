@@ -271,7 +271,7 @@
   }
 }
 
-/* « La Bibliothèque » has its own band and tabs, at every width. */
+/* « La Bibliothèque » has its own bars, at every width. */
 :root[data-look="bibliotheque"] .top,
 :root[data-look="bibliotheque"] .phoneTop,
 :root[data-look="bibliotheque"] .tabs {

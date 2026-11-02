@@ -15,11 +15,13 @@ import {
   tabBadge,
   xpProgressLabel,
 } from "@leximon/view-model";
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useCallback, useState } from "react";
 import { Avatar } from "@/components/avatar";
 import {
+  CountBadge,
   LevelGauge,
   MailButton,
   PortraitButton,
@@ -28,13 +30,15 @@ import {
   TabBar,
 } from "@/library/play-pieces";
 import { Dialog } from "@/ui/dialog";
+import { Lettering, ToyIcon } from "@/ui/toy";
 import styles from "./library-bars.module.css";
 import { isCurrent, TABS } from "./nav";
 import { useShell } from "./shell-context";
 import { StockDetail } from "./stock-detail";
 import { usePlayerView } from "./use-player-view";
 
-const ICONS: Readonly<Record<Exclude<TabId, "jouer">, ToyIconName>> = {
+const ICONS: Readonly<Record<TabId, ToyIconName>> = {
+  jouer: "sachet",
   album: "album",
   defis: "challenges",
   echanges: "trades",
@@ -50,11 +54,81 @@ function hrefOf(id: TabId): string {
 }
 
 /**
- * The phone band of « La Bibliothèque »: the portrait opens the player's menu, the medal the
- * levels, then the stock and the mail. CSS shows it in place of the current band when the look
- * is on.
+ * The wide band of « La Bibliothèque », from 760 px: a shelf across the top with the house's
+ * seal, the five places of the game, then the level, the stock, the mail and the player's
+ * portrait, which opens their menu. CSS shows it in place of the current top bar.
  */
-export function LibraryTopBand({ onMenu }: { readonly onMenu: () => void }) {
+export function LibraryTopBar({
+  menuOpen,
+  onMenu,
+}: {
+  readonly menuOpen: boolean;
+  readonly onMenu: () => void;
+}) {
+  const pathname = usePathname();
+  const view = usePlayerView();
+  const closed = closedTabs(view.progress?.level ?? null, view.now);
+  const counts = { offers: view.offers, coffrets: view.coffrets.length };
+  const name =
+    view.profile === null ? null : (view.profile.pseudo ?? (view.profile.member ? null : "Invité"));
+  return (
+    <header className={styles.top}>
+      <Link href="/jouer" className={styles.brand} aria-label="Leximon, retour au jeu">
+        <Image src="/logo-mark.svg" alt="" width={46} height={46} className={styles.seal} />
+        <Lettering className={styles.brandName}>Leximon</Lettering>
+      </Link>
+      <nav aria-label="Navigation principale" className={styles.nav}>
+        {TABS.map((tab) => {
+          const current = isCurrent(pathname, tab.href);
+          const badge = tabBadge(tab.id, counts);
+          const locked = closed.has(tab.id);
+          return (
+            <Link
+              key={tab.id}
+              href={tab.href}
+              className={styles.navItem}
+              aria-current={current ? "page" : undefined}
+              aria-label={
+                locked ? `${tab.label}, ${levelBadge(levelsOfFeatures(view.now).trade)}` : undefined
+              }
+            >
+              <span className={locked ? styles.navIconLocked : styles.navIcon}>
+                <ToyIcon name={ICONS[tab.id]} size={30} />
+                {locked && (
+                  <span className={styles.navLock}>
+                    <ToyIcon name="lock" size={16} />
+                  </span>
+                )}
+                {badge > 0 && !current && (
+                  <CountBadge count={String(badge)} className={styles.navBadge} />
+                )}
+              </span>
+              <Lettering className={styles.navLabel}>{tab.label}</Lettering>
+            </Link>
+          );
+        })}
+      </nav>
+      <div className={styles.side}>
+        <PlayerTools />
+        <button
+          type="button"
+          className={styles.player}
+          onClick={onMenu}
+          aria-label="Menu du joueur"
+          aria-expanded={menuOpen}
+        >
+          <span className={styles.playerPortrait} aria-hidden="true">
+            <Avatar avatar={view.profile?.avatar ?? null} frame={null} size={40} />
+          </span>
+          {name !== null && <Lettering className={styles.playerName}>{name}</Lettering>}
+        </button>
+      </div>
+    </header>
+  );
+}
+
+/** The level, the stock with its detail and the mail: the same toys on the band and the bar. */
+function PlayerTools() {
   const view = usePlayerView();
   const { openMail } = useShell();
   const [stockOpen, setStockOpen] = useState(false);
@@ -62,10 +136,7 @@ export function LibraryTopBand({ onMenu }: { readonly onMenu: () => void }) {
   const { progress, wallet, now } = view;
   const stock = wallet === null || now === 0 ? null : stockView(wallet, now);
   return (
-    <header className={styles.band}>
-      <PortraitButton label="Menu du joueur" onClick={onMenu}>
-        <Avatar avatar={view.profile?.avatar ?? null} frame={null} size={40} />
-      </PortraitButton>
+    <>
       {progress === null ? (
         <span className={styles.gauge} />
       ) : (
@@ -94,6 +165,23 @@ export function LibraryTopBand({ onMenu }: { readonly onMenu: () => void }) {
         </>
       )}
       <MailButton label={mailLabel(view.mail)} count={view.mail} onClick={openMail} />
+    </>
+  );
+}
+
+/**
+ * The phone band of « La Bibliothèque »: the portrait opens the player's menu, the medal the
+ * levels, then the stock and the mail. CSS shows it in place of the current band when the look
+ * is on.
+ */
+export function LibraryTopBand({ onMenu }: { readonly onMenu: () => void }) {
+  const view = usePlayerView();
+  return (
+    <header className={styles.band}>
+      <PortraitButton label="Menu du joueur" onClick={onMenu}>
+        <Avatar avatar={view.profile?.avatar ?? null} frame={null} size={40} />
+      </PortraitButton>
+      <PlayerTools />
     </header>
   );
 }

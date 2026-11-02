@@ -43,6 +43,8 @@ export interface LibraryCounterProps {
   };
   /** The sachet itself, which the screen opens: the counter only moves it and makes it charge. */
   readonly sachet: ReactNode;
+  /** The sachets of the collections on either side, behind it: only a wide screen shows them. */
+  readonly beside: ReactNode;
   readonly stock: StockView | null;
   /** Sachets the player may still open, for the count on the button; null to show none. */
   readonly left: number | null;
@@ -66,6 +68,7 @@ export function LibraryCounter({
   choice,
   neighbours,
   sachet,
+  beside,
   stock,
   left,
   canOpen,
@@ -109,6 +112,7 @@ export function LibraryCounter({
         </div>
         <Tiles say={say} />
         <div ref={sachetRef} className={styles.sachet} data-moment={moment}>
+          <div className={`${styles.beside} ${styles.fading}`}>{beside}</div>
           <div className={styles.glow} aria-hidden="true" />
           <div className={styles.charge}>{sachet}</div>
         </div>

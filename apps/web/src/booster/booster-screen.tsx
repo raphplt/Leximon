@@ -638,6 +638,32 @@ function BoosterFlow({ library }: { readonly library: boolean }) {
               }}
             />
           }
+          beside={
+            <>
+              {around.left !== null && (
+                <PackPeek
+                  key={around.left.id}
+                  side="left"
+                  choice={around.left}
+                  pack={packOfChoice(around.left)}
+                  entry={entryOf(around.left.id)}
+                  onPick={pick}
+                  onLocked={onLocked}
+                />
+              )}
+              {around.right !== null && (
+                <PackPeek
+                  key={around.right.id}
+                  side="right"
+                  choice={around.right}
+                  pack={packOfChoice(around.right)}
+                  entry={entryOf(around.right.id)}
+                  onPick={pick}
+                  onLocked={onLocked}
+                />
+              )}
+            </>
+          }
           stock={stock}
           left={left}
           canOpen={canOpen}

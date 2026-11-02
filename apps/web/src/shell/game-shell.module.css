@@ -25,7 +25,9 @@
   }
 }
 
-/* « La Bibliothèque » keeps its tabs at the bottom on every screen. */
-:root[data-look="bibliotheque"] .content {
-  padding-bottom: calc(96px + env(safe-area-inset-bottom));
+/* The phone tabs of « La Bibliothèque » rise higher. */
+@media (max-width: 759px) {
+  :root[data-look="bibliotheque"] .content {
+    padding-bottom: calc(96px + env(safe-area-inset-bottom));
+  }
 }

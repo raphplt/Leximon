@@ -169,7 +169,7 @@ Seulement ce dont l'écran Jouer et l'ouverture ont besoin : bandeau du haut (po
 
 **D'abord l'écran Jouer et l'ouverture** (choix du propriétaire, le 2026-11-02), dans le vrai jeu, derrière le réglage, sur le web puis sur téléphone.
 
-**Jouer, ouverture et bilan faits le 2026-11-02**, à juger par le propriétaire. La logique du jeu reste dans les écrans existants, seule l'allure change avec le réglage. Le bandeau du haut et les onglets de La Bibliothèque remplacent les barres actuelles à toutes les largeurs : en grand écran, le bandeau garde la portée d'un téléphone au centre et les onglets restent en bas. Écarts :
+**Jouer, ouverture et bilan faits le 2026-11-02**, à juger par le propriétaire. La logique du jeu reste dans les écrans existants, seule l'allure change avec le réglage. Le web garde son identité de grand écran (refus du propriétaire, le 2026-11-02, d'un web qui copiait le mobile) : à partir de 760 px, une planche de bois liserée d'or en haut porte le sceau, les cinq rubriques (celle qu'on regarde sur une plaque d'or) puis le niveau, le stock, le courrier et le portrait ; l'écran Jouer y est un large sous-main, le sachet en grand au milieu avec ceux des collections voisines posés derrière, les tuiles de chaque côté. Sous 760 px, le bandeau et l'étagère d'onglets du téléphone. Écarts :
 
 - le sachet reste l'ancien sachet en 3D (relief, lumière qui bouge, bande à déchirer) : le sachet plat de `/planches` a été refusé par le propriétaire le 2026-11-02 ;
 - on l'ouvre en déchirant la bande ou d'un toucher, et la pile de cartes est sautée : la première carte arrive juste après l'éclatement ;
