@@ -613,7 +613,31 @@ function BoosterFlow({ library }: { readonly library: boolean }) {
           choices={choices}
           choice={choice}
           neighbours={around}
-          pack={packCollection}
+          sachet={
+            <PackView
+              key={packCollection.id}
+              shape={shape}
+              collection={packCollection}
+              state={
+                phase.name === "opening"
+                  ? moment === "burst"
+                    ? "opening"
+                    : "sealed"
+                  : canOpen
+                    ? "sealed"
+                    : "empty"
+              }
+              // A guest out of sachets waits for an account, not for time.
+              refill={mustSignUp ? null : stock?.refill}
+              refillLabel={stock?.refillShort}
+              onTearStart={() => {
+                startRequest();
+              }}
+              onOpen={() => {
+                if (canOpen && phase.name !== "opening") void openPack();
+              }}
+            />
+          }
           stock={stock}
           left={left}
           canOpen={canOpen}

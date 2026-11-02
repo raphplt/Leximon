@@ -113,6 +113,8 @@ function delay(ms: number): Promise<void> {
 
 /** In « La Bibliothèque », the seam of the sachet, from the top of its box: where light leaks. */
 const SEAM_AT = 0.13;
+/** In « La Bibliothèque », the sachet on the desk, between its tiles. */
+const LIBRARY_SACHET_WIDTH = 146;
 /** Most sparks a single beat of the charge throws, however late the answer is. */
 const CHARGE_SPARKS_MAX = 6;
 
@@ -546,7 +548,26 @@ function PlayFlow() {
           choices={choices}
           choice={choice}
           neighbours={neighbourChoices(choices, choice)}
-          collection={collection}
+          sachet={
+            <Sachet
+              key={collection.id}
+              collection={collection}
+              state={
+                opening ? (moment === "burst" ? "opening" : "sealed") : canOpen ? "sealed" : "empty"
+              }
+              active={focused && !opening}
+              width={LIBRARY_SACHET_WIDTH}
+              // A guest out of sachets waits for an account, not for time.
+              refill={mustSignUp ? null : (stock?.refill ?? null)}
+              refillLabel={stock?.refillShort ?? null}
+              onTearStart={() => {
+                startRequest();
+              }}
+              onOpen={() => {
+                if (canOpen && !opening) void openPack();
+              }}
+            />
+          }
           stock={stock}
           left={left}
           canOpen={canOpen}

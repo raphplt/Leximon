@@ -9,13 +9,10 @@ import {
   lockedToast,
   playFabs,
   type StockView,
-  sachetContents,
 } from "@leximon/view-model";
 import { useRouter } from "next/navigation";
 import { type ReactNode, type RefObject, useState } from "react";
-import type { PackCollection } from "@/booster/pack-looks";
 import { CollectionTitle, Desk, InfoBubble, MainAction, SideTile } from "@/library/play-pieces";
-import { LibrarySachet, type LibrarySachetState } from "@/library/sachet";
 import { dailyChallenge } from "@/player/collection";
 import { useShared } from "@/player/resource";
 import { useShell } from "@/shell/shell-context";
@@ -44,7 +41,8 @@ export interface LibraryCounterProps {
     readonly left: CollectionChoice | null;
     readonly right: CollectionChoice | null;
   };
-  readonly pack: PackCollection;
+  /** The sachet itself, which the screen opens: the counter only moves it and makes it charge. */
+  readonly sachet: ReactNode;
   readonly stock: StockView | null;
   /** Sachets the player may still open, for the count on the button; null to show none. */
   readonly left: number | null;
@@ -67,7 +65,7 @@ export function LibraryCounter({
   choices,
   choice,
   neighbours,
-  pack,
+  sachet,
   stock,
   left,
   canOpen,
@@ -88,14 +86,6 @@ export function LibraryCounter({
     if (next.lock !== null) say(lockedToast("choose_collection", view.now));
     else onPick(next);
   };
-  const state: LibrarySachetState =
-    moment === "charging"
-      ? "charging"
-      : moment === "burst"
-        ? "burst"
-        : canOpen
-          ? "sealed"
-          : "empty";
 
   return (
     <section className={styles.screen} data-opening={opening || undefined} aria-label="Ton sachet">
@@ -119,14 +109,8 @@ export function LibraryCounter({
         </div>
         <Tiles say={say} />
         <div ref={sachetRef} className={styles.sachet} data-moment={moment}>
-          <LibrarySachet
-            key={pack.id}
-            collection={pack}
-            label="Ouvrir le sachet"
-            countLabel={view.now === 0 ? "" : sachetContents(view.now)}
-            state={state}
-            onOpen={onOpen}
-          />
+          <div className={styles.glow} aria-hidden="true" />
+          <div className={styles.charge}>{sachet}</div>
         </div>
       </div>
       <div className={`${styles.cta} ${styles.fading}`}>

@@ -1,5 +1,4 @@
-import type { Catalog } from "@leximon/contract/client";
-import type { ToyIconName, ToyMatterName } from "@leximon/tokens";
+import { openingTimes, type ToyIconName, type ToyMatterName, toyMatters } from "@leximon/tokens";
 import {
   type CollectionChoice,
   dailyView,
@@ -9,22 +8,21 @@ import {
   NOT_BUILT_COPY,
   playFabs,
   type StockView,
-  sachetContents,
 } from "@leximon/view-model";
 import { router } from "expo-router";
 import { type ReactNode, type Ref, useEffect, useState } from "react";
 import { StyleSheet, View, type ViewInstance } from "react-native";
 import Animated, {
+  Easing,
   useAnimatedStyle,
   useReducedMotion,
   useSharedValue,
+  withRepeat,
   withSpring,
   withTiming,
 } from "react-native-reanimated";
-import { catalogFileUrl } from "@/cards/catalog";
 import { openCoffret } from "@/levels/coffret";
 import { CollectionTitle, Desk, InfoBubble, MainAction, SideTile } from "@/library/play-pieces";
-import { LibrarySachet, type LibrarySachetState } from "@/library/sachet";
 import { dailyChallenge } from "@/player/collection";
 import { useNow, useShared } from "@/player/shared";
 import { usePlayerView } from "@/player/use-player-view";
@@ -44,6 +42,9 @@ const TILES: Readonly<
   coffrets: { icon: "chest", matter: "blue" },
 };
 
+const DESK_TOP = 26;
+const DESK_BOTTOM = 96 + TAB_BAR_RISE;
+
 /** How much the sachet grows once it comes to the middle to be opened. */
 const OPENING_SCALE = 1.25;
 
@@ -59,7 +60,7 @@ export function LibraryCounter({
   choices,
   choice,
   neighbours,
-  collection,
+  sachet,
   stock,
   left,
   canOpen,
@@ -75,7 +76,8 @@ export function LibraryCounter({
     readonly left: CollectionChoice | null;
     readonly right: CollectionChoice | null;
   };
-  readonly collection: Catalog["collections"][number];
+  /** The sachet itself, which the screen opens: the counter only moves it and makes it charge. */
+  readonly sachet: ReactNode;
   readonly stock: StockView | null;
   /** Sachets the player may still open, for the count on the button; null to show none. */
   readonly left: number | null;
@@ -93,10 +95,12 @@ export function LibraryCounter({
   const [bubble, setBubble] = useState<{ readonly text: string } | null>(null);
   const say = (text: string) => setBubble({ text });
   const opening = moment !== "waiting";
-  /** The room beside the tiles, and where the sachet lies in it: it climbs to its middle. */
-  const [room, setRoom] = useState(0);
+  /** The screen, the row of the tiles in it, and the sachet in that row: it climbs to the desk's middle. */
+  const [screen, setScreen] = useState(0);
+  const [row, setRow] = useState(0);
   const [place, setPlace] = useState({ y: 0, height: 0 });
-  const climb = room === 0 ? 0 : room / 2 - place.y - place.height / 2;
+  const deskMiddle = (DESK_TOP + screen - DESK_BOTTOM) / 2;
+  const climb = screen === 0 ? 0 : deskMiddle - row - place.y - place.height / 2;
 
   const chrome = useSharedValue(1);
   const lift = useSharedValue(0);
@@ -118,24 +122,52 @@ export function LibraryCounter({
     ],
   }));
 
+  // It trembles harder as the light gathers, then swells and is gone in the flash.
+  const charge = useSharedValue(0);
+  const wobble = useSharedValue(0.5);
+  const vanish = useSharedValue(0);
+  useEffect(() => {
+    const charging = moment === "charging" && !reduced;
+    charge.value = withTiming(moment === "charging" || moment === "burst" ? 1 : 0, {
+      duration: moment === "charging" ? openingTimes.chargeMs : 200,
+      easing: Easing.in(Easing.quad),
+    });
+    wobble.value = charging
+      ? withRepeat(withTiming(1, { duration: 45 }), -1, true)
+      : withTiming(0.5, { duration: 60 });
+    vanish.value =
+      moment === "burst" && !reduced
+        ? withTiming(1, { duration: openingTimes.burstMs, easing: Easing.in(Easing.quad) })
+        : 0;
+  }, [moment, reduced, charge, wobble, vanish]);
+  const trembling = useAnimatedStyle(() => {
+    const shiver = (wobble.value * 2 - 1) * charge.value;
+    return {
+      opacity: 1 - Math.max(0, vanish.value - 0.4) / 0.6,
+      transform: [
+        { translateX: 3 * shiver },
+        { rotate: `${1.8 * shiver}deg` },
+        { scale: 1 + 0.2 * vanish.value },
+      ],
+    };
+  });
+  const glowing = useAnimatedStyle(() => ({
+    opacity: charge.value * (1 - vanish.value),
+    transform: [{ scale: 0.8 + 0.35 * charge.value }],
+  }));
+
   const turn = (side: "left" | "right") => {
     const next = neighbours[side];
     if (next === null || opening) return;
     if (next.lock !== null) say(lockedToast("choose_collection", now));
     else onPick(next);
   };
-  const state: LibrarySachetState =
-    moment === "charging"
-      ? "charging"
-      : moment === "burst"
-        ? "burst"
-        : canOpen
-          ? "sealed"
-          : "empty";
-  const engraving = collection.engraving?.ink;
 
   return (
-    <View style={styles.screen}>
+    <View
+      style={styles.screen}
+      onLayout={({ nativeEvent: { layout } }) => setScreen(layout.height)}
+    >
       <Desk style={styles.desk} />
       <Animated.View style={fading} pointerEvents={opening ? "none" : "auto"}>
         <CollectionTitle
@@ -153,10 +185,7 @@ export function LibraryCounter({
           onNext={() => turn("right")}
         />
       </Animated.View>
-      <View
-        style={styles.middle}
-        onLayout={({ nativeEvent: { layout } }) => setRoom(layout.height)}
-      >
+      <View style={styles.middle} onLayout={({ nativeEvent: { layout } }) => setRow(layout.y)}>
         <Animated.View style={[styles.side, fading]} pointerEvents={opening ? "none" : "auto"}>
           <Tiles side="left" say={say} />
         </Animated.View>
@@ -167,16 +196,10 @@ export function LibraryCounter({
             setPlace({ y: layout.y, height: layout.height })
           }
         >
-          <LibrarySachet
-            key={collection.id}
-            name={collection.name}
-            back={collection.back}
-            engraving={engraving === undefined ? undefined : catalogFileUrl(engraving)}
-            label="Ouvrir le sachet"
-            countLabel={sachetContents(now)}
-            state={state}
-            onOpen={onOpen}
-          />
+          <Animated.View style={[styles.glow, glowing]} pointerEvents="none" />
+          <Animated.View style={trembling} pointerEvents={opening ? "none" : "auto"}>
+            {sachet}
+          </Animated.View>
         </Animated.View>
         <Animated.View style={[styles.side, fading]} pointerEvents={opening ? "none" : "auto"}>
           <Tiles side="right" say={say} />
@@ -268,7 +291,7 @@ function Tiles({
 
 const styles = StyleSheet.create({
   screen: { flex: 1, alignItems: "center", paddingTop: 46 },
-  desk: { position: "absolute", top: 26, left: 14, right: 14, bottom: 96 + TAB_BAR_RISE },
+  desk: { position: "absolute", top: DESK_TOP, left: 14, right: 14, bottom: DESK_BOTTOM },
   middle: {
     flex: 1,
     flexDirection: "row",
@@ -278,6 +301,15 @@ const styles = StyleSheet.create({
   },
   side: { gap: 8, paddingTop: 10 },
   sachet: { marginHorizontal: -4, paddingTop: 12, zIndex: 2 },
+  // The light it gathers, behind it.
+  glow: {
+    position: "absolute",
+    top: "-20%",
+    bottom: "-20%",
+    left: "-40%",
+    right: "-40%",
+    backgroundImage: `radial-gradient(ellipse 50% 50% at 50% 50%, ${toyMatters.gold.top}8C, ${toyMatters.gold.bottom}26 60%, transparent)`,
+  },
   cta: {
     width: "100%",
     alignItems: "center",

@@ -1,32 +1,33 @@
-/* Shown only on a phone, and only in « La Bibliothèque »: the current bars give way to them. */
+/* Shown only in « La Bibliothèque », at every width: the current bars give way to them. */
 
 .band,
 .tabs {
   display: none;
 }
 
-@media (max-width: 759px) {
-  :root[data-look="bibliotheque"] .band {
-    position: sticky;
-    top: 0;
-    z-index: 30;
-    display: flex;
-    align-items: center;
-    gap: 9px;
-    height: 66px;
-    padding: 10px 12px 0;
-    box-sizing: border-box;
-    background: linear-gradient(var(--lx-toy-drop) 40%, transparent);
-  }
+:root[data-look="bibliotheque"] .band {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  height: 66px;
+  /* On a wide screen the band keeps a phone's reach, centred over the desk. */
+  padding: 10px max(12px, calc(50% - 360px)) 0;
+  box-sizing: border-box;
+  background: linear-gradient(var(--lx-toy-drop) 40%, transparent);
+}
 
-  :root[data-look="bibliotheque"] .tabs {
-    position: fixed;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    z-index: 30;
-    display: flex;
-  }
+:root[data-look="bibliotheque"] .tabs {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 30;
+  display: flex;
+  /* The shelf runs the whole width; its tabs keep together in the middle. */
+  padding-inline: max(4px, calc(50% - 300px));
 }
 
 .gauge {
