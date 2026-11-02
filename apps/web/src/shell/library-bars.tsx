@@ -83,28 +83,31 @@ export function LibraryTopBar({
           const badge = tabBadge(tab.id, counts);
           const locked = closed.has(tab.id);
           return (
-            <Link
-              key={tab.id}
-              href={tab.href}
-              className={styles.navItem}
-              aria-current={current ? "page" : undefined}
-              aria-label={
-                locked ? `${tab.label}, ${levelBadge(levelsOfFeatures(view.now).trade)}` : undefined
-              }
-            >
-              <span className={locked ? styles.navIconLocked : styles.navIcon}>
-                <ToyIcon name={ICONS[tab.id]} size={30} />
-                {locked && (
-                  <span className={styles.navLock}>
-                    <ToyIcon name="lock" size={16} />
-                  </span>
-                )}
-                {badge > 0 && !current && (
-                  <CountBadge count={String(badge)} className={styles.navBadge} />
-                )}
-              </span>
-              <Lettering className={styles.navLabel}>{tab.label}</Lettering>
-            </Link>
+            <span key={tab.id} className={styles.plank}>
+              <Link
+                href={tab.href}
+                className={styles.navItem}
+                aria-current={current ? "page" : undefined}
+                aria-label={
+                  locked
+                    ? `${tab.label}, ${levelBadge(levelsOfFeatures(view.now).trade)}`
+                    : undefined
+                }
+              >
+                <span className={locked ? styles.navIconLocked : styles.navIcon}>
+                  <ToyIcon name={ICONS[tab.id]} size={30} />
+                  {locked && (
+                    <span className={styles.navLock}>
+                      <ToyIcon name="lock" size={16} />
+                    </span>
+                  )}
+                  {badge > 0 && !current && (
+                    <CountBadge count={String(badge)} className={styles.navBadge} />
+                  )}
+                </span>
+                <Lettering className={styles.navLabel}>{tab.label}</Lettering>
+              </Link>
+            </span>
           );
         })}
       </nav>
