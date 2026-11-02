@@ -43,9 +43,9 @@ function reducedMotion(): boolean {
   return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 }
 
-function sink(event: PointerEvent<HTMLElement>): void {
-  if (event.button !== 0) return;
+function sink(event: PointerEvent<HTMLButtonElement>): void {
   const element = event.currentTarget;
+  if (event.button !== 0 || element.disabled) return;
   element.dataset.down = "";
   vibrate([press.vibration]);
   const release = () => {

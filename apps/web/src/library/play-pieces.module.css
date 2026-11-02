@@ -389,6 +389,14 @@
   font-size: var(--lx-size-micro);
 }
 
+.tab[aria-current="page"] .tabIcon {
+  translate: 0 -3px;
+}
+
+.tab[aria-current="page"] .tabLabel {
+  color: var(--lx-toy-gold-top);
+}
+
 .playDisc {
   width: 74px;
   height: 74px;

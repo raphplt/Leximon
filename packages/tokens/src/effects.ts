@@ -161,6 +161,16 @@ export const effects = {
   readonly rain: Omit<BurstSettings, "count">;
 };
 
+/**
+ * The opening of a sachet, in ms: it comes to the middle of the desk, charges while the server
+ * answers (longer if the answer is late), then bursts and lets the first card come.
+ */
+export const openingTimes = {
+  arriveMs: 520,
+  chargeMs: 1100,
+  burstMs: 450,
+} as const;
+
 /** What a card's face does as it turns, by rarity. */
 export interface RevealEffect {
   readonly bursts: readonly BurstSettings[];

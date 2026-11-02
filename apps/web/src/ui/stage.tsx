@@ -46,6 +46,11 @@ export function useStage(): Stage {
   return stage;
 }
 
+/** The stage of the screen, or null where none is drawn (the current look). */
+export function useOptionalStage(): Stage | null {
+  return useContext(StageContext);
+}
+
 const CURVE = `cubic-bezier(${easings.settle.join(", ")})`;
 
 function reducedMotion(): boolean {

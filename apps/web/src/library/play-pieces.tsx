@@ -218,18 +218,21 @@ export function MainAction({
   label,
   count,
   inviting = true,
+  disabled = false,
   onClick,
 }: {
   readonly label: string;
   readonly count?: string | undefined;
   readonly inviting?: boolean;
+  readonly disabled?: boolean;
   readonly onClick?: () => void;
 }) {
   return (
     <Toy
       matter="gold"
       large
-      className={inviting ? `${styles.main} ${styles.inviting}` : styles.main}
+      className={inviting && !disabled ? `${styles.main} ${styles.inviting}` : styles.main}
+      disabled={disabled}
       onClick={onClick}
     >
       <Lettering className={styles.mainLabel}>{label}</Lettering>
@@ -271,13 +274,18 @@ export interface Tab {
 export function TabBar({
   tabs,
   playLabel,
+  current = null,
   onTab,
   onPlay,
+  className,
 }: {
   readonly tabs: readonly [Tab, Tab, Tab, Tab];
   readonly playLabel: string;
+  /** The tab of the screen shown, `play` for Jouer; null on a screen that is no tab. */
+  readonly current?: number | "play" | null;
   readonly onTab?: (index: number) => void;
   readonly onPlay?: () => void;
+  readonly className?: string | undefined;
 }) {
   const [first, second, third, fourth] = tabs;
   const tab = (item: Tab, index: number) => (
@@ -286,6 +294,7 @@ export function TabBar({
       type="button"
       className={styles.tab}
       aria-label={item.lockedAt === undefined ? item.label : `${item.label}, ${item.lockedAt}`}
+      aria-current={current === index ? "page" : undefined}
       onClick={() => onTab?.(index)}
     >
       <span className={item.lockedAt === undefined ? styles.tabIcon : styles.tabIconLocked}>
@@ -301,7 +310,10 @@ export function TabBar({
     </button>
   );
   return (
-    <nav className={styles.tabs}>
+    <nav
+      aria-label="Navigation principale"
+      className={[styles.tabs, className].filter(Boolean).join(" ")}
+    >
       {tab(first, 0)}
       {tab(second, 1)}
       <div className={styles.playTab}>
@@ -310,6 +322,7 @@ export function TabBar({
           large
           className={styles.playDisc}
           aria-label={playLabel}
+          aria-current={current === "play" ? "page" : undefined}
           onClick={onPlay}
         >
           <ToyIcon name="sachet" size={46} />

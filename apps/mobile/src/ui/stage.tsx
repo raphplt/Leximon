@@ -66,6 +66,11 @@ export function useStage(): Stage {
   return stage;
 }
 
+/** The stage of the screen, or null where none is drawn (the current look). */
+export function useOptionalStage(): Stage | null {
+  return useContext(StageContext);
+}
+
 const RING_SIZE = 80;
 const SETTLE = Easing.bezier(...easings.settle);
 

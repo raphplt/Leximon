@@ -269,6 +269,12 @@
     border-top: 1px solid color-mix(in srgb, var(--lx-color-page-ink) 8%, transparent);
     background: var(--lx-color-binding-deep);
   }
+
+  /* « La Bibliothèque » has its own band and tabs. */
+  :root[data-look="bibliotheque"] .phoneTop,
+  :root[data-look="bibliotheque"] .tabs {
+    display: none;
+  }
 }
 
 .phoneAvatar {

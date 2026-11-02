@@ -1,5 +1,5 @@
-import type { CatalogCard } from "@leximon/contract";
-import { cardSize, rarityStyles } from "@leximon/tokens";
+import { type CatalogCard, RARITY_LABELS } from "@leximon/contract";
+import { cardSize, rarityLights, rarityStyles, revealBanner, revealEffects } from "@leximon/tokens";
 import {
   cardRelease,
   frequencyLine,
@@ -7,14 +7,16 @@ import {
   speechToggleLabel,
 } from "@leximon/view-model";
 import { useEffect, useRef, useState } from "react";
-import { PanResponder, Pressable, StyleSheet, Text, View } from "react-native";
+import { PanResponder, Pressable, StyleSheet, Text, View, type ViewInstance } from "react-native";
 import Animated, {
   Easing,
   interpolate,
   useAnimatedStyle,
+  useReducedMotion,
   useSharedValue,
   withRepeat,
   withSequence,
+  withSpring,
   withTiming,
 } from "react-native-reanimated";
 import Svg, { Defs, Ellipse, Polyline, RadialGradient, Stop } from "react-native-svg";
@@ -22,8 +24,10 @@ import { CardBack, CardEdge } from "@/cards/card-back";
 import { HoloCard } from "@/cards/holo-card";
 import { type SpokenWord, useSpokenWord } from "@/cards/spoken-word";
 import { play, readPreference, speechOn, vibrate, writePreference } from "@/feedback/feedback";
+import { Aura, RarityBanner, Rays, Sheen } from "@/library/reveal-pieces";
 import { colors, fontSizes, fonts, radii, space } from "@/theme";
 import { Icon } from "@/ui/icon";
+import type { Stage } from "@/ui/stage";
 
 /** A touch during the first moments of an announcement is ignored: it may be a double tap. */
 const TOUCH_GUARD_MS = 350;
@@ -33,6 +37,8 @@ const EDGE_MS = 250;
 const TAP_SLOP = 8;
 /** The word is said as the face settles, just after the « Nouveau ! » chime when there is one. */
 const SPEAK_AFTER_CHIME_MS = 220;
+/** The corner of a card, for a card 300 wide. */
+const CARD_CORNER = 16;
 
 /**
  * One card of the pack: its announcement on the back, then its face, then a touch or a swipe
@@ -48,6 +54,7 @@ export function RevealCard({
   copies,
   firstLabel,
   tone,
+  stage = null,
   onNext,
 }: {
   readonly card: CatalogCard;
@@ -61,6 +68,11 @@ export function RevealCard({
   readonly firstLabel: string | null;
   /** The `back` of the pack's collection. */
   readonly tone: string | undefined;
+  /**
+   * In « La Bibliothèque », where its light is drawn: the rarity glows behind the card while it
+   * is announced, then sparks, rays and its name come as the face shows.
+   */
+  readonly stage?: Stage | null;
   readonly onNext: () => void;
 }) {
   const [flipped, setFlipped] = useState(false);
@@ -78,9 +90,24 @@ export function RevealCard({
   const exitSide = useSharedValue(-1);
   const drag = useSharedValue(0);
   const dim = useSharedValue(0);
+  /** In « La Bibliothèque », each card comes onto the desk on a spring, face down. */
+  const arrival = useSharedValue(stage === null ? 1 : 0);
   const height = (width * cardSize.height) / cardSize.width;
   const glow = rarityStyles[card.rarity].glow;
   const word = useSpokenWord(card);
+  const reduced = useReducedMotion();
+  const target = useRef<ViewInstance>(null);
+  const [drawing, setDrawing] = useState(false);
+  const [sweep, setSweep] = useState(0);
+  const [stamp, setStamp] = useState(0);
+  const effect = revealEffects[card.rarity];
+  const rarityLight = rarityLights[card.rarity][0] ?? colors.pageInk;
+  const banner = revealBanner[card.rarity];
+
+  /** Runs `action` at the middle of the card, in window coordinates. */
+  const atCenter = (action: (x: number, y: number) => void) => {
+    target.current?.measureInWindow((x, y, w, h) => action(x + w / 2, y + h / 2));
+  };
 
   const later = (ms: number, action: () => void) => {
     timers.current.push(setTimeout(action, ms));
@@ -98,6 +125,13 @@ export function RevealCard({
     });
     play(staging.revealCue);
     vibrate(staging.revealHaptic);
+    if (stage !== null) {
+      later(staging.flipMs / 2, () => {
+        atCenter((x, y) => stage.reveal(x, y, effect, rarityLight));
+        setSweep((value) => value + 1);
+        if (banner !== undefined) setStamp((value) => value + 1);
+      });
+    }
     later(staging.flipMs, () => {
       setSettled(true);
       if (isNew) play("newCard");
@@ -110,6 +144,7 @@ export function RevealCard({
   // The staging is read once: a card keeps the one it started with.
   // biome-ignore lint/correctness/useExhaustiveDependencies: run once per card.
   useEffect(() => {
+    arrival.value = reduced ? 1 : withSpring(1, { damping: 11, stiffness: 160 });
     if (staging.dim) dim.value = withTiming(1, { duration: 400 });
     if (staging.flip === "instant") {
       flip();
@@ -160,7 +195,19 @@ export function RevealCard({
 
   const press = () => {
     if (!flipped) {
-      if (staging.flip === "touch" && touchable) flip();
+      if (staging.flip !== "touch" || !touchable || drawing) return;
+      if (stage === null || effect.drawInMs === 0 || reduced) {
+        flip();
+        return;
+      }
+      // The light of the room is drawn into the card before it turns.
+      setDrawing(true);
+      shake.value = withRepeat(
+        withSequence(withTiming(2.5, { duration: 35 }), withTiming(-2.5, { duration: 70 })),
+        -1,
+      );
+      atCenter((x, y) => stage.drawIn(x, y, rarityLights[card.rarity], effect.drawInMs));
+      later(effect.drawInMs, flip);
       return;
     }
     if (settled) leave(-1);
@@ -198,9 +245,11 @@ export function RevealCard({
     }),
   ).current;
 
-  const stage = useAnimatedStyle(() => ({
-    opacity: 1 - exit.value,
+  const cardStyle = useAnimatedStyle(() => ({
+    opacity: (1 - exit.value) * Math.min(1, arrival.value * 2),
     transform: [
+      { translateY: 60 * (1 - arrival.value) },
+      { scale: 0.6 + 0.4 * arrival.value },
       { translateX: drag.value + exitSide.value * width * 0.6 * exit.value + shake.value * 3 },
       { translateY: -8 * float.value },
       { rotate: `${shake.value * 1.2 + drag.value / 20 + exitSide.value * exit.value * 8}deg` },
@@ -222,6 +271,9 @@ export function RevealCard({
   const shade = useAnimatedStyle(() => ({
     opacity: dim.value * (staging.announce === "eclipse" ? 0.8 : 0.6),
   }));
+  const library = stage !== null;
+  const announcing = !flipped && staging.announce !== "none";
+  const auraStrength = announcing ? 0.9 : !flipped ? 0 : card.rarity === "common" ? 0.25 : 0.6;
 
   return (
     <View style={styles.reveal}>
@@ -238,8 +290,10 @@ export function RevealCard({
       >
         {firstLabel ?? " "}
       </Text>
-      <Animated.View style={[{ width, height }, stage]}>
-        {glow !== null && (
+      <Animated.View style={[{ width, height }, cardStyle]}>
+        {library && <Aura size={width * 2.4} color={rarityLight} strength={auraStrength} />}
+        {library && <Rays size={width * 2.8} color={rarityLight} shown={flipped && effect.rays} />}
+        {!library && glow !== null && (
           <Animated.View
             style={[
               styles.glow,
@@ -260,6 +314,7 @@ export function RevealCard({
           </Animated.View>
         )}
         <View
+          ref={target}
           style={StyleSheet.absoluteFill}
           collapsable={false}
           accessible
@@ -283,8 +338,19 @@ export function RevealCard({
               width={width}
               touchable={settled}
             />
+            {library && (
+              <View
+                style={[styles.sheen, { borderRadius: (CARD_CORNER * width) / cardSize.width }]}
+                pointerEvents="none"
+              >
+                <Sheen width={width} sweep={sweep} />
+              </View>
+            )}
           </Animated.View>
         </View>
+        {library && banner !== undefined && (
+          <RarityBanner text={RARITY_LABELS[card.rarity]} color={banner} stamp={stamp} />
+        )}
         {settled && (
           <Text style={[styles.badge, isNew ? styles.newBadge : styles.copies]}>
             {isNew ? "Nouveau !" : `×${copies}`}
@@ -372,6 +438,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   glow: { position: "absolute" },
+  sheen: { ...StyleSheet.absoluteFill, overflow: "hidden" },
   badge: {
     position: "absolute",
     top: -12,

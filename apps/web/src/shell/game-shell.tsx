@@ -9,6 +9,7 @@ import { PhoneTabs, PhoneTopBar, TopBar } from "./bars";
 import { CardSheet } from "./card-sheet";
 import { CoffretDialog } from "./coffret-dialog";
 import styles from "./game-shell.module.css";
+import { LibraryTabs, LibraryTopBand } from "./library-bars";
 import { MailPanel } from "./mail-panel";
 import { NewsDialog } from "./news-dialog";
 import { PlayerMenu } from "./player-menu";
@@ -76,8 +77,10 @@ function Frame({ children }: { readonly children: ReactNode }) {
     <ShellContext.Provider value={shell}>
       <TopBar menuOpen={overlay === "menu"} onMenu={toggleMenu} />
       <PhoneTopBar onMenu={toggleMenu} />
+      <LibraryTopBand onMenu={toggleMenu} />
       <div className={styles.content}>{children}</div>
       <PhoneTabs />
+      <LibraryTabs />
       <PlayerMenu open={overlay === "menu"} onClose={close} />
       <SettingsPanel open={overlay === "settings"} onClose={close} />
       <MailPanel open={overlay === "mail"} onClose={close} />

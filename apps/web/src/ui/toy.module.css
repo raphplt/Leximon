@@ -35,6 +35,11 @@ a.toy {
   cursor: pointer;
 }
 
+.toy:disabled {
+  cursor: default;
+  filter: saturate(0.35) brightness(0.8);
+}
+
 .toy[data-down] {
   translate: 0 var(--depth);
   box-shadow:

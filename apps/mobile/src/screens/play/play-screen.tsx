@@ -1,7 +1,7 @@
 import type { OpenBoosterResult } from "@leximon/contract/client";
 import { type Catalog, cardOrPlaceholder, collectionName } from "@leximon/contract/client";
 import type { Rarity } from "@leximon/core";
-import { cardSize, motion } from "@leximon/tokens";
+import { cardSize, effects, motion, openingTimes, rarityLights } from "@leximon/tokens";
 import {
   type CollectionChoice,
   collectionChoices,
@@ -11,6 +11,7 @@ import {
   isFirstOfRarity,
   keepsAnnouncementWhenHurried,
   lockedToast,
+  neighbourChoices,
   openButtonLabel,
   pickCollection,
   revealNextLabel,
@@ -30,6 +31,7 @@ import {
   Text,
   useWindowDimensions,
   View,
+  type ViewInstance,
 } from "react-native";
 import Animated, {
   useAnimatedStyle,
@@ -41,16 +43,19 @@ import { api } from "@/api/client";
 import { loadCatalog } from "@/cards/catalog";
 import { prepareSpokenWords } from "@/cards/spoken-word";
 import { play, prepareSounds } from "@/feedback/feedback";
+import { PaperAction } from "@/library/play-pieces";
 import { noteGained, OWNED_CARDS_MAX_AGE_MS, ownedCards } from "@/player/collection";
 import { useNow, useShared } from "@/player/shared";
 import { account, publishProgress, wallet } from "@/player/state";
 import { usePlayerView } from "@/player/use-player-view";
 import { TAB_BAR_RISE } from "@/shell/tab-bar";
-import { colors, fontSizes, fonts, radii, space } from "@/theme";
+import { colors, fontSizes, fonts, IS_LIBRARY, radii, space } from "@/theme";
 import { Button } from "@/ui/button";
 import { Icon } from "@/ui/icon";
 import { RarityName } from "@/ui/rarity-icon";
+import { ParticleStage, useOptionalStage } from "@/ui/stage";
 import { CardStack } from "./card-stack";
+import { type CounterMoment, LibraryCounter } from "./library-counter";
 import { isNewAt, type Pack } from "./pack";
 import { PlayFabs } from "./play-fabs";
 import { Recap } from "./recap";
@@ -106,8 +111,23 @@ function delay(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+/** In « La Bibliothèque », the seam of the sachet, from the top of its box: where light leaks. */
+const SEAM_AT = 0.13;
+/** Most sparks a single beat of the charge throws, however late the answer is. */
+const CHARGE_SPARKS_MAX = 6;
+
 /** The Jouer screen: the counter with its sachet, the opening, the reveal and the recap. */
 export function PlayScreen() {
+  return IS_LIBRARY ? (
+    <ParticleStage dust>
+      <PlayFlow />
+    </ParticleStage>
+  ) : (
+    <PlayFlow />
+  );
+}
+
+function PlayFlow() {
   const [phase, setPhase] = useState<Phase>({ name: "loading" });
   const [catalog, setCatalog] = useState<Catalog | null>(null);
   const [owned, setOwned] = useState<ReadonlyMap<string, number>>(new Map());
@@ -123,6 +143,9 @@ export function PlayScreen() {
   const reduced = useReducedMotion();
   const focused = useIsFocused();
   const window = useWindowDimensions();
+  const stage = useOptionalStage();
+  const [moment, setMoment] = useState<CounterMoment>("waiting");
+  const sachetRef = useRef<ViewInstance>(null);
   /** The whole screen, which sizes a revealed card. */
   const [screenHeight, setScreenHeight] = useState(0);
   /** The room left for the sachet between its picker and its shelf. */
@@ -208,6 +231,52 @@ export function PlayScreen() {
     return started;
   };
 
+  /** Runs `action` with the sachet's box, in window coordinates. */
+  const atSachet = (action: (x: number, y: number, width: number, height: number) => void) => {
+    sachetRef.current?.measureInWindow(action);
+  };
+
+  /**
+   * The sachet comes to the middle, then charges until it is told to stop: sparks leak from its
+   * seam, more of them as the wait goes on.
+   */
+  const chargeSachet = (): (() => void) => {
+    setMoment("arriving");
+    if (reduced || stage === null) {
+      setMoment("charging");
+      return () => undefined;
+    }
+    let beats = 0;
+    let sparks: ReturnType<typeof setInterval> | undefined;
+    const arrival = setTimeout(() => {
+      setMoment("charging");
+      sparks = setInterval(() => {
+        beats++;
+        const count = Math.min(CHARGE_SPARKS_MAX, 1 + Math.floor(beats / 4));
+        atSachet((x, y, width, height) =>
+          stage.burst(x + width / 2, y + height * SEAM_AT, { ...effects.charge.burst, count }),
+        );
+      }, effects.charge.everyMs);
+    }, openingTimes.arriveMs);
+    return () => {
+      clearTimeout(arrival);
+      clearInterval(sparks);
+    };
+  };
+
+  /** The sachet bursts: light, a ring, scraps of parchment, and the screen shakes. */
+  const burstSachet = () => {
+    setMoment("burst");
+    if (stage === null) return;
+    atSachet((x, y, width, height) => {
+      const middle = { x: x + width / 2, y: y + height / 2 };
+      for (const settings of effects.burst) stage.burst(middle.x, middle.y, settings);
+      stage.ring(middle.x, middle.y, rarityLights.epic[0] ?? colors.pageInk, 6);
+      stage.flash(1, 500);
+      stage.shake(10, 450);
+    });
+  };
+
   const openPack = async () => {
     if (catalog === null || choice === null) return;
     if (phase.name !== "sealed" && phase.name !== "recap") return;
@@ -215,6 +284,7 @@ export function PlayScreen() {
     if (started?.outcome == null) return;
     setError(null);
     setPhase({ name: "opening" });
+    const stopCharge = IS_LIBRARY ? chargeSachet() : () => undefined;
     // The words start loading while the seal still breaks.
     void started.outcome.then((answer) => {
       if (answer.kind !== "answered" || answer.result.kind !== "opened") return;
@@ -222,7 +292,13 @@ export function PlayScreen() {
         answer.result.cards.flatMap((drawn) => catalog.cardsById.get(drawn.cardId) ?? []),
       );
     });
-    const [outcome] = await Promise.all([started.outcome, delay(reduced ? 0 : motion.sealBreak)]);
+    const wait = reduced
+      ? 0
+      : IS_LIBRARY
+        ? openingTimes.arriveMs + openingTimes.chargeMs
+        : motion.sealBreak;
+    const [outcome] = await Promise.all([started.outcome, delay(wait)]);
+    stopCharge();
     if (outcome.kind === "failed") {
       // Same key next time: if the server did open the booster, it answers with the same cards.
       request.current = { key: started.key, outcome: null };
@@ -248,6 +324,10 @@ export function PlayScreen() {
       onLocked();
       setPhase({ name: "sealed" });
       return;
+    }
+    if (IS_LIBRARY && !reduced) {
+      burstSachet();
+      await delay(openingTimes.burstMs);
     }
     if (who?.kind === "guest") {
       account.publish({ ...who, boostersLeft: Math.max(0, who.boostersLeft - 1) });
@@ -282,6 +362,10 @@ export function PlayScreen() {
     );
     ownedCards.publish(after);
     if (reduced) {
+      setPhase({ name: "revealing", index: 0, hurriedFrom: null });
+    } else if (IS_LIBRARY) {
+      // The cards come one by one straight from the burst, without the stack to touch first.
+      play("cardSlide");
       setPhase({ name: "revealing", index: 0, hurriedFrom: null });
     } else {
       play("cardSlide");
@@ -388,6 +472,7 @@ export function PlayScreen() {
               : null
           }
           tone={pack.back}
+          stage={stage}
           onNext={next}
         />
         <View style={styles.revealBar}>
@@ -398,16 +483,23 @@ export function PlayScreen() {
               {progress.total}
             </Text>
           </View>
-          <View style={styles.revealActions}>
-            {!last && !hurried && (
-              <Pressable onPress={revealAll} accessibilityRole="button" style={styles.skip}>
-                <Text style={styles.skipText}>Tout révéler</Text>
+          {IS_LIBRARY ? (
+            <View style={styles.revealActions}>
+              {!last && !hurried && <PaperAction label="Tout révéler" onPress={revealAll} />}
+              <PaperAction label={revealNextLabel(last)} onPress={next} />
+            </View>
+          ) : (
+            <View style={styles.revealActions}>
+              {!last && !hurried && (
+                <Pressable onPress={revealAll} accessibilityRole="button" style={styles.skip}>
+                  <Text style={styles.skipText}>Tout révéler</Text>
+                </Pressable>
+              )}
+              <Pressable onPress={next} accessibilityRole="button" style={styles.next}>
+                <Text style={styles.nextText}>{revealNextLabel(last)}</Text>
               </Pressable>
-            )}
-            <Pressable onPress={next} accessibilityRole="button" style={styles.next}>
-              <Text style={styles.nextText}>{revealNextLabel(last)}</Text>
-            </Pressable>
-          </View>
+            </View>
+          )}
         </View>
       </View>
     );
@@ -421,6 +513,7 @@ export function PlayScreen() {
           pack={pack}
           hurriedFrom={phase.hurriedFrom}
           mustSignUp={mustSignUp}
+          library={IS_LIBRARY}
           onOpenAnother={() => {
             setPack(null);
             play("tearFinish");
@@ -438,6 +531,52 @@ export function PlayScreen() {
   const ready = phase.name === "sealed" || phase.name === "opening";
   const collection =
     choice === null ? null : (catalog?.collections.find((c) => c.id === choice.id) ?? null);
+  if (IS_LIBRARY && ready && choice !== null && collection !== null) {
+    const left =
+      stock === null
+        ? null
+        : stock.stored > 0
+          ? guestLeft === null
+            ? stock.stored
+            : Math.min(stock.stored, guestLeft)
+          : stock.bonus;
+    return (
+      <View style={styles.screen} onLayout={measureScreen}>
+        <LibraryCounter
+          choices={choices}
+          choice={choice}
+          neighbours={neighbourChoices(choices, choice)}
+          collection={collection}
+          stock={stock}
+          left={left}
+          canOpen={canOpen}
+          moment={opening ? moment : "waiting"}
+          sachetRef={sachetRef}
+          onPick={pick}
+          onOpen={() => {
+            if (!canOpen || opening) return;
+            startRequest();
+            play("tearFinish");
+            void openPack();
+          }}
+          footer={
+            mustSignUp ? (
+              <>
+                <Text style={styles.message}>{SIGN_UP_HINT}</Text>
+                <Button label="Créer mon compte" onPress={() => router.push("/compte")} />
+              </>
+            ) : error !== null ? (
+              <Text style={styles.error} accessibilityRole="alert">
+                {error}
+              </Text>
+            ) : canOpen && guestLeft === 1 ? (
+              <Text style={styles.message}>C'est ton dernier sachet sans compte.</Text>
+            ) : null
+          }
+        />
+      </View>
+    );
+  }
   const sachetWidth = Math.floor(
     Math.min(
       SACHET_MAX_WIDTH,

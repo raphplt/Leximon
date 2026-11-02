@@ -1,7 +1,7 @@
 "use client";
 
-import type { CatalogCard } from "@leximon/contract";
-import { rarityStyles } from "@leximon/tokens";
+import { type CatalogCard, RARITY_LABELS } from "@leximon/contract";
+import { rarityLights, rarityStyles, revealBanner, revealEffects } from "@leximon/tokens";
 import type { RarityStaging } from "@leximon/view-model";
 import { cardRelease, frequencyLine, speechToggleLabel } from "@leximon/view-model";
 import {
@@ -16,7 +16,9 @@ import { useCardShare } from "@/cards/share-card";
 import { type SpokenWord, useSpokenWord } from "@/cards/use-spoken-word";
 import { HoloCard } from "@/components/holo-card";
 import { useHoloLight } from "@/components/use-holo-light";
+import { Aura, RarityBanner, Rays, Sheen } from "@/library/reveal-pieces";
 import { Icon } from "@/ui/icon";
+import type { Stage } from "@/ui/stage";
 import { CardBack } from "./card-back";
 import { play, readPreference, speechOn, vibrate, writePreference } from "./feedback";
 import styles from "./reveal-card.module.css";
@@ -40,6 +42,11 @@ interface RevealCardProps {
   readonly onNext: () => void;
   /** The `back` of the pack's collection. */
   readonly backTone?: string | undefined;
+  /**
+   * In « La Bibliothèque », where its light is drawn: the rarity glows behind the card while it
+   * is announced, then sparks, rays and its name come as the face shows.
+   */
+  readonly stage?: Stage | null;
 }
 
 interface Drag {
@@ -64,6 +71,7 @@ export function RevealCard({
   firstLabel,
   onNext,
   backTone,
+  stage = null,
 }: RevealCardProps) {
   const [flipped, setFlipped] = useState(false);
   const [settled, setSettled] = useState(false);
@@ -75,6 +83,19 @@ export function RevealCard({
   const flippedRef = useRef(false);
   const timers = useRef<number[]>([]);
   const word = useSpokenWord(card);
+  const flipper = useRef<HTMLButtonElement>(null);
+  const root = useRef<HTMLDivElement>(null);
+  const [drawing, setDrawing] = useState(false);
+  const [sweep, setSweep] = useState(0);
+  const [stamp, setStamp] = useState(0);
+  const effect = revealEffects[card.rarity];
+  const rarityLight = rarityLights[card.rarity][0] ?? "white";
+  const banner = revealBanner[card.rarity];
+
+  const center = () => {
+    const box = flipper.current?.getBoundingClientRect();
+    return box === undefined ? null : { x: box.left + box.width / 2, y: box.top + box.height / 2 };
+  };
 
   const later = (ms: number, action: () => void) => {
     timers.current.push(window.setTimeout(action, ms));
@@ -105,6 +126,16 @@ export function RevealCard({
     setFlipped(true);
     play(staging.revealCue);
     vibrate(staging.revealHaptic);
+    if (stage !== null) {
+      later(staging.flipMs / 2, () => {
+        const point = center();
+        if (point !== null) {
+          stage.reveal(point.x, point.y, effect, rarityLight, root.current ?? document.body);
+        }
+        setSweep((value) => value + 1);
+        if (banner !== undefined) setStamp((value) => value + 1);
+      });
+    }
     later(staging.flipMs, () => {
       setSettled(true);
       if (isNew) play("newCard");
@@ -123,7 +154,16 @@ export function RevealCard({
 
   const press = () => {
     if (!flipped) {
-      if (staging.flip === "touch" && touchable) flip();
+      if (staging.flip !== "touch" || !touchable || drawing) return;
+      const point = center();
+      if (stage === null || effect.drawInMs === 0 || point === null || prefersReducedMotion()) {
+        flip();
+        return;
+      }
+      // The light of the room is drawn into the card before it turns.
+      setDrawing(true);
+      stage.drawIn(point.x, point.y, rarityLights[card.rarity], effect.drawInMs);
+      later(effect.drawInMs, flip);
       return;
     }
     if (settled) leave(1);
@@ -176,9 +216,11 @@ export function RevealCard({
   const glow = rarityStyles[card.rarity].glow;
   const announcing = !flipped && staging.announce !== "none";
   const height = (width * 420) / 300;
+  const library = stage !== null;
+  const auraStrength = announcing ? 0.9 : !flipped ? 0 : card.rarity === "common" ? 0.25 : 0.6;
 
   return (
-    <div className={styles.reveal}>
+    <div ref={root} className={library ? `${styles.reveal} ${styles.library}` : styles.reveal}>
       {staging.dim && (
         <div
           className={staging.announce === "eclipse" ? styles.dimDeep : styles.dim}
@@ -197,20 +239,25 @@ export function RevealCard({
         style={{ width, height }}
         ref={light.ref}
       >
-        {flipped && glow !== null && (
+        {library && <Aura size={width * 2.4} color={rarityLight} strength={auraStrength} />}
+        {library && <Rays size={width * 2.8} color={rarityLight} shown={flipped && effect.rays} />}
+        {!library && flipped && glow !== null && (
           <div
             className={styles.glow}
             style={{ background: `radial-gradient(ellipse, ${glow} 0%, transparent 65%)` }}
             aria-hidden="true"
           />
         )}
-        {flipped && staging.spotlight && <div className={styles.rays} aria-hidden="true" />}
-        {announcing && staging.announce === "eclipse" && (
+        {!library && flipped && staging.spotlight && (
+          <div className={styles.rays} aria-hidden="true" />
+        )}
+        {!library && announcing && staging.announce === "eclipse" && (
           <div className={styles.halo} aria-hidden="true" />
         )}
         <button
+          ref={flipper}
           type="button"
-          className={`${styles.flipper} ${announcing ? styles[staging.announce] : ""}`}
+          className={`${styles.flipper} ${announcing ? styles[staging.announce] : ""} ${drawing ? styles.drawing : ""}`}
           style={flipperStyle}
           onPointerDown={onPointerDown}
           onPointerMove={onPointerMove}
@@ -234,10 +281,20 @@ export function RevealCard({
           </span>
           <span className={styles.front}>
             <HoloCard card={card} collectionName={collectionName} width={width} />
+            {library && (
+              <span className={styles.sheen}>
+                <Sheen sweep={sweep} />
+              </span>
+            )}
           </span>
         </button>
-        {flipped && (staging.announce === "crack" || staging.announce === "eclipse") && (
-          <Particles kind={staging.announce === "crack" ? "gold" : "sparkle"} />
+        {!library &&
+          flipped &&
+          (staging.announce === "crack" || staging.announce === "eclipse") && (
+            <Particles kind={staging.announce === "crack" ? "gold" : "sparkle"} />
+          )}
+        {library && banner !== undefined && (
+          <RarityBanner text={RARITY_LABELS[card.rarity]} color={banner} stamp={stamp} />
         )}
         {settled && isNew && <span className={styles.newBadge}>Nouveau !</span>}
         {settled && !isNew && <span className={styles.copies}>×{copies}</span>}
@@ -264,6 +321,10 @@ export function RevealCard({
       {settled && staging.spotlight && <ShareButton card={card} />}
     </div>
   );
+}
+
+function prefersReducedMotion(): boolean {
+  return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 }
 
 /**

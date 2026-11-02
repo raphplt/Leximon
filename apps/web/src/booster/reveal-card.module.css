@@ -463,6 +463,50 @@
   }
 }
 
+/* --- « La Bibliothèque » ------------------------------------------------------------------ */
+
+/* Each card comes onto the desk on a spring, face down. */
+.library .stage {
+  animation: arrive 480ms cubic-bezier(0.3, 1.5, 0.5, 1) both;
+}
+
+.library .flipper {
+  z-index: 1;
+}
+
+/* The face's sheen, clipped to the card. */
+.sheen {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  border-radius: var(--lx-radius-xxl);
+  pointer-events: none;
+}
+
+/* The light being drawn in: the card shakes harder until it turns. */
+.drawing {
+  animation: draw-shake 70ms linear infinite;
+}
+
+@keyframes arrive {
+  from {
+    opacity: 0;
+    transform: translateY(60px) scale(0.6) rotate(-6deg);
+  }
+}
+
+@keyframes draw-shake {
+  0%,
+  100% {
+    translate: -3px 0;
+    rotate: -1.5deg;
+  }
+  50% {
+    translate: 3px -1px;
+    rotate: 1.5deg;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .back,
   .floating,
@@ -473,7 +517,9 @@
   .sparkle,
   .newBadge,
   .first,
-  .cracks {
+  .cracks,
+  .library .stage,
+  .drawing {
     animation: none;
   }
 

@@ -41,10 +41,13 @@ const STRIP_PATH = `M 0 0 L ${WIDTH} 0 L ${WIDTH} ${STRIP - CRIMP}${crimp(STRIP 
 /** The pouch under it, crimped at the bottom, rounded only where the cloth folds. */
 const BODY_PATH = `M 0 ${STRIP} L ${WIDTH} ${STRIP} L ${WIDTH} ${HEIGHT - CRIMP}${crimp(HEIGHT - CRIMP)} Z`;
 
+export type LibrarySachetState = "sealed" | "empty" | "charging" | "burst";
+
 /**
  * The sachet of « La Bibliothèque »: cloth in the collection's color under a gilt frame, an
  * engraved medallion, a red ribbon with the collection's name and the house's wax seal. It floats
- * on the desk while it waits, and light leaks from its seam while it charges.
+ * on the desk while it waits, trembles with light leaking from its seam while it charges, then
+ * loses its top and falls away as it bursts. Empty, it fades until the next one.
  */
 export function LibrarySachet({
   name,
@@ -52,7 +55,7 @@ export function LibrarySachet({
   engraving,
   label,
   countLabel,
-  charging = false,
+  state = "sealed",
   onOpen,
 }: {
   readonly name: string;
@@ -63,15 +66,18 @@ export function LibrarySachet({
   /** What touching it does, for a screen reader. */
   readonly label: string;
   readonly countLabel: string;
-  readonly charging?: boolean;
+  readonly state?: LibrarySachetState;
   readonly onOpen?: () => void;
 }) {
   const [light, middle, dark] = clothOf(back);
   const reduced = useReducedMotion();
+  const charging = state === "charging";
   const bob = useSharedValue(0);
   const seam = useSharedValue(0);
+  const wobble = useSharedValue(0);
+  const burst = useSharedValue(0);
   useEffect(() => {
-    if (reduced || charging) {
+    if (reduced || state !== "sealed") {
       bob.value = withTiming(0, { duration: 200 });
       return;
     }
@@ -80,91 +86,131 @@ export function LibrarySachet({
       -1,
       true,
     );
-  }, [reduced, charging, bob]);
+  }, [reduced, state, bob]);
   useEffect(() => {
     seam.value = withTiming(charging ? 1 : 0, { duration: charging ? 1100 : 200 });
-  }, [charging, seam]);
-  const floating = useAnimatedStyle(() => ({
-    transform: [{ translateY: -10 * bob.value }, { rotate: `${-1.2 + 2.4 * bob.value}deg` }],
-  }));
+    wobble.value =
+      charging && !reduced
+        ? withRepeat(withTiming(1, { duration: 45 }), -1, true)
+        : withTiming(0.5, { duration: 60 });
+  }, [charging, reduced, seam, wobble]);
+  useEffect(() => {
+    burst.value =
+      state === "burst" && !reduced
+        ? withTiming(1, { duration: 450, easing: Easing.in(Easing.quad) })
+        : 0;
+  }, [state, reduced, burst]);
+  const floating = useAnimatedStyle(() => {
+    // The tremble grows with the light in the seam.
+    const shiver = (wobble.value * 2 - 1) * seam.value;
+    return {
+      transform: [
+        { translateY: -10 * bob.value },
+        { translateX: 4 * shiver },
+        { rotate: `${-1.2 + 2.4 * bob.value + 2 * shiver}deg` },
+      ],
+    };
+  });
   const shadow = useAnimatedStyle(() => ({
-    opacity: 1 - 0.4 * bob.value,
+    opacity: (1 - 0.4 * bob.value) * (1 - burst.value),
     transform: [{ scaleX: 1 - 0.18 * bob.value }],
   }));
   const aura = useAnimatedStyle(() => ({
-    opacity: 0.45 + 0.25 * bob.value,
-    transform: [{ scale: 0.92 + 0.13 * bob.value }],
+    opacity: (0.45 + 0.25 * bob.value + 0.55 * seam.value) * (1 - burst.value),
+    transform: [{ scale: 0.92 + 0.13 * bob.value + 0.25 * seam.value }],
   }));
-  const glow = useAnimatedStyle(() => ({ opacity: seam.value }));
+  const glow = useAnimatedStyle(() => ({ opacity: seam.value * (1 - burst.value) }));
+  const strip = useAnimatedStyle(() => ({
+    opacity: 1 - burst.value,
+    transform: [
+      { translateX: 40 * burst.value },
+      { translateY: -160 * burst.value },
+      { rotate: `${28 * burst.value}deg` },
+    ],
+  }));
+  const pouch = useAnimatedStyle(() => ({
+    opacity: 1 - burst.value,
+    transform: [{ translateY: 120 * burst.value }, { scale: 1 - 0.08 * burst.value }],
+  }));
   return (
-    <View style={styles.zone}>
-      <Animated.View style={[styles.aura, aura]} pointerEvents="none" />
+    <View style={[styles.zone, state === "empty" && styles.empty]}>
+      {state !== "empty" && <Animated.View style={[styles.aura, aura]} pointerEvents="none" />}
       <Animated.View style={[styles.shadow, shadow]} pointerEvents="none" />
       <Animated.View style={[styles.sachet, floating]}>
         <Pressable
           style={StyleSheet.absoluteFill}
           accessibilityRole="button"
           accessibilityLabel={label}
+          accessibilityState={{ disabled: state !== "sealed" }}
+          disabled={state !== "sealed"}
           onPress={onOpen}
         >
-          <Svg width={WIDTH} height={HEIGHT} style={StyleSheet.absoluteFill}>
-            <Defs>
-              <LinearGradient id="cloth" x1="0.2" y1="0" x2="0.8" y2="1">
-                <Stop offset="0" stopColor={light} />
-                <Stop offset="0.6" stopColor={middle} />
-                <Stop offset="1" stopColor={dark} />
-              </LinearGradient>
-              <LinearGradient id="strip" x1="0" y1="0" x2="0" y2="1">
-                <Stop offset="0" stopColor={middle} />
-                <Stop offset="1" stopColor={dark} />
-              </LinearGradient>
-            </Defs>
-            <Path
-              d={BODY_PATH}
-              fill="url(#cloth)"
-              stroke={toy.outline}
-              strokeWidth={4}
-              strokeLinejoin="round"
-            />
-            <Path d={BODY_PATH} fill="url(#cloth)" />
-            <Path
-              d={STRIP_PATH}
-              fill="url(#strip)"
-              stroke={toy.outline}
-              strokeWidth={4}
-              strokeLinejoin="round"
-            />
-            <Path d={STRIP_PATH} fill="url(#strip)" />
-            <Path
-              d={`M 6 ${STRIP - 2} L ${WIDTH - 6} ${STRIP - 2}`}
-              stroke={lettering.kicker}
-              strokeWidth={2}
-              strokeDasharray="6 4"
-            />
-          </Svg>
-          <Animated.View style={[styles.seam, glow]} pointerEvents="none" />
-          <View style={styles.frame} pointerEvents="none" />
-          <Text style={styles.brand}>LEXIMON</Text>
-          <View style={styles.medallion}>
-            {engraving === undefined ? (
-              <Svg width={80} height={80} viewBox="0 0 100 100">
-                <LogoMarkShapes id="library-sachet-seal" />
-              </Svg>
-            ) : (
-              <Image source={{ uri: engraving }} style={styles.engraving} resizeMode="contain" />
-            )}
-          </View>
-          <View style={styles.ribbon}>
-            <Lettering size={13} numberOfLines={2} style={styles.ribbonText}>
-              {name}
-            </Lettering>
-          </View>
-          <Text style={styles.count}>{countLabel.toUpperCase()}</Text>
-          <View style={styles.wax}>
-            <Svg width={32} height={32} viewBox="0 0 100 100">
-              <LogoMarkShapes id="library-sachet-wax" />
+          <Animated.View style={[StyleSheet.absoluteFill, pouch]}>
+            <Svg width={WIDTH} height={HEIGHT} style={StyleSheet.absoluteFill}>
+              <Defs>
+                <LinearGradient id="cloth" x1="0.2" y1="0" x2="0.8" y2="1">
+                  <Stop offset="0" stopColor={light} />
+                  <Stop offset="0.6" stopColor={middle} />
+                  <Stop offset="1" stopColor={dark} />
+                </LinearGradient>
+              </Defs>
+              <Path
+                d={BODY_PATH}
+                fill="url(#cloth)"
+                stroke={toy.outline}
+                strokeWidth={4}
+                strokeLinejoin="round"
+              />
+              <Path d={BODY_PATH} fill="url(#cloth)" />
             </Svg>
-          </View>
+            <View style={styles.frame} pointerEvents="none" />
+            <Text style={styles.brand}>LEXIMON</Text>
+            <View style={styles.medallion}>
+              {engraving === undefined ? (
+                <Svg width={80} height={80} viewBox="0 0 100 100">
+                  <LogoMarkShapes id="library-sachet-seal" />
+                </Svg>
+              ) : (
+                <Image source={{ uri: engraving }} style={styles.engraving} resizeMode="contain" />
+              )}
+            </View>
+            <View style={styles.ribbon}>
+              <Lettering size={13} numberOfLines={2} style={styles.ribbonText}>
+                {name}
+              </Lettering>
+            </View>
+            <Text style={styles.count}>{countLabel.toUpperCase()}</Text>
+            <View style={styles.wax}>
+              <Svg width={32} height={32} viewBox="0 0 100 100">
+                <LogoMarkShapes id="library-sachet-wax" />
+              </Svg>
+            </View>
+          </Animated.View>
+          <Animated.View style={[styles.strip, strip]} pointerEvents="none">
+            <Svg width={WIDTH} height={STRIP}>
+              <Defs>
+                <LinearGradient id="strip" x1="0" y1="0" x2="0" y2="1">
+                  <Stop offset="0" stopColor={middle} />
+                  <Stop offset="1" stopColor={dark} />
+                </LinearGradient>
+              </Defs>
+              <Path
+                d={STRIP_PATH}
+                fill="url(#strip)"
+                stroke={toy.outline}
+                strokeWidth={4}
+                strokeLinejoin="round"
+              />
+              <Path d={STRIP_PATH} fill="url(#strip)" />
+              <Path
+                d={`M 6 ${STRIP - 2} L ${WIDTH - 6} ${STRIP - 2}`}
+                stroke={lettering.kicker}
+                strokeWidth={2}
+                strokeDasharray="6 4"
+              />
+            </Svg>
+            <Animated.View style={[styles.seam, glow]} pointerEvents="none" />
+          </Animated.View>
         </Pressable>
       </Animated.View>
     </View>
@@ -173,6 +219,8 @@ export function LibrarySachet({
 
 const styles = StyleSheet.create({
   zone: { width: WIDTH, height: HEIGHT },
+  empty: { opacity: 0.55 },
+  strip: { position: "absolute", top: 0, left: 0, width: WIDTH, height: STRIP },
   aura: {
     position: "absolute",
     top: -HEIGHT * 0.4,

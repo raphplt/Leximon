@@ -138,7 +138,12 @@ export function Toy({
         }
         onPressOut?.(event);
       }}
-      style={[styles.toy, { marginBottom: depth }, style]}
+      style={[
+        styles.toy,
+        { marginBottom: depth },
+        pressable.disabled === true && styles.off,
+        style,
+      ]}
     >
       <Animated.View style={[styles.fill, popped]}>
         <Thickness radius={radius} depth={depth} />
@@ -297,6 +302,7 @@ export function ToyIcon({
 }
 
 const styles = StyleSheet.create({
+  off: { opacity: 0.6 },
   toy: { position: "relative" },
   fill: { flexGrow: 1 },
   body: { flexGrow: 1, alignItems: "center", justifyContent: "center", overflow: "hidden" },

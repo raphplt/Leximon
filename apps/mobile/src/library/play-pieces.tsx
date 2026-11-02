@@ -340,17 +340,19 @@ export function MainAction({
   label,
   count,
   inviting = true,
+  disabled = false,
   onPress,
 }: {
   readonly label: string;
   readonly count?: string | undefined;
   readonly inviting?: boolean;
+  readonly disabled?: boolean;
   readonly onPress?: () => void;
 }) {
   const reduced = useReducedMotion();
   const squash = useSharedValue(0);
   useEffect(() => {
-    if (reduced || !inviting) {
+    if (reduced || !inviting || disabled) {
       squash.value = 0;
       return;
     }
@@ -362,7 +364,7 @@ export function MainAction({
       ),
       -1,
     );
-  }, [reduced, inviting, squash]);
+  }, [reduced, inviting, disabled, squash]);
   const invite = useAnimatedStyle(() => ({
     transform: [{ scaleX: 1 + squash.value * 0.04 }, { scaleY: 1 - squash.value * 0.03 }],
   }));
@@ -375,6 +377,7 @@ export function MainAction({
         bodyStyle={styles.mainBody}
         accessibilityRole="button"
         accessibilityLabel={label}
+        disabled={disabled}
         onPress={onPress}
       >
         <View style={styles.sheen} pointerEvents="none" />
@@ -423,27 +426,32 @@ export function TabBar({
   tabs,
   playLabel,
   bottomInset = 0,
+  current = null,
   onTab,
   onPlay,
 }: {
   readonly tabs: readonly [Tab, Tab, Tab, Tab];
   readonly playLabel: string;
   readonly bottomInset?: number;
+  /** The tab of the screen shown, `play` for Jouer. */
+  readonly current?: number | "play" | null;
   readonly onTab?: (index: number) => void;
   readonly onPlay?: () => void;
 }) {
   const [first, second, third, fourth] = tabs;
   const tab = (item: Tab, index: number) => {
     const locked = item.lockedAt !== undefined;
+    const focused = current === index;
     return (
       <Pressable
         key={item.label}
         style={styles.tab}
         accessibilityRole="tab"
+        accessibilityState={{ selected: focused }}
         accessibilityLabel={locked ? `${item.label}, ${item.lockedAt}` : item.label}
         onPress={() => onTab?.(index)}
       >
-        <View style={locked ? styles.tabIconLocked : undefined}>
+        <View style={locked ? styles.tabIconLocked : focused ? styles.tabIconFocused : undefined}>
           <ToyIcon name={item.icon} size={34} locked={locked} />
         </View>
         {locked && (
@@ -452,7 +460,7 @@ export function TabBar({
           </View>
         )}
         {item.badge !== undefined && <CountBadge count={item.badge} style={styles.tabBadge} />}
-        <Lettering size={10} numberOfLines={1}>
+        <Lettering size={10} numberOfLines={1} {...(focused ? { color: toyMatters.gold.top } : {})}>
           {item.label}
         </Lettering>
       </Pressable>
@@ -471,6 +479,7 @@ export function TabBar({
             shape="tile"
             style={styles.playDisc}
             accessibilityRole="tab"
+            accessibilityState={{ selected: current === "play" }}
             accessibilityLabel={playLabel}
             onPress={onPlay}
           >
@@ -681,6 +690,7 @@ const styles = StyleSheet.create({
   },
   tab: { flex: 1, alignItems: "center", gap: 3, paddingBottom: 4 },
   tabIconLocked: { opacity: 0.6 },
+  tabIconFocused: { transform: [{ translateY: -3 }] },
   tabLock: { position: "absolute", top: -4, right: 10 },
   tabBadge: { position: "absolute", top: -6, right: 6 },
   playRing: {

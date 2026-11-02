@@ -391,6 +391,41 @@
   }
 }
 
+/* « La Bibliothèque »: the recap lies on the desk, its figures in gilt. */
+.recapLibrary {
+  position: relative;
+  isolation: isolate;
+  padding: 34px 22px 30px;
+  background: none;
+}
+
+.recapDesk {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+}
+
+.recapLibrary .recapXp {
+  color: var(--lx-toy-gold-top);
+}
+
+.recapLibrary .recapProgress,
+.recapLibrary .hint,
+.recapLibrary .recapHint {
+  color: var(--lx-color-page-ink);
+}
+
+@media (max-width: 759px) {
+  .wide .recapLibrary {
+    margin: 0 -8px;
+    padding: 30px 16px 24px;
+  }
+
+  .wide .recapLibrary .recapCarousel {
+    width: calc(100% + 32px);
+  }
+}
+
 @keyframes enter {
   from {
     opacity: 0;

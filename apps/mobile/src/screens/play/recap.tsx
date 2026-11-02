@@ -31,6 +31,7 @@ import Svg, { Defs, LinearGradient, Rect, Stop } from "react-native-svg";
 import { Card } from "@/cards/card";
 import { play } from "@/feedback/feedback";
 import { openCoffret } from "@/levels/coffret";
+import { Desk, MainAction, PaperAction } from "@/library/play-pieces";
 import { useNow, useShared } from "@/player/shared";
 import { progress as progressResource, wallet as walletResource } from "@/player/state";
 import { usePlayerView } from "@/player/use-player-view";
@@ -46,8 +47,13 @@ const GAP = 14;
 /** Room left at the edge for the next card to show. */
 const PEEK = 96;
 const CARD_MAX = 260;
+const CARD_MIN = 160;
+/** The desk's buttons leave less room: a small phone takes smaller cards rather than overflow. */
+const LIBRARY_CARD_MIN = 136;
 /** Height kept around the cards: the recap's lines and buttons. */
 const CHROME = 300;
+/** More of it in « La Bibliothèque », where the buttons are thicker and the tabs rise higher. */
+const LIBRARY_CHROME = 540;
 const STEP_MS = 80;
 /** A card's chime rings once it has slid in. */
 const CHIME_AT_MS = 220;
@@ -62,6 +68,7 @@ export function Recap({
   pack,
   hurriedFrom,
   mustSignUp,
+  library = false,
   onOpenAnother,
   onHome,
 }: {
@@ -70,6 +77,8 @@ export function Recap({
   /** Where the player asked to reveal everything; null when every card was turned. */
   readonly hurriedFrom: number | null;
   readonly mustSignUp: boolean;
+  /** In « La Bibliothèque », the cards lie on the desk and the buttons are its objects. */
+  readonly library?: boolean;
   readonly onOpenAnother: () => void;
   readonly onHome: () => void;
 }) {
@@ -82,8 +91,12 @@ export function Recap({
   const coffretWaits = usePlayerView().coffrets.length > 0;
   const width = Math.floor(
     Math.max(
-      160,
-      Math.min(CARD_MAX, window.width - PEEK, ((room - CHROME) * cardSize.width) / cardSize.height),
+      library ? LIBRARY_CARD_MIN : CARD_MIN,
+      Math.min(
+        CARD_MAX,
+        window.width - PEEK,
+        ((room - (library ? LIBRARY_CHROME : CHROME)) * cardSize.width) / cardSize.height,
+      ),
     ),
   );
   const [active, setActive] = useState(0);
@@ -120,6 +133,7 @@ export function Recap({
   const another = !mustSignUp && !coffretWaits && wallet !== null && canOpenAgain(wallet);
   return (
     <View style={styles.recap} onLayout={(event) => setRoom(event.nativeEvent.layout.height)}>
+      {library && <Desk style={styles.desk} />}
       <Text style={styles.kicker}>TON SACHET</Text>
       <View style={styles.line}>
         {best !== null && (
@@ -183,23 +197,43 @@ export function Recap({
       {!mustSignUp && !coffretWaits && nextSachet !== null && (
         <Text style={styles.progress}>{nextSachet}</Text>
       )}
-      <View style={styles.actions}>
-        {coffretWaits ? (
-          <Button label="Ouvrir le coffret" onPress={() => openCoffret()} />
-        ) : mustSignUp ? (
-          <Button label="Créer mon compte" onPress={() => router.push("/compte")} />
-        ) : (
-          <Button
-            label={wallet === null ? BACK_HOME_LABEL : openAgainLabel(wallet)}
-            onPress={another ? onOpenAnother : onHome}
-          />
-        )}
-        {another ? (
-          <Button label={BACK_HOME_LABEL} secondary onPress={onHome} />
-        ) : (
-          <Button label="Voir mon album" secondary onPress={() => router.navigate("/album")} />
-        )}
-      </View>
+      {library ? (
+        <View style={[styles.actions, styles.libraryActions]}>
+          {coffretWaits ? (
+            <MainAction label="Ouvrir le coffret" onPress={() => openCoffret()} />
+          ) : mustSignUp ? (
+            <MainAction label="Créer mon compte" onPress={() => router.push("/compte")} />
+          ) : (
+            <MainAction
+              label={wallet === null ? BACK_HOME_LABEL : openAgainLabel(wallet)}
+              onPress={another ? onOpenAnother : onHome}
+            />
+          )}
+          {another ? (
+            <PaperAction label={BACK_HOME_LABEL} onPress={onHome} />
+          ) : (
+            <PaperAction label="Voir mon album" onPress={() => router.navigate("/album")} />
+          )}
+        </View>
+      ) : (
+        <View style={styles.actions}>
+          {coffretWaits ? (
+            <Button label="Ouvrir le coffret" onPress={() => openCoffret()} />
+          ) : mustSignUp ? (
+            <Button label="Créer mon compte" onPress={() => router.push("/compte")} />
+          ) : (
+            <Button
+              label={wallet === null ? BACK_HOME_LABEL : openAgainLabel(wallet)}
+              onPress={another ? onOpenAnother : onHome}
+            />
+          )}
+          {another ? (
+            <Button label={BACK_HOME_LABEL} secondary onPress={onHome} />
+          ) : (
+            <Button label="Voir mon album" secondary onPress={() => router.navigate("/album")} />
+          )}
+        </View>
+      )}
     </View>
   );
 }
@@ -271,6 +305,8 @@ function Glint({
 const styles = StyleSheet.create({
   glint: { ...StyleSheet.absoluteFill, opacity: 0 },
   recap: { flex: 1, alignItems: "center", paddingTop: space.s6, gap: space.s4 },
+  desk: { position: "absolute", top: 4, left: 8, right: 8, bottom: 96 + TAB_BAR_RISE },
+  libraryActions: { alignItems: "center", paddingBottom: TAB_BAR_RISE + 24 },
   kicker: {
     fontFamily: fonts.ui.extrabold,
     fontSize: fontSizes.caption,
@@ -279,7 +315,7 @@ const styles = StyleSheet.create({
   },
   line: { flexDirection: "row", alignItems: "center", gap: space.s4 },
   lineText: { fontFamily: fonts.ui.bold, fontSize: fontSizes.body, color: colors.pageInk },
-  carousel: { flexGrow: 0, paddingVertical: space.s7 },
+  carousel: { flexGrow: 0, flexShrink: 0, paddingVertical: space.s7 },
   new: {
     position: "absolute",
     top: -10,

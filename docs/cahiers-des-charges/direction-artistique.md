@@ -167,7 +167,15 @@ Seulement ce dont l'écran Jouer et l'ouverture ont besoin : bandeau du haut (po
 
 ## Phase 2 · Jouer et l'ouverture, puis le cœur du jeu
 
-**D'abord l'écran Jouer et l'ouverture** (choix du propriétaire, le 2026-11-02), dans le vrai jeu, derrière le réglage, sur le web puis sur téléphone. Le propriétaire les juge en jouant, sur son téléphone, avant qu'on touche aux autres écrans. Les pièces de lecture (feuilles, listes, onglets, champs, fenêtres) naissent ensuite avec les écrans qui les utilisent, et `/planches` les montre au fur et à mesure.
+**D'abord l'écran Jouer et l'ouverture** (choix du propriétaire, le 2026-11-02), dans le vrai jeu, derrière le réglage, sur le web puis sur téléphone.
+
+**Jouer, ouverture et bilan faits le 2026-11-02**, à juger par le propriétaire. La logique du jeu reste dans les écrans existants, seule l'allure change avec le réglage ; le bandeau du haut et les onglets de La Bibliothèque remplacent les actuels sur téléphone. Écarts :
+
+- le sachet s'ouvre d'un toucher, sans geste de déchirure, et la pile de cartes est sautée : la première carte arrive juste après l'éclatement ;
+- l'appel au serveur part au toucher, et la charge (1,1 s) dure jusqu'à la réponse ;
+- sur le mobile, pas de tuile des réglages à côté du sachet (le compte en tient lieu), comme dans l'écran actuel ;
+- sur le web en grand écran, la barre du haut actuelle reste, en attendant sa refonte ;
+- sur un petit téléphone, les cartes du bilan rapetissent (136 px de large au moins) pour que les boutons tiennent au-dessus des onglets. Le propriétaire les juge en jouant, sur son téléphone, avant qu'on touche aux autres écrans. Les pièces de lecture (feuilles, listes, onglets, champs, fenêtres) naissent ensuite avec les écrans qui les utilisent, et `/planches` les montre au fur et à mesure.
 
 | Écran | Attendu |
 |---|---|

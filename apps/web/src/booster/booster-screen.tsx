@@ -4,7 +4,14 @@ import type { ProgressGain, RarityCompletionResponse } from "@leximon/contract";
 import type { OpenBoosterResult } from "@leximon/contract/client";
 import { type Catalog, cardOrPlaceholder, collectionName } from "@leximon/contract/client";
 import type { Rarity } from "@leximon/core";
-import { cardSize, motion, rarityStyles } from "@leximon/tokens";
+import {
+  cardSize,
+  effects,
+  motion,
+  openingTimes,
+  rarityLights,
+  rarityStyles,
+} from "@leximon/tokens";
 import type { PackShape } from "@leximon/view-model";
 import {
   BACK_HOME_LABEL,
@@ -40,6 +47,7 @@ import {
   xpGainLabel,
 } from "@leximon/view-model";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { type CSSProperties, useCallback, useEffect, useRef, useState } from "react";
 import { takeSignedIn } from "@/account/sign-in-memory";
 import { loadCatalog } from "@/cards/catalog";
@@ -48,9 +56,12 @@ import { Card } from "@/components/card";
 import { RarityName } from "@/components/rarity-icon";
 import { api } from "@/lib/api";
 import { usePackShape } from "@/lib/use-pack-shape";
+import { Desk, MainAction, PaperAction } from "@/library/play-pieces";
 import { CollectionPicker } from "@/play/collection-picker";
 import { noteSachetOpened, StockDots, TearHint } from "@/play/counter-bits";
 import { LevelStrip } from "@/play/level-strip";
+import { type CounterMoment, LibraryCounter } from "@/play/library-counter";
+import counter from "@/play/library-counter.module.css";
 import { PackPeek, PeekArrow } from "@/play/pack-peek";
 import play from "@/play/play.module.css";
 import { PlayFabs } from "@/play/play-fabs";
@@ -67,8 +78,10 @@ import { useShared } from "@/player/resource";
 import { publishProgress, useProgress } from "@/progress/use-progress";
 import { useShell } from "@/shell/shell-context";
 import { usePlayerView } from "@/shell/use-player-view";
+import { useLibraryLook } from "@/theme/use-library-look";
 import { Button, ButtonLink } from "@/ui/button";
 import { XpBar } from "@/ui/level-bits";
+import { ParticleStage, type Stage, useOptionalStage } from "@/ui/stage";
 import { useToast } from "@/ui/toast";
 import ui from "@/ui/ui.module.css";
 import styles from "./booster-screen.module.css";
@@ -191,6 +204,22 @@ function writeChoice(id: string): void {
 
 /** The Jouer screen and the opening of a sachet. */
 export function BoosterScreen() {
+  const library = useLibraryLook();
+  return library ? (
+    <ParticleStage dust>
+      <BoosterFlow library />
+    </ParticleStage>
+  ) : (
+    <BoosterFlow library={false} />
+  );
+}
+
+/** In « La Bibliothèque », the seam of the sachet, from the top of its box: where light leaks. */
+const SEAM_AT = 0.13;
+/** Most sparks a single beat of the charge throws, however late the answer is. */
+const CHARGE_SPARKS_MAX = 6;
+
+function BoosterFlow({ library }: { readonly library: boolean }) {
   const [phase, setPhase] = useState<Phase>({ name: "loading" });
   const [catalog, setCatalog] = useState<Catalog | null>(null);
   const [owned, setOwned] = useState<ReadonlyMap<string, number>>(new Map());
@@ -201,6 +230,10 @@ export function BoosterScreen() {
   const [memory, setMemory] = useState<ReadonlyMap<string, WordMemory>>(new Map());
   const [visit, setVisit] = useState(0);
   const request = useRef<OpenRequest | null>(null);
+  const stage = useOptionalStage();
+  const [moment, setMoment] = useState<CounterMoment>("waiting");
+  const sachetRef = useRef<HTMLDivElement>(null);
+  const counterRef = useRef<HTMLElement>(null);
   const { shape, known } = usePackShape();
   const view = usePlayerView();
   const who = useShared(account);
@@ -292,12 +325,56 @@ export function BoosterScreen() {
     return started;
   };
 
+  /**
+   * The sachet comes to the middle, then charges until it is told to stop: sparks leak from its
+   * seam, more of them as the wait goes on.
+   */
+  const chargeSachet = (reduced: boolean): (() => void) => {
+    setMoment("arriving");
+    if (reduced || stage === null) {
+      setMoment("charging");
+      return () => undefined;
+    }
+    let beats = 0;
+    let sparks = 0;
+    const arrival = window.setTimeout(() => {
+      setMoment("charging");
+      sparks = window.setInterval(() => {
+        const box = sachetRef.current?.getBoundingClientRect();
+        if (box === undefined) return;
+        beats++;
+        stage.burst(box.left + box.width / 2, box.top + box.height * SEAM_AT, {
+          ...effects.charge.burst,
+          count: Math.min(CHARGE_SPARKS_MAX, 1 + Math.floor(beats / 4)),
+        });
+      }, effects.charge.everyMs);
+    }, openingTimes.arriveMs);
+    return () => {
+      window.clearTimeout(arrival);
+      window.clearInterval(sparks);
+    };
+  };
+
+  /** The sachet bursts: light, a ring, scraps of parchment, and the screen shakes. */
+  const burstSachet = () => {
+    setMoment("burst");
+    const box = sachetRef.current?.getBoundingClientRect();
+    if (stage === null || box === undefined) return;
+    const x = box.left + box.width / 2;
+    const y = box.top + box.height / 2;
+    for (const settings of effects.burst) stage.burst(x, y, settings);
+    stage.ring(x, y, rarityLights.epic[0] ?? "white", 6);
+    stage.flash(1, 500);
+    if (counterRef.current !== null) stage.shake(counterRef.current, 10, 450);
+  };
+
   const openPack = async () => {
     const started = startRequest();
     if (started?.outcome == null || catalog === null || choice === null) return;
     setError(null);
     setPhase({ name: "opening" });
     const reduced = prefersReducedMotion();
+    const stopCharge = library ? chargeSachet(reduced) : () => undefined;
     // The words start loading while the seal still breaks.
     void started.outcome.then((answer) => {
       if (answer.kind !== "answered" || answer.result.kind !== "opened") return;
@@ -305,7 +382,13 @@ export function BoosterScreen() {
         answer.result.cards.flatMap((drawn) => catalog.cardsById.get(drawn.cardId) ?? []),
       );
     });
-    const [outcome] = await Promise.all([started.outcome, delay(reduced ? 0 : motion.sealBreak)]);
+    const wait = reduced
+      ? 0
+      : library
+        ? openingTimes.arriveMs + openingTimes.chargeMs
+        : motion.sealBreak;
+    const [outcome] = await Promise.all([started.outcome, delay(wait)]);
+    stopCharge();
     if (outcome.kind === "failed") {
       // Same key next time: if the server did open the booster, it answers with the same cards.
       request.current = { key: started.key, outcome: null };
@@ -331,6 +414,10 @@ export function BoosterScreen() {
       toast(lockedToast("choose_collection", now));
       setPhase({ name: "sealed" });
       return;
+    }
+    if (library && !reduced) {
+      burstSachet();
+      await delay(openingTimes.burstMs);
     }
     if (who?.kind === "guest") {
       account.publish({ ...who, boostersLeft: Math.max(0, who.boostersLeft - 1) });
@@ -365,6 +452,10 @@ export function BoosterScreen() {
     );
     ownedCards.publish(after);
     if (reduced) {
+      setPhase({ name: "revealing", index: 0, hurriedFrom: null });
+    } else if (library) {
+      // The cards come one by one straight from the burst, without the stack to touch first.
+      playSound("cardSlide");
       setPhase({ name: "revealing", index: 0, hurriedFrom: null });
     } else {
       playSound("cardSlide");
@@ -455,6 +546,7 @@ export function BoosterScreen() {
             index={phase.index}
             hurried={phase.hurriedFrom !== null}
             width={cardWidth}
+            stage={stage}
             onNext={next}
             onRevealAll={revealAll}
           />
@@ -465,6 +557,7 @@ export function BoosterScreen() {
             pack={pack}
             hurriedFrom={phase.hurriedFrom}
             mustSignUp={mustSignUp}
+            library={library}
             onOpenAnother={() => {
               setPack(null);
               playSound("tearFinish");
@@ -505,6 +598,52 @@ export function BoosterScreen() {
   // The counter is drawn once its size is known, whole: drawn empty first, it would shrink
   // under the eye when the word slipping away takes its place below.
   const waiting = phase.name === "loading" || (ready && !known);
+  if (library && !waiting && ready && choice !== null && packCollection !== null) {
+    const left =
+      stock === null
+        ? null
+        : stock.stored > 0
+          ? guestLeft === null
+            ? stock.stored
+            : Math.min(stock.stored, guestLeft)
+          : stock.bonus;
+    return (
+      <main ref={counterRef}>
+        <LibraryCounter
+          choices={choices}
+          choice={choice}
+          neighbours={around}
+          pack={packCollection}
+          stock={stock}
+          left={left}
+          canOpen={canOpen}
+          moment={phase.name === "opening" ? moment : "waiting"}
+          sachetRef={sachetRef}
+          onPick={(next) => pick(next)}
+          onOpen={() => {
+            if (!canOpen || phase.name === "opening") return;
+            startRequest();
+            playSound("tearFinish");
+            void openPack();
+          }}
+          footer={
+            mustSignUp ? (
+              <>
+                <p className={counter.message}>{SIGN_UP_HINT}</p>
+                <ButtonLink href="/compte">Créer mon compte</ButtonLink>
+              </>
+            ) : error !== null ? (
+              <p className={counter.error} role="alert">
+                {error}
+              </p>
+            ) : canOpen && guestLeft === 1 ? (
+              <p className={counter.message}>C'est ton dernier sachet sans compte.</p>
+            ) : null
+          }
+        />
+      </main>
+    );
+  }
   return (
     <main className={play.page}>
       <LevelStrip />
@@ -672,6 +811,7 @@ function Revealing({
   index,
   hurried,
   width,
+  stage,
   onNext,
   onRevealAll,
 }: {
@@ -680,6 +820,7 @@ function Revealing({
   readonly index: number;
   readonly hurried: boolean;
   readonly width: number;
+  readonly stage: Stage | null;
   readonly onNext: () => void;
   readonly onRevealAll: () => void;
 }) {
@@ -712,6 +853,7 @@ function Revealing({
             ? firstOfRarityLabel(drawn.rarity)
             : null
         }
+        stage={stage}
         onNext={onNext}
       />
       <div className={styles.revealBar}>
@@ -725,16 +867,23 @@ function Revealing({
             · {pack.collectionName} {progress.owned}/{progress.total}
           </span>
         </span>
-        <div className={styles.revealActions}>
-          {!last && !hurried && (
-            <button type="button" className={styles.skip} onClick={onRevealAll}>
-              Tout révéler
+        {stage === null ? (
+          <div className={styles.revealActions}>
+            {!last && !hurried && (
+              <button type="button" className={styles.skip} onClick={onRevealAll}>
+                Tout révéler
+              </button>
+            )}
+            <button type="button" className={styles.next} onClick={onNext}>
+              {revealNextLabel(last)}
             </button>
-          )}
-          <button type="button" className={styles.next} onClick={onNext}>
-            {revealNextLabel(last)}
-          </button>
-        </div>
+          </div>
+        ) : (
+          <div className={styles.revealActions}>
+            {!last && !hurried && <PaperAction label="Tout révéler" onClick={onRevealAll} />}
+            <PaperAction label={revealNextLabel(last)} onClick={onNext} />
+          </div>
+        )}
       </div>
     </div>
   );
@@ -746,6 +895,7 @@ function Recap({
   pack,
   hurriedFrom,
   mustSignUp,
+  library,
   onOpenAnother,
   onHome,
 }: {
@@ -753,10 +903,13 @@ function Recap({
   readonly pack: Pack;
   readonly hurriedFrom: number | null;
   readonly mustSignUp: boolean;
+  /** In « La Bibliothèque », the cards lie on the desk and the buttons are its objects. */
+  readonly library: boolean;
   readonly onOpenAnother: () => void;
   readonly onHome: () => void;
 }) {
   const view = usePlayerView();
+  const router = useRouter();
   const { openCoffret } = useShell();
   const progressNow = useProgress();
   const progress = collectionProgress(pack.collectionCardIds, pack.quantitiesBefore, pack.cards);
@@ -768,7 +921,10 @@ function Recap({
     view.wallet === null || view.now === 0 ? null : nextSachetLine(view.wallet, view.now);
   const another = !mustSignUp && !coffretWaits && view.wallet !== null && canOpenAgain(view.wallet);
   return (
-    <div className={`${ui.panel} ${styles.recap}`}>
+    <div
+      className={library ? `${styles.recap} ${styles.recapLibrary}` : `${ui.panel} ${styles.recap}`}
+    >
+      {library && <Desk className={styles.recapDesk} />}
       <p className={`${ui.kicker} ${styles.recapKicker}`}>Ton sachet</p>
       <RecapLine pack={pack} />
       {catalog !== null && (
@@ -802,33 +958,54 @@ function Recap({
       {!mustSignUp && !coffretWaits && nextSachet !== null && (
         <p className={styles.hint}>{nextSachet}</p>
       )}
-      <div className={styles.actions}>
-        {coffretWaits ? (
-          <Button glow onClick={() => openCoffret()}>
-            Ouvrir le coffret
-          </Button>
-        ) : mustSignUp ? (
-          <ButtonLink href="/compte">Créer mon compte</ButtonLink>
-        ) : (
-          <Button onClick={another ? onOpenAnother : onHome}>
-            {view.wallet === null ? BACK_HOME_LABEL : openAgainLabel(view.wallet)}
-          </Button>
-        )}
-        {another && (
-          <Button variant="secondary" onClick={onHome}>
-            {BACK_HOME_LABEL}
-          </Button>
-        )}
-        {mustSignUp && coffretWaits ? (
-          <ButtonLink href="/compte" variant="secondary">
-            Créer mon compte
-          </ButtonLink>
-        ) : (
-          <Link href="/album" className={`${ui.secondary} ${styles.recapAlbum}`}>
-            Voir mon album
-          </Link>
-        )}
-      </div>
+      {library ? (
+        <div className={styles.actions}>
+          {coffretWaits ? (
+            <MainAction label="Ouvrir le coffret" onClick={() => openCoffret()} />
+          ) : mustSignUp ? (
+            <MainAction label="Créer mon compte" onClick={() => router.push("/compte")} />
+          ) : (
+            <MainAction
+              label={view.wallet === null ? BACK_HOME_LABEL : openAgainLabel(view.wallet)}
+              onClick={another ? onOpenAnother : onHome}
+            />
+          )}
+          {another && <PaperAction label={BACK_HOME_LABEL} onClick={onHome} />}
+          {mustSignUp && coffretWaits ? (
+            <PaperAction label="Créer mon compte" onClick={() => router.push("/compte")} />
+          ) : (
+            <PaperAction label="Voir mon album" onClick={() => router.push("/album")} />
+          )}
+        </div>
+      ) : (
+        <div className={styles.actions}>
+          {coffretWaits ? (
+            <Button glow onClick={() => openCoffret()}>
+              Ouvrir le coffret
+            </Button>
+          ) : mustSignUp ? (
+            <ButtonLink href="/compte">Créer mon compte</ButtonLink>
+          ) : (
+            <Button onClick={another ? onOpenAnother : onHome}>
+              {view.wallet === null ? BACK_HOME_LABEL : openAgainLabel(view.wallet)}
+            </Button>
+          )}
+          {another && (
+            <Button variant="secondary" onClick={onHome}>
+              {BACK_HOME_LABEL}
+            </Button>
+          )}
+          {mustSignUp && coffretWaits ? (
+            <ButtonLink href="/compte" variant="secondary">
+              Créer mon compte
+            </ButtonLink>
+          ) : (
+            <Link href="/album" className={`${ui.secondary} ${styles.recapAlbum}`}>
+              Voir mon album
+            </Link>
+          )}
+        </div>
+      )}
     </div>
   );
 }

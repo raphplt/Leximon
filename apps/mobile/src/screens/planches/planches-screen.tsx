@@ -228,7 +228,7 @@ function PlayScreen() {
               back={collection.back}
               label="Ouvrir le sachet"
               countLabel="5 cartes"
-              charging={charging}
+              state={charging ? "charging" : "sealed"}
               onOpen={() => void open()}
             />
           </View>
