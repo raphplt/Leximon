@@ -56,7 +56,7 @@ Détail et maquettes : [cahiers-des-charges/ouverture.md](cahiers-des-charges/ou
 |---|---|---|---|
 | P45 | Mise en scène | L'ouverture est le moment fort du jeu. Le pli se déchire au doigt ; l'annonce d'une carte vient avant sa face, plus longue à mesure que la rareté monte ; à partir de Précieux, le joueur retourne la carte lui-même. Son et vibration l'accompagnent, et se coupent dans les réglages. | Tranché le 2026-10-20 |
 | P46 | Coup d'œil | Glisser la pile en biais montre la tranche des cartes, colorée par rareté. Possible seulement une fois le pli ouvert, le tirage déjà fait : il ne sert jamais à choisir un pli. Jamais expliqué dans l'interface. | Tranché le 2026-10-20 |
-| P47 | Forme du paquet | Deux formes, le pli scellé et le sachet. Pas de test A/B : le propriétaire les a essayées. **Tous les joueurs voient le sachet** ; le pli reste visible à l'essai (`/jouer?paquet=pli`). La forme sera rejugée sur prototypes pendant la refonte ([cahier](cahiers-des-charges/direction-artistique-le-livre.md)) : sachet teinté, pochette de papier ou pli cacheté. | Tranché le 2026-10-20, sachet choisi le 2026-10-20 ; rouvert le 2026-11-01 |
+| P47 | Forme du paquet | Le sachet. **Tous les joueurs le voient.** Dans la nouvelle direction artistique, c'est un sachet de toile à la couleur de la collection, avec cadre doré, médaillon gravé, ruban et sceau ([cahier](cahiers-des-charges/direction-artistique.md)). Le pli scellé reste visible à l'essai (`/jouer?paquet=pli`) dans l'ancien style, sans être redessiné. | Tranché le 2026-10-20, sachet choisi le 2026-10-20 ; rouvert le 2026-11-01, sachet confirmé le 2026-11-02 |
 | P53 | Nom du paquet | Le mot suit la forme : avec le sachet, « sachet » partout (navigation, stock, sachets bonus, défis, échanges, album) ; avec le pli, « pli ». | Tranché le 2026-10-20 |
 
 ## Cartes et rareté
@@ -192,5 +192,4 @@ Options et recommandations dans les cahiers des charges ([ouverture](cahiers-des
 
 - **Numéro de collection sur la carte** (« 040/160 ») : dénominateur fixe annoncé à la publication, ou nombre de cartes publiées ; Légendaires « hors série » numérotées au-delà, ou non.
 - **Sons de l'ouverture :** garder les sons synthétisés, ou passer à des sons de banque. Décision reportée au moment où le jeu tourne dans sa nouvelle direction artistique.
-- **Forme du paquet (P47) :** sachet teinté, pochette de papier ou pli cacheté, sur prototypes animés. Le mot du paquet suivra (P53).
 - **Notation phonétique affichée :** sur la carte, à côté de la carte (vue agrandie), ou pas du tout. Penchant du propriétaire pour l'afficher (2026-10-21). Essai sur le web (lot 2 de l'interface) : affichée à côté de la carte, dans sa fiche, après le bouton qui fait entendre le mot. À confirmer.

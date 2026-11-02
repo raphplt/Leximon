@@ -3,7 +3,7 @@
 - **Statut :** tous les choix tranchés par le propriétaire le 2026-11-01, rien de construit. Chiffres de jeu provisoires, à recaler sur la bêta.
 - **Source :** appel de deux heures du 2026-10-31 avec un game designer bénévole, ses retours écrits et les notes du propriétaire.
 - **Règles liées :** P84 à P92 et les changements du 2026-11-01 sur P15, P23, P50, P59, P77 ([regles-du-jeu.md](../regles-du-jeu.md)). Les valeurs vivent dans ce fichier-là, ce cahier dit quoi construire.
-- **Cahier lié :** [direction-artistique-le-livre.md](direction-artistique-le-livre.md), le chantier numéro un.
+- **Cahier lié :** [direction-artistique.md](direction-artistique.md), le chantier numéro un.
 - **Études :** [rnd/doublons.md](../rnd/doublons.md), maquettes dans `rnd/da-refonte/`.
 
 ## Le diagnostic
@@ -22,15 +22,15 @@ La direction artistique passe d'abord, tout le reste ensuite, avec une seule exc
 | Phase | Contenu | Mise en ligne |
 |---|---|---|
 | 0 | Six corrections immédiates | Dès qu'elles sont prêtes |
-| 1 | Fondations de la DA : tokens, thèmes, matières, polices, ornements | Invisible pour le joueur |
-| 2 | Le Livre sur la coque et le cœur du jeu, prototypes de l'écran Jouer et du paquet | Invisible, derrière un réglage |
-| 3 | Le Livre partout, textes réécrits, puis bascule web, mobile et stores | La bascule |
+| 1 | Socle de la DA : tokens, retrait de Le Livre, salle et objets, mouvement et particules | Invisible pour le joueur |
+| 2 | L'écran Jouer et l'ouverture d'abord, puis le cœur du jeu | Invisible, derrière un réglage |
+| 3 | La nouvelle allure partout, textes réécrits, puis bascule web, mobile et stores | La bascule |
 | 4 | Récompenses et progression lisibles, album | Par lots |
 | 5 | Économie : écus, recyclage, dépenses, tampons, série, succès, codes | Par lots |
 | 6 | Social : niveaux, doubles visibles, échanges suggérés, souhaits, taux de réussite | Par lots |
 | 7 | Duel en direct : R&D, prototype, construction | Après validation |
 
-Les phases 1 à 3 sont détaillées dans le cahier de la DA. Les phases 4 à 7 sont dessinées dans Le Livre dès leur premier écran : elles ne créent donc pas de travail à refaire.
+Les phases 1 à 3 sont détaillées dans le cahier de la DA. Les phases 4 à 7 sont dessinées dans la nouvelle allure dès leur premier écran : elles ne créent donc pas de travail à refaire.
 
 **Chaque lot compte double :** logique et textes vivent dans `packages/view-model`, mais les écrans s'écrivent pour le web et pour le mobile (D-033).
 
@@ -39,7 +39,7 @@ Les phases 1 à 3 sont détaillées dans le cahier de la DA. Les phases 4 à 7 s
 Il n'y a plus de date ferme. Début décembre reste la cible, janvier le repli. On ouvre quand tout ceci est vrai :
 
 1. Les préalables de la [feuille de route](../feuille-de-route.md#avant-la-bêta-ouverte) sont tenus.
-2. La phase 3 est finie : Le Livre est en ligne sur le web et sur les stores.
+2. La phase 3 est finie : la nouvelle allure est en ligne sur le web et sur les stores.
 3. La rétention des testeurs atteint les objectifs de la north star : 35 % à J1 et 12 % à J7, mesurés dans `/admin/mesure` sur des joueurs arrivés après la bascule. Si elle reste en dessous, la phase 5 passe avant l'ouverture.
 
 ## Phase 0 · Six corrections immédiates
@@ -63,7 +63,7 @@ Chacune se teste sur le web et le mobile. Aucune ne change de règle du jeu.
 |---|---|---|---|
 | 4.1 | Sachet bonus | Le bouton de fin de défi propose d'ouvrir le sachet gagné. Sur Jouer, le sachet bonus se choisit sans attendre un stock vide, et le texte « À ouvrir quand ton stock gratuit est vide » disparaît. Une ligne dit ce qu'est un sachet bonus et d'où il vient | P23 |
 | 4.2 | Frise du défi | À chaque question, une frise de 5 cases montre les étapes et ce qu'on gagne : 3 justes donnent le sachet bonus, 5 justes les écus du sans-faute. L'étape gagnée s'anime avec un son | P29, P84 |
-| 4.3 | Feedback du défi | Revue de chaque réaction du défi dans Le Livre : bonne réponse, erreur, palier, fin de série. Le bilan dit ce qui a été gagné et où cela se trouve | |
+| 4.3 | Feedback du défi | Revue de chaque réaction du défi dans la nouvelle allure : bonne réponse, erreur, palier, fin de série. Le bilan dit ce qui a été gagné et où cela se trouve | |
 | 4.4 | Mémoire d'un mot | Nouvel état « Jamais révisé », puis Esquisse, Encre et Dorure. Le nombre de révisions, et « Prochaine révision dans 3 jours ». L'API expose le nombre de révisions, de façon additive | P33 |
 | 4.5 | Jauge de mémoire | Étude courte de la jauge FSRS sur la fiche, sur maquette, avant de l'ajouter ou de l'écarter | |
 | 4.6 | « Tes mots par palier » | Nouveau titre et une phrase qui dit l'action attendue et comment la lancer | |
@@ -176,7 +176,7 @@ Tout est tranché, sauf ce que le propriétaire a voulu décider sur pièces :
 | Organisation de l'écran Jouer | Phase 2 | Prototype des versions A et B |
 | Forme du paquet | Phase 2 | Prototypes animés : sachet teinté, pochette de papier, pli cacheté |
 | Polices | Phase 1 | Essai sur écran réel de Spectral et IM Fell French Canon |
-| Sons | Après la phase 2 | Écoute du jeu dans Le Livre |
+| Sons | Après la phase 2 | Écoute du jeu dans la nouvelle allure |
 | Matière des cartes par rareté | R&D sans priorité, après la phase 3 | Essais sur quelques cartes |
 | Jauge de mémoire | Phase 4 | Étude sur maquette |
 
