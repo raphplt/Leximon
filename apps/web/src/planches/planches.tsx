@@ -5,12 +5,15 @@ import {
   effects,
   libraryTheme,
   rarityLights,
+  revealBanner,
   revealEffects,
   type ToyIconName,
   type ToyMatterName,
   toyIcons,
 } from "@leximon/tokens";
-import { type CSSProperties, type ReactNode, useRef, useState } from "react";
+import { type RarityStaging, stagingFor } from "@leximon/view-model";
+import { type CSSProperties, type ReactNode, useEffect, useRef, useState } from "react";
+import { CardBack } from "@/booster/card-back";
 import type { PackCollection } from "@/booster/pack-looks";
 import { Avatar } from "@/components/avatar";
 import {
@@ -26,6 +29,7 @@ import {
   StockButton,
   TabBar,
 } from "@/library/play-pieces";
+import { Aura, RarityBanner, Rays, Sheen } from "@/library/reveal-pieces";
 import { LibrarySachet } from "@/library/sachet";
 import { ParticleStage, useStage } from "@/ui/stage";
 import { Kicker, Leaf, Lettering, Toy, ToyIcon } from "@/ui/toy";
@@ -306,47 +310,181 @@ function Letters() {
   );
 }
 
-/** Each rarity's light, on a card-sized target. */
+const CARD_WIDTH = 150;
+const TREMBLES: Readonly<Record<RarityStaging["announce"], number>> = {
+  none: 0,
+  edge: 0,
+  tremble: 1.5,
+  crack: 2.5,
+  eclipse: 3.5,
+};
+
+type Moment = "rest" | "announce" | "waiting" | "turning" | "shown";
+
+function stagingOf(rarity: Rarity): RarityStaging {
+  return stagingFor(rarity, { reducedMotion: false, hurried: false });
+}
+
+function shiver(element: HTMLElement | null, strength: number, ms: number): void {
+  if (element === null || strength === 0) return;
+  const steps = Math.max(2, Math.round(ms / 45));
+  const frames: Keyframe[] = Array.from({ length: steps }, (_, index) => {
+    const reach = (index % 2 === 0 ? 1 : -1) * strength * (0.6 + index / steps);
+    return { translate: `${reach}px 0`, rotate: `${reach * 0.6}deg` };
+  });
+  element.animate([...frames, { translate: "0 0", rotate: "0deg" }], { duration: ms });
+}
+
+/**
+ * One card turned as in the game: its announcement on the back, the player's touch from
+ * Précieuse up, then the light of its rarity as the face shows.
+ */
 function Effects() {
   const stage = useStage();
-  const target = useRef<HTMLDivElement>(null);
-  const [shown, setShown] = useState<Rarity | null>(null);
-  const reveal = (rarity: Rarity) => {
-    const box = target.current?.getBoundingClientRect();
-    if (box === undefined || target.current === null) return;
-    setShown(rarity);
-    const x = box.left + box.width / 2;
-    const y = box.top + box.height / 2;
-    const effect = revealEffects[rarity];
-    const run = () =>
-      stage.reveal(
-        x,
-        y,
-        effect,
-        rarityLights[rarity][0] ?? "white",
-        target.current ?? document.body,
-      );
-    if (effect.drawInMs > 0) {
-      stage.drawIn(x, y, rarityLights[rarity], effect.drawInMs);
-      window.setTimeout(run, effect.drawInMs);
-    } else {
-      run();
-    }
+  const target = useRef<HTMLButtonElement>(null);
+  const card = useRef<HTMLDivElement>(null);
+  const timers = useRef<number[]>([]);
+  const [rarity, setRarity] = useState<Rarity>("common");
+  const [moment, setMoment] = useState<Moment>("rest");
+  const [turned, setTurned] = useState(false);
+  const [lifted, setLifted] = useState(false);
+  const [stamp, setStamp] = useState(0);
+  const [sweep, setSweep] = useState(0);
+  const staging = stagingOf(rarity);
+  const effect = revealEffects[rarity];
+  const light = rarityLights[rarity][0] ?? "white";
+  const banner = revealBanner[rarity];
+
+  const later = (ms: number, action: () => void) => {
+    timers.current.push(window.setTimeout(action, ms));
   };
+  useEffect(() => () => timers.current.forEach(window.clearTimeout), []);
+
+  const center = () => {
+    const box = target.current?.getBoundingClientRect();
+    return box === undefined ? null : { x: box.left + box.width / 2, y: box.top + box.height / 2 };
+  };
+
+  const turnOver = (chosen: Rarity) => {
+    const { flipMs, spotlight } = stagingOf(chosen);
+    setMoment("turning");
+    setTurned(true);
+    card.current?.animate([{ scale: "1" }, { scale: "1.18" }, { scale: "1" }], {
+      duration: flipMs,
+      easing: "ease-out",
+    });
+    later(flipMs / 2, () => {
+      const point = center();
+      if (point !== null) {
+        stage.reveal(
+          point.x,
+          point.y,
+          revealEffects[chosen],
+          rarityLights[chosen][0] ?? "white",
+          target.current ?? document.body,
+        );
+      }
+      setSweep((value) => value + 1);
+      if (revealBanner[chosen] !== undefined) setStamp((value) => value + 1);
+      setLifted(spotlight);
+      setMoment("shown");
+    });
+  };
+
+  const draw = (chosen: Rarity) => {
+    timers.current.forEach(window.clearTimeout);
+    timers.current = [];
+    setRarity(chosen);
+    setTurned(false);
+    setLifted(false);
+    const chosenStaging = stagingOf(chosen);
+    // The face must be hidden again before it turns.
+    later(30, () => {
+      if (chosenStaging.flip === "instant") {
+        turnOver(chosen);
+        return;
+      }
+      setMoment("announce");
+      shiver(card.current, TREMBLES[chosenStaging.announce], chosenStaging.announceMs);
+      later(chosenStaging.announceMs, () => {
+        if (chosenStaging.flip === "auto") turnOver(chosen);
+        else setMoment("waiting");
+      });
+    });
+  };
+
+  const touch = () => {
+    if (moment !== "waiting") return;
+    setMoment("turning");
+    if (effect.drawInMs > 0) {
+      const point = center();
+      if (point !== null) stage.drawIn(point.x, point.y, rarityLights[rarity], effect.drawInMs);
+      shiver(card.current, TREMBLES[staging.announce] * 1.6, effect.drawInMs);
+    }
+    later(effect.drawInMs, () => turnOver(rarity));
+  };
+
+  const announced = moment === "announce" || moment === "waiting" || moment === "turning";
+  const auraStrength =
+    moment === "rest" || (staging.announce === "none" && moment !== "shown")
+      ? 0
+      : announced
+        ? 0.9
+        : rarity === "common"
+          ? 0.25
+          : 0.6;
+
   return (
     <div className={styles.effects}>
-      <div ref={target} className={styles.target} data-rarity={shown ?? undefined}>
-        <Lettering>{shown === null ? "Une carte" : RARITY_NAMES[shown]}</Lettering>
+      <p className={styles.effectsNote}>
+        Dans le jeu, ces effets jouent à l'ouverture d'un sachet, quand chaque carte se retourne.
+        Plus la carte est rare, plus son annonce dure, et à partir de Précieuse c'est toi qui la
+        retournes.
+      </p>
+      <div className={styles.revealZone}>
+        <Aura size={CARD_WIDTH * 2.6} color={light} strength={auraStrength} />
+        <Rays size={CARD_WIDTH * 3} color={light} shown={moment === "shown" && effect.rays} />
+        <button
+          ref={target}
+          type="button"
+          className={styles.demoButton}
+          onClick={touch}
+          disabled={moment !== "waiting"}
+          aria-label="Retourner la carte"
+          data-lifted={lifted || undefined}
+        >
+          <div
+            ref={card}
+            className={styles.demoCard}
+            data-turned={turned || undefined}
+            style={{ transitionDuration: `${staging.flipMs}ms` }}
+          >
+            <div className={styles.demoBack}>
+              <CardBack rarity={rarity} width={CARD_WIDTH} />
+            </div>
+            <Leaf className={styles.demoFace}>
+              <span className={styles.demoRarity}>{RARITY_NAMES[rarity]}</span>
+              <span className={styles.demoWord}>abajoue</span>
+              <Sheen sweep={sweep} />
+            </Leaf>
+          </div>
+        </button>
+        {banner !== undefined && (
+          <RarityBanner text={RARITY_NAMES[rarity]} color={banner} stamp={stamp} />
+        )}
       </div>
+      <p className={styles.effectsHint}>
+        {moment === "waiting" ? "Touche la carte pour la retourner." : "\u00a0"}
+      </p>
       <div className={styles.row}>
-        {RARITIES.map((rarity) => (
+        {RARITIES.map((choice) => (
           <Toy
-            key={rarity}
+            key={choice}
             matter="paper"
             className={styles.effectButton}
-            onClick={() => reveal(rarity)}
+            onClick={() => draw(choice)}
           >
-            <Lettering>{RARITY_NAMES[rarity]}</Lettering>
+            <Lettering>{RARITY_NAMES[choice]}</Lettering>
           </Toy>
         ))}
       </div>

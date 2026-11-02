@@ -11,6 +11,8 @@ import {
   type Particle,
   particleCap,
   type RevealEffect,
+  rarityLights,
+  revealEffects,
   sizeOf,
 } from "@leximon/tokens";
 import {
@@ -20,7 +22,9 @@ import {
   Picture,
   Skia,
   type SkPath,
+  type SkShader,
   StrokeCap,
+  TileMode,
 } from "@shopify/react-native-skia";
 import { createContext, type ReactNode, useContext, useEffect, useMemo, useRef } from "react";
 import { StyleSheet, View, type ViewInstance } from "react-native";
@@ -87,6 +91,35 @@ function leafPath(): SkPath {
     .detach();
 }
 
+/** Every color a glow may take: its gradient is built once, never during a frame. */
+function glowColors(): readonly string[] {
+  const bursts: readonly BurstSettings[] = [
+    effects.dust.burst,
+    effects.charge.burst,
+    ...effects.burst,
+    effects.land,
+    effects.reward,
+    ...Object.values(revealEffects).flatMap((effect) => effect.bursts),
+  ];
+  const colors = bursts
+    .filter((burst) => burst.kinds.includes("glow"))
+    .flatMap((burst) => burst.colors);
+  return [...new Set([...colors, ...Object.values(rarityLights).flat()])];
+}
+
+/** A soft light of radius 1 around the origin, full at its heart and gone at its edge. */
+function glowShader(color: string): SkShader {
+  const full = Skia.Color(color);
+  const clear = Float32Array.of(full[0] ?? 1, full[1] ?? 1, full[2] ?? 1, 0);
+  return Skia.Shader.MakeRadialGradient(
+    { x: 0, y: 0 },
+    1,
+    [full, full, clear],
+    [0, 0.25, 1],
+    TileMode.Clamp,
+  );
+}
+
 /**
  * The layer over the stage where the light of « La Bibliothèque » is drawn by Skia. Particles
  * move and are drawn on the UI thread; the JavaScript thread only asks for bursts. Nothing is
@@ -118,6 +151,10 @@ export function ParticleStage({
   const shakeX = useSharedValue(0);
   const shakeY = useSharedValue(0);
   const shapes = useMemo(() => ({ star: starPath(), leaf: leafPath() }), []);
+  const glows = useMemo(
+    () => Object.fromEntries(glowColors().map((color) => [color, glowShader(color)])),
+    [],
+  );
 
   useEffect(() => {
     dusty.value = dust && !reduced;
@@ -147,15 +184,29 @@ export function ParticleStage({
     clock.value;
     const paint = Skia.Paint();
     paint.setAntiAlias(true);
+    const glowPaint = Skia.Paint();
+    glowPaint.setAntiAlias(true);
+    glowPaint.setBlendMode(BlendMode.Plus);
     return createPicture((canvas) => {
       for (const particle of particles.value) {
         const opacity = Math.max(0, opacityOf(particle));
         const radius = sizeOf(particle);
+        const shader = particle.kind === "glow" ? glows[particle.color] : undefined;
+        if (shader !== undefined) {
+          glowPaint.setShader(shader);
+          glowPaint.setAlphaf(opacity);
+          canvas.save();
+          canvas.translate(particle.x, particle.y);
+          canvas.scale(radius * 3, radius * 3);
+          canvas.drawCircle(0, 0, 1, glowPaint);
+          canvas.restore();
+          continue;
+        }
         paint.setColor(Skia.Color(particle.color));
         const alpha = paint.getAlphaf();
         paint.setBlendMode(particle.kind === "leaf" ? BlendMode.SrcOver : BlendMode.Plus);
         if (particle.kind === "glow") {
-          // Three discs instead of a blurred one: a blur per particle and per frame is too slow.
+          // A color with no gradient built: three discs, rather than a blur in every frame.
           for (const [scale, weight] of [
             [3, 0.18],
             [1.6, 0.35],

@@ -201,14 +201,85 @@
   gap: var(--lx-s10);
 }
 
-.target {
-  display: grid;
-  place-items: center;
+.effectsNote {
+  max-width: 420px;
+  margin: 0;
+  font-size: var(--lx-size-body);
+  line-height: 1.45;
+}
+
+.revealZone {
+  position: relative;
   width: 150px;
   height: 210px;
-  border: 2px dashed var(--lx-desk-rule);
-  border-radius: var(--lx-radius-card);
-  font-size: var(--lx-size-subtitle);
+  margin: var(--lx-s16) 0;
+}
+
+.demoButton {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+  perspective: 1200px;
+  transition: scale 0.4s cubic-bezier(0.3, 1.5, 0.5, 1);
+}
+
+.demoButton:enabled {
+  cursor: pointer;
+}
+
+.demoButton[data-lifted] {
+  scale: 1.12;
+}
+
+.demoCard {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+  transition: transform cubic-bezier(0.65, 0, 0.35, 1);
+}
+
+.demoCard[data-turned] {
+  transform: rotateY(180deg);
+}
+
+.demoBack,
+.demoFace {
+  position: absolute;
+  inset: 0;
+  backface-visibility: hidden;
+}
+
+.demoFace {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--lx-s5);
+  overflow: hidden;
+  transform: rotateY(180deg);
+}
+
+.demoRarity {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+
+.demoWord {
+  font:
+    900 24px / 1 var(--font-display),
+    serif;
+}
+
+.effectsHint {
+  margin: 0;
+  font-weight: 800;
 }
 
 .effectButton {

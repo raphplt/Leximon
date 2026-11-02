@@ -1,14 +1,18 @@
 import { RARITIES, type Rarity } from "@leximon/core";
 import {
+  cardSize,
   effects,
   rarityLights,
+  revealBanner,
   revealEffects,
   type ToyIconName,
   type ToyMatterName,
   toyIcons,
 } from "@leximon/tokens";
-import { type ReactNode, useRef, useState } from "react";
+import { type RarityStaging, stagingFor } from "@leximon/view-model";
+import { type ReactNode, useEffect, useRef, useState } from "react";
 import {
+  Pressable,
   ScrollView,
   StyleSheet,
   Text,
@@ -16,7 +20,16 @@ import {
   View,
   type ViewInstance,
 } from "react-native";
+import Animated, {
+  Easing,
+  useAnimatedStyle,
+  useSharedValue,
+  withSequence,
+  withSpring,
+  withTiming,
+} from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { CardBack } from "@/cards/card-back";
 import {
   CollectionTitle,
   Desk,
@@ -31,6 +44,7 @@ import {
   StockButton,
   TabBar,
 } from "@/library/play-pieces";
+import { Aura, RarityBanner, Rays, Sheen } from "@/library/reveal-pieces";
 import { LibrarySachet } from "@/library/sachet";
 import { colors, fontSizes, fonts, space } from "@/theme";
 import { Avatar } from "@/ui/avatar";
@@ -312,40 +326,192 @@ function Letters() {
   );
 }
 
-/** Each rarity's light, on a card-sized target. */
+const CARD_WIDTH = 150;
+const CARD_HEIGHT = (CARD_WIDTH * cardSize.height) / cardSize.width;
+const TREMBLES: Readonly<Record<RarityStaging["announce"], number>> = {
+  none: 0,
+  edge: 0,
+  tremble: 1.5,
+  crack: 2.5,
+  eclipse: 3.5,
+};
+
+type Moment = "rest" | "announce" | "waiting" | "turning" | "shown";
+
+/**
+ * One card turned as in the game: its announcement on the back, the player's touch from
+ * Précieuse up, then the light of its rarity as the face shows.
+ */
 function Effects() {
   const stage = useStage();
   const target = useRef<ViewInstance>(null);
-  const [shown, setShown] = useState<Rarity | null>(null);
-  const reveal = async (rarity: Rarity) => {
-    const box = await measure(target.current);
-    if (box === null) return;
-    setShown(rarity);
-    const x = box.x + box.width / 2;
-    const y = box.y + box.height / 2;
-    const effect = revealEffects[rarity];
-    const run = () => stage.reveal(x, y, effect, rarityLights[rarity][0] ?? colors.pageInk);
-    if (effect.drawInMs > 0) {
-      stage.drawIn(x, y, rarityLights[rarity], effect.drawInMs);
-      setTimeout(run, effect.drawInMs);
-    } else {
-      run();
-    }
+  const timers = useRef<ReturnType<typeof setTimeout>[]>([]);
+  const [rarity, setRarity] = useState<Rarity>("common");
+  const [moment, setMoment] = useState<Moment>("rest");
+  const [stamp, setStamp] = useState(0);
+  const [sweep, setSweep] = useState(0);
+  const turn = useSharedValue(0);
+  const tremble = useSharedValue(0);
+  const pop = useSharedValue(1);
+  const lift = useSharedValue(1);
+  const staging = stagingFor(rarity, { reducedMotion: false, hurried: false });
+  const effect = revealEffects[rarity];
+  const light = rarityLights[rarity][0] ?? colors.pageInk;
+  const banner = revealBanner[rarity];
+
+  const later = (ms: number, action: () => void) => {
+    timers.current.push(setTimeout(action, ms));
   };
+  useEffect(() => () => timers.current.forEach(clearTimeout), []);
+
+  const shiver = (strength: number, ms: number) => {
+    if (strength === 0) return;
+    const steps = Math.max(2, Math.round(ms / 45));
+    tremble.value = withSequence(
+      ...Array.from({ length: steps }, (_, index) =>
+        withTiming((index % 2 === 0 ? 1 : -1) * strength * (0.6 + index / steps), {
+          duration: 45,
+        }),
+      ),
+      withTiming(0, { duration: 45 }),
+    );
+  };
+
+  const turnOver = (chosen: Rarity, flipMs: number) => {
+    setMoment("turning");
+    pop.value = withSequence(
+      withTiming(1.18, { duration: flipMs / 2 }),
+      withTiming(1, { duration: flipMs / 2, easing: Easing.out(Easing.back(2)) }),
+    );
+    turn.value = withTiming(1, { duration: flipMs, easing: Easing.inOut(Easing.cubic) });
+    later(flipMs / 2, async () => {
+      const box = await measure(target.current);
+      if (box !== null) {
+        const chosenLight = rarityLights[chosen][0] ?? colors.pageInk;
+        stage.reveal(
+          box.x + box.width / 2,
+          box.y + box.height / 2,
+          revealEffects[chosen],
+          chosenLight,
+        );
+      }
+      setSweep((value) => value + 1);
+      if (revealBanner[chosen] !== undefined) setStamp((value) => value + 1);
+      if (stagingFor(chosen, { reducedMotion: false, hurried: false }).spotlight) {
+        lift.value = withSpring(1.12, { damping: 10 });
+      }
+      setMoment("shown");
+    });
+  };
+
+  const draw = async (chosen: Rarity) => {
+    timers.current.forEach(clearTimeout);
+    timers.current = [];
+    setRarity(chosen);
+    turn.value = 0;
+    lift.value = withTiming(1, { duration: 200 });
+    const chosenStaging = stagingFor(chosen, { reducedMotion: false, hurried: false });
+    if (chosenStaging.flip === "instant") {
+      turnOver(chosen, chosenStaging.flipMs);
+      return;
+    }
+    setMoment("announce");
+    shiver(TREMBLES[chosenStaging.announce], chosenStaging.announceMs);
+    later(chosenStaging.announceMs, () => {
+      if (chosenStaging.flip === "auto") turnOver(chosen, chosenStaging.flipMs);
+      else setMoment("waiting");
+    });
+  };
+
+  const touch = async () => {
+    if (moment !== "waiting") return;
+    setMoment("turning");
+    if (effect.drawInMs > 0) {
+      const box = await measure(target.current);
+      if (box !== null) {
+        stage.drawIn(
+          box.x + box.width / 2,
+          box.y + box.height / 2,
+          rarityLights[rarity],
+          effect.drawInMs,
+        );
+      }
+      shiver(TREMBLES[staging.announce] * 1.6, effect.drawInMs);
+    }
+    later(effect.drawInMs, () => turnOver(rarity, staging.flipMs));
+  };
+
+  const card = useAnimatedStyle(() => ({
+    transform: [
+      { translateX: tremble.value },
+      { rotate: `${tremble.value * 0.6}deg` },
+      { scale: pop.value * lift.value },
+    ],
+  }));
+  const back = useAnimatedStyle(() => ({
+    opacity: turn.value < 0.5 ? 1 : 0,
+    transform: [{ perspective: 1200 }, { rotateY: `${turn.value * 180}deg` }],
+  }));
+  const face = useAnimatedStyle(() => ({
+    opacity: turn.value >= 0.5 ? 1 : 0,
+    transform: [{ perspective: 1200 }, { rotateY: `${(turn.value - 1) * 180}deg` }],
+  }));
+  const announced = moment === "announce" || moment === "waiting" || moment === "turning";
+  const auraStrength =
+    moment === "rest" || (staging.announce === "none" && moment !== "shown")
+      ? 0
+      : announced
+        ? 0.9
+        : rarity === "common"
+          ? 0.25
+          : 0.6;
+
   return (
     <View style={styles.effects}>
-      <View ref={target} style={styles.target}>
-        <Lettering size={18}>{shown === null ? "Une carte" : RARITY_NAMES[shown]}</Lettering>
+      <Text style={styles.effectsNote}>
+        Dans le jeu, ces effets jouent à l'ouverture d'un sachet, quand chaque carte se retourne.
+        Plus la carte est rare, plus son annonce dure, et à partir de Précieuse c'est toi qui la
+        retournes.
+      </Text>
+      <View style={styles.revealZone}>
+        <Aura size={CARD_WIDTH * 2.6} color={light} strength={auraStrength} />
+        <Rays size={CARD_WIDTH * 3} color={light} shown={moment === "shown" && effect.rays} />
+        <Pressable
+          ref={target}
+          onPress={() => void touch()}
+          disabled={moment !== "waiting"}
+          accessibilityRole="button"
+          accessibilityLabel="Retourner la carte"
+        >
+          <Animated.View style={[styles.demoCard, card]}>
+            <Animated.View style={[StyleSheet.absoluteFill, back]}>
+              <CardBack width={CARD_WIDTH} tone="night" />
+            </Animated.View>
+            <Animated.View style={[StyleSheet.absoluteFill, face]}>
+              <Leaf style={[styles.demoFace, { borderColor: light }]}>
+                <Text style={styles.demoRarity}>{RARITY_NAMES[rarity].toUpperCase()}</Text>
+                <Text style={styles.demoWord}>abajoue</Text>
+                <Sheen width={CARD_WIDTH} sweep={sweep} />
+              </Leaf>
+            </Animated.View>
+          </Animated.View>
+        </Pressable>
+        {banner !== undefined && (
+          <RarityBanner text={RARITY_NAMES[rarity]} color={banner} stamp={stamp} />
+        )}
       </View>
+      <Text style={styles.effectsHint}>
+        {moment === "waiting" ? "Touche la carte pour la retourner." : " "}
+      </Text>
       <View style={styles.row}>
-        {RARITIES.map((rarity) => (
+        {RARITIES.map((choice) => (
           <Toy
-            key={rarity}
+            key={choice}
             matter="paper"
             style={styles.effectButton}
-            onPress={() => void reveal(rarity)}
+            onPress={() => void draw(choice)}
           >
-            <Lettering size={14}>{RARITY_NAMES[rarity]}</Lettering>
+            <Lettering size={14}>{RARITY_NAMES[choice]}</Lettering>
           </Toy>
         ))}
       </View>
@@ -390,15 +556,38 @@ const styles = StyleSheet.create({
     lineHeight: 23,
   },
   effects: { gap: 16, alignItems: "center" },
-  target: {
-    width: 150,
-    height: 210,
+  effectsNote: {
+    color: colors.pageInk,
+    fontFamily: fonts.text.regular,
+    fontSize: fontSizes.body,
+    lineHeight: 21,
+  },
+  revealZone: {
+    width: CARD_WIDTH,
+    height: CARD_HEIGHT,
+    marginVertical: 40,
     alignItems: "center",
     justifyContent: "center",
-    borderRadius: 14,
-    borderWidth: 2.5,
-    borderColor: colors.pageInkFaint,
-    borderStyle: "dashed",
+  },
+  demoCard: { width: CARD_WIDTH, height: CARD_HEIGHT },
+  demoFace: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 10,
+    borderWidth: 4,
+  },
+  demoRarity: {
+    color: colors.paperInk,
+    fontFamily: fonts.ui.extrabold,
+    fontSize: 10,
+    letterSpacing: 2,
+  },
+  demoWord: { color: colors.paperInk, fontFamily: fonts.display, fontSize: 24 },
+  effectsHint: {
+    color: colors.pageInk,
+    fontFamily: fonts.ui.extrabold,
+    fontSize: fontSizes.body,
   },
   effectButton: { height: 40, paddingHorizontal: 12 },
 });

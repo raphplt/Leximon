@@ -88,12 +88,14 @@ Les polices de Le Livre (Leximon Canon et Spectral) sont retirées. Le web ne ch
 
 | Rareté | Annonce | Face |
 |---|---|---|
-| Commune | Brève | Se retourne seule, un peu de poussière |
+| Commune | Brève | Se retourne seule, quelques reflets d'or autour d'elle |
 | Peu commune | Brève | Se retourne seule, étoiles vertes |
 | Rare | Le dos luit orange | Se retourne seule, onde et éclats, petite secousse |
 | Précieuse | Le dos luit bleu | Le joueur la retourne, onde, éclats, secousse |
 | Épique | Le dos doré tremble et attire la lumière | Le joueur la retourne, rayons, flash léger, secousse, quelques feuilles d'or, bandeau « Épique » |
 | Légendaire | Tremblement plus long, la lumière est aspirée | Le joueur la retourne, rayons, flash, forte secousse, pluie de feuilles d'or, bandeau « Légendaire », la carte s'agrandit |
+
+Chaque face qui se retourne est traversée d'un reflet, et la lumière de sa rareté luit derrière la carte pendant l'annonce. La Légendaire brille en or blanc et nacre, pas en arc-en-ciel : une pluie de couleurs vives faisait fête foraine (retour du propriétaire, le 2026-11-02).
 
 Les durées d'annonce actuelles restent. Les sons synthétisés restent aussi : leur choix est reporté (voir « À décider » dans les règles du jeu).
 
@@ -149,7 +151,7 @@ Le Livre est sur `main` derrière le réglage (commits du 2026-11-01). Le propri
 
 ### 1.4 Le mouvement et les particules
 
-**Fait le 2026-11-02, sauf la mesure.** Le moteur est écrit une seule fois, en fonctions pures dans `packages/tokens/src/particles.ts`, que le canvas du web et Skia (sur le fil d'interface) appellent tous deux ; les réglages des effets sont dans `effects.ts`. Sur le mobile, une lueur se dessine en trois disques plutôt qu'en flou, trop lent à chaque image. **Reste la mesure sur un Android modeste**, par le propriétaire, sur les planches.
+**Fait le 2026-11-02.** Le moteur est écrit une seule fois, en fonctions pures dans `packages/tokens/src/particles.ts`, que le canvas du web et Skia (sur le fil d'interface) appellent tous deux ; les réglages des effets sont dans `effects.ts`. Sur le mobile, chaque lueur est un dégradé préparé une fois par couleur : un flou à chaque image serait trop lent, et trois disques empilés dessinaient des cibles. Le propriétaire a jugé les planches fluides sur son téléphone le 2026-11-02, avant le passage aux dégradés.
 
 - Courbes, durées et table des vibrations dans `packages/tokens`.
 - Le comportement d'appui dans `Toy` sur les deux plateformes.
@@ -159,7 +161,7 @@ Le Livre est sur `main` derrière le réglage (commits du 2026-11-01). Le propri
 
 ### 1.5 Les pièces de Jouer
 
-**Fait le 2026-11-02.** Les pièces vivent dans `apps/web/src/library/` et `apps/mobile/src/library/`, sans rien savoir du jeu ; `/planches` les assemble en un écran Jouer qu'on peut toucher, avec l'ouverture du sachet et l'effet de chaque rareté. Écart : React Native ne sait pas cerner un texte, le lettrage du mobile pose donc huit copies sombres autour des lettres.
+**Fait le 2026-11-02.** Les pièces vivent dans `apps/web/src/library/` et `apps/mobile/src/library/`, sans rien savoir du jeu ; `/planches` les assemble en un écran Jouer qu'on peut toucher, avec l'ouverture du sachet et une carte qui se retourne au rythme du jeu pour chaque rareté (annonce, toucher à partir de Précieuse, puis l'effet). Écart : React Native ne sait pas cerner un texte, le lettrage du mobile pose donc huit copies sombres autour des lettres.
 
 Seulement ce dont l'écran Jouer et l'ouverture ont besoin : bandeau du haut (portrait, médaille, barre d'XP, stock, courrier), barre d'onglets avec Jouer surélevé, tuiles latérales avec pastilles et cadenas, bouton principal, bulle d'information, sachet, lettrage cerné. Les autres pièces viennent avec leurs écrans.
 

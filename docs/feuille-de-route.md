@@ -4,7 +4,7 @@ Où en est Leximon, ce qui reste avant la bêta publique (début décembre 2026 
 
 **Dernière mise à jour :** 2026-11-01.
 
-**Le prochain grand chantier :** les retours du game designer et la refonte de la direction artistique, arbitrés le 2026-11-01. L'ordre est dans [retours-game-designer.md](cahiers-des-charges/retours-game-designer.md) : six corrections immédiates, puis la direction artistique ([direction-artistique.md](cahiers-des-charges/direction-artistique.md)), puis lisibilité, économie, social et duel. Les six corrections sont faites (2026-11-01), pas encore en ligne. La direction « Le Livre » a été construite derrière le réglage, puis refusée sur ses planches le 2026-11-02 (« ça ne fait pas jeu vidéo, ça fait site web ») ; le propriétaire a choisi le même jour « La Bibliothèque » (D-056), sur la maquette `rnd/da-jeu/bibliotheque.html`. La phase 1 (le socle : Le Livre retiré, salle, objets, particules, pièces de Jouer sur `/planches`) est faite le 2026-11-02, sauf la mesure sur un Android modeste. Prochaine étape : l'écran Jouer et l'ouverture dans le vrai jeu, derrière le réglage.
+**Le prochain grand chantier :** les retours du game designer et la refonte de la direction artistique, arbitrés le 2026-11-01. L'ordre est dans [retours-game-designer.md](cahiers-des-charges/retours-game-designer.md) : six corrections immédiates, puis la direction artistique ([direction-artistique.md](cahiers-des-charges/direction-artistique.md)), puis lisibilité, économie, social et duel. Les six corrections sont faites (2026-11-01), pas encore en ligne. La direction « Le Livre » a été construite derrière le réglage, puis refusée sur ses planches le 2026-11-02 (« ça ne fait pas jeu vidéo, ça fait site web ») ; le propriétaire a choisi le même jour « La Bibliothèque » (D-056), sur la maquette `rnd/da-jeu/bibliotheque.html`. La phase 1 (le socle : Le Livre retiré, salle, objets, particules, pièces de Jouer sur `/planches`) est faite le 2026-11-02 et jugée fluide sur le téléphone du propriétaire ; les effets de Commune et de Légendaire, jugés « cheap », ont été repris le même jour. Prochaine étape : l'écran Jouer et l'ouverture dans le vrai jeu, derrière le réglage.
 
 ## En une phrase
 
@@ -120,7 +120,7 @@ Dans l'ordre où elles débloquent le plus :
 ## Prochaines étapes conseillées
 
 1. Mettre la phase 0 en ligne et la recetter sur un téléphone : vérifiée dans le navigateur, seulement typée côté mobile.
-2. Direction artistique « La Bibliothèque » : mesurer les particules Skia sur un Android modeste, puis construire l'écran Jouer et l'ouverture dans le vrai jeu, que le propriétaire juge sur son téléphone avant le reste.
+2. Direction artistique « La Bibliothèque » : construire l'écran Jouer et l'ouverture dans le vrai jeu, que le propriétaire juge sur son téléphone avant le reste.
 3. Suivre `/admin/mesure` et `/admin/retours` à mesure que les invités arrivent ; vérifier `cf-placement: local-CDG` et le p95 de l'ouverture dans le résumé Discord ([rnd/charge.md](rnd/charge.md)).
 4. Le mobile : recette complète sur Android et iPhone ([recette-mobile.md](recette-mobile.md)). Avant la première publication sur les stores : un compte de démonstration pour l'examen (la connexion par code l'empêche), les captures et l'image de présentation dans la nouvelle allure, l'adresse App Store et les liens universels. Les textes et réponses sont prêts ([fiches-stores.md](fiches-stores.md)), premier build de production Android le 2026-10-27.
 5. La quatrième collection, après la bascule.

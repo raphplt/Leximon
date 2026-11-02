@@ -180,7 +180,7 @@ const styles = StyleSheet.create({
     left: -WIDTH * 0.4,
     right: -WIDTH * 0.4,
     backgroundImage:
-      "radial-gradient(closest-side, rgba(255, 200, 110, 0.4), rgba(255, 160, 60, 0.1) 60%, transparent)",
+      "radial-gradient(ellipse 50% 50% at 50% 50%, rgba(255, 200, 110, 0.4), rgba(255, 160, 60, 0.1) 60%, transparent)",
   },
   shadow: {
     position: "absolute",
@@ -188,7 +188,8 @@ const styles = StyleSheet.create({
     right: WIDTH * 0.18,
     bottom: -26,
     height: 18,
-    backgroundImage: "radial-gradient(closest-side, rgba(0, 0, 0, 0.55), transparent)",
+    backgroundImage:
+      "radial-gradient(ellipse 50% 50% at 50% 50%, rgba(0, 0, 0, 0.55), transparent)",
   },
   sachet: {
     ...StyleSheet.absoluteFill,

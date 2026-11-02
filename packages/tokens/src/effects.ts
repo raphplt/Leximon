@@ -47,7 +47,17 @@ export const rarityLights: Readonly<Record<Rarity, readonly string[]>> = {
   rare: ["#FF8A5C", "#F0603C", "#FFD2B8"],
   precious: ["#8FB0FF", "#3361E8", "#D6E2FF"],
   epic: ["#FFE08A", "#FFC23D", "#FFF4CF", "#FF9D2E"],
-  legendary: ["#FF9AD5", "#FFD36E", "#A5FF9A", "#7FE6FF", "#B49CFF", "#FFFFFF"],
+  // White gold with a pearl sheen: a rainbow of saturated lights reads as a party, not a treasure.
+  legendary: ["#FFFFFF", "#FFF4CF", "#FFE08A", "#DDF6FF", "#FFE1F0"],
+};
+
+/** The band of light that sweeps a card's face as it settles, at its brightest. */
+export const revealSheen = "rgba(255, 255, 255, 0.7)";
+
+/** The rarity's name stamped over the card, for the two highest. */
+export const revealBanner: Readonly<Partial<Record<Rarity, string>>> = {
+  epic: "#F6D47A",
+  legendary: "#DDF6FF",
 };
 
 const GOLD_LEAF = ["#F6D47A", "#E0B04A", "#FBECCB"];
@@ -166,30 +176,62 @@ export interface RevealEffect {
   readonly drawInMs: number;
 }
 
-function lightBurst(rarity: Rarity, count: number, kinds: readonly ParticleKind[]): BurstSettings {
+/** A soft light swelling on the card as it turns, under the sparks. */
+function halo(colors: readonly string[], count: number, size: Range): BurstSettings {
   return {
     count,
-    kinds,
+    kinds: ["glow"],
+    colors,
+    speed: [0, 90],
+    life: [0.5, 1],
+    size,
+    grow: 0.6,
+    drag: 0.9,
+  };
+}
+
+/** Sparks thrown off the card, as from a struck flint. */
+function sparks(rarity: Rarity, count: number, speed: Range): BurstSettings {
+  return {
+    count,
+    kinds: ["spark"],
     colors: rarityLights[rarity],
-    speed: [200, 900],
-    life: [0.5, 1.3],
-    size: [2, 6],
-    gravity: 350,
+    speed,
+    life: [0.35, 0.8],
+    size: [1.5, 3.5],
+    gravity: 380,
+    drag: 0.94,
+  };
+}
+
+/** Stars that linger and rise a little after the sparks are gone. */
+function twinkles(rarity: Rarity, count: number): BurstSettings {
+  return {
+    count,
+    kinds: ["star"],
+    colors: rarityLights[rarity],
+    speed: [40, 220],
+    life: [0.9, 1.8],
+    size: [3, 7],
+    gravity: -30,
     drag: 0.95,
   };
 }
 
 export const revealEffects: Readonly<Record<Rarity, RevealEffect>> = {
+  // Most cards of a sachet: a few glints off its edges, nothing that tires on the third one.
+  // They start around the card, where the dark of the room shows them, not on its cream face.
   common: {
     bursts: [
       {
-        count: 10,
-        kinds: ["glow"],
-        colors: [DUST],
-        speed: [40, 120],
-        life: [0.4, 0.7],
-        size: [5, 9],
-        grow: 1.2,
+        count: 14,
+        kinds: ["star"],
+        colors: ["#F6D47A", "#FFF6E0"],
+        spread: 80,
+        speed: [50, 160],
+        life: [0.5, 0.9],
+        size: [3, 5.5],
+        gravity: 60,
       },
     ],
     rain: 0,
@@ -202,9 +244,10 @@ export const revealEffects: Readonly<Record<Rarity, RevealEffect>> = {
   uncommon: {
     bursts: [
       {
-        count: 26,
+        count: 24,
         kinds: ["star"],
         colors: rarityLights.uncommon,
+        spread: 50,
         speed: [60, 260],
         life: [0.4, 0.9],
         size: [3, 6],
@@ -220,15 +263,9 @@ export const revealEffects: Readonly<Record<Rarity, RevealEffect>> = {
   },
   rare: {
     bursts: [
-      {
-        count: 50,
-        kinds: ["spark", "star"],
-        colors: rarityLights.rare,
-        speed: [150, 520],
-        life: [0.4, 0.9],
-        size: [2, 5],
-        gravity: 300,
-      },
+      halo(["rgba(255, 138, 92, 0.45)"], 3, [8, 12]),
+      sparks("rare", 34, [150, 520]),
+      twinkles("rare", 12),
     ],
     rain: 0,
     ring: 3.5,
@@ -238,7 +275,11 @@ export const revealEffects: Readonly<Record<Rarity, RevealEffect>> = {
     drawInMs: 0,
   },
   precious: {
-    bursts: [lightBurst("precious", 60, ["spark", "star"])],
+    bursts: [
+      halo(["rgba(143, 176, 255, 0.5)"], 3, [9, 13]),
+      sparks("precious", 44, [200, 700]),
+      twinkles("precious", 16),
+    ],
     rain: 0,
     ring: 4.5,
     shake: { strength: 6, ms: 340 },
@@ -247,7 +288,11 @@ export const revealEffects: Readonly<Record<Rarity, RevealEffect>> = {
     drawInMs: 0,
   },
   epic: {
-    bursts: [lightBurst("epic", 80, ["spark", "glow", "star"])],
+    bursts: [
+      halo(["rgba(255, 224, 138, 0.5)"], 4, [10, 15]),
+      sparks("epic", 60, [250, 900]),
+      twinkles("epic", 22),
+    ],
     rain: 30,
     ring: 6,
     shake: { strength: 8, ms: 420 },
@@ -256,8 +301,12 @@ export const revealEffects: Readonly<Record<Rarity, RevealEffect>> = {
     drawInMs: 650,
   },
   legendary: {
-    bursts: [lightBurst("legendary", 130, ["spark", "glow", "star"])],
-    rain: 140,
+    bursts: [
+      halo(["rgba(255, 244, 207, 0.55)", "rgba(221, 246, 255, 0.5)"], 5, [12, 18]),
+      sparks("legendary", 90, [300, 1050]),
+      twinkles("legendary", 34),
+    ],
+    rain: 110,
     ring: 9,
     shake: { strength: 14, ms: 650 },
     flash: { opacity: 0.95, ms: 650 },
