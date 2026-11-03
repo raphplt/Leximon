@@ -68,7 +68,7 @@ Chacune se teste sur le web et le mobile. Aucune ne change de règle du jeu.
 | 4.5 | Jauge de mémoire | Étude courte de la jauge FSRS sur la fiche, sur maquette, avant de l'ajouter ou de l'écarter | |
 | 4.6 | « Tes mots par palier » | Nouveau titre et une phrase qui dit l'action attendue et comment la lancer | |
 | 4.7 | Prochaine étape | Bandeau et fins d'action ne montrent que la prochaine récompense. La table des matières complète reste sur Niveaux | |
-| 4.8 | Album | Tri alphabétique par défaut, tri par rareté ou par date au choix, barre de lettres, en-tête fixe, cartes manquantes en fin de liste pour ne pas révéler leurs initiales. Une lettre saute à sa position, sans défilement linéaire | |
+| 4.8 | Album | Tri alphabétique par défaut, tri par rareté ou par date au choix, barre de lettres, en-tête fixe, cartes manquantes en fin de liste pour ne pas révéler leurs initiales. Une lettre saute à sa position, sans défilement linéaire. Fait le 2026-11-03, web et mobile | |
 | 4.9 | Minimiser les clics | Revue de chaque parcours principal, avec le nombre de touches avant et après : ouvrir, réviser, trouver une carte, proposer un échange | |
 
 **Points d'attention :** l'album charge ses cartes par tranches, donc la barre de lettres saute dans la liste triée au lieu de piloter une barre de défilement. La recherche existe déjà et reste limitée aux mots possédés.

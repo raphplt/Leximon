@@ -80,8 +80,8 @@ Les polices de Le Livre (Leximon Canon et Spectral) sont retirées. Le web ne ch
 
 **Le rythme reste celui de P45** (choix du propriétaire, le 2026-11-02) : le sachet se déchire au doigt, les cartes viennent une à une, l'annonce d'une carte est plus longue à mesure que la rareté monte, et le joueur retourne lui-même la carte à partir de Précieuse. La maquette pose les cinq cartes d'un coup : seul son habillage est repris, pas cette disposition.
 
-1. **Arrivée :** le sachet vient au centre et grossit (520 ms), le reste de l'écran s'efface.
-2. **Charge :** il tremble de plus en plus fort, la lumière fuit par la déchirure, des étincelles en sortent (1,1 s). La demande au serveur part au geste : si la réponse tarde, la charge dure jusqu'à elle.
+1. **Arrivée :** le sachet vient au centre et grossit (360 ms), le reste de l'écran s'efface.
+2. **Charge :** il tremble de plus en plus fort, la lumière fuit par la déchirure, des étincelles en sortent (650 ms). La demande au serveur part au geste : si la réponse tarde, la charge dure jusqu'à elle. Un toucher n'importe où (ou Espace, Entrée, Échap sur le web) passe l'arrivée, la charge et l'éclatement : la première carte vient dès la réponse du serveur.
 3. **Éclatement :** flash, secousse, onde, éclats et bouts de parchemin. Le haut du sachet s'envole, le reste tombe.
 4. **Les cartes, une à une :** chaque carte arrive en ressort, de dos, puis son annonce, puis sa face.
 5. **Le bilan :** les cinq cartes, « Nouveau » sur celles qui entrent dans l'album, puis les deux boutons de suite.
@@ -173,7 +173,7 @@ Seulement ce dont l'écran Jouer et l'ouverture ont besoin : bandeau du haut (po
 
 - le sachet reste l'ancien sachet en 3D (relief, lumière qui bouge, bande à déchirer) : le sachet plat de `/planches` a été refusé par le propriétaire le 2026-11-02 ;
 - on l'ouvre en déchirant la bande ou d'un toucher, et la pile de cartes est sautée : la première carte arrive juste après l'éclatement ;
-- l'appel au serveur part au geste, et la charge (1,1 s) dure jusqu'à la réponse. À l'éclatement, la bande s'envole et le sachet disparaît dans l'éclair ;
+- l'appel au serveur part au geste, et la charge (650 ms) dure jusqu'à la réponse. À l'éclatement, la bande s'envole et le sachet disparaît dans l'éclair ;
 - sur le mobile, pas de tuile des réglages à côté du sachet (le compte en tient lieu), comme dans l'écran actuel ;
 - sur un petit téléphone, les cartes du bilan rapetissent (136 px de large au moins) pour que les boutons tiennent au-dessus des onglets. Le propriétaire les juge en jouant, sur son téléphone, avant qu'on touche aux autres écrans. Les pièces de lecture (feuilles, listes, onglets, champs, fenêtres) naissent ensuite avec les écrans qui les utilisent, et `/planches` les montre au fur et à mesure.
 
@@ -182,7 +182,7 @@ Seulement ce dont l'écran Jouer et l'ouverture ont besoin : bandeau du haut (po
 - les cartes de l'album sont posées sur le sous-main vert, pas sur une feuille : une feuille crème sous des cartes crème les noyait. Les onglets de collection et la recherche sont en papier, la collection choisie en or ;
 - la fiche de carte est un sous-main : sur le grand écran la carte à gauche et ses renseignements sur une feuille à droite, sur le téléphone la feuille sous la carte ;
 - les questions des défis se posent sur le sous-main : l'énoncé sur une feuille, chaque proposition sur une tuile de papier marquée a, b, c ou d dans une pastille d'or, la bonne en cuir vert (avec son éclat), la mauvaise en cuir rouge, le verdict sur une feuille bordée de vert ou de rouge. L'accueil des défis, l'énigme du jour, l'entraînement et le bilan d'une série sont sur des feuilles posées dans la salle ;
-- la barre de lettres de l'album et la frise des défis n'existent pas encore : leur place est laissée, elles viendront avec leurs chantiers.
+- la frise des défis n'existe pas encore : sa place est laissée, elle viendra avec son chantier. La barre de lettres de l'album est faite le 2026-11-03 (voir plus bas).
 
 **Énigme, niveaux, coffrets, compte et réglages faits le 2026-11-02**, sur le web et le mobile ensemble. Une page du mobile hors des onglets se tient désormais dans la salle, son titre en lettrage, et ce qui est posé sur une feuille (paragraphe, champ, lien, case à cocher) y prend l'encre brune de lui-même. Sur le web, un écran qui a ses propres classes reçoit en plus l'habit commun (feuille, bouton d'or ou de papier, champ, lettrage). Écarts :
 
@@ -232,6 +232,18 @@ Seulement ce dont l'écran Jouer et l'ouverture ont besoin : bandeau du haut (po
 **Sanctions, écrans fermés et erreurs faits le 2026-11-03**, sur le web et le mobile. Une fonction fermée par le niveau, une page introuvable ou une page qui a planté se disent sur une feuille, leur signe dans un médaillon d'or. Sur le mobile, l'avis de sanction s'ouvre sur une feuille ; sur le web, il était déjà dans une fenêtre de papier. Le mobile n'a pas d'écran d'erreur à lui.
 
 **Pages publiques faites le 2026-11-03**, sur le web et le mobile. La page publique d'une carte pose ses renseignements sur une feuille à côté de la carte, comme la fiche du jeu. L'invitation, le lien d'ami et la désinscription posent leur texte et leur formulaire sur une feuille sous un titre en lettres dorées. L'énigme publique était déjà sur une feuille. Hors du jeu, ces pages ne prennent l'allure qu'avec le réglage, comme le reste, jusqu'à la bascule.
+
+**Retours du propriétaire sur la phase 3 repris le 2026-11-03**, sur le web et le mobile :
+
+- les boutons-objets se soulèvent et s'éclairent au survol de la souris ;
+- l'ouverture est plus courte (arrivée 360 ms, charge 650 ms) et se passe d'un toucher ;
+- les cartes révélées et leurs lignes (rareté, fréquence, rang dans le sachet) sont posées sur le sous-main, plus sur les rayonnages où elles se lisaient mal ;
+- les boutons du bilan du web sont rangés sur une grille : le premier sur toute la largeur, les deux suivants côte à côte ;
+- la carte agrandie a deux flèches (et les flèches du clavier sur le web) pour passer aux cartes voisines sans la fermer, avec « 2 sur 5 » dessous : depuis le bilan, l'album, les cartes épinglées du profil et les mots d'un défi ;
+- l'album est un sous-main de la hauteur de l'écran (choix du propriétaire) : collections, raretés, filtres et tri restent en haut, seules les cartes défilent dans leur boîte, et la barre de lettres longe le bord droit dès 24 cartes possédées en ordre alphabétique. Le tri est alphabétique par défaut, par rareté ou par date au choix, gardé sur l'appareil. Sur le web, les thèmes se replient derrière « Voir les thèmes » (choix du propriétaire), le thème choisi reste visible ; sur le mobile, tri et thèmes sont dans la fenêtre des filtres, et la barre de lettres se parcourt aussi en glissant le doigt ;
+- le web est plus léger : la poussière flotte en éléments animés par le navigateur au lieu d'un dessin à chaque image, les étincelles n'effacent que leur place, et le balancement du sachet tourne sans JavaScript. Au repos sur Jouer, le travail du navigateur passe d'environ 730 à 100 ms toutes les 2 s.
+
+**L'allure du sachet n'est pas tranchée.** Le sachet du jeu jure un peu avec les objets de la salle (retour du propriétaire, le 2026-11-03). Deux essais sont posés côte à côte sur `/planches`, dans les trois couleurs, et le propriétaire choisit avant que le jeu change (son choix, le 2026-11-03) : le sachet jouet de la maquette (toile, cadre doré, contour d'encre épais, ruban rouge, coins ronds), ou le sachet actuel retouché d'un contour d'encre et d'un cadre doré.
 
 **Fenêtres du mobile faites le 2026-11-03.** Toutes les fenêtres qui montent du bas de l'écran (sachets, filtres de l'album, réglages, pseudo, avis, épingles, ami, options et membres du clan, menu d'un message, fondation d'un clan) sont des feuilles de papier à l'encre brune, d'où qu'elles montent. Sur le web, les fenêtres étaient déjà en papier.
 
