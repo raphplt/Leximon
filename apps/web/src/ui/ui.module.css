@@ -734,7 +734,22 @@ a.chip:hover {
 :root[data-look="bibliotheque"]
   :is(.primary, .secondary, .round, button.chip, a.chip, .goldToy, .paperToy):hover {
   background: linear-gradient(180deg, var(--top) 0 47%, var(--bottom) 53% 100%);
-  filter: brightness(1.06);
+}
+
+/* Under the pointer, a toy rises a little and catches the light, so it reads as one to press. */
+@media (hover: hover) {
+  :root[data-look="bibliotheque"]
+    :is(.primary, .secondary, .round, button.chip, a.chip, .goldToy, .paperToy):hover:not(
+      :disabled
+    ):not(:active) {
+    translate: 0 -2px;
+    filter: brightness(1.1);
+    box-shadow:
+      inset 0 calc(-1 * var(--lip)) 0 var(--edge),
+      inset 0 2px 0 var(--lx-toy-sheen),
+      0 calc(var(--depth) + 2px) 0 var(--lx-toy-outline),
+      0 calc(var(--depth) + 7px) 14px var(--lx-toy-drop);
+  }
 }
 
 :root[data-look="bibliotheque"]

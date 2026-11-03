@@ -27,7 +27,8 @@
   touch-action: manipulation;
   transition:
     translate var(--lx-press-sink) ease-out,
-    box-shadow var(--lx-press-sink) ease-out;
+    box-shadow var(--lx-press-sink) ease-out,
+    filter 120ms ease-out;
 }
 
 button.toy,
@@ -47,6 +48,19 @@ a.toy {
     inset 0 2px 0 var(--lx-toy-sheen),
     0 0 0 var(--lx-toy-outline),
     0 2px 4px var(--lx-toy-drop);
+}
+
+/* Under the pointer, a toy rises a little and catches the light, so it reads as one to press. */
+@media (hover: hover) {
+  :is(button, a).toy:hover:not(:disabled):not([data-down]) {
+    translate: 0 -2px;
+    filter: brightness(1.1);
+    box-shadow:
+      inset 0 calc(-1 * var(--lip)) 0 var(--edge),
+      inset 0 2px 0 var(--lx-toy-sheen),
+      0 calc(var(--depth) + 2px) 0 var(--lx-toy-outline),
+      0 calc(var(--depth) + 7px) 14px var(--lx-toy-drop);
+  }
 }
 
 .toy:focus-visible {
