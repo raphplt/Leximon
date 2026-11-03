@@ -1,3 +1,4 @@
+import { toy as toyValues } from "@leximon/tokens";
 import {
   ATELIER_TABS,
   type AtelierItem,
@@ -12,13 +13,14 @@ import { Pressable, StyleSheet, Text, useWindowDimensions, View } from "react-na
 import { useNow, useSharedFailed } from "@/player/shared";
 import { profile } from "@/player/state";
 import { useProfileActions } from "@/profile/profile-actions";
-import { colors, fontSizes, fonts, radii, space } from "@/theme";
+import { colors, fontSizes, fonts, IS_LIBRARY, paperColors, radii, space } from "@/theme";
 import { Avatar } from "@/ui/avatar";
 import { Button } from "@/ui/button";
 import { Icon } from "@/ui/icon";
 import { Page, Paragraph } from "@/ui/page";
 import { Segmented } from "@/ui/segmented";
 import { toast } from "@/ui/toast";
+import { toyFace } from "@/ui/toy";
 
 /** Titles are words, wider than a face: two to a row. */
 const COLUMNS: Readonly<Record<AtelierTab, number>> = { avatars: 3, frames: 3, titles: 2 };
@@ -90,6 +92,10 @@ export function AtelierScreen() {
                   styles.item,
                   { width: itemWidth },
                   item.state === "worn" && styles.itemWorn,
+                  IS_LIBRARY && [
+                    styles.toy,
+                    toyFace(item.state === "worn" ? "gold" : "paper", "tile"),
+                  ],
                   pressed && styles.pressed,
                 ]}
               >
@@ -102,8 +108,8 @@ export function AtelierScreen() {
                   </Text>
                 )}
                 <View style={styles.state}>
-                  {item.state === "worn" && <Icon name="check" size={13} color={colors.success} />}
-                  {closed && <Icon name="lock" size={12} color={colors.pageInkFaint} />}
+                  {item.state === "worn" && <Icon name="check" size={13} color={wornInk} />}
+                  {closed && <Icon name="lock" size={12} color={ink.pageInkMuted} />}
                   <Text
                     style={[
                       styles.stateText,
@@ -149,6 +155,10 @@ function Preview({
   );
 }
 
+/** Each piece is a paper tile in « La Bibliothèque », the one worn is gold. */
+const ink = paperColors;
+const wornInk = IS_LIBRARY ? toyValues.outline : colors.success;
+
 const styles = StyleSheet.create({
   head: { flexDirection: "row", alignItems: "center", gap: space.s7, marginTop: -6 },
   wornTitle: {
@@ -168,30 +178,31 @@ const styles = StyleSheet.create({
     paddingVertical: space.s6,
     paddingHorizontal: space.s3,
     borderRadius: radii.xxl,
-    backgroundColor: colors.panel,
+    backgroundColor: ink.panel,
     borderWidth: 2,
     borderColor: "transparent",
   },
-  itemWorn: { borderColor: colors.success },
+  itemWorn: { borderColor: ink.success },
+  toy: { marginBottom: 4 },
   pressed: { opacity: 0.7 },
   closed: { opacity: 0.4 },
-  name: { fontFamily: fonts.ui.bold, fontSize: fontSizes.small, color: colors.pageInk },
+  name: { fontFamily: fonts.ui.bold, fontSize: fontSizes.small, color: ink.pageInk },
   state: { flexDirection: "row", alignItems: "center", gap: space.s2 },
   stateText: {
     fontFamily: fonts.ui.extrabold,
     fontSize: fontSizes.caption,
-    color: colors.pageInkFaint,
+    color: ink.pageInkFaint,
   },
-  stateWorn: { color: colors.success },
-  stateOwned: { color: colors.rubric },
+  stateWorn: { color: wornInk },
+  stateOwned: { color: ink.rubric },
   titleBox: { alignSelf: "stretch", alignItems: "center", justifyContent: "center" },
   titlePill: {
     overflow: "hidden",
     paddingHorizontal: space.s4,
     paddingVertical: space.s2,
     borderRadius: radii.sm,
-    backgroundColor: colors.kraft,
-    color: colors.kraftTitle,
+    backgroundColor: ink.kraft,
+    color: ink.kraftTitle,
     fontFamily: fonts.display,
     fontSize: fontSizes.label,
     textAlign: "center",

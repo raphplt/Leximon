@@ -17,6 +17,7 @@ import { Icon } from "@/ui/icon";
 import { LoadFailed } from "@/ui/load-failed";
 import { Bone, WaitingScreen } from "@/ui/skeleton";
 import { useToast } from "@/ui/toast";
+import ui from "@/ui/ui.module.css";
 import { PinnedCardsEditor } from "./pinned-editor";
 import styles from "./profile.module.css";
 import { ProfileHeader, StatsPanel } from "./profile-view";
@@ -87,7 +88,7 @@ export function ProfileScreen() {
         }
       />
       {note !== null && (
-        <p className={styles.note}>
+        <p className={`${styles.note} ${ui.leaf}`}>
           <Icon name={me.member && me.pseudo !== null ? "lock" : "profil"} size={18} />
           {note}
           {!me.member && (
@@ -106,7 +107,7 @@ export function ProfileScreen() {
         {me.member ? (
           <PinnedCardsEditor pinned={me.pinned} slots={me.pinnedSlots} onOpen={openCard} />
         ) : (
-          <section className={styles.panel}>
+          <section className={`${styles.panel} ${ui.leaf}`}>
             <p className={styles.muted}>
               Avec un compte, tu peux épingler tes plus belles cartes ici.{" "}
               <Link href="/compte">Créer mon compte</Link>

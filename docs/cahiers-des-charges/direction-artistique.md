@@ -225,6 +225,8 @@ Seulement ce dont l'écran Jouer et l'ouverture ont besoin : bandeau du haut (po
 
 **Clan fait le 2026-11-03**, sur le web et le mobile. L'en-tête du clan, le sien comme celui qu'on visite, est sa bannière posée sur le sous-main, son nom en lettres dorées et ses boutons en papier. L'objectif, la bibliothèque, les membres et la discussion sont sur des feuilles. Dans la discussion, les messages des autres sont des billets de papier cernés d'encre, ceux du joueur sont dorés, le journal est en papier pointillé, et le champ d'écriture est creusé dans la feuille avec un bouton d'envoi en or. Les menus et les mentions s'ouvrent sur du papier, les gravures du blason sont des jouets. Sur le mobile, une fenêtre qui monte d'une feuille reste sombre, comme les autres.
 
+**Profil et atelier faits le 2026-11-03**, sur le web et le mobile. Sur le web, la bannière du joueur est encadrée d'or sur le sous-main ; sur le mobile, l'en-tête reste dans la salle comme avant. Les cartes épinglées, les chiffres et les liens sont sur des feuilles, chaque chiffre dans un creux du papier, et les bandeaux d'information (compte invité, pseudo à choisir) sont des feuilles. Dans l'atelier, chaque avatar, cadre ou titre est une tuile de papier, celle qu'on porte est en or ; une pièce fermée reste grise.
+
 ### Hors du jeu
 
 | Élément | Travail |

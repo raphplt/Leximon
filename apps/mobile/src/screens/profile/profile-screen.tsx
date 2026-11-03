@@ -23,7 +23,7 @@ import { useShared, useSharedFailed } from "@/player/shared";
 import { profile } from "@/player/state";
 import { useProfileActions } from "@/profile/profile-actions";
 import { openCard } from "@/screens/trades/card-row";
-import { colors, fontSizes, fonts, radii, space } from "@/theme";
+import { fontSizes, fonts, paperColors, radii, space } from "@/theme";
 import { Button } from "@/ui/button";
 import { Icon } from "@/ui/icon";
 import { Page, Paragraph } from "@/ui/page";
@@ -105,7 +105,7 @@ export function ProfileScreen() {
       </View>
 
       {note !== null && (
-        <Panel>
+        <Panel paper>
           <Text style={styles.note}>{note}</Text>
           {!me.member && (
             <>
@@ -122,7 +122,7 @@ export function ProfileScreen() {
       {me.member ? (
         <PinnedCards me={me} catalog={catalog} />
       ) : (
-        <Panel>
+        <Panel paper>
           <Text style={styles.note}>
             Avec un compte, tu peux épingler tes plus belles cartes ici.
           </Text>
@@ -131,7 +131,7 @@ export function ProfileScreen() {
 
       <StatsPanel stats={me.stats} catalog={catalog} />
 
-      <Panel style={styles.links}>
+      <Panel paper style={styles.links}>
         {LINKS.map((link) => (
           <Pressable
             key={link.label}
@@ -139,9 +139,9 @@ export function ProfileScreen() {
             accessibilityRole="link"
             style={({ pressed }) => [styles.link, pressed && styles.pressed]}
           >
-            <Icon name={link.icon} size={20} color={colors.pageInk} />
+            <Icon name={link.icon} size={20} color={ink.pageInk} />
             <Text style={styles.linkText}>{link.label}</Text>
-            <Icon name="chev" size={16} color={colors.pageInkMuted} />
+            <Icon name="chev" size={16} color={ink.pageInkMuted} />
           </Pressable>
         ))}
         {me.member && me.pseudo !== null && (
@@ -150,9 +150,9 @@ export function ProfileScreen() {
             accessibilityRole="button"
             style={({ pressed }) => [styles.link, pressed && styles.pressed]}
           >
-            <Icon name="plume" size={20} color={colors.pageInk} />
+            <Icon name="plume" size={20} color={ink.pageInk} />
             <Text style={styles.linkText}>Changer de pseudo</Text>
-            <Icon name="chev" size={16} color={colors.pageInkMuted} />
+            <Icon name="chev" size={16} color={ink.pageInkMuted} />
           </Pressable>
         )}
         <Pressable
@@ -160,9 +160,9 @@ export function ProfileScreen() {
           accessibilityRole="button"
           style={({ pressed }) => [styles.link, pressed && styles.pressed]}
         >
-          <Icon name="send" size={20} color={colors.pageInk} />
+          <Icon name="send" size={20} color={ink.pageInk} />
           <Text style={styles.linkText}>Écrire à l'équipe</Text>
-          <Icon name="chev" size={16} color={colors.pageInkMuted} />
+          <Icon name="chev" size={16} color={ink.pageInkMuted} />
         </Pressable>
       </Panel>
 
@@ -201,7 +201,7 @@ function PinnedCards({
   };
 
   return (
-    <Panel>
+    <Panel paper>
       <View style={styles.panelHead}>
         <Text style={styles.panelTitle}>Cartes épinglées</Text>
         <Text style={styles.meta}>{pinnedSlotsLabel(slots)}</Text>
@@ -239,7 +239,7 @@ function PinnedCards({
                 accessibilityLabel={`${PIN_TEXTS.remove} ${word}`}
                 hitSlop={6}
               >
-                <Icon name="close" size={14} color={colors.pageInk} />
+                <Icon name="close" size={14} color={ink.pageInk} />
               </Pressable>
               <View style={styles.tools}>
                 <Pressable
@@ -249,7 +249,7 @@ function PinnedCards({
                   accessibilityRole="button"
                   accessibilityLabel={`${PIN_TEXTS.earlier} ${word}`}
                 >
-                  <Icon name="back" size={16} color={colors.pageInk} />
+                  <Icon name="back" size={16} color={ink.pageInk} />
                 </Pressable>
                 <Pressable
                   style={styles.toolText}
@@ -266,7 +266,7 @@ function PinnedCards({
                   accessibilityRole="button"
                   accessibilityLabel={`${PIN_TEXTS.later} ${word}`}
                 >
-                  <Icon name="chev" size={16} color={colors.pageInk} />
+                  <Icon name="chev" size={16} color={ink.pageInk} />
                 </Pressable>
               </View>
             </View>
@@ -280,7 +280,7 @@ function PinnedCards({
             onPress={() => setPicking({ at: null })}
             accessibilityRole="button"
           >
-            <Icon name="plus" size={24} color={colors.pageInkMuted} />
+            <Icon name="plus" size={24} color={ink.pageInkMuted} />
             <Text style={styles.emptyText}>{PIN_TEXTS.emptySlot}</Text>
           </Pressable>
         ))}
@@ -301,6 +301,9 @@ function PinnedCards({
   );
 }
 
+/** The profile's blocks lie on paper in « La Bibliothèque ». */
+const ink = paperColors;
+
 const styles = StyleSheet.create({
   actions: { flexDirection: "row", gap: space.s5 },
   grow: { flex: 1 },
@@ -308,11 +311,11 @@ const styles = StyleSheet.create({
     fontFamily: fonts.text.regular,
     fontSize: fontSizes.lead,
     lineHeight: 24,
-    color: colors.pageInk,
+    color: ink.pageInk,
   },
   panelHead: { flexDirection: "row", alignItems: "baseline", justifyContent: "space-between" },
-  panelTitle: { fontFamily: fonts.display, fontSize: fontSizes.title, color: colors.pageInk },
-  meta: { fontFamily: fonts.ui.semibold, fontSize: fontSizes.small, color: colors.pageInkMuted },
+  panelTitle: { fontFamily: fonts.display, fontSize: fontSizes.title, color: ink.pageInk },
+  meta: { fontFamily: fonts.ui.semibold, fontSize: fontSizes.small, color: ink.pageInkMuted },
   pinsScroll: { marginHorizontal: -18 },
   pins: { gap: space.s7, paddingHorizontal: space.s9, paddingTop: space.s4 },
   pin: { width: PIN_WIDTH, gap: space.s4 },
@@ -320,7 +323,7 @@ const styles = StyleSheet.create({
     width: PIN_WIDTH,
     height: PIN_WIDTH * 1.4,
     borderRadius: radii.md,
-    backgroundColor: colors.pageRaised,
+    backgroundColor: ink.pageRaised,
   },
   remove: {
     position: "absolute",
@@ -330,8 +333,8 @@ const styles = StyleSheet.create({
     height: 28,
     borderRadius: 14,
     borderWidth: 2,
-    borderColor: colors.sheet,
-    backgroundColor: colors.pageRaised,
+    borderColor: ink.sheet,
+    backgroundColor: ink.pageRaised,
     alignItems: "center",
     justifyContent: "center",
   },
@@ -340,20 +343,20 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: colors.pageRaised,
+    backgroundColor: ink.pageRaised,
     alignItems: "center",
     justifyContent: "center",
   },
   toolOff: { opacity: 0.35 },
   toolText: { paddingHorizontal: space.s3, paddingVertical: space.s3 },
-  toolLabel: { fontFamily: fonts.ui.extrabold, fontSize: fontSizes.small, color: colors.pageInk },
+  toolLabel: { fontFamily: fonts.ui.extrabold, fontSize: fontSizes.small, color: ink.pageInk },
   emptySlot: {
     width: PIN_WIDTH,
     height: PIN_WIDTH * 1.4,
     borderRadius: radii.lg,
     borderWidth: 2,
     borderStyle: "dashed",
-    borderColor: colors.rule,
+    borderColor: ink.rule,
     alignItems: "center",
     justifyContent: "center",
     gap: space.s3,
@@ -362,7 +365,7 @@ const styles = StyleSheet.create({
   emptyText: {
     fontFamily: fonts.ui.bold,
     fontSize: fontSizes.small,
-    color: colors.pageInkMuted,
+    color: ink.pageInkMuted,
     textAlign: "center",
   },
   links: { gap: 0, paddingVertical: space.s3 },
@@ -371,7 +374,7 @@ const styles = StyleSheet.create({
     flex: 1,
     fontFamily: fonts.ui.bold,
     fontSize: fontSizes.bodyLarge,
-    color: colors.pageInk,
+    color: ink.pageInk,
   },
   pressed: { opacity: 0.6 },
 });

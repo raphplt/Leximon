@@ -17,6 +17,7 @@ import { Button, ButtonLink } from "@/ui/button";
 import { Dialog } from "@/ui/dialog";
 import { Icon } from "@/ui/icon";
 import { ToastProvider, useToast } from "@/ui/toast";
+import ui from "@/ui/ui.module.css";
 import styles from "./profile.module.css";
 import { PinnedCards, type ProfileFace, ProfileHeader, StatsPanel } from "./profile-view";
 import { failureMessage } from "./use-profile-actions";
@@ -71,10 +72,10 @@ function PublicProfileBody({
     };
   }, [pseudo]);
 
-  if (blocked) return <p className={styles.note}>{BLOCKED_NOTE}</p>;
+  if (blocked) return <p className={`${styles.note} ${ui.leaf}`}>{BLOCKED_NOTE}</p>;
   if (shown === null) {
     return (
-      <div className={styles.note}>
+      <div className={`${styles.note} ${ui.leaf}`}>
         <span>{PROFILE_NOT_FOUND}</span>
         <ButtonLink href="/jouer" small>
           Jouer à Leximon
@@ -113,14 +114,14 @@ function PublicProfileBody({
     <>
       <ProfileHeader face={face} />
       {viewer === undefined ? null : own ? (
-        <p className={styles.note}>
+        <p className={`${styles.note} ${ui.leaf}`}>
           Tu vois ton profil comme les autres le voient.
           <ButtonLink href="/profil" small variant="secondary">
             Mon profil
           </ButtonLink>
         </p>
       ) : viewer === null ? (
-        <p className={styles.note}>
+        <p className={`${styles.note} ${ui.leaf}`}>
           Leximon, le jeu de cartes des mots rares et oubliés du français.
           <ButtonLink href="/jouer" small>
             Jouer à Leximon
@@ -141,7 +142,7 @@ function PublicProfileBody({
           <StatsPanel stats={shown.stats} />
         </div>
       ) : (
-        <p className={styles.note}>
+        <p className={`${styles.note} ${ui.leaf}`}>
           <Icon name="lock" size={18} />
           Profil privé.
         </p>

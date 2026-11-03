@@ -17,7 +17,7 @@ import { api } from "@/api/client";
 import { catalogInHand, loadCatalog } from "@/cards/catalog";
 import { useShared } from "@/player/shared";
 import { friends, profile } from "@/player/state";
-import { colors, fontSizes, fonts, space } from "@/theme";
+import { colors, fontSizes, fonts, paperColors, space } from "@/theme";
 import { Button } from "@/ui/button";
 import { Icon } from "@/ui/icon";
 import { Page, Paragraph } from "@/ui/page";
@@ -104,8 +104,10 @@ export function PublicProfileScreen({ pseudo }: { readonly pseudo: string }) {
     <Page title={shown.pseudo}>
       <ProfileHeader face={face} {...(clanId === null ? {} : { onClan: openClan(clanId) })} />
       {own ? (
-        <Panel>
-          <Text style={styles.note}>Tu vois ton profil comme les autres le voient.</Text>
+        <Panel paper>
+          <Text style={[styles.note, styles.onPaper]}>
+            Tu vois ton profil comme les autres le voient.
+          </Text>
           <Button label="Mon profil" secondary onPress={() => router.replace("/profil")} />
         </Panel>
       ) : (
@@ -259,6 +261,7 @@ const styles = StyleSheet.create({
     lineHeight: 24,
     color: colors.pageInk,
   },
+  onPaper: { color: paperColors.pageInk },
   private: { flexDirection: "row", alignItems: "center", gap: space.s4 },
   actions: { gap: space.s5 },
   friendTag: {

@@ -5,7 +5,7 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { Card } from "@/cards/card";
 import { Emblem } from "@/clan/emblem";
 import { openCard } from "@/screens/trades/card-row";
-import { colors, fontSizes, fonts, radii, space } from "@/theme";
+import { colors, fontSizes, fonts, IS_LIBRARY, paperColors, radii, space } from "@/theme";
 import { Avatar } from "@/ui/avatar";
 import { LevelMedal } from "@/ui/level";
 import { Panel } from "@/ui/panel";
@@ -76,7 +76,7 @@ export function PinnedCards({
   readonly catalog: Catalog | null;
 }) {
   return (
-    <Panel>
+    <Panel paper>
       <Text style={styles.panelTitle}>Cartes épinglées</Text>
       {pinned.length === 0 ? (
         <Text style={styles.muted}>Aucune carte épinglée.</Text>
@@ -124,7 +124,7 @@ export function StatsPanel({
 }) {
   const tiles = statTiles(stats, catalog === null ? null : catalog.cardsById.size);
   return (
-    <Panel>
+    <Panel paper>
       <Text style={styles.panelTitle}>En chiffres</Text>
       <View style={styles.tiles}>
         {tiles.map((tile) => (
@@ -137,6 +137,9 @@ export function StatsPanel({
     </Panel>
   );
 }
+
+/** The pinned cards and the figures lie on paper in « La Bibliothèque »; the identity stays in the room. */
+const ink = paperColors;
 
 const styles = StyleSheet.create({
   identity: { flexDirection: "row", alignItems: "center", gap: space.s8, marginTop: -6 },
@@ -155,15 +158,15 @@ const styles = StyleSheet.create({
     lineHeight: 18,
     color: colors.pageInkMuted,
   },
-  panelTitle: { fontFamily: fonts.display, fontSize: fontSizes.title, color: colors.pageInk },
-  muted: { fontFamily: fonts.ui.medium, fontSize: fontSizes.label, color: colors.pageInkMuted },
+  panelTitle: { fontFamily: fonts.display, fontSize: fontSizes.title, color: ink.pageInk },
+  muted: { fontFamily: fonts.ui.medium, fontSize: fontSizes.label, color: ink.pageInkMuted },
   pinsScroll: { marginHorizontal: -18 },
   pins: { gap: space.s7, paddingHorizontal: space.s9, paddingTop: space.s2 },
   placeholder: {
     width: PIN_WIDTH,
     height: PIN_WIDTH * 1.4,
     borderRadius: radii.md,
-    backgroundColor: colors.pageRaised,
+    backgroundColor: ink.pageRaised,
   },
   tiles: { flexDirection: "row", flexWrap: "wrap", gap: space.s5 },
   tile: {
@@ -172,12 +175,12 @@ const styles = StyleSheet.create({
     gap: space.s1,
     padding: space.s6,
     borderRadius: radii.xl,
-    backgroundColor: colors.page,
+    backgroundColor: IS_LIBRARY ? ink.well : colors.page,
   },
-  tileValue: { fontFamily: fonts.display, fontSize: fontSizes.titleLarge, color: colors.pageInk },
+  tileValue: { fontFamily: fonts.display, fontSize: fontSizes.titleLarge, color: ink.pageInk },
   tileLabel: {
     fontFamily: fonts.ui.semibold,
     fontSize: fontSizes.small,
-    color: colors.pageInkMuted,
+    color: ink.pageInkMuted,
   },
 });
