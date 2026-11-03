@@ -1,6 +1,7 @@
 import type { RiddleResponse } from "@leximon/contract";
 import { describe, expect, it } from "vitest";
 import {
+  riddleAction,
   riddleAskLabel,
   riddleCells,
   riddleClueLines,
@@ -15,6 +16,7 @@ import {
   riddleRewardLines,
   riddleRule,
   riddleShareText,
+  riddleSlots,
   riddleSquares,
   riddleTriesLine,
 } from "./riddle";
@@ -192,5 +194,36 @@ describe("riddlePublicLine", () => {
     [5, 3, "3 joueurs sur 5 ont trouvé ce mot."],
   ])("%i played, %i found", (played, found, line) => {
     expect(riddlePublicLine(played, found)).toBe(line);
+  });
+});
+
+describe("riddleSlots", () => {
+  it("shows the letters uncovered and hides the rest", () => {
+    expect(riddleSlots({ letters: 5, shownLetters: "lo", answer: null })).toEqual([
+      "L",
+      "O",
+      null,
+      null,
+      null,
+    ]);
+  });
+
+  it("shows the whole word once the game is over", () => {
+    const answer = { cardId: "loche", word: "loche" };
+    expect(riddleSlots({ letters: 5, shownLetters: "l", answer })).toEqual([
+      "L",
+      "O",
+      "C",
+      "H",
+      "E",
+    ]);
+  });
+});
+
+describe("riddleAction", () => {
+  it("asks to play, to go on, then to see the result", () => {
+    expect(riddleAction({ step: 0, outcome: null })).toBe("Jouer");
+    expect(riddleAction({ step: 2, outcome: null })).toBe("Continuer");
+    expect(riddleAction({ step: 2, outcome: "found" })).toBe("Voir mon résultat");
   });
 });

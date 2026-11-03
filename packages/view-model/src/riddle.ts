@@ -26,6 +26,23 @@ export function riddleNature(partOfSpeech: string, letters: number): string {
   return `${NATURES[partOfSpeech] ?? partOfSpeech} de ${letters} lettres`;
 }
 
+/**
+ * The word's letters as the player may see them, one slot per letter: those uncovered, or all
+ * of them once the game is over, upper case; `null` for a letter still hidden.
+ */
+export function riddleSlots(
+  riddle: Pick<RiddleResponse, "letters" | "shownLetters" | "answer">,
+): readonly (string | null)[] {
+  const known = [...(riddle.answer?.word ?? riddle.shownLetters)];
+  return Array.from({ length: riddle.letters }, (_, index) => known[index]?.toUpperCase() ?? null);
+}
+
+/** What the riddle's button says: to begin, to go on, or to see how it went. */
+export function riddleAction(riddle: Pick<RiddleResponse, "step" | "outcome">): string {
+  if (riddle.outcome !== null) return "Voir mon résultat";
+  return riddle.step > 0 ? "Continuer" : "Jouer";
+}
+
 function tries(lastStep: number): number {
   return lastStep + 1;
 }

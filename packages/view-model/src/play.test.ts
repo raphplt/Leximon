@@ -14,6 +14,7 @@ import {
   shortName,
   speechToggleLabel,
   stockView,
+  todayLabel,
   wordUnderCounter,
 } from "./play";
 
@@ -245,5 +246,12 @@ describe("word under the counter", () => {
 
   it("shows nothing without a card", () => {
     expect(wordUnderCounter(new Map(), new Map(), none, now, 0)).toBeNull();
+  });
+});
+
+describe("todayLabel", () => {
+  it("names the day in Paris, even when it has already turned there", () => {
+    expect(todayLabel(Date.UTC(2026, 10, 3, 12))).toBe("Mardi 3 novembre");
+    expect(todayLabel(Date.UTC(2026, 10, 3, 23, 30))).toBe("Mercredi 4 novembre");
   });
 });

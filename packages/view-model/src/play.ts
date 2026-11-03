@@ -10,7 +10,7 @@ import {
   unlockRulesAt,
 } from "@leximon/core";
 import { levelBadge, levelsOfFeatures } from "./features";
-import { formatWait } from "./format";
+import { capitalize, formatWait } from "./format";
 
 /** The Jouer screen and the stock shown in the top bar. */
 
@@ -119,6 +119,33 @@ export function nextSachetLine(wallet: BoosterWalletResponse, now: EpochMs): str
   if (canOpenAgain(wallet) || wallet.nextRefillAt === null) return null;
   return `Ton prochain sachet arrive dans ${formatWait(Date.parse(wallet.nextRefillAt) - now)}.`;
 }
+
+// --- The desk's two columns, on a wide screen ----------------------------------------------
+
+/** « Lundi 3 novembre »: the day in Paris, at the head of the day's column. */
+export function todayLabel(now: EpochMs): string {
+  const day = new Intl.DateTimeFormat("fr-FR", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    timeZone: "Europe/Paris",
+  }).format(now);
+  return capitalize(day);
+}
+
+export const DESK_TEXTS = {
+  today: "Aujourd'hui",
+  standing: "Ta progression",
+  stock: "Tes sachets",
+  daily: "Défi du jour",
+  riddle: "Énigme du jour",
+  clanGoal: "Objectif du clan cette semaine",
+  clanInvite:
+    "Un clan vise un objectif chaque semaine, et ses membres y gagnent des sachets bonus.",
+  findClan: "Trouver un clan",
+  seeClan: "Voir le clan",
+  chat: "Discussion",
+} as const;
 
 // --- Reserve of bonus sachets ---------------------------------------------------------------
 
