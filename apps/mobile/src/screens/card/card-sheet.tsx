@@ -3,8 +3,11 @@ import { type Catalog, collectionName } from "@leximon/contract/client";
 import { masteryColors } from "@leximon/tokens";
 import {
   CARD_REPORT,
+  CARD_RUN_TEXTS,
+  type CardRun,
   canOfferInTrade,
   cardPath,
+  cardRun,
   copiesLabel,
   creditLine,
   engravingOf,
@@ -21,6 +24,7 @@ import { router } from "expo-router";
 import * as WebBrowser from "expo-web-browser";
 import { useCallback, useEffect, useState } from "react";
 import { Pressable, Share, StyleSheet, Text, useWindowDimensions, View } from "react-native";
+import { cardsAround } from "@/cards/card-run";
 import { catalogInHand, loadCatalog } from "@/cards/catalog";
 import { HoloCard } from "@/cards/holo-card";
 import { WEB_URL } from "@/config";
@@ -36,6 +40,7 @@ import { Icon } from "@/ui/icon";
 import { Page, Paragraph } from "@/ui/page";
 import { OnPaper } from "@/ui/panel";
 import { RarityName } from "@/ui/rarity-icon";
+import { Toy } from "@/ui/toy";
 
 const CARD_MAX = 300;
 
@@ -73,14 +78,51 @@ export function CardSheet({ cardId }: { readonly cardId: string }) {
       </Page>
     );
   }
-  return <SheetBody card={card} collection={collectionName(catalog, card.collectionId)} />;
+  return (
+    <SheetBody
+      card={card}
+      run={cardRun(cardsAround(), card.id)}
+      collection={collectionName(catalog, card.collectionId)}
+    />
+  );
+}
+
+/** An arrow beside the card, to the one before or after; greyed at either end. */
+function TurnButton({
+  label,
+  icon,
+  to,
+}: {
+  readonly label: string;
+  readonly icon: "back" | "chev";
+  readonly to: string | null;
+}) {
+  return (
+    <Toy
+      matter="paper"
+      shape="round"
+      style={[styles.turn, to === null && styles.turnOff]}
+      bodyStyle={styles.turnBody}
+      disabled={to === null}
+      accessibilityRole="button"
+      accessibilityLabel={label}
+      // The same screen shows the next card: no pile of sheets to go back through.
+      onPress={() => {
+        if (to !== null) router.setParams({ id: to });
+      }}
+    >
+      <Icon name={icon} size={20} color={paperColors.pageInk} />
+    </Toy>
+  );
 }
 
 function SheetBody({
   card,
+  run,
   collection,
 }: {
   readonly card: CatalogCard;
+  readonly run: CardRun | null;
   readonly collection: string;
 }) {
   const window = useWindowDimensions();
@@ -133,11 +175,18 @@ function SheetBody({
   return (
     <Page title={card.word} desk>
       <View style={styles.cardSide}>
-        <HoloCard
-          card={card}
-          collectionName={collection}
-          width={Math.min(CARD_MAX, window.width - 48)}
-        />
+        <View style={styles.turning}>
+          {run !== null && (
+            <TurnButton label={CARD_RUN_TEXTS.previous} icon="back" to={run.previous} />
+          )}
+          <HoloCard
+            card={card}
+            collectionName={collection}
+            width={Math.min(CARD_MAX, window.width - (run === null ? 48 : 136))}
+          />
+          {run !== null && <TurnButton label={CARD_RUN_TEXTS.next} icon="chev" to={run.next} />}
+        </View>
+        {run !== null && <Text style={styles.place}>{run.place}</Text>}
         <EngravingCredit card={card} />
       </View>
 
@@ -294,6 +343,11 @@ const ink = paperColors;
 
 const styles = StyleSheet.create({
   cardSide: { alignItems: "center", gap: space.s5, marginBottom: space.s2 },
+  turning: { flexDirection: "row", alignItems: "center", gap: space.s3 },
+  turn: { width: 40, height: 44 },
+  turnBody: { alignItems: "center", justifyContent: "center" },
+  turnOff: { opacity: 0.35 },
+  place: { fontFamily: fonts.ui.bold, fontSize: fontSizes.caption, color: colors.pageInkMuted },
   credit: {
     fontFamily: fonts.ui.medium,
     fontSize: fontSizes.caption,

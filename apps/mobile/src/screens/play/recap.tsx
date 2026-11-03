@@ -17,7 +17,7 @@ import {
 } from "@leximon/view-model";
 import { router } from "expo-router";
 import { useEffect, useState } from "react";
-import { ScrollView, StyleSheet, Text, useWindowDimensions, View } from "react-native";
+import { Pressable, ScrollView, StyleSheet, Text, useWindowDimensions, View } from "react-native";
 import Animated, {
   Easing,
   FadeInRight,
@@ -35,6 +35,7 @@ import { Desk, MainAction, PaperAction } from "@/library/play-pieces";
 import { useNow, useShared } from "@/player/shared";
 import { progress as progressResource, wallet as walletResource } from "@/player/state";
 import { usePlayerView } from "@/player/use-player-view";
+import { openCard } from "@/screens/trades/card-row";
 import { TAB_BAR_RISE } from "@/shell/tab-bar";
 import { colors, fontSizes, fonts, radii, space } from "@/theme";
 import { Button } from "@/ui/button";
@@ -132,7 +133,10 @@ export function Recap({
   const nextSachet = wallet === null ? null : nextSachetLine(wallet, now);
   const another = !mustSignUp && !coffretWaits && wallet !== null && canOpenAgain(wallet);
   return (
-    <View style={styles.recap} onLayout={(event) => setRoom(event.nativeEvent.layout.height)}>
+    <View
+      style={[styles.recap, library && styles.recapLibrary]}
+      onLayout={(event) => setRoom(event.nativeEvent.layout.height)}
+    >
       {library && <Desk style={styles.desk} />}
       <Text style={styles.kicker}>TON SACHET</Text>
       <View style={styles.line}>
@@ -156,11 +160,22 @@ export function Recap({
       >
         {shown.map(({ card: drawn, index }, position) => (
           <Animated.View key={index} entering={FadeInRight.delay(position * STEP_MS).duration(260)}>
-            <Card
-              card={cardOrPlaceholder(catalog, drawn.cardId, drawn.rarity)}
-              collectionName={pack.collectionName}
-              width={width}
-            />
+            <Pressable
+              onPress={() =>
+                openCard(
+                  drawn.cardId,
+                  shown.map((entry) => entry.card.cardId),
+                )
+              }
+              accessibilityRole="button"
+              accessibilityLabel={`Lire ${cardOrPlaceholder(catalog, drawn.cardId, drawn.rarity).word}`}
+            >
+              <Card
+                card={cardOrPlaceholder(catalog, drawn.cardId, drawn.rarity)}
+                collectionName={pack.collectionName}
+                width={width}
+              />
+            </Pressable>
             {steps[position]?.glint === true && (
               <Glint
                 color={rarityStyles[drawn.rarity].glow ?? rarityStyles[drawn.rarity].spot}
@@ -305,6 +320,8 @@ function Glint({
 const styles = StyleSheet.create({
   glint: { ...StyleSheet.absoluteFill, opacity: 0 },
   recap: { flex: 1, alignItems: "center", paddingTop: space.s6, gap: space.s4 },
+  // Clear of the desk's gilt frame.
+  recapLibrary: { paddingTop: space.s12 },
   desk: { position: "absolute", top: 4, left: 8, right: 8, bottom: 96 + TAB_BAR_RISE },
   libraryActions: { alignItems: "center", paddingBottom: TAB_BAR_RISE + 24 },
   kicker: {

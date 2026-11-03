@@ -86,3 +86,31 @@ export const CARD_REPORT = {
   title: "Une erreur sur cette carte ?",
   label: "Indique ce qui est à corriger (définition, citation, gravure ou prononciation).",
 } as const;
+
+/** Where a card sits among those it was opened from, to turn to its neighbours. */
+export interface CardRun {
+  readonly previous: string | null;
+  readonly next: string | null;
+  /** « 3 sur 12 » */
+  readonly place: string;
+}
+
+export const CARD_RUN_TEXTS = {
+  previous: "Carte précédente",
+  next: "Carte suivante",
+} as const;
+
+/**
+ * The neighbours of a card in the list it was opened from (a sachet, the album as filtered, the
+ * pinned cards). A card twice in the list counts once; alone, or not in it, it has none.
+ */
+export function cardRun(among: readonly string[], cardId: string): CardRun | null {
+  const cards = [...new Set(among)];
+  const index = cards.indexOf(cardId);
+  if (index === -1 || cards.length < 2) return null;
+  return {
+    previous: cards[index - 1] ?? null,
+    next: cards[index + 1] ?? null,
+    place: `${index + 1} sur ${cards.length}`,
+  };
+}

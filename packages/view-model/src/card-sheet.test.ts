@@ -1,5 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { canOfferInTrade, comeBackIn, copiesLabel, masteryView, reviewLabel } from "./card-sheet";
+import {
+  canOfferInTrade,
+  cardRun,
+  comeBackIn,
+  copiesLabel,
+  masteryView,
+  reviewLabel,
+} from "./card-sheet";
 
 const NOW = Date.parse("2026-10-24T12:00:00Z");
 const DAY = 86_400_000;
@@ -63,5 +70,27 @@ describe("copies and actions", () => {
     );
     expect(comeBackIn(30 * 60_000)).toBe("dans 30 min");
     expect(comeBackIn(DAY)).toBe("demain");
+  });
+});
+
+describe("turning from card to card", () => {
+  it("gives the neighbours and the place among the cards", () => {
+    expect(cardRun(["a", "b", "c"], "b")).toEqual({ previous: "a", next: "c", place: "2 sur 3" });
+    expect(cardRun(["a", "b", "c"], "a")).toEqual({ previous: null, next: "b", place: "1 sur 3" });
+    expect(cardRun(["a", "b", "c"], "c")).toEqual({ previous: "b", next: null, place: "3 sur 3" });
+  });
+
+  it("counts a card drawn twice once", () => {
+    expect(cardRun(["a", "b", "a", "c"], "c")).toEqual({
+      previous: "b",
+      next: null,
+      place: "3 sur 3",
+    });
+  });
+
+  it("has nothing to turn to for a card alone or outside the list", () => {
+    expect(cardRun(["a"], "a")).toBeNull();
+    expect(cardRun(["a", "b"], "z")).toBeNull();
+    expect(cardRun([], "a")).toBeNull();
   });
 });

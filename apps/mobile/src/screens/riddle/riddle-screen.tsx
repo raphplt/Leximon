@@ -20,7 +20,6 @@ import {
   riddleTriesLine,
 } from "@leximon/view-model";
 import { randomUUID } from "expo-crypto";
-import { router } from "expo-router";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Share, StyleSheet, Text, TextInput, View } from "react-native";
 import { api } from "@/api/client";
@@ -34,6 +33,7 @@ import {
 } from "@/player/collection";
 import { useNow } from "@/player/shared";
 import { publishProgress } from "@/player/state";
+import { openCard } from "@/screens/trades/card-row";
 import { alpha, fontSizes, fonts, IS_LIBRARY, paperColors, radii, space } from "@/theme";
 import { Button } from "@/ui/button";
 import { FormError, Page, Paragraph } from "@/ui/page";
@@ -246,11 +246,7 @@ function Result({ riddle }: { readonly riddle: RiddleResponse }) {
           onPress={() => void Share.share({ message: riddleShareText(riddle) })}
         />
         {answer !== null && (
-          <Button
-            label="Voir la carte"
-            secondary
-            onPress={() => router.push(`/carte/${answer.cardId}`)}
-          />
+          <Button label="Voir la carte" secondary onPress={() => openCard(answer.cardId)} />
         )}
       </View>
     </Panel>

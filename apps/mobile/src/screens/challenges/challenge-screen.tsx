@@ -32,6 +32,7 @@ import { dailyChallenge, ownedCards, refreshIfRead, wordMemory } from "@/player/
 import { useNow, useShared } from "@/player/shared";
 import { publishProgress, wallet } from "@/player/state";
 import { RiddleEntry } from "@/screens/riddle/riddle-entry";
+import { openCard } from "@/screens/trades/card-row";
 import { TAB_BAR_RISE } from "@/shell/tab-bar";
 import { alpha, colors, fontSizes, fonts, IS_LIBRARY, paperColors, space } from "@/theme";
 import { Button } from "@/ui/button";
@@ -414,7 +415,12 @@ function Escaping({
         return (
           <Panel key={entry.cardId} paper style={styles.slipping}>
             <Pressable
-              onPress={() => router.push({ pathname: "/carte/[id]", params: { id: card.id } })}
+              onPress={() =>
+                openCard(
+                  card.id,
+                  words.map((word) => word.cardId),
+                )
+              }
               accessibilityRole="button"
               accessibilityLabel={`Voir la carte ${card.word}`}
             >

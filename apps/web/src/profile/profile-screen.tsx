@@ -105,7 +105,11 @@ export function ProfileScreen() {
       )}
       <div className={styles.layout}>
         {me.member ? (
-          <PinnedCardsEditor pinned={me.pinned} slots={me.pinnedSlots} onOpen={openCard} />
+          <PinnedCardsEditor
+            pinned={me.pinned}
+            slots={me.pinnedSlots}
+            onOpen={(cardId) => openCard(cardId, me.pinned)}
+          />
         ) : (
           <section className={`${styles.panel} ${ui.leaf}`}>
             <p className={styles.muted}>

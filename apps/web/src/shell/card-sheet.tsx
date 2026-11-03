@@ -4,9 +4,12 @@ import type { CatalogCard } from "@leximon/contract";
 import { type Catalog, collectionName } from "@leximon/contract/client";
 import {
   CARD_REPORT,
+  CARD_RUN_TEXTS,
   CARD_SHARE_COPIED,
+  type CardRun,
   canOfferInTrade,
   cardPath,
+  cardRun,
   cardShareRefused,
   copiesLabel,
   masteryView,
@@ -44,9 +47,14 @@ import styles from "./card-sheet.module.css";
 /** The sheet of one card: the card large, what the player knows of it, actions. */
 export function CardSheet({
   cardId,
+  among,
+  onTurn,
   onClose,
 }: {
   readonly cardId: string | null;
+  /** The cards it was opened among, to turn to the one before or after. */
+  readonly among: readonly string[];
+  readonly onTurn: (cardId: string) => void;
   readonly onClose: () => void;
 }) {
   const [catalog, setCatalog] = useState<Catalog | null>(null);
@@ -62,19 +70,67 @@ export function CardSheet({
     load();
   }, [cardId, catalog, load]);
   const card = cardId === null ? undefined : catalog?.cardsById.get(cardId);
+  const run = cardId === null ? null : cardRun(among, cardId);
+
+  useEffect(() => {
+    if (run === null) return;
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key !== "ArrowLeft" && event.key !== "ArrowRight") return;
+      if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return;
+      const { target } = event;
+      if (target instanceof Element && target.closest("input, textarea, select, [contenteditable]"))
+        return;
+      const to = event.key === "ArrowLeft" ? run.previous : run.next;
+      if (to === null) return;
+      event.preventDefault();
+      onTurn(to);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [run, onTurn]);
 
   return (
     <Dialog open={cardId !== null} title={card?.word ?? "Carte"} onClose={onClose} variant="wide">
       {catalog === null && failed && <LoadFailed onRetry={load} />}
       {card !== undefined && catalog !== null && (
         <SheetBody
+          key={card.id}
           card={card}
+          run={run}
+          onTurn={onTurn}
           collection={collectionName(catalog, card.collectionId)}
           seal={sealOf(catalog, card.collectionId)}
           onClose={onClose}
         />
       )}
     </Dialog>
+  );
+}
+
+/** An arrow beside the card, to the one before or after; greyed at either end. */
+function TurnButton({
+  label,
+  icon,
+  to,
+  onTurn,
+}: {
+  readonly label: string;
+  readonly icon: "back" | "chev";
+  readonly to: string | null;
+  readonly onTurn: (cardId: string) => void;
+}) {
+  return (
+    <button
+      type="button"
+      className={`${ui.round} ${styles.turn}`}
+      aria-label={label}
+      disabled={to === null}
+      onClick={() => {
+        if (to !== null) onTurn(to);
+      }}
+    >
+      <Icon name={icon} size={22} />
+    </button>
   );
 }
 
@@ -85,11 +141,15 @@ function sealOf(catalog: Catalog, collectionId: string): PackCollection | null {
 
 function SheetBody({
   card,
+  run,
+  onTurn,
   collection,
   seal,
   onClose,
 }: {
   readonly card: CatalogCard;
+  readonly run: CardRun | null;
+  readonly onTurn: (cardId: string) => void;
   readonly collection: string;
   readonly seal: PackCollection | null;
   readonly onClose: () => void;
@@ -150,7 +210,21 @@ function SheetBody({
         onPointerMove={light.onPointerMove}
         onPointerLeave={light.onPointerLeave}
       >
-        <HoloCard card={card} collectionName={collection} width={narrow ? 250 : 300} />
+        <div className={styles.turning}>
+          {run !== null && (
+            <TurnButton
+              label={CARD_RUN_TEXTS.previous}
+              icon="back"
+              to={run.previous}
+              onTurn={onTurn}
+            />
+          )}
+          <HoloCard card={card} collectionName={collection} width={narrow ? 250 : 300} />
+          {run !== null && (
+            <TurnButton label={CARD_RUN_TEXTS.next} icon="chev" to={run.next} onTurn={onTurn} />
+          )}
+        </div>
+        {run !== null && <p className={styles.place}>{run.place}</p>}
         <EngravingCredit card={card} />
       </div>
       <div className={styles.facts} data-paper="">

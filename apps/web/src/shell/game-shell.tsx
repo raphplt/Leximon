@@ -35,7 +35,10 @@ export function GameShell({ children }: { readonly children: ReactNode }) {
 function Frame({ children }: { readonly children: ReactNode }) {
   const [overlay, setOverlay] = useState<Overlay>(null);
   const [coffret, setCoffret] = useState<number | null>(null);
-  const [card, setCard] = useState<string | null>(null);
+  const [card, setCard] = useState<{
+    readonly id: string;
+    readonly among: readonly string[];
+  } | null>(null);
   const view = usePlayerView();
   const router = useRouter();
   const lowest = view.coffrets[0];
@@ -55,9 +58,9 @@ function Frame({ children }: { readonly children: ReactNode }) {
       openSettings: () => setOverlay("settings"),
       openMail: () => setOverlay("mail"),
       openChat: () => setOverlay("chat"),
-      openCard: (cardId) => {
+      openCard: (cardId, among = []) => {
         setOverlay(null);
-        setCard(cardId);
+        setCard({ id: cardId, among });
       },
     }),
     [openCoffret],
@@ -90,7 +93,12 @@ function Frame({ children }: { readonly children: ReactNode }) {
       <NewsDialog level={view.progress?.level ?? null} />
       <CoffretDialog level={coffret} now={view.now} onClose={() => setCoffret(null)} />
       <TradeDoneDialog />
-      <CardSheet cardId={card} onClose={() => setCard(null)} />
+      <CardSheet
+        cardId={card?.id ?? null}
+        among={card?.among ?? []}
+        onTurn={(id) => setCard((open) => (open === null ? null : { ...open, id }))}
+        onClose={() => setCard(null)}
+      />
     </ShellContext.Provider>
   );
 }

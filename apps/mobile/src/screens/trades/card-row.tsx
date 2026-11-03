@@ -3,6 +3,7 @@ import { type Catalog, cardOrPlaceholder, collectionName } from "@leximon/contra
 import { router } from "expo-router";
 import { Pressable, StyleSheet, View } from "react-native";
 import { Card } from "@/cards/card";
+import { rememberCardsAround } from "@/cards/card-run";
 import { space } from "@/theme";
 
 /** The card behind an id from the API; a placeholder if this catalogue does not know it. */
@@ -14,7 +15,9 @@ export function cardLabel(card: CatalogCard): string {
   return `${card.word}, ${RARITY_LABELS[card.rarity]}`;
 }
 
-export function openCard(cardId: string): void {
+/** `among`: the cards shown with it, in their order, to turn through from its sheet. */
+export function openCard(cardId: string, among: readonly string[] = []): void {
+  rememberCardsAround(among);
   router.push({ pathname: "/carte/[id]", params: { id: cardId } });
 }
 

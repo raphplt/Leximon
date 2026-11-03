@@ -92,7 +92,7 @@ export function PinnedCards({
             return (
               <Pressable
                 key={cardId}
-                onPress={() => openCard(cardId)}
+                onPress={() => openCard(cardId, pinned)}
                 accessibilityRole="button"
                 accessibilityLabel={`Ouvrir ${card?.word ?? "la carte"}`}
               >

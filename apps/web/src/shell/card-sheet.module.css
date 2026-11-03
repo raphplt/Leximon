@@ -139,3 +139,28 @@
     0 4px 0 var(--lx-toy-outline),
     0 10px 20px var(--lx-toy-drop);
 }
+
+/* The card between its arrows, to turn to the cards it was opened among. */
+.turning {
+  display: flex;
+  align-items: center;
+  gap: var(--lx-s6);
+}
+
+.turn:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.place {
+  margin: 0;
+  font-size: var(--lx-size-small);
+  font-weight: 700;
+  color: var(--lx-color-page-ink-muted);
+}
+
+@media (max-width: 759px) {
+  .turning {
+    gap: var(--lx-s3);
+  }
+}

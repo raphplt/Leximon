@@ -218,7 +218,7 @@ function PinnedCards({
           return (
             <View key={cardId} style={styles.pin}>
               <Pressable
-                onPress={() => openCard(cardId)}
+                onPress={() => openCard(cardId, pinned)}
                 accessibilityRole="button"
                 accessibilityLabel={`Ouvrir ${word}`}
               >
