@@ -1,5 +1,6 @@
+/* As far from the section above as every other title of the screen. */
 .title {
-  margin: 0 0 var(--lx-s6);
+  margin: var(--lx-s14) 0 var(--lx-s6);
   font-size: var(--lx-size-title-large);
 }
 
