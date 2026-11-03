@@ -1,7 +1,7 @@
 "use client";
 
 import type { RiddleResponse } from "@leximon/contract";
-import { riddleInvitation, riddleProgressLine } from "@leximon/view-model";
+import { riddleAction, riddleInvitation, riddleProgressLine } from "@leximon/view-model";
 import { useEffect, useState } from "react";
 import { api } from "@/lib/api";
 import { ButtonLink } from "@/ui/button";
@@ -32,7 +32,7 @@ export function RiddleEntry({ now }: { readonly now: number }) {
         </p>
       </div>
       <ButtonLink href="/enigme" variant={riddle.outcome === null ? "primary" : "secondary"} small>
-        {riddle.outcome !== null ? "Voir mon résultat" : started ? "Continuer" : "Jouer"}
+        {riddleAction(riddle)}
       </ButtonLink>
     </section>
   );

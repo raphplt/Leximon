@@ -59,10 +59,10 @@ import { usePackShape } from "@/lib/use-pack-shape";
 import { Desk, MainAction, PaperAction } from "@/library/play-pieces";
 import { CollectionPicker } from "@/play/collection-picker";
 import { noteSachetOpened, StockDots, TearHint } from "@/play/counter-bits";
+import { StandingColumn, TodayColumn } from "@/play/desk-columns";
 import { LevelStrip } from "@/play/level-strip";
 import { type CounterMoment, LibraryCounter } from "@/play/library-counter";
 import counter from "@/play/library-counter.module.css";
-import { NextReward } from "@/play/next-reward";
 import { PackPeek, PeekArrow } from "@/play/pack-peek";
 import play from "@/play/play.module.css";
 import { PlayFabs } from "@/play/play-fabs";
@@ -647,6 +647,10 @@ function BoosterFlow({ library }: { readonly library: boolean }) {
             ? stock.stored
             : Math.min(stock.stored, guestLeft)
           : stock.bonus;
+    const wordTag =
+      catalog !== null && underCounter !== null ? (
+        <SlippingWord catalog={catalog} word={underCounter} compact />
+      ) : null;
     return (
       <main ref={counterRef}>
         <LibraryCounter
@@ -730,12 +734,9 @@ function BoosterFlow({ library }: { readonly library: boolean }) {
               <p className={counter.message}>C'est ton dernier sachet sans compte.</p>
             ) : null
           }
-          reward={<NextReward />}
-          word={
-            catalog !== null && underCounter !== null ? (
-              <SlippingWord catalog={catalog} word={underCounter} compact />
-            ) : null
-          }
+          today={<TodayColumn word={wordTag} />}
+          standing={<StandingColumn />}
+          word={wordTag}
         />
       </main>
     );

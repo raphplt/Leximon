@@ -56,9 +56,11 @@ export interface LibraryCounterProps {
   readonly onOpen: () => void;
   /** Under the button: the account to create, an error, the last sachet without an account. */
   readonly footer: ReactNode;
-  /** Left of the button, on a wide screen: the next level's reward. */
-  readonly reward?: ReactNode;
-  /** Right of the button, or under it on a phone: a word of the album to read again, or one slipping away. */
+  /** Left of the desk, on a wide screen: what the day holds. */
+  readonly today?: ReactNode;
+  /** Right of the desk, on a wide screen: the level, the clan, the rest of the room. */
+  readonly standing?: ReactNode;
+  /** Under the button, below a wide screen: a word of the album to read again, or one slipping away. */
   readonly word?: ReactNode;
 }
 
@@ -81,7 +83,8 @@ export function LibraryCounter({
   onPick,
   onOpen,
   footer,
-  reward = null,
+  today = null,
+  standing = null,
   word = null,
 }: LibraryCounterProps) {
   const view = usePlayerView();
@@ -98,46 +101,49 @@ export function LibraryCounter({
 
   return (
     <section className={styles.screen} data-opening={opening || undefined} aria-label="Ton sachet">
-      <div className={styles.play}>
-        <Desk className={styles.desk} />
-        <div className={`${styles.title} ${styles.fading}`}>
-          <CollectionTitle
-            kicker="Sachet"
-            name={choice.name}
-            tagline={choice.tagline ?? ""}
-            index={Math.max(
-              0,
-              choices.findIndex((c) => c.id === choice.id),
-            )}
-            count={choices.length}
-            previousLabel="Collection précédente"
-            nextLabel="Collection suivante"
-            onPrevious={() => turn("left")}
-            onNext={() => turn("right")}
-          />
-        </div>
-        <Tiles say={say} />
-        <div ref={sachetRef} className={styles.sachet} data-moment={moment}>
-          <div className={`${styles.beside} ${styles.fading}`}>{beside}</div>
-          <div className={styles.glow} aria-hidden="true" />
-          <div className={styles.charge}>{sachet}</div>
-        </div>
-      </div>
-      <div className={`${styles.cta} ${styles.fading}`}>
-        {reward !== null && <div className={styles.reward}>{reward}</div>}
-        <div className={styles.main}>
-          {stock !== null && (
-            <MainAction
-              label={opening ? "Ouverture…" : stock.action}
-              count={left === null || left === 0 ? undefined : String(left)}
-              disabled={!canOpen || opening}
-              onClick={onOpen}
+      {today !== null && <div className={`${styles.today} ${styles.fading}`}>{today}</div>}
+      <div className={styles.stage}>
+        <div className={styles.play}>
+          <Desk className={styles.desk} />
+          <div className={`${styles.title} ${styles.fading}`}>
+            <CollectionTitle
+              kicker="Sachet"
+              name={choice.name}
+              tagline={choice.tagline ?? ""}
+              index={Math.max(
+                0,
+                choices.findIndex((c) => c.id === choice.id),
+              )}
+              count={choices.length}
+              previousLabel="Collection précédente"
+              nextLabel="Collection suivante"
+              onPrevious={() => turn("left")}
+              onNext={() => turn("right")}
             />
-          )}
-          {footer}
+          </div>
+          <Tiles say={say} />
+          <div ref={sachetRef} className={styles.sachet} data-moment={moment}>
+            <div className={`${styles.beside} ${styles.fading}`}>{beside}</div>
+            <div className={styles.glow} aria-hidden="true" />
+            <div className={styles.charge}>{sachet}</div>
+          </div>
         </div>
-        {word !== null && <div className={styles.word}>{word}</div>}
+        <div className={`${styles.cta} ${styles.fading}`}>
+          <div className={styles.main}>
+            {stock !== null && (
+              <MainAction
+                label={opening ? "Ouverture…" : stock.action}
+                count={left === null || left === 0 ? undefined : String(left)}
+                disabled={!canOpen || opening}
+                onClick={onOpen}
+              />
+            )}
+            {footer}
+          </div>
+          {word !== null && <div className={styles.word}>{word}</div>}
+        </div>
       </div>
+      {standing !== null && <div className={`${styles.standing} ${styles.fading}`}>{standing}</div>}
       <InfoBubble message={bubble} />
     </section>
   );

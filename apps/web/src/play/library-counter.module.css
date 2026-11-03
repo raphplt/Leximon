@@ -9,6 +9,20 @@
   user-select: none;
 }
 
+/* The desk and its button; the columns beside it come only on a wide screen. */
+.stage {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+}
+
+.today,
+.standing {
+  display: none;
+}
+
 .play {
   position: relative;
   flex: 1;
@@ -308,11 +322,6 @@
   gap: 8px;
 }
 
-/* The next reward: on a phone, the band at the top already tells the level. */
-.reward {
-  display: none;
-}
-
 .word {
   display: flex;
   justify-content: center;
@@ -326,29 +335,33 @@
   }
 }
 
-/* Room enough: the reward and the word stand on either side of the button, at its height. */
+/*
+ * Room enough: the day on the left of the desk, the player on the right, the sachet alone in the
+ * middle. The tiles and the word leave the desk for the columns.
+ */
 @media (min-width: 1180px) {
-  .cta {
+  .screen {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
-    align-items: center;
-    gap: 24px;
-    padding-inline: 0;
+    grid-template-columns: minmax(250px, 300px) minmax(0, 1fr) minmax(250px, 300px);
+    gap: 26px;
+    max-width: 1560px;
   }
 
-  .reward {
-    grid-column: 1;
+  .today,
+  .standing {
     display: flex;
-    justify-content: flex-start;
+    flex-direction: column;
+    min-height: 0;
   }
 
-  .main {
-    grid-column: 2;
-  }
-
+  .left,
+  .right,
   .word {
-    grid-column: 3;
-    justify-content: flex-end;
+    display: none;
+  }
+
+  .sachet {
+    inset: 132px 90px 28px;
   }
 }
 
