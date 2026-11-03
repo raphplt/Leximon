@@ -128,6 +128,7 @@ Dans l'ordre où elles débloquent le plus :
 4. **Questions ouvertes** de [regles-du-jeu.md](regles-du-jeu.md#à-décider) : numéro de collection, sons de l'ouverture, notation phonétique, forme du paquet.
 5. **Réécriture des textes :** donner dix phrases aimées et dix phrases détestées, avant la phase 3.
 6. **Choix sur pièces de la refonte :** [la liste du cahier](cahiers-des-charges/retours-game-designer.md#ce-qui-reste-à-décider-et-quand), avec le moment de chacun.
+7. **Défis et entraînement :** les 18 questions de [defis-entrainement.md](cahiers-des-charges/defis-entrainement.md#questions-au-propriétaire), avant de refaire l'écran Défis.
 
 ## Prochaines étapes conseillées
 
