@@ -223,6 +223,8 @@ Seulement ce dont l'écran Jouer et l'ouverture ont besoin : bandeau du haut (po
 
 **Communauté faite le 2026-11-02** (joueurs, clans et amis ; le clan et sa discussion suivent). Les sections sont des onglets en papier, celle qui est ouverte est en or. Les recherches sont creusées dans le papier (sur le mobile, un seul champ sert aux joueurs, aux clans et aux amis). La liste des joueurs, chaque clan, les amis, le podium et le fil sont sur des feuilles. Sur le mobile, les pages des onglets laissent voir la salle derrière elles. Écart : les fenêtres qui montent du bas du mobile restent sombres pour l'instant ; les passer en papier touche toutes leurs pages, ce sera un lot à part.
 
+**Clan fait le 2026-11-03**, sur le web et le mobile. L'en-tête du clan, le sien comme celui qu'on visite, est sa bannière posée sur le sous-main, son nom en lettres dorées et ses boutons en papier. L'objectif, la bibliothèque, les membres et la discussion sont sur des feuilles. Dans la discussion, les messages des autres sont des billets de papier cernés d'encre, ceux du joueur sont dorés, le journal est en papier pointillé, et le champ d'écriture est creusé dans la feuille avec un bouton d'envoi en or. Les menus et les mentions s'ouvrent sur du papier, les gravures du blason sont des jouets. Sur le mobile, une fenêtre qui monte d'une feuille reste sombre, comme les autres.
+
 ### Hors du jeu
 
 | Élément | Travail |

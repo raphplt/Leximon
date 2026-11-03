@@ -1,4 +1,5 @@
 import type { ClanMember, ClanSummary, ClanView, MyClanResponse } from "@leximon/contract";
+import { alpha, lettering } from "@leximon/tokens";
 import {
   ALREADY_IN_CLAN,
   CLAN_GONE,
@@ -17,9 +18,10 @@ import { api } from "@/api/client";
 import { act } from "@/clan/act";
 import { Banner, Emblem } from "@/clan/emblem";
 import { useJoinClan } from "@/clan/use-join-clan";
+import { Desk } from "@/library/play-pieces";
 import { useNow, useShared, useSharedFailed } from "@/player/shared";
 import { myClan, profile, progress as progressResource } from "@/player/state";
-import { colors, fontSizes, fonts, space } from "@/theme";
+import { colors, fontSizes, fonts, IS_LIBRARY, paperColors, space } from "@/theme";
 import { Avatar } from "@/ui/avatar";
 import { Button } from "@/ui/button";
 import { Icon } from "@/ui/icon";
@@ -143,16 +145,17 @@ function ClanVisit({
 
   return (
     <Page kicker={`Clan de niveau ${clan.level}`} title={clan.name}>
-      <Panel style={styles.hero}>
+      <Panel style={[styles.hero, IS_LIBRARY && styles.heroDesk]}>
+        {IS_LIBRARY && <Desk style={StyleSheet.absoluteFill} />}
         <Banner cardId={clan.banner} />
         <View style={styles.heroHead}>
           <Emblem emblem={clan.emblem} size={64} level={clan.level} />
-          <Text style={[styles.small, styles.heroLine]}>{clanSubline(clan)}</Text>
+          <Text style={[styles.heroSmall, styles.heroLine]}>{clanSubline(clan)}</Text>
         </View>
         <VisitorAction clan={clan} mine={mine} level={level} now={now} onJoined={onJoined} />
       </Panel>
 
-      <Panel>
+      <Panel paper>
         <View style={styles.membersHead}>
           <Text style={styles.kicker}>MEMBRES</Text>
           <Text style={styles.small}>{clan.memberCount}</Text>
@@ -188,7 +191,7 @@ function VisitorAction({
   readonly onJoined: (clanId: string) => void;
 }) {
   const join = useJoinClan(mine, onJoined);
-  if (mine.clanId !== null) return <Text style={styles.small}>{ALREADY_IN_CLAN}</Text>;
+  if (mine.clanId !== null) return <Text style={styles.heroSmall}>{ALREADY_IN_CLAN}</Text>;
   if (!isFeatureOpen("join_clan", level, now)) {
     return (
       <Button label="Rejoindre" secondary onPress={() => toast(lockedToast("join_clan", now))} />
@@ -215,7 +218,7 @@ function VisitedMember({ member }: { readonly member: ClanMember }) {
       </Text>
       {role !== null && (
         <View style={styles.role}>
-          <Icon name="crown" size={12} color={colors.rubric} />
+          <Icon name="crown" size={12} color={ink.rubric} />
           <Text style={styles.roleText}>{role}</Text>
         </View>
       )}
@@ -223,21 +226,31 @@ function VisitedMember({ member }: { readonly member: ClanMember }) {
   );
 }
 
+/** The members lie on paper in « La Bibliothèque »; the clan's header stays on the desk. */
+const ink = paperColors;
+
 const styles = StyleSheet.create({
   hero: { overflow: "hidden" },
+  heroDesk: { backgroundColor: "transparent" },
+  heroSmall: {
+    fontFamily: fonts.ui.medium,
+    fontSize: fontSizes.label,
+    lineHeight: 20,
+    color: IS_LIBRARY ? alpha(lettering.fill, 0.85) : colors.pageInkMuted,
+  },
   heroHead: { flexDirection: "row", alignItems: "center", gap: space.s8 },
   heroLine: { flex: 1 },
   small: {
     fontFamily: fonts.ui.medium,
     fontSize: fontSizes.label,
     lineHeight: 20,
-    color: colors.pageInkMuted,
+    color: ink.pageInkMuted,
   },
   kicker: {
     fontFamily: fonts.ui.extrabold,
     fontSize: fontSizes.caption,
     letterSpacing: 2,
-    color: colors.pageInkMuted,
+    color: ink.pageInkMuted,
   },
   membersHead: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
   member: { flexDirection: "row", alignItems: "center", gap: space.s6, minHeight: 48 },
@@ -246,8 +259,8 @@ const styles = StyleSheet.create({
     flex: 1,
     fontFamily: fonts.ui.bold,
     fontSize: fontSizes.bodyLarge,
-    color: colors.pageInk,
+    color: ink.pageInk,
   },
   role: { flexDirection: "row", alignItems: "center", gap: space.s2 },
-  roleText: { fontFamily: fonts.ui.bold, fontSize: fontSizes.caption, color: colors.rubric },
+  roleText: { fontFamily: fonts.ui.bold, fontSize: fontSizes.caption, color: ink.rubric },
 });

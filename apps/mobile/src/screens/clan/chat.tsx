@@ -1,5 +1,6 @@
 import type { ClanMember, ClanMessage, ClanRole } from "@leximon/contract";
 import { canAct } from "@leximon/core";
+import { toyMatters, toy as toyValues } from "@leximon/tokens";
 import {
   chatPollDelay,
   EMPTY_DISCUSSION,
@@ -31,12 +32,13 @@ import { api } from "@/api/client";
 import { refusalText } from "@/clan/act";
 import { useShared } from "@/player/shared";
 import { sanctions } from "@/player/state";
-import { colors, fontSizes, fonts, radii, space } from "@/theme";
+import { colors, fontSizes, fonts, IS_LIBRARY, paperColors, radii, space } from "@/theme";
 import { Avatar } from "@/ui/avatar";
 import { Button } from "@/ui/button";
 import { Icon } from "@/ui/icon";
 import { Sheet } from "@/ui/sheet";
 import { toast } from "@/ui/toast";
+import { Leaf, toyFace } from "@/ui/toy";
 
 /** Typing after an "@" asks for members once the keys pause this long. */
 const MENTION_DELAY_MS = 150;
@@ -234,8 +236,9 @@ export function ClanChat({
     sanctioned ??
     (clanMuted && mutedUntil !== null ? mutedUntilLabel(mutedUntil, now) : null);
 
+  const Ground = IS_LIBRARY ? Leaf : View;
   return (
-    <View style={styles.chat}>
+    <Ground style={[styles.chat, IS_LIBRARY && styles.leaf]}>
       <ScrollView
         ref={scroller}
         style={styles.thread}
@@ -272,7 +275,7 @@ export function ClanChat({
           messages.map((message) =>
             message.kind === "event" ? (
               <View key={message.id} style={styles.event}>
-                <Icon name="star" size={14} color={colors.rubric} />
+                <Icon name="star" size={14} color={ink.rubric} />
                 <Text style={styles.eventText}>{eventText(message.event, wordOf)}</Text>
               </View>
             ) : (
@@ -298,7 +301,7 @@ export function ClanChat({
           </Text>
         )}
         {mention.suggestions.length > 0 && (
-          <View style={styles.mentions}>
+          <View style={[styles.mentions, IS_LIBRARY && styles.mentionsPaper]}>
             {mention.suggestions.map((member) => (
               <Pressable
                 key={member.player.code}
@@ -314,12 +317,12 @@ export function ClanChat({
         )}
         <View style={styles.composeRow}>
           <TextInput
-            style={styles.field}
+            style={[styles.field, IS_LIBRARY && styles.fieldPaper]}
             maxLength={500}
             placeholder={MESSAGE_PLACEHOLDER}
-            placeholderTextColor={colors.pageInkFaint}
-            selectionColor={colors.rubric}
-            cursorColor={colors.rubric}
+            placeholderTextColor={ink.pageInkFaint}
+            selectionColor={ink.rubric}
+            cursorColor={ink.rubric}
             accessibilityLabel="Message au clan"
             value={draft}
             editable={!muted}
@@ -351,13 +354,14 @@ export function ClanChat({
             disabled={muted || sending || draft.trim() === ""}
             style={({ pressed }) => [
               styles.send,
+              IS_LIBRARY && toyFace("gold", "round"),
               (muted || sending || draft.trim() === "") && styles.sendOff,
               pressed && styles.sendPressed,
             ]}
             accessibilityRole="button"
             accessibilityLabel="Envoyer"
           >
-            <Icon name="send" size={20} color={colors.actionInk} />
+            <Icon name="send" size={20} color={IS_LIBRARY ? toyValues.outline : colors.actionInk} />
           </Pressable>
         </View>
       </View>
@@ -381,7 +385,7 @@ export function ClanChat({
           <Button label="Effacer" secondary onPress={() => void remove(menu)} />
         )}
       </Sheet>
-    </View>
+    </Ground>
   );
 }
 
@@ -409,7 +413,13 @@ function MessageRow({
         {message.body === null ? (
           <Text style={styles.removed}>{REMOVED_MESSAGE[message.removed ?? "deleted"]}</Text>
         ) : (
-          <Text style={[styles.bubble, message.mine && styles.bubbleMine]}>
+          <Text
+            style={[
+              styles.bubble,
+              message.mine && styles.bubbleMine,
+              IS_LIBRARY && (message.mine ? styles.bubbleGold : styles.bubblePaper),
+            ]}
+          >
             {messageSegments(message.body, message.mentions).map((segment, index) =>
               segment.kind === "text" ? (
                 segment.text
@@ -434,7 +444,7 @@ function MessageRow({
           accessibilityRole="button"
           accessibilityLabel={`Actions sur le message de ${playerName(message.author)}`}
         >
-          <Icon name="dots" size={16} color={colors.pageInkFaint} />
+          <Icon name="dots" size={16} color={ink.pageInkFaint} />
         </Pressable>
       )}
     </Pressable>
@@ -485,23 +495,27 @@ function useMentions(clanId: string, onInsert: (text: string, caret: number) => 
   return { suggestions, update, pick, close };
 }
 
+/** The thread lies on a leaf of paper in « La Bibliothèque ». */
+const ink = paperColors;
+
 const styles = StyleSheet.create({
   chat: { flex: 1 },
+  leaf: { marginHorizontal: space.s6, marginTop: space.s2, marginBottom: space.s6 },
   thread: { flex: 1 },
   threadContent: { gap: space.s6, paddingHorizontal: space.s8, paddingVertical: space.s6 },
   older: { alignSelf: "center", paddingVertical: space.s3 },
   olderText: {
     fontFamily: fonts.ui.bold,
     fontSize: fontSizes.label,
-    color: colors.rubric,
+    color: ink.rubric,
     textDecorationLine: "underline",
   },
-  faint: { fontFamily: fonts.ui.medium, fontSize: fontSizes.body, color: colors.pageInkFaint },
+  faint: { fontFamily: fonts.ui.medium, fontSize: fontSizes.body, color: ink.pageInkFaint },
   empty: {
     fontFamily: fonts.text.italic,
     fontSize: fontSizes.subtitle,
     lineHeight: 25,
-    color: colors.pageInkMuted,
+    color: ink.pageInkMuted,
     textAlign: "center",
     paddingVertical: space.s12,
   },
@@ -517,22 +531,22 @@ const styles = StyleSheet.create({
     fontFamily: fonts.ui.semibold,
     fontSize: fontSizes.small,
     lineHeight: 19,
-    color: colors.pageInkMuted,
+    color: ink.pageInkMuted,
     textAlign: "center",
   },
   row: { flexDirection: "row", alignItems: "flex-end", gap: space.s4 },
   rowMine: { justifyContent: "flex-end" },
   bubbleWrap: { flexShrink: 1, gap: 3, maxWidth: "80%" },
   bubbleWrapMine: { alignItems: "flex-end" },
-  who: { fontFamily: fonts.ui.semibold, fontSize: fontSizes.caption, color: colors.pageInkFaint },
+  who: { fontFamily: fonts.ui.semibold, fontSize: fontSizes.caption, color: ink.pageInkFaint },
   bubble: {
     overflow: "hidden",
     paddingHorizontal: space.s7,
     paddingVertical: 9,
     borderRadius: radii.x3,
     borderBottomLeftRadius: radii.xs,
-    backgroundColor: colors.pageRaised,
-    color: colors.pageInk,
+    backgroundColor: ink.pageRaised,
+    color: ink.pageInk,
     fontFamily: fonts.ui.medium,
     fontSize: fontSizes.bodyLarge,
     lineHeight: 22,
@@ -540,15 +554,26 @@ const styles = StyleSheet.create({
   bubbleMine: {
     borderBottomLeftRadius: radii.x3,
     borderBottomRightRadius: radii.xs,
-    backgroundColor: colors.mention,
+    backgroundColor: ink.mention,
+  },
+  bubblePaper: {
+    borderWidth: toyValues.outlineWidth,
+    borderColor: toyValues.outline,
+    backgroundColor: toyMatters.paper.top,
+  },
+  bubbleGold: {
+    borderWidth: toyValues.outlineWidth,
+    borderColor: toyValues.outline,
+    backgroundColor: toyMatters.gold.top,
+    color: toyValues.outline,
   },
   removed: {
     fontFamily: fonts.text.italic,
     fontSize: fontSizes.body,
-    color: colors.pageInkFaint,
+    color: ink.pageInkFaint,
   },
-  mention: { fontFamily: fonts.ui.extrabold, color: colors.mentionInk },
-  mentionMe: { fontFamily: fonts.ui.extrabold, color: colors.rubric },
+  mention: { fontFamily: fonts.ui.extrabold, color: IS_LIBRARY ? ink.rubric : colors.mentionInk },
+  mentionMe: { fontFamily: fonts.ui.extrabold, color: ink.rubric },
   dots: { paddingBottom: space.s4 },
   compose: {
     gap: space.s4,
@@ -556,11 +581,17 @@ const styles = StyleSheet.create({
     paddingTop: space.s4,
     paddingBottom: space.s5,
     borderTopWidth: 1,
-    borderTopColor: colors.track,
-    backgroundColor: colors.page,
+    borderTopColor: ink.track,
+    backgroundColor: IS_LIBRARY ? "transparent" : colors.page,
   },
-  composeError: { fontFamily: fonts.ui.bold, fontSize: fontSizes.label, color: colors.danger },
+  composeError: { fontFamily: fonts.ui.bold, fontSize: fontSizes.label, color: ink.danger },
   mentions: { borderRadius: radii.xl, backgroundColor: colors.sheet, overflow: "hidden" },
+  mentionsPaper: {
+    borderWidth: toyValues.outlineWidth,
+    borderColor: toyValues.outline,
+    borderRadius: 14,
+    backgroundColor: toyMatters.paper.top,
+  },
   mentionOption: {
     flexDirection: "row",
     alignItems: "center",
@@ -568,7 +599,7 @@ const styles = StyleSheet.create({
     minHeight: 44,
     paddingHorizontal: space.s6,
   },
-  mentionName: { fontFamily: fonts.ui.bold, fontSize: fontSizes.body, color: colors.pageInk },
+  mentionName: { fontFamily: fonts.ui.bold, fontSize: fontSizes.body, color: ink.pageInk },
   composeRow: { flexDirection: "row", alignItems: "flex-end", gap: space.s4 },
   field: {
     flex: 1,
@@ -578,8 +609,8 @@ const styles = StyleSheet.create({
     paddingTop: space.s6,
     paddingBottom: space.s6,
     borderRadius: 23,
-    backgroundColor: colors.well,
-    color: colors.pageInk,
+    backgroundColor: ink.well,
+    color: ink.pageInk,
     fontFamily: fonts.ui.medium,
     fontSize: fontSizes.bodyLarge,
   },
@@ -589,7 +620,14 @@ const styles = StyleSheet.create({
     borderRadius: 23,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: colors.action,
+    backgroundColor: ink.action,
+  },
+  fieldPaper: {
+    borderWidth: toyValues.outlineWidth,
+    borderColor: toyValues.outline,
+    borderRadius: 14,
+    backgroundColor: ink.paper,
+    boxShadow: `inset 0 3px 0 ${toyMatters.paper.bottom}`,
   },
   sendOff: { opacity: 0.4 },
   sendPressed: { opacity: 0.8 },

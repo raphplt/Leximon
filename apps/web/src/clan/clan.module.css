@@ -1133,3 +1133,153 @@
 :root[data-look="bibliotheque"] .searchInput::placeholder {
   color: var(--lx-color-paper-ink-muted);
 }
+
+/* The clan's header is its banner hung on the desk, its name in lettering. */
+:root[data-look="bibliotheque"] .hero.hero {
+  --lx-color-page-ink: var(--lx-lettering-fill);
+  --lx-color-page-ink-soft: color-mix(in srgb, var(--lx-lettering-fill) 85%, transparent);
+  --lx-color-page-ink-muted: color-mix(in srgb, var(--lx-lettering-fill) 78%, transparent);
+  --lx-color-track: var(--lx-desk-hollow);
+  border: 6px solid transparent;
+  border-radius: var(--lx-toy-radius-large);
+  background:
+    var(--lx-matter-leather) 0 0 / var(--lx-matter-size) padding-box,
+    radial-gradient(
+      ellipse 80% 90% at 30% 40%,
+      var(--lx-desk-center) 0%,
+      var(--lx-desk-middle) 55%,
+      var(--lx-desk-edge) 100%
+    )
+    padding-box,
+    var(--lx-old-gold) border-box;
+  box-shadow:
+    0 0 0 3px var(--lx-toy-outline),
+    0 6px 0 var(--lx-toy-outline),
+    inset 0 0 50px var(--lx-desk-hollow);
+  color: var(--lx-lettering-fill);
+}
+
+:root[data-look="bibliotheque"] .hero.hero .heroName {
+  -webkit-text-stroke: var(--lx-lettering-width) var(--lx-lettering-outline);
+  paint-order: stroke fill;
+  text-shadow: 0 var(--lx-lettering-drop) 0 var(--lx-lettering-outline);
+}
+
+:root[data-look="bibliotheque"] .hero.hero .heroKicker {
+  color: var(--lx-lettering-kicker);
+}
+
+:root[data-look="bibliotheque"] .clanXpHead {
+  color: var(--lx-lettering-fill);
+}
+
+:root[data-look="bibliotheque"] .clanTabs {
+  gap: var(--lx-s4);
+  padding: 0;
+  background: none;
+}
+
+:root[data-look="bibliotheque"] .clanTab {
+  margin-bottom: 3px;
+  border: var(--lx-toy-outline-width) solid var(--lx-toy-outline);
+  border-radius: var(--lx-toy-radius-small);
+  background: linear-gradient(
+    180deg,
+    var(--lx-toy-paper-top) 0 47%,
+    var(--lx-toy-paper-bottom) 53% 100%
+  );
+  box-shadow:
+    inset 0 -3px 0 var(--lx-toy-paper-edge),
+    inset 0 2px 0 var(--lx-toy-sheen),
+    0 3px 0 var(--lx-toy-outline);
+  color: var(--lx-color-paper-ink);
+}
+
+:root[data-look="bibliotheque"] .clanTab[aria-selected="true"] {
+  background: linear-gradient(
+    180deg,
+    var(--lx-toy-gold-top) 0 47%,
+    var(--lx-toy-gold-bottom) 53% 100%
+  );
+  box-shadow:
+    inset 0 -3px 0 var(--lx-toy-gold-edge),
+    inset 0 2px 0 var(--lx-toy-sheen),
+    0 3px 0 var(--lx-toy-outline);
+  color: var(--lx-toy-outline);
+}
+
+:root[data-look="bibliotheque"] .tier {
+  box-shadow:
+    0 0 0 var(--lx-toy-outline-width) var(--lx-toy-outline),
+    0 2px 0 var(--lx-toy-outline-width) var(--lx-toy-outline);
+}
+
+/* In the thread, the others write on slips of paper and the player on gold. */
+:root[data-look="bibliotheque"] .event {
+  border: 1px dashed color-mix(in srgb, var(--lx-color-paper-ink) 30%, transparent);
+  background: color-mix(in srgb, var(--lx-toy-paper-bottom) 70%, transparent);
+  color: var(--lx-color-paper-ink-muted);
+}
+
+:root[data-look="bibliotheque"] :is(.bubble, .bubbleMine) {
+  border: var(--lx-toy-outline-width) solid var(--lx-toy-outline);
+  box-shadow: 0 2px 0 var(--lx-toy-outline);
+}
+
+:root[data-look="bibliotheque"] .bubble {
+  background: var(--lx-toy-paper-top);
+  color: var(--lx-color-paper-ink);
+}
+
+:root[data-look="bibliotheque"] .bubbleMine {
+  background: var(--lx-toy-gold-top);
+  color: var(--lx-toy-outline);
+}
+
+:root[data-look="bibliotheque"] :is(.menu, .menuLeft, .mentions) {
+  border: var(--lx-toy-outline-width) solid var(--lx-toy-outline);
+  border-radius: var(--lx-toy-radius-small);
+  background: var(--lx-color-paper);
+  box-shadow:
+    0 3px 0 var(--lx-toy-outline),
+    0 10px 20px var(--lx-toy-drop);
+}
+
+:root[data-look="bibliotheque"] .sendButton {
+  border: var(--lx-toy-outline-width) solid var(--lx-toy-outline);
+  background: linear-gradient(
+    180deg,
+    var(--lx-toy-gold-top) 0 47%,
+    var(--lx-toy-gold-bottom) 53% 100%
+  );
+  box-shadow:
+    inset 0 -3px 0 var(--lx-toy-gold-edge),
+    inset 0 2px 0 var(--lx-toy-sheen),
+    0 3px 0 var(--lx-toy-outline);
+  color: var(--lx-toy-outline);
+}
+
+:root[data-look="bibliotheque"] .sendButton:disabled {
+  background: var(--lx-toy-paper-bottom);
+  box-shadow: inset 0 -3px 0 var(--lx-toy-paper-edge);
+  color: var(--lx-color-paper-ink-muted);
+}
+
+:root[data-look="bibliotheque"] .engravingChoice {
+  border: var(--lx-toy-outline-width) solid var(--lx-toy-outline);
+  border-radius: var(--lx-toy-radius-small);
+  background: linear-gradient(
+    180deg,
+    var(--lx-toy-paper-top) 0 47%,
+    var(--lx-toy-paper-bottom) 53% 100%
+  );
+  box-shadow: 0 3px 0 var(--lx-toy-outline);
+}
+
+:root[data-look="bibliotheque"] .engravingChoice[aria-pressed="true"] {
+  background: linear-gradient(
+    180deg,
+    var(--lx-toy-gold-top) 0 47%,
+    var(--lx-toy-gold-bottom) 53% 100%
+  );
+}

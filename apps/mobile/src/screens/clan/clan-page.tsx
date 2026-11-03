@@ -1,7 +1,7 @@
 import type { ClaimableGoal, ClanGoal, ClanMember, ClanView } from "@leximon/contract";
 import type { Catalog } from "@leximon/contract/client";
 import { canAct } from "@leximon/core";
-import { collectionTone } from "@leximon/tokens";
+import { alpha, collectionTone, lettering, toy as toyValues } from "@leximon/tokens";
 import {
   claimLabel,
   clanLevelLine,
@@ -23,18 +23,19 @@ import {
   weekAnswersLabel,
 } from "@leximon/view-model";
 import { useFocusEffect } from "expo-router";
-import { useCallback, useMemo, useState } from "react";
+import { type ReactNode, useCallback, useMemo, useState } from "react";
 import { Pressable, ScrollView, Share, StyleSheet, Text, View } from "react-native";
 import { api } from "@/api/client";
 import { catalogInHand, loadCatalog } from "@/cards/catalog";
 import { claimGoal } from "@/clan/claim";
 import { Banner, Emblem } from "@/clan/emblem";
 import { WEB_URL } from "@/config";
+import { Desk } from "@/library/play-pieces";
 import { ownedCards } from "@/player/collection";
 import { useShared } from "@/player/shared";
 import { myClan } from "@/player/state";
 import { TAB_BAR_RISE } from "@/shell/tab-bar";
-import { colors, fontSizes, fonts, radii, space } from "@/theme";
+import { colors, fontSizes, fonts, IS_LIBRARY, paperColors, radii, space } from "@/theme";
 import { Avatar } from "@/ui/avatar";
 import { Badge } from "@/ui/badge";
 import { Button } from "@/ui/button";
@@ -43,6 +44,7 @@ import { KeyboardLift } from "@/ui/keyboard-lift";
 import { Panel } from "@/ui/panel";
 import { Segmented } from "@/ui/segmented";
 import { TextButton } from "@/ui/text-button";
+import { Lettering, Toy } from "@/ui/toy";
 import { ClanChat } from "./chat";
 import { ClanSettings, MemberSheet, RequestsSheet } from "./manage";
 
@@ -176,46 +178,47 @@ export function ClanPage({
   return (
     <View style={styles.screen}>
       <View style={styles.top}>
-        <View style={styles.hero}>
+        <View style={[styles.hero, IS_LIBRARY && styles.heroDesk]}>
+          {IS_LIBRARY && <Desk style={StyleSheet.absoluteFill} />}
           <Banner cardId={view.clan.banner} />
           <Emblem emblem={view.clan.emblem} size={52} level={progress.level} />
           <View style={styles.heroText}>
-            <Text style={styles.heroName} numberOfLines={1} accessibilityRole="header">
-              {view.clan.name}
-            </Text>
-            <Text style={styles.small} numberOfLines={1}>
+            {IS_LIBRARY ? (
+              <View accessible accessibilityRole="header" accessibilityLabel={view.clan.name}>
+                <Lettering size={fontSizes.titleSmall} numberOfLines={1}>
+                  {view.clan.name}
+                </Lettering>
+              </View>
+            ) : (
+              <Text style={styles.heroName} numberOfLines={1} accessibilityRole="header">
+                {view.clan.name}
+              </Text>
+            )}
+            <Text style={[styles.heroSmall, IS_LIBRARY && styles.onDesk]} numberOfLines={1}>
               {online ?? clanSubline(view.clan)}
             </Text>
           </View>
           {view.pendingRequests > 0 && canAct(me.role, "accept_request") && (
-            <Pressable
+            <HeroButton
               onPress={() => setOverlay("requests")}
-              style={styles.round}
-              accessibilityRole="button"
-              accessibilityLabel={
-                view.pendingRequests > 1 ? `${view.pendingRequests} demandes` : "Une demande"
-              }
+              label={view.pendingRequests > 1 ? `${view.pendingRequests} demandes` : "Une demande"}
             >
-              <Icon name="amis" size={20} color={colors.pageInk} />
-              <Badge count={view.pendingRequests} ring={colors.page} />
-            </Pressable>
+              <Icon name="amis" size={20} color={ink.pageInk} />
+              <Badge
+                count={view.pendingRequests}
+                ring={IS_LIBRARY ? toyValues.outline : colors.page}
+              />
+            </HeroButton>
           )}
-          <Pressable
-            onPress={invite}
-            style={styles.round}
-            accessibilityRole="button"
-            accessibilityLabel="Inviter"
-          >
-            <Icon name="share" size={19} color={colors.pageInk} />
-          </Pressable>
-          <Pressable
+          <HeroButton onPress={invite} label="Inviter">
+            <Icon name="share" size={19} color={ink.pageInk} />
+          </HeroButton>
+          <HeroButton
             onPress={() => setOverlay("settings")}
-            style={styles.round}
-            accessibilityRole="button"
-            accessibilityLabel={canManage ? "Gérer le clan" : "Options du clan"}
+            label={canManage ? "Gérer le clan" : "Options du clan"}
           >
-            <Icon name="reglages" size={20} color={colors.pageInk} />
-          </Pressable>
+            <Icon name="reglages" size={20} color={ink.pageInk} />
+          </HeroButton>
         </View>
         <Segmented
           options={[
@@ -242,7 +245,7 @@ export function ClanPage({
 
       {tab === "clan" && (
         <ScrollView contentContainerStyle={styles.page}>
-          <Panel>
+          <Panel paper>
             <Text style={styles.subline}>{clanSubline(view.clan)}</Text>
             <View style={styles.xpHead}>
               <Text style={styles.xpLine}>{clanLevelLine(progress)}</Text>
@@ -269,7 +272,7 @@ export function ClanPage({
             />
           )}
 
-          <Panel>
+          <Panel paper>
             <Text style={styles.kicker}>BIBLIOTHÈQUE DU CLAN</Text>
             <Text style={styles.libraryLine}>{libraryHeadline(rows)}</Text>
             {rows.map((row) => (
@@ -308,44 +311,46 @@ export function ClanPage({
 
       {tab === "members" && (
         <ScrollView contentContainerStyle={styles.page}>
-          <View style={styles.membersHead}>
-            <Text style={styles.kicker}>MEMBRES</Text>
-            <Text style={styles.small}>{view.clan.memberCount}</Text>
-          </View>
-          {members.map((entry) => {
-            const role = roleLabel(entry.role);
-            return (
-              <Pressable
-                key={entry.player.code}
-                style={({ pressed }) => [styles.member, pressed && styles.pressed]}
-                onPress={() => setMember(entry)}
-                accessibilityRole="button"
-              >
-                <View>
-                  <Avatar avatar={entry.player.avatar} frame={null} size={40} />
-                  {entry.online && <View style={styles.online} />}
-                </View>
-                <View style={styles.memberText}>
-                  <View style={styles.memberNameRow}>
-                    <Text style={styles.memberName} numberOfLines={1}>
-                      {entry.player.pseudo}
-                    </Text>
-                    {role !== null && (
-                      <View style={styles.role}>
-                        <Icon name="crown" size={12} color={colors.rubric} />
-                        <Text style={styles.roleText}>{role}</Text>
-                      </View>
-                    )}
+          <MembersGround>
+            <View style={styles.membersHead}>
+              <Text style={styles.kicker}>MEMBRES</Text>
+              <Text style={styles.small}>{view.clan.memberCount}</Text>
+            </View>
+            {members.map((entry) => {
+              const role = roleLabel(entry.role);
+              return (
+                <Pressable
+                  key={entry.player.code}
+                  style={({ pressed }) => [styles.member, pressed && styles.pressed]}
+                  onPress={() => setMember(entry)}
+                  accessibilityRole="button"
+                >
+                  <View>
+                    <Avatar avatar={entry.player.avatar} frame={null} size={40} />
+                    {entry.online && <View style={styles.online} />}
                   </View>
-                  <Text style={styles.small} numberOfLines={1}>
-                    {memberLine(entry, now)}
-                  </Text>
-                </View>
-                <Text style={styles.memberWords}>{weekAnswersLabel(entry.weekAnswers)}</Text>
-              </Pressable>
-            );
-          })}
-          {moreLabel !== null && <TextButton label={moreLabel} onPress={() => void loadMore()} />}
+                  <View style={styles.memberText}>
+                    <View style={styles.memberNameRow}>
+                      <Text style={styles.memberName} numberOfLines={1}>
+                        {entry.player.pseudo}
+                      </Text>
+                      {role !== null && (
+                        <View style={styles.role}>
+                          <Icon name="crown" size={12} color={ink.rubric} />
+                          <Text style={styles.roleText}>{role}</Text>
+                        </View>
+                      )}
+                    </View>
+                    <Text style={styles.small} numberOfLines={1}>
+                      {memberLine(entry, now)}
+                    </Text>
+                  </View>
+                  <Text style={styles.memberWords}>{weekAnswersLabel(entry.weekAnswers)}</Text>
+                </Pressable>
+              );
+            })}
+            {moreLabel !== null && <TextButton label={moreLabel} onPress={() => void loadMore()} />}
+          </MembersGround>
         </ScrollView>
       )}
 
@@ -378,6 +383,54 @@ export function ClanPage({
   );
 }
 
+/** A round button of the header: a paper toy on the desk in « La Bibliothèque ». */
+function HeroButton({
+  onPress,
+  label,
+  children,
+}: {
+  readonly onPress: () => void;
+  readonly label: string;
+  readonly children: ReactNode;
+}) {
+  if (IS_LIBRARY) {
+    return (
+      <Toy
+        matter="paper"
+        shape="round"
+        onPress={onPress}
+        style={styles.toy}
+        bodyStyle={styles.toyBody}
+        accessibilityRole="button"
+        accessibilityLabel={label}
+      >
+        {children}
+      </Toy>
+    );
+  }
+  return (
+    <Pressable
+      onPress={onPress}
+      style={styles.round}
+      accessibilityRole="button"
+      accessibilityLabel={label}
+    >
+      {children}
+    </Pressable>
+  );
+}
+
+/** The members: one leaf of paper in « La Bibliothèque », rows straight on the page elsewhere. */
+function MembersGround({ children }: { readonly children: ReactNode }) {
+  return IS_LIBRARY ? (
+    <Panel paper style={styles.membersLeaf}>
+      {children}
+    </Panel>
+  ) : (
+    children
+  );
+}
+
 function GoalPanel({
   goal,
   now,
@@ -393,7 +446,7 @@ function GoalPanel({
   const reward = goalRewardLine(goal);
   const hint = contributionHint(goal);
   return (
-    <Panel>
+    <Panel paper>
       <View style={styles.goalHead}>
         <View style={styles.goalTitles}>
           <Text style={styles.kicker}>OBJECTIF DE LA SEMAINE</Text>
@@ -419,7 +472,7 @@ function GoalPanel({
             <Icon
               name={tier.tier === "gold" || tier.tier === "illuminated" ? "star" : "check"}
               size={14}
-              color={tier.reached ? colors.actionInk : colors.pageInkMuted}
+              color={tier.reached ? ink.actionInk : ink.pageInkMuted}
             />
           </View>
         ))}
@@ -440,6 +493,9 @@ function GoalPanel({
   );
 }
 
+/** What the clan shows lies on paper in « La Bibliothèque »; the header stays on the desk. */
+const ink = paperColors;
+
 const styles = StyleSheet.create({
   screen: { flex: 1 },
   failed: { flex: 1, justifyContent: "center", gap: space.s8, paddingHorizontal: space.s12 },
@@ -458,6 +514,16 @@ const styles = StyleSheet.create({
   hero: { flexDirection: "row", alignItems: "center", gap: space.s6, overflow: "hidden" },
   heroText: { flex: 1, gap: space.s1 },
   heroName: { fontFamily: fonts.display, fontSize: fontSizes.titleLarge, color: colors.pageInk },
+  heroDesk: { padding: space.s8, paddingRight: space.s7 },
+  heroSmall: {
+    fontFamily: fonts.ui.medium,
+    fontSize: fontSizes.small,
+    lineHeight: 19,
+    color: colors.pageInkMuted,
+  },
+  onDesk: { color: alpha(lettering.fill, 0.85) },
+  toy: { width: 42, height: 42 },
+  toyBody: { flex: 1, alignItems: "center", justifyContent: "center" },
   round: {
     width: 42,
     height: 42,
@@ -477,30 +543,30 @@ const styles = StyleSheet.create({
     fontFamily: fonts.ui.medium,
     fontSize: fontSizes.small,
     lineHeight: 19,
-    color: colors.pageInkMuted,
+    color: ink.pageInkMuted,
   },
-  subline: { fontFamily: fonts.ui.semibold, fontSize: fontSizes.label, color: colors.pageInkMuted },
+  subline: { fontFamily: fonts.ui.semibold, fontSize: fontSizes.label, color: ink.pageInkMuted },
   kicker: {
     fontFamily: fonts.ui.extrabold,
     fontSize: fontSizes.caption,
     letterSpacing: 2,
-    color: colors.pageInkMuted,
+    color: ink.pageInkMuted,
   },
   xpHead: { gap: space.s1 },
-  xpLine: { fontFamily: fonts.ui.extrabold, fontSize: fontSizes.body, color: colors.pageInk },
-  track: { height: 8, borderRadius: 4, backgroundColor: colors.well, overflow: "hidden" },
-  fill: { height: 8, borderRadius: 4, backgroundColor: colors.action },
+  xpLine: { fontFamily: fonts.ui.extrabold, fontSize: fontSizes.body, color: ink.pageInk },
+  track: { height: 8, borderRadius: 4, backgroundColor: ink.well, overflow: "hidden" },
+  fill: { height: 8, borderRadius: 4, backgroundColor: ink.action },
   goalHead: { flexDirection: "row", alignItems: "flex-start", gap: space.s4 },
   goalTitles: { flex: 1, gap: space.s2 },
   goalTitle: {
     fontFamily: fonts.display,
     fontSize: fontSizes.titleSmall,
     lineHeight: 25,
-    color: colors.pageInk,
+    color: ink.pageInk,
   },
   goalBar: { height: 28, justifyContent: "center", marginHorizontal: space.s4 },
-  goalTrack: { height: 10, borderRadius: 5, backgroundColor: colors.well, overflow: "hidden" },
-  goalFill: { height: 10, borderRadius: 5, backgroundColor: colors.success },
+  goalTrack: { height: 10, borderRadius: 5, backgroundColor: ink.well, overflow: "hidden" },
+  goalFill: { height: 10, borderRadius: 5, backgroundColor: ink.success },
   tier: {
     position: "absolute",
     marginLeft: -13,
@@ -509,11 +575,11 @@ const styles = StyleSheet.create({
     borderRadius: 13,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: colors.pageRaised,
+    backgroundColor: ink.pageRaised,
     borderWidth: 2,
-    borderColor: colors.track,
+    borderColor: ink.track,
   },
-  tierReached: { backgroundColor: colors.action, borderColor: colors.actionEdge },
+  tierReached: { backgroundColor: ink.action, borderColor: ink.actionEdge },
   goalFoot: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -524,20 +590,25 @@ const styles = StyleSheet.create({
     fontFamily: fonts.ui.semibold,
     fontSize: fontSizes.label,
     lineHeight: 20,
-    color: colors.pageInk,
+    color: ink.pageInk,
   },
   libraryLine: {
     fontFamily: fonts.text.italic,
     fontSize: fontSizes.lead,
     lineHeight: 24,
-    color: colors.pageInk,
+    color: ink.pageInk,
   },
   libraryRow: { gap: space.s3 },
   libraryHead: { flexDirection: "row", justifyContent: "space-between" },
-  libraryName: { fontFamily: fonts.ui.bold, fontSize: fontSizes.label, color: colors.pageInk },
+  libraryName: { fontFamily: fonts.ui.bold, fontSize: fontSizes.label, color: ink.pageInk },
   libraryClan: { position: "absolute", top: 0, bottom: 0, left: 0, opacity: 0.4 },
   libraryMine: { position: "absolute", top: 0, bottom: 0, left: 0 },
-  membersHead: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
+  membersHead: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingHorizontal: IS_LIBRARY ? space.s5 : 0,
+  },
   member: {
     flexDirection: "row",
     alignItems: "center",
@@ -546,8 +617,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: space.s6,
     paddingVertical: space.s4,
     borderRadius: radii.xxl,
-    backgroundColor: colors.panel,
+    backgroundColor: IS_LIBRARY ? "transparent" : colors.panel,
   },
+  membersLeaf: { paddingHorizontal: space.s4, gap: space.s2 },
   pressed: { opacity: 0.7 },
   online: {
     position: "absolute",
@@ -556,9 +628,9 @@ const styles = StyleSheet.create({
     width: 12,
     height: 12,
     borderRadius: 6,
-    backgroundColor: colors.success,
+    backgroundColor: ink.success,
     borderWidth: 2,
-    borderColor: colors.page,
+    borderColor: ink.page,
   },
   memberText: { flex: 1, gap: space.s1 },
   memberNameRow: { flexDirection: "row", alignItems: "center", gap: space.s4 },
@@ -566,9 +638,9 @@ const styles = StyleSheet.create({
     flexShrink: 1,
     fontFamily: fonts.ui.extrabold,
     fontSize: fontSizes.bodyLarge,
-    color: colors.pageInk,
+    color: ink.pageInk,
   },
   role: { flexDirection: "row", alignItems: "center", gap: 3 },
-  roleText: { fontFamily: fonts.ui.bold, fontSize: fontSizes.caption, color: colors.rubric },
-  memberWords: { fontFamily: fonts.ui.bold, fontSize: fontSizes.small, color: colors.pageInkMuted },
+  roleText: { fontFamily: fonts.ui.bold, fontSize: fontSizes.caption, color: ink.rubric },
+  memberWords: { fontFamily: fonts.ui.bold, fontSize: fontSizes.small, color: ink.pageInkMuted },
 });

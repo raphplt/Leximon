@@ -11,6 +11,7 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { alpha, colors, fontSizes, fonts, space } from "@/theme";
 import { Icon } from "./icon";
+import { OnPaperContext } from "./ink";
 import { ToastHost } from "./toast";
 
 /** A panel that rises from the bottom over the screen: a member, the clan's options, a form. */
@@ -55,7 +56,8 @@ export function Sheet({
             keyboardShouldPersistTaps="handled"
             bounces={false}
           >
-            {children}
+            {/* The sheet is dark, even when it rises from something laid on paper. */}
+            <OnPaperContext.Provider value={false}>{children}</OnPaperContext.Provider>
           </ScrollView>
         </View>
         <ToastHost />
