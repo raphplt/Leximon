@@ -43,6 +43,7 @@
   inset: 0;
   perspective: 900px;
   animation: sway 12s ease-in-out infinite;
+  will-change: transform;
 }
 
 .sachet {
@@ -701,20 +702,18 @@
   }
 }
 
-/* Slow and slight: the light moves across the foil more than the pouch moves. */
+/*
+ * Slow and slight, and in transforms only: the compositor turns the pouch on its own.
+ * Swaying the light variables instead restyled and repainted every layer of the foil on every
+ * frame, and kept the whole screen busy while the pouch merely waited.
+ */
 @keyframes sway {
   0%,
   100% {
-    --holo-x: 35%;
-    --holo-y: 30%;
-    --holo-rx: 1.5deg;
-    --holo-ry: -2.5deg;
+    transform: perspective(900px) rotateX(2.4deg) rotateY(-4deg);
   }
   50% {
-    --holo-x: 65%;
-    --holo-y: 40%;
-    --holo-rx: -0.5deg;
-    --holo-ry: 2.5deg;
+    transform: perspective(900px) rotateX(-0.8deg) rotateY(4deg);
   }
 }
 

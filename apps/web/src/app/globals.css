@@ -29,7 +29,20 @@ body {
 }
 
 :root[data-look="bibliotheque"] body {
-  background: var(--lx-room) fixed;
+  background: var(--lx-room-floor);
+}
+
+/*
+ * The room on a layer of its own that stays put: a fixed background on the page itself is
+ * repainted whole on every frame of a scroll.
+ */
+:root[data-look="bibliotheque"] body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background: var(--lx-room);
+  pointer-events: none;
 }
 
 a {

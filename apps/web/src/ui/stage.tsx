@@ -57,6 +57,50 @@ function reducedMotion(): boolean {
   return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 }
 
+function between([low, high]: readonly [number, number]): number {
+  return low + Math.random() * (high - low);
+}
+
+/** One mote of dust rising slowly through the lamplight, then gone. */
+function floatMote(layer: HTMLElement): void {
+  const { burst } = effects.dust;
+  const mote = document.createElement("span");
+  const size = between(burst.size) * 6;
+  const life = between(burst.life) * 1000;
+  const angle = between(burst.angle ?? [-Math.PI / 2, -Math.PI / 2]);
+  const travel = (between(burst.speed) * life) / 1000;
+  const dx = Math.cos(angle) * travel;
+  const dy = Math.sin(angle) * travel;
+  const sway = (burst.sway ?? 0) * (Math.random() < 0.5 ? -1 : 1);
+  mote.style.left = `${20 + Math.random() * 60}%`;
+  mote.style.top = `${20 + Math.random() * 50}%`;
+  mote.style.width = `${size}px`;
+  mote.style.height = `${size}px`;
+  mote.style.background = `radial-gradient(closest-side, ${burst.colors[0]} 25%, transparent)`;
+  layer.append(mote);
+  mote
+    .animate(
+      [
+        { opacity: 0, transform: "translate(0, 0)" },
+        { opacity: 1, transform: `translate(${dx / 2 + sway}px, ${dy / 2}px)`, offset: 0.3 },
+        { opacity: 0, transform: `translate(${dx}px, ${dy}px)` },
+      ],
+      { duration: life, easing: "linear" },
+    )
+    .finished.then(
+      () => mote.remove(),
+      () => mote.remove(),
+    );
+}
+
+/** How far a particle's drawing reaches from its centre, to wipe only where it was. */
+function reachOf(particle: Particle): number {
+  const size = sizeOf(particle);
+  if (particle.kind === "glow") return size * 3 + 2;
+  if (particle.kind === "spark") return Math.hypot(particle.vx, particle.vy) * 0.045 + size + 2;
+  return size + 2;
+}
+
 function draw(context: CanvasRenderingContext2D, particle: Particle): void {
   const size = sizeOf(particle);
   context.save();
@@ -123,7 +167,8 @@ export function ParticleStage({
   const canvas = useRef<HTMLCanvasElement>(null);
   const flashLayer = useRef<HTMLDivElement>(null);
   const ringLayer = useRef<HTMLDivElement>(null);
-  const engine = useRef<{ wake: () => void; particles: Particle[]; dust: boolean } | null>(null);
+  const dustLayer = useRef<HTMLDivElement>(null);
+  const engine = useRef<{ wake: () => void; particles: Particle[] } | null>(null);
 
   useEffect(() => {
     const element = canvas.current;
@@ -132,11 +177,13 @@ export function ParticleStage({
       return;
     }
     const particles: Particle[] = [];
+    // Where the last frame drew: only these squares are wiped, not the whole window.
+    let drawn: { x: number; y: number; reach: number }[] = [];
     let frame = 0;
     let last = 0;
     let width = 0;
     let height = 0;
-    const state = { particles, dust: false, wake };
+    const state = { particles, wake };
     engine.current = state;
 
     function resize() {
@@ -147,26 +194,31 @@ export function ParticleStage({
       element.width = width * ratio;
       element.height = height * ratio;
       context?.setTransform(ratio, 0, 0, ratio, 0, 0);
+      drawn = [];
     }
 
     function tick(now: number) {
       // A frame after a pause would move everything at once.
       const seconds = Math.min((now - last) / 1000, 0.05);
       last = now;
-      if (state.dust && Math.random() < seconds * effects.dust.perSecond) {
-        emit(
-          particles,
-          width * (0.2 + Math.random() * 0.6),
-          height * (0.2 + Math.random() * 0.5),
-          effects.dust.burst,
-          particleCap.web,
-          1,
-        );
-      }
       advance(particles, seconds);
-      context?.clearRect(0, 0, width, height);
-      for (const particle of particles) if (context) draw(context, particle);
-      frame = particles.length > 0 || state.dust ? requestAnimationFrame(tick) : 0;
+      if (context) {
+        for (const spot of drawn) {
+          context.clearRect(
+            spot.x - spot.reach,
+            spot.y - spot.reach,
+            spot.reach * 2,
+            spot.reach * 2,
+          );
+        }
+        drawn = particles.map((particle) => ({
+          x: particle.x,
+          y: particle.y,
+          reach: reachOf(particle),
+        }));
+        for (const particle of particles) draw(context, particle);
+      }
+      frame = particles.length > 0 ? requestAnimationFrame(tick) : 0;
     }
 
     function wake() {
@@ -184,11 +236,16 @@ export function ParticleStage({
     };
   }, []);
 
+  // The motes are elements the compositor moves on its own: drawn on the canvas, a few specks
+  // of dust redrew a window-sized layer on every frame and kept the whole screen busy.
   useEffect(() => {
-    const state = engine.current;
-    if (state === null) return;
-    state.dust = dust;
-    if (dust) state.wake();
+    const layer = dustLayer.current;
+    if (!dust || layer === null || reducedMotion()) return;
+    const timer = window.setInterval(() => floatMote(layer), 1000 / effects.dust.perSecond);
+    return () => {
+      window.clearInterval(timer);
+      layer.replaceChildren();
+    };
   }, [dust]);
 
   const stage = useMemo<Stage>(() => {
@@ -265,6 +322,7 @@ export function ParticleStage({
       {children}
       <div ref={flashLayer} className={styles.flash} aria-hidden="true" />
       <div ref={ringLayer} className={styles.ring} aria-hidden="true" />
+      <div ref={dustLayer} className={styles.dust} aria-hidden="true" />
       <canvas ref={canvas} className={styles.canvas} />
     </StageContext>
   );

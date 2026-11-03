@@ -30,3 +30,18 @@
   opacity: 0;
   pointer-events: none;
 }
+
+.dust {
+  position: fixed;
+  inset: 0;
+  z-index: 58;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.dust > span {
+  position: absolute;
+  border-radius: 50%;
+  opacity: 0;
+  will-change: transform, opacity;
+}
