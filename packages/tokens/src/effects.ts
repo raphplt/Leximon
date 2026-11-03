@@ -174,12 +174,13 @@ export const effects = {
 
 /**
  * The opening of a sachet, in ms: it comes to the middle of the desk, charges while the server
- * answers (longer if the answer is late), then bursts and lets the first card come.
+ * answers (longer if the answer is late), then bursts and lets the first card come. Short, for
+ * a moment seen several times a day; a tap during it goes straight to the cards.
  */
 export const openingTimes = {
-  arriveMs: 520,
-  chargeMs: 1100,
-  burstMs: 450,
+  arriveMs: 360,
+  chargeMs: 650,
+  burstMs: 380,
 } as const;
 
 /** What a card's face does as it turns, by rarity. */

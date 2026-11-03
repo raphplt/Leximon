@@ -475,6 +475,7 @@ const styles = StyleSheet.create({
     flexShrink: 1,
     fontFamily: fonts.text.italic,
     fontSize: fontSizes.body,
+    lineHeight: 19,
     color: colors.pageInkMuted,
     textAlign: "center",
   },

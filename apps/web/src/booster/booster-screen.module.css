@@ -405,6 +405,42 @@
   z-index: -1;
 }
 
+/* The cards come one by one onto the desk of the recap. */
+.revealLibrary {
+  position: relative;
+  isolation: isolate;
+  margin-top: var(--lx-s12);
+  padding: 34px 22px 30px;
+}
+
+@media (max-width: 759px) {
+  .revealLibrary {
+    margin: 0 -8px;
+    padding: 30px 16px 24px;
+  }
+}
+
+.revealLibrary .position {
+  color: var(--lx-color-page-ink-soft);
+}
+
+/* The main action on a row of its own, the others under it side by side, of one width. */
+.recapLibrary .actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  width: min(100%, 460px);
+}
+
+.recapLibrary .actions > * {
+  width: 100%;
+  max-width: none;
+}
+
+.recapLibrary .actions > :first-child,
+.recapLibrary .actions > :last-child:nth-child(2) {
+  grid-column: 1 / -1;
+}
+
 .recapLibrary .recapXp {
   color: var(--lx-toy-gold-top);
 }

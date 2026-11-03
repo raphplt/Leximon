@@ -1,3 +1,4 @@
+import { openingTimes } from "./effects";
 import {
   easings,
   lettering,
@@ -123,6 +124,9 @@ function libraryParts(): Record<string, string> {
     variables[`--lx-ease-${name}`] = `cubic-bezier(${curve.join(", ")})`;
   }
   variables["--lx-press-sink"] = `${press.sinkMs}ms`;
+  variables["--lx-open-arrive"] = `${openingTimes.arriveMs}ms`;
+  variables["--lx-open-charge"] = `${openingTimes.chargeMs}ms`;
+  variables["--lx-open-burst"] = `${openingTimes.burstMs}ms`;
   for (const [name, value] of Object.entries(toyRadii)) {
     variables[`--lx-toy-radius-${name}`] = `${value}px`;
   }

@@ -171,10 +171,6 @@ function prefersReducedMotion(): boolean {
   return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 }
 
-function delay(ms: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
 function readChoice(): string | null {
   try {
     return window.localStorage.getItem(CHOICE_KEY);
@@ -230,6 +226,9 @@ function BoosterFlow({ library }: { readonly library: boolean }) {
   const [memory, setMemory] = useState<ReadonlyMap<string, WordMemory>>(new Map());
   const [visit, setVisit] = useState(0);
   const request = useRef<OpenRequest | null>(null);
+  /** Set by a tap during the opening: the waits that are only for show end at once. */
+  const hurried = useRef(false);
+  const endWait = useRef<(() => void) | null>(null);
   const stage = useOptionalStage();
   const [moment, setMoment] = useState<CounterMoment>("waiting");
   const sachetRef = useRef<HTMLDivElement>(null);
@@ -355,6 +354,22 @@ function BoosterFlow({ library }: { readonly library: boolean }) {
     };
   };
 
+  /** A wait for show only: a tap during the opening cuts it short. */
+  const showFor = (ms: number) =>
+    new Promise<void>((resolve) => {
+      if (hurried.current) {
+        resolve();
+        return;
+      }
+      const timer = window.setTimeout(done, ms);
+      function done() {
+        window.clearTimeout(timer);
+        endWait.current = null;
+        resolve();
+      }
+      endWait.current = done;
+    });
+
   /** The sachet bursts: light, a ring, scraps of parchment, and the screen shakes. */
   const burstSachet = () => {
     setMoment("burst");
@@ -372,6 +387,7 @@ function BoosterFlow({ library }: { readonly library: boolean }) {
     const started = startRequest();
     if (started?.outcome == null || catalog === null || choice === null) return;
     setError(null);
+    hurried.current = false;
     setPhase({ name: "opening" });
     const reduced = prefersReducedMotion();
     const stopCharge = library ? chargeSachet(reduced) : () => undefined;
@@ -387,7 +403,7 @@ function BoosterFlow({ library }: { readonly library: boolean }) {
       : library
         ? openingTimes.arriveMs + openingTimes.chargeMs
         : motion.sealBreak;
-    const [outcome] = await Promise.all([started.outcome, delay(wait)]);
+    const [outcome] = await Promise.all([started.outcome, showFor(wait)]);
     stopCharge();
     if (outcome.kind === "failed") {
       // Same key next time: if the server did open the booster, it answers with the same cards.
@@ -415,9 +431,9 @@ function BoosterFlow({ library }: { readonly library: boolean }) {
       setPhase({ name: "sealed" });
       return;
     }
-    if (library && !reduced) {
+    if (library && !reduced && !hurried.current) {
       burstSachet();
-      await delay(openingTimes.burstMs);
+      await showFor(openingTimes.burstMs);
     }
     if (who?.kind === "guest") {
       account.publish({ ...who, boostersLeft: Math.max(0, who.boostersLeft - 1) });
@@ -502,6 +518,23 @@ function BoosterFlow({ library }: { readonly library: boolean }) {
   const shiftRef = useRef<(side: "left" | "right") => void>(() => undefined);
   shiftRef.current = () => undefined;
   // The arrow keys turn the sachets too, unless a field or a dialog has them.
+  // A tap or a key during the opening goes straight to the cards, once the server has answered.
+  const opening = phase.name === "opening";
+  useEffect(() => {
+    if (!opening) return;
+    const hurry = (event: Event) => {
+      if (event instanceof KeyboardEvent && ![" ", "Enter", "Escape"].includes(event.key)) return;
+      hurried.current = true;
+      endWait.current?.();
+    };
+    window.addEventListener("pointerdown", hurry);
+    window.addEventListener("keydown", hurry);
+    return () => {
+      window.removeEventListener("pointerdown", hurry);
+      window.removeEventListener("keydown", hurry);
+    };
+  }, [opening]);
+
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
       if (event.key !== "ArrowLeft" && event.key !== "ArrowRight") return;
@@ -519,7 +552,13 @@ function BoosterFlow({ library }: { readonly library: boolean }) {
 
   if (phase.name === "stack" || phase.name === "revealing" || phase.name === "recap") {
     return (
-      <main className={phase.name === "recap" ? `${styles.screen} ${styles.wide}` : styles.screen}>
+      <main
+        className={
+          phase.name === "recap" || (library && phase.name === "revealing")
+            ? `${styles.screen} ${styles.wide}`
+            : styles.screen
+        }
+      >
         {phase.name === "stack" && pack !== null && (
           <div className={styles.center}>
             <CardStack
@@ -887,8 +926,12 @@ function Revealing({
     index,
   );
   const last = index === pack.cards.length - 1;
+  // In « La Bibliothèque » the cards come onto the desk the sachet burst on, as in the recap.
   return (
-    <div className={styles.revealing}>
+    <div
+      className={stage === null ? styles.revealing : `${styles.revealing} ${styles.revealLibrary}`}
+    >
+      {stage !== null && <Desk className={styles.recapDesk} />}
       <RevealCard
         key={index}
         card={card}
@@ -1138,7 +1181,12 @@ function RecapCards({
               <button
                 type="button"
                 className={`${styles.recapCard} ${step?.glint === true ? styles.glint : ""}`}
-                onClick={() => openCard(drawn.cardId)}
+                onClick={() =>
+                  openCard(
+                    drawn.cardId,
+                    shown.map((entry) => entry.card.cardId),
+                  )
+                }
                 aria-label={`Lire ${card.word}`}
               >
                 <Card card={card} collectionName={pack.collectionName} width={layout.width} />

@@ -43,7 +43,7 @@ import { api } from "@/api/client";
 import { loadCatalog } from "@/cards/catalog";
 import { prepareSpokenWords } from "@/cards/spoken-word";
 import { play, prepareSounds } from "@/feedback/feedback";
-import { PaperAction } from "@/library/play-pieces";
+import { Desk, PaperAction } from "@/library/play-pieces";
 import { noteGained, OWNED_CARDS_MAX_AGE_MS, ownedCards } from "@/player/collection";
 import { useNow, useShared } from "@/player/shared";
 import { account, publishProgress, wallet } from "@/player/state";
@@ -70,8 +70,11 @@ const SACHET_MAX_WIDTH = 230;
 const CARD_MAX_WIDTH = 300;
 /** Kept on both sides of the sachet for the round buttons. */
 const FABS_ROOM = 150;
-/** Room kept around a revealed card: the banner above, the bar below. */
-const REVEAL_CHROME = 210;
+/**
+ * Room kept around a revealed card: the banner above, the bar below, and under a new card the
+ * line of its frequency, which takes two lines beside the buttons to hear it.
+ */
+const REVEAL_CHROME = 236;
 const CHROME_FADE_MS = 160;
 
 type Phase =
@@ -107,8 +110,21 @@ interface OpenRequest {
 /** Shown once a guest opened all its boosters. */
 const SIGN_UP_HINT = "Crée ton compte pour garder tes cartes et ouvrir d'autres sachets.";
 
-function delay(ms: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms));
+/** A wait for show only: `hurry` (a tap during the opening) cuts it short. */
+function showFor(ms: number, hurry: { hurried: boolean; end: (() => void) | null }): Promise<void> {
+  return new Promise((resolve) => {
+    if (hurry.hurried) {
+      resolve();
+      return;
+    }
+    const timer = setTimeout(done, ms);
+    function done() {
+      clearTimeout(timer);
+      hurry.end = null;
+      resolve();
+    }
+    hurry.end = done;
+  });
 }
 
 /** In « La Bibliothèque », the seam of the sachet, from the top of its box: where light leaks. */
@@ -139,6 +155,10 @@ function PlayFlow() {
   const [notice, setNotice] = useState<string | null>(null);
   /** Kept until the server answers, so that a retry never opens a second booster. */
   const request = useRef<OpenRequest | null>(null);
+  const hurry = useRef<{ hurried: boolean; end: (() => void) | null }>({
+    hurried: false,
+    end: null,
+  });
   const view = usePlayerView();
   const who = useShared(account);
   const now = useNow(15_000);
@@ -285,6 +305,7 @@ function PlayFlow() {
     const started = startRequest();
     if (started?.outcome == null) return;
     setError(null);
+    hurry.current = { hurried: false, end: null };
     setPhase({ name: "opening" });
     const stopCharge = IS_LIBRARY ? chargeSachet() : () => undefined;
     // The words start loading while the seal still breaks.
@@ -299,7 +320,7 @@ function PlayFlow() {
       : IS_LIBRARY
         ? openingTimes.arriveMs + openingTimes.chargeMs
         : motion.sealBreak;
-    const [outcome] = await Promise.all([started.outcome, delay(wait)]);
+    const [outcome] = await Promise.all([started.outcome, showFor(wait, hurry.current)]);
     stopCharge();
     if (outcome.kind === "failed") {
       // Same key next time: if the server did open the booster, it answers with the same cards.
@@ -327,9 +348,9 @@ function PlayFlow() {
       setPhase({ name: "sealed" });
       return;
     }
-    if (IS_LIBRARY && !reduced) {
+    if (IS_LIBRARY && !reduced && !hurry.current.hurried) {
       burstSachet();
-      await delay(openingTimes.burstMs);
+      await showFor(openingTimes.burstMs, hurry.current);
     }
     if (who?.kind === "guest") {
       account.publish({ ...who, boostersLeft: Math.max(0, who.boostersLeft - 1) });
@@ -460,6 +481,8 @@ function PlayFlow() {
     const hurried = phase.hurriedFrom !== null;
     return (
       <View style={styles.screen} onLayout={measureScreen}>
+        {/* On the desk, the lines under the card read on leather rather than on the shelves. */}
+        {IS_LIBRARY && <Desk style={styles.revealDesk} />}
         <RevealCard
           key={phase.index}
           card={card}
@@ -595,6 +618,17 @@ function PlayFlow() {
             ) : null
           }
         />
+        {opening && (
+          // A tap during the opening goes straight to the cards, once the server has answered.
+          <Pressable
+            style={StyleSheet.absoluteFill}
+            accessibilityLabel="Passer l'ouverture"
+            onPress={() => {
+              hurry.current.hurried = true;
+              hurry.current.end?.();
+            }}
+          />
+        )}
       </View>
     );
   }
@@ -897,6 +931,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   stackStage: { flex: 1, alignItems: "center", justifyContent: "center" },
+  revealDesk: { position: "absolute", top: 4, left: 8, right: 8, bottom: TAB_BAR_RISE + 64 },
   revealBar: { paddingHorizontal: space.s10, paddingBottom: 12 + TAB_BAR_RISE, gap: space.s6 },
   revealInfo: { alignItems: "center", gap: space.s3 },
   position: {

@@ -527,3 +527,8 @@
     transition: none;
   }
 }
+
+/* On the green desk, the line under the card reads in plain ink, not the faint one. */
+:root[data-look="bibliotheque"] .frequency {
+  color: var(--lx-color-page-ink-soft);
+}
