@@ -94,6 +94,8 @@ import { Pli } from "./pli";
 import { RevealCard } from "./reveal-card";
 import { Sachet } from "./sachet";
 
+/** A change of sachet has played out by then: its longest animation, `--swap`, takes 620 ms. */
+const SWAP_MS = 700;
 /** Widest the recap's screen gets, in px: `.wide` in the stylesheet. */
 const RECAP_SCREEN_MAX = 1180;
 /** The screen's and the panel's padding around the recap's cards, in px. */
@@ -306,6 +308,12 @@ function BoosterFlow({ library }: { readonly library: boolean }) {
     setWanted(next.id);
     writeChoice(next.id);
   };
+  // Played once: a later return to the counter, after an opening, shows the sachets in place.
+  useEffect(() => {
+    if (swap === null) return;
+    const timer = window.setTimeout(() => setSwap(null), SWAP_MS);
+    return () => clearTimeout(timer);
+  }, [swap]);
   const entryOf = (id: string) =>
     swap === null ? null : id === swap.previous ? ("front" as const) : ("outside" as const);
 
@@ -713,7 +721,8 @@ function BoosterFlow({ library }: { readonly library: boolean }) {
           canOpen={canOpen}
           moment={phase.name === "opening" ? moment : "waiting"}
           sachetRef={sachetRef}
-          onPick={(next) => pick(next)}
+          entry={swap?.from ?? null}
+          onPick={pick}
           onOpen={() => {
             if (!canOpen || phase.name === "opening") return;
             startRequest();

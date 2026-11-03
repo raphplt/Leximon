@@ -11,7 +11,7 @@ import {
   type StockView,
 } from "@leximon/view-model";
 import { useRouter } from "next/navigation";
-import { type ReactNode, type RefObject, useState } from "react";
+import { type ReactNode, type RefObject, useEffect, useRef, useState } from "react";
 import { CollectionTitle, Desk, InfoBubble, MainAction, SideTile } from "@/library/play-pieces";
 import { dailyChallenge } from "@/player/collection";
 import { useShared } from "@/player/resource";
@@ -52,7 +52,10 @@ export interface LibraryCounterProps {
   readonly moment: CounterMoment;
   /** Where the particles of the opening start: the sachet. */
   readonly sachetRef: RefObject<HTMLDivElement | null>;
-  readonly onPick: (next: CollectionChoice) => void;
+  /** The side the sachet on the desk came in from, on the last change; null for none to play. */
+  readonly entry: "left" | "right" | null;
+  /** `from`: the side the new sachet comes in from. */
+  readonly onPick: (next: CollectionChoice, from: "left" | "right") => void;
   readonly onOpen: () => void;
   /** Under the button: the account to create, an error, the last sachet without an account. */
   readonly footer: ReactNode;
@@ -80,6 +83,7 @@ export function LibraryCounter({
   canOpen,
   moment,
   sachetRef,
+  entry,
   onPick,
   onOpen,
   footer,
@@ -96,8 +100,9 @@ export function LibraryCounter({
     const next = neighbours[side];
     if (next === null || opening) return;
     if (next.lock !== null) say(lockedToast("choose_collection", view.now));
-    else onPick(next);
+    else onPick(next, side);
   };
+  const leaving = useLeavingSachet(choice.id, sachet, entry);
 
   return (
     <section className={styles.screen} data-opening={opening || undefined} aria-label="Ton sachet">
@@ -125,7 +130,23 @@ export function LibraryCounter({
           <div ref={sachetRef} className={styles.sachet} data-moment={moment}>
             <div className={`${styles.beside} ${styles.fading}`}>{beside}</div>
             <div className={styles.glow} aria-hidden="true" />
-            <div className={styles.charge}>{sachet}</div>
+            <div className={styles.charge}>
+              {leaving !== null && (
+                <div
+                  key={leaving.id}
+                  className={`${styles.front} ${styles.leaving} ${leaving.to === "left" ? styles.toLeft : styles.toRight}`}
+                  inert
+                >
+                  {leaving.node}
+                </div>
+              )}
+              <div
+                key={choice.id}
+                className={`${styles.front} ${entry === "right" ? styles.fromRight : entry === "left" ? styles.fromLeft : ""}`}
+              >
+                {sachet}
+              </div>
+            </div>
           </div>
         </div>
         <div className={`${styles.cta} ${styles.fading}`}>
@@ -147,6 +168,49 @@ export function LibraryCounter({
       <InfoBubble message={bubble} />
     </section>
   );
+}
+
+/** How long the sachet put back takes to leave, as `--swap-out` in the styles. */
+const LEAVE_MS = 380;
+
+/**
+ * The sachet put back on a change of collection, as it was last drawn, while it slides away on
+ * the side opposite to the new one. Only a phone shows it: on a wide screen it becomes the
+ * sachet behind, which plays its own way back.
+ */
+function useLeavingSachet(
+  id: string,
+  sachet: ReactNode,
+  entry: "left" | "right" | null,
+): { readonly id: string; readonly node: ReactNode; readonly to: "left" | "right" } | null {
+  const last = useRef({ id, node: sachet });
+  const [shown, setShown] = useState(id);
+  const [leaving, setLeaving] = useState<{
+    readonly id: string;
+    readonly node: ReactNode;
+    readonly to: "left" | "right";
+  } | null>(null);
+  if (shown !== id) {
+    setShown(id);
+    setLeaving(
+      entry === null
+        ? null
+        : {
+            id: last.current.id,
+            node: last.current.node,
+            to: entry === "right" ? "left" : "right",
+          },
+    );
+  }
+  useEffect(() => {
+    last.current = { id, node: sachet };
+  });
+  useEffect(() => {
+    if (leaving === null) return;
+    const timer = window.setTimeout(() => setLeaving(null), LEAVE_MS);
+    return () => clearTimeout(timer);
+  }, [leaving]);
+  return leaving;
 }
 
 /** The tiles on both sides of the sachet; a closed one says the level that opens it. */

@@ -51,6 +51,24 @@
       "port": 8081
     },
     {
+      "name": "mobile-library",
+      "runtimeExecutable": "env",
+      "runtimeArgs": [
+        "EXPO_PUBLIC_LOOK=bibliotheque",
+        "pnpm",
+        "--filter",
+        "@leximon/mobile",
+        "exec",
+        "expo",
+        "start",
+        "--dev-client",
+        "--localhost",
+        "--port",
+        "8082"
+      ],
+      "port": 8082
+    },
+    {
       "name": "da-jeu",
       "runtimeExecutable": "python3",
       "runtimeArgs": [

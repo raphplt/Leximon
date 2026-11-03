@@ -17,6 +17,7 @@ import Animated, {
   useAnimatedStyle,
   useReducedMotion,
   useSharedValue,
+  withDelay,
   withRepeat,
   withSpring,
   withTiming,
@@ -47,6 +48,53 @@ const DESK_BOTTOM = 96 + TAB_BAR_RISE;
 
 /** How much the sachet grows once it comes to the middle to be opened. */
 const OPENING_SCALE = 1.25;
+
+/** How far a sachet slides across the desk when the collection changes, in pt. */
+const SLIDE = 210;
+const SLIDE_IN_WAIT_MS = 140;
+
+/**
+ * A change of sachet slides them across the desk, the new one in as the old one goes out. The new
+ * one waits a moment before it moves: drawing it takes the phone's first frames, which would
+ * otherwise swallow the start of its way in.
+ */
+function slideIn(from: "left" | "right") {
+  const sign = from === "right" ? 1 : -1;
+  return () => {
+    "worklet";
+    const go = <T extends number | string>(to: T) =>
+      withDelay(
+        SLIDE_IN_WAIT_MS,
+        withTiming(to, { duration: 460, easing: Easing.out(Easing.quad) }),
+      );
+    return {
+      initialValues: {
+        opacity: 0,
+        transform: [{ translateX: sign * SLIDE }, { rotate: `${sign * 10}deg` }],
+      },
+      animations: {
+        opacity: go(1),
+        transform: [{ translateX: go(0) }, { rotate: go("0deg") }],
+      },
+    };
+  };
+}
+
+function slideOut(to: "left" | "right") {
+  const sign = to === "right" ? 1 : -1;
+  return () => {
+    "worklet";
+    const go = <T extends number | string>(value: T) =>
+      withTiming(value, { duration: 380, easing: Easing.in(Easing.quad) });
+    return {
+      initialValues: { opacity: 1, transform: [{ translateX: 0 }, { rotate: "0deg" }] },
+      animations: {
+        opacity: go(0),
+        transform: [{ translateX: go(sign * SLIDE) }, { rotate: go(`${sign * 10}deg`) }],
+      },
+    };
+  };
+}
 
 /** Where the opening stands, as the counter shows it. */
 export type CounterMoment = "waiting" | "arriving" | "charging" | "burst";
@@ -156,11 +204,16 @@ export function LibraryCounter({
     transform: [{ scale: 0.8 + 0.35 * charge.value }],
   }));
 
+  /** The side the sachet on the desk came in from, on the last change. */
+  const [entry, setEntry] = useState<"left" | "right" | null>(null);
   const turn = (side: "left" | "right") => {
     const next = neighbours[side];
     if (next === null || opening) return;
     if (next.lock !== null) say(lockedToast("choose_collection", now));
-    else onPick(next);
+    else {
+      setEntry(side);
+      onPick(next);
+    }
   };
 
   return (
@@ -198,7 +251,18 @@ export function LibraryCounter({
         >
           <Animated.View style={[styles.glow, glowing]} pointerEvents="none" />
           <Animated.View style={trembling} pointerEvents={opening ? "none" : "auto"}>
-            {sachet}
+            <Animated.View
+              key={choice.id}
+              collapsable={false}
+              {...(entry === null
+                ? {}
+                : {
+                    entering: slideIn(entry),
+                    exiting: slideOut(entry === "right" ? "left" : "right"),
+                  })}
+            >
+              {sachet}
+            </Animated.View>
           </Animated.View>
         </Animated.View>
         <Animated.View style={[styles.side, fading]} pointerEvents={opening ? "none" : "auto"}>
