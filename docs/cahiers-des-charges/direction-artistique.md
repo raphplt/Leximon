@@ -231,6 +231,8 @@ Seulement ce dont l'écran Jouer et l'ouverture ont besoin : bandeau du haut (po
 
 **Sanctions, écrans fermés et erreurs faits le 2026-11-03**, sur le web et le mobile. Une fonction fermée par le niveau, une page introuvable ou une page qui a planté se disent sur une feuille, leur signe dans un médaillon d'or. Sur le mobile, l'avis de sanction s'ouvre sur une feuille ; sur le web, il était déjà dans une fenêtre de papier. Le mobile n'a pas d'écran d'erreur à lui.
 
+**Pages publiques faites le 2026-11-03**, sur le web et le mobile. La page publique d'une carte pose ses renseignements sur une feuille à côté de la carte, comme la fiche du jeu. L'invitation, le lien d'ami et la désinscription posent leur texte et leur formulaire sur une feuille sous un titre en lettres dorées. L'énigme publique était déjà sur une feuille. Hors du jeu, ces pages ne prennent l'allure qu'avec le réglage, comme le reste, jusqu'à la bascule.
+
 ### Hors du jeu
 
 | Élément | Travail |

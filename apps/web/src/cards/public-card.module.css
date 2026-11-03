@@ -88,3 +88,8 @@
     font-size: var(--lx-size-heading-large);
   }
 }
+
+/* In « La Bibliothèque », the facts lie on a leaf beside the card, as on the card's sheet. */
+:root[data-look="bibliotheque"] .facts {
+  padding: var(--lx-s12) var(--lx-s12) var(--lx-s10);
+}

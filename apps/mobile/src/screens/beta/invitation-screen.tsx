@@ -18,6 +18,7 @@ import { api } from "@/api/client";
 import { playFromScratch } from "@/player/session";
 import { Button } from "@/ui/button";
 import { FormError, Page, Paragraph } from "@/ui/page";
+import { OnPaper } from "@/ui/panel";
 import { TextField } from "@/ui/text-field";
 import { SignInLink } from "./sign-in-link";
 import { WaitlistForm } from "./waitlist-form";
@@ -55,26 +56,28 @@ export function InvitationScreen({ code }: { readonly code: string | null }) {
   const closed = "status" in state && state.status !== "open";
   return (
     <Page title={closed ? CLOSED_TITLE : INVITED_TITLE}>
-      {"kind" in state && state.kind === "loading" && <Paragraph muted>Un instant…</Paragraph>}
-      {"kind" in state && state.kind === "failed" && (
-        <>
-          <Paragraph muted>Le serveur ne répond pas.</Paragraph>
-          <Button label="Réessayer" secondary onPress={() => void load()} />
-        </>
-      )}
-      {"status" in state && state.status === "open" && (
-        <>
-          <Paragraph>{INVITED_PITCH}</Paragraph>
-          <Button label={INVITED_ACTION} onPress={enter} />
-        </>
-      )}
-      {"status" in state && state.status !== "open" && (
-        <>
-          <Paragraph>{INVITE_CLOSED_TEXT[state.status]}</Paragraph>
-          <WaitlistForm />
-        </>
-      )}
-      <SignInLink />
+      <OnPaper>
+        {"kind" in state && state.kind === "loading" && <Paragraph muted>Un instant…</Paragraph>}
+        {"kind" in state && state.kind === "failed" && (
+          <>
+            <Paragraph muted>Le serveur ne répond pas.</Paragraph>
+            <Button label="Réessayer" secondary onPress={() => void load()} />
+          </>
+        )}
+        {"status" in state && state.status === "open" && (
+          <>
+            <Paragraph>{INVITED_PITCH}</Paragraph>
+            <Button label={INVITED_ACTION} onPress={enter} />
+          </>
+        )}
+        {"status" in state && state.status !== "open" && (
+          <>
+            <Paragraph>{INVITE_CLOSED_TEXT[state.status]}</Paragraph>
+            <WaitlistForm />
+          </>
+        )}
+        <SignInLink />
+      </OnPaper>
     </Page>
   );
 }
@@ -101,26 +104,28 @@ export function InvitationRequiredScreen() {
 
   return (
     <Page title={INVITATION_REQUIRED_TITLE} closable={false}>
-      <Paragraph>{INVITATION_REQUIRED_TEXT}</Paragraph>
-      <TextField
-        label={DOOR_FIELD}
-        placeholder="https://leximon.fr/invitation/…"
-        value={link}
-        onChangeText={(text) => {
-          setLink(text);
-          setError(null);
-        }}
-        autoCapitalize="none"
-        autoCorrect={false}
-        keyboardType="url"
-        returnKeyType="go"
-        onSubmitEditing={open}
-      />
-      <Button label="Entrer" disabled={link.trim() === ""} onPress={open} />
-      <FormError message={error} />
-      <Paragraph muted>Pas de lien ? Laisse ton adresse.</Paragraph>
-      <WaitlistForm />
-      <SignInLink />
+      <OnPaper>
+        <Paragraph>{INVITATION_REQUIRED_TEXT}</Paragraph>
+        <TextField
+          label={DOOR_FIELD}
+          placeholder="https://leximon.fr/invitation/…"
+          value={link}
+          onChangeText={(text) => {
+            setLink(text);
+            setError(null);
+          }}
+          autoCapitalize="none"
+          autoCorrect={false}
+          keyboardType="url"
+          returnKeyType="go"
+          onSubmitEditing={open}
+        />
+        <Button label="Entrer" disabled={link.trim() === ""} onPress={open} />
+        <FormError message={error} />
+        <Paragraph muted>Pas de lien ? Laisse ton adresse.</Paragraph>
+        <WaitlistForm />
+        <SignInLink />
+      </OnPaper>
     </Page>
   );
 }

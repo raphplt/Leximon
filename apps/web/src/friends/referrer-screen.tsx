@@ -17,6 +17,7 @@ import { Avatar } from "@/components/avatar";
 import { WaitlistForm } from "@/landing/waitlist-form";
 import { api } from "@/lib/api";
 import { Button } from "@/ui/button";
+import ui from "@/ui/ui.module.css";
 
 type State =
   | { readonly kind: "loading" | "failed" | "unknown" }
@@ -64,10 +65,10 @@ export function ReferrerScreen() {
           />
         </div>
       )}
-      <h1 className={styles.title}>
+      <h1 className={`${styles.title} ${ui.lettered}`}>
         {referrer === null ? "Lien d'ami" : referrerTitle(referrer.player.pseudo)}
       </h1>
-      <section className={styles.section}>
+      <section className={`${styles.section} ${ui.leaf}`}>
         {state.kind === "loading" && <p>Un instant…</p>}
         {state.kind === "failed" && <p>Le serveur ne répond pas. Réessaie.</p>}
         {state.kind === "unknown" && <p>{REFERRER_UNKNOWN}</p>}

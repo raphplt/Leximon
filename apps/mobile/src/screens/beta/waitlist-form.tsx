@@ -5,8 +5,9 @@ import { StyleSheet, Text, View } from "react-native";
 import { api } from "@/api/client";
 import { WEB_URL } from "@/config";
 import { playFromScratch } from "@/player/session";
-import { colors, fontSizes, fonts, space } from "@/theme";
+import { fontSizes, fonts, space } from "@/theme";
 import { Button } from "@/ui/button";
+import { useInk } from "@/ui/ink";
 import { FormError } from "@/ui/page";
 import { TextField } from "@/ui/text-field";
 
@@ -19,6 +20,7 @@ type FormState =
 
 /** Leaves an address to be warned when the game opens. Nothing else is asked or promised. */
 export function WaitlistForm() {
+  const ink = useInk();
   const [email, setEmail] = useState("");
   const [state, setState] = useState<FormState>({ kind: "idle" });
 
@@ -39,7 +41,7 @@ export function WaitlistForm() {
 
   if (state.kind === "joined") {
     return (
-      <Text style={styles.done} accessibilityLiveRegion="polite">
+      <Text style={[styles.done, { color: ink.success }]} accessibilityLiveRegion="polite">
         Noté. On se revoit à l'ouverture.
       </Text>
     );
@@ -48,7 +50,7 @@ export function WaitlistForm() {
   if (state.kind === "closed") {
     return (
       <View style={styles.form}>
-        <Text style={styles.done} accessibilityLiveRegion="polite">
+        <Text style={[styles.done, { color: ink.success }]} accessibilityLiveRegion="polite">
           Le jeu est ouvert.
         </Text>
         <Button label="Viens jouer" onPress={playFromScratch} />
@@ -79,10 +81,10 @@ export function WaitlistForm() {
         onPress={() => void submit()}
       />
       <FormError message={state.kind === "error" ? state.message : null} />
-      <Text style={styles.note}>
+      <Text style={[styles.note, { color: ink.pageInkFaint }]}>
         On t'écrit à l'ouverture, puis quand le jeu a du nouveau.{" "}
         <Text
-          style={styles.link}
+          style={[styles.link, { color: ink.rubric }]}
           accessibilityRole="link"
           onPress={() => void WebBrowser.openBrowserAsync(`${WEB_URL}/confidentialite`)}
         >
@@ -99,13 +101,11 @@ const styles = StyleSheet.create({
     fontFamily: fonts.ui.bold,
     fontSize: fontSizes.lead,
     lineHeight: 24,
-    color: colors.success,
   },
   note: {
     fontFamily: fonts.ui.medium,
     fontSize: fontSizes.small,
     lineHeight: 19,
-    color: colors.pageInkFaint,
   },
-  link: { color: colors.rubric, textDecorationLine: "underline" },
+  link: { textDecorationLine: "underline" },
 });

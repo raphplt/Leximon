@@ -38,7 +38,7 @@ export function PublicCardView({
         <HoloCard card={card} collectionName={collectionName} width={narrow ? 260 : 320} />
         <EngravingCredit card={card} />
       </div>
-      <div className={styles.facts}>
+      <div className={`${styles.facts} ${ui.leaf}`}>
         <h1 className={`${ui.display} ${styles.word}`}>{card.word}</h1>
         <CardFacts card={card} />
         <p className={styles.chips}>
