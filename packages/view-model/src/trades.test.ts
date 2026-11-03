@@ -17,6 +17,7 @@ import {
   toggleCard,
   tradeDoneAction,
   tradeDoneTitle,
+  tradeGuide,
   tradeLevelLabel,
   tradeRulesNote,
   tradeSides,
@@ -225,6 +226,17 @@ describe("échanges screen", () => {
     expect(tradeRulesNote(now)).toBe(
       "Tu peux envoyer 10 offres par jour. Une offre sans réponse expire après 72 h.",
     );
+  });
+
+  it("walks through a trade with the holding time and the offer's lifetime in force", () => {
+    const guide = tradeGuide(now);
+    expect(guide.map((step) => step.title)).toEqual([
+      "Repère tes doubles",
+      "Trouve un joueur",
+      "Fais ton offre",
+    ]);
+    expect(guide[0]?.text).toContain("attend 7 jours");
+    expect(guide[2]?.text).toContain("a 72 h pour accepter");
   });
 
   it("sums up a past offer, the player's cards first", () => {

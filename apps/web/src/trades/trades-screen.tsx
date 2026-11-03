@@ -14,6 +14,7 @@ import {
   splitTrades,
   type TradeBox,
   timeLeftLabel,
+  tradeGuide,
   tradeLevelLabel,
   tradeRulesNote,
   tradeSides,
@@ -29,7 +30,7 @@ import { publishTraded } from "@/player/collection";
 import { profile as ownProfile } from "@/player/player";
 import { useProgress } from "@/progress/use-progress";
 import { useShell } from "@/shell/shell-context";
-import { Button } from "@/ui/button";
+import { Button, ButtonLink } from "@/ui/button";
 import { Icon } from "@/ui/icon";
 import { Bone, WaitingScreen } from "@/ui/skeleton";
 import { useToast } from "@/ui/toast";
@@ -244,6 +245,7 @@ export function TradesScreen() {
       {tab === "incoming" && (
         <Received
           catalog={catalog}
+          code={profile.playerCode}
           inbox={inboxes.incoming}
           now={now}
           busyTradeId={busyTradeId}
@@ -258,12 +260,14 @@ export function TradesScreen() {
 
       {tab === "outgoing" && (
         <Sent
+          code={profile.playerCode}
           inbox={inboxes.outgoing}
           now={now}
           busyTradeId={busyTradeId}
           wordOf={wordOf}
           onCancel={(trade) => void resolve("outgoing", trade, "cancel")}
           onLoadMore={() => void loadMore("outgoing")}
+          onPropose={() => selectTab("propose")}
         />
       )}
 
@@ -333,8 +337,8 @@ function TradesWaiting() {
   );
 }
 
-/** « Ton code K7QP 2MXA », copied with one tap. */
-function PlayerCode({ code }: { readonly code: string }) {
+/** « Ton code K7QP 2MXA », copied with one tap. `large`: the code alone, set out to be read aloud. */
+function PlayerCode({ code, large = false }: { readonly code: string; readonly large?: boolean }) {
   const toast = useToast();
   const copy = async () => {
     try {
@@ -347,18 +351,62 @@ function PlayerCode({ code }: { readonly code: string }) {
   return (
     <button
       type="button"
-      className={`${ui.chip} ${styles.codeChip}`}
+      className={`${ui.chip} ${styles.codeChip} ${large ? styles.codeLarge : ""}`}
       onClick={() => void copy()}
       aria-label={`Copier mon code joueur, ${code.split("").join(" ")}`}
     >
-      Ton code <strong className={`${ui.display} ${styles.code}`}>{formatPlayerCode(code)}</strong>
-      <Icon name="share" size={15} />
+      {!large && "Ton code "}
+      <strong className={styles.code}>{formatPlayerCode(code)}</strong>
+      <Icon name="share" size={large ? 18 : 15} />
     </button>
+  );
+}
+
+/** No offer waiting in the box: how a trade goes, the code to give, and where to begin. */
+function NoOffer({
+  text,
+  code,
+  now,
+  onPropose,
+}: {
+  readonly text: string;
+  readonly code: string;
+  readonly now: number;
+  readonly onPropose: () => void;
+}) {
+  return (
+    <section className={`${styles.empty} ${ui.leaf}`} aria-labelledby="trade-guide">
+      <p className={styles.emptyText}>
+        <em>{text}</em>
+      </p>
+      <h2 id="trade-guide" className={`${ui.kicker} ${styles.guideTitle}`}>
+        Comment échanger
+      </h2>
+      <ol className={styles.guide}>
+        {tradeGuide(now).map((step, index) => (
+          <li key={step.title} className={styles.guideStep}>
+            <span className={styles.guideNumber} aria-hidden="true">
+              {index + 1}
+            </span>
+            <h3 className={styles.guideStepTitle}>{step.title}</h3>
+            <p className={styles.guideText}>{step.text}</p>
+            {index === 1 && <PlayerCode code={code} large />}
+          </li>
+        ))}
+      </ol>
+      <div className={styles.guideActions}>
+        <Button onClick={onPropose}>Proposer un échange</Button>
+        <ButtonLink href="/amis" variant="secondary">
+          Voir mes amis
+        </ButtonLink>
+      </div>
+    </section>
   );
 }
 
 function Received({
   catalog,
+  code,
   inbox,
   now,
   busyTradeId,
@@ -370,6 +418,7 @@ function Received({
   onOpen,
 }: {
   readonly catalog: Catalog;
+  readonly code: string;
   readonly inbox: Inbox;
   readonly now: number;
   readonly busyTradeId: string | null;
@@ -385,14 +434,7 @@ function Received({
   return (
     <>
       {pending.length === 0 ? (
-        <div className={`${styles.empty} ${ui.leaf}`}>
-          <p className={styles.emptyText}>
-            <em>{NO_OFFER_RECEIVED}</em>
-          </p>
-          <Button variant="secondary" onClick={onPropose}>
-            Proposer un échange
-          </Button>
-        </div>
+        <NoOffer text={NO_OFFER_RECEIVED} code={code} now={now} onPropose={onPropose} />
       ) : (
         <ul className={styles.offers}>
           {pending.map((trade) => (
@@ -498,27 +540,29 @@ function ReceivedOffer({
 }
 
 function Sent({
+  code,
   inbox,
   now,
   busyTradeId,
   wordOf,
   onCancel,
   onLoadMore,
+  onPropose,
 }: {
+  readonly code: string;
   readonly inbox: Inbox;
   readonly now: number;
   readonly busyTradeId: string | null;
   readonly wordOf: (cardId: string) => string;
   readonly onCancel: (trade: Trade) => void;
   readonly onLoadMore: () => void;
+  readonly onPropose: () => void;
 }) {
   const { pending, history } = splitTrades(inbox.trades, now);
   return (
     <div className={styles.sent}>
       {pending.length === 0 ? (
-        <p className={styles.emptyText}>
-          <em>{NO_OFFER_SENT}</em>
-        </p>
+        <NoOffer text={NO_OFFER_SENT} code={code} now={now} onPropose={onPropose} />
       ) : (
         <ul className={styles.offers}>
           {pending.map((trade) => {

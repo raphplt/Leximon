@@ -1,5 +1,6 @@
 import type { ProfileResponse, Trade } from "@leximon/contract";
 import { ApiError, type Catalog } from "@leximon/contract/client";
+import { toyMatters, toy as toyValues } from "@leximon/tokens";
 import {
   boxTabLabel,
   formatPlayerCode,
@@ -12,6 +13,7 @@ import {
   splitTrades,
   type TradeBox,
   timeLeftLabel,
+  tradeGuide,
   tradeLevelLabel,
   tradeRulesNote,
   tradeSides,
@@ -39,7 +41,7 @@ import {
   progress as progressResource,
 } from "@/player/state";
 import { TAB_BAR_RISE } from "@/shell/tab-bar";
-import { colors, fontSizes, fonts, IS_LIBRARY, paperColors, radii, space } from "@/theme";
+import { alpha, colors, fontSizes, fonts, IS_LIBRARY, paperColors, radii, space } from "@/theme";
 import { Button } from "@/ui/button";
 import { Icon } from "@/ui/icon";
 import { OnPaper, Panel } from "@/ui/panel";
@@ -257,6 +259,7 @@ export function TradesScreen({
         {ready && tab === "incoming" && (
           <Received
             catalog={catalog}
+            code={profile.playerCode}
             inbox={inboxes.incoming}
             now={now}
             busyTradeId={busyTradeId}
@@ -269,12 +272,14 @@ export function TradesScreen({
         )}
         {ready && tab === "outgoing" && (
           <Sent
+            code={profile.playerCode}
             inbox={inboxes.outgoing}
             now={now}
             busyTradeId={busyTradeId}
             wordOf={(id) => catalogCard(catalog, id).word}
             onCancel={(trade) => void resolve("outgoing", trade, "cancel")}
             onLoadMore={() => void loadMore("outgoing")}
+            onPropose={() => selectTab("propose")}
           />
         )}
         {/* Hidden rather than unmounted: an offer being prepared survives a look at the lists. */}
@@ -335,29 +340,80 @@ function NoticeBanner({
   );
 }
 
-/** « Ton code K7QP 2MXA »: selectable, and sent with the share sheet. */
-function PlayerCode({ code }: { readonly code: string }) {
+/**
+ * « Ton code K7QP 2MXA »: selectable, and sent with the share sheet. `large`: the code alone, set
+ * out to be read aloud.
+ */
+function PlayerCode({ code, large = false }: { readonly code: string; readonly large?: boolean }) {
   const share = () => {
     void Share.share({ message: `Mon code joueur Leximon : ${formatPlayerCode(code)}` });
   };
   return (
     <Pressable
       onPress={share}
-      style={[styles.codeChip, IS_LIBRARY && [styles.codeToy, toyFace("paper", "tag")]]}
+      style={[
+        styles.codeChip,
+        large && styles.codeChipLarge,
+        IS_LIBRARY && [styles.codeToy, toyFace("paper", "tag")],
+      ]}
       accessibilityRole="button"
       accessibilityLabel={`Partager mon code joueur, ${code.split("").join(" ")}`}
     >
-      <Text style={styles.codeLabel}>Ton code</Text>
-      <Text style={styles.code} selectable>
+      {!large && <Text style={styles.codeLabel}>Ton code</Text>}
+      <Text
+        style={[styles.code, large && styles.codeLarge, IS_LIBRARY && styles.codeWell]}
+        selectable
+      >
         {formatPlayerCode(code)}
       </Text>
-      <Icon name="share" size={15} color={ink.pageInkMuted} />
+      <Icon name="share" size={large ? 18 : 15} color={ink.pageInkMuted} />
     </Pressable>
+  );
+}
+
+/** No offer waiting in the box: how a trade goes, the code to give, and where to begin. */
+function NoOffer({
+  text,
+  code,
+  now,
+  onPropose,
+}: {
+  readonly text: string;
+  readonly code: string;
+  readonly now: number;
+  readonly onPropose: () => void;
+}) {
+  return (
+    <OnPaper>
+      <View style={styles.empty}>
+        <Text style={styles.emptyText}>{text}</Text>
+        <Text style={[styles.kicker, styles.guideTitle]} accessibilityRole="header">
+          COMMENT ÉCHANGER
+        </Text>
+        {tradeGuide(now).map((step, index) => (
+          <View key={step.title} style={styles.guideStep}>
+            <View style={[styles.guideNumber, IS_LIBRARY && styles.guideNumberGilt]}>
+              <Text style={[styles.guideNumberText, IS_LIBRARY && styles.guideNumberGiltText]}>
+                {index + 1}
+              </Text>
+            </View>
+            <View style={styles.guideBody}>
+              <Text style={styles.guideStepTitle}>{step.title}</Text>
+              <Text style={styles.guideText}>{step.text}</Text>
+              {index === 1 && <PlayerCode code={code} large />}
+            </View>
+          </View>
+        ))}
+        <Button label="Proposer un échange" onPress={onPropose} />
+        <Button label="Voir mes amis" secondary onPress={() => router.push("/amis")} />
+      </View>
+    </OnPaper>
   );
 }
 
 function Received({
   catalog,
+  code,
   inbox,
   now,
   busyTradeId,
@@ -368,6 +424,7 @@ function Received({
   onPropose,
 }: {
   readonly catalog: Catalog;
+  readonly code: string;
   readonly inbox: Inbox;
   readonly now: number;
   readonly busyTradeId: string | null;
@@ -382,12 +439,7 @@ function Received({
   return (
     <>
       {pending.length === 0 ? (
-        <OnPaper>
-          <View style={styles.empty}>
-            <Text style={styles.emptyText}>{NO_OFFER_RECEIVED}</Text>
-            <Button label="Proposer un échange" secondary onPress={onPropose} />
-          </View>
-        </OnPaper>
+        <NoOffer text={NO_OFFER_RECEIVED} code={code} now={now} onPropose={onPropose} />
       ) : (
         pending.map((trade) => (
           <ReceivedOffer
@@ -482,27 +534,29 @@ function ReceivedOffer({
 }
 
 function Sent({
+  code,
   inbox,
   now,
   busyTradeId,
   wordOf,
   onCancel,
   onLoadMore,
+  onPropose,
 }: {
+  readonly code: string;
   readonly inbox: Inbox;
   readonly now: number;
   readonly busyTradeId: string | null;
   readonly wordOf: (cardId: string) => string;
   readonly onCancel: (trade: Trade) => void;
   readonly onLoadMore: () => void;
+  readonly onPropose: () => void;
 }) {
   const { pending, history } = splitTrades(inbox.trades, now);
   return (
     <>
       {pending.length === 0 ? (
-        <OnPaper>
-          <Text style={styles.emptyText}>{NO_OFFER_SENT}</Text>
-        </OnPaper>
+        <NoOffer text={NO_OFFER_SENT} code={code} now={now} onPropose={onPropose} />
       ) : (
         pending.map((trade) => {
           const sides = tradeSides(trade, "outgoing");
@@ -598,11 +652,22 @@ const styles = StyleSheet.create({
     fontSize: fontSizes.small,
     color: ink.pageInkMuted,
   },
+  codeChipLarge: { alignSelf: "flex-start", minHeight: 48, marginTop: space.s3 },
+  // Plain letters, wide apart: a code is read aloud or copied by hand, never guessed at.
   code: {
-    fontFamily: fonts.display,
+    fontFamily: fonts.ui.extrabold,
     fontSize: fontSizes.bodyLarge,
     color: ink.pageInk,
-    letterSpacing: 1,
+    letterSpacing: 2,
+    fontVariant: ["tabular-nums"],
+  },
+  codeLarge: { fontSize: fontSizes.title },
+  codeWell: {
+    overflow: "hidden",
+    paddingHorizontal: space.s4,
+    paddingVertical: 1,
+    borderRadius: 6,
+    backgroundColor: alpha(toyMatters.paper.edge, 0.45),
   },
   warning: {
     fontFamily: fonts.ui.bold,
@@ -618,6 +683,41 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   empty: { gap: space.s7, paddingVertical: space.s6 },
+  guideTitle: { textAlign: "center", marginTop: space.s2 },
+  // The number stands in the margin of its step.
+  guideStep: { flexDirection: "row", gap: space.s5 },
+  guideNumber: {
+    alignItems: "center",
+    justifyContent: "center",
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: colors.action,
+  },
+  guideNumberText: {
+    fontFamily: fonts.ui.extrabold,
+    fontSize: fontSizes.body,
+    color: colors.actionInk,
+  },
+  guideNumberGilt: {
+    borderWidth: toyValues.outlineWidth,
+    borderColor: toyValues.outline,
+    backgroundColor: toyMatters.gold.bottom,
+  },
+  guideNumberGiltText: { color: toyValues.outline },
+  guideBody: { flex: 1, gap: space.s2 },
+  guideStepTitle: {
+    fontFamily: fonts.ui.extrabold,
+    fontSize: fontSizes.bodyLarge,
+    lineHeight: 32,
+    color: ink.pageInk,
+  },
+  guideText: {
+    fontFamily: fonts.text.regular,
+    fontSize: fontSizes.body,
+    lineHeight: 21,
+    color: ink.pageInkMuted,
+  },
   emptyText: {
     fontFamily: fonts.text.italic,
     fontSize: fontSizes.subtitle,

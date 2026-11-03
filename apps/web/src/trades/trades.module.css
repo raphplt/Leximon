@@ -55,9 +55,24 @@
   gap: var(--lx-s4);
 }
 
+/* Plain letters, wide apart: a code is read aloud or copied by hand, never guessed at. */
 .code {
+  font-family: var(--font-bricolage), system-ui, sans-serif;
   font-size: var(--lx-size-body);
-  letter-spacing: 0.08em;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.14em;
+}
+
+.codeLarge {
+  align-self: flex-start;
+  gap: var(--lx-s5);
+  margin-top: var(--lx-s3);
+  padding: var(--lx-s4) var(--lx-s7);
+}
+
+.codeLarge .code {
+  font-size: var(--lx-size-title-small);
 }
 
 .warning {
@@ -302,6 +317,67 @@
   font-family: var(--font-text), Georgia, serif;
   font-size: var(--lx-size-subtitle);
   text-align: center;
+  color: var(--lx-color-page-ink-muted);
+}
+
+.guideTitle {
+  margin: var(--lx-s4) 0 0;
+}
+
+/* Three steps side by side on a wide screen, one under the other on a phone. */
+.guide {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: var(--lx-s8);
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.guideActions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--lx-s5);
+}
+
+/* The number stands in the margin of its step. */
+.guideStep {
+  display: grid;
+  grid-template-columns: 34px 1fr;
+  align-content: start;
+  gap: var(--lx-s3) var(--lx-s5);
+}
+
+.guideStep > :not(.guideNumber) {
+  grid-column: 2;
+}
+
+.guideNumber {
+  grid-row: span 3;
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--lx-color-action);
+  color: var(--lx-color-action-ink);
+  font-weight: 800;
+}
+
+.guideStepTitle {
+  margin: 0;
+  align-self: center;
+  font-size: var(--lx-size-body-large);
+  font-weight: 800;
+}
+
+.guideText {
+  margin: 0;
+  font-family: var(--font-text), Georgia, serif;
+  font-size: var(--lx-size-body);
+  line-height: 1.45;
   color: var(--lx-color-page-ink-muted);
 }
 
@@ -816,10 +892,29 @@
 }
 
 :root[data-look="bibliotheque"] .empty {
-  width: fit-content;
-  max-width: 100%;
   margin: var(--lx-s6) auto;
   padding: var(--lx-s10) var(--lx-s12);
+}
+
+/* The steps' numbers are gilt toys; the code sits in a well of the paper. */
+:root[data-look="bibliotheque"] .guideNumber {
+  box-sizing: border-box;
+  border: var(--lx-toy-outline-width) solid var(--lx-toy-outline);
+  background: linear-gradient(180deg, var(--lx-toy-gold-top), var(--lx-toy-gold-bottom));
+  box-shadow: 0 2px 0 var(--lx-toy-outline);
+  color: var(--lx-toy-outline);
+}
+
+:root[data-look="bibliotheque"] .guideText {
+  color: var(--lx-color-paper-ink-muted);
+}
+
+:root[data-look="bibliotheque"] .code {
+  padding: 2px var(--lx-s4);
+  border-radius: var(--lx-toy-radius-small);
+  background: color-mix(in srgb, var(--lx-toy-paper-edge) 45%, transparent);
+  box-shadow: inset 0 1px 2px color-mix(in srgb, var(--lx-toy-outline) 35%, transparent);
+  color: var(--lx-color-paper-ink);
 }
 
 :root[data-look="bibliotheque"] .warning,

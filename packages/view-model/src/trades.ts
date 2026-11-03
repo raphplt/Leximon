@@ -237,6 +237,31 @@ export function tradeRulesNote(now: number): string {
   return `Tu peux envoyer ${rules.offersPerDay} offres par jour. Une offre sans réponse expire après ${Math.round(rules.offerTtlMs / HOUR)} h.`;
 }
 
+/** One step of how a trade goes, shown while no offer waits. */
+export interface TradeGuideStep {
+  readonly title: string;
+  readonly text: string;
+}
+
+/** How a trade goes, in three steps, with the rules of `now`. */
+export function tradeGuide(now: number): readonly TradeGuideStep[] {
+  const rules = tradeRulesAt(TRADE_SCHEDULE, now);
+  return [
+    {
+      title: "Repère tes doubles",
+      text: `Seule une carte que tu as en plusieurs exemplaires peut partir. Une Épique ou une Légendaire attend ${Math.round(rules.heldForMs / DAY)} jours après son arrivée.`,
+    },
+    {
+      title: "Trouve un joueur",
+      text: "Donne ton code à un autre joueur, ou demande-lui le sien. Un ami se choisit depuis son profil, sans code.",
+    },
+    {
+      title: "Fais ton offre",
+      text: `Choisis ce que tu donnes et ce que tu demandes. L'autre joueur a ${Math.round(rules.offerTtlMs / HOUR)} h pour accepter.`,
+    },
+  ];
+}
+
 /** « baloise, talle »: the words of one side of an offer. */
 export function wordList(cardIds: readonly string[], wordOf: (cardId: string) => string): string {
   return cardIds.map(wordOf).join(", ");
