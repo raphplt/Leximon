@@ -7,6 +7,18 @@
   padding: 26px var(--lx-s16) var(--lx-s32);
 }
 
+/*
+ * The album fills the window: its title, collections and filters stay in place while the cards
+ * scroll in their own box below them.
+ */
+.page:has(.desk) {
+  display: flex;
+  flex-direction: column;
+  height: calc(100dvh - 76px);
+  min-height: 560px;
+  padding-bottom: var(--lx-s9);
+}
+
 .header {
   display: flex;
   align-items: flex-end;
@@ -175,7 +187,112 @@
 }
 
 .row + .row {
-  margin-bottom: var(--lx-s9);
+  margin-bottom: var(--lx-s5);
+}
+
+/* On a wide screen every chip shows: the rows go to the line rather than hide some aside. */
+@media (min-width: 760px) {
+  .row {
+    flex-wrap: wrap;
+    overflow-x: visible;
+  }
+}
+
+.themes {
+  margin-top: calc(-1 * var(--lx-s2));
+}
+
+/* The sort, a select dressed as a chip, at the end of the rarities. */
+.sort {
+  position: relative;
+  gap: var(--lx-s3);
+  margin-left: auto;
+  padding-right: var(--lx-s5);
+  cursor: pointer;
+}
+
+.sortTitle {
+  color: var(--lx-color-page-ink-muted);
+}
+
+.sortSelect {
+  appearance: none;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.sortSelect:focus-visible {
+  outline: none;
+}
+
+.sort:focus-within {
+  outline: 3px solid var(--lx-color-focus);
+  outline-offset: 2px;
+}
+
+/* --- The cards in their box, the letters beside them --- */
+
+.shelf {
+  position: relative;
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  gap: var(--lx-s4);
+  margin-top: var(--lx-s4);
+}
+
+.scroller {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  /* Room for a card lifting under the pointer and the tags above its corner. */
+  padding: 12px 6px var(--lx-s9);
+  scrollbar-width: thin;
+  scrollbar-color: var(--lx-color-rule) transparent;
+}
+
+.letters {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  flex-shrink: 0;
+  width: 26px;
+  padding: var(--lx-s2) 0;
+}
+
+.letter {
+  appearance: none;
+  flex: 1;
+  max-height: 26px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  background: none;
+  color: var(--lx-color-page-ink);
+  font: inherit;
+  font-size: var(--lx-size-caption);
+  font-weight: 800;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.letter:hover:not(:disabled) {
+  background: var(--lx-color-control);
+}
+
+.letter:disabled {
+  color: var(--lx-color-page-ink-faint);
+  opacity: 0.45;
+  cursor: default;
 }
 
 .rarityChip,
@@ -454,6 +571,20 @@
     padding: var(--lx-s4) var(--lx-s7) var(--lx-s14);
   }
 
+  .page:has(.desk) {
+    height: calc(100dvh - 166px - env(safe-area-inset-bottom));
+    min-height: 480px;
+    padding-bottom: var(--lx-s4);
+  }
+
+  .header {
+    margin-bottom: var(--lx-s5);
+  }
+
+  .letters {
+    width: 20px;
+  }
+
   .title {
     font-size: var(--lx-size-heading-large);
   }
@@ -517,6 +648,10 @@
 /* The cards lie on the desk; the title and the search stay on the room above it. */
 .desk {
   position: relative;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
 }
 
 .deskBack {
@@ -526,7 +661,15 @@
 :root[data-look="bibliotheque"] .desk {
   isolation: isolate;
   margin: 0 -28px;
-  padding: 30px 30px 40px;
+  padding: 30px 22px 18px 30px;
+}
+
+:root[data-look="bibliotheque"] .scroller {
+  scrollbar-color: color-mix(in srgb, var(--lx-toy-gold-bottom) 70%, transparent) transparent;
+}
+
+:root[data-look="bibliotheque"] .letter:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--lx-toy-gold-top) 30%, transparent);
 }
 
 :root[data-look="bibliotheque"] .deskBack {
@@ -587,6 +730,6 @@
 @media (max-width: 759px) {
   :root[data-look="bibliotheque"] .desk {
     margin: 0 -10px;
-    padding: 20px 14px 28px;
+    padding: 18px 10px 12px 14px;
   }
 }

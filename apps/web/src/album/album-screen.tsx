@@ -4,15 +4,21 @@ import type { Catalog } from "@leximon/contract/client";
 import { PRACTICE_SCHEDULE, practiceRulesAt, type Rarity } from "@leximon/core";
 import { collectionTone, cssFill, rarityStyles } from "@leximon/tokens";
 import {
+  ALBUM_SORT_LABELS,
+  ALBUM_SORT_TITLE,
+  ALBUM_SORTS,
+  ALBUM_THEME_TEXTS,
   ALL_COLLECTIONS,
   type AlbumFilter,
   type AlbumItem,
+  type AlbumSort,
   type AlbumState,
   albumPracticeCards,
   albumView,
   type CompareFilter,
   compareFilters,
   comparingTitle,
+  isAlbumSort,
   isFeatureOpen,
   type MissingItem,
   type OwnedItem,
@@ -45,6 +51,7 @@ import ui from "@/ui/ui.module.css";
 import styles from "./album-screen.module.css";
 
 const STORED_COLLECTION = "leximon.album";
+const STORED_SORT = "leximon.album.sort";
 
 /** Tiles drawn per batch: a full collection at once is hundreds of cards. */
 const BATCH = 48;
@@ -54,6 +61,23 @@ function readCollection(): string | null {
     return localStorage.getItem(STORED_COLLECTION);
   } catch {
     return null;
+  }
+}
+
+function readSort(): AlbumSort {
+  try {
+    const stored = localStorage.getItem(STORED_SORT);
+    return isAlbumSort(stored) ? stored : "alpha";
+  } catch {
+    return "alpha";
+  }
+}
+
+function writeSort(sort: AlbumSort): void {
+  try {
+    localStorage.setItem(STORED_SORT, sort);
+  } catch {
+    // Not remembered: the album opens from A to Z next time.
   }
 }
 
@@ -121,7 +145,7 @@ export function AlbumScreen() {
         // The tab chosen last time if it still exists, else every collection.
         const stored = readCollection();
         const kept = loaded.collections.some((c) => c.id === stored) ? stored : null;
-        setState((s) => ({ ...s, collectionId: kept ?? ALL_COLLECTIONS }));
+        setState((s) => ({ ...s, collectionId: kept ?? ALL_COLLECTIONS, sort: readSort() }));
       })
       .catch(() => setFailed(true));
   };
@@ -145,9 +169,45 @@ export function AlbumScreen() {
           ),
     [catalog, owned, memory, dates, now, state, friend],
   );
-  const { shown, sentinel } = useIncremental(view?.items.length ?? 0, BATCH, JSON.stringify(state));
+  // The sheet turns through the cards the album shows, in its order.
+  const ownedIds = useMemo(
+    () => view?.items.flatMap((item) => (item.kind === "owned" ? [item.card.id] : [])) ?? [],
+    [view],
+  );
+  const [scroller, setScroller] = useState<HTMLDivElement | null>(null);
+  const resetKey = JSON.stringify(state);
+  const { shown, sentinel, reach } = useIncremental(
+    view?.items.length ?? 0,
+    BATCH,
+    resetKey,
+    scroller,
+  );
+  // Another filter or sort starts the cards over from the top of their box.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: the key is the reason to run
+  useEffect(() => {
+    scroller?.scrollTo({ top: 0 });
+  }, [resetKey, scroller]);
+  /** A letter of the bar: its first card, drawn if it was not yet, at the top of the box. */
+  const [jump, setJump] = useState<number | null>(null);
+  const jumpTo = (index: number) => {
+    reach(index);
+    setJump(index);
+  };
+  useEffect(() => {
+    if (jump === null || scroller === null || shown <= jump) return;
+    const target = scroller.querySelector<HTMLElement>(`[data-index="${jump}"]`);
+    if (target !== null) scroller.scrollTo({ top: target.offsetTop - 8 });
+    setJump(null);
+  }, [jump, shown, scroller]);
+  const [themesOpen, setThemesOpen] = useState(false);
+  const sort = state.sort ?? "alpha";
+  const pickSort = (next: AlbumSort) => {
+    writeSort(next);
+    setState((s) => ({ ...s, sort: next }));
+  };
   const cardWidth = narrow ? 104 : 168;
   const tagline = catalog?.collections.find((c) => c.id === state.collectionId)?.tagline;
+  const pickedTheme = view?.themes.find((theme) => theme.id === state.theme);
 
   if (failed) {
     return (
@@ -267,6 +327,7 @@ export function AlbumScreen() {
                   }
                 />
               ))}
+              <SortPicker sort={sort} onPick={pickSort} />
             </div>
             {friend !== null && state.compare != null && (
               <div className={styles.compare}>
@@ -298,20 +359,51 @@ export function AlbumScreen() {
                   onPick={() => setState((s) => ({ ...s, filter: filter.id as AlbumFilter }))}
                 />
               ))}
-              <span className={styles.divider} aria-hidden="true" />
-              {view.themes.map((theme) => (
+              {view.themes.length > 0 && (
+                <>
+                  <span className={styles.divider} aria-hidden="true" />
+                  <button
+                    type="button"
+                    className={`${ui.chip} ${styles.filter} ${styles.theme}`}
+                    aria-expanded={themesOpen}
+                    aria-controls="album-themes"
+                    onClick={() => setThemesOpen((open) => !open)}
+                  >
+                    {themesOpen ? ALBUM_THEME_TEXTS.hide : ALBUM_THEME_TEXTS.show}
+                    <Icon name="chevd" size={14} />
+                  </button>
+                </>
+              )}
+              {!themesOpen && pickedTheme !== undefined && (
                 <FilterChip
-                  key={theme.id}
-                  label={theme.label}
-                  on={state.theme === theme.id}
+                  label={pickedTheme.label}
+                  on
                   muted
-                  onPick={() =>
-                    setState((s) => ({ ...s, theme: s.theme === theme.id ? null : theme.id }))
-                  }
+                  onPick={() => setState((s) => ({ ...s, theme: null }))}
                 />
-              ))}
+              )}
             </div>
+            {themesOpen && (
+              <div id="album-themes" className={`${styles.row} ${styles.themes}`}>
+                {view.themes.map((theme) => (
+                  <FilterChip
+                    key={theme.id}
+                    label={theme.label}
+                    on={state.theme === theme.id}
+                    muted
+                    onPick={() =>
+                      setState((s) => ({ ...s, theme: s.theme === theme.id ? null : theme.id }))
+                    }
+                  />
+                ))}
+              </div>
+            )}
           </>
+        )}
+        {view.searching && (
+          <div className={styles.row}>
+            <SortPicker sort={sort} onPick={pickSort} />
+          </div>
         )}
 
         {practiceCards !== null && (
@@ -334,20 +426,39 @@ export function AlbumScreen() {
             <em>{view.empty}</em>
           </p>
         ) : (
-          <>
-            <ul
-              className={styles.grid}
-              style={{ "--card": `${cardWidth}px` } as CSSProperties}
-              aria-label="Cartes"
-            >
-              {view.items.slice(0, shown).map((item) => (
-                <li key={itemKey(item)} className={styles.slot}>
-                  <Tile item={item} width={cardWidth} onOpen={openCard} />
-                </li>
-              ))}
-            </ul>
-            {shown < view.items.length && <div ref={sentinel} aria-hidden="true" />}
-          </>
+          <div className={styles.shelf}>
+            <div ref={setScroller} className={styles.scroller}>
+              <ul
+                className={styles.grid}
+                style={{ "--card": `${cardWidth}px` } as CSSProperties}
+                aria-label="Cartes"
+              >
+                {view.items.slice(0, shown).map((item, index) => (
+                  <li key={itemKey(item)} className={styles.slot} data-index={index}>
+                    <Tile item={item} width={cardWidth} onOpen={(id) => openCard(id, ownedIds)} />
+                  </li>
+                ))}
+              </ul>
+              {shown < view.items.length && <div ref={sentinel} aria-hidden="true" />}
+            </div>
+            {view.letters.length > 0 && (
+              <nav className={styles.letters} aria-label="Aller à la lettre">
+                {view.letters.map(({ letter, index }) => (
+                  <button
+                    key={letter}
+                    type="button"
+                    className={styles.letter}
+                    disabled={index === null}
+                    onClick={() => {
+                      if (index !== null) jumpTo(index);
+                    }}
+                  >
+                    {letter}
+                  </button>
+                ))}
+              </nav>
+            )}
+          </div>
         )}
       </div>
     </main>
@@ -513,6 +624,35 @@ function RarityChip({
       </span>
       <span className={styles.num}>{count}</span>
     </button>
+  );
+}
+
+/** How the cards owned are laid out: a select dressed as a chip, at the end of the rarities. */
+function SortPicker({
+  sort,
+  onPick,
+}: {
+  readonly sort: AlbumSort;
+  readonly onPick: (sort: AlbumSort) => void;
+}) {
+  return (
+    <label className={`${ui.chip} ${styles.filter} ${styles.sort}`}>
+      <span className={styles.sortTitle}>{ALBUM_SORT_TITLE}</span>
+      <select
+        className={styles.sortSelect}
+        value={sort}
+        onChange={(event) => {
+          if (isAlbumSort(event.target.value)) onPick(event.target.value);
+        }}
+      >
+        {ALBUM_SORTS.map((choice) => (
+          <option key={choice} value={choice}>
+            {ALBUM_SORT_LABELS[choice]}
+          </option>
+        ))}
+      </select>
+      <Icon name="chevd" size={14} />
+    </label>
   );
 }
 

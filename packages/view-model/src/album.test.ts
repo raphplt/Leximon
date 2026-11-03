@@ -4,6 +4,7 @@ import {
   ALL_COLLECTIONS,
   type AlbumState,
   activeFilterCount,
+  albumLetters,
   albumView,
   copiesByCard,
   datesAfterGain,
@@ -99,7 +100,7 @@ describe("album", () => {
     expect(view.themes.map((theme) => theme.id)).toContain("metiers");
   });
 
-  it("shows owned cards rarest first, then the tile, then the missing slots", () => {
+  it("shows owned cards from A to Z, then the tile, then the missing slots", () => {
     const view = albumView(input, STATE);
     expect(view.items.map((item) => (item.kind === "owned" ? item.card.id : item.kind))).toEqual([
       "bélître",
@@ -283,5 +284,76 @@ describe("the album's filters", () => {
       "Émeute",
       "zinzin",
     ]);
+  });
+});
+
+describe("sorting the album", () => {
+  const owned = new Map([
+    ["grigou", 1],
+    ["bélître", 1],
+    ["écrouelles", 1],
+    ["talpinette", 1],
+  ]);
+  const ids = (sort: "alpha" | "rarity" | "recent") =>
+    albumView({ ...input, owned }, { ...STATE, sort }).items.flatMap((item) =>
+      item.kind === "owned" ? [item.card.id] : [],
+    );
+
+  it("lays the cards owned from A to Z by default, accents aside", () => {
+    expect(ids("alpha")).toEqual(["bélître", "écrouelles", "grigou", "talpinette"]);
+    expect(
+      albumView({ ...input, owned }, STATE).items.flatMap((item) =>
+        item.kind === "owned" ? [item.card.id] : [],
+      ),
+    ).toEqual(["bélître", "écrouelles", "grigou", "talpinette"]);
+  });
+
+  it("lays them rarest first on demand", () => {
+    expect(ids("rarity")).toEqual(["talpinette", "bélître", "écrouelles", "grigou"]);
+  });
+
+  it("lays the latest found first on demand, the undated ones last", () => {
+    // grigou and bélître share a date: alphabetical between them.
+    expect(ids("recent")).toEqual(["bélître", "grigou", "écrouelles", "talpinette"]);
+  });
+
+  it("keeps the missing cards after the cards owned, whatever the sort", () => {
+    const view = albumView(input, { ...STATE, sort: "alpha" });
+    const kinds = view.items.map((item) => item.kind);
+    expect(kinds.indexOf("missing")).toBeGreaterThan(kinds.lastIndexOf("owned"));
+  });
+});
+
+describe("the bar of letters", () => {
+  const many = (words: string[]) =>
+    words.map((word) => ({
+      kind: "owned" as const,
+      card: card(word, "common"),
+      collectionName: "Les Fondateurs",
+      quantity: 1,
+      level: "sketch" as const,
+      levelLabel: "Esquisse",
+      fresh: false,
+      aria: word,
+    }));
+
+  it("leads each letter to its first word, accents and ligatures folded", () => {
+    const words = [
+      ...Array.from({ length: 10 }, (_, i) => `abaque${i}`),
+      "écrouelles",
+      "œillade",
+      ...Array.from({ length: 12 }, (_, i) => `zibeline${i}`),
+    ];
+    const letters = albumLetters(many(words));
+    expect(letters).toHaveLength(26);
+    expect(letters.find((l) => l.letter === "A")?.index).toBe(0);
+    expect(letters.find((l) => l.letter === "E")?.index).toBe(10);
+    expect(letters.find((l) => l.letter === "O")?.index).toBe(11);
+    expect(letters.find((l) => l.letter === "Z")?.index).toBe(12);
+    expect(letters.find((l) => l.letter === "B")?.index).toBeNull();
+  });
+
+  it("stays away from a short album", () => {
+    expect(albumLetters(many(["abaque", "bélître"]))).toEqual([]);
   });
 });

@@ -11,9 +11,14 @@ import {
 } from "@leximon/tokens";
 import {
   ALBUM_FILTER_TEXTS,
+  ALBUM_SORT_LABELS,
+  ALBUM_SORT_TITLE,
+  ALBUM_SORTS,
   ALL_COLLECTIONS,
   type AlbumFilter,
   type AlbumItem,
+  type AlbumLetter,
+  type AlbumSort,
   type AlbumState,
   activeFilterCount,
   albumPracticeCards,
@@ -22,6 +27,7 @@ import {
   compareFilters,
   comparingTitle,
   filterButtonLabel,
+  isAlbumSort,
   isFeatureOpen,
   type MissingItem,
   type OwnedItem,
@@ -31,9 +37,10 @@ import {
 } from "@leximon/view-model";
 import { router } from "expo-router";
 import * as SecureStore from "expo-secure-store";
-import { memo, type ReactNode, useCallback, useEffect, useMemo, useState } from "react";
+import { memo, type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   FlatList,
+  type LayoutChangeEvent,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -45,11 +52,13 @@ import {
 import { api } from "@/api/client";
 import { Card } from "@/cards/card";
 import { catalogInHand, loadCatalog } from "@/cards/catalog";
+import { vibrate } from "@/feedback/feedback";
 import { Desk } from "@/library/play-pieces";
 import { cardDates, ownedCards, wordMemory } from "@/player/collection";
 import { useNow, useShared, useSharedFailed } from "@/player/shared";
 import { progress } from "@/player/state";
 import { askAlbumPractice } from "@/screens/challenges/pending-practice";
+import { openCard } from "@/screens/trades/card-row";
 import { TAB_BAR_RISE } from "@/shell/tab-bar";
 import { alpha, colors, fontSizes, fonts, IS_LIBRARY, paperColors, radii, space } from "@/theme";
 import { Button } from "@/ui/button";
@@ -61,10 +70,18 @@ import { Lettering, toyFace } from "@/ui/toy";
 
 /** The collection tab chosen last, kept on the device. */
 const STORED_COLLECTION = "leximon_album";
+/** The order chosen last, kept on the device. */
+const STORED_SORT = "leximon_album_sort";
 const COLUMNS = 3;
 const GUTTER = 16;
 const GAP = 12;
 const ROOM_MARGIN = 6;
+/** Under a card, its level or its rarity: every tile is as tall, so a letter knows its row. */
+const TILE_FOOT = 28;
+const ROW_GAP = space.s9;
+const GRID_TOP = space.s4;
+/** The bar of letters, in the right margin of the cards. */
+const LETTER_ROOM = 24;
 
 function readCollection(): string | null {
   try {
@@ -88,6 +105,21 @@ function writeCollection(id: string): void {
   });
 }
 
+function readSort(): AlbumSort {
+  try {
+    const stored = SecureStore.getItem(STORED_SORT);
+    return isAlbumSort(stored) ? stored : "alpha";
+  } catch {
+    return "alpha";
+  }
+}
+
+function writeSort(sort: AlbumSort): void {
+  SecureStore.setItemAsync(STORED_SORT, sort).catch(() => {
+    // Not remembered: the album opens from A to Z next time.
+  });
+}
+
 /** The album: search, collection tabs, the grid of cards; the filters wait behind their button. */
 export function AlbumScreen({ friendCode }: { readonly friendCode: string | null }) {
   const window = useWindowDimensions();
@@ -101,6 +133,7 @@ export function AlbumScreen({ friendCode }: { readonly friendCode: string | null
   const player = useShared(progress);
   const [state, setState] = useState<AlbumState>(() => ({
     collectionId: catalog === null ? "" : rememberedCollection(catalog),
+    sort: readSort(),
     rarity: null,
     filter: "all",
     theme: null,
@@ -165,9 +198,50 @@ export function AlbumScreen({ friendCode }: { readonly friendCode: string | null
     [catalog, owned, memory, dates, now, state, friend],
   );
 
+  // The sheet turns through the cards the album shows, in its order. Read at the tap, so that
+  // the tiles keep one handler and are not drawn again for every filter.
+  const shownIds = useRef<readonly string[]>([]);
+  shownIds.current =
+    view?.items.flatMap((item) => (item.kind === "owned" ? [item.card.id] : [])) ?? [];
+  const openOwned = useCallback((cardId: string) => openCard(cardId, shownIds.current), []);
+
+  const list = useRef<FlatList<AlbumItem>>(null);
+  /** Where the rows of cards start, under the tagline and the review button. */
+  const rowsTop = useRef<number>(GRID_TOP);
+  const resetKey = JSON.stringify(state);
+  // Another filter or sort starts the cards over from the top of their box.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: the key is the reason to run
+  useEffect(() => {
+    list.current?.scrollToOffset({ offset: 0, animated: false });
+  }, [resetKey]);
+
+  const lettered = (view?.letters.length ?? 0) > 0;
   const cardWidth = Math.floor(
-    (window.width - LIBRARY_INSET * 2 - GUTTER * 2 - GAP * (COLUMNS - 1)) / COLUMNS,
+    (window.width -
+      LIBRARY_INSET * 2 -
+      GUTTER -
+      (lettered ? LETTER_ROOM : GUTTER) -
+      GAP * (COLUMNS - 1)) /
+      COLUMNS,
   );
+  const tileHeight = Math.ceil(cardWidth * 1.4) + TILE_FOOT;
+  // Every row is as tall: the list knows where the rows it has not drawn yet lie, and a letter
+  // finds its row by counting.
+  const rowHeight = tileHeight + ROW_GAP;
+  const rowLayout = useCallback(
+    (_rows: unknown, row: number) => ({
+      length: rowHeight,
+      offset: rowsTop.current + row * rowHeight,
+      index: row,
+    }),
+    [rowHeight],
+  );
+  const jumpTo = (index: number) =>
+    list.current?.scrollToOffset({
+      // A little of the row above shows, and the badges over the cards with it.
+      offset: rowsTop.current - GRID_TOP + Math.floor(index / COLUMNS) * rowHeight,
+      animated: false,
+    });
   const practiceCards =
     view !== null && player !== null && isFeatureOpen("practice_choice", player.level, now)
       ? albumPracticeCards(view, state, practiceRulesAt(PRACTICE_SCHEDULE, now).minWords)
@@ -206,9 +280,15 @@ export function AlbumScreen({ friendCode }: { readonly friendCode: string | null
   const tagline = catalog?.collections.find((c) => c.id === state.collectionId)?.tagline;
   const comparing = friend !== null && state.compare != null;
   const filtersOn = activeFilterCount(state);
+  const sort = state.sort ?? "alpha";
+  const pickSort = (next: AlbumSort) => {
+    writeSort(next);
+    setState((s) => ({ ...s, sort: next }));
+  };
 
+  // The search, the tabs and the filters stay in view; only the cards run under them.
   const header = (
-    <View style={styles.header}>
+    <View style={[styles.header, IS_LIBRARY && library.header]}>
       <View style={styles.titleRow}>
         {IS_LIBRARY ? (
           <View accessibilityRole="header">
@@ -317,7 +397,6 @@ export function AlbumScreen({ friendCode }: { readonly friendCode: string | null
         })}
       </TabRow>
 
-      {!view.searching && tagline !== undefined && <Text style={styles.tagline}>{tagline}</Text>}
       {!view.searching && comparing && (
         <View style={styles.compare}>
           <View style={styles.compareHead}>
@@ -348,6 +427,17 @@ export function AlbumScreen({ friendCode }: { readonly friendCode: string | null
           </ScrollView>
         </View>
       )}
+    </View>
+  );
+
+  const head = (
+    <View
+      style={styles.listHead}
+      onLayout={(event: LayoutChangeEvent) => {
+        rowsTop.current = GRID_TOP + event.nativeEvent.layout.height;
+      }}
+    >
+      {!view.searching && tagline !== undefined && <Text style={styles.tagline}>{tagline}</Text>}
       {practiceCards !== null && (
         <View style={styles.revise}>
           <Button
@@ -364,22 +454,36 @@ export function AlbumScreen({ friendCode }: { readonly friendCode: string | null
     </View>
   );
 
-  const list = (
-    <FlatList
-      data={view.empty === null ? view.items : []}
-      keyExtractor={itemKey}
-      numColumns={COLUMNS}
-      ListHeaderComponent={header}
-      renderItem={({ item }) => <Tile item={item} width={cardWidth} />}
-      columnWrapperStyle={styles.gridRow}
-      contentContainerStyle={[styles.grid, IS_LIBRARY && library.grid]}
-      keyboardShouldPersistTaps="handled"
-      keyboardDismissMode="on-drag"
-      initialNumToRender={9}
-      maxToRenderPerBatch={9}
-      windowSize={5}
-      removeClippedSubviews
-    />
+  const album = (
+    <>
+      {header}
+      <View style={styles.shelf}>
+        <FlatList
+          ref={list}
+          data={view.empty === null ? view.items : []}
+          keyExtractor={itemKey}
+          numColumns={COLUMNS}
+          getItemLayout={rowLayout}
+          ListHeaderComponent={head}
+          renderItem={({ item }) => (
+            <Tile item={item} width={cardWidth} height={tileHeight} onOpen={openOwned} />
+          )}
+          columnWrapperStyle={styles.gridRow}
+          contentContainerStyle={[
+            styles.grid,
+            lettered && styles.gridLettered,
+            IS_LIBRARY && library.grid,
+          ]}
+          keyboardShouldPersistTaps="handled"
+          keyboardDismissMode="on-drag"
+          initialNumToRender={9}
+          maxToRenderPerBatch={9}
+          windowSize={5}
+          removeClippedSubviews
+        />
+        {lettered && <LetterBar letters={view.letters} onJump={jumpTo} />}
+      </View>
+    </>
   );
 
   return (
@@ -390,12 +494,24 @@ export function AlbumScreen({ friendCode }: { readonly friendCode: string | null
           <View style={library.deskClip}>
             <Desk style={library.desk} />
           </View>
-          <View style={library.inside}>{list}</View>
+          <View style={library.inside}>{album}</View>
         </View>
       ) : (
-        list
+        <View style={styles.page}>{album}</View>
       )}
       <Sheet open={filtering} title={ALBUM_FILTER_TEXTS.button} onClose={() => setFiltering(false)}>
+        {!comparing && (
+          <FilterGroup title={ALBUM_SORT_TITLE}>
+            {ALBUM_SORTS.map((choice) => (
+              <FilterChip
+                key={choice}
+                label={ALBUM_SORT_LABELS[choice]}
+                on={sort === choice}
+                onPick={() => pickSort(choice)}
+              />
+            ))}
+          </FilterGroup>
+        )}
         {view.rarities.length > 0 && (
           <FilterGroup title={ALBUM_FILTER_TEXTS.rarity}>
             {view.rarities.map((chip) => (
@@ -478,17 +594,21 @@ function itemKey(item: AlbumItem): string {
 const Tile = memo(function Tile({
   item,
   width,
+  height,
+  onOpen,
 }: {
   readonly item: AlbumItem;
   readonly width: number;
+  readonly height: number;
+  readonly onOpen: (cardId: string) => void;
 }) {
-  switch (item.kind) {
-    case "owned":
-      return <OwnedTile item={item} width={width} />;
-    case "missing":
-      return <MissingTile item={item} width={width} />;
-    case "more":
-      return (
+  return (
+    <View style={{ width, height }}>
+      {item.kind === "owned" ? (
+        <OwnedTile item={item} width={width} onOpen={onOpen} />
+      ) : item.kind === "missing" ? (
+        <MissingTile item={item} width={width} />
+      ) : (
         <Pressable
           onPress={() => router.navigate("/")}
           accessibilityRole="link"
@@ -497,14 +617,23 @@ const Tile = memo(function Tile({
           <Text style={styles.moreCount}>{item.left}</Text>
           <Text style={styles.moreLabel}>{item.label}</Text>
         </Pressable>
-      );
-  }
+      )}
+    </View>
+  );
 });
 
-function OwnedTile({ item, width }: { readonly item: OwnedItem; readonly width: number }) {
+function OwnedTile({
+  item,
+  width,
+  onOpen,
+}: {
+  readonly item: OwnedItem;
+  readonly width: number;
+  readonly onOpen: (cardId: string) => void;
+}) {
   return (
     <Pressable
-      onPress={() => router.push({ pathname: "/carte/[id]", params: { id: item.card.id } })}
+      onPress={() => onOpen(item.card.id)}
       accessibilityRole="button"
       accessibilityLabel={item.aria}
       style={[styles.tile, { width }]}
@@ -618,6 +747,71 @@ function FilterChip({
   );
 }
 
+/** The letters beside an alphabetical album: a tap, or the finger sliding down, leads to one. */
+function LetterBar({
+  letters,
+  onJump,
+}: {
+  readonly letters: readonly AlbumLetter[];
+  readonly onJump: (index: number) => void;
+}) {
+  const height = useRef(1);
+  const [current, setCurrent] = useState<string | null>(null);
+  const reached = letters.filter((entry) => entry.index !== null);
+  const go = (entry: AlbumLetter | undefined) => {
+    if (entry === undefined || entry.index === null) return;
+    setCurrent(entry.letter);
+    vibrate([8]);
+    onJump(entry.index);
+  };
+  const at = (y: number) =>
+    letters[
+      Math.min(letters.length - 1, Math.max(0, Math.floor((y / height.current) * letters.length)))
+    ];
+  const step = (by: number) => {
+    const from = reached.findIndex((entry) => entry.letter === current);
+    go(reached[from === -1 ? 0 : from + by]);
+  };
+  return (
+    <View
+      style={styles.letters}
+      onLayout={(event: LayoutChangeEvent) => {
+        height.current = Math.max(1, event.nativeEvent.layout.height);
+      }}
+      onStartShouldSetResponder={() => true}
+      onResponderTerminationRequest={() => false}
+      onResponderGrant={(event) => go(at(event.nativeEvent.locationY))}
+      onResponderMove={(event) => {
+        const entry = at(event.nativeEvent.locationY);
+        if (entry?.letter !== current) go(entry);
+      }}
+      accessible
+      accessibilityRole="adjustable"
+      accessibilityLabel="Aller à la lettre"
+      accessibilityValue={{ text: current ?? reached[0]?.letter ?? "" }}
+      accessibilityActions={[{ name: "increment" }, { name: "decrement" }]}
+      onAccessibilityAction={(event) => step(event.nativeEvent.actionName === "increment" ? 1 : -1)}
+    >
+      {/* The finger is read on the bar itself, so that its height tells the letter. */}
+      <View style={styles.letterColumn} pointerEvents="none">
+        {letters.map((entry) => (
+          <View key={entry.letter} style={styles.letterSlot}>
+            <Text
+              style={[
+                styles.letter,
+                entry.index === null && styles.letterOff,
+                entry.letter === current && styles.letterOn,
+              ]}
+            >
+              {entry.letter}
+            </Text>
+          </View>
+        ))}
+      </View>
+    </View>
+  );
+}
+
 /**
  * The collection tabs: in « La Bibliothèque », all in view on rows of two; elsewhere, a row that
  * scrolls aside.
@@ -655,7 +849,32 @@ const styles = StyleSheet.create({
     fontSize: fontSizes.bodyLarge,
     color: colors.pageInkMuted,
   },
-  header: { gap: space.s6, paddingTop: space.s4, paddingBottom: space.s8 },
+  page: { flex: 1 },
+  header: {
+    gap: space.s6,
+    paddingTop: space.s4,
+    paddingBottom: space.s6,
+    paddingHorizontal: GUTTER,
+  },
+  listHead: { gap: space.s6, paddingBottom: space.s8 },
+  shelf: { flex: 1 },
+  letters: {
+    position: "absolute",
+    top: space.s4,
+    bottom: TAB_BAR_RISE + space.s8,
+    right: 0,
+    width: LETTER_ROOM,
+  },
+  // Slots of one height: the finger's height on the bar is the letter's rank.
+  letterColumn: { flex: 1 },
+  letterSlot: { flex: 1, alignItems: "center", justifyContent: "center" },
+  letter: {
+    fontFamily: fonts.ui.extrabold,
+    fontSize: fontSizes.micro,
+    color: colors.pageInk,
+  },
+  letterOff: { opacity: 0.3 },
+  letterOn: { color: colors.gilt },
   titleRow: { flexDirection: "row", alignItems: "baseline", justifyContent: "space-between" },
   title: { fontFamily: fonts.display, fontSize: fontSizes.heading, color: colors.pageInk },
   headline: {
@@ -775,8 +994,9 @@ const styles = StyleSheet.create({
     textAlign: "center",
     marginTop: space.s16,
   },
-  grid: { paddingHorizontal: GUTTER, paddingBottom: TAB_BAR_RISE + 24 },
-  gridRow: { gap: GAP, marginBottom: space.s9 },
+  grid: { paddingHorizontal: GUTTER, paddingTop: GRID_TOP, paddingBottom: TAB_BAR_RISE + 24 },
+  gridLettered: { paddingRight: LETTER_ROOM },
+  gridRow: { gap: GAP, marginBottom: ROW_GAP },
   tile: { alignItems: "center", gap: space.s3 },
   fresh: {
     position: "absolute",
@@ -871,6 +1091,7 @@ const library = StyleSheet.create({
     borderTopRightRadius: room.desk.radius - room.desk.frameWidth,
     overflow: "hidden",
   },
+  header: { paddingTop: space.s6, gap: space.s5 },
   tabGrid: { flexDirection: "row", flexWrap: "wrap", gap: space.s5 },
   tabCell: { flexBasis: "40%", flexGrow: 1, minWidth: 0 },
   search: {
@@ -885,7 +1106,12 @@ const library = StyleSheet.create({
   grid: { paddingBottom: TAB_BAR_RISE + space.s12 },
   paperInk: { color: colors.paperInk },
   paperInkMuted: { color: colors.paperInkMuted },
-  tab: { borderWidth: toyValues.outlineWidth, marginBottom: 4 },
+  tab: {
+    borderWidth: toyValues.outlineWidth,
+    marginBottom: 4,
+    paddingVertical: space.s3,
+    gap: space.s3,
+  },
   tabName: { fontFamily: fonts.display, color: colors.paperInk },
   tabTrack: { backgroundColor: alpha(colors.paperInk, 0.18) },
 });

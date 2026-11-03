@@ -136,8 +136,32 @@ export function themeLabel(slug: string): string {
   return THEME_LABELS[slug] ?? slug.charAt(0).toUpperCase() + slug.slice(1).replaceAll("-", " ");
 }
 
+/** How the album lays out the cards owned; the missing ones always come last. */
+export const ALBUM_SORTS = ["alpha", "rarity", "recent"] as const;
+export type AlbumSort = (typeof ALBUM_SORTS)[number];
+
+export const ALBUM_SORT_LABELS: Readonly<Record<AlbumSort, string>> = {
+  alpha: "De A à Z",
+  rarity: "Par rareté",
+  recent: "Les plus récentes",
+};
+
+export const ALBUM_SORT_TITLE = "Trier";
+
+export function isAlbumSort(value: unknown): value is AlbumSort {
+  return typeof value === "string" && (ALBUM_SORTS as readonly string[]).includes(value);
+}
+
+/** The theme chips, folded away until asked for. */
+export const ALBUM_THEME_TEXTS = {
+  show: "Voir les thèmes",
+  hide: "Cacher les thèmes",
+} as const;
+
 export interface AlbumState {
   readonly collectionId: string;
+  /** Alphabetical when left out. */
+  readonly sort?: AlbumSort;
   readonly rarity: Rarity | null;
   readonly filter: AlbumFilter;
   /** A theme slug, or `null` for every theme. */
@@ -204,6 +228,12 @@ export interface MoreItem {
 
 export type AlbumItem = OwnedItem | MissingItem | MoreItem;
 
+/** A letter of the bar beside the album, and the first card under it; `null` when none. */
+export interface AlbumLetter {
+  readonly letter: string;
+  readonly index: number | null;
+}
+
 export interface AlbumView {
   /** « 590 mots sur 1 561 » */
   readonly headline: { readonly owned: string; readonly total: string };
@@ -217,6 +247,8 @@ export interface AlbumView {
   }[];
   readonly themes: readonly { readonly id: string; readonly label: string }[];
   readonly items: readonly AlbumItem[];
+  /** The bar of letters, for an alphabetical album long enough to need it; empty otherwise. */
+  readonly letters: readonly AlbumLetter[];
   /** A search runs through every collection; the tabs then stand aside. */
   readonly searching: boolean;
   readonly empty: string | null;
@@ -283,6 +315,47 @@ function albumOrder(a: CatalogCard, b: CatalogCard, places: ReadonlyMap<string, 
   return (
     rarityRank(b.rarity) - rarityRank(a.rarity) || (places.get(a.id) ?? 0) - (places.get(b.id) ?? 0)
   );
+}
+
+/** The order of the cards owned, for the sort chosen. */
+function ownedOrder(
+  sort: AlbumSort,
+  places: ReadonlyMap<string, number>,
+  dates: ReadonlyMap<string, CardDate>,
+): (a: CatalogCard, b: CatalogCard) => number {
+  const place = (card: CatalogCard) => places.get(card.id) ?? 0;
+  switch (sort) {
+    case "alpha":
+      return (a, b) => place(a) - place(b);
+    case "rarity":
+      return (a, b) => albumOrder(a, b, places);
+    case "recent":
+      return (a, b) =>
+        (dates.get(b.id)?.firstObtainedAt ?? 0) - (dates.get(a.id)?.firstObtainedAt ?? 0) ||
+        place(a) - place(b);
+  }
+}
+
+const ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
+
+/** Below this many cards, the album fits in a few rows: no bar of letters. */
+const LETTERS_FROM = 24;
+
+/** The bar of letters of an alphabetical album: each letter leads to the first word under it. */
+export function albumLetters(items: readonly AlbumItem[]): readonly AlbumLetter[] {
+  const owned = items.filter((item) => item.kind === "owned").length;
+  if (owned < LETTERS_FROM) return [];
+  const first = new Map<string, number>();
+  items.forEach((item, index) => {
+    if (item.kind !== "owned") return;
+    const letter = foldedWord(item.card)
+      .charAt(0)
+      .replace("œ", "o")
+      .replace("æ", "a")
+      .toUpperCase();
+    if (!first.has(letter)) first.set(letter, index);
+  });
+  return ALPHABET.map((letter) => ({ letter, index: first.get(letter) ?? null }));
 }
 
 const FOLDED_WORDS = new WeakMap<CatalogCard, string>();
@@ -355,6 +428,8 @@ function ownedItem(
 export function albumView(input: AlbumInput, state: AlbumState): AlbumView {
   const { collections, owned, memory, dates, now } = input;
   const places = wordPlaces(collections);
+  const sort = state.sort ?? "alpha";
+  const order = ownedOrder(sort, places, dates);
   const collectionTabs = collections.map((collection) => {
     const found = collection.cards.filter((card) => owned.has(card.id)).length;
     const total = collection.cards.length;
@@ -398,7 +473,7 @@ export function albumView(input: AlbumInput, state: AlbumState): AlbumView {
           .filter((card) => owned.has(card.id) && foldedWord(card).includes(query))
           .map((card) => ({ card, name: collection.name })),
       )
-      .sort((a, b) => albumOrder(a.card, b.card, places))
+      .sort((a, b) => order(a.card, b.card))
       .map(({ card, name }) =>
         ownedItem(card, name, owned.get(card.id) ?? 1, memory.get(card.id), dates.get(card.id)),
       );
@@ -409,6 +484,7 @@ export function albumView(input: AlbumInput, state: AlbumState): AlbumView {
       filters,
       themes: [],
       items,
+      letters: sort === "alpha" ? albumLetters(items) : [],
       searching: true,
       empty: items.length === 0 ? ALBUM_EMPTY : null,
     };
@@ -429,6 +505,7 @@ export function albumView(input: AlbumInput, state: AlbumState): AlbumView {
       filters,
       themes: [],
       items: [],
+      letters: [],
       searching: false,
       empty: ALBUM_EMPTY,
     };
@@ -462,7 +539,9 @@ export function albumView(input: AlbumInput, state: AlbumState): AlbumView {
   const compare = state.compare ?? null;
   if (compare !== null && input.friend !== undefined) {
     const friend = input.friend;
-    const items = inView.flatMap(({ card, name }): AlbumItem[] => {
+    const items = (
+      compare === "theirs" ? inView : [...inView].sort((a, b) => order(a.card, b.card))
+    ).flatMap(({ card, name }): AlbumItem[] => {
       const quantity = owned.get(card.id);
       const theirs = friend.has(card.id);
       if (compare === "theirs") return quantity === undefined && theirs ? [missingItem(card)] : [];
@@ -476,6 +555,7 @@ export function albumView(input: AlbumInput, state: AlbumState): AlbumView {
       filters,
       themes,
       items,
+      letters: sort === "alpha" ? albumLetters(items) : [],
       searching: false,
       empty: items.length === 0 ? ALBUM_EMPTY : null,
     };
@@ -484,15 +564,17 @@ export function albumView(input: AlbumInput, state: AlbumState): AlbumView {
   const ownedItems =
     state.filter === "missing"
       ? []
-      : inView.flatMap(({ card, name }) => {
-          const quantity = owned.get(card.id);
-          const word = memory.get(card.id);
-          const date = dates.get(card.id);
-          if (quantity === undefined || !matchesFilter(state.filter, quantity, word, date, now)) {
-            return [];
-          }
-          return [ownedItem(card, name, quantity, word, date)];
-        });
+      : [...inView]
+          .sort((a, b) => order(a.card, b.card))
+          .flatMap(({ card, name }) => {
+            const quantity = owned.get(card.id);
+            const word = memory.get(card.id);
+            const date = dates.get(card.id);
+            if (quantity === undefined || !matchesFilter(state.filter, quantity, word, date, now)) {
+              return [];
+            }
+            return [ownedItem(card, name, quantity, word, date)];
+          });
 
   const missing =
     state.filter === "all" || state.filter === "missing"
@@ -518,6 +600,7 @@ export function albumView(input: AlbumInput, state: AlbumState): AlbumView {
     filters,
     themes,
     items,
+    letters: sort === "alpha" ? albumLetters(items) : [],
     searching: false,
     empty: items.length === 0 ? ALBUM_EMPTY : null,
   };

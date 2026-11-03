@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 /** How far below the window the next batch starts loading, so the scroll never hits a wall. */
 const AHEAD = "1200px";
@@ -13,7 +13,14 @@ export function useIncremental(
   total: number,
   step: number,
   resetKey: string,
-): { readonly shown: number; readonly sentinel: (element: HTMLElement | null) => void } {
+  /** The box that scrolls, when it is not the window. */
+  root: HTMLElement | null = null,
+): {
+  readonly shown: number;
+  readonly sentinel: (element: HTMLElement | null) => void;
+  /** Draws at least up to `index`, for a jump straight to it. */
+  readonly reach: (index: number) => void;
+} {
   const [batch, setBatch] = useState({ key: resetKey, count: step });
   const [element, sentinel] = useState<HTMLElement | null>(null);
   const count = batch.key === resetKey ? batch.count : step;
@@ -30,11 +37,21 @@ export function useIncremental(
           setBatch((b) => (b.key === resetKey ? { key: b.key, count: shown + step } : b));
         }
       },
-      { rootMargin: `0px 0px ${AHEAD} 0px` },
+      { root, rootMargin: `0px 0px ${AHEAD} 0px` },
     );
     observer.observe(element);
     return () => observer.disconnect();
-  }, [element, shown, total, step, resetKey]);
+  }, [element, shown, total, step, resetKey, root]);
 
-  return { shown, sentinel };
+  const reach = useCallback(
+    (index: number) =>
+      setBatch((b) =>
+        b.key === resetKey && b.count <= index
+          ? { key: b.key, count: (Math.floor(index / step) + 1) * step }
+          : b,
+      ),
+    [resetKey, step],
+  );
+
+  return { shown, sentinel, reach };
 }
