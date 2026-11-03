@@ -7,6 +7,8 @@ import {
   sealBox,
   sealGold,
   sealScallopPath,
+  toyMatters,
+  toy as toyValues,
 } from "@leximon/tokens";
 import { sachetContents } from "@leximon/view-model";
 import { type ReactNode, useState } from "react";
@@ -38,7 +40,7 @@ import Svg, {
 } from "react-native-svg";
 import { scheduleOnRN } from "react-native-worklets";
 import { catalogFileUrl } from "@/cards/catalog";
-import { colors, fonts } from "@/theme";
+import { colors, fonts, IS_LIBRARY } from "@/theme";
 import { LogoMarkShapes } from "@/ui/logo-mark";
 import { displayBoldWidth } from "./glyph-widths";
 import {
@@ -825,6 +827,7 @@ export function PrintLayer({
               fill="url(#wrinkles-bottom)"
             />
             <Motif motif={look.motif} unit={unit} paint={body} />
+            {IS_LIBRARY && <GiltFrame paint={body} />}
             <G
               filter="url(#seal-shadow)"
               transform={`translate(${CENTER - SEAL_SIZE / 2} ${layout.sealTop}) scale(${SEAL_SIZE / sealBox})`}
@@ -858,6 +861,53 @@ export function PrintLayer({
         </>
       )}
     </Layer>
+  );
+}
+
+/** The gilt frame's border box, as on the web: 18 units under the strip, 16 in, 36 off the foot. */
+const FRAME = {
+  x: 16,
+  y: STRIP + 18,
+  width: GRID.width - 32,
+  height: GRID.height - STRIP - 18 - 36,
+  radius: 16,
+  border: 4,
+  ink: 1.5,
+} as const;
+
+/** In « La Bibliothèque », a gilt frame inside the edge, lined with ink on both sides. */
+function GiltFrame({ paint }: { readonly paint: Paint }) {
+  const box = { x: FRAME.x, y: FRAME.y, width: FRAME.width, height: FRAME.height };
+  // Each line is a stroke centered on its path: a path sits half a stroke inside its edge.
+  const ring = (inset: number, stroke: number, color: string) => (
+    <Rect
+      x={FRAME.x + inset + stroke / 2}
+      y={FRAME.y + inset + stroke / 2}
+      width={FRAME.width - 2 * inset - stroke}
+      height={FRAME.height - 2 * inset - stroke}
+      rx={Math.max(0, FRAME.radius - inset - stroke / 2)}
+      fill="none"
+      stroke={color}
+      strokeWidth={stroke}
+    />
+  );
+  return (
+    <>
+      <Defs>
+        <Linear
+          id="gilt-frame"
+          line={cssLinear(160, box)}
+          list={[
+            [0, toyMatters.gold.top],
+            [1, toyMatters.gold.bottom],
+          ]}
+          paint={paint}
+        />
+      </Defs>
+      {ring(-FRAME.ink, FRAME.ink, paint(toyValues.outline))}
+      {ring(0, FRAME.border, "url(#gilt-frame)")}
+      {ring(FRAME.border, FRAME.ink, paint(toyValues.outline))}
+    </>
   );
 }
 

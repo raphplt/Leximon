@@ -32,11 +32,7 @@ export function Sachet({
   refill = null,
   refillLabel = null,
   still = false,
-  framed = false,
-}: PackProps & {
-  /** An ink outline and a gilt frame, to sit with the other objects of « La Bibliothèque ». */
-  readonly framed?: boolean;
-}) {
+}: PackProps) {
   const sealed = state === "sealed";
   const refilled = useRefilled(state, refill);
   const tear = useTear({ enabled: sealed, onTearStart, onOpen });
@@ -54,7 +50,6 @@ export function Sachet({
     styles.sachet,
     state === "opening" ? styles.opening : "",
     state === "empty" ? styles.empty : "",
-    framed ? styles.framed : "",
     refilled ? styles.refilled : "",
     tear.dragging ? styles.dragging : "",
     tear.fromRight ? styles.fromRight : "",
@@ -72,7 +67,6 @@ export function Sachet({
         <div className={styles.stage}>
           <div className={styles.shadow} aria-hidden="true" />
           <div className={classes} style={tear.style}>
-            {framed && <div className={styles.rim} aria-hidden="true" />}
             <div className={styles.back} aria-hidden="true" />
             {SLICES.map((z) => (
               <div
@@ -94,7 +88,7 @@ export function Sachet({
               onClick={openWithTouch}
             >
               <span className={styles.motif} aria-hidden="true" />
-              {framed && <span className={styles.frame} aria-hidden="true" />}
+              <span className={styles.frame} aria-hidden="true" />
               <span className={styles.brand} aria-hidden="true">
                 Leximon
               </span>

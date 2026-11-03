@@ -15,7 +15,6 @@ import { type RarityStaging, stagingFor } from "@leximon/view-model";
 import { type CSSProperties, type ReactNode, useEffect, useRef, useState } from "react";
 import { CardBack } from "@/booster/card-back";
 import type { PackCollection } from "@/booster/pack-looks";
-import { Sachet } from "@/booster/sachet";
 import { Avatar } from "@/components/avatar";
 import {
   CollectionTitle,
@@ -31,7 +30,7 @@ import {
   TabBar,
 } from "@/library/play-pieces";
 import { Aura, RarityBanner, Rays, Sheen } from "@/library/reveal-pieces";
-import { LibrarySachet, type LibrarySachetState } from "@/library/sachet";
+import { LibrarySachet } from "@/library/sachet";
 import { ParticleStage, useStage } from "@/ui/stage";
 import { Kicker, Leaf, Lettering, Toy, ToyIcon } from "@/ui/toy";
 import styles from "./planches.module.css";
@@ -88,9 +87,6 @@ export function Planches() {
         <div className={styles.columns}>
           <PlayScreen />
           <div className={styles.plates}>
-            <Plate title="Deux sachets à choisir">
-              <SachetTrials />
-            </Plate>
             <Plate title="Les objets">
               <Objects />
             </Plate>
@@ -122,85 +118,6 @@ function Plate({ title, children }: { readonly title: string; readonly children:
       </h2>
       {children}
     </section>
-  );
-}
-
-/**
- * The two ways the sachet could go, side by side on the desk: the toy of the mockups, and the
- * cloth of the game with an ink outline and a gilt frame. Touch either to see it open.
- */
-function SachetTrials() {
-  const [index, setIndex] = useState(0);
-  const [toy, setToy] = useState<LibrarySachetState>("sealed");
-  const [cloth, setCloth] = useState<"sealed" | "opening">("sealed");
-  const collection = COLLECTIONS[index] ?? COLLECTIONS[0];
-  if (collection === undefined) return null;
-
-  const openToy = () => {
-    setToy("charging");
-    setTimeout(() => setToy("burst"), 650);
-    setTimeout(() => setToy("sealed"), 1900);
-  };
-  const openCloth = () => {
-    setCloth("opening");
-    setTimeout(() => setCloth("sealed"), 1900);
-  };
-
-  return (
-    <div className={styles.trials}>
-      <p className={styles.trialsIntro}>
-        Deux allures pour le sachet, avant de l'emporter dans le jeu. Change de collection pour voir
-        chaque couleur.
-      </p>
-      <div className={styles.row}>
-        {COLLECTIONS.map((choice, at) => (
-          <Toy
-            key={choice.id}
-            matter={at === index ? "gold" : "paper"}
-            className={styles.effectButton}
-            onClick={() => setIndex(at)}
-            aria-pressed={at === index}
-          >
-            <Lettering>{choice.name}</Lettering>
-          </Toy>
-        ))}
-      </div>
-      <div className={styles.trialPair}>
-        <figure className={styles.trial}>
-          <Desk className={styles.trialDesk} />
-          <div className={`${styles.trialStage} ${styles.trialToy}`}>
-            <LibrarySachet
-              collection={collection}
-              label="Ouvrir le sachet"
-              countLabel="5 cartes"
-              state={toy}
-              onOpen={openToy}
-            />
-          </div>
-          <figcaption className={styles.trialCaption}>
-            <strong>Essai 1, le jouet.</strong> Le sachet des maquettes : tissu de la collection,
-            cadre doré, contour d'encre épais, ruban rouge et coins ronds.
-          </figcaption>
-        </figure>
-        <figure className={styles.trial}>
-          <Desk className={styles.trialDesk} />
-          <div className={styles.trialStage}>
-            <Sachet
-              key={collection.id}
-              state={cloth}
-              collection={collection}
-              onTearStart={() => undefined}
-              onOpen={openCloth}
-              framed
-            />
-          </div>
-          <figcaption className={styles.trialCaption}>
-            <strong>Essai 2, la retouche.</strong> Le sachet du jeu tel qu'il est, avec un contour
-            d'encre et un cadre doré pour rejoindre les autres objets.
-          </figcaption>
-        </figure>
-      </div>
-    </div>
   );
 }
 
