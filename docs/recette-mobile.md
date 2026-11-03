@@ -84,7 +84,7 @@ A sur le web sert de deuxième joueur : amis, échanges, clan, sanctions. `pnpm 
 
 ### MJO-01 · Écran Jouer (JOU-01 à JOU-03)
 - **Faire :** regarder l'écran, changer de collection avec les flèches.
-- **Attendu :** sachet gravé de la collection, stock en pastilles et temps avant le suivant, boutons ronds autour du sachet (clan, discussion, joutes fermées, défi du jour avec son anneau, amis, coffrets avec leur nombre). Une collection fermée dit le niveau requis. Dans la barre du haut, la pilule du stock ouvre un panneau avec le stock et la réserve de sachets bonus.
+- **Attendu :** l'ancien sachet glisse hors du comptoir d'un côté pendant que le nouveau entre de l'autre, en se redressant. Sachet gravé de la collection, stock en pastilles et temps avant le suivant, boutons ronds autour du sachet (clan, discussion, joutes fermées, défi du jour avec son anneau, amis, coffrets avec leur nombre). Une collection fermée dit le niveau requis. Dans la barre du haut, la pilule du stock ouvre un panneau avec le stock et la réserve de sachets bonus.
 - **Retour :**
 
 ### MJO-08 · Le même sachet que sur le web
@@ -186,7 +186,7 @@ A sur le web sert de deuxième joueur : amis, échanges, clan, sanctions. `pnpm 
 
 ### MDE-01 · Session
 - **Faire :** lancer une session, répondre juste et faux, taper un mot quand il le demande, arrêter en cours.
-- **Attendu :** comme sur le web, progression, sons, vibrations et réactions compris (DEF-07, DEF-08) ; le clavier ne cache ni la question ni le champ. Bilan et sachet bonus du jour.
+- **Attendu :** comme sur le web, prononciation, médaillon du verdict, progression, sons, vibrations et réactions compris (DEF-02, DEF-07, DEF-08) ; le clavier ne cache ni la question ni le champ. Bilan et sachet bonus du jour.
 - **Retour :**
 
 ### MDE-02 · Réviser un mot

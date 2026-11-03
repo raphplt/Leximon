@@ -328,6 +328,17 @@
   overflow-wrap: anywhere;
 }
 
+.speech {
+  display: flex;
+  justify-content: center;
+  gap: var(--lx-s4);
+  margin-top: var(--lx-s5);
+}
+
+.speech:empty {
+  display: none;
+}
+
 .promptDefinition {
   margin: var(--lx-s6) 0 0;
   font-family: var(--font-text), Georgia, serif;
@@ -457,14 +468,46 @@
 }
 
 .feedback {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: space-between;
   flex-wrap: wrap;
   gap: var(--lx-s6);
   margin-top: var(--lx-s9);
-  padding: var(--lx-s7) var(--lx-s9);
+  padding: var(--lx-s7) var(--lx-s9) var(--lx-s7) 52px;
   border-radius: var(--lx-radius-xxl);
+}
+
+/* The verdict, stamped on the corner of the slip like a seal: ticked in green, crossed in red. */
+.verdict {
+  position: absolute;
+  top: -14px;
+  left: -12px;
+  width: 50px;
+  height: 50px;
+  rotate: -10deg;
+  animation: stamp 420ms cubic-bezier(0.3, 1.5, 0.5, 1) both;
+}
+
+.verdict svg {
+  filter: drop-shadow(0 1.5px 0 var(--lx-lettering-outline));
+  stroke-width: 3.2px;
+}
+
+.bad .verdict {
+  rotate: 8deg;
+}
+
+@keyframes stamp {
+  from {
+    scale: 1.9;
+    opacity: 0;
+  }
+  55% {
+    scale: 0.9;
+    opacity: 1;
+  }
 }
 
 .good {
@@ -610,6 +653,7 @@
   .dot.right,
   .dot.wrong,
   .feedback,
+  .verdict,
   .risen,
   .won {
     animation: none;
@@ -922,7 +966,6 @@
 /* What the answer was, on a leaf, edged with the green or red of the verdict. */
 :root[data-look="bibliotheque"] .feedback {
   border: var(--lx-toy-outline-width) solid var(--lx-toy-outline);
-  border-left-width: 10px;
   border-radius: var(--lx-toy-radius-tile);
   background:
     var(--lx-matter-paper) 0 0 / var(--lx-matter-size),
@@ -933,12 +976,18 @@
   color: var(--lx-color-paper-ink);
 }
 
-:root[data-look="bibliotheque"] .good {
-  border-left-color: var(--lx-toy-green-bottom);
+:root[data-look="bibliotheque"] .feedbackTitle {
+  font-family: var(--font-display), Georgia, serif;
+  font-weight: 900;
+  font-size: var(--lx-size-title);
 }
 
-:root[data-look="bibliotheque"] .bad {
-  border-left-color: var(--lx-toy-red-bottom);
+:root[data-look="bibliotheque"] .good .feedbackTitle {
+  color: var(--lx-toy-green-edge);
+}
+
+:root[data-look="bibliotheque"] .bad .feedbackTitle {
+  color: var(--lx-toy-red-edge);
 }
 
 :root[data-look="bibliotheque"] .feedbackExtra {

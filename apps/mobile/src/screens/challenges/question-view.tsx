@@ -1,3 +1,4 @@
+import type { CatalogCard } from "@leximon/contract";
 import { type Catalog, cardOrPlaceholder } from "@leximon/contract/client";
 import { TYPED_ANSWER_MAX_LENGTH } from "@leximon/core";
 import { effects, room, type ToyMatterName, toyMatters, toy as toyValues } from "@leximon/tokens";
@@ -28,12 +29,16 @@ import {
 } from "react-native";
 import Animated, {
   FadeInUp,
+  Keyframe,
   useAnimatedStyle,
   useReducedMotion,
   useSharedValue,
   withSequence,
   withTiming,
 } from "react-native-reanimated";
+import { SpeechButtons } from "@/cards/speech-buttons";
+import { useSpokenWord } from "@/cards/spoken-word";
+import { speechOn } from "@/feedback/feedback";
 import { Desk } from "@/library/play-pieces";
 import { wordMemory } from "@/player/collection";
 import { useShared } from "@/player/shared";
@@ -66,6 +71,40 @@ function choiceState(choiceId: string, answerId: string, step: Step): ChoiceStat
   if (step.name === "sending") return choiceId === step.chosen ? "pending" : "idle";
   if (choiceId === answerId) return "right";
   return choiceId === step.chosen ? "wrong" : "faded";
+}
+
+/** The word is said once the question has slid in, not over the last answer's sound. */
+const SPEAK_AFTER_MS = 250;
+
+/** The verdict stamped on the corner of the slip like a seal, at its own tilt. */
+function stampIn(tilt: number) {
+  return new Keyframe({
+    0: { opacity: 0, transform: [{ scale: 1.9 }, { rotate: `${tilt}deg` }] },
+    55: { opacity: 1, transform: [{ scale: 0.9 }, { rotate: `${tilt}deg` }] },
+    100: { opacity: 1, transform: [{ scale: 1 }, { rotate: `${tilt}deg` }] },
+  }).duration(420);
+}
+
+/** The word asked, said by the catalogue's voice as the question comes, unless it is muted. */
+function SpokenPrompt({ card }: { readonly card: CatalogCard }) {
+  const word = useSpokenWord(card);
+  // Each question is a fresh component (keyed by its card): the word is said once, as it comes.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: runs once per question on purpose
+  useEffect(() => {
+    if (!speechOn()) return;
+    const timer = setTimeout(word.play, SPEAK_AFTER_MS);
+    return () => clearTimeout(timer);
+  }, []);
+  return (
+    <>
+      <Text style={styles.promptWord} accessibilityRole="header">
+        {card.word}
+      </Text>
+      <View style={styles.speech}>
+        <SpeechButtons word={word} label={card.word} />
+      </View>
+    </>
+  );
 }
 
 /** One question of a session: the prompt, the choices or the field, then what the answer did. */
@@ -121,9 +160,7 @@ export function QuestionView({
     <>
       <Text style={styles.kicker}>{questionKicker(question.format).toUpperCase()}</Text>
       {asksDefinition ? (
-        <Text style={styles.promptWord} accessibilityRole="header">
-          {card.word}
-        </Text>
+        <SpokenPrompt key={question.cardId} card={card} />
       ) : (
         <Text style={styles.promptDefinition} accessibilityRole="header">
           {result === null ? hideWordIn(card.definition, card.word) : card.definition}
@@ -253,11 +290,31 @@ export function QuestionView({
           style={[
             styles.feedback,
             result.correct ? styles.good : styles.bad,
-            IS_LIBRARY && [library.feedback, result.correct ? library.good : library.bad],
+            IS_LIBRARY && library.feedback,
           ]}
           accessibilityLiveRegion="polite"
         >
-          <Text style={styles.feedbackTitle}>
+          {IS_LIBRARY && (
+            <Animated.View
+              entering={stampIn(result.correct ? -10 : 8)}
+              style={[
+                library.verdict,
+                toyFace(result.correct ? "green" : "red", "round"),
+                { transform: [{ rotate: `${result.correct ? -10 : 8}deg` }] },
+              ]}
+            >
+              <Icon name={result.correct ? "check" : "close"} size={24} color={colors.inkOnColor} />
+            </Animated.View>
+          )}
+          <Text
+            style={[
+              styles.feedbackTitle,
+              IS_LIBRARY && [
+                library.verdictTitle,
+                { color: toyMatters[result.correct ? "green" : "red"].edge },
+              ],
+            ]}
+          >
             {answerTitle(result.correct, result.progress.xpGained, slip)}
           </Text>
           <Text style={styles.feedbackText}>
@@ -454,6 +511,7 @@ const styles = StyleSheet.create({
     lineHeight: 40,
     color: ink.pageInk,
   },
+  speech: { flexDirection: "row", gap: space.s4 },
   promptDefinition: {
     fontFamily: fonts.text.regular,
     fontSize: fontSizes.titleSmall,
@@ -601,14 +659,21 @@ const library = StyleSheet.create({
   typedRight: leather("green"),
   typedWrong: leather("red"),
   feedback: {
-    overflow: "hidden",
     borderWidth: toyValues.outlineWidth,
-    borderLeftWidth: 10,
     borderColor: toyValues.outline,
     borderRadius: 16,
     backgroundColor: colors.paper,
     boxShadow: `inset 0 -4px 0 ${toyMatters.paper.bottom}, 0 4px 0 ${toyValues.outline}`,
   },
-  good: { borderLeftColor: toyMatters.green.bottom },
-  bad: { borderLeftColor: toyMatters.red.bottom },
+  /** Clear of the seal on the corner; the lines under it run the slip's whole width. */
+  verdictTitle: { paddingLeft: 30 },
+  verdict: {
+    position: "absolute",
+    top: -14,
+    left: -10,
+    width: 48,
+    height: 48,
+    alignItems: "center",
+    justifyContent: "center",
+  },
 });

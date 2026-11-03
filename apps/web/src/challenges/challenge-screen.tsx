@@ -1,6 +1,6 @@
 "use client";
 
-import type { MasteryLevelCode, PracticeScope } from "@leximon/contract";
+import type { CatalogCard, MasteryLevelCode, PracticeScope } from "@leximon/contract";
 import { type Catalog, cardOrPlaceholder, collectionName } from "@leximon/contract/client";
 import { createSeededRandom, TYPED_ANSWER_MAX_LENGTH } from "@leximon/core";
 import { effects } from "@leximon/tokens";
@@ -40,8 +40,10 @@ import {
 } from "@leximon/view-model";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { type FormEvent, useCallback, useEffect, useRef, useState } from "react";
-import { play, vibrate } from "@/booster/feedback";
+import { play, speechOn, vibrate } from "@/booster/feedback";
 import { loadCatalog } from "@/cards/catalog";
+import { SpeechButtons } from "@/cards/speech-buttons";
+import { useSpokenWord } from "@/cards/use-spoken-word";
 import { Card } from "@/components/card";
 import { api } from "@/lib/api";
 import { useNow } from "@/lib/use-now";
@@ -58,10 +60,14 @@ import { Button, ButtonLink, RoundButton } from "@/ui/button";
 import { Icon, type IconName } from "@/ui/icon";
 import { Bone } from "@/ui/skeleton";
 import { ParticleStage, useOptionalStage } from "@/ui/stage";
+import { ToyBody } from "@/ui/toy";
 import ui from "@/ui/ui.module.css";
 import styles from "./challenge-screen.module.css";
 import { takeAlbumPractice } from "./pending-practice";
 import { PracticeSection } from "./practice-section";
+
+/** The word is said once the question has slid in, not over the last answer's sound. */
+const SPEAK_AFTER_MS = 250;
 
 /** `chosen`: the card picked, or the word typed. */
 type Step =
@@ -567,9 +573,7 @@ function QuestionView({
       <div className={`${ui.panel} ${styles.prompt}`}>
         <p className={ui.kicker}>{questionKicker(question.format)}</p>
         {asksDefinition ? (
-          <h2 id="prompt" className={`${ui.display} ${styles.promptWord}`}>
-            {card.word}
-          </h2>
+          <SpokenPrompt key={question.cardId} card={card} />
         ) : (
           <h2 id="prompt" className={styles.promptDefinition}>
             {result === null ? hideWordIn(card.definition, card.word) : card.definition}
@@ -620,6 +624,13 @@ function QuestionView({
         )}
         {result !== null && (
           <div className={`${styles.feedback} ${result.correct ? styles.good : styles.bad}`}>
+            <ToyBody
+              matter={result.correct ? "green" : "red"}
+              shape="round"
+              className={styles.verdict}
+            >
+              <Icon name={result.correct ? "check" : "close"} size={24} />
+            </ToyBody>
             <div>
               <p className={styles.feedbackTitle}>
                 {answerTitle(result.correct, result.progress.xpGained, slip)}
@@ -648,6 +659,28 @@ function QuestionView({
         )}
       </div>
     </section>
+  );
+}
+
+/** The word asked, said by the catalogue's voice as the question comes, unless it is muted. */
+function SpokenPrompt({ card }: { readonly card: CatalogCard }) {
+  const word = useSpokenWord(card);
+  // Each question is a fresh component (keyed by its card): the word is said once, as it comes.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: runs once per question on purpose
+  useEffect(() => {
+    if (!speechOn()) return;
+    const timer = window.setTimeout(word.play, SPEAK_AFTER_MS);
+    return () => clearTimeout(timer);
+  }, []);
+  return (
+    <>
+      <h2 id="prompt" className={`${ui.display} ${styles.promptWord}`}>
+        {card.word}
+      </h2>
+      <div className={styles.speech}>
+        <SpeechButtons word={word} label={card.word} />
+      </div>
+    </>
   );
 }
 

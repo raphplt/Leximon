@@ -3,7 +3,7 @@
 import { type CatalogCard, RARITY_LABELS } from "@leximon/contract";
 import { rarityLights, rarityStyles, revealBanner, revealEffects } from "@leximon/tokens";
 import type { RarityStaging } from "@leximon/view-model";
-import { cardRelease, frequencyLine, speechToggleLabel } from "@leximon/view-model";
+import { cardRelease, frequencyLine } from "@leximon/view-model";
 import {
   type CSSProperties,
   type KeyboardEvent,
@@ -13,14 +13,14 @@ import {
   useState,
 } from "react";
 import { useCardShare } from "@/cards/share-card";
-import { type SpokenWord, useSpokenWord } from "@/cards/use-spoken-word";
+import { SpeechButtons } from "@/cards/speech-buttons";
+import { useSpokenWord } from "@/cards/use-spoken-word";
 import { HoloCard } from "@/components/holo-card";
 import { useHoloLight } from "@/components/use-holo-light";
 import { Aura, RarityBanner, Rays, Sheen } from "@/library/reveal-pieces";
-import { Icon } from "@/ui/icon";
 import type { Stage } from "@/ui/stage";
 import { CardBack } from "./card-back";
-import { play, readPreference, speechOn, vibrate, writePreference } from "./feedback";
+import { play, speechOn, vibrate } from "./feedback";
 import styles from "./reveal-card.module.css";
 
 /** A touch during the first moments of an announcement is ignored: it may be a double tap. */
@@ -306,17 +306,7 @@ export function RevealCard({
         {!flipped && staging.flip === "touch" && touchable && (
           <span className={styles.touchHint}>Touche la carte</span>
         )}
-        {settled && word.available && (
-          <button
-            type="button"
-            className={word.playing ? `${styles.listen} ${styles.listening}` : styles.listen}
-            onClick={word.play}
-            aria-label={`Écouter ${card.word}`}
-          >
-            <Icon name="play" size={18} />
-          </button>
-        )}
-        {settled && word.available && <SpeechToggle word={word} />}
+        {settled && <SpeechButtons word={word} label={card.word} />}
         {settled && isNew && (
           <span className={styles.frequency}>{frequencyLine(card.perBillion)}</span>
         )}
@@ -328,30 +318,6 @@ export function RevealCard({
 
 function prefersReducedMotion(): boolean {
   return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-}
-
-/**
- * Stops the words from being said, this one included, through the setting of the same name.
- * With all sounds off nothing is said anyway: nothing to offer.
- */
-function SpeechToggle({ word }: { readonly word: SpokenWord }) {
-  const [on, setOn] = useState(() => readPreference("speech"));
-  if (!readPreference("sound")) return null;
-  const toggle = () => {
-    writePreference("speech", !on);
-    setOn(!on);
-    if (on) word.stop();
-  };
-  return (
-    <button
-      type="button"
-      className={styles.listen}
-      onClick={toggle}
-      aria-label={speechToggleLabel(on)}
-    >
-      <Icon name={on ? "sound" : "soundOff"} size={18} />
-    </button>
-  );
 }
 
 /**

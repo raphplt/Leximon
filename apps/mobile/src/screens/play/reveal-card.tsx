@@ -1,13 +1,8 @@
 import { type CatalogCard, RARITY_LABELS } from "@leximon/contract";
 import { cardSize, rarityLights, rarityStyles, revealBanner, revealEffects } from "@leximon/tokens";
-import {
-  cardRelease,
-  frequencyLine,
-  type RarityStaging,
-  speechToggleLabel,
-} from "@leximon/view-model";
+import { cardRelease, frequencyLine, type RarityStaging } from "@leximon/view-model";
 import { useEffect, useRef, useState } from "react";
-import { PanResponder, Pressable, StyleSheet, Text, View, type ViewInstance } from "react-native";
+import { PanResponder, StyleSheet, Text, View, type ViewInstance } from "react-native";
 import Animated, {
   Easing,
   interpolate,
@@ -22,11 +17,11 @@ import Animated, {
 import Svg, { Defs, Ellipse, Polyline, RadialGradient, Stop } from "react-native-svg";
 import { CardBack, CardEdge } from "@/cards/card-back";
 import { HoloCard } from "@/cards/holo-card";
-import { type SpokenWord, useSpokenWord } from "@/cards/spoken-word";
-import { play, readPreference, speechOn, vibrate, writePreference } from "@/feedback/feedback";
+import { SpeechButtons } from "@/cards/speech-buttons";
+import { useSpokenWord } from "@/cards/spoken-word";
+import { play, speechOn, vibrate } from "@/feedback/feedback";
 import { Aura, RarityBanner, Rays, Sheen } from "@/library/reveal-pieces";
 import { colors, fontSizes, fonts, radii, space } from "@/theme";
-import { Icon } from "@/ui/icon";
 import type { Stage } from "@/ui/stage";
 
 /** A touch during the first moments of an announcement is ignored: it may be a double tap. */
@@ -361,44 +356,10 @@ export function RevealCard({
         {!flipped && staging.flip === "touch" && touchable && (
           <Text style={styles.touchHint}>Touche la carte</Text>
         )}
-        {settled && word.available && (
-          <Pressable
-            onPress={word.play}
-            accessibilityRole="button"
-            accessibilityLabel={`Écouter ${card.word}`}
-            style={[styles.listen, word.playing && styles.listening]}
-          >
-            <Icon name="play" size={18} color={word.playing ? colors.actionInk : colors.pageInk} />
-          </Pressable>
-        )}
-        {settled && word.available && <SpeechToggle word={word} />}
+        {settled && <SpeechButtons word={word} label={card.word} />}
         {settled && isNew && <Text style={styles.frequency}>{frequencyLine(card.perBillion)}</Text>}
       </View>
     </View>
-  );
-}
-
-/**
- * Stops the words from being said, this one included, through the setting of the same name.
- * With all sounds off nothing is said anyway: nothing to offer.
- */
-function SpeechToggle({ word }: { readonly word: SpokenWord }) {
-  const [on, setOn] = useState(() => readPreference("speech"));
-  if (!readPreference("sound")) return null;
-  const toggle = () => {
-    writePreference("speech", !on);
-    setOn(!on);
-    if (on) word.stop();
-  };
-  return (
-    <Pressable
-      onPress={toggle}
-      accessibilityRole="button"
-      accessibilityLabel={speechToggleLabel(on)}
-      style={styles.listen}
-    >
-      <Icon name={on ? "sound" : "soundOff"} size={18} color={colors.pageInk} />
-    </Pressable>
   );
 }
 
@@ -461,15 +422,6 @@ const styles = StyleSheet.create({
     gap: space.s5,
     paddingHorizontal: space.s12,
   },
-  listen: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: colors.pageRaised,
-  },
-  listening: { backgroundColor: colors.action },
   touchHint: { fontFamily: fonts.ui.bold, fontSize: fontSizes.body, color: colors.pageInkMuted },
   frequency: {
     flexShrink: 1,

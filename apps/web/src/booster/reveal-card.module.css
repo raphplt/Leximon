@@ -269,33 +269,6 @@
   text-align: center;
 }
 
-.listen {
-  appearance: none;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  width: 36px;
-  height: 36px;
-  padding: 0;
-  border: 0;
-  border-radius: 50%;
-  background: var(--lx-color-page-raised);
-  color: var(--lx-color-page-ink);
-  cursor: pointer;
-  animation: fadeIn 0.4s ease-out both;
-}
-
-.listen:hover {
-  background: var(--lx-color-control);
-}
-
-.listening,
-.listening:hover {
-  background: var(--lx-color-action);
-  color: var(--lx-color-action-ink);
-}
-
 .touchHint {
   font-size: var(--lx-size-label);
   font-weight: 700;

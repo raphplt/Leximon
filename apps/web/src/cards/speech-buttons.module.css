@@ -1,0 +1,38 @@
+.listen {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: var(--lx-color-page-raised);
+  color: var(--lx-color-page-ink);
+  cursor: pointer;
+  animation: fade-in 0.4s ease-out both;
+}
+
+.listen:hover {
+  background: var(--lx-color-control);
+}
+
+.listening,
+.listening:hover {
+  background: var(--lx-color-action);
+  color: var(--lx-color-action-ink);
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .listen {
+    animation: none;
+  }
+}
