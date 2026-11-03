@@ -229,6 +229,8 @@ Seulement ce dont l'écran Jouer et l'ouverture ont besoin : bandeau du haut (po
 
 **Courrier, nouveautés et pages légales faits le 2026-11-03**, sur le web et le mobile. Chaque lettre du courrier est un billet de papier ; une nouvelle porte une bande d'or sur le web, et sur le mobile le billet entier est en or. Les nouveautés et les pages légales (conditions, confidentialité, charte, mentions) sont sur des feuilles, leur titre en lettres dorées ; sur le mobile, la fenêtre des nouveautés qui s'ouvre au lancement est une feuille, elle aussi.
 
+**Sanctions, écrans fermés et erreurs faits le 2026-11-03**, sur le web et le mobile. Une fonction fermée par le niveau, une page introuvable ou une page qui a planté se disent sur une feuille, leur signe dans un médaillon d'or. Sur le mobile, l'avis de sanction s'ouvre sur une feuille ; sur le web, il était déjà dans une fenêtre de papier. Le mobile n'a pas d'écran d'erreur à lui.
+
 ### Hors du jeu
 
 | Élément | Travail |

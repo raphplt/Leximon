@@ -13,10 +13,11 @@ import {
 import { api } from "@/api/client";
 import { useNow, useShared } from "@/player/shared";
 import { sanctions } from "@/player/state";
-import { alpha, colors, fontSizes, fonts, radii, space } from "@/theme";
+import { alpha, colors, fontSizes, fonts, IS_LIBRARY, paperColors, radii, space } from "@/theme";
 import { Button } from "@/ui/button";
 import { KeyboardLift } from "@/ui/keyboard-lift";
 import { ToastHost, toast } from "@/ui/toast";
+import { Leaf } from "@/ui/toy";
 
 /**
  * A sanction the player has not read yet: what was done, why, until when, and how to contest
@@ -45,7 +46,12 @@ export function SanctionHost() {
     >
       <KeyboardLift style={styles.backdrop}>
         <View style={styles.centered}>
-          <View style={[styles.card, { width: Math.min(400, window.width - 32) }]}>
+          <Card
+            style={[
+              IS_LIBRARY ? styles.leaf : styles.card,
+              { width: Math.min(400, window.width - 32) },
+            ]}
+          >
             <ScrollView contentContainerStyle={styles.inner} keyboardShouldPersistTaps="handled">
               <Text style={styles.title} accessibilityRole="header">
                 {unseen.length > 1 ? "Des sanctions te concernent" : "Une sanction te concerne"}
@@ -55,7 +61,7 @@ export function SanctionHost() {
               ))}
               <Button label="J'ai lu" onPress={close} />
             </ScrollView>
-          </View>
+          </Card>
         </View>
       </KeyboardLift>
       <ToastHost />
@@ -116,7 +122,7 @@ function SanctionCard({ sanction, now }: { readonly sanction: Sanction; readonly
               multiline
               numberOfLines={4}
               textAlignVertical="top"
-              selectionColor={colors.rubric}
+              selectionColor={ink.rubric}
               accessibilityLabel={CONTEST_HINT}
               onChangeText={setText}
             />
@@ -133,6 +139,10 @@ function SanctionCard({ sanction, now }: { readonly sanction: Sanction; readonly
   );
 }
 
+/** The notice pops up on a leaf of paper in « La Bibliothèque ». */
+const ink = paperColors;
+const Card = IS_LIBRARY ? Leaf : View;
+
 const styles = StyleSheet.create({
   backdrop: { flex: 1, backgroundColor: alpha(colors.scrim, 0.82) },
   centered: {
@@ -142,50 +152,51 @@ const styles = StyleSheet.create({
     paddingVertical: space.s24,
   },
   card: { maxHeight: "100%", borderRadius: 24, backgroundColor: colors.sheet },
+  leaf: { maxHeight: "100%", backgroundColor: ink.paper },
   inner: { gap: space.s7, padding: 22 },
   title: {
     fontFamily: fonts.display,
     fontSize: fontSizes.titleLarge,
     lineHeight: 29,
-    color: colors.pageInk,
+    color: ink.pageInk,
   },
   sanction: {
     gap: space.s4,
     padding: space.s7,
     borderRadius: radii.xxl,
-    backgroundColor: colors.panel,
+    backgroundColor: ink.panel,
   },
   sanctionTitle: {
     fontFamily: fonts.ui.extrabold,
     fontSize: fontSizes.bodyLarge,
-    color: colors.danger,
+    color: ink.danger,
   },
   reason: {
     fontFamily: fonts.ui.semibold,
     fontSize: fontSizes.body,
     lineHeight: 21,
-    color: colors.pageInk,
+    color: ink.pageInk,
   },
   content: {
     fontFamily: fonts.text.italic,
     fontSize: fontSizes.bodyLarge,
     lineHeight: 22,
-    color: colors.pageInkMuted,
+    color: ink.pageInkMuted,
   },
   detail: {
     fontFamily: fonts.ui.medium,
     fontSize: fontSizes.small,
     lineHeight: 18,
-    color: colors.pageInkMuted,
+    color: ink.pageInkMuted,
   },
   field: {
     minHeight: 96,
     padding: space.s6,
     borderRadius: radii.xl,
     borderWidth: 2,
-    borderColor: colors.track,
-    backgroundColor: colors.well,
-    color: colors.pageInk,
+    borderColor: ink.track,
+    backgroundColor: ink.well,
+    color: ink.pageInk,
     fontFamily: fonts.ui.medium,
     fontSize: fontSizes.body,
   },

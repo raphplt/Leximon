@@ -64,3 +64,18 @@
     font-size: var(--lx-size-heading);
   }
 }
+
+/* In « La Bibliothèque », the sign of the page is a gold medallion. */
+:root[data-look="bibliotheque"] .icon {
+  border: var(--lx-toy-outline-width) solid var(--lx-toy-outline);
+  background: linear-gradient(
+    180deg,
+    var(--lx-toy-gold-top) 0 47%,
+    var(--lx-toy-gold-bottom) 53% 100%
+  );
+  box-shadow:
+    inset 0 -4px 0 var(--lx-toy-gold-edge),
+    inset 0 2px 0 var(--lx-toy-sheen),
+    0 4px 0 var(--lx-toy-outline);
+  color: var(--lx-toy-outline);
+}

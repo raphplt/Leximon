@@ -1,12 +1,14 @@
 import type { IconName } from "@leximon/tokens";
+import { toy as toyValues } from "@leximon/tokens";
 import { router } from "expo-router";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
 import { TAB_BAR_RISE } from "@/shell/tab-bar";
-import { alpha, colors, fontSizes, fonts, space } from "@/theme";
+import { alpha, colors, fontSizes, fonts, IS_LIBRARY, paperColors, space } from "@/theme";
 import { Button } from "./button";
 import { Icon } from "./icon";
 import { XpBar } from "./level";
 import { Panel } from "./panel";
+import { ToyBody } from "./toy";
 
 /**
  * A feature closed by the level: what opens it, a sentence of promise, the way there.
@@ -29,10 +31,16 @@ export function LockedScreen({
 }) {
   return (
     <ScrollView contentContainerStyle={styles.page}>
-      <Panel style={styles.panel}>
-        <View style={styles.icon}>
-          <Icon name={icon} size={38} color={colors.rubric} />
-        </View>
+      <Panel paper style={styles.panel}>
+        {IS_LIBRARY ? (
+          <ToyBody matter="gold" shape="round" large style={styles.medal}>
+            <Icon name={icon} size={38} color={toyValues.outline} />
+          </ToyBody>
+        ) : (
+          <View style={styles.icon}>
+            <Icon name={icon} size={38} color={colors.rubric} />
+          </View>
+        )}
         {level !== undefined && <Text style={styles.kicker}>NIVEAU {level}</Text>}
         <Text style={styles.title} accessibilityRole="header">
           {title}
@@ -53,6 +61,9 @@ export function LockedScreen({
   );
 }
 
+/** The closed feature is told on a leaf of paper in « La Bibliothèque ». */
+const ink = paperColors;
+
 const styles = StyleSheet.create({
   page: {
     flexGrow: 1,
@@ -68,30 +79,31 @@ const styles = StyleSheet.create({
     borderRadius: 38,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: alpha(colors.gilt, 0.14),
+    backgroundColor: alpha(ink.gilt, 0.14),
     marginBottom: space.s3,
   },
+  medal: { width: 84, height: 84, marginBottom: space.s5 },
   kicker: {
     fontFamily: fonts.ui.extrabold,
     fontSize: fontSizes.caption,
     letterSpacing: 2,
-    color: colors.pageInkMuted,
+    color: ink.pageInkMuted,
   },
   title: {
     fontFamily: fonts.display,
     fontSize: fontSizes.titleLarge,
     lineHeight: 32,
-    color: colors.pageInk,
+    color: ink.pageInk,
     textAlign: "center",
   },
   text: {
     fontFamily: fonts.text.regular,
     fontSize: fontSizes.lead,
     lineHeight: 24,
-    color: colors.pageInkMuted,
+    color: ink.pageInkMuted,
     textAlign: "center",
   },
   progress: { alignSelf: "stretch", gap: space.s3, marginTop: space.s4, alignItems: "center" },
-  left: { fontFamily: fonts.ui.bold, fontSize: fontSizes.label, color: colors.pageInkMuted },
+  left: { fontFamily: fonts.ui.bold, fontSize: fontSizes.label, color: ink.pageInkMuted },
   actions: { alignSelf: "stretch", gap: space.s5, marginTop: space.s7 },
 });
