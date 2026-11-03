@@ -15,7 +15,6 @@ import { usePlayerView } from "@/shell/use-player-view";
 import { Button } from "@/ui/button";
 import { Icon } from "@/ui/icon";
 import { LevelMedal, XpBar } from "@/ui/level-bits";
-import ui from "@/ui/ui.module.css";
 import styles from "./play.module.css";
 
 /** The level band of the Jouer screen: medal, XP, next rewards, coffrets. */
@@ -23,13 +22,11 @@ export function LevelStrip() {
   const view = usePlayerView();
   const { openCoffret } = useShell();
   const { progress } = view;
-  if (progress === null)
-    return <div className={`${styles.strip} ${ui.leaf} ${styles.stripLoading}`} />;
+  if (progress === null) return <div className={`${styles.strip} ${styles.stripLoading}`} />;
   const next = view.now === 0 ? [] : upcomingRewards(progress.level, view.now);
   const line = view.now === 0 ? null : nextRewardLine(progress.level, view.now);
   return (
-    // In « La Bibliothèque », a leaf of paper; elsewhere the leaf class draws nothing.
-    <div className={`${styles.strip} ${ui.leaf}`}>
+    <div className={styles.strip}>
       <Link href="/niveaux" className={styles.medalLink} aria-label="Niveaux">
         <LevelMedal level={progress.level} size={72} />
       </Link>

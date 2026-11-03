@@ -62,6 +62,7 @@ import { noteSachetOpened, StockDots, TearHint } from "@/play/counter-bits";
 import { LevelStrip } from "@/play/level-strip";
 import { type CounterMoment, LibraryCounter } from "@/play/library-counter";
 import counter from "@/play/library-counter.module.css";
+import { NextReward } from "@/play/next-reward";
 import { PackPeek, PeekArrow } from "@/play/pack-peek";
 import play from "@/play/play.module.css";
 import { PlayFabs } from "@/play/play-fabs";
@@ -729,10 +730,10 @@ function BoosterFlow({ library }: { readonly library: boolean }) {
               <p className={counter.message}>C'est ton dernier sachet sans compte.</p>
             ) : null
           }
-          above={<LevelStrip />}
-          below={
+          reward={<NextReward />}
+          word={
             catalog !== null && underCounter !== null ? (
-              <SlippingWord catalog={catalog} word={underCounter} />
+              <SlippingWord catalog={catalog} word={underCounter} compact />
             ) : null
           }
         />
@@ -741,7 +742,8 @@ function BoosterFlow({ library }: { readonly library: boolean }) {
   }
   return (
     <main className={play.page}>
-      <LevelStrip />
+      {/* « La Bibliothèque » waits without the old band, which would flash over its desk. */}
+      {!library && <LevelStrip />}
       {waiting ? (
         <p className={play.waiting}>On fouille les rayons…</p>
       ) : (

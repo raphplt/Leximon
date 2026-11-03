@@ -56,10 +56,10 @@ export interface LibraryCounterProps {
   readonly onOpen: () => void;
   /** Under the button: the account to create, an error, the last sachet without an account. */
   readonly footer: ReactNode;
-  /** Over the desk, on a wide screen: the level and the rewards to come. */
-  readonly above?: ReactNode;
-  /** Under the button: a word of the album to read again, or one slipping away. */
-  readonly below?: ReactNode;
+  /** Left of the button, on a wide screen: the next level's reward. */
+  readonly reward?: ReactNode;
+  /** Right of the button, or under it on a phone: a word of the album to read again, or one slipping away. */
+  readonly word?: ReactNode;
 }
 
 /**
@@ -81,8 +81,8 @@ export function LibraryCounter({
   onPick,
   onOpen,
   footer,
-  above = null,
-  below = null,
+  reward = null,
+  word = null,
 }: LibraryCounterProps) {
   const view = usePlayerView();
   const [bubble, setBubble] = useState<{ readonly text: string } | null>(null);
@@ -98,7 +98,6 @@ export function LibraryCounter({
 
   return (
     <section className={styles.screen} data-opening={opening || undefined} aria-label="Ton sachet">
-      {above !== null && <div className={`${styles.above} ${styles.fading}`}>{above}</div>}
       <div className={styles.play}>
         <Desk className={styles.desk} />
         <div className={`${styles.title} ${styles.fading}`}>
@@ -125,17 +124,20 @@ export function LibraryCounter({
         </div>
       </div>
       <div className={`${styles.cta} ${styles.fading}`}>
-        {stock !== null && (
-          <MainAction
-            label={opening ? "Ouverture…" : stock.action}
-            count={left === null || left === 0 ? undefined : String(left)}
-            disabled={!canOpen || opening}
-            onClick={onOpen}
-          />
-        )}
-        {footer}
+        {reward !== null && <div className={styles.reward}>{reward}</div>}
+        <div className={styles.main}>
+          {stock !== null && (
+            <MainAction
+              label={opening ? "Ouverture…" : stock.action}
+              count={left === null || left === 0 ? undefined : String(left)}
+              disabled={!canOpen || opening}
+              onClick={onOpen}
+            />
+          )}
+          {footer}
+        </div>
+        {word !== null && <div className={styles.word}>{word}</div>}
       </div>
-      {below !== null && <div className={`${styles.below} ${styles.fading}`}>{below}</div>}
       <InfoBubble message={bubble} />
     </section>
   );

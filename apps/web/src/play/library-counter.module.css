@@ -56,17 +56,6 @@
   display: none;
 }
 
-/* The level over the desk: on a phone, the band at the top already tells it. */
-.above {
-  display: none;
-}
-
-.below {
-  position: relative;
-  z-index: 4;
-  padding: 0 12px;
-}
-
 /* --- On a phone: the desk between the band and the tabs --- */
 
 @media (max-width: 759px) {
@@ -82,12 +71,12 @@
   }
 
   /* The word to read again comes under the button: the desk keeps its height, the page scrolls. */
-  .screen:has(.below) {
+  .screen:has(.word) {
     height: auto;
     max-height: none;
   }
 
-  .screen:has(.below) .play {
+  .screen:has(.word) .play {
     flex: none;
     box-sizing: border-box;
     height: clamp(480px, 100dvh - 66px - 96px - 80px - env(safe-area-inset-bottom), 740px);
@@ -312,32 +301,54 @@
   padding: 0 22px 14px;
 }
 
+.main {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+/* The next reward: on a phone, the band at the top already tells the level. */
+.reward {
+  display: none;
+}
+
+.word {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
 /* On a wide screen, the button stands clear of the desk's gilt frame. */
 @media (min-width: 760px) {
   .cta {
-    padding-top: 26px;
+    padding-top: 22px;
+  }
+}
+
+/* Room enough: the reward and the word stand on either side of the button, at its height. */
+@media (min-width: 1180px) {
+  .cta {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    align-items: center;
+    gap: 24px;
+    padding-inline: 0;
   }
 
-  .above {
-    position: relative;
-    z-index: 4;
-    display: block;
-    margin-bottom: 18px;
+  .reward {
+    grid-column: 1;
+    display: flex;
+    justify-content: flex-start;
   }
 
-  /*
-   * With the level over it and the word to read again under it, the desk keeps a height of its
-   * own: the page may scroll a little rather than shrink the sachet.
-   */
-  .screen:has(.above) {
-    height: auto;
-    max-height: none;
+  .main {
+    grid-column: 2;
   }
 
-  .screen:has(.above) .play {
-    flex: none;
-    /* The band, the level, the desk and the button fit the screen; the word comes under them. */
-    height: clamp(440px, 100dvh - 390px, 700px);
+  .word {
+    grid-column: 3;
+    justify-content: flex-end;
   }
 }
 
