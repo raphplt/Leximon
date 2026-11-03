@@ -99,10 +99,22 @@ La bêta reste fermée jusqu'à ce que le jeu soit prêt (décidé le 2026-11-01
 
 1. **Codes de connexion :** quota d'Email Service relevé ([mise-en-ligne.md](mise-en-ligne.md), étape 12). Sans lui, une vague d'inscriptions bloque les connexions.
 2. **Liste d'attente prévenue :** Lettermint prêt (étape 12), pour tenir la promesse de P55.
-3. **Stores :** publication manuelle sur l'App Store et Google Play. Tant que la porte est fermée, l'app refuse tout nouveau joueur sans lien : elle sort le jour de l'ouverture, pas avant.
+3. **Stores :** tant que la porte est fermée, l'app refuse tout nouveau joueur sans lien : les testeurs l'ont par TestFlight et le test fermé de Google Play, et la version publique sort le jour de l'ouverture, pas avant. Elle est soumise à l'avance et validée, puis publiée à la main (« publication manuelle » de l'App Store, « publication gérée » de Google Play).
 4. **Mesure de l'arrivée :** Umami et Search Console installés (étape 12 bis), pour lire les sources dès le premier jour.
 5. **La nouvelle direction artistique en ligne :** phases 0 à 3 finies, sur le web et sur les stores.
-6. **Rétention :** les objectifs de 35 % à J1 et de 12 % à J7 tenus par les joueurs arrivés après la bascule. Sinon, l'économie (phase 5) passe avant l'ouverture.
+6. **Rétention :** les objectifs de 35 % à J1 et de 12 % à J7 tenus par les comptes créés après la bascule. Sinon, l'économie (phase 5) passe avant l'ouverture.
+
+### Dans quel ordre
+
+La grande mise à jour (nouvelle allure, retours du game designer) et l'ouverture ne sortent pas le même jour : si la rétention baisse, on doit savoir pourquoi, et la condition 6 se mesure sur des joueurs arrivés après la bascule (décidé le 2026-11-03).
+
+1. **Pendant la refonte :** de petites sorties continuent (phase 0, correctifs), et les testeurs savent une fois ce qui arrive : réponse dans les fils Reddit d'origine et sur le Discord, avec ce qui change grâce à leurs retours, une fenêtre de sortie sans date ferme, et la garantie que leur partie ne se perd pas.
+2. **Avant-première :** les testeurs essaient la nouvelle allure derrière le réglage, avant la bascule.
+3. **Bascule pour la bêta fermée :** web, TestFlight et test fermé de Google Play. Le jour même : sauvegarde juste avant, sortie en semaine le matin, `MOBILE_MIN_VERSION` relevé si l'ancienne app ne suit plus, écran « Quoi de neuf » montré une fois.
+4. **Mesure :** une à deux semaines, avec des vagues d'invitations plus grosses (100 à 200 places). La rétention se lit sur les comptes créés, pas sur les invités.
+5. **Ouverture :** quand les conditions ci-dessus sont tenues.
+
+À vérifier tout de suite dans la Play Console : un compte développeur personnel créé après novembre 2023 doit tenir un test fermé avec au moins 12 testeurs pendant 14 jours d'affilée avant de publier en production. Si c'est le cas, ce test commence dès maintenant avec les joueurs Android de la bêta, et il fixe le calendrier.
 
 Le jour de l'ouverture : `BETA_INVITES` à `"off"` dans `env.production` de `apps/api/wrangler.jsonc`, puis `pnpm deploy:prod` ; publier les deux apps ; envoyer la campagne à la liste d'attente.
 
