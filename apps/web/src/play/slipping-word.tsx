@@ -39,7 +39,7 @@ export function SlippingWord({
     const review = `/defis?mot=${encodeURIComponent(card.id)}`;
     const tone = catalog.collections.find((c) => c.id === card.collectionId)?.back;
     return (
-      <div className={styles.slipping}>
+      <div className={`${styles.slipping} ${ui.leaf}`}>
         <Link href={review} className={styles.slippingOpen}>
           <span className={styles.slippingCard}>
             <CardBack rarity={card.rarity} width={THUMB_WIDTH} tone={tone} />
@@ -58,7 +58,7 @@ export function SlippingWord({
 
   const open = () => openCard(card.id);
   return (
-    <div className={styles.slipping}>
+    <div className={`${styles.slipping} ${ui.leaf}`}>
       <button type="button" className={styles.slippingOpen} onClick={open}>
         <span className={styles.slippingCard}>
           <Card

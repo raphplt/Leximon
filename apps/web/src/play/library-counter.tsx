@@ -56,6 +56,10 @@ export interface LibraryCounterProps {
   readonly onOpen: () => void;
   /** Under the button: the account to create, an error, the last sachet without an account. */
   readonly footer: ReactNode;
+  /** Over the desk, on a wide screen: the level and the rewards to come. */
+  readonly above?: ReactNode;
+  /** Under the button: a word of the album to read again, or one slipping away. */
+  readonly below?: ReactNode;
 }
 
 /**
@@ -77,6 +81,8 @@ export function LibraryCounter({
   onPick,
   onOpen,
   footer,
+  above = null,
+  below = null,
 }: LibraryCounterProps) {
   const view = usePlayerView();
   const [bubble, setBubble] = useState<{ readonly text: string } | null>(null);
@@ -92,6 +98,7 @@ export function LibraryCounter({
 
   return (
     <section className={styles.screen} data-opening={opening || undefined} aria-label="Ton sachet">
+      {above !== null && <div className={`${styles.above} ${styles.fading}`}>{above}</div>}
       <div className={styles.play}>
         <Desk className={styles.desk} />
         <div className={`${styles.title} ${styles.fading}`}>
@@ -128,6 +135,7 @@ export function LibraryCounter({
         )}
         {footer}
       </div>
+      {below !== null && <div className={`${styles.below} ${styles.fading}`}>{below}</div>}
       <InfoBubble message={bubble} />
     </section>
   );

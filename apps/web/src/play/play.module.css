@@ -143,6 +143,27 @@
   translate: 0 -2px;
 }
 
+/* In « La Bibliothèque », the rewards to come are small toys on the leaf. */
+:root[data-look="bibliotheque"] :is(.nextIcon, .nextIconKraft) {
+  box-sizing: border-box;
+  border: var(--lx-toy-outline-width) solid var(--lx-toy-outline);
+  box-shadow: 0 3px 0 var(--lx-toy-outline);
+}
+
+:root[data-look="bibliotheque"] .nextIcon {
+  background: linear-gradient(
+    180deg,
+    var(--lx-toy-paper-top) 0 47%,
+    var(--lx-toy-paper-bottom) 53%
+  );
+  color: var(--lx-toy-red-bottom);
+}
+
+:root[data-look="bibliotheque"] .nextIconKraft {
+  background: linear-gradient(180deg, var(--lx-toy-gold-top) 0 47%, var(--lx-toy-gold-bottom) 53%);
+  color: var(--lx-toy-outline);
+}
+
 /* One line each: the four steps stay level. */
 .nextWord {
   font-size: var(--lx-size-caption);

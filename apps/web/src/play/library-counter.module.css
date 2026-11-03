@@ -56,6 +56,17 @@
   display: none;
 }
 
+/* The level over the desk: on a phone, the band at the top already tells it. */
+.above {
+  display: none;
+}
+
+.below {
+  position: relative;
+  z-index: 4;
+  padding: 0 12px;
+}
+
 /* --- On a phone: the desk between the band and the tabs --- */
 
 @media (max-width: 759px) {
@@ -68,6 +79,18 @@
 
   .play {
     padding-top: 32px;
+  }
+
+  /* The word to read again comes under the button: the desk keeps its height, the page scrolls. */
+  .screen:has(.below) {
+    height: auto;
+    max-height: none;
+  }
+
+  .screen:has(.below) .play {
+    flex: none;
+    box-sizing: border-box;
+    height: clamp(480px, 100dvh - 66px - 96px - 80px - env(safe-area-inset-bottom), 740px);
   }
 
   .desk {
@@ -162,10 +185,6 @@
     position: absolute;
     inset: 0;
     display: block;
-  }
-
-  .cta {
-    padding-top: 34px;
   }
 }
 
@@ -291,6 +310,35 @@
   align-items: center;
   gap: 8px;
   padding: 0 22px 14px;
+}
+
+/* On a wide screen, the button stands clear of the desk's gilt frame. */
+@media (min-width: 760px) {
+  .cta {
+    padding-top: 26px;
+  }
+
+  .above {
+    position: relative;
+    z-index: 4;
+    display: block;
+    margin-bottom: 18px;
+  }
+
+  /*
+   * With the level over it and the word to read again under it, the desk keeps a height of its
+   * own: the page may scroll a little rather than shrink the sachet.
+   */
+  .screen:has(.above) {
+    height: auto;
+    max-height: none;
+  }
+
+  .screen:has(.above) .play {
+    flex: none;
+    /* The band, the level, the desk and the button fit the screen; the word comes under them. */
+    height: clamp(440px, 100dvh - 390px, 700px);
+  }
 }
 
 .message,

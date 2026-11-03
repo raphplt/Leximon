@@ -729,6 +729,12 @@ function BoosterFlow({ library }: { readonly library: boolean }) {
               <p className={counter.message}>C'est ton dernier sachet sans compte.</p>
             ) : null
           }
+          above={<LevelStrip />}
+          below={
+            catalog !== null && underCounter !== null ? (
+              <SlippingWord catalog={catalog} word={underCounter} />
+            ) : null
+          }
         />
       </main>
     );
