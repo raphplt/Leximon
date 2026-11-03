@@ -91,6 +91,7 @@
 
 /* --- Layers in depth ------------------------------------------------------------------ */
 
+.rim,
 .back,
 .slice,
 .pouch {
@@ -128,6 +129,12 @@
     var(--tone-dark),
     color-mix(in oklab, var(--tone-dark), black 40%)
   );
+}
+
+/* Framed: an ink silhouette a little larger than the pouch, just behind it, draws its outline. */
+.rim {
+  transform: translateZ(calc(-1 * var(--face) - 1px)) scale(1.05, 1.025);
+  background: var(--lx-toy-outline);
 }
 
 /* The rim of the pouch, seen when it leans: lit in the middle of its thickness, like a seam. */
@@ -352,6 +359,20 @@
   color: var(--lx-color-kraft);
   background: var(--motif, none);
   opacity: 0.11;
+  pointer-events: none;
+}
+
+/* Framed: a gilt frame inside the edge, lined with ink, as on the toys of the room. */
+.frame {
+  position: absolute;
+  inset: calc(18 * var(--u)) calc(16 * var(--u)) calc(36 * var(--u));
+  border: calc(4 * var(--u)) solid;
+  border-color: var(--lx-toy-gold-top) var(--lx-toy-gold-bottom) var(--lx-toy-gold-bottom)
+    var(--lx-toy-gold-top);
+  border-radius: calc(16 * var(--u));
+  box-shadow:
+    0 0 0 calc(1.5 * var(--u)) var(--lx-toy-outline),
+    inset 0 0 0 calc(1.5 * var(--u)) var(--lx-toy-outline);
   pointer-events: none;
 }
 

@@ -63,6 +63,57 @@
   gap: var(--lx-s8);
 }
 
+/* --- The two sachets --- */
+
+.trials {
+  display: flex;
+  flex-direction: column;
+  gap: var(--lx-s8);
+}
+
+.trialsIntro,
+.trialCaption {
+  margin: 0;
+  font-size: var(--lx-size-small);
+  line-height: 1.45;
+  color: var(--lx-color-page-ink-soft);
+}
+
+.trialPair {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: var(--lx-s8);
+}
+
+.trial {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  flex-direction: column;
+  gap: var(--lx-s6);
+  margin: 0;
+  padding: 26px 20px 22px;
+}
+
+.trialDesk {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+}
+
+.trialStage {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 360px;
+}
+
+/* The toy is drawn at the size of the Jouer screen: brought up to the cloth's height. */
+.trialToy > * {
+  scale: 1.25;
+}
+
 /* --- The Jouer screen --- */
 
 .phone {
