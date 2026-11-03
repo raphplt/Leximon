@@ -27,7 +27,7 @@ import {
 } from "@leximon/view-model";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { type CSSProperties, useEffect, useMemo, useState } from "react";
+import { type CSSProperties, useEffect, useMemo, useRef, useState } from "react";
 import { packOf } from "@/booster/pack-looks";
 import { loadCatalog } from "@/cards/catalog";
 import { askAlbumPractice } from "@/challenges/pending-practice";
@@ -205,7 +205,7 @@ export function AlbumScreen() {
     writeSort(next);
     setState((s) => ({ ...s, sort: next }));
   };
-  const cardWidth = narrow ? 104 : 168;
+  const cardWidth = narrow ? 100 : 168;
   const tagline = catalog?.collections.find((c) => c.id === state.collectionId)?.tagline;
   const pickedTheme = view?.themes.find((theme) => theme.id === state.theme);
 
@@ -266,200 +266,203 @@ export function AlbumScreen() {
 
       <div className={styles.desk}>
         <Desk className={styles.deskBack} />
-        <div
-          className={`${styles.tabs} ${view.searching ? styles.dimmed : ""}`}
-          role="tablist"
-          aria-label="Collections"
-        >
-          {view.tabs.map((tab) => {
-            const selected = !view.searching && tab.id === state.collectionId;
-            const file = catalog?.collections.find((c) => c.id === tab.id);
-            return (
-              <button
-                key={tab.id}
-                type="button"
-                role="tab"
-                aria-selected={selected}
-                className={styles.tab}
-                onClick={() => pickCollection(tab.id)}
-              >
-                <span className={styles.tabHead}>
-                  {file !== undefined && (
-                    <CollectionSeal collection={packOf(file)} size={narrow ? 24 : 30} />
-                  )}
-                  <span className={styles.tabText}>
-                    <span className={styles.tabName}>
-                      {narrow ? shortName(tab.name) : tab.name}
+        {/* The collections and filters scroll away with the cards, so that the cards get the desk. */}
+        <div className={styles.shelf}>
+          <div ref={setScroller} className={styles.scroller}>
+            <div
+              className={`${styles.tabs} ${view.searching ? styles.dimmed : ""}`}
+              role="tablist"
+              aria-label="Collections"
+            >
+              {view.tabs.map((tab) => {
+                const selected = !view.searching && tab.id === state.collectionId;
+                const file = catalog?.collections.find((c) => c.id === tab.id);
+                return (
+                  <button
+                    key={tab.id}
+                    type="button"
+                    role="tab"
+                    aria-selected={selected}
+                    className={styles.tab}
+                    onClick={() => pickCollection(tab.id)}
+                  >
+                    <span className={styles.tabHead}>
+                      {file !== undefined && (
+                        <CollectionSeal collection={packOf(file)} size={narrow ? 24 : 30} />
+                      )}
+                      <span className={styles.tabText}>
+                        <span className={styles.tabName}>
+                          {narrow ? shortName(tab.name) : tab.name}
+                        </span>
+                        <span className={styles.tabCount}>{tab.count}</span>
+                      </span>
                     </span>
-                    <span className={styles.tabCount}>{tab.count}</span>
-                  </span>
-                </span>
-                <span className={styles.tabTrack}>
-                  <span
-                    className={styles.tabFill}
-                    style={{
-                      width: `${Math.round(tab.ratio * 100)}%`,
-                      background: collectionTone(tab.id),
-                    }}
-                  />
-                </span>
-              </button>
-            );
-          })}
-        </div>
-
-        {!view.searching && (
-          <>
-            {tagline !== undefined && <p className={styles.tagline}>{tagline}</p>}
-            <div className={styles.row}>
-              {view.rarities.map((chip) => (
-                <RarityChip
-                  key={chip.rarity}
-                  rarity={chip.rarity}
-                  count={chip.count}
-                  aria={chip.aria}
-                  on={state.rarity === chip.rarity}
-                  onPick={() =>
-                    setState((s) => ({
-                      ...s,
-                      rarity: s.rarity === chip.rarity ? null : chip.rarity,
-                    }))
-                  }
-                />
-              ))}
-              <SortPicker sort={sort} onPick={pickSort} />
+                    <span className={styles.tabTrack}>
+                      <span
+                        className={styles.tabFill}
+                        style={{
+                          width: `${Math.round(tab.ratio * 100)}%`,
+                          background: collectionTone(tab.id),
+                        }}
+                      />
+                    </span>
+                  </button>
+                );
+              })}
             </div>
-            {friend !== null && state.compare != null && (
-              <div className={styles.compare}>
-                <p className={styles.compareTitle}>{comparingTitle(friend.name)}</p>
+
+            {!view.searching && (
+              <>
+                {tagline !== undefined && <p className={styles.tagline}>{tagline}</p>}
                 <div className={styles.row}>
-                  {compareFilters(friend.name).map((choice) => (
-                    <FilterChip
-                      key={choice.id}
-                      label={choice.label}
-                      on={state.compare === choice.id}
+                  {view.rarities.map((chip) => (
+                    <RarityChip
+                      key={chip.rarity}
+                      rarity={chip.rarity}
+                      count={chip.count}
+                      aria={chip.aria}
+                      on={state.rarity === chip.rarity}
                       onPick={() =>
-                        setState((s) => ({ ...s, compare: choice.id as CompareFilter }))
+                        setState((s) => ({
+                          ...s,
+                          rarity: s.rarity === chip.rarity ? null : chip.rarity,
+                        }))
                       }
                     />
                   ))}
-                  <Button variant="ghost" small onClick={() => router.replace("/album")}>
-                    Fermer la comparaison
-                  </Button>
+                  <SortPicker sort={sort} onPick={pickSort} />
                 </div>
+                {friend !== null && state.compare != null && (
+                  <div className={styles.compare}>
+                    <p className={styles.compareTitle}>{comparingTitle(friend.name)}</p>
+                    <div className={styles.row}>
+                      {compareFilters(friend.name).map((choice) => (
+                        <FilterChip
+                          key={choice.id}
+                          label={choice.label}
+                          on={state.compare === choice.id}
+                          onPick={() =>
+                            setState((s) => ({ ...s, compare: choice.id as CompareFilter }))
+                          }
+                        />
+                      ))}
+                      <Button variant="ghost" small onClick={() => router.replace("/album")}>
+                        Fermer la comparaison
+                      </Button>
+                    </div>
+                  </div>
+                )}
+                <div className={styles.row} hidden={friend !== null && state.compare != null}>
+                  {view.filters.map((filter) => (
+                    <FilterChip
+                      key={filter.id}
+                      label={filter.label}
+                      count={filter.count}
+                      on={state.filter === filter.id}
+                      onPick={() => setState((s) => ({ ...s, filter: filter.id as AlbumFilter }))}
+                    />
+                  ))}
+                  {view.themes.length > 0 && (
+                    <>
+                      <span className={styles.divider} aria-hidden="true" />
+                      <button
+                        type="button"
+                        className={`${ui.chip} ${styles.filter} ${styles.theme}`}
+                        aria-expanded={themesOpen}
+                        aria-controls="album-themes"
+                        onClick={() => setThemesOpen((open) => !open)}
+                      >
+                        {themesOpen ? ALBUM_THEME_TEXTS.hide : ALBUM_THEME_TEXTS.show}
+                        <Icon name="chevd" size={14} />
+                      </button>
+                    </>
+                  )}
+                  {!themesOpen && pickedTheme !== undefined && (
+                    <FilterChip
+                      label={pickedTheme.label}
+                      on
+                      muted
+                      onPick={() => setState((s) => ({ ...s, theme: null }))}
+                    />
+                  )}
+                </div>
+                {themesOpen && (
+                  <div id="album-themes" className={`${styles.row} ${styles.themes}`}>
+                    {view.themes.map((theme) => (
+                      <FilterChip
+                        key={theme.id}
+                        label={theme.label}
+                        on={state.theme === theme.id}
+                        muted
+                        onPick={() =>
+                          setState((s) => ({ ...s, theme: s.theme === theme.id ? null : theme.id }))
+                        }
+                      />
+                    ))}
+                  </div>
+                )}
+              </>
+            )}
+            {view.searching && (
+              <div className={styles.row}>
+                <SortPicker sort={sort} onPick={pickSort} />
               </div>
             )}
-            <div className={styles.row} hidden={friend !== null && state.compare != null}>
-              {view.filters.map((filter) => (
-                <FilterChip
-                  key={filter.id}
-                  label={filter.label}
-                  count={filter.count}
-                  on={state.filter === filter.id}
-                  onPick={() => setState((s) => ({ ...s, filter: filter.id as AlbumFilter }))}
-                />
+
+            {practiceCards !== null && (
+              <div className={styles.revise}>
+                <Button
+                  variant="secondary"
+                  small
+                  onClick={() => {
+                    askAlbumPractice(practiceCards);
+                    router.push("/defis?revision=album");
+                  }}
+                >
+                  Réviser ces mots
+                </Button>
+              </div>
+            )}
+
+            {view.empty !== null ? (
+              <p className={styles.empty}>
+                <em>{view.empty}</em>
+              </p>
+            ) : (
+              <>
+                <ul
+                  className={styles.grid}
+                  style={{ "--card": `${cardWidth}px` } as CSSProperties}
+                  aria-label="Cartes"
+                >
+                  {view.items.slice(0, shown).map((item, index) => (
+                    <li key={itemKey(item)} className={styles.slot} data-index={index}>
+                      <Tile item={item} width={cardWidth} onOpen={(id) => openCard(id, ownedIds)} />
+                    </li>
+                  ))}
+                </ul>
+                {shown < view.items.length && <div ref={sentinel} aria-hidden="true" />}
+              </>
+            )}
+          </div>
+          {view.empty === null && view.letters.length > 0 && (
+            <nav className={styles.letters} aria-label="Aller à la lettre">
+              {view.letters.map(({ letter, index }) => (
+                <button
+                  key={letter}
+                  type="button"
+                  className={styles.letter}
+                  disabled={index === null}
+                  onClick={() => {
+                    if (index !== null) jumpTo(index);
+                  }}
+                >
+                  {letter}
+                </button>
               ))}
-              {view.themes.length > 0 && (
-                <>
-                  <span className={styles.divider} aria-hidden="true" />
-                  <button
-                    type="button"
-                    className={`${ui.chip} ${styles.filter} ${styles.theme}`}
-                    aria-expanded={themesOpen}
-                    aria-controls="album-themes"
-                    onClick={() => setThemesOpen((open) => !open)}
-                  >
-                    {themesOpen ? ALBUM_THEME_TEXTS.hide : ALBUM_THEME_TEXTS.show}
-                    <Icon name="chevd" size={14} />
-                  </button>
-                </>
-              )}
-              {!themesOpen && pickedTheme !== undefined && (
-                <FilterChip
-                  label={pickedTheme.label}
-                  on
-                  muted
-                  onPick={() => setState((s) => ({ ...s, theme: null }))}
-                />
-              )}
-            </div>
-            {themesOpen && (
-              <div id="album-themes" className={`${styles.row} ${styles.themes}`}>
-                {view.themes.map((theme) => (
-                  <FilterChip
-                    key={theme.id}
-                    label={theme.label}
-                    on={state.theme === theme.id}
-                    muted
-                    onPick={() =>
-                      setState((s) => ({ ...s, theme: s.theme === theme.id ? null : theme.id }))
-                    }
-                  />
-                ))}
-              </div>
-            )}
-          </>
-        )}
-        {view.searching && (
-          <div className={styles.row}>
-            <SortPicker sort={sort} onPick={pickSort} />
-          </div>
-        )}
-
-        {practiceCards !== null && (
-          <div className={styles.revise}>
-            <Button
-              variant="secondary"
-              small
-              onClick={() => {
-                askAlbumPractice(practiceCards);
-                router.push("/defis?revision=album");
-              }}
-            >
-              Réviser ces mots
-            </Button>
-          </div>
-        )}
-
-        {view.empty !== null ? (
-          <p className={styles.empty}>
-            <em>{view.empty}</em>
-          </p>
-        ) : (
-          <div className={styles.shelf}>
-            <div ref={setScroller} className={styles.scroller}>
-              <ul
-                className={styles.grid}
-                style={{ "--card": `${cardWidth}px` } as CSSProperties}
-                aria-label="Cartes"
-              >
-                {view.items.slice(0, shown).map((item, index) => (
-                  <li key={itemKey(item)} className={styles.slot} data-index={index}>
-                    <Tile item={item} width={cardWidth} onOpen={(id) => openCard(id, ownedIds)} />
-                  </li>
-                ))}
-              </ul>
-              {shown < view.items.length && <div ref={sentinel} aria-hidden="true" />}
-            </div>
-            {view.letters.length > 0 && (
-              <nav className={styles.letters} aria-label="Aller à la lettre">
-                {view.letters.map(({ letter, index }) => (
-                  <button
-                    key={letter}
-                    type="button"
-                    className={styles.letter}
-                    disabled={index === null}
-                    onClick={() => {
-                      if (index !== null) jumpTo(index);
-                    }}
-                  >
-                    {letter}
-                  </button>
-                ))}
-              </nav>
-            )}
-          </div>
-        )}
+            </nav>
+          )}
+        </div>
       </div>
     </main>
   );
@@ -627,7 +630,10 @@ function RarityChip({
   );
 }
 
-/** How the cards owned are laid out: a select dressed as a chip, at the end of the rarities. */
+/**
+ * How the cards owned are laid out: a chip at the end of the rarities that unfolds a leaf of
+ * choices. The leaf is fixed to the screen, so that a row scrolling aside never cuts it.
+ */
 function SortPicker({
   sort,
   onPick,
@@ -635,26 +641,96 @@ function SortPicker({
   readonly sort: AlbumSort;
   readonly onPick: (sort: AlbumSort) => void;
 }) {
+  const button = useRef<HTMLButtonElement>(null);
+  const menu = useRef<HTMLDivElement>(null);
+  const [at, setAt] = useState<{ readonly top: number; readonly left: number } | null>(null);
+  const close = (refocus: boolean) => {
+    setAt(null);
+    if (refocus) button.current?.focus();
+  };
+
+  useEffect(() => {
+    if (at === null) return;
+    menu.current?.querySelector<HTMLButtonElement>('[aria-selected="true"]')?.focus();
+    const outside = (event: PointerEvent) => {
+      const target = event.target as Node;
+      if (!menu.current?.contains(target) && !button.current?.contains(target)) setAt(null);
+    };
+    const away = () => setAt(null);
+    document.addEventListener("pointerdown", outside);
+    window.addEventListener("resize", away);
+    window.addEventListener("scroll", away, true);
+    return () => {
+      document.removeEventListener("pointerdown", outside);
+      window.removeEventListener("resize", away);
+      window.removeEventListener("scroll", away, true);
+    };
+  }, [at]);
+
+  const open = () => {
+    const box = button.current?.getBoundingClientRect();
+    if (box === undefined) return;
+    setAt({ top: box.bottom + 8, left: Math.max(8, box.right - SORT_MENU_WIDTH) });
+  };
+  const step = (event: React.KeyboardEvent<HTMLDivElement>) => {
+    if (event.key === "Escape") {
+      event.preventDefault();
+      close(true);
+      return;
+    }
+    if (event.key !== "ArrowDown" && event.key !== "ArrowUp") return;
+    event.preventDefault();
+    const options = [...(menu.current?.querySelectorAll<HTMLButtonElement>("[role=option]") ?? [])];
+    const from = options.indexOf(document.activeElement as HTMLButtonElement);
+    const by = event.key === "ArrowDown" ? 1 : -1;
+    options[(from + by + options.length) % options.length]?.focus();
+  };
+
   return (
-    <label className={`${ui.chip} ${styles.filter} ${styles.sort}`}>
-      <span className={styles.sortTitle}>{ALBUM_SORT_TITLE}</span>
-      <select
-        className={styles.sortSelect}
-        value={sort}
-        onChange={(event) => {
-          if (isAlbumSort(event.target.value)) onPick(event.target.value);
-        }}
+    <>
+      <button
+        ref={button}
+        type="button"
+        className={`${ui.chip} ${styles.filter} ${styles.sort}`}
+        aria-haspopup="listbox"
+        aria-expanded={at !== null}
+        onClick={() => (at === null ? open() : close(false))}
       >
-        {ALBUM_SORTS.map((choice) => (
-          <option key={choice} value={choice}>
-            {ALBUM_SORT_LABELS[choice]}
-          </option>
-        ))}
-      </select>
-      <Icon name="chevd" size={14} />
-    </label>
+        <span className={styles.sortTitle}>{ALBUM_SORT_TITLE}</span>
+        <span className={styles.sortChoice}>{ALBUM_SORT_LABELS[sort]}</span>
+        <Icon name="chevd" size={14} />
+      </button>
+      {at !== null && (
+        <div
+          ref={menu}
+          role="listbox"
+          aria-label={ALBUM_SORT_TITLE}
+          className={`${ui.leaf} ${styles.sortMenu}`}
+          style={{ top: at.top, left: at.left, width: SORT_MENU_WIDTH }}
+          onKeyDown={step}
+        >
+          {ALBUM_SORTS.map((choice) => (
+            <button
+              key={choice}
+              type="button"
+              role="option"
+              aria-selected={choice === sort}
+              className={`${ui.chip} ${styles.sortOption}`}
+              onClick={() => {
+                onPick(choice);
+                close(true);
+              }}
+            >
+              {ALBUM_SORT_LABELS[choice]}
+            </button>
+          ))}
+        </div>
+      )}
+    </>
   );
 }
+
+const SORT_MENU_WIDTH = 200;
 
 function FilterChip({
   label,

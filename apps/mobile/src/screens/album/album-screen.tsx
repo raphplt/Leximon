@@ -73,7 +73,8 @@ const STORED_COLLECTION = "leximon_album";
 /** The order chosen last, kept on the device. */
 const STORED_SORT = "leximon_album_sort";
 const COLUMNS = 3;
-const GUTTER = 16;
+/** Inside the desk, its frame already holds the cards off the edge: a narrower margin leaves them wider. */
+const GUTTER = IS_LIBRARY ? 10 : 16;
 const GAP = 12;
 const ROOM_MARGIN = 6;
 /** Under a card, its level or its rarity: every tile is as tall, so a letter knows its row. */
