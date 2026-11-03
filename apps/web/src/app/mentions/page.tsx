@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { HOST, PUBLISHER } from "@/lib/publisher";
+import ui from "@/ui/ui.module.css";
 import styles from "../confidentialite/privacy.module.css";
 
 export const metadata: Metadata = {
@@ -21,9 +22,9 @@ export default function MentionsPage() {
       <Link href="/" className={styles.logo}>
         Leximon
       </Link>
-      <h1 className={styles.title}>Contact et mentions</h1>
+      <h1 className={`${styles.title} ${ui.lettered}`}>Contact et mentions</h1>
 
-      <section className={styles.section}>
+      <section className={`${styles.section} ${ui.leaf}`}>
         <h2>Nous écrire</h2>
         <p>
           Pour toute question, erreur sur une carte ou signalement :{" "}
@@ -31,7 +32,7 @@ export default function MentionsPage() {
         </p>
       </section>
 
-      <section className={styles.section}>
+      <section className={`${styles.section} ${ui.leaf}`}>
         <h2>Éditeur</h2>
         <p>
           {PUBLISHER.name}, {PUBLISHER.status}
@@ -46,7 +47,7 @@ export default function MentionsPage() {
         </p>
       </section>
 
-      <section className={styles.section}>
+      <section className={`${styles.section} ${ui.leaf}`}>
         <h2>Hébergement</h2>
         <p>
           {HOST.name}
@@ -57,7 +58,7 @@ export default function MentionsPage() {
         </p>
       </section>
 
-      <section className={styles.section}>
+      <section className={`${styles.section} ${ui.leaf}`}>
         <h2>Les mots</h2>
         <p>
           Définitions, origines et citations sont rédigées à partir du Dictionnaire de la langue
@@ -66,7 +67,7 @@ export default function MentionsPage() {
         </p>
       </section>
 
-      <section className={styles.section}>
+      <section className={`${styles.section} ${ui.leaf}`}>
         <h2>La rareté</h2>
         <p>
           La rareté d'un mot vient de sa fréquence dans Google Books Ngram (corpus français 2019,
@@ -74,7 +75,7 @@ export default function MentionsPage() {
         </p>
       </section>
 
-      <section className={styles.section}>
+      <section className={`${styles.section} ${ui.leaf}`}>
         <h2>Les gravures</h2>
         <p>
           Les gravures viennent de Wikimedia Commons : domaine public, CC0 ou CC BY 4.0. Le nom de
@@ -89,7 +90,7 @@ export default function MentionsPage() {
         </p>
       </section>
 
-      <section className={styles.section}>
+      <section className={`${styles.section} ${ui.leaf}`}>
         <h2>La voix</h2>
         <p>Les mots sont lus par une voix de synthèse, Google Cloud Text-to-Speech.</p>
       </section>

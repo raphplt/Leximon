@@ -227,6 +227,8 @@ Seulement ce dont l'écran Jouer et l'ouverture ont besoin : bandeau du haut (po
 
 **Profil et atelier faits le 2026-11-03**, sur le web et le mobile. Sur le web, la bannière du joueur est encadrée d'or sur le sous-main ; sur le mobile, l'en-tête reste dans la salle comme avant. Les cartes épinglées, les chiffres et les liens sont sur des feuilles, chaque chiffre dans un creux du papier, et les bandeaux d'information (compte invité, pseudo à choisir) sont des feuilles. Dans l'atelier, chaque avatar, cadre ou titre est une tuile de papier, celle qu'on porte est en or ; une pièce fermée reste grise.
 
+**Courrier, nouveautés et pages légales faits le 2026-11-03**, sur le web et le mobile. Chaque lettre du courrier est un billet de papier ; une nouvelle porte une bande d'or sur le web, et sur le mobile le billet entier est en or. Les nouveautés et les pages légales (conditions, confidentialité, charte, mentions) sont sur des feuilles, leur titre en lettres dorées ; sur le mobile, la fenêtre des nouveautés qui s'ouvre au lancement est une feuille, elle aussi.
+
 ### Hors du jeu
 
 | Élément | Travail |

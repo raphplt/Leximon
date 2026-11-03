@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { PUBLISHER } from "@/lib/publisher";
+import ui from "@/ui/ui.module.css";
 import styles from "../confidentialite/privacy.module.css";
 
 export const metadata: Metadata = {
@@ -18,10 +19,10 @@ export default function CharterPage() {
       <Link href="/" className={styles.logo}>
         Leximon
       </Link>
-      <h1 className={styles.title}>Charte de la discussion</h1>
+      <h1 className={`${styles.title} ${ui.lettered}`}>Charte de la discussion</h1>
       <p className={styles.updated}>Version du 22 octobre 2026.</p>
 
-      <section className={styles.section}>
+      <section className={`${styles.section} ${ui.leaf}`}>
         <h2>Où elle s'applique</h2>
         <p>
           Elle s'applique partout où un joueur écrit, c'est-à-dire son pseudo, le nom de son clan et
@@ -30,7 +31,7 @@ export default function CharterPage() {
         </p>
       </section>
 
-      <section className={styles.section}>
+      <section className={`${styles.section} ${ui.leaf}`}>
         <h2>L'esprit</h2>
         <p>
           On est là pour le plaisir des mots. Les vieilles insultes du catalogue font sourire parce
@@ -39,7 +40,7 @@ export default function CharterPage() {
         </p>
       </section>
 
-      <section className={styles.section}>
+      <section className={`${styles.section} ${ui.leaf}`}>
         <h2>Ce qui est interdit</h2>
         <ul>
           <li>Insulter, humilier ou harceler un joueur, même sans le nommer.</li>
@@ -64,7 +65,7 @@ export default function CharterPage() {
         </ul>
       </section>
 
-      <section className={styles.section}>
+      <section className={`${styles.section} ${ui.leaf}`}>
         <h2>Le pseudo et le nom de clan</h2>
         <p>
           Ils suivent les mêmes règles, avec une de plus : ils ne contiennent ni le vrai nom d'une
@@ -74,7 +75,7 @@ export default function CharterPage() {
         </p>
       </section>
 
-      <section className={styles.section}>
+      <section className={`${styles.section} ${ui.leaf}`}>
         <h2>Ce que tu peux faire</h2>
         <ul>
           <li>Bloquer un joueur. Vous ne voyez plus ni le profil ni les offres de l'autre.</li>
@@ -88,7 +89,7 @@ export default function CharterPage() {
         </ul>
       </section>
 
-      <section className={styles.section}>
+      <section className={`${styles.section} ${ui.leaf}`}>
         <h2>Ce qui se passe ensuite</h2>
         <p>
           Un filtre arrête certains mots à l'envoi. Dans un clan, le chef et ses adjoints peuvent

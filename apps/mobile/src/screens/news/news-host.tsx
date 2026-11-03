@@ -4,9 +4,10 @@ import * as SecureStore from "expo-secure-store";
 import { useEffect, useMemo, useState } from "react";
 import { Modal, ScrollView, StyleSheet, Text, useWindowDimensions, View } from "react-native";
 import { usePlayerView } from "@/player/use-player-view";
-import { alpha, colors, fontSizes, fonts, space } from "@/theme";
+import { alpha, colors, fontSizes, fonts, IS_LIBRARY, paperColors, space } from "@/theme";
 import { Button } from "@/ui/button";
 import { TextButton } from "@/ui/text-button";
+import { Leaf } from "@/ui/toy";
 import { NewsEntries } from "./news-entries";
 
 const STORAGE_KEY = "leximon_news_seen";
@@ -57,7 +58,12 @@ export function NewsHost() {
       onRequestClose={close}
     >
       <View style={styles.backdrop}>
-        <View style={[styles.card, { width: Math.min(420, window.width - 32) }]}>
+        <Card
+          style={[
+            IS_LIBRARY ? styles.leaf : styles.card,
+            { width: Math.min(420, window.width - 32) },
+          ]}
+        >
           <ScrollView contentContainerStyle={styles.inner}>
             <Text style={styles.title} accessibilityRole="header">
               Nouveautés
@@ -72,11 +78,14 @@ export function NewsHost() {
               }}
             />
           </ScrollView>
-        </View>
+        </Card>
       </View>
     </Modal>
   );
 }
+
+/** The news pop up on a leaf of paper in « La Bibliothèque ». */
+const Card = IS_LIBRARY ? Leaf : View;
 
 const styles = StyleSheet.create({
   backdrop: {
@@ -87,11 +96,12 @@ const styles = StyleSheet.create({
     backgroundColor: alpha(colors.scrim, 0.82),
   },
   card: { maxHeight: "100%", borderRadius: 24, backgroundColor: colors.sheet },
+  leaf: { maxHeight: "100%", backgroundColor: paperColors.paper },
   inner: { gap: space.s9, padding: 22 },
   title: {
     fontFamily: fonts.display,
     fontSize: fontSizes.titleLarge,
     lineHeight: 31,
-    color: colors.pageInk,
+    color: paperColors.pageInk,
   },
 });

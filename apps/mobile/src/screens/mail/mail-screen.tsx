@@ -25,11 +25,12 @@ import { openCoffret } from "@/levels/coffret";
 import { useNow } from "@/player/shared";
 import { mailbox, wallet } from "@/player/state";
 import { usePlayerView } from "@/player/use-player-view";
-import { alpha, colors, fontSizes, fonts, radii, space } from "@/theme";
+import { alpha, colors, fontSizes, fonts, IS_LIBRARY, paperColors, radii, space } from "@/theme";
 import { Icon } from "@/ui/icon";
 import { Page, Paragraph } from "@/ui/page";
 import { TextButton } from "@/ui/text-button";
 import { toast } from "@/ui/toast";
+import { toyFace } from "@/ui/toy";
 
 const LETTER_ICONS: Readonly<Record<MailKind, IconName>> = {
   offer_received: "echange",
@@ -250,10 +251,15 @@ function RowItem({ row }: { readonly row: Row }) {
       onPress={row.onPress}
       accessibilityRole="button"
       accessibilityHint={fresh ? "Nouveau" : undefined}
-      style={({ pressed }) => [styles.row, fresh && styles.fresh, pressed && styles.pressed]}
+      style={({ pressed }) => [
+        styles.row,
+        fresh && styles.fresh,
+        IS_LIBRARY && [styles.slip, toyFace(fresh ? "gold" : "paper")],
+        pressed && styles.pressed,
+      ]}
     >
       <View style={styles.icon}>
-        <Icon name={row.icon} size={20} color={fresh ? colors.rubric : colors.pageInk} />
+        <Icon name={row.icon} size={20} color={fresh ? ink.rubric : ink.pageInk} />
       </View>
       <View style={styles.text}>
         <Text style={styles.title}>{row.title}</Text>
@@ -263,6 +269,9 @@ function RowItem({ row }: { readonly row: Row }) {
     </Pressable>
   );
 }
+
+/** Each letter is a slip of paper in « La Bibliothèque », a new one is gold. */
+const ink = paperColors;
 
 const styles = StyleSheet.create({
   section: { gap: space.s4 },
@@ -281,15 +290,16 @@ const styles = StyleSheet.create({
     paddingHorizontal: space.s7,
     paddingVertical: space.s5,
     borderRadius: radii.xxl,
-    backgroundColor: colors.panel,
+    backgroundColor: ink.panel,
   },
-  fresh: { borderWidth: 1, borderColor: alpha(colors.gilt, 0.45) },
+  fresh: { borderWidth: 1, borderColor: alpha(ink.gilt, 0.45) },
+  slip: { marginBottom: 3 },
   pressed: { opacity: 0.7 },
   icon: {
     width: 40,
     height: 40,
     borderRadius: radii.lg,
-    backgroundColor: colors.page,
+    backgroundColor: IS_LIBRARY ? ink.well : colors.page,
     alignItems: "center",
     justifyContent: "center",
   },
@@ -298,9 +308,9 @@ const styles = StyleSheet.create({
     fontFamily: fonts.ui.bold,
     fontSize: fontSizes.body,
     lineHeight: 20,
-    color: colors.pageInk,
+    color: ink.pageInk,
   },
   word: { fontFamily: fonts.text.italic, fontSize: fontSizes.lead },
-  detail: { fontFamily: fonts.ui.medium, fontSize: fontSizes.small, color: colors.pageInkMuted },
-  when: { fontFamily: fonts.ui.medium, fontSize: fontSizes.caption, color: colors.pageInkFaint },
+  detail: { fontFamily: fonts.ui.medium, fontSize: fontSizes.small, color: ink.pageInkMuted },
+  when: { fontFamily: fonts.ui.medium, fontSize: fontSizes.caption, color: ink.pageInkFaint },
 });

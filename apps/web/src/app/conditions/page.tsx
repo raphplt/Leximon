@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { PUBLISHER } from "@/lib/publisher";
+import ui from "@/ui/ui.module.css";
 import styles from "../confidentialite/privacy.module.css";
 
 export const metadata: Metadata = {
@@ -19,10 +20,10 @@ export default function TermsPage() {
       <Link href="/" className={styles.logo}>
         Leximon
       </Link>
-      <h1 className={styles.title}>Conditions d'utilisation</h1>
+      <h1 className={`${styles.title} ${ui.lettered}`}>Conditions d'utilisation</h1>
       <p className={styles.updated}>Version du 22 octobre 2026.</p>
 
-      <section className={styles.section}>
+      <section className={`${styles.section} ${ui.leaf}`}>
         <h2>L'éditeur</h2>
         <p>
           Leximon est édité par {PUBLISHER.name}, {PUBLISHER.status} (SIREN {PUBLISHER.siren}),{" "}
@@ -35,7 +36,7 @@ export default function TermsPage() {
         </p>
       </section>
 
-      <section className={styles.section}>
+      <section className={`${styles.section} ${ui.leaf}`}>
         <h2>Le jeu</h2>
         <p>
           Leximon est un jeu de cartes à collectionner autour des mots rares et anciens du français.
@@ -49,7 +50,7 @@ export default function TermsPage() {
         </p>
       </section>
 
-      <section className={styles.section}>
+      <section className={`${styles.section} ${ui.leaf}`}>
         <h2>Ton compte</h2>
         <p>
           Tu peux essayer le jeu sans compte, en invité. Pour continuer, tu crées un compte avec ton
@@ -65,7 +66,7 @@ export default function TermsPage() {
         </ul>
       </section>
 
-      <section className={styles.section}>
+      <section className={`${styles.section} ${ui.leaf}`}>
         <h2>Les cartes</h2>
         <p>
           Les cartes, les sachets, l'XP et les objets gagnés dans le jeu n'ont aucune valeur en
@@ -79,7 +80,7 @@ export default function TermsPage() {
         </p>
       </section>
 
-      <section className={styles.section}>
+      <section className={`${styles.section} ${ui.leaf}`}>
         <h2>Les échanges</h2>
         <p>
           Un échange se fait carte contre carte (jusqu'à trois de chaque côté selon le niveau), par
@@ -90,7 +91,7 @@ export default function TermsPage() {
         </p>
       </section>
 
-      <section className={styles.section}>
+      <section className={`${styles.section} ${ui.leaf}`}>
         <h2>Ce qui est interdit</h2>
         <ul>
           <li>
@@ -114,7 +115,7 @@ export default function TermsPage() {
         </ul>
       </section>
 
-      <section className={styles.section}>
+      <section className={`${styles.section} ${ui.leaf}`}>
         <h2>Ce que tu écris</h2>
         <p>
           Ton pseudo, le nom de ton clan et tes messages sont visibles par d'autres joueurs. Tu en
@@ -124,7 +125,7 @@ export default function TermsPage() {
         </p>
       </section>
 
-      <section className={styles.section}>
+      <section className={`${styles.section} ${ui.leaf}`}>
         <h2>Signaler, bloquer</h2>
         <p>
           Depuis le profil d'un joueur, tu peux le bloquer. Vous ne voyez plus vos profils et vous
@@ -135,7 +136,7 @@ export default function TermsPage() {
         </p>
       </section>
 
-      <section className={styles.section}>
+      <section className={`${styles.section} ${ui.leaf}`}>
         <h2>Sanctions</h2>
         <p>Si tu enfreins ces conditions ou la charte, on peut, selon la gravité :</p>
         <ul>
@@ -153,7 +154,7 @@ export default function TermsPage() {
         </p>
       </section>
 
-      <section className={styles.section}>
+      <section className={`${styles.section} ${ui.leaf}`}>
         <h2>Propriété intellectuelle</h2>
         <p>
           Le nom Leximon, son logo, ses écrans et les textes des cartes appartiennent à l'éditeur.
@@ -163,7 +164,7 @@ export default function TermsPage() {
         </p>
       </section>
 
-      <section className={styles.section}>
+      <section className={`${styles.section} ${ui.leaf}`}>
         <h2>Le service</h2>
         <p>
           On fait de notre mieux pour que Leximon fonctionne, sans garantir qu'il soit toujours
@@ -176,7 +177,7 @@ export default function TermsPage() {
         </p>
       </section>
 
-      <section className={styles.section}>
+      <section className={`${styles.section} ${ui.leaf}`}>
         <h2>Supprimer ton compte</h2>
         <p>
           Tu peux supprimer ton compte à tout moment depuis les réglages, bouton « Supprimer mon
@@ -187,7 +188,7 @@ export default function TermsPage() {
         </p>
       </section>
 
-      <section className={styles.section}>
+      <section className={`${styles.section} ${ui.leaf}`}>
         <h2>Si ces conditions changent</h2>
         <p>
           On te prévient dans le jeu au moins quinze jours avant qu'une nouvelle version s'applique.
@@ -195,7 +196,7 @@ export default function TermsPage() {
         </p>
       </section>
 
-      <section className={styles.section}>
+      <section className={`${styles.section} ${ui.leaf}`}>
         <h2>En cas de désaccord</h2>
         <p>
           Ces conditions relèvent du droit français. En cas de litige, écris-nous d'abord : on

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { AnalyticsOptOut } from "@/analytics/opt-out";
 import { PUBLISHER } from "@/lib/publisher";
+import ui from "@/ui/ui.module.css";
 import styles from "./privacy.module.css";
 
 export const metadata: Metadata = {
@@ -18,9 +19,9 @@ export default function PrivacyPage() {
       <Link href="/" className={styles.logo}>
         Leximon
       </Link>
-      <h1 className={styles.title}>Tes données</h1>
+      <h1 className={`${styles.title} ${ui.lettered}`}>Tes données</h1>
 
-      <section className={styles.section}>
+      <section className={`${styles.section} ${ui.leaf}`}>
         <h2>Responsable des données</h2>
         <p>
           {PUBLISHER.name}, {PUBLISHER.status} (SIREN {PUBLISHER.siren}), {PUBLISHER.address}. Pour
@@ -28,7 +29,7 @@ export default function PrivacyPage() {
         </p>
       </section>
 
-      <section className={styles.section}>
+      <section className={`${styles.section} ${ui.leaf}`}>
         <h2>Liste d'attente</h2>
         <p>
           On garde ton adresse e-mail, et rien d'autre. Elle sert à te prévenir de l'ouverture, puis
@@ -37,7 +38,7 @@ export default function PrivacyPage() {
         </p>
       </section>
 
-      <section className={styles.section}>
+      <section className={`${styles.section} ${ui.leaf}`}>
         <h2>Compte de jeu</h2>
         <p>
           Ton adresse e-mail sert à te connecter. Ta partie (cartes, progression, échanges) est
@@ -55,7 +56,7 @@ export default function PrivacyPage() {
         </p>
       </section>
 
-      <section className={styles.section}>
+      <section className={`${styles.section} ${ui.leaf}`}>
         <h2>Statistiques de la bêta</h2>
         <p>
           On conserve le lien d'invitation par lequel tu es entré ainsi que le code d'origine du
@@ -70,7 +71,7 @@ export default function PrivacyPage() {
         </p>
       </section>
 
-      <section className={styles.section}>
+      <section className={`${styles.section} ${ui.leaf}`}>
         <h2>Visites du site</h2>
         <p>
           On compte les pages vues avec Umami, un outil libre installé sur notre propre serveur,
@@ -85,7 +86,7 @@ export default function PrivacyPage() {
         </div>
       </section>
 
-      <section className={styles.section}>
+      <section className={`${styles.section} ${ui.leaf}`}>
         <h2>Profil</h2>
         <p>
           Ton pseudo, ton avatar, ton niveau, tes cartes épinglées et tes statistiques de jeu
@@ -100,7 +101,7 @@ export default function PrivacyPage() {
         </p>
       </section>
 
-      <section className={styles.section}>
+      <section className={`${styles.section} ${ui.leaf}`}>
         <h2>E-mails</h2>
         <p>
           Les codes de connexion sont envoyés via Cloudflare uniquement quand tu en demandes un.
@@ -114,7 +115,7 @@ export default function PrivacyPage() {
         </p>
       </section>
 
-      <section className={styles.section}>
+      <section className={`${styles.section} ${ui.leaf}`}>
         <h2>Ce qu'on ne fait pas</h2>
         <p>
           Il n'y a ni publicité, ni revente de données, ni traceur publicitaire, ni dans le site ni
@@ -125,7 +126,7 @@ export default function PrivacyPage() {
         </p>
       </section>
 
-      <section className={styles.section}>
+      <section className={`${styles.section} ${ui.leaf}`}>
         <h2>Bases légales</h2>
         <p>
           La gestion de ton compte, de ta partie et de tes connexions repose sur l'exécution du
@@ -138,7 +139,7 @@ export default function PrivacyPage() {
         </p>
       </section>
 
-      <section className={styles.section}>
+      <section className={`${styles.section} ${ui.leaf}`}>
         <h2>Où tes données sont hébergées</h2>
         <p>
           La base de données est sur notre propre serveur, en France, et ses sauvegardes sont
@@ -158,7 +159,7 @@ export default function PrivacyPage() {
         </p>
       </section>
 
-      <section className={styles.section}>
+      <section className={`${styles.section} ${ui.leaf}`}>
         <h2>Tes droits</h2>
         <p>
           Depuis les réglages, bouton « Supprimer mon compte », ton compte, ta partie et ton adresse

@@ -1,6 +1,7 @@
 import { CHANGELOG, changelogDate } from "@leximon/view-model";
 import type { Metadata } from "next";
 import Link from "next/link";
+import ui from "@/ui/ui.module.css";
 import styles from "../confidentialite/privacy.module.css";
 
 export const metadata: Metadata = {
@@ -15,9 +16,9 @@ export default function NewsPage() {
       <Link href="/" className={styles.logo}>
         Leximon
       </Link>
-      <h1 className={styles.title}>Nouveautés</h1>
+      <h1 className={`${styles.title} ${ui.lettered}`}>Nouveautés</h1>
       {CHANGELOG.map((entry) => (
-        <section key={entry.date} className={styles.section}>
+        <section key={entry.date} className={`${styles.section} ${ui.leaf}`}>
           <h2>{entry.title}</h2>
           <p className={styles.updated}>{changelogDate(entry.date)}</p>
           <ul>
