@@ -674,6 +674,11 @@
     gap: 26px 30px;
   }
 
+  /* The filters stand clear of the first row and of the tags above its cards. */
+  :root[data-look="bibliotheque"] .scroller .grid {
+    margin-top: 30px;
+  }
+
   /* A long collection name takes the room a short one leaves. */
   .tab {
     flex-basis: auto;

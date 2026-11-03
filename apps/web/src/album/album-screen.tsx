@@ -445,6 +445,10 @@ export function AlbumScreen() {
               </>
             )}
           </div>
+          {/* Its place stays when the order hides it: changing the order moves nothing. */}
+          {view.empty === null && view.letters.length === 0 && (
+            <div className={styles.letters} aria-hidden="true" />
+          )}
           {view.empty === null && view.letters.length > 0 && (
             <nav className={styles.letters} aria-label="Aller à la lettre">
               {view.letters.map(({ letter, index }) => (

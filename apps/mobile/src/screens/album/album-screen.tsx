@@ -217,13 +217,10 @@ export function AlbumScreen({ friendCode }: { readonly friendCode: string | null
   }, [resetKey]);
 
   const lettered = (view?.letters.length ?? 0) > 0;
+  // The bar of letters keeps its margin even when the order hides it: changing the order
+  // does not resize every card.
   const cardWidth = Math.floor(
-    (window.width -
-      LIBRARY_INSET * 2 -
-      GUTTER -
-      (lettered ? LETTER_ROOM : GUTTER) -
-      GAP * (COLUMNS - 1)) /
-      COLUMNS,
+    (window.width - LIBRARY_INSET * 2 - GUTTER - LETTER_ROOM - GAP * (COLUMNS - 1)) / COLUMNS,
   );
   const tileHeight = Math.ceil(cardWidth * 1.4) + TILE_FOOT;
   // Every row is as tall: the list knows where the rows it has not drawn yet lie, and a letter
@@ -470,11 +467,7 @@ export function AlbumScreen({ friendCode }: { readonly friendCode: string | null
             <Tile item={item} width={cardWidth} height={tileHeight} onOpen={openOwned} />
           )}
           columnWrapperStyle={styles.gridRow}
-          contentContainerStyle={[
-            styles.grid,
-            lettered && styles.gridLettered,
-            IS_LIBRARY && library.grid,
-          ]}
+          contentContainerStyle={[styles.grid, styles.gridLettered, IS_LIBRARY && library.grid]}
           keyboardShouldPersistTaps="handled"
           keyboardDismissMode="on-drag"
           initialNumToRender={9}
