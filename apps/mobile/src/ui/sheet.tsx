@@ -9,10 +9,11 @@ import {
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { alpha, colors, fontSizes, fonts, space } from "@/theme";
+import { alpha, colors, fontSizes, fonts, IS_LIBRARY, paperColors, space } from "@/theme";
 import { Icon } from "./icon";
 import { OnPaperContext } from "./ink";
 import { ToastHost } from "./toast";
+import { Leaf } from "./toy";
 
 /** A panel that rises from the bottom over the screen: a member, the clan's options, a form. */
 export function Sheet({
@@ -36,7 +37,9 @@ export function Sheet({
           accessibilityLabel="Fermer"
           accessibilityRole="button"
         />
-        <View style={[styles.sheet, { paddingBottom: insets.bottom + 16 }]}>
+        <Surface
+          style={[styles.sheet, IS_LIBRARY && styles.paper, { paddingBottom: insets.bottom + 16 }]}
+        >
           <View style={styles.head}>
             <Text style={styles.title} accessibilityRole="header" numberOfLines={2}>
               {title}
@@ -48,7 +51,7 @@ export function Sheet({
               accessibilityRole="button"
               accessibilityLabel="Fermer"
             >
-              <Icon name="close" size={20} color={colors.pageInk} />
+              <Icon name="close" size={20} color={ink.pageInk} />
             </Pressable>
           </View>
           <ScrollView
@@ -56,15 +59,19 @@ export function Sheet({
             keyboardShouldPersistTaps="handled"
             bounces={false}
           >
-            {/* The sheet is dark, even when it rises from something laid on paper. */}
-            <OnPaperContext.Provider value={false}>{children}</OnPaperContext.Provider>
+            {/* What it holds reads on the sheet, whatever it rose from. */}
+            <OnPaperContext.Provider value={IS_LIBRARY}>{children}</OnPaperContext.Provider>
           </ScrollView>
-        </View>
+        </Surface>
         <ToastHost />
       </KeyboardAvoidingView>
     </Modal>
   );
 }
+
+/** A leaf of paper in « La Bibliothèque », a dark sheet elsewhere. */
+const Surface = IS_LIBRARY ? Leaf : View;
+const ink = paperColors;
 
 const styles = StyleSheet.create({
   backdrop: { flex: 1, justifyContent: "flex-end", backgroundColor: alpha(colors.scrim, 0.6) },
@@ -74,6 +81,12 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 24,
     backgroundColor: colors.sheet,
   },
+  paper: {
+    backgroundColor: paperColors.paper,
+    borderBottomWidth: 0,
+    borderBottomLeftRadius: 0,
+    borderBottomRightRadius: 0,
+  },
   head: {
     flexDirection: "row",
     alignItems: "center",
@@ -82,14 +95,14 @@ const styles = StyleSheet.create({
     paddingTop: space.s9,
     paddingBottom: space.s3,
   },
-  title: { flex: 1, fontFamily: fonts.display, fontSize: fontSizes.title, color: colors.pageInk },
+  title: { flex: 1, fontFamily: fonts.display, fontSize: fontSizes.title, color: ink.pageInk },
   close: {
     width: 36,
     height: 36,
     borderRadius: 18,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: colors.pageRaised,
+    backgroundColor: ink.pageRaised,
   },
   body: { gap: space.s7, paddingHorizontal: space.s10, paddingTop: space.s5 },
 });

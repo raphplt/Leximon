@@ -246,7 +246,7 @@ function ViewerActions({
         title={`Bloquer ${shown.pseudo} ?`}
         onClose={() => setConfirmBlock(false)}
       >
-        <Text style={styles.note}>{BLOCK_CONFIRM}</Text>
+        <Text style={[styles.note, styles.onPaper]}>{BLOCK_CONFIRM}</Text>
         <Button danger label="Bloquer" disabled={busy} onPress={() => void block()} />
         <Button label="Annuler" secondary disabled={busy} onPress={() => setConfirmBlock(false)} />
       </Sheet>

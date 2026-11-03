@@ -440,14 +440,14 @@ function FriendActions({
       <View style={styles.sheetHead}>
         <Avatar avatar={friend.player.avatar} frame={friend.player.frame} size={72} />
         <View style={styles.rowText}>
-          <Text style={styles.sheetSmall}>{friendLine(friend, now)}</Text>
+          <Text style={styles.small}>{friendLine(friend, now)}</Text>
           {friend.clan !== null && (
             <View style={styles.clan}>
               <Emblem emblem={friend.clan.emblem} size={22} />
               <Text style={styles.clanName}>{friend.clan.name}</Text>
             </View>
           )}
-          {trades !== null && <Text style={styles.sheetTradesText}>{trades}</Text>}
+          {trades !== null && <Text style={styles.tradesText}>{trades}</Text>}
         </View>
       </View>
       {friend.player.pseudo !== null && (
@@ -482,7 +482,7 @@ function FriendActions({
         disabled={busy}
         onPress={() => (confirming ? void remove() : setConfirming(true))}
       />
-      {confirming && <Text style={styles.sheetSmall}>Sans prévenir, des deux côtés.</Text>}
+      {confirming && <Text style={styles.small}>Sans prévenir, des deux côtés.</Text>}
     </>
   );
 }
@@ -568,12 +568,5 @@ const styles = StyleSheet.create({
   summaryText: { fontFamily: fonts.ui.extrabold, fontSize: fontSizes.body, color: ink.pageInk },
   sheetHead: { flexDirection: "row", alignItems: "center", gap: space.s8 },
   clan: { flexDirection: "row", alignItems: "center", gap: space.s4 },
-  sheetSmall: {
-    fontFamily: fonts.ui.medium,
-    fontSize: fontSizes.small,
-    lineHeight: 18,
-    color: colors.pageInkMuted,
-  },
-  sheetTradesText: { fontFamily: fonts.ui.bold, fontSize: fontSizes.small, color: colors.rubric },
-  clanName: { fontFamily: fonts.ui.bold, fontSize: fontSizes.label, color: colors.pageInk },
+  clanName: { fontFamily: fonts.ui.bold, fontSize: fontSizes.label, color: ink.pageInk },
 });

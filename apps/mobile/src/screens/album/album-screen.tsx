@@ -51,7 +51,7 @@ import { useNow, useShared, useSharedFailed } from "@/player/shared";
 import { progress } from "@/player/state";
 import { askAlbumPractice } from "@/screens/challenges/pending-practice";
 import { TAB_BAR_RISE } from "@/shell/tab-bar";
-import { alpha, colors, fontSizes, fonts, IS_LIBRARY, radii, space } from "@/theme";
+import { alpha, colors, fontSizes, fonts, IS_LIBRARY, paperColors, radii, space } from "@/theme";
 import { Button } from "@/ui/button";
 import { Icon } from "@/ui/icon";
 import { RarityChip, RarityName } from "@/ui/rarity-icon";
@@ -745,7 +745,11 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   group: { gap: space.s4 },
-  groupTitle: { fontFamily: fonts.ui.extrabold, fontSize: fontSizes.body, color: colors.pageInk },
+  groupTitle: {
+    fontFamily: fonts.ui.extrabold,
+    fontSize: fontSizes.body,
+    color: paperColors.pageInk,
+  },
   groupChips: { flexDirection: "row", flexWrap: "wrap", gap: space.s4 },
   chipMuted: { backgroundColor: "transparent", borderWidth: 1, borderColor: colors.rule },
   chipOn: { backgroundColor: colors.action, borderColor: colors.gilt },

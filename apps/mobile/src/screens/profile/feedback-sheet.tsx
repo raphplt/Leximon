@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { StyleSheet, Text, TextInput } from "react-native";
 import { api } from "@/api/client";
-import { colors, fontSizes, fonts, radii, space } from "@/theme";
+import { fontSizes, fonts, paperColors, radii, space } from "@/theme";
 import { Button } from "@/ui/button";
 import { FormError } from "@/ui/page";
 import { Sheet } from "@/ui/sheet";
@@ -53,7 +53,7 @@ export function FeedbackSheet({
         multiline
         numberOfLines={5}
         textAlignVertical="top"
-        selectionColor={colors.rubric}
+        selectionColor={ink.rubric}
         accessibilityLabel={label}
         onChangeText={setBody}
       />
@@ -67,21 +67,24 @@ export function FeedbackSheet({
   );
 }
 
+/** It is read on a sheet, a leaf of paper in « La Bibliothèque ». */
+const ink = paperColors;
+
 const styles = StyleSheet.create({
   label: {
     fontFamily: fonts.ui.semibold,
     fontSize: fontSizes.body,
     lineHeight: 21,
-    color: colors.pageInk,
+    color: ink.pageInk,
   },
   field: {
     minHeight: 120,
     padding: space.s6,
     borderRadius: radii.xl,
     borderWidth: 2,
-    borderColor: colors.track,
-    backgroundColor: colors.well,
-    color: colors.pageInk,
+    borderColor: ink.track,
+    backgroundColor: ink.well,
+    color: ink.pageInk,
     fontFamily: fonts.ui.medium,
     fontSize: fontSizes.body,
   },

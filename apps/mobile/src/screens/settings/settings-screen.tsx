@@ -389,7 +389,7 @@ function BlocksSheet({
         players.map((player) => (
           <View key={player.code} style={styles.blocked}>
             <Avatar avatar={player.avatar} frame={player.frame} size={40} />
-            <Text style={[styles.label, styles.rowText, styles.onSheet]}>{playerName(player)}</Text>
+            <Text style={[styles.label, styles.rowText]}>{playerName(player)}</Text>
             <Button
               label="Débloquer"
               secondary
@@ -498,13 +498,12 @@ const styles = StyleSheet.create({
   label: { fontFamily: fonts.ui.bold, fontSize: fontSizes.body, color: ink.pageInk },
   detail: { fontFamily: fonts.ui.medium, fontSize: fontSizes.small, color: ink.pageInkMuted },
   danger: { color: ink.danger },
-  onSheet: { color: colors.pageInk },
   blocked: { flexDirection: "row", alignItems: "center", gap: space.s6 },
   warning: {
     fontFamily: fonts.text.regular,
     fontSize: fontSizes.subtitle,
     lineHeight: 25,
-    color: colors.pageInk,
+    color: ink.pageInk,
   },
   footnote: {
     fontFamily: fonts.ui.medium,

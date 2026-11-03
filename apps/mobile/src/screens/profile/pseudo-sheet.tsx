@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { StyleSheet, Text } from "react-native";
 import { useNow } from "@/player/shared";
 import { useProfileActions } from "@/profile/profile-actions";
-import { colors, fontSizes, fonts } from "@/theme";
+import { fontSizes, fonts, paperColors } from "@/theme";
 import { Button } from "@/ui/button";
 import { Sheet } from "@/ui/sheet";
 import { TextField } from "@/ui/text-field";
@@ -78,17 +78,20 @@ export function PseudoSheet({
   );
 }
 
+/** It is read on a sheet, a leaf of paper in « La Bibliothèque ». */
+const ink = paperColors;
+
 const styles = StyleSheet.create({
   hint: {
     fontFamily: fonts.ui.medium,
     fontSize: fontSizes.label,
     lineHeight: 20,
-    color: colors.pageInkMuted,
+    color: ink.pageInkMuted,
   },
   problem: {
     fontFamily: fonts.ui.bold,
     fontSize: fontSizes.label,
     lineHeight: 20,
-    color: colors.danger,
+    color: ink.danger,
   },
 });

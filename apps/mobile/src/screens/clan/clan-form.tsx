@@ -5,7 +5,7 @@ import { useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { catalogInHand } from "@/cards/catalog";
 import { Emblem } from "@/clan/emblem";
-import { colors, fontSizes, fonts, radii, space } from "@/theme";
+import { fontSizes, fonts, paperColors, radii, space } from "@/theme";
 import { Button } from "@/ui/button";
 import { Chip } from "@/ui/chip";
 import { FormError } from "@/ui/page";
@@ -129,13 +129,16 @@ export function ClanForm({
   );
 }
 
+/** It is read on a sheet, a leaf of paper in « La Bibliothèque ». */
+const ink = paperColors;
+
 const styles = StyleSheet.create({
   form: { gap: space.s7 },
   preview: { flexDirection: "row", alignItems: "center", gap: space.s8 },
   previewText: { flex: 1, gap: space.s1 },
-  previewName: { fontFamily: fonts.display, fontSize: fontSizes.title, color: colors.pageInk },
-  small: { fontFamily: fonts.ui.medium, fontSize: fontSizes.label, color: colors.pageInkMuted },
-  label: { fontFamily: fonts.ui.bold, fontSize: fontSizes.label, color: colors.pageInkMuted },
+  previewName: { fontFamily: fonts.display, fontSize: fontSizes.title, color: ink.pageInk },
+  small: { fontFamily: fonts.ui.medium, fontSize: fontSizes.label, color: ink.pageInkMuted },
+  label: { fontFamily: fonts.ui.bold, fontSize: fontSizes.label, color: ink.pageInkMuted },
   chips: { flexDirection: "row", flexWrap: "wrap", gap: space.s4 },
   group: { gap: space.s4 },
   engravings: { flexDirection: "row", flexWrap: "wrap", gap: space.s4 },
@@ -145,8 +148,8 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: "transparent",
   },
-  picked: { borderColor: colors.gilt },
+  picked: { borderColor: ink.gilt },
   swatches: { flexDirection: "row", flexWrap: "wrap", gap: space.s5 },
-  swatch: { width: 34, height: 34, borderRadius: 17, borderWidth: 2, borderColor: colors.rule },
-  swatchPicked: { borderWidth: 3, borderColor: colors.gilt },
+  swatch: { width: 34, height: 34, borderRadius: 17, borderWidth: 2, borderColor: ink.rule },
+  swatchPicked: { borderWidth: 3, borderColor: ink.gilt },
 });

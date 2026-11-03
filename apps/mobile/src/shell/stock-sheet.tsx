@@ -2,7 +2,7 @@ import type { BoosterWalletResponse } from "@leximon/contract";
 import { reserveView, stockView } from "@leximon/view-model";
 import { router } from "expo-router";
 import { StyleSheet, Text, View } from "react-native";
-import { colors, fontSizes, fonts, radii, space } from "@/theme";
+import { fontSizes, fonts, paperColors, radii, space } from "@/theme";
 import { Button } from "@/ui/button";
 import { Icon } from "@/ui/icon";
 import { Sheet } from "@/ui/sheet";
@@ -25,7 +25,7 @@ export function StockSheet({
     <Sheet open={open} title="Tes sachets" onClose={onClose}>
       <View style={styles.line}>
         <View style={styles.sachet}>
-          <Icon name="sachet" size={22} color={colors.pageInk} />
+          <Icon name="sachet" size={22} color={ink.pageInk} />
         </View>
         <View style={styles.lineText}>
           <Text style={styles.headline}>{stock.count}</Text>
@@ -34,7 +34,7 @@ export function StockSheet({
       </View>
       <View style={styles.line}>
         <View style={[styles.sachet, styles.sachetGold]}>
-          <Icon name="sachet" size={22} color={colors.actionInk} />
+          <Icon name="sachet" size={22} color={ink.actionInk} />
         </View>
         <View style={styles.lineText}>
           <Text style={styles.headline}>{reserve.headline}</Text>
@@ -59,6 +59,9 @@ export function StockSheet({
   );
 }
 
+/** It is read on a sheet, a leaf of paper in « La Bibliothèque ». */
+const ink = paperColors;
+
 const styles = StyleSheet.create({
   line: { flexDirection: "row", alignItems: "center", gap: space.s6 },
   sachet: {
@@ -67,33 +70,33 @@ const styles = StyleSheet.create({
     borderRadius: radii.xl,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: colors.pageRaised,
+    backgroundColor: ink.pageRaised,
   },
-  sachetGold: { backgroundColor: colors.action },
+  sachetGold: { backgroundColor: ink.action },
   lineText: { flex: 1, gap: 1 },
-  headline: { fontFamily: fonts.ui.bold, fontSize: fontSizes.bodyLarge, color: colors.pageInk },
+  headline: { fontFamily: fonts.ui.bold, fontSize: fontSizes.bodyLarge, color: ink.pageInk },
   muted: {
     fontFamily: fonts.ui.medium,
     fontSize: fontSizes.label,
     lineHeight: 20,
-    color: colors.pageInkMuted,
+    color: ink.pageInkMuted,
   },
   notes: {
     gap: space.s3,
     paddingTop: space.s6,
     borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: colors.rule,
+    borderTopColor: ink.rule,
   },
   note: {
     fontFamily: fonts.ui.medium,
     fontSize: fontSizes.label,
     lineHeight: 20,
-    color: colors.pageInk,
+    color: ink.pageInk,
   },
   garni: {
     fontFamily: fonts.ui.bold,
     fontSize: fontSizes.label,
     lineHeight: 20,
-    color: colors.rubric,
+    color: ink.rubric,
   },
 });
