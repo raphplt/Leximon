@@ -17,7 +17,7 @@
     "android": {
       "package": "fr.leximon.app",
       "adaptiveIcon": {
-        "backgroundColor": "#262B40",
+        "backgroundColor": "#1C0F07",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
         "backgroundImage": "./assets/images/android-icon-background.png",
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
@@ -54,7 +54,7 @@
       [
         "expo-splash-screen",
         {
-          "backgroundColor": "#262B40",
+          "backgroundColor": "#1C0F07",
           "image": "./assets/images/splash-icon.png",
           "imageWidth": 120
         }
@@ -88,6 +88,6 @@
         "projectId": "e6c7ad61-577e-4c31-965c-aeeea542e60e"
       }
     },
-    "backgroundColor": "#262B40"
+    "backgroundColor": "#1C0F07"
   }
 }

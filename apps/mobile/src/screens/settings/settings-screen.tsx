@@ -26,16 +26,7 @@ import { account, profile } from "@/player/state";
 import { useProfileActions } from "@/profile/profile-actions";
 import { forgetLastEmail } from "@/screens/account/last-email";
 import { PseudoSheet } from "@/screens/profile/pseudo-sheet";
-import {
-  colors,
-  fontSizes,
-  fonts,
-  IS_LIBRARY,
-  paperColors,
-  radii,
-  space,
-  switchColors,
-} from "@/theme";
+import { colors, fontSizes, fonts, paperColors, space, switchColors } from "@/theme";
 import { Avatar } from "@/ui/avatar";
 import { Button } from "@/ui/button";
 import { Icon } from "@/ui/icon";
@@ -216,7 +207,8 @@ export function SettingsScreen() {
         </Group>
       )}
 
-      {IS_LIBRARY && (
+      {/* The showcase of the pieces, for whoever builds the game. */}
+      {__DEV__ && (
         <Group title="LA BIBLIOTHÈQUE">
           <Row label="Planches de la Bibliothèque" onPress={() => router.push("/planches")} />
         </Group>
@@ -272,11 +264,7 @@ function Group({ title, children }: { readonly title: string; readonly children:
   return (
     <View style={styles.group}>
       <Text style={styles.kicker}>{title}</Text>
-      {IS_LIBRARY ? (
-        <Leaf style={styles.leafRows}>{children}</Leaf>
-      ) : (
-        <View style={styles.rows}>{children}</View>
-      )}
+      <Leaf style={styles.leafRows}>{children}</Leaf>
     </View>
   );
 }
@@ -471,7 +459,7 @@ function DeleteAccountSheet({
   );
 }
 
-/** The rows are read on paper in « La Bibliothèque ». */
+/** The rows are read on paper. */
 const ink = paperColors;
 
 const styles = StyleSheet.create({
@@ -482,7 +470,6 @@ const styles = StyleSheet.create({
     letterSpacing: 2,
     color: colors.pageInkMuted,
   },
-  rows: { borderRadius: radii.x3, backgroundColor: colors.panel, paddingHorizontal: space.s8 },
   leafRows: { paddingHorizontal: space.s8 },
   row: {
     flexDirection: "row",

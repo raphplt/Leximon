@@ -35,7 +35,7 @@ import { ownedCards } from "@/player/collection";
 import { useShared } from "@/player/shared";
 import { myClan } from "@/player/state";
 import { TAB_BAR_RISE } from "@/shell/tab-bar";
-import { colors, fontSizes, fonts, IS_LIBRARY, paperColors, radii, space } from "@/theme";
+import { colors, fontSizes, fonts, paperColors, radii, space } from "@/theme";
 import { Avatar } from "@/ui/avatar";
 import { Badge } from "@/ui/badge";
 import { Button } from "@/ui/button";
@@ -178,23 +178,17 @@ export function ClanPage({
   return (
     <View style={styles.screen}>
       <View style={styles.top}>
-        <View style={[styles.hero, IS_LIBRARY && styles.heroDesk]}>
-          {IS_LIBRARY && <Desk style={StyleSheet.absoluteFill} />}
+        <View style={styles.hero}>
+          <Desk style={StyleSheet.absoluteFill} />
           <Banner cardId={view.clan.banner} />
           <Emblem emblem={view.clan.emblem} size={52} level={progress.level} />
           <View style={styles.heroText}>
-            {IS_LIBRARY ? (
-              <View accessible accessibilityRole="header" accessibilityLabel={view.clan.name}>
-                <Lettering size={fontSizes.titleSmall} numberOfLines={1}>
-                  {view.clan.name}
-                </Lettering>
-              </View>
-            ) : (
-              <Text style={styles.heroName} numberOfLines={1} accessibilityRole="header">
+            <View accessible accessibilityRole="header" accessibilityLabel={view.clan.name}>
+              <Lettering size={fontSizes.titleSmall} numberOfLines={1}>
                 {view.clan.name}
-              </Text>
-            )}
-            <Text style={[styles.heroSmall, IS_LIBRARY && styles.onDesk]} numberOfLines={1}>
+              </Lettering>
+            </View>
+            <Text style={styles.heroSmall} numberOfLines={1}>
               {online ?? clanSubline(view.clan)}
             </Text>
           </View>
@@ -204,10 +198,7 @@ export function ClanPage({
               label={view.pendingRequests > 1 ? `${view.pendingRequests} demandes` : "Une demande"}
             >
               <Icon name="amis" size={20} color={ink.pageInk} />
-              <Badge
-                count={view.pendingRequests}
-                ring={IS_LIBRARY ? toyValues.outline : colors.page}
-              />
+              <Badge count={view.pendingRequests} ring={toyValues.outline} />
             </HeroButton>
           )}
           <HeroButton onPress={invite} label="Inviter">
@@ -383,7 +374,7 @@ export function ClanPage({
   );
 }
 
-/** A round button of the header: a paper toy on the desk in « La Bibliothèque ». */
+/** A round button of the header: a paper toy on the desk. */
 function HeroButton({
   onPress,
   label,
@@ -393,41 +384,27 @@ function HeroButton({
   readonly label: string;
   readonly children: ReactNode;
 }) {
-  if (IS_LIBRARY) {
-    return (
-      <Toy
-        matter="paper"
-        shape="round"
-        onPress={onPress}
-        style={styles.toy}
-        bodyStyle={styles.toyBody}
-        accessibilityRole="button"
-        accessibilityLabel={label}
-      >
-        {children}
-      </Toy>
-    );
-  }
   return (
-    <Pressable
+    <Toy
+      matter="paper"
+      shape="round"
       onPress={onPress}
-      style={styles.round}
+      style={styles.toy}
+      bodyStyle={styles.toyBody}
       accessibilityRole="button"
       accessibilityLabel={label}
     >
       {children}
-    </Pressable>
+    </Toy>
   );
 }
 
-/** The members: one leaf of paper in « La Bibliothèque », rows straight on the page elsewhere. */
+/** The members, on one leaf of paper. */
 function MembersGround({ children }: { readonly children: ReactNode }) {
-  return IS_LIBRARY ? (
+  return (
     <Panel paper style={styles.membersLeaf}>
       {children}
     </Panel>
-  ) : (
-    children
   );
 }
 
@@ -493,7 +470,7 @@ function GoalPanel({
   );
 }
 
-/** What the clan shows lies on paper in « La Bibliothèque »; the header stays on the desk. */
+/** What the clan shows lies on paper; the header stays on the desk. */
 const ink = paperColors;
 
 const styles = StyleSheet.create({
@@ -511,27 +488,23 @@ const styles = StyleSheet.create({
     paddingTop: space.s2,
     paddingBottom: space.s4,
   },
-  hero: { flexDirection: "row", alignItems: "center", gap: space.s6, overflow: "hidden" },
+  hero: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: space.s6,
+    overflow: "hidden",
+    padding: space.s8,
+    paddingRight: space.s7,
+  },
   heroText: { flex: 1, gap: space.s1 },
-  heroName: { fontFamily: fonts.display, fontSize: fontSizes.titleLarge, color: colors.pageInk },
-  heroDesk: { padding: space.s8, paddingRight: space.s7 },
   heroSmall: {
     fontFamily: fonts.ui.medium,
     fontSize: fontSizes.small,
     lineHeight: 19,
-    color: colors.pageInkMuted,
+    color: alpha(lettering.fill, 0.85),
   },
-  onDesk: { color: alpha(lettering.fill, 0.85) },
   toy: { width: 42, height: 42 },
   toyBody: { flex: 1, alignItems: "center", justifyContent: "center" },
-  round: {
-    width: 42,
-    height: 42,
-    borderRadius: 21,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: colors.panel,
-  },
   chat: { flex: 1, paddingBottom: TAB_BAR_RISE },
   page: {
     gap: space.s7,
@@ -607,7 +580,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    paddingHorizontal: IS_LIBRARY ? space.s5 : 0,
+    paddingHorizontal: space.s5,
   },
   member: {
     flexDirection: "row",
@@ -617,7 +590,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: space.s6,
     paddingVertical: space.s4,
     borderRadius: radii.xxl,
-    backgroundColor: IS_LIBRARY ? "transparent" : colors.panel,
+    backgroundColor: "transparent",
   },
   membersLeaf: { paddingHorizontal: space.s4, gap: space.s2 },
   pressed: { opacity: 0.7 },

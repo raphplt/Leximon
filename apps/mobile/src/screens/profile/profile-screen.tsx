@@ -301,7 +301,7 @@ function PinnedCards({
   );
 }
 
-/** The profile's blocks lie on paper in « La Bibliothèque ». */
+/** The profile's blocks lie on paper. */
 const ink = paperColors;
 
 const styles = StyleSheet.create({

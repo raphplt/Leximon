@@ -21,7 +21,6 @@ import { play, speechOn, vibrate } from "@/feedback/feedback";
 import { dailyChallenge, refreshIfRead, reviewSummary, wordMemory } from "@/player/collection";
 import { useNow, useShared } from "@/player/shared";
 import { publishProgress, wallet } from "@/player/state";
-import { IS_LIBRARY } from "@/theme";
 import { ParticleStage } from "@/ui/stage";
 import { ChallengeRecap } from "./challenge-recap";
 import { takeAlbumPractice } from "./pending-practice";
@@ -39,12 +38,10 @@ export function ChallengeScreen(props: {
   readonly word: string | null;
   readonly fromAlbum: boolean;
 }) {
-  return IS_LIBRARY ? (
+  return (
     <ParticleStage>
       <ChallengeFlow {...props} />
     </ParticleStage>
-  ) : (
-    <ChallengeFlow {...props} />
   );
 }
 

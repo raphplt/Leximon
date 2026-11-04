@@ -21,7 +21,7 @@ import { useJoinClan } from "@/clan/use-join-clan";
 import { Desk } from "@/library/play-pieces";
 import { useNow, useShared, useSharedFailed } from "@/player/shared";
 import { myClan, profile, progress as progressResource } from "@/player/state";
-import { colors, fontSizes, fonts, IS_LIBRARY, paperColors, space } from "@/theme";
+import { fontSizes, fonts, paperColors, space } from "@/theme";
 import { Avatar } from "@/ui/avatar";
 import { Button } from "@/ui/button";
 import { Icon } from "@/ui/icon";
@@ -145,8 +145,8 @@ function ClanVisit({
 
   return (
     <Page kicker={`Clan de niveau ${clan.level}`} title={clan.name}>
-      <Panel style={[styles.hero, IS_LIBRARY && styles.heroDesk]}>
-        {IS_LIBRARY && <Desk style={StyleSheet.absoluteFill} />}
+      <Panel style={styles.hero}>
+        <Desk style={StyleSheet.absoluteFill} />
         <Banner cardId={clan.banner} />
         <View style={styles.heroHead}>
           <Emblem emblem={clan.emblem} size={64} level={clan.level} />
@@ -226,17 +226,16 @@ function VisitedMember({ member }: { readonly member: ClanMember }) {
   );
 }
 
-/** The members lie on paper in « La Bibliothèque »; the clan's header stays on the desk. */
+/** The members lie on paper; the clan's header stays on the desk. */
 const ink = paperColors;
 
 const styles = StyleSheet.create({
-  hero: { overflow: "hidden" },
-  heroDesk: { backgroundColor: "transparent" },
+  hero: { overflow: "hidden", backgroundColor: "transparent" },
   heroSmall: {
     fontFamily: fonts.ui.medium,
     fontSize: fontSizes.label,
     lineHeight: 20,
-    color: IS_LIBRARY ? alpha(lettering.fill, 0.85) : colors.pageInkMuted,
+    color: alpha(lettering.fill, 0.85),
   },
   heroHead: { flexDirection: "row", alignItems: "center", gap: space.s8 },
   heroLine: { flex: 1 },

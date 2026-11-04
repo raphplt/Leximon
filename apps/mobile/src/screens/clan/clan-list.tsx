@@ -155,7 +155,7 @@ export function JoinButton({
   );
 }
 
-/** Each clan is shown on a leaf of paper in « La Bibliothèque ». */
+/** Each clan is shown on a leaf of paper. */
 const ink = paperColors;
 
 const styles = StyleSheet.create({

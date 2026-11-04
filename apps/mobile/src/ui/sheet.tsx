@@ -9,9 +9,8 @@ import {
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { alpha, colors, fontSizes, fonts, IS_LIBRARY, paperColors, space } from "@/theme";
+import { alpha, colors, fontSizes, fonts, paperColors, space } from "@/theme";
 import { Icon } from "./icon";
-import { OnPaperContext } from "./ink";
 import { ToastHost } from "./toast";
 import { Leaf } from "./toy";
 
@@ -37,9 +36,7 @@ export function Sheet({
           accessibilityLabel="Fermer"
           accessibilityRole="button"
         />
-        <Surface
-          style={[styles.sheet, IS_LIBRARY && styles.paper, { paddingBottom: insets.bottom + 16 }]}
-        >
+        <Leaf style={[styles.sheet, { paddingBottom: insets.bottom + 16 }]}>
           <View style={styles.head}>
             <Text style={styles.title} accessibilityRole="header" numberOfLines={2}>
               {title}
@@ -59,18 +56,15 @@ export function Sheet({
             keyboardShouldPersistTaps="handled"
             bounces={false}
           >
-            {/* What it holds reads on the sheet, whatever it rose from. */}
-            <OnPaperContext.Provider value={IS_LIBRARY}>{children}</OnPaperContext.Provider>
+            {children}
           </ScrollView>
-        </Surface>
+        </Leaf>
         <ToastHost />
       </KeyboardAvoidingView>
     </Modal>
   );
 }
 
-/** A leaf of paper in « La Bibliothèque », a dark sheet elsewhere. */
-const Surface = IS_LIBRARY ? Leaf : View;
 const ink = paperColors;
 
 const styles = StyleSheet.create({
@@ -79,9 +73,6 @@ const styles = StyleSheet.create({
     maxHeight: "88%",
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
-    backgroundColor: colors.sheet,
-  },
-  paper: {
     backgroundColor: paperColors.paper,
     borderBottomWidth: 0,
     borderBottomLeftRadius: 0,

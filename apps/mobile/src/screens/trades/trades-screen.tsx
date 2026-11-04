@@ -41,7 +41,7 @@ import {
   progress as progressResource,
 } from "@/player/state";
 import { TAB_BAR_RISE } from "@/shell/tab-bar";
-import { alpha, colors, fontSizes, fonts, IS_LIBRARY, paperColors, radii, space } from "@/theme";
+import { alpha, colors, fontSizes, fonts, paperColors, radii, space } from "@/theme";
 import { Button } from "@/ui/button";
 import { Icon } from "@/ui/icon";
 import { OnPaper, Panel } from "@/ui/panel";
@@ -235,15 +235,9 @@ export function TradesScreen({
         keyboardShouldPersistTaps="handled"
       >
         <View style={styles.header}>
-          {IS_LIBRARY ? (
-            <View accessibilityRole="header">
-              <Lettering size={fontSizes.heading}>Échanges</Lettering>
-            </View>
-          ) : (
-            <Text style={styles.title} accessibilityRole="header">
-              Échanges
-            </Text>
-          )}
+          <View accessibilityRole="header">
+            <Lettering size={fontSizes.heading}>Échanges</Lettering>
+          </View>
           {profile !== null && <PlayerCode code={profile.playerCode} />}
         </View>
         {tooLow !== null && <Text style={styles.warning}>{tooLow}</Text>}
@@ -354,16 +348,14 @@ function PlayerCode({ code, large = false }: { readonly code: string; readonly l
       style={[
         styles.codeChip,
         large && styles.codeChipLarge,
-        IS_LIBRARY && [styles.codeToy, toyFace("paper", "tag")],
+        styles.codeToy,
+        toyFace("paper", "tag"),
       ]}
       accessibilityRole="button"
       accessibilityLabel={`Partager mon code joueur, ${code.split("").join(" ")}`}
     >
       {!large && <Text style={styles.codeLabel}>Ton code</Text>}
-      <Text
-        style={[styles.code, large && styles.codeLarge, IS_LIBRARY && styles.codeWell]}
-        selectable
-      >
+      <Text style={[styles.code, large && styles.codeLarge]} selectable>
         {formatPlayerCode(code)}
       </Text>
       <Icon name="share" size={large ? 18 : 15} color={ink.pageInkMuted} />
@@ -392,10 +384,8 @@ function NoOffer({
         </Text>
         {tradeGuide(now).map((step, index) => (
           <View key={step.title} style={styles.guideStep}>
-            <View style={[styles.guideNumber, IS_LIBRARY && styles.guideNumberGilt]}>
-              <Text style={[styles.guideNumberText, IS_LIBRARY && styles.guideNumberGiltText]}>
-                {index + 1}
-              </Text>
+            <View style={styles.guideNumber}>
+              <Text style={styles.guideNumberText}>{index + 1}</Text>
             </View>
             <View style={styles.guideBody}>
               <Text style={styles.guideStepTitle}>{step.title}</Text>
@@ -617,7 +607,7 @@ function History({
   );
 }
 
-/** The offers, the history and the empty boxes are read on paper in « La Bibliothèque ». */
+/** The offers, the history and the empty boxes are read on paper. */
 const ink = paperColors;
 
 const styles = StyleSheet.create({
@@ -636,7 +626,6 @@ const styles = StyleSheet.create({
     flexWrap: "wrap",
     gap: space.s5,
   },
-  title: { fontFamily: fonts.display, fontSize: fontSizes.heading, color: colors.pageInk },
   codeChip: {
     flexDirection: "row",
     alignItems: "center",
@@ -660,15 +649,13 @@ const styles = StyleSheet.create({
     color: ink.pageInk,
     letterSpacing: 2,
     fontVariant: ["tabular-nums"],
-  },
-  codeLarge: { fontSize: fontSizes.title },
-  codeWell: {
     overflow: "hidden",
     paddingHorizontal: space.s4,
     paddingVertical: 1,
     borderRadius: 6,
     backgroundColor: alpha(toyMatters.paper.edge, 0.45),
   },
+  codeLarge: { fontSize: fontSizes.title },
   warning: {
     fontFamily: fonts.ui.bold,
     fontSize: fontSizes.body,
@@ -692,19 +679,15 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: colors.action,
-  },
-  guideNumberText: {
-    fontFamily: fonts.ui.extrabold,
-    fontSize: fontSizes.body,
-    color: colors.actionInk,
-  },
-  guideNumberGilt: {
     borderWidth: toyValues.outlineWidth,
     borderColor: toyValues.outline,
     backgroundColor: toyMatters.gold.bottom,
   },
-  guideNumberGiltText: { color: toyValues.outline },
+  guideNumberText: {
+    fontFamily: fonts.ui.extrabold,
+    fontSize: fontSizes.body,
+    color: toyValues.outline,
+  },
   guideBody: { flex: 1, gap: space.s2 },
   guideStepTitle: {
     fontFamily: fonts.ui.extrabold,

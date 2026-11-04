@@ -34,7 +34,7 @@ import { Matter } from "@/ui/matter";
 import { Kicker, Lettering, Toy, ToyBody, ToyIcon } from "@/ui/toy";
 
 /**
- * The pieces of the Jouer screen in « La Bibliothèque ». They know nothing of the game: each
+ * The pieces of the Jouer screen. They know nothing of the game: each
  * screen gives them their words and figures, so that the same pieces serve every state.
  */
 

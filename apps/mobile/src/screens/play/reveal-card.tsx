@@ -64,7 +64,7 @@ export function RevealCard({
   /** The `back` of the pack's collection. */
   readonly tone: string | undefined;
   /**
-   * In « La Bibliothèque », where its light is drawn: the rarity glows behind the card while it
+   * Where its light is drawn: the rarity glows behind the card while it
    * is announced, then sparks, rays and its name come as the face shows.
    */
   readonly stage?: Stage | null;
@@ -85,7 +85,7 @@ export function RevealCard({
   const exitSide = useSharedValue(-1);
   const drag = useSharedValue(0);
   const dim = useSharedValue(0);
-  /** In « La Bibliothèque », each card comes onto the desk on a spring, face down. */
+  /** Each card comes onto the desk on a spring, face down. */
   const arrival = useSharedValue(stage === null ? 1 : 0);
   const height = (width * cardSize.height) / cardSize.width;
   const glow = rarityStyles[card.rarity].glow;

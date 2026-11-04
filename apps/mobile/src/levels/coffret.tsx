@@ -40,7 +40,7 @@ import { api } from "@/api/client";
 import { Desk } from "@/library/play-pieces";
 import { useNow } from "@/player/shared";
 import { levelRewards, progress, publishClaimed, wallet } from "@/player/state";
-import { alpha, colors, fontSizes, fonts, IS_LIBRARY, paperColors, radii, space } from "@/theme";
+import { alpha, colors, fontSizes, fonts, paperColors, radii, space } from "@/theme";
 import { Avatar } from "@/ui/avatar";
 import { Button } from "@/ui/button";
 import { Icon } from "@/ui/icon";
@@ -151,19 +151,9 @@ export function CoffretHost() {
     >
       <Pressable style={styles.backdrop} onPress={close} accessibilityLabel="Fermer" />
       <View style={styles.center} pointerEvents="box-none">
-        <View
-          style={[
-            styles.card,
-            IS_LIBRARY && library.card,
-            { width: Math.min(380, window.width - 32) },
-          ]}
-        >
-          {IS_LIBRARY && <Desk style={StyleSheet.absoluteFill} />}
-          <ScrollView
-            style={IS_LIBRARY && library.inside}
-            contentContainerStyle={styles.inner}
-            bounces={false}
-          >
+        <View style={[styles.card, { width: Math.min(380, window.width - 32) }]}>
+          <Desk style={StyleSheet.absoluteFill} />
+          <ScrollView style={styles.inside} contentContainerStyle={styles.inner} bounces={false}>
             {step.name === "opened" ? (
               <>
                 {level !== null && (
@@ -171,15 +161,9 @@ export function CoffretHost() {
                     <LevelMedal level={level} size={96} />
                   </Animated.View>
                 )}
-                {IS_LIBRARY ? (
-                  <Animated.View entering={ZoomIn.duration(320)}>
-                    <Lettering size={fontSizes.headingLarge}>{`Niveau ${level} !`}</Lettering>
-                  </Animated.View>
-                ) : (
-                  <Animated.Text entering={ZoomIn.duration(320)} style={styles.levelUp}>
-                    Niveau {level} !
-                  </Animated.Text>
-                )}
+                <Animated.View entering={ZoomIn.duration(320)}>
+                  <Lettering size={fontSizes.headingLarge}>{`Niveau ${level} !`}</Lettering>
+                </Animated.View>
                 <View style={styles.items}>
                   {step.rewards.map((reward, index) => {
                     const item = rewardItem(reward);
@@ -227,15 +211,9 @@ export function CoffretHost() {
                   disabled={step.name === "claiming" || step.name === "refused"}
                   onOpen={() => void open()}
                 />
-                {IS_LIBRARY ? (
-                  <View accessibilityRole="header">
-                    <Lettering size={fontSizes.heading}>Un coffret pour toi</Lettering>
-                  </View>
-                ) : (
-                  <Text style={styles.title} accessibilityRole="header">
-                    Un coffret pour toi
-                  </Text>
-                )}
+                <View accessibilityRole="header">
+                  <Lettering size={fontSizes.heading}>Un coffret pour toi</Lettering>
+                </View>
                 {step.name === "refused" ? (
                   <Text style={styles.refused} accessibilityRole="alert">
                     {claimRefusalMessage(step.reason, level ?? 0)}
@@ -275,7 +253,7 @@ export function CoffretHost() {
 
 const BOX = 168;
 /** The light behind the closed coffret: gold where gold may shine. */
-const GLOW = IS_LIBRARY ? toyMatters.gold.top : colors.rubric;
+const GLOW = toyMatters.gold.top;
 const RAYS = Array.from({ length: 12 }, (_, k) => k * 30);
 
 /** The closed coffret, floating in its turning rays. */
@@ -335,7 +313,7 @@ function Box({
               key={angle}
               d={`M${c} ${c} L${c - 9} 0 L${c + 9} 0 Z`}
               fill={colors.action}
-              opacity={IS_LIBRARY ? 0.24 : 0.14}
+              opacity={0.24}
               transform={`rotate(${angle} ${c} ${c})`}
             />
           ))}
@@ -343,22 +321,17 @@ function Box({
         </Svg>
       </Animated.View>
       <Animated.View style={floating}>
-        {IS_LIBRARY ? (
-          <ToyBody matter="gold" large style={library.chest}>
-            <ToyIcon name="chest" size={84} />
-          </ToyBody>
-        ) : (
-          <Icon name="coffret" size={88} color={colors.rubric} />
-        )}
+        <ToyBody matter="gold" large style={styles.chest}>
+          <ToyIcon name="chest" size={84} />
+        </ToyBody>
       </Animated.View>
     </Pressable>
   );
 }
 
-/** A reward of the opened coffret: in « La Bibliothèque », on a slip of paper of its own. */
+/** A reward of the opened coffret, on a slip of paper of its own. */
 function Slip({ children }: { readonly children: ReactNode }) {
-  if (IS_LIBRARY) return <Leaf style={[styles.item, library.slip]}>{children}</Leaf>;
-  return <View style={styles.item}>{children}</View>;
+  return <Leaf style={[styles.item, styles.slip]}>{children}</Leaf>;
 }
 
 /** What a reward looks like: the sachet itself, the engraving, the frame; an icon otherwise. */
@@ -398,32 +371,31 @@ function RewardVisual({ reward }: { readonly reward: LevelRewardView }) {
   }
 }
 
-/** The rewards are read on paper in « La Bibliothèque ». */
+/** The rewards are read on paper. */
 const ink = paperColors;
 
 const styles = StyleSheet.create({
   backdrop: { ...StyleSheet.absoluteFill, backgroundColor: alpha(colors.scrim, 0.82) },
   center: { flex: 1, alignItems: "center", justifyContent: "center", paddingVertical: space.s24 },
-  card: {
-    maxHeight: "100%",
-    borderRadius: 28,
-    backgroundColor: colors.sheet,
-    borderWidth: 1,
-    borderColor: alpha(colors.gilt, 0.25),
+  // The coffret lies on the desk.
+  card: { maxHeight: "100%", borderRadius: room.desk.radius, backgroundColor: "transparent" },
+  inside: {
+    margin: room.desk.frameWidth,
+    borderRadius: room.desk.radius - room.desk.frameWidth,
   },
   inner: { alignItems: "center", gap: space.s6, padding: space.s12 },
   kicker: {
     fontFamily: fonts.ui.extrabold,
     fontSize: fontSizes.caption,
     letterSpacing: 2,
-    color: IS_LIBRARY ? lettering.kicker : colors.rubric,
+    color: lettering.kicker,
   },
   box: { width: BOX, height: BOX, alignItems: "center", justifyContent: "center" },
-  title: {
-    fontFamily: fonts.display,
-    fontSize: fontSizes.heading,
-    color: colors.pageInk,
-    textAlign: "center",
+  // The chest is a big toy of gold.
+  chest: {
+    width: 128,
+    height: 112,
+    boxShadow: `0 0 60px ${alpha(toyMatters.gold.top, 0.55)}`,
   },
   hint: { fontFamily: fonts.ui.medium, fontSize: fontSizes.body, color: colors.pageInkMuted },
   refused: {
@@ -434,9 +406,9 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   actions: { alignSelf: "stretch", gap: space.s3, marginTop: space.s3 },
-  levelUp: { fontFamily: fonts.display, fontSize: fontSizes.headingLarge, color: colors.rubric },
   items: { alignSelf: "stretch", gap: space.s6, marginTop: space.s2 },
   item: { flexDirection: "row", alignItems: "center", gap: space.s7 },
+  slip: { paddingHorizontal: space.s6, paddingVertical: space.s5 },
   itemText: { flex: 1, gap: space.s1 },
   itemTitle: {
     fontFamily: fonts.ui.extrabold,
@@ -506,19 +478,4 @@ const styles = StyleSheet.create({
     color: colors.pageInk,
     textAlign: "center",
   },
-});
-
-/** « La Bibliothèque »: the coffret lies on the desk, and the chest is a big toy of gold. */
-const library = StyleSheet.create({
-  card: { borderWidth: 0, borderRadius: room.desk.radius, backgroundColor: "transparent" },
-  inside: {
-    margin: room.desk.frameWidth,
-    borderRadius: room.desk.radius - room.desk.frameWidth,
-  },
-  chest: {
-    width: 128,
-    height: 112,
-    boxShadow: `0 0 60px ${alpha(toyMatters.gold.top, 0.55)}`,
-  },
-  slip: { paddingHorizontal: space.s6, paddingVertical: space.s5 },
 });

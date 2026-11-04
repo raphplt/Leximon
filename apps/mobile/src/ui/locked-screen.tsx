@@ -3,7 +3,7 @@ import { toy as toyValues } from "@leximon/tokens";
 import { router } from "expo-router";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
 import { TAB_BAR_RISE } from "@/shell/tab-bar";
-import { alpha, colors, fontSizes, fonts, IS_LIBRARY, paperColors, space } from "@/theme";
+import { fontSizes, fonts, paperColors, space } from "@/theme";
 import { Button } from "./button";
 import { Icon } from "./icon";
 import { XpBar } from "./level";
@@ -32,15 +32,9 @@ export function LockedScreen({
   return (
     <ScrollView contentContainerStyle={styles.page}>
       <Panel paper style={styles.panel}>
-        {IS_LIBRARY ? (
-          <ToyBody matter="gold" shape="round" large style={styles.medal}>
-            <Icon name={icon} size={38} color={toyValues.outline} />
-          </ToyBody>
-        ) : (
-          <View style={styles.icon}>
-            <Icon name={icon} size={38} color={colors.rubric} />
-          </View>
-        )}
+        <ToyBody matter="gold" shape="round" large style={styles.medal}>
+          <Icon name={icon} size={38} color={toyValues.outline} />
+        </ToyBody>
         {level !== undefined && <Text style={styles.kicker}>NIVEAU {level}</Text>}
         <Text style={styles.title} accessibilityRole="header">
           {title}
@@ -61,7 +55,7 @@ export function LockedScreen({
   );
 }
 
-/** The closed feature is told on a leaf of paper in « La Bibliothèque ». */
+/** The closed feature is told on a leaf of paper. */
 const ink = paperColors;
 
 const styles = StyleSheet.create({
@@ -73,15 +67,6 @@ const styles = StyleSheet.create({
     paddingBottom: TAB_BAR_RISE + 24,
   },
   panel: { alignItems: "center", paddingVertical: space.s16, gap: space.s5 },
-  icon: {
-    width: 76,
-    height: 76,
-    borderRadius: 38,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: alpha(ink.gilt, 0.14),
-    marginBottom: space.s3,
-  },
   medal: { width: 84, height: 84, marginBottom: space.s5 },
   kicker: {
     fontFamily: fonts.ui.extrabold,

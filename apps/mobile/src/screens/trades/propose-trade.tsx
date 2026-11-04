@@ -695,7 +695,7 @@ function StepActions({
   );
 }
 
-/** The offer is prepared on paper in « La Bibliothèque ». */
+/** The offer is prepared on paper. */
 const ink = paperColors;
 
 const styles = StyleSheet.create({

@@ -338,7 +338,7 @@ function EngravingCredit({ card }: { readonly card: CatalogCard }) {
   );
 }
 
-/** The facts are read on paper in « La Bibliothèque »: the same roles, in brown ink. */
+/** The facts are read on paper: the same roles, in brown ink. */
 const ink = paperColors;
 
 const styles = StyleSheet.create({

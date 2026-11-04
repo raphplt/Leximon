@@ -93,7 +93,7 @@ function measure(view: ViewInstance | null): Promise<Box | null> {
 }
 
 /**
- * The pieces of « La Bibliothèque », whatever the look of this build: the Jouer screen put
+ * The pieces of « La Bibliothèque »: the Jouer screen put
  * together, then each piece on its own, and the effects to set off by hand.
  */
 export function PlanchesScreen() {

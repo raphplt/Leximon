@@ -60,7 +60,7 @@ import { progress } from "@/player/state";
 import { askAlbumPractice } from "@/screens/challenges/pending-practice";
 import { openCard } from "@/screens/trades/card-row";
 import { TAB_BAR_RISE } from "@/shell/tab-bar";
-import { alpha, colors, fontSizes, fonts, IS_LIBRARY, paperColors, radii, space } from "@/theme";
+import { alpha, colors, fontSizes, fonts, paperColors, radii, space } from "@/theme";
 import { Button } from "@/ui/button";
 import { Icon } from "@/ui/icon";
 import { RarityChip, RarityName } from "@/ui/rarity-icon";
@@ -74,7 +74,7 @@ const STORED_COLLECTION = "leximon_album";
 const STORED_SORT = "leximon_album_sort";
 const COLUMNS = 3;
 /** Inside the desk, its frame already holds the cards off the edge: a narrower margin leaves them wider. */
-const GUTTER = IS_LIBRARY ? 10 : 16;
+const GUTTER = 10;
 const GAP = 12;
 const ROOM_MARGIN = 6;
 /** Under a card, its level or its rarity: every tile is as tall, so a letter knows its row. */
@@ -286,29 +286,23 @@ export function AlbumScreen({ friendCode }: { readonly friendCode: string | null
 
   // The search, the tabs and the filters stay in view; only the cards run under them.
   const header = (
-    <View style={[styles.header, IS_LIBRARY && library.header]}>
+    <View style={[styles.header, library.header]}>
       <View style={styles.titleRow}>
-        {IS_LIBRARY ? (
-          <View accessibilityRole="header">
-            <Lettering size={fontSizes.heading}>Album</Lettering>
-          </View>
-        ) : (
-          <Text style={styles.title} accessibilityRole="header">
-            Album
-          </Text>
-        )}
+        <View accessibilityRole="header">
+          <Lettering size={fontSizes.heading}>Album</Lettering>
+        </View>
         <Text style={styles.headline}>
           <Text style={styles.headlineStrong}>{view.headline.owned}</Text> mots sur{" "}
           {view.headline.total}
         </Text>
       </View>
       <View style={styles.searchRow}>
-        <View style={[styles.search, IS_LIBRARY && library.search]}>
+        <View style={[styles.search, library.search]}>
           <Icon name="search" size={18} color={SEARCH_MUTED} />
           <TextInput
-            style={[styles.searchInput, IS_LIBRARY && library.searchInput]}
+            style={[styles.searchInput, library.searchInput]}
             placeholder="Chercher un mot"
-            placeholderTextColor={IS_LIBRARY ? colors.paperInkMuted : colors.pageInkFaint}
+            placeholderTextColor={colors.paperInkMuted}
             selectionColor={colors.rubric}
             value={state.search}
             onChangeText={(search) => setState((s) => ({ ...s, search }))}
@@ -335,16 +329,10 @@ export function AlbumScreen({ friendCode }: { readonly friendCode: string | null
             style={[
               styles.filtersButton,
               filtersOn > 0 && styles.chipOn,
-              IS_LIBRARY && toyFace(filtersOn > 0 ? "gold" : "paper"),
+              toyFace(filtersOn > 0 ? "gold" : "paper"),
             ]}
           >
-            <Text
-              style={[
-                styles.chipText,
-                IS_LIBRARY && library.paperInk,
-                filtersOn > 0 && styles.chipTextOn,
-              ]}
-            >
+            <Text style={[styles.chipText, library.paperInk, filtersOn > 0 && styles.chipTextOn]}>
               {ALBUM_FILTER_TEXTS.button}
             </Text>
             {filtersOn > 0 && <Text style={styles.filtersCount}>{filtersOn}</Text>}
@@ -364,22 +352,16 @@ export function AlbumScreen({ friendCode }: { readonly friendCode: string | null
               style={[
                 styles.tab,
                 selected && styles.tabOn,
-                IS_LIBRARY && [
-                  library.tab,
-                  library.tabCell,
-                  toyFace(selected ? "gold" : "paper", "tile"),
-                ],
+                library.tab,
+                library.tabCell,
+                toyFace(selected ? "gold" : "paper", "tile"),
               ]}
             >
               <View style={styles.tabHead}>
-                <Text style={[styles.tabName, IS_LIBRARY && library.tabName]}>
-                  {shortName(tab.name)}
-                </Text>
-                <Text style={[styles.tabCount, IS_LIBRARY && library.paperInkMuted]}>
-                  {tab.count}
-                </Text>
+                <Text style={[styles.tabName, library.tabName]}>{shortName(tab.name)}</Text>
+                <Text style={[styles.tabCount, library.paperInkMuted]}>{tab.count}</Text>
               </View>
-              <View style={[styles.tabTrack, IS_LIBRARY && library.tabTrack]}>
+              <View style={[styles.tabTrack, library.tabTrack]}>
                 <View
                   style={[
                     styles.tabFill,
@@ -467,7 +449,7 @@ export function AlbumScreen({ friendCode }: { readonly friendCode: string | null
             <Tile item={item} width={cardWidth} height={tileHeight} onOpen={openOwned} />
           )}
           columnWrapperStyle={styles.gridRow}
-          contentContainerStyle={[styles.grid, styles.gridLettered, IS_LIBRARY && library.grid]}
+          contentContainerStyle={[styles.grid, styles.gridLettered, library.grid]}
           keyboardShouldPersistTaps="handled"
           keyboardDismissMode="on-drag"
           initialNumToRender={9}
@@ -482,17 +464,13 @@ export function AlbumScreen({ friendCode }: { readonly friendCode: string | null
 
   return (
     <>
-      {IS_LIBRARY ? (
-        <View style={library.room}>
-          {/* The desk runs on under the tabs: its foot is never seen, and the cards keep the room. */}
-          <View style={library.deskClip}>
-            <Desk style={library.desk} />
-          </View>
-          <View style={library.inside}>{album}</View>
+      <View style={library.room}>
+        {/* The desk runs on under the tabs: its foot is never seen, and the cards keep the room. */}
+        <View style={library.deskClip}>
+          <Desk style={library.desk} />
         </View>
-      ) : (
-        <View style={styles.page}>{album}</View>
-      )}
+        <View style={library.inside}>{album}</View>
+      </View>
       <Sheet open={filtering} title={ALBUM_FILTER_TEXTS.button} onClose={() => setFiltering(false)}>
         {!comparing && (
           <FilterGroup title={ALBUM_SORT_TITLE}>
@@ -686,16 +664,10 @@ function RarityFilter({
       accessibilityRole="button"
       accessibilityState={{ selected: on }}
       accessibilityLabel={label}
-      style={[
-        styles.chip,
-        on && styles.chipOn,
-        IS_LIBRARY && toyFace(on ? "gold" : "paper", "tag"),
-      ]}
+      style={[styles.chip, on && styles.chipOn, toyFace(on ? "gold" : "paper", "tag")]}
     >
       <RarityChip rarity={rarity} size={24} />
-      <Text style={[styles.chipText, IS_LIBRARY && library.paperInk, on && styles.chipTextOn]}>
-        {count}
-      </Text>
+      <Text style={[styles.chipText, library.paperInk, on && styles.chipTextOn]}>{count}</Text>
     </Pressable>
   );
 }
@@ -723,14 +695,14 @@ function FilterChip({
         styles.chip,
         muted && styles.chipMuted,
         on && styles.chipOn,
-        IS_LIBRARY && toyFace(on ? "gold" : "paper", "tag"),
+        toyFace(on ? "gold" : "paper", "tag"),
       ]}
     >
       <Text
         style={[
           styles.chipText,
           muted && styles.chipTextMuted,
-          IS_LIBRARY && library.paperInk,
+          library.paperInk,
           on && styles.chipTextOn,
         ]}
       >
@@ -806,27 +778,12 @@ function LetterBar({
   );
 }
 
-/**
- * The collection tabs: in « La Bibliothèque », all in view on rows of two; elsewhere, a row that
- * scrolls aside.
- */
+/** The collection tabs, all in view on rows of two. */
 function TabRow({ dimmed, children }: { readonly dimmed: boolean; readonly children: ReactNode }) {
-  if (IS_LIBRARY)
-    return (
-      <View style={[library.tabGrid, dimmed && styles.dimmed]} accessibilityRole="tablist">
-        {children}
-      </View>
-    );
   return (
-    <ScrollView
-      horizontal
-      showsHorizontalScrollIndicator={false}
-      contentContainerStyle={styles.row}
-      style={[styles.bleed, dimmed && styles.dimmed]}
-      accessibilityRole="tablist"
-    >
+    <View style={[library.tabGrid, dimmed && styles.dimmed]} accessibilityRole="tablist">
       {children}
-    </ScrollView>
+    </View>
   );
 }
 
@@ -843,7 +800,6 @@ const styles = StyleSheet.create({
     fontSize: fontSizes.bodyLarge,
     color: colors.pageInkMuted,
   },
-  page: { flex: 1 },
   header: {
     gap: space.s6,
     paddingTop: space.s4,
@@ -870,7 +826,6 @@ const styles = StyleSheet.create({
   letterOff: { opacity: 0.3 },
   letterOn: { color: colors.gilt },
   titleRow: { flexDirection: "row", alignItems: "baseline", justifyContent: "space-between" },
-  title: { fontFamily: fonts.display, fontSize: fontSizes.heading, color: colors.pageInk },
   headline: {
     fontFamily: fonts.ui.semibold,
     fontSize: fontSizes.label,
@@ -1054,11 +1009,11 @@ const styles = StyleSheet.create({
 const DESK_RING = 12;
 
 /** How far the desk's frame takes the cards in from the screen's edges. */
-const LIBRARY_INSET = IS_LIBRARY ? ROOM_MARGIN + room.desk.frameWidth : 0;
+const LIBRARY_INSET = ROOM_MARGIN + room.desk.frameWidth;
 
-const SEARCH_MUTED = IS_LIBRARY ? colors.paperInkMuted : colors.pageInkMuted;
+const SEARCH_MUTED = colors.paperInkMuted;
 
-/** « La Bibliothèque »: the cards on the desk, the tabs and the search cut from paper. */
+/** The cards on the desk, the tabs and the search cut from paper. */
 const library = StyleSheet.create({
   room: { flex: 1, marginHorizontal: ROOM_MARGIN },
   // Wide enough for the frame's outline and shadow on three sides, cut at the foot.

@@ -13,7 +13,7 @@ import { Pressable, StyleSheet, Text, useWindowDimensions, View } from "react-na
 import { useNow, useSharedFailed } from "@/player/shared";
 import { profile } from "@/player/state";
 import { useProfileActions } from "@/profile/profile-actions";
-import { colors, fontSizes, fonts, IS_LIBRARY, paperColors, radii, space } from "@/theme";
+import { colors, fontSizes, fonts, paperColors, radii, space } from "@/theme";
 import { Avatar } from "@/ui/avatar";
 import { Button } from "@/ui/button";
 import { Icon } from "@/ui/icon";
@@ -92,10 +92,8 @@ export function AtelierScreen() {
                   styles.item,
                   { width: itemWidth },
                   item.state === "worn" && styles.itemWorn,
-                  IS_LIBRARY && [
-                    styles.toy,
-                    toyFace(item.state === "worn" ? "gold" : "paper", "tile"),
-                  ],
+                  styles.toy,
+                  toyFace(item.state === "worn" ? "gold" : "paper", "tile"),
                   pressed && styles.pressed,
                 ]}
               >
@@ -155,9 +153,9 @@ function Preview({
   );
 }
 
-/** Each piece is a paper tile in « La Bibliothèque », the one worn is gold. */
+/** Each piece is a paper tile, the one worn is gold. */
 const ink = paperColors;
-const wornInk = IS_LIBRARY ? toyValues.outline : colors.success;
+const wornInk = toyValues.outline;
 
 const styles = StyleSheet.create({
   head: { flexDirection: "row", alignItems: "center", gap: space.s7, marginTop: -6 },

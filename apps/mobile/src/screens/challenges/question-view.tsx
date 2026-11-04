@@ -62,10 +62,9 @@ import { wordMemory } from "@/player/collection";
 import { useShared } from "@/player/shared";
 import { openCard } from "@/screens/trades/card-row";
 import { TAB_BAR_RISE } from "@/shell/tab-bar";
-import { alpha, colors, fontSizes, fonts, IS_LIBRARY, paperColors, radii, space } from "@/theme";
+import { alpha, colors, fontSizes, fonts, paperColors, radii, space } from "@/theme";
 import { Button } from "@/ui/button";
 import { Icon } from "@/ui/icon";
-import { Panel } from "@/ui/panel";
 import { useOptionalStage } from "@/ui/stage";
 import { TextButton } from "@/ui/text-button";
 import { Leaf, Lettering, Toy, toyFace } from "@/ui/toy";
@@ -73,7 +72,7 @@ import type { Session, Step } from "./session";
 
 type ChoiceState = "idle" | "pending" | "right" | "wrong" | "faded";
 
-/** In « La Bibliothèque », each answer is a tile of paper, of green or red leather once judged. */
+/** Each answer is a tile of paper, of green or red leather once judged. */
 const CHOICE_MATTERS: Readonly<Record<ChoiceState, ToyMatterName>> = {
   idle: "paper",
   pending: "paper",
@@ -82,7 +81,7 @@ const CHOICE_MATTERS: Readonly<Record<ChoiceState, ToyMatterName>> = {
   faded: "paper",
 };
 
-/** The prompt, the answers and the verdict are read on paper in « La Bibliothèque ». */
+/** The prompt, the answers and the verdict are read on paper. */
 const ink = paperColors;
 
 function choiceState(choiceId: string, answerId: string, step: Step): ChoiceState {
@@ -146,31 +145,16 @@ function HeardPrompt({ card, shown }: { readonly card: CatalogCard; readonly sho
         </Text>
       )}
       <View style={styles.heard}>
-        {IS_LIBRARY ? (
-          <Toy
-            matter="gold"
-            shape="round"
-            style={styles.heardButton}
-            accessibilityRole="button"
-            accessibilityLabel="Réécouter le mot"
-            onPress={word.play}
-          >
-            <Icon name="sound" size={34} color={toyValues.outline} />
-          </Toy>
-        ) : (
-          <Pressable
-            onPress={word.play}
-            accessibilityRole="button"
-            accessibilityLabel="Réécouter le mot"
-            style={({ pressed }) => [
-              styles.heardButton,
-              styles.heardClassic,
-              pressed && styles.choicePressed,
-            ]}
-          >
-            <Icon name="sound" size={34} color={colors.actionInk} />
-          </Pressable>
-        )}
+        <Toy
+          matter="gold"
+          shape="round"
+          style={styles.heardButton}
+          accessibilityRole="button"
+          accessibilityLabel="Réécouter le mot"
+          onPress={word.play}
+        >
+          <Icon name="sound" size={34} color={toyValues.outline} />
+        </Toy>
       </View>
     </>
   );
@@ -205,7 +189,7 @@ function Meeting({
       <Button label={MEET_ACTION} onPress={onMeet} />
     </>
   );
-  return IS_LIBRARY ? <Leaf style={library.prompt}>{content}</Leaf> : <Panel>{content}</Panel>;
+  return <Leaf style={library.prompt}>{content}</Leaf>;
 }
 
 /** One question of a series: the prompt, the choices or the field, then what the answer did. */
@@ -294,7 +278,7 @@ export function QuestionView({
   const page = (
     <ScrollView
       ref={scroll}
-      contentContainerStyle={[styles.page, IS_LIBRARY && library.page]}
+      contentContainerStyle={[styles.page, library.page]}
       keyboardShouldPersistTaps="handled"
     >
       <View style={styles.top}>
@@ -302,9 +286,9 @@ export function QuestionView({
           onPress={onQuit}
           accessibilityRole="button"
           accessibilityLabel="Arrêter le défi"
-          style={[styles.round, IS_LIBRARY && [library.round, toyFace("paper", "round")]]}
+          style={[styles.round, library.round, toyFace("paper", "round")]}
         >
-          <Icon name="close" size={20} color={IS_LIBRARY ? ink.pageInk : colors.pageInk} />
+          <Icon name="close" size={20} color={ink.pageInk} />
         </Pressable>
         <View style={styles.dots} importantForAccessibility="no-hide-descendants">
           {session.questions.map((q, index) => {
@@ -324,8 +308,8 @@ export function QuestionView({
                 key={index}
                 style={[
                   styles.dot,
-                  IS_LIBRARY && library.dot,
-                  q.catchUp && (IS_LIBRARY ? library.catchUpDot : styles.catchUpDot),
+                  library.dot,
+                  q.catchUp && library.catchUpDot,
                   { backgroundColor: tone },
                 ]}
               />
@@ -333,13 +317,7 @@ export function QuestionView({
           })}
         </View>
         <View>
-          {IS_LIBRARY ? (
-            <Lettering size={17}>{`${session.index + 1}/${total}`}</Lettering>
-          ) : (
-            <Text style={styles.position}>
-              {session.index + 1}/{total}
-            </Text>
-          )}
+          <Lettering size={17}>{`${session.index + 1}/${total}`}</Lettering>
           {result?.correct && result.progress.xpGained > 0 && (
             <XpFloat key={session.answers.length} xp={result.progress.xpGained} />
           )}
@@ -348,10 +326,8 @@ export function QuestionView({
 
       {step.name === "meeting" ? (
         <Meeting key={question.cardId} catalog={catalog} card={card} onMeet={onMeet} />
-      ) : IS_LIBRARY ? (
-        <Leaf style={library.prompt}>{prompt}</Leaf>
       ) : (
-        <Panel>{prompt}</Panel>
+        <Leaf style={library.prompt}>{prompt}</Leaf>
       )}
 
       {step.name === "meeting" ? null : question.format === "typed" ? (
@@ -396,25 +372,21 @@ export function QuestionView({
                     styles.choice,
                     choiceStyles[state],
                     pressed && styles.choicePressed,
-                    IS_LIBRARY && [
-                      library.choice,
-                      toyFace(CHOICE_MATTERS[state], "tile"),
-                      state === "pending" && library.pending,
-                      state === "faded" && library.faded,
-                      pressed && library.pressed,
-                    ],
+                    library.choice,
+                    toyFace(CHOICE_MATTERS[state], "tile"),
+                    state === "pending" && library.pending,
+                    state === "faded" && library.faded,
+                    pressed && library.pressed,
                   ]}
                 >
-                  {IS_LIBRARY && (
-                    <View style={[library.disc, toyFace("gold", "round")]}>
-                      <Lettering size={15}>{String.fromCharCode(97 + index)}</Lettering>
-                    </View>
-                  )}
+                  <View style={[library.disc, toyFace("gold", "round")]}>
+                    <Lettering size={15}>{String.fromCharCode(97 + index)}</Lettering>
+                  </View>
                   <Text
                     style={[
                       asksDefinition ? styles.choiceDefinition : styles.choiceWord,
-                      IS_LIBRARY && library.choiceText,
-                      IS_LIBRARY && judged && library.onLeather,
+                      library.choiceText,
+                      judged && library.onLeather,
                     ]}
                   >
                     {asksDefinition ? choice.definition : choice.word}
@@ -437,32 +409,31 @@ export function QuestionView({
           style={[
             styles.feedback,
             result.correct ? styles.good : pairs ? styles.even : styles.bad,
-            IS_LIBRARY && library.feedback,
+            library.feedback,
           ]}
           accessibilityLiveRegion="polite"
         >
-          {IS_LIBRARY && (
-            <Animated.View
-              entering={stampIn(result.correct ? -10 : 8)}
-              style={[
-                library.verdict,
-                toyFace(verdictMatter, "round"),
-                { transform: [{ rotate: `${result.correct ? -10 : 8}deg` }] },
-              ]}
-            >
-              <Icon
-                name={result.correct || pairs ? "check" : "close"}
-                size={24}
-                color={colors.inkOnColor}
-              />
-            </Animated.View>
-          )}
+          <Animated.View
+            entering={stampIn(result.correct ? -10 : 8)}
+            style={[
+              library.verdict,
+              toyFace(verdictMatter, "round"),
+              { transform: [{ rotate: `${result.correct ? -10 : 8}deg` }] },
+            ]}
+          >
+            <Icon
+              name={result.correct || pairs ? "check" : "close"}
+              size={24}
+              color={colors.inkOnColor}
+            />
+          </Animated.View>
           <View style={styles.verdictRow}>
             <View style={styles.verdictLines}>
               <Text
                 style={[
                   styles.feedbackTitle,
-                  IS_LIBRARY && [library.verdictTitle, { color: toyMatters[verdictMatter].edge }],
+                  library.verdictTitle,
+                  { color: toyMatters[verdictMatter].edge },
                 ]}
               >
                 {pairs && !result.correct
@@ -521,15 +492,11 @@ export function QuestionView({
 
   return (
     <KeyboardAvoidingView style={styles.screen} behavior="padding">
-      {IS_LIBRARY ? (
-        <View style={library.room}>
-          <Desk style={StyleSheet.absoluteFill} />
-          {/* The questions slide under the frame, not over it. */}
-          <View style={library.inside}>{page}</View>
-        </View>
-      ) : (
-        page
-      )}
+      <View style={library.room}>
+        <Desk style={StyleSheet.absoluteFill} />
+        {/* The questions slide under the frame, not over it. */}
+        <View style={library.inside}>{page}</View>
+      </View>
     </KeyboardAvoidingView>
   );
 }
@@ -613,12 +580,11 @@ function TypedAnswer({
           styles.typedField,
           correct === true && styles.typedRight,
           correct === false && styles.typedWrong,
-          IS_LIBRARY && library.typedField,
-          IS_LIBRARY &&
-            correct !== null && [
-              library.onLeather,
-              correct ? library.typedRight : library.typedWrong,
-            ],
+          library.typedField,
+          correct !== null && [
+            library.onLeather,
+            correct ? library.typedRight : library.typedWrong,
+          ],
         ]}
         value={step.name === "answered" ? step.chosen : typed}
         onChangeText={setTyped}
@@ -669,12 +635,7 @@ function LettersAnswer({
       <View
         style={[
           styles.slots,
-          judged &&
-            (IS_LIBRARY
-              ? [library.slotsJudged, correct ? library.typedRight : library.typedWrong]
-              : correct
-                ? choiceStyles.right
-                : choiceStyles.wrong),
+          judged && [library.slotsJudged, correct ? library.typedRight : library.typedWrong],
         ]}
       >
         {Array.from({ length: slots }, (_, slot) => {
@@ -688,15 +649,9 @@ function LettersAnswer({
               onPress={() => setState((current) => takeBackFrom(current, slot))}
               accessibilityRole="button"
               accessibilityLabel={letter === "" ? `Case ${slot + 1}, vide` : `Retirer ${letter}`}
-              style={[
-                styles.slot,
-                judged && styles.slotJudged,
-                IS_LIBRARY && judged && library.slotOnLeather,
-              ]}
+              style={[styles.slot, judged && styles.slotJudged, judged && library.slotOnLeather]}
             >
-              <Text style={[styles.letter, IS_LIBRARY && judged && library.onLeather]}>
-                {letter}
-              </Text>
+              <Text style={[styles.letter, judged && library.onLeather]}>{letter}</Text>
             </Pressable>
           );
         })}
@@ -715,7 +670,9 @@ function LettersAnswer({
               style={({ pressed }) => [
                 styles.tile,
                 pressed && styles.choicePressed,
-                IS_LIBRARY && [library.tile, toyFace("paper", "tile"), pressed && library.pressed],
+                library.tile,
+                toyFace("paper", "tile"),
+                pressed && library.pressed,
                 placed && styles.tilePlaced,
               ]}
             >
@@ -797,18 +754,16 @@ function PairsRound({
                     styles.pair,
                     choiceStyles[tone],
                     pressed && styles.choicePressed,
-                    IS_LIBRARY && [
-                      library.pair,
-                      toyFace(CHOICE_MATTERS[tone], "tile"),
-                      tone === "pending" && library.pending,
-                      pressed && library.pressed,
-                    ],
+                    library.pair,
+                    toyFace(CHOICE_MATTERS[tone], "tile"),
+                    tone === "pending" && library.pending,
+                    pressed && library.pressed,
                   ]}
                 >
                   <Text
                     style={[
                       side === "word" ? styles.pairWord : styles.pairDefinition,
-                      IS_LIBRARY && judged && library.onLeather,
+                      judged && library.onLeather,
                     ]}
                   >
                     {side === "word" ? card.word : hideWordIn(card.definition, card.word)}
@@ -858,8 +813,6 @@ const styles = StyleSheet.create({
     gap: space.s2,
   },
   dot: { width: 10, height: 10, borderRadius: 5 },
-  catchUpDot: { width: 6, height: 6, borderRadius: 3 },
-  position: { fontFamily: fonts.ui.bold, fontSize: fontSizes.label, color: colors.pageInkMuted },
   kicker: {
     fontFamily: fonts.ui.extrabold,
     fontSize: fontSizes.caption,
@@ -985,12 +938,6 @@ const styles = StyleSheet.create({
   },
   heard: { alignItems: "center", marginTop: space.s4 },
   heardButton: { width: 88, height: 88 },
-  heardClassic: {
-    borderRadius: 44,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: colors.action,
-  },
   error: {
     fontFamily: fonts.ui.bold,
     fontSize: fontSizes.body,
@@ -1045,16 +992,14 @@ function leather(matter: "green" | "red") {
   };
 }
 
-const DOTS = IS_LIBRARY
-  ? {
-      right: toyMatters.green.top,
-      wrong: toyMatters.red.top,
-      current: toyMatters.paper.top,
-      waiting: toyMatters.dark.bottom,
-    }
-  : { right: colors.success, wrong: colors.danger, current: colors.rubric, waiting: colors.track };
+const DOTS = {
+  right: toyMatters.green.top,
+  wrong: toyMatters.red.top,
+  current: toyMatters.paper.top,
+  waiting: toyMatters.dark.bottom,
+};
 
-/** « La Bibliothèque »: the questions asked on the desk, the answers as tiles of paper. */
+/** The questions asked on the desk, the answers as tiles of paper. */
 const library = StyleSheet.create({
   room: { flex: 1, marginHorizontal: 6, marginBottom: TAB_BAR_RISE },
   inside: {

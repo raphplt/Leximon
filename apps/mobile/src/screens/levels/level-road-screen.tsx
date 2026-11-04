@@ -16,7 +16,7 @@ import { openCoffret } from "@/levels/coffret";
 import { REWARD_ICONS } from "@/levels/reward-icons";
 import { useNow, useShared, useSharedFailed } from "@/player/shared";
 import { levelRewards, progress as progressResource } from "@/player/state";
-import { alpha, colors, fontSizes, fonts, IS_LIBRARY, paperColors, radii, space } from "@/theme";
+import { alpha, colors, fontSizes, fonts, paperColors, radii, space } from "@/theme";
 import { Button } from "@/ui/button";
 import { Icon } from "@/ui/icon";
 import { LevelMedal, XpBar } from "@/ui/level";
@@ -174,32 +174,19 @@ function Turn({
   readonly disabled: boolean;
   readonly onPress: () => void;
 }) {
-  const glyph = <Icon name={icon} size={18} color={ink.pageInk} />;
-  if (IS_LIBRARY)
-    return (
-      <Toy
-        matter="paper"
-        shape="round"
-        style={styles.turnToy}
-        bodyStyle={styles.turnBody}
-        disabled={disabled}
-        onPress={onPress}
-        accessibilityRole="button"
-        accessibilityLabel={label}
-      >
-        {glyph}
-      </Toy>
-    );
   return (
-    <Pressable
-      style={[styles.turn, disabled && styles.dim]}
+    <Toy
+      matter="paper"
+      shape="round"
+      style={styles.turnToy}
+      bodyStyle={styles.turnBody}
       disabled={disabled}
       onPress={onPress}
       accessibilityRole="button"
       accessibilityLabel={label}
     >
-      {glyph}
-    </Pressable>
+      <Icon name={icon} size={18} color={ink.pageInk} />
+    </Toy>
   );
 }
 
@@ -315,7 +302,7 @@ function Quarters({
   );
 }
 
-/** Every panel of the screen is a leaf of paper in « La Bibliothèque ». */
+/** Every panel of the screen is a leaf of paper. */
 const ink = paperColors;
 
 const styles = StyleSheet.create({
@@ -329,18 +316,8 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: ink.rule,
   },
-  turn: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: ink.rule,
-    alignItems: "center",
-    justifyContent: "center",
-  },
   turnToy: { width: 40, height: 40 },
   turnBody: { alignItems: "center", justifyContent: "center" },
-  dim: { opacity: 0.35 },
   quarterName: { flex: 1, alignItems: "center" },
   quarterRange: {
     fontFamily: fonts.ui.extrabold,

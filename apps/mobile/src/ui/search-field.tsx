@@ -1,8 +1,7 @@
 import { toyMatters, toy as toyValues } from "@leximon/tokens";
 import { StyleSheet, TextInput, View } from "react-native";
-import { fontSizes, fonts, IS_LIBRARY, paperColors, space } from "@/theme";
+import { fontSizes, fonts, paperColors, space } from "@/theme";
 import { Icon } from "./icon";
-import { useInk } from "./ink";
 
 /** A field to search a list by its first letters, a magnifier before it. */
 export function SearchField({
@@ -20,18 +19,8 @@ export function SearchField({
   /** A smaller field, inside a panel. */
   readonly compact?: boolean;
 }) {
-  const room = useInk();
-  // In « La Bibliothèque » the field is cut into paper, wherever it lies.
-  const ink = IS_LIBRARY ? paperColors : room;
   return (
-    <View
-      style={[
-        styles.field,
-        compact && styles.compact,
-        { backgroundColor: ink.well },
-        IS_LIBRARY && styles.paper,
-      ]}
-    >
+    <View style={[styles.field, compact && styles.compact, styles.paper]}>
       <Icon name="search" size={compact ? 17 : 18} color={ink.pageInkMuted} />
       <TextInput
         style={[styles.input, compact && styles.inputCompact, { color: ink.pageInk }]}
@@ -48,6 +37,9 @@ export function SearchField({
     </View>
   );
 }
+
+/** The field is cut into paper, wherever it lies. */
+const ink = paperColors;
 
 const styles = StyleSheet.create({
   field: {

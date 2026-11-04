@@ -32,7 +32,7 @@ import { api } from "@/api/client";
 import { refusalText } from "@/clan/act";
 import { useShared } from "@/player/shared";
 import { sanctions } from "@/player/state";
-import { colors, fontSizes, fonts, IS_LIBRARY, paperColors, radii, space } from "@/theme";
+import { fontSizes, fonts, paperColors, radii, space } from "@/theme";
 import { Avatar } from "@/ui/avatar";
 import { Button } from "@/ui/button";
 import { Icon } from "@/ui/icon";
@@ -236,9 +236,8 @@ export function ClanChat({
     sanctioned ??
     (clanMuted && mutedUntil !== null ? mutedUntilLabel(mutedUntil, now) : null);
 
-  const Ground = IS_LIBRARY ? Leaf : View;
   return (
-    <Ground style={[styles.chat, IS_LIBRARY && styles.leaf]}>
+    <Leaf style={styles.chat}>
       <ScrollView
         ref={scroller}
         style={styles.thread}
@@ -301,7 +300,7 @@ export function ClanChat({
           </Text>
         )}
         {mention.suggestions.length > 0 && (
-          <View style={[styles.mentions, IS_LIBRARY && styles.mentionsPaper]}>
+          <View style={styles.mentions}>
             {mention.suggestions.map((member) => (
               <Pressable
                 key={member.player.code}
@@ -317,7 +316,7 @@ export function ClanChat({
         )}
         <View style={styles.composeRow}>
           <TextInput
-            style={[styles.field, IS_LIBRARY && styles.fieldPaper]}
+            style={styles.field}
             maxLength={500}
             placeholder={MESSAGE_PLACEHOLDER}
             placeholderTextColor={ink.pageInkFaint}
@@ -354,14 +353,14 @@ export function ClanChat({
             disabled={muted || sending || draft.trim() === ""}
             style={({ pressed }) => [
               styles.send,
-              IS_LIBRARY && toyFace("gold", "round"),
+              toyFace("gold", "round"),
               (muted || sending || draft.trim() === "") && styles.sendOff,
               pressed && styles.sendPressed,
             ]}
             accessibilityRole="button"
             accessibilityLabel="Envoyer"
           >
-            <Icon name="send" size={20} color={IS_LIBRARY ? toyValues.outline : colors.actionInk} />
+            <Icon name="send" size={20} color={toyValues.outline} />
           </Pressable>
         </View>
       </View>
@@ -385,7 +384,7 @@ export function ClanChat({
           <Button label="Effacer" secondary onPress={() => void remove(menu)} />
         )}
       </Sheet>
-    </Ground>
+    </Leaf>
   );
 }
 
@@ -417,7 +416,7 @@ function MessageRow({
             style={[
               styles.bubble,
               message.mine && styles.bubbleMine,
-              IS_LIBRARY && (message.mine ? styles.bubbleGold : styles.bubblePaper),
+              message.mine ? styles.bubbleGold : styles.bubblePaper,
             ]}
           >
             {messageSegments(message.body, message.mentions).map((segment, index) =>
@@ -495,12 +494,11 @@ function useMentions(clanId: string, onInsert: (text: string, caret: number) => 
   return { suggestions, update, pick, close };
 }
 
-/** The thread lies on a leaf of paper in « La Bibliothèque ». */
+/** The thread lies on a leaf of paper. */
 const ink = paperColors;
 
 const styles = StyleSheet.create({
-  chat: { flex: 1 },
-  leaf: { marginHorizontal: space.s6, marginTop: space.s2, marginBottom: space.s6 },
+  chat: { flex: 1, marginHorizontal: space.s6, marginTop: space.s2, marginBottom: space.s6 },
   thread: { flex: 1 },
   threadContent: { gap: space.s6, paddingHorizontal: space.s8, paddingVertical: space.s6 },
   older: { alignSelf: "center", paddingVertical: space.s3 },
@@ -572,7 +570,7 @@ const styles = StyleSheet.create({
     fontSize: fontSizes.body,
     color: ink.pageInkFaint,
   },
-  mention: { fontFamily: fonts.ui.extrabold, color: IS_LIBRARY ? ink.rubric : colors.mentionInk },
+  mention: { fontFamily: fonts.ui.extrabold, color: ink.rubric },
   mentionMe: { fontFamily: fonts.ui.extrabold, color: ink.rubric },
   dots: { paddingBottom: space.s4 },
   compose: {
@@ -582,11 +580,11 @@ const styles = StyleSheet.create({
     paddingBottom: space.s5,
     borderTopWidth: 1,
     borderTopColor: ink.track,
-    backgroundColor: IS_LIBRARY ? "transparent" : colors.page,
+    backgroundColor: "transparent",
   },
   composeError: { fontFamily: fonts.ui.bold, fontSize: fontSizes.label, color: ink.danger },
-  mentions: { borderRadius: radii.xl, backgroundColor: colors.sheet, overflow: "hidden" },
-  mentionsPaper: {
+  mentions: {
+    overflow: "hidden",
     borderWidth: toyValues.outlineWidth,
     borderColor: toyValues.outline,
     borderRadius: 14,
@@ -608,11 +606,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: space.s8,
     paddingTop: space.s6,
     paddingBottom: space.s6,
-    borderRadius: 23,
-    backgroundColor: ink.well,
     color: ink.pageInk,
     fontFamily: fonts.ui.medium,
     fontSize: fontSizes.bodyLarge,
+    borderWidth: toyValues.outlineWidth,
+    borderColor: toyValues.outline,
+    borderRadius: 14,
+    backgroundColor: ink.paper,
+    boxShadow: `inset 0 3px 0 ${toyMatters.paper.bottom}`,
   },
   send: {
     width: 46,
@@ -621,13 +622,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     backgroundColor: ink.action,
-  },
-  fieldPaper: {
-    borderWidth: toyValues.outlineWidth,
-    borderColor: toyValues.outline,
-    borderRadius: 14,
-    backgroundColor: ink.paper,
-    boxShadow: `inset 0 3px 0 ${toyMatters.paper.bottom}`,
   },
   sendOff: { opacity: 0.4 },
   sendPressed: { opacity: 0.8 },

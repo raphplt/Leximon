@@ -1,9 +1,9 @@
 import { toy as toyValues } from "@leximon/tokens";
 import { Pressable, StyleSheet, Text, View } from "react-native";
-import { alpha, colors, fontSizes, fonts, IS_LIBRARY, paperColors, radii, space } from "@/theme";
+import { alpha, colors, fontSizes, fonts, paperColors, radii, space } from "@/theme";
 import { toyFace } from "./toy";
 
-/** A row of tabs inside one pill: one choice among a few views of a screen. */
+/** A row of tabs, each a toy of paper, the one chosen in gold: one choice among a few views. */
 export function Segmented<T extends string>({
   options,
   value,
@@ -16,11 +16,9 @@ export function Segmented<T extends string>({
   /** A smaller row without its pill, for a navigation above another one. */
   readonly light?: boolean;
 }) {
-  // In « La Bibliothèque », each tab is a toy of paper, the one chosen in gold.
-  const toys = IS_LIBRARY;
   return (
     <View
-      style={[styles.row, light && styles.rowLight, toys && styles.rowToys]}
+      style={[styles.row, light && styles.rowLight, styles.rowToys]}
       accessibilityRole="tablist"
     >
       {options.map((option) => {
@@ -35,7 +33,8 @@ export function Segmented<T extends string>({
               styles.tab,
               light && styles.tabLight,
               selected && (light ? styles.tabOnLight : styles.tabOn),
-              toys && [styles.toy, toyFace(selected ? "gold" : "paper")],
+              styles.toy,
+              toyFace(selected ? "gold" : "paper"),
             ]}
           >
             <Text
@@ -43,7 +42,7 @@ export function Segmented<T extends string>({
                 styles.label,
                 light && styles.labelLight,
                 selected && (light ? styles.labelOnLight : styles.labelOn),
-                toys && (selected ? styles.labelGold : styles.labelPaper),
+                selected ? styles.labelGold : styles.labelPaper,
               ]}
               numberOfLines={1}
             >

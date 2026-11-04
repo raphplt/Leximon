@@ -34,7 +34,7 @@ import {
 import { useNow } from "@/player/shared";
 import { publishProgress } from "@/player/state";
 import { openCard } from "@/screens/trades/card-row";
-import { alpha, fontSizes, fonts, IS_LIBRARY, paperColors, radii, space } from "@/theme";
+import { alpha, fontSizes, fonts, paperColors, radii, space } from "@/theme";
 import { Button } from "@/ui/button";
 import { FormError, Page, Paragraph } from "@/ui/page";
 import { Panel } from "@/ui/panel";
@@ -161,7 +161,7 @@ function Riddle({
           accessibilityLabel={`Mot de ${riddle.letters} lettres`}
         >
           {riddleCells(riddle).map((letter, index) => {
-            const tile = IS_LIBRARY && (letter === "" ? library.hollow : library.found);
+            const tile = letter === "" ? inPaper.hollow : inPaper.found;
             return (
               // biome-ignore lint/suspicious/noArrayIndexKey: a letter's place is its identity
               <View key={index} style={[styles.cell, tile]}>
@@ -181,7 +181,7 @@ function Riddle({
       {playing ? (
         <Panel paper style={styles.panel}>
           <TextInput
-            style={[styles.field, IS_LIBRARY && library.field]}
+            style={[styles.field, inPaper.field]}
             value={typed}
             onChangeText={onType}
             maxLength={TYPED_ANSWER_MAX_LENGTH}
@@ -253,7 +253,7 @@ function Result({ riddle }: { readonly riddle: RiddleResponse }) {
   );
 }
 
-/** What the panels hold is read on paper in « La Bibliothèque ». */
+/** What the panels hold is read on paper. */
 const ink = paperColors;
 
 const styles = StyleSheet.create({
@@ -330,8 +330,8 @@ const styles = StyleSheet.create({
   actions: { gap: space.s5, marginTop: space.s2 },
 });
 
-/** « La Bibliothèque »: each letter has its hollow in the paper, the ones found are tiles of gold. */
-const library = StyleSheet.create({
+/** Each letter has its hollow in the paper, the ones found are tiles of gold. */
+const inPaper = StyleSheet.create({
   hollow: {
     borderWidth: 2,
     borderColor: toyValues.outline,

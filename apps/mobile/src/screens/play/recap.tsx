@@ -38,7 +38,6 @@ import { usePlayerView } from "@/player/use-player-view";
 import { openCard } from "@/screens/trades/card-row";
 import { TAB_BAR_RISE } from "@/shell/tab-bar";
 import { colors, fontSizes, fonts, radii, space } from "@/theme";
-import { Button } from "@/ui/button";
 import { XpBar } from "@/ui/level";
 import { RarityName } from "@/ui/rarity-icon";
 import { isNewAt, type Pack } from "./pack";
@@ -48,13 +47,10 @@ const GAP = 14;
 /** Room left at the edge for the next card to show. */
 const PEEK = 96;
 const CARD_MAX = 260;
-const CARD_MIN = 160;
-/** The desk's buttons leave less room: a small phone takes smaller cards rather than overflow. */
-const LIBRARY_CARD_MIN = 136;
-/** Height kept around the cards: the recap's lines and buttons. */
-const CHROME = 300;
-/** More of it in « La Bibliothèque », where the buttons are thicker and the tabs rise higher. */
-const LIBRARY_CHROME = 540;
+/** The desk's buttons leave little room: a small phone takes smaller cards rather than overflow. */
+const CARD_MIN = 136;
+/** Height kept around the cards: the recap's lines, the desk's thick buttons and the tabs. */
+const CHROME = 540;
 const STEP_MS = 80;
 /** A card's chime rings once it has slid in. */
 const CHIME_AT_MS = 220;
@@ -69,7 +65,6 @@ export function Recap({
   pack,
   hurriedFrom,
   mustSignUp,
-  library = false,
   onOpenAnother,
   onHome,
 }: {
@@ -78,8 +73,6 @@ export function Recap({
   /** Where the player asked to reveal everything; null when every card was turned. */
   readonly hurriedFrom: number | null;
   readonly mustSignUp: boolean;
-  /** In « La Bibliothèque », the cards lie on the desk and the buttons are its objects. */
-  readonly library?: boolean;
   readonly onOpenAnother: () => void;
   readonly onHome: () => void;
 }) {
@@ -92,12 +85,8 @@ export function Recap({
   const coffretWaits = usePlayerView().coffrets.length > 0;
   const width = Math.floor(
     Math.max(
-      library ? LIBRARY_CARD_MIN : CARD_MIN,
-      Math.min(
-        CARD_MAX,
-        window.width - PEEK,
-        ((room - (library ? LIBRARY_CHROME : CHROME)) * cardSize.width) / cardSize.height,
-      ),
+      CARD_MIN,
+      Math.min(CARD_MAX, window.width - PEEK, ((room - CHROME) * cardSize.width) / cardSize.height),
     ),
   );
   const [active, setActive] = useState(0);
@@ -133,11 +122,9 @@ export function Recap({
   const nextSachet = wallet === null ? null : nextSachetLine(wallet, now);
   const another = !mustSignUp && !coffretWaits && wallet !== null && canOpenAgain(wallet);
   return (
-    <View
-      style={[styles.recap, library && styles.recapLibrary]}
-      onLayout={(event) => setRoom(event.nativeEvent.layout.height)}
-    >
-      {library && <Desk style={styles.desk} />}
+    <View style={styles.recap} onLayout={(event) => setRoom(event.nativeEvent.layout.height)}>
+      {/* The cards lie on the desk and the buttons are its objects. */}
+      <Desk style={styles.desk} />
       <Text style={styles.kicker}>TON SACHET</Text>
       <View style={styles.line}>
         {best !== null && (
@@ -212,43 +199,23 @@ export function Recap({
       {!mustSignUp && !coffretWaits && nextSachet !== null && (
         <Text style={styles.progress}>{nextSachet}</Text>
       )}
-      {library ? (
-        <View style={[styles.actions, styles.libraryActions]}>
-          {coffretWaits ? (
-            <MainAction label="Ouvrir le coffret" onPress={() => openCoffret()} />
-          ) : mustSignUp ? (
-            <MainAction label="Créer mon compte" onPress={() => router.push("/compte")} />
-          ) : (
-            <MainAction
-              label={wallet === null ? BACK_HOME_LABEL : openAgainLabel(wallet)}
-              onPress={another ? onOpenAnother : onHome}
-            />
-          )}
-          {another ? (
-            <PaperAction label={BACK_HOME_LABEL} onPress={onHome} />
-          ) : (
-            <PaperAction label="Voir mon album" onPress={() => router.navigate("/album")} />
-          )}
-        </View>
-      ) : (
-        <View style={styles.actions}>
-          {coffretWaits ? (
-            <Button label="Ouvrir le coffret" onPress={() => openCoffret()} />
-          ) : mustSignUp ? (
-            <Button label="Créer mon compte" onPress={() => router.push("/compte")} />
-          ) : (
-            <Button
-              label={wallet === null ? BACK_HOME_LABEL : openAgainLabel(wallet)}
-              onPress={another ? onOpenAnother : onHome}
-            />
-          )}
-          {another ? (
-            <Button label={BACK_HOME_LABEL} secondary onPress={onHome} />
-          ) : (
-            <Button label="Voir mon album" secondary onPress={() => router.navigate("/album")} />
-          )}
-        </View>
-      )}
+      <View style={styles.actions}>
+        {coffretWaits ? (
+          <MainAction label="Ouvrir le coffret" onPress={() => openCoffret()} />
+        ) : mustSignUp ? (
+          <MainAction label="Créer mon compte" onPress={() => router.push("/compte")} />
+        ) : (
+          <MainAction
+            label={wallet === null ? BACK_HOME_LABEL : openAgainLabel(wallet)}
+            onPress={another ? onOpenAnother : onHome}
+          />
+        )}
+        {another ? (
+          <PaperAction label={BACK_HOME_LABEL} onPress={onHome} />
+        ) : (
+          <PaperAction label="Voir mon album" onPress={() => router.navigate("/album")} />
+        )}
+      </View>
     </View>
   );
 }
@@ -319,11 +286,9 @@ function Glint({
 
 const styles = StyleSheet.create({
   glint: { ...StyleSheet.absoluteFill, opacity: 0 },
-  recap: { flex: 1, alignItems: "center", paddingTop: space.s6, gap: space.s4 },
   // Clear of the desk's gilt frame.
-  recapLibrary: { paddingTop: space.s12 },
+  recap: { flex: 1, alignItems: "center", paddingTop: space.s12, gap: space.s4 },
   desk: { position: "absolute", top: 4, left: 8, right: 8, bottom: 96 + TAB_BAR_RISE },
-  libraryActions: { alignItems: "center", paddingBottom: TAB_BAR_RISE + 24 },
   kicker: {
     fontFamily: fonts.ui.extrabold,
     fontSize: fontSizes.caption,
@@ -376,8 +341,9 @@ const styles = StyleSheet.create({
   gained: { color: colors.success },
   actions: {
     alignSelf: "stretch",
+    alignItems: "center",
     paddingHorizontal: space.s12,
-    paddingBottom: TAB_BAR_RISE,
+    paddingBottom: TAB_BAR_RISE + 24,
     gap: space.s5,
     marginTop: space.s3,
   },

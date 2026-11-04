@@ -7,13 +7,7 @@ import type {
 } from "@leximon/contract";
 import { type Catalog, collectionName } from "@leximon/contract/client";
 import { PRACTICE_SCHEDULE, practiceRulesAt, UNLOCK_SCHEDULE, unlockRulesAt } from "@leximon/core";
-import {
-  masteryColors,
-  room,
-  type ToyMatterName,
-  toyMatters,
-  toy as toyValues,
-} from "@leximon/tokens";
+import { room, type ToyMatterName, toyMatters, toy as toyValues } from "@leximon/tokens";
 import {
   DESK_TEXTS,
   DIFFICULTY_OPTIONS,
@@ -59,15 +53,14 @@ import { dailyChallenge, reviewSummary } from "@/player/collection";
 import { useShared } from "@/player/shared";
 import { progress } from "@/player/state";
 import { TAB_BAR_RISE } from "@/shell/tab-bar";
-import { alpha, colors, fontSizes, fonts, IS_LIBRARY, paperColors, radii, space } from "@/theme";
-import { Button } from "@/ui/button";
+import { alpha, colors, fontSizes, fonts, paperColors, radii, space } from "@/theme";
 import { Icon } from "@/ui/icon";
 import { Panel } from "@/ui/panel";
 import { Lettering, Toy, ToyBody, ToyIcon } from "@/ui/toy";
 
 const NOUN = PACK_NOUNS.sachet;
 
-/** Everything here is read on paper in « La Bibliothèque ». */
+/** Everything here is read on paper. */
 const ink = paperColors;
 
 /** Each leaf rises in turn when the screen appears, as on Jouer. */
@@ -115,15 +108,9 @@ export function ReviewDesk({
   const canStart = !busy && summary !== null && !reviewAction(summary).disabled;
   return (
     <ScrollView contentContainerStyle={styles.page}>
-      {IS_LIBRARY ? (
-        <View accessibilityRole="header">
-          <Lettering size={fontSizes.heading}>Défis</Lettering>
-        </View>
-      ) : (
-        <Text style={styles.pageTitle} accessibilityRole="header">
-          Défis
-        </Text>
-      )}
+      <View accessibilityRole="header">
+        <Lettering size={fontSizes.heading}>Défis</Lettering>
+      </View>
       <Rising index={0}>
         <Review summary={summary} now={now} busy={busy} onStart={onStart} />
       </Rising>
@@ -230,51 +217,29 @@ function Review({
       </View>
       <Text style={styles.line}>{summary === null ? " " : reviewLine(summary, now, NOUN)}</Text>
       <View style={styles.go}>
-        {IS_LIBRARY ? (
-          <MainAction
-            label={action?.label ?? "Commencer"}
-            count={action === null ? undefined : String(action.count)}
-            disabled={disabled}
-            onPress={() => onStart({})}
-          />
-        ) : (
-          <View style={styles.goClassic}>
-            <Button
-              label={action?.label ?? "Commencer"}
-              disabled={disabled}
-              onPress={() => onStart({})}
-            />
-          </View>
-        )}
+        <MainAction
+          label={action?.label ?? "Commencer"}
+          count={action === null ? undefined : String(action.count)}
+          disabled={disabled}
+          onPress={() => onStart({})}
+        />
         {action !== null && !action.disabled && (
           <Text style={styles.estimate}>{action.estimate}</Text>
         )}
       </View>
       {settingsOpen && summary !== null && <Settings summary={summary} />}
       <View style={styles.settings}>
-        {IS_LIBRARY ? (
-          <Toy
-            matter="paper"
-            shape="round"
-            style={styles.settingsToy}
-            accessibilityRole="button"
-            accessibilityLabel={REVIEW_SETTINGS_TITLE}
-            accessibilityState={{ expanded: settingsOpen }}
-            onPress={() => setSettingsOpen((open) => !open)}
-          >
-            <ToyIcon name="settings" size={26} />
-          </Toy>
-        ) : (
-          <Pressable
-            style={styles.settingsClassic}
-            accessibilityRole="button"
-            accessibilityLabel={REVIEW_SETTINGS_TITLE}
-            accessibilityState={{ expanded: settingsOpen }}
-            onPress={() => setSettingsOpen((open) => !open)}
-          >
-            <Icon name="reglages" size={22} color={ink.pageInk} />
-          </Pressable>
-        )}
+        <Toy
+          matter="paper"
+          shape="round"
+          style={styles.settingsToy}
+          accessibilityRole="button"
+          accessibilityLabel={REVIEW_SETTINGS_TITLE}
+          accessibilityState={{ expanded: settingsOpen }}
+          onPress={() => setSettingsOpen((open) => !open)}
+        >
+          <ToyIcon name="settings" size={26} />
+        </Toy>
       </View>
     </Panel>
   );
@@ -385,32 +350,19 @@ function Option({
   readonly disabled: boolean;
   readonly onPress: () => void;
 }) {
-  if (IS_LIBRARY) {
-    return (
-      <Toy
-        matter={on ? "gold" : "paper"}
-        style={styles.optionToy}
-        bodyStyle={styles.optionBody}
-        accessibilityRole="button"
-        accessibilityLabel={label}
-        accessibilityState={{ selected: on, disabled }}
-        disabled={disabled}
-        onPress={onPress}
-      >
-        <Text style={styles.optionToyText}>{label}</Text>
-      </Toy>
-    );
-  }
   return (
-    <Pressable
-      style={[styles.option, on && styles.optionOn, disabled && styles.off]}
+    <Toy
+      matter={on ? "gold" : "paper"}
+      style={styles.optionToy}
+      bodyStyle={styles.optionBody}
       accessibilityRole="button"
+      accessibilityLabel={label}
       accessibilityState={{ selected: on, disabled }}
       disabled={disabled}
       onPress={onPress}
     >
-      <Text style={[styles.optionText, on && styles.optionTextOn]}>{label}</Text>
-    </Pressable>
+      <Text style={styles.optionToyText}>{label}</Text>
+    </Toy>
   );
 }
 
@@ -422,12 +374,10 @@ function LeafBadge({
   readonly matter: ToyMatterName;
   readonly children: ReactNode;
 }) {
-  return IS_LIBRARY ? (
+  return (
     <ToyBody matter={matter} shape="tile" style={styles.badge}>
       {children}
     </ToyBody>
-  ) : (
-    <View style={[styles.badge, styles.badgeClassic]}>{children}</View>
   );
 }
 
@@ -453,11 +403,7 @@ function DailyLeaf({
     <Panel paper style={styles.leaf}>
       <View style={styles.leafHead}>
         <LeafBadge matter="red">
-          {IS_LIBRARY ? (
-            <ToyIcon name="challenge" size={26} />
-          ) : (
-            <Icon name="defi" size={24} color={ink.rubric} />
-          )}
+          <ToyIcon name="challenge" size={26} />
         </LeafBadge>
         <View style={styles.leafTitles}>
           <PaperKicker>{DESK_TEXTS.daily}</PaperKicker>
@@ -508,7 +454,7 @@ function RiddleLeaf({ riddle }: { readonly riddle: RiddleResponse }) {
       <Panel paper style={styles.leaf}>
         <View style={styles.leafHead}>
           <LeafBadge matter="gold">
-            <Icon name="plume" size={22} color={IS_LIBRARY ? toyValues.outline : ink.rubric} />
+            <Icon name="plume" size={22} color={toyValues.outline} />
           </LeafBadge>
           <View style={styles.leafTitles}>
             <PaperKicker>{`${DESK_TEXTS.riddle} · n° ${riddle.number}`}</PaperKicker>
@@ -750,26 +696,17 @@ function MemoryLeaf({
   );
 }
 
-/** The bar's levels: the toys' leathers in « La Bibliothèque », the mastery colours otherwise. */
-const TIERS = StyleSheet.create(
-  IS_LIBRARY
-    ? {
-        blank: { backgroundColor: toyMatters.paper.top },
-        sketch: { backgroundColor: toyMatters.paper.edge },
-        ink: {
-          backgroundImage: `linear-gradient(180deg, ${toyMatters.blue.top}, ${toyMatters.blue.bottom})`,
-        },
-        gilded: {
-          backgroundImage: `linear-gradient(180deg, ${toyMatters.gold.top}, ${toyMatters.gold.bottom})`,
-        },
-      }
-    : {
-        blank: { backgroundColor: colors.well },
-        sketch: { backgroundColor: masteryColors.sketch },
-        ink: { backgroundColor: masteryColors.ink },
-        gilded: { backgroundColor: masteryColors.gilded },
-      },
-);
+/** The bar's levels, in the toys' leathers. */
+const TIERS = StyleSheet.create({
+  blank: { backgroundColor: toyMatters.paper.top },
+  sketch: { backgroundColor: toyMatters.paper.edge },
+  ink: {
+    backgroundImage: `linear-gradient(180deg, ${toyMatters.blue.top}, ${toyMatters.blue.bottom})`,
+  },
+  gilded: {
+    backgroundImage: `linear-gradient(180deg, ${toyMatters.gold.top}, ${toyMatters.gold.bottom})`,
+  },
+});
 
 const coverSizes = StyleSheet.create({
   short: { minHeight: 76 },
@@ -784,7 +721,6 @@ const styles = StyleSheet.create({
     paddingTop: space.s4,
     paddingBottom: TAB_BAR_RISE + 24,
   },
-  pageTitle: { fontFamily: fonts.display, fontSize: fontSizes.heading, color: colors.pageInk },
   kicker: {
     fontFamily: fonts.ui.extrabold,
     fontSize: fontSizes.caption,
@@ -845,7 +781,6 @@ const styles = StyleSheet.create({
     color: ink.pageInkMuted,
   },
   go: { alignItems: "center", gap: space.s4 },
-  goClassic: { alignSelf: "stretch" },
   estimate: {
     fontFamily: fonts.text.italic,
     fontSize: fontSizes.label,
@@ -854,14 +789,6 @@ const styles = StyleSheet.create({
   },
   settings: { position: "absolute", top: space.s7, right: space.s7 },
   settingsToy: { width: 46, height: 46 },
-  settingsClassic: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: ink.pageRaised,
-  },
   sheet: { gap: space.s6 },
   sheetTitle: {
     fontFamily: fonts.ui.extrabold,
@@ -877,17 +804,6 @@ const styles = StyleSheet.create({
     fontSize: fontSizes.label,
     color: toyValues.outline,
   },
-  option: {
-    minHeight: 44,
-    paddingHorizontal: space.s8,
-    borderRadius: radii.x4,
-    justifyContent: "center",
-    backgroundColor: ink.pageRaised,
-  },
-  optionOn: { backgroundColor: colors.action },
-  optionText: { fontFamily: fonts.ui.bold, fontSize: fontSizes.label, color: ink.pageInk },
-  optionTextOn: { color: colors.actionInk },
-  off: { opacity: 0.6 },
   sheetNote: {
     fontFamily: fonts.ui.medium,
     fontSize: fontSizes.small,
@@ -898,7 +814,6 @@ const styles = StyleSheet.create({
   pressed: { transform: [{ translateY: 2 }] },
   leafHead: { flexDirection: "row", alignItems: "center", gap: space.s6 },
   badge: { width: 46, height: 46, alignItems: "center", justifyContent: "center" },
-  badgeClassic: { borderRadius: 23, backgroundColor: alpha(colors.gilt, 0.14) },
   leafTitles: { flex: 1, gap: space.s1 },
   leafTitle: {
     fontFamily: fonts.display,
@@ -1008,9 +923,9 @@ const styles = StyleSheet.create({
     height: 10,
     overflow: "hidden",
     borderWidth: 2,
-    borderColor: IS_LIBRARY ? toyValues.outline : ink.rule,
+    borderColor: toyValues.outline,
     borderRadius: 6,
-    backgroundColor: IS_LIBRARY ? toyMatters.paper.top : colors.well,
+    backgroundColor: toyMatters.paper.top,
   },
   tierFigures: { flexDirection: "row", flexWrap: "wrap", rowGap: space.s1 },
   tierFigure: {

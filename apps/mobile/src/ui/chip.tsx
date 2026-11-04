@@ -1,5 +1,5 @@
 import { Pressable, StyleSheet, Text } from "react-native";
-import { colors, fontSizes, fonts, IS_LIBRARY, paperColors, radii, space } from "@/theme";
+import { colors, fontSizes, fonts, paperColors, radii, space } from "@/theme";
 import { toyFace } from "./toy";
 
 /** A small pill: a filter or a choice among a few, gold once picked. */
@@ -23,13 +23,12 @@ export function Chip({
       style={[
         styles.chip,
         on && styles.on,
-        IS_LIBRARY && [styles.toy, toyFace(on ? "gold" : "paper", "tag")],
+        styles.toy,
+        toyFace(on ? "gold" : "paper", "tag"),
         disabled && styles.disabled,
       ]}
     >
-      <Text style={[styles.text, IS_LIBRARY && styles.textOnPaper, on && styles.textOn]}>
-        {label}
-      </Text>
+      <Text style={[styles.text, styles.textOnPaper, on && styles.textOn]}>{label}</Text>
     </Pressable>
   );
 }

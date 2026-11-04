@@ -25,7 +25,7 @@ import { openCoffret } from "@/levels/coffret";
 import { useNow } from "@/player/shared";
 import { mailbox, wallet } from "@/player/state";
 import { usePlayerView } from "@/player/use-player-view";
-import { alpha, colors, fontSizes, fonts, IS_LIBRARY, paperColors, radii, space } from "@/theme";
+import { alpha, colors, fontSizes, fonts, paperColors, radii, space } from "@/theme";
 import { Icon } from "@/ui/icon";
 import { Page, Paragraph } from "@/ui/page";
 import { TextButton } from "@/ui/text-button";
@@ -254,7 +254,8 @@ function RowItem({ row }: { readonly row: Row }) {
       style={({ pressed }) => [
         styles.row,
         fresh && styles.fresh,
-        IS_LIBRARY && [styles.slip, toyFace(fresh ? "gold" : "paper")],
+        styles.slip,
+        toyFace(fresh ? "gold" : "paper"),
         pressed && styles.pressed,
       ]}
     >
@@ -270,7 +271,7 @@ function RowItem({ row }: { readonly row: Row }) {
   );
 }
 
-/** Each letter is a slip of paper in « La Bibliothèque », a new one is gold. */
+/** Each letter is a slip of paper, a new one is gold. */
 const ink = paperColors;
 
 const styles = StyleSheet.create({
@@ -299,7 +300,7 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: radii.lg,
-    backgroundColor: IS_LIBRARY ? ink.well : colors.page,
+    backgroundColor: ink.well,
     alignItems: "center",
     justifyContent: "center",
   },

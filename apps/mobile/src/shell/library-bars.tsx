@@ -41,7 +41,7 @@ const ICONS: Readonly<Record<Exclude<TabId, "jouer">, ToyIconName>> = {
 
 const SIDE_TABS = PHONE_TAB_ORDER.filter((id): id is Exclude<TabId, "jouer"> => id !== "jouer");
 
-/** The band at the top of every tab in « La Bibliothèque »: portrait, level, stock, mail. */
+/** The band at the top of every tab: portrait, level, stock, mail. */
 export function LibraryTopBand() {
   const insets = useSafeAreaInsets();
   const view = usePlayerView();
@@ -95,7 +95,7 @@ export function LibraryTopBand() {
   );
 }
 
-/** The shelf of tabs in « La Bibliothèque »: Jouer raised in gold, a padlock on what is closed. */
+/** The shelf of tabs: Jouer raised in gold, a padlock on what is closed. */
 export function LibraryTabBar({ state, emitter, navigateToTab }: BottomTabBarProps) {
   const insets = useSafeAreaInsets();
   const view = usePlayerView();

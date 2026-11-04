@@ -206,7 +206,7 @@ export function ChallengeRecap({
   );
 }
 
-/** Everything here is read on paper in « La Bibliothèque ». */
+/** Everything here is read on paper. */
 const ink = paperColors;
 
 const styles = StyleSheet.create({

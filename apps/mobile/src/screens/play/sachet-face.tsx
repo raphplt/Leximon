@@ -40,7 +40,7 @@ import Svg, {
 } from "react-native-svg";
 import { scheduleOnRN } from "react-native-worklets";
 import { catalogFileUrl } from "@/cards/catalog";
-import { colors, fonts, IS_LIBRARY } from "@/theme";
+import { colors, fonts } from "@/theme";
 import { LogoMarkShapes } from "@/ui/logo-mark";
 import { displayBoldWidth } from "./glyph-widths";
 import {
@@ -827,7 +827,7 @@ export function PrintLayer({
               fill="url(#wrinkles-bottom)"
             />
             <Motif motif={look.motif} unit={unit} paint={body} />
-            {IS_LIBRARY && <GiltFrame paint={body} />}
+            <GiltFrame paint={body} />
             <G
               filter="url(#seal-shadow)"
               transform={`translate(${CENTER - SEAL_SIZE / 2} ${layout.sealTop}) scale(${SEAL_SIZE / sealBox})`}
@@ -875,7 +875,7 @@ const FRAME = {
   ink: 1.5,
 } as const;
 
-/** In « La Bibliothèque », a gilt frame inside the edge, lined with ink on both sides. */
+/** A gilt frame inside the edge, lined with ink on both sides. */
 function GiltFrame({ paint }: { readonly paint: Paint }) {
   const box = { x: FRAME.x, y: FRAME.y, width: FRAME.width, height: FRAME.height };
   // Each line is a stroke centered on its path: a path sits half a stroke inside its edge.

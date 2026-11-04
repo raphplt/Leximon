@@ -161,7 +161,7 @@ function PlayerRow({ entry, first }: { readonly entry: DirectoryPlayer; readonly
   );
 }
 
-/** The players are listed on paper in « La Bibliothèque ». */
+/** The players are listed on paper. */
 const ink = paperColors;
 
 const styles = StyleSheet.create({

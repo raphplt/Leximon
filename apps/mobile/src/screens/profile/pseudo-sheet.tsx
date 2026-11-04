@@ -78,7 +78,7 @@ export function PseudoSheet({
   );
 }
 
-/** It is read on a sheet, a leaf of paper in « La Bibliothèque ». */
+/** It is read on a sheet, a leaf of paper. */
 const ink = paperColors;
 
 const styles = StyleSheet.create({

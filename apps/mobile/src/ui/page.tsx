@@ -5,7 +5,7 @@ import { KeyboardAvoidingView, Pressable, ScrollView, StyleSheet, Text, View } f
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Desk, Room } from "@/library/play-pieces";
 import { TAB_BAR_RISE } from "@/shell/tab-bar";
-import { colors, fontSizes, fonts, IS_LIBRARY, space } from "@/theme";
+import { colors, fontSizes, fonts, space } from "@/theme";
 import { Icon } from "./icon";
 import { useInk } from "./ink";
 import { Lettering } from "./toy";
@@ -32,11 +32,11 @@ export function Page({
   readonly closable?: boolean;
   /** Under the top bar and above the tabs, which already leave room and the way out. */
   readonly inTab?: boolean;
-  /** In « La Bibliothèque », the page lies on the desk of the reading room: a card, read up close. */
+  /** The page lies on the desk of the reading room: a card, read up close. */
   readonly desk?: boolean;
 }) {
   const insets = useSafeAreaInsets();
-  const onDesk = IS_LIBRARY && desk && !inTab;
+  const onDesk = desk && !inTab;
   const scroll = (
     <ScrollView
       keyboardShouldPersistTaps="handled"
@@ -65,23 +65,14 @@ export function Page({
         </View>
       )}
       {kicker !== undefined && <Text style={styles.kicker}>{kicker.toUpperCase()}</Text>}
-      {IS_LIBRARY ? (
-        <View accessibilityRole="header">
-          <Lettering size={fontSizes.headingLarge}>{title}</Lettering>
-        </View>
-      ) : (
-        <Text style={styles.title} accessibilityRole="header">
-          {title}
-        </Text>
-      )}
+      <View accessibilityRole="header">
+        <Lettering size={fontSizes.headingLarge}>{title}</Lettering>
+      </View>
       <View style={styles.body}>{children}</View>
     </ScrollView>
   );
   return (
-    <KeyboardAvoidingView
-      style={[styles.page, IS_LIBRARY && inTab && styles.inRoom]}
-      behavior="padding"
-    >
+    <KeyboardAvoidingView style={[styles.page, inTab && styles.inRoom]} behavior="padding">
       {onDesk ? (
         <Room>
           <View
@@ -92,7 +83,7 @@ export function Page({
             <View style={styles.deskInside}>{scroll}</View>
           </View>
         </Room>
-      ) : IS_LIBRARY && !inTab ? (
+      ) : !inTab ? (
         // The tabs already stand in the reading room; a page of its own brings it along.
         <Room>{scroll}</Room>
       ) : (
@@ -167,14 +158,8 @@ const styles = StyleSheet.create({
     fontFamily: fonts.ui.extrabold,
     fontSize: fontSizes.caption,
     letterSpacing: 2,
-    color: IS_LIBRARY ? lettering.kicker : colors.pageInkMuted,
+    color: lettering.kicker,
     marginBottom: space.s3,
-  },
-  title: {
-    fontFamily: fonts.display,
-    fontSize: fontSizes.headingLarge,
-    lineHeight: 38,
-    color: colors.pageInk,
   },
   body: { gap: space.s8, marginTop: space.s10 },
   paragraph: {

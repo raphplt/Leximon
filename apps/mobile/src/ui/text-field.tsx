@@ -1,7 +1,7 @@
 import { toyMatters, toy as toyValues } from "@leximon/tokens";
 import { useState } from "react";
 import { StyleSheet, Text, TextInput, type TextInputProps, View } from "react-native";
-import { fontSizes, fonts, IS_LIBRARY, radii, space } from "@/theme";
+import { fontSizes, fonts, radii, space } from "@/theme";
 import { useInk } from "./ink";
 
 /** A labelled field; `large` spaces out a short code. */
@@ -33,8 +33,7 @@ export function TextField({
         }}
         style={[
           styles.input,
-          { borderColor: ink.track, backgroundColor: ink.well, color: ink.pageInk },
-          IS_LIBRARY && styles.pressedIn,
+          { color: ink.pageInk },
           focused && { borderColor: ink.gilt },
           large && styles.large,
         ]}
@@ -50,21 +49,18 @@ const styles = StyleSheet.create({
     minHeight: 52,
     paddingHorizontal: space.s8,
     borderRadius: radii.xl,
-    borderWidth: 2,
     fontFamily: fonts.ui.semibold,
     fontSize: fontSizes.lead,
+    // Pressed into the paper, under its dark outline.
+    borderWidth: toyValues.outlineWidth,
+    borderColor: toyValues.outline,
+    backgroundColor: toyMatters.paper.top,
+    boxShadow: `inset 0 3px 0 ${toyMatters.paper.bottom}`,
   },
   large: {
     fontFamily: fonts.ui.extrabold,
     fontSize: fontSizes.titleLarge,
     letterSpacing: 10,
     textAlign: "center",
-  },
-  // In « La Bibliothèque », a field is pressed into the paper, under its dark outline.
-  pressedIn: {
-    borderWidth: toyValues.outlineWidth,
-    borderColor: toyValues.outline,
-    backgroundColor: toyMatters.paper.top,
-    boxShadow: `inset 0 3px 0 ${toyMatters.paper.bottom}`,
   },
 });

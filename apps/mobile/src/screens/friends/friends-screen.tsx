@@ -487,7 +487,7 @@ function FriendActions({
   );
 }
 
-/** What the panels hold is read on paper in « La Bibliothèque ». */
+/** What the panels hold is read on paper. */
 const ink = paperColors;
 
 const styles = StyleSheet.create({

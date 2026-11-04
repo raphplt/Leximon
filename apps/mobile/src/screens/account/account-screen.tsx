@@ -472,7 +472,7 @@ function AgeChoice({
   );
 }
 
-/** The forms and the member's page are read on paper in « La Bibliothèque ». */
+/** The forms and the member's page are read on paper. */
 const ink = paperColors;
 
 const styles = StyleSheet.create({

@@ -13,7 +13,7 @@ import {
 import { api } from "@/api/client";
 import { useNow, useShared } from "@/player/shared";
 import { sanctions } from "@/player/state";
-import { alpha, colors, fontSizes, fonts, IS_LIBRARY, paperColors, radii, space } from "@/theme";
+import { alpha, colors, fontSizes, fonts, paperColors, radii, space } from "@/theme";
 import { Button } from "@/ui/button";
 import { KeyboardLift } from "@/ui/keyboard-lift";
 import { ToastHost, toast } from "@/ui/toast";
@@ -46,12 +46,7 @@ export function SanctionHost() {
     >
       <KeyboardLift style={styles.backdrop}>
         <View style={styles.centered}>
-          <Card
-            style={[
-              IS_LIBRARY ? styles.leaf : styles.card,
-              { width: Math.min(400, window.width - 32) },
-            ]}
-          >
+          <Leaf style={[styles.leaf, { width: Math.min(400, window.width - 32) }]}>
             <ScrollView contentContainerStyle={styles.inner} keyboardShouldPersistTaps="handled">
               <Text style={styles.title} accessibilityRole="header">
                 {unseen.length > 1 ? "Des sanctions te concernent" : "Une sanction te concerne"}
@@ -61,7 +56,7 @@ export function SanctionHost() {
               ))}
               <Button label="J'ai lu" onPress={close} />
             </ScrollView>
-          </Card>
+          </Leaf>
         </View>
       </KeyboardLift>
       <ToastHost />
@@ -139,9 +134,8 @@ function SanctionCard({ sanction, now }: { readonly sanction: Sanction; readonly
   );
 }
 
-/** The notice pops up on a leaf of paper in « La Bibliothèque ». */
+/** The notice pops up on a leaf of paper. */
 const ink = paperColors;
-const Card = IS_LIBRARY ? Leaf : View;
 
 const styles = StyleSheet.create({
   backdrop: { flex: 1, backgroundColor: alpha(colors.scrim, 0.82) },
@@ -151,7 +145,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     paddingVertical: space.s24,
   },
-  card: { maxHeight: "100%", borderRadius: 24, backgroundColor: colors.sheet },
   leaf: { maxHeight: "100%", backgroundColor: ink.paper },
   inner: { gap: space.s7, padding: 22 },
   title: {

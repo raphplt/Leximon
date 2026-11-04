@@ -5,7 +5,7 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { Card } from "@/cards/card";
 import { Emblem } from "@/clan/emblem";
 import { openCard } from "@/screens/trades/card-row";
-import { colors, fontSizes, fonts, IS_LIBRARY, paperColors, radii, space } from "@/theme";
+import { colors, fontSizes, fonts, paperColors, radii, space } from "@/theme";
 import { Avatar } from "@/ui/avatar";
 import { LevelMedal } from "@/ui/level";
 import { Panel } from "@/ui/panel";
@@ -138,7 +138,7 @@ export function StatsPanel({
   );
 }
 
-/** The pinned cards and the figures lie on paper in « La Bibliothèque »; the identity stays in the room. */
+/** The pinned cards and the figures lie on paper; the identity stays in the room. */
 const ink = paperColors;
 
 const styles = StyleSheet.create({
@@ -175,7 +175,7 @@ const styles = StyleSheet.create({
     gap: space.s1,
     padding: space.s6,
     borderRadius: radii.xl,
-    backgroundColor: IS_LIBRARY ? ink.well : colors.page,
+    backgroundColor: ink.well,
   },
   tileValue: { fontFamily: fonts.display, fontSize: fontSizes.titleLarge, color: ink.pageInk },
   tileLabel: {
