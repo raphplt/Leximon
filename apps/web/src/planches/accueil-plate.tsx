@@ -337,7 +337,7 @@ function Guess({ cards }: { readonly cards: readonly ShowcaseCard[] }) {
   const narrow = useNarrow();
   const [turned, setTurned] = useState<ReadonlySet<string>>(new Set());
   if (cards.length === 0) return null;
-  const width = narrow ? 148 : 196;
+  const width = narrow ? 140 : 196;
   const height = Math.round((width * cardSize.height) / cardSize.width);
   const turn = (id: string) => {
     play("cardSlide");
@@ -409,7 +409,7 @@ function Ladder({ ladder }: { readonly ladder: readonly ShowcaseCard[] }) {
       <ol className={styles.ladder}>
         {ladder.map(({ card, collectionName }, at) => (
           <li key={card.id} className={styles.rung} style={{ "--at": at } as CSSProperties}>
-            <Card card={card} collectionName={collectionName} width={narrow ? 150 : 158} />
+            <Card card={card} collectionName={collectionName} width={narrow ? 150 : 144} />
             <span className={styles.rungTag}>
               <span className={styles.rungRarity}>
                 <RarityName rarity={card.rarity} />
