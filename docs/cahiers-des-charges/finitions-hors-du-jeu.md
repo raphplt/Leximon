@@ -1,6 +1,6 @@
 # Cahier des charges · Les finitions hors du jeu, en commençant par l'accueil
 
-- **Statut :** proposé le 2026-11-04, toutes les questions tranchées le même jour (ci-dessous). Rien n'est construit ; le lot 1 (la maquette de l'accueil) vient en premier.
+- **Statut :** proposé le 2026-11-04, toutes les questions tranchées le même jour (ci-dessous). Lot 1 fait le 2026-11-04 : la planche `/planches/accueil`, à juger par le propriétaire, avec un bouton pour passer de l'ouverture publique à la bêta fermée.
 - **Source :** demande du propriétaire du 2026-11-04 : après les Défis, « passer aux peaufinages restants, genre la page d'accueil ». C'est la partie « Hors du jeu » de la phase 3 de la [direction artistique](direction-artistique.md#hors-du-jeu), qui reste à faire maintenant que « La Bibliothèque » est la seule allure.
 - **Règles liées :** P1 (positionnement), P47 et P53 (le sachet), P55 (liste d'attente), P71 (cible du lancement), D-036 (e-mails sans image distante), D-056 (La Bibliothèque).
 - **Cahiers liés :** [direction-artistique.md](direction-artistique.md), [e-mails.md](e-mails.md), [ouverture.md](ouverture.md). Voix : [voix.md](../voix.md), partie « Vendre le bénéfice ».

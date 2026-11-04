@@ -33,6 +33,9 @@ export const RARITY_LADDER_IDS = [
   "pendardeau",
 ] as const;
 
+/** Words to guess before the card turns: the insults of old, from the most to the least printed. */
+export const GUESS_WORD_IDS = ["maroufle", "croutier", "coqueplumet", "digressionnaire"] as const;
+
 /** The two cards swapped in the trade figure, both in the public domain. */
 export const TRADE_CARD_IDS = ["antitonnerre", "griviere"] as const;
 
@@ -67,6 +70,7 @@ export interface Showcase {
   /** The first collection, for the sachet of the rules. */
   readonly pack: PackCollection | null;
   readonly trade: readonly ShowcaseCard[];
+  readonly guess: readonly ShowcaseCard[];
 }
 
 export const EMPTY_SHOWCASE: Showcase = {
@@ -75,6 +79,7 @@ export const EMPTY_SHOWCASE: Showcase = {
   shelves: [],
   pack: null,
   trade: [],
+  guess: [],
 };
 
 export function showcaseOf(collections: readonly CatalogCollectionFile[]): Showcase {
@@ -95,5 +100,6 @@ export function showcaseOf(collections: readonly CatalogCollectionFile[]): Showc
     shelves,
     pack: first === undefined ? null : packOf(first),
     trade: pickShowcase(cardsById, TRADE_CARD_IDS).map(withCollection),
+    guess: pickShowcase(cardsById, GUESS_WORD_IDS).map(withCollection),
   };
 }

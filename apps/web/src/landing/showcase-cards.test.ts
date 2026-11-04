@@ -55,6 +55,7 @@ describe("showcaseOf", () => {
       shelves: [],
       pack: null,
       trade: [],
+      guess: [],
     });
   });
 });
