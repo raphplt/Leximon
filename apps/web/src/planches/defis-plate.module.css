@@ -1,0 +1,517 @@
+/* The plate of the Défis screen: the room, the review on the desk, the day and the shelf beside it. */
+
+.page {
+  min-height: 100dvh;
+  padding: 14px 16px 32px;
+  box-sizing: border-box;
+  background: var(--lx-room) fixed;
+  color: var(--lx-color-page-ink);
+}
+
+/* --- The plate's own controls, not part of the screen --- */
+
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin: 0 auto 14px;
+}
+
+.controlsLabel {
+  font-size: var(--lx-size-micro);
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--lx-toy-gold-top);
+}
+
+.control {
+  height: 36px;
+  padding: 0 14px;
+  font-size: var(--lx-size-label);
+  font-weight: 800;
+  color: var(--lx-toy-outline);
+}
+
+/* --- The screen: one column, the review first --- */
+
+.screen {
+  display: flex;
+  flex-direction: column;
+  gap: 26px;
+  max-width: 620px;
+  margin: 0 auto;
+}
+
+.stage {
+  order: -1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.today {
+  display: grid;
+  gap: 14px;
+}
+
+@media (min-width: 760px) {
+  .today {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .today > header {
+    grid-column: 1 / -1;
+  }
+}
+
+/* --- The review on the desk --- */
+
+.play {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  min-height: 520px;
+  padding: 30px 26px 26px;
+  box-sizing: border-box;
+}
+
+.desk {
+  position: absolute;
+  inset: 0;
+}
+
+.reviewHead {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.reviewTitle {
+  font-size: var(--lx-size-title);
+}
+
+/* The words waiting, as a fanned deck under the lamp: the sachet's place on Jouer. */
+.deck {
+  position: relative;
+  flex: 1;
+  width: 100%;
+  min-height: 210px;
+}
+
+.deckCard {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  display: grid;
+  translate: calc(-50% + var(--at) * 46px) calc(-50% + var(--at) * var(--at) * 6px);
+  rotate: calc(var(--at) * 7deg);
+  filter: drop-shadow(0 8px 10px var(--lx-toy-drop));
+  transition:
+    translate 220ms ease-out,
+    rotate 220ms ease-out,
+    opacity 220ms ease-out;
+}
+
+.deckCard:nth-child(3) {
+  z-index: 1;
+}
+
+.deck:hover .deckCard {
+  translate: calc(-50% + var(--at) * 58px) calc(-50% + var(--at) * var(--at) * 7px - 6px);
+  rotate: calc(var(--at) * 9deg);
+}
+
+/* Nothing due: the deck lies gathered, in the shade. */
+.deck[data-calm] .deckCard {
+  translate: calc(-50% + var(--at) * 4px) calc(-50% + var(--at) * 2px);
+  rotate: calc(var(--at) * 2deg);
+  opacity: 0.55;
+}
+
+.deckCount {
+  position: absolute;
+  z-index: 2;
+  left: calc(50% + 50px);
+  top: calc(50% - 104px);
+  scale: 1.25;
+}
+
+/* The three figures, in hollows of the paper, and the sentence that says them. */
+.counters {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+  max-width: 480px;
+  padding: 16px 16px 14px;
+  box-sizing: border-box;
+}
+
+.wells {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.well {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 10px 6px 9px;
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--lx-toy-paper-edge) 28%, transparent);
+  box-shadow:
+    inset 0 2px 4px color-mix(in srgb, var(--lx-toy-outline) 28%, transparent),
+    0 1px 0 color-mix(in srgb, var(--lx-toy-paper-top) 80%, transparent);
+}
+
+.wellFigure {
+  font-family: var(--font-display), Georgia, serif;
+  font-size: 34px;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.well[data-gilt] .wellFigure {
+  color: var(--lx-toy-gold-edge);
+}
+
+.well[data-empty] .wellFigure {
+  color: var(--lx-color-page-ink-faint);
+}
+
+.wellLabel {
+  font-size: var(--lx-size-caption);
+  font-weight: 800;
+  color: var(--lx-color-page-ink-muted);
+}
+
+.line {
+  margin: 0;
+  font-family: var(--font-text), Georgia, serif;
+  font-size: var(--lx-size-label);
+  line-height: 1.45;
+  text-align: center;
+  color: var(--lx-color-page-ink-muted);
+}
+
+.cta {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding-top: 20px;
+}
+
+/* The settings of the review, a paper tile in the corner of the desk. */
+.settings {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+}
+
+.estimate {
+  margin: 0;
+  font:
+    italic 500 var(--lx-size-label) / 1.3 var(--font-text),
+    serif;
+  color: var(--lx-color-page-ink-soft);
+}
+
+/* A phone: the fan closes up to stay on the desk. */
+@media (max-width: 759px) {
+  .deck {
+    scale: 0.82;
+  }
+
+  .deckCard {
+    translate: calc(-50% + var(--at) * 34px) calc(-50% + var(--at) * var(--at) * 5px);
+  }
+}
+
+/* --- The shelf of books --- */
+
+/* The bookcase stands at the top of its column, not on the line of the button. */
+.shelfColumn.shelfColumn > :last-child {
+  margin-top: 0;
+}
+
+.bookcase {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  padding: 0 4px;
+}
+
+.shelf {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  gap: 3px;
+  min-height: 168px;
+  padding: 18px 10px 0;
+}
+
+/* The plank the books stand on. */
+.shelf::after {
+  content: "";
+  position: absolute;
+  left: -4px;
+  right: -4px;
+  bottom: -14px;
+  height: 14px;
+  border-radius: 3px;
+  background: linear-gradient(180deg, var(--lx-shelf-top), var(--lx-shelf-bottom));
+  box-shadow:
+    inset 0 2px 0 var(--lx-shelf-gilt),
+    inset 0 4px 0 var(--lx-shelf-gilt-shade),
+    0 8px 14px var(--lx-toy-drop);
+}
+
+.shelf + .shelf {
+  margin-top: 22px;
+}
+
+.book {
+  position: relative;
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 38px;
+  height: 150px;
+  padding: 14px 0 0;
+  box-sizing: border-box;
+  border: var(--lx-toy-outline-width) solid var(--lx-toy-outline);
+  border-radius: 5px 5px 3px 3px;
+  background:
+    /* Two gilt fillets across the spine, top and bottom, as on a bound book. */
+    linear-gradient(
+      180deg,
+      transparent 7px,
+      var(--lx-shelf-gilt) 7px 9px,
+      transparent 9px calc(100% - 30px),
+      var(--lx-shelf-gilt) calc(100% - 30px) calc(100% - 28px),
+      transparent calc(100% - 28px)
+    ),
+    linear-gradient(90deg, var(--spine-bottom), var(--spine-top) 45%, var(--spine-bottom));
+  box-shadow:
+    inset -4px 0 0 var(--spine-edge),
+    0 3px 0 var(--lx-toy-outline);
+  color: var(--lx-toy-paper-top);
+  font: inherit;
+  cursor: pointer;
+  transition:
+    translate 160ms ease-out,
+    rotate 160ms ease-out;
+}
+
+/* Collections are thick and tall, themes are thinner, the shortcuts in between. */
+.book[data-kind="collection"] {
+  width: 48px;
+  height: 158px;
+}
+
+.book[data-kind="theme"] {
+  width: 34px;
+  height: 132px;
+}
+
+.book[data-kind="theme"]:nth-child(3n) {
+  height: 142px;
+}
+
+.book[data-kind="theme"]:nth-child(4n + 1) {
+  height: 124px;
+}
+
+.book[data-kind="rising"] {
+  width: 46px;
+  color: var(--lx-toy-outline);
+}
+
+.book[data-kind="recent"] {
+  color: var(--lx-toy-outline);
+}
+
+.book:hover,
+.book[data-open] {
+  translate: 0 -12px;
+}
+
+.book:focus-visible {
+  outline: 3px solid var(--lx-color-focus);
+  outline-offset: 3px;
+}
+
+.book[data-locked] {
+  cursor: default;
+}
+
+.book[data-locked]:hover {
+  translate: none;
+}
+
+.spineName {
+  writing-mode: vertical-rl;
+  rotate: 180deg;
+  max-height: calc(100% - 40px);
+  overflow: hidden;
+  font-family: var(--font-display), Georgia, serif;
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1.05;
+  text-align: center;
+}
+
+.book[data-kind="collection"] .spineName {
+  font-size: 13px;
+}
+
+/* How much of the scope is past the Esquisse: gilt rising from the foot of the spine. */
+.spineGilt {
+  position: absolute;
+  left: 3px;
+  right: 7px;
+  bottom: 3px;
+  height: calc(var(--gilt) * 60%);
+  border-radius: 2px;
+  background: linear-gradient(180deg, var(--lx-toy-gold-top), var(--lx-toy-gold-bottom));
+  opacity: 0.9;
+}
+
+.spineBadge {
+  position: absolute;
+  top: -12px;
+  right: -10px;
+  z-index: 1;
+}
+
+.spineLock {
+  position: absolute;
+  bottom: 34px;
+  left: 50%;
+  translate: -50% 0;
+  padding: 2px 4px;
+  border-radius: 6px;
+  background: var(--lx-toy-dark-bottom);
+  font-size: 10px;
+  font-weight: 900;
+  color: var(--lx-toy-paper-top);
+  white-space: nowrap;
+}
+
+/* The missed words: a red ribbon hanging from the top of the book. */
+.ribbon {
+  position: absolute;
+  top: -6px;
+  right: 6px;
+  width: 8px;
+  height: 46px;
+  background: linear-gradient(180deg, var(--lx-toy-alert-top), var(--lx-toy-alert-bottom));
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 82%, 0 100%);
+}
+
+/* The recent words: a fresh paper bookmark sticking out. */
+.bookmark {
+  position: absolute;
+  top: -14px;
+  left: 8px;
+  width: 14px;
+  height: 22px;
+  border: 2px solid var(--lx-toy-outline);
+  border-bottom: none;
+  border-radius: 3px 3px 0 0;
+  background: var(--lx-toy-paper-top);
+}
+
+.bookLeaf {
+  margin-top: 20px;
+}
+
+/* --- Memory: the three tiers on one bar --- */
+
+.tiers {
+  display: flex;
+  height: 12px;
+  overflow: hidden;
+  border: 2px solid var(--lx-toy-outline);
+  border-radius: 6px;
+}
+
+.tierSketch {
+  background: color-mix(in srgb, var(--lx-toy-paper-edge) 55%, transparent);
+}
+
+.tierInk {
+  background: linear-gradient(180deg, var(--lx-toy-blue-top), var(--lx-toy-blue-bottom));
+}
+
+.tierGilt {
+  background: linear-gradient(180deg, var(--lx-toy-gold-top), var(--lx-toy-gold-bottom));
+}
+
+.tierFigures {
+  display: flex;
+  justify-content: space-between;
+  font-size: var(--lx-size-caption);
+  font-weight: 700;
+  color: var(--lx-color-page-ink-muted);
+}
+
+.tierFigures b {
+  font-weight: 900;
+  color: var(--lx-color-page-ink);
+}
+
+/* --- A wide screen: the desk of Jouer, the day on the left, the shelf on the right --- */
+
+@media (min-width: 1180px) {
+  .screen {
+    display: grid;
+    grid-template-columns: minmax(250px, 300px) minmax(0, 1fr) minmax(290px, 340px);
+    align-items: stretch;
+    max-width: 1560px;
+    min-height: calc(100dvh - 76px);
+  }
+
+  .stage {
+    order: 0;
+  }
+
+  .today {
+    display: flex;
+    grid-template-columns: none;
+  }
+
+  .play {
+    flex: 1;
+    min-height: 0;
+  }
+
+  .deck {
+    min-height: 260px;
+    scale: 1.25;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .deckCard,
+  .book {
+    transition: none;
+  }
+}
