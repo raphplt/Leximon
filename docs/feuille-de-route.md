@@ -133,7 +133,7 @@ Dans l'ordre où elles débloquent le plus :
 ## Prochaines étapes conseillées
 
 1. Mettre la phase 0 en ligne et la recetter sur un téléphone : vérifiée dans le navigateur, seulement typée côté mobile.
-2. Direction artistique « La Bibliothèque » : seule allure depuis le 2026-11-04 ; le propriétaire joue une semaine sur le web et sur téléphone, puis la fin de la phase 3 avant la mise en ligne : les textes, et les finitions hors du jeu, en commençant par l'accueil ([cahier](cahiers-des-charges/finitions-hors-du-jeu.md), questions ouvertes).
+2. Direction artistique « La Bibliothèque » : seule allure depuis le 2026-11-04 ; le propriétaire joue une semaine sur le web et sur téléphone, puis la fin de la phase 3 avant la mise en ligne : les textes, et les finitions hors du jeu, en commençant par l'accueil ([cahier](cahiers-des-charges/finitions-hors-du-jeu.md), tranché le 2026-11-04 ; d'abord la planche `/planches/accueil`).
 3. Suivre `/admin/mesure` et `/admin/retours` à mesure que les invités arrivent ; vérifier `cf-placement: local-CDG` et le p95 de l'ouverture dans le résumé Discord ([rnd/charge.md](rnd/charge.md)).
 4. Le mobile : recette complète sur Android et iPhone ([recette-mobile.md](recette-mobile.md)). Avant la première publication sur les stores : un compte de démonstration pour l'examen (la connexion par code l'empêche), les captures et l'image de présentation dans la nouvelle allure, l'adresse App Store et les liens universels. Les textes et réponses sont prêts ([fiches-stores.md](fiches-stores.md)), premier build de production Android le 2026-10-27.
 5. La quatrième collection, après la bascule.

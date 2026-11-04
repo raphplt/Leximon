@@ -1,13 +1,23 @@
 # Cahier des charges · Les finitions hors du jeu, en commençant par l'accueil
 
-- **Statut :** proposé le 2026-11-04, questions ouvertes (plus bas). Rien n'est construit.
+- **Statut :** proposé le 2026-11-04, toutes les questions tranchées le même jour (ci-dessous). Rien n'est construit ; le lot 1 (la maquette de l'accueil) vient en premier.
 - **Source :** demande du propriétaire du 2026-11-04 : après les Défis, « passer aux peaufinages restants, genre la page d'accueil ». C'est la partie « Hors du jeu » de la phase 3 de la [direction artistique](direction-artistique.md#hors-du-jeu), qui reste à faire maintenant que « La Bibliothèque » est la seule allure.
 - **Règles liées :** P1 (positionnement), P47 et P53 (le sachet), P55 (liste d'attente), P71 (cible du lancement), D-036 (e-mails sans image distante), D-056 (La Bibliothèque).
 - **Cahiers liés :** [direction-artistique.md](direction-artistique.md), [e-mails.md](e-mails.md), [ouverture.md](ouverture.md). Voix : [voix.md](../voix.md), partie « Vendre le bénéfice ».
 
 ## Choix du propriétaire
 
-Aucun pour l'instant.
+- **2026-11-04 · Toutes les recommandations retenues**, de A1 à A6 et de B1 à B4 :
+  - le premier écran montre un vrai sachet que le visiteur déchire sur place, sans compte (A1 : a) ;
+  - la page est construite pour l'ouverture : « Jouer » mène au jeu en invité, un seul réglage le remplace par la liste d'attente tant que la bêta est fermée (A2 : a) ;
+  - « Comment on joue » tient en trois feuilles avec les vraies pièces du jeu en mouvement (A3 : a) ;
+  - les collections en couvertures de livres et l'énigme du jour jouable sans compte s'ajoutent (A4 : a) ;
+  - sur téléphone, le sachet est visible au premier écran, le bouton à portée du pouce (A5 : a) ;
+  - une planche `/planches/accueil` d'abord, jugée par le propriétaire avant de construire (A6 : a) ;
+  - ensuite : icône, favicon, écran de lancement et images de partage, puis e-mails, puis cadres et emblèmes, puis fiches des stores (B1 : a) ;
+  - les images de partage posent la vraie carte du jeu sur le sous-main (B2 : a) ;
+  - les e-mails sont une feuille crème sur fond de bois uni, bouton plein en or (B3 : a) ;
+  - les 13 cadres d'avatar sont redessinés dans les matières de la salle, mêmes identifiants (B4 : a).
 
 ## Ce qu'on a aujourd'hui
 
