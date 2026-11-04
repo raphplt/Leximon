@@ -7,14 +7,12 @@ import type {
 import {
   buildQuestion,
   CHOICES_PER_QUESTION,
-  canSpellWithTiles,
   closeChoicePool,
   createSeededRandom,
   type EpochMs,
   endsWithPairs,
   type FormatChoices,
   gameDayOf,
-  letterTiles,
   levelOf,
   levelUpPossible,
   MASTERY_SCHEDULE,
@@ -64,7 +62,6 @@ function settingsOf(
     readonly reviewLength: number;
     readonly newWordsPerDay: number;
     readonly reviewListen: boolean;
-    readonly reviewLetters: boolean;
     readonly reviewPairs: boolean;
     readonly reviewDifficulty: ReviewDifficulty;
   },
@@ -77,7 +74,6 @@ function settingsOf(
       ? preferences.newWordsPerDay
       : rules.defaultNewWordsPerDay,
     listen: preferences.reviewListen,
-    letters: preferences.reviewLetters,
     pairs: preferences.reviewPairs,
     difficulty: preferences.reviewDifficulty,
   };
@@ -301,13 +297,7 @@ function buildReviewQuestion(
   choices: FormatChoices,
 ): ReviewQuestion | null {
   const { cardId, counted, fresh } = item;
-  const lemma = catalog.wordOf.get(cardId);
-  const format = pickFormat(
-    random,
-    rules,
-    { counted, fresh, rising, spellable: lemma !== undefined && canSpellWithTiles(rules, lemma) },
-    choices,
-  );
+  const format = pickFormat(random, rules, { counted, fresh, rising }, choices);
   const collectionId = catalog.collectionOf.get(cardId);
   const sameCollection =
     collectionId === undefined ? [] : (catalog.byCollection.get(collectionId) ?? []);
@@ -339,10 +329,6 @@ function buildReviewQuestion(
   switch (format) {
     case "typed":
       return { cardId, format, ...meta };
-    case "letters":
-      return lemma === undefined
-        ? null
-        : { cardId, format, tiles: [...letterTiles(random, rules, lemma)], ...meta };
     default: {
       const main = choice(format);
       return main === null ? null : { cardId, format, choices: [...main.choices], ...meta };

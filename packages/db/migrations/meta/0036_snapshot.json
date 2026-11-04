@@ -5822,13 +5822,6 @@
           "notNull": true,
           "default": true
         },
-        "review_letters": {
-          "name": "review_letters",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true,
-          "default": true
-        },
         "review_pairs": {
           "name": "review_pairs",
           "type": "boolean",
@@ -6456,7 +6449,6 @@
         "word",
         "typed",
         "listen",
-        "letters",
         "pairs"
       ]
     },

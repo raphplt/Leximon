@@ -769,7 +769,6 @@ const DEFAULT_PREFERENCES: Preferences = {
   reviewLength: 10,
   newWordsPerDay: 10,
   reviewListen: true,
-  reviewLetters: true,
   reviewPairs: true,
   reviewDifficulty: "normal",
 };
@@ -787,7 +786,6 @@ export async function readPreferences(db: Reader, userId: string): Promise<Prefe
       reviewLength: userPreferences.reviewLength,
       newWordsPerDay: userPreferences.newWordsPerDay,
       reviewListen: userPreferences.reviewListen,
-      reviewLetters: userPreferences.reviewLetters,
       reviewPairs: userPreferences.reviewPairs,
       reviewDifficulty: userPreferences.reviewDifficulty,
     })
@@ -820,7 +818,6 @@ export async function updatePreferences(
       reviewLength: userPreferences.reviewLength,
       newWordsPerDay: userPreferences.newWordsPerDay,
       reviewListen: userPreferences.reviewListen,
-      reviewLetters: userPreferences.reviewLetters,
       reviewPairs: userPreferences.reviewPairs,
       reviewDifficulty: userPreferences.reviewDifficulty,
     });

@@ -2,7 +2,7 @@
 
 import type { CatalogCard, ReviewRequest } from "@leximon/contract";
 import { type Catalog, cardOrPlaceholder, collectionName } from "@leximon/contract/client";
-import { normalizeWord, TYPED_ANSWER_MAX_LENGTH } from "@leximon/core";
+import { TYPED_ANSWER_MAX_LENGTH } from "@leximon/core";
 import { effects } from "@leximon/tokens";
 import {
   AFTER_ANSWER_MS,
@@ -21,11 +21,6 @@ import {
   frequencyLine,
   hideWordIn,
   KEYBOARD_HINT,
-  LETTERS_ACTION,
-  LETTERS_HINT,
-  LETTERS_START,
-  letterSlots,
-  lettersSpelled,
   levelUpLabel,
   levelUpLine,
   MEET_ACTION,
@@ -40,7 +35,6 @@ import {
   pairsDone,
   pairsVerdict,
   pickInPairs,
-  placeTile,
   playable,
   questionKicker,
   RECAP_BONUS_MS,
@@ -54,7 +48,6 @@ import {
   spellingLine,
   streakLine,
   TYPED_KEYBOARD_HINT,
-  takeBackFrom,
   typedQuestionHint,
   withCatchUp,
 } from "@leximon/view-model";
@@ -186,13 +179,13 @@ function ChallengeFlow() {
 
   /**
    * A word that counts goes through the review; free practice only earns its XP. `chosen` is the
-   * card picked, the word spelled out, or the mistakes of a round of pairs.
+   * card picked, the word typed, or the mistakes of a round of pairs.
    */
   const sendAnswer = async (question: SeriesQuestion, chosen: string, key: string) => {
     const { cardId } = question;
     if (question.counted && question.format !== "pairs") {
       return api.answerChallenge(
-        question.format === "typed" || question.format === "letters"
+        question.format === "typed"
           ? { cardId, format: question.format, typed: chosen }
           : { cardId, format: question.format, chosenCardId: chosen },
         key,
@@ -201,7 +194,7 @@ function ChallengeFlow() {
     const free = await api.answerPractice(
       question.format === "pairs"
         ? { cardId, format: "pairs", mistakes: Number(chosen) }
-        : question.format === "typed" || question.format === "letters"
+        : question.format === "typed"
           ? { cardId, format: question.format, typed: chosen }
           : { cardId, chosenCardId: chosen, format: question.format },
       key,
@@ -552,9 +545,6 @@ function Asked({
             {question.counted ? typedQuestionHint(level) : PRACTICE_TYPED_HINT}
           </p>
         )}
-        {question.format === "letters" && result === null && (
-          <p className={styles.promptHint}>{LETTERS_HINT}</p>
-        )}
         {result === null && !pairs && (question.catchUp || !question.counted) && (
           <p className={styles.promptHint}>
             {question.catchUp ? CATCH_UP_HINT : PRACTICE_FREE_HINT}
@@ -565,15 +555,6 @@ function Asked({
       {question.format === "typed" ? (
         <TypedAnswer
           key={question.cardId}
-          step={step}
-          correct={result?.correct ?? null}
-          onAnswer={onChoose}
-        />
-      ) : question.format === "letters" ? (
-        <LettersAnswer
-          key={question.cardId}
-          tiles={question.tiles}
-          slots={letterSlots(card.word)}
           step={step}
           correct={result?.correct ?? null}
           onAnswer={onChoose}
@@ -700,104 +681,6 @@ function HeardPrompt({ card, shown }: { readonly card: CatalogCard; readonly sho
         </Toy>
       </div>
     </>
-  );
-}
-
-/** The word rebuilt from its tiles: a tile goes to the next slot, a slot gives its tile back. */
-function LettersAnswer({
-  tiles,
-  slots,
-  step,
-  correct,
-  onAnswer,
-}: {
-  readonly tiles: readonly string[];
-  readonly slots: number;
-  readonly step: Step;
-  readonly correct: boolean | null;
-  readonly onAnswer: (spelled: string) => void;
-}) {
-  const [state, setState] = useState(LETTERS_START);
-  const asking = step.name === "asking";
-  const full = state.placed.length === slots;
-  const submit = useCallback(() => {
-    if (asking && full) onAnswer(lettersSpelled(state, tiles));
-  }, [asking, full, onAnswer, state, tiles]);
-  // On a keyboard, letters typed take the first free tile that matches, Backspace takes one back.
-  useEffect(() => {
-    if (!asking) return;
-    const onKey = (event: KeyboardEvent) => {
-      if (event.ctrlKey || event.metaKey || event.altKey) return;
-      if (event.key === "Backspace") {
-        setState((current) => takeBackFrom(current, current.placed.length - 1));
-        return;
-      }
-      if (event.key === "Enter") {
-        event.preventDefault();
-        submit();
-        return;
-      }
-      if (event.key.length !== 1) return;
-      const typed = normalizeWord(event.key);
-      if (typed === "") return;
-      setState((current) => {
-        const free = tiles.findIndex(
-          (tile, index) => !current.placed.includes(index) && normalizeWord(tile) === typed,
-        );
-        return free === -1 ? current : placeTile(current, free, slots);
-      });
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [asking, slots, submit, tiles]);
-  const tone = correct === null ? "" : correct ? styles.typedRight : styles.typedWrong;
-  return (
-    <div className={styles.letters} data-right={correct === true || undefined}>
-      <div className={`${styles.slots} ${tone}`}>
-        {Array.from({ length: slots }, (_, slot) => {
-          const index = state.placed[slot];
-          const letter = index === undefined ? "" : tiles[index];
-          return (
-            <button
-              // biome-ignore lint/suspicious/noArrayIndexKey: one slot per letter, in order
-              key={slot}
-              type="button"
-              className={`${ui.display} ${styles.slot}`}
-              disabled={!asking || index === undefined}
-              aria-label={letter === "" ? `Case ${slot + 1}, vide` : `Retirer ${letter}`}
-              onClick={() => setState((current) => takeBackFrom(current, slot))}
-            >
-              {letter}
-            </button>
-          );
-        })}
-      </div>
-      <div className={styles.tiles}>
-        {tiles.map((tile, index) => (
-          <Toy
-            // biome-ignore lint/suspicious/noArrayIndexKey: a letter may come twice
-            key={index}
-            matter="paper"
-            shape="tile"
-            className={`${ui.display} ${styles.tile}`}
-            disabled={!asking || state.placed.includes(index)}
-            onClick={() => setState((current) => placeTile(current, index, slots))}
-          >
-            {tile}
-          </Toy>
-        ))}
-      </div>
-      {asking && (
-        <div className={styles.typedActions}>
-          <Button disabled={!full} onClick={submit}>
-            {LETTERS_ACTION}
-          </Button>
-          <Button variant="ghost" onClick={() => onAnswer("")}>
-            Je sèche
-          </Button>
-        </div>
-      )}
-    </div>
   );
 }
 

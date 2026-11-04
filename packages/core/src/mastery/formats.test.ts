@@ -1,13 +1,11 @@
 import { describe, expect, it } from "vitest";
 import { createSeededRandom } from "../random";
 import { PRACTICE_SCHEDULE } from "../rules";
-import { gradeLetters, otherChoiceFormat } from "./challenge";
+import { otherChoiceFormat } from "./challenge";
 import {
   type AskedFormat,
-  canSpellWithTiles,
   closeChoicePool,
   endsWithPairs,
-  letterTiles,
   pairsCards,
   pickFormat,
 } from "./formats";
@@ -15,7 +13,7 @@ import { practiceRulesAt } from "./practice";
 
 const rules = practiceRulesAt(PRACTICE_SCHEDULE, Date.UTC(2026, 10, 5));
 const seeded = () => createSeededRandom("0123456789abcdef0123456789abcdef");
-const ALL = { listen: true, letters: true, difficulty: "normal" } as const;
+const ALL = { listen: true, difficulty: "normal" } as const;
 
 function draws(
   word: Parameters<typeof pickFormat>[2],
@@ -32,7 +30,7 @@ function draws(
 }
 
 describe("pickFormat", () => {
-  const plain = { counted: true, fresh: false, rising: false, spellable: true };
+  const plain = { counted: true, fresh: false, rising: false };
 
   it("asks a word that can rise typed, and a new word its definition", () => {
     expect([...draws({ ...plain, rising: true }, ALL).keys()]).toEqual(["typed"]);
@@ -41,47 +39,23 @@ describe("pickFormat", () => {
 
   it("draws among the formats kept, about evenly", () => {
     const seen = draws(plain, ALL);
-    expect([...seen.keys()].sort()).toEqual(["definition", "letters", "listen", "word"]);
-    for (const count of seen.values()) expect(count).toBeGreaterThan(70);
-    const plainOnly = draws(plain, { listen: false, letters: false, difficulty: "normal" });
+    expect([...seen.keys()].sort()).toEqual(["definition", "listen", "word"]);
+    for (const count of seen.values()) expect(count).toBeGreaterThan(100);
+    const plainOnly = draws(plain, { listen: false, difficulty: "normal" });
     expect([...plainOnly.keys()].sort()).toEqual(["definition", "word"]);
-    const noTiles = draws({ ...plain, spellable: false }, ALL);
-    expect(noTiles.has("letters")).toBe(false);
   });
 
-  it("spells out often in demanding practice, never in a review that counts", () => {
+  it("asks often to type the word in demanding practice, never in a review that counts", () => {
     const hard = { ...ALL, difficulty: "hard" } as const;
     const practice = draws({ ...plain, counted: false }, hard);
-    const spelled = (practice.get("typed") ?? 0) + (practice.get("letters") ?? 0);
-    expect(spelled).toBeGreaterThan(220);
+    expect(practice.get("typed")).toBeGreaterThan(160);
     expect(draws(plain, hard).get("typed")).toBeUndefined();
   });
 });
 
-describe("letters", () => {
-  it("rebuilds plain words of 4 to 12 letters", () => {
-    expect(canSpellWithTiles(rules, "équanimité")).toBe(true);
-    expect(canSpellWithTiles(rules, "vit")).toBe(false);
-    expect(canSpellWithTiles(rules, "arc-en-ciel")).toBe(false);
-    expect(canSpellWithTiles(rules, "à la fortune du pot")).toBe(false);
-    expect(canSpellWithTiles(rules, "anticonstitution")).toBe(false);
-  });
-
-  it("gives every letter plus the decoys, never in order", () => {
-    const tiles = letterTiles(seeded(), rules, "Introït");
-    expect(tiles).toHaveLength(9);
-    for (const letter of "introït") expect(tiles).toContain(letter);
-    expect(tiles.slice(0, 7).join("")).not.toBe("introït");
-  });
-
-  it("grades the word rebuilt without slips, accents aside", () => {
-    expect(gradeLetters("introit", "introït")).toBe("good");
-    expect(gradeLetters("intorït", "introït")).toBe("again");
-  });
-
+describe("catch-up", () => {
   it("asks a heard word again as its word to find", () => {
     expect(otherChoiceFormat("listen")).toBe("word");
-    expect(otherChoiceFormat("letters")).toBe("definition");
   });
 });
 

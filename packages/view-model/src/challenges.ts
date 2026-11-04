@@ -334,8 +334,6 @@ export function questionKicker(format: ChallengeFormat): string {
       return "Quel mot correspond à cette définition ?";
     case "listen":
       return "Écoute le mot : que veut-il dire ?";
-    case "letters":
-      return "Remets les lettres du mot dans l'ordre";
     case "pairs":
       return "Relie chaque mot à sa définition";
   }

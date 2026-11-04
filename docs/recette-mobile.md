@@ -186,7 +186,7 @@ A sur le web sert de deuxième joueur : amis, échanges, clan, sanctions. `pnpm 
 
 ### MDE-06 · Nouvelles questions et réglages
 - **Faire :** suivre DEF-15 à DEF-19 de [recette-web.md](recette-web.md) sur le téléphone.
-- **Attendu :** comme sur le web, au doigt : tuiles de lettres assez grandes, paires en deux colonnes sur un téléphone de 360 dp, vibration sur une mauvaise paire. La voix suit le réglage du téléphone ; les types de questions et l'entraînement suivent le compte (un choix fait sur le web se retrouve ici).
+- **Attendu :** comme sur le web, au doigt : paires en deux colonnes sur un téléphone de 360 dp, vibration sur une mauvaise paire. La voix suit le réglage du téléphone ; les types de questions et l'entraînement suivent le compte (un choix fait sur le web se retrouve ici).
 - **Retour :**
 
 ### MDE-02 · Révisions choisies

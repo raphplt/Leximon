@@ -1,14 +1,14 @@
 /**
  * How each word of a review series is asked. A word that can rise is typed, the only proof of
  * memory (it alone raises the level). A new word, met right after its card, is asked its
- * definition. The others get one of the formats the player kept: the two multiple choices, the
- * word only heard, the word rebuilt from its letters. In free practice, the « demanding »
- * difficulty asks often to spell the word and draws wrong choices close to the answer; a review
+ * definition. The others get one of the formats the player kept: the two multiple choices, or the
+ * word only heard. In free practice, the « demanding » difficulty asks often to type the word
+ * and draws wrong choices close to the answer; a review
  * that counts never changes with it, so that the memory model measures the same for everyone.
  */
 
 import { type RandomSource, randomInt } from "../random";
-import { pickDistinct, type QuizFormat, type SpelledFormat } from "./challenge";
+import { pickDistinct, type QuizFormat } from "./challenge";
 import type { PracticeRules } from "./practice";
 
 export const REVIEW_DIFFICULTIES = ["normal", "hard"] as const;
@@ -17,21 +17,10 @@ export type ReviewDifficulty = (typeof REVIEW_DIFFICULTIES)[number];
 /** The formats a player kept, and their difficulty. The two multiple choices are always kept. */
 export interface FormatChoices {
   readonly listen: boolean;
-  readonly letters: boolean;
   readonly difficulty: ReviewDifficulty;
 }
 
-export type AskedFormat = QuizFormat | SpelledFormat;
-
-/** Letters only, as many as tiles can hold: no spaces, hyphens or apostrophes to place. */
-export function canSpellWithTiles(rules: PracticeRules, word: string): boolean {
-  const letters = [...word];
-  return (
-    /^\p{L}+$/u.test(word) &&
-    letters.length >= rules.tileWordMinLetters &&
-    letters.length <= rules.tileWordMaxLetters
-  );
-}
+export type AskedFormat = QuizFormat | "typed";
 
 export function pickFormat(
   random: RandomSource,
@@ -40,58 +29,21 @@ export function pickFormat(
     readonly counted: boolean;
     readonly fresh: boolean;
     readonly rising: boolean;
-    readonly spellable: boolean;
   },
   choices: FormatChoices,
 ): AskedFormat {
   if (word.counted && word.rising) return "typed";
   if (word.fresh) return "definition";
-  const tiles = choices.letters && word.spellable;
   if (
     !word.counted &&
     choices.difficulty === "hard" &&
     randomInt(random, 100) < rules.hardSpelledPercent
   ) {
-    return tiles && randomInt(random, 2) === 0 ? "letters" : "typed";
+    return "typed";
   }
   const pool: AskedFormat[] = ["definition", "word"];
   if (choices.listen) pool.push("listen");
-  if (tiles) pool.push("letters");
   return pool[randomInt(random, pool.length)] ?? "definition";
-}
-
-/**
- * The tiles of a word to rebuild: its letters, lowercased, and a few decoys, shuffled so that
- * the word never reads in order.
- */
-export function letterTiles(
-  random: RandomSource,
-  rules: PracticeRules,
-  word: string,
-): readonly string[] {
-  const letters = [...word.toLocaleLowerCase("fr")];
-  const decoys = Array.from(
-    { length: rules.decoyLetters },
-    () => DECOY_LETTERS[randomInt(random, DECOY_LETTERS.length)] ?? "e",
-  );
-  const tiles = [...letters, ...decoys];
-  for (let attempt = 0; attempt < 5; attempt++) {
-    shuffle(random, tiles);
-    if (tiles.slice(0, letters.length).join("") !== letters.join("")) break;
-  }
-  return tiles;
-}
-
-/** Common letters of French, so that a decoy does not stand out. */
-const DECOY_LETTERS = [..."eeeaaiinnorsstuulcdmp"];
-
-function shuffle(random: RandomSource, items: string[]): void {
-  for (let i = items.length - 1; i > 0; i--) {
-    const j = randomInt(random, i + 1);
-    const kept = items[i] as string;
-    items[i] = items[j] as string;
-    items[j] = kept;
-  }
 }
 
 /**

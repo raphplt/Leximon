@@ -6,7 +6,6 @@ import {
   PRACTICE_MAX_CARDS,
   QUIZ_FORMATS,
   REVIEW_DIFFICULTIES,
-  SPELLED_FORMATS,
   TYPED_ANSWER_MAX_LENGTH,
 } from "@leximon/core";
 import { z } from "zod";
@@ -15,7 +14,6 @@ import { progressGainSchema } from "./progress";
 
 export const challengeFormatSchema = z.enum(CHALLENGE_FORMATS);
 export const reviewDifficultySchema = z.enum(REVIEW_DIFFICULTIES);
-const TILES_MAX = 30;
 const PAIRS_MAX_CARDS = 6;
 /** More mistakes than this on a round of pairs is clicking at random. */
 const PAIRS_MAX_MISTAKES = 50;
@@ -69,7 +67,7 @@ export const challengeAnswerRequestSchema = z.discriminatedUnion("format", [
   z.object({ cardId: slugSchema, format: z.enum(QUIZ_FORMATS), chosenCardId: slugSchema }),
   z.object({
     cardId: slugSchema,
-    format: z.enum(SPELLED_FORMATS),
+    format: z.literal("typed"),
     typed: z.string().max(TYPED_ANSWER_MAX_LENGTH),
   }),
 ]);
@@ -133,7 +131,7 @@ export const practiceAnswerRequestSchema = z.union([
   }),
   z.object({
     cardId: slugSchema,
-    format: z.enum(SPELLED_FORMATS),
+    format: z.literal("typed"),
     typed: z.string().max(TYPED_ANSWER_MAX_LENGTH),
   }),
   z.object({
@@ -242,7 +240,6 @@ export const reviewSummaryResponseSchema = z.object({
     lengths: z.array(z.int().positive()),
     newWordsPerDayChoices: z.array(z.int().positive()),
     listen: z.boolean(),
-    letters: z.boolean(),
     pairs: z.boolean(),
     difficulty: reviewDifficultySchema,
   }),
@@ -289,12 +286,6 @@ export const reviewQuestionSchema = z
       choices: z.array(slugSchema).length(CHOICES_PER_QUESTION),
     }),
     z.object({ cardId: slugSchema, format: z.literal("typed") }),
-    /** The word's letters and a few decoys, shuffled. */
-    z.object({
-      cardId: slugSchema,
-      format: z.literal("letters"),
-      tiles: z.array(z.string().min(1).max(2)).min(2).max(TILES_MAX),
-    }),
     /** `cards`: the words to match, `cardId` among them; their definitions in another order. */
     z.object({
       cardId: slugSchema,

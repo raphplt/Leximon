@@ -12,7 +12,6 @@ import {
   creditReserve,
   type EpochMs,
   gameDayOf,
-  gradeLetters,
   gradeTyped,
   isDue,
   isProvenLevel,
@@ -33,7 +32,6 @@ import {
   REFILL_SCHEDULE,
   reserveCapacity,
   reviewWord,
-  type SpelledFormat,
   XP_SCHEDULE,
   xpRulesAt,
 } from "@leximon/core";
@@ -167,10 +165,10 @@ export async function nextChallenges(
   return { questions, nextDueAt: next === undefined ? null : next.due.getTime() };
 }
 
-/** The card picked among the choices, or the word spelled out. */
+/** The card picked among the choices, or the word typed. */
 export type GivenAnswer =
   | { readonly format: QuizFormat; readonly chosenCardId: string }
-  | { readonly format: SpelledFormat; readonly typed: string };
+  | { readonly format: "typed"; readonly typed: string };
 
 export type AnswerInput = GivenAnswer & {
   readonly userId: string;
@@ -457,18 +455,15 @@ export async function lockWallet(
 /** FSRS rating of a right answer typed with a slip. */
 const SLIP_RATING = 2;
 
-/** Only the word typed from memory raises the level: rebuilt from tiles, it is not recalled. */
 function gradeAnswer(rules: MasteryRules, catalog: CatalogIndex, input: AnswerInput): Answer {
-  if ("chosenCardId" in input) {
+  if (input.format !== "typed") {
     return { grade: input.chosenCardId === input.cardId ? "good" : "again", typed: false };
   }
   const word = catalog.wordOf.get(input.cardId);
   if (word === undefined) {
     throw new Error(`Owned card ${input.cardId} missing from the published catalog`);
   }
-  return input.format === "letters"
-    ? { grade: gradeLetters(input.typed, word), typed: false }
-    : { grade: gradeTyped(rules, input.typed, word, catalog.words), typed: true };
+  return { grade: gradeTyped(rules, input.typed, word, catalog.words), typed: true };
 }
 
 export interface StoredAward {

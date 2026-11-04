@@ -1,35 +1,5 @@
 import { describe, expect, it } from "vitest";
-import {
-  LETTERS_START,
-  letterSlots,
-  lettersSpelled,
-  PAIRS_START,
-  pairsDone,
-  pairsVerdict,
-  pickInPairs,
-  placeTile,
-  takeBackFrom,
-} from "./puzzles";
-
-describe("letters", () => {
-  const tiles = ["t", "r", "o", "ï", "e", "n", "i", "t", "a"];
-
-  it("fills the slots in order, once per tile, no more than the word", () => {
-    const slots = letterSlots("introït");
-    expect(slots).toBe(7);
-    let state = LETTERS_START;
-    for (const index of [6, 5, 0, 1, 2, 3, 7, 8]) state = placeTile(state, index, slots);
-    expect(lettersSpelled(state, tiles)).toBe("introït");
-    expect(placeTile(state, 4, slots)).toBe(state);
-    expect(lettersSpelled(placeTile(takeBackFrom(state, 6), 4, slots), tiles)).toBe("introïe");
-  });
-
-  it("takes back a slot and those after it", () => {
-    let state = LETTERS_START;
-    for (const index of [6, 5, 0]) state = placeTile(state, index, 7);
-    expect(lettersSpelled(takeBackFrom(state, 1), tiles)).toBe("i");
-  });
-});
+import { PAIRS_START, pairsDone, pairsVerdict, pickInPairs } from "./puzzles";
 
 describe("pairs", () => {
   const cards = ["a", "b"];

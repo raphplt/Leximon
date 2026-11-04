@@ -331,10 +331,8 @@ docker compose exec postgres psql -U leximon -d leximon -c "update user_mastery 
 - **Attendu :** le mot est dit aussitôt, sans être écrit ; un gros bouton d'or le redit. Les 4 choix sont des définitions. Le mot s'écrit une fois la réponse donnée. Voix coupée : plus aucune question d'écoute, elles deviennent « Que veut dire ce mot ? ».
 - **Retour :**
 
-### DEF-16 · Lettres à remettre
-- **Faire :** lancer des séries jusqu'à « Remets les lettres du mot dans l'ordre ». Placer des lettres à la souris, en retirer une, finir au clavier (taper les lettres, Retour arrière, Entrée).
-- **Attendu :** la définition, « Deux lettres ne servent pas. Touche une lettre placée pour la retirer. », une case par lettre et les tuiles dessous, deux de trop. Toucher une lettre placée la retire avec celles d'après. « Valider le mot » marche une fois les cases pleines ; « Je sèche » compte faux. Les accents ne comptent pas. Juste : « Juste. » et l'XP ; un mot qui compte ne monte jamais de palier par les lettres. Seulement sur des mots de 4 à 12 lettres, sans espace ni trait d'union.
-- **Retour :**
+### DEF-16 · Lettres à remettre (retiré)
+- Format retiré le 2026-11-04 : aucune question « Remets les lettres du mot dans l'ordre » ne doit plus apparaître.
 
 ### DEF-17 · Paires
 - **Faire :** une série d'au moins 5 questions qui finit par de l'entraînement. Sur la dernière, relier un mot à une mauvaise définition, puis finir sans faute ; refaire une série et tout relier du premier coup.
@@ -342,8 +340,8 @@ docker compose exec postgres psql -U leximon -d leximon -c "update user_mastery 
 - **Retour :**
 
 ### DEF-18 · Types de questions et entraînement
-- **Faire :** dans les réglages, couper l'écoute, les lettres et les paires, lancer une série ; les rallumer, passer l'entraînement à « Exigeant », lancer « Mes mots récents ».
-- **Attendu :** « Types de questions » avec « Le mot seulement entendu », « Les lettres à remettre », « Les paires en fin de série », « Dire le mot à voix haute », et « Les deux QCM et le mot à écrire restent toujours. Sans le son, l'écoute devient un QCM. ». Un type coupé ne revient plus. « Entraînement » : Normal ou Exigeant. Exigeant fait écrire le mot ou remettre ses lettres environ une question d'entraînement sur deux, avec des mauvais choix proches (même thème, même initiale) ; les mots à revoir ne changent pas. Les choix tiennent après rechargement et se retrouvent sur le téléphone.
+- **Faire :** dans les réglages, couper l'écoute et les paires, lancer une série ; les rallumer, passer l'entraînement à « Exigeant », lancer « Mes mots récents ».
+- **Attendu :** « Types de questions » avec « Le mot seulement entendu », « Les paires en fin de série », « Dire le mot à voix haute », et « Les deux QCM et le mot à écrire restent toujours. Sans le son, l'écoute devient un QCM. ». Un type coupé ne revient plus. « Entraînement » : Normal ou Exigeant. Exigeant fait écrire le mot environ une question d'entraînement sur deux, avec des mauvais choix proches (même thème, même initiale) ; les mots à revoir ne changent pas. Les choix tiennent après rechargement et se retrouvent sur le téléphone.
 - **Retour :**
 
 ### DEF-19 · Jours joués

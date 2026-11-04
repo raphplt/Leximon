@@ -9,7 +9,6 @@ import {
   creditReserve,
   type EpochMs,
   gameDayOf,
-  gradeLetters,
   gradeTyped,
   levelOf,
   levelUpPossible,
@@ -27,7 +26,6 @@ import {
   type QuizFormat,
   REFILL_SCHEDULE,
   reserveCapacity,
-  type SpelledFormat,
   UNLOCK_SCHEDULE,
   type UnlockRules,
   unlockRulesAt,
@@ -328,10 +326,10 @@ export type PracticeAnswerResult =
  */
 export type PracticeAnswer =
   | { readonly chosenCardId: string; readonly format?: QuizFormat | undefined }
-  | { readonly format: SpelledFormat; readonly typed: string }
+  | { readonly format: "typed"; readonly typed: string }
   | { readonly format: "pairs"; readonly mistakes: number };
 
-/** A spelled word gets the slip a review allows; a round of pairs is right without a mistake. */
+/** A typed word gets the slip a review allows; a round of pairs is right without a mistake. */
 function practiceCorrect(
   catalog: CatalogIndex,
   cardId: string,
@@ -342,10 +340,9 @@ function practiceCorrect(
   if (answer.format === "pairs") return answer.mistakes === 0;
   const word = catalog.wordOf.get(cardId);
   if (word === undefined) return false;
-  return answer.format === "letters"
-    ? gradeLetters(answer.typed, word) === "good"
-    : gradeTyped(masteryRulesAt(MASTERY_SCHEDULE, now), answer.typed, word, catalog.words) !==
-        "again";
+  return (
+    gradeTyped(masteryRulesAt(MASTERY_SCHEDULE, now), answer.typed, word, catalog.words) !== "again"
+  );
 }
 
 export async function answerPractice(

@@ -175,7 +175,6 @@ export const preferencesSchema = z.object({
   newWordsPerDay: z.int().min(1).max(50),
   /** Formats of a review series kept beyond the two multiple choices. */
   reviewListen: z.boolean(),
-  reviewLetters: z.boolean(),
   reviewPairs: z.boolean(),
   /** « hard » changes free practice only. */
   reviewDifficulty: z.enum(REVIEW_DIFFICULTIES),

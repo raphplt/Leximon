@@ -35,7 +35,6 @@ function summary(overrides: Partial<ReviewSummaryResponse> = {}): ReviewSummaryR
       lengths: [5, 10, 20],
       newWordsPerDayChoices: [5, 10, 20],
       listen: true,
-      letters: true,
       pairs: false,
       difficulty: "normal",
     },
@@ -116,7 +115,6 @@ describe("settings and streak", () => {
   it("lists the formats the player keeps", () => {
     expect(formatOptions(summary()).map((o) => [o.key, o.on])).toEqual([
       ["listen", true],
-      ["letters", true],
       ["pairs", false],
     ]);
   });

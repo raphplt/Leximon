@@ -531,7 +531,6 @@ describe("/me/preferences", () => {
       reviewLength: 10,
       newWordsPerDay: 10,
       reviewListen: true,
-      reviewLetters: true,
       reviewPairs: true,
       reviewDifficulty: "normal",
     });
@@ -550,7 +549,6 @@ describe("/me/preferences", () => {
       reviewLength: 10,
       newWordsPerDay: 10,
       reviewListen: true,
-      reviewLetters: true,
       reviewPairs: true,
       reviewDifficulty: "normal",
     });

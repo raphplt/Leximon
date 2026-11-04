@@ -547,7 +547,6 @@ export const userPreferences = pgTable("user_preferences", {
   newWordsPerDay: smallint().notNull().default(10),
   /** Formats of a review series the player keeps, beyond the two multiple choices. */
   reviewListen: boolean().notNull().default(true),
-  reviewLetters: boolean().notNull().default(true),
   reviewPairs: boolean().notNull().default(true),
   /** Changes free practice only: a review that counts is the same for everyone. */
   reviewDifficulty: reviewDifficulty().notNull().default("normal"),

@@ -9,11 +9,6 @@ import {
   CATCH_UP_HINT,
   frequencyLine,
   hideWordIn,
-  LETTERS_ACTION,
-  LETTERS_HINT,
-  LETTERS_START,
-  letterSlots,
-  lettersSpelled,
   levelUpLabel,
   levelUpLine,
   MEET_ACTION,
@@ -26,10 +21,8 @@ import {
   pairsDone,
   pairsVerdict,
   pickInPairs,
-  placeTile,
   questionKicker,
   spellingLine,
-  takeBackFrom,
   typedQuestionHint,
 } from "@leximon/view-model";
 import { type ReactNode, useEffect, useRef, useState } from "react";
@@ -266,9 +259,6 @@ export function QuestionView({
           {question.counted ? typedQuestionHint(level) : PRACTICE_TYPED_HINT}
         </Text>
       )}
-      {question.format === "letters" && result === null && (
-        <Text style={styles.hint}>{LETTERS_HINT}</Text>
-      )}
       {result === null && !pairs && (question.catchUp || !question.counted) && (
         <Text style={styles.hint}>{question.catchUp ? CATCH_UP_HINT : PRACTICE_FREE_HINT}</Text>
       )}
@@ -333,15 +323,6 @@ export function QuestionView({
       {step.name === "meeting" ? null : question.format === "typed" ? (
         <TypedAnswer
           key={question.cardId}
-          step={step}
-          correct={result?.correct ?? null}
-          onAnswer={onChoose}
-        />
-      ) : question.format === "letters" ? (
-        <LettersAnswer
-          key={question.cardId}
-          tiles={question.tiles}
-          slots={letterSlots(card.word)}
           step={step}
           correct={result?.correct ?? null}
           onAnswer={onChoose}
@@ -612,89 +593,6 @@ function TypedAnswer({
   );
 }
 
-/** The word rebuilt from its tiles: a tile goes to the next slot, a slot gives its tile back. */
-function LettersAnswer({
-  tiles,
-  slots,
-  step,
-  correct,
-  onAnswer,
-}: {
-  readonly tiles: readonly string[];
-  readonly slots: number;
-  readonly step: Step;
-  readonly correct: boolean | null;
-  readonly onAnswer: (spelled: string) => void;
-}) {
-  const [state, setState] = useState(LETTERS_START);
-  const asking = step.name === "asking";
-  const full = state.placed.length === slots;
-  const judged = correct !== null;
-  return (
-    <View style={styles.letters}>
-      <View
-        style={[
-          styles.slots,
-          judged && [library.slotsJudged, correct ? library.typedRight : library.typedWrong],
-        ]}
-      >
-        {Array.from({ length: slots }, (_, slot) => {
-          const index = state.placed[slot];
-          const letter = index === undefined ? "" : (tiles[index] ?? "");
-          return (
-            <Pressable
-              // biome-ignore lint/suspicious/noArrayIndexKey: one slot per letter, in order
-              key={slot}
-              disabled={!asking || index === undefined}
-              onPress={() => setState((current) => takeBackFrom(current, slot))}
-              accessibilityRole="button"
-              accessibilityLabel={letter === "" ? `Case ${slot + 1}, vide` : `Retirer ${letter}`}
-              style={[styles.slot, judged && styles.slotJudged, judged && library.slotOnLeather]}
-            >
-              <Text style={[styles.letter, judged && library.onLeather]}>{letter}</Text>
-            </Pressable>
-          );
-        })}
-      </View>
-      <View style={styles.tiles}>
-        {tiles.map((tile, index) => {
-          const placed = state.placed.includes(index);
-          return (
-            <Pressable
-              // biome-ignore lint/suspicious/noArrayIndexKey: a letter may come twice
-              key={index}
-              disabled={!asking || placed}
-              onPress={() => setState((current) => placeTile(current, index, slots))}
-              accessibilityRole="button"
-              accessibilityLabel={tile}
-              style={({ pressed }) => [
-                styles.tile,
-                pressed && styles.choicePressed,
-                library.tile,
-                toyFace("paper", "tile"),
-                pressed && library.pressed,
-                placed && styles.tilePlaced,
-              ]}
-            >
-              <Text style={styles.letter}>{tile}</Text>
-            </Pressable>
-          );
-        })}
-      </View>
-      {asking && (
-        <>
-          <Button
-            label={LETTERS_ACTION}
-            disabled={!full}
-            onPress={() => onAnswer(lettersSpelled(state, tiles))}
-          />
-          <TextButton label="Je sèche" onPress={() => onAnswer("")} />
-        </>
-      )}
-    </View>
-  );
-}
-
 /** A mismatch in a round of pairs sounds and buzzes like a wrong answer. */
 const MISMATCH = answerFeedback({
   correct: false,
@@ -873,42 +771,6 @@ const styles = StyleSheet.create({
   },
   typedRight: { borderColor: colors.success },
   typedWrong: { borderColor: colors.danger },
-  letters: { gap: space.s8 },
-  slots: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    justifyContent: "center",
-    gap: space.s2,
-    padding: space.s5,
-    borderRadius: radii.xl,
-    borderWidth: 2,
-    borderColor: "transparent",
-  },
-  slot: {
-    width: 30,
-    height: 42,
-    alignItems: "center",
-    justifyContent: "center",
-    borderTopLeftRadius: radii.md,
-    borderTopRightRadius: radii.md,
-    borderBottomWidth: 3,
-    borderBottomColor: ink.pageInkFaint,
-    backgroundColor: ink.well,
-  },
-  slotJudged: { backgroundColor: "transparent", borderBottomColor: ink.pageInkMuted },
-  letter: { fontFamily: fonts.display, fontSize: fontSizes.title, color: ink.pageInk },
-  tiles: { flexDirection: "row", flexWrap: "wrap", justifyContent: "center", gap: space.s4 },
-  tile: {
-    width: 42,
-    height: 42,
-    alignItems: "center",
-    justifyContent: "center",
-    borderRadius: radii.lg,
-    borderWidth: 2,
-    borderColor: colors.track,
-    backgroundColor: colors.pageRaised,
-  },
-  tilePlaced: { opacity: 0.25 },
   // Narrow words beside wider definitions: both columns fit a small phone.
   pairs: { flexDirection: "row", gap: space.s3 },
   pairWords: { flex: 1, gap: space.s3 },
@@ -1022,9 +884,6 @@ const library = StyleSheet.create({
     marginBottom: 4,
   },
   pending: { borderColor: toyMatters.gold.top },
-  tile: { borderWidth: toyValues.outlineWidth, borderColor: toyValues.outline, marginBottom: 4 },
-  slotsJudged: { borderWidth: toyValues.outlineWidth, borderColor: toyValues.outline },
-  slotOnLeather: { borderBottomColor: colors.inkOnColor },
   pair: { borderWidth: toyValues.outlineWidth, marginBottom: 4 },
   faded: { opacity: 0.55 },
   pressed: { transform: [{ translateY: 3 }] },

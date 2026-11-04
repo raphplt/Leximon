@@ -344,7 +344,6 @@ describe("the formats of a series", () => {
     const guest = await signInAsGuest(app, env);
     expect((await summary(guest)).settings).toMatchObject({
       listen: true,
-      letters: true,
       pairs: true,
       difficulty: "normal",
     });
@@ -352,7 +351,7 @@ describe("the formats of a series", () => {
     for (const word of WORDS) await reviewed(guest, word, { dueInDays: 3 });
     const off = await request(guest, "/me/preferences", {
       method: "PATCH",
-      body: { reviewListen: false, reviewLetters: false, reviewPairs: false },
+      body: { reviewListen: false, reviewPairs: false },
     });
     expect(off.status).toBe(200);
     const questions = await series(guest, { length: 20 });
@@ -389,38 +388,13 @@ describe("the formats of a series", () => {
     });
   });
 
-  it("never raises a word rebuilt from its letters", async () => {
-    const guest = await signInAsGuest(app, env);
-    await give(guest, WORDS.slice(0, 4));
-    const word = WORDS[0] as string;
-    await reviewed(guest, word, { dueInDays: -1, reviewedDaysAgo: 8 });
-    const response = await request(
-      guest,
-      "/challenges/answer",
-      { method: "POST", body: { cardId: word, format: "letters", typed: "common1" } },
-      crypto.randomUUID(),
-    );
-    expect(challengeAnswerResponseSchema.parse(await response.json())).toMatchObject({
-      correct: true,
-      levelUp: false,
-      level: "sketch",
-    });
-    const [log] = await db
-      .select({ format: schema.reviewLogs.format })
-      .from(schema.reviewLogs)
-      .where(eq(schema.reviewLogs.userId, guest.userId));
-    expect(log?.format).toBe("letters");
-  });
-
-  it("grades practice spelled out or in pairs", async () => {
+  it("grades practice typed or in pairs", async () => {
     const guest = await signInAsGuest(app, env);
     await give(guest, WORDS.slice(0, 4));
     const word = WORDS[0] as string;
     const verdict = async (body: object) =>
       practiceAnswerResponseSchema.parse(await (await practiseWith(guest, word, body)).json())
         .correct;
-    expect(await verdict({ format: "letters", typed: "common 1" })).toBe(true);
-    expect(await verdict({ format: "letters", typed: "commno 1" })).toBe(false);
     expect(await verdict({ format: "typed", typed: "commn 1" })).toBe(true);
     expect(await verdict({ format: "pairs", mistakes: 0 })).toBe(true);
     expect(await verdict({ format: "pairs", mistakes: 2 })).toBe(false);

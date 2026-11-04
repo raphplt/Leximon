@@ -159,7 +159,7 @@ export const REVIEW_DIFFICULTY_NOTE =
   "Exigeant fait souvent écrire le mot et rapproche les mauvais choix, sur les questions d'entraînement seulement. Une révision qui compte ne change pas.";
 export const REVIEW_SOUND_LABEL = "Dire le mot à voix haute";
 
-export type FormatSetting = "listen" | "letters" | "pairs";
+export type FormatSetting = "listen" | "pairs";
 
 export interface FormatOption {
   readonly key: FormatSetting;
@@ -171,7 +171,6 @@ export function formatOptions(summary: ReviewSummaryResponse): readonly FormatOp
   const { settings } = summary;
   return [
     { key: "listen", label: "Le mot seulement entendu", on: settings.listen },
-    { key: "letters", label: "Les lettres à remettre", on: settings.letters },
     { key: "pairs", label: "Les paires en fin de série", on: settings.pairs },
   ];
 }
@@ -179,7 +178,6 @@ export function formatOptions(summary: ReviewSummaryResponse): readonly FormatOp
 /** The preference each format option writes. */
 export const FORMAT_PREFERENCE = {
   listen: "reviewListen",
-  letters: "reviewLetters",
   pairs: "reviewPairs",
 } as const satisfies Record<FormatSetting, string>;
 

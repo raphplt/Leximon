@@ -685,62 +685,6 @@
   height: 88px;
 }
 
-/* The word rebuilt from its tiles: its slots, then the tiles to place. */
-.letters {
-  display: grid;
-  gap: var(--lx-s8);
-  margin-top: var(--lx-s9);
-}
-
-.slots {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: var(--lx-s3);
-  padding: var(--lx-s5);
-  border-radius: var(--lx-radius-xl);
-}
-
-.slot {
-  appearance: none;
-  width: 44px;
-  height: 52px;
-  border: 0;
-  border-bottom: 3px solid var(--lx-color-page-ink-faint);
-  background: var(--lx-color-sheet);
-  border-radius: var(--lx-radius-md) var(--lx-radius-md) 0 0;
-  color: inherit;
-  font-size: var(--lx-size-title);
-  cursor: pointer;
-}
-
-.slot:disabled {
-  cursor: default;
-}
-
-.slots.typedRight .slot,
-.slots.typedWrong .slot {
-  background: transparent;
-  border-bottom-color: currentColor;
-}
-
-.tiles {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: var(--lx-s4);
-}
-
-.tile {
-  width: 48px;
-  height: 48px;
-  font-size: var(--lx-size-title);
-}
-
-.tile:disabled {
-  opacity: 0.25;
-}
-
 /* A round of pairs: the words on one side, their definitions on the other. */
 .pairs {
   display: grid;
@@ -785,15 +729,5 @@
 
   .pairs .choiceDefinition {
     font-size: var(--lx-size-small);
-  }
-
-  .slot {
-    width: 34px;
-    height: 44px;
-  }
-
-  .tile {
-    width: 42px;
-    height: 42px;
   }
 }

@@ -19,6 +19,7 @@
 - **2026-11-04 · Les recommandations pour le reste du lot 1 :** T1 a, T4 a, T5 a, T6 a, T11 a, T13 a, T14 a, T15 a, T16 a, T19 a, et T18 a pour l'ordre des lots. Le défi du jour garde sa porte : une série de 5 questions composée comme la révision.
 - **2026-11-04 · Le lot 1 d'un bloc**, web et mobile, sans étape intermédiaire à tester.
 - **2026-11-04 · Écoute, lettres à remettre et paires** (T8 : recommandation). Les lettres comptent comme un QCM et ne font jamais monter (T9). Entraînement Normal ou Exigeant, Exigeant ne touchant que l'entraînement (T10). La série et le total des jours joués se construisent avec ce chantier, montrés dans Ta mémoire et au bilan ; un seul objectif, le défi du jour ; les paliers en écus attendent les écus (T12).
+- **2026-11-04 · Les lettres à remettre sont retirées** après essai, sur le web comme sur le mobile : trop lentes à placer sur ordinateur, et peu utiles à côté du mot à écrire. Exigeant fait donc écrire le mot ; le réglage « Les lettres à remettre » disparaît. Le reste du cahier qui en parle est caduc.
 - **Construit autrement que prévu :** pas de table des jours joués ; la série se lit à la volée dans les sachets ouverts, les réponses et l'énigme, rien de neuf à écrire. La réaction « 5 justes d'affilée » n'est pas faite.
 
 ## Ce qu'on a aujourd'hui

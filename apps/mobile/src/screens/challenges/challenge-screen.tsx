@@ -107,13 +107,13 @@ function ChallengeFlow({
 
   /**
    * A word that counts goes through the review; free practice only earns its XP. `chosen` is the
-   * card picked, the word spelled out, or the mistakes of a round of pairs.
+   * card picked, the word typed, or the mistakes of a round of pairs.
    */
   const sendAnswer = async (question: SeriesQuestion, chosen: string, key: string) => {
     const { cardId } = question;
     if (question.counted && question.format !== "pairs") {
       return api.answerChallenge(
-        question.format === "typed" || question.format === "letters"
+        question.format === "typed"
           ? { cardId, format: question.format, typed: chosen }
           : { cardId, format: question.format, chosenCardId: chosen },
         key,
@@ -122,7 +122,7 @@ function ChallengeFlow({
     const free = await api.answerPractice(
       question.format === "pairs"
         ? { cardId, format: "pairs", mistakes: Number(chosen) }
-        : question.format === "typed" || question.format === "letters"
+        : question.format === "typed"
           ? { cardId, format: question.format, typed: chosen }
           : { cardId, chosenCardId: chosen, format: question.format },
       key,

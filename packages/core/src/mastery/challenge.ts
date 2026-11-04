@@ -9,18 +9,10 @@ import { type RandomSource, randomInt } from "../random";
 import type { AnswerGrade, MasteryRules } from "./mastery";
 
 /**
- * Every way a word is asked. "listen": the word is only heard, pick its definition. "letters":
- * the definition is shown, rebuild the word from its letters. "pairs": four words and their
- * definitions to match, practice only.
+ * Every way a word is asked. "listen": the word is only heard, pick its definition. "pairs": four
+ * words and their definitions to match, practice only.
  */
-export const CHALLENGE_FORMATS = [
-  "definition",
-  "word",
-  "typed",
-  "listen",
-  "letters",
-  "pairs",
-] as const;
+export const CHALLENGE_FORMATS = ["definition", "word", "typed", "listen", "pairs"] as const;
 export type ChallengeFormat = (typeof CHALLENGE_FORMATS)[number];
 /** The two multiple choices of the first clients, still the only ones of `GET /challenges`. */
 export const CHOICE_FORMATS = ["definition", "word"] as const;
@@ -28,9 +20,6 @@ export type ChoiceFormat = (typeof CHOICE_FORMATS)[number];
 /** Multiple choices of the review: four cards, one of them the answer. */
 export const QUIZ_FORMATS = ["definition", "word", "listen"] as const;
 export type QuizFormat = (typeof QUIZ_FORMATS)[number];
-/** Answers spelled out: typed on the keyboard, or rebuilt from tiles. */
-export const SPELLED_FORMATS = ["typed", "letters"] as const;
-export type SpelledFormat = (typeof SPELLED_FORMATS)[number];
 
 export const CHOICES_PER_QUESTION = 4;
 /** Longest text accepted as a typed answer; the longest word of the catalog has 18 letters. */
@@ -191,11 +180,6 @@ export function buildQuestion(
  */
 export function otherChoiceFormat(format: ChallengeFormat): ChoiceFormat {
   return format === "definition" || format === "listen" ? "word" : "definition";
-}
-
-/** A rebuilt word is right only when every letter is in place: the tiles leave no room for slips. */
-export function gradeLetters(typed: string, word: string): AnswerGrade {
-  return normalizeWord(typed) === normalizeWord(word) ? "good" : "again";
 }
 
 /** Up to `count` distinct items, uniformly (partial Fisher-Yates on a copy). */
