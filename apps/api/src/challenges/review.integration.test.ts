@@ -329,3 +329,133 @@ describe("a word met for the first time", () => {
     expect(right.progress.xpGained).toBe(15);
   });
 });
+
+describe("the formats of a series", () => {
+  function practiseWith(guest: Guest, cardId: string, body: object) {
+    return request(
+      guest,
+      "/challenges/practice/answer",
+      { method: "POST", body: { cardId, ...body } },
+      crypto.randomUUID(),
+    );
+  }
+
+  it("keeps every format by default, and only the two multiple choices once turned off", async () => {
+    const guest = await signInAsGuest(app, env);
+    expect((await summary(guest)).settings).toMatchObject({
+      listen: true,
+      letters: true,
+      pairs: true,
+      difficulty: "normal",
+    });
+    await give(guest, WORDS);
+    for (const word of WORDS) await reviewed(guest, word, { dueInDays: 3 });
+    const off = await request(guest, "/me/preferences", {
+      method: "PATCH",
+      body: { reviewListen: false, reviewLetters: false, reviewPairs: false },
+    });
+    expect(off.status).toBe(200);
+    const questions = await series(guest, { length: 20 });
+    expect(new Set(questions.map((q) => q.format))).toEqual(new Set(["definition", "word"]));
+  });
+
+  it("ends a practice series on a round of pairs among the words owned", async () => {
+    const guest = await signInAsGuest(app, env);
+    await give(guest, WORDS.slice(0, 8));
+    for (const word of WORDS.slice(0, 8)) await reviewed(guest, word, { dueInDays: 3 });
+    const questions = await series(guest);
+    const last = questions.at(-1);
+    expect(last?.format).toBe("pairs");
+    if (last?.format !== "pairs") return;
+    expect(last).toMatchObject({ counted: false, retry: null });
+    expect(last.cards).toHaveLength(4);
+    expect(last.cards[0]).toBe(last.cardId);
+    expect([...last.definitions].sort()).toEqual([...last.cards].sort());
+    for (const card of last.cards) expect(WORDS.slice(0, 8)).toContain(card);
+  });
+
+  it("asks a word heard, and grades it like a multiple choice", async () => {
+    const guest = await signInAsGuest(app, env);
+    await give(guest, WORDS.slice(0, 4));
+    const word = WORDS[0] as string;
+    const response = await request(
+      guest,
+      "/challenges/answer",
+      { method: "POST", body: { cardId: word, format: "listen", chosenCardId: word } },
+      crypto.randomUUID(),
+    );
+    expect(challengeAnswerResponseSchema.parse(await response.json())).toMatchObject({
+      correct: true,
+    });
+  });
+
+  it("never raises a word rebuilt from its letters", async () => {
+    const guest = await signInAsGuest(app, env);
+    await give(guest, WORDS.slice(0, 4));
+    const word = WORDS[0] as string;
+    await reviewed(guest, word, { dueInDays: -1, reviewedDaysAgo: 8 });
+    const response = await request(
+      guest,
+      "/challenges/answer",
+      { method: "POST", body: { cardId: word, format: "letters", typed: "common1" } },
+      crypto.randomUUID(),
+    );
+    expect(challengeAnswerResponseSchema.parse(await response.json())).toMatchObject({
+      correct: true,
+      levelUp: false,
+      level: "sketch",
+    });
+    const [log] = await db
+      .select({ format: schema.reviewLogs.format })
+      .from(schema.reviewLogs)
+      .where(eq(schema.reviewLogs.userId, guest.userId));
+    expect(log?.format).toBe("letters");
+  });
+
+  it("grades practice spelled out or in pairs", async () => {
+    const guest = await signInAsGuest(app, env);
+    await give(guest, WORDS.slice(0, 4));
+    const word = WORDS[0] as string;
+    const verdict = async (body: object) =>
+      practiceAnswerResponseSchema.parse(await (await practiseWith(guest, word, body)).json())
+        .correct;
+    expect(await verdict({ format: "letters", typed: "common 1" })).toBe(true);
+    expect(await verdict({ format: "letters", typed: "commno 1" })).toBe(false);
+    expect(await verdict({ format: "typed", typed: "commn 1" })).toBe(true);
+    expect(await verdict({ format: "pairs", mistakes: 0 })).toBe(true);
+    expect(await verdict({ format: "pairs", mistakes: 2 })).toBe(false);
+    expect(await verdict({ format: "listen", chosenCardId: WORDS[1] })).toBe(false);
+  });
+
+  it("refuses a difficulty the game does not know", async () => {
+    const guest = await signInAsGuest(app, env);
+    const odd = await request(guest, "/me/preferences", {
+      method: "PATCH",
+      body: { reviewDifficulty: "extreme" },
+    });
+    expect(odd.status).toBe(400);
+    const hard = await request(guest, "/me/preferences", {
+      method: "PATCH",
+      body: { reviewDifficulty: "hard" },
+    });
+    expect(preferencesSchema.parse(await hard.json()).reviewDifficulty).toBe("hard");
+  });
+});
+
+describe("the streak", () => {
+  it("counts today once the player answers, and the days played before", async () => {
+    const guest = await signInAsGuest(app, env);
+    await give(guest, WORDS.slice(0, 4));
+    expect((await summary(guest)).streak).toEqual({ current: 0, total: 0, playedToday: false });
+    await db.insert(schema.practiceAnswers).values({
+      userId: guest.userId,
+      idempotencyKey: crypto.randomUUID(),
+      cardId: WORDS[1] as string,
+      correct: true,
+      xp: 0,
+      answeredAt: new Date(Date.now() - DAY),
+    });
+    await answer(guest, WORDS[0] as string, WORDS[0] as string);
+    expect((await summary(guest)).streak).toEqual({ current: 2, total: 2, playedToday: true });
+  });
+});

@@ -530,6 +530,10 @@ describe("/me/preferences", () => {
       emailReminders: true,
       reviewLength: 10,
       newWordsPerDay: 10,
+      reviewListen: true,
+      reviewLetters: true,
+      reviewPairs: true,
+      reviewDifficulty: "normal",
     });
     expect(
       (await call(member, "PATCH", "/me/preferences", { notifyTrades: false, emailNews: false }))
@@ -545,6 +549,10 @@ describe("/me/preferences", () => {
       emailReminders: true,
       reviewLength: 10,
       newWordsPerDay: 10,
+      reviewListen: true,
+      reviewLetters: true,
+      reviewPairs: true,
+      reviewDifficulty: "normal",
     });
     expect((await call(member, "PATCH", "/me/preferences", {})).status).toBe(400);
   });

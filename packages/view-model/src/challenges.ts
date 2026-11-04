@@ -325,11 +325,25 @@ export function escapingWords(
 
 /** The question line. */
 export function questionKicker(format: ChallengeFormat): string {
-  if (format === "typed") return "Écris le mot";
-  return format === "definition"
-    ? "Que veut dire ce mot ?"
-    : "Quel mot correspond à cette définition ?";
+  switch (format) {
+    case "typed":
+      return "Écris le mot";
+    case "definition":
+      return "Que veut dire ce mot ?";
+    case "word":
+      return "Quel mot correspond à cette définition ?";
+    case "listen":
+      return "Écoute le mot : que veut-il dire ?";
+    case "letters":
+      return "Remets les lettres du mot dans l'ordre";
+    case "pairs":
+      return "Relie chaque mot à sa définition";
+  }
 }
+
+/** Under a word to type in practice: nothing rises, the same slips are forgiven. */
+export const PRACTICE_TYPED_HINT =
+  "Écris le mot de mémoire. Les accents ne comptent pas et une faute de frappe est tolérée.";
 
 /** Under a word to type: what it is worth, and what is forgiven. */
 export function typedQuestionHint(level: MasteryLevelCode): string {

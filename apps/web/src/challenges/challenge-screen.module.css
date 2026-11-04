@@ -454,6 +454,12 @@
   color: var(--lx-color-rubric);
 }
 
+.streak {
+  margin: 0;
+  font-size: var(--lx-size-body);
+  color: var(--lx-color-page-ink-muted);
+}
+
 .clanShare {
   display: inline-flex;
   align-items: center;
@@ -798,5 +804,139 @@
   :root[data-look="bibliotheque"] .quiz {
     margin: 0 -8px;
     padding: 18px 14px 22px;
+  }
+}
+
+/* After a mistake, the card of the word, small, to open it. */
+.missedCard {
+  appearance: none;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  rotate: -3deg;
+}
+
+.heard {
+  display: flex;
+  justify-content: center;
+  margin-top: var(--lx-s7);
+}
+
+.heardButton {
+  width: 88px;
+  height: 88px;
+}
+
+/* The word rebuilt from its tiles: its slots, then the tiles to place. */
+.letters {
+  display: grid;
+  gap: var(--lx-s8);
+  margin-top: var(--lx-s9);
+}
+
+.slots {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--lx-s3);
+  padding: var(--lx-s5);
+  border-radius: var(--lx-radius-xl);
+}
+
+.slot {
+  appearance: none;
+  width: 44px;
+  height: 52px;
+  border: 0;
+  border-bottom: 3px solid var(--lx-color-page-ink-faint);
+  background: var(--lx-color-sheet);
+  border-radius: var(--lx-radius-md) var(--lx-radius-md) 0 0;
+  color: inherit;
+  font-size: var(--lx-size-title);
+  cursor: pointer;
+}
+
+.slot:disabled {
+  cursor: default;
+}
+
+.slots.typedRight .slot,
+.slots.typedWrong .slot {
+  background: transparent;
+  border-bottom-color: currentColor;
+}
+
+.tiles {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--lx-s4);
+}
+
+.tile {
+  width: 48px;
+  height: 48px;
+  font-size: var(--lx-size-title);
+}
+
+.tile:disabled {
+  opacity: 0.25;
+}
+
+/* A round of pairs: the words on one side, their definitions on the other. */
+.pairs {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
+  gap: var(--lx-s5);
+  margin-top: var(--lx-s7);
+}
+
+.pairColumn {
+  display: grid;
+  gap: var(--lx-s5);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.pairItem {
+  display: flex;
+}
+
+:root[data-look="bibliotheque"] .pairs .choice::before {
+  content: none;
+}
+
+@media (max-width: 759px) {
+  .pairs {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr);
+    gap: var(--lx-s3);
+  }
+
+  .pairColumn {
+    gap: var(--lx-s3);
+  }
+
+  .pairs .choice {
+    padding: var(--lx-s5);
+  }
+
+  .pairs .choiceWord {
+    font-size: var(--lx-size-body-large);
+  }
+
+  .pairs .choiceDefinition {
+    font-size: var(--lx-size-small);
+  }
+
+  .slot {
+    width: 34px;
+    height: 44px;
+  }
+
+  .tile {
+    width: 42px;
+    height: 42px;
   }
 }

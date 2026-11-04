@@ -19,6 +19,7 @@ import type { PracticeSchedule } from "./mastery/practice";
 import type { NotifySchedule } from "./notify/notify";
 import type { XpSchedule } from "./progress/progress";
 import type { LevelRewardSchedule } from "./progress/rewards";
+import type { StreakSchedule } from "./progress/streak";
 import type { UnlockSchedule } from "./progress/unlocks";
 import type { RiddleSchedule } from "./riddle/riddle";
 import type { TradeSchedule } from "./trade/trade";
@@ -347,6 +348,12 @@ export const PRACTICE_SCHEDULE: PracticeSchedule = [
     fragilePool: 1,
     dailyChallengeLength: 5,
     practiceCountsForDaily: false,
+    tileWordMinLetters: 4,
+    tileWordMaxLetters: 12,
+    decoyLetters: 2,
+    hardSpelledPercent: 0,
+    pairsWords: 4,
+    pairsMinQuestions: Number.MAX_SAFE_INTEGER,
   },
   {
     startsAt: REVIEW_DECIDED,
@@ -365,8 +372,17 @@ export const PRACTICE_SCHEDULE: PracticeSchedule = [
     fragilePool: 3,
     dailyChallengeLength: 5,
     practiceCountsForDaily: true,
+    tileWordMinLetters: 4,
+    tileWordMaxLetters: 12,
+    decoyLetters: 2,
+    hardSpelledPercent: 50,
+    pairsWords: 4,
+    pairsMinQuestions: 5,
   },
 ];
+
+// The streak of days played.
+export const STREAK_SCHEDULE: StreakSchedule = [{ startsAt: REVIEW_DECIDED, forgivenPerWeek: 2 }];
 
 /** The day of riddle number 1, in Paris. */
 export const RIDDLE_FIRST_DAY = "2026-10-31";

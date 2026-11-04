@@ -1,6 +1,6 @@
 # Cahier des charges · L'écran Défis repensé et un vrai entraînement
 
-- **Statut :** proposé le 2026-11-03. Choix du propriétaire le 2026-11-04 (ci-dessous) ; le lot 1 est construit le 2026-11-04, web et mobile, à recetter (DEF-01 à DEF-14, MDE-01 à MDE-05). Restent ouvertes T8, T9, T10 et T12 (lots 2 et 3). La planche de l'écran est sur `/planches/defis`. Les règles tranchées sont dans `regles-du-jeu.md` (P1, P29, P31, P33, P81).
+- **Statut :** proposé le 2026-11-03. Choix du propriétaire le 2026-11-04 (ci-dessous) ; le lot 1 est construit le 2026-11-04, web et mobile, à recetter (DEF-01 à DEF-14, MDE-01 à MDE-05). Les lots 2 et 3 sont construits le 2026-11-04, web et mobile, à recetter (DEF-15 à DEF-19, MDE-06). La planche de l'écran est sur `/planches/defis`. Les règles tranchées sont dans `regles-du-jeu.md` (P1, P29, P31, P33, P81).
 - **Source :** retours du propriétaire du 2026-11-03 sur l'écran Défis du web, dans La Bibliothèque. L'écran est éparpillé : le défi du jour, « Tes mots par palier » qui prend beaucoup de place, l'énigme du jour, une liste « Mots à réviser » dont on ne fait rien, et une liste de catégories d'entraînement qui se lit mal et se personnalise peu. « S'entraîner » n'est pas mis en avant, ses boutons sont plats et aucun ne donne envie. Il manque un vrai entraînement, dans l'esprit d'Anki ou de Duolingo.
 - **Règles liées :** P1 (positionnement), P29 (sachet bonus du défi du jour), P31 (ce qu'on révise), P32 et P33 (formats, paliers), P48 (XP), P57 (prononciation), P59 (ouverture par niveau), P72 (rien de payant ne touche la progression), P81 (révisions choisies), P82 (énigme), P84 (écus), P88 (série), P89 (succès), N1 et N2.
 - **Cahiers liés :** [revisions-et-modes-de-jeu.md](revisions-et-modes-de-jeu.md) (la partie A, faite, est reprise ici ; la partie B fournit des types de questions), [defis-progression-et-sensation.md](defis-progression-et-sensation.md) (sons et réactions, gardés), [direction-artistique.md](direction-artistique.md) (la place laissée à la frise), [retours-game-designer.md](retours-game-designer.md) (4.1 sachet bonus à ouvrir, 4.2 frise, 4.3 réactions, 4.6 paliers).
@@ -18,6 +18,8 @@
 - **2026-11-04 · L'entraînement compte pour le défi du jour** (T7 : a). Le clan ne compte toujours que les révisions.
 - **2026-11-04 · Les recommandations pour le reste du lot 1 :** T1 a, T4 a, T5 a, T6 a, T11 a, T13 a, T14 a, T15 a, T16 a, T19 a, et T18 a pour l'ordre des lots. Le défi du jour garde sa porte : une série de 5 questions composée comme la révision.
 - **2026-11-04 · Le lot 1 d'un bloc**, web et mobile, sans étape intermédiaire à tester.
+- **2026-11-04 · Écoute, lettres à remettre et paires** (T8 : recommandation). Les lettres comptent comme un QCM et ne font jamais monter (T9). Entraînement Normal ou Exigeant, Exigeant ne touchant que l'entraînement (T10). La série et le total des jours joués se construisent avec ce chantier, montrés dans Ta mémoire et au bilan ; un seul objectif, le défi du jour ; les paliers en écus attendent les écus (T12).
+- **Construit autrement que prévu :** pas de table des jours joués ; la série se lit à la volée dans les sachets ouverts, les réponses et l'énigme, rien de neuf à écrire. La réaction « 5 justes d'affilée » n'est pas faite.
 
 ## Ce qu'on a aujourd'hui
 

@@ -6,6 +6,7 @@ import {
   MASTERY_LEVELS,
   type PityCounters,
   RARITIES,
+  REVIEW_DIFFICULTIES,
   RIDDLE_OUTCOMES,
   type RiddleClues,
   SANCTION_KINDS,
@@ -36,6 +37,7 @@ export const masteryLevel = pgEnum("mastery_level", MASTERY_LEVELS);
 export const challengeFormat = pgEnum("challenge_format", CHALLENGE_FORMATS);
 export const boosterBonusKind = pgEnum("booster_bonus_kind", BONUS_KINDS);
 export const riddleOutcome = pgEnum("riddle_outcome", RIDDLE_OUTCOMES);
+export const reviewDifficulty = pgEnum("review_difficulty", REVIEW_DIFFICULTIES);
 /** "expired" is never stored: a pending offer past `expires_at` is expired (no scheduled task). */
 export const tradeStatus = pgEnum("trade_status", [
   "pending",
@@ -543,6 +545,12 @@ export const userPreferences = pgTable("user_preferences", {
   reviewLength: smallint().notNull().default(10),
   /** New words the player starts each day, Paris time. */
   newWordsPerDay: smallint().notNull().default(10),
+  /** Formats of a review series the player keeps, beyond the two multiple choices. */
+  reviewListen: boolean().notNull().default(true),
+  reviewLetters: boolean().notNull().default(true),
+  reviewPairs: boolean().notNull().default(true),
+  /** Changes free practice only: a review that counts is the same for everyone. */
+  reviewDifficulty: reviewDifficulty().notNull().default("normal"),
 });
 
 /**

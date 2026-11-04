@@ -7,12 +7,12 @@ import {
   type BoosterWallet,
   bonusRulesAt,
   buildQuestion,
-  type ChoiceFormat,
   createFullWallet,
   createSeededRandom,
   creditReserve,
   type EpochMs,
   gameDayOf,
+  gradeLetters,
   gradeTyped,
   isDue,
   isProvenLevel,
@@ -29,9 +29,11 @@ import {
   practiceRulesAt,
   progressGain,
   type Question,
+  type QuizFormat,
   REFILL_SCHEDULE,
   reserveCapacity,
   reviewWord,
+  type SpelledFormat,
   XP_SCHEDULE,
   xpRulesAt,
 } from "@leximon/core";
@@ -165,10 +167,10 @@ export async function nextChallenges(
   return { questions, nextDueAt: next === undefined ? null : next.due.getTime() };
 }
 
-/** The card picked among the choices, or the word typed. */
+/** The card picked among the choices, or the word spelled out. */
 export type GivenAnswer =
-  | { readonly format: ChoiceFormat; readonly chosenCardId: string }
-  | { readonly format: "typed"; readonly typed: string };
+  | { readonly format: QuizFormat; readonly chosenCardId: string }
+  | { readonly format: SpelledFormat; readonly typed: string };
 
 export type AnswerInput = GivenAnswer & {
   readonly userId: string;
@@ -455,15 +457,18 @@ export async function lockWallet(
 /** FSRS rating of a right answer typed with a slip. */
 const SLIP_RATING = 2;
 
+/** Only the word typed from memory raises the level: rebuilt from tiles, it is not recalled. */
 function gradeAnswer(rules: MasteryRules, catalog: CatalogIndex, input: AnswerInput): Answer {
-  if (input.format !== "typed") {
+  if ("chosenCardId" in input) {
     return { grade: input.chosenCardId === input.cardId ? "good" : "again", typed: false };
   }
   const word = catalog.wordOf.get(input.cardId);
   if (word === undefined) {
     throw new Error(`Owned card ${input.cardId} missing from the published catalog`);
   }
-  return { grade: gradeTyped(rules, input.typed, word, catalog.words), typed: true };
+  return input.format === "letters"
+    ? { grade: gradeLetters(input.typed, word), typed: false }
+    : { grade: gradeTyped(rules, input.typed, word, catalog.words), typed: true };
 }
 
 export interface StoredAward {

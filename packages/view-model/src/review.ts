@@ -1,5 +1,4 @@
 import {
-  type ChallengeQuestion,
   type LevelCounts,
   MASTERY_LEVEL_LABELS,
   type MasteryLevelCode,
@@ -152,6 +151,63 @@ export function paceOptions(summary: ReviewSummaryResponse): readonly SettingOpt
   }));
 }
 
+export const REVIEW_FORMATS_TITLE = "Types de questions";
+export const REVIEW_FORMATS_NOTE =
+  "Les deux QCM et le mot à écrire restent toujours. Sans le son, l'écoute devient un QCM.";
+export const REVIEW_DIFFICULTY_TITLE = "Entraînement";
+export const REVIEW_DIFFICULTY_NOTE =
+  "Exigeant fait souvent écrire le mot et rapproche les mauvais choix, sur les questions d'entraînement seulement. Une révision qui compte ne change pas.";
+export const REVIEW_SOUND_LABEL = "Dire le mot à voix haute";
+
+export type FormatSetting = "listen" | "letters" | "pairs";
+
+export interface FormatOption {
+  readonly key: FormatSetting;
+  readonly label: string;
+  readonly on: boolean;
+}
+
+export function formatOptions(summary: ReviewSummaryResponse): readonly FormatOption[] {
+  const { settings } = summary;
+  return [
+    { key: "listen", label: "Le mot seulement entendu", on: settings.listen },
+    { key: "letters", label: "Les lettres à remettre", on: settings.letters },
+    { key: "pairs", label: "Les paires en fin de série", on: settings.pairs },
+  ];
+}
+
+/** The preference each format option writes. */
+export const FORMAT_PREFERENCE = {
+  listen: "reviewListen",
+  letters: "reviewLetters",
+  pairs: "reviewPairs",
+} as const satisfies Record<FormatSetting, string>;
+
+export interface DifficultyOption {
+  readonly value: ReviewSummaryResponse["settings"]["difficulty"];
+  readonly label: string;
+}
+
+export const DIFFICULTY_OPTIONS: readonly DifficultyOption[] = [
+  { value: "normal", label: "Normal" },
+  { value: "hard", label: "Exigeant" },
+];
+
+// --- The streak ---------------------------------------------------------------------
+
+/**
+ * The days played first, then the streak, never a word about losing it: « 12 jours joués, dont 5
+ * à la suite. » `null` before the first day.
+ */
+export function streakLine(streak: ReviewSummaryResponse["streak"]): string | null {
+  if (streak.total === 0) return null;
+  const total = `${streak.total} ${plural(streak.total, "jour joué", "jours joués")}`;
+  if (streak.current < 2) return `${total}.`;
+  return streak.current === streak.total
+    ? `${total}, tous à la suite.`
+    : `${total}, dont ${streak.current} à la suite.`;
+}
+
 // --- The shelf of scopes ------------------------------------------------------------
 
 export type CoverKind = "rising" | "missed" | "recent" | "collection" | "theme";
@@ -288,12 +344,17 @@ export function memoryLine(summary: ReviewSummaryResponse, now: number): string 
 // --- The series ---------------------------------------------------------------------
 
 /** A question of a series as asked: a catch-up is a missed word asked again, as practice. */
-export type SeriesQuestion = ChallengeQuestion & {
-  readonly counted: boolean;
-  readonly fresh: boolean;
-  readonly retry: ReviewQuestion["retry"];
-  readonly catchUp: boolean;
-};
+export type SeriesQuestion = ReviewQuestion & { readonly catchUp: boolean };
+
+/**
+ * The question as it can be asked here: a word to listen to is shown instead when the sound is
+ * off, and the answer says so.
+ */
+export function playable(question: SeriesQuestion, soundOn: boolean): SeriesQuestion {
+  return question.format === "listen" && !soundOn
+    ? { ...question, format: "definition" }
+    : question;
+}
 
 export function seriesOf(questions: readonly ReviewQuestion[]): readonly SeriesQuestion[] {
   return questions.map((question) => ({ ...question, catchUp: false }));

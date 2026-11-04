@@ -768,6 +768,10 @@ const DEFAULT_PREFERENCES: Preferences = {
   emailReminders: true,
   reviewLength: 10,
   newWordsPerDay: 10,
+  reviewListen: true,
+  reviewLetters: true,
+  reviewPairs: true,
+  reviewDifficulty: "normal",
 };
 
 export async function readPreferences(db: Reader, userId: string): Promise<Preferences> {
@@ -782,6 +786,10 @@ export async function readPreferences(db: Reader, userId: string): Promise<Prefe
       emailReminders: userPreferences.emailReminders,
       reviewLength: userPreferences.reviewLength,
       newWordsPerDay: userPreferences.newWordsPerDay,
+      reviewListen: userPreferences.reviewListen,
+      reviewLetters: userPreferences.reviewLetters,
+      reviewPairs: userPreferences.reviewPairs,
+      reviewDifficulty: userPreferences.reviewDifficulty,
     })
     .from(userPreferences)
     .where(eq(userPreferences.userId, userId));
@@ -811,6 +819,10 @@ export async function updatePreferences(
       emailReminders: userPreferences.emailReminders,
       reviewLength: userPreferences.reviewLength,
       newWordsPerDay: userPreferences.newWordsPerDay,
+      reviewListen: userPreferences.reviewListen,
+      reviewLetters: userPreferences.reviewLetters,
+      reviewPairs: userPreferences.reviewPairs,
+      reviewDifficulty: userPreferences.reviewDifficulty,
     });
   if (row === undefined) throw new Error("Preferences upsert returned no row");
   return row;

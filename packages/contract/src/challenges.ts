@@ -4,6 +4,9 @@ import {
   CHOICES_PER_QUESTION,
   MASTERY_LEVELS,
   PRACTICE_MAX_CARDS,
+  QUIZ_FORMATS,
+  REVIEW_DIFFICULTIES,
+  SPELLED_FORMATS,
   TYPED_ANSWER_MAX_LENGTH,
 } from "@leximon/core";
 import { z } from "zod";
@@ -11,6 +14,11 @@ import { slugSchema, timestampSchema } from "./common";
 import { progressGainSchema } from "./progress";
 
 export const challengeFormatSchema = z.enum(CHALLENGE_FORMATS);
+export const reviewDifficultySchema = z.enum(REVIEW_DIFFICULTIES);
+const TILES_MAX = 30;
+const PAIRS_MAX_CARDS = 6;
+/** More mistakes than this on a round of pairs is clicking at random. */
+const PAIRS_MAX_MISTAKES = 50;
 export const masteryLevelSchema = z.enum(MASTERY_LEVELS);
 export type MasteryLevelCode = z.infer<typeof masteryLevelSchema>;
 
@@ -58,10 +66,10 @@ export type ChallengesResponse = z.infer<typeof challengesResponseSchema>;
  * level, whatever question was served.
  */
 export const challengeAnswerRequestSchema = z.discriminatedUnion("format", [
-  z.object({ cardId: slugSchema, format: z.enum(CHOICE_FORMATS), chosenCardId: slugSchema }),
+  z.object({ cardId: slugSchema, format: z.enum(QUIZ_FORMATS), chosenCardId: slugSchema }),
   z.object({
     cardId: slugSchema,
-    format: z.literal("typed"),
+    format: z.enum(SPELLED_FORMATS),
     typed: z.string().max(TYPED_ANSWER_MAX_LENGTH),
   }),
 ]);
@@ -112,13 +120,28 @@ export type PracticeQuestion = z.infer<typeof practiceQuestionSchema>;
 export const practiceResponseSchema = z.object({ questions: z.array(practiceQuestionSchema) });
 export type PracticeResponse = z.infer<typeof practiceResponseSchema>;
 
-/** `POST /challenges/practice/answer` body, with an `Idempotency-Key` header. */
-export const practiceAnswerRequestSchema = z.object({
-  cardId: slugSchema,
-  chosenCardId: slugSchema,
-  /** How the word was asked; sent by the clients of the review. */
-  format: z.enum(CHOICE_FORMATS).optional(),
-});
+/**
+ * `POST /challenges/practice/answer` body, with an `Idempotency-Key` header: the card picked, the
+ * word spelled out, or a round of pairs with the mistakes made before every pair was found. The
+ * first clients send the card picked without a format.
+ */
+export const practiceAnswerRequestSchema = z.union([
+  z.object({
+    cardId: slugSchema,
+    chosenCardId: slugSchema,
+    format: z.enum(QUIZ_FORMATS).optional(),
+  }),
+  z.object({
+    cardId: slugSchema,
+    format: z.enum(SPELLED_FORMATS),
+    typed: z.string().max(TYPED_ANSWER_MAX_LENGTH),
+  }),
+  z.object({
+    cardId: slugSchema,
+    format: z.literal("pairs"),
+    mistakes: z.int().min(0).max(PAIRS_MAX_MISTAKES),
+  }),
+]);
 export type PracticeAnswerRequest = z.infer<typeof practiceAnswerRequestSchema>;
 
 /** Bonus boosters earned by one answer. */
@@ -218,6 +241,10 @@ export const reviewSummaryResponseSchema = z.object({
     newWordsPerDay: z.int().positive(),
     lengths: z.array(z.int().positive()),
     newWordsPerDayChoices: z.array(z.int().positive()),
+    listen: z.boolean(),
+    letters: z.boolean(),
+    pairs: z.boolean(),
+    difficulty: reviewDifficultySchema,
   }),
   /** Scopes with enough words, closed ones included (the level they ask for is in the rules). */
   scopes: z.array(
@@ -230,6 +257,12 @@ export const reviewSummaryResponseSchema = z.object({
     }),
   ),
   xp: z.object({ today: z.int().nonnegative(), cap: z.int().positive() }),
+  /** Days played in a row, a few missed days forgiven each week, and since the first. */
+  streak: z.object({
+    current: z.int().nonnegative(),
+    total: z.int().nonnegative(),
+    playedToday: z.boolean(),
+  }),
 });
 export type ReviewSummaryResponse = z.infer<typeof reviewSummaryResponseSchema>;
 
@@ -248,18 +281,40 @@ export type ReviewRequest = z.infer<typeof reviewRequestSchema>;
  * first time. `retry`: the same word asked the other way round, to ask again a few questions later
  * when it is missed, as free practice.
  */
-export const reviewQuestionSchema = challengeQuestionSchema.and(
-  z.object({
-    counted: z.boolean(),
-    fresh: z.boolean(),
-    retry: z
-      .object({
-        format: z.enum(CHOICE_FORMATS),
-        choices: z.array(slugSchema).length(CHOICES_PER_QUESTION),
-      })
-      .nullable(),
-  }),
-);
+export const reviewQuestionSchema = z
+  .discriminatedUnion("format", [
+    z.object({
+      cardId: slugSchema,
+      format: z.enum(QUIZ_FORMATS),
+      choices: z.array(slugSchema).length(CHOICES_PER_QUESTION),
+    }),
+    z.object({ cardId: slugSchema, format: z.literal("typed") }),
+    /** The word's letters and a few decoys, shuffled. */
+    z.object({
+      cardId: slugSchema,
+      format: z.literal("letters"),
+      tiles: z.array(z.string().min(1).max(2)).min(2).max(TILES_MAX),
+    }),
+    /** `cards`: the words to match, `cardId` among them; their definitions in another order. */
+    z.object({
+      cardId: slugSchema,
+      format: z.literal("pairs"),
+      cards: z.array(slugSchema).min(2).max(PAIRS_MAX_CARDS),
+      definitions: z.array(slugSchema).min(2).max(PAIRS_MAX_CARDS),
+    }),
+  ])
+  .and(
+    z.object({
+      counted: z.boolean(),
+      fresh: z.boolean(),
+      retry: z
+        .object({
+          format: z.enum(CHOICE_FORMATS),
+          choices: z.array(slugSchema).length(CHOICES_PER_QUESTION),
+        })
+        .nullable(),
+    }),
+  );
 export type ReviewQuestion = z.infer<typeof reviewQuestionSchema>;
 
 /** `POST /challenges/review`, 200. Errors: 403 `level_required`, 422 `scope_too_small`. */

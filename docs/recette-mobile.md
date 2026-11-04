@@ -172,7 +172,7 @@ A sur le web sert de deuxième joueur : amis, échanges, clan, sanctions. `pnpm 
 
 ---
 
-## 6. Défis (DEF-01 à DEF-14)
+## 6. Défis (DEF-01 à DEF-19)
 
 ### MDE-04 · Écran Défis
 - **Faire :** suivre DEF-01, DEF-05 et DEF-07 de [recette-web.md](recette-web.md) sur le téléphone.
@@ -182,6 +182,11 @@ A sur le web sert de deuxième joueur : amis, échanges, clan, sanctions. `pnpm 
 ### MDE-01 · Série
 - **Faire :** lancer une révision, répondre juste et faux, taper un mot quand il le demande, arrêter en cours.
 - **Attendu :** comme sur le web, prononciation, médaillon du verdict, mot nouveau présenté en grande carte, rattrapage, sons, vibrations et réactions compris (DEF-02, DEF-03, DEF-06, DEF-08, DEF-11, DEF-12) ; le clavier ne cache ni la question ni le champ. Bilan enrichi et sachet bonus du jour. Pas d'aide clavier.
+- **Retour :**
+
+### MDE-06 · Nouvelles questions et réglages
+- **Faire :** suivre DEF-15 à DEF-19 de [recette-web.md](recette-web.md) sur le téléphone.
+- **Attendu :** comme sur le web, au doigt : tuiles de lettres assez grandes, paires en deux colonnes sur un téléphone de 360 dp, vibration sur une mauvaise paire. La voix suit le réglage du téléphone ; les types de questions et l'entraînement suivent le compte (un choix fait sur le web se retrouve ici).
 - **Retour :**
 
 ### MDE-02 · Révisions choisies

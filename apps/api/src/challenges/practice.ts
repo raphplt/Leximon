@@ -4,12 +4,13 @@ import {
   BONUS_SCHEDULE,
   bonusRulesAt,
   buildQuestion,
-  type ChoiceFormat,
   createFullWallet,
   createSeededRandom,
   creditReserve,
   type EpochMs,
   gameDayOf,
+  gradeLetters,
+  gradeTyped,
   levelOf,
   levelUpPossible,
   MASTERY_SCHEDULE,
@@ -23,8 +24,10 @@ import {
   practiceRulesAt,
   practiceXp,
   progressGain,
+  type QuizFormat,
   REFILL_SCHEDULE,
   reserveCapacity,
+  type SpelledFormat,
   UNLOCK_SCHEDULE,
   type UnlockRules,
   unlockRulesAt,
@@ -323,14 +326,36 @@ export type PracticeAnswerResult =
  * The wallet lock is the one every answer of the player takes: it serializes them, so the sum of
  * today's XP is exact, the cap holds when answers race, and the daily goal is met once.
  */
+export type PracticeAnswer =
+  | { readonly chosenCardId: string; readonly format?: QuizFormat | undefined }
+  | { readonly format: SpelledFormat; readonly typed: string }
+  | { readonly format: "pairs"; readonly mistakes: number };
+
+/** A spelled word gets the slip a review allows; a round of pairs is right without a mistake. */
+function practiceCorrect(
+  catalog: CatalogIndex,
+  cardId: string,
+  answer: PracticeAnswer,
+  now: EpochMs,
+): boolean {
+  if ("chosenCardId" in answer) return answer.chosenCardId === cardId;
+  if (answer.format === "pairs") return answer.mistakes === 0;
+  const word = catalog.wordOf.get(cardId);
+  if (word === undefined) return false;
+  return answer.format === "letters"
+    ? gradeLetters(answer.typed, word) === "good"
+    : gradeTyped(masteryRulesAt(MASTERY_SCHEDULE, now), answer.typed, word, catalog.words) !==
+        "again";
+}
+
 export async function answerPractice(
   db: Database,
+  catalog: CatalogIndex,
   input: {
     userId: string;
     idempotencyKey: string;
     cardId: string;
-    chosenCardId: string;
-    format?: ChoiceFormat | undefined;
+    answer: PracticeAnswer;
     now: EpochMs;
   },
 ): Promise<PracticeAnswerResult> {
@@ -391,7 +416,7 @@ export async function answerPractice(
     }
     if (!row.owned) return { kind: "card_not_owned" };
 
-    const correct = input.chosenCardId === cardId;
+    const correct = practiceCorrect(catalog, cardId, input.answer, now);
     const xpGained = practiceXp(rules, { correct, earnedToday: row.earned_today });
     const earned = rules.practiceCountsForDaily
       ? answerBonuses(bonusRules, {
@@ -420,7 +445,7 @@ export async function answerPractice(
             userId,
             idempotencyKey: input.idempotencyKey,
             cardId,
-            format: input.format ?? null,
+            format: input.answer.format ?? null,
             correct,
             xp: xpGained,
             answeredAt,

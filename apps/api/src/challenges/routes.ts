@@ -186,11 +186,14 @@ export function challengeRoutes(loadCatalogIndex: CatalogIndexLoader) {
     if (!body.success) {
       return c.json({ error: "invalid_request" }, 400);
     }
-    const result = await answerPractice(c.var.db, {
+    const now = Date.now();
+    const { cardId, ...answer } = body.data;
+    const result = await answerPractice(c.var.db, await loadCatalogIndex(c.var.db, now), {
       userId: c.var.userId,
       idempotencyKey: key.data,
-      ...body.data,
-      now: Date.now(),
+      cardId,
+      answer,
+      now,
     });
     switch (result.kind) {
       case "answered":

@@ -6,20 +6,32 @@ import type {
 } from "@leximon/contract";
 import {
   buildQuestion,
+  CHOICES_PER_QUESTION,
+  canSpellWithTiles,
+  closeChoicePool,
   createSeededRandom,
   type EpochMs,
+  endsWithPairs,
+  type FormatChoices,
   gameDayOf,
+  letterTiles,
   levelOf,
   levelUpPossible,
   MASTERY_SCHEDULE,
   type MasteryRules,
   masteryRulesAt,
+  normalizeWord,
   otherChoiceFormat,
   PRACTICE_SCHEDULE,
   type PracticeRules,
+  pairsCards,
+  pickDistinct,
+  pickFormat,
   planReview,
   practiceRulesAt,
+  type QuizFormat,
   type RandomSource,
+  type ReviewDifficulty,
   recallProbability,
   UNLOCK_SCHEDULE,
   unlockRulesAt,
@@ -27,6 +39,7 @@ import {
 import type { Database } from "@leximon/db";
 import { readPreferences } from "../profile/profile";
 import { readXp } from "../progress/progress";
+import { readStreak } from "../progress/streak";
 import type { CatalogIndex } from "./catalog-index";
 import {
   countsAsReview,
@@ -38,11 +51,24 @@ import {
   scopeLevel,
 } from "./practice";
 
+interface Settings extends FormatChoices {
+  readonly length: number;
+  readonly newWordsPerDay: number;
+  readonly pairs: boolean;
+}
+
 /** The player's settings, kept to what the rules in force allow. */
 function settingsOf(
   rules: PracticeRules,
-  preferences: { readonly reviewLength: number; readonly newWordsPerDay: number },
-): { readonly length: number; readonly newWordsPerDay: number } {
+  preferences: {
+    readonly reviewLength: number;
+    readonly newWordsPerDay: number;
+    readonly reviewListen: boolean;
+    readonly reviewLetters: boolean;
+    readonly reviewPairs: boolean;
+    readonly reviewDifficulty: ReviewDifficulty;
+  },
+): Settings {
   return {
     length: rules.lengths.includes(preferences.reviewLength)
       ? preferences.reviewLength
@@ -50,6 +76,10 @@ function settingsOf(
     newWordsPerDay: rules.newWordsPerDay.includes(preferences.newWordsPerDay)
       ? preferences.newWordsPerDay
       : rules.defaultNewWordsPerDay,
+    listen: preferences.reviewListen,
+    letters: preferences.reviewLetters,
+    pairs: preferences.reviewPairs,
+    difficulty: preferences.reviewDifficulty,
   };
 }
 
@@ -107,11 +137,12 @@ export async function reviewSummary(
   const { userId, now } = input;
   const rules = practiceRulesAt(PRACTICE_SCHEDULE, now);
   const mastery = masteryRulesAt(MASTERY_SCHEDULE, now);
-  const [pool, missed, xpToday, preferences] = await Promise.all([
+  const [pool, missed, xpToday, preferences, streak] = await Promise.all([
     ownedWords(db, userId),
     missedWords(db, userId, rules, now),
     practiceXpToday(db, userId, now),
     readPreferences(db, userId),
+    readStreak(db, userId, now),
   ]);
   const settings = settingsOf(rules, preferences);
   const due = pool.filter((word) => isDueNow(word, now));
@@ -161,6 +192,7 @@ export async function reviewSummary(
     },
     scopes,
     xp: { today: xpToday, cap: rules.dailyXpCap },
+    streak,
   };
 }
 
@@ -232,10 +264,30 @@ export async function startReview(
   for (const item of items) {
     const word = byId.get(item.cardId);
     if (word === undefined) continue;
-    const question = buildReviewQuestion(random, rules, catalog, item, {
-      typed: item.counted && canRise(mastery, catalog, word, now) && countsAsReview(word, now),
-    });
+    const rising =
+      item.counted && canRise(mastery, catalog, word, now) && countsAsReview(word, now);
+    const question = buildReviewQuestion(random, rules, catalog, item, rising, settings);
     if (question !== null) questions.push(question);
+  }
+  const last = questions.at(-1);
+  if (settings.pairs && last !== undefined && endsWithPairs(rules, questions)) {
+    const cards = pairsCards(
+      random,
+      rules,
+      last.cardId,
+      words.map((word) => word.cardId),
+    );
+    if (cards !== null) {
+      questions[questions.length - 1] = {
+        cardId: last.cardId,
+        format: "pairs",
+        cards: [...cards],
+        definitions: pickDistinct(random, cards, cards.length),
+        counted: false,
+        fresh: false,
+        retry: null,
+      };
+    }
   }
   return { kind: "ready", questions };
 }
@@ -245,21 +297,55 @@ function buildReviewQuestion(
   rules: PracticeRules,
   catalog: CatalogIndex,
   item: { readonly cardId: string; readonly counted: boolean; readonly fresh: boolean },
-  options: { readonly typed: boolean },
+  rising: boolean,
+  choices: FormatChoices,
 ): ReviewQuestion | null {
   const { cardId, counted, fresh } = item;
+  const lemma = catalog.wordOf.get(cardId);
+  const format = pickFormat(
+    random,
+    rules,
+    { counted, fresh, rising, spellable: lemma !== undefined && canSpellWithTiles(rules, lemma) },
+    choices,
+  );
   const collectionId = catalog.collectionOf.get(cardId);
   const sameCollection =
     collectionId === undefined ? [] : (catalog.byCollection.get(collectionId) ?? []);
-  const choice = (format?: "definition" | "word") =>
-    buildQuestion(random, cardId, sameCollection, catalog.all, format);
-  const main = options.typed ? null : choice(fresh ? "definition" : undefined);
-  if (!options.typed && main === null) return null;
-  const retry =
-    rules.catchUps > 0 ? choice(otherChoiceFormat(main === null ? "typed" : main.format)) : null;
-  const again = retry === null ? null : { format: retry.format, choices: [...retry.choices] };
-  if (main === null) {
-    return { cardId, format: "typed", counted, fresh, retry: again };
+  const wrongFrom =
+    !counted && choices.difficulty === "hard"
+      ? closeChoicePool(
+          cardId,
+          (id) => normalizeWord(catalog.wordOf.get(id) ?? "").slice(0, 1),
+          [
+            ...new Set(
+              (catalog.themesOf.get(cardId) ?? []).flatMap(
+                (theme) => catalog.byTheme.get(theme) ?? [],
+              ),
+            ),
+          ],
+          sameCollection,
+          CHOICES_PER_QUESTION - 1,
+        )
+      : sameCollection;
+  const choice = (asked: QuizFormat) =>
+    buildQuestion(random, cardId, wrongFrom, catalog.all, asked);
+  const other = otherChoiceFormat(format);
+  const again = rules.catchUps > 0 ? choice(other) : null;
+  const meta = {
+    counted,
+    fresh,
+    retry: again === null ? null : { format: other, choices: [...again.choices] },
+  };
+  switch (format) {
+    case "typed":
+      return { cardId, format, ...meta };
+    case "letters":
+      return lemma === undefined
+        ? null
+        : { cardId, format, tiles: [...letterTiles(random, rules, lemma)], ...meta };
+    default: {
+      const main = choice(format);
+      return main === null ? null : { cardId, format, choices: [...main.choices], ...meta };
+    }
   }
-  return { cardId, format: main.format, choices: [...main.choices], counted, fresh, retry: again };
 }

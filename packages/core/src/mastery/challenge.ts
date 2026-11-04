@@ -8,18 +8,37 @@
 import { type RandomSource, randomInt } from "../random";
 import type { AnswerGrade, MasteryRules } from "./mastery";
 
-export const CHALLENGE_FORMATS = ["definition", "word", "typed"] as const;
+/**
+ * Every way a word is asked. "listen": the word is only heard, pick its definition. "letters":
+ * the definition is shown, rebuild the word from its letters. "pairs": four words and their
+ * definitions to match, practice only.
+ */
+export const CHALLENGE_FORMATS = [
+  "definition",
+  "word",
+  "typed",
+  "listen",
+  "letters",
+  "pairs",
+] as const;
 export type ChallengeFormat = (typeof CHALLENGE_FORMATS)[number];
+/** The two multiple choices of the first clients, still the only ones of `GET /challenges`. */
 export const CHOICE_FORMATS = ["definition", "word"] as const;
 export type ChoiceFormat = (typeof CHOICE_FORMATS)[number];
+/** Multiple choices of the review: four cards, one of them the answer. */
+export const QUIZ_FORMATS = ["definition", "word", "listen"] as const;
+export type QuizFormat = (typeof QUIZ_FORMATS)[number];
+/** Answers spelled out: typed on the keyboard, or rebuilt from tiles. */
+export const SPELLED_FORMATS = ["typed", "letters"] as const;
+export type SpelledFormat = (typeof SPELLED_FORMATS)[number];
 
 export const CHOICES_PER_QUESTION = 4;
 /** Longest text accepted as a typed answer; the longest word of the catalog has 18 letters. */
 export const TYPED_ANSWER_MAX_LENGTH = 60;
 
-export interface ChoiceQuestion {
+export interface ChoiceQuestion<F extends QuizFormat = QuizFormat> {
   readonly cardId: string;
-  readonly format: ChoiceFormat;
+  readonly format: F;
   /** Card ids, in display order; the answer is one of them. */
   readonly choices: readonly string[];
   readonly answerIndex: number;
@@ -30,7 +49,8 @@ export interface TypedQuestion {
   readonly format: "typed";
 }
 
-export type Question = ChoiceQuestion | TypedQuestion;
+/** A question of the first clients' sessions. */
+export type Question = ChoiceQuestion<ChoiceFormat> | TypedQuestion;
 
 /**
  * A word reduced to its letters for comparing a typed answer: case, accents, ligatures, spaces
@@ -131,7 +151,20 @@ export function buildQuestion(
   cardId: string,
   sameCollection: readonly string[],
   wholeCatalog: readonly string[],
-  format?: ChoiceFormat,
+): ChoiceQuestion<ChoiceFormat> | null;
+export function buildQuestion<F extends QuizFormat>(
+  random: RandomSource,
+  cardId: string,
+  sameCollection: readonly string[],
+  wholeCatalog: readonly string[],
+  format: F,
+): ChoiceQuestion<F> | null;
+export function buildQuestion(
+  random: RandomSource,
+  cardId: string,
+  sameCollection: readonly string[],
+  wholeCatalog: readonly string[],
+  format?: QuizFormat,
 ): ChoiceQuestion | null {
   const wrong = pickDistinct(
     random,
@@ -152,13 +185,25 @@ export function buildQuestion(
   return { cardId, format: drawn, choices, answerIndex };
 }
 
-/** The other multiple choice format: a word missed comes back asked the other way round. */
+/**
+ * The other multiple choice format: a word missed comes back asked the other way round. A word
+ * heard or shown comes back as its definition to name; a word to find, as its word to define.
+ */
 export function otherChoiceFormat(format: ChallengeFormat): ChoiceFormat {
-  return format === "definition" ? "word" : "definition";
+  return format === "definition" || format === "listen" ? "word" : "definition";
+}
+
+/** A rebuilt word is right only when every letter is in place: the tiles leave no room for slips. */
+export function gradeLetters(typed: string, word: string): AnswerGrade {
+  return normalizeWord(typed) === normalizeWord(word) ? "good" : "again";
 }
 
 /** Up to `count` distinct items, uniformly (partial Fisher-Yates on a copy). */
-function pickDistinct(random: RandomSource, items: readonly string[], count: number): string[] {
+export function pickDistinct(
+  random: RandomSource,
+  items: readonly string[],
+  count: number,
+): string[] {
   const copy = [...items];
   const picked: string[] = [];
   for (let i = 0; i < count && i < copy.length; i++) {

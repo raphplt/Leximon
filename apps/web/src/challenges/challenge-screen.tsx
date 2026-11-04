@@ -2,7 +2,7 @@
 
 import type { CatalogCard, ReviewRequest } from "@leximon/contract";
 import { type Catalog, cardOrPlaceholder, collectionName } from "@leximon/contract/client";
-import { TYPED_ANSWER_MAX_LENGTH } from "@leximon/core";
+import { normalizeWord, TYPED_ANSWER_MAX_LENGTH } from "@leximon/core";
 import { effects } from "@leximon/tokens";
 import {
   AFTER_ANSWER_MS,
@@ -21,14 +21,27 @@ import {
   frequencyLine,
   hideWordIn,
   KEYBOARD_HINT,
+  LETTERS_ACTION,
+  LETTERS_HINT,
+  LETTERS_START,
+  letterSlots,
+  lettersSpelled,
   levelUpLabel,
   levelUpLine,
   MEET_ACTION,
   MEET_KICKER,
   NOT_THIS_TIME,
   noChallengeNotice,
+  PAIRS_START,
+  type PairSide,
   PRACTICE_FREE_HINT,
   PRACTICE_REFUSED,
+  PRACTICE_TYPED_HINT,
+  pairsDone,
+  pairsVerdict,
+  pickInPairs,
+  placeTile,
+  playable,
   questionKicker,
   RECAP_BONUS_MS,
   recapActions,
@@ -39,7 +52,9 @@ import {
   sessionScore,
   sessionXpLine,
   spellingLine,
+  streakLine,
   TYPED_KEYBOARD_HINT,
+  takeBackFrom,
   typedQuestionHint,
   withCatchUp,
 } from "@leximon/view-model";
@@ -63,7 +78,7 @@ import { useLibraryLook } from "@/theme/use-library-look";
 import { Button, ButtonLink, RoundButton } from "@/ui/button";
 import { Icon } from "@/ui/icon";
 import { ParticleStage, useOptionalStage } from "@/ui/stage";
-import { ToyBody } from "@/ui/toy";
+import { Toy, ToyBody } from "@/ui/toy";
 import ui from "@/ui/ui.module.css";
 import styles from "./challenge-screen.module.css";
 import { takeAlbumPractice } from "./pending-practice";
@@ -146,7 +161,8 @@ function ChallengeFlow() {
         } else if (series.questions.length === 0) {
           setNotice(noChallengeNotice(null, Date.now(), noun));
         } else {
-          const questions = seriesOf(series.questions);
+          // Without sound, a word to listen to is shown instead.
+          const questions = seriesOf(series.questions).map((q) => playable(q, speechOn()));
           setSession({ questions, answers: [], index: 0, step: stepFor(questions[0]), request });
           window.scrollTo(0, 0);
         }
@@ -172,26 +188,30 @@ function ChallengeFlow() {
     }
   }, [word, fromAlbum, catalog, router, pathname, start]);
 
-  /** A word that counts goes through the review; free practice only earns its XP. */
+  /**
+   * A word that counts goes through the review; free practice only earns its XP. `chosen` is the
+   * card picked, the word spelled out, or the mistakes of a round of pairs.
+   */
   const sendAnswer = async (question: SeriesQuestion, chosen: string, key: string) => {
-    if (question.format === "typed") {
+    const { cardId } = question;
+    if (question.counted && question.format !== "pairs") {
       return api.answerChallenge(
-        { cardId: question.cardId, format: question.format, typed: chosen },
-        key,
-      );
-    }
-    if (question.counted) {
-      return api.answerChallenge(
-        { cardId: question.cardId, format: question.format, chosenCardId: chosen },
+        question.format === "typed" || question.format === "letters"
+          ? { cardId, format: question.format, typed: chosen }
+          : { cardId, format: question.format, chosenCardId: chosen },
         key,
       );
     }
     const free = await api.answerPractice(
-      { cardId: question.cardId, chosenCardId: chosen, format: question.format },
+      question.format === "pairs"
+        ? { cardId, format: "pairs", mistakes: Number(chosen) }
+        : question.format === "typed" || question.format === "letters"
+          ? { cardId, format: question.format, typed: chosen }
+          : { cardId, chosenCardId: chosen, format: question.format },
       key,
     );
     if (free.kind === "not_owned") return { kind: "not_due" as const };
-    const outcome = freeAnswerOutcome(memory?.get(question.cardId)?.level ?? "blank");
+    const outcome = freeAnswerOutcome(memory?.get(cardId)?.level ?? "blank");
     return { ...free, ...outcome, bonus: free.bonus ?? outcome.bonus };
   };
 
@@ -369,7 +389,7 @@ function QuestionView({
       if (event.target instanceof HTMLInputElement) return;
       const at = choiceIndexOfKey(event.key);
       if (at === null || step.name !== "asking" || question === undefined) return;
-      if (question.format === "typed") return;
+      if (!("choices" in question)) return;
       const chosen = question.choices[at];
       if (chosen !== undefined) {
         event.preventDefault();
@@ -512,22 +532,34 @@ function Asked({
   readonly onNext: () => void;
 }) {
   const step = session.step;
-  const asksDefinition = question.format === "definition";
+  const { openCard } = useShell();
+  // The choices are definitions when the word is shown or heard.
+  const asksDefinition = question.format === "definition" || question.format === "listen";
+  const pairs = question.format === "pairs";
+  const mistakes = pairs && step.name === "answered" ? Number(step.chosen) : 0;
+  const answerText = asksDefinition ? card.definition : card.word;
   return (
     <>
       <div className={`${ui.panel} ${styles.prompt}`}>
         <p className={ui.kicker}>{questionKicker(question.format)}</p>
-        {asksDefinition ? (
+        {question.format === "definition" ? (
           <SpokenPrompt key={question.cardId} card={card} />
-        ) : (
+        ) : question.format === "listen" ? (
+          <HeardPrompt key={question.cardId} card={card} shown={result !== null} />
+        ) : pairs ? null : (
           <h2 id="prompt" className={styles.promptDefinition}>
             {result === null ? hideWordIn(card.definition, card.word) : card.definition}
           </h2>
         )}
         {question.format === "typed" && result === null && (
-          <p className={styles.promptHint}>{typedQuestionHint(level)}</p>
+          <p className={styles.promptHint}>
+            {question.counted ? typedQuestionHint(level) : PRACTICE_TYPED_HINT}
+          </p>
         )}
-        {result === null && (question.catchUp || !question.counted) && (
+        {question.format === "letters" && result === null && (
+          <p className={styles.promptHint}>{LETTERS_HINT}</p>
+        )}
+        {result === null && !pairs && (question.catchUp || !question.counted) && (
           <p className={styles.promptHint}>
             {question.catchUp ? CATCH_UP_HINT : PRACTICE_FREE_HINT}
           </p>
@@ -540,6 +572,24 @@ function Asked({
           step={step}
           correct={result?.correct ?? null}
           onAnswer={onChoose}
+        />
+      ) : question.format === "letters" ? (
+        <LettersAnswer
+          key={question.cardId}
+          tiles={question.tiles}
+          slots={letterSlots(card.word)}
+          step={step}
+          correct={result?.correct ?? null}
+          onAnswer={onChoose}
+        />
+      ) : question.format === "pairs" ? (
+        <PairsRound
+          key={question.cardId}
+          catalog={catalog}
+          cards={question.cards}
+          definitions={question.definitions}
+          done={step.name !== "asking"}
+          onDone={(count) => onChoose(String(count))}
         />
       ) : (
         <ul className={styles.choices}>
@@ -571,22 +621,44 @@ function Asked({
         )}
         {result !== null && (
           <div className={`${styles.feedback} ${result.correct ? styles.good : styles.bad}`}>
+            {/* Every pair is found in the end: a round with mistakes is not a failure. */}
             <ToyBody
-              matter={result.correct ? "green" : "red"}
+              matter={result.correct ? "green" : pairs ? "gold" : "red"}
               shape="round"
               className={styles.verdict}
             >
-              <Icon name={result.correct ? "check" : "close"} size={24} />
+              <Icon name={result.correct || pairs ? "check" : "close"} size={24} />
             </ToyBody>
+            {/* After a mistake, the card itself: the player sees again the thing they own. */}
+            {!result.correct && !pairs && (
+              <button
+                type="button"
+                className={styles.missedCard}
+                aria-label={`Voir la carte ${card.word}`}
+                onClick={() => openCard(card.id)}
+              >
+                <Card
+                  card={card}
+                  collectionName={collectionName(catalog, card.collectionId)}
+                  width={72}
+                />
+              </button>
+            )}
             <div>
               <p className={styles.feedbackTitle}>
-                {answerTitle(result.correct, result.progress.xpGained, slip)}
+                {pairs && !result.correct
+                  ? pairsVerdict(mistakes)
+                  : answerTitle(result.correct, result.progress.xpGained, slip)}
               </p>
-              <p className={styles.feedbackText}>
-                {result.correct
-                  ? (spelling ?? frequencyLine(card.perBillion))
-                  : `La bonne réponse était « ${asksDefinition ? card.definition : card.word} »`}
-              </p>
+              {(!pairs || result.correct) && (
+                <p className={styles.feedbackText}>
+                  {pairs
+                    ? pairsVerdict(mistakes)
+                    : result.correct
+                      ? (spelling ?? frequencyLine(card.perBillion))
+                      : `La bonne réponse était « ${answerText} »`}
+                </p>
+              )}
               {result.levelUp && (
                 <p className={`${styles.feedbackExtra} ${styles.risen}`}>
                   {levelUpLine(card.word, result.level)}
@@ -605,10 +677,190 @@ function Asked({
           </div>
         )}
       </div>
-      <p className={styles.keys}>
-        {question.format === "typed" ? TYPED_KEYBOARD_HINT : KEYBOARD_HINT}
-      </p>
+      {!pairs && (
+        <p className={styles.keys}>{"choices" in question ? KEYBOARD_HINT : TYPED_KEYBOARD_HINT}</p>
+      )}
     </>
+  );
+}
+
+/** A word to recognise by ear: said as it comes, written only once answered. */
+function HeardPrompt({ card, shown }: { readonly card: CatalogCard; readonly shown: boolean }) {
+  const word = useSpokenWord(card);
+  // biome-ignore lint/correctness/useExhaustiveDependencies: said once, as the question comes
+  useEffect(() => {
+    const timer = window.setTimeout(word.play, SPEAK_AFTER_MS);
+    return () => clearTimeout(timer);
+  }, []);
+  return (
+    <>
+      <h2 id="prompt" className={`${ui.display} ${styles.promptWord}`}>
+        {shown ? card.word : <span className={styles.spoken}>Le mot est dit à voix haute.</span>}
+      </h2>
+      <div className={styles.heard}>
+        <Toy matter="gold" shape="round" className={styles.heardButton} onClick={word.play}>
+          <Icon name="sound" size={34} />
+          <span className={styles.spoken}>Réécouter le mot</span>
+        </Toy>
+      </div>
+    </>
+  );
+}
+
+/** The word rebuilt from its tiles: a tile goes to the next slot, a slot gives its tile back. */
+function LettersAnswer({
+  tiles,
+  slots,
+  step,
+  correct,
+  onAnswer,
+}: {
+  readonly tiles: readonly string[];
+  readonly slots: number;
+  readonly step: Step;
+  readonly correct: boolean | null;
+  readonly onAnswer: (spelled: string) => void;
+}) {
+  const [state, setState] = useState(LETTERS_START);
+  const asking = step.name === "asking";
+  const full = state.placed.length === slots;
+  const submit = useCallback(() => {
+    if (asking && full) onAnswer(lettersSpelled(state, tiles));
+  }, [asking, full, onAnswer, state, tiles]);
+  // On a keyboard, letters typed take the first free tile that matches, Backspace takes one back.
+  useEffect(() => {
+    if (!asking) return;
+    const onKey = (event: KeyboardEvent) => {
+      if (event.ctrlKey || event.metaKey || event.altKey) return;
+      if (event.key === "Backspace") {
+        setState((current) => takeBackFrom(current, current.placed.length - 1));
+        return;
+      }
+      if (event.key === "Enter") {
+        event.preventDefault();
+        submit();
+        return;
+      }
+      if (event.key.length !== 1) return;
+      const typed = normalizeWord(event.key);
+      if (typed === "") return;
+      setState((current) => {
+        const free = tiles.findIndex(
+          (tile, index) => !current.placed.includes(index) && normalizeWord(tile) === typed,
+        );
+        return free === -1 ? current : placeTile(current, free, slots);
+      });
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [asking, slots, submit, tiles]);
+  const tone = correct === null ? "" : correct ? styles.typedRight : styles.typedWrong;
+  return (
+    <div className={styles.letters} data-right={correct === true || undefined}>
+      <div className={`${styles.slots} ${tone}`}>
+        {Array.from({ length: slots }, (_, slot) => {
+          const index = state.placed[slot];
+          const letter = index === undefined ? "" : tiles[index];
+          return (
+            <button
+              // biome-ignore lint/suspicious/noArrayIndexKey: one slot per letter, in order
+              key={slot}
+              type="button"
+              className={`${ui.display} ${styles.slot}`}
+              disabled={!asking || index === undefined}
+              aria-label={letter === "" ? `Case ${slot + 1}, vide` : `Retirer ${letter}`}
+              onClick={() => setState((current) => takeBackFrom(current, slot))}
+            >
+              {letter}
+            </button>
+          );
+        })}
+      </div>
+      <div className={styles.tiles}>
+        {tiles.map((tile, index) => (
+          <Toy
+            // biome-ignore lint/suspicious/noArrayIndexKey: a letter may come twice
+            key={index}
+            matter="paper"
+            shape="tile"
+            className={`${ui.display} ${styles.tile}`}
+            disabled={!asking || state.placed.includes(index)}
+            onClick={() => setState((current) => placeTile(current, index, slots))}
+          >
+            {tile}
+          </Toy>
+        ))}
+      </div>
+      {asking && (
+        <div className={styles.typedActions}>
+          <Button disabled={!full} onClick={submit}>
+            {LETTERS_ACTION}
+          </Button>
+          <Button variant="ghost" onClick={() => onAnswer("")}>
+            Je sèche
+          </Button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/** Four words and their definitions: a word, then its definition, until every pair is found. */
+function PairsRound({
+  catalog,
+  cards,
+  definitions,
+  done,
+  onDone,
+}: {
+  readonly catalog: Catalog;
+  readonly cards: readonly string[];
+  readonly definitions: readonly string[];
+  readonly done: boolean;
+  readonly onDone: (mistakes: number) => void;
+}) {
+  const [state, setState] = useState(PAIRS_START);
+  const pick = (side: PairSide, cardId: string) => {
+    if (done) return;
+    const next = pickInPairs(state, side, cardId);
+    setState(next);
+    if (next.wrong !== null) {
+      play("answerWrong");
+      vibrate([30]);
+    } else if (next.matched.length > state.matched.length) {
+      play("answerRight");
+    }
+    if (pairsDone(next, cards)) onDone(next.mistakes);
+  };
+  const tone = (side: PairSide, cardId: string) => {
+    if (state.matched.includes(cardId)) return styles.right;
+    if (state.picked?.side === side && state.picked.cardId === cardId) return styles.pending;
+    const wrong = side === "word" ? state.wrong?.word : state.wrong?.definition;
+    return wrong === cardId ? styles.wrong : "";
+  };
+  return (
+    <div className={styles.pairs}>
+      {(["word", "definition"] as const).map((side) => (
+        <ul key={side} className={styles.pairColumn}>
+          {(side === "word" ? cards : definitions).map((cardId) => {
+            const card = cardOrPlaceholder(catalog, cardId, "common");
+            return (
+              <li key={cardId} className={styles.pairItem}>
+                <button
+                  type="button"
+                  className={`${styles.choice} ${side === "word" ? `${ui.display} ${styles.choiceWord}` : styles.choiceDefinition} ${tone(side, cardId)}`}
+                  aria-pressed={state.picked?.cardId === cardId && state.picked.side === side}
+                  disabled={done || state.matched.includes(cardId)}
+                  onClick={() => pick(side, cardId)}
+                >
+                  {side === "word" ? card.word : hideWordIn(card.definition, card.word)}
+                </button>
+              </li>
+            );
+          })}
+        </ul>
+      ))}
+    </div>
   );
 }
 
@@ -744,6 +996,7 @@ function Recap({
   const back = comingBackTomorrow(answers);
   const backLine = comingBackLine(back.length);
   const actions = recapActions(summary, summary?.settings.length ?? answers.length, noun);
+  const streak = summary === null ? null : streakLine(summary.streak);
   const card = (cardId: string) => cardOrPlaceholder(catalog, cardId, "common");
   return (
     <section className={`${ui.panel} ${styles.recap}`} aria-labelledby="recap-title">
@@ -758,6 +1011,7 @@ function Recap({
         <span className={styles.spoken}>{sessionScore(scored)}</span>
       </p>
       {xp !== null && <p className={styles.xp}>{xp}</p>}
+      {streak !== null && <p className={styles.streak}>{streak}</p>}
       {bonus !== null ? (
         <p className={styles.won} style={{ animationDelay: `${RECAP_BONUS_MS}ms` }}>
           <Icon name="sachet" size={28} />

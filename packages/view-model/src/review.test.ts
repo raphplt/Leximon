@@ -5,14 +5,17 @@ import {
   choiceIndexOfKey,
   comingBackLine,
   comingBackTomorrow,
+  formatOptions,
   memoryLine,
   memoryParts,
+  playable,
   reviewAction,
   reviewLine,
   reviewShelf,
   reviewWells,
   scoredAnswers,
   seriesOf,
+  streakLine,
   withCatchUp,
 } from "./review";
 
@@ -31,9 +34,14 @@ function summary(overrides: Partial<ReviewSummaryResponse> = {}): ReviewSummaryR
       newWordsPerDay: 10,
       lengths: [5, 10, 20],
       newWordsPerDayChoices: [5, 10, 20],
+      listen: true,
+      letters: true,
+      pairs: false,
+      difficulty: "normal",
     },
     scopes: [],
     xp: { today: 0, cap: 100 },
+    streak: { current: 0, total: 0, playedToday: false },
     ...overrides,
   };
 }
@@ -101,6 +109,42 @@ describe("what waits", () => {
     expect(calm.estimate).toBe("10 questions sur tes mots les plus fragiles, environ 3 minutes");
     const short = summary({ rising: 0, settings: { ...summary().settings, length: 5 } });
     expect(reviewAction(short).estimate).toBe("5 questions, environ 1 minute");
+  });
+});
+
+describe("settings and streak", () => {
+  it("lists the formats the player keeps", () => {
+    expect(formatOptions(summary()).map((o) => [o.key, o.on])).toEqual([
+      ["listen", true],
+      ["letters", true],
+      ["pairs", false],
+    ]);
+  });
+
+  it("says the days played first, then those in a row", () => {
+    const streak = (current: number, total: number) =>
+      streakLine({ current, total, playedToday: true });
+    expect(streak(0, 0)).toBeNull();
+    expect(streak(1, 1)).toBe("1 jour joué.");
+    expect(streak(1, 12)).toBe("12 jours joués.");
+    expect(streak(5, 5)).toBe("5 jours joués, tous à la suite.");
+    expect(streak(5, 12)).toBe("12 jours joués, dont 5 à la suite.");
+  });
+
+  it("shows a word to listen to when the sound is off", () => {
+    const heard = seriesOf([
+      {
+        cardId: "a",
+        format: "listen",
+        choices: ["a", "b", "c", "d"],
+        counted: true,
+        fresh: false,
+        retry: null,
+      },
+    ])[0];
+    if (heard === undefined) throw new Error("no question");
+    expect(playable(heard, true).format).toBe("listen");
+    expect(playable(heard, false).format).toBe("definition");
   });
 });
 

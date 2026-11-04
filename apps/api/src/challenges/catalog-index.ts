@@ -14,6 +14,8 @@ export interface CatalogIndex {
   readonly all: readonly string[];
   readonly wordOf: ReadonlyMap<string, string>;
   readonly themesOf: ReadonlyMap<string, readonly string[]>;
+  /** Drawable cards of each theme: the close wrong choices of a demanding question. */
+  readonly byTheme: ReadonlyMap<string, readonly string[]>;
   /** Every word, normalized: a typed slip that spells another card is no slip. */
   readonly words: ReadonlySet<string>;
 }
@@ -56,12 +58,21 @@ export function createCatalogIndexLoader(ttlMs = CACHE_TTL_MS) {
       ids.push(row.id);
       byCollection.set(row.collectionId, ids);
     }
+    const drawableIds = new Set(drawable.map((row) => row.id));
+    const byTheme = new Map<string, string[]>();
+    for (const { cardId, themeId } of themes) {
+      if (!drawableIds.has(cardId)) continue;
+      const ids = byTheme.get(themeId) ?? [];
+      ids.push(cardId);
+      byTheme.set(themeId, ids);
+    }
     const index: CatalogIndex = {
       collectionOf: new Map(drawable.map((row) => [row.id, row.collectionId])),
       byCollection,
       all: drawable.map((row) => row.id),
       wordOf: new Map(rows.map((row) => [row.id, row.lemma])),
       themesOf,
+      byTheme,
       words: new Set(rows.map((row) => normalizeWord(row.lemma))),
     };
     cached = { index, expiresAt: now + ttlMs };

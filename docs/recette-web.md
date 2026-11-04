@@ -326,6 +326,31 @@ docker compose exec postgres psql -U leximon -d leximon -c "update user_mastery 
 - **Attendu :** dans l'album, le mot est marqué Page blanche (une teinte pâle) ; la fiche dit « Tu n'as pas encore révisé ce mot. Une bonne réponse en révision le fera passer à l'Esquisse. » et aucun palier n'est coché. « Ta mémoire » compte ces mots dans « Page blanche ».
 - **Retour :**
 
+### DEF-15 · Écoute
+- **Faire :** son et voix activés, lancer des séries d'entraînement jusqu'à « Écoute le mot : que veut-il dire ? ». Puis couper « Dire le mot à voix haute » dans les réglages et relancer une série.
+- **Attendu :** le mot est dit aussitôt, sans être écrit ; un gros bouton d'or le redit. Les 4 choix sont des définitions. Le mot s'écrit une fois la réponse donnée. Voix coupée : plus aucune question d'écoute, elles deviennent « Que veut dire ce mot ? ».
+- **Retour :**
+
+### DEF-16 · Lettres à remettre
+- **Faire :** lancer des séries jusqu'à « Remets les lettres du mot dans l'ordre ». Placer des lettres à la souris, en retirer une, finir au clavier (taper les lettres, Retour arrière, Entrée).
+- **Attendu :** la définition, « Deux lettres ne servent pas. Touche une lettre placée pour la retirer. », une case par lettre et les tuiles dessous, deux de trop. Toucher une lettre placée la retire avec celles d'après. « Valider le mot » marche une fois les cases pleines ; « Je sèche » compte faux. Les accents ne comptent pas. Juste : « Juste. » et l'XP ; un mot qui compte ne monte jamais de palier par les lettres. Seulement sur des mots de 4 à 12 lettres, sans espace ni trait d'union.
+- **Retour :**
+
+### DEF-17 · Paires
+- **Faire :** une série d'au moins 5 questions qui finit par de l'entraînement. Sur la dernière, relier un mot à une mauvaise définition, puis finir sans faute ; refaire une série et tout relier du premier coup.
+- **Attendu :** « Relie chaque mot à sa définition », 4 mots à gauche, leurs définitions mêlées à droite, sans pastille a, b, c, d. Le choix en cours est cerclé d'or, une paire trouvée passe au vert, une mauvaise tremble en rouge et compte une erreur. À la fin : « Toutes les paires, avec une erreur. » avec un médaillon d'or (pas « Raté. »), ou « Juste. +5 XP » et « Toutes les paires du premier coup. ». Tient en deux colonnes à 390 px. Pas de paires si la série a moins de 5 questions ou finit par un mot qui compte.
+- **Retour :**
+
+### DEF-18 · Types de questions et entraînement
+- **Faire :** dans les réglages, couper l'écoute, les lettres et les paires, lancer une série ; les rallumer, passer l'entraînement à « Exigeant », lancer « Mes mots récents ».
+- **Attendu :** « Types de questions » avec « Le mot seulement entendu », « Les lettres à remettre », « Les paires en fin de série », « Dire le mot à voix haute », et « Les deux QCM et le mot à écrire restent toujours. Sans le son, l'écoute devient un QCM. ». Un type coupé ne revient plus. « Entraînement » : Normal ou Exigeant. Exigeant fait écrire le mot ou remettre ses lettres environ une question d'entraînement sur deux, avec des mauvais choix proches (même thème, même initiale) ; les mots à revoir ne changent pas. Les choix tiennent après rechargement et se retrouvent sur le téléphone.
+- **Retour :**
+
+### DEF-19 · Jours joués
+- **Faire :** regarder « Ta mémoire » et le bilan d'une série, sur un compte qui a joué plusieurs jours.
+- **Attendu :** « 12 jours joués, dont 5 à la suite. » (ou « tous à la suite », ou « 1 jour joué. »). Un jour compte dès un sachet ouvert, une réponse à un défi ou l'énigme jouée. Deux jours manqués dans la semaine (lundi à dimanche) ne coupent pas la suite ; le troisième la fait repartir. Rien avant le premier jour, aucune phrase sur la série perdue.
+- **Retour :**
+
 ### DEF-10 · Énigme du jour
 - **Faire :** sur Défis, ouvrir « Énigme du jour » et proposer un mauvais mot. Demander un indice, puis une lettre. Proposer le bon mot avec une petite faute de frappe, partager, ouvrir `/enigme/<numéro>` hors connexion. Le lendemain, recommencer et aller jusqu'à la défaite avec « Abandonner et voir le mot ».
 - **Attendu :** la nature, le nombre de lettres et la première lettre s'affichent d'emblée, sur une seule ligne de cases même au téléphone. Il y a 7 essais, et chaque mauvaise réponse comme chaque indice en retire un : début de la définition, définition, origine, puis trois étapes de lettres, avec 2 lettres encore cachées à la fin (1 sur un mot de 5 lettres). Le mot trouvé donne 50 XP, plus l'XP de mot nouveau et la carte si le joueur ne l'a pas ; la défaite ne donne rien et montre le mot. Le texte partagé donne le numéro, le résultat et les cases, jamais le mot. La page publique du jour ne donne pas le mot, celle d'un jour passé le donne. On ne rejoue pas : revenir sur l'écran montre le résultat.

@@ -1,3 +1,4 @@
+import { REVIEW_DIFFICULTIES } from "@leximon/core";
 import { z } from "zod";
 import { emblemSchema, slugSchema, timestampSchema } from "./common";
 
@@ -172,6 +173,12 @@ export const preferencesSchema = z.object({
   reviewLength: z.int().min(1).max(20),
   /** New words started each day; the server accepts the choices of its rules only. */
   newWordsPerDay: z.int().min(1).max(50),
+  /** Formats of a review series kept beyond the two multiple choices. */
+  reviewListen: z.boolean(),
+  reviewLetters: z.boolean(),
+  reviewPairs: z.boolean(),
+  /** « hard » changes free practice only. */
+  reviewDifficulty: z.enum(REVIEW_DIFFICULTIES),
 });
 export type Preferences = z.infer<typeof preferencesSchema>;
 

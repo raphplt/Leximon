@@ -5,24 +5,34 @@ import { type Catalog, collectionName } from "@leximon/contract/client";
 import { PRACTICE_SCHEDULE, practiceRulesAt, UNLOCK_SCHEDULE, unlockRulesAt } from "@leximon/core";
 import type { ToyMatterName } from "@leximon/tokens";
 import {
+  DIFFICULTY_OPTIONS,
+  FORMAT_PREFERENCE,
+  formatOptions,
   isFeatureOpen,
   lengthOptions,
   memoryLine,
   memoryParts,
   paceOptions,
   practiceEmptyLine,
+  REVIEW_DIFFICULTY_NOTE,
+  REVIEW_DIFFICULTY_TITLE,
+  REVIEW_FORMATS_NOTE,
+  REVIEW_FORMATS_TITLE,
   REVIEW_LENGTH_TITLE,
   REVIEW_PACE_NOTE,
   REVIEW_PACE_TITLE,
   REVIEW_SETTINGS_TITLE,
+  REVIEW_SOUND_LABEL,
   type ReviewCover,
   reviewAction,
   reviewLine,
   reviewShelf,
   reviewWells,
   shelfXpLine,
+  streakLine,
 } from "@leximon/view-model";
 import { type CSSProperties, useEffect, useState } from "react";
+import { readPreference, writePreference } from "@/booster/feedback";
 import { api } from "@/lib/api";
 import { usePackShape } from "@/lib/use-pack-shape";
 import { CountBadge, MainAction } from "@/library/play-pieces";
@@ -193,10 +203,16 @@ function Review({
   );
 }
 
-/** Length of a series and pace of the new words, kept on the account. */
+type SettingsChange = Parameters<typeof api.updatePreferences>[0];
+
+/**
+ * Length of a series, pace of the new words, kinds of questions and difficulty, kept on the
+ * account; the voice that says the word stays on this device, like the other sounds.
+ */
 function Settings({ summary }: { readonly summary: ReviewSummaryResponse }) {
   const [saving, setSaving] = useState(false);
-  const save = async (change: { reviewLength?: number; newWordsPerDay?: number }) => {
+  const [speech, setSpeech] = useState(() => readPreference("speech"));
+  const save = async (change: SettingsChange) => {
     setSaving(true);
     try {
       await api.updatePreferences(change);
@@ -238,6 +254,49 @@ function Settings({ summary }: { readonly summary: ReviewSummaryResponse }) {
         ))}
       </div>
       <p className={styles.sheetNote}>{REVIEW_PACE_NOTE}</p>
+      <h3 className={styles.sheetTitle}>{REVIEW_FORMATS_TITLE}</h3>
+      <div className={styles.options}>
+        {formatOptions(summary).map((option) => (
+          <Toy
+            key={option.key}
+            matter={option.on ? "gold" : "paper"}
+            className={styles.option}
+            aria-pressed={option.on}
+            disabled={saving}
+            onClick={() => void save({ [FORMAT_PREFERENCE[option.key]]: !option.on })}
+          >
+            {option.label}
+          </Toy>
+        ))}
+        <Toy
+          matter={speech ? "gold" : "paper"}
+          className={styles.option}
+          aria-pressed={speech}
+          onClick={() => {
+            writePreference("speech", !speech);
+            setSpeech(!speech);
+          }}
+        >
+          {REVIEW_SOUND_LABEL}
+        </Toy>
+      </div>
+      <p className={styles.sheetNote}>{REVIEW_FORMATS_NOTE}</p>
+      <h3 className={styles.sheetTitle}>{REVIEW_DIFFICULTY_TITLE}</h3>
+      <div className={styles.options}>
+        {DIFFICULTY_OPTIONS.map((option) => (
+          <Toy
+            key={option.value}
+            matter={option.value === summary.settings.difficulty ? "gold" : "paper"}
+            className={styles.option}
+            aria-pressed={option.value === summary.settings.difficulty}
+            disabled={saving}
+            onClick={() => void save({ reviewDifficulty: option.value })}
+          >
+            {option.label}
+          </Toy>
+        ))}
+      </div>
+      <p className={styles.sheetNote}>{REVIEW_DIFFICULTY_NOTE}</p>
     </div>
   );
 }
@@ -447,6 +506,7 @@ function MemoryLeaf({
   readonly now: number;
 }) {
   const parts = memoryParts(summary.levels);
+  const streak = streakLine(summary.streak);
   return (
     <section
       className={`${ui.leaf} ${desk.leaf} ${desk.rising}`}
@@ -463,6 +523,7 @@ function MemoryLeaf({
         ))}
       </div>
       <span className={desk.leafText}>{memoryLine(summary, now)}</span>
+      {streak !== null && <span className={desk.leafText}>{streak}</span>}
     </section>
   );
 }

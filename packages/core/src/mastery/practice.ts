@@ -43,6 +43,16 @@ export interface PracticeRules {
   readonly dailyChallengeLength: number;
   /** Whether a free practice answer counts towards the daily goal. */
   readonly practiceCountsForDaily: boolean;
+  /** Words rebuilt from tiles: long enough to be a puzzle, short enough to fit a phone. */
+  readonly tileWordMinLetters: number;
+  readonly tileWordMaxLetters: number;
+  /** Letters added to the tiles that belong to no word. */
+  readonly decoyLetters: number;
+  /** In demanding practice, the percentage of questions where the word is spelled out. */
+  readonly hardSpelledPercent: number;
+  readonly pairsWords: number;
+  /** A series ends with a round of pairs from this many questions. */
+  readonly pairsMinQuestions: number;
 }
 
 export type PracticeSchedule = readonly [PracticeRules, ...PracticeRules[]];

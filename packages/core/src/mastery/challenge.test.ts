@@ -34,16 +34,17 @@ describe("buildQuestion", () => {
   it("places the answer and picks the format evenly", () => {
     const random = createSeededRandom(SEED);
     const positions = [0, 0, 0, 0];
-    const formats = { definition: 0, word: 0 };
+    const formats: Record<string, number> = { definition: 0, word: 0 };
     const others = Array.from({ length: 20 }, (_, i) => `c${i}`);
     for (let i = 0; i < 4_000; i++) {
       const question = buildQuestion(random, "a", others, []);
       if (question === null) throw new Error("no question");
       positions[question.answerIndex] = (positions[question.answerIndex] ?? 0) + 1;
-      formats[question.format]++;
+      formats[question.format] = (formats[question.format] ?? 0) + 1;
     }
     for (const count of positions) expect(Math.abs(count - 1_000)).toBeLessThan(120);
-    expect(Math.abs(formats.definition - 2_000)).toBeLessThan(150);
+    expect(Object.keys(formats)).toEqual(["definition", "word"]);
+    expect(Math.abs((formats["definition"] ?? 0) - 2_000)).toBeLessThan(150);
   });
 });
 
