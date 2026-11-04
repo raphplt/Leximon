@@ -206,7 +206,7 @@
 }
 
 .shelfTitle {
-  margin: 8px 0 0;
+  margin: 14px 0 2px;
   font-size: var(--lx-size-micro);
   font-weight: 800;
   letter-spacing: 0.18em;
@@ -218,7 +218,8 @@
 .collections,
 .themes {
   display: grid;
-  gap: 12px;
+  /* Rows wide apart: each count badge stands out over the cover above. */
+  gap: 22px 16px;
   margin: 0;
   padding: 0;
   list-style: none;
@@ -230,7 +231,7 @@
 }
 
 .themes {
-  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(176px, 1fr));
 }
 
 .cover {
@@ -302,8 +303,20 @@
 
 .cover[data-size="small"] {
   grid-template-columns: minmax(0, 1fr);
-  min-height: 84px;
-  padding: 10px 12px 10px 20px;
+  row-gap: 12px;
+  min-height: 96px;
+  padding: 16px 18px 16px 26px;
+}
+
+@media (max-width: 559px) {
+  .themes {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: 12px;
+  }
+
+  .cover[data-size="small"] {
+    padding: 14px 14px 14px 24px;
+  }
 }
 
 .coverMark {

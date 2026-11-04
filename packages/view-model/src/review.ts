@@ -292,14 +292,11 @@ export function reviewShelf(
   };
 }
 
-/** Under the shelf: what free practice earns today. */
-export function shelfXpLine(summary: ReviewSummaryResponse, now: number): string {
+/** Under the shelf, once free practice earns nothing more today; `null` before. */
+export function shelfXpLine(summary: ReviewSummaryResponse): string | null {
   const { today, cap } = summary.xp;
-  const { xpPerAnswer } = practiceRulesAt(PRACTICE_SCHEDULE, now);
-  if (today >= cap) {
-    return `Tu as atteint les ${cap} XP d'entraînement du jour. Les mots à revoir rapportent toujours leur XP.`;
-  }
-  return `Une bonne réponse d'entraînement rapporte ${xpPerAnswer} XP, ${cap} XP par jour au plus. Elle compte pour le défi du jour.`;
+  if (today < cap) return null;
+  return `Tu as atteint les ${cap} XP d'entraînement du jour. Les mots à revoir rapportent toujours leur XP.`;
 }
 
 // --- Ta mémoire ---------------------------------------------------------------------

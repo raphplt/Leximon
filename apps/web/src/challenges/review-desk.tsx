@@ -340,6 +340,7 @@ function Shelf({
     themesOpen ? null : themesLevel,
   );
   const empty = shelf.shortcuts.length + shelf.collections.length + shelf.themes.length === 0;
+  const xpLine = shelfXpLine(summary);
   const pick = (cover: ReviewCover) => {
     if (cover.lockedAt === null && !busy) onStart({ scope: cover.scope });
   };
@@ -411,7 +412,7 @@ function Shelf({
           </ul>
         </>
       )}
-      <p className={styles.note}>{shelfXpLine(summary, now)}</p>
+      {xpLine !== null && <p className={styles.note}>{xpLine}</p>}
     </section>
   );
 }

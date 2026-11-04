@@ -519,6 +519,7 @@ function Shelf({
     themesOpen ? null : themesLevel,
   );
   const empty = shelf.shortcuts.length + shelf.collections.length + shelf.themes.length === 0;
+  const xpLine = shelfXpLine(summary);
   const pick = (cover: ReviewCover) => {
     if (cover.lockedAt === null && !busy) onStart({ scope: cover.scope });
   };
@@ -578,7 +579,7 @@ function Shelf({
           </View>
         </>
       )}
-      <Text style={styles.note}>{shelfXpLine(summary, now)}</Text>
+      {xpLine !== null && <Text style={styles.note}>{xpLine}</Text>}
     </Panel>
   );
 }
@@ -711,7 +712,7 @@ const TIERS = StyleSheet.create({
 const coverSizes = StyleSheet.create({
   short: { minHeight: 76 },
   large: { minHeight: 104, paddingVertical: space.s7 },
-  small: { minHeight: 84 },
+  small: { minHeight: 92, paddingVertical: space.s7 },
 });
 
 const styles = StyleSheet.create({
@@ -857,7 +858,7 @@ const styles = StyleSheet.create({
   blockLetter: { fontFamily: fonts.display, fontSize: fontSizes.bodyLarge, color: ink.pageInk },
   shelf: { gap: space.s7 },
   shelfTitle: {
-    marginTop: space.s2,
+    marginTop: space.s5,
     fontFamily: fonts.ui.extrabold,
     fontSize: fontSizes.micro,
     letterSpacing: 2,
@@ -867,7 +868,8 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     flexWrap: "wrap",
     justifyContent: "space-between",
-    rowGap: space.s7,
+    // Rows wide apart: each count badge stands out over the cover above.
+    rowGap: space.s9,
   },
   theme: { width: "48%" },
   cover: {
