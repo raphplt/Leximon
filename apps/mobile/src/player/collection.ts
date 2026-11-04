@@ -1,4 +1,8 @@
-import type { DailyChallengeResponse, OwnedCardsResponse } from "@leximon/contract";
+import type {
+  DailyChallengeResponse,
+  OwnedCardsResponse,
+  ReviewSummaryResponse,
+} from "@leximon/contract";
 import {
   type CardDate,
   copiesAfterTrade,
@@ -77,6 +81,9 @@ export const wordMemory = sharedResource<ReadonlyMap<string, WordMemory>>(async 
 /** Today's challenge: answers given, right ones, and whether its bonus was won. */
 export const dailyChallenge = sharedResource<DailyChallengeResponse>(api.fetchDaily);
 
+/** What waits in the review, the player's settings, and the scopes to practise on. */
+export const reviewSummary = sharedResource<ReviewSummaryResponse>(api.fetchReviewSummary);
+
 /**
  * Reads a resource again after an action changed it on the server (a booster, an answer, a
  * trade), but only if a screen already read it: nobody pays for a list nobody looks at.
@@ -92,4 +99,5 @@ export function resetCollection(): void {
   cardDates.reset();
   wordMemory.reset();
   dailyChallenge.reset();
+  reviewSummary.reset();
 }

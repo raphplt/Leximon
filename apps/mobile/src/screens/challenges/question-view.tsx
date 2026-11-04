@@ -1,14 +1,17 @@
 import type { CatalogCard } from "@leximon/contract";
-import { type Catalog, cardOrPlaceholder } from "@leximon/contract/client";
+import { type Catalog, cardOrPlaceholder, collectionName } from "@leximon/contract/client";
 import { TYPED_ANSWER_MAX_LENGTH } from "@leximon/core";
 import { effects, room, type ToyMatterName, toyMatters, toy as toyValues } from "@leximon/tokens";
 import {
   answerTitle,
   bonusLines,
+  CATCH_UP_HINT,
   frequencyLine,
   hideWordIn,
   levelUpLabel,
   levelUpLine,
+  MEET_ACTION,
+  MEET_KICKER,
   PACK_NOUNS,
   PRACTICE_FREE_HINT,
   questionKicker,
@@ -36,6 +39,7 @@ import Animated, {
   withSequence,
   withTiming,
 } from "react-native-reanimated";
+import { Card } from "@/cards/card";
 import { SpeechButtons } from "@/cards/speech-buttons";
 import { useSpokenWord } from "@/cards/spoken-word";
 import { speechOn } from "@/feedback/feedback";
@@ -67,7 +71,7 @@ const CHOICE_MATTERS: Readonly<Record<ChoiceState, ToyMatterName>> = {
 const ink = paperColors;
 
 function choiceState(choiceId: string, answerId: string, step: Step): ChoiceState {
-  if (step.name === "asking" || step.name === "recap") return "idle";
+  if (step.name === "asking" || step.name === "meeting" || step.name === "recap") return "idle";
   if (step.name === "sending") return choiceId === step.chosen ? "pending" : "idle";
   if (choiceId === answerId) return "right";
   return choiceId === step.chosen ? "wrong" : "faded";
@@ -107,11 +111,44 @@ function SpokenPrompt({ card }: { readonly card: CatalogCard }) {
   );
 }
 
-/** One question of a session: the prompt, the choices or the field, then what the answer did. */
+/** A new word: its card first, said aloud, then its question. */
+function Meeting({
+  catalog,
+  card,
+  onMeet,
+}: {
+  readonly catalog: Catalog;
+  readonly card: CatalogCard;
+  readonly onMeet: () => void;
+}) {
+  const word = useSpokenWord(card);
+  // biome-ignore lint/correctness/useExhaustiveDependencies: said once, as the card comes
+  useEffect(() => {
+    if (!speechOn()) return;
+    const timer = setTimeout(word.play, SPEAK_AFTER_MS);
+    return () => clearTimeout(timer);
+  }, []);
+  const content = (
+    <>
+      <Text style={styles.kicker}>{MEET_KICKER.toUpperCase()}</Text>
+      <View style={styles.meetingCard}>
+        <Card card={card} collectionName={collectionName(catalog, card.collectionId)} width={230} />
+      </View>
+      <View style={styles.speech}>
+        <SpeechButtons word={word} label={card.word} />
+      </View>
+      <Button label={MEET_ACTION} onPress={onMeet} />
+    </>
+  );
+  return IS_LIBRARY ? <Leaf style={library.prompt}>{content}</Leaf> : <Panel>{content}</Panel>;
+}
+
+/** One question of a series: the prompt, the choices or the field, then what the answer did. */
 export function QuestionView({
   catalog,
   session,
   error,
+  onMeet,
   onChoose,
   onNext,
   onQuit,
@@ -119,6 +156,7 @@ export function QuestionView({
   readonly catalog: Catalog;
   readonly session: Session;
   readonly error: string | null;
+  readonly onMeet: () => void;
   readonly onChoose: (chosen: string) => void;
   readonly onNext: () => void;
   readonly onQuit: () => void;
@@ -145,7 +183,7 @@ export function QuestionView({
   if (question === undefined) return null;
   const card = cardOrPlaceholder(catalog, question.cardId, "common");
   const asksDefinition = question.format === "definition";
-  const level = memory?.get(question.cardId)?.level ?? "sketch";
+  const level = memory?.get(question.cardId)?.level ?? "blank";
   const total = session.questions.length;
   const last = session.index + 1 === total;
   const step = session.step;
@@ -169,8 +207,8 @@ export function QuestionView({
       {question.format === "typed" && result === null && (
         <Text style={styles.hint}>{typedQuestionHint(level)}</Text>
       )}
-      {question.counted === false && result === null && (
-        <Text style={styles.hint}>{PRACTICE_FREE_HINT}</Text>
+      {result === null && (question.catchUp || !question.counted) && (
+        <Text style={styles.hint}>{question.catchUp ? CATCH_UP_HINT : PRACTICE_FREE_HINT}</Text>
       )}
     </>
   );
@@ -201,10 +239,17 @@ export function QuestionView({
                 : index === session.index
                   ? DOTS.current
                   : DOTS.waiting;
+            // A missed word asked again comes back as a smaller dot.
             return (
               <View
-                key={q.cardId}
-                style={[styles.dot, IS_LIBRARY && library.dot, { backgroundColor: tone }]}
+                // biome-ignore lint/suspicious/noArrayIndexKey: one dot per question, in order
+                key={index}
+                style={[
+                  styles.dot,
+                  IS_LIBRARY && library.dot,
+                  q.catchUp && (IS_LIBRARY ? library.catchUpDot : styles.catchUpDot),
+                  { backgroundColor: tone },
+                ]}
               />
             );
           })}
@@ -223,9 +268,15 @@ export function QuestionView({
         </View>
       </View>
 
-      {IS_LIBRARY ? <Leaf style={library.prompt}>{prompt}</Leaf> : <Panel>{prompt}</Panel>}
+      {step.name === "meeting" ? (
+        <Meeting key={question.cardId} catalog={catalog} card={card} onMeet={onMeet} />
+      ) : IS_LIBRARY ? (
+        <Leaf style={library.prompt}>{prompt}</Leaf>
+      ) : (
+        <Panel>{prompt}</Panel>
+      )}
 
-      {question.format === "typed" ? (
+      {step.name === "meeting" ? null : question.format === "typed" ? (
         <TypedAnswer
           key={question.cardId}
           step={step}
@@ -496,8 +547,17 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     backgroundColor: colors.pageRaised,
   },
-  dots: { flex: 1, flexDirection: "row", justifyContent: "center", gap: space.s3 },
+  // Up to twenty questions and their catch-ups: the row wraps rather than run off the screen.
+  dots: {
+    flex: 1,
+    flexDirection: "row",
+    flexWrap: "wrap",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: space.s2,
+  },
   dot: { width: 10, height: 10, borderRadius: 5 },
+  catchUpDot: { width: 6, height: 6, borderRadius: 3 },
   position: { fontFamily: fonts.ui.bold, fontSize: fontSizes.label, color: colors.pageInkMuted },
   kicker: {
     fontFamily: fonts.ui.extrabold,
@@ -512,6 +572,7 @@ const styles = StyleSheet.create({
     color: ink.pageInk,
   },
   speech: { flexDirection: "row", gap: space.s4 },
+  meetingCard: { alignItems: "center" },
   promptDefinition: {
     fontFamily: fonts.text.regular,
     fontSize: fontSizes.titleSmall,
@@ -629,6 +690,7 @@ const library = StyleSheet.create({
   page: { paddingHorizontal: space.s6, paddingTop: space.s7, paddingBottom: space.s12 },
   round: { borderWidth: toyValues.outlineWidth },
   dot: { height: 12, borderWidth: 2, borderColor: toyValues.outline },
+  catchUpDot: { width: 8, height: 8, borderRadius: 4, borderWidth: 1.5 },
   prompt: { padding: space.s9, gap: space.s6 },
   choice: {
     flexDirection: "row",
