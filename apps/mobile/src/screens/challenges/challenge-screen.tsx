@@ -7,6 +7,7 @@ import {
   noChallengeNotice,
   PACK_NOUNS,
   PRACTICE_REFUSED,
+  playable,
   type SeriesQuestion,
   seriesOf,
   withCatchUp,
@@ -16,7 +17,7 @@ import { router } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import { api } from "@/api/client";
 import { catalogInHand, loadCatalog } from "@/cards/catalog";
-import { play, vibrate } from "@/feedback/feedback";
+import { play, speechOn, vibrate } from "@/feedback/feedback";
 import { dailyChallenge, refreshIfRead, reviewSummary, wordMemory } from "@/player/collection";
 import { useNow, useShared } from "@/player/shared";
 import { publishProgress, wallet } from "@/player/state";
@@ -83,7 +84,9 @@ function ChallengeFlow({
       } else if (series.questions.length === 0) {
         setNotice(noChallengeNotice(null, Date.now(), NOUN));
       } else {
-        setSession(startSession(seriesOf(series.questions), request));
+        // Without sound, a word to listen to is shown instead.
+        const questions = seriesOf(series.questions).map((q) => playable(q, speechOn()));
+        setSession(startSession(questions, request));
       }
     } catch {
       setError("Le serveur ne répond pas. Réessaie.");
@@ -105,26 +108,30 @@ function ChallengeFlow({
     }
   }, [word, fromAlbum, catalog, start]);
 
-  /** A word that counts goes through the review; free practice only earns its XP. */
+  /**
+   * A word that counts goes through the review; free practice only earns its XP. `chosen` is the
+   * card picked, the word spelled out, or the mistakes of a round of pairs.
+   */
   const sendAnswer = async (question: SeriesQuestion, chosen: string, key: string) => {
-    if (question.format === "typed") {
+    const { cardId } = question;
+    if (question.counted && question.format !== "pairs") {
       return api.answerChallenge(
-        { cardId: question.cardId, format: question.format, typed: chosen },
-        key,
-      );
-    }
-    if (question.counted) {
-      return api.answerChallenge(
-        { cardId: question.cardId, format: question.format, chosenCardId: chosen },
+        question.format === "typed" || question.format === "letters"
+          ? { cardId, format: question.format, typed: chosen }
+          : { cardId, format: question.format, chosenCardId: chosen },
         key,
       );
     }
     const free = await api.answerPractice(
-      { cardId: question.cardId, chosenCardId: chosen, format: question.format },
+      question.format === "pairs"
+        ? { cardId, format: "pairs", mistakes: Number(chosen) }
+        : question.format === "typed" || question.format === "letters"
+          ? { cardId, format: question.format, typed: chosen }
+          : { cardId, chosenCardId: chosen, format: question.format },
       key,
     );
     if (free.kind === "not_owned") return { kind: "not_due" as const };
-    const outcome = freeAnswerOutcome(memory?.get(question.cardId)?.level ?? "blank");
+    const outcome = freeAnswerOutcome(memory?.get(cardId)?.level ?? "blank");
     return { ...free, ...outcome, bonus: free.bonus ?? outcome.bonus };
   };
 

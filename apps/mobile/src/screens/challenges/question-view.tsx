@@ -3,19 +3,33 @@ import { type Catalog, cardOrPlaceholder, collectionName } from "@leximon/contra
 import { TYPED_ANSWER_MAX_LENGTH } from "@leximon/core";
 import { effects, room, type ToyMatterName, toyMatters, toy as toyValues } from "@leximon/tokens";
 import {
+  answerFeedback,
   answerTitle,
   bonusLines,
   CATCH_UP_HINT,
   frequencyLine,
   hideWordIn,
+  LETTERS_ACTION,
+  LETTERS_HINT,
+  LETTERS_START,
+  letterSlots,
+  lettersSpelled,
   levelUpLabel,
   levelUpLine,
   MEET_ACTION,
   MEET_KICKER,
   PACK_NOUNS,
+  PAIRS_START,
+  type PairSide,
   PRACTICE_FREE_HINT,
+  PRACTICE_TYPED_HINT,
+  pairsDone,
+  pairsVerdict,
+  pickInPairs,
+  placeTile,
   questionKicker,
   spellingLine,
+  takeBackFrom,
   typedQuestionHint,
 } from "@leximon/view-model";
 import { type ReactNode, useEffect, useRef, useState } from "react";
@@ -42,10 +56,11 @@ import Animated, {
 import { Card } from "@/cards/card";
 import { SpeechButtons } from "@/cards/speech-buttons";
 import { useSpokenWord } from "@/cards/spoken-word";
-import { speechOn } from "@/feedback/feedback";
+import { play, speechOn, vibrate } from "@/feedback/feedback";
 import { Desk } from "@/library/play-pieces";
 import { wordMemory } from "@/player/collection";
 import { useShared } from "@/player/shared";
+import { openCard } from "@/screens/trades/card-row";
 import { TAB_BAR_RISE } from "@/shell/tab-bar";
 import { alpha, colors, fontSizes, fonts, IS_LIBRARY, paperColors, radii, space } from "@/theme";
 import { Button } from "@/ui/button";
@@ -53,7 +68,7 @@ import { Icon } from "@/ui/icon";
 import { Panel } from "@/ui/panel";
 import { useOptionalStage } from "@/ui/stage";
 import { TextButton } from "@/ui/text-button";
-import { Leaf, Lettering, toyFace } from "@/ui/toy";
+import { Leaf, Lettering, Toy, toyFace } from "@/ui/toy";
 import type { Session, Step } from "./session";
 
 type ChoiceState = "idle" | "pending" | "right" | "wrong" | "faded";
@@ -106,6 +121,56 @@ function SpokenPrompt({ card }: { readonly card: CatalogCard }) {
       </Text>
       <View style={styles.speech}>
         <SpeechButtons word={word} label={card.word} />
+      </View>
+    </>
+  );
+}
+
+/** A word to recognise by ear: said as it comes, written only once answered. */
+function HeardPrompt({ card, shown }: { readonly card: CatalogCard; readonly shown: boolean }) {
+  const word = useSpokenWord(card);
+  // biome-ignore lint/correctness/useExhaustiveDependencies: said once, as the question comes
+  useEffect(() => {
+    const timer = setTimeout(word.play, SPEAK_AFTER_MS);
+    return () => clearTimeout(timer);
+  }, []);
+  return (
+    <>
+      {shown ? (
+        <Text style={styles.promptWord} accessibilityRole="header">
+          {card.word}
+        </Text>
+      ) : (
+        <Text style={styles.spoken} accessibilityRole="header">
+          Le mot est dit à voix haute.
+        </Text>
+      )}
+      <View style={styles.heard}>
+        {IS_LIBRARY ? (
+          <Toy
+            matter="gold"
+            shape="round"
+            style={styles.heardButton}
+            accessibilityRole="button"
+            accessibilityLabel="Réécouter le mot"
+            onPress={word.play}
+          >
+            <Icon name="sound" size={34} color={toyValues.outline} />
+          </Toy>
+        ) : (
+          <Pressable
+            onPress={word.play}
+            accessibilityRole="button"
+            accessibilityLabel="Réécouter le mot"
+            style={({ pressed }) => [
+              styles.heardButton,
+              styles.heardClassic,
+              pressed && styles.choicePressed,
+            ]}
+          >
+            <Icon name="sound" size={34} color={colors.actionInk} />
+          </Pressable>
+        )}
       </View>
     </>
   );
@@ -182,13 +247,19 @@ export function QuestionView({
   const question = session.questions[session.index];
   if (question === undefined) return null;
   const card = cardOrPlaceholder(catalog, question.cardId, "common");
-  const asksDefinition = question.format === "definition";
+  // The choices are definitions when the word is shown or heard.
+  const asksDefinition = question.format === "definition" || question.format === "listen";
+  const pairs = question.format === "pairs";
   const level = memory?.get(question.cardId)?.level ?? "blank";
   const total = session.questions.length;
   const last = session.index + 1 === total;
   const step = session.step;
   const result = step.name === "answered" ? (session.answers.at(-1) ?? null) : null;
   const slip = step.name === "answered" && step.slip;
+  const mistakes = pairs && step.name === "answered" ? Number(step.chosen) : 0;
+  // Every pair is found in the end: a round with mistakes is not a failure.
+  const verdictMatter: ToyMatterName =
+    result === null || result.correct ? "green" : pairs ? "gold" : "red";
   const spelling =
     result?.correct && question.format === "typed" && step.name === "answered"
       ? spellingLine(step.chosen, card.word)
@@ -197,17 +268,24 @@ export function QuestionView({
   const prompt = (
     <>
       <Text style={styles.kicker}>{questionKicker(question.format).toUpperCase()}</Text>
-      {asksDefinition ? (
+      {question.format === "definition" ? (
         <SpokenPrompt key={question.cardId} card={card} />
-      ) : (
+      ) : question.format === "listen" ? (
+        <HeardPrompt key={question.cardId} card={card} shown={result !== null} />
+      ) : pairs ? null : (
         <Text style={styles.promptDefinition} accessibilityRole="header">
           {result === null ? hideWordIn(card.definition, card.word) : card.definition}
         </Text>
       )}
       {question.format === "typed" && result === null && (
-        <Text style={styles.hint}>{typedQuestionHint(level)}</Text>
+        <Text style={styles.hint}>
+          {question.counted ? typedQuestionHint(level) : PRACTICE_TYPED_HINT}
+        </Text>
       )}
-      {result === null && (question.catchUp || !question.counted) && (
+      {question.format === "letters" && result === null && (
+        <Text style={styles.hint}>{LETTERS_HINT}</Text>
+      )}
+      {result === null && !pairs && (question.catchUp || !question.counted) && (
         <Text style={styles.hint}>{question.catchUp ? CATCH_UP_HINT : PRACTICE_FREE_HINT}</Text>
       )}
     </>
@@ -283,6 +361,24 @@ export function QuestionView({
           correct={result?.correct ?? null}
           onAnswer={onChoose}
         />
+      ) : question.format === "letters" ? (
+        <LettersAnswer
+          key={question.cardId}
+          tiles={question.tiles}
+          slots={letterSlots(card.word)}
+          step={step}
+          correct={result?.correct ?? null}
+          onAnswer={onChoose}
+        />
+      ) : question.format === "pairs" ? (
+        <PairsRound
+          key={question.cardId}
+          catalog={catalog}
+          cards={question.cards}
+          definitions={question.definitions}
+          done={step.name !== "asking"}
+          onDone={(count) => onChoose(String(count))}
+        />
       ) : (
         <View style={styles.choices}>
           {question.choices.map((choiceId, index) => {
@@ -340,7 +436,7 @@ export function QuestionView({
           entering={FadeInUp.duration(200)}
           style={[
             styles.feedback,
-            result.correct ? styles.good : styles.bad,
+            result.correct ? styles.good : pairs ? styles.even : styles.bad,
             IS_LIBRARY && library.feedback,
           ]}
           accessibilityLiveRegion="polite"
@@ -350,29 +446,57 @@ export function QuestionView({
               entering={stampIn(result.correct ? -10 : 8)}
               style={[
                 library.verdict,
-                toyFace(result.correct ? "green" : "red", "round"),
+                toyFace(verdictMatter, "round"),
                 { transform: [{ rotate: `${result.correct ? -10 : 8}deg` }] },
               ]}
             >
-              <Icon name={result.correct ? "check" : "close"} size={24} color={colors.inkOnColor} />
+              <Icon
+                name={result.correct || pairs ? "check" : "close"}
+                size={24}
+                color={colors.inkOnColor}
+              />
             </Animated.View>
           )}
-          <Text
-            style={[
-              styles.feedbackTitle,
-              IS_LIBRARY && [
-                library.verdictTitle,
-                { color: toyMatters[result.correct ? "green" : "red"].edge },
-              ],
-            ]}
-          >
-            {answerTitle(result.correct, result.progress.xpGained, slip)}
-          </Text>
-          <Text style={styles.feedbackText}>
-            {result.correct
-              ? (spelling ?? frequencyLine(card.perBillion))
-              : `La bonne réponse était « ${asksDefinition ? card.definition : card.word} »`}
-          </Text>
+          <View style={styles.verdictRow}>
+            <View style={styles.verdictLines}>
+              <Text
+                style={[
+                  styles.feedbackTitle,
+                  IS_LIBRARY && [library.verdictTitle, { color: toyMatters[verdictMatter].edge }],
+                ]}
+              >
+                {pairs && !result.correct
+                  ? pairsVerdict(mistakes)
+                  : answerTitle(result.correct, result.progress.xpGained, slip)}
+              </Text>
+              {(!pairs || result.correct) && (
+                <Text style={styles.feedbackText}>
+                  {pairs
+                    ? pairsVerdict(mistakes)
+                    : result.correct
+                      ? (spelling ?? frequencyLine(card.perBillion))
+                      : `La bonne réponse était « ${asksDefinition ? card.definition : card.word} »`}
+                </Text>
+              )}
+            </View>
+            {/* After a mistake, the card itself: the player sees again the thing they own. */}
+            {!result.correct && !pairs && (
+              <Pressable
+                onPress={() => openCard(card.id)}
+                accessibilityRole="button"
+                accessibilityLabel={`Voir la carte ${card.word}`}
+                style={styles.missedCard}
+              >
+                <View importantForAccessibility="no-hide-descendants">
+                  <Card
+                    card={card}
+                    collectionName={collectionName(catalog, card.collectionId)}
+                    width={72}
+                  />
+                </View>
+              </Pressable>
+            )}
+          </View>
           {result.levelUp && (
             <Animated.Text
               entering={FadeInUp.delay(200).duration(240)}
@@ -522,6 +646,183 @@ function TypedAnswer({
   );
 }
 
+/** The word rebuilt from its tiles: a tile goes to the next slot, a slot gives its tile back. */
+function LettersAnswer({
+  tiles,
+  slots,
+  step,
+  correct,
+  onAnswer,
+}: {
+  readonly tiles: readonly string[];
+  readonly slots: number;
+  readonly step: Step;
+  readonly correct: boolean | null;
+  readonly onAnswer: (spelled: string) => void;
+}) {
+  const [state, setState] = useState(LETTERS_START);
+  const asking = step.name === "asking";
+  const full = state.placed.length === slots;
+  const judged = correct !== null;
+  return (
+    <View style={styles.letters}>
+      <View
+        style={[
+          styles.slots,
+          judged &&
+            (IS_LIBRARY
+              ? [library.slotsJudged, correct ? library.typedRight : library.typedWrong]
+              : correct
+                ? choiceStyles.right
+                : choiceStyles.wrong),
+        ]}
+      >
+        {Array.from({ length: slots }, (_, slot) => {
+          const index = state.placed[slot];
+          const letter = index === undefined ? "" : (tiles[index] ?? "");
+          return (
+            <Pressable
+              // biome-ignore lint/suspicious/noArrayIndexKey: one slot per letter, in order
+              key={slot}
+              disabled={!asking || index === undefined}
+              onPress={() => setState((current) => takeBackFrom(current, slot))}
+              accessibilityRole="button"
+              accessibilityLabel={letter === "" ? `Case ${slot + 1}, vide` : `Retirer ${letter}`}
+              style={[
+                styles.slot,
+                judged && styles.slotJudged,
+                IS_LIBRARY && judged && library.slotOnLeather,
+              ]}
+            >
+              <Text style={[styles.letter, IS_LIBRARY && judged && library.onLeather]}>
+                {letter}
+              </Text>
+            </Pressable>
+          );
+        })}
+      </View>
+      <View style={styles.tiles}>
+        {tiles.map((tile, index) => {
+          const placed = state.placed.includes(index);
+          return (
+            <Pressable
+              // biome-ignore lint/suspicious/noArrayIndexKey: a letter may come twice
+              key={index}
+              disabled={!asking || placed}
+              onPress={() => setState((current) => placeTile(current, index, slots))}
+              accessibilityRole="button"
+              accessibilityLabel={tile}
+              style={({ pressed }) => [
+                styles.tile,
+                pressed && styles.choicePressed,
+                IS_LIBRARY && [library.tile, toyFace("paper", "tile"), pressed && library.pressed],
+                placed && styles.tilePlaced,
+              ]}
+            >
+              <Text style={styles.letter}>{tile}</Text>
+            </Pressable>
+          );
+        })}
+      </View>
+      {asking && (
+        <>
+          <Button
+            label={LETTERS_ACTION}
+            disabled={!full}
+            onPress={() => onAnswer(lettersSpelled(state, tiles))}
+          />
+          <TextButton label="Je sèche" onPress={() => onAnswer("")} />
+        </>
+      )}
+    </View>
+  );
+}
+
+/** A mismatch in a round of pairs sounds and buzzes like a wrong answer. */
+const MISMATCH = answerFeedback({
+  correct: false,
+  levelUp: false,
+  bonus: { daily: 0, gilded: 0, credited: 0, reserve: 0 },
+});
+
+/** Words and their definitions: a word, then its definition, until every pair is found. */
+function PairsRound({
+  catalog,
+  cards,
+  definitions,
+  done,
+  onDone,
+}: {
+  readonly catalog: Catalog;
+  readonly cards: readonly string[];
+  readonly definitions: readonly string[];
+  readonly done: boolean;
+  readonly onDone: (mistakes: number) => void;
+}) {
+  const [state, setState] = useState(PAIRS_START);
+  const pick = (side: PairSide, cardId: string) => {
+    if (done) return;
+    const next = pickInPairs(state, side, cardId);
+    setState(next);
+    if (next.wrong !== null) {
+      play(MISMATCH.cue);
+      vibrate(MISMATCH.vibration);
+    } else if (next.matched.length > state.matched.length) {
+      play("answerRight");
+    }
+    if (pairsDone(next, cards)) onDone(next.mistakes);
+  };
+  const stateOf = (side: PairSide, cardId: string): ChoiceState => {
+    if (state.matched.includes(cardId)) return "right";
+    if (state.picked?.side === side && state.picked.cardId === cardId) return "pending";
+    const wrong = side === "word" ? state.wrong?.word : state.wrong?.definition;
+    return wrong === cardId ? "wrong" : "idle";
+  };
+  return (
+    <View style={styles.pairs}>
+      {(["word", "definition"] as const).map((side) => (
+        <View key={side} style={side === "word" ? styles.pairWords : styles.pairDefinitions}>
+          {(side === "word" ? cards : definitions).map((cardId) => {
+            const card = cardOrPlaceholder(catalog, cardId, "common");
+            const tone = stateOf(side, cardId);
+            const judged = tone === "right" || tone === "wrong";
+            return (
+              <Reaction key={cardId} kind={tone}>
+                <Pressable
+                  disabled={done || state.matched.includes(cardId)}
+                  onPress={() => pick(side, cardId)}
+                  accessibilityRole="button"
+                  accessibilityState={{ selected: tone === "pending" }}
+                  style={({ pressed }) => [
+                    styles.pair,
+                    choiceStyles[tone],
+                    pressed && styles.choicePressed,
+                    IS_LIBRARY && [
+                      library.pair,
+                      toyFace(CHOICE_MATTERS[tone], "tile"),
+                      tone === "pending" && library.pending,
+                      pressed && library.pressed,
+                    ],
+                  ]}
+                >
+                  <Text
+                    style={[
+                      side === "word" ? styles.pairWord : styles.pairDefinition,
+                      IS_LIBRARY && judged && library.onLeather,
+                    ]}
+                  >
+                    {side === "word" ? card.word : hideWordIn(card.definition, card.word)}
+                  </Text>
+                </Pressable>
+              </Reaction>
+            );
+          })}
+        </View>
+      ))}
+    </View>
+  );
+}
+
 const choiceStyles = StyleSheet.create({
   idle: {},
   pending: { borderColor: colors.gilt },
@@ -619,6 +920,77 @@ const styles = StyleSheet.create({
   },
   typedRight: { borderColor: colors.success },
   typedWrong: { borderColor: colors.danger },
+  letters: { gap: space.s8 },
+  slots: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "center",
+    gap: space.s2,
+    padding: space.s5,
+    borderRadius: radii.xl,
+    borderWidth: 2,
+    borderColor: "transparent",
+  },
+  slot: {
+    width: 30,
+    height: 42,
+    alignItems: "center",
+    justifyContent: "center",
+    borderTopLeftRadius: radii.md,
+    borderTopRightRadius: radii.md,
+    borderBottomWidth: 3,
+    borderBottomColor: ink.pageInkFaint,
+    backgroundColor: ink.well,
+  },
+  slotJudged: { backgroundColor: "transparent", borderBottomColor: ink.pageInkMuted },
+  letter: { fontFamily: fonts.display, fontSize: fontSizes.title, color: ink.pageInk },
+  tiles: { flexDirection: "row", flexWrap: "wrap", justifyContent: "center", gap: space.s4 },
+  tile: {
+    width: 42,
+    height: 42,
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: radii.lg,
+    borderWidth: 2,
+    borderColor: colors.track,
+    backgroundColor: colors.pageRaised,
+  },
+  tilePlaced: { opacity: 0.25 },
+  // Narrow words beside wider definitions: both columns fit a small phone.
+  pairs: { flexDirection: "row", gap: space.s3 },
+  pairWords: { flex: 1, gap: space.s3 },
+  pairDefinitions: { flex: 1.4, gap: space.s3 },
+  pair: {
+    minHeight: 48,
+    justifyContent: "center",
+    paddingHorizontal: space.s4,
+    paddingVertical: space.s5,
+    borderRadius: radii.xl,
+    borderWidth: 2,
+    borderColor: colors.track,
+    backgroundColor: colors.pageRaised,
+  },
+  pairWord: { fontFamily: fonts.display, fontSize: fontSizes.bodyLarge, color: ink.pageInk },
+  pairDefinition: {
+    fontFamily: fonts.text.regular,
+    fontSize: fontSizes.small,
+    lineHeight: 18,
+    color: ink.pageInk,
+  },
+  spoken: {
+    fontFamily: fonts.text.italic,
+    fontSize: fontSizes.bodyLarge,
+    lineHeight: 22,
+    color: ink.pageInkMuted,
+  },
+  heard: { alignItems: "center", marginTop: space.s4 },
+  heardButton: { width: 88, height: 88 },
+  heardClassic: {
+    borderRadius: 44,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: colors.action,
+  },
   error: {
     fontFamily: fonts.ui.bold,
     fontSize: fontSizes.body,
@@ -628,6 +1000,10 @@ const styles = StyleSheet.create({
   feedback: { gap: space.s4, padding: space.s9, borderRadius: 20, borderWidth: 2 },
   good: { borderColor: colors.success, backgroundColor: alpha(colors.success, 0.12) },
   bad: { borderColor: colors.danger, backgroundColor: alpha(colors.danger, 0.1) },
+  even: { borderColor: colors.gilt, backgroundColor: alpha(colors.gilt, 0.12) },
+  verdictRow: { flexDirection: "row", alignItems: "flex-start", gap: space.s6 },
+  verdictLines: { flex: 1, gap: space.s4 },
+  missedCard: { transform: [{ rotate: "3deg" }] },
   feedbackTitle: {
     fontFamily: fonts.display,
     fontSize: fontSizes.titleLarge,
@@ -701,6 +1077,10 @@ const library = StyleSheet.create({
     marginBottom: 4,
   },
   pending: { borderColor: toyMatters.gold.top },
+  tile: { borderWidth: toyValues.outlineWidth, borderColor: toyValues.outline, marginBottom: 4 },
+  slotsJudged: { borderWidth: toyValues.outlineWidth, borderColor: toyValues.outline },
+  slotOnLeather: { borderBottomColor: colors.inkOnColor },
+  pair: { borderWidth: toyValues.outlineWidth, marginBottom: 4 },
   faded: { opacity: 0.55 },
   pressed: { transform: [{ translateY: 3 }] },
   disc: {

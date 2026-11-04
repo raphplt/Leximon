@@ -16,6 +16,7 @@ import {
   sessionBonusLine,
   sessionScore,
   sessionXpLine,
+  streakLine,
 } from "@leximon/view-model";
 import { router } from "expo-router";
 import { useEffect, useState } from "react";
@@ -130,6 +131,7 @@ export function ChallengeRecap({
   const climbedIds = climbed.map((word) => word.cardId);
   const back = comingBackTomorrow(answers);
   const backLine = comingBackLine(back.length);
+  const streak = summary === null ? null : streakLine(summary.streak);
   const actions = recapActions(summary, summary?.settings.length ?? answers.length, NOUN);
   const more = (primary: boolean) => (
     <Button label={actions.more} secondary={!primary} disabled={busy} onPress={onMore} />
@@ -145,6 +147,7 @@ export function ChallengeRecap({
           {right}/{scored.length}
         </Text>
         {xp !== null && <Text style={styles.xp}>{xp}</Text>}
+        {streak !== null && <Text style={styles.streak}>{streak}</Text>}
         {bonus !== null ? (
           <Animated.View
             entering={FadeInUp.delay(RECAP_BONUS_MS).duration(320)}
@@ -227,6 +230,12 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   xp: { fontFamily: fonts.display, fontSize: fontSizes.titleLarge, color: ink.rubric },
+  streak: {
+    fontFamily: fonts.ui.bold,
+    fontSize: fontSizes.body,
+    color: ink.pageInkMuted,
+    textAlign: "center",
+  },
   line: { flexDirection: "row", alignItems: "center", gap: space.s4 },
   lineText: { fontFamily: fonts.ui.bold, fontSize: fontSizes.bodyLarge, color: ink.pageInk },
   won: { color: ink.rubric },

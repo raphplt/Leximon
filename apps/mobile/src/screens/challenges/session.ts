@@ -1,7 +1,10 @@
 import type { ReviewRequest } from "@leximon/contract";
 import type { AnsweredQuestion, SeriesQuestion } from "@leximon/view-model";
 
-/** `chosen`: the card picked, or the word typed. `meeting`: a new word's card, before its question. */
+/**
+ * `chosen`: the card picked, the word typed or spelled out, or the mistakes of a round of pairs.
+ * `meeting`: a new word's card, before its question.
+ */
 export type Step =
   | { readonly name: "meeting" }
   | { readonly name: "asking" }

@@ -16,7 +16,10 @@ import {
 } from "@leximon/tokens";
 import {
   DESK_TEXTS,
+  DIFFICULTY_OPTIONS,
   dailyView,
+  FORMAT_PREFERENCE,
+  formatOptions,
   isFeatureOpen,
   lengthOptions,
   memoryLine,
@@ -24,10 +27,15 @@ import {
   PACK_NOUNS,
   paceOptions,
   practiceEmptyLine,
+  REVIEW_DIFFICULTY_NOTE,
+  REVIEW_DIFFICULTY_TITLE,
+  REVIEW_FORMATS_NOTE,
+  REVIEW_FORMATS_TITLE,
   REVIEW_LENGTH_TITLE,
   REVIEW_PACE_NOTE,
   REVIEW_PACE_TITLE,
   REVIEW_SETTINGS_TITLE,
+  REVIEW_SOUND_LABEL,
   type ReviewCover,
   reviewAction,
   reviewLine,
@@ -38,12 +46,14 @@ import {
   riddleProgressLine,
   riddleSlots,
   shelfXpLine,
+  streakLine,
 } from "@leximon/view-model";
 import { router, useFocusEffect } from "expo-router";
 import { type ReactNode, useCallback, useState } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import Animated, { FadeInUp } from "react-native-reanimated";
 import { api } from "@/api/client";
+import { readPreference, writePreference } from "@/feedback/feedback";
 import { CountBadge, MainAction } from "@/library/play-pieces";
 import { dailyChallenge, reviewSummary } from "@/player/collection";
 import { useShared } from "@/player/shared";
@@ -270,11 +280,17 @@ function Review({
   );
 }
 
-/** Length of a series and pace of the new words, kept on the account. */
+type SettingsChange = Parameters<typeof api.updatePreferences>[0];
+
+/**
+ * Length of a series, pace of the new words, kinds of questions and difficulty, kept on the
+ * account; the voice that says the word stays on this phone, like the other sounds.
+ */
 function Settings({ summary }: { readonly summary: ReviewSummaryResponse }) {
   const [saving, setSaving] = useState(false);
   const [failed, setFailed] = useState(false);
-  const save = async (change: { reviewLength?: number; newWordsPerDay?: number }) => {
+  const [speech, setSpeech] = useState(() => readPreference("speech"));
+  const save = async (change: SettingsChange) => {
     setSaving(true);
     setFailed(false);
     try {
@@ -313,6 +329,41 @@ function Settings({ summary }: { readonly summary: ReviewSummaryResponse }) {
         ))}
       </View>
       <Text style={styles.sheetNote}>{REVIEW_PACE_NOTE}</Text>
+      <Text style={styles.sheetTitle}>{REVIEW_FORMATS_TITLE.toUpperCase()}</Text>
+      <View style={styles.options}>
+        {formatOptions(summary).map((option) => (
+          <Option
+            key={option.key}
+            label={option.label}
+            on={option.on}
+            disabled={saving}
+            onPress={() => void save({ [FORMAT_PREFERENCE[option.key]]: !option.on })}
+          />
+        ))}
+        <Option
+          label={REVIEW_SOUND_LABEL}
+          on={speech}
+          disabled={false}
+          onPress={() => {
+            writePreference("speech", !speech);
+            setSpeech(!speech);
+          }}
+        />
+      </View>
+      <Text style={styles.sheetNote}>{REVIEW_FORMATS_NOTE}</Text>
+      <Text style={styles.sheetTitle}>{REVIEW_DIFFICULTY_TITLE.toUpperCase()}</Text>
+      <View style={styles.options}>
+        {DIFFICULTY_OPTIONS.map((option) => (
+          <Option
+            key={option.value}
+            label={option.label}
+            on={option.value === summary.settings.difficulty}
+            disabled={saving}
+            onPress={() => void save({ reviewDifficulty: option.value })}
+          />
+        ))}
+      </View>
+      <Text style={styles.sheetNote}>{REVIEW_DIFFICULTY_NOTE}</Text>
       {failed && (
         <Text style={styles.error} accessibilityRole="alert">
           Le serveur ne répond pas. Réessaie.
@@ -681,6 +732,7 @@ function MemoryLeaf({
   readonly summary: ReviewSummaryResponse;
   readonly now: number;
 }) {
+  const streak = streakLine(summary.streak);
   return (
     <Panel paper style={styles.leaf}>
       <PaperKicker>Ta mémoire</PaperKicker>
@@ -693,6 +745,7 @@ function MemoryLeaf({
         ))}
       </View>
       <Text style={styles.leafText}>{memoryLine(summary, now)}</Text>
+      {streak !== null && <Text style={styles.leafText}>{streak}</Text>}
     </Panel>
   );
 }
