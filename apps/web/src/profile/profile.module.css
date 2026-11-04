@@ -7,12 +7,27 @@
 
 /* --- Banner --- */
 
+/* The player's banner hangs over the desk, framed in old gold. */
 .banner {
   position: relative;
   overflow: hidden;
-  border-radius: 26px;
-  background: var(--lx-color-panel);
-  border: 1px solid color-mix(in srgb, var(--lx-color-page-ink) 9%, transparent);
+  border: 6px solid transparent;
+  border-radius: var(--lx-toy-radius-large);
+  background:
+    var(--lx-matter-leather) 0 0 / var(--lx-matter-size) padding-box,
+    radial-gradient(
+      ellipse 80% 90% at 30% 80%,
+      var(--lx-desk-center) 0%,
+      var(--lx-desk-middle) 55%,
+      var(--lx-desk-edge) 100%
+    )
+    padding-box,
+    var(--lx-old-gold) border-box;
+  box-shadow:
+    0 0 0 3px var(--lx-toy-outline),
+    0 6px 0 var(--lx-toy-outline),
+    inset 0 0 50px var(--lx-desk-hollow);
+  color: var(--lx-lettering-fill);
 }
 
 .bannerArt {
@@ -24,6 +39,7 @@
       transparent 14px 28px
     ),
     linear-gradient(110deg, var(--lx-color-banner-start), var(--lx-color-banner-end));
+  box-shadow: inset 0 -3px 0 var(--lx-toy-outline);
 }
 
 .identity {
@@ -36,7 +52,10 @@
 }
 
 .bigAvatar {
-  outline: 5px solid var(--lx-color-page-raised);
+  outline: var(--lx-toy-outline-width) solid var(--lx-toy-outline);
+  box-shadow:
+    0 0 0 6px var(--lx-toy-gold-top),
+    0 0 0 9px var(--lx-toy-outline);
 }
 
 .names {
@@ -80,21 +99,27 @@ a.clan:hover {
   color: var(--lx-color-page-ink-muted);
 }
 
+.banner .headline {
+  color: var(--lx-lettering-kicker);
+}
+
+.banner :is(.clan, .subline) {
+  color: color-mix(in srgb, var(--lx-lettering-fill) 85%, transparent);
+}
+
 .actions {
   display: flex;
   flex-wrap: wrap;
   gap: var(--lx-s5);
 }
 
+/* Always worn with the leaf, which gives it its paper, its edge and its ink. */
 .note {
   display: flex;
   align-items: center;
   gap: var(--lx-s5);
   margin: var(--lx-s8) 0 0;
   padding: var(--lx-s7) var(--lx-s9);
-  border-radius: var(--lx-radius-x3);
-  background: var(--lx-color-binding);
-  color: var(--lx-color-page-ink-muted);
   font-size: var(--lx-size-label);
 }
 
@@ -154,6 +179,10 @@ a.clan:hover {
 
 .panel {
   padding: var(--lx-s10) 22px var(--lx-s12);
+}
+
+.layout > .panel {
+  padding: var(--lx-s10) 22px;
 }
 
 .panelHead {
@@ -216,7 +245,7 @@ a.clan:hover {
 }
 
 .pinPlaceholder {
-  background: var(--lx-color-binding);
+  background: var(--lx-color-well);
 }
 
 .emptySlot {
@@ -258,17 +287,12 @@ button.emptySlot {
   width: 28px;
   height: 28px;
   padding: 0;
-  border: 2px solid var(--lx-color-rule);
+  border: var(--lx-toy-outline-width) solid var(--lx-toy-outline);
   border-radius: var(--lx-radius-pill);
-  background: var(--lx-color-binding);
-  color: var(--lx-color-page-ink);
+  background: var(--lx-toy-paper-top);
+  box-shadow: 0 2px 0 var(--lx-toy-outline);
+  color: var(--lx-color-paper-ink);
   cursor: pointer;
-}
-
-.pinRemove:hover,
-.pinRemove:focus-visible {
-  border-color: var(--lx-color-danger);
-  color: var(--lx-color-danger);
 }
 
 /* Under each of the player's own pinned cards: earlier, change, later. */
@@ -317,13 +341,15 @@ button.emptySlot {
   margin: 0;
 }
 
+/* The figures are small wells pressed into the paper. */
 .tile {
   display: flex;
   flex-direction: column-reverse;
   justify-content: flex-end;
   padding: var(--lx-s6) var(--lx-s7);
-  border-radius: var(--lx-radius-xxl);
-  background: var(--lx-color-binding);
+  border-radius: var(--lx-toy-radius-small);
+  background: var(--lx-color-well);
+  box-shadow: inset 0 3px 0 color-mix(in srgb, var(--lx-toy-paper-edge) 60%, transparent);
 }
 
 .tileValue {
@@ -352,9 +378,15 @@ button.emptySlot {
   gap: var(--lx-s4);
   min-height: 42px;
   padding: 0 var(--lx-s8);
-  border-radius: var(--lx-radius-pill);
-  background: color-mix(in srgb, var(--lx-color-gilt) 14%, transparent);
-  color: var(--lx-color-rubric);
+  border: var(--lx-toy-outline-width) solid var(--lx-toy-outline);
+  border-radius: var(--lx-toy-radius-small);
+  background: linear-gradient(
+    180deg,
+    var(--lx-toy-gold-top) 0 47%,
+    var(--lx-toy-gold-bottom) 53% 100%
+  );
+  box-shadow: 0 3px 0 var(--lx-toy-outline);
+  color: var(--lx-toy-outline);
   font-weight: 800;
   font-size: var(--lx-size-label);
 }
@@ -370,13 +402,9 @@ button.emptySlot {
   align-items: center;
   gap: var(--lx-s3);
   margin-bottom: var(--lx-s7);
-  color: var(--lx-color-page-ink-muted);
+  color: var(--lx-lettering-fill);
   font-weight: 700;
   text-decoration: none;
-}
-
-.back:hover {
-  color: var(--lx-color-page-ink);
 }
 
 .atelierHead {
@@ -408,6 +436,7 @@ button.emptySlot {
   list-style: none;
 }
 
+/* In the workshop, each piece is a paper tile; the one worn is gold. */
 .item {
   display: flex;
   flex-direction: column;
@@ -416,21 +445,36 @@ button.emptySlot {
   box-sizing: border-box;
   width: 100%;
   height: 100%;
+  margin-bottom: 4px;
   padding: 22px var(--lx-s6) var(--lx-s7);
-  border: 1px solid color-mix(in srgb, var(--lx-color-page-ink) 9%, transparent);
-  border-radius: 20px;
-  background: var(--lx-color-panel);
-  color: var(--lx-color-page-ink);
+  border: var(--lx-toy-outline-width) solid var(--lx-toy-outline);
+  border-radius: var(--lx-toy-radius-tile);
+  background:
+    var(--lx-matter-paper) 0 0 / var(--lx-matter-size),
+    var(--lx-color-paper);
+  box-shadow:
+    inset 0 -4px 0 var(--lx-toy-paper-bottom),
+    0 4px 0 var(--lx-toy-outline);
+  color: var(--lx-color-paper-ink);
   font: inherit;
   cursor: pointer;
 }
 
 .item:hover {
-  border-color: color-mix(in srgb, var(--lx-color-page-ink) 25%, transparent);
+  filter: brightness(1.04);
 }
 
 .item[aria-pressed="true"] {
-  border-color: var(--lx-color-success-bright);
+  background: linear-gradient(
+    180deg,
+    var(--lx-toy-gold-top) 0 47%,
+    var(--lx-toy-gold-bottom) 53% 100%
+  );
+  box-shadow:
+    inset 0 -4px 0 var(--lx-toy-gold-edge),
+    inset 0 2px 0 var(--lx-toy-sheen),
+    0 4px 0 var(--lx-toy-outline);
+  color: var(--lx-toy-outline);
 }
 
 .itemBone {
@@ -438,9 +482,10 @@ button.emptySlot {
   height: 178px;
 }
 
+/* A piece still closed is paper gone grey, not a hole in the shelf. */
 .itemLocked {
   filter: grayscale(1);
-  opacity: 0.6;
+  opacity: 0.85;
 }
 
 .itemName {
@@ -455,15 +500,19 @@ button.emptySlot {
 }
 
 .worn {
-  color: var(--lx-color-success-bright);
+  color: var(--lx-color-success-deep);
+}
+
+.item[aria-pressed="true"] .worn {
+  color: var(--lx-toy-outline);
 }
 
 .owned {
-  color: var(--lx-color-rubric);
+  color: var(--lx-toy-red-bottom);
 }
 
 .closed {
-  color: var(--lx-color-page-ink-faint);
+  color: var(--lx-color-paper-ink-muted);
 }
 
 .titlePreview {
@@ -474,9 +523,10 @@ button.emptySlot {
 
 .titlePill {
   padding: var(--lx-s4) var(--lx-s7);
+  border: var(--lx-toy-outline-width) solid var(--lx-toy-outline);
   border-radius: var(--lx-radius-pill);
-  background: var(--lx-color-page);
-  color: var(--lx-color-rubric);
+  background: var(--lx-toy-paper-top);
+  color: var(--lx-toy-red-bottom);
   font-weight: 800;
   font-size: var(--lx-size-label);
   text-align: center;
@@ -546,148 +596,4 @@ button.emptySlot {
   .title {
     font-size: var(--lx-size-heading-large);
   }
-}
-
-/* --- « La Bibliothèque » --- */
-
-/* The player's banner hangs over the desk, framed in old gold. */
-:root[data-look="bibliotheque"] .banner {
-  border: 6px solid transparent;
-  border-radius: var(--lx-toy-radius-large);
-  background:
-    var(--lx-matter-leather) 0 0 / var(--lx-matter-size) padding-box,
-    radial-gradient(
-      ellipse 80% 90% at 30% 80%,
-      var(--lx-desk-center) 0%,
-      var(--lx-desk-middle) 55%,
-      var(--lx-desk-edge) 100%
-    )
-    padding-box,
-    var(--lx-old-gold) border-box;
-  box-shadow:
-    0 0 0 3px var(--lx-toy-outline),
-    0 6px 0 var(--lx-toy-outline),
-    inset 0 0 50px var(--lx-desk-hollow);
-  color: var(--lx-lettering-fill);
-}
-
-:root[data-look="bibliotheque"] .bannerArt {
-  box-shadow: inset 0 -3px 0 var(--lx-toy-outline);
-}
-
-:root[data-look="bibliotheque"] .bigAvatar {
-  outline: var(--lx-toy-outline-width) solid var(--lx-toy-outline);
-  box-shadow:
-    0 0 0 6px var(--lx-toy-gold-top),
-    0 0 0 9px var(--lx-toy-outline);
-}
-
-:root[data-look="bibliotheque"] .banner .headline {
-  color: var(--lx-lettering-kicker);
-}
-
-:root[data-look="bibliotheque"] .banner :is(.clan, .subline) {
-  color: color-mix(in srgb, var(--lx-lettering-fill) 85%, transparent);
-}
-
-:root[data-look="bibliotheque"] .note {
-  padding: var(--lx-s7) var(--lx-s9);
-}
-
-:root[data-look="bibliotheque"] .layout > .panel {
-  padding: var(--lx-s10) 22px;
-}
-
-/* The figures are small wells pressed into the paper. */
-:root[data-look="bibliotheque"] .tile {
-  border-radius: var(--lx-toy-radius-small);
-  background: var(--lx-color-well);
-  box-shadow: inset 0 3px 0 color-mix(in srgb, var(--lx-toy-paper-edge) 60%, transparent);
-}
-
-:root[data-look="bibliotheque"] .pinPlaceholder {
-  background: var(--lx-color-well);
-}
-
-:root[data-look="bibliotheque"] .pinRemove {
-  border: var(--lx-toy-outline-width) solid var(--lx-toy-outline);
-  background: var(--lx-toy-paper-top);
-  box-shadow: 0 2px 0 var(--lx-toy-outline);
-  color: var(--lx-color-paper-ink);
-}
-
-:root[data-look="bibliotheque"] .friendTag {
-  border: var(--lx-toy-outline-width) solid var(--lx-toy-outline);
-  border-radius: var(--lx-toy-radius-small);
-  background: linear-gradient(
-    180deg,
-    var(--lx-toy-gold-top) 0 47%,
-    var(--lx-toy-gold-bottom) 53% 100%
-  );
-  box-shadow: 0 3px 0 var(--lx-toy-outline);
-  color: var(--lx-toy-outline);
-}
-
-:root[data-look="bibliotheque"] .back {
-  color: var(--lx-lettering-fill);
-}
-
-/* In the workshop, each piece is a paper tile; the one worn is gold. */
-:root[data-look="bibliotheque"] .item {
-  margin-bottom: 4px;
-  border: var(--lx-toy-outline-width) solid var(--lx-toy-outline);
-  border-radius: var(--lx-toy-radius-tile);
-  background:
-    var(--lx-matter-paper) 0 0 / var(--lx-matter-size),
-    var(--lx-color-paper);
-  box-shadow:
-    inset 0 -4px 0 var(--lx-toy-paper-bottom),
-    0 4px 0 var(--lx-toy-outline);
-  color: var(--lx-color-paper-ink);
-}
-
-:root[data-look="bibliotheque"] .item:hover {
-  border-color: var(--lx-toy-outline);
-  filter: brightness(1.04);
-}
-
-:root[data-look="bibliotheque"] .item[aria-pressed="true"] {
-  border-color: var(--lx-toy-outline);
-  background: linear-gradient(
-    180deg,
-    var(--lx-toy-gold-top) 0 47%,
-    var(--lx-toy-gold-bottom) 53% 100%
-  );
-  box-shadow:
-    inset 0 -4px 0 var(--lx-toy-gold-edge),
-    inset 0 2px 0 var(--lx-toy-sheen),
-    0 4px 0 var(--lx-toy-outline);
-  color: var(--lx-toy-outline);
-}
-
-:root[data-look="bibliotheque"] .worn {
-  color: var(--lx-color-success-deep);
-}
-
-:root[data-look="bibliotheque"] .item[aria-pressed="true"] .worn {
-  color: var(--lx-toy-outline);
-}
-
-:root[data-look="bibliotheque"] .owned {
-  color: var(--lx-toy-red-bottom);
-}
-
-:root[data-look="bibliotheque"] .closed {
-  color: var(--lx-color-paper-ink-muted);
-}
-
-:root[data-look="bibliotheque"] .titlePill {
-  border: var(--lx-toy-outline-width) solid var(--lx-toy-outline);
-  background: var(--lx-toy-paper-top);
-  color: var(--lx-toy-red-bottom);
-}
-
-/* A piece still closed is paper gone grey, not a hole in the shelf. */
-:root[data-look="bibliotheque"] .itemLocked {
-  opacity: 0.85;
 }

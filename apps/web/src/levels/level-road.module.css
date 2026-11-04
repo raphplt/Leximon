@@ -83,15 +83,8 @@
   flex: none;
   width: 40px;
   height: 40px;
-  border: 1px solid color-mix(in srgb, var(--lx-color-paper-ink) 25%, transparent);
   border-radius: 50%;
-  background: none;
-  color: var(--ink);
   cursor: pointer;
-}
-
-.turn:hover:not(:disabled) {
-  background: color-mix(in srgb, var(--lx-color-paper-ink) 6%, transparent);
 }
 
 .turn:disabled {
@@ -381,10 +374,6 @@
   background: color-mix(in srgb, var(--lx-color-kraft) 16%, transparent);
 }
 
-.opensKicker {
-  color: var(--lx-color-kraft);
-}
-
 .opensText {
   margin: var(--lx-s1) 0 0;
   font-weight: 800;
@@ -480,10 +469,4 @@
     min-width: 24px;
     font-size: var(--lx-size-subtitle);
   }
-}
-
-/* --- « La Bibliothèque » --- */
-
-:root[data-look="bibliotheque"] .turn {
-  border-radius: 50%;
 }

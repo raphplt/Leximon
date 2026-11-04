@@ -54,9 +54,8 @@ function hrefOf(id: TabId): string {
 }
 
 /**
- * The wide band of « La Bibliothèque », from 760 px: a shelf across the top with the house's
- * seal, the five places of the game, then the level, the stock, the mail and the player's
- * portrait, which opens their menu. CSS shows it in place of the current top bar.
+ * The wide band, from 760 px: a shelf across the top with the house's seal, the five places of
+ * the game, then the level, the stock, the mail and the player's portrait, which opens their menu.
  */
 export function LibraryTopBar({
   menuOpen,
@@ -173,9 +172,8 @@ function PlayerTools() {
 }
 
 /**
- * The phone band of « La Bibliothèque »: the portrait opens the player's menu, the medal the
- * levels, then the stock and the mail. CSS shows it in place of the current band when the look
- * is on.
+ * The phone band, under 760 px: the portrait opens the player's menu, the medal the levels, then
+ * the stock and the mail.
  */
 export function LibraryTopBand({ onMenu }: { readonly onMenu: () => void }) {
   const view = usePlayerView();
@@ -189,7 +187,7 @@ export function LibraryTopBand({ onMenu }: { readonly onMenu: () => void }) {
   );
 }
 
-/** The phone tabs of « La Bibliothèque », in place of the current ones when the look is on. */
+/** The phone tabs, under 760 px. */
 export function LibraryTabs() {
   const pathname = usePathname();
   const router = useRouter();

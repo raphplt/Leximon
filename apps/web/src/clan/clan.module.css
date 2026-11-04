@@ -78,11 +78,34 @@
   padding: var(--lx-s12) 26px;
   overflow: hidden;
   isolation: isolate;
-  background: linear-gradient(
-    120deg,
-    color-mix(in srgb, var(--lx-color-banner-start) 85%, transparent),
-    color-mix(in srgb, var(--lx-color-page-raised) 80%, transparent)
-  );
+}
+
+/*
+ * The clan's header is its banner hung on the desk, its name in lettering. The class is doubled
+ * to win over the panel the header also is.
+ */
+.hero.hero {
+  --lx-color-page-ink: var(--lx-lettering-fill);
+  --lx-color-page-ink-soft: color-mix(in srgb, var(--lx-lettering-fill) 85%, transparent);
+  --lx-color-page-ink-muted: color-mix(in srgb, var(--lx-lettering-fill) 78%, transparent);
+  --lx-color-track: var(--lx-desk-hollow);
+  border: 6px solid transparent;
+  border-radius: var(--lx-toy-radius-large);
+  background:
+    var(--lx-matter-leather) 0 0 / var(--lx-matter-size) padding-box,
+    radial-gradient(
+      ellipse 80% 90% at 30% 40%,
+      var(--lx-desk-center) 0%,
+      var(--lx-desk-middle) 55%,
+      var(--lx-desk-edge) 100%
+    )
+    padding-box,
+    var(--lx-old-gold) border-box;
+  box-shadow:
+    0 0 0 3px var(--lx-toy-outline),
+    0 6px 0 var(--lx-toy-outline),
+    inset 0 0 50px var(--lx-desk-hollow);
+  color: var(--lx-lettering-fill);
 }
 
 /* The clan's page while it arrives: the hero's place, and the tabs on a phone. */
@@ -115,7 +138,7 @@
   margin-bottom: var(--lx-s3);
   font-size: var(--lx-size-small);
   font-weight: 700;
-  color: #f6eedd;
+  color: var(--lx-lettering-fill);
 }
 
 .clanXpNext {
@@ -131,8 +154,8 @@
   background: linear-gradient(#f4d27a, var(--lx-color-gilt-deep));
 }
 
-.heroKicker {
-  color: #f2c9a8;
+.hero.hero .heroKicker {
+  color: var(--lx-lettering-kicker);
 }
 
 .heroName {
@@ -140,6 +163,12 @@
   font-size: 38px;
   line-height: 1;
   overflow-wrap: break-word;
+}
+
+.hero.hero .heroName {
+  -webkit-text-stroke: var(--lx-lettering-width) var(--lx-lettering-outline);
+  paint-order: stroke fill;
+  text-shadow: 0 var(--lx-lettering-drop) 0 var(--lx-lettering-outline);
 }
 
 .heroLine {
@@ -159,20 +188,26 @@
 .clanTabs {
   display: none;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: var(--lx-s2);
+  gap: var(--lx-s4);
   margin-bottom: var(--lx-s7);
-  padding: var(--lx-s2);
-  border-radius: var(--lx-radius-pill);
-  background: var(--lx-color-binding);
 }
 
 .clanTab {
   appearance: none;
   min-height: 40px;
-  border: 0;
-  border-radius: var(--lx-radius-pill);
-  background: none;
-  color: var(--lx-color-page-ink-muted);
+  margin-bottom: 3px;
+  border: var(--lx-toy-outline-width) solid var(--lx-toy-outline);
+  border-radius: var(--lx-toy-radius-small);
+  background: linear-gradient(
+    180deg,
+    var(--lx-toy-paper-top) 0 47%,
+    var(--lx-toy-paper-bottom) 53% 100%
+  );
+  box-shadow:
+    inset 0 -3px 0 var(--lx-toy-paper-edge),
+    inset 0 2px 0 var(--lx-toy-sheen),
+    0 3px 0 var(--lx-toy-outline);
+  color: var(--lx-color-paper-ink);
   font: inherit;
   font-size: var(--lx-size-label);
   font-weight: 800;
@@ -180,8 +215,16 @@
 }
 
 .clanTab[aria-selected="true"] {
-  background: var(--lx-color-page-ink);
-  color: var(--lx-color-page);
+  background: linear-gradient(
+    180deg,
+    var(--lx-toy-gold-top) 0 47%,
+    var(--lx-toy-gold-bottom) 53% 100%
+  );
+  box-shadow:
+    inset 0 -3px 0 var(--lx-toy-gold-edge),
+    inset 0 2px 0 var(--lx-toy-sheen),
+    0 3px 0 var(--lx-toy-outline);
+  color: var(--lx-toy-outline);
 }
 
 .columns {
@@ -262,7 +305,9 @@
   transform: translate(-50%, -50%);
   background: var(--lx-color-well);
   color: var(--lx-color-page-ink-muted);
-  box-shadow: 0 0 0 3px var(--lx-color-panel);
+  box-shadow:
+    0 0 0 var(--lx-toy-outline-width) var(--lx-toy-outline),
+    0 2px 0 var(--lx-toy-outline-width) var(--lx-toy-outline);
 }
 
 .tier[data-tier="bronze"][data-reached="true"] {
@@ -277,9 +322,6 @@
 
 .tier[data-tier="gold"] {
   color: var(--lx-color-rubric);
-  box-shadow:
-    0 0 0 3px var(--lx-color-panel),
-    inset 0 0 0 2px var(--lx-color-gilt);
 }
 
 .tier[data-tier="gold"][data-reached="true"] {
@@ -289,9 +331,6 @@
 
 .tier[data-tier="illuminated"] {
   color: #8e5ad8;
-  box-shadow:
-    0 0 0 3px var(--lx-color-panel),
-    inset 0 0 0 2px #8e5ad8;
 }
 
 .tier[data-tier="illuminated"][data-reached="true"] {
@@ -510,9 +549,10 @@
   max-width: 92%;
   margin: 0;
   padding: 7px var(--lx-s7);
+  border: 1px dashed color-mix(in srgb, var(--lx-color-paper-ink) 30%, transparent);
   border-radius: var(--lx-radius-pill);
-  background: color-mix(in srgb, var(--lx-color-kraft) 14%, transparent);
-  color: #f2ddbf;
+  background: color-mix(in srgb, var(--lx-toy-paper-bottom) 70%, transparent);
+  color: var(--lx-color-paper-ink-muted);
   font-size: var(--lx-size-small);
   font-weight: 700;
   text-align: center;
@@ -557,15 +597,23 @@
   white-space: pre-wrap;
 }
 
+/* In the thread, the others write on slips of paper and the player on gold. */
+.bubble,
+.bubbleMine {
+  border: var(--lx-toy-outline-width) solid var(--lx-toy-outline);
+  box-shadow: 0 2px 0 var(--lx-toy-outline);
+}
+
 .bubble {
   border-bottom-left-radius: var(--lx-radius-xxs);
-  background: var(--lx-color-page);
+  background: var(--lx-toy-paper-top);
+  color: var(--lx-color-paper-ink);
 }
 
 .bubbleMine {
   border-bottom-right-radius: var(--lx-radius-xxs);
-  background: var(--lx-color-action);
-  color: var(--lx-color-action-ink);
+  background: var(--lx-toy-gold-top);
+  color: var(--lx-toy-outline);
 }
 
 .bubbleRemoved {
@@ -602,9 +650,12 @@
   z-index: 5;
   min-width: 180px;
   padding: var(--lx-s3);
-  border-radius: var(--lx-radius-xl);
-  background: var(--lx-color-binding);
-  box-shadow: var(--lx-shadow-floating);
+  border: var(--lx-toy-outline-width) solid var(--lx-toy-outline);
+  border-radius: var(--lx-toy-radius-small);
+  background: var(--lx-color-paper);
+  box-shadow:
+    0 3px 0 var(--lx-toy-outline),
+    0 10px 20px var(--lx-toy-drop);
 }
 
 .menu {
@@ -676,9 +727,12 @@
   margin: 0;
   padding: var(--lx-s3);
   list-style: none;
-  border-radius: var(--lx-radius-xl);
-  background: var(--lx-color-binding);
-  box-shadow: var(--lx-shadow-floating);
+  border: var(--lx-toy-outline-width) solid var(--lx-toy-outline);
+  border-radius: var(--lx-toy-radius-small);
+  background: var(--lx-color-paper);
+  box-shadow:
+    0 3px 0 var(--lx-toy-outline),
+    0 10px 20px var(--lx-toy-drop);
 }
 
 .mentionOption,
@@ -730,16 +784,25 @@
   place-items: center;
   width: 52px;
   height: 52px;
-  border: 0;
+  border: var(--lx-toy-outline-width) solid var(--lx-toy-outline);
   border-radius: 50%;
-  background: var(--lx-color-action);
-  color: var(--lx-color-action-ink);
+  background: linear-gradient(
+    180deg,
+    var(--lx-toy-gold-top) 0 47%,
+    var(--lx-toy-gold-bottom) 53% 100%
+  );
+  box-shadow:
+    inset 0 -3px 0 var(--lx-toy-gold-edge),
+    inset 0 2px 0 var(--lx-toy-sheen),
+    0 3px 0 var(--lx-toy-outline);
+  color: var(--lx-toy-outline);
   cursor: pointer;
 }
 
 .sendButton:disabled {
-  background: var(--lx-color-track);
-  color: var(--lx-color-page-ink-muted);
+  background: var(--lx-toy-paper-bottom);
+  box-shadow: inset 0 -3px 0 var(--lx-toy-paper-edge);
+  color: var(--lx-color-paper-ink-muted);
   cursor: default;
 }
 
@@ -794,14 +857,14 @@
   gap: var(--lx-s5);
   margin-bottom: var(--lx-s7);
   padding: 0 var(--lx-s9);
-  border: 2px solid var(--lx-color-rule);
-  border-radius: var(--lx-radius-pill);
-  background: var(--lx-color-page);
-  color: var(--lx-color-page-ink-muted);
-}
-
-.search:focus-within {
-  border-color: var(--lx-color-focus);
+  /* Cut into the paper, as the other fields are. */
+  border: var(--lx-toy-outline-width) solid var(--lx-toy-outline);
+  border-radius: var(--lx-toy-radius-small);
+  background:
+    var(--lx-matter-paper) 0 0 / var(--lx-matter-size),
+    var(--lx-color-paper);
+  box-shadow: inset 0 3px 0 color-mix(in srgb, var(--lx-toy-paper-edge) 60%, transparent);
+  color: var(--lx-color-paper-ink-muted);
 }
 
 .searchInput {
@@ -810,9 +873,13 @@
   border: 0;
   outline: none;
   background: none;
-  color: var(--lx-color-page-ink);
+  color: var(--lx-color-paper-ink);
   font: inherit;
   font-size: var(--lx-size-lead);
+}
+
+.searchInput::placeholder {
+  color: var(--lx-color-paper-ink-muted);
 }
 
 .clanList {
@@ -946,14 +1013,23 @@
   display: grid;
   place-items: center;
   min-height: 72px;
-  border: 2px solid transparent;
-  border-radius: var(--lx-radius-xl);
-  background: var(--lx-color-binding);
+  border: var(--lx-toy-outline-width) solid var(--lx-toy-outline);
+  border-radius: var(--lx-toy-radius-small);
+  background: linear-gradient(
+    180deg,
+    var(--lx-toy-paper-top) 0 47%,
+    var(--lx-toy-paper-bottom) 53% 100%
+  );
+  box-shadow: 0 3px 0 var(--lx-toy-outline);
   cursor: pointer;
 }
 
 .engravingChoice[aria-pressed="true"] {
-  border-color: var(--lx-color-gilt);
+  background: linear-gradient(
+    180deg,
+    var(--lx-toy-gold-top) 0 47%,
+    var(--lx-toy-gold-bottom) 53% 100%
+  );
 }
 
 .swatches {
@@ -1111,175 +1187,4 @@
 
 .cardHead > span {
   white-space: nowrap;
-}
-
-/* --- « La Bibliothèque » --- */
-
-/* A search is cut into the paper, as the other fields are. */
-:root[data-look="bibliotheque"] .search {
-  border: var(--lx-toy-outline-width) solid var(--lx-toy-outline);
-  border-radius: var(--lx-toy-radius-small);
-  background:
-    var(--lx-matter-paper) 0 0 / var(--lx-matter-size),
-    var(--lx-color-paper);
-  box-shadow: inset 0 3px 0 color-mix(in srgb, var(--lx-toy-paper-edge) 60%, transparent);
-  color: var(--lx-color-paper-ink-muted);
-}
-
-:root[data-look="bibliotheque"] .searchInput {
-  color: var(--lx-color-paper-ink);
-}
-
-:root[data-look="bibliotheque"] .searchInput::placeholder {
-  color: var(--lx-color-paper-ink-muted);
-}
-
-/* The clan's header is its banner hung on the desk, its name in lettering. */
-:root[data-look="bibliotheque"] .hero.hero {
-  --lx-color-page-ink: var(--lx-lettering-fill);
-  --lx-color-page-ink-soft: color-mix(in srgb, var(--lx-lettering-fill) 85%, transparent);
-  --lx-color-page-ink-muted: color-mix(in srgb, var(--lx-lettering-fill) 78%, transparent);
-  --lx-color-track: var(--lx-desk-hollow);
-  border: 6px solid transparent;
-  border-radius: var(--lx-toy-radius-large);
-  background:
-    var(--lx-matter-leather) 0 0 / var(--lx-matter-size) padding-box,
-    radial-gradient(
-      ellipse 80% 90% at 30% 40%,
-      var(--lx-desk-center) 0%,
-      var(--lx-desk-middle) 55%,
-      var(--lx-desk-edge) 100%
-    )
-    padding-box,
-    var(--lx-old-gold) border-box;
-  box-shadow:
-    0 0 0 3px var(--lx-toy-outline),
-    0 6px 0 var(--lx-toy-outline),
-    inset 0 0 50px var(--lx-desk-hollow);
-  color: var(--lx-lettering-fill);
-}
-
-:root[data-look="bibliotheque"] .hero.hero .heroName {
-  -webkit-text-stroke: var(--lx-lettering-width) var(--lx-lettering-outline);
-  paint-order: stroke fill;
-  text-shadow: 0 var(--lx-lettering-drop) 0 var(--lx-lettering-outline);
-}
-
-:root[data-look="bibliotheque"] .hero.hero .heroKicker {
-  color: var(--lx-lettering-kicker);
-}
-
-:root[data-look="bibliotheque"] .clanXpHead {
-  color: var(--lx-lettering-fill);
-}
-
-:root[data-look="bibliotheque"] .clanTabs {
-  gap: var(--lx-s4);
-  padding: 0;
-  background: none;
-}
-
-:root[data-look="bibliotheque"] .clanTab {
-  margin-bottom: 3px;
-  border: var(--lx-toy-outline-width) solid var(--lx-toy-outline);
-  border-radius: var(--lx-toy-radius-small);
-  background: linear-gradient(
-    180deg,
-    var(--lx-toy-paper-top) 0 47%,
-    var(--lx-toy-paper-bottom) 53% 100%
-  );
-  box-shadow:
-    inset 0 -3px 0 var(--lx-toy-paper-edge),
-    inset 0 2px 0 var(--lx-toy-sheen),
-    0 3px 0 var(--lx-toy-outline);
-  color: var(--lx-color-paper-ink);
-}
-
-:root[data-look="bibliotheque"] .clanTab[aria-selected="true"] {
-  background: linear-gradient(
-    180deg,
-    var(--lx-toy-gold-top) 0 47%,
-    var(--lx-toy-gold-bottom) 53% 100%
-  );
-  box-shadow:
-    inset 0 -3px 0 var(--lx-toy-gold-edge),
-    inset 0 2px 0 var(--lx-toy-sheen),
-    0 3px 0 var(--lx-toy-outline);
-  color: var(--lx-toy-outline);
-}
-
-:root[data-look="bibliotheque"] .tier {
-  box-shadow:
-    0 0 0 var(--lx-toy-outline-width) var(--lx-toy-outline),
-    0 2px 0 var(--lx-toy-outline-width) var(--lx-toy-outline);
-}
-
-/* In the thread, the others write on slips of paper and the player on gold. */
-:root[data-look="bibliotheque"] .event {
-  border: 1px dashed color-mix(in srgb, var(--lx-color-paper-ink) 30%, transparent);
-  background: color-mix(in srgb, var(--lx-toy-paper-bottom) 70%, transparent);
-  color: var(--lx-color-paper-ink-muted);
-}
-
-:root[data-look="bibliotheque"] :is(.bubble, .bubbleMine) {
-  border: var(--lx-toy-outline-width) solid var(--lx-toy-outline);
-  box-shadow: 0 2px 0 var(--lx-toy-outline);
-}
-
-:root[data-look="bibliotheque"] .bubble {
-  background: var(--lx-toy-paper-top);
-  color: var(--lx-color-paper-ink);
-}
-
-:root[data-look="bibliotheque"] .bubbleMine {
-  background: var(--lx-toy-gold-top);
-  color: var(--lx-toy-outline);
-}
-
-:root[data-look="bibliotheque"] :is(.menu, .menuLeft, .mentions) {
-  border: var(--lx-toy-outline-width) solid var(--lx-toy-outline);
-  border-radius: var(--lx-toy-radius-small);
-  background: var(--lx-color-paper);
-  box-shadow:
-    0 3px 0 var(--lx-toy-outline),
-    0 10px 20px var(--lx-toy-drop);
-}
-
-:root[data-look="bibliotheque"] .sendButton {
-  border: var(--lx-toy-outline-width) solid var(--lx-toy-outline);
-  background: linear-gradient(
-    180deg,
-    var(--lx-toy-gold-top) 0 47%,
-    var(--lx-toy-gold-bottom) 53% 100%
-  );
-  box-shadow:
-    inset 0 -3px 0 var(--lx-toy-gold-edge),
-    inset 0 2px 0 var(--lx-toy-sheen),
-    0 3px 0 var(--lx-toy-outline);
-  color: var(--lx-toy-outline);
-}
-
-:root[data-look="bibliotheque"] .sendButton:disabled {
-  background: var(--lx-toy-paper-bottom);
-  box-shadow: inset 0 -3px 0 var(--lx-toy-paper-edge);
-  color: var(--lx-color-paper-ink-muted);
-}
-
-:root[data-look="bibliotheque"] .engravingChoice {
-  border: var(--lx-toy-outline-width) solid var(--lx-toy-outline);
-  border-radius: var(--lx-toy-radius-small);
-  background: linear-gradient(
-    180deg,
-    var(--lx-toy-paper-top) 0 47%,
-    var(--lx-toy-paper-bottom) 53% 100%
-  );
-  box-shadow: 0 3px 0 var(--lx-toy-outline);
-}
-
-:root[data-look="bibliotheque"] .engravingChoice[aria-pressed="true"] {
-  background: linear-gradient(
-    180deg,
-    var(--lx-toy-gold-top) 0 47%,
-    var(--lx-toy-gold-bottom) 53% 100%
-  );
 }

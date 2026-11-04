@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import styles from "@/account/account-screen.module.css";
 import { api } from "@/lib/api";
+import ui from "@/ui/ui.module.css";
 
 /**
  * The patron offer, announced before it is sold: opening the page and asking to be told are
@@ -25,9 +26,9 @@ export function PatronScreen() {
     <main className={styles.screen}>
       <header className={styles.header}>
         <p className={styles.kicker}>Bientôt</p>
-        <h1 className={styles.title}>Devenir mécène</h1>
+        <h1 className={`${styles.title} ${ui.lettered}`}>Devenir mécène</h1>
       </header>
-      <div className={styles.panel}>
+      <div className={`${styles.panel} ${ui.leaf}`}>
         <p className={styles.text}>
           Leximon est gratuit, sans publicité et sans sachet à acheter. Avec l'abonnement mécène, tu
           soutiens le jeu.
@@ -51,7 +52,7 @@ export function PatronScreen() {
             C'est noté. On te préviendra à l'ouverture des abonnements.
           </p>
         ) : (
-          <button type="button" className={styles.primary} onClick={ask}>
+          <button type="button" className={`${styles.primary} ${ui.goldToy}`} onClick={ask}>
             Préviens-moi
           </button>
         )}

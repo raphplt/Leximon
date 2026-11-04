@@ -5,7 +5,6 @@ import { type ReactNode, useCallback, useEffect, useMemo, useState } from "react
 import { ChatPanel } from "@/clan/chat-panel";
 import { TradeDoneDialog } from "@/trades/trade-done-dialog";
 import { ToastProvider } from "@/ui/toast";
-import { PhoneTabs, PhoneTopBar, TopBar } from "./bars";
 import { CardSheet } from "./card-sheet";
 import { CoffretDialog } from "./coffret-dialog";
 import styles from "./game-shell.module.css";
@@ -21,8 +20,8 @@ import { usePlayerView } from "./use-player-view";
 type Overlay = "menu" | "settings" | "mail" | "chat" | null;
 
 /**
- * The frame of every game screen: the top bar on the web, the phone band and tabs under 760 px
- *, and what opens over any screen (menu, settings, mail, coffret, card sheet).
+ * The frame of every game screen: the top bar on the web, the phone band and tabs under 760 px,
+ * and what opens over any screen (menu, settings, mail, coffret, card sheet).
  */
 export function GameShell({ children }: { readonly children: ReactNode }) {
   return (
@@ -78,12 +77,9 @@ function Frame({ children }: { readonly children: ReactNode }) {
 
   return (
     <ShellContext.Provider value={shell}>
-      <TopBar menuOpen={overlay === "menu"} onMenu={toggleMenu} />
-      <PhoneTopBar onMenu={toggleMenu} />
       <LibraryTopBar menuOpen={overlay === "menu"} onMenu={toggleMenu} />
       <LibraryTopBand onMenu={toggleMenu} />
       <div className={styles.content}>{children}</div>
-      <PhoneTabs />
       <LibraryTabs />
       <PlayerMenu open={overlay === "menu"} onClose={close} />
       <SettingsPanel open={overlay === "settings"} onClose={close} />

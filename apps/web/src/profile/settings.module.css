@@ -37,16 +37,10 @@
 }
 
 /* A destructive button: the danger colour, never the yellow of a main action. */
+/* A primary button: the gold toy gives it its skin. */
 .destroy {
-  background: var(--lx-color-danger);
-  box-shadow: 0 4px 0 var(--lx-color-danger-shade);
-  color: var(--lx-color-danger-ink);
   white-space: normal;
   text-align: center;
-}
-
-.destroy:hover {
-  background: var(--lx-color-danger-hover);
 }
 
 .error {

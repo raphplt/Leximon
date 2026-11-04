@@ -7,22 +7,6 @@
   padding: 26px var(--lx-s16) var(--lx-s32);
 }
 
-.right {
-  background: var(--lx-color-success-bright);
-}
-
-.wrong {
-  background: var(--lx-color-danger-bright);
-}
-
-.empty {
-  background: var(--lx-color-well);
-}
-
-.current {
-  background: var(--lx-color-page-ink);
-}
-
 .notice,
 .error {
   margin: var(--lx-s9) 0 0;
@@ -44,9 +28,19 @@
   cursor: pointer;
 }
 
+/* The questions are asked on the desk: the word on a leaf, the answers as paper tiles. */
 .quiz {
+  position: relative;
+  isolation: isolate;
   max-width: 720px;
   margin: 0 auto;
+  padding: 26px 30px 32px;
+}
+
+.quizDesk {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
 }
 
 .quizTop {
@@ -64,15 +58,36 @@
 
 .dot {
   flex: 1;
-  height: 10px;
+  height: 12px;
+  border: 2px solid var(--lx-toy-outline);
   border-radius: var(--lx-radius-pill);
+  box-shadow: inset 0 -2px 0 var(--lx-toy-drop);
+}
+
+.dot.empty {
+  background: var(--lx-toy-dark-bottom);
+}
+
+.dot.current {
+  background: var(--lx-toy-paper-top);
+}
+
+.dot.right {
+  background: var(--lx-toy-green-top);
+}
+
+.dot.wrong {
+  background: var(--lx-toy-red-top);
 }
 
 .position {
   position: relative;
-  font-weight: 800;
-  color: var(--lx-color-page-ink-muted);
+  color: var(--lx-lettering-fill);
+  font-family: var(--font-display), Georgia, serif;
+  font-weight: 900;
   font-variant-numeric: tabular-nums;
+  -webkit-text-stroke: var(--lx-lettering-width) var(--lx-lettering-outline);
+  paint-order: stroke fill;
 }
 
 .prompt {
@@ -129,15 +144,23 @@
 }
 
 .typedRight {
-  border-color: var(--lx-color-success-deep);
-  background: var(--lx-color-success-deep);
-  color: var(--lx-color-ink-on-color);
+  border-color: var(--lx-toy-outline);
+  background: linear-gradient(
+    180deg,
+    var(--lx-toy-green-top) 0 47%,
+    var(--lx-toy-green-bottom) 53% 100%
+  );
+  color: var(--lx-lettering-fill);
 }
 
 .typedWrong {
-  border-color: var(--lx-color-danger-deep);
-  background: var(--lx-color-danger-deep);
-  color: var(--lx-color-ink-on-color);
+  border-color: var(--lx-toy-outline);
+  background: linear-gradient(
+    180deg,
+    var(--lx-toy-red-top) 0 47%,
+    var(--lx-toy-red-bottom) 53% 100%
+  );
+  color: var(--lx-lettering-fill);
 }
 
 .typedActions {
@@ -154,37 +177,78 @@
   margin: var(--lx-s7) 0 0;
   padding: 0;
   list-style: none;
+  counter-reset: choice;
 }
 
 .choices li {
   display: flex;
+  counter-increment: choice;
 }
 
+/* Each answer is a paper tile with its letter, a, b, c or d, in a gold disc. */
 .choice {
+  --top: var(--lx-toy-paper-top);
+  --bottom: var(--lx-toy-paper-bottom);
+  --edge: var(--lx-toy-paper-edge);
   appearance: none;
+  display: flex;
+  align-items: center;
+  gap: 14px;
   width: 100%;
   min-height: 64px;
   padding: var(--lx-s7) var(--lx-s9);
-  border: 0;
-  border-radius: var(--lx-radius-xxl);
-  background: var(--lx-color-page-raised);
-  color: var(--lx-color-page-ink);
-  box-shadow: var(--lx-shadow-control-low);
+  border: var(--lx-toy-outline-width) solid var(--lx-toy-outline);
+  border-radius: var(--lx-toy-radius-tile);
+  background: linear-gradient(180deg, var(--top) 0 47%, var(--bottom) 53% 100%);
+  color: var(--lx-color-paper-ink);
+  box-shadow:
+    inset 0 -4px 0 var(--edge),
+    inset 0 2px 0 var(--lx-toy-sheen),
+    0 4px 0 var(--lx-toy-outline),
+    0 8px 12px var(--lx-toy-drop);
   font: inherit;
   line-height: 1.3;
   cursor: pointer;
   transition:
-    transform 80ms,
-    box-shadow 80ms;
+    translate var(--lx-press-sink) ease-out,
+    box-shadow var(--lx-press-sink) ease-out,
+    filter 120ms ease-out;
+}
+
+.choice::before {
+  content: counter(choice, lower-alpha);
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border: 2px solid var(--lx-toy-outline);
+  border-radius: 50%;
+  background: linear-gradient(
+    180deg,
+    var(--lx-toy-gold-top) 0 47%,
+    var(--lx-toy-gold-bottom) 53% 100%
+  );
+  box-shadow: inset 0 -3px 0 var(--lx-toy-gold-edge);
+  color: var(--lx-lettering-fill);
+  font:
+    900 18px / 1 var(--font-display),
+    Georgia,
+    serif;
+  -webkit-text-stroke: 4px var(--lx-lettering-outline);
+  paint-order: stroke fill;
 }
 
 .choice:not(:disabled):hover {
-  background: var(--lx-color-control-hover);
+  filter: brightness(1.05);
 }
 
 .choice:not(:disabled):active {
-  transform: translateY(3px);
-  box-shadow: var(--lx-shadow-control-pressed);
+  translate: 0 4px;
+  box-shadow:
+    inset 0 -4px 0 var(--edge),
+    inset 0 2px 0 var(--lx-toy-sheen),
+    0 0 0 var(--lx-toy-outline);
 }
 
 .choice:disabled {
@@ -204,28 +268,46 @@
   text-align: center;
 }
 
+/* On paper the word is plain ink; it is only lettered once the verdict colors the tile. */
+.choice.choiceWord {
+  justify-content: center;
+  -webkit-text-stroke: 0;
+  text-shadow: none;
+}
+
 .choice.pending {
-  box-shadow: inset 0 0 0 2px var(--lx-color-gilt);
+  box-shadow:
+    inset 0 -4px 0 var(--edge),
+    0 0 0 3px var(--lx-toy-gold-top),
+    0 4px 0 var(--lx-toy-outline);
 }
 
 .choice.right {
-  background: var(--lx-color-success-deep);
-  color: var(--lx-color-ink-on-color);
-  box-shadow: 0 4px 0 var(--lx-color-success-edge);
+  --top: var(--lx-toy-green-top);
+  --bottom: var(--lx-toy-green-bottom);
+  --edge: var(--lx-toy-green-edge);
+  color: var(--lx-lettering-fill);
 }
 
 .choice.wrong {
-  background: var(--lx-color-danger-deep);
-  color: var(--lx-color-ink-on-color);
-  box-shadow: 0 4px 0 var(--lx-color-danger-edge);
+  --top: var(--lx-toy-red-top);
+  --bottom: var(--lx-toy-red-bottom);
+  --edge: var(--lx-toy-red-edge);
+  color: var(--lx-lettering-fill);
 }
 
 .choice.faded {
-  background: var(--lx-color-sheet);
-  color: var(--lx-color-page-ink-faint);
-  box-shadow: none;
+  opacity: 0.55;
+  filter: saturate(0.6);
 }
 
+:is(.choice.right, .choice.wrong).choiceWord {
+  -webkit-text-stroke: var(--lx-lettering-width) var(--lx-lettering-outline);
+  paint-order: stroke fill;
+  text-shadow: 0 2px 0 var(--lx-lettering-outline);
+}
+
+/* What the answer was, on a leaf, edged with the green or red of the verdict. */
 .feedback {
   position: relative;
   display: flex;
@@ -235,7 +317,15 @@
   gap: var(--lx-s6);
   margin-top: var(--lx-s9);
   padding: var(--lx-s7) var(--lx-s9) var(--lx-s7) 52px;
-  border-radius: var(--lx-radius-xxl);
+  border: var(--lx-toy-outline-width) solid var(--lx-toy-outline);
+  border-radius: var(--lx-toy-radius-tile);
+  background:
+    var(--lx-matter-paper) 0 0 / var(--lx-matter-size),
+    var(--lx-color-paper);
+  box-shadow:
+    inset 0 -4px 0 var(--lx-toy-paper-bottom),
+    0 4px 0 var(--lx-toy-outline);
+  color: var(--lx-color-paper-ink);
 }
 
 /* The verdict, stamped on the corner of the slip like a seal: ticked in green, crossed in red. */
@@ -269,20 +359,19 @@
   }
 }
 
-.good {
-  background: color-mix(in srgb, var(--lx-color-success-deep) 22%, transparent);
-  border: 1px solid color-mix(in srgb, var(--lx-color-success-bright) 50%, transparent);
-}
-
-.bad {
-  background: color-mix(in srgb, var(--lx-color-danger-deep) 20%, transparent);
-  border: 1px solid color-mix(in srgb, var(--lx-color-danger-bright) 50%, transparent);
-}
-
 .feedbackTitle {
   margin: 0;
-  font-weight: 800;
-  font-size: var(--lx-size-lead);
+  font-family: var(--font-display), Georgia, serif;
+  font-weight: 900;
+  font-size: var(--lx-size-title);
+}
+
+.good .feedbackTitle {
+  color: var(--lx-toy-green-edge);
+}
+
+.bad .feedbackTitle {
+  color: var(--lx-toy-red-edge);
 }
 
 .feedbackText {
@@ -295,7 +384,7 @@
 .feedbackExtra {
   margin: var(--lx-s3) 0 0;
   font-weight: 800;
-  color: var(--lx-color-rubric);
+  color: var(--lx-toy-red-bottom);
 }
 
 /* --- Reactions: short, once, gone with reduced motion --- */
@@ -333,21 +422,9 @@
   animation: float 900ms ease-out;
 }
 
-/* A word that climbs: a sweep of gold across the line, once. */
+/* A word that climbs rises in just after the verdict. */
 .risen {
-  background:
-    linear-gradient(
-      100deg,
-      var(--lx-color-action) 40%,
-      var(--lx-color-gilt-pale) 50%,
-      var(--lx-color-action) 60%
-    )
-    0 0 / 250% 100%;
-  background-clip: text;
-  color: transparent;
-  animation:
-    rise 240ms ease-out 200ms backwards,
-    sweep 1200ms ease-in-out 300ms;
+  animation: rise 240ms ease-out 200ms backwards;
 }
 
 .won {
@@ -392,15 +469,6 @@
   to {
     transform: translateY(-22px);
     opacity: 0;
-  }
-}
-
-@keyframes sweep {
-  from {
-    background-position: 100% 0;
-  }
-  to {
-    background-position: 0 0;
   }
 }
 
@@ -521,6 +589,11 @@
     font-size: var(--lx-size-subtitle);
   }
 
+  .quiz {
+    margin: 0 -8px;
+    padding: 18px 14px 22px;
+  }
+
   .choices {
     grid-template-columns: minmax(0, 1fr);
   }
@@ -589,222 +662,6 @@
   align-items: center;
   gap: var(--lx-s3);
   max-width: 180px;
-}
-
-/* --- « La Bibliothèque » --- */
-
-.quizDesk {
-  display: none;
-}
-
-/* The questions are asked on the desk: the word on a leaf, the answers as paper tiles. */
-:root[data-look="bibliotheque"] .quiz {
-  position: relative;
-  isolation: isolate;
-  padding: 26px 30px 32px;
-}
-
-:root[data-look="bibliotheque"] .quizDesk {
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  display: block;
-}
-
-:root[data-look="bibliotheque"] .dot {
-  height: 12px;
-  border: 2px solid var(--lx-toy-outline);
-  box-shadow: inset 0 -2px 0 var(--lx-toy-drop);
-}
-
-:root[data-look="bibliotheque"] .dot.empty {
-  background: var(--lx-toy-dark-bottom);
-}
-
-:root[data-look="bibliotheque"] .dot.current {
-  background: var(--lx-toy-paper-top);
-}
-
-:root[data-look="bibliotheque"] .dot.right {
-  background: var(--lx-toy-green-top);
-}
-
-:root[data-look="bibliotheque"] .dot.wrong {
-  background: var(--lx-toy-red-top);
-}
-
-:root[data-look="bibliotheque"] .position {
-  color: var(--lx-lettering-fill);
-  font-family: var(--font-display), Georgia, serif;
-  font-weight: 900;
-  -webkit-text-stroke: var(--lx-lettering-width) var(--lx-lettering-outline);
-  paint-order: stroke fill;
-}
-
-/* Each answer is a paper tile with its letter, a, b, c or d, in a gold disc. */
-:root[data-look="bibliotheque"] .choices {
-  counter-reset: choice;
-}
-
-:root[data-look="bibliotheque"] .choices li {
-  counter-increment: choice;
-}
-
-:root[data-look="bibliotheque"] .choice {
-  --top: var(--lx-toy-paper-top);
-  --bottom: var(--lx-toy-paper-bottom);
-  --edge: var(--lx-toy-paper-edge);
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  border: var(--lx-toy-outline-width) solid var(--lx-toy-outline);
-  border-radius: var(--lx-toy-radius-tile);
-  background: linear-gradient(180deg, var(--top) 0 47%, var(--bottom) 53% 100%);
-  box-shadow:
-    inset 0 -4px 0 var(--edge),
-    inset 0 2px 0 var(--lx-toy-sheen),
-    0 4px 0 var(--lx-toy-outline),
-    0 8px 12px var(--lx-toy-drop);
-  color: var(--lx-color-paper-ink);
-  transition:
-    translate var(--lx-press-sink) ease-out,
-    box-shadow var(--lx-press-sink) ease-out,
-    filter 120ms ease-out;
-}
-
-:root[data-look="bibliotheque"] .choice::before {
-  content: counter(choice, lower-alpha);
-  display: grid;
-  flex: none;
-  place-items: center;
-  width: 34px;
-  height: 34px;
-  border: 2px solid var(--lx-toy-outline);
-  border-radius: 50%;
-  background: linear-gradient(
-    180deg,
-    var(--lx-toy-gold-top) 0 47%,
-    var(--lx-toy-gold-bottom) 53% 100%
-  );
-  box-shadow: inset 0 -3px 0 var(--lx-toy-gold-edge);
-  color: var(--lx-lettering-fill);
-  font:
-    900 18px / 1 var(--font-display),
-    Georgia,
-    serif;
-  -webkit-text-stroke: 4px var(--lx-lettering-outline);
-  paint-order: stroke fill;
-}
-
-/* On paper the word is plain ink; it is only lettered once the verdict colors the tile. */
-:root[data-look="bibliotheque"] .choice.choiceWord {
-  justify-content: center;
-  -webkit-text-stroke: 0;
-  text-shadow: none;
-}
-
-:root[data-look="bibliotheque"] .choice:not(:disabled):hover {
-  background: linear-gradient(180deg, var(--top) 0 47%, var(--bottom) 53% 100%);
-  filter: brightness(1.05);
-}
-
-:root[data-look="bibliotheque"] .choice:not(:disabled):active {
-  transform: none;
-  translate: 0 4px;
-  box-shadow:
-    inset 0 -4px 0 var(--edge),
-    inset 0 2px 0 var(--lx-toy-sheen),
-    0 0 0 var(--lx-toy-outline);
-}
-
-:root[data-look="bibliotheque"] .choice.pending {
-  box-shadow:
-    inset 0 -4px 0 var(--edge),
-    0 0 0 3px var(--lx-toy-gold-top),
-    0 4px 0 var(--lx-toy-outline);
-}
-
-:root[data-look="bibliotheque"] .choice.right {
-  --top: var(--lx-toy-green-top);
-  --bottom: var(--lx-toy-green-bottom);
-  --edge: var(--lx-toy-green-edge);
-  color: var(--lx-lettering-fill);
-}
-
-:root[data-look="bibliotheque"] .choice.wrong {
-  --top: var(--lx-toy-red-top);
-  --bottom: var(--lx-toy-red-bottom);
-  --edge: var(--lx-toy-red-edge);
-  color: var(--lx-lettering-fill);
-}
-
-:root[data-look="bibliotheque"] .choice.faded {
-  opacity: 0.55;
-  filter: saturate(0.6);
-}
-
-:root[data-look="bibliotheque"] :is(.choice.right, .choice.wrong).choiceWord {
-  -webkit-text-stroke: var(--lx-lettering-width) var(--lx-lettering-outline);
-  paint-order: stroke fill;
-  text-shadow: 0 2px 0 var(--lx-lettering-outline);
-}
-
-:root[data-look="bibliotheque"] .typedRight {
-  border-color: var(--lx-toy-outline);
-  background: linear-gradient(
-    180deg,
-    var(--lx-toy-green-top) 0 47%,
-    var(--lx-toy-green-bottom) 53% 100%
-  );
-  color: var(--lx-lettering-fill);
-}
-
-:root[data-look="bibliotheque"] .typedWrong {
-  border-color: var(--lx-toy-outline);
-  background: linear-gradient(
-    180deg,
-    var(--lx-toy-red-top) 0 47%,
-    var(--lx-toy-red-bottom) 53% 100%
-  );
-  color: var(--lx-lettering-fill);
-}
-
-/* What the answer was, on a leaf, edged with the green or red of the verdict. */
-:root[data-look="bibliotheque"] .feedback {
-  border: var(--lx-toy-outline-width) solid var(--lx-toy-outline);
-  border-radius: var(--lx-toy-radius-tile);
-  background:
-    var(--lx-matter-paper) 0 0 / var(--lx-matter-size),
-    var(--lx-color-paper);
-  box-shadow:
-    inset 0 -4px 0 var(--lx-toy-paper-bottom),
-    0 4px 0 var(--lx-toy-outline);
-  color: var(--lx-color-paper-ink);
-}
-
-:root[data-look="bibliotheque"] .feedbackTitle {
-  font-family: var(--font-display), Georgia, serif;
-  font-weight: 900;
-  font-size: var(--lx-size-title);
-}
-
-:root[data-look="bibliotheque"] .good .feedbackTitle {
-  color: var(--lx-toy-green-edge);
-}
-
-:root[data-look="bibliotheque"] .bad .feedbackTitle {
-  color: var(--lx-toy-red-edge);
-}
-
-:root[data-look="bibliotheque"] .feedbackExtra {
-  color: var(--lx-toy-red-bottom);
-}
-
-@media (max-width: 759px) {
-  :root[data-look="bibliotheque"] .quiz {
-    margin: 0 -8px;
-    padding: 18px 14px 22px;
-  }
 }
 
 /* After a mistake, the card of the word, small, to open it. */
@@ -904,7 +761,7 @@
   display: flex;
 }
 
-:root[data-look="bibliotheque"] .pairs .choice::before {
+.pairs .choice::before {
   content: none;
 }
 

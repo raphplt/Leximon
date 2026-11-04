@@ -355,12 +355,8 @@
   pointer-events: none;
 }
 
-/* In « La Bibliothèque », a gilt frame inside the edge, lined with ink, as on the toys of the room. */
+/* A gilt frame inside the edge, lined with ink, as on the toys of the room. */
 .frame {
-  display: none;
-}
-
-[data-look="bibliotheque"] .frame {
   display: block;
   position: absolute;
   inset: calc(18 * var(--u)) calc(16 * var(--u)) calc(36 * var(--u));

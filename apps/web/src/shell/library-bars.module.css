@@ -1,6 +1,6 @@
 /*
- * The bars of « La Bibliothèque », in place of the current ones when the look is on: a shelf
- * across the top from 760 px, a band and a shelf of tabs on a phone.
+ * The bars of the game: a shelf across the top from 760 px, a band and a shelf of tabs on a
+ * phone. Each stays hidden outside its widths.
  */
 
 .top,
@@ -12,7 +12,7 @@
 /* --- The wide bar --- */
 
 @media (min-width: 760px) {
-  :root[data-look="bibliotheque"] .top {
+  .top {
     position: sticky;
     top: 0;
     z-index: 30;
@@ -225,7 +225,7 @@
 
 /* Narrower still, the level keeps its medal and the boards close in. */
 @media (max-width: 1023px) {
-  :root[data-look="bibliotheque"] .top {
+  .top {
     gap: 12px;
     padding-inline: 16px;
   }
@@ -254,7 +254,7 @@
 /* --- The phone band and tabs --- */
 
 @media (max-width: 759px) {
-  :root[data-look="bibliotheque"] .band {
+  .band {
     position: sticky;
     top: 0;
     z-index: 30;
@@ -267,7 +267,7 @@
     background: linear-gradient(var(--lx-toy-drop) 40%, transparent);
   }
 
-  :root[data-look="bibliotheque"] .tabs {
+  .tabs {
     position: fixed;
     left: 0;
     right: 0;

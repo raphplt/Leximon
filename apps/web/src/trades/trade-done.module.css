@@ -1,10 +1,26 @@
 /* An offer accepted: the cards that came in, under the same rays as a coffret. */
 
+/* A trade concluded is a moment of gold too: the cards come onto the desk, under its rays. */
 .moment {
+  --lx-color-page-ink: var(--lx-lettering-fill);
+  --lx-color-page-ink-muted: color-mix(in srgb, var(--lx-lettering-fill) 78%, transparent);
   position: relative;
   padding: 30px var(--lx-s12) var(--lx-s12);
-  border: 2px solid color-mix(in srgb, var(--lx-color-gilt) 40%, transparent);
-  border-radius: var(--lx-radius-x5);
+  border: 6px solid transparent;
+  border-radius: var(--lx-toy-radius-large);
+  background:
+    var(--lx-matter-leather) 0 0 / var(--lx-matter-size) padding-box,
+    radial-gradient(
+      ellipse 80% 60% at 50% 35%,
+      var(--lx-desk-center) 0%,
+      var(--lx-desk-middle) 55%,
+      var(--lx-desk-edge) 100%
+    )
+    padding-box,
+    var(--lx-old-gold) border-box;
+  box-shadow:
+    0 0 0 3px var(--lx-toy-outline),
+    inset 0 0 50px var(--lx-desk-hollow);
   text-align: center;
   /* Clipped, not hidden: the rays overflow, and a hidden box could scroll to them. */
   overflow: clip;
@@ -19,7 +35,7 @@
   margin: -320px 0 0 -320px;
   border-radius: 50%;
   background: repeating-conic-gradient(
-    color-mix(in srgb, var(--lx-color-gilt) 13%, transparent) 0 9deg,
+    color-mix(in srgb, var(--lx-toy-gold-top) 24%, transparent) 0 9deg,
     transparent 9deg 20deg
   );
   pointer-events: none;
@@ -30,15 +46,21 @@
   position: relative;
 }
 
-.kicker {
-  color: var(--lx-color-gilt-light);
+.moment .kicker {
+  color: var(--lx-lettering-kicker);
 }
 
 .title {
   margin: var(--lx-s4) 0 var(--lx-s10);
   font-size: var(--lx-size-heading-large);
   line-height: 1.1;
-  color: var(--lx-color-rubric);
+}
+
+.moment .title {
+  color: var(--lx-lettering-fill);
+  -webkit-text-stroke: var(--lx-lettering-width) var(--lx-lettering-outline);
+  paint-order: stroke fill;
+  text-shadow: 0 var(--lx-lettering-drop) 0 var(--lx-lettering-outline);
 }
 
 .cards {
@@ -103,45 +125,4 @@
   .rays {
     animation: none;
   }
-}
-
-/* --- « La Bibliothèque » --- */
-
-/* A trade concluded is a moment of gold too: the cards come onto the desk, under its rays. */
-:root[data-look="bibliotheque"] .moment {
-  --lx-color-page-ink: var(--lx-lettering-fill);
-  --lx-color-page-ink-muted: color-mix(in srgb, var(--lx-lettering-fill) 78%, transparent);
-  border: 6px solid transparent;
-  border-radius: var(--lx-toy-radius-large);
-  background:
-    var(--lx-matter-leather) 0 0 / var(--lx-matter-size) padding-box,
-    radial-gradient(
-      ellipse 80% 60% at 50% 35%,
-      var(--lx-desk-center) 0%,
-      var(--lx-desk-middle) 55%,
-      var(--lx-desk-edge) 100%
-    )
-    padding-box,
-    var(--lx-old-gold) border-box;
-  box-shadow:
-    0 0 0 3px var(--lx-toy-outline),
-    inset 0 0 50px var(--lx-desk-hollow);
-}
-
-:root[data-look="bibliotheque"] .rays {
-  background: repeating-conic-gradient(
-    color-mix(in srgb, var(--lx-toy-gold-top) 24%, transparent) 0 9deg,
-    transparent 9deg 20deg
-  );
-}
-
-:root[data-look="bibliotheque"] .moment .title {
-  color: var(--lx-lettering-fill);
-  -webkit-text-stroke: var(--lx-lettering-width) var(--lx-lettering-outline);
-  paint-order: stroke fill;
-  text-shadow: 0 var(--lx-lettering-drop) 0 var(--lx-lettering-outline);
-}
-
-:root[data-look="bibliotheque"] .moment .kicker {
-  color: var(--lx-lettering-kicker);
 }

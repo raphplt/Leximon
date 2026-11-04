@@ -16,104 +16,107 @@ export interface LinearGradient {
 export type Fill = string | LinearGradient;
 
 /**
- * Colors by role, not by value: a screen says what a surface is (a page, the binding, a rule) and
- * each look gives the role its value. Translucent variants derive from a role: `alpha()` here,
- * `color-mix()` in CSS.
+ * « La Bibliothèque »: a card game played in a reading room at night. The room is the backdrop,
+ * the controls are toys cut from leather and old gold, what is read lies on cream paper, and the
+ * light is kept for what the player wins. One look only, whatever the device's theme.
+ *
+ * Colors by role, not by value: a screen says what a surface is (a page, the binding, a rule).
+ * Translucent variants derive from a role: `alpha()` here, `color-mix()` in CSS.
  */
 export const colors = {
-  /** Screen background: a deep blue-grey night, so that every rarity color stands out. */
-  page: "#262B40",
-  pageRaised: "#343B5C",
+  /** Screen background: the reading room at night, so that every rarity color stands out. */
+  page: "#1C0F07",
+  pageRaised: "#2C1709",
   /** Text and icons on the page. */
-  pageInk: "#F6F0E2",
-  pageInkSoft: "#D9D3E6",
-  pageInkMuted: "#BDB6CC",
-  pageInkFaint: "#8D88A3",
+  pageInk: "#FFF4DC",
+  pageInkSoft: "#EFE2C4",
+  pageInkMuted: "#D2BE98",
+  pageInkFaint: "#AE9A76",
   /** Panels on the page, slightly see-through. */
-  panel: "rgba(52, 59, 92, 0.72)",
+  panel: "rgba(44, 23, 9, 0.78)",
   /** Side panels, bottom sheets and dialogs. */
-  sheet: "#2B3150",
+  sheet: "#2C1709",
   /** Top of a dialog's gradient. */
-  sheetLight: "#424B78",
+  sheetLight: "#4F2E16",
   /** The gradient of a profile's or a clan's banner. */
-  bannerStart: "#5E2130",
-  bannerEnd: "#2C3459",
+  bannerStart: "#922A34",
+  bannerEnd: "#1F4D30",
   /** What holds the game: the bars of the shell and their menus, darker than the page. */
-  binding: "#1F2337",
+  binding: "#2C1709",
   /** The last strip of the binding, under the tabs. */
-  bindingDeep: "#1C2033",
-  bindingInk: "#F6F0E2",
-  bindingInkMuted: "#BDB6CC",
+  bindingDeep: "#1C0F07",
+  bindingInk: "#FFF4DC",
+  bindingInkMuted: "#D9C49C",
   /** Hollow of a progress bar. */
-  well: "#1B1F33",
+  well: "#1A0E06",
   /** Unfilled part of a ring or a road. */
-  track: "#4A5175",
+  track: "#4A3020",
   /** Thin lines and empty markers (stock dots, missing cards) on the page. */
-  rule: "#5A6182",
-  /** The sheet of paper a card or a road is printed on: light in every look. */
-  paper: "#FBF5E8",
-  paperInk: "#1E1B16",
-  paperInkMuted: "#625A4E",
+  rule: "#6A4426",
+  /** The cream paper a card, a road or a leaf of reading is printed on. */
+  paper: "#FBECCB",
+  paperInk: "#3B2414",
+  paperInkMuted: "#6E5236",
   /** Main call to action. */
-  action: "#FFD24D",
-  actionHover: "#FFDB6E",
-  actionInk: "#2A1D05",
+  action: "#F6D47A",
+  actionHover: "#FADF98",
+  actionInk: "#2A1608",
   /** The dome of the central tab: its lit side and its shaded side. */
-  actionLight: "#FFE48A",
-  actionDeep: "#E0A91C",
+  actionLight: "#F6D47A",
+  actionDeep: "#D9A63A",
   /** Thickness under the main action, then under the central tab. */
-  actionEdge: "#C99A12",
-  actionEdgeDeep: "#A87E10",
+  actionEdge: "#A5741A",
+  actionEdgeDeep: "#2A1608",
   /** Secondary actions and their thickness. */
-  control: "#3F4770",
-  controlHover: "#3D456B",
-  controlEdge: "#191C2E",
+  control: "#4A3020",
+  controlHover: "#5A3A26",
+  controlEdge: "#1A0E06",
   /** The filled part of an XP bar, top to bottom. */
-  xpLight: "#FFE07A",
-  xpDeep: "#F2B829",
+  xpLight: "#F6D47A",
+  xpDeep: "#D9A63A",
   /** What the eye must catch in a text: a figure, a current tab, a link. */
-  rubric: "#FFD24D",
+  rubric: "#F6D47A",
   /** Gold in a thin line or a highlight, and its lights: the first glows, the last lies flat. */
-  gilt: "#FFD24D",
-  giltPale: "#FFF0B8",
-  giltLight: "#FFE08A",
-  giltDeep: "#D9A233",
+  gilt: "#D9A63A",
+  giltPale: "#FBEFC8",
+  giltLight: "#F6D47A",
+  giltDeep: "#A5741A",
   /** Done, received: a claimed level, a switch on. */
-  success: "#2FC79B",
-  successBright: "#3BD3A5",
-  successLight: "#5FE0B6",
-  successPale: "#7FE3C2",
+  success: "#8FD0A3",
+  successBright: "#9ED8AF",
+  successLight: "#B2E2C0",
+  successPale: "#CBEBD4",
   /** Fill of a right answer, and the thickness under it. */
-  successDeep: "#1F9E7A",
-  successEdge: "#126650",
+  successDeep: "#34714A",
+  successEdge: "#1F4D30",
   /** Destructive actions on dark: sign out, block. */
-  danger: "#FF9C80",
-  dangerBright: "#FF8462",
-  dangerHover: "#FFB39C",
+  danger: "#F29A84",
+  dangerBright: "#F27A62",
+  dangerHover: "#F6B09F",
   dangerInk: "#2A0D05",
   /** Thickness under the button that destroys. */
-  dangerShade: "#B45A42",
+  dangerShade: "#922A34",
   /** Fill of a wrong answer, and the thickness under it. */
-  dangerDeep: "#C23D1B",
-  dangerEdge: "#7A240F",
+  dangerDeep: "#922A34",
+  dangerEdge: "#5E131C",
   /** Red counts of what waits for the player. */
-  badge: "#E2431D",
+  badge: "#B52D1C",
   /** The third step of a podium. */
-  bronze: "#D68C50",
+  bronze: "#C47D3E",
   /** A player named in the clan's discussion: the bubble, then the name. */
-  mention: "#4A5490",
-  mentionInk: "#9FB4FF",
+  mention: "#4A3020",
+  mentionInk: "#F6D47A",
   /** Figures of the admin charts. */
-  data: "#5598E7",
+  data: "#8FB4D9",
   /** Text on a saturated fill. */
-  inkOnColor: "#FFFFFF",
+  inkOnColor: "#FFF4DC",
   /** A light that catches an edge, and the dark that falls behind a floating surface. */
   glint: "#FFFFFF",
   shade: "#000000",
   /** Behind a dialog or a sheet. */
-  scrim: "#0A0C18",
+  scrim: "#080300",
   /** Behind a card being revealed. */
-  dim: "#06070D",
+  dim: "#080300",
   /** The kraft envelope of a booster and its wax seal. */
   kraft: "#D9B486",
   kraftInk: "#5A3D18",
@@ -123,10 +126,10 @@ export const colors = {
   sealDark: "#A82B0E",
   sealInk: "#8C2208",
   sticker: "#F0603C",
-  focus: "#FFD24D",
+  focus: "#F6D47A",
 } as const;
 
-/** Every role, with the value a look gives it. */
+/** Every role, with its value. */
 export type Palette = Readonly<Record<keyof typeof colors, string>>;
 
 /** A `#RRGGBB` role at the given opacity, from 0 to 1. */

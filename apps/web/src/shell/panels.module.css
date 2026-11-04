@@ -32,15 +32,20 @@
   list-style: none;
 }
 
+/* Each letter is a slip of paper; a new one carries a gold band on its edge. */
 .letter {
   display: flex;
   align-items: flex-start;
   gap: var(--lx-s6);
   width: 100%;
+  margin-bottom: 3px;
   padding: var(--lx-s6);
-  border: 0;
-  border-radius: var(--lx-radius-xl);
-  background: color-mix(in srgb, var(--lx-color-gilt) 7%, transparent);
+  border: var(--lx-toy-outline-width) solid var(--lx-toy-outline);
+  border-radius: var(--lx-toy-radius-small);
+  background: var(--lx-toy-paper-top);
+  box-shadow:
+    inset 0 -3px 0 var(--lx-toy-paper-bottom),
+    0 3px 0 var(--lx-toy-outline);
   color: var(--lx-color-page-ink);
   font: inherit;
   text-align: left;
@@ -49,7 +54,7 @@
 }
 
 .letter:hover {
-  background: color-mix(in srgb, var(--lx-color-gilt) 12%, transparent);
+  filter: brightness(1.04);
 }
 
 .letterIcon {
@@ -58,9 +63,15 @@
   flex-shrink: 0;
   width: 42px;
   height: 42px;
-  border-radius: var(--lx-radius-xl);
-  background: var(--lx-color-page);
-  color: var(--lx-color-rubric);
+  border: var(--lx-toy-outline-width) solid var(--lx-toy-outline);
+  border-radius: 50%;
+  background: linear-gradient(
+    180deg,
+    var(--lx-toy-gold-top) 0 47%,
+    var(--lx-toy-gold-bottom) 53% 100%
+  );
+  box-shadow: inset 0 -2px 0 var(--lx-toy-gold-edge);
+  color: var(--lx-toy-outline);
 }
 
 .letterText {
@@ -82,10 +93,14 @@
   overflow-wrap: anywhere;
 }
 
-/* A letter new to this opening of the mail: a gold edge and its dot. */
+/* A letter new to this opening of the mail: a gold band on its edge and its dot. */
 .letterFresh {
-  background: color-mix(in srgb, var(--lx-color-gilt) 16%, transparent);
-  box-shadow: inset 3px 0 0 var(--lx-color-gilt);
+  padding-left: calc(var(--lx-s6) + 8px);
+  box-shadow:
+    inset 6px 0 0 var(--lx-toy-gold-top),
+    inset 8px 0 0 var(--lx-toy-outline),
+    inset 0 -3px 0 var(--lx-toy-paper-bottom),
+    0 3px 0 var(--lx-toy-outline);
 }
 
 .letterWhen {
@@ -185,7 +200,6 @@
   display: block;
   margin-top: var(--lx-s4);
   padding: var(--lx-s6) var(--lx-s8);
-  border-radius: var(--lx-radius-xxl);
   font-size: var(--lx-size-body);
   resize: vertical;
 }
@@ -231,43 +245,4 @@
   font-size: var(--lx-size-label);
   font-weight: 700;
   color: var(--lx-color-page-ink-muted);
-}
-
-/* --- « La Bibliothèque » --- */
-
-/* Each letter is a slip of paper; a new one carries a gold band on its edge. */
-:root[data-look="bibliotheque"] .letter {
-  margin-bottom: 3px;
-  border: var(--lx-toy-outline-width) solid var(--lx-toy-outline);
-  border-radius: var(--lx-toy-radius-small);
-  background: var(--lx-toy-paper-top);
-  box-shadow:
-    inset 0 -3px 0 var(--lx-toy-paper-bottom),
-    0 3px 0 var(--lx-toy-outline);
-}
-
-:root[data-look="bibliotheque"] .letter:hover {
-  background: var(--lx-toy-paper-top);
-  filter: brightness(1.04);
-}
-
-:root[data-look="bibliotheque"] .letterFresh {
-  box-shadow:
-    inset 6px 0 0 var(--lx-toy-gold-top),
-    inset 8px 0 0 var(--lx-toy-outline),
-    inset 0 -3px 0 var(--lx-toy-paper-bottom),
-    0 3px 0 var(--lx-toy-outline);
-  padding-left: calc(var(--lx-s6) + 8px);
-}
-
-:root[data-look="bibliotheque"] .letterIcon {
-  border: var(--lx-toy-outline-width) solid var(--lx-toy-outline);
-  border-radius: 50%;
-  background: linear-gradient(
-    180deg,
-    var(--lx-toy-gold-top) 0 47%,
-    var(--lx-toy-gold-bottom) 53% 100%
-  );
-  box-shadow: inset 0 -2px 0 var(--lx-toy-gold-edge);
-  color: var(--lx-toy-outline);
 }

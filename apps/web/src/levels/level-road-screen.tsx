@@ -154,7 +154,7 @@ export function LevelRoadScreen() {
             </ul>
             {detail.opens !== null && (
               <div className={styles.opensBox}>
-                <p className={`${ui.kicker} ${styles.opensKicker}`}>Débloque</p>
+                <p className={ui.kicker}>Débloque</p>
                 <p className={styles.opensText}>{detail.opens}</p>
               </div>
             )}

@@ -15,7 +15,6 @@
 .text {
   min-height: 132px;
   padding: var(--lx-s6) var(--lx-s8);
-  border-radius: var(--lx-radius-xxl);
   font-size: var(--lx-size-body-large);
   line-height: 1.4;
   resize: vertical;

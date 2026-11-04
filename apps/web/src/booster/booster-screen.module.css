@@ -1,6 +1,6 @@
 .screen {
   box-sizing: border-box;
-  max-width: 640px;
+  max-width: 1180px;
   min-height: calc(100dvh - 70px);
   margin: 0 auto;
   padding: var(--lx-s4) var(--lx-s8) var(--lx-s20);
@@ -8,42 +8,43 @@
   flex-direction: column;
 }
 
-.center {
-  flex-grow: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: var(--lx-s16);
-}
-
-.hint,
-.error {
+.hint {
   margin: 0;
   max-width: 320px;
   font-size: var(--lx-size-body-large);
   font-weight: 700;
+  color: var(--lx-color-page-ink);
   text-align: center;
 }
 
-.hint {
-  color: var(--lx-color-page-ink);
-}
-
-.error {
-  color: var(--lx-color-rubric);
+/* What the Jouer screen says when it has no sachet to show: on the desk, in its place. */
+.notice {
+  position: relative;
+  isolation: isolate;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--lx-s9);
+  min-height: 300px;
+  padding: 34px 22px 30px;
 }
 
 /* --- Revealing ------------------------------------------------------------------------ */
 
+/* The cards come one by one onto the desk of the recap. */
 .revealing {
+  position: relative;
+  isolation: isolate;
   flex-grow: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: var(--lx-s9);
-  padding-top: var(--lx-s4);
+  margin-top: var(--lx-s12);
+  padding: 34px 22px 30px;
 }
 
 .revealBar {
@@ -64,7 +65,7 @@
 .position {
   font-size: var(--lx-size-small);
   font-weight: 700;
-  color: var(--lx-color-page-ink-muted);
+  color: var(--lx-color-page-ink-soft);
 }
 
 .progress {
@@ -76,48 +77,25 @@
   color: var(--lx-color-page-ink);
 }
 
-.next {
-  min-height: 46px;
-  padding: 0 var(--lx-s12);
-  border: none;
-  border-radius: var(--lx-radius-pill);
-  background: var(--lx-color-page-ink);
-  color: var(--lx-color-page);
-  font: inherit;
-  font-size: var(--lx-size-body);
-  font-weight: 800;
-  cursor: pointer;
-}
-
-.skip {
-  min-height: 46px;
-  padding: 0 var(--lx-s8);
-  border: none;
-  background: none;
-  color: var(--lx-color-page-ink-muted);
-  font: inherit;
-  font-size: var(--lx-size-label);
-  font-weight: 700;
-  text-decoration: underline;
-  text-underline-offset: 3px;
-  cursor: pointer;
-}
-
 /* --- Recap ---------------------------------------------------------------------------- */
 
-.wide {
-  max-width: 1180px;
-}
-
+/* The recap lies on the desk, its figures in gilt. */
 .recap {
+  position: relative;
+  isolation: isolate;
   display: flex;
   flex-direction: column;
   align-items: center;
   margin: var(--lx-s12) 0 0;
-  padding: var(--lx-s14) 26px;
+  padding: 34px 22px 30px;
   text-align: center;
-  background: color-mix(in srgb, var(--lx-color-page) 92%, transparent);
   animation: enter 240ms ease-out both;
+}
+
+.recapDesk {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
 }
 
 .recapLine {
@@ -246,7 +224,7 @@
   margin: var(--lx-s5) 0 0;
   font-size: var(--lx-size-small);
   font-weight: 600;
-  color: var(--lx-color-page-ink-muted);
+  color: var(--lx-color-page-ink);
 }
 
 @keyframes land {
@@ -285,7 +263,7 @@
   margin: var(--lx-s7) 0 0;
   font-size: var(--lx-size-label);
   font-weight: 700;
-  color: var(--lx-color-page-ink-muted);
+  color: var(--lx-color-page-ink);
 }
 
 .gained {
@@ -295,7 +273,7 @@
 .recapXp {
   margin: var(--lx-s7) 0 var(--lx-s2);
   font-size: var(--lx-size-heading-large);
-  color: var(--lx-color-rubric);
+  color: var(--lx-toy-gold-top);
 }
 
 .recapBar {
@@ -328,16 +306,30 @@
   font-size: var(--lx-size-body);
 }
 
+/* The main action on a row of its own, the others under it side by side, of one width. */
 .actions {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   justify-content: center;
   gap: var(--lx-s5);
+  width: min(100%, 460px);
   margin-top: var(--lx-s10);
 }
 
-/* A phone: the recap fits between the top bar and the tabs, without a frame, the carousel running
-   to the screen's edges. The album has its tab right below, the kicker says what is plain. */
+/* Above the actions' own widths. */
+.recap .actions > * {
+  width: 100%;
+  max-width: none;
+}
+
+.actions > :first-child,
+.actions > :last-child:nth-child(2) {
+  grid-column: 1 / -1;
+}
+
+/* A phone: the recap fits between the top bar and the tabs, its desk almost to the screen's edges
+   and the carousel running to them. The album has its tab right below, the kicker says what is
+   plain. */
 @media (max-width: 759px) {
   /* The shell already keeps room for the top bar and the tabs: the screen fills what is left. */
   .screen {
@@ -345,17 +337,13 @@
     padding-bottom: var(--lx-s6);
   }
 
-  .wide .recap {
-    margin: 0;
-    padding: var(--lx-s2) 0 0;
-    border: 0;
-    border-radius: 0;
-    background: none;
-    box-shadow: none;
+  .recap,
+  .revealing {
+    margin: 0 -8px;
+    padding: 30px 16px 24px;
   }
 
-  .recapKicker,
-  .recapAlbum {
+  .recapKicker {
     display: none;
   }
 
@@ -388,77 +376,6 @@
 
   .actions {
     margin-top: var(--lx-s6);
-  }
-}
-
-/* « La Bibliothèque »: the recap lies on the desk, its figures in gilt. */
-.recapLibrary {
-  position: relative;
-  isolation: isolate;
-  padding: 34px 22px 30px;
-  background: none;
-}
-
-.recapDesk {
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-}
-
-/* The cards come one by one onto the desk of the recap. */
-.revealLibrary {
-  position: relative;
-  isolation: isolate;
-  margin-top: var(--lx-s12);
-  padding: 34px 22px 30px;
-}
-
-@media (max-width: 759px) {
-  .revealLibrary {
-    margin: 0 -8px;
-    padding: 30px 16px 24px;
-  }
-}
-
-.revealLibrary .position {
-  color: var(--lx-color-page-ink-soft);
-}
-
-/* The main action on a row of its own, the others under it side by side, of one width. */
-.recapLibrary .actions {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  width: min(100%, 460px);
-}
-
-.recapLibrary .actions > * {
-  width: 100%;
-  max-width: none;
-}
-
-.recapLibrary .actions > :first-child,
-.recapLibrary .actions > :last-child:nth-child(2) {
-  grid-column: 1 / -1;
-}
-
-.recapLibrary .recapXp {
-  color: var(--lx-toy-gold-top);
-}
-
-.recapLibrary .recapProgress,
-.recapLibrary .hint,
-.recapLibrary .recapHint {
-  color: var(--lx-color-page-ink);
-}
-
-@media (max-width: 759px) {
-  .wide .recapLibrary {
-    margin: 0 -8px;
-    padding: 30px 16px 24px;
-  }
-
-  .wide .recapLibrary .recapCarousel {
-    width: calc(100% + 32px);
   }
 }
 

@@ -1,9 +1,9 @@
 import { RARITIES } from "@leximon/core";
 import { describe, expect, it } from "vitest";
-import { cssFill, cssRootRule, cssUrl, cssVariables, libraryTheme, solidColor } from "./css";
+import { cssFill, cssRootRule, cssUrl, cssVariables, solidColor } from "./css";
 import { effects, particleCap, revealEffects } from "./effects";
 import { levelBadge, levelBadgeText } from "./level-badge";
-import { lettering, library, toyMatters } from "./library";
+import { lettering, toyMatters } from "./library";
 import { alpha, backTone, backTones, colors, matter, rarityStyles } from "./tokens";
 
 /** WCAG relative luminance of a `#RRGGBB` color. */
@@ -73,12 +73,12 @@ describe("css helpers", () => {
     expect(cssVariables()["--lx-radius-card"]).toBe("16px");
     expect(cssVariables()["--lx-size-body"]).toBe("15px");
     expect(cssVariables()["--lx-s6"]).toBe("12px");
-    expect(cssRootRule()).toMatch(/^:root\{color-scheme:dark;--lx-color-page:#262B40;/);
+    expect(cssRootRule()).toMatch(/^:root\{color-scheme:dark;--lx-color-page:#1C0F07;/);
   });
 });
 
 describe("the look of the library", () => {
-  const palette = library;
+  const palette = colors;
 
   it("keeps reading text at 7:1, on paper as on the room", () => {
     expect(contrast(palette.pageInk, palette.page)).toBeGreaterThanOrEqual(7);
@@ -127,9 +127,7 @@ describe("the look of the library", () => {
     expect(contrast(lettering.fill, lettering.outline)).toBeGreaterThanOrEqual(7);
   });
 
-  it("turns on over the current look with the page's data-look", () => {
-    expect(cssRootRule()).toContain(':root[data-look="bibliotheque"]{color-scheme:dark;');
-    expect(libraryTheme()["--lx-color-page"]).toBe(library.page);
+  it("declares its toys beside its colors", () => {
     expect(cssVariables()["--lx-toy-gold-top"]).toBe(toyMatters.gold.top);
   });
 });
@@ -158,7 +156,7 @@ describe("effects", () => {
 
 describe("alpha", () => {
   it("gives a role an opacity", () => {
-    expect(alpha(colors.page, 0.5)).toBe("rgba(38, 43, 64, 0.5)");
+    expect(alpha(colors.page, 0.5)).toBe("rgba(28, 15, 7, 0.5)");
   });
 });
 

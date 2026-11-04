@@ -27,10 +27,11 @@
   gap: var(--lx-s6);
 }
 
+/* The facts lie on a leaf beside the card, as on the card's sheet. */
 .facts {
   flex: 1;
   min-width: 0;
-  padding-top: var(--lx-s4);
+  padding: var(--lx-s12) var(--lx-s12) var(--lx-s10);
 }
 
 .word {
@@ -81,15 +82,9 @@
 
   .facts {
     width: 100%;
-    padding-top: 0;
   }
 
   .word {
     font-size: var(--lx-size-heading-large);
   }
-}
-
-/* In « La Bibliothèque », the facts lie on a leaf beside the card, as on the card's sheet. */
-:root[data-look="bibliotheque"] .facts {
-  padding: var(--lx-s12) var(--lx-s12) var(--lx-s10);
 }

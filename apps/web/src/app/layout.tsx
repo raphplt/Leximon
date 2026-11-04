@@ -3,7 +3,6 @@ import type { Metadata, Viewport } from "next";
 import { Bricolage_Grotesque, Fraunces, Newsreader } from "next/font/google";
 import { Umami } from "@/analytics/umami";
 import { SourceCapture } from "@/beta/source-capture";
-import { LOOK_SCRIPT } from "@/theme/look";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -46,14 +45,10 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="fr"
-      // The look is set before React starts: they are not for it to reconcile.
-      suppressHydrationWarning
       className={`${display.variable} ${ui.variable} ${text.variable} ${textItalic.variable}`}
     >
       <head>
         <style>{cssRootRule()}</style>
-        {/* biome-ignore lint/security/noDangerouslySetInnerHtml: a constant, without any input */}
-        <script dangerouslySetInnerHTML={{ __html: LOOK_SCRIPT }} />
       </head>
       <body>
         {children}

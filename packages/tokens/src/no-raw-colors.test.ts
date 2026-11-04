@@ -63,7 +63,7 @@ describe("colors", () => {
     expect(offenders).toEqual([]);
   });
 
-  it("reach the phone through its theme, which picks the look at launch", () => {
+  it("reach the phone through its theme", () => {
     const direct = sourceFiles(join(ROOT, "apps/mobile/src"))
       .filter((path) => !path.endsWith("theme.ts"))
       .filter((path) => /\bcolors\b[^;]*from "@leximon\/tokens"/.test(readFileSync(path, "utf8")))

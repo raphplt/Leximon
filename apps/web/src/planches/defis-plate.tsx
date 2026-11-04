@@ -1,7 +1,7 @@
 "use client";
 
-import { libraryTheme, type ToyMatterName } from "@leximon/tokens";
-import { type CSSProperties, useEffect, useState } from "react";
+import type { ToyMatterName } from "@leximon/tokens";
+import { type CSSProperties, useState } from "react";
 import { CountBadge, MainAction } from "@/library/play-pieces";
 import desk from "@/play/desk-columns.module.css";
 import { Icon } from "@/ui/icon";
@@ -143,19 +143,8 @@ const rise = (index: number) => ({ "--rise": index }) as CSSProperties;
 
 export function DefisPlate() {
   const [moment, setMoment] = useState<Moment>("due");
-  // The leaves of the room only take their paper under the library look of the whole page.
-  useEffect(() => {
-    const root = document.documentElement;
-    const before = root.dataset.look;
-    root.dataset.look = "bibliotheque";
-    return () => {
-      if (before === undefined) delete root.dataset.look;
-      else root.dataset.look = before;
-    };
-  }, []);
-
   return (
-    <main data-look="bibliotheque" className={styles.page} style={libraryTheme() as CSSProperties}>
+    <main className={styles.page}>
       <ParticleStage dust>
         <nav className={styles.controls} aria-label="État de la planche">
           <span className={styles.controlsLabel}>Planche Défis</span>

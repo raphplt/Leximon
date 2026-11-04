@@ -53,7 +53,7 @@ function Pronunciation({ card }: { readonly card: CatalogCard }) {
     <p className={styles.spoken}>
       <button
         type="button"
-        className={`${ui.round} ${word.playing ? styles.playing : ""}`}
+        className={ui.round}
         onClick={word.play}
         aria-label={`Écouter ${card.word}`}
       >

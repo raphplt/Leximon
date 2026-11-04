@@ -17,7 +17,6 @@ import { type CSSProperties, useState } from "react";
 import { Avatar } from "@/components/avatar";
 import { api } from "@/lib/api";
 import { publishClaimed, wallet } from "@/player/player";
-import { useLibraryLook } from "@/theme/use-library-look";
 import { Button } from "@/ui/button";
 import { Dialog } from "@/ui/dialog";
 import { Icon } from "@/ui/icon";
@@ -93,7 +92,6 @@ export function CoffretDialog({
   };
 
   const opens = level === null ? null : opensAt(level, now);
-  const library = useLibraryLook();
 
   return (
     <Dialog
@@ -168,7 +166,7 @@ export function CoffretDialog({
                 disabled={step.name === "claiming" || step.name === "refused"}
                 aria-label="Ouvrir le coffret"
               >
-                {library ? <ToyIcon name="chest" size={96} /> : <Icon name="coffret" size={84} />}
+                <ToyIcon name="chest" size={96} />
               </button>
               <h2 className={`${ui.display} ${styles.title}`}>Un coffret pour toi</h2>
               {step.name === "refused" ? (

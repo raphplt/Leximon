@@ -41,6 +41,7 @@
   list-style: none;
 }
 
+/* Each letter has its hollow in the paper; the ones found are small tiles of gold. */
 .cell {
   display: grid;
   place-items: center;
@@ -48,10 +49,24 @@
   flex: 0 1 44px;
   min-width: 0;
   height: 52px;
-  border: 1px solid var(--lx-color-rule);
-  border-radius: var(--lx-radius-md);
+  border: 2px solid var(--lx-toy-outline);
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--lx-toy-paper-bottom) 55%, var(--lx-color-paper));
+  box-shadow: inset 0 3px 0 color-mix(in srgb, var(--lx-toy-paper-edge) 55%, transparent);
   font-size: var(--lx-size-title-large);
   text-transform: uppercase;
+}
+
+.cell:not(:empty) {
+  background: linear-gradient(
+    180deg,
+    var(--lx-toy-gold-top) 0 47%,
+    var(--lx-toy-gold-bottom) 53% 100%
+  );
+  box-shadow:
+    inset 0 -3px 0 var(--lx-toy-gold-edge),
+    0 3px 0 var(--lx-toy-outline);
+  color: var(--lx-toy-outline);
 }
 
 .nature {
@@ -75,6 +90,8 @@
 .field {
   min-height: 60px;
   font-size: var(--lx-size-title-large);
+  /* The field's `font: inherit` would otherwise undo the weight of the lettering. */
+  font-weight: 900;
   text-align: center;
 }
 
@@ -139,29 +156,6 @@
   .cell {
     flex-basis: 34px;
     height: 42px;
-    border-radius: var(--lx-radius-sm);
     font-size: min(21px, 4.6vw);
   }
-}
-
-/* --- « La Bibliothèque » --- */
-
-/* Each letter has its hollow in the paper; the ones found are small tiles of gold. */
-:root[data-look="bibliotheque"] .cell {
-  border: 2px solid var(--lx-toy-outline);
-  border-radius: 10px;
-  background: color-mix(in srgb, var(--lx-toy-paper-bottom) 55%, var(--lx-color-paper));
-  box-shadow: inset 0 3px 0 color-mix(in srgb, var(--lx-toy-paper-edge) 55%, transparent);
-}
-
-:root[data-look="bibliotheque"] .cell:not(:empty) {
-  background: linear-gradient(
-    180deg,
-    var(--lx-toy-gold-top) 0 47%,
-    var(--lx-toy-gold-bottom) 53% 100%
-  );
-  box-shadow:
-    inset 0 -3px 0 var(--lx-toy-gold-edge),
-    0 3px 0 var(--lx-toy-outline);
-  color: var(--lx-toy-outline);
 }

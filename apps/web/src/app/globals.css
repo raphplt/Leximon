@@ -17,26 +17,16 @@ html {
 body {
   margin: 0;
   min-height: 100dvh;
-  /* A fine grain over a soft halo: depth without a repeating pattern. */
-  background:
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.07 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E")
-    0 0 / 180px 180px,
-    radial-gradient(ellipse at 50% 30%, var(--lx-color-page-raised) 0%, var(--lx-color-page) 70%)
-    fixed,
-    var(--lx-color-page);
+  background: var(--lx-room-floor);
   color: var(--lx-color-page-ink);
   font-family: var(--font-ui), system-ui, sans-serif;
-}
-
-:root[data-look="bibliotheque"] body {
-  background: var(--lx-room-floor);
 }
 
 /*
  * The room on a layer of its own that stays put: a fixed background on the page itself is
  * repainted whole on every frame of a scroll.
  */
-:root[data-look="bibliotheque"] body::before {
+body::before {
   content: "";
   position: fixed;
   inset: 0;

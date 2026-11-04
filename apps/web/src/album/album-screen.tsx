@@ -367,7 +367,7 @@ export function AlbumScreen() {
                       <span className={styles.divider} aria-hidden="true" />
                       <button
                         type="button"
-                        className={`${ui.chip} ${styles.filter} ${styles.theme}`}
+                        className={`${ui.chip} ${styles.filter}`}
                         aria-expanded={themesOpen}
                         aria-controls="album-themes"
                         onClick={() => setThemesOpen((open) => !open)}
@@ -381,7 +381,6 @@ export function AlbumScreen() {
                     <FilterChip
                       label={pickedTheme.label}
                       on
-                      muted
                       onPick={() => setState((s) => ({ ...s, theme: null }))}
                     />
                   )}
@@ -393,7 +392,6 @@ export function AlbumScreen() {
                         key={theme.id}
                         label={theme.label}
                         on={state.theme === theme.id}
-                        muted
                         onPick={() =>
                           setState((s) => ({ ...s, theme: s.theme === theme.id ? null : theme.id }))
                         }
@@ -740,21 +738,18 @@ function FilterChip({
   label,
   count = null,
   on,
-  muted = false,
   onPick,
 }: {
   readonly label: string;
   /** Shown beside the label when there is something to count. */
   readonly count?: number | null;
   readonly on: boolean;
-  readonly muted?: boolean;
   readonly onPick: () => void;
 }) {
   return (
     <button
       type="button"
-      className={`${ui.chip} ${styles.filter} ${muted ? styles.theme : ""}`}
-      data-on={on}
+      className={`${ui.chip} ${styles.filter}`}
       aria-pressed={on}
       onClick={onPick}
     >

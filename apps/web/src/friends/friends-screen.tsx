@@ -238,7 +238,7 @@ function Incoming({ requests }: { readonly requests: readonly FriendRequest[] })
   };
 
   return (
-    <section className={`${ui.panel} ${styles.card} ${styles.incoming}`}>
+    <section className={`${ui.panel} ${styles.card}`}>
       <p className={ui.kicker}>
         {requests.length > 1 ? `${requests.length} demandes d'ami` : "Une demande d'ami"}
       </p>
@@ -422,7 +422,7 @@ function AddFromLink() {
 
   if (code === null || pseudo === null || done) return null;
   return (
-    <section className={`${ui.panel} ${styles.card} ${styles.incoming}`}>
+    <section className={`${ui.panel} ${styles.card}`}>
       <p className={styles.hint}>Ajouter {pseudo} en ami ?</p>
       <div className={styles.linkActions}>
         <Button

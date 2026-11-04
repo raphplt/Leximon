@@ -20,8 +20,14 @@
   line-height: 1;
 }
 
+/* Each part of the page is a leaf of paper. */
 .section {
   margin-top: 36px;
+  padding: var(--lx-s10) var(--lx-s12);
+}
+
+.section + .section {
+  margin-top: var(--lx-s9);
 }
 
 .section h2 {
@@ -83,13 +89,4 @@
   align-items: flex-start;
   gap: var(--lx-s6);
   margin-top: var(--lx-s6);
-}
-
-/* In « La Bibliothèque », each part of the page is a leaf of paper. */
-:root[data-look="bibliotheque"] .section {
-  padding: var(--lx-s10) var(--lx-s12);
-}
-
-:root[data-look="bibliotheque"] .section + .section {
-  margin-top: var(--lx-s9);
 }

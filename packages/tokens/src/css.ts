@@ -1,15 +1,5 @@
 import { openingTimes } from "./effects";
-import {
-  easings,
-  lettering,
-  library,
-  oldGold,
-  press,
-  room,
-  toy,
-  toyMatters,
-  toyRadii,
-} from "./library";
+import { easings, lettering, oldGold, press, room, toy, toyMatters, toyRadii } from "./library";
 import {
   colors,
   type Fill,
@@ -60,7 +50,7 @@ export function cssVariables(): Record<string, string> {
   return variables;
 }
 
-/** What changes from one look or theme to another: its colors and the shadows made of them. */
+/** The colors, and the shadows made of them. */
 function paletteVariables(palette: Palette): Record<string, string> {
   const variables: Record<string, string> = {};
   for (const [name, value] of Object.entries(palette)) {
@@ -72,10 +62,7 @@ function paletteVariables(palette: Palette): Record<string, string> {
   return variables;
 }
 
-/**
- * What « La Bibliothèque » adds: its toys, letters, room and grain. Declared in every look, since
- * nothing else reads these names, so that a page can show the new pieces beside the current look.
- */
+/** The toys, letters, room and grain of the reading room. */
 function libraryParts(): Record<string, string> {
   const variables: Record<string, string> = {
     "--lx-toy-outline": toy.outline,
@@ -133,25 +120,14 @@ function libraryParts(): Record<string, string> {
   return variables;
 }
 
-/** The colors of « La Bibliothèque », for the one page that shows its pieces outside the look. */
-export function libraryTheme(): Record<string, string> {
-  return paletteVariables(library);
-}
-
 function rule(selector: string, variables: Record<string, string>, scheme: string): string {
   const declarations = Object.entries(variables).map(([name, value]) => `${name}:${value}`);
   return `${selector}{color-scheme:${scheme};${declarations.join(";")}}`;
 }
 
-/**
- * The rules declaring the tokens: the current look, then « La Bibliothèque », which the script of
- * the page turns on with `data-look`.
- */
+/** The rule declaring the tokens. */
 export function cssRootRule(): string {
-  return [
-    rule(":root", cssVariables(), "dark"),
-    rule(':root[data-look="bibliotheque"]', libraryTheme(), "dark"),
-  ].join("");
+  return rule(":root", cssVariables(), "dark");
 }
 
 function kebab(name: string): string {

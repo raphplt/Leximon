@@ -74,7 +74,6 @@ import { dailyChallenge, refreshIfRead, reviewSummary, wordMemory } from "@/play
 import { useShared } from "@/player/resource";
 import { publishProgress } from "@/progress/use-progress";
 import { useShell } from "@/shell/shell-context";
-import { useLibraryLook } from "@/theme/use-library-look";
 import { Button, ButtonLink, RoundButton } from "@/ui/button";
 import { Icon } from "@/ui/icon";
 import { ParticleStage, useOptionalStage } from "@/ui/stage";
@@ -114,13 +113,10 @@ function stepFor(question: SeriesQuestion | undefined): Step {
  * challenge, the riddle and the memory by level; then the series of questions themselves.
  */
 export function ChallengeScreen() {
-  const library = useLibraryLook();
-  return library ? (
+  return (
     <ParticleStage>
       <ChallengeFlow />
     </ParticleStage>
-  ) : (
-    <ChallengeFlow />
   );
 }
 

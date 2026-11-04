@@ -3,7 +3,6 @@
 import { RARITIES, type Rarity } from "@leximon/core";
 import {
   effects,
-  libraryTheme,
   rarityLights,
   revealBanner,
   revealEffects,
@@ -12,7 +11,7 @@ import {
   toyIcons,
 } from "@leximon/tokens";
 import { type RarityStaging, stagingFor } from "@leximon/view-model";
-import { type CSSProperties, type ReactNode, useEffect, useRef, useState } from "react";
+import { type ReactNode, useEffect, useRef, useState } from "react";
 import { CardBack } from "@/booster/card-back";
 import type { PackCollection } from "@/booster/pack-looks";
 import { Avatar } from "@/components/avatar";
@@ -69,12 +68,12 @@ const MATTERS: readonly ToyMatterName[] = ["gold", "red", "green", "blue", "pape
 const ICON_NAMES = Object.keys(toyIcons) as ToyIconName[];
 
 /**
- * The pieces of « La Bibliothèque », whatever the look of this browser: the Jouer screen put
- * together, then each piece on its own, and the effects to set off by hand.
+ * The pieces of « La Bibliothèque »: the Jouer screen put together, then each piece on its own,
+ * and the effects to set off by hand.
  */
 export function Planches() {
   return (
-    <main data-look="bibliotheque" className={styles.page} style={libraryTheme() as CSSProperties}>
+    <main className={styles.page}>
       <ParticleStage dust>
         <header className={styles.header}>
           <Kicker>Planches</Kicker>

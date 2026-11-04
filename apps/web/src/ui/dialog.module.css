@@ -3,10 +3,20 @@
 .wide {
   margin: 0;
   padding: 0;
-  border: 0;
-  color: var(--lx-color-page-ink);
-  background: var(--lx-color-sheet);
   overflow: visible;
+}
+
+/* A window is a leaf of cream paper, outlined like the toys. */
+.side,
+.center {
+  border: var(--lx-toy-outline-width) solid var(--lx-toy-outline);
+  background:
+    var(--lx-matter-paper) 0 0 / var(--lx-matter-size),
+    var(--lx-color-paper);
+  box-shadow:
+    inset 0 -5px 0 var(--lx-toy-paper-bottom),
+    0 5px 0 var(--lx-toy-outline),
+    0 24px 48px var(--lx-toy-drop);
 }
 
 .side::backdrop,
@@ -23,7 +33,6 @@
   max-width: 100%;
   height: 100dvh;
   max-height: 100dvh;
-  box-shadow: var(--lx-shadow-side-panel);
 }
 
 .side[open] {
@@ -36,9 +45,7 @@
   width: min(440px, calc(100% - 32px));
   max-height: calc(100dvh - 32px);
   margin: auto;
-  border-radius: var(--lx-radius-x5);
-  background: linear-gradient(170deg, var(--lx-color-sheet-light), var(--lx-color-page) 70%);
-  box-shadow: var(--lx-shadow-dialog);
+  border-radius: var(--lx-toy-radius-large);
   overflow: hidden;
 }
 
@@ -46,7 +53,10 @@
   animation: pop 420ms cubic-bezier(0.2, 0.9, 0.3, 1.2) both;
 }
 
-/* Web: a large window in the middle, for a card and what goes with it. */
+/*
+ * Web: a large window in the middle, for a card and what goes with it. It is the desk itself:
+ * green leather in its gold frame, the card lying on it.
+ */
 .wide {
   position: fixed;
   inset: 0;
@@ -55,8 +65,23 @@
   height: fit-content;
   max-height: calc(100dvh - 48px);
   margin: auto;
+  border: 6px solid transparent;
   border-radius: 28px;
-  box-shadow: var(--lx-shadow-dialog);
+  background:
+    var(--lx-matter-leather) 0 0 / var(--lx-matter-size) padding-box,
+    radial-gradient(
+      ellipse 80% 70% at 35% 40%,
+      var(--lx-desk-center) 0%,
+      var(--lx-desk-middle) 55%,
+      var(--lx-desk-edge) 100%
+    )
+    padding-box,
+    var(--lx-old-gold) border-box;
+  box-shadow:
+    0 0 0 3px var(--lx-toy-outline),
+    0 28px 56px var(--lx-toy-drop),
+    inset 0 0 50px var(--lx-desk-hollow);
+  color: var(--lx-color-page-ink);
 }
 
 .wide[open] {
@@ -106,16 +131,31 @@
   line-height: 1.1;
 }
 
+.wide .title {
+  color: var(--lx-lettering-fill);
+  font-weight: 900;
+  -webkit-text-stroke: var(--lx-lettering-width) var(--lx-lettering-outline);
+  paint-order: stroke fill;
+  text-shadow: 0 var(--lx-lettering-drop) 0 var(--lx-lettering-outline);
+}
+
 .close {
   display: grid;
   place-items: center;
   width: 44px;
   height: 44px;
   padding: 0;
-  border: 0;
+  border: var(--lx-toy-outline-width) solid var(--lx-toy-outline);
   border-radius: 50%;
-  background: var(--lx-color-page-raised);
-  color: var(--lx-color-page-ink);
+  background: linear-gradient(
+    180deg,
+    var(--lx-toy-paper-top) 0 47%,
+    var(--lx-toy-paper-bottom) 53% 100%
+  );
+  box-shadow:
+    inset 0 -3px 0 var(--lx-toy-paper-edge),
+    0 3px 0 var(--lx-toy-outline);
+  color: var(--lx-color-paper-ink);
   cursor: pointer;
 }
 
@@ -145,8 +185,8 @@
     max-width: 100%;
     height: auto;
     max-height: 90dvh;
+    border-bottom: 0;
     border-radius: 26px 26px 0 0;
-    box-shadow: var(--lx-shadow-bottom-sheet);
   }
 
   .side[open],
@@ -164,7 +204,7 @@
     height: 5px;
     margin: var(--lx-s5) auto var(--lx-s1);
     border-radius: var(--lx-radius-pill);
-    background: var(--lx-color-rule);
+    background: var(--lx-toy-paper-edge);
   }
 
   .head {
@@ -220,73 +260,5 @@
   .center[open],
   .wide[open] {
     animation: none;
-  }
-}
-
-/* --- « La Bibliothèque » --- */
-
-/* A window is a leaf of cream paper, outlined like the toys. */
-:root[data-look="bibliotheque"] :is(.side, .center) {
-  border: var(--lx-toy-outline-width) solid var(--lx-toy-outline);
-  background:
-    var(--lx-matter-paper) 0 0 / var(--lx-matter-size),
-    var(--lx-color-paper);
-  box-shadow:
-    inset 0 -5px 0 var(--lx-toy-paper-bottom),
-    0 5px 0 var(--lx-toy-outline),
-    0 24px 48px var(--lx-toy-drop);
-}
-
-:root[data-look="bibliotheque"] .center {
-  border-radius: var(--lx-toy-radius-large);
-}
-
-/* A card sheet is the desk itself: green leather in its gold frame, the card lying on it. */
-:root[data-look="bibliotheque"] .wide {
-  border: 6px solid transparent;
-  background:
-    var(--lx-matter-leather) 0 0 / var(--lx-matter-size) padding-box,
-    radial-gradient(
-      ellipse 80% 70% at 35% 40%,
-      var(--lx-desk-center) 0%,
-      var(--lx-desk-middle) 55%,
-      var(--lx-desk-edge) 100%
-    )
-    padding-box,
-    var(--lx-old-gold) border-box;
-  box-shadow:
-    0 0 0 3px var(--lx-toy-outline),
-    0 28px 56px var(--lx-toy-drop),
-    inset 0 0 50px var(--lx-desk-hollow);
-}
-
-:root[data-look="bibliotheque"] .wide .title {
-  color: var(--lx-lettering-fill);
-  font-weight: 900;
-  -webkit-text-stroke: var(--lx-lettering-width) var(--lx-lettering-outline);
-  paint-order: stroke fill;
-  text-shadow: 0 var(--lx-lettering-drop) 0 var(--lx-lettering-outline);
-}
-
-:root[data-look="bibliotheque"] .close {
-  border: var(--lx-toy-outline-width) solid var(--lx-toy-outline);
-  background: linear-gradient(
-    180deg,
-    var(--lx-toy-paper-top) 0 47%,
-    var(--lx-toy-paper-bottom) 53% 100%
-  );
-  box-shadow:
-    inset 0 -3px 0 var(--lx-toy-paper-edge),
-    0 3px 0 var(--lx-toy-outline);
-  color: var(--lx-color-paper-ink);
-}
-
-:root[data-look="bibliotheque"] .handle {
-  background: var(--lx-toy-paper-edge);
-}
-
-@media (max-width: 759px) {
-  :root[data-look="bibliotheque"] :is(.side, .wide) {
-    border-bottom: 0;
   }
 }

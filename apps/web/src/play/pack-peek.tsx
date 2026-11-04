@@ -68,39 +68,3 @@ export function PackPeek({
     </div>
   );
 }
-
-/**
- * Beside the sachets behind, on the counter's edge: an arrow that stays, with the name of the
- * collection it brings. The sachets themselves can be taken too.
- */
-export function PeekArrow({
-  side,
-  choice,
-  onPick,
-  onLocked,
-}: {
-  readonly side: "left" | "right";
-  readonly choice: CollectionChoice;
-  readonly onPick: (choice: CollectionChoice, from: "left" | "right") => void;
-  readonly onLocked: () => void;
-}) {
-  const locked = choice.lock !== null;
-  return (
-    <button
-      type="button"
-      className={`${styles.peekArrow} ${side === "left" ? styles.peekArrowLeft : styles.peekArrowRight}`}
-      aria-label={
-        locked
-          ? `Sachet ${choice.name}, ${choice.lock?.replace("Niv.", "niveau")}`
-          : `Prendre le sachet ${choice.name}`
-      }
-      title={choice.tagline ?? choice.name}
-      onClick={() => (locked ? onLocked() : onPick(choice, side))}
-    >
-      {side === "left" && <Icon name="back" size={16} />}
-      <span className={styles.peekArrowName}>{choice.short}</span>
-      {locked && <Icon name="lock" size={12} />}
-      {side === "right" && <Icon name="chev" size={16} />}
-    </button>
-  );
-}

@@ -1,7 +1,7 @@
 "use client";
 
 import { type CatalogCard, RARITY_LABELS } from "@leximon/contract";
-import { rarityLights, rarityStyles, revealBanner, revealEffects } from "@leximon/tokens";
+import { rarityLights, revealBanner, revealEffects } from "@leximon/tokens";
 import type { RarityStaging } from "@leximon/view-model";
 import { cardRelease, frequencyLine } from "@leximon/view-model";
 import {
@@ -43,10 +43,10 @@ interface RevealCardProps {
   /** The `back` of the pack's collection. */
   readonly backTone?: string | undefined;
   /**
-   * In « La Bibliothèque », where its light is drawn: the rarity glows behind the card while it
-   * is announced, then sparks, rays and its name come as the face shows.
+   * Where its light is drawn: the rarity glows behind the card while it is announced, then
+   * sparks, rays and its name come as the face shows.
    */
-  readonly stage?: Stage | null;
+  readonly stage: Stage;
 }
 
 interface Drag {
@@ -71,7 +71,7 @@ export function RevealCard({
   firstLabel,
   onNext,
   backTone,
-  stage = null,
+  stage,
 }: RevealCardProps) {
   const [flipped, setFlipped] = useState(false);
   const [settled, setSettled] = useState(false);
@@ -126,16 +126,14 @@ export function RevealCard({
     setFlipped(true);
     play(staging.revealCue);
     vibrate(staging.revealHaptic);
-    if (stage !== null) {
-      later(staging.flipMs / 2, () => {
-        const point = center();
-        if (point !== null) {
-          stage.reveal(point.x, point.y, effect, rarityLight, root.current ?? document.body);
-        }
-        setSweep((value) => value + 1);
-        if (banner !== undefined) setStamp((value) => value + 1);
-      });
-    }
+    later(staging.flipMs / 2, () => {
+      const point = center();
+      if (point !== null) {
+        stage.reveal(point.x, point.y, effect, rarityLight, root.current ?? document.body);
+      }
+      setSweep((value) => value + 1);
+      if (banner !== undefined) setStamp((value) => value + 1);
+    });
     later(staging.flipMs, () => {
       setSettled(true);
       if (isNew) play("newCard");
@@ -156,7 +154,7 @@ export function RevealCard({
     if (!flipped) {
       if (staging.flip !== "touch" || !touchable || drawing) return;
       const point = center();
-      if (stage === null || effect.drawInMs === 0 || point === null || prefersReducedMotion()) {
+      if (effect.drawInMs === 0 || point === null || prefersReducedMotion()) {
         flip();
         return;
       }
@@ -216,14 +214,12 @@ export function RevealCard({
     transitionDuration:
       exit !== null ? `${EXIT_MS}ms` : drag !== null ? "0ms" : `${staging.flipMs}ms`,
   } as CSSProperties;
-  const glow = rarityStyles[card.rarity].glow;
   const announcing = !flipped && staging.announce !== "none";
   const height = (width * 420) / 300;
-  const library = stage !== null;
   const auraStrength = announcing ? 0.9 : !flipped ? 0 : card.rarity === "common" ? 0.25 : 0.6;
 
   return (
-    <div ref={root} className={library ? `${styles.reveal} ${styles.library}` : styles.reveal}>
+    <div ref={root} className={styles.reveal}>
       {staging.dim && (
         <div
           className={staging.announce === "eclipse" ? styles.dimDeep : styles.dim}
@@ -233,30 +229,9 @@ export function RevealCard({
       <p className={firstLabel !== null && settled ? styles.first : styles.firstHidden}>
         {firstLabel}
       </p>
-      <div
-        className={
-          announcing && staging.announce === "eclipse"
-            ? `${styles.stage} ${styles.floating}`
-            : styles.stage
-        }
-        style={{ width, height }}
-        ref={light.ref}
-      >
-        {library && <Aura size={width * 2.4} color={rarityLight} strength={auraStrength} />}
-        {library && <Rays size={width * 2.8} color={rarityLight} shown={flipped && effect.rays} />}
-        {!library && flipped && glow !== null && (
-          <div
-            className={styles.glow}
-            style={{ background: `radial-gradient(ellipse, ${glow} 0%, transparent 65%)` }}
-            aria-hidden="true"
-          />
-        )}
-        {!library && flipped && staging.spotlight && (
-          <div className={styles.rays} aria-hidden="true" />
-        )}
-        {!library && announcing && staging.announce === "eclipse" && (
-          <div className={styles.halo} aria-hidden="true" />
-        )}
+      <div className={styles.stage} style={{ width, height }} ref={light.ref}>
+        <Aura size={width * 2.4} color={rarityLight} strength={auraStrength} />
+        <Rays size={width * 2.8} color={rarityLight} shown={flipped && effect.rays} />
         <button
           ref={flipper}
           type="button"
@@ -284,19 +259,12 @@ export function RevealCard({
           </span>
           <span className={styles.front}>
             <HoloCard card={card} collectionName={collectionName} width={width} />
-            {library && (
-              <span className={styles.sheen}>
-                <Sheen sweep={sweep} />
-              </span>
-            )}
+            <span className={styles.sheen}>
+              <Sheen sweep={sweep} />
+            </span>
           </span>
         </button>
-        {!library &&
-          flipped &&
-          (staging.announce === "crack" || staging.announce === "eclipse") && (
-            <Particles kind={staging.announce === "crack" ? "gold" : "sparkle"} />
-          )}
-        {library && banner !== undefined && (
+        {banner !== undefined && (
           <RarityBanner text={RARITY_LABELS[card.rarity]} color={banner} stamp={stamp} />
         )}
         {settled && isNew && <span className={styles.newBadge}>Nouveau !</span>}
@@ -357,31 +325,5 @@ function Cracks() {
       <polyline points="136,130 168,112" />
       <polyline points="170,252 214,262" />
     </svg>
-  );
-}
-
-const PARTICLE_COUNT = 18;
-
-/** Gold dust or sparkles around the card. Positions are fixed, so every render matches. */
-function Particles({ kind }: { readonly kind: "gold" | "sparkle" }) {
-  return (
-    <div className={styles.particles} aria-hidden="true">
-      {Array.from({ length: PARTICLE_COUNT }, (_, index) => {
-        const style = {
-          left: `${(index * 53) % 100}%`,
-          top: `${(index * 31 + 7) % 90}%`,
-          animationDelay: `${(index * 97) % 900}ms`,
-          scale: `${0.6 + ((index * 17) % 10) / 10}`,
-        } as CSSProperties;
-        return (
-          <span
-            // biome-ignore lint/suspicious/noArrayIndexKey: fixed set of decorative particles
-            key={index}
-            className={kind === "gold" ? styles.dust : styles.sparkle}
-            style={style}
-          />
-        );
-      })}
-    </div>
   );
 }

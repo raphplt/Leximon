@@ -16,11 +16,6 @@
   margin: var(--lx-s7) 0 0;
 }
 
-.playing {
-  background: var(--lx-color-action);
-  color: var(--lx-color-action-ink);
-}
-
 .ipa {
   font-family: var(--font-text), Georgia, serif;
   font-size: var(--lx-size-subtitle);

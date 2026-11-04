@@ -57,6 +57,11 @@
 
 /* Plain letters, wide apart: a code is read aloud or copied by hand, never guessed at. */
 .code {
+  padding: 2px var(--lx-s4);
+  border-radius: var(--lx-toy-radius-small);
+  background: color-mix(in srgb, var(--lx-toy-paper-edge) 45%, transparent);
+  box-shadow: inset 0 1px 2px color-mix(in srgb, var(--lx-toy-outline) 35%, transparent);
+  color: var(--lx-color-paper-ink);
   font-family: var(--font-bricolage), system-ui, sans-serif;
   font-size: var(--lx-size-body);
   font-weight: 800;
@@ -79,20 +84,20 @@
   margin: 0 0 var(--lx-s6);
   font-size: var(--lx-size-label);
   font-weight: 700;
-  color: var(--lx-color-rubric);
+  color: var(--lx-lettering-fill);
+  text-shadow: 0 1px 0 var(--lx-toy-outline);
 }
 
 /* --- Tabs --- */
 
+/* Each box of offers is a paper tab; the one open is in old gold. */
 .tabs {
   display: flex;
-  gap: var(--lx-s3);
+  gap: var(--lx-s4);
   width: fit-content;
   max-width: 100%;
   margin-bottom: var(--lx-s9);
-  padding: 5px;
-  border-radius: var(--lx-radius-pill);
-  background: var(--lx-color-binding);
+  padding: 0 0 4px;
   overflow-x: auto;
   scrollbar-width: none;
 }
@@ -102,10 +107,18 @@
   flex-shrink: 0;
   min-height: 40px;
   padding: 0 var(--lx-s8);
-  border: 0;
-  border-radius: var(--lx-radius-pill);
-  background: none;
-  color: var(--lx-color-page-ink);
+  border: var(--lx-toy-outline-width) solid var(--lx-toy-outline);
+  border-radius: var(--lx-toy-radius-small);
+  background: linear-gradient(
+    180deg,
+    var(--lx-toy-paper-top) 0 47%,
+    var(--lx-toy-paper-bottom) 53% 100%
+  );
+  box-shadow:
+    inset 0 -3px 0 var(--lx-toy-paper-edge),
+    inset 0 2px 0 var(--lx-toy-sheen),
+    0 3px 0 var(--lx-toy-outline);
+  color: var(--lx-color-paper-ink);
   font: inherit;
   font-size: var(--lx-size-label);
   font-weight: 800;
@@ -114,8 +127,16 @@
 }
 
 .tab[aria-selected="true"] {
-  background: var(--lx-color-page-ink);
-  color: var(--lx-color-page);
+  background: linear-gradient(
+    180deg,
+    var(--lx-toy-gold-top) 0 47%,
+    var(--lx-toy-gold-bottom) 53% 100%
+  );
+  box-shadow:
+    inset 0 -3px 0 var(--lx-toy-gold-edge),
+    inset 0 2px 0 var(--lx-toy-sheen),
+    0 3px 0 var(--lx-toy-outline);
+  color: var(--lx-toy-outline);
 }
 
 .noticeError {
@@ -150,8 +171,11 @@
 }
 
 .toast {
-  background: var(--lx-color-page-ink);
-  color: var(--lx-color-page);
+  border: var(--lx-toy-outline-width) solid var(--lx-toy-outline);
+  background:
+    var(--lx-matter-paper) 0 0 / var(--lx-matter-size),
+    var(--lx-color-paper);
+  color: var(--lx-color-paper-ink);
 }
 
 .toastError {
@@ -263,14 +287,6 @@
   font-size: var(--lx-size-nano);
 }
 
-.getting {
-  color: var(--lx-color-success-pale);
-}
-
-.giving {
-  color: var(--lx-color-danger);
-}
-
 .swap {
   color: var(--lx-color-rubric);
 }
@@ -309,7 +325,8 @@
   flex-direction: column;
   align-items: center;
   gap: var(--lx-s7);
-  margin: 30px 0;
+  margin: var(--lx-s6) auto;
+  padding: var(--lx-s10) var(--lx-s12);
 }
 
 .emptyText {
@@ -354,15 +371,19 @@
   grid-column: 2;
 }
 
+/* The steps' numbers are gilt toys; the code sits in a well of the paper. */
 .guideNumber {
+  box-sizing: border-box;
   grid-row: span 3;
   display: grid;
   place-items: center;
   width: 34px;
   height: 34px;
+  border: var(--lx-toy-outline-width) solid var(--lx-toy-outline);
   border-radius: 50%;
-  background: var(--lx-color-action);
-  color: var(--lx-color-action-ink);
+  background: linear-gradient(180deg, var(--lx-toy-gold-top), var(--lx-toy-gold-bottom));
+  box-shadow: 0 2px 0 var(--lx-toy-outline);
+  color: var(--lx-toy-outline);
   font-weight: 800;
 }
 
@@ -378,7 +399,7 @@
   font-family: var(--font-text), Georgia, serif;
   font-size: var(--lx-size-body);
   line-height: 1.45;
-  color: var(--lx-color-page-ink-muted);
+  color: var(--lx-color-paper-ink-muted);
 }
 
 /* --- Offers sent and history --- */
@@ -431,6 +452,7 @@
 
 .history {
   margin-top: 22px;
+  padding: var(--lx-s10);
 }
 
 .historyList {
@@ -447,7 +469,8 @@
 .rules {
   margin: var(--lx-s3) 0 0;
   font-size: var(--lx-size-small);
-  color: var(--lx-color-page-ink-faint);
+  color: var(--lx-lettering-fill);
+  text-shadow: 0 1px 0 var(--lx-toy-outline);
 }
 
 .sideLabel {
@@ -468,61 +491,39 @@
 
 /* --- Buttons -------------------------------------------------------------------------- */
 
+/*
+ * Always worn with the gold or paper toy, which gives them their skin. The font is spelled out
+ * again after `font: inherit` so that the toy's face holds whichever file loads last.
+ */
 .primary,
-.secondary,
-.primarySmall,
-.secondarySmall {
+.secondary {
   box-sizing: border-box;
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  min-height: 52px;
   padding: 0 var(--lx-s10);
-  border-radius: var(--lx-radius-pill);
   font: inherit;
+  font-family: var(--font-display), Georgia, serif;
+  font-size: var(--lx-size-body-large);
   text-align: center;
   text-decoration: none;
   cursor: pointer;
 }
 
-.primary,
+.primary {
+  font-weight: 900;
+}
+
 .secondary {
-  min-height: 52px;
-  font-size: var(--lx-size-body-large);
-}
-
-.primarySmall,
-.secondarySmall {
-  min-height: 44px;
-  font-size: var(--lx-size-body);
-}
-
-.primary,
-.primarySmall {
-  border: none;
-  background: var(--lx-color-action);
-  box-shadow: var(--lx-shadow-action);
-  color: var(--lx-color-action-ink);
   font-weight: 800;
 }
 
-.secondary,
-.secondarySmall {
-  border: 2px solid var(--lx-color-page-ink);
-  background: none;
-  color: var(--lx-color-page-ink);
-  font-weight: 700;
-}
-
-.primary:disabled,
-.primarySmall:disabled {
+.primary:disabled {
   cursor: default;
-  background: var(--lx-color-rule);
-  box-shadow: none;
-  color: var(--lx-color-page-ink);
 }
 
-.secondary:disabled,
-.secondarySmall:disabled {
+.secondary:disabled {
   cursor: default;
   opacity: 0.5;
 }
@@ -534,6 +535,7 @@
   display: flex;
   flex-direction: column;
   gap: var(--lx-s7);
+  padding: var(--lx-s10);
 }
 
 .panel > .sectionTitle {
@@ -634,15 +636,12 @@
   font-weight: 700;
 }
 
+/* Always worn with the paper field, which gives it its edge, its paper and its ink. */
 .input {
   box-sizing: border-box;
   width: 100%;
   min-height: 56px;
   padding: 0 var(--lx-s9);
-  border: 2px solid var(--lx-color-rule);
-  border-radius: var(--lx-radius-pill);
-  background: var(--lx-color-page-raised);
-  color: var(--lx-color-page-ink);
   font-family: var(--font-display), Georgia, serif;
   font-weight: 800;
   font-size: var(--lx-size-title-large);
@@ -655,7 +654,6 @@
 }
 
 .input:focus-visible {
-  border-color: var(--lx-color-focus);
   outline: none;
 }
 
@@ -720,13 +718,14 @@
   cursor: pointer;
 }
 
+/* A card chosen is ringed with gold, as the toys are. */
 .pickButton[aria-pressed="true"] {
-  outline: 4px solid var(--lx-color-gilt);
+  outline: 4px solid var(--lx-toy-gold-top);
   outline-offset: 2px;
+  box-shadow: 0 0 0 7px var(--lx-toy-outline);
 }
 
 .pickButton[aria-pressed="true"]:focus-visible {
-  outline-color: var(--lx-color-focus);
   outline-offset: 5px;
 }
 
@@ -847,96 +846,4 @@
 
 .panel > .secondary {
   align-self: flex-start;
-}
-
-/* --- « La Bibliothèque » --- */
-
-/* Each box of offers is a paper tab; the one open is in old gold. */
-:root[data-look="bibliotheque"] .tabs {
-  gap: var(--lx-s4);
-  padding: 0 0 4px;
-  border-radius: 0;
-  background: none;
-}
-
-:root[data-look="bibliotheque"] .tab {
-  border: var(--lx-toy-outline-width) solid var(--lx-toy-outline);
-  border-radius: var(--lx-toy-radius-small);
-  background: linear-gradient(
-    180deg,
-    var(--lx-toy-paper-top) 0 47%,
-    var(--lx-toy-paper-bottom) 53% 100%
-  );
-  box-shadow:
-    inset 0 -3px 0 var(--lx-toy-paper-edge),
-    inset 0 2px 0 var(--lx-toy-sheen),
-    0 3px 0 var(--lx-toy-outline);
-  color: var(--lx-color-paper-ink);
-}
-
-:root[data-look="bibliotheque"] .tab[aria-selected="true"] {
-  background: linear-gradient(
-    180deg,
-    var(--lx-toy-gold-top) 0 47%,
-    var(--lx-toy-gold-bottom) 53% 100%
-  );
-  box-shadow:
-    inset 0 -3px 0 var(--lx-toy-gold-edge),
-    inset 0 2px 0 var(--lx-toy-sheen),
-    0 3px 0 var(--lx-toy-outline);
-  color: var(--lx-toy-outline);
-}
-
-:root[data-look="bibliotheque"] :is(.panel, .history) {
-  padding: var(--lx-s10);
-}
-
-:root[data-look="bibliotheque"] .empty {
-  margin: var(--lx-s6) auto;
-  padding: var(--lx-s10) var(--lx-s12);
-}
-
-/* The steps' numbers are gilt toys; the code sits in a well of the paper. */
-:root[data-look="bibliotheque"] .guideNumber {
-  box-sizing: border-box;
-  border: var(--lx-toy-outline-width) solid var(--lx-toy-outline);
-  background: linear-gradient(180deg, var(--lx-toy-gold-top), var(--lx-toy-gold-bottom));
-  box-shadow: 0 2px 0 var(--lx-toy-outline);
-  color: var(--lx-toy-outline);
-}
-
-:root[data-look="bibliotheque"] .guideText {
-  color: var(--lx-color-paper-ink-muted);
-}
-
-:root[data-look="bibliotheque"] .code {
-  padding: 2px var(--lx-s4);
-  border-radius: var(--lx-toy-radius-small);
-  background: color-mix(in srgb, var(--lx-toy-paper-edge) 45%, transparent);
-  box-shadow: inset 0 1px 2px color-mix(in srgb, var(--lx-toy-outline) 35%, transparent);
-  color: var(--lx-color-paper-ink);
-}
-
-:root[data-look="bibliotheque"] .warning,
-:root[data-look="bibliotheque"] .rules {
-  color: var(--lx-lettering-fill);
-  text-shadow: 0 1px 0 var(--lx-toy-outline);
-}
-
-:root[data-look="bibliotheque"] .getting {
-  color: var(--lx-color-success);
-}
-
-/* A card chosen is ringed with gold, as the toys are. */
-:root[data-look="bibliotheque"] .pickButton[aria-pressed="true"] {
-  outline: 4px solid var(--lx-toy-gold-top);
-  box-shadow: 0 0 0 7px var(--lx-toy-outline);
-}
-
-:root[data-look="bibliotheque"] .toast {
-  border: var(--lx-toy-outline-width) solid var(--lx-toy-outline);
-  background:
-    var(--lx-matter-paper) 0 0 / var(--lx-matter-size),
-    var(--lx-color-paper);
-  color: var(--lx-color-paper-ink);
 }
