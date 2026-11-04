@@ -25,6 +25,22 @@
       "port": 8787
     },
     {
+      "name": "api-alt",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": [
+        "--filter",
+        "@leximon/api",
+        "exec",
+        "wrangler",
+        "dev",
+        "--var",
+        "TRUSTED_ORIGINS:http://localhost:3002",
+        "--var",
+        "PUBLIC_WEB_URL:http://localhost:3002"
+      ],
+      "port": 8787
+    },
+    {
       "name": "web",
       "runtimeExecutable": "pnpm",
       "runtimeArgs": ["--filter", "@leximon/web", "dev"],

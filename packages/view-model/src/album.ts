@@ -409,7 +409,8 @@ function ownedItem(
   memory: WordMemory | undefined,
   date: CardDate | undefined,
 ): OwnedItem {
-  const level = memory?.level ?? "sketch";
+  // A word owned but never answered has no memory yet: it waits on a blank page.
+  const level = memory?.level ?? "blank";
   const levelLabel = MASTERY_LEVEL_LABELS[level];
   const copies = quantity > 1 ? `, ${quantity} exemplaires` : "";
   const fresh = isFresh(date);

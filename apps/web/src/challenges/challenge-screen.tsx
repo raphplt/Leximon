@@ -1,8 +1,8 @@
 "use client";
 
-import type { CatalogCard, MasteryLevelCode, PracticeScope } from "@leximon/contract";
+import type { CatalogCard, ReviewRequest } from "@leximon/contract";
 import { type Catalog, cardOrPlaceholder, collectionName } from "@leximon/contract/client";
-import { createSeededRandom, TYPED_ANSWER_MAX_LENGTH } from "@leximon/core";
+import { TYPED_ANSWER_MAX_LENGTH } from "@leximon/core";
 import { effects } from "@leximon/tokens";
 import {
   AFTER_ANSWER_MS,
@@ -10,33 +10,38 @@ import {
   answerFeedback,
   answerTitle,
   bonusLines,
-  challengeOutlook,
+  CATCH_UP_HINT,
+  choiceIndexOfKey,
   clanAnswers,
   clanShareLine,
-  dailyView,
-  escapingWords,
+  climbedWords,
+  comingBackLine,
+  comingBackTomorrow,
   freeAnswerOutcome,
   frequencyLine,
   hideWordIn,
-  levelShares,
+  KEYBOARD_HINT,
   levelUpLabel,
   levelUpLine,
-  memoryCounts,
-  memoryNote,
+  MEET_ACTION,
+  MEET_KICKER,
   NOT_THIS_TIME,
   noChallengeNotice,
-  outlookLine,
   PRACTICE_FREE_HINT,
   PRACTICE_REFUSED,
   questionKicker,
   RECAP_BONUS_MS,
-  reviewQuestion,
-  type SessionQuestion,
+  recapActions,
+  type SeriesQuestion,
+  scoredAnswers,
+  seriesOf,
   sessionBonusLine,
   sessionScore,
   sessionXpLine,
   spellingLine,
+  TYPED_KEYBOARD_HINT,
   typedQuestionHint,
+  withCatchUp,
 } from "@leximon/view-model";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { type FormEvent, useCallback, useEffect, useRef, useState } from "react";
@@ -50,46 +55,49 @@ import { useNow } from "@/lib/use-now";
 import { usePackShape } from "@/lib/use-pack-shape";
 import { Desk } from "@/library/play-pieces";
 import { myClan } from "@/player/clan";
-import { dailyChallenge, ownedCards, refreshIfRead, wordMemory } from "@/player/collection";
+import { dailyChallenge, refreshIfRead, reviewSummary, wordMemory } from "@/player/collection";
 import { useShared } from "@/player/resource";
 import { publishProgress } from "@/progress/use-progress";
-import { RiddleEntry } from "@/riddle/riddle-entry";
 import { useShell } from "@/shell/shell-context";
 import { useLibraryLook } from "@/theme/use-library-look";
 import { Button, ButtonLink, RoundButton } from "@/ui/button";
-import { Icon, type IconName } from "@/ui/icon";
-import { Bone } from "@/ui/skeleton";
+import { Icon } from "@/ui/icon";
 import { ParticleStage, useOptionalStage } from "@/ui/stage";
 import { ToyBody } from "@/ui/toy";
 import ui from "@/ui/ui.module.css";
 import styles from "./challenge-screen.module.css";
 import { takeAlbumPractice } from "./pending-practice";
-import { PracticeSection } from "./practice-section";
+import { ReviewDesk } from "./review-desk";
 
 /** The word is said once the question has slid in, not over the last answer's sound. */
 const SPEAK_AFTER_MS = 250;
 
-/** `chosen`: the card picked, or the word typed. */
+/** `chosen`: the card picked, or the word typed. `meeting`: a new word's card, before its question. */
 type Step =
+  | { readonly name: "meeting" }
   | { readonly name: "asking" }
   | { readonly name: "sending"; readonly chosen: string }
   | { readonly name: "answered"; readonly chosen: string; readonly slip: boolean }
   | { readonly name: "recap" };
 
 interface Session {
-  readonly questions: readonly SessionQuestion[];
+  readonly questions: readonly SeriesQuestion[];
   readonly answers: readonly AnsweredQuestion[];
   readonly index: number;
   readonly step: Step;
-  /** A series on a scope the player picked, not the daily challenge. */
-  readonly practice?: boolean;
+  /** What started it, to start another of the same kind from the recap. */
+  readonly request: ReviewRequest;
+}
+
+/** A new word shows its card first: the player meets it before being asked. */
+function stepFor(question: SeriesQuestion | undefined): Step {
+  return question?.fresh === true ? { name: "meeting" } : { name: "asking" };
 }
 
 /**
- * Défis: the daily goal, the player's memory, the words slipping away, and the sessions of
- * questions: multiple choice to keep words in memory, the word to type to raise its level.
+ * Défis: the review of the player's words, the shelf of scopes to practise on, the daily
+ * challenge, the riddle and the memory by level; then the series of questions themselves.
  */
-/** The challenges: today's, the memory by level, the words slipping away, and the questions. */
 export function ChallengeScreen() {
   const library = useLibraryLook();
   return library ? (
@@ -126,100 +134,69 @@ function ChallengeFlow() {
   }, []);
   useEffect(loadIt, [loadIt]);
 
-  // A word slipping away, picked in the list: a session of that one word.
-  useEffect(() => {
-    if (word === null || catalog === null || memory === null) return;
-    router.replace(pathname, { scroll: false });
-    const seed = Array.from(crypto.getRandomValues(new Uint8Array(16)), (byte) =>
-      byte.toString(16).padStart(2, "0"),
-    ).join("");
-    const question = reviewQuestion(
-      createSeededRandom(seed),
-      word,
-      catalog.collections,
-      memory.get(word),
-      Date.now(),
-    );
-    if (question !== null) {
+  const start = useCallback(
+    async (request: ReviewRequest) => {
+      setStarting(true);
       setNotice(null);
-      setSession({ questions: [question], answers: [], index: 0, step: { name: "asking" } });
-    }
-  }, [word, catalog, memory, router, pathname]);
-
-  const practise = useCallback(async (scope: PracticeScope) => {
-    setStarting(true);
-    setNotice(null);
-    setError(null);
-    try {
-      const series = await api.startPractice(scope);
-      if (series.kind === "refused" || series.questions.length === 0) {
-        setNotice(PRACTICE_REFUSED);
-      } else {
-        setSession({
-          questions: series.questions,
-          answers: [],
-          index: 0,
-          step: { name: "asking" },
-          practice: true,
-        });
+      setError(null);
+      try {
+        const series = await api.startReview(request);
+        if (series.kind === "refused") {
+          setNotice(PRACTICE_REFUSED);
+        } else if (series.questions.length === 0) {
+          setNotice(noChallengeNotice(null, Date.now(), noun));
+        } else {
+          const questions = seriesOf(series.questions);
+          setSession({ questions, answers: [], index: 0, step: stepFor(questions[0]), request });
+          window.scrollTo(0, 0);
+        }
+      } catch {
+        setError("Le serveur ne répond pas. Réessaie.");
+      } finally {
+        setStarting(false);
       }
-    } catch {
-      setError("Le serveur ne répond pas. Réessaie.");
-    } finally {
-      setStarting(false);
-    }
-  }, []);
+    },
+    [noun],
+  );
 
-  // A filter of the album, reviewed from there.
+  // A word picked on Jouer opens the series; a filter of the album makes its scope.
   useEffect(() => {
-    if (!fromAlbum || catalog === null) return;
-    router.replace(pathname, { scroll: false });
-    const cardIds = takeAlbumPractice();
-    if (cardIds !== null) void practise({ kind: "cards", cardIds: [...cardIds] });
-  }, [fromAlbum, catalog, router, pathname, practise]);
-
-  const start = async () => {
-    setStarting(true);
-    setNotice(null);
-    setError(null);
-    try {
-      const next = await api.fetchChallenges();
-      if (next.questions.length === 0) {
-        setNotice(noChallengeNotice(next.nextDueAt, Date.now(), noun));
-      } else {
-        setSession({ questions: next.questions, answers: [], index: 0, step: { name: "asking" } });
-      }
-    } catch {
-      setError("Le serveur ne répond pas. Réessaie.");
-    } finally {
-      setStarting(false);
+    if (catalog === null) return;
+    if (word !== null) {
+      router.replace(pathname, { scroll: false });
+      void start({ first: word });
+    } else if (fromAlbum) {
+      router.replace(pathname, { scroll: false });
+      const cardIds = takeAlbumPractice();
+      if (cardIds !== null) void start({ scope: { kind: "cards", cardIds: [...cardIds] } });
     }
-  };
+  }, [word, fromAlbum, catalog, router, pathname, start]);
 
   /** A word that counts goes through the review; free practice only earns its XP. */
-  const sendAnswer = async (question: SessionQuestion, chosen: string, key: string) => {
+  const sendAnswer = async (question: SeriesQuestion, chosen: string, key: string) => {
     if (question.format === "typed") {
       return api.answerChallenge(
         { cardId: question.cardId, format: question.format, typed: chosen },
         key,
       );
     }
-    if (question.counted !== false) {
+    if (question.counted) {
       return api.answerChallenge(
         { cardId: question.cardId, format: question.format, chosenCardId: chosen },
         key,
       );
     }
-    const free = await api.answerPractice({ cardId: question.cardId, chosenCardId: chosen }, key);
+    const free = await api.answerPractice(
+      { cardId: question.cardId, chosenCardId: chosen, format: question.format },
+      key,
+    );
     if (free.kind === "not_owned") return { kind: "not_due" as const };
-    return {
-      ...free,
-      ...freeAnswerOutcome(memory?.get(question.cardId)?.level ?? "sketch"),
-    };
+    const outcome = freeAnswerOutcome(memory?.get(question.cardId)?.level ?? "blank");
+    return { ...free, ...outcome, bonus: free.bonus ?? outcome.bonus };
   };
 
   const choose = async (chosen: string) => {
-    if (session === null) return;
+    if (session === null || session.step.name !== "asking") return;
     const question = session.questions[session.index];
     if (question === undefined) return;
     const key = pendingKey ?? crypto.randomUUID();
@@ -243,6 +220,10 @@ function ChallengeFlow() {
       if (followUp !== null) window.setTimeout(() => play(followUp), AFTER_ANSWER_MS);
       setSession({
         ...session,
+        // A missed word comes back a few questions later, asked the other way round.
+        questions: result.correct
+          ? session.questions
+          : withCatchUp(session.questions, session.index, Date.now()),
         answers: [
           ...session.answers,
           {
@@ -252,7 +233,7 @@ function ChallengeFlow() {
             level: result.level,
             bonus: result.bonus,
             progress: result.progress,
-            free: question.counted === false,
+            free: !question.counted,
           },
         ],
         step: { name: "answered", chosen, slip: result.slip },
@@ -264,9 +245,10 @@ function ChallengeFlow() {
   };
 
   const advance = (current: Session) => {
+    const next = current.questions[current.index + 1];
     setSession(
-      current.index + 1 < current.questions.length
-        ? { ...current, index: current.index + 1, step: { name: "asking" } }
+      next !== undefined
+        ? { ...current, index: current.index + 1, step: stepFor(next) }
         : { ...current, step: { name: "recap" } },
     );
   };
@@ -274,6 +256,8 @@ function ChallengeFlow() {
   const quit = () => {
     setSession(null);
     setError(null);
+    reviewSummary.refresh();
+    window.scrollTo(0, 0);
   };
 
   if (session !== null && catalog !== null) {
@@ -283,7 +267,9 @@ function ChallengeFlow() {
           <Recap
             catalog={catalog}
             answers={session.answers}
-            practice={session.practice === true}
+            series={session.questions}
+            busy={starting}
+            onMore={() => void start(session.request)}
             onBack={quit}
           />
         ) : (
@@ -291,6 +277,7 @@ function ChallengeFlow() {
             catalog={catalog}
             session={session}
             error={error}
+            onMeet={() => setSession({ ...session, step: { name: "asking" } })}
             onChoose={(chosen) => void choose(chosen)}
             onNext={() => advance(session)}
             onQuit={quit}
@@ -302,196 +289,29 @@ function ChallengeFlow() {
 
   return (
     <main className={styles.page}>
-      <h1 className={`${ui.display} ${styles.title}`}>Défis</h1>
-      <div className={styles.columns}>
-        <DailyCard starting={starting} now={now} onStart={() => void start()} />
-        <MemoryPanel now={now} />
-      </div>
-      {notice !== null && (
-        <p className={styles.notice} role="status">
-          {notice}
-        </p>
+      {catalog !== null && (
+        <ReviewDesk
+          catalog={catalog}
+          now={now}
+          busy={starting}
+          notice={notice}
+          error={error}
+          onStart={(request) => void start(request)}
+        />
       )}
-      {error !== null && (
+      {catalog === null && error !== null && (
         <p className={styles.error} role="alert">
           {error}
         </p>
       )}
-      <RiddleEntry now={now} />
-      {catalog !== null && <Escaping catalog={catalog} now={now} />}
-      {catalog !== null && (
-        <PracticeSection
-          catalog={catalog}
-          now={now}
-          busy={starting}
-          onPick={(scope) => void practise(scope)}
-        />
-      )}
     </main>
-  );
-}
-
-function DailyCard({
-  starting,
-  now,
-  onStart,
-}: {
-  readonly starting: boolean;
-  readonly now: number;
-  readonly onStart: () => void;
-}) {
-  const tally = useShared(dailyChallenge);
-  const owned = useShared(ownedCards);
-  const memory = useShared(wordMemory);
-  const { noun } = usePackShape();
-  const view = tally === null ? null : dailyView(tally, noun);
-  const outlook =
-    owned === null || memory === null || now === 0
-      ? null
-      : outlookLine(challengeOutlook(memory, owned.keys(), now));
-  return (
-    <section className={`${ui.panel} ${styles.daily}`} aria-labelledby="daily-title">
-      <div className={styles.dailyHead}>
-        <div>
-          <p className={`${ui.kicker} ${styles.dailyKicker}`}>Défi du jour</p>
-          <h2 id="daily-title" className={`${ui.display} ${styles.dailyTitle}`}>
-            {view === null ? <Bone className={styles.titleBone} /> : view.title}
-          </h2>
-          <p className={styles.dailyText}>
-            {view === null ? (
-              <>
-                <Bone className={styles.lineBone} />
-                <Bone className={`${styles.lineBone} ${styles.shortLine}`} />
-              </>
-            ) : (
-              view.text
-            )}
-          </p>
-        </div>
-        <span className={styles.dailyIcon} aria-hidden="true">
-          <Icon name="sachet" size={30} />
-        </span>
-      </div>
-      <div className={styles.dailyBars} aria-hidden="true">
-        {(view?.bars ?? ["empty", "empty", "empty", "empty", "empty"]).map((bar, index) => (
-          // biome-ignore lint/suspicious/noArrayIndexKey: fixed positions of the goal
-          <span key={index} className={`${styles.bar} ${styles[bar]}`} />
-        ))}
-      </div>
-      {outlook !== null && <p className={styles.outlook}>{outlook}</p>}
-      {view?.done ? (
-        <Button variant="secondary" disabled={starting} onClick={onStart}>
-          Réviser encore
-        </Button>
-      ) : (
-        <Button disabled={starting || view === null} onClick={onStart}>
-          {view?.action ?? "Commencer le défi"}
-        </Button>
-      )}
-    </section>
-  );
-}
-
-const LEVELS: readonly { level: MasteryLevelCode; label: string; icon: IconName }[] = [
-  { level: "sketch", label: "Esquisse", icon: "plume" },
-  { level: "ink", label: "Encre", icon: "encre" },
-  { level: "gilded", label: "Dorure", icon: "star" },
-];
-
-function MemoryPanel({ now }: { readonly now: number }) {
-  const owned = useShared(ownedCards);
-  const memory = useShared(wordMemory);
-  const levels = new Map(
-    [...(memory ?? new Map()).entries()].map(([id, word]) => [id, word.level]),
-  );
-  const counts = memoryCounts(owned?.keys() ?? [], levels);
-  const shares = levelShares(counts);
-  return (
-    <section className={`${ui.panel} ${styles.memory}`} aria-labelledby="memory-title">
-      <p id="memory-title" className={ui.kicker}>
-        Tes mots par palier
-      </p>
-      <ul className={styles.levels}>
-        {LEVELS.map(({ level, label, icon }) => (
-          <li key={level} className={styles.level}>
-            <span className={`${styles.levelIcon} ${styles[level]}`} aria-hidden="true">
-              <Icon name={icon} size={20} />
-            </span>
-            <span className={`${ui.display} ${styles.levelCount}`}>
-              {owned === null ? "–" : counts[level]}
-            </span>
-            <span className={styles.levelLabel}>{label}</span>
-          </li>
-        ))}
-      </ul>
-      {owned !== null && owned.size > 0 && (
-        <div className={styles.shares} aria-hidden="true">
-          {LEVELS.map(({ level }) => (
-            <span
-              key={level}
-              className={`${styles.share} ${styles[level]}`}
-              style={{ flexGrow: shares[level] }}
-            />
-          ))}
-        </div>
-      )}
-      <p className={styles.memoryNote}>{memoryNote(now)}</p>
-    </section>
-  );
-}
-
-/** Words slipping away: due now, or within the day. */
-function Escaping({ catalog, now }: { readonly catalog: Catalog; readonly now: number }) {
-  const owned = useShared(ownedCards);
-  const memory = useShared(wordMemory);
-  const { openCard } = useShell();
-  if (owned === null || memory === null) return null;
-  const words = escapingWords(memory, new Set(owned.keys()), now);
-  if (words.length === 0) return null;
-  return (
-    <section aria-labelledby="escaping-title">
-      <h2 id="escaping-title" className={`${ui.display} ${styles.subtitle}`}>
-        Mots à réviser
-      </h2>
-      <ul className={styles.escaping}>
-        {words.map((entry) => {
-          const card = cardOrPlaceholder(catalog, entry.cardId, "common");
-          return (
-            <li key={entry.cardId} className={`${ui.panel} ${styles.slipping}`}>
-              <button
-                type="button"
-                className={styles.thumb}
-                onClick={() => openCard(card.id)}
-                aria-label={`Voir la carte ${card.word}`}
-              >
-                <Card
-                  card={card}
-                  collectionName={collectionName(catalog, card.collectionId)}
-                  width={60}
-                />
-              </button>
-              <div className={styles.slippingText}>
-                <p className={styles.slippingWord}>{card.word}</p>
-                <p className={styles.slippingWhen}>{entry.when}</p>
-                {entry.rise !== null && <p className={styles.slippingRise}>{entry.rise}</p>}
-              </div>
-              {entry.due && (
-                <ButtonLink variant="ghost" small href={`/defis?mot=${card.id}`}>
-                  Réviser
-                </ButtonLink>
-              )}
-            </li>
-          );
-        })}
-      </ul>
-    </section>
   );
 }
 
 type ChoiceState = "idle" | "pending" | "right" | "wrong" | "faded";
 
 function choiceState(choiceId: string, answerId: string, step: Step): ChoiceState {
-  if (step.name === "asking" || step.name === "recap") return "idle";
+  if (step.name === "asking" || step.name === "meeting" || step.name === "recap") return "idle";
   if (step.name === "sending") return choiceId === step.chosen ? "pending" : "idle";
   if (choiceId === answerId) return "right";
   return choiceId === step.chosen ? "wrong" : "faded";
@@ -501,6 +321,7 @@ function QuestionView({
   catalog,
   session,
   error,
+  onMeet,
   onChoose,
   onNext,
   onQuit,
@@ -508,6 +329,7 @@ function QuestionView({
   readonly catalog: Catalog;
   readonly session: Session;
   readonly error: string | null;
+  readonly onMeet: () => void;
   readonly onChoose: (cardId: string) => void;
   readonly onNext: () => void;
   readonly onQuit: () => void;
@@ -527,10 +349,39 @@ function QuestionView({
     stage.burst(box.left + box.width / 2, box.top + box.height / 2, effects.right);
   }, [right, stage]);
   const question = session.questions[session.index];
+  // Anki's keys: 1 to 4 (or a to d) answers, Enter goes on, Escape stops.
+  useEffect(() => {
+    const onKey = (event: KeyboardEvent) => {
+      if (event.ctrlKey || event.metaKey || event.altKey) return;
+      if (event.key === "Escape") {
+        event.preventDefault();
+        if (session.answers.length === 0 || window.confirm("Arrêter la révision ?")) onQuit();
+        return;
+      }
+      if (event.key === "Enter") {
+        if (step.name === "meeting") onMeet();
+        else if (step.name === "answered") onNext();
+        else return;
+        event.preventDefault();
+        return;
+      }
+      // Letters typed in the word field are the answer, not a choice.
+      if (event.target instanceof HTMLInputElement) return;
+      const at = choiceIndexOfKey(event.key);
+      if (at === null || step.name !== "asking" || question === undefined) return;
+      if (question.format === "typed") return;
+      const chosen = question.choices[at];
+      if (chosen !== undefined) {
+        event.preventDefault();
+        onChoose(chosen);
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [question, step, session.answers.length, onChoose, onMeet, onNext, onQuit]);
   if (question === undefined) return null;
   const card = cardOrPlaceholder(catalog, question.cardId, "common");
-  const asksDefinition = question.format === "definition";
-  const level = memory?.get(question.cardId)?.level ?? "sketch";
+  const level = memory?.get(question.cardId)?.level ?? "blank";
   const total = session.questions.length;
   const last = session.index + 1 === total;
   const slip = step.name === "answered" && step.slip;
@@ -557,7 +408,14 @@ function QuestionView({
                 : index === session.index
                   ? styles.current
                   : styles.empty;
-            return <span key={q.cardId} className={`${styles.dot} ${tone}`} />;
+            // A missed word asked again comes back as a smaller dot.
+            return (
+              <span
+                // biome-ignore lint/suspicious/noArrayIndexKey: one dot per question, in order
+                key={index}
+                className={`${styles.dot} ${tone} ${q.catchUp ? styles.catchUpDot : ""}`}
+              />
+            );
           })}
         </div>
         <span className={styles.position}>
@@ -570,6 +428,93 @@ function QuestionView({
         </span>
       </div>
 
+      {step.name === "meeting" ? (
+        <Meeting catalog={catalog} card={card} onMeet={onMeet} />
+      ) : (
+        <Asked
+          catalog={catalog}
+          session={session}
+          question={question}
+          card={card}
+          level={level}
+          result={result}
+          spelling={spelling}
+          slip={slip}
+          last={last}
+          error={error}
+          noun={noun}
+          onChoose={onChoose}
+          onNext={onNext}
+        />
+      )}
+    </section>
+  );
+}
+
+/** A new word: its card first, said aloud, then its question. */
+function Meeting({
+  catalog,
+  card,
+  onMeet,
+}: {
+  readonly catalog: Catalog;
+  readonly card: CatalogCard;
+  readonly onMeet: () => void;
+}) {
+  const word = useSpokenWord(card);
+  // biome-ignore lint/correctness/useExhaustiveDependencies: said once, as the card comes
+  useEffect(() => {
+    if (!speechOn()) return;
+    const timer = window.setTimeout(word.play, SPEAK_AFTER_MS);
+    return () => clearTimeout(timer);
+  }, []);
+  return (
+    <div className={`${ui.panel} ${styles.meeting}`}>
+      <p className={ui.kicker}>{MEET_KICKER}</p>
+      <div className={styles.meetingCard}>
+        <Card card={card} collectionName={collectionName(catalog, card.collectionId)} width={240} />
+      </div>
+      <div className={styles.speech}>
+        <SpeechButtons word={word} label={card.word} />
+      </div>
+      <Button onClick={onMeet}>{MEET_ACTION}</Button>
+    </div>
+  );
+}
+
+function Asked({
+  catalog,
+  session,
+  question,
+  card,
+  level,
+  result,
+  spelling,
+  slip,
+  last,
+  error,
+  noun,
+  onChoose,
+  onNext,
+}: {
+  readonly catalog: Catalog;
+  readonly session: Session;
+  readonly question: SeriesQuestion;
+  readonly card: CatalogCard;
+  readonly level: AnsweredQuestion["level"];
+  readonly result: AnsweredQuestion | null;
+  readonly spelling: string | null;
+  readonly slip: boolean;
+  readonly last: boolean;
+  readonly error: string | null;
+  readonly noun: ReturnType<typeof usePackShape>["noun"];
+  readonly onChoose: (cardId: string) => void;
+  readonly onNext: () => void;
+}) {
+  const step = session.step;
+  const asksDefinition = question.format === "definition";
+  return (
+    <>
       <div className={`${ui.panel} ${styles.prompt}`}>
         <p className={ui.kicker}>{questionKicker(question.format)}</p>
         {asksDefinition ? (
@@ -582,8 +527,10 @@ function QuestionView({
         {question.format === "typed" && result === null && (
           <p className={styles.promptHint}>{typedQuestionHint(level)}</p>
         )}
-        {question.counted === false && result === null && (
-          <p className={styles.promptHint}>{PRACTICE_FREE_HINT}</p>
+        {result === null && (question.catchUp || !question.counted) && (
+          <p className={styles.promptHint}>
+            {question.catchUp ? CATCH_UP_HINT : PRACTICE_FREE_HINT}
+          </p>
         )}
       </div>
 
@@ -603,7 +550,7 @@ function QuestionView({
               <li key={choiceId}>
                 <button
                   type="button"
-                  className={`${styles.choice} ${styles[state]} ${asksDefinition ? styles.choiceDefinition : `${ui.display} ${styles.choiceWord}`}`}
+                  className={`${styles.choice} ${styles[state] ?? ""} ${asksDefinition ? styles.choiceDefinition : `${ui.display} ${styles.choiceWord}`}`}
                   disabled={session.step.name !== "asking"}
                   data-right={state === "right" || undefined}
                   onClick={() => onChoose(choiceId)}
@@ -658,7 +605,10 @@ function QuestionView({
           </div>
         )}
       </div>
-    </section>
+      <p className={styles.keys}>
+        {question.format === "typed" ? TYPED_KEYBOARD_HINT : KEYBOARD_HINT}
+      </p>
+    </>
   );
 }
 
@@ -757,60 +707,63 @@ function useCountUp(target: number, ms: number): number {
 function Recap({
   catalog,
   answers,
-  practice,
+  series,
+  busy,
+  onMore,
   onBack,
 }: {
   readonly catalog: Catalog;
   readonly answers: readonly AnsweredQuestion[];
-  readonly practice: boolean;
+  readonly series: readonly SeriesQuestion[];
+  readonly busy: boolean;
+  readonly onMore: () => void;
   readonly onBack: () => void;
 }) {
   const { noun } = usePackShape();
+  const { openCard } = useShell();
   const tally = useShared(dailyChallenge);
   const clan = useShared(myClan);
+  const summary = useShared(reviewSummary);
   const xp = sessionXpLine(answers);
   const clanShare = clan?.clanId == null ? null : clanShareLine(clanAnswers(answers));
-  // The Jouer screen's clan row counts these answers too.
-  useEffect(() => refreshIfRead(myClan), []);
+  // The Jouer screen's clan row counts these answers too; the review counts what is left.
+  useEffect(() => {
+    refreshIfRead(myClan);
+    reviewSummary.refresh();
+  }, []);
   const bonus = sessionBonusLine(answers, noun);
-  const right = useCountUp(answers.filter((answer) => answer.correct).length, 500);
+  const scored = scoredAnswers(series, answers);
+  const right = useCountUp(scored.filter((answer) => answer.correct).length, 500);
   useEffect(() => {
     play("recap");
     if (bonus === null) return;
     const timer = window.setTimeout(() => play("chimePrecious"), RECAP_BONUS_MS);
     return () => window.clearTimeout(timer);
   }, [bonus]);
-  const ups = answers
-    .filter((answer) => answer.levelUp)
-    .map((answer) =>
-      levelUpLine(cardOrPlaceholder(catalog, answer.cardId, "common").word, answer.level),
-    );
+  const climbed = climbedWords(answers);
+  const back = comingBackTomorrow(answers);
+  const backLine = comingBackLine(back.length);
+  const actions = recapActions(summary, summary?.settings.length ?? answers.length, noun);
+  const card = (cardId: string) => cardOrPlaceholder(catalog, cardId, "common");
   return (
     <section className={`${ui.panel} ${styles.recap}`} aria-labelledby="recap-title">
       <p id="recap-title" className={ui.kicker}>
-        {practice ? "Entraînement terminé" : "Défi terminé"}
+        Révision terminée
       </p>
       {/* Screen readers get the final score, not the count on its way. */}
       <p className={`${ui.display} ${styles.score}`}>
         <span aria-hidden="true">
-          {right}/{answers.length}
+          {right}/{scored.length}
         </span>
-        <span className={styles.spoken}>{sessionScore(answers)}</span>
+        <span className={styles.spoken}>{sessionScore(scored)}</span>
       </p>
       {xp !== null && <p className={styles.xp}>{xp}</p>}
-      {clanShare !== null && (
-        <p className={styles.clanShare}>
-          <Icon name="clan" size={18} />
-          {clanShare}
-        </p>
-      )}
       {bonus !== null ? (
         <p className={styles.won} style={{ animationDelay: `${RECAP_BONUS_MS}ms` }}>
           <Icon name="sachet" size={28} />
           {bonus}
         </p>
       ) : (
-        !practice &&
         tally !== null &&
         !tally.awarded && (
           <p className={styles.lost}>
@@ -818,16 +771,77 @@ function Recap({
           </p>
         )
       )}
-      {ups.map((line) => (
-        <p key={line} className={styles.up}>
-          {line}
+      {climbed.length > 0 && (
+        <ul className={styles.recapCards} aria-label="Les mots qui montent">
+          {climbed.map(({ cardId, level }) => (
+            <li key={cardId} className={styles.recapCard}>
+              <button
+                type="button"
+                className={styles.thumb}
+                onClick={() => openCard(cardId)}
+                aria-label={`Voir la carte ${card(cardId).word}`}
+              >
+                <Card
+                  card={card(cardId)}
+                  collectionName={collectionName(catalog, card(cardId).collectionId)}
+                  width={92}
+                />
+              </button>
+              <span className={styles.up}>{levelUpLine(card(cardId).word, level)}</span>
+            </li>
+          ))}
+        </ul>
+      )}
+      {backLine !== null && (
+        <>
+          <p className={styles.comingBack}>{backLine}</p>
+          <ul className={styles.recapCards} aria-label="Les mots à revoir demain">
+            {back.map((cardId) => (
+              <li key={cardId} className={styles.recapCard}>
+                <button
+                  type="button"
+                  className={styles.thumb}
+                  onClick={() => openCard(cardId)}
+                  aria-label={`Voir la carte ${card(cardId).word}`}
+                >
+                  <Card
+                    card={card(cardId)}
+                    collectionName={collectionName(catalog, card(cardId).collectionId)}
+                    width={72}
+                  />
+                </button>
+              </li>
+            ))}
+          </ul>
+        </>
+      )}
+      {clanShare !== null && (
+        <p className={styles.clanShare}>
+          <Icon name="clan" size={18} />
+          {clanShare}
         </p>
-      ))}
+      )}
       <div className={styles.recapActions}>
-        <Button onClick={onBack}>Retour aux défis</Button>
-        <ButtonLink variant="secondary" href="/jouer">
-          Ouvrir un {noun.one}
-        </ButtonLink>
+        {actions.moreFirst ? (
+          <>
+            <Button disabled={busy} onClick={onMore}>
+              {actions.more}
+            </Button>
+            <ButtonLink variant="secondary" href="/jouer">
+              {actions.open}
+            </ButtonLink>
+          </>
+        ) : (
+          <>
+            <ButtonLink href="/jouer">{actions.open}</ButtonLink>
+            <Button variant="secondary" disabled={busy} onClick={onMore}>
+              {actions.more}
+            </Button>
+          </>
+        )}
+        <Button variant="ghost" onClick={onBack}>
+          Retour aux défis
+        </Button>
       </div>
     </section>
   );

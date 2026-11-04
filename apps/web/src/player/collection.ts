@@ -1,6 +1,10 @@
 "use client";
 
-import type { DailyChallengeResponse, OwnedCardsResponse } from "@leximon/contract";
+import type {
+  DailyChallengeResponse,
+  OwnedCardsResponse,
+  ReviewSummaryResponse,
+} from "@leximon/contract";
 import {
   type CardDate,
   copiesAfterTrade,
@@ -82,6 +86,9 @@ export const wordMemory = sharedResource<ReadonlyMap<string, WordMemory>>(async 
 
 /** Today's answers towards the daily goal. */
 export const dailyChallenge = sharedResource<DailyChallengeResponse>(api.fetchDaily);
+
+/** What waits in the review, the player's settings, and the scopes to practise on. */
+export const reviewSummary = sharedResource<ReviewSummaryResponse>(api.fetchReviewSummary);
 
 /**
  * Reads a resource again after an action changed it on the server (a booster, an answer, a

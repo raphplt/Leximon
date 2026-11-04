@@ -262,46 +262,68 @@ Compte A : `pnpm dev:player contact@leximon.fr --level 21` pour avoir une série
 ## 6. Défis
 
 ### DEF-01 · Écran Défis
-- **Attendu :** défi du jour (« 5 questions, 3 bonnes », cinq barres), « Ta mémoire » (Esquisse, Encre, Dorure, avec la phrase des seuils), « Ces mots t'échappent » avec quand ils reviennent.
+- **Faire :** ouvrir Défis avec un compte qui a des mots à revoir, puis avec un compte sans carte.
+- **Attendu :** en tête, « Ta révision » : trois puits (« à revoir », « nouveaux », « peuvent monter », ce dernier en or), une phrase qui dit ce qui attend (accords justes à 0 et 1), le bouton « Commencer » avec la longueur de la série et « 10 questions, environ N minutes » dessous. Puis « S'entraîner sur… » : « Prêts à monter », « Mes mots ratés », « Mes mots récents », les collections et les thèmes en couvertures de livre, chacune avec son nombre de mots, une pastille des mots à revoir et la barre de ses paliers. Puis le défi du jour et l'énigme côte à côte, enfin « Ta mémoire » : Page blanche, Esquisse, Encre, Dorure, une barre partagée et quand revient le prochain mot. Sans carte : « Ouvre des sachets pour trouver tes premiers mots. », le bouton grisé, sans durée. Au téléphone, tout passe en une colonne, sans défilement horizontal.
 - **Retour :**
 
-### DEF-02 · Session
-- **Faire :** « Commencer le défi », répondre juste et faux.
-- **Attendu :** croix pour arrêter, barres de position, « Que veut dire ce mot ? » ou « Quel mot se cache là-dessous ? », quatre choix. Sur « Que veut dire ce mot ? », le mot est dit dès que la question arrive ; sous lui, le bouton de lecture le redit et le haut-parleur coupe la prononciation (le même réglage que sous une carte révélée), jusqu'à ce qu'on la remette. Les autres questions ne disent rien : le mot est la réponse. Après une réponse juste, la fréquence ; après une fausse, la bonne réponse. Le verdict est un papier sans liseré de couleur : un médaillon vert coché (juste) ou rouge barré (raté) se pose en tampon sur son coin, et « Juste. » ou « Raté. » est écrit dans sa couleur.
+### DEF-02 · Série
+- **Faire :** « Commencer », répondre juste et faux.
+- **Attendu :** croix pour arrêter, un point par question, « Que veut dire ce mot ? » ou « Quel mot se cache là-dessous ? », quatre choix. Sur « Que veut dire ce mot ? », le mot est dit dès que la question arrive ; sous lui, le bouton de lecture le redit et le haut-parleur coupe la prononciation (le même réglage que sous une carte révélée), jusqu'à ce qu'on la remette. Les autres questions ne disent rien : le mot est la réponse. Après une réponse juste, la fréquence ; après une fausse, la bonne réponse. Le verdict est un papier sans liseré de couleur : un médaillon vert coché (juste) ou rouge barré (raté) se pose en tampon sur son coin, et « Juste. » ou « Raté. » est écrit dans sa couleur. Les mots à revoir passent d'abord ; un mot nouveau vient une question sur trois au plus.
 - **Retour :**
 
 ### DEF-03 · Bilan et sachet bonus du jour
-- **Faire :** finir avec au moins 3 bonnes sur 5, puis refaire une session le même jour.
-- **Attendu :** « 4/5 », « +60 XP », « Un sachet bonus pour le défi du jour ! » la première fois ; plus de bonus ensuite. Sous 3 bonnes : « Pas encore de bonus. Le défi du jour court jusqu'à minuit. ».
+- **Faire :** finir une série avec au moins 3 bonnes réponses, puis en refaire une le même jour.
+- **Attendu :** « Révision terminée », le score sur les questions de la série (« 7/10 », rattrapages non comptés), « +60 XP », « 1 sachet bonus gagné, rangé dans ta réserve. » la première fois ; plus de bonus ensuite. Puis les cartes des mots qui ont monté, « Ces N mots reviendront demain. » avec leurs miniatures (« Ce mot reviendra demain. » pour un seul), la part du clan, et « Encore 10 questions », « Ouvrir un sachet », « Retour aux défis ». « Encore » relance la même portée. « Commencer le défi », sur le défi du jour, lance une série de 5 questions composée de la même façon. Retour : la page repart du haut et les puits ont baissé.
 - **Retour :**
 
 ### DEF-04 · Arrêter en cours
-- **Faire :** quitter au milieu, revenir.
-- **Attendu :** « Continuer le défi ». Les réponses déjà données comptent.
+- **Faire :** quitter au milieu par la croix, puis recommencer et appuyer sur Échap.
+- **Attendu :** la croix ramène à Défis, les réponses déjà données comptent. Échap demande « Arrêter la révision ? » dès qu'une réponse est donnée (sans réponse, il quitte tout de suite).
 - **Retour :**
 
 ### DEF-05 · Rien à réviser
-- **Attendu :** « Tes mots tiennent bon. Le prochain revient dans 3 h. ». *L'Encre (7 jours) et la Dorure (30 jours) ne se testent pas en une séance : voir DEF-06.*
+- **Faire :** réviser jusqu'à n'avoir plus de mot à revoir ni de mot nouveau du jour.
+- **Attendu :** « Tes mots tiennent bon. Le prochain revient dans 3 h. Tu peux t'entraîner en attendant. », le bouton devient « S'entraîner » avec « 10 questions sur tes mots les plus fragiles, environ N minutes ». Cette série ne touche ni la mémoire ni les paliers, rapporte 5 XP par bonne réponse et compte pour le défi du jour. *L'Encre (7 jours) et la Dorure (30 jours) ne se testent pas en une séance : voir DEF-06.*
 - **Retour :**
 
 ### DEF-06 · Mot à écrire
-- **Faire :** sur la base locale, vieillir de 8 jours un mot déjà révisé (ici *équanimité*), puis « Commencer le défi » et écrire le mot : sans accent, puis avec une faute, puis faux, puis « Je sèche » (refaire la commande entre deux essais).
+- **Faire :** sur la base locale, vieillir de 8 jours un mot déjà révisé (ici *équanimité*), puis « Commencer » et écrire le mot : sans accent, puis avec une faute, puis faux, puis « Je sèche » (refaire la commande entre deux essais).
 
 ```bash
 docker compose exec postgres psql -U leximon -d leximon -c "update user_mastery set due = now(), last_reviewed_at = now() - interval '8 days' where card_id = 'equanimite' and user_id = (select id from users where email = 'contact@leximon.fr')"
 ```
 
-- **Attendu :** « Écris le mot », la définition (les mots de la même famille remplacés par « … », par exemple « Petit du …, jeune … » pour *renardeau* ou « … de nouveau » pour *rapaiser*, en entier après la réponse), « Trouvé de tête, il passe à l'Encre. Les accents ne comptent pas, une faute de frappe passe. », un champ « Le mot », « Valider le mot » et « Je sèche ». *equanimite* : « Juste. », « Ça s'écrit équanimité. », « équanimité passe à l'Encre ! ». *equanimte* : « Juste, à une lettre près. », la même montée. Faux ou « Je sèche » : « Raté. », « C'était : équanimité ». Les autres mots restent en QCM. « Ta mémoire » dit qu'un mot monte quand on l'écrit de tête.
+- **Attendu :** « Écris le mot », la définition (les mots de la même famille remplacés par « … », par exemple « Petit du …, jeune … » pour *renardeau* ou « … de nouveau » pour *rapaiser*, en entier après la réponse), « Écris le mot de mémoire pour passer à l'Encre. Les accents ne comptent pas et une faute de frappe est tolérée. », un champ « Le mot », « Valider le mot » et « Je sèche ». *equanimite* : « Juste. », « Ça s'écrit équanimité. », « équanimité passe à l'Encre ! ». *equanimte* : « Juste, à une lettre près. », la même montée. Faux ou « Je sèche » : « Raté. », « C'était : équanimité ». Les autres mots restent en QCM. Le puits « peut monter » de « Ta révision » compte ce mot.
 - **Retour :**
 
-### DEF-07 · Progression sur l'écran Défis
-- **Faire :** avec le mot vieilli de DEF-06 et quelques mots à revoir, ouvrir Défis.
-- **Attendu :** sous les barres du défi du jour, « N mots à revoir, dont 1 peut monter de palier. N nouveaux mots attendent leur première question. » (accords justes à 1). Sous les paliers, une barre partagée Esquisse, Encre, Dorure en proportion des mots possédés. Dans « Mots à réviser », le mot qui peut monter vient en tête avec « Peut passer à l'Encre ».
+### DEF-07 · Réglages de la révision
+- **Faire :** ouvrir la roue de « Ta révision », choisir 5 questions, puis 5 mots nouveaux par jour, recharger la page.
+- **Attendu :** « Questions par révision » (5, 10, 20) et « Mots nouveaux par jour » (5, 10, 20), le choix en or, et « Les autres mots attendent leur tour dans l'album, sans rien perdre. Tu peux t'entraîner sur tous tes mots. ». Le bouton passe à 5 avec sa durée, le puits « nouveaux » suit le rythme du jour, et le choix tient après rechargement.
 - **Retour :**
 
-### DEF-09 · Révisions choisies
-- **Faire :** avec au moins 4 mots, ouvrir Défis, section « S'entraîner », et lancer une série sur une collection. Recommencer jusqu'à n'avoir que des mots déjà revus dans cette collection. Sous le niveau 3, regarder la ligne sur les thèmes ; au niveau 3 ou plus, lancer un thème, puis dans l'album poser un filtre et cliquer sur « Réviser ces mots ».
-- **Attendu :** chaque portée dit son nombre de mots et combien sont à revoir ; une portée de moins de 4 mots n'apparaît pas. Une série compte 10 questions au plus, les mots à revoir d'abord, puis une phrase sous la question annonce les mots d'entraînement (« Ce mot n'est pas à revoir »). Un mot d'entraînement rapporte 5 XP, ne change ni son palier, ni sa date de retour, ni le défi du jour, ni l'objectif du clan. Le bilan dit « Entraînement terminé ». La ligne d'XP de la section suit la journée, et à 100 XP par jour une bonne réponse d'entraînement ne rapporte plus rien. Sans filtre, l'album ne propose pas le bouton.
+### DEF-09 · S'entraîner sur…
+- **Faire :** lancer une collection, « Mes mots ratés », « Prêts à monter ». Sous le niveau 3, regarder les thèmes ; au niveau 3 ou plus, lancer un thème, puis dans l'album poser un filtre et cliquer sur « Réviser ces mots ».
+- **Attendu :** une portée de moins de 4 mots n'apparaît pas (sauf « Prêts à monter », dès 1 mot) ; sous le niveau 3, les thèmes sont fermés, avec leur niveau. La série compte la longueur réglée au plus : d'abord les mots à revoir de la portée, puis de l'entraînement sur ses mots les plus fragiles, annoncé par « Ce mot n'est pas à revoir » sous la question. « Prêts à monter » demande d'écrire chaque mot. L'entraînement rapporte 5 XP, 100 XP par jour au plus, compte pour le défi du jour, ne change ni le palier, ni la date de retour, ni l'objectif du clan. Sans filtre, l'album ne propose pas le bouton.
+- **Retour :**
+
+### DEF-11 · Mot nouveau présenté
+- **Faire :** avec des mots jamais révisés, lancer une série.
+- **Attendu :** avant sa première question, un mot nouveau se montre en grande carte sous « Nouveau mot », avec sa prononciation et « Voir la question » (Entrée marche aussi). La question qui suit demande sa définition. Une bonne réponse le fait passer de la Page blanche à l'Esquisse (« … passe à l'Esquisse ! »).
+- **Retour :**
+
+### DEF-12 · Rattrapage
+- **Faire :** rater exprès la première question, puis trois autres.
+- **Attendu :** la série gagne une question (« 1/11 »), un point plus petit trois places plus loin. Le mot revient là, dans l'autre sens du QCM, avec une phrase qui l'annonce ; il ne compte pas dans le score. Trois rattrapages au plus par série, un par mot ; un mot raté en fin de série revient en dernier.
+- **Retour :**
+
+### DEF-13 · Clavier
+- **Faire :** une série au clavier seulement.
+- **Attendu :** 1 à 4 (ou a à d) répondent à un QCM, Entrée passe à la suite (et valide un mot écrit, puis passe à la suite), Échap arrête. La ligne d'aide sous la question le dit ; sur un mot à écrire, elle ne parle pas de 1 à 4. Pas de ligne d'aide sur un écran tactile.
+- **Retour :**
+
+### DEF-14 · Page blanche
+- **Faire :** ouvrir l'album et la fiche d'un mot jamais révisé.
+- **Attendu :** dans l'album, le mot est marqué Page blanche (une teinte pâle) ; la fiche dit « Tu n'as pas encore révisé ce mot. Une bonne réponse en révision le fera passer à l'Esquisse. » et aucun palier n'est coché. « Ta mémoire » compte ces mots dans « Page blanche ».
 - **Retour :**
 
 ### DEF-10 · Énigme du jour

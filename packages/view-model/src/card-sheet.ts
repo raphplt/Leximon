@@ -18,12 +18,13 @@ export interface MasteryView {
   readonly text: string;
 }
 
+// The blank page is where a word starts, not a step to climb: on it, no step is reached yet.
 const LEVELS: readonly MasteryLevelCode[] = ["sketch", "ink", "gilded"];
 
 /** The three steps of mastery and what it takes to climb the next one. */
 export function masteryView(memory: WordMemory | undefined, now: number): MasteryView {
   const rules = masteryRulesAt(MASTERY_SCHEDULE, now);
-  const level = memory?.level ?? "sketch";
+  const level = memory?.level ?? "blank";
   const reachedIndex = LEVELS.indexOf(level);
   const steps = LEVELS.map((step, index) => ({
     level: step,
@@ -31,7 +32,13 @@ export function masteryView(memory: WordMemory | undefined, now: number): Master
     reached: index <= reachedIndex,
   }));
   if (memory === undefined) {
-    return { steps, text: "Tu n'as pas encore révisé ce mot." };
+    return {
+      steps,
+      text: "Tu n'as pas encore révisé ce mot. Une bonne réponse en révision le fera passer à l'Esquisse.",
+    };
+  }
+  if (level === "blank") {
+    return { steps, text: "Réponds juste à la prochaine révision pour passer à l'Esquisse." };
   }
   if (level === "gilded") {
     return { steps, text: "Ce mot a atteint la Dorure, le dernier palier." };

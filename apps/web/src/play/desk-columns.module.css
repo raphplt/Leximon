@@ -57,11 +57,19 @@
     box-shadow 140ms ease-out;
 }
 
-a.leaf:hover {
+/* On Défis the daily leaf is a button: it launches its series. */
+button.leaf {
+  width: 100%;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+:is(a, button).leaf:hover {
   translate: 0 -3px;
 }
 
-a.leaf:focus-visible,
+:is(a, button).leaf:focus-visible,
 .leaf a:focus-visible {
   outline: 3px solid var(--lx-color-focus);
   outline-offset: 3px;

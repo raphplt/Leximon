@@ -113,6 +113,22 @@ describe("album", () => {
     expect(more).toMatchObject({ left: 2, label: "mots à trouver" });
   });
 
+  it("shows each card's level, a word never answered on a blank page", () => {
+    const view = albumView(input, { ...STATE, collectionId: ALL_COLLECTIONS });
+    const levels = view.items.flatMap((item) =>
+      item.kind === "owned" ? [`${item.card.id} · ${item.level} · ${item.levelLabel}`] : [],
+    );
+    expect(levels).toEqual([
+      "bélître · sketch · Esquisse",
+      "fouacier · blank · Page blanche",
+      "grigou · gilded · Dorure",
+    ]);
+    const fouacier = view.items.find(
+      (item) => item.kind === "owned" && item.card.id === "fouacier",
+    );
+    expect(fouacier?.kind === "owned" && fouacier.aria).toContain("Page blanche");
+  });
+
   it("counts by rarity, from Courant to Légendaire, only the rarities present", () => {
     expect(albumView(input, STATE).rarities.map((chip) => chip.count)).toEqual([
       "1/2",

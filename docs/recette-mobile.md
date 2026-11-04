@@ -172,26 +172,31 @@ A sur le web sert de deuxième joueur : amis, échanges, clan, sanctions. `pnpm 
 
 ---
 
-## 6. Défis (DEF-01 à DEF-08)
+## 6. Défis (DEF-01 à DEF-14)
+
+### MDE-04 · Écran Défis
+- **Faire :** suivre DEF-01, DEF-05 et DEF-07 de [recette-web.md](recette-web.md) sur le téléphone.
+- **Attendu :** comme sur le web, en une colonne : « Ta révision » et son bouton en tête, les couvertures « S'entraîner sur… » faciles à toucher, le défi du jour, l'énigme, « Ta mémoire ». Les réglages s'ouvrent sous la roue et tiennent d'un lancement à l'autre (ils sont sur le compte : un réglage fait sur le web se retrouve ici).
+- **Retour :**
+
+### MDE-01 · Série
+- **Faire :** lancer une révision, répondre juste et faux, taper un mot quand il le demande, arrêter en cours.
+- **Attendu :** comme sur le web, prononciation, médaillon du verdict, mot nouveau présenté en grande carte, rattrapage, sons, vibrations et réactions compris (DEF-02, DEF-03, DEF-06, DEF-08, DEF-11, DEF-12) ; le clavier ne cache ni la question ni le champ. Bilan enrichi et sachet bonus du jour. Pas d'aide clavier.
+- **Retour :**
 
 ### MDE-02 · Révisions choisies
 - **Faire :** suivre DEF-09 de [recette-web.md](recette-web.md) sur le téléphone, bouton de l'album compris.
 - **Attendu :** comme sur le web ; le bouton de l'album ouvre la série dans l'onglet Défis.
 - **Retour :**
 
+### MDE-05 · Un mot demandé d'ailleurs
+- **Faire :** depuis le courrier, ouvrir un mot à réviser.
+- **Attendu :** une révision démarre, ce mot en premier.
+- **Retour :**
+
 ### MDE-03 · Énigme du jour
 - **Faire :** suivre DEF-10 de [recette-web.md](recette-web.md) sur le téléphone, depuis la carte « Énigme du jour » de l'onglet Défis.
 - **Attendu :** comme sur le web, sons et vibrations compris ; le clavier ne cache pas le champ, le partage ouvre la feuille du système, et la carte de l'onglet Défis montre le résultat au retour.
-- **Retour :**
-
-### MDE-01 · Session
-- **Faire :** lancer une session, répondre juste et faux, taper un mot quand il le demande, arrêter en cours.
-- **Attendu :** comme sur le web, prononciation, médaillon du verdict, progression, sons, vibrations et réactions compris (DEF-02, DEF-07, DEF-08) ; le clavier ne cache ni la question ni le champ. Bilan et sachet bonus du jour.
-- **Retour :**
-
-### MDE-02 · Réviser un mot
-- **Faire :** fiche d'une carte → Réviser.
-- **Attendu :** une session sur ce mot démarre aussitôt.
 - **Retour :**
 
 ---

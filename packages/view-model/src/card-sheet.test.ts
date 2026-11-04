@@ -12,7 +12,11 @@ const NOW = Date.parse("2026-10-24T12:00:00Z");
 const DAY = 86_400_000;
 
 describe("mastery of a card", () => {
-  const word = (level: "sketch" | "ink" | "gilded", due: number, lastReviewedAt: number) => ({
+  const word = (
+    level: "blank" | "sketch" | "ink" | "gilded",
+    due: number,
+    lastReviewedAt: number,
+  ) => ({
     level,
     due,
     stability: 1,
@@ -20,7 +24,16 @@ describe("mastery of a card", () => {
   });
 
   it("says what it takes to climb the next level", () => {
-    expect(masteryView(undefined, NOW).text).toBe("Tu n'as pas encore révisé ce mot.");
+    const unanswered = masteryView(undefined, NOW);
+    expect(unanswered.text).toBe(
+      "Tu n'as pas encore révisé ce mot. Une bonne réponse en révision le fera passer à l'Esquisse.",
+    );
+    expect(unanswered.steps.map((step) => step.label)).toEqual(["Esquisse", "Encre", "Dorure"]);
+    expect(unanswered.steps.some((step) => step.reached)).toBe(false);
+    // Missed so far: any right answer draws the sketch, with no wait and no typing.
+    const missed = masteryView(word("blank", NOW + 2 * DAY, NOW - DAY), NOW);
+    expect(missed.text).toBe("Réponds juste à la prochaine révision pour passer à l'Esquisse.");
+    expect(missed.steps.some((step) => step.reached)).toBe(false);
     const sketch = masteryView(word("sketch", NOW + 2 * DAY, NOW - DAY), NOW);
     expect(sketch.text).toBe(
       "Écris ce mot de mémoire 7 jours après une révision pour passer à l'Encre.",

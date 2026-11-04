@@ -101,21 +101,50 @@ function StockLeaf({ index }: { readonly index: number }) {
   );
 }
 
-function DailyLeaf({
+/**
+ * The daily challenge: a link to Défis from Jouer; on Défis, `onStart` launches its series, and
+ * the leaf is a button until the goal is met.
+ */
+export function DailyLeaf({
   daily,
   index,
+  onStart,
 }: {
   readonly daily: DailyChallengeResponse;
   readonly index: number;
+  readonly onStart?: (() => void) | undefined;
 }) {
   const view = dailyView(daily);
+  const content = <DailyContent view={view} />;
+  const label = `${DESK_TEXTS.daily}. ${view.title}. ${view.text}`;
+  const className = `${ui.leaf} ${styles.leaf} ${styles.rising}`;
+  if (onStart !== undefined) {
+    return view.done ? (
+      <section className={className} style={rise(index)} aria-label={label}>
+        {content}
+      </section>
+    ) : (
+      <button
+        type="button"
+        className={className}
+        style={rise(index)}
+        aria-label={label}
+        onClick={onStart}
+      >
+        {content}
+      </button>
+    );
+  }
   return (
-    <Link
-      href="/defis"
-      className={`${ui.leaf} ${styles.leaf} ${styles.rising}`}
-      style={rise(index)}
-      aria-label={`${DESK_TEXTS.daily}. ${view.title}. ${view.text}`}
-    >
+    <Link href="/defis" className={className} style={rise(index)} aria-label={label}>
+      {content}
+    </Link>
+  );
+}
+
+function DailyContent({ view }: { readonly view: ReturnType<typeof dailyView> }) {
+  return (
+    <>
       <span className={styles.leafHead}>
         <ToyBody matter="red" shape="tile" className={styles.badge}>
           <ToyIcon name="challenge" size={26} />
@@ -138,11 +167,11 @@ function DailyLeaf({
       </span>
       <span className={`${styles.leafText} ${styles.spare}`}>{view.text}</span>
       {!view.done && <span className={styles.go}>{view.action}</span>}
-    </Link>
+    </>
   );
 }
 
-function RiddleLeaf({
+export function RiddleLeaf({
   riddle,
   index,
 }: {

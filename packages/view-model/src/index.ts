@@ -24,6 +24,7 @@ export * from "./practice";
 export * from "./profile";
 export * from "./resource";
 export * from "./reveal";
+export * from "./review";
 export * from "./rewards";
 export * from "./riddle";
 export * from "./sanctions";

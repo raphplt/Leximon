@@ -428,6 +428,10 @@
   background: currentColor;
 }
 
+.blank {
+  color: var(--lx-mastery-blank);
+}
+
 .sketch {
   color: var(--lx-color-page-ink-muted);
 }
