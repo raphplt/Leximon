@@ -2,12 +2,11 @@
 
 import { libraryTheme, type ToyMatterName } from "@leximon/tokens";
 import { type CSSProperties, useEffect, useState } from "react";
-import { CardBack } from "@/booster/card-back";
-import { CountBadge, Desk, MainAction } from "@/library/play-pieces";
+import { CountBadge, MainAction } from "@/library/play-pieces";
 import desk from "@/play/desk-columns.module.css";
 import { Icon } from "@/ui/icon";
 import { ParticleStage } from "@/ui/stage";
-import { Kicker, Lettering, Toy, ToyBody, ToyIcon } from "@/ui/toy";
+import { Lettering, Toy, ToyBody, ToyIcon } from "@/ui/toy";
 import ui from "@/ui/ui.module.css";
 import styles from "./defis-plate.module.css";
 
@@ -69,59 +68,74 @@ const REVIEW: Readonly<Record<Moment, ReviewState>> = {
   },
 };
 
-type BookKind = "collection" | "theme" | "rising" | "missed" | "recent";
+/** Shares of the words of a scope by tier: blank page, sketch, ink, gilding. */
+type Tiers = readonly [number, number, number, number];
 
-interface Book {
+interface Scope {
   readonly name: string;
-  readonly kind: BookKind;
   readonly matter: ToyMatterName;
   readonly words: number;
   readonly due: number;
-  /** The share of its words past the Esquisse, shown as the gilt band at the foot of the spine. */
-  readonly gilt: number;
+  readonly tiers: Tiers;
+  /** What the cover shows: the collection's first letter, or an icon for the shortcuts. */
+  readonly mark: string;
   readonly lockedAt?: number;
 }
 
-const SHELVES: readonly (readonly Book[])[] = [
-  [
-    { name: "Prêts à monter", kind: "rising", matter: "gold", words: 2, due: 2, gilt: 0 },
-    { name: "Les Fondateurs", kind: "collection", matter: "blue", words: 56, due: 6, gilt: 0.3 },
-    {
-      name: "Caractères et travers",
-      kind: "collection",
-      matter: "red",
-      words: 36,
-      due: 4,
-      gilt: 0.1,
-    },
-    {
-      name: "Métiers et objets disparus",
-      kind: "collection",
-      matter: "green",
-      words: 43,
-      due: 2,
-      gilt: 0.05,
-    },
-    { name: "Mes mots ratés", kind: "missed", matter: "dark", words: 4, due: 0, gilt: 0 },
-    { name: "Mes mots récents", kind: "recent", matter: "paper", words: 30, due: 3, gilt: 0 },
-  ],
-  [
-    { name: "Nature", kind: "theme", matter: "green", words: 20, due: 3, gilt: 0.25 },
-    { name: "Arts", kind: "theme", matter: "red", words: 26, due: 1, gilt: 0.1 },
-    { name: "Religion", kind: "theme", matter: "blue", words: 15, due: 0, gilt: 0.4 },
-    { name: "Sentiments", kind: "theme", matter: "dark", words: 15, due: 2, gilt: 0 },
-    { name: "Vie quotidienne", kind: "theme", matter: "paper", words: 47, due: 4, gilt: 0.15 },
-    { name: "Métiers", kind: "theme", matter: "green", words: 51, due: 0, gilt: 0.2 },
-    { name: "Corps", kind: "theme", matter: "red", words: 6, due: 1, gilt: 0 },
-  ],
-  [
-    { name: "Cuisine", kind: "theme", matter: "gold", words: 7, due: 0, gilt: 0.3 },
-    { name: "Sciences", kind: "theme", matter: "blue", words: 13, due: 2, gilt: 0 },
-    { name: "Droit", kind: "theme", matter: "dark", words: 12, due: 0, gilt: 0.1 },
-    { name: "Guerre", kind: "theme", matter: "red", words: 13, due: 1, gilt: 0 },
-    { name: "Insultes", kind: "theme", matter: "green", words: 4, due: 0, gilt: 0 },
-    { name: "Loufoque", kind: "theme", matter: "paper", words: 12, due: 0, gilt: 0, lockedAt: 3 },
-  ],
+const SHORTCUTS: readonly Scope[] = [
+  { name: "Prêts à monter", matter: "gold", words: 2, due: 2, tiers: [0, 2, 0, 0], mark: "▲" },
+  { name: "Mes mots ratés", matter: "red", words: 4, due: 0, tiers: [0, 4, 0, 0], mark: "✕" },
+  {
+    name: "Mes mots récents",
+    matter: "paper",
+    words: 30,
+    due: 3,
+    tiers: [18, 12, 0, 0],
+    mark: "✦",
+  },
+];
+
+const COLLECTIONS: readonly Scope[] = [
+  { name: "Les Fondateurs", matter: "blue", words: 56, due: 6, tiers: [20, 26, 8, 2], mark: "F" },
+  {
+    name: "Caractères et travers",
+    matter: "red",
+    words: 36,
+    due: 4,
+    tiers: [14, 19, 3, 0],
+    mark: "C",
+  },
+  {
+    name: "Métiers et objets disparus",
+    matter: "green",
+    words: 43,
+    due: 2,
+    tiers: [25, 16, 2, 0],
+    mark: "M",
+  },
+];
+
+const THEMES: readonly Scope[] = [
+  { name: "Nature", matter: "green", words: 20, due: 3, tiers: [6, 10, 3, 1], mark: "N" },
+  { name: "Arts", matter: "red", words: 26, due: 1, tiers: [10, 14, 2, 0], mark: "A" },
+  { name: "Religion", matter: "blue", words: 15, due: 0, tiers: [3, 6, 5, 1], mark: "R" },
+  { name: "Sentiments", matter: "dark", words: 15, due: 2, tiers: [7, 8, 0, 0], mark: "S" },
+  { name: "Vie quotidienne", matter: "paper", words: 47, due: 4, tiers: [20, 20, 6, 1], mark: "V" },
+  { name: "Métiers", matter: "green", words: 51, due: 0, tiers: [25, 16, 9, 1], mark: "M" },
+  { name: "Corps", matter: "red", words: 6, due: 1, tiers: [2, 4, 0, 0], mark: "C" },
+  { name: "Cuisine", matter: "gold", words: 7, due: 0, tiers: [2, 3, 2, 0], mark: "C" },
+  { name: "Sciences", matter: "blue", words: 13, due: 2, tiers: [6, 7, 0, 0], mark: "S" },
+  { name: "Droit", matter: "dark", words: 12, due: 0, tiers: [4, 7, 1, 0], mark: "D" },
+  { name: "Guerre", matter: "red", words: 13, due: 1, tiers: [5, 8, 0, 0], mark: "G" },
+  {
+    name: "Loufoque",
+    matter: "paper",
+    words: 12,
+    due: 0,
+    tiers: [12, 0, 0, 0],
+    mark: "L",
+    lockedAt: 3,
+  },
 ];
 
 /** Each leaf rises in turn when the screen appears, as on Jouer. */
@@ -158,58 +172,53 @@ export function DefisPlate() {
           ))}
         </nav>
         <div className={styles.screen}>
-          <TodayColumn />
+          <Lettering className={styles.pageTitle}>Défis</Lettering>
           <Review state={REVIEW[moment]} />
-          <ShelfColumn />
+          <div className={styles.lower}>
+            <Practice />
+            <aside className={styles.side} aria-label="Aujourd'hui">
+              <DailyLeaf />
+              <RiddleLeaf />
+              <MemoryLeaf />
+            </aside>
+          </div>
         </div>
       </ParticleStage>
     </main>
   );
 }
 
-/** The hero: the words waiting, as a deck on the desk, and the gold button that starts. */
+/** The hero, across the screen: what waits, said in figures and in words, and the gold button. */
 function Review({ state }: { readonly state: ReviewState }) {
-  const calm = state.review === 0 && state.fresh === 0;
   return (
-    <section className={styles.stage} aria-labelledby="review-title">
-      <div className={styles.play}>
-        <Desk className={styles.desk} />
-        <Toy matter="paper" shape="round" className={styles.settings} aria-label="Régler la séance">
-          <ToyIcon name="settings" size={26} />
-        </Toy>
-        <header className={styles.reviewHead}>
-          <Kicker>Ta révision</Kicker>
-          <Lettering className={styles.reviewTitle}>
-            <span id="review-title">Réviser tes mots</span>
-          </Lettering>
-        </header>
-        <div className={styles.deck} data-calm={calm || undefined} aria-hidden="true">
-          {[-2, -1, 0, 1, 2].map((at) => (
-            <span key={at} className={styles.deckCard} style={{ "--at": at } as CSSProperties}>
-              <CardBack rarity="common" width={128} tone={at === 0 ? "burgundy" : "night"} />
-            </span>
-          ))}
-          {!calm && (
-            <CountBadge count={String(state.review + state.fresh)} className={styles.deckCount} />
-          )}
-        </div>
-        <div className={`${ui.leaf} ${styles.counters}`}>
-          <div className={styles.wells}>
-            <Well figure={state.review} label="à revoir" />
-            <Well figure={state.fresh} label="nouveaux" />
-            <Well figure={state.rising} label="peuvent monter" gilt />
-          </div>
-          <p className={styles.line}>
-            {state.lines.map((line) => (
-              <span key={line}>{line} </span>
-            ))}
-          </p>
-        </div>
+    <section
+      className={`${ui.leaf} ${styles.review} ${desk.rising}`}
+      style={rise(0)}
+      aria-labelledby="review-title"
+    >
+      <header className={styles.reviewHead}>
+        <span className={desk.leafKicker}>Ta révision</span>
+        <h2 id="review-title" className={styles.reviewTitle}>
+          Réviser tes mots
+        </h2>
+      </header>
+      <div className={styles.wells}>
+        <Well figure={state.review} label="à revoir" />
+        <Well figure={state.fresh} label="nouveaux" />
+        <Well figure={state.rising} label="peuvent monter" gilt />
       </div>
-      <div className={styles.cta}>
+      <p className={styles.line}>
+        {state.lines.map((line) => (
+          <span key={line}>{line} </span>
+        ))}
+      </p>
+      <div className={styles.go}>
         <MainAction label={state.action} count="10" />
-        <p className={styles.estimate}>{state.estimate}</p>
+        <span className={styles.estimate}>{state.estimate}</span>
       </div>
+      <Toy matter="paper" shape="round" className={styles.settings} aria-label="Régler la séance">
+        <ToyIcon name="settings" size={26} />
+      </Toy>
     </section>
   );
 }
@@ -235,186 +244,200 @@ function Well({
   );
 }
 
-/** Left of the desk: what the day holds apart from the review, and the player's memory. */
-function TodayColumn() {
+/** What to practise on: book covers seen from the front, each one a door. */
+function Practice() {
   return (
-    <aside className={`${desk.column} ${styles.today}`} aria-label="Aujourd'hui">
-      <header className={desk.head}>
-        <Kicker>Aujourd'hui</Kicker>
-        <Lettering className={desk.headTitle}>Mercredi 4 novembre</Lettering>
+    <section
+      className={`${ui.leaf} ${styles.practice} ${desk.rising}`}
+      style={rise(1)}
+      aria-labelledby="practice-title"
+    >
+      <header className={styles.practiceHead}>
+        <span className={desk.leafKicker}>Hors révision, sans limite</span>
+        <h2 id="practice-title" className={styles.sectionTitle}>
+          S'entraîner sur…
+        </h2>
       </header>
-      <a href="#defi" className={`${ui.leaf} ${desk.leaf} ${desk.rising}`} style={rise(0)}>
-        <span className={desk.leafHead}>
-          <ToyBody matter="red" shape="tile" className={desk.badge}>
-            <ToyIcon name="challenge" size={26} />
-          </ToyBody>
-          <span className={desk.leafTitles}>
-            <span className={desk.leafKicker}>Défi du jour</span>
-            <span className={desk.leafTitle}>3 bonnes réponses sur 5</span>
-          </span>
-        </span>
-        <span className={desk.pips} aria-hidden="true">
-          {["right", "wrong", "right", "todo", "todo"].map((bar, at) => (
-            // biome-ignore lint/suspicious/noArrayIndexKey: one pip per question, in order
-            <span key={at} className={desk.pip} data-bar={bar} />
-          ))}
-        </span>
-        <span className={desk.leafText}>
-          Encore 2 questions. Le sachet bonus est à la 3e bonne réponse.
-        </span>
-        <span className={desk.go}>Continuer le défi</span>
-      </a>
-      <a href="#enigme" className={`${ui.leaf} ${desk.leaf} ${desk.rising}`} style={rise(1)}>
-        <span className={desk.leafHead}>
-          <ToyBody matter="gold" shape="tile" className={desk.badge}>
-            <span className={desk.badgeGlyph}>
-              <Icon name="plume" size={22} />
-            </span>
-          </ToyBody>
-          <span className={desk.leafTitles}>
-            <span className={desk.leafKicker}>Énigme du jour · n° 5</span>
-            <span className={desk.leafTitle}>Nom de 8 lettres</span>
-          </span>
-        </span>
-        <span className={desk.type} style={{ "--letters": 8 } as CSSProperties} aria-hidden="true">
-          {["G", null, null, null, null, null, null, null].map((letter, at) => (
-            // biome-ignore lint/suspicious/noArrayIndexKey: one block per letter, in order
-            <span key={at} className={letter === null ? desk.blockHollow : desk.block}>
-              {letter}
-            </span>
-          ))}
-        </span>
-        <span className={desk.go}>Jouer</span>
-      </a>
-      <div className={`${ui.leaf} ${desk.leaf} ${desk.rising}`} style={rise(2)}>
-        <span className={desk.leafKicker}>Ta mémoire</span>
-        <div className={styles.tiers} aria-hidden="true">
-          <span className={styles.tierSketch} style={{ flexGrow: 84 }} />
-          <span className={styles.tierInk} style={{ flexGrow: 9 }} />
-          <span className={styles.tierGilt} style={{ flexGrow: 3 }} />
-        </div>
-        <div className={styles.tierFigures}>
-          <span>
-            <b>84</b> Esquisse
-          </span>
-          <span>
-            <b>9</b> Encre
-          </span>
-          <span>
-            <b>3</b> Dorure
-          </span>
-        </div>
-        <span className={desk.leafText}>
-          Le prochain mot revient dans 3 h. Tu as joué 12 jours, dont les 4 derniers d'affilée.
-        </span>
-      </div>
-    </aside>
-  );
-}
-
-/** Right of the desk: what to practise on, as books on a shelf. */
-function ShelfColumn() {
-  const [open, setOpen] = useState<Book | null>(SHELVES[0]?.[1] ?? null);
-  return (
-    <aside className={`${desk.column} ${styles.shelfColumn}`} aria-label="S'entraîner sur…">
-      <header className={desk.head}>
-        <Kicker>S'entraîner sur…</Kicker>
-        <Lettering className={desk.headTitle}>Tes livres</Lettering>
-      </header>
-      <div className={`${styles.bookcase} ${desk.rising}`} style={rise(1)}>
-        {SHELVES.map((books) => (
-          <div key={books[0]?.name} className={styles.shelf}>
-            {books.map((book) => (
-              <BookSpine
-                key={book.name}
-                book={book}
-                open={open?.name === book.name}
-                onPick={() => setOpen(open?.name === book.name ? null : book)}
-              />
-            ))}
-          </div>
+      <ul className={styles.shortcuts}>
+        {SHORTCUTS.map((scope) => (
+          <li key={scope.name}>
+            <Cover scope={scope} size="short" />
+          </li>
         ))}
-      </div>
-      {open !== null && <BookLeaf book={open} />}
-    </aside>
+      </ul>
+      <h3 className={styles.shelfTitle}>Les collections</h3>
+      <ul className={styles.collections}>
+        {COLLECTIONS.map((scope) => (
+          <li key={scope.name}>
+            <Cover scope={scope} size="large" />
+          </li>
+        ))}
+      </ul>
+      <h3 className={styles.shelfTitle}>Les thèmes</h3>
+      <ul className={styles.themes}>
+        {THEMES.map((scope) => (
+          <li key={scope.name}>
+            <Cover scope={scope} size="small" />
+          </li>
+        ))}
+      </ul>
+      <p className={styles.note}>
+        Une bonne réponse d'entraînement rapporte 5 XP, 100 XP par jour au plus. Elle ne change pas
+        la mémoire du mot.
+      </p>
+    </section>
   );
 }
 
-function BookSpine({
-  book,
-  open,
-  onPick,
+/** A book seen from the front: its leather, its title, how much of it is learnt, what is due. */
+function Cover({
+  scope,
+  size,
 }: {
-  readonly book: Book;
-  readonly open: boolean;
-  readonly onPick: () => void;
+  readonly scope: Scope;
+  readonly size: "large" | "small" | "short";
 }) {
-  const locked = book.lockedAt !== undefined;
+  const locked = scope.lockedAt !== undefined;
+  const matter = locked ? "locked" : scope.matter;
   return (
     <button
       type="button"
-      className={styles.book}
-      data-kind={book.kind}
-      data-open={open || undefined}
+      className={styles.cover}
+      data-size={size}
       data-locked={locked || undefined}
+      data-light={matter === "paper" || matter === "gold" || undefined}
       style={
         {
-          "--spine-top": `var(--lx-toy-${locked ? "locked" : book.matter}-top)`,
-          "--spine-bottom": `var(--lx-toy-${locked ? "locked" : book.matter}-bottom)`,
-          "--spine-edge": `var(--lx-toy-${locked ? "locked" : book.matter}-edge)`,
-          "--gilt": book.gilt,
+          "--cover-top": `var(--lx-toy-${matter}-top)`,
+          "--cover-bottom": `var(--lx-toy-${matter}-bottom)`,
+          "--cover-edge": `var(--lx-toy-${matter}-edge)`,
         } as CSSProperties
       }
-      aria-label={`${book.name}, ${book.words} mots, dont ${book.due} à revoir`}
-      onClick={onPick}
+      aria-label={
+        locked
+          ? `${scope.name}, s'ouvre au niveau ${scope.lockedAt}`
+          : `${scope.name}, ${scope.words} mots, dont ${scope.due} à revoir. Lancer 10 questions.`
+      }
     >
-      <span className={styles.spineName}>{book.name}</span>
-      <span className={styles.spineGilt} aria-hidden="true" />
-      {book.kind === "missed" && <span className={styles.ribbon} aria-hidden="true" />}
-      {book.kind === "recent" && <span className={styles.bookmark} aria-hidden="true" />}
+      <span className={styles.coverMark} aria-hidden="true">
+        {scope.mark}
+      </span>
+      <span className={styles.coverText}>
+        <Lettering className={styles.coverName}>{scope.name}</Lettering>
+        <span className={styles.coverWords}>
+          {locked ? `Niveau ${scope.lockedAt}` : `${scope.words} mots`}
+        </span>
+      </span>
+      {!locked && <TierBar tiers={scope.tiers} className={styles.coverTiers} />}
       {locked ? (
-        <span className={styles.spineLock}>Niv. {book.lockedAt}</span>
+        <span className={styles.coverLock} aria-hidden="true">
+          <ToyIcon name="lock" size={22} />
+        </span>
       ) : (
-        book.due > 0 && <CountBadge count={String(book.due)} className={styles.spineBadge} />
+        <>
+          {scope.due > 0 && <CountBadge count={String(scope.due)} className={styles.coverBadge} />}
+          <span className={styles.coverGo} aria-hidden="true">
+            10 questions ›
+          </span>
+        </>
       )}
     </button>
   );
 }
 
-/** The book taken from the shelf: what it holds, and the button that starts on it. */
-function BookLeaf({ book }: { readonly book: Book }) {
-  const locked = book.lockedAt !== undefined;
+function TierBar({
+  tiers,
+  className,
+}: {
+  readonly tiers: Tiers;
+  readonly className?: string | undefined;
+}) {
+  const [blank, sketch, ink, gilt] = tiers;
   return (
-    <div className={`${ui.leaf} ${desk.leaf} ${styles.bookLeaf}`}>
-      <span className={desk.leafKicker}>{kindLabel(book.kind)}</span>
-      <span className={desk.leafTitle}>{book.name}</span>
-      <span className={desk.leafText}>
-        {locked
-          ? `Les thèmes s'ouvrent au niveau ${book.lockedAt}.`
-          : `${book.words} mots, dont ${book.due} à revoir.`}
-      </span>
-      {!locked && (
-        <div className={styles.tiers} aria-hidden="true">
-          <span className={styles.tierSketch} style={{ flexGrow: 1 - book.gilt }} />
-          <span className={styles.tierInk} style={{ flexGrow: book.gilt }} />
-        </div>
-      )}
-      {!locked && <span className={desk.go}>Lancer 10 questions</span>}
-    </div>
+    <span className={`${styles.tiers} ${className ?? ""}`} aria-hidden="true">
+      <span className={styles.tierBlank} style={{ flexGrow: blank }} />
+      <span className={styles.tierSketch} style={{ flexGrow: sketch }} />
+      <span className={styles.tierInk} style={{ flexGrow: ink }} />
+      <span className={styles.tierGilt} style={{ flexGrow: gilt }} />
+    </span>
   );
 }
 
-function kindLabel(kind: BookKind): string {
-  switch (kind) {
-    case "collection":
-      return "Collection";
-    case "theme":
-      return "Thème";
-    case "rising":
-      return "Les mots qui peuvent monter";
-    case "missed":
-      return "Ratés ces 30 derniers jours";
-    case "recent":
-      return "Tes 30 derniers mots";
-  }
+function DailyLeaf() {
+  return (
+    <a href="#defi" className={`${ui.leaf} ${desk.leaf} ${desk.rising}`} style={rise(2)}>
+      <span className={desk.leafHead}>
+        <ToyBody matter="red" shape="tile" className={desk.badge}>
+          <ToyIcon name="challenge" size={26} />
+        </ToyBody>
+        <span className={desk.leafTitles}>
+          <span className={desk.leafKicker}>Défi du jour</span>
+          <span className={desk.leafTitle}>3 bonnes réponses sur 5</span>
+        </span>
+      </span>
+      <span className={desk.pips} aria-hidden="true">
+        {["right", "wrong", "right", "todo", "todo"].map((bar, at) => (
+          // biome-ignore lint/suspicious/noArrayIndexKey: one pip per question, in order
+          <span key={at} className={desk.pip} data-bar={bar} />
+        ))}
+      </span>
+      <span className={desk.leafText}>
+        Encore 2 questions. Le sachet bonus est à la 3e bonne réponse.
+      </span>
+      <span className={desk.go}>Continuer le défi</span>
+    </a>
+  );
+}
+
+function RiddleLeaf() {
+  return (
+    <a href="#enigme" className={`${ui.leaf} ${desk.leaf} ${desk.rising}`} style={rise(3)}>
+      <span className={desk.leafHead}>
+        <ToyBody matter="gold" shape="tile" className={desk.badge}>
+          <span className={desk.badgeGlyph}>
+            <Icon name="plume" size={22} />
+          </span>
+        </ToyBody>
+        <span className={desk.leafTitles}>
+          <span className={desk.leafKicker}>Énigme du jour · n° 5</span>
+          <span className={desk.leafTitle}>Nom de 8 lettres</span>
+        </span>
+      </span>
+      <span className={desk.type} style={{ "--letters": 8 } as CSSProperties} aria-hidden="true">
+        {["G", null, null, null, null, null, null, null].map((letter, at) => (
+          // biome-ignore lint/suspicious/noArrayIndexKey: one block per letter, in order
+          <span key={at} className={letter === null ? desk.blockHollow : desk.block}>
+            {letter}
+          </span>
+        ))}
+      </span>
+      <span className={desk.go}>Jouer</span>
+    </a>
+  );
+}
+
+function MemoryLeaf() {
+  return (
+    <div className={`${ui.leaf} ${desk.leaf} ${desk.rising}`} style={rise(4)}>
+      <span className={desk.leafKicker}>Ta mémoire</span>
+      <TierBar tiers={[31, 53, 9, 3]} />
+      <div className={styles.tierFigures}>
+        <span>
+          <b>31</b> Page blanche
+        </span>
+        <span>
+          <b>53</b> Esquisse
+        </span>
+        <span>
+          <b>9</b> Encre
+        </span>
+        <span>
+          <b>3</b> Dorure
+        </span>
+      </div>
+      <span className={desk.leafText}>
+        Le prochain mot revient dans 3 h. Tu as joué 12 jours, dont les 4 derniers d'affilée.
+      </span>
+    </div>
+  );
 }

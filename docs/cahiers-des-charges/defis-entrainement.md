@@ -11,6 +11,9 @@
 - **2026-11-04 · P1 est à revoir.** Le propriétaire juge que le refus de « faire du Duolingo » peut être contre-productif : T1 est rouverte, et « Ce qu'on évite » se relira avec elle.
 - **2026-11-04 · Les trois compteurs sont retenus**, avec leurs mots et leurs phrases (voir « La séance » plus bas).
 - **2026-11-04 · Une maquette avant de trancher le reste**, pour se représenter l'écran : `/planches/defis`.
+- **2026-11-04 · Pas de sous-main façon Jouer.** Une première planche posait la révision sur le sous-main vert, une pioche de cartes au centre et les portées en livres sur une étagère : refusée (« ressemble trop à Jouer », 80 % de l'écran ne sert à rien, les dos de livres se lisent mal en tournant la tête).
+- **2026-11-04 · Un tableau de bord.** Des feuilles sur la salle, comme l'album ou le clan. En haut, sur toute la largeur, la révision : les trois compteurs, la phrase et le bouton d'or. Dessous, « S'entraîner sur… » en couvertures de livres vues de face, titre à l'horizontale ; à côté, le défi du jour, l'énigme et Ta mémoire. Remplace « L'écran Défis » plus bas là où ils divergent.
+- **2026-11-04 · Un niveau 0, « Page blanche ».** Une carte obtenue n'a pas de palier ; elle passe en Esquisse à sa première bonne réponse (P33). Ta mémoire montre donc quatre parts : Page blanche, Esquisse, Encre, Dorure. À construire avec le lot 1 (règle, données existantes, album, fiche, profil).
 
 ## Ce qu'on a aujourd'hui
 
