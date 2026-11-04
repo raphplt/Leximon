@@ -39,6 +39,8 @@ const PRACTICE_DECIDED = Date.UTC(2026, 9, 29, 23);
 const RIDDLE_DECIDED = Date.UTC(2026, 9, 30, 23);
 /** Midnight in Paris on 2026-11-01, when the owner gave the riddle more letters. */
 const RIDDLE_MORE_LETTERS = Date.UTC(2026, 9, 31, 23);
+// Midnight in Paris, 4 November 2026: the review comes first, cards start on a blank page.
+const REVIEW_DECIDED = Date.UTC(2026, 10, 3, 23);
 
 export const REFILL_SCHEDULE: RefillSchedule = [
   { startsAt: SINCE_LAUNCH, capacity: 6, intervalMs: 30 * MINUTE },
@@ -78,6 +80,7 @@ export const MASTERY_SCHEDULE: MasterySchedule = [
     levelThresholdDays: { ink: 7, gilded: 30 },
     levelBy: "stability",
     slipToleranceFromLetters: 6,
+    startLevel: "sketch",
   },
   {
     startsAt: PROVEN_RECALL_DECIDED,
@@ -86,6 +89,16 @@ export const MASTERY_SCHEDULE: MasterySchedule = [
     levelThresholdDays: { ink: 7, gilded: 30 },
     levelBy: "provenRecall",
     slipToleranceFromLetters: 6,
+    startLevel: "sketch",
+  },
+  {
+    startsAt: REVIEW_DECIDED,
+    requestRetention: 0.9,
+    maximumIntervalDays: 365,
+    levelThresholdDays: { ink: 7, gilded: 30 },
+    levelBy: "provenRecall",
+    slipToleranceFromLetters: 6,
+    startLevel: "blank",
   },
 ];
 
@@ -314,7 +327,8 @@ export const UNLOCK_SCHEDULE: UnlockSchedule = [
   },
 ];
 
-// Practice series: a scope the player picks, free practice for the words not due.
+// Review series: words due and new words first, then free practice on the most fragile words.
+// The player picks the length and how many new words to start each day.
 export const PRACTICE_SCHEDULE: PracticeSchedule = [
   {
     startsAt: PRACTICE_DECIDED,
@@ -324,6 +338,33 @@ export const PRACTICE_SCHEDULE: PracticeSchedule = [
     recentWords: 30,
     xpPerAnswer: 5,
     dailyXpCap: 100,
+    lengths: [10],
+    newWordsPerDay: [Number.MAX_SAFE_INTEGER],
+    defaultNewWordsPerDay: Number.MAX_SAFE_INTEGER,
+    newWordEvery: Number.MAX_SAFE_INTEGER,
+    catchUps: 0,
+    catchUpGap: 3,
+    fragilePool: 1,
+    dailyChallengeLength: 5,
+    practiceCountsForDaily: false,
+  },
+  {
+    startsAt: REVIEW_DECIDED,
+    seriesSize: 10,
+    minWords: 4,
+    missedWindowMs: 30 * 24 * 60 * MINUTE,
+    recentWords: 30,
+    xpPerAnswer: 5,
+    dailyXpCap: 100,
+    lengths: [5, 10, 20],
+    newWordsPerDay: [5, 10, 20],
+    defaultNewWordsPerDay: 10,
+    newWordEvery: 3,
+    catchUps: 3,
+    catchUpGap: 3,
+    fragilePool: 3,
+    dailyChallengeLength: 5,
+    practiceCountsForDaily: true,
   },
 ];
 

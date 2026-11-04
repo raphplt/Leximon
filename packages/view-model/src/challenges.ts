@@ -46,8 +46,14 @@ export function nextDueLabel(nextDueAt: string | null, now: number): string | nu
   return days <= 1 ? "demain" : `dans ${days} jours`;
 }
 
+/** « à l'Esquisse », « à l'Encre », « à la Dorure » */
+export function toLevel(level: MasteryLevelCode): string {
+  const label = MASTERY_LEVEL_LABELS[level];
+  return /^[AEIOUÉ]/.test(label) ? `à l'${label}` : `à la ${label}`;
+}
+
 export function levelUpLine(word: string, level: MasteryLevelCode): string {
-  return `${word} passe à ${level === "ink" ? "l'" : "la "}${MASTERY_LEVEL_LABELS[level]} !`;
+  return `${word} passe ${toLevel(level)} !`;
 }
 
 /** "4 bonnes réponses sur 5", plus the level ups, if any. */
@@ -184,13 +190,13 @@ function capitalize(text: string): string {
   return text.charAt(0).toUpperCase() + text.slice(1);
 }
 
-/** Words at each level: every owned word starts as a sketch. */
+/** Words at each level: every owned word starts on a blank page. */
 export function memoryCounts(
   ownedIds: Iterable<string>,
   levels: ReadonlyMap<string, MasteryLevelCode>,
 ): Readonly<Record<MasteryLevelCode, number>> {
-  const counts = { sketch: 0, ink: 0, gilded: 0 };
-  for (const id of ownedIds) counts[levels.get(id) ?? "sketch"] += 1;
+  const counts = { blank: 0, sketch: 0, ink: 0, gilded: 0 };
+  for (const id of ownedIds) counts[levels.get(id) ?? "blank"] += 1;
   return counts;
 }
 
@@ -269,9 +275,10 @@ export function outlookLine({ due, rising, fresh }: ChallengeOutlook): string | 
 export function levelShares(
   counts: Readonly<Record<MasteryLevelCode, number>>,
 ): Readonly<Record<MasteryLevelCode, number>> {
-  const total = counts.sketch + counts.ink + counts.gilded;
-  if (total === 0) return { sketch: 0, ink: 0, gilded: 0 };
+  const total = counts.blank + counts.sketch + counts.ink + counts.gilded;
+  if (total === 0) return { blank: 0, sketch: 0, ink: 0, gilded: 0 };
   return {
+    blank: counts.blank / total,
     sketch: counts.sketch / total,
     ink: counts.ink / total,
     gilded: counts.gilded / total,

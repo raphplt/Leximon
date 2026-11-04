@@ -24,7 +24,14 @@ import {
   updatePreferencesRequestSchema,
   updateProfileRequestSchema,
 } from "@leximon/contract";
-import { GUEST_SCHEDULE, guestBoostersLeft, guestRulesAt, levelOf } from "@leximon/core";
+import {
+  GUEST_SCHEDULE,
+  guestBoostersLeft,
+  guestRulesAt,
+  levelOf,
+  PRACTICE_SCHEDULE,
+  practiceRulesAt,
+} from "@leximon/core";
 import { schema } from "@leximon/db";
 import { and, asc, eq, gt, isNull, or, sql } from "drizzle-orm";
 import { type Context, Hono } from "hono";
@@ -302,6 +309,14 @@ export function meRoutes() {
   routes.patch("/preferences", async (c) => {
     const body = updatePreferencesRequestSchema.safeParse(await c.req.json().catch(() => null));
     if (!body.success) {
+      return c.json({ error: "invalid_request" }, 400);
+    }
+    const review = practiceRulesAt(PRACTICE_SCHEDULE, Date.now());
+    const { reviewLength, newWordsPerDay } = body.data;
+    if (
+      (reviewLength !== undefined && !review.lengths.includes(reviewLength)) ||
+      (newWordsPerDay !== undefined && !review.newWordsPerDay.includes(newWordsPerDay))
+    ) {
       return c.json({ error: "invalid_request" }, 400);
     }
     return c.json<Preferences>(await updatePreferences(c.var.db, c.var.userId, body.data));

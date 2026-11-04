@@ -11,6 +11,9 @@ import {
   type PracticeSummaryResponse,
   practiceAnswerRequestSchema,
   practiceRequestSchema,
+  type ReviewResponse,
+  type ReviewSummaryResponse,
+  reviewRequestSchema,
 } from "@leximon/contract";
 import { Hono } from "hono";
 import { generateSeed } from "../boosters/seed";
@@ -22,6 +25,7 @@ import { refuseLockedWrites } from "../moderation/restrictions";
 import type { CatalogIndexLoader } from "./catalog-index";
 import { answerChallenge, dailyTally, nextChallenges } from "./challenges";
 import { answerPractice, practiceSummary, startPractice } from "./practice";
+import { reviewSummary, startReview } from "./review";
 
 /** Challenges: questions on owned words, answers that raise their mastery. */
 export function challengeRoutes(loadCatalogIndex: CatalogIndexLoader) {
@@ -104,6 +108,39 @@ export function challengeRoutes(loadCatalogIndex: CatalogIndexLoader) {
     }
   });
 
+  routes.get("/review", async (c) => {
+    const now = Date.now();
+    const catalog = await loadCatalogIndex(c.var.db, now);
+    const summary = await reviewSummary(c.var.db, catalog, { userId: c.var.userId, now });
+    c.header("Cache-Control", "no-store");
+    return c.json<ReviewSummaryResponse>(summary);
+  });
+
+  // A POST for the length of an album's list; it writes nothing.
+  routes.post("/review", async (c) => {
+    const body = reviewRequestSchema.safeParse(await c.req.json().catch(() => null));
+    if (!body.success) {
+      return c.json({ error: "invalid_request" }, 400);
+    }
+    const now = Date.now();
+    const catalog = await loadCatalogIndex(c.var.db, now);
+    const series = await startReview(c.var.db, catalog, {
+      userId: c.var.userId,
+      ...body.data,
+      now,
+      seed: generateSeed(),
+    });
+    c.header("Cache-Control", "no-store");
+    switch (series.kind) {
+      case "ready":
+        return c.json<ReviewResponse>({ questions: [...series.questions] });
+      case "level_required":
+        return c.json({ error: "level_required", level: series.level }, 403);
+      case "scope_too_small":
+        return c.json({ error: "scope_too_small", minWords: series.minWords }, 422);
+    }
+  });
+
   routes.get("/practice", async (c) => {
     const now = Date.now();
     const catalog = await loadCatalogIndex(c.var.db, now);
@@ -165,6 +202,7 @@ export function challengeRoutes(loadCatalogIndex: CatalogIndexLoader) {
           correct: result.correct,
           xpToday: result.xpToday,
           progress: result.progress,
+          bonus: result.bonus,
         });
       case "card_not_owned":
         return c.json({ error: "card_not_owned" }, 404);

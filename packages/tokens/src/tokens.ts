@@ -388,6 +388,8 @@ export function backTone(name: string | undefined): BackTone {
 
 /** A word's mastery, from the dot on an album tile to the steps of its sheet. */
 export const masteryColors = {
+  /** A word never answered right yet: nothing drawn on the page. */
+  blank: colors.pageInkFaint,
   sketch: colors.pageInkMuted,
   ink: "#7C9BFF",
   /** The ink step filled in, on a mastery ladder. */

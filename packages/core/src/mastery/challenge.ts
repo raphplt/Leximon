@@ -121,15 +121,17 @@ function oneSlipApart(a: string, b: string): boolean {
 }
 
 /**
- * Builds one question. `sameCollection` and `wholeCatalog` are the other cards to pick wrong
- * choices from, in order of preference; the card itself is ignored if present. Returns `null`
- * when the catalog is too small for a full set of choices.
+ * Builds one question, of `format` or of a format drawn at random. `sameCollection` and
+ * `wholeCatalog` are the other cards to pick wrong choices from, in order of preference; the card
+ * itself is ignored if present. Returns `null` when the catalog is too small for a full set of
+ * choices.
  */
 export function buildQuestion(
   random: RandomSource,
   cardId: string,
   sameCollection: readonly string[],
   wholeCatalog: readonly string[],
+  format?: ChoiceFormat,
 ): ChoiceQuestion | null {
   const wrong = pickDistinct(
     random,
@@ -146,8 +148,13 @@ export function buildQuestion(
   const answerIndex = randomInt(random, CHOICES_PER_QUESTION);
   const choices = [...wrong];
   choices.splice(answerIndex, 0, cardId);
-  const format = CHOICE_FORMATS[randomInt(random, CHOICE_FORMATS.length)] ?? "definition";
-  return { cardId, format, choices, answerIndex };
+  const drawn = format ?? CHOICE_FORMATS[randomInt(random, CHOICE_FORMATS.length)] ?? "definition";
+  return { cardId, format: drawn, choices, answerIndex };
+}
+
+/** The other multiple choice format: a word missed comes back asked the other way round. */
+export function otherChoiceFormat(format: ChallengeFormat): ChoiceFormat {
+  return format === "definition" ? "word" : "definition";
 }
 
 /** Up to `count` distinct items, uniformly (partial Fisher-Yates on a copy). */

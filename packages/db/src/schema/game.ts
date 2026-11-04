@@ -539,6 +539,10 @@ export const userPreferences = pgTable("user_preferences", {
   emailNews: boolean().notNull().default(true),
   /** An e-mail when the player stays away while their sachets are full. */
   emailReminders: boolean().notNull().default(true),
+  /** Questions of a review series. */
+  reviewLength: smallint().notNull().default(10),
+  /** New words the player starts each day, Paris time. */
+  newWordsPerDay: smallint().notNull().default(10),
 });
 
 /**
@@ -565,6 +569,8 @@ export const userMastery = pgTable(
     /** FSRS state: 0 new, 1 learning, 2 review, 3 relearning. */
     state: smallint().notNull(),
     lastReviewedAt: timestamp({ withTimezone: true }),
+    /** First answer on the word: the day's new words are counted from it. Unknown before 2026-11. */
+    startedAt: timestamp({ withTimezone: true }),
   },
   (table) => [
     primaryKey({ columns: [table.userId, table.cardId] }),
@@ -614,6 +620,9 @@ export const practiceAnswers = pgTable(
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
     idempotencyKey: uuid().notNull(),
+    /** The word and how it was asked; unknown for the answers of the first series. */
+    cardId: text().references(() => cards.id),
+    format: challengeFormat(),
     correct: boolean().notNull(),
     xp: smallint().notNull(),
     answeredAt: timestamp({ withTimezone: true }).notNull(),

@@ -70,7 +70,7 @@ async function reviewedWord(
   daysAgo: number,
 ) {
   const now = Date.now();
-  const { memory } = newWordMastery(now);
+  const { memory } = newWordMastery(masteryRulesAt(MASTERY_SCHEDULE, now), now);
   await db.insert(schema.userMastery).values({
     userId: guest.userId,
     cardId,
@@ -169,7 +169,8 @@ describe("POST /challenges/answer", () => {
 
     expect(response.status).toBe(200);
     const body = challengeAnswerResponseSchema.parse(await response.json());
-    expect(body).toMatchObject({ correct: true, level: "sketch", levelUp: false });
+    // The first right answer takes the word from its blank page to the sketch.
+    expect(body).toMatchObject({ correct: true, level: "sketch", levelUp: true });
     expect(Date.parse(body.nextReviewAt)).toBeGreaterThanOrEqual(before + DAY);
 
     const after = await questions(guest);
@@ -201,6 +202,7 @@ describe("POST /challenges/answer", () => {
     // The same answer, and the XP counted once: a retry shows the total without a new gain.
     expect(challengeAnswerResponseSchema.parse(await replay.json())).toEqual({
       ...first,
+      levelUp: false,
       progress: { ...first.progress, xpGained: 0, levelUp: false },
     });
 
@@ -528,7 +530,11 @@ describe("bonus boosters", () => {
       [1, 2, 3].map(() => reply(guest, WORDS[4] as string, true, key)),
     );
     for (const replay of replays) {
-      expect(replay).toEqual({ ...first, progress: { ...first.progress, xpGained: 0 } });
+      expect(replay).toEqual({
+        ...first,
+        levelUp: false,
+        progress: { ...first.progress, xpGained: 0 },
+      });
     }
     expect(await reserve(guest)).toBe(1);
     expect(await awards(guest)).toHaveLength(1);

@@ -1,7 +1,7 @@
 /**
  * Mastery of a word: spaced repetition with FSRS decides when a word comes back in a
- * challenge, and the right answers raise the card's level: sketch, ink, then gilded. A level
- * never goes down, even after a forgotten word.
+ * challenge, and the right answers raise the card's level: a blank page, then sketch, ink and
+ * gilded. A level never goes down, even after a forgotten word.
  */
 
 import {
@@ -14,7 +14,7 @@ import {
 } from "ts-fsrs";
 import type { EpochMs } from "../booster/refill";
 
-export const MASTERY_LEVELS = ["sketch", "ink", "gilded"] as const;
+export const MASTERY_LEVELS = ["blank", "sketch", "ink", "gilded"] as const;
 export type MasteryLevel = (typeof MASTERY_LEVELS)[number];
 
 export interface MasteryRules {
@@ -31,10 +31,15 @@ export interface MasteryRules {
    * recognised among choices where a guess is right once in four. A level is climbed one step per
    * answer.
    */
-  readonly levelThresholdDays: Readonly<Record<Exclude<MasteryLevel, "sketch">, number>>;
+  readonly levelThresholdDays: Readonly<Record<"ink" | "gilded", number>>;
   readonly levelBy: "stability" | "provenRecall";
   /** Typed words at least this long forgive one slip (a letter missing, extra, wrong or swapped). */
   readonly slipToleranceFromLetters: number;
+  /**
+   * Level of a word answered for the first time. From a blank page, the first right answer
+   * reaches the sketch, typed or not: it only shows the word was met.
+   */
+  readonly startLevel: "blank" | "sketch";
 }
 
 /** "again": wrong. "hard": right, typed with a slip. "good": right. */
@@ -84,9 +89,9 @@ export function masteryRulesAt(schedule: MasterySchedule, time: EpochMs): Master
   return active;
 }
 
-/** A word never reviewed: due at once, level sketch. */
-export function newWordMastery(now: EpochMs): WordMastery {
-  return { level: "sketch", memory: fromFsrs(createEmptyCard(new Date(now))) };
+/** A word never reviewed: due at once, at the start level. */
+export function newWordMastery(rules: MasteryRules, now: EpochMs): WordMastery {
+  return { level: rules.startLevel, memory: fromFsrs(createEmptyCard(new Date(now))) };
 }
 
 export function isDue(memory: MemoryState, now: EpochMs): boolean {
@@ -101,7 +106,7 @@ export function provenLevel(
   recalledAfterDays: number,
   current: MasteryLevel,
 ): MasteryLevel {
-  if (current === "gilded") return current;
+  if (current === "gilded" || current === "blank") return current;
   const next = current === "sketch" ? "ink" : "gilded";
   return recalledAfterDays >= rules.levelThresholdDays[next] ? next : current;
 }
@@ -135,6 +140,27 @@ export function levelFor(
   return MASTERY_LEVELS.indexOf(reached) > MASTERY_LEVELS.indexOf(current) ? reached : current;
 }
 
+/** Whether reaching this level proves recall over time, and earns the level's XP and rewards. */
+export function isProvenLevel(level: MasteryLevel): boolean {
+  return level === "ink" || level === "gilded";
+}
+
+function scheduler(rules: MasteryRules) {
+  return fsrs(
+    generatorParameters({
+      request_retention: rules.requestRetention,
+      maximum_interval: rules.maximumIntervalDays,
+      enable_fuzz: false,
+      enable_short_term: false,
+    }),
+  );
+}
+
+/** Probability, between 0 and 1, that the player recalls the word now, as FSRS predicts it. */
+export function recallProbability(rules: MasteryRules, memory: MemoryState, now: EpochMs): number {
+  return scheduler(rules).get_retrievability(toFsrs(memory), new Date(now), false);
+}
+
 const RATINGS: Readonly<Record<AnswerGrade, Rating.Again | Rating.Hard | Rating.Good>> = {
   again: Rating.Again,
   hard: Rating.Hard,
@@ -152,16 +178,8 @@ export function reviewWord(
   answer: Answer,
   now: EpochMs,
 ): ReviewOutcome {
-  const scheduler = fsrs(
-    generatorParameters({
-      request_retention: rules.requestRetention,
-      maximum_interval: rules.maximumIntervalDays,
-      enable_fuzz: false,
-      enable_short_term: false,
-    }),
-  );
   const rating = RATINGS[answer.grade];
-  const { card } = scheduler.next(toFsrs(current.memory), new Date(now), rating);
+  const { card } = scheduler(rules).next(toFsrs(current.memory), new Date(now), rating);
   const memory = fromFsrs(card);
   const level = levelAfter(rules, current, memory, answer, now);
   return { mastery: { level, memory }, rating, levelUp: level !== current.level };
@@ -174,6 +192,7 @@ function levelAfter(
   answer: Answer,
   now: EpochMs,
 ): MasteryLevel {
+  if (current.level === "blank") return answer.grade === "again" ? "blank" : "sketch";
   if (rules.levelBy === "stability") return levelFor(rules, memory.stability, current.level);
   const previous = current.memory.lastReviewedAt;
   if (answer.grade === "again" || !answer.typed || previous === null) return current.level;

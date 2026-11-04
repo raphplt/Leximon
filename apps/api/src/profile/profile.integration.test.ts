@@ -528,6 +528,8 @@ describe("/me/preferences", () => {
       shareFinds: true,
       emailNews: true,
       emailReminders: true,
+      reviewLength: 10,
+      newWordsPerDay: 10,
     });
     expect(
       (await call(member, "PATCH", "/me/preferences", { notifyTrades: false, emailNews: false }))
@@ -541,6 +543,8 @@ describe("/me/preferences", () => {
       shareFinds: true,
       emailNews: false,
       emailReminders: true,
+      reviewLength: 10,
+      newWordsPerDay: 10,
     });
     expect((await call(member, "PATCH", "/me/preferences", {})).status).toBe(400);
   });

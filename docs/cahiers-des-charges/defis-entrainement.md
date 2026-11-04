@@ -1,6 +1,6 @@
 # Cahier des charges · L'écran Défis repensé et un vrai entraînement
 
-- **Statut :** proposé le 2026-11-03. Premiers choix du propriétaire le 2026-11-04 (ci-dessous), les autres questions restent ouvertes. Rien n'est construit ; une planche montre l'écran sur `/planches/defis`. Les choix de règles iront dans `regles-du-jeu.md` une fois tranchés, pas avant.
+- **Statut :** proposé le 2026-11-03. Choix du propriétaire le 2026-11-04 (ci-dessous) ; le lot 1 se construit d'un bloc, web et mobile. Restent ouvertes T8, T9, T10 et T12 (lots 2 et 3). La planche de l'écran est sur `/planches/defis`. Les règles tranchées sont dans `regles-du-jeu.md` (P1, P29, P31, P33, P81).
 - **Source :** retours du propriétaire du 2026-11-03 sur l'écran Défis du web, dans La Bibliothèque. L'écran est éparpillé : le défi du jour, « Tes mots par palier » qui prend beaucoup de place, l'énigme du jour, une liste « Mots à réviser » dont on ne fait rien, et une liste de catégories d'entraînement qui se lit mal et se personnalise peu. « S'entraîner » n'est pas mis en avant, ses boutons sont plats et aucun ne donne envie. Il manque un vrai entraînement, dans l'esprit d'Anki ou de Duolingo.
 - **Règles liées :** P1 (positionnement), P29 (sachet bonus du défi du jour), P31 (ce qu'on révise), P32 et P33 (formats, paliers), P48 (XP), P57 (prononciation), P59 (ouverture par niveau), P72 (rien de payant ne touche la progression), P81 (révisions choisies), P82 (énigme), P84 (écus), P88 (série), P89 (succès), N1 et N2.
 - **Cahiers liés :** [revisions-et-modes-de-jeu.md](revisions-et-modes-de-jeu.md) (la partie A, faite, est reprise ici ; la partie B fournit des types de questions), [defis-progression-et-sensation.md](defis-progression-et-sensation.md) (sons et réactions, gardés), [direction-artistique.md](direction-artistique.md) (la place laissée à la frise), [retours-game-designer.md](retours-game-designer.md) (4.1 sachet bonus à ouvrir, 4.2 frise, 4.3 réactions, 4.6 paliers).
@@ -14,6 +14,10 @@
 - **2026-11-04 · Pas de sous-main façon Jouer.** Une première planche posait la révision sur le sous-main vert, une pioche de cartes au centre et les portées en livres sur une étagère : refusée (« ressemble trop à Jouer », 80 % de l'écran ne sert à rien, les dos de livres se lisent mal en tournant la tête).
 - **2026-11-04 · Un tableau de bord.** Des feuilles sur la salle, comme l'album ou le clan. En haut, sur toute la largeur, la révision : les trois compteurs, la phrase et le bouton d'or. Dessous, « S'entraîner sur… » en couvertures de livres vues de face, titre à l'horizontale ; à côté, le défi du jour, l'énigme et Ta mémoire. Remplace « L'écran Défis » plus bas là où ils divergent.
 - **2026-11-04 · Un niveau 0, « Page blanche ».** Une carte obtenue n'a pas de palier ; elle passe en Esquisse à sa première bonne réponse (P33). Ta mémoire montre donc quatre parts : Page blanche, Esquisse, Encre, Dorure. À construire avec le lot 1 (règle, données existantes, album, fiche, profil).
+- **2026-11-04 · Le nom est « révision ».** « Ta révision », « Réviser tes mots », bouton « Commencer » (T3 : c). « Défi » reste le nom du défi du jour.
+- **2026-11-04 · L'entraînement compte pour le défi du jour** (T7 : a). Le clan ne compte toujours que les révisions.
+- **2026-11-04 · Les recommandations pour le reste du lot 1 :** T1 a, T4 a, T5 a, T6 a, T11 a, T13 a, T14 a, T15 a, T16 a, T19 a, et T18 a pour l'ordre des lots. Le défi du jour garde sa porte : une série de 5 questions composée comme la révision.
+- **2026-11-04 · Le lot 1 d'un bloc**, web et mobile, sans étape intermédiaire à tester.
 
 ## Ce qu'on a aujourd'hui
 
@@ -298,7 +302,7 @@ La recette ajoute des tests DEF et MDE à `recette-web.md` et `recette-mobile.md
 
 Chaque question a une recommandation, en premier.
 
-**T1 · Positionnement.** P1 dit « pas une app d'apprentissage façon Duolingo ». Rouverte le 2026-11-04 : le propriétaire juge ce refus peut-être contre-productif.
+**T1 · Positionnement.** P1 dit « pas une app d'apprentissage façon Duolingo ». Rouverte le 2026-11-04 : le propriétaire juge ce refus peut-être contre-productif. Tranchée le 2026-11-04 : a.
 - a. **(recommandé)** Préciser P1 : on emprunte la mécanique de séance d'Anki et de Duolingo, mais l'accueil, la vente et le cœur restent la collection.
 - b. Assumer un virage vers l'apprentissage, aussi dans la landing et les stores.
 - c. Ne rien emprunter de plus : on se contente de remettre l'écran en ordre.
@@ -308,27 +312,27 @@ Chaque question a une recommandation, en premier.
 - b. Garder le défi du jour (5 questions) et un entraînement séparé, chacun son bouton.
 - c. Une seule séance, sans portées : on retire le choix de collection et de thème.
 
-**T3 · Le nom dans l'interface.**
+**T3 · Le nom dans l'interface.** Tranchée le 2026-11-04 : c.
 - a. **(recommandé)** « Défi » partout, comme le lexique : « Commencer le défi », « Continuer », « un défi de 10 questions ». Le défi du jour devient l'objectif qui se remplit.
 - b. « Séance » : « Commencer la séance », le défi du jour reste le nom de l'objectif.
 - c. « Révision » : plus clair sur ce qu'on fait, plus scolaire.
 
-**T4 · La longueur.**
+**T4 · La longueur.** Tranchée le 2026-11-04 : a.
 - a. **(recommandé)** 10 par défaut, au choix 5, 10 ou 20.
 - b. 10, fixe.
 - c. 5, 10 ou 20, plus « jusqu'à ce qu'il n'y ait plus rien à revoir » (à la Anki).
 
-**T5 · Les mots nouveaux dans la séance.** (Recommandation changée le 2026-11-04, après la question du propriétaire sur les grandes collections.)
+**T5 · Les mots nouveaux dans la séance.** (Recommandation changée le 2026-11-04, après la question du propriétaire sur les grandes collections.) Tranchée le 2026-11-04 : a.
 - a. **(recommandé)** Mêlés aux mots à revoir, un sur trois au plus tant qu'il en reste, dans la limite du rythme du jour (T19), les plus récents d'abord.
 - b. Mêlés de la même façon, sans limite par jour : la pile grossit vite (voir « Quand la collection grandit »).
 - c. Comme aujourd'hui : tous les mots dus d'abord, puis les nouveaux, sans limite.
 
-**T6 · Un mot raté dans la séance.**
+**T6 · Un mot raté dans la séance.** Tranchée le 2026-11-04 : a.
 - a. **(recommandé)** Il revient trois questions plus tard, sous un autre format, en entraînement (5 XP, rien pour FSRS) ; trois rattrapages au plus.
 - b. Il ne revient pas avant demain, comme aujourd'hui.
 - c. Il revient et compte pour FSRS (étapes courtes d'Anki) : plus fidèle à Anki, mais un mot oublié pourrait sembler acquis le jour même.
 
-**T7 · Le défi du jour et l'entraînement.** Aujourd'hui, une question d'entraînement ne compte pas pour le défi du jour (P81) : un joueur qui n'a rien à revoir ne peut pas gagner son sachet bonus.
+**T7 · Le défi du jour et l'entraînement.** Aujourd'hui, une question d'entraînement ne compte pas pour le défi du jour (P81) : un joueur qui n'a rien à revoir ne peut pas gagner son sachet bonus. Tranchée le 2026-11-04 : a.
 - a. **(recommandé)** Toute question de la séance compte pour le défi du jour, entraînement compris. Le sachet reste un par jour, et le clan ne compte toujours que les révisions.
 - b. Garder P81 : seules les révisions comptent, et la frise le dit (« Aucun mot à revoir pour l'instant. Ces questions ne comptent pas pour le défi du jour. »).
 
@@ -348,7 +352,7 @@ Chaque question a une recommandation, en premier.
 - b. Pas de réglage.
 - c. Facile, Normale, Exigeante, Facile proposant 2 choix au lieu de 4 en entraînement.
 
-**T11 · Présenter un mot nouveau.** Sa première question est une rencontre (P31), parfois des jours après l'ouverture du sachet.
+**T11 · Présenter un mot nouveau.** Sa première question est une rencontre (P31), parfois des jours après l'ouverture du sachet. Tranchée le 2026-11-04 : a.
 - a. **(recommandé)** La carte s'affiche d'abord, avec le mot dit à voix haute, puis vient sa question « trouver la définition ».
 - b. Pas de présentation, comme aujourd'hui.
 - c. La présentation seulement si la carte a été obtenue il y a plus de 24 h.
@@ -358,36 +362,36 @@ Chaque question a une recommandation, en premier.
 - b. Laisser la série en phase 5, avec les écus, comme prévu.
 - c. La série avec ce chantier, plus un objectif personnel au choix (10, 20 ou 30 questions par jour), sans récompense.
 
-**T13 · L'énigme du jour.**
+**T13 · L'énigme du jour.** Tranchée le 2026-11-04 : a.
 - a. **(recommandé)** Une tuile compacte dans Autres jeux sur Défis, et un bouton rond sur Jouer dans l'app et sur le téléphone (le grand écran l'a déjà).
 - b. Une tuile compacte sur Défis seulement.
 - c. Elle quitte Défis : Jouer seulement, avec le bouton rond sur le téléphone.
 
-**T14 · « Tes mots par palier ».**
+**T14 · « Tes mots par palier ».** Tranchée le 2026-11-04 : a.
 - a. **(recommandé)** Une barre fine dans Ta mémoire, qui ouvre l'album filtré sur le palier ; la part dorée de chaque portée sur l'étagère.
 - b. Retiré de Défis : les paliers se lisent dans l'album et le profil.
 - c. Gardé tel quel, en plus petit.
 
-**T15 · La liste « Mots à réviser ».**
+**T15 · La liste « Mots à réviser ».** Tranchée le 2026-11-04 : a.
 - a. **(recommandé)** Elle disparaît : ses mots sont les compteurs de la séance, qui les pose en premier, et « prêts à monter » devient un livre de l'étagère.
 - b. Elle disparaît, et un lien « Voir les 12 mots » ouvre la liste dans une feuille, sans bouton par mot.
 - c. Elle reste, repliée sous la séance.
 
-**T16 · Où vivent les réglages de la séance.**
+**T16 · Où vivent les réglages de la séance.** Tranchée le 2026-11-04 : a.
 - a. **(recommandé)** Sur le compte, côté serveur : ils suivent le joueur du web à son téléphone.
 - b. Sur l'appareil seulement : plus simple, mais à refaire sur chaque appareil.
 
-**T17 · L'allure des portées.**
+**T17 · L'allure des portées.** Tranchée le 2026-11-04 : des couvertures vues de face, dans le tableau de bord.
 - a. **(recommandé)** Des livres sur une étagère, avec pastille et part dorée.
 - b. Des tuiles-objets en grille, comme les tuiles de Jouer, avec le sceau ou la gravure.
 - c. Les boutons actuels, en tuiles de papier plus grandes, avec leur barre de paliers.
 
-**T18 · L'ordre des lots.**
+**T18 · L'ordre des lots.** Tranchée le 2026-11-04 : a.
 - a. **(recommandé)** Lot 1 (écran et séance), lot 2 (types de questions), lot 3 (réglages et série).
 - b. Lot 1 et lot 2 ensemble, pour juger la séance avec ses nouveaux types d'un coup.
 - c. Lot 1 seulement, le reste après la semaine de jeu dans La Bibliothèque.
 
-**T19 · Le rythme des mots nouveaux.**
+**T19 · Le rythme des mots nouveaux.** Tranchée le 2026-11-04 : a.
 - a. **(recommandé)** Au choix du joueur, 5, 10 ou 20 mots nouveaux commencés par jour, 10 par défaut, dans la feuille de la séance.
 - b. Fixe, 10 par jour.
 - c. Fixe, 20 par jour, comme Anki.

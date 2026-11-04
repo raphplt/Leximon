@@ -1,14 +1,20 @@
 import type { PracticeQuestion, PracticeScope } from "@leximon/contract";
 import {
+  answerBonuses,
+  BONUS_SCHEDULE,
+  bonusRulesAt,
   buildQuestion,
+  type ChoiceFormat,
   createFullWallet,
   createSeededRandom,
+  creditReserve,
   type EpochMs,
   gameDayOf,
   levelOf,
   levelUpPossible,
   MASTERY_SCHEDULE,
   type MasteryLevel,
+  type MemoryState,
   masteryRulesAt,
   PRACTICE_SCHEDULE,
   type PracticeRules,
@@ -18,36 +24,62 @@ import {
   practiceXp,
   progressGain,
   REFILL_SCHEDULE,
+  reserveCapacity,
   UNLOCK_SCHEDULE,
   type UnlockRules,
   unlockRulesAt,
 } from "@leximon/core";
 import { type Database, schema } from "@leximon/db";
-import { and, eq, gt, gte, sql } from "drizzle-orm";
+import { and, eq, gt, gte, sql, type WithSubquery } from "drizzle-orm";
 import { addXp, readXp } from "../progress/progress";
 import type { CatalogIndex } from "./catalog-index";
-import { lockWallet } from "./challenges";
+import {
+  type AnswerBonus,
+  lockWallet,
+  type StoredAward,
+  summarize,
+  todaysAnswers,
+} from "./challenges";
 
-const { practiceAnswers, reviewLogs, userCards, userMastery, userProgress } = schema;
+const {
+  boosterBonusAwards,
+  boosterWallets,
+  practiceAnswers,
+  reviewLogs,
+  userCards,
+  userMastery,
+  userProgress,
+} = schema;
 
-interface PoolWord {
+export interface PoolWord {
   readonly cardId: string;
   readonly obtainedAt: EpochMs;
   readonly level: MasteryLevel | null;
   /** When the word is due; `null` when it was never reviewed. */
   readonly due: EpochMs | null;
   readonly lastReviewedAt: EpochMs | null;
+  /** FSRS memory; `null` when the word was never reviewed. */
+  readonly memory: MemoryState | null;
+  readonly startedAt: EpochMs | null;
 }
 
 /** Every word the player owns with its memory, in one read: a series needs all of them. */
-async function ownedWords(db: Database, userId: string): Promise<readonly PoolWord[]> {
+export async function ownedWords(db: Database, userId: string): Promise<readonly PoolWord[]> {
   const rows = await db
     .select({
       cardId: userCards.cardId,
       obtainedAt: sql<Date | string>`min(${userCards.firstObtainedAt})`,
       level: userMastery.level,
       due: userMastery.due,
+      stability: userMastery.stability,
+      difficulty: userMastery.difficulty,
+      scheduledDays: userMastery.scheduledDays,
+      learningSteps: userMastery.learningSteps,
+      reps: userMastery.reps,
+      lapses: userMastery.lapses,
+      state: userMastery.state,
       lastReviewedAt: userMastery.lastReviewedAt,
+      startedAt: userMastery.startedAt,
     })
     .from(userCards)
     .leftJoin(
@@ -55,18 +87,38 @@ async function ownedWords(db: Database, userId: string): Promise<readonly PoolWo
       and(eq(userMastery.userId, userCards.userId), eq(userMastery.cardId, userCards.cardId)),
     )
     .where(and(eq(userCards.userId, userId), gt(userCards.quantity, 0)))
-    .groupBy(userCards.cardId, userMastery.level, userMastery.due, userMastery.lastReviewedAt);
-  return rows.map((row) => ({
-    cardId: row.cardId,
-    obtainedAt: new Date(row.obtainedAt).getTime(),
-    level: row.level,
-    due: row.lastReviewedAt === null ? null : (row.due?.getTime() ?? null),
-    lastReviewedAt: row.lastReviewedAt?.getTime() ?? null,
-  }));
+    // The mastery row is unique per card: grouping by its key lets every column of it through.
+    .groupBy(userCards.cardId, userMastery.userId, userMastery.cardId);
+  return rows.map((row) => {
+    const lastReviewedAt = row.lastReviewedAt?.getTime() ?? null;
+    const reviewed = lastReviewedAt !== null && row.due !== null;
+    return {
+      cardId: row.cardId,
+      obtainedAt: new Date(row.obtainedAt).getTime(),
+      level: row.level,
+      due: reviewed ? (row.due?.getTime() ?? null) : null,
+      lastReviewedAt,
+      memory:
+        reviewed && row.due !== null
+          ? {
+              due: row.due.getTime(),
+              stability: row.stability ?? 0,
+              difficulty: row.difficulty ?? 0,
+              scheduledDays: row.scheduledDays ?? 0,
+              learningSteps: row.learningSteps ?? 0,
+              reps: row.reps ?? 0,
+              lapses: row.lapses ?? 0,
+              state: row.state ?? 0,
+              lastReviewedAt,
+            }
+          : null,
+      startedAt: row.startedAt?.getTime() ?? null,
+    };
+  });
 }
 
 /** Words answered wrong lately, read through the journal's index on (player, date). */
-async function missedWords(
+export async function missedWords(
   db: Database,
   userId: string,
   rules: PracticeRules,
@@ -89,7 +141,7 @@ function recentWords(pool: readonly PoolWord[], rules: PracticeRules): readonly 
   return [...pool].sort((a, b) => b.obtainedAt - a.obtainedAt).slice(0, rules.recentWords);
 }
 
-function inScope(
+export function inScope(
   scope: PracticeScope,
   pool: readonly PoolWord[],
   catalog: CatalogIndex,
@@ -112,12 +164,12 @@ function inScope(
   }
 }
 
-function countsAsReview(word: PoolWord, now: EpochMs): boolean {
+export function countsAsReview(word: PoolWord, now: EpochMs): boolean {
   return word.due === null || word.due <= now;
 }
 
 /** The level a scope asks for: themes and album filters open later. */
-function scopeLevel(scope: PracticeScope, unlocks: UnlockRules): number {
+export function scopeLevel(scope: PracticeScope, unlocks: UnlockRules): number {
   return scope.kind === "theme" || scope.kind === "cards" ? unlocks.levels.practice_choice : 1;
 }
 
@@ -239,7 +291,7 @@ export async function startPractice(
 }
 
 /** Free practice XP earned today, Paris time. */
-async function practiceXpToday(db: Database, userId: string, now: EpochMs): Promise<number> {
+export async function practiceXpToday(db: Database, userId: string, now: EpochMs): Promise<number> {
   const day = gameDayOf(now);
   const [row] = await db
     .select({ xp: sql<number>`coalesce(sum(${practiceAnswers.xp}), 0)::int` })
@@ -260,15 +312,16 @@ export type PracticeAnswerResult =
       readonly correct: boolean;
       readonly xpToday: number;
       readonly progress: ProgressGain;
+      readonly bonus: AnswerBonus;
     }
   | { readonly kind: "card_not_owned" };
 
 /**
- * Applies a free practice answer: XP up to the daily cap, nothing else. The word's memory, the
- * daily goal and the clan's goal never see it.
+ * Applies a free practice answer: XP up to the daily cap, and the daily bonus when the rules count
+ * free practice towards the daily goal. The word's memory and the clan's goal never see it.
  *
  * The wallet lock is the one every answer of the player takes: it serializes them, so the sum of
- * today's XP is exact and the cap holds when answers race.
+ * today's XP is exact, the cap holds when answers race, and the daily goal is met once.
  */
 export async function answerPractice(
   db: Database,
@@ -277,20 +330,25 @@ export async function answerPractice(
     idempotencyKey: string;
     cardId: string;
     chosenCardId: string;
+    format?: ChoiceFormat | undefined;
     now: EpochMs;
   },
 ): Promise<PracticeAnswerResult> {
   const { userId, cardId, now } = input;
   const rules = practiceRulesAt(PRACTICE_SCHEDULE, now);
+  const bonusRules = bonusRulesAt(BONUS_SCHEDULE, now);
   const day = gameDayOf(now);
   return db.transaction(async (tx) => {
-    await lockWallet(tx, userId, createFullWallet(REFILL_SCHEDULE, now));
+    const locked = await lockWallet(tx, userId, createFullWallet(REFILL_SCHEDULE, now));
 
     const lookup = await tx.execute<{
       owned: boolean;
       previous: { correct: boolean } | null;
       earned_today: number;
       xp: number;
+      day_answers: number;
+      day_correct: number;
+      awards: (StoredAward & { challengeId: string })[];
     }>(sql`
       select
         exists (select 1 from ${userCards} where ${userCards.userId} = ${userId}
@@ -303,37 +361,110 @@ export async function answerPractice(
             and ${practiceAnswers.answeredAt} >= ${new Date(day.start)}
             and ${practiceAnswers.answeredAt} < ${new Date(day.end)}) as earned_today,
         coalesce((select ${userProgress.xp} from ${userProgress}
-          where ${userProgress.userId} = ${userId}), 0) as xp
+          where ${userProgress.userId} = ${userId}), 0) as xp,
+        tally.day_answers, tally.day_correct,
+        (select coalesce(json_agg(json_build_object('kind', ${boosterBonusAwards.kind},
+            'awardKey', ${boosterBonusAwards.awardKey}, 'amount', ${boosterBonusAwards.amount},
+            'credited', ${boosterBonusAwards.credited},
+            'challengeId', ${boosterBonusAwards.challengeId})), '[]'::json)
+          from ${boosterBonusAwards}
+          where ${boosterBonusAwards.userId} = ${userId}
+            and ((${boosterBonusAwards.kind} = 'daily' and ${boosterBonusAwards.awardKey} = ${day.key})
+              or ${boosterBonusAwards.challengeId} = ${input.idempotencyKey})) as awards
+      from (
+        select count(*)::int as day_answers,
+          (count(*) filter (where answers.correct))::int as day_correct
+        from ${todaysAnswers(userId, day, now)}
+      ) tally
     `);
     const row = lookup.rows[0];
     if (row === undefined) throw new Error(`Practice lookup empty for user ${userId}`);
     if (row.previous !== null) {
+      const replayed = row.awards.filter((award) => award.challengeId === input.idempotencyKey);
       return {
         kind: "answered",
         correct: row.previous.correct,
         xpToday: row.earned_today,
         progress: progressGain(row.xp, 0),
+        bonus: summarize(replayed, locked.bonusBoosters),
       };
     }
     if (!row.owned) return { kind: "card_not_owned" };
 
     const correct = input.chosenCardId === cardId;
     const xpGained = practiceXp(rules, { correct, earnedToday: row.earned_today });
-    const progressUpsert = addXp(tx, "progress_upsert", userId, xpGained);
-    const answerInsert = tx.$with("answer_insert").as(
-      tx
-        .insert(practiceAnswers)
-        .values({
-          userId,
-          idempotencyKey: input.idempotencyKey,
-          correct,
-          xp: xpGained,
-          answeredAt: new Date(now),
+    const earned = rules.practiceCountsForDaily
+      ? answerBonuses(bonusRules, {
+          day,
+          tally: { answers: row.day_answers + 1, correct: row.day_correct + (correct ? 1 : 0) },
+          dailyAwarded: row.awards.some((a) => a.kind === "daily" && a.awardKey === day.key),
+          cardId,
+          reachedGilded: false,
+          gildedAwarded: true,
         })
-        .returning({ userId: practiceAnswers.userId }),
+      : [];
+    const credit = creditReserve(
+      reserveCapacity(bonusRules, locked.reserveSlots),
+      locked.bonusBoosters,
+      earned,
     );
+    const answeredAt = new Date(now);
+
+    const progressUpsert = addXp(tx, "progress_upsert", userId, xpGained);
+    const ctes: WithSubquery[] = [progressUpsert];
+    ctes.push(
+      tx.$with("answer_insert").as(
+        tx
+          .insert(practiceAnswers)
+          .values({
+            userId,
+            idempotencyKey: input.idempotencyKey,
+            cardId,
+            format: input.format ?? null,
+            correct,
+            xp: xpGained,
+            answeredAt,
+          })
+          .returning({ userId: practiceAnswers.userId }),
+      ),
+    );
+    if (credit.awards.length > 0) {
+      ctes.push(
+        tx.$with("award_insert").as(
+          tx
+            .insert(boosterBonusAwards)
+            .values(
+              credit.awards.map((award) => ({
+                userId,
+                kind: award.kind,
+                awardKey: award.awardKey,
+                amount: award.amount,
+                credited: award.credited,
+                challengeId: input.idempotencyKey,
+                awardedAt: answeredAt,
+              })),
+            )
+            .onConflictDoNothing()
+            .returning({ kind: boosterBonusAwards.kind }),
+        ),
+      );
+      if (credit.reserve !== locked.bonusBoosters) {
+        ctes.push(
+          tx.$with("wallet_update").as(
+            tx
+              .update(boosterWallets)
+              .set({ bonusBoosters: credit.reserve })
+              .where(
+                and(eq(boosterWallets.userId, userId), sql`exists (select 1 from award_insert)`),
+              )
+              .returning({ userId: boosterWallets.userId }),
+          ),
+        );
+      }
+    }
+    // Every data-modifying CTE runs, read or not; the statement returns the new XP total.
     const [progress] = await tx
-      .with(progressUpsert, answerInsert)
+      .with(...ctes)
       .select({ xp: progressUpsert.xp })
       .from(progressUpsert);
     if (progress === undefined) {
@@ -344,6 +475,7 @@ export async function answerPractice(
       correct,
       xpToday: row.earned_today + xpGained,
       progress: progressGain(progress.xp, xpGained),
+      bonus: summarize(credit.awards, credit.reserve),
     };
   });
 }

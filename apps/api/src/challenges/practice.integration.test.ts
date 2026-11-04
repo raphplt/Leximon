@@ -5,7 +5,13 @@ import {
   practiceResponseSchema,
   practiceSummaryResponseSchema,
 } from "@leximon/contract";
-import { newWordMastery, PRACTICE_SCHEDULE, practiceRulesAt } from "@leximon/core";
+import {
+  MASTERY_SCHEDULE,
+  masteryRulesAt,
+  newWordMastery,
+  PRACTICE_SCHEDULE,
+  practiceRulesAt,
+} from "@leximon/core";
 import { createDb, schema } from "@leximon/db";
 import { testDatabaseUrl } from "@leximon/db/testing";
 import { and, count, eq } from "drizzle-orm";
@@ -44,7 +50,7 @@ async function give(guest: Guest, cardIds: readonly string[]) {
 /** A word reviewed recently, not due before `dueInDays`. */
 async function seenWord(guest: Guest, cardId: string, dueInDays: number) {
   const now = Date.now();
-  const { memory } = newWordMastery(now);
+  const { memory } = newWordMastery(masteryRulesAt(MASTERY_SCHEDULE, now), now);
   await db.insert(schema.userMastery).values({
     userId: guest.userId,
     cardId,
@@ -184,7 +190,7 @@ describe("POST /challenges/practice", () => {
 });
 
 describe("POST /challenges/practice/answer", () => {
-  it("gives XP and leaves the memory, the journal and the daily goal alone", async () => {
+  it("gives XP, counts for the daily goal, and leaves the memory and the journal alone", async () => {
     const guest = await signInAsGuest(app, env);
     const [cardId] = WORDS as [string, ...string[]];
     await give(guest, [cardId]);
@@ -214,7 +220,8 @@ describe("POST /challenges/practice/answer", () => {
     const daily = dailyChallengeResponseSchema.parse(
       await (await request(guest, "/challenges/daily")).json(),
     );
-    expect(daily.answers).toBe(0);
+    // Free practice counts towards the daily goal, never towards the word's memory.
+    expect(daily).toMatchObject({ answers: 1, correct: 1 });
   });
 
   it("gives nothing for a wrong answer", async () => {

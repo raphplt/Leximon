@@ -16,6 +16,7 @@ export type MasteryLevelCode = z.infer<typeof masteryLevelSchema>;
 
 /** Level names shown to players. */
 export const MASTERY_LEVEL_LABELS: Readonly<Record<MasteryLevelCode, string>> = {
+  blank: "Page blanche",
   sketch: "Esquisse",
   ink: "Encre",
   gilded: "Dorure",
@@ -115,17 +116,10 @@ export type PracticeResponse = z.infer<typeof practiceResponseSchema>;
 export const practiceAnswerRequestSchema = z.object({
   cardId: slugSchema,
   chosenCardId: slugSchema,
+  /** How the word was asked; sent by the clients of the review. */
+  format: z.enum(CHOICE_FORMATS).optional(),
 });
 export type PracticeAnswerRequest = z.infer<typeof practiceAnswerRequestSchema>;
-
-/** `POST /challenges/practice/answer`, 200. Error: 404 `card_not_owned`. */
-export const practiceAnswerResponseSchema = z.object({
-  correct: z.boolean(),
-  /** Free practice XP earned today, this answer included. */
-  xpToday: z.int().nonnegative(),
-  progress: progressGainSchema,
-});
-export type PracticeAnswerResponse = z.infer<typeof practiceAnswerResponseSchema>;
 
 /** Bonus boosters earned by one answer. */
 export const answerBonusSchema = z.object({
@@ -139,6 +133,17 @@ export const answerBonusSchema = z.object({
   reserve: z.int().nonnegative(),
 });
 export type AnswerBonus = z.infer<typeof answerBonusSchema>;
+
+/** `POST /challenges/practice/answer`, 200. Error: 404 `card_not_owned`. */
+export const practiceAnswerResponseSchema = z.object({
+  correct: z.boolean(),
+  /** Free practice XP earned today, this answer included. */
+  xpToday: z.int().nonnegative(),
+  progress: progressGainSchema,
+  /** The daily bonus, when free practice counts towards the daily goal. */
+  bonus: answerBonusSchema.optional(),
+});
+export type PracticeAnswerResponse = z.infer<typeof practiceAnswerResponseSchema>;
 
 /** `POST /challenges/answer`, 200. Errors: 409 `challenge_not_due`, 404 `card_not_owned`. */
 export const challengeAnswerResponseSchema = z.object({
@@ -180,3 +185,83 @@ export const dailyChallengeResponseSchema = z.object({
   awarded: z.boolean(),
 });
 export type DailyChallengeResponse = z.infer<typeof dailyChallengeResponseSchema>;
+
+/** What a review series draws from: everything owned, a practice scope, or the words ready to rise. */
+export const reviewScopeSchema = z.discriminatedUnion("kind", [
+  ...practiceScopeSchema.options,
+  z.object({ kind: z.literal("rising") }),
+]);
+export type ReviewScope = z.infer<typeof reviewScopeSchema>;
+
+/** Owned words at each level; a word never answered right is a blank page. */
+export const levelCountsSchema = z.object({
+  blank: z.int().nonnegative(),
+  sketch: z.int().nonnegative(),
+  ink: z.int().nonnegative(),
+  gilded: z.int().nonnegative(),
+});
+export type LevelCounts = z.infer<typeof levelCountsSchema>;
+
+/** `GET /challenges/review`, 200: what waits, the player's settings, and the scopes to pick from. */
+export const reviewSummaryResponseSchema = z.object({
+  /** Words reviewed before and due now. */
+  due: z.int().nonnegative(),
+  /** New words the player can still start today. */
+  fresh: z.int().nonnegative(),
+  /** Words due whose right answer, typed, raises the level. */
+  rising: z.int().nonnegative(),
+  /** When the next word becomes due, if none is due now; `null` otherwise. */
+  nextDueAt: timestampSchema.nullable(),
+  levels: levelCountsSchema,
+  settings: z.object({
+    length: z.int().positive(),
+    newWordsPerDay: z.int().positive(),
+    lengths: z.array(z.int().positive()),
+    newWordsPerDayChoices: z.array(z.int().positive()),
+  }),
+  /** Scopes with enough words, closed ones included (the level they ask for is in the rules). */
+  scopes: z.array(
+    z.object({
+      scope: reviewScopeSchema,
+      words: z.int().nonnegative(),
+      due: z.int().nonnegative(),
+      rising: z.int().nonnegative(),
+      levels: levelCountsSchema,
+    }),
+  ),
+  xp: z.object({ today: z.int().nonnegative(), cap: z.int().positive() }),
+});
+export type ReviewSummaryResponse = z.infer<typeof reviewSummaryResponseSchema>;
+
+/** `POST /challenges/review` body: everything owned by default, at the player's length. */
+export const reviewRequestSchema = z.object({
+  scope: reviewScopeSchema.optional(),
+  length: z.int().min(1).max(20).optional(),
+  /** A word to open the series with, picked by the player. */
+  first: slugSchema.optional(),
+});
+export type ReviewRequest = z.infer<typeof reviewRequestSchema>;
+
+/**
+ * One question of a review. `counted`: answered through `POST /challenges/answer`. Otherwise free
+ * practice, through `POST /challenges/practice/answer`. `fresh`: the player meets the word for the
+ * first time. `retry`: the same word asked the other way round, to ask again a few questions later
+ * when it is missed, as free practice.
+ */
+export const reviewQuestionSchema = challengeQuestionSchema.and(
+  z.object({
+    counted: z.boolean(),
+    fresh: z.boolean(),
+    retry: z
+      .object({
+        format: z.enum(CHOICE_FORMATS),
+        choices: z.array(slugSchema).length(CHOICES_PER_QUESTION),
+      })
+      .nullable(),
+  }),
+);
+export type ReviewQuestion = z.infer<typeof reviewQuestionSchema>;
+
+/** `POST /challenges/review`, 200. Errors: 403 `level_required`, 422 `scope_too_small`. */
+export const reviewResponseSchema = z.object({ questions: z.array(reviewQuestionSchema) });
+export type ReviewResponse = z.infer<typeof reviewResponseSchema>;

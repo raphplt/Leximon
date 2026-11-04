@@ -60,9 +60,14 @@ import {
   progressResponseSchema,
   publicProfileSchema,
   publicRiddleSchema,
+  type ReviewQuestion,
+  type ReviewRequest,
+  type ReviewSummaryResponse,
   type RiddleAnswerRequest,
   type RiddleAnswerResponse,
   type RiddleResponse,
+  reviewResponseSchema,
+  reviewSummaryResponseSchema,
   riddleAnswerResponseSchema,
   riddleResponseSchema,
   type SendFeedbackRequest,
@@ -98,6 +103,11 @@ export type AnswerResult =
 
 export type PracticeStart =
   | { readonly kind: "ready"; readonly questions: readonly PracticeQuestion[] }
+  /** The scope shrank or stays closed: its list is out of date. */
+  | { readonly kind: "refused" };
+
+export type ReviewStart =
+  | { readonly kind: "ready"; readonly questions: readonly ReviewQuestion[] }
   /** The scope shrank or stays closed: its list is out of date. */
   | { readonly kind: "refused" };
 
@@ -258,6 +268,18 @@ export function gameRoutes(http: Http) {
 
     fetchPracticeSummary: (): Promise<PracticeSummaryResponse> =>
       getJson("/challenges/practice", practiceSummaryResponseSchema, "practice_unavailable"),
+
+    fetchReviewSummary: (): Promise<ReviewSummaryResponse> =>
+      getJson("/challenges/review", reviewSummaryResponseSchema, "review_unavailable"),
+
+    /** A review series: everything owned by default, at the player's length. */
+    async startReview(request: ReviewRequest = {}): Promise<ReviewStart> {
+      const response = await sendAsPlayer("/challenges/review", json("POST", request));
+      if (response.status === 403 || response.status === 422) return { kind: "refused" };
+      if (!response.ok) throw new ApiError("review_failed", response.status);
+      const { questions } = await parse(response, reviewResponseSchema);
+      return { kind: "ready", questions };
+    },
 
     async startPractice(scope: PracticeScope): Promise<PracticeStart> {
       const response = await sendAsPlayer("/challenges/practice", json("POST", { scope }));

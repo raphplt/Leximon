@@ -168,6 +168,10 @@ export const preferencesSchema = z.object({
   emailNews: z.boolean(),
   /** An e-mail when the player stays away while their sachets are full. */
   emailReminders: z.boolean(),
+  /** Questions of a review series; the server accepts the lengths of its rules only. */
+  reviewLength: z.int().min(1).max(20),
+  /** New words started each day; the server accepts the choices of its rules only. */
+  newWordsPerDay: z.int().min(1).max(50),
 });
 export type Preferences = z.infer<typeof preferencesSchema>;
 

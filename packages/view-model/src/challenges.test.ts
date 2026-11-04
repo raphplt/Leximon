@@ -63,6 +63,7 @@ describe("lines", () => {
   it("names the new level with its article", () => {
     expect(levelUpLine("galimatias", "ink")).toBe("galimatias passe à l'Encre !");
     expect(levelUpLine("galimatias", "gilded")).toBe("galimatias passe à la Dorure !");
+    expect(levelUpLine("galimatias", "sketch")).toBe("galimatias passe à l'Esquisse !");
   });
 
   it("encourages", () => {
@@ -186,9 +187,10 @@ describe("défis screen", () => {
     expect(reviewQuestion(random, "a", [home], yesterday, now)?.format).not.toBe("typed");
   });
 
-  it("counts words at each level, owned words starting as sketches", () => {
+  it("counts words at each level, owned words starting on a blank page", () => {
     expect(memoryCounts(["a", "b", "c"], new Map([["b", "ink" as const]]))).toEqual({
-      sketch: 2,
+      blank: 2,
+      sketch: 0,
       ink: 1,
       gilded: 0,
     });
@@ -232,7 +234,8 @@ describe("défis screen", () => {
       "1 mot à revoir. 1 nouveau mot attend sa première question.",
     );
     expect(outlookLine({ due: 0, rising: 0, fresh: 0 })).toBeNull();
-    expect(levelShares({ sketch: 3, ink: 1, gilded: 0 })).toEqual({
+    expect(levelShares({ blank: 0, sketch: 3, ink: 1, gilded: 0 })).toEqual({
+      blank: 0,
       sketch: 0.75,
       ink: 0.25,
       gilded: 0,

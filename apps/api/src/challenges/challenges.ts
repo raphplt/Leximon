@@ -15,6 +15,7 @@ import {
   gameDayOf,
   gradeTyped,
   isDue,
+  isProvenLevel,
   levelUpPossible,
   MASTERY_SCHEDULE,
   type MasteryLevel,
@@ -22,8 +23,10 @@ import {
   type MemoryState,
   masteryRulesAt,
   newWordMastery,
+  PRACTICE_SCHEDULE,
   type ProgressGain,
   planSession,
+  practiceRulesAt,
   progressGain,
   type Question,
   REFILL_SCHEDULE,
@@ -33,12 +36,42 @@ import {
   xpRulesAt,
 } from "@leximon/core";
 import { type Database, schema } from "@leximon/db";
-import { and, asc, eq, sql, type WithSubquery } from "drizzle-orm";
+import { and, asc, eq, type SQL, sql, type WithSubquery } from "drizzle-orm";
 import { addXp } from "../progress/progress";
 import type { CatalogIndex } from "./catalog-index";
 
-const { boosterBonusAwards, boosterWallets, userMastery, userProgress, reviewLogs, userCards } =
-  schema;
+const {
+  boosterBonusAwards,
+  boosterWallets,
+  practiceAnswers,
+  userMastery,
+  userProgress,
+  reviewLogs,
+  userCards,
+} = schema;
+
+/**
+ * Today's answers towards the daily goal, as a subquery of one `correct` column: the reviews, and
+ * the free practice answers when the rules count them. Both read their (player, date) index.
+ */
+export function todaysAnswers(
+  userId: string,
+  day: { start: EpochMs; end: EpochMs },
+  now: EpochMs,
+): SQL {
+  const countPractice = practiceRulesAt(PRACTICE_SCHEDULE, now).practiceCountsForDaily;
+  return sql`(
+    select ${reviewLogs.correct} as correct from ${reviewLogs}
+    where ${reviewLogs.userId} = ${userId}
+      and ${reviewLogs.reviewedAt} >= ${new Date(day.start)}
+      and ${reviewLogs.reviewedAt} < ${new Date(day.end)}
+    union all
+    select ${practiceAnswers.correct} as correct from ${practiceAnswers}
+    where ${countPractice} and ${practiceAnswers.userId} = ${userId}
+      and ${practiceAnswers.answeredAt} >= ${new Date(day.start)}
+      and ${practiceAnswers.answeredAt} < ${new Date(day.end)}
+  ) answers`;
+}
 
 export interface ChallengeSession {
   readonly questions: readonly Question[];
@@ -197,7 +230,7 @@ export async function answerChallenge(
   const { userId, cardId, now } = input;
   const rules = masteryRulesAt(MASTERY_SCHEDULE, now);
   const bonusRules = bonusRulesAt(BONUS_SCHEDULE, now);
-  const fresh = newWordMastery(now);
+  const fresh = newWordMastery(rules, now);
   const wallet = createFullWallet(REFILL_SCHEDULE, now);
   const day = gameDayOf(now);
 
@@ -211,11 +244,11 @@ export async function answerChallenge(
     const lookup = await tx.execute<AnswerLookupRow>(sql`
       with locked as (
         insert into ${userMastery} (user_id, card_id, level, due, stability, difficulty,
-          scheduled_days, learning_steps, reps, lapses, state, last_reviewed_at)
+          scheduled_days, learning_steps, reps, lapses, state, last_reviewed_at, started_at)
         select ${userId}, ${cardId}, ${fresh.level}, ${new Date(fresh.memory.due)},
           ${fresh.memory.stability}, ${fresh.memory.difficulty}, ${fresh.memory.scheduledDays},
           ${fresh.memory.learningSteps}, ${fresh.memory.reps}, ${fresh.memory.lapses},
-          ${fresh.memory.state}, null
+          ${fresh.memory.state}, null, ${new Date(now)}
         where exists (select 1 from ${userCards} where ${userCards.userId} = ${userId}
           and ${userCards.cardId} = ${cardId} and ${userCards.quantity} > 0)
         on conflict (user_id, card_id) do update set user_id = excluded.user_id
@@ -233,11 +266,8 @@ export async function answerChallenge(
           where ${userProgress.userId} = ${userId}), 0) as xp
       from locked
       cross join lateral (
-        select count(*)::int as day_answers, (count(*) filter (where ${reviewLogs.correct}))::int as day_correct
-        from ${reviewLogs}
-        where ${reviewLogs.userId} = ${userId}
-          and ${reviewLogs.reviewedAt} >= ${new Date(day.start)}
-          and ${reviewLogs.reviewedAt} < ${new Date(day.end)}
+        select count(*)::int as day_answers, (count(*) filter (where answers.correct))::int as day_correct
+        from ${todaysAnswers(userId, day, now)}
       ) tally
       cross join lateral (
         select coalesce(json_agg(json_build_object('kind', ${boosterBonusAwards.kind},
@@ -313,7 +343,11 @@ export async function answerChallenge(
         .where(and(eq(userMastery.userId, userId), eq(userMastery.cardId, cardId)))
         .returning({ cardId: userMastery.cardId }),
     );
-    const xpGained = answerXp(xpRulesAt(XP_SCHEDULE, now), { correct, levelUp: outcome.levelUp });
+    // Reaching the sketch only shows the word was met: no level XP before the ink.
+    const xpGained = answerXp(xpRulesAt(XP_SCHEDULE, now), {
+      correct,
+      levelUp: outcome.levelUp && isProvenLevel(outcome.mastery.level),
+    });
     // Written even for 0 XP: the statement then returns the exact total for the response.
     const progressUpsert = addXp(tx, "progress_upsert", userId, xpGained);
     const ctes: WithSubquery[] = [masteryUpdate, progressUpsert];
@@ -432,14 +466,14 @@ function gradeAnswer(rules: MasteryRules, catalog: CatalogIndex, input: AnswerIn
   return { grade: gradeTyped(rules, input.typed, word, catalog.words), typed: true };
 }
 
-interface StoredAward {
+export interface StoredAward {
   readonly kind: BonusKind;
   readonly awardKey: string;
   readonly amount: number;
   readonly credited: number;
 }
 
-function summarize(awards: readonly StoredAward[], reserve: number): AnswerBonus {
+export function summarize(awards: readonly StoredAward[], reserve: number): AnswerBonus {
   const total = (kind: BonusKind) =>
     awards.filter((award) => award.kind === kind).reduce((sum, award) => sum + award.amount, 0);
   return {
@@ -494,22 +528,19 @@ export interface DailyTally {
 
 /**
  * Today's answers towards the daily goal, in one read: the answers of the game day
- * (Paris time) and whether its bonus was already given. Uses the same index as the answer tally.
+ * (Paris time) and whether its bonus was already given. Same subquery as the answer tally.
  */
 export async function dailyTally(db: Database, userId: string, now: EpochMs): Promise<DailyTally> {
   const rules = bonusRulesAt(BONUS_SCHEDULE, now);
   const day = gameDayOf(now);
   const result = await db.execute<{ answers: number; correct: number; awarded: boolean }>(sql`
     select count(*)::int as answers,
-      (count(*) filter (where ${reviewLogs.correct}))::int as correct,
+      (count(*) filter (where answers.correct))::int as correct,
       exists (select 1 from ${boosterBonusAwards}
         where ${boosterBonusAwards.userId} = ${userId}
           and ${boosterBonusAwards.kind} = 'daily'
           and ${boosterBonusAwards.awardKey} = ${day.key}) as awarded
-    from ${reviewLogs}
-    where ${reviewLogs.userId} = ${userId}
-      and ${reviewLogs.reviewedAt} >= ${new Date(day.start)}
-      and ${reviewLogs.reviewedAt} < ${new Date(day.end)}
+    from ${todaysAnswers(userId, day, now)}
   `);
   const row = result.rows[0];
   return {
