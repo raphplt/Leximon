@@ -1,9 +1,16 @@
 # Cahier des charges · L'écran Défis repensé et un vrai entraînement
 
-- **Statut :** proposé le 2026-11-03, en attente des choix du propriétaire (questions en bas). Rien n'est construit. Les choix de règles iront dans `regles-du-jeu.md` une fois tranchés, pas avant.
+- **Statut :** proposé le 2026-11-03. Premiers choix du propriétaire le 2026-11-04 (ci-dessous), les autres questions restent ouvertes. Rien n'est construit ; une planche montre l'écran sur `/planches/defis`. Les choix de règles iront dans `regles-du-jeu.md` une fois tranchés, pas avant.
 - **Source :** retours du propriétaire du 2026-11-03 sur l'écran Défis du web, dans La Bibliothèque. L'écran est éparpillé : le défi du jour, « Tes mots par palier » qui prend beaucoup de place, l'énigme du jour, une liste « Mots à réviser » dont on ne fait rien, et une liste de catégories d'entraînement qui se lit mal et se personnalise peu. « S'entraîner » n'est pas mis en avant, ses boutons sont plats et aucun ne donne envie. Il manque un vrai entraînement, dans l'esprit d'Anki ou de Duolingo.
 - **Règles liées :** P1 (positionnement), P29 (sachet bonus du défi du jour), P31 (ce qu'on révise), P32 et P33 (formats, paliers), P48 (XP), P57 (prononciation), P59 (ouverture par niveau), P72 (rien de payant ne touche la progression), P81 (révisions choisies), P82 (énigme), P84 (écus), P88 (série), P89 (succès), N1 et N2.
 - **Cahiers liés :** [revisions-et-modes-de-jeu.md](revisions-et-modes-de-jeu.md) (la partie A, faite, est reprise ici ; la partie B fournit des types de questions), [defis-progression-et-sensation.md](defis-progression-et-sensation.md) (sons et réactions, gardés), [direction-artistique.md](direction-artistique.md) (la place laissée à la frise), [retours-game-designer.md](retours-game-designer.md) (4.1 sachet bonus à ouvrir, 4.2 frise, 4.3 réactions, 4.6 paliers).
+
+## Choix du propriétaire
+
+- **2026-11-04 · Le défi du jour reste à part.** Il ne devient pas l'objectif de la révision principale et n'en est pas le titre (T2 : b). La révision a son propre nom (T3 reste ouverte), le défi du jour garde sa porte, sa frise et son sachet bonus.
+- **2026-11-04 · P1 est à revoir.** Le propriétaire juge que le refus de « faire du Duolingo » peut être contre-productif : T1 est rouverte, et « Ce qu'on évite » se relira avec elle.
+- **2026-11-04 · Les trois compteurs sont retenus**, avec leurs mots et leurs phrases (voir « La séance » plus bas).
+- **2026-11-04 · Une maquette avant de trancher le reste**, pour se représenter l'écran : `/planches/defis`.
 
 ## Ce qu'on a aujourd'hui
 
@@ -49,9 +56,9 @@ Ce qui ne va pas, au-delà de l'allure :
 
 Une grande feuille posée au centre du sous-main.
 
-- **Titre en lettrage :** « Défi du jour ».
+- **Titre en lettrage :** le nom de la révision (T3), jamais « Défi du jour ».
 - **Ce qui attend**, en trois compteurs dans des creux du papier, comme les trois chiffres d'Anki, avec leurs mots : « à revoir », « nouveaux », « peuvent monter ». La ligne du dessous le dit en phrase, avec les accords pour 0, 1 et plusieurs : « 12 mots sont à revoir, dont 2 peuvent passer à l'Encre. 5 nouveaux mots attendent leur première question. » Quand rien n'est dû : « Tes mots tiennent bon. Le prochain revient dans 3 h. Tu peux t'entraîner en attendant. »
-- **La frise du défi du jour** (game designer 4.2) : 5 cases. La 3e porte le sachet bonus, la 5e les écus du sans-faute quand les écus existeront (P84). Elle se remplit pendant la séance, et reste visible en haut de chaque question.
+- **Le défi du jour reste une porte à part** (choix du 2026-11-04) : sa frise de 5 cases (game designer 4.2), la 3e portant le sachet bonus, et son bouton. Il ne s'affiche pas dans la feuille de la révision.
 - **Le bouton d'or :** « Commencer la séance » (ou le verbe retenu en T3), son nombre en bout à droite, comme sur Jouer : « 10 ». Dessous, en petit : « 10 questions, environ 3 minutes ». Le bouton invite toutes les trois secondes tant que l'objectif du jour n'est pas gagné (vie au repos de la DA), puis se calme.
 - **Le réglage**, une tuile ronde de papier à côté du bouton, ouvre une feuille : longueur, types de questions, difficulté, son des questions (T4, T8, T10, T16). Le choix est gardé.
 - **Après le défi gagné**, le bouton reste le même et dit « Continuer » ; la frise pleine brille une fois, puis se tait.
@@ -194,6 +201,28 @@ Une personnalisation ne s'achète jamais : longueur, types, portées et difficul
 
 Les réglages sont gardés sur le compte (T16), pour suivre le joueur du web à son téléphone.
 
+## Quand la collection grandit
+
+Un joueur régulier ouvre une douzaine de sachets par jour au début : une cinquantaine de cartes, dont la plupart sont des mots nouveaux. En une ou deux semaines, il possède plusieurs centaines de mots. C'est le cas normal, pas une exception, et la séance doit le tenir.
+
+**Ce qui coûte, ce sont les mots qu'on commence, pas ceux qu'on possède.** Avec FSRS réglé à 90 % de rétention, un mot bien su revient environ 4 fois dans son premier mois (vers 1, 3, 10 et 30 jours), puis tous les deux ou trois mois. La charge du jour dépend donc du nombre de mots nouveaux qu'on commence chaque jour, à peu près :
+
+| Mots nouveaux commencés par jour | Questions par jour, une fois le rythme pris | Soit |
+|---|---|---|
+| 5 | environ 25 | 2 à 3 séances de 10 |
+| 10 | environ 50 | 5 séances |
+| 20 | environ 100 | 10 séances |
+| 50 (tout ce qu'on ouvre, comme aujourd'hui) | environ 250 | intenable |
+
+Sans limite, la pile « à revoir » grossit sans fin et décourage : c'est l'écueil d'Anki quand on ajoute trop de cartes. D'où ce qu'on propose :
+
+- **Un rythme, choisi par le joueur** (T19) : 5, 10 ou 20 mots nouveaux commencés par jour, 10 par défaut. Le compteur « nouveaux » montre ce qui reste du jour (« 5 »), pas les 300 mots jamais révisés. Les autres attendent leur tour dans l'album, sans rien perdre : la carte reste à lui.
+- **Les plus récents d'abord** : le mot qu'on vient de révéler dans un sachet est celui dont on se souvient le mieux, il entre en premier.
+- **Pas de dette affichée.** Après une absence, les mots les plus en retard passent d'abord, et la phrase dit ce qui attend sans reproche : « 140 mots sont à revoir. Les plus urgents passent d'abord. » FSRS tient compte du retard réel : un mot revu en retard et su s'espace davantage.
+- **S'entraîner reste ouvert à tout** : l'étagère pose des questions sur n'importe quel mot possédé, commencé ou non, sans toucher la mémoire (P81).
+- **Les doubles n'ajoutent rien** : la mémoire est rangée par mot, pas par exemplaire.
+- **Côté serveur**, quelques centaines puis quelques milliers de lignes de mémoire par joueur, lues par une seule requête indexée : rien à craindre (1 561 mots au catalogue aujourd'hui).
+
 ## Avec la révision espacée et les paliers
 
 Rien ne change dans ce que la mémoire enregistre. C'est la condition pour que la séance ne casse pas le jeu.
@@ -266,12 +295,12 @@ La recette ajoute des tests DEF et MDE à `recette-web.md` et `recette-mobile.md
 
 Chaque question a une recommandation, en premier.
 
-**T1 · Positionnement.** P1 dit « pas une app d'apprentissage façon Duolingo ».
+**T1 · Positionnement.** P1 dit « pas une app d'apprentissage façon Duolingo ». Rouverte le 2026-11-04 : le propriétaire juge ce refus peut-être contre-productif.
 - a. **(recommandé)** Préciser P1 : on emprunte la mécanique de séance d'Anki et de Duolingo, mais l'accueil, la vente et le cœur restent la collection.
 - b. Assumer un virage vers l'apprentissage, aussi dans la landing et les stores.
 - c. Ne rien emprunter de plus : on se contente de remettre l'écran en ordre.
 
-**T2 · Combien de portes.**
+**T2 · Combien de portes.** Tranchée le 2026-11-04 : b, le défi du jour reste à part.
 - a. **(recommandé)** Une seule séance en héros, qui remplit le défi du jour ; les portées en second, sur l'étagère.
 - b. Garder le défi du jour (5 questions) et un entraînement séparé, chacun son bouton.
 - c. Une seule séance, sans portées : on retire le choix de collection et de thème.
@@ -286,10 +315,10 @@ Chaque question a une recommandation, en premier.
 - b. 10, fixe.
 - c. 5, 10 ou 20, plus « jusqu'à ce qu'il n'y ait plus rien à revoir » (à la Anki).
 
-**T5 · Les mots nouveaux dans la séance.**
-- a. **(recommandé)** Mêlés aux mots à revoir, un sur trois au plus tant qu'il en reste, sans limite par jour.
-- b. Comme aujourd'hui : tous les mots dus d'abord, puis les nouveaux.
-- c. Une limite par jour, comme Anki (20 nouveaux mots), pour éviter l'avalanche de révisions quand on ouvre beaucoup de sachets.
+**T5 · Les mots nouveaux dans la séance.** (Recommandation changée le 2026-11-04, après la question du propriétaire sur les grandes collections.)
+- a. **(recommandé)** Mêlés aux mots à revoir, un sur trois au plus tant qu'il en reste, dans la limite du rythme du jour (T19), les plus récents d'abord.
+- b. Mêlés de la même façon, sans limite par jour : la pile grossit vite (voir « Quand la collection grandit »).
+- c. Comme aujourd'hui : tous les mots dus d'abord, puis les nouveaux, sans limite.
 
 **T6 · Un mot raté dans la séance.**
 - a. **(recommandé)** Il revient trois questions plus tard, sous un autre format, en entraînement (5 XP, rien pour FSRS) ; trois rattrapages au plus.
@@ -354,3 +383,8 @@ Chaque question a une recommandation, en premier.
 - a. **(recommandé)** Lot 1 (écran et séance), lot 2 (types de questions), lot 3 (réglages et série).
 - b. Lot 1 et lot 2 ensemble, pour juger la séance avec ses nouveaux types d'un coup.
 - c. Lot 1 seulement, le reste après la semaine de jeu dans La Bibliothèque.
+
+**T19 · Le rythme des mots nouveaux.**
+- a. **(recommandé)** Au choix du joueur, 5, 10 ou 20 mots nouveaux commencés par jour, 10 par défaut, dans la feuille de la séance.
+- b. Fixe, 10 par jour.
+- c. Fixe, 20 par jour, comme Anki.
