@@ -44,6 +44,12 @@ export const mailLetterSchema = z.discriminatedUnion("kind", [
     eventId: z.int().positive(),
     reactions: z.int().nonnegative(),
   }),
+  /** A joust to play, launched by the other player; the joust to answer, or ended. */
+  z.object({
+    kind: z.enum(["joust_received", "joust_ended"]),
+    ...letterBase,
+    joustId: z.uuid(),
+  }),
 ]);
 export type MailLetter = z.infer<typeof mailLetterSchema>;
 export type MailKind = MailLetter["kind"];

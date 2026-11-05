@@ -78,6 +78,8 @@ export const cards = pgTable(
     /** Stable slug, e.g. "galimatias". Never reused. */
     id: text().primaryKey(),
     lemma: text().notNull(),
+    /** The definition with its word hidden, as a joust asks it; written by each publication. */
+    definition: text(),
     /** Frozen once published (enforced by a trigger): a re-tiered word becomes a new card. */
     rarity: rarity().notNull(),
     /** Every card belongs to exactly one collection, whatever booster it comes from. */
@@ -477,6 +479,8 @@ export const players = pgTable(
     lastSeenAt: timestamp({ withTimezone: true }),
     /** Places of the closed beta taken through the player's friend link. */
     friendPlacesUsed: integer().notNull().default(0),
+    /** Jousts opened to this player before they open to all, from the back office. */
+    joustAccess: boolean().notNull().default(false),
   },
   (table) => [
     uniqueIndex("players_pseudo_key_idx").on(table.pseudoKey),
@@ -653,6 +657,8 @@ export const userPreferences = pgTable("user_preferences", {
   notifyTrades: boolean().notNull().default(true),
   /** Only when someone names the player in the clan's discussion. */
   notifyClanMentions: boolean().notNull().default(true),
+  /** When a player sends the player a joust to play. */
+  notifyJousts: boolean().notNull().default(true),
   /** Anyone may ask the player to be friends, or nobody: only their friend link makes friends. */
   friendRequestsOpen: boolean().notNull().default(true),
   /** What the player finds enters their friends' feed. */

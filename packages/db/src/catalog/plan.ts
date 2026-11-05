@@ -1,4 +1,5 @@
 import {
+  hideWordIn,
   type Rarity,
   RIDDLE_SCHEDULE,
   type RiddleClues,
@@ -22,6 +23,8 @@ export interface CatalogPlan {
   readonly cards: readonly {
     readonly id: string;
     readonly lemma: string;
+    /** As a joust asks it: the word hidden. */
+    readonly definition: string;
     readonly rarity: Rarity;
     readonly collectionId: string;
   }[];
@@ -51,6 +54,7 @@ export function planCatalog(release: Release, published: readonly PublishedCard[
     cards: releaseCards.map((card) => ({
       id: card.id,
       lemma: card.word,
+      definition: hideWordIn(card.definition, card.word),
       rarity: card.rarity,
       collectionId: card.collectionId,
     })),
@@ -118,6 +122,7 @@ export async function applyCatalog(db: Database, plan: CatalogPlan, now: Date): 
           target: cards.id,
           set: {
             lemma: sql`excluded.lemma`,
+            definition: sql`excluded.definition`,
             collectionId: sql`excluded.collection_id`,
             retiredAt: null,
           },

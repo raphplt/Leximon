@@ -34,6 +34,7 @@
 
 /* Each letter is a slip of paper; a new one carries a gold band on its edge. */
 .letter {
+  box-sizing: border-box;
   display: flex;
   align-items: flex-start;
   gap: var(--lx-s6);

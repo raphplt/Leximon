@@ -6,7 +6,7 @@ import { readReferralRewards } from "../friends/referrals";
 import { readBadges } from "../profile/profile";
 import { purgeRows } from "../purge";
 
-const { clanMessages, friendReactions, friendRequests, mailLetters, trades } = schema;
+const { clanMessages, friendReactions, friendRequests, jousts, mailLetters, trades } = schema;
 
 /** Letters are erased after this long, read or not. */
 export const MAIL_RETENTION_MS = 90 * 24 * 60 * 60 * 1000;
@@ -153,6 +153,73 @@ export async function writeRequestLetters(
       join clan_members m on m.clan_id = r.clan_id and m.role in ('chief', 'deputy')
       where r.clan_id = ${clanId} and r.user_id = ${userId}
       on conflict (user_id, dedupe_key) do nothing`);
+  }
+}
+
+/**
+ * Letters about jousts, from each joust's current state: the opponent's once the challenger has
+ * played, the challenger's once it ends, and the absent opponent's when it went to the
+ * challenger without them. Once the opponent has played, their letter is read.
+ */
+export async function writeJoustLetters(db: Database, joustIds: readonly string[]): Promise<void> {
+  if (joustIds.length === 0) return;
+  const rows = await db
+    .select()
+    .from(jousts)
+    .where(inArray(jousts.id, [...new Set(joustIds)]));
+  const letters: NewLetter[] = [];
+  const played: { readonly userId: string; readonly dedupeKey: string }[] = [];
+  for (const joust of rows) {
+    if (joust.challengerDoneAt === null) continue;
+    const received = `joust:${joust.id}:received`;
+    if (joust.endedAt === null && joust.opponentStartedAt === null) {
+      letters.push({
+        userId: joust.opponentId,
+        kind: "joust_received",
+        payload: { joustId: joust.id, playerId: joust.challengerId },
+        dedupeKey: received,
+        createdAt: joust.challengerDoneAt,
+      });
+    }
+    if (joust.opponentStartedAt !== null) {
+      played.push({ userId: joust.opponentId, dedupeKey: received });
+    }
+    if (joust.endedAt === null) continue;
+    letters.push({
+      userId: joust.challengerId,
+      kind: "joust_ended",
+      payload: { joustId: joust.id, playerId: joust.opponentId },
+      dedupeKey: `joust:${joust.id}:ended`,
+      createdAt: joust.endedAt,
+    });
+    if (joust.forfeit) {
+      letters.push({
+        userId: joust.opponentId,
+        kind: "joust_ended",
+        payload: { joustId: joust.id, playerId: joust.challengerId },
+        dedupeKey: `joust:${joust.id}:ended`,
+        createdAt: joust.endedAt,
+      });
+    }
+  }
+  await insertLetters(db, letters);
+  if (played.length > 0) {
+    await db
+      .update(mailLetters)
+      .set({ readAt: sql`now()` })
+      .where(
+        and(
+          isNull(mailLetters.readAt),
+          or(
+            ...played.map((letter) =>
+              and(
+                eq(mailLetters.userId, letter.userId),
+                eq(mailLetters.dedupeKey, letter.dedupeKey),
+              ),
+            ),
+          ),
+        ),
+      );
   }
 }
 
@@ -398,6 +465,9 @@ function toLetter(
             },
           ]
         : [];
+    case "joust_received":
+    case "joust_ended":
+      return "joustId" in payload ? [{ kind: row.kind, ...base, joustId: payload.joustId }] : [];
     default:
       throw new Error(`Unknown letter: ${JSON.stringify(row.kind satisfies never)}`);
   }

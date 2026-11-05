@@ -161,6 +161,7 @@ export const preferencesSchema = z.object({
   notifyReviews: z.boolean(),
   notifyTrades: z.boolean(),
   notifyClanMentions: z.boolean(),
+  notifyJousts: z.boolean(),
   /** Anyone may ask to be friends; otherwise only the friend link makes friends. */
   friendRequestsOpen: z.boolean(),
   /** What the player finds enters their friends' feed. */

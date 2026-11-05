@@ -143,6 +143,12 @@ export function SettingsScreen() {
             value={notify.notifyClanMentions}
             onChange={(on) => void toggleNotify("notifyClanMentions", on)}
           />
+          <Toggle
+            label="Joutes"
+            detail="Quand un joueur te lance une joute"
+            value={notify.notifyJousts}
+            onChange={(on) => void toggleNotify("notifyJousts", on)}
+          />
         </Group>
       )}
 

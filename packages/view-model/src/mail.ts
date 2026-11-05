@@ -24,6 +24,7 @@ export interface LetterView {
 
 const trades: LetterTarget = { kind: "screen", href: "/echanges" };
 const friends: LetterTarget = { kind: "screen", href: "/amis" };
+const jousts: LetterTarget = { kind: "screen", href: "/joutes" };
 
 /** A letter as the mail lists it. */
 export function letterView(letter: MailLetter, now: EpochMs, timeZone?: string): LetterView {
@@ -80,6 +81,15 @@ export function letterView(letter: MailLetter, now: EpochMs, timeZone?: string):
         target: friends,
       };
     }
+    case "joust_received":
+      return { title: `${name} te défie en joute`, detail: "Joutes", when, target: jousts };
+    case "joust_ended":
+      return {
+        title: `Ta joute contre ${name} est finie`,
+        detail: "Résultat de la joute",
+        when,
+        target: jousts,
+      };
     default:
       throw new Error(`Unknown letter: ${JSON.stringify(letter satisfies never)}`);
   }

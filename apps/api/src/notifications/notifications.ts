@@ -52,6 +52,7 @@ const NEWS_KINDS = [
   "offer_completed",
   "clan_mention",
   "clan_request",
+  "joust_received",
 ] as const satisfies readonly MailLetter["kind"][];
 type NewsKind = (typeof NEWS_KINDS)[number];
 
@@ -176,6 +177,7 @@ interface Recipient {
   readonly emailReminders: boolean;
   readonly notifyTrades: boolean;
   readonly notifyClanMentions: boolean;
+  readonly notifyJousts: boolean;
   readonly notifyReviews: boolean;
 }
 
@@ -194,6 +196,7 @@ async function readRecipients(db: Database, userIds: readonly string[]): Promise
     email_reminders: boolean;
     notify_trades: boolean;
     notify_clan_mentions: boolean;
+    notify_jousts: boolean;
     notify_reviews: boolean;
   }>(sql`
     select u.id, u.email, coalesce(p.last_seen_at, u.created_at) as last_seen_at,
@@ -203,6 +206,7 @@ async function readRecipients(db: Database, userIds: readonly string[]): Promise
       coalesce(pr.email_reminders, true) as email_reminders,
       coalesce(pr.notify_trades, true) as notify_trades,
       coalesce(pr.notify_clan_mentions, true) as notify_clan_mentions,
+      coalesce(pr.notify_jousts, true) as notify_jousts,
       coalesce(pr.notify_reviews, true) as notify_reviews
     from users u
     left join players p on p.user_id = u.id
@@ -223,6 +227,7 @@ async function readRecipients(db: Database, userIds: readonly string[]): Promise
     emailReminders: row.email_reminders,
     notifyTrades: row.notify_trades,
     notifyClanMentions: row.notify_clan_mentions,
+    notifyJousts: row.notify_jousts,
     notifyReviews: row.notify_reviews,
   }));
 }
@@ -235,6 +240,8 @@ function wantsLetter(recipient: Recipient, kind: NewsKind): boolean {
       return recipient.notifyTrades;
     case "clan_mention":
       return recipient.notifyClanMentions;
+    case "joust_received":
+      return recipient.notifyJousts;
     case "friend_request":
     case "clan_request":
       return true;

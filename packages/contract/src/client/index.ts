@@ -4,6 +4,7 @@ import { clanRoutes } from "./clans";
 import { friendRoutes } from "./friends";
 import { gameRoutes } from "./game";
 import { type ApiClientOptions, createHttp } from "./http";
+import { joustRoutes } from "./jousts";
 
 /**
  * Client of the game API, shared by the web and the mobile app. Every response is validated
@@ -16,6 +17,7 @@ export function createApiClient(options: ApiClientOptions) {
     ...accountRoutes(http),
     ...friendRoutes(http),
     ...clanRoutes(http),
+    ...joustRoutes(http),
   };
 }
 
@@ -54,3 +56,9 @@ export {
   BetaClosedError,
   type BetaClosedReason,
 } from "./http";
+export type {
+  JoustAnswerResult,
+  JoustQuestionResult,
+  LaunchJoustResult,
+  SaveDeckResult,
+} from "./jousts";

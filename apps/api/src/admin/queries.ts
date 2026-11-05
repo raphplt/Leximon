@@ -368,7 +368,7 @@ export async function readPlayer(
   const row = playerResult.rows[0];
   if (row === undefined) return null;
 
-  const [wallets, collection, mastery, opens, recentOpens, tradeCounts, actions] =
+  const [wallets, collection, mastery, opens, recentOpens, tradeCounts, jousts, actions] =
     await Promise.all([
       db.execute<{
         stored: number;
@@ -406,6 +406,11 @@ export async function readPlayer(
             and ${trades.expiresAt} > ${new Date(now)})::int as pending
         from ${trades}
         where ${trades.proposerId} = ${userId} or ${trades.recipientId} = ${userId}`),
+      db.execute<{ access: boolean; played: number }>(sql`
+        select coalesce((select joust_access from players where user_id = ${userId}), false)
+            as access,
+          (select count(*)::int from jousts
+            where challenger_id = ${userId} or opponent_id = ${userId}) as played`),
       db.execute<ActionRow>(actionsQuery(sql`${adminActions.targetUserId} = ${userId}`, 20)),
     ]);
 
@@ -462,6 +467,7 @@ export async function readPlayer(
       })),
     },
     trades: { total: tradeCounts.rows[0]?.total ?? 0, pending: tradeCounts.rows[0]?.pending ?? 0 },
+    jousts: { access: jousts.rows[0]?.access ?? false, played: jousts.rows[0]?.played ?? 0 },
     actions: actions.rows.map(toAction),
   };
 }

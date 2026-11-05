@@ -6,7 +6,12 @@ import type { Context } from "hono";
 import type { AppEnv } from "../context";
 import { errorSummary } from "../error-summary";
 import { handleFriendEvents } from "../friends/events";
-import { writeMentionLetters, writeRequestLetters, writeTradeLetters } from "../mail/mail";
+import {
+  writeJoustLetters,
+  writeMentionLetters,
+  writeRequestLetters,
+  writeTradeLetters,
+} from "../mail/mail";
 import { lastLetterId, playersWithNews } from "../notifications/notifications";
 import { clansOf } from "./clans";
 import { recountClanWeek } from "./goal";
@@ -77,6 +82,7 @@ export async function handleGameEvents(
   const answerIds = new Set<string>();
   const changedClans = new Set<string>();
   const tradeIds = new Set<string>();
+  const joustIds = new Set<string>();
   const messageIds = new Set<number>();
   const requests = new Map<string, { clanId: string; userId: string }>();
   const levelIds = new Set<string>();
@@ -116,6 +122,9 @@ export async function handleGameEvents(
       case "trade_changed":
         tradeIds.add(event.data.tradeId);
         break;
+      case "joust_changed":
+        joustIds.add(event.data.joustId);
+        break;
       case "clan_mentions":
         messageIds.add(event.data.messageId);
         break;
@@ -152,6 +161,7 @@ export async function handleGameEvents(
   // Letters written from here on are this batch's: their players may get an e-mail.
   const lettersBefore = await lastLetterId(db);
   await writeTradeLetters(db, [...tradeIds], now);
+  await writeJoustLetters(db, [...joustIds]);
   await writeMentionLetters(db, [...messageIds]);
   await writeRequestLetters(db, [...requests.values()]);
   await handleFriendEvents(

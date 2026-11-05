@@ -15,6 +15,7 @@ import type { ClanGoalSchedule } from "./clan/goal";
 import type { ClanLevelRules } from "./clan/level";
 import type { EcuSchedule } from "./ecus/ecus";
 import type { FriendSchedule } from "./friend/friend";
+import type { JoustSchedule } from "./joust/joust";
 import type { MasterySchedule } from "./mastery/mastery";
 import type { PracticeSchedule } from "./mastery/practice";
 import type { NotifySchedule } from "./notify/notify";
@@ -30,6 +31,8 @@ import type { TradeSchedule } from "./trade/trade";
 
 const MINUTE = 60_000;
 const SINCE_LAUNCH = Number.MIN_SAFE_INTEGER;
+// Midnight in Paris, 6 November 2026: profile, clans and jousts open at lower levels.
+const SOCIAL_SOONER = Date.parse("2026-11-05T23:00:00Z");
 /** Midnight in Paris on 2026-10-21, when the owner decided level rewards and features by level. */
 const LEVELS_DECIDED = Date.UTC(2026, 9, 20, 22);
 /** Midnight in Paris on 2026-10-23, when the owner decided levels on proven recall. */
@@ -429,6 +432,51 @@ export const UNLOCK_SCHEDULE: UnlockSchedule = [
     },
     // A stable slug of the catalog.
     starterCollection: "fondateurs",
+  },
+  {
+    // The social side comes sooner: most players had left before level 10.
+    startsAt: SOCIAL_SOONER,
+    levels: {
+      choose_collection: 3,
+      practice_choice: 3,
+      public_profile: 5,
+      join_clan: 5,
+      create_clan: 10,
+      jousts: 8,
+    },
+    starterCollection: "fondateurs",
+  },
+];
+
+// Jousts: decks of 10 cards on 25 points, 5 drawn from each, 15 seconds a question. The clock is
+// to be tried at 10, 15 and 20 seconds with the testers; gains provisional.
+export const JOUST_SCHEDULE: JoustSchedule = [
+  {
+    startsAt: SINCE_LAUNCH,
+    openToAll: false,
+    deckSize: 10,
+    drawn: 5,
+    deckBudget: 25,
+    cost: { common: 1, uncommon: 2, rare: 3, precious: 4, epic: 5, legendary: 6 },
+    minimumMastery: "sketch",
+    choices: 4,
+    answerMs: 15_000,
+    graceMs: 2_000,
+    runMs: 5 * MINUTE,
+    replyMs: 24 * 60 * MINUTE,
+    maxWaiting: 5,
+    maxToPlay: 3,
+    seenWithinMs: 24 * 60 * MINUTE,
+    pairCooldownMs: 24 * 60 * MINUTE,
+    xpPlayed: 20,
+    xpWon: 20,
+    rewardedPerDay: 5,
+    firstWinBoosters: 1,
+    glicko: {
+      initial: { rating: 1500, deviation: 350, volatility: 0.06 },
+      tau: 0.5,
+      periodDays: 7,
+    },
   },
 ];
 

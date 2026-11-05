@@ -156,6 +156,12 @@ export function adminRoutes(http: Http) {
       await postJson(player(id, "/unban"), {});
     },
 
+    /** Opens or closes jousts to a tester, while they are not open to everyone. */
+    async setJoustAccess(id: string, access: boolean): Promise<void> {
+      const response = await send(player(id, "/jousts"), json("PUT", { access }));
+      if (!response.ok) throw await failure(response);
+    },
+
     fetchWaitlist: (cursor?: string): Promise<AdminWaitlistResponse> =>
       getJson(withQuery("/admin/waitlist", { cursor }), adminWaitlistResponseSchema),
 

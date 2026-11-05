@@ -1,0 +1,317 @@
+/* Joutes: the hall, the deck, a run on the clock and its result. */
+
+.page {
+  box-sizing: border-box;
+  display: grid;
+  gap: var(--lx-s9);
+  align-content: start;
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 26px var(--lx-s16) var(--lx-s32);
+}
+
+.title {
+  margin: 0;
+  font-size: var(--lx-size-display-large);
+  line-height: 1;
+}
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--lx-s7);
+  padding: var(--lx-s10);
+}
+
+.line {
+  margin: 0;
+  font-size: var(--lx-size-body);
+  line-height: 1.45;
+  color: var(--lx-color-page-ink-muted);
+}
+
+.notice {
+  margin: 0;
+  font-weight: 800;
+  color: var(--lx-color-danger-deep);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--lx-s5);
+}
+
+.headline {
+  margin: 0;
+  font-size: var(--lx-size-heading);
+  line-height: 1.15;
+}
+
+/* On the shelves, not on paper: the light ink of the page. */
+.back {
+  justify-self: start;
+  font-size: var(--lx-size-body);
+  font-weight: 800;
+  color: var(--lx-color-page-ink);
+}
+
+/* The player's jousts. */
+
+.list {
+  display: grid;
+  gap: var(--lx-s5);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: var(--lx-s6);
+}
+
+.rowText {
+  flex: 1;
+  min-width: 0;
+}
+
+.rowTitle {
+  margin: 0;
+  font-weight: 800;
+}
+
+.rowDetail {
+  margin: 0;
+  font-size: var(--lx-size-body);
+  color: var(--lx-color-page-ink-muted);
+}
+
+.rowLink {
+  font-weight: 800;
+  color: var(--lx-color-page-ink-muted);
+}
+
+/* The deck. */
+
+.deck {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--lx-s4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.dialogBody {
+  display: grid;
+  gap: var(--lx-s7);
+}
+
+.deckCount {
+  margin: 0;
+  font-weight: 800;
+}
+
+.pick {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(104px, 1fr));
+  gap: var(--lx-s5);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.pickCard {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  gap: var(--lx-s2);
+  padding: var(--lx-s2);
+  border: 3px solid transparent;
+  border-radius: 12px;
+  background: none;
+  font: inherit;
+  cursor: pointer;
+  opacity: 0.55;
+}
+
+.picked {
+  border-color: var(--lx-toy-gold-edge);
+  background: color-mix(in srgb, var(--lx-toy-gold-top) 30%, transparent);
+  opacity: 1;
+}
+
+.cost {
+  font-size: var(--lx-size-body);
+  font-weight: 800;
+}
+
+/* A run. */
+
+.run {
+  gap: var(--lx-s8);
+}
+
+.runHead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.seconds {
+  margin: 0;
+  font-size: var(--lx-size-title-large);
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+}
+
+.clock {
+  overflow: hidden;
+  height: 14px;
+  border: 2px solid var(--lx-toy-outline);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--lx-toy-paper-bottom) 55%, var(--lx-color-paper));
+}
+
+.clockFill {
+  display: block;
+  height: 100%;
+  background: linear-gradient(180deg, var(--lx-toy-green-top), var(--lx-toy-green-bottom));
+  transform-origin: left;
+  transition: transform 0.1s linear;
+}
+
+.clockLow {
+  background: linear-gradient(180deg, var(--lx-toy-red-top), var(--lx-toy-red-bottom));
+}
+
+.ghost {
+  margin: 0;
+  font-size: var(--lx-size-body);
+  font-weight: 700;
+  color: var(--lx-color-page-ink-muted);
+}
+
+.definition {
+  margin: 0;
+  font-size: var(--lx-size-title-large);
+  line-height: 1.3;
+}
+
+.choices {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--lx-s5);
+}
+
+.choice {
+  min-height: 64px;
+  padding: var(--lx-s5);
+  border: var(--lx-toy-outline-width) solid var(--lx-toy-outline);
+  border-radius: 14px;
+  background: linear-gradient(180deg, var(--lx-toy-paper-top), var(--lx-toy-paper-bottom));
+  box-shadow: 0 4px 0 var(--lx-toy-outline);
+  color: var(--lx-toy-outline);
+  font: inherit;
+  font-size: var(--lx-size-lead);
+  font-weight: 900;
+  cursor: pointer;
+  transition: transform 0.08s ease;
+}
+
+.choice:not(:disabled):hover {
+  transform: translateY(-2px);
+}
+
+.choice:not(:disabled):active {
+  transform: translateY(2px);
+  box-shadow: 0 2px 0 var(--lx-toy-outline);
+}
+
+.choice:disabled {
+  cursor: default;
+}
+
+.choiceRight {
+  background: linear-gradient(180deg, var(--lx-toy-green-top), var(--lx-toy-green-bottom));
+}
+
+.choiceWrong {
+  background: linear-gradient(180deg, var(--lx-toy-red-top), var(--lx-toy-red-bottom));
+}
+
+.choiceDim {
+  opacity: 0.45;
+}
+
+.right {
+  margin: 0;
+  font-weight: 800;
+  color: var(--lx-color-success-deep);
+}
+
+.wrong {
+  margin: 0;
+  font-weight: 800;
+  color: var(--lx-color-danger-deep);
+}
+
+/* The result. */
+
+.reward {
+  margin: 0;
+  font-size: var(--lx-size-lead);
+  font-weight: 900;
+}
+
+.runs {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: var(--lx-s8);
+}
+
+.answers {
+  display: grid;
+  gap: var(--lx-s3);
+  margin: var(--lx-s4) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.answers li {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--lx-s4);
+}
+
+.answers a {
+  color: inherit;
+}
+
+.answers span {
+  font-weight: 600;
+  color: var(--lx-color-page-ink-muted);
+}
+
+@media (max-width: 640px) {
+  .page {
+    padding: var(--lx-s9) var(--lx-s8) var(--lx-s24);
+  }
+
+  .title {
+    font-size: var(--lx-size-heading-large);
+  }
+
+  .choices {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .clockFill,
+  .choice {
+    transition: none;
+  }
+}

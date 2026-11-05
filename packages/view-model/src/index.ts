@@ -17,6 +17,7 @@ export * from "./friends";
 export * from "./gesture";
 export * from "./holo";
 export * from "./invitation";
+export * from "./jousts";
 export * from "./landing";
 export * from "./level";
 export * from "./mail";

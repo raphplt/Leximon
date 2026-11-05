@@ -16,7 +16,7 @@ import { ADMIN_ROLE } from "../auth";
  * transaction, so a change is never applied without its trace.
  */
 
-const { adminActions, boosterWallets, guestLinks, sessions, trades, users } = schema;
+const { adminActions, boosterWallets, guestLinks, players, sessions, trades, users } = schema;
 
 export type GrantBonusResult =
   | { readonly kind: "granted"; readonly added: number; readonly bonus: number }
@@ -233,5 +233,34 @@ export async function logExport(db: Database, adminId: string, now: EpochMs): Pr
     adminId,
     action: ADMIN_ACTIONS.exportWaitlist,
     createdAt: new Date(now),
+  });
+}
+
+/** Opens or closes jousts to a player while they are open to testers only. */
+export async function setJoustAccess(
+  db: Database,
+  input: {
+    readonly adminId: string;
+    readonly userId: string;
+    readonly access: boolean;
+    readonly now: EpochMs;
+  },
+): Promise<{ readonly kind: "done" } | { readonly kind: "player_not_found" }> {
+  const { adminId, userId, access, now } = input;
+  return db.transaction(async (tx) => {
+    const updated = await tx
+      .update(players)
+      .set({ joustAccess: access })
+      .where(eq(players.userId, userId))
+      .returning({ userId: players.userId });
+    if (updated.length === 0) return { kind: "player_not_found" };
+    await tx.insert(adminActions).values({
+      adminId,
+      action: ADMIN_ACTIONS.joustAccess,
+      targetUserId: userId,
+      details: { access },
+      createdAt: new Date(now),
+    });
+    return { kind: "done" };
   });
 }

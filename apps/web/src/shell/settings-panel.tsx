@@ -147,6 +147,12 @@ export function SettingsPanel({
               checked={notify.notifyClanMentions}
               onChange={(on) => void toggleNotify("notifyClanMentions", on)}
             />
+            <Switch
+              label="Joutes"
+              detail="Quand un joueur te lance une joute"
+              checked={notify.notifyJousts}
+              onChange={(on) => void toggleNotify("notifyJousts", on)}
+            />
           </div>
         </section>
       )}

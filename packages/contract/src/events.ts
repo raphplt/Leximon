@@ -38,6 +38,8 @@ export const gameEventSchema = z.discriminatedUnion("type", [
   }),
   /** A friend reacted to a feed event: its author gets a letter. */
   z.object({ type: z.literal("friend_reaction"), eventId: z.int().positive() }),
+  /** A joust's run or the joust itself closed: the player who waits for it gets a letter. */
+  z.object({ type: z.literal("joust_changed"), joustId: z.uuid() }),
   /** Letters came in a while ago: an e-mail if they are still unread and the player away. */
   z.object({ type: z.literal("news_due"), userId: z.string().min(1) }),
   /** The evening's reminders, for players away while their sachets are full. */

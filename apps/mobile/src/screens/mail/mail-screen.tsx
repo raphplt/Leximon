@@ -49,6 +49,8 @@ const LETTER_ICONS: Readonly<Record<MailKind, IconName>> = {
   referral_arrived: "amis",
   referral_qualified: "sachet",
   friend_reaction: "amis",
+  joust_received: "joutes",
+  joust_ended: "joutes",
 };
 
 interface Row {
@@ -72,6 +74,9 @@ function goTo(href: string): void {
       return;
     case "/clan":
       router.dismissTo("/clan");
+      return;
+    case "/joutes":
+      router.replace("/joutes");
       return;
     default:
       router.dismissTo("/");

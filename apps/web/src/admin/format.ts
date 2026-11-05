@@ -41,6 +41,7 @@ export const ACTION_LABELS: Readonly<Record<string, string>> = {
   dismiss_report: "Signalement classé",
   sanction: "Sanction",
   resolve_contest: "Contestation tranchée",
+  joust_access: "Accès aux joutes",
   invite_create: "Invitation créée",
   invite_revoke: "Invitation retirée",
   invite_places: "Places d'une invitation",
@@ -78,5 +79,6 @@ export function actionSummary(details: Record<string, unknown>): string {
   if (typeof details["erased"] === "number") {
     parts.push(`${formatNumber(details["erased"])} adresse(s)`);
   }
+  if (typeof details["access"] === "boolean") parts.push(details["access"] ? "ouvert" : "fermé");
   return parts.join(" · ");
 }

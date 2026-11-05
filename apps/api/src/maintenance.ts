@@ -4,7 +4,8 @@ import { and, eq, inArray, isNotNull, lt, sql } from "drizzle-orm";
 import { recountActiveClans } from "./clans/events";
 import { purgeFeed } from "./friends/feed";
 import { purgeFriendRequests } from "./friends/friends";
-import { purgeMail } from "./mail/mail";
+import { settleExpired } from "./jousts/jousts";
+import { purgeMail, writeJoustLetters } from "./mail/mail";
 import { SIGN_IN_CODE_DAILY_QUOTA } from "./middleware/rate-limit";
 import { NOTIFICATION_RETENTION_MS, purgeNotifications } from "./notifications/notifications";
 import { inBatches, purgeRows } from "./purge";
@@ -41,6 +42,7 @@ export interface MaintenanceReport {
   readonly erasedFeedEvents: number;
   readonly erasedPracticeAnswers: number;
   readonly recountedClans: number;
+  readonly settledJousts: number;
 }
 
 /**
@@ -56,7 +58,8 @@ export interface MaintenanceReport {
  * - erases guests no session can reach any more, 180 days after they came;
  * - erases reports handled more than a year ago;
  * - erases free practice answers past the day they count for;
- * - recounts the clans of this week and the last, in case an event was lost.
+ * - recounts the clans of this week and the last, in case an event was lost;
+ * - closes the jousts whose time ran out while nobody came by, and writes their letters.
  */
 export async function runMaintenance(db: Database, now: number): Promise<MaintenanceReport> {
   await db.execute(sql`select leximon_ensure_booster_open_partitions(${PARTITION_MONTHS_AHEAD})`);
@@ -85,6 +88,8 @@ export async function runMaintenance(db: Database, now: number): Promise<Mainten
     lt(quotas.windowStart, new Date(now - SIGN_IN_CODE_DAILY_QUOTA.windowMs)),
   );
   const erasedSessions = await eraseExpiredSessions(db, now);
+  const jousts = await settleExpired(db, now);
+  await writeJoustLetters(db, jousts.joustIds);
   return {
     purgedRequests: purged,
     erasedCampaignAddresses: erased,
@@ -112,6 +117,7 @@ export async function runMaintenance(db: Database, now: number): Promise<Mainten
       lt(schema.practiceAnswers.answeredAt, new Date(now - IDEMPOTENCY_RETENTION_MS)),
     ),
     recountedClans: await recountActiveClans(db, now),
+    settledJousts: jousts.joustIds.length,
   };
 }
 

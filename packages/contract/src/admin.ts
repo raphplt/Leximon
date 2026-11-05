@@ -154,6 +154,8 @@ export const adminPlayerDetailSchema = z.object({
     ),
   }),
   trades: z.object({ total: z.int().nonnegative(), pending: z.int().nonnegative() }),
+  /** Jousts open to this player while they are open to testers only. */
+  jousts: z.object({ access: z.boolean(), played: z.int().nonnegative() }),
   actions: z.array(adminActionSchema),
 });
 export type AdminPlayerDetail = z.infer<typeof adminPlayerDetailSchema>;
@@ -171,6 +173,10 @@ export const adminGrantBonusResponseSchema = z.object({
   bonus: z.int().nonnegative(),
 });
 export type AdminGrantBonusResponse = z.infer<typeof adminGrantBonusResponseSchema>;
+
+/** `PUT /admin/players/:id/jousts`: opens or closes jousts to a tester. */
+export const adminJoustAccessRequestSchema = z.object({ access: z.boolean() });
+export type AdminJoustAccessRequest = z.infer<typeof adminJoustAccessRequestSchema>;
 
 /** `POST /admin/players/:id/ban`: `days` null bans until lifted. 409 `cannot_ban_admin`. */
 export const adminBanRequestSchema = z.object({
@@ -317,6 +323,7 @@ export const ADMIN_ACTIONS = {
   dismissReport: "dismiss_report",
   sanction: "sanction",
   resolveContest: "resolve_contest",
+  joustAccess: "joust_access",
 } as const;
 
 // --- E-mails ---------------------------------------------------------------------------------

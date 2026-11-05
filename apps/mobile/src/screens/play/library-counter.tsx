@@ -6,7 +6,6 @@ import {
   type Fab as FabModel,
   lockedToast,
   missionsLockedToast,
-  NOT_BUILT_COPY,
   playFabs,
   type StockView,
 } from "@leximon/view-model";
@@ -387,7 +386,7 @@ function Tiles({
         router.navigate("/clan");
         return;
       case "jousts":
-        say(NOT_BUILT_COPY.jousts.title);
+        router.push("/joutes");
         return;
       case "daily":
         router.navigate("/defis");

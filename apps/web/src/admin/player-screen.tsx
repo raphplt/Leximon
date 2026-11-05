@@ -128,6 +128,7 @@ function PlayerDetail({
           ) : (
             <BanForm id={player.id} disabled={player.isAdmin} onChange={onChange} />
           )}
+          <JoustAccessForm detail={detail} onChange={onChange} />
         </div>
       )}
 
@@ -438,5 +439,51 @@ export function ActionsTable({
         </tbody>
       </table>
     </div>
+  );
+}
+
+/** Jousts open to a few testers first, chosen here, while the clock is tuned. */
+function JoustAccessForm({
+  detail,
+  onChange,
+}: {
+  readonly detail: AdminPlayerDetail;
+  readonly onChange: () => void;
+}) {
+  const [status, setStatus] = useState<FormStatus>({ kind: "idle" });
+  const { access, played } = detail.jousts;
+  const toggle = async () => {
+    setStatus({ kind: "busy" });
+    try {
+      await adminApi.setJoustAccess(detail.player.id, !access);
+      setStatus({
+        kind: "done",
+        message: access ? "Joutes fermées à ce joueur." : "Joutes ouvertes à ce joueur.",
+      });
+      onChange();
+    } catch (error) {
+      setStatus({ kind: "failed", message: adminErrorMessage(error) });
+    }
+  };
+  return (
+    <section className={`${styles.panel} ${styles.form}`}>
+      <h2 className={styles.subtitle}>Joutes</h2>
+      <p className={styles.muted}>
+        {access
+          ? "Ce joueur fait partie des testeurs des joutes."
+          : "Les joutes ne lui sont pas encore ouvertes."}{" "}
+        Il a joué {formatNumber(played)} joute(s). Il lui faut aussi un compte, un pseudo et le
+        niveau des joutes.
+      </p>
+      <button
+        type="button"
+        className={access ? styles.danger : styles.primary}
+        disabled={status.kind === "busy"}
+        onClick={() => void toggle()}
+      >
+        {access ? "Fermer les joutes" : "Ouvrir les joutes"}
+      </button>
+      <StatusLine status={status} />
+    </section>
   );
 }

@@ -281,6 +281,13 @@
       "when": 1793898401198,
       "tag": "0039_missions_carnet",
       "breakpoints": true
+    },
+    {
+      "idx": 40,
+      "version": "7",
+      "when": 1793910253190,
+      "tag": "0040_jousts",
+      "breakpoints": true
     }
   ]
 }

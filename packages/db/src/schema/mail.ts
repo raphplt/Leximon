@@ -25,6 +25,8 @@ export const MAIL_KINDS = [
   "referral_arrived",
   "referral_qualified",
   "friend_reaction",
+  "joust_received",
+  "joust_ended",
 ] as const;
 export const mailKind = pgEnum("mail_kind", MAIL_KINDS);
 
@@ -34,7 +36,8 @@ export type MailPayload =
   | { readonly clanId: string; readonly messageId: number; readonly playerId: string | null }
   | { readonly clanId: string; readonly playerId: string }
   | { readonly playerId: string }
-  | { readonly eventId: number; readonly playerId: string };
+  | { readonly eventId: number; readonly playerId: string }
+  | { readonly joustId: string; readonly playerId: string };
 
 /**
  * The player's mail: news written by the queue's consumer (an offer received or answered, a

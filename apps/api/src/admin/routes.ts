@@ -13,6 +13,7 @@ import {
   adminBanRequestSchema,
   adminCancelTradeRequestSchema,
   adminGrantBonusRequestSchema,
+  adminJoustAccessRequestSchema,
   adminPlayersQuerySchema,
   adminTradesQuerySchema,
   adminWaitlistInviteRequestSchema,
@@ -27,7 +28,14 @@ import { playerRateLimit } from "../middleware/rate-limit";
 import { requireAdmin } from "../middleware/require-admin";
 import { adminModerationRoutes } from "../moderation/routes";
 import { inviteFromWaitlist } from "../waitlist/invite";
-import { banPlayer, cancelTrade, grantBonus, logExport, unbanPlayer } from "./actions";
+import {
+  banPlayer,
+  cancelTrade,
+  grantBonus,
+  logExport,
+  setJoustAccess,
+  unbanPlayer,
+} from "./actions";
 import { adminBetaRoutes } from "./beta-routes";
 import {
   exportWaitlist,
@@ -106,6 +114,19 @@ export function adminRoutes(createMailer: CampaignMailerFactory) {
       case "guest_archived":
         return c.json({ error: "guest_archived" }, 409);
     }
+  });
+
+  routes.put("/players/:id/jousts", async (c) => {
+    const body = adminJoustAccessRequestSchema.safeParse(await c.req.json().catch(() => null));
+    if (!body.success) return c.json({ error: "invalid_request" }, 400);
+    const result = await setJoustAccess(c.var.db, {
+      adminId: c.var.userId,
+      userId: c.req.param("id"),
+      access: body.data.access,
+      now: Date.now(),
+    });
+    if (result.kind === "player_not_found") return c.json({ error: "player_not_found" }, 404);
+    return c.json({ ok: true });
   });
 
   routes.post("/players/:id/ban", async (c) => {

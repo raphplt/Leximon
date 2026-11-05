@@ -27,6 +27,7 @@ import { clanRoutes } from "./clans/routes";
 import type { AppEnv } from "./context";
 import { errorSummary } from "./error-summary";
 import { referrerRoutes } from "./friends/routes";
+import { joustRoutes } from "./jousts/routes";
 import { meRoutes } from "./me/routes";
 import { readAuthEmail, serializeCodeChecks } from "./middleware/auth-email";
 import { databaseMiddleware } from "./middleware/database";
@@ -131,6 +132,9 @@ export function createApp(options: AppOptions = {}) {
   app.use("/challenges", withDatabase);
   app.use("/challenges/*", withDatabase);
   app.route("/challenges", challengeRoutes(loadCatalogIndex));
+  app.use("/jousts", withDatabase);
+  app.use("/jousts/*", withDatabase);
+  app.route("/jousts", joustRoutes(loadCatalogIndex));
   app.use("/riddles/*", withDatabase);
   app.route("/riddles", riddleRoutes(loadCatalogIndex));
   app.use("/trades/*", withDatabase);

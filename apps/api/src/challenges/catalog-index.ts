@@ -1,4 +1,4 @@
-import { normalizeWord } from "@leximon/core";
+import { type ChoiceCard, normalizeWord } from "@leximon/core";
 import { type Database, schema } from "@leximon/db";
 import { eq, lte } from "drizzle-orm";
 
@@ -18,6 +18,8 @@ export interface CatalogIndex {
   readonly byTheme: ReadonlyMap<string, readonly string[]>;
   /** Every word, normalized: a typed slip that spells another card is no slip. */
   readonly words: ReadonlySet<string>;
+  /** Drawable cards with their rarity, to pick the choices of a joust question. */
+  readonly choiceCards: readonly ChoiceCard[];
 }
 
 /**
@@ -37,6 +39,7 @@ export function createCatalogIndexLoader(ttlMs = CACHE_TTL_MS) {
         id: cards.id,
         collectionId: cards.collectionId,
         lemma: cards.lemma,
+        rarity: cards.rarity,
         retiredAt: cards.retiredAt,
       })
       .from(cards)
@@ -74,6 +77,11 @@ export function createCatalogIndexLoader(ttlMs = CACHE_TTL_MS) {
       themesOf,
       byTheme,
       words: new Set(rows.map((row) => normalizeWord(row.lemma))),
+      choiceCards: drawable.map((row) => ({
+        id: row.id,
+        collectionId: row.collectionId,
+        rarity: row.rarity,
+      })),
     };
     cached = { index, expiresAt: now + ttlMs };
     return index;
