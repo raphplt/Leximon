@@ -23,6 +23,8 @@
     "load:players": "pnpm --filter @leximon/db load:players",
     "db:migrate:prod": "sh infra/prod/check-database-url.sh && pnpm db:migrate",
     "catalog:publish:prod": "sh infra/prod/check-database-url.sh && pnpm catalog:publish",
+    "economy:snapshot": "pnpm --silent --filter @leximon/db economy:snapshot",
+    "economy:snapshot:prod": "sh infra/prod/check-database-url.sh >&2 && pnpm --silent --filter @leximon/db economy:snapshot",
     "admin:grant:prod": "sh infra/prod/check-database-url.sh && pnpm admin:grant",
     "deploy:api": "pnpm --filter @leximon/api exec wrangler deploy --env production",
     "deploy:web": "pnpm --filter @leximon/web run deploy:production",
