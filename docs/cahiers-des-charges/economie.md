@@ -1,6 +1,6 @@
 # Cahier des charges · L'économie et l'équilibrage
 
-- **Statut :** proposé le 2026-11-05. Choix du propriétaire le même jour : toutes les recommandations, sauf E9 (pointage permanent, voir ci-dessous). Inscrit en P10, P37, P48, P84 et P93 à P97. Étapes 1 à 4 de E10 construites le 2026-11-05 (réglages, semaine de bienvenue, écus, missions et carnet) ; restent les joutes et la saison.
+- **Statut :** proposé le 2026-11-05. Choix du propriétaire le même jour : toutes les recommandations, sauf E9 (pointage permanent, voir ci-dessous). Inscrit en P10, P37, P48, P84 et P93 à P97. Étapes 1 à 4 de E10 construites le 2026-11-05 (réglages, semaine de bienvenue, écus, missions et carnet) ; joutes (lot 1) construites le même jour ; la saison a son cahier, [saison.md](saison.md).
 - **Source :** l'appel et les notes du game designer de la semaine du 2026-10-31, les retours des joueurs ([retours-joueurs.md](../retours-joueurs.md)), et la demande du propriétaire du 2026-11-05 : un vrai travail d'équilibrage sur les chiffres de la bêta (sachets par heure et par jour, tirage, XP), puis une économie plus riche, faite de systèmes qui se répondent, dans l'esprit de Brawl Stars et de Summoners War, sans faire de Leximon un gacha.
 - **Données :** tableau de bord et page Mesure de l'admin, liste des testeurs, relevés le 2026-11-05, soit 10 jours de bêta ouverte depuis Reddit et FrenchTech. Aucun nom ni adresse n'est repris ici.
 - **Règles liées :** N1, N2, P10, P11, P23, P29, P37, P48, P58, P72, P81, P84 à P91 ([regles-du-jeu.md](../regles-du-jeu.md)).
