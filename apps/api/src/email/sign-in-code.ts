@@ -26,7 +26,7 @@ export function renderSignInCodeEmail({ code, validMinutes }: SignInCodeContent)
   const c = EMAIL_COLORS;
 
   const bodyHtml = [
-    `<p style="margin:0 0 20px;"><span style="display:inline-block;padding:12px 20px;background-color:${c.page};border:1px solid ${c.rule};border-radius:8px;font-family:${MONOSPACE};font-size:32px;font-weight:bold;letter-spacing:8px;color:${c.ink};">${escapeHtml(code)}</span></p>`,
+    `<p style="margin:0 0 20px;"><span style="display:inline-block;padding:12px 20px;background-color:${c.well};border:2px solid ${c.rule};border-radius:12px;font-family:${MONOSPACE};font-size:32px;font-weight:bold;letter-spacing:8px;color:${c.ink};">${escapeHtml(code)}</span></p>`,
     `<p style="margin:0 0 16px;">${escapeHtml(sentence)}</p>`,
     `<p style="margin:0;color:${c.muted};">${escapeHtml(ignore)}</p>`,
   ].join("\n");

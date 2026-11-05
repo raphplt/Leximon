@@ -1,12 +1,13 @@
 import type { RecipientLinks } from "../campaigns/render";
 import {
   buttonHtml,
-  EMAIL_COLORS,
   escapeHtml,
+  footerLinkHtml,
   type RenderedEmail,
   renderHtmlLayout,
   renderTextLayout,
   SITE_URL,
+  siteLinkHtml,
 } from "./layout";
 
 /**
@@ -112,12 +113,11 @@ function notificationEmail(input: {
   readonly stopLabel: string;
 }): NotificationEmail {
   const { subject, paragraphs, button, links, stopLabel } = input;
-  const c = EMAIL_COLORS;
   const bodyHtml = [
     ...paragraphs.map((text) => `<p style="margin:0 0 16px;">${escapeHtml(text)}</p>`),
     buttonHtml(button),
   ].join("\n");
-  const footerHtml = `Leximon · <a href="${SITE_URL}" style="color:${c.muted};">leximon.fr</a><br><a href="${escapeHtml(links.unsubscribePage)}" style="color:${c.muted};">${escapeHtml(stopLabel)}</a>`;
+  const footerHtml = `${siteLinkHtml()}<br>${footerLinkHtml({ label: stopLabel, url: links.unsubscribePage })}`;
   const bodyText = `${paragraphs.join("\n\n")}\n\n${button.label} : ${button.url}`;
   const footerText = `Leximon · leximon.fr\n${stopLabel} : ${links.unsubscribePage}`;
   return {

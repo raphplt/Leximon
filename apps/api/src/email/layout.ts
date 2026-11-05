@@ -1,9 +1,10 @@
-import { rarityStyles } from "@leximon/tokens";
+import { colors, room, toy, toyMatters } from "@leximon/tokens";
 
 /**
- * The shell shared by every e-mail Leximon sends: a 560 px column of table cells with
- * inline styles, which is what Outlook, Gmail and Apple Mail all read. No remote image and no
- * tracked link: nothing is blocked, nothing follows the reader.
+ * The shell shared by every e-mail Leximon sends: a cream leaf on the dark wood of the room, in a
+ * 560 px column of table cells with inline styles, which is what Outlook, Gmail and Apple Mail
+ * all read. Plain colours only: no remote image and no tracked link, so nothing is blocked and
+ * nothing follows the reader.
  */
 
 /** An e-mail as it leaves our code, before the provider. */
@@ -13,15 +14,21 @@ export interface RenderedEmail {
   readonly html: string;
 }
 
-const paper = rarityStyles.common;
-
-/** Colors of the "Planche populaire" paper, from the shared tokens. */
+/** Colours of the room and of its paper, from the shared tokens. */
 export const EMAIL_COLORS = {
-  page: paper.chip,
-  paper: paper.paper,
-  ink: paper.ink,
-  muted: paper.muted,
-  rule: "#D8CFBD",
+  /** The wood around the leaf. */
+  wood: room.shelf.bottom,
+  /** The line under the leaf, on the wood. */
+  woodInk: colors.bindingInkMuted,
+  paper: colors.paper,
+  ink: colors.paperInk,
+  muted: colors.paperInkMuted,
+  /** The leaf's edge, and the frame of a code. */
+  rule: toyMatters.paper.edge,
+  /** The hollow of a code, a shade darker than the leaf. */
+  well: toyMatters.paper.bottom,
+  /** The gilt rule under the name. */
+  gilt: room.shelf.gilt,
 } as const;
 
 /** System serif fonts only: web fonts are blocked or ignored by most mail clients. */
@@ -68,18 +75,18 @@ export function renderHtmlLayout({ title, preheader, bodyHtml, footerHtml }: Lay
 <meta name="supported-color-schemes" content="light">
 <title>${escapeHtml(title)}</title>
 </head>
-<body style="margin:0;padding:0;background-color:${c.page};">
+<body style="margin:0;padding:0;background-color:${c.wood};">
 <div style="display:none;max-height:0;overflow:hidden;opacity:0;">${escapeHtml(preheader)}</div>
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:${c.page};">
-<tr><td align="center" style="padding:24px 12px;">
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:560px;background-color:${c.paper};border:1px solid ${c.rule};border-radius:12px;">
-<tr><td style="padding:28px 32px 0;font-family:${SERIF};font-size:22px;font-weight:bold;color:${c.ink};">Leximon</td></tr>
-<tr><td style="padding:20px 32px 28px;font-family:${SERIF};font-size:17px;line-height:1.55;color:${c.ink};">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:${c.wood};">
+<tr><td align="center" style="padding:32px 12px;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:560px;background-color:${c.paper};border:2px solid ${c.rule};border-radius:16px;">
+<tr><td style="padding:28px 32px 0;"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr><td style="padding:0 0 14px;border-bottom:2px solid ${c.gilt};font-family:${SERIF};font-size:24px;font-weight:bold;letter-spacing:0.5px;color:${c.ink};">Leximon</td></tr></table></td></tr>
+<tr><td style="padding:22px 32px 30px;font-family:${SERIF};font-size:17px;line-height:1.55;color:${c.ink};">
 ${bodyHtml}
 </td></tr>
 </table>
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:560px;">
-<tr><td align="center" style="padding:16px 32px;font-family:${SERIF};font-size:13px;line-height:1.5;color:${c.muted};">${footerHtml}</td></tr>
+<tr><td align="center" style="padding:18px 32px;font-family:${SERIF};font-size:13px;line-height:1.6;color:${c.woodInk};">${footerHtml}</td></tr>
 </table>
 </td></tr>
 </table>
@@ -95,10 +102,25 @@ export function renderTextLayout(bodyText: string, footerText: string): string {
 
 /** Footer link to the site, without tracking parameters. */
 export function siteLinkHtml(): string {
-  return `Leximon · <a href="${SITE_URL}" style="color:${EMAIL_COLORS.muted};">leximon.fr</a>`;
+  return `Leximon · ${footerLinkHtml({ label: "leximon.fr", url: SITE_URL })}`;
 }
 
-/** A button made of a table cell: Outlook ignores the padding of a styled link. */
+/** A link of the footer, on the wood. */
+export function footerLinkHtml({
+  label,
+  url,
+}: {
+  readonly label: string;
+  readonly url: string;
+}): string {
+  return `<a href="${escapeHtml(url)}" style="color:${EMAIL_COLORS.woodInk};">${escapeHtml(label)}</a>`;
+}
+
+/**
+ * The main action as the game draws it: old gold outlined in ink, its thickness under it. Made of
+ * table cells, since Outlook ignores the padding of a styled link; a client without gradients or
+ * rounded corners still shows a plain gold block.
+ */
 export function buttonHtml({
   label,
   url,
@@ -106,6 +128,6 @@ export function buttonHtml({
   readonly label: string;
   readonly url: string;
 }): string {
-  const c = EMAIL_COLORS;
-  return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:8px 0 8px;"><tr><td style="background-color:${c.ink};border-radius:999px;"><a href="${escapeHtml(url)}" style="display:inline-block;padding:12px 24px;font-family:${SERIF};font-size:17px;font-weight:bold;color:${c.paper};text-decoration:none;">${escapeHtml(label)}</a></td></tr></table>`;
+  const gold = toyMatters.gold;
+  return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:12px 0 8px;"><tr><td style="background-color:${gold.edge};border:2px solid ${toy.outline};border-radius:16px;padding:0 0 4px;"><a href="${escapeHtml(url)}" style="display:inline-block;padding:13px 28px;background-color:${gold.bottom};background-image:linear-gradient(${gold.top},${gold.bottom});border-radius:14px;font-family:${SERIF};font-size:17px;font-weight:bold;color:${toy.outline};text-decoration:none;">${escapeHtml(label)}</a></td></tr></table>`;
 }

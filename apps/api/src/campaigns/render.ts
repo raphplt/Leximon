@@ -1,11 +1,10 @@
 import {
   buttonHtml,
-  EMAIL_COLORS,
-  escapeHtml,
+  footerLinkHtml,
   type RenderedEmail,
   renderHtmlLayout,
   renderTextLayout,
-  SITE_URL,
+  siteLinkHtml,
 } from "../email/layout";
 import { firstParagraphText, markdownToHtml, markdownToText } from "./markdown";
 
@@ -47,7 +46,7 @@ export function prepareCampaignEmail(
   const preheader = firstParagraphText(content.bodyMarkdown);
 
   return (links) => {
-    const footerHtml = `Leximon · <a href="${SITE_URL}" style="color:${EMAIL_COLORS.muted};">leximon.fr</a><br><a href="${escapeHtml(links.unsubscribePage)}" style="color:${EMAIL_COLORS.muted};">Ne plus recevoir ces e-mails</a>`;
+    const footerHtml = `${siteLinkHtml()}<br>${footerLinkHtml({ label: "Ne plus recevoir ces e-mails", url: links.unsubscribePage })}`;
     const footerText = `Leximon · leximon.fr\nNe plus recevoir ces e-mails : ${links.unsubscribePage}`;
     return {
       subject: content.subject,

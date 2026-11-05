@@ -669,7 +669,7 @@ En local, aucun e-mail ne part : chaque envoi s'écrit dans le terminal de `pnpm
 
 ### CAM-01 · Brouillon et aperçu
 - **Faire :** `/admin/campagnes`, nouvelle campagne, audience « test » avec ton adresse. Sujet, texte avec du gras, un lien et un bouton.
-- **Attendu :** l'aperçu montre l'e-mail tel qu'il partira, avec le lien de désinscription. Le brouillon se modifie.
+- **Attendu :** l'aperçu montre l'e-mail tel qu'il partira : une feuille crème sur le bois sombre, « Leximon » en brun souligné d'un filet doré, le bouton en or cerné d'encre, et sous la feuille le lien de désinscription. Le brouillon se modifie.
 - **Retour :**
 
 ### CAM-02 · Lancer
