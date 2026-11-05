@@ -1,4 +1,4 @@
-/* A shield: straight top, rounded point; the rim scales with the size. */
+/* The box of the shield; its rim and thickness are drawn past it. */
 .emblem {
   position: relative;
   display: grid;
@@ -6,12 +6,12 @@
   place-items: center;
   width: var(--size);
   height: calc(var(--size) * 1.15);
-  border-radius: 14% 14% 50% 50% / 12% 12% 38% 38%;
-  background: var(--field);
   color: var(--ink);
-  box-shadow:
-    0 0 0 calc(var(--size) * 0.045) #d9a233,
-    0 calc(var(--size) * 0.06) 0 calc(var(--size) * 0.045) #7a5410;
+}
+
+.shield {
+  position: absolute;
+  overflow: visible;
 }
 
 .ink {

@@ -440,7 +440,7 @@ A au niveau 8 au moins.
 
 ### PRO-06 · Atelier
 - **Faire :** menu de l'avatar, « Atelier ».
-- **Attendu :** onglets Avatars, Cadres, Titres. Chaque objet : porté, à mettre, ou « Niveau 20 ». Changer d'avatar, de cadre et de titre se voit tout de suite dans la barre du haut et sur le profil. *À valider : la liste des avatars et leurs noms.*
+- **Attendu :** onglets Avatars, Cadres, Titres. Chaque objet : porté, à mettre, ou « Niveau 20 ». Changer d'avatar, de cadre et de titre se voit tout de suite dans la barre du haut et sur le profil. Les 13 cadres sont faits de matières, chacun cerné d'encre, avec son épaisseur dessous et un reflet en haut, du plus simple au plus rare : bois, or, encre qui coule (trois gouttes en bas), laiton et perles de nacre, vert-de-gris, torsade rouge et or, dentelle de papier, cuir indigo filé d'or, cire rouge, gloire de rayons d'or, or vif clouté, nacre irisée, soleil royal (rayons qui tournent lentement, quatre rubis). Sans animations, les rayons du soleil restent immobiles. Les cadres fermés sont gris. *À valider : la liste des avatars et leurs noms.*
 - **Retour :**
 
 ---
@@ -498,7 +498,7 @@ pnpm dev:player recette-c@example.com --level 9
 
 ### CLA-03 · Créer un clan
 - **Faire :** A crée un clan : nom, emblème (gravure et deux couleurs), devise, mode « sur demande ». Essayer un nom de 2 caractères, un nom pris, un nom avec « connard », une devise de plus de 80 caractères.
-- **Attendu :** les noms invalides sont refusés avec la raison. Une fois créé, la page du clan : emblème, nom, membres, mode d'entrée, devise, « Inviter ».
+- **Attendu :** les noms invalides sont refusés avec la raison. Une fois créé, la page du clan : emblème, nom, membres, mode d'entrée, devise, « Inviter ». L'emblème est un bouclier cerclé d'or cerné d'encre, avec son épaisseur dessous : sa couleur s'éclaire en haut et fonce vers la pointe.
 - **Retour :**
 
 ### CLA-04 · Demander à entrer

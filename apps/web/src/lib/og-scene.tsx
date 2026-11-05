@@ -164,7 +164,7 @@ export function OgCard({
         padding: 7 * u,
         borderRadius: 16 * u,
         backgroundImage: cssFill(style.frame),
-        boxShadow: `0 ${16 * u}px ${36 * u}px rgba(0, 0, 0, 0.5)`,
+        boxShadow: `0 ${16 * u}px ${36 * u}px ${toy.drop}`,
         color: style.ink,
       }}
     >

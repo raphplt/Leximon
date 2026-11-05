@@ -264,8 +264,8 @@ Seulement ce dont l'écran Jouer et l'ouverture ont besoin : bandeau du haut (po
 | Images de partage | Fait le 2026-11-05 : les trois images dans la salle, la carte dessinée comme dans le jeu sur le sous-main |
 | Icône d'app, écran de lancement, favicon | Fait le 2026-11-05 : le sceau de cire sur le cuir vert, cadre d'or |
 | Fiches des stores | Captures, image de présentation, en-têtes iOS |
-| Cadres d'avatar | Les 13 cadres sont redessinés. Leurs identifiants en base restent les mêmes |
-| Emblèmes de clan | Couleurs à accorder à la salle |
+| Cadres d'avatar | Fait le 2026-11-05 : les 13 cadres en matières (bois, or, laiton, cuir, vert-de-gris, papier, cire, nacre), un seul dessin pour le web et le mobile (`packages/tokens/src/avatar-frames.ts`). Identifiants inchangés |
+| Emblèmes de clan | Fait le 2026-11-05 : bouclier cerclé d'or comme les jouets, champ éclairé en haut, couleurs accordées à la salle. Identifiants inchangés |
 | Admin | Tokens seulement. Couleurs de graphiques sorties du code |
 
 ### Les textes

@@ -233,7 +233,7 @@ A sur le web sert de deuxième joueur : amis, échanges, clan, sanctions. `pnpm 
 - **Retour :**
 
 ### MPR-01 · Profil et atelier
-- **Faire :** ouvrir le profil ; épingler, réordonner, changer une carte ; Atelier : porter un avatar, un cadre, un titre ; Partager.
+- **Faire :** ouvrir le profil ; épingler, réordonner, changer une carte ; Atelier : porter un avatar, un cadre, un titre ; Partager. Les cadres et les emblèmes de clan sont les mêmes dessins que sur le web (PRO-06, CLA-03), mais les rayons du soleil royal ne tournent pas.
 - **Attendu :** en-tête avec avatar encadré, titre, niveau, clan, code joueur ; statistiques. Ce qui est porté se voit aussitôt dans le bandeau.
 - **Retour :**
 

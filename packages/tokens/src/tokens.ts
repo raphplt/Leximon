@@ -421,24 +421,25 @@ export const motion = {
 
 /**
  * Colours of a clan's emblem, by their key in the rules: the field, then the ink of the
- * engraving. A key a newer server sends falls back on ink black.
+ * engraving. A key a newer server sends falls back on ink black. Tuned to the room: warm, a
+ * little deep, so that the gold rim stands out on each.
  */
 export const emblemColors = {
-  sang: "#8E1B2C",
-  or: "#D9A233",
-  indigo: "#3B3F9E",
+  sang: "#9A2232",
+  or: "#D9A63A",
+  indigo: "#344F8F",
   "vert-de-gris": "#5E9C8A",
   ocre: "#C67B2E",
   prune: "#6B2F5B",
-  craie: "#F1EADB",
-  encre: "#1B1F33",
-  vermillon: "#E2431D",
-  turquoise: "#2FB8B0",
-  argent: "#C9CCD8",
+  craie: "#F6E7C6",
+  encre: "#231A24",
+  vermillon: "#E04A30",
+  turquoise: "#2FA8A0",
+  argent: "#CFCAC0",
   safran: "#F2B829",
-  azur: "#2E6FD8",
-  emeraude: "#1F8A5B",
-  corail: "#F07A5C",
+  azur: "#3A72C8",
+  emeraude: "#2F8A5C",
+  corail: "#EC7A5C",
   bronze: "#9C6B3A",
 } as const satisfies Record<string, string>;
 
@@ -447,3 +448,39 @@ export function emblemColor(key: string): string {
     ? emblemColors[key as keyof typeof emblemColors]
     : emblemColors.encre;
 }
+
+/** The field of an emblem as a matter: its colour lit at the top, deeper at the point. */
+export function emblemField(key: string): { readonly top: string; readonly bottom: string } {
+  const base = emblemColor(key);
+  return { top: mixHex(base, "#FFFFFF", 0.22), bottom: mixHex(base, "#000000", 0.28) };
+}
+
+/** Two `#RRGGBB` colours mixed, `share` of the second. */
+export function mixHex(from: string, to: string, share: number): string {
+  const channel = (hex: string, index: number) =>
+    Number.parseInt(hex.slice(1 + index * 2, 3 + index * 2), 16);
+  const mixed = [0, 1, 2].map((index) =>
+    Math.round(channel(from, index) * (1 - share) + channel(to, index) * share)
+      .toString(16)
+      .padStart(2, "0"),
+  );
+  return `#${mixed.join("").toUpperCase()}`;
+}
+
+/**
+ * The shield of an emblem on a 100 × 115 grid: straight top, rounded corners, a soft point. Its
+ * rim is old gold outlined in ink, with its thickness under it, as the toys of the room.
+ */
+export const emblemShield = {
+  path: "M14 0H86Q100 0 100 14V62Q100 98 50 115Q0 98 0 62V14Q0 0 14 0Z",
+  width: 100,
+  height: 115,
+  rim: 7,
+  outline: 2.4,
+  depth: 5,
+  /** The line of light along the top of the rim. */
+  sheen: "M18 0H82",
+} as const;
+
+/** Room the drawing takes around the shield's grid: half the rim and its outline. */
+export const emblemShieldPad = emblemShield.rim / 2 + emblemShield.outline;

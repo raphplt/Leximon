@@ -1,19 +1,23 @@
 import type { EmblemView } from "@leximon/contract";
-import { emblemColor } from "@leximon/tokens";
+import {
+  emblemColor,
+  emblemField,
+  emblemShield,
+  emblemShieldPad,
+  frameSheen,
+  oldGold,
+  toy,
+  toyMatters,
+} from "@leximon/tokens";
 import { Image, StyleSheet, View } from "react-native";
-import Svg, { Path } from "react-native-svg";
+import Svg, { Defs, LinearGradient, Path, Stop } from "react-native-svg";
 import { useEngravingInk } from "@/cards/catalog";
 import { Icon } from "@/ui/icon";
 import { LevelMedal } from "@/ui/level";
 
-const RIM = "#D9A233";
-const RIM_SHADOW = "#7A5410";
-/** A shield on a 100 × 115 box: straight top, rounded corners, a soft point. */
-const SHIELD = "M14 0H86Q100 0 100 14V62Q100 98 50 115Q0 98 0 62V14Q0 0 14 0Z";
-
 /**
- * A clan's emblem: a shield of the first colour, the engraving inked in the second, a gold
- * rim, and the clan's level on a medal when given. Decorative: the clan's name is always next to it.
+ * A clan's emblem: a shield of the first colour, the engraving inked in the second, a rim of old
+ * gold outlined in ink, and the clan's level on a medal when given. Decorative: the clan's name is always next to it.
  */
 export function Emblem({
   emblem,
@@ -25,26 +29,16 @@ export function Emblem({
   readonly level?: number;
 }) {
   const ink = useEngravingInk(emblem.engraving);
-  const field = emblemColor(emblem.colors[0]);
   const inkColor = emblemColor(emblem.colors[1]);
   const height = size * 1.15;
-  const rim = Math.max(2, size * 0.045);
   const medal = Math.max(24, Math.round(size * 0.5));
   return (
     <View
-      style={{ width: size, height: height + rim }}
+      style={{ width: size, height }}
       importantForAccessibility="no-hide-descendants"
       accessible={false}
     >
-      <Svg
-        width={size}
-        height={height + rim}
-        viewBox={`${-rim} ${-rim} ${100 + 2 * rim} ${115 + 3 * rim}`}
-        style={StyleSheet.absoluteFill}
-      >
-        <Path d={SHIELD} fill={RIM_SHADOW} stroke={RIM_SHADOW} strokeWidth={rim * 2} y={rim} />
-        <Path d={SHIELD} fill={field} stroke={RIM} strokeWidth={rim * 2} />
-      </Svg>
+      <Shield field={emblem.colors[0]} size={size} />
       <View style={[styles.inkBox, { height }]}>
         {ink === null ? (
           <Icon name="clan" size={Math.round(size * 0.5)} color={inkColor} />
@@ -62,6 +56,57 @@ export function Emblem({
         </View>
       )}
     </View>
+  );
+}
+
+/** The shield, drawn past the emblem's box by half its rim. */
+function Shield({ field, size }: { readonly field: string; readonly size: number }) {
+  const { path, width, height, rim, outline, depth, sheen } = emblemShield;
+  const pad = emblemShieldPad;
+  const k = size / width;
+  const lit = emblemField(field);
+  return (
+    <Svg
+      width={(width + 2 * pad) * k}
+      height={(height + 2 * pad + depth) * k}
+      viewBox={`${-pad} ${-pad} ${width + 2 * pad} ${height + 2 * pad + depth}`}
+      style={{ position: "absolute", left: -pad * k, top: -pad * k }}
+    >
+      <Defs>
+        <LinearGradient id="field" x1="0" y1="0" x2="0" y2="1">
+          <Stop offset="0" stopColor={lit.top} />
+          <Stop offset="1" stopColor={lit.bottom} />
+        </LinearGradient>
+        <LinearGradient id="gold" x1="0" y1="0" x2="0.5" y2="1">
+          {oldGold.stops.map(([color, offset]) => (
+            <Stop key={offset} offset={offset} stopColor={color} />
+          ))}
+        </LinearGradient>
+      </Defs>
+      <Path
+        d={path}
+        y={depth}
+        fill={toyMatters.gold.edge}
+        stroke={toy.outline}
+        strokeWidth={rim + 2 * outline}
+        strokeLinejoin="round"
+      />
+      <Path
+        d={path}
+        fill="url(#field)"
+        stroke={toy.outline}
+        strokeWidth={rim + 2 * outline}
+        strokeLinejoin="round"
+      />
+      <Path d={path} fill="none" stroke="url(#gold)" strokeWidth={rim} strokeLinejoin="round" />
+      <Path
+        d={sheen}
+        stroke={frameSheen.color}
+        strokeOpacity={frameSheen.opacity}
+        strokeWidth={rim * 0.3}
+        strokeLinecap="round"
+      />
+    </Svg>
   );
 }
 

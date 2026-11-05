@@ -1,3 +1,4 @@
+export * from "./avatar-frames";
 export * from "./css";
 export * from "./effects";
 export * from "./icons";

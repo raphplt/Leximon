@@ -23,6 +23,7 @@ const OWN_PALETTE = [
   // Drawings.
   /avatar/,
   /logo-mark/,
+  /og-seal/,
   /emblem/,
   /collection-seal/,
   // The medals and banners of a clan.
