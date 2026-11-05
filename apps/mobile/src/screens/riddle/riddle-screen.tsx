@@ -32,7 +32,7 @@ import {
   wordMemory,
 } from "@/player/collection";
 import { useNow } from "@/player/shared";
-import { publishProgress } from "@/player/state";
+import { missions, publishProgress } from "@/player/state";
 import { openCard } from "@/screens/trades/card-row";
 import { alpha, fontSizes, fonts, paperColors, radii, space } from "@/theme";
 import { Button } from "@/ui/button";
@@ -79,6 +79,7 @@ export function RiddleScreen() {
         return;
       }
       publishProgress(result.progress);
+      refreshIfRead(missions);
       setLoaded({ state: "ready", riddle: result.riddle });
       setTyped("");
       if (result.riddle.cardGiven) {

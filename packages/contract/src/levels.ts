@@ -8,7 +8,8 @@ export const levelRewardSchema = z.discriminatedUnion("kind", [
   /** `avatar` (a card id) is absent from coffrets opened before avatars were named. */
   z.object({ kind: z.literal("avatar"), avatar: z.string().min(1).exactOptional() }),
   z.object({ kind: z.literal("frame"), frame: z.string().min(1) }),
-  z.object({ kind: z.enum(LEVEL_REWARD_KINDS).exclude(["title", "avatar", "frame"]) }),
+  z.object({ kind: z.literal("ecus"), amount: z.int().positive() }),
+  z.object({ kind: z.enum(LEVEL_REWARD_KINDS).exclude(["title", "avatar", "frame", "ecus"]) }),
 ]);
 export type LevelRewardView = z.infer<typeof levelRewardSchema>;
 

@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { RARITIES } from "../booster/rarity";
 import { createSeededRandom } from "../random";
 import { ECU_SCHEDULE } from "../rules";
-import { drawMissingWord, ecuRulesAt, recycleOne, recyclePlan } from "./ecus";
+import { drawMissingWord, ecuRulesAt, perfectStartEcus, recycleOne, recyclePlan } from "./ecus";
 
 const rules = ecuRulesAt(ECU_SCHEDULE, Date.UTC(2026, 10, 10));
 
@@ -65,5 +65,17 @@ describe("drawMissingWord", () => {
   it("draws nothing when no word is missing", () => {
     const random = createSeededRandom("0123456789abcdef0123456789abcdef");
     expect(drawMissingWord([], random)).toBeNull();
+  });
+});
+
+describe("perfectStartEcus", () => {
+  it("gives écus to the answer that makes the day's first five all right", () => {
+    expect(perfectStartEcus(rules, { answers: 5, correct: 5 })).toBe(5);
+  });
+
+  it("gives nothing before, after, or with a mistake among them", () => {
+    expect(perfectStartEcus(rules, { answers: 4, correct: 4 })).toBe(0);
+    expect(perfectStartEcus(rules, { answers: 6, correct: 6 })).toBe(0);
+    expect(perfectStartEcus(rules, { answers: 5, correct: 4 })).toBe(0);
   });
 });

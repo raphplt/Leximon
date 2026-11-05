@@ -212,6 +212,16 @@ Compte A : `pnpm dev:player contact@leximon.fr --level 21` pour avoir une série
 - **Attendu :** la semaine s'ouvre seule à la première visite du jour où une case attend, une fois par jour : sept cases, « Jour 1 sur 7 », la règle dite en clair, « Ouvrir la case du jour ». La case ouverte montre ses récompenses comme un coffret, puis ce que donne le lendemain. Tant qu'une case attend, Récompenses et le courrier comptent 1 et y mènent ; une fois prise, plus rien jusqu'au lendemain, et le bilan d'un sachet qui finit la séance dit ce qui attend demain. Le jour 7 donne un sachet garni Précieux (bleu, au moins une Précieuse à l'ouverture) et le titre « Habitué des rayons », porté au profil ; le jour 4, l'avatar « Le Béjaune ». Réserve pleine : la case reste fermée et propose d'ouvrir un sachet. L'invité voit, sous l'appel à créer un compte, ce que la semaine lui offrirait.
 - **Retour :**
 
+### NIV-09 · Missions du jour
+- **Faire :** avec un compte de niveau 2 ou plus, ouvrir Jouer (sur grand écran, la feuille « Missions du jour » en tête de la colonne de gauche ; sur téléphone, la tuile Missions). Toucher « Y aller » sur une mission, la faire, revenir. Changer une mission, puis essayer d'en changer une deuxième. Faire les trois, puis prendre les récompenses. Avec un compte de niveau 1, toucher la tuile.
+- **Attendu :** trois missions différentes, chacune avec sa phrase, son chiffre (« 1 / 3 ») et sa barre ; « 2 missions faites sur 3 » en titre. Jamais une mission impossible (échange avant le niveau 5 ou pour un invité, énigme déjà jouée, recyclage sans double en trop). « Changer » remplace la mission par une autre, une fois par jour ; ensuite le bouton disparaît. Une mission faite se coche ; « Prendre 30 XP et 10 écus » apparaît, puis « Prendre 90 XP, 30 écus et un sachet bonus » quand les trois sont faites. Après : « Tu as gagné … ! », un tintement, l'XP et les écus montent, la pastille de la tuile s'éteint, « Tu as fait toutes tes missions du jour. De nouvelles missions t'attendent demain. » Réserve pleine : les XP et écus arrivent, le sachet bonus attend et la phrase le dit. Le lendemain, trois autres missions ; une mission faite et pas prise se prend encore pendant 7 jours. Au niveau 1 : « Les missions du jour commencent au niveau 2. »
+- **Retour :**
+
+### NIV-10 · Carnet de pointage
+- **Faire :** avec un compte dont la semaine de bienvenue est finie, jouer un jour (ouvrir un sachet, répondre à un défi ou à l'énigme), puis arriver sur Jouer. Prendre la case. Revenir le lendemain sans jouer, puis jouer. En base locale, reculer les jours joués pour remplir une case garnie ou la 28e.
+- **Attendu :** le carnet s'ouvre seul une fois par jour quand une case attend, jamais le même jour que la semaine de bienvenue ; Récompenses et le courrier comptent la case et y mènent. 28 cases sur quatre rangées de sept, les dates de la période en haut, « 1 case remplie sur 28 », la case à prendre qui brille. Les cases donnent 10 écus, un sachet bonus les jours 3, 10, 17 et 24, un sachet garni les jours 7, 14 et 21, un sachet garni Précieux le 28e. Une case se prend dans l'ordre ; tant qu'aucun jour n'est joué, « Joue un autre jour pour remplir la case 2, qui t'offre … ». Les jours sautés ne font rien perdre. Réserve pleine pour une case à sachet : la case attend et propose d'ouvrir un sachet. Avant la fin de la semaine de bienvenue, le carnet dit qu'il commence après elle ; l'invité n'en a pas.
+- **Retour :**
+
 ### NIV-07 · Écrans fermés par le niveau
 - **Faire :** avec un compte de niveau 4, toucher Échanges ; niveau 9, Clan ; niveau 14, Joutes.
 - **Attendu :** l'écran fermé dit quel niveau l'ouvre, une phrase de promesse, la barre vers ce niveau, « Ouvrir un sachet », « Faire un défi ». Joutes, une fois le niveau atteint : « pas encore construit ».
@@ -363,6 +373,11 @@ docker compose exec postgres psql -U leximon -d leximon -c "update user_mastery 
 ### DEF-19 · Jours joués
 - **Faire :** regarder « Ta mémoire » et le bilan d'une série, sur un compte qui a joué plusieurs jours.
 - **Attendu :** « 12 jours joués, dont 5 à la suite. » (ou « tous à la suite », ou « 1 jour joué. »). Un jour compte dès un sachet ouvert, une réponse à un défi ou l'énigme jouée. Deux jours manqués dans la semaine (lundi à dimanche) ne coupent pas la suite ; le troisième la fait repartir. Rien avant le premier jour, aucune phrase sur la série perdue.
+- **Retour :**
+
+### DEF-20 · Sans-faute du jour
+- **Faire :** un jour où le joueur n'a encore répondu à rien, répondre juste aux 5 premières questions (défi ou entraînement). Un autre jour, se tromper sur l'une des 5 premières.
+- **Attendu :** à la 5e bonne réponse : « Sans-faute sur tes 5 premières questions du jour ! Tu gagnes 5 écus. » et la pastille des écus monte. Une seule fois par jour, jamais après une erreur parmi les 5 premières, jamais pour les questions suivantes.
 - **Retour :**
 
 ### DEF-10 · Énigme du jour

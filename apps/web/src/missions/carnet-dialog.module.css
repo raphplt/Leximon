@@ -1,0 +1,95 @@
+/* The 28 cases of the carnet on the leather, four weeks of seven. */
+.cases {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: var(--lx-s3) var(--lx-s2);
+  margin: var(--lx-s6) auto var(--lx-s8);
+  padding: 0;
+  max-width: 360px;
+  list-style: none;
+}
+
+.case {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  min-width: 0;
+}
+
+.caseIcon {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border: var(--lx-toy-outline-width) solid var(--lx-toy-outline);
+  border-radius: var(--lx-toy-radius-tile);
+  background:
+    var(--lx-matter-paper) 0 0 / var(--lx-matter-size),
+    var(--lx-color-paper);
+  box-shadow:
+    inset 0 -3px 0 var(--lx-toy-paper-bottom),
+    0 2px 0 var(--lx-toy-outline);
+  color: var(--lx-color-paper-ink);
+}
+
+.caseNumber {
+  font-weight: 800;
+  font-size: var(--lx-size-micro);
+  color: var(--lx-color-page-ink-muted);
+}
+
+/* The sachets of the carnet, its milestones, are drawn in kraft. */
+.big .caseIcon {
+  background: var(--lx-color-kraft);
+  color: var(--lx-color-kraft-ink);
+}
+
+.claimed .caseIcon {
+  background: linear-gradient(160deg, var(--lx-color-gilt-light), var(--lx-color-gilt-deep));
+  color: var(--lx-color-action-ink);
+}
+
+.waiting .caseIcon {
+  background: linear-gradient(
+    180deg,
+    var(--lx-toy-gold-top) 0 47%,
+    var(--lx-toy-gold-bottom) 53% 100%
+  );
+  color: var(--lx-color-kraft-ink);
+}
+
+.next .caseIcon {
+  box-shadow:
+    inset 0 -4px 0 var(--lx-toy-gold-edge),
+    0 2px 0 var(--lx-toy-outline),
+    0 0 22px color-mix(in srgb, var(--lx-toy-gold-top) 70%, transparent);
+  translate: 0 -3px;
+}
+
+.next .caseNumber {
+  color: var(--lx-toy-gold-top);
+}
+
+.later .caseIcon {
+  opacity: 0.75;
+}
+
+.filled {
+  margin: var(--lx-s2) 0 0;
+  font-weight: 700;
+  color: var(--lx-color-page-ink-muted);
+}
+
+.rule {
+  margin: var(--lx-s5) 0 0;
+  font-size: var(--lx-size-small);
+  color: var(--lx-color-page-ink-muted);
+}
+
+@media (max-width: 380px) {
+  .caseIcon {
+    width: 28px;
+    height: 28px;
+  }
+}

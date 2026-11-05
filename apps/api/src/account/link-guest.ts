@@ -32,6 +32,7 @@ const {
   userCards,
   userLevelRewards,
   userMastery,
+  userMissions,
   userRarityCompletions,
   userProgress,
   users,
@@ -61,6 +62,9 @@ export const USER_REFERENCES = {
   "user_level_rewards.user_id": { transfer: "moved", abandon: "kept" },
   // Only an account claims the welcome week: a guest has nothing there.
   "user_welcome_days.user_id": { transfer: "kept", abandon: "kept" },
+  "user_missions.user_id": { transfer: "moved", abandon: "kept" },
+  // The carnet starts after the welcome week, which only an account claims.
+  "user_carnet_cases.user_id": { transfer: "kept", abandon: "kept" },
   "user_rarity_completions.user_id": { transfer: "moved", abandon: "kept" },
   "booster_opens.user_id": { transfer: "moved", abandon: "kept" },
   "booster_open_requests.user_id": { transfer: "moved", abandon: "kept" },
@@ -350,6 +354,7 @@ async function transferEverything(tx: Transaction, guestId: string, accountId: s
       masteries as (update ${userMastery} set user_id = ${accountId} where user_id = ${guestId} returning 1),
       progress as (update ${userProgress} set user_id = ${accountId} where user_id = ${guestId} returning 1),
       level_rewards as (update ${userLevelRewards} set user_id = ${accountId} where user_id = ${guestId} returning 1),
+      missions as (update ${userMissions} set user_id = ${accountId} where user_id = ${guestId} returning 1),
       completions as (update ${userRarityCompletions} set user_id = ${accountId} where user_id = ${guestId} returning 1),
       opens as (update ${boosterOpens} set user_id = ${accountId} where user_id = ${guestId} returning 1),
       open_requests as (update ${boosterOpenRequests} set user_id = ${accountId} where user_id = ${guestId} returning 1),

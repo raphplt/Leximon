@@ -15,7 +15,7 @@ import {
   unclaimedLevels,
 } from "@leximon/core";
 import { FEATURE_NAMES, FEATURE_WORDS, levelsOfFeatures, opensAt } from "./features";
-import { formatCount, plural } from "./format";
+import { capitalize, formatCount, plural } from "./format";
 import { xpBefore } from "./level";
 import { avatarName, frameName } from "./profile";
 
@@ -31,7 +31,8 @@ export type RewardIcon =
   | "plus"
   | "profil"
   | "cadre"
-  | "pin";
+  | "pin"
+  | "ecu";
 
 export interface RewardItem {
   readonly icon: RewardIcon;
@@ -87,7 +88,17 @@ export function rewardItem(reward: LevelRewardView | LevelReward): RewardItem {
         title: "Une épingle de plus",
         detail: "Une carte de plus à mettre en avant sur ton profil",
       };
+    case "ecus":
+      return {
+        icon: "ecu",
+        title: capitalize(ecusOf(reward.amount)),
+        detail: "Pour choisir un mot qui te manque",
+      };
   }
+}
+
+function ecusOf(amount: number): string {
+  return plural(amount, "écu", "écus");
 }
 
 /** What a level gives, under the rules in force. */
@@ -214,6 +225,8 @@ function rewardWord(reward: LevelReward): string {
       return "Cadre";
     case "pinned_slot":
       return "Épingle";
+    case "ecus":
+      return "Écus";
   }
 }
 
@@ -255,6 +268,8 @@ function rewardPhrase(reward: LevelRewardView | LevelReward): string {
       return "un cadre";
     case "pinned_slot":
       return "une carte épinglée de plus sur ton profil";
+    case "ecus":
+      return ecusOf(reward.amount);
   }
 }
 

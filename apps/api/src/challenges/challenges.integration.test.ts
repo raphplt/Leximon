@@ -541,6 +541,62 @@ describe("bonus boosters", () => {
   });
 });
 
+describe("perfect start", () => {
+  const WORDS = [1, 2, 3].flatMap((n) => [`test-a-common-${n}`, `test-a-uncommon-${n}`]);
+
+  async function reply(guest: Guest, cardId: string, correct: boolean, key?: string) {
+    const response = await answer(guest, cardId, correct ? cardId : "test-b-common-1", key);
+    expect(response.status).toBe(200);
+    return challengeAnswerResponseSchema.parse(await response.json());
+  }
+
+  async function ecusOf(guest: Guest) {
+    const [row] = await db
+      .select({ ecus: schema.boosterWallets.ecus })
+      .from(schema.boosterWallets)
+      .where(eq(schema.boosterWallets.userId, guest.userId));
+    const movements = await db
+      .select({ kind: schema.ecuMovements.kind, amount: schema.ecuMovements.amount })
+      .from(schema.ecuMovements)
+      .where(eq(schema.ecuMovements.userId, guest.userId));
+    return { ecus: row?.ecus ?? 0, movements };
+  }
+
+  it("gives 5 écus to the answer that makes the day's first five right, and replays it", async () => {
+    const guest = await signInAsGuest(app, env);
+    await give(guest, ...WORDS);
+    for (const cardId of WORDS.slice(0, 4)) expect((await reply(guest, cardId, true)).ecus).toBe(0);
+    const key = crypto.randomUUID();
+    expect((await reply(guest, WORDS[4] as string, true, key)).ecus).toBe(5);
+    expect((await reply(guest, WORDS[4] as string, true, key)).ecus).toBe(5);
+    expect((await reply(guest, WORDS[5] as string, true)).ecus).toBe(0);
+    expect(await ecusOf(guest)).toEqual({
+      ecus: 5,
+      movements: [{ kind: "perfect_start", amount: 5 }],
+    });
+  });
+
+  it("gives nothing when one of the first five is wrong", async () => {
+    const guest = await signInAsGuest(app, env);
+    await give(guest, ...WORDS);
+    for (const [index, correct] of [true, false, true, true, true, true].entries()) {
+      expect((await reply(guest, WORDS[index] as string, correct)).ecus).toBe(0);
+    }
+    expect((await ecusOf(guest)).ecus).toBe(0);
+  });
+
+  it("gives the écus once when answers race", async () => {
+    const guest = await signInAsGuest(app, env);
+    await give(guest, ...WORDS);
+    const responses = await Promise.all(WORDS.map((cardId) => answer(guest, cardId, cardId)));
+    const bodies = await Promise.all(
+      responses.map(async (response) => challengeAnswerResponseSchema.parse(await response.json())),
+    );
+    expect(bodies.filter((body) => body.ecus === 5)).toHaveLength(1);
+    expect((await ecusOf(guest)).ecus).toBe(5);
+  });
+});
+
 describe("answer latency budget", () => {
   it("uses five statements per answer: BEGIN, wallet, mastery and lookups, write, COMMIT", async () => {
     const queries: string[] = [];

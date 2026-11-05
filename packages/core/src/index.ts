@@ -18,6 +18,8 @@ export * from "./mastery/practice";
 export * from "./moderation/sanction";
 export * from "./moderation/text-filter";
 export * from "./notify/notify";
+export * from "./progress/carnet";
+export * from "./progress/missions";
 export * from "./progress/progress";
 export * from "./progress/rewards";
 export * from "./progress/streak";

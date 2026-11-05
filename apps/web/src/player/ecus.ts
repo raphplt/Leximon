@@ -5,8 +5,8 @@ import type { MissingWordResult, RecycleCopyResult } from "@leximon/contract/cli
 import { copiesAfterRecycle } from "@leximon/view-model";
 import { api } from "@/lib/api";
 import { publishProgress } from "@/progress/use-progress";
-import { noteGained, ownedCards } from "./collection";
-import { wallet } from "./player";
+import { noteGained, ownedCards, refreshIfRead } from "./collection";
+import { missions, wallet } from "./player";
 
 /**
  * Recycling and the missing word: each request has its own key, since a repeated tap after a
@@ -15,6 +15,7 @@ import { wallet } from "./player";
 
 function publishRecycled(result: RecycleResponse): void {
   wallet.publish(result.wallet);
+  refreshIfRead(missions);
   const current = ownedCards.current();
   if (current !== null && result.cards.length > 0) {
     ownedCards.publish(copiesAfterRecycle(current, result.cards));

@@ -8,16 +8,26 @@ import {
   blocksResponseSchema,
   boosterStockEmptySchema,
   boosterWalletSchema,
+  type CarnetRefusal,
+  type CarnetResponse,
   type ChallengeAnswerRequest,
   type ChallengeAnswerResponse,
   type ChallengesResponse,
+  type ChangeMissionRefusal,
+  type ClaimCarnetCaseResponse,
   type ClaimLevelRewardResponse,
+  type ClaimMissionsResponse,
   type ClaimRefusal,
   type ClaimWelcomeDayResponse,
   type CreateTradeRequest,
+  carnetRefusalSchema,
+  carnetResponseSchema,
   challengeAnswerResponseSchema,
   challengesResponseSchema,
+  changeMissionRefusalSchema,
+  claimCarnetCaseResponseSchema,
   claimLevelRewardResponseSchema,
+  claimMissionsResponseSchema,
   claimRefusalSchema,
   claimWelcomeDayResponseSchema,
   type DailyChallengeResponse,
@@ -35,11 +45,13 @@ import {
   type MissingWordRefusal,
   type MissingWordRequest,
   type MissingWordResponse,
+  type MissionsResponse,
   mailResponseSchema,
   markMailReadResponseSchema,
   masteryResponseSchema,
   missingWordRefusalSchema,
   missingWordResponseSchema,
+  missionsResponseSchema,
   type OpenBoosterResponse,
   type OwnedCardsResponse,
   openBoosterResponseSchema,
@@ -122,6 +134,14 @@ export type RecycleCopyResult =
 export type MissingWordResult =
   | ({ readonly kind: "bought" } & MissingWordResponse)
   | { readonly kind: "refused"; readonly reason: MissingWordRefusal };
+
+export type ChangeMissionResult =
+  | { readonly kind: "changed"; readonly missions: MissionsResponse }
+  | { readonly kind: "refused"; readonly reason: ChangeMissionRefusal };
+
+export type CarnetClaimResult =
+  | ({ readonly kind: "claimed" } & ClaimCarnetCaseResponse)
+  | { readonly kind: "refused"; readonly reason: CarnetRefusal };
 
 export type AnswerResult =
   | ({ readonly kind: "answered" } & ChallengeAnswerResponse)
@@ -295,6 +315,53 @@ export function gameRoutes(http: Http) {
       }
       if (!response.ok) throw new ApiError("claim_failed", response.status);
       return { kind: "claimed", ...(await parse(response, claimWelcomeDayResponseSchema)) };
+    },
+
+    /** The missions of the day, drawn by the server on the first request of the day. */
+    fetchMissions: (): Promise<MissionsResponse> =>
+      getJson("/me/missions", missionsResponseSchema, "missions_unavailable"),
+
+    /** Changes one mission of the day, once a day; returns the day's missions afterwards. */
+    async changeMission(slot: number, idempotencyKey: string): Promise<ChangeMissionResult> {
+      const response = await sendAsPlayer(
+        "/me/missions/change",
+        json("POST", { slot }, { [IDEMPOTENCY_KEY_HEADER]: idempotencyKey }),
+      );
+      if (response.status === 409) {
+        return {
+          kind: "refused",
+          reason: (await parse(response, changeMissionRefusalSchema)).error,
+        };
+      }
+      if (!response.ok) throw new ApiError("change_failed", response.status);
+      return { kind: "changed", missions: await parse(response, missionsResponseSchema) };
+    },
+
+    /** Claims every mission done, today and the days before, with the bonus of a full day. */
+    async claimMissions(idempotencyKey: string): Promise<ClaimMissionsResponse> {
+      const response = await sendAsPlayer(
+        "/me/missions/claim",
+        json("POST", {}, { [IDEMPOTENCY_KEY_HEADER]: idempotencyKey }),
+      );
+      await refuseArchivedGuest(response);
+      if (!response.ok) throw new ApiError("claim_failed", response.status);
+      return parse(response, claimMissionsResponseSchema);
+    },
+
+    fetchCarnet: (): Promise<CarnetResponse> =>
+      getJson("/me/carnet", carnetResponseSchema, "carnet_unavailable"),
+
+    /** Claims a case of the carnet. Idempotent on the server: the period and case are the key. */
+    async claimCarnetCase(period: number, caseNumber: number): Promise<CarnetClaimResult> {
+      const response = await sendAsPlayer(`/me/carnet/${period}/${caseNumber}`, {
+        method: "POST",
+      });
+      await refuseArchivedGuest(response);
+      if (response.status === 409) {
+        return { kind: "refused", reason: (await parse(response, carnetRefusalSchema)).error };
+      }
+      if (!response.ok) throw new ApiError("claim_failed", response.status);
+      return { kind: "claimed", ...(await parse(response, claimCarnetCaseResponseSchema)) };
     },
 
     /**

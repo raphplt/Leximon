@@ -17,6 +17,18 @@ const { boosterOpens, practiceAnswers, reviewLogs, riddlePlays } = schema;
  * its index on the player.
  */
 export async function readStreak(db: Database, userId: string, now: EpochMs): Promise<Streak> {
+  const played = await readPlayedDays(db, userId);
+  return streakOf(streakRulesAt(STREAK_SCHEDULE, now), played, gameDayOf(now).key);
+}
+
+/**
+ * The days a player played (keys `YYYY-MM-DD`, Paris time): a sachet opened, a challenge
+ * answered or the riddle played. The streak and the carnet both count them.
+ */
+export async function readPlayedDays(
+  db: Pick<Database, "execute">,
+  userId: string,
+): Promise<Set<string>> {
   const result = await db.execute<{ day: string }>(sql`
     select (${boosterOpens.openedAt} at time zone 'Europe/Paris')::date::text as day
       from ${boosterOpens} where ${boosterOpens.userId} = ${userId}
@@ -29,6 +41,5 @@ export async function readStreak(db: Database, userId: string, now: EpochMs): Pr
     union
     select ${riddlePlays.day}::text from ${riddlePlays} where ${riddlePlays.userId} = ${userId}
   `);
-  const played = new Set(result.rows.map((row) => row.day));
-  return streakOf(streakRulesAt(STREAK_SCHEDULE, now), played, gameDayOf(now).key);
+  return new Set(result.rows.map((row) => row.day));
 }

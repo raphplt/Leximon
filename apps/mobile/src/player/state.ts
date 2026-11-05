@@ -1,9 +1,11 @@
 import type {
   AccountResponse,
   BoosterWalletResponse,
+  CarnetResponse,
   FriendsResponse,
   LevelRewardsResponse,
   MailResponse,
+  MissionsResponse,
   MyClanResponse,
   ProfileResponse,
   Progress,
@@ -22,6 +24,10 @@ export const wallet = sharedResource<BoosterWalletResponse>(api.fetchWallet);
 export const levelRewards = sharedResource<LevelRewardsResponse>(api.fetchLevelRewards);
 /** The welcome week: what each day gives, and whether today's waits. */
 export const welcomeWeek = sharedResource<WelcomeWeekResponse>(api.fetchWelcomeWeek);
+/** The missions of the day, with what earlier days still give. */
+export const missions = sharedResource<MissionsResponse>(api.fetchMissions);
+/** The carnet de pointage, after the welcome week. */
+export const carnet = sharedResource<CarnetResponse>(api.fetchCarnet);
 export const account = sharedResource<AccountResponse>(api.fetchAccount);
 export const profile = sharedResource<ProfileResponse>(api.fetchProfile);
 export const progress = sharedResource<Progress>(api.fetchProgress);
@@ -57,6 +63,8 @@ export function publishWelcomeClaimed(day: number): void {
   const week = welcomeWeek.current();
   if (week === null || week.claimed >= day) return;
   welcomeWeek.publish({ ...week, claimed: day, open: false });
+  // The last day starts the carnet.
+  if (carnet.current() !== null) carnet.refresh();
 }
 
 /** Forgets the state of the player who left: the next read is the new player's. */
@@ -65,6 +73,8 @@ export function resetPlayerState(): void {
     wallet,
     levelRewards,
     welcomeWeek,
+    missions,
+    carnet,
     account,
     profile,
     progress,

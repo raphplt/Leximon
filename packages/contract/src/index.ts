@@ -14,6 +14,7 @@ export * from "./friends";
 export * from "./levels";
 export * from "./mail";
 export * from "./me";
+export * from "./missions";
 export * from "./moderation";
 export * from "./profile";
 export * from "./progress";

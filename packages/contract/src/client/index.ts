@@ -36,6 +36,8 @@ export type { ClaimReferralResult, FriendResult } from "./friends";
 export type {
   AnswerResult,
   BlockResult,
+  CarnetClaimResult,
+  ChangeMissionResult,
   ClaimResult,
   DeleteAccountResult,
   MissingWordResult,

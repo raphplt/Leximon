@@ -243,3 +243,9 @@ export function copiesAfterRecycle(
   }
   return after;
 }
+
+/** After the answer that makes the day's first questions all right. */
+export function perfectStartToast(ecus: number, now: EpochMs): string {
+  const { questions } = ecuRules(now).perfectStart;
+  return `Sans-faute sur tes ${formatCount(questions)} premières questions du jour ! Tu gagnes ${ecusLabel(ecus)}.`;
+}

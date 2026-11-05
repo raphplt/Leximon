@@ -163,6 +163,8 @@ export const practiceAnswerResponseSchema = z.object({
   progress: progressGainSchema,
   /** The daily bonus, when free practice counts towards the daily goal. */
   bonus: answerBonusSchema.optional(),
+  /** Écus of a perfect start: this answer made the day's first questions all right. */
+  ecus: z.int().nonnegative().default(0),
 });
 export type PracticeAnswerResponse = z.infer<typeof practiceAnswerResponseSchema>;
 
@@ -176,6 +178,8 @@ export const challengeAnswerResponseSchema = z.object({
   nextReviewAt: timestampSchema,
   bonus: answerBonusSchema,
   progress: progressGainSchema,
+  /** Écus of a perfect start: this answer made the day's first questions all right. */
+  ecus: z.int().nonnegative().default(0),
 });
 export type ChallengeAnswerResponse = z.infer<typeof challengeAnswerResponseSchema>;
 

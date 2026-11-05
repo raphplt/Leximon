@@ -7,6 +7,7 @@ import {
   noChallengeNotice,
   PACK_NOUNS,
   PRACTICE_REFUSED,
+  perfectStartToast,
   playable,
   type SeriesQuestion,
   seriesOf,
@@ -19,9 +20,11 @@ import { api } from "@/api/client";
 import { catalogInHand, loadCatalog } from "@/cards/catalog";
 import { play, speechOn, vibrate } from "@/feedback/feedback";
 import { dailyChallenge, refreshIfRead, reviewSummary, wordMemory } from "@/player/collection";
+import { publishEcusWon } from "@/player/missions";
 import { useNow, useShared } from "@/player/shared";
-import { publishProgress, wallet } from "@/player/state";
+import { missions, publishProgress, wallet } from "@/player/state";
 import { ParticleStage } from "@/ui/stage";
+import { toast } from "@/ui/toast";
 import { ChallengeRecap } from "./challenge-recap";
 import { takeAlbumPractice } from "./pending-practice";
 import { QuestionView } from "./question-view";
@@ -144,6 +147,7 @@ function ChallengeFlow({
       const result = await sendAnswer(question, chosen, key);
       setPendingKey(null);
       refreshIfRead(wordMemory);
+      refreshIfRead(missions);
       dailyChallenge.refresh();
       if (result.kind === "not_due") {
         setSession(advance({ ...session, step: { name: "asking" } }));
@@ -157,6 +161,10 @@ function ChallengeFlow({
       if (followUp !== null) setTimeout(() => play(followUp), AFTER_ANSWER_MS);
       // A bonus sachet went to the reserve: the top bar's count follows.
       if (result.bonus.credited > 0) refreshIfRead(wallet);
+      if (result.ecus > 0) {
+        publishEcusWon(result.ecus);
+        toast(perfectStartToast(result.ecus, Date.now()));
+      }
       setSession({
         ...session,
         // A missed word comes back a few questions later, asked the other way round.

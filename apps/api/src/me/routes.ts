@@ -54,6 +54,7 @@ import { claimLevelReward, readLevelRewards, walletView } from "../levels/reward
 import { markMailRead, readMail } from "../mail/mail";
 import { playerRateLimit } from "../middleware/rate-limit";
 import { requireUser } from "../middleware/require-user";
+import { missionRoutes } from "../missions/routes";
 import { readRestrictions, refuseLockedWrites } from "../moderation/restrictions";
 import { sanctionRoutes } from "../moderation/routes";
 import {
@@ -95,6 +96,7 @@ export function meRoutes() {
   routes.route("/", betaPlayerRoutes());
   routes.route("/", friendRoutes());
   routes.route("/", ecuRoutes());
+  routes.route("/", missionRoutes());
 
   routes.get("/wallet", async (c) => {
     // Asked for on every screen: the player's presence for the clan.

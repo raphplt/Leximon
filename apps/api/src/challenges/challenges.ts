@@ -10,7 +10,9 @@ import {
   createFullWallet,
   createSeededRandom,
   creditReserve,
+  ECU_SCHEDULE,
   type EpochMs,
+  ecuRulesAt,
   gameDayOf,
   gradeTyped,
   isDue,
@@ -24,6 +26,7 @@ import {
   newWordMastery,
   PRACTICE_SCHEDULE,
   type ProgressGain,
+  perfectStartEcus,
   planSession,
   practiceRulesAt,
   progressGain,
@@ -37,6 +40,7 @@ import {
 } from "@leximon/core";
 import { type Database, schema } from "@leximon/db";
 import { and, asc, eq, type SQL, sql, type WithSubquery } from "drizzle-orm";
+import { creditPerfectStart, perfectStartOf } from "../ecus/perfect-start";
 import { addXp } from "../progress/progress";
 import type { CatalogIndex } from "./catalog-index";
 
@@ -198,6 +202,8 @@ export type AnswerResult =
       readonly nextReviewAt: EpochMs;
       readonly bonus: AnswerBonus;
       readonly progress: ProgressGain;
+      /** Écus of a perfect start. */
+      readonly ecus: number;
     }
   | { readonly kind: "card_not_owned" }
   | { readonly kind: "not_due"; readonly nextReviewAt: EpochMs };
@@ -263,7 +269,8 @@ export async function answerChallenge(
           limit 1) as previous,
         tally.day_answers, tally.day_correct, awards.awards,
         coalesce((select ${userProgress.xp} from ${userProgress}
-          where ${userProgress.userId} = ${userId}), 0) as xp
+          where ${userProgress.userId} = ${userId}), 0) as xp,
+        ${perfectStartOf(userId, input.idempotencyKey)} as perfect_ecus
       from locked
       cross join lateral (
         select count(*)::int as day_answers, (count(*) filter (where answers.correct))::int as day_correct
@@ -298,6 +305,7 @@ export async function answerChallenge(
         nextReviewAt: current.memory.due,
         bonus: summarize(replayed, locked.bonusBoosters),
         progress: progressGain(row.xp, 0),
+        ecus: row.perfect_ecus,
       };
     }
 
@@ -311,9 +319,10 @@ export async function answerChallenge(
     const { memory } = outcome.mastery;
     const reviewedAt = new Date(now);
 
+    const tally = { answers: row.day_answers + 1, correct: row.day_correct + (correct ? 1 : 0) };
     const earned = answerBonuses(bonusRules, {
       day,
-      tally: { answers: row.day_answers + 1, correct: row.day_correct + (correct ? 1 : 0) },
+      tally,
       dailyAwarded: row.awards.some((a) => a.kind === "daily" && a.awardKey === day.key),
       cardId,
       reachedGilded: outcome.levelUp && outcome.mastery.level === "gilded",
@@ -410,6 +419,10 @@ export async function answerChallenge(
     if (progress === undefined) {
       throw new Error(`XP missing for user ${userId} right after the answer`);
     }
+    const ecus = perfectStartEcus(ecuRulesAt(ECU_SCHEDULE, now), tally);
+    if (ecus > 0) {
+      await creditPerfectStart(tx, { userId, key: input.idempotencyKey, ecus, day: day.key, now });
+    }
 
     return {
       kind: "answered",
@@ -420,6 +433,7 @@ export async function answerChallenge(
       nextReviewAt: memory.due,
       bonus: summarize(credit.awards, credit.reserve),
       progress: progressGain(progress.xp, xpGained),
+      ecus,
     };
   });
 }
@@ -490,6 +504,7 @@ interface AnswerLookupRow extends MasteryRow, Record<string, unknown> {
   day_correct: number;
   awards: (StoredAward & { challengeId: string })[];
   xp: number;
+  perfect_ecus: number;
 }
 
 interface MasteryRow {

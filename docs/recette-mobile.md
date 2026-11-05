@@ -156,6 +156,11 @@ A sur le web sert de deuxième joueur : amis, échanges, clan, sanctions. `pnpm 
 - **Attendu :** la semaine s'ouvre seule au premier lancement du jour où une case attend, sur le bureau comme le coffret ; le bouton rond Récompenses et le courrier y mènent tant qu'une case attend. Les sept cases tiennent sur 360 points de large.
 - **Retour :**
 
+### MNI-05 · Missions du jour et carnet de pointage (NIV-09, NIV-10)
+- **Faire :** comme NIV-09 et NIV-10, sur le téléphone : la tuile Missions en haut de la colonne de gauche, le carnet par Récompenses ou le courrier.
+- **Attendu :** la tuile porte une pastille quand une récompense attend ; elle ouvre une feuille avec les trois missions, « Y aller » ferme la feuille et mène au bon onglet. Le carnet s'ouvre sur le bureau comme le coffret, ses 28 cases tiennent sur 360 points de large ; il s'ouvre seul une fois par lancement et par jour quand une case attend, jamais en même temps que la semaine de bienvenue.
+- **Retour :**
+
 ### MNI-03 · Courrier
 - **Faire :** ouvrir l'enveloppe.
 - **Attendu :** « À faire » (coffrets, parrainages, objectifs de clan, mot qui s'échappe) puis les nouvelles. Toucher une lettre mène au bon écran et fait baisser le compteur.
@@ -217,6 +222,11 @@ A sur le web sert de deuxième joueur : amis, échanges, clan, sanctions. `pnpm 
 ### MDE-03 · Énigme du jour
 - **Faire :** suivre DEF-10 de [recette-web.md](recette-web.md) sur le téléphone, depuis la carte « Énigme du jour » de l'onglet Défis.
 - **Attendu :** comme sur le web, sons et vibrations compris ; le clavier ne cache pas le champ, le partage ouvre la feuille du système, et la carte de l'onglet Défis montre le résultat au retour.
+- **Retour :**
+
+### MDE-07 · Sans-faute du jour (DEF-20)
+- **Faire :** comme DEF-20, sur le téléphone.
+- **Attendu :** le message s'affiche au-dessus de la série sans la masquer, la pastille des écus du bandeau monte.
 - **Retour :**
 
 ---

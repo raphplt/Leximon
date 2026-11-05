@@ -2,7 +2,9 @@
 
 import type { MailKind, MailLetter } from "@leximon/contract";
 import {
+  CARNET_TITLE,
   capitalize,
+  carnetCasePhrase,
   claimableMailTitle,
   coffretsMailTitle,
   letterView,
@@ -72,7 +74,7 @@ export function MailPanel({
   readonly onClose: () => void;
 }) {
   const view = usePlayerView();
-  const { openCoffret, openChat, openWelcome } = useShell();
+  const { openCoffret, openChat, openWelcome, openCarnet } = useShell();
   const claim = useClaim();
   const toast = useToast();
   const box = view.mailbox;
@@ -134,6 +136,16 @@ export function MailPanel({
       title: welcomeMailTitle(welcomeDay.day),
       detail: capitalize(welcomeDay.phrase),
       action: () => openWelcome(),
+    });
+  }
+  const carnetCase = view.carnet?.next ?? null;
+  if (carnetCase !== null) {
+    todo.push({
+      key: "carnet",
+      icon: "coffret",
+      title: `${CARNET_TITLE}, case ${carnetCase.case}`,
+      detail: capitalize(carnetCasePhrase(view.carnet, carnetCase.case)),
+      action: () => openCarnet(),
     });
   }
   if (view.coffrets.length > 0) {

@@ -1,0 +1,183 @@
+/* The missions of the day: a leaf of paper with one line per mission. */
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px 16px 18px;
+}
+
+.inDialog {
+  box-shadow: none;
+}
+
+.head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.badge {
+  display: grid;
+  flex-shrink: 0;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+}
+
+.titles {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.kicker {
+  font-size: var(--lx-size-micro);
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--lx-color-page-ink-muted);
+}
+
+.title {
+  font-family: var(--font-display), Georgia, serif;
+  font-size: var(--lx-size-body-large);
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 4px 10px;
+}
+
+/* A round seal: empty while the mission goes on, gilt once done. */
+.seal {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border: var(--lx-toy-outline-width) solid var(--lx-toy-outline);
+  border-radius: 50%;
+  background: var(--lx-color-paper);
+  color: var(--lx-toy-outline);
+}
+
+.done .seal,
+.claimed .seal {
+  background: linear-gradient(180deg, var(--lx-toy-gold-top), var(--lx-toy-gold-bottom));
+  box-shadow: 0 2px 0 var(--lx-toy-outline);
+}
+
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 0;
+}
+
+.line {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.what {
+  font-family: var(--font-text), Georgia, serif;
+  font-size: var(--lx-size-label);
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.claimed .what {
+  color: var(--lx-color-page-ink-muted);
+}
+
+.figure {
+  flex-shrink: 0;
+  font-size: var(--lx-size-small);
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  color: var(--lx-color-page-ink-muted);
+}
+
+.bar {
+  height: 8px;
+  border: 2px solid var(--lx-toy-outline);
+  border-radius: 999px;
+  background: var(--lx-color-paper-deep, var(--lx-color-paper));
+  overflow: hidden;
+}
+
+.fill {
+  display: block;
+  height: 100%;
+  background: linear-gradient(180deg, var(--lx-toy-gold-top), var(--lx-toy-gold-bottom));
+  transition: width 300ms ease-out;
+}
+
+.actions {
+  grid-column: 2;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.go,
+.change {
+  padding: 3px 10px 4px;
+  border: 2px solid var(--lx-toy-outline);
+  border-radius: var(--lx-toy-radius-small);
+  font: inherit;
+  font-size: var(--lx-size-small);
+  font-weight: 800;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.go {
+  background: linear-gradient(
+    180deg,
+    var(--lx-toy-gold-top) 0 47%,
+    var(--lx-toy-gold-bottom) 53% 100%
+  );
+  box-shadow: 0 2px 0 var(--lx-toy-outline);
+  color: var(--lx-toy-outline);
+}
+
+.change {
+  background: var(--lx-color-paper);
+  color: var(--lx-color-page-ink);
+}
+
+.change:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.go:focus-visible,
+.change:focus-visible {
+  outline: 3px solid var(--lx-color-focus);
+  outline-offset: 2px;
+}
+
+.text {
+  margin: 0;
+  font-family: var(--font-text), Georgia, serif;
+  font-size: var(--lx-size-label);
+  line-height: 1.4;
+  color: var(--lx-color-page-ink-muted);
+}

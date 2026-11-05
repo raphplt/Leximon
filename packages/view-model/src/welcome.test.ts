@@ -81,7 +81,7 @@ describe("the lines of the week", () => {
 
   it("closes the week on its last day", () => {
     expect(welcomeAfterClaim(week(4, false), 4)).toBe(
-      "C'était le dernier jour de ta semaine de bienvenue.",
+      "C'était le dernier jour de ta semaine de bienvenue. Ton carnet de pointage prend le relais, une case par jour où tu joues.",
     );
   });
 

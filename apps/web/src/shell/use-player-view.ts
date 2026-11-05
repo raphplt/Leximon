@@ -1,12 +1,18 @@
 "use client";
 
 import type { Progress } from "@leximon/contract";
-import { mailCount, playerTitle, waitingCoffrets, welcomeWaits } from "@leximon/view-model";
+import {
+  carnetWaits,
+  mailCount,
+  playerTitle,
+  waitingCoffrets,
+  welcomeWaits,
+} from "@leximon/view-model";
 import { useNow } from "@/lib/use-now";
 import { myClan } from "@/player/clan";
 import { mailbox } from "@/player/mail";
 import { incomingOffers } from "@/player/offers";
-import { account, levelRewards, profile, wallet, welcomeWeek } from "@/player/player";
+import { account, carnet, levelRewards, profile, wallet, welcomeWeek } from "@/player/player";
 import { useShared } from "@/player/resource";
 import { useProgress } from "@/progress/use-progress";
 
@@ -21,6 +27,7 @@ export function usePlayerView() {
   const clan = useShared(myClan);
   const mail = useShared(mailbox);
   const welcome = useShared(welcomeWeek);
+  const card = useShared(carnet);
   const now = useNow(15_000);
   const claimed = rewards?.claimed ?? [];
   const coffrets =
@@ -37,8 +44,12 @@ export function usePlayerView() {
     welcome,
     /** A day of the welcome week waits to be claimed today. */
     welcomeWaits: welcomeWaits(welcome),
-    /** What « Récompenses » counts: the coffrets and today's day of the welcome week. */
-    rewardsWaiting: coffrets.length + (welcomeWaits(welcome) ? 1 : 0),
+    /** The carnet de pointage; `null` until read. */
+    carnet: card,
+    /** A case of the carnet waits to be claimed. */
+    carnetWaits: carnetWaits(card),
+    /** What « Récompenses » counts: the coffrets, the welcome week's day and the carnet. */
+    rewardsWaiting: coffrets.length + (welcomeWaits(welcome) ? 1 : 0) + (carnetWaits(card) ? 1 : 0),
     /** The title worn: the one chosen in the atelier, else the latest won. */
     title: me !== null ? me.title : now === 0 ? null : playerTitle(claimed, now),
     guest: who?.kind === "guest",
@@ -57,7 +68,8 @@ export function usePlayerView() {
     mailbox: mail,
     mail: mailCount({
       coffrets: coffrets.length,
-      welcome: welcomeWaits(welcome) ? 1 : 0,
+      // The welcome week's day and the carnet's case are entries of the same kind.
+      welcome: (welcomeWaits(welcome) ? 1 : 0) + (carnetWaits(card) ? 1 : 0),
       goalSachets: claimable.length,
       referralSachets: mail?.referralRewards.length ?? 0,
       unread: mail?.unread ?? 0,

@@ -8,7 +8,14 @@ export interface Shell {
   openCoffret(level?: number): void;
   /** The welcome week. */
   openWelcome(): void;
-  /** What waits in « Récompenses »: today's day of the welcome week first, then the coffrets. */
+  /** The carnet de pointage. */
+  openCarnet(): void;
+  /** The missions of the day, in a panel (the wide desk shows them on its own). */
+  openMissions(): void;
+  /**
+   * What waits in « Récompenses »: today's day of the welcome week first, then the carnet's case,
+   * then the coffrets.
+   */
   openRewards(): void;
   /** Spending écus on a missing word, from `collectionId` when given. */
   openMissingWord(collectionId?: string): void;
@@ -26,6 +33,8 @@ export interface Shell {
 export const ShellContext = createContext<Shell>({
   openCoffret: () => undefined,
   openWelcome: () => undefined,
+  openCarnet: () => undefined,
+  openMissions: () => undefined,
   openRewards: () => undefined,
   openMissingWord: () => undefined,
   openSettings: () => undefined,

@@ -5,6 +5,7 @@ import {
   type FabId,
   type Fab as FabModel,
   lockedToast,
+  missionsLockedToast,
   NOT_BUILT_COPY,
   playFabs,
   type StockView,
@@ -30,8 +31,10 @@ import Animated, {
 } from "react-native-reanimated";
 import { openRewards } from "@/levels/welcome";
 import { CollectionTitle, Desk, InfoBubble, MainAction, SideTile } from "@/library/play-pieces";
+import { openMissions } from "@/missions/missions-sheet";
 import { dailyChallenge } from "@/player/collection";
 import { useNow, useShared } from "@/player/shared";
+import { missions } from "@/player/state";
 import { usePlayerView } from "@/player/use-player-view";
 import { TAB_BAR_RISE } from "@/shell/tab-bar";
 import { GRID } from "./sachet-face";
@@ -42,6 +45,7 @@ type TileId = Exclude<FabId, "mail" | "settings">;
 const TILES: Readonly<
   Record<TileId, { readonly icon: ToyIconName; readonly matter: ToyMatterName }>
 > = {
+  missions: { icon: "missions", matter: "gold" },
   clan: { icon: "clan", matter: "blue" },
   chat: { icon: "discussion", matter: "green" },
   jousts: { icon: "jousts", matter: "red" },
@@ -353,18 +357,31 @@ function Tiles({
   const view = usePlayerView();
   const now = useNow(60_000);
   const daily = useShared(dailyChallenge);
+  const today = useShared(missions);
   const fabs = playFabs(
-    { level: view.progress?.level ?? 1, coffrets: view.rewardsWaiting, mail: view.mail },
+    {
+      level: view.progress?.level ?? 1,
+      coffrets: view.rewardsWaiting,
+      mail: view.mail,
+      missions: (today?.claimable.missions ?? 0) + (today?.claimable.bonus ?? 0),
+    },
     now,
   )[side];
   const dailyLeft = daily !== null && dailyView(daily).ratio < 1;
 
   const act = (fab: FabModel) => {
     if (fab.lock !== null) {
-      say(lockedToast(fab.id === "jousts" ? "jousts" : "join_clan", now));
+      say(
+        fab.id === "missions"
+          ? missionsLockedToast(now)
+          : lockedToast(fab.id === "jousts" ? "jousts" : "join_clan", now),
+      );
       return;
     }
     switch (fab.id) {
+      case "missions":
+        openMissions();
+        return;
       case "clan":
       case "chat":
         router.navigate("/clan");

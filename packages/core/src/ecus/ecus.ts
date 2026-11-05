@@ -10,8 +10,14 @@ import type { Rarity } from "../booster/rarity";
 import type { EpochMs } from "../booster/refill";
 import { type RandomSource, randomInt } from "../random";
 
-/** Why écus moved: a recycling gives, a missing word costs. */
-export const ECU_MOVEMENT_KINDS = ["recycle", "missing_word"] as const;
+/** Why écus moved: a missing word costs, the rest gives. */
+export const ECU_MOVEMENT_KINDS = [
+  "recycle",
+  "missing_word",
+  "perfect_start",
+  "mission",
+  "carnet",
+] as const;
 export type EcuMovementKind = (typeof ECU_MOVEMENT_KINDS)[number];
 
 export interface EcuRules {
@@ -25,6 +31,8 @@ export interface EcuRules {
   readonly recycledTogether: readonly Rarity[];
   /** Copies the one-touch recycling always leaves of a card: the card and one double. */
   readonly copiesKept: number;
+  /** Écus once a day when the first questions of the day are all right. */
+  readonly perfectStart: { readonly questions: number; readonly ecus: number };
 }
 
 export type EcuSchedule = readonly [EcuRules, ...EcuRules[]];
@@ -87,6 +95,19 @@ export function recyclePlan(rules: EcuRules, holdings: readonly OwnedCopies[]): 
 export function recycleOne(rules: EcuRules, holding: OwnedCopies): RecycledCard | null {
   if (holding.quantity < 2) return null;
   return { cardId: holding.cardId, copies: 1, ecus: rules.recycleValue[holding.rarity] };
+}
+
+/**
+ * Écus an answer earns for a perfect start: the one that makes the day's first questions all
+ * right. `tally` counts the day's answers with this one. The player's answers are serialized, so
+ * exactly one answer of a day can earn them.
+ */
+export function perfectStartEcus(
+  rules: EcuRules,
+  tally: { readonly answers: number; readonly correct: number },
+): number {
+  const { questions, ecus } = rules.perfectStart;
+  return tally.answers === questions && tally.correct === questions ? ecus : 0;
 }
 
 /** The missing word drawn among the candidates, `null` when none is missing. */

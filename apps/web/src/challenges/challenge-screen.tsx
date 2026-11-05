@@ -34,6 +34,7 @@ import {
   PRACTICE_TYPED_HINT,
   pairsDone,
   pairsVerdict,
+  perfectStartToast,
   pickInPairs,
   playable,
   questionKicker,
@@ -64,12 +65,15 @@ import { usePackShape } from "@/lib/use-pack-shape";
 import { Desk } from "@/library/play-pieces";
 import { myClan } from "@/player/clan";
 import { dailyChallenge, refreshIfRead, reviewSummary, wordMemory } from "@/player/collection";
+import { publishEcusWon } from "@/player/missions";
+import { missions } from "@/player/player";
 import { useShared } from "@/player/resource";
 import { publishProgress } from "@/progress/use-progress";
 import { useShell } from "@/shell/shell-context";
 import { Button, ButtonLink, RoundButton } from "@/ui/button";
 import { Icon } from "@/ui/icon";
 import { ParticleStage, useOptionalStage } from "@/ui/stage";
+import { useToast } from "@/ui/toast";
 import { Toy, ToyBody } from "@/ui/toy";
 import ui from "@/ui/ui.module.css";
 import styles from "./challenge-screen.module.css";
@@ -129,6 +133,7 @@ function ChallengeFlow() {
   const memory = useShared(wordMemory);
   const router = useRouter();
   const pathname = usePathname();
+  const toast = useToast();
 
   const loadIt = useCallback(() => {
     setError(null);
@@ -216,12 +221,17 @@ function ChallengeFlow() {
       const result = await sendAnswer(question, chosen, key);
       setPendingKey(null);
       refreshIfRead(wordMemory);
+      refreshIfRead(missions);
       dailyChallenge.refresh();
       if (result.kind === "not_due") {
         advance({ ...session, step: { name: "asking" } });
         return;
       }
       publishProgress(result.progress);
+      if (result.ecus > 0) {
+        publishEcusWon(result.ecus);
+        toast(perfectStartToast(result.ecus, Date.now()));
+      }
       const feel = answerFeedback(result);
       play(feel.cue);
       vibrate(feel.vibration);

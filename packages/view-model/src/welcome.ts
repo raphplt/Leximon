@@ -116,7 +116,7 @@ export function welcomeReminderLine(week: WelcomeWeekResponse | null): string | 
 /** Under an opened day: the last one says the week is over. */
 export function welcomeAfterClaim(week: WelcomeWeekResponse | null, day: number): string {
   if (week !== null && day >= week.days.length) {
-    return "C'était le dernier jour de ta semaine de bienvenue.";
+    return "C'était le dernier jour de ta semaine de bienvenue. Ton carnet de pointage prend le relais, une case par jour où tu joues.";
   }
   return welcomeTomorrowLine(week) ?? "";
 }

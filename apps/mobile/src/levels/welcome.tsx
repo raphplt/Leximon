@@ -2,6 +2,7 @@ import type { BoosterWalletResponse, LevelRewardView, WelcomeRefusal } from "@le
 import { gameDayOf } from "@leximon/core";
 import { lettering } from "@leximon/tokens";
 import {
+  carnetWaits,
   claimedToast,
   WELCOME_OPEN,
   WELCOME_RULE,
@@ -20,12 +21,13 @@ import { StyleSheet, Text, View } from "react-native";
 import Animated, { ZoomIn } from "react-native-reanimated";
 import { api } from "@/api/client";
 import { useNow, useShared } from "@/player/shared";
-import { publishWelcomeClaimed, wallet, welcomeWeek } from "@/player/state";
+import { carnet, publishWelcomeClaimed, wallet, welcomeWeek } from "@/player/state";
 import { alpha, colors, fontSizes, fonts, radii, space } from "@/theme";
 import { Button } from "@/ui/button";
 import { Icon } from "@/ui/icon";
 import { toast } from "@/ui/toast";
 import { Lettering, ToyBody } from "@/ui/toy";
+import { openCarnet } from "./carnet";
 import { CoffretFrame, openCoffret, RewardSlips } from "./coffret";
 import { REWARD_ICONS } from "./reward-icons";
 
@@ -47,10 +49,14 @@ export function openWelcome(): void {
   show(true);
 }
 
-/** What waits in « Récompenses »: today's day of the welcome week first, then the coffrets. */
+/**
+ * What waits in « Récompenses »: today's day of the welcome week first, then the carnet's case,
+ * then the coffrets.
+ */
 export function openRewards(): void {
   const week = welcomeWeek.current();
   if (week !== null && welcomeView(week).today !== null) openWelcome();
+  else if (carnetWaits(carnet.current())) openCarnet();
   else openCoffret();
 }
 

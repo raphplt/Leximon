@@ -70,9 +70,10 @@ import {
   noteGained,
   OWNED_CARDS_MAX_AGE_MS,
   ownedCards,
+  refreshIfRead,
   wordMemory,
 } from "@/player/collection";
-import { account, wallet } from "@/player/player";
+import { account, carnet, missions, wallet } from "@/player/player";
 import { useShared } from "@/player/resource";
 import { publishProgress, useProgress } from "@/progress/use-progress";
 import { useShell } from "@/shell/shell-context";
@@ -318,7 +319,12 @@ function BoosterFlow() {
     const started: OpenRequest = {
       key: current.key,
       outcome: api.openBooster(choice.source, current.key).then(
-        (result): Outcome => ({ kind: "answered", result }),
+        (result): Outcome => {
+          // A sachet opened moves a mission, and the first one of the day marks the carnet.
+          refreshIfRead(missions);
+          refreshIfRead(carnet);
+          return { kind: "answered", result };
+        },
         (): Outcome => ({ kind: "failed" }),
       ),
     };

@@ -3,7 +3,9 @@
 import type {
   AccountResponse,
   BoosterWalletResponse,
+  CarnetResponse,
   LevelRewardsResponse,
+  MissionsResponse,
   ProfileResponse,
   WelcomeWeekResponse,
 } from "@leximon/contract";
@@ -29,12 +31,20 @@ export const profile = sharedResource<ProfileResponse>(api.fetchProfile);
 /** The welcome week: what each day gives, and whether today's waits. */
 export const welcomeWeek = sharedResource<WelcomeWeekResponse>(api.fetchWelcomeWeek);
 
+/** The missions of the day, with what earlier days still give. */
+export const missions = sharedResource<MissionsResponse>(api.fetchMissions);
+
+/** The carnet de pointage, after the welcome week. */
+export const carnet = sharedResource<CarnetResponse>(api.fetchCarnet);
+
 /** A day of the welcome week was claimed: the next one opens tomorrow. */
 export function publishWelcomeClaimed(day: number): void {
   refreshIfRead(profile);
   const week = welcomeWeek.current();
   if (week === null || week.claimed >= day) return;
   welcomeWeek.publish({ ...week, claimed: day, open: false });
+  // The last day starts the carnet.
+  refreshIfRead(carnet);
 }
 
 /** A coffret was claimed: its level is done. */
@@ -52,6 +62,8 @@ export function forgetPlayer(): void {
   wallet.refresh();
   levelRewards.refresh();
   welcomeWeek.refresh();
+  refreshIfRead(missions);
+  refreshIfRead(carnet);
   account.refresh();
   refreshIfRead(profile);
   refreshIfRead(ownedCards);

@@ -5,6 +5,7 @@ import {
   type GuestLinkOutcome,
   type LevelReward,
   MASTERY_LEVELS,
+  type Mission,
   type PityCounters,
   RARITIES,
   REVIEW_DIFFICULTIES,
@@ -267,7 +268,13 @@ export type EcuMovementDetails =
         readonly ecus: number;
       }[];
     }
-  | { readonly kind: "missing_word"; readonly cardId: string };
+  | { readonly kind: "missing_word"; readonly cardId: string }
+  | { readonly kind: "perfect_start"; readonly day: string }
+  | {
+      readonly kind: "mission";
+      readonly missions: readonly { readonly day: string; readonly slot: number }[];
+    }
+  | { readonly kind: "carnet"; readonly period: number; readonly case: number };
 
 /**
  * Days of the welcome week claimed, one row per day: the primary key makes a claim happen once,
@@ -288,6 +295,49 @@ export const userWelcomeDays = pgTable(
     primaryKey({ columns: [table.userId, table.day] }),
     uniqueIndex("user_welcome_days_one_a_day").on(table.userId, table.claimedOn),
     check("user_welcome_days_day_check", sql`${table.day} >= 1`),
+  ],
+);
+
+/**
+ * The missions of a player's day, drawn by the first request of the day that shows them: the
+ * primary key makes the draw happen once. Their progress is read from what the player did that
+ * day; `claimed` lists the slots whose reward was taken.
+ */
+export const userMissions = pgTable(
+  "user_missions",
+  {
+    userId: text()
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    day: date({ mode: "string" }).notNull(),
+    missions: jsonb().$type<readonly Mission[]>().notNull(),
+    claimed: jsonb().$type<readonly number[]>().notNull().default([]),
+    bonusClaimed: boolean().notNull().default(false),
+    /** The key of the change of a mission, the one change of the day; `null` before it. */
+    changeKey: uuid(),
+    drawnAt: timestamp({ withTimezone: true }).notNull(),
+  },
+  (table) => [primaryKey({ columns: [table.userId, table.day] })],
+);
+
+/**
+ * Cases of the carnet claimed, one row each: the primary key makes a claim happen once, and
+ * `rewards` keeps what it gave. `period` counts the periods of the carnet from the first one.
+ */
+export const userCarnetCases = pgTable(
+  "user_carnet_cases",
+  {
+    userId: text()
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    period: integer().notNull(),
+    case: smallint().notNull(),
+    rewards: jsonb().$type<readonly LevelReward[]>().notNull(),
+    claimedAt: timestamp({ withTimezone: true }).notNull(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.userId, table.period, table.case] }),
+    check("user_carnet_cases_case_check", sql`${table.case} >= 1`),
   ],
 );
 

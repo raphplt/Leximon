@@ -28,6 +28,8 @@ export const LEVEL_REWARD_KINDS = [
   "frame",
   // A garni booster whose guaranteed card is at least Précieuse: the welcome week gives one.
   "precious_garni_booster",
+  // Écus, given by the carnet.
+  "ecus",
 ] as const;
 export type LevelRewardKind = (typeof LEVEL_REWARD_KINDS)[number];
 
@@ -36,7 +38,8 @@ export type LevelReward =
   /** `avatar` is absent from rewards claimed before avatars were named (2026-10-21). */
   | { readonly kind: "avatar"; readonly avatar?: string }
   | { readonly kind: "frame"; readonly frame: string }
-  | { readonly kind: Exclude<LevelRewardKind, "title" | "avatar" | "frame"> };
+  | { readonly kind: "ecus"; readonly amount: number }
+  | { readonly kind: Exclude<LevelRewardKind, "title" | "avatar" | "frame" | "ecus"> };
 
 export interface LevelRewardRules {
   /** Period start; the rules in force when a reward is claimed apply. */
@@ -141,6 +144,11 @@ export function rewardReserve(rewards: readonly LevelReward[]): {
     garni: count("garni_booster", "precious_garni_booster"),
     precious: count("precious_garni_booster"),
   };
+}
+
+/** Écus rewards give. */
+export function rewardEcus(rewards: readonly LevelReward[]): number {
+  return rewards.reduce((sum, reward) => sum + (reward.kind === "ecus" ? reward.amount : 0), 0);
 }
 
 /** Levels reached but not claimed yet, lowest first. */

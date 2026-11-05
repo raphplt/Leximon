@@ -120,6 +120,10 @@ describe("GET /riddles/today", () => {
       })
       .onConflictDoNothing();
     await db.insert(schema.riddleWords).values({ cardId: "riddle-other", clues: CLUES });
+    // Already asked on an earlier day: today's draw takes the word never asked.
+    await db
+      .insert(schema.dailyRiddles)
+      .values({ day: "2026-01-01", cardId: "riddle-other", clues: CLUES });
     const seen = await readToday(first);
     expect(await readToday(second)).toEqual(seen);
     expect(seen).toMatchObject({
@@ -133,7 +137,10 @@ describe("GET /riddles/today", () => {
     });
     expect(JSON.stringify(seen)).not.toContain(WORD);
     expect(JSON.stringify(seen)).not.toContain("mailloche");
-    const stored = await db.select().from(schema.dailyRiddles);
+    const stored = await db
+      .select()
+      .from(schema.dailyRiddles)
+      .where(eq(schema.dailyRiddles.day, today()));
     expect(stored).toHaveLength(1);
     await db.delete(schema.dailyRiddles);
     await db.delete(schema.riddleWords).where(eq(schema.riddleWords.cardId, "riddle-other"));

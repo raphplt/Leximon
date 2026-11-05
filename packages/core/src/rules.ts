@@ -18,6 +18,8 @@ import type { FriendSchedule } from "./friend/friend";
 import type { MasterySchedule } from "./mastery/mastery";
 import type { PracticeSchedule } from "./mastery/practice";
 import type { NotifySchedule } from "./notify/notify";
+import type { CarnetSchedule } from "./progress/carnet";
+import type { MissionSchedule } from "./progress/missions";
 import type { XpSchedule } from "./progress/progress";
 import type { LevelRewardSchedule } from "./progress/rewards";
 import type { StreakSchedule } from "./progress/streak";
@@ -262,6 +264,7 @@ export const ECU_SCHEDULE: EcuSchedule = [
     },
     recycledTogether: ["common", "uncommon", "rare", "precious"],
     copiesKept: 2,
+    perfectStart: { questions: 5, ecus: 5 },
   },
 ];
 
@@ -280,6 +283,53 @@ export const WELCOME_SCHEDULE: WelcomeSchedule = [
       [{ kind: "bonus_booster" }, { kind: "bonus_booster" }],
       [{ kind: "precious_garni_booster" }, { kind: "title", title: "Habitué des rayons" }],
     ],
+  },
+];
+
+// Three missions a day lead the player to every part of the game. List and gains provisional.
+export const MISSION_SCHEDULE: MissionSchedule = [
+  {
+    startsAt: SINCE_LAUNCH,
+    opensAtLevel: 2,
+    perDay: 3,
+    awayFromFavourite: 2,
+    changesPerDay: 1,
+    targets: {
+      open_sachets: 3,
+      good_answers: 5,
+      write_words: 2,
+      review_collection: 3,
+      riddle: 1,
+      trade: 1,
+      recycle: 1,
+    },
+    xp: 30,
+    ecus: 10,
+    allDoneBoosters: 1,
+    claimableDays: 7,
+    favouriteWindowDays: 14,
+  },
+];
+
+const ten = { kind: "ecus", amount: 10 } as const;
+const sachet = { kind: "bonus_booster" } as const;
+const garni = { kind: "garni_booster" } as const;
+
+// After the welcome week, a carnet of 28 cases every 4 weeks, one case a day played. Periods
+// start on Monday 2026-11-09, the calendar the seasons will follow. Rewards provisional; the last
+// case will add the period's cosmetic once seasons have one.
+export const CARNET_SCHEDULE: CarnetSchedule = [
+  {
+    startsAt: SINCE_LAUNCH,
+    firstPeriodDay: "2026-11-09",
+    periodDays: 28,
+    cases: Array.from({ length: 28 }, (_, index) => {
+      const day = index + 1;
+      if (day === 28) return [{ kind: "precious_garni_booster" } as const];
+      if (day % 7 === 0) return [garni];
+      if (day % 7 === 3) return [sachet];
+      return [ten];
+    }),
   },
 ];
 

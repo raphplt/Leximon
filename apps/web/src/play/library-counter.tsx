@@ -7,6 +7,7 @@ import {
   type FabId,
   type Fab as FabModel,
   lockedToast,
+  missionsLockedToast,
   playFabs,
   type StockView,
 } from "@leximon/view-model";
@@ -14,6 +15,7 @@ import { useRouter } from "next/navigation";
 import { type ReactNode, type RefObject, useEffect, useRef, useState } from "react";
 import { CollectionTitle, Desk, InfoBubble, MainAction, SideTile } from "@/library/play-pieces";
 import { dailyChallenge } from "@/player/collection";
+import { missions } from "@/player/player";
 import { useShared } from "@/player/resource";
 import { useShell } from "@/shell/shell-context";
 import { usePlayerView } from "@/shell/use-player-view";
@@ -22,6 +24,7 @@ import styles from "./library-counter.module.css";
 const TILES: Readonly<
   Record<Exclude<FabId, "mail">, { readonly icon: ToyIconName; readonly matter: ToyMatterName }>
 > = {
+  missions: { icon: "missions", matter: "gold" },
   clan: { icon: "clan", matter: "blue" },
   chat: { icon: "discussion", matter: "green" },
   jousts: { icon: "jousts", matter: "red" },
@@ -219,19 +222,32 @@ function Tiles({ say }: { readonly say: (text: string) => void }) {
   const shell = useShell();
   const router = useRouter();
   const daily = useShared(dailyChallenge);
+  const today = useShared(missions);
   if (view.now === 0) return null;
   const { left, right } = playFabs(
-    { level: view.progress?.level ?? 1, coffrets: view.rewardsWaiting, mail: view.mail },
+    {
+      level: view.progress?.level ?? 1,
+      coffrets: view.rewardsWaiting,
+      mail: view.mail,
+      missions: (today?.claimable.missions ?? 0) + (today?.claimable.bonus ?? 0),
+    },
     view.now,
   );
   const dailyLeft = daily !== null && dailyView(daily).ratio < 1;
 
   const act = (fab: FabModel) => {
     if (fab.lock !== null) {
-      say(lockedToast(fab.id === "jousts" ? "jousts" : "join_clan", view.now));
+      say(
+        fab.id === "missions"
+          ? missionsLockedToast(view.now)
+          : lockedToast(fab.id === "jousts" ? "jousts" : "join_clan", view.now),
+      );
       return;
     }
     switch (fab.id) {
+      case "missions":
+        shell.openMissions();
+        return;
       case "clan":
         router.push("/clan");
         return;

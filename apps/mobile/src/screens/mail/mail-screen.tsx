@@ -1,7 +1,9 @@
 import type { MailKind, MailLetter } from "@leximon/contract";
 import type { IconName } from "@leximon/tokens";
 import {
+  CARNET_TITLE,
   capitalize,
+  carnetCasePhrase,
   claimableMailTitle,
   coffretsMailTitle,
   letterView,
@@ -23,6 +25,7 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 import { api } from "@/api/client";
 import { catalogInHand, loadCatalog } from "@/cards/catalog";
 import { claimGoal } from "@/clan/claim";
+import { openCarnet } from "@/levels/carnet";
 import { openCoffret } from "@/levels/coffret";
 import { openWelcome } from "@/levels/welcome";
 import { useNow } from "@/player/shared";
@@ -150,6 +153,16 @@ export function MailScreen() {
       title: welcomeMailTitle(welcomeDay.day),
       detail: capitalize(welcomeDay.phrase),
       onPress: () => openWelcome(),
+    });
+  }
+  const carnetCase = view.carnet?.next ?? null;
+  if (carnetCase !== null) {
+    todo.push({
+      key: "carnet",
+      icon: "coffret",
+      title: `${CARNET_TITLE}, case ${carnetCase.case}`,
+      detail: capitalize(carnetCasePhrase(view.carnet, carnetCase.case)),
+      onPress: () => openCarnet(),
     });
   }
   if (view.coffrets.length > 0) {

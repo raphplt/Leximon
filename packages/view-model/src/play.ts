@@ -5,12 +5,15 @@ import {
   drawRulesAt,
   type EpochMs,
   intervalAt,
+  MISSION_SCHEDULE,
+  missionRulesAt,
   REFILL_SCHEDULE,
   UNLOCK_SCHEDULE,
   unlockRulesAt,
 } from "@leximon/core";
 import { levelBadge, levelsOfFeatures } from "./features";
 import { capitalize, formatWait } from "./format";
+import { MISSIONS_TITLE } from "./missions";
 
 /** The Jouer screen and the stock shown in the top bar. */
 
@@ -319,6 +322,7 @@ function pickAt<T>(items: readonly T[], visit: number): T | undefined {
 // --- Floating buttons -----------------------------------------------------------------------
 
 export type FabId =
+  | "missions"
   | "clan"
   | "chat"
   | "jousts"
@@ -343,6 +347,8 @@ export interface FabInput {
   readonly level: number;
   readonly coffrets: number;
   readonly mail: number;
+  /** Missions done and bonus sachets that wait to be claimed. */
+  readonly missions?: number;
 }
 
 export function playFabs(input: FabInput, now: EpochMs): { left: Fab[]; right: Fab[] } {
@@ -359,6 +365,11 @@ export function playFabs(input: FabInput, now: EpochMs): { left: Fab[]; right: F
   });
   return {
     left: [
+      fab("missions", MISSIONS_TITLE, {
+        lock: lockOf(missionRulesAt(MISSION_SCHEDULE, now).opensAtLevel),
+        badge: input.missions ?? 0,
+        glow: (input.missions ?? 0) > 0,
+      }),
       fab("clan", "Clan", { lock: lockOf(levels.join_clan) }),
       fab("chat", "Discussion", { lock: lockOf(levels.join_clan) }),
       fab("jousts", "Joutes", { lock: lockOf(levels.jousts) }),

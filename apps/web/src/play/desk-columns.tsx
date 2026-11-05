@@ -2,6 +2,7 @@
 
 import type { DailyChallengeResponse, RiddleResponse } from "@leximon/contract";
 import {
+  carnetAction,
   coffretsLabel,
   DESK_TEXTS,
   dailyView,
@@ -27,6 +28,7 @@ import { useRouter } from "next/navigation";
 import { type CSSProperties, type ReactNode, useEffect } from "react";
 import { Emblem } from "@/clan/emblem";
 import { SideTile } from "@/library/play-pieces";
+import { MissionsCard } from "@/missions/missions-card";
 import { myClan } from "@/player/clan";
 import { dailyChallenge } from "@/player/collection";
 import { useShared } from "@/player/resource";
@@ -62,14 +64,15 @@ export function TodayColumn({ word }: { readonly word: ReactNode }) {
         <Kicker>{DESK_TEXTS.today}</Kicker>
         <Lettering className={styles.headTitle}>{todayLabel(view.now)}</Lettering>
       </header>
-      {daily !== null && <DailyLeaf daily={daily} index={0} />}
-      {riddle !== null && <RiddleLeaf riddle={riddle} index={1} />}
+      <MissionsCard className={styles.rising} style={rise(0)} />
+      {daily !== null && <DailyLeaf daily={daily} index={1} />}
+      {riddle !== null && <RiddleLeaf riddle={riddle} index={2} />}
       {word !== null && (
-        <div className={styles.rising} style={rise(2)}>
+        <div className={styles.rising} style={rise(3)}>
           {word}
         </div>
       )}
-      <StockLeaf index={3} />
+      <StockLeaf index={4} />
     </aside>
   );
 }
@@ -252,7 +255,7 @@ export function StandingColumn() {
 
 function LevelLeaf({ index }: { readonly index: number }) {
   const view = usePlayerView();
-  const { openCoffret, openWelcome } = useShell();
+  const { openCoffret, openWelcome, openCarnet } = useShell();
   const { progress } = view;
   if (progress === null) return null;
   const [reward] = upcomingRewards(progress.level, view.now, 1);
@@ -278,6 +281,12 @@ function LevelLeaf({ index }: { readonly index: number }) {
         <Button glow className={styles.claim} onClick={openWelcome}>
           <Icon name="coffret" size={20} />
           {WELCOME_OPEN}
+        </Button>
+      )}
+      {!view.welcomeWaits && view.carnet !== null && view.carnetWaits && (
+        <Button glow className={styles.claim} onClick={openCarnet}>
+          <Icon name="coffret" size={20} />
+          {carnetAction(view.carnet)}
         </Button>
       )}
       {view.coffrets.length > 0 && (

@@ -7,7 +7,9 @@ import {
   createFullWallet,
   createSeededRandom,
   creditReserve,
+  ECU_SCHEDULE,
   type EpochMs,
+  ecuRulesAt,
   gameDayOf,
   gradeTyped,
   levelOf,
@@ -19,6 +21,7 @@ import {
   PRACTICE_SCHEDULE,
   type PracticeRules,
   type ProgressGain,
+  perfectStartEcus,
   planPractice,
   practiceRulesAt,
   practiceXp,
@@ -32,6 +35,7 @@ import {
 } from "@leximon/core";
 import { type Database, schema } from "@leximon/db";
 import { and, eq, gt, gte, sql, type WithSubquery } from "drizzle-orm";
+import { creditPerfectStart, perfectStartOf } from "../ecus/perfect-start";
 import { addXp, readXp } from "../progress/progress";
 import type { CatalogIndex } from "./catalog-index";
 import {
@@ -314,6 +318,8 @@ export type PracticeAnswerResult =
       readonly xpToday: number;
       readonly progress: ProgressGain;
       readonly bonus: AnswerBonus;
+      /** Écus of a perfect start. */
+      readonly ecus: number;
     }
   | { readonly kind: "card_not_owned" };
 
@@ -371,6 +377,7 @@ export async function answerPractice(
       day_answers: number;
       day_correct: number;
       awards: (StoredAward & { challengeId: string })[];
+      perfect_ecus: number;
     }>(sql`
       select
         exists (select 1 from ${userCards} where ${userCards.userId} = ${userId}
@@ -392,7 +399,8 @@ export async function answerPractice(
           from ${boosterBonusAwards}
           where ${boosterBonusAwards.userId} = ${userId}
             and ((${boosterBonusAwards.kind} = 'daily' and ${boosterBonusAwards.awardKey} = ${day.key})
-              or ${boosterBonusAwards.challengeId} = ${input.idempotencyKey})) as awards
+              or ${boosterBonusAwards.challengeId} = ${input.idempotencyKey})) as awards,
+        ${perfectStartOf(userId, input.idempotencyKey)} as perfect_ecus
       from (
         select count(*)::int as day_answers,
           (count(*) filter (where answers.correct))::int as day_correct
@@ -409,16 +417,18 @@ export async function answerPractice(
         xpToday: row.earned_today,
         progress: progressGain(row.xp, 0),
         bonus: summarize(replayed, locked.bonusBoosters),
+        ecus: row.perfect_ecus,
       };
     }
     if (!row.owned) return { kind: "card_not_owned" };
 
     const correct = practiceCorrect(catalog, cardId, input.answer, now);
     const xpGained = practiceXp(rules, { correct, earnedToday: row.earned_today });
+    const tally = { answers: row.day_answers + 1, correct: row.day_correct + (correct ? 1 : 0) };
     const earned = rules.practiceCountsForDaily
       ? answerBonuses(bonusRules, {
           day,
-          tally: { answers: row.day_answers + 1, correct: row.day_correct + (correct ? 1 : 0) },
+          tally,
           dailyAwarded: row.awards.some((a) => a.kind === "daily" && a.awardKey === day.key),
           cardId,
           reachedGilded: false,
@@ -492,12 +502,19 @@ export async function answerPractice(
     if (progress === undefined) {
       throw new Error(`XP missing for user ${userId} right after the answer`);
     }
+    const ecus = rules.practiceCountsForDaily
+      ? perfectStartEcus(ecuRulesAt(ECU_SCHEDULE, now), tally)
+      : 0;
+    if (ecus > 0) {
+      await creditPerfectStart(tx, { userId, key: input.idempotencyKey, ecus, day: day.key, now });
+    }
     return {
       kind: "answered",
       correct,
       xpToday: row.earned_today + xpGained,
       progress: progressGain(progress.xp, xpGained),
       bonus: summarize(credit.awards, credit.reserve),
+      ecus,
     };
   });
 }

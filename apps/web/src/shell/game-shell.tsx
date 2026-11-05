@@ -4,6 +4,8 @@ import { useRouter } from "next/navigation";
 import { type ReactNode, useCallback, useEffect, useMemo, useState } from "react";
 import { ChatPanel } from "@/clan/chat-panel";
 import { MissingWordDialog } from "@/ecus/missing-word-dialog";
+import { CarnetDialog, useCarnetOnArrival } from "@/missions/carnet-dialog";
+import { MissionsDialog } from "@/missions/missions-card";
 import { TradeDoneDialog } from "@/trades/trade-done-dialog";
 import { ToastProvider } from "@/ui/toast";
 import { CardSheet } from "./card-sheet";
@@ -19,7 +21,7 @@ import { type Shell, ShellContext } from "./shell-context";
 import { usePlayerView } from "./use-player-view";
 import { useWelcomeOnArrival, WelcomeDialog } from "./welcome-dialog";
 
-type Overlay = "menu" | "settings" | "mail" | "chat" | null;
+type Overlay = "menu" | "settings" | "mail" | "chat" | "missions" | null;
 
 /**
  * The frame of every game screen: the top bar on the web, the phone band and tabs under 760 px,
@@ -37,6 +39,7 @@ function Frame({ children }: { readonly children: ReactNode }) {
   const [overlay, setOverlay] = useState<Overlay>(null);
   const [coffret, setCoffret] = useState<number | null>(null);
   const [welcome, setWelcome] = useState(false);
+  const [carnetOpen, setCarnetOpen] = useState(false);
   const [missingWord, setMissingWord] = useState<{ readonly collectionId: string | null } | null>(
     null,
   );
@@ -61,16 +64,25 @@ function Frame({ children }: { readonly children: ReactNode }) {
     setOverlay(null);
     setWelcome(true);
   }, []);
+  const openCarnet = useCallback(() => {
+    setOverlay(null);
+    setCarnetOpen(true);
+  }, []);
   const welcomeWaits = view.welcomeWaits;
+  const carnetWaits = view.carnetWaits;
   const openRewards = useCallback(() => {
     if (welcomeWaits) openWelcome();
+    else if (carnetWaits) openCarnet();
     else openCoffret();
-  }, [welcomeWaits, openWelcome, openCoffret]);
+  }, [welcomeWaits, carnetWaits, openWelcome, openCarnet, openCoffret]);
   useWelcomeOnArrival(welcomeWaits, view.now, openWelcome);
+  useCarnetOnArrival(carnetWaits && !welcomeWaits, view.now, openCarnet);
   const shell = useMemo<Shell>(
     () => ({
       openCoffret,
       openWelcome,
+      openCarnet,
+      openMissions: () => setOverlay("missions"),
       openRewards,
       openMissingWord: (collectionId) => {
         setOverlay(null);
@@ -84,7 +96,7 @@ function Frame({ children }: { readonly children: ReactNode }) {
         setCard({ id: cardId, among });
       },
     }),
-    [openCoffret, openWelcome, openRewards],
+    [openCoffret, openWelcome, openCarnet, openRewards],
   );
   // `?courrier` in an e-mail's link opens the mail over the screen, once.
   useEffect(() => {
@@ -111,6 +123,8 @@ function Frame({ children }: { readonly children: ReactNode }) {
       <NewsDialog level={view.progress?.level ?? null} />
       <CoffretDialog level={coffret} now={view.now} onClose={() => setCoffret(null)} />
       <WelcomeDialog open={welcome} onClose={() => setWelcome(false)} />
+      <CarnetDialog open={carnetOpen} onClose={() => setCarnetOpen(false)} />
+      <MissionsDialog open={overlay === "missions"} onClose={close} />
       <MissingWordDialog
         open={missingWord !== null}
         collectionId={missingWord?.collectionId ?? null}

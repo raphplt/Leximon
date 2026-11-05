@@ -12,4 +12,5 @@ export const REWARD_ICONS: Readonly<Record<RewardIcon, IconName>> = {
   profil: "profil",
   cadre: "palette",
   pin: "pin",
+  ecu: "ecu",
 };

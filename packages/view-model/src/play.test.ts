@@ -163,8 +163,10 @@ describe("short collection name", () => {
 
 describe("floating buttons", () => {
   it("shows closed features with their level and what waits", () => {
-    const { left, right } = playFabs({ level: 7, coffrets: 2, mail: 0 }, NOW);
-    expect(left.map((f) => f.lock)).toEqual(["Niv. 10", "Niv. 10", "Niv. 15"]);
+    const { left, right } = playFabs({ level: 7, coffrets: 2, mail: 0, missions: 1 }, NOW);
+    expect(left.map((f) => f.lock)).toEqual([null, "Niv. 10", "Niv. 10", "Niv. 15"]);
+    expect(left[0]).toMatchObject({ id: "missions", badge: 1, glow: true });
+    expect(playFabs({ level: 1, coffrets: 0, mail: 0 }, NOW).left[0]?.lock).toBe("Niv. 2");
     expect(right.find((f) => f.id === "coffrets")).toMatchObject({ badge: 2, glow: true });
     const later = playFabs({ level: 15, coffrets: 0, mail: 0 }, NOW);
     expect(later.left.every((f) => f.lock === null)).toBe(true);

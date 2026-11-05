@@ -3,8 +3,8 @@ import type { MissingWordResult, RecycleCopyResult } from "@leximon/contract/cli
 import { copiesAfterRecycle } from "@leximon/view-model";
 import { randomUUID } from "expo-crypto";
 import { api } from "@/api/client";
-import { noteGained, ownedCards } from "./collection";
-import { publishProgress, wallet } from "./state";
+import { noteGained, ownedCards, refreshIfRead } from "./collection";
+import { missions, publishProgress, wallet } from "./state";
 
 /**
  * Recycling and the missing word: each request has its own key, since a repeated tap after a
@@ -13,6 +13,7 @@ import { publishProgress, wallet } from "./state";
 
 function publishRecycled(result: RecycleResponse): void {
   wallet.publish(result.wallet);
+  refreshIfRead(missions);
   const current = ownedCards.current();
   if (current !== null && result.cards.length > 0) {
     ownedCards.publish(copiesAfterRecycle(current, result.cards));

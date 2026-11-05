@@ -38,9 +38,9 @@ import { loadCatalog } from "@/cards/catalog";
 import { prepareSpokenWords } from "@/cards/spoken-word";
 import { play, prepareSounds } from "@/feedback/feedback";
 import { Desk, PaperAction } from "@/library/play-pieces";
-import { noteGained, OWNED_CARDS_MAX_AGE_MS, ownedCards } from "@/player/collection";
+import { noteGained, OWNED_CARDS_MAX_AGE_MS, ownedCards, refreshIfRead } from "@/player/collection";
 import { useNow, useShared } from "@/player/shared";
-import { account, publishProgress, wallet } from "@/player/state";
+import { account, carnet, missions, publishProgress, wallet } from "@/player/state";
 import { usePlayerView } from "@/player/use-player-view";
 import { TAB_BAR_RISE } from "@/shell/tab-bar";
 import { colors, fontSizes, fonts, space } from "@/theme";
@@ -209,7 +209,12 @@ function PlayFlow() {
     const started: OpenRequest = {
       key: current.key,
       outcome: api.openBooster(choice.source, current.key).then(
-        (result): Outcome => ({ kind: "answered", result }),
+        (result): Outcome => {
+          // A sachet opened moves a mission, and the first one of the day marks the carnet.
+          refreshIfRead(missions);
+          refreshIfRead(carnet);
+          return { kind: "answered", result };
+        },
         (): Outcome => ({ kind: "failed" }),
       ),
     };

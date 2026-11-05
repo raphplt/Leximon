@@ -25,6 +25,8 @@ import Link from "next/link";
 import { type FormEvent, useCallback, useEffect, useRef, useState } from "react";
 import { play, vibrate } from "@/booster/feedback";
 import { api } from "@/lib/api";
+import { refreshIfRead } from "@/player/collection";
+import { missions } from "@/player/player";
 import { publishProgress } from "@/progress/use-progress";
 import { Button, ButtonLink } from "@/ui/button";
 import { LoadFailed } from "@/ui/load-failed";
@@ -71,6 +73,7 @@ export function RiddleScreen() {
         return;
       }
       publishProgress(result.progress);
+      refreshIfRead(missions);
       setLoaded({ state: "ready", riddle: result.riddle });
       setTyped("");
       if (result.riddle.outcome === "found") {
