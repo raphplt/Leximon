@@ -60,6 +60,7 @@ Pour ajouter ou modifier une décision, utiliser le skill `decision`.
 - **R&D :** trouver une solution WebSockets qui tient les pics (40 000 connectés), pour les duels et peut-être les échanges en direct. Pistes : Durable Objects, service dédié. Rapport attendu dans `docs/rnd/` (skill `spike`).
 - **Discussion de clan (ajout du 2026-10-20) :** évaluer aussi le temps réel pour la discussion des clans, hors du chemin critique : un Durable Object par clan avec hibernation des connexions, coût, tenue des pics, repli par interrogation périodique. Besoin décrit dans [progression-et-social.md](cahiers-des-charges/progression-et-social.md).
 - **Discussion de clan, v1 (2026-10-21, choix du propriétaire) :** sans attendre la R&D, l'écran ouvert interroge l'API toutes les quelques secondes avec un curseur ([interface-v1.md](cahiers-des-charges/interface-v1.md), K-06). Le temps réel pourra le remplacer sans changer le stockage.
+- **Joutes (2026-11-05, choix du propriétaire) :** asynchrones avec un chrono par question (P91), faites de requêtes courtes et d'état dans Postgres : elles n'attendent pas cette R&D. Elle reste nécessaire pour le direct entre amis (lot 3 de [joutes.md](cahiers-des-charges/joutes.md)), si l'interrogation périodique ne suffit plus, et pour un événement de streamer en direct.
 - **Pourquoi :** le temps réel est ce qui a fait laguer WikiMasters au pic. On le garde hors du chemin critique tant qu'il n'est pas prouvé.
 
 ## D-008 · Outil éditorial : Directus
