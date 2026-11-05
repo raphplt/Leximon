@@ -68,6 +68,8 @@ export interface ReminderContent {
   readonly slipping: { readonly word: string; readonly others: number } | null;
   /** Letters unread in the mail. */
   readonly letters: number;
+  /** The day of the welcome week that waits, said in a sentence; `null` when none does. */
+  readonly welcome: string | null;
   /** No reminder follows this one. */
   readonly last: boolean;
 }
@@ -80,6 +82,7 @@ export function renderReminderEmail(
   const paragraphs = [
     `Tu as ${content.stock} sachets à ouvrir. Tant que ton stock est plein, il ne se recharge plus.`,
   ];
+  if (content.welcome !== null) paragraphs.push(content.welcome);
   if (content.slipping !== null) {
     const { word, others } = content.slipping;
     paragraphs.push(

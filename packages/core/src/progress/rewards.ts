@@ -26,6 +26,8 @@ export const LEVEL_REWARD_KINDS = [
   "avatar",
   "pinned_slot",
   "frame",
+  // A garni booster whose guaranteed card is at least Précieuse: the welcome week gives one.
+  "precious_garni_booster",
 ] as const;
 export type LevelRewardKind = (typeof LEVEL_REWARD_KINDS)[number];
 
@@ -64,6 +66,8 @@ export interface LevelRewardRules {
   readonly avatarEveryBeyond: number;
   /** A garni booster holds at least one card this rare. */
   readonly garniMinRarity: Rarity;
+  /** A precious garni booster holds at least one card this rare. */
+  readonly preciousGarniMinRarity: Rarity;
 }
 
 export type LevelRewardSchedule = readonly [LevelRewardRules, ...LevelRewardRules[]];
@@ -118,7 +122,25 @@ function avatarReward(rules: LevelRewardRules, level: number): LevelReward {
 
 /** Boosters a reward adds to the bonus reserve. */
 export function rewardBoosters(rewards: readonly LevelReward[]): number {
-  return rewards.filter((r) => r.kind === "bonus_booster" || r.kind === "garni_booster").length;
+  return rewardReserve(rewards).bonus;
+}
+
+/**
+ * What rewards add to the bonus reserve: `bonus` boosters, of which `garni` are garni, of which
+ * `precious` are precious garni.
+ */
+export function rewardReserve(rewards: readonly LevelReward[]): {
+  readonly bonus: number;
+  readonly garni: number;
+  readonly precious: number;
+} {
+  const count = (...kinds: LevelRewardKind[]) =>
+    rewards.filter((reward) => kinds.includes(reward.kind)).length;
+  return {
+    bonus: count("bonus_booster", "garni_booster", "precious_garni_booster"),
+    garni: count("garni_booster", "precious_garni_booster"),
+    precious: count("precious_garni_booster"),
+  };
 }
 
 /** Levels reached but not claimed yet, lowest first. */
@@ -138,9 +160,9 @@ export function currentTitle(rules: LevelRewardRules, claimed: Iterable<number>)
   return best === null ? null : (rules.titles[best] ?? null);
 }
 
-/** A claimed level and what its coffret gave, as stored. */
+/** A claimed level and what its coffret gave, as stored; no level for a day of the welcome week. */
 export interface ClaimedReward {
-  readonly level: number;
+  readonly level?: number;
   readonly rewards: readonly LevelReward[];
 }
 
@@ -168,7 +190,8 @@ export function wardrobe(rules: LevelRewardRules, claimed: readonly ClaimedRewar
       else if (reward.kind === "frame") frames.add(reward.frame);
       else if (reward.kind === "pinned_slot") pinnedSlots += 1;
       else if (reward.kind === "avatar") {
-        const avatar = reward.avatar ?? rules.avatars[claim.level];
+        const avatar =
+          reward.avatar ?? (claim.level === undefined ? undefined : rules.avatars[claim.level]);
         if (avatar !== undefined) avatars.add(avatar);
       }
     }

@@ -69,6 +69,7 @@ const {
   userBlocks,
   userCards,
   userLevelRewards,
+  userWelcomeDays,
   userPreferences,
   userProgress,
   users,
@@ -192,11 +193,17 @@ function publicLevel(now: EpochMs): number {
   return featureLevels(UNLOCK_SCHEDULE, TRADE_SCHEDULE, now).public_profile;
 }
 
+/** The coffrets claimed, then the days of the welcome week, which carry no level. */
 async function readClaims(db: Reader, userId: string): Promise<ClaimedReward[]> {
-  return db
+  const levels = await db
     .select({ level: userLevelRewards.level, rewards: userLevelRewards.rewards })
     .from(userLevelRewards)
     .where(eq(userLevelRewards.userId, userId));
+  const days = await db
+    .select({ rewards: userWelcomeDays.rewards })
+    .from(userWelcomeDays)
+    .where(eq(userWelcomeDays.userId, userId));
+  return [...levels, ...days];
 }
 
 /** The chosen title while the player still holds it, else the latest one won. */
@@ -207,10 +214,17 @@ function wornTitle(
   titles: ReadonlySet<string>,
 ): string | null {
   if (chosen !== null && titles.has(chosen)) return chosen;
-  return currentTitle(
-    rules,
-    claimed.map((claim) => claim.level),
-  );
+  const levels = claimed.flatMap((claim) => (claim.level === undefined ? [] : [claim.level]));
+  return currentTitle(rules, levels) ?? welcomeTitle(claimed);
+}
+
+/** The title of the welcome week, worn until a level gives one. */
+function welcomeTitle(claimed: readonly ClaimedReward[]): string | null {
+  for (const claim of claimed) {
+    if (claim.level !== undefined) continue;
+    for (const reward of claim.rewards) if (reward.kind === "title") return reward.title;
+  }
+  return null;
 }
 
 /**

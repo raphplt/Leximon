@@ -14,7 +14,7 @@ import {
   levelRewards,
   REFILL_SCHEDULE,
   reserveCapacity,
-  rewardBoosters,
+  rewardReserve,
 } from "@leximon/core";
 import { type Database, schema } from "@leximon/db";
 import { asc, eq, sql } from "drizzle-orm";
@@ -23,7 +23,13 @@ const { boosterWallets, guestLinks, userLevelRewards, userProgress } = schema;
 
 export type WalletRow = Pick<
   typeof boosterWallets.$inferSelect,
-  "stored" | "progressMs" | "asOf" | "bonusBoosters" | "garniBoosters" | "reserveSlots"
+  | "stored"
+  | "progressMs"
+  | "asOf"
+  | "bonusBoosters"
+  | "garniBoosters"
+  | "preciousBoosters"
+  | "reserveSlots"
 >;
 
 /** The wallet as clients see it. A player without a row yet has a full stock and no bonus. */
@@ -65,6 +71,30 @@ export async function lockWallet(tx: Transaction, userId: string, now: EpochMs) 
     throw new Error(`Wallet missing for user ${userId} right after its creation`);
   }
   return locked;
+}
+
+/**
+ * The wallet once rewards are added to its reserve, or `null` when they bring boosters that do
+ * not fit: the reward then waits, so that nothing is wasted.
+ */
+export function withRewards(
+  locked: WalletRow,
+  rewards: readonly LevelReward[],
+  reserveSlots: number,
+  now: EpochMs,
+): WalletRow | null {
+  const added = rewardReserve(rewards);
+  const capacity = reserveCapacity(bonusRulesAt(BONUS_SCHEDULE, now), reserveSlots);
+  if (added.bonus > 0 && locked.bonusBoosters + added.bonus > capacity) return null;
+  return {
+    stored: locked.stored,
+    progressMs: locked.progressMs,
+    asOf: locked.asOf,
+    bonusBoosters: locked.bonusBoosters + added.bonus,
+    garniBoosters: locked.garniBoosters + added.garni,
+    preciousBoosters: locked.preciousBoosters + added.precious,
+    reserveSlots,
+  };
 }
 
 export interface LevelRewardsState {
@@ -112,7 +142,6 @@ export async function claimLevelReward(
 ): Promise<ClaimResult> {
   const { userId, level, now } = input;
   const rules = levelRewardRulesAt(LEVEL_REWARD_SCHEDULE, now);
-  const bonusRules = bonusRulesAt(BONUS_SCHEDULE, now);
 
   return db.transaction(async (tx): Promise<ClaimResult> => {
     const locked = await lockWallet(tx, userId, now);
@@ -141,23 +170,9 @@ export async function claimLevelReward(
     const has = (kind: LevelReward["kind"]) => rewards.some((reward) => reward.kind === kind);
 
     const reserveSlots = locked.reserveSlots + (has("reserve_slot") ? 1 : 0);
-    const boosters = rewardBoosters(rewards);
-    const garni = rewards.filter((reward) => reward.kind === "garni_booster").length;
-    if (
-      boosters > 0 &&
-      locked.bonusBoosters + boosters > reserveCapacity(bonusRules, reserveSlots)
-    ) {
-      return { kind: "refused", reason: "reserve_full" };
-    }
+    const after = withRewards(locked, rewards, reserveSlots, now);
+    if (after === null) return { kind: "refused", reason: "reserve_full" };
 
-    const after: WalletRow = {
-      stored: locked.stored,
-      progressMs: locked.progressMs,
-      asOf: locked.asOf,
-      bonusBoosters: locked.bonusBoosters + boosters,
-      garniBoosters: locked.garniBoosters + garni,
-      reserveSlots,
-    };
     const claimInsert = tx.$with("claim_insert").as(
       tx
         .insert(userLevelRewards)

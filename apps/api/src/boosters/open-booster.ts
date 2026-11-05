@@ -156,17 +156,24 @@ export async function openBooster(
     }
     const wallet = fromRow(locked);
     const bonusCap = reserveCapacity(bonusRules, locked.reserveSlots);
-    const reserve = { bonus: locked.bonusBoosters, garni: locked.garniBoosters };
+    const reserve = {
+      bonus: locked.bonusBoosters,
+      garni: locked.garniBoosters,
+      precious: locked.preciousBoosters,
+    };
 
     // Which booster would be spent decides the draw: a garni booster guarantees its rarity.
     // Pure, so computed before the checks below; applied only if they pass.
     const consumed = takeBooster(wallet, reserve, REFILL_SCHEDULE, now);
     const garni = consumed.ok && consumed.garni;
+    const precious = consumed.ok && consumed.precious;
 
     // Drawn before the lookup, which then tells which drawn words are new to the player. Wasted on
     // a replayed key or an empty stock, which is cheap: no I/O.
     const draw = drawBooster(
-      garni ? garniRules(drawRules, levelRewardRulesAt(LEVEL_REWARD_SCHEDULE, now)) : drawRules,
+      garni
+        ? garniRules(drawRules, levelRewardRulesAt(LEVEL_REWARD_SCHEDULE, now), precious)
+        : drawRules,
       pool,
       locked.pityCounters,
       createSeededRandom(input.seed),
@@ -315,6 +322,7 @@ export async function openBooster(
           pityCounters: draw.pityCounters,
           bonusBoosters: consumed.reserve.bonus,
           garniBoosters: consumed.reserve.garni,
+          preciousBoosters: consumed.reserve.precious,
           lastOpenedDay: day,
           ...(locked.lastOpenedDay === day
             ? {}
@@ -387,11 +395,12 @@ export async function openBooster(
   });
 }
 
-/** The draw of a garni booster: its guaranteed card is at least the garni rarity. */
-function garniRules(rules: DrawRules, rewards: LevelRewardRules): DrawRules {
-  return isAtLeast(rules.guaranteedMinRarity, rewards.garniMinRarity)
+/** The draw of a garni booster: its guaranteed card is at least the garni, or precious, rarity. */
+function garniRules(rules: DrawRules, rewards: LevelRewardRules, precious: boolean): DrawRules {
+  const minimum = precious ? rewards.preciousGarniMinRarity : rewards.garniMinRarity;
+  return isAtLeast(rules.guaranteedMinRarity, minimum)
     ? rules
-    : { ...rules, guaranteedMinRarity: rewards.garniMinRarity };
+    : { ...rules, guaranteedMinRarity: minimum };
 }
 
 /** Groups drawn cards into quantities per card, in a stable order (consistent row locking). */

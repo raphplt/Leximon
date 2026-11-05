@@ -14,7 +14,7 @@ import {
   sendableAt,
 } from "@leximon/core";
 import { type Database, schema } from "@leximon/db";
-import { letterView } from "@leximon/view-model";
+import { letterView, welcomeReminderLine } from "@leximon/view-model";
 import { eq, inArray, lt, sql } from "drizzle-orm";
 import { EmailSendError } from "../account/email-sender";
 import { unsubscribeLinks } from "../campaigns/delivery";
@@ -28,6 +28,7 @@ import {
 } from "../email/notifications";
 import { readMail } from "../mail/mail";
 import { purgeRows } from "../purge";
+import { readWelcomeWeek } from "../welcome/welcome";
 import { createNotificationMailer, type NotificationMailer } from "./mailer";
 
 /**
@@ -440,6 +441,7 @@ export async function deliverReminders(
       recipient.notifyReviews && mail.slipping !== null
         ? await slippingWord(ctx.db, mail.slipping.cardId, mail.slipping.others)
         : null;
+    const welcome = welcomeReminderLine(await readWelcomeWeek(ctx.db, recipient.id, now));
     const outcome = await sendClaimed(
       ctx,
       recipient,
@@ -450,6 +452,7 @@ export async function deliverReminders(
             stock: stock.stored,
             slipping,
             letters: mail.unread,
+            welcome,
             last: isLastReminder(rules, step),
           },
           links,

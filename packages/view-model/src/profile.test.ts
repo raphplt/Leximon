@@ -67,6 +67,7 @@ function profile(overrides: Partial<ProfileResponse> = {}): ProfileResponse {
 describe("names", () => {
   it("names avatars and frames, and falls back on the id", () => {
     expect(avatarName("encaveur")).toBe("L'Encaveur");
+    expect(avatarName("bejaune")).toBe("Le Béjaune");
     expect(frameName("ink")).toBe("Encre qui coule");
     expect(avatarName("grigou")).toBe("Grigou");
   });

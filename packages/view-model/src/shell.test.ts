@@ -21,6 +21,8 @@ describe("counts", () => {
   });
 
   it("adds up what waits in the mail", () => {
-    expect(mailCount({ coffrets: 1, goalSachets: 2, referralSachets: 0, unread: 3 })).toBe(6);
+    expect(
+      mailCount({ coffrets: 1, welcome: 1, goalSachets: 2, referralSachets: 0, unread: 3 }),
+    ).toBe(7);
   });
 });

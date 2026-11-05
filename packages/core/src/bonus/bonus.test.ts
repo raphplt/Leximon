@@ -157,7 +157,7 @@ describe("creditReserve", () => {
 
 describe("takeBooster", () => {
   const schedule = fixedSchedule(6, 1_000);
-  const reserve = (bonus: number, garni = 0) => ({ bonus, garni });
+  const reserve = (bonus: number, garni = 0, precious = 0) => ({ bonus, garni, precious });
 
   it("spends the free stock first", () => {
     const result = takeBooster({ stored: 2, progressMs: 0, asOf: 0 }, reserve(3, 1), schedule, 0);
@@ -177,6 +177,7 @@ describe("takeBooster", () => {
       reserve: reserve(2),
       fromBonus: true,
       garni: false,
+      precious: false,
       state: { stored: 0, progressMs: 700, asOf: 500, nextRefillAt: 800 },
     });
   });
@@ -190,6 +191,20 @@ describe("takeBooster", () => {
     expect(takeBooster(wallet, reserve(1, 1), schedule, 0)).toMatchObject({
       reserve: reserve(0, 0),
       garni: true,
+    });
+  });
+
+  it("opens the precious garni boosters before the other garni ones", () => {
+    const wallet = { stored: 0, progressMs: 0, asOf: 0 };
+    expect(takeBooster(wallet, reserve(3, 2, 1), schedule, 0)).toMatchObject({
+      reserve: reserve(2, 1, 0),
+      garni: true,
+      precious: true,
+    });
+    expect(takeBooster(wallet, reserve(2, 1, 0), schedule, 0)).toMatchObject({
+      reserve: reserve(1, 0, 0),
+      garni: true,
+      precious: false,
     });
   });
 

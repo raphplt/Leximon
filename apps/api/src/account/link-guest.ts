@@ -57,6 +57,8 @@ export const USER_REFERENCES = {
   "user_mastery.user_id": { transfer: "moved", abandon: "kept" },
   "user_progress.user_id": { transfer: "moved", abandon: "kept" },
   "user_level_rewards.user_id": { transfer: "moved", abandon: "kept" },
+  // Only an account claims the welcome week: a guest has nothing there.
+  "user_welcome_days.user_id": { transfer: "kept", abandon: "kept" },
   "user_rarity_completions.user_id": { transfer: "moved", abandon: "kept" },
   "booster_opens.user_id": { transfer: "moved", abandon: "kept" },
   "booster_open_requests.user_id": { transfer: "moved", abandon: "kept" },

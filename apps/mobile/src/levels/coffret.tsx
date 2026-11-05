@@ -7,6 +7,7 @@ import {
   claimRefusalMessage,
   coffretHint,
   coffretReached,
+  givesSachets,
   opensAt,
   reserveAfterClaim,
   rewardItem,
@@ -99,7 +100,6 @@ export function CoffretHost() {
   const [step, setStep] = useState<Step>({ name: "closed" });
   const [shownLevel, setShownLevel] = useState<number | null>(null);
   const now = useNow(60_000);
-  const window = useWindowDimensions();
 
   // A new coffret starts closed.
   if (level !== shownLevel) {
@@ -142,112 +142,144 @@ export function CoffretHost() {
   const opens = level === null ? null : opensAt(level, now);
 
   return (
+    <CoffretFrame visible={level !== null} onClose={close}>
+      {step.name === "opened" ? (
+        <>
+          {level !== null && (
+            <Animated.View entering={ZoomIn.duration(320)}>
+              <LevelMedal level={level} size={96} />
+            </Animated.View>
+          )}
+          <Animated.View entering={ZoomIn.duration(320)}>
+            <Lettering size={fontSizes.headingLarge}>{`Niveau ${level} !`}</Lettering>
+          </Animated.View>
+          <RewardSlips rewards={step.rewards} wallet={step.wallet} />
+          {opens !== null && (
+            <Text style={styles.opens}>
+              Débloque {opens.charAt(0).toLowerCase()}
+              {opens.slice(1)}
+            </Text>
+          )}
+          <View style={styles.actions}>
+            <Button label={COFFRET_ACTION} onPress={() => store(step.rewards)} />
+            <TextButton label={COFFRET_ROAD} onPress={toRoad} />
+          </View>
+        </>
+      ) : (
+        <>
+          {level !== null && (
+            <Text style={styles.kicker}>{coffretReached(level).toUpperCase()}</Text>
+          )}
+          <Box
+            busy={step.name === "claiming"}
+            disabled={step.name === "claiming" || step.name === "refused"}
+            onOpen={() => void open()}
+          />
+          <View accessibilityRole="header">
+            <Lettering size={fontSizes.heading}>Un coffret pour toi</Lettering>
+          </View>
+          {step.name === "refused" ? (
+            <Text style={styles.refused} accessibilityRole="alert">
+              {claimRefusalMessage(step.reason, level ?? 0)}
+            </Text>
+          ) : step.name === "failed" ? (
+            <Text style={styles.refused} accessibilityRole="alert">
+              Le serveur ne répond pas. Réessaie.
+            </Text>
+          ) : (
+            <Text style={styles.hint}>{level === null ? "" : coffretHint(level, now)}</Text>
+          )}
+          <View style={styles.actions}>
+            {step.name === "refused" && step.reason === "reserve_full" ? (
+              <Button
+                label="Ouvrir un sachet"
+                onPress={() => {
+                  show(null);
+                  router.navigate("/");
+                }}
+              />
+            ) : (
+              <Button
+                label={step.name === "claiming" ? "Ouverture…" : "Ouvrir le coffret"}
+                disabled={step.name === "claiming" || step.name === "refused"}
+                onPress={() => void open()}
+              />
+            )}
+          </View>
+        </>
+      )}
+    </CoffretFrame>
+  );
+}
+
+/** A moment of reward over any screen: the desk in a dialog, its content scrolling. */
+export function CoffretFrame({
+  visible,
+  onClose,
+  children,
+}: {
+  readonly visible: boolean;
+  readonly onClose: () => void;
+  readonly children: ReactNode;
+}) {
+  const window = useWindowDimensions();
+  return (
     <Modal
-      visible={level !== null}
+      visible={visible}
       transparent
       animationType="fade"
       statusBarTranslucent
-      onRequestClose={close}
+      onRequestClose={onClose}
     >
-      <Pressable style={styles.backdrop} onPress={close} accessibilityLabel="Fermer" />
+      <Pressable style={styles.backdrop} onPress={onClose} accessibilityLabel="Fermer" />
       <View style={styles.center} pointerEvents="box-none">
         <View style={[styles.card, { width: Math.min(380, window.width - 32) }]}>
           <Desk style={StyleSheet.absoluteFill} />
           <ScrollView style={styles.inside} contentContainerStyle={styles.inner} bounces={false}>
-            {step.name === "opened" ? (
-              <>
-                {level !== null && (
-                  <Animated.View entering={ZoomIn.duration(320)}>
-                    <LevelMedal level={level} size={96} />
-                  </Animated.View>
-                )}
-                <Animated.View entering={ZoomIn.duration(320)}>
-                  <Lettering size={fontSizes.headingLarge}>{`Niveau ${level} !`}</Lettering>
-                </Animated.View>
-                <View style={styles.items}>
-                  {step.rewards.map((reward, index) => {
-                    const item = rewardItem(reward);
-                    return (
-                      <Animated.View
-                        key={item.title}
-                        entering={FadeInDown.delay(120 + index * 140).duration(280)}
-                      >
-                        <Slip>
-                          <RewardVisual reward={reward} />
-                          <View style={styles.itemText}>
-                            <Text style={styles.itemTitle}>{item.title}</Text>
-                            {reward.kind === "title" ? (
-                              <Text style={styles.plaque}>{reward.title}</Text>
-                            ) : (
-                              <Text style={styles.itemDetail}>{item.detail}</Text>
-                            )}
-                          </View>
-                        </Slip>
-                      </Animated.View>
-                    );
-                  })}
-                </View>
-                {step.rewards.some(
-                  (r) => r.kind === "bonus_booster" || r.kind === "garni_booster",
-                ) && <Text style={styles.stored}>{reserveAfterClaim(step.wallet)}</Text>}
-                {opens !== null && (
-                  <Text style={styles.opens}>
-                    Débloque {opens.charAt(0).toLowerCase()}
-                    {opens.slice(1)}
-                  </Text>
-                )}
-                <View style={styles.actions}>
-                  <Button label={COFFRET_ACTION} onPress={() => store(step.rewards)} />
-                  <TextButton label={COFFRET_ROAD} onPress={toRoad} />
-                </View>
-              </>
-            ) : (
-              <>
-                {level !== null && (
-                  <Text style={styles.kicker}>{coffretReached(level).toUpperCase()}</Text>
-                )}
-                <Box
-                  busy={step.name === "claiming"}
-                  disabled={step.name === "claiming" || step.name === "refused"}
-                  onOpen={() => void open()}
-                />
-                <View accessibilityRole="header">
-                  <Lettering size={fontSizes.heading}>Un coffret pour toi</Lettering>
-                </View>
-                {step.name === "refused" ? (
-                  <Text style={styles.refused} accessibilityRole="alert">
-                    {claimRefusalMessage(step.reason, level ?? 0)}
-                  </Text>
-                ) : step.name === "failed" ? (
-                  <Text style={styles.refused} accessibilityRole="alert">
-                    Le serveur ne répond pas. Réessaie.
-                  </Text>
-                ) : (
-                  <Text style={styles.hint}>{level === null ? "" : coffretHint(level, now)}</Text>
-                )}
-                <View style={styles.actions}>
-                  {step.name === "refused" && step.reason === "reserve_full" ? (
-                    <Button
-                      label="Ouvrir un sachet"
-                      onPress={() => {
-                        show(null);
-                        router.navigate("/");
-                      }}
-                    />
-                  ) : (
-                    <Button
-                      label={step.name === "claiming" ? "Ouverture…" : "Ouvrir le coffret"}
-                      disabled={step.name === "claiming" || step.name === "refused"}
-                      onPress={() => void open()}
-                    />
-                  )}
-                </View>
-              </>
-            )}
+            {children}
           </ScrollView>
         </View>
       </View>
     </Modal>
+  );
+}
+
+/** What an opened coffret gave, one slip after the other, and where its sachets went. */
+export function RewardSlips({
+  rewards,
+  wallet: after,
+}: {
+  readonly rewards: readonly LevelRewardView[];
+  readonly wallet: BoosterWalletResponse;
+}) {
+  return (
+    <>
+      <View style={styles.items}>
+        {rewards.map((reward, index) => {
+          const item = rewardItem(reward);
+          return (
+            <Animated.View
+              // biome-ignore lint/suspicious/noArrayIndexKey: a fixed list, shown once; two rewards may be alike
+              key={`${reward.kind}-${index}`}
+              entering={FadeInDown.delay(120 + index * 140).duration(280)}
+            >
+              <Slip>
+                <RewardVisual reward={reward} />
+                <View style={styles.itemText}>
+                  <Text style={styles.itemTitle}>{item.title}</Text>
+                  {reward.kind === "title" ? (
+                    <Text style={styles.plaque}>{reward.title}</Text>
+                  ) : (
+                    <Text style={styles.itemDetail}>{item.detail}</Text>
+                  )}
+                </View>
+              </Slip>
+            </Animated.View>
+          );
+        })}
+      </View>
+      {rewards.some(givesSachets) && <Text style={styles.stored}>{reserveAfterClaim(after)}</Text>}
+    </>
   );
 }
 
@@ -338,11 +370,18 @@ function Slip({ children }: { readonly children: ReactNode }) {
 function RewardVisual({ reward }: { readonly reward: LevelRewardView }) {
   switch (reward.kind) {
     case "bonus_booster":
-    case "garni_booster": {
-      const garni = reward.kind === "garni_booster";
+    case "garni_booster":
+    case "precious_garni_booster": {
+      const garni = reward.kind !== "bonus_booster";
       return (
         <View style={styles.visual}>
-          <View style={[styles.mini, garni && styles.miniGarni]}>
+          <View
+            style={[
+              styles.mini,
+              garni && styles.miniGarni,
+              reward.kind === "precious_garni_booster" && styles.miniPrecious,
+            ]}
+          >
             <View style={styles.miniSeal}>
               <Icon name={garni ? "star" : "sachet"} size={12} color="#FFF4E8" />
             </View>
@@ -450,6 +489,8 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   miniGarni: { backgroundColor: colors.action },
+  // Précieux: the blue of the rarity it guarantees.
+  miniPrecious: { backgroundColor: "#3361E8" },
   miniSeal: {
     width: 22,
     height: 22,

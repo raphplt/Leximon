@@ -8,6 +8,7 @@ import {
   claimRefusalMessage,
   coffretHint,
   coffretReached,
+  givesSachets,
   opensAt,
   reserveAfterClaim,
   rewardItem,
@@ -117,7 +118,8 @@ export function CoffretDialog({
                   const item = rewardItem(reward);
                   return (
                     <li
-                      key={item.title}
+                      // biome-ignore lint/suspicious/noArrayIndexKey: a fixed list, shown once; two rewards may be alike
+                      key={`${reward.kind}-${index}`}
                       className={`${styles.item} ${ui.pop}`}
                       style={{ animationDelay: `${120 + index * 140}ms` } as CSSProperties}
                     >
@@ -134,9 +136,7 @@ export function CoffretDialog({
                   );
                 })}
               </ul>
-              {step.rewards.some(
-                (r) => r.kind === "bonus_booster" || r.kind === "garni_booster",
-              ) && (
+              {step.rewards.some(givesSachets) && (
                 <p className={`${styles.stored} ${ui.pop}`} style={{ animationDelay: "320ms" }}>
                   {reserveAfterClaim(step.wallet)}
                 </p>
@@ -207,20 +207,29 @@ export function CoffretDialog({
   );
 }
 
+const MINI_SACHETS = {
+  bonus_booster: { className: styles.mini, icon: "sachet" },
+  garni_booster: { className: styles.miniGarni, icon: "star" },
+  precious_garni_booster: { className: styles.miniPrecious, icon: "star" },
+} as const;
+
 /** What a reward looks like: the sachet itself, the engraving, the frame; an icon otherwise. */
-function RewardVisual({ reward }: { readonly reward: LevelRewardView }) {
+export function RewardVisual({ reward }: { readonly reward: LevelRewardView }) {
   switch (reward.kind) {
     case "bonus_booster":
     case "garni_booster":
+    case "precious_garni_booster": {
+      const mini = MINI_SACHETS[reward.kind];
       return (
         <span className={styles.visual} aria-hidden="true">
-          <span className={reward.kind === "garni_booster" ? styles.miniGarni : styles.mini}>
+          <span className={mini.className}>
             <span className={styles.miniSeal}>
-              <Icon name={reward.kind === "garni_booster" ? "star" : "sachet"} size={12} />
+              <Icon name={mini.icon} size={12} />
             </span>
           </span>
         </span>
       );
+    }
     case "avatar":
       return (
         <span className={styles.visual}>

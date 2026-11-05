@@ -172,11 +172,13 @@ export function creditReserve(
 
 /**
  * The bonus reserve: `bonus` boosters, of which `garni` are garni boosters won by level,
- * which hold at least one card of a given rarity. Garni boosters are spent first.
+ * which hold at least one card of a given rarity, of which `precious` hold a rarer one.
+ * Precious garni boosters are spent first, then garni ones.
  */
 export interface BonusReserve {
   readonly bonus: number;
   readonly garni: number;
+  readonly precious: number;
 }
 
 export type TakeBoosterResult =
@@ -188,6 +190,8 @@ export type TakeBoosterResult =
       readonly fromBonus: boolean;
       /** It was a garni booster. */
       readonly garni: boolean;
+      /** It was a precious garni booster (`garni` is then true too). */
+      readonly precious: boolean;
     }
   | Extract<ConsumeResult, { ok: false }>;
 
@@ -200,16 +204,29 @@ export function takeBooster(
 ): TakeBoosterResult {
   const consumed = consumeBooster(wallet, schedule, now);
   if (consumed.ok) {
-    return { ok: true, state: consumed.state, reserve, fromBonus: false, garni: false };
+    return {
+      ok: true,
+      state: consumed.state,
+      reserve,
+      fromBonus: false,
+      garni: false,
+      precious: false,
+    };
   }
   if (reserve.bonus > 0) {
     const garni = reserve.garni > 0;
+    const precious = reserve.precious > 0;
     return {
       ok: true,
       state: computeRefill(wallet, schedule, now),
-      reserve: { bonus: reserve.bonus - 1, garni: garni ? reserve.garni - 1 : reserve.garni },
+      reserve: {
+        bonus: reserve.bonus - 1,
+        garni: garni ? reserve.garni - 1 : reserve.garni,
+        precious: precious ? reserve.precious - 1 : reserve.precious,
+      },
       fromBonus: true,
       garni,
+      precious,
     };
   }
   return consumed;

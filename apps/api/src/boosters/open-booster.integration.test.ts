@@ -314,7 +314,7 @@ describe("rarities completed", () => {
 
 describe("bonus reserve", () => {
   /** A player whose free stock is `stored` (timer just started) with `bonus` in reserve. */
-  async function playerWith(stored: number, bonus: number, garni = 0) {
+  async function playerWith(stored: number, bonus: number, garni = 0, precious = 0) {
     const guest = await signInAsPlayer();
     await db.insert(schema.boosterWallets).values({
       userId: guest.userId,
@@ -323,6 +323,7 @@ describe("bonus reserve", () => {
       asOf: new Date(),
       bonusBoosters: bonus,
       garniBoosters: garni,
+      preciousBoosters: precious,
     });
     return guest;
   }
@@ -375,6 +376,26 @@ describe("bonus reserve", () => {
     const plain = openBoosterResponseSchema.parse(await (await openBooster(guest)).json());
     expect(plain.wallet).toMatchObject({ bonus: 0, garni: 0 });
   });
+
+  it("opens a precious garni booster first, with at least a Précieuse", async () => {
+    const guest = await playerWith(0, 2, 2, 1);
+    const precious = openBoosterResponseSchema.parse(await (await openBooster(guest)).json());
+    expect(precious.wallet).toMatchObject({ bonus: 1, garni: 1 });
+    expect(precious.cards.some((card) => isAtLeast(card.rarity, "precious"))).toBe(true);
+    expect((await walletRow(guest.userId))?.preciousBoosters).toBe(0);
+
+    const garni = openBoosterResponseSchema.parse(await (await openBooster(guest)).json());
+    expect(garni.wallet).toMatchObject({ bonus: 0, garni: 0 });
+    expect(garni.cards.some((card) => isAtLeast(card.rarity, "rare"))).toBe(true);
+  });
+
+  async function walletRow(userId: string) {
+    const [row] = await db
+      .select()
+      .from(schema.boosterWallets)
+      .where(eq(schema.boosterWallets.userId, userId));
+    return row;
+  }
 
   it("is never overspent by concurrent opens", async () => {
     const guest = await playerWith(0, 3);

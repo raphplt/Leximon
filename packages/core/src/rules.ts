@@ -21,6 +21,7 @@ import type { XpSchedule } from "./progress/progress";
 import type { LevelRewardSchedule } from "./progress/rewards";
 import type { StreakSchedule } from "./progress/streak";
 import type { UnlockSchedule } from "./progress/unlocks";
+import type { WelcomeSchedule } from "./progress/welcome";
 import type { RiddleSchedule } from "./riddle/riddle";
 import type { TradeSchedule } from "./trade/trade";
 
@@ -202,6 +203,7 @@ export const LEVEL_REWARD_SCHEDULE: LevelRewardSchedule = [
     cosmeticsOnlyAbove: 50,
     avatarEveryBeyond: 20,
     garniMinRarity: "rare",
+    preciousGarniMinRarity: "precious",
     // Engraved avatars: portraits from the cards' engravings, named by their card id.
     startingAvatars: [
       "metaphraste",
@@ -238,6 +240,24 @@ export const LEVEL_REWARD_SCHEDULE: LevelRewardSchedule = [
       120: "iridescent",
       150: "royal-sun",
     },
+  },
+];
+
+// Most players stopped after their first day: the welcome week gives a reason to come back the
+// next ones, the best gift last. A gift only, so it starts when it ships.
+export const WELCOME_SCHEDULE: WelcomeSchedule = [
+  {
+    startsAt: SINCE_LAUNCH,
+    days: [
+      [{ kind: "bonus_booster" }, { kind: "bonus_booster" }],
+      [{ kind: "garni_booster" }],
+      [{ kind: "bonus_booster" }, { kind: "bonus_booster" }],
+      // A beginner, for a beginner.
+      [{ kind: "avatar", avatar: "bejaune" }],
+      [{ kind: "garni_booster" }],
+      [{ kind: "bonus_booster" }, { kind: "bonus_booster" }],
+      [{ kind: "precious_garni_booster" }, { kind: "title", title: "Habitué des rayons" }],
+    ],
   },
 ];
 

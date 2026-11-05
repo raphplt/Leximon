@@ -33,4 +33,5 @@ export * from "./sanctions";
 export * from "./shell";
 export * from "./staging";
 export * from "./trades";
+export * from "./welcome";
 export * from "./word-size";

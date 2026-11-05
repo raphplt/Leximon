@@ -135,6 +135,8 @@ export const boosterWallets = pgTable(
     bonusBoosters: integer().notNull().default(0),
     /** Of `bonusBoosters`, the garni ones won by level, spent first. */
     garniBoosters: integer().notNull().default(0),
+    /** Of `garniBoosters`, the precious ones, spent before the others. */
+    preciousBoosters: integer().notNull().default(0),
     /** Places added to the reserve cap by level rewards. */
     reserveSlots: smallint().notNull().default(0),
     /** Day in Paris of the last booster opened: the first one of a day earns more XP. */
@@ -149,6 +151,10 @@ export const boosterWallets = pgTable(
     check(
       "booster_wallets_garni_check",
       sql`${table.garniBoosters} >= 0 and ${table.garniBoosters} <= ${table.bonusBoosters}`,
+    ),
+    check(
+      "booster_wallets_precious_check",
+      sql`${table.preciousBoosters} >= 0 and ${table.preciousBoosters} <= ${table.garniBoosters}`,
     ),
     check("booster_wallets_reserve_slots_check", sql`${table.reserveSlots} >= 0`),
   ],
@@ -218,6 +224,28 @@ export const userLevelRewards = pgTable(
   (table) => [
     primaryKey({ columns: [table.userId, table.level] }),
     check("user_level_rewards_level_check", sql`${table.level} >= 2`),
+  ],
+);
+
+/**
+ * Days of the welcome week claimed, one row per day: the primary key makes a claim happen once,
+ * the day it was claimed on (in Paris) one claim a day, and `rewards` keeps what it gave.
+ */
+export const userWelcomeDays = pgTable(
+  "user_welcome_days",
+  {
+    userId: text()
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    day: smallint().notNull(),
+    rewards: jsonb().$type<readonly LevelReward[]>().notNull(),
+    claimedAt: timestamp({ withTimezone: true }).notNull(),
+    claimedOn: date({ mode: "string" }).notNull(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.userId, table.day] }),
+    uniqueIndex("user_welcome_days_one_a_day").on(table.userId, table.claimedOn),
+    check("user_welcome_days_day_check", sql`${table.day} >= 1`),
   ],
 );
 

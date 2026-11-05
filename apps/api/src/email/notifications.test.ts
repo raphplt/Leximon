@@ -58,7 +58,13 @@ describe("renderNewsEmail", () => {
 describe("renderReminderEmail", () => {
   it("says the sachets wait, with the word slipping away and the letters", () => {
     const email = renderReminderEmail(
-      { stock: 6, slipping: { word: "lucubrateur", others: 2 }, letters: 1, last: false },
+      {
+        stock: 6,
+        slipping: { word: "lucubrateur", others: 2 },
+        letters: 1,
+        welcome: null,
+        last: false,
+      },
       links,
     );
     expect(email.subject).toBe("Tes 6 sachets t'attendent");
@@ -68,8 +74,20 @@ describe("renderReminderEmail", () => {
     expect(email.text).toContain("Ne plus recevoir ces rappels");
   });
 
+  it("adds the day of the welcome week that waits", () => {
+    const line = "Le jour 2 de ta semaine de bienvenue t'attend aussi, avec un sachet garni.";
+    const email = renderReminderEmail(
+      { stock: 6, slipping: null, letters: 0, welcome: line, last: false },
+      links,
+    );
+    expect(email.text).toContain(line);
+  });
+
   it("says when it is the last one", () => {
-    const email = renderReminderEmail({ stock: 6, slipping: null, letters: 0, last: true }, links);
+    const email = renderReminderEmail(
+      { stock: 6, slipping: null, letters: 0, welcome: null, last: true },
+      links,
+    );
     expect(email.text).toContain("Dernier rappel, on ne t'écrira plus pour tes sachets.");
     expect(email.text).not.toContain("courrier");
   });

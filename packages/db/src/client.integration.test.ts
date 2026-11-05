@@ -76,6 +76,7 @@ describe("database", () => {
       "user_preferences",
       "user_progress",
       "user_rarity_completions",
+      "user_welcome_days",
       "users",
       "verifications",
       "waitlist_signups",

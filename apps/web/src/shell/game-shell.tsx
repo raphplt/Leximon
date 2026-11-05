@@ -16,6 +16,7 @@ import { SanctionDialog } from "./sanction-dialog";
 import { SettingsPanel } from "./settings-panel";
 import { type Shell, ShellContext } from "./shell-context";
 import { usePlayerView } from "./use-player-view";
+import { useWelcomeOnArrival, WelcomeDialog } from "./welcome-dialog";
 
 type Overlay = "menu" | "settings" | "mail" | "chat" | null;
 
@@ -34,6 +35,7 @@ export function GameShell({ children }: { readonly children: ReactNode }) {
 function Frame({ children }: { readonly children: ReactNode }) {
   const [overlay, setOverlay] = useState<Overlay>(null);
   const [coffret, setCoffret] = useState<number | null>(null);
+  const [welcome, setWelcome] = useState(false);
   const [card, setCard] = useState<{
     readonly id: string;
     readonly among: readonly string[];
@@ -51,9 +53,21 @@ function Frame({ children }: { readonly children: ReactNode }) {
     },
     [lowest, router],
   );
+  const openWelcome = useCallback(() => {
+    setOverlay(null);
+    setWelcome(true);
+  }, []);
+  const welcomeWaits = view.welcomeWaits;
+  const openRewards = useCallback(() => {
+    if (welcomeWaits) openWelcome();
+    else openCoffret();
+  }, [welcomeWaits, openWelcome, openCoffret]);
+  useWelcomeOnArrival(welcomeWaits, view.now, openWelcome);
   const shell = useMemo<Shell>(
     () => ({
       openCoffret,
+      openWelcome,
+      openRewards,
       openSettings: () => setOverlay("settings"),
       openMail: () => setOverlay("mail"),
       openChat: () => setOverlay("chat"),
@@ -62,7 +76,7 @@ function Frame({ children }: { readonly children: ReactNode }) {
         setCard({ id: cardId, among });
       },
     }),
-    [openCoffret],
+    [openCoffret, openWelcome, openRewards],
   );
   // `?courrier` in an e-mail's link opens the mail over the screen, once.
   useEffect(() => {
@@ -88,6 +102,7 @@ function Frame({ children }: { readonly children: ReactNode }) {
       <SanctionDialog now={view.now} />
       <NewsDialog level={view.progress?.level ?? null} />
       <CoffretDialog level={coffret} now={view.now} onClose={() => setCoffret(null)} />
+      <WelcomeDialog open={welcome} onClose={() => setWelcome(false)} />
       <TradeDoneDialog />
       <CardSheet
         cardId={card?.id ?? null}

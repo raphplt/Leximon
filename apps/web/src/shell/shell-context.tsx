@@ -6,6 +6,10 @@ import { createContext, useContext } from "react";
 export interface Shell {
   /** The coffret of `level`, or of the lowest level waiting; the level road when none waits. */
   openCoffret(level?: number): void;
+  /** The welcome week. */
+  openWelcome(): void;
+  /** What waits in « Récompenses »: today's day of the welcome week first, then the coffrets. */
+  openRewards(): void;
   openSettings(): void;
   openMail(): void;
   /** The clan's discussion in a panel. */
@@ -19,6 +23,8 @@ export interface Shell {
 
 export const ShellContext = createContext<Shell>({
   openCoffret: () => undefined,
+  openWelcome: () => undefined,
+  openRewards: () => undefined,
   openSettings: () => undefined,
   openMail: () => undefined,
   openChat: () => undefined,

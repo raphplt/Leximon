@@ -4,6 +4,7 @@ import {
   type BoosterWalletResponse,
   type ClaimLevelRewardResponse,
   type ClaimRefusal,
+  type ClaimWelcomeDayResponse,
   cardReadParamSchema,
   type DeleteAccountRefusal,
   type LevelRewardsResponse,
@@ -23,6 +24,8 @@ import {
   type TradeableCardsResponse,
   updatePreferencesRequestSchema,
   updateProfileRequestSchema,
+  type WelcomeRefusal,
+  type WelcomeWeekResponse,
 } from "@leximon/contract";
 import {
   GUEST_SCHEDULE,
@@ -67,10 +70,13 @@ import { readXp } from "../progress/progress";
 import { ensurePlayer, tradeableResponse } from "../trades/players";
 import { blockResultResponse } from "../trades/routes";
 
+import { claimWelcomeDay, readWelcomeWeek } from "../welcome/welcome";
+
 const { boosterWallets, cards, userCards, userMastery } = schema;
 
 /** A level in a path: from the first rewarded level, within the range of the stored column. */
 const levelParamSchema = z.coerce.number().int().min(2).max(10_000);
+const welcomeDayParamSchema = z.coerce.number().int().min(1).max(100);
 
 /** Player state for the current session. Never cached: it changes with every action. */
 export function meRoutes() {
@@ -148,6 +154,31 @@ export function meRoutes() {
     }
     return c.json<ClaimLevelRewardResponse>({
       level: result.level,
+      rewards: [...result.rewards],
+      wallet: result.wallet,
+    });
+  });
+
+  /** The welcome week: what each day gives and whether today's waits. */
+  routes.get("/welcome", async (c) => {
+    return c.json<WelcomeWeekResponse>(await readWelcomeWeek(c.var.db, c.var.userId, Date.now()));
+  });
+
+  routes.post("/welcome/:day", refuseLockedWrites, async (c) => {
+    const day = welcomeDayParamSchema.safeParse(c.req.param("day"));
+    if (!day.success) {
+      return c.json({ error: "invalid_request" }, 400);
+    }
+    const result = await claimWelcomeDay(c.var.db, {
+      userId: c.var.userId,
+      day: day.data,
+      now: Date.now(),
+    });
+    if (result.kind === "refused") {
+      return c.json<{ error: WelcomeRefusal }>({ error: result.reason }, 409);
+    }
+    return c.json<ClaimWelcomeDayResponse>({
+      day: result.day,
       rewards: [...result.rewards],
       wallet: result.wallet,
     });

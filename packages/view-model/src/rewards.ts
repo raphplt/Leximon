@@ -52,6 +52,12 @@ export function rewardItem(reward: LevelRewardView | LevelReward): RewardItem {
       return { icon: "bolt", title: "Recharge", detail: "Ton stock de sachets est rempli" };
     case "garni_booster":
       return { icon: "star", title: "Sachet garni", detail: "Au moins une carte Rare garantie" };
+    case "precious_garni_booster":
+      return {
+        icon: "star",
+        title: "Sachet garni Précieux",
+        detail: "Au moins une carte Précieuse garantie",
+      };
     case "title":
       return { icon: "plume", title: "Titre", detail: `« ${reward.title} »` };
     case "reserve_slot":
@@ -136,9 +142,18 @@ export function coffretHint(level: number, now: EpochMs): string {
 
 /** The toast once a coffret is put away. */
 export function claimedToast(rewards: readonly LevelRewardView[]): string {
-  return rewards.some((r) => r.kind === "bonus_booster" || r.kind === "garni_booster")
+  return rewards.some((r) => givesSachets(r))
     ? "Les sachets sont dans ta réserve."
     : "À retrouver dans ton profil.";
+}
+
+/** The reward goes to the bonus reserve. */
+export function givesSachets(reward: LevelRewardView | LevelReward): boolean {
+  return (
+    reward.kind === "bonus_booster" ||
+    reward.kind === "garni_booster" ||
+    reward.kind === "precious_garni_booster"
+  );
 }
 
 /** The button of an opened coffret: what the player does with it. */
@@ -187,6 +202,8 @@ function rewardWord(reward: LevelReward): string {
       return "Recharge";
     case "garni_booster":
       return "Sachet garni";
+    case "precious_garni_booster":
+      return "Sachet Précieux";
     case "title":
       return "Titre";
     case "reserve_slot":
@@ -200,8 +217,24 @@ function rewardWord(reward: LevelReward): string {
   }
 }
 
+/**
+ * « 2 sachets bonus », « un sachet garni Précieux et le titre « Habitué des rayons » »: rewards
+ * as said in a sentence, the same ones counted together.
+ */
+export function rewardsPhrase(rewards: readonly (LevelRewardView | LevelReward)[]): string {
+  const parts: string[] = [];
+  const sachets = rewards.filter((reward) => reward.kind === "bonus_booster").length;
+  if (sachets > 1) parts.push(plural(sachets, "sachet bonus", "sachets bonus"));
+  for (const reward of rewards) {
+    if (reward.kind === "bonus_booster" && sachets > 1) continue;
+    parts.push(rewardPhrase(reward));
+  }
+  if (parts.length <= 1) return parts[0] ?? "";
+  return `${parts.slice(0, -1).join(", ")} et ${parts[parts.length - 1]}`;
+}
+
 /** « un sachet garni », the reward as said in a sentence. */
-function rewardPhrase(reward: LevelReward): string {
+function rewardPhrase(reward: LevelRewardView | LevelReward): string {
   switch (reward.kind) {
     case "bonus_booster":
       return "un sachet bonus";
@@ -210,6 +243,8 @@ function rewardPhrase(reward: LevelReward): string {
       return "une recharge";
     case "garni_booster":
       return "un sachet garni";
+    case "precious_garni_booster":
+      return "un sachet garni Précieux";
     case "title":
       return `le titre « ${reward.title} »`;
     case "reserve_slot":

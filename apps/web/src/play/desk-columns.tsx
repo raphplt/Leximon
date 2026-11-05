@@ -19,6 +19,7 @@ import {
   stockView,
   todayLabel,
   upcomingRewards,
+  WELCOME_OPEN,
   xpProgressLabel,
 } from "@leximon/view-model";
 import Link from "next/link";
@@ -251,7 +252,7 @@ export function StandingColumn() {
 
 function LevelLeaf({ index }: { readonly index: number }) {
   const view = usePlayerView();
-  const { openCoffret } = useShell();
+  const { openCoffret, openWelcome } = useShell();
   const { progress } = view;
   if (progress === null) return null;
   const [reward] = upcomingRewards(progress.level, view.now, 1);
@@ -272,6 +273,12 @@ function LevelLeaf({ index }: { readonly index: number }) {
           </span>
           <span className={styles.leafText}>{line}</span>
         </Link>
+      )}
+      {view.welcomeWaits && (
+        <Button glow className={styles.claim} onClick={openWelcome}>
+          <Icon name="coffret" size={20} />
+          {WELCOME_OPEN}
+        </Button>
       )}
       {view.coffrets.length > 0 && (
         <Button glow className={styles.claim} onClick={() => openCoffret()}>

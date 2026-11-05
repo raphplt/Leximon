@@ -15,6 +15,8 @@ import {
   SLIPPING_AWAY,
   slippingDetail,
   tierName,
+  welcomeMailTitle,
+  welcomeToday,
 } from "@leximon/view-model";
 import Link from "next/link";
 import { type ReactNode, useEffect, useRef, useState } from "react";
@@ -70,7 +72,7 @@ export function MailPanel({
   readonly onClose: () => void;
 }) {
   const view = usePlayerView();
-  const { openCoffret, openChat } = useShell();
+  const { openCoffret, openChat, openWelcome } = useShell();
   const claim = useClaim();
   const toast = useToast();
   const box = view.mailbox;
@@ -124,6 +126,16 @@ export function MailPanel({
   }, [open, box]);
 
   const todo: Row[] = [];
+  const welcomeDay = welcomeToday(view.welcome);
+  if (welcomeDay !== null) {
+    todo.push({
+      key: "welcome",
+      icon: "coffret",
+      title: welcomeMailTitle(welcomeDay.day),
+      detail: capitalize(welcomeDay.phrase),
+      action: () => openWelcome(),
+    });
+  }
   if (view.coffrets.length > 0) {
     todo.push({
       key: "coffrets",

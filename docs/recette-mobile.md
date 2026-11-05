@@ -151,6 +151,11 @@ A sur le web sert de deuxième joueur : amis, échanges, clan, sanctions. `pnpm 
 - **Attendu :** le coffret flotte, s'ouvre, montre ses récompenses ; compteurs mis à jour. Réserve pleine : la fenêtre le dit et propose d'ouvrir un sachet.
 - **Retour :**
 
+### MNI-04 · Semaine de bienvenue (NIV-08)
+- **Faire :** comme NIV-08, sur le téléphone.
+- **Attendu :** la semaine s'ouvre seule au premier lancement du jour où une case attend, sur le bureau comme le coffret ; le bouton rond Récompenses et le courrier y mènent tant qu'une case attend. Les sept cases tiennent sur 360 points de large.
+- **Retour :**
+
 ### MNI-03 · Courrier
 - **Faire :** ouvrir l'enveloppe.
 - **Attendu :** « À faire » (coffrets, parrainages, objectifs de clan, mot qui s'échappe) puis les nouvelles. Toucher une lettre mène au bon écran et fait baisser le compteur.

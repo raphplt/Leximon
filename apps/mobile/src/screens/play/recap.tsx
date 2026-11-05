@@ -13,6 +13,7 @@ import {
   recap,
   recapCascade,
   recapOrder,
+  welcomeSessionLine,
   xpGainLabel,
 } from "@leximon/view-model";
 import { router } from "expo-router";
@@ -102,7 +103,8 @@ export function Recap({
   const progressNow = useShared(progressResource);
   const wallet = useShared(walletResource);
   // The sachet raised the level: its coffret comes before the next sachet.
-  const coffretWaits = usePlayerView().coffrets.length > 0;
+  const player = usePlayerView();
+  const coffretWaits = player.coffrets.length > 0;
   const width = Math.floor(
     Math.max(
       CARD_MIN,
@@ -145,6 +147,8 @@ export function Recap({
   const levelUp = levelUpLabel(pack.progress);
   const nextSachet = wallet === null ? null : nextSachetLine(wallet, now);
   const another = !mustSignUp && !coffretWaits && wallet !== null && canOpenAgain(wallet);
+  // The session ends on this sachet: say what the welcome week keeps for today or tomorrow.
+  const welcomeLine = mustSignUp || another ? null : welcomeSessionLine(player.welcome);
   return (
     <View style={styles.recap} onLayout={(event) => setRoom(event.nativeEvent.layout.height)}>
       {/* The cards lie on the desk and the buttons are its objects. */}
@@ -232,6 +236,7 @@ export function Recap({
         {!mustSignUp && !coffretWaits && nextSachet !== null && (
           <Text style={styles.progress}>{nextSachet}</Text>
         )}
+        {welcomeLine !== null && <Text style={styles.progress}>{welcomeLine}</Text>}
         <View style={styles.actions} onLayout={measureActions}>
           {coffretWaits ? (
             <MainAction label="Ouvrir le coffret" onPress={() => openCoffret()} />

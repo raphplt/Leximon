@@ -42,11 +42,19 @@ export function tabBadge(
  */
 export function mailCount(waiting: {
   readonly coffrets: number;
+  /** 1 while a day of the welcome week waits. */
+  readonly welcome: number;
   readonly goalSachets: number;
   readonly referralSachets: number;
   readonly unread: number;
 }): number {
-  return waiting.coffrets + waiting.goalSachets + waiting.referralSachets + waiting.unread;
+  return (
+    waiting.coffrets +
+    waiting.welcome +
+    waiting.goalSachets +
+    waiting.referralSachets +
+    waiting.unread
+  );
 }
 
 /** « Courrier, 3 en attente », for screen readers. */

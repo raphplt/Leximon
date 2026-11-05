@@ -13,11 +13,13 @@ import {
   type ChallengesResponse,
   type ClaimLevelRewardResponse,
   type ClaimRefusal,
+  type ClaimWelcomeDayResponse,
   type CreateTradeRequest,
   challengeAnswerResponseSchema,
   challengesResponseSchema,
   claimLevelRewardResponseSchema,
   claimRefusalSchema,
+  claimWelcomeDayResponseSchema,
   type DailyChallengeResponse,
   type DeleteAccountRefusal,
   dailyChallengeResponseSchema,
@@ -81,6 +83,10 @@ import {
   tradeSchema,
   tradesResponseSchema,
   type UpdateProfileRequest,
+  type WelcomeRefusal,
+  type WelcomeWeekResponse,
+  welcomeRefusalSchema,
+  welcomeWeekResponseSchema,
 } from "../index";
 import { ApiError, type Http, json, parse, refusal, segment, withQuery } from "./http";
 
@@ -95,6 +101,10 @@ export type OpenBoosterResult =
 export type ClaimResult =
   | ({ readonly kind: "claimed" } & ClaimLevelRewardResponse)
   | { readonly kind: "refused"; readonly reason: ClaimRefusal };
+
+export type WelcomeClaimResult =
+  | ({ readonly kind: "claimed" } & ClaimWelcomeDayResponse)
+  | { readonly kind: "refused"; readonly reason: WelcomeRefusal };
 
 export type AnswerResult =
   | ({ readonly kind: "answered" } & ChallengeAnswerResponse)
@@ -243,6 +253,19 @@ export function gameRoutes(http: Http) {
       }
       if (!response.ok) throw new ApiError("claim_failed", response.status);
       return { kind: "claimed", ...(await parse(response, claimLevelRewardResponseSchema)) };
+    },
+
+    fetchWelcomeWeek: (): Promise<WelcomeWeekResponse> =>
+      getJson("/me/welcome", welcomeWeekResponseSchema, "welcome_unavailable"),
+
+    /** Claims a day of the welcome week. Idempotent on the server: the day is the key. */
+    async claimWelcomeDay(day: number): Promise<WelcomeClaimResult> {
+      const response = await sendAsPlayer(`/me/welcome/${day}`, { method: "POST" });
+      if (response.status === 409) {
+        return { kind: "refused", reason: (await parse(response, welcomeRefusalSchema)).error };
+      }
+      if (!response.ok) throw new ApiError("claim_failed", response.status);
+      return { kind: "claimed", ...(await parse(response, claimWelcomeDayResponseSchema)) };
     },
 
     fetchChallenges: (limit = 5): Promise<ChallengesResponse> =>

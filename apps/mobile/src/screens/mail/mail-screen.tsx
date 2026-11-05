@@ -14,6 +14,8 @@ import {
   SLIPPING_AWAY,
   slippingDetail,
   tierName,
+  welcomeMailTitle,
+  welcomeToday,
 } from "@leximon/view-model";
 import { router } from "expo-router";
 import { type ReactNode, useEffect, useState } from "react";
@@ -22,6 +24,7 @@ import { api } from "@/api/client";
 import { catalogInHand, loadCatalog } from "@/cards/catalog";
 import { claimGoal } from "@/clan/claim";
 import { openCoffret } from "@/levels/coffret";
+import { openWelcome } from "@/levels/welcome";
 import { useNow } from "@/player/shared";
 import { mailbox, wallet } from "@/player/state";
 import { usePlayerView } from "@/player/use-player-view";
@@ -139,6 +142,16 @@ export function MailScreen() {
   }, [box]);
 
   const todo: Row[] = [];
+  const welcomeDay = welcomeToday(view.welcome);
+  if (welcomeDay !== null) {
+    todo.push({
+      key: "welcome",
+      icon: "coffret",
+      title: welcomeMailTitle(welcomeDay.day),
+      detail: capitalize(welcomeDay.phrase),
+      onPress: () => openWelcome(),
+    });
+  }
   if (view.coffrets.length > 0) {
     todo.push({
       key: "coffrets",

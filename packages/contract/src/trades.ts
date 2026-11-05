@@ -25,7 +25,7 @@ export const profileResponseSchema = z.object({
   pseudoChangeableFrom: timestampSchema.nullable(),
   avatar: z.string(),
   frame: z.string(),
-  /** The title worn: the one chosen, else the latest won; `null` before level 5. */
+  /** The title worn: the one chosen, else the latest won; `null` before the first one. */
   title: z.string().nullable(),
   /** The player chose `title`; otherwise it follows the latest title won. */
   titleChosen: z.boolean(),

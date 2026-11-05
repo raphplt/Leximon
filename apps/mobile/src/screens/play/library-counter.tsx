@@ -28,7 +28,7 @@ import Animated, {
   withSpring,
   withTiming,
 } from "react-native-reanimated";
-import { openCoffret } from "@/levels/coffret";
+import { openRewards } from "@/levels/welcome";
 import { CollectionTitle, Desk, InfoBubble, MainAction, SideTile } from "@/library/play-pieces";
 import { dailyChallenge } from "@/player/collection";
 import { useNow, useShared } from "@/player/shared";
@@ -354,7 +354,7 @@ function Tiles({
   const now = useNow(60_000);
   const daily = useShared(dailyChallenge);
   const fabs = playFabs(
-    { level: view.progress?.level ?? 1, coffrets: view.coffrets.length, mail: view.mail },
+    { level: view.progress?.level ?? 1, coffrets: view.rewardsWaiting, mail: view.mail },
     now,
   )[side];
   const dailyLeft = daily !== null && dailyView(daily).ratio < 1;
@@ -379,7 +379,7 @@ function Tiles({
         router.push("/amis");
         return;
       case "coffrets":
-        openCoffret();
+        openRewards();
         return;
       case "mail":
       case "settings":

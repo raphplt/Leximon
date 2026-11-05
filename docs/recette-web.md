@@ -207,6 +207,11 @@ Compte A : `pnpm dev:player contact@leximon.fr --level 21` pour avoir une série
 - **Attendu :** « 1 garni » dans la réserve ; le sachet ouvert est le garni, avec au moins une Rare.
 - **Retour :**
 
+### NIV-08 · Semaine de bienvenue
+- **Faire :** avec un compte neuf, arriver sur Jouer. Prendre la case, revenir le même jour, puis le lendemain (ou reculer la date de la case en base locale). En invité, épuiser ses sachets.
+- **Attendu :** la semaine s'ouvre seule à la première visite du jour où une case attend, une fois par jour : sept cases, « Jour 1 sur 7 », la règle dite en clair, « Ouvrir la case du jour ». La case ouverte montre ses récompenses comme un coffret, puis ce que donne le lendemain. Tant qu'une case attend, Récompenses et le courrier comptent 1 et y mènent ; une fois prise, plus rien jusqu'au lendemain, et le bilan d'un sachet qui finit la séance dit ce qui attend demain. Le jour 7 donne un sachet garni Précieux (bleu, au moins une Précieuse à l'ouverture) et le titre « Habitué des rayons », porté au profil ; le jour 4, l'avatar « Le Béjaune ». Réserve pleine : la case reste fermée et propose d'ouvrir un sachet. L'invité voit, sous l'appel à créer un compte, ce que la semaine lui offrirait.
+- **Retour :**
+
 ### NIV-07 · Écrans fermés par le niveau
 - **Faire :** avec un compte de niveau 4, toucher Échanges ; niveau 9, Clan ; niveau 14, Joutes.
 - **Attendu :** l'écran fermé dit quel niveau l'ouvre, une phrase de promesse, la barre vers ce niveau, « Ouvrir un sachet », « Faire un défi ». Joutes, une fois le niveau atteint : « pas encore construit ».

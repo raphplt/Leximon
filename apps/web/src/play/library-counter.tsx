@@ -221,7 +221,7 @@ function Tiles({ say }: { readonly say: (text: string) => void }) {
   const daily = useShared(dailyChallenge);
   if (view.now === 0) return null;
   const { left, right } = playFabs(
-    { level: view.progress?.level ?? 1, coffrets: view.coffrets.length, mail: view.mail },
+    { level: view.progress?.level ?? 1, coffrets: view.rewardsWaiting, mail: view.mail },
     view.now,
   );
   const dailyLeft = daily !== null && dailyView(daily).ratio < 1;
@@ -248,7 +248,7 @@ function Tiles({ say }: { readonly say: (text: string) => void }) {
         router.push("/defis");
         return;
       case "coffrets":
-        shell.openCoffret();
+        shell.openRewards();
         return;
       case "mail":
         shell.openMail();

@@ -34,6 +34,8 @@ import {
   stagingFor,
   stockView,
   type WordMemory,
+  welcomeGuestLine,
+  welcomeSessionLine,
   wordUnderCounter,
   xpGainLabel,
 } from "@leximon/view-model";
@@ -682,6 +684,9 @@ function BoosterFlow() {
             mustSignUp ? (
               <>
                 <p className={counter.message}>{SIGN_UP_HINT}</p>
+                {welcomeGuestLine(view.welcome) !== null && (
+                  <p className={counter.message}>{welcomeGuestLine(view.welcome)}</p>
+                )}
                 <ButtonLink href="/compte">Créer mon compte</ButtonLink>
               </>
             ) : error !== null ? (
@@ -837,6 +842,9 @@ function Recap({
   const nextSachet =
     view.wallet === null || view.now === 0 ? null : nextSachetLine(view.wallet, view.now);
   const another = !mustSignUp && !coffretWaits && view.wallet !== null && canOpenAgain(view.wallet);
+  // The session ends on this sachet: say what the welcome week keeps for today or tomorrow.
+  const welcomeLine = mustSignUp || another ? null : welcomeSessionLine(view.welcome);
+  const guestLine = mustSignUp ? welcomeGuestLine(view.welcome) : null;
   // The cards lie on the desk and the buttons are its objects.
   return (
     <div className={styles.recap}>
@@ -851,6 +859,7 @@ function Recap({
           extraLines={
             (levelUp === null ? 0 : RECAP_LEVEL_UP_LINE) +
             (mustSignUp ? RECAP_SIGN_UP_LINE : 0) +
+            (welcomeLine !== null || guestLine !== null ? RECAP_SIGN_UP_LINE : 0) +
             (another ? RECAP_HOME_LINE : 0) +
             pack.completions.length * RECAP_COMPLETION_LINE
           }
@@ -871,9 +880,11 @@ function Recap({
         {progress.gained > 0 && <span className={styles.gained}> (+{progress.gained})</span>}
       </p>
       {mustSignUp && <p className={styles.hint}>{SIGN_UP_HINT}</p>}
+      {guestLine !== null && <p className={styles.hint}>{guestLine}</p>}
       {!mustSignUp && !coffretWaits && nextSachet !== null && (
         <p className={styles.hint}>{nextSachet}</p>
       )}
+      {welcomeLine !== null && <p className={styles.hint}>{welcomeLine}</p>}
       <div className={styles.actions}>
         {coffretWaits ? (
           <MainAction label="Ouvrir le coffret" onClick={() => openCoffret()} />

@@ -36,6 +36,7 @@ const AVATAR_NAMES: Readonly<Record<string, string>> = {
   bequillard: "Le Béquillard",
   zani: "Le Zani",
   pochon: "Le Pochon",
+  bejaune: "Le Béjaune",
 };
 
 const FRAME_NAMES: Readonly<Record<string, string>> = {

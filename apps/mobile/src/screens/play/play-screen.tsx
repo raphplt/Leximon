@@ -17,6 +17,7 @@ import {
   revealOrder,
   stagingFor,
   stockView,
+  welcomeGuestLine,
 } from "@leximon/view-model";
 import { randomUUID } from "expo-crypto";
 import { router, useIsFocused } from "expo-router";
@@ -516,6 +517,9 @@ function PlayFlow() {
             mustSignUp ? (
               <>
                 <Text style={styles.message}>{SIGN_UP_HINT}</Text>
+                {welcomeGuestLine(view.welcome) !== null && (
+                  <Text style={styles.message}>{welcomeGuestLine(view.welcome)}</Text>
+                )}
                 <Button label="Créer mon compte" onPress={() => router.push("/compte")} />
               </>
             ) : error !== null ? (
