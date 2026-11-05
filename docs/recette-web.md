@@ -67,8 +67,8 @@ Sans être connecté.
 - **Retour :**
 
 ### PUB-04 · Image de partage
-- **Faire :** ouvrir http://localhost:3000/opengraph-image.
-- **Attendu :** une image propre, au nom de Leximon.
+- **Faire :** ouvrir http://localhost:3000/opengraph-image, `/carte/lucubrateur/opengraph-image`, `/carte/pendardeau/opengraph-image`, `/carte/inconnue/opengraph-image` et `/joueur/<pseudo public>/opengraph-image`. Regarder l'onglet du navigateur et, sur iPhone, l'icône d'un raccourci sur l'écran d'accueil.
+- **Attendu :** les quatre images sont dans la salle, le sceau et « Leximon » en lettres crème cernées d'encre. Le site : la promesse de l'accueil et une vraie carte sur le sous-main. Une carte : la carte comme dans le jeu (cadre et couleurs de sa rareté, initiale sur les hachures, mot, définition, collection et cote), penchée sur le sous-main, sa fréquence en clair à côté. Une carte inconnue : le sceau et le nom seuls. Un profil : l'initiale sur une médaille d'or posée sur le sous-main, le pseudo, le titre et le niveau, le clan, les chiffres. Le favicon et l'icône d'accueil : le sceau sur le cuir vert, cadre d'or.
 - **Retour :**
 
 ### PUB-05 · Nouveautés

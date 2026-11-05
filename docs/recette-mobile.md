@@ -41,7 +41,7 @@ A sur le web sert de deuxième joueur : amis, échanges, clan, sanctions. `pnpm 
 
 ### COQ-01 · Lancement
 - **Faire :** ouvrir l'app.
-- **Attendu :** écran de lancement aux couleurs du jeu, puis Jouer. Polices du jeu partout (pas de police système), barre d'état claire sur fond sombre.
+- **Attendu :** l'icône de l'app et l'écran de lancement montrent le sceau sur le cuir vert du sous-main (icône ronde ou carrée selon le lanceur, sceau jamais rogné), puis Jouer. Une nouvelle icône ne se voit qu'après un nouveau build de l'app. Polices du jeu partout (pas de police système), barre d'état claire sur fond sombre.
 - **Retour :**
 
 ### COQ-02 · Onglets et bandeau

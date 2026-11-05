@@ -1,89 +1,61 @@
-import { alpha, colors, cssFill, type Fill, fonts, rarityStyles } from "@leximon/tokens";
-import { frequencyLine } from "@leximon/view-model";
+import { fonts, lettering } from "@leximon/tokens";
+import { LANDING_TITLE } from "@leximon/view-model";
 import { ImageResponse } from "next/og";
+import { readShowcase } from "@/landing/showcase-server";
 import { googleFont } from "@/lib/og-fonts";
+import {
+  cardGlyphs,
+  lettered,
+  OG_DOMAIN,
+  OG_SIZE,
+  OgBrand,
+  OgCard,
+  OgDesk,
+  OgRoom,
+} from "@/lib/og-scene";
 
 export const alt = "Leximon, le jeu de cartes des mots rares et oubliés du français.";
-export const size = { width: 1200, height: 630 };
+export const size = OG_SIZE;
 export const contentType = "image/png";
 
-const TAGLINE = "La langue a jeté des mots superbes. On les a ramassés.";
-const DOMAIN = "leximon.fr";
-
-/**
- * One word of the catalogue printed on a dictionary slip, as on the home page. Copied from the
- * published card (lucubrateur, Précieux): the image is rendered at build time, without the API.
- */
-const SLIP = {
-  word: "lucubrateur",
-  meta: "Précieux · n. m.",
-  definition:
-    "Celui qui travaille intensément à des ouvrages de l'esprit, surtout la nuit, à la lueur de la lampe.",
-  frequency: frequencyLine(0.0585),
-  style: rarityStyles.precious,
-} as const;
+/** The card on the desk: a word of the home page, read from the published catalogue. */
+const SHOWN_WORD = "lucubrateur";
 
 /** Shared image of the site, rendered once at build time. */
 export default async function Image() {
+  const showcase = await readShowcase();
+  const card = showcase.heroWords.find((word) => word.id === SHOWN_WORD) ?? null;
+  const collectionName =
+    showcase.shelves.find((shelf) => shelf.id === card?.collectionId)?.name ?? "";
+  const glyphs =
+    card === null ? { display: "", ui: "", text: "" } : cardGlyphs(card, collectionName);
+
   const [display, ui, text] = await Promise.all([
     googleFont(
       `${fonts.display.family}:opsz,wght,SOFT@72,${fonts.display.weight},${fonts.display.soft}`,
-      `Leximon${TAGLINE}${SLIP.word}`,
+      `Leximon${LANDING_TITLE}${glyphs.display}`,
     ),
-    googleFont(`${fonts.ui.family}:wght@800`, DOMAIN + SLIP.meta + SLIP.frequency),
-    googleFont(`${fonts.text.family}:wght@400`, SLIP.definition),
+    googleFont(`${fonts.ui.family}:wght@800`, OG_DOMAIN + glyphs.ui),
+    googleFont(`${fonts.text.family}:wght@400`, glyphs.text || "a"),
   ]);
-  const { style } = SLIP;
 
   return new ImageResponse(
-    <div
-      style={{
-        width: "100%",
-        height: "100%",
-        display: "flex",
-        alignItems: "center",
-        backgroundColor: colors.page,
-        backgroundImage: `radial-gradient(ellipse at 70% 40%, ${colors.pageRaised} 0%, ${colors.page} 70%)`,
-        color: colors.pageInk,
-      }}
-    >
-      <div
-        style={{
-          width: 560,
-          height: "100%",
-          padding: "60px 0 56px 72px",
-          display: "flex",
-          flexDirection: "column",
-          justifyContent: "space-between",
-        }}
-      >
-        <div style={{ fontFamily: "Display", fontSize: 48 }}>Leximon</div>
-        <div style={{ fontFamily: "Display", fontSize: 58, lineHeight: 1.04 }}>{TAGLINE}</div>
-        <div style={{ fontFamily: "Ui", fontSize: 24, color: colors.pageInkMuted }}>{DOMAIN}</div>
-      </div>
-      <div
-        style={{
-          width: 520,
-          marginLeft: 40,
-          padding: "40px 44px",
-          display: "flex",
-          flexDirection: "column",
-          gap: 18,
-          borderRadius: 8,
-          backgroundColor: style.paper,
-          color: style.ink,
-          boxShadow: `0 28px 60px ${alpha(colors.shade, 0.45)}`,
-          transform: "rotate(-2deg)",
-        }}
-      >
-        <div style={{ fontFamily: "Ui", fontSize: 20, color: style.muted }}>{SLIP.meta}</div>
-        <div style={{ fontFamily: "Display", fontSize: 74, lineHeight: 1, ...ink(style.word) }}>
-          {SLIP.word}
+    <OgRoom>
+      <div style={{ flex: 1, display: "flex", alignItems: "center", gap: 48, padding: "0 64px" }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: 40, flex: 1 }}>
+          <OgBrand size={40} />
+          <div style={{ ...lettered(60), lineHeight: 1.08 }}>{LANDING_TITLE}</div>
+          <div style={{ fontFamily: "Ui", fontSize: 26, color: lettering.fill }}>{OG_DOMAIN}</div>
         </div>
-        <div style={{ fontFamily: "Text", fontSize: 26, lineHeight: 1.35 }}>{SLIP.definition}</div>
-        <div style={{ fontFamily: "Ui", fontSize: 20, color: style.muted }}>{SLIP.frequency}</div>
+        {card !== null && (
+          <OgDesk width={460} height={540}>
+            <div style={{ display: "flex", transform: "rotate(3deg)" }}>
+              <OgCard card={card} collectionName={collectionName} width={320} />
+            </div>
+          </OgDesk>
+        )}
       </div>
-    </div>,
+    </OgRoom>,
     {
       ...size,
       fonts: [
@@ -93,13 +65,4 @@ export default async function Image() {
       ],
     },
   );
-}
-
-/** Style inking text with a fill: a plain colour, or a gradient clipped to the letters. */
-function ink(
-  fill: Fill,
-): { color: string } | { backgroundImage: string; backgroundClip: "text"; color: "transparent" } {
-  return typeof fill === "string"
-    ? { color: fill }
-    : { backgroundImage: cssFill(fill), backgroundClip: "text", color: "transparent" };
 }

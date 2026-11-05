@@ -261,8 +261,8 @@ Seulement ce dont l'écran Jouer et l'ouverture ont besoin : bandeau du haut (po
 | Accueil public | Refonte complète : c'est la première impression, et elle compte pour les captures |
 | Pages légales | Feuilles, automatiques par les tokens |
 | E-mails | Gabarit papier et encre. Pas d'image distante (D-036), Georgia reste la police |
-| Images de partage | Les trois images passent dans la salle. Elles ont aujourd'hui leur propre carte et leurs couleurs en dur |
-| Icône d'app, écran de lancement, favicon | Le sceau de cire sur le cuir vert |
+| Images de partage | Fait le 2026-11-05 : les trois images dans la salle, la carte dessinée comme dans le jeu sur le sous-main |
+| Icône d'app, écran de lancement, favicon | Fait le 2026-11-05 : le sceau de cire sur le cuir vert, cadre d'or |
 | Fiches des stores | Captures, image de présentation, en-têtes iOS |
 | Cadres d'avatar | Les 13 cadres sont redessinés. Leurs identifiants en base restent les mêmes |
 | Emblèmes de clan | Couleurs à accorder à la salle |
