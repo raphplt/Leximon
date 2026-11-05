@@ -102,6 +102,8 @@ Un objet a un seul nom dans l'interface.
 | Encre, Dorure | niveau 1, niveau 2 | Toujours avec la majuscule : « passe à l'Encre ». |
 | Courant, Peu courant, Rare, Précieux, Épique, Légendaire | | Avec la majuscule, accordé avec « carte » : « une carte Précieuse », « les cartes Légendaires ». |
 | niveau, XP | | Le niveau du joueur, à ne pas confondre avec l'Encre et la Dorure. |
+| mission | quête, tâche | Les trois missions du jour. |
+| carnet | calendrier, pointage | Le carnet de pointage, une case par jour joué. |
 | joute | duel | On lance une joute, on défie un ami. |
 | récompenses | coffrets (sur un bouton) | Le bouton qui ouvre les coffrets de niveau dit « Récompenses ». |
 

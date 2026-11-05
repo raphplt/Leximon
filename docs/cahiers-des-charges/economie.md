@@ -1,11 +1,16 @@
 # Cahier des charges · L'économie et l'équilibrage
 
-- **Statut :** proposé le 2026-11-05, rien de tranché, rien de construit. Pas de code avant les choix du propriétaire.
+- **Statut :** proposé le 2026-11-05. Choix du propriétaire le même jour : toutes les recommandations, sauf E9 (pointage permanent, voir ci-dessous). Inscrit en P10, P37, P48, P84 et P93 à P97. Rien de construit.
 - **Source :** l'appel et les notes du game designer de la semaine du 2026-10-31, les retours des joueurs ([retours-joueurs.md](../retours-joueurs.md)), et la demande du propriétaire du 2026-11-05 : un vrai travail d'équilibrage sur les chiffres de la bêta (sachets par heure et par jour, tirage, XP), puis une économie plus riche, faite de systèmes qui se répondent, dans l'esprit de Brawl Stars et de Summoners War, sans faire de Leximon un gacha.
 - **Données :** tableau de bord et page Mesure de l'admin, liste des testeurs, relevés le 2026-11-05, soit 10 jours de bêta ouverte depuis Reddit et FrenchTech. Aucun nom ni adresse n'est repris ici.
 - **Règles liées :** N1, N2, P10, P11, P23, P29, P37, P48, P58, P72, P81, P84 à P91 ([regles-du-jeu.md](../regles-du-jeu.md)).
 - **Cahiers liés :** [retours-game-designer.md](retours-game-designer.md) (phases 4 à 6, déjà tranchées), [joutes.md](joutes.md), [defis-entrainement.md](defis-entrainement.md).
 - **Études :** [rnd/doublons.md](../rnd/doublons.md), [rnd/level-sim.md](../rnd/level-sim.md), [rnd/collection-sim.md](../rnd/collection-sim.md). Relevé reproductible : `pnpm economy:snapshot:prod`.
+
+## Choix du propriétaire
+
+- **2026-11-05 · E1 à E8 et E10 : a.**
+- **2026-11-05 · E9 : un pointage permanent,** pas seulement la semaine de bienvenue, « au moins une fois par mois ». Un carnet de 28 cases par période de 4 semaines, calé sur les saisons, une case par jour joué, prend le relais de la semaine de bienvenue (P95). La série reste à côté. Le carnet se construit avec les missions (étape 4 de E10), une fois les écus en place.
 
 ## Où en sont les retours du game designer
 
@@ -149,7 +154,7 @@ Chaque question a une recommandation, en premier. Les chiffres sont des valeurs 
   1. Les réglages E1 et E3 (deux valeurs de `rules.ts` et leurs textes), cette semaine ;
   2. la semaine de bienvenue ;
   3. les écus, le recyclage et le mot manquant (P84 à P86) ;
-  4. les missions du jour ;
+  4. les missions du jour et le carnet de pointage ;
   5. les joutes, lot 1 ;
   6. la saison.
 
