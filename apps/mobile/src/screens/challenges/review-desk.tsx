@@ -21,12 +21,9 @@ import {
   PACK_NOUNS,
   paceOptions,
   practiceEmptyLine,
-  REVIEW_DIFFICULTY_NOTE,
   REVIEW_DIFFICULTY_TITLE,
-  REVIEW_FORMATS_NOTE,
   REVIEW_FORMATS_TITLE,
   REVIEW_LENGTH_TITLE,
-  REVIEW_PACE_NOTE,
   REVIEW_PACE_TITLE,
   REVIEW_SETTINGS_TITLE,
   REVIEW_SOUND_LABEL,
@@ -293,7 +290,6 @@ function Settings({ summary }: { readonly summary: ReviewSummaryResponse }) {
           />
         ))}
       </View>
-      <Text style={styles.sheetNote}>{REVIEW_PACE_NOTE}</Text>
       <Text style={styles.sheetTitle}>{REVIEW_FORMATS_TITLE.toUpperCase()}</Text>
       <View style={styles.options}>
         {formatOptions(summary).map((option) => (
@@ -315,7 +311,6 @@ function Settings({ summary }: { readonly summary: ReviewSummaryResponse }) {
           }}
         />
       </View>
-      <Text style={styles.sheetNote}>{REVIEW_FORMATS_NOTE}</Text>
       <Text style={styles.sheetTitle}>{REVIEW_DIFFICULTY_TITLE.toUpperCase()}</Text>
       <View style={styles.options}>
         {DIFFICULTY_OPTIONS.map((option) => (
@@ -328,7 +323,6 @@ function Settings({ summary }: { readonly summary: ReviewSummaryResponse }) {
           />
         ))}
       </View>
-      <Text style={styles.sheetNote}>{REVIEW_DIFFICULTY_NOTE}</Text>
       {failed && (
         <Text style={styles.error} accessibilityRole="alert">
           Le serveur ne répond pas. Réessaie.
@@ -804,12 +798,6 @@ const styles = StyleSheet.create({
     fontFamily: fonts.ui.extrabold,
     fontSize: fontSizes.label,
     color: toyValues.outline,
-  },
-  sheetNote: {
-    fontFamily: fonts.ui.medium,
-    fontSize: fontSizes.small,
-    lineHeight: 18,
-    color: ink.pageInkMuted,
   },
   leaf: { gap: space.s6 },
   pressed: { transform: [{ translateY: 2 }] },

@@ -14,12 +14,9 @@ import {
   memoryParts,
   paceOptions,
   practiceEmptyLine,
-  REVIEW_DIFFICULTY_NOTE,
   REVIEW_DIFFICULTY_TITLE,
-  REVIEW_FORMATS_NOTE,
   REVIEW_FORMATS_TITLE,
   REVIEW_LENGTH_TITLE,
-  REVIEW_PACE_NOTE,
   REVIEW_PACE_TITLE,
   REVIEW_SETTINGS_TITLE,
   REVIEW_SOUND_LABEL,
@@ -253,7 +250,6 @@ function Settings({ summary }: { readonly summary: ReviewSummaryResponse }) {
           </Toy>
         ))}
       </div>
-      <p className={styles.sheetNote}>{REVIEW_PACE_NOTE}</p>
       <h3 className={styles.sheetTitle}>{REVIEW_FORMATS_TITLE}</h3>
       <div className={styles.options}>
         {formatOptions(summary).map((option) => (
@@ -280,7 +276,6 @@ function Settings({ summary }: { readonly summary: ReviewSummaryResponse }) {
           {REVIEW_SOUND_LABEL}
         </Toy>
       </div>
-      <p className={styles.sheetNote}>{REVIEW_FORMATS_NOTE}</p>
       <h3 className={styles.sheetTitle}>{REVIEW_DIFFICULTY_TITLE}</h3>
       <div className={styles.options}>
         {DIFFICULTY_OPTIONS.map((option) => (
@@ -296,7 +291,6 @@ function Settings({ summary }: { readonly summary: ReviewSummaryResponse }) {
           </Toy>
         ))}
       </div>
-      <p className={styles.sheetNote}>{REVIEW_DIFFICULTY_NOTE}</p>
     </div>
   );
 }

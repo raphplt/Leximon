@@ -499,13 +499,6 @@
   color: var(--lx-toy-outline);
 }
 
-.sheetNote {
-  margin: 0;
-  font-size: var(--lx-size-small);
-  line-height: 1.4;
-  color: var(--lx-color-page-ink-muted);
-}
-
 .notice,
 .error {
   margin: 0;

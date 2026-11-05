@@ -299,7 +299,7 @@ docker compose exec postgres psql -U leximon -d leximon -c "update user_mastery 
 
 ### DEF-07 · Réglages de la révision
 - **Faire :** ouvrir la roue de « Ta révision », choisir 5 questions, puis 5 mots nouveaux par jour, recharger la page.
-- **Attendu :** « Questions par révision » (5, 10, 20) et « Mots nouveaux par jour » (5, 10, 20), le choix en or, et « Les autres mots attendent leur tour dans l'album, sans rien perdre. Tu peux t'entraîner sur tous tes mots. ». Le bouton passe à 5 avec sa durée, le puits « nouveaux » suit le rythme du jour, et le choix tient après rechargement.
+- **Attendu :** « Questions par révision » (5, 10, 20) et « Mots nouveaux par jour » (5, 10, 20), le choix en or, sans note sous les boutons. Le bouton passe à 5 avec sa durée, le puits « nouveaux » suit le rythme du jour, et le choix tient après rechargement.
 - **Retour :**
 
 ### DEF-09 · S'entraîner sur…
@@ -328,7 +328,7 @@ docker compose exec postgres psql -U leximon -d leximon -c "update user_mastery 
 - **Retour :**
 
 ### DEF-15 · Écoute
-- **Faire :** son et voix activés, lancer des séries d'entraînement jusqu'à « Écoute le mot : que veut-il dire ? ». Puis couper « Dire le mot à voix haute » dans les réglages et relancer une série.
+- **Faire :** son et voix activés, lancer des séries d'entraînement jusqu'à « Écoute le mot : que veut-il dire ? ». Puis couper « Mots dits à voix haute » dans les réglages et relancer une série.
 - **Attendu :** le mot est dit aussitôt, sans être écrit ; un gros bouton d'or le redit. Les 4 choix sont des définitions. Le mot s'écrit une fois la réponse donnée. Voix coupée : plus aucune question d'écoute, elles deviennent « Que veut dire ce mot ? ».
 - **Retour :**
 
@@ -342,7 +342,7 @@ docker compose exec postgres psql -U leximon -d leximon -c "update user_mastery 
 
 ### DEF-18 · Types de questions et entraînement
 - **Faire :** dans les réglages, couper l'écoute et les paires, lancer une série ; les rallumer, passer l'entraînement à « Exigeant », lancer « Mes mots récents ».
-- **Attendu :** « Types de questions » avec « Le mot seulement entendu », « Les paires en fin de série », « Dire le mot à voix haute », et « Les deux QCM et le mot à écrire restent toujours. Sans le son, l'écoute devient un QCM. ». Un type coupé ne revient plus. « Entraînement » : Normal ou Exigeant. Exigeant fait écrire le mot environ une question d'entraînement sur deux, avec des mauvais choix proches (même thème, même initiale) ; les mots à revoir ne changent pas. Les choix tiennent après rechargement et se retrouvent sur le téléphone.
+- **Attendu :** « Types de questions » avec « Questions à l'écoute », « Paires en fin de série » et « Mots dits à voix haute », sans note dessous. Un type coupé ne revient plus. « Entraînement » : Normal ou Exigeant. Exigeant fait écrire le mot environ une question d'entraînement sur deux, avec des mauvais choix proches (même thème, même initiale) ; les mots à revoir ne changent pas. Les choix tiennent après rechargement et se retrouvent sur le téléphone.
 - **Retour :**
 
 ### DEF-19 · Jours joués

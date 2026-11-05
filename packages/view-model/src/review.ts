@@ -137,8 +137,6 @@ export interface SettingOption {
 export const REVIEW_SETTINGS_TITLE = "Régler la révision";
 export const REVIEW_LENGTH_TITLE = "Questions par révision";
 export const REVIEW_PACE_TITLE = "Mots nouveaux par jour";
-export const REVIEW_PACE_NOTE =
-  "Les autres mots attendent leur tour dans l'album, sans rien perdre. Tu peux t'entraîner sur tous tes mots.";
 
 export function lengthOptions(summary: ReviewSummaryResponse): readonly SettingOption[] {
   return summary.settings.lengths.map((value) => ({ value, label: `${value} questions` }));
@@ -152,12 +150,8 @@ export function paceOptions(summary: ReviewSummaryResponse): readonly SettingOpt
 }
 
 export const REVIEW_FORMATS_TITLE = "Types de questions";
-export const REVIEW_FORMATS_NOTE =
-  "Les deux QCM et le mot à écrire restent toujours. Sans le son, l'écoute devient un QCM.";
 export const REVIEW_DIFFICULTY_TITLE = "Entraînement";
-export const REVIEW_DIFFICULTY_NOTE =
-  "Exigeant fait souvent écrire le mot et rapproche les mauvais choix, sur les questions d'entraînement seulement. Une révision qui compte ne change pas.";
-export const REVIEW_SOUND_LABEL = "Dire le mot à voix haute";
+export const REVIEW_SOUND_LABEL = "Mots dits à voix haute";
 
 export type FormatSetting = "listen" | "pairs";
 
@@ -170,8 +164,8 @@ export interface FormatOption {
 export function formatOptions(summary: ReviewSummaryResponse): readonly FormatOption[] {
   const { settings } = summary;
   return [
-    { key: "listen", label: "Le mot seulement entendu", on: settings.listen },
-    { key: "pairs", label: "Les paires en fin de série", on: settings.pairs },
+    { key: "listen", label: "Questions à l'écoute", on: settings.listen },
+    { key: "pairs", label: "Paires en fin de série", on: settings.pairs },
   ];
 }
 

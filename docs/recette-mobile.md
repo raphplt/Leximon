@@ -119,7 +119,7 @@ A sur le web sert de deuxième joueur : amis, échanges, clan, sanctions. `pnpm 
 
 ### MJO-06 · Bilan (JOU-06, JOU-07)
 - **Faire :** finir les cartes.
-- **Attendu :** les cartes du sachet en défilement, XP gagnée, progression de la collection. Un coffret qui attend fait du bouton principal « Ouvrir le coffret ».
+- **Attendu :** les cartes du sachet en défilement, XP gagnée, progression de la collection. Un coffret qui attend fait du bouton principal « Ouvrir le coffret ». Sur un écran court (2:1, 16:9), les cartes rapetissent et les lignes se resserrent : les deux boutons restent au-dessus de Jouer. Sur le plus petit écran, le bilan défile pour les atteindre.
 - **Retour :**
 
 ### MJO-09 · Sons, voix et vibrations (JOU-08)

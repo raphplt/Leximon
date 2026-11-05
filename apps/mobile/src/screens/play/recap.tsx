@@ -17,7 +17,15 @@ import {
 } from "@leximon/view-model";
 import { router } from "expo-router";
 import { useEffect, useState } from "react";
-import { Pressable, ScrollView, StyleSheet, Text, useWindowDimensions, View } from "react-native";
+import {
+  type LayoutChangeEvent,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  useWindowDimensions,
+  View,
+} from "react-native";
 import Animated, {
   Easing,
   FadeInRight,
@@ -48,8 +56,10 @@ const GAP = 14;
 const PEEK = 96;
 const CARD_MAX = 260;
 /** The desk's buttons leave little room: a small phone takes smaller cards rather than overflow. */
-const CARD_MIN = 136;
-/** Height kept around the cards: the recap's lines, the desk's thick buttons and the tabs. */
+const CARD_MIN = 112;
+/** Below this height the recap closes up its lines; below what even that leaves, it scrolls. */
+const TIGHT_ROOM = 600;
+/** Height kept around the cards until it is measured: the recap's lines, the buttons and the tabs. */
 const CHROME = 540;
 const STEP_MS = 80;
 /** A card's chime rings once it has slid in. */
@@ -78,6 +88,16 @@ export function Recap({
 }) {
   const window = useWindowDimensions();
   const [room, setRoom] = useState(window.height);
+  const tight = room < TIGHT_ROOM;
+  // Everything but the cards, measured: lines come and go (a level, a completed rarity), and a
+  // long phone or a large font takes more than any estimate.
+  const [carouselHeight, setCarouselHeight] = useState(0);
+  const [actionsBottom, setActionsBottom] = useState(0);
+  const chrome = carouselHeight > 0 && actionsBottom > 0 ? actionsBottom - carouselHeight : CHROME;
+  const measureActions = (event: LayoutChangeEvent) => {
+    const { y, height } = event.nativeEvent.layout;
+    setActionsBottom(Math.ceil(y + height));
+  };
   const now = useNow(15_000);
   const progressNow = useShared(progressResource);
   const wallet = useShared(walletResource);
@@ -86,7 +106,11 @@ export function Recap({
   const width = Math.floor(
     Math.max(
       CARD_MIN,
-      Math.min(CARD_MAX, window.width - PEEK, ((room - CHROME) * cardSize.width) / cardSize.height),
+      Math.min(
+        CARD_MAX,
+        window.width - PEEK,
+        ((room - chrome - 2 * space.s7) * cardSize.width) / cardSize.height,
+      ),
     ),
   );
   const [active, setActive] = useState(0);
@@ -125,97 +149,107 @@ export function Recap({
     <View style={styles.recap} onLayout={(event) => setRoom(event.nativeEvent.layout.height)}>
       {/* The cards lie on the desk and the buttons are its objects. */}
       <Desk style={styles.desk} />
-      <Text style={styles.kicker}>TON SACHET</Text>
-      <View style={styles.line}>
-        {best !== null && (
-          <RarityName rarity={best.rarity} text={best.label} color={colors.pageInk} />
-        )}
-        {best !== null && <Text style={styles.lineText}>·</Text>}
-        <Text style={styles.lineText}>{fresh}</Text>
-      </View>
       <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        snapToInterval={width + GAP}
-        decelerationRate="fast"
-        contentContainerStyle={{ gap: GAP, paddingHorizontal: (window.width - width) / 2 }}
-        onScroll={(event) =>
-          setActive(Math.round(event.nativeEvent.contentOffset.x / (width + GAP)))
-        }
-        scrollEventThrottle={32}
-        style={styles.carousel}
+        scrollEnabled={actionsBottom > room + 1}
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={[styles.column, tight && styles.columnTight]}
       >
-        {shown.map(({ card: drawn, index }, position) => (
-          <Animated.View key={index} entering={FadeInRight.delay(position * STEP_MS).duration(260)}>
-            <Pressable
-              onPress={() =>
-                openCard(
-                  drawn.cardId,
-                  shown.map((entry) => entry.card.cardId),
-                )
-              }
-              accessibilityRole="button"
-              accessibilityLabel={`Lire ${cardOrPlaceholder(catalog, drawn.cardId, drawn.rarity).word}`}
-            >
-              <Card
-                card={cardOrPlaceholder(catalog, drawn.cardId, drawn.rarity)}
-                collectionName={pack.collectionName}
-                width={width}
-              />
-            </Pressable>
-            {steps[position]?.glint === true && (
-              <Glint
-                color={rarityStyles[drawn.rarity].glow ?? rarityStyles[drawn.rarity].spot}
-                width={width}
-                delayMs={(steps[position]?.delayMs ?? 0) + GLINT_AT_MS}
-              />
-            )}
-            {isNewAt(pack, index) && <Text style={styles.new}>Nouveau</Text>}
-          </Animated.View>
-        ))}
-      </ScrollView>
-      <View style={styles.dots} importantForAccessibility="no-hide-descendants">
-        {pack.cards.map((_, index) => (
-          // biome-ignore lint/suspicious/noArrayIndexKey: one dot per card of the pack.
-          <View key={index} style={[styles.dot, index === active && styles.dotOn]} />
-        ))}
-      </View>
-      {xp !== null && <Text style={styles.xp}>{xp}</Text>}
-      {progressNow !== null && (
-        <View style={styles.bar}>
-          <XpBar ratio={levelRatio(progressNow)} thin />
+        <Text style={styles.kicker}>TON SACHET</Text>
+        <View style={styles.line}>
+          {best !== null && (
+            <RarityName rarity={best.rarity} text={best.label} color={colors.pageInk} />
+          )}
+          {best !== null && <Text style={styles.lineText}>·</Text>}
+          <Text style={styles.lineText}>{fresh}</Text>
         </View>
-      )}
-      {pack.completions.map((completion) => (
-        <Text key={completion.rarity} style={styles.completed}>
-          {rarityCompletedLabel(completion)}
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          snapToInterval={width + GAP}
+          decelerationRate="fast"
+          contentContainerStyle={{ gap: GAP, paddingHorizontal: (window.width - width) / 2 }}
+          onScroll={(event) =>
+            setActive(Math.round(event.nativeEvent.contentOffset.x / (width + GAP)))
+          }
+          scrollEventThrottle={32}
+          onLayout={(event) => setCarouselHeight(Math.floor(event.nativeEvent.layout.height))}
+          style={styles.carousel}
+        >
+          {shown.map(({ card: drawn, index }, position) => (
+            <Animated.View
+              key={index}
+              entering={FadeInRight.delay(position * STEP_MS).duration(260)}
+            >
+              <Pressable
+                onPress={() =>
+                  openCard(
+                    drawn.cardId,
+                    shown.map((entry) => entry.card.cardId),
+                  )
+                }
+                accessibilityRole="button"
+                accessibilityLabel={`Lire ${cardOrPlaceholder(catalog, drawn.cardId, drawn.rarity).word}`}
+              >
+                <Card
+                  card={cardOrPlaceholder(catalog, drawn.cardId, drawn.rarity)}
+                  collectionName={pack.collectionName}
+                  width={width}
+                />
+              </Pressable>
+              {steps[position]?.glint === true && (
+                <Glint
+                  color={rarityStyles[drawn.rarity].glow ?? rarityStyles[drawn.rarity].spot}
+                  width={width}
+                  delayMs={(steps[position]?.delayMs ?? 0) + GLINT_AT_MS}
+                />
+              )}
+              {isNewAt(pack, index) && <Text style={styles.new}>Nouveau</Text>}
+            </Animated.View>
+          ))}
+        </ScrollView>
+        <View style={styles.dots} importantForAccessibility="no-hide-descendants">
+          {pack.cards.map((_, index) => (
+            // biome-ignore lint/suspicious/noArrayIndexKey: one dot per card of the pack.
+            <View key={index} style={[styles.dot, index === active && styles.dotOn]} />
+          ))}
+        </View>
+        {xp !== null && <Text style={styles.xp}>{xp}</Text>}
+        {progressNow !== null && (
+          <View style={styles.bar}>
+            <XpBar ratio={levelRatio(progressNow)} thin />
+          </View>
+        )}
+        {pack.completions.map((completion) => (
+          <Text key={completion.rarity} style={styles.completed}>
+            {rarityCompletedLabel(completion)}
+          </Text>
+        ))}
+        {levelUp !== null && <Text style={styles.levelUp}>{levelUp}</Text>}
+        <Text style={styles.progress}>
+          {pack.collectionName} · {progress.owned} / {progress.total}
+          {progress.gained > 0 && <Text style={styles.gained}> (+{progress.gained})</Text>}
         </Text>
-      ))}
-      {levelUp !== null && <Text style={styles.levelUp}>{levelUp}</Text>}
-      <Text style={styles.progress}>
-        {pack.collectionName} · {progress.owned} / {progress.total}
-        {progress.gained > 0 && <Text style={styles.gained}> (+{progress.gained})</Text>}
-      </Text>
-      {!mustSignUp && !coffretWaits && nextSachet !== null && (
-        <Text style={styles.progress}>{nextSachet}</Text>
-      )}
-      <View style={styles.actions}>
-        {coffretWaits ? (
-          <MainAction label="Ouvrir le coffret" onPress={() => openCoffret()} />
-        ) : mustSignUp ? (
-          <MainAction label="Créer mon compte" onPress={() => router.push("/compte")} />
-        ) : (
-          <MainAction
-            label={wallet === null ? BACK_HOME_LABEL : openAgainLabel(wallet)}
-            onPress={another ? onOpenAnother : onHome}
-          />
+        {!mustSignUp && !coffretWaits && nextSachet !== null && (
+          <Text style={styles.progress}>{nextSachet}</Text>
         )}
-        {another ? (
-          <PaperAction label={BACK_HOME_LABEL} onPress={onHome} />
-        ) : (
-          <PaperAction label="Voir mon album" onPress={() => router.navigate("/album")} />
-        )}
-      </View>
+        <View style={styles.actions} onLayout={measureActions}>
+          {coffretWaits ? (
+            <MainAction label="Ouvrir le coffret" onPress={() => openCoffret()} />
+          ) : mustSignUp ? (
+            <MainAction label="Créer mon compte" onPress={() => router.push("/compte")} />
+          ) : (
+            <MainAction
+              label={wallet === null ? BACK_HOME_LABEL : openAgainLabel(wallet)}
+              onPress={another ? onOpenAnother : onHome}
+            />
+          )}
+          {another ? (
+            <PaperAction label={BACK_HOME_LABEL} onPress={onHome} />
+          ) : (
+            <PaperAction label="Voir mon album" onPress={() => router.navigate("/album")} />
+          )}
+        </View>
+      </ScrollView>
     </View>
   );
 }
@@ -287,7 +321,9 @@ function Glint({
 const styles = StyleSheet.create({
   glint: { ...StyleSheet.absoluteFill, opacity: 0 },
   // Clear of the desk's gilt frame.
-  recap: { flex: 1, alignItems: "center", paddingTop: space.s12, gap: space.s4 },
+  recap: { flex: 1 },
+  column: { flexGrow: 1, alignItems: "center", paddingTop: space.s12, gap: space.s4 },
+  columnTight: { gap: space.s2 },
   desk: { position: "absolute", top: 4, left: 8, right: 8, bottom: 96 + TAB_BAR_RISE },
   kicker: {
     fontFamily: fonts.ui.extrabold,
