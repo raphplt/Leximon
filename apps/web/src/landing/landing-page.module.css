@@ -1,14 +1,21 @@
+/* The home page: the room, the desk, leaves of paper and the pieces of the game. */
+
 .page {
-  min-height: 100dvh;
   display: flex;
   flex-direction: column;
+  gap: 140px;
+  min-height: 100dvh;
+  padding: 14px 0 0;
+  overflow-x: clip;
 }
 
 .top,
 .hero,
+.section,
+.closing,
 .footer {
   box-sizing: border-box;
-  width: min(1120px, 100% - 32px);
+  width: min(1160px, 100% - 32px);
   margin-inline: auto;
 }
 
@@ -16,660 +23,589 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: var(--lx-s8);
-  padding: var(--lx-s10) 0 0;
+  gap: 16px;
+  margin-bottom: -108px;
 }
 
 .topAction {
   display: grid;
 }
 
-.topAction > * {
+/* The way back for a player and the sign-in for a visitor share one cell, one of them hidden:
+   the bar keeps its size whatever the answer. */
+.topAction > *,
+.doorCell > * {
   grid-area: 1 / 1;
+}
+
+.topAction > * {
   justify-self: end;
 }
 
-/* Keeps its room, unseen: the other state of the same place. */
 .away {
   visibility: hidden;
 }
 
-.resumeSmall {
-  box-sizing: border-box;
+.topButton {
   display: inline-flex;
   align-items: center;
-  min-height: 44px;
-  padding: 0 var(--lx-s10);
-  border-radius: var(--lx-radius-pill);
-  background: var(--lx-color-action);
-  box-shadow: var(--lx-shadow-action-low);
-  color: var(--lx-color-action-ink);
-  font-size: var(--lx-size-body);
-  font-weight: 800;
+  height: 46px;
+  padding: 0 20px;
+  font-size: var(--lx-size-body-large);
   text-decoration: none;
   white-space: nowrap;
 }
 
-.signIn {
-  box-sizing: border-box;
-  display: inline-flex;
-  align-items: center;
-  min-height: 44px;
-  padding: 0 var(--lx-s9);
-  border: 2px solid color-mix(in srgb, var(--lx-color-page-ink) 35%, transparent);
-  border-radius: var(--lx-radius-pill);
-  color: var(--lx-color-page-ink);
-  font-size: var(--lx-size-body);
-  font-weight: 800;
-  text-decoration: none;
-  white-space: nowrap;
-}
-
-.signIn:hover {
-  border-color: var(--lx-color-page-ink);
-}
-
-.resume {
-  display: inline-flex;
-  align-items: center;
-  align-self: flex-start;
-  margin-top: var(--lx-s3);
-  text-decoration: none;
-}
-
-.logo,
-.logoSmall {
-  font-family: var(--font-display), Georgia, serif;
-  font-weight: var(--lx-weight-display);
-}
-
-.logo {
-  font-size: var(--lx-size-heading);
-}
-
-.logoSmall {
-  font-size: var(--lx-size-subtitle);
-  color: var(--lx-color-page-ink);
-}
-
-/* --- Hero ----------------------------------------------------------------------------- */
+/* --- The first screen --- */
 
 .hero {
   display: grid;
-  grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr);
   align-items: center;
-  gap: 56px;
-  padding: var(--lx-s20) 0 88px;
+  gap: 48px;
+  min-height: min(760px, 100dvh - 120px);
 }
-
-/*
- * A dictionary slip in the colours of the word's rarity: paper, ink and word come from
- * the rarity tokens, so a legendary word arrives on a night slip with its iridescent ink.
- */
-.slip {
-  position: relative;
-  container-type: inline-size;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  grid-template-areas:
-    "meta meta"
-    "word word"
-    "text figure";
-  column-gap: var(--lx-s12);
-  row-gap: var(--lx-s7);
-  min-height: 400px;
-  padding: var(--lx-s16) var(--lx-s16) var(--lx-s14);
-  border-radius: var(--lx-radius-xs);
-  background: var(--paper);
-  color: var(--ink);
-  box-shadow:
-    0 2px 0 color-mix(in srgb, var(--lx-color-shade) 25%, transparent),
-    0 28px 60px color-mix(in srgb, var(--lx-color-shade) 40%, transparent);
-  rotate: -1.2deg;
-}
-
-/* The printed frame of the slip. */
-.slip::before {
-  content: "";
-  position: absolute;
-  inset: 10px;
-  border: 1px solid color-mix(in srgb, var(--ink) 22%, transparent);
-  border-radius: 3px;
-  pointer-events: none;
-}
-
-.slipText {
-  grid-area: text;
-  display: flex;
-  flex-direction: column;
-  gap: var(--lx-s7);
-  min-width: 0;
-}
-
-.slipMeta {
-  grid-area: meta;
-  display: flex;
-  align-items: center;
-  gap: var(--lx-s6);
-  margin: 0;
-  font-size: var(--lx-size-label);
-  font-weight: 700;
-  color: var(--muted);
-}
-
-.slipWord,
-.slipWordGradient {
-  grid-area: word;
-  margin: 0;
-  font-family: var(--font-display), Georgia, serif;
-  font-weight: var(--lx-weight-display);
-  /* The longest words of the pool (12 letters) still hold on one line of the slip. */
-  font-size: clamp(40px, 12cqi, 110px);
-  line-height: 0.92;
-  letter-spacing: -0.02em;
-  overflow-wrap: anywhere;
-  color: var(--word);
-}
-
-.slipWordGradient {
-  background: var(--word);
-  background-clip: text;
-  color: transparent;
-}
-
-.slipDefinition {
-  margin: 0;
-  max-width: 34ch;
-  font-family: var(--font-text), Georgia, serif;
-  font-size: var(--lx-size-title-small);
-  line-height: 1.4;
-  text-wrap: pretty;
-}
-
-.slipQuote {
-  margin: 0;
-  max-width: 38ch;
-  font-family: var(--font-text), Georgia, serif;
-  font-style: italic;
-  font-size: var(--lx-size-body-large);
-  line-height: 1.4;
-  color: var(--muted);
-}
-
-.slipQuote span {
-  font-style: normal;
-  font-size: var(--lx-size-label);
-  font-weight: 500;
-}
-
-.slipFrequency {
-  margin: 0;
-  font-size: var(--lx-size-label);
-  font-weight: 700;
-  color: var(--muted);
-}
-
-.again {
-  align-self: flex-start;
-  margin-top: auto;
-  min-height: 44px;
-  padding: 0 var(--lx-s9);
-  border: 2px solid var(--ink);
-  border-radius: var(--lx-radius-pill);
-  background: transparent;
-  color: var(--ink);
-  font: inherit;
-  font-size: var(--lx-size-body);
-  font-weight: 800;
-  cursor: pointer;
-}
-
-.again:hover {
-  background: var(--ink);
-  color: var(--paper);
-}
-
-.slipFigure {
-  grid-area: figure;
-  align-self: end;
-  display: flex;
-  flex-direction: column;
-  gap: var(--lx-s4);
-  width: clamp(140px, 20vw, 230px);
-  margin: 0;
-}
-
-/* A tall subject is held by its height, so the slip keeps its size from one word to the next. */
-.slipPrint {
-  position: relative;
-  align-self: flex-end;
-  width: min(100%, calc(260px * var(--ratio)));
-}
-
-.slipPlate,
-.slipPlateNight,
-.slipInk {
-  position: absolute;
-  inset: 0;
-  mask-repeat: no-repeat;
-  mask-position: center;
-  mask-size: 100% 100%;
-}
-
-/* The second pass of the press, out of register, as on the card. */
-.slipPlate,
-.slipPlateNight {
-  background: var(--frame);
-  mask-image: var(--fill-src);
-  opacity: 0.5;
-  translate: 6px 4px;
-}
-
-.slipPlateNight {
-  opacity: 0.3;
-}
-
-.slipInk {
-  background: var(--word);
-  mask-image: var(--ink-src);
-}
-
-.slipCredit {
-  font-size: var(--lx-size-nano);
-  line-height: 1.35;
-  text-align: right;
-  color: var(--muted);
-}
-
-/* --- Pitch and waiting list ----------------------------------------------------------- */
 
 .pitch {
   display: flex;
   flex-direction: column;
-  gap: var(--lx-s9);
+  align-items: flex-start;
+  gap: 26px;
 }
 
 .title {
   margin: 0;
-  font-family: var(--font-display), Georgia, serif;
-  font-weight: var(--lx-weight-display);
-  font-size: clamp(34px, 4.4vw, 50px);
-  line-height: 1.02;
-  text-wrap: balance;
+  font-size: clamp(40px, 4.6vw, 64px);
+  line-height: 1.05;
 }
 
 .lead {
-  margin: 0;
-  font-family: var(--font-text), Georgia, serif;
-  font-size: var(--lx-size-title-small);
-  line-height: 1.45;
-  color: var(--lx-color-page-ink-muted);
-  text-wrap: pretty;
+  max-width: 520px;
+  padding: 18px 22px;
+  font-size: var(--lx-size-body-large);
+  line-height: 1.5;
 }
 
-.form {
+.lead p {
+  margin: 0;
+}
+
+.door {
   display: flex;
   flex-direction: column;
-  gap: var(--lx-s4);
-  margin-top: var(--lx-s3);
+  align-items: flex-start;
+  gap: 10px;
 }
 
-.label {
-  font-size: var(--lx-size-body);
-  font-weight: 800;
+.doorCell {
+  display: grid;
+  align-items: start;
 }
 
-.fields {
+.mainLink {
+  text-decoration: none;
+}
+
+.doorNote {
+  padding-left: 6px;
+  font-size: var(--lx-size-label);
+  font-weight: 700;
+  color: var(--lx-toy-paper-top);
+}
+
+.waitlist {
+  width: min(520px, 100%);
+  color: var(--lx-toy-paper-top);
+}
+
+.discord {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding-left: 6px;
+  color: var(--lx-toy-paper-top);
+  font-size: var(--lx-size-label);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.discord:hover {
+  text-decoration: underline;
+}
+
+/* The desk, with its sachet or its card. */
+.counter {
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  place-items: center;
+  height: 600px;
+}
+
+/* Doubled, to win over the desk's own position whatever order the sheets load in. */
+.counter > .counterDesk {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+}
+
+.sachet {
   display: flex;
-  gap: var(--lx-s4);
+  width: 300px;
+  height: 500px;
+  scale: 1;
+  transition: scale var(--lx-open-arrive) cubic-bezier(0.3, 1.4, 0.5, 1);
 }
 
-.input {
-  box-sizing: border-box;
-  flex: 1;
-  min-width: 0;
-  min-height: 56px;
-  padding: 0 var(--lx-s9);
-  border: 2px solid var(--lx-color-rule);
-  border-radius: var(--lx-radius-pill);
-  background: var(--lx-color-page);
-  color: var(--lx-color-page-ink);
-  font: inherit;
-  font-size: var(--lx-size-subtitle);
-  font-weight: 700;
+.sachet:not([data-moment="waiting"]) {
+  scale: 1.12;
 }
 
-.input:focus-visible {
-  border-color: var(--lx-color-focus);
-  outline: none;
+.sachet:not([data-moment="waiting"]) * {
+  pointer-events: none;
 }
 
-.primary {
-  flex-shrink: 0;
-  min-height: 56px;
-  padding: 0 var(--lx-s12);
-  border: none;
-  border-radius: var(--lx-radius-pill);
-  background: var(--lx-color-action);
-  box-shadow: var(--lx-shadow-action);
-  color: var(--lx-color-action-ink);
-  font: inherit;
-  font-size: var(--lx-size-lead);
-  font-weight: 800;
-  cursor: pointer;
-}
-
-.primary:disabled {
-  cursor: default;
-  background: var(--lx-color-rule);
-  box-shadow: none;
-  color: var(--lx-color-page-ink);
-}
-
-.error {
+.deskHint {
+  position: absolute;
+  bottom: 22px;
   margin: 0;
+  transition: opacity 200ms ease-out;
+}
+
+.deskHint[data-gone] {
+  opacity: 0;
+}
+
+.reveal {
+  display: grid;
+  place-items: center;
+}
+
+.revealed {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+  animation: settle 420ms cubic-bezier(0.3, 1.4, 0.5, 1) both;
+}
+
+.revealedText {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+  max-width: 220px;
+  color: var(--lx-toy-paper-top);
   font-size: var(--lx-size-body);
   font-weight: 700;
-  color: var(--lx-color-rubric);
 }
 
-.error:empty {
-  display: none;
+.revealedRarity {
+  font-size: var(--lx-size-subtitle);
 }
 
-.note {
+/* --- The sections --- */
+
+/* Each section sits in its own alcove, darker than the shelves behind it, so the eye rests
+   between two of them instead of reading one long pile. */
+.section {
+  isolation: isolate;
+  display: flex;
+  flex-direction: column;
+  gap: 56px;
+  padding: 64px 56px 72px;
+  border-radius: 28px;
+  background: color-mix(in srgb, var(--lx-room-floor) 88%, transparent);
+  box-shadow:
+    inset 0 0 0 2px color-mix(in srgb, var(--lx-shelf-gilt) 30%, transparent),
+    inset 0 18px 40px var(--lx-toy-drop),
+    0 18px 50px var(--lx-toy-drop);
+}
+
+.sectionHead {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 22px;
+  text-align: center;
+}
+
+.sectionHead::after {
+  content: "";
+  order: 1;
+  width: 72px;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--lx-shelf-gilt);
+  opacity: 0.8;
+}
+
+.sectionHead > p {
+  order: 2;
+}
+
+.sectionTitle {
+  max-width: 820px;
   margin: 0;
-  font-size: var(--lx-size-small);
-  font-weight: 500;
-  line-height: 1.45;
-  color: var(--lx-color-page-ink-muted);
+  font-size: clamp(30px, 3.4vw, 44px);
+  line-height: 1.1;
 }
 
-.joined {
-  margin: var(--lx-s3) 0 0;
-  font-family: var(--font-display), Georgia, serif;
-  font-weight: var(--lx-weight-display);
-  font-size: var(--lx-size-title-large);
-  line-height: 1.15;
-  color: var(--lx-color-rubric);
+.sectionLead {
+  max-width: 600px;
+  margin: 0;
+  color: var(--lx-toy-paper-top);
+  font-size: var(--lx-size-body-large);
+  font-weight: 600;
+  line-height: 1.55;
 }
 
-/* --- Rarities: one real card of each, climbing like a ladder ------------------------ */
-
-.collections {
-  box-sizing: border-box;
-  width: min(1120px, 100% - 32px);
-  margin-inline: auto;
-  padding: var(--lx-s12) 0 96px;
-}
-
-.collectionsHead {
+/* Words to guess: the back of the card with the word, its face once turned. */
+.guess {
   display: flex;
   flex-wrap: wrap;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: var(--lx-s6) var(--lx-s20);
-}
-
-.collectionsTitle {
+  justify-content: center;
+  gap: 44px;
   margin: 0;
-  max-width: 16ch;
-  font-family: var(--font-display), Georgia, serif;
-  font-weight: var(--lx-weight-display);
-  font-size: clamp(34px, 5vw, 60px);
-  line-height: 1;
-  text-wrap: balance;
+  padding: 0;
+  list-style: none;
+  perspective: 1200px;
 }
 
-.collectionsLead {
-  margin: 0;
-  max-width: 30ch;
-  font-family: var(--font-text), Georgia, serif;
-  font-size: var(--lx-size-title-small);
-  line-height: 1.45;
-  color: var(--lx-color-page-ink-muted);
-  text-wrap: pretty;
+.flip {
+  position: relative;
+  display: block;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  transform-style: preserve-3d;
+  transition:
+    rotate 520ms cubic-bezier(0.3, 1.3, 0.5, 1),
+    translate 160ms ease-out;
 }
 
-/* Six steps: the rarer the word, the higher its card stands. */
-.ladder {
-  --step: 18px;
+.flip:hover {
+  translate: 0 -6px;
+}
+
+.flip:focus-visible {
+  outline: 3px solid var(--lx-color-focus);
+  outline-offset: 6px;
+  border-radius: 12px;
+}
+
+.flip[data-turned] {
+  rotate: y 180deg;
+}
+
+.flipFront,
+.flipBack {
+  position: absolute;
+  inset: 0;
+  backface-visibility: hidden;
+}
+
+.flipBack {
+  rotate: y 180deg;
+}
+
+.flipWord {
+  position: absolute;
+  inset: auto 10px 18%;
   display: grid;
-  grid-template-columns: repeat(6, 168px);
-  justify-content: space-between;
-  align-items: end;
-  gap: var(--lx-s10);
-  margin: var(--lx-s24) 0 0;
-  padding: calc(var(--step) * 5) 0 0;
+  place-items: center;
+  padding: 10px 8px;
+  border: var(--lx-toy-outline-width) solid var(--lx-toy-outline);
+  border-radius: var(--lx-toy-radius-small);
+  background: linear-gradient(180deg, var(--lx-toy-gold-top), var(--lx-toy-gold-bottom));
+  box-shadow: 0 3px 0 var(--lx-toy-outline);
+  font-size: var(--lx-size-body-large);
+  overflow-wrap: anywhere;
+}
+
+/* The six rarities, standing on a gilt shelf. */
+.ladder {
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  gap: 26px;
+  margin: 0;
+  padding: 0;
   list-style: none;
 }
 
 .rung {
   display: flex;
   flex-direction: column;
-  gap: var(--lx-s3);
+  align-items: center;
+  gap: 18px;
+  translate: 0 calc(var(--at) * -6px);
+  transition: translate 160ms ease-out;
 }
 
-.rung:nth-child(1) {
-  margin-bottom: 0;
+.rung:hover {
+  translate: 0 calc(var(--at) * -6px - 8px);
 }
 
-.rung:nth-child(2) {
-  margin-bottom: var(--step);
-}
-
-.rung:nth-child(3) {
-  margin-bottom: calc(var(--step) * 2);
-}
-
-.rung:nth-child(4) {
-  margin-bottom: calc(var(--step) * 3);
-}
-
-.rung:nth-child(5) {
-  margin-bottom: calc(var(--step) * 4);
-}
-
-.rung:nth-child(6) {
-  margin-bottom: calc(var(--step) * 5);
-}
-
-.rungCard {
-  margin-bottom: var(--lx-s4);
-  filter: drop-shadow(0 14px 22px color-mix(in srgb, var(--lx-color-shade) 35%, transparent));
-  transition: translate 200ms ease-out;
-}
-
-.rung:hover .rungCard {
-  translate: 0 -8px;
+.rungTag {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  max-width: 150px;
+  padding: 8px 10px 10px;
+  border: var(--lx-toy-outline-width) solid var(--lx-toy-outline);
+  border-radius: var(--lx-toy-radius-small);
+  background:
+    var(--lx-matter-paper) 0 0 / var(--lx-matter-size),
+    var(--lx-color-paper);
+  box-shadow: 0 3px 0 var(--lx-toy-outline);
+  color: var(--lx-color-paper-ink);
+  text-align: center;
 }
 
 .rungRarity {
-  margin: 0;
-  font-size: var(--lx-size-body);
   font-weight: 800;
 }
 
 .rungFrequency {
-  margin: 0;
-  min-height: 2.8em;
-  font-size: var(--lx-size-label);
-  font-weight: 600;
-  line-height: 1.4;
-  color: var(--lx-color-page-ink-muted);
-  text-wrap: pretty;
+  font-size: var(--lx-size-caption);
+  line-height: 1.3;
 }
 
-.shelves {
-  margin: var(--lx-s24) 0 0;
-  max-width: 60ch;
-  font-family: var(--font-text), Georgia, serif;
-  font-size: var(--lx-size-title-small);
-  line-height: 1.5;
-  color: var(--lx-color-page-ink-muted);
-  text-wrap: pretty;
+.plank {
+  height: 18px;
+  margin: -74px -12px 0;
+  border: var(--lx-toy-outline-width) solid var(--lx-toy-outline);
+  border-radius: 6px;
+  background: linear-gradient(180deg, var(--lx-shelf-top), var(--lx-shelf-bottom));
+  box-shadow:
+    inset 0 2px 0 var(--lx-shelf-gilt),
+    0 10px 18px var(--lx-toy-drop);
+  position: relative;
+  z-index: -1;
 }
 
-.shelves strong {
-  color: var(--lx-color-page-ink);
-}
-
-.shelfName {
-  font-style: italic;
-  color: var(--lx-color-page-ink);
-}
-
-/* Under the form, quieter than it: the project's hub, for those not ready to leave an address. */
-.discord {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--lx-s5);
-  align-self: flex-start;
-  min-height: 44px;
-  color: var(--lx-color-page-ink-muted);
-  font-size: var(--lx-size-body);
-  font-weight: 800;
-  text-decoration: none;
-}
-
-.discord:hover {
-  color: var(--lx-color-page-ink);
-}
-
-/* --- Closing call: the form again, for those who read to the end ---------------------- */
-
-.closing {
-  box-sizing: border-box;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  width: min(560px, 100% - 32px);
-  margin-inline: auto;
-  padding: 88px 0 var(--lx-s12);
-  text-align: center;
-}
-
-.closingTitle {
-  margin: 0 0 var(--lx-s14);
-  font-family: var(--font-display), Georgia, serif;
-  font-weight: var(--lx-weight-display);
-  font-size: clamp(30px, 4.4vw, 44px);
-  line-height: 1.05;
-  text-wrap: balance;
-}
-
-.closing .form {
-  width: 100%;
-  text-align: left;
-}
-
-.closing .resume {
-  align-self: center;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .rungCard {
-    transition: none;
-  }
-}
-
-/* --- Mode d'emploi: a plate of an old encyclopedia ------------------------------------ */
-
-.plate {
-  background: var(--paper);
-  color: var(--ink);
-}
-
-.plateInner {
-  box-sizing: border-box;
-  width: min(1120px, 100% - 32px);
-  margin-inline: auto;
-  padding: var(--lx-s32) 0 var(--lx-s24);
-}
-
-.plateTitle {
-  display: flex;
-  align-items: center;
-  gap: var(--lx-s10);
-  margin: 0 0 var(--lx-s24);
-  font-family: var(--font-display), Georgia, serif;
-  font-weight: var(--lx-weight-display);
-  font-size: clamp(30px, 4vw, 44px);
-  white-space: nowrap;
-}
-
-.plateTitle::before,
-.plateTitle::after {
-  content: "";
-  flex: 1;
-  height: 0;
-  border-top: 1px solid var(--ink);
-  border-bottom: 1px solid var(--ink);
-  padding-top: 3px;
-}
-
-.figures {
+/* How the game is played: three leaves, each with a piece of the game that moves. */
+.how {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: var(--lx-s24);
+  gap: 36px;
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
-.figure {
+.howLeaf {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--lx-s5);
+  gap: 16px;
+  height: 100%;
+  box-sizing: border-box;
+  padding: 28px 26px 32px;
   text-align: center;
 }
 
-.figureArt {
+.howArt {
   display: grid;
   place-items: center;
-  height: 200px;
-  margin-bottom: var(--lx-s4);
+  width: 100%;
+  height: 250px;
 }
 
-.figureLabel {
-  margin: 0;
-  font-family: var(--font-display), Georgia, serif;
-  font-weight: var(--lx-weight-display);
-  font-size: var(--lx-size-title-large);
-  line-height: 1.1;
+.howSachet {
+  display: flex;
+  width: 150px;
+  height: 250px;
 }
 
-.figureText {
+.howTitle {
+  font-size: var(--lx-size-subtitle);
+}
+
+.howText {
   margin: 0;
-  max-width: 30ch;
-  font-size: var(--lx-size-body-large);
-  font-weight: 500;
+  font-size: var(--lx-size-body);
   line-height: 1.5;
-  color: var(--muted);
-  text-wrap: pretty;
 }
 
-/* What players said: their words in the text face, signed underneath. */
-.voices {
+.quiz {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: min(260px, 100%);
+}
+
+.quizPrompt {
+  margin: 0 0 4px;
+  font-size: var(--lx-size-label);
+  font-style: italic;
+  line-height: 1.4;
+}
+
+.quizChoice {
+  height: 44px;
+  font-size: var(--lx-size-body-large);
+  transition: background 200ms ease-out;
+}
+
+.trade {
+  position: relative;
+  width: 240px;
+  height: 200px;
+}
+
+.tradeLeft,
+.tradeRight {
+  position: absolute;
+  top: 10px;
+  animation: 3.6s ease-in-out infinite;
+}
+
+.tradeLeft {
+  left: 0;
+  rotate: -6deg;
+  animation-name: trade-left;
+}
+
+.tradeRight {
+  right: 0;
+  rotate: 6deg;
+  animation-name: trade-right;
+}
+
+@keyframes trade-left {
+  0%,
+  30% {
+    translate: 0 0;
+    rotate: -6deg;
+  }
+  50% {
+    translate: 68px -30px;
+    rotate: 4deg;
+  }
+  70%,
+  100% {
+    translate: 136px 0;
+    rotate: 6deg;
+  }
+}
+
+@keyframes trade-right {
+  0%,
+  30% {
+    translate: 0 0;
+    rotate: 6deg;
+  }
+  50% {
+    translate: -68px 30px;
+    rotate: -4deg;
+  }
+  70%,
+  100% {
+    translate: -136px 0;
+    rotate: -6deg;
+  }
+}
+
+/* The collections as books, and the riddle beside them. */
+.library {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+  gap: 40px;
+  align-items: start;
+}
+
+.books {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 24px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.book {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 16px;
+  min-height: 230px;
   box-sizing: border-box;
-  width: min(1120px, 100% - 32px);
-  margin-inline: auto;
-  padding: var(--lx-s32) 0 var(--lx-s8);
-}
-
-.voicesTitle {
-  margin: 0 0 var(--lx-s16);
-  font-family: var(--font-display), Georgia, serif;
-  font-weight: var(--lx-weight-display);
-  font-size: clamp(28px, 3.6vw, 40px);
+  padding: 22px 18px 22px 30px;
   text-align: center;
+  border: var(--lx-toy-outline-width) solid var(--lx-toy-outline);
+  border-radius: 6px 16px 16px 6px;
+  background:
+    linear-gradient(
+      90deg,
+      var(--cover-edge) 0 11px,
+      color-mix(in srgb, var(--cover-edge) 50%, transparent) 11px 13px,
+      transparent 13px
+    ),
+    linear-gradient(160deg, var(--cover-top), var(--cover-bottom));
+  box-shadow:
+    inset 0 -4px 0 var(--cover-edge),
+    0 4px 0 var(--lx-toy-outline),
+    0 10px 16px var(--lx-toy-drop);
+  color: var(--lx-toy-paper-top);
 }
 
-.voicesList {
+.book::before {
+  content: "";
+  position: absolute;
+  inset: 7px 8px 9px 20px;
+  border: 1.5px solid var(--lx-shelf-gilt);
+  border-radius: 3px 10px 10px 3px;
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+.bookMark {
+  width: 58px;
+  height: 58px;
+  font-size: 28px;
+}
+
+.bookText {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.bookName {
+  font-size: var(--lx-size-subtitle);
+}
+
+.bookWords {
+  font-size: var(--lx-size-label);
+  font-weight: 800;
+}
+
+.riddle {
+  color: var(--lx-color-paper-ink);
+}
+
+.riddleTitle {
+  font-family: var(--font-display), Georgia, serif;
+  font-size: var(--lx-size-subtitle);
+  font-weight: 900;
+  line-height: 1.15;
+}
+
+.riddleText {
+  font-size: var(--lx-size-body);
+}
+
+/* What players said, each on a slip of paper. */
+.voices {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  gap: var(--lx-s10);
+  gap: 28px;
   margin: 0;
   padding: 0;
   list-style: none;
@@ -678,291 +614,241 @@
 .voice {
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-  gap: var(--lx-s8);
-  padding: var(--lx-s12);
-  border-radius: var(--lx-radius-x3);
-  background: var(--lx-color-page-raised);
+  gap: 14px;
+  height: 100%;
+  box-sizing: border-box;
+  padding: 24px 26px;
 }
 
 .voiceQuote {
   margin: 0;
-  font-family: var(--font-text), Georgia, serif;
-  font-size: var(--lx-size-subtitle);
+  font-size: var(--lx-size-body-large);
+  font-style: italic;
   line-height: 1.5;
-  text-wrap: pretty;
 }
 
 .voiceAuthor {
   margin: 0;
   font-size: var(--lx-size-label);
-  font-weight: 700;
-  color: var(--lx-color-page-ink-muted);
-}
-
-/* Sachets: the backs fan out behind the pouch, as if they came out of it. */
-.backs {
-  position: relative;
-  width: 200px;
-  height: 150px;
-}
-
-.packScene {
-  position: relative;
-  width: 220px;
-  height: 200px;
-}
-
-.packScene .backs {
-  position: absolute;
-  top: -24px;
-  left: 10px;
-}
-
-.pack {
-  position: absolute;
-  left: 50%;
-  bottom: -6px;
-  translate: -50% 0;
-  display: flex;
-  flex-direction: column;
-  width: 110px;
-  height: 170px;
-  --sachet-min-height: 0px;
-}
-
-.backLeft,
-.backMiddle,
-.backRight {
-  position: absolute;
-  top: 10px;
-  left: 54px;
-  transform-origin: 50% 120%;
-  box-shadow: 0 6px 14px color-mix(in srgb, var(--lx-color-shade) 18%, transparent);
-}
-
-.backLeft {
-  rotate: -16deg;
-}
-
-.backRight {
-  rotate: 16deg;
-}
-
-/* Défis */
-.quiz {
-  display: flex;
-  flex-direction: column;
-  align-items: stretch;
-  gap: var(--lx-s3);
-  width: 250px;
-}
-
-.quizQuestion {
-  margin: 0 0 var(--lx-s2);
-  font-family: var(--font-text), Georgia, serif;
-  font-size: var(--lx-size-body);
-  line-height: 1.35;
-}
-
-.quizChoice {
-  padding: 5px var(--lx-s7);
-  border: 2px solid color-mix(in srgb, var(--ink) 22%, transparent);
-  border-radius: var(--lx-radius-pill);
-  background: transparent;
-  color: var(--ink);
-  font-family: var(--font-display), Georgia, serif;
   font-weight: 800;
-  font-size: var(--lx-size-lead);
-  text-align: left;
-  cursor: pointer;
 }
 
-.quizChoice:not(:disabled):hover {
-  border-color: var(--ink);
-}
-
-.quizChoice:disabled {
-  cursor: default;
-}
-
-.quizRight {
-  border-color: var(--right);
-  background: var(--right);
-  color: var(--lx-color-ink-on-color);
-}
-
-.quizRight::after {
-  content: " ✓";
-}
-
-.quizWrong {
-  border-color: var(--wrong);
-  color: color-mix(in srgb, var(--wrong) 70%, var(--ink));
-  text-decoration: line-through;
-}
-
-.quizVerdict {
-  margin: var(--lx-s2) 0 0;
-  min-height: 1.4em;
-  white-space: nowrap;
-  font-size: var(--lx-size-body);
-  font-weight: 700;
-  line-height: 1.4;
-  color: var(--muted);
-}
-
-/* Échanges */
-.trade {
+/* The end: the promise again, on the desk. */
+.closing {
+  position: relative;
+  isolation: isolate;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: var(--lx-s3);
+  gap: 30px;
+  padding: 88px 24px;
 }
 
-.tradeLeft {
-  rotate: -7deg;
+.closing > .closingDesk {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
 }
 
-.tradeRight {
-  rotate: 7deg;
+.closingTitle {
+  margin: 0;
+  font-size: clamp(32px, 4vw, 52px);
+  text-align: center;
 }
 
-.tradeArrows {
-  font-family: var(--font-display), Georgia, serif;
-  font-weight: var(--lx-weight-display);
-  font-size: var(--lx-size-heading);
+.closing .doorCell {
+  justify-items: center;
+  width: min(520px, 100%);
 }
 
-/* --- Footer --------------------------------------------------------------------------- */
+.closing .door {
+  align-items: center;
+}
+
+.closing .waitlist {
+  width: 100%;
+}
 
 .footer {
   display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  gap: var(--lx-s8);
-  margin-top: auto;
-  padding: var(--lx-s14) 0 36px;
-  font-size: var(--lx-size-label);
-  color: var(--lx-color-page-ink-muted);
-}
-
-.footerBrand {
-  display: flex;
   flex-wrap: wrap;
-  align-items: baseline;
-  gap: var(--lx-s2) var(--lx-s7);
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+  margin: 0;
+  padding: 26px max(16px, (100% - 1160px) / 2) 32px;
+  background: linear-gradient(180deg, var(--lx-shelf-top), var(--lx-shelf-bottom));
+  border-top: var(--lx-toy-outline-width) solid var(--lx-toy-outline);
+  color: var(--lx-toy-paper-top);
+  font-size: var(--lx-size-label);
 }
 
-.sources {
-  font-size: var(--lx-size-caption);
-  opacity: 0.75;
-}
-
+.footerBrand,
 .footerLinks {
   display: flex;
   flex-wrap: wrap;
-  justify-content: flex-end;
-  gap: var(--lx-s4) var(--lx-s10);
+  align-items: center;
+  gap: 8px 18px;
 }
 
-/* --- Narrower screens ----------------------------------------------------------------- */
+.footerLinks a {
+  color: inherit;
+  font-weight: 700;
+}
 
-@media (max-width: 900px) {
+@keyframes settle {
+  from {
+    scale: 0.9;
+    opacity: 0;
+  }
+}
+
+/* --- On a phone: the sachet in the first screen, the button under the thumb --- */
+
+@media (max-width: 759px) {
+  .page {
+    gap: 72px;
+  }
+
+  .top {
+    margin-bottom: -58px;
+  }
+
+  .section {
+    gap: 36px;
+    padding: 40px 16px 44px;
+    border-radius: 22px;
+  }
+
+  .sectionHead {
+    gap: 16px;
+  }
+
+  .topButton {
+    height: 40px;
+    padding: 0 14px;
+    font-size: var(--lx-size-body);
+  }
+
   .hero {
-    grid-template-columns: minmax(0, 1fr);
-    gap: var(--lx-s20);
-    padding: var(--lx-s12) 0 56px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    min-height: 0;
   }
 
-  /* On one column, what Leximon is and the form come first; the word shows it just below. */
   .pitch {
-    order: -1;
+    display: contents;
   }
 
-  .figures {
-    grid-template-columns: minmax(0, 1fr);
-    gap: var(--lx-s20);
+  .title {
+    order: 1;
+    font-size: 30px;
+    text-align: center;
   }
-}
 
-/* Too narrow for six cards: the ladder scrolls sideways, still climbing. */
-@media (max-width: 1180px) {
+  .counter {
+    order: 2;
+    width: 100%;
+    height: 380px;
+  }
+
+  .doorCell {
+    order: 3;
+    align-self: stretch;
+  }
+
+  .door {
+    align-items: center;
+  }
+
+  .discord {
+    order: 5;
+    align-self: center;
+  }
+
+  .lead {
+    order: 4;
+    font-size: var(--lx-size-body);
+  }
+
+  .sachet {
+    width: 190px;
+    height: 330px;
+  }
+
+  .deskHint {
+    bottom: 12px;
+  }
+
+  .revealed {
+    gap: 16px;
+    padding: 0 14px;
+  }
+
+  .revealedText {
+    font-size: var(--lx-size-label);
+  }
+
+  .guess {
+    gap: 24px 16px;
+  }
+
+  .flipWord {
+    inset: auto 6px 18%;
+    padding: 8px 4px;
+    font-size: var(--lx-size-label);
+  }
+
   .ladder {
-    --step: 12px;
-    justify-content: start;
-    margin-inline: -16px;
-    padding-inline: var(--lx-s8);
+    justify-content: flex-start;
+    gap: 18px;
+    margin: 0 -16px;
+    padding: 12px 16px 0;
     overflow-x: auto;
-    overscroll-behavior-x: contain;
     scroll-snap-type: x mandatory;
-    scroll-padding-inline: 16px;
-    scrollbar-width: none;
   }
 
   .rung {
-    scroll-snap-align: start;
+    flex: none;
+    scroll-snap-align: center;
+    translate: none;
   }
-}
 
-@media (max-width: 560px) {
-  .slip {
+  .plank {
+    display: none;
+  }
+
+  .how,
+  .library,
+  .books {
     grid-template-columns: minmax(0, 1fr);
-    grid-template-areas:
-      "figure"
-      "meta"
-      "word"
-      "text";
-    min-height: 0;
-    padding: var(--lx-s12) 22px 22px;
-    rotate: -0.8deg;
+    gap: 20px;
   }
 
-  .slipFigure {
-    align-self: auto;
-    justify-self: end;
-    width: 140px;
-    margin-bottom: -16px;
+  .book {
+    flex-direction: row;
+    justify-content: flex-start;
+    min-height: 96px;
+    text-align: left;
   }
 
-  .slipPrint {
-    width: min(100%, calc(150px * var(--ratio)));
-  }
-
-  .slipDefinition {
-    font-size: var(--lx-size-subtitle);
-  }
-
-  .fields {
-    flex-direction: column;
+  .bookText {
+    align-items: flex-start;
   }
 }
 
-/* --- Waitlist or way back: both in one cell, so the answer never moves the page ------- */
+@media (prefers-reduced-motion: reduce) {
+  .flip,
+  .rung,
+  .sachet {
+    transition: none;
+  }
 
-.join {
-  display: grid;
-}
-
-.joinResume,
-.joinForm {
-  grid-area: 1 / 1;
-  display: flex;
-  flex-direction: column;
-}
-
-.joinResume {
-  justify-content: center;
-}
-
-.joinResume[hidden] {
-  display: none;
-}
-
-/* Every slip in one cell: the cell is as tall as the tallest word. */
-.slipStack {
-  display: grid;
-}
-
-.slipStack > .slip {
-  grid-area: 1 / 1;
+  .tradeLeft,
+  .tradeRight,
+  .revealed {
+    animation: none;
+  }
 }

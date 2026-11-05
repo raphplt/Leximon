@@ -269,7 +269,7 @@ curl -s -X POST https://api.leximon.fr/api/auth/sign-in/anonymous -H 'Origin: ht
 4. Pour mesurer un canal, ajoute `?src=<code>` à tout lien posté (`https://leximon.fr/?src=tiktok-insultes`). Le premier code vu est gardé avec le joueur.
 5. Suivi : `/admin/mesure` (rétention J1, J7, J30 par semaine, par lien ou source, par âge ; entonnoir ; fausse porte mécène ; liste des testeurs) et `/admin/retours` (le bouton « Un retour ? » du menu du joueur).
 
-Pour ouvrir la bêta à tous : passer `BETA_INVITES` à `"off"` dans `env.production` de `apps/api/wrangler.jsonc`, puis `pnpm deploy:api`.
+Pour ouvrir la bêta à tous : passer `BETA_INVITES` à `"off"` dans `env.production` de `apps/api/wrangler.jsonc`, puis `pnpm deploy:api` ; retirer `NEXT_PUBLIC_BETA_INVITES=required` du script `deploy:production` de `apps/web/package.json` et redéployer le web, pour que l'accueil propose « Jouer » au lieu de la liste d'attente.
 
 Pour forcer la mise à jour de l'app mobile (quand l'API cesse de servir ce dont une vieille version a besoin) : passer `MOBILE_MIN_VERSION` à la version voulue (`"1.2.0"`) dans `env.production`, puis `pnpm deploy:api`. Une app plus ancienne affiche « Leximon a changé » à son prochain lancement ou retour au premier plan, avec un bouton vers le store.
 

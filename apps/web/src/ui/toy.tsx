@@ -28,7 +28,8 @@ const SHAPES: Readonly<Record<ToyShapeName, string | undefined>> = {
   tag: styles.tag,
 };
 
-function toyClass(
+/** The classes of a toy's body, for a link that must look like one. */
+export function toyClass(
   matter: ToyMatterName,
   shape: ToyShapeName,
   large: boolean,

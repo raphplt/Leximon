@@ -4,7 +4,8 @@ import { WAITLIST_ERRORS } from "@leximon/view-model";
 import Link from "next/link";
 import { type FormEvent, useId, useState } from "react";
 import { api } from "@/lib/api";
-import styles from "./landing-page.module.css";
+import { Lettering, Toy } from "@/ui/toy";
+import styles from "./waitlist-form.module.css";
 
 type FormState =
   | { readonly kind: "idle" }
@@ -14,7 +15,7 @@ type FormState =
   | { readonly kind: "error"; readonly message: string };
 
 /** Leaves an address to be warned when the game opens. Nothing else is asked or promised. */
-export function WaitlistForm() {
+export function WaitlistForm({ className }: { readonly className?: string | undefined } = {}) {
   // The page shows the form twice, so its ids must differ.
   const id = useId();
   const [email, setEmail] = useState("");
@@ -53,7 +54,11 @@ export function WaitlistForm() {
   }
 
   return (
-    <form className={styles.form} onSubmit={submit} noValidate>
+    <form
+      className={className === undefined ? styles.form : `${styles.form} ${className}`}
+      onSubmit={submit}
+      noValidate
+    >
       <label className={styles.label} htmlFor={`${id}-email`}>
         Ton adresse e-mail
       </label>
@@ -71,9 +76,14 @@ export function WaitlistForm() {
           onChange={(event) => setEmail(event.target.value)}
           aria-describedby={`${id}-note ${id}-error`}
         />
-        <button className={styles.primary} type="submit" disabled={state.kind === "sending"}>
-          {state.kind === "sending" ? "Envoi…" : "Préviens-moi"}
-        </button>
+        <Toy
+          matter="gold"
+          type="submit"
+          className={styles.send}
+          disabled={state.kind === "sending"}
+        >
+          <Lettering>{state.kind === "sending" ? "Envoi…" : "Préviens-moi"}</Lettering>
+        </Toy>
       </div>
       <p id={`${id}-error`} className={styles.error} role="alert">
         {state.kind === "error" ? state.message : ""}

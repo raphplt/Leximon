@@ -8,7 +8,7 @@
     "build": "next build",
     "start": "next start",
     "preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
-    "deploy:production": "test -f public/catalog/manifest.json || { echo 'No catalogue in public/catalog: run pnpm catalog:publish:prod first.' >&2; exit 1; } && NEXT_PUBLIC_API_URL=https://api.leximon.fr NEXT_PUBLIC_UMAMI_WEBSITE_ID=dd45472b-6364-47a1-b466-50c04a2ea9be opennextjs-cloudflare build --env production && opennextjs-cloudflare deploy --env production",
+    "deploy:production": "test -f public/catalog/manifest.json || { echo 'No catalogue in public/catalog: run pnpm catalog:publish:prod first.' >&2; exit 1; } && NEXT_PUBLIC_API_URL=https://api.leximon.fr NEXT_PUBLIC_BETA_INVITES=required NEXT_PUBLIC_UMAMI_WEBSITE_ID=dd45472b-6364-47a1-b466-50c04a2ea9be opennextjs-cloudflare build --env production && opennextjs-cloudflare deploy --env production",
     "typecheck": "next typegen && tsc --noEmit",
     "test": "vitest run"
   },

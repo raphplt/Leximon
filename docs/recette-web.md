@@ -51,12 +51,13 @@ Chaque section dit le niveau qu'il faut. Garde un compte bas (niveau 1 à 4) pou
 Sans être connecté.
 
 ### PUB-01 · Page d'accueil
-- **Faire :** ouvrir http://localhost:3000.
-- **Attendu :** l'accueil présente le jeu, les trois collections et les règles, avec le formulaire de la liste d'attente en bas. Logo et favicon visibles. Rien ne casse en 390 px de large.
+- **Faire :** ouvrir http://localhost:3000 en 1440 × 900, puis en 375 × 812. Déchirer le sachet du sous-main, tourner les quatre cartes de « Tu sais ce que c'est ? », descendre jusqu'au pied de page.
+- **Attendu :** au premier écran, sans défiler, le titre, le sachet sur le sous-main et « Jouer » (sur téléphone, le sachet au milieu et le bouton dessous). Le sachet s'ouvre sur place avec ses étincelles, une carte se révèle avec sa rareté et sa fréquence, puis « Un autre sachet » en ressort un neuf ; rien n'est demandé au serveur. Plus bas, chaque section dans son alcôve : les mots à deviner, les six raretés sur leur étagère, « Comment on joue » en trois feuilles qui bougent, les trois collections en livres et l'énigme du jour, puis « Tes sachets sont prêts. » sur le sous-main. « Jouer » mène au jeu en invité. Un joueur déjà en partie voit « Reprendre la partie » en haut et à la place de « Jouer ». Mouvement réduit : tout se lit et se clique sans animation. Aucun défilement de côté.
 - **Retour :**
 
 ### PUB-02 · Liste d'attente
-- **Faire :** laisser une adresse dans le formulaire, puis la même une seconde fois.
+- **Faire :** construire le web avec `NEXT_PUBLIC_BETA_INVITES=required` (comme la production tant que la bêta est fermée), puis laisser une adresse dans le formulaire, puis la même une seconde fois.
+- **Attendu, en plus :** le formulaire remplace « Jouer » en haut de page et à la fin (« L'ouverture approche. ») ; sans la variable, c'est « Jouer ».
 - **Attendu :** confirmation courte, pas de doublon (l'adresse apparaît une seule fois dans `/admin/invitations`, onglet « Liste d'attente »). Une adresse invalide est refusée avec un message clair.
 - **Retour :**
 

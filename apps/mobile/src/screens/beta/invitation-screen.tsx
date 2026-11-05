@@ -5,11 +5,12 @@ import {
   DOOR_INVALID,
   doorFrom,
   INVITATION_REQUIRED_TEXT,
-  INVITATION_REQUIRED_TITLE,
   INVITE_CLOSED_TEXT,
   INVITED_ACTION,
   INVITED_PITCH,
   INVITED_TITLE,
+  LANDING_PITCH,
+  LANDING_TITLE,
 } from "@leximon/view-model";
 import { router } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
@@ -20,6 +21,7 @@ import { Button } from "@/ui/button";
 import { FormError, Page, Paragraph } from "@/ui/page";
 import { OnPaper } from "@/ui/panel";
 import { TextField } from "@/ui/text-field";
+import { DoorSachet } from "./door-sachet";
 import { SignInLink } from "./sign-in-link";
 import { WaitlistForm } from "./waitlist-form";
 
@@ -82,7 +84,10 @@ export function InvitationScreen({ code }: { readonly code: string | null }) {
   );
 }
 
-/** Where a player without an invitation lands when they try to play. */
+/**
+ * Where a player without an invitation lands when they try to play: the first screen of the home
+ * page, with a sachet to tear on the desk, then the invitation link and the waitlist.
+ */
 export function InvitationRequiredScreen() {
   const [link, setLink] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -103,8 +108,10 @@ export function InvitationRequiredScreen() {
   };
 
   return (
-    <Page title={INVITATION_REQUIRED_TITLE} closable={false}>
+    <Page title={LANDING_TITLE} closable={false}>
+      <DoorSachet />
       <OnPaper>
+        <Paragraph>{LANDING_PITCH}</Paragraph>
         <Paragraph>{INVITATION_REQUIRED_TEXT}</Paragraph>
         <TextField
           label={DOOR_FIELD}

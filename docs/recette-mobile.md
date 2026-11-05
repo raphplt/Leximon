@@ -73,6 +73,11 @@ A sur le web sert de deuxième joueur : amis, échanges, clan, sanctions. `pnpm 
 - **Attendu :** tous les écrans repartent sur le bon joueur (album, niveau, courrier), sans trace du joueur d'avant.
 - **Retour :**
 
+### CPT-04 · Premier lancement sans invitation
+- **Faire :** avec l'API en `BETA_INVITES=required`, désinstaller l'app, la relancer et toucher Jouer sans lien d'invitation. Déchirer le sachet du sous-main, puis « Un autre sachet ».
+- **Attendu :** le premier écran de l'accueil du site : le titre, le sous-main avec un vrai sachet qui se balance, puis sur une feuille la phrase du jeu, le champ du lien d'invitation, la liste d'attente et « Me connecter ». Déchiré, le sachet laisse une carte de sa collection avec sa rareté et sa fréquence ; rien n'est demandé au serveur. Sans réseau, le sous-main reste vide et le reste de l'écran marche.
+- **Retour :**
+
 ### CPT-03 · Liens d'invitation et d'ami
 - **Faire :** avec `adb shell am start -a android.intent.action.VIEW -d "leximon://invitation/<code>" fr.leximon.app`, puis `leximon://ami/<code joueur de A>`.
 - **Attendu :** la page d'invitation ou d'ami s'ouvre dans l'app, comme `/invitation/<code>` et `/ami/<code>` sur le web. Les liens `https://leximon.fr/…` n'ouvrent pas encore l'app (liens universels à configurer).

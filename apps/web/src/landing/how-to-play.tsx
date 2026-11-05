@@ -1,166 +1,137 @@
 "use client";
 
-import { cssFill, rarityStyles } from "@leximon/tokens";
-import { capitalize, DEFAULT_PACK_NOUN } from "@leximon/view-model";
-import { type CSSProperties, useState } from "react";
-import { CardBack } from "@/booster/card-back";
-import type { PackCollection } from "@/booster/pack-looks";
+import type { CatalogCard } from "@leximon/contract";
+import type { ToyMatterName } from "@leximon/tokens";
+import { useEffect, useState } from "react";
 import { Sachet } from "@/booster/sachet";
 import { Card } from "@/components/card";
+import { Leaf, Lettering, ToyBody } from "@/ui/toy";
 import styles from "./landing-page.module.css";
-import type { ShowcaseCard } from "./showcase-cards";
+import type { Showcase, ShowcaseCard } from "./showcase-cards";
 
-const { many } = DEFAULT_PACK_NOUN;
-const PAPER = rarityStyles.common;
+function prefersReducedMotion(): boolean {
+  return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+}
 
-/** The game in three pictures, printed like a plate of an old encyclopedia. */
+/** How the game is played: three leaves, each with a piece of the game that moves. */
 export function HowToPlay({
   pack,
   trade,
+  quiz,
 }: {
-  readonly pack: PackCollection | null;
+  readonly pack: Showcase["pack"];
   readonly trade: readonly ShowcaseCard[];
+  readonly quiz: readonly CatalogCard[];
 }) {
-  const variables = {
-    "--paper": PAPER.paper,
-    "--ink": PAPER.ink,
-    "--muted": PAPER.muted,
-    // The challenges mark a right answer with this green, a wrong one with this red.
-    "--right": cssFill(rarityStyles.uncommon.frame),
-    "--wrong": cssFill(rarityStyles.rare.frame),
-  } as CSSProperties;
   return (
-    <section className={styles.plate} style={variables} aria-labelledby="how-to-play">
-      <div className={styles.plateInner}>
-        <h2 id="how-to-play" className={styles.plateTitle}>
-          Mode d'emploi
+    <section className={styles.section} aria-labelledby="how-title">
+      <div className={styles.sectionHead}>
+        <h2 id="how-title" className={styles.sectionTitle}>
+          <Lettering>Comment on joue</Lettering>
         </h2>
-        <ol className={styles.figures}>
-          <li className={styles.figure}>
-            <div className={styles.figureArt}>
-              <PackFigure collection={pack} />
-            </div>
-            <p className={styles.figureLabel}>{capitalize(many)}</p>
-            <p className={styles.figureText}>
-              Chaque jour, tu ouvres des sachets gratuits. Certains mots sont courants, d'autres
-              n'apparaissent presque jamais.
-            </p>
-          </li>
-          <li className={styles.figure}>
-            <div className={styles.figureArt}>
-              <ChallengeFigure />
-            </div>
-            <p className={styles.figureLabel}>Défis</p>
-            <p className={styles.figureText}>
-              Des questions courtes te font réviser les mots que tu as tirés. Un mot que tu retiens
-              fait monter sa carte d'un cran, jusqu'à la Dorure, le dernier palier.
-            </p>
-          </li>
-          <li className={styles.figure}>
-            <div className={styles.figureArt}>
-              <TradeFigure cards={trade} />
-            </div>
-            <p className={styles.figureLabel}>Échanges</p>
-            <p className={styles.figureText}>
-              Tu échanges tes doubles avec d'autres joueurs, une carte contre une carte.
-            </p>
-          </li>
-        </ol>
       </div>
+      <ol className={styles.how}>
+        <li>
+          <Leaf className={styles.howLeaf}>
+            <div className={styles.howArt}>
+              <div className={styles.howSachet}>
+                {pack !== null && (
+                  <Sachet
+                    collection={pack}
+                    state="sealed"
+                    onTearStart={() => undefined}
+                    onOpen={() => undefined}
+                  />
+                )}
+              </div>
+            </div>
+            <Lettering className={styles.howTitle}>Des sachets chaque jour</Lettering>
+            <p className={styles.howText}>
+              Tes sachets se remplissent tout seuls, gratuitement. Certains mots sont courants,
+              d'autres n'apparaissent presque jamais.
+            </p>
+          </Leaf>
+        </li>
+        <li>
+          <Leaf className={styles.howLeaf}>
+            <div className={styles.howArt}>
+              <QuizFigure words={quiz} />
+            </div>
+            <Lettering className={styles.howTitle}>Des mots qui montent</Lettering>
+            <p className={styles.howText}>
+              Quelques questions par jour sur tes mots. Un mot que tu retiens fait monter sa carte,
+              de l'Esquisse jusqu'à la Dorure.
+            </p>
+          </Leaf>
+        </li>
+        <li>
+          <Leaf className={styles.howLeaf}>
+            <div className={styles.howArt}>
+              <TradeFigure trade={trade} />
+            </div>
+            <Lettering className={styles.howTitle}>Des doubles à échanger</Lettering>
+            <p className={styles.howText}>
+              Tu échanges tes doubles avec d'autres joueurs, une carte contre une carte, pour finir
+              tes collections.
+            </p>
+          </Leaf>
+        </li>
+      </ol>
     </section>
   );
 }
 
-const noop = () => undefined;
-
-/**
- * A sachet of the first collection, as in the game, with three card backs rising out of it: their
- * edges give away a common, a rare and a legendary. Only to look at: `inert` keeps it from tearing.
- */
-function PackFigure({ collection }: { readonly collection: PackCollection | null }) {
-  return (
-    <div className={styles.packScene}>
-      <Backs />
-      {collection !== null && (
-        <div className={styles.pack} inert>
-          <Sachet state="sealed" collection={collection} onTearStart={noop} onOpen={noop} />
-        </div>
-      )}
-    </div>
+/** A question of the review on its tiles: the right word turns green, again and again. */
+function QuizFigure({ words }: { readonly words: readonly CatalogCard[] }) {
+  const [answered, setAnswered] = useState(false);
+  useEffect(() => {
+    if (prefersReducedMotion()) {
+      setAnswered(true);
+      return;
+    }
+    const timer = window.setInterval(() => setAnswered((value) => !value), 1800);
+    return () => window.clearInterval(timer);
+  }, []);
+  const asked = words.find((card) => card.id === "lucubrateur") ?? words[0];
+  if (asked === undefined) return null;
+  const others = words.filter((card) => card.id !== asked.id).slice(0, 2);
+  const choices = [others[0], asked, others[1]].filter(
+    (card): card is CatalogCard => card !== undefined,
   );
-}
-
-function Backs() {
-  return (
-    <div className={styles.backs}>
-      <div className={styles.backLeft}>
-        <CardBack rarity="common" width={92} edge={1} />
-      </div>
-      <div className={styles.backMiddle}>
-        <CardBack rarity="rare" width={92} edge={1} />
-      </div>
-      <div className={styles.backRight}>
-        <CardBack rarity="legendary" width={92} edge={1} />
-      </div>
-    </div>
-  );
-}
-
-const CHOICES = [
-  { word: "fouacier", verdict: "Raté. Le fouacier fait des galettes." },
-  { word: "lucubrateur", verdict: "Bien vu." },
-  { word: "canéphore", verdict: "Raté. La canéphore porte des corbeilles." },
-] as const;
-const RIGHT = "lucubrateur";
-
-/** A question as the challenges ask it, to answer for real: one try, as in the game. */
-function ChallengeFigure() {
-  const [picked, setPicked] = useState<string | null>(null);
-  const verdict =
-    CHOICES.find((choice) => choice.word === picked)?.verdict ?? "Choisis une réponse.";
   return (
     <div className={styles.quiz}>
-      <p className={styles.quizQuestion}>Celui qui travaille la nuit, à la lueur de la lampe.</p>
-      {CHOICES.map(({ word }) => (
-        <button
-          key={word}
-          type="button"
-          className={choiceClass(word, picked)}
-          disabled={picked !== null}
-          onClick={() => setPicked(word)}
-        >
-          {word}
-        </button>
-      ))}
-      <p className={styles.quizVerdict} role="status">
-        {verdict}
-      </p>
+      <p className={styles.quizPrompt}>{shortDefinition(asked.definition)}</p>
+      {choices.map((card) => {
+        const right = card.id === asked.id;
+        const matter: ToyMatterName = answered && right ? "green" : "paper";
+        return (
+          <ToyBody key={card.id} matter={matter} className={styles.quizChoice}>
+            <Lettering>{card.word}</Lettering>
+          </ToyBody>
+        );
+      })}
     </div>
   );
 }
 
-function choiceClass(word: string, picked: string | null): string {
-  if (picked === null) return styles.quizChoice ?? "";
-  if (word === RIGHT) return `${styles.quizChoice} ${styles.quizRight}`;
-  if (word === picked) return `${styles.quizChoice} ${styles.quizWrong}`;
-  return styles.quizChoice ?? "";
+/** The first sentence of a definition, for a figure that has little room. */
+function shortDefinition(definition: string): string {
+  const cut = definition.search(/[.;]/);
+  return cut === -1 ? definition : `${definition.slice(0, cut)}.`;
 }
 
-/** Two real cards crossing hands. */
-function TradeFigure({ cards }: { readonly cards: readonly ShowcaseCard[] }) {
-  const [left, right] = cards;
+/** Two cards crossing over, each to the other player. */
+function TradeFigure({ trade }: { readonly trade: readonly ShowcaseCard[] }) {
+  const [left, right] = trade;
   if (left === undefined || right === undefined) return null;
   return (
     <div className={styles.trade}>
-      <div className={styles.tradeLeft}>
+      <span className={styles.tradeLeft}>
         <Card card={left.card} collectionName={left.collectionName} width={104} />
-      </div>
-      <span className={styles.tradeArrows} aria-hidden="true">
-        ⇄
       </span>
-      <div className={styles.tradeRight}>
+      <span className={styles.tradeRight}>
         <Card card={right.card} collectionName={right.collectionName} width={104} />
-      </div>
+      </span>
     </div>
   );
 }

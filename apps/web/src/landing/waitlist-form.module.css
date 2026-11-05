@@ -1,0 +1,93 @@
+/* The waitlist, on the room's wood as on a leaf of paper: its text takes the colour around it. */
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  text-align: left;
+}
+
+.label {
+  font-size: var(--lx-size-body);
+  font-weight: 800;
+}
+
+.fields {
+  display: flex;
+  gap: 10px;
+}
+
+.input {
+  flex: 1;
+  min-width: 0;
+  height: 56px;
+  box-sizing: border-box;
+  padding: 0 18px;
+  border: var(--lx-toy-outline-width) solid var(--lx-toy-outline);
+  border-radius: var(--lx-toy-radius-small);
+  background: var(--lx-color-paper);
+  box-shadow: inset 0 3px 0 var(--lx-toy-paper-bottom);
+  color: var(--lx-color-paper-ink);
+  font: inherit;
+  font-size: var(--lx-size-body-large);
+}
+
+.input:focus-visible {
+  outline: 3px solid var(--lx-color-focus);
+  outline-offset: 2px;
+}
+
+.send {
+  flex: none;
+  height: 56px;
+  padding: 0 20px;
+  font-size: var(--lx-size-body-large);
+}
+
+/* On a tag of paper, so it reads on the wood as on a leaf. */
+.error {
+  align-self: flex-start;
+  margin: 0;
+  padding: 6px 12px;
+  border-radius: var(--lx-toy-radius-tag);
+  background: var(--lx-color-paper);
+  color: var(--lx-color-danger-deep);
+  font-size: var(--lx-size-body);
+  font-weight: 700;
+}
+
+.error:empty {
+  display: none;
+}
+
+.note {
+  margin: 0;
+  font-size: var(--lx-size-label);
+  font-weight: 600;
+  line-height: 1.45;
+}
+
+.note a {
+  color: inherit;
+}
+
+.joined {
+  margin: 0;
+  font-size: var(--lx-size-subtitle);
+  font-weight: 800;
+  line-height: 1.3;
+}
+
+.joined a {
+  color: inherit;
+}
+
+@media (max-width: 559px) {
+  .fields {
+    flex-direction: column;
+  }
+
+  .input {
+    flex: none;
+  }
+}

@@ -1,3 +1,4 @@
+import { Leaf, Lettering } from "@/ui/toy";
 import styles from "./landing-page.module.css";
 
 interface Testimonial {
@@ -16,15 +17,19 @@ const TESTIMONIALS: readonly Testimonial[] = [];
 export function Testimonials() {
   if (TESTIMONIALS.length === 0) return null;
   return (
-    <section className={styles.voices} aria-labelledby="voices-title">
-      <h2 id="voices-title" className={styles.voicesTitle}>
-        Ce qu'en disent les joueurs
-      </h2>
-      <ul className={styles.voicesList}>
+    <section className={styles.section} aria-labelledby="voices-title">
+      <div className={styles.sectionHead}>
+        <h2 id="voices-title" className={styles.sectionTitle}>
+          <Lettering>Ce qu'en disent les joueurs</Lettering>
+        </h2>
+      </div>
+      <ul className={styles.voices}>
         {TESTIMONIALS.map(({ quote, author }) => (
-          <li key={author} className={styles.voice}>
-            <blockquote className={styles.voiceQuote}>« {quote} »</blockquote>
-            <p className={styles.voiceAuthor}>{author}, de la bêta fermée</p>
+          <li key={author}>
+            <Leaf className={styles.voice}>
+              <blockquote className={styles.voiceQuote}>« {quote} »</blockquote>
+              <p className={styles.voiceAuthor}>{author}, de la bêta fermée</p>
+            </Leaf>
           </li>
         ))}
       </ul>

@@ -8,6 +8,8 @@ declare namespace NodeJS {
     readonly NEXT_PUBLIC_CATALOG_URL?: string;
     /** Absolute base URL of the catalogue for the server's own reads (a card's page); see `catalog-server.ts`. */
     readonly CATALOG_URL?: string;
+    /** `required` while the beta is closed: the home page offers the waitlist instead of the game. */
+    readonly NEXT_PUBLIC_BETA_INVITES?: string;
     /** Umami site id, inlined in the browser bundle. Without it, no visit is counted. */
     readonly NEXT_PUBLIC_UMAMI_WEBSITE_ID?: string;
     /** Port of the web app, for the server to reach its own `/catalog` in local development. */
