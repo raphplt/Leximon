@@ -136,7 +136,7 @@ Chaque question a une recommandation, en premier. Les chiffres sont des valeurs 
 - c. On attend la fin des réglages E1 à E5 avant de construire les écus.
 
 **E7 · Le rythme des niveaux.** Le joueur médian est dans le rythme visé, les plus assidus vont deux fois plus vite.
-- a. **(recommandé)** On ne touche pas à la courbe : E3 ralentit les plus assidus, et l'XP des missions compense pour les autres. On relance la simulation de niveau (rnd/level-sim) avec les profils réels de la bêta.
+- a. **(recommandé)** On ne touche pas à la courbe : E3 ralentit les plus assidus, et l'XP des missions compense pour les autres. On relance la simulation de niveau (rnd/level-sim) avec les profils réels de la bêta. *Simulation faite le 2026-11-05 ([level-sim](../rnd/level-sim.md#complément-du-2026-11-05--les-profils-réels-de-la-bêta)) : le joueur médian tient le rythme visé, mais E3 ne ralentit presque pas les niveaux des plus assidus (niveau 50 en 57 jours au lieu de 55) ; son effet porte sur les sachets, pas sur l'XP.*
 - b. Une courbe plus raide au-delà du niveau 15.
 - c. Un plafond d'XP par jour sur les sachets.
 

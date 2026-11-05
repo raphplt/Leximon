@@ -88,10 +88,27 @@ Ce qu'il reste à vérifier :
 - les profils sont des hypothèses : il faudra les recaler sur les vraies données de la bêta ;
 - l'assidu atteint le niveau 50 en moins de deux mois. Le propriétaire a voulu plus de cadres et de titres au-delà du niveau 50 pour que ce joueur ait encore de quoi viser.
 
+## Complément du 2026-11-05 : les profils réels de la bêta
+
+Après 10 jours de bêta ([economie.md](../cahiers-des-charges/economie.md)), les profils sont recalés sur les vrais joueurs, et l'horloge du 2026-11-07 (un sachet par heure, 8 en stock, au lieu de 30 minutes et 6) est comparée à l'ancienne. Courbe en vigueur, 150 + 45 × (n − 1). Tableau complet : [rnd/level-sim/results-beta.md](../../rnd/level-sim/results-beta.md).
+
+| Profil | Niv. 10 | Niv. 20 | Niv. 50 |
+|---|---|---|---|
+| Médian de la bêta, 12 sachets par jour | 4 j | 15 j | 4,4 mois |
+| Trois passages par jour, ancienne horloge | 3 j | 10 j | 3,0 mois |
+| Trois passages par jour, nouvelle horloge | 3 j | 10 j | 2,9 mois |
+| Le plus assidu, ancienne horloge (28 sachets gratuits par jour) | 2 j | 6 j | 55 j |
+| Le plus assidu, nouvelle horloge (24 sachets gratuits par jour) | 2 j | 7 j | 57 j |
+
+Ce que montrent les chiffres :
+- **le joueur médian de la bêta tient le rythme visé** (niveau 10 au 4e jour, 20 en deux semaines, 50 en un peu plus de quatre mois) : la courbe est juste ;
+- la simulation retrouve ce qu'on observe chez les plus assidus (niveau 19 à 23 en 6 à 10 jours) ;
+- **la nouvelle horloge ne ralentit presque pas les niveaux.** Passé les premiers jours, l'XP de l'assidu vient surtout de ses bonnes réponses, et les mots nouveaux se font rares. Son effet porte sur le nombre de sachets et la vitesse à laquelle le contenu s'use, pas sur le niveau. Si l'on veut un jour ralentir les niveaux des plus assidus, il faudra toucher à l'XP des défis ou à la courbe au-delà du niveau 20, pas à l'horloge.
+
 ## Pour reproduire
 
 ```bash
 pnpm --filter @leximon/core exec vitest run --root ../.. rnd/level-sim
 ```
 
-Node 24.21, Linux x86_64, 16 cœurs : environ 25 secondes. Le script réécrit `rnd/level-sim/results.md`.
+Node 24.21, Linux x86_64, 16 cœurs : environ 25 secondes. Le script réécrit `rnd/level-sim/results.md`. Les profils de la bêta : `pnpm --filter @leximon/core exec vitest run --root ../.. rnd/level-sim/run-beta` (environ 15 secondes, réécrit `results-beta.md`).

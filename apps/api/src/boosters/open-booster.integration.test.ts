@@ -10,11 +10,13 @@ import {
 } from "@leximon/contract";
 import {
   byRarity,
+  capacityAt,
   createSeededRandom,
   DRAW_SCHEDULE,
   drawBooster,
   drawRulesAt,
   GUEST_SCHEDULE,
+  guestRulesAt,
   isAtLeast,
   RARITIES,
   REFILL_SCHEDULE,
@@ -44,7 +46,7 @@ const url = testDatabaseUrl();
 const env = testEnv(url);
 const app = createApp();
 const { db, close } = createDb(url, { maxConnections: 2 });
-const CAPACITY = REFILL_SCHEDULE[0].capacity;
+const CAPACITY = capacityAt(REFILL_SCHEDULE, Date.now());
 
 beforeAll(() => seedTestCatalog(db));
 
@@ -635,7 +637,7 @@ describe("demonstration draws", () => {
 });
 
 describe("guest limit", () => {
-  const LIMIT = GUEST_SCHEDULE[0].boostersBeforeSignup;
+  const LIMIT = guestRulesAt(GUEST_SCHEDULE, Date.now()).boostersBeforeSignup;
 
   async function boostersLeft(guest: Guest): Promise<number> {
     const response = await app.request(

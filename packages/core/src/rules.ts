@@ -42,9 +42,17 @@ const RIDDLE_DECIDED = Date.UTC(2026, 9, 30, 23);
 const RIDDLE_MORE_LETTERS = Date.UTC(2026, 9, 31, 23);
 // Midnight in Paris, 4 November 2026: the review comes first, cards start on a blank page.
 const REVIEW_DECIDED = Date.UTC(2026, 10, 3, 23);
+/**
+ * Midnight in Paris on 2026-11-07: the economy decided on 2026-11-05 from the beta's figures
+ * (slower clock, longer guest trial), a day after it was decided so testers hear of it first.
+ */
+const ECONOMY_DECIDED = Date.UTC(2026, 10, 6, 23);
 
 export const REFILL_SCHEDULE: RefillSchedule = [
   { startsAt: SINCE_LAUNCH, capacity: 6, intervalMs: 30 * MINUTE },
+  // The most assiduous opened 25 to 38 sachets a day: fewer fall from the clock, more are earned
+  // by playing. Three visits a day keep about what they had.
+  { startsAt: ECONOMY_DECIDED, capacity: 8, intervalMs: 60 * MINUTE },
 ];
 
 export const DRAW_SCHEDULE: DrawSchedule = [
@@ -162,7 +170,11 @@ export const XP_SCHEDULE: XpSchedule = [
 ];
 
 // Boosters a guest opens before an account is required.
-export const GUEST_SCHEDULE: GuestSchedule = [{ startsAt: SINCE_LAUNCH, boostersBeforeSignup: 2 }];
+// Most guests stopped exactly at the limit of 2: a full stock lets them see a challenge and a bonus.
+export const GUEST_SCHEDULE: GuestSchedule = [
+  { startsAt: SINCE_LAUNCH, boostersBeforeSignup: 2 },
+  { startsAt: ECONOMY_DECIDED, boostersBeforeSignup: 6 },
+];
 
 // Level rewards. Titles are provisional.
 export const LEVEL_REWARD_SCHEDULE: LevelRewardSchedule = [

@@ -1,4 +1,4 @@
-import { gameDayOf, gameTimeOn, pseudoKey } from "@leximon/core";
+import { capacityAt, gameDayOf, gameTimeOn, pseudoKey, REFILL_SCHEDULE } from "@leximon/core";
 import { createDb, schema } from "@leximon/db";
 import { testDatabaseUrl } from "@leximon/db/testing";
 import { eq, sql } from "drizzle-orm";
@@ -244,7 +244,9 @@ describe("reminders", () => {
     const report = await deliverReminders(context(), [away.userId, last.userId], evening);
     expect(report.sent).toBe(2);
     const toAway = sent.find((mail) => mail.to === away.email);
-    expect(toAway?.email.subject).toBe("Tes 6 sachets t'attendent");
+    expect(toAway?.email.subject).toBe(
+      `Tes ${capacityAt(REFILL_SCHEDULE, evening)} sachets t'attendent`,
+    );
     expect(toAway?.email.text).not.toContain("Dernier rappel");
     expect(sent.find((mail) => mail.to === last.email)?.email.text).toContain("Dernier rappel");
 

@@ -6,7 +6,14 @@ import {
   profileResponseSchema,
   tradeableCardsResponseSchema,
 } from "@leximon/contract";
-import { BONUS_SCHEDULE, REFILL_SCHEDULE, xpToReach } from "@leximon/core";
+import {
+  BONUS_SCHEDULE,
+  capacityAt,
+  computeRefill,
+  createFullWallet,
+  REFILL_SCHEDULE,
+  xpToReach,
+} from "@leximon/core";
 import { createDb, schema } from "@leximon/db";
 import { testDatabaseUrl } from "@leximon/db/testing";
 import { count, eq, sum } from "drizzle-orm";
@@ -27,7 +34,7 @@ const url = testDatabaseUrl();
 const env = testEnv(url);
 const app = createApp();
 const { db, close } = createDb(url, { maxConnections: 1 });
-const CAPACITY = REFILL_SCHEDULE[0].capacity;
+const CAPACITY = capacityAt(REFILL_SCHEDULE, Date.now());
 
 beforeAll(() => seedTestCatalog(db));
 afterAll(close);
@@ -59,6 +66,17 @@ async function open(guest: Guest, collectionId?: string) {
   expect(response.status).toBe(200);
 }
 
+/** When a full stock gains its next booster, as the rules compute it: `null` unless the capacity rises. */
+function fullStockRefill(): string | null {
+  const now = Date.now();
+  const { nextRefillAt } = computeRefill(
+    createFullWallet(REFILL_SCHEDULE, now),
+    REFILL_SCHEDULE,
+    now,
+  );
+  return nextRefillAt === null ? null : new Date(nextRefillAt).toISOString();
+}
+
 describe("GET /me/wallet", () => {
   it("requires a session", async () => {
     expect((await get(null, "/me/wallet")).status).toBe(401);
@@ -72,7 +90,8 @@ describe("GET /me/wallet", () => {
     expect(response.headers.get("cache-control")).toBe("no-store");
     expect(boosterWalletSchema.parse(await response.json())).toEqual({
       stored: CAPACITY,
-      nextRefillAt: null,
+      // Full, so nothing is pending, unless a raised capacity is already scheduled.
+      nextRefillAt: fullStockRefill(),
       bonus: 0,
       garni: 0,
       bonusCap: BONUS_SCHEDULE[0].reserveCap,

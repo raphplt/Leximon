@@ -26,7 +26,8 @@ describe("guestRulesAt", () => {
     expect(guestRulesAt(schedule, 1_000).boostersBeforeSignup).toBe(3);
   });
 
-  it("lets a guest open two boosters at launch", () => {
-    expect(guestRulesAt(GUEST_SCHEDULE, Date.now()).boostersBeforeSignup).toBe(2);
+  it("lets a guest open two boosters at launch, then a full stock", () => {
+    expect(guestRulesAt(GUEST_SCHEDULE, Date.UTC(2026, 10, 5)).boostersBeforeSignup).toBe(2);
+    expect(guestRulesAt(GUEST_SCHEDULE, Date.UTC(2026, 10, 7)).boostersBeforeSignup).toBe(6);
   });
 });

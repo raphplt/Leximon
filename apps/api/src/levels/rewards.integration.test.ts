@@ -3,7 +3,7 @@ import {
   claimLevelRewardResponseSchema,
   levelRewardsResponseSchema,
 } from "@leximon/contract";
-import { BONUS_SCHEDULE, REFILL_SCHEDULE, xpToReach } from "@leximon/core";
+import { BONUS_SCHEDULE, capacityAt, REFILL_SCHEDULE, xpToReach } from "@leximon/core";
 import { createDb, schema } from "@leximon/db";
 import { testDatabaseUrl } from "@leximon/db/testing";
 import { eq } from "drizzle-orm";
@@ -16,7 +16,7 @@ const url = testDatabaseUrl();
 const env = testEnv(url);
 const app = createApp();
 const { db, close } = createDb(url, { maxConnections: 2 });
-const CAPACITY = REFILL_SCHEDULE[0].capacity;
+const CAPACITY = capacityAt(REFILL_SCHEDULE, Date.now());
 const CAP = BONUS_SCHEDULE[0].reserveCap;
 
 beforeAll(() => seedTestCatalog(db));

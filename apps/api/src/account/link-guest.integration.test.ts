@@ -8,7 +8,7 @@ import {
   profileResponseSchema,
   SIGN_IN_CODE_QUOTA_ERROR,
 } from "@leximon/contract";
-import type { MasteryLevel } from "@leximon/core";
+import { GUEST_SCHEDULE, guestRulesAt, type MasteryLevel } from "@leximon/core";
 import { createDb, schema } from "@leximon/db";
 import { testDatabaseUrl } from "@leximon/db/testing";
 import { eq, sql } from "drizzle-orm";
@@ -30,6 +30,9 @@ import {
   signInWithCode,
 } from "../test-support";
 import { linkGuest, USER_REFERENCES } from "./link-guest";
+
+/** Boosters a guest opens before an account is required, under the rules in force. */
+const GUEST_LIMIT = guestRulesAt(GUEST_SCHEDULE, Date.now()).boostersBeforeSignup;
 
 const url = testDatabaseUrl();
 const env = testEnv(url);
@@ -377,7 +380,7 @@ describe("signing in to an account that plays", () => {
     expect(refused.status).toBe(409);
     expect(await errorCode(refused)).toBe(ACCOUNT_ERROR_CODES.guestLossNotAcknowledged);
     const stillGuest = applySetCookies(guest.cookie, refused);
-    expect(await whoIs(stillGuest)).toEqual({ kind: "guest", boostersLeft: 1 });
+    expect(await whoIs(stillGuest)).toEqual({ kind: "guest", boostersLeft: GUEST_LIMIT - 1 });
     expect(await cardsOf(guest.userId)).toEqual({ "test-a-common-1": 3, "test-a-epic-1": 1 });
     expect(await linkOf(guest.userId)).toBeNull();
 
@@ -559,7 +562,7 @@ describe("retries and failures", () => {
     expect(failed.response.status).toBe(500);
     expect(await errorCode(failed.response)).toBe(ACCOUNT_ERROR_CODES.accountLinkFailed);
     // The browser is back on the guest's session, and the guest's game is untouched.
-    expect(await whoIs(failed.cookie)).toEqual({ kind: "guest", boostersLeft: 2 });
+    expect(await whoIs(failed.cookie)).toEqual({ kind: "guest", boostersLeft: GUEST_LIMIT });
     expect(await cardsOf(guest.userId)).toEqual({ "test-b-rare-1": 2 });
     expect(await linkOf(guest.userId)).toBeNull();
     const [created] = await db.select().from(users).where(eq(users.email, email));

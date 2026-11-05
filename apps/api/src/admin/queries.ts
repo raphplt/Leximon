@@ -18,6 +18,7 @@ import type {
 import {
   BONUS_SCHEDULE,
   bonusRulesAt,
+  capacityAt,
   computeRefill,
   createFullWallet,
   type EpochMs,
@@ -438,7 +439,7 @@ export async function readPlayer(
     },
     wallet: {
       stored: wallet.stored,
-      capacity: REFILL_SCHEDULE[0].capacity,
+      capacity: capacityAt(REFILL_SCHEDULE, now),
       nextRefillAt: wallet.nextRefillAt === null ? null : iso(new Date(wallet.nextRefillAt)),
       bonus: walletRow?.bonus_boosters ?? 0,
       bonusCap: reserveCapacity(bonusRulesAt(BONUS_SCHEDULE, now), walletRow?.reserve_slots ?? 0),
