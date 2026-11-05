@@ -130,6 +130,7 @@ export const adminPlayerDetailSchema = z.object({
     nextRefillAt: timestampSchema.nullable(),
     bonus: z.int().nonnegative(),
     bonusCap: z.int().nonnegative(),
+    ecus: z.int().nonnegative(),
   }),
   progress: progressSchema,
   collection: z.object({

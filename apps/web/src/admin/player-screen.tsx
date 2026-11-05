@@ -100,6 +100,7 @@ function PlayerDetail({
           }
         />
         <Figure label="Plis bonus" value={wallet.bonus} note={`réserve max ${wallet.bonusCap}`} />
+        <Figure label="Écus" value={wallet.ecus} />
         <Figure label="Plis ouverts" value={opens.total} />
         <Figure
           label="Cartes distinctes"

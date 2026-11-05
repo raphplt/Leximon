@@ -572,6 +572,14 @@
   margin: var(--lx-s6) 0 0;
 }
 
+/* Recycling and the missing word: what the duplicates of the album are good for. */
+.ecus {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--lx-s3);
+  margin: var(--lx-s6) 0 0;
+}
+
 .empty {
   margin: var(--lx-s20) 0;
   font-family: var(--font-text), Georgia, serif;

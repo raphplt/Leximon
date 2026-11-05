@@ -20,6 +20,7 @@ import {
   comparingTitle,
   isAlbumSort,
   isFeatureOpen,
+  MISSING_WORD_OPEN,
   type MissingItem,
   type OwnedItem,
   playerName,
@@ -34,6 +35,7 @@ import { askAlbumPractice } from "@/challenges/pending-practice";
 import { Card } from "@/components/card";
 import { CollectionSeal } from "@/components/collection-seal";
 import { RarityIcon, RarityName } from "@/components/rarity-icon";
+import { RecycleButton } from "@/ecus/recycle-button";
 import { api } from "@/lib/api";
 import { useIncremental } from "@/lib/use-incremental";
 import { useNarrow } from "@/lib/use-narrow";
@@ -99,7 +101,7 @@ export function AlbumScreen() {
   const dates = useShared(cardDates);
   const now = useNow(60_000);
   const narrow = useNarrow();
-  const { openCard } = useShell();
+  const { openCard, openMissingWord } = useShell();
   const progress = useProgress();
   const [state, setState] = useState<AlbumState>({
     collectionId: "",
@@ -406,6 +408,21 @@ export function AlbumScreen() {
                 <SortPicker sort={sort} onPick={pickSort} />
               </div>
             )}
+
+            <div className={styles.ecus}>
+              <RecycleButton small />
+              <Button
+                variant="secondary"
+                small
+                onClick={() =>
+                  openMissingWord(
+                    state.collectionId === ALL_COLLECTIONS ? undefined : state.collectionId,
+                  )
+                }
+              >
+                {MISSING_WORD_OPEN}
+              </Button>
+            </div>
 
             {practiceCards !== null && (
               <div className={styles.revise}>

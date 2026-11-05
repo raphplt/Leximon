@@ -9,6 +9,7 @@ export * from "./clan/clan";
 export * from "./clan/goal";
 export * from "./clan/level";
 export * from "./clan/mentions";
+export * from "./ecus/ecus";
 export * from "./friend/friend";
 export * from "./mastery/challenge";
 export * from "./mastery/formats";

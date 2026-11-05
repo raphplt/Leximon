@@ -16,7 +16,8 @@ export type SoundCue =
   | "newCard"
   | "recap"
   | "answerRight"
-  | "answerWrong";
+  | "answerWrong"
+  | "coins";
 
 /**
  * How each rarity is revealed. The announcement always comes before the face: the rarer the

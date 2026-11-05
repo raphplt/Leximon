@@ -29,6 +29,7 @@ import {
   filterButtonLabel,
   isAlbumSort,
   isFeatureOpen,
+  MISSING_WORD_OPEN,
   type MissingItem,
   type OwnedItem,
   playerName,
@@ -52,6 +53,8 @@ import {
 import { api } from "@/api/client";
 import { Card } from "@/cards/card";
 import { catalogInHand, loadCatalog } from "@/cards/catalog";
+import { openMissingWord } from "@/ecus/missing-word";
+import { RecycleButton } from "@/ecus/recycle-button";
 import { vibrate } from "@/feedback/feedback";
 import { Desk } from "@/library/play-pieces";
 import { cardDates, ownedCards, wordMemory } from "@/player/collection";
@@ -418,6 +421,16 @@ export function AlbumScreen({ friendCode }: { readonly friendCode: string | null
       }}
     >
       {!view.searching && tagline !== undefined && <Text style={styles.tagline}>{tagline}</Text>}
+      <View style={styles.ecus}>
+        <RecycleButton />
+        <Button
+          label={MISSING_WORD_OPEN}
+          secondary
+          onPress={() =>
+            openMissingWord(state.collectionId === ALL_COLLECTIONS ? undefined : state.collectionId)
+          }
+        />
+      </View>
       {practiceCards !== null && (
         <View style={styles.revise}>
           <Button
@@ -936,6 +949,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   revise: { marginTop: space.s6 },
+  ecus: { marginTop: space.s6, gap: space.s3 },
   emptyLine: {
     fontFamily: fonts.text.italic,
     fontSize: fontSizes.lead,

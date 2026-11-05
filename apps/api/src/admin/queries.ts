@@ -376,10 +376,11 @@ export async function readPlayer(
         as_of: string;
         bonus_boosters: number;
         reserve_slots: number;
+        ecus: number;
       }>(sql`
         select ${boosterWallets.stored} as stored, ${boosterWallets.progressMs} as progress_ms,
           ${boosterWallets.asOf} as as_of, ${boosterWallets.bonusBoosters} as bonus_boosters,
-          ${boosterWallets.reserveSlots} as reserve_slots
+          ${boosterWallets.reserveSlots} as reserve_slots, ${boosterWallets.ecus} as ecus
         from ${boosterWallets} where ${boosterWallets.userId} = ${userId}`),
       db.execute<{ rarity: Rarity; distinct_cards: number; copies: number }>(sql`
         select ${cards.rarity} as rarity, count(*)::int as distinct_cards,
@@ -443,6 +444,7 @@ export async function readPlayer(
       nextRefillAt: wallet.nextRefillAt === null ? null : iso(new Date(wallet.nextRefillAt)),
       bonus: walletRow?.bonus_boosters ?? 0,
       bonusCap: reserveCapacity(bonusRulesAt(BONUS_SCHEDULE, now), walletRow?.reserve_slots ?? 0),
+      ecus: walletRow?.ecus ?? 0,
     },
     progress: { xp: row.xp, ...levelOf(row.xp) },
     collection: { distinctCards, copies, byRarity },

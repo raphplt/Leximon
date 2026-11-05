@@ -32,9 +32,14 @@ import {
   levelRewardsResponseSchema,
   type MailResponse,
   type MasteryResponse,
+  type MissingWordRefusal,
+  type MissingWordRequest,
+  type MissingWordResponse,
   mailResponseSchema,
   markMailReadResponseSchema,
   masteryResponseSchema,
+  missingWordRefusalSchema,
+  missingWordResponseSchema,
   type OpenBoosterResponse,
   type OwnedCardsResponse,
   openBoosterResponseSchema,
@@ -62,12 +67,16 @@ import {
   progressResponseSchema,
   publicProfileSchema,
   publicRiddleSchema,
+  type RecycleRefusal,
+  type RecycleResponse,
   type ReviewQuestion,
   type ReviewRequest,
   type ReviewSummaryResponse,
   type RiddleAnswerRequest,
   type RiddleAnswerResponse,
   type RiddleResponse,
+  recycleRefusalSchema,
+  recycleResponseSchema,
   reviewResponseSchema,
   reviewSummaryResponseSchema,
   riddleAnswerResponseSchema,
@@ -105,6 +114,14 @@ export type ClaimResult =
 export type WelcomeClaimResult =
   | ({ readonly kind: "claimed" } & ClaimWelcomeDayResponse)
   | { readonly kind: "refused"; readonly reason: WelcomeRefusal };
+
+export type RecycleCopyResult =
+  | ({ readonly kind: "recycled" } & RecycleResponse)
+  | { readonly kind: "refused"; readonly reason: RecycleRefusal };
+
+export type MissingWordResult =
+  | ({ readonly kind: "bought" } & MissingWordResponse)
+  | { readonly kind: "refused"; readonly reason: MissingWordRefusal };
 
 export type AnswerResult =
   | ({ readonly kind: "answered" } & ChallengeAnswerResponse)
@@ -159,6 +176,18 @@ async function refusedOr<T>(
     if (reason !== null) return reason;
   }
   throw new ApiError(failure, response.status);
+}
+
+/** The guest's game just went to an account (sign-in elsewhere): retrying uses it. */
+async function refuseArchivedGuest(response: Response): Promise<void> {
+  if (response.status !== 409) return;
+  const body: unknown = await response
+    .clone()
+    .json()
+    .catch(() => null);
+  if (errorResponseSchema.safeParse(body).data?.error === "guest_archived") {
+    throw new ApiError("session_changed", 409);
+  }
 }
 
 /** The game routes of the signed-in player (a guest is created on the first request). */
@@ -266,6 +295,51 @@ export function gameRoutes(http: Http) {
       }
       if (!response.ok) throw new ApiError("claim_failed", response.status);
       return { kind: "claimed", ...(await parse(response, claimWelcomeDayResponseSchema)) };
+    },
+
+    /**
+     * Recycles the duplicates beyond the copies kept, of the rarities recycled together. The caller
+     * keeps `idempotencyKey` until it gets a result, as for a booster.
+     */
+    async recycleDuplicates(idempotencyKey: string): Promise<RecycleResponse> {
+      const response = await sendAsPlayer(
+        "/me/recycle",
+        json("POST", {}, { [IDEMPOTENCY_KEY_HEADER]: idempotencyKey }),
+      );
+      await refuseArchivedGuest(response);
+      if (!response.ok) throw new ApiError("recycle_failed", response.status);
+      return parse(response, recycleResponseSchema);
+    },
+
+    /** Recycles one copy of a card, whatever its rarity; never the last one. */
+    async recycleCopy(cardId: string, idempotencyKey: string): Promise<RecycleCopyResult> {
+      const response = await sendAsPlayer(
+        `/me/cards/${segment(cardId)}/recycle`,
+        json("POST", {}, { [IDEMPOTENCY_KEY_HEADER]: idempotencyKey }),
+      );
+      await refuseArchivedGuest(response);
+      if (response.status === 409) {
+        return { kind: "refused", reason: (await parse(response, recycleRefusalSchema)).error };
+      }
+      if (!response.ok) throw new ApiError("recycle_failed", response.status);
+      return { kind: "recycled", ...(await parse(response, recycleResponseSchema)) };
+    },
+
+    /** Spends écus on a word the player lacks, drawn by the server among the missing ones. */
+    async buyMissingWord(
+      request: MissingWordRequest,
+      idempotencyKey: string,
+    ): Promise<MissingWordResult> {
+      const response = await sendAsPlayer(
+        "/me/missing-word",
+        json("POST", request, { [IDEMPOTENCY_KEY_HEADER]: idempotencyKey }),
+      );
+      await refuseArchivedGuest(response);
+      if (response.status === 409) {
+        return { kind: "refused", reason: (await parse(response, missingWordRefusalSchema)).error };
+      }
+      if (!response.ok) throw new ApiError("missing_word_failed", response.status);
+      return { kind: "bought", ...(await parse(response, missingWordResponseSchema)) };
     },
 
     fetchChallenges: (limit = 5): Promise<ChallengesResponse> =>

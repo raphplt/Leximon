@@ -25,6 +25,7 @@ const wallet = (stored: number, bonus = 0) => ({
   garni: 0,
   bonusCap: 10,
   capacity: 6,
+  ecus: 0,
   nextRefillAt: stored >= 6 ? null : new Date(NOW + 18 * 60_000).toISOString(),
 });
 const collections = [

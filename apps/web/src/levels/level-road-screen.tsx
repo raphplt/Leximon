@@ -140,8 +140,9 @@ export function LevelRoadScreen() {
             <p className={ui.kicker}>Niveau {detail.level}</p>
             <h2 className={`${ui.display} ${styles.detailTitle}`}>{detail.title}</h2>
             <ul className={styles.items}>
-              {detail.items.map((item) => (
-                <li key={item.title} className={styles.item}>
+              {detail.items.map((item, index) => (
+                // biome-ignore lint/suspicious/noArrayIndexKey: a fixed list; two rewards may be alike
+                <li key={`${item.title}-${index}`} className={styles.item}>
                   <span className={styles.itemIcon}>
                     <Icon name={REWARD_ICONS[item.icon]} size={22} />
                   </span>

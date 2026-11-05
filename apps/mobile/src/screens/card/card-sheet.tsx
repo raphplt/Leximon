@@ -28,6 +28,7 @@ import { cardsAround } from "@/cards/card-run";
 import { catalogInHand, loadCatalog } from "@/cards/catalog";
 import { HoloCard } from "@/cards/holo-card";
 import { WEB_URL } from "@/config";
+import { RecycleCopy } from "@/ecus/recycle-copy";
 import { noteCardRead, ownedCards, wordMemory } from "@/player/collection";
 import { useNow, useShared } from "@/player/shared";
 import { progress as progressResource } from "@/player/state";
@@ -253,6 +254,7 @@ function SheetBody({
                 }
               />
             )}
+            <RecycleCopy cardId={card.id} rarity={card.rarity} quantity={quantity} />
             <View style={styles.ghosts}>
               {pins.profile?.member === true && (
                 <Pressable

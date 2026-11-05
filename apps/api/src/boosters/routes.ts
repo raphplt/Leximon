@@ -68,6 +68,7 @@ export function boosterRoutes(loadCardPool: CardPoolLoader) {
             garni: result.wallet.garni,
             bonusCap: result.wallet.bonusCap,
             capacity: capacityAt(REFILL_SCHEDULE, now),
+            ecus: result.wallet.ecus,
           },
           progress: result.progress,
           completions: result.completions.map(({ collectionId, rarity, xp }) => ({

@@ -37,6 +37,7 @@ describe("database", () => {
       "clans",
       "collections",
       "daily_riddles",
+      "ecu_movements",
       "email_campaign_sends",
       "email_campaigns",
       "email_consents",

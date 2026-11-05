@@ -30,6 +30,7 @@ export type WalletRow = Pick<
   | "garniBoosters"
   | "preciousBoosters"
   | "reserveSlots"
+  | "ecus"
 >;
 
 /** The wallet as clients see it. A player without a row yet has a full stock and no bonus. */
@@ -46,6 +47,7 @@ export function walletView(row: WalletRow | undefined, now: EpochMs): BoosterWal
     garni: row?.garniBoosters ?? 0,
     bonusCap: reserveCapacity(bonusRulesAt(BONUS_SCHEDULE, now), row?.reserveSlots ?? 0),
     capacity: capacityAt(REFILL_SCHEDULE, now),
+    ecus: row?.ecus ?? 0,
   };
 }
 
@@ -94,6 +96,7 @@ export function withRewards(
     garniBoosters: locked.garniBoosters + added.garni,
     preciousBoosters: locked.preciousBoosters + added.precious,
     reserveSlots,
+    ecus: locked.ecus,
   };
 }
 

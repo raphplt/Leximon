@@ -14,6 +14,7 @@ const {
   boosterOpenRequests,
   boosterOpens,
   boosterWallets,
+  ecuMovements,
   friendFeedEvents,
   guestLinks,
   mailLetters,
@@ -53,6 +54,7 @@ type Executor = Pick<Database, "execute">;
 export const USER_REFERENCES = {
   "booster_wallets.user_id": { transfer: "moved", abandon: "kept" },
   "booster_bonus_awards.user_id": { transfer: "moved", abandon: "kept" },
+  "ecu_movements.user_id": { transfer: "moved", abandon: "kept" },
   "user_cards.user_id": { transfer: "moved", abandon: "kept" },
   "user_mastery.user_id": { transfer: "moved", abandon: "kept" },
   "user_progress.user_id": { transfer: "moved", abandon: "kept" },
@@ -343,6 +345,7 @@ async function transferEverything(tx: Transaction, guestId: string, accountId: s
     with
       wallets as (update ${boosterWallets} set user_id = ${accountId} where user_id = ${guestId} returning 1),
       awards as (update ${boosterBonusAwards} set user_id = ${accountId} where user_id = ${guestId} returning 1),
+      ecus as (update ${ecuMovements} set user_id = ${accountId} where user_id = ${guestId} returning 1),
       copies as (update ${userCards} set user_id = ${accountId} where user_id = ${guestId} returning 1),
       masteries as (update ${userMastery} set user_id = ${accountId} where user_id = ${guestId} returning 1),
       progress as (update ${userProgress} set user_id = ${accountId} where user_id = ${guestId} returning 1),

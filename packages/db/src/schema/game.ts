@@ -1,6 +1,7 @@
 import {
   BONUS_KINDS,
   CHALLENGE_FORMATS,
+  ECU_MOVEMENT_KINDS,
   type GuestLinkOutcome,
   type LevelReward,
   MASTERY_LEVELS,
@@ -36,6 +37,7 @@ export const rarity = pgEnum("rarity", RARITIES);
 export const masteryLevel = pgEnum("mastery_level", MASTERY_LEVELS);
 export const challengeFormat = pgEnum("challenge_format", CHALLENGE_FORMATS);
 export const boosterBonusKind = pgEnum("booster_bonus_kind", BONUS_KINDS);
+export const ecuMovementKind = pgEnum("ecu_movement_kind", ECU_MOVEMENT_KINDS);
 export const riddleOutcome = pgEnum("riddle_outcome", RIDDLE_OUTCOMES);
 export const reviewDifficulty = pgEnum("review_difficulty", REVIEW_DIFFICULTIES);
 /** "expired" is never stored: a pending offer past `expires_at` is expired (no scheduled task). */
@@ -137,6 +139,8 @@ export const boosterWallets = pgTable(
     garniBoosters: integer().notNull().default(0),
     /** Of `garniBoosters`, the precious ones, spent before the others. */
     preciousBoosters: integer().notNull().default(0),
+    /** Écus: every change is written in `ecu_movements` by the same statement. */
+    ecus: integer().notNull().default(0),
     /** Places added to the reserve cap by level rewards. */
     reserveSlots: smallint().notNull().default(0),
     /** Day in Paris of the last booster opened: the first one of a day earns more XP. */
@@ -157,6 +161,7 @@ export const boosterWallets = pgTable(
       sql`${table.preciousBoosters} >= 0 and ${table.preciousBoosters} <= ${table.garniBoosters}`,
     ),
     check("booster_wallets_reserve_slots_check", sql`${table.reserveSlots} >= 0`),
+    check("booster_wallets_ecus_check", sql`${table.ecus} >= 0`),
   ],
 );
 
@@ -226,6 +231,43 @@ export const userLevelRewards = pgTable(
     check("user_level_rewards_level_check", sql`${table.level} >= 2`),
   ],
 );
+
+/**
+ * Every change of a player's écus, for the player's history and the admin. The idempotency key of
+ * the request makes it happen once; `details` says what moved (cards recycled, word bought).
+ */
+export const ecuMovements = pgTable(
+  "ecu_movements",
+  {
+    id: uuid().primaryKey(),
+    userId: text()
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    kind: ecuMovementKind().notNull(),
+    /** Positive when écus are earned, negative when spent. */
+    amount: integer().notNull(),
+    idempotencyKey: uuid().notNull(),
+    details: jsonb().$type<EcuMovementDetails>().notNull(),
+    createdAt: timestamp({ withTimezone: true }).notNull(),
+  },
+  (table) => [
+    uniqueIndex("ecu_movements_user_key_idx").on(table.userId, table.idempotencyKey),
+    index("ecu_movements_user_created_idx").on(table.userId, table.createdAt),
+    check("ecu_movements_amount_check", sql`${table.amount} <> 0`),
+  ],
+);
+
+/** What a movement of écus moved. */
+export type EcuMovementDetails =
+  | {
+      readonly kind: "recycle";
+      readonly cards: readonly {
+        readonly cardId: string;
+        readonly copies: number;
+        readonly ecus: number;
+      }[];
+    }
+  | { readonly kind: "missing_word"; readonly cardId: string };
 
 /**
  * Days of the welcome week claimed, one row per day: the primary key makes a claim happen once,

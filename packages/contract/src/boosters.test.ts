@@ -28,10 +28,15 @@ describe("booster contract", () => {
         levelUp: true,
       },
     };
-    // An older API sends no completions: none were made.
-    expect(openBoosterResponseSchema.parse(response)).toEqual({ ...response, completions: [] });
+    // An older API sends no completions and no écus: none were made, none were won.
+    expect(openBoosterResponseSchema.parse(response)).toEqual({
+      ...response,
+      wallet: { ...response.wallet, ecus: 0 },
+      completions: [],
+    });
     const completed = {
       ...response,
+      wallet: { ...response.wallet, ecus: 12 },
       completions: [{ collectionId: "fondateurs", rarity: "common", xp: 100 }],
     };
     expect(openBoosterResponseSchema.parse(completed)).toEqual(completed);

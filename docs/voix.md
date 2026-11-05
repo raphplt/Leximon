@@ -105,6 +105,8 @@ Un objet a un seul nom dans l'interface.
 | mission | quête, tâche | Les trois missions du jour. |
 | carnet | calendrier, pointage | Le carnet de pointage, une case par jour joué. |
 | joute | duel | On lance une joute, on défie un ami. |
+| écus | pièces, monnaie, crédits | La seule monnaie du jeu. « 0 écu », « 1 écu », « 34 écus ». On **recycle** ses doubles en écus. |
+| mot manquant | achat, boutique | Un mot qui manque, tiré au sort dans la collection et la rareté choisies. |
 | récompenses | coffrets (sur un bouton) | Le bouton qui ouvre les coffrets de niveau dit « Récompenses ». |
 
 ## Boutons

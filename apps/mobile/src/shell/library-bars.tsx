@@ -1,6 +1,8 @@
 import type { ToyIconName } from "@leximon/tokens";
 import {
   closedTabs,
+  ECUS_TITLE,
+  ecusLabel,
   levelBadge,
   levelDescription,
   levelRatio,
@@ -18,7 +20,9 @@ import type { BottomTabBarProps } from "expo-router/js-tabs";
 import { useState } from "react";
 import { Pressable, StyleSheet, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { EcusSheet } from "@/ecus/ecus-sheet";
 import {
+  EcusButton,
   LevelGauge,
   MailButton,
   PortraitButton,
@@ -47,6 +51,7 @@ export function LibraryTopBand() {
   const view = usePlayerView();
   const now = useNow(15_000);
   const [stockOpen, setStockOpen] = useState(false);
+  const [ecusOpen, setEcusOpen] = useState(false);
   const { progress } = view;
   const stock = view.wallet === null ? null : stockView(view.wallet, now);
   return (
@@ -78,6 +83,13 @@ export function LibraryTopBand() {
           onPress={() => setStockOpen(true)}
         />
       )}
+      {view.wallet !== null && (
+        <EcusButton
+          label={`${ECUS_TITLE}, ${ecusLabel(view.wallet.ecus)}`}
+          figure={String(view.wallet.ecus)}
+          onPress={() => setEcusOpen(true)}
+        />
+      )}
       <MailButton
         label={mailLabel(view.mail)}
         count={view.mail}
@@ -89,6 +101,14 @@ export function LibraryTopBand() {
           now={now}
           open={stockOpen}
           onClose={() => setStockOpen(false)}
+        />
+      )}
+      {view.wallet !== null && (
+        <EcusSheet
+          wallet={view.wallet}
+          now={now}
+          open={ecusOpen}
+          onClose={() => setEcusOpen(false)}
         />
       )}
     </View>

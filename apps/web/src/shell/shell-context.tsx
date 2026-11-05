@@ -10,6 +10,8 @@ export interface Shell {
   openWelcome(): void;
   /** What waits in « Récompenses »: today's day of the welcome week first, then the coffrets. */
   openRewards(): void;
+  /** Spending écus on a missing word, from `collectionId` when given. */
+  openMissingWord(collectionId?: string): void;
   openSettings(): void;
   openMail(): void;
   /** The clan's discussion in a panel. */
@@ -25,6 +27,7 @@ export const ShellContext = createContext<Shell>({
   openCoffret: () => undefined,
   openWelcome: () => undefined,
   openRewards: () => undefined,
+  openMissingWord: () => undefined,
   openSettings: () => undefined,
   openMail: () => undefined,
   openChat: () => undefined,

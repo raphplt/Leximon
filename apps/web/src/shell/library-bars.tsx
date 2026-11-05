@@ -3,6 +3,8 @@
 import type { ToyIconName } from "@leximon/tokens";
 import {
   closedTabs,
+  ECUS_TITLE,
+  ecusLabel,
   levelBadge,
   levelDescription,
   levelRatio,
@@ -20,8 +22,10 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useCallback, useState } from "react";
 import { Avatar } from "@/components/avatar";
+import { EcusDetail } from "@/ecus/ecus-detail";
 import {
   CountBadge,
+  EcusButton,
   LevelGauge,
   MailButton,
   PortraitButton,
@@ -135,6 +139,8 @@ function PlayerTools() {
   const { openMail } = useShell();
   const [stockOpen, setStockOpen] = useState(false);
   const closeStock = useCallback(() => setStockOpen(false), []);
+  const [ecusOpen, setEcusOpen] = useState(false);
+  const closeEcus = useCallback(() => setEcusOpen(false), []);
   const { progress, wallet, now } = view;
   const stock = wallet === null || now === 0 ? null : stockView(wallet, now);
   return (
@@ -163,6 +169,14 @@ function PlayerTools() {
           />
           <Dialog open={stockOpen} title="Tes sachets" onClose={closeStock} variant="center">
             <StockDetail wallet={wallet} now={now} onClose={closeStock} />
+          </Dialog>
+          <EcusButton
+            label={`${ECUS_TITLE}, ${ecusLabel(wallet.ecus)}`}
+            figure={String(wallet.ecus)}
+            onClick={() => setEcusOpen(true)}
+          />
+          <Dialog open={ecusOpen} title={ECUS_TITLE} onClose={closeEcus} variant="center">
+            <EcusDetail wallet={wallet} now={now} onClose={closeEcus} />
           </Dialog>
         </>
       )}

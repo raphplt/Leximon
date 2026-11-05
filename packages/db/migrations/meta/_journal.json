@@ -267,6 +267,13 @@
       "when": 1793893357324,
       "tag": "0037_welcome_week",
       "breakpoints": true
+    },
+    {
+      "idx": 38,
+      "version": "7",
+      "when": 1793895081788,
+      "tag": "0038_ecus",
+      "breakpoints": true
     }
   ]
 }

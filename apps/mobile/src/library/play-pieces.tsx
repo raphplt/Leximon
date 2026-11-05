@@ -193,6 +193,31 @@ export function StockButton({
   );
 }
 
+/** The player's écus, which opens what they are for. */
+export function EcusButton({
+  label,
+  figure,
+  onPress,
+}: {
+  readonly label: string;
+  readonly figure: string;
+  readonly onPress?: () => void;
+}) {
+  return (
+    <Toy
+      matter="paper"
+      style={styles.stockToy}
+      bodyStyle={styles.stock}
+      accessibilityRole="button"
+      accessibilityLabel={label}
+      onPress={onPress}
+    >
+      <ToyIcon name="ecu" size={30} />
+      <Lettering size={17}>{figure}</Lettering>
+    </Toy>
+  );
+}
+
 /** The mail, with what waits in it. */
 export function MailButton({
   label,

@@ -14,6 +14,7 @@ import {
   collectionProgress,
   copiesAt,
   type DrawnCard,
+  ecuRules,
   firstOfRarityLabel,
   isFirstOfRarity,
   keepsAnnouncementWhenHurried,
@@ -28,6 +29,7 @@ import {
   recap,
   recapCascade,
   recapOrder,
+  recyclePreview,
   revealNextLabel,
   revealOrder,
   SIGNED_IN_TOAST,
@@ -53,6 +55,7 @@ import { loadCatalog } from "@/cards/catalog";
 import { prepareSpokenWords } from "@/cards/use-spoken-word";
 import { Card } from "@/components/card";
 import { RarityName } from "@/components/rarity-icon";
+import { RecycleButton } from "@/ecus/recycle-button";
 import { api } from "@/lib/api";
 import { usePackShape } from "@/lib/use-pack-shape";
 import { Desk, MainAction, PaperAction } from "@/library/play-pieces";
@@ -109,6 +112,7 @@ const RECAP_LEVEL_UP_LINE = 56;
 const RECAP_SIGN_UP_LINE = 42;
 const RECAP_HOME_LINE = 58;
 const RECAP_COMPLETION_LINE = 32;
+const RECAP_RECYCLE_LINE = 48;
 /** Narrower, a card no longer reads even as a preview. */
 const RECAP_CAROUSEL_MIN = 180;
 /** A skipped card chimes once it has landed, a little after its slot starts moving. */
@@ -845,6 +849,11 @@ function Recap({
   // The session ends on this sachet: say what the welcome week keeps for today or tomorrow.
   const welcomeLine = mustSignUp || another ? null : welcomeSessionLine(view.welcome);
   const guestLine = mustSignUp ? welcomeGuestLine(view.welcome) : null;
+  const owned = useShared(ownedCards);
+  const recycles =
+    catalog !== null &&
+    owned !== null &&
+    recyclePreview(ecuRules(view.now), [...catalog.cardsById.values()], owned).copies > 0;
   // The cards lie on the desk and the buttons are its objects.
   return (
     <div className={styles.recap}>
@@ -861,7 +870,8 @@ function Recap({
             (mustSignUp ? RECAP_SIGN_UP_LINE : 0) +
             (welcomeLine !== null || guestLine !== null ? RECAP_SIGN_UP_LINE : 0) +
             (another ? RECAP_HOME_LINE : 0) +
-            pack.completions.length * RECAP_COMPLETION_LINE
+            pack.completions.length * RECAP_COMPLETION_LINE +
+            (recycles ? RECAP_RECYCLE_LINE : 0)
           }
         />
       )}
@@ -885,6 +895,7 @@ function Recap({
         <p className={styles.hint}>{nextSachet}</p>
       )}
       {welcomeLine !== null && <p className={styles.hint}>{welcomeLine}</p>}
+      {recycles && <RecycleButton small />}
       <div className={styles.actions}>
         {coffretWaits ? (
           <MainAction label="Ouvrir le coffret" onClick={() => openCoffret()} />

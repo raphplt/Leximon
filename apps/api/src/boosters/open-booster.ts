@@ -63,6 +63,7 @@ export interface WalletView {
   readonly garni: number;
   /** Most bonus boosters the reserve holds. */
   readonly bonusCap: number;
+  readonly ecus: number;
 }
 
 export type OpenBoosterResult =
@@ -244,6 +245,7 @@ export async function openBooster(
           bonus: locked.bonusBoosters,
           garni: locked.garniBoosters,
           bonusCap,
+          ecus: locked.ecus,
         },
         // The XP was counted by the first request; a retry shows the total without a new gain.
         progress: progressGain(state.xp, 0),
@@ -388,6 +390,7 @@ export async function openBooster(
         bonus: consumed.reserve.bonus,
         garni: consumed.reserve.garni,
         bonusCap,
+        ecus: locked.ecus,
       },
       progress: progressGain(progress.xp, xpGained + completionXp),
       completions: progress.completions,

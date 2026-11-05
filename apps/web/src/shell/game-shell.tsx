@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { type ReactNode, useCallback, useEffect, useMemo, useState } from "react";
 import { ChatPanel } from "@/clan/chat-panel";
+import { MissingWordDialog } from "@/ecus/missing-word-dialog";
 import { TradeDoneDialog } from "@/trades/trade-done-dialog";
 import { ToastProvider } from "@/ui/toast";
 import { CardSheet } from "./card-sheet";
@@ -36,6 +37,9 @@ function Frame({ children }: { readonly children: ReactNode }) {
   const [overlay, setOverlay] = useState<Overlay>(null);
   const [coffret, setCoffret] = useState<number | null>(null);
   const [welcome, setWelcome] = useState(false);
+  const [missingWord, setMissingWord] = useState<{ readonly collectionId: string | null } | null>(
+    null,
+  );
   const [card, setCard] = useState<{
     readonly id: string;
     readonly among: readonly string[];
@@ -68,6 +72,10 @@ function Frame({ children }: { readonly children: ReactNode }) {
       openCoffret,
       openWelcome,
       openRewards,
+      openMissingWord: (collectionId) => {
+        setOverlay(null);
+        setMissingWord({ collectionId: collectionId ?? null });
+      },
       openSettings: () => setOverlay("settings"),
       openMail: () => setOverlay("mail"),
       openChat: () => setOverlay("chat"),
@@ -103,6 +111,11 @@ function Frame({ children }: { readonly children: ReactNode }) {
       <NewsDialog level={view.progress?.level ?? null} />
       <CoffretDialog level={coffret} now={view.now} onClose={() => setCoffret(null)} />
       <WelcomeDialog open={welcome} onClose={() => setWelcome(false)} />
+      <MissingWordDialog
+        open={missingWord !== null}
+        collectionId={missingWord?.collectionId ?? null}
+        onClose={() => setMissingWord(null)}
+      />
       <TradeDoneDialog />
       <CardSheet
         cardId={card?.id ?? null}

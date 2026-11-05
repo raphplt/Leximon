@@ -10,7 +10,15 @@ function json(status: number, body: unknown): Response {
   });
 }
 
-const WALLET = { stored: 6, nextRefillAt: null, bonus: 0, garni: 0, bonusCap: 10, capacity: 6 };
+const WALLET = {
+  stored: 6,
+  nextRefillAt: null,
+  bonus: 0,
+  garni: 0,
+  bonusCap: 10,
+  capacity: 6,
+  ecus: 0,
+};
 
 describe("guest sign-in", () => {
   it("signs in once when parallel requests find no session", async () => {

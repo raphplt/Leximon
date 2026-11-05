@@ -13,6 +13,7 @@ import type { RefillSchedule } from "./booster/refill";
 import type { ClanSchedule } from "./clan/clan";
 import type { ClanGoalSchedule } from "./clan/goal";
 import type { ClanLevelRules } from "./clan/level";
+import type { EcuSchedule } from "./ecus/ecus";
 import type { FriendSchedule } from "./friend/friend";
 import type { MasterySchedule } from "./mastery/mastery";
 import type { PracticeSchedule } from "./mastery/practice";
@@ -240,6 +241,27 @@ export const LEVEL_REWARD_SCHEDULE: LevelRewardSchedule = [
       120: "iridescent",
       150: "royal-sun",
     },
+  },
+];
+
+const RECYCLE_VALUE = { common: 1, uncommon: 2, rare: 5, precious: 15, epic: 50, legendary: 200 };
+
+// Calibrated on a regular player at 8 sachets a day (rnd/doublons-sim): a missing word costs eight
+// times what recycling its rarity gives, a Légendaire about seven weeks of duplicates.
+export const ECU_SCHEDULE: EcuSchedule = [
+  {
+    startsAt: SINCE_LAUNCH,
+    recycleValue: RECYCLE_VALUE,
+    missingWordPrice: {
+      common: 8,
+      uncommon: 16,
+      rare: 40,
+      precious: 120,
+      epic: 400,
+      legendary: 1_600,
+    },
+    recycledTogether: ["common", "uncommon", "rare", "precious"],
+    copiesKept: 2,
   },
 ];
 

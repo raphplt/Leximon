@@ -96,6 +96,7 @@ describe("GET /me/wallet", () => {
       garni: 0,
       bonusCap: BONUS_SCHEDULE[0].reserveCap,
       capacity: CAPACITY,
+      ecus: 0,
     });
     const [row] = await db
       .select({ total: count() })

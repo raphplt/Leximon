@@ -24,6 +24,7 @@ NOISE = rng.uniform(-1, 1, RATE)
 
 C5, E5, G5, A5 = 523.25, 659.25, 783.99, 880.0
 C6, D6, E6, G6, C7 = 1046.5, 1174.66, 1318.51, 1567.98, 2093.0
+F7 = 2793.83
 
 
 def ramp(t, start, end, v0, v1):
@@ -203,6 +204,14 @@ def answer_wrong(cue):
     cue.noise(0.08, "lowpass", 400, 0.06)
 
 
+def coins(cue):
+    for index, note in enumerate([E6 * 2, G6 * 2, F7]):
+        at = index * 0.075
+        cue.noise(0.03, "highpass", 5000, 0.12, at=at)
+        cue.tone(note, 0.28, 0.05, at=at)
+        cue.tone(note * 1.47, 0.16, 0.025, at=at)
+
+
 CUES = {
     "seal-break": seal_break,
     "tear-finish": tear_finish,
@@ -219,6 +228,7 @@ CUES = {
     "recap": recap,
     "answer-right": answer_right,
     "answer-wrong": answer_wrong,
+    "coins": coins,
 }
 GRAINS = 6
 """The loudest grain the web plays: the app lowers each grain's volume from there."""

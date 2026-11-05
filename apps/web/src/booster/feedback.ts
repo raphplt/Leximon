@@ -165,6 +165,7 @@ const D6 = 1174.66;
 const E6 = 1318.51;
 const G6 = 1567.98;
 const C7 = 2093;
+const F7 = 2793.83;
 
 const CUES: Readonly<Record<SoundCue, (ctx: AudioContext) => void>> = {
   sealBreak: (ctx) => {
@@ -256,6 +257,15 @@ const CUES: Readonly<Record<SoundCue, (ctx: AudioContext) => void>> = {
   answerWrong: (ctx) => {
     tone(ctx, { frequency: 220, frequencyTo: 150, duration: 0.24, gain: 0.12, type: "triangle" });
     noiseBurst(ctx, { duration: 0.08, filter: "lowpass", frequency: 400, gain: 0.06 });
+  },
+  // Écus falling into the purse: three clinks, each a bright tick and a short metal ring.
+  coins: (ctx) => {
+    [E6 * 2, G6 * 2, F7].forEach((note, index) => {
+      const at = index * 0.075;
+      noiseBurst(ctx, { at, duration: 0.03, filter: "highpass", frequency: 5000, gain: 0.12 });
+      tone(ctx, { at, frequency: note, duration: 0.28, gain: 0.05 });
+      tone(ctx, { at, frequency: note * 1.47, duration: 0.16, gain: 0.025 });
+    });
   },
 };
 

@@ -29,6 +29,7 @@ import { CollectionSeal } from "@/components/collection-seal";
 import { EngravingCredit } from "@/components/engraving-credit";
 import { HoloCard } from "@/components/holo-card";
 import { useHoloLight } from "@/components/use-holo-light";
+import { RecycleCopy } from "@/ecus/recycle-copy";
 import { useNarrow } from "@/lib/use-narrow";
 import { useNow } from "@/lib/use-now";
 import { noteCardRead, ownedCards, wordMemory } from "@/player/collection";
@@ -267,6 +268,7 @@ function SheetBody({
                 Proposer en échange
               </ButtonLink>
             )}
+            <RecycleCopy cardId={card.id} rarity={card.rarity} quantity={quantity} />
             {pins.profile?.member === true && (
               <button
                 type="button"

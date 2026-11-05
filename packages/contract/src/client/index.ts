@@ -38,8 +38,10 @@ export type {
   BlockResult,
   ClaimResult,
   DeleteAccountResult,
+  MissingWordResult,
   OpenBoosterResult,
   ProfileResult,
+  RecycleCopyResult,
   TradeResult,
 } from "./game";
 export {

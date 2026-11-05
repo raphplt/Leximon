@@ -117,8 +117,9 @@ export function LevelRoadScreen({ asked }: { readonly asked: number | null }) {
         <Text style={styles.kicker}>NIVEAU {detail.level}</Text>
         <Text style={styles.detailTitle}>{detail.title}</Text>
         <View style={styles.items}>
-          {detail.items.map((item) => (
-            <View key={item.title} style={styles.item}>
+          {detail.items.map((item, index) => (
+            // biome-ignore lint/suspicious/noArrayIndexKey: a fixed list; two rewards may be alike
+            <View key={`${item.title}-${index}`} style={styles.item}>
               <View style={styles.itemIcon}>
                 <Icon name={REWARD_ICONS[item.icon]} size={22} color={ink.rubric} />
               </View>

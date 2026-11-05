@@ -32,6 +32,8 @@ export const boosterWalletSchema = z.object({
   bonusCap: z.int().positive(),
   /** Most boosters the free stock holds. */
   capacity: z.int().positive(),
+  /** Écus won by recycling duplicates, spent on a missing word. Absent from older APIs. */
+  ecus: z.int().nonnegative().default(0),
 });
 export type BoosterWalletResponse = z.infer<typeof boosterWalletSchema>;
 

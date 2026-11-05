@@ -1,0 +1,15 @@
+.confirm {
+  display: grid;
+  gap: var(--lx-s3);
+  flex-basis: 100%;
+}
+
+.text {
+  margin: 0;
+}
+
+.buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--lx-s3);
+}

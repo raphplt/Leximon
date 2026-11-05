@@ -175,6 +175,11 @@ A sur le web sert de deuxième joueur : amis, échanges, clan, sanctions. `pnpm 
 - **Attendu :** carte en grand, crédit de la gravure, prononciation écrite, maîtrise, exemplaires, origine. Partager ouvre la feuille de partage d'Android. Épingler toutes places prises propose de remplacer une carte. « Signaler une erreur », tout en bas, envoie un retour rangé dans `/admin/retours` sous `/mobile/carte/<mot>`.
 - **Retour :**
 
+### MAL-04 · Écus, recyclage et mot manquant (ALB-10, ALB-11)
+- **Faire :** comme ALB-10 et ALB-11, sur le téléphone.
+- **Attendu :** la pastille des écus tient dans le bandeau du haut sur 360 points de large, à côté du stock et du courrier ; elle ouvre une feuille avec le solde, le barème et les deux boutons. Le mot manquant s'ouvre en feuille au-dessus de l'écran, la fiche du mot reçu s'ouvre ensuite. Le tintement joue au recyclage, la vibration et le son suivent les réglages.
+- **Retour :**
+
 ### MAL-03 · Comparer avec un ami
 - **Faire :** Amis → un ami → « Comparer nos albums » ; essayer les trois filtres, fermer par la croix.
 - **Attendu :** « Ton album, à côté de celui de … », filtres « … l'a, pas moi », « Je l'ai, pas … », « On l'a tous les deux ». La croix rend l'album normal.

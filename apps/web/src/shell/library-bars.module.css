@@ -200,14 +200,14 @@
   font-size: 16px;
 }
 
-/* The player's name needs the widest screens; under 1360 px the labels leave, the icons stay. */
+/* The player's name needs the widest screens; under 1500 px the labels leave, the icons stay. */
 @media (max-width: 1559px) {
   .playerName {
     display: none;
   }
 }
 
-@media (max-width: 1359px) {
+@media (max-width: 1499px) {
   .navLabel {
     display: none;
   }
@@ -224,7 +224,7 @@
 }
 
 /* Narrower still, the level keeps its medal and the boards close in. */
-@media (max-width: 1023px) {
+@media (max-width: 1119px) {
   .top {
     gap: 12px;
     padding-inline: 16px;

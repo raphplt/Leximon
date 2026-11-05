@@ -1,6 +1,7 @@
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { Fragment } from "react";
+import { MissingWordHost } from "@/ecus/missing-word";
 import { CoffretHost } from "@/levels/coffret";
 import { WelcomeHost } from "@/levels/welcome";
 import { useSessionGeneration } from "@/player/session";
@@ -23,6 +24,7 @@ export default function RootLayout() {
         />
         <CoffretHost />
         <WelcomeHost />
+        <MissingWordHost />
       </Fragment>
       <ToastHost />
       <UpdateGate />

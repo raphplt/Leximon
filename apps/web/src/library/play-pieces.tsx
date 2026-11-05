@@ -94,6 +94,24 @@ export function StockButton({
   );
 }
 
+/** The player's écus, which opens what they are for. */
+export function EcusButton({
+  label,
+  figure,
+  onClick,
+}: {
+  readonly label: string;
+  readonly figure: string;
+  readonly onClick?: () => void;
+}) {
+  return (
+    <Toy matter="paper" className={styles.stock} aria-label={label} onClick={onClick}>
+      <ToyIcon name="ecu" size={30} />
+      <Lettering className={styles.stockFigure}>{figure}</Lettering>
+    </Toy>
+  );
+}
+
 /** The mail, with what waits in it. */
 export function MailButton({
   label,

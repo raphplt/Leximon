@@ -22,7 +22,7 @@ La plupart ont déjà une réponse. Ce cahier ne les rouvre pas.
 | Album : barre de lettres, recherche, défilement par lettre | Fait le 2026-11-03 |
 | Direction artistique ancienne | Fait : « La Bibliothèque » (D-056) |
 | Défis : ce qu'on gagne, sachet gagné à ouvrir, « Tes mots par palier » | Refait avec la page Défis (P81) |
-| Doublons qui ne valent rien | Tranché, pas construit : écus, recyclage, mot manquant, tampons (P84 à P87) |
+| Doublons qui ne valent rien | Écus, recyclage et mot manquant construits le 2026-11-05 (P84 à P86) ; tampons tranchés, pas construits (P87) |
 | Pointage sans punition | Tranché : la série qui pardonne et le total des jours joués (P88), en partie construite |
 | Succès, codes | Tranchés, pas construits (P89, P90) |
 | Échanges seulement par code, social trop tard | Tranché, pas construit : niveau 5, doubles visibles, échanges suggérés (P59, P77) ; la liste des joueurs existe (P83) |

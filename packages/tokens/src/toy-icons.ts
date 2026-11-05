@@ -143,6 +143,12 @@ export const toyIcons = {
     outlined(circle(10, 5, 3), "f3"),
   ],
   mail: [outlined(rect(4, 10, 40, 29, 5), "f2"), outlined("M6 13l18 14 18-14")],
+  ecu: [
+    outlined(circle(24, 24, 19), "f1"),
+    outlined(circle(24, 24, 13.5), "f2"),
+    outlined("M24 15l4.5 9-4.5 9-4.5-9z", "f3"),
+    light("M11 19a14 14 0 0 1 7-8"),
+  ],
   lock: [
     outlined("M15 21v-6a9 9 0 0 1 18 0v6", undefined, { strokeWidth: 5.5 }),
     { d: "M15 21v-6a9 9 0 0 1 18 0v6", stroke: "f2", strokeWidth: 2 },
@@ -173,6 +179,7 @@ export const toyIconInks: Readonly<Record<ToyIconName, ToyInks>> = {
   trades: { f1: "#5A7CB8", f2: "#F6D47A", f3: "#F6D47A" },
   community: { f1: "#34714A", f2: "#FBECCB", f3: "#F6D47A" },
   mail: { f1: "#FBECCB", f2: "#FBECCB", f3: "#F6D47A" },
+  ecu: { f1: "#D9A63A", f2: "#F6D47A", f3: "#FFF6E0" },
   lock: { f1: "#D0C8BA", f2: "#D0C8BA", f3: "#F6D47A" },
   arrow: { f1: "#5A3418", f2: "#5A3418", f3: "#5A3418" },
 };
