@@ -11,7 +11,13 @@ import {
 } from "@leximon/view-model";
 import { router } from "expo-router";
 import { type ReactNode, type Ref, useEffect, useState } from "react";
-import { StyleSheet, View, type ViewInstance } from "react-native";
+import {
+  type LayoutChangeEvent,
+  StyleSheet,
+  useWindowDimensions,
+  View,
+  type ViewInstance,
+} from "react-native";
 import Animated, {
   Easing,
   useAnimatedStyle,
@@ -28,6 +34,7 @@ import { dailyChallenge } from "@/player/collection";
 import { useNow, useShared } from "@/player/shared";
 import { usePlayerView } from "@/player/use-player-view";
 import { TAB_BAR_RISE } from "@/shell/tab-bar";
+import { GRID } from "./sachet-face";
 
 type TileId = Exclude<FabId, "mail" | "settings">;
 
@@ -48,6 +55,24 @@ const DESK_BOTTOM = 96 + TAB_BAR_RISE;
 
 /** How much the sachet grows once it comes to the middle to be opened. */
 const OPENING_SCALE = 1.25;
+/** The sachet on the desk, between its tiles: as large as its row allows, within these. */
+const SACHET_WIDTH = { min: 64, max: 180 } as const;
+/** Room the sachet keeps in its row: its top margin and its sway. */
+const SACHET_ROOM = 24;
+/** Room it keeps across: the desk's frame and some air beside the tiles. */
+const SACHET_GUTTER = 24;
+/** The desk's distance from the screen's sides. */
+const DESK_SIDE = 14;
+
+/**
+ * The sachet's width in a row of this height, between tiles leaving this much width: on a short
+ * or narrow screen, it shrinks so the button and the tiles stay clear.
+ */
+function fitSachet(rowHeight: number, between: number): number {
+  if (rowHeight === 0) return SACHET_WIDTH.max;
+  const fit = Math.min(((rowHeight - SACHET_ROOM) * GRID.width) / GRID.height, between);
+  return Math.max(SACHET_WIDTH.min, Math.min(SACHET_WIDTH.max, Math.floor(fit)));
+}
 
 /** How far a sachet slides across the desk when the collection changes, in pt. */
 const SLIDE = 210;
@@ -124,8 +149,11 @@ export function LibraryCounter({
     readonly left: CollectionChoice | null;
     readonly right: CollectionChoice | null;
   };
-  /** The sachet itself, which the screen opens: the counter only moves it and makes it charge. */
-  readonly sachet: ReactNode;
+  /**
+   * The sachet itself at a width, which the screen opens: the counter only sizes it to its row,
+   * moves it and makes it charge.
+   */
+  readonly sachet: (width: number) => ReactNode;
   readonly stock: StockView | null;
   /** Sachets the player may still open, for the count on the button; null to show none. */
   readonly left: number | null;
@@ -145,10 +173,28 @@ export function LibraryCounter({
   const opening = moment !== "waiting";
   /** The screen, the row of the tiles in it, and the sachet in that row: it climbs to the desk's middle. */
   const [screen, setScreen] = useState(0);
-  const [row, setRow] = useState(0);
+  const [row, setRow] = useState({ y: 0, height: 0 });
   const [place, setPlace] = useState({ y: 0, height: 0 });
   const deskMiddle = (DESK_TOP + screen - DESK_BOTTOM) / 2;
-  const climb = screen === 0 ? 0 : deskMiddle - row - place.y - place.height / 2;
+  const climb = screen === 0 ? 0 : deskMiddle - row.y - place.y - place.height / 2;
+  /** The columns of tiles, at their natural size: they shrink to the row when it is short. */
+  const [tiles, setTiles] = useState({ width: 0, height: 0 });
+  const tileScale =
+    row.height === 0 || tiles.height === 0 ? 1 : Math.min(1, row.height / tiles.height);
+  const { width: windowWidth } = useWindowDimensions();
+  const sachetWidth = fitSachet(
+    row.height,
+    windowWidth - 2 * DESK_SIDE - 2 * tiles.width * tileScale - SACHET_GUTTER,
+  );
+  const fitTiles = {
+    transform: [{ scale: tileScale }],
+    transformOrigin: "top",
+  } as const;
+  const measureTiles = ({ nativeEvent: { layout } }: LayoutChangeEvent) =>
+    setTiles((known) => ({
+      width: Math.max(known.width, layout.width),
+      height: Math.max(known.height, layout.height),
+    }));
 
   const chrome = useSharedValue(1);
   const lift = useSharedValue(0);
@@ -238,8 +284,15 @@ export function LibraryCounter({
           onNext={() => turn("right")}
         />
       </Animated.View>
-      <View style={styles.middle} onLayout={({ nativeEvent: { layout } }) => setRow(layout.y)}>
-        <Animated.View style={[styles.side, fading]} pointerEvents={opening ? "none" : "auto"}>
+      <View
+        style={styles.middle}
+        onLayout={({ nativeEvent: { layout } }) => setRow({ y: layout.y, height: layout.height })}
+      >
+        <Animated.View
+          style={[styles.side, fitTiles, fading]}
+          pointerEvents={opening ? "none" : "auto"}
+          onLayout={measureTiles}
+        >
           <Tiles side="left" say={say} />
         </Animated.View>
         <Animated.View
@@ -261,11 +314,15 @@ export function LibraryCounter({
                     exiting: slideOut(entry === "right" ? "left" : "right"),
                   })}
             >
-              {sachet}
+              {sachet(sachetWidth)}
             </Animated.View>
           </Animated.View>
         </Animated.View>
-        <Animated.View style={[styles.side, fading]} pointerEvents={opening ? "none" : "auto"}>
+        <Animated.View
+          style={[styles.side, fitTiles, fading]}
+          pointerEvents={opening ? "none" : "auto"}
+          onLayout={measureTiles}
+        >
           <Tiles side="right" say={say} />
         </Animated.View>
       </View>
@@ -355,7 +412,13 @@ function Tiles({
 
 const styles = StyleSheet.create({
   screen: { flex: 1, alignItems: "center", paddingTop: 46 },
-  desk: { position: "absolute", top: DESK_TOP, left: 14, right: 14, bottom: DESK_BOTTOM },
+  desk: {
+    position: "absolute",
+    top: DESK_TOP,
+    left: DESK_SIDE,
+    right: DESK_SIDE,
+    bottom: DESK_BOTTOM,
+  },
   middle: {
     flex: 1,
     flexDirection: "row",

@@ -92,8 +92,8 @@ Rien d'autre : ni position, ni contacts, ni photos, ni identifiant publicitaire,
 **Visuels**, dans [apps/mobile/store/](../apps/mobile/store/) :
 
 - icône 512 × 512 : `icon-512.png` ;
-- image de présentation 1024 × 500 : `presentation-1024x500.png` ;
-- 7 captures de téléphone en 1080 × 1920, à envoyer dans l'ordre : `android/01-sachet.jpg` à `android/07-fiche-precieux.jpg`. Elles ont été prises sur l'émulateur le 2026-10-27, barre d'état figée à 9:41.
+- image de présentation 1024 × 500 : `presentation-1024x500.png`, tirée de la planche `/planches/stores` du web (voir plus bas) ;
+- 7 captures de téléphone en 1080 × 2160 (le format le plus haut que Google Play accepte, 2:1), à envoyer dans l'ordre : `android/01-sachet.jpg` à `android/07-fiche-precieux.jpg`. Elles ont été prises sur l'émulateur le 2026-11-05, dans l'allure « La Bibliothèque », barre d'état figée à 9:41.
 
 ## App Store
 
@@ -134,9 +134,17 @@ Apple calcule 13+. On remplace par **16+** : les conditions d'utilisation impose
 | Données d'utilisation › Interaction avec le produit | Analyse, fonctionnalités de l'app |
 | Autres données (tranche d'âge) | Analyse |
 
-**Captures :** 7 captures iPhone « écran moyen » (1206 × 2622, la taille qu'App Store Connect demande en 2026), dans [apps/mobile/store/ios/](../apps/mobile/store/ios/), à envoyer dans l'ordre. Elles ont été prises le 2026-10-28 sur l'émulateur Android réglé comme un iPhone 16 Pro Max (440 × 956 points), barre d'état effacée, puis réduites. À refaire sur un vrai iPhone si l'app y diffère. L'iPad n'est pas visé.
+**Captures :** 7 captures iPhone « écran moyen » (1206 × 2622, la taille qu'App Store Connect demande en 2026), dans [apps/mobile/store/ios/](../apps/mobile/store/ios/), à envoyer dans l'ordre. Elles ont été reprises le 2026-11-05 dans l'allure « La Bibliothèque », sur l'émulateur Android réglé comme un iPhone 16 Pro Max (440 × 956 points), barre d'état effacée, puis réduites. À refaire sur un vrai iPhone si l'app y diffère. L'iPad n'est pas visé.
 
-**En-tête et résultats de recherche :** `en-tete-5244x2950.png` et `en-tete-3840x1646.png` (en PNG : Apple refuse le JPEG ici), deux cartes sans texte (le nom de l'app s'affiche par-dessus).
+**En-tête et résultats de recherche :** `en-tete-5244x2950.png` et `en-tete-3840x1646.png` (en PNG : Apple refuse le JPEG ici), deux cartes sans texte (le nom de l'app s'affiche par-dessus) : le sachet entre deux cartes sur le sous-main.
+
+**Refaire l'image de présentation et les en-têtes :** avec le web lancé en local, ouvrir `/planches/stores?format=play` (1024 × 500), `?format=header` (1920 × 823) ou `?format=poster` (2622 × 1475), et la photographier sans le badge de Next, par exemple avec Chrome sans fenêtre :
+
+```bash
+google-chrome-stable --headless --hide-scrollbars --window-size=1920,823 --force-device-scale-factor=2 --virtual-time-budget=6000 --screenshot=en-tete-3840x1646.png "http://localhost:3000/planches/stores?format=header"
+```
+
+`play` se prend à l'échelle 1 et `poster` à l'échelle 2 (5244 × 2950).
 
 ## Compte de démonstration
 

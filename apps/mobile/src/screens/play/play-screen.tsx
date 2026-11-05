@@ -112,8 +112,6 @@ function showFor(ms: number, hurry: { hurried: boolean; end: (() => void) | null
 
 /** The seam of the sachet, from the top of its box: where light leaks. */
 const SEAM_AT = 0.13;
-/** The sachet on the desk, between its tiles. */
-const LIBRARY_SACHET_WIDTH = 146;
 /** Most sparks a single beat of the charge throws, however late the answer is. */
 const CHARGE_SPARKS_MAX = 6;
 
@@ -482,7 +480,7 @@ function PlayFlow() {
           choices={choices}
           choice={choice}
           neighbours={neighbourChoices(choices, choice)}
-          sachet={
+          sachet={(width) => (
             <Sachet
               key={collection.id}
               collection={collection}
@@ -490,7 +488,7 @@ function PlayFlow() {
                 opening ? (moment === "burst" ? "opening" : "sealed") : canOpen ? "sealed" : "empty"
               }
               active={focused && !opening}
-              width={LIBRARY_SACHET_WIDTH}
+              width={width}
               // A guest out of sachets waits for an account, not for time.
               refill={mustSignUp ? null : (stock?.refill ?? null)}
               refillLabel={stock?.refillShort ?? null}
@@ -501,7 +499,7 @@ function PlayFlow() {
                 if (canOpen && !opening) void openPack();
               }}
             />
-          }
+          )}
           stock={stock}
           left={left}
           canOpen={canOpen}

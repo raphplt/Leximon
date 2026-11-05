@@ -263,7 +263,7 @@ Seulement ce dont l'écran Jouer et l'ouverture ont besoin : bandeau du haut (po
 | E-mails | Fait le 2026-11-05 : une feuille crème sur le bois sombre, bouton en or cerné d'encre, en couleurs pleines. Pas d'image distante (D-036), Georgia reste la police |
 | Images de partage | Fait le 2026-11-05 : les trois images dans la salle, la carte dessinée comme dans le jeu sur le sous-main |
 | Icône d'app, écran de lancement, favicon | Fait le 2026-11-05 : le sceau de cire sur le cuir vert, cadre d'or |
-| Fiches des stores | Captures, image de présentation, en-têtes iOS |
+| Fiches des stores | Fait le 2026-11-05 : captures refaites, image de présentation et en-têtes iOS tirés de la planche `/planches/stores` |
 | Cadres d'avatar | Fait le 2026-11-05 : les 13 cadres en matières (bois, or, laiton, cuir, vert-de-gris, papier, cire, nacre), un seul dessin pour le web et le mobile (`packages/tokens/src/avatar-frames.ts`). Identifiants inchangés |
 | Emblèmes de clan | Fait le 2026-11-05 : bouclier cerclé d'or comme les jouets, champ éclairé en haut, couleurs accordées à la salle. Identifiants inchangés |
 | Admin | Tokens seulement. Couleurs de graphiques sorties du code |
