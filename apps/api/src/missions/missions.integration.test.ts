@@ -178,12 +178,36 @@ describe("GET /me/missions", () => {
     expect(rows).toHaveLength(1);
   });
 
-  it("never draws a trade for a guest, nor a recycling without duplicates", async () => {
+  it("never draws a trade or a joust for a guest, nor a recycling without duplicates", async () => {
     for (let n = 0; n < 5; n++) {
       const guest = await player();
       const body = missionsResponseSchema.parse(await (await read(guest)).json());
-      for (const mission of body.missions) expect(["trade", "recycle"]).not.toContain(mission.kind);
+      for (const mission of body.missions) {
+        expect(["trade", "joust", "recycle"]).not.toContain(mission.kind);
+      }
     }
+  });
+
+  it("counts the joust runs the player finished today, on either side", async () => {
+    const guest = await player();
+    const other = await player();
+    await setMissions(guest, [{ kind: "joust", target: 2 }]);
+    const now = Date.now();
+    const joust = (challengerId: string, opponentId: string) => ({
+      kind: "friendly" as const,
+      challengerId,
+      opponentId,
+      launchKey: crypto.randomUUID(),
+      createdAt: new Date(now - DAY),
+    });
+    await db.insert(schema.jousts).values([
+      { ...joust(guest.userId, other.userId), challengerDoneAt: new Date(now) },
+      { ...joust(other.userId, guest.userId), opponentDoneAt: new Date(now) },
+      { ...joust(guest.userId, other.userId), challengerDoneAt: new Date(now - 2 * DAY) },
+      { ...joust(other.userId, guest.userId), challengerDoneAt: new Date(now) },
+    ]);
+    const body = missionsResponseSchema.parse(await (await read(guest)).json());
+    expect(body.missions.map((m) => [m.kind, m.progress])).toEqual([["joust", 2]]);
   });
 
   it("reads progress from what the player did today", async () => {

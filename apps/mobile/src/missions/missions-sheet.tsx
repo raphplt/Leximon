@@ -42,6 +42,7 @@ const PLACES: Readonly<Record<MissionPlace, Href>> = {
   riddle: "/enigme",
   trades: "/echanges",
   album: "/album",
+  jousts: "/joutes",
 };
 
 let shown = false;

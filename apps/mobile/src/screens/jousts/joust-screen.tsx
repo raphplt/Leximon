@@ -31,7 +31,7 @@ import { api } from "@/api/client";
 import { useCatalog } from "@/cards/use-catalog";
 import { play, vibrate } from "@/feedback/feedback";
 import { refreshIfRead } from "@/player/collection";
-import { progress, wallet } from "@/player/state";
+import { missions, progress, wallet } from "@/player/state";
 import { catalogCard, openCard } from "@/screens/trades/card-row";
 import { alpha, colors, fontSizes, fonts, paperColors, radii, space } from "@/theme";
 import { Button } from "@/ui/button";
@@ -140,6 +140,7 @@ function RunScreen({
   const finish = useCallback(() => {
     progress.refresh();
     refreshIfRead(wallet);
+    refreshIfRead(missions);
     onOver();
   }, [onOver]);
 

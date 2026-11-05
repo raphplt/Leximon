@@ -28,7 +28,7 @@ function isMissionKind(kind: string): kind is MissionKind {
 }
 
 /** Where a mission is done: each platform maps it to its screen. */
-export type MissionPlace = "play" | "challenges" | "riddle" | "trades" | "album";
+export type MissionPlace = "play" | "challenges" | "riddle" | "trades" | "album" | "jousts";
 
 export interface MissionLine {
   /** « Ouvre 3 sachets ». */
@@ -108,6 +108,11 @@ function missionText(
       };
     case "recycle":
       return { text: "Recycle des doubles en écus", place: "album" };
+    case "joust":
+      return {
+        text: target > 1 ? `Joue ${formatCount(target)} joutes` : "Joue une joute",
+        place: "jousts",
+      };
   }
 }
 

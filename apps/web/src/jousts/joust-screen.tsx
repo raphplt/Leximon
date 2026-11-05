@@ -29,6 +29,8 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { play, vibrate } from "@/booster/feedback";
 import { useCatalog } from "@/cards/use-catalog";
 import { api } from "@/lib/api";
+import { refreshIfRead } from "@/player/collection";
+import { missions } from "@/player/player";
 import { publishProgress } from "@/progress/use-progress";
 import { catalogCard } from "@/trades/card-thumb";
 import { Button } from "@/ui/button";
@@ -134,6 +136,7 @@ function RunScreen({
       .fetchProgress()
       .then(publishProgress)
       .catch(() => undefined);
+    refreshIfRead(missions);
     onOver();
   }, [onOver]);
 

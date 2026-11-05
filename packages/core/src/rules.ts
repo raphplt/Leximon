@@ -305,6 +305,7 @@ export const MISSION_SCHEDULE: MissionSchedule = [
       riddle: 1,
       trade: 1,
       recycle: 1,
+      joust: 1,
     },
     xp: 30,
     ecus: 10,

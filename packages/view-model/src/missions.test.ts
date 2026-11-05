@@ -74,11 +74,16 @@ describe("missionLine", () => {
   });
 
   it("shows a kind it does not know rather than failing", () => {
-    const line = missionLine({ kind: "joust", target: 1, progress: 0, claimed: false }, names);
+    const line = missionLine({ kind: "duel", target: 1, progress: 0, claimed: false }, names);
     expect(line).toMatchObject({
       place: null,
       text: "Mets Leximon à jour pour découvrir cette mission.",
     });
+  });
+
+  it("sends a joust mission to the jousts", () => {
+    const line = missionLine({ kind: "joust", target: 1, progress: 0, claimed: false }, names);
+    expect(line).toMatchObject({ place: "jousts", text: "Joue une joute" });
   });
 });
 

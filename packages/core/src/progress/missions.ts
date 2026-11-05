@@ -22,11 +22,19 @@ export const MISSION_KINDS = [
   "riddle",
   "trade",
   "recycle",
+  "joust",
 ] as const;
 export type MissionKind = (typeof MISSION_KINDS)[number];
 
 /** What the player does to move a mission: the favourite one is the most frequent. */
-export const MISSION_GESTURES = ["sachets", "challenges", "riddle", "trades", "recycle"] as const;
+export const MISSION_GESTURES = [
+  "sachets",
+  "challenges",
+  "riddle",
+  "trades",
+  "recycle",
+  "jousts",
+] as const;
 export type MissionGesture = (typeof MISSION_GESTURES)[number];
 
 export const GESTURE_OF: Readonly<Record<MissionKind, MissionGesture>> = {
@@ -37,6 +45,7 @@ export const GESTURE_OF: Readonly<Record<MissionKind, MissionGesture>> = {
   riddle: "riddle",
   trade: "trades",
   recycle: "recycle",
+  joust: "jousts",
 };
 
 /** A mission of a day: how much of what, and for one kind, which collection. */
@@ -200,6 +209,8 @@ export interface DayActivity {
   readonly riddleFound: boolean;
   readonly trades: number;
   readonly recycles: number;
+  /** Own runs of jousts finished. */
+  readonly jousts: number;
 }
 
 /** How far a mission is, capped at its target. */
@@ -220,6 +231,8 @@ export function missionProgress(mission: Mission, activity: DayActivity): number
         return activity.trades;
       case "recycle":
         return activity.recycles;
+      case "joust":
+        return activity.jousts;
     }
   })();
   return Math.min(done, mission.target);

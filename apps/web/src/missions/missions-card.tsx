@@ -42,6 +42,7 @@ const PLACES: Readonly<Record<MissionPlace, string>> = {
   riddle: "/enigme",
   trades: "/echanges",
   album: "/album",
+  jousts: "/joutes",
 };
 
 /**

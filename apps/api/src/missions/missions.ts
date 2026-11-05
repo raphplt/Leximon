@@ -17,7 +17,10 @@ import {
   favouriteGesture,
   featureLevels,
   gameDayOf,
+  JOUST_SCHEDULE,
+  joustRulesAt,
   levelOf,
+  MASTERY_LEVELS,
   MISSION_SCHEDULE,
   type Mission,
   type MissionContext,
@@ -45,6 +48,8 @@ const {
   cards,
   ecuMovements,
   guestLinks,
+  jousts,
+  players,
   practiceAnswers,
   reviewLogs,
   riddlePlays,
@@ -101,6 +106,7 @@ async function readActivity(
     riddle: boolean;
     trades: number;
     recycles: number;
+    jousts: number;
   }>(sql`
     select d.day::text as day,
       (select count(*)::int from ${boosterOpens} where ${boosterOpens.userId} = ${userId}
@@ -113,7 +119,13 @@ async function readActivity(
         and ${trades.resolvedAt} >= d.starts and ${trades.resolvedAt} < d.ends) as trades,
       (select count(*)::int from ${ecuMovements} where ${ecuMovements.userId} = ${userId}
         and ${ecuMovements.kind} = 'recycle'
-        and ${ecuMovements.createdAt} >= d.starts and ${ecuMovements.createdAt} < d.ends) as recycles
+        and ${ecuMovements.createdAt} >= d.starts and ${ecuMovements.createdAt} < d.ends) as recycles,
+      (select count(*)::int from ${jousts}
+        where (${jousts.challengerId} = ${userId}
+            and ${jousts.challengerDoneAt} >= d.starts and ${jousts.challengerDoneAt} < d.ends)
+          or (${jousts.opponentId} = ${userId}
+            and ${jousts.opponentDoneAt} >= d.starts and ${jousts.opponentDoneAt} < d.ends))
+        as jousts
     from (values ${values}) as d(day, starts, ends)
     cross join lateral (
       select (count(*) filter (where a.correct))::int as good,
@@ -149,6 +161,7 @@ async function readActivity(
           riddleFound: row.riddle,
           trades: row.trades,
           recycles: row.recycles,
+          jousts: row.jousts,
         },
       ];
     }),
@@ -163,6 +176,7 @@ const IDLE: DayActivity = {
   riddleFound: false,
   trades: 0,
   recycles: 0,
+  jousts: 0,
 };
 
 /** What the player can do today and does most, for a draw: one round trip. */
@@ -182,6 +196,13 @@ async function readDrawContext(
     ecuRules.recycledTogether.map((rarity) => sql`${rarity}`),
     sql`, `,
   );
+  const joustRules = joustRulesAt(JOUST_SCHEDULE, now);
+  const deckLevels = sql.join(
+    MASTERY_LEVELS.slice(MASTERY_LEVELS.indexOf(joustRules.minimumMastery)).map(
+      (level) => sql`${level}`,
+    ),
+    sql`, `,
+  );
   const result = await db.execute<{
     xp: number;
     guest: boolean;
@@ -196,6 +217,10 @@ async function readDrawContext(
     riddle_days: number;
     trade_days: number;
     recycle_days: number;
+    pseudo: boolean;
+    joust_access: boolean;
+    deck_cards: number;
+    joust_days: number;
   }>(sql`
     select
       coalesce((select ${userProgress.xp} from ${userProgress}
@@ -240,19 +265,41 @@ async function readDrawContext(
       (select count(distinct (${ecuMovements.createdAt} at time zone 'Europe/Paris')::date)::int
         from ${ecuMovements} where ${ecuMovements.userId} = ${userId}
           and ${ecuMovements.kind} = 'recycle' and ${ecuMovements.createdAt} >= ${since})
-        as recycle_days
+        as recycle_days,
+      exists (select 1 from ${players} where ${players.userId} = ${userId}
+        and ${players.pseudo} is not null) as pseudo,
+      coalesce((select ${players.joustAccess} from ${players}
+        where ${players.userId} = ${userId}), false) as joust_access,
+      (select count(*)::int from ${userCards}
+        join ${cards} on ${cards.id} = ${userCards.cardId} and ${cards.definition} is not null
+        join ${userMastery} on ${userMastery.userId} = ${userCards.userId}
+          and ${userMastery.cardId} = ${userCards.cardId}
+        where ${userCards.userId} = ${userId} and ${userCards.quantity} > 0
+          and ${userMastery.level}::text in (${deckLevels})) as deck_cards,
+      (select count(distinct (played.at at time zone 'Europe/Paris')::date)::int from (
+        select ${jousts.challengerDoneAt} as at from ${jousts}
+        where ${jousts.challengerId} = ${userId} and ${jousts.challengerDoneAt} >= ${since}
+        union all
+        select ${jousts.opponentDoneAt} from ${jousts}
+        where ${jousts.opponentId} = ${userId} and ${jousts.opponentDoneAt} >= ${since}
+      ) played) as joust_days
   `);
   const row = result.rows[0];
   if (row === undefined) throw new Error("Mission context query returned no row");
   const level = levelOf(row.xp).level;
-  const tradeLevel = featureLevels(UNLOCK_SCHEDULE, TRADE_SCHEDULE, now).trade;
+  const levels = featureLevels(UNLOCK_SCHEDULE, TRADE_SCHEDULE, now);
   const feasible = new Set<MissionKind>(["open_sachets"]);
   if (row.owned > 0) feasible.add("good_answers");
   if (row.reviewed >= rules.targets.write_words) feasible.add("write_words");
   if (row.collections.length > 0) feasible.add("review_collection");
   if (!row.riddle_over) feasible.add("riddle");
-  if (!row.guest && level >= tradeLevel) feasible.add("trade");
+  if (!row.guest && level >= levels.trade) feasible.add("trade");
   if (row.recyclable) feasible.add("recycle");
+  // The deck may stay short of the draw when its points run out: the mission can be changed.
+  const jouster = !row.guest && row.pseudo && (joustRules.openToAll || row.joust_access);
+  if (jouster && level >= levels.jousts && row.deck_cards >= joustRules.drawn) {
+    feasible.add("joust");
+  }
   return {
     feasible,
     collections: row.collections,
@@ -262,6 +309,7 @@ async function readDrawContext(
       riddle: row.riddle_days,
       trades: row.trade_days,
       recycle: row.recycle_days,
+      jousts: row.joust_days,
     }),
     yesterday: (row.yesterday ?? []).map((mission) => mission.kind),
   };

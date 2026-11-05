@@ -32,6 +32,7 @@ const idle: DayActivity = {
   riddleFound: false,
   trades: 0,
   recycles: 0,
+  jousts: 0,
 };
 
 function seed(n: number): string {
@@ -149,6 +150,7 @@ describe("missionProgress", () => {
       ),
     ).toBe(0);
     expect(missionProgress({ kind: "riddle", target: 1 }, { ...idle, riddleFound: true })).toBe(1);
+    expect(missionProgress({ kind: "joust", target: 1 }, { ...idle, jousts: 2 })).toBe(1);
   });
 });
 
