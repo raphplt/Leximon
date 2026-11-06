@@ -1,5 +1,13 @@
 import { describe, expect, it } from "vitest";
-import { cardRelease, peekAmount, stackRelease, tearProgress } from "./gesture";
+import {
+  cardRelease,
+  peekAmount,
+  stackRelease,
+  stripClicked,
+  TEAR_BY_CLICK_MS,
+  tearByClick,
+  tearProgress,
+} from "./gesture";
 
 describe("tearProgress", () => {
   it("measures the share of the strip torn, from either end", () => {
@@ -11,6 +19,26 @@ describe("tearProgress", () => {
   it("stays between 0 and 1", () => {
     expect(tearProgress(900, 300)).toBe(1);
     expect(tearProgress(50, 0)).toBe(0);
+  });
+});
+
+describe("a click on the strip", () => {
+  it("is a press that barely moves", () => {
+    expect(stripClicked(0, 0)).toBe(true);
+    expect(stripClicked(5, 3)).toBe(true);
+    expect(stripClicked(20, 0)).toBe(false);
+  });
+
+  it("tears the strip from nothing to all, never going back", () => {
+    expect(tearByClick(0)).toBe(0);
+    expect(tearByClick(TEAR_BY_CLICK_MS)).toBe(1);
+    expect(tearByClick(TEAR_BY_CLICK_MS * 2)).toBe(1);
+    let last = 0;
+    for (let elapsed = 0; elapsed <= TEAR_BY_CLICK_MS; elapsed += 20) {
+      const share = tearByClick(elapsed);
+      expect(share).toBeGreaterThanOrEqual(last);
+      last = share;
+    }
   });
 });
 

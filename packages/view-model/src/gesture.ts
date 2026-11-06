@@ -34,6 +34,23 @@ export function tearProgress(dx: number, stripWidth: number): number {
   return clamp(Math.abs(dx) / stripWidth, 0, 1);
 }
 
+/** How long a click on the strip takes to tear it all, as a drag would. */
+export const TEAR_BY_CLICK_MS = 560;
+
+/** A press on the strip that barely moves is a click: it tears the whole strip by itself. */
+export function stripClicked(dx: number, dy: number): boolean {
+  return Math.hypot(dx, dy) < TAP_SLOP;
+}
+
+/**
+ * The share torn `elapsed` ms after a click on the strip: slow at first, as a strip that
+ * resists, then quick to the end.
+ */
+export function tearByClick(elapsed: number): number {
+  const t = clamp(elapsed / TEAR_BY_CLICK_MS, 0, 1);
+  return t * t * (3 - 2 * t) * 0.35 + t * t * 0.65;
+}
+
 /**
  * How far the stack is fanned out, from 0 to 1. Only a diagonal drag peeks: a mostly
  * vertical or horizontal one is something else.
