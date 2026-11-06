@@ -1,95 +1,134 @@
-/* A discreet « ? » and the bubble it opens, a slip of paper pinned under it. */
-.root {
-  position: relative;
-  display: inline-flex;
-  flex-shrink: 0;
-}
-
+/* A discreet « ? » and the popover it opens, a slip of paper pointing at it. */
 .button {
   display: grid;
+  flex-shrink: 0;
   place-items: center;
-  width: 30px;
-  height: 30px;
+  width: 32px;
+  height: 32px;
   padding: 0;
   border: 0;
   border-radius: 50%;
   background: transparent;
-  color: var(--lx-color-page-ink-muted);
   cursor: pointer;
   transition:
     color 120ms ease-out,
     background 120ms ease-out;
 }
 
-.button:hover,
-.button[aria-expanded="true"] {
-  background: color-mix(in srgb, var(--lx-toy-outline) 10%, transparent);
-  color: var(--lx-color-page-ink);
+.paper {
+  color: var(--lx-color-paper-ink-muted);
+}
+
+.paper:hover,
+.paper[aria-expanded="true"] {
+  background: color-mix(in srgb, var(--lx-toy-outline) 12%, transparent);
+  color: var(--lx-color-paper-ink);
+}
+
+/* On the felt: a cream ring, readable on the dark green. */
+.felt {
+  border: 2px solid color-mix(in srgb, var(--lx-lettering-fill) 55%, transparent);
+  color: var(--lx-lettering-fill);
+}
+
+.felt:hover,
+.felt[aria-expanded="true"] {
+  border-color: var(--lx-lettering-fill);
+  background: color-mix(in srgb, var(--lx-lettering-fill) 16%, transparent);
 }
 
 .button:focus-visible {
   outline: 3px solid var(--lx-color-focus);
-  outline-offset: 1px;
+  outline-offset: 2px;
 }
 
-.bubble {
-  position: absolute;
-  top: calc(100% + 8px);
-  z-index: 20;
-  display: flex;
+/* In the top layer: placed by script under or over its button, never clipped by a card. */
+.popover {
+  position: fixed;
+  inset: auto;
+  display: none;
   flex-direction: column;
   gap: 10px;
+  box-sizing: border-box;
   width: max-content;
-  max-width: min(300px, calc(100vw - 32px));
-  padding: 12px 14px 14px;
+  max-width: min(360px, calc(100vw - 40px));
+  margin: 0;
+  padding: 12px 16px 14px;
+  overflow: visible;
   border: var(--lx-toy-outline-width) solid var(--lx-toy-outline);
   border-radius: var(--lx-toy-radius-small);
   background: var(--lx-color-paper);
   box-shadow:
     0 4px 0 var(--lx-toy-outline),
-    0 10px 24px var(--lx-toy-drop);
-  /* Paper ink, not the page's: on the felt, the page's ink turns cream. */
+    0 12px 28px var(--lx-toy-drop);
+  /* Paper ink, never the page's: on the felt, the page's ink turns cream. */
   color: var(--lx-color-paper-ink);
   font-family: var(--font-ui), system-ui, sans-serif;
   font-size: var(--lx-size-label);
   line-height: 1.35;
   text-align: left;
+}
+
+.popover:popover-open {
+  display: flex;
+}
+
+/* Hidden until placed: the first frame would show it at the browser's default spot. */
+.popover:not([data-side]) {
+  visibility: hidden;
+}
+
+.popover[data-side="below"] {
+  transform-origin: var(--arrow-x) top;
   animation: rise 160ms cubic-bezier(0.2, 1.4, 0.4, 1);
 }
 
-.end {
-  right: 0;
+.popover[data-side="above"] {
+  transform-origin: var(--arrow-x) bottom;
+  animation: rise 160ms cubic-bezier(0.2, 1.4, 0.4, 1);
 }
 
-.start {
-  left: 0;
+/* The arrow: a square turned on its corner, half hidden under the slip. */
+.popover::before {
+  content: "";
+  position: absolute;
+  left: calc(var(--arrow-x, 50%) - 8px);
+  width: 14px;
+  height: 14px;
+  border: var(--lx-toy-outline-width) solid var(--lx-toy-outline);
+  background: var(--lx-color-paper);
+  rotate: 45deg;
 }
 
-.center {
-  left: 50%;
-  translate: -50% 0;
+.popover[data-side="below"]::before {
+  top: -9px;
+  border-right: 0;
+  border-bottom: 0;
 }
 
-.above {
-  top: auto;
-  bottom: calc(100% + 8px);
+.popover[data-side="above"]::before {
+  bottom: -9px;
+  border-top: 0;
+  border-left: 0;
 }
 
 .title {
+  padding-bottom: 8px;
+  border-bottom: 1px dashed color-mix(in srgb, var(--lx-toy-outline) 30%, transparent);
   font-family: var(--font-display), Georgia, serif;
-  font-size: var(--lx-size-label);
+  font-size: var(--lx-size-body);
   font-weight: 800;
 }
 
 @keyframes rise {
   from {
     opacity: 0;
-    scale: 0.94;
+    scale: 0.92;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .bubble {
+  .popover[data-side] {
     animation: none;
   }
 }

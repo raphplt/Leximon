@@ -418,6 +418,11 @@
   gap: var(--lx-s6);
 }
 
+/* In a column, its margin no longer merges with the tabs': the card would start lower. */
+.sent > .empty {
+  margin-top: 0;
+}
+
 .sent .emptyText {
   text-align: left;
 }

@@ -411,3 +411,10 @@ Chaque retour vaut pour le web (téléphone et grand écran) et pour l'app, sauf
 | R-23 | Clan, bibliothèque | Pouvoir l'ouvrir et voir le détail des cartes du clan, comme un album commun. | 5 |
 | R-24 | Clan, membres | Une fenêtre avec la liste complète des membres, triable et filtrable. | 5 |
 | R-25 | Sachet, à la souris | Survoler le haut du sachet (la bande « déchirer ici ») le déchire ; un clic rejoue ensuite l'animation depuis le début. | 4 |
+
+**Relecture du lot 1 (2026-11-06).** Quatre points revenus, repris le jour même :
+
+- Missions : les lignes n'étaient pas alignées (barre plus longue sur une mission faite). Toutes les missions partagent maintenant les mêmes colonnes : barre, compteur et boutons tombent au même endroit, faite ou non, sur le web comme sur l'app. Le « ? » passe dans le coin, le titre tient sur une ligne.
+- Bulle d'aide (missions, clavier des défis) : texte blanc sur fond clair, et pas un vrai popover. Elle s'ouvre maintenant au-dessus de tout, avec une flèche vers son bouton, du côté où elle tient, en encre foncée ; le bouton du clavier est cerclé de crème pour se voir sur le tapis.
+- Échanges : les trois onglets ont la même largeur et commencent à la même hauteur (vérifié à 390, 1 500 et 2 000 px).
+- Page clan qui plante : l'erreur venait d'un état intermédiaire pendant les modifications, la page s'affiche (téléphone, grand écran, clan visité, app). L'écran d'erreur écrit désormais la cause dans la console, pour la retrouver si ça revient.

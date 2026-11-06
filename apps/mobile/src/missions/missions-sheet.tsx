@@ -261,31 +261,34 @@ function Row({
           <View style={[styles.fill, { width: `${Math.round(line.ratio * 100)}%` }]} />
         </View>
         <Text style={styles.figure}>{line.figure}</Text>
-        {!finished && canChange && (
-          <Pressable
-            onPress={onChange}
-            disabled={disabled}
-            hitSlop={8}
-            style={[styles.round, disabled && styles.dim]}
-            accessibilityRole="button"
-            accessibilityLabel={MISSION_CHANGE_LABEL}
-            accessibilityState={{ disabled, busy: changing }}
-          >
-            <Icon name="swap" size={18} color={paperColors.pageInkMuted} />
-          </Pressable>
-        )}
-        {!finished && place !== null && (
-          <Toy
-            matter="gold"
-            style={styles.go}
-            bodyStyle={styles.goBody}
-            accessibilityRole="button"
-            accessibilityLabel="Y aller"
-            onPress={() => onGo(place)}
-          >
-            <Lettering size={13}>Y aller</Lettering>
-          </Toy>
-        )}
+        {/* Always there, even empty: every row keeps the same bar under the same buttons. */}
+        <View style={styles.actions}>
+          {canChange && (
+            <Pressable
+              onPress={onChange}
+              disabled={disabled}
+              hitSlop={8}
+              style={[styles.round, disabled && styles.dim]}
+              accessibilityRole="button"
+              accessibilityLabel={MISSION_CHANGE_LABEL}
+              accessibilityState={{ disabled, busy: changing }}
+            >
+              <Icon name="swap" size={18} color={paperColors.pageInkMuted} />
+            </Pressable>
+          )}
+          {!finished && place !== null && (
+            <Toy
+              matter="gold"
+              style={styles.go}
+              bodyStyle={styles.goBody}
+              accessibilityRole="button"
+              accessibilityLabel="Y aller"
+              onPress={() => onGo(place)}
+            >
+              <Lettering size={13}>Y aller</Lettering>
+            </Toy>
+          )}
+        </View>
       </View>
     </View>
   );
@@ -356,6 +359,14 @@ const styles = StyleSheet.create({
   },
   roundOn: { backgroundColor: alpha(toyValues.outline, 0.1) },
   dim: { opacity: 0.5 },
+  // Wide enough for the change and « Y aller », on every row.
+  actions: {
+    width: 32 + space.s3 + 78,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "flex-end",
+    gap: space.s3,
+  },
   go: { minHeight: 32 },
   goBody: { paddingHorizontal: space.s5, paddingVertical: space.s1 },
   help: {

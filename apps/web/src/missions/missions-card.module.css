@@ -11,9 +11,17 @@
 }
 
 .head {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 12px;
+}
+
+/* The « ? » sits in the corner, so the title keeps the whole width. */
+.help {
+  position: absolute;
+  top: -8px;
+  right: -8px;
 }
 
 .badge {
@@ -30,6 +38,7 @@
   flex-direction: column;
   gap: 3px;
   min-width: 0;
+  padding-right: 22px;
 }
 
 .kicker {
@@ -45,31 +54,34 @@
   font-size: var(--lx-size-body-large);
   font-weight: 800;
   line-height: 1.2;
+  text-wrap: balance;
 }
 
+/*
+ * One grid for every mission, which each row shares: the bars, the counts and the buttons
+ * fall in the same columns, a mission done or not.
+ */
 .list {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
+  display: grid;
+  grid-template-columns: 24px minmax(0, 1fr) auto auto;
+  gap: 14px 8px;
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
-/* The mission's words on their own line, then its bar, its count and its two buttons. */
+/* The mission's words on their own line, then its bar, its count and its buttons. */
 .row {
   display: grid;
-  grid-template-columns: 24px minmax(0, 1fr) auto;
-  grid-template-areas:
-    "seal what what"
-    ". progress actions";
+  grid-column: 1 / -1;
+  grid-template-columns: subgrid;
   align-items: center;
-  gap: 6px 10px;
+  row-gap: 6px;
 }
 
 /* A round seal: empty while the mission goes on, gilt once done. */
 .seal {
-  grid-area: seal;
+  grid-column: 1;
   display: grid;
   place-items: center;
   width: 24px;
@@ -87,7 +99,7 @@
 }
 
 .what {
-  grid-area: what;
+  grid-column: 2 / -1;
   font-family: var(--font-text), Georgia, serif;
   font-size: var(--lx-size-label);
   font-weight: 700;
@@ -98,21 +110,8 @@
   color: var(--lx-color-page-ink-muted);
 }
 
-.progress {
-  grid-area: progress;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  min-width: 0;
-}
-
-.done .progress,
-.claimed .progress {
-  grid-column: 2 / -1;
-}
-
 .figure {
-  flex-shrink: 0;
+  grid-column: 3;
   min-width: 2.6em;
   font-size: var(--lx-size-small);
   font-weight: 800;
@@ -122,7 +121,7 @@
 }
 
 .bar {
-  flex: 1;
+  grid-column: 2;
   height: 8px;
   border: 2px solid var(--lx-toy-outline);
   border-radius: 999px;
@@ -138,10 +137,12 @@
 }
 
 .actions {
-  grid-area: actions;
+  grid-column: 4;
   display: flex;
   align-items: center;
+  justify-content: flex-end;
   gap: 4px;
+  min-height: 28px;
 }
 
 .go {
@@ -215,7 +216,7 @@
 }
 
 /* Behind the « ? »: one line per gain, the rewards drawn rather than told. */
-.help {
+.helpBody {
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -278,4 +279,14 @@
   font-size: var(--lx-size-label);
   line-height: 1.4;
   color: var(--lx-color-page-ink-muted);
+}
+
+/* In the phone's panel, the panel's close button takes the corner: the « ? » sits beside it. */
+.inDialog .help {
+  top: 2px;
+  right: 46px;
+}
+
+.inDialog .titles {
+  padding-right: 80px;
 }

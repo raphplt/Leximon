@@ -134,7 +134,11 @@ export function MissionsCard({
           <span className={styles.kicker}>{MISSIONS_TITLE}</span>
           <span className={styles.title}>{locked ?? missionsHeadline(current)}</span>
         </span>
-        {locked === null && <Help missions={current} />}
+        {locked === null && (
+          <span className={styles.help}>
+            <Help missions={current} />
+          </span>
+        )}
       </span>
       {lines.length > 0 && (
         <ol className={styles.list}>
@@ -190,7 +194,7 @@ export function MissionsCard({
 function Help({ missions: current }: { readonly missions: MissionsResponse }) {
   return (
     <HelpTip label={MISSIONS_HELP_OPEN} title={MISSIONS_HELP_TITLE}>
-      <span className={styles.help}>
+      <span className={styles.helpBody}>
         {missionsHelp(current).map((line) => (
           <span key={line.label} className={styles.helpLine}>
             <span>{line.label}</span>
@@ -242,39 +246,38 @@ function Row({
       <span className={styles.what} aria-hidden="true">
         {line.text}
       </span>
-      <span className={styles.progress} aria-hidden="true">
-        <span className={styles.bar}>
-          <span className={styles.fill} style={{ width: `${Math.round(line.ratio * 100)}%` }} />
-        </span>
-        <span className={styles.figure}>{line.figure}</span>
+      <span className={styles.bar} aria-hidden="true">
+        <span className={styles.fill} style={{ width: `${Math.round(line.ratio * 100)}%` }} />
       </span>
-      {!finished && (
-        <span className={styles.actions}>
-          {canChange && (
-            <button
-              type="button"
-              className={styles.change}
-              onClick={onChange}
-              disabled={disabled}
-              aria-label={MISSION_CHANGE_LABEL}
-              title={MISSION_CHANGE_LABEL}
-            >
-              {changing ? (
-                <span className={styles.spinning}>
-                  <Icon name="swap" size={16} />
-                </span>
-              ) : (
+      <span className={styles.figure} aria-hidden="true">
+        {line.figure}
+      </span>
+      {/* Always there, even empty: every row keeps the same bar under the same buttons. */}
+      <span className={styles.actions}>
+        {canChange && (
+          <button
+            type="button"
+            className={styles.change}
+            onClick={onChange}
+            disabled={disabled}
+            aria-label={MISSION_CHANGE_LABEL}
+            title={MISSION_CHANGE_LABEL}
+          >
+            {changing ? (
+              <span className={styles.spinning}>
                 <Icon name="swap" size={16} />
-              )}
-            </button>
-          )}
-          {line.place !== null && (
-            <Link href={PLACES[line.place]} className={styles.go} onClick={() => onLeave?.()}>
-              Y aller
-            </Link>
-          )}
-        </span>
-      )}
+              </span>
+            ) : (
+              <Icon name="swap" size={16} />
+            )}
+          </button>
+        )}
+        {!finished && line.place !== null && (
+          <Link href={PLACES[line.place]} className={styles.go} onClick={() => onLeave?.()}>
+            Y aller
+          </Link>
+        )}
+      </span>
     </li>
   );
 }

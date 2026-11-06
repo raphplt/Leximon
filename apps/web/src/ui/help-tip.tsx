@@ -1,77 +1,99 @@
 "use client";
 
-import { type ReactNode, useEffect, useId, useRef, useState } from "react";
+import { type ReactNode, useEffect, useId, useRef } from "react";
 import styles from "./help-tip.module.css";
 import { Icon, type IconName } from "./icon";
 
+const GAP = 10;
+const MARGIN = 12;
+
 /**
- * A small « ? » that opens a bubble under it: the rule of a game screen, kept off the screen
- * until the player asks. A click outside or Escape closes it.
+ * A small « ? » and the popover it opens, pointing at it: the rule of a game screen, kept off
+ * the screen until the player asks. The browser's popover lays it above everything, closes it
+ * on a click outside or Escape; it opens on the side where it fits.
  */
 export function HelpTip({
   label,
   title,
   children,
-  align = "end",
-  above = false,
+  side = "below",
+  tone = "paper",
   icon = "help",
 }: {
   /** The button's name, read by screen readers. */
   readonly label: string;
   readonly title?: string | undefined;
   readonly children: ReactNode;
-  /** Which edge of the button the bubble lines up with. */
-  readonly align?: "start" | "end" | "center";
-  /** Opens upward, for a « ? » at the bottom of a screen. */
-  readonly above?: boolean;
+  /** The side it prefers, when both fit. */
+  readonly side?: "below" | "above";
+  /** The surface the button sits on: dark ink on paper, cream on the felt. */
+  readonly tone?: "paper" | "felt";
   readonly icon?: IconName;
 }) {
-  const [open, setOpen] = useState(false);
-  const root = useRef<HTMLSpanElement>(null);
+  const button = useRef<HTMLButtonElement>(null);
+  const popover = useRef<HTMLDivElement>(null);
   const id = useId();
 
   useEffect(() => {
-    if (!open) return;
-    const close = (event: Event) => {
-      if (
-        event instanceof KeyboardEvent
-          ? event.key === "Escape"
-          : !root.current?.contains(event.target as Node)
-      ) {
-        if (event instanceof KeyboardEvent) event.stopPropagation();
-        setOpen(false);
+    const element = popover.current;
+    const anchor = button.current;
+    if (element === null || anchor === null) return;
+    const place = () => {
+      const from = anchor.getBoundingClientRect();
+      const size = element.getBoundingClientRect();
+      // The page's width, without the gutter its scrollbar keeps even while a panel locks it.
+      const width = Math.min(
+        document.documentElement.clientWidth,
+        document.body.getBoundingClientRect().right,
+      );
+      const height = document.documentElement.clientHeight;
+      const fitsBelow = from.bottom + GAP + size.height <= height - MARGIN;
+      const fitsAbove = from.top - GAP - size.height >= MARGIN;
+      const below = side === "below" ? fitsBelow || !fitsAbove : !fitsAbove && fitsBelow;
+      const center = from.left + from.width / 2;
+      const left = Math.min(Math.max(center - size.width / 2, MARGIN), width - MARGIN - size.width);
+      element.style.top = `${below ? from.bottom + GAP : from.top - GAP - size.height}px`;
+      element.style.left = `${left}px`;
+      element.style.setProperty("--arrow-x", `${center - left}px`);
+      element.dataset["side"] = below ? "below" : "above";
+    };
+    const onToggle = (event: Event) => {
+      const open = (event as ToggleEvent).newState === "open";
+      anchor.setAttribute("aria-expanded", String(open));
+      if (open) {
+        place();
+        window.addEventListener("resize", place);
+        window.addEventListener("scroll", place, true);
+      } else {
+        delete element.dataset["side"];
+        window.removeEventListener("resize", place);
+        window.removeEventListener("scroll", place, true);
       }
     };
-    document.addEventListener("pointerdown", close);
-    document.addEventListener("keydown", close, true);
+    element.addEventListener("toggle", onToggle);
     return () => {
-      document.removeEventListener("pointerdown", close);
-      document.removeEventListener("keydown", close, true);
+      element.removeEventListener("toggle", onToggle);
+      window.removeEventListener("resize", place);
+      window.removeEventListener("scroll", place, true);
     };
-  }, [open]);
+  }, [side]);
 
   return (
-    <span ref={root} className={styles.root}>
+    <>
       <button
+        ref={button}
         type="button"
-        className={styles.button}
+        className={`${styles.button} ${styles[tone]}`}
         aria-label={label}
-        aria-expanded={open}
-        aria-controls={id}
-        onClick={() => setOpen((was) => !was)}
+        aria-expanded="false"
+        popoverTarget={id}
       >
-        <Icon name={icon} size={18} />
+        <Icon name={icon} size={20} />
       </button>
-      {open && (
-        <span
-          id={id}
-          role="note"
-          className={`${styles.bubble} ${styles[align]} ${above ? styles.above : ""}`}
-        >
-          {title !== undefined && <strong className={styles.title}>{title}</strong>}
-          {children}
-        </span>
-      )}
-    </span>
+      <div ref={popover} id={id} popover="auto" role="note" className={styles.popover}>
+        {title !== undefined && <strong className={styles.title}>{title}</strong>}
+        {children}
+      </div>
+    </>
   );
 }

@@ -679,7 +679,7 @@ function Asked({
 /** The keys of a challenge, behind a small keyboard: never in the way of the question. */
 function Shortcuts({ list }: { readonly list: readonly KeyShortcut[] }) {
   return (
-    <HelpTip label={KEYBOARD_HELP} title={KEYBOARD_HELP} icon="clavier" align="center" above>
+    <HelpTip label={KEYBOARD_HELP} title={KEYBOARD_HELP} icon="clavier" side="above" tone="felt">
       <span className={styles.shortcuts}>
         {list.map((shortcut) => (
           <span key={shortcut.action} className={styles.shortcut}>
