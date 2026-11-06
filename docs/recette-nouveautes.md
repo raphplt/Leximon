@@ -387,7 +387,7 @@ Chaque retour vaut pour le web (téléphone et grand écran) et pour l'app, sauf
 | # | Écran | Retour | Lot |
 |---|---|---|---|
 | R-01 | Semaine de bienvenue | Le cuir vert de la fenêtre fait doublon avec le fond : autre texture, autre couleur (une texture neuve si besoin). | 3 |
-| R-02 | Semaine de bienvenue, récompense | L'encart « Demain, le jour 2… t'offre un sachet garni » rend mal et ne fait pas jeu. | 2 |
+| R-02 | Semaine de bienvenue, récompense | L'encart « Demain, le jour 2… t'offre un sachet garni » rend mal et ne fait pas jeu. | 2 ✓ |
 | R-03 | Missions du jour | Retirer « Chaque mission rapporte 30 XP… » ; l'aide passe dans un bouton « ? » discret qui ouvre une bulle. | 1 ✓ |
 | R-04 | Missions du jour | « Changer » plus discret, et une confirmation qui dit ce que fait le changement et qu'il n'y en a qu'un par jour. | 1 ✓ |
 | R-05 | Missions du jour | Le titre d'une mission passe sur deux lignes à côté de son compteur. | 1 ✓ |
@@ -400,7 +400,7 @@ Chaque retour vaut pour le web (téléphone et grand écran) et pour l'app, sauf
 | R-12 | Défis | L'aide du clavier (« 1 à 4 pour répondre… ») ne reste pas affichée tout le temps. | 1 ✓ |
 | R-13 | Défis | Un effet au survol, même léger, sur les boutons de réponse. | 1 ✓ |
 | R-14 | Fin de révision | Les informations arrivent une à une par une animation courte. L'écran est trop étroit : plus large. | 2 ✓ |
-| R-15 | Gains, partout | « 1 sachet bonus gagné, rangé dans ta réserve. » ressort mal : une bordure d'enluminure et un fond texturé de couleur propre, repris pour tous les affichages de gains. | 2 (fin de révision et fin de sachet ✓) |
+| R-15 | Gains, partout | « 1 sachet bonus gagné, rangé dans ta réserve. » ressort mal : une bordure d'enluminure et un fond texturé de couleur propre, repris pour tous les affichages de gains. | 2 ✓ |
 | R-16 | Niveaux de maîtrise | Une icône dessinée avec soin pour chaque niveau (Esquisse…), sur la fin de révision et dans l'album partout où le niveau d'une carte se voit. | 2 ✓ |
 | R-17 | Fin de révision | « +7 pour le clan » est à peine visible (couleur). | 1 ✓ |
 | R-18 | Fin de révision | « Retour aux défis » plus visible, peut-être sans « Ouvrir un sachet ». | 2 ✓ |
@@ -433,4 +433,9 @@ Chaque retour vaut pour le web (téléphone et grand écran) et pour l'app, sauf
 - R-08 : la montée de niveau passe dans l'encart enluminé (le coffret dans le médaillon, « Niveau 13 », « Un coffret t'attend »). Une rareté complétée a le même encart, avec sa pierre. Ils arrivent une fois les cartes posées.
 - R-07 : l'XP et la collection deviennent deux décomptes côte à côte, chacun avec son grand chiffre et sa barre ; la barre de la collection montre en vert les mots que le sachet vient d'ajouter, et « +5 » est une pastille verte. « Ouvre une carte pour la lire. » et la ligne de la semaine de bienvenue disparaissent. Plus d'air au-dessus des boutons et entre eux ; sur téléphone, les boutons sont l'un sous l'autre pour que chaque libellé tienne sur une ligne.
 - Dans l'app, le tapis suit maintenant ce qu'il porte (les cartes restent lisibles, l'écran défile un peu après une montée de niveau) et le bouton principal est posé sur son bord, comme sur l'écran Jouer.
+
+**Lot 2, semaine de bienvenue et autres gains (2026-11-06).** Web et app, vérifiés à 390, 1 500 et 2 000 px et sur l'émulateur :
+
+- R-02 : sous un jour ouvert, l'encart « Demain, le jour 2… » laisse place à la frise des 7 jours. Le jour reçu y est coché ; la case de demain, plus grande, porte l'icône de son cadeau dans un anneau doré qui se soulève doucement, et « Demain » à la place de son numéro. La même frise reste seule, sans phrase, quand la case du jour est déjà prise. Seul le dernier jour garde sa phrase (le carnet prend le relais). Sur téléphone, les cases rétrécissent pour tenir sans se toucher ; dans l'app, la frise débordait à gauche et le titre était aligné à gauche, les deux sont corrigés.
+- R-15, autres gains : après une réponse en défi, un niveau gagné et les sachets bonus du défi du jour ou de la Dorure passent dans l'encart enluminé, en petit, sous la ligne de la réponse (au-dessus du bouton sur téléphone). La réserve pleine reste une phrase, ce n'est pas un gain. Un mot qui monte de palier garde sa phrase, précédée de l'icône du palier : il revient à presque chaque première bonne réponse, un encart à chaque fois serait trop.
 

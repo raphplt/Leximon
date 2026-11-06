@@ -2,8 +2,8 @@ import { createSeededRandom } from "@leximon/core";
 import { describe, expect, it } from "vitest";
 import {
   answerFeedback,
+  answerGains,
   answerTitle,
-  bonusLines,
   challengeOutlook,
   dailyView,
   escapingWords,
@@ -72,25 +72,35 @@ describe("lines", () => {
   });
 });
 
-describe("bonus lines", () => {
-  it("celebrates each bonus earned", () => {
-    expect(bonusLines(NO_BONUS, PLI)).toEqual([]);
-    expect(bonusLines({ daily: 1, gilded: 0, credited: 1, reserve: 1 }, PLI)).toEqual([
-      "Un pli bonus pour le défi du jour !",
-    ]);
-    expect(bonusLines({ daily: 1, gilded: 2, credited: 3, reserve: 4 }, PLI)).toEqual([
-      "Un pli bonus pour le défi du jour !",
-      "2 plis bonus pour ces mots passés à la Dorure !",
+describe("answer gains", () => {
+  const gains = (bonus: typeof NO_BONUS, levelUp = false) =>
+    answerGains({ progress: { levelUp, level: 6 }, bonus }, PLI);
+
+  it("gives nothing to an answer that earned nothing", () => {
+    expect(gains(NO_BONUS)).toEqual({ gains: [], lost: null });
+  });
+
+  it("gives a banner to a new level and to each bonus that reached the reserve", () => {
+    expect(gains({ daily: 1, gilded: 2, credited: 3, reserve: 4 }, true).gains).toEqual([
+      { icon: "chest", title: "Niveau 6", note: "Un coffret t'attend" },
+      { icon: "sachet", title: "1 pli bonus", note: "Défi du jour réussi" },
+      { icon: "sachet", title: "2 plis bonus", note: "Mots passés à la Dorure" },
     ]);
   });
 
-  it("says when the full reserve lost a bonus", () => {
-    expect(bonusLines({ daily: 0, gilded: 1, credited: 0, reserve: 10 }, PLI)).toEqual([
-      "Un pli bonus pour ce mot passé à la Dorure !",
-      "Ta réserve est pleine, ce pli bonus est perdu.",
-    ]);
+  it("says what the full reserve refused, without a banner for it", () => {
+    expect(gains({ daily: 0, gilded: 1, credited: 0, reserve: 10 })).toEqual({
+      gains: [],
+      lost: "Ta réserve est pleine, ce pli bonus est perdu.",
+    });
+    expect(gains({ daily: 1, gilded: 2, credited: 1, reserve: 10 })).toEqual({
+      gains: [{ icon: "sachet", title: "1 pli bonus", note: "Défi du jour réussi" }],
+      lost: "Ta réserve est pleine, 2 plis bonus sont perdus.",
+    });
   });
+});
 
+describe("the session's bonus", () => {
   it("sums the session's bonus boosters for the recap", () => {
     const answer = (credited: number) => ({
       cardId: "x",

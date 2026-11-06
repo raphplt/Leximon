@@ -11,6 +11,7 @@ export function GainBanner({
   icon,
   title,
   note,
+  small = false,
   className,
   style,
 }: {
@@ -20,13 +21,18 @@ export function GainBanner({
   readonly title: string;
   /** « Dans ta réserve » */
   readonly note?: string | null | undefined;
+  /** Within a panel (the answer to a question), rather than on its own. */
+  readonly small?: boolean;
   readonly className?: string | undefined;
   readonly style?: CSSProperties | undefined;
 }) {
   return (
-    <div className={[styles.banner, className].filter(Boolean).join(" ")} style={style}>
+    <div
+      className={[styles.banner, small && styles.small, className].filter(Boolean).join(" ")}
+      style={style}
+    >
       <span className={styles.medallion} aria-hidden="true">
-        {typeof icon === "string" ? <ToyIcon name={icon} size={34} /> : icon}
+        {typeof icon === "string" ? <ToyIcon name={icon} size={small ? 26 : 34} /> : icon}
       </span>
       <span className={styles.words}>
         <strong className={styles.title}>{title}</strong>

@@ -68,14 +68,56 @@
   color: var(--lx-toy-gold-top);
 }
 
-.tomorrow .dayIcon,
 .later .dayIcon {
   opacity: 0.8;
 }
 
-@media (max-width: 380px) {
+/* Tomorrow's gift, lit and ringed in gold: what coming back brings. */
+.tomorrow {
+  flex-basis: 52px;
+}
+
+.tomorrow .dayIcon {
+  width: 46px;
+  height: 46px;
+  outline: 2px dashed var(--lx-toy-gold-top);
+  outline-offset: 3px;
+  animation: beckon 2.4s ease-in-out infinite;
+}
+
+.tomorrow .dayLabel {
+  color: var(--lx-toy-gold-top);
+}
+
+/* Under an opened day, the row comes back with tomorrow lit. */
+.after {
+  margin: var(--lx-s8) 0 var(--lx-s4);
+}
+
+@keyframes beckon {
+  0%,
+  100% {
+    translate: 0 0;
+  }
+  50% {
+    translate: 0 -3px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tomorrow .dayIcon {
+    animation: none;
+  }
+}
+
+/* A phone: seven cases, tomorrow's ring included, across the window without touching. */
+@media (max-width: 420px) {
   .days {
-    gap: var(--lx-s2);
+    gap: 5px;
+  }
+
+  .day {
+    flex-basis: 34px;
   }
 
   .dayIcon {
@@ -84,7 +126,17 @@
   }
 
   .last .dayIcon {
-    width: 44px;
-    height: 44px;
+    width: 42px;
+    height: 42px;
+  }
+
+  .tomorrow {
+    flex-basis: 46px;
+  }
+
+  .tomorrow .dayIcon {
+    width: 38px;
+    height: 38px;
+    outline-offset: 2px;
   }
 }

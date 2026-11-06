@@ -2,11 +2,13 @@ import type { WelcomeRefusal, WelcomeWeekResponse } from "@leximon/contract";
 import { plural } from "./format";
 import { givesSachets, rewardItem, rewardsPhrase } from "./rewards";
 
-/** The welcome week: its dialog, its line in the mail and at the end of a session. */
+/** The welcome week: its dialog and its line in the mail. */
 
 export const WELCOME_TITLE = "Semaine de bienvenue";
 export const WELCOME_OPEN = "Ouvrir la case du jour";
 export const WELCOME_TAKE = "Prendre les récompenses";
+/** Under tomorrow's case, in place of its number. */
+export const WELCOME_TOMORROW = "Demain";
 export const WELCOME_RULE =
   "Une case s'ouvre chaque jour où tu viens jouer. Les jours n'ont pas besoin de se suivre.";
 
@@ -84,28 +86,6 @@ export function welcomeMailTitle(day: number): string {
   return `${WELCOME_TITLE}, jour ${day}`;
 }
 
-/**
- * What the next day gives, once today's is claimed: « Demain, le jour 4 t'offre un avatar
- * gravé. » `null` when the week is over, or when today's still waits.
- */
-export function welcomeTomorrowLine(week: WelcomeWeekResponse | null): string | null {
-  if (week === null || !week.account || week.open) return null;
-  const next = week.claimed + 1;
-  const rewards = week.days[next - 1];
-  if (rewards === undefined) return null;
-  return `Demain, le jour ${next} de ta semaine de bienvenue t'offre ${rewardsPhrase(rewards)}.`;
-}
-
-/** At the end of a session: what waits today, or else tomorrow. */
-export function welcomeSessionLine(week: WelcomeWeekResponse | null): string | null {
-  if (week === null) return null;
-  const today = welcomeView(week).today;
-  if (today !== null) {
-    return `Le jour ${today} de ta semaine de bienvenue t'attend dans tes récompenses.`;
-  }
-  return welcomeTomorrowLine(week);
-}
-
 /** In the e-mail that says the sachets are full: today's day, if one waits. */
 export function welcomeReminderLine(week: WelcomeWeekResponse | null): string | null {
   const today = welcomeToday(week);
@@ -113,12 +93,13 @@ export function welcomeReminderLine(week: WelcomeWeekResponse | null): string | 
   return `Le jour ${today.day} de ta semaine de bienvenue t'attend aussi, avec ${today.phrase}.`;
 }
 
-/** Under an opened day: the last one says the week is over. */
-export function welcomeAfterClaim(week: WelcomeWeekResponse | null, day: number): string {
-  if (week !== null && day >= week.days.length) {
-    return "C'était le dernier jour de ta semaine de bienvenue. Ton carnet de pointage prend le relais, une case par jour où tu joues.";
-  }
-  return welcomeTomorrowLine(week) ?? "";
+/**
+ * Under an opened day, only on the last one: the week is over. The other days show the row of
+ * the week instead, tomorrow's case lit.
+ */
+export function welcomeAfterClaim(week: WelcomeWeekResponse | null, day: number): string | null {
+  if (week === null || day < week.days.length) return null;
+  return "C'était le dernier jour de ta semaine de bienvenue. Ton carnet de pointage prend le relais, une case par jour où tu joues.";
 }
 
 /** For a guest, on the wall that asks for an account: what the week gives, counted. */

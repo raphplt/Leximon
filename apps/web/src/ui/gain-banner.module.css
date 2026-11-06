@@ -102,6 +102,27 @@
   color: var(--lx-lettering-kicker);
 }
 
+/* Within a panel: the same banner, a size down. */
+.small {
+  gap: 10px;
+  padding: 9px 22px 9px 9px;
+  border-width: 3px;
+  border-radius: 15px;
+}
+
+.small .medallion {
+  width: 40px;
+  height: 40px;
+}
+
+.small .title {
+  font-size: var(--lx-size-subtitle);
+}
+
+.small .note {
+  font-size: var(--lx-size-caption);
+}
+
 @media (max-width: 759px) {
   .banner {
     padding-right: 22px;

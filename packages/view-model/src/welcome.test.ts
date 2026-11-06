@@ -5,8 +5,6 @@ import {
   welcomeGuestLine,
   welcomeRefusalMessage,
   welcomeReminderLine,
-  welcomeSessionLine,
-  welcomeTomorrowLine,
   welcomeView,
   welcomeWaits,
 } from "./welcome";
@@ -55,23 +53,6 @@ describe("welcomeView", () => {
 });
 
 describe("the lines of the week", () => {
-  it("says what tomorrow gives once today's day is claimed", () => {
-    expect(welcomeTomorrowLine(week(2, false))).toBe(
-      "Demain, le jour 3 de ta semaine de bienvenue t'offre un avatar gravé.",
-    );
-    expect(welcomeTomorrowLine(week(2, true))).toBeNull();
-    expect(welcomeTomorrowLine(week(4, false))).toBeNull();
-  });
-
-  it("ends a session on today's day if it waits, else on tomorrow's", () => {
-    expect(welcomeSessionLine(week(0, true))).toBe(
-      "Le jour 1 de ta semaine de bienvenue t'attend dans tes récompenses.",
-    );
-    expect(welcomeSessionLine(week(1, false))).toBe(
-      "Demain, le jour 2 de ta semaine de bienvenue t'offre un sachet garni.",
-    );
-  });
-
   it("adds today's day to the e-mail that says the sachets are full", () => {
     expect(welcomeReminderLine(week(1, true))).toBe(
       "Le jour 2 de ta semaine de bienvenue t'attend aussi, avec un sachet garni.",
@@ -79,10 +60,11 @@ describe("the lines of the week", () => {
     expect(welcomeReminderLine(week(1, false))).toBeNull();
   });
 
-  it("closes the week on its last day", () => {
+  it("closes the week on its last day, and says nothing under the others", () => {
     expect(welcomeAfterClaim(week(4, false), 4)).toBe(
       "C'était le dernier jour de ta semaine de bienvenue. Ton carnet de pointage prend le relais, une case par jour où tu joues.",
     );
+    expect(welcomeAfterClaim(week(2, false), 2)).toBeNull();
   });
 
   it("counts the sachets of the week for a guest", () => {

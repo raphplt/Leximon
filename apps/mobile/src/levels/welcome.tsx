@@ -8,17 +8,25 @@ import {
   WELCOME_RULE,
   WELCOME_TAKE,
   WELCOME_TITLE,
+  WELCOME_TOMORROW,
   type WelcomeCase,
   welcomeAfterClaim,
   welcomeKicker,
   welcomeRefusalMessage,
-  welcomeTomorrowLine,
   welcomeView,
 } from "@leximon/view-model";
 import { router } from "expo-router";
-import { useEffect, useState, useSyncExternalStore } from "react";
+import { type ReactNode, useEffect, useState, useSyncExternalStore } from "react";
 import { StyleSheet, Text, View } from "react-native";
-import Animated, { ZoomIn } from "react-native-reanimated";
+import Animated, {
+  FadeIn,
+  useAnimatedStyle,
+  useReducedMotion,
+  useSharedValue,
+  withRepeat,
+  withTiming,
+  ZoomIn,
+} from "react-native-reanimated";
 import { api } from "@/api/client";
 import { useNow, useShared } from "@/player/shared";
 import { carnet, publishWelcomeClaimed, wallet, welcomeWeek } from "@/player/state";
@@ -136,7 +144,15 @@ export function WelcomeHost() {
             <Lettering size={fontSizes.headingLarge}>{`Jour ${step.day} !`}</Lettering>
           </Animated.View>
           <RewardSlips rewards={step.rewards} wallet={step.wallet} />
-          <Text style={styles.next}>{welcomeAfterClaim(current, step.day)}</Text>
+          {welcomeAfterClaim(current, step.day) === null ? (
+            <Animated.View entering={FadeIn.delay(400).duration(300)} style={styles.days}>
+              {view.cases.map((day) => (
+                <Day key={day.day} day={day} />
+              ))}
+            </Animated.View>
+          ) : (
+            <Text style={styles.next}>{welcomeAfterClaim(current, step.day)}</Text>
+          )}
           <View style={styles.actions}>
             <Button
               label={WELCOME_TAKE}
@@ -153,7 +169,9 @@ export function WelcomeHost() {
             {(today === null ? WELCOME_TITLE : welcomeKicker(today, total)).toUpperCase()}
           </Text>
           <View accessibilityRole="header">
-            <Lettering size={fontSizes.heading}>{WELCOME_TITLE}</Lettering>
+            <Lettering size={fontSizes.heading} style={styles.centered}>
+              {WELCOME_TITLE}
+            </Lettering>
           </View>
           <View style={styles.days}>
             {view.cases.map((day) => (
@@ -169,9 +187,8 @@ export function WelcomeHost() {
               Le serveur ne répond pas. Réessaie.
             </Text>
           ) : (
-            <Text style={styles.hint}>
-              {today === null ? (welcomeTomorrowLine(current) ?? WELCOME_RULE) : WELCOME_RULE}
-            </Text>
+            // Once today's case is open, the row says it all: tomorrow's case is lit.
+            today !== null && <Text style={styles.hint}>{WELCOME_RULE}</Text>
           )}
           <View style={styles.actions}>
             {step.name === "refused" && step.reason === "reserve_full" ? (
@@ -198,33 +215,51 @@ export function WelcomeHost() {
   );
 }
 
-/** A day of the week: its main reward, ticked once claimed, in gold when it is today's. */
+/**
+ * A day of the week: its main reward, ticked once claimed, in gold when it is today's, lit and
+ * named when it is tomorrow's.
+ */
 function Day({ day }: { readonly day: WelcomeCase }) {
-  const size = day.last ? 48 : 38;
+  const tomorrow = day.status === "tomorrow";
+  // Seven cases and tomorrow's ring across a phone's window, without touching.
+  const size = day.last ? 42 : tomorrow ? 38 : 34;
   const matter = day.status === "today" || day.status === "claimed" ? "gold" : "paper";
+  const icon = (
+    <ToyBody
+      matter={matter}
+      style={[styles.dayIcon, { width: size, height: size }, day.status === "later" && styles.dim]}
+    >
+      <Icon
+        name={day.status === "claimed" ? "check" : REWARD_ICONS[day.icon]}
+        size={day.last || tomorrow ? 20 : 17}
+        color={colors.kraftInk}
+      />
+    </ToyBody>
+  );
   return (
     <View
       style={[styles.day, day.status === "today" && styles.today]}
       accessible
       accessibilityLabel={`${day.label}, ${day.phrase}${day.status === "claimed" ? ", reçu" : ""}`}
     >
-      <ToyBody
-        matter={matter}
-        style={[
-          styles.dayIcon,
-          { width: size, height: size },
-          (day.status === "tomorrow" || day.status === "later") && styles.dim,
-        ]}
-      >
-        <Icon
-          name={day.status === "claimed" ? "check" : REWARD_ICONS[day.icon]}
-          size={day.last ? 22 : 18}
-          color={colors.kraftInk}
-        />
-      </ToyBody>
-      <Text style={[styles.dayLabel, day.status === "today" && styles.todayLabel]}>{day.day}</Text>
+      {tomorrow ? <Beckoning>{icon}</Beckoning> : icon}
+      <Text style={[styles.dayLabel, (day.status === "today" || tomorrow) && styles.todayLabel]}>
+        {tomorrow ? WELCOME_TOMORROW : day.day}
+      </Text>
     </View>
   );
+}
+
+/** Tomorrow's gift in its gold ring, rising a little and settling again: what coming back brings. */
+function Beckoning({ children }: { readonly children: ReactNode }) {
+  const reducedMotion = useReducedMotion();
+  const rise = useSharedValue(0);
+  useEffect(() => {
+    if (reducedMotion) return;
+    rise.value = withRepeat(withTiming(-3, { duration: 1200 }), -1, true);
+  }, [reducedMotion, rise]);
+  const moving = useAnimatedStyle(() => ({ transform: [{ translateY: rise.value }] }));
+  return <Animated.View style={[styles.ring, moving]}>{children}</Animated.View>;
 }
 
 const styles = StyleSheet.create({
@@ -245,12 +280,21 @@ const styles = StyleSheet.create({
   today: { transform: [{ translateY: -4 }] },
   dayIcon: { alignItems: "center", justifyContent: "center", borderRadius: radii.lg },
   dim: { opacity: 0.8 },
+  ring: {
+    padding: 2,
+    borderWidth: 2,
+    borderStyle: "dashed",
+    borderColor: lettering.kicker,
+    borderRadius: radii.lg + 4,
+  },
   dayLabel: {
     fontFamily: fonts.ui.extrabold,
     fontSize: fontSizes.label,
     color: colors.pageInkMuted,
   },
   todayLabel: { color: lettering.kicker },
+  // On two lines on a phone, like the window's other lines.
+  centered: { textAlign: "center" },
   hint: {
     fontFamily: fonts.ui.medium,
     fontSize: fontSizes.body,

@@ -14,6 +14,7 @@ import {
   type RandomSource,
 } from "@leximon/core";
 import { type PackNoun, SACHET_NOUN } from "./format";
+import { levelUpGain } from "./level";
 import type { SoundCue } from "./staging";
 
 export { hideWordIn } from "@leximon/core";
@@ -73,26 +74,50 @@ export function feedbackLine(correct: boolean): string {
   return correct ? "Bien vu." : "Raté. C'était celle-ci.";
 }
 
-function bonusCount(count: number, noun: PackNoun): string {
-  return count === 1 ? `Un ${noun.one} bonus` : `${count} ${noun.many} bonus`;
+function bonusTitle(count: number, noun: PackNoun): string {
+  return count === 1 ? `1 ${noun.one} bonus` : `${count} ${noun.many} bonus`;
 }
 
-/** What an answer earned: "Un pli bonus pour le défi du jour !", and what the cap took. */
-export function bonusLines(bonus: AnswerBonus, noun: PackNoun = SACHET_NOUN): string[] {
-  const lines: string[] = [];
-  if (bonus.daily > 0) lines.push(`${bonusCount(bonus.daily, noun)} pour le défi du jour !`);
-  if (bonus.gilded > 0) {
-    lines.push(
-      `${bonusCount(bonus.gilded, noun)} pour ${bonus.gilded === 1 ? "ce mot passé" : "ces mots passés"} à la Dorure !`,
-    );
+/** A gain of one answer, with the drawing of its banner. */
+export interface AnswerGain extends Gain {
+  readonly icon: "chest" | "sachet";
+}
+
+/**
+ * What an answer earned, each in its banner: a level of the account with its coffret, the bonus
+ * sachets that reached the reserve. `lost` says what a full reserve refused.
+ */
+export function answerGains(
+  answer: {
+    readonly progress: Pick<ProgressGain, "levelUp" | "level">;
+    readonly bonus: AnswerBonus;
+  },
+  noun: PackNoun = SACHET_NOUN,
+): { readonly gains: readonly AnswerGain[]; readonly lost: string | null } {
+  const gains: AnswerGain[] = [];
+  const level = levelUpGain(answer.progress, true);
+  if (level !== null) gains.push({ icon: "chest", ...level });
+  const { bonus } = answer;
+  const daily = Math.min(bonus.daily, bonus.credited);
+  const gilded = Math.min(bonus.gilded, bonus.credited - daily);
+  if (daily > 0) {
+    gains.push({ icon: "sachet", title: bonusTitle(daily, noun), note: "Défi du jour réussi" });
+  }
+  if (gilded > 0) {
+    gains.push({
+      icon: "sachet",
+      title: bonusTitle(gilded, noun),
+      note: gilded === 1 ? "Mot passé à la Dorure" : "Mots passés à la Dorure",
+    });
   }
   const lost = bonus.daily + bonus.gilded - bonus.credited;
-  if (lost > 0) {
-    lines.push(
-      `Ta réserve est pleine, ${lost === 1 ? `ce ${noun.one} bonus est perdu` : `${lost} ${noun.many} bonus sont perdus`}.`,
-    );
-  }
-  return lines;
+  return {
+    gains,
+    lost:
+      lost > 0
+        ? `Ta réserve est pleine, ${lost === 1 ? `ce ${noun.one} bonus est perdu` : `${lost} ${noun.many} bonus sont perdus`}.`
+        : null,
+  };
 }
 
 /** A gain as its banner draws it: what was won, then where it went. */
@@ -111,7 +136,7 @@ export function sessionBonusGain(
   const won = answers.reduce((sum, answer) => sum + answer.bonus.credited, 0);
   if (won === 0) return null;
   return {
-    title: won === 1 ? `1 ${noun.one} bonus` : `${won} ${noun.many} bonus`,
+    title: bonusTitle(won, noun),
     note: "Dans ta réserve",
   };
 }

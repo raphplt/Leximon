@@ -399,9 +399,34 @@
 }
 
 .feedbackExtra {
+  display: flex;
+  align-items: center;
+  gap: 6px;
   margin: var(--lx-s3) 0 0;
   font-weight: 800;
   color: var(--lx-toy-red-bottom);
+}
+
+/*
+ * What the answer won, in its banners, on a row of their own: under the slip's line on a wide
+ * screen, above the button on a phone, where the button would push them out of sight.
+ */
+.feedbackGains {
+  display: flex;
+  flex: 1 1 100%;
+  flex-wrap: wrap;
+  gap: var(--lx-s5);
+}
+
+.feedbackGains > * {
+  flex: 1 1 240px;
+  max-width: 340px;
+}
+
+@media (min-width: 760px) {
+  .feedbackGains {
+    order: 1;
+  }
 }
 
 /* --- Reactions: short, once, gone with reduced motion --- */

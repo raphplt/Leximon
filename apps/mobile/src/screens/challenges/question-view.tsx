@@ -4,12 +4,11 @@ import { TYPED_ANSWER_MAX_LENGTH } from "@leximon/core";
 import { effects, room, type ToyMatterName, toyMatters, toy as toyValues } from "@leximon/tokens";
 import {
   answerFeedback,
+  answerGains,
   answerTitle,
-  bonusLines,
   CATCH_UP_HINT,
   frequencyLine,
   hideWordIn,
-  levelUpLabel,
   levelUpLine,
   MEET_ACTION,
   MEET_KICKER,
@@ -57,10 +56,11 @@ import { openCard } from "@/screens/trades/card-row";
 import { TAB_BAR_RISE } from "@/shell/tab-bar";
 import { alpha, colors, fontSizes, fonts, paperColors, radii, space } from "@/theme";
 import { Button } from "@/ui/button";
+import { GainBanner } from "@/ui/gain-banner";
 import { Icon } from "@/ui/icon";
 import { useOptionalStage } from "@/ui/stage";
 import { TextButton } from "@/ui/text-button";
-import { Leaf, Lettering, Toy, toyFace } from "@/ui/toy";
+import { Leaf, Lettering, Toy, ToyIcon, toyFace } from "@/ui/toy";
 import type { Session, Step } from "./session";
 
 type ChoiceState = "idle" | "pending" | "right" | "wrong" | "faded";
@@ -232,6 +232,8 @@ export function QuestionView({
   const last = session.index + 1 === total;
   const step = session.step;
   const result = step.name === "answered" ? (session.answers.at(-1) ?? null) : null;
+  const earned =
+    result === null ? { gains: [], lost: null } : answerGains(result, PACK_NOUNS.sachet);
   const slip = step.name === "answered" && step.slip;
   const mistakes = pairs && step.name === "answered" ? Number(step.chosen) : 0;
   // Every pair is found in the end: a round with mistakes is not a failure.
@@ -450,21 +452,22 @@ export function QuestionView({
             )}
           </View>
           {result.levelUp && (
-            <Animated.Text
-              entering={FadeInUp.delay(200).duration(240)}
-              style={[styles.feedbackExtra, styles.risen]}
+            <Animated.View entering={FadeInUp.delay(200).duration(240)} style={styles.risenRow}>
+              <ToyIcon name={result.level} size={20} />
+              <Text style={[styles.feedbackExtra, styles.risen, styles.risenText]}>
+                {levelUpLine(card.word, result.level)}
+              </Text>
+            </Animated.View>
+          )}
+          {earned.lost !== null && <Text style={styles.feedbackExtra}>{earned.lost}</Text>}
+          {earned.gains.map((gain, index) => (
+            <Animated.View
+              key={`${gain.icon}-${gain.note}`}
+              entering={FadeInUp.delay(200 + index * 140).duration(280)}
             >
-              {levelUpLine(card.word, result.level)}
-            </Animated.Text>
-          )}
-          {[levelUpLabel(result.progress), ...bonusLines(result.bonus, PACK_NOUNS.sachet)].map(
-            (line) =>
-              line !== null && (
-                <Text key={line} style={styles.feedbackExtra}>
-                  {line}
-                </Text>
-              ),
-          )}
+              <GainBanner icon={gain.icon} title={gain.title} note={gain.note} small />
+            </Animated.View>
+          ))}
           <Button label={last ? "Voir le résultat" : "Question suivante"} onPress={onNext} />
         </Animated.View>
       )}
@@ -825,6 +828,8 @@ const styles = StyleSheet.create({
     color: ink.pageInk,
   },
   risen: { fontFamily: fonts.ui.extrabold },
+  risenRow: { flexDirection: "row", alignItems: "center", gap: 6 },
+  risenText: { flexShrink: 1 },
   xpFloat: {
     position: "absolute",
     right: 0,

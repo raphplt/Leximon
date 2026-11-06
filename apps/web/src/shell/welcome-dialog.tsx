@@ -11,11 +11,11 @@ import {
   WELCOME_RULE,
   WELCOME_TAKE,
   WELCOME_TITLE,
+  WELCOME_TOMORROW,
   type WelcomeCase,
   welcomeAfterClaim,
   welcomeKicker,
   welcomeRefusalMessage,
-  welcomeTomorrowLine,
   welcomeView,
 } from "@leximon/view-model";
 import { useRouter } from "next/navigation";
@@ -131,9 +131,20 @@ export function WelcomeDialog({
                   {reserveAfterClaim(step.wallet)}
                 </p>
               )}
-              <p className={`${styles.opens} ${ui.pop}`} style={{ animationDelay: "400ms" }}>
-                {welcomeAfterClaim(current, step.day)}
-              </p>
+              {welcomeAfterClaim(current, step.day) === null ? (
+                <ol
+                  className={`${week.days} ${week.after} ${ui.pop}`}
+                  style={{ animationDelay: "400ms" }}
+                >
+                  {view.cases.map((day) => (
+                    <Day key={day.day} day={day} />
+                  ))}
+                </ol>
+              ) : (
+                <p className={`${styles.opens} ${ui.pop}`} style={{ animationDelay: "400ms" }}>
+                  {welcomeAfterClaim(current, step.day)}
+                </p>
+              )}
               <Button wide className={styles.action} onClick={() => take(step.rewards)}>
                 {WELCOME_TAKE}
               </Button>
@@ -158,9 +169,8 @@ export function WelcomeDialog({
                   Le serveur ne répond pas. Réessaie.
                 </p>
               ) : (
-                <p className={styles.hint}>
-                  {today === null ? (welcomeTomorrowLine(current) ?? WELCOME_RULE) : WELCOME_RULE}
-                </p>
+                // Once today's case is open, the row says it all: tomorrow's case is lit.
+                today !== null && <p className={styles.hint}>{WELCOME_RULE}</p>
               )}
               {step.name === "refused" && step.reason === "reserve_full" ? (
                 <Button
@@ -217,7 +227,7 @@ export function useWelcomeOnArrival(waits: boolean, now: number, open: () => voi
   }, [waits, now, open]);
 }
 
-/** A day of the week: its main reward, ticked once claimed, glowing when it is today's. */
+/** A day of the week: its main reward, ticked once claimed, glowing when it is today's, lit and named when it is tomorrow's. */
 function Day({ day }: { readonly day: WelcomeCase }) {
   return (
     <li
@@ -225,10 +235,13 @@ function Day({ day }: { readonly day: WelcomeCase }) {
       aria-label={`${day.label}, ${day.phrase}${day.status === "claimed" ? ", reçu" : ""}`}
     >
       <span className={week.dayIcon} aria-hidden="true">
-        <Icon name={day.status === "claimed" ? "check" : REWARD_ICONS[day.icon]} size={20} />
+        <Icon
+          name={day.status === "claimed" ? "check" : REWARD_ICONS[day.icon]}
+          size={day.status === "tomorrow" ? 24 : 20}
+        />
       </span>
       <span className={week.dayLabel} aria-hidden="true">
-        {day.day}
+        {day.status === "tomorrow" ? WELCOME_TOMORROW : day.day}
       </span>
     </li>
   );

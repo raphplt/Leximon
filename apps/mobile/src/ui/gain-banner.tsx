@@ -24,6 +24,7 @@ export function GainBanner({
   icon,
   title,
   note,
+  small = false,
 }: {
   /** A toy icon by its name, or another drawing (a rarity's). */
   readonly icon: ToyIconName | ReactElement;
@@ -31,24 +32,26 @@ export function GainBanner({
   readonly title: string;
   /** « Dans ta réserve » */
   readonly note?: string | null | undefined;
+  /** Within a panel (the answer to a question), rather than on its own. */
+  readonly small?: boolean;
 }) {
   return (
     <View
-      style={styles.frame}
+      style={[styles.frame, small && styles.frameSmall]}
       accessible
       accessibilityLabel={[title, note].filter(Boolean).join(", ")}
     >
-      <View style={styles.leather}>
+      <View style={[styles.leather, small && styles.leatherSmall]}>
         <Matter kind="leather" />
         <View style={styles.rule} />
         {CORNERS.map((corner) => (
           <View key={corner} style={[styles.lozenge, LOZENGE_AT[corner]]} />
         ))}
-        <View style={styles.medallion}>
-          {typeof icon === "string" ? <ToyIcon name={icon} size={30} /> : icon}
+        <View style={[styles.medallion, small && styles.medallionSmall]}>
+          {typeof icon === "string" ? <ToyIcon name={icon} size={small ? 24 : 30} /> : icon}
         </View>
         <View style={styles.words}>
-          <Lettering size={fontSizes.titleSmall}>{title}</Lettering>
+          <Lettering size={small ? fontSizes.subtitle : fontSizes.titleSmall}>{title}</Lettering>
           {note != null && <Text style={styles.note}>{note.toUpperCase()}</Text>}
         </View>
       </View>
@@ -115,6 +118,10 @@ const styles = StyleSheet.create({
     backgroundImage: `radial-gradient(circle at 40% 30%, ${toyMatters.paper.top}, ${toyMatters.paper.bottom})`,
     boxShadow: `0 0 0 3px ${lettering.kicker}, 0 3px 0 3px ${toyValues.outline}`,
   },
+  // In a panel, banners one under the other share its width.
+  frameSmall: { alignSelf: "stretch", padding: 3, borderRadius: 15 },
+  leatherSmall: { gap: 10, paddingVertical: 8, paddingLeft: 8, paddingRight: 18 },
+  medallionSmall: { width: 40, height: 40, borderRadius: 20 },
   words: { flexShrink: 1, gap: 2 },
   note: {
     fontFamily: fonts.ui.extrabold,

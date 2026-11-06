@@ -5,7 +5,6 @@ import {
   levelLabel,
   levelRatio,
   levelUpGain,
-  levelUpLabel,
   playerTitle,
   roadSubtitle,
   xpGainLabel,
@@ -20,8 +19,6 @@ describe("level", () => {
   it("labels a gain only when something was earned", () => {
     expect(xpGainLabel({ xpGained: 35 })).toBe("+35 XP");
     expect(xpGainLabel({ xpGained: 0 })).toBeNull();
-    expect(levelUpLabel({ levelUp: true, level: 6 })).toBe("Niveau 6 !");
-    expect(levelUpLabel({ levelUp: false, level: 6 })).toBeNull();
   });
 
   it("gives the banner of a new level, with its coffret when one waits", () => {

@@ -8,8 +8,8 @@ import {
   AFTER_ANSWER_MS,
   type AnsweredQuestion,
   answerFeedback,
+  answerGains,
   answerTitle,
-  bonusLines,
   CATCH_UP_HINT,
   CHOICE_SHORTCUTS,
   choiceIndexOfKey,
@@ -22,7 +22,6 @@ import {
   hideWordIn,
   KEYBOARD_HELP,
   type KeyShortcut,
-  levelUpLabel,
   levelUpLine,
   MEET_ACTION,
   MEET_KICKER,
@@ -553,6 +552,7 @@ function Asked({
   const pairs = question.format === "pairs";
   const mistakes = pairs && step.name === "answered" ? Number(step.chosen) : 0;
   const answerText = asksDefinition ? card.definition : card.word;
+  const earned = result === null ? null : answerGains(result, noun);
   return (
     <>
       <div className={`${ui.panel} ${styles.prompt}`}>
@@ -664,18 +664,27 @@ function Asked({
               )}
               {result.levelUp && (
                 <p className={`${styles.feedbackExtra} ${styles.risen}`}>
+                  <ToyIcon name={result.level} size={22} />
                   {levelUpLine(card.word, result.level)}
                 </p>
               )}
-              {[levelUpLabel(result.progress), ...bonusLines(result.bonus, noun)].map(
-                (line) =>
-                  line !== null && (
-                    <p key={line} className={styles.feedbackExtra}>
-                      {line}
-                    </p>
-                  ),
-              )}
+              {earned?.lost != null && <p className={styles.feedbackExtra}>{earned.lost}</p>}
             </div>
+            {earned !== null && earned.gains.length > 0 && (
+              <div className={styles.feedbackGains}>
+                {earned.gains.map((gain, index) => (
+                  <GainBanner
+                    key={`${gain.icon}-${gain.note}`}
+                    icon={gain.icon}
+                    title={gain.title}
+                    note={gain.note}
+                    small
+                    className={styles.risen}
+                    style={{ animationDelay: `${200 + index * 140}ms` }}
+                  />
+                ))}
+              </div>
+            )}
             <Button onClick={onNext}>{last ? "Voir le résultat" : "Question suivante"}</Button>
           </div>
         )}
