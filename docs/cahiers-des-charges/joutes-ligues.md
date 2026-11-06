@@ -1,6 +1,6 @@
 # Cahier des charges · Les joutes, la suite : sensation, accueil guidé et ligues
 
-- **Statut :** proposé le 2026-11-06 ; le propriétaire a retenu toutes les recommandations le même jour (L1 à L11 en a), inscrites en P51, P91 et P98. Rien de construit : la planche du lot 2 vient d'abord.
+- **Statut :** proposé le 2026-11-06 ; le propriétaire a retenu toutes les recommandations le même jour (L1 à L11 en a), inscrites en P51, P91 et P98. Rien de construit hors de la maquette.
 - **Source :** retours du propriétaire du 2026-11-06, après une joute jouée contre les bots en local. Le principe marche. Ce qui ne va pas :
   - l'interface manque de sensation (« juicyness ») ;
   - la joute n'est pas assez expliquée ;
@@ -13,6 +13,7 @@
   - P23 (réserve), P51 (classements), P52 (sans mise), P84 (écus) ;
   - P91 (joutes), P95 (carnet), P96 (saison), P97 (récompenses connues) ;
   - N1 ([regles-du-jeu.md](../regles-du-jeu.md)).
+- **Maquette :** la planche `/planches/joutes` du web (`pnpm dev`, puis http://localhost:3000/planches/joutes), faite le 2026-11-06, à juger par le propriétaire avant le code. Six moments en haut : l'accueil guidé (ses quatre temps, éditeur de deck et entraînement jouables), l'accueil des joutes, la joute (face-à-face, chrono, réponses), le bilan de sa partie, la révélation du résultat, les ligues et le classement. Joueurs et chiffres inventés. Elle se lit aussi à 375 px.
 - **Cahiers liés :**
   - [joutes.md](joutes.md) : le lot 1, et J12 pour la cote et les rangs ;
   - [saison.md](saison.md) : le calendrier, en attente de S1 à S9 ;
