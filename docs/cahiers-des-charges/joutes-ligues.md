@@ -1,6 +1,6 @@
 # Cahier des charges · Les joutes, la suite : sensation, accueil guidé et ligues
 
-- **Statut :** proposé le 2026-11-06, en attente des choix du propriétaire (L1 à L11). Rien de construit.
+- **Statut :** proposé le 2026-11-06 ; le propriétaire a retenu toutes les recommandations le même jour (L1 à L11 en a), inscrites en P51, P91 et P98. Rien de construit : la planche du lot 2 vient d'abord.
 - **Source :** retours du propriétaire du 2026-11-06, après une joute jouée contre les bots en local. Le principe marche. Ce qui ne va pas :
   - l'interface manque de sensation (« juicyness ») ;
   - la joute n'est pas assez expliquée ;
@@ -163,6 +163,8 @@ Chaque ligne porte l'avatar, le pseudo, l'emblème, les lauriers et la place. Le
 
 ## Questions au propriétaire
 
+Toutes tranchées le 2026-11-06 : la réponse recommandée (a) partout.
+
 **L1 · L'accueil guidé.**
 - a. **(recommandé)** Les quatre temps décrits plus haut, avec Maître Furet, chacun avec « Passer », marqués faits sur le compte. Ensuite, la bulle « ? » avec « Revoir l'accueil guidé ». La règle quitte l'accueil des joutes.
 - b. Trois planches illustrées à faire défiler la première fois, sans entraînement, puis la bulle « ? ».
@@ -224,11 +226,11 @@ Chaque ligne porte l'avatar, le pseudo, l'emblème, les lauriers et la place. Le
 - **Faire monter un ami** : seules les joutes classées comptent, une par paire et par 24 h, comme pour la cote.
 - **Des animations qui font attendre** : chacune se passe d'un toucher, et la révélation se joue une seule fois.
 
-## Ce qui change dans les règles, une fois tranché
+## Ce qui a changé dans les règles
 
-- **P91 :** le premier deck est composé par le joueur (L2), avec l'accueil guidé (L1).
-- **P51 :** l'échelle de lauriers et ses ligues (L7, L8), les classements (L11).
-- **Une nouvelle règle pour les ligues :** barème, planchers, saison et récompenses (L9, L10). Elle renvoie à P96 pour le calendrier.
+- **P91 :** le premier deck composé par le joueur (L2), l'accueil guidé et la bulle « ? » (L1).
+- **P51 :** les lauriers et la ligue à l'écran, la cote dans le détail des statistiques (L8), les classements (L11).
+- **P98, nouvelle :** les ligues, leur barème, leurs planchers, la saison des joutes et ses récompenses (L7, L9, L10).
 
 ## Ce qui change dans le code, en bref
 
