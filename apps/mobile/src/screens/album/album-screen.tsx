@@ -26,10 +26,11 @@ import {
   type CompareFilter,
   compareFilters,
   comparingTitle,
+  ECUS_TITLE,
+  ecusLabel,
   filterButtonLabel,
   isAlbumSort,
   isFeatureOpen,
-  MISSING_WORD_OPEN,
   type MissingItem,
   type OwnedItem,
   playerName,
@@ -53,13 +54,12 @@ import {
 import { api } from "@/api/client";
 import { Card } from "@/cards/card";
 import { catalogInHand, loadCatalog } from "@/cards/catalog";
-import { openMissingWord } from "@/ecus/missing-word";
-import { RecycleButton } from "@/ecus/recycle-button";
+import { EcusSheet } from "@/ecus/ecus-sheet";
 import { vibrate } from "@/feedback/feedback";
 import { Desk } from "@/library/play-pieces";
 import { cardDates, ownedCards, wordMemory } from "@/player/collection";
 import { useNow, useShared, useSharedFailed } from "@/player/shared";
-import { progress } from "@/player/state";
+import { progress, wallet } from "@/player/state";
 import { askAlbumPractice } from "@/screens/challenges/pending-practice";
 import { openCard } from "@/screens/trades/card-row";
 import { TAB_BAR_RISE } from "@/shell/tab-bar";
@@ -149,6 +149,8 @@ export function AlbumScreen({ friendCode }: { readonly friendCode: string | null
     readonly cards: ReadonlySet<string>;
   } | null>(null);
   const [filtering, setFiltering] = useState(false);
+  const currentWallet = useShared(wallet);
+  const [ecusOpen, setEcusOpen] = useState(false);
 
   useEffect(() => {
     setFriend(null);
@@ -341,24 +343,17 @@ export function AlbumScreen({ friendCode }: { readonly friendCode: string | null
             {filtersOn > 0 && <Text style={styles.filtersCount}>{filtersOn}</Text>}
           </Pressable>
         )}
+        {currentWallet !== null && (
+          <Pressable
+            onPress={() => setEcusOpen(true)}
+            accessibilityRole="button"
+            accessibilityLabel={`${ECUS_TITLE}, ${ecusLabel(currentWallet.ecus)}`}
+            style={[styles.filtersButton, styles.ecusButton, toyFace("paper")]}
+          >
+            <ToyIcon name="ecu" size={26} />
+          </Pressable>
+        )}
       </View>
-      {/* Recycling and the missing word act on the whole album: they sit by the search, not among the cards. */}
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.row}
-        style={styles.bleed}
-      >
-        <RecycleButton small />
-        <Button
-          label={MISSING_WORD_OPEN}
-          secondary
-          small
-          onPress={() =>
-            openMissingWord(state.collectionId === ALL_COLLECTIONS ? undefined : state.collectionId)
-          }
-        />
-      </ScrollView>
 
       <TabRow dimmed={view.searching}>
         {view.tabs.map((tab) => {
@@ -556,6 +551,15 @@ export function AlbumScreen({ friendCode }: { readonly friendCode: string | null
           />
         )}
       </Sheet>
+      {currentWallet !== null && (
+        <EcusSheet
+          wallet={currentWallet}
+          now={now}
+          collectionId={state.collectionId === ALL_COLLECTIONS ? undefined : state.collectionId}
+          open={ecusOpen}
+          onClose={() => setEcusOpen(false)}
+        />
+      )}
     </>
   );
 }
@@ -921,6 +925,8 @@ const styles = StyleSheet.create({
     borderRadius: radii.x4,
     backgroundColor: colors.pageRaised,
   },
+  // The écu alone: the search keeps the width of the row.
+  ecusButton: { width: 48, justifyContent: "center", paddingHorizontal: 0 },
   filtersCount: {
     overflow: "hidden",
     minWidth: 20,

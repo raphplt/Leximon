@@ -18,9 +18,10 @@ import {
   type CompareFilter,
   compareFilters,
   comparingTitle,
+  ECUS_TITLE,
+  ecusLabel,
   isAlbumSort,
   isFeatureOpen,
-  MISSING_WORD_OPEN,
   type MissingItem,
   type OwnedItem,
   playerName,
@@ -28,24 +29,26 @@ import {
 } from "@leximon/view-model";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { type CSSProperties, useEffect, useMemo, useRef, useState } from "react";
+import { type CSSProperties, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { packOf } from "@/booster/pack-looks";
 import { loadCatalog } from "@/cards/catalog";
 import { askAlbumPractice } from "@/challenges/pending-practice";
 import { Card } from "@/components/card";
 import { CollectionSeal } from "@/components/collection-seal";
 import { RarityIcon, RarityName } from "@/components/rarity-icon";
-import { RecycleButton } from "@/ecus/recycle-button";
+import { EcusDetail } from "@/ecus/ecus-detail";
 import { api } from "@/lib/api";
 import { useIncremental } from "@/lib/use-incremental";
 import { useNarrow } from "@/lib/use-narrow";
 import { useNow } from "@/lib/use-now";
 import { Desk } from "@/library/play-pieces";
 import { cardDates, ownedCards, wordMemory } from "@/player/collection";
+import { wallet } from "@/player/player";
 import { useShared, useSharedFailed } from "@/player/resource";
 import { useProgress } from "@/progress/use-progress";
 import { useShell } from "@/shell/shell-context";
 import { Button } from "@/ui/button";
+import { Dialog } from "@/ui/dialog";
 import { Icon } from "@/ui/icon";
 import { LoadFailed } from "@/ui/load-failed";
 import { Bone, WaitingScreen } from "@/ui/skeleton";
@@ -102,8 +105,11 @@ export function AlbumScreen() {
   const dates = useShared(cardDates);
   const now = useNow(60_000);
   const narrow = useNarrow();
-  const { openCard, openMissingWord } = useShell();
+  const { openCard } = useShell();
   const progress = useProgress();
+  const currentWallet = useShared(wallet);
+  const [ecusOpen, setEcusOpen] = useState(false);
+  const closeEcus = useCallback(() => setEcusOpen(false), []);
   const [state, setState] = useState<AlbumState>({
     collectionId: "",
     rarity: null,
@@ -253,20 +259,6 @@ export function AlbumScreen() {
           </p>
         </div>
         <div className={styles.tools}>
-          <div className={styles.ecus}>
-            <RecycleButton small />
-            <Button
-              variant="secondary"
-              small
-              onClick={() =>
-                openMissingWord(
-                  state.collectionId === ALL_COLLECTIONS ? undefined : state.collectionId,
-                )
-              }
-            >
-              {MISSING_WORD_OPEN}
-            </Button>
-          </div>
           <label className={styles.search}>
             <span className={styles.searchIcon}>
               <Icon name="search" size={18} />
@@ -280,8 +272,29 @@ export function AlbumScreen() {
               onChange={(event) => setState((s) => ({ ...s, search: event.target.value }))}
             />
           </label>
+          {currentWallet !== null && (
+            <button
+              type="button"
+              className={`${ui.chip} ${styles.ecus}`}
+              aria-label={`${ECUS_TITLE}, ${ecusLabel(currentWallet.ecus)}`}
+              onClick={() => setEcusOpen(true)}
+            >
+              <ToyIcon name="ecu" size={22} />
+              {ECUS_TITLE}
+            </button>
+          )}
         </div>
       </header>
+      {currentWallet !== null && (
+        <Dialog open={ecusOpen} title={ECUS_TITLE} onClose={closeEcus} variant="center">
+          <EcusDetail
+            wallet={currentWallet}
+            now={now}
+            collectionId={state.collectionId === ALL_COLLECTIONS ? undefined : state.collectionId}
+            onClose={closeEcus}
+          />
+        </Dialog>
+      )}
 
       <div className={styles.desk}>
         <Desk className={styles.deskBack} />

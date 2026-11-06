@@ -44,7 +44,7 @@
   color: var(--lx-color-page-ink);
 }
 
-/* Recycling and the missing word act on the whole album, so they sit by the search, above the filters. */
+/* The écus open by the search: recycling and the missing word act on the whole album, not on a filter. */
 .tools {
   display: flex;
   flex-wrap: wrap;
@@ -53,10 +53,11 @@
   gap: var(--lx-s5);
 }
 
+/* As tall as the search beside it. */
 .ecus {
-  display: flex;
-  flex-wrap: wrap;
+  flex-shrink: 0;
   gap: var(--lx-s3);
+  min-height: 48px;
 }
 
 .search {
@@ -612,30 +613,14 @@
   }
 
   .tools {
-    width: 100%;
-    justify-content: flex-start;
-  }
-
-  /* On a phone the search comes first, the actions under it on one row that scrolls sideways. */
-  .ecus {
-    order: 1;
     flex-wrap: nowrap;
-    max-width: 100%;
-    padding-bottom: var(--lx-s2);
-    overflow-x: auto;
-    scrollbar-width: none;
-  }
-
-  .ecus::-webkit-scrollbar {
-    display: none;
-  }
-
-  .ecus > * {
-    flex-shrink: 0;
+    width: 100%;
   }
 
   .search {
-    width: 100%;
+    flex: 1;
+    width: auto;
+    min-width: 0;
   }
 
   .tabs {

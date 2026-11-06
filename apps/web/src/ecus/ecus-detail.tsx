@@ -21,10 +21,13 @@ import { RecycleButton } from "./recycle-button";
 export function EcusDetail({
   wallet,
   now,
+  collectionId,
   onClose,
 }: {
   readonly wallet: BoosterWalletResponse;
   readonly now: number;
+  /** The collection the missing word is first looked for in, when opened from one. */
+  readonly collectionId?: string | undefined;
   readonly onClose: () => void;
 }) {
   const { openMissingWord } = useShell();
@@ -111,7 +114,7 @@ export function EcusDetail({
           wide
           onClick={() => {
             onClose();
-            openMissingWord();
+            openMissingWord(collectionId);
           }}
         >
           {MISSING_WORD_OPEN}
