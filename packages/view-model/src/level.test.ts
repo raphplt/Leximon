@@ -6,10 +6,10 @@ import {
   levelRatio,
   levelUpGain,
   playerTitle,
-  roadSubtitle,
   xpGainLabel,
   xpProgressLabel,
   xpSources,
+  xpToNextLabel,
 } from "./level";
 
 const NOW = Date.UTC(2026, 9, 22);
@@ -39,7 +39,7 @@ describe("level", () => {
     expect(xpProgressLabel(at16)).toBe("260 / 825 XP");
     expect(levelLabel(at16.level)).toBe("Niveau 16");
     expect(levelDescription(at16)).toBe("Niveau 16, 260 sur 825 XP");
-    expect(roadSubtitle(at16)).toBe("Niveau 16 · encore 565 XP avant le 17");
+    expect(xpToNextLabel(at16)).toBe("Encore 565 XP avant le niveau 17");
   });
 
   it("carries the title of the highest milestone claimed", () => {
@@ -49,7 +49,7 @@ describe("level", () => {
   });
 
   it("reads the XP table from the rules in force", () => {
-    expect(xpSources(NOW)).toContainEqual({ action: "Nouveau mot", xp: "5 à 50" });
-    expect(xpSources(NOW)[0]).toEqual({ action: "Ouvrir un sachet", xp: "10" });
+    expect(xpSources(NOW)).toContainEqual({ icon: "album", action: "Nouveau mot", xp: "5 à 50" });
+    expect(xpSources(NOW)[0]).toEqual({ icon: "sachet", action: "Ouvrir un sachet", xp: "10" });
   });
 });

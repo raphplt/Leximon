@@ -34,6 +34,7 @@ export * from "./reveal";
 export * from "./review";
 export * from "./rewards";
 export * from "./riddle";
+export * from "./road";
 export * from "./sanctions";
 export * from "./shell";
 export * from "./staging";

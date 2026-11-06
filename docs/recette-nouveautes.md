@@ -425,7 +425,7 @@ Chaque retour vaut pour le web (téléphone et grand écran) et pour l'app, sauf
 | R-27 | Écus, recycler | Le bouton ne doit pas recycler sans demander : on choisit les cartes à recycler, une ou plusieurs, avec tris et filtres pour choisir vite. | 6 ✓ |
 | R-28 | Album, trier | Un tri par niveau de connaissance du mot (Dorure d'abord). | 6 ✓ |
 | R-29 | Clan, chef | En local, le journal se remplit de « X prend la tête du clan », en alternance entre deux joueurs. | 6 ✓ |
-| R-30 | Niveaux | Le visuel ne plaît pas du tout : la page est à refaire. | 7 (planche) |
+| R-30 | Niveaux | Le visuel ne plaît pas du tout : la page est à refaire. | 7 ✓ |
 
 **Relecture du lot 1 (2026-11-06).** Quatre points revenus, repris le jour même :
 
@@ -471,4 +471,10 @@ Chaque retour vaut pour le web (téléphone et grand écran) et pour l'app, sauf
 - R-28 : l'album a un quatrième tri, « Les mieux connues » : Dorure, Encre, Esquisse, puis les mots jamais révisés ; à niveau égal, le mot que la mémoire tient le plus longtemps d'abord.
 - R-29 : un chef absent depuis 14 jours ne passe plus la main qu'à un adjoint ou un membre venu dans les 14 derniers jours ; si personne ne vient, il garde le rôle. Avant, deux absents se renvoyaient le rôle à chaque lecture de la page. Les lignes déjà écrites au journal de ta base locale restent.
 
-**Lot 7, la page Niveaux (2026-11-06).** R-30 a sa planche `/planches/niveaux`, à 390 et 1 500 px : trois façons de dessiner la page (A, la route qui serpente ; B, la piste qu'on fait glisser ; C, les dix coffrets du chapitre), pour trois joueurs (niveau 4, niveau 17 avec 5 coffrets, niveau 17 sans coffret). L'en-tête est commun aux trois : la médaille du niveau dans un anneau d'XP, la barre, le titre porté et le bouton des coffrets. Rien n'est codé avant le choix d'une direction.
+**Lot 7, la page Niveaux (2026-11-06).** R-30 a d'abord eu sa planche `/planches/niveaux` (trois directions : A, la route ; B, la piste ; C, les coffrets). Le propriétaire a choisi A, faite le jour même sur le web et l'app, vérifiée à 390, 1 500 et 2 000 px et sur l'émulateur :
+
+- En haut, la médaille du niveau dans un anneau vert qui se remplit avec l'XP, le titre porté, la barre « 765 / 870 XP » et « Encore 105 XP avant le niveau 18 ». Le « ? » à côté ouvre « D'où vient l'XP », chaque source avec son dessin. À droite (en dessous sur le téléphone), « Ouvrir un coffret » avec le nombre de coffrets qui attendent ; sans coffret, ce que donne le niveau suivant.
+- Le chapitre est une route qui serpente sous un ruban à son nom : les niveaux ouverts sont des pièces dorées cochées, les coffrets à ouvrir des coffres qui sautillent, ton niveau la médaille qui brille, le suivant un anneau d'XP, la suite en gris. Chaque étape porte une étiquette : ce qu'elle débloque, sinon sa récompense (« Sachet garni et 4 autres » quand il y en a plus de deux). Les onglets en haut changent de chapitre.
+- Toucher un coffre l'ouvre. Toucher une autre étape montre ce qu'elle donne : à droite de la route sur grand écran, dans une bulle sous l'étape sur le téléphone (au-dessus pour les dernières).
+- « À débloquer » liste les parties du jeu encore fermées, avec leur niveau.
+- Les coffrets s'ouvrent toujours un par un ; un bouton « Tout ouvrir » reste à trancher.

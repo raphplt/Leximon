@@ -1,338 +1,504 @@
 .page {
   box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
   max-width: 1180px;
   margin: 0 auto;
-  padding: 26px var(--lx-s16) var(--lx-s32);
+  padding: 22px var(--lx-s16) var(--lx-s32);
+  color: var(--lx-color-page-ink);
 }
 
 .header {
   display: flex;
   align-items: center;
-  gap: var(--lx-s6);
-  margin-bottom: var(--lx-s9);
+  gap: 14px;
 }
 
 .title {
   margin: 0;
-  font-size: var(--lx-size-display-large);
+  font-size: var(--lx-size-display);
   line-height: 1;
 }
 
-.subtitle {
-  margin: var(--lx-s2) 0 0;
-  font-size: var(--lx-size-label);
-  color: var(--lx-color-page-ink-muted);
+.loading {
+  min-height: 420px;
 }
 
 .layout {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 360px;
-  gap: var(--lx-s12);
+  grid-template-columns: minmax(0, 1fr) 380px;
+  gap: 18px;
   align-items: start;
 }
 
-/* --- The page of contents: paper among the night panels, as a card is --- */
+/* --- The head: the level in big, its bar, the coffrets that wait --- */
 
-.folio {
-  --paper: var(--lx-color-paper);
-  --ink: var(--lx-color-paper-ink);
-  --ink-muted: var(--lx-color-paper-ink-muted);
-  --rubric: #a8341c;
-  --gilt: #8a5c0a;
-
-  position: relative;
-  padding: 26px 34px 30px;
-  border-radius: var(--lx-radius-md);
-  background: var(--paper);
-  color: var(--ink);
-  box-shadow: 0 18px 44px color-mix(in srgb, var(--lx-color-scrim) 40%, transparent);
-}
-
-/* The double rule of an old title page. */
-.folio::before {
-  content: "";
-  position: absolute;
-  inset: 9px;
-  border: 1px solid color-mix(in srgb, var(--lx-color-paper-ink) 22%, transparent);
-  border-radius: 5px;
-  box-shadow:
-    inset 0 0 0 2px var(--paper),
-    inset 0 0 0 3px color-mix(in srgb, var(--lx-color-paper-ink) 12%, transparent);
-  pointer-events: none;
-}
-
-.loading {
-  min-height: 620px;
-  opacity: 0.5;
-}
-
-.folioHead {
-  position: relative;
-  display: flex;
+.hero {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: center;
-  justify-content: space-between;
-  gap: var(--lx-s6);
-  padding-bottom: var(--lx-s8);
-  border-bottom: 1px solid color-mix(in srgb, var(--lx-color-paper-ink) 22%, transparent);
+  gap: 22px;
+  padding: 18px 24px;
 }
 
-.turn {
-  appearance: none;
+/* The XP of the level runs round the medal, as on a game's profile. */
+.ring {
   display: grid;
   place-items: center;
-  flex: none;
-  width: 40px;
-  height: 40px;
+  width: 108px;
+  height: 108px;
+  border: var(--lx-toy-outline-width) solid var(--lx-toy-outline);
   border-radius: 50%;
-  cursor: pointer;
+  background:
+    radial-gradient(circle, var(--lx-color-paper) 0 58%, transparent 59%),
+    conic-gradient(
+      var(--lx-color-success) calc(var(--ratio) * 1turn),
+      color-mix(in srgb, var(--lx-toy-outline) 18%, var(--lx-color-paper)) 0
+    );
+  box-shadow: 0 4px 0 var(--lx-toy-outline);
 }
 
-.turn:disabled {
-  opacity: 0.3;
-  cursor: default;
-}
-
-.quarterName {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-}
-
-.quarterRange {
-  font-size: var(--lx-size-caption);
-  font-weight: 800;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--rubric);
-}
-
-.quarterTitle {
-  margin: var(--lx-s2) 0 0;
-  color: var(--ink);
-  font-size: var(--lx-size-heading-large);
-  line-height: 1.05;
-}
-
-.lines {
-  position: relative;
-  margin: var(--lx-s4) 0 0;
-  padding: 0;
-  list-style: none;
-}
-
-.line {
-  appearance: none;
-  display: flex;
-  align-items: center;
-  gap: var(--lx-s6);
-  width: 100%;
-  min-height: 58px;
-  padding: 7px var(--lx-s5);
-  border: 0;
-  border-radius: var(--lx-radius-sm);
-  background: none;
-  color: var(--ink-muted);
-  font: inherit;
-  text-align: left;
-  cursor: pointer;
-}
-
-.line:hover,
-.line[aria-pressed="true"] {
-  background: color-mix(in srgb, var(--lx-color-paper-ink) 6%, transparent);
-}
-
-.line:focus-visible {
-  outline: 2px solid var(--rubric);
-  outline-offset: 1px;
-}
-
-.line[data-state="next"],
-.line[data-state="claimable"] {
-  color: var(--ink);
-}
-
-.lineMark {
+.heroText {
   display: grid;
-  place-items: center;
-  flex: none;
-  width: 36px;
-  height: 36px;
-  color: var(--gilt);
-}
-
-.lineText {
-  display: flex;
-  flex-direction: column;
-  flex: 0 1 auto;
-  gap: 1px;
+  gap: 6px;
   min-width: 0;
 }
 
-.lineTitle {
-  font-family: var(--font-text), Georgia, serif;
-  font-size: var(--lx-size-subtitle);
-  line-height: 1.25;
+.heroTitle {
+  margin: 0;
+  font-family: var(--font-display), Georgia, serif;
+  font-size: var(--lx-size-title-large);
+  font-weight: var(--lx-weight-display);
+  line-height: 1;
 }
 
-.line[data-state="next"] .lineTitle,
-.line[data-state="claimable"] .lineTitle,
-.line[data-milestone="true"] .lineTitle {
-  font-weight: 700;
-}
-
-.lineOpens {
-  font-size: var(--lx-size-small);
-  font-weight: 700;
-  line-height: 1.3;
-  color: var(--rubric);
-}
-
-.lineBar {
-  width: 200px;
-  max-width: 100%;
-  margin-top: 5px;
-  background: color-mix(in srgb, var(--lx-color-paper-ink) 14%, transparent);
-}
-
-/* The dots of a table of contents, from the title to the number. */
-.leader {
-  flex: 1 1 24px;
-  min-width: 24px;
-  height: 1px;
-  margin-top: var(--lx-s4);
-  border-bottom: 2px dotted color-mix(in srgb, var(--lx-color-paper-ink) 28%, transparent);
-}
-
-.toOpen {
-  flex: none;
-  padding: 3px var(--lx-s5);
+.heroBar {
+  position: relative;
+  display: block;
+  height: 26px;
+  overflow: hidden;
+  border: var(--lx-toy-outline-width) solid var(--lx-toy-outline);
   border-radius: var(--lx-radius-pill);
-  background: var(--lx-color-action);
-  color: var(--lx-color-action-ink);
+  background: color-mix(in srgb, var(--lx-toy-outline) 14%, var(--lx-color-paper));
+}
+
+.heroBar span {
+  position: absolute;
+  inset: 0 auto 0 0;
+  border-radius: var(--lx-radius-pill);
+  background: linear-gradient(
+    180deg,
+    var(--lx-toy-green-top) 0 50%,
+    var(--lx-toy-green-bottom) 50% 100%
+  );
+}
+
+.heroBar b {
+  position: relative;
+  display: grid;
+  place-items: center;
+  height: 100%;
   font-size: var(--lx-size-small);
-  font-weight: 800;
+  font-weight: 900;
+  color: var(--lx-color-paper);
+  -webkit-text-stroke: 3px var(--lx-toy-outline);
+  paint-order: stroke fill;
 }
 
-.lineLevel {
-  flex: none;
-  min-width: 30px;
-  color: inherit;
-  font-size: var(--lx-size-title-small);
-  font-variant-numeric: tabular-nums;
-  text-align: right;
-}
-
-.line[data-milestone="true"] .lineLevel {
-  color: var(--rubric);
-}
-
-/* --- Quarters --- */
-
-.quarters {
-  padding: var(--lx-s9) var(--lx-s8) var(--lx-s6);
-}
-
-.quarters > h2 {
-  padding: 0 var(--lx-s2);
-}
-
-.quarterList {
-  display: flex;
-  flex-direction: column;
-  gap: var(--lx-s1);
-  margin: var(--lx-s5) 0 0;
-  padding: 0;
-  list-style: none;
-}
-
-.quarter {
+.heroNext {
   display: flex;
   align-items: center;
-  gap: var(--lx-s6);
-  width: 100%;
-  padding: var(--lx-s4);
-  border: 0;
-  border-radius: var(--lx-radius-xl);
-  background: none;
-  color: var(--lx-color-page-ink);
-  font: inherit;
+  gap: 6px;
   font-size: var(--lx-size-label);
   font-weight: 700;
-  text-align: left;
-  cursor: pointer;
+  color: var(--lx-color-page-ink-muted);
 }
 
-.quarter:hover {
-  background: color-mix(in srgb, var(--lx-color-page-ink) 5%, transparent);
-}
-
-.quarter[aria-current="true"] {
-  background: var(--lx-color-page-raised);
-}
-
-.quarterDone,
-.quarterHere,
-.quarterAhead {
-  flex-shrink: 0;
+.xpList {
   display: grid;
-  place-items: center;
-  width: 28px;
-  height: 28px;
-  border-radius: 9px;
-  font-size: var(--lx-size-caption);
-  font-weight: 800;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
 }
 
-.quarterDone {
-  background: var(--lx-color-action);
-  color: var(--lx-color-action-ink);
-}
-
-.quarterHere {
-  background: var(--lx-color-badge);
-  color: var(--lx-color-ink-on-color);
-}
-
-.quarterAhead {
-  background: var(--lx-color-binding);
-  color: var(--lx-color-page-ink-faint);
-}
-
-.quarterLabel {
-  flex: 1;
-  min-width: 0;
-}
-
-.quarterLevels {
+.xpLine {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
   font-size: var(--lx-size-small);
-  color: var(--lx-color-page-ink-faint);
+}
+
+.xpLine strong {
+  font-weight: 900;
+  color: var(--lx-color-success);
   white-space: nowrap;
 }
 
-/* --- Detail and XP table --- */
+.heroAction {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.coming {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px 10px 10px;
+  border: 2px dashed color-mix(in srgb, var(--lx-toy-outline) 35%, transparent);
+  border-radius: var(--lx-radius-xl);
+}
+
+.coming > span:last-child {
+  display: grid;
+  gap: 2px;
+}
+
+/* A chest that waits gives a little hop now and then, to be opened. */
+.hop {
+  animation: hop 2.4s ease-in-out infinite;
+}
+
+@keyframes hop {
+  0%,
+  70%,
+  100% {
+    transform: translateY(0) rotate(0);
+  }
+  78% {
+    transform: translateY(-8px) rotate(-6deg);
+  }
+  86% {
+    transform: translateY(0) rotate(4deg);
+  }
+  92% {
+    transform: translateY(-3px) rotate(0);
+  }
+}
+
+/* --- A reward as a coin with its sign --- */
+
+.coinWrap {
+  display: inline-grid;
+  flex: none;
+}
+
+.coin {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  color: var(--lx-color-paper);
+}
+
+/* --- The road --- */
+
+.roadLeaf {
+  padding: 16px 18px 26px;
+}
+
+.tabs {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 2px 2px 8px;
+  scrollbar-width: none;
+}
+
+.tab {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 6px;
+  height: 34px;
+  padding: 0 14px;
+  font-size: var(--lx-size-label);
+  font-weight: 800;
+  color: var(--lx-toy-outline);
+}
+
+.banner {
+  display: grid;
+  justify-items: center;
+  gap: 16px;
+  margin: 10px 0 4px;
+}
+
+.ribbon {
+  position: relative;
+  padding: 8px 36px 10px;
+  border: var(--lx-toy-outline-width) solid var(--lx-toy-outline);
+  border-radius: 10px;
+  background: linear-gradient(180deg, var(--lx-toy-red-top) 0 50%, var(--lx-toy-red-bottom) 50%);
+  box-shadow: 0 4px 0 var(--lx-toy-outline);
+  font-size: var(--lx-size-title);
+}
+
+/* The two tails of the ribbon, folded behind it. */
+.ribbon::before,
+.ribbon::after {
+  content: "";
+  position: absolute;
+  top: 10px;
+  z-index: -1;
+  width: 26px;
+  height: 100%;
+  border: var(--lx-toy-outline-width) solid var(--lx-toy-outline);
+  background: var(--lx-toy-red-edge);
+}
+
+.ribbon::before {
+  left: -18px;
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%, 40% 50%);
+}
+
+.ribbon::after {
+  right: -18px;
+  clip-path: polygon(0 0, 100% 0, 60% 50%, 100% 100%, 0 100%);
+}
+
+.range {
+  font-size: var(--lx-size-small);
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--lx-color-page-ink-muted);
+}
+
+.road {
+  position: relative;
+}
+
+.path {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.pathAhead,
+.pathDone {
+  fill: none;
+  stroke-linecap: round;
+  vector-effect: non-scaling-stroke;
+}
+
+.pathAhead {
+  stroke: color-mix(in srgb, var(--lx-toy-outline) 28%, transparent);
+  stroke-width: 8;
+  stroke-dasharray: 2 16;
+}
+
+.pathDone {
+  stroke: var(--lx-toy-gold-top);
+  stroke-width: 12;
+  filter: drop-shadow(0 3px 0 var(--lx-toy-outline));
+}
+
+.stops {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.stop {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 104px;
+  scroll-margin: 120px;
+}
+
+.stopButton {
+  position: absolute;
+  top: 50%;
+  left: var(--x);
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: none;
+  cursor: pointer;
+  transform: translate(-50%, -50%);
+}
+
+.stopButton:focus-visible {
+  outline: 3px solid var(--lx-color-focus);
+  outline-offset: 4px;
+}
+
+.disc {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 54px;
+  height: 54px;
+  padding: 0;
+  font-size: 22px;
+}
+
+.stop[data-milestone] .disc {
+  width: 64px;
+  height: 64px;
+  font-size: 26px;
+}
+
+.tick {
+  position: absolute;
+  right: -6px;
+  bottom: -4px;
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border: 2px solid var(--lx-toy-outline);
+  border-radius: 50%;
+  background: var(--lx-toy-green-top);
+  color: var(--lx-color-paper);
+}
+
+/* The next level fills its ring as the XP comes. */
+.discRing {
+  position: absolute;
+  inset: -9px;
+  border-radius: 50%;
+  background: conic-gradient(var(--lx-color-success) calc(var(--ratio) * 1turn), transparent 0);
+  mask: radial-gradient(circle, transparent 0 62%, black 63%);
+}
+
+.here {
+  position: relative;
+  display: grid;
+  filter: drop-shadow(0 0 14px color-mix(in srgb, var(--lx-toy-gold-top) 80%, transparent));
+}
+
+.hereChest {
+  position: absolute;
+  top: -14px;
+  right: -22px;
+}
+
+.chest {
+  position: relative;
+  display: grid;
+}
+
+.chestNumber {
+  position: absolute;
+  left: 50%;
+  bottom: -8px;
+  min-width: 30px;
+  height: 22px;
+  padding: 0 6px;
+  font-size: 14px;
+  translate: -50% 0;
+}
+
+.tag {
+  position: absolute;
+  top: 50%;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 12px 4px 5px;
+  border: 2px solid color-mix(in srgb, var(--lx-toy-outline) 40%, transparent);
+  border-radius: var(--lx-radius-pill);
+  background: var(--lx-color-page-raised);
+  font-size: var(--lx-size-small);
+  font-weight: 800;
+  line-height: 1.15;
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+.stop[data-side="right"] .tag {
+  left: calc(var(--x) + 46px);
+  max-width: calc(100% - var(--x) - 50px);
+}
+
+.stop[data-side="left"] .tag {
+  right: calc(100% - var(--x) + 46px);
+  max-width: calc(var(--x) - 50px);
+}
+
+.tag[data-chosen] {
+  border-color: var(--lx-toy-outline);
+  background: color-mix(in srgb, var(--lx-toy-gold-top) 45%, var(--lx-color-paper));
+}
+
+.stop[data-state="locked"] .tag {
+  color: var(--lx-color-page-ink-muted);
+}
+
+.stop[data-milestone] .tag {
+  border-color: var(--lx-toy-gold-edge);
+}
+
+/* On a phone, the detail of a level opens under its stop, pointing at it. */
+.bubble {
+  position: absolute;
+  left: -6px;
+  right: -6px;
+  z-index: 3;
+  display: none;
+  filter: drop-shadow(0 10px 18px color-mix(in srgb, var(--lx-color-shade) 60%, transparent));
+}
+
+.bubble::before {
+  content: "";
+  position: absolute;
+  top: -9px;
+  left: calc(var(--x) - 10px);
+  width: 18px;
+  height: 18px;
+  border-top: var(--lx-toy-outline-width) solid var(--lx-toy-outline);
+  border-left: var(--lx-toy-outline-width) solid var(--lx-toy-outline);
+  background: var(--lx-color-paper);
+  rotate: 45deg;
+}
+
+.bubble[data-above]::before {
+  top: auto;
+  bottom: -9px;
+  rotate: 225deg;
+}
+
+/* --- Beside the road: the detail and what is still closed --- */
 
 .side {
   display: flex;
   flex-direction: column;
-  gap: var(--lx-s8);
+  gap: 18px;
+  min-width: 0;
+}
+
+.sideDetail {
+  position: sticky;
+  top: 90px;
 }
 
 .detail {
-  padding: 22px;
+  display: grid;
+  gap: 10px;
+  padding: 18px 20px;
 }
 
 .detailTitle {
-  margin: var(--lx-s3) 0 var(--lx-s7);
-  font-size: var(--lx-size-heading);
-  line-height: 1.05;
+  margin: 0;
+  font-family: var(--font-display), Georgia, serif;
+  font-size: var(--lx-size-title);
+  font-weight: var(--lx-weight-display);
 }
 
 .items {
-  display: flex;
-  flex-direction: column;
-  gap: var(--lx-s5);
+  display: grid;
+  gap: 8px;
   margin: 0;
   padding: 0;
   list-style: none;
@@ -341,132 +507,155 @@
 .item {
   display: flex;
   align-items: center;
-  gap: var(--lx-s6);
+  gap: 12px;
+  padding: 8px 10px;
+  border-radius: var(--lx-radius-lg);
+  background: var(--lx-color-page-raised);
 }
 
-.itemIcon {
+.item > span:last-child {
   display: grid;
-  place-items: center;
-  flex-shrink: 0;
-  width: 44px;
-  height: 44px;
-  border-radius: var(--lx-radius-xl);
-  background: var(--lx-color-page);
-  color: var(--lx-color-rubric);
-}
-
-.itemTitle {
-  display: block;
-  font-weight: 800;
-}
-
-.itemDetail {
-  display: block;
   font-size: var(--lx-size-small);
   color: var(--lx-color-page-ink-muted);
 }
 
-.opensBox {
-  margin-top: var(--lx-s7);
-  padding: var(--lx-s6) var(--lx-s7);
-  border: 1px solid color-mix(in srgb, var(--lx-color-kraft) 40%, transparent);
-  border-radius: var(--lx-radius-xl);
-  background: color-mix(in srgb, var(--lx-color-kraft) 16%, transparent);
+.item strong {
+  font-size: var(--lx-size-body);
+  color: var(--lx-color-page-ink);
 }
 
-.opensText {
-  margin: var(--lx-s1) 0 0;
-  font-weight: 800;
-}
-
-.detailAction {
-  margin-top: var(--lx-s9);
-}
-
-.done {
+.opens {
   display: flex;
   align-items: center;
-  gap: var(--lx-s3);
+  gap: 10px;
   margin: 0;
-  color: var(--lx-color-success);
-  font-weight: 800;
-}
-
-.left {
-  margin: 0;
-  color: var(--lx-color-page-ink-muted);
+  padding: 8px 10px;
+  border-radius: var(--lx-radius-lg);
+  background: color-mix(in srgb, var(--lx-toy-gold-top) 30%, var(--lx-color-paper));
   font-weight: 700;
 }
 
-.xpTable {
-  padding: var(--lx-s9) var(--lx-s10);
-}
-
-.sources {
-  display: grid;
-  grid-template-columns: 1fr auto;
-  gap: 7px var(--lx-s6);
-  margin: var(--lx-s5) 0 0;
-  font-size: var(--lx-size-label);
-}
-
-.source {
-  display: contents;
-}
-
-.source dt {
+.done,
+.left {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  font-weight: 800;
   color: var(--lx-color-page-ink-muted);
 }
 
-.source dd {
-  margin: 0;
-  font-weight: 800;
-  text-align: right;
-  font-variant-numeric: tabular-nums;
+.done {
+  color: var(--lx-color-success);
 }
 
-@media (max-width: 759px) {
-  .page {
-    padding: var(--lx-s4) var(--lx-s7) var(--lx-s14);
-  }
+.unlocks {
+  display: grid;
+  gap: 12px;
+  padding: 18px 20px;
+}
 
-  .title {
-    font-size: var(--lx-size-heading-large);
-  }
+.unlockList {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
 
+.unlock {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 8px 12px 8px 8px;
+  border-radius: var(--lx-radius-lg);
+  background: var(--lx-color-page-raised);
+  font-size: var(--lx-size-label);
+  font-weight: 800;
+}
+
+.unlock > span:last-child {
+  display: grid;
+}
+
+.unlockAt {
+  font-size: var(--lx-size-small);
+  font-weight: 700;
+  color: var(--lx-color-page-ink-muted);
+}
+
+.unlockToy {
+  position: relative;
+  flex: none;
+}
+
+.unlockLevel {
+  position: absolute;
+  right: -8px;
+  bottom: -6px;
+  min-width: 24px;
+  height: 22px;
+  padding: 0 5px;
+  font-size: 13px;
+}
+
+@media (max-width: 900px) {
   .layout {
-    display: flex;
-    flex-direction: column;
-    gap: var(--lx-s7);
+    grid-template-columns: minmax(0, 1fr);
   }
 
-  .side {
-    width: 100%;
+  .sideDetail {
+    display: none;
   }
 
-  .folio {
-    padding: var(--lx-s10) var(--lx-s7) var(--lx-s9);
+  .bubble {
+    display: block;
+  }
+}
+
+@media (max-width: 600px) {
+  .page {
+    gap: 14px;
+    padding: 14px 10px var(--lx-s16);
   }
 
-  .quarterTitle {
-    font-size: var(--lx-size-title-large);
+  .hero {
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 14px;
+    padding: 14px;
   }
 
-  .line {
-    gap: var(--lx-s4);
-    padding: var(--lx-s3) var(--lx-s2);
+  .ring {
+    width: 86px;
+    height: 86px;
   }
 
-  .lineMark {
-    width: 28px;
+  .ring > * {
+    width: 66px;
+    height: 66px;
   }
 
-  .lineTitle {
-    font-size: var(--lx-size-body-large);
+  .heroAction {
+    grid-column: 1 / -1;
+    justify-content: center;
   }
 
-  .lineLevel {
-    min-width: 24px;
-    font-size: var(--lx-size-subtitle);
+  .heroAction > .hop {
+    display: none;
+  }
+
+  .roadLeaf {
+    padding-inline: 10px;
+  }
+
+  .tag {
+    padding: 3px 8px 3px 3px;
+    font-size: 12px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hop {
+    animation: none;
   }
 }

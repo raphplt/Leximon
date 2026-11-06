@@ -16,10 +16,10 @@ import {
   type RoadNode,
   rewardItem,
   rewardsOfLevel,
-  roadSubtitle,
   waitingCoffrets,
   xpProgressLabel,
   xpSources,
+  xpToNextLabel,
 } from "@leximon/view-model";
 import { type CSSProperties, useEffect, useRef, useState } from "react";
 import { MainAction } from "@/library/play-pieces";
@@ -155,7 +155,7 @@ function Hero({ progress, claimed, now }: Props) {
           <span style={{ width: `${Math.round(ratio * 100)}%` }} />
           <b>{xpProgressLabel(progress)}</b>
         </div>
-        <p className={styles.heroNext}>{roadSubtitle(progress).split(" · ")[1]}</p>
+        <p className={styles.heroNext}>{xpToNextLabel(progress)}</p>
       </div>
       <div className={styles.heroAction}>
         {waiting.length > 0 ? (

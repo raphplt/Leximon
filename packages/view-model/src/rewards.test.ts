@@ -107,6 +107,21 @@ describe("level road", () => {
     expect(node(5)?.opens).toBe("Les échanges");
   });
 
+  it("draws each stop with what it opens, else its main reward, named short", () => {
+    // Once the social parts open sooner, level 15 opens nothing more.
+    const later = Date.UTC(2026, 10, 7);
+    const nodes = quarterNodes(quarterAt(2), 12, [], later);
+    const node = (n: number) => nodes.find((it) => it.level === n);
+    expect(node(12)).toMatchObject({ icon: "sachet", tag: "Sachet bonus" });
+    expect(node(15)).toMatchObject({ icon: "star", tag: "Sachet garni · Titre" });
+    expect(node(20)).toMatchObject({ icon: "star", tag: "Sachet garni et 4 autres" });
+    expect(quarterNodes(quarterAt(1), 1, [], later)[0]).toMatchObject({ tag: "Départ" });
+    expect(quarterNodes(quarterAt(1), 1, [], later)[4]).toMatchObject({
+      icon: "lock",
+      tag: "Les échanges, le profil public, les clans",
+    });
+  });
+
   it("details a level", () => {
     const p = progress(16, 260);
     expect(levelDetail(16, p, [], NOW)).toMatchObject({

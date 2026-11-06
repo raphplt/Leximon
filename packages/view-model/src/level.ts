@@ -57,13 +57,26 @@ export function xpBefore(progress: Pick<Progress, "xp">, level: number): number 
   return Math.max(0, xpToReach(level) - progress.xp);
 }
 
-/** "Niveau 16 · encore 140 XP avant le 17", under the title of the level road. */
-export function roadSubtitle(progress: Progress): string {
+/** « Encore 140 XP avant le niveau 17 », under the bar of the level page. */
+export function xpToNextLabel(progress: Progress): string {
   const next = progress.level + 1;
-  return `Niveau ${progress.level} · encore ${formatCount(xpBefore(progress, next))} XP avant le ${next}`;
+  return `Encore ${formatCount(xpBefore(progress, next))} XP avant le niveau ${next}`;
 }
 
+export const XP_SOURCES_TITLE = "D'où vient l'XP";
+
+/** The drawing of each source; the names are those of the toy icons, on both platforms. */
+export type XpSourceIcon =
+  | "sachet"
+  | "challenge"
+  | "album"
+  | "challenges"
+  | "gilded"
+  | "trades"
+  | "chest";
+
 export interface XpSource {
+  readonly icon: XpSourceIcon;
   readonly action: string;
   readonly xp: string;
 }
@@ -74,13 +87,22 @@ export function xpSources(now: EpochMs): XpSource[] {
   const newWord = Object.values(rules.newWord);
   const completed = Object.values(rules.rarityCompleted);
   return [
-    { action: "Ouvrir un sachet", xp: String(rules.boosterOpened) },
-    { action: "Premier sachet du jour", xp: `+${rules.firstBoosterOfDay}` },
-    { action: "Nouveau mot", xp: `${Math.min(...newWord)} à ${Math.max(...newWord)}` },
-    { action: "Bonne réponse", xp: String(rules.correctAnswer) },
-    { action: "Mot qui passe à l'Encre ou à la Dorure", xp: String(rules.masteryLevelUp) },
-    { action: "Échange conclu", xp: String(rules.tradeCompleted) },
+    { icon: "sachet", action: "Ouvrir un sachet", xp: String(rules.boosterOpened) },
+    { icon: "challenge", action: "Premier sachet du jour", xp: `+${rules.firstBoosterOfDay}` },
     {
+      icon: "album",
+      action: "Nouveau mot",
+      xp: `${Math.min(...newWord)} à ${Math.max(...newWord)}`,
+    },
+    { icon: "challenges", action: "Bonne réponse", xp: String(rules.correctAnswer) },
+    {
+      icon: "gilded",
+      action: "Mot qui passe à l'Encre ou à la Dorure",
+      xp: String(rules.masteryLevelUp),
+    },
+    { icon: "trades", action: "Échange conclu", xp: String(rules.tradeCompleted) },
+    {
+      icon: "chest",
       action: "Toutes les cartes d'une rareté réunies",
       xp: `${formatCount(Math.min(...completed))} à ${formatCount(Math.max(...completed))}`,
     },

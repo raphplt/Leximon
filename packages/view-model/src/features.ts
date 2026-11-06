@@ -61,6 +61,20 @@ export function featureMilestones(now: EpochMs): number[] {
   return [...new Set(FEATURES.map((feature) => levels[feature]))].sort((a, b) => a - b);
 }
 
+export interface Unlock {
+  readonly level: number;
+  /** « Les joutes ». */
+  readonly text: string;
+}
+
+/** The parts of the game still closed at `level`, each with the level that opens it. */
+export function unlocksAhead(level: number, now: EpochMs): Unlock[] {
+  return featureMilestones(now).flatMap((at) => {
+    const text = at > level ? opensAt(at, now) : null;
+    return text === null ? [] : [{ level: at, text }];
+  });
+}
+
 /** « Niv. 10 », the badge of a closed feature. */
 export function levelBadge(level: number): string {
   return `Niv. ${level}`;

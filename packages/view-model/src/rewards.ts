@@ -385,7 +385,26 @@ export interface RoadNode {
   readonly opens: string | null;
   /** « Débloque les échanges ». */
   readonly opensLine: string | null;
+  /** What the stop of the road shows: what the level opens, else its main reward. */
+  readonly icon: RewardIcon | "lock";
+  /** « Les joutes », « Sachet garni · Titre », « Sachet garni et 4 autres »: beside the stop. */
+  readonly tag: string;
   readonly label: string;
+}
+
+/** The reward a level is drawn with: a sachet bonus only when it gives nothing else. */
+function mainIcon(rewards: readonly LevelReward[]): RewardIcon {
+  const main = rewards.find((reward) => reward.kind !== "bonus_booster") ?? rewards[0];
+  return main === undefined ? "star" : rewardItem(main).icon;
+}
+
+/** Two rewards are named, more are counted, so the tag stays short beside its stop. */
+function roadTag(rewards: readonly LevelReward[]): string {
+  const titles = rewards.map((reward) => rewardItem(reward).title);
+  const [first] = titles;
+  if (first === undefined) return "Départ";
+  if (titles.length <= 2) return titles.join(" · ");
+  return `${first} et ${titles.length - 1} autres`;
 }
 
 /** How many levels past the player's stay clear of the fog. */
@@ -412,6 +431,7 @@ export function quarterNodes(
           : "claimable";
     const summary = rewardSummary(n, now);
     const opens = opensAt(n, now);
+    const rewards = levelRewards(rules, n);
     nodes.push({
       level: n,
       state,
@@ -421,6 +441,8 @@ export function quarterNodes(
       opens,
       opensLine:
         opens === null ? null : `Débloque ${opens.charAt(0).toLowerCase()}${opens.slice(1)}`,
+      icon: opens === null ? mainIcon(rewards) : "lock",
+      tag: opens ?? roadTag(rewards),
       label: `Niveau ${n}, ${summary}${state === "claimable" ? ", à réclamer" : ""}`,
     });
   }
