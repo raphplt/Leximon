@@ -317,7 +317,7 @@ A sur le web sert de deuxième joueur : amis, échanges, clan, sanctions. `pnpm 
 
 ## 12. Joutes
 
-Les tests du téléphone (MJO-01 à MJO-04) sont dans [recette-joutes.md](recette-joutes.md#7-sur-lapp-android).
+Les tests du téléphone (MJT-01 à MJT-04) sont dans [recette-nouveautes.md](recette-nouveautes.md#joutes--7-sur-lapp-android).
 
 ---
 

@@ -1,6 +1,9 @@
-# Recette des joutes
+# Recette des nouveautés
 
-Ce qu'on vérifie avant d'ouvrir les joutes aux testeurs, puis en production : chaque test, ce qu'on doit voir, et ta place pour noter. Les règles sont en P91 ([regles-du-jeu.md](regles-du-jeu.md)), le cahier dans [joutes.md](cahiers-des-charges/joutes.md). Le lot 1 est construit depuis le 2026-11-05, web et mobile.
+Ce qui a été construit du 4 au 6 novembre 2026, en deux parties :
+
+- **Finitions hors du jeu** (FIN-01 à FIN-13) : le [cahier des finitions](cahiers-des-charges/finitions-hors-du-jeu.md) (accueil, icônes, images de partage, e-mails, cadres, emblèmes, fiches des stores), puis trois corrections du 5 novembre (écran Jouer sur petit téléphone, bilan du sachet, réglages de la révision). La plupart de ces tests renvoient à un test de la [recette du web](recette-web.md) ou de la [recette du mobile](recette-mobile.md) et disent ce qu'il faut y regarder ; les attendus complets restent dans le test cité.
+- **Joutes, lot 1** (JTE-01 à JTE-22 sur le web, MJT-01 à MJT-04 sur Android, PROD-01 à PROD-03 en production) : ce qu'on vérifie avant d'ouvrir les joutes aux testeurs, puis en production. Les règles sont en P91 ([regles-du-jeu.md](regles-du-jeu.md)), le cahier dans [joutes.md](cahiers-des-charges/joutes.md). Le lot 1 est construit depuis le 2026-11-05, web et mobile.
 
 Pour chaque test, note dans **Retour** : « OK », ou ce que tu as vu à la place. Une capture d'écran aide.
 
@@ -8,21 +11,21 @@ Pour chaque test, note dans **Retour** : « OK », ou ce que tu as vu à la plac
 
 ### Lancer le projet
 
-Comme dans [recette-web.md](recette-web.md#0-préparer) : `pnpm install`, `docker compose up -d`, `pnpm db:migrate`, puis `pnpm dev`. Le web répond sur http://localhost:3000, l'API sur http://localhost:8787. Le code de connexion s'affiche dans le terminal de `pnpm dev`.
+Comme dans [recette-web.md](recette-web.md#0-préparer) et [recette-mobile.md](recette-mobile.md#0-préparer) : `pnpm install`, `docker compose up -d`, `pnpm db:migrate`, puis `pnpm dev`. Le web répond sur http://localhost:3000 (si un autre projet occupe ce port, l'arrêter d'abord), l'API sur http://localhost:8787. Le code de connexion s'affiche dans le terminal de `pnpm dev`.
 
-Si ta base locale est neuve, lance une fois `pnpm catalog:publish` : il écrit la définition de chaque carte, et sans elle aucune carte ne peut entrer dans un deck.
+Si ta base locale est neuve, lance une fois `pnpm catalog:publish` : il écrit la définition de chaque carte, et sans elle aucune carte ne peut entrer dans un deck de joute.
 
 ### Les comptes
 
-Il faut trois comptes inscrits, chacun dans son propre navigateur ou profil :
+Il faut trois comptes inscrits, chacun dans son propre navigateur ou profil, et une fenêtre privée pour l'invité. B sert aussi sur le téléphone :
 
 | Nom | Compte | Rôle |
 |---|---|---|
-| A | `contact@leximon.fr` | Toi, admin. Lance les joutes |
-| B | `recette-b@example.com` | L'ami défié |
+| A | `contact@leximon.fr` | Toi, admin. Lance les joutes, regarde l'atelier et les clans |
+| B | `recette-b@example.com` | L'ami défié, et le compte du téléphone |
 | C | `recette-c@example.com` | L'adversaire de la joute classée |
 
-Pour chacun :
+Pour les joutes, pour chacun :
 
 1. Se connecter une fois sur le site, puis choisir un pseudo dans le profil.
 2. Monter au niveau des joutes. Elles s'ouvrent au niveau 8 depuis le 2026-11-06 (au 15 avant) :
@@ -38,18 +41,121 @@ Ensuite, A et B deviennent amis (page Amis, par pseudo). C reste hors des amis d
 
 ### Raccourcis en base locale
 
-Certains tests demandent d'avancer le temps. Les commandes ci-dessous ne touchent que la base locale :
+Certains tests des joutes demandent d'avancer le temps. Les commandes ci-dessous ne touchent que la base locale :
 
 ```bash
 # Fait passer l'heure limite de toutes les joutes qui attendent leur second joueur
 docker exec leximon-postgres-1 psql -U leximon -d leximon -c "update jousts set reply_by = now() - interval '1 minute' where ended_at is null and opponent_started_at is null and challenger_done_at is not null"
 ```
 
+### Pour les finitions
+
+- Pour le bilan d'un sachet, il faut des sachets : `/admin/joueurs`, fiche de B, « Offrir des plis bonus ».
+- **Sans petit téléphone sous la main**, l'émulateur Android prend n'importe quel format. Une fois l'app ouverte :
+
+```bash
+adb shell wm size 1080x1920
+```
+
+Puis fermer l'app (`adb shell am force-stop fr.leximon.app`) et la rouvrir, sinon elle garde l'ancienne mise en page. `adb shell wm size reset` remet l'écran d'origine.
+
 ---
 
-## 1. La porte
+## Finitions · 1. Accueil
 
-### JOU-01 · Qui peut jouter
+### FIN-01 · L'accueil du site
+- **Faire :** [PUB-01](recette-web.md#pub-01--page-daccueil) en grand écran et en 375 × 812, puis [PUB-02](recette-web.md#pub-02--liste-dattente) avec la bêta fermée.
+- **Regarder surtout :** le sachet qu'on déchire sans compte au premier écran, et le bouton à portée du pouce sur téléphone.
+- **Retour :**
+
+### FIN-02 · Le premier écran de l'app sans invitation
+- **Faire :** [CPT-04](recette-mobile.md#cpt-04--premier-lancement-sans-invitation).
+- **Regarder surtout :** c'est le même premier écran que le site. Le sachet se déchire sans compte.
+- **Retour :**
+
+## Finitions · 2. Icônes et images de partage
+
+### FIN-03 · Icône, favicon et écran de lancement
+- **Faire :** [PUB-04](recette-web.md#pub-04--image-de-partage) pour l'onglet du navigateur et le raccourci sur iPhone, puis [COQ-01](recette-mobile.md#coq-01--lancement) sur le téléphone. La nouvelle icône de l'app ne se voit qu'après un nouveau build.
+- **Regarder surtout :** le sceau de cire au L sur le cuir vert, jamais rogné, lisible en tout petit dans l'onglet, sur fond clair comme sur fond sombre.
+- **Retour :**
+
+### FIN-04 · Images de partage
+- **Faire :** [PUB-04](recette-web.md#pub-04--image-de-partage) en local. Une fois en ligne, coller un lien de carte et un lien de profil dans Discord et dans WhatsApp.
+- **Attendu :** l'aperçu montre la carte posée sur le sous-main, le mot lisible même en petit. Une carte n'a pas sa gravure dans l'image : c'est voulu, elle porte l'initiale sur les hachures.
+- **Retour :**
+
+## Finitions · 3. E-mails
+
+### FIN-05 · L'aperçu d'une campagne
+- **Faire :** [CAM-01](recette-web.md#cam-01--brouillon-et-aperçu).
+- **Retour :**
+
+### FIN-06 · Un vrai e-mail reçu
+En local, aucun e-mail ne part : ce test se fait une fois le site en ligne.
+- **Faire :** se connecter sur leximon.fr avec une adresse Gmail, puis lire le code dans Gmail sur ordinateur, dans l'app Gmail du téléphone, et en mode sombre. Si un rappel ou une nouvelle arrive, le regarder aussi.
+- **Attendu :** une feuille crème sur le bois sombre, « Leximon » en brun avec un filet doré dessous. Le code est dans un encadré beige. Un bouton est en or, cerné d'encre, avec son épaisseur dessous. En bas, sur le bois, le lien du site, et « Se désabonner » sur un rappel ou une nouvelle. Aucune image à télécharger. Gmail en mode sombre peut foncer la feuille : le texte doit rester lisible.
+- **Retour :**
+
+## Finitions · 4. Cadres d'avatar et emblèmes de clan
+
+### FIN-07 · Les 13 cadres
+- **Faire :** [PRO-06](recette-web.md#pro-06--atelier) sur le web, avec un compte au niveau 200 (`pnpm dev:player <email> --level 200`) pour tous les avoir, puis [MPR-01](recette-mobile.md#mpr-01--profil-et-atelier) sur le téléphone.
+- **Regarder surtout :** chaque cadre en grand dans l'atelier, puis en petit dans la barre du haut et dans une liste (amis, membres du clan). Les gouttes d'encre, les perles, la dentelle et les rayons débordent du rond sans toucher le texte autour. Seuls les rayons du soleil royal tournent, et sur le web seulement ; ils restent immobiles avec « réduire les animations » activé dans le système.
+- **Retour :**
+
+### FIN-08 · Les emblèmes
+- **Faire :** [CLA-03](recette-web.md#cla-03--créer-un-clan) : essayer plusieurs gravures et paires de couleurs, puis ouvrir le même clan sur le téléphone.
+- **Attendu :** le bouclier est cerclé d'or comme les boutons du jeu, avec son épaisseur dessous. Le champ est plus clair en haut. Les couleurs vont avec la salle, et la gravure reste lisible sur chacune. Le web et le téléphone montrent le même bouclier.
+- **Retour :**
+
+## Finitions · 5. Fiches des stores
+
+### FIN-09 · Les images des fiches
+- **Faire :** ouvrir les fichiers de [apps/mobile/store/](../apps/mobile/store/) :
+  - `presentation-1024x500.png` ;
+  - les 7 captures de `android/` ;
+  - les 7 captures de `ios/` ;
+  - les deux en-têtes de `ios/`.
+
+  Les comparer à l'ordre et aux textes de [fiches-stores.md](fiches-stores.md).
+- **Attendu :**
+  - Les captures montrent, dans l'ordre : le sachet, l'ouverture, une carte révélée, une fiche épique, l'album, une question de défi, une fiche précieuse.
+  - La barre d'état affiche 9:41. On ne voit ni outil de développement, ni message d'erreur, ni donnée personnelle.
+  - L'image de présentation et les en-têtes montrent le sachet entre deux cartes sur le sous-main, sans texte sur les en-têtes, parce que le store y pose le nom de l'app.
+  - Les captures iPhone viennent de l'émulateur Android réglé comme un iPhone : à refaire sur un vrai iPhone si l'app y diffère.
+- **Retour :**
+
+### FIN-10 · Refaire une image
+- **Faire :** suivre « Refaire l'image de présentation et les en-têtes » dans [fiches-stores.md](fiches-stores.md), pour `?format=play`.
+- **Attendu :** la même image que `presentation-1024x500.png`, sans le badge de Next.
+- **Retour :**
+
+## Finitions · 6. Petits écrans et réglages
+
+### FIN-11 · L'écran Jouer sur un petit téléphone
+- **Faire :** [MJO-01](recette-mobile.md#mjo-01--écran-jouer-jou-01-à-jou-03) sur trois formats : 16:9 (`1080x1920`), 2:1 (`1080x2160`) et ton téléphone.
+- **Attendu :** le sachet et les boutons ronds rapetissent pour tenir dans la place. Rien ne passe sous la barre des onglets, rien ne sort de l'écran, et le bouton d'ouverture reste visible.
+- **Retour :**
+
+### FIN-12 · Le bilan d'un sachet
+- **Faire :** [MJO-06](recette-mobile.md#mjo-06--bilan-jou-06-jou-07) en 2:1, puis en 16:9, avec le dernier sachet du stock : le second bouton devient alors « Voir mon album ».
+- **Attendu :** en 2:1, les cartes rapetissent et les deux boutons tiennent au-dessus du bouton Jouer, sans défiler. En 16:9, le bilan défile pour atteindre « Voir mon album ». « TON SACHET » ne touche pas le cadre doré.
+- **Retour :**
+
+### FIN-13 · Les réglages de la révision
+- **Faire :** [DEF-07](recette-web.md#def-07--réglages-de-la-révision) et [DEF-18](recette-web.md#def-18--types-de-questions-et-entraînement) sur le web, puis la même roue dentée dans Défis sur le téléphone.
+- **Attendu :**
+  - Aucune note sous les boutons.
+  - Les types de questions s'appellent « Questions à l'écoute », « Paires en fin de série » et « Mots dits à voix haute ». Ce dernier est le même nom que dans les Réglages de l'app.
+  - Dis si « Exigeant » reste clair sans son explication.
+- **Retour :**
+
+---
+
+## Joutes · 1. La porte
+
+### JTE-01 · Qui peut jouter
 - **Faire :** ouvrir `/joutes` avec un invité, puis avec un compte sans pseudo, puis avec un compte sous le niveau 8, puis avec un compte au bon niveau mais dont la case n'est pas cochée dans l'admin. Enfin, avec A.
 - **Attendu :**
   - invité : « Crée un compte pour jouter contre d'autres joueurs. », avec « Créer mon compte » ;
@@ -59,45 +165,45 @@ docker exec leximon-postgres-1 psql -U leximon -d leximon -c "update jousts set 
   - A : la règle du jeu, « Trouver un adversaire », « Défier un ami », son deck et la liste de ses joutes (« Aucune joute pour l'instant. Lance la première. »).
 - **Retour :**
 
-### JOU-02 · L'entrée depuis Jouer
+### JTE-02 · L'entrée depuis Jouer
 - **Faire :** sur l'écran Jouer, toucher le bouton rond Joutes avec A, puis avec un compte sous le niveau 8. Sur grand écran, la tuile Joutes de la colonne de gauche.
 - **Attendu :** A arrive sur `/joutes`. Sous le niveau, un message dit le niveau qui les ouvre.
 - **Retour :**
 
-### JOU-03 · L'admin
+### JTE-03 · L'admin
 - **Faire :** sur la fiche de B dans `/admin/joueurs`, fermer puis rouvrir les joutes. Regarder le journal des actions.
 - **Attendu :** le bouton passe de « Ouvrir les joutes » à « Fermer les joutes » et le texte au-dessus change. La fiche dit le nombre de joutes jouées (« Il a joué 3 joutes. »). Le journal garde « Accès aux joutes » à chaque changement. B fermé ne peut plus lancer de joute ni changer son deck.
 - **Retour :**
 
 ---
 
-## 2. Le deck
+## Joutes · 2. Le deck
 
-### JOU-04 · Le deck d'office
+### JTE-04 · Le deck d'office
 - **Faire :** A ouvre `/joutes` sans avoir jamais touché à son deck.
 - **Attendu :** « Le jeu a composé ce deck avec tes mots les plus rares. Change-le quand tu veux. » Le compte dit les cartes et les points (« 10 cartes sur 10, 23 points sur 25 »), moins de 10 si A n'a pas assez de mots en Esquisse. Seuls des mots trouvés au moins une fois y entrent.
 - **Retour :**
 
-### JOU-05 · Changer son deck
+### JTE-05 · Changer son deck
 - **Faire :** « Changer mon deck ». Retirer des cartes, en ajouter, essayer de dépasser 25 points, puis 10 cartes. Descendre sous 5 cartes. Garder un deck de 7 cartes, recharger la page.
 - **Attendu :** le compte des points suit chaque touche. Au-delà de 25 points ou de 10 cartes, la carte n'entre pas et une phrase dit pourquoi. Sous 5 cartes, « Garder ce deck » est grisé. Après le rechargement, le deck de 7 cartes est là et le texte « composé d'office » a disparu.
 - **Retour :**
 
-### JOU-06 · Pas assez de mots
+### JTE-06 · Pas assez de mots
 - **Faire :** un compte ouvert aux joutes qui a moins de 5 mots en Esquisse ouvre `/joutes`.
 - **Attendu :** les deux boutons de lancement sont grisés, avec « Il te faut au moins 5 mots trouvés une fois pour faire un deck. Réponds à tes défis pour en trouver. »
 - **Retour :**
 
 ---
 
-## 3. Une joute entre amis
+## Joutes · 3. Une joute entre amis
 
-### JOU-07 · Lancer
+### JTE-07 · Lancer
 - **Faire :** A clique « Défier un ami ». Regarder la liste, puis défier B.
 - **Attendu :** la liste montre les amis et les membres du clan qui peuvent jouter, avec avatar et pseudo. C n'y est pas. Un ami qui n'a pas le niveau ou l'accès n'y est pas non plus. Après « Défier », A arrive sur la joute : « Joute contre B », la règle du chrono et « Jouer ».
 - **Retour :**
 
-### JOU-08 · Jouer sa partie
+### JTE-08 · Jouer sa partie
 - **Faire :** A clique « Jouer » et répond aux 5 questions : une juste, une fausse, et une laissée passer sans répondre.
 - **Attendu :**
   - en haut, « Question 1 sur 5 » et les secondes qui restent ; la barre du chrono se vide et rougit dans les dernières secondes ;
@@ -108,27 +214,27 @@ docker exec leximon-postgres-1 psql -U leximon -d leximon -c "update jousts set 
   - le niveau de A a gagné 20 XP.
 - **Retour :**
 
-### JOU-09 · Reprendre après un rechargement
+### JTE-09 · Reprendre après un rechargement
 - **Faire :** lancer une nouvelle joute contre B. Pendant la question 2, recharger la page, puis « Reprendre la joute ».
 - **Attendu :** la joute reprend à la question en cours, avec le temps qui lui restait (le chrono a continué pendant le rechargement). Les questions déjà répondues ne reviennent pas.
 - **Retour :**
 
-### JOU-10 · Quitter en cours de partie
+### JTE-10 · Quitter en cours de partie
 - **Faire :** lancer une joute, répondre à une question, fermer l'onglet. Revenir sur `/joutes` après 5 minutes.
 - **Attendu :** la partie de A est close : les questions non jouées comptent fausses, et la joute attend B.
 - **Retour :**
 
-### JOU-11 · La lettre de B
+### JTE-11 · La lettre de B
 - **Faire :** B ouvre le jeu et son courrier.
 - **Attendu :** une lettre « A te défie en joute » ; un clic mène à `/joutes`. Dans la liste de B, la joute est en tête avec « Jouer ». Dès que B commence sa partie, la lettre passe en lue.
 - **Retour :**
 
-### JOU-12 · La partie de B, contre le fantôme
+### JTE-12 · La partie de B, contre le fantôme
 - **Faire :** B joue sa partie.
 - **Attendu :** avant de jouer, « Tu joues contre la partie enregistrée de A. ». Pendant la partie, une ligne dit où en était A au même moment (« À la 2e question, A en avait 1. Tu en as 1. »). Le compte de B suit ses bonnes réponses.
 - **Retour :**
 
-### JOU-13 · Le résultat
+### JTE-13 · Le résultat
 - **Faire :** B voit l'écran de fin. A ouvre sa lettre « Ta joute contre B est finie ».
 - **Attendu :**
   - un titre qui dit qui gagne ;
@@ -139,92 +245,92 @@ docker exec leximon-postgres-1 psql -U leximon -d leximon -c "update jousts set 
   - la même joute, vue par A, montre le même résultat de son côté.
 - **Retour :**
 
-### JOU-14 · La revanche
+### JTE-14 · La revanche
 - **Faire :** sur le résultat, « Proposer une revanche ».
 - **Attendu :** une nouvelle joute amicale s'ouvre, avec 5 nouvelles cartes tirées des decks.
 - **Retour :**
 
 ---
 
-## 4. Une joute classée
+## Joutes · 4. Une joute classée
 
-### JOU-15 · Trouver un adversaire
+### JTE-15 · Trouver un adversaire
 - **Faire :** C ouvre le jeu (il doit être passé dans les 24 dernières heures). A clique « Trouver un adversaire ». Recommencer tout de suite.
 - **Attendu :** la première fois, A tombe sur une joute contre B ou C : le jeu choisit parmi les joueurs proches de sa cote. Pas deux joutes classées contre le même adversaire en 24 h : la deuxième va vers l'autre joueur, ou s'arrête sur « Personne n'est disponible pour une joute classée en ce moment… » s'il n'y en a plus.
 - **Retour :**
 
-### JOU-16 · La cote reste cachée
+### JTE-16 · La cote reste cachée
 - **Faire :** jouer une joute classée jusqu'au bout.
 - **Attendu :** aucune cote ni aucun rang ne s'affichent nulle part. En base, `joust_ratings` a une ligne pour chacun des deux joueurs.
 - **Retour :**
 
 ---
 
-## 5. Les limites
+## Joutes · 5. Les limites
 
-### JOU-17 · Cinq joutes en attente
+### JTE-17 · Cinq joutes en attente
 - **Faire :** A lance des joutes contre B sans que B les joue, jusqu'à la sixième.
 - **Attendu :** la sixième est refusée : « Tu as déjà 5 joutes qui attendent leur adversaire. Lance la suivante quand l'une d'elles est finie. »
 - **Retour :**
 
-### JOU-18 · Un double clic ne lance qu'une joute
+### JTE-18 · Un double clic ne lance qu'une joute
 - **Faire :** double-cliquer vite sur « Défier » dans la liste des amis.
 - **Attendu :** une seule joute est créée.
 - **Retour :**
 
-### JOU-19 · Les récompenses par jour
+### JTE-19 · Les récompenses par jour
 - **Faire :** jouer 6 joutes dans la journée avec A.
 - **Attendu :** les 5 premières rapportent leur XP, la sixième plus rien. Le sachet de la première victoire n'est donné qu'une fois par jour (heure de Paris). Si la réserve de sachets bonus est pleine, la victoire ne le donne pas, mais une autre victoire du même jour peut encore le donner.
 - **Retour :**
 
-### JOU-20 · Sans réponse en 24 h
+### JTE-20 · Sans réponse en 24 h
 - **Faire :** A lance une joute contre B, qui ne la joue pas. Lancer la commande « heure limite » de la préparation, puis A ouvre `/joutes`.
 - **Attendu :** la joute revient à A, « La joute te revient, car B n'a pas joué à temps. », avec ses récompenses et une lettre de fin. B la voit perdue : « La joute revient à ton adversaire, car tu n'as pas joué à temps. »
 - **Retour :**
 
 ---
 
-## 6. Courrier, e-mail, missions
+## Joutes · 6. Courrier, e-mail, missions
 
-### JOU-21 · L'e-mail des lettres en attente
+### JTE-21 · L'e-mail des lettres en attente
 - **Faire :** en local, l'API écrit les e-mails dans sa console. A lance une joute à B, qui ne revient pas pendant 30 minutes (entre 8 h et 21 h). Puis recommencer avec « Joutes » éteint dans les réglages de B (Réglages, notifications : « Quand un joueur te lance une joute »).
 - **Attendu :** le premier e-mail nomme la joute à jouer. Le réglage éteint, l'e-mail ne la nomme plus.
 - **Retour :**
 
-### JOU-22 · La mission « Joue une joute »
+### JTE-22 · La mission « Joue une joute »
 - **Faire :** sur A, ouvrir les missions du jour. Si la mission n'est pas tirée, changer une mission (une fois par jour) jusqu'à la voir, ou réessayer le lendemain. Cliquer « Y aller », jouer sa partie, revenir aux missions.
 - **Attendu :** « Joue une joute », avec « Y aller » qui mène à `/joutes`. Elle passe à « faite » dès que la partie de A est finie, sans attendre B. Elle n'est jamais tirée pour un invité, ni pour un compte dont les joutes sont fermées.
 - **Retour :**
 
 ---
 
-## 7. Sur l'app Android
+## Joutes · 7. Sur l'app Android
 
-Le mobile se prépare comme dans [recette-mobile.md](recette-mobile.md). Les comptes sont les mêmes. L'écran des joutes du mobile n'a encore tourné sur aucun téléphone : c'est la partie la plus à risque de cette recette.
+Le mobile se prépare comme dans [recette-mobile.md](recette-mobile.md). Les comptes sont les mêmes. L'écran des joutes du mobile n'a encore tourné sur aucun téléphone : c'est la partie la plus à risque des joutes.
 
-### MJO-01 · Hall et deck
+### MJT-01 · Hall et deck
 - **Faire :** A touche le bouton rond Joutes de l'écran Jouer. Ouvrir « Changer mon deck », ajouter et retirer des cartes, garder.
-- **Attendu :** comme JOU-01 et JOU-05. La feuille du deck monte du bas, défile jusqu'au bouton « Garder ce deck », et le compte des points suit chaque touche. Les cartes de la ligne du deck ouvrent leur fiche.
+- **Attendu :** comme JTE-01 et JTE-05. La feuille du deck monte du bas, défile jusqu'au bouton « Garder ce deck », et le compte des points suit chaque touche. Les cartes de la ligne du deck ouvrent leur fiche.
 - **Retour :**
 
-### MJO-02 · Une joute du téléphone au web
+### MJT-02 · Une joute du téléphone au web
 - **Faire :** A défie B depuis le téléphone et joue sa partie. B joue sur le web. A ouvre la lettre de fin dans le courrier du téléphone.
-- **Attendu :** comme JOU-08 à JOU-13. Le chrono reste fluide. Une bonne réponse vibre une fois, une mauvaise deux fois. Les quatre choix restent lisibles et touchables sur un petit écran. La lettre mène aux joutes, la joute finie montre le résultat et « Proposer une revanche ».
+- **Attendu :** comme JTE-08 à JTE-13. Le chrono reste fluide. Une bonne réponse vibre une fois, une mauvaise deux fois. Les quatre choix restent lisibles et touchables sur un petit écran. La lettre mène aux joutes, la joute finie montre le résultat et « Proposer une revanche ».
 - **Retour :**
 
-### MJO-03 · Sortir de l'app en pleine partie
+### MJT-03 · Sortir de l'app en pleine partie
 - **Faire :** pendant une question, passer sur une autre app 10 secondes, puis revenir.
 - **Attendu :** le chrono a continué : la question est perdue si son temps est passé, et la suivante arrive.
 - **Retour :**
 
-### MJO-04 · Réglage et mission
+### MJT-04 · Réglage et mission
 - **Faire :** Réglages, éteindre puis rallumer « Joutes ». Ouvrir les missions, « Y aller » sur « Joue une joute ».
 - **Attendu :** le réglage tient après un relancement de l'app. « Y aller » ouvre les joutes.
 - **Retour :**
 
 ---
 
-## 8. En production
+## Joutes · 8. En production
 
 À faire une fois les joutes mises en ligne par `pnpm deploy:prod`.
 
@@ -240,12 +346,12 @@ Le mobile se prépare comme dans [recette-mobile.md](recette-mobile.md). Les com
 
 ### PROD-03 · Une vraie joute
 - **Faire :** jouer une joute amicale contre un testeur, puis une classée.
-- **Attendu :** comme JOU-07 à JOU-16. L'e-mail de lettres en attente part bien de la production.
+- **Attendu :** comme JTE-07 à JTE-16. L'e-mail de lettres en attente part bien de la production.
 - **Retour :**
 
 ---
 
-## Ce que tu juges
+## Joutes · Ce que tu juges
 
 Ces réglages ne sont ni justes ni faux : ils se décident à l'usage. Dis ce que tu en penses après quelques joutes.
 

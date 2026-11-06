@@ -786,7 +786,7 @@ Il faut deux comptes inscrits avec un pseudo, A et B (deux navigateurs, ou une f
 
 ## 13 ter. Joutes
 
-La recette des joutes a son propre fichier : [recette-joutes.md](recette-joutes.md).
+La recette des joutes est dans [recette-nouveautes.md](recette-nouveautes.md#joutes--1-la-porte).
 
 ---
 
