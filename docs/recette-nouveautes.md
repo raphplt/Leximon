@@ -384,6 +384,7 @@ Chaque retour vaut pour le web (téléphone et grand écran) et pour l'app, sauf
 4. Le sachet à la souris : R-25.
 5. Le cahier du clan : R-22, R-23, R-24.
 6. Recycler au choix, trier par maîtrise, le passage de la main du chef : R-27, R-28, R-29.
+7. La page Niveaux refaite : R-30.
 
 | # | Écran | Retour | Lot |
 |---|---|---|---|
@@ -416,6 +417,7 @@ Chaque retour vaut pour le web (téléphone et grand écran) et pour l'app, sauf
 | R-27 | Écus, recycler | Le bouton ne doit pas recycler sans demander : on choisit les cartes à recycler, une ou plusieurs, avec tris et filtres pour choisir vite. | 6 ✓ |
 | R-28 | Album, trier | Un tri par niveau de connaissance du mot (Dorure d'abord). | 6 ✓ |
 | R-29 | Clan, chef | En local, le journal se remplit de « X prend la tête du clan », en alternance entre deux joueurs. | 6 ✓ |
+| R-30 | Niveaux | Le visuel ne plaît pas du tout : la page est à refaire. | 7 (planche) |
 
 **Relecture du lot 1 (2026-11-06).** Quatre points revenus, repris le jour même :
 
@@ -460,3 +462,5 @@ Chaque retour vaut pour le web (téléphone et grand écran) et pour l'app, sauf
 - R-27 : « Recycler des doubles » (à la fin d'un sachet, dans l'album et dans la fenêtre des écus) ouvre une fenêtre avec toutes les cartes dont tu as un double (au milieu de l'écran sur le web, en feuille sur l'app). On cherche un mot, on trie (le plus de doubles, les plus rares, de A à Z) et on filtre par collection et par rareté. Une touche sur une ligne la coche : elle prend ce qui dépasse la carte et un double, ou un double s'il n'y en a qu'un. Les boutons − et + règlent le nombre, jusqu'à garder un seul exemplaire. « Les doubles en trop » coche d'un coup, parmi les cartes affichées, ce qui dépasse la carte et un double, sans les Épiques ni les Légendaires ; « Tout cocher » coche tous les doubles des cartes affichées, en gardant un exemplaire de chacune, et « Tout décocher » les retire. Sur le web, la liste s'ouvre en fenêtre au milieu de l'écran. En bas, le bouton dit ce qu'il fait : « Recycler 7 doubles, +23 écus ». Une Épique ou une Légendaire cochée demande une confirmation qui la nomme. Les anciennes versions de l'app gardent le recyclage en une touche.
 - R-28 : l'album a un quatrième tri, « Les mieux connues » : Dorure, Encre, Esquisse, puis les mots jamais révisés ; à niveau égal, le mot que la mémoire tient le plus longtemps d'abord.
 - R-29 : un chef absent depuis 14 jours ne passe plus la main qu'à un adjoint ou un membre venu dans les 14 derniers jours ; si personne ne vient, il garde le rôle. Avant, deux absents se renvoyaient le rôle à chaque lecture de la page. Les lignes déjà écrites au journal de ta base locale restent.
+
+**Lot 7, la page Niveaux (2026-11-06).** R-30 a sa planche `/planches/niveaux`, à 390 et 1 500 px : trois façons de dessiner la page (A, la route qui serpente ; B, la piste qu'on fait glisser ; C, les dix coffrets du chapitre), pour trois joueurs (niveau 4, niveau 17 avec 5 coffrets, niveau 17 sans coffret). L'en-tête est commun aux trois : la médaille du niveau dans un anneau d'XP, la barre, le titre porté et le bouton des coffrets. Rien n'est codé avant le choix d'une direction.
