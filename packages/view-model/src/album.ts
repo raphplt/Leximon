@@ -137,13 +137,14 @@ export function themeLabel(slug: string): string {
 }
 
 /** How the album lays out the cards owned; the missing ones always come last. */
-export const ALBUM_SORTS = ["alpha", "rarity", "recent"] as const;
+export const ALBUM_SORTS = ["alpha", "rarity", "recent", "mastery"] as const;
 export type AlbumSort = (typeof ALBUM_SORTS)[number];
 
 export const ALBUM_SORT_LABELS: Readonly<Record<AlbumSort, string>> = {
   alpha: "De A à Z",
   rarity: "Par rareté",
   recent: "Les plus récentes",
+  mastery: "Les mieux connues",
 };
 
 export const ALBUM_SORT_TITLE = "Trier";
@@ -322,8 +323,11 @@ function ownedOrder(
   sort: AlbumSort,
   places: ReadonlyMap<string, number>,
   dates: ReadonlyMap<string, CardDate>,
+  memory: ReadonlyMap<string, WordMemory>,
 ): (a: CatalogCard, b: CatalogCard) => number {
   const place = (card: CatalogCard) => places.get(card.id) ?? 0;
+  const level = (card: CatalogCard) => MASTERY_RANKS[memory.get(card.id)?.level ?? "blank"];
+  const stability = (card: CatalogCard) => memory.get(card.id)?.stability ?? 0;
   switch (sort) {
     case "alpha":
       return (a, b) => place(a) - place(b);
@@ -333,8 +337,18 @@ function ownedOrder(
       return (a, b) =>
         (dates.get(b.id)?.firstObtainedAt ?? 0) - (dates.get(a.id)?.firstObtainedAt ?? 0) ||
         place(a) - place(b);
+    case "mastery":
+      // Gilded first; within a level, the word the memory holds longest comes first.
+      return (a, b) => level(b) - level(a) || stability(b) - stability(a) || place(a) - place(b);
   }
 }
+
+const MASTERY_RANKS: Readonly<Record<MasteryLevelCode, number>> = {
+  blank: 0,
+  sketch: 1,
+  ink: 2,
+  gilded: 3,
+};
 
 const ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
 
@@ -430,7 +444,7 @@ export function albumView(input: AlbumInput, state: AlbumState): AlbumView {
   const { collections, owned, memory, dates, now } = input;
   const places = wordPlaces(collections);
   const sort = state.sort ?? "alpha";
-  const order = ownedOrder(sort, places, dates);
+  const order = ownedOrder(sort, places, dates, memory);
   const collectionTabs = collections.map((collection) => {
     const found = collection.cards.filter((card) => owned.has(card.id)).length;
     const total = collection.cards.length;

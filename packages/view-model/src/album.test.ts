@@ -2,6 +2,7 @@ import type { CatalogCard } from "@leximon/contract";
 import { describe, expect, it } from "vitest";
 import {
   ALL_COLLECTIONS,
+  type AlbumSort,
   type AlbumState,
   activeFilterCount,
   albumLetters,
@@ -12,6 +13,7 @@ import {
   filterButtonLabel,
   foldSearch,
   themeLabel,
+  type WordMemory,
   withoutFilters,
 } from "./album";
 
@@ -310,8 +312,8 @@ describe("sorting the album", () => {
     ["écrouelles", 1],
     ["talpinette", 1],
   ]);
-  const ids = (sort: "alpha" | "rarity" | "recent") =>
-    albumView({ ...input, owned }, { ...STATE, sort }).items.flatMap((item) =>
+  const ids = (sort: AlbumSort, memory: ReadonlyMap<string, WordMemory> = input.memory) =>
+    albumView({ ...input, owned, memory }, { ...STATE, sort }).items.flatMap((item) =>
       item.kind === "owned" ? [item.card.id] : [],
     );
 
@@ -331,6 +333,16 @@ describe("sorting the album", () => {
   it("lays the latest found first on demand, the undated ones last", () => {
     // grigou and bélître share a date: alphabetical between them.
     expect(ids("recent")).toEqual(["bélître", "grigou", "écrouelles", "talpinette"]);
+  });
+
+  it("lays the best known first on demand, gilded to never answered", () => {
+    const memory = new Map<string, WordMemory>(input.memory).set("talpinette", {
+      level: "ink",
+      due: NOW,
+      stability: 9,
+      lastReviewedAt: NOW,
+    });
+    expect(ids("mastery", memory)).toEqual(["grigou", "talpinette", "bélître", "écrouelles"]);
   });
 
   it("keeps the missing cards after the cards owned, whatever the sort", () => {
