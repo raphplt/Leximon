@@ -407,9 +407,9 @@ Chaque retour vaut pour le web (téléphone et grand écran) et pour l'app, sauf
 | R-19 | Échanges, vide | Tout est trop collé : plus d'espace vertical. | 1 ✓ |
 | R-20 | Échanges | Le panneau de « Reçues » est plus large que ceux d'« Envoyées » et « Nouvelle offre » : même largeur pour les trois. | 1 ✓ |
 | R-21 | Clan, bandeau | Retirer « TON CLAN ». Sous le nom, la devise seule, un peu plus grande et plus détachée du nom. Le nombre de membres et l'entrée (libre ou non) passent à droite, au-dessus d'« Inviter » et des réglages, chacun avec son icône. | 1 ✓ |
-| R-22 | Clan, objectif de la semaine | Incompréhensible pour un nouveau joueur (« 14 / 15 · 7 à toi », « À l'argent, un sachet bonus », « Encore 8 bonnes réponses… ») et expliqué nulle part : UX, UI et game design à reprendre. | 5 |
-| R-23 | Clan, bibliothèque | Pouvoir l'ouvrir et voir le détail des cartes du clan, comme un album commun. | 5 |
-| R-24 | Clan, membres | Une fenêtre avec la liste complète des membres, triable et filtrable. | 5 |
+| R-22 | Clan, objectif de la semaine | Incompréhensible pour un nouveau joueur (« 14 / 15 · 7 à toi », « À l'argent, un sachet bonus », « Encore 8 bonnes réponses… ») et expliqué nulle part : UX, UI et game design à reprendre. | 5 (cahier) |
+| R-23 | Clan, bibliothèque | Pouvoir l'ouvrir et voir le détail des cartes du clan, comme un album commun. | 5 (cahier) |
+| R-24 | Clan, membres | Une fenêtre avec la liste complète des membres, triable et filtrable. | 5 (cahier) |
 | R-25 | Sachet, à la souris | Survoler le haut du sachet (la bande « déchirer ici ») le déchire ; un clic rejoue ensuite l'animation depuis le début. | 4 ✓ |
 | R-26 | Fiche d'une carte | Toutes les fiches doivent avoir la même taille, sinon les flèches gauche et droite bougent d'une carte à l'autre. | 2 ✓ |
 
@@ -448,4 +448,6 @@ Chaque retour vaut pour le web (téléphone et grand écran) et pour l'app, sauf
 **Lot 4, le sachet à la souris (2026-11-06).** Web, vérifié à 390 et 1 500 px :
 
 - R-25 : quand la souris passe sur la bande « déchirer ici », son bout gauche se soulève et se fend un peu, sans ouvrir le sachet ; il se recolle quand la souris s'en va. Un clic sur la bande joue toute la déchirure depuis le début, en un peu plus d'une demi-seconde, avec ses craquements, puis ouvre le sachet. Le glisser reste là : un glisser court se recolle, un glisser au-delà de 60 % de la bande ouvre. Sans animations, le clic ouvre tout de suite. Au doigt sur le web, un tap sur la bande déchire aussi tout. L'app, sans souris, garde le glisser et le tap sur le sachet.
+
+**Lot 5, le cahier du clan (2026-11-06).** R-22 à R-24 sont dans [clan-lisible.md](cahiers-des-charges/clan-lisible.md), avec sa planche `/planches/clan` : l'objectif en route de quatre coffres avec une barre « Ta part » à part, la bibliothèque en album commun qui dit qui a chaque mot, les membres dans une fenêtre qu'on trie et qu'on filtre. Rien n'est codé avant les réponses aux questions C1 à C12.
 
