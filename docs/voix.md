@@ -26,9 +26,15 @@ La voix monte quand le joueur a de la place pour la lire. Elle se tait quand il 
 | Récompense : première rareté, Dorure, niveau | La fête. Le « ! » est permis ici, et presque seulement ici. | « Ta première carte Légendaire ! », « Toutes les cartes Rares réunies ! » |
 | Landing, partage | Le bénéfice, avec du caractère. | « La langue a jeté des mots superbes. On les a ramassés. », « Noté. On se revoit à l'ouverture. » |
 
+## Moins de phrases sur les écrans de jeu
+
+Revu le 2026-11-06 après la recette : les écrans du jeu portaient trop de phrases complètes, et un joueur ne les lit pas toutes. Sur un écran de jeu (jouer, défis, fin de sachet, missions, clan, fenêtres de récompense), l'information passe d'abord par un libellé court, un chiffre, une icône ou un visuel : « Niveau 7 » avec l'icône du sachet plutôt que « Au niveau 7, tu gagnes un sachet bonus. » ; un tableau rareté → écus plutôt qu'une phrase qui énumère les gains.
+
+Une règle à expliquer va dans une bulle derrière un bouton « ? » discret, ou dans une fenêtre d'aide. La phrase complète reste là où elle est indispensable : une confirmation qui dit ce qu'un geste va faire, une erreur, la première explication sans laquelle le joueur est perdu. Un libellé court n'est pas un fragment de phrase : c'est une étiquette, comme un titre ou un bouton.
+
 ## Règles d'écriture
 
-- **Des phrases complètes, avec un verbe.** Pas de fragments (« Doré. », « Pas parti. », « Toi-même ? Non. »). Un titre ou un bouton peut être sans verbe, une phrase d'explication jamais.
+- **Des phrases complètes, avec un verbe, quand il y a phrase.** Pas de fragments (« Doré. », « Pas parti. », « Toi-même ? Non. »). Un titre, un bouton ou une étiquette peut être sans verbe, une phrase d'explication jamais.
 - **La règle en clair.** Quand un texte explique comment ça marche, il donne la condition et le chiffre : « Écris ce mot de mémoire 7 jours après une révision pour passer à l'Encre. » Pas de jargon interne qui cache la règle (« un mot monte », « des questions à choix », « file en réserve »).
 - **Pas de sentence ni de fausse chute.** Pas de maximes (« Plus le mot est rare, plus la carte l'est. »), pas de paradoxes fabriqués (« Trop tard pour attendre : c'est ouvert. »), pas de punchline en deuxième phrase (« Il y reste. », « Pas pour longtemps. », « Ou plus. »).
 - **Pas de fausse gouaille.** Les images toutes faites et l'argot plaqué sonnent faux (« Le serveur lambine. », « Ce lien a fait son temps. », « Tes cartes restent au chaud. »). On écrit ce qui se passe.
