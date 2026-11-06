@@ -1,7 +1,7 @@
 "use client";
 
 import type { Rarity } from "@leximon/core";
-import { cssFill, rarityStyles, type ToyInks } from "@leximon/tokens";
+import { cssFill, goalChestInks, rarityStyles, type ToyInks } from "@leximon/tokens";
 import { type CSSProperties, useState } from "react";
 import { RarityIcon } from "@/components/rarity-icon";
 import { MainAction } from "@/library/play-pieces";
@@ -47,28 +47,28 @@ const TIERS: readonly {
     name: "Bronze",
     target: 15,
     sachet: false,
-    inks: { f1: "#7A4A22", f2: "#9C5F2C", f3: "#D08A4E" },
+    inks: goalChestInks.bronze,
   },
   {
     tier: "silver",
     name: "Argent",
     target: 30,
     sachet: true,
-    inks: { f1: "#6B6E78", f2: "#8C909B", f3: "#ECEAE4" },
+    inks: goalChestInks.silver,
   },
   {
     tier: "gold",
     name: "Or",
     target: 50,
     sachet: true,
-    inks: { f1: "#9C5F2C", f2: "#C47D3E", f3: "#F6D47A" },
+    inks: goalChestInks.gold,
   },
   {
     tier: "illuminated",
     name: "Enluminure",
     target: 60,
     sachet: true,
-    inks: { f1: "#6E1428", f2: "#A3304A", f3: "#F6D47A" },
+    inks: goalChestInks.illuminated,
   },
 ];
 

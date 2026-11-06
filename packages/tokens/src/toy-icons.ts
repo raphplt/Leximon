@@ -259,3 +259,11 @@ export const toyLights = {
   gloss: { color: "#FFFFFF", opacity: 0.28 },
   sheen: { color: "#FFFFFF", opacity: 0.6 },
 } as const;
+
+/** The chests of a clan's weekly goal, each in its metal. */
+export const goalChestInks = {
+  bronze: { f1: "#7A4A22", f2: "#9C5F2C", f3: "#D08A4E" },
+  silver: { f1: "#6B6E78", f2: "#8C909B", f3: "#ECEAE4" },
+  gold: { f1: "#9C5F2C", f2: "#C47D3E", f3: "#F6D47A" },
+  illuminated: { f1: "#6E1428", f2: "#A3304A", f3: "#F6D47A" },
+} as const satisfies Record<string, ToyInks>;
