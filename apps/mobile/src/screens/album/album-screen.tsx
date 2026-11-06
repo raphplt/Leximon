@@ -342,6 +342,23 @@ export function AlbumScreen({ friendCode }: { readonly friendCode: string | null
           </Pressable>
         )}
       </View>
+      {/* Recycling and the missing word act on the whole album: they sit by the search, not among the cards. */}
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.row}
+        style={styles.bleed}
+      >
+        <RecycleButton small />
+        <Button
+          label={MISSING_WORD_OPEN}
+          secondary
+          small
+          onPress={() =>
+            openMissingWord(state.collectionId === ALL_COLLECTIONS ? undefined : state.collectionId)
+          }
+        />
+      </ScrollView>
 
       <TabRow dimmed={view.searching}>
         {view.tabs.map((tab) => {
@@ -421,16 +438,6 @@ export function AlbumScreen({ friendCode }: { readonly friendCode: string | null
       }}
     >
       {!view.searching && tagline !== undefined && <Text style={styles.tagline}>{tagline}</Text>}
-      <View style={styles.ecus}>
-        <RecycleButton />
-        <Button
-          label={MISSING_WORD_OPEN}
-          secondary
-          onPress={() =>
-            openMissingWord(state.collectionId === ALL_COLLECTIONS ? undefined : state.collectionId)
-          }
-        />
-      </View>
       {practiceCards !== null && (
         <View style={styles.revise}>
           <Button
@@ -949,7 +956,6 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   revise: { marginTop: space.s6 },
-  ecus: { marginTop: space.s6, gap: space.s3 },
   emptyLine: {
     fontFamily: fonts.text.italic,
     fontSize: fontSizes.lead,
