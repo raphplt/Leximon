@@ -11,6 +11,25 @@ export const recycledCardSchema = z.object({
 });
 export type RecycledCard = z.infer<typeof recycledCardSchema>;
 
+/** Most cards one recycling may pick: more than a player holds doubles of, in practice. */
+export const RECYCLE_CHOICE_MAX = 500;
+
+/**
+ * `POST /me/recycle` request body: the copies picked, card by card. Without `cards`, the request
+ * recycles every copy beyond the card and one double, of the rarities recycled together.
+ */
+export const recycleRequestSchema = z.object({
+  cards: z
+    .array(z.object({ cardId: slugSchema, copies: z.int().positive().max(9_999) }))
+    .min(1)
+    .max(RECYCLE_CHOICE_MAX)
+    .refine((cards) => new Set(cards.map((card) => card.cardId)).size === cards.length, {
+      message: "Each card once",
+    })
+    .optional(),
+});
+export type RecycleRequest = z.infer<typeof recycleRequestSchema>;
+
 /**
  * `POST /me/recycle` and `POST /me/cards/:cardId/recycle`, 200: what was recycled, nothing when
  * there was no duplicate left to recycle.

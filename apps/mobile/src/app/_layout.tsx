@@ -2,6 +2,7 @@ import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { Fragment } from "react";
 import { MissingWordHost } from "@/ecus/missing-word";
+import { RecycleHost } from "@/ecus/recycle-sheet";
 import { CarnetHost } from "@/levels/carnet";
 import { CoffretHost } from "@/levels/coffret";
 import { WelcomeHost } from "@/levels/welcome";
@@ -29,6 +30,7 @@ export default function RootLayout() {
         <CarnetHost />
         <MissionsHost />
         <MissingWordHost />
+        <RecycleHost />
       </Fragment>
       <ToastHost />
       <UpdateGate />

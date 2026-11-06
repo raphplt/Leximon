@@ -28,6 +28,7 @@ export * from "./play";
 export * from "./practice";
 export * from "./profile";
 export * from "./puzzles";
+export * from "./recycle";
 export * from "./resource";
 export * from "./reveal";
 export * from "./review";

@@ -1,70 +1,41 @@
 "use client";
 
-import {
-  ecuRules,
-  RECYCLE_BUSY,
-  RECYCLE_FAILED,
-  recycleAction,
-  recycledToast,
-  recyclePreview,
-} from "@leximon/view-model";
-import { useMemo, useState } from "react";
-import { play } from "@/booster/feedback";
-import { useCatalog } from "@/cards/use-catalog";
+import { hasDoubles, RECYCLE_OPEN } from "@leximon/view-model";
 import { ownedCards } from "@/player/collection";
-import { recycleAll } from "@/player/ecus";
 import { useShared } from "@/player/resource";
+import { useShell } from "@/shell/shell-context";
 import { Button, type ButtonVariant } from "@/ui/button";
-import { useToast } from "@/ui/toast";
 
-/**
- * « Recycler 12 doubles, +34 écus »: says what it does before doing it, from the copies the screen
- * knows; the server recycles what exists when it gets the request. Hidden with nothing to recycle.
- */
+/** Opens the window where the player picks the doubles to recycle. Hidden without a double. */
 export function RecycleButton({
   variant = "secondary",
   small,
   wide,
   className,
+  onOpen,
 }: {
   readonly variant?: ButtonVariant;
   readonly small?: boolean;
   readonly wide?: boolean;
   readonly className?: string;
+  /** Closes the window the button sits in, so that the two never stack. */
+  readonly onOpen?: () => void;
 }) {
   const owned = useShared(ownedCards);
-  const catalog = useCatalog();
-  const toast = useToast();
-  const [busy, setBusy] = useState(false);
-  const plan = useMemo(
-    () =>
-      owned === null || catalog === null
-        ? null
-        : recyclePreview(ecuRules(Date.now()), [...catalog.cardsById.values()], owned),
-    [owned, catalog],
-  );
-  const label = plan === null ? null : recycleAction(plan);
-  if (label === null) return null;
-  const recycle = () => {
-    setBusy(true);
-    recycleAll()
-      .then((result) => {
-        if (result.copies > 0) play("coins");
-        toast(recycledToast(result));
-      })
-      .catch(() => toast(RECYCLE_FAILED))
-      .finally(() => setBusy(false));
-  };
+  const { openRecycle } = useShell();
+  if (owned === null || !hasDoubles(owned)) return null;
   return (
     <Button
       variant={variant}
       small={small}
       wide={wide}
       className={className}
-      disabled={busy}
-      onClick={recycle}
+      onClick={() => {
+        onOpen?.();
+        openRecycle();
+      }}
     >
-      {busy ? RECYCLE_BUSY : label}
+      {RECYCLE_OPEN}
     </Button>
   );
 }

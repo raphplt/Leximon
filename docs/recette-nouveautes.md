@@ -383,6 +383,7 @@ Chaque retour vaut pour le web (téléphone et grand écran) et pour l'app, sauf
 3. Les fenêtres : « Tes sachets » R-09, écus R-06, semaine de bienvenue R-01.
 4. Le sachet à la souris : R-25.
 5. Le cahier du clan : R-22, R-23, R-24.
+6. Recycler au choix, trier par maîtrise, le passage de la main du chef : R-27, R-28, R-29.
 
 | # | Écran | Retour | Lot |
 |---|---|---|---|
@@ -412,6 +413,9 @@ Chaque retour vaut pour le web (téléphone et grand écran) et pour l'app, sauf
 | R-24 | Clan, membres | Une fenêtre avec la liste complète des membres, triable et filtrable. | 5 (cahier) |
 | R-25 | Sachet, à la souris | Survoler le haut du sachet (la bande « déchirer ici ») le déchire ; un clic rejoue ensuite l'animation depuis le début. | 4 ✓ |
 | R-26 | Fiche d'une carte | Toutes les fiches doivent avoir la même taille, sinon les flèches gauche et droite bougent d'une carte à l'autre. | 2 ✓ |
+| R-27 | Écus, recycler | Le bouton ne doit pas recycler sans demander : on choisit les cartes à recycler, une ou plusieurs, avec tris et filtres pour choisir vite. | 6 ✓ |
+| R-28 | Album, trier | Un tri par niveau de connaissance du mot (Dorure d'abord). | 6 ✓ |
+| R-29 | Clan, chef | En local, le journal se remplit de « X prend la tête du clan », en alternance entre deux joueurs. | 6 ✓ |
 
 **Relecture du lot 1 (2026-11-06).** Quatre points revenus, repris le jour même :
 
@@ -451,3 +455,8 @@ Chaque retour vaut pour le web (téléphone et grand écran) et pour l'app, sauf
 
 **Lot 5, le cahier du clan (2026-11-06).** R-22 à R-24 sont dans [clan-lisible.md](cahiers-des-charges/clan-lisible.md), avec sa planche `/planches/clan` : l'objectif en route de quatre coffres avec une barre « Ta part » à part, la bibliothèque en album commun qui dit qui a chaque mot, les membres dans une fenêtre qu'on trie et qu'on filtre. Rien n'est codé avant les réponses aux questions C1 à C12.
 
+**Lot 6, recycler au choix (2026-11-06).** Web et app, vérifiés à 390 et 1 500 px et sur l'émulateur :
+
+- R-27 : « Recycler des doubles » (à la fin d'un sachet, dans l'album et dans la fenêtre des écus) ouvre une fenêtre avec toutes les cartes dont tu as un double. On cherche un mot, on trie (le plus de doubles, les plus rares, de A à Z) et on filtre par collection et par rareté. Une touche sur une ligne la coche : elle prend ce qui dépasse la carte et un double, ou un double s'il n'y en a qu'un. Les boutons − et + règlent le nombre, jusqu'à garder un seul exemplaire. « Les doubles en trop » coche d'un coup, parmi les cartes affichées, ce qui dépasse la carte et un double, sans les Épiques ni les Légendaires ; « Tout décocher » les retire. En bas, le bouton dit ce qu'il fait : « Recycler 7 doubles, +23 écus ». Une Épique ou une Légendaire cochée demande une confirmation qui la nomme. Les anciennes versions de l'app gardent le recyclage en une touche.
+- R-28 : l'album a un quatrième tri, « Les mieux connues » : Dorure, Encre, Esquisse, puis les mots jamais révisés ; à niveau égal, le mot que la mémoire tient le plus longtemps d'abord.
+- R-29 : un chef absent depuis 14 jours ne passe plus la main qu'à un adjoint ou un membre venu dans les 14 derniers jours ; si personne ne vient, il garde le rôle. Avant, deux absents se renvoyaient le rôle à chaque lecture de la page. Les lignes déjà écrites au journal de ta base locale restent.

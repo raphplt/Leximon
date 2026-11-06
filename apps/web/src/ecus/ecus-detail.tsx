@@ -105,7 +105,7 @@ export function EcusDetail({
       </table>
 
       <div className={styles.actions}>
-        <RecycleButton wide />
+        <RecycleButton wide onOpen={onClose} />
         <Button
           variant="primary"
           wide

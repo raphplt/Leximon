@@ -19,6 +19,8 @@ export interface Shell {
   openRewards(): void;
   /** Spending écus on a missing word, from `collectionId` when given. */
   openMissingWord(collectionId?: string): void;
+  /** Picking the doubles to recycle. */
+  openRecycle(): void;
   openSettings(): void;
   openMail(): void;
   /** The clan's discussion in a panel. */
@@ -37,6 +39,7 @@ export const ShellContext = createContext<Shell>({
   openMissions: () => undefined,
   openRewards: () => undefined,
   openMissingWord: () => undefined,
+  openRecycle: () => undefined,
   openSettings: () => undefined,
   openMail: () => undefined,
   openChat: () => undefined,

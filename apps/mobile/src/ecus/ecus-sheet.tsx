@@ -110,7 +110,7 @@ export function EcusSheet({
         ))}
       </View>
 
-      <RecycleButton />
+      <RecycleButton onOpen={onClose} />
       <Button
         label={MISSING_WORD_OPEN}
         onPress={() => {

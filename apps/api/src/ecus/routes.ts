@@ -6,6 +6,7 @@ import {
   missingWordRequestSchema,
   type RecycleRefusal,
   type RecycleResponse,
+  recycleRequestSchema,
   slugSchema,
 } from "@leximon/contract";
 import type { RecyclePlan } from "@leximon/core";
@@ -14,7 +15,13 @@ import { generateSeed } from "../boosters/seed";
 import { sendGameEvents } from "../clans/events";
 import type { AppEnv } from "../context";
 import { refuseLockedWrites } from "../moderation/restrictions";
-import { buyMissingWord, type RecycleResult, recycleCopy, recycleDuplicates } from "./ecus";
+import {
+  buyMissingWord,
+  type RecycleResult,
+  recycleChosen,
+  recycleCopy,
+  recycleDuplicates,
+} from "./ecus";
 
 /** Recycling duplicates and buying a missing word, under `/me` (signed-in player, rate limited). */
 export function ecuRoutes() {
@@ -23,12 +30,14 @@ export function ecuRoutes() {
   routes.post("/recycle", refuseLockedWrites, async (c) => {
     const key = idempotencyKeySchema.safeParse(c.req.header(IDEMPOTENCY_KEY_HEADER));
     if (!key.success) return c.json({ error: "invalid_idempotency_key" }, 400);
-    const result = await recycleDuplicates(c.var.db, {
-      userId: c.var.userId,
-      idempotencyKey: key.data,
-      now: Date.now(),
-    });
-    return recycleResponse(c, result);
+    const input = { userId: c.var.userId, idempotencyKey: key.data, now: Date.now() };
+    const body = recycleRequestSchema.safeParse(await c.req.json().catch(() => ({})));
+    if (!body.success) return c.json({ error: "invalid_request" }, 400);
+    // Without a choice, the one-touch recycling the first versions of the app still send.
+    if (body.data.cards === undefined) {
+      return recycleResponse(c, await recycleDuplicates(c.var.db, input));
+    }
+    return recycleResponse(c, await recycleChosen(c.var.db, { ...input, choice: body.data.cards }));
   });
 
   routes.post("/cards/:cardId/recycle", refuseLockedWrites, async (c) => {

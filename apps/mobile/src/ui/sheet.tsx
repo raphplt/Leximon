@@ -20,11 +20,14 @@ export function Sheet({
   title,
   onClose,
   children,
+  footer,
 }: {
   readonly open: boolean;
   readonly title: string;
   readonly onClose: () => void;
   readonly children: ReactNode;
+  /** Stays at the bottom while the content scrolls: the action of a long list. */
+  readonly footer?: ReactNode;
 }) {
   const insets = useSafeAreaInsets();
   return (
@@ -58,6 +61,7 @@ export function Sheet({
           >
             {children}
           </ScrollView>
+          {footer !== undefined && <View style={styles.footer}>{footer}</View>}
         </Leaf>
         <ToastHost />
       </KeyboardAvoidingView>
@@ -96,4 +100,11 @@ const styles = StyleSheet.create({
     backgroundColor: ink.pageRaised,
   },
   body: { gap: space.s7, paddingHorizontal: space.s10, paddingTop: space.s5 },
+  footer: {
+    gap: space.s4,
+    paddingHorizontal: space.s10,
+    paddingTop: space.s6,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: ink.rule,
+  },
 });

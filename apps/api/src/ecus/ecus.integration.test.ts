@@ -209,6 +209,60 @@ describe("POST /me/recycle", () => {
   });
 });
 
+describe("POST /me/recycle with a choice", () => {
+  const choose = (guest: Guest, cards: readonly { cardId: string; copies: number }[]) =>
+    post(guest, "/me/recycle", { cards });
+
+  it("recycles the copies picked, any rarity, down to the last copy and no further", async () => {
+    const guest = await player([
+      { cardId: card("common", 1), quantity: 5 },
+      { cardId: card("epic", 1), quantity: 2 },
+      { cardId: card("rare", 1), quantity: 3 },
+      { cardId: card("uncommon", 1), quantity: 1 },
+    ]);
+    const response = await choose(guest, [
+      { cardId: card("common", 1), copies: 2 },
+      { cardId: card("epic", 1), copies: 5 },
+      { cardId: card("uncommon", 1), copies: 1 },
+    ]);
+    expect(response.status).toBe(200);
+    const ecus = 2 * RULES.recycleValue.common + RULES.recycleValue.epic;
+    expect(recycleResponseSchema.parse(await response.json())).toMatchObject({
+      copies: 3,
+      ecus,
+      wallet: { ecus },
+    });
+    expect(await quantity(guest.userId, card("common", 1))).toBe(3);
+    expect(await quantity(guest.userId, card("epic", 1))).toBe(1);
+    expect(await quantity(guest.userId, card("rare", 1))).toBe(3);
+    expect(await quantity(guest.userId, card("uncommon", 1))).toBe(1);
+  });
+
+  it("refuses a malformed choice", async () => {
+    const guest = await player([{ cardId: card("common", 1), quantity: 5 }]);
+    const twice = [
+      { cardId: card("common", 1), copies: 1 },
+      { cardId: card("common", 1), copies: 1 },
+    ];
+    expect((await choose(guest, twice)).status).toBe(400);
+    expect((await choose(guest, [])).status).toBe(400);
+    expect((await choose(guest, [{ cardId: card("common", 1), copies: 0 }])).status).toBe(400);
+    expect(await quantity(guest.userId, card("common", 1))).toBe(5);
+  });
+
+  it("recycles each copy once under concurrent requests", async () => {
+    const guest = await player([{ cardId: card("rare", 2), quantity: 4 }]);
+    const pick = [{ cardId: card("rare", 2), copies: 3 }];
+    const responses = await Promise.all(Array.from({ length: 4 }, () => choose(guest, pick)));
+    const bodies = await Promise.all(
+      responses.map(async (response) => recycleResponseSchema.parse(await response.json())),
+    );
+    expect(bodies.reduce((sum, body) => sum + body.copies, 0)).toBe(3);
+    expect(await ecusOf(guest.userId)).toBe(3 * RULES.recycleValue.rare);
+    expect(await quantity(guest.userId, card("rare", 2))).toBe(1);
+  });
+});
+
 describe("POST /me/cards/:cardId/recycle", () => {
   it("recycles one copy of a rare card, never the last one", async () => {
     const guest = await player([{ cardId: card("epic", 1), quantity: 2 }]);

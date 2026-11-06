@@ -71,7 +71,7 @@ export function ecusTable(rules: EcuRules): EcusTable {
   };
 }
 
-/** What the one-touch recycling would do now, from the cards the screen knows of. */
+/** What the one-touch recycling would do now: the end of a sachet offers the window only then. */
 export function recyclePreview(
   rules: EcuRules,
   cards: readonly Pick<CatalogCard, "id" | "rarity">[],
@@ -86,17 +86,11 @@ export function recyclePreview(
   );
 }
 
-/** « Recycler 12 doubles, +34 écus »; `null` when there is nothing to recycle. */
-export function recycleAction(plan: RecyclePlan): string | null {
-  if (plan.copies === 0) return null;
-  return `Recycler ${plural(plan.copies, "double", "doubles")}, +${ecusLabel(plan.ecus)}`;
-}
-
 export const RECYCLE_BUSY = "Recyclage…";
 export const RECYCLE_FAILED = "Tes doubles n'ont pas été recyclés. Réessaie.";
 
 export const RECYCLE_RULE =
-  "Le recyclage te laisse toujours la carte et un double, pour l'échanger. Les cartes Épiques et Légendaires se recyclent une par une, depuis leur fiche.";
+  "Tu choisis les doubles à recycler, carte par carte. Il te reste toujours au moins un exemplaire de chaque carte, et le mot garde sa maîtrise.";
 
 /** Said once recycled; a concurrent tab may have left nothing. */
 export function recycledToast(plan: Pick<RecyclePlan, "copies" | "ecus">): string {

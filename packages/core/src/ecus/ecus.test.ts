@@ -2,7 +2,14 @@ import { describe, expect, it } from "vitest";
 import { RARITIES } from "../booster/rarity";
 import { createSeededRandom } from "../random";
 import { ECU_SCHEDULE } from "../rules";
-import { drawMissingWord, ecuRulesAt, perfectStartEcus, recycleOne, recyclePlan } from "./ecus";
+import {
+  drawMissingWord,
+  ecuRulesAt,
+  perfectStartEcus,
+  recycleChoice,
+  recycleOne,
+  recyclePlan,
+} from "./ecus";
 
 const rules = ecuRulesAt(ECU_SCHEDULE, Date.UTC(2026, 10, 10));
 
@@ -39,6 +46,40 @@ describe("recycleOne", () => {
       ecus: 50,
     });
     expect(recycleOne(rules, { cardId: "legendary", rarity: "legendary", quantity: 1 })).toBeNull();
+  });
+});
+
+describe("recycleChoice", () => {
+  const holdings = [
+    { cardId: "b-epic", rarity: "epic", quantity: 2 },
+    { cardId: "a-common", rarity: "common", quantity: 4 },
+    { cardId: "c-rare", rarity: "rare", quantity: 1 },
+  ] as const;
+
+  it("recycles the copies picked, any rarity, by card id", () => {
+    expect(
+      recycleChoice(rules, holdings, [
+        { cardId: "b-epic", copies: 1 },
+        { cardId: "a-common", copies: 3 },
+      ]),
+    ).toEqual({
+      cards: [
+        { cardId: "a-common", copies: 3, ecus: 3 },
+        { cardId: "b-epic", copies: 1, ecus: 50 },
+      ],
+      copies: 4,
+      ecus: 53,
+    });
+  });
+
+  it("never takes a card's last copy, nor a card the player no longer holds", () => {
+    expect(
+      recycleChoice(rules, holdings, [
+        { cardId: "a-common", copies: 9 },
+        { cardId: "c-rare", copies: 1 },
+        { cardId: "gone", copies: 2 },
+      ]),
+    ).toEqual({ cards: [{ cardId: "a-common", copies: 3, ecus: 3 }], copies: 3, ecus: 3 });
   });
 });
 

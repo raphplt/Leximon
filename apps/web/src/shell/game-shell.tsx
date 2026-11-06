@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { type ReactNode, useCallback, useEffect, useMemo, useState } from "react";
 import { ChatPanel } from "@/clan/chat-panel";
 import { MissingWordDialog } from "@/ecus/missing-word-dialog";
+import { RecycleDialog } from "@/ecus/recycle-dialog";
 import { CarnetDialog, useCarnetOnArrival } from "@/missions/carnet-dialog";
 import { MissionsDialog } from "@/missions/missions-card";
 import { TradeDoneDialog } from "@/trades/trade-done-dialog";
@@ -43,6 +44,7 @@ function Frame({ children }: { readonly children: ReactNode }) {
   const [missingWord, setMissingWord] = useState<{ readonly collectionId: string | null } | null>(
     null,
   );
+  const [recycling, setRecycling] = useState(false);
   const [card, setCard] = useState<{
     readonly id: string;
     readonly among: readonly string[];
@@ -88,6 +90,10 @@ function Frame({ children }: { readonly children: ReactNode }) {
         setOverlay(null);
         setMissingWord({ collectionId: collectionId ?? null });
       },
+      openRecycle: () => {
+        setOverlay(null);
+        setRecycling(true);
+      },
       openSettings: () => setOverlay("settings"),
       openMail: () => setOverlay("mail"),
       openChat: () => setOverlay("chat"),
@@ -130,6 +136,7 @@ function Frame({ children }: { readonly children: ReactNode }) {
         collectionId={missingWord?.collectionId ?? null}
         onClose={() => setMissingWord(null)}
       />
+      <RecycleDialog open={recycling} onClose={() => setRecycling(false)} />
       <TradeDoneDialog />
       <CardSheet
         cardId={card?.id ?? null}

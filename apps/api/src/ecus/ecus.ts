@@ -15,8 +15,10 @@ import {
   type ProgressGain,
   progressGain,
   type Rarity,
+  type RecycleChoice,
   type RecycledCard,
   type RecyclePlan,
+  recycleChoice,
   recycleOne,
   recyclePlan,
   UNLOCK_SCHEDULE,
@@ -72,6 +74,23 @@ export function recycleDuplicates(db: Database, input: RecycleInput): Promise<Re
       inArray(cards.rarity, [...rules.recycledTogether]),
       gt(userCards.quantity, rules.copiesKept),
     ]).then((holdings) => recyclePlan(rules, holdings)),
+  );
+}
+
+/**
+ * Turns into écus the copies the player picked, card by card, whatever their rarity; never a
+ * card's last copy. Locks as `recycleDuplicates`, only the copies picked.
+ */
+export function recycleChosen(
+  db: Database,
+  input: RecycleInput & { readonly choice: readonly RecycleChoice[] },
+): Promise<RecycleResult> {
+  const rules = ecuRulesAt(ECU_SCHEDULE, input.now);
+  const cardIds = input.choice.map((picked) => picked.cardId);
+  return recycleWith(db, input, (tx) =>
+    lockCopies(tx, input.userId, [inArray(userCards.cardId, cardIds)]).then((holdings) =>
+      recycleChoice(rules, holdings, input.choice),
+    ),
   );
 }
 

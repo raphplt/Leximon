@@ -1,0 +1,258 @@
+.choice {
+  display: grid;
+  gap: var(--lx-s5);
+  font-size: var(--lx-size-label);
+}
+
+.choice p {
+  margin: 0;
+}
+
+.rule {
+  color: var(--lx-color-page-ink-muted);
+}
+
+.search {
+  display: flex;
+  align-items: center;
+  gap: var(--lx-s3);
+  padding: 0 var(--lx-s6);
+  border: var(--lx-toy-outline-width) solid var(--lx-toy-outline);
+  border-radius: var(--lx-radius-pill);
+  background: var(--lx-color-page-raised);
+  color: var(--lx-color-page-ink-muted);
+}
+
+.input {
+  flex: 1;
+  min-width: 0;
+  min-height: 44px;
+  border: 0;
+  background: transparent;
+  color: var(--lx-color-page-ink);
+  font: inherit;
+}
+
+.input:focus-visible {
+  outline: none;
+}
+
+.search:focus-within {
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--lx-toy-gold-top) 70%, transparent);
+}
+
+.chips {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--lx-s3);
+}
+
+.chip {
+  min-height: 32px;
+  padding: 0 12px;
+}
+
+.gemChip {
+  padding: 0 7px;
+}
+
+.gem {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+}
+
+.tools {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--lx-s3);
+  padding-top: var(--lx-s3);
+  border-top: 1px solid var(--lx-color-rule);
+}
+
+.count {
+  flex: 1 1 100%;
+  font-weight: 800;
+}
+
+.clear {
+  margin-left: auto;
+}
+
+.empty {
+  padding: var(--lx-s8) 0;
+  color: var(--lx-color-page-ink-muted);
+  text-align: center;
+}
+
+.rows {
+  display: grid;
+  gap: var(--lx-s2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* A card per line: a tap on its left picks or unpicks it, the stepper sets how many copies go. */
+.row {
+  display: flex;
+  align-items: center;
+  gap: var(--lx-s3);
+  padding: var(--lx-s2) var(--lx-s3);
+  border: 2px solid transparent;
+  border-radius: var(--lx-radius-xl);
+  background: var(--lx-color-page-raised);
+}
+
+.row[data-on] {
+  border-color: var(--lx-toy-gold-edge);
+  background: color-mix(in srgb, var(--lx-toy-gold-top) 22%, var(--lx-color-page-raised));
+}
+
+.pick {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: var(--lx-s4);
+  min-width: 0;
+  min-height: 44px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.box {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  border: 2px solid var(--lx-toy-outline);
+  border-radius: 7px;
+  background: var(--lx-color-paper);
+  color: var(--lx-toy-outline);
+}
+
+.row[data-on] .box {
+  background: var(--lx-toy-gold-top);
+}
+
+.word {
+  display: grid;
+  min-width: 0;
+}
+
+.word strong {
+  overflow: hidden;
+  font-size: var(--lx-size-body);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.owned {
+  color: var(--lx-color-page-ink-muted);
+  font-size: var(--lx-size-small);
+}
+
+.stepper {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.step {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 2px solid var(--lx-toy-outline);
+  border-radius: 50%;
+  background: linear-gradient(
+    180deg,
+    var(--lx-toy-paper-top) 0 47%,
+    var(--lx-toy-paper-bottom) 53% 100%
+  );
+  box-shadow: 0 2px 0 var(--lx-toy-outline);
+  color: var(--lx-toy-outline);
+  cursor: pointer;
+}
+
+.step:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.picked {
+  min-width: 2ch;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+}
+
+.gain {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 3px;
+  min-width: 92px;
+  color: var(--lx-color-page-ink-muted);
+  font-size: var(--lx-size-small);
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.gain[data-on] {
+  color: var(--lx-color-success);
+  font-size: var(--lx-size-label);
+  font-weight: 800;
+}
+
+/* The action stays in reach at the bottom of the window while the list scrolls under it. */
+.footer {
+  position: sticky;
+  bottom: -30px;
+  display: grid;
+  gap: var(--lx-s3);
+  margin: 0 -26px -30px;
+  padding: var(--lx-s5) 26px var(--lx-s8);
+  border-top: 1px solid var(--lx-color-rule);
+  background:
+    var(--lx-matter-paper) 0 0 / var(--lx-matter-size),
+    var(--lx-color-paper);
+}
+
+.confirm {
+  color: var(--lx-color-rubric);
+  font-weight: 700;
+}
+
+.hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+@media (max-width: 420px) {
+  .gain {
+    min-width: 0;
+  }
+
+  .gain:not([data-on]) {
+    display: none;
+  }
+}

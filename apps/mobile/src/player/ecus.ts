@@ -1,5 +1,6 @@
 import type { MissingWordRequest, RecycleResponse } from "@leximon/contract";
 import type { MissingWordResult, RecycleCopyResult } from "@leximon/contract/client";
+import type { RecycleChoice } from "@leximon/core";
 import { copiesAfterRecycle } from "@leximon/view-model";
 import { randomUUID } from "expo-crypto";
 import { api } from "@/api/client";
@@ -20,9 +21,9 @@ function publishRecycled(result: RecycleResponse): void {
   }
 }
 
-/** Recycles the duplicates beyond the copies kept. */
-export async function recycleAll(): Promise<RecycleResponse> {
-  const result = await api.recycleDuplicates(randomUUID());
+/** Recycles the copies picked, card by card. */
+export async function recycleChosen(choice: readonly RecycleChoice[]): Promise<RecycleResponse> {
+  const result = await api.recycleDuplicates(randomUUID(), [...choice]);
   publishRecycled(result);
   return result;
 }

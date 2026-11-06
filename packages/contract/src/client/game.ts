@@ -80,6 +80,7 @@ import {
   publicProfileSchema,
   publicRiddleSchema,
   type RecycleRefusal,
+  type RecycleRequest,
   type RecycleResponse,
   type ReviewQuestion,
   type ReviewRequest,
@@ -365,13 +366,19 @@ export function gameRoutes(http: Http) {
     },
 
     /**
-     * Recycles the duplicates beyond the copies kept, of the rarities recycled together. The caller
-     * keeps `idempotencyKey` until it gets a result, as for a booster.
+     * Recycles the copies picked, card by card; without a choice, the duplicates beyond the copies
+     * kept, of the rarities recycled together. The caller keeps `idempotencyKey` until it gets a
+     * result, as for a booster.
      */
-    async recycleDuplicates(idempotencyKey: string): Promise<RecycleResponse> {
+    async recycleDuplicates(
+      idempotencyKey: string,
+      choice?: RecycleRequest["cards"],
+    ): Promise<RecycleResponse> {
       const response = await sendAsPlayer(
         "/me/recycle",
-        json("POST", {}, { [IDEMPOTENCY_KEY_HEADER]: idempotencyKey }),
+        json("POST", choice === undefined ? {} : { cards: choice }, {
+          [IDEMPOTENCY_KEY_HEADER]: idempotencyKey,
+        }),
       );
       await refuseArchivedGuest(response);
       if (!response.ok) throw new ApiError("recycle_failed", response.status);

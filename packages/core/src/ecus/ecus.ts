@@ -97,6 +97,39 @@ export function recycleOne(rules: EcuRules, holding: OwnedCopies): RecycledCard 
   return { cardId: holding.cardId, copies: 1, ecus: rules.recycleValue[holding.rarity] };
 }
 
+/** Copies of a card the player picked to recycle. */
+export interface RecycleChoice {
+  readonly cardId: string;
+  readonly copies: number;
+}
+
+/**
+ * Recycling the copies the player picked, card by card: any rarity, since each one is an explicit
+ * choice, and never a card's last copy. A choice beyond what the player still holds (another tab
+ * recycled or traded meanwhile) recycles what is left above that last copy.
+ */
+export function recycleChoice(
+  rules: EcuRules,
+  holdings: readonly OwnedCopies[],
+  choice: readonly RecycleChoice[],
+): RecyclePlan {
+  const held = new Map(holdings.map((holding) => [holding.cardId, holding]));
+  const cards = choice
+    .flatMap((picked) => {
+      const holding = held.get(picked.cardId);
+      if (holding === undefined) return [];
+      const copies = Math.min(picked.copies, holding.quantity - 1);
+      if (copies <= 0) return [];
+      return [{ cardId: picked.cardId, copies, ecus: copies * rules.recycleValue[holding.rarity] }];
+    })
+    .sort((a, b) => (a.cardId < b.cardId ? -1 : a.cardId > b.cardId ? 1 : 0));
+  return {
+    cards,
+    copies: cards.reduce((sum, card) => sum + card.copies, 0),
+    ecus: cards.reduce((sum, card) => sum + card.ecus, 0),
+  };
+}
+
 /**
  * Écus an answer earns for a perfect start: the one that makes the day's first questions all
  * right. `tally` counts the day's answers with this one. The player's answers are serialized, so

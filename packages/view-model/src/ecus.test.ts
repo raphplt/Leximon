@@ -10,7 +10,6 @@ import {
   missingWordCollections,
   missingWordLockedLine,
   missingWordOptions,
-  recycleAction,
   recycleCopyAction,
   recycleCopyConfirm,
   recycleCopyNeedsConfirm,
@@ -47,7 +46,7 @@ describe("ecusTable", () => {
 describe("recycling", () => {
   const cards = [card("a", "common"), card("b", "rare"), card("c", "epic"), card("d", "uncommon")];
 
-  it("says what the button does before doing it", () => {
+  it("tells what was recycled", () => {
     const copies = new Map([
       ["a", 5],
       ["b", 3],
@@ -55,16 +54,15 @@ describe("recycling", () => {
       ["d", 1],
     ]);
     const plan = recyclePreview(RULES, cards, copies);
-    expect(recycleAction(plan)).toBe("Recycler 4 doubles, +8 écus");
+    expect(plan).toMatchObject({ copies: 4, ecus: 8 });
     expect(recycledToast(plan)).toBe("Tu as recyclé 4 doubles et gagné 8 écus.");
   });
 
-  it("agrees with a single double and hides the button without any", () => {
+  it("agrees with a single double, and says when none was left", () => {
     const one = recyclePreview(RULES, cards, new Map([["a", 3]]));
-    expect(recycleAction(one)).toBe("Recycler 1 double, +1 écu");
     expect(recycledToast(one)).toBe("Tu as recyclé 1 double et gagné 1 écu.");
     const none = recyclePreview(RULES, cards, new Map([["a", 2]]));
-    expect(recycleAction(none)).toBeNull();
+    expect(none.copies).toBe(0);
     expect(recycledToast(none)).toBe("Tu n'avais plus de double à recycler.");
   });
 
