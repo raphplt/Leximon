@@ -62,8 +62,9 @@
   inset: 0;
   width: min(880px, calc(100% - 48px));
   max-width: none;
-  height: fit-content;
-  max-height: calc(100dvh - 48px);
+  /* One size for every card: turning to the next one never moves the arrows. */
+  height: min(720px, calc(100dvh - 48px));
+  max-height: none;
   margin: auto;
   border: 6px solid transparent;
   border-radius: 28px;
@@ -94,8 +95,9 @@
   max-height: inherit;
 }
 
-/* Only here: under a window sized by its content, Safari 16 resolves this to 0 and the window vanishes. */
-.side .box {
+/* Only where the window has a height: under one sized by its content, Safari 16 resolves this to 0 and the window vanishes. */
+.side .box,
+.wide .box {
   height: 100%;
 }
 
@@ -132,6 +134,9 @@
 }
 
 .wide .title {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
   color: var(--lx-lettering-fill);
   font-weight: 900;
   -webkit-text-stroke: var(--lx-lettering-width) var(--lx-lettering-outline);
@@ -192,6 +197,11 @@
   .side[open],
   .wide[open] {
     animation-name: fromBottom;
+  }
+
+  /* Its full height on phones too, so that the sheet's top stays put from one card to the next. */
+  .wide {
+    height: 90dvh;
   }
 
   .wide .box {

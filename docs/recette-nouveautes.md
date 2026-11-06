@@ -411,6 +411,7 @@ Chaque retour vaut pour le web (téléphone et grand écran) et pour l'app, sauf
 | R-23 | Clan, bibliothèque | Pouvoir l'ouvrir et voir le détail des cartes du clan, comme un album commun. | 5 |
 | R-24 | Clan, membres | Une fenêtre avec la liste complète des membres, triable et filtrable. | 5 |
 | R-25 | Sachet, à la souris | Survoler le haut du sachet (la bande « déchirer ici ») le déchire ; un clic rejoue ensuite l'animation depuis le début. | 4 |
+| R-26 | Fiche d'une carte | Toutes les fiches doivent avoir la même taille, sinon les flèches gauche et droite bougent d'une carte à l'autre. | 2 ✓ |
 
 **Relecture du lot 1 (2026-11-06).** Quatre points revenus, repris le jour même :
 
@@ -425,4 +426,4 @@ Chaque retour vaut pour le web (téléphone et grand écran) et pour l'app, sauf
 - R-15 : le sachet bonus s'affiche dans un encart de cuir rouge cerclé d'or vieilli, avec un filet doré et ses quatre losanges, le sachet dessiné dans un médaillon. Le même encart servira à la fin d'un sachet (montée de niveau) et aux autres gains dans la suite du lot.
 - R-16 : quatre icônes dessinées (page blanche, esquisse, encre, dorure), sous chaque mot qui monte, dans l'album, sur la fiche d'une carte et dans « Ta mémoire ».
 - R-18 : « Retour aux défis » devient le bouton principal quand la révision est finie ; quand il reste des mots à revoir, « Encore 10 questions » passe devant et le retour reste un vrai bouton juste à côté.
-
+- R-26 : la fenêtre d'une carte garde la même taille pour toutes les cartes (880 × 720 px au plus sur le web, 90 % de la hauteur sur téléphone). La carte et ses flèches ne bougent plus ; quand le texte est long, la feuille de droite défile dans son cadre. Vérifié en tournant huit cartes à 390, 1 500 et 2 000 px. Dans l'app, la fiche est une page entière, la carte reste en haut, les flèches ne bougent pas non plus.

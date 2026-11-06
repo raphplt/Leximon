@@ -116,6 +116,23 @@
   color: var(--lx-color-page-ink-muted);
 }
 
+/*
+ * The window keeps one height for every card: the card stays in place, a long leaf scrolls
+ * on its own beside it.
+ */
+@media (min-width: 760px) {
+  .sheet {
+    height: 100%;
+  }
+
+  .facts {
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
+    scrollbar-color: var(--lx-color-page-ink-faint) transparent;
+  }
+}
+
 @media (max-width: 759px) {
   .sheet {
     flex-direction: column;
