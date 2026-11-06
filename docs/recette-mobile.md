@@ -315,12 +315,9 @@ A sur le web sert de deuxième joueur : amis, échanges, clan, sanctions. `pnpm 
 
 ---
 
-## 12. Joutes (JOU-01 à JOU-06)
+## 12. Joutes
 
-### MJO-01 · Une joute entre le web et le téléphone
-- **Faire :** préparer A et B comme sur le web (section 13 ter). Sur le téléphone, A touche le bouton Joutes de l'écran Jouer, change son deck dans la feuille, défie B et joue. B joue sur le web, puis A ouvre la lettre de fin dans le courrier du téléphone.
-- **Attendu :** comme JOU-01 à JOU-03. La feuille du deck défile et garde le compte des points ; le chrono reste fluide ; une bonne réponse vibre une fois, une mauvaise deux. La lettre mène aux joutes, la joute finie montre le résultat et « Proposer une revanche ».
-- **Retour :**
+Les tests du téléphone (MJO-01 à MJO-04) sont dans [recette-joutes.md](recette-joutes.md#7-sur-lapp-android).
 
 ---
 

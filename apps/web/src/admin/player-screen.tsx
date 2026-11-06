@@ -472,8 +472,12 @@ function JoustAccessForm({
         {access
           ? "Ce joueur fait partie des testeurs des joutes."
           : "Les joutes ne lui sont pas encore ouvertes."}{" "}
-        Il a joué {formatNumber(played)} joute(s). Il lui faut aussi un compte, un pseudo et le
-        niveau des joutes.
+        {played === 0
+          ? "Il n'a joué aucune joute."
+          : played === 1
+            ? "Il a joué une joute."
+            : `Il a joué ${formatNumber(played)} joutes.`}{" "}
+        Il lui faut aussi un compte, un pseudo et le niveau des joutes.
       </p>
       <button
         type="button"

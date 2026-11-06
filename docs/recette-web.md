@@ -786,37 +786,7 @@ Il faut deux comptes inscrits avec un pseudo, A et B (deux navigateurs, ou une f
 
 ## 13 ter. Joutes
 
-Préparer deux comptes inscrits avec un pseudo, A et B, amis entre eux, chacun avec au moins 10 cartes en Esquisse : `pnpm dev:player <e-mail> --level 8`, puis cocher « Ouvrir les joutes » sur la fiche de chacun dans `/admin`. Avant le 2026-11-06, les joutes s'ouvrent au niveau 15.
-
-### JOU-01 · Porte et deck
-- **Faire :** ouvrir `/joutes` avec un compte non coché, puis avec A. Ouvrir « Changer mon deck », retirer et ajouter des cartes, dépasser 25 points, garder.
-- **Attendu :** sans la case cochée, la page dit que les joutes s'ouvrent bientôt. Pour A, un deck de 10 cartes composé d'office, « Le jeu a composé ce deck avec tes mots les plus rares ». Le compte des points suit chaque touche ; une carte de trop ou au-delà de 25 points est refusée et le dit. Le deck gardé revient après un rechargement.
-- **Retour :**
-
-### JOU-02 · Lancer et jouer
-- **Faire :** A clique « Défier un ami », choisit B, joue ses 5 questions. Laisser filer le chrono d'une question.
-- **Attendu :** une définition, 4 mots, un chrono de 15 secondes qui rougit à la fin. Après la réponse, le bon mot en vert, le mauvais choix en rouge. La question laissée passer compte fausse, la suivante arrive seule. À la fin, la page dit que B a 24 h pour répondre ; le niveau monte de 20 XP.
-- **Retour :**
-
-### JOU-03 · Le fantôme et le résultat
-- **Faire :** B ouvre son courrier, puis la joute, et joue.
-- **Attendu :** B a la lettre « A te défie en joute », marquée lue dès qu'il commence. Pendant sa partie, une ligne dit où en était A au même moment. À la fin, les deux voient le résultat, les scores, les réponses de chacun (chaque mot ouvre sa carte), les mots qui ont piégé l'autre. Le gagnant a 20 XP de plus et, à sa première victoire du jour, un sachet bonus. A reçoit « Ta joute contre B est finie ».
-- **Retour :**
-
-### JOU-04 · Revanche, classée, limites
-- **Faire :** « Proposer une revanche » depuis le résultat. Puis « Trouver un adversaire » (il faut un troisième jouteur passé dans les 24 h). Lancer 6 joutes sans qu'elles soient jouées.
-- **Attendu :** la revanche ouvre une nouvelle joute amicale. La classée trouve un adversaire, ou dit qu'il n'y en a pas pour l'instant. La sixième joute en attente est refusée avec une phrase claire.
-- **Retour :**
-
-### JOU-05 · Sans réponse en 24 h
-- **Faire :** en base locale, reculer de 25 h le `reply_by` d'une joute que B n'a pas jouée, puis ouvrir `/joutes` avec A.
-- **Attendu :** la joute revient à A (« La joute te revient, car B n'a pas joué à temps. »), avec ses récompenses et une lettre.
-- **Retour :**
-
-### JOU-06 · E-mail et réglage
-- **Faire :** comme AMI-08, A lance une joute à B, qui ne revient pas pendant 30 minutes ; recommencer avec « Joutes » éteint dans les réglages de B.
-- **Attendu :** l'e-mail des lettres en attente nomme la joute ; réglage éteint, il ne la nomme plus.
-- **Retour :**
+La recette des joutes a son propre fichier : [recette-joutes.md](recette-joutes.md).
 
 ---
 
