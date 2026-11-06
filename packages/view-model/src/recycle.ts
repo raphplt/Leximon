@@ -14,7 +14,7 @@ export const RECYCLE_SEARCH = "Chercher un mot";
 export const RECYCLE_ALL_RARITIES = "Toutes";
 export const RECYCLE_ALL_COLLECTIONS = "Toutes";
 /** Picks, among the cards shown, every copy beyond the card and one double. */
-export const RECYCLE_PICK_EXTRA = "Les doubles en trop";
+export const RECYCLE_PICK_EXTRA = "Garder un double";
 export const RECYCLE_PICK_EXTRA_HELP =
   "Coche, parmi les cartes affichées, ce qui dépasse la carte et un double, sans les Épiques ni les Légendaires.";
 export const RECYCLE_CLEAR = "Tout décocher";
@@ -213,7 +213,7 @@ export function steppedPick(picks: RecyclePicks, row: RecycleRow, step: 1 | -1):
 }
 
 /**
- * « Les doubles en trop »: among the rows shown, every copy beyond the card and one double, of the
+ * « Garder un double »: among the rows shown, every copy beyond the card and one double, of the
  * rarities recycled together. The rest of the choice stays.
  */
 export function extraPicks(
