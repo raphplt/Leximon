@@ -58,7 +58,7 @@ export function RecycleDialog({
   readonly onClose: () => void;
 }) {
   return (
-    <Dialog open={open} title={RECYCLE_TITLE} onClose={onClose} variant="center">
+    <Dialog open={open} title={RECYCLE_TITLE} onClose={onClose} variant="center" large>
       {open && <RecycleChoice onClose={onClose} />}
     </Dialog>
   );
