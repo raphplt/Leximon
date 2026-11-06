@@ -24,6 +24,7 @@ export function Page({
   closable = true,
   inTab = false,
   desk = false,
+  fill = false,
 }: {
   readonly kicker?: string;
   readonly title: string;
@@ -34,21 +35,21 @@ export function Page({
   readonly inTab?: boolean;
   /** The page lies on the desk of the reading room: a card, read up close. */
   readonly desk?: boolean;
+  /** The page holds in the screen and its content scrolls where it says: the levels' road. */
+  readonly fill?: boolean;
 }) {
   const insets = useSafeAreaInsets();
   const onDesk = desk && !inTab;
-  const scroll = (
-    <ScrollView
-      keyboardShouldPersistTaps="handled"
-      contentContainerStyle={[
-        styles.content,
-        inTab
-          ? { paddingTop: space.s6, paddingBottom: TAB_BAR_RISE + 24 }
-          : onDesk
-            ? { paddingTop: space.s4, paddingBottom: space.s16 }
-            : { paddingTop: insets.top + 8, paddingBottom: insets.bottom + 32 },
-      ]}
-    >
+  const padding = [
+    styles.content,
+    inTab
+      ? { paddingTop: space.s6, paddingBottom: TAB_BAR_RISE + 24 }
+      : onDesk
+        ? { paddingTop: space.s4, paddingBottom: space.s16 }
+        : { paddingTop: insets.top + 8, paddingBottom: insets.bottom + (fill ? 12 : 32) },
+  ];
+  const inside = (
+    <>
       {!inTab && (
         <View style={styles.top}>
           {closable && (
@@ -68,7 +69,14 @@ export function Page({
       <View accessibilityRole="header">
         <Lettering size={fontSizes.headingLarge}>{title}</Lettering>
       </View>
-      <View style={styles.body}>{children}</View>
+      <View style={[styles.body, fill && styles.filled]}>{children}</View>
+    </>
+  );
+  const scroll = fill ? (
+    <View style={[styles.filled, padding]}>{inside}</View>
+  ) : (
+    <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={padding}>
+      {inside}
     </ScrollView>
   );
   return (
@@ -162,6 +170,7 @@ const styles = StyleSheet.create({
     marginBottom: space.s3,
   },
   body: { gap: space.s8, marginTop: space.s10 },
+  filled: { flex: 1 },
   paragraph: {
     fontFamily: fonts.text.regular,
     fontSize: fontSizes.subtitle,

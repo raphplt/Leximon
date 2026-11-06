@@ -478,3 +478,10 @@ Chaque retour vaut pour le web (téléphone et grand écran) et pour l'app, sauf
 - Toucher un coffre l'ouvre. Toucher une autre étape montre ce qu'elle donne : à droite de la route sur grand écran, dans une bulle sous l'étape sur le téléphone (au-dessus pour les dernières).
 - « À débloquer » liste les parties du jeu encore fermées, avec leur niveau.
 - Les coffrets s'ouvrent toujours un par un ; un bouton « Tout ouvrir » reste à trancher.
+
+Retour du propriétaire le même jour : la page ne doit plus défiler, et la route doit être plus belle. Fait sur le web et l'app, vérifié à 390, 1 500 et 2 000 px et sur l'émulateur :
+
+- La page tient dans l'écran ; seule la route défile, dans un plateau creusé sous les onglets. Elle s'ouvre sur ton niveau (ou sur celui demandé par `#niveau-N`), et une bulle ouverte se place d'elle-même dans la vue.
+- La route est en relief : bord sombre, lit de papier, pointillés au milieu ; la partie parcourue est pavée d'or et cloutée. Des objets de bibliothèque la bordent (livres, bougie, encrier, parchemin, livre ouvert), un fanion marque les niveaux qui débloquent quelque chose, et ton avatar se tient sur ta médaille, entouré de petites étoiles sur le web.
+- Au bout de la route, un panneau mène au chapitre suivant ; fermé, il dit à quel niveau il s'ouvrira (« Tu le verras au niveau 21. »).
+- Sur le téléphone, l'en-tête est resserré (anneau plus petit, bouton « Ouvrir un coffret » plus bas) et « À débloquer » passe sous la route, dans le plateau. Sur le web, le titre « Niveaux » disparaît sous 600 px : la barre du bas ramène au jeu.

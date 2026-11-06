@@ -9,6 +9,16 @@
   color: var(--lx-color-page-ink);
 }
 
+/*
+ * The page fills the window: the head stays in place while the road scrolls in its own box, as
+ * the cards do in the album.
+ */
+.page:has(.layout) {
+  height: calc(100dvh - 76px);
+  min-height: 640px;
+  padding-bottom: 18px;
+}
+
 .header {
   display: flex;
   align-items: center;
@@ -27,9 +37,10 @@
 
 .layout {
   display: grid;
+  flex: 1;
   grid-template-columns: minmax(0, 1fr) 380px;
   gap: 18px;
-  align-items: start;
+  min-height: 0;
 }
 
 /* --- The head: the level in big, its bar, the coffrets that wait --- */
@@ -157,6 +168,31 @@
   gap: 2px;
 }
 
+.heroChest {
+  display: grid;
+}
+
+/* The small button of a phone, in place of the big one. */
+.heroCompact {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  height: 46px;
+  padding: 0 10px 0 6px;
+  font-size: var(--lx-size-body);
+}
+
+.heroCount {
+  display: grid;
+  place-items: center;
+  min-width: 30px;
+  height: 30px;
+  padding: 0 6px;
+  font-size: 15px;
+}
+
 /* A chest that waits gives a little hop now and then, to be opened. */
 .hop {
   animation: hop 2.4s ease-in-out infinite;
@@ -198,14 +234,18 @@
 /* --- The road --- */
 
 .roadLeaf {
-  padding: 16px 18px 26px;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  padding: 14px 14px 14px;
 }
 
 .tabs {
   display: flex;
+  flex: none;
   gap: 8px;
   overflow-x: auto;
-  padding: 2px 2px 8px;
+  padding: 2px 2px 10px;
   scrollbar-width: none;
 }
 
@@ -221,15 +261,44 @@
   color: var(--lx-toy-outline);
 }
 
+/*
+ * The road's own box, sunk into the leaf like a board game's tray; its edges fade so that the
+ * road seems to go on.
+ */
+.scroll {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 0 12px 22px;
+  border: var(--lx-toy-outline-width) solid var(--lx-toy-outline);
+  border-radius: var(--lx-toy-radius-large);
+  background:
+    radial-gradient(
+      circle at 1px 1px,
+      color-mix(in srgb, var(--lx-toy-outline) 12%, transparent) 1.5px,
+      transparent 2px
+    )
+    0 0 / 22px 22px,
+    color-mix(in srgb, var(--lx-toy-outline) 9%, var(--lx-color-paper));
+  box-shadow:
+    inset 0 6px 0 color-mix(in srgb, var(--lx-toy-outline) 14%, transparent),
+    inset 0 0 40px color-mix(in srgb, var(--lx-toy-outline) 14%, transparent);
+  scrollbar-color: color-mix(in srgb, var(--lx-toy-outline) 40%, transparent) transparent;
+  scrollbar-width: thin;
+}
+
 .banner {
   display: grid;
   justify-items: center;
-  gap: 16px;
-  margin: 10px 0 4px;
+  gap: 14px;
+  padding: 22px 0 20px;
 }
 
 .ribbon {
   position: relative;
+  z-index: 0;
   padding: 8px 36px 10px;
   border: var(--lx-toy-outline-width) solid var(--lx-toy-outline);
   border-radius: 10px;
@@ -281,23 +350,77 @@
   overflow: visible;
 }
 
-.pathAhead,
-.pathDone {
+/* The road is laid in layers: its shadow, its outline, its bed and the line down its middle. */
+.path path {
   fill: none;
   stroke-linecap: round;
+  stroke-linejoin: round;
   vector-effect: non-scaling-stroke;
 }
 
-.pathAhead {
-  stroke: color-mix(in srgb, var(--lx-toy-outline) 28%, transparent);
-  stroke-width: 8;
-  stroke-dasharray: 2 16;
+.pathShadow {
+  stroke: color-mix(in srgb, var(--lx-toy-outline) 22%, transparent);
+  stroke-width: 30;
 }
 
-.pathDone {
+.pathEdge {
+  stroke: var(--lx-toy-outline);
+  stroke-width: 30;
+}
+
+.pathBed {
+  stroke: var(--lx-toy-paper-bottom);
+  stroke-width: 22;
+}
+
+.pathMarks {
+  stroke: color-mix(in srgb, var(--lx-toy-outline) 30%, transparent);
+  stroke-width: 3;
+  stroke-dasharray: 10 12;
+}
+
+/* The part already walked is paved in gold, studded like a bound book. */
+.pathGold {
+  stroke: var(--lx-toy-gold-bottom);
+  stroke-width: 22;
+}
+
+.pathGlint {
   stroke: var(--lx-toy-gold-top);
   stroke-width: 12;
-  filter: drop-shadow(0 3px 0 var(--lx-toy-outline));
+}
+
+.pathStuds {
+  stroke: var(--lx-color-paper);
+  stroke-width: 5;
+  stroke-dasharray: 0 26;
+}
+
+/* The odds and ends of a reading room, along the road. */
+.decor {
+  position: absolute;
+  z-index: 0;
+  display: grid;
+  translate: -50% -50%;
+  rotate: -6deg;
+  pointer-events: none;
+}
+
+.decor[data-small] {
+  rotate: 7deg;
+}
+
+/* Each one stands on its little shadow. */
+.decor::after {
+  content: "";
+  position: absolute;
+  left: 12%;
+  right: 12%;
+  bottom: -4px;
+  z-index: -1;
+  height: 9px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--lx-toy-outline) 22%, transparent);
 }
 
 .stops {
@@ -310,8 +433,8 @@
   position: absolute;
   left: 0;
   right: 0;
+  z-index: 1;
   height: 104px;
-  scroll-margin: 120px;
 }
 
 .stopButton {
@@ -372,10 +495,112 @@
   mask: radial-gradient(circle, transparent 0 62%, black 63%);
 }
 
+/* A pennant marks the levels that open something, on the side the tag leaves free. */
+.flag {
+  position: absolute;
+  top: 50%;
+  display: grid;
+  translate: 0 -78%;
+  rotate: -8deg;
+  pointer-events: none;
+}
+
+.stop[data-side="right"] .flag {
+  left: calc(var(--x) - 78px);
+}
+
+.stop[data-side="left"] .flag {
+  left: calc(var(--x) + 36px);
+  rotate: 8deg;
+}
+
 .here {
   position: relative;
   display: grid;
   filter: drop-shadow(0 0 14px color-mix(in srgb, var(--lx-toy-gold-top) 80%, transparent));
+}
+
+/* The player, as a piece standing on their level. */
+.me {
+  position: absolute;
+  bottom: calc(100% - 14px);
+  left: 50%;
+  z-index: 1;
+  display: grid;
+  padding: 3px;
+  border: var(--lx-toy-outline-width) solid var(--lx-toy-outline);
+  border-radius: 50%;
+  background: var(--lx-toy-gold-top);
+  box-shadow: 0 3px 0 var(--lx-toy-outline);
+  translate: -50% 0;
+  animation: bob 2.2s ease-in-out infinite;
+}
+
+.me::after {
+  content: "";
+  position: absolute;
+  top: calc(100% - 4px);
+  left: 50%;
+  width: 12px;
+  height: 12px;
+  border-right: var(--lx-toy-outline-width) solid var(--lx-toy-outline);
+  border-bottom: var(--lx-toy-outline-width) solid var(--lx-toy-outline);
+  background: var(--lx-toy-gold-top);
+  translate: -50% 0;
+  rotate: 45deg;
+}
+
+@keyframes bob {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+/* Small stars twinkle round the player's level. */
+.sparkles i {
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  background: var(--lx-toy-gold-top);
+  clip-path: polygon(50% 0, 62% 38%, 100% 50%, 62% 62%, 50% 100%, 38% 62%, 0 50%, 38% 38%);
+  animation: twinkle 2.6s ease-in-out infinite;
+}
+
+.sparkles i:nth-child(1) {
+  top: 4px;
+  left: -16px;
+}
+
+.sparkles i:nth-child(2) {
+  right: -18px;
+  bottom: 10px;
+  width: 11px;
+  height: 11px;
+  animation-delay: 0.9s;
+}
+
+.sparkles i:nth-child(3) {
+  bottom: -8px;
+  left: -6px;
+  width: 9px;
+  height: 9px;
+  animation-delay: 1.7s;
+}
+
+@keyframes twinkle {
+  0%,
+  100% {
+    opacity: 0;
+    transform: scale(0.4) rotate(0);
+  }
+  40% {
+    opacity: 1;
+    transform: scale(1) rotate(45deg);
+  }
 }
 
 .hereChest {
@@ -410,6 +635,7 @@
   border: 2px solid color-mix(in srgb, var(--lx-toy-outline) 40%, transparent);
   border-radius: var(--lx-radius-pill);
   background: var(--lx-color-page-raised);
+  box-shadow: 0 2px 0 color-mix(in srgb, var(--lx-toy-outline) 25%, transparent);
   font-size: var(--lx-size-small);
   font-weight: 800;
   line-height: 1.15;
@@ -438,6 +664,57 @@
 
 .stop[data-milestone] .tag {
   border-color: var(--lx-toy-gold-edge);
+}
+
+/* Where the road leaves the chapter. */
+.end {
+  position: absolute;
+  z-index: 1;
+  translate: -50% -50%;
+}
+
+.sign {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: max-content;
+  max-width: min(340px, 80vw);
+  padding: 10px 16px 10px 10px;
+  text-align: left;
+  color: var(--lx-toy-outline);
+}
+
+.sign:disabled {
+  cursor: default;
+}
+
+.signText {
+  display: grid;
+  gap: 1px;
+  min-width: 0;
+}
+
+.signText strong {
+  font-family: var(--font-display), Georgia, serif;
+  font-size: var(--lx-size-body);
+  font-weight: var(--lx-weight-display);
+}
+
+.signKicker {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.signNote {
+  font-size: var(--lx-size-small);
+  font-weight: 700;
+}
+
+.unlocksInRoad {
+  display: none;
+  margin-top: 6px;
 }
 
 /* On a phone, the detail of a level opens under its stop, pointing at it. */
@@ -476,11 +753,9 @@
   flex-direction: column;
   gap: 18px;
   min-width: 0;
-}
-
-.sideDetail {
-  position: sticky;
-  top: 90px;
+  min-height: 0;
+  overflow-y: auto;
+  scrollbar-width: thin;
 }
 
 .detail {
@@ -604,12 +879,21 @@
     grid-template-columns: minmax(0, 1fr);
   }
 
-  .sideDetail {
+  .side {
     display: none;
   }
 
-  .bubble {
+  .bubble,
+  .unlocksInRoad {
     display: block;
+  }
+}
+
+@media (max-width: 759px) {
+  .page:has(.layout) {
+    height: calc(100dvh - 166px - env(safe-area-inset-bottom));
+    min-height: 500px;
+    padding-bottom: 6px;
   }
 }
 
@@ -621,18 +905,39 @@
 
   .hero {
     grid-template-columns: auto minmax(0, 1fr);
-    gap: 14px;
+    gap: 10px 14px;
     padding: 14px;
   }
 
+  /* The head says the level already; the bar below the page leads back. */
+  .header {
+    display: none;
+  }
+
   .ring {
-    width: 86px;
-    height: 86px;
+    width: 70px;
+    height: 70px;
   }
 
   .ring > * {
-    width: 66px;
-    height: 66px;
+    width: 52px;
+    height: 52px;
+  }
+
+  .heroTitle {
+    font-size: var(--lx-size-title);
+  }
+
+  .heroBar {
+    height: 22px;
+  }
+
+  .heroText {
+    gap: 4px;
+  }
+
+  .heroNext {
+    font-size: var(--lx-size-small);
   }
 
   .heroAction {
@@ -640,12 +945,26 @@
     justify-content: center;
   }
 
-  .heroAction > .hop {
+  .heroChest,
+  .heroMain {
     display: none;
   }
 
+  .heroCompact {
+    display: flex;
+  }
+
+  .coming {
+    width: 100%;
+    padding: 6px 12px 6px 6px;
+  }
+
   .roadLeaf {
-    padding-inline: 10px;
+    padding: 10px 8px 8px;
+  }
+
+  .scroll {
+    padding-inline: 6px;
   }
 
   .tag {
@@ -655,7 +974,9 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .hop {
+  .hop,
+  .me,
+  .sparkles i {
     animation: none;
   }
 }

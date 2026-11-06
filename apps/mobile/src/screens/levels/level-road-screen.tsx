@@ -1,7 +1,8 @@
 import type { Progress } from "@leximon/contract";
-import { toyMatters, toy as toyValues } from "@leximon/tokens";
+import { toyIconInks, toyMatters, toy as toyValues } from "@leximon/tokens";
 import {
   levelDetail,
+  nextChapterSign,
   playerTitle,
   type Quarter,
   quarterAt,
@@ -18,8 +19,15 @@ import {
   xpSources,
   xpToNextLabel,
 } from "@leximon/view-model";
-import { type ReactNode, useEffect, useState } from "react";
-import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { type ReactNode, useEffect, useRef, useState } from "react";
+import {
+  Pressable,
+  ScrollView,
+  type ScrollViewInstance,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 import Animated, {
   useAnimatedStyle,
   useReducedMotion,
@@ -34,8 +42,9 @@ import { openCoffret } from "@/levels/coffret";
 import { RewardToy } from "@/levels/reward-toy";
 import { MainAction } from "@/library/play-pieces";
 import { useNow, useShared, useSharedFailed } from "@/player/shared";
-import { levelRewards, progress as progressResource } from "@/player/state";
+import { levelRewards, profile, progress as progressResource } from "@/player/state";
 import { alpha, colors, fontSizes, fonts, paperColors, radii, space } from "@/theme";
+import { Avatar } from "@/ui/avatar";
 import { Button } from "@/ui/button";
 import { Icon } from "@/ui/icon";
 import { LevelMedal } from "@/ui/level";
@@ -48,10 +57,19 @@ const QUARTERS_AHEAD = 2;
 /** Every leaf of the screen is paper. */
 const ink = paperColors;
 
-/** The levels as a road that winds down the page, a chapter of ten at a time. */
+interface Me {
+  readonly avatar: string | null;
+  readonly frame: string | null;
+}
+
+/**
+ * The levels as a road that winds down a chapter of ten. The page holds in the screen: the road
+ * scrolls in its own box, which opens on the player's level.
+ */
 export function LevelRoadScreen({ asked }: { readonly asked: number | null }) {
   const progress = useShared(progressResource);
   const rewards = useShared(levelRewards);
+  const me = useShared(profile);
   const progressFailed = useSharedFailed(progressResource);
   const rewardsFailed = useSharedFailed(levelRewards);
   const now = useNow(60_000);
@@ -89,6 +107,16 @@ export function LevelRoadScreen({ asked }: { readonly asked: number | null }) {
   const last = own.index + QUARTERS_AHEAD;
   const quarter = quarterAt(Math.min(last, shown ?? own.index));
   const nodes = quarterNodes(quarter, progress.level, claimed, now);
+  // The road opens on the level asked for, else on the player's, else on its first coffret.
+  const focus =
+    [asked, progress.level, nodes.find((node) => node.state === "claimable")?.level].find(
+      (level) => level != null && level >= quarter.first && level <= quarter.last,
+    ) ?? null;
+  const sign = nextChapterSign(quarter.index, own.index, QUARTERS_AHEAD);
+  const show = (index: number) => {
+    setShown(index);
+    setBubble(null);
+  };
 
   const pick = (node: RoadNode) => {
     if (node.state === "claimable") {
@@ -100,29 +128,34 @@ export function LevelRoadScreen({ asked }: { readonly asked: number | null }) {
   };
 
   return (
-    <Page title="Niveaux">
+    <Page title="Niveaux" fill>
       <Hero progress={progress} claimed={claimed} now={now} />
       <Leaf style={styles.roadLeaf}>
-        <ChapterTabs
-          own={own}
-          last={last}
-          shown={quarter}
-          onShow={(index) => {
-            setShown(index);
-            setBubble(null);
-          }}
-        />
-        <Banner quarter={quarter} />
-        <Road
-          nodes={nodes}
-          progress={progress}
-          claimed={claimed}
-          now={now}
-          bubble={bubble}
-          onPick={pick}
-        />
+        <ChapterTabs own={own} last={last} shown={quarter} onShow={show} />
+        <View style={styles.tray}>
+          <Road
+            key={quarter.index}
+            quarter={quarter}
+            nodes={nodes}
+            progress={progress}
+            claimed={claimed}
+            now={now}
+            me={{ avatar: me?.avatar ?? null, frame: me?.frame ?? null }}
+            focus={focus}
+            bubble={bubble}
+            onPick={pick}
+            end={
+              <ChapterSignpost
+                name={sign.name}
+                note={sign.note}
+                open={sign.open && quarter.index < last}
+                onShow={() => show(sign.index)}
+              />
+            }
+            after={<Unlocks level={progress.level} now={now} />}
+          />
+        </View>
       </Leaf>
-      <Unlocks level={progress.level} now={now} />
     </Page>
   );
 }
@@ -147,6 +180,18 @@ function Hop({ children }: { readonly children: ReactNode }) {
     transform: [{ translateY: -Math.max(0, lift.value) * 8 }, { rotate: `${-lift.value * 6}deg` }],
   }));
   return <Animated.View style={hop}>{children}</Animated.View>;
+}
+
+/** The player's piece bobs gently on their level. */
+function Bob({ children }: { readonly children: ReactNode }) {
+  const reduced = useReducedMotion();
+  const lift = useSharedValue(0);
+  useEffect(() => {
+    if (reduced) return;
+    lift.value = withRepeat(withTiming(1, { duration: 1100 }), -1, true);
+  }, [reduced, lift]);
+  const bob = useAnimatedStyle(() => ({ transform: [{ translateY: -lift.value * 5 }] }));
+  return <Animated.View style={bob}>{children}</Animated.View>;
 }
 
 /** An arc that fills as the XP of the level comes, round a medal or a stop. */
@@ -199,8 +244,8 @@ function Hero({
     <Leaf style={styles.hero}>
       <View style={styles.heroRow}>
         <View style={styles.ring}>
-          <XpRing size={88} ratio={ratio} width={10} track={alpha(toyValues.outline, 0.15)} />
-          <LevelMedal level={progress.level} size={66} />
+          <XpRing size={RING} ratio={ratio} width={8} track={alpha(toyValues.outline, 0.15)} />
+          <LevelMedal level={progress.level} size={RING - 22} />
         </View>
         <View style={styles.heroText}>
           {title !== null && <Text style={styles.kicker}>{title.toUpperCase()}</Text>}
@@ -241,15 +286,24 @@ function Hero({
         </View>
       )}
       {coffrets > 0 ? (
-        <MainAction
-          label="Ouvrir un coffret"
-          count={String(coffrets)}
+        // A smaller button than the game's main one leaves the road its room.
+        <Toy
+          matter="gold"
+          style={styles.heroAction}
+          bodyStyle={styles.heroActionBody}
+          accessibilityRole="button"
           onPress={() => openCoffret()}
-        />
+        >
+          <ToyIcon name="chest" size={30} />
+          <Lettering size={fontSizes.body}>Ouvrir un coffret</Lettering>
+          <ToyBody matter="red" shape="round" style={styles.heroCount}>
+            <Lettering size={14}>{coffrets}</Lettering>
+          </ToyBody>
+        </Toy>
       ) : (
         next !== undefined && (
           <View style={styles.coming}>
-            <RewardToy icon={next.icon} size={44} />
+            <RewardToy icon={next.icon} size={38} />
             <View style={styles.comingText}>
               <Text style={styles.kicker}>AU NIVEAU {next.level}</Text>
               <Text style={styles.comingTitle}>{next.opens ?? next.title}</Text>
@@ -278,6 +332,7 @@ function ChapterTabs({
     <ScrollView
       horizontal
       showsHorizontalScrollIndicator={false}
+      style={styles.tabsBox}
       accessibilityLabel="Chapitres"
       contentContainerStyle={styles.tabs}
     >
@@ -337,135 +392,252 @@ function Banner({ quarter }: { readonly quarter: Quarter }) {
 /** The stop's token is laid in a square this wide, centred on the road. */
 const STOP_BOX = 84;
 
+/** Width of the hero's ring round the medal. */
+const RING = 70;
+
 function Road({
+  quarter,
   nodes,
   progress,
   claimed,
   now,
+  me,
+  focus,
   bubble,
   onPick,
+  end,
+  after,
 }: {
+  readonly quarter: Quarter;
   readonly nodes: readonly RoadNode[];
   readonly progress: Progress;
   readonly claimed: readonly number[];
   readonly now: number;
+  readonly me: Me;
+  readonly focus: number | null;
   readonly bubble: number | null;
   readonly onPick: (node: RoadNode) => void;
+  readonly end: ReactNode;
+  readonly after: ReactNode;
 }) {
+  const box = useRef<ScrollViewInstance>(null);
   const [width, setWidth] = useState(0);
+  const [roadTop, setRoadTop] = useState<number | null>(null);
+  const [boxHeight, setBoxHeight] = useState(0);
   const reached = nodes.filter((node) => node.level <= progress.level).length;
-  const road = roadGeometry(nodes.length, reached, width);
+  const road = roadGeometry(nodes.length, reached, progress.level > quarter.last, width);
   const open = nodes.findIndex((node) => node.level === bubble);
   // Near the end of the road the bubble opens above its stop, to stay on the leaf.
   const above = open >= nodes.length - 3;
+
+  // Opens once on the level in focus; the chapter's own key gives each chapter its first look.
+  const [first] = useState(nodes.findIndex((node) => node.level === focus));
+  const ready = roadTop !== null && boxHeight > 0;
+  useEffect(() => {
+    if (!ready || roadTop === null || first === -1) return;
+    const y = roadTop + first * ROAD_ROW + ROAD_ROW / 2 - boxHeight * 0.45;
+    box.current?.scrollTo({ y: Math.max(0, y), animated: false });
+  }, [ready, roadTop, boxHeight, first]);
+
+  useEffect(() => {
+    if (roadTop === null || open === -1) return;
+    const y = above
+      ? roadTop + (open + 1) * ROAD_ROW - boxHeight * 0.92
+      : roadTop + open * ROAD_ROW - boxHeight * 0.06;
+    box.current?.scrollTo({ y: Math.max(0, y), animated: true });
+  }, [roadTop, boxHeight, open, above]);
+
   return (
-    <View
-      style={{ height: road.height }}
-      onLayout={(event) => setWidth(event.nativeEvent.layout.width)}
+    <ScrollView
+      ref={box}
+      style={styles.scroll}
+      contentContainerStyle={styles.scrollInside}
+      onLayout={(event) => setBoxHeight(event.nativeEvent.layout.height)}
     >
-      {width > 0 && (
-        <>
-          <Svg width={width} height={road.height} style={StyleSheet.absoluteFill}>
-            <Path
-              d={road.ahead}
-              fill="none"
-              stroke={alpha(toyValues.outline, 0.28)}
-              strokeWidth={8}
-              strokeLinecap="round"
-              strokeDasharray="2 16"
-            />
-            {road.done !== "" && (
-              <>
-                <Path
-                  d={road.done}
-                  fill="none"
-                  stroke={toyValues.outline}
-                  strokeWidth={12}
-                  strokeLinecap="round"
-                  transform="translate(0 3)"
-                />
-                <Path
-                  d={road.done}
-                  fill="none"
-                  stroke={toyMatters.gold.top}
-                  strokeWidth={12}
-                  strokeLinecap="round"
-                />
-              </>
-            )}
-          </Svg>
-          {nodes.map((node, k) => {
-            const stop = road.stops[k];
-            if (stop === undefined) return null;
-            const room = stop.side === "right" ? width - stop.x - 50 : stop.x - 50;
-            return (
-              <View key={node.level} style={[styles.stop, { top: k * ROAD_ROW }]}>
+      <Banner quarter={quarter} />
+      <View
+        style={{ height: road.height }}
+        onLayout={(event) => {
+          setWidth(event.nativeEvent.layout.width);
+          setRoadTop(event.nativeEvent.layout.y);
+        }}
+      >
+        {width > 0 && (
+          <>
+            <Svg width={width} height={road.height} style={StyleSheet.absoluteFill}>
+              <RoadPath d={road.ahead} stroke={alpha(toyValues.outline, 0.22)} width={30} y={6} />
+              <RoadPath d={road.ahead} stroke={toyValues.outline} width={30} />
+              <RoadPath d={road.ahead} stroke={toyMatters.paper.bottom} width={22} />
+              <RoadPath
+                d={road.ahead}
+                stroke={alpha(toyValues.outline, 0.3)}
+                width={3}
+                dash="10 12"
+              />
+              {road.done !== "" && (
+                <>
+                  <RoadPath d={road.done} stroke={toyMatters.gold.bottom} width={22} />
+                  <RoadPath d={road.done} stroke={toyMatters.gold.top} width={12} y={-2} />
+                  <RoadPath d={road.done} stroke={colors.paper} width={5} dash="0 26" />
+                </>
+              )}
+            </Svg>
+            {road.decor.map((item) => {
+              const size = item.small ? 36 : 46;
+              return (
                 <View
-                  style={[
-                    styles.tagWrap,
-                    { maxWidth: room },
-                    stop.side === "right" ? { left: stop.x + 44 } : { right: width - stop.x + 44 },
-                  ]}
+                  key={item.y}
                   pointerEvents="none"
+                  style={[
+                    styles.decor,
+                    {
+                      left: item.x - size / 2,
+                      top: item.y - size / 2,
+                      transform: [{ rotate: item.small ? "7deg" : "-6deg" }],
+                    },
+                  ]}
                 >
+                  <View style={[styles.ground, { width: size * 0.76 }]} />
+                  <ToyIcon name={item.kind} size={size} />
+                </View>
+              );
+            })}
+            {nodes.map((node, k) => {
+              const stop = road.stops[k];
+              if (stop === undefined) return null;
+              const room = stop.side === "right" ? width - stop.x - 42 : stop.x - 42;
+              return (
+                <View key={node.level} style={[styles.stop, { top: k * ROAD_ROW }]}>
+                  {node.milestone && (
+                    <View
+                      pointerEvents="none"
+                      style={[
+                        styles.flag,
+                        stop.side === "right"
+                          ? { left: stop.x - 72, transform: [{ rotate: "-8deg" }] }
+                          : { left: stop.x + 34, transform: [{ rotate: "8deg" }] },
+                      ]}
+                    >
+                      <ToyIcon name="community" size={36} inks={toyIconInks.album} />
+                    </View>
+                  )}
                   <View
                     style={[
-                      styles.tag,
-                      node.milestone && styles.tagMilestone,
-                      node.level === bubble && styles.tagChosen,
+                      styles.tagWrap,
+                      { maxWidth: room },
+                      stop.side === "right"
+                        ? { left: stop.x + 38 }
+                        : { right: width - stop.x + 38 },
                     ]}
+                    pointerEvents="none"
                   >
-                    <RewardToy icon={node.icon} size={24} dim={node.fog} />
-                    <Text
-                      style={[styles.tagText, node.state === "locked" && styles.tagFar]}
-                      numberOfLines={2}
+                    <View
+                      style={[
+                        styles.tag,
+                        node.milestone && styles.tagMilestone,
+                        node.level === bubble && styles.tagChosen,
+                      ]}
                     >
-                      {node.tag}
-                    </Text>
+                      <RewardToy icon={node.icon} size={24} dim={node.fog} />
+                      <Text
+                        style={[styles.tagText, node.state === "locked" && styles.tagFar]}
+                        numberOfLines={2}
+                      >
+                        {node.tag}
+                      </Text>
+                    </View>
                   </View>
+                  <Pressable
+                    onPress={() => onPick(node)}
+                    accessibilityRole="button"
+                    accessibilityLabel={node.label}
+                    accessibilityState={{ expanded: node.level === bubble }}
+                    style={[styles.stopButton, { left: stop.x - STOP_BOX / 2 }]}
+                  >
+                    <StopToken node={node} progress={progress} me={me} />
+                  </Pressable>
                 </View>
-                <Pressable
-                  onPress={() => onPick(node)}
-                  accessibilityRole="button"
-                  accessibilityLabel={node.label}
-                  accessibilityState={{ expanded: node.level === bubble }}
-                  style={[styles.stopButton, { left: stop.x - STOP_BOX / 2 }]}
-                >
-                  <StopToken node={node} progress={progress} />
-                </Pressable>
-              </View>
-            );
-          })}
-          {bubble !== null && open !== -1 && (
-            <View
-              style={[
-                styles.bubble,
-                above
-                  ? { bottom: (nodes.length - open) * ROAD_ROW - 6 }
-                  : { top: (open + 1) * ROAD_ROW - 6 },
-              ]}
-            >
+              );
+            })}
+            <View style={[styles.end, { top: road.end.y - 36 }]}>{end}</View>
+            {bubble !== null && open !== -1 && (
               <View
                 style={[
-                  styles.arrow,
-                  { left: (road.stops[open]?.x ?? width / 2) - 10 },
-                  above ? styles.arrowBelow : styles.arrowAbove,
+                  styles.bubble,
+                  above
+                    ? { bottom: road.height - open * ROAD_ROW - 6 }
+                    : { top: (open + 1) * ROAD_ROW - 6 },
                 ]}
-              />
-              <Detail level={bubble} progress={progress} claimed={claimed} now={now} />
-            </View>
-          )}
-        </>
-      )}
-    </View>
+              >
+                <View
+                  style={[
+                    styles.arrow,
+                    { left: (road.stops[open]?.x ?? width / 2) - 10 },
+                    above ? styles.arrowBelow : styles.arrowAbove,
+                  ]}
+                />
+                <Detail level={bubble} progress={progress} claimed={claimed} now={now} />
+              </View>
+            )}
+          </>
+        )}
+      </View>
+      {after}
+    </ScrollView>
   );
 }
 
-function StopToken({ node, progress }: { readonly node: RoadNode; readonly progress: Progress }) {
+/** One layer of the road: its shadow, its outline, its bed, the line down its middle, its gold. */
+function RoadPath({
+  d,
+  stroke,
+  width,
+  y = 0,
+  dash,
+}: {
+  readonly d: string;
+  readonly stroke: string;
+  readonly width: number;
+  readonly y?: number;
+  readonly dash?: string;
+}) {
+  return (
+    <Path
+      d={d}
+      fill="none"
+      stroke={stroke}
+      strokeWidth={width}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      {...(dash === undefined ? {} : { strokeDasharray: dash })}
+      {...(y === 0 ? {} : { transform: `translate(0 ${y})` })}
+    />
+  );
+}
+
+function StopToken({
+  node,
+  progress,
+  me,
+}: {
+  readonly node: RoadNode;
+  readonly progress: Progress;
+  readonly me: Me;
+}) {
   if (node.level === progress.level) {
+    const size = node.milestone ? 76 : 68;
     return (
       <View style={styles.here}>
-        <LevelMedal level={node.level} size={node.milestone ? 76 : 68} />
+        <LevelMedal level={node.level} size={size} />
+        {/* The player stands on their own level, as a piece on a board. */}
+        <View style={[styles.me, { bottom: size - 14 }]} pointerEvents="none">
+          <Bob>
+            <View style={styles.meDisc}>
+              <Avatar avatar={me.avatar} frame={me.frame} size={26} />
+            </View>
+            <View style={styles.mePoint} />
+          </Bob>
+        </View>
         {node.state === "claimable" && (
           <View style={styles.hereChest}>
             <Hop>
@@ -512,6 +684,38 @@ function StopToken({ node, progress }: { readonly node: RoadNode; readonly progr
         </View>
       )}
     </View>
+  );
+}
+
+/** Where the road leaves the chapter: a sign to the next one, closed until it shows. */
+function ChapterSignpost({
+  name,
+  note,
+  open,
+  onShow,
+}: {
+  readonly name: string;
+  readonly note: string;
+  readonly open: boolean;
+  readonly onShow: () => void;
+}) {
+  return (
+    <Toy
+      matter={open ? "paper" : "locked"}
+      disabled={!open}
+      bodyStyle={styles.signBody}
+      accessibilityRole="button"
+      accessibilityState={{ disabled: !open }}
+      onPress={onShow}
+    >
+      <ToyIcon name={open ? "community" : "lock"} size={28} />
+      <View style={styles.signText}>
+        <Text style={styles.signKicker}>CHAPITRE SUIVANT</Text>
+        <Text style={styles.signName}>{name}</Text>
+        <Text style={styles.signNote}>{note}</Text>
+      </View>
+      {open && <Icon name="chevd" size={18} color={toyValues.outline} />}
+    </Toy>
   );
 }
 
@@ -596,26 +800,26 @@ const styles = StyleSheet.create({
     letterSpacing: 1.6,
     color: ink.pageInkMuted,
   },
-  hero: { gap: space.s7, padding: space.s7 },
-  heroRow: { flexDirection: "row", alignItems: "center", gap: space.s7 },
+  hero: { gap: space.s5, padding: space.s6 },
+  heroRow: { flexDirection: "row", alignItems: "center", gap: space.s6 },
   ring: {
-    width: 88,
-    height: 88,
+    width: RING,
+    height: RING,
     alignItems: "center",
     justifyContent: "center",
-    borderRadius: 44,
+    borderRadius: RING / 2,
     backgroundColor: colors.paper,
     boxShadow: `0 0 0 ${toyValues.outlineWidth}px ${toyValues.outline}, 0 4px 0 ${toyValues.outlineWidth}px ${toyValues.outline}`,
   },
   heroText: { flex: 1, gap: space.s2 },
   heroTitle: {
     fontFamily: fonts.display,
-    fontSize: fontSizes.titleLarge,
-    lineHeight: 30,
+    fontSize: fontSizes.title,
+    lineHeight: 26,
     color: ink.pageInk,
   },
   heroBar: {
-    height: 24,
+    height: 22,
     overflow: "hidden",
     justifyContent: "center",
     borderWidth: toyValues.outlineWidth,
@@ -634,6 +838,20 @@ const styles = StyleSheet.create({
     borderBottomColor: toyMatters.green.bottom,
   },
   heroBarLabel: { alignItems: "center" },
+  heroAction: { height: 50 },
+  heroActionBody: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: space.s4,
+  },
+  heroCount: {
+    minWidth: 28,
+    height: 28,
+    paddingHorizontal: 5,
+    alignItems: "center",
+    justifyContent: "center",
+  },
   heroNext: { flexDirection: "row", alignItems: "center", gap: space.s3 },
   heroNextText: {
     flexShrink: 1,
@@ -673,7 +891,72 @@ const styles = StyleSheet.create({
   },
   comingText: { flex: 1, gap: 2 },
   comingTitle: { fontFamily: fonts.ui.extrabold, fontSize: fontSizes.body, color: ink.pageInk },
-  roadLeaf: { paddingTop: space.s6, paddingHorizontal: space.s4, paddingBottom: space.s9 },
+  roadLeaf: {
+    flex: 1,
+    paddingTop: space.s5,
+    paddingHorizontal: space.s3,
+    paddingBottom: space.s4,
+  },
+  // The road's own box, sunk into the leaf like a board game's tray.
+  tray: {
+    flex: 1,
+    overflow: "hidden",
+    borderWidth: toyValues.outlineWidth,
+    borderColor: toyValues.outline,
+    borderRadius: 20,
+    backgroundColor: alpha(toyValues.outline, 0.09),
+    boxShadow: `inset 0 6px 0 ${alpha(toyValues.outline, 0.14)}, inset 0 0 30px ${alpha(toyValues.outline, 0.14)}`,
+  },
+  scroll: { flex: 1 },
+  scrollInside: { paddingHorizontal: space.s1, paddingBottom: space.s9, gap: space.s4 },
+  decor: { position: "absolute", alignItems: "center" },
+  ground: {
+    position: "absolute",
+    bottom: -4,
+    height: 9,
+    borderRadius: 5,
+    backgroundColor: alpha(toyValues.outline, 0.2),
+  },
+  flag: { position: "absolute", top: ROAD_ROW / 2 - 28 },
+  me: { position: "absolute", alignSelf: "center", alignItems: "center", zIndex: 1 },
+  meDisc: {
+    padding: 2,
+    borderWidth: toyValues.outlineWidth,
+    borderColor: toyValues.outline,
+    borderRadius: 40,
+    backgroundColor: toyMatters.gold.top,
+    boxShadow: `0 3px 0 ${toyValues.outline}`,
+  },
+  mePoint: {
+    alignSelf: "center",
+    width: 11,
+    height: 11,
+    marginTop: -7,
+    borderRightWidth: toyValues.outlineWidth,
+    borderBottomWidth: toyValues.outlineWidth,
+    borderColor: toyValues.outline,
+    backgroundColor: toyMatters.gold.top,
+    transform: [{ rotate: "45deg" }],
+  },
+  end: { position: "absolute", left: 0, right: 0, alignItems: "center" },
+  signBody: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: space.s5,
+    paddingVertical: space.s4,
+    paddingLeft: space.s4,
+    paddingRight: space.s6,
+  },
+  signText: { flexShrink: 1 },
+  signKicker: {
+    fontFamily: fonts.ui.extrabold,
+    fontSize: 10,
+    letterSpacing: 1.4,
+    color: toyValues.outline,
+  },
+  signName: { fontFamily: fonts.display, fontSize: fontSizes.body, color: toyValues.outline },
+  signNote: { fontFamily: fonts.ui.bold, fontSize: fontSizes.small, color: toyValues.outline },
+  tabsBox: { flexGrow: 0 },
   tabs: { gap: space.s4, paddingHorizontal: space.s2, paddingBottom: space.s4 },
   tab: { height: 36 },
   tabBody: {
@@ -683,7 +966,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: space.s6,
   },
   tabText: { fontFamily: fonts.ui.extrabold, fontSize: fontSizes.label, color: toyValues.outline },
-  banner: { alignItems: "center", gap: space.s5, marginTop: space.s5, marginBottom: space.s2 },
+  banner: { alignItems: "center", gap: space.s5, paddingTop: space.s8, paddingBottom: space.s6 },
   ribbonWrap: { paddingHorizontal: 22 },
   ribbon: { paddingHorizontal: space.s12, paddingVertical: space.s3 },
   tail: { position: "absolute", top: 12 },

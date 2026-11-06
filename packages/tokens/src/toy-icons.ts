@@ -212,6 +212,31 @@ export const toyIcons = {
     { d: "M28 24.5L43 5.5", stroke: "outline", strokeWidth: 1.6 },
     light("M13.5 31v9"),
   ],
+  // Along the level road, a reading room's odds and ends.
+  books: [
+    outlined(rect(5, 34, 38, 9, 2.5), "f1"),
+    outlined(rect(9, 25, 31, 9, 2.5), "f2", { rotate: [-5, 24, 29] }),
+    outlined(rect(8, 16, 29, 9, 2.5), "f3", { rotate: [4, 22, 20] }),
+    { d: "M12 38.5h23M14 29.5h20M13 20.5h18", stroke: "sheen", strokeWidth: 1.6 },
+    outlined("M29 16v-7l2.5 2.5L34 9v7", "f1", { strokeWidth: 2 }),
+  ],
+  candle: [
+    outlined(ellipse(24, 41, 15, 4), "f1"),
+    outlined(rect(19, 33, 10, 7, 2), "f1"),
+    outlined(rect(18, 16, 12, 18, 2.5), "f2"),
+    outlined("M30 19c-2 1-2 5-4 5s-1-4-3-5", "f2", { strokeWidth: 2 }),
+    { d: "M24 16v-3", stroke: "outline", strokeWidth: 1.8 },
+    outlined("M24 2c4 4 5.5 7 5.5 9.5a5.5 5.5 0 0 1-11 0C18.5 9 20 6 24 2z", "f3"),
+    light("M21.5 20v10"),
+  ],
+  scroll: [
+    outlined(rect(10, 10, 28, 28), "f1"),
+    outlined(rect(6, 6, 36, 8, 4), "f2"),
+    outlined(rect(6, 34, 36, 8, 4), "f2"),
+    { d: "M15 19h18M15 24h18M15 29h11", stroke: "outline", strokeWidth: 1.6, dash: "3 2.2" },
+    outlined(circle(33, 32, 4.5), "f3"),
+    light("M10 9h20"),
+  ],
   gilded: [
     outlined(gear(24, 26, 19, 16.5, 14), "f1"),
     outlined(circle(24, 26, 12), "f2"),
@@ -246,6 +271,9 @@ export const toyIconInks: Readonly<Record<ToyIconName, ToyInks>> = {
   sketch: { f1: "#FFF6E0", f2: "#E9B44C", f3: "#6B655C" },
   ink: { f1: "#2F3E66", f2: "#FBECCB", f3: "#FFF6E0" },
   gilded: { f1: "#D9A63A", f2: "#F6D47A", f3: "#FFF6E0" },
+  books: { f1: "#922A34", f2: "#34714A", f3: "#344F8F" },
+  candle: { f1: "#D9A63A", f2: "#FFF6E0", f3: "#F6D47A" },
+  scroll: { f1: "#FBECCB", f2: "#C47D3E", f3: "#922A34" },
 };
 
 /** The sachet of the stock, in the blue of the night collection. */

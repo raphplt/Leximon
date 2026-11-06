@@ -1,8 +1,10 @@
 "use client";
 
 import type { Progress } from "@leximon/contract";
+import { toyIconInks } from "@leximon/tokens";
 import {
   levelDetail,
+  nextChapterSign,
   playerTitle,
   type Quarter,
   quarterAt,
@@ -19,7 +21,8 @@ import {
   xpToNextLabel,
 } from "@leximon/view-model";
 import Link from "next/link";
-import { type CSSProperties, useEffect, useState } from "react";
+import { type CSSProperties, type ReactNode, useEffect, useRef, useState } from "react";
+import { Avatar } from "@/components/avatar";
 import { MainAction } from "@/library/play-pieces";
 import desk from "@/play/desk-columns.module.css";
 import { levelRewards } from "@/player/player";
@@ -58,33 +61,35 @@ function firstOf(nodes: readonly RoadNode[], level: number): number {
 /** Each leaf rises in turn when the screen appears, as on Jouer. */
 const rise = (index: number) => ({ "--rise": index }) as CSSProperties;
 
-/** The levels as a road that winds down the page, a chapter of ten at a time. */
+interface Me {
+  readonly avatar: string | null;
+  readonly frame: string | null;
+}
+
+/**
+ * The levels as a road that winds down a chapter of ten. The page holds in the window: the road
+ * scrolls in its own box, which opens on the player's level.
+ */
 export function LevelRoadScreen() {
   const view = usePlayerView();
   const { openCoffret } = useShell();
   const [selected, setSelected] = useState<number | null>(null);
-  // On a phone the detail of a level opens in a bubble under its stop, only when asked.
+  // Below the width of the side column, the detail of a level opens in a bubble under its stop.
   const [bubble, setBubble] = useState<number | null>(null);
   const [shown, setShown] = useState<number | null>(null);
+  const [asked, setAsked] = useState<number | null>(null);
   const { progress, now, claimed } = view;
   const progressFailed = useProgressFailed();
   const rewardsFailed = useSharedFailed(levelRewards);
 
   useEffect(() => {
-    const asked = levelFromHash();
-    if (asked === null) return;
-    setSelected(asked);
-    setBubble(asked);
-    setShown(quarterOfLevel(asked).index);
+    const level = levelFromHash();
+    if (level === null) return;
+    setAsked(level);
+    setSelected(level);
+    setBubble(level);
+    setShown(quarterOfLevel(level).index);
   }, []);
-
-  const ready = progress !== null && claimed !== null && now !== 0;
-  useEffect(() => {
-    if (!ready) return;
-    const asked = levelFromHash();
-    if (asked !== null)
-      document.getElementById(`niveau-${asked}`)?.scrollIntoView({ block: "center" });
-  }, [ready]);
 
   if ((progress === null && progressFailed) || (claimed === null && rewardsFailed)) {
     return (
@@ -112,10 +117,15 @@ export function LevelRoadScreen() {
   const last = own.index + QUARTERS_AHEAD;
   const quarter = quarterAt(Math.min(last, shown ?? own.index));
   const nodes = quarterNodes(quarter, progress.level, claimed, now);
+  // The road opens on the level asked for, else on the player's, else on its first coffret.
+  const focus =
+    [asked, progress.level, nodes.find((node) => node.state === "claimable")?.level].find(
+      (level) => level != null && level >= quarter.first && level <= quarter.last,
+    ) ?? null;
   const chosen =
     selected !== null && selected >= quarter.first && selected <= quarter.last
       ? selected
-      : firstOf(nodes, progress.level);
+      : (focus ?? firstOf(nodes, progress.level));
 
   const pick = (node: RoadNode) => {
     setSelected(node.level);
@@ -130,7 +140,9 @@ export function LevelRoadScreen() {
     setShown(index);
     setSelected(null);
     setBubble(null);
+    setAsked(null);
   };
+  const sign = nextChapterSign(quarter.index, own.index, QUARTERS_AHEAD);
 
   return (
     <main className={styles.page}>
@@ -143,35 +155,42 @@ export function LevelRoadScreen() {
           aria-label={`${quarter.name}, ${quarter.range}`}
         >
           <ChapterTabs own={own} last={last} shown={quarter} onShow={show} />
-          <div className={styles.banner}>
-            <span className={styles.ribbon}>
-              <Lettering>{quarter.name}</Lettering>
-            </span>
-            <span className={styles.range}>
-              {quarter.chapter} · {quarter.range}
-            </span>
-          </div>
           <Road
+            key={quarter.index}
+            quarter={quarter}
             nodes={nodes}
             progress={progress}
             claimed={claimed}
             now={now}
+            me={{ avatar: view.profile?.avatar ?? null, frame: view.profile?.frame ?? null }}
             chosen={chosen}
+            focus={focus}
             bubble={bubble}
             onPick={pick}
             onCoffret={openCoffret}
+            end={
+              <ChapterSignpost
+                name={sign.name}
+                note={sign.note}
+                open={sign.open && quarter.index < last}
+                onShow={() => show(sign.index)}
+              />
+            }
+            after={
+              <div className={styles.unlocksInRoad}>
+                <Unlocks level={progress.level} now={now} />
+              </div>
+            }
           />
         </section>
         <div className={styles.side}>
-          <div className={styles.sideDetail}>
-            <Detail
-              level={chosen}
-              progress={progress}
-              claimed={claimed}
-              now={now}
-              onCoffret={openCoffret}
-            />
-          </div>
+          <Detail
+            level={chosen}
+            progress={progress}
+            claimed={claimed}
+            now={now}
+            onCoffret={openCoffret}
+          />
           <Unlocks level={progress.level} now={now} />
         </div>
       </div>
@@ -238,19 +257,31 @@ function Hero({
       <div className={styles.heroAction}>
         {coffrets > 0 ? (
           <>
-            <span className={styles.hop} aria-hidden="true">
-              <ToyIcon name="chest" size={60} />
+            <span className={styles.heroChest} aria-hidden="true">
+              <span className={styles.hop}>
+                <ToyIcon name="chest" size={60} />
+              </span>
             </span>
-            <MainAction
-              label="Ouvrir un coffret"
-              count={String(coffrets)}
-              onClick={() => openCoffret()}
-            />
+            <span className={styles.heroMain}>
+              <MainAction
+                label="Ouvrir un coffret"
+                count={String(coffrets)}
+                onClick={() => openCoffret()}
+              />
+            </span>
+            {/* On a phone, a smaller button leaves the road its room. */}
+            <Toy matter="gold" className={styles.heroCompact} onClick={() => openCoffret()}>
+              <ToyIcon name="chest" size={30} />
+              <Lettering>Ouvrir un coffret</Lettering>
+              <ToyBody matter="red" shape="round" className={styles.heroCount}>
+                <Lettering>{coffrets}</Lettering>
+              </ToyBody>
+            </Toy>
           </>
         ) : (
           next !== undefined && (
             <div className={styles.coming}>
-              <RewardToy icon={next.icon} size={48} />
+              <RewardToy icon={next.icon} size={44} />
               <span>
                 <span className={desk.leafKicker}>Au niveau {next.level}</span>
                 <strong>{next.opens ?? next.title}</strong>
@@ -297,106 +328,198 @@ function ChapterTabs({
   );
 }
 
+/** Scrolls the road's box so that `y`, measured from its top, sits at `share` of its height. */
+function scrollBoxTo(box: HTMLElement, road: HTMLElement, y: number, share: number) {
+  const top = road.offsetTop + y - box.clientHeight * share;
+  box.scrollTo({ top: Math.max(0, top) });
+}
+
 function Road({
+  quarter,
   nodes,
   progress,
   claimed,
   now,
+  me,
   chosen,
+  focus,
   bubble,
   onPick,
   onCoffret,
+  end,
+  after,
 }: {
+  readonly quarter: Quarter;
   readonly nodes: readonly RoadNode[];
   readonly progress: Progress;
   readonly claimed: readonly number[];
   readonly now: number;
+  readonly me: Me;
   readonly chosen: number;
+  readonly focus: number | null;
   readonly bubble: number | null;
   readonly onPick: (node: RoadNode) => void;
   readonly onCoffret: (level: number) => void;
+  readonly end: ReactNode;
+  readonly after: ReactNode;
 }) {
+  const box = useRef<HTMLDivElement>(null);
+  const roadBox = useRef<HTMLDivElement>(null);
   const reached = nodes.filter((node) => node.level <= progress.level).length;
   // The road is drawn on a width of 100 and stretched; its strokes keep their thickness.
-  const road = roadGeometry(nodes.length, reached, 100);
+  const road = roadGeometry(nodes.length, reached, progress.level > quarter.last, 100);
   const open = nodes.findIndex((node) => node.level === bubble);
   // Near the end of the road the bubble opens above its stop, to stay on the leaf.
   const above = open >= nodes.length - 3;
+  const focusAt = nodes.findIndex((node) => node.level === focus);
+
+  // Opens once on the level in focus; the chapter's own key gives each chapter its first look.
+  const [first] = useState(focusAt);
+  useEffect(() => {
+    if (box.current === null || roadBox.current === null || first === -1) return;
+    scrollBoxTo(box.current, roadBox.current, first * ROAD_ROW + ROAD_ROW / 2, 0.45);
+  }, [first]);
+
+  useEffect(() => {
+    if (box.current === null || roadBox.current === null || open === -1) return;
+    const y = above ? (open + 1) * ROAD_ROW : open * ROAD_ROW;
+    scrollBoxTo(box.current, roadBox.current, y, above ? 0.92 : 0.06);
+  }, [open, above]);
+
   return (
-    <div className={styles.road} style={{ height: road.height }}>
-      <svg
-        className={styles.path}
-        viewBox={`0 0 100 ${road.height}`}
-        preserveAspectRatio="none"
-        aria-hidden="true"
-      >
-        <path d={road.ahead} className={styles.pathAhead} />
-        {road.done !== "" && <path d={road.done} className={styles.pathDone} />}
-      </svg>
-      <ol className={styles.stops}>
-        {nodes.map((node, k) => {
-          const stop = road.stops[k];
-          if (stop === undefined) return null;
-          const here = node.level === progress.level;
-          return (
-            <li
-              key={node.level}
-              id={`niveau-${node.level}`}
-              className={styles.stop}
-              data-state={here && node.state !== "claimable" ? "here" : node.state}
-              data-milestone={node.milestone || undefined}
-              data-side={stop.side}
-              style={{ "--x": `${stop.x}%`, top: k * ROAD_ROW } as CSSProperties}
-            >
-              <button
-                type="button"
-                className={styles.stopButton}
-                aria-label={node.label}
-                aria-pressed={node.level === chosen}
-                aria-expanded={node.level === bubble}
-                onClick={() => onPick(node)}
-              >
-                <StopToken node={node} progress={progress} />
-              </button>
-              <span className={styles.tag} data-chosen={node.level === chosen || undefined}>
-                <RewardToy icon={node.icon} size={26} dim={node.fog} />
-                <span>{node.tag}</span>
-              </span>
-            </li>
-          );
-        })}
-      </ol>
-      {bubble !== null && open !== -1 && (
-        <div
-          className={styles.bubble}
-          data-above={above || undefined}
-          style={
-            {
-              "--x": `${road.stops[open]?.x ?? 50}%`,
-              [above ? "bottom" : "top"]: above
-                ? (nodes.length - open) * ROAD_ROW - 6
-                : (open + 1) * ROAD_ROW - 6,
-            } as CSSProperties
-          }
+    <div className={styles.scroll} ref={box}>
+      <div className={styles.banner}>
+        <span className={styles.ribbon}>
+          <Lettering>{quarter.name}</Lettering>
+        </span>
+        <span className={styles.range}>
+          {quarter.chapter} · {quarter.range}
+        </span>
+      </div>
+      <div className={styles.road} style={{ height: road.height }} ref={roadBox}>
+        <svg
+          className={styles.path}
+          viewBox={`0 0 100 ${road.height}`}
+          preserveAspectRatio="none"
+          aria-hidden="true"
         >
-          <Detail
-            level={bubble}
-            progress={progress}
-            claimed={claimed}
-            now={now}
-            onCoffret={onCoffret}
-          />
+          <path d={road.ahead} className={styles.pathShadow} transform="translate(0 6)" />
+          <path d={road.ahead} className={styles.pathEdge} />
+          <path d={road.ahead} className={styles.pathBed} />
+          <path d={road.ahead} className={styles.pathMarks} />
+          {road.done !== "" && (
+            <>
+              <path d={road.done} className={styles.pathGold} />
+              <path d={road.done} className={styles.pathGlint} transform="translate(0 -2)" />
+              <path d={road.done} className={styles.pathStuds} />
+            </>
+          )}
+        </svg>
+        {road.decor.map((item) => (
+          <span
+            key={item.y}
+            className={styles.decor}
+            data-small={item.small || undefined}
+            style={{ left: `${item.x}%`, top: item.y }}
+            aria-hidden="true"
+          >
+            <ToyIcon name={item.kind} size={item.small ? 40 : 50} />
+          </span>
+        ))}
+        <ol className={styles.stops}>
+          {nodes.map((node, k) => {
+            const stop = road.stops[k];
+            if (stop === undefined) return null;
+            const here = node.level === progress.level;
+            return (
+              <li
+                key={node.level}
+                id={`niveau-${node.level}`}
+                className={styles.stop}
+                data-state={here && node.state !== "claimable" ? "here" : node.state}
+                data-milestone={node.milestone || undefined}
+                data-side={stop.side}
+                style={{ "--x": `${stop.x}%`, top: k * ROAD_ROW } as CSSProperties}
+              >
+                {node.milestone && (
+                  <span className={styles.flag} aria-hidden="true">
+                    <ToyIcon name="community" size={40} inks={toyIconInks.album} />
+                  </span>
+                )}
+                <button
+                  type="button"
+                  className={styles.stopButton}
+                  aria-label={node.label}
+                  aria-pressed={node.level === chosen}
+                  aria-expanded={node.level === bubble}
+                  onClick={() => onPick(node)}
+                >
+                  <StopToken node={node} progress={progress} me={me} />
+                </button>
+                <span className={styles.tag} data-chosen={node.level === chosen || undefined}>
+                  <RewardToy icon={node.icon} size={26} dim={node.fog} />
+                  <span>{node.tag}</span>
+                </span>
+              </li>
+            );
+          })}
+        </ol>
+        <div
+          className={styles.end}
+          style={{ left: `${road.end.x}%`, top: road.end.y } as CSSProperties}
+        >
+          {end}
         </div>
-      )}
+        {bubble !== null && open !== -1 && (
+          <div
+            className={styles.bubble}
+            data-above={above || undefined}
+            style={
+              {
+                "--x": `${road.stops[open]?.x ?? 50}%`,
+                [above ? "bottom" : "top"]: above
+                  ? road.height - open * ROAD_ROW - 6
+                  : (open + 1) * ROAD_ROW - 6,
+              } as CSSProperties
+            }
+          >
+            <Detail
+              level={bubble}
+              progress={progress}
+              claimed={claimed}
+              now={now}
+              onCoffret={onCoffret}
+            />
+          </div>
+        )}
+      </div>
+      {after}
     </div>
   );
 }
 
-function StopToken({ node, progress }: { readonly node: RoadNode; readonly progress: Progress }) {
+function StopToken({
+  node,
+  progress,
+  me,
+}: {
+  readonly node: RoadNode;
+  readonly progress: Progress;
+  readonly me: Me;
+}) {
   if (node.level === progress.level) {
     return (
       <span className={styles.here}>
+        <span className={styles.sparkles} aria-hidden="true">
+          <i />
+          <i />
+          <i />
+        </span>
         <LevelMedal level={node.level} size={node.milestone ? 78 : 70} />
+        {/* The player stands on their own level, as a piece on a board. */}
+        <span className={styles.me}>
+          <Avatar avatar={me.avatar} frame={me.frame} size={30} />
+        </span>
         {node.state === "claimable" && (
           <span className={`${styles.hereChest} ${styles.hop}`}>
             <ToyIcon name="chest" size={34} />
@@ -434,6 +557,36 @@ function StopToken({ node, progress }: { readonly node: RoadNode; readonly progr
         />
       )}
     </ToyBody>
+  );
+}
+
+/** Where the road leaves the chapter: a sign to the next one, closed until it shows. */
+function ChapterSignpost({
+  name,
+  note,
+  open,
+  onShow,
+}: {
+  readonly name: string;
+  readonly note: string;
+  readonly open: boolean;
+  readonly onShow: () => void;
+}) {
+  return (
+    <Toy
+      matter={open ? "paper" : "locked"}
+      className={styles.sign}
+      disabled={!open}
+      onClick={onShow}
+    >
+      <ToyIcon name={open ? "community" : "lock"} size={30} />
+      <span className={styles.signText}>
+        <span className={styles.signKicker}>Chapitre suivant</span>
+        <strong>{name}</strong>
+        <span className={styles.signNote}>{note}</span>
+      </span>
+      {open && <Icon name="chevd" size={18} />}
+    </Toy>
   );
 }
 
@@ -495,7 +648,7 @@ function Unlocks({ level, now }: { readonly level: number; readonly now: number 
   const ahead = unlocksAhead(level, now);
   if (ahead.length === 0) return null;
   return (
-    <section className={`${ui.leaf} ${styles.unlocks} ${desk.rising}`} style={rise(2)}>
+    <section className={`${ui.leaf} ${styles.unlocks}`}>
       <span className={desk.leafKicker}>À débloquer</span>
       <ul className={styles.unlockList}>
         {ahead.map((unlock) => (
