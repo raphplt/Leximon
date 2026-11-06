@@ -252,19 +252,35 @@ export function AlbumScreen() {
             <strong>{view.headline.owned}</strong> mots sur {view.headline.total}
           </p>
         </div>
-        <label className={styles.search}>
-          <span className={styles.searchIcon}>
-            <Icon name="search" size={18} />
-          </span>
-          <span className={styles.hidden}>Chercher un mot</span>
-          <input
-            className={styles.input}
-            type="search"
-            placeholder="Chercher un mot"
-            value={state.search}
-            onChange={(event) => setState((s) => ({ ...s, search: event.target.value }))}
-          />
-        </label>
+        <div className={styles.tools}>
+          <div className={styles.ecus}>
+            <RecycleButton small />
+            <Button
+              variant="secondary"
+              small
+              onClick={() =>
+                openMissingWord(
+                  state.collectionId === ALL_COLLECTIONS ? undefined : state.collectionId,
+                )
+              }
+            >
+              {MISSING_WORD_OPEN}
+            </Button>
+          </div>
+          <label className={styles.search}>
+            <span className={styles.searchIcon}>
+              <Icon name="search" size={18} />
+            </span>
+            <span className={styles.hidden}>Chercher un mot</span>
+            <input
+              className={styles.input}
+              type="search"
+              placeholder="Chercher un mot"
+              value={state.search}
+              onChange={(event) => setState((s) => ({ ...s, search: event.target.value }))}
+            />
+          </label>
+        </div>
       </header>
 
       <div className={styles.desk}>
@@ -409,21 +425,6 @@ export function AlbumScreen() {
                 <SortPicker sort={sort} onPick={pickSort} />
               </div>
             )}
-
-            <div className={styles.ecus}>
-              <RecycleButton small />
-              <Button
-                variant="secondary"
-                small
-                onClick={() =>
-                  openMissingWord(
-                    state.collectionId === ALL_COLLECTIONS ? undefined : state.collectionId,
-                  )
-                }
-              >
-                {MISSING_WORD_OPEN}
-              </Button>
-            </div>
 
             {practiceCards !== null && (
               <div className={styles.revise}>

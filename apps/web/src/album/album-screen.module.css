@@ -44,6 +44,21 @@
   color: var(--lx-color-page-ink);
 }
 
+/* Recycling and the missing word act on the whole album, so they sit by the search, above the filters. */
+.tools {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--lx-s5);
+}
+
+.ecus {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--lx-s3);
+}
+
 .search {
   position: relative;
   display: block;
@@ -565,14 +580,6 @@
   margin: var(--lx-s6) 0 0;
 }
 
-/* Recycling and the missing word: what the duplicates of the album are good for. */
-.ecus {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--lx-s3);
-  margin: var(--lx-s6) 0 0;
-}
-
 .empty {
   margin: var(--lx-s20) 0;
   font-family: var(--font-text), Georgia, serif;
@@ -602,6 +609,29 @@
 
   .title {
     font-size: var(--lx-size-heading-large);
+  }
+
+  .tools {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  /* On a phone the search comes first, the actions under it on one row that scrolls sideways. */
+  .ecus {
+    order: 1;
+    flex-wrap: nowrap;
+    max-width: 100%;
+    padding-bottom: var(--lx-s2);
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .ecus::-webkit-scrollbar {
+    display: none;
+  }
+
+  .ecus > * {
+    flex-shrink: 0;
   }
 
   .search {
