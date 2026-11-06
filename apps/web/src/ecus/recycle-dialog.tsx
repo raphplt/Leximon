@@ -3,6 +3,7 @@
 import { RARITY_LABELS } from "@leximon/contract";
 import { cssFill, rarityStyles } from "@leximon/tokens";
 import {
+  allPicks,
   clearedPicks,
   ecuRules,
   extraPicks,
@@ -13,6 +14,7 @@ import {
   RECYCLE_CONFIRM_ACTION,
   RECYCLE_FAILED,
   RECYCLE_NONE_PICKED,
+  RECYCLE_PICK_ALL,
   RECYCLE_PICK_EXTRA,
   RECYCLE_PICK_EXTRA_HELP,
   RECYCLE_PICK_RULE,
@@ -56,7 +58,7 @@ export function RecycleDialog({
   readonly onClose: () => void;
 }) {
   return (
-    <Dialog open={open} title={RECYCLE_TITLE} onClose={onClose}>
+    <Dialog open={open} title={RECYCLE_TITLE} onClose={onClose} variant="center">
       {open && <RecycleChoice onClose={onClose} />}
     </Dialog>
   );
@@ -180,22 +182,33 @@ function RecycleChoice({ onClose }: { readonly onClose: () => void }) {
       )}
 
       <div className={styles.tools}>
-        <span className={styles.count}>{view.count}</span>
-        <button
-          type="button"
-          className={`${ui.chip} ${styles.chip}`}
-          onClick={() => pick(extraPicks(rules, picks, view.rows))}
-        >
-          {RECYCLE_PICK_EXTRA}
-        </button>
-        <HelpTip label={`${RECYCLE_PICK_EXTRA}, la règle`}>{RECYCLE_PICK_EXTRA_HELP}</HelpTip>
-        <button
-          type="button"
-          className={`${ui.ghost} ${styles.clear}`}
-          onClick={() => pick(clearedPicks(picks, view.rows))}
-        >
-          {RECYCLE_CLEAR}
-        </button>
+        <div className={styles.countRow}>
+          <span className={styles.count}>{view.count}</span>
+          <button
+            type="button"
+            className={ui.ghost}
+            onClick={() => pick(clearedPicks(picks, view.rows))}
+          >
+            {RECYCLE_CLEAR}
+          </button>
+        </div>
+        <div className={styles.chips}>
+          <button
+            type="button"
+            className={`${ui.chip} ${styles.chip}`}
+            onClick={() => pick(allPicks(picks, view.rows))}
+          >
+            {RECYCLE_PICK_ALL}
+          </button>
+          <button
+            type="button"
+            className={`${ui.chip} ${styles.chip}`}
+            onClick={() => pick(extraPicks(rules, picks, view.rows))}
+          >
+            {RECYCLE_PICK_EXTRA}
+          </button>
+          <HelpTip label={`${RECYCLE_PICK_EXTRA}, la règle`}>{RECYCLE_PICK_EXTRA_HELP}</HelpTip>
+        </div>
       </div>
 
       {view.empty !== null ? (
@@ -271,6 +284,7 @@ function Row({
         <span className={styles.word}>
           <strong>{row.word}</strong>
           <span className={styles.owned}>{row.owned}</span>
+          {on && <span className={styles.ownedGain}>{row.gain}</span>}
         </span>
       </button>
       <span className={styles.stepper}>

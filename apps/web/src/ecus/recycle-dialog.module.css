@@ -69,21 +69,25 @@
 }
 
 .tools {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
+  display: grid;
   gap: var(--lx-s3);
   padding-top: var(--lx-s3);
   border-top: 1px solid var(--lx-color-rule);
 }
 
+.countRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--lx-s3);
+}
+
 .count {
-  flex: 1 1 100%;
   font-weight: 800;
 }
 
-.clear {
-  margin-left: auto;
+.tools .chips {
+  align-items: center;
 }
 
 .empty {
@@ -222,10 +226,10 @@
 /* The action stays in reach at the bottom of the window while the list scrolls under it. */
 .footer {
   position: sticky;
-  bottom: -30px;
+  bottom: -26px;
   display: grid;
   gap: var(--lx-s3);
-  margin: 0 -26px -30px;
+  margin: 0 -26px -26px;
   padding: var(--lx-s5) 26px var(--lx-s8);
   border-top: 1px solid var(--lx-color-rule);
   background:
@@ -247,12 +251,35 @@
   white-space: nowrap;
 }
 
-@media (max-width: 420px) {
+.owned,
+.ownedGain {
+  white-space: nowrap;
+}
+
+.ownedGain {
+  display: none;
+  color: var(--lx-color-success);
+  font-size: var(--lx-size-small);
+  font-weight: 800;
+}
+
+/* Phones: what the picked copies bring takes the place of the count of copies, under the word. */
+@media (max-width: 520px) {
   .gain {
-    min-width: 0;
+    display: none;
   }
 
-  .gain:not([data-on]) {
+  .chip {
+    min-height: 30px;
+    padding: 0 9px;
+    font-size: var(--lx-size-small);
+  }
+
+  .row[data-on] .owned {
     display: none;
+  }
+
+  .row[data-on] .ownedGain {
+    display: inline;
   }
 }

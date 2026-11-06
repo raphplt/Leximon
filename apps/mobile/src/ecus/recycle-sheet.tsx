@@ -1,6 +1,7 @@
 import { RARITY_LABELS } from "@leximon/contract";
 import { toyMatters, toy as toyValues } from "@leximon/tokens";
 import {
+  allPicks,
   clearedPicks,
   ecuRules,
   extraPicks,
@@ -11,6 +12,7 @@ import {
   RECYCLE_CONFIRM_ACTION,
   RECYCLE_FAILED,
   RECYCLE_NONE_PICKED,
+  RECYCLE_PICK_ALL,
   RECYCLE_PICK_EXTRA,
   RECYCLE_PICK_EXTRA_HELP,
   RECYCLE_PICK_RULE,
@@ -194,8 +196,18 @@ export function RecycleHost() {
           </View>
 
           <View style={styles.tools}>
-            <Text style={styles.count}>{view.count}</Text>
-            <View style={styles.toolRow}>
+            <View style={styles.countRow}>
+              <Text style={styles.count}>{view.count}</Text>
+              <Pressable
+                onPress={() => pick(clearedPicks(picks, view.rows))}
+                hitSlop={8}
+                accessibilityRole="button"
+              >
+                <Text style={styles.clearText}>{RECYCLE_CLEAR}</Text>
+              </Pressable>
+            </View>
+            <ChipRow label="Cocher">
+              <Chip label={RECYCLE_PICK_ALL} onPress={() => pick(allPicks(picks, view.rows))} />
               <Chip
                 label={RECYCLE_PICK_EXTRA}
                 onPress={() => pick(extraPicks(rules, picks, view.rows))}
@@ -210,15 +222,7 @@ export function RecycleHost() {
               >
                 <Icon name="help" size={20} color={ink.pageInkMuted} />
               </Pressable>
-              <Pressable
-                onPress={() => pick(clearedPicks(picks, view.rows))}
-                hitSlop={8}
-                style={styles.clear}
-                accessibilityRole="button"
-              >
-                <Text style={styles.clearText}>{RECYCLE_CLEAR}</Text>
-              </Pressable>
-            </View>
+            </ChipRow>
             {helping && <Text style={styles.help}>{RECYCLE_PICK_EXTRA_HELP}</Text>}
           </View>
 
@@ -327,7 +331,7 @@ const styles = StyleSheet.create({
     color: ink.pageInkMuted,
   },
   filters: { gap: space.s4 },
-  chips: { flexDirection: "row", gap: space.s3 },
+  chips: { flexDirection: "row", alignItems: "center", gap: space.s3 },
   gemChip: {
     minHeight: 36,
     paddingHorizontal: space.s4,
@@ -348,7 +352,6 @@ const styles = StyleSheet.create({
     borderTopColor: ink.rule,
   },
   count: { fontFamily: fonts.ui.extrabold, fontSize: fontSizes.label, color: ink.pageInk },
-  toolRow: { flexDirection: "row", alignItems: "center", gap: space.s3 },
   round: {
     width: 30,
     height: 30,
@@ -357,7 +360,7 @@ const styles = StyleSheet.create({
     borderRadius: 15,
   },
   roundOn: { backgroundColor: alpha(toyValues.outline, 0.1) },
-  clear: { marginLeft: "auto" },
+  countRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
   clearText: { fontFamily: fonts.ui.bold, fontSize: fontSizes.label, color: ink.rubric },
   help: {
     padding: space.s5,

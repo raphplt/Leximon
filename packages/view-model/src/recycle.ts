@@ -18,6 +18,8 @@ export const RECYCLE_PICK_EXTRA = "Les doubles en trop";
 export const RECYCLE_PICK_EXTRA_HELP =
   "Coche, parmi les cartes affichées, ce qui dépasse la carte et un double, sans les Épiques ni les Légendaires.";
 export const RECYCLE_CLEAR = "Tout décocher";
+/** Picks, among the cards shown, every double: one copy of each card stays. */
+export const RECYCLE_PICK_ALL = "Tout cocher";
 export const RECYCLE_NONE_PICKED = "Choisis des doubles";
 export const RECYCLE_CONFIRM_ACTION = "Oui, recycler";
 export const RECYCLE_REVIEW = "Revoir mon choix";
@@ -224,6 +226,16 @@ export function extraPicks(
     if (row.precious || row.quantity <= rules.copiesKept) continue;
     next.set(row.cardId, row.quantity - rules.copiesKept);
   }
+  return next;
+}
+
+/**
+ * « Tout cocher »: among the rows shown, every copy but the last, whatever the rarity; the
+ * Épiques and Légendaires among them are asked about once more before they go.
+ */
+export function allPicks(picks: RecyclePicks, rows: readonly RecycleRow[]): RecyclePicks {
+  const next = new Map(picks);
+  for (const row of rows) next.set(row.cardId, row.max);
   return next;
 }
 

@@ -3,6 +3,7 @@ import type { Rarity } from "@leximon/core";
 import { describe, expect, it } from "vitest";
 import { ecuRules } from "./ecus";
 import {
+  allPicks,
   clearedPicks,
   extraPicks,
   RECYCLE_START,
@@ -137,6 +138,15 @@ describe("picking", () => {
     if (full === undefined) throw new Error("zinzin");
     expect(steppedPick(new Map([["zinzin", 1]]), full, 1).get("zinzin")).toBe(1);
     expect(steppedPick(new Map([["zinzin", 1]]), full, -1).has("zinzin")).toBe(false);
+  });
+
+  it("picks every double of the rows shown, one copy of each card kept", () => {
+    expect([...allPicks(new Map(), rows)]).toEqual([
+      ["grigou", 4],
+      ["bélître", 2],
+      ["aragne", 1],
+      ["zinzin", 1],
+    ]);
   });
 
   it("picks the doubles in excess of the rows shown, never the rarest", () => {
