@@ -57,6 +57,7 @@ Les sources téléchargées vivent dans `content/pipeline/data/` (ignoré par gi
 | `docs/cahiers-des-charges/` | Spécifications fonctionnelles d'un chantier, avant sa réalisation                 | Oui                           |
 | `docs/recette-web.md`       | Recette du web : chaque test, ce qu'on doit voir, les retours du propriétaire     | Oui                           |
 | `docs/recette-mobile.md`    | Recette de l'app Android : ce qui est propre au téléphone, renvoie au web         | Oui                           |
+| `docs/recette-finitions.md` | Recette des finitions hors du jeu (accueil, icônes, e-mails, cadres, stores)      | Oui                           |
 | `docs/retours-joueurs.md`   | Retours des joueurs de la bêta (Reddit…) et ce qu'on en fait                      | Oui                           |
 | `docs/fiches-stores.md`     | Fiches Google Play et App Store : textes, classification, données collectées      | Oui                           |
 | `docs/ornements.md`         | Ornements anciens de l'interface : source et licence de chacun (fichier généré)   | Oui                           |
