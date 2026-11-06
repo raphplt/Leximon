@@ -11,6 +11,7 @@ import {
   answerTitle,
   bonusLines,
   CATCH_UP_HINT,
+  CHOICE_SHORTCUTS,
   choiceIndexOfKey,
   clanAnswers,
   clanShareLine,
@@ -20,7 +21,8 @@ import {
   freeAnswerOutcome,
   frequencyLine,
   hideWordIn,
-  KEYBOARD_HINT,
+  KEYBOARD_HELP,
+  type KeyShortcut,
   levelUpLabel,
   levelUpLine,
   MEET_ACTION,
@@ -48,7 +50,7 @@ import {
   sessionXpLine,
   spellingLine,
   streakLine,
-  TYPED_KEYBOARD_HINT,
+  TYPED_SHORTCUTS,
   typedQuestionHint,
   withCatchUp,
 } from "@leximon/view-model";
@@ -71,6 +73,7 @@ import { useShared } from "@/player/resource";
 import { publishProgress } from "@/progress/use-progress";
 import { useShell } from "@/shell/shell-context";
 import { Button, ButtonLink, RoundButton } from "@/ui/button";
+import { HelpTip } from "@/ui/help-tip";
 import { Icon } from "@/ui/icon";
 import { ParticleStage, useOptionalStage } from "@/ui/stage";
 import { useToast } from "@/ui/toast";
@@ -665,9 +668,33 @@ function Asked({
         )}
       </div>
       {!pairs && (
-        <p className={styles.keys}>{"choices" in question ? KEYBOARD_HINT : TYPED_KEYBOARD_HINT}</p>
+        <div className={styles.keys}>
+          <Shortcuts list={"choices" in question ? CHOICE_SHORTCUTS : TYPED_SHORTCUTS} />
+        </div>
       )}
     </>
+  );
+}
+
+/** The keys of a challenge, behind a small keyboard: never in the way of the question. */
+function Shortcuts({ list }: { readonly list: readonly KeyShortcut[] }) {
+  return (
+    <HelpTip label={KEYBOARD_HELP} title={KEYBOARD_HELP} icon="clavier" align="center" above>
+      <span className={styles.shortcuts}>
+        {list.map((shortcut) => (
+          <span key={shortcut.action} className={styles.shortcut}>
+            <span className={styles.keycaps}>
+              {shortcut.keys.map((key) => (
+                <kbd key={key} className={styles.keycap}>
+                  {key}
+                </kbd>
+              ))}
+            </span>
+            {shortcut.action}
+          </span>
+        ))}
+      </span>
+    </HelpTip>
   );
 }
 

@@ -370,7 +370,7 @@ Les retours qui demandent un changement s'écrivent ici, datés, avec ce qu'on e
 
 ### 2026-11-06 · Retours sur les écrans du jeu
 
-Chaque retour vaut pour le web (téléphone et grand écran) et pour l'app, sauf ceux qui tiennent à la souris ou au clavier. La colonne **Lot** dit quand il est traité ; une case cochée veut dire livré.
+Chaque retour vaut pour le web (téléphone et grand écran) et pour l'app, sauf ceux qui tiennent à la souris ou au clavier. La colonne **Lot** dit quand il est traité ; une coche (✓) veut dire livré, à revoir dans la recette.
 
 **En général.** Il y a trop de texte, et surtout trop de phrases complètes : les joueurs ne liront pas tout. Une phrase reste quand elle est nécessaire pour comprendre ; sinon, un libellé court, un chiffre, une icône ou un visuel. La règle est écrite dans [voix.md](voix.md#moins-de-phrases-sur-les-écrans-de-jeu) depuis le 2026-11-06.
 
@@ -388,25 +388,25 @@ Chaque retour vaut pour le web (téléphone et grand écran) et pour l'app, sauf
 |---|---|---|---|
 | R-01 | Semaine de bienvenue | Le cuir vert de la fenêtre fait doublon avec le fond : autre texture, autre couleur (une texture neuve si besoin). | 3 |
 | R-02 | Semaine de bienvenue, récompense | L'encart « Demain, le jour 2… t'offre un sachet garni » rend mal et ne fait pas jeu. | 2 |
-| R-03 | Missions du jour | Retirer « Chaque mission rapporte 30 XP… » ; l'aide passe dans un bouton « ? » discret qui ouvre une bulle. | 1 |
-| R-04 | Missions du jour | « Changer » plus discret, et une confirmation qui dit ce que fait le changement et qu'il n'y en a qu'un par jour. | 1 |
-| R-05 | Missions du jour | Le titre d'une mission passe sur deux lignes à côté de son compteur. | 1 |
+| R-03 | Missions du jour | Retirer « Chaque mission rapporte 30 XP… » ; l'aide passe dans un bouton « ? » discret qui ouvre une bulle. | 1 ✓ |
+| R-04 | Missions du jour | « Changer » plus discret, et une confirmation qui dit ce que fait le changement et qu'il n'y en a qu'un par jour. | 1 ✓ |
+| R-05 | Missions du jour | Le titre d'une mission passe sur deux lignes à côté de son compteur. | 1 ✓ |
 | R-06 | Fenêtre des écus | Illisible : un tableau visuel, chaque rareté avec son icône, une flèche et les écus gagnés. Montrer clairement à quoi servent les écus (le mot manquant). | 3 |
 | R-07 | Fin d'un sachet | Faire respirer en hauteur : les trois boutons sont trop collés, « 25 / 539 (+5) » trop discret, « Ouvre une carte pour la lire. » sans doute de trop. | 2 |
 | R-08 | Fin d'un sachet | La montée de niveau est moche et mal placée : un encart de gain enluminé (R-15), et moins de texte. | 2 |
 | R-09 | Fenêtre « Tes sachets » | Mauvaise UX, désagréable à regarder : à refaire en visuel. | 3 |
-| R-10 | Jouer, progression | « Au niveau 7, tu gagnes un sachet bonus » ne doit pas être une phrase complète. Le rond du sachet est ovale. | 1 |
-| R-11 | Jouer, progression | L'icône du bouton « Ouvrir 1 coffret » est blanche sur jaune : invisible. | 1 |
-| R-12 | Défis | L'aide du clavier (« 1 à 4 pour répondre… ») ne reste pas affichée tout le temps. | 1 |
-| R-13 | Défis | Un effet au survol, même léger, sur les boutons de réponse. | 1 |
+| R-10 | Jouer, progression | « Au niveau 7, tu gagnes un sachet bonus » ne doit pas être une phrase complète. Le rond du sachet est ovale. | 1 ✓ |
+| R-11 | Jouer, progression | L'icône du bouton « Ouvrir 1 coffret » est blanche sur jaune : invisible. | 1 ✓ |
+| R-12 | Défis | L'aide du clavier (« 1 à 4 pour répondre… ») ne reste pas affichée tout le temps. | 1 ✓ |
+| R-13 | Défis | Un effet au survol, même léger, sur les boutons de réponse. | 1 ✓ |
 | R-14 | Fin de révision | Les informations arrivent une à une par une animation courte. L'écran est trop étroit : plus large. | 2 |
 | R-15 | Gains, partout | « 1 sachet bonus gagné, rangé dans ta réserve. » ressort mal : une bordure d'enluminure et un fond texturé de couleur propre, repris pour tous les affichages de gains. | 2 |
 | R-16 | Niveaux de maîtrise | Une icône dessinée avec soin pour chaque niveau (Esquisse…), sur la fin de révision et dans l'album partout où le niveau d'une carte se voit. | 2 |
-| R-17 | Fin de révision | « +7 pour le clan » est à peine visible (couleur). | 1 |
+| R-17 | Fin de révision | « +7 pour le clan » est à peine visible (couleur). | 1 ✓ |
 | R-18 | Fin de révision | « Retour aux défis » plus visible, peut-être sans « Ouvrir un sachet ». | 2 |
-| R-19 | Échanges, vide | Tout est trop collé : plus d'espace vertical. | 1 |
-| R-20 | Échanges | Le panneau de « Reçues » est plus large que ceux d'« Envoyées » et « Nouvelle offre » : même largeur pour les trois. | 1 |
-| R-21 | Clan, bandeau | Retirer « TON CLAN ». Sous le nom, la devise seule, un peu plus grande et plus détachée du nom. Le nombre de membres et l'entrée (libre ou non) passent à droite, au-dessus d'« Inviter » et des réglages, chacun avec son icône. | 1 |
+| R-19 | Échanges, vide | Tout est trop collé : plus d'espace vertical. | 1 ✓ |
+| R-20 | Échanges | Le panneau de « Reçues » est plus large que ceux d'« Envoyées » et « Nouvelle offre » : même largeur pour les trois. | 1 ✓ |
+| R-21 | Clan, bandeau | Retirer « TON CLAN ». Sous le nom, la devise seule, un peu plus grande et plus détachée du nom. Le nombre de membres et l'entrée (libre ou non) passent à droite, au-dessus d'« Inviter » et des réglages, chacun avec son icône. | 1 ✓ |
 | R-22 | Clan, objectif de la semaine | Incompréhensible pour un nouveau joueur (« 14 / 15 · 7 à toi », « À l'argent, un sachet bonus », « Encore 8 bonnes réponses… ») et expliqué nulle part : UX, UI et game design à reprendre. | 5 |
 | R-23 | Clan, bibliothèque | Pouvoir l'ouvrir et voir le détail des cartes du clan, comme un album commun. | 5 |
 | R-24 | Clan, membres | Une fenêtre avec la liste complète des membres, triable et filtrable. | 5 |

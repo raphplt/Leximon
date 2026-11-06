@@ -4,22 +4,27 @@ import type { MissionsResponse } from "@leximon/contract";
 import {
   changeMissionRefusalMessage,
   MISSION_CHANGE,
-  MISSION_CHANGE_BUSY,
   MISSION_CHANGE_FAILED,
+  MISSION_CHANGE_KEEP,
+  MISSION_CHANGE_LABEL,
+  MISSION_CHANGE_TITLE,
   MISSIONS_CLAIM_BUSY,
   MISSIONS_CLAIM_FAILED,
   MISSIONS_FAILED,
+  MISSIONS_HELP_CHANGE,
+  MISSIONS_HELP_OPEN,
+  MISSIONS_HELP_TITLE,
   MISSIONS_TITLE,
   type MissionLine,
   type MissionPlace,
+  missionChangeConfirm,
   missionLine,
-  missionsChangeLine,
   missionsClaimAction,
   missionsClaimedToast,
   missionsDoneLine,
   missionsHeadline,
+  missionsHelp,
   missionsLockedLine,
-  missionsRule,
 } from "@leximon/view-model";
 import Link from "next/link";
 import { type CSSProperties, useEffect, useState } from "react";
@@ -30,6 +35,7 @@ import { missions } from "@/player/player";
 import { useShared, useSharedFailed } from "@/player/resource";
 import { Button } from "@/ui/button";
 import { Dialog } from "@/ui/dialog";
+import { HelpTip } from "@/ui/help-tip";
 import { Icon } from "@/ui/icon";
 import { useToast } from "@/ui/toast";
 import { ToyBody, ToyIcon } from "@/ui/toy";
@@ -65,6 +71,7 @@ export function MissionsCard({
   const catalog = useCatalog();
   const toast = useToast();
   const [busy, setBusy] = useState<"claim" | number | null>(null);
+  const [asking, setAsking] = useState<number | null>(null);
   useEffect(() => missions.refresh(), []);
 
   if (current === null) {
@@ -98,6 +105,7 @@ export function MissionsCard({
   };
 
   const change = async (slot: number) => {
+    setAsking(null);
     setBusy(slot);
     try {
       const result = await changeMissionAt(slot);
@@ -126,6 +134,7 @@ export function MissionsCard({
           <span className={styles.kicker}>{MISSIONS_TITLE}</span>
           <span className={styles.title}>{locked ?? missionsHeadline(current)}</span>
         </span>
+        {locked === null && <Help missions={current} />}
       </span>
       {lines.length > 0 && (
         <ol className={styles.list}>
@@ -137,7 +146,7 @@ export function MissionsCard({
               canChange={current.canChange && line.state === "todo"}
               changing={busy === slot}
               disabled={busy !== null}
-              onChange={() => void change(slot)}
+              onChange={() => setAsking(slot)}
               onLeave={onLeave}
             />
           ))}
@@ -149,17 +158,63 @@ export function MissionsCard({
           {busy === "claim" ? MISSIONS_CLAIM_BUSY : claimAction}
         </Button>
       )}
-      {locked === null && <Footer missions={current} />}
+      {locked === null && missionsDoneLine(current) !== null && (
+        <p className={styles.text}>{missionsDoneLine(current)}</p>
+      )}
+      <Dialog
+        open={asking !== null}
+        title={MISSION_CHANGE_TITLE}
+        onClose={() => setAsking(null)}
+        variant="center"
+      >
+        <div className={styles.confirm}>
+          <p className={styles.confirmText}>
+            {asking !== null && lines[asking] !== undefined && missionChangeConfirm(lines[asking])}
+          </p>
+          <div className={styles.confirmButtons}>
+            <Button variant="secondary" onClick={() => setAsking(null)}>
+              {MISSION_CHANGE_KEEP}
+            </Button>
+            <Button onClick={() => asking !== null && void change(asking)}>
+              <Icon name="swap" size={18} />
+              {MISSION_CHANGE}
+            </Button>
+          </div>
+        </div>
+      </Dialog>
     </section>
   );
 }
 
-function Footer({ missions: current }: { readonly missions: MissionsResponse }) {
-  const done = missionsDoneLine(current);
+/** The « ? » of the card: what each mission and all of them give, and the change of the day. */
+function Help({ missions: current }: { readonly missions: MissionsResponse }) {
   return (
-    <p className={styles.text}>
-      {done ?? `${missionsRule(current)} ${missionsChangeLine(current) ?? ""}`.trim()}
-    </p>
+    <HelpTip label={MISSIONS_HELP_OPEN} title={MISSIONS_HELP_TITLE}>
+      <span className={styles.help}>
+        {missionsHelp(current).map((line) => (
+          <span key={line.label} className={styles.helpLine}>
+            <span>{line.label}</span>
+            <span className={styles.gains}>
+              {line.xp > 0 && <span className={styles.gain}>+{line.xp} XP</span>}
+              {line.ecus > 0 && (
+                <span className={styles.gain}>
+                  <ToyIcon name="ecu" size={20} />+{line.ecus}
+                </span>
+              )}
+              {line.boosters > 0 && (
+                <span className={styles.gain}>
+                  <ToyIcon name="sachet" size={20} />+{line.boosters}
+                </span>
+              )}
+            </span>
+          </span>
+        ))}
+        <span className={styles.helpNote}>
+          <Icon name="swap" size={16} />
+          {MISSIONS_HELP_CHANGE}
+        </span>
+      </span>
+    </HelpTip>
   );
 }
 
@@ -184,26 +239,39 @@ function Row({
       <span className={styles.seal} aria-hidden="true">
         {finished && <Icon name="check" size={14} />}
       </span>
-      <span className={styles.body} aria-hidden="true">
-        <span className={styles.line}>
-          <span className={styles.what}>{line.text}</span>
-          <span className={styles.figure}>{line.figure}</span>
-        </span>
+      <span className={styles.what} aria-hidden="true">
+        {line.text}
+      </span>
+      <span className={styles.progress} aria-hidden="true">
         <span className={styles.bar}>
           <span className={styles.fill} style={{ width: `${Math.round(line.ratio * 100)}%` }} />
         </span>
+        <span className={styles.figure}>{line.figure}</span>
       </span>
       {!finished && (
         <span className={styles.actions}>
+          {canChange && (
+            <button
+              type="button"
+              className={styles.change}
+              onClick={onChange}
+              disabled={disabled}
+              aria-label={MISSION_CHANGE_LABEL}
+              title={MISSION_CHANGE_LABEL}
+            >
+              {changing ? (
+                <span className={styles.spinning}>
+                  <Icon name="swap" size={16} />
+                </span>
+              ) : (
+                <Icon name="swap" size={16} />
+              )}
+            </button>
+          )}
           {line.place !== null && (
             <Link href={PLACES[line.place]} className={styles.go} onClick={() => onLeave?.()}>
               Y aller
             </Link>
-          )}
-          {canChange && (
-            <button type="button" className={styles.change} onClick={onChange} disabled={disabled}>
-              {changing ? MISSION_CHANGE_BUSY : MISSION_CHANGE}
-            </button>
           )}
         </span>
       )}

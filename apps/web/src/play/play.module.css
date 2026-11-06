@@ -22,6 +22,7 @@
 .nextIconKraft {
   box-sizing: border-box;
   display: grid;
+  flex-shrink: 0;
   place-items: center;
   width: 42px;
   height: 42px;

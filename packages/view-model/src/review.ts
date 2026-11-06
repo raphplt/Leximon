@@ -388,10 +388,22 @@ export function choiceIndexOfKey(key: string): number | null {
   return index >= 0 && key.length === 1 ? index : null;
 }
 
-export const KEYBOARD_HINT =
-  "Au clavier : 1 à 4 pour répondre, Entrée pour la question suivante, Échap pour arrêter.";
-export const TYPED_KEYBOARD_HINT =
-  "Au clavier : Entrée pour valider puis pour la question suivante, Échap pour arrêter.";
+/** A keyboard shortcut of a challenge: its keys drawn as keycaps, then what they do. */
+export interface KeyShortcut {
+  readonly keys: readonly string[];
+  readonly action: string;
+}
+
+export const KEYBOARD_HELP = "Raccourcis clavier";
+export const CHOICE_SHORTCUTS: readonly KeyShortcut[] = [
+  { keys: ["1", "2", "3", "4"], action: "Répondre" },
+  { keys: ["Entrée"], action: "Question suivante" },
+  { keys: ["Échap"], action: "Arrêter" },
+];
+export const TYPED_SHORTCUTS: readonly KeyShortcut[] = [
+  { keys: ["Entrée"], action: "Valider, puis question suivante" },
+  { keys: ["Échap"], action: "Arrêter" },
+];
 
 // --- The recap ----------------------------------------------------------------------
 

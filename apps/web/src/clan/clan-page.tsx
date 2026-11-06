@@ -7,7 +7,7 @@ import { collectionTone } from "@leximon/tokens";
 import {
   claimLabel,
   clanLevelLine,
-  clanSubline,
+  clanMottoLine,
   contributionHint,
   goalBar,
   goalCountLine,
@@ -41,6 +41,7 @@ import { Banner } from "./banner";
 import { ClanChat } from "./chat";
 import { useClaim } from "./claim";
 import styles from "./clan.module.css";
+import { ClanFacts } from "./clan-facts";
 import { Emblem } from "./emblem";
 import { ClanSettings, MemberSheet, RequestsDialog } from "./manage";
 
@@ -199,6 +200,7 @@ export function ClanPage({
     (c) => mine === null || mine.claimable.some((m) => m.week === c.week && m.tier === c.tier),
   );
   const canManage = canAct(me.role, "edit_clan") || canAct(me.role, "accept_request");
+  const motto = clanMottoLine(view.clan.motto);
 
   return (
     <main className={styles.screen} data-tab={tab}>
@@ -206,9 +208,8 @@ export function ClanPage({
         <Banner cardId={view.clan.banner} />
         <Emblem emblem={view.clan.emblem} size={96} level={progress.level} />
         <div className={styles.heroText}>
-          <p className={`${ui.kicker} ${styles.heroKicker}`}>Ton clan</p>
           <h1 className={`${ui.display} ${styles.heroName}`}>{view.clan.name}</h1>
-          <p className={styles.heroLine}>{clanSubline(view.clan)}</p>
+          {motto !== null && <p className={styles.heroMotto}>{motto}</p>}
           <div className={styles.clanXp}>
             <div className={styles.clanXpHead}>
               <span>{clanLevelLine(progress)}</span>
@@ -224,25 +225,28 @@ export function ClanPage({
             </div>
           </div>
         </div>
-        <div className={styles.heroActions}>
-          {view.pendingRequests > 0 && canAct(me.role, "accept_request") && (
-            <button type="button" className={ui.chip} onClick={() => setOverlay("requests")}>
-              {view.pendingRequests > 1 ? `${view.pendingRequests} demandes` : "Une demande"}
-              <span className={ui.badge}>{view.pendingRequests}</span>
+        <div className={styles.heroSide}>
+          <ClanFacts clan={view.clan} />
+          <div className={styles.heroActions}>
+            {view.pendingRequests > 0 && canAct(me.role, "accept_request") && (
+              <button type="button" className={ui.chip} onClick={() => setOverlay("requests")}>
+                {view.pendingRequests > 1 ? `${view.pendingRequests} demandes` : "Une demande"}
+                <span className={ui.badge}>{view.pendingRequests}</span>
+              </button>
+            )}
+            <Button variant="secondary" small onClick={() => void invite()}>
+              <Icon name="share" size={17} />
+              Inviter
+            </Button>
+            <button
+              type="button"
+              className={ui.round}
+              aria-label={canManage ? "Gérer le clan" : "Options du clan"}
+              onClick={() => setOverlay("settings")}
+            >
+              <Icon name="reglages" size={20} />
             </button>
-          )}
-          <Button variant="secondary" small onClick={() => void invite()}>
-            <Icon name="share" size={17} />
-            Inviter
-          </Button>
-          <button
-            type="button"
-            className={ui.round}
-            aria-label={canManage ? "Gérer le clan" : "Options du clan"}
-            onClick={() => setOverlay("settings")}
-          >
-            <Icon name="reglages" size={20} />
-          </button>
+          </div>
         </div>
       </header>
 

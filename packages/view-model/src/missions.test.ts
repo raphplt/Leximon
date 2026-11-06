@@ -1,13 +1,14 @@
 import type { MissionsResponse } from "@leximon/contract";
 import { describe, expect, it } from "vitest";
 import {
+  missionChangeConfirm,
   missionLine,
   missionsClaimAction,
   missionsClaimedToast,
   missionsDoneLine,
   missionsHeadline,
+  missionsHelp,
   missionsLockedLine,
-  missionsRule,
 } from "./missions";
 
 const names = (id: string) => (id === "bestiaire" ? "Bestiaire" : null);
@@ -100,9 +101,19 @@ describe("missions texts", () => {
     expect(missionsHeadline(missions({ missions: none }))).toBe("0 mission faite sur 3");
   });
 
-  it("says the rule with its figures", () => {
-    expect(missionsRule(missions())).toBe(
-      "Chaque mission rapporte 30 XP et 10 écus. Les trois faites rapportent aussi un sachet bonus.",
+  it("lists what the missions give, each and all together", () => {
+    expect(missionsHelp(missions())).toEqual([
+      { label: "Chaque mission", xp: 30, ecus: 10, boosters: 0 },
+      { label: "Les 3 missions faites", xp: 0, ecus: 0, boosters: 1 },
+    ]);
+    expect(missionsHelp(missions({ missions: missions().missions.slice(0, 1) }))[1]?.label).toBe(
+      "La mission faite",
+    );
+  });
+
+  it("says what a change does before it is made", () => {
+    expect(missionChangeConfirm({ text: "Ouvre 3 sachets" })).toBe(
+      "« Ouvre 3 sachets » laisse place à une autre mission, tirée au sort. Tu ne peux changer qu'une mission par jour.",
     );
   });
 
@@ -123,9 +134,7 @@ describe("missions texts", () => {
     );
     expect(missionsDoneLine(missions())).toBeNull();
     const done = missions().missions.map((m) => ({ ...m, claimed: true }));
-    expect(missionsDoneLine(missions({ missions: done }))).toBe(
-      "Tu as fait toutes tes missions du jour. De nouvelles missions t'attendent demain.",
-    );
+    expect(missionsDoneLine(missions({ missions: done }))).toBe("Nouvelles missions demain");
   });
 
   it("toasts what was won", () => {

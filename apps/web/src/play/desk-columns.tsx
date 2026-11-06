@@ -10,7 +10,6 @@ import {
   levelDescription,
   levelRatio,
   lockedToast,
-  nextRewardLine,
   playFabs,
   reserveView,
   riddleAction,
@@ -259,7 +258,6 @@ function LevelLeaf({ index }: { readonly index: number }) {
   const { progress } = view;
   if (progress === null) return null;
   const [reward] = upcomingRewards(progress.level, view.now, 1);
-  const line = nextRewardLine(progress.level, view.now);
   return (
     <div className={`${ui.leaf} ${styles.leaf} ${styles.rising}`} style={rise(index)}>
       <Link href="/niveaux" className={styles.level} aria-label={levelDescription(progress)}>
@@ -270,11 +268,18 @@ function LevelLeaf({ index }: { readonly index: number }) {
         </span>
       </Link>
       {reward !== undefined && (
-        <Link href={`/niveaux#niveau-${reward.level}`} className={styles.next}>
+        <Link
+          href={`/niveaux#niveau-${reward.level}`}
+          className={styles.next}
+          aria-label={reward.label}
+        >
           <span className={reward.milestone ? play.nextIconKraft : play.nextIcon}>
             <Icon name={REWARD_ICONS[reward.icon]} size={22} />
           </span>
-          <span className={styles.leafText}>{line}</span>
+          <span className={styles.nextText}>
+            <span className={styles.nextLevel}>Niveau {reward.level}</span>
+            <span className={styles.nextWhat}>{reward.opens ?? reward.title}</span>
+          </span>
         </Link>
       )}
       {view.welcomeWaits && (

@@ -95,6 +95,11 @@
   text-shadow: 0 var(--lx-lettering-drop) 0 var(--lx-lettering-outline);
 }
 
+/* A line icon has no outline of its own: white on gold, it vanished. It takes the lettering's ink. */
+:is(.primary, .goldToy) > svg {
+  color: var(--lx-lettering-outline);
+}
+
 :is(.primary, .secondary, .goldToy, .paperToy):disabled {
   --top: var(--lx-toy-locked-top);
   --bottom: var(--lx-toy-locked-bottom);

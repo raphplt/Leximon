@@ -171,10 +171,45 @@
   text-shadow: 0 var(--lx-lettering-drop) 0 var(--lx-lettering-outline);
 }
 
-.heroLine {
-  margin: 0;
-  font-size: var(--lx-size-label);
+/* The motto alone under the name, large enough to be read. */
+.heroMotto {
+  margin: var(--lx-s5) 0 0;
+  font-family: var(--font-text), Georgia, serif;
+  font-size: var(--lx-size-body-large);
+  font-style: italic;
+  line-height: 1.35;
   color: var(--lx-color-page-ink-soft);
+}
+
+/* Right of the header: the clan's size and entry, then its buttons. */
+.heroSide {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: var(--lx-s6);
+}
+
+.heroFacts {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--lx-s4) var(--lx-s10);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.heroFact {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--lx-s3);
+  font-size: var(--lx-size-body);
+  font-weight: 700;
+  color: var(--lx-color-page-ink);
+}
+
+.heroFact svg {
+  color: var(--lx-lettering-kicker);
 }
 
 .heroActions {
@@ -1138,6 +1173,15 @@
   .heroActions {
     width: 100%;
     flex-wrap: wrap;
+  }
+
+  .heroSide {
+    width: 100%;
+    align-items: flex-start;
+  }
+
+  .heroFacts {
+    justify-content: flex-start;
   }
 
   .visitActions {

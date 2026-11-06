@@ -29,7 +29,7 @@ import { useShared } from "@/player/shared";
 import { myClan } from "@/player/state";
 import { openCard } from "@/screens/trades/card-row";
 import { TAB_BAR_RISE } from "@/shell/tab-bar";
-import { fontSizes, fonts, paperColors, space } from "@/theme";
+import { colors, fontSizes, fonts, paperColors, space } from "@/theme";
 import { Button } from "@/ui/button";
 import { Icon } from "@/ui/icon";
 import { Panel } from "@/ui/panel";
@@ -182,9 +182,9 @@ export function ChallengeRecap({
           </>
         )}
         {clanShare !== null && (
-          <View style={styles.line}>
-            <Icon name="clan" size={18} color={ink.pageInk} />
-            <Text style={styles.lineText}>{clanShare}</Text>
+          <View style={styles.clanShare}>
+            <Icon name="clan" size={18} color={colors.successEdge} />
+            <Text style={styles.clanShareText}>{clanShare}</Text>
           </View>
         )}
         <View style={styles.actions}>
@@ -237,6 +237,25 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   line: { flexDirection: "row", alignItems: "center", gap: space.s4 },
+  // What the session gave the clan: a green tag, as on the web.
+  clanShare: {
+    flexDirection: "row",
+    alignItems: "center",
+    alignSelf: "center",
+    gap: space.s3,
+    paddingVertical: space.s2,
+    paddingLeft: space.s4,
+    paddingRight: space.s6,
+    borderWidth: 2,
+    borderColor: colors.successDeep,
+    borderRadius: 999,
+    backgroundColor: colors.successPale,
+  },
+  clanShareText: {
+    fontFamily: fonts.ui.extrabold,
+    fontSize: fontSizes.body,
+    color: colors.successEdge,
+  },
   lineText: { fontFamily: fonts.ui.bold, fontSize: fontSizes.bodyLarge, color: ink.pageInk },
   won: { color: ink.rubric },
   lost: {

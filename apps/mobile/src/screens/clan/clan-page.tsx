@@ -5,7 +5,7 @@ import { alpha, collectionTone, lettering, toy as toyValues } from "@leximon/tok
 import {
   claimLabel,
   clanLevelLine,
-  clanSubline,
+  clanMottoLine,
   contributionHint,
   goalBar,
   goalCountLine,
@@ -28,6 +28,7 @@ import { Pressable, ScrollView, Share, StyleSheet, Text, View } from "react-nati
 import { api } from "@/api/client";
 import { catalogInHand, loadCatalog } from "@/cards/catalog";
 import { claimGoal } from "@/clan/claim";
+import { ClanFacts } from "@/clan/clan-facts";
 import { Banner, Emblem } from "@/clan/emblem";
 import { WEB_URL } from "@/config";
 import { Desk } from "@/library/play-pieces";
@@ -189,7 +190,7 @@ export function ClanPage({
               </Lettering>
             </View>
             <Text style={styles.heroSmall} numberOfLines={1}>
-              {online ?? clanSubline(view.clan)}
+              {online ?? clanMottoLine(view.clan.motto) ?? ""}
             </Text>
           </View>
           {view.pendingRequests > 0 && canAct(me.role, "accept_request") && (
@@ -237,7 +238,10 @@ export function ClanPage({
       {tab === "clan" && (
         <ScrollView contentContainerStyle={styles.page}>
           <Panel paper>
-            <Text style={styles.subline}>{clanSubline(view.clan)}</Text>
+            {clanMottoLine(view.clan.motto) !== null && (
+              <Text style={styles.motto}>{clanMottoLine(view.clan.motto)}</Text>
+            )}
+            <ClanFacts clan={view.clan} color={ink.pageInk} iconColor={ink.pageInkMuted} />
             <View style={styles.xpHead}>
               <Text style={styles.xpLine}>{clanLevelLine(progress)}</Text>
               {nextUnlock !== null && <Text style={styles.small}>{nextUnlock}</Text>}
@@ -518,7 +522,12 @@ const styles = StyleSheet.create({
     lineHeight: 19,
     color: ink.pageInkMuted,
   },
-  subline: { fontFamily: fonts.ui.semibold, fontSize: fontSizes.label, color: ink.pageInkMuted },
+  motto: {
+    fontFamily: fonts.text.italic,
+    fontSize: fontSizes.bodyLarge,
+    lineHeight: 24,
+    color: ink.pageInk,
+  },
   kicker: {
     fontFamily: fonts.ui.extrabold,
     fontSize: fontSizes.caption,

@@ -4,7 +4,7 @@ import {
   ALREADY_IN_CLAN,
   CLAN_GONE,
   CLANS_TITLE,
-  clanSubline,
+  clanMottoLine,
   isFeatureOpen,
   lockedToast,
   moreMembersLabel,
@@ -16,6 +16,7 @@ import { useCallback, useEffect, useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { api } from "@/api/client";
 import { act } from "@/clan/act";
+import { ClanFacts } from "@/clan/clan-facts";
 import { Banner, Emblem } from "@/clan/emblem";
 import { useJoinClan } from "@/clan/use-join-clan";
 import { Desk } from "@/library/play-pieces";
@@ -150,7 +151,12 @@ function ClanVisit({
         <Banner cardId={clan.banner} />
         <View style={styles.heroHead}>
           <Emblem emblem={clan.emblem} size={64} level={clan.level} />
-          <Text style={[styles.heroSmall, styles.heroLine]}>{clanSubline(clan)}</Text>
+          <View style={styles.heroLine}>
+            {clanMottoLine(clan.motto) !== null && (
+              <Text style={styles.heroMotto}>{clanMottoLine(clan.motto)}</Text>
+            )}
+            <ClanFacts clan={clan} color={lettering.fill} iconColor={lettering.kicker} />
+          </View>
         </View>
         <VisitorAction clan={clan} mine={mine} level={level} now={now} onJoined={onJoined} />
       </Panel>
@@ -238,7 +244,13 @@ const styles = StyleSheet.create({
     color: alpha(lettering.fill, 0.85),
   },
   heroHead: { flexDirection: "row", alignItems: "center", gap: space.s8 },
-  heroLine: { flex: 1 },
+  heroLine: { flex: 1, gap: space.s4 },
+  heroMotto: {
+    fontFamily: fonts.text.italic,
+    fontSize: fontSizes.body,
+    lineHeight: 21,
+    color: alpha(lettering.fill, 0.9),
+  },
   small: {
     fontFamily: fonts.ui.medium,
     fontSize: fontSizes.label,

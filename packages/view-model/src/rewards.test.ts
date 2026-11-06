@@ -7,7 +7,6 @@ import {
   coffretsLabel,
   coffretsMailTitle,
   levelDetail,
-  nextRewardLine,
   quarterAt,
   quarterNodes,
   quarterOfLevel,
@@ -79,14 +78,6 @@ describe("level rewards", () => {
       label: "Niveau 4, Sachet bonus",
     });
     expect(next[2]).toMatchObject({ milestone: true, icon: "lock" });
-  });
-
-  it("says the next reward in a sentence, an opening first", () => {
-    expect(nextRewardLine(1, NOW)).toBe("Au niveau 2, tu gagnes un sachet bonus.");
-    expect(nextRewardLine(2, NOW)).toBe(
-      "Au niveau 3, tu débloques le choix de la collection de ton sachet et les révisions par thème.",
-    );
-    expect(nextRewardLine(3, NOW)).toBe("Au niveau 4, tu gagnes un sachet bonus.");
   });
 });
 

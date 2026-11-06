@@ -1,10 +1,11 @@
 import type { ClanMember, ClanMessage } from "@leximon/contract";
 import { describe, expect, it } from "vitest";
 import {
+  clanFacts,
   clanLevelLine,
+  clanMottoLine,
   clanRefusalMessage,
   clanShareLine,
-  clanSubline,
   contributionHint,
   eventText,
   goalBar,
@@ -54,13 +55,13 @@ function member(overrides: Partial<ClanMember> = {}): ClanMember {
 }
 
 describe("the clan header", () => {
-  it("says the size, the entry and the motto", () => {
-    expect(clanSubline({ memberCount: 34, entryMode: "request", motto: "Rien ne se perd" })).toBe(
-      "34 membres · entrée sur demande · « Rien ne se perd »",
-    );
-    expect(clanSubline({ memberCount: 1, entryMode: "open", motto: "" })).toBe(
-      "1 membre · entrée libre",
-    );
+  it("puts the motto alone under the name, the size and the entry beside the buttons", () => {
+    expect(clanMottoLine("Rien ne se perd")).toBe("« Rien ne se perd »");
+    expect(clanMottoLine("")).toBeNull();
+    expect(clanFacts({ memberCount: 1, entryMode: "invite" })).toEqual([
+      { kind: "members", label: "1 membre" },
+      { kind: "invite", label: "Sur invitation" },
+    ]);
   });
 });
 

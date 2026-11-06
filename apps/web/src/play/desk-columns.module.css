@@ -298,7 +298,29 @@ button.leaf {
   text-decoration: none;
 }
 
-.next:hover .leafText {
+.nextText {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.nextLevel {
+  font-size: var(--lx-size-micro);
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--lx-color-page-ink-muted);
+}
+
+.nextWhat {
+  font-family: var(--font-display), Georgia, serif;
+  font-size: var(--lx-size-label);
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.next:hover .nextWhat {
   text-decoration: underline;
   text-underline-offset: 3px;
 }

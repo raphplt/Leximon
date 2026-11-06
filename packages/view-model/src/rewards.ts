@@ -14,7 +14,7 @@ import {
   levelRewards,
   unclaimedLevels,
 } from "@leximon/core";
-import { FEATURE_NAMES, FEATURE_WORDS, levelsOfFeatures, opensAt } from "./features";
+import { FEATURE_WORDS, levelsOfFeatures, opensAt } from "./features";
 import { capitalize, formatCount, plural } from "./format";
 import { xpBefore } from "./level";
 import { avatarName, frameName } from "./profile";
@@ -271,26 +271,6 @@ function rewardPhrase(reward: LevelRewardView | LevelReward): string {
     case "ecus":
       return ecusOf(reward.amount);
   }
-}
-
-/**
- * « Au niveau 4, tu gagnes un sachet bonus. », under the XP bar. A level that opens a part of the
- * game says that instead: it is the bigger news.
- */
-export function nextRewardLine(level: number, now: EpochMs): string {
-  const next = level + 1;
-  const opened = featuresOpenedAt(levelsOfFeatures(now), next).map((f) => FEATURE_NAMES[f]);
-  if (opened.length > 0) {
-    const names =
-      opened.length === 1
-        ? opened[0]
-        : `${opened.slice(0, -1).join(", ")} et ${opened[opened.length - 1]}`;
-    return `Au niveau ${next}, tu débloques ${names}.`;
-  }
-  const first = rewardsOfLevel(next, now)[0];
-  return first === undefined
-    ? `Le niveau ${next} approche.`
-    : `Au niveau ${next}, tu gagnes ${rewardPhrase(first)}.`;
 }
 
 /** The next `count` levels after the player's, with the main thing each gives. */

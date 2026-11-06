@@ -17,6 +17,8 @@ import { formatCount, plural } from "./format";
 
 export const MISSIONS_TITLE = "Missions du jour";
 export const MISSION_CHANGE = "Changer";
+/** The name of the small change button, which shows only an icon. */
+export const MISSION_CHANGE_LABEL = "Changer cette mission";
 export const MISSION_CHANGE_BUSY = "Changement…";
 export const MISSIONS_CLAIM_BUSY = "Récompenses…";
 export const MISSIONS_FAILED = "Les missions n'ont pas pu être chargées. Réessaie.";
@@ -116,19 +118,27 @@ function missionText(
   }
 }
 
-/** « Chaque mission rapporte 30 XP et 10 écus. Les trois faites rapportent un sachet bonus. » */
-export function missionsRule(missions: MissionsResponse): string {
-  const { xp, ecus, allDoneBoosters } = missions.rewards;
-  const count = missions.missions.length;
-  const each = `Chaque mission rapporte ${formatCount(xp)} XP et ${plural(ecus, "écu", "écus")}.`;
-  if (allDoneBoosters === 0 || count === 0) return each;
-  const all =
-    count === 1 ? "La mission faite rapporte" : `Les ${countWord(count)} faites rapportent`;
-  return `${each} ${all} aussi ${sachetsPhrase(allDoneBoosters)}.`;
+/** One line of the missions' help: who wins and what, drawn with the reward icons. */
+export interface MissionsHelpLine {
+  /** « Chaque mission », « Les 3 missions faites ». */
+  readonly label: string;
+  readonly xp: number;
+  readonly ecus: number;
+  readonly boosters: number;
 }
 
-function countWord(count: number): string {
-  return count === 2 ? "deux" : count === 3 ? "trois" : formatCount(count);
+export const MISSIONS_HELP_TITLE = "Ce que rapportent les missions";
+export const MISSIONS_HELP_OPEN = "Comment marchent les missions";
+export const MISSIONS_HELP_CHANGE = "1 changement de mission par jour";
+
+/** Behind the « ? » of the card: each mission's gain, then the gain of all of them done. */
+export function missionsHelp(missions: MissionsResponse): readonly MissionsHelpLine[] {
+  const { xp, ecus, allDoneBoosters } = missions.rewards;
+  const count = missions.missions.length;
+  const each = { label: "Chaque mission", xp, ecus, boosters: 0 };
+  if (allDoneBoosters === 0 || count === 0) return [each];
+  const all = count === 1 ? "La mission faite" : `Les ${formatCount(count)} missions faites`;
+  return [each, { label: all, xp: 0, ecus: 0, boosters: allDoneBoosters }];
 }
 
 function sachetsPhrase(count: number): string {
@@ -172,12 +182,15 @@ export function missionsDoneLine(missions: MissionsResponse): string | null {
   if (missions.missions.length === 0 || !missions.missions.every((mission) => mission.claimed)) {
     return null;
   }
-  return "Tu as fait toutes tes missions du jour. De nouvelles missions t'attendent demain.";
+  return "Nouvelles missions demain";
 }
 
-/** Under the missions while one can still be changed. */
-export function missionsChangeLine(missions: MissionsResponse): string | null {
-  return missions.canChange ? "Tu peux changer une mission par jour." : null;
+export const MISSION_CHANGE_TITLE = "Changer cette mission ?";
+export const MISSION_CHANGE_KEEP = "La garder";
+
+/** The confirmation before the one change of the day. */
+export function missionChangeConfirm(line: Pick<MissionLine, "text">): string {
+  return `« ${line.text} » laisse place à une autre mission, tirée au sort. Tu ne peux changer qu'une mission par jour.`;
 }
 
 /** The toast after a claim. */

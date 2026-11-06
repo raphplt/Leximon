@@ -56,15 +56,20 @@
   list-style: none;
 }
 
+/* The mission's words on their own line, then its bar, its count and its two buttons. */
 .row {
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-columns: 24px minmax(0, 1fr) auto;
+  grid-template-areas:
+    "seal what what"
+    ". progress actions";
   align-items: center;
-  gap: 4px 10px;
+  gap: 6px 10px;
 }
 
 /* A round seal: empty while the mission goes on, gilt once done. */
 .seal {
+  grid-area: seal;
   display: grid;
   place-items: center;
   width: 24px;
@@ -81,21 +86,8 @@
   box-shadow: 0 2px 0 var(--lx-toy-outline);
 }
 
-.body {
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-  min-width: 0;
-}
-
-.line {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 8px;
-}
-
 .what {
+  grid-area: what;
   font-family: var(--font-text), Georgia, serif;
   font-size: var(--lx-size-label);
   font-weight: 700;
@@ -106,15 +98,31 @@
   color: var(--lx-color-page-ink-muted);
 }
 
+.progress {
+  grid-area: progress;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.done .progress,
+.claimed .progress {
+  grid-column: 2 / -1;
+}
+
 .figure {
   flex-shrink: 0;
+  min-width: 2.6em;
   font-size: var(--lx-size-small);
   font-weight: 800;
   font-variant-numeric: tabular-nums;
+  text-align: right;
   color: var(--lx-color-page-ink-muted);
 }
 
 .bar {
+  flex: 1;
   height: 8px;
   border: 2px solid var(--lx-toy-outline);
   border-radius: 999px;
@@ -130,25 +138,16 @@
 }
 
 .actions {
-  grid-column: 2;
+  grid-area: actions;
   display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-.go,
-.change {
-  padding: 3px 10px 4px;
-  border: 2px solid var(--lx-toy-outline);
-  border-radius: var(--lx-toy-radius-small);
-  font: inherit;
-  font-size: var(--lx-size-small);
-  font-weight: 800;
-  text-decoration: none;
-  cursor: pointer;
+  align-items: center;
+  gap: 4px;
 }
 
 .go {
+  padding: 3px 10px 4px;
+  border: 2px solid var(--lx-toy-outline);
+  border-radius: var(--lx-toy-radius-small);
   background: linear-gradient(
     180deg,
     var(--lx-toy-gold-top) 0 47%,
@@ -156,22 +155,121 @@
   );
   box-shadow: 0 2px 0 var(--lx-toy-outline);
   color: var(--lx-toy-outline);
+  font: inherit;
+  font-size: var(--lx-size-small);
+  font-weight: 800;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: translate 120ms ease-out;
 }
 
+@media (hover: hover) {
+  .go:hover {
+    translate: 0 -1px;
+    filter: brightness(1.06);
+  }
+}
+
+/* The change of the day: a quiet icon, the confirmation says what it does. */
 .change {
-  background: var(--lx-color-paper);
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--lx-color-page-ink-muted);
+  cursor: pointer;
+  transition:
+    color 120ms ease-out,
+    background 120ms ease-out;
+}
+
+.change:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--lx-toy-outline) 10%, transparent);
   color: var(--lx-color-page-ink);
 }
 
 .change:disabled {
-  opacity: 0.6;
+  opacity: 0.5;
   cursor: default;
+}
+
+.spinning {
+  display: grid;
+  animation: spin 700ms linear infinite;
+}
+
+@keyframes spin {
+  to {
+    rotate: -360deg;
+  }
 }
 
 .go:focus-visible,
 .change:focus-visible {
   outline: 3px solid var(--lx-color-focus);
   outline-offset: 2px;
+}
+
+/* Behind the « ? »: one line per gain, the rewards drawn rather than told. */
+.help {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.helpLine {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  font-weight: 700;
+}
+
+.gains {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.gain {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.helpNote {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding-top: 8px;
+  border-top: 1px dashed color-mix(in srgb, var(--lx-toy-outline) 30%, transparent);
+  color: var(--lx-color-page-ink-muted);
+}
+
+.confirm {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.confirmText {
+  margin: 0;
+  font-size: var(--lx-size-body);
+  line-height: 1.45;
+}
+
+.confirmButtons {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 10px;
 }
 
 .text {

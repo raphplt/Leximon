@@ -324,9 +324,11 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--lx-s7);
+  box-sizing: border-box;
+  width: 100%;
+  gap: var(--lx-s14);
   margin: var(--lx-s6) auto;
-  padding: var(--lx-s10) var(--lx-s12);
+  padding: var(--lx-s16) var(--lx-s16) var(--lx-s20);
 }
 
 .emptyText {
@@ -338,7 +340,7 @@
 }
 
 .guideTitle {
-  margin: var(--lx-s4) 0 0;
+  margin: var(--lx-s4) 0 calc(-1 * var(--lx-s6));
 }
 
 /* Three steps side by side on a wide screen, one under the other on a phone. */
@@ -356,7 +358,7 @@
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: var(--lx-s5);
+  gap: var(--lx-s6);
 }
 
 /* The number stands in the margin of its step. */
@@ -404,11 +406,11 @@
 
 /* --- Offers sent and history --- */
 
+/* The three tabs hold panels of one width, the screen's: switching tabs never jolts the page. */
 .sent {
   display: flex;
   flex-direction: column;
   gap: var(--lx-s6);
-  max-width: 760px;
 }
 
 .sent .offers {
@@ -531,7 +533,6 @@
 /* --- Proposing ------------------------------------------------------------------------ */
 
 .panel {
-  max-width: 760px;
   display: flex;
   flex-direction: column;
   gap: var(--lx-s7);

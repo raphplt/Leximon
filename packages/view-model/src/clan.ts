@@ -12,7 +12,7 @@ import type {
   GoalTier,
 } from "@leximon/contract";
 import { CLAN_SCHEDULE, clanRulesAt, type EpochMs } from "@leximon/core";
-import { formatCount, formatWait, ofName, plural } from "./format";
+import { capitalize, formatCount, formatWait, ofName, plural } from "./format";
 import { playerName } from "./trades";
 
 /**
@@ -36,15 +36,26 @@ export function entryModeLabel(mode: ClanEntryMode): string {
   return ENTRY_LABELS[mode];
 }
 
-/** « 34 membres · entrée sur demande · « On collectionne… » ». */
-export function clanSubline(clan: {
+/** The motto under the clan's name, between French quotes; `null` without one. */
+export function clanMottoLine(motto: string): string | null {
+  return motto === "" ? null : `« ${motto} »`;
+}
+
+/** What a clan's header shows beside its buttons, each with its icon. */
+export interface ClanFact {
+  readonly kind: "members" | ClanEntryMode;
+  readonly label: string;
+}
+
+/** « 34 membres », « Entrée sur demande ». */
+export function clanFacts(clan: {
   readonly memberCount: number;
   readonly entryMode: ClanEntryMode;
-  readonly motto: string;
-}): string {
-  const parts = [plural(clan.memberCount, "membre", "membres"), entryModeLabel(clan.entryMode)];
-  if (clan.motto !== "") parts.push(`« ${clan.motto} »`);
-  return parts.join(" · ");
+}): readonly ClanFact[] {
+  return [
+    { kind: "members", label: plural(clan.memberCount, "membre", "membres") },
+    { kind: clan.entryMode, label: capitalize(entryModeLabel(clan.entryMode)) },
+  ];
 }
 
 /** The colour names of the emblem lists. */

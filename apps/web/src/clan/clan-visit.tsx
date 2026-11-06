@@ -6,7 +6,7 @@ import {
   CLAN_GONE,
   CLANS_PATH,
   CLANS_TITLE,
-  clanSubline,
+  clanMottoLine,
   isFeatureOpen,
   lockedToast,
   moreMembersLabel,
@@ -34,6 +34,7 @@ import ui from "@/ui/ui.module.css";
 import { Banner } from "./banner";
 import { refusalText } from "./chat";
 import styles from "./clan.module.css";
+import { ClanFacts } from "./clan-facts";
 import { JoinButton } from "./clan-list";
 import { Emblem } from "./emblem";
 import { useJoinClan } from "./use-join-clan";
@@ -165,9 +166,12 @@ function ClanVisit({
         <div className={styles.heroText}>
           <p className={`${ui.kicker} ${styles.heroKicker}`}>Clan de niveau {clan.level}</p>
           <h1 className={`${ui.display} ${styles.heroName}`}>{clan.name}</h1>
-          <p className={styles.heroLine}>{clanSubline(clan)}</p>
+          {clanMottoLine(clan.motto) !== null && (
+            <p className={styles.heroMotto}>{clanMottoLine(clan.motto)}</p>
+          )}
         </div>
-        <div className={styles.visitActions}>
+        <div className={`${styles.heroSide} ${styles.visitActions}`}>
+          <ClanFacts clan={clan} />
           <VisitorAction clan={clan} mine={mine} level={level} now={now} onJoined={onJoined} />
         </div>
       </header>
