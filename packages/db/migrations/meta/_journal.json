@@ -288,6 +288,13 @@
       "when": 1793910253190,
       "tag": "0040_jousts",
       "breakpoints": true
+    },
+    {
+      "idx": 41,
+      "version": "7",
+      "when": 1793987299139,
+      "tag": "0041_joust_guide_seen",
+      "breakpoints": true
     }
   ]
 }

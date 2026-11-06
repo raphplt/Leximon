@@ -481,6 +481,8 @@ export const players = pgTable(
     friendPlacesUsed: integer().notNull().default(0),
     /** Jousts opened to this player before they open to all, from the back office. */
     joustAccess: boolean().notNull().default(false),
+    /** The player went through the first visit of the jousts, or skipped it. */
+    joustGuideDoneAt: timestamp({ withTimezone: true }),
   },
   (table) => [
     uniqueIndex("players_pseudo_key_idx").on(table.pseudoKey),

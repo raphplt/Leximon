@@ -344,6 +344,13 @@ async function opponentFor(
   return { opponentId, revengeOf };
 }
 
+async function hasJousted(tx: Reader, userId: string): Promise<boolean> {
+  const result = await tx.execute(sql`
+    select 1 where exists (select 1 from jousts where challenger_id = ${userId})
+      or exists (select 1 from jousts where opponent_id = ${userId})`);
+  return result.rows.length > 0;
+}
+
 /**
  * Launches a joust: picks the opponent, draws the cards of both decks and the choices of each
  * question, and freezes them. The challenger plays at once. A key already used returns its joust.
@@ -377,12 +384,17 @@ export async function launchJoust(
       select count(*)::int as count from jousts
       where challenger_id = ${userId} and ended_at is null`);
     if ((waiting.rows[0]?.count ?? 0) >= rules.maxWaiting) return refuseLaunch("too_many_waiting");
-    const myDeck = deckOf(
-      rules,
-      await readSavedDeck(tx, userId),
-      await readCandidates(tx, userId, catalog),
-    );
+    const saved = await readSavedDeck(tx, userId);
+    const myDeck = deckOf(rules, saved, await readCandidates(tx, userId, catalog));
     if (myDeck.length < rules.drawn) return refuseLaunch("deck_too_small");
+    if (saved === null) {
+      if (!(await hasJousted(tx, userId))) return refuseLaunch("deck_not_saved");
+      // Players who jousted before composing a deck keep the one the game made them play.
+      await tx
+        .insert(joustDecks)
+        .values({ userId, cardIds: [...myDeck], updatedAt: new Date(now) })
+        .onConflictDoNothing();
+    }
 
     const found = await opponentFor(tx, userId, target, rules, seed, now);
     if ("kind" in found) return found;
@@ -982,6 +994,8 @@ function summaryOf(
     // The other's score shows once the joust ends: the second player meets it as they play.
     theirs: ended ? (role === "challenger" ? opponent : challenger) : null,
     createdAt: joust.createdAt.toISOString(),
+    seen:
+      !ended || (role === "challenger" ? joust.challengerSeenAt : joust.opponentSeenAt) !== null,
   };
 }
 
@@ -995,11 +1009,12 @@ export async function listJousts(
   const rules = rulesAt(now);
   const access = await readAccess(db, userId, now);
   const settled = access === "account_required" ? NONE_SETTLED : await settleDue(db, userId, now);
-  const deck = deckOf(
-    rules,
-    await readSavedDeck(db, userId),
-    await readCandidates(db, userId, catalog),
-  );
+  const saved = await readSavedDeck(db, userId);
+  const deck = deckOf(rules, saved, await readCandidates(db, userId, catalog));
+  const [guide] = await db
+    .select({ doneAt: players.joustGuideDoneAt })
+    .from(players)
+    .where(eq(players.userId, userId));
   const open = await db.execute<{ id: string }>(sql`
     (select id, created_at from jousts
       where (challenger_id = ${userId}
@@ -1042,6 +1057,8 @@ export async function listJousts(
       access,
       opensAtLevel: opensAtLevel(now),
       deckReady: deck.length >= rules.drawn,
+      deckSaved: saved !== null,
+      guideDone: guide?.doneAt != null,
       waiting: ordered.filter((row) => row.challengerId === userId && row.endedAt === null).length,
       maxWaiting: rules.maxWaiting,
       answerSeconds: Math.round(rules.answerMs / 1000),
@@ -1080,6 +1097,7 @@ export async function readJoust(
     ms: answerTime(rules, toRunAnswer(q)),
   });
   const ended = joust.endedAt !== null;
+  const closed = runClosed(joust, role);
   const ghost =
     role === "opponent" && !joust.forfeit
       ? theirs.map((q) => ({ correct: q.correct === true, ms: answerTime(rules, toRunAnswer(q)) }))
@@ -1090,6 +1108,14 @@ export async function readJoust(
       ghost,
       ghostPlayedAt: role === "opponent" ? (joust.challengerDoneAt?.toISOString() ?? null) : null,
       answered: mine.filter((q) => q.answeredAt !== null).length,
+      run: closed
+        ? {
+            answers: mine.map(answerOf),
+            // With the win's, once ended.
+            xp: role === "challenger" ? joust.challengerXp : joust.opponentXp,
+          }
+        : null,
+      traps: closed ? theirs.map((q) => q.cardId) : null,
       result: ended
         ? {
             mine: mine.map(answerOf),
@@ -1101,6 +1127,33 @@ export async function readJoust(
     },
     settled,
   };
+}
+
+/** `POST /jousts/guide`: the first visit is done; the first time stays. */
+export async function markGuideDone(db: Database, userId: string, now: EpochMs): Promise<void> {
+  await db
+    .update(players)
+    .set({ joustGuideDoneAt: sql`coalesce(${players.joustGuideDoneAt}, ${new Date(now)})` })
+    .where(eq(players.userId, userId));
+}
+
+/** `POST /jousts/:id/seen`: the player watched the result of an ended joust; the first time stays. */
+export async function markSeen(
+  db: Database,
+  input: { readonly userId: string; readonly joustId: string; readonly now: EpochMs },
+): Promise<"seen" | "not_found"> {
+  const { userId, joustId, now } = input;
+  const at = new Date(now);
+  const result = await db.execute(sql`
+    update jousts set
+      challenger_seen_at = case when challenger_id = ${userId}
+        then coalesce(challenger_seen_at, ${at}) else challenger_seen_at end,
+      opponent_seen_at = case when opponent_id = ${userId}
+        then coalesce(opponent_seen_at, ${at}) else opponent_seen_at end
+    where id = ${joustId} and ended_at is not null
+      and (challenger_id = ${userId} or opponent_id = ${userId})
+    returning id`);
+  return result.rows.length > 0 ? "seen" : "not_found";
 }
 
 /** `GET /jousts/opponents`: friends and clan members who may joust now. */

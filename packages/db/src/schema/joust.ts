@@ -78,6 +78,9 @@ export const jousts = pgTable(
     opponentXp: integer().notNull().default(0),
     challengerBoosters: smallint().notNull().default(0),
     opponentBoosters: smallint().notNull().default(0),
+    /** Each player watched the result once: until then it shows sealed. */
+    challengerSeenAt: timestamp({ withTimezone: true }),
+    opponentSeenAt: timestamp({ withTimezone: true }),
     ratings: jsonb().$type<{
       readonly challenger: JoustRatingChange;
       readonly opponent: JoustRatingChange;

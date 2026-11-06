@@ -2,12 +2,17 @@ import type { JoustSummary } from "@leximon/contract";
 import { describe, expect, it } from "vitest";
 import {
   accessText,
+  answerTimeText,
   clockShare,
+  completeDeck,
   deadlineText,
   forfeitLine,
   ghostLine,
   joustLine,
+  joustRowState,
+  joustSections,
   localDeadline,
+  outcomeWord,
   rewardText,
   scoresLine,
   scoreText,
@@ -15,9 +20,12 @@ import {
   sortJousts,
   toggleDeckCard,
   trappedLine,
+  trapsLine,
+  waitingLine,
 } from "./jousts";
 
 const NOW = Date.parse("2026-11-10T15:00:00Z");
+const NOW_ISO = new Date(NOW).toISOString();
 const PARIS = "Europe/Paris";
 const alix = { code: "ABCD1234", pseudo: "Alix", avatar: "a", frame: "f", level: 9 };
 
@@ -34,6 +42,7 @@ function joust(overrides: Partial<JoustSummary>): JoustSummary {
     mine: null,
     theirs: null,
     createdAt: "2026-11-10T14:00:00Z",
+    seen: true,
     ...overrides,
   };
 }
@@ -143,5 +152,76 @@ describe("the end of a joust", () => {
     expect(trappedLine(["cacochyme"], alix)).toBe("Ton mot cacochyme a piégé Alix.");
     expect(trappedLine(["a", "b", "c"], alix)).toBe("Tes mots a, b et c ont piégé Alix.");
     expect(forfeitLine(true, alix)).toBe("La joute te revient, car Alix n'a pas joué à temps.");
+  });
+});
+
+describe("the jousts' home", () => {
+  it("files each joust in its section, a result not watched yet apart", () => {
+    const toPlay = joust({ id: "1", state: "play" });
+    const sealed = joust({ id: "2", state: "ended", outcome: "won", seen: false });
+    const waiting = joust({ id: "3", state: "waiting" });
+    const old = joust({ id: "4", state: "ended", outcome: "lost" });
+    const newer = joust({ id: "5", state: "ended", outcome: "draw", createdAt: NOW_ISO });
+    const sections = joustSections([old, waiting, sealed, toPlay, newer]);
+    expect(sections.toPlay).toEqual([toPlay]);
+    expect(sections.toDiscover).toEqual([sealed]);
+    expect(sections.waiting).toEqual([waiting]);
+    expect(sections.ended).toEqual([newer, old]);
+  });
+
+  it("says in one short line where a joust stands", () => {
+    const at = "2026-11-11T08:05:00Z";
+    expect(joustRowState(joust({ kind: "ranked" }), NOW, PARIS)).toBe("Classée · à toi de jouer");
+    expect(joustRowState(joust({ launched: false, replyBy: at }), NOW, PARIS)).toBe(
+      "Amicale · avant demain 9 h 05",
+    );
+    expect(joustRowState(joust({ state: "waiting", replyBy: at }), NOW, PARIS)).toBe(
+      "Amicale · jusqu'à demain 9 h 05",
+    );
+    expect(joustRowState(joust({ state: "ended", forfeit: true }), NOW, PARIS)).toBe(
+      "Amicale · forfait",
+    );
+    const ended = joust({
+      state: "ended",
+      mine: { correct: 4, ms: 1 },
+      theirs: { correct: 3, ms: 1 },
+    });
+    expect(joustRowState(ended, NOW, PARIS)).toBe("Amicale · 4 à 3");
+    expect(outcomeWord("won", true)).toBe("Victoire !");
+    expect(outcomeWord("draw")).toBe("Égalité");
+  });
+});
+
+describe("the run's summary", () => {
+  it("names the wait and the traps, for one word and several", () => {
+    expect(waitingLine(alix, "2026-11-11T16:20:00Z", NOW, PARIS)).toBe(
+      "Alix a jusqu'à demain 17 h 20. On te prévient au courrier.",
+    );
+    expect(trapsLine(5, alix)).toBe("Les 5 mots de ton deck que Alix devra trouver.");
+    expect(trapsLine(1, alix)).toBe("Le mot de ton deck que Alix devra trouver.");
+  });
+
+  it("gives an answer's time to the tenth, or says it was missed", () => {
+    expect(answerTimeText({ correct: true, ms: 4_240 })).toBe("4,2 s");
+    expect(answerTimeText({ correct: false, ms: 15_000 })).toBe("manqué");
+  });
+});
+
+describe("completing the deck", () => {
+  const candidates = [
+    { cardId: "a", cost: 1 },
+    { cardId: "b", cost: 6 },
+    { cardId: "c", cost: 3 },
+    { cardId: "d", cost: 3 },
+    { cardId: "e", cost: 2 },
+  ];
+
+  it("fills the empty places with the rarest cards that fit", () => {
+    expect(completeDeck([], candidates, { size: 3, budget: 25 })).toEqual(["b", "c", "d"]);
+    expect(completeDeck(["a"], candidates, { size: 10, budget: 10 })).toEqual(["a", "b", "c"]);
+  });
+
+  it("keeps the cards already chosen and a full deck as it is", () => {
+    expect(completeDeck(["e", "a"], candidates, { size: 2, budget: 25 })).toEqual(["e", "a"]);
   });
 });

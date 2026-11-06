@@ -207,6 +207,8 @@ export function launchRefusalText(reason: LaunchRefusal | "account_locked", leve
       return `Les joutes ouvrent au niveau ${level}, avec un compte et un pseudo.`;
     case "deck_too_small":
       return "Il te faut au moins 5 mots trouvés une fois pour faire un deck. Réponds à tes défis pour en trouver.";
+    case "deck_not_saved":
+      return "Compose ton deck avant ta première joute : ce sont tes mots que l'autre devra trouver.";
     case "too_many_waiting":
       return "Tu as déjà 5 joutes qui attendent leur adversaire. Lance la suivante quand l'une d'elles est finie.";
     case "no_opponent":
@@ -321,14 +323,180 @@ export function trappedLine(words: readonly string[], opponent: PlayerBadge | nu
   return `Tes mots ${list} ont piégé ${name}.`;
 }
 
-/** Questions of a run, and seconds to answer each, as the rules say now. */
-export function runSize(now: EpochMs): { readonly questions: number; readonly seconds: number } {
+export interface RunSize {
+  readonly questions: number;
+  readonly seconds: number;
+  readonly choices: number;
+  /** Hours the second player has to play. */
+  readonly replyHours: number;
+}
+
+/** Questions of a run, seconds to answer each, and choices, as the rules say now. */
+export function runSize(now: EpochMs): RunSize {
   const rules = joustRulesAt(JOUST_SCHEDULE, now);
-  return { questions: rules.drawn, seconds: Math.round(rules.answerMs / 1000) };
+  return {
+    questions: rules.drawn,
+    seconds: Math.round(rules.answerMs / 1000),
+    choices: rules.choices,
+    replyHours: Math.round(rules.replyMs / 3_600_000),
+  };
 }
 
 /** Before the run starts. */
 export function runRules(now: EpochMs): string {
   const { questions, seconds } = runSize(now);
   return `Tu as ${seconds} secondes pour chacun des ${questions} mots. Si tu quittes la joute, le chrono continue et les questions restantes comptent fausses.`;
+}
+
+// --- The jousts' home, the run's summary and the result's reveal ---------------------------------
+
+export const JOUST = "Jouter";
+export const NEW_JOUST = "Nouvelle joute";
+export const BACK_TO_JOUSTS = "Retour aux joutes";
+export const REVENGE_SHORT = "Revanche";
+export const REPLAY_REVEAL = "Revoir";
+export const EDIT_DECK_SHORT = "Modifier";
+export const COMPOSE_DECK = "Composer mon deck";
+export const COMPLETE_DECK = "Compléter pour moi";
+export const GUIDE_AGAIN = "Revoir l'accueil guidé";
+export const RUN_DONE = "Ta partie est jouée";
+export const TRAPS_TITLE = "Tes pièges";
+export const SEALED_RESULT = "Résultat à découvrir";
+export const OPEN_SEALED = "Touche pour l'ouvrir";
+export const JOUSTS_HELP_LABEL = "Comment se joue une joute";
+export const DECK_NOT_SAVED =
+  "Compose ton deck pour jouter : ce sont tes mots que tes adversaires devront trouver.";
+
+/** The rule in four short lines, behind the « ? » of the jousts' home. */
+export function joustHelp(size: RunSize): readonly string[] {
+  return [
+    `Tu trouves les ${size.questions} mots tirés du deck de l'autre joueur, qui trouve les ${size.questions} du tien.`,
+    `${size.seconds} secondes par mot, ${size.choices} choix.`,
+    "Le plus de mots trouvés gagne ; à égalité, le plus rapide.",
+    "Chaque partie donne des XP, et une victoire un sachet bonus en réserve.",
+  ];
+}
+
+export interface JoustSections {
+  readonly toPlay: readonly JoustSummary[];
+  /** Ended, the result not watched yet: shown sealed. */
+  readonly toDiscover: readonly JoustSummary[];
+  readonly waiting: readonly JoustSummary[];
+  readonly ended: readonly JoustSummary[];
+}
+
+/** The player's jousts by section, the newest first in each. */
+export function joustSections(jousts: readonly JoustSummary[]): JoustSections {
+  const newest = [...jousts].sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt));
+  return {
+    toPlay: newest.filter((joust) => joust.state === "play"),
+    toDiscover: newest.filter((joust) => joust.state === "ended" && !joust.seen),
+    waiting: newest.filter((joust) => joust.state === "waiting"),
+    ended: newest.filter((joust) => joust.state === "ended" && joust.seen),
+  };
+}
+
+const kindWord = (joust: JoustSummary) => (joust.kind === "ranked" ? "Classée" : "Amicale");
+
+/** The short line of a joust in its section: « Classée · avant demain 9 h 05 ». */
+export function joustRowState(joust: JoustSummary, now: EpochMs, timeZone?: string): string {
+  switch (joust.state) {
+    case "play":
+      return joust.launched || joust.replyBy === null
+        ? `${kindWord(joust)} · à toi de jouer`
+        : `${kindWord(joust)} · avant ${deadlineText(joust.replyBy, now, timeZone)}`;
+    case "waiting":
+      return joust.replyBy === null
+        ? `${kindWord(joust)} · en train de jouer`
+        : `${kindWord(joust)} · jusqu'à ${deadlineText(joust.replyBy, now, timeZone)}`;
+    case "ended":
+      if (joust.forfeit) return `${kindWord(joust)} · forfait`;
+      return joust.seen && joust.mine !== null && joust.theirs !== null
+        ? `${kindWord(joust)} · ${joust.mine.correct} à ${joust.theirs.correct}`
+        : kindWord(joust);
+  }
+}
+
+/** The word of the banner, and of an ended joust in the list. */
+export function outcomeWord(outcome: JoustSummary["outcome"], banner = false): string {
+  switch (outcome) {
+    case "won":
+      return banner ? "Victoire !" : "Victoire";
+    case "lost":
+      return "Défaite";
+    default:
+      return "Égalité";
+  }
+}
+
+/** Under the run's summary: « Alix a jusqu'à demain 17 h 20. On te prévient au courrier. » */
+export function waitingLine(
+  opponent: PlayerBadge | null,
+  replyBy: string | null,
+  now: EpochMs,
+  timeZone?: string,
+): string {
+  const name = playerName(opponent);
+  return replyBy === null
+    ? `${name} va jouer sa partie. On te prévient au courrier.`
+    : `${name} a jusqu'à ${deadlineText(replyBy, now, timeZone)}. On te prévient au courrier.`;
+}
+
+/** « Les 5 mots de ton deck que Alix devra trouver. » */
+export function trapsLine(count: number, opponent: PlayerBadge | null): string {
+  const name = playerName(opponent);
+  return count === 1
+    ? `Le mot de ton deck que ${name} devra trouver.`
+    : `Les ${count} mots de ton deck que ${name} devra trouver.`;
+}
+
+/** The time of an answer on the summary and the board: « 4,2 s », or « manqué ». */
+export function answerTimeText(answer: { readonly correct: boolean; readonly ms: number }) {
+  if (!answer.correct) return "manqué";
+  return `${(Math.round(answer.ms / 100) / 10).toLocaleString("fr-FR")} s`;
+}
+
+/** « 31 s », the total time of a run. */
+export function runSeconds(answers: readonly { readonly ms: number }[]): string {
+  return `${Math.round(answers.reduce((total, answer) => total + answer.ms, 0) / 1000)} s`;
+}
+
+export function xpGainText(xp: number): string {
+  return `+${xp} XP`;
+}
+
+export function sachetGainText(boosters: number): string {
+  return `+${plural(boosters, "sachet", "sachets")}`;
+}
+
+/** The words of the player's deck the other player missed, for the reveal's last line. */
+export function trappingWords(
+  theirs: readonly { readonly cardId: string; readonly correct: boolean }[],
+  wordOf: (cardId: string) => string,
+): string[] {
+  return theirs.filter((answer) => !answer.correct).map((answer) => wordOf(answer.cardId));
+}
+
+/**
+ * Fills the deck's empty places with the rarest cards that still fit its budget, as the game's own
+ * deck does; ties go by card id, so the same cards give the same deck.
+ */
+export function completeDeck(
+  deck: readonly string[],
+  candidates: readonly { readonly cardId: string; readonly cost: number }[],
+  limits: { readonly size: number; readonly budget: number },
+): readonly string[] {
+  const costs = new Map(candidates.map((candidate) => [candidate.cardId, candidate.cost]));
+  let spent = deck.reduce((total, id) => total + (costs.get(id) ?? 0), 0);
+  const next = [...deck];
+  const byRarity = [...candidates].sort(
+    (a, b) => b.cost - a.cost || a.cardId.localeCompare(b.cardId),
+  );
+  for (const candidate of byRarity) {
+    if (next.length >= limits.size) break;
+    if (next.includes(candidate.cardId) || spent + candidate.cost > limits.budget) continue;
+    next.push(candidate.cardId);
+    spent += candidate.cost;
+  }
+  return next;
 }

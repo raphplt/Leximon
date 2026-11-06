@@ -1,6 +1,6 @@
 # Cahier des charges · Les joutes, la suite : sensation, accueil guidé et ligues
 
-- **Statut :** proposé le 2026-11-06 ; le propriétaire a retenu toutes les recommandations le même jour (L1 à L11 en a), inscrites en P51, P91 et P98. Rien de construit hors de la maquette.
+- **Statut :** proposé le 2026-11-06 ; le propriétaire a retenu toutes les recommandations le même jour (L1 à L11 en a), inscrites en P51, P91 et P98. Lot 2 (L1 à L6) construit le 2026-11-06, web et mobile, à recetter ([recette-nouveautes.md](../recette-nouveautes.md), JTE-04 à JTE-14) ; lot 3 pas commencé.
 - **Source :** retours du propriétaire du 2026-11-06, après une joute jouée contre les bots en local. Le principe marche. Ce qui ne va pas :
   - l'interface manque de sensation (« juicyness ») ;
   - la joute n'est pas assez expliquée ;

@@ -97,6 +97,18 @@ export function joustRoutes(http: Http) {
       return refused(response, launchRefusalSchema, "launch_failed");
     },
 
+    /** Idempotent: the first visit stays done. */
+    async markJoustGuideDone(): Promise<void> {
+      const response = await sendAsPlayer("/jousts/guide", json("POST"));
+      if (!response.ok) throw new ApiError("guide_not_saved", response.status);
+    },
+
+    /** Idempotent: the result stays opened. */
+    async markJoustSeen(id: string): Promise<void> {
+      const response = await sendAsPlayer(joust(id, "/seen"), json("POST"));
+      if (!response.ok) throw new ApiError("seen_not_saved", response.status);
+    },
+
     fetchJoust: (id: string): Promise<JoustView> =>
       getJson(joust(id), joustViewSchema, "joust_unavailable"),
 

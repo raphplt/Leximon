@@ -27,6 +27,8 @@ import {
   launchJoust,
   listJousts,
   listOpponents,
+  markGuideDone,
+  markSeen,
   nextQuestion,
   readDeck,
   readJoust,
@@ -116,6 +118,23 @@ export function joustRoutes(loadCatalogIndex: CatalogIndexLoader) {
       case "not_found":
         return c.json({ error: "joust_not_found" }, 404);
     }
+  });
+
+  routes.post("/guide", async (c) => {
+    await markGuideDone(c.var.db, c.var.userId, Date.now());
+    return c.body(null, 204);
+  });
+
+  routes.post("/:id/seen", async (c) => {
+    const joustId = joustIdSchema.safeParse(c.req.param("id"));
+    if (!joustId.success) return c.json({ error: "joust_not_found" }, 404);
+    const result = await markSeen(c.var.db, {
+      userId: c.var.userId,
+      joustId: joustId.data,
+      now: Date.now(),
+    });
+    if (result === "not_found") return c.json({ error: "joust_not_found" }, 404);
+    return c.body(null, 204);
   });
 
   routes.get("/:id", async (c) => {

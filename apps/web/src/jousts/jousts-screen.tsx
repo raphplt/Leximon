@@ -1,58 +1,78 @@
 "use client";
 
-import type { JoustDeckResponse, JoustsResponse, PlayerBadge } from "@leximon/contract";
-import { collectionName, type LaunchJoustResult } from "@leximon/contract/client";
+import type {
+  JoustDeckResponse,
+  JoustSummary,
+  JoustsResponse,
+  PlayerBadge,
+} from "@leximon/contract";
 import {
   accessText,
-  DECK_AUTO,
-  DECK_RULES,
-  deckRefusalText,
-  deckSummary,
-  EDIT_DECK,
-  JOUSTS_RULES,
-  joustLine,
+  COMPOSE_DECK,
+  DECK_NOT_SAVED,
+  EDIT_DECK_SHORT,
+  GUIDE_AGAIN,
+  JOUST,
+  JOUSTS_HELP_LABEL,
+  JOUSTS_TITLE,
+  joustHelp,
+  joustRowState,
+  joustSections,
   LAUNCH_FRIENDLY,
-  LAUNCH_RANKED,
   launchRefusalText,
   NO_FRIENDS_TO_DEFY,
   NO_JOUSTS,
+  outcomeWord,
   PLAY_JOUST,
   playerName,
-  SAVE_DECK,
-  sortJousts,
-  toggleDeckCard,
+  runSize,
+  SEALED_RESULT,
 } from "@leximon/view-model";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { type CSSProperties, type ReactNode, useCallback, useEffect, useState } from "react";
 import { useCatalog } from "@/cards/use-catalog";
 import { Avatar } from "@/components/avatar";
-import { Card } from "@/components/card";
 import { api } from "@/lib/api";
 import { useNow } from "@/lib/use-now";
-import { cardLabel, catalogCard } from "@/trades/card-thumb";
+import { MainAction } from "@/library/play-pieces";
+import desk from "@/play/desk-columns.module.css";
+import { profile } from "@/player/player";
+import { useShared } from "@/player/resource";
+import { catalogCard } from "@/trades/card-thumb";
 import { Button, ButtonLink } from "@/ui/button";
 import { Dialog } from "@/ui/dialog";
+import { HelpTip } from "@/ui/help-tip";
+import { Icon } from "@/ui/icon";
 import { LoadFailed } from "@/ui/load-failed";
+import { ParticleStage } from "@/ui/stage";
+import { Lettering, Toy, ToyBody, ToyIcon } from "@/ui/toy";
 import ui from "@/ui/ui.module.css";
+import { DeckBuilder } from "./deck-builder";
+import { Guide } from "./guide";
 import styles from "./jousts.module.css";
+import { MiniCard, rise } from "./pieces";
+import { useLaunch } from "./use-launch";
 
 type Loaded =
   | { readonly state: "loading" }
   | { readonly state: "failed" }
   | { readonly state: "ready"; readonly jousts: JoustsResponse; readonly deck: JoustDeckResponse };
 
-/** The jousts' hall: the deck, launching a joust, and the player's jousts. */
+/** The jousts' hall: the first visit, then « Jouter », the deck and the player's jousts. */
 export function JoustsScreen() {
-  const router = useRouter();
+  return (
+    <ParticleStage>
+      <JoustsHall />
+    </ParticleStage>
+  );
+}
+
+function JoustsHall() {
   const [loaded, setLoaded] = useState<Loaded>({ state: "loading" });
-  const [refusal, setRefusal] = useState<string | null>(null);
-  const [launching, setLaunching] = useState(false);
-  const [deckOpen, setDeckOpen] = useState(false);
-  const [friendsOpen, setFriendsOpen] = useState(false);
-  // Kept until the server answers: a retry after a lost answer never launches twice.
-  const pendingKey = useRef<string | null>(null);
-  const now = useNow(60_000);
+  const [guideOpen, setGuideOpen] = useState(false);
+  const me = useShared(profile);
+  const opensAt = loaded.state === "ready" ? loaded.jousts.opensAtLevel : 0;
+  const { launch, busy, refusal } = useLaunch(opensAt);
 
   const load = useCallback(() => {
     Promise.all([api.fetchJousts(), api.fetchJoustDeck()])
@@ -60,30 +80,6 @@ export function JoustsScreen() {
       .catch(() => setLoaded({ state: "failed" }));
   }, []);
   useEffect(load, [load]);
-
-  const launch = async (request: Parameters<typeof api.launchJoust>[0]) => {
-    if (loaded.state !== "ready") return;
-    const key = pendingKey.current ?? crypto.randomUUID();
-    pendingKey.current = key;
-    setLaunching(true);
-    setRefusal(null);
-    let result: LaunchJoustResult;
-    try {
-      result = await api.launchJoust(request, key);
-    } catch {
-      setRefusal("Le serveur ne répond pas. Réessaie.");
-      setLaunching(false);
-      return;
-    }
-    pendingKey.current = null;
-    setLaunching(false);
-    if (result.kind === "launched") {
-      router.push(`/joutes/${result.joustId}`);
-      return;
-    }
-    setFriendsOpen(false);
-    setRefusal(launchRefusalText(result.reason, loaded.jousts.opensAtLevel));
-  };
 
   if (loaded.state === "failed") {
     return (
@@ -96,11 +92,11 @@ export function JoustsScreen() {
   const { jousts, deck } = loaded;
   const closed = accessText(jousts.access, jousts.opensAtLevel);
 
-  return (
-    <main className={styles.page}>
-      <h1 className={`${ui.display} ${styles.title}`}>Joutes</h1>
-      {closed !== null ? (
-        <section className={`${ui.panel} ${styles.panel}`}>
+  if (closed !== null) {
+    return (
+      <main className={styles.page}>
+        <section className={`${ui.leaf} ${styles.closed}`}>
+          <Lettering className={styles.homeTitle}>{JOUSTS_TITLE}</Lettering>
           <p className={styles.line}>{closed}</p>
           {jousts.access === "account_required" && (
             <ButtonLink href="/compte">Créer mon compte</ButtonLink>
@@ -109,225 +105,279 @@ export function JoustsScreen() {
             <ButtonLink href="/profil">Choisir mon pseudo</ButtonLink>
           )}
         </section>
-      ) : (
-        <>
-          <section className={`${ui.panel} ${styles.panel}`}>
-            <p className={styles.line}>{JOUSTS_RULES}</p>
-            <div className={styles.actions}>
-              <Button
-                glow
-                disabled={launching || !jousts.deckReady}
-                onClick={() => void launch({ kind: "ranked" })}
-              >
-                {LAUNCH_RANKED}
-              </Button>
-              <Button
-                variant="secondary"
-                disabled={launching || !jousts.deckReady}
+      </main>
+    );
+  }
+
+  const closeGuide = () => {
+    setGuideOpen(false);
+    // Shown once: the server keeps it done, for the web and the phone.
+    api
+      .markJoustGuideDone()
+      .catch(() => undefined)
+      .finally(load);
+  };
+
+  if (!jousts.guideDone || guideOpen) {
+    return (
+      <main className={styles.page}>
+        <Guide
+          deck={deck}
+          deckSaved={jousts.deckSaved}
+          jousted={jousts.jousts.length > 0}
+          size={runSize(Date.now())}
+          me={{ name: me?.pseudo ?? "Toi", avatar: me?.avatar ?? null, frame: me?.frame ?? null }}
+          busy={busy}
+          refusal={refusal}
+          onDeckSaved={load}
+          onLaunch={() => {
+            api.markJoustGuideDone().catch(() => undefined);
+            void launch({ kind: "ranked" });
+          }}
+          onClose={closeGuide}
+        />
+      </main>
+    );
+  }
+
+  return (
+    <Home
+      jousts={jousts}
+      deck={deck}
+      busy={busy}
+      refusal={refusal}
+      onLaunch={(request) => void launch(request)}
+      onGuide={() => setGuideOpen(true)}
+      onDeckSaved={load}
+    />
+  );
+}
+
+function Home({
+  jousts,
+  deck,
+  busy,
+  refusal,
+  onLaunch,
+  onGuide,
+  onDeckSaved,
+}: {
+  readonly jousts: JoustsResponse;
+  readonly deck: JoustDeckResponse;
+  readonly busy: boolean;
+  readonly refusal: string | null;
+  readonly onLaunch: (request: Parameters<typeof api.launchJoust>[0]) => void;
+  readonly onGuide: () => void;
+  readonly onDeckSaved: () => void;
+}) {
+  const catalog = useCatalog();
+  const now = useNow(60_000) || Date.now();
+  const [deckOpen, setDeckOpen] = useState(false);
+  const [friendsOpen, setFriendsOpen] = useState(false);
+  const sections = joustSections(jousts.jousts);
+  const costs = new Map(deck.candidates.map((candidate) => [candidate.cardId, candidate.cost]));
+  const spent = deck.cardIds.reduce((total, id) => total + (costs.get(id) ?? 0), 0);
+  const ready = jousts.deckSaved && jousts.deckReady;
+
+  return (
+    <main className={styles.page}>
+      <div className={styles.home}>
+        <section className={`${ui.leaf} ${styles.homeTop} ${desk.rising}`} style={rise(0)}>
+          <header className={styles.homeHead}>
+            <Lettering className={styles.homeTitle}>{JOUSTS_TITLE}</Lettering>
+            <span className={styles.homeTools}>
+              <HelpTip label={JOUSTS_HELP_LABEL} title="La joute">
+                <ul className={styles.helpList}>
+                  {joustHelp(runSize(now)).map((line) => (
+                    <li key={line}>{line}</li>
+                  ))}
+                </ul>
+                <button type="button" className={styles.helpLink} onClick={onGuide}>
+                  {GUIDE_AGAIN}
+                </button>
+              </HelpTip>
+            </span>
+          </header>
+          {ready ? (
+            <div className={styles.launch}>
+              <MainAction
+                label={JOUST}
+                disabled={busy}
+                onClick={() => onLaunch({ kind: "ranked" })}
+              />
+              <Toy
+                matter="paper"
+                className={styles.friendAction}
+                disabled={busy}
                 onClick={() => setFriendsOpen(true)}
               >
-                {LAUNCH_FRIENDLY}
-              </Button>
+                <Icon name="amis" size={18} /> {LAUNCH_FRIENDLY}
+              </Toy>
             </div>
-            {!jousts.deckReady && (
-              <p className={styles.notice}>{launchRefusalText("deck_too_small", 0)}</p>
-            )}
-            {refusal !== null && (
-              <p className={styles.notice} role="alert">
-                {refusal}
-              </p>
+          ) : (
+            <div className={styles.launch}>
+              <MainAction
+                label={COMPOSE_DECK}
+                disabled={!jousts.deckReady}
+                onClick={() => setDeckOpen(true)}
+              />
+            </div>
+          )}
+          {!jousts.deckReady && (
+            <p className={styles.line}>{launchRefusalText("deck_too_small", 0)}</p>
+          )}
+          {jousts.deckReady && !jousts.deckSaved && <p className={styles.line}>{DECK_NOT_SAVED}</p>}
+          {refusal !== null && (
+            <p className={styles.notice} role="alert">
+              {refusal}
+            </p>
+          )}
+        </section>
+
+        {jousts.deckSaved && (
+          <section className={`${ui.leaf} ${styles.deckLeaf} ${desk.rising}`} style={rise(1)}>
+            <header className={styles.deckHead}>
+              <span className={desk.leafKicker}>
+                Ton deck · {spent} / {deck.budget} points
+              </span>
+              <Toy matter="paper" className={styles.control} onClick={() => setDeckOpen(true)}>
+                {EDIT_DECK_SHORT}
+              </Toy>
+            </header>
+            {catalog !== null && (
+              <div className={styles.fan}>
+                {deck.cardIds.map((cardId, index) => (
+                  <MiniCard
+                    key={cardId}
+                    card={catalogCard(catalog, cardId)}
+                    className={styles.fanCard}
+                    style={{ "--i": index - (deck.cardIds.length - 1) / 2 } as CSSProperties}
+                  />
+                ))}
+              </div>
             )}
           </section>
-          <DeckPanel deck={deck} onEdit={() => setDeckOpen(true)} />
-          <section className={`${ui.panel} ${styles.panel}`}>
-            <h2 className={ui.kicker}>Tes joutes</h2>
-            {jousts.jousts.length === 0 ? (
-              <p className={styles.line}>{NO_JOUSTS}</p>
-            ) : (
-              <ul className={styles.list}>
-                {sortJousts(jousts.jousts).map((joust) => {
-                  const line = joustLine(joust, jousts.questions, now || Date.now());
-                  return (
-                    <li key={joust.id} className={styles.row}>
-                      <Avatar
-                        avatar={joust.opponent?.avatar ?? null}
-                        frame={joust.opponent?.frame ?? null}
-                        size={44}
-                      />
-                      <div className={styles.rowText}>
-                        <p className={styles.rowTitle}>{line.title}</p>
-                        <p className={styles.rowDetail}>{line.detail}</p>
-                      </div>
-                      {line.toPlay ? (
-                        <ButtonLink href={`/joutes/${joust.id}`} small>
-                          {PLAY_JOUST}
-                        </ButtonLink>
-                      ) : (
-                        <Link href={`/joutes/${joust.id}`} className={styles.rowLink}>
-                          Voir
-                        </Link>
-                      )}
-                    </li>
-                  );
-                })}
-              </ul>
+        )}
+
+        <section className={`${ui.leaf} ${styles.list} ${desk.rising}`} style={rise(2)}>
+          {jousts.jousts.length === 0 && <p className={styles.line}>{NO_JOUSTS}</p>}
+          <JoustGroup title="À toi de jouer" jousts={sections.toPlay}>
+            {(joust) => (
+              <JoustRow joust={joust} now={now} pulse>
+                <ToyBody matter="gold" className={styles.rowAction}>
+                  {PLAY_JOUST}
+                </ToyBody>
+              </JoustRow>
             )}
-          </section>
-          <DeckDialog
-            open={deckOpen}
+          </JoustGroup>
+          <JoustGroup title="Résultats à découvrir" jousts={sections.toDiscover}>
+            {(joust) => (
+              <JoustRow joust={joust} now={now} sealed>
+                <span className={styles.seal} role="img" aria-label={SEALED_RESULT}>
+                  <ToyIcon name="mail" size={38} />
+                </span>
+              </JoustRow>
+            )}
+          </JoustGroup>
+          <JoustGroup title="En attente" jousts={sections.waiting}>
+            {(joust) => (
+              <JoustRow joust={joust} now={now} clock>
+                {null}
+              </JoustRow>
+            )}
+          </JoustGroup>
+          <JoustGroup title="Terminées" jousts={sections.ended}>
+            {(joust) => (
+              <JoustRow joust={joust} now={now}>
+                <span className={styles.outcome} data-won={joust.outcome === "won" || undefined}>
+                  {outcomeWord(joust.outcome)}
+                </span>
+              </JoustRow>
+            )}
+          </JoustGroup>
+        </section>
+      </div>
+
+      <Dialog open={deckOpen} title="Ton deck" onClose={() => setDeckOpen(false)} large>
+        {deckOpen && (
+          <DeckBuilder
             deck={deck}
-            onClose={() => setDeckOpen(false)}
+            initial={deck.saved || jousts.jousts.length > 0 ? deck.cardIds : []}
             onSaved={() => {
               setDeckOpen(false);
-              load();
+              onDeckSaved();
             }}
           />
-          <FriendsDialog
-            open={friendsOpen}
-            busy={launching}
-            onClose={() => setFriendsOpen(false)}
-            onPick={(code) => void launch({ kind: "friendly", opponentCode: code })}
-          />
-        </>
-      )}
+        )}
+      </Dialog>
+      <FriendsDialog
+        open={friendsOpen}
+        busy={busy}
+        onClose={() => setFriendsOpen(false)}
+        onPick={(code) => {
+          setFriendsOpen(false);
+          onLaunch({ kind: "friendly", opponentCode: code });
+        }}
+      />
     </main>
   );
 }
 
-function DeckPanel({
-  deck,
-  onEdit,
+function JoustGroup({
+  title,
+  jousts,
+  children,
 }: {
-  readonly deck: JoustDeckResponse;
-  readonly onEdit: () => void;
+  readonly title: string;
+  readonly jousts: readonly JoustSummary[];
+  readonly children: (joust: JoustSummary) => ReactNode;
 }) {
-  const catalog = useCatalog();
-  const cost = deckCost(deck, deck.cardIds);
+  if (jousts.length === 0) return null;
   return (
-    <section className={`${ui.panel} ${styles.panel}`}>
-      <h2 className={ui.kicker}>Ton deck</h2>
-      <p className={styles.line}>
-        {deckSummary(deck.cardIds.length, deck.size, cost, deck.budget)}.{" "}
-        {deck.saved ? "" : DECK_AUTO}
-      </p>
-      {catalog !== null && deck.cardIds.length > 0 && (
-        <ul className={styles.deck}>
-          {deck.cardIds.map((cardId) => {
-            const card = catalogCard(catalog, cardId);
-            return (
-              <li key={cardId} aria-label={cardLabel(card)}>
-                <Card
-                  card={card}
-                  collectionName={collectionName(catalog, card.collectionId)}
-                  width={84}
-                />
-              </li>
-            );
-          })}
-        </ul>
-      )}
-      <div className={styles.actions}>
-        <Button variant="secondary" small onClick={onEdit}>
-          {EDIT_DECK}
-        </Button>
-      </div>
-    </section>
+    <div className={styles.group}>
+      <span className={desk.leafKicker}>{title}</span>
+      <ul className={styles.rows}>
+        {jousts.map((joust) => (
+          <li key={joust.id}>{children(joust)}</li>
+        ))}
+      </ul>
+    </div>
   );
 }
 
-function deckCost(deck: JoustDeckResponse, cardIds: readonly string[]): number {
-  const costs = new Map(deck.candidates.map((candidate) => [candidate.cardId, candidate.cost]));
-  return cardIds.reduce((total, id) => total + (costs.get(id) ?? 0), 0);
-}
-
-function DeckDialog({
-  open,
-  deck,
-  onClose,
-  onSaved,
+function JoustRow({
+  joust,
+  now,
+  pulse = false,
+  sealed = false,
+  clock = false,
+  children,
 }: {
-  readonly open: boolean;
-  readonly deck: JoustDeckResponse;
-  readonly onClose: () => void;
-  readonly onSaved: () => void;
+  readonly joust: JoustSummary;
+  readonly now: number;
+  readonly pulse?: boolean;
+  readonly sealed?: boolean;
+  readonly clock?: boolean;
+  readonly children: ReactNode;
 }) {
-  const catalog = useCatalog();
-  const [chosen, setChosen] = useState<readonly string[]>(deck.cardIds);
-  const [message, setMessage] = useState<string | null>(null);
-  const [saving, setSaving] = useState(false);
-  useEffect(() => {
-    if (open) {
-      setChosen(deck.cardIds);
-      setMessage(null);
-    }
-  }, [open, deck.cardIds]);
-  const costs = new Map(deck.candidates.map((candidate) => [candidate.cardId, candidate.cost]));
-  const costOf = (cardId: string) => costs.get(cardId) ?? 0;
-
-  const save = async () => {
-    setSaving(true);
-    setMessage(null);
-    try {
-      const result = await api.saveJoustDeck(chosen);
-      if (result.kind === "saved") onSaved();
-      else setMessage(deckRefusalText(result.reason));
-    } catch {
-      setMessage("Le serveur ne répond pas. Réessaie.");
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const candidates = [...deck.candidates].sort(
-    (a, b) => b.cost - a.cost || a.cardId.localeCompare(b.cardId),
-  );
   return (
-    <Dialog open={open} title="Ton deck" onClose={onClose}>
-      <div className={styles.dialogBody}>
-        <p className={styles.line}>{DECK_RULES}</p>
-        <p className={styles.deckCount} aria-live="polite">
-          {deckSummary(chosen.length, deck.size, deckCost(deck, chosen), deck.budget)}
-        </p>
-        {message !== null && (
-          <p className={styles.notice} role="alert">
-            {message}
-          </p>
-        )}
-        {catalog !== null && (
-          <ul className={styles.pick}>
-            {candidates.map((candidate) => {
-              const card = catalogCard(catalog, candidate.cardId);
-              const inDeck = chosen.includes(candidate.cardId);
-              return (
-                <li key={candidate.cardId}>
-                  <button
-                    type="button"
-                    className={`${styles.pickCard} ${inDeck ? styles.picked : ""}`}
-                    aria-pressed={inDeck}
-                    aria-label={`${cardLabel(card)}, ${candidate.cost} points`}
-                    onClick={() => {
-                      const next = toggleDeckCard(chosen, candidate.cardId, costOf, deck);
-                      setChosen(next.deck);
-                      setMessage(next.refused);
-                    }}
-                  >
-                    <Card
-                      card={card}
-                      collectionName={collectionName(catalog, card.collectionId)}
-                      width={96}
-                    />
-                    <span className={styles.cost}>{candidate.cost} pts</span>
-                  </button>
-                </li>
-              );
-            })}
-          </ul>
-        )}
-        <Button wide disabled={saving || chosen.length < deck.min} onClick={() => void save()}>
-          {SAVE_DECK}
-        </Button>
-      </div>
-    </Dialog>
+    <Link
+      href={`/joutes/${joust.id}`}
+      className={styles.row}
+      data-pulse={pulse || undefined}
+      data-sealed={sealed || undefined}
+    >
+      <Avatar
+        avatar={joust.opponent?.avatar ?? null}
+        frame={joust.opponent?.frame ?? null}
+        size={40}
+      />
+      <span className={styles.rowName}>{playerName(joust.opponent)}</span>
+      <span className={styles.rowState}>
+        {clock && <Icon name="clock" size={14} />} {joustRowState(joust, now)}
+      </span>
+      {children}
+    </Link>
   );
 }
 
@@ -355,17 +405,17 @@ function FriendsDialog({
 
   return (
     <Dialog open={open} title={LAUNCH_FRIENDLY} onClose={onClose}>
-      <div className={styles.dialogBody}>
+      <div className={styles.friends}>
         {failed && <p className={styles.notice}>Le serveur ne répond pas. Réessaie.</p>}
         {players !== null && players.length === 0 && (
           <p className={styles.line}>{NO_FRIENDS_TO_DEFY}</p>
         )}
         {players !== null && players.length > 0 && (
-          <ul className={styles.list}>
+          <ul className={styles.rows}>
             {players.map((player) => (
-              <li key={player.code} className={styles.row}>
+              <li key={player.code} className={styles.friendRow}>
                 <Avatar avatar={player.avatar} frame={player.frame} size={40} />
-                <p className={`${styles.rowTitle} ${styles.rowText}`}>{playerName(player)}</p>
+                <span className={styles.rowName}>{playerName(player)}</span>
                 <Button small disabled={busy} onClick={() => onPick(player.code)}>
                   Défier
                 </Button>

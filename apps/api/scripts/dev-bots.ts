@@ -23,11 +23,18 @@ import { createDb, schema } from "@leximon/db";
 import { and, eq, inArray, isNotNull, isNull } from "drizzle-orm";
 import { generateSeed } from "../src/boosters/seed";
 import { createCatalogIndexLoader } from "../src/challenges/catalog-index";
-import { answerQuestion, launchJoust, nextQuestion, settleJoust } from "../src/jousts/jousts";
+import {
+  answerQuestion,
+  launchJoust,
+  nextQuestion,
+  readDeck,
+  settleJoust,
+} from "../src/jousts/jousts";
 
 const {
   cards,
   friendships,
+  joustDecks,
   joustQuestions,
   jousts,
   players,
@@ -198,6 +205,12 @@ async function prepareBots(accountId: string): Promise<void> {
         ])
         .onConflictDoNothing();
     });
+    // The deck the game composes, kept as the bot's: a joust waits for a deck composed once.
+    const deck = await readDeck(db, bot.id, catalog, Date.now());
+    await db
+      .insert(joustDecks)
+      .values({ userId: bot.id, cardIds: deck.cardIds, updatedAt: now })
+      .onConflictDoNothing();
   }
   console.info(`Bots prêts, amis de ${email} : ${BOTS.map((bot) => bot.pseudo).join(", ")}.`);
 }

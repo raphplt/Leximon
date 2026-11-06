@@ -1,91 +1,95 @@
-import type { JoustDeckResponse, JoustsResponse, PlayerBadge } from "@leximon/contract";
-import { collectionName, type LaunchJoustResult } from "@leximon/contract/client";
+import type {
+  JoustDeckResponse,
+  JoustSummary,
+  JoustsResponse,
+  LaunchJoustRequest,
+  PlayerBadge,
+} from "@leximon/contract";
+import { toyMatters, toy as toyValues } from "@leximon/tokens";
 import {
   accessText,
-  DECK_AUTO,
-  DECK_RULES,
-  deckRefusalText,
-  deckSummary,
-  EDIT_DECK,
-  JOUSTS_RULES,
+  COMPOSE_DECK,
+  DECK_NOT_SAVED,
+  EDIT_DECK_SHORT,
+  GUIDE_AGAIN,
+  JOUST,
+  JOUSTS_HELP_LABEL,
   JOUSTS_TITLE,
-  joustLine,
+  joustHelp,
+  joustRowState,
+  joustSections,
   LAUNCH_FRIENDLY,
-  LAUNCH_RANKED,
   launchRefusalText,
   NO_FRIENDS_TO_DEFY,
   NO_JOUSTS,
+  outcomeWord,
   PLAY_JOUST,
   playerName,
-  SAVE_DECK,
-  sortJousts,
-  toggleDeckCard,
+  runSize,
+  SEALED_RESULT,
 } from "@leximon/view-model";
-import { randomUUID } from "expo-crypto";
-import { router } from "expo-router";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { router, useFocusEffect } from "expo-router";
+import { type ReactNode, useCallback, useEffect, useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
+import Animated, { FadeInUp } from "react-native-reanimated";
 import { api } from "@/api/client";
-import { Card } from "@/cards/card";
 import { useCatalog } from "@/cards/use-catalog";
-import { useNow } from "@/player/shared";
-import { CardRow, cardLabel, catalogCard } from "@/screens/trades/card-row";
-import { fontSizes, fonts, paperColors, radii, space } from "@/theme";
+import { MainAction } from "@/library/play-pieces";
+import { useNow, useShared } from "@/player/shared";
+import { profile } from "@/player/state";
+import { catalogCard } from "@/screens/trades/card-row";
+import { fontSizes, fonts, radii, space } from "@/theme";
 import { Avatar } from "@/ui/avatar";
 import { Button } from "@/ui/button";
+import { Icon } from "@/ui/icon";
 import { FormError, Page, Paragraph } from "@/ui/page";
-import { Panel } from "@/ui/panel";
 import { Sheet } from "@/ui/sheet";
+import { ParticleStage } from "@/ui/stage";
 import { TextButton } from "@/ui/text-button";
-
-const NO_ANSWER = "Le serveur ne répond pas. Réessaie.";
+import { Leaf, Lettering, Toy, ToyBody, ToyIcon } from "@/ui/toy";
+import { DeckBuilder } from "./deck-builder";
+import { Guide } from "./guide";
+import { ink, LeafKicker, Looping, MiniCard, Notice, pieces } from "./pieces";
+import { NO_ANSWER, useLaunch } from "./use-launch";
 
 type Loaded =
   | { readonly state: "loading" }
   | { readonly state: "failed" }
   | { readonly state: "ready"; readonly jousts: JoustsResponse; readonly deck: JoustDeckResponse };
 
-/** The jousts' hall: the deck, launching a joust, and the player's jousts. */
+const FAN_CARD = 60;
+
+/** Each leaf rises in turn when the screen appears. */
+const rise = (index: number) => FadeInUp.delay(index * 90).duration(320);
+
+/** The jousts' hall: the first visit, then « Jouter », the deck and the player's jousts. */
 export function JoustsScreen() {
+  return (
+    <ParticleStage>
+      <JoustsHall />
+    </ParticleStage>
+  );
+}
+
+function JoustsHall() {
   const [loaded, setLoaded] = useState<Loaded>({ state: "loading" });
-  const [refusal, setRefusal] = useState<string | null>(null);
-  const [launching, setLaunching] = useState(false);
-  const [deckOpen, setDeckOpen] = useState(false);
-  const [friendsOpen, setFriendsOpen] = useState(false);
-  // Kept until the server answers: a retry after a lost answer never launches twice.
-  const pendingKey = useRef<string | null>(null);
-  const now = useNow(60_000);
+  const [guideOpen, setGuideOpen] = useState(false);
+  const me = useShared(profile);
+  const opensAt = loaded.state === "ready" ? loaded.jousts.opensAtLevel : 0;
+  const { launch, busy, refusal } = useLaunch(opensAt);
 
   const load = useCallback(() => {
     Promise.all([api.fetchJousts(), api.fetchJoustDeck()])
       .then(([jousts, deck]) => setLoaded({ state: "ready", jousts, deck }))
       .catch(() => setLoaded({ state: "failed" }));
   }, []);
-  useEffect(load, [load]);
-
-  const launch = async (request: Parameters<typeof api.launchJoust>[0]) => {
-    if (loaded.state !== "ready") return;
-    const key = pendingKey.current ?? randomUUID();
-    pendingKey.current = key;
-    setLaunching(true);
-    setRefusal(null);
-    let result: LaunchJoustResult;
-    try {
-      result = await api.launchJoust(request, key);
-    } catch {
-      setRefusal(NO_ANSWER);
-      setLaunching(false);
-      return;
-    }
-    pendingKey.current = null;
-    setLaunching(false);
-    setFriendsOpen(false);
-    if (result.kind === "launched") {
-      router.push({ pathname: "/joutes/[id]", params: { id: result.joustId } });
-      return;
-    }
-    setRefusal(launchRefusalText(result.reason, loaded.jousts.opensAtLevel));
-  };
+  // Read again on each return from a joust: its row moved, and the guide closed if it launched it.
+  useFocusEffect(
+    useCallback(() => {
+      setGuideOpen(false);
+      load();
+    }, [load]),
+  );
 
   if (loaded.state !== "ready") {
     return (
@@ -106,208 +110,360 @@ export function JoustsScreen() {
   if (closed !== null) {
     return (
       <Page title={JOUSTS_TITLE}>
-        <Panel paper style={styles.panel}>
-          <Text style={styles.line}>{closed}</Text>
+        <Leaf style={pieces.leaf}>
+          <Text style={pieces.line}>{closed}</Text>
           {jousts.access === "account_required" && (
             <Button label="Créer mon compte" onPress={() => router.push("/compte")} />
           )}
           {jousts.access === "pseudo_required" && (
             <Button label="Choisir mon pseudo" onPress={() => router.push("/profil")} />
           )}
-        </Panel>
+        </Leaf>
+      </Page>
+    );
+  }
+
+  const closeGuide = () => {
+    setGuideOpen(false);
+    // Shown once: the server keeps it done, for the web and the phone.
+    api
+      .markJoustGuideDone()
+      .catch(() => undefined)
+      .finally(load);
+  };
+
+  if (!jousts.guideDone || guideOpen) {
+    return (
+      <Page title={JOUSTS_TITLE}>
+        <Guide
+          deck={deck}
+          deckSaved={jousts.deckSaved}
+          jousted={jousts.jousts.length > 0}
+          size={runSize(Date.now())}
+          me={{ name: me?.pseudo ?? "Toi", avatar: me?.avatar ?? null, frame: me?.frame ?? null }}
+          busy={busy}
+          refusal={refusal}
+          onDeckSaved={load}
+          onLaunch={() => {
+            api.markJoustGuideDone().catch(() => undefined);
+            void launch({ kind: "ranked" });
+          }}
+          onClose={closeGuide}
+        />
       </Page>
     );
   }
 
   return (
+    <Home
+      jousts={jousts}
+      deck={deck}
+      busy={busy}
+      refusal={refusal}
+      onLaunch={(request) => void launch(request)}
+      onGuide={() => setGuideOpen(true)}
+      onDeckSaved={load}
+    />
+  );
+}
+
+function Home({
+  jousts,
+  deck,
+  busy,
+  refusal,
+  onLaunch,
+  onGuide,
+  onDeckSaved,
+}: {
+  readonly jousts: JoustsResponse;
+  readonly deck: JoustDeckResponse;
+  readonly busy: boolean;
+  readonly refusal: string | null;
+  readonly onLaunch: (request: LaunchJoustRequest) => void;
+  readonly onGuide: () => void;
+  readonly onDeckSaved: () => void;
+}) {
+  const catalog = useCatalog();
+  const now = useNow(60_000);
+  const [deckOpen, setDeckOpen] = useState(false);
+  const [friendsOpen, setFriendsOpen] = useState(false);
+  const [helpOpen, setHelpOpen] = useState(false);
+  const sections = joustSections(jousts.jousts);
+  const costs = new Map(deck.candidates.map((candidate) => [candidate.cardId, candidate.cost]));
+  const spent = deck.cardIds.reduce((total, id) => total + (costs.get(id) ?? 0), 0);
+  const ready = jousts.deckSaved && jousts.deckReady;
+  const middle = (deck.cardIds.length - 1) / 2;
+  // The fan closes up to hold in the leaf, whatever the phone's width.
+  const [fanWidth, setFanWidth] = useState(0);
+  const fanStep =
+    deck.cardIds.length < 2 || fanWidth === 0
+      ? FAN_CARD
+      : Math.min(FAN_CARD * 0.8, (fanWidth - FAN_CARD - 8) / (deck.cardIds.length - 1));
+
+  return (
     <Page title={JOUSTS_TITLE}>
-      <Panel paper style={styles.panel}>
-        <Text style={styles.line}>{JOUSTS_RULES}</Text>
-        <Button
-          label={LAUNCH_RANKED}
-          disabled={launching || !jousts.deckReady}
-          onPress={() => void launch({ kind: "ranked" })}
-        />
-        <Button
-          label={LAUNCH_FRIENDLY}
-          secondary
-          disabled={launching || !jousts.deckReady}
-          onPress={() => setFriendsOpen(true)}
-        />
-        {!jousts.deckReady && (
-          <Text style={styles.notice}>{launchRefusalText("deck_too_small", 0)}</Text>
-        )}
-        <FormError message={refusal} />
-      </Panel>
-      <DeckPanel deck={deck} onEdit={() => setDeckOpen(true)} />
-      <Panel paper style={styles.panel}>
-        <Text style={styles.kicker}>TES JOUTES</Text>
-        {jousts.jousts.length === 0 ? (
-          <Text style={styles.line}>{NO_JOUSTS}</Text>
-        ) : (
-          sortJousts(jousts.jousts).map((joust) => {
-            const line = joustLine(joust, jousts.questions, now);
-            const open = () => router.push({ pathname: "/joutes/[id]", params: { id: joust.id } });
-            return (
-              <Pressable
-                key={joust.id}
-                style={styles.row}
-                onPress={open}
+      <View style={styles.home}>
+        <Animated.View entering={rise(0)}>
+          <Leaf style={pieces.leaf}>
+            <View style={styles.helpCorner}>
+              <Toy
+                matter="paper"
+                shape="round"
+                style={styles.help}
                 accessibilityRole="button"
-                accessibilityLabel={`${line.title}. ${line.detail}`}
+                accessibilityLabel={JOUSTS_HELP_LABEL}
+                onPress={() => setHelpOpen(true)}
               >
-                <Avatar
-                  avatar={joust.opponent?.avatar ?? null}
-                  frame={joust.opponent?.frame ?? null}
-                  size={40}
+                <Lettering size={fontSizes.lead}>?</Lettering>
+              </Toy>
+            </View>
+            <View style={styles.crest}>
+              <ToyIcon name="jousts" size={64} />
+            </View>
+            {ready ? (
+              <View style={pieces.actions}>
+                <MainAction
+                  label={JOUST}
+                  disabled={busy}
+                  onPress={() => onLaunch({ kind: "ranked" })}
                 />
-                <View style={styles.rowText}>
-                  <Text style={styles.rowTitle}>{line.title}</Text>
-                  <Text style={styles.rowDetail}>{line.detail}</Text>
+                <Toy
+                  matter="paper"
+                  style={styles.friend}
+                  bodyStyle={styles.friendBody}
+                  accessibilityRole="button"
+                  accessibilityLabel={LAUNCH_FRIENDLY}
+                  disabled={busy}
+                  onPress={() => setFriendsOpen(true)}
+                >
+                  <Icon name="amis" size={18} color={ink.pageInk} />
+                  <Text style={styles.friendText}>{LAUNCH_FRIENDLY}</Text>
+                </Toy>
+              </View>
+            ) : (
+              <View style={pieces.actions}>
+                <MainAction
+                  label={COMPOSE_DECK}
+                  disabled={!jousts.deckReady}
+                  onPress={() => setDeckOpen(true)}
+                />
+              </View>
+            )}
+            {!jousts.deckReady && (
+              <Text style={[pieces.line, styles.centered]}>
+                {launchRefusalText("deck_too_small", 0)}
+              </Text>
+            )}
+            {jousts.deckReady && !jousts.deckSaved && (
+              <Text style={[pieces.line, styles.centered]}>{DECK_NOT_SAVED}</Text>
+            )}
+            <Notice>{refusal}</Notice>
+          </Leaf>
+        </Animated.View>
+
+        {jousts.deckSaved && (
+          <Animated.View entering={rise(1)}>
+            <Leaf style={pieces.leaf}>
+              <View style={styles.deckHead}>
+                <View style={styles.deckKicker}>
+                  <LeafKicker>{`Ton deck · ${spent} / ${deck.budget} points`}</LeafKicker>
                 </View>
-                <Text style={line.toPlay ? styles.rowPlay : styles.rowSee}>
-                  {line.toPlay ? PLAY_JOUST : "Voir"}
-                </Text>
-              </Pressable>
-            );
-          })
+                <Toy
+                  matter="paper"
+                  style={styles.edit}
+                  bodyStyle={styles.editBody}
+                  accessibilityRole="button"
+                  accessibilityLabel={EDIT_DECK_SHORT}
+                  onPress={() => setDeckOpen(true)}
+                >
+                  <Lettering size={fontSizes.small}>{EDIT_DECK_SHORT}</Lettering>
+                </Toy>
+              </View>
+              {catalog !== null && (
+                <Pressable
+                  style={styles.fan}
+                  onLayout={(event) => setFanWidth(event.nativeEvent.layout.width)}
+                  onPress={() => setDeckOpen(true)}
+                  accessibilityRole="button"
+                  accessibilityLabel={EDIT_DECK_SHORT}
+                >
+                  {deck.cardIds.map((cardId, index) => {
+                    const offset = index - middle;
+                    return (
+                      <View
+                        key={cardId}
+                        style={[
+                          {
+                            marginLeft: index === 0 ? 0 : fanStep - FAN_CARD,
+                            transform: [
+                              { translateY: Math.abs(offset) * 2.5 },
+                              { rotate: `${offset * 3.5}deg` },
+                            ],
+                          },
+                        ]}
+                      >
+                        <MiniCard card={catalogCard(catalog, cardId)} width={FAN_CARD} />
+                      </View>
+                    );
+                  })}
+                </Pressable>
+              )}
+            </Leaf>
+          </Animated.View>
         )}
-      </Panel>
-      <DeckSheet
-        open={deckOpen}
-        deck={deck}
-        onClose={() => setDeckOpen(false)}
-        onSaved={() => {
-          setDeckOpen(false);
-          load();
-        }}
-      />
+
+        <Animated.View entering={rise(2)}>
+          <Leaf style={pieces.leaf}>
+            {jousts.jousts.length === 0 && <Text style={pieces.line}>{NO_JOUSTS}</Text>}
+            <JoustGroup title="À toi de jouer" jousts={sections.toPlay}>
+              {(joust) => (
+                <Looping kind="beat">
+                  <JoustRow joust={joust} now={now} tone="play">
+                    <ToyBody matter="gold" style={styles.rowAction}>
+                      <Lettering size={fontSizes.small}>{PLAY_JOUST}</Lettering>
+                    </ToyBody>
+                  </JoustRow>
+                </Looping>
+              )}
+            </JoustGroup>
+            <JoustGroup title="Résultats à découvrir" jousts={sections.toDiscover}>
+              {(joust) => (
+                <JoustRow joust={joust} now={now} tone="sealed">
+                  <Looping kind="wobble">
+                    <View accessible accessibilityRole="image" accessibilityLabel={SEALED_RESULT}>
+                      <ToyIcon name="mail" size={38} />
+                    </View>
+                  </Looping>
+                </JoustRow>
+              )}
+            </JoustGroup>
+            <JoustGroup title="En attente" jousts={sections.waiting}>
+              {(joust) => <JoustRow joust={joust} now={now} clock />}
+            </JoustGroup>
+            <JoustGroup title="Terminées" jousts={sections.ended}>
+              {(joust) => (
+                <JoustRow joust={joust} now={now}>
+                  <Text
+                    style={[
+                      styles.outcome,
+                      joust.outcome === "won" && { color: toyMatters.green.bottom },
+                    ]}
+                  >
+                    {outcomeWord(joust.outcome)}
+                  </Text>
+                </JoustRow>
+              )}
+            </JoustGroup>
+          </Leaf>
+        </Animated.View>
+      </View>
+
+      <Sheet open={helpOpen} title="La joute" onClose={() => setHelpOpen(false)}>
+        {joustHelp(runSize(now)).map((line) => (
+          <View key={line} style={styles.helpLine}>
+            <View style={styles.bullet} />
+            <Text style={styles.helpText}>{line}</Text>
+          </View>
+        ))}
+        <TextButton
+          label={GUIDE_AGAIN}
+          onPress={() => {
+            setHelpOpen(false);
+            onGuide();
+          }}
+        />
+      </Sheet>
+      <Sheet open={deckOpen} title="Ton deck" onClose={() => setDeckOpen(false)}>
+        {deckOpen && (
+          <DeckBuilder
+            deck={deck}
+            initial={deck.saved || jousts.jousts.length > 0 ? deck.cardIds : []}
+            onSaved={() => {
+              setDeckOpen(false);
+              onDeckSaved();
+            }}
+          />
+        )}
+      </Sheet>
       <FriendsSheet
         open={friendsOpen}
-        busy={launching}
+        busy={busy}
         onClose={() => setFriendsOpen(false)}
-        onPick={(code) => void launch({ kind: "friendly", opponentCode: code })}
+        onPick={(code) => {
+          setFriendsOpen(false);
+          onLaunch({ kind: "friendly", opponentCode: code });
+        }}
       />
     </Page>
   );
 }
 
-function deckCost(deck: JoustDeckResponse, cardIds: readonly string[]): number {
-  const costs = new Map(deck.candidates.map((candidate) => [candidate.cardId, candidate.cost]));
-  return cardIds.reduce((total, id) => total + (costs.get(id) ?? 0), 0);
-}
-
-function DeckPanel({
-  deck,
-  onEdit,
+function JoustGroup({
+  title,
+  jousts,
+  children,
 }: {
-  readonly deck: JoustDeckResponse;
-  readonly onEdit: () => void;
+  readonly title: string;
+  readonly jousts: readonly JoustSummary[];
+  readonly children: (joust: JoustSummary) => ReactNode;
 }) {
-  const catalog = useCatalog();
-  const summary = deckSummary(
-    deck.cardIds.length,
-    deck.size,
-    deckCost(deck, deck.cardIds),
-    deck.budget,
-  );
+  if (jousts.length === 0) return null;
   return (
-    <Panel paper style={styles.panel}>
-      <Text style={styles.kicker}>TON DECK</Text>
-      <Text style={styles.line}>
-        {summary}. {deck.saved ? "" : DECK_AUTO}
-      </Text>
-      {catalog !== null && deck.cardIds.length > 0 && (
-        <CardRow catalog={catalog} cardIds={deck.cardIds} width={60} />
-      )}
-      <TextButton label={EDIT_DECK} onPress={onEdit} />
-    </Panel>
+    <View style={styles.group}>
+      <LeafKicker>{title}</LeafKicker>
+      {jousts.map((joust) => (
+        <View key={joust.id}>{children(joust)}</View>
+      ))}
+    </View>
   );
 }
 
-function DeckSheet({
-  open,
-  deck,
-  onClose,
-  onSaved,
+function JoustRow({
+  joust,
+  now,
+  tone,
+  clock = false,
+  children,
 }: {
-  readonly open: boolean;
-  readonly deck: JoustDeckResponse;
-  readonly onClose: () => void;
-  readonly onSaved: () => void;
+  readonly joust: JoustSummary;
+  readonly now: number;
+  readonly tone?: "play" | "sealed";
+  readonly clock?: boolean;
+  readonly children?: ReactNode;
 }) {
-  const catalog = useCatalog();
-  const [chosen, setChosen] = useState<readonly string[]>(deck.cardIds);
-  const [message, setMessage] = useState<string | null>(null);
-  const [saving, setSaving] = useState(false);
-  useEffect(() => {
-    if (open) {
-      setChosen(deck.cardIds);
-      setMessage(null);
-    }
-  }, [open, deck.cardIds]);
-  const costs = new Map(deck.candidates.map((candidate) => [candidate.cardId, candidate.cost]));
-  const costOf = (cardId: string) => costs.get(cardId) ?? 0;
-
-  const save = async () => {
-    setSaving(true);
-    setMessage(null);
-    try {
-      const result = await api.saveJoustDeck(chosen);
-      if (result.kind === "saved") onSaved();
-      else setMessage(deckRefusalText(result.reason));
-    } catch {
-      setMessage(NO_ANSWER);
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const candidates = [...deck.candidates].sort(
-    (a, b) => b.cost - a.cost || a.cardId.localeCompare(b.cardId),
-  );
+  const name = playerName(joust.opponent);
+  const state = joustRowState(joust, now);
   return (
-    <Sheet open={open} title="Ton deck" onClose={onClose}>
-      <Text style={styles.line}>{DECK_RULES}</Text>
-      <Text style={styles.deckCount} accessibilityLiveRegion="polite">
-        {deckSummary(chosen.length, deck.size, deckCost(deck, chosen), deck.budget)}
-      </Text>
-      <FormError message={message} />
-      {catalog !== null && (
-        <View style={styles.pick}>
-          {candidates.map((candidate) => {
-            const card = catalogCard(catalog, candidate.cardId);
-            const inDeck = chosen.includes(candidate.cardId);
-            return (
-              <Pressable
-                key={candidate.cardId}
-                style={[styles.pickCard, inDeck && styles.picked]}
-                accessibilityRole="checkbox"
-                accessibilityState={{ checked: inDeck }}
-                accessibilityLabel={`${cardLabel(card)}, ${candidate.cost} points`}
-                onPress={() => {
-                  const next = toggleDeckCard(chosen, candidate.cardId, costOf, deck);
-                  setChosen(next.deck);
-                  setMessage(next.refused);
-                }}
-              >
-                <Card
-                  card={card}
-                  collectionName={collectionName(catalog, card.collectionId)}
-                  width={88}
-                />
-                <Text style={styles.cost}>{candidate.cost} pts</Text>
-              </Pressable>
-            );
-          })}
-        </View>
-      )}
-      <Button
-        label={SAVE_DECK}
-        disabled={saving || chosen.length < deck.min}
-        onPress={() => void save()}
+    <Pressable
+      onPress={() => router.push({ pathname: "/joutes/[id]", params: { id: joust.id } })}
+      style={({ pressed }) => [
+        styles.row,
+        tone === "play" && styles.rowPlay,
+        tone === "sealed" && styles.rowSealed,
+        pressed && styles.rowPressed,
+      ]}
+      accessibilityRole="button"
+      accessibilityLabel={`${name}. ${state}`}
+    >
+      <Avatar
+        avatar={joust.opponent?.avatar ?? null}
+        frame={joust.opponent?.frame ?? null}
+        size={40}
       />
-    </Sheet>
+      <View style={styles.rowText}>
+        <Text style={styles.rowName} numberOfLines={1}>
+          {name}
+        </Text>
+        <View style={styles.rowStateLine}>
+          {clock && <Icon name="clock" size={13} color={ink.pageInkMuted} />}
+          <Text style={styles.rowState} numberOfLines={2}>
+            {state}
+          </Text>
+        </View>
+      </View>
+      {children}
+    </Pressable>
   );
 }
 
@@ -337,54 +493,91 @@ function FriendsSheet({
     <Sheet open={open} title={LAUNCH_FRIENDLY} onClose={onClose}>
       <FormError message={failed ? NO_ANSWER : null} />
       {players !== null && players.length === 0 && (
-        <Text style={styles.line}>{NO_FRIENDS_TO_DEFY}</Text>
+        <Text style={pieces.line}>{NO_FRIENDS_TO_DEFY}</Text>
       )}
       {players?.map((player) => (
-        <View key={player.code} style={styles.row}>
+        <View key={player.code} style={styles.friendRow}>
           <Avatar avatar={player.avatar} frame={player.frame} size={40} />
-          <Text style={[styles.rowTitle, styles.rowText]}>{playerName(player)}</Text>
-          <TextButton label="Défier" disabled={busy} onPress={() => onPick(player.code)} />
+          <Text style={[styles.rowName, styles.rowText]} numberOfLines={1}>
+            {playerName(player)}
+          </Text>
+          <Button label="Défier" small disabled={busy} onPress={() => onPick(player.code)} />
         </View>
       ))}
     </Sheet>
   );
 }
 
-/** What the panels hold is read on paper. */
-const ink = paperColors;
-
 const styles = StyleSheet.create({
-  panel: { gap: space.s6 },
-  kicker: {
-    fontFamily: fonts.ui.extrabold,
-    fontSize: fontSizes.caption,
-    letterSpacing: 2,
+  home: { gap: space.s8 },
+  helpCorner: { position: "absolute", top: space.s4, right: space.s4, zIndex: 1 },
+  help: { width: 40, height: 40 },
+  crest: { alignItems: "center", paddingTop: space.s4 },
+  friend: { height: 46, alignSelf: "center" },
+  friendBody: { flexDirection: "row", gap: space.s3, paddingHorizontal: space.s8 },
+  friendText: { fontFamily: fonts.ui.bold, fontSize: fontSizes.body, color: ink.pageInk },
+  centered: { textAlign: "center" },
+  deckHead: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: space.s4,
+  },
+  deckKicker: { flex: 1 },
+  edit: { height: 34 },
+  editBody: { paddingHorizontal: space.s6 },
+  fan: {
+    flexDirection: "row",
+    justifyContent: "center",
+    paddingTop: space.s4,
+    paddingBottom: space.s8,
+  },
+  group: { gap: space.s4 },
+  row: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: space.s5,
+    minHeight: 58,
+    paddingHorizontal: space.s4,
+    paddingVertical: space.s3,
+    borderRadius: radii.lg,
+    borderWidth: 2,
+    borderColor: ink.rule,
+    backgroundColor: ink.pageRaised,
+  },
+  rowPlay: {
+    borderColor: toyMatters.gold.bottom,
+    boxShadow: `0 0 0 3px ${toyMatters.gold.top}`,
+  },
+  rowSealed: { borderColor: toyMatters.red.bottom },
+  rowPressed: { opacity: 0.8 },
+  rowText: { flex: 1 },
+  rowName: { fontFamily: fonts.ui.bold, fontSize: fontSizes.bodyLarge, color: ink.pageInk },
+  rowStateLine: { flexDirection: "row", alignItems: "center", gap: space.s2 },
+  rowState: {
+    flexShrink: 1,
+    fontFamily: fonts.ui.medium,
+    fontSize: fontSizes.small,
     color: ink.pageInkMuted,
   },
-  line: {
+  rowAction: { paddingHorizontal: space.s6, paddingVertical: space.s3 },
+  outcome: { fontFamily: fonts.ui.extrabold, fontSize: fontSizes.label, color: ink.pageInkMuted },
+  helpLine: { flexDirection: "row", alignItems: "flex-start", gap: space.s4 },
+  bullet: {
+    width: 7,
+    height: 7,
+    marginTop: 8,
+    borderRadius: 4,
+    backgroundColor: ink.rubric,
+    borderWidth: 1,
+    borderColor: toyValues.outline,
+  },
+  helpText: {
+    flex: 1,
     fontFamily: fonts.ui.medium,
     fontSize: fontSizes.body,
     lineHeight: 21,
-    color: ink.pageInkMuted,
+    color: ink.pageInk,
   },
-  notice: { fontFamily: fonts.ui.bold, fontSize: fontSizes.body, color: ink.pageInk },
-  row: { flexDirection: "row", alignItems: "center", gap: space.s6, minHeight: 52 },
-  rowText: { flex: 1 },
-  rowTitle: { fontFamily: fonts.ui.bold, fontSize: fontSizes.bodyLarge, color: ink.pageInk },
-  rowDetail: { fontFamily: fonts.ui.medium, fontSize: fontSizes.label, color: ink.pageInkMuted },
-  rowPlay: { fontFamily: fonts.ui.extrabold, fontSize: fontSizes.body, color: ink.rubric },
-  rowSee: { fontFamily: fonts.ui.bold, fontSize: fontSizes.body, color: ink.pageInkMuted },
-  deckCount: { fontFamily: fonts.ui.bold, fontSize: fontSizes.bodyLarge, color: ink.pageInk },
-  pick: { flexDirection: "row", flexWrap: "wrap", gap: space.s4, justifyContent: "center" },
-  pickCard: {
-    alignItems: "center",
-    gap: space.s2,
-    padding: space.s2,
-    borderWidth: 3,
-    borderColor: "transparent",
-    borderRadius: radii.md,
-    opacity: 0.6,
-  },
-  picked: { borderColor: ink.gilt, opacity: 1 },
-  cost: { fontFamily: fonts.ui.bold, fontSize: fontSizes.label, color: ink.pageInk },
+  friendRow: { flexDirection: "row", alignItems: "center", gap: space.s6, minHeight: 52 },
 });

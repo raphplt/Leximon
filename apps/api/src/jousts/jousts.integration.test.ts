@@ -1,4 +1,4 @@
-import { IDEMPOTENCY_KEY_HEADER, joustsResponseSchema } from "@leximon/contract";
+import { IDEMPOTENCY_KEY_HEADER, joustsResponseSchema, joustViewSchema } from "@leximon/contract";
 import {
   featureLevels,
   JOUST_SCHEDULE,
@@ -38,7 +38,8 @@ const env = testEnv(url);
 const app = createApp();
 const { db, close } = createDb(url, { maxConnections: 6 });
 const loadCatalog = createCatalogIndexLoader(0);
-const { joustQuestions, jousts, joustRatings, mailLetters, players, userProgress } = schema;
+const { joustDecks, joustQuestions, jousts, joustRatings, mailLetters, players, userProgress } =
+  schema;
 const RULES = joustRulesAt(JOUST_SCHEDULE, Date.now());
 const LEVEL_XP = xpToReach(featureLevels(UNLOCK_SCHEDULE, TRADE_SCHEDULE, Date.now()).jousts);
 const SEED = "0123456789abcdef0123456789abcdef";
@@ -55,8 +56,13 @@ interface Jouster extends Guest {
   readonly code: string;
 }
 
-/** A member past the jousts' level, open to jousts, owning six words found at least once. */
-async function jouster(options: { readonly access?: boolean; readonly xp?: number } = {}) {
+/**
+ * A member past the jousts' level, open to jousts, owning six words found at least once, all in
+ * the deck they composed unless `deck` is `false`.
+ */
+async function jouster(
+  options: { readonly access?: boolean; readonly xp?: number; readonly deck?: boolean } = {},
+) {
   const member = await signInAsMember(app, env, db);
   expect((await app.request("/me/profile", { headers: headers(member) }, env)).status).toBe(200);
   const pseudo = `Jouteur ${crypto.randomUUID().slice(0, 8)}`;
@@ -100,6 +106,9 @@ async function jouster(options: { readonly access?: boolean; readonly xp?: numbe
       state: 2,
     })),
   );
+  if (options.deck ?? true) {
+    await db.insert(joustDecks).values({ userId: member.userId, cardIds, updatedAt: new Date() });
+  }
   return { ...member, code: row.code };
 }
 
@@ -242,6 +251,23 @@ describe("launching", () => {
       expect(question.choices).toHaveLength(RULES.choices);
       expect(question.choices).toContain(question.cardId);
     }
+  });
+
+  it("waits for a deck the player composed, but keeps the one a tester already played", async () => {
+    const a = await jouster({ deck: false });
+    const b = await jouster({ deck: false });
+    await befriend(a, b);
+    expect(await launch(a, { kind: "friendly", opponentCode: b.code })).toEqual({
+      kind: "refused",
+      reason: "deck_not_saved",
+    });
+    // The opponent's deck may still be the game's: only the challenger composes one first.
+    const c = await jouster();
+    await befriend(c, a);
+    await launched(c, a);
+    expect((await launch(a, { kind: "friendly", opponentCode: b.code })).kind).toBe("launched");
+    const [saved] = await db.select().from(joustDecks).where(eq(joustDecks.userId, a.userId));
+    expect(saved?.cardIds.length).toBeGreaterThanOrEqual(RULES.drawn);
   });
 
   it("keeps the number of jousts waiting under its limit", async () => {
@@ -522,6 +548,72 @@ describe("the routes", () => {
       await (await app.request("/jousts", { headers: headers(low) }, env)).json(),
     );
     expect(refused.access).toBe("level_too_low");
+  });
+
+  it("mark the first visit done once, for good", async () => {
+    const a = await jouster();
+    const list = async () =>
+      joustsResponseSchema.parse(
+        await (await app.request("/jousts", { headers: headers(a) }, env)).json(),
+      );
+    expect(await list()).toMatchObject({ guideDone: false, deckSaved: true });
+    const guide = () => app.request("/jousts/guide", { method: "POST", headers: headers(a) }, env);
+    const [first, second] = await Promise.all([guide(), guide()]);
+    expect([first.status, second.status]).toEqual([204, 204]);
+    const [row] = await db
+      .select({ at: players.joustGuideDoneAt })
+      .from(players)
+      .where(eq(players.userId, a.userId));
+    expect((await list()).guideDone).toBe(true);
+    expect((await guide()).status).toBe(204);
+    const [again] = await db
+      .select({ at: players.joustGuideDoneAt })
+      .from(players)
+      .where(eq(players.userId, a.userId));
+    expect(again?.at).toEqual(row?.at);
+  });
+
+  it("show the closed run and its traps, then the result sealed until seen", async () => {
+    const a = await jouster();
+    const b = await jouster();
+    const outsider = await jouster();
+    await befriend(a, b);
+    const joustId = await launched(a, b);
+    const view = async (who: Jouster) =>
+      joustViewSchema.parse(
+        await (await app.request(`/jousts/${joustId}`, { headers: headers(who) }, env)).json(),
+      );
+    expect(await view(a)).toMatchObject({ run: null, traps: null });
+
+    const end = await playRun(a, joustId, Date.now(), [1]);
+    await settleJoust(db, joustId, end);
+    const closed = await view(a);
+    expect(closed.run?.answers.map((answer) => answer.correct)).toEqual([
+      true,
+      false,
+      true,
+      true,
+      true,
+    ]);
+    const traps = await db
+      .select({ cardId: joustQuestions.cardId })
+      .from(joustQuestions)
+      .where(and(eq(joustQuestions.joustId, joustId), eq(joustQuestions.answererId, b.userId)))
+      .orderBy(joustQuestions.position);
+    expect(closed.traps).toEqual(traps.map((row) => row.cardId));
+
+    const seen = (who: Jouster) =>
+      app.request(`/jousts/${joustId}/seen`, { method: "POST", headers: headers(who) }, env);
+    // Nothing to see before the joust ends.
+    expect((await seen(a)).status).toBe(404);
+    await settleJoust(db, joustId, await playRun(b, joustId, end));
+    expect((await view(a)).summary.seen).toBe(false);
+    expect((await view(b)).summary.seen).toBe(false);
+    const [first, second] = await Promise.all([seen(a), seen(a)]);
+    expect([first.status, second.status]).toEqual([204, 204]);
+    expect((await view(a)).summary.seen).toBe(true);
+    expect((await view(b)).summary.seen).toBe(false);
+    expect((await seen(outsider)).status).toBe(404);
   });
 
   it("serve the question without its answer", async () => {

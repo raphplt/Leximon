@@ -79,6 +79,8 @@ export const joustSummarySchema = z.object({
   mine: runScoreSchema.nullable(),
   theirs: runScoreSchema.nullable(),
   createdAt: timestampSchema,
+  /** The player watched the result; until then it shows sealed. `true` while not ended. */
+  seen: z.boolean(),
 });
 export type JoustSummary = z.infer<typeof joustSummarySchema>;
 
@@ -88,6 +90,10 @@ export const joustsResponseSchema = z.object({
   opensAtLevel: z.int().positive(),
   /** The deck holds enough cards for a joust. */
   deckReady: z.boolean(),
+  /** The player composed their deck: no joust before. */
+  deckSaved: z.boolean(),
+  /** The player went through the first visit, or skipped it. */
+  guideDone: z.boolean(),
   /** Jousts launched still waiting for their opponent, and how many may. */
   waiting: z.int().nonnegative(),
   maxWaiting: z.int().positive(),
@@ -117,6 +123,8 @@ export type LaunchJoustRequest = z.infer<typeof launchJoustRequestSchema>;
 export const launchRefusalSchema = z.enum([
   "not_open",
   "deck_too_small",
+  /** The player never composed a deck. */
+  "deck_not_saved",
   "too_many_waiting",
   /** No ranked opponent came by recently enough. */
   "no_opponent",
@@ -184,6 +192,10 @@ export const joustViewSchema = z.object({
   ghostPlayedAt: timestampSchema.nullable(),
   /** Questions of the player's run answered so far, the cards shown once answered. */
   answered: z.int().nonnegative(),
+  /** Once the player's run is closed: its questions and the XP it gave. */
+  run: z.object({ answers: z.array(joustAnswerSchema), xp: z.int().nonnegative() }).nullable(),
+  /** Once the player's run is closed: the cards of their deck the other player has to find. */
+  traps: z.array(slugSchema).nullable(),
   /** Once ended: the questions of both runs, and what the joust gave the player. */
   result: z
     .object({

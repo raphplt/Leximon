@@ -1,50 +1,37 @@
-import type { AnswerJoustResponse, JoustAnswer, JoustView } from "@leximon/contract";
-import { ApiError, type Catalog } from "@leximon/contract/client";
-import { toyMatters, toy as toyValues } from "@leximon/tokens";
+import type { JoustView, PlayerBadge, ProfileResponse } from "@leximon/contract";
+import { ApiError } from "@leximon/contract/client";
 import {
-  clockShare,
-  firstRunDone,
   forfeitLine,
-  ghostLine,
-  ghostTitle,
   JOUSTS_TITLE,
-  joustAnswerFeedback,
-  launchRefusalText,
+  joustLine,
   localDeadline,
-  outcomeTitle,
-  PLAY_JOUST,
+  NEW_JOUST,
   playerName,
-  questionCounter,
-  REVENGE,
-  rewardText,
-  runRules,
+  REVENGE_SHORT,
   runSize,
-  scoresLine,
-  secondsLeft,
   trappedLine,
+  trappingWords,
 } from "@leximon/view-model";
-import { randomUUID } from "expo-crypto";
 import { router } from "expo-router";
-import { useCallback, useEffect, useRef, useState } from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { api } from "@/api/client";
 import { useCatalog } from "@/cards/use-catalog";
-import { play, vibrate } from "@/feedback/feedback";
+import { MainAction, PaperAction } from "@/library/play-pieces";
 import { refreshIfRead } from "@/player/collection";
-import { missions, progress, wallet } from "@/player/state";
-import { catalogCard, openCard } from "@/screens/trades/card-row";
-import { alpha, colors, fontSizes, fonts, paperColors, radii, space } from "@/theme";
+import { useShared } from "@/player/shared";
+import { missions, profile, progress, wallet } from "@/player/state";
+import { catalogCard } from "@/screens/trades/card-row";
 import { Button } from "@/ui/button";
-import { FormError, Page, Paragraph } from "@/ui/page";
-import { Panel } from "@/ui/panel";
-import { Lettering, toyFace } from "@/ui/toy";
+import { Page, Paragraph } from "@/ui/page";
+import { ParticleStage } from "@/ui/stage";
+import { type Duelist, Notice } from "./pieces";
+import { Reveal, type RevealData, SealedResult } from "./reveal";
+import { RunScene, type RunSource } from "./run-scene";
+import { RunSummary } from "./run-summary";
+import { NO_ANSWER, useLaunch } from "./use-launch";
 
 /** After the clock, the server still takes an answer this long: the next question waits for it. */
 const AFTER_CLOCK_MS = 2_500;
-/** How long the answer stays shown before the next question. */
-const FEEDBACK_MS = 1_200;
-
-const NO_ANSWER = "Le serveur ne répond pas. Réessaie.";
 
 type Loaded =
   | { readonly state: "loading" }
@@ -52,29 +39,23 @@ type Loaded =
   | { readonly state: "missing" }
   | { readonly state: "ready"; readonly view: JoustView };
 
-interface Served {
-  readonly position: number;
-  readonly definition: string;
-  readonly choices: readonly string[];
-  readonly deadline: number;
-  readonly totalMs: number;
+/** One joust: the player's run on the clock, then the summary while the other plays, then the result. */
+export function JoustScreen({ joustId }: { readonly joustId: string }) {
+  return (
+    <ParticleStage>
+      <JoustFlow joustId={joustId} />
+    </ParticleStage>
+  );
 }
 
-type Run =
-  | { readonly phase: "intro" }
-  | { readonly phase: "question"; readonly question: Served; readonly sending: boolean }
-  | {
-      readonly phase: "answered";
-      readonly question: Served;
-      readonly chosen: string | null;
-      readonly answer: AnswerJoustResponse;
-      /** The clock as it stood at the answer. */
-      readonly at: number;
-    };
-
-/** One joust: the player's run on the clock, then the wait or the result. */
-export function JoustScreen({ joustId }: { readonly joustId: string }) {
+function JoustFlow({ joustId }: { readonly joustId: string }) {
+  const catalog = useCatalog();
+  const level = useShared(progress);
+  const me = useShared(profile);
   const [loaded, setLoaded] = useState<Loaded>({ state: "loading" });
+  // The result plays at once, unsealed, when it comes from the run just played or the seal broken.
+  const [revealing, setRevealing] = useState(false);
+  const { launch, busy, refusal } = useLaunch(0);
 
   const load = useCallback(() => {
     api
@@ -90,434 +71,170 @@ export function JoustScreen({ joustId }: { readonly joustId: string }) {
   }, [joustId]);
   useEffect(load, [load]);
 
+  const source = useMemo(() => apiSource(joustId), [joustId]);
+
+  const runOver = useCallback(() => {
+    progress.refresh();
+    refreshIfRead(wallet);
+    refreshIfRead(missions);
+    setRevealing(true);
+    load();
+  }, [load]);
+
+  const view = loaded.state === "ready" ? loaded.view : null;
+  const ended = view?.summary.state === "ended";
+  // Watched once: the seal stays broken on every device.
+  useEffect(() => {
+    if (ended && revealing) api.markJoustSeen(joustId).catch(() => undefined);
+  }, [ended, revealing, joustId]);
+
+  if (view === null) {
+    return (
+      <Page title={JOUSTS_TITLE}>
+        {loaded.state === "loading" && <Paragraph muted>Un instant…</Paragraph>}
+        {loaded.state === "missing" && (
+          <Paragraph muted>Cette joute n'existe pas, ou elle n'est pas la tienne.</Paragraph>
+        )}
+        {loaded.state === "failed" && (
+          <>
+            <Paragraph muted>La joute n'a pas pu être chargée. Réessaie.</Paragraph>
+            <Button label="Réessayer" secondary onPress={load} />
+          </>
+        )}
+      </Page>
+    );
+  }
+
+  const { summary } = view;
+  const size = runSize(Date.now());
+  const kicker = joustLine(summary, size.questions, Date.now()).title;
+  const mine = duelistOf(me);
+  const them = opponentOf(summary.opponent);
+  const word = (cardId: string) => (catalog === null ? "…" : catalogCard(catalog, cardId).word);
+  const goHome = () => {
+    if (router.canGoBack()) router.back();
+    else router.replace("/joutes");
+  };
+
   return (
     <Page title={JOUSTS_TITLE}>
-      {loaded.state === "loading" && <Paragraph muted>Un instant…</Paragraph>}
-      {loaded.state === "failed" && (
-        <>
-          <Paragraph muted>La joute n'a pas pu être chargée. Réessaie.</Paragraph>
-          <Button label="Réessayer" secondary onPress={load} />
-        </>
+      {summary.state === "play" && (
+        <RunScene
+          source={source}
+          me={mine}
+          them={them}
+          ghost={view.ghost}
+          questions={size.questions}
+          answered={view.answered}
+          kicker={kicker}
+          doneLabel={summary.launched ? "Voir le bilan" : "Voir le résultat"}
+          onDone={runOver}
+        />
       )}
-      {loaded.state === "missing" && (
-        <Paragraph muted>Cette joute n'existe pas, ou elle n'est pas la tienne.</Paragraph>
+      {summary.state === "waiting" && (
+        <RunSummary
+          view={view}
+          them={them}
+          kicker={kicker}
+          progress={level}
+          busy={busy}
+          refusal={refusal}
+          onNew={() => void launch({ kind: "ranked" })}
+          onBack={goHome}
+        />
       )}
-      {loaded.state === "ready" &&
-        (loaded.view.summary.state === "play" ? (
-          <RunScreen view={loaded.view} joustId={joustId} onOver={load} />
-        ) : loaded.view.result !== null ? (
-          <Result view={loaded.view} />
-        ) : (
-          <Panel paper style={styles.panel}>
-            <Text style={styles.headline}>
-              Joute contre {playerName(loaded.view.summary.opponent)}
-            </Text>
-            <Text style={styles.line}>
-              {firstRunDone(loaded.view.summary.opponent, loaded.view.summary.replyBy, Date.now())}
-            </Text>
-          </Panel>
-        ))}
+      {ended && !summary.seen && !revealing && (
+        <SealedResult kicker={kicker} onOpen={() => setRevealing(true)} />
+      )}
+      {ended && view.result !== null && (summary.seen || revealing) && (
+        <Reveal data={revealOf(view, mine, them, word)} kicker={kicker} playing={revealing}>
+          <Notice>{refusal}</Notice>
+          <MainAction
+            label={REVENGE_SHORT}
+            disabled={busy}
+            onPress={() => void launch({ kind: "revenge", joustId: summary.id })}
+          />
+          <PaperAction label={NEW_JOUST} onPress={() => void launch({ kind: "ranked" })} />
+        </Reveal>
+      )}
     </Page>
   );
 }
 
-function RunScreen({
-  view,
-  joustId,
-  onOver,
-}: {
-  readonly view: JoustView;
-  readonly joustId: string;
-  readonly onOver: () => void;
-}) {
-  const catalog = useCatalog();
-  const [run, setRun] = useState<Run>({ phase: "intro" });
-  const [error, setError] = useState<string | null>(null);
-  const [mine, setMine] = useState(0);
-  const [now, setNow] = useState(() => Date.now());
-  const retry = useRef<ReturnType<typeof setTimeout> | null>(null);
+function duelistOf(me: ProfileResponse | null): Duelist {
+  return { name: me?.pseudo ?? "Toi", avatar: me?.avatar ?? null, frame: me?.frame ?? null };
+}
 
-  const finish = useCallback(() => {
-    progress.refresh();
-    refreshIfRead(wallet);
-    refreshIfRead(missions);
-    onOver();
-  }, [onOver]);
-
-  const next = useCallback(
-    async (after: number | null) => {
-      setError(null);
-      try {
-        const result = await api.nextJoustQuestion(joustId);
-        if (result.kind === "run_over") {
-          finish();
-          return;
-        }
-        if (result.kind === "refused") {
-          setError("Cette joute attend encore la partie de ton adversaire.");
-          return;
-        }
-        // The server keeps a question on until its allowance is over: ask again a little later.
-        if (after !== null && result.position <= after) {
-          retry.current = setTimeout(() => void next(after), 1_000);
-          return;
-        }
-        const receivedAt = Date.now();
-        setNow(receivedAt);
-        setRun({
-          phase: "question",
-          sending: false,
-          question: {
-            position: result.position,
-            definition: result.definition,
-            choices: result.choices,
-            deadline: localDeadline(result, receivedAt),
-            totalMs: Date.parse(result.deadline) - Date.parse(result.servedAt),
-          },
-        });
-      } catch {
-        setError(NO_ANSWER);
-      }
-    },
-    [joustId, finish],
-  );
-
-  useEffect(() => () => clearTimeout(retry.current ?? undefined), []);
-
-  // The clock: a frame every tenth of a second while a question is on.
-  useEffect(() => {
-    if (run.phase !== "question") return;
-    const timer = setInterval(() => setNow(Date.now()), 100);
-    return () => clearInterval(timer);
-  }, [run.phase]);
-
-  // Out of time: the question counts wrong, the next one comes once the server lets it go.
-  useEffect(() => {
-    if (run.phase !== "question" || run.sending) return;
-    if (now < run.question.deadline + AFTER_CLOCK_MS) return;
-    const position = run.question.position;
-    setRun({
-      phase: "answered",
-      question: run.question,
-      chosen: null,
-      answer: { correct: false, rightCardId: "", late: true, runOver: false },
-      at: run.question.deadline,
-    });
-    play("answerWrong");
-    retry.current = setTimeout(() => void next(position), FEEDBACK_MS);
-  }, [now, run, next]);
-
-  const answer = async (question: Served, cardId: string) => {
-    const at = Date.now();
-    setRun({ phase: "question", question, sending: true });
-    try {
-      const result = await api.answerJoust(joustId, question.position, cardId);
-      if (result.kind === "refused") {
-        setError("Cette réponse n'a pas été prise. Reviens à la joute pour la reprendre.");
-        return;
-      }
-      setRun({ phase: "answered", question, chosen: cardId, answer: result, at });
-      if (result.correct) {
-        setMine((count) => count + 1);
-        play("answerRight");
-        vibrate([12]);
-      } else {
-        play("answerWrong");
-        vibrate([10, 60, 10]);
-      }
-      retry.current = setTimeout(
-        () => (result.runOver ? finish() : void next(question.position)),
-        FEEDBACK_MS,
-      );
-    } catch {
-      setRun({ phase: "question", question, sending: false });
-      setError(NO_ANSWER);
-    }
+function opponentOf(opponent: PlayerBadge | null): Duelist {
+  return {
+    name: playerName(opponent),
+    avatar: opponent?.avatar ?? null,
+    frame: opponent?.frame ?? null,
   };
-
-  const { summary, ghost } = view;
-  if (run.phase === "intro") {
-    return (
-      <Panel paper style={styles.panel}>
-        <Text style={styles.headline}>Joute contre {playerName(summary.opponent)}</Text>
-        {ghost !== null && <Text style={styles.line}>{ghostTitle(summary.opponent)}</Text>}
-        <Text style={styles.line}>{runRules(Date.now())}</Text>
-        <FormError message={error} />
-        <Button
-          label={view.answered > 0 ? "Reprendre la joute" : PLAY_JOUST}
-          disabled={catalog === null}
-          onPress={() => void next(null)}
-        />
-      </Panel>
-    );
-  }
-
-  const { question } = run;
-  const clockAt = run.phase === "answered" ? run.at : now;
-  const left = secondsLeft(question.deadline, clockAt);
-  const share = clockShare(question.deadline, question.totalMs, clockAt);
-  return (
-    <Panel paper style={styles.panel}>
-      <View style={styles.runHead}>
-        <Text style={styles.kicker}>
-          {questionCounter(question.position, runSize(now).questions).toUpperCase()}
-        </Text>
-        <Text style={styles.seconds} accessibilityLabel={`${left} secondes`}>
-          {left} s
-        </Text>
-      </View>
-      <View style={styles.clock} importantForAccessibility="no" accessibilityElementsHidden>
-        <View
-          style={[
-            styles.clockFill,
-            share < 0.3 && styles.clockLow,
-            { width: `${Math.round(share * 100)}%` },
-          ]}
-        />
-      </View>
-      {ghost !== null && (
-        <Text style={styles.ghost}>
-          {ghostLine(ghost, question.position, summary.opponent)} Tu en as {mine}.
-        </Text>
-      )}
-      <Text style={styles.definition}>{question.definition}</Text>
-      <View style={styles.choices}>
-        {question.choices.map((cardId) => (
-          <Choice
-            key={cardId}
-            catalog={catalog}
-            cardId={cardId}
-            run={run}
-            onPick={() => {
-              if (run.phase === "question" && !run.sending) void answer(question, cardId);
-            }}
-          />
-        ))}
-      </View>
-      {run.phase === "answered" && (
-        <Text
-          style={run.answer.correct ? styles.right : styles.wrong}
-          accessibilityLiveRegion="polite"
-        >
-          {joustAnswerFeedback(run.answer)}
-        </Text>
-      )}
-      <FormError message={error} />
-    </Panel>
-  );
 }
 
-function Choice({
-  catalog,
-  cardId,
-  run,
-  onPick,
-}: {
-  readonly catalog: Catalog | null;
-  readonly cardId: string;
-  readonly run: Run;
-  readonly onPick: () => void;
-}) {
-  const word = catalog === null ? "…" : catalogCard(catalog, cardId).word;
-  const answered = run.phase === "answered" ? run : null;
-  const state =
-    answered === null
-      ? "idle"
-      : cardId === answered.answer.rightCardId
-        ? "right"
-        : cardId === answered.chosen
-          ? "wrong"
-          : "faded";
-  const matter = state === "right" ? "green" : state === "wrong" ? "red" : "paper";
-  const disabled = run.phase !== "question" || run.sending;
-  return (
-    <Pressable
-      onPress={onPick}
-      disabled={disabled}
-      accessibilityRole="button"
-      accessibilityState={{ disabled }}
-      style={({ pressed }) => [
-        styles.choice,
-        toyFace(matter, "tile"),
-        state === "faded" && styles.faded,
-        pressed && styles.pressed,
-      ]}
-    >
-      {state === "right" || state === "wrong" ? (
-        <Lettering size={18}>{word}</Lettering>
-      ) : (
-        <Text style={styles.choiceWord}>{word}</Text>
-      )}
-    </Pressable>
-  );
-}
-
-function Result({ view }: { readonly view: JoustView }) {
-  const catalog = useCatalog();
-  const [refusal, setRefusal] = useState<string | null>(null);
-  const [busy, setBusy] = useState(false);
-  const pendingKey = useRef<string | null>(null);
+function revealOf(
+  view: JoustView,
+  me: Duelist,
+  them: Duelist,
+  word: (cardId: string) => string,
+): RevealData {
   const { summary, result } = view;
-  if (result === null) return null;
-  const name = playerName(summary.opponent);
-  const reward = rewardText(result);
+  const theirs = result === null || summary.forfeit ? null : result.theirs;
+  return {
+    me,
+    them,
+    mine: result?.mine ?? [],
+    theirs,
+    outcome: summary.outcome,
+    gains: result === null ? null : { xp: result.xp, boosters: result.boosters },
+    closing: summary.forfeit
+      ? forfeitLine(summary.launched, summary.opponent)
+      : trappedLine(trappingWords(theirs ?? [], word), summary.opponent),
+  };
+}
 
-  const revenge = async () => {
-    const key = pendingKey.current ?? randomUUID();
-    pendingKey.current = key;
-    setBusy(true);
-    setRefusal(null);
+/** The run on the server's clock. */
+function apiSource(joustId: string): RunSource {
+  const call = async <T,>(action: () => Promise<T>): Promise<T> => {
     try {
-      const launched = await api.launchJoust({ kind: "revenge", joustId: summary.id }, key);
-      pendingKey.current = null;
-      if (launched.kind === "launched") {
-        router.replace({ pathname: "/joutes/[id]", params: { id: launched.joustId } });
-      } else {
-        setRefusal(launchRefusalText(launched.reason, 0));
-      }
+      return await action();
     } catch {
-      setRefusal(NO_ANSWER);
-    } finally {
-      setBusy(false);
+      throw new Error(NO_ANSWER);
     }
   };
-
-  const wordOf = (cardId: string) => (catalog === null ? "…" : catalogCard(catalog, cardId).word);
-  const trapped = summary.forfeit
-    ? null
-    : trappedLine(
-        result.theirs.filter((answer) => !answer.correct).map((answer) => wordOf(answer.cardId)),
-        summary.opponent,
-      );
-  return (
-    <Panel paper style={styles.panel}>
-      <Text style={styles.headline} accessibilityLiveRegion="polite">
-        {outcomeTitle(summary)}
-      </Text>
-      {summary.forfeit ? (
-        <Text style={styles.line}>{forfeitLine(summary.launched, summary.opponent)}</Text>
-      ) : (
-        summary.mine !== null &&
-        summary.theirs !== null && (
-          <Text style={styles.line}>
-            {scoresLine(summary.mine, summary.theirs, result.mine.length, summary.opponent)}
-          </Text>
-        )
-      )}
-      {reward !== null && <Text style={styles.reward}>{reward}</Text>}
-      {trapped !== null && <Text style={styles.line}>{trapped}</Text>}
-      <RunList title="TES RÉPONSES" answers={result.mine} wordOf={wordOf} />
-      {!summary.forfeit && (
-        <RunList
-          title={`LES RÉPONSES DE ${name.toUpperCase()}`}
-          answers={result.theirs}
-          wordOf={wordOf}
-        />
-      )}
-      <FormError message={refusal} />
-      <Button label={REVENGE} disabled={busy} onPress={() => void revenge()} />
-    </Panel>
-  );
+  return {
+    graceMs: AFTER_CLOCK_MS,
+    async next(after) {
+      const result = await call(() => api.nextJoustQuestion(joustId));
+      if (result.kind === "run_over") return { kind: "over" };
+      if (result.kind === "refused") {
+        throw new Error("Cette joute attend encore la partie de ton adversaire.");
+      }
+      // The server keeps a question on until its allowance is over.
+      if (after !== null && result.position <= after) return { kind: "wait" };
+      return {
+        kind: "question",
+        question: {
+          position: result.position,
+          definition: result.definition,
+          choices: result.choices,
+          deadline: localDeadline(result, Date.now()),
+          totalMs: Date.parse(result.deadline) - Date.parse(result.servedAt),
+        },
+      };
+    },
+    async answer(question, cardId) {
+      const result = await call(() => api.answerJoust(joustId, question.position, cardId));
+      if (result.kind === "refused") {
+        throw new Error("Cette réponse n'a pas été prise. Reviens à la joute pour la reprendre.");
+      }
+      return {
+        correct: result.correct,
+        rightCardId: result.rightCardId,
+        late: result.late,
+        runOver: result.runOver,
+      };
+    },
+  };
 }
-
-function RunList({
-  title,
-  answers,
-  wordOf,
-}: {
-  readonly title: string;
-  readonly answers: readonly JoustAnswer[];
-  readonly wordOf: (cardId: string) => string;
-}) {
-  const cardIds = answers.map((answer) => answer.cardId);
-  return (
-    <View style={styles.answers}>
-      <Text style={styles.kicker}>{title}</Text>
-      {answers.map((answer) => (
-        <Pressable
-          key={answer.cardId}
-          style={styles.answer}
-          onPress={() => openCard(answer.cardId, cardIds)}
-          accessibilityRole="link"
-        >
-          <Text style={[styles.answerWord, answer.correct ? styles.right : styles.wrong]}>
-            {wordOf(answer.cardId)}
-          </Text>
-          <Text style={styles.answerTime}>
-            {answer.correct ? "trouvé" : "raté"} en {Math.round(answer.ms / 1000)} s
-          </Text>
-        </Pressable>
-      ))}
-    </View>
-  );
-}
-
-/** What the panels hold is read on paper. */
-const ink = paperColors;
-
-const styles = StyleSheet.create({
-  panel: { gap: space.s6 },
-  kicker: {
-    fontFamily: fonts.ui.extrabold,
-    fontSize: fontSizes.caption,
-    letterSpacing: 2,
-    color: ink.pageInkMuted,
-  },
-  line: {
-    fontFamily: fonts.ui.medium,
-    fontSize: fontSizes.body,
-    lineHeight: 21,
-    color: ink.pageInkMuted,
-  },
-  headline: {
-    fontFamily: fonts.display,
-    fontSize: fontSizes.titleLarge,
-    lineHeight: 32,
-    color: ink.pageInk,
-  },
-  runHead: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
-  seconds: { fontFamily: fonts.display, fontSize: fontSizes.title, color: ink.pageInk },
-  clock: {
-    height: 12,
-    borderRadius: 6,
-    overflow: "hidden",
-    borderWidth: 2,
-    borderColor: toyValues.outline,
-    backgroundColor: ink.track,
-  },
-  clockFill: { height: "100%", backgroundColor: toyMatters.gold.top },
-  clockLow: { backgroundColor: toyMatters.red.top },
-  ghost: { fontFamily: fonts.ui.semibold, fontSize: fontSizes.label, color: ink.pageInkMuted },
-  definition: {
-    fontFamily: fonts.text.regular,
-    fontSize: fontSizes.subtitle,
-    lineHeight: 26,
-    color: ink.pageInk,
-  },
-  choices: { gap: space.s4 },
-  choice: {
-    minHeight: 54,
-    alignItems: "center",
-    justifyContent: "center",
-    paddingHorizontal: space.s6,
-    borderWidth: toyValues.outlineWidth,
-    marginBottom: 4,
-  },
-  choiceWord: { fontFamily: fonts.ui.bold, fontSize: fontSizes.lead, color: ink.pageInk },
-  faded: { opacity: 0.5 },
-  pressed: { transform: [{ translateY: 3 }] },
-  right: { fontFamily: fonts.ui.bold, fontSize: fontSizes.body, color: ink.success },
-  wrong: { fontFamily: fonts.ui.bold, fontSize: fontSizes.body, color: ink.danger },
-  reward: {
-    fontFamily: fonts.ui.extrabold,
-    fontSize: fontSizes.bodyLarge,
-    color: ink.pageInk,
-    padding: space.s4,
-    borderRadius: radii.md,
-    backgroundColor: alpha(colors.gilt, 0.18),
-  },
-  answers: { gap: space.s3 },
-  answer: { flexDirection: "row", justifyContent: "space-between", gap: space.s4, minHeight: 32 },
-  answerWord: { textDecorationLine: "underline" },
-  answerTime: { fontFamily: fonts.ui.medium, fontSize: fontSizes.label, color: ink.pageInkMuted },
-});

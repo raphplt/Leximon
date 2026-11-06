@@ -185,21 +185,37 @@ En local, aucun e-mail ne part : ce test se fait une fois le site en ligne.
 
 ---
 
-## Joutes · 2. Le deck
+## Joutes · 2. L'accueil guidé et le deck
 
-### JTE-04 · Le deck d'office
-- **Faire :** A ouvre `/joutes` sans avoir jamais touché à son deck.
-- **Attendu :** « Le jeu a composé ce deck avec tes mots les plus rares. Change-le quand tu veux. » Le compte dit les cartes et les points (« 10 cartes sur 10, 23 points sur 25 »), moins de 10 si A n'a pas assez de mots en Esquisse. Seuls des mots trouvés au moins une fois y entrent.
+### JTE-04 · L'accueil guidé
+- **Faire :** un compte qui n'a jamais joué de joute ouvre `/joutes`. Suivre les quatre temps : la lice, ton deck, l'entraînement, la première joute.
+- **Attendu :**
+  - Maître Furet accueille en plein écran, avec les quatre temps en haut et « Passer » à droite ;
+  - la lice : tes cartes et les siennes qui changent de côté, puis 15 s par mot, le plus de mots trouvés gagne, égalité au plus rapide ;
+  - ton deck : 10 places vides et la jauge des 25 points (voir JTE-05) ;
+  - l'entraînement : 3 mots contre Maître Furet avec le vrai chrono, ses réponses dans le ruban du bas, puis le résultat révélé comme une vraie joute, sans gain ;
+  - la première joute : « Trouver un adversaire » lance une joute classée, « Plus tard » mène à l'accueil des joutes.
+  - Recharger la page ensuite : l'accueil guidé ne revient pas, ni sur le téléphone avec le même compte.
 - **Retour :**
 
-### JTE-05 · Changer son deck
-- **Faire :** « Changer mon deck ». Retirer des cartes, en ajouter, essayer de dépasser 25 points, puis 10 cartes. Descendre sous 5 cartes. Garder un deck de 7 cartes, recharger la page.
-- **Attendu :** le compte des points suit chaque touche. Au-delà de 25 points ou de 10 cartes, la carte n'entre pas et une phrase dit pourquoi. Sous 5 cartes, « Garder ce deck » est grisé. Après le rechargement, le deck de 7 cartes est là et le texte « composé d'office » a disparu.
+### JTE-05 · Composer son deck
+- **Faire :** dans l'accueil guidé (ou « Modifier » depuis l'accueil des joutes), poser des cartes, en retirer, essayer de dépasser 25 points, puis 10 cartes. « Compléter pour moi » avec 3 cartes posées. Descendre sous 5 cartes, puis garder un deck de 7 cartes et recharger.
+- **Attendu :** la jauge suit chaque touche. Au-delà de 25 points ou de 10 cartes, la carte n'entre pas et une phrase dit pourquoi. « Compléter pour moi » garde les 3 cartes et remplit les places vides avec les plus rares qui tiennent. Sous 5 cartes, « Garder ce deck » est grisé. Après le rechargement, le deck de 7 cartes est en éventail sur l'accueil.
 - **Retour :**
 
-### JTE-06 · Pas assez de mots
-- **Faire :** un compte ouvert aux joutes qui a moins de 5 mots en Esquisse ouvre `/joutes`.
-- **Attendu :** les deux boutons de lancement sont grisés, avec « Il te faut au moins 5 mots trouvés une fois pour faire un deck. Réponds à tes défis pour en trouver. »
+### JTE-06 · Pas de joute sans deck
+- **Faire :** un compte neuf passe le temps « Ton deck » sans garder de deck, finit l'accueil guidé. Puis un compte qui a moins de 5 mots en Esquisse ouvre `/joutes`.
+- **Attendu :** le premier voit « Composer mon deck » à la place de « Jouter », avec « Compose ton deck pour jouter : ce sont tes mots que tes adversaires devront trouver. ». Le second a ce bouton grisé, avec « Il te faut au moins 5 mots trouvés une fois pour faire un deck. Réponds à tes défis pour en trouver. »
+- **Retour :**
+
+### JTE-06b · Un testeur qui a déjà jouté
+- **Faire :** un compte qui a joué des joutes avant cette version ouvre `/joutes`.
+- **Attendu :** il voit l'accueil guidé une fois ; au temps « Ton deck », son deck est déjà posé, il n'a qu'à le garder. S'il passe ce temps, sa prochaine joute garde le deck qu'il jouait.
+- **Retour :**
+
+### JTE-06c · La bulle « ? »
+- **Faire :** sur l'accueil des joutes, toucher le « ? » en haut à droite, puis « Revoir l'accueil guidé ».
+- **Attendu :** la règle en quatre lignes courtes, sans texte permanent sur l'écran. Le lien relance l'accueil guidé depuis la lice.
 - **Retour :**
 
 ---
@@ -208,23 +224,23 @@ En local, aucun e-mail ne part : ce test se fait une fois le site en ligne.
 
 ### JTE-07 · Lancer
 - **Faire :** A clique « Défier un ami ». Regarder la liste, puis défier B.
-- **Attendu :** la liste montre les amis et les membres du clan qui peuvent jouter, avec avatar et pseudo. C n'y est pas. Un ami qui n'a pas le niveau ou l'accès n'y est pas non plus. Après « Défier », A arrive sur la joute : « Joute contre B », la règle du chrono et « Jouer ».
+- **Attendu :** « Jouter » est le gros bouton, « Défier un ami » est à côté, plus petit. La liste montre les amis et les membres du clan qui peuvent jouter, avec avatar et pseudo. C n'y est pas. Un ami qui n'a pas le niveau ou l'accès n'y est pas non plus. Après « Défier », A arrive sur la joute : les deux avatars face à face, puis 3, 2, 1 (un toucher passe ce face-à-face).
 - **Retour :**
 
 ### JTE-08 · Jouer sa partie
-- **Faire :** A clique « Jouer » et répond aux 5 questions : une juste, une fausse, et une laissée passer sans répondre.
+- **Faire :** A répond aux 5 questions : une juste, une fausse, et une laissée passer sans répondre. Puis « Voir le bilan ».
 - **Attendu :**
-  - en haut, « Question 1 sur 5 » et les secondes qui restent ; la barre du chrono se vide et rougit dans les dernières secondes ;
-  - une définition, 4 mots, sans le mot cherché dans la définition ;
-  - après un choix : le bon mot en vert, le mauvais choix en rouge, « Bonne réponse » ou « Mauvaise réponse », puis la question suivante seule ;
-  - la question laissée passer : « Le temps était écoulé. La question compte fausse. », puis la suivante ;
-  - à la fin : « Ta partie est jouée. B a jusqu'à … pour jouer la sienne. » ;
-  - le niveau de A a gagné 20 XP.
+  - en haut, les deux rubans (A et B), « 1 / 5 » et l'anneau du chrono, qui se vide, rougit et bat les 5 dernières secondes avec un tic ;
+  - la définition arrive comme une carte retournée, avec la couleur de sa rareté ; 4 mots, sans le mot cherché dans la définition ;
+  - une bonne réponse : le mot s'allume en vert, un éclat, un son, une vibration et un « +1 » qui s'envole ; une faute : la carte tremble, le choix passe en rouge et le bon mot s'allume en vert ;
+  - la question laissée passer : « Le temps est écoulé : la question compte fausse. », puis la suivante ;
+  - à la fin, le tampon « Partie jouée » ;
+  - le bilan : les 5 réponses se retournent une à une, le score se compte, la barre du niveau se remplit de 20 XP ; « Tes pièges » montre les 5 mots du deck de A que B devra trouver ; « B a jusqu'à demain … On te prévient au courrier. » ; « Nouvelle joute » puis « Retour aux joutes ».
 - **Retour :**
 
 ### JTE-09 · Reprendre après un rechargement
 - **Faire :** lancer une nouvelle joute contre B. Pendant la question 2, recharger la page, puis « Reprendre la joute ».
-- **Attendu :** la joute reprend à la question en cours, avec le temps qui lui restait (le chrono a continué pendant le rechargement). Les questions déjà répondues ne reviennent pas.
+- **Attendu :** après le face-à-face, la joute reprend à la question en cours, l'anneau là où il en était (le chrono a continué pendant le rechargement). Les questions déjà répondues ne reviennent pas ; leurs cases du ruban sont grises.
 - **Retour :**
 
 ### JTE-10 · Quitter en cours de partie
@@ -239,22 +255,20 @@ En local, aucun e-mail ne part : ce test se fait une fois le site en ligne.
 
 ### JTE-12 · La partie de B, contre le fantôme
 - **Faire :** B joue sa partie.
-- **Attendu :** avant de jouer, « Tu joues contre la partie enregistrée de A. ». Pendant la partie, une ligne dit où en était A au même moment (« À la 2e question, A en avait 1. Tu en as 1. »). Le compte de B suit ses bonnes réponses.
+- **Attendu :** le ruban du bas montre les réponses de A au même moment de sa partie, celui du haut celles de B ; chaque ruban a son score à droite.
 - **Retour :**
 
 ### JTE-13 · Le résultat
-- **Faire :** B voit l'écran de fin. A ouvre sa lettre « Ta joute contre B est finie ».
+- **Faire :** B finit sa partie et touche « Voir le résultat ». A ouvre sa lettre « Ta joute contre B est finie », puis `/joutes`.
 - **Attendu :**
-  - un titre qui dit qui gagne ;
-  - les scores (« Tu as trouvé 3 mots sur 5 en 34 s, et A 2 sur 5 en 41 s. ») ; à égalité de bonnes réponses, le temps total départage ;
-  - les mots qui ont piégé l'autre (« Tes mots … ont piégé A. ») ;
-  - les deux listes de réponses, trouvé ou raté et le temps ; chaque mot ouvre sa carte ;
-  - la récompense du gagnant : 20 XP de plus, et un sachet bonus à sa première victoire du jour ;
-  - la même joute, vue par A, montre le même résultat de son côté.
+  - B voit la révélation tout de suite : les deux avatars, les questions retournées une à une sur deux colonnes avec le score qui monte de chaque côté, puis la bannière Victoire, Défaite ou Égalité (fanfare, éclats et vibration pour une victoire), les gains (XP, sachet), et « Ton mot … a piégé A. » ;
+  - à égalité de bonnes réponses, le temps total départage ;
+  - chez A, la joute est dans « Résultats à découvrir », scellée ; l'ouvrir casse le sceau et joue la même révélation de son côté ;
+  - ensuite, la joute passe dans « Terminées » (« Victoire », « Classée · 3 à 2 ») et rouvrir la joute montre le résultat entier avec « Revoir », sur le web comme sur le téléphone.
 - **Retour :**
 
 ### JTE-14 · La revanche
-- **Faire :** sur le résultat, « Proposer une revanche ».
+- **Faire :** sur le résultat, « Revanche ».
 - **Attendu :** une nouvelle joute amicale s'ouvre, avec 5 nouvelles cartes tirées des decks.
 - **Retour :**
 
@@ -317,13 +331,13 @@ En local, aucun e-mail ne part : ce test se fait une fois le site en ligne.
 Le mobile se prépare comme dans [recette-mobile.md](recette-mobile.md). Les comptes sont les mêmes. L'écran des joutes du mobile n'a encore tourné sur aucun téléphone : c'est la partie la plus à risque des joutes.
 
 ### MJT-01 · Hall et deck
-- **Faire :** A touche le bouton rond Joutes de l'écran Jouer. Ouvrir « Changer mon deck », ajouter et retirer des cartes, garder.
-- **Attendu :** comme JTE-01 et JTE-05. La feuille du deck monte du bas, défile jusqu'au bouton « Garder ce deck », et le compte des points suit chaque touche. Les cartes de la ligne du deck ouvrent leur fiche.
+- **Faire :** un compte neuf touche le bouton rond Joutes de l'écran Jouer et suit l'accueil guidé. Puis, sur l'accueil des joutes, « Modifier » le deck : ajouter et retirer des cartes, garder.
+- **Attendu :** comme JTE-04 et JTE-05, l'entraînement contre Maître Furet compris. La feuille du deck monte du bas, défile jusqu'au bouton « Garder ce deck », et le compte des points suit chaque touche. Les cartes de la ligne du deck ouvrent leur fiche.
 - **Retour :**
 
 ### MJT-02 · Une joute du téléphone au web
 - **Faire :** A défie B depuis le téléphone et joue sa partie. B joue sur le web. A ouvre la lettre de fin dans le courrier du téléphone.
-- **Attendu :** comme JTE-08 à JTE-13. Le chrono reste fluide. Une bonne réponse vibre une fois, une mauvaise deux fois. Les quatre choix restent lisibles et touchables sur un petit écran. La lettre mène aux joutes, la joute finie montre le résultat et « Proposer une revanche ».
+- **Attendu :** comme JTE-08 à JTE-13. Le chrono reste fluide. Une bonne réponse vibre une fois, une mauvaise deux fois. Les quatre choix restent lisibles et touchables sur un petit écran. La révélation vibre à la bannière et ses éclats restent fluides. La lettre mène aux joutes, la joute finie montre le résultat, « Revanche » et « Nouvelle joute ».
 - **Retour :**
 
 ### MJT-03 · Sortir de l'app en pleine partie
