@@ -20,7 +20,7 @@ import {
 } from "@leximon/core";
 import { createDb, schema } from "@leximon/db";
 import { testDatabaseUrl } from "@leximon/db/testing";
-import { and, eq, sql } from "drizzle-orm";
+import { and, eq, inArray, sql } from "drizzle-orm";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { createApp } from "../app";
 import { runMaintenance } from "../maintenance";
@@ -467,6 +467,52 @@ describe("entering and leaving", () => {
     await away(15);
     expect((await view(member, clanId)).me?.role).toBe("chief");
     expect((await view(chief, clanId)).me?.role).toBe("member");
+  });
+
+  it("passes over a successor away too, rather than send the role back and forth", async () => {
+    const chief = await player();
+    const clanId = await createClan(chief);
+    const absent = await player(10);
+    await send(absent, "POST", `/clans/${clanId}/join`);
+    const reader = await player(10);
+    await send(reader, "POST", `/clans/${clanId}/join`);
+    await db
+      .update(players)
+      .set({ lastSeenAt: new Date(Date.now() - 20 * DAY) })
+      .where(inArray(players.userId, [chief.userId, absent.userId]));
+
+    for (let read = 0; read < 3; read++) await view(reader, clanId);
+    expect((await view(reader, clanId)).me?.role).toBe("chief");
+    const handovers = await db
+      .select({ id: clanMessages.id })
+      .from(clanMessages)
+      .where(
+        and(
+          eq(clanMessages.clanId, clanId),
+          sql`${clanMessages.event} @> '{"type":"role","role":"chief"}'`,
+        ),
+      );
+    expect(handovers).toHaveLength(1);
+  });
+
+  it("keeps an absent chief when nobody in the clan comes by", async () => {
+    const chief = await player();
+    const clanId = await createClan(chief);
+    const absent = await player(10);
+    await send(absent, "POST", `/clans/${clanId}/join`);
+    await db
+      .update(players)
+      .set({ lastSeenAt: new Date(Date.now() - 20 * DAY) })
+      .where(inArray(players.userId, [chief.userId, absent.userId]));
+    const outsider = await player(10);
+
+    for (let read = 0; read < 3; read++) await view(outsider, clanId);
+    const roles = await db
+      .select({ userId: clanMembers.userId, role: clanMembers.role })
+      .from(clanMembers)
+      .where(eq(clanMembers.clanId, clanId));
+    expect(roles).toContainEqual({ userId: chief.userId, role: "chief" });
+    expect(roles).toContainEqual({ userId: absent.userId, role: "member" });
   });
 });
 

@@ -158,15 +158,44 @@ describe("roles", () => {
   });
 
   it("hands the clan to the oldest deputy, else the oldest member", () => {
+    const now = Date.UTC(2026, 9, 22);
     const members = [
-      { userId: "chief", role: "chief", joinedAt: 1 },
-      { userId: "old-member", role: "member", joinedAt: 2 },
-      { userId: "young-deputy", role: "deputy", joinedAt: 5 },
-      { userId: "old-deputy", role: "deputy", joinedAt: 3 },
+      { userId: "chief", role: "chief", joinedAt: 1, seenAt: now },
+      { userId: "old-member", role: "member", joinedAt: 2, seenAt: now },
+      { userId: "young-deputy", role: "deputy", joinedAt: 5, seenAt: now },
+      { userId: "old-deputy", role: "deputy", joinedAt: 3, seenAt: now },
     ] as const;
-    expect(nextChief(members, "chief")).toBe("old-deputy");
-    expect(nextChief(members.slice(0, 2), "chief")).toBe("old-member");
-    expect(nextChief(members.slice(0, 1), "chief")).toBeNull();
+    const leaves = { userId: "chief", reason: "left" } as const;
+    expect(nextChief(rules, members, leaves, now)).toBe("old-deputy");
+    expect(nextChief(rules, members.slice(0, 2), leaves, now)).toBe("old-member");
+    expect(nextChief(rules, members.slice(0, 1), leaves, now)).toBeNull();
+  });
+
+  it("passes over a successor who no longer comes by", () => {
+    const now = Date.UTC(2026, 9, 22);
+    const gone = now - 20 * 24 * HOUR;
+    const members = [
+      { userId: "chief", role: "chief", joinedAt: 1, seenAt: gone },
+      { userId: "old-deputy", role: "deputy", joinedAt: 2, seenAt: gone },
+      { userId: "old-member", role: "member", joinedAt: 3, seenAt: gone },
+      { userId: "young-member", role: "member", joinedAt: 4, seenAt: now - HOUR },
+    ] as const;
+    const away = { userId: "chief", reason: "away" } as const;
+    expect(nextChief(rules, members, away, now)).toBe("young-member");
+    expect(nextChief(rules, members, { userId: "chief", reason: "left" }, now)).toBe(
+      "young-member",
+    );
+  });
+
+  it("keeps an absent chief when nobody else comes by, but not one who leaves", () => {
+    const now = Date.UTC(2026, 9, 22);
+    const gone = now - 20 * 24 * HOUR;
+    const members = [
+      { userId: "chief", role: "chief", joinedAt: 1, seenAt: gone },
+      { userId: "deputy", role: "deputy", joinedAt: 2, seenAt: gone },
+    ] as const;
+    expect(nextChief(rules, members, { userId: "chief", reason: "away" }, now)).toBeNull();
+    expect(nextChief(rules, members, { userId: "chief", reason: "left" }, now)).toBe("deputy");
   });
 
   it("sees a chief away for 14 days", () => {

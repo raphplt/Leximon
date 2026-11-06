@@ -188,19 +188,34 @@ export interface ClanMemberState {
   readonly userId: string;
   readonly role: ClanRole;
   readonly joinedAt: EpochMs;
+  /** Last visit, or the arrival for a player never seen since. */
+  readonly seenAt: EpochMs;
 }
 
 /**
- * Who becomes chief when the chief leaves or stays away: the oldest deputy, else the oldest
- * member; `null` if nobody is left. Ties on the arrival date fall on the user id, to be stable.
+ * Who becomes chief when the chief leaves or stays away: the oldest deputy who still comes by,
+ * else the oldest such member. A chief who leaves still hands the role to someone absent when
+ * nobody comes by, since the clan needs a chief; a chief merely away keeps it then, because an
+ * absent successor would be away in turn and send the role straight back. `null` keeps no one
+ * or leaves the chief in place. Ties on the arrival date fall on the user id, to be stable.
  */
-export function nextChief(members: readonly ClanMemberState[], leavingId: string): string | null {
-  const others = members.filter((member) => member.userId !== leavingId);
+export function nextChief(
+  rules: ClanRules,
+  members: readonly ClanMemberState[],
+  chief: { readonly userId: string; readonly reason: "left" | "away" },
+  now: EpochMs,
+): string | null {
+  const others = members.filter((member) => member.userId !== chief.userId);
   const byAge = (a: ClanMemberState, b: ClanMemberState) =>
     a.joinedAt - b.joinedAt || (a.userId < b.userId ? -1 : 1);
-  const deputies = others.filter((member) => member.role === "deputy").sort(byAge);
-  const rest = others.filter((member) => member.role === "member").sort(byAge);
-  return deputies[0]?.userId ?? rest[0]?.userId ?? null;
+  const pick = (pool: readonly ClanMemberState[]) => {
+    const deputies = pool.filter((member) => member.role === "deputy").sort(byAge);
+    const rest = pool.filter((member) => member.role === "member").sort(byAge);
+    return deputies[0]?.userId ?? rest[0]?.userId ?? null;
+  };
+  const present = pick(others.filter((member) => !isChiefAway(rules, member.seenAt, now)));
+  if (present !== null || chief.reason === "away") return present;
+  return pick(others);
 }
 
 export function isChiefAway(rules: ClanRules, chiefLastSeenAt: EpochMs, now: EpochMs): boolean {

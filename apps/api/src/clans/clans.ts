@@ -209,24 +209,48 @@ function isUniqueViolation(error: unknown, constraint: string): boolean {
   return false;
 }
 
-/** The deputies and the oldest member: enough for `nextChief`, without reading a whole clan. */
-async function chiefCandidates(tx: Transaction, clanId: string): Promise<ClanMemberState[]> {
+/**
+ * The deputies, the oldest member and the oldest member still coming by: enough for `nextChief`,
+ * without reading a whole clan.
+ */
+async function chiefCandidates(
+  tx: Transaction,
+  clanId: string,
+  now: EpochMs,
+): Promise<ClanMemberState[]> {
+  const seenAt = sql<Date>`coalesce(${players.lastSeenAt}, ${clanMembers.joinedAt})`;
   const fields = {
     userId: clanMembers.userId,
     role: clanMembers.role,
     joinedAt: clanMembers.joinedAt,
+    seenAt,
   };
-  const deputies = await tx
-    .select(fields)
-    .from(clanMembers)
-    .where(and(eq(clanMembers.clanId, clanId), eq(clanMembers.role, "deputy")));
-  const oldest = await tx
-    .select(fields)
-    .from(clanMembers)
-    .where(and(eq(clanMembers.clanId, clanId), eq(clanMembers.role, "member")))
-    .orderBy(asc(clanMembers.joinedAt), asc(clanMembers.userId))
+  const members = () =>
+    tx
+      .select(fields)
+      .from(clanMembers)
+      .innerJoin(players, eq(players.userId, clanMembers.userId))
+      .$dynamic();
+  const isMember = and(eq(clanMembers.clanId, clanId), eq(clanMembers.role, "member"));
+  const oldestFirst = [asc(clanMembers.joinedAt), asc(clanMembers.userId)] as const;
+  const recently = new Date(now - rulesAt(now).chiefAbsenceMs);
+  // One after the other: a transaction's queries share one connection.
+  const deputies = await members().where(
+    and(eq(clanMembers.clanId, clanId), eq(clanMembers.role, "deputy")),
+  );
+  const oldest = await members()
+    .where(isMember)
+    .orderBy(...oldestFirst)
     .limit(1);
-  return [...deputies, ...oldest].map((row) => ({ ...row, joinedAt: row.joinedAt.getTime() }));
+  const oldestPresent = await members()
+    .where(and(isMember, sql`${seenAt} > ${recently}`))
+    .orderBy(...oldestFirst)
+    .limit(1);
+  return [...deputies, ...oldest, ...oldestPresent].map((row) => ({
+    ...row,
+    joinedAt: row.joinedAt.getTime(),
+    seenAt: new Date(row.seenAt).getTime(),
+  }));
 }
 
 /** Makes `successorId` the chief; the former chief becomes `formerRole`. */
@@ -479,7 +503,8 @@ export async function leaveClan(
       return { kind: "left", clanId, dissolved: true };
     }
     if (me.role === "chief") {
-      const successorId = nextChief(await chiefCandidates(tx, clanId), userId);
+      const candidates = await chiefCandidates(tx, clanId, now);
+      const successorId = nextChief(rulesAt(now), candidates, { userId, reason: "left" }, now);
       if (successorId !== null) {
         await passChief(tx, { clanId, chiefId: userId, successorId, formerRole: null, now });
       }
@@ -695,7 +720,13 @@ export async function handOverIfChiefAway(
     if ((await lockClan(tx, clanId)) === null) return;
     const current = await readChief(tx, clanId);
     if (current === null || !isChiefAway(rules, current.seenAt, now)) return;
-    const successorId = nextChief(await chiefCandidates(tx, clanId), current.userId);
+    const candidates = await chiefCandidates(tx, clanId, now);
+    const successorId = nextChief(
+      rules,
+      candidates,
+      { userId: current.userId, reason: "away" },
+      now,
+    );
     if (successorId === null) return;
     await passChief(tx, {
       clanId,
