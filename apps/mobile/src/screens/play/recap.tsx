@@ -1,19 +1,21 @@
 import { type Catalog, cardOrPlaceholder } from "@leximon/contract/client";
-import { cardSize, rarityStyles } from "@leximon/tokens";
+import { cardSize, rarityStyles, toy, toyMatters } from "@leximon/tokens";
 import {
   BACK_HOME_LABEL,
+  CASCADE_STEP_MS,
   canOpenAgain,
   collectionProgress,
+  collectionTally,
   keepsAnnouncementWhenHurried,
+  levelLabel,
   levelRatio,
-  levelUpLabel,
+  levelUpGain,
   nextSachetLine,
   openAgainLabel,
-  rarityCompletedLabel,
+  rarityCompletedGain,
   recap,
   recapCascade,
   recapOrder,
-  welcomeSessionLine,
   xpGainLabel,
 } from "@leximon/view-model";
 import { router } from "expo-router";
@@ -30,6 +32,7 @@ import {
 import Animated, {
   Easing,
   FadeInRight,
+  FadeInUp,
   useAnimatedStyle,
   useReducedMotion,
   useSharedValue,
@@ -48,8 +51,10 @@ import { usePlayerView } from "@/player/use-player-view";
 import { openCard } from "@/screens/trades/card-row";
 import { TAB_BAR_RISE } from "@/shell/tab-bar";
 import { colors, fontSizes, fonts, radii, space } from "@/theme";
+import { GainBanner } from "@/ui/gain-banner";
 import { XpBar } from "@/ui/level";
-import { RarityName } from "@/ui/rarity-icon";
+import { RarityIcon, RarityName } from "@/ui/rarity-icon";
+import { Lettering } from "@/ui/toy";
 import { isNewAt, type Pack } from "./pack";
 import { cssLinearInShape } from "./sachet-paint";
 
@@ -57,12 +62,14 @@ const GAP = 14;
 /** Room left at the edge for the next card to show. */
 const PEEK = 96;
 const CARD_MAX = 260;
-/** The desk's buttons leave little room: a small phone takes smaller cards rather than overflow. */
-const CARD_MIN = 112;
+/** Narrower, a card no longer reads: a short phone scrolls the recap rather than shrink it more. */
+const CARD_MIN = 156;
 /** Below this height the recap closes up its lines; below what even that leaves, it scrolls. */
 const TIGHT_ROOM = 600;
 /** Height kept around the cards until it is measured: the recap's lines, the buttons and the tabs. */
 const CHROME = 540;
+/** The main button's height, in the play pieces: the desk's edge runs through its middle. */
+const MAIN_ACTION_HEIGHT = 66;
 const STEP_MS = 80;
 /** A card's chime rings once it has slid in. */
 const CHIME_AT_MS = 220;
@@ -145,100 +152,163 @@ export function Recap({
   const { best, fresh } = recap(pack.cards, pack.quantitiesBefore);
   const progress = collectionProgress(pack.collectionCardIds, pack.quantitiesBefore, pack.cards);
   const xp = xpGainLabel(pack.progress);
-  const levelUp = levelUpLabel(pack.progress);
+  const levelGain = levelUpGain(pack.progress, coffretWaits);
+  const tally = collectionTally(progress);
   const nextSachet = wallet === null ? null : nextSachetLine(wallet, now);
   const another = !mustSignUp && !coffretWaits && wallet !== null && canOpenAgain(wallet);
-  // The session ends on this sachet: say what the welcome week keeps for today or tomorrow.
-  const welcomeLine = mustSignUp || another ? null : welcomeSessionLine(player.welcome);
+  // The gains come once the cards have landed, one after the other.
+  const after = (index: number) =>
+    FadeInUp.delay(pack.cards.length * CASCADE_STEP_MS + 260 + index * 140).duration(320);
   return (
     <View style={styles.recap} onLayout={(event) => setRoom(event.nativeEvent.layout.height)}>
-      {/* The cards lie on the desk and the buttons are its objects. */}
-      <Desk style={styles.desk} />
       <ScrollView
         scrollEnabled={actionsBottom > room + 1}
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={[styles.column, tight && styles.columnTight]}
+        contentContainerStyle={styles.scroll}
       >
-        <Text style={styles.kicker}>TON SACHET</Text>
-        <View style={styles.line}>
-          {best !== null && (
-            <RarityName rarity={best.rarity} text={best.label} color={colors.pageInk} />
-          )}
-          {best !== null && <Text style={styles.lineText}>·</Text>}
-          <Text style={styles.lineText}>{fresh}</Text>
-        </View>
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          snapToInterval={width + GAP}
-          decelerationRate="fast"
-          contentContainerStyle={{ gap: GAP, paddingHorizontal: (window.width - width) / 2 }}
-          onScroll={(event) =>
-            setActive(Math.round(event.nativeEvent.contentOffset.x / (width + GAP)))
-          }
-          scrollEventThrottle={32}
-          onLayout={(event) => setCarouselHeight(Math.floor(event.nativeEvent.layout.height))}
-          style={styles.carousel}
-        >
-          {shown.map(({ card: drawn, index }, position) => (
-            <Animated.View
-              key={index}
-              entering={FadeInRight.delay(position * STEP_MS).duration(260)}
-            >
-              <Pressable
-                onPress={() =>
-                  openCard(
-                    drawn.cardId,
-                    shown.map((entry) => entry.card.cardId),
-                  )
-                }
-                accessibilityRole="button"
-                accessibilityLabel={`Lire ${cardOrPlaceholder(catalog, drawn.cardId, drawn.rarity).word}`}
-              >
-                <Card
-                  card={cardOrPlaceholder(catalog, drawn.cardId, drawn.rarity)}
-                  collectionName={pack.collectionName}
-                  width={width}
-                />
-              </Pressable>
-              {steps[position]?.glint === true && (
-                <Glint
-                  color={rarityStyles[drawn.rarity].glow ?? rarityStyles[drawn.rarity].spot}
-                  width={width}
-                  delayMs={(steps[position]?.delayMs ?? 0) + GLINT_AT_MS}
-                />
-              )}
-              {isNewAt(pack, index) && <Text style={styles.new}>Nouveau</Text>}
-            </Animated.View>
-          ))}
-        </ScrollView>
-        <View style={styles.dots} importantForAccessibility="no-hide-descendants">
-          {pack.cards.map((_, index) => (
-            // biome-ignore lint/suspicious/noArrayIndexKey: one dot per card of the pack.
-            <View key={index} style={[styles.dot, index === active && styles.dotOn]} />
-          ))}
-        </View>
-        {xp !== null && <Text style={styles.xp}>{xp}</Text>}
-        {progressNow !== null && (
-          <View style={styles.bar}>
-            <XpBar ratio={levelRatio(progressNow)} thin />
+        {/* The cards lie on the desk, as long as what it holds; the main button sits on its edge. */}
+        <View style={[styles.column, tight && styles.columnTight]}>
+          <Desk style={styles.desk} />
+          <View style={styles.line}>
+            {best !== null && (
+              <RarityName rarity={best.rarity} text={best.label} color={colors.pageInk} />
+            )}
+            {best !== null && <Text style={styles.lineText}>·</Text>}
+            <Text style={styles.lineText}>{fresh}</Text>
           </View>
-        )}
-        {pack.completions.map((completion) => (
-          <Text key={completion.rarity} style={styles.completed}>
-            {rarityCompletedLabel(completion)}
-          </Text>
-        ))}
-        {levelUp !== null && <Text style={styles.levelUp}>{levelUp}</Text>}
-        <Text style={styles.progress}>
-          {pack.collectionName} · {progress.owned} / {progress.total}
-          {progress.gained > 0 && <Text style={styles.gained}> (+{progress.gained})</Text>}
-        </Text>
-        {!mustSignUp && !coffretWaits && nextSachet !== null && (
-          <Text style={styles.progress}>{nextSachet}</Text>
-        )}
-        {welcomeLine !== null && <Text style={styles.progress}>{welcomeLine}</Text>}
-        <RecycleButton />
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            snapToInterval={width + GAP}
+            decelerationRate="fast"
+            contentContainerStyle={{ gap: GAP, paddingHorizontal: (window.width - width) / 2 }}
+            onScroll={(event) =>
+              setActive(Math.round(event.nativeEvent.contentOffset.x / (width + GAP)))
+            }
+            scrollEventThrottle={32}
+            onLayout={(event) => setCarouselHeight(Math.floor(event.nativeEvent.layout.height))}
+            style={styles.carousel}
+          >
+            {shown.map(({ card: drawn, index }, position) => (
+              <Animated.View
+                key={index}
+                entering={FadeInRight.delay(position * STEP_MS).duration(260)}
+              >
+                <Pressable
+                  onPress={() =>
+                    openCard(
+                      drawn.cardId,
+                      shown.map((entry) => entry.card.cardId),
+                    )
+                  }
+                  accessibilityRole="button"
+                  accessibilityLabel={`Lire ${cardOrPlaceholder(catalog, drawn.cardId, drawn.rarity).word}`}
+                >
+                  <Card
+                    card={cardOrPlaceholder(catalog, drawn.cardId, drawn.rarity)}
+                    collectionName={pack.collectionName}
+                    width={width}
+                  />
+                </Pressable>
+                {steps[position]?.glint === true && (
+                  <Glint
+                    color={rarityStyles[drawn.rarity].glow ?? rarityStyles[drawn.rarity].spot}
+                    width={width}
+                    delayMs={(steps[position]?.delayMs ?? 0) + GLINT_AT_MS}
+                  />
+                )}
+                {isNewAt(pack, index) && <Text style={styles.new}>Nouveau</Text>}
+              </Animated.View>
+            ))}
+          </ScrollView>
+          <View style={styles.dots} importantForAccessibility="no-hide-descendants">
+            {pack.cards.map((_, index) => (
+              // biome-ignore lint/suspicious/noArrayIndexKey: one dot per card of the pack.
+              <View key={index} style={[styles.dot, index === active && styles.dotOn]} />
+            ))}
+          </View>
+          {levelGain !== null && (
+            <Animated.View entering={after(0)} style={styles.banner}>
+              <GainBanner icon="chest" title={levelGain.title} note={levelGain.note} />
+            </Animated.View>
+          )}
+          {pack.completions.map((completion, index) => {
+            const gain = rarityCompletedGain(completion);
+            return (
+              <Animated.View
+                key={completion.rarity}
+                entering={after(index + 1)}
+                style={styles.banner}
+              >
+                <GainBanner
+                  icon={
+                    <RarityIcon
+                      rarity={completion.rarity}
+                      size={28}
+                      color={rarityStyles[completion.rarity].spot}
+                    />
+                  }
+                  title={gain.title}
+                  note={gain.note}
+                />
+              </Animated.View>
+            );
+          })}
+          <View style={styles.tallies}>
+            {xp !== null && (
+              <Animated.View entering={after(0)} style={styles.tally}>
+                <Text
+                  style={styles.tallyName}
+                  numberOfLines={1}
+                  adjustsFontSizeToFit
+                  minimumFontScale={0.75}
+                >
+                  {progressNow === null
+                    ? "EXPÉRIENCE"
+                    : levelLabel(progressNow.level).toUpperCase()}
+                </Text>
+                <Lettering size={fontSizes.titleSmall}>{xp}</Lettering>
+                {progressNow !== null && (
+                  <View style={styles.tallyBar}>
+                    <XpBar ratio={levelRatio(progressNow)} />
+                  </View>
+                )}
+              </Animated.View>
+            )}
+            <Animated.View entering={after(1)} style={styles.tally}>
+              <Text
+                style={styles.tallyName}
+                numberOfLines={1}
+                adjustsFontSizeToFit
+                minimumFontScale={0.75}
+              >
+                {pack.collectionName.toUpperCase()}
+              </Text>
+              <View style={styles.tallyFigure}>
+                <Lettering size={fontSizes.titleSmall}>{tally.figure}</Lettering>
+                {tally.gained !== null && <Text style={styles.tallyGained}>{tally.gained}</Text>}
+              </View>
+              <View style={[styles.tallyBar, styles.collectionBar]}>
+                <View style={[styles.collectionOwned, { width: `${tally.before * 100}%` }]} />
+                {tally.gained !== null && (
+                  <View
+                    style={[
+                      styles.collectionGained,
+                      {
+                        left: `${tally.before * 100}%`,
+                        width: `${(tally.after - tally.before) * 100}%`,
+                      },
+                    ]}
+                  />
+                )}
+              </View>
+            </Animated.View>
+          </View>
+          {!mustSignUp && !coffretWaits && nextSachet !== null && (
+            <Text style={styles.note}>{nextSachet}</Text>
+          )}
+          <RecycleButton />
+        </View>
         <View style={styles.actions} onLayout={measureActions}>
           {coffretWaits ? (
             <MainAction label="Ouvrir le coffret" onPress={() => openCoffret()} />
@@ -329,15 +399,16 @@ const styles = StyleSheet.create({
   glint: { ...StyleSheet.absoluteFill, opacity: 0 },
   // Clear of the desk's gilt frame.
   recap: { flex: 1 },
-  column: { flexGrow: 1, alignItems: "center", paddingTop: space.s12, gap: space.s4 },
-  columnTight: { gap: space.s2 },
-  desk: { position: "absolute", top: 4, left: 8, right: 8, bottom: 96 + TAB_BAR_RISE },
-  kicker: {
-    fontFamily: fonts.ui.extrabold,
-    fontSize: fontSizes.caption,
-    letterSpacing: 2,
-    color: colors.pageInkMuted,
+  scroll: { flexGrow: 1 },
+  column: {
+    flexGrow: 1,
+    alignItems: "center",
+    paddingTop: space.s12,
+    paddingBottom: space.s10,
+    gap: space.s4,
   },
+  columnTight: { gap: space.s2 },
+  desk: { position: "absolute", top: 4, left: 8, right: 8, bottom: -MAIN_ACTION_HEIGHT / 2 },
   line: { flexDirection: "row", alignItems: "center", gap: space.s4 },
   lineText: { fontFamily: fonts.ui.bold, fontSize: fontSizes.body, color: colors.pageInk },
   carousel: { flexGrow: 0, flexShrink: 0, paddingVertical: space.s7 },
@@ -357,37 +428,70 @@ const styles = StyleSheet.create({
   dots: { flexDirection: "row", gap: space.s3 },
   dot: { width: 7, height: 7, borderRadius: radii.xxs, backgroundColor: colors.rule },
   dotOn: { backgroundColor: colors.action },
-  xp: {
-    fontFamily: fonts.display,
-    fontSize: fontSizes.titleLarge,
-    color: colors.rubric,
+  banner: { alignSelf: "stretch", paddingHorizontal: space.s8 },
+  tallies: {
+    flexDirection: "row",
+    alignSelf: "stretch",
+    gap: space.s8,
+    paddingHorizontal: space.s12,
     marginTop: space.s2,
   },
-  bar: { width: 200 },
-  levelUp: { fontFamily: fonts.ui.extrabold, fontSize: fontSizes.bodyLarge, color: colors.pageInk },
-  completed: {
-    fontFamily: fonts.ui.bold,
-    fontSize: fontSizes.label,
-    color: colors.pageInk,
-    paddingHorizontal: space.s5,
-    paddingVertical: space.s2,
-    borderWidth: 2,
-    borderStyle: "dashed",
-    borderColor: colors.badge,
-    borderRadius: radii.md,
+  tally: { flex: 1, alignItems: "center", gap: space.s2 },
+  tallyName: {
+    fontFamily: fonts.ui.extrabold,
+    fontSize: fontSizes.caption,
+    letterSpacing: 1.6,
+    color: colors.pageInkMuted,
   },
-  progress: {
+  tallyFigure: { flexDirection: "row", alignItems: "center", gap: space.s3 },
+  tallyGained: {
+    overflow: "hidden",
+    paddingHorizontal: 7,
+    paddingVertical: 1,
+    borderWidth: 2,
+    borderColor: toy.outline,
+    borderRadius: radii.pill,
+    backgroundColor: colors.successDeep,
+    color: colors.inkOnColor,
+    fontFamily: fonts.ui.extrabold,
+    fontSize: fontSizes.small,
+  },
+  tallyBar: { alignSelf: "stretch", marginTop: space.s1 },
+  // What was owned before in cream, what this sachet added in green after it.
+  collectionBar: {
+    height: 16,
+    overflow: "hidden",
+    borderRadius: radii.pill,
+    backgroundColor: colors.well,
+  },
+  collectionOwned: {
+    position: "absolute",
+    top: 0,
+    bottom: 0,
+    left: 0,
+    borderRadius: radii.pill,
+    backgroundColor: toyMatters.paper.top,
+  },
+  // A few words out of five hundred: drawn a little wider than their share, so that they show.
+  collectionGained: {
+    position: "absolute",
+    top: 0,
+    bottom: 0,
+    minWidth: 14,
+    borderRadius: radii.pill,
+    backgroundColor: colors.successLight,
+  },
+  note: {
     fontFamily: fonts.ui.semibold,
     fontSize: fontSizes.label,
     color: colors.pageInkMuted,
+    marginTop: space.s3,
   },
-  gained: { color: colors.success },
   actions: {
     alignSelf: "stretch",
     alignItems: "center",
     paddingHorizontal: space.s12,
     paddingBottom: TAB_BAR_RISE + 24,
-    gap: space.s5,
-    marginTop: space.s3,
+    gap: space.s6,
   },
 });

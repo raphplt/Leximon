@@ -3,10 +3,12 @@ import { PACK_NOUNS } from "./pack";
 import {
   bonusLabel,
   collectionProgress,
+  collectionTally,
   copiesAt,
   firstOfRarityLabel,
   isFirstOfRarity,
   nextRefillLabel,
+  rarityCompletedGain,
   rarityCompletedLabel,
   recap,
   recapOrder,
@@ -110,6 +112,19 @@ describe("isFirstOfRarity", () => {
   });
 });
 
+describe("rarityCompletedGain", () => {
+  it("says which rarity is complete and what it earned", () => {
+    expect(rarityCompletedGain({ rarity: "legendary", xp: 1000 })).toEqual({
+      title: "Toutes les Légendaires",
+      note: `Réunies, +1${"\u202f"}000 XP`,
+    });
+    expect(rarityCompletedGain({ rarity: "precious", xp: 400 })).toEqual({
+      title: "Toutes les Précieuses",
+      note: "Réunies, +400 XP",
+    });
+  });
+});
+
 describe("rarityCompletedLabel", () => {
   it("says the rarity is complete and what it earned", () => {
     expect(rarityCompletedLabel({ rarity: "legendary", xp: 1000 })).toBe(
@@ -118,6 +133,28 @@ describe("rarityCompletedLabel", () => {
     expect(rarityCompletedLabel({ rarity: "precious", xp: 400 })).toBe(
       "Toutes les cartes Précieuses réunies ! +400 XP",
     );
+  });
+});
+
+describe("collectionTally", () => {
+  it("gives the figure, the cards gained and the bar before and after", () => {
+    expect(collectionTally({ owned: 40, total: 520, gained: 5 })).toEqual({
+      figure: "40 / 520",
+      gained: "+5",
+      before: 35 / 520,
+      after: 40 / 520,
+    });
+  });
+
+  it("has no gain when the sachet gave nothing new", () => {
+    expect(collectionTally({ owned: 40, total: 520, gained: 0 }).gained).toBeNull();
+  });
+
+  it("stays at zero for an empty collection", () => {
+    expect(collectionTally({ owned: 0, total: 0, gained: 0 })).toMatchObject({
+      before: 0,
+      after: 0,
+    });
   });
 });
 

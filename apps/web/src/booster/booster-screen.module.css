@@ -220,13 +220,6 @@
   opacity: 1;
 }
 
-.recapHint {
-  margin: var(--lx-s5) 0 0;
-  font-size: var(--lx-size-small);
-  font-weight: 600;
-  color: var(--lx-color-page-ink);
-}
-
 @keyframes land {
   from {
     opacity: 0;
@@ -259,51 +252,147 @@
   }
 }
 
-.recapProgress {
-  margin: var(--lx-s7) 0 0;
-  font-size: var(--lx-size-label);
-  font-weight: 700;
-  color: var(--lx-color-page-ink);
+/* A level reached, a rarity complete: each in its illuminated banner, once the cards have landed. */
+.recapBanners {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--lx-s7);
+  margin-top: var(--lx-s14);
 }
 
-.gained {
-  color: var(--lx-color-rubric);
+.recapGain,
+.tally {
+  animation: rise 360ms cubic-bezier(0.2, 0.9, 0.3, 1.2) both;
 }
 
-.recapXp {
-  margin: var(--lx-s7) 0 var(--lx-s2);
+/* What the sachet moved: the XP and the collection, side by side, each with its figure and bar. */
+.tallies {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(0, 260px));
+  justify-content: center;
+  gap: var(--lx-s8) 56px;
+  width: 100%;
+  margin-top: var(--lx-s14);
+}
+
+.tally {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--lx-s3);
+  min-width: 0;
+}
+
+.tallyName {
+  max-width: 100%;
+  overflow: hidden;
+  font-size: var(--lx-size-caption);
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  color: var(--lx-color-page-ink-muted);
+}
+
+.tallyFigure {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--lx-s4);
   font-size: var(--lx-size-heading-large);
+  line-height: 1.05;
   color: var(--lx-toy-gold-top);
 }
 
-.recapBar {
-  width: 100%;
-  max-width: 360px;
-}
-
-.levelUp {
-  width: 100%;
-  max-width: 360px;
-  margin: var(--lx-s8) 0 0;
-  padding: var(--lx-s6);
-  box-sizing: border-box;
-  border-radius: var(--lx-radius-xxl);
-  background: linear-gradient(120deg, var(--lx-color-badge), var(--lx-color-sticker));
-  font-weight: 800;
-  font-size: var(--lx-size-subtitle);
-}
-
-/* A rarity of the collection complete: quieter than a level, but a sticker of its own. */
-.completed {
-  width: 100%;
-  max-width: 360px;
-  margin: var(--lx-s4) 0 0;
-  padding: var(--lx-s3) var(--lx-s6);
-  box-sizing: border-box;
-  border: 2px dashed var(--lx-color-badge);
-  border-radius: var(--lx-radius-lg);
-  font-weight: 700;
+/* The words this sachet added, in the green of what is new. */
+.tallyGained {
+  padding: 2px 10px 3px;
+  border: var(--lx-toy-outline-width) solid var(--lx-toy-outline);
+  border-radius: var(--lx-radius-pill);
+  background: var(--lx-color-success-deep);
+  box-shadow: 0 2px 0 var(--lx-toy-outline);
+  font-family: var(--font-ui), system-ui, sans-serif;
   font-size: var(--lx-size-body);
+  font-weight: 800;
+  color: var(--lx-color-ink-on-color);
+  -webkit-text-stroke: 0;
+  text-shadow: none;
+}
+
+.tallyBar,
+.collectionBar {
+  width: 100%;
+  margin-top: var(--lx-s2);
+}
+
+/* The collection's bar: what was owned before in cream, what this sachet added in green after it. */
+.collectionBar {
+  position: relative;
+  display: block;
+  height: 16px;
+  border-radius: var(--lx-radius-pill);
+  background: var(--lx-color-well);
+  box-shadow: inset 0 2px 0 color-mix(in srgb, var(--lx-color-shade) 35%, transparent);
+  overflow: hidden;
+}
+
+.collectionOwned,
+.collectionGained {
+  position: absolute;
+  inset: 0 auto 0 0;
+  border-radius: var(--lx-radius-pill);
+}
+
+/* A few words out of five hundred: drawn a little wider than their share, so that they show. */
+.collectionGained {
+  left: var(--from);
+  width: max(14px, var(--share));
+}
+
+.collectionOwned {
+  background: linear-gradient(180deg, var(--lx-toy-paper-top), var(--lx-toy-paper-bottom));
+}
+
+.collectionGained {
+  background: linear-gradient(180deg, var(--lx-color-success-light), var(--lx-color-success));
+  animation: grow 700ms 900ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  transform-origin: left;
+}
+
+.recapNote {
+  margin: var(--lx-s10) 0 0;
+  font-size: var(--lx-size-small);
+  font-weight: 600;
+  color: var(--lx-color-page-ink-muted);
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.94);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes grow {
+  from {
+    transform: scaleX(0.6);
+  }
+  to {
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .recapGain,
+  .tally,
+  .collectionGained {
+    animation: none;
+  }
 }
 
 /* The main action on a row of its own, the others under it side by side, of one width. */
@@ -311,9 +400,9 @@
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   justify-content: center;
-  gap: var(--lx-s5);
+  gap: var(--lx-s7);
   width: min(100%, 460px);
-  margin-top: var(--lx-s10);
+  margin-top: var(--lx-s14);
 }
 
 /* Above the actions' own widths. */
@@ -361,21 +450,48 @@
     padding-inline: calc(50% + var(--lx-s8) - var(--w) / 2);
   }
 
-  .recapHint {
-    margin-top: var(--lx-s3);
+  /* One under the other, of one width. */
+  .recapBanners {
+    flex-direction: column;
+    align-items: stretch;
+    width: min(100%, 340px);
+    gap: var(--lx-s5);
+    margin-top: var(--lx-s8);
   }
 
-  .recapXp {
-    margin: var(--lx-s4) 0 var(--lx-s1);
-    font-size: var(--lx-size-heading);
+  .tallies {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--lx-s6) var(--lx-s8);
+    margin-top: var(--lx-s8);
   }
 
-  .recapProgress {
-    margin-top: var(--lx-s4);
+  .tallyFigure {
+    font-size: var(--lx-size-title);
   }
 
-  .actions {
+  .tallyGained {
+    padding: 1px 7px 2px;
+    font-size: var(--lx-size-small);
+  }
+
+  .recapNote {
     margin-top: var(--lx-s6);
+  }
+
+  /* One under the other: side by side, a phone breaks each label on two lines. */
+  .actions {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--lx-s5);
+    margin-top: var(--lx-s8);
+  }
+
+  .recap .actions > * + * {
+    height: 46px;
+  }
+
+  /* « Ouvrir un autre sachet » on one line. */
+  .recap .actions > :first-child span {
+    font-size: var(--lx-size-title-small);
   }
 }
 

@@ -1,5 +1,5 @@
 import type { ToyIconName } from "@leximon/tokens";
-import type { CSSProperties } from "react";
+import type { CSSProperties, ReactElement } from "react";
 import styles from "./gain-banner.module.css";
 import { ToyIcon } from "./toy";
 
@@ -14,7 +14,8 @@ export function GainBanner({
   className,
   style,
 }: {
-  readonly icon: ToyIconName;
+  /** A toy icon by its name, or another drawing (a rarity's). */
+  readonly icon: ToyIconName | ReactElement;
   /** « 1 sachet bonus » */
   readonly title: string;
   /** « Dans ta réserve » */
@@ -25,7 +26,7 @@ export function GainBanner({
   return (
     <div className={[styles.banner, className].filter(Boolean).join(" ")} style={style}>
       <span className={styles.medallion} aria-hidden="true">
-        <ToyIcon name={icon} size={34} />
+        {typeof icon === "string" ? <ToyIcon name={icon} size={34} /> : icon}
       </span>
       <span className={styles.words}>
         <strong className={styles.title}>{title}</strong>

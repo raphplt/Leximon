@@ -8,6 +8,7 @@ import {
   xpRulesAt,
   xpToReach,
 } from "@leximon/core";
+import type { Gain } from "./challenges";
 import { formatCount } from "./format";
 
 /** The account level as screens show it: medal, headline, bar. */
@@ -15,6 +16,15 @@ import { formatCount } from "./format";
 /** "+35 XP", or `null` when nothing was earned (a wrong answer, a replayed request). */
 export function xpGainLabel(gain: Pick<ProgressGain, "xpGained">): string | null {
   return gain.xpGained > 0 ? `+${formatCount(gain.xpGained)} XP` : null;
+}
+
+/** The level a sachet raised, for the recap's banner, with the coffret it brought; else `null`. */
+export function levelUpGain(
+  gain: Pick<ProgressGain, "levelUp" | "level">,
+  coffretWaits: boolean,
+): Gain | null {
+  if (!gain.levelUp) return null;
+  return { title: `Niveau ${gain.level}`, note: coffretWaits ? "Un coffret t'attend" : null };
 }
 
 /** "Niveau 6 !" when the action raised the level, else `null`. */

@@ -7,6 +7,7 @@ import {
   toyMatters,
   toy as toyValues,
 } from "@leximon/tokens";
+import type { ReactElement } from "react";
 import { StyleSheet, Text, View } from "react-native";
 import { fontSizes, fonts } from "@/theme";
 import { Matter } from "./matter";
@@ -24,7 +25,8 @@ export function GainBanner({
   title,
   note,
 }: {
-  readonly icon: ToyIconName;
+  /** A toy icon by its name, or another drawing (a rarity's). */
+  readonly icon: ToyIconName | ReactElement;
   /** « 1 sachet bonus » */
   readonly title: string;
   /** « Dans ta réserve » */
@@ -43,7 +45,7 @@ export function GainBanner({
           <View key={corner} style={[styles.lozenge, LOZENGE_AT[corner]]} />
         ))}
         <View style={styles.medallion}>
-          <ToyIcon name={icon} size={30} />
+          {typeof icon === "string" ? <ToyIcon name={icon} size={30} /> : icon}
         </View>
         <View style={styles.words}>
           <Lettering size={fontSizes.titleSmall}>{title}</Lettering>

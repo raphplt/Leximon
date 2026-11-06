@@ -392,15 +392,15 @@ Chaque retour vaut pour le web (téléphone et grand écran) et pour l'app, sauf
 | R-04 | Missions du jour | « Changer » plus discret, et une confirmation qui dit ce que fait le changement et qu'il n'y en a qu'un par jour. | 1 ✓ |
 | R-05 | Missions du jour | Le titre d'une mission passe sur deux lignes à côté de son compteur. | 1 ✓ |
 | R-06 | Fenêtre des écus | Illisible : un tableau visuel, chaque rareté avec son icône, une flèche et les écus gagnés. Montrer clairement à quoi servent les écus (le mot manquant). | 3 |
-| R-07 | Fin d'un sachet | Faire respirer en hauteur : les trois boutons sont trop collés, « 25 / 539 (+5) » trop discret, « Ouvre une carte pour la lire. » sans doute de trop. | 2 |
-| R-08 | Fin d'un sachet | La montée de niveau est moche et mal placée : un encart de gain enluminé (R-15), et moins de texte. | 2 |
+| R-07 | Fin d'un sachet | Faire respirer en hauteur : les trois boutons sont trop collés, « 25 / 539 (+5) » trop discret, « Ouvre une carte pour la lire. » sans doute de trop. | 2 ✓ |
+| R-08 | Fin d'un sachet | La montée de niveau est moche et mal placée : un encart de gain enluminé (R-15), et moins de texte. | 2 ✓ |
 | R-09 | Fenêtre « Tes sachets » | Mauvaise UX, désagréable à regarder : à refaire en visuel. | 3 |
 | R-10 | Jouer, progression | « Au niveau 7, tu gagnes un sachet bonus » ne doit pas être une phrase complète. Le rond du sachet est ovale. | 1 ✓ |
 | R-11 | Jouer, progression | L'icône du bouton « Ouvrir 1 coffret » est blanche sur jaune : invisible. | 1 ✓ |
 | R-12 | Défis | L'aide du clavier (« 1 à 4 pour répondre… ») ne reste pas affichée tout le temps. | 1 ✓ |
 | R-13 | Défis | Un effet au survol, même léger, sur les boutons de réponse. | 1 ✓ |
 | R-14 | Fin de révision | Les informations arrivent une à une par une animation courte. L'écran est trop étroit : plus large. | 2 ✓ |
-| R-15 | Gains, partout | « 1 sachet bonus gagné, rangé dans ta réserve. » ressort mal : une bordure d'enluminure et un fond texturé de couleur propre, repris pour tous les affichages de gains. | 2 (fin de révision ✓) |
+| R-15 | Gains, partout | « 1 sachet bonus gagné, rangé dans ta réserve. » ressort mal : une bordure d'enluminure et un fond texturé de couleur propre, repris pour tous les affichages de gains. | 2 (fin de révision et fin de sachet ✓) |
 | R-16 | Niveaux de maîtrise | Une icône dessinée avec soin pour chaque niveau (Esquisse…), sur la fin de révision et dans l'album partout où le niveau d'une carte se voit. | 2 ✓ |
 | R-17 | Fin de révision | « +7 pour le clan » est à peine visible (couleur). | 1 ✓ |
 | R-18 | Fin de révision | « Retour aux défis » plus visible, peut-être sans « Ouvrir un sachet ». | 2 ✓ |
@@ -427,3 +427,10 @@ Chaque retour vaut pour le web (téléphone et grand écran) et pour l'app, sauf
 - R-16 : quatre icônes dessinées (page blanche, esquisse, encre, dorure), sous chaque mot qui monte, dans l'album, sur la fiche d'une carte et dans « Ta mémoire ».
 - R-18 : « Retour aux défis » devient le bouton principal quand la révision est finie ; quand il reste des mots à revoir, « Encore 10 questions » passe devant et le retour reste un vrai bouton juste à côté.
 - R-26 : la fenêtre d'une carte garde la même taille pour toutes les cartes (880 × 720 px au plus sur le web, 90 % de la hauteur sur téléphone). La carte et ses flèches ne bougent plus ; quand le texte est long, la feuille de droite défile dans son cadre. Vérifié en tournant huit cartes à 390, 1 500 et 2 000 px. Dans l'app, la fiche est une page entière, la carte reste en haut, les flèches ne bougent pas non plus.
+
+**Lot 2, fin d'un sachet (2026-11-06).** Refaite sur le web et l'app, vérifiée à 390, 1 500 et 2 000 px et sur l'émulateur (montée de niveau réelle, du 12 au 13) :
+
+- R-08 : la montée de niveau passe dans l'encart enluminé (le coffret dans le médaillon, « Niveau 13 », « Un coffret t'attend »). Une rareté complétée a le même encart, avec sa pierre. Ils arrivent une fois les cartes posées.
+- R-07 : l'XP et la collection deviennent deux décomptes côte à côte, chacun avec son grand chiffre et sa barre ; la barre de la collection montre en vert les mots que le sachet vient d'ajouter, et « +5 » est une pastille verte. « Ouvre une carte pour la lire. » et la ligne de la semaine de bienvenue disparaissent. Plus d'air au-dessus des boutons et entre eux ; sur téléphone, les boutons sont l'un sous l'autre pour que chaque libellé tienne sur une ligne.
+- Dans l'app, le tapis suit maintenant ce qu'il porte (les cartes restent lisibles, l'écran défile un peu après une montée de niveau) et le bouton principal est posé sur son bord, comme sur l'écran Jouer.
+

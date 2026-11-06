@@ -8,24 +8,27 @@ import { cardSize, effects, openingTimes, rarityLights, rarityStyles } from "@le
 import type { PackShape } from "@leximon/view-model";
 import {
   BACK_HOME_LABEL,
+  CASCADE_STEP_MS,
   type CollectionChoice,
   canOpenAgain,
   collectionChoices,
   collectionProgress,
+  collectionTally,
   copiesAt,
   type DrawnCard,
   ecuRules,
   firstOfRarityLabel,
   isFirstOfRarity,
   keepsAnnouncementWhenHurried,
+  levelLabel,
   levelRatio,
-  levelUpLabel,
+  levelUpGain,
   lockedToast,
   neighbourChoices,
   nextSachetLine,
   openAgainLabel,
   pickCollection,
-  rarityCompletedLabel,
+  rarityCompletedGain,
   recap,
   recapCascade,
   recapOrder,
@@ -37,7 +40,6 @@ import {
   stockView,
   type WordMemory,
   welcomeGuestLine,
-  welcomeSessionLine,
   wordUnderCounter,
   xpGainLabel,
 } from "@leximon/view-model";
@@ -54,7 +56,7 @@ import { takeSignedIn } from "@/account/sign-in-memory";
 import { loadCatalog } from "@/cards/catalog";
 import { prepareSpokenWords } from "@/cards/use-spoken-word";
 import { Card } from "@/components/card";
-import { RarityName } from "@/components/rarity-icon";
+import { RarityIcon, RarityName } from "@/components/rarity-icon";
 import { RecycleButton } from "@/ecus/recycle-button";
 import { api } from "@/lib/api";
 import { usePackShape } from "@/lib/use-pack-shape";
@@ -79,6 +81,7 @@ import { publishProgress, useProgress } from "@/progress/use-progress";
 import { useShell } from "@/shell/shell-context";
 import { usePlayerView } from "@/shell/use-player-view";
 import { ButtonLink } from "@/ui/button";
+import { GainBanner } from "@/ui/gain-banner";
 import { XpBar } from "@/ui/level-bits";
 import { ParticleStage, type Stage, useStage } from "@/ui/stage";
 import { useToast } from "@/ui/toast";
@@ -107,12 +110,13 @@ const RECAP_PEEK = 96;
  * Height a phone keeps around the carousel's cards, in px: top bar, tabs, the recap's lines and
  * its button. The cards shrink on a short screen so that the button shows without scrolling.
  */
-const RECAP_PHONE_CHROME = 430;
-/** The lines a recap shows only sometimes, in px: a level reached, an account to create. */
-const RECAP_LEVEL_UP_LINE = 56;
+const RECAP_PHONE_CHROME = 460;
+/** The lines a recap shows only sometimes, in px: a gain's banner, an account to create. */
+const RECAP_BANNER = 112;
 const RECAP_SIGN_UP_LINE = 42;
 const RECAP_HOME_LINE = 58;
-const RECAP_COMPLETION_LINE = 32;
+/** On a phone the second paper button goes under the first. */
+const RECAP_STACKED_LINE = 56;
 const RECAP_RECYCLE_LINE = 48;
 /** Narrower, a card no longer reads even as a preview. */
 const RECAP_CAROUSEL_MIN = 180;
@@ -846,20 +850,22 @@ function Recap({
   const progressNow = useProgress();
   const progress = collectionProgress(pack.collectionCardIds, pack.quantitiesBefore, pack.cards);
   const xp = xpGainLabel(pack.progress);
-  const levelUp = levelUpLabel(pack.progress);
   // The coffret replaces « open another » while it waits.
   const coffretWaits = pack.progress.levelUp && view.coffrets.length > 0;
   const nextSachet =
     view.wallet === null || view.now === 0 ? null : nextSachetLine(view.wallet, view.now);
   const another = !mustSignUp && !coffretWaits && view.wallet !== null && canOpenAgain(view.wallet);
-  // The session ends on this sachet: say what the welcome week keeps for today or tomorrow.
-  const welcomeLine = mustSignUp || another ? null : welcomeSessionLine(view.welcome);
   const guestLine = mustSignUp ? welcomeGuestLine(view.welcome) : null;
   const owned = useShared(ownedCards);
   const recycles =
     catalog !== null &&
     owned !== null &&
     recyclePreview(ecuRules(view.now), [...catalog.cardsById.values()], owned).copies > 0;
+  const levelGain = levelUpGain(pack.progress, coffretWaits);
+  const tally = collectionTally(progress);
+  // The gains come once the cards have landed, one after the other.
+  const after = (index: number) =>
+    ({ animationDelay: `${pack.cards.length * CASCADE_STEP_MS + 260 + index * 140}ms` }) as const;
   // The cards lie on the desk and the buttons are its objects.
   return (
     <div className={styles.recap}>
@@ -872,35 +878,84 @@ function Recap({
           pack={pack}
           hurriedFrom={hurriedFrom}
           extraLines={
-            (levelUp === null ? 0 : RECAP_LEVEL_UP_LINE) +
+            (levelGain === null ? 0 : RECAP_BANNER) +
             (mustSignUp ? RECAP_SIGN_UP_LINE : 0) +
-            (welcomeLine !== null || guestLine !== null ? RECAP_SIGN_UP_LINE : 0) +
-            (another ? RECAP_HOME_LINE : 0) +
-            pack.completions.length * RECAP_COMPLETION_LINE +
+            (guestLine !== null ? RECAP_SIGN_UP_LINE : 0) +
+            (another ? RECAP_HOME_LINE + RECAP_STACKED_LINE : 0) +
+            pack.completions.length * RECAP_BANNER +
             (recycles ? RECAP_RECYCLE_LINE : 0)
           }
         />
       )}
-      {xp !== null && <p className={`${ui.display} ${styles.recapXp}`}>{xp}</p>}
-      {pack.completions.map((completion) => (
-        <p key={completion.rarity} className={`${ui.pop} ${styles.completed}`}>
-          {rarityCompletedLabel(completion)}
-        </p>
-      ))}
-      {progressNow !== null && (
-        <XpBar ratio={levelRatio(progressNow)} className={styles.recapBar} />
+      {(levelGain !== null || pack.completions.length > 0) && (
+        <div className={styles.recapBanners}>
+          {levelGain !== null && (
+            <GainBanner
+              icon="chest"
+              title={levelGain.title}
+              note={levelGain.note}
+              className={styles.recapGain}
+              style={after(0)}
+            />
+          )}
+          {pack.completions.map((completion, index) => {
+            const gain = rarityCompletedGain(completion);
+            return (
+              <GainBanner
+                key={completion.rarity}
+                icon={
+                  <span style={{ color: rarityStyles[completion.rarity].spot }}>
+                    <RarityIcon rarity={completion.rarity} size="30px" />
+                  </span>
+                }
+                title={gain.title}
+                note={gain.note}
+                className={styles.recapGain}
+                style={after(index + 1)}
+              />
+            );
+          })}
+        </div>
       )}
-      {levelUp !== null && <p className={`${ui.pop} ${styles.levelUp}`}>{levelUp}</p>}
-      <p className={styles.recapProgress}>
-        {pack.collectionName} · {progress.owned} / {progress.total}
-        {progress.gained > 0 && <span className={styles.gained}> (+{progress.gained})</span>}
-      </p>
+      <div className={styles.tallies}>
+        {xp !== null && (
+          <div className={styles.tally} style={after(0)}>
+            <span className={styles.tallyName}>
+              {progressNow === null ? "Expérience" : levelLabel(progressNow.level)}
+            </span>
+            <strong className={`${ui.display} ${styles.tallyFigure}`}>{xp}</strong>
+            {progressNow !== null && (
+              <XpBar ratio={levelRatio(progressNow)} className={styles.tallyBar} />
+            )}
+          </div>
+        )}
+        <div className={styles.tally} style={after(1)}>
+          <span className={styles.tallyName}>{pack.collectionName}</span>
+          <strong className={`${ui.display} ${styles.tallyFigure}`}>
+            {tally.figure}
+            {tally.gained !== null && <span className={styles.tallyGained}>{tally.gained}</span>}
+          </strong>
+          <span className={styles.collectionBar} aria-hidden="true">
+            <span className={styles.collectionOwned} style={{ width: `${tally.before * 100}%` }} />
+            {tally.gained !== null && (
+              <span
+                className={styles.collectionGained}
+                style={
+                  {
+                    "--from": `${tally.before * 100}%`,
+                    "--share": `${(tally.after - tally.before) * 100}%`,
+                  } as CSSProperties
+                }
+              />
+            )}
+          </span>
+        </div>
+      </div>
       {mustSignUp && <p className={styles.hint}>{SIGN_UP_HINT}</p>}
       {guestLine !== null && <p className={styles.hint}>{guestLine}</p>}
       {!mustSignUp && !coffretWaits && nextSachet !== null && (
-        <p className={styles.hint}>{nextSachet}</p>
+        <p className={styles.recapNote}>{nextSachet}</p>
       )}
-      {welcomeLine !== null && <p className={styles.hint}>{welcomeLine}</p>}
       {recycles && <RecycleButton small />}
       <div className={styles.actions}>
         {coffretWaits ? (
@@ -1028,7 +1083,6 @@ function RecapCards({
           ))}
         </p>
       )}
-      <p className={styles.recapHint}>Ouvre une carte pour la lire.</p>
     </>
   );
 }

@@ -1,5 +1,6 @@
 import { RARITY_LABELS } from "@leximon/contract";
 import { type Rarity, rarityRank } from "@leximon/core";
+import type { Gain } from "./challenges";
 import { formatCount, type PackNoun } from "./format";
 import { countPacks, DEFAULT_PACK_NOUN } from "./pack";
 
@@ -115,9 +116,37 @@ const RARITY_PLURAL: Readonly<Record<Rarity, string>> = {
   legendary: "Légendaires",
 };
 
+/** A rarity of the collection now complete, for the recap's banner: what is complete, what it earned. */
+export function rarityCompletedGain(completion: { rarity: Rarity; xp: number }): Gain {
+  return {
+    title: `Toutes les ${RARITY_PLURAL[completion.rarity]}`,
+    note: `Réunies, +${formatCount(completion.xp)} XP`,
+  };
+}
+
 /** A rarity of the collection now complete: « Toutes les cartes Légendaires réunies ! +1 000 XP ». */
 export function rarityCompletedLabel(completion: { rarity: Rarity; xp: number }): string {
   return `Toutes les cartes ${RARITY_PLURAL[completion.rarity]} réunies ! +${formatCount(completion.xp)} XP`;
+}
+
+/** The collection's figure on a sachet's recap: « 40 / 519 », the cards it gave, the bar's two parts. */
+export interface CollectionTally {
+  readonly figure: string;
+  /** « +5 », or `null` when the sachet gave nothing new. */
+  readonly gained: string | null;
+  /** Share owned before the sachet, then after it, between 0 and 1. */
+  readonly before: number;
+  readonly after: number;
+}
+
+export function collectionTally(progress: CollectionProgress): CollectionTally {
+  const share = (count: number) => (progress.total === 0 ? 0 : count / progress.total);
+  return {
+    figure: `${formatCount(progress.owned)} / ${formatCount(progress.total)}`,
+    gained: progress.gained > 0 ? `+${formatCount(progress.gained)}` : null,
+    before: share(progress.owned - progress.gained),
+    after: share(progress.owned),
+  };
 }
 
 export interface CollectionProgress {

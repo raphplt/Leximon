@@ -4,6 +4,7 @@ import {
   levelDescription,
   levelLabel,
   levelRatio,
+  levelUpGain,
   levelUpLabel,
   playerTitle,
   roadSubtitle,
@@ -21,6 +22,18 @@ describe("level", () => {
     expect(xpGainLabel({ xpGained: 0 })).toBeNull();
     expect(levelUpLabel({ levelUp: true, level: 6 })).toBe("Niveau 6 !");
     expect(levelUpLabel({ levelUp: false, level: 6 })).toBeNull();
+  });
+
+  it("gives the banner of a new level, with its coffret when one waits", () => {
+    expect(levelUpGain({ levelUp: true, level: 6 }, true)).toEqual({
+      title: "Niveau 6",
+      note: "Un coffret t'attend",
+    });
+    expect(levelUpGain({ levelUp: true, level: 6 }, false)).toEqual({
+      title: "Niveau 6",
+      note: null,
+    });
+    expect(levelUpGain({ levelUp: false, level: 6 }, true)).toBeNull();
   });
 
   it("measures the current level", () => {
