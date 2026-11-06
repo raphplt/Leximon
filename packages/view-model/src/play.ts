@@ -185,6 +185,74 @@ export function reserveView(wallet: BoosterWalletResponse): ReserveView {
   };
 }
 
+/** A row of sachets in the « Tes sachets » window: how many it holds, out of how many. */
+export interface SachetShelf {
+  readonly title: string;
+  /** « 5 / 6 ». */
+  readonly figure: string;
+  readonly filled: number;
+  readonly slots: number;
+}
+
+export interface FreeShelf extends SachetShelf {
+  /** How far the next free sachet has come, from 0 to 1; `null` with a full stock. */
+  readonly refill: number | null;
+  /** « +1 dans 13 min », « Plein ». */
+  readonly note: string;
+}
+
+export interface ReserveShelf extends SachetShelf {
+  /** The first `garni` sachets of the row are garnis: they open first. */
+  readonly garni: number;
+  /** « 2 sachets garnis », or nothing without one. */
+  readonly garniLabel: string | null;
+  /** What the « ? » beside the reserve says. */
+  readonly help: string;
+}
+
+export type SachetSourceIcon = "chest" | "challenge" | "gilded" | "clan";
+
+export interface SachetsPanel {
+  readonly free: FreeShelf;
+  readonly reserve: ReserveShelf;
+  readonly sourcesTitle: string;
+  readonly sources: readonly { readonly icon: SachetSourceIcon; readonly label: string }[];
+}
+
+export const SACHETS_TITLE = "Tes sachets";
+
+/** What the stock chip opens: the free sachets and the reserve drawn as rows, then where bonus ones come from. */
+export function sachetsPanel(wallet: BoosterWalletResponse, now: EpochMs): SachetsPanel {
+  const stock = stockView(wallet, now);
+  const { bonus, garni, bonusCap } = wallet;
+  return {
+    free: {
+      title: "Sachets gratuits",
+      figure: `${stock.stored} / ${stock.capacity}`,
+      filled: Math.min(stock.stored, stock.capacity),
+      slots: stock.capacity,
+      refill: stock.stored >= stock.capacity ? null : stock.refill,
+      note: stock.stored >= stock.capacity ? "Plein" : `+1 dans ${stock.refillShort}`,
+    },
+    reserve: {
+      title: "Réserve bonus",
+      figure: `${bonus} / ${bonusCap}`,
+      filled: bonus,
+      slots: Math.max(bonus, bonusCap),
+      garni: Math.min(garni, bonus),
+      garniLabel: garni === 0 ? null : `${garni} ${garni > 1 ? "sachets garnis" : "sachet garni"}`,
+      help: `Tu ouvres tes sachets bonus quand tu n'as plus de sachet gratuit. Ta réserve en garde jusqu'à ${bonusCap}. Un sachet garni contient au moins une carte Rare et s'ouvre en premier.`,
+    },
+    sourcesTitle: "Pour gagner des sachets bonus",
+    sources: [
+      { icon: "chest", label: "Coffrets de niveau" },
+      { icon: "challenge", label: "Défi du jour" },
+      { icon: "gilded", label: "Mots à la Dorure" },
+      { icon: "clan", label: "Objectifs de clan" },
+    ],
+  };
+}
+
 // --- Collection of the sachet --------------------------------------------------------------
 
 export interface CollectionChoice {

@@ -354,7 +354,7 @@ export const space = {
 } as const;
 
 /**
- * The baked tiles of paper and leather (scripts/bake_matter.py), size in px, and how far their
+ * The baked tiles of paper, leather and cloth (scripts/bake_matter.py), size in px, and how far their
  * grain darkens or lightens a color at its strongest.
  */
 export const matter = {

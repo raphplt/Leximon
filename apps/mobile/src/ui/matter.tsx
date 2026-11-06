@@ -5,6 +5,7 @@ import { Image, type LayoutChangeEvent, StyleSheet, View } from "react-native";
 const TILES = {
   paper: require("../../assets/matter/paper.webp"),
   leather: require("../../assets/matter/leather.webp"),
+  cloth: require("../../assets/matter/cloth.webp"),
 } as const;
 
 type Kind = keyof typeof TILES;
@@ -32,7 +33,7 @@ function Tiles({ kind }: { readonly kind: Kind }) {
   );
 }
 
-/** The grain of paper or leather, over the color of the surface it fills. */
+/** The grain of paper, leather or cloth, over the color of the surface it fills. */
 export function Matter({ kind }: { readonly kind: Kind }) {
   return <Tiles kind={kind} />;
 }

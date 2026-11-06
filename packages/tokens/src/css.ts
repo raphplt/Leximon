@@ -9,6 +9,7 @@ import {
   toy,
   toyMatters,
   toyRadii,
+  welcomeCloth,
 } from "./library";
 import {
   colors,
@@ -109,12 +110,16 @@ function libraryParts(): Record<string, string> {
     "--lx-gain-edge": gainBanner.edge,
     "--lx-gain-rule": gainBanner.rule,
     "--lx-gain-rule-inset": `${gainBanner.ruleInset}px`,
+    "--lx-welcome-center": welcomeCloth.center,
+    "--lx-welcome-middle": welcomeCloth.middle,
+    "--lx-welcome-edge": welcomeCloth.edge,
     "--lx-shelf-top": room.shelf.top,
     "--lx-shelf-bottom": room.shelf.bottom,
     "--lx-shelf-gilt": room.shelf.gilt,
     "--lx-shelf-gilt-shade": room.shelf.giltShade,
     "--lx-matter-paper": 'url("/matter/paper.webp")',
     "--lx-matter-leather": 'url("/matter/leather.webp")',
+    "--lx-matter-cloth": 'url("/matter/cloth.webp")',
     "--lx-matter-size": `${matter.size}px`,
   };
   for (const [name, tone] of Object.entries(toyMatters)) {

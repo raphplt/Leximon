@@ -7,6 +7,7 @@ import {
   type ToyMatterName,
   toyMatters,
   toy as toyValues,
+  welcomeCloth,
 } from "@leximon/tokens";
 import { type ReactNode, useEffect, useState } from "react";
 import {
@@ -64,12 +65,21 @@ export function Room({ children }: { readonly children?: ReactNode }) {
   );
 }
 
-/** The green leather desk under the lamp, framed in old gold. */
-export function Desk({ style }: { readonly style?: StyleProp<ViewStyle> }) {
+/**
+ * The green leather desk under the lamp, framed in old gold; `cloth` lines the same frame with the
+ * welcome week's night-blue cloth.
+ */
+export function Desk({
+  style,
+  cloth = false,
+}: {
+  readonly style?: StyleProp<ViewStyle>;
+  readonly cloth?: boolean;
+}) {
   return (
     <View style={[styles.deskFrame, style]} pointerEvents="none">
-      <View style={styles.desk}>
-        <Matter kind="leather" />
+      <View style={[styles.desk, cloth && styles.cloth]}>
+        <Matter kind={cloth ? "cloth" : "leather"} />
         <View style={styles.deskRule} />
       </View>
     </View>
@@ -578,6 +588,9 @@ const styles = StyleSheet.create({
     borderRadius: room.desk.radius - room.desk.frameWidth,
     backgroundImage: `radial-gradient(ellipse 80% 60% at 50% 40%, ${room.desk.center} 0%, ${room.desk.middle} 55%, ${room.desk.edge} 100%)`,
     boxShadow: `inset 0 0 50px ${room.desk.hollow}`,
+  },
+  cloth: {
+    backgroundImage: `radial-gradient(ellipse 80% 60% at 50% 40%, ${welcomeCloth.center} 0%, ${welcomeCloth.middle} 55%, ${welcomeCloth.edge} 100%)`,
   },
   deskRule: {
     position: "absolute",

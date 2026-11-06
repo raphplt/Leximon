@@ -386,15 +386,15 @@ Chaque retour vaut pour le web (téléphone et grand écran) et pour l'app, sauf
 
 | # | Écran | Retour | Lot |
 |---|---|---|---|
-| R-01 | Semaine de bienvenue | Le cuir vert de la fenêtre fait doublon avec le fond : autre texture, autre couleur (une texture neuve si besoin). | 3 |
+| R-01 | Semaine de bienvenue | Le cuir vert de la fenêtre fait doublon avec le fond : autre texture, autre couleur (une texture neuve si besoin). | 3 ✓ |
 | R-02 | Semaine de bienvenue, récompense | L'encart « Demain, le jour 2… t'offre un sachet garni » rend mal et ne fait pas jeu. | 2 ✓ |
 | R-03 | Missions du jour | Retirer « Chaque mission rapporte 30 XP… » ; l'aide passe dans un bouton « ? » discret qui ouvre une bulle. | 1 ✓ |
 | R-04 | Missions du jour | « Changer » plus discret, et une confirmation qui dit ce que fait le changement et qu'il n'y en a qu'un par jour. | 1 ✓ |
 | R-05 | Missions du jour | Le titre d'une mission passe sur deux lignes à côté de son compteur. | 1 ✓ |
-| R-06 | Fenêtre des écus | Illisible : un tableau visuel, chaque rareté avec son icône, une flèche et les écus gagnés. Montrer clairement à quoi servent les écus (le mot manquant). | 3 |
+| R-06 | Fenêtre des écus | Illisible : un tableau visuel, chaque rareté avec son icône, une flèche et les écus gagnés. Montrer clairement à quoi servent les écus (le mot manquant). | 3 ✓ |
 | R-07 | Fin d'un sachet | Faire respirer en hauteur : les trois boutons sont trop collés, « 25 / 539 (+5) » trop discret, « Ouvre une carte pour la lire. » sans doute de trop. | 2 ✓ |
 | R-08 | Fin d'un sachet | La montée de niveau est moche et mal placée : un encart de gain enluminé (R-15), et moins de texte. | 2 ✓ |
-| R-09 | Fenêtre « Tes sachets » | Mauvaise UX, désagréable à regarder : à refaire en visuel. | 3 |
+| R-09 | Fenêtre « Tes sachets » | Mauvaise UX, désagréable à regarder : à refaire en visuel. | 3 ✓ |
 | R-10 | Jouer, progression | « Au niveau 7, tu gagnes un sachet bonus » ne doit pas être une phrase complète. Le rond du sachet est ovale. | 1 ✓ |
 | R-11 | Jouer, progression | L'icône du bouton « Ouvrir 1 coffret » est blanche sur jaune : invisible. | 1 ✓ |
 | R-12 | Défis | L'aide du clavier (« 1 à 4 pour répondre… ») ne reste pas affichée tout le temps. | 1 ✓ |
@@ -438,4 +438,10 @@ Chaque retour vaut pour le web (téléphone et grand écran) et pour l'app, sauf
 
 - R-02 : sous un jour ouvert, l'encart « Demain, le jour 2… » laisse place à la frise des 7 jours. Le jour reçu y est coché ; la case de demain, plus grande, porte l'icône de son cadeau dans un anneau doré qui se soulève doucement, et « Demain » à la place de son numéro. La même frise reste seule, sans phrase, quand la case du jour est déjà prise. Seul le dernier jour garde sa phrase (le carnet prend le relais). Sur téléphone, les cases rétrécissent pour tenir sans se toucher ; dans l'app, la frise débordait à gauche et le titre était aligné à gauche, les deux sont corrigés.
 - R-15, autres gains : après une réponse en défi, un niveau gagné et les sachets bonus du défi du jour ou de la Dorure passent dans l'encart enluminé, en petit, sous la ligne de la réponse (au-dessus du bouton sur téléphone). La réserve pleine reste une phrase, ce n'est pas un gain. Un mot qui monte de palier garde sa phrase, précédée de l'icône du palier : il revient à presque chaque première bonne réponse, un encart à chaque fois serait trop.
+
+**Lot 3, les fenêtres (2026-11-06).** Web et app, vérifiés à 390, 1 500 et 2 000 px et sur l'émulateur :
+
+- R-09 : « Tes sachets » montre les sachets au lieu de les raconter. Les sachets gratuits sont posés sur une planche des rayonnages, une place par sachet, les places vides en pointillés ; la prochaine se remplit d'or à mesure que son heure approche, avec « +1 dans 13 min » ou « Plein » en dessous. La réserve bonus suit sur sa propre planche, en sachets dorés, les garnis marqués de la pierre Rare. La règle de la réserve passe derrière un « ? ». En bas, les quatre façons d'en gagner, chacune avec son icône (coffrets de niveau, défi du jour, mots à la Dorure, objectifs de clan).
+- R-06 : « Tes écus » donne le solde en grand, puis à quoi servent les écus en trois étapes dessinées (tes doubles, des écus, un mot qui te manque), puis un tableau rareté par rareté : la pierre et le nom, ce que rapporte un double (en vert, après une flèche) et ce que coûte un mot manquant, chacun avec l'écu. La règle du recyclage passe derrière un « ? ». Sur téléphone, la flèche des lignes disparaît pour que les chiffres tiennent.
+- R-01 : la semaine de bienvenue a sa propre boîte, en toile de reliure bleu nuit tissée (une texture neuve, cuite comme le papier et le cuir) dans le même cadre d'or, avec des rayons plus discrets. Le coffret de niveau garde le cuir vert du tapis.
 

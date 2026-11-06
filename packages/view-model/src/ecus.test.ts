@@ -4,7 +4,7 @@ import {
   copiesAfterRecycle,
   ecuRules,
   ecusLabel,
-  ecusPanel,
+  ecusTable,
   missingWordAction,
   missingWordBlocked,
   missingWordCollections,
@@ -30,15 +30,17 @@ describe("ecusLabel", () => {
   });
 });
 
-describe("ecusPanel", () => {
-  it("gives every gain and price", () => {
-    const [, gains, prices] = ecusPanel(RULES);
-    expect(gains).toBe(
-      "Un double rapporte 1 écu pour une carte Courante, 2 pour une Peu courante, 5 pour une Rare, 15 pour une Précieuse, 50 pour une Épique et 200 pour une Légendaire.",
-    );
-    expect(prices).toBe(
-      "Un mot manquant coûte 8 écus en Courant, 16 en Peu courant, 40 en Rare, 120 en Précieux, 400 en Épique et 1\u202f600 en Légendaire.",
-    );
+describe("ecusTable", () => {
+  it("gives every rarity its gain and its price", () => {
+    const table = ecusTable(RULES);
+    expect(table.rows.map((row) => [row.rarity, row.gain, row.price])).toEqual([
+      ["common", "+1", "8"],
+      ["uncommon", "+2", "16"],
+      ["rare", "+5", "40"],
+      ["precious", "+15", "120"],
+      ["epic", "+50", "400"],
+      ["legendary", "+200", "1\u202f600"],
+    ]);
   });
 });
 

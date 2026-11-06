@@ -1,4 +1,4 @@
-"""The grain of paper and leather, baked once as translucent tiles.
+"""The grain of paper, leather and cloth, baked once as translucent tiles.
 
 A tile only holds the grain, over whatever color lies behind it: one file serves every sheet or
 every leather, without a blend mode or live noise, which are too slow on a modest phone. The
@@ -71,10 +71,25 @@ def leather() -> Image.Image:
     return translucent(pebbles + 0.2 * hide, 0.3, 0.1)
 
 
+def cloth() -> Image.Image:
+    # A bookbinding cloth in plain weave: each thread passes over one and under the next, rounded
+    # by the light across its width, a little uneven along its length.
+    thread = 4
+    position = np.arange(SIZE)
+    across = np.cos((position % thread + 0.5) / thread * np.pi * 2 - np.pi) * -1
+    rows, columns = np.meshgrid(position, position, indexing="ij")
+    warp_on_top = ((rows // thread) + (columns // thread)) % 2 == 0
+    slub = smooth_noise(3)
+    weave = np.where(warp_on_top, across[columns], across[rows]) + 0.35 * slub
+    hide = smooth_noise(18)
+    return translucent(weave + 0.25 * hide, 0.32, 0.12)
+
+
 def main() -> None:
     tiles = (
         ("paper", paper()),
         ("leather", leather()),
+        ("cloth", cloth()),
     )
     for name, tile in tiles:
         buffer = io.BytesIO()

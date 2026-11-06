@@ -212,14 +212,19 @@ export function CoffretHost() {
   );
 }
 
-/** A moment of reward over any screen: the desk in a dialog, its content scrolling. */
+/**
+ * A moment of reward over any screen: the desk in a dialog, its content scrolling; `cloth` for
+ * the welcome week's own box.
+ */
 export function CoffretFrame({
   visible,
   onClose,
+  cloth = false,
   children,
 }: {
   readonly visible: boolean;
   readonly onClose: () => void;
+  readonly cloth?: boolean;
   readonly children: ReactNode;
 }) {
   const window = useWindowDimensions();
@@ -234,7 +239,7 @@ export function CoffretFrame({
       <Pressable style={styles.backdrop} onPress={onClose} accessibilityLabel="Fermer" />
       <View style={styles.center} pointerEvents="box-none">
         <View style={[styles.card, { width: Math.min(380, window.width - 32) }]}>
-          <Desk style={StyleSheet.absoluteFill} />
+          <Desk style={StyleSheet.absoluteFill} cloth={cloth} />
           <ScrollView style={styles.inside} contentContainerStyle={styles.inner} bounces={false}>
             {children}
           </ScrollView>

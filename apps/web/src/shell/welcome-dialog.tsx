@@ -96,7 +96,7 @@ export function WelcomeDialog({
 
   return (
     <Dialog open={open} title={WELCOME_TITLE} onClose={onClose} variant="center" hideTitle>
-      <div className={styles.coffret}>
+      <div className={`${styles.coffret} ${week.cloth}`}>
         <span className={styles.rays} aria-hidden="true" />
         <div className={styles.inner}>
           {step.name === "opened" ? (

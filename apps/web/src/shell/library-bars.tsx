@@ -11,6 +11,7 @@ import {
   levelsOfFeatures,
   mailLabel,
   PHONE_TAB_ORDER,
+  SACHETS_TITLE,
   stockView,
   TAB_LABELS,
   type TabId,
@@ -167,7 +168,7 @@ function PlayerTools() {
             figure={`${stock.stored}/${stock.capacity}`}
             onClick={() => setStockOpen(true)}
           />
-          <Dialog open={stockOpen} title="Tes sachets" onClose={closeStock} variant="center">
+          <Dialog open={stockOpen} title={SACHETS_TITLE} onClose={closeStock} variant="center">
             <StockDetail wallet={wallet} now={now} onClose={closeStock} />
           </Dialog>
           <EcusButton

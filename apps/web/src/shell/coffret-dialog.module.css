@@ -8,13 +8,14 @@
   padding: 34px var(--lx-s12) 26px;
   border: 6px solid transparent;
   border-radius: var(--lx-toy-radius-large);
+  /* The desk's leather, unless a box brings its own matter. */
   background:
-    var(--lx-matter-leather) 0 0 / var(--lx-matter-size) padding-box,
+    var(--box-matter, var(--lx-matter-leather)) 0 0 / var(--lx-matter-size) padding-box,
     radial-gradient(
       ellipse 80% 60% at 50% 35%,
-      var(--lx-desk-center) 0%,
-      var(--lx-desk-middle) 55%,
-      var(--lx-desk-edge) 100%
+      var(--box-center, var(--lx-desk-center)) 0%,
+      var(--box-middle, var(--lx-desk-middle)) 55%,
+      var(--box-edge, var(--lx-desk-edge)) 100%
     )
     padding-box,
     var(--lx-old-gold) border-box;
@@ -36,7 +37,7 @@
   margin: -320px 0 0 -320px;
   border-radius: 50%;
   background: repeating-conic-gradient(
-    color-mix(in srgb, var(--lx-toy-gold-top) 24%, transparent) 0 9deg,
+    var(--box-ray, color-mix(in srgb, var(--lx-toy-gold-top) 24%, transparent)) 0 9deg,
     transparent 9deg 20deg
   );
   pointer-events: none;

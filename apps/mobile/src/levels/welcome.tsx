@@ -136,7 +136,7 @@ export function WelcomeHost() {
   };
 
   return (
-    <CoffretFrame visible={visible} onClose={close}>
+    <CoffretFrame visible={visible} onClose={close} cloth>
       {step.name === "opened" ? (
         <>
           <Text style={styles.kicker}>{WELCOME_TITLE.toUpperCase()}</Text>

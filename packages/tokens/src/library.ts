@@ -108,6 +108,16 @@ export const gainBanner = {
   ruleInset: 5,
 } as const;
 
+/**
+ * The welcome week's box: night-blue bookbinding cloth in the same old-gold frame, so that it
+ * stands apart from the green desk it opens over.
+ */
+export const welcomeCloth = {
+  center: "#2F4396",
+  middle: "#1B2766",
+  edge: "#0B1236",
+} as const;
+
 /** The cloth of a sachet, one per collection tone (`backTones`): light, middle and dark. */
 export const sachetCloths = {
   night: ["#34479A", "#18215A", "#0B1033"],

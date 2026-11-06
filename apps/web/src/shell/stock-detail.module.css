@@ -1,59 +1,174 @@
 .detail {
   display: grid;
-  gap: var(--lx-s6);
+  gap: var(--lx-s10);
   font-size: var(--lx-size-label);
 }
 
-.detail p {
+.detail :where(p) {
   margin: 0;
 }
 
-.line {
+.shelf {
+  display: grid;
+}
+
+.head {
   display: flex;
   align-items: center;
-  gap: var(--lx-s6);
+  gap: var(--lx-s3);
+  margin-bottom: var(--lx-s4);
 }
 
-.sachet {
-  display: grid;
-  place-items: center;
-  flex-shrink: 0;
-  width: 42px;
-  height: 42px;
-  border-radius: var(--lx-radius-xl);
-  background: var(--lx-color-page-raised);
-  color: var(--lx-color-page-ink);
-}
-
-.sachetGold {
-  background: linear-gradient(160deg, var(--lx-color-gilt-light), var(--lx-color-gilt-deep));
-  color: var(--lx-color-action-ink);
-}
-
-.detail .lineText {
-  display: grid;
-  gap: 1px;
-  min-width: 0;
-}
-
-.headline {
-  font-size: var(--lx-size-body-large);
+.title {
+  font-size: var(--lx-size-caption);
   font-weight: 800;
-  font-variant-numeric: tabular-nums;
-}
-
-.muted {
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
   color: var(--lx-color-page-ink-muted);
 }
 
-.notes {
+.figure {
+  margin-left: auto;
+  font-family: var(--font-display), Georgia, serif;
+  font-size: var(--lx-size-title-small);
+  font-weight: var(--lx-weight-display);
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+/* The sachets stand in a row on their shelf, the empty places drawn in dashes; on a narrow
+   screen the places shrink rather than wrap. */
+.slots {
   display: grid;
-  gap: var(--lx-s3);
-  padding-top: var(--lx-s6);
-  border-top: 1px solid color-mix(in srgb, var(--lx-color-page-ink) 10%, transparent);
+  grid-template-columns: repeat(var(--slots), minmax(0, 44px));
+  gap: var(--lx-s4);
+  padding: 0 var(--lx-s4);
+}
+
+.slot {
+  position: relative;
+  display: grid;
+  place-items: center;
+  aspect-ratio: 4 / 5;
+  border-radius: 10px;
+}
+
+.small {
+  grid-template-columns: repeat(var(--slots), minmax(0, 27px));
+  gap: var(--lx-s2);
+}
+
+.small .slot {
+  border-radius: 7px;
+}
+
+.filled,
+.bonus {
+  border: 2.5px solid var(--lx-toy-outline);
+  box-shadow: inset 0 -3px 0 var(--lx-toy-paper-edge);
+}
+
+.filled {
+  background: linear-gradient(
+    180deg,
+    var(--lx-toy-paper-top) 0 50%,
+    var(--lx-toy-paper-bottom) 50% 100%
+  );
+}
+
+.bonus {
+  border-width: 2px;
+  background: linear-gradient(
+    180deg,
+    var(--lx-toy-gold-top) 0 50%,
+    var(--lx-toy-gold-bottom) 50% 100%
+  );
+  box-shadow: inset 0 -2px 0 var(--lx-toy-gold-edge);
+}
+
+.empty {
+  border: 2px dashed color-mix(in srgb, var(--lx-color-paper-ink) 30%, transparent);
+  background: color-mix(in srgb, var(--lx-color-paper-ink) 5%, transparent);
+  overflow: hidden;
+}
+
+/* The next free sachet fills from the bottom as its time comes. */
+.empty[data-next]::after {
+  content: "";
+  position: absolute;
+  inset: auto 0 0;
+  height: calc(var(--refill, 0) * 100%);
+  background: color-mix(in srgb, var(--lx-toy-gold-top) 70%, transparent);
+}
+
+.garni,
+.garniInline {
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  box-shadow: 0 0 0 1.5px var(--lx-toy-outline);
 }
 
 .garni {
-  color: var(--lx-color-rubric);
-  font-weight: 800;
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  width: 15px;
+  height: 15px;
+}
+
+.garniInline {
+  width: 17px;
+  height: 17px;
+}
+
+/* A plank of the room's shelves under the row. */
+.ledge {
+  height: 8px;
+  margin-top: -2px;
+  border-top: 2px solid var(--lx-shelf-gilt);
+  border-radius: 3px;
+  background: linear-gradient(180deg, var(--lx-shelf-top), var(--lx-shelf-bottom));
+  box-shadow: 0 2px 0 var(--lx-toy-outline);
+}
+
+.note,
+.full {
+  display: flex;
+  align-items: center;
+  gap: var(--lx-s3);
+  margin-top: var(--lx-s5);
+  font-weight: 700;
+}
+
+.note {
+  color: var(--lx-color-page-ink-muted);
+}
+
+.full {
+  color: var(--lx-color-success-deep);
+}
+
+.sources {
+  display: grid;
+  gap: var(--lx-s5);
+  padding-top: var(--lx-s8);
+  border-top: 1px solid color-mix(in srgb, var(--lx-color-page-ink) 10%, transparent);
+}
+
+.sourceList {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--lx-s4) var(--lx-s6);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.source {
+  display: flex;
+  align-items: center;
+  gap: var(--lx-s4);
+  font-weight: 700;
+  line-height: 1.2;
 }

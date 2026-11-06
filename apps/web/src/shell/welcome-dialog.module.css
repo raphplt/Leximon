@@ -1,3 +1,13 @@
+/* The welcome week comes in its own box: night-blue cloth, not the desk's green leather. */
+.cloth {
+  --box-matter: var(--lx-matter-cloth);
+  --box-center: var(--lx-welcome-center);
+  --box-middle: var(--lx-welcome-middle);
+  --box-edge: var(--lx-welcome-edge);
+  /* Fainter rays: the same gold turns grey over blue. */
+  --box-ray: color-mix(in srgb, var(--lx-toy-gold-top) 13%, transparent);
+}
+
 /* The seven days in a row on the leather, the last one bigger: the best gift comes last. */
 .days {
   display: flex;

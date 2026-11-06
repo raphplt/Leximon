@@ -32,15 +32,6 @@ export function ecusLabel(count: number): string {
 
 export const ECUS_TITLE = "Tes écus";
 
-const RARITY_FEMININE: Readonly<Record<Rarity, string>> = {
-  common: "Courante",
-  uncommon: "Peu courante",
-  rare: "Rare",
-  precious: "Précieuse",
-  epic: "Épique",
-  legendary: "Légendaire",
-};
-
 const RARITY_MASCULINE_PLURAL: Readonly<Record<Rarity, string>> = {
   common: "Courants",
   uncommon: "Peu courants",
@@ -50,26 +41,34 @@ const RARITY_MASCULINE_PLURAL: Readonly<Record<Rarity, string>> = {
   legendary: "Légendaires",
 };
 
-/** The panel behind the pill: where écus come from and what they buy, with the figures. */
-export function ecusPanel(rules: EcuRules): readonly string[] {
-  const [first, ...others] = RARITIES;
-  const gains = others.map(
-    (rarity) => `${formatCount(rules.recycleValue[rarity])} pour une ${RARITY_FEMININE[rarity]}`,
-  );
-  const prices = others.map(
-    (rarity) => `${formatCount(rules.missingWordPrice[rarity])} en ${RARITY_LABELS[rarity]}`,
-  );
-  return [
-    "Tu gagnes des écus en recyclant tes doubles, et tu les dépenses pour choisir un mot qui te manque.",
-    `Un double rapporte ${listOf([`${ecusLabel(rules.recycleValue[first])} pour une carte ${RARITY_FEMININE[first]}`, ...gains])}.`,
-    `Un mot manquant coûte ${listOf([`${ecusLabel(rules.missingWordPrice[first])} en ${RARITY_LABELS[first]}`, ...prices])}.`,
-  ];
+export interface EcusRow {
+  readonly rarity: Rarity;
+  /** What a double of this rarity brings: « +5 ». */
+  readonly gain: string;
+  /** What a missing word of this rarity costs: « 1 600 ». */
+  readonly price: string;
 }
 
-function listOf(items: readonly string[]): string {
-  return items.length < 2
-    ? (items[0] ?? "")
-    : `${items.slice(0, -1).join(", ")} et ${items[items.length - 1]}`;
+export interface EcusTable {
+  /** Where écus come from and what they buy, as three steps. */
+  readonly flow: readonly [string, string, string];
+  readonly gainColumn: string;
+  readonly priceColumn: string;
+  readonly rows: readonly EcusRow[];
+}
+
+/** The window behind the pill: a table, rarity by rarity, rather than a sentence that lists them. */
+export function ecusTable(rules: EcuRules): EcusTable {
+  return {
+    flow: ["Tes doubles", "Des écus", "Un mot qui te manque"],
+    gainColumn: "Un double rapporte",
+    priceColumn: "Un mot manquant coûte",
+    rows: RARITIES.map((rarity) => ({
+      rarity,
+      gain: `+${formatCount(rules.recycleValue[rarity])}`,
+      price: formatCount(rules.missingWordPrice[rarity]),
+    })),
+  };
 }
 
 /** What the one-touch recycling would do now, from the cards the screen knows of. */

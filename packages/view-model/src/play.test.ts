@@ -11,6 +11,7 @@ import {
   reserveView,
   revealNextLabel,
   sachetContents,
+  sachetsPanel,
   shortName,
   speechToggleLabel,
   stockView,
@@ -58,6 +59,35 @@ describe("reserve", () => {
 
   it("names an empty reserve without saying when it opens", () => {
     expect(reserveView(wallet(4))).toMatchObject({ headline: "Aucun sachet bonus", rule: null });
+  });
+});
+
+describe("the sachets window", () => {
+  it("draws the free row with its refill and the reserve with its garnis", () => {
+    const panel = sachetsPanel({ ...wallet(5, 3), garni: 2 }, NOW);
+    expect(panel.free).toMatchObject({
+      figure: "5 / 6",
+      filled: 5,
+      slots: 6,
+      note: "+1 dans 18 min",
+    });
+    expect(panel.free.refill).not.toBeNull();
+    expect(panel.reserve).toMatchObject({
+      figure: "3 / 10",
+      filled: 3,
+      slots: 10,
+      garni: 2,
+      garniLabel: "2 sachets garnis",
+    });
+    expect(sachetsPanel({ ...wallet(0, 1), garni: 1 }, NOW).reserve.garniLabel).toBe(
+      "1 sachet garni",
+    );
+  });
+
+  it("says a full stock is full and leaves out garnis it does not have", () => {
+    const panel = sachetsPanel(wallet(6), NOW);
+    expect(panel.free).toMatchObject({ figure: "6 / 6", note: "Plein", refill: null });
+    expect(panel.reserve).toMatchObject({ figure: "0 / 10", garni: 0, garniLabel: null });
   });
 });
 
