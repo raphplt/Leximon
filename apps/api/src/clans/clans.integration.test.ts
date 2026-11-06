@@ -16,6 +16,8 @@ import {
   clanXpToReach,
   gameWeekOf,
   pseudoKey,
+  UNLOCK_SCHEDULE,
+  unlockRulesAt,
   xpToReach,
 } from "@leximon/core";
 import { createDb, schema } from "@leximon/db";
@@ -35,6 +37,8 @@ const app = createApp();
 const { db, close } = createDb(url, { maxConnections: 8 });
 const HOUR = 3_600_000;
 const DAY = 24 * HOUR;
+/** The levels in force today: they come down on dated changes, the tests follow them. */
+const LEVELS = unlockRulesAt(UNLOCK_SCHEDULE, Date.now()).levels;
 
 const { boosterWallets, clanMembers, clanMessages, clans, moderationReports, players, userCards } =
   schema;
@@ -48,7 +52,7 @@ interface Player extends Guest {
 }
 
 /** A member with a pseudo, at a level (10 joins a clan, 15 creates one). */
-async function player(level = 15): Promise<Player> {
+async function player(level = LEVELS.create_clan): Promise<Player> {
   const member = await signInAsMember(app, env, db);
   expect((await request(member, "/me/profile")).status).toBe(200);
   const pseudo = `Joueur ${crypto.randomUUID().slice(0, 8)}`;
@@ -171,15 +175,15 @@ async function cardIds(): Promise<string[]> {
 }
 
 describe("creating a clan", () => {
-  it("needs an account, a pseudo and level 15", async () => {
+  it("needs an account, a pseudo and the level to found one", async () => {
     const guest = await signInAsGuest(app, env);
     const body = { name: uniqueName(), motto: "", entryMode: "open", emblem: EMBLEM };
     expect(await errorOf(await send(guest, "POST", "/clans", body))).toBe("account_required");
 
-    const low = await player(14);
+    const low = await player(LEVELS.create_clan - 1);
     expect(await errorOf(await send(low, "POST", "/clans", body))).toBe("level_too_low");
 
-    const anonymous = await player(15);
+    const anonymous = await player(LEVELS.create_clan);
     await db
       .update(players)
       .set({ pseudo: null, pseudoKey: null, pseudoChangedAt: null })
@@ -298,13 +302,13 @@ describe("creating a clan", () => {
 });
 
 describe("entering and leaving", () => {
-  it("enters an open clan at level 10, asks to enter a clan on request", async () => {
+  it("enters an open clan at the level to join, asks to enter a clan on request", async () => {
     const chief = await player();
     const open = await createClan(chief);
-    const low = await player(9);
+    const low = await player(LEVELS.join_clan - 1);
     expect(await errorOf(await send(low, "POST", `/clans/${open}/join`))).toBe("level_too_low");
 
-    const member = await player(10);
+    const member = await player(LEVELS.join_clan);
     const joined = clanJoinResultSchema.parse(
       await (await send(member, "POST", `/clans/${open}/join`)).json(),
     );

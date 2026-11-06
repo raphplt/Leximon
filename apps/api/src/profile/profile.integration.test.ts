@@ -6,7 +6,14 @@ import {
   publicProfileSchema,
   tradesResponseSchema,
 } from "@leximon/contract";
-import { LEVEL_REWARD_SCHEDULE, levelRewardRulesAt, levelRewards, xpToReach } from "@leximon/core";
+import {
+  LEVEL_REWARD_SCHEDULE,
+  levelRewardRulesAt,
+  levelRewards,
+  UNLOCK_SCHEDULE,
+  unlockRulesAt,
+  xpToReach,
+} from "@leximon/core";
 import { createDb, schema } from "@leximon/db";
 import { testDatabaseUrl } from "@leximon/db/testing";
 import { and, eq } from "drizzle-orm";
@@ -26,6 +33,8 @@ const url = testDatabaseUrl();
 const env = testEnv(url);
 const app = createApp();
 const { db, close } = createDb(url, { maxConnections: 4 });
+/** The level of the public profile today: it comes down on dated changes, the tests follow it. */
+const PROFILE_LEVEL = unlockRulesAt(UNLOCK_SCHEDULE, Date.now()).levels.public_profile;
 
 beforeAll(() => seedTestCatalog(db));
 afterAll(close);
@@ -409,7 +418,7 @@ describe("GET /players", () => {
     const shown = await listedPlayer(prefix);
     const hidden = await listedPlayer(prefix);
     await call(hidden, "PATCH", "/me/profile", { profilePublic: false });
-    await listedPlayer(prefix, 0, 7);
+    await listedPlayer(prefix, 0, PROFILE_LEVEL - 1);
     const blocked = await listedPlayer(prefix);
     await call(viewer, "PUT", `/me/blocks/${blocked.code}`);
     const blocking = await listedPlayer(prefix);
