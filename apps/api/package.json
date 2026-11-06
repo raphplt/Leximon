@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "wrangler dev --test-scheduled",
+    "dev:bots": "node --experimental-transform-types --no-warnings --env-file-if-exists=../../.env --import ../../packages/config/node/resolve-ts.mjs scripts/dev-bots.ts",
     "deploy": "wrangler deploy --env production",
     "cf-typegen": "wrangler types --strict-vars=false",
     "test": "vitest run",

@@ -20,6 +20,7 @@
     "catalog:publish": "pnpm --filter @leximon/db catalog:publish",
     "admin:grant": "pnpm --filter @leximon/db admin:grant",
     "dev:player": "pnpm --filter @leximon/db dev:player",
+    "dev:bots": "pnpm --filter @leximon/api dev:bots",
     "load:players": "pnpm --filter @leximon/db load:players",
     "db:migrate:prod": "sh infra/prod/check-database-url.sh && pnpm db:migrate",
     "catalog:publish:prod": "sh infra/prod/check-database-url.sh && pnpm catalog:publish",

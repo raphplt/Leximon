@@ -19,6 +19,7 @@ pnpm check                       # lint + typecheck + tests unitaires, à lancer
 pnpm test:integration            # tests contre la base leximon_test, vidée à chaque passage (Docker requis)
 pnpm admin:grant <email>         # donne le rôle admin à un compte existant (--revoke pour le retirer)
 pnpm dev:player <email> --level 16   # base locale seulement : niveau d'un compte, pour la recette
+pnpm dev:bots <email> --challenge     # base locale seulement : ouvre les joutes au compte, des bots y répondent
 pnpm format                      # corrige le formatage (Biome)
 pnpm deploy:prod                 # met main en production (docs/mise-en-ligne.md), arbre propre exigé
 ```

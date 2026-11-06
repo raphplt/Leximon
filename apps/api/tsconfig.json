@@ -5,6 +5,7 @@
   },
   "include": [
     "src",
+    "scripts",
     "worker-configuration.d.ts",
     "vitest.config.ts",
     "vitest.integration.config.ts",

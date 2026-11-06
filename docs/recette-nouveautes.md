@@ -39,6 +39,14 @@ Pour les joutes, pour chacun :
 
 Ensuite, A et B deviennent amis (page Amis, par pseudo). C reste hors des amis de A.
 
+**Pour jouer seul, sans B ni C**, des bots tiennent lieu d'adversaires :
+
+```bash
+pnpm dev:bots <ton email> --challenge
+```
+
+Le script ouvre les joutes à ton compte et le monte au niveau 8 s'il est plus bas. Il crée quatre bots qui sont tes amis : Bot Étourdi, Bot Lettré, Bot Érudit et Bot Éclair, du plus faible au plus fort. Avec `--challenge`, chaque bot te lance une joute et joue sa manche, si bien que tu as quatre joutes à jouer. Tant que le script tourne, un bot joue sa manche quelques secondes après la tienne, que la joute soit amicale ou classée. Ctrl+C l'arrête. Une joute classée contre le même bot ne revient qu'au bout de 24 h, donc quatre joutes classées par jour au plus. Pour vérifier une règle entre deux humains (blocage, e-mail, courrier), il faut quand même B et C.
+
 ### Raccourcis en base locale
 
 Certains tests des joutes demandent d'avancer le temps. Les commandes ci-dessous ne touchent que la base locale :
