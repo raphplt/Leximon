@@ -427,13 +427,6 @@
   font-weight: 700;
 }
 
-.dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: currentColor;
-}
-
 .blank {
   color: var(--lx-mastery-blank);
 }

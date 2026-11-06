@@ -95,15 +95,30 @@ export function bonusLines(bonus: AnswerBonus, noun: PackNoun = SACHET_NOUN): st
   return lines;
 }
 
-/** "2 plis bonus gagnés…" for the recap, or `null` when the session earned none. */
-export function sessionBonusLine(
+/** A gain as its banner draws it: what was won, then where it went. */
+export interface Gain {
+  /** « 1 sachet bonus » */
+  readonly title: string;
+  /** « Dans ta réserve » */
+  readonly note: string | null;
+}
+
+/** The bonus sachets of a series, for the recap's banner; `null` when it earned none. */
+export function sessionBonusGain(
   answers: readonly AnsweredQuestion[],
   noun: PackNoun = SACHET_NOUN,
-): string | null {
+): Gain | null {
   const won = answers.reduce((sum, answer) => sum + answer.bonus.credited, 0);
   if (won === 0) return null;
-  const count = won === 1 ? `1 ${noun.one} bonus gagné` : `${won} ${noun.many} bonus gagnés`;
-  return `${count}, rangé${won > 1 ? "s" : ""} dans ta réserve.`;
+  return {
+    title: won === 1 ? `1 ${noun.one} bonus` : `${won} ${noun.many} bonus`,
+    note: "Dans ta réserve",
+  };
+}
+
+/** The name of a level, under a word that reached it: « Esquisse ». */
+export function masteryLevelName(level: MasteryLevelCode): string {
+  return MASTERY_LEVEL_LABELS[level];
 }
 
 /** "+75 XP gagnés pendant ce défi" for the recap, or `null` when the session earned none. */

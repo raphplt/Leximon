@@ -200,6 +200,16 @@ export function streakLine(streak: ReviewSummaryResponse["streak"]): string | nu
     : `${total}, dont ${streak.current} à la suite.`;
 }
 
+/** The days played, as a tag of the recap: « 12 jours joués, 5 à la suite ». */
+export function streakTag(streak: ReviewSummaryResponse["streak"]): string | null {
+  if (streak.total === 0) return null;
+  const total = `${streak.total} ${plural(streak.total, "jour joué", "jours joués")}`;
+  if (streak.current < 2) return total;
+  return streak.current === streak.total
+    ? `${total} à la suite`
+    : `${total}, ${streak.current} à la suite`;
+}
+
 // --- The shelf of scopes ------------------------------------------------------------
 
 export type CoverKind = "rising" | "missed" | "recent" | "collection" | "theme";
@@ -421,10 +431,6 @@ export function comingBackTomorrow(answers: readonly AnsweredQuestion[]): readon
 }
 
 /** « Ces 2 mots reviendront demain. » */
-export function comingBackLine(count: number): string | null {
-  if (count === 0) return null;
-  return count > 1 ? `Ces ${count} mots reviendront demain.` : "Ce mot reviendra demain.";
-}
 
 /** Words that climbed a level during the series, for the recap's cards. */
 export function climbedWords(
@@ -433,22 +439,44 @@ export function climbedWords(
   return answers.filter((a) => a.levelUp).map((a) => ({ cardId: a.cardId, level: a.level }));
 }
 
+/** When each part of the recap rises in, in ms: one after the other, all within about a second. */
+export interface RecapTimes {
+  readonly tags: number;
+  readonly climbedAt: number;
+  readonly climbedCards: readonly number[];
+  readonly backAt: number;
+  readonly backCards: readonly number[];
+  readonly actions: number;
+}
+
+/** `bonusAt`: when the gain banner comes, with its chime; the words wait for it. */
+export function recapTimes(bonusAt: number | null, climbed: number, back: number): RecapTimes {
+  const cardsOf = (count: number, from: number, step: number) =>
+    Array.from({ length: count }, (_, index) => from + Math.min(index, 8) * step);
+  const climbedAt = bonusAt === null ? 450 : bonusAt + 150;
+  const climbedCards = cardsOf(climbed, climbedAt + 80, 60);
+  const backAt = (climbedCards.at(-1) ?? climbedAt - 80) + 120;
+  const backCards = cardsOf(back, backAt + 60, 30);
+  const actions = Math.min((backCards.at(-1) ?? backAt) + 120, 1400);
+  return { tags: 250, climbedAt, climbedCards, backAt, backCards, actions };
+}
+
+export const RECAP_TITLE = "Révision terminée";
+export const RECAP_CLIMBED = "Mots qui montent";
+export const RECAP_COMING_BACK = "À revoir demain";
+
 export interface RecapActions {
   /** « Encore 10 questions » */
   readonly more: string;
-  /** Words still wait: another series comes first; otherwise a sachet does. */
+  /** Words still wait: another series comes first; otherwise the way back does. */
   readonly moreFirst: boolean;
-  readonly open: string;
+  readonly back: string;
 }
 
-export function recapActions(
-  summary: ReviewSummaryResponse | null,
-  length: number,
-  noun: PackNoun = SACHET_NOUN,
-): RecapActions {
+export function recapActions(summary: ReviewSummaryResponse | null, length: number): RecapActions {
   return {
     more: `Encore ${length} questions`,
     moreFirst: summary === null || summary.due + summary.fresh > 0,
-    open: `Ouvrir un ${noun.one}`,
+    back: "Retour aux défis",
   };
 }

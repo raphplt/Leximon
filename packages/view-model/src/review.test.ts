@@ -3,12 +3,12 @@ import { describe, expect, it } from "vitest";
 import type { AnsweredQuestion } from "./challenges";
 import {
   choiceIndexOfKey,
-  comingBackLine,
   comingBackTomorrow,
   formatOptions,
   memoryLine,
   memoryParts,
   playable,
+  recapTimes,
   reviewAction,
   reviewLine,
   reviewShelf,
@@ -16,6 +16,7 @@ import {
   scoredAnswers,
   seriesOf,
   streakLine,
+  streakTag,
   withCatchUp,
 } from "./review";
 
@@ -127,6 +128,25 @@ describe("settings and streak", () => {
     expect(streak(1, 12)).toBe("12 jours joués.");
     expect(streak(5, 5)).toBe("5 jours joués, tous à la suite.");
     expect(streak(5, 12)).toBe("12 jours joués, dont 5 à la suite.");
+  });
+
+  it("reveals the recap top to bottom, within about a second", () => {
+    const times = recapTimes(700, 10, 10);
+    expect(times.climbedAt).toBeGreaterThan(700);
+    expect(times.climbedCards[0]).toBeGreaterThan(times.climbedAt);
+    expect(times.backAt).toBeGreaterThan(times.climbedCards.at(-1) ?? 0);
+    expect(times.actions).toBeLessThanOrEqual(1400);
+    expect(recapTimes(null, 0, 0).actions).toBeLessThan(700);
+  });
+
+  it("tags the days played on the recap, without a sentence", () => {
+    const tag = (current: number, total: number) =>
+      streakTag({ current, total, playedToday: true });
+    expect(tag(0, 0)).toBeNull();
+    expect(tag(1, 1)).toBe("1 jour joué");
+    expect(tag(1, 12)).toBe("12 jours joués");
+    expect(tag(5, 5)).toBe("5 jours joués à la suite");
+    expect(tag(5, 12)).toBe("12 jours joués, 5 à la suite");
   });
 
   it("shows a word to listen to when the sound is off", () => {
@@ -276,8 +296,5 @@ describe("the recap", () => {
       answered("c", false, true),
     ]);
     expect(words).toEqual(["a"]);
-    expect(comingBackLine(0)).toBeNull();
-    expect(comingBackLine(1)).toBe("Ce mot reviendra demain.");
-    expect(comingBackLine(2)).toBe("Ces 2 mots reviendront demain.");
   });
 });

@@ -512,7 +512,8 @@ function MemoryLeaf({
       <LevelBar levels={summary.levels} />
       <div className={styles.tierFigures}>
         {parts.map((part) => (
-          <span key={part.level}>
+          <span key={part.level} className={styles.tierFigure}>
+            <ToyIcon name={part.level} size={18} />
             <b>{part.count}</b> {part.label}
           </span>
         ))}

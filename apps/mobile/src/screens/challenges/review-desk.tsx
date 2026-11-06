@@ -680,9 +680,12 @@ function MemoryLeaf({
       <LevelBar levels={summary.levels} />
       <View style={styles.tierFigures}>
         {memoryParts(summary.levels).map((part) => (
-          <Text key={part.level} style={styles.tierFigure}>
-            <Text style={styles.tierCount}>{part.count}</Text> {part.label}
-          </Text>
+          <View key={part.level} style={styles.tierFigure}>
+            <ToyIcon name={part.level} size={18} />
+            <Text style={styles.tierText}>
+              <Text style={styles.tierCount}>{part.count}</Text> {part.label}
+            </Text>
+          </View>
         ))}
       </View>
       <Text style={styles.leafText}>{memoryLine(summary, now)}</Text>
@@ -918,8 +921,8 @@ const styles = StyleSheet.create({
     backgroundColor: toyMatters.paper.top,
   },
   tierFigures: { flexDirection: "row", flexWrap: "wrap", rowGap: space.s1 },
-  tierFigure: {
-    width: "50%",
+  tierFigure: { width: "50%", flexDirection: "row", alignItems: "center", gap: 4 },
+  tierText: {
     fontFamily: fonts.ui.bold,
     fontSize: fontSizes.small,
     color: ink.pageInkMuted,

@@ -69,6 +69,27 @@ function sword(angle: number): ToyShape[] {
   ];
 }
 
+function star(cx: number, cy: number, outer: number, inner: number): string {
+  const points: string[] = [];
+  for (let index = 0; index < 10; index++) {
+    const angle = (index / 10) * Math.PI * 2 - Math.PI / 2;
+    const radius = index % 2 === 0 ? outer : inner;
+    points.push(
+      `${(cx + radius * Math.cos(angle)).toFixed(2)} ${(cy + radius * Math.sin(angle)).toFixed(2)}`,
+    );
+  }
+  return `M${points.join("L")}Z`;
+}
+
+/** A leaf with its top corner folded, the ground of the mastery icons. */
+function leaf(x: number, y: number, width: number, height: number): ToyShape[] {
+  const fold = 7;
+  return [
+    outlined(`M${x} ${y}h${width - fold}l${fold} ${fold}v${height - fold}h${-width}z`, "f1"),
+    outlined(`M${x + width - fold} ${y}v${fold}h${fold}z`, "f2"),
+  ];
+}
+
 export const toyIcons = {
   challenge: [
     outlined(rect(19, 3, 10, 7, 2), "f3"),
@@ -169,6 +190,35 @@ export const toyIcons = {
     outlined("M30 8L14 24l16 16", undefined, { strokeWidth: 7 }),
     { d: "M30 8L14 24l16 16", stroke: "f1", strokeWidth: 3 },
   ],
+  // The four levels of a word's mastery, from the blank page to the gilded one.
+  blank: [
+    ...leaf(11, 5, 26, 38),
+    { d: "M16 20h16M16 26h16M16 32h10", stroke: "f3", strokeWidth: 1.8, dash: "3 2.5" },
+    light("M14.5 10v28"),
+  ],
+  sketch: [
+    ...leaf(6, 5, 25, 36),
+    { d: "M11 31c2-8 7-12 10-8s-3 9 2 9c3 0 4-3 5-5", stroke: "f3", strokeWidth: 2.2 },
+    { d: "M11 16h11", stroke: "f3", strokeWidth: 1.8, dash: "4 2.5" },
+    outlined("M27 42L39 22l5 3-12 20z", "f2"),
+    outlined("M27 42l5 3-5.5 1.8z", "f1"),
+    outlined("M39 22l2.5-4 5 3-2.5 4z", "f3"),
+  ],
+  ink: [
+    outlined("M13 27h20l3 5v11H10V32z", "f1"),
+    outlined(rect(17, 21, 12, 6, 1.5), "f1"),
+    outlined(rect(14, 34, 18, 6, 1), "f2"),
+    outlined("M27 24C30 14 37 6 45 3c-1 9-7 17-16 22z", "f3"),
+    { d: "M28 24.5L43 5.5", stroke: "outline", strokeWidth: 1.6 },
+    light("M13.5 31v9"),
+  ],
+  gilded: [
+    outlined(gear(24, 26, 19, 16.5, 14), "f1"),
+    outlined(circle(24, 26, 12), "f2"),
+    outlined(star(24, 26, 8, 3.6), "f3"),
+    outlined("M40 2l1.6 4.4L46 8l-4.4 1.6L40 14l-1.6-4.4L34 8l4.4-1.6z", "f3"),
+    light("M12 21a13 13 0 0 1 7-8"),
+  ],
 } as const satisfies Record<string, readonly ToyShape[]>;
 
 export type ToyIconName = keyof typeof toyIcons;
@@ -192,6 +242,10 @@ export const toyIconInks: Readonly<Record<ToyIconName, ToyInks>> = {
   missions: { f1: "#FBECCB", f2: "#C47D3E", f3: "#922A34" },
   lock: { f1: "#D0C8BA", f2: "#D0C8BA", f3: "#F6D47A" },
   arrow: { f1: "#5A3418", f2: "#5A3418", f3: "#5A3418" },
+  blank: { f1: "#FFF6E0", f2: "#EAD2A0", f3: "#BF9C5E" },
+  sketch: { f1: "#FFF6E0", f2: "#E9B44C", f3: "#6B655C" },
+  ink: { f1: "#2F3E66", f2: "#FBECCB", f3: "#FFF6E0" },
+  gilded: { f1: "#D9A63A", f2: "#F6D47A", f3: "#FFF6E0" },
 };
 
 /** The sachet of the stock, in the blue of the night collection. */

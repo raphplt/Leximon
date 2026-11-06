@@ -98,6 +98,16 @@ export const room = {
   shelf: { top: "#4F2E16", bottom: "#2C1709", gilt: "#D4A447", giltShade: "#5E3A10" },
 } as const;
 
+/** The banner of a gain: red leather in an old-gold frame, the gain lettered on it. */
+export const gainBanner = {
+  center: "#A3304A",
+  middle: "#6E1428",
+  edge: "#3C0614",
+  /** The gilt rule inside the frame, and its distance from it. */
+  rule: "rgba(246, 210, 130, 0.75)",
+  ruleInset: 5,
+} as const;
+
 /** The cloth of a sachet, one per collection tone (`backTones`): light, middle and dark. */
 export const sachetCloths = {
   night: ["#34479A", "#18215A", "#0B1033"],

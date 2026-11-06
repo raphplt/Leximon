@@ -16,7 +16,6 @@ import {
   clanAnswers,
   clanShareLine,
   climbedWords,
-  comingBackLine,
   comingBackTomorrow,
   freeAnswerOutcome,
   frequencyLine,
@@ -27,6 +26,7 @@ import {
   levelUpLine,
   MEET_ACTION,
   MEET_KICKER,
+  masteryLevelName,
   NOT_THIS_TIME,
   noChallengeNotice,
   PAIRS_START,
@@ -41,27 +41,39 @@ import {
   playable,
   questionKicker,
   RECAP_BONUS_MS,
+  RECAP_CLIMBED,
+  RECAP_COMING_BACK,
+  RECAP_TITLE,
   recapActions,
+  recapTimes,
   type SeriesQuestion,
   scoredAnswers,
   seriesOf,
-  sessionBonusLine,
+  sessionBonusGain,
   sessionScore,
   sessionXpLine,
   spellingLine,
-  streakLine,
+  streakTag,
   TYPED_SHORTCUTS,
   typedQuestionHint,
   withCatchUp,
 } from "@leximon/view-model";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { type FormEvent, useCallback, useEffect, useRef, useState } from "react";
+import {
+  type CSSProperties,
+  type FormEvent,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import { play, speechOn, vibrate } from "@/booster/feedback";
 import { loadCatalog } from "@/cards/catalog";
 import { SpeechButtons } from "@/cards/speech-buttons";
 import { useSpokenWord } from "@/cards/use-spoken-word";
 import { Card } from "@/components/card";
 import { api } from "@/lib/api";
+import { useNarrow } from "@/lib/use-narrow";
 import { useNow } from "@/lib/use-now";
 import { usePackShape } from "@/lib/use-pack-shape";
 import { Desk } from "@/library/play-pieces";
@@ -72,12 +84,13 @@ import { missions } from "@/player/player";
 import { useShared } from "@/player/resource";
 import { publishProgress } from "@/progress/use-progress";
 import { useShell } from "@/shell/shell-context";
-import { Button, ButtonLink, RoundButton } from "@/ui/button";
+import { Button, RoundButton } from "@/ui/button";
+import { GainBanner } from "@/ui/gain-banner";
 import { HelpTip } from "@/ui/help-tip";
 import { Icon } from "@/ui/icon";
 import { ParticleStage, useOptionalStage } from "@/ui/stage";
 import { useToast } from "@/ui/toast";
-import { Toy, ToyBody } from "@/ui/toy";
+import { Toy, ToyBody, ToyIcon } from "@/ui/toy";
 import ui from "@/ui/ui.module.css";
 import styles from "./challenge-screen.module.css";
 import { takeAlbumPractice } from "./pending-practice";
@@ -872,6 +885,8 @@ function useCountUp(target: number, ms: number): number {
   return shown;
 }
 
+const at = (ms: number): CSSProperties => ({ animationDelay: `${ms}ms` });
+
 function Recap({
   catalog,
   answers,
@@ -899,7 +914,7 @@ function Recap({
     refreshIfRead(myClan);
     reviewSummary.refresh();
   }, []);
-  const bonus = sessionBonusLine(answers, noun);
+  const bonus = sessionBonusGain(answers, noun);
   const scored = scoredAnswers(series, answers);
   const right = useCountUp(scored.filter((answer) => answer.correct).length, 500);
   useEffect(() => {
@@ -910,108 +925,145 @@ function Recap({
   }, [bonus]);
   const climbed = climbedWords(answers);
   const back = comingBackTomorrow(answers);
-  const backLine = comingBackLine(back.length);
-  const actions = recapActions(summary, summary?.settings.length ?? answers.length, noun);
-  const streak = summary === null ? null : streakLine(summary.streak);
+  const actions = recapActions(summary, summary?.settings.length ?? answers.length);
+  const streak = summary === null ? null : streakTag(summary.streak);
   const card = (cardId: string) => cardOrPlaceholder(catalog, cardId, "common");
+  const times = recapTimes(bonus === null ? null : RECAP_BONUS_MS, climbed.length, back.length);
+  const narrow = useNarrow();
+  const thumb = (cardId: string, width: number) => (
+    <button
+      type="button"
+      className={styles.thumb}
+      onClick={() => openCard(cardId)}
+      aria-label={`Voir la carte ${card(cardId).word}`}
+    >
+      <Card
+        card={card(cardId)}
+        collectionName={collectionName(catalog, card(cardId).collectionId)}
+        width={width}
+      />
+    </button>
+  );
+  const more = (primary: boolean) => (
+    <Button variant={primary ? "primary" : "secondary"} disabled={busy} onClick={onMore}>
+      {actions.more}
+    </Button>
+  );
+  const leave = (primary: boolean) => (
+    <Button variant={primary ? "primary" : "secondary"} onClick={onBack}>
+      <Icon name="back" size={18} />
+      {actions.back}
+    </Button>
+  );
   return (
     <section className={`${ui.panel} ${styles.recap}`} aria-labelledby="recap-title">
-      <p id="recap-title" className={ui.kicker}>
-        Révision terminée
-      </p>
-      {/* Screen readers get the final score, not the count on its way. */}
-      <p className={`${ui.display} ${styles.score}`}>
-        <span aria-hidden="true">
-          {right}/{scored.length}
-        </span>
-        <span className={styles.spoken}>{sessionScore(scored)}</span>
-      </p>
-      {xp !== null && <p className={styles.xp}>{xp}</p>}
-      {streak !== null && <p className={styles.streak}>{streak}</p>}
-      {bonus !== null ? (
-        <p className={styles.won} style={{ animationDelay: `${RECAP_BONUS_MS}ms` }}>
-          <Icon name="sachet" size={28} />
-          {bonus}
+      <header className={styles.recapHead}>
+        <p id="recap-title" className={ui.kicker}>
+          {RECAP_TITLE}
         </p>
+        {/* Screen readers get the final score, not the count on its way. */}
+        <p className={`${ui.display} ${styles.score}`}>
+          <span aria-hidden="true">
+            {right}/{scored.length}
+          </span>
+          <span className={styles.spoken}>{sessionScore(scored)}</span>
+        </p>
+        {(xp !== null || streak !== null || clanShare !== null) && (
+          <ul className={`${styles.tags} ${styles.reveal}`} style={at(times.tags)}>
+            {xp !== null && <li className={`${styles.tag} ${styles.xpTag}`}>{xp}</li>}
+            {clanShare !== null && (
+              <li className={`${styles.tag} ${styles.clanShare}`}>
+                <Icon name="clan" size={18} />
+                {clanShare}
+              </li>
+            )}
+            {streak !== null && (
+              <li className={styles.tag}>
+                <Icon name="flag" size={16} />
+                {streak}
+              </li>
+            )}
+          </ul>
+        )}
+      </header>
+      {bonus !== null ? (
+        <GainBanner
+          icon="sachet"
+          title={bonus.title}
+          note={bonus.note}
+          className={`${styles.reveal} ${styles.gain}`}
+          style={at(RECAP_BONUS_MS)}
+        />
       ) : (
         tally !== null &&
         !tally.awarded && (
-          <p className={styles.lost}>
+          <p className={`${styles.lost} ${styles.reveal}`} style={at(times.tags)}>
             <em>{NOT_THIS_TIME}</em>
           </p>
         )
       )}
       {climbed.length > 0 && (
-        <ul className={styles.recapCards} aria-label="Les mots qui montent">
-          {climbed.map(({ cardId, level }) => (
-            <li key={cardId} className={styles.recapCard}>
-              <button
-                type="button"
-                className={styles.thumb}
-                onClick={() => openCard(cardId)}
-                aria-label={`Voir la carte ${card(cardId).word}`}
+        <section className={styles.shelf} aria-labelledby="recap-climbed">
+          <h3
+            id="recap-climbed"
+            className={`${styles.shelfTitle} ${styles.reveal}`}
+            style={at(times.climbedAt)}
+          >
+            {RECAP_CLIMBED}
+            <span className={styles.shelfCount}>{climbed.length}</span>
+          </h3>
+          <ul className={`${styles.recapCards} ${styles.climbed}`}>
+            {climbed.map(({ cardId, level }, index) => (
+              <li
+                key={cardId}
+                className={`${styles.recapCard} ${styles.pop}`}
+                style={at(times.climbedCards[index] ?? 0)}
               >
-                <Card
-                  card={card(cardId)}
-                  collectionName={collectionName(catalog, card(cardId).collectionId)}
-                  width={92}
-                />
-              </button>
-              <span className={styles.up}>{levelUpLine(card(cardId).word, level)}</span>
-            </li>
-          ))}
-        </ul>
-      )}
-      {backLine !== null && (
-        <>
-          <p className={styles.comingBack}>{backLine}</p>
-          <ul className={styles.recapCards} aria-label="Les mots à revoir demain">
-            {back.map((cardId) => (
-              <li key={cardId} className={styles.recapCard}>
-                <button
-                  type="button"
-                  className={styles.thumb}
-                  onClick={() => openCard(cardId)}
-                  aria-label={`Voir la carte ${card(cardId).word}`}
-                >
-                  <Card
-                    card={card(cardId)}
-                    collectionName={collectionName(catalog, card(cardId).collectionId)}
-                    width={72}
-                  />
-                </button>
+                {thumb(cardId, narrow ? 92 : 112)}
+                <span className={`${styles.levelTag} ${level === "gilded" ? styles.gilded : ""}`}>
+                  <ToyIcon name={level} size={22} />
+                  {masteryLevelName(level)}
+                </span>
               </li>
             ))}
           </ul>
-        </>
+        </section>
       )}
-      {clanShare !== null && (
-        <p className={styles.clanShare}>
-          <Icon name="clan" size={18} />
-          {clanShare}
-        </p>
+      {back.length > 0 && (
+        <section className={styles.shelf} aria-labelledby="recap-back">
+          <h3
+            id="recap-back"
+            className={`${styles.shelfTitle} ${styles.reveal}`}
+            style={at(times.backAt)}
+          >
+            {RECAP_COMING_BACK}
+            <span className={styles.shelfCount}>{back.length}</span>
+          </h3>
+          <ul className={styles.recapCards}>
+            {back.map((cardId, index) => (
+              <li
+                key={cardId}
+                className={`${styles.recapCard} ${styles.pop}`}
+                style={at(times.backCards[index] ?? 0)}
+              >
+                {thumb(cardId, narrow ? 72 : 84)}
+              </li>
+            ))}
+          </ul>
+        </section>
       )}
-      <div className={styles.recapActions}>
+      <div className={`${styles.recapActions} ${styles.reveal}`} style={at(times.actions)}>
         {actions.moreFirst ? (
           <>
-            <Button disabled={busy} onClick={onMore}>
-              {actions.more}
-            </Button>
-            <ButtonLink variant="secondary" href="/jouer">
-              {actions.open}
-            </ButtonLink>
+            {leave(false)}
+            {more(true)}
           </>
         ) : (
           <>
-            <ButtonLink href="/jouer">{actions.open}</ButtonLink>
-            <Button variant="secondary" disabled={busy} onClick={onMore}>
-              {actions.more}
-            </Button>
+            {more(false)}
+            {leave(true)}
           </>
         )}
-        <Button variant="ghost" onClick={onBack}>
-          Retour aux défis
-        </Button>
       </div>
     </section>
   );

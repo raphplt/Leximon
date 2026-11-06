@@ -42,6 +42,7 @@ import { Dialog } from "@/ui/dialog";
 import { Icon } from "@/ui/icon";
 import { LoadFailed } from "@/ui/load-failed";
 import { useToast } from "@/ui/toast";
+import { ToyIcon } from "@/ui/toy";
 import ui from "@/ui/ui.module.css";
 import styles from "./card-sheet.module.css";
 
@@ -238,7 +239,10 @@ function SheetBody({
               {mastery.steps.map((step) => (
                 <li key={step.level} className={step.reached ? styles[step.level] : styles.stepOff}>
                   <span className={styles.stepBar} />
-                  {step.label}
+                  <span className={styles.stepName}>
+                    <ToyIcon name={step.level} size={22} locked={!step.reached} />
+                    {step.label}
+                  </span>
                 </li>
               ))}
             </ol>

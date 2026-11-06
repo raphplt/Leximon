@@ -1,24 +1,27 @@
 import { type Catalog, cardOrPlaceholder, collectionName } from "@leximon/contract/client";
+import { lettering, toyMatters, toy as toyValues } from "@leximon/tokens";
 import {
   type AnsweredQuestion,
   clanAnswers,
   clanShareLine,
   climbedWords,
-  comingBackLine,
   comingBackTomorrow,
-  levelUpLine,
+  masteryLevelName,
   NOT_THIS_TIME,
   PACK_NOUNS,
   RECAP_BONUS_MS,
+  RECAP_CLIMBED,
+  RECAP_COMING_BACK,
+  RECAP_TITLE,
   recapActions,
+  recapTimes,
   type SeriesQuestion,
   scoredAnswers,
-  sessionBonusLine,
+  sessionBonusGain,
   sessionScore,
   sessionXpLine,
-  streakLine,
+  streakTag,
 } from "@leximon/view-model";
-import { router } from "expo-router";
 import { useEffect, useState } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import Animated, { FadeInUp, useReducedMotion } from "react-native-reanimated";
@@ -29,11 +32,12 @@ import { useShared } from "@/player/shared";
 import { myClan } from "@/player/state";
 import { openCard } from "@/screens/trades/card-row";
 import { TAB_BAR_RISE } from "@/shell/tab-bar";
-import { colors, fontSizes, fonts, paperColors, space } from "@/theme";
+import { alpha, colors, fontSizes, fonts, paperColors, space } from "@/theme";
 import { Button } from "@/ui/button";
+import { GainBanner } from "@/ui/gain-banner";
 import { Icon } from "@/ui/icon";
 import { Panel } from "@/ui/panel";
-import { TextButton } from "@/ui/text-button";
+import { ToyIcon } from "@/ui/toy";
 
 const NOUN = PACK_NOUNS.sachet;
 
@@ -90,8 +94,9 @@ function Thumb({
 }
 
 /**
- * The end of a series: the score, the XP, the words that climbed and those coming back tomorrow,
- * what the clan and the daily goal got from it, and what to do next.
+ * The end of a series: the score, its gains as tags and a banner, the words that climbed with
+ * the level they reached, those coming back tomorrow, then what to do next. Each part rises in
+ * after the one above, all within about a second.
  */
 export function ChallengeRecap({
   catalog,
@@ -118,7 +123,7 @@ export function ChallengeRecap({
     refreshIfRead(myClan);
     reviewSummary.refresh();
   }, []);
-  const bonus = sessionBonusLine(answers, NOUN);
+  const bonus = sessionBonusGain(answers, NOUN);
   const scored = scoredAnswers(series, answers);
   const right = useCountUp(scored.filter((answer) => answer.correct).length, 500);
   useEffect(() => {
@@ -130,77 +135,108 @@ export function ChallengeRecap({
   const climbed = climbedWords(answers);
   const climbedIds = climbed.map((word) => word.cardId);
   const back = comingBackTomorrow(answers);
-  const backLine = comingBackLine(back.length);
-  const streak = summary === null ? null : streakLine(summary.streak);
-  const actions = recapActions(summary, summary?.settings.length ?? answers.length, NOUN);
+  const streak = summary === null ? null : streakTag(summary.streak);
+  const actions = recapActions(summary, summary?.settings.length ?? answers.length);
+  const times = recapTimes(bonus === null ? null : RECAP_BONUS_MS, climbed.length, back.length);
+  // Reanimated leaves it out when the system asks for less motion.
+  const rise = (ms: number) => FadeInUp.delay(ms).duration(320);
   const more = (primary: boolean) => (
     <Button label={actions.more} secondary={!primary} disabled={busy} onPress={onMore} />
   );
-  const open = (primary: boolean) => (
-    <Button label={actions.open} secondary={!primary} onPress={() => router.navigate("/")} />
+  const leave = (primary: boolean) => (
+    <Button label={actions.back} secondary={!primary} onPress={onBack} />
   );
   return (
     <ScrollView contentContainerStyle={styles.page}>
       <Panel paper style={styles.recap}>
-        <Text style={styles.kicker}>RÉVISION TERMINÉE</Text>
+        <Text style={styles.kicker}>{RECAP_TITLE.toUpperCase()}</Text>
         <Text style={styles.score} accessibilityLabel={sessionScore(scored)}>
           {right}/{scored.length}
         </Text>
-        {xp !== null && <Text style={styles.xp}>{xp}</Text>}
-        {streak !== null && <Text style={styles.streak}>{streak}</Text>}
+        {(xp !== null || streak !== null || clanShare !== null) && (
+          <Animated.View entering={rise(times.tags)} style={styles.tags}>
+            {xp !== null && (
+              <View style={[styles.tag, styles.xpTag]}>
+                <Text style={styles.xpText}>{xp}</Text>
+              </View>
+            )}
+            {clanShare !== null && (
+              <View style={[styles.tag, styles.clanShare]}>
+                <Icon name="clan" size={16} color={colors.successEdge} />
+                <Text style={styles.clanShareText}>{clanShare}</Text>
+              </View>
+            )}
+            {streak !== null && (
+              <View style={styles.tag}>
+                <Icon name="flag" size={15} color={ink.pageInkMuted} />
+                <Text style={styles.tagText}>{streak}</Text>
+              </View>
+            )}
+          </Animated.View>
+        )}
         {bonus !== null ? (
-          <Animated.View
-            entering={FadeInUp.delay(RECAP_BONUS_MS).duration(320)}
-            style={styles.line}
-          >
-            <Icon name="sachet" size={26} color={ink.rubric} />
-            <Text style={[styles.lineText, styles.won]}>{bonus}</Text>
+          <Animated.View entering={rise(RECAP_BONUS_MS)} style={styles.gain}>
+            <GainBanner icon="sachet" title={bonus.title} note={bonus.note} />
           </Animated.View>
         ) : (
-          tally !== null && !tally.awarded && <Text style={styles.lost}>{NOT_THIS_TIME}</Text>
+          tally !== null &&
+          !tally.awarded && (
+            <Animated.Text entering={rise(times.tags)} style={styles.lost}>
+              {NOT_THIS_TIME}
+            </Animated.Text>
+          )
         )}
         {climbed.length > 0 && (
-          <View style={styles.cards} accessibilityLabel="Les mots qui montent">
-            {climbed.map(({ cardId, level }) => (
-              <View key={cardId} style={styles.climbed}>
-                <Thumb catalog={catalog} cardId={cardId} among={climbedIds} width={92} />
-                <Text style={styles.up}>
-                  {levelUpLine(cardOrPlaceholder(catalog, cardId, "common").word, level)}
-                </Text>
-              </View>
-            ))}
-          </View>
-        )}
-        {backLine !== null && (
-          <>
-            <Text style={styles.comingBack}>{backLine}</Text>
-            <View style={styles.cards} accessibilityLabel="Les mots à revoir demain">
-              {back.map((cardId) => (
-                <Thumb key={cardId} catalog={catalog} cardId={cardId} among={back} width={72} />
+          <View style={styles.shelf} accessibilityLabel={RECAP_CLIMBED}>
+            <Animated.View entering={rise(times.climbedAt)} style={styles.shelfHead}>
+              <Text style={styles.shelfTitle}>{RECAP_CLIMBED}</Text>
+              <Text style={styles.shelfCount}>{climbed.length}</Text>
+            </Animated.View>
+            <View style={styles.cards}>
+              {climbed.map(({ cardId, level }, index) => (
+                <Animated.View
+                  key={cardId}
+                  entering={rise(times.climbedCards[index] ?? 0)}
+                  style={styles.climbed}
+                >
+                  <Thumb catalog={catalog} cardId={cardId} among={climbedIds} width={92} />
+                  <View style={[styles.levelTag, level === "gilded" && styles.levelGilded]}>
+                    <ToyIcon name={level} size={20} />
+                    <Text style={styles.levelText}>{masteryLevelName(level)}</Text>
+                  </View>
+                </Animated.View>
               ))}
             </View>
-          </>
-        )}
-        {clanShare !== null && (
-          <View style={styles.clanShare}>
-            <Icon name="clan" size={18} color={colors.successEdge} />
-            <Text style={styles.clanShareText}>{clanShare}</Text>
           </View>
         )}
-        <View style={styles.actions}>
+        {back.length > 0 && (
+          <View style={styles.shelf} accessibilityLabel={RECAP_COMING_BACK}>
+            <Animated.View entering={rise(times.backAt)} style={styles.shelfHead}>
+              <Text style={styles.shelfTitle}>{RECAP_COMING_BACK}</Text>
+              <Text style={styles.shelfCount}>{back.length}</Text>
+            </Animated.View>
+            <View style={styles.cards}>
+              {back.map((cardId, index) => (
+                <Animated.View key={cardId} entering={rise(times.backCards[index] ?? 0)}>
+                  <Thumb catalog={catalog} cardId={cardId} among={back} width={72} />
+                </Animated.View>
+              ))}
+            </View>
+          </View>
+        )}
+        <Animated.View entering={rise(times.actions)} style={styles.actions}>
           {actions.moreFirst ? (
             <>
               {more(true)}
-              {open(false)}
+              {leave(false)}
             </>
           ) : (
             <>
-              {open(true)}
+              {leave(true)}
               {more(false)}
             </>
           )}
-          <TextButton label="Retour aux défis" onPress={onBack} />
-        </View>
+        </Animated.View>
       </Panel>
     </ScrollView>
   );
@@ -211,53 +247,56 @@ const ink = paperColors;
 
 const styles = StyleSheet.create({
   page: {
-    padding: space.s8,
+    padding: space.s6,
     paddingBottom: TAB_BAR_RISE + 24,
     flexGrow: 1,
     justifyContent: "center",
   },
-  recap: { alignItems: "center", gap: space.s6, paddingVertical: space.s14 },
+  recap: {
+    alignItems: "center",
+    gap: space.s10,
+    paddingVertical: space.s14,
+    paddingHorizontal: space.s4,
+  },
   kicker: {
     fontFamily: fonts.ui.extrabold,
     fontSize: fontSizes.caption,
     letterSpacing: 2,
     color: ink.pageInkMuted,
+    marginBottom: -space.s8,
   },
   score: {
     fontFamily: fonts.display,
-    fontSize: fontSizes.display,
+    fontSize: 64,
+    lineHeight: 70,
     color: ink.pageInk,
     textAlign: "center",
+    marginBottom: -space.s4,
   },
-  xp: { fontFamily: fonts.display, fontSize: fontSizes.titleLarge, color: ink.rubric },
-  streak: {
-    fontFamily: fonts.ui.bold,
-    fontSize: fontSizes.body,
-    color: ink.pageInkMuted,
-    textAlign: "center",
-  },
-  line: { flexDirection: "row", alignItems: "center", gap: space.s4 },
-  // What the session gave the clan: a green tag, as on the web.
-  clanShare: {
+  // The XP, the clan's share and the days played: tags in a row, no sentence.
+  tags: { flexDirection: "row", flexWrap: "wrap", justifyContent: "center", gap: space.s4 },
+  tag: {
     flexDirection: "row",
     alignItems: "center",
-    alignSelf: "center",
     gap: space.s3,
     paddingVertical: space.s2,
-    paddingLeft: space.s4,
-    paddingRight: space.s6,
+    paddingHorizontal: space.s6,
     borderWidth: 2,
-    borderColor: colors.successDeep,
+    borderColor: alpha(toyValues.outline, 0.35),
     borderRadius: 999,
-    backgroundColor: colors.successPale,
+    backgroundColor: alpha(toyMatters.paper.bottom, 0.55),
   },
+  tagText: { fontFamily: fonts.ui.extrabold, fontSize: fontSizes.body, color: ink.pageInkMuted },
+  xpTag: { borderColor: ink.rubric, backgroundColor: alpha(ink.rubric, 0.1) },
+  xpText: { fontFamily: fonts.display, fontSize: fontSizes.subtitle, color: ink.rubric },
+  // What the session gave the clan: a green tag, as on the web.
+  clanShare: { borderColor: colors.successDeep, backgroundColor: colors.successPale },
   clanShareText: {
     fontFamily: fonts.ui.extrabold,
     fontSize: fontSizes.body,
     color: colors.successEdge,
   },
-  lineText: { fontFamily: fonts.ui.bold, fontSize: fontSizes.bodyLarge, color: ink.pageInk },
-  won: { color: ink.rubric },
+  gain: { alignSelf: "stretch", marginBottom: space.s4 },
   lost: {
     fontFamily: fonts.text.italic,
     fontSize: fontSizes.bodyLarge,
@@ -265,20 +304,42 @@ const styles = StyleSheet.create({
     color: ink.pageInkMuted,
     textAlign: "center",
   },
-  cards: { flexDirection: "row", flexWrap: "wrap", justifyContent: "center", gap: space.s6 },
-  climbed: { width: 120, alignItems: "center", gap: space.s3 },
-  up: {
-    fontFamily: fonts.ui.bold,
+  shelf: { alignSelf: "stretch", alignItems: "center", gap: space.s6 },
+  shelfHead: { flexDirection: "row", alignItems: "center", gap: space.s4 },
+  shelfTitle: { fontFamily: fonts.display, fontSize: fontSizes.subtitle, color: ink.pageInk },
+  shelfCount: {
+    minWidth: 24,
+    paddingHorizontal: 6,
+    borderRadius: 12,
+    overflow: "hidden",
+    backgroundColor: toyValues.outline,
+    fontFamily: fonts.ui.extrabold,
     fontSize: fontSizes.small,
-    lineHeight: 18,
-    color: ink.success,
+    lineHeight: 24,
+    color: lettering.fill,
     textAlign: "center",
   },
-  comingBack: {
-    fontFamily: fonts.ui.bold,
-    fontSize: fontSizes.body,
-    color: ink.pageInkMuted,
-    textAlign: "center",
+  cards: { flexDirection: "row", flexWrap: "wrap", justifyContent: "center", gap: 10 },
+  climbed: { alignItems: "center", gap: space.s4 },
+  // The level the word reached, drawn and named, under its card.
+  levelTag: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 3,
+    paddingVertical: 1,
+    paddingLeft: 2,
+    paddingRight: 8,
+    borderWidth: 2,
+    borderColor: toyValues.outline,
+    borderRadius: 999,
+    backgroundColor: toyMatters.paper.top,
+    boxShadow: `0 2px 0 ${toyValues.outline}`,
   },
-  actions: { alignSelf: "stretch", gap: space.s5, marginTop: space.s4 },
+  levelGilded: { backgroundColor: toyMatters.gold.top },
+  levelText: {
+    fontFamily: fonts.ui.extrabold,
+    fontSize: fontSizes.caption,
+    color: toyValues.outline,
+  },
+  actions: { alignSelf: "stretch", gap: space.s5, marginTop: space.s2 },
 });

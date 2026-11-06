@@ -19,7 +19,7 @@ import {
   questionKicker,
   recapLine,
   reviewQuestion,
-  sessionBonusLine,
+  sessionBonusGain,
   sessionXpLine,
   spellingLine,
   typedQuestionHint,
@@ -100,12 +100,13 @@ describe("bonus lines", () => {
       bonus: { ...NO_BONUS, daily: credited, credited },
       progress: NO_XP,
     });
-    expect(sessionBonusLine([answer(0), answer(0)])).toBeNull();
-    expect(sessionBonusLine([answer(1)], PLI)).toMatch(/^1 pli bonus gagné,/);
-    expect(sessionBonusLine([answer(1), answer(1)], PLI)).toMatch(/^2 plis bonus gagnés,/);
-    expect(sessionBonusLine([answer(1)], SACHET_NOUN)).toBe(
-      "1 sachet bonus gagné, rangé dans ta réserve.",
-    );
+    expect(sessionBonusGain([answer(0), answer(0)])).toBeNull();
+    expect(sessionBonusGain([answer(1)], PLI)?.title).toBe("1 pli bonus");
+    expect(sessionBonusGain([answer(1), answer(1)], PLI)?.title).toBe("2 plis bonus");
+    expect(sessionBonusGain([answer(1)], SACHET_NOUN)).toEqual({
+      title: "1 sachet bonus",
+      note: "Dans ta réserve",
+    });
   });
 });
 

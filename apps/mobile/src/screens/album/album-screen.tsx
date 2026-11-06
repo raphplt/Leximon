@@ -69,7 +69,7 @@ import { Icon } from "@/ui/icon";
 import { RarityChip, RarityName } from "@/ui/rarity-icon";
 import { Sheet } from "@/ui/sheet";
 import { TextButton } from "@/ui/text-button";
-import { Lettering, toyFace } from "@/ui/toy";
+import { Lettering, ToyIcon, toyFace } from "@/ui/toy";
 
 /** The collection tab chosen last, kept on the device. */
 const STORED_COLLECTION = "leximon_album";
@@ -629,7 +629,7 @@ function OwnedTile({
       {item.fresh && <Text style={styles.fresh}>Nouveau</Text>}
       {item.quantity > 1 && <Text style={styles.quantity}>×{item.quantity}</Text>}
       <View style={styles.mastery}>
-        <View style={[styles.dot, { backgroundColor: masteryColors[item.level] }]} />
+        <ToyIcon name={item.level} size={18} />
         <Text style={[styles.masteryText, { color: masteryColors[item.level] }]}>
           {item.levelLabel}
         </Text>
@@ -988,7 +988,6 @@ const styles = StyleSheet.create({
     fontSize: fontSizes.caption,
   },
   mastery: { flexDirection: "row", alignItems: "center", gap: 5 },
-  dot: { width: 8, height: 8, borderRadius: 4 },
   masteryText: { fontFamily: fonts.ui.bold, fontSize: fontSizes.caption },
   missingBox: {
     alignItems: "center",

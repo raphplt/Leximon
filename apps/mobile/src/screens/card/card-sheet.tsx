@@ -41,7 +41,7 @@ import { Icon } from "@/ui/icon";
 import { Page, Paragraph } from "@/ui/page";
 import { OnPaper } from "@/ui/panel";
 import { RarityName } from "@/ui/rarity-icon";
-import { Toy } from "@/ui/toy";
+import { Toy, ToyIcon } from "@/ui/toy";
 
 const CARD_MAX = 300;
 
@@ -205,11 +205,17 @@ function SheetBody({
                 return (
                   <View key={step.level} style={styles.step}>
                     <View style={[styles.stepBar, { backgroundColor: tone }]} />
-                    <Text
-                      style={[styles.stepLabel, { color: step.reached ? tone : ink.pageInkFaint }]}
-                    >
-                      {step.label}
-                    </Text>
+                    <View style={styles.stepName}>
+                      <ToyIcon name={step.level} size={20} locked={!step.reached} />
+                      <Text
+                        style={[
+                          styles.stepLabel,
+                          { color: step.reached ? ink.pageInk : ink.pageInkFaint },
+                        ]}
+                      >
+                        {step.label}
+                      </Text>
+                    </View>
                   </View>
                 );
               })}
@@ -375,6 +381,7 @@ const styles = StyleSheet.create({
   steps: { flexDirection: "row", gap: space.s4 },
   step: { flex: 1, gap: space.s3 },
   stepBar: { height: 6, borderRadius: 3 },
+  stepName: { flexDirection: "row", alignItems: "center", gap: 3 },
   stepLabel: { fontFamily: fonts.ui.bold, fontSize: fontSizes.small },
   note: {
     fontFamily: fonts.ui.medium,

@@ -454,6 +454,12 @@
   color: var(--lx-color-page-ink-muted);
 }
 
+.tierFigure {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
 .tierFigures b {
   font-weight: 900;
   color: var(--lx-color-page-ink);

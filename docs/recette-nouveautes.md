@@ -399,11 +399,11 @@ Chaque retour vaut pour le web (téléphone et grand écran) et pour l'app, sauf
 | R-11 | Jouer, progression | L'icône du bouton « Ouvrir 1 coffret » est blanche sur jaune : invisible. | 1 ✓ |
 | R-12 | Défis | L'aide du clavier (« 1 à 4 pour répondre… ») ne reste pas affichée tout le temps. | 1 ✓ |
 | R-13 | Défis | Un effet au survol, même léger, sur les boutons de réponse. | 1 ✓ |
-| R-14 | Fin de révision | Les informations arrivent une à une par une animation courte. L'écran est trop étroit : plus large. | 2 |
-| R-15 | Gains, partout | « 1 sachet bonus gagné, rangé dans ta réserve. » ressort mal : une bordure d'enluminure et un fond texturé de couleur propre, repris pour tous les affichages de gains. | 2 |
-| R-16 | Niveaux de maîtrise | Une icône dessinée avec soin pour chaque niveau (Esquisse…), sur la fin de révision et dans l'album partout où le niveau d'une carte se voit. | 2 |
+| R-14 | Fin de révision | Les informations arrivent une à une par une animation courte. L'écran est trop étroit : plus large. | 2 ✓ |
+| R-15 | Gains, partout | « 1 sachet bonus gagné, rangé dans ta réserve. » ressort mal : une bordure d'enluminure et un fond texturé de couleur propre, repris pour tous les affichages de gains. | 2 (fin de révision ✓) |
+| R-16 | Niveaux de maîtrise | Une icône dessinée avec soin pour chaque niveau (Esquisse…), sur la fin de révision et dans l'album partout où le niveau d'une carte se voit. | 2 ✓ |
 | R-17 | Fin de révision | « +7 pour le clan » est à peine visible (couleur). | 1 ✓ |
-| R-18 | Fin de révision | « Retour aux défis » plus visible, peut-être sans « Ouvrir un sachet ». | 2 |
+| R-18 | Fin de révision | « Retour aux défis » plus visible, peut-être sans « Ouvrir un sachet ». | 2 ✓ |
 | R-19 | Échanges, vide | Tout est trop collé : plus d'espace vertical. | 1 ✓ |
 | R-20 | Échanges | Le panneau de « Reçues » est plus large que ceux d'« Envoyées » et « Nouvelle offre » : même largeur pour les trois. | 1 ✓ |
 | R-21 | Clan, bandeau | Retirer « TON CLAN ». Sous le nom, la devise seule, un peu plus grande et plus détachée du nom. Le nombre de membres et l'entrée (libre ou non) passent à droite, au-dessus d'« Inviter » et des réglages, chacun avec son icône. | 1 ✓ |
@@ -418,3 +418,11 @@ Chaque retour vaut pour le web (téléphone et grand écran) et pour l'app, sauf
 - Bulle d'aide (missions, clavier des défis) : texte blanc sur fond clair, et pas un vrai popover. Elle s'ouvre maintenant au-dessus de tout, avec une flèche vers son bouton, du côté où elle tient, en encre foncée ; le bouton du clavier est cerclé de crème pour se voir sur le tapis.
 - Échanges : les trois onglets ont la même largeur et commencent à la même hauteur (vérifié à 390, 1 500 et 2 000 px).
 - Page clan qui plante : l'erreur venait d'un état intermédiaire pendant les modifications, la page s'affiche (téléphone, grand écran, clan visité, app). L'écran d'erreur écrit désormais la cause dans la console, pour la retrouver si ça revient.
+
+**Lot 2, fin de révision (2026-11-06).** Refaite sur le web et l'app, vérifiée à 390, 1 500 et 2 000 px et sur l'émulateur :
+
+- R-14 : l'écran s'élargit (980 px de large sur le web, 7 cartes par ligne à 1 500 px). Le score, les étiquettes (XP, clan, jours joués), le gain, puis les mots arrivent l'un après l'autre en un peu plus d'une seconde, sans animation si le joueur les a coupées.
+- R-15 : le sachet bonus s'affiche dans un encart de cuir rouge cerclé d'or vieilli, avec un filet doré et ses quatre losanges, le sachet dessiné dans un médaillon. Le même encart servira à la fin d'un sachet (montée de niveau) et aux autres gains dans la suite du lot.
+- R-16 : quatre icônes dessinées (page blanche, esquisse, encre, dorure), sous chaque mot qui monte, dans l'album, sur la fiche d'une carte et dans « Ta mémoire ».
+- R-18 : « Retour aux défis » devient le bouton principal quand la révision est finie ; quand il reste des mots à revoir, « Encore 10 questions » passe devant et le retour reste un vrai bouton juste à côté.
+

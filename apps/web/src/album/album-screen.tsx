@@ -49,6 +49,7 @@ import { Button } from "@/ui/button";
 import { Icon } from "@/ui/icon";
 import { LoadFailed } from "@/ui/load-failed";
 import { Bone, WaitingScreen } from "@/ui/skeleton";
+import { ToyIcon } from "@/ui/toy";
 import ui from "@/ui/ui.module.css";
 import styles from "./album-screen.module.css";
 
@@ -589,7 +590,7 @@ function OwnedTile({
       {item.fresh && <span className={styles.fresh}>Nouveau</span>}
       {item.quantity > 1 && <span className={styles.quantity}>×{item.quantity}</span>}
       <span className={`${styles.mastery} ${styles[item.level]}`}>
-        <span className={styles.dot} />
+        <ToyIcon name={item.level} size={20} />
         {item.levelLabel}
       </span>
     </button>

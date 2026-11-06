@@ -69,6 +69,13 @@
   background: var(--lx-mastery-gilded);
 }
 
+.stepName {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  margin-top: var(--lx-s2);
+}
+
 .stepOff {
   color: var(--lx-color-page-ink-faint);
 }

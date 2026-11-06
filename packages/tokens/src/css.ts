@@ -1,5 +1,15 @@
 import { openingTimes } from "./effects";
-import { easings, lettering, oldGold, press, room, toy, toyMatters, toyRadii } from "./library";
+import {
+  easings,
+  gainBanner,
+  lettering,
+  oldGold,
+  press,
+  room,
+  toy,
+  toyMatters,
+  toyRadii,
+} from "./library";
 import {
   colors,
   type Fill,
@@ -94,6 +104,11 @@ function libraryParts(): Record<string, string> {
     "--lx-desk-edge": room.desk.edge,
     "--lx-desk-rule": room.desk.rule,
     "--lx-desk-hollow": room.desk.hollow,
+    "--lx-gain-center": gainBanner.center,
+    "--lx-gain-middle": gainBanner.middle,
+    "--lx-gain-edge": gainBanner.edge,
+    "--lx-gain-rule": gainBanner.rule,
+    "--lx-gain-rule-inset": `${gainBanner.ruleInset}px`,
     "--lx-shelf-top": room.shelf.top,
     "--lx-shelf-bottom": room.shelf.bottom,
     "--lx-shelf-gilt": room.shelf.gilt,
