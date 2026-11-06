@@ -38,7 +38,10 @@ export function GameShell({ children }: { readonly children: ReactNode }) {
 
 function Frame({ children }: { readonly children: ReactNode }) {
   const [overlay, setOverlay] = useState<Overlay>(null);
-  const [coffret, setCoffret] = useState<number | null>(null);
+  const [coffret, setCoffret] = useState<{
+    readonly level: number;
+    readonly all: boolean;
+  } | null>(null);
   const [welcome, setWelcome] = useState(false);
   const [carnetOpen, setCarnetOpen] = useState(false);
   const [missingWord, setMissingWord] = useState<{ readonly collectionId: string | null } | null>(
@@ -58,10 +61,14 @@ function Frame({ children }: { readonly children: ReactNode }) {
       setOverlay(null);
       const target = level ?? lowest;
       if (target === undefined) router.push("/niveaux");
-      else setCoffret(target);
+      else setCoffret({ level: target, all: false });
     },
     [lowest, router],
   );
+  const openAllCoffrets = useCallback(() => {
+    setOverlay(null);
+    if (lowest !== undefined) setCoffret({ level: lowest, all: true });
+  }, [lowest]);
   const openWelcome = useCallback(() => {
     setOverlay(null);
     setWelcome(true);
@@ -82,6 +89,7 @@ function Frame({ children }: { readonly children: ReactNode }) {
   const shell = useMemo<Shell>(
     () => ({
       openCoffret,
+      openAllCoffrets,
       openWelcome,
       openCarnet,
       openMissions: () => setOverlay("missions"),
@@ -102,7 +110,7 @@ function Frame({ children }: { readonly children: ReactNode }) {
         setCard({ id: cardId, among });
       },
     }),
-    [openCoffret, openWelcome, openCarnet, openRewards],
+    [openCoffret, openAllCoffrets, openWelcome, openCarnet, openRewards],
   );
   // `?courrier` in an e-mail's link opens the mail over the screen, once.
   useEffect(() => {
@@ -127,7 +135,13 @@ function Frame({ children }: { readonly children: ReactNode }) {
       <ChatPanel open={overlay === "chat"} onClose={close} />
       <SanctionDialog now={view.now} />
       <NewsDialog level={view.progress?.level ?? null} />
-      <CoffretDialog level={coffret} now={view.now} onClose={() => setCoffret(null)} />
+      <CoffretDialog
+        level={coffret?.level ?? null}
+        waiting={view.coffrets}
+        all={coffret?.all ?? false}
+        now={view.now}
+        onClose={() => setCoffret(null)}
+      />
       <WelcomeDialog open={welcome} onClose={() => setWelcome(false)} />
       <CarnetDialog open={carnetOpen} onClose={() => setCarnetOpen(false)} />
       <MissionsDialog open={overlay === "missions"} onClose={close} />

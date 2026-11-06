@@ -149,9 +149,12 @@
 }
 
 .heroAction {
-  display: flex;
+  display: grid;
+  grid-template-areas:
+    "chest main"
+    "chest all";
   align-items: center;
-  gap: 10px;
+  gap: 8px 10px;
 }
 
 .coming {
@@ -170,6 +173,22 @@
 
 .heroChest {
   display: grid;
+  grid-area: chest;
+}
+
+.heroMain {
+  grid-area: main;
+}
+
+/* Every coffret at once, under the button that opens one. */
+.heroAll {
+  grid-area: all;
+  justify-self: center;
+  height: 36px;
+  padding: 0 18px;
+  font-size: var(--lx-size-label);
+  font-weight: 800;
+  color: var(--lx-toy-outline);
 }
 
 /* The small button of a phone, in place of the big one. */
@@ -942,7 +961,23 @@
 
   .heroAction {
     grid-column: 1 / -1;
-    justify-content: center;
+    grid-template-areas: "main all";
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .heroCompact {
+    grid-area: main;
+  }
+
+  .heroCompact {
+    gap: 6px;
+    font-size: var(--lx-size-label);
+    white-space: nowrap;
+  }
+
+  .heroAll {
+    height: 46px;
+    padding: 0 12px;
   }
 
   .heroChest,

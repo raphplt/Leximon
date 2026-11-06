@@ -292,6 +292,43 @@
   margin-top: var(--lx-s3);
 }
 
+/* Several coffrets opened: a chest over their rewards, counted together. */
+.chests {
+  display: flex;
+  justify-content: center;
+  margin-top: var(--lx-s4);
+  line-height: 0;
+  filter: drop-shadow(0 0 22px color-mix(in srgb, var(--lx-toy-gold-top) 70%, transparent));
+}
+
+/* While the coffrets open one after another, the chest shakes. */
+.shaking {
+  animation: shake 0.5s ease-in-out infinite;
+}
+
+@keyframes shake {
+  0%,
+  100% {
+    rotate: 0deg;
+  }
+  25% {
+    rotate: -4deg;
+  }
+  75% {
+    rotate: 4deg;
+  }
+}
+
+.progress {
+  margin: var(--lx-s6) 0 0;
+  font-weight: 800;
+  color: var(--lx-color-gilt-light);
+}
+
+.inner .stopped {
+  margin: var(--lx-s7) 0 0;
+}
+
 @keyframes spin {
   to {
     transform: rotate(360deg);
@@ -299,7 +336,8 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .rays {
+  .rays,
+  .shaking {
     animation: none;
   }
 }

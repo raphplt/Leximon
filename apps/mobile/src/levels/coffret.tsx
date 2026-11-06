@@ -7,14 +7,22 @@ import {
   claimRefusalMessage,
   coffretHint,
   coffretReached,
+  coffretsLabel,
   givesSachets,
+  OPENING_ALL_TITLE,
+  openAllLabel,
+  openAllStopped,
+  openedAllTitle,
+  openedLevelsLabel,
+  openingAllLabel,
   opensAt,
   reserveAfterClaim,
   rewardItem,
+  tallyRewards,
   waitingCoffrets,
 } from "@leximon/view-model";
 import { router } from "expo-router";
-import { type ReactNode, useEffect, useState, useSyncExternalStore } from "react";
+import { type ReactNode, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import {
   Modal,
   Pressable,
@@ -39,7 +47,7 @@ import Animated, {
 import Svg, { Circle, Defs, Path, RadialGradient, Stop } from "react-native-svg";
 import { api } from "@/api/client";
 import { Desk } from "@/library/play-pieces";
-import { useNow } from "@/player/shared";
+import { useNow, useShared } from "@/player/shared";
 import { levelRewards, progress, publishClaimed, wallet } from "@/player/state";
 import { alpha, colors, fontSizes, fonts, paperColors, radii, space } from "@/theme";
 import { Avatar } from "@/ui/avatar";
@@ -51,12 +59,26 @@ import { toast } from "@/ui/toast";
 import { Leaf, Lettering, ToyBody, ToyIcon } from "@/ui/toy";
 import { REWARD_ICONS } from "./reward-icons";
 
-let shown: number | null = null;
+/** The coffret shown, and whether every coffret waiting opens at once from it. */
+interface Shown {
+  readonly level: number;
+  readonly all: boolean;
+}
+
+let shown: Shown | null = null;
 const listeners = new Set<() => void>();
 
-function show(level: number | null): void {
-  shown = level;
+function show(next: Shown | null): void {
+  shown = next;
   for (const listener of listeners) listener();
+}
+
+function lowestWaiting(): number | undefined {
+  const current = progress.current();
+  const claimed = levelRewards.current()?.claimed;
+  return current === null || claimed === undefined
+    ? undefined
+    : waitingCoffrets(current.level, claimed)[0];
 }
 
 function subscribe(listener: () => void): () => void {
@@ -69,15 +91,15 @@ function subscribe(listener: () => void): () => void {
  * waiting, the level road says what comes next.
  */
 export function openCoffret(level?: number): void {
-  const current = progress.current();
-  const claimed = levelRewards.current()?.claimed;
-  const target =
-    level ??
-    (current === null || claimed === undefined
-      ? undefined
-      : waitingCoffrets(current.level, claimed)[0]);
+  const target = level ?? lowestWaiting();
   if (target === undefined) router.push("/niveaux");
-  else show(target);
+  else show({ level: target, all: false });
+}
+
+/** Every coffret waiting, opened one after another, their rewards shown together. */
+export function openAllCoffrets(): void {
+  const lowest = lowestWaiting();
+  if (lowest !== undefined) show({ level: lowest, all: true });
 }
 
 type Step =
@@ -89,27 +111,98 @@ type Step =
       readonly wallet: BoosterWalletResponse;
     }
   | { readonly name: "refused"; readonly reason: ClaimRefusal }
-  | { readonly name: "failed" };
+  | { readonly name: "failed" }
+  | { readonly name: "claimingAll"; readonly done: number; readonly total: number }
+  | {
+      readonly name: "openedAll";
+      readonly levels: readonly number[];
+      readonly rewards: readonly LevelRewardView[];
+      readonly wallet: BoosterWalletResponse;
+      /** Why the coffrets stopped before the last one, if they did. */
+      readonly stop: { readonly reason: ClaimRefusal | "failed"; readonly left: number } | null;
+    };
 
 /**
  * The coffret, mounted once at the root: closed with its rays, then opened on the rewards one by
  * one. The claim happens on « Ouvrir le coffret »: the server applies it and says what it gave.
+ * With several waiting, they may all open at once, one claim after another, and their rewards
+ * show together.
  */
 export function CoffretHost() {
-  const level = useSyncExternalStore(subscribe, () => shown);
+  const current = useSyncExternalStore(subscribe, () => shown);
+  const level = current?.level ?? null;
+  const all = current?.all ?? false;
+  const key = current === null ? null : `${current.level}${current.all ? "+" : ""}`;
   const [step, setStep] = useState<Step>({ name: "closed" });
-  const [shownLevel, setShownLevel] = useState<number | null>(null);
+  const [shownKey, setShownKey] = useState<string | null>(null);
+  const started = useRef<string | null>(null);
   const now = useNow(60_000);
+  const reached = useShared(progress);
+  const rewards = useShared(levelRewards);
+  const waiting =
+    reached === null || rewards === null ? [] : waitingCoffrets(reached.level, rewards.claimed);
+  const busy = step.name === "claiming" || step.name === "claimingAll";
 
   // A new coffret starts closed.
-  if (level !== shownLevel) {
-    setShownLevel(level);
+  if (key !== shownKey) {
+    setShownKey(key);
     setStep({ name: "closed" });
   }
 
   const close = () => {
-    if (step.name !== "claiming") show(null);
+    if (!busy) show(null);
   };
+
+  const openAll = async () => {
+    // The list is taken once: each claim changes the coffrets waiting.
+    const levels = [...waiting];
+    const opened: number[] = [];
+    const gained: LevelRewardView[] = [];
+    let last: BoosterWalletResponse | null = null;
+    let stop: ClaimRefusal | "failed" | null = null;
+    setStep({ name: "claimingAll", done: 0, total: levels.length });
+    // One after another, lowest first: each claim may fill the reserve that the next one needs.
+    for (const next of levels) {
+      try {
+        const result = await api.claimLevelReward(next);
+        if (result.kind === "refused") {
+          stop = result.reason;
+          break;
+        }
+        wallet.publish(result.wallet);
+        publishClaimed(next);
+        opened.push(next);
+        gained.push(...result.rewards);
+        last = result.wallet;
+        setStep({ name: "claimingAll", done: opened.length, total: levels.length });
+      } catch {
+        stop = "failed";
+        break;
+      }
+    }
+    if (last === null) {
+      setStep(
+        stop === null || stop === "failed" ? { name: "failed" } : { name: "refused", reason: stop },
+      );
+      return;
+    }
+    setStep({
+      name: "openedAll",
+      levels: opened,
+      rewards: gained,
+      wallet: last,
+      stop: stop === null ? null : { reason: stop, left: levels.length - opened.length },
+    });
+  };
+
+  // Opening them all from a button elsewhere starts at once, a single time per showing.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: started once per coffret shown
+  useEffect(() => {
+    if (key === null) started.current = null;
+    if (!all || key === null || started.current === key) return;
+    started.current = key;
+    void openAll();
+  }, [all, key]);
 
   const open = async () => {
     if (level === null) return;
@@ -134,7 +227,7 @@ export function CoffretHost() {
   };
 
   const toRoad = () => {
-    if (step.name === "opened") toast(claimedToast(step.rewards));
+    if (step.name === "opened" || step.name === "openedAll") toast(claimedToast(step.rewards));
     show(null);
     router.navigate("/niveaux");
   };
@@ -143,7 +236,69 @@ export function CoffretHost() {
 
   return (
     <CoffretFrame visible={level !== null} onClose={close}>
-      {step.name === "opened" ? (
+      {step.name === "openedAll" ? (
+        <>
+          <Text style={styles.kicker}>{openedLevelsLabel(step.levels).toUpperCase()}</Text>
+          <Animated.View entering={ZoomIn.duration(320)}>
+            <ToyIcon name="chest" size={80} />
+          </Animated.View>
+          <Animated.View entering={ZoomIn.duration(320)}>
+            <Lettering size={fontSizes.headingLarge} style={styles.centered}>
+              {openedAllTitle(step.levels.length)}
+            </Lettering>
+          </Animated.View>
+          <View style={styles.items}>
+            {tallyRewards(step.rewards).map((tally, index) => (
+              <Animated.View
+                // biome-ignore lint/suspicious/noArrayIndexKey: a fixed list, shown once; two titles may be alike
+                key={`${tally.reward.kind}-${index}`}
+                entering={FadeInDown.delay(120 + index * 110).duration(280)}
+              >
+                <Slip>
+                  <RewardVisual reward={tally.reward} />
+                  <View style={styles.itemText}>
+                    <Text style={styles.itemTitle}>{tally.item.title}</Text>
+                    {tally.reward.kind === "title" ? (
+                      <Text style={styles.plaque}>{tally.reward.title}</Text>
+                    ) : (
+                      <Text style={styles.itemDetail}>{tally.item.detail}</Text>
+                    )}
+                  </View>
+                </Slip>
+              </Animated.View>
+            ))}
+          </View>
+          {step.rewards.some(givesSachets) && (
+            <Text style={styles.stored}>{reserveAfterClaim(step.wallet)}</Text>
+          )}
+          {step.stop !== null && (
+            <Text style={styles.refused} accessibilityRole="alert">
+              {openAllStopped(
+                step.stop.reason,
+                step.stop.left,
+                (step.levels[step.levels.length - 1] ?? 0) + 1,
+              )}
+            </Text>
+          )}
+          <View style={styles.actions}>
+            <Button label={COFFRET_ACTION} onPress={() => store(step.rewards)} />
+            <TextButton label={COFFRET_ROAD} onPress={toRoad} />
+          </View>
+        </>
+      ) : step.name === "claimingAll" ? (
+        <>
+          <Text style={styles.kicker}>{coffretsLabel(step.total).toUpperCase()}</Text>
+          <Box busy disabled onOpen={() => undefined} />
+          <View accessibilityRole="header">
+            <Lettering size={fontSizes.heading} style={styles.centered}>
+              {OPENING_ALL_TITLE}
+            </Lettering>
+          </View>
+          <Text style={styles.progress} accessibilityLiveRegion="polite">
+            {openingAllLabel(step.done, step.total)}
+          </Text>
+        </>
+      ) : step.name === "opened" ? (
         <>
           {level !== null && (
             <Animated.View entering={ZoomIn.duration(320)}>
@@ -203,6 +358,13 @@ export function CoffretHost() {
                 label={step.name === "claiming" ? "Ouverture…" : "Ouvrir le coffret"}
                 disabled={step.name === "claiming" || step.name === "refused"}
                 onPress={() => void open()}
+              />
+            )}
+            {waiting.length > 1 && step.name !== "refused" && (
+              <TextButton
+                label={openAllLabel(waiting.length)}
+                disabled={busy}
+                onPress={() => void openAll()}
               />
             )}
           </View>
@@ -442,6 +604,8 @@ const styles = StyleSheet.create({
     boxShadow: `0 0 60px ${alpha(toyMatters.gold.top, 0.55)}`,
   },
   hint: { fontFamily: fonts.ui.medium, fontSize: fontSizes.body, color: colors.pageInkMuted },
+  centered: { textAlign: "center" },
+  progress: { fontFamily: fonts.ui.extrabold, fontSize: fontSizes.body, color: lettering.kicker },
   refused: {
     fontFamily: fonts.ui.bold,
     fontSize: fontSizes.body,

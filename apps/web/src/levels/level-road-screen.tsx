@@ -5,6 +5,8 @@ import { toyIconInks } from "@leximon/tokens";
 import {
   levelDetail,
   nextChapterSign,
+  OPEN_ALL_SHORT,
+  openAllLabel,
   playerTitle,
   type Quarter,
   quarterAt,
@@ -223,7 +225,7 @@ function Hero({
   readonly now: number;
   readonly coffrets: number;
 }) {
-  const { openCoffret } = useShell();
+  const { openCoffret, openAllCoffrets } = useShell();
   const title = playerTitle(claimed, now);
   const [next] = upcomingRewards(progress.level, now, 1);
   const ratio = Math.min(1, progress.xpIntoLevel / progress.xpForNextLevel);
@@ -277,6 +279,16 @@ function Hero({
                 <Lettering>{coffrets}</Lettering>
               </ToyBody>
             </Toy>
+            {coffrets > 1 && (
+              <Toy
+                matter="paper"
+                className={styles.heroAll}
+                aria-label={openAllLabel(coffrets)}
+                onClick={openAllCoffrets}
+              >
+                {OPEN_ALL_SHORT}
+              </Toy>
+            )}
           </>
         ) : (
           next !== undefined && (

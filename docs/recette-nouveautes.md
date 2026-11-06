@@ -477,7 +477,7 @@ Chaque retour vaut pour le web (téléphone et grand écran) et pour l'app, sauf
 - Le chapitre est une route qui serpente sous un ruban à son nom : les niveaux ouverts sont des pièces dorées cochées, les coffrets à ouvrir des coffres qui sautillent, ton niveau la médaille qui brille, le suivant un anneau d'XP, la suite en gris. Chaque étape porte une étiquette : ce qu'elle débloque, sinon sa récompense (« Sachet garni et 4 autres » quand il y en a plus de deux). Les onglets en haut changent de chapitre.
 - Toucher un coffre l'ouvre. Toucher une autre étape montre ce qu'elle donne : à droite de la route sur grand écran, dans une bulle sous l'étape sur le téléphone (au-dessus pour les dernières).
 - « À débloquer » liste les parties du jeu encore fermées, avec leur niveau.
-- Les coffrets s'ouvrent toujours un par un ; un bouton « Tout ouvrir » reste à trancher.
+- Les coffrets s'ouvrent un par un ; « Tout ouvrir » est venu ensuite (plus bas).
 
 Retour du propriétaire le même jour : la page ne doit plus défiler, et la route doit être plus belle. Fait sur le web et l'app, vérifié à 390, 1 500 et 2 000 px et sur l'émulateur :
 
@@ -485,3 +485,10 @@ Retour du propriétaire le même jour : la page ne doit plus défiler, et la rou
 - La route est en relief : bord sombre, lit de papier, pointillés au milieu ; la partie parcourue est pavée d'or et cloutée. Des objets de bibliothèque la bordent (livres, bougie, encrier, parchemin, livre ouvert), un fanion marque les niveaux qui débloquent quelque chose, et ton avatar se tient sur ta médaille, entouré de petites étoiles sur le web.
 - Au bout de la route, un panneau mène au chapitre suivant ; fermé, il dit à quel niveau il s'ouvrira (« Tu le verras au niveau 21. »).
 - Sur le téléphone, l'en-tête est resserré (anneau plus petit, bouton « Ouvrir un coffret » plus bas) et « À débloquer » passe sous la route, dans le plateau. Sur le web, le titre « Niveaux » disparaît sous 600 px : la barre du bas ramène au jeu.
+
+« Tout ouvrir », demandé par le propriétaire le même jour, fait sur le web et l'app, vérifié à 390 et 1 500 px et sur l'émulateur :
+
+- Dès que deux coffrets attendent, « Tout ouvrir » se tient à côté de « Ouvrir un coffret » en haut de la page Niveaux, et la fenêtre d'un coffret propose « Ouvrir les 9 coffrets » sous son bouton.
+- Les coffrets s'ouvrent l'un après l'autre, du plus bas au plus haut (« Ouverture… 3 / 9 »), puis une seule fenêtre montre tout ce qu'ils ont donné, les récompenses pareilles comptées ensemble : « 5 sachets bonus », « 2 sachets garnis », chaque titre, avatar ou cadre à part.
+- Si la réserve de sachets bonus se remplit en route, l'ouverture s'arrête et le dit : « Ta réserve de sachets bonus est pleine, donc 5 coffrets restent fermés. Ouvre un sachet bonus pour les récupérer. » Rien n'est perdu, les autres attendent.
+- Côté serveur rien ne change : chaque coffret passe par la même réclamation qu'avant, une à la fois, ce qui garde les vieilles versions de l'app compatibles.

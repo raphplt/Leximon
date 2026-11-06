@@ -3,6 +3,8 @@ import { toyIconInks, toyMatters, toy as toyValues } from "@leximon/tokens";
 import {
   levelDetail,
   nextChapterSign,
+  OPEN_ALL_SHORT,
+  openAllLabel,
   playerTitle,
   type Quarter,
   quarterAt,
@@ -38,7 +40,7 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 import Svg, { Circle, Path, Polygon } from "react-native-svg";
-import { openCoffret } from "@/levels/coffret";
+import { openAllCoffrets, openCoffret } from "@/levels/coffret";
 import { RewardToy } from "@/levels/reward-toy";
 import { MainAction } from "@/library/play-pieces";
 import { useNow, useShared, useSharedFailed } from "@/player/shared";
@@ -287,19 +289,34 @@ function Hero({
       )}
       {coffrets > 0 ? (
         // A smaller button than the game's main one leaves the road its room.
-        <Toy
-          matter="gold"
-          style={styles.heroAction}
-          bodyStyle={styles.heroActionBody}
-          accessibilityRole="button"
-          onPress={() => openCoffret()}
-        >
-          <ToyIcon name="chest" size={30} />
-          <Lettering size={fontSizes.body}>Ouvrir un coffret</Lettering>
-          <ToyBody matter="red" shape="round" style={styles.heroCount}>
-            <Lettering size={14}>{coffrets}</Lettering>
-          </ToyBody>
-        </Toy>
+        <View style={styles.heroActions}>
+          <Toy
+            matter="gold"
+            style={styles.heroAction}
+            bodyStyle={styles.heroActionBody}
+            accessibilityRole="button"
+            onPress={() => openCoffret()}
+          >
+            {/* Beside « Tout ouvrir », the chest gives the words their room. */}
+            {coffrets === 1 && <ToyIcon name="chest" size={28} />}
+            <Lettering size={fontSizes.label}>Ouvrir un coffret</Lettering>
+            <ToyBody matter="red" shape="round" style={styles.heroCount}>
+              <Lettering size={14}>{coffrets}</Lettering>
+            </ToyBody>
+          </Toy>
+          {coffrets > 1 && (
+            <Toy
+              matter="paper"
+              style={styles.heroAll}
+              bodyStyle={styles.heroAllBody}
+              accessibilityRole="button"
+              accessibilityLabel={openAllLabel(coffrets)}
+              onPress={openAllCoffrets}
+            >
+              <Text style={styles.heroAllText}>{OPEN_ALL_SHORT}</Text>
+            </Toy>
+          )}
+        </View>
       ) : (
         next !== undefined && (
           <View style={styles.coming}>
@@ -838,12 +855,20 @@ const styles = StyleSheet.create({
     borderBottomColor: toyMatters.green.bottom,
   },
   heroBarLabel: { alignItems: "center" },
-  heroAction: { height: 50 },
+  heroActions: { flexDirection: "row", gap: space.s4 },
+  heroAction: { flex: 1, height: 50 },
+  heroAll: { height: 50 },
+  heroAllBody: { alignItems: "center", justifyContent: "center", paddingHorizontal: space.s5 },
+  heroAllText: {
+    fontFamily: fonts.ui.extrabold,
+    fontSize: fontSizes.label,
+    color: toyValues.outline,
+  },
   heroActionBody: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    gap: space.s4,
+    gap: space.s3,
   },
   heroCount: {
     minWidth: 28,

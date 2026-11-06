@@ -22,6 +22,7 @@ export * from "./landing";
 export * from "./level";
 export * from "./mail";
 export * from "./missions";
+export * from "./open-all";
 export * from "./pack";
 export * from "./pins";
 export * from "./play";
