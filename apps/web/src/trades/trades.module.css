@@ -853,3 +853,70 @@
 .panel > .secondary {
   align-self: flex-start;
 }
+
+/* --- Wishes: who looks for my doubles, the words I look for --- */
+
+.wishTitle {
+  margin: 0;
+  font-family: var(--font-display), Georgia, serif;
+  font-size: var(--lx-size-subtitle);
+}
+
+.wishNote {
+  margin: var(--lx-s4) 0 0;
+  font-size: var(--lx-size-small);
+  color: var(--lx-color-page-ink-muted);
+}
+
+.seekers,
+.wishes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--lx-s6);
+  margin: var(--lx-s4) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.seekers {
+  flex-direction: column;
+}
+
+.seeker {
+  display: grid;
+  gap: var(--lx-s3);
+}
+
+.seekerHead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--lx-s4);
+}
+
+.seekerName {
+  flex: 1;
+  min-width: 160px;
+  font-weight: 700;
+}
+
+.wish {
+  display: grid;
+  justify-items: center;
+  gap: var(--lx-s2);
+}
+
+.wishRemove {
+  border: 0;
+  background: none;
+  font: inherit;
+  font-size: var(--lx-size-small);
+  font-weight: 700;
+  color: var(--lx-color-rubric);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.wishRemove:disabled {
+  opacity: 0.5;
+}

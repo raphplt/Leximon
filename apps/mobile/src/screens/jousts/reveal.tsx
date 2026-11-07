@@ -44,6 +44,8 @@ export interface RevealData {
   } | null;
   /** The last line: the words that trapped the other, or why the joust ended without them. */
   readonly closing: string | null;
+  /** The words of the run the player does not own, gone to their list of wishes. */
+  readonly wished: string | null;
 }
 
 const ROW_MS = 650;
@@ -265,6 +267,14 @@ export function Reveal({
               <Text style={styles.closingText}>{data.closing}</Text>
             </Animated.View>
           )}
+          {data.wished !== null && (
+            <Animated.View entering={FadeInUp.delay(560).duration(300)} style={styles.closing}>
+              <View style={styles.wishedIcon}>
+                <Icon name="star" size={18} color={ink.rubric} />
+              </View>
+              <Text style={styles.closingText}>{data.wished}</Text>
+            </Animated.View>
+          )}
           {children !== undefined && <View style={pieces.actions}>{children}</View>}
         </View>
       )}
@@ -355,6 +365,8 @@ const styles = StyleSheet.create({
   gain: { flexDirection: "row", alignItems: "center", gap: space.s4 },
   tournament: { alignSelf: "stretch", alignItems: "center" },
   closing: { flexDirection: "row", alignItems: "center", gap: space.s4, alignSelf: "stretch" },
+  // As wide as the joust's icon above, so both lines start at the same place.
+  wishedIcon: { width: 24, alignItems: "center" },
   closingText: {
     flex: 1,
     fontFamily: fonts.ui.semibold,

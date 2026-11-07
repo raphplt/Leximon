@@ -43,4 +43,5 @@ export * from "./shell";
 export * from "./staging";
 export * from "./trades";
 export * from "./welcome";
+export * from "./wishes";
 export * from "./word-size";

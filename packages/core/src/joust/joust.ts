@@ -298,3 +298,22 @@ export function winReward(
   if (!input.rewarded) return { xp: 0, boosters: 0 };
   return { xp: rules.xpWon, boosters: input.wonToday === 0 ? rules.firstWinBoosters : 0 };
 }
+
+// --- Traps and wishes ----------------------------------------------------------------------------
+
+/**
+ * The cards of a played run the answerer did not find: each one trapped them once. A run never
+ * played (the joust given up) traps no one.
+ */
+export function trappedCards(
+  questions: readonly { readonly cardId: string; readonly correct: boolean }[],
+  played: boolean,
+): string[] {
+  if (!played) return [];
+  return [...new Set(questions.filter((q) => !q.correct).map((q) => q.cardId))];
+}
+
+/** The words a player met in a joust without owning them: they go to their list of wishes. */
+export function wishedCards(asked: readonly string[], owned: ReadonlySet<string>): string[] {
+  return [...new Set(asked.filter((cardId) => !owned.has(cardId)))];
+}

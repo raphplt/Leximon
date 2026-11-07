@@ -53,6 +53,7 @@ describe("database", () => {
       "joust_groups",
       "joust_questions",
       "joust_ratings",
+      "joust_traps",
       "joust_week_rewards",
       "jousts",
       "mail_letters",
@@ -90,6 +91,7 @@ describe("database", () => {
       "users",
       "verifications",
       "waitlist_signups",
+      "wishes",
     ]);
   });
 });

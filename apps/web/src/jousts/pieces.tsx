@@ -2,7 +2,7 @@
 
 import type { CatalogCard } from "@leximon/contract";
 import { cssFill, rarityStyles } from "@leximon/tokens";
-import { FURET } from "@leximon/view-model";
+import { FURET, formatCount, trappedText } from "@leximon/view-model";
 import type { CSSProperties, ReactNode } from "react";
 import { Avatar } from "@/components/avatar";
 import { RarityIcon } from "@/components/rarity-icon";
@@ -16,11 +16,14 @@ export const rise = (index: number) => ({ "--rise": index }) as CSSProperties;
 export function MiniCard({
   card,
   cost,
+  trapped = 0,
   className,
   style,
 }: {
   readonly card: CatalogCard;
   readonly cost?: number | undefined;
+  /** Opponents the card trapped, shown as a seal under it. */
+  readonly trapped?: number;
   readonly className?: string | undefined;
   readonly style?: CSSProperties | undefined;
 }) {
@@ -40,6 +43,11 @@ export function MiniCard({
         {cost !== undefined && <span className={styles.miniCost}>{cost}</span>}
       </span>
       <span className={styles.miniWord}>{card.word}</span>
+      {trapped > 0 && (
+        <span className={styles.trapSeal} role="img" aria-label={trappedText(trapped)}>
+          {formatCount(trapped)}
+        </span>
+      )}
     </span>
   );
 }

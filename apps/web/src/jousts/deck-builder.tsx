@@ -40,6 +40,7 @@ export function DeckBuilder({
   const [saving, setSaving] = useState(false);
   const costs = new Map(deck.candidates.map((candidate) => [candidate.cardId, candidate.cost]));
   const costOf = (cardId: string) => costs.get(cardId) ?? 0;
+  const traps = new Map(deck.trapped.map((card) => [card.cardId, card.count]));
   const spent = chosen.reduce((total, id) => total + costOf(id), 0);
 
   const toggle = (cardId: string) => {
@@ -96,7 +97,12 @@ export function DeckBuilder({
                 onClick={() => toggle(cardId)}
                 aria-label={`Retirer ${card.word}`}
               >
-                <MiniCard card={card} cost={costOf(cardId)} className={styles.dropIn} />
+                <MiniCard
+                  card={card}
+                  cost={costOf(cardId)}
+                  trapped={traps.get(cardId) ?? 0}
+                  className={styles.dropIn}
+                />
               </button>
             );
           })}
@@ -150,7 +156,11 @@ export function DeckBuilder({
                     aria-label={`${card.word}, ${plural(candidate.cost, "point", "points")}`}
                     onClick={() => toggle(candidate.cardId)}
                   >
-                    <MiniCard card={card} cost={candidate.cost} />
+                    <MiniCard
+                      card={card}
+                      cost={candidate.cost}
+                      trapped={traps.get(candidate.cardId) ?? 0}
+                    />
                   </button>
                 </li>
               );

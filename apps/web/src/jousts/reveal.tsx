@@ -54,6 +54,8 @@ export interface RevealData {
   } | null;
   /** The last line: the words that trapped the other, or why the joust ended without them. */
   readonly closing: string | null;
+  /** The words of the run the player does not own, gone to their list of wishes. */
+  readonly wished: string | null;
 }
 
 const ROW_MS = 650;
@@ -239,6 +241,11 @@ export function Reveal({
           {data.closing !== null && (
             <p className={styles.trapped}>
               <ToyIcon name="jousts" size={22} /> {data.closing}
+            </p>
+          )}
+          {data.wished !== null && (
+            <p className={styles.trapped}>
+              <Icon name="star" size={18} /> {data.wished}
             </p>
           )}
           {children !== undefined && <div className={styles.runActions}>{children}</div>}

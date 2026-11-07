@@ -101,6 +101,27 @@
   color: var(--lx-color-paper-ink);
 }
 
+.mini {
+  position: relative;
+}
+
+.trapSeal {
+  position: absolute;
+  right: 4px;
+  bottom: 4px;
+  display: grid;
+  place-items: center;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 5px;
+  border: 2px solid var(--lx-toy-outline);
+  border-radius: 999px;
+  background: linear-gradient(180deg, var(--lx-toy-red-top), var(--lx-toy-red-bottom));
+  font-size: var(--lx-size-micro);
+  font-weight: 900;
+  color: var(--lx-color-ink-on-color);
+}
+
 .miniBand {
   display: flex;
   align-items: center;

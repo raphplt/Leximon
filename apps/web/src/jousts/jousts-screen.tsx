@@ -12,6 +12,7 @@ import {
   CLASSEMENT,
   COMPOSE_DECK,
   DECK_NOT_SAVED,
+  deckTrapsLine,
   EDIT_DECK_SHORT,
   GUIDE_AGAIN,
   JOUST,
@@ -182,6 +183,7 @@ function Home({
   const costs = new Map(deck.candidates.map((candidate) => [candidate.cardId, candidate.cost]));
   const spent = deck.cardIds.reduce((total, id) => total + (costs.get(id) ?? 0), 0);
   const ready = jousts.deckSaved && jousts.deckReady;
+  const trapsByCard = new Map(deck.trapped.map((card) => [card.cardId, card.count]));
 
   return (
     <main className={styles.page}>
@@ -273,12 +275,16 @@ function Home({
                 {EDIT_DECK_SHORT}
               </Toy>
             </header>
+            {deckTrapsLine(deck.trapped) !== null && (
+              <p className={styles.trapsText}>{deckTrapsLine(deck.trapped)}</p>
+            )}
             {catalog !== null && (
               <div className={styles.fan}>
                 {deck.cardIds.map((cardId, index) => (
                   <MiniCard
                     key={cardId}
                     card={catalogCard(catalog, cardId)}
+                    trapped={trapsByCard.get(cardId) ?? 0}
                     className={styles.fanCard}
                     style={{ "--i": index - (deck.cardIds.length - 1) / 2 } as CSSProperties}
                   />

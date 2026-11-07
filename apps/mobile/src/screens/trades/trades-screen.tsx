@@ -17,6 +17,7 @@ import {
   tradeLevelLabel,
   tradeRulesNote,
   tradeSides,
+  WISHES_TAB,
   wordList,
 } from "@leximon/view-model";
 import { randomUUID } from "expo-crypto";
@@ -51,8 +52,9 @@ import { Lettering, toyFace } from "@/ui/toy";
 import { CardRow, catalogCard } from "./card-row";
 import { Counterpart } from "./counterpart";
 import { ProposeTrade } from "./propose-trade";
+import { WishesPanel } from "./wishes-panel";
 
-type Tab = TradeBox | "propose";
+type Tab = TradeBox | "propose" | "wishes";
 
 interface Inbox {
   readonly trades: readonly Trade[];
@@ -70,8 +72,9 @@ const DONE_MESSAGES: Readonly<Record<Action, string>> = {
 const OFFER_THUMB = 96;
 
 /**
- * Échanges: offers received and sent, their history, and a new offer. `given` and `partner`
- * open a new offer at once: a card from its sheet, a player from their profile.
+ * Échanges: offers received and sent, their history, a new offer, and the list of wishes, with
+ * the players who look for the player's doubles. `given` and `partner` open a new offer at once:
+ * a card from its sheet, a player from their profile.
  */
 export function TradesScreen({
   given,
@@ -246,7 +249,9 @@ export function TradesScreen({
             { value: "incoming", label: boxTabLabel("incoming", waiting.incoming) },
             { value: "outgoing", label: boxTabLabel("outgoing", waiting.outgoing) },
             { value: "propose", label: "Nouvelle offre" },
+            { value: "wishes", label: WISHES_TAB },
           ]}
+          wrap
           value={tab}
           onChange={selectTab}
         />
@@ -274,6 +279,16 @@ export function TradesScreen({
             onCancel={(trade) => void resolve("outgoing", trade, "cancel")}
             onLoadMore={() => void loadMore("outgoing")}
             onPropose={() => selectTab("propose")}
+          />
+        )}
+        {ready && tab === "wishes" && (
+          <WishesPanel
+            catalog={catalog}
+            onPropose={(code) => {
+              setPresetPartner(code);
+              selectTab("propose");
+              scroll.current?.scrollTo({ y: 0, animated: false });
+            }}
           />
         )}
         {/* Hidden rather than unmounted: an offer being prepared survives a look at the lists. */}

@@ -12,6 +12,7 @@ import {
   runSize,
   trappedLine,
   trappingWords,
+  wishedLine,
 } from "@leximon/view-model";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -210,6 +211,7 @@ function revealOf(
     closing: summary.forfeit
       ? forfeitLine(summary.launched, summary.opponent)
       : trappedLine(trappingWords(theirs ?? [], word), summary.opponent),
+    wished: wishedLine(result?.wished.length ?? 0),
   };
 }
 

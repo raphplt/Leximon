@@ -15,7 +15,9 @@ import {
   playedXp,
   runOver,
   runScore,
+  trappedCards,
   winReward,
+  wishedCards,
 } from "./joust";
 
 const rules = joustRulesAt(JOUST_SCHEDULE, Date.UTC(2026, 10, 10));
@@ -199,5 +201,23 @@ describe("rewards", () => {
     expect(winReward(rules, { rewarded: true, wonToday: 0 })).toEqual({ xp: 20, boosters: 1 });
     expect(winReward(rules, { rewarded: true, wonToday: 1 })).toEqual({ xp: 20, boosters: 0 });
     expect(winReward(rules, { rewarded: false, wonToday: 0 })).toEqual({ xp: 0, boosters: 0 });
+  });
+});
+
+describe("traps and wishes", () => {
+  it("count the cards a played run did not find, once each", () => {
+    const run = [
+      { cardId: "a", correct: true },
+      { cardId: "b", correct: false },
+      { cardId: "c", correct: false },
+      { cardId: "b", correct: false },
+    ];
+    expect(trappedCards(run, true)).toEqual(["b", "c"]);
+    expect(trappedCards(run, false)).toEqual([]);
+  });
+
+  it("wish only the words the player does not own", () => {
+    expect(wishedCards(["a", "b", "c", "a"], new Set(["b"]))).toEqual(["a", "c"]);
+    expect(wishedCards(["b"], new Set(["b"]))).toEqual([]);
   });
 });

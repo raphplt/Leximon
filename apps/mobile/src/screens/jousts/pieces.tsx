@@ -1,6 +1,6 @@
 import type { CatalogCard } from "@leximon/contract";
 import { rarityStyles, solidColor, toyMatters, toy as toyValues } from "@leximon/tokens";
-import { FURET } from "@leximon/view-model";
+import { FURET, formatCount, trappedText } from "@leximon/view-model";
 import { type ReactNode, useEffect } from "react";
 import { type StyleProp, StyleSheet, Text, View, type ViewStyle } from "react-native";
 import Animated, {
@@ -13,7 +13,7 @@ import Animated, {
   withSequence,
   withTiming,
 } from "react-native-reanimated";
-import { fontSizes, fonts, paperColors, radii, space } from "@/theme";
+import { colors, fontSizes, fonts, paperColors, radii, space } from "@/theme";
 import { Avatar } from "@/ui/avatar";
 import { RarityIcon } from "@/ui/rarity-icon";
 import { ToyBody, ToyIcon } from "@/ui/toy";
@@ -39,11 +39,14 @@ function wordSize(word: string, width: number): number {
 export function MiniCard({
   card,
   cost,
+  trapped = 0,
   width = 76,
   style,
 }: {
   readonly card: CatalogCard;
   readonly cost?: number | undefined;
+  /** Opponents the card trapped, shown as a seal on its corner. */
+  readonly trapped?: number;
   readonly width?: number;
   readonly style?: StyleProp<ViewStyle>;
 }) {
@@ -64,6 +67,16 @@ export function MiniCard({
       >
         {card.word}
       </Text>
+      {trapped > 0 && (
+        <View
+          style={pieces.trapSeal}
+          accessible
+          accessibilityRole="image"
+          accessibilityLabel={trappedText(trapped)}
+        >
+          <Text style={pieces.trapCount}>{formatCount(trapped)}</Text>
+        </View>
+      )}
     </View>
   );
 }
@@ -194,6 +207,26 @@ export const pieces = StyleSheet.create({
     justifyContent: "space-between",
     paddingHorizontal: 5,
     height: 16,
+  },
+  trapSeal: {
+    position: "absolute",
+    right: 3,
+    bottom: 3,
+    minWidth: 20,
+    height: 20,
+    paddingHorizontal: 4,
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: radii.pill,
+    borderWidth: 2,
+    borderColor: toyValues.outline,
+    backgroundColor: toyMatters.red.top,
+  },
+  trapCount: {
+    fontFamily: fonts.ui.extrabold,
+    fontSize: fontSizes.nano,
+    color: colors.inkOnColor,
+    includeFontPadding: false,
   },
   miniCost: { fontFamily: fonts.ui.extrabold, fontSize: fontSizes.nano },
   miniWord: {

@@ -5,6 +5,7 @@ import { friendRoutes } from "./friends";
 import { gameRoutes } from "./game";
 import { type ApiClientOptions, createHttp } from "./http";
 import { joustRoutes } from "./jousts";
+import { wishRoutes } from "./wishes";
 
 /**
  * Client of the game API, shared by the web and the mobile app. Every response is validated
@@ -18,6 +19,7 @@ export function createApiClient(options: ApiClientOptions) {
     ...friendRoutes(http),
     ...clanRoutes(http),
     ...joustRoutes(http),
+    ...wishRoutes(http),
   };
 }
 

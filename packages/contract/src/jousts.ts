@@ -30,6 +30,8 @@ export const joustDeckResponseSchema = z.object({
   size: z.int().positive(),
   /** The fewest cards a deck holds: the cards drawn for one joust. */
   min: z.int().positive(),
+  /** Opponents each card trapped, for the cards that trapped at least one. */
+  trapped: z.array(z.object({ cardId: slugSchema, count: z.int().positive() })),
 });
 export type JoustDeckResponse = z.infer<typeof joustDeckResponseSchema>;
 
@@ -210,6 +212,8 @@ export const joustViewSchema = z.object({
       theirs: z.array(joustAnswerSchema),
       xp: z.int().nonnegative(),
       boosters: z.int().nonnegative(),
+      /** The words of the player's run they do not own: they went to their list of wishes. */
+      wished: z.array(slugSchema),
       /**
        * A ranked joust: the tournament points it gave the player, and where they stand now in
        * the group of the week it ended in (`group` is `null` once that week is over).

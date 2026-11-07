@@ -73,6 +73,7 @@ import { ensurePlayer, tradeableResponse } from "../trades/players";
 import { blockResultResponse } from "../trades/routes";
 
 import { claimWelcomeDay, readWelcomeWeek } from "../welcome/welcome";
+import { wishRoutes } from "../wishes/routes";
 
 const { boosterWallets, cards, userCards, userMastery } = schema;
 
@@ -97,6 +98,7 @@ export function meRoutes() {
   routes.route("/", friendRoutes());
   routes.route("/", ecuRoutes());
   routes.route("/", missionRoutes());
+  routes.route("/", wishRoutes());
 
   routes.get("/wallet", async (c) => {
     // Asked for on every screen: the player's presence for the clan.

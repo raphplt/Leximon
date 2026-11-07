@@ -92,6 +92,9 @@ export const USER_REFERENCES = {
   "joust_ratings.user_id": { transfer: "kept", abandon: "kept" },
   "joust_group_members.user_id": { transfer: "kept", abandon: "kept" },
   "joust_week_rewards.user_id": { transfer: "kept", abandon: "kept" },
+  "joust_traps.user_id": { transfer: "kept", abandon: "kept" },
+  // Wishes come from jousts, which need an account: a guest has none (kept to be safe).
+  "wishes.user_id": { transfer: "kept", abandon: "kept" },
   "review_logs.user_id": { transfer: "moved", abandon: "kept" },
   "practice_answers.user_id": { transfer: "moved", abandon: "kept" },
   "riddle_plays.user_id": { transfer: "moved", abandon: "kept" },

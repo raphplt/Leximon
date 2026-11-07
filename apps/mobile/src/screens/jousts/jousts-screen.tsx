@@ -12,6 +12,7 @@ import {
   CLASSEMENT,
   COMPOSE_DECK,
   DECK_NOT_SAVED,
+  deckTrapsLine,
   EDIT_DECK_SHORT,
   GUIDE_AGAIN,
   JOUST,
@@ -198,6 +199,8 @@ function Home({
   const costs = new Map(deck.candidates.map((candidate) => [candidate.cardId, candidate.cost]));
   const spent = deck.cardIds.reduce((total, id) => total + (costs.get(id) ?? 0), 0);
   const ready = jousts.deckSaved && jousts.deckReady;
+  const trapsByCard = new Map(deck.trapped.map((card) => [card.cardId, card.count]));
+  const trapsLine = deckTrapsLine(deck.trapped);
   const header = standingHeader(jousts.standing, gameDayOf(now).key);
   // Once the ranked jousts of the day are played, the free joust takes the main place.
   const ranked = jousts.standing.rankedLeft > 0;
@@ -321,6 +324,7 @@ function Home({
                   <Lettering size={fontSizes.small}>{EDIT_DECK_SHORT}</Lettering>
                 </Toy>
               </View>
+              {trapsLine !== null && <Text style={pieces.line}>{trapsLine}</Text>}
               {catalog !== null && (
                 <Pressable
                   style={styles.fan}
@@ -344,7 +348,11 @@ function Home({
                           },
                         ]}
                       >
-                        <MiniCard card={catalogCard(catalog, cardId)} width={FAN_CARD} />
+                        <MiniCard
+                          card={catalogCard(catalog, cardId)}
+                          trapped={trapsByCard.get(cardId) ?? 0}
+                          width={FAN_CARD}
+                        />
                       </View>
                     );
                   })}

@@ -216,3 +216,22 @@ export const joustWeekRewards = pgTable(
   },
   (table) => [primaryKey({ columns: [table.userId, table.week] })],
 );
+
+/** How many opponents each card of a player's deck trapped: one more for each word not found. */
+export const joustTraps = pgTable(
+  "joust_traps",
+  {
+    userId: text()
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    cardId: text()
+      .notNull()
+      .references(() => cards.id),
+    trapped: integer().notNull().default(0),
+    updatedAt: timestamp({ withTimezone: true }).notNull(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.userId, table.cardId] }),
+    check("joust_traps_trapped_check", sql`${table.trapped} >= 0`),
+  ],
+);

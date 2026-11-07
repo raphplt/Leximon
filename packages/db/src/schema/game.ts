@@ -373,6 +373,32 @@ export const userCards = pgTable(
 );
 
 /**
+ * Words the player met without owning them, which they would like to get: read by the players
+ * who hold them in double, only those of their doubles. `source` says where the word was met.
+ * A word owned since is no longer shown; the player may also take it off.
+ */
+export const wishes = pgTable(
+  "wishes",
+  {
+    userId: text()
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    cardId: text()
+      .notNull()
+      .references(() => cards.id),
+    source: text().notNull(),
+    seenAt: timestamp({ withTimezone: true }).notNull(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.userId, table.cardId] }),
+    // The players who wish a card, for its holders.
+    index("wishes_card_idx").on(table.cardId, table.seenAt.desc()),
+    // The player's own list, most recent first.
+    index("wishes_user_idx").on(table.userId, table.seenAt.desc()),
+  ],
+);
+
+/**
  * Rarities of a collection whose every drawable card the player owned at least once. One row per
  * collection and rarity, never deleted when copies leave: its XP is earned once.
  */

@@ -278,6 +278,7 @@ function Training({
         outcome,
         gains: null,
         closing: trainingClosing(outcome),
+        wished: null,
       }}
       kicker={TRAINING_KICKER}
       playing

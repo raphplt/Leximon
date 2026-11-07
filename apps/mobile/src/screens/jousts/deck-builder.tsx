@@ -55,6 +55,7 @@ export function DeckBuilder({
     rowWidth === 0 ? 56 : Math.floor((rowWidth - (SLOTS_PER_ROW - 1) * SLOT_GAP) / SLOTS_PER_ROW);
   const costs = new Map(deck.candidates.map((candidate) => [candidate.cardId, candidate.cost]));
   const costOf = (cardId: string) => costs.get(cardId) ?? 0;
+  const traps = new Map(deck.trapped.map((card) => [card.cardId, card.count]));
   const spent = chosen.reduce((total, id) => total + costOf(id), 0);
 
   const toggle = (cardId: string) => {
@@ -112,7 +113,12 @@ export function DeckBuilder({
               accessibilityLabel={`Retirer ${card.word}`}
             >
               <Animated.View entering={dropIn}>
-                <MiniCard card={card} cost={costOf(cardId)} width={slotWidth} />
+                <MiniCard
+                  card={card}
+                  cost={costOf(cardId)}
+                  trapped={traps.get(cardId) ?? 0}
+                  width={slotWidth}
+                />
               </Animated.View>
             </Pressable>
           );
@@ -170,7 +176,11 @@ export function DeckBuilder({
                 accessibilityLabel={`${card.word}, ${plural(candidate.cost, "point", "points")}`}
                 onPress={() => toggle(candidate.cardId)}
               >
-                <MiniCard card={card} cost={candidate.cost} />
+                <MiniCard
+                  card={card}
+                  cost={candidate.cost}
+                  trapped={traps.get(candidate.cardId) ?? 0}
+                />
               </Pressable>
             );
           })}

@@ -1,9 +1,12 @@
 import {
   boardResponseSchema,
   IDEMPOTENCY_KEY_HEADER,
+  joustDeckResponseSchema,
   joustsResponseSchema,
   joustViewSchema,
   leagueResponseSchema,
+  wishesResponseSchema,
+  wishSeekersResponseSchema,
 } from "@leximon/contract";
 import {
   featureLevels,
@@ -969,5 +972,136 @@ describe("leagues", () => {
       await (await app.request("/jousts", { headers: headers(b) }, env)).json(),
     );
     expect(home.standing.rankedLeft).toBe(0);
+  });
+});
+
+describe("traps and wishes", () => {
+  async function trapsOf(who: Jouster) {
+    const rows = await db
+      .select({ cardId: schema.joustTraps.cardId, trapped: schema.joustTraps.trapped })
+      .from(schema.joustTraps)
+      .where(eq(schema.joustTraps.userId, who.userId));
+    return new Map(rows.map((row) => [row.cardId, row.trapped]));
+  }
+
+  async function askedTo(joustId: string, who: Jouster) {
+    const rows = await db
+      .select({ cardId: joustQuestions.cardId, position: joustQuestions.position })
+      .from(joustQuestions)
+      .where(and(eq(joustQuestions.joustId, joustId), eq(joustQuestions.answererId, who.userId)))
+      .orderBy(joustQuestions.position);
+    return rows.map((row) => row.cardId);
+  }
+
+  async function get<T>(who: Jouster, path: string, parse: (value: unknown) => T): Promise<T> {
+    return parse(await (await app.request(path, { headers: headers(who) }, env)).json());
+  }
+
+  it("count each card's traps and wish the words of the run not owned", async () => {
+    const a = await jouster();
+    const b = await jouster();
+    await befriend(a, b);
+    const joustId = await launched(a, b);
+    const asked = await askedTo(joustId, b);
+    const unknown = asked[2] ?? "";
+    // `b` lost that card since the launch: it is a word they do not own.
+    await db
+      .update(schema.userCards)
+      .set({ quantity: 0 })
+      .where(and(eq(schema.userCards.userId, b.userId), eq(schema.userCards.cardId, unknown)));
+    const aDone = await playRun(a, joustId, Date.now());
+    await settleJoust(db, joustId, aDone);
+    const bDone = await playRun(b, joustId, aDone + 1_000, [0, 1]);
+    await settleJoust(db, joustId, bDone);
+
+    expect(await trapsOf(a)).toEqual(
+      new Map([
+        [asked[0], 1],
+        [asked[1], 1],
+      ]),
+    );
+    expect((await trapsOf(b)).size).toBe(0);
+    const deck = await get(a, "/jousts/deck", (v) => joustDeckResponseSchema.parse(v));
+    expect(deck.trapped.sort((x, y) => x.cardId.localeCompare(y.cardId))).toEqual(
+      [asked[0], asked[1]].sort().map((cardId) => ({ cardId, count: 1 })),
+    );
+
+    const view = await get(b, `/jousts/${joustId}`, (v) => joustViewSchema.parse(v));
+    expect(view.result?.wished).toEqual([unknown]);
+    const wishes = await get(b, "/me/wishes", (v) => wishesResponseSchema.parse(v));
+    expect(wishes.wishes.map((wish) => [wish.cardId, wish.source])).toEqual([[unknown, "joust"]]);
+    expect((await get(a, "/me/wishes", (v) => wishesResponseSchema.parse(v))).wishes).toEqual([]);
+
+    const removed = await app.request(
+      `/me/wishes/${unknown}`,
+      { method: "DELETE", headers: headers(b) },
+      env,
+    );
+    expect(removed.status).toBe(204);
+    expect((await get(b, "/me/wishes", (v) => wishesResponseSchema.parse(v))).wishes).toEqual([]);
+  });
+
+  it("count the traps of two jousts ending at the same time", async () => {
+    const a = await jouster();
+    const b = await jouster();
+    const c = await jouster();
+    await befriend(a, b);
+    await befriend(a, c);
+    const first = await launched(a, b);
+    const second = await launched(a, c);
+    const start = Date.now();
+    const aFirst = await playRun(a, first, start);
+    const aSecond = await playRun(a, second, aFirst);
+    await settleJoust(db, first, aFirst);
+    await settleJoust(db, second, aSecond);
+    const bDone = await playRun(b, first, aSecond + 1_000, [0, 1, 2, 3, 4]);
+    const cDone = await playRun(c, second, aSecond + 1_000, [0, 1, 2, 3, 4]);
+    const at = Math.max(bDone, cDone);
+    await Promise.all([settleJoust(db, first, at), settleJoust(db, second, at)]);
+    const traps = await trapsOf(a);
+    expect([...traps.values()].reduce((sum, count) => sum + count, 0)).toBe(10);
+    const expected = new Map<string, number>();
+    for (const cardId of [...(await askedTo(first, b)), ...(await askedTo(second, c))]) {
+      expected.set(cardId, (expected.get(cardId) ?? 0) + 1);
+    }
+    expect(traps).toEqual(expected);
+  });
+
+  it("show a player's doubles only to those who wish them, and only those words", async () => {
+    const holder = await jouster();
+    const seeker = await jouster();
+    const blocked = await jouster();
+    const double = `${STARTER_COLLECTION}-${RARITIES[0]}-1`;
+    const notHeld = `${STARTER_COLLECTION}-${RARITIES[0]}-2`;
+    await setOwnedCards(db, holder.userId, [{ cardId: double, quantity: 3 }]);
+    for (const who of [seeker, blocked]) {
+      await setOwnedCards(db, who.userId, [
+        { cardId: double, quantity: 0 },
+        { cardId: notHeld, quantity: 0 },
+      ]);
+      await db.insert(schema.wishes).values([
+        { userId: who.userId, cardId: double, source: "joust", seenAt: new Date() },
+        { userId: who.userId, cardId: notHeld, source: "joust", seenAt: new Date() },
+      ]);
+    }
+    await db.insert(schema.userBlocks).values({
+      blockerId: blocked.userId,
+      blockedId: holder.userId,
+      createdAt: new Date(),
+    });
+    const seekers = await get(holder, "/me/wish-seekers", (v) =>
+      wishSeekersResponseSchema.parse(v),
+    );
+    const mine = seekers.players.filter((entry) =>
+      [seeker.code, blocked.code].includes(entry.player.code),
+    );
+    expect(mine).toEqual([
+      { player: expect.objectContaining({ code: seeker.code }), cardIds: [double] },
+    ]);
+
+    // Once the seeker owns the word, they no longer look for it.
+    await setOwnedCards(db, seeker.userId, [{ cardId: double, quantity: 1 }]);
+    const after = await get(holder, "/me/wish-seekers", (v) => wishSeekersResponseSchema.parse(v));
+    expect(after.players.some((entry) => entry.player.code === seeker.code)).toBe(false);
   });
 });

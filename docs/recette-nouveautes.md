@@ -3,7 +3,7 @@
 Ce qui a été construit du 4 au 6 novembre 2026, en deux parties :
 
 - **Finitions hors du jeu** (FIN-01 à FIN-13) : le [cahier des finitions](cahiers-des-charges/finitions-hors-du-jeu.md) (accueil, icônes, images de partage, e-mails, cadres, emblèmes, fiches des stores), puis trois corrections du 5 novembre (écran Jouer sur petit téléphone, bilan du sachet, réglages de la révision). La plupart de ces tests renvoient à un test de la [recette du web](recette-web.md) ou de la [recette du mobile](recette-mobile.md) et disent ce qu'il faut y regarder ; les attendus complets restent dans le test cité.
-- **Joutes, lots 1 à 3 bis** (JTE-01 à JTE-33 sur le web, MJT-01 à MJT-05 sur Android, PROD-01 à PROD-03 en production) : ce qu'on vérifie avant d'ouvrir les joutes aux testeurs, puis en production. Les règles sont en P91 ([regles-du-jeu.md](regles-du-jeu.md)), le cahier dans [joutes.md](cahiers-des-charges/joutes.md). Le lot 1 est construit depuis le 2026-11-05, web et mobile.
+- **Joutes, lots 1 à 4** (JTE-01 à JTE-37 sur le web, MJT-01 à MJT-06 sur Android, PROD-01 à PROD-03 en production) : ce qu'on vérifie avant d'ouvrir les joutes aux testeurs, puis en production. Les règles sont en P91 ([regles-du-jeu.md](regles-du-jeu.md)), le cahier dans [joutes.md](cahiers-des-charges/joutes.md). Le lot 1 est construit depuis le 2026-11-05, web et mobile.
 
 Pour chaque test, note dans **Retour** : « OK », ou ce que tu as vu à la place. Une capture d'écran aide.
 
@@ -360,6 +360,32 @@ Lot 3 bis, construit le 2026-11-07 : les tournois de la semaine remplacent les l
 
 ---
 
+## Joutes · 4c. Pièges et liste de souhaits
+
+Lot 4, construit le 2026-11-07. Les règles sont en P91 et P77. Il faut deux comptes A et B, amis, ou A contre les bots.
+
+### JTE-34 · Le compteur de pièges
+- **Faire :** A défie B. B se trompe sur deux mots. Puis A ouvre `/joutes` et « Modifier » le deck.
+- **Attendu :** sous « Ton deck », « Tes cartes ont piégé 2 adversaires. ». Les deux cartes qui ont piégé B portent un petit sceau rouge « 1 » (lu « 1 adversaire piégé » au lecteur d'écran), sur l'accueil comme dans l'éditeur. Une autre joute où B rate encore l'un des deux mots le fait passer à « 2 ». Une joute que B laisse sans réponse ne piège rien.
+- **Retour :**
+
+### JTE-35 · Les mots qui vont dans la liste
+- **Faire :** jouer une joute où l'adversaire a dans son deck des mots que tu n'as pas (un compte récent contre un compte plus avancé). Regarder la révélation.
+- **Attendu :** sous la ligne des pièges, « Les N mots que tu n'as pas vont dans ta liste de souhaits. » (« Le mot que tu n'as pas va… » pour un seul). Rien quand tu avais tous les mots, ni pendant l'entraînement contre Maître Furet.
+- **Retour :**
+
+### JTE-36 · Les mots que tu cherches
+- **Faire :** ouvrir les échanges, onglet « Souhaits ». Toucher un mot de « Les mots que tu cherches », puis « Retirer » sur un autre. Obtenir un des mots (sachet ou échange) et revenir.
+- **Attendu :** les mots vus en joute, du plus récent au plus ancien, chacun ouvre sa fiche. « Retirer » le fait partir de la liste, et il ne revient qu'à une prochaine joute où tu le croises. Un mot obtenu n'y est plus. Liste vide : « Ta liste est vide. Les mots que tu croises en joute sans les avoir y arrivent. ».
+- **Retour :**
+
+### JTE-37 · Ils cherchent tes doubles
+- **Faire :** B a un mot en double que A cherche (JTE-35). B ouvre l'onglet « Souhaits » de ses échanges, puis « Proposer un échange ».
+- **Attendu :** « Ils cherchent tes doubles » montre A, « A cherche un de tes doubles. », et seulement les mots que B peut lui échanger tout de suite, jamais le reste de la liste de A. « Proposer un échange » ouvre « Nouvelle offre » avec A déjà choisi. Si A bloque B, ou B bloque A, A n'y est plus. Personne : « Personne ne cherche tes doubles pour l'instant… ».
+- **Retour :**
+
+---
+
 ## Joutes · 5. Les limites
 
 ### JTE-17 · Cinq joutes en attente
@@ -425,6 +451,11 @@ Le mobile se prépare comme dans [recette-mobile.md](recette-mobile.md). Les com
 ### MJT-05 · Tournoi et classement
 - **Faire :** sur le téléphone, ouvrir les joutes, puis « Classement ». Jouer une joute classée contre un bot et la gagner, puis une joute libre. Avec les raccourcis, finir une semaine (JTE-28).
 - **Attendu :** comme JTE-23 à JTE-32 : l'en-tête de ligue en haut des joutes, « Joute libre » sous le bouton « Jouter », le point rouge quand une récompense attend, « Réclamer », « Mon tournoi » avec ses automates et ses zones teintées, l'échelle des ligues, les onglets des classements. À la révélation, l'écu, « +3 points » et ta place dans le groupe.
+- **Retour :**
+
+### MJT-06 · Pièges et souhaits
+- **Faire :** sur le téléphone, refaire JTE-34 à JTE-37 : le deck après une joute, la révélation, puis l'onglet « Souhaits » des échanges.
+- **Attendu :** comme sur le web. Les sceaux restent lisibles sur les petites cartes du deck ; les cartes de la liste ouvrent leur fiche ; « Proposer un échange » ouvre la nouvelle offre avec le joueur choisi.
 - **Retour :**
 
 ---

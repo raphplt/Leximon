@@ -13,6 +13,7 @@ export function Button({
   secondary = false,
   danger = false,
   small = false,
+  accessibilityLabel = label,
 }: {
   readonly label: string;
   readonly onPress: () => void;
@@ -20,6 +21,8 @@ export function Button({
   readonly secondary?: boolean;
   readonly danger?: boolean;
   readonly small?: boolean;
+  /** When the label alone does not say what the button acts on. */
+  readonly accessibilityLabel?: string;
 }) {
   return (
     <Toy
@@ -27,7 +30,7 @@ export function Button({
       style={small ? styles.smallToy : styles.toy}
       bodyStyle={small ? styles.smallBody : styles.toyBody}
       accessibilityRole="button"
-      accessibilityLabel={label}
+      accessibilityLabel={accessibilityLabel}
       accessibilityState={{ disabled }}
       disabled={disabled}
       onPress={onPress}

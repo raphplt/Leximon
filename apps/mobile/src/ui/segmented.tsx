@@ -9,16 +9,19 @@ export function Segmented<T extends string>({
   value,
   onChange,
   light = false,
+  wrap = false,
 }: {
   readonly options: readonly { readonly value: T; readonly label: string }[];
   readonly value: T;
   readonly onChange: (next: T) => void;
   /** A smaller row without its pill, for a navigation above another one. */
   readonly light?: boolean;
+  /** Tabs too many to hold on one line go on a second rather than lose their words. */
+  readonly wrap?: boolean;
 }) {
   return (
     <View
-      style={[styles.row, light && styles.rowLight, styles.rowToys]}
+      style={[styles.row, light && styles.rowLight, styles.rowToys, wrap && styles.rowWrap]}
       accessibilityRole="tablist"
     >
       {options.map((option) => {
@@ -80,6 +83,7 @@ const styles = StyleSheet.create({
   labelLight: { fontSize: fontSizes.label },
   labelOnLight: { color: colors.rubric },
   rowToys: { padding: 0, gap: space.s4, backgroundColor: "transparent" },
+  rowWrap: { flexWrap: "wrap" },
   // Each tab as wide as its words, the room left shared out.
   toy: {
     flex: 0,

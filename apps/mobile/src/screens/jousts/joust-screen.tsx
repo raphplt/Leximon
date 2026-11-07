@@ -11,6 +11,7 @@ import {
   runSize,
   trappedLine,
   trappingWords,
+  wishedLine,
 } from "@leximon/view-model";
 import { router } from "expo-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -194,6 +195,7 @@ function revealOf(
     closing: summary.forfeit
       ? forfeitLine(summary.launched, summary.opponent)
       : trappedLine(trappingWords(theirs ?? [], word), summary.opponent),
+    wished: wishedLine(result?.wished.length ?? 0),
   };
 }
 

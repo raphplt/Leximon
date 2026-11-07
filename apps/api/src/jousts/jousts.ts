@@ -46,8 +46,10 @@ import {
   runOver,
   runScore,
   TRADE_SCHEDULE,
+  trappedCards,
   UNLOCK_SCHEDULE,
   winReward,
+  wishedCards,
   xpToReach,
 } from "@leximon/core";
 import { type Database, schema } from "@leximon/db";
@@ -57,9 +59,19 @@ import { notLocked } from "../friends/friends";
 import { lockWallet } from "../levels/rewards";
 import { readBadges } from "../profile/profile";
 import { addXpToPlayers, readXp } from "../progress/progress";
+import { ownedAmong, wishJoustWords } from "../wishes/wishes";
 import { applyPoints, readRankedLeft, readStanding, tournamentView } from "./leagues";
 
-const { boosterWallets, cards, joustDecks, joustQuestions, joustRatings, jousts, players } = schema;
+const {
+  boosterWallets,
+  cards,
+  joustDecks,
+  joustQuestions,
+  joustRatings,
+  joustTraps,
+  jousts,
+  players,
+} = schema;
 
 type Transaction = Parameters<Parameters<Database["transaction"]>[0]>[0];
 type Reader = Pick<Database, "select" | "execute">;
@@ -201,8 +213,13 @@ export async function readDeck(
   now: EpochMs,
 ): Promise<JoustDeckResponse> {
   const rules = rulesAt(now);
-  const candidates = await readCandidates(db, userId, catalog);
-  const saved = await readSavedDeck(db, userId);
+  const [candidates, saved, traps] = await Promise.all([
+    readCandidates(db, userId, catalog),
+    readSavedDeck(db, userId),
+    db.execute<{ card_id: string; trapped: number }>(
+      sql`select card_id, trapped from joust_traps where user_id = ${userId} and trapped > 0`,
+    ),
+  ]);
   return {
     cardIds: [...deckOf(rules, saved, candidates)],
     saved: saved !== null,
@@ -212,6 +229,7 @@ export async function readDeck(
     budget: rules.deckBudget,
     size: rules.deckSize,
     min: rules.drawn,
+    trapped: traps.rows.map((row) => ({ cardId: row.card_id, count: row.trapped })),
   };
 }
 
@@ -734,6 +752,25 @@ async function lockRatings(
   );
 }
 
+const found = (q: QuestionRow) => ({ cardId: q.cardId, correct: q.correct === true });
+
+/** One more trapped opponent for each card; an upsert, so jousts ending at once all count. */
+async function countTraps(
+  tx: Transaction,
+  userId: string,
+  cardIds: readonly string[],
+  now: EpochMs,
+): Promise<void> {
+  if (cardIds.length === 0) return;
+  await tx
+    .insert(joustTraps)
+    .values(cardIds.map((cardId) => ({ userId, cardId, trapped: 1, updatedAt: new Date(now) })))
+    .onConflictDoUpdate({
+      target: [joustTraps.userId, joustTraps.cardId],
+      set: { trapped: sql`${joustTraps.trapped} + 1`, updatedAt: new Date(now) },
+    });
+}
+
 export interface SettleReport {
   /** Something closed: letters may be due. */
   readonly changed: boolean;
@@ -767,8 +804,10 @@ export async function settleJoust(
     const joust = await lockJoust(tx, joustId);
     if (joust === undefined || joust.endedAt !== null) return NOTHING_SETTLED;
     const { challengerId, opponentId } = joust;
-    const challengerRun = (await runQuestions(tx, joustId, challengerId)).map(toRunAnswer);
-    const opponentRun = (await runQuestions(tx, joustId, opponentId)).map(toRunAnswer);
+    const challengerQuestions = await runQuestions(tx, joustId, challengerId);
+    const opponentQuestions = await runQuestions(tx, joustId, opponentId);
+    const challengerRun = challengerQuestions.map(toRunAnswer);
+    const opponentRun = opponentQuestions.map(toRunAnswer);
 
     const changes: Partial<typeof jousts.$inferInsert> = {};
     const gains = new Map<string, number>([
@@ -834,6 +873,28 @@ export async function settleJoust(
       const outcome = forfeit ? "challenger" : joustOutcome(challengerScore, opponentScore);
       changes.endedAt = new Date(now);
       changes.outcome = outcome;
+      const opponentPlayed = !(forfeit || joust.forfeit);
+      await countTraps(
+        tx,
+        challengerId,
+        trappedCards(opponentQuestions.map(found), opponentPlayed),
+        now,
+      );
+      await countTraps(tx, opponentId, trappedCards(challengerQuestions.map(found), true), now);
+      await wishJoustWords(
+        tx,
+        challengerId,
+        challengerQuestions.map((q) => q.cardId),
+        now,
+      );
+      if (opponentPlayed) {
+        await wishJoustWords(
+          tx,
+          opponentId,
+          opponentQuestions.map((q) => q.cardId),
+          now,
+        );
+      }
       if (outcome !== "draw") {
         const winner = outcome === "challenger" ? challengerId : opponentId;
         const rewarded =
@@ -1154,6 +1215,17 @@ export async function readJoust(
             theirs: theirs.map(answerOf),
             xp: role === "challenger" ? joust.challengerXp : joust.opponentXp,
             boosters: role === "challenger" ? joust.challengerBoosters : joust.opponentBoosters,
+            wished:
+              role === "opponent" && joust.forfeit
+                ? []
+                : wishedCards(
+                    mine.map((q) => q.cardId),
+                    await ownedAmong(
+                      db,
+                      userId,
+                      mine.map((q) => q.cardId),
+                    ),
+                  ),
             tournament:
               joust.points === null || joust.endedAt === null
                 ? null

@@ -18,6 +18,7 @@ import {
   tradeLevelLabel,
   tradeRulesNote,
   tradeSides,
+  WISHES_TAB,
   wordList,
 } from "@leximon/view-model";
 import Link from "next/link";
@@ -39,8 +40,9 @@ import { CardRow, catalogCard } from "./card-thumb";
 import { Counterpart } from "./counterpart";
 import { ProposeTrade } from "./propose-trade";
 import styles from "./trades.module.css";
+import { WishesPanel } from "./wishes-panel";
 
-type Tab = TradeBox | "propose";
+type Tab = TradeBox | "propose" | "wishes";
 
 interface Inbox {
   readonly trades: readonly Trade[];
@@ -240,6 +242,15 @@ export function TradesScreen() {
         >
           Nouvelle offre
         </button>
+        <button
+          type="button"
+          role="tab"
+          aria-selected={tab === "wishes"}
+          className={styles.tab}
+          onClick={() => selectTab("wishes")}
+        >
+          {WISHES_TAB}
+        </button>
       </div>
 
       {tab === "incoming" && (
@@ -268,6 +279,17 @@ export function TradesScreen() {
           onCancel={(trade) => void resolve("outgoing", trade, "cancel")}
           onLoadMore={() => void loadMore("outgoing")}
           onPropose={() => selectTab("propose")}
+        />
+      )}
+
+      {tab === "wishes" && (
+        <WishesPanel
+          catalog={catalog}
+          onOpen={open}
+          onPropose={(code) => {
+            setPresetPartner(code);
+            selectTab("propose");
+          }}
         />
       )}
 
@@ -314,8 +336,8 @@ export function TradesScreen() {
   );
 }
 
-/** Widths of the three tabs, « Reçues », « Envoyées », « Nouvelle offre ». */
-const WAITING_TABS = [82, 98, 132];
+/** Widths of the four tabs, « Reçues », « Envoyées », « Nouvelle offre », « Souhaits ». */
+const WAITING_TABS = [82, 98, 132, 96];
 
 /**
  * The frame while the offers arrive: the title, the code, the tabs. Below them, nothing: an
