@@ -3,7 +3,7 @@ import type {
   BoardEntry,
   BoardResponse,
   BoosterWalletResponse,
-  DivisionView,
+  GroupPlace,
   JoustStanding,
   LeagueClaimRefusal,
   LeagueResponse,
@@ -11,34 +11,32 @@ import type {
   PlayerBadge,
 } from "@leximon/contract";
 import {
-  type Division,
-  divisionOf,
-  divisionRewards,
-  divisions,
   type EpochMs,
-  freshStanding,
+  type GroupLine,
+  type GroupMember,
+  type GroupSeed,
   gameDayOf,
-  joustLaurels,
+  gameTimeOn,
+  groupStandings,
+  joustPoints,
   LEAGUE_SCHEDULE,
   LEAGUES,
+  type League,
   type LeagueRules,
-  leagueOf,
+  leagueAfter,
   leagueRulesAt,
-  leagueStepRewards,
-  pendingLeagueRewards,
+  rankedLeft,
   rewardEcus,
-  rewardedDivisions,
-  type SeasonStanding,
-  type Standing,
-  seasonAt,
-  seasonOf,
+  weekAt,
+  weekOf,
+  weekRewards,
 } from "@leximon/core";
 import { type Database, type EcuMovementDetails, schema } from "@leximon/db";
 import { eq, sql, type WithSubquery } from "drizzle-orm";
 import { lockWallet, walletView, withRewards } from "../levels/rewards";
 import { readBadges } from "../profile/profile";
 
-const { boosterWallets, ecuMovements, joustLeagueRewards, joustStandings } = schema;
+const { boosterWallets, ecuMovements, joustGroupMembers, joustGroups, joustWeekRewards } = schema;
 
 type Transaction = Parameters<Parameters<Database["transaction"]>[0]>[0];
 type Reader = Pick<Database, "select" | "execute">;
@@ -55,207 +53,339 @@ function rulesAt(now: EpochMs): LeagueRules {
   return leagueRulesAt(LEAGUE_SCHEDULE, now);
 }
 
-export function seasonNow(rules: LeagueRules, now: EpochMs): number {
-  return seasonOf(rules, gameDayOf(now).key).index;
+export function weekNow(rules: LeagueRules, now: EpochMs): number {
+  return weekOf(rules, gameDayOf(now).key).index;
 }
 
-type SeasonRow = {
-  readonly season: number;
-  readonly started: number;
-  readonly laurels: number;
-  readonly peak: number;
-  readonly streak: number;
+/** The last instant of a week: where a week over is read. */
+function weekEnd(rules: LeagueRules, week: number): EpochMs {
+  return gameTimeOn(weekAt(rules, week + 1).firstDay, 0) - 1;
+}
+
+function asLeague(value: string): League {
+  return (LEAGUES as readonly string[]).includes(value) ? (value as League) : "page";
+}
+
+/** The rank of a league in SQL, for ordering the boards. */
+const leagueRankSql = (column: string) =>
+  sql.raw(`array_position(array[${LEAGUES.map((league) => `'${league}'`).join(", ")}], ${column})`);
+
+const BOT_NAMES_SEED = 4;
+
+/** Picks an automaton's name: the same in a group all week, different from group to group. */
+function botName(seed: string, index: number): number {
+  return Number.parseInt(seed.slice(0, BOT_NAMES_SEED), 16) + index;
+}
+
+// --- Groups and memberships ----------------------------------------------------------------------
+
+type MemberRow = {
+  readonly week: number;
+  readonly groupId: string;
+  readonly league: string;
+  readonly points: number;
   readonly wins: number;
   readonly losses: number;
   readonly draws: number;
 };
 
-async function readSeasons(db: Reader, userId: string): Promise<SeasonRow[]> {
+async function readMemberships(db: Reader, userId: string): Promise<MemberRow[]> {
   return db
     .select({
-      season: joustStandings.season,
-      started: joustStandings.started,
-      laurels: joustStandings.laurels,
-      peak: joustStandings.peak,
-      streak: joustStandings.streak,
-      wins: joustStandings.wins,
-      losses: joustStandings.losses,
-      draws: joustStandings.draws,
+      week: joustGroupMembers.week,
+      groupId: joustGroupMembers.groupId,
+      league: joustGroupMembers.league,
+      points: joustGroupMembers.points,
+      wins: joustGroupMembers.wins,
+      losses: joustGroupMembers.losses,
+      draws: joustGroupMembers.draws,
     })
-    .from(joustStandings)
-    .where(eq(joustStandings.userId, userId))
-    .orderBy(joustStandings.season);
+    .from(joustGroupMembers)
+    .where(eq(joustGroupMembers.userId, userId))
+    .orderBy(joustGroupMembers.week);
 }
 
-/** The standing of a season: its row, or where it starts from the last season played. */
-function standingIn(
-  rules: LeagueRules,
-  rows: readonly SeasonRow[],
-  season: number,
-): Standing & { readonly started: number } {
-  const row = rows.find((candidate) => candidate.season === season);
-  if (row !== undefined) return row;
-  const last = rows.findLast((candidate) => candidate.season < season) ?? null;
-  const fresh = freshStanding(rules, last, season);
-  return { ...fresh, started: fresh.laurels };
+interface Group {
+  readonly id: string;
+  readonly seed: GroupSeed;
+  readonly members: readonly GroupMember[];
 }
 
-function isChampion(rules: LeagueRules, rows: readonly SeasonRow[], season: number): boolean {
-  const before = rows.find((row) => row.season === season - 1);
-  return before !== undefined && leagueOf(rules, before.laurels) === "champion";
-}
-
-function divisionView(division: Division): DivisionView {
+async function readGroup(db: Reader, groupId: string): Promise<Group | null> {
+  const result = await db.execute<{
+    week: number;
+    league: string;
+    seed: string;
+    user_id: string | null;
+    points: number | null;
+    scored_at: Date | string | null;
+  }>(sql`
+    select g.week, g.league, g.seed, m.user_id, m.points, m.scored_at
+    from joust_groups g left join joust_group_members m on m.group_id = g.id
+    where g.id = ${groupId}`);
+  const first = result.rows[0];
+  if (first === undefined) return null;
   return {
-    league: division.league,
-    rank: division.rank,
-    from: division.from,
-    index: division.index,
+    id: groupId,
+    seed: { week: first.week, league: asLeague(first.league), seed: first.seed },
+    members: result.rows.flatMap((row) =>
+      row.user_id === null
+        ? []
+        : [
+            {
+              userId: row.user_id,
+              points: row.points ?? 0,
+              scoredAt: new Date(row.scored_at ?? 0).getTime(),
+            },
+          ],
+    ),
   };
 }
 
-function standingView(
+/** The group as it stands now, or as it ended for a week over. */
+function linesOf(rules: LeagueRules, group: Group, now: EpochMs): GroupLine[] {
+  return groupStandings(
+    rules,
+    group.seed,
+    group.members,
+    Math.min(now, weekEnd(rules, group.seed.week)),
+  );
+}
+
+function placeOf(rules: LeagueRules, lines: readonly GroupLine[], userId: string): GroupPlace {
+  const line = lines.find((each) => each.kind === "player" && each.userId === userId);
+  if (line === undefined) throw new Error(`Member missing from their group: ${userId}`);
+  return { place: line.place, points: line.points, size: rules.groupSize, move: line.move };
+}
+
+/**
+ * The league of a week the player has not entered yet: where their last week played sent them,
+ * Page before any. The weeks over never change, so this reads without a lock.
+ */
+async function leagueFrom(
+  db: Reader,
   rules: LeagueRules,
-  rows: readonly SeasonRow[],
-  claimed: readonly { readonly season: number; readonly step: number }[],
-  now: EpochMs,
-): JoustStanding {
-  const season = seasonNow(rules, now);
-  const standing = standingIn(rules, rows, season);
-  const division = divisionOf(rules, standing.laurels);
-  const next = divisions(rules)[division.index + 1];
-  return {
-    season: seasonAt(rules, season),
-    laurels: standing.laurels,
-    division: divisionView(division),
-    nextDivision: next === undefined ? null : divisionView(next),
-    streak: standing.streak,
-    champion: isChampion(rules, rows, season),
-    rewardsWaiting: pendingLeagueRewards(rules, rows, claimed, season).length,
-  };
+  userId: string,
+  rows: readonly MemberRow[],
+  week: number,
+): Promise<League> {
+  const current = rows.find((row) => row.week === week);
+  if (current !== undefined) return asLeague(current.league);
+  const last = rows.findLast((row) => row.week < week);
+  if (last === undefined) return "page";
+  const group = await readGroup(db, last.groupId);
+  if (group === null) return asLeague(last.league);
+  const ended = placeOf(rules, linesOf(rules, group, weekEnd(rules, last.week)), userId);
+  return leagueAfter(asLeague(last.league), ended.move);
 }
 
-async function readClaims(db: Reader, userId: string) {
-  return db
-    .select({ season: joustLeagueRewards.season, step: joustLeagueRewards.step })
-    .from(joustLeagueRewards)
-    .where(eq(joustLeagueRewards.userId, userId));
+async function rankedToday(db: Reader, userId: string, now: EpochMs): Promise<number> {
+  const day = gameDayOf(now);
+  const [start, end] = [new Date(day.start), new Date(day.end)];
+  const result = await db.execute<{ count: number }>(sql`
+    select
+      (select count(*) from jousts where challenger_id = ${userId} and kind = 'ranked'
+        and created_at >= ${start} and created_at < ${end})
+      + (select count(*) from jousts where opponent_id = ${userId} and kind = 'ranked'
+        and created_at >= ${start} and created_at < ${end}) as count`);
+  return Number(result.rows[0]?.count ?? 0);
 }
 
-/** Laurels and league this season, for the jousts' home. */
+/** Ranked jousts the player may still launch or receive today. */
+export async function readRankedLeft(db: Reader, userId: string, now: EpochMs): Promise<number> {
+  return rankedLeft(rulesAt(now), await rankedToday(db, userId, now));
+}
+
+async function readClaimedWeeks(db: Reader, userId: string): Promise<Set<number>> {
+  const rows = await db
+    .select({ week: joustWeekRewards.week })
+    .from(joustWeekRewards)
+    .where(eq(joustWeekRewards.userId, userId));
+  return new Set(rows.map((row) => row.week));
+}
+
+function waitingWeeks(rows: readonly MemberRow[], claimed: ReadonlySet<number>, week: number) {
+  return rows.filter((row) => row.week < week && !claimed.has(row.week));
+}
+
+/** League and place in this week's tournament, for the jousts' home. */
 export async function readStanding(
   db: Reader,
   userId: string,
   now: EpochMs,
 ): Promise<JoustStanding> {
-  const [rows, claimed] = await Promise.all([readSeasons(db, userId), readClaims(db, userId)]);
-  return standingView(rulesAt(now), rows, claimed, now);
+  const rules = rulesAt(now);
+  const week = weekNow(rules, now);
+  const [rows, claimed, today] = await Promise.all([
+    readMemberships(db, userId),
+    readClaimedWeeks(db, userId),
+    rankedToday(db, userId, now),
+  ]);
+  return standingOf(db, rules, { userId, rows, claimed, today, week, now });
 }
 
-// --- A ranked joust's laurels --------------------------------------------------------------------
+async function standingOf(
+  db: Reader,
+  rules: LeagueRules,
+  input: {
+    readonly userId: string;
+    readonly rows: readonly MemberRow[];
+    readonly claimed: ReadonlySet<number>;
+    readonly today: number;
+    readonly week: number;
+    readonly now: EpochMs;
+  },
+): Promise<JoustStanding> {
+  const { userId, rows, claimed, today, week, now } = input;
+  const current = rows.find((row) => row.week === week);
+  const group = current === undefined ? null : await readGroup(db, current.groupId);
+  return {
+    week: weekAt(rules, week),
+    league: await leagueFrom(db, rules, userId, rows, week),
+    group: group === null ? null : placeOf(rules, linesOf(rules, group, now), userId),
+    rankedLeft: rankedLeft(rules, today),
+    rankedPerDay: rules.rankedPerDay,
+    rewardsWaiting: waitingWeeks(rows, claimed, week).length,
+  };
+}
 
-export interface LaurelsChanges {
-  readonly challenger: { readonly before: number; readonly after: number };
-  readonly opponent: { readonly before: number; readonly after: number };
+// --- A ranked joust's points ---------------------------------------------------------------------
+
+export interface PointsWon {
+  readonly challenger: number;
+  readonly opponent: number;
+}
+
+/** Locks the entry of a league's groups for a week: two players never take the same last place. */
+async function lockEntry(tx: Transaction, week: number, league: League): Promise<void> {
+  await tx.execute(sql`select pg_advisory_xact_lock(hashtext(${`joust_group:${week}:${league}`}))`);
+}
+
+/** Puts the player in a group of their league with room, or a new one. */
+async function enterGroup(
+  tx: Transaction,
+  rules: LeagueRules,
+  input: { readonly userId: string; readonly week: number; readonly league: League },
+  now: EpochMs,
+): Promise<void> {
+  const { userId, week, league } = input;
+  const [open] = await tx
+    .select({ id: joustGroups.id })
+    .from(joustGroups)
+    .where(
+      sql`${joustGroups.week} = ${week} and ${joustGroups.league} = ${league}
+        and ${joustGroups.players} < ${rules.groupSize}`,
+    )
+    .orderBy(joustGroups.createdAt, joustGroups.id)
+    .limit(1);
+  let groupId = open?.id;
+  if (groupId === undefined) {
+    const seed = Buffer.from(crypto.getRandomValues(new Uint8Array(16))).toString("hex");
+    const [made] = await tx
+      .insert(joustGroups)
+      .values({ week, league, seed, createdAt: new Date(now) })
+      .returning({ id: joustGroups.id });
+    if (made === undefined) throw new Error("Group insert returned no row");
+    groupId = made.id;
+  }
+  await tx
+    .update(joustGroups)
+    .set({ players: sql`${joustGroups.players} + 1` })
+    .where(eq(joustGroups.id, groupId));
+  await tx.insert(joustGroupMembers).values({
+    userId,
+    week,
+    groupId,
+    league,
+    scoredAt: new Date(now),
+    joinedAt: new Date(now),
+  });
 }
 
 /**
- * Writes the laurels of a ranked joust that just ended, inside its transaction, after the
- * ratings: both standings of the season are created if missing, then locked in user id order.
- * `ratings` are both ratings as they stood before the joust.
+ * Writes the points of a ranked joust that just ended, inside its transaction, after the
+ * ratings. A player not yet in this week's tournament enters a group of their league: the
+ * entries of each league are locked in a fixed order, then both members in user id order.
+ * Callers hold both players' wallets, so one player's jousts settle one at a time.
  */
-export async function applyLaurels(
+export async function applyPoints(
   tx: Transaction,
   input: {
     readonly challengerId: string;
     readonly opponentId: string;
     readonly outcome: "challenger" | "opponent" | "draw";
-    readonly ratings: ReadonlyMap<string, number>;
     readonly now: EpochMs;
   },
-): Promise<LaurelsChanges> {
-  const { challengerId, opponentId, outcome, ratings, now } = input;
+): Promise<PointsWon> {
+  const { challengerId, opponentId, outcome, now } = input;
   const rules = rulesAt(now);
-  const season = seasonNow(rules, now);
+  const week = weekNow(rules, now);
   const ids = [challengerId, opponentId].sort();
+
+  const entering: { userId: string; league: League }[] = [];
   for (const userId of ids) {
-    const [last] = await tx
-      .select({ season: joustStandings.season, laurels: joustStandings.laurels })
-      .from(joustStandings)
-      .where(sql`${joustStandings.userId} = ${userId} and ${joustStandings.season} < ${season}`)
-      .orderBy(sql`${joustStandings.season} desc`)
-      .limit(1);
-    const fresh = freshStanding(rules, last ?? null, season);
-    await tx
-      .insert(joustStandings)
-      .values({
-        userId,
-        season,
-        started: fresh.laurels,
-        laurels: fresh.laurels,
-        peak: fresh.peak,
-        updatedAt: new Date(now),
-      })
-      .onConflictDoNothing();
+    const rows = await readMemberships(tx, userId);
+    if (rows.some((row) => row.week === week)) continue;
+    entering.push({ userId, league: await leagueFrom(tx, rules, userId, rows, week) });
   }
-  const locked = await tx.execute<{
-    user_id: string;
-    laurels: number;
-    peak: number;
-    streak: number;
-  }>(sql`select user_id, laurels, peak, streak from joust_standings
-    where season = ${season} and user_id in (${challengerId}, ${opponentId})
+  const leagues = [...new Set(entering.map((entry) => entry.league))].sort();
+  for (const league of leagues) await lockEntry(tx, week, league);
+  for (const entry of entering) await enterGroup(tx, rules, { ...entry, week }, now);
+
+  await tx.execute(sql`select user_id from joust_group_members
+    where week = ${week} and user_id in (${challengerId}, ${opponentId})
     order by user_id for update`);
-  const rows = new Map(locked.rows.map((row) => [row.user_id, row]));
-  const sideOutcome = (userId: string) => {
+  const resultOf = (userId: string) => {
     if (outcome === "draw") return "draw" as const;
     const winner = outcome === "challenger" ? challengerId : opponentId;
     return userId === winner ? ("won" as const) : ("lost" as const);
   };
-  const changes = new Map<string, { before: number; after: number }>();
+  const won = new Map<string, number>();
   for (const userId of ids) {
-    const row = rows.get(userId);
-    if (row === undefined) throw new Error(`Standing missing for ${userId}`);
-    const other = userId === challengerId ? opponentId : challengerId;
-    const result = sideOutcome(userId);
-    const change = joustLaurels(rules, row, {
-      outcome: result,
-      rating: ratings.get(userId) ?? 0,
-      opponentRating: ratings.get(other) ?? 0,
-    });
+    const result = resultOf(userId);
+    const points = joustPoints(rules, result);
     await tx
-      .update(joustStandings)
+      .update(joustGroupMembers)
       .set({
-        laurels: change.after.laurels,
-        peak: change.after.peak,
-        streak: change.after.streak,
+        points: sql`${joustGroupMembers.points} + ${points}`,
+        ...(points > 0 ? { scoredAt: new Date(now) } : {}),
         ...(result === "won"
-          ? { wins: sql`${joustStandings.wins} + 1` }
+          ? { wins: sql`${joustGroupMembers.wins} + 1` }
           : result === "lost"
-            ? { losses: sql`${joustStandings.losses} + 1` }
-            : { draws: sql`${joustStandings.draws} + 1` }),
-        updatedAt: new Date(now),
+            ? { losses: sql`${joustGroupMembers.losses} + 1` }
+            : { draws: sql`${joustGroupMembers.draws} + 1` }),
       })
-      .where(sql`${joustStandings.userId} = ${userId} and ${joustStandings.season} = ${season}`);
-    changes.set(userId, { before: row.laurels, after: change.after.laurels });
+      .where(sql`${joustGroupMembers.userId} = ${userId} and ${joustGroupMembers.week} = ${week}`);
+    won.set(userId, points);
   }
-  const of = (userId: string) => changes.get(userId) ?? { before: 0, after: 0 };
-  return { challenger: of(challengerId), opponent: of(opponentId) };
+  return { challenger: won.get(challengerId) ?? 0, opponent: won.get(opponentId) ?? 0 };
 }
 
-/** A joust's laurels for its result, with the division they reached. */
-export function laurelsView(
-  change: { readonly before: number; readonly after: number },
-  now: EpochMs,
+/** A ranked joust's points for its result, with where the player stands in that week's group. */
+export async function tournamentView(
+  db: Reader,
+  input: {
+    readonly userId: string;
+    readonly won: number;
+    readonly endedAt: EpochMs;
+    readonly now: EpochMs;
+  },
 ) {
-  const rules = rulesAt(now);
-  const division = divisionOf(rules, change.after);
-  const next = divisions(rules)[division.index + 1];
+  const rules = rulesAt(input.now);
+  const week = weekNow(rules, input.endedAt);
+  const [row] = await db
+    .select({ groupId: joustGroupMembers.groupId, league: joustGroupMembers.league })
+    .from(joustGroupMembers)
+    .where(
+      sql`${joustGroupMembers.userId} = ${input.userId} and ${joustGroupMembers.week} = ${week}`,
+    );
+  if (row === undefined) return null;
+  const current = week === weekNow(rules, input.now);
+  const group = current ? await readGroup(db, row.groupId) : null;
   return {
-    before: change.before,
-    after: change.after,
-    division: divisionView(division),
-    nextDivision: next === undefined ? null : divisionView(next),
+    won: input.won,
+    league: asLeague(row.league),
+    group: group === null ? null : placeOf(rules, linesOf(rules, group, input.now), input.userId),
   };
 }
 
@@ -272,50 +402,65 @@ async function generalOpen(db: Reader, now: EpochMs): Promise<boolean> {
   return (result.rows[0]?.count ?? 0) >= GENERAL_JOUSTERS;
 }
 
-/** `GET /jousts/league`: the road of the season, the rewards to claim, the player's figures. */
+/** What a week over gave the player: their final place in its group and its rewards. */
+async function weekResult(db: Reader, rules: LeagueRules, userId: string, row: MemberRow) {
+  const group = await readGroup(db, row.groupId);
+  const league = asLeague(row.league);
+  const ended =
+    group === null
+      ? { place: rules.groupSize, points: row.points, size: rules.groupSize, move: "stay" as const }
+      : placeOf(rules, linesOf(rules, group, weekEnd(rules, row.week)), userId);
+  return {
+    week: row.week,
+    league,
+    place: ended.place,
+    move: ended.move,
+    rewards: [...weekRewards(rules, league, ended.place, ended.move)],
+  };
+}
+
+/** `GET /jousts/league`: the ladder, the week rewards to claim, the player's figures. */
 export async function readLeague(
   db: Database,
   userId: string,
   now: EpochMs,
 ): Promise<LeagueResponse> {
   const rules = rulesAt(now);
-  const season = seasonNow(rules, now);
-  const [rows, claimed, rating, open] = await Promise.all([
-    readSeasons(db, userId),
-    readClaims(db, userId),
+  const week = weekNow(rules, now);
+  const [rows, claimed, today, rating, open] = await Promise.all([
+    readMemberships(db, userId),
+    readClaimedWeeks(db, userId),
+    rankedToday(db, userId, now),
     db.execute<{ rating: number; games: number }>(
       sql`select rating, games from joust_ratings where user_id = ${userId}`,
     ),
     generalOpen(db, now),
   ]);
-  const standing = standingIn(rules, rows, season);
-  const climbed = new Set(
-    rewardedDivisions(rules, standing.started, standing.peak).map((division) => division.index),
+  const waiting = await Promise.all(
+    waitingWeeks(rows, claimed, week).map((row) => weekResult(db, rules, userId, row)),
   );
-  const done = new Set(claimed.map((key) => `${key.season}:${key.step}`));
-  const row = rows.find((candidate) => candidate.season === season);
+  const current = rows.find((row) => row.week === week);
   const games = rating.rows[0]?.games ?? 0;
   return {
-    standing: standingView(rules, rows, claimed, now),
-    road: divisions(rules).map((division) => ({
-      division: divisionView(division),
-      rewards: division.index === 0 ? [] : [...divisionRewards(rules, division)],
-      rewarded: climbed.has(division.index),
-      claimed: done.has(`${season}:${division.index}`),
-    })),
-    seasonRewards: LEAGUES.map((league) => ({
+    standing: await standingOf(db, rules, { userId, rows, claimed, today, week, now }),
+    ladder: LEAGUES.map((league) => ({
       league,
-      rewards: [...rules.seasonRewards[league]],
+      up: rules.moves[league].up,
+      down: rules.moves[league].down,
+      rewards: [{ kind: "ecus" as const, amount: rules.weekEcus[league] }],
     })),
-    waiting: pendingLeagueRewards(rules, rows, claimed, season).map((key) => ({
-      ...key,
-      rewards: [...rewardsOf(rules, rows, key)],
-    })),
+    upRewards: [...rules.upRewards],
+    podium: {
+      places: rules.championPodium.places,
+      rewards: [...rules.championPodium.rewards],
+    },
+    points: { ...rules.points },
+    waiting,
     stats: {
       ranked: games,
-      wins: row?.wins ?? 0,
-      losses: row?.losses ?? 0,
-      draws: row?.draws ?? 0,
+      wins: current?.wins ?? 0,
+      losses: current?.losses ?? 0,
+      draws: current?.draws ?? 0,
       rating:
         games >= RATING_SHOWN_AFTER && rating.rows[0] !== undefined
           ? Math.round(rating.rows[0].rating)
@@ -326,74 +471,47 @@ export async function readLeague(
   };
 }
 
-function rewardsOf(
-  rules: LeagueRules,
-  rows: readonly SeasonStanding[],
-  key: { readonly season: number; readonly step: number },
-) {
-  const row = rows.find((candidate) => candidate.season === key.season);
-  return leagueStepRewards(rules, key.step, leagueOf(rules, row?.laurels ?? 0));
-}
-
 // --- Claiming a reward ---------------------------------------------------------------------------
 
 export type LeagueClaimResult =
   | {
       readonly kind: "claimed";
-      readonly season: number;
-      readonly step: number;
+      readonly week: number;
       readonly rewards: readonly LevelRewardView[];
       readonly wallet: BoosterWalletResponse;
     }
   | { readonly kind: "refused"; readonly reason: LeagueClaimRefusal };
 
 /**
- * Claims a league reward. Idempotent by nature: the season and the step are the key, a second
- * claim returns what the first one gave. A division gives once it was climbed that season, the
- * end of a season once it is over; a reward whose sachets do not fit in the reserve waits.
+ * Claims the rewards of a week played. Idempotent by nature: the week is the key, a second claim
+ * returns what the first one gave. A week gives once it is over; a reward whose sachets do not
+ * fit in the reserve waits.
  *
- * One transaction, the wallet locked first as for every reward: BEGIN, lock the wallet, the
- * seasons and claims, one combined write (the claim, the reserve and the écus with their
- * movement), COMMIT. Laurels only grow a season's peak, so seasons read without their lock can
- * only refuse a reward a joust just opened, never give one twice.
+ * One transaction, the wallet locked first as for every reward: BEGIN, lock the wallet, read the
+ * week's group (over, so it no longer changes), one combined write (the claim, the reserve and
+ * the écus with their movement), COMMIT.
  */
 export async function claimLeagueReward(
   db: Database,
-  input: {
-    readonly userId: string;
-    readonly season: number;
-    readonly step: number;
-    readonly now: EpochMs;
-  },
+  input: { readonly userId: string; readonly week: number; readonly now: EpochMs },
 ): Promise<LeagueClaimResult> {
-  const { userId, season, step, now } = input;
+  const { userId, week, now } = input;
   const rules = rulesAt(now);
 
   return db.transaction(async (tx): Promise<LeagueClaimResult> => {
     const locked = await lockWallet(tx, userId, now);
     const [previous] = await tx
-      .select({ rewards: joustLeagueRewards.rewards })
-      .from(joustLeagueRewards)
-      .where(
-        sql`${joustLeagueRewards.userId} = ${userId} and ${joustLeagueRewards.season} = ${season}
-          and ${joustLeagueRewards.step} = ${step}`,
-      );
+      .select({ rewards: joustWeekRewards.rewards })
+      .from(joustWeekRewards)
+      .where(sql`${joustWeekRewards.userId} = ${userId} and ${joustWeekRewards.week} = ${week}`);
     if (previous !== undefined) {
-      return {
-        kind: "claimed",
-        season,
-        step,
-        rewards: previous.rewards,
-        wallet: walletView(locked, now),
-      };
+      return { kind: "claimed", week, rewards: previous.rewards, wallet: walletView(locked, now) };
     }
-    const [rows, claimed] = await Promise.all([readSeasons(tx, userId), readClaims(tx, userId)]);
-    const open = pendingLeagueRewards(rules, rows, claimed, seasonNow(rules, now)).some(
-      (key) => key.season === season && key.step === step,
-    );
-    if (!open) return { kind: "refused", reason: "not_reached" };
+    if (week >= weekNow(rules, now)) return { kind: "refused", reason: "not_reached" };
+    const row = (await readMemberships(tx, userId)).find((each) => each.week === week);
+    if (row === undefined) return { kind: "refused", reason: "not_reached" };
 
-    const rewards = [...rewardsOf(rules, rows, { season, step })];
+    const { rewards } = await weekResult(tx, rules, userId, row);
     const reserved = withRewards(locked, rewards, locked.reserveSlots, now);
     if (reserved === null) return { kind: "refused", reason: "reserve_full" };
     const ecus = rewardEcus(rewards);
@@ -401,13 +519,13 @@ export async function claimLeagueReward(
 
     const claimInsert = tx.$with("claim_insert").as(
       tx
-        .insert(joustLeagueRewards)
-        .values({ userId, season, step, rewards, claimedAt: new Date(now) })
-        .returning({ season: joustLeagueRewards.season }),
+        .insert(joustWeekRewards)
+        .values({ userId, week, rewards, claimedAt: new Date(now) })
+        .returning({ week: joustWeekRewards.week }),
     );
     const ctes: WithSubquery[] = [claimInsert];
     if (ecus > 0) {
-      const details: EcuMovementDetails = { kind: "league", season, step };
+      const details: EcuMovementDetails = { kind: "league", week };
       ctes.push(
         tx.$with("movement_insert").as(
           tx
@@ -430,40 +548,23 @@ export async function claimLeagueReward(
       .update(boosterWallets)
       .set(after)
       .where(eq(boosterWallets.userId, userId));
-    return { kind: "claimed", season, step, rewards, wallet: walletView(after, now) };
+    return { kind: "claimed", week, rewards, wallet: walletView(after, now) };
   });
 }
 
 // --- Boards --------------------------------------------------------------------------------------
 
-/** The cursor of a page: the laurels and the user id of the last row shown. */
-export const BOARD_CURSOR = /^(\d{1,9})\.([A-Za-z0-9_-]{1,64})$/;
+/** The cursor of a page of the general board: league rank, points and user id of the last row. */
+export const BOARD_CURSOR = /^(\d{1,2})\.(\d{1,9})\.([A-Za-z0-9_-]{1,64})$/;
 
-function cursorOf(laurels: number, userId: string): string {
-  return `${laurels}.${userId}`;
-}
-
-interface Ranked {
+export interface BoardCursor {
+  readonly rank: number;
+  readonly points: number;
   readonly userId: string;
-  readonly laurels: number;
-  readonly place: number;
-  readonly champion: boolean;
 }
 
-function entryOf(
-  rules: LeagueRules,
-  ranked: Ranked,
-  badges: ReadonlyMap<string, PlayerBadge>,
-): BoardEntry | null {
-  const player = badges.get(ranked.userId);
-  if (player === undefined) return null;
-  return {
-    player,
-    place: ranked.place,
-    laurels: ranked.laurels,
-    division: divisionView(divisionOf(rules, ranked.laurels)),
-    champion: ranked.champion,
-  };
+function cursorOf(rank: number, points: number, userId: string): string {
+  return `${rank}.${points}.${userId}`;
 }
 
 /** Players who block the player or whom the player blocks stay off their boards. */
@@ -473,89 +574,140 @@ function notBlocked(column: string, userId: string) {
       or (blocker_id = ${sql.raw(column)} and blocked_id = ${userId}))`;
 }
 
+async function blockedAmong(
+  db: Reader,
+  userId: string,
+  ids: readonly string[],
+): Promise<Set<string>> {
+  if (ids.length === 0) return new Set();
+  const list = sql.join(
+    ids.map((id) => sql`${id}`),
+    sql`, `,
+  );
+  const result = await db.execute<{ id: string }>(sql`
+    select blocked_id as id from user_blocks where blocker_id = ${userId} and blocked_id in (${list})
+    union select blocker_id as id from user_blocks where blocked_id = ${userId} and blocker_id in (${list})`);
+  return new Set(result.rows.map((row) => row.id));
+}
+
+interface Ranked {
+  readonly userId: string;
+  readonly league: League;
+  readonly points: number;
+  readonly place: number;
+}
+
+function playerEntry(
+  ranked: Ranked,
+  badges: ReadonlyMap<string, PlayerBadge>,
+  move: BoardEntry["move"] = null,
+): BoardEntry | null {
+  const player = badges.get(ranked.userId);
+  if (player === undefined) return null;
+  return {
+    kind: "player",
+    player,
+    place: ranked.place,
+    points: ranked.points,
+    league: ranked.league,
+    move,
+  };
+}
+
 /**
- * `GET /jousts/boards/:board`: a page of a board of the season, most laurels first, ties by
- * place shared. Ma ligue and the general board are paged by cursor among the season's jousters;
- * friends and clan are bounded and come whole, with their jousters of earlier seasons at where
- * they start this one.
+ * `GET /jousts/boards/:board`: a board of this week. The group comes whole, automatons included,
+ * a blocked player kept at their place without their name. Friends and clan come whole, by league
+ * then points, ties sharing a place; the general board is paged by cursor.
  */
 export async function readBoard(
   db: Database,
   input: {
     readonly userId: string;
     readonly board: Board;
-    readonly after: { readonly laurels: number; readonly userId: string } | null;
+    readonly after: BoardCursor | null;
     readonly now: EpochMs;
   },
 ): Promise<BoardResponse> {
   const { userId, board, after, now } = input;
   const rules = rulesAt(now);
-  const season = seasonNow(rules, now);
-  const mine = await readSeasons(db, userId);
-  const myStanding = standingIn(rules, mine, season);
-  const myChampion = isChampion(rules, mine, season);
-  const myLeague = leagueOf(rules, myStanding.laurels);
+  const week = weekNow(rules, now);
+  const rows = await readMemberships(db, userId);
+  const mine = rows.find((row) => row.week === week);
 
-  if (board === "league" || board === "general") {
-    if (board === "general" && !(await generalOpen(db, now))) {
-      return closedBoard(db, rules, {
-        board,
-        closed: "general_closed",
-        me: { userId, laurels: myStanding.laurels, place: 1, champion: myChampion },
-        now,
-      });
-    }
-    const next = LEAGUES[LEAGUES.indexOf(myLeague) + 1];
-    const range =
-      board === "league"
-        ? sql`and s.laurels >= ${rules.leagueFrom[myLeague]}
-            ${next === undefined ? sql`` : sql`and s.laurels < ${rules.leagueFrom[next]}`}`
-        : sql``;
+  if (board === "group") return readGroupBoard(db, rules, { userId, mine, now });
+
+  const closed = (reason: "no_clan" | "general_closed"): BoardResponse => ({
+    board,
+    closed: reason,
+    league: null,
+    moves: null,
+    entries: [],
+    me: null,
+    next: null,
+  });
+
+  if (board === "general") {
+    if (!(await generalOpen(db, now))) return closed("general_closed");
+    const rank = leagueRankSql("m.league");
     const page = await db.execute<{
       user_id: string;
-      laurels: number;
+      league: string;
+      points: number;
+      rank: number;
       place: number;
-      champion: boolean;
     }>(sql`
       select * from (
-        select s.user_id, s.laurels, (rank() over (order by s.laurels desc))::int as place,
-          coalesce(b.laurels >= ${rules.leagueFrom.champion}, false) as champion
-        from joust_standings s
-        left join joust_standings b on b.user_id = s.user_id and b.season = ${season - 1}
-        where s.season = ${season} ${range} and (s.user_id = ${userId} or ${notBlocked("s.user_id", userId)})
+        select m.user_id, m.league, m.points, ${rank} as rank,
+          (rank() over (order by ${rank} desc, m.points desc))::int as place
+        from joust_group_members m
+        where m.week = ${week} and (m.user_id = ${userId} or ${notBlocked("m.user_id", userId)})
       ) ranked
-      ${after === null ? sql`` : sql`where laurels < ${after.laurels} or (laurels = ${after.laurels} and user_id > ${after.userId})`}
-      order by laurels desc, user_id
+      ${
+        after === null
+          ? sql``
+          : sql`where rank < ${after.rank} or (rank = ${after.rank} and points < ${after.points})
+              or (rank = ${after.rank} and points = ${after.points} and user_id > ${after.userId})`
+      }
+      order by rank desc, points desc, user_id
       limit ${BOARD_PAGE + 1}`);
-    const rows = page.rows.slice(0, BOARD_PAGE);
-    const ahead = await db.execute<{ count: number }>(sql`
-      select count(*)::int as count from joust_standings s
-      where s.season = ${season} ${range} and s.laurels > ${myStanding.laurels}
-        and ${notBlocked("s.user_id", userId)}`);
-    const badges = await readBadges(db, [userId, ...rows.map((row) => row.user_id)], now);
-    const entries = rows.flatMap((row) => {
-      const entry = entryOf(
-        rules,
-        { userId: row.user_id, laurels: row.laurels, place: row.place, champion: row.champion },
-        badges,
-      );
-      return entry === null ? [] : [entry];
-    });
-    const last = rows.at(-1);
+    const shown = page.rows.slice(0, BOARD_PAGE);
+    let me: Ranked | null = null;
+    if (mine !== undefined) {
+      const myRank = LEAGUES.indexOf(asLeague(mine.league)) + 1;
+      const ahead = await db.execute<{ count: number }>(sql`
+        select count(*)::int as count from joust_group_members m
+        where m.week = ${week} and ${notBlocked("m.user_id", userId)}
+          and (${rank} > ${myRank} or (${rank} = ${myRank} and m.points > ${mine.points}))`);
+      me = {
+        userId,
+        league: asLeague(mine.league),
+        points: mine.points,
+        place: (ahead.rows[0]?.count ?? 0) + 1,
+      };
+    }
+    const badges = await readBadges(db, [userId, ...shown.map((row) => row.user_id)], now);
+    const last = shown.at(-1);
     return {
       board,
       closed: null,
-      league: board === "league" ? myLeague : null,
-      entries,
-      me: meEntry(rules, badges, {
-        userId,
-        laurels: myStanding.laurels,
-        place: (ahead.rows[0]?.count ?? 0) + 1,
-        champion: myChampion,
+      league: null,
+      moves: null,
+      entries: shown.flatMap((row) => {
+        const entry = playerEntry(
+          {
+            userId: row.user_id,
+            league: asLeague(row.league),
+            points: row.points,
+            place: row.place,
+          },
+          badges,
+        );
+        return entry === null ? [] : [entry];
       }),
+      me: me === null ? null : playerEntry(me, badges),
       next:
         page.rows.length > BOARD_PAGE && last !== undefined
-          ? cursorOf(last.laurels, last.user_id)
+          ? cursorOf(last.rank, last.points, last.user_id)
           : null,
     };
   }
@@ -573,88 +725,94 @@ export async function readBoard(
     const inClan = await db.execute<{ found: boolean }>(
       sql`select exists (select 1 from clan_members where user_id = ${userId}) as found`,
     );
-    if (inClan.rows[0]?.found !== true) {
-      return closedBoard(db, rules, {
-        board,
-        closed: "no_clan",
-        me: { userId, laurels: myStanding.laurels, place: 1, champion: myChampion },
-        now,
-      });
-    }
+    if (inClan.rows[0]?.found !== true) return closed("no_clan");
   }
   const ids = [userId, ...members.rows.map((row) => row.id)];
-  const seasons = await db.execute<SeasonRow & { user_id: string }>(sql`
-    select user_id, season, started, laurels, peak, streak, wins, losses, draws
-    from joust_standings
-    where user_id in (${sql.join(
+  const entered = await db.execute<{ user_id: string; league: string; points: number }>(sql`
+    select user_id, league, points from joust_group_members
+    where week = ${week} and user_id in (${sql.join(
       ids.map((id) => sql`${id}`),
       sql`, `,
-    )}) and season <= ${season}
-    order by season`);
-  const byUser = new Map<string, SeasonRow[]>();
-  for (const row of seasons.rows) {
-    byUser.set(row.user_id, [...(byUser.get(row.user_id) ?? []), row]);
-  }
-  const standings = ids
-    .filter((id) => id === userId || byUser.has(id))
-    .map((id) => {
-      const rows = byUser.get(id) ?? [];
-      return {
-        userId: id,
-        laurels: standingIn(rules, rows, season).laurels,
-        champion: isChampion(rules, rows, season),
-      };
-    })
-    .sort((a, b) => b.laurels - a.laurels || a.userId.localeCompare(b.userId));
-  const ranked = standings.map((standing) => ({
+    )})`);
+  const standings = entered.rows
+    .map((row) => ({ userId: row.user_id, league: asLeague(row.league), points: row.points }))
+    .sort(
+      (a, b) =>
+        LEAGUES.indexOf(b.league) - LEAGUES.indexOf(a.league) ||
+        b.points - a.points ||
+        a.userId.localeCompare(b.userId),
+    );
+  const ahead = (one: (typeof standings)[number], other: (typeof standings)[number]) =>
+    LEAGUES.indexOf(other.league) > LEAGUES.indexOf(one.league) ||
+    (other.league === one.league && other.points > one.points);
+  const ranked: Ranked[] = standings.map((standing) => ({
     ...standing,
-    place: 1 + standings.filter((other) => other.laurels > standing.laurels).length,
+    place: 1 + standings.filter((other) => ahead(standing, other)).length,
   }));
-  const badges = await readBadges(db, ids, now);
-  const entries = ranked.flatMap((row) => {
-    const entry = entryOf(rules, row, badges);
-    return entry === null ? [] : [entry];
-  });
+  const badges = await readBadges(
+    db,
+    ranked.map((row) => row.userId),
+    now,
+  );
   const me = ranked.find((row) => row.userId === userId);
   return {
     board,
     closed: null,
     league: null,
-    entries,
-    me: meEntry(rules, badges, {
-      userId,
-      laurels: myStanding.laurels,
-      place: me?.place ?? 1,
-      champion: myChampion,
+    moves: null,
+    entries: ranked.flatMap((row) => {
+      const entry = playerEntry(row, badges);
+      return entry === null ? [] : [entry];
     }),
+    me: me === undefined ? null : playerEntry(me, badges),
     next: null,
   };
 }
 
-function meEntry(rules: LeagueRules, badges: ReadonlyMap<string, PlayerBadge>, me: Ranked) {
-  const entry = entryOf(rules, me, badges);
-  if (entry === null) throw new Error("Badge missing for the player");
-  return entry;
-}
-
-/** A board the player cannot see yet: only themself, with their laurels. */
-async function closedBoard(
-  db: Reader,
+async function readGroupBoard(
+  db: Database,
   rules: LeagueRules,
-  input: {
-    readonly board: Board;
-    readonly closed: "no_clan" | "general_closed";
-    readonly me: Ranked;
-    readonly now: EpochMs;
-  },
+  input: { readonly userId: string; readonly mine: MemberRow | undefined; readonly now: EpochMs },
 ): Promise<BoardResponse> {
-  const badges = await readBadges(db, [input.me.userId], input.now);
+  const { userId, mine, now } = input;
+  const group = mine === undefined ? null : await readGroup(db, mine.groupId);
+  if (mine === undefined || group === null) {
+    return {
+      board: "group",
+      closed: "not_entered",
+      league: null,
+      moves: null,
+      entries: [],
+      me: null,
+      next: null,
+    };
+  }
+  const league = group.seed.league;
+  const lines = linesOf(rules, group, now);
+  const players = group.members.map((member) => member.userId);
+  const [badges, blocked] = await Promise.all([
+    readBadges(db, players, now),
+    blockedAmong(db, userId, players),
+  ]);
+  const entries = lines.flatMap((line): BoardEntry[] => {
+    const common = { place: line.place, points: line.points, league, move: line.move };
+    if (line.kind === "bot") {
+      return [{ kind: "bot", bot: botName(group.seed.seed, line.index), ...common }];
+    }
+    const player = badges.get(line.userId);
+    if (blocked.has(line.userId) || player === undefined) return [{ kind: "hidden", ...common }];
+    return [{ kind: "player", player, ...common }];
+  });
+  const me = entries.find(
+    (entry) => entry.kind === "player" && entry.player.code === badges.get(userId)?.code,
+  );
   return {
-    board: input.board,
-    closed: input.closed,
-    league: null,
-    entries: [],
-    me: meEntry(rules, badges, input.me),
+    board: "group",
+    closed: null,
+    league,
+    moves: { up: rules.moves[league].up, down: rules.moves[league].down },
+    entries,
+    me: me ?? null,
     next: null,
   };
 }

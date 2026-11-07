@@ -1,6 +1,6 @@
 # Cahier des charges · Les joutes, la suite : sensation, accueil guidé et ligues
 
-- **Statut :** proposé le 2026-11-06 ; le propriétaire a retenu toutes les recommandations le même jour (L1 à L11 en a), inscrites en P51, P91 et P98. Lot 2 (L1 à L6) construit le 2026-11-06, web et mobile, à recetter ([recette-nouveautes.md](../recette-nouveautes.md), JTE-04 à JTE-14) ; lot 3 (L7 à L11) construit le 2026-11-07, web et mobile, à recetter (JTE-23 à JTE-31, MJT-05), avec la série à +10 après la [simulation](../rnd/lauriers.md) ; défaite qui coûte plus à chaque ligue le 2026-11-07, départ de saison inchangé (JTE-32).
+- **Statut :** proposé le 2026-11-06 ; le propriétaire a retenu toutes les recommandations le même jour (L1 à L11 en a), inscrites en P51, P91 et P98. Lot 2 (L1 à L6) construit le 2026-11-06, web et mobile, à recetter ([recette-nouveautes.md](../recette-nouveautes.md), JTE-04 à JTE-14) ; lot 3 (L7 à L11) construit le 2026-11-07, web et mobile, à recetter (JTE-23 à JTE-31, MJT-05), avec la série à +10 après la [simulation](../rnd/lauriers.md) ; défaite qui coûte plus à chaque ligue le 2026-11-07, puis lauriers et saisons remplacés le même jour par les tournois de la semaine (lot 3 bis, plus bas), construit le 2026-11-07, web et mobile, à recetter (JTE-23 à JTE-33, MJT-05) ; reste le lot 4.
 - **Source :** retours du propriétaire du 2026-11-06, après une joute jouée contre les bots en local. Le principe marche. Ce qui ne va pas :
   - l'interface manque de sensation (« juicyness ») ;
   - la joute n'est pas assez expliquée ;
@@ -19,6 +19,66 @@
   - [saison.md](saison.md) : le calendrier, en attente de S1 à S9 ;
   - [direction-artistique.md](direction-artistique.md) ;
   - [economie.md](economie.md).
+
+## Lot 3 bis · Les tournois de la semaine
+
+Le 2026-11-07, le propriétaire remplace les lauriers et les saisons du lot 3 par des tournois de la semaine. Ce modèle remplace L7, L9 et L10, et la partie « Ma ligue » de L11 ; le reste du cahier garde son histoire. Il s'inscrit en P51, P91 et P98.
+
+**Pourquoi.** Descendre d'une ligue à chaque saison est imposé, pas mérité, et la [simulation](../rnd/lauriers.md) a montré que les lauriers mesurent surtout le nombre de joutes jouées. Dans un tournoi, on monte, on reste ou on descend selon sa place parmi 30 jouteurs, chaque semaine. Le point 5 de l'avis plus haut (« pas à notre taille ») tombe avec les automates qui complètent les groupes.
+
+**Trois sortes de joute.**
+- **Classée :** 5 par jour au plus (heure de Paris), lancées ou reçues. Elle compte pour le tournoi et pour la cote. L'adversaire est choisi par le jeu dans sa ligue d'abord, puis le plus proche de sa cote.
+- **Libre :** sans limite, adversaire choisi par le jeu près de sa cote. Elle ne compte ni pour le tournoi ni pour la cote.
+- **Amicale :** un ami ou un membre du clan, comme avant.
+- Les récompenses d'une joute (XP, sachet de la première victoire) restent sur 5 joutes par jour, toutes sortes confondues.
+
+**Sept ligues :** Page, Écuyer, Chevalier, Banneret, Maréchal, Connétable, Champion. Chacun commence en Page. Plus de divisions, de lauriers ni de planchers : la place dans le tournoi sert de jauge.
+
+**Le tournoi de la semaine.**
+- Du lundi 0 h au dimanche minuit, heure de Paris, à partir du lundi 2026-11-09.
+- Le joueur entre dans le tournoi de la semaine au premier résultat d'une joute classée. Il rejoint un groupe de 30 jouteurs de sa ligue ; tant qu'il manque des joueurs, des **automates** complètent le groupe.
+- **Points :** une victoire classée 3, une égalité 1, une défaite 0. Une joute laissée sans réponse compte comme une défaite pour l'absent.
+- **Classement du groupe :** par points ; à égalité, celui qui a atteint ce score le premier passe devant.
+- **À la fin de la semaine**, selon la place dans le groupe (chiffres provisoires, calés par la simulation) :
+
+| Ligue | Montent | Descendent |
+|---|---|---|
+| Page | les 10 premiers | personne |
+| Écuyer | les 8 premiers | les 3 derniers |
+| Chevalier | les 7 premiers | les 5 derniers |
+| Banneret | les 6 premiers | les 5 derniers |
+| Maréchal | les 5 premiers | les 6 derniers |
+| Connétable | les 4 premiers | les 7 derniers |
+| Champion | personne | les 8 derniers |
+
+- Pour monter, il faut au moins un point.
+- Une semaine sans joute classée ne change rien : le joueur garde sa ligue.
+
+**Les automates.**
+- Ils sont signalés comme tels dans le groupe (« automate », avec leur propre portrait), jamais présentés comme des joueurs.
+- Ils ne joutent pas : leurs points montent au fil de la semaine, plus haut dans les ligues hautes. C'est leur barème qui règle la difficulté de chaque ligue tant que les groupes ne sont pas pleins.
+- Un groupe accueille des joueurs tant qu'il en a moins de 30 ; chaque joueur qui arrive prend la place d'un automate. Le nombre de joueurs par groupe pourra grandir plus tard.
+
+**Les récompenses de la semaine**, connues d'avance (P97), à réclamer d'un bouton (chiffres provisoires, à caler sur le relevé de l'économie) :
+- avoir joué le tournoi : des écus selon la ligue, 10 en Page, puis 5 de plus par ligue, jusqu'à 40 en Champion ;
+- monter : un sachet garni en plus ;
+- finir dans les 3 premiers en Champion : un sachet garni Précieux en plus.
+- L'**emblème de Champion** se porte tant qu'on est en Champion, dans les joutes et les classements.
+
+**L'écran Classement.**
+- En tête : sa ligue, sa place dans le groupe, ses points, le temps qui reste au tournoi, et ce que donnerait sa place si la semaine finissait maintenant (monte, reste, descend).
+- **Mon tournoi :** les 30 du groupe, avec la zone de montée et la zone de descente ; les automates y sont marqués.
+- **Amis, Clan, Général :** les jouteurs de la semaine, par ligue puis par points. Le général s'ouvre toujours au seuil de P51.
+- **L'échelle des ligues** remplace la route des lauriers : les 7 ligues, la sienne marquée, avec ce que chaque ligue donne par semaine et combien y montent ou en descendent.
+- Les récompenses des semaines passées attendent en haut, la plus ancienne d'abord.
+- Après une joute classée, la révélation montre « +3 points » et la nouvelle place dans le groupe.
+
+**Dans le code.**
+- `packages/core` : ligues, semaines, points, classement du groupe avec ses automates, montées et descentes, récompenses ; la limite de joutes classées par jour.
+- `packages/db`, migration : groupes de la semaine et leurs membres, récompenses de la semaine réclamées, sorte de joute « libre ». Les tables des lauriers et des saisons partent : rien n'est en ligne.
+- `apps/api` : on entre dans un groupe à la fin de sa première joute classée de la semaine, sous un verrou par ligue et par semaine pris dans un ordre fixe ; les points s'écrivent dans la transaction de la cote ; la fin de semaine se calcule à la lecture, sans tâche planifiée.
+- `packages/view-model`, web et mobile ensemble.
+- Simulation dans `rnd/tournament-sim`, rapport dans [docs/rnd/tournois.md](../rnd/tournois.md).
 
 ## Ma recommandation en une phrase
 

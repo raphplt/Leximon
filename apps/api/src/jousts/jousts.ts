@@ -31,6 +31,8 @@ import {
   joustChoices,
   joustOutcome,
   joustRulesAt,
+  LEAGUE_SCHEDULE,
+  leagueRulesAt,
   levelOf,
   MASTERY_LEVELS,
   type MasteryLevel,
@@ -55,7 +57,7 @@ import { notLocked } from "../friends/friends";
 import { lockWallet } from "../levels/rewards";
 import { readBadges } from "../profile/profile";
 import { addXpToPlayers, readXp } from "../progress/progress";
-import { applyLaurels, laurelsView, readStanding } from "./leagues";
+import { applyPoints, readRankedLeft, readStanding, tournamentView } from "./leagues";
 
 const { boosterWallets, cards, joustDecks, joustQuestions, joustRatings, jousts, players } = schema;
 
@@ -245,6 +247,7 @@ export async function saveDeck(
 
 export type LaunchTarget =
   | { readonly kind: "ranked" }
+  | { readonly kind: "free" }
   | { readonly kind: "friendly"; readonly opponentCode: string }
   | { readonly kind: "revenge"; readonly joustId: string };
 
@@ -255,17 +258,40 @@ export type LaunchResult =
 
 const refuseLaunch = (reason: LaunchRefusal): LaunchResult => ({ kind: "refused", reason });
 
-/** Opponents of a ranked joust: came by lately, free to play, not met lately, nearest in rating. */
-async function rankedOpponents(
+/**
+ * Opponents the game picks: came by lately, free to play, nearest in rating. For a ranked joust,
+ * also with ranked jousts left today and not met lately, those of the player's league first: a
+ * strong player placed too low then meets weaker players, wins more and climbs. The league is the
+ * one of the last week each player entered.
+ */
+async function gameOpponents(
   tx: Transaction,
   userId: string,
+  kind: "ranked" | "free",
   rules: JoustRules,
   now: EpochMs,
 ): Promise<string[]> {
-  const mine = await tx.execute<{ rating: number }>(
-    sql`select rating from joust_ratings where user_id = ${userId}`,
-  );
+  const mine = await tx.execute<{ rating: number; league: string | null }>(sql`
+    select
+      (select rating from joust_ratings where user_id = ${userId}) as rating,
+      (select league from joust_group_members where user_id = ${userId}
+        order by week desc limit 1) as league`);
   const rating = mine.rows[0]?.rating ?? rules.glicko.initial.rating;
+  const league = mine.rows[0]?.league ?? "page";
+  const day = gameDayOf(now);
+  const [dayStart, dayEnd] = [new Date(day.start), new Date(day.end)];
+  const ranked = kind === "ranked";
+  const lastLeague = sql`coalesce((select m.league from joust_group_members m
+    where m.user_id = p.user_id order by m.week desc limit 1), 'page')`;
+  const rankedRules = ranked
+    ? sql`and (select count(*) from jousts j where j.kind = 'ranked'
+          and (j.challenger_id = p.user_id or j.opponent_id = p.user_id)
+          and j.created_at >= ${dayStart} and j.created_at < ${dayEnd}) < ${leagueRulesAt(LEAGUE_SCHEDULE, now).rankedPerDay}
+        and not exists (select 1 from jousts j
+          where j.kind = 'ranked' and j.created_at > ${new Date(now - rules.pairCooldownMs)}
+            and ((j.challenger_id = ${userId} and j.opponent_id = p.user_id)
+              or (j.challenger_id = p.user_id and j.opponent_id = ${userId})))`
+    : sql``;
   const result = await tx.execute<{ user_id: string }>(sql`
     select p.user_id
     from players p
@@ -277,16 +303,14 @@ async function rankedOpponents(
       and (select count(*) from jousts j
         where j.opponent_id = p.user_id and j.ended_at is null and j.opponent_done_at is null)
         < ${rules.maxToPlay}
-      and not exists (select 1 from jousts j
-        where j.kind = 'ranked' and j.created_at > ${new Date(now - rules.pairCooldownMs)}
-          and ((j.challenger_id = ${userId} and j.opponent_id = p.user_id)
-            or (j.challenger_id = p.user_id and j.opponent_id = ${userId})))
+      ${rankedRules}
       and (select count(distinct uc.card_id) from user_cards uc
         join cards c on c.id = uc.card_id and c.definition is not null
         join user_mastery um on um.user_id = uc.user_id and um.card_id = uc.card_id
           and um.level::text in (${deckLevels(rules)})
         where uc.user_id = p.user_id and uc.quantity > 0) >= ${rules.drawn}
-    order by abs(coalesce(r.rating, ${rules.glicko.initial.rating}) - ${rating}), p.user_id
+    order by ${ranked ? sql`(${lastLeague} <> ${league}),` : sql``}
+      abs(coalesce(r.rating, ${rules.glicko.initial.rating}) - ${rating}), p.user_id
     limit ${NEAREST_OPPONENTS}`);
   return result.rows.map((row) => row.user_id);
 }
@@ -308,8 +332,8 @@ async function opponentFor(
   seed: string,
   now: EpochMs,
 ): Promise<{ readonly opponentId: string; readonly revengeOf: string | null } | LaunchResult> {
-  if (target.kind === "ranked") {
-    const nearest = await rankedOpponents(tx, userId, rules, now);
+  if (target.kind === "ranked" || target.kind === "free") {
+    const nearest = await gameOpponents(tx, userId, target.kind, rules, now);
     if (nearest.length === 0) return refuseLaunch("no_opponent");
     const picked = nearest[randomInt(createSeededRandom(seed), nearest.length)];
     return picked === undefined
@@ -385,6 +409,11 @@ export async function launchJoust(
       select count(*)::int as count from jousts
       where challenger_id = ${userId} and ended_at is null`);
     if ((waiting.rows[0]?.count ?? 0) >= rules.maxWaiting) return refuseLaunch("too_many_waiting");
+    // The opponent's ranked jousts of the day are counted when they are picked, without their
+    // lock: two launches at the same instant may give them one ranked joust more, never fewer.
+    if (target.kind === "ranked" && (await readRankedLeft(tx, userId, now)) === 0) {
+      return refuseLaunch("ranked_limit");
+    }
     const saved = await readSavedDeck(tx, userId);
     const myDeck = deckOf(rules, saved, await readCandidates(tx, userId, catalog));
     if (myDeck.length < rules.drawn) return refuseLaunch("deck_too_small");
@@ -425,7 +454,7 @@ export async function launchJoust(
     const [joust] = await tx
       .insert(jousts)
       .values({
-        kind: target.kind === "ranked" ? "ranked" : "friendly",
+        kind: target.kind === "revenge" ? "friendly" : target.kind,
         challengerId: userId,
         opponentId,
         launchKey,
@@ -869,16 +898,7 @@ export async function settleJoust(
           challenger: { before: a.rating.rating, after: nextA.rating },
           opponent: { before: b.rating.rating, after: nextB.rating },
         };
-        changes.laurels = await applyLaurels(tx, {
-          challengerId,
-          opponentId,
-          outcome,
-          ratings: new Map([
-            [challengerId, a.rating.rating],
-            [opponentId, b.rating.rating],
-          ]),
-          now,
-        });
+        changes.points = await applyPoints(tx, { challengerId, opponentId, outcome, now });
       }
     }
 
@@ -1134,7 +1154,15 @@ export async function readJoust(
             theirs: theirs.map(answerOf),
             xp: role === "challenger" ? joust.challengerXp : joust.opponentXp,
             boosters: role === "challenger" ? joust.challengerBoosters : joust.opponentBoosters,
-            laurels: joust.laurels === null ? null : laurelsView(joust.laurels[role], now),
+            tournament:
+              joust.points === null || joust.endedAt === null
+                ? null
+                : await tournamentView(db, {
+                    userId,
+                    won: joust.points[role],
+                    endedAt: joust.endedAt.getTime(),
+                    now,
+                  }),
           }
         : null,
     },

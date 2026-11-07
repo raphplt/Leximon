@@ -20,6 +20,7 @@ import {
   joustHelp,
   joustRowState,
   joustSections,
+  LAUNCH_FREE,
   LAUNCH_FRIENDLY,
   launchRefusalText,
   NO_FRIENDS_TO_DEFY,
@@ -29,6 +30,7 @@ import {
   playerName,
   runSize,
   SEALED_RESULT,
+  standingHeader,
 } from "@leximon/view-model";
 import { router, useFocusEffect } from "expo-router";
 import { type ReactNode, useCallback, useEffect, useState } from "react";
@@ -196,6 +198,9 @@ function Home({
   const costs = new Map(deck.candidates.map((candidate) => [candidate.cardId, candidate.cost]));
   const spent = deck.cardIds.reduce((total, id) => total + (costs.get(id) ?? 0), 0);
   const ready = jousts.deckSaved && jousts.deckReady;
+  const header = standingHeader(jousts.standing, gameDayOf(now).key);
+  // Once the ranked jousts of the day are played, the free joust takes the main place.
+  const ranked = jousts.standing.rankedLeft > 0;
   const middle = (deck.cardIds.length - 1) / 2;
   // The fan closes up to hold in the leaf, whatever the phone's width.
   const [fanWidth, setFanWidth] = useState(0);
@@ -216,9 +221,7 @@ function Home({
               bodyStyle={styles.friendBody}
               accessibilityRole="button"
               accessibilityLabel={
-                jousts.standing.rewardsWaiting > 0
-                  ? `${CLASSEMENT}, récompense à réclamer`
-                  : CLASSEMENT
+                header.waiting === null ? CLASSEMENT : `${CLASSEMENT}, ${header.waiting}`
               }
               onPress={() => router.push("/joutes/classement")}
             >
@@ -248,10 +251,24 @@ function Home({
             {ready ? (
               <View style={pieces.actions}>
                 <MainAction
-                  label={JOUST}
+                  label={ranked ? JOUST : LAUNCH_FREE}
                   disabled={busy}
-                  onPress={() => onLaunch({ kind: "ranked" })}
+                  onPress={() => onLaunch({ kind: ranked ? "ranked" : "free" })}
                 />
+                {ranked && (
+                  <Toy
+                    matter="paper"
+                    style={styles.friend}
+                    bodyStyle={styles.friendBody}
+                    accessibilityRole="button"
+                    accessibilityLabel={LAUNCH_FREE}
+                    disabled={busy}
+                    onPress={() => onLaunch({ kind: "free" })}
+                  >
+                    <Icon name="joutes" size={18} color={ink.pageInk} />
+                    <Text style={styles.friendText}>{LAUNCH_FREE}</Text>
+                  </Toy>
+                )}
                 <Toy
                   matter="paper"
                   style={styles.friend}

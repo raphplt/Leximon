@@ -40,7 +40,7 @@ import {
   settleExpired,
   settleJoust,
 } from "./jousts";
-import { seasonNow } from "./leagues";
+import { weekNow } from "./leagues";
 
 const url = testDatabaseUrl();
 const env = testEnv(url);
@@ -49,10 +49,11 @@ const { db, close } = createDb(url, { maxConnections: 6 });
 const loadCatalog = createCatalogIndexLoader(0);
 const {
   joustDecks,
+  joustGroupMembers,
+  joustGroups,
   joustQuestions,
   jousts,
   joustRatings,
-  joustStandings,
   mailLetters,
   players,
   userProgress,
@@ -659,30 +660,49 @@ describe("the routes", () => {
 
 describe("leagues", () => {
   const LEAGUE = leagueRulesAt(LEAGUE_SCHEDULE, Date.now());
-  const season = () => seasonNow(LEAGUE, Date.now());
+  const WEEK_MS = 7 * 86_400_000;
+  const week = (at = Date.now()) => weekNow(LEAGUE, at);
+  /** A week no other test plays in, far ahead: its groups start empty. */
+  const weekAhead = () => Date.now() + (200 + Math.floor(Math.random() * 5_000)) * WEEK_MS;
 
-  async function standAt(who: Jouster, laurels: number, at = season()) {
-    await db
-      .insert(joustStandings)
+  /** A group of `league` in `at`'s week, holding the given players with their points. */
+  async function groupOf(
+    league: string,
+    members: readonly { readonly who: Jouster; readonly points: number }[],
+    at = week(),
+  ) {
+    const [group] = await db
+      .insert(joustGroups)
       .values({
-        userId: who.userId,
-        season: at,
-        started: at === season() ? laurels : 0,
-        laurels,
-        peak: laurels,
-        updatedAt: new Date(),
+        week: at,
+        league,
+        seed: SEED,
+        players: members.length,
+        createdAt: new Date(),
       })
-      .onConflictDoUpdate({
-        target: [joustStandings.userId, joustStandings.season],
-        set: { laurels, peak: laurels, started: at === season() ? laurels : 0 },
-      });
+      .returning({ id: joustGroups.id });
+    if (group === undefined) throw new Error("No group");
+    if (members.length > 0) {
+      await db.insert(joustGroupMembers).values(
+        members.map(({ who, points }) => ({
+          userId: who.userId,
+          week: at,
+          groupId: group.id,
+          league,
+          points,
+          scoredAt: new Date(Date.now() - 3_600_000),
+          joinedAt: new Date(Date.now() - 3_600_000),
+        })),
+      );
+    }
+    return group.id;
   }
 
-  async function standingOf(who: Jouster) {
+  async function memberOf(who: Jouster, at = week()) {
     const [row] = await db
       .select()
-      .from(joustStandings)
-      .where(and(eq(joustStandings.userId, who.userId), eq(joustStandings.season, season())));
+      .from(joustGroupMembers)
+      .where(and(eq(joustGroupMembers.userId, who.userId), eq(joustGroupMembers.week, at)));
     return row;
   }
 
@@ -708,28 +728,33 @@ describe("leagues", () => {
     );
   }
 
-  it("give the winner of a ranked joust laurels and take some from the loser", async () => {
+  it("give the winner of a ranked joust 3 points, entering both in a group of their league", async () => {
     const a = await jouster();
     const b = await jouster();
-    await standAt(a, 650);
-    await standAt(b, 650);
     const { joustId, done } = await rankedJoust(a, b);
     const bDone = await playRun(b, joustId, done + 1_000, [0, 1, 2, 3, 4]);
     await settleJoust(db, joustId, bDone);
-    expect(await standingOf(a)).toMatchObject({ laurels: 675, peak: 675, streak: 1, wins: 1 });
-    expect(await standingOf(b)).toMatchObject({ laurels: 627, peak: 650, streak: 0, losses: 1 });
-    expect((await readJoustRow(joustId)).laurels).toEqual({
-      challenger: { before: 650, after: 675 },
-      opponent: { before: 650, after: 627 },
-    });
+    const winner = await memberOf(a);
+    const loser = await memberOf(b);
+    expect(winner).toMatchObject({ league: "page", points: 3, wins: 1, losses: 0 });
+    expect(loser).toMatchObject({ league: "page", points: 0, wins: 0, losses: 1 });
+    expect((await readJoustRow(joustId)).points).toEqual({ challenger: 3, opponent: 0 });
     const view = joustViewSchema.parse(
-      await (await app.request(`/jousts/${joustId}`, { headers: headers(b) }, env)).json(),
+      await (await app.request(`/jousts/${joustId}`, { headers: headers(a) }, env)).json(),
     );
-    expect(view.result?.laurels).toMatchObject({
-      before: 650,
-      after: 627,
-      division: { league: "chevalier", rank: 3 },
-      nextDivision: { league: "chevalier", rank: 2, from: 700 },
+    expect(view.result?.tournament).toMatchObject({
+      won: 3,
+      league: "page",
+      group: { points: 3, size: 30 },
+    });
+    const home = joustsResponseSchema.parse(
+      await (await app.request("/jousts", { headers: headers(a) }, env)).json(),
+    );
+    expect(home.standing).toMatchObject({
+      league: "page",
+      group: { points: 3, size: 30 },
+      rankedPerDay: 5,
+      rewardsWaiting: 0,
     });
   });
 
@@ -737,7 +762,6 @@ describe("leagues", () => {
     const a = await jouster();
     const b = await jouster();
     const c = await jouster();
-    for (const who of [a, b, c]) await standAt(who, 650);
     const now = Date.now();
     const first = await rankedJoust(b, a, now);
     const second = await rankedJoust(c, a, now);
@@ -749,117 +773,201 @@ describe("leagues", () => {
       settleJoust(db, second.joustId, at),
       settleJoust(db, first.joustId, at),
     ]);
-    // The second loss, to an opponent now rated above the player, costs a little less.
-    const mine = await standingOf(a);
-    expect(mine?.losses).toBe(2);
-    expect(mine?.laurels).toBeGreaterThan(604);
-    expect(mine?.laurels).toBeLessThan(627);
-    for (const winner of [b, c]) {
-      const standing = await standingOf(winner);
-      expect(standing?.wins).toBe(1);
-      expect(standing?.laurels).toBeGreaterThan(650);
-    }
+    expect(await memberOf(a)).toMatchObject({ points: 0, losses: 2 });
+    for (const winner of [b, c]) expect(await memberOf(winner)).toMatchObject({ points: 3 });
   });
 
-  it("start a season a league lower, never below the league reached", async () => {
-    const a = await jouster();
-    const b = await jouster();
-    await standAt(a, 1000, season() - 1);
-    const listed = joustsResponseSchema.parse(
-      await (await app.request("/jousts", { headers: headers(a) }, env)).json(),
+  it("never put more than 30 players in a group, however many enter at once", async () => {
+    const at = weekAhead();
+    const almostFull = await db
+      .insert(joustGroups)
+      .values({ week: week(at), league: "page", seed: SEED, players: 29, createdAt: new Date() })
+      .returning({ id: joustGroups.id });
+    const pairs = await Promise.all(
+      [0, 1, 2].map(async () => {
+        const winner = await jouster();
+        const loser = await jouster();
+        await befriend(winner, loser);
+        const joustId = await launched(winner, loser);
+        await db.update(jousts).set({ kind: "ranked" }).where(eq(jousts.id, joustId));
+        const done = await playRun(winner, joustId, Date.now());
+        await settleJoust(db, joustId, done);
+        await playRun(loser, joustId, done + 1_000, [0, 1, 2, 3, 4]);
+        return joustId;
+      }),
     );
-    expect(listed.standing).toMatchObject({
-      laurels: 600,
-      division: { league: "chevalier", rank: 3 },
-      nextDivision: { league: "chevalier", rank: 2, from: 700 },
-      champion: false,
-    });
-    await standAt(b, 600);
-    const { joustId, done } = await rankedJoust(b, a);
-    const aDone = await playRun(a, joustId, done + 1_000, [0, 1, 2, 3, 4]);
-    await settleJoust(db, joustId, aDone);
-    expect(await standingOf(a)).toMatchObject({ started: 600, laurels: 600, losses: 1 });
+    await Promise.all(pairs.map((joustId) => settleJoust(db, joustId, at)));
+    const groups = await db
+      .select({ id: joustGroups.id, players: joustGroups.players })
+      .from(joustGroups)
+      .where(and(eq(joustGroups.week, week(at)), eq(joustGroups.league, "page")));
+    expect(groups.find((group) => group.id === almostFull[0]?.id)?.players).toBe(30);
+    expect(groups.map((group) => group.players).sort((x, y) => x - y)).toEqual([5, 30]);
+    const counted = await db.execute<{ group_id: string; count: number }>(sql`
+      select group_id, count(*)::int as count from joust_group_members
+      where week = ${week(at)} group by group_id`);
+    expect(counted.rows.map((row) => row.count).sort()).toEqual([1, 5]);
   });
 
-  it("let a division's reward be claimed once, and the end of a season once it is over", async () => {
+  it("let a week's rewards be claimed once it is over, and send the player up", async () => {
     const a = await jouster();
-    await standAt(a, 1250, season() - 1);
-    await standAt(a, 920);
-    const claim = (at: number, step: number) =>
-      app.request(`/jousts/league/${at}/${step}`, { method: "POST", headers: headers(a) }, env);
+    await groupOf("page", [{ who: a, points: 100 }], week() - 1);
+    const claim = (at: number) =>
+      app.request(`/jousts/league/${at}`, { method: "POST", headers: headers(a) }, env);
 
     const before = await league(a);
-    expect(before.standing).toMatchObject({ laurels: 920, champion: true });
-    // Started at 920 this season: no division climbed yet; last season's end and its climb wait.
-    expect(before.road.filter((stop) => stop.rewarded)).toEqual([]);
-    expect(before.waiting.at(-1)).toEqual({
-      season: season() - 1,
-      step: 0,
-      rewards: [{ kind: "precious_garni_booster" }],
-    });
+    expect(before.standing).toMatchObject({ league: "ecuyer", group: null, rewardsWaiting: 1 });
+    expect(before.waiting).toEqual([
+      {
+        week: week() - 1,
+        league: "page",
+        place: 1,
+        move: "up",
+        rewards: [{ kind: "ecus", amount: 10 }, { kind: "garni_booster" }],
+      },
+    ]);
+    expect(before.ladder.map((step) => step.league)).toEqual([
+      "page",
+      "ecuyer",
+      "chevalier",
+      "banneret",
+      "marechal",
+      "connetable",
+      "champion",
+    ]);
 
-    expect((await claim(season(), 0)).status).toBe(409);
-    expect((await claim(season(), 10)).status).toBe(409);
-    const [first, second] = await Promise.all([claim(season() - 1, 1), claim(season() - 1, 1)]);
+    expect((await claim(week())).status).toBe(409);
+    expect((await claim(week() - 2)).status).toBe(409);
+    const [first, second] = await Promise.all([claim(week() - 1), claim(week() - 1)]);
     expect(first.status).toBe(200);
     expect(second.status).toBe(200);
-    expect(await first.json()).toMatchObject({ rewards: [{ kind: "ecus", amount: 20 }] });
-    const ended = await claim(season() - 1, 0);
-    expect(ended.status).toBe(200);
+    expect(await second.json()).toMatchObject({
+      week: week() - 1,
+      rewards: [{ kind: "ecus", amount: 10 }, { kind: "garni_booster" }],
+    });
     const wallet = await db
       .select()
       .from(schema.boosterWallets)
       .where(eq(schema.boosterWallets.userId, a.userId));
-    expect(wallet[0]).toMatchObject({ ecus: 20, preciousBoosters: 1 });
+    expect(wallet[0]).toMatchObject({ ecus: 10, garniBoosters: 1 });
     const movements = await db
       .select()
       .from(schema.ecuMovements)
       .where(eq(schema.ecuMovements.userId, a.userId));
     expect(movements).toHaveLength(1);
-    expect((await league(a)).waiting).toHaveLength(11);
+    expect((await league(a)).waiting).toEqual([]);
   });
 
-  it("rank the player's league, friends and clan by laurels", async () => {
+  it("enter a player sent up last week in a group of their new league", async () => {
     const a = await jouster();
     const b = await jouster();
-    const c = await jouster();
-    const far = await jouster();
-    await standAt(a, 640);
-    await standAt(b, 700);
-    await standAt(far, 300);
-    await standAt(c, 1000, season() - 1);
-    await befriend(a, c);
-    const board = async (name: string) =>
+    await groupOf("chevalier", [{ who: a, points: 100 }], week() - 1);
+    const { joustId, done } = await rankedJoust(a, b);
+    await settleJoust(db, joustId, done + RULES.replyMs + 1_000);
+    expect(await memberOf(a)).toMatchObject({ league: "banneret", points: 3 });
+    expect(await memberOf(b)).toMatchObject({ league: "page", losses: 1 });
+  });
+
+  it("show the group with its automatons, and rank friends and clan by league then points", async () => {
+    const a = await jouster();
+    const b = await jouster();
+    const hidden = await jouster();
+    const friend = await jouster();
+    const outsider = await jouster();
+    await groupOf("ecuyer", [
+      { who: a, points: 12 },
+      { who: b, points: 30 },
+      { who: hidden, points: 6 },
+    ]);
+    await groupOf("chevalier", [{ who: friend, points: 3 }]);
+    await befriend(a, friend);
+    await db.insert(schema.userBlocks).values({
+      blockerId: a.userId,
+      blockedId: hidden.userId,
+      createdAt: new Date(),
+    });
+    const board = async (name: string, who: Jouster = a) =>
       boardResponseSchema.parse(
-        await (await app.request(`/jousts/boards/${name}`, { headers: headers(a) }, env)).json(),
+        await (await app.request(`/jousts/boards/${name}`, { headers: headers(who) }, env)).json(),
       );
 
-    const mine = await board("league");
-    expect(mine.league).toBe("chevalier");
-    const codes = mine.entries.map((entry) => entry.player.code);
-    expect(codes).toContain(b.code);
-    expect(codes).not.toContain(far.code);
-    expect(codes.indexOf(b.code)).toBeLessThan(codes.indexOf(a.code));
-    expect(mine.me).toMatchObject({ laurels: 640 });
-    expect(mine.me.place).toBeGreaterThan(
-      mine.entries.find((e) => e.player.code === b.code)?.place ?? 0,
+    const group = await board("group");
+    expect(group).toMatchObject({ league: "ecuyer", moves: { up: 8, down: 3 }, closed: null });
+    expect(group.entries).toHaveLength(30);
+    expect(group.entries.filter((entry) => entry.kind === "bot")).toHaveLength(27);
+    expect(group.entries.filter((entry) => entry.kind === "hidden")).toHaveLength(1);
+    const codes = group.entries.flatMap((entry) =>
+      entry.kind === "player" ? [entry.player.code] : [],
     );
+    expect(codes.indexOf(b.code)).toBeLessThan(codes.indexOf(a.code));
+    expect(group.me).toMatchObject({ kind: "player", points: 12, league: "ecuyer" });
+    expect(group.entries.map((entry) => entry.place)).toEqual(
+      Array.from({ length: 30 }, (_, i) => i + 1),
+    );
+
+    expect(await board("group", outsider)).toMatchObject({
+      closed: "not_entered",
+      me: null,
+      entries: [],
+    });
 
     const friends = await board("friends");
-    expect(friends.entries.map((entry) => [entry.player.code, entry.laurels, entry.place])).toEqual(
-      [
-        [a.code, 640, 1],
-        [c.code, 600, 2],
-      ],
-    );
+    expect(
+      friends.entries.map((entry) => [
+        entry.kind === "player" ? entry.player.code : entry.kind,
+        entry.league,
+        entry.place,
+      ]),
+    ).toEqual([
+      [friend.code, "chevalier", 1],
+      [a.code, "ecuyer", 2],
+    ]);
     expect((await board("clan")).closed).toBe("no_clan");
     expect((await board("general")).closed).toBe("general_closed");
-
     const page = await app.request(
-      "/jousts/boards/league?after=nope",
+      "/jousts/boards/general?after=nope",
       { headers: headers(a) },
       env,
     );
     expect(page.status).toBe(400);
+  });
+
+  it("allow 5 ranked jousts a day, launched or received, and free jousts without limit", async () => {
+    const a = await jouster();
+    const b = await jouster();
+    const other = await jouster();
+    const away = await jouster();
+    const gone = await jouster();
+    await db
+      .update(players)
+      .set({ lastSeenAt: new Date("2026-01-01") })
+      .where(notInArray(players.userId, [a.userId, b.userId, other.userId]));
+    const past = (challenger: Jouster, opponent: Jouster) => ({
+      kind: "ranked" as const,
+      challengerId: challenger.userId,
+      opponentId: opponent.userId,
+      launchKey: crypto.randomUUID(),
+      createdAt: new Date(),
+      endedAt: new Date(),
+      outcome: "draw",
+    });
+    // `b` played 5 ranked jousts today, 3 of them received: no ranked joust for them.
+    await db
+      .insert(jousts)
+      .values([past(b, away), past(b, gone), past(away, b), past(away, b), past(gone, b)]);
+    const ranked = await launch(a, { kind: "ranked" });
+    if (ranked.kind !== "launched") throw new Error(`Not launched: ${JSON.stringify(ranked)}`);
+    expect((await readJoustRow(ranked.joustId)).opponentId).toBe(other.userId);
+    expect(await launch(b, { kind: "ranked" })).toEqual({
+      kind: "refused",
+      reason: "ranked_limit",
+    });
+    const free = await launch(b, { kind: "free" });
+    if (free.kind !== "launched") throw new Error(`Not launched: ${JSON.stringify(free)}`);
+    expect(await readJoustRow(free.joustId)).toMatchObject({ kind: "free" });
+    const home = joustsResponseSchema.parse(
+      await (await app.request("/jousts", { headers: headers(b) }, env)).json(),
+    );
+    expect(home.standing.rankedLeft).toBe(0);
   });
 });

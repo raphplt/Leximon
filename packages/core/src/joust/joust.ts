@@ -11,7 +11,7 @@ import { MASTERY_LEVELS, type MasteryLevel } from "../mastery/mastery";
 import { type RandomSource, randomInt } from "../random";
 import type { GlickoRules } from "./glicko";
 
-export const JOUST_KINDS = ["ranked", "friendly"] as const;
+export const JOUST_KINDS = ["ranked", "free", "friendly"] as const;
 export type JoustKind = (typeof JOUST_KINDS)[number];
 
 export interface JoustRules {

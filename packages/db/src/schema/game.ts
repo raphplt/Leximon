@@ -277,7 +277,7 @@ export type EcuMovementDetails =
       readonly missions: readonly { readonly day: string; readonly slot: number }[];
     }
   | { readonly kind: "carnet"; readonly period: number; readonly case: number }
-  | { readonly kind: "league"; readonly season: number; readonly step: number };
+  | { readonly kind: "league"; readonly week: number };
 
 /**
  * Days of the welcome week claimed, one row per day: the primary key makes a claim happen once,

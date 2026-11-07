@@ -1,228 +1,285 @@
 import type { BoardResponse, JoustStanding, LeagueResponse } from "@leximon/contract";
 import { describe, expect, it } from "vitest";
-import { formatCount } from "./format";
 import {
+  boardLines,
   boardNote,
-  divisionName,
-  laurelsDelta,
-  meOutsidePage,
+  ladderRules,
+  ladderSteps,
+  leagueNumeral,
+  placeText,
+  pointsText,
+  rankedLeftText,
   ratingLine,
-  roadStops,
-  seasonLeft,
-  seasonRecord,
-  seasonRewardLines,
   standingHeader,
+  tournamentGain,
   waitingReward,
+  weekLeft,
+  weekRecord,
+  zoneStarts,
 } from "./leagues";
 
-const season = { index: 0, firstDay: "2026-11-09", lastDay: "2026-12-06" };
-const chevalierII = { league: "chevalier", rank: 2, from: 700, index: 7 } as const;
-const chevalierI = { league: "chevalier", rank: 1, from: 800, index: 8 } as const;
+const week = { index: 2, firstDay: "2026-11-23", lastDay: "2026-11-29" };
 
 const standing: JoustStanding = {
-  season,
-  laurels: 742,
-  division: chevalierII,
-  nextDivision: chevalierI,
-  streak: 0,
-  champion: false,
+  week,
+  league: "chevalier",
+  group: { place: 4, points: 12, size: 30, move: "up" },
+  rankedLeft: 3,
+  rankedPerDay: 5,
   rewardsWaiting: 0,
 };
 
 const badge = (code: string) => ({ code, pseudo: code, avatar: "a", frame: "f", level: 9 });
 
+const ecus = (amount: number) => ({ kind: "ecus" as const, amount });
+
+const league: LeagueResponse = {
+  standing,
+  ladder: [
+    { league: "page", up: 10, down: 0, rewards: [ecus(10)] },
+    { league: "ecuyer", up: 8, down: 3, rewards: [ecus(15)] },
+    { league: "chevalier", up: 7, down: 5, rewards: [ecus(20)] },
+    { league: "banneret", up: 6, down: 5, rewards: [ecus(25)] },
+    { league: "marechal", up: 5, down: 6, rewards: [ecus(30)] },
+    { league: "connetable", up: 4, down: 7, rewards: [ecus(35)] },
+    { league: "champion", up: 0, down: 8, rewards: [ecus(40)] },
+  ],
+  upRewards: [{ kind: "garni_booster" }],
+  podium: { places: 3, rewards: [{ kind: "precious_garni_booster" }] },
+  points: { won: 3, draw: 1, lost: 0 },
+  waiting: [],
+  stats: { ranked: 2, wins: 0, losses: 0, draws: 0, rating: null, ratingAfter: 5 },
+  generalOpen: false,
+};
+
+describe("words", () => {
+  it("count points and places", () => {
+    expect(pointsText(0)).toBe("0 point");
+    expect(pointsText(1)).toBe("1 point");
+    expect(pointsText(12)).toBe("12 points");
+    expect(placeText(1)).toBe("1er");
+    expect(placeText(2)).toBe("2e");
+  });
+
+  it("number the leagues on their shields, Champion crowned", () => {
+    expect(leagueNumeral("page")).toBe("I");
+    expect(leagueNumeral("connetable")).toBe("VI");
+    expect(leagueNumeral("champion")).toBeNull();
+  });
+
+  it("say the ranked jousts left today", () => {
+    expect(rankedLeftText(3)).toBe("Encore 3 joutes classées aujourd'hui");
+    expect(rankedLeftText(1)).toBe("Encore 1 joute classée aujourd'hui");
+    expect(rankedLeftText(0)).toBe(
+      "Tes joutes classées du jour sont jouées. Les joutes libres restent ouvertes.",
+    );
+  });
+
+  it("count down to Sunday midnight", () => {
+    expect(weekLeft(week, "2026-11-25")).toBe("Fin du tournoi dans 4 jours");
+    expect(weekLeft(week, "2026-11-28")).toBe("Fin du tournoi demain soir à minuit");
+    expect(weekLeft(week, "2026-11-29")).toBe("Fin du tournoi ce soir à minuit");
+  });
+});
+
 describe("standingHeader", () => {
-  it("names the division and what is left to the next one", () => {
-    expect(standingHeader(standing, "2026-11-24")).toEqual({
-      name: "Chevalier II",
-      laurels: "742 lauriers",
-      share: 0.42,
-      next: "Encore 58 pour Chevalier I",
-      season: "Fin de la saison dans 12 jours",
-      streak: null,
+  it("tells the place in the group and what it would give", () => {
+    expect(standingHeader(standing, "2026-11-25")).toEqual({
+      name: "Chevalier",
+      place: "4e sur 30",
+      points: "12 points",
+      move: "up",
+      line: "Si le tournoi finissait maintenant, tu monterais en Banneret.",
+      week: "Fin du tournoi dans 4 jours",
+      ranked: "Encore 3 joutes classées aujourd'hui",
       champion: null,
       waiting: null,
     });
   });
 
-  it("tells the top, the streak, the emblem and the rewards waiting", () => {
+  it("asks for a ranked joust before the first of the week, and wears the Champion emblem", () => {
     const header = standingHeader(
-      {
-        ...standing,
-        laurels: 1330,
-        division: { league: "champion", rank: null, from: 1200, index: 12 },
-        nextDivision: null,
-        streak: 3,
-        champion: true,
-        rewardsWaiting: 1,
-      },
-      "2026-12-06",
+      { ...standing, league: "champion", group: null, rewardsWaiting: 2 },
+      "2026-11-25",
     );
     expect(header).toMatchObject({
       name: "Champion",
-      share: 1,
-      next: "Tu es dans la plus haute ligue.",
-      season: "Fin de la saison ce soir",
-      streak: "3 victoires classées d'affilée",
-      champion: "Champion de la saison passée",
-      waiting: "1 récompense à réclamer",
+      place: null,
+      points: null,
+      line: "Joue une joute classée pour entrer dans le tournoi de la semaine.",
+      champion: "Champion",
+      waiting: "2 récompenses à réclamer",
     });
+  });
+
+  it("says a fall and a stay", () => {
+    const at = (move: "down" | "stay") =>
+      standingHeader({ ...standing, group: { place: 28, points: 0, size: 30, move } }, "2026-11-25")
+        .line;
+    expect(at("down")).toBe("Si le tournoi finissait maintenant, tu descendrais en Écuyer.");
+    expect(at("stay")).toBe("Si le tournoi finissait maintenant, tu resterais en Chevalier.");
   });
 });
 
-describe("texts", () => {
-  it("names divisions", () => {
-    expect(divisionName({ league: "page", rank: 3 })).toBe("Page III");
-    expect(divisionName({ league: "ecuyer", rank: 1 })).toBe("Écuyer I");
-  });
-
-  it("counts the days left in the season", () => {
-    expect(seasonLeft(season, "2026-12-05")).toBe("Fin de la saison demain soir");
-    expect(seasonLeft(season, "2026-11-09")).toBe("Fin de la saison dans 27 jours");
-  });
-
-  it("tells the laurels of a joust", () => {
-    expect(laurelsDelta({ before: 650, after: 675 })).toBe("+25 lauriers");
-    expect(laurelsDelta({ before: 650, after: 649 })).toBe("−1 laurier");
-    expect(laurelsDelta({ before: 600, after: 600 })).toBe("Lauriers inchangés");
-  });
-});
-
-const league: LeagueResponse = {
-  standing,
-  road: [
-    {
-      division: { league: "page", rank: 3, from: 0, index: 0 },
-      rewards: [],
-      rewarded: false,
-      claimed: false,
-    },
-    {
-      division: { league: "page", rank: 2, from: 100, index: 1 },
-      rewards: [{ kind: "ecus", amount: 20 }],
-      rewarded: true,
-      claimed: true,
-    },
-    {
-      division: chevalierII,
-      rewards: [{ kind: "ecus", amount: 20 }],
-      rewarded: true,
-      claimed: false,
-    },
-    {
-      division: chevalierI,
-      rewards: [{ kind: "ecus", amount: 20 }],
-      rewarded: false,
-      claimed: false,
-    },
-  ],
-  seasonRewards: [
-    { league: "page", rewards: [{ kind: "bonus_booster" }] },
-    { league: "chevalier", rewards: [{ kind: "garni_booster" }] },
-    { league: "champion", rewards: [{ kind: "precious_garni_booster" }] },
-  ],
-  waiting: [{ season: 0, step: 7, rewards: [{ kind: "ecus", amount: 20 }] }],
-  stats: { ranked: 3, wins: 2, losses: 1, draws: 0, rating: null, ratingAfter: 5 },
-  generalOpen: false,
-};
-
-describe("the road", () => {
-  it("marks each stop claimed, waiting, reached or later", () => {
-    const stops = roadStops(league);
-    expect(stops.map((stop) => [stop.name, stop.status, stop.here])).toEqual([
-      ["Page III", "reached", false],
-      ["Page II", "claimed", false],
-      ["Chevalier II", "waiting", true],
-      ["Chevalier I", "later", false],
-    ]);
-    expect(stops[2]?.label).toBe("Chevalier II, 700 lauriers, 20 écus, à réclamer");
-    expect(stops[0]?.reward).toBeNull();
-  });
-
-  it("says the end of season rewards", () => {
-    expect(seasonRewardLines(league).map((line) => [line.name, line.reward, line.here])).toEqual([
-      ["Page", "Un sachet bonus", false],
-      ["Chevalier", "Un sachet garni", true],
-      ["Champion", "Un sachet garni Précieux et l'emblème de Champion", false],
-    ]);
-  });
-
-  it("names the next reward to claim", () => {
-    expect(waitingReward(league)).toMatchObject({
-      season: 0,
-      step: 7,
-      title: "20 écus pour avoir atteint Chevalier II",
-      icon: "ecu",
-      more: null,
-    });
+describe("tournamentGain", () => {
+  it("gives the points won and the place now", () => {
     expect(
-      waitingReward({
-        ...league,
-        waiting: [{ season: -1, step: 0, rewards: [{ kind: "garni_booster" }] }],
-      })?.title,
-    ).toBe("Un sachet garni pour ta ligue à la fin de la saison passée");
-    const older = waitingReward({
+      tournamentGain({
+        won: 3,
+        league: "page",
+        group: { place: 1, points: 9, size: 30, move: "up" },
+      }),
+    ).toEqual({ points: "+3 points", place: "1er de ton groupe, 9 points", move: "up" });
+    expect(tournamentGain({ won: 1, league: "page", group: null })).toEqual({
+      points: "+1 point",
+      place: null,
+      move: null,
+    });
+    expect(tournamentGain({ won: 0, league: "page", group: null }).points).toBe("Aucun point");
+  });
+});
+
+describe("the ladder", () => {
+  it("lists the leagues from the top, with their moves and rewards", () => {
+    const steps = ladderSteps(league);
+    expect(steps.map((step) => step.name)).toEqual([
+      "Champion",
+      "Connétable",
+      "Maréchal",
+      "Banneret",
+      "Chevalier",
+      "Écuyer",
+      "Page",
+    ]);
+    expect(steps[0]).toMatchObject({
+      moves: "Personne ne monte, les 8 derniers descendent.",
+      reward: "40 écus par semaine",
+      here: false,
+    });
+    expect(steps.find((step) => step.here)?.league).toBe("chevalier");
+    expect(steps.at(-1)?.moves).toBe("Les 10 premiers montent, personne ne descend.");
+  });
+
+  it("tells the rule with its numbers", () => {
+    expect(ladderRules(league)).toEqual([
+      "Une victoire classée rapporte 3 points, une égalité 1 point, une défaite aucun.",
+      "Tu joues 5 joutes classées par jour au plus, lancées ou reçues.",
+      "Le dimanche à minuit, les premiers de chaque groupe montent d'une ligue et les derniers descendent. Une semaine sans joute classée ne change rien.",
+      "Monter donne en plus un sachet garni. Finir dans les 3 premiers en Champion donne en plus un sachet garni Précieux.",
+      "Les automates complètent les groupes tant qu'il manque des joueurs. Ils ne joutent pas : leurs points montent au fil de la semaine.",
+    ]);
+  });
+});
+
+describe("waitingReward", () => {
+  it("tells last week's reward and what the place gave", () => {
+    const next = waitingReward({
       ...league,
       waiting: [
-        { season: -2, step: 0, rewards: [{ kind: "garni_booster" }] },
-        { season: -2, step: 4, rewards: [{ kind: "ecus", amount: 20 }] },
+        {
+          week: 1,
+          league: "page",
+          place: 1,
+          move: "up",
+          rewards: [ecus(10), { kind: "garni_booster" }],
+        },
       ],
     });
-    expect(older?.title).toBe(
-      "Un sachet garni pour ta ligue à la fin de la saison du 14 septembre",
-    );
-    expect(older?.more).toBe("Encore 1 récompense après celle-ci");
-    expect(
-      waitingReward({
-        ...league,
-        waiting: [{ season: -2, step: 7, rewards: [{ kind: "ecus", amount: 20 }] }],
-      })?.title,
-    ).toBe("20 écus pour avoir atteint Chevalier II pendant la saison du 14 septembre");
-    expect(waitingReward({ ...league, waiting: [] })).toBeNull();
+    expect(next).toMatchObject({
+      week: 1,
+      title: "10 écus et un sachet garni pour le tournoi de la semaine passée",
+      detail: "1er de ton groupe en Page : tu passes en Écuyer.",
+      icon: "star",
+      more: null,
+    });
+  });
+
+  it("dates an older week and counts the rewards after", () => {
+    const at = (move: "stay" | "down") => ({
+      week: 0,
+      league: "chevalier" as const,
+      place: 12,
+      move,
+      rewards: [ecus(20)],
+    });
+    const next = waitingReward({ ...league, waiting: [at("down"), at("stay")] });
+    expect(next).toMatchObject({
+      title: "20 écus pour le tournoi de la semaine du 9 novembre",
+      detail: "12e de ton groupe en Chevalier : tu redescends en Écuyer.",
+      icon: "ecu",
+      more: "Encore 1 récompense après celle-ci",
+    });
+    expect(waitingReward(league)).toBeNull();
   });
 });
 
 describe("figures", () => {
-  it("counts the season and hides the rating until enough jousts", () => {
-    expect(seasonRecord(league.stats)).toBe("2 victoires, 1 défaite cette saison");
+  it("count the week's ranked jousts", () => {
+    expect(weekRecord(league.stats)).toBe("Aucune joute classée cette semaine pour l'instant.");
+    expect(weekRecord({ ...league.stats, wins: 1, losses: 3, draws: 1 })).toBe(
+      "1 victoire, 3 défaites, 1 égalité cette semaine",
+    );
+  });
+
+  it("show the rating after 5 ranked jousts", () => {
     expect(ratingLine(league.stats)).toBe(
-      "Ta cote se montre après 5 joutes classées. Encore 2 joutes.",
+      "Ta cote se montre après 5 joutes classées. Encore 3 joutes.",
     );
-    expect(ratingLine({ ...league.stats, ranked: 7, rating: 1532 })).toBe(
-      `Ta cote est de ${formatCount(1532)}. Elle choisit des adversaires de ta force et ne se remet jamais à zéro.`,
-    );
-    expect(seasonRecord({ ...league.stats, wins: 0, losses: 0 })).toBe(
-      "Aucune joute classée cette saison pour l'instant.",
-    );
+    expect(ratingLine({ ...league.stats, ranked: 4 })).toContain("Encore 1 joute.");
+    expect(ratingLine({ ...league.stats, ranked: 7, rating: 1612 })).toContain("1\u202f612");
   });
 });
 
 describe("boards", () => {
-  const me = {
-    player: badge("ME"),
-    place: 9,
-    laurels: 640,
-    division: chevalierII,
-    champion: false,
-  };
-  const board: BoardResponse = {
-    board: "league",
+  const line = (kind: "player" | "bot" | "hidden", place: number, move: "up" | "stay" | "down") =>
+    kind === "player"
+      ? {
+          kind,
+          player: badge(`P${place}`),
+          place,
+          points: 40 - place,
+          league: "ecuyer" as const,
+          move,
+        }
+      : kind === "bot"
+        ? { kind, bot: place, place, points: 40 - place, league: "ecuyer" as const, move }
+        : { kind, place, points: 40 - place, league: "ecuyer" as const, move };
+  const group: BoardResponse = {
+    board: "group",
     closed: null,
-    league: "chevalier",
-    entries: [{ ...me, player: badge("OTHER"), place: 1 }],
-    me,
+    league: "ecuyer",
+    moves: { up: 2, down: 1 },
+    entries: [line("bot", 1, "up"), line("player", 2, "up"), line("hidden", 3, "stay")],
+    me: line("player", 2, "up"),
     next: null,
   };
 
-  it("says who is on the board, or why it is empty", () => {
-    expect(boardNote(board)).toBe("Les jouteurs de la ligue Chevalier cette saison.");
-    expect(boardNote({ ...board, board: "clan", closed: "no_clan" })).toBe(
-      "Rejoins un clan pour voir le classement de ses jouteurs.",
-    );
+  it("names players, automatons and hidden players, the player marked", () => {
+    const { lines, pinned } = boardLines(group);
+    expect(lines.map((each) => [each.name, each.tag, each.me])).toEqual([
+      ["Aubin", "automate", false],
+      ["P2 (toi)", null, true],
+      ["Jouteur", null, false],
+    ]);
+    expect(pinned).toBeNull();
+    expect(zoneStarts(lines)).toEqual({ stay: "h-3", down: null });
   });
 
   it("pins the player under a page that does not show them", () => {
-    expect(meOutsidePage(board)).toBe(true);
-    expect(meOutsidePage({ ...board, entries: [me] })).toBe(false);
+    const { pinned } = boardLines({ ...group, entries: [line("bot", 1, "up")] });
+    expect(pinned).toMatchObject({ name: "P2 (toi)", me: true, place: "2" });
+    expect(boardLines({ ...group, me: null }).pinned).toBeNull();
+  });
+
+  it("explains each board", () => {
+    expect(boardNote(group)).toBe(
+      "Ton groupe de la ligue Écuyer. Les 2 premiers montent, le dernier descend. Les automates complètent les places libres.",
+    );
+    expect(boardNote({ ...group, closed: "not_entered", entries: [], me: null })).toContain(
+      "Joue une joute classée",
+    );
+    expect(boardNote({ ...group, board: "clan", closed: "no_clan" })).toBe(
+      "Rejoins un clan pour voir le classement de ses jouteurs.",
+    );
   });
 });

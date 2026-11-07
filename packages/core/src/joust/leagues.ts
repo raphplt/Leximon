@@ -1,55 +1,58 @@
 /**
- * Leagues of ranked jousts. Laurels are won and lost in ranked jousts only, on a ladder of
- * leagues cut into divisions. A season follows the carnet's calendar; at its end each player gets
- * the reward of the league they reached and starts the next one a league lower. A defeat costs more
- * the higher the league, so that winning one joust in two holds a player in the middle leagues
- * instead of carrying everyone who plays a lot up to Champion. The hidden rating still chooses the
- * opponent and only weighs the laurels a joust is worth.
+ * Leagues of ranked jousts, played as a tournament each week. A player enters the week's
+ * tournament with the result of their first ranked joust of the week, in a group of their league;
+ * automatons fill the places no player took. Ranked wins and draws bring points; at the end of
+ * the week the first places of the group go up a league and the last go down. A week without a
+ * ranked joust changes nothing.
  *
- * Nothing is stored for a season the player did not play: where they start is computed from
- * their last season played, one league lower again for each season skipped since.
+ * The automatons never joust: their points are drawn from the group's seed and rise over the
+ * week, higher in the higher leagues, so that they set how hard each league is to leave while the
+ * groups are not full. They are always shown as automatons.
  *
- * Concurrency: these functions are pure. Callers apply a joust's laurels under both standings'
- * locks, and a reward claim under the player's wallet lock.
+ * Concurrency: these functions are pure. Callers add a joust's points under both members' locks,
+ * enter a group under a lock of its league and week, and claim a reward under the wallet lock.
  */
 
+import { gameTimeOn } from "../bonus/bonus";
 import type { EpochMs } from "../booster/refill";
 import { type CarnetPeriod, carnetPeriodOf, periodAt } from "../progress/carnet";
 import type { LevelReward } from "../progress/rewards";
+import { createSeededRandom, type RandomSource, randomInt } from "../random";
 
-export const LEAGUES = ["page", "ecuyer", "chevalier", "banneret", "champion"] as const;
+export const LEAGUES = [
+  "page",
+  "ecuyer",
+  "chevalier",
+  "banneret",
+  "marechal",
+  "connetable",
+  "champion",
+] as const;
 export type League = (typeof LEAGUES)[number];
+
+export type JoustResult = "won" | "lost" | "draw";
+export type WeekMove = "up" | "stay" | "down";
 
 export interface LeagueRules {
   /** Period start; the rules in force when a joust ends or a reward is claimed apply. */
   readonly startsAt: EpochMs;
-  /** First day (Paris) of season 0; the seasons before have negative numbers. */
-  readonly firstSeasonDay: string;
-  readonly seasonDays: number;
-  /** Laurels at which each league starts, Page at 0. */
-  readonly leagueFrom: Readonly<Record<League, number>>;
-  /** Divisions of each league below the last one; the last league has one. */
-  readonly divisionsPerLeague: number;
-  /** Laurels of a win against an opponent of the same rating, and the bounds by rating gap. */
-  readonly win: LaurelRange;
-  /** The same for a defeat, by the league the player is in before the joust. */
-  readonly loss: Readonly<Record<League, LaurelRange>>;
-  /** A rating gap this wide reaches a bound of the range. */
-  readonly ratingSpread: number;
-  /** From this win in a row on, a win brings `streakBonus` more laurels. */
-  readonly streakFrom: number;
-  readonly streakBonus: number;
-  /** The first time in a season a division is reached, and a league. */
-  readonly divisionRewards: readonly LevelReward[];
-  readonly leagueRewards: readonly LevelReward[];
-  /** At the end of a season, by the league reached. */
-  readonly seasonRewards: Readonly<Record<League, readonly LevelReward[]>>;
-}
-
-export interface LaurelRange {
-  readonly base: number;
-  readonly min: number;
-  readonly max: number;
+  /** A Monday (Paris): the first day of week 0; the weeks before have negative numbers. */
+  readonly firstWeekDay: string;
+  /** Places of a group: players first, automatons for the rest. */
+  readonly groupSize: number;
+  /** Ranked jousts a player may play in a day (Paris), launched or received. */
+  readonly rankedPerDay: number;
+  readonly points: Readonly<Record<JoustResult, number>>;
+  /** At the end of a week: how many first places go up, and last places go down. */
+  readonly moves: Readonly<Record<League, { readonly up: number; readonly down: number }>>;
+  /** Points of the automatons over a whole week: a normal draw, kept within what a player can do. */
+  readonly bots: Readonly<Record<League, { readonly mean: number; readonly spread: number }>>;
+  /** What a week played gives, by its league. */
+  readonly weekEcus: Readonly<Record<League, number>>;
+  /** Given on top for going up. */
+  readonly upRewards: readonly LevelReward[];
+  /** Given on top to the first places of the Champion group. */
+  readonly championPodium: { readonly places: number; readonly rewards: readonly LevelReward[] };
 }
 
 export type LeagueSchedule = readonly [LeagueRules, ...LeagueRules[]];
@@ -63,227 +66,224 @@ export function leagueRulesAt(schedule: LeagueSchedule, time: EpochMs): LeagueRu
   return active;
 }
 
-// --- Seasons -------------------------------------------------------------------------------------
+export function leagueRank(league: League): number {
+  return LEAGUES.indexOf(league);
+}
 
+export function leagueAt(rank: number): League {
+  return LEAGUES[Math.max(0, Math.min(LEAGUES.length - 1, rank))] ?? "page";
+}
+
+// --- Weeks ---------------------------------------------------------------------------------------
+
+const WEEK_DAYS = 7;
 const calendarOf = (rules: LeagueRules) => ({
-  firstPeriodDay: rules.firstSeasonDay,
-  periodDays: rules.seasonDays,
+  firstPeriodDay: rules.firstWeekDay,
+  periodDays: WEEK_DAYS,
 });
 
-/** The season of a day (Paris, "2026-11-09"). */
-export function seasonOf(rules: LeagueRules, day: string): CarnetPeriod {
+/** The week of a day (Paris, "2026-11-09"). */
+export function weekOf(rules: LeagueRules, day: string): CarnetPeriod {
   return carnetPeriodOf(calendarOf(rules), day);
 }
 
-export function seasonAt(rules: LeagueRules, index: number): CarnetPeriod {
+export function weekAt(rules: LeagueRules, index: number): CarnetPeriod {
   return periodAt(calendarOf(rules), index);
 }
 
-// --- Divisions -----------------------------------------------------------------------------------
+// --- A joust -------------------------------------------------------------------------------------
 
-export interface Division {
+export function joustPoints(rules: LeagueRules, result: JoustResult): number {
+  return rules.points[result];
+}
+
+/** The most points a player can make in a week. */
+export function weekPointsCap(rules: LeagueRules): number {
+  return rules.rankedPerDay * WEEK_DAYS * rules.points.won;
+}
+
+/** Ranked jousts the player may still play today. */
+export function rankedLeft(rules: LeagueRules, rankedToday: number): number {
+  return Math.max(0, rules.rankedPerDay - rankedToday);
+}
+
+// --- The automatons ------------------------------------------------------------------------------
+
+export interface GroupSeed {
   readonly league: League;
-  /** 3, 2 then 1 within a league, as « Chevalier III » then « Chevalier I »; `null` for the last. */
-  readonly rank: number | null;
-  readonly from: number;
-  /** Its place on the ladder, 0 for the first. */
-  readonly index: number;
+  readonly week: number;
+  /** 32 lowercase hex characters, drawn when the group was made. */
+  readonly seed: string;
 }
 
-/** Every division, lowest first. */
-export function divisions(rules: LeagueRules): readonly Division[] {
-  const all: Division[] = [];
-  LEAGUES.forEach((league, leagueIndex) => {
-    const from = rules.leagueFrom[league];
-    const next = LEAGUES[leagueIndex + 1];
-    if (next === undefined) {
-      all.push({ league, rank: null, from, index: all.length });
-      return;
-    }
-    const step = (rules.leagueFrom[next] - from) / rules.divisionsPerLeague;
-    for (let part = 0; part < rules.divisionsPerLeague; part += 1) {
-      all.push({
-        league,
-        rank: rules.divisionsPerLeague - part,
-        from: Math.round(from + part * step),
-        index: all.length,
-      });
-    }
+interface BotPlan {
+  readonly total: number;
+  /** When the automaton jousts in the week, and the share of its points each time. */
+  readonly steps: readonly { readonly at: EpochMs; readonly share: number }[];
+}
+
+function unit(random: RandomSource): number {
+  return random.nextUint32() / 2 ** 32;
+}
+
+function normal(random: RandomSource): number {
+  const u = Math.max(unit(random), 1e-12);
+  return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * unit(random));
+}
+
+function dayAfter(day: string, days: number): string {
+  const [year = 0, month = 1, date = 1] = day.split("-").map(Number);
+  return new Date(Date.UTC(year, month - 1, date + days)).toISOString().slice(0, 10);
+}
+
+/** Every automaton a group could hold, in the order they leave as players arrive. */
+function botPlans(rules: LeagueRules, group: GroupSeed): BotPlan[] {
+  const random = createSeededRandom(group.seed);
+  const firstDay = weekAt(rules, group.week).firstDay;
+  const { mean, spread } = rules.bots[group.league];
+  const cap = weekPointsCap(rules);
+  return Array.from({ length: rules.groupSize }, () => {
+    const total = Math.max(0, Math.min(cap, Math.round(mean + spread * normal(random))));
+    const steps = Array.from({ length: WEEK_DAYS }, (_, day) => {
+      const plays = unit(random) < 0.8;
+      const share = plays ? 0.5 + unit(random) : 0;
+      const hour = 8 + randomInt(random, 15);
+      const minute = randomInt(random, 60);
+      return { at: gameTimeOn(dayAfter(firstDay, day), hour) + minute * 60_000, share };
+    });
+    return { total, steps };
   });
-  return all;
 }
 
-export function divisionOf(rules: LeagueRules, laurels: number): Division {
-  const all = divisions(rules);
-  return all.findLast((division) => laurels >= division.from) ?? (all[0] as Division);
+export interface BotStanding {
+  readonly index: number;
+  readonly points: number;
+  /** When it reached those points: the start of the week before its first step. */
+  readonly scoredAt: EpochMs;
 }
 
-export function leagueOf(rules: LeagueRules, laurels: number): League {
-  return divisionOf(rules, laurels).league;
-}
-
-/** Laurels never go below the start of the league reached in the season. */
-export function floorOf(rules: LeagueRules, peak: number): number {
-  return rules.leagueFrom[leagueOf(rules, peak)];
-}
-
-// --- A joust's laurels ---------------------------------------------------------------------------
-
-export interface Standing {
-  readonly laurels: number;
-  /** The most laurels held this season: its league is the floor. */
-  readonly peak: number;
-  /** Ranked wins in a row this season. */
-  readonly streak: number;
-}
-
-export interface LaurelsChange {
-  readonly before: Standing;
-  readonly after: Standing;
-  /** Laurels won (positive) or lost (negative), after the floor. */
-  readonly delta: number;
-}
-
-const clamp = (value: number, range: LaurelRange) =>
-  Math.max(range.min, Math.min(range.max, Math.round(value)));
-
-/**
- * The laurels of a ranked joust, from both ratings as they stood before it. Beating a stronger
- * opponent brings more, losing to one costs less; a draw changes nothing and breaks the streak.
- */
-export function joustLaurels(
+/** The first `count` automatons of a group as they stand at `at`. */
+export function botsOf(
   rules: LeagueRules,
-  standing: Standing,
-  input: {
-    readonly outcome: "won" | "lost" | "draw";
-    readonly rating: number;
-    readonly opponentRating: number;
-  },
-): LaurelsChange {
-  const gap = (input.opponentRating - input.rating) / rules.ratingSpread;
-  if (input.outcome === "draw") {
-    return { before: standing, after: { ...standing, streak: 0 }, delta: 0 };
-  }
-  if (input.outcome === "won") {
-    const streak = standing.streak + 1;
-    const won = clamp(rules.win.base + gap * (rules.win.max - rules.win.base), rules.win);
-    const delta = streak >= rules.streakFrom ? won + rules.streakBonus : won;
-    const laurels = standing.laurels + delta;
-    return {
-      before: standing,
-      after: { laurels, peak: Math.max(standing.peak, laurels), streak },
-      delta,
+  group: GroupSeed,
+  count: number,
+  at: EpochMs,
+): BotStanding[] {
+  const weekStart = gameTimeOn(weekAt(rules, group.week).firstDay, 0);
+  return botPlans(rules, group)
+    .slice(0, Math.max(0, count))
+    .map((plan, index) => {
+      const whole = plan.steps.reduce((sum, step) => sum + step.share, 0);
+      let done = 0;
+      let scoredAt = weekStart;
+      for (const step of plan.steps) {
+        if (step.at > at || step.share === 0) continue;
+        done += step.share;
+        scoredAt = Math.max(scoredAt, step.at);
+      }
+      const points = whole === 0 ? 0 : Math.round((plan.total * done) / whole);
+      return { index, points, scoredAt: points === 0 ? weekStart : scoredAt };
+    });
+}
+
+// --- The group -----------------------------------------------------------------------------------
+
+export interface GroupMember {
+  readonly userId: string;
+  readonly points: number;
+  /** When the member reached their points; when they entered the group if they have none. */
+  readonly scoredAt: EpochMs;
+}
+
+export type GroupLine =
+  | {
+      readonly kind: "player";
+      readonly userId: string;
+      readonly points: number;
+      readonly place: number;
+      readonly move: WeekMove;
+    }
+  | {
+      readonly kind: "bot";
+      readonly index: number;
+      readonly points: number;
+      readonly place: number;
+      readonly move: WeekMove;
     };
-  }
-  const loss = rules.loss[leagueOf(rules, standing.laurels)];
-  const lost = clamp(loss.base - gap * (loss.max - loss.base), loss);
-  const laurels = Math.max(floorOf(rules, standing.peak), standing.laurels - lost);
-  return {
-    before: standing,
-    after: { laurels, peak: standing.peak, streak: 0 },
-    delta: laurels - standing.laurels,
-  };
-}
 
-// --- From one season to the next -----------------------------------------------------------------
-
-/** A season the player played, as it ended or stands. */
-export interface SeasonPlayed {
-  readonly season: number;
-  readonly laurels: number;
+/** What a place gives at the end of the week. Going up takes at least one point. */
+export function moveOf(
+  rules: LeagueRules,
+  league: League,
+  place: number,
+  points: number,
+): WeekMove {
+  const { up, down } = rules.moves[league];
+  if (place <= up && points > 0) return "up";
+  if (place > rules.groupSize - down) return "down";
+  return "stay";
 }
 
 /**
- * Where the player starts a season: the start of the league below the one they reached in their
- * last season played, one league lower again for each season they skipped since.
+ * The group as it stands at `at`: its players and the automatons that fill the places left, by
+ * points, the first to reach a score ahead at equal points, players ahead of automatons last.
  */
-export function seasonStart(rules: LeagueRules, last: SeasonPlayed | null, season: number): number {
-  if (last === null || last.season >= season) return 0;
-  const reached = LEAGUES.indexOf(leagueOf(rules, last.laurels));
-  const league = LEAGUES[Math.max(0, reached - (season - last.season))] ?? "page";
-  return rules.leagueFrom[league];
+export function groupStandings(
+  rules: LeagueRules,
+  group: GroupSeed,
+  members: readonly GroupMember[],
+  at: EpochMs,
+): GroupLine[] {
+  const bots = botsOf(rules, group, rules.groupSize - members.length, at);
+  const lines = [
+    ...members.map((member) => ({
+      key: `p:${member.userId}`,
+      points: member.points,
+      scoredAt: member.scoredAt,
+      player: member.userId as string | null,
+      bot: -1,
+    })),
+    ...bots.map((bot) => ({
+      key: `b:${String(bot.index).padStart(3, "0")}`,
+      points: bot.points,
+      scoredAt: bot.scoredAt,
+      player: null,
+      bot: bot.index,
+    })),
+  ].sort(
+    (a, b) =>
+      b.points - a.points ||
+      a.scoredAt - b.scoredAt ||
+      (a.player === null ? 1 : 0) - (b.player === null ? 1 : 0) ||
+      (a.key < b.key ? -1 : 1),
+  );
+  return lines.map((line, position) => {
+    const place = position + 1;
+    const move = moveOf(rules, group.league, place, line.points);
+    return line.player === null
+      ? { kind: "bot", index: line.bot, points: line.points, place, move }
+      : { kind: "player", userId: line.player, points: line.points, place, move };
+  });
 }
 
-/** The standing of a season not played yet. */
-export function freshStanding(
-  rules: LeagueRules,
-  last: SeasonPlayed | null,
-  season: number,
-): Standing {
-  const laurels = seasonStart(rules, last, season);
-  return { laurels, peak: laurels, streak: 0 };
+export function leagueAfter(league: League, move: WeekMove): League {
+  const shift = move === "up" ? 1 : move === "down" ? -1 : 0;
+  return leagueAt(leagueRank(league) + shift);
 }
 
 // --- Rewards -------------------------------------------------------------------------------------
 
-/** A league reward: `step` is a division's index, or 0 for the season's end. */
-export interface LeagueRewardKey {
-  readonly season: number;
-  readonly step: number;
-}
-
-export const SEASON_END_STEP = 0;
-
-/** What reaching a division gives: a league's first division gives the league's reward. */
-export function divisionRewards(rules: LeagueRules, division: Division): readonly LevelReward[] {
-  const opensLeague = division.rank === null || division.rank === rules.divisionsPerLeague;
-  return opensLeague ? rules.leagueRewards : rules.divisionRewards;
-}
-
-/** What a step gives; empty for a step that does not exist. */
-export function leagueStepRewards(
+/** What a week played gives: écus by league, and more for going up or for the Champion podium. */
+export function weekRewards(
   rules: LeagueRules,
-  step: number,
   league: League,
+  place: number,
+  move: WeekMove,
 ): readonly LevelReward[] {
-  if (step === SEASON_END_STEP) return rules.seasonRewards[league];
-  const division = divisions(rules)[step];
-  return division === undefined || step < 1 ? [] : divisionRewards(rules, division);
-}
-
-/**
- * The divisions a season rewards: those reached above the one it started in. The starting
- * division and the ones below were not climbed this season.
- */
-export function rewardedDivisions(
-  rules: LeagueRules,
-  started: number,
-  peak: number,
-): readonly Division[] {
-  const from = divisionOf(rules, started).index;
-  const to = divisionOf(rules, peak).index;
-  return divisions(rules).filter((division) => division.index > from && division.index <= to);
-}
-
-/** A season the player played: where it started and the most laurels held. */
-export interface SeasonStanding {
-  readonly season: number;
-  readonly started: number;
-  readonly laurels: number;
-  readonly peak: number;
-}
-
-/**
- * The league rewards still to claim, oldest first: the divisions reached in each season played,
- * and the end of every season over.
- */
-export function pendingLeagueRewards(
-  rules: LeagueRules,
-  seasons: readonly SeasonStanding[],
-  claimed: readonly LeagueRewardKey[],
-  currentSeason: number,
-): LeagueRewardKey[] {
-  const done = new Set(claimed.map((key) => `${key.season}:${key.step}`));
-  const pending: LeagueRewardKey[] = [];
-  for (const standing of [...seasons].sort((a, b) => a.season - b.season)) {
-    const keys = rewardedDivisions(rules, standing.started, standing.peak).map((division) => ({
-      season: standing.season,
-      step: division.index,
-    }));
-    if (standing.season < currentSeason) {
-      keys.push({ season: standing.season, step: SEASON_END_STEP });
-    }
-    for (const key of keys) if (!done.has(`${key.season}:${key.step}`)) pending.push(key);
+  const rewards: LevelReward[] = [{ kind: "ecus", amount: rules.weekEcus[league] }];
+  if (move === "up") rewards.push(...rules.upRewards);
+  if (league === "champion" && place <= rules.championPodium.places) {
+    rewards.push(...rules.championPodium.rewards);
   }
-  return pending;
+  return rewards;
 }

@@ -482,37 +482,46 @@ export const JOUST_SCHEDULE: JoustSchedule = [
   },
 ];
 
-// Leagues of ranked jousts, on the carnet's calendar. A streak adds 10 rather than doubling the
-// win: doubled, half the keen players were Champion in their first season. A defeat costs more
-// in each league up: at a fixed cost, winning one joust in two was enough to climb with volume
-// alone, and nearly every keen player ended Champion after three seasons. Provisional.
+// Leagues of ranked jousts, a tournament each week in groups of 30 filled by automatons. The
+// automatons' points set how hard each league is to leave while the groups are not full: a player
+// who wins one joust in two at 5 a day settles in the middle leagues. Provisional, from the
+// simulation in rnd/tournament-sim.
 export const LEAGUE_SCHEDULE: LeagueSchedule = [
   {
     startsAt: SINCE_LAUNCH,
-    firstSeasonDay: "2026-11-09",
-    seasonDays: 28,
-    leagueFrom: { page: 0, ecuyer: 300, chevalier: 600, banneret: 900, champion: 1200 },
-    divisionsPerLeague: 3,
-    win: { base: 25, min: 15, max: 35 },
-    loss: {
-      page: { base: 15, min: 5, max: 25 },
-      ecuyer: { base: 20, min: 10, max: 30 },
-      chevalier: { base: 23, min: 13, max: 33 },
-      banneret: { base: 26, min: 16, max: 36 },
-      champion: { base: 30, min: 20, max: 40 },
+    firstWeekDay: "2026-11-09",
+    groupSize: 30,
+    rankedPerDay: 5,
+    points: { won: 3, draw: 1, lost: 0 },
+    moves: {
+      page: { up: 10, down: 0 },
+      ecuyer: { up: 8, down: 3 },
+      chevalier: { up: 7, down: 5 },
+      banneret: { up: 6, down: 5 },
+      marechal: { up: 5, down: 6 },
+      connetable: { up: 4, down: 7 },
+      champion: { up: 0, down: 8 },
     },
-    ratingSpread: 400,
-    streakFrom: 3,
-    streakBonus: 10,
-    divisionRewards: [{ kind: "ecus", amount: 20 }],
-    leagueRewards: [garni],
-    seasonRewards: {
-      page: [sachet],
-      ecuyer: [sachet, sachet],
-      chevalier: [garni],
-      banneret: [{ kind: "precious_garni_booster" }],
-      champion: [{ kind: "precious_garni_booster" }],
+    bots: {
+      page: { mean: 5, spread: 5 },
+      ecuyer: { mean: 20, spread: 10 },
+      chevalier: { mean: 30, spread: 12 },
+      banneret: { mean: 40, spread: 12 },
+      marechal: { mean: 50, spread: 12 },
+      connetable: { mean: 60, spread: 12 },
+      champion: { mean: 70, spread: 12 },
     },
+    weekEcus: {
+      page: 10,
+      ecuyer: 15,
+      chevalier: 20,
+      banneret: 25,
+      marechal: 30,
+      connetable: 35,
+      champion: 40,
+    },
+    upRewards: [garni],
+    championPodium: { places: 3, rewards: [{ kind: "precious_garni_booster" }] },
   },
 ];
 

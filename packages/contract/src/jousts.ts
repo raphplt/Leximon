@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { slugSchema, timestampSchema } from "./common";
-import { divisionSchema, joustStandingSchema } from "./leagues";
+import { groupPlaceSchema, joustStandingSchema, leagueSchema } from "./leagues";
 import { playerBadgeSchema } from "./profile";
 
 /** Whether the player may joust, or what keeps them from it. */
@@ -67,7 +67,7 @@ export type JoustOutcome = z.infer<typeof joustOutcomeSchema>;
 
 export const joustSummarySchema = z.object({
   id: z.uuid(),
-  kind: z.enum(["ranked", "friendly"]),
+  kind: z.enum(["ranked", "free", "friendly"]),
   /** The player launched it. */
   launched: z.boolean(),
   opponent: playerBadgeSchema.nullable(),
@@ -102,7 +102,7 @@ export const joustsResponseSchema = z.object({
   answerSeconds: z.int().positive(),
   questions: z.int().positive(),
   jousts: z.array(joustSummarySchema),
-  /** Laurels and league this season. */
+  /** League and place in this week's tournament. */
   standing: joustStandingSchema,
 });
 export type JoustsResponse = z.infer<typeof joustsResponseSchema>;
@@ -115,6 +115,8 @@ export type JoustOpponentsResponse = z.infer<typeof joustOpponentsResponseSchema
 
 export const launchJoustRequestSchema = z.discriminatedUnion("kind", [
   z.object({ kind: z.literal("ranked") }),
+  /** An opponent chosen by the game, for nothing but the game. */
+  z.object({ kind: z.literal("free") }),
   /** A friend or clan member, by the code of their badge. */
   z.object({ kind: z.literal("friendly"), opponentCode: z.string().min(1).max(32) }),
   /** A friendly rematch against the other player of an earlier joust. */
@@ -131,6 +133,8 @@ export const launchRefusalSchema = z.enum([
   "too_many_waiting",
   /** No ranked opponent came by recently enough. */
   "no_opponent",
+  /** The player played their ranked jousts of the day. */
+  "ranked_limit",
   /** The player chosen cannot joust now. */
   "opponent_unavailable",
   "not_friends",
@@ -206,13 +210,15 @@ export const joustViewSchema = z.object({
       theirs: z.array(joustAnswerSchema),
       xp: z.int().nonnegative(),
       boosters: z.int().nonnegative(),
-      /** A ranked joust: the player's laurels before and after it, and the division after. */
-      laurels: z
+      /**
+       * A ranked joust: the tournament points it gave the player, and where they stand now in
+       * the group of the week it ended in (`group` is `null` once that week is over).
+       */
+      tournament: z
         .object({
-          before: z.int().nonnegative(),
-          after: z.int().nonnegative(),
-          division: divisionSchema,
-          nextDivision: divisionSchema.nullable(),
+          won: z.int().nonnegative(),
+          league: leagueSchema,
+          group: groupPlaceSchema.nullable(),
         })
         .nullable(),
     })

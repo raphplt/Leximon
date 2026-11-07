@@ -3,7 +3,7 @@
 Ce qui a été construit du 4 au 6 novembre 2026, en deux parties :
 
 - **Finitions hors du jeu** (FIN-01 à FIN-13) : le [cahier des finitions](cahiers-des-charges/finitions-hors-du-jeu.md) (accueil, icônes, images de partage, e-mails, cadres, emblèmes, fiches des stores), puis trois corrections du 5 novembre (écran Jouer sur petit téléphone, bilan du sachet, réglages de la révision). La plupart de ces tests renvoient à un test de la [recette du web](recette-web.md) ou de la [recette du mobile](recette-mobile.md) et disent ce qu'il faut y regarder ; les attendus complets restent dans le test cité.
-- **Joutes, lots 1 à 3** (JTE-01 à JTE-31 sur le web, MJT-01 à MJT-05 sur Android, PROD-01 à PROD-03 en production) : ce qu'on vérifie avant d'ouvrir les joutes aux testeurs, puis en production. Les règles sont en P91 ([regles-du-jeu.md](regles-du-jeu.md)), le cahier dans [joutes.md](cahiers-des-charges/joutes.md). Le lot 1 est construit depuis le 2026-11-05, web et mobile.
+- **Joutes, lots 1 à 3 bis** (JTE-01 à JTE-33 sur le web, MJT-01 à MJT-05 sur Android, PROD-01 à PROD-03 en production) : ce qu'on vérifie avant d'ouvrir les joutes aux testeurs, puis en production. Les règles sont en P91 ([regles-du-jeu.md](regles-du-jeu.md)), le cahier dans [joutes.md](cahiers-des-charges/joutes.md). Le lot 1 est construit depuis le 2026-11-05, web et mobile.
 
 Pour chaque test, note dans **Retour** : « OK », ou ce que tu as vu à la place. Une capture d'écran aide.
 
@@ -55,14 +55,17 @@ Certains tests des joutes demandent d'avancer le temps. Les commandes ci-dessous
 # Fait passer l'heure limite de toutes les joutes qui attendent leur second joueur
 docker exec leximon-postgres-1 psql -U leximon -d leximon -c "update jousts set reply_by = now() - interval '1 minute' where ended_at is null and opponent_started_at is null and challenger_done_at is not null"
 
-# Ligues : ramène ta saison de joutes à la saison précédente, comme si elle venait de finir
-docker exec leximon-postgres-1 psql -U leximon -d leximon -c "update joust_standings set season = season - 1 where user_id = (select id from users where email = '<ton email>') and season = (select max(season) from joust_standings where user_id = (select id from users where email = '<ton email>'))"
+# Tournoi : met tes points de la semaine à 80, de quoi finir premier de ton groupe (après une première joute classée)
+docker exec leximon-postgres-1 psql -U leximon -d leximon -c "update joust_group_members set points = 80, scored_at = now() where user_id = (select id from users where email = '<ton email>') and week = (select max(week) from joust_group_members where user_id = (select id from users where email = '<ton email>'))"
 
-# Ligues : met tes lauriers de la saison en cours à 1 190 (tout près de Champion)
-docker exec leximon-postgres-1 psql -U leximon -d leximon -c "update joust_standings set laurels = 1190, peak = greatest(peak, 1190) where user_id = (select id from users where email = '<ton email>') and season = (select max(season) from joust_standings where user_id = (select id from users where email = '<ton email>'))"
+# Tournoi : met ton groupe de la semaine dans une autre ligue (remplace connetable par page, ecuyer, chevalier, banneret, marechal ou champion)
+docker exec leximon-postgres-1 psql -U leximon -d leximon -c "update joust_groups set league = 'connetable' where id = (select group_id from joust_group_members where user_id = (select id from users where email = '<ton email>') order by week desc limit 1); update joust_group_members set league = 'connetable' where group_id = (select group_id from joust_group_members where user_id = (select id from users where email = '<ton email>') order by week desc limit 1)"
+
+# Tournoi : ramène ton groupe à la semaine précédente, comme si le tournoi venait de finir
+docker exec leximon-postgres-1 psql -U leximon -d leximon -c "update joust_groups set week = week - 1 where id = (select group_id from joust_group_members where user_id = (select id from users where email = '<ton email>') order by week desc limit 1); update joust_group_members set week = week - 1 where group_id = (select group_id from joust_group_members where user_id = (select id from users where email = '<ton email>') order by week desc limit 1)"
 ```
 
-La saison des joutes suit le calendrier du carnet : avant le lundi 2026-11-09, c'est la saison « −1 », qui finit le dimanche 8 au soir.
+Le tournoi va du lundi 0 h au dimanche minuit, heure de Paris ; la semaine 0 commence le lundi 2026-11-09, celle d'avant est la semaine « −1 ».
 
 ### Pour les finitions
 
@@ -296,58 +299,63 @@ En local, aucun e-mail ne part : ce test se fait une fois le site en ligne.
 
 ---
 
-## Joutes · 4b. Lauriers, ligues et classements
+## Joutes · 4b. Tournois de la semaine, ligues et classements
 
-Lot 3, construit le 2026-11-07. Les règles sont en P98 et P51, le cahier dans [joutes-ligues.md](cahiers-des-charges/joutes-ligues.md). Les bots suffisent pour presque tout (`pnpm dev:bots <ton email> --challenge`).
+Lot 3 bis, construit le 2026-11-07 : les tournois de la semaine remplacent les lauriers et les saisons. Les règles sont en P98, P91 et P51, le modèle dans [joutes-ligues.md](cahiers-des-charges/joutes-ligues.md), le calage dans [tournois.md](rnd/tournois.md). Les bots suffisent pour presque tout (`pnpm dev:bots <ton email> --challenge`) ; les raccourcis du tournoi sont dans « Préparer ».
 
 ### JTE-23 · L'en-tête de ligue
-- **Faire :** ouvrir `/joutes` avant toute joute classée.
-- **Attendu :** en haut, un écu de papier « Page III », « 0 laurier », une barre vide, « Encore 100 pour Page II » et le temps qui reste à la saison (« Fin de la saison dans N jours », « demain soir », « ce soir »). Un bouton « Classement » à côté de la bulle « ? ».
+- **Faire :** ouvrir `/joutes` avant toute joute classée de la semaine.
+- **Attendu :** en haut, un écu de papier marqué « I » et « Page », « Joue une joute classée pour entrer dans le tournoi de la semaine. », « Encore 5 joutes classées aujourd'hui », et le temps qui reste au tournoi (« Fin du tournoi dans N jours », « demain soir à minuit », « ce soir à minuit »). Un bouton « Classement » à côté de la bulle « ? ».
 - **Retour :**
 
-### JTE-24 · Les lauriers d'une joute classée
+### JTE-24 · Les points d'une joute classée
 - **Faire :** jouer une joute classée contre un bot et la gagner, puis une autre et la perdre. Puis une joute amicale.
-- **Attendu :** à la révélation de la victoire, un écu et « +N lauriers » (de 15 à 35, plus si l'adversaire est mieux coté), puis une barre qui se remplit vers la division suivante (« Page II à 100 »), avec le bruit des pièces. La défaite affiche « −N lauriers » (en Page, de 5 à 25), jamais sous 0. La joute amicale n'affiche aucun laurier. L'en-tête de `/joutes` suit.
+- **Attendu :** à la révélation de la victoire, l'écu de ta ligue et « +3 points », puis « Ne de ton groupe, 3 points », en vert si ta place est dans la zone de montée, avec le bruit des pièces. La défaite affiche « Aucun point ». La joute amicale n'affiche aucun point. L'en-tête de `/joutes` dit « Ne sur 30 · 3 points » et « Si le tournoi finissait maintenant, tu monterais en Écuyer. » (ou resterais).
 - **Retour :**
 
-### JTE-25 · La série
-- **Faire :** gagner 3 joutes classées d'affilée (Bot Étourdi est le plus faible).
-- **Attendu :** dès la deuxième, l'en-tête dit « 2 victoires classées d'affilée ». La troisième rapporte 10 lauriers de plus que la deuxième, à cote égale. Une défaite ou une égalité remet la série à zéro.
+### JTE-25 · Cinq joutes classées par jour
+- **Faire :** jouer des joutes classées jusqu'à en avoir 5 dans la journée, lancées ou reçues des bots.
+- **Attendu :** l'en-tête compte « Encore N joutes classées aujourd'hui », jusqu'à « Tes joutes classées du jour sont jouées. Les joutes libres restent ouvertes. ». Le gros bouton devient « Joute libre ». « Nouvelle joute » sur une joute classée finie est refusé avec « Tu as joué tes 5 joutes classées du jour. Reviens demain, ou lance une joute libre. ».
 - **Retour :**
 
-### JTE-26 · La route des lauriers
-- **Faire :** ouvrir Classement. Avec le raccourci des 1 190 lauriers, jouer une joute classée et la gagner, puis revenir.
-- **Attendu :** la route défile seule jusqu'à ta division, ta division est plus grande avec tes lauriers dessous. Chaque division montre son seuil et sa récompense (20 écus, un sachet garni à l'entrée d'une ligue), les divisions passées sont cochées une fois réclamées. Sous la route, les récompenses de fin de saison de chaque ligue, la tienne surlignée. Après la victoire : « Champion », « Tu es dans la plus haute ligue. ».
+### JTE-26 · La joute libre
+- **Faire :** lancer une « Joute libre » et la jouer jusqu'au bout.
+- **Attendu :** l'adversaire est choisi par le jeu (un bot), la liste marque la joute « Libre ». Elle donne ses XP comme les autres, mais aucun point ni place dans le tournoi, et la cote ne bouge pas. Sans joute classée dans la semaine, tu n'entres pas dans le tournoi.
 - **Retour :**
 
-### JTE-27 · Réclamer une récompense
-- **Faire :** atteindre une division (gagner jusqu'à 100 lauriers, ou le raccourci), puis ouvrir Classement. Réclamer. Recommencer avec la réserve de sachets bonus pleine sur une récompense en sachet.
-- **Attendu :** un point rouge sur « Classement » dans `/joutes`. En haut de Classement, « 20 écus pour avoir atteint Page II » et « Réclamer » ; le toast « Tu reçois 20 écus. », le compteur d'écus monte. S'il en reste, « Encore N récompenses après celle-ci ». Réserve pleine, la récompense est refusée avec une phrase qui le dit, et elle attend.
+### JTE-27 · Mon tournoi
+- **Faire :** après une joute classée, ouvrir Classement.
+- **Attendu :** l'onglet « Mon tournoi » s'ouvre : 30 lignes, toi surligné « (toi) », les autres places tenues par des automates (portrait gris, nom ancien, mention « automate »). « Zone de montée » au-dessus des premiers, un trait pointillé à la fin de cette zone ; en Page, pas de zone de descente. Sous la liste : « Ton groupe de la ligue Page. Les 10 premiers montent, personne ne descend. Les automates complètent les places libres. ». Plus tard dans la journée, les points des automates ont monté.
 - **Retour :**
 
-### JTE-28 · La fin de la saison
-- **Faire :** avec le premier raccourci des ligues, ramener ta saison à la précédente (par exemple après avoir atteint Chevalier). Ouvrir `/joutes`, puis Classement.
-- **Attendu :** l'en-tête repart une ligue plus bas, au plancher (Chevalier → Écuyer III, 300 lauriers ; Page et Écuyer → 0). Classement propose la récompense de fin de saison de la ligue atteinte, « … pour ta ligue à la fin de la saison passée », puis les divisions non réclamées de cette saison. Si tu avais atteint Champion, l'en-tête porte « Champion de la saison passée » et ton nom dans les classements porte l'emblème.
+### JTE-28 · La fin de la semaine, en montant
+- **Faire :** avec les raccourcis, mettre tes points à 80, puis ramener ton groupe à la semaine précédente. Ouvrir `/joutes`, puis Classement. Réclamer. Recommencer avec la réserve de sachets bonus pleine.
+- **Attendu :** l'en-tête est en Écuyer (écu vert « II ») et redemande une joute classée. Un point rouge sur « Classement ». En haut de Classement : « 10 écus et un sachet garni pour le tournoi de la semaine passée », « 1er de ton groupe en Page : tu passes en Écuyer. », « Réclamer » ; le toast « Tu reçois 10 écus et un sachet garni, rangé dans ta réserve. », le compteur d'écus monte. Réserve pleine, la récompense est refusée avec une phrase qui le dit, et elle attend.
 - **Retour :**
 
-### JTE-29 · Le plancher
-- **Faire :** atteindre Écuyer (300), puis perdre plusieurs joutes classées.
-- **Attendu :** les lauriers ne descendent jamais sous 300 dans la saison. La révélation dit « Lauriers inchangés » quand le plancher retient tout.
+### JTE-29 · La fin de la semaine, en descendant
+- **Faire :** après une joute classée perdue, mettre ton groupe en Connétable, puis le ramener à la semaine précédente. Ouvrir Classement.
+- **Attendu :** en Connétable, ta place sans point était dans la « Zone de descente », en rouge. Après la fin : l'en-tête est en Maréchal (écu brun « V »), la récompense dit « 35 écus pour le tournoi de la semaine passée » et « … de ton groupe en Connétable : tu redescends en Maréchal. ».
 - **Retour :**
 
-### JTE-32 · La défaite coûte plus en haut
-- **Faire :** perdre une joute classée en Page, puis une en Écuyer (au-dessus de 300 sans toucher le plancher). Avec le raccourci des 1 190 lauriers, en perdre une en Banneret. Ouvrir Classement.
-- **Attendu :** à cote égale, la défaite coûte 15 lauriers en Page, 20 en Écuyer, 26 en Banneret (23 en Chevalier, 30 en Champion), chaque fois 10 de moins ou 10 de plus selon la cote de l'adversaire. Sous les récompenses de fin de saison, Classement le dit : « Une défaite coûte plus de lauriers à chaque ligue : 15 en Page, 20 en Écuyer, 23 en Chevalier, 26 en Banneret et 30 en Champion. », puis le plancher et le départ une ligue plus bas. La victoire rapporte toujours 25 à cote égale, quelle que soit la ligue.
+### JTE-30 · Champion
+- **Faire :** mettre ton groupe en Champion et tes points à 80, puis ramener le groupe à la semaine précédente.
+- **Attendu :** en Champion, l'écu doré porte une couronne, l'emblème « Champion » s'affiche dans l'en-tête et dans les classements. Personne ne monte de Champion. Après la fin, premier du groupe : « 40 écus et un sachet garni Précieux pour le tournoi de la semaine passée », « tu restes en Champion ».
 - **Retour :**
 
-### JTE-30 · Les classements
-- **Faire :** dans Classement, passer de « Ma ligue » à « Amis » puis à « Clan ». Sur un compte sans clan, ouvrir « Clan ».
-- **Attendu :** Ma ligue liste les jouteurs de ta ligue cette saison, par lauriers, places partagées en cas d'égalité, toi surligné « (toi) ». Amis compte les amis qui ont jouté cette saison, toi compris. Sans clan : « Rejoins un clan pour voir le classement de ses jouteurs. ». Un joueur bloqué n'apparaît dans aucun. L'onglet « Général » n'apparaît pas tant que 50 joueurs n'ont pas fait 5 joutes classées dans les 30 derniers jours.
+### JTE-31 · L'échelle des ligues
+- **Faire :** dans Classement, descendre jusqu'à « L'échelle des ligues ».
+- **Attendu :** les 7 ligues de Champion à Page, chacune avec son écu, combien montent et descendent, et ses écus par semaine ; la tienne surlignée. Dessous, la règle en cinq phrases avec ses chiffres : 3 points la victoire, 5 joutes classées par jour, la fin du dimanche, les sachets des montées et du podium de Champion, les automates.
 - **Retour :**
 
-### JTE-31 · Sur un téléphone, en largeur
-- **Faire :** ouvrir Classement sur le web à 375 px de large.
-- **Attendu :** rien ne dépasse, la route défile seule dans son bandeau, les lignes du classement gardent nom, écu et lauriers.
+### JTE-32 · Amis, clan, général
+- **Faire :** passer de « Mon tournoi » à « Amis » puis à « Clan ». Sur un compte sans clan, ouvrir « Clan ». Bloquer un joueur de ton groupe, puis rouvrir « Mon tournoi ».
+- **Attendu :** Amis liste les amis entrés dans le tournoi de la semaine, toi compris, par ligue puis par points, places partagées à égalité. Sans clan : « Rejoins un clan pour voir le classement de ses jouteurs. ». L'onglet « Général » n'apparaît pas tant que 50 joueurs n'ont pas fait 5 joutes classées dans les 30 derniers jours. Le joueur bloqué garde sa place dans ton groupe sous « Jouteur », sans pseudo ni portrait, et disparaît des autres classements.
+- **Retour :**
+
+### JTE-33 · Sur un téléphone, en largeur
+- **Faire :** ouvrir `/joutes` et Classement sur le web à 375 px de large.
+- **Attendu :** rien ne dépasse ; les deux boutons de lancement tiennent ; dans l'échelle, la règle de montée passe sous le nom de la ligue ; les lignes du classement gardent place, nom et points.
 - **Retour :**
 
 ---
@@ -414,9 +422,9 @@ Le mobile se prépare comme dans [recette-mobile.md](recette-mobile.md). Les com
 - **Attendu :** le réglage tient après un relancement de l'app. « Y aller » ouvre les joutes.
 - **Retour :**
 
-### MJT-05 · Ligues et classement
-- **Faire :** sur le téléphone, ouvrir les joutes, puis « Classement ». Jouer une joute classée contre un bot et la gagner.
-- **Attendu :** comme JTE-23 et JTE-26 à JTE-30 : l'en-tête de ligue en haut des joutes, le point rouge quand une récompense attend, la route qui défile du doigt et s'ouvre sur ta division, « Réclamer », les onglets des classements. À la révélation, l'écu, « +N lauriers » et la barre qui se remplit, comme JTE-24.
+### MJT-05 · Tournoi et classement
+- **Faire :** sur le téléphone, ouvrir les joutes, puis « Classement ». Jouer une joute classée contre un bot et la gagner, puis une joute libre. Avec les raccourcis, finir une semaine (JTE-28).
+- **Attendu :** comme JTE-23 à JTE-32 : l'en-tête de ligue en haut des joutes, « Joute libre » sous le bouton « Jouter », le point rouge quand une récompense attend, « Réclamer », « Mon tournoi » avec ses automates et ses zones teintées, l'échelle des ligues, les onglets des classements. À la révélation, l'écu, « +3 points » et ta place dans le groupe.
 - **Retour :**
 
 ---
@@ -454,8 +462,12 @@ Ces réglages ne sont ni justes ni faux : ils se décident à l'usage. Dis ce qu
 | Réserve pleine à la première victoire du jour | le sachet est perdu, une autre victoire du jour peut le donner | |
 | La revanche | toujours une joute amicale | |
 | Gains | 20 XP par joute jouée, 20 de plus par victoire, sur 5 joutes par jour | |
-| Série de victoires | +10 lauriers par victoire dès la troisième d'affilée, au lieu du double (voir [la simulation](rnd/lauriers.md)) | |
-| Départ de saison | une ligue plus bas pour tous ; la simulation montre que les assidus finissent presque tous Champion en trois saisons, trois options dans le rapport | |
+| Joutes classées par jour | 5, lancées ou reçues ; les joutes libres sans limite | |
+| Points | 3 la victoire, 1 l'égalité, 0 la défaite | |
+| Montées et descentes | de 10 montées en Page à 8 descentes en Champion (P98), calées par [la simulation](rnd/tournois.md) | |
+| Points des automates | en moyenne 5 la semaine en Page, 20 en Écuyer, puis 10 de plus par ligue jusqu'à 70 en Champion | |
+| Récompenses de la semaine | 10 à 40 écus selon la ligue, un sachet garni pour une montée, un sachet garni Précieux pour le podium de Champion | |
+| Noms des ligues | Page, Écuyer, Chevalier, Banneret, Maréchal, Connétable, Champion | |
 
 ## Retours de la recette
 

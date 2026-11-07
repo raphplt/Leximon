@@ -302,6 +302,20 @@
       "when": 1794042960502,
       "tag": "0042_joust_leagues",
       "breakpoints": true
+    },
+    {
+      "idx": 43,
+      "version": "7",
+      "when": 1794063816865,
+      "tag": "0043_joust_tournaments",
+      "breakpoints": true
+    },
+    {
+      "idx": 44,
+      "version": "7",
+      "when": 1794063822886,
+      "tag": "0044_joust_laurels_gone",
+      "breakpoints": true
     }
   ]
 }

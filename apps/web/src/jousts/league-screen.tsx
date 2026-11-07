@@ -1,30 +1,30 @@
 "use client";
 
-import type { Board, BoardEntry, BoardResponse, LeagueResponse } from "@leximon/contract";
+import type { Board, BoardResponse, LeagueResponse } from "@leximon/contract";
 import { gameDayOf } from "@leximon/core";
 import {
+  AUTOMATON,
   BOARDS,
+  type BoardLine,
+  boardLines,
   boardNote,
   CLASSEMENT,
-  divisionNumeral,
+  LADDER_TITLE,
   LEAGUE_CLAIM,
   LEAGUE_CLAIM_BUSY,
+  ladderRules,
+  ladderSteps,
   leagueClaimedToast,
   leagueClaimRefusalText,
-  meOutsidePage,
-  playerName,
-  ROAD_RULE,
-  ROAD_TITLE,
   ratingLine,
-  roadStops,
-  SEASON_END_KICKER,
-  SEASON_RULE,
-  seasonRecord,
-  seasonRewardLines,
   waitingReward,
+  weekRecord,
+  ZONE_DOWN,
+  ZONE_UP,
+  zoneStarts,
 } from "@leximon/view-model";
 import Link from "next/link";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { Fragment, useCallback, useEffect, useState } from "react";
 import { Avatar } from "@/components/avatar";
 import { api } from "@/lib/api";
 import { MainAction } from "@/library/play-pieces";
@@ -45,7 +45,7 @@ type Loaded =
   | { readonly state: "failed" }
   | { readonly state: "ready"; readonly league: LeagueResponse };
 
-/** The leagues: where the player stands, the road of the season, its rewards and the boards. */
+/** The leagues: where the player stands this week, the rewards to claim, the boards, the ladder. */
 export function LeagueScreen() {
   const [loaded, setLoaded] = useState<Loaded>({ state: "loading" });
   const load = useCallback(() => {
@@ -75,13 +75,15 @@ export function LeagueScreen() {
         <section className={`${ui.leaf} ${styles.roadLeaf} ${desk.rising}`} style={rise(0)}>
           <LeagueHeader standing={league.standing} today={today} />
           <ClaimBox league={league} onClaimed={load} />
-          <Road league={league} />
         </section>
         <Boards league={league} />
-        <section className={`${ui.leaf} ${styles.boardLeaf} ${desk.rising}`} style={rise(2)}>
+        <section className={`${ui.leaf} ${styles.roadLeaf} ${desk.rising}`} style={rise(2)}>
+          <Ladder league={league} />
+        </section>
+        <section className={`${ui.leaf} ${styles.boardLeaf} ${desk.rising}`} style={rise(3)}>
           <span className={desk.leafKicker}>Tes joutes classées</span>
           <div className={styles.figures}>
-            <p className={styles.line}>{seasonRecord(league.stats)}</p>
+            <p className={styles.line}>{weekRecord(league.stats)}</p>
             <p className={styles.trapsText}>{ratingLine(league.stats)}</p>
           </div>
         </section>
@@ -108,7 +110,7 @@ function ClaimBox({
     setBusy(true);
     setRefusal(null);
     try {
-      const result = await api.claimLeagueReward(next.season, next.step);
+      const result = await api.claimLeagueReward(next.week);
       if (result.kind === "refused") {
         setRefusal(leagueClaimRefusalText(result.reason));
         return;
@@ -129,6 +131,7 @@ function ClaimBox({
         <ToyIcon name={next.icon === "ecu" ? "ecu" : "sachet"} size={26} />
         <span>
           {next.title}
+          <span className={styles.claimMore}>{next.detail}</span>
           {next.more !== null && <span className={styles.claimMore}>{next.more}</span>}
         </span>
       </span>
@@ -144,65 +147,33 @@ function ClaimBox({
   );
 }
 
-function Road({ league }: { readonly league: LeagueResponse }) {
-  const road = useRef<HTMLOListElement>(null);
-  const stops = roadStops(league);
-  useEffect(() => {
-    const here = road.current?.querySelector<HTMLElement>("[data-here]");
-    const tray = road.current;
-    if (here == null || tray == null) return;
-    // Scrolls the tray only, never the page.
-    tray.scrollLeft = here.offsetLeft - tray.clientWidth / 2 + here.clientWidth / 2;
-  }, []);
+/** The seven leagues, highest first, with what each week in them gives. */
+function Ladder({ league }: { readonly league: LeagueResponse }) {
   return (
     <>
-      <Lettering className={styles.homeTitle}>{ROAD_TITLE}</Lettering>
-      <ol className={styles.road} ref={road}>
-        {stops.map((stop) => (
+      <Lettering className={styles.homeTitle}>{LADDER_TITLE}</Lettering>
+      <ol className={styles.ladder}>
+        {ladderSteps(league).map((step) => (
           <li
-            key={stop.key}
-            className={styles.roadStop}
-            data-reached={stop.reached || undefined}
-            data-here={stop.here || undefined}
-            data-status={stop.status}
-            aria-label={stop.label}
+            key={step.league}
+            className={styles.ladderStep}
+            data-here={step.here || undefined}
+            aria-label={step.label}
           >
-            <Shield league={stop.league} numeral={stop.numeral} size={stop.here ? 54 : 40} />
-            <span className={styles.roadName}>{stop.name}</span>
-            <span className={styles.roadFrom}>{stop.from}</span>
-            <span className={styles.roadReward}>
-              {stop.short === null ? (
-                "Départ"
-              ) : (
-                <>
-                  <ToyIcon name={stop.icon === "ecu" ? "ecu" : "sachet"} size={18} />
-                  {stop.short}
-                </>
-              )}
-              {stop.status === "claimed" && <Icon name="check" size={12} />}
+            <Shield league={step.league} size={step.here ? 40 : 30} />
+            <strong>{step.name}</strong>
+            <span className={styles.ladderMoves}>{step.moves}</span>
+            <span className={styles.ladderReward}>
+              <ToyIcon name="ecu" size={18} /> {step.reward}
             </span>
-            {stop.here && <span className={styles.you}>{league.standing.laurels}</span>}
           </li>
         ))}
       </ol>
-      <p className={styles.trapsText}>{ROAD_RULE}</p>
-      <div className={styles.endRewards}>
-        <span className={desk.leafKicker}>{SEASON_END_KICKER}</span>
-        <ul>
-          {seasonRewardLines(league).map((line) => (
-            <li key={line.league} data-here={line.here || undefined}>
-              <Shield
-                league={line.league}
-                numeral={line.league === "champion" ? null : "I"}
-                size={26}
-              />
-              <strong>{line.name}</strong>
-              <span>{line.reward}</span>
-            </li>
-          ))}
-        </ul>
-        <p className={styles.trapsText}>{SEASON_RULE}</p>
-      </div>
+      <ul className={styles.ladderRules}>
+        {ladderRules(league).map((line) => (
+          <li key={line}>{line}</li>
+        ))}
+      </ul>
     </>
   );
 }
@@ -213,7 +184,7 @@ type BoardState =
   | { readonly state: "ready"; readonly board: BoardResponse; readonly more: boolean };
 
 function Boards({ league }: { readonly league: LeagueResponse }) {
-  const [tab, setTab] = useState<Board>("league");
+  const [tab, setTab] = useState<Board>("group");
   const [shown, setShown] = useState<BoardState>({ state: "loading" });
   const tabs = BOARDS.filter((entry) => entry.id !== "general" || league.generalOpen);
 
@@ -263,16 +234,7 @@ function Boards({ league }: { readonly league: LeagueResponse }) {
       {shown.state === "failed" && <LoadFailed onRetry={() => load(tab)} />}
       {shown.state === "ready" && (
         <>
-          <ol className={styles.standings}>
-            {shown.board.entries.map((entry) => (
-              <Standing
-                key={entry.player.code}
-                entry={entry}
-                me={entry.player.code === shown.board.me.player.code}
-              />
-            ))}
-            {meOutsidePage(shown.board) && <Standing entry={shown.board.me} me pinned />}
-          </ol>
+          <Standings board={shown.board} />
           {shown.board.next !== null && (
             <div className={styles.more}>
               <MainAction
@@ -289,28 +251,63 @@ function Boards({ league }: { readonly league: LeagueResponse }) {
   );
 }
 
+/** A board's lines; in the group, the zones that go up and down are marked. */
+function Standings({ board }: { readonly board: BoardResponse }) {
+  const { lines, pinned } = boardLines(board);
+  if (lines.length === 0 && pinned === null) return null;
+  const zones = board.board === "group" ? zoneStarts(lines) : { stay: null, down: null };
+  const ups = board.board === "group" && lines[0]?.move === "up";
+  return (
+    <ol className={styles.standings}>
+      {ups && <li className={styles.zone}>{ZONE_UP}</li>}
+      {lines.map((line) => (
+        <Fragment key={line.key}>
+          {line.key === zones.stay && <li className={styles.zoneEnd} aria-hidden="true" />}
+          {line.key === zones.down && (
+            <li className={styles.zone} data-move="down">
+              {ZONE_DOWN}
+            </li>
+          )}
+          <Standing line={line} />
+        </Fragment>
+      ))}
+      {pinned !== null && <Standing line={pinned} pinned />}
+    </ol>
+  );
+}
+
 function Standing({
-  entry,
-  me,
+  line,
   pinned = false,
 }: {
-  readonly entry: BoardEntry;
-  readonly me: boolean;
+  readonly line: BoardLine;
   readonly pinned?: boolean;
 }) {
-  const name = playerName(entry.player);
   return (
-    <li className={styles.standing} data-me={me || undefined} data-pinned={pinned || undefined}>
-      <span className={styles.place} data-podium={entry.place <= 3 || undefined}>
-        {entry.place}
+    <li
+      className={styles.standing}
+      data-me={line.me || undefined}
+      data-pinned={pinned || undefined}
+      data-move={line.move ?? undefined}
+      data-kind={line.kind}
+    >
+      <span className={styles.place} data-podium={line.podium || undefined}>
+        {line.place}
       </span>
-      <Avatar avatar={entry.player.avatar} frame={entry.player.frame} size={36} />
+      {line.player !== null ? (
+        <Avatar avatar={line.player.avatar} frame={line.player.frame} size={36} />
+      ) : (
+        <span className={styles.automaton} aria-hidden="true">
+          <Icon name={line.kind === "bot" ? "reglages" : "profil"} size={20} />
+        </span>
+      )}
       <span className={styles.standingName}>
-        {me ? `${name} (toi)` : name}
-        {entry.champion && <span className={styles.emblem}>Champion</span>}
+        {line.name}
+        {line.tag !== null && <span className={styles.botTag}>{AUTOMATON}</span>}
+        {line.champion && <span className={styles.emblem}>Champion</span>}
       </span>
-      <Shield league={entry.division.league} numeral={divisionNumeral(entry.division)} size={24} />
-      <span className={styles.standingLauriers}>{entry.laurels}</span>
+      <Shield league={line.league} size={24} />
+      <span className={styles.standingPoints}>{line.points}</span>
     </li>
   );
 }

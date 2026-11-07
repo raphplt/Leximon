@@ -86,11 +86,8 @@ export const jousts = pgTable(
       readonly challenger: JoustRatingChange;
       readonly opponent: JoustRatingChange;
     }>(),
-    /** Each player's laurels, as they stood before and after a ranked joust. */
-    laurels: jsonb().$type<{
-      readonly challenger: JoustRatingChange;
-      readonly opponent: JoustRatingChange;
-    }>(),
+    /** The tournament points each player won in a ranked joust. */
+    points: jsonb().$type<{ readonly challenger: number; readonly opponent: number }>(),
   },
   (table) => [
     uniqueIndex("jousts_launch_idx").on(table.challengerId, table.launchKey),
@@ -153,55 +150,69 @@ export const joustRatings = pgTable(
 );
 
 /**
- * A season of ranked jousts the player played: a row from their first ranked joust of the
- * season. `started` is where the season began for them, `peak` the most laurels held; its league
- * is the floor. A season not played has no row: where it starts is computed from the last one.
+ * A group of a week's tournament: up to `groupSize` players of one league, automatons drawn from
+ * `seed` for the places left. `players` counts its members, to find a group with room.
  */
-export const joustStandings = pgTable(
-  "joust_standings",
+export const joustGroups = pgTable(
+  "joust_groups",
   {
-    userId: text()
-      .notNull()
-      .references(() => users.id, { onDelete: "cascade" }),
-    season: integer().notNull(),
-    started: integer().notNull(),
-    laurels: integer().notNull(),
-    peak: integer().notNull(),
-    /** Ranked wins in a row this season. */
-    streak: smallint().notNull().default(0),
-    wins: integer().notNull().default(0),
-    losses: integer().notNull().default(0),
-    draws: integer().notNull().default(0),
-    updatedAt: timestamp({ withTimezone: true }).notNull(),
+    id: uuid().primaryKey().defaultRandom(),
+    week: integer().notNull(),
+    league: text().notNull(),
+    seed: text().notNull(),
+    players: smallint().notNull().default(0),
+    createdAt: timestamp({ withTimezone: true }).notNull(),
   },
   (table) => [
-    primaryKey({ columns: [table.userId, table.season] }),
-    // The boards of a season, by laurels.
-    index("joust_standings_board_idx").on(table.season, table.laurels.desc(), table.userId),
-    check(
-      "joust_standings_laurels_check",
-      sql`${table.laurels} >= 0 and ${table.peak} >= ${table.laurels}`,
-    ),
+    // The groups of a league this week, to find one with room.
+    index("joust_groups_open_idx").on(table.week, table.league, table.players),
+    check("joust_groups_players_check", sql`${table.players} >= 0`),
   ],
 );
 
 /**
- * League rewards claimed, one row each: the primary key makes a claim happen once, and `rewards`
- * keeps what it gave. `step` is the division reached, or 0 for the end of the season.
+ * A player in the week's tournament: a row from the result of their first ranked joust of the
+ * week. `scoredAt` is when they reached their points, or entered the group without any. A week
+ * without a row was not played.
  */
-export const joustLeagueRewards = pgTable(
-  "joust_league_rewards",
+export const joustGroupMembers = pgTable(
+  "joust_group_members",
   {
     userId: text()
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
-    season: integer().notNull(),
-    step: smallint().notNull(),
+    week: integer().notNull(),
+    groupId: uuid()
+      .notNull()
+      .references(() => joustGroups.id, { onDelete: "cascade" }),
+    /** The group's league, kept here for the boards and the choice of opponents. */
+    league: text().notNull(),
+    points: integer().notNull().default(0),
+    wins: integer().notNull().default(0),
+    losses: integer().notNull().default(0),
+    draws: integer().notNull().default(0),
+    scoredAt: timestamp({ withTimezone: true }).notNull(),
+    joinedAt: timestamp({ withTimezone: true }).notNull(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.userId, table.week] }),
+    index("joust_group_members_group_idx").on(table.groupId),
+    // The boards of a week, by points.
+    index("joust_group_members_week_idx").on(table.week, table.points.desc(), table.userId),
+    check("joust_group_members_points_check", sql`${table.points} >= 0`),
+  ],
+);
+
+/** Week rewards claimed, one row each: the key makes a claim happen once, `rewards` keeps it. */
+export const joustWeekRewards = pgTable(
+  "joust_week_rewards",
+  {
+    userId: text()
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    week: integer().notNull(),
     rewards: jsonb().$type<readonly LevelReward[]>().notNull(),
     claimedAt: timestamp({ withTimezone: true }).notNull(),
   },
-  (table) => [
-    primaryKey({ columns: [table.userId, table.season, table.step] }),
-    check("joust_league_rewards_step_check", sql`${table.step} >= 0`),
-  ],
+  (table) => [primaryKey({ columns: [table.userId, table.week] })],
 );

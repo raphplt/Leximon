@@ -1,5 +1,7 @@
 # R&D · Lauriers et ligues
 
+> Remplacé le 2026-11-07 par les tournois de la semaine ([tournois.md](tournois.md)). Le code de cette simulation correspond aux règles du commit cb8d7a4 et ne tourne plus sur les règles actuelles.
+
 - **Décision liée :** règles P98 (ligues de joute) et P51 (classements), cahier [Joutes, ligues](../cahiers-des-charges/joutes-ligues.md)
 - **Dates :** 2026-11-07 → 2026-11-07
 - **Question :** le barème des lauriers du cahier (25 / 15, série doublée dès la 3e victoire) étage-t-il les joueurs sur les cinq ligues, ou les plus assidus atteignent-ils tous Champion ? Et, saison après saison, quel départ de saison ou quel barème garde l'étagement ?

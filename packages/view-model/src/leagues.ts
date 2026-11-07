@@ -1,78 +1,105 @@
 import type {
   Board,
+  BoardEntry,
   BoardResponse,
-  DivisionView,
+  GroupPlace,
   JoustStanding,
+  JoustView,
   LeagueClaimRefusal,
   LeagueId,
   LeagueResponse,
   LevelRewardView,
-  SeasonView,
+  PlayerBadge,
+  WeekMove,
+  WeekView,
 } from "@leximon/contract";
 import { formatCount, plural } from "./format";
 import { rewardItem, rewardsPhrase } from "./rewards";
+import { playerName } from "./trades";
 
-/** The leagues of ranked jousts: the header of the jousts' home, the road, the boards. */
+/** The leagues of ranked jousts: the header of the jousts' home, the ladder, the boards. */
 
 export const LEAGUE_NAMES: Readonly<Record<LeagueId, string>> = {
   page: "Page",
   ecuyer: "Écuyer",
   chevalier: "Chevalier",
   banneret: "Banneret",
+  marechal: "Maréchal",
+  connetable: "Connétable",
   champion: "Champion",
 };
 
-const NUMERALS = ["", "I", "II", "III", "IV", "V"];
+const LEAGUE_ORDER = Object.keys(LEAGUE_NAMES) as LeagueId[];
 
-/** « Chevalier II », « Champion ». */
-export function divisionName(division: Pick<DivisionView, "league" | "rank">): string {
-  const league = LEAGUE_NAMES[division.league];
-  return division.rank === null ? league : `${league} ${NUMERALS[division.rank] ?? division.rank}`;
+function leagueBeside(league: LeagueId, move: WeekMove): LeagueId {
+  const rank = LEAGUE_ORDER.indexOf(league) + (move === "up" ? 1 : move === "down" ? -1 : 0);
+  return LEAGUE_ORDER[Math.max(0, Math.min(LEAGUE_ORDER.length - 1, rank))] ?? league;
 }
 
-/** The numeral drawn on the division's shield; `null` for Champion, drawn with a crown. */
-export function divisionNumeral(division: Pick<DivisionView, "rank">): string | null {
-  return division.rank === null ? null : (NUMERALS[division.rank] ?? String(division.rank));
+const NUMERALS = ["I", "II", "III", "IV", "V", "VI"];
+
+/** The numeral drawn on a league's shield, its rank; `null` for Champion, drawn with a crown. */
+export function leagueNumeral(league: LeagueId): string | null {
+  return league === "champion" ? null : (NUMERALS[LEAGUE_ORDER.indexOf(league)] ?? null);
 }
 
-/** « 742 lauriers », « 1 laurier ». */
-export function laurelsText(laurels: number): string {
-  return plural(laurels, "laurier", "lauriers");
+/** « 12 points », « 1 point », « 0 point ». */
+export function pointsText(points: number): string {
+  return plural(points, "point", "points");
+}
+
+/** « 1er », « 2e ». */
+export function placeText(place: number): string {
+  return place === 1 ? "1er" : `${formatCount(place)}e`;
 }
 
 export const CLASSEMENT = "Classement";
-export const ROAD_TITLE = "La route des lauriers";
+export const LADDER_TITLE = "L'échelle des ligues";
+export const CHAMPION_EMBLEM = "Champion";
+
+/** What a place would give if the week ended now, in a sentence. */
+export function moveSentence(league: LeagueId, move: WeekMove): string {
+  switch (move) {
+    case "up":
+      return `Si le tournoi finissait maintenant, tu monterais en ${LEAGUE_NAMES[leagueBeside(league, "up")]}.`;
+    case "down":
+      return `Si le tournoi finissait maintenant, tu descendrais en ${LEAGUE_NAMES[leagueBeside(league, "down")]}.`;
+    case "stay":
+      return `Si le tournoi finissait maintenant, tu resterais en ${LEAGUE_NAMES[league]}.`;
+  }
+}
 
 export interface StandingHeader {
   readonly name: string;
-  readonly laurels: string;
-  /** Share of the division filled, 0 to 1. */
-  readonly share: number;
-  /** « Encore 58 pour Chevalier I », or the top reached. */
-  readonly next: string;
-  /** « Fin de la saison dans 12 jours ». */
-  readonly season: string;
-  /** « 3 victoires d'affilée », shown from the second. */
-  readonly streak: string | null;
+  /** « 4e sur 30 », once in the week's tournament. */
+  readonly place: string | null;
+  readonly points: string | null;
+  readonly move: WeekMove | null;
+  /** What the place would give, or how to enter the tournament. */
+  readonly line: string;
+  /** « Fin du tournoi dans 3 jours ». */
+  readonly week: string;
+  /** The ranked jousts left today. */
+  readonly ranked: string;
   readonly champion: string | null;
   /** « 2 récompenses à réclamer ». */
   readonly waiting: string | null;
 }
 
 export function standingHeader(standing: JoustStanding, today: string): StandingHeader {
-  const { laurels, division, nextDivision } = standing;
+  const { league, group } = standing;
   return {
-    name: divisionName(division),
-    laurels: laurelsText(laurels),
-    share: divisionShare(laurels, division, nextDivision),
-    next:
-      nextDivision === null
-        ? "Tu es dans la plus haute ligue."
-        : `Encore ${formatCount(nextDivision.from - laurels)} pour ${divisionName(nextDivision)}`,
-    season: seasonLeft(standing.season, today),
-    streak:
-      standing.streak >= 2 ? `${formatCount(standing.streak)} victoires classées d'affilée` : null,
-    champion: standing.champion ? "Champion de la saison passée" : null,
+    name: LEAGUE_NAMES[league],
+    place: group === null ? null : `${placeText(group.place)} sur ${formatCount(group.size)}`,
+    points: group === null ? null : pointsText(group.points),
+    move: group?.move ?? null,
+    line:
+      group === null
+        ? "Joue une joute classée pour entrer dans le tournoi de la semaine."
+        : moveSentence(league, group.move),
+    week: weekLeft(standing.week, today),
+    ranked: rankedLeftText(standing.rankedLeft),
+    champion: league === "champion" ? CHAMPION_EMBLEM : null,
     waiting:
       standing.rewardsWaiting === 0
         ? null
@@ -80,13 +107,11 @@ export function standingHeader(standing: JoustStanding, today: string): Standing
   };
 }
 
-export function divisionShare(
-  laurels: number,
-  division: Pick<DivisionView, "from">,
-  next: Pick<DivisionView, "from"> | null,
-): number {
-  if (next === null) return 1;
-  return Math.max(0, Math.min(1, (laurels - division.from) / (next.from - division.from)));
+/** « Encore 3 joutes classées aujourd'hui », or what is left once they are played. */
+export function rankedLeftText(left: number): string {
+  if (left === 0)
+    return "Tes joutes classées du jour sont jouées. Les joutes libres restent ouvertes.";
+  return `Encore ${plural(left, "joute classée", "joutes classées")} aujourd'hui`;
 }
 
 const DAY_MS = 86_400_000;
@@ -95,120 +120,95 @@ function dayNumber(day: string): number {
   return Math.round(Date.parse(`${day}T00:00:00Z`) / DAY_MS);
 }
 
-/** « Fin de la saison dans 12 jours », « demain », « ce soir ». `today` is the day in Paris. */
-export function seasonLeft(season: SeasonView, today: string): string {
-  const left = dayNumber(season.lastDay) - dayNumber(today);
-  if (left <= 0) return "Fin de la saison ce soir";
-  if (left === 1) return "Fin de la saison demain soir";
-  return `Fin de la saison dans ${formatCount(left)} jours`;
+/** « Fin du tournoi dans 3 jours », « demain soir », « ce soir ». `today` is the day in Paris. */
+export function weekLeft(week: WeekView, today: string): string {
+  const left = dayNumber(week.lastDay) - dayNumber(today);
+  if (left <= 0) return "Fin du tournoi ce soir à minuit";
+  if (left === 1) return "Fin du tournoi demain soir à minuit";
+  return `Fin du tournoi dans ${formatCount(left)} jours`;
 }
 
-// --- A joust's laurels ---------------------------------------------------------------------------
+// --- A joust's points ----------------------------------------------------------------------------
 
-/** « +25 lauriers », « −15 lauriers », or nothing when a draw or the floor left them as they were. */
-export function laurelsDelta(laurels: { readonly before: number; readonly after: number }): string {
-  const delta = laurels.after - laurels.before;
-  if (delta === 0) return "Lauriers inchangés";
-  const amount = laurelsText(Math.abs(delta));
-  return delta > 0 ? `+${amount}` : `−${amount}`;
+export type JoustTournament = NonNullable<NonNullable<JoustView["result"]>["tournament"]>;
+
+export interface TournamentGain {
+  /** « +3 points », « +1 point », « Aucun point ». */
+  readonly points: string;
+  /** « 4e de ton groupe, 12 points », while the week lasts. */
+  readonly place: string | null;
+  readonly move: WeekMove | null;
 }
 
-// --- The road ------------------------------------------------------------------------------------
+export function tournamentGain(tournament: JoustTournament): TournamentGain {
+  const { won, group } = tournament;
+  return {
+    points: won === 0 ? "Aucun point" : `+${pointsText(won)}`,
+    place: group === null ? null : groupPlaceText(group),
+    move: group?.move ?? null,
+  };
+}
 
-export type LeagueStopStatus = "claimed" | "waiting" | "reached" | "later";
+function groupPlaceText(group: GroupPlace): string {
+  return `${placeText(group.place)} de ton groupe, ${pointsText(group.points)}`;
+}
 
-export interface LeagueStop {
-  readonly key: number;
-  readonly name: string;
+// --- The ladder ----------------------------------------------------------------------------------
+
+export interface LadderStep {
   readonly league: LeagueId;
-  readonly numeral: string | null;
-  readonly from: string;
+  readonly name: string;
   readonly here: boolean;
-  readonly reached: boolean;
-  readonly status: LeagueStopStatus;
-  /** « 20 écus », « un sachet garni »; `null` for the start. */
-  readonly reward: string | null;
-  readonly icon: ReturnType<typeof rewardItem>["icon"] | null;
-  /** Under the stop's icon: « 20 » écus, « garni » for a sachet. */
-  readonly short: string | null;
-  /** « Chevalier I, 800 lauriers, 20 écus, à réclamer ». */
+  /** « Les 7 premiers montent, les 5 derniers descendent. » */
+  readonly moves: string;
+  /** « 20 écus par semaine ». */
+  readonly reward: string;
   readonly label: string;
 }
 
-export function roadStops(league: LeagueResponse): LeagueStop[] {
-  const { laurels, division } = league.standing;
-  return league.road.map((stop) => {
-    const reached = laurels >= stop.division.from || stop.rewarded;
-    const status: LeagueStopStatus = stop.claimed
-      ? "claimed"
-      : stop.rewarded
-        ? "waiting"
-        : reached
-          ? "reached"
-          : "later";
-    const [first] = stop.rewards;
-    const reward = stop.rewards.length === 0 ? null : rewardsPhrase(stop.rewards);
-    const name = divisionName(stop.division);
-    const said =
-      status === "claimed"
-        ? "réclamée"
-        : status === "waiting"
-          ? "à réclamer"
-          : status === "reached"
-            ? "atteinte"
-            : "à venir";
+function movesText(up: number, down: number): string {
+  const ups =
+    up === 0
+      ? "Personne ne monte"
+      : up === 1
+        ? "Le premier monte"
+        : `Les ${formatCount(up)} premiers montent`;
+  const downs =
+    down === 0
+      ? "personne ne descend"
+      : down === 1
+        ? "le dernier descend"
+        : `les ${formatCount(down)} derniers descendent`;
+  return `${ups}, ${downs}.`;
+}
+
+/** Every league, highest first, as the ladder shows it. */
+export function ladderSteps(league: LeagueResponse): LadderStep[] {
+  return [...league.ladder].reverse().map((step) => {
+    const name = LEAGUE_NAMES[step.league];
+    const moves = movesText(step.up, step.down);
+    const reward = `${rewardsPhrase(step.rewards)} par semaine`;
     return {
-      key: stop.division.index,
+      league: step.league,
       name,
-      league: stop.division.league,
-      numeral: divisionNumeral(stop.division),
-      from: formatCount(stop.division.from),
-      here: stop.division.index === division.index,
-      reached,
-      status,
+      here: step.league === league.standing.league,
+      moves,
       reward,
-      icon: first === undefined ? null : rewardItem(first).icon,
-      short: first === undefined ? null : shortReward(first),
-      label: [name, laurelsText(stop.division.from), reward, reward === null ? null : said]
-        .filter((part) => part !== null)
-        .join(", "),
+      label: `${name}. ${moves} ${capitalizeFirst(reward)}.`,
     };
   });
 }
 
-function shortReward(reward: LevelRewardView): string {
-  switch (reward.kind) {
-    case "ecus":
-      return formatCount(reward.amount);
-    case "precious_garni_booster":
-      return "Précieux";
-    case "garni_booster":
-      return "garni";
-    default:
-      return rewardItem(reward).title;
-  }
-}
-
-export const SEASON_END_KICKER = "En fin de saison, selon ta ligue";
-export const SEASON_RULE =
-  "Une défaite coûte plus de lauriers à chaque ligue : 15 en Page, 20 en Écuyer, 23 en Chevalier, 26 en Banneret et 30 en Champion. Pendant la saison, tu ne descends jamais sous le début de la ligue atteinte. À la fin de la saison, tu repars une ligue plus bas.";
-export const ROAD_RULE =
-  "Une division atteinte pour la première fois dans la saison donne 20 écus, une nouvelle ligue un sachet garni.";
-
-export function seasonRewardLines(league: LeagueResponse): readonly {
-  readonly league: LeagueId;
-  readonly name: string;
-  readonly reward: string;
-  readonly here: boolean;
-}[] {
-  return league.seasonRewards.map((entry) => ({
-    league: entry.league,
-    name: LEAGUE_NAMES[entry.league],
-    reward: capitalizeFirst(
-      `${rewardsPhrase(entry.rewards)}${entry.league === "champion" ? " et l'emblème de Champion" : ""}`,
-    ),
-    here: entry.league === league.standing.division.league,
-  }));
+/** How the tournament works, with its numbers. */
+export function ladderRules(league: LeagueResponse): readonly string[] {
+  const { won, draw } = league.points;
+  return [
+    `Une victoire classée rapporte ${pointsText(won)}, une égalité ${pointsText(draw)}, une défaite aucun.`,
+    `Tu joues ${plural(league.standing.rankedPerDay, "joute classée", "joutes classées")} par jour au plus, lancées ou reçues.`,
+    "Le dimanche à minuit, les premiers de chaque groupe montent d'une ligue et les derniers descendent. Une semaine sans joute classée ne change rien.",
+    `Monter donne en plus ${rewardsPhrase(league.upRewards)}. Finir dans les ${formatCount(league.podium.places)} premiers en Champion donne en plus ${rewardsPhrase(league.podium.rewards)}.`,
+    "Les automates complètent les groupes tant qu'il manque des joueurs. Ils ne joutent pas : leurs points montent au fil de la semaine.",
+  ];
 }
 
 function capitalizeFirst(text: string): string {
@@ -222,51 +222,49 @@ export const LEAGUE_CLAIM_BUSY = "Ouverture…";
 
 /** The next reward to claim, oldest first, said as on its button. */
 export interface WaitingReward {
-  readonly season: number;
-  readonly step: number;
-  /** « 20 écus pour avoir atteint Chevalier II ». */
+  readonly week: number;
+  /** « 10 écus et un sachet garni pour le tournoi de la semaine passée ». */
   readonly title: string;
+  /** « 1er de ton groupe en Page : tu passes en Écuyer. » */
+  readonly detail: string;
   readonly icon: ReturnType<typeof rewardItem>["icon"];
-  /** « Encore 9 récompenses après celle-ci », when more wait. */
+  /** « Encore 2 récompenses après celle-ci », when more wait. */
   readonly more: string | null;
   readonly rewards: readonly LevelRewardView[];
 }
 
-/** The next reward to claim, oldest first, said as on its button. */
 export function waitingReward(league: LeagueResponse): WaitingReward | null {
   const [first] = league.waiting;
   if (first === undefined) return null;
-  const current = league.standing.season.index;
-  const what = rewardsPhrase(first.rewards);
-  const division = league.road.find((stop) => stop.division.index === first.step)?.division;
+  const current = league.standing.week;
   const when =
-    first.season === current
-      ? ""
-      : first.season === current - 1
-        ? " la saison passée"
-        : ` pendant la saison du ${seasonStartText(first.season, league.standing.season)}`;
-  const title =
-    first.step === 0
-      ? `${what} pour ta ligue à la fin de la saison${first.season === current - 1 ? " passée" : ` du ${seasonStartText(first.season, league.standing.season)}`}`
-      : `${what} pour avoir atteint ${division === undefined ? "une division" : divisionName(division)}${when}`;
+    first.week === current.index - 1
+      ? "de la semaine passée"
+      : `de la semaine du ${weekStartText(first.week, current)}`;
+  const where = `${placeText(first.place)} de ton groupe en ${LEAGUE_NAMES[first.league]}`;
+  const moved =
+    first.move === "up"
+      ? `tu passes en ${LEAGUE_NAMES[leagueBeside(first.league, "up")]}`
+      : first.move === "down"
+        ? `tu redescends en ${LEAGUE_NAMES[leagueBeside(first.league, "down")]}`
+        : `tu restes en ${LEAGUE_NAMES[first.league]}`;
   const others = league.waiting.length - 1;
-  const [reward] = first.rewards;
+  const [reward] = first.rewards.filter((each) => each.kind !== "ecus");
   return {
-    season: first.season,
-    step: first.step,
-    title: capitalizeFirst(title),
-    icon: reward === undefined ? "sachet" : rewardItem(reward).icon,
+    week: first.week,
+    title: capitalizeFirst(`${rewardsPhrase(first.rewards)} pour le tournoi ${when}`),
+    detail: `${where} : ${moved}.`,
+    icon: reward === undefined ? "ecu" : rewardItem(reward).icon,
     more:
       others === 0 ? null : `Encore ${plural(others, "récompense", "récompenses")} après celle-ci`,
     rewards: first.rewards,
   };
 }
 
-/** « 12 octobre »: the first day of an earlier season, counted back from the current one. */
-function seasonStartText(season: number, current: SeasonView): string {
+/** « 9 novembre »: the first day of an earlier week. */
+function weekStartText(week: number, current: WeekView): string {
   const first = Date.parse(`${current.firstDay}T00:00:00Z`);
-  const length = Date.parse(`${current.lastDay}T00:00:00Z`) - first + DAY_MS;
-  const day = new Date(first - (current.index - season) * length);
+  const day = new Date(first - (current.index - week) * 7 * DAY_MS);
   return day.toLocaleDateString("fr-FR", { day: "numeric", month: "long", timeZone: "UTC" });
 }
 
@@ -275,23 +273,29 @@ export function leagueClaimRefusalText(reason: LeagueClaimRefusal): string {
     case "reserve_full":
       return "Ta réserve de sachets bonus est pleine. Ouvre un sachet, puis réclame cette récompense, qui t'attend.";
     case "not_reached":
-      return "Cette récompense n'est pas encore atteinte.";
+      return "Cette récompense n'est pas encore là : le tournoi n'est pas fini.";
   }
+}
+
+/** Once claimed: « Tu reçois 10 écus. », the sachets said to be in the reserve. */
+export function leagueClaimedToast(rewards: readonly LevelRewardView[]): string {
+  const sachets = rewards.some((reward) => reward.kind !== "ecus");
+  return `Tu reçois ${rewardsPhrase(rewards)}${sachets ? ", rangé dans ta réserve" : ""}.`;
 }
 
 // --- Figures -------------------------------------------------------------------------------------
 
-/** « 12 victoires, 9 défaites, 1 égalité cette saison ». */
-export function seasonRecord(stats: LeagueResponse["stats"]): string {
+/** « 4 victoires, 2 défaites cette semaine ». */
+export function weekRecord(stats: LeagueResponse["stats"]): string {
   if (stats.wins + stats.losses + stats.draws === 0) {
-    return "Aucune joute classée cette saison pour l'instant.";
+    return "Aucune joute classée cette semaine pour l'instant.";
   }
   const parts = [
     plural(stats.wins, "victoire", "victoires"),
     plural(stats.losses, "défaite", "défaites"),
   ];
   if (stats.draws > 0) parts.push(plural(stats.draws, "égalité", "égalités"));
-  return `${parts.join(", ")} cette saison`;
+  return `${parts.join(", ")} cette semaine`;
 }
 
 /** The rating, for the curious, once enough ranked jousts are played. */
@@ -306,11 +310,147 @@ export function ratingLine(stats: LeagueResponse["stats"]): string {
 // --- Boards --------------------------------------------------------------------------------------
 
 export const BOARDS: readonly { readonly id: Board; readonly label: string }[] = [
-  { id: "league", label: "Ma ligue" },
+  { id: "group", label: "Mon tournoi" },
   { id: "friends", label: "Amis" },
   { id: "clan", label: "Clan" },
   { id: "general", label: "Général" },
 ];
+
+/** Names of the automatons, old names of knights and ladies. */
+const AUTOMATON_NAMES = [
+  "Aliénor",
+  "Aubin",
+  "Bertrand",
+  "Blanche",
+  "Clotaire",
+  "Clémence",
+  "Enguerrand",
+  "Ermengarde",
+  "Fulbert",
+  "Gauvain",
+  "Héloïse",
+  "Hugues",
+  "Iseut",
+  "Lancelin",
+  "Mahaut",
+  "Ombeline",
+  "Perceval",
+  "Pernelle",
+  "Roland",
+  "Sibylle",
+  "Tancrède",
+  "Ursule",
+  "Yvain",
+  "Ysolde",
+  "Amaury",
+  "Bérengère",
+  "Geoffroy",
+  "Mélisende",
+  "Thibaut",
+  "Aude",
+  "Baudouin",
+  "Gisèle",
+];
+
+export const AUTOMATON = "automate";
+export const HIDDEN_JOUSTER = "Jouteur";
+
+/** A line of a board as shown. */
+export interface BoardLine {
+  readonly key: string;
+  readonly kind: BoardEntry["kind"];
+  readonly name: string;
+  /** « automate » under an automaton's name. */
+  readonly tag: string | null;
+  readonly player: PlayerBadge | null;
+  readonly place: string;
+  readonly podium: boolean;
+  readonly points: string;
+  readonly league: LeagueId;
+  readonly move: WeekMove | null;
+  readonly champion: boolean;
+  readonly me: boolean;
+}
+
+function isMe(entry: BoardEntry, me: BoardEntry | null): boolean {
+  return (
+    me !== null &&
+    me.kind === "player" &&
+    entry.kind === "player" &&
+    entry.player.code === me.player.code
+  );
+}
+
+export function boardLine(entry: BoardEntry, board: BoardResponse): BoardLine {
+  const me = isMe(entry, board.me);
+  const base = {
+    kind: entry.kind,
+    place: formatCount(entry.place),
+    podium: entry.place <= 3,
+    points: formatCount(entry.points),
+    league: entry.league,
+    move: entry.move,
+    champion: entry.league === "champion",
+    me,
+  };
+  switch (entry.kind) {
+    case "player": {
+      const name = playerName(entry.player);
+      return {
+        ...base,
+        key: `p-${entry.player.code}`,
+        name: me ? `${name} (toi)` : name,
+        tag: null,
+        player: entry.player,
+      };
+    }
+    case "bot":
+      return {
+        ...base,
+        key: `b-${entry.bot}`,
+        name: AUTOMATON_NAMES[entry.bot % AUTOMATON_NAMES.length] ?? "Automate",
+        tag: AUTOMATON,
+        player: null,
+      };
+    case "hidden":
+      return {
+        ...base,
+        key: `h-${entry.place}`,
+        name: HIDDEN_JOUSTER,
+        tag: null,
+        player: null,
+      };
+  }
+}
+
+/** The lines of a board, with the player pinned under the page when it does not show them. */
+export function boardLines(board: BoardResponse): {
+  readonly lines: readonly BoardLine[];
+  readonly pinned: BoardLine | null;
+} {
+  const lines = board.entries.map((entry) => boardLine(entry, board));
+  const shown = lines.some((line) => line.me);
+  return {
+    lines,
+    pinned: board.me === null || shown ? null : { ...boardLine(board.me, board), me: true },
+  };
+}
+
+/** Where the group's zones start: the first line that stays, and the first that goes down. */
+export function zoneStarts(lines: readonly BoardLine[]): {
+  readonly stay: string | null;
+  readonly down: string | null;
+} {
+  const stay = lines.findIndex((line) => line.move !== "up");
+  const down = lines.findIndex((line) => line.move === "down");
+  return {
+    stay: stay > 0 ? (lines[stay]?.key ?? null) : null,
+    down: down >= 0 ? (lines[down]?.key ?? null) : null,
+  };
+}
+
+export const ZONE_UP = "Zone de montée";
+export const ZONE_DOWN = "Zone de descente";
 
 /** The line under a board: who is on it, or why it is empty. */
 export function boardNote(board: BoardResponse): string {
@@ -318,27 +458,19 @@ export function boardNote(board: BoardResponse): string {
   if (board.closed === "general_closed") {
     return "Le classement de toutes les ligues s'ouvrira quand 50 joueurs auront fait 5 joutes classées dans le mois.";
   }
-  switch (board.board) {
-    case "league":
-      return board.league === null
-        ? "Les jouteurs de ta ligue cette saison."
-        : `Les jouteurs de la ligue ${LEAGUE_NAMES[board.league]} cette saison.`;
-    case "friends":
-      return "Tes amis qui ont déjà jouté, avec toi.";
-    case "clan":
-      return "Les membres de ton clan qui ont déjà jouté, avec toi.";
-    case "general":
-      return "Tous les jouteurs de la saison.";
+  if (board.closed === "not_entered") {
+    return "Joue une joute classée pour entrer dans le tournoi de la semaine : tu rejoindras un groupe de 30 jouteurs de ta ligue.";
   }
-}
-
-/** The player is not on the page shown: their line is pinned under it. */
-export function meOutsidePage(board: BoardResponse): boolean {
-  return !board.entries.some((entry) => entry.player.code === board.me.player.code);
-}
-
-/** Once claimed: « Tu reçois 20 écus. », the sachets said to be in the reserve. */
-export function leagueClaimedToast(rewards: readonly LevelRewardView[]): string {
-  const sachets = rewards.some((reward) => reward.kind !== "ecus");
-  return `Tu reçois ${rewardsPhrase(rewards)}${sachets ? ", rangé dans ta réserve" : ""}.`;
+  switch (board.board) {
+    case "group":
+      return board.league === null || board.moves === null
+        ? "Ton groupe du tournoi de la semaine."
+        : `Ton groupe de la ligue ${LEAGUE_NAMES[board.league]}. ${movesText(board.moves.up, board.moves.down)} Les automates complètent les places libres.`;
+    case "friends":
+      return "Tes amis entrés dans le tournoi de la semaine, avec toi, par ligue puis par points.";
+    case "clan":
+      return "Les membres de ton clan entrés dans le tournoi de la semaine, avec toi, par ligue puis par points.";
+    case "general":
+      return "Tous les jouteurs du tournoi de la semaine, par ligue puis par points.";
+  }
 }

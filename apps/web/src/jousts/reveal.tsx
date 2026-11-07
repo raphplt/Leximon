@@ -4,13 +4,12 @@ import type { JoustOutcome, JoustView } from "@leximon/contract";
 import { rarityLights, revealEffects } from "@leximon/tokens";
 import {
   answerTimeText,
-  divisionNumeral,
-  laurelsDelta,
   OPEN_SEALED,
   outcomeWord,
   REPLAY_REVEAL,
   SEALED_RESULT,
   sachetGainText,
+  tournamentGain,
   xpGainText,
 } from "@leximon/view-model";
 import {
@@ -30,7 +29,7 @@ import { useStage } from "@/ui/stage";
 import { Lettering, ToyIcon } from "@/ui/toy";
 import ui from "@/ui/ui.module.css";
 import styles from "./jousts.module.css";
-import { LaurelsGain, Shield } from "./league-pieces";
+import { Shield, TournamentGain } from "./league-pieces";
 import { type Duelist, DuelistFace, rise } from "./pieces";
 
 export interface RevealAnswer {
@@ -50,8 +49,8 @@ export interface RevealData {
   readonly gains: {
     readonly xp: number;
     readonly boosters: number;
-    /** A ranked joust's laurels. */
-    readonly laurels: NonNullable<JoustView["result"]>["laurels"];
+    /** A ranked joust's tournament points. */
+    readonly tournament: NonNullable<JoustView["result"]>["tournament"];
   } | null;
   /** The last line: the words that trapped the other, or why the joust ended without them. */
   readonly closing: string | null;
@@ -147,8 +146,7 @@ export function Reveal({
     });
     later(verdictAt + 1_200, () => {
       setGains(true);
-      const laurels = data.gains?.laurels;
-      const gained = laurels != null && laurels.after > laurels.before;
+      const gained = (data.gains?.tournament?.won ?? 0) > 0;
       if (data.gains !== null && (data.gains.xp > 0 || data.gains.boosters > 0 || gained)) {
         play("coins");
       }
@@ -229,17 +227,13 @@ export function Reveal({
               <Lettering>{sachetGainText(data.gains.boosters)}</Lettering>
             </span>
           )}
-          {data.gains?.laurels != null && (
+          {data.gains?.tournament != null && (
             <>
               <span className={styles.gain} style={{ "--i": 2 } as CSSProperties}>
-                <Shield
-                  league={data.gains.laurels.division.league}
-                  numeral={divisionNumeral(data.gains.laurels.division)}
-                  size={30}
-                />
-                <Lettering>{laurelsDelta(data.gains.laurels)}</Lettering>
+                <Shield league={data.gains.tournament.league} size={30} />
+                <Lettering>{tournamentGain(data.gains.tournament).points}</Lettering>
               </span>
-              <LaurelsGain laurels={data.gains.laurels} />
+              <TournamentGain tournament={data.gains.tournament} />
             </>
           )}
           {data.closing !== null && (

@@ -43,8 +43,7 @@ import {
 import { BOARD_CURSOR, claimLeagueReward, readBoard, readLeague } from "./leagues";
 
 const joustIdSchema = z.uuid();
-const seasonSchema = z.coerce.number().int().min(-10_000).max(10_000);
-const stepSchema = z.coerce.number().int().min(0).max(100);
+const weekSchema = z.coerce.number().int().min(-10_000).max(100_000);
 
 /** Letters for the joust that closed something, and the levels its rewards passed. */
 function settledEvents(report: SettleReport, joustIds: readonly string[]): GameEvent[] {
@@ -137,20 +136,17 @@ export function joustRoutes(loadCatalogIndex: CatalogIndexLoader) {
     return c.json<LeagueResponse>(await readLeague(c.var.db, c.var.userId, Date.now()));
   });
 
-  routes.post("/league/:season/:step", async (c) => {
-    const season = seasonSchema.safeParse(c.req.param("season"));
-    const step = stepSchema.safeParse(c.req.param("step"));
-    if (!season.success || !step.success) return c.json({ error: "not_reached" }, 409);
+  routes.post("/league/:week", async (c) => {
+    const week = weekSchema.safeParse(c.req.param("week"));
+    if (!week.success) return c.json({ error: "not_reached" }, 409);
     const result = await claimLeagueReward(c.var.db, {
       userId: c.var.userId,
-      season: season.data,
-      step: step.data,
+      week: week.data,
       now: Date.now(),
     });
     if (result.kind === "refused") return c.json({ error: result.reason }, 409);
     return c.json<ClaimLeagueRewardResponse>({
-      season: result.season,
-      step: result.step,
+      week: result.week,
       rewards: [...result.rewards],
       wallet: result.wallet,
     });
@@ -162,7 +158,10 @@ export function joustRoutes(loadCatalogIndex: CatalogIndexLoader) {
     const cursor = c.req.query("after");
     const match = cursor === undefined ? null : BOARD_CURSOR.exec(cursor);
     if (cursor !== undefined && match === null) return c.json({ error: "invalid_cursor" }, 400);
-    const after = match === null ? null : { laurels: Number(match[1]), userId: match[2] ?? "" };
+    const after =
+      match === null
+        ? null
+        : { rank: Number(match[1]), points: Number(match[2]), userId: match[3] ?? "" };
     c.header("Cache-Control", "no-store");
     return c.json<BoardResponse>(
       await readBoard(c.var.db, {

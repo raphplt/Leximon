@@ -125,9 +125,9 @@ export function joustRoutes(http: Http) {
     fetchJoustLeague: (): Promise<LeagueResponse> =>
       getJson("/jousts/league", leagueResponseSchema, "league_unavailable"),
 
-    /** Idempotent: the season and the step are the key. */
-    async claimLeagueReward(season: number, step: number): Promise<LeagueClaimResult> {
-      const response = await sendAsPlayer(`/jousts/league/${season}/${step}`, json("POST"));
+    /** Idempotent: the week is the key. */
+    async claimLeagueReward(week: number): Promise<LeagueClaimResult> {
+      const response = await sendAsPlayer(`/jousts/league/${week}`, json("POST"));
       if (response.status === 409) {
         return { kind: "refused", reason: (await parse(response, leagueClaimRefusalSchema)).error };
       }

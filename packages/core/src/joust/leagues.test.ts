@@ -1,199 +1,195 @@
 import { describe, expect, it } from "vitest";
+import { gameTimeOn } from "../bonus/bonus";
 import { LEAGUE_SCHEDULE } from "../rules";
 import {
-  type Division,
-  divisionOf,
-  divisions,
-  floorOf,
-  freshStanding,
-  joustLaurels,
+  botsOf,
+  type GroupMember,
+  type GroupSeed,
+  groupStandings,
+  joustPoints,
+  LEAGUES,
   type LeagueRules,
+  leagueAfter,
   leagueRulesAt,
-  leagueStepRewards,
-  pendingLeagueRewards,
-  rewardedDivisions,
-  SEASON_END_STEP,
-  seasonOf,
-  seasonStart,
+  moveOf,
+  rankedLeft,
+  weekAt,
+  weekOf,
+  weekPointsCap,
+  weekRewards,
 } from "./leagues";
 
 const rules: LeagueRules = leagueRulesAt(LEAGUE_SCHEDULE, Date.now());
-const name = (division: Division) => `${division.league} ${division.rank ?? ""}`.trim();
-const even = { rating: 1500, opponentRating: 1500 };
-
-describe("divisions", () => {
-  it("cuts each league into three divisions, the last one whole", () => {
-    const all = divisions(rules);
-    expect(all).toHaveLength(13);
-    expect(all.slice(0, 4).map((division) => [name(division), division.from])).toEqual([
-      ["page 3", 0],
-      ["page 2", 100],
-      ["page 1", 200],
-      ["ecuyer 3", 300],
-    ]);
-    expect(all.at(-1)).toMatchObject({ league: "champion", rank: null, from: 1200, index: 12 });
-  });
-
-  it("places laurels in their division", () => {
-    expect(name(divisionOf(rules, 0))).toBe("page 3");
-    expect(name(divisionOf(rules, 742))).toBe("chevalier 2");
-    expect(name(divisionOf(rules, 899))).toBe("chevalier 1");
-    expect(name(divisionOf(rules, 5000))).toBe("champion");
-  });
-
-  it("floors at the start of the league reached", () => {
-    expect(floorOf(rules, 250)).toBe(0);
-    expect(floorOf(rules, 742)).toBe(600);
-    expect(floorOf(rules, 1300)).toBe(1200);
-  });
+const SEED = "0123456789abcdef0123456789abcdef";
+const group = (league: GroupSeed["league"], week = 0, seed = SEED): GroupSeed => ({
+  league,
+  week,
+  seed,
 });
+const monday = gameTimeOn("2026-11-09", 0);
+const sundayNight = gameTimeOn("2026-11-16", 0) - 1;
 
-describe("joustLaurels", () => {
-  const start = { laurels: 400, peak: 400, streak: 0 };
-
-  it("gives 25 for a win against an even opponent", () => {
-    expect(joustLaurels(rules, start, { outcome: "won", ...even }).delta).toBe(25);
-    expect(
-      joustLaurels(rules, { laurels: 1300, peak: 1300, streak: 0 }, { outcome: "won", ...even })
-        .delta,
-    ).toBe(25);
-  });
-
-  it("takes more for a loss the higher the league the player is in", () => {
-    const lost = (laurels: number) =>
-      joustLaurels(rules, { laurels, peak: laurels, streak: 0 }, { outcome: "lost", ...even })
-        .delta;
-    expect(lost(100)).toBe(-15);
-    expect(lost(400)).toBe(-20);
-    expect(lost(700)).toBe(-23);
-    expect(lost(1000)).toBe(-26);
-    expect(lost(1300)).toBe(-30);
-  });
-
-  it("weighs the laurels by the opponent's rating, within bounds", () => {
-    const won = (opponentRating: number) =>
-      joustLaurels(rules, start, { outcome: "won", rating: 1500, opponentRating }).delta;
-    const lost = (opponentRating: number) =>
-      joustLaurels(rules, start, { outcome: "lost", rating: 1500, opponentRating }).delta;
-    expect(won(1700)).toBe(30);
-    expect(won(2500)).toBe(35);
-    expect(won(1100)).toBe(15);
-    expect(lost(1700)).toBe(-15);
-    expect(lost(2500)).toBe(-10);
-    expect(lost(500)).toBe(-30);
-  });
-
-  it("changes nothing on a draw, but breaks the streak", () => {
-    const change = joustLaurels(rules, { ...start, streak: 4 }, { outcome: "draw", ...even });
-    expect(change.delta).toBe(0);
-    expect(change.after).toEqual({ laurels: 400, peak: 400, streak: 0 });
-  });
-
-  it("adds to a win from the third in a row", () => {
-    const second = joustLaurels(rules, { ...start, streak: 1 }, { outcome: "won", ...even });
-    expect(second.delta).toBe(25);
-    const third = joustLaurels(rules, second.after, { outcome: "won", ...even });
-    expect(third.delta).toBe(35);
-    expect(third.after).toEqual({ laurels: 460, peak: 460, streak: 3 });
-  });
-
-  it("never takes a player below the league reached", () => {
-    const change = joustLaurels(
-      rules,
-      { laurels: 605, peak: 640, streak: 2 },
-      { outcome: "lost", ...even },
-    );
-    expect(change.after).toEqual({ laurels: 600, peak: 640, streak: 0 });
-    expect(change.delta).toBe(-5);
-    const atFloor = joustLaurels(rules, change.after, { outcome: "lost", ...even });
-    expect(atFloor.delta).toBe(0);
-  });
-
-  it("lets a player fall within their league", () => {
-    const change = joustLaurels(
-      rules,
-      { laurels: 710, peak: 720, streak: 0 },
-      { outcome: "lost", ...even },
-    );
-    expect(change.after.laurels).toBe(687);
-  });
-});
-
-describe("seasons", () => {
-  it("follows the carnet's calendar from Monday 9 November 2026", () => {
-    expect(seasonOf(rules, "2026-11-09")).toEqual({
+describe("weeks", () => {
+  it("run from Monday 9 November 2026, Paris time", () => {
+    expect(weekOf(rules, "2026-11-09")).toEqual({
       index: 0,
       firstDay: "2026-11-09",
-      lastDay: "2026-12-06",
+      lastDay: "2026-11-15",
     });
-    expect(seasonOf(rules, "2026-12-07").index).toBe(1);
-    expect(seasonOf(rules, "2026-11-08").index).toBe(-1);
-  });
-
-  it("starts a league lower, at its start", () => {
-    expect(seasonStart(rules, null, 3)).toBe(0);
-    expect(seasonStart(rules, { season: 2, laurels: 1000 }, 3)).toBe(600);
-    expect(seasonStart(rules, { season: 2, laurels: 1500 }, 3)).toBe(900);
-    expect(seasonStart(rules, { season: 2, laurels: 450 }, 3)).toBe(0);
-  });
-
-  it("drops a league more for each season skipped", () => {
-    expect(seasonStart(rules, { season: 0, laurels: 1300 }, 2)).toBe(600);
-    expect(seasonStart(rules, { season: 0, laurels: 1300 }, 9)).toBe(0);
-  });
-
-  it("keeps the season being played", () => {
-    expect(seasonStart(rules, { season: 3, laurels: 1300 }, 3)).toBe(0);
-    expect(freshStanding(rules, { season: 2, laurels: 1300 }, 3)).toEqual({
-      laurels: 900,
-      peak: 900,
-      streak: 0,
-    });
+    expect(weekOf(rules, "2026-11-15").index).toBe(0);
+    expect(weekOf(rules, "2026-11-16").index).toBe(1);
+    expect(weekOf(rules, "2026-11-08").index).toBe(-1);
+    expect(weekAt(rules, 2).firstDay).toBe("2026-11-23");
   });
 });
 
-describe("rewards", () => {
-  it("rewards a division with écus and a league with a garni sachet", () => {
-    expect(leagueStepRewards(rules, 1, "page")).toEqual([{ kind: "ecus", amount: 20 }]);
-    expect(leagueStepRewards(rules, 3, "page")).toEqual([{ kind: "garni_booster" }]);
-    expect(leagueStepRewards(rules, 12, "page")).toEqual([{ kind: "garni_booster" }]);
-    expect(leagueStepRewards(rules, 13, "page")).toEqual([]);
-    expect(leagueStepRewards(rules, -1, "page")).toEqual([]);
+describe("a joust", () => {
+  it("gives 3 points for a win, 1 for a draw, none for a defeat", () => {
+    expect(joustPoints(rules, "won")).toBe(3);
+    expect(joustPoints(rules, "draw")).toBe(1);
+    expect(joustPoints(rules, "lost")).toBe(0);
   });
 
-  it("rewards the end of a season by the league reached", () => {
-    expect(leagueStepRewards(rules, SEASON_END_STEP, "ecuyer")).toEqual([
-      { kind: "bonus_booster" },
-      { kind: "bonus_booster" },
+  it("allows 5 ranked jousts a day", () => {
+    expect(rankedLeft(rules, 0)).toBe(5);
+    expect(rankedLeft(rules, 4)).toBe(1);
+    expect(rankedLeft(rules, 7)).toBe(0);
+    expect(weekPointsCap(rules)).toBe(105);
+  });
+});
+
+describe("the automatons", () => {
+  it("are drawn the same from the same seed", () => {
+    expect(botsOf(rules, group("chevalier"), 30, sundayNight)).toEqual(
+      botsOf(rules, group("chevalier"), 30, sundayNight),
+    );
+    expect(botsOf(rules, group("chevalier"), 30, sundayNight)).not.toEqual(
+      botsOf(rules, group("chevalier", 0, "f".repeat(32)), 30, sundayNight),
+    );
+  });
+
+  it("start the week at nothing and only gain", () => {
+    const at = (time: number) => botsOf(rules, group("banneret"), 30, time);
+    expect(at(monday).every((bot) => bot.points === 0)).toBe(true);
+    let before = at(monday);
+    for (let day = 1; day <= 7; day += 1) {
+      const now = at(monday + day * 86_400_000 - 1);
+      now.forEach((bot, index) => {
+        expect(bot.points).toBeGreaterThanOrEqual(before[index]?.points ?? 0);
+      });
+      before = now;
+    }
+  });
+
+  it("make more points in the higher leagues, never more than a player can", () => {
+    const mean = (league: GroupSeed["league"]) => {
+      let total = 0;
+      for (let seed = 0; seed < 40; seed += 1) {
+        const bots = botsOf(
+          rules,
+          group(league, 0, seed.toString(16).padStart(32, "0")),
+          30,
+          sundayNight,
+        );
+        total += bots.reduce((sum, bot) => sum + bot.points, 0) / bots.length;
+        for (const bot of bots) expect(bot.points).toBeLessThanOrEqual(weekPointsCap(rules));
+      }
+      return total / 40;
+    };
+    const means = LEAGUES.map(mean);
+    for (let rank = 1; rank < means.length; rank += 1) {
+      expect(means[rank]).toBeGreaterThan(means[rank - 1] ?? 0);
+    }
+    expect(means[0]).toBeGreaterThan(rules.bots.page.mean - 3);
+    expect(means[0]).toBeLessThan(rules.bots.page.mean + 3);
+  });
+
+  it("keep their order as players take their places", () => {
+    const all = botsOf(rules, group("page"), 30, sundayNight);
+    expect(botsOf(rules, group("page"), 12, sundayNight)).toEqual(all.slice(0, 12));
+  });
+});
+
+describe("the group", () => {
+  const member = (userId: string, points: number, scoredAt = monday + 1): GroupMember => ({
+    userId,
+    points,
+    scoredAt,
+  });
+
+  it("fills the places left with automatons", () => {
+    const lines = groupStandings(rules, group("ecuyer"), [member("a", 9)], sundayNight);
+    expect(lines).toHaveLength(30);
+    expect(lines.filter((line) => line.kind === "bot")).toHaveLength(29);
+    expect(lines.map((line) => line.place)).toEqual(Array.from({ length: 30 }, (_, i) => i + 1));
+  });
+
+  it("ranks by points, the first to reach a score ahead", () => {
+    const lines = groupStandings(
+      rules,
+      group("page"),
+      [member("late", 200, monday + 5_000), member("early", 200, monday + 1_000)],
+      sundayNight,
+    );
+    expect(lines[0]).toMatchObject({ kind: "player", userId: "early", place: 1, move: "up" });
+    expect(lines[1]).toMatchObject({ kind: "player", userId: "late", place: 2, move: "up" });
+  });
+
+  it("puts a player ahead of an automaton on the same points at the same time", () => {
+    const bots = botsOf(rules, group("page"), 29, sundayNight);
+    const top = bots.reduce((best, bot) => (bot.points > best.points ? bot : best));
+    const lines = groupStandings(
+      rules,
+      group("page"),
+      [member("tied", top.points, top.scoredAt)],
+      sundayNight,
+    );
+    const mine = lines.find((line) => line.kind === "player");
+    const theirs = lines.find((line) => line.kind === "bot" && line.index === top.index);
+    expect(mine?.place).toBeLessThan(theirs?.place ?? 0);
+  });
+
+  it("is full of players once 30 have come", () => {
+    const members = Array.from({ length: 30 }, (_, i) => member(`p${i}`, i));
+    const lines = groupStandings(rules, group("chevalier"), members, sundayNight);
+    expect(lines.every((line) => line.kind === "player")).toBe(true);
+  });
+});
+
+describe("the end of the week", () => {
+  it("sends the first places up and the last down, by league", () => {
+    expect(moveOf(rules, "page", 10, 5)).toBe("up");
+    expect(moveOf(rules, "page", 11, 5)).toBe("stay");
+    expect(moveOf(rules, "page", 30, 0)).toBe("stay");
+    expect(moveOf(rules, "chevalier", 7, 40)).toBe("up");
+    expect(moveOf(rules, "chevalier", 25, 10)).toBe("stay");
+    expect(moveOf(rules, "chevalier", 26, 10)).toBe("down");
+    expect(moveOf(rules, "champion", 1, 90)).toBe("stay");
+    expect(moveOf(rules, "champion", 23, 40)).toBe("down");
+  });
+
+  it("takes a point to go up", () => {
+    expect(moveOf(rules, "page", 1, 0)).toBe("stay");
+  });
+
+  it("moves a league up or down, within the ladder", () => {
+    expect(leagueAfter("page", "up")).toBe("ecuyer");
+    expect(leagueAfter("banneret", "down")).toBe("chevalier");
+    expect(leagueAfter("page", "down")).toBe("page");
+    expect(leagueAfter("champion", "up")).toBe("champion");
+    expect(leagueAfter("marechal", "stay")).toBe("marechal");
+  });
+
+  it("rewards the week by league, more for going up and for the Champion podium", () => {
+    expect(weekRewards(rules, "page", 20, "stay")).toEqual([{ kind: "ecus", amount: 10 }]);
+    expect(weekRewards(rules, "chevalier", 2, "up")).toEqual([
+      { kind: "ecus", amount: 20 },
+      { kind: "garni_booster" },
     ]);
-    expect(leagueStepRewards(rules, SEASON_END_STEP, "champion")).toEqual([
+    expect(weekRewards(rules, "champion", 3, "stay")).toEqual([
+      { kind: "ecus", amount: 40 },
       { kind: "precious_garni_booster" },
     ]);
-  });
-
-  it("rewards only the divisions climbed above the season's start", () => {
-    expect(rewardedDivisions(rules, 0, 250).map((division) => division.index)).toEqual([1, 2]);
-    expect(rewardedDivisions(rules, 600, 742).map((division) => division.index)).toEqual([7]);
-    expect(rewardedDivisions(rules, 600, 650)).toEqual([]);
-  });
-
-  it("lists what is left to claim, the end of past seasons included", () => {
-    const pending = pendingLeagueRewards(
-      rules,
-      [
-        { season: 1, started: 0, laurels: 120, peak: 160 },
-        { season: 0, started: 0, laurels: 310, peak: 310 },
-      ],
-      [
-        { season: 0, step: 1 },
-        { season: 0, step: 2 },
-      ],
-      1,
-    );
-    expect(pending).toEqual([
-      { season: 0, step: 3 },
-      { season: 0, step: SEASON_END_STEP },
-      { season: 1, step: 1 },
-    ]);
+    expect(weekRewards(rules, "champion", 4, "stay")).toEqual([{ kind: "ecus", amount: 40 }]);
   });
 });

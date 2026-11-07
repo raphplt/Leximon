@@ -2,8 +2,6 @@ import type { JoustOutcome, JoustView } from "@leximon/contract";
 import { rarityLights, revealEffects, type ToyMatterName, toyMatters } from "@leximon/tokens";
 import {
   answerTimeText,
-  divisionNumeral,
-  laurelsDelta,
   OPEN_SEALED,
   outcomeWord,
   REPLAY_REVEAL,
@@ -21,7 +19,7 @@ import { fontSizes, fonts, radii, space } from "@/theme";
 import { Icon } from "@/ui/icon";
 import { useStage } from "@/ui/stage";
 import { Leaf, Lettering, ToyBody, ToyIcon } from "@/ui/toy";
-import { LaurelsGain, Shield } from "./league-pieces";
+import { TournamentGain } from "./league-pieces";
 import { type Duelist, DuelistFace, ink, LeafKicker, Looping, pieces } from "./pieces";
 
 export interface RevealAnswer {
@@ -41,8 +39,8 @@ export interface RevealData {
   readonly gains: {
     readonly xp: number;
     readonly boosters: number;
-    /** A ranked joust's laurels. */
-    readonly laurels: NonNullable<JoustView["result"]>["laurels"];
+    /** A ranked joust's points in the week's tournament. */
+    readonly tournament: NonNullable<JoustView["result"]>["tournament"];
   } | null;
   /** The last line: the words that trapped the other, or why the joust ended without them. */
   readonly closing: string | null;
@@ -167,8 +165,7 @@ export function Reveal({
     });
     later(verdictAt + 1_200, () => {
       setGains(true);
-      const laurels = data.gains?.laurels;
-      const gained = laurels != null && laurels.after > laurels.before;
+      const gained = (data.gains?.tournament?.won ?? 0) > 0;
       if (data.gains !== null && (data.gains.xp > 0 || data.gains.boosters > 0 || gained)) {
         play("coins");
       }
@@ -257,17 +254,9 @@ export function Reveal({
               <Lettering size={fontSizes.subtitle}>{sachetGainText(data.gains.boosters)}</Lettering>
             </Animated.View>
           )}
-          {data.gains?.laurels != null && (
-            <Animated.View entering={FadeInUp.delay(320).duration(300)} style={styles.laurels}>
-              <View style={styles.gain}>
-                <Shield
-                  league={data.gains.laurels.division.league}
-                  numeral={divisionNumeral(data.gains.laurels.division)}
-                  size={28}
-                />
-                <Lettering size={fontSizes.subtitle}>{laurelsDelta(data.gains.laurels)}</Lettering>
-              </View>
-              <LaurelsGain laurels={data.gains.laurels} />
+          {data.gains?.tournament != null && (
+            <Animated.View entering={FadeInUp.delay(320).duration(300)} style={styles.tournament}>
+              <TournamentGain tournament={data.gains.tournament} />
             </Animated.View>
           )}
           {data.closing !== null && (
@@ -364,7 +353,7 @@ const styles = StyleSheet.create({
   bannerBody: { paddingHorizontal: space.s16, paddingVertical: space.s5 },
   gains: { alignItems: "center", gap: space.s6 },
   gain: { flexDirection: "row", alignItems: "center", gap: space.s4 },
-  laurels: { alignSelf: "stretch", alignItems: "center", gap: space.s4 },
+  tournament: { alignSelf: "stretch", alignItems: "center" },
   closing: { flexDirection: "row", alignItems: "center", gap: space.s4, alignSelf: "stretch" },
   closingText: {
     flex: 1,

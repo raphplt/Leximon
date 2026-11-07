@@ -20,6 +20,7 @@ import {
   joustHelp,
   joustRowState,
   joustSections,
+  LAUNCH_FREE,
   LAUNCH_FRIENDLY,
   launchRefusalText,
   NO_FRIENDS_TO_DEFY,
@@ -210,11 +211,29 @@ function Home({
           <LeagueHeader standing={jousts.standing} today={gameDayOf(now).key} />
           {ready ? (
             <div className={styles.launch}>
-              <MainAction
-                label={JOUST}
-                disabled={busy}
-                onClick={() => onLaunch({ kind: "ranked" })}
-              />
+              {jousts.standing.rankedLeft > 0 ? (
+                <>
+                  <MainAction
+                    label={JOUST}
+                    disabled={busy}
+                    onClick={() => onLaunch({ kind: "ranked" })}
+                  />
+                  <Toy
+                    matter="paper"
+                    className={styles.friendAction}
+                    disabled={busy}
+                    onClick={() => onLaunch({ kind: "free" })}
+                  >
+                    <Icon name="joutes" size={18} /> {LAUNCH_FREE}
+                  </Toy>
+                </>
+              ) : (
+                <MainAction
+                  label={LAUNCH_FREE}
+                  disabled={busy}
+                  onClick={() => onLaunch({ kind: "free" })}
+                />
+              )}
               <Toy
                 matter="paper"
                 className={styles.friendAction}

@@ -190,7 +190,7 @@ function revealOf(
     gains:
       result === null
         ? null
-        : { xp: result.xp, boosters: result.boosters, laurels: result.laurels },
+        : { xp: result.xp, boosters: result.boosters, tournament: result.tournament },
     closing: summary.forfeit
       ? forfeitLine(summary.launched, summary.opponent)
       : trappedLine(trappingWords(theirs ?? [], word), summary.opponent),

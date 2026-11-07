@@ -18,6 +18,13 @@ export const JOUSTS_RULES =
   "Tu réponds aux 5 mots tirés du deck de ton adversaire, puis il répond aux 5 mots du tien. Pour chaque mot, tu lis la définition et tu choisis le mot parmi 4, en 15 secondes. Le plus de bonnes réponses gagne, et le temps total départage une égalité.";
 export const LAUNCH_RANKED = "Trouver un adversaire";
 export const LAUNCH_FRIENDLY = "Défier un ami";
+export const LAUNCH_FREE = "Joute libre";
+
+const KIND_NAMES: Readonly<Record<JoustSummary["kind"], string>> = {
+  ranked: "Joute classée",
+  free: "Joute libre",
+  friendly: "Joute amicale",
+};
 export const REVENGE = "Proposer une revanche";
 export const EDIT_DECK = "Changer mon deck";
 export const SAVE_DECK = "Garder ce deck";
@@ -83,7 +90,7 @@ export function joustLine(
   timeZone?: string,
 ): JoustLine {
   const name = playerName(joust.opponent);
-  const kind = joust.kind === "ranked" ? "Joute classée" : "Joute amicale";
+  const kind = KIND_NAMES[joust.kind];
   const title = `${kind} contre ${name}`;
   switch (joust.state) {
     case "play":
@@ -211,8 +218,10 @@ export function launchRefusalText(reason: LaunchRefusal | "account_locked", leve
       return "Compose ton deck avant ta première joute : ce sont tes mots que l'autre devra trouver.";
     case "too_many_waiting":
       return "Tu as déjà 5 joutes qui attendent leur adversaire. Lance la suivante quand l'une d'elles est finie.";
+    case "ranked_limit":
+      return "Tu as joué tes 5 joutes classées du jour. Reviens demain, ou lance une joute libre.";
     case "no_opponent":
-      return "Personne n'est disponible pour une joute classée en ce moment. Réessaie plus tard, ou défie un ami.";
+      return "Personne n'est disponible pour jouter en ce moment. Réessaie plus tard, ou défie un ami.";
     case "opponent_unavailable":
       return "Ce joueur ne peut pas jouter en ce moment.";
     case "not_friends":
@@ -373,7 +382,8 @@ export function joustHelp(size: RunSize): readonly string[] {
     `Tu trouves les ${size.questions} mots tirés du deck de l'autre joueur, qui trouve les ${size.questions} du tien.`,
     `${size.seconds} secondes par mot, ${size.choices} choix.`,
     "Le plus de mots trouvés gagne ; à égalité, le plus rapide.",
-    "Chaque partie donne des XP. Une joute classée fait gagner ou perdre des lauriers.",
+    "Chaque partie donne des XP. Une joute classée donne des points pour le tournoi de la semaine : 3 pour une victoire, 1 pour une égalité.",
+    "Une joute libre se joue sans limite, contre un adversaire choisi par le jeu, pour le plaisir.",
   ];
 }
 
@@ -396,7 +406,8 @@ export function joustSections(jousts: readonly JoustSummary[]): JoustSections {
   };
 }
 
-const kindWord = (joust: JoustSummary) => (joust.kind === "ranked" ? "Classée" : "Amicale");
+const kindWord = (joust: JoustSummary) =>
+  joust.kind === "ranked" ? "Classée" : joust.kind === "free" ? "Libre" : "Amicale";
 
 /** The short line of a joust in its section: « Classée · avant demain 9 h 05 ». */
 export function joustRowState(joust: JoustSummary, now: EpochMs, timeZone?: string): string {

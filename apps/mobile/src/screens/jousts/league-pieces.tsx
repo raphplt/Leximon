@@ -1,21 +1,12 @@
-import type { JoustStanding, LeagueId } from "@leximon/contract";
+import type { JoustStanding, LeagueId, WeekMove } from "@leximon/contract";
 import { toyMatters, toy as toyValues } from "@leximon/tokens";
 import {
-  divisionName,
-  divisionNumeral,
-  divisionShare,
-  laurelsDelta,
+  type JoustTournament,
+  leagueNumeral,
   standingHeader,
+  tournamentGain,
 } from "@leximon/view-model";
-import { useEffect } from "react";
 import { StyleSheet, Text, View } from "react-native";
-import Animated, {
-  useAnimatedStyle,
-  useReducedMotion,
-  useSharedValue,
-  withDelay,
-  withTiming,
-} from "react-native-reanimated";
 import Svg, { Defs, LinearGradient, Path, Stop, Text as SvgText } from "react-native-svg";
 import { alpha, fontSizes, fonts, radii, space } from "@/theme";
 import { Icon } from "@/ui/icon";
@@ -28,10 +19,19 @@ export const LEAGUE_MATTERS: Readonly<Record<LeagueId, keyof typeof toyMatters>>
   ecuyer: "green",
   chevalier: "blue",
   banneret: "red",
+  marechal: "dark",
+  connetable: "locked",
   champion: "gold",
 };
 
-/** A league's shield, in its matter, with the division's numeral; Champion wears a crown. */
+/** What a place gives at the end of the week, in a colour: green going up, red going down. */
+export const MOVE_COLORS: Readonly<Record<WeekMove, string>> = {
+  up: toyMatters.green.bottom,
+  stay: ink.pageInk,
+  down: toyMatters.red.bottom,
+};
+
+/** A league's shield, in its matter, with the league's numeral; Champion wears a crown. */
 export function Shield({
   league,
   numeral,
@@ -43,7 +43,7 @@ export function Shield({
 }) {
   const matter = toyMatters[LEAGUE_MATTERS[league]];
   const gradient = `shield-${league}`;
-  const numeralSize = numeral === "III" ? 12 : 14;
+  const numeralSize = numeral !== null && numeral.length > 2 ? 12 : 14;
   return (
     <Svg width={size} height={size * 1.15} viewBox="0 0 40 46" accessible={false}>
       <Defs>
@@ -94,7 +94,7 @@ export function Shield({
   );
 }
 
-/** The player's league at the top of the jousts' home: shield, laurels, the way to the next. */
+/** The player's league at the top of the jousts' home: shield, place in the week's tournament. */
 export function LeagueHeader({
   standing,
   today,
@@ -106,26 +106,32 @@ export function LeagueHeader({
   return (
     <View style={styles.head}>
       <View style={styles.headTop}>
-        <Shield
-          league={standing.division.league}
-          numeral={divisionNumeral(standing.division)}
-          size={52}
-        />
+        <Shield league={standing.league} numeral={leagueNumeral(standing.league)} size={52} />
         <View style={styles.headText}>
-          <Lettering size={fontSizes.subtitle}>{header.name}</Lettering>
-          <View style={styles.laurels}>
-            <Icon name="star" size={15} color={ink.pageInk} />
-            <Text style={styles.laurelsText}>{header.laurels}</Text>
+          <View style={styles.headName}>
+            <Lettering size={fontSizes.subtitle}>{header.name}</Lettering>
             {header.champion !== null && <Emblem>{header.champion}</Emblem>}
           </View>
+          {header.place !== null && header.points !== null && (
+            <Text style={styles.place}>{`${header.place} · ${header.points}`}</Text>
+          )}
         </View>
       </View>
-      <Bar from={header.share} to={header.share} />
-      <Text style={styles.next}>{header.next}</Text>
-      {header.streak !== null && <Text style={styles.streak}>{header.streak}</Text>}
-      <View style={styles.season}>
+      <Text
+        style={[
+          styles.line,
+          header.move !== null && header.move !== "stay" && { color: MOVE_COLORS[header.move] },
+        ]}
+      >
+        {header.line}
+      </Text>
+      <View style={styles.ranked}>
+        <Icon name="bolt" size={14} color={ink.pageInk} />
+        <Text style={styles.rankedText}>{header.ranked}</Text>
+      </View>
+      <View style={styles.week}>
         <Icon name="clock" size={13} color={toyMatters.paper.top} />
-        <Text style={styles.seasonText}>{header.season}</Text>
+        <Text style={styles.weekText}>{header.week}</Text>
       </View>
     </View>
   );
@@ -140,58 +146,25 @@ export function Emblem({ children }: { readonly children: string }) {
   );
 }
 
-/** A bar of gold that fills from one share to another. */
-function Bar({
-  from,
-  to,
-  delay = 0,
-}: {
-  readonly from: number;
-  readonly to: number;
-  readonly delay?: number;
-}) {
-  const reduced = useReducedMotion();
-  const share = useSharedValue(reduced ? to : from);
-  useEffect(() => {
-    share.value = reduced ? to : withDelay(delay, withTiming(to, { duration: 1100 }));
-  }, [share, to, delay, reduced]);
-  const fill = useAnimatedStyle(() => ({ width: `${share.value * 100}%` }));
-  return (
-    <View style={styles.bar} accessible={false}>
-      <Animated.View style={[styles.barFill, fill]} />
-    </View>
-  );
-}
-
-/** Under a ranked joust's result: the laurels won or lost, the bar filling to where they stand. */
-export function LaurelsGain({
-  laurels,
-}: {
-  readonly laurels: {
-    readonly before: number;
-    readonly after: number;
-    readonly division: JoustStanding["division"];
-    readonly nextDivision: JoustStanding["nextDivision"];
-  };
-}) {
-  const { division, nextDivision } = laurels;
-  const from =
-    laurels.before < division.from ? 0 : divisionShare(laurels.before, division, nextDivision);
-  const to = divisionShare(laurels.after, division, nextDivision);
+/** Under a ranked joust's result: the points it gave, and the place in the group now. */
+export function TournamentGain({ tournament }: { readonly tournament: JoustTournament }) {
+  const gain = tournamentGain(tournament);
   return (
     <View style={styles.gain}>
-      <View style={styles.gainLabels}>
-        <View style={styles.gainLabel}>
-          <Shield league={division.league} numeral={divisionNumeral(division)} size={22} />
-          <Text style={styles.gainText}>{divisionName(division)}</Text>
-        </View>
-        <Text style={styles.gainText}>
-          {nextDivision === null
-            ? laurelsDelta(laurels)
-            : `${divisionName(nextDivision)} à ${nextDivision.from}`}
-        </Text>
+      <View style={styles.gainTop}>
+        <Shield league={tournament.league} numeral={leagueNumeral(tournament.league)} size={28} />
+        <Lettering size={fontSizes.subtitle}>{gain.points}</Lettering>
       </View>
-      <Bar from={from} to={to} delay={700} />
+      {gain.place !== null && (
+        <Text
+          style={[
+            styles.gainPlace,
+            gain.move !== null && gain.move !== "stay" && { color: MOVE_COLORS[gain.move] },
+          ]}
+        >
+          {gain.place}
+        </Text>
+      )}
     </View>
   );
 }
@@ -206,11 +179,17 @@ const styles = StyleSheet.create({
   },
   headTop: { flexDirection: "row", alignItems: "center", gap: space.s5 },
   headText: { flex: 1, gap: space.s1 },
-  laurels: { flexDirection: "row", flexWrap: "wrap", alignItems: "center", gap: space.s3 },
-  laurelsText: { fontFamily: fonts.ui.extrabold, fontSize: fontSizes.body, color: ink.pageInk },
-  next: { fontFamily: fonts.ui.medium, fontSize: fontSizes.small, color: ink.pageInkMuted },
-  streak: { fontFamily: fonts.ui.extrabold, fontSize: fontSizes.small, color: ink.rubric },
-  season: {
+  headName: { flexDirection: "row", flexWrap: "wrap", alignItems: "center", gap: space.s3 },
+  place: { fontFamily: fonts.ui.extrabold, fontSize: fontSizes.body, color: ink.pageInk },
+  line: { fontFamily: fonts.ui.semibold, fontSize: fontSizes.small, color: ink.pageInk },
+  ranked: { flexDirection: "row", alignItems: "center", gap: space.s2 },
+  rankedText: {
+    flex: 1,
+    fontFamily: fonts.ui.medium,
+    fontSize: fontSizes.small,
+    color: ink.pageInkMuted,
+  },
+  week: {
     flexDirection: "row",
     alignItems: "center",
     alignSelf: "flex-start",
@@ -220,7 +199,7 @@ const styles = StyleSheet.create({
     borderRadius: radii.pill,
     backgroundColor: toyMatters.dark.top,
   },
-  seasonText: { fontFamily: fonts.ui.bold, fontSize: fontSizes.small, color: toyMatters.paper.top },
+  weekText: { fontFamily: fonts.ui.bold, fontSize: fontSizes.small, color: toyMatters.paper.top },
   emblem: {
     paddingHorizontal: space.s3,
     borderWidth: 2,
@@ -233,22 +212,12 @@ const styles = StyleSheet.create({
     fontSize: fontSizes.micro,
     color: toyValues.outline,
   },
-  bar: {
-    height: 14,
-    overflow: "hidden",
-    borderWidth: 2,
-    borderColor: toyValues.outline,
-    borderRadius: radii.pill,
-    backgroundColor: alpha(ink.pageInk, 0.14),
+  gain: { alignSelf: "stretch", alignItems: "center", gap: space.s2 },
+  gainTop: { flexDirection: "row", alignItems: "center", gap: space.s4 },
+  gainPlace: {
+    textAlign: "center",
+    fontFamily: fonts.ui.extrabold,
+    fontSize: fontSizes.small,
+    color: ink.pageInk,
   },
-  barFill: {
-    height: "100%",
-    borderRadius: radii.pill,
-    backgroundColor: toyMatters.gold.bottom,
-    boxShadow: `inset 0 3px 0 ${toyMatters.gold.top}`,
-  },
-  gain: { alignSelf: "stretch", gap: space.s2 },
-  gainLabels: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
-  gainLabel: { flexDirection: "row", alignItems: "center", gap: space.s2 },
-  gainText: { fontFamily: fonts.ui.extrabold, fontSize: fontSizes.small, color: ink.pageInk },
 });
