@@ -483,7 +483,9 @@ export const JOUST_SCHEDULE: JoustSchedule = [
 ];
 
 // Leagues of ranked jousts, on the carnet's calendar. A streak adds 10 rather than doubling the
-// win: doubled, half the keen players were Champion in their first season. Provisional.
+// win: doubled, half the keen players were Champion in their first season. A defeat costs more
+// in each league up: at a fixed cost, winning one joust in two was enough to climb with volume
+// alone, and nearly every keen player ended Champion after three seasons. Provisional.
 export const LEAGUE_SCHEDULE: LeagueSchedule = [
   {
     startsAt: SINCE_LAUNCH,
@@ -492,7 +494,13 @@ export const LEAGUE_SCHEDULE: LeagueSchedule = [
     leagueFrom: { page: 0, ecuyer: 300, chevalier: 600, banneret: 900, champion: 1200 },
     divisionsPerLeague: 3,
     win: { base: 25, min: 15, max: 35 },
-    loss: { base: 15, min: 5, max: 25 },
+    loss: {
+      page: { base: 15, min: 5, max: 25 },
+      ecuyer: { base: 20, min: 10, max: 30 },
+      chevalier: { base: 23, min: 13, max: 33 },
+      banneret: { base: 26, min: 16, max: 36 },
+      champion: { base: 30, min: 20, max: 40 },
+    },
     ratingSpread: 400,
     streakFrom: 3,
     streakBonus: 10,

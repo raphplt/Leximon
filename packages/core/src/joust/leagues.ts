@@ -1,11 +1,13 @@
 /**
  * Leagues of ranked jousts. Laurels are won and lost in ranked jousts only, on a ladder of
  * leagues cut into divisions. A season follows the carnet's calendar; at its end each player gets
- * the reward of the league they reached and starts the next one a league lower. The hidden rating
- * still chooses the opponent and only weighs the laurels a joust is worth.
+ * the reward of the league they reached and starts the next one a league lower. A defeat costs more
+ * the higher the league, so that winning one joust in two holds a player in the middle leagues
+ * instead of carrying everyone who plays a lot up to Champion. The hidden rating still chooses the
+ * opponent and only weighs the laurels a joust is worth.
  *
  * Nothing is stored for a season the player did not play: where they start is computed from
- * their last season played, one league lower for each season since.
+ * their last season played, one league lower again for each season skipped since.
  *
  * Concurrency: these functions are pure. Callers apply a joust's laurels under both standings'
  * locks, and a reward claim under the player's wallet lock.
@@ -30,7 +32,8 @@ export interface LeagueRules {
   readonly divisionsPerLeague: number;
   /** Laurels of a win against an opponent of the same rating, and the bounds by rating gap. */
   readonly win: LaurelRange;
-  readonly loss: LaurelRange;
+  /** The same for a defeat, by the league the player is in before the joust. */
+  readonly loss: Readonly<Record<League, LaurelRange>>;
   /** A rating gap this wide reaches a bound of the range. */
   readonly ratingSpread: number;
   /** From this win in a row on, a win brings `streakBonus` more laurels. */
@@ -172,7 +175,8 @@ export function joustLaurels(
       delta,
     };
   }
-  const lost = clamp(rules.loss.base - gap * (rules.loss.max - rules.loss.base), rules.loss);
+  const loss = rules.loss[leagueOf(rules, standing.laurels)];
+  const lost = clamp(loss.base - gap * (loss.max - loss.base), loss);
   const laurels = Math.max(floorOf(rules, standing.peak), standing.laurels - lost);
   return {
     before: standing,

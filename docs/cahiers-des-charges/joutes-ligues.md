@@ -1,6 +1,6 @@
 # Cahier des charges · Les joutes, la suite : sensation, accueil guidé et ligues
 
-- **Statut :** proposé le 2026-11-06 ; le propriétaire a retenu toutes les recommandations le même jour (L1 à L11 en a), inscrites en P51, P91 et P98. Lot 2 (L1 à L6) construit le 2026-11-06, web et mobile, à recetter ([recette-nouveautes.md](../recette-nouveautes.md), JTE-04 à JTE-14) ; lot 3 (L7 à L11) construit le 2026-11-07, web et mobile, à recetter (JTE-23 à JTE-31, MJT-05), avec la série à +10 après la [simulation](../rnd/lauriers.md).
+- **Statut :** proposé le 2026-11-06 ; le propriétaire a retenu toutes les recommandations le même jour (L1 à L11 en a), inscrites en P51, P91 et P98. Lot 2 (L1 à L6) construit le 2026-11-06, web et mobile, à recetter ([recette-nouveautes.md](../recette-nouveautes.md), JTE-04 à JTE-14) ; lot 3 (L7 à L11) construit le 2026-11-07, web et mobile, à recetter (JTE-23 à JTE-31, MJT-05), avec la série à +10 après la [simulation](../rnd/lauriers.md) ; défaite qui coûte plus à chaque ligue le 2026-11-07, départ de saison inchangé (JTE-32).
 - **Source :** retours du propriétaire du 2026-11-06, après une joute jouée contre les bots en local. Le principe marche. Ce qui ne va pas :
   - l'interface manque de sensation (« juicyness ») ;
   - la joute n'est pas assez expliquée ;
@@ -128,9 +128,9 @@ Elle se joue une fois ; ensuite, « Revoir ». En bas, « Revanche » et « Nouv
 - Une division vaut 100 lauriers. Seuils provisoires, à caler par une simulation, comme pour le clan ([clan-sim](../rnd/clan-sim.md)).
 - **Le barème** (en joute classée seulement) :
   - une victoire rapporte 25 lauriers, de 15 à 35 selon la cote de l'adversaire (battre plus fort rapporte plus) ;
-  - une défaite en retire 15 (de 5 à 25) ;
+  - une défaite en retire 15 (de 5 à 25). *Changé le 2026-11-07 après la [simulation](../rnd/lauriers.md) : une défaite coûte plus à chaque ligue, 15 en Page, 20 en Écuyer, 23 en Chevalier, 26 en Banneret et 30 en Champion (P98) ;*
   - une égalité ne change rien ;
-  - à la troisième victoire d'affilée et ensuite, les lauriers d'une victoire doublent.
+  - à la troisième victoire d'affilée et ensuite, les lauriers d'une victoire doublent. *Changé le 2026-11-07 : +10 par victoire, pas le double (P98).*
 - **Les planchers :** on ne descend jamais sous le plancher de la ligue atteinte dans la saison. Un Chevalier reste Chevalier ; il peut seulement redescendre de Chevalier I à Chevalier III.
 - **Ce que donne ce barème :**
   - un joueur qui gagne une joute sur deux avance d'environ 5 lauriers par joute, plus ses séries ;

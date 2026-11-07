@@ -717,17 +717,17 @@ describe("leagues", () => {
     const bDone = await playRun(b, joustId, done + 1_000, [0, 1, 2, 3, 4]);
     await settleJoust(db, joustId, bDone);
     expect(await standingOf(a)).toMatchObject({ laurels: 675, peak: 675, streak: 1, wins: 1 });
-    expect(await standingOf(b)).toMatchObject({ laurels: 635, peak: 650, streak: 0, losses: 1 });
+    expect(await standingOf(b)).toMatchObject({ laurels: 627, peak: 650, streak: 0, losses: 1 });
     expect((await readJoustRow(joustId)).laurels).toEqual({
       challenger: { before: 650, after: 675 },
-      opponent: { before: 650, after: 635 },
+      opponent: { before: 650, after: 627 },
     });
     const view = joustViewSchema.parse(
       await (await app.request(`/jousts/${joustId}`, { headers: headers(b) }, env)).json(),
     );
     expect(view.result?.laurels).toMatchObject({
       before: 650,
-      after: 635,
+      after: 627,
       division: { league: "chevalier", rank: 3 },
       nextDivision: { league: "chevalier", rank: 2, from: 700 },
     });
@@ -752,8 +752,8 @@ describe("leagues", () => {
     // The second loss, to an opponent now rated above the player, costs a little less.
     const mine = await standingOf(a);
     expect(mine?.losses).toBe(2);
-    expect(mine?.laurels).toBeGreaterThan(620);
-    expect(mine?.laurels).toBeLessThan(635);
+    expect(mine?.laurels).toBeGreaterThan(604);
+    expect(mine?.laurels).toBeLessThan(627);
     for (const winner of [b, c]) {
       const standing = await standingOf(winner);
       expect(standing?.wins).toBe(1);

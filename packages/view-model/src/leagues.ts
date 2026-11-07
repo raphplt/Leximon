@@ -191,7 +191,7 @@ function shortReward(reward: LevelRewardView): string {
 
 export const SEASON_END_KICKER = "En fin de saison, selon ta ligue";
 export const SEASON_RULE =
-  "À la fin de la saison, tu repars une ligue plus bas. Pendant la saison, tu ne descends jamais sous le début de la ligue atteinte.";
+  "Une défaite coûte plus de lauriers à chaque ligue : 15 en Page, 20 en Écuyer, 23 en Chevalier, 26 en Banneret et 30 en Champion. Pendant la saison, tu ne descends jamais sous le début de la ligue atteinte. À la fin de la saison, tu repars une ligue plus bas.";
 export const ROAD_RULE =
   "Une division atteinte pour la première fois dans la saison donne 20 écus, une nouvelle ligue un sachet garni.";
 

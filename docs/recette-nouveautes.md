@@ -307,7 +307,7 @@ Lot 3, construit le 2026-11-07. Les règles sont en P98 et P51, le cahier dans [
 
 ### JTE-24 · Les lauriers d'une joute classée
 - **Faire :** jouer une joute classée contre un bot et la gagner, puis une autre et la perdre. Puis une joute amicale.
-- **Attendu :** à la révélation de la victoire, un écu et « +N lauriers » (de 15 à 35, plus si l'adversaire est mieux coté), puis une barre qui se remplit vers la division suivante (« Page II à 100 »), avec le bruit des pièces. La défaite affiche « −N lauriers » (de 5 à 25), jamais sous 0. La joute amicale n'affiche aucun laurier. L'en-tête de `/joutes` suit.
+- **Attendu :** à la révélation de la victoire, un écu et « +N lauriers » (de 15 à 35, plus si l'adversaire est mieux coté), puis une barre qui se remplit vers la division suivante (« Page II à 100 »), avec le bruit des pièces. La défaite affiche « −N lauriers » (en Page, de 5 à 25), jamais sous 0. La joute amicale n'affiche aucun laurier. L'en-tête de `/joutes` suit.
 - **Retour :**
 
 ### JTE-25 · La série
@@ -333,6 +333,11 @@ Lot 3, construit le 2026-11-07. Les règles sont en P98 et P51, le cahier dans [
 ### JTE-29 · Le plancher
 - **Faire :** atteindre Écuyer (300), puis perdre plusieurs joutes classées.
 - **Attendu :** les lauriers ne descendent jamais sous 300 dans la saison. La révélation dit « Lauriers inchangés » quand le plancher retient tout.
+- **Retour :**
+
+### JTE-32 · La défaite coûte plus en haut
+- **Faire :** perdre une joute classée en Page, puis une en Écuyer (au-dessus de 300 sans toucher le plancher). Avec le raccourci des 1 190 lauriers, en perdre une en Banneret. Ouvrir Classement.
+- **Attendu :** à cote égale, la défaite coûte 15 lauriers en Page, 20 en Écuyer, 26 en Banneret (23 en Chevalier, 30 en Champion), chaque fois 10 de moins ou 10 de plus selon la cote de l'adversaire. Sous les récompenses de fin de saison, Classement le dit : « Une défaite coûte plus de lauriers à chaque ligue : 15 en Page, 20 en Écuyer, 23 en Chevalier, 26 en Banneret et 30 en Champion. », puis le plancher et le départ une ligue plus bas. La victoire rapporte toujours 25 à cote égale, quelle que soit la ligue.
 - **Retour :**
 
 ### JTE-30 · Les classements

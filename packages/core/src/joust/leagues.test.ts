@@ -51,9 +51,23 @@ describe("divisions", () => {
 describe("joustLaurels", () => {
   const start = { laurels: 400, peak: 400, streak: 0 };
 
-  it("gives 25 for a win and takes 15 for a loss against an even opponent", () => {
+  it("gives 25 for a win against an even opponent", () => {
     expect(joustLaurels(rules, start, { outcome: "won", ...even }).delta).toBe(25);
-    expect(joustLaurels(rules, start, { outcome: "lost", ...even }).delta).toBe(-15);
+    expect(
+      joustLaurels(rules, { laurels: 1300, peak: 1300, streak: 0 }, { outcome: "won", ...even })
+        .delta,
+    ).toBe(25);
+  });
+
+  it("takes more for a loss the higher the league the player is in", () => {
+    const lost = (laurels: number) =>
+      joustLaurels(rules, { laurels, peak: laurels, streak: 0 }, { outcome: "lost", ...even })
+        .delta;
+    expect(lost(100)).toBe(-15);
+    expect(lost(400)).toBe(-20);
+    expect(lost(700)).toBe(-23);
+    expect(lost(1000)).toBe(-26);
+    expect(lost(1300)).toBe(-30);
   });
 
   it("weighs the laurels by the opponent's rating, within bounds", () => {
@@ -64,9 +78,9 @@ describe("joustLaurels", () => {
     expect(won(1700)).toBe(30);
     expect(won(2500)).toBe(35);
     expect(won(1100)).toBe(15);
-    expect(lost(1700)).toBe(-10);
-    expect(lost(2500)).toBe(-5);
-    expect(lost(500)).toBe(-25);
+    expect(lost(1700)).toBe(-15);
+    expect(lost(2500)).toBe(-10);
+    expect(lost(500)).toBe(-30);
   });
 
   it("changes nothing on a draw, but breaks the streak", () => {
@@ -101,7 +115,7 @@ describe("joustLaurels", () => {
       { laurels: 710, peak: 720, streak: 0 },
       { outcome: "lost", ...even },
     );
-    expect(change.after.laurels).toBe(695);
+    expect(change.after.laurels).toBe(687);
   });
 });
 

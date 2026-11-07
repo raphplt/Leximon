@@ -23,15 +23,27 @@ import {
 
 const BASE = LEAGUE_SCHEDULE[0];
 const GLICKO = JOUST_SCHEDULE[0].glicko;
+const FLAT_LOSS = { base: 15, min: 5, max: 25 };
+const FIXED: LeagueRules = {
+  ...BASE,
+  loss: {
+    page: FLAT_LOSS,
+    ecuyer: FLAT_LOSS,
+    chevalier: FLAT_LOSS,
+    banneret: FLAT_LOSS,
+    champion: FLAT_LOSS,
+  },
+};
 const SETTINGS: readonly { readonly name: string; readonly rules: LeagueRules }[] = [
-  { name: "cahier : 25 / 15, série doublée dès la 3e", rules: { ...BASE, streakBonus: 25 } },
-  { name: "sans série", rules: { ...BASE, streakBonus: 0 } },
-  { name: "série à +10", rules: { ...BASE, streakBonus: 10 } },
+  { name: "cahier : 25 / 15, série doublée dès la 3e", rules: { ...FIXED, streakBonus: 25 } },
+  { name: "sans série", rules: { ...FIXED, streakBonus: 0 } },
+  { name: "série à +10", rules: { ...FIXED, streakBonus: 10 } },
+  { name: "série à +10, défaite de 15 à 30 selon la ligue (retenu)", rules: BASE },
 ];
 const WIN_RATES = [0.4, 0.5, 0.55, 0.6, 0.7];
 const LONE_RUNS = 200;
 const POPULATION_RUNS = 10;
-const SEASONS = 3;
+const SEASONS = 4;
 
 const NAMES: Record<string, string> = {
   page: "Page",

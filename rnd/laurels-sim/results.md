@@ -33,6 +33,11 @@ Généré par `rnd/laurels-sim/run.test.ts`. Tirages par graine fixe.
 | 3 | régulier | 6 % | 9 % | 16 % | 20 % | 49 % |
 | 3 | assidu | 3 % | 0 % | 3 % | 2 % | 92 % |
 | 3 | acharné | 8 % | 8 % | 17 % | 0 % | 67 % |
+| 4 | tous | 22 % | 14 % | 11 % | 8 % | 45 % |
+| 4 | occasionnel | 48 % | 27 % | 16 % | 7 % | 2 % |
+| 4 | régulier | 4 % | 7 % | 12 % | 14 % | 63 % |
+| 4 | assidu | 3 % | 2 % | 0 % | 2 % | 94 % |
+| 4 | acharné | 8 % | 0 % | 17 % | 8 % | 67 % |
 
 ### 300 jouteurs, adversaires choisis par la cote (part des joueurs par ligue en fin de saison, 10 tirages)
 
@@ -53,6 +58,11 @@ Généré par `rnd/laurels-sim/run.test.ts`. Tirages par graine fixe.
 | 3 | régulier | 1 % | 4 % | 16 % | 25 % | 54 % |
 | 3 | assidu | 0 % | 0 % | 0 % | 1 % | 99 % |
 | 3 | acharné | 0 % | 0 % | 0 % | 0 % | 100 % |
+| 4 | tous | 22 % | 22 % | 9 % | 6 % | 41 % |
+| 4 | occasionnel | 42 % | 43 % | 12 % | 3 % | 0 % |
+| 4 | régulier | 1 % | 3 % | 8 % | 16 % | 73 % |
+| 4 | assidu | 0 % | 0 % | 0 % | 0 % | 100 % |
+| 4 | acharné | 0 % | 0 % | 0 % | 0 % | 100 % |
 
 ## Réglage : sans série
 
@@ -85,6 +95,11 @@ Généré par `rnd/laurels-sim/run.test.ts`. Tirages par graine fixe.
 | 3 | régulier | 14 % | 41 % | 20 % | 16 % | 9 % |
 | 3 | assidu | 3 % | 3 % | 8 % | 5 % | 82 % |
 | 3 | acharné | 25 % | 8 % | 0 % | 0 % | 67 % |
+| 4 | tous | 35 % | 25 % | 8 % | 7 % | 25 % |
+| 4 | occasionnel | 72 % | 26 % | 2 % | 0 % | 0 % |
+| 4 | régulier | 12 % | 40 % | 18 % | 18 % | 12 % |
+| 4 | assidu | 5 % | 2 % | 5 % | 3 % | 86 % |
+| 4 | acharné | 17 % | 8 % | 8 % | 0 % | 67 % |
 
 ### 300 jouteurs, adversaires choisis par la cote (part des joueurs par ligue en fin de saison, 10 tirages)
 
@@ -105,6 +120,11 @@ Généré par `rnd/laurels-sim/run.test.ts`. Tirages par graine fixe.
 | 3 | régulier | 6 % | 46 % | 35 % | 11 % | 3 % |
 | 3 | assidu | 0 % | 1 % | 1 % | 5 % | 93 % |
 | 3 | acharné | 0 % | 0 % | 0 % | 0 % | 100 % |
+| 4 | tous | 41 % | 23 % | 11 % | 4 % | 21 % |
+| 4 | occasionnel | 76 % | 24 % | 0 % | 0 % | 0 % |
+| 4 | régulier | 7 % | 39 % | 36 % | 14 % | 4 % |
+| 4 | assidu | 0 % | 1 % | 1 % | 1 % | 98 % |
+| 4 | acharné | 0 % | 0 % | 0 % | 0 % | 100 % |
 
 ## Réglage : série à +10
 
@@ -137,6 +157,11 @@ Généré par `rnd/laurels-sim/run.test.ts`. Tirages par graine fixe.
 | 3 | régulier | 10 % | 22 % | 19 % | 21 % | 28 % |
 | 3 | assidu | 3 % | 0 % | 6 % | 3 % | 88 % |
 | 3 | acharné | 17 % | 8 % | 8 % | 0 % | 67 % |
+| 4 | tous | 27 % | 21 % | 10 % | 7 % | 35 % |
+| 4 | occasionnel | 61 % | 32 % | 6 % | 2 % | 0 % |
+| 4 | régulier | 4 % | 21 % | 21 % | 17 % | 37 % |
+| 4 | assidu | 3 % | 2 % | 0 % | 5 % | 91 % |
+| 4 | acharné | 8 % | 17 % | 8 % | 0 % | 67 % |
 
 ### 300 jouteurs, adversaires choisis par la cote (part des joueurs par ligue en fin de saison, 10 tirages)
 
@@ -157,3 +182,70 @@ Généré par `rnd/laurels-sim/run.test.ts`. Tirages par graine fixe.
 | 3 | régulier | 2 % | 20 % | 33 % | 29 % | 17 % |
 | 3 | assidu | 0 % | 0 % | 1 % | 1 % | 98 % |
 | 3 | acharné | 0 % | 0 % | 0 % | 0 % | 100 % |
+| 4 | tous | 33 % | 21 % | 9 % | 9 % | 28 % |
+| 4 | occasionnel | 64 % | 34 % | 2 % | 0 % | 0 % |
+| 4 | régulier | 2 % | 12 % | 27 % | 31 % | 28 % |
+| 4 | assidu | 0 % | 0 % | 0 % | 0 % | 99 % |
+| 4 | acharné | 0 % | 0 % | 0 % | 0 % | 100 % |
+
+## Réglage : série à +10, défaite de 15 à 30 selon la ligue (retenu)
+
+### Un joueur seul, contre des adversaires de sa force, première saison (médiane sur 200 saisons)
+
+| Victoires | occasionnel (1/jour, 3 j/7) | régulier (3/jour, 5 j/7) | assidu (5/jour, 7 j/7) | acharné (10/jour, 7 j/7) |
+|---|---|---|---|---|
+| 40 % | Page III (45) | Page II (140) | Écuyer III (330) | Écuyer II (470) |
+| 50 % | Page III (75) | Écuyer III (380) | Chevalier II (700) | Banneret I (1136) |
+| 55 % | Page II (110) | Écuyer II (465) | Banneret III (958) | Champion (1435) |
+| 60 % | Page II (130) | Chevalier III (636) | Champion (1247) | Champion (1976) |
+| 70 % | Page II (190) | Chevalier I (839) | Champion (1845) | Champion (3420) |
+
+### Bêta, 30 jouteurs, adversaires choisis par la cote (part des joueurs par ligue en fin de saison, 10 tirages)
+
+| Saison | Habitude | Page | Écuyer | Chevalier | Banneret | Champion |
+|---|---|---|---|---|---|---|
+| 1 | tous | 30 % | 39 % | 17 % | 8 % | 6 % |
+| 1 | occasionnel | 58 % | 41 % | 2 % | 0 % | 0 % |
+| 1 | régulier | 16 % | 51 % | 28 % | 3 % | 2 % |
+| 1 | assidu | 2 % | 22 % | 31 % | 29 % | 17 % |
+| 1 | acharné | 17 % | 25 % | 8 % | 17 % | 33 % |
+| 2 | tous | 25 % | 39 % | 17 % | 9 % | 10 % |
+| 2 | occasionnel | 53 % | 43 % | 4 % | 0 % | 0 % |
+| 2 | régulier | 6 % | 53 % | 27 % | 10 % | 4 % |
+| 2 | assidu | 3 % | 14 % | 26 % | 26 % | 31 % |
+| 2 | acharné | 17 % | 17 % | 8 % | 8 % | 50 % |
+| 3 | tous | 26 % | 36 % | 14 % | 11 % | 12 % |
+| 3 | occasionnel | 52 % | 45 % | 3 % | 0 % | 0 % |
+| 3 | régulier | 10 % | 46 % | 28 % | 10 % | 6 % |
+| 3 | assidu | 3 % | 11 % | 15 % | 32 % | 38 % |
+| 3 | acharné | 25 % | 8 % | 8 % | 8 % | 50 % |
+| 4 | tous | 29 % | 33 % | 13 % | 11 % | 15 % |
+| 4 | occasionnel | 61 % | 36 % | 3 % | 0 % | 0 % |
+| 4 | régulier | 6 % | 50 % | 22 % | 16 % | 6 % |
+| 4 | assidu | 5 % | 5 % | 17 % | 25 % | 49 % |
+| 4 | acharné | 17 % | 17 % | 8 % | 8 % | 50 % |
+
+### 300 jouteurs, adversaires choisis par la cote (part des joueurs par ligue en fin de saison, 10 tirages)
+
+| Saison | Habitude | Page | Écuyer | Chevalier | Banneret | Champion |
+|---|---|---|---|---|---|---|
+| 1 | tous | 35 % | 37 % | 17 % | 8 % | 3 % |
+| 1 | occasionnel | 63 % | 35 % | 2 % | 0 % | 0 % |
+| 1 | régulier | 11 % | 57 % | 28 % | 4 % | 1 % |
+| 1 | assidu | 0 % | 20 % | 48 % | 28 % | 4 % |
+| 1 | acharné | 0 % | 1 % | 13 % | 48 % | 38 % |
+| 2 | tous | 32 % | 35 % | 16 % | 9 % | 7 % |
+| 2 | occasionnel | 61 % | 37 % | 3 % | 0 % | 0 % |
+| 2 | régulier | 5 % | 54 % | 34 % | 6 % | 1 % |
+| 2 | assidu | 0 % | 4 % | 32 % | 47 % | 18 % |
+| 2 | acharné | 0 % | 0 % | 1 % | 15 % | 84 % |
+| 3 | tous | 32 % | 33 % | 15 % | 10 % | 10 % |
+| 3 | occasionnel | 62 % | 36 % | 2 % | 0 % | 0 % |
+| 3 | régulier | 3 % | 50 % | 40 % | 7 % | 1 % |
+| 3 | assidu | 0 % | 1 % | 16 % | 55 % | 28 % |
+| 3 | acharné | 0 % | 1 % | 1 % | 3 % | 95 % |
+| 4 | tous | 34 % | 31 % | 15 % | 10 % | 11 % |
+| 4 | occasionnel | 64 % | 35 % | 1 % | 0 % | 0 % |
+| 4 | régulier | 4 % | 45 % | 44 % | 7 % | 1 % |
+| 4 | assidu | 0 % | 1 % | 11 % | 50 % | 37 % |
+| 4 | acharné | 0 % | 0 % | 2 % | 1 % | 98 % |
