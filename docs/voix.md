@@ -110,6 +110,8 @@ Un objet a un seul nom dans l'interface.
 | niveau, XP | | Le niveau du joueur, à ne pas confondre avec l'Encre et la Dorure. |
 | mission | quête, tâche | Les trois missions du jour. |
 | carnet | calendrier, pointage | Le carnet de pointage, une case par jour joué. |
+| saison | almanach, passe, pass | « La saison » ; « Saison des Bêtes et plantes » pour la nommer. |
+| étape | palier, niveau, page | Les 30 étapes de la saison. « Palier » reste le mot de l'Esquisse, de l'Encre et de la Dorure. |
 | joute | duel | On lance une joute, on défie un ami. |
 | écus | pièces, monnaie, crédits | La seule monnaie du jeu. « 0 écu », « 1 écu », « 34 écus ». On **recycle** ses doubles en écus. |
 | mot manquant | achat, boutique | Un mot qui manque, tiré au sort dans la collection et la rareté choisies. |
