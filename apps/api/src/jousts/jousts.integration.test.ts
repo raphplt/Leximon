@@ -1071,13 +1071,16 @@ describe("traps and wishes", () => {
     const holder = await jouster();
     const seeker = await jouster();
     const blocked = await jouster();
+    const emptyHanded = await jouster();
     const double = `${STARTER_COLLECTION}-${RARITIES[0]}-1`;
     const notHeld = `${STARTER_COLLECTION}-${RARITIES[0]}-2`;
+    const theirDouble = `${STARTER_COLLECTION}-${RARITIES[0]}-3`;
     await setOwnedCards(db, holder.userId, [{ cardId: double, quantity: 3 }]);
-    for (const who of [seeker, blocked]) {
+    for (const who of [seeker, blocked, emptyHanded]) {
       await setOwnedCards(db, who.userId, [
         { cardId: double, quantity: 0 },
         { cardId: notHeld, quantity: 0 },
+        { cardId: theirDouble, quantity: who === emptyHanded ? 1 : 2 },
       ]);
       await db.insert(schema.wishes).values([
         { userId: who.userId, cardId: double, source: "joust", seenAt: new Date() },
@@ -1093,7 +1096,7 @@ describe("traps and wishes", () => {
       wishSeekersResponseSchema.parse(v),
     );
     const mine = seekers.players.filter((entry) =>
-      [seeker.code, blocked.code].includes(entry.player.code),
+      [seeker.code, blocked.code, emptyHanded.code].includes(entry.player.code),
     );
     expect(mine).toEqual([
       { player: expect.objectContaining({ code: seeker.code }), cardIds: [double] },

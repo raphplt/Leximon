@@ -166,7 +166,7 @@ describe("the ladder", () => {
       "Tu joues 5 joutes classées par jour au plus, lancées ou reçues.",
       "Le dimanche à minuit, les premiers de chaque groupe montent d'une ligue et les derniers descendent. Une semaine sans joute classée ne change rien.",
       "Monter donne en plus un sachet garni. Finir dans les 3 premiers en Champion donne en plus un sachet garni Précieux.",
-      "Les automates complètent les groupes tant qu'il manque des joueurs. Ils ne joutent pas : leurs points montent au fil de la semaine.",
+      "Les automates complètent les groupes tant qu'il manque des joueurs. Ils ne joutent pas. Leurs points montent au fil de la semaine.",
     ]);
   });
 });
@@ -188,7 +188,7 @@ describe("waitingReward", () => {
     expect(next).toMatchObject({
       week: 1,
       title: "10 écus et un sachet garni pour le tournoi de la semaine passée",
-      detail: "1er de ton groupe en Page : tu passes en Écuyer.",
+      detail: "Tu as fini 1er de ton groupe en Page et tu passes en Écuyer.",
       icon: "star",
       more: null,
     });
@@ -205,7 +205,7 @@ describe("waitingReward", () => {
     const next = waitingReward({ ...league, waiting: [at("down"), at("stay")] });
     expect(next).toMatchObject({
       title: "20 écus pour le tournoi de la semaine du 9 novembre",
-      detail: "12e de ton groupe en Chevalier : tu redescends en Écuyer.",
+      detail: "Tu as fini 12e de ton groupe en Chevalier et tu redescends en Écuyer.",
       icon: "ecu",
       more: "Encore 1 récompense après celle-ci",
     });
@@ -265,6 +265,15 @@ describe("boards", () => {
     expect(zoneStarts(lines)).toEqual({ stay: "h-3", down: null });
   });
 
+  it("sets a Champion apart outside the group only", () => {
+    const champion = { ...line("player", 2, "stay"), league: "champion" as const };
+    expect(boardLines({ ...group, entries: [champion] }).lines[0]?.champion).toBe(false);
+    expect(
+      boardLines({ ...group, board: "friends", moves: null, entries: [champion] }).lines[0]
+        ?.champion,
+    ).toBe(true);
+  });
+
   it("pins the player under a page that does not show them", () => {
     const { pinned } = boardLines({ ...group, entries: [line("bot", 1, "up")] });
     expect(pinned).toMatchObject({ name: "P2 (toi)", me: true, place: "2" });
@@ -280,6 +289,13 @@ describe("boards", () => {
     );
     expect(boardNote({ ...group, board: "clan", closed: "no_clan" })).toBe(
       "Rejoins un clan pour voir le classement de ses jouteurs.",
+    );
+    const friends = { ...group, board: "friends" as const, moves: null };
+    expect(boardNote(friends)).toBe(
+      "Tes amis entrés dans le tournoi de la semaine, avec toi, par ligue puis par points.",
+    );
+    expect(boardNote({ ...friends, me: null })).toBe(
+      "Tes amis entrés dans le tournoi de la semaine, sans toi, par ligue puis par points. Joue une joute classée pour y entrer.",
     );
   });
 });

@@ -519,11 +519,12 @@ export function trappedText(count: number): string {
   return count === 1 ? "1 adversaire piégé" : `${formatCount(count)} adversaires piégés`;
 }
 
-/** Above the deck: what its cards trapped so far; `null` before the first trap. */
+/**
+ * Above the deck: how many times its cards trapped so far; `null` before the first trap. A count of
+ * times, since the same opponent missing three words of one joust is three traps.
+ */
 export function deckTrapsLine(trapped: readonly { readonly count: number }[]): string | null {
   const total = trapped.reduce((sum, card) => sum + card.count, 0);
   if (total === 0) return null;
-  return total === 1
-    ? "Tes cartes ont piégé 1 adversaire."
-    : `Tes cartes ont piégé ${formatCount(total)} adversaires.`;
+  return `Tes cartes ont piégé tes adversaires ${formatCount(total)} fois.`;
 }

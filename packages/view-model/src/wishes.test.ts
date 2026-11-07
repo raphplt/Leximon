@@ -31,7 +31,9 @@ describe("traps", () => {
     expect(trappedText(1)).toBe("1 adversaire piégé");
     expect(trappedText(4)).toBe("4 adversaires piégés");
     expect(deckTrapsLine([])).toBeNull();
-    expect(deckTrapsLine([{ count: 1 }])).toBe("Tes cartes ont piégé 1 adversaire.");
-    expect(deckTrapsLine([{ count: 2 }, { count: 3 }])).toBe("Tes cartes ont piégé 5 adversaires.");
+    expect(deckTrapsLine([{ count: 1 }])).toBe("Tes cartes ont piégé tes adversaires 1 fois.");
+    expect(deckTrapsLine([{ count: 2 }, { count: 3 }])).toBe(
+      "Tes cartes ont piégé tes adversaires 5 fois.",
+    );
   });
 });

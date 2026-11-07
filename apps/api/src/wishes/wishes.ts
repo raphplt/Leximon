@@ -3,7 +3,7 @@ import { type EpochMs, wishedCards } from "@leximon/core";
 import { type Database, schema } from "@leximon/db";
 import { sql } from "drizzle-orm";
 import { readBadges } from "../profile/profile";
-import { listTradeableCards } from "../trades/players";
+import { listTradeableCards, TRADED_VARIANT } from "../trades/players";
 
 const { wishes } = schema;
 
@@ -85,7 +85,8 @@ export async function removeWish(db: Writer, userId: string, cardId: string): Pr
 
 /**
  * `GET /me/wish-seekers`: players who wish words the player can trade now, with only those
- * words, the most matches first. Blocked players either way stay out.
+ * words, the most matches first. Blocked players either way stay out, and so do players without
+ * a double to give back, since a trade is card for card.
  */
 export async function readWishSeekers(
   db: Database,
@@ -100,6 +101,8 @@ export async function readWishSeekers(
     where w.card_id in (${list(cardIds)}) and w.user_id <> ${userId}
       and not exists (select 1 from user_cards uc
         where uc.user_id = w.user_id and uc.card_id = w.card_id and uc.quantity > 0)
+      and exists (select 1 from user_cards d
+        where d.user_id = w.user_id and d.variant = ${TRADED_VARIANT} and d.quantity >= 2)
       and not exists (select 1 from user_blocks b
         where (b.blocker_id = ${userId} and b.blocked_id = w.user_id)
           or (b.blocker_id = w.user_id and b.blocked_id = ${userId}))

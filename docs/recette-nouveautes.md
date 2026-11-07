@@ -55,17 +55,17 @@ Certains tests des joutes demandent d'avancer le temps. Les commandes ci-dessous
 # Fait passer l'heure limite de toutes les joutes qui attendent leur second joueur
 docker exec leximon-postgres-1 psql -U leximon -d leximon -c "update jousts set reply_by = now() - interval '1 minute' where ended_at is null and opponent_started_at is null and challenger_done_at is not null"
 
-# Tournoi : met tes points de la semaine à 80, de quoi finir premier de ton groupe (après une première joute classée)
-docker exec leximon-postgres-1 psql -U leximon -d leximon -c "update joust_group_members set points = 80, scored_at = now() where user_id = (select id from users where email = '<ton email>') and week = (select max(week) from joust_group_members where user_id = (select id from users where email = '<ton email>'))"
+# Tournoi : met tes points de la semaine à 105, le plus haut possible en une semaine, de quoi finir premier de ton groupe même en Champion (après une première joute classée)
+docker exec leximon-postgres-1 psql -U leximon -d leximon -c "update joust_group_members set points = 105, scored_at = now() where user_id = (select id from users where email = '<ton email>') and week = (select max(week) from joust_group_members where user_id = (select id from users where email = '<ton email>'))"
 
 # Tournoi : met ton groupe de la semaine dans une autre ligue (remplace connetable par page, ecuyer, chevalier, banneret, marechal ou champion)
 docker exec leximon-postgres-1 psql -U leximon -d leximon -c "update joust_groups set league = 'connetable' where id = (select group_id from joust_group_members where user_id = (select id from users where email = '<ton email>') order by week desc limit 1); update joust_group_members set league = 'connetable' where group_id = (select group_id from joust_group_members where user_id = (select id from users where email = '<ton email>') order by week desc limit 1)"
 
-# Tournoi : ramène ton groupe à la semaine précédente, comme si le tournoi venait de finir
-docker exec leximon-postgres-1 psql -U leximon -d leximon -c "update joust_groups set week = week - 1 where id = (select group_id from joust_group_members where user_id = (select id from users where email = '<ton email>') order by week desc limit 1); update joust_group_members set week = week - 1 where group_id = (select group_id from joust_group_members where user_id = (select id from users where email = '<ton email>') order by week desc limit 1)"
+# Tournoi : recule toutes tes semaines de tournoi d'une semaine, récompenses comprises, comme si le tournoi venait de finir (à relancer autant de fois qu'il faut)
+docker exec leximon-postgres-1 psql -U leximon -d leximon -c "update joust_groups set week = week - 1000 where id in (select group_id from joust_group_members where user_id = (select id from users where email = '<ton email>')); update joust_group_members set week = week - 1000 where group_id in (select group_id from joust_group_members where user_id = (select id from users where email = '<ton email>')); update joust_groups set week = week + 999 where id in (select group_id from joust_group_members where user_id = (select id from users where email = '<ton email>')); update joust_group_members set week = week + 999 where group_id in (select group_id from joust_group_members where user_id = (select id from users where email = '<ton email>')); update joust_week_rewards set week = week - 1000 where user_id = (select id from users where email = '<ton email>'); update joust_week_rewards set week = week + 999 where user_id = (select id from users where email = '<ton email>')"
 ```
 
-Le tournoi va du lundi 0 h au dimanche minuit, heure de Paris ; la semaine 0 commence le lundi 2026-11-09, celle d'avant est la semaine « −1 ».
+Le tournoi va du lundi 0 h au dimanche minuit, heure de Paris ; la semaine 0 commence le lundi 2026-11-09, celle d'avant est la semaine « −1 ». Les raccourcis du tournoi visent ton dernier groupe : lance-les une fois la joute classée finie des deux côtés (le bot a joué sa manche), sinon c'est le groupe de la semaine d'avant qui change.
 
 ### Pour les finitions
 
@@ -329,18 +329,18 @@ Lot 3 bis, construit le 2026-11-07 : les tournois de la semaine remplacent les l
 - **Retour :**
 
 ### JTE-28 · La fin de la semaine, en montant
-- **Faire :** avec les raccourcis, mettre tes points à 80, puis ramener ton groupe à la semaine précédente. Ouvrir `/joutes`, puis Classement. Réclamer. Recommencer avec la réserve de sachets bonus pleine.
-- **Attendu :** l'en-tête est en Écuyer (écu vert « II ») et redemande une joute classée. Un point rouge sur « Classement ». En haut de Classement : « 10 écus et un sachet garni pour le tournoi de la semaine passée », « 1er de ton groupe en Page : tu passes en Écuyer. », « Réclamer » ; le toast « Tu reçois 10 écus et un sachet garni, rangé dans ta réserve. », le compteur d'écus monte. Réserve pleine, la récompense est refusée avec une phrase qui le dit, et elle attend.
+- **Faire :** avec les raccourcis, mettre tes points à 105, puis reculer tes semaines de tournoi d'une semaine. Ouvrir `/joutes`, puis Classement. Réclamer. Recommencer avec la réserve de sachets bonus pleine.
+- **Attendu :** l'en-tête est en Écuyer (écu vert « II ») et redemande une joute classée. Un point rouge sur « Classement ». En haut de Classement : « 10 écus et un sachet garni pour le tournoi de la semaine passée », « Tu as fini 1er de ton groupe en Page et tu passes en Écuyer. », « Réclamer » ; le toast « Tu reçois 10 écus et un sachet garni, rangé dans ta réserve. », le compteur d'écus monte. Réserve pleine, la récompense est refusée avec une phrase qui le dit, et elle attend.
 - **Retour :**
 
 ### JTE-29 · La fin de la semaine, en descendant
-- **Faire :** après une joute classée perdue, mettre ton groupe en Connétable, puis le ramener à la semaine précédente. Ouvrir Classement.
-- **Attendu :** en Connétable, ta place sans point était dans la « Zone de descente », en rouge. Après la fin : l'en-tête est en Maréchal (écu brun « V »), la récompense dit « 35 écus pour le tournoi de la semaine passée » et « … de ton groupe en Connétable : tu redescends en Maréchal. ».
+- **Faire :** après une joute classée perdue, mettre ton groupe en Connétable, puis reculer tes semaines de tournoi d'une semaine. Ouvrir Classement.
+- **Attendu :** en Connétable, ta place sans point était dans la « Zone de descente », en rouge. Après la fin : l'en-tête est en Maréchal (écu brun « V »), la récompense dit « 35 écus pour le tournoi de la semaine passée » et « … de ton groupe en Connétable et tu redescends en Maréchal. ».
 - **Retour :**
 
 ### JTE-30 · Champion
-- **Faire :** mettre ton groupe en Champion et tes points à 80, puis ramener le groupe à la semaine précédente.
-- **Attendu :** en Champion, l'écu doré porte une couronne, l'emblème « Champion » s'affiche dans l'en-tête et dans les classements. Personne ne monte de Champion. Après la fin, premier du groupe : « 40 écus et un sachet garni Précieux pour le tournoi de la semaine passée », « tu restes en Champion ».
+- **Faire :** mettre ton groupe en Champion et tes points à 105, puis reculer tes semaines de tournoi d'une semaine.
+- **Attendu :** en Champion, l'écu doré porte une couronne, l'emblème « Champion » s'affiche dans l'en-tête et dans les classements. Personne ne monte de Champion. Après la fin, premier du groupe : « 40 écus et un sachet garni Précieux pour le tournoi de la semaine passée », « Tu as fini 1er de ton groupe en Champion et tu restes en Champion. ».
 - **Retour :**
 
 ### JTE-31 · L'échelle des ligues
@@ -366,7 +366,7 @@ Lot 4, construit le 2026-11-07. Les règles sont en P91 et P77. Il faut deux com
 
 ### JTE-34 · Le compteur de pièges
 - **Faire :** A défie B. B se trompe sur deux mots. Puis A ouvre `/joutes` et « Modifier » le deck.
-- **Attendu :** sous « Ton deck », « Tes cartes ont piégé 2 adversaires. ». Les deux cartes qui ont piégé B portent un petit sceau rouge « 1 » (lu « 1 adversaire piégé » au lecteur d'écran), sur l'accueil comme dans l'éditeur. Une autre joute où B rate encore l'un des deux mots le fait passer à « 2 ». Une joute que B laisse sans réponse ne piège rien.
+- **Attendu :** sous « Ton deck », « Tes cartes ont piégé tes adversaires 2 fois. ». Les deux cartes qui ont piégé B portent un petit sceau rouge « 1 » (lu « 1 adversaire piégé » au lecteur d'écran), sur l'accueil comme dans l'éditeur. Une autre joute où B rate encore l'un des deux mots le fait passer à « 2 ». Une joute que B laisse sans réponse ne piège rien.
 - **Retour :**
 
 ### JTE-35 · Les mots qui vont dans la liste
@@ -381,7 +381,7 @@ Lot 4, construit le 2026-11-07. Les règles sont en P91 et P77. Il faut deux com
 
 ### JTE-37 · Ils cherchent tes doubles
 - **Faire :** B a un mot en double que A cherche (JTE-35). B ouvre l'onglet « Souhaits » de ses échanges, puis « Proposer un échange ».
-- **Attendu :** « Ils cherchent tes doubles » montre A, « A cherche un de tes doubles. », et seulement les mots que B peut lui échanger tout de suite, jamais le reste de la liste de A. « Proposer un échange » ouvre « Nouvelle offre » avec A déjà choisi. Si A bloque B, ou B bloque A, A n'y est plus. Personne : « Personne ne cherche tes doubles pour l'instant… ».
+- **Attendu :** « Ils cherchent tes doubles » montre A, « A cherche un de tes doubles. », et seulement les mots que B peut lui échanger tout de suite, jamais le reste de la liste de A. « Proposer un échange » ouvre « Nouvelle offre » avec A déjà choisi. A doit avoir au moins un double à donner en retour, sinon il n'y est pas. Si A bloque B, ou B bloque A, A n'y est plus. Personne : « Personne ne cherche tes doubles pour l'instant… ».
 - **Retour :**
 
 ---

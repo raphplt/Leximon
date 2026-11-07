@@ -207,7 +207,7 @@ export function ladderRules(league: LeagueResponse): readonly string[] {
     `Tu joues ${plural(league.standing.rankedPerDay, "joute classée", "joutes classées")} par jour au plus, lancées ou reçues.`,
     "Le dimanche à minuit, les premiers de chaque groupe montent d'une ligue et les derniers descendent. Une semaine sans joute classée ne change rien.",
     `Monter donne en plus ${rewardsPhrase(league.upRewards)}. Finir dans les ${formatCount(league.podium.places)} premiers en Champion donne en plus ${rewardsPhrase(league.podium.rewards)}.`,
-    "Les automates complètent les groupes tant qu'il manque des joueurs. Ils ne joutent pas : leurs points montent au fil de la semaine.",
+    "Les automates complètent les groupes tant qu'il manque des joueurs. Ils ne joutent pas. Leurs points montent au fil de la semaine.",
   ];
 }
 
@@ -241,7 +241,7 @@ export function waitingReward(league: LeagueResponse): WaitingReward | null {
     first.week === current.index - 1
       ? "de la semaine passée"
       : `de la semaine du ${weekStartText(first.week, current)}`;
-  const where = `${placeText(first.place)} de ton groupe en ${LEAGUE_NAMES[first.league]}`;
+  const where = `Tu as fini ${placeText(first.place)} de ton groupe en ${LEAGUE_NAMES[first.league]}`;
   const moved =
     first.move === "up"
       ? `tu passes en ${LEAGUE_NAMES[leagueBeside(first.league, "up")]}`
@@ -253,7 +253,7 @@ export function waitingReward(league: LeagueResponse): WaitingReward | null {
   return {
     week: first.week,
     title: capitalizeFirst(`${rewardsPhrase(first.rewards)} pour le tournoi ${when}`),
-    detail: `${where} : ${moved}.`,
+    detail: `${where} et ${moved}.`,
     icon: reward === undefined ? "ecu" : rewardItem(reward).icon,
     more:
       others === 0 ? null : `Encore ${plural(others, "récompense", "récompenses")} après celle-ci`,
@@ -273,7 +273,7 @@ export function leagueClaimRefusalText(reason: LeagueClaimRefusal): string {
     case "reserve_full":
       return "Ta réserve de sachets bonus est pleine. Ouvre un sachet, puis réclame cette récompense, qui t'attend.";
     case "not_reached":
-      return "Cette récompense n'est pas encore là : le tournoi n'est pas fini.";
+      return "Cette récompense arrive quand le tournoi est fini.";
   }
 }
 
@@ -390,7 +390,8 @@ export function boardLine(entry: BoardEntry, board: BoardResponse): BoardLine {
     points: formatCount(entry.points),
     league: entry.league,
     move: entry.move,
-    champion: entry.league === "champion",
+    // In a group everyone shares the league: the emblem only sets a Champion apart elsewhere.
+    champion: entry.league === "champion" && board.board !== "group",
     me,
   };
   switch (entry.kind) {
@@ -452,6 +453,11 @@ export function zoneStarts(lines: readonly BoardLine[]): {
 export const ZONE_UP = "Zone de montée";
 export const ZONE_DOWN = "Zone de descente";
 
+const withMe = (board: BoardResponse) => (board.me === null ? "sans toi" : "avec toi");
+
+const notEntered = (board: BoardResponse) =>
+  board.me === null ? " Joue une joute classée pour y entrer." : "";
+
 /** The line under a board: who is on it, or why it is empty. */
 export function boardNote(board: BoardResponse): string {
   if (board.closed === "no_clan") return "Rejoins un clan pour voir le classement de ses jouteurs.";
@@ -459,7 +465,7 @@ export function boardNote(board: BoardResponse): string {
     return "Le classement de toutes les ligues s'ouvrira quand 50 joueurs auront fait 5 joutes classées dans le mois.";
   }
   if (board.closed === "not_entered") {
-    return "Joue une joute classée pour entrer dans le tournoi de la semaine : tu rejoindras un groupe de 30 jouteurs de ta ligue.";
+    return "Joue une joute classée pour entrer dans le tournoi de la semaine. Tu rejoindras un groupe de 30 jouteurs de ta ligue.";
   }
   switch (board.board) {
     case "group":
@@ -467,9 +473,9 @@ export function boardNote(board: BoardResponse): string {
         ? "Ton groupe du tournoi de la semaine."
         : `Ton groupe de la ligue ${LEAGUE_NAMES[board.league]}. ${movesText(board.moves.up, board.moves.down)} Les automates complètent les places libres.`;
     case "friends":
-      return "Tes amis entrés dans le tournoi de la semaine, avec toi, par ligue puis par points.";
+      return `Tes amis entrés dans le tournoi de la semaine, ${withMe(board)}, par ligue puis par points.${notEntered(board)}`;
     case "clan":
-      return "Les membres de ton clan entrés dans le tournoi de la semaine, avec toi, par ligue puis par points.";
+      return `Les membres de ton clan entrés dans le tournoi de la semaine, ${withMe(board)}, par ligue puis par points.${notEntered(board)}`;
     case "general":
       return "Tous les jouteurs du tournoi de la semaine, par ligue puis par points.";
   }

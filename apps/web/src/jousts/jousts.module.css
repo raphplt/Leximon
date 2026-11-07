@@ -1821,6 +1821,11 @@
 }
 
 .standingName {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 2px 8px;
+  min-width: 0;
   font-weight: 800;
 }
 
@@ -1855,7 +1860,6 @@
 }
 
 .botTag {
-  margin-left: 8px;
   padding: 0 7px;
   border-radius: 999px;
   background: color-mix(in srgb, var(--lx-toy-locked-top) 40%, transparent);
