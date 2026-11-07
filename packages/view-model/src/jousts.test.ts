@@ -95,7 +95,7 @@ describe("jousts copy", () => {
   });
 
   it("names the rewards, with their numbers", () => {
-    const result = { mine: [], theirs: [] };
+    const result = { mine: [], theirs: [], laurels: null };
     expect(rewardText({ ...result, xp: 40, boosters: 1 })).toBe(
       "Tu gagnes 40 XP et 1 sachet bonus en réserve.",
     );

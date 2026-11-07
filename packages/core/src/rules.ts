@@ -16,6 +16,7 @@ import type { ClanLevelRules } from "./clan/level";
 import type { EcuSchedule } from "./ecus/ecus";
 import type { FriendSchedule } from "./friend/friend";
 import type { JoustSchedule } from "./joust/joust";
+import type { LeagueSchedule } from "./joust/leagues";
 import type { MasterySchedule } from "./mastery/mastery";
 import type { PracticeSchedule } from "./mastery/practice";
 import type { NotifySchedule } from "./notify/notify";
@@ -477,6 +478,32 @@ export const JOUST_SCHEDULE: JoustSchedule = [
       initial: { rating: 1500, deviation: 350, volatility: 0.06 },
       tau: 0.5,
       periodDays: 7,
+    },
+  },
+];
+
+// Leagues of ranked jousts, on the carnet's calendar. A streak adds 10 rather than doubling the
+// win: doubled, half the keen players were Champion in their first season. Provisional.
+export const LEAGUE_SCHEDULE: LeagueSchedule = [
+  {
+    startsAt: SINCE_LAUNCH,
+    firstSeasonDay: "2026-11-09",
+    seasonDays: 28,
+    leagueFrom: { page: 0, ecuyer: 300, chevalier: 600, banneret: 900, champion: 1200 },
+    divisionsPerLeague: 3,
+    win: { base: 25, min: 15, max: 35 },
+    loss: { base: 15, min: 5, max: 25 },
+    ratingSpread: 400,
+    streakFrom: 3,
+    streakBonus: 10,
+    divisionRewards: [{ kind: "ecus", amount: 20 }],
+    leagueRewards: [garni],
+    seasonRewards: {
+      page: [sachet],
+      ecuyer: [sachet, sachet],
+      chevalier: [garni],
+      banneret: [{ kind: "precious_garni_booster" }],
+      champion: [{ kind: "precious_garni_booster" }],
     },
   },
 ];

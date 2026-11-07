@@ -3,7 +3,7 @@
 Ce qui a été construit du 4 au 6 novembre 2026, en deux parties :
 
 - **Finitions hors du jeu** (FIN-01 à FIN-13) : le [cahier des finitions](cahiers-des-charges/finitions-hors-du-jeu.md) (accueil, icônes, images de partage, e-mails, cadres, emblèmes, fiches des stores), puis trois corrections du 5 novembre (écran Jouer sur petit téléphone, bilan du sachet, réglages de la révision). La plupart de ces tests renvoient à un test de la [recette du web](recette-web.md) ou de la [recette du mobile](recette-mobile.md) et disent ce qu'il faut y regarder ; les attendus complets restent dans le test cité.
-- **Joutes, lot 1** (JTE-01 à JTE-22 sur le web, MJT-01 à MJT-04 sur Android, PROD-01 à PROD-03 en production) : ce qu'on vérifie avant d'ouvrir les joutes aux testeurs, puis en production. Les règles sont en P91 ([regles-du-jeu.md](regles-du-jeu.md)), le cahier dans [joutes.md](cahiers-des-charges/joutes.md). Le lot 1 est construit depuis le 2026-11-05, web et mobile.
+- **Joutes, lots 1 à 3** (JTE-01 à JTE-31 sur le web, MJT-01 à MJT-05 sur Android, PROD-01 à PROD-03 en production) : ce qu'on vérifie avant d'ouvrir les joutes aux testeurs, puis en production. Les règles sont en P91 ([regles-du-jeu.md](regles-du-jeu.md)), le cahier dans [joutes.md](cahiers-des-charges/joutes.md). Le lot 1 est construit depuis le 2026-11-05, web et mobile.
 
 Pour chaque test, note dans **Retour** : « OK », ou ce que tu as vu à la place. Une capture d'écran aide.
 
@@ -54,7 +54,15 @@ Certains tests des joutes demandent d'avancer le temps. Les commandes ci-dessous
 ```bash
 # Fait passer l'heure limite de toutes les joutes qui attendent leur second joueur
 docker exec leximon-postgres-1 psql -U leximon -d leximon -c "update jousts set reply_by = now() - interval '1 minute' where ended_at is null and opponent_started_at is null and challenger_done_at is not null"
+
+# Ligues : ramène ta saison de joutes à la saison précédente, comme si elle venait de finir
+docker exec leximon-postgres-1 psql -U leximon -d leximon -c "update joust_standings set season = season - 1 where user_id = (select id from users where email = '<ton email>') and season = (select max(season) from joust_standings where user_id = (select id from users where email = '<ton email>'))"
+
+# Ligues : met tes lauriers de la saison en cours à 1 190 (tout près de Champion)
+docker exec leximon-postgres-1 psql -U leximon -d leximon -c "update joust_standings set laurels = 1190, peak = greatest(peak, 1190) where user_id = (select id from users where email = '<ton email>') and season = (select max(season) from joust_standings where user_id = (select id from users where email = '<ton email>'))"
 ```
+
+La saison des joutes suit le calendrier du carnet : avant le lundi 2026-11-09, c'est la saison « −1 », qui finit le dimanche 8 au soir.
 
 ### Pour les finitions
 
@@ -282,8 +290,59 @@ En local, aucun e-mail ne part : ce test se fait une fois le site en ligne.
 - **Retour :**
 
 ### JTE-16 · La cote reste cachée
-- **Faire :** jouer une joute classée jusqu'au bout.
-- **Attendu :** aucune cote ni aucun rang ne s'affichent nulle part. En base, `joust_ratings` a une ligne pour chacun des deux joueurs.
+- **Faire :** jouer une joute classée jusqu'au bout, puis ouvrir Classement depuis l'accueil des joutes.
+- **Attendu :** aucune cote ne s'affiche, sauf en bas de Classement après 5 joutes classées : « Ta cote est de… ». Avant, « Ta cote se montre après 5 joutes classées. Encore N joutes. ». En base, `joust_ratings` a une ligne pour chacun des deux joueurs.
+- **Retour :**
+
+---
+
+## Joutes · 4b. Lauriers, ligues et classements
+
+Lot 3, construit le 2026-11-07. Les règles sont en P98 et P51, le cahier dans [joutes-ligues.md](cahiers-des-charges/joutes-ligues.md). Les bots suffisent pour presque tout (`pnpm dev:bots <ton email> --challenge`).
+
+### JTE-23 · L'en-tête de ligue
+- **Faire :** ouvrir `/joutes` avant toute joute classée.
+- **Attendu :** en haut, un écu de papier « Page III », « 0 laurier », une barre vide, « Encore 100 pour Page II » et le temps qui reste à la saison (« Fin de la saison dans N jours », « demain soir », « ce soir »). Un bouton « Classement » à côté de la bulle « ? ».
+- **Retour :**
+
+### JTE-24 · Les lauriers d'une joute classée
+- **Faire :** jouer une joute classée contre un bot et la gagner, puis une autre et la perdre. Puis une joute amicale.
+- **Attendu :** à la révélation de la victoire, un écu et « +N lauriers » (de 15 à 35, plus si l'adversaire est mieux coté), puis une barre qui se remplit vers la division suivante (« Page II à 100 »), avec le bruit des pièces. La défaite affiche « −N lauriers » (de 5 à 25), jamais sous 0. La joute amicale n'affiche aucun laurier. L'en-tête de `/joutes` suit.
+- **Retour :**
+
+### JTE-25 · La série
+- **Faire :** gagner 3 joutes classées d'affilée (Bot Étourdi est le plus faible).
+- **Attendu :** dès la deuxième, l'en-tête dit « 2 victoires classées d'affilée ». La troisième rapporte 10 lauriers de plus que la deuxième, à cote égale. Une défaite ou une égalité remet la série à zéro.
+- **Retour :**
+
+### JTE-26 · La route des lauriers
+- **Faire :** ouvrir Classement. Avec le raccourci des 1 190 lauriers, jouer une joute classée et la gagner, puis revenir.
+- **Attendu :** la route défile seule jusqu'à ta division, ta division est plus grande avec tes lauriers dessous. Chaque division montre son seuil et sa récompense (20 écus, un sachet garni à l'entrée d'une ligue), les divisions passées sont cochées une fois réclamées. Sous la route, les récompenses de fin de saison de chaque ligue, la tienne surlignée. Après la victoire : « Champion », « Tu es dans la plus haute ligue. ».
+- **Retour :**
+
+### JTE-27 · Réclamer une récompense
+- **Faire :** atteindre une division (gagner jusqu'à 100 lauriers, ou le raccourci), puis ouvrir Classement. Réclamer. Recommencer avec la réserve de sachets bonus pleine sur une récompense en sachet.
+- **Attendu :** un point rouge sur « Classement » dans `/joutes`. En haut de Classement, « 20 écus pour avoir atteint Page II » et « Réclamer » ; le toast « Tu reçois 20 écus. », le compteur d'écus monte. S'il en reste, « Encore N récompenses après celle-ci ». Réserve pleine, la récompense est refusée avec une phrase qui le dit, et elle attend.
+- **Retour :**
+
+### JTE-28 · La fin de la saison
+- **Faire :** avec le premier raccourci des ligues, ramener ta saison à la précédente (par exemple après avoir atteint Chevalier). Ouvrir `/joutes`, puis Classement.
+- **Attendu :** l'en-tête repart une ligue plus bas, au plancher (Chevalier → Écuyer III, 300 lauriers ; Page et Écuyer → 0). Classement propose la récompense de fin de saison de la ligue atteinte, « … pour ta ligue à la fin de la saison passée », puis les divisions non réclamées de cette saison. Si tu avais atteint Champion, l'en-tête porte « Champion de la saison passée » et ton nom dans les classements porte l'emblème.
+- **Retour :**
+
+### JTE-29 · Le plancher
+- **Faire :** atteindre Écuyer (300), puis perdre plusieurs joutes classées.
+- **Attendu :** les lauriers ne descendent jamais sous 300 dans la saison. La révélation dit « Lauriers inchangés » quand le plancher retient tout.
+- **Retour :**
+
+### JTE-30 · Les classements
+- **Faire :** dans Classement, passer de « Ma ligue » à « Amis » puis à « Clan ». Sur un compte sans clan, ouvrir « Clan ».
+- **Attendu :** Ma ligue liste les jouteurs de ta ligue cette saison, par lauriers, places partagées en cas d'égalité, toi surligné « (toi) ». Amis compte les amis qui ont jouté cette saison, toi compris. Sans clan : « Rejoins un clan pour voir le classement de ses jouteurs. ». Un joueur bloqué n'apparaît dans aucun. L'onglet « Général » n'apparaît pas tant que 50 joueurs n'ont pas fait 5 joutes classées dans les 30 derniers jours.
+- **Retour :**
+
+### JTE-31 · Sur un téléphone, en largeur
+- **Faire :** ouvrir Classement sur le web à 375 px de large.
+- **Attendu :** rien ne dépasse, la route défile seule dans son bandeau, les lignes du classement gardent nom, écu et lauriers.
 - **Retour :**
 
 ---
@@ -350,6 +409,11 @@ Le mobile se prépare comme dans [recette-mobile.md](recette-mobile.md). Les com
 - **Attendu :** le réglage tient après un relancement de l'app. « Y aller » ouvre les joutes.
 - **Retour :**
 
+### MJT-05 · Ligues et classement
+- **Faire :** sur le téléphone, ouvrir les joutes, puis « Classement ». Jouer une joute classée contre un bot et la gagner.
+- **Attendu :** comme JTE-23 et JTE-26 à JTE-30 : l'en-tête de ligue en haut des joutes, le point rouge quand une récompense attend, la route qui défile du doigt et s'ouvre sur ta division, « Réclamer », les onglets des classements. À la révélation, l'écu, « +N lauriers » et la barre qui se remplit, comme JTE-24.
+- **Retour :**
+
 ---
 
 ## Joutes · 8. En production
@@ -385,6 +449,8 @@ Ces réglages ne sont ni justes ni faux : ils se décident à l'usage. Dis ce qu
 | Réserve pleine à la première victoire du jour | le sachet est perdu, une autre victoire du jour peut le donner | |
 | La revanche | toujours une joute amicale | |
 | Gains | 20 XP par joute jouée, 20 de plus par victoire, sur 5 joutes par jour | |
+| Série de victoires | +10 lauriers par victoire dès la troisième d'affilée, au lieu du double (voir [la simulation](rnd/lauriers.md)) | |
+| Départ de saison | une ligue plus bas pour tous ; la simulation montre que les assidus finissent presque tous Champion en trois saisons, trois options dans le rapport | |
 
 ## Retours de la recette
 

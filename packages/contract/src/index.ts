@@ -12,6 +12,7 @@ export * from "./email";
 export * from "./events";
 export * from "./friends";
 export * from "./jousts";
+export * from "./leagues";
 export * from "./levels";
 export * from "./mail";
 export * from "./me";

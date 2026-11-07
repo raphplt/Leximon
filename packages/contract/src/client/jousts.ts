@@ -2,6 +2,11 @@ import { z } from "zod";
 import {
   type AnswerJoustResponse,
   answerJoustResponseSchema,
+  type Board,
+  type BoardResponse,
+  boardResponseSchema,
+  type ClaimLeagueRewardResponse,
+  claimLeagueRewardResponseSchema,
   type DeckRefusal,
   deckRefusalSchema,
   IDEMPOTENCY_KEY_HEADER,
@@ -19,8 +24,12 @@ import {
   joustViewSchema,
   type LaunchJoustRequest,
   type LaunchRefusal,
+  type LeagueClaimRefusal,
+  type LeagueResponse,
   launchJoustResponseSchema,
   launchRefusalSchema,
+  leagueClaimRefusalSchema,
+  leagueResponseSchema,
 } from "../index";
 import { ApiError, type Http, json, parse, refusal, segment } from "./http";
 
@@ -34,6 +43,10 @@ export type SaveDeckResult =
 export type LaunchJoustResult =
   | { readonly kind: "launched"; readonly joustId: string }
   | { readonly kind: "refused"; readonly reason: LaunchRefusal | Locked };
+
+export type LeagueClaimResult =
+  | ({ readonly kind: "claimed" } & ClaimLeagueRewardResponse)
+  | { readonly kind: "refused"; readonly reason: LeagueClaimRefusal };
 
 export type JoustQuestionResult =
   | JoustQuestionResponse
@@ -108,6 +121,27 @@ export function joustRoutes(http: Http) {
       const response = await sendAsPlayer(joust(id, "/seen"), json("POST"));
       if (!response.ok) throw new ApiError("seen_not_saved", response.status);
     },
+
+    fetchJoustLeague: (): Promise<LeagueResponse> =>
+      getJson("/jousts/league", leagueResponseSchema, "league_unavailable"),
+
+    /** Idempotent: the season and the step are the key. */
+    async claimLeagueReward(season: number, step: number): Promise<LeagueClaimResult> {
+      const response = await sendAsPlayer(`/jousts/league/${season}/${step}`, json("POST"));
+      if (response.status === 409) {
+        return { kind: "refused", reason: (await parse(response, leagueClaimRefusalSchema)).error };
+      }
+      if (!response.ok) throw new ApiError("claim_failed", response.status);
+      return { kind: "claimed", ...(await parse(response, claimLeagueRewardResponseSchema)) };
+    },
+
+    /** A page of a board; `after` is the `next` of the page before. */
+    fetchJoustBoard: (board: Board, after: string | null = null): Promise<BoardResponse> =>
+      getJson(
+        `/jousts/boards/${board}${after === null ? "" : `?after=${encodeURIComponent(after)}`}`,
+        boardResponseSchema,
+        "board_unavailable",
+      ),
 
     fetchJoust: (id: string): Promise<JoustView> =>
       getJson(joust(id), joustViewSchema, "joust_unavailable"),

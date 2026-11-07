@@ -1,8 +1,16 @@
-import { IDEMPOTENCY_KEY_HEADER, joustsResponseSchema, joustViewSchema } from "@leximon/contract";
+import {
+  boardResponseSchema,
+  IDEMPOTENCY_KEY_HEADER,
+  joustsResponseSchema,
+  joustViewSchema,
+  leagueResponseSchema,
+} from "@leximon/contract";
 import {
   featureLevels,
   JOUST_SCHEDULE,
   joustRulesAt,
+  LEAGUE_SCHEDULE,
+  leagueRulesAt,
   pseudoKey,
   RARITIES,
   TRADE_SCHEDULE,
@@ -32,14 +40,23 @@ import {
   settleExpired,
   settleJoust,
 } from "./jousts";
+import { seasonNow } from "./leagues";
 
 const url = testDatabaseUrl();
 const env = testEnv(url);
 const app = createApp();
 const { db, close } = createDb(url, { maxConnections: 6 });
 const loadCatalog = createCatalogIndexLoader(0);
-const { joustDecks, joustQuestions, jousts, joustRatings, mailLetters, players, userProgress } =
-  schema;
+const {
+  joustDecks,
+  joustQuestions,
+  jousts,
+  joustRatings,
+  joustStandings,
+  mailLetters,
+  players,
+  userProgress,
+} = schema;
 const RULES = joustRulesAt(JOUST_SCHEDULE, Date.now());
 const LEVEL_XP = xpToReach(featureLevels(UNLOCK_SCHEDULE, TRADE_SCHEDULE, Date.now()).jousts);
 const SEED = "0123456789abcdef0123456789abcdef";
@@ -637,5 +654,212 @@ describe("the routes", () => {
       .from(jousts)
       .where(and(eq(jousts.id, joustId), isNull(jousts.endedAt)));
     expect(others).toHaveLength(1);
+  });
+});
+
+describe("leagues", () => {
+  const LEAGUE = leagueRulesAt(LEAGUE_SCHEDULE, Date.now());
+  const season = () => seasonNow(LEAGUE, Date.now());
+
+  async function standAt(who: Jouster, laurels: number, at = season()) {
+    await db
+      .insert(joustStandings)
+      .values({
+        userId: who.userId,
+        season: at,
+        started: at === season() ? laurels : 0,
+        laurels,
+        peak: laurels,
+        updatedAt: new Date(),
+      })
+      .onConflictDoUpdate({
+        target: [joustStandings.userId, joustStandings.season],
+        set: { laurels, peak: laurels, started: at === season() ? laurels : 0 },
+      });
+  }
+
+  async function standingOf(who: Jouster) {
+    const [row] = await db
+      .select()
+      .from(joustStandings)
+      .where(and(eq(joustStandings.userId, who.userId), eq(joustStandings.season, season())));
+    return row;
+  }
+
+  /** A ranked joust between two given players, `winner` finding every word, the other none. */
+  async function rankedJoust(winner: Jouster, loser: Jouster, now = Date.now()) {
+    await db
+      .insert(schema.friendships)
+      .values([
+        { userId: winner.userId, friendId: loser.userId, createdAt: new Date() },
+        { userId: loser.userId, friendId: winner.userId, createdAt: new Date() },
+      ])
+      .onConflictDoNothing();
+    const joustId = await launched(winner, loser, now);
+    await db.update(jousts).set({ kind: "ranked" }).where(eq(jousts.id, joustId));
+    const done = await playRun(winner, joustId, now);
+    await settleJoust(db, joustId, done);
+    return { joustId, done };
+  }
+
+  async function league(who: Jouster) {
+    return leagueResponseSchema.parse(
+      await (await app.request("/jousts/league", { headers: headers(who) }, env)).json(),
+    );
+  }
+
+  it("give the winner of a ranked joust laurels and take some from the loser", async () => {
+    const a = await jouster();
+    const b = await jouster();
+    await standAt(a, 650);
+    await standAt(b, 650);
+    const { joustId, done } = await rankedJoust(a, b);
+    const bDone = await playRun(b, joustId, done + 1_000, [0, 1, 2, 3, 4]);
+    await settleJoust(db, joustId, bDone);
+    expect(await standingOf(a)).toMatchObject({ laurels: 675, peak: 675, streak: 1, wins: 1 });
+    expect(await standingOf(b)).toMatchObject({ laurels: 635, peak: 650, streak: 0, losses: 1 });
+    expect((await readJoustRow(joustId)).laurels).toEqual({
+      challenger: { before: 650, after: 675 },
+      opponent: { before: 650, after: 635 },
+    });
+    const view = joustViewSchema.parse(
+      await (await app.request(`/jousts/${joustId}`, { headers: headers(b) }, env)).json(),
+    );
+    expect(view.result?.laurels).toMatchObject({
+      before: 650,
+      after: 635,
+      division: { league: "chevalier", rank: 3 },
+      nextDivision: { league: "chevalier", rank: 2, from: 700 },
+    });
+  });
+
+  it("count both ranked jousts of a player ending at the same time", async () => {
+    const a = await jouster();
+    const b = await jouster();
+    const c = await jouster();
+    for (const who of [a, b, c]) await standAt(who, 650);
+    const now = Date.now();
+    const first = await rankedJoust(b, a, now);
+    const second = await rankedJoust(c, a, now);
+    const aFirst = await playRun(a, first.joustId, first.done + 1_000, [0]);
+    const aSecond = await playRun(a, second.joustId, second.done + 1_000, [0]);
+    const at = Math.max(aFirst, aSecond);
+    await Promise.all([
+      settleJoust(db, first.joustId, at),
+      settleJoust(db, second.joustId, at),
+      settleJoust(db, first.joustId, at),
+    ]);
+    // The second loss, to an opponent now rated above the player, costs a little less.
+    const mine = await standingOf(a);
+    expect(mine?.losses).toBe(2);
+    expect(mine?.laurels).toBeGreaterThan(620);
+    expect(mine?.laurels).toBeLessThan(635);
+    for (const winner of [b, c]) {
+      const standing = await standingOf(winner);
+      expect(standing?.wins).toBe(1);
+      expect(standing?.laurels).toBeGreaterThan(650);
+    }
+  });
+
+  it("start a season a league lower, never below the league reached", async () => {
+    const a = await jouster();
+    const b = await jouster();
+    await standAt(a, 1000, season() - 1);
+    const listed = joustsResponseSchema.parse(
+      await (await app.request("/jousts", { headers: headers(a) }, env)).json(),
+    );
+    expect(listed.standing).toMatchObject({
+      laurels: 600,
+      division: { league: "chevalier", rank: 3 },
+      nextDivision: { league: "chevalier", rank: 2, from: 700 },
+      champion: false,
+    });
+    await standAt(b, 600);
+    const { joustId, done } = await rankedJoust(b, a);
+    const aDone = await playRun(a, joustId, done + 1_000, [0, 1, 2, 3, 4]);
+    await settleJoust(db, joustId, aDone);
+    expect(await standingOf(a)).toMatchObject({ started: 600, laurels: 600, losses: 1 });
+  });
+
+  it("let a division's reward be claimed once, and the end of a season once it is over", async () => {
+    const a = await jouster();
+    await standAt(a, 1250, season() - 1);
+    await standAt(a, 920);
+    const claim = (at: number, step: number) =>
+      app.request(`/jousts/league/${at}/${step}`, { method: "POST", headers: headers(a) }, env);
+
+    const before = await league(a);
+    expect(before.standing).toMatchObject({ laurels: 920, champion: true });
+    // Started at 920 this season: no division climbed yet; last season's end and its climb wait.
+    expect(before.road.filter((stop) => stop.rewarded)).toEqual([]);
+    expect(before.waiting.at(-1)).toEqual({
+      season: season() - 1,
+      step: 0,
+      rewards: [{ kind: "precious_garni_booster" }],
+    });
+
+    expect((await claim(season(), 0)).status).toBe(409);
+    expect((await claim(season(), 10)).status).toBe(409);
+    const [first, second] = await Promise.all([claim(season() - 1, 1), claim(season() - 1, 1)]);
+    expect(first.status).toBe(200);
+    expect(second.status).toBe(200);
+    expect(await first.json()).toMatchObject({ rewards: [{ kind: "ecus", amount: 20 }] });
+    const ended = await claim(season() - 1, 0);
+    expect(ended.status).toBe(200);
+    const wallet = await db
+      .select()
+      .from(schema.boosterWallets)
+      .where(eq(schema.boosterWallets.userId, a.userId));
+    expect(wallet[0]).toMatchObject({ ecus: 20, preciousBoosters: 1 });
+    const movements = await db
+      .select()
+      .from(schema.ecuMovements)
+      .where(eq(schema.ecuMovements.userId, a.userId));
+    expect(movements).toHaveLength(1);
+    expect((await league(a)).waiting).toHaveLength(11);
+  });
+
+  it("rank the player's league, friends and clan by laurels", async () => {
+    const a = await jouster();
+    const b = await jouster();
+    const c = await jouster();
+    const far = await jouster();
+    await standAt(a, 640);
+    await standAt(b, 700);
+    await standAt(far, 300);
+    await standAt(c, 1000, season() - 1);
+    await befriend(a, c);
+    const board = async (name: string) =>
+      boardResponseSchema.parse(
+        await (await app.request(`/jousts/boards/${name}`, { headers: headers(a) }, env)).json(),
+      );
+
+    const mine = await board("league");
+    expect(mine.league).toBe("chevalier");
+    const codes = mine.entries.map((entry) => entry.player.code);
+    expect(codes).toContain(b.code);
+    expect(codes).not.toContain(far.code);
+    expect(codes.indexOf(b.code)).toBeLessThan(codes.indexOf(a.code));
+    expect(mine.me).toMatchObject({ laurels: 640 });
+    expect(mine.me.place).toBeGreaterThan(
+      mine.entries.find((e) => e.player.code === b.code)?.place ?? 0,
+    );
+
+    const friends = await board("friends");
+    expect(friends.entries.map((entry) => [entry.player.code, entry.laurels, entry.place])).toEqual(
+      [
+        [a.code, 640, 1],
+        [c.code, 600, 2],
+      ],
+    );
+    expect((await board("clan")).closed).toBe("no_clan");
+    expect((await board("general")).closed).toBe("general_closed");
+
+    const page = await app.request(
+      "/jousts/boards/league?after=nope",
+      { headers: headers(a) },
+      env,
+    );
+    expect(page.status).toBe(400);
   });
 });

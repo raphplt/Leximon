@@ -60,5 +60,6 @@ export type {
   JoustAnswerResult,
   JoustQuestionResult,
   LaunchJoustResult,
+  LeagueClaimResult,
   SaveDeckResult,
 } from "./jousts";

@@ -4,6 +4,7 @@ import {
   COMPLETE_DECK,
   completeDeck,
   deckRefusalText,
+  plural,
   SAVE_DECK,
   toggleDeckCard,
 } from "@leximon/view-model";
@@ -166,7 +167,7 @@ export function DeckBuilder({
                 disabled={taken || !fits}
                 accessibilityRole="button"
                 accessibilityState={{ disabled: taken || !fits, selected: taken }}
-                accessibilityLabel={`${card.word}, ${candidate.cost} points`}
+                accessibilityLabel={`${card.word}, ${plural(candidate.cost, "point", "points")}`}
                 onPress={() => toggle(candidate.cardId)}
               >
                 <MiniCard card={card} cost={candidate.cost} />

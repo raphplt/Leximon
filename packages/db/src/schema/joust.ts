@@ -1,3 +1,4 @@
+import type { LevelReward } from "@leximon/core";
 import { JOUST_KINDS } from "@leximon/core";
 import { sql } from "drizzle-orm";
 import {
@@ -85,6 +86,11 @@ export const jousts = pgTable(
       readonly challenger: JoustRatingChange;
       readonly opponent: JoustRatingChange;
     }>(),
+    /** Each player's laurels, as they stood before and after a ranked joust. */
+    laurels: jsonb().$type<{
+      readonly challenger: JoustRatingChange;
+      readonly opponent: JoustRatingChange;
+    }>(),
   },
   (table) => [
     uniqueIndex("jousts_launch_idx").on(table.challengerId, table.launchKey),
@@ -144,4 +150,58 @@ export const joustRatings = pgTable(
     lastPlayedAt: timestamp({ withTimezone: true }).notNull(),
   },
   (table) => [index("joust_ratings_rating_idx").on(table.rating)],
+);
+
+/**
+ * A season of ranked jousts the player played: a row from their first ranked joust of the
+ * season. `started` is where the season began for them, `peak` the most laurels held; its league
+ * is the floor. A season not played has no row: where it starts is computed from the last one.
+ */
+export const joustStandings = pgTable(
+  "joust_standings",
+  {
+    userId: text()
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    season: integer().notNull(),
+    started: integer().notNull(),
+    laurels: integer().notNull(),
+    peak: integer().notNull(),
+    /** Ranked wins in a row this season. */
+    streak: smallint().notNull().default(0),
+    wins: integer().notNull().default(0),
+    losses: integer().notNull().default(0),
+    draws: integer().notNull().default(0),
+    updatedAt: timestamp({ withTimezone: true }).notNull(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.userId, table.season] }),
+    // The boards of a season, by laurels.
+    index("joust_standings_board_idx").on(table.season, table.laurels.desc(), table.userId),
+    check(
+      "joust_standings_laurels_check",
+      sql`${table.laurels} >= 0 and ${table.peak} >= ${table.laurels}`,
+    ),
+  ],
+);
+
+/**
+ * League rewards claimed, one row each: the primary key makes a claim happen once, and `rewards`
+ * keeps what it gave. `step` is the division reached, or 0 for the end of the season.
+ */
+export const joustLeagueRewards = pgTable(
+  "joust_league_rewards",
+  {
+    userId: text()
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    season: integer().notNull(),
+    step: smallint().notNull(),
+    rewards: jsonb().$type<readonly LevelReward[]>().notNull(),
+    claimedAt: timestamp({ withTimezone: true }).notNull(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.userId, table.season, table.step] }),
+    check("joust_league_rewards_step_check", sql`${table.step} >= 0`),
+  ],
 );

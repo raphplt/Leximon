@@ -5,6 +5,7 @@ import {
   COMPLETE_DECK,
   completeDeck,
   deckRefusalText,
+  plural,
   SAVE_DECK,
   toggleDeckCard,
 } from "@leximon/view-model";
@@ -146,7 +147,7 @@ export function DeckBuilder({
                     className={styles.poolCard}
                     data-taken={taken || undefined}
                     disabled={taken || !fits}
-                    aria-label={`${card.word}, ${candidate.cost} points`}
+                    aria-label={`${card.word}, ${plural(candidate.cost, "point", "points")}`}
                     onClick={() => toggle(candidate.cardId)}
                   >
                     <MiniCard card={card} cost={candidate.cost} />

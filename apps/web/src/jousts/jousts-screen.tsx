@@ -6,8 +6,10 @@ import type {
   JoustsResponse,
   PlayerBadge,
 } from "@leximon/contract";
+import { gameDayOf } from "@leximon/core";
 import {
   accessText,
+  CLASSEMENT,
   COMPOSE_DECK,
   DECK_NOT_SAVED,
   EDIT_DECK_SHORT,
@@ -50,6 +52,7 @@ import ui from "@/ui/ui.module.css";
 import { DeckBuilder } from "./deck-builder";
 import { Guide } from "./guide";
 import styles from "./jousts.module.css";
+import { LeagueHeader } from "./league-pieces";
 import { MiniCard, rise } from "./pieces";
 import { useLaunch } from "./use-launch";
 
@@ -186,6 +189,12 @@ function Home({
           <header className={styles.homeHead}>
             <Lettering className={styles.homeTitle}>{JOUSTS_TITLE}</Lettering>
             <span className={styles.homeTools}>
+              <Link href="/joutes/classement" className={styles.iconButton}>
+                <Icon name="crown" size={18} /> {CLASSEMENT}
+                {jousts.standing.rewardsWaiting > 0 && (
+                  <span className={styles.dot} role="img" aria-label="Récompense à réclamer" />
+                )}
+              </Link>
               <HelpTip label={JOUSTS_HELP_LABEL} title="La joute">
                 <ul className={styles.helpList}>
                   {joustHelp(runSize(now)).map((line) => (
@@ -198,6 +207,7 @@ function Home({
               </HelpTip>
             </span>
           </header>
+          <LeagueHeader standing={jousts.standing} today={gameDayOf(now).key} />
           {ready ? (
             <div className={styles.launch}>
               <MainAction

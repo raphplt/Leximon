@@ -1,6 +1,9 @@
 import {
   type AnswerJoustResponse,
   answerJoustRequestSchema,
+  type BoardResponse,
+  boardSchema,
+  type ClaimLeagueRewardResponse,
   type GameEvent,
   IDEMPOTENCY_KEY_HEADER,
   idempotencyKeySchema,
@@ -9,6 +12,7 @@ import {
   type JoustQuestionResponse,
   type JoustsResponse,
   type JoustView,
+  type LeagueResponse,
   launchJoustRequestSchema,
   saveDeckRequestSchema,
 } from "@leximon/contract";
@@ -36,8 +40,11 @@ import {
   saveDeck,
   settleJoust,
 } from "./jousts";
+import { BOARD_CURSOR, claimLeagueReward, readBoard, readLeague } from "./leagues";
 
 const joustIdSchema = z.uuid();
+const seasonSchema = z.coerce.number().int().min(-10_000).max(10_000);
+const stepSchema = z.coerce.number().int().min(0).max(100);
 
 /** Letters for the joust that closed something, and the levels its rewards passed. */
 function settledEvents(report: SettleReport, joustIds: readonly string[]): GameEvent[] {
@@ -123,6 +130,48 @@ export function joustRoutes(loadCatalogIndex: CatalogIndexLoader) {
   routes.post("/guide", async (c) => {
     await markGuideDone(c.var.db, c.var.userId, Date.now());
     return c.body(null, 204);
+  });
+
+  routes.get("/league", async (c) => {
+    c.header("Cache-Control", "no-store");
+    return c.json<LeagueResponse>(await readLeague(c.var.db, c.var.userId, Date.now()));
+  });
+
+  routes.post("/league/:season/:step", async (c) => {
+    const season = seasonSchema.safeParse(c.req.param("season"));
+    const step = stepSchema.safeParse(c.req.param("step"));
+    if (!season.success || !step.success) return c.json({ error: "not_reached" }, 409);
+    const result = await claimLeagueReward(c.var.db, {
+      userId: c.var.userId,
+      season: season.data,
+      step: step.data,
+      now: Date.now(),
+    });
+    if (result.kind === "refused") return c.json({ error: result.reason }, 409);
+    return c.json<ClaimLeagueRewardResponse>({
+      season: result.season,
+      step: result.step,
+      rewards: [...result.rewards],
+      wallet: result.wallet,
+    });
+  });
+
+  routes.get("/boards/:board", async (c) => {
+    const board = boardSchema.safeParse(c.req.param("board"));
+    if (!board.success) return c.json({ error: "board_not_found" }, 404);
+    const cursor = c.req.query("after");
+    const match = cursor === undefined ? null : BOARD_CURSOR.exec(cursor);
+    if (cursor !== undefined && match === null) return c.json({ error: "invalid_cursor" }, 400);
+    const after = match === null ? null : { laurels: Number(match[1]), userId: match[2] ?? "" };
+    c.header("Cache-Control", "no-store");
+    return c.json<BoardResponse>(
+      await readBoard(c.var.db, {
+        userId: c.var.userId,
+        board: board.data,
+        after,
+        now: Date.now(),
+      }),
+    );
   });
 
   routes.post("/:id/seen", async (c) => {

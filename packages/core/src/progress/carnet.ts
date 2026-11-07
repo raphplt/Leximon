@@ -49,14 +49,17 @@ export interface CarnetPeriod {
   readonly lastDay: string;
 }
 
-export function carnetPeriodOf(rules: CarnetRules, day: string): CarnetPeriod {
+/** A calendar of periods of a fixed number of days: the carnet's, and the jousts' seasons. */
+export type PeriodCalendar = Pick<CarnetRules, "firstPeriodDay" | "periodDays">;
+
+export function carnetPeriodOf(rules: PeriodCalendar, day: string): CarnetPeriod {
   const index = Math.floor(
     Math.round((timeOf(day) - timeOf(rules.firstPeriodDay)) / DAY_MS) / rules.periodDays,
   );
   return periodAt(rules, index);
 }
 
-export function periodAt(rules: CarnetRules, index: number): CarnetPeriod {
+export function periodAt(rules: PeriodCalendar, index: number): CarnetPeriod {
   const first = timeOf(rules.firstPeriodDay) + index * rules.periodDays * DAY_MS;
   return {
     index,

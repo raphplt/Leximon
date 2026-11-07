@@ -84,12 +84,14 @@ export const USER_REFERENCES = {
   "clan_messages.deleted_by": { transfer: "kept", abandon: "kept" },
   "clan_week_members.user_id": { transfer: "kept", abandon: "kept" },
   "clan_goal_claims.user_id": { transfer: "kept", abandon: "kept" },
-  // Jousts need an account: a guest has no deck, joust nor rating.
+  // Jousts need an account: a guest has no deck, joust, rating nor laurels.
   "joust_decks.user_id": { transfer: "kept", abandon: "kept" },
   "jousts.challenger_id": { transfer: "kept", abandon: "kept" },
   "jousts.opponent_id": { transfer: "kept", abandon: "kept" },
   "joust_questions.answerer_id": { transfer: "kept", abandon: "kept" },
   "joust_ratings.user_id": { transfer: "kept", abandon: "kept" },
+  "joust_standings.user_id": { transfer: "kept", abandon: "kept" },
+  "joust_league_rewards.user_id": { transfer: "kept", abandon: "kept" },
   "review_logs.user_id": { transfer: "moved", abandon: "kept" },
   "practice_answers.user_id": { transfer: "moved", abandon: "kept" },
   "riddle_plays.user_id": { transfer: "moved", abandon: "kept" },

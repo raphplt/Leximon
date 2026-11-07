@@ -187,7 +187,10 @@ function revealOf(
     mine: result?.mine ?? [],
     theirs,
     outcome: summary.outcome,
-    gains: result === null ? null : { xp: result.xp, boosters: result.boosters },
+    gains:
+      result === null
+        ? null
+        : { xp: result.xp, boosters: result.boosters, laurels: result.laurels },
     closing: summary.forfeit
       ? forfeitLine(summary.launched, summary.opponent)
       : trappedLine(trappingWords(theirs ?? [], word), summary.opponent),

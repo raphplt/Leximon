@@ -55,6 +55,7 @@ import { notLocked } from "../friends/friends";
 import { lockWallet } from "../levels/rewards";
 import { readBadges } from "../profile/profile";
 import { addXpToPlayers, readXp } from "../progress/progress";
+import { applyLaurels, laurelsView, readStanding } from "./leagues";
 
 const { boosterWallets, cards, joustDecks, joustQuestions, joustRatings, jousts, players } = schema;
 
@@ -868,6 +869,16 @@ export async function settleJoust(
           challenger: { before: a.rating.rating, after: nextA.rating },
           opponent: { before: b.rating.rating, after: nextB.rating },
         };
+        changes.laurels = await applyLaurels(tx, {
+          challengerId,
+          opponentId,
+          outcome,
+          ratings: new Map([
+            [challengerId, a.rating.rating],
+            [opponentId, b.rating.rating],
+          ]),
+          now,
+        });
       }
     }
 
@@ -1064,6 +1075,7 @@ export async function listJousts(
       answerSeconds: Math.round(rules.answerMs / 1000),
       questions: rules.drawn,
       jousts: summaries,
+      standing: await readStanding(db, userId, now),
     },
     settled,
   };
@@ -1122,6 +1134,7 @@ export async function readJoust(
             theirs: theirs.map(answerOf),
             xp: role === "challenger" ? joust.challengerXp : joust.opponentXp,
             boosters: role === "challenger" ? joust.challengerBoosters : joust.opponentBoosters,
+            laurels: joust.laurels === null ? null : laurelsView(joust.laurels[role], now),
           }
         : null,
     },

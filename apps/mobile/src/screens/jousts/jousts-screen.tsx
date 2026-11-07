@@ -5,9 +5,11 @@ import type {
   LaunchJoustRequest,
   PlayerBadge,
 } from "@leximon/contract";
+import { gameDayOf } from "@leximon/core";
 import { toyMatters, toy as toyValues } from "@leximon/tokens";
 import {
   accessText,
+  CLASSEMENT,
   COMPOSE_DECK,
   DECK_NOT_SAVED,
   EDIT_DECK_SHORT,
@@ -49,6 +51,7 @@ import { TextButton } from "@/ui/text-button";
 import { Leaf, Lettering, Toy, ToyBody, ToyIcon } from "@/ui/toy";
 import { DeckBuilder } from "./deck-builder";
 import { Guide } from "./guide";
+import { LeagueHeader } from "./league-pieces";
 import { ink, LeafKicker, Looping, MiniCard, Notice, pieces } from "./pieces";
 import { NO_ANSWER, useLaunch } from "./use-launch";
 
@@ -206,6 +209,27 @@ function Home({
       <View style={styles.home}>
         <Animated.View entering={rise(0)}>
           <Leaf style={pieces.leaf}>
+            <LeagueHeader standing={jousts.standing} today={gameDayOf(now).key} />
+            <Toy
+              matter="paper"
+              style={styles.classement}
+              bodyStyle={styles.friendBody}
+              accessibilityRole="button"
+              accessibilityLabel={
+                jousts.standing.rewardsWaiting > 0
+                  ? `${CLASSEMENT}, récompense à réclamer`
+                  : CLASSEMENT
+              }
+              onPress={() => router.push("/joutes/classement")}
+            >
+              <Icon name="crown" size={18} color={ink.pageInk} />
+              <Text style={styles.friendText}>{CLASSEMENT}</Text>
+              {jousts.standing.rewardsWaiting > 0 && <View style={styles.dot} />}
+            </Toy>
+          </Leaf>
+        </Animated.View>
+        <Animated.View entering={rise(1)}>
+          <Leaf style={pieces.leaf}>
             <View style={styles.helpCorner}>
               <Toy
                 matter="paper"
@@ -263,7 +287,7 @@ function Home({
         </Animated.View>
 
         {jousts.deckSaved && (
-          <Animated.View entering={rise(1)}>
+          <Animated.View entering={rise(2)}>
             <Leaf style={pieces.leaf}>
               <View style={styles.deckHead}>
                 <View style={styles.deckKicker}>
@@ -313,7 +337,7 @@ function Home({
           </Animated.View>
         )}
 
-        <Animated.View entering={rise(2)}>
+        <Animated.View entering={rise(3)}>
           <Leaf style={pieces.leaf}>
             {jousts.jousts.length === 0 && <Text style={pieces.line}>{NO_JOUSTS}</Text>}
             <JoustGroup title="À toi de jouer" jousts={sections.toPlay}>
@@ -515,6 +539,15 @@ const styles = StyleSheet.create({
   crest: { alignItems: "center", paddingTop: space.s4 },
   friend: { height: 46, alignSelf: "center" },
   friendBody: { flexDirection: "row", gap: space.s3, paddingHorizontal: space.s8 },
+  classement: { height: 42, alignSelf: "center" },
+  dot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    borderWidth: 2,
+    borderColor: toyValues.outline,
+    backgroundColor: toyMatters.alert.top,
+  },
   friendText: { fontFamily: fonts.ui.bold, fontSize: fontSizes.body, color: ink.pageInk },
   centered: { textAlign: "center" },
   deckHead: {

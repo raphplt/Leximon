@@ -1,9 +1,11 @@
 "use client";
 
-import type { JoustOutcome } from "@leximon/contract";
+import type { JoustOutcome, JoustView } from "@leximon/contract";
 import { rarityLights, revealEffects } from "@leximon/tokens";
 import {
   answerTimeText,
+  divisionNumeral,
+  laurelsDelta,
   OPEN_SEALED,
   outcomeWord,
   REPLAY_REVEAL,
@@ -28,6 +30,7 @@ import { useStage } from "@/ui/stage";
 import { Lettering, ToyIcon } from "@/ui/toy";
 import ui from "@/ui/ui.module.css";
 import styles from "./jousts.module.css";
+import { LaurelsGain, Shield } from "./league-pieces";
 import { type Duelist, DuelistFace, rise } from "./pieces";
 
 export interface RevealAnswer {
@@ -44,7 +47,12 @@ export interface RevealData {
   readonly theirs: readonly RevealAnswer[] | null;
   readonly outcome: JoustOutcome | null;
   /** What the joust gave; `null` in training. */
-  readonly gains: { readonly xp: number; readonly boosters: number } | null;
+  readonly gains: {
+    readonly xp: number;
+    readonly boosters: number;
+    /** A ranked joust's laurels. */
+    readonly laurels: NonNullable<JoustView["result"]>["laurels"];
+  } | null;
   /** The last line: the words that trapped the other, or why the joust ended without them. */
   readonly closing: string | null;
 }
@@ -139,7 +147,11 @@ export function Reveal({
     });
     later(verdictAt + 1_200, () => {
       setGains(true);
-      if (data.gains !== null && (data.gains.xp > 0 || data.gains.boosters > 0)) play("coins");
+      const laurels = data.gains?.laurels;
+      const gained = laurels != null && laurels.after > laurels.before;
+      if (data.gains !== null && (data.gains.xp > 0 || data.gains.boosters > 0 || gained)) {
+        play("coins");
+      }
     });
   }, [rows, won]);
 
@@ -216,6 +228,19 @@ export function Reveal({
               <ToyIcon name="sachet" size={34} />
               <Lettering>{sachetGainText(data.gains.boosters)}</Lettering>
             </span>
+          )}
+          {data.gains?.laurels != null && (
+            <>
+              <span className={styles.gain} style={{ "--i": 2 } as CSSProperties}>
+                <Shield
+                  league={data.gains.laurels.division.league}
+                  numeral={divisionNumeral(data.gains.laurels.division)}
+                  size={30}
+                />
+                <Lettering>{laurelsDelta(data.gains.laurels)}</Lettering>
+              </span>
+              <LaurelsGain laurels={data.gains.laurels} />
+            </>
           )}
           {data.closing !== null && (
             <p className={styles.trapped}>

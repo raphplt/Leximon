@@ -17,6 +17,7 @@ export const ECU_MOVEMENT_KINDS = [
   "perfect_start",
   "mission",
   "carnet",
+  "league",
 ] as const;
 export type EcuMovementKind = (typeof ECU_MOVEMENT_KINDS)[number];
 

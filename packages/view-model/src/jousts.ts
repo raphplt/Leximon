@@ -373,7 +373,7 @@ export function joustHelp(size: RunSize): readonly string[] {
     `Tu trouves les ${size.questions} mots tirés du deck de l'autre joueur, qui trouve les ${size.questions} du tien.`,
     `${size.seconds} secondes par mot, ${size.choices} choix.`,
     "Le plus de mots trouvés gagne ; à égalité, le plus rapide.",
-    "Chaque partie donne des XP, et une victoire un sachet bonus en réserve.",
+    "Chaque partie donne des XP. Une joute classée fait gagner ou perdre des lauriers.",
   ];
 }
 

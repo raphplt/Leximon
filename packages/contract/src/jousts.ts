@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { slugSchema, timestampSchema } from "./common";
+import { divisionSchema, joustStandingSchema } from "./leagues";
 import { playerBadgeSchema } from "./profile";
 
 /** Whether the player may joust, or what keeps them from it. */
@@ -101,6 +102,8 @@ export const joustsResponseSchema = z.object({
   answerSeconds: z.int().positive(),
   questions: z.int().positive(),
   jousts: z.array(joustSummarySchema),
+  /** Laurels and league this season. */
+  standing: joustStandingSchema,
 });
 export type JoustsResponse = z.infer<typeof joustsResponseSchema>;
 
@@ -203,6 +206,15 @@ export const joustViewSchema = z.object({
       theirs: z.array(joustAnswerSchema),
       xp: z.int().nonnegative(),
       boosters: z.int().nonnegative(),
+      /** A ranked joust: the player's laurels before and after it, and the division after. */
+      laurels: z
+        .object({
+          before: z.int().nonnegative(),
+          after: z.int().nonnegative(),
+          division: divisionSchema,
+          nextDivision: divisionSchema.nullable(),
+        })
+        .nullable(),
     })
     .nullable(),
 });
