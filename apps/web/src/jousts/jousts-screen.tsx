@@ -333,7 +333,7 @@ function Home({
         </section>
       </div>
 
-      <Dialog open={deckOpen} title="Ton deck" onClose={() => setDeckOpen(false)} large>
+      <Dialog open={deckOpen} title="Ton deck" onClose={() => setDeckOpen(false)} size="large">
         {deckOpen && (
           <DeckBuilder
             deck={deck}

@@ -8,13 +8,33 @@
   --box-ray: color-mix(in srgb, var(--lx-toy-gold-top) 13%, transparent);
 }
 
+/* The box is a moment of the game: its title as big as a reward's. */
+.title {
+  font-size: var(--lx-size-display);
+}
+
+/* What today's case holds, in gold: the reason to press the button. */
+.gift {
+  margin: 0 0 var(--lx-s9);
+  color: var(--lx-toy-gold-top);
+  font-weight: 800;
+  font-size: var(--lx-size-body-large);
+}
+
+/* The rule, small under the button: it reassures, it does not compete with the gift. */
+.rule {
+  margin: var(--lx-s5) 0 0;
+  color: var(--lx-color-page-ink-muted);
+  font-size: var(--lx-size-small);
+}
+
 /* The seven days in a row on the leather, the last one bigger: the best gift comes last. */
 .days {
   display: flex;
   justify-content: center;
   align-items: flex-end;
-  gap: var(--lx-s3);
-  margin: var(--lx-s9) 0;
+  gap: var(--lx-s4);
+  margin: var(--lx-s10) 0 var(--lx-s9);
   padding: 0;
   list-style: none;
 }
@@ -24,15 +44,15 @@
   flex-direction: column;
   align-items: center;
   gap: var(--lx-s2);
-  flex: 0 1 44px;
+  flex: 0 1 56px;
   min-width: 0;
 }
 
 .dayIcon {
   display: grid;
   place-items: center;
-  width: 40px;
-  height: 40px;
+  width: 54px;
+  height: 54px;
   border: var(--lx-toy-outline-width) solid var(--lx-toy-outline);
   border-radius: var(--lx-toy-radius-tile);
   background:
@@ -46,13 +66,13 @@
 
 .dayLabel {
   font-weight: 800;
-  font-size: var(--lx-size-small);
+  font-size: var(--lx-size-label);
   color: var(--lx-color-page-ink-muted);
 }
 
 .last .dayIcon {
-  width: 52px;
-  height: 52px;
+  width: 68px;
+  height: 68px;
 }
 
 .claimed .dayIcon {
@@ -84,12 +104,12 @@
 
 /* Tomorrow's gift, lit and ringed in gold: what coming back brings. */
 .tomorrow {
-  flex-basis: 52px;
+  flex-basis: 66px;
 }
 
 .tomorrow .dayIcon {
-  width: 46px;
-  height: 46px;
+  width: 60px;
+  height: 60px;
   outline: 2px dashed var(--lx-toy-gold-top);
   outline-offset: 3px;
   animation: beckon 2.4s ease-in-out infinite;
@@ -122,6 +142,10 @@
 
 /* A phone: seven cases, tomorrow's ring included, across the window without touching. */
 @media (max-width: 420px) {
+  .title {
+    font-size: var(--lx-size-heading);
+  }
+
   .days {
     gap: 5px;
   }
@@ -138,6 +162,11 @@
   .last .dayIcon {
     width: 42px;
     height: 42px;
+  }
+
+  .dayIcon svg {
+    width: 18px;
+    height: 18px;
   }
 
   .tomorrow {

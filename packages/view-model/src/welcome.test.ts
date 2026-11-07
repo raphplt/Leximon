@@ -5,6 +5,7 @@ import {
   welcomeGuestLine,
   welcomeRefusalMessage,
   welcomeReminderLine,
+  welcomeTodayLine,
   welcomeView,
   welcomeWaits,
 } from "./welcome";
@@ -53,6 +54,16 @@ describe("welcomeView", () => {
 });
 
 describe("the lines of the week", () => {
+  it("says what today's case holds, and nothing once it is taken", () => {
+    expect(welcomeTodayLine(welcomeView(week(0, true)))).toBe(
+      "La case du jour t'offre 2 sachets bonus.",
+    );
+    expect(welcomeTodayLine(welcomeView(week(3, true)))).toBe(
+      "La case du jour t'offre un sachet garni Précieux et le titre « Habitué des rayons ».",
+    );
+    expect(welcomeTodayLine(welcomeView(week(1, false)))).toBeNull();
+  });
+
   it("adds today's day to the e-mail that says the sachets are full", () => {
     expect(welcomeReminderLine(week(1, true))).toBe(
       "Le jour 2 de ta semaine de bienvenue t'attend aussi, avec un sachet garni.",

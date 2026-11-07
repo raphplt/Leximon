@@ -16,6 +16,7 @@ import {
   welcomeAfterClaim,
   welcomeKicker,
   welcomeRefusalMessage,
+  welcomeTodayLine,
   welcomeView,
 } from "@leximon/view-model";
 import { useRouter } from "next/navigation";
@@ -95,7 +96,14 @@ export function WelcomeDialog({
   };
 
   return (
-    <Dialog open={open} title={WELCOME_TITLE} onClose={onClose} variant="center" hideTitle>
+    <Dialog
+      open={open}
+      title={WELCOME_TITLE}
+      onClose={onClose}
+      variant="center"
+      size="medium"
+      hideTitle
+    >
       <div className={`${styles.coffret} ${week.cloth}`}>
         <span className={styles.rays} aria-hidden="true" />
         <div className={styles.inner}>
@@ -154,7 +162,7 @@ export function WelcomeDialog({
               <p className={`${ui.kicker} ${styles.kicker}`}>
                 {today === null ? WELCOME_TITLE : welcomeKicker(today, total)}
               </p>
-              <h2 className={`${ui.display} ${styles.title}`}>{WELCOME_TITLE}</h2>
+              <h2 className={`${ui.display} ${styles.title} ${week.title}`}>{WELCOME_TITLE}</h2>
               <ol className={week.days}>
                 {view.cases.map((day) => (
                   <Day key={day.day} day={day} />
@@ -170,7 +178,7 @@ export function WelcomeDialog({
                 </p>
               ) : (
                 // Once today's case is open, the row says it all: tomorrow's case is lit.
-                today !== null && <p className={styles.hint}>{WELCOME_RULE}</p>
+                today !== null && <p className={week.gift}>{welcomeTodayLine(view)}</p>
               )}
               {step.name === "refused" && step.reason === "reserve_full" ? (
                 <Button
@@ -187,13 +195,16 @@ export function WelcomeDialog({
                   Fermer
                 </Button>
               ) : (
-                <Button
-                  wide
-                  onClick={() => void claim()}
-                  disabled={step.name === "claiming" || step.name === "refused"}
-                >
-                  {step.name === "claiming" ? "Ouverture…" : WELCOME_OPEN}
-                </Button>
+                <>
+                  <Button
+                    wide
+                    onClick={() => void claim()}
+                    disabled={step.name === "claiming" || step.name === "refused"}
+                  >
+                    {step.name === "claiming" ? "Ouverture…" : WELCOME_OPEN}
+                  </Button>
+                  <p className={week.rule}>{WELCOME_RULE}</p>
+                </>
               )}
             </>
           )}
@@ -237,7 +248,7 @@ function Day({ day }: { readonly day: WelcomeCase }) {
       <span className={week.dayIcon} aria-hidden="true">
         <Icon
           name={day.status === "claimed" ? "check" : REWARD_ICONS[day.icon]}
-          size={day.status === "tomorrow" ? 24 : 20}
+          size={day.last || day.status === "tomorrow" ? 30 : 26}
         />
       </span>
       <span className={week.dayLabel} aria-hidden="true">

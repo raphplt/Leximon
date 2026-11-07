@@ -13,6 +13,7 @@ import {
   welcomeAfterClaim,
   welcomeKicker,
   welcomeRefusalMessage,
+  welcomeTodayLine,
   welcomeView,
 } from "@leximon/view-model";
 import { router } from "expo-router";
@@ -188,7 +189,7 @@ export function WelcomeHost() {
             </Text>
           ) : (
             // Once today's case is open, the row says it all: tomorrow's case is lit.
-            today !== null && <Text style={styles.hint}>{WELCOME_RULE}</Text>
+            today !== null && <Text style={styles.gift}>{welcomeTodayLine(view)}</Text>
           )}
           <View style={styles.actions}>
             {step.name === "refused" && step.reason === "reserve_full" ? (
@@ -202,11 +203,14 @@ export function WelcomeHost() {
             ) : today === null ? (
               <Button label="Fermer" onPress={close} />
             ) : (
-              <Button
-                label={step.name === "claiming" ? "Ouverture…" : WELCOME_OPEN}
-                disabled={step.name === "claiming" || step.name === "refused"}
-                onPress={() => void claim()}
-              />
+              <>
+                <Button
+                  label={step.name === "claiming" ? "Ouverture…" : WELCOME_OPEN}
+                  disabled={step.name === "claiming" || step.name === "refused"}
+                  onPress={() => void claim()}
+                />
+                <Text style={styles.rule}>{WELCOME_RULE}</Text>
+              </>
             )}
           </View>
         </>
@@ -295,9 +299,17 @@ const styles = StyleSheet.create({
   todayLabel: { color: lettering.kicker },
   // On two lines on a phone, like the window's other lines.
   centered: { textAlign: "center" },
-  hint: {
+  // What today's case holds, in gold: the reason to press the button.
+  gift: {
+    fontFamily: fonts.ui.extrabold,
+    fontSize: fontSizes.bodyLarge,
+    color: lettering.kicker,
+    textAlign: "center",
+  },
+  // Small under the button: it reassures, it does not compete with the gift.
+  rule: {
     fontFamily: fonts.ui.medium,
-    fontSize: fontSizes.body,
+    fontSize: fontSizes.small,
     color: colors.pageInkMuted,
     textAlign: "center",
   },

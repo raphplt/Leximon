@@ -9,8 +9,8 @@ export const WELCOME_OPEN = "Ouvrir la case du jour";
 export const WELCOME_TAKE = "Prendre les récompenses";
 /** Under tomorrow's case, in place of its number. */
 export const WELCOME_TOMORROW = "Demain";
-export const WELCOME_RULE =
-  "Une case s'ouvre chaque jour où tu viens jouer. Les jours n'ont pas besoin de se suivre.";
+/** Small, under the button: no streak to keep. */
+export const WELCOME_RULE = "Tu peux sauter des jours sans rien perdre.";
 
 export type WelcomeCaseStatus = "claimed" | "today" | "tomorrow" | "later";
 
@@ -79,6 +79,12 @@ export function welcomeWaits(week: WelcomeWeekResponse | null): boolean {
 /** « Jour 3 sur 7 », above the dialog. */
 export function welcomeKicker(day: number, total: number): string {
   return `Jour ${day} sur ${total}`;
+}
+
+/** Under the row, before it opens: what today's case holds; `null` when none waits. */
+export function welcomeTodayLine(view: WelcomeView): string | null {
+  const today = view.cases.find((day) => day.status === "today");
+  return today === undefined ? null : `La case du jour t'offre ${today.phrase}.`;
 }
 
 /** « Semaine de bienvenue, jour 3 », the mail's entry. */

@@ -17,7 +17,7 @@ export function Dialog({
   children,
   variant = "side",
   hideTitle = false,
-  large = false,
+  size,
 }: {
   readonly open: boolean;
   readonly title: string;
@@ -27,8 +27,11 @@ export function Dialog({
   readonly variant?: "side" | "center" | "wide";
   /** The content draws its own heading; the title still names the dialog. */
   readonly hideTitle?: boolean;
-  /** `center` only: room for a list to choose from, rather than a few lines and a button. */
-  readonly large?: boolean;
+  /**
+   * `center` only. `medium`: a box that is a moment of the game, drawn big; `large`: room for a
+   * list to choose from, rather than a few lines and a button.
+   */
+  readonly size?: "medium" | "large";
 }) {
   const ref = useRef<HTMLDialogElement>(null);
 
@@ -47,7 +50,7 @@ export function Dialog({
     // biome-ignore lint/a11y/useKeyWithClickEvents: the keyboard closes it with Escape (`cancel`)
     <dialog
       ref={ref}
-      className={`${styles[variant]} ${large ? styles.large : ""}`}
+      className={`${styles[variant]} ${size === undefined ? "" : styles[size]}`}
       // A card sheet lies on the desk; every other window is a leaf of paper.
       data-paper={variant === "wide" ? undefined : ""}
       aria-label={title}
