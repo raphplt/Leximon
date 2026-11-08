@@ -1,6 +1,6 @@
 # Cahier des charges · La saison
 
-- **Statut :** proposé le 2026-11-05 ; tranché le 2026-11-07, inscrit en P95 et P96. Rien de construit.
+- **Statut :** proposé le 2026-11-05 ; tranché le 2026-11-07, inscrit en P95 et P96. Rien de construit. Reportée le 2026-11-08 par le propriétaire, date à fixer après les retours de la bêta.
 - **Choix du propriétaire, le 2026-11-07 :** S1 la première saison part le 9 sur **Bêtes et plantes**, générée pour elle (jusqu'à 15 $, cartes et gravures) ; si elle n'est pas publiée le 9, la saison part quand même sous son nom et la collection arrive dans la semaine. S2 Bêtes et plantes. S3 a, « la saison » ; ses 30 marches s'appellent des **étapes**, car « palier » nomme déjà l'Esquisse, l'Encre et la Dorure. S4 a. S5 a. S6 a. S7 a. S8 a. S9 a. Dans ce cahier, « palier » se lit donc « étape ».
 - **Source :** E5 du cahier [economie.md](economie.md), tranché le 2026-11-05 et inscrit en P96. La règle fixe l'idée : 4 semaines, 30 paliers gratuits, des points gagnés partout, des récompenses connues d'avance. Ce cahier règle tout ce qui manque pour la construire.
 - **Règles liées :** P23 (réserve), P56 (collections prévues), P58 (récompenses de niveau), P84 (écus), P88 (jours joués), P93 (semaine de bienvenue), P94 (missions), P95 (carnet), P96 (saison), P97 (récompenses connues), N1 ([regles-du-jeu.md](../regles-du-jeu.md)).
