@@ -32,7 +32,7 @@ import { myClan } from "@/player/clan";
 import { dailyChallenge } from "@/player/collection";
 import { useShared } from "@/player/resource";
 import { todayRiddle } from "@/player/riddle";
-import { REWARD_ICONS } from "@/shell/reward-icons";
+import { REWARD_LETTRINES } from "@/shell/reward-icons";
 import { useShell } from "@/shell/shell-context";
 import { usePlayerView } from "@/shell/use-player-view";
 import { Button } from "@/ui/button";
@@ -41,7 +41,6 @@ import { LevelMedal, XpBar } from "@/ui/level-bits";
 import { Kicker, Lettering, Lettrine, ToyBody, ToyIcon } from "@/ui/toy";
 import ui from "@/ui/ui.module.css";
 import styles from "./desk-columns.module.css";
-import play from "./play.module.css";
 
 /** Each leaf rises in turn when the desk appears. */
 const rise = (index: number) => ({ "--rise": index }) as CSSProperties;
@@ -271,9 +270,9 @@ function LevelLeaf({ index }: { readonly index: number }) {
           className={styles.next}
           aria-label={reward.label}
         >
-          <span className={reward.milestone ? play.nextIconKraft : play.nextIcon}>
-            <Icon name={REWARD_ICONS[reward.icon]} size={22} />
-          </span>
+          <ToyBody matter="gold" shape="tile" className={styles.badge}>
+            <Lettrine {...REWARD_LETTRINES[reward.icon]} size={24} />
+          </ToyBody>
           <span className={styles.nextText}>
             <span className={styles.nextLevel}>Niveau {reward.level}</span>
             <span className={styles.nextWhat}>{reward.opens ?? reward.title}</span>

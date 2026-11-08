@@ -1,6 +1,6 @@
 /*
  * The pieces of the Jouer screen around the desk: the page that holds it, the sachets of the
- * other collections tucked behind the one on it, the rewards to come and the word slipping away.
+ * other collections tucked behind the one on it and the word slipping away.
  */
 
 .page {
@@ -13,37 +13,6 @@
   min-height: max(600px, calc(100dvh - 71px));
   margin: 0 auto;
   padding: var(--lx-s12) var(--lx-s16) var(--lx-s16);
-}
-
-/* --- Rewards to come --- */
-
-/* The rewards to come are small toys on the leaf. */
-.nextIcon,
-.nextIconKraft {
-  box-sizing: border-box;
-  display: grid;
-  flex-shrink: 0;
-  place-items: center;
-  width: 42px;
-  height: 42px;
-  border: var(--lx-toy-outline-width) solid var(--lx-toy-outline);
-  border-radius: 50%;
-  box-shadow: 0 3px 0 var(--lx-toy-outline);
-}
-
-.nextIcon {
-  background: linear-gradient(
-    180deg,
-    var(--lx-toy-paper-top) 0 47%,
-    var(--lx-toy-paper-bottom) 53%
-  );
-  color: var(--lx-toy-red-bottom);
-}
-
-.nextIconKraft {
-  border-radius: var(--lx-radius-lg);
-  background: linear-gradient(180deg, var(--lx-toy-gold-top) 0 47%, var(--lx-toy-gold-bottom) 53%);
-  color: var(--lx-toy-outline);
 }
 
 /* --- Waiting --- */
