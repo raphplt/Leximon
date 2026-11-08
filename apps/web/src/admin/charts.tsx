@@ -1,7 +1,6 @@
+"use client";
+
 import { alpha, colors } from "@leximon/tokens";
-
-("use client");
-
 import {
   type CSSProperties,
   type KeyboardEvent,

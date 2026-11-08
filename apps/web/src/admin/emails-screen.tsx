@@ -1,8 +1,7 @@
-import { colors } from "@leximon/tokens";
-
-("use client");
+"use client";
 
 import type { AdminEmail, AdminEmailKind, AdminEmailsResponse } from "@leximon/contract";
+import { colors } from "@leximon/tokens";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";

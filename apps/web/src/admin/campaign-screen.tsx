@@ -1,6 +1,4 @@
-import { colors } from "@leximon/tokens";
-
-("use client");
+"use client";
 
 import {
   type AdminCampaign,
@@ -9,6 +7,7 @@ import {
   CAMPAIGN_RATE,
   type DRAFT_AUDIENCES,
 } from "@leximon/contract";
+import { colors } from "@leximon/tokens";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { type FormEvent, useCallback, useEffect, useState } from "react";
