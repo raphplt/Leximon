@@ -32,21 +32,25 @@ export function forgetLastEmail(): void {
   }
 }
 
-export function noteSignedIn(): void {
+/** A new account is welcomed, a returning one greeted. */
+export type SignedIn = "joined" | "back";
+
+export function noteSignedIn(how: SignedIn): void {
   try {
-    window.sessionStorage.setItem(SIGNED_IN_KEY, "1");
+    window.sessionStorage.setItem(SIGNED_IN_KEY, how);
   } catch {
     // The game opens without the message.
   }
 }
 
-/** True once after a sign-in. */
-export function takeSignedIn(): boolean {
+/** How the player just signed in, once; null the rest of the time. */
+export function takeSignedIn(): SignedIn | null {
   try {
-    const noted = window.sessionStorage.getItem(SIGNED_IN_KEY) !== null;
+    const noted = window.sessionStorage.getItem(SIGNED_IN_KEY);
     window.sessionStorage.removeItem(SIGNED_IN_KEY);
-    return noted;
+    if (noted === null) return null;
+    return noted === "joined" ? "joined" : "back";
   } catch {
-    return false;
+    return null;
   }
 }

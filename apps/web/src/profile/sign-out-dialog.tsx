@@ -26,8 +26,8 @@ export function SignOutDialog({
     setError(null);
     try {
       await api.signOut();
-      // A full load: the next screen starts a new guest from scratch.
-      window.location.assign("/jouer");
+      // A full load on the home page: the game, if played again, starts a new guest from scratch.
+      window.location.assign("/");
     } catch {
       setBusy(false);
       setError("Le serveur ne répond pas. Réessaie.");

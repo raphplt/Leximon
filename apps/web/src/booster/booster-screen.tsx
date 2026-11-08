@@ -36,7 +36,7 @@ import {
   recyclePreview,
   revealNextLabel,
   revealOrder,
-  SIGNED_IN_TOAST,
+  signedInToast,
   stagingFor,
   stockView,
   type WordMemory,
@@ -244,7 +244,8 @@ function BoosterFlow() {
   const cardWidth = useCardWidth();
 
   useEffect(() => {
-    if (takeSignedIn()) toast(SIGNED_IN_TOAST);
+    const signedIn = takeSignedIn();
+    if (signedIn !== null) toast(signedInToast(signedIn === "joined"));
   }, [toast]);
 
   const { now } = view;

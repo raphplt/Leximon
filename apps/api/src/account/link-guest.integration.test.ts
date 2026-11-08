@@ -252,6 +252,7 @@ describe("signing up from a guest", () => {
       email,
       isAdmin: false,
       withGoogle: false,
+      justJoined: true,
     });
     expect(await cardsOf(user.id)).toEqual(cardsBefore);
     const [wallet] = await db
@@ -333,6 +334,8 @@ describe("signing in to an account that plays", () => {
     const code = profileResponseSchema.parse(
       await (await get(account.cookie, "/me/profile")).json(),
     ).playerCode;
+    // An account from last month: signing in to it again is no welcome.
+    await ageAccount(db, account.userId, 30 * DAY);
     const [walletBefore] = await db
       .select()
       .from(boosterWallets)
@@ -397,6 +400,7 @@ describe("signing in to an account that plays", () => {
       email: account.email,
       isAdmin: false,
       withGoogle: false,
+      justJoined: false,
     });
     expect(await cardsOf(account.userId)).toEqual({ "test-a-common-1": 2, "test-a-common-2": 1 });
     expect(await cardsOf(guest.userId)).toEqual({ "test-a-common-1": 3, "test-a-epic-1": 1 });
@@ -467,6 +471,7 @@ describe("signing in to an account that plays", () => {
       email: account.email,
       isAdmin: false,
       withGoogle: false,
+      justJoined: true,
     });
     expect(await cardsOf(account.userId)).toEqual({ "test-b-common-1": 1 });
     expect(await linkOf(empty.userId)).toMatchObject({

@@ -85,6 +85,8 @@ const { boosterWallets, cards, userCards, userMastery } = schema;
 /** A level in a path: from the first rewarded level, within the range of the stored column. */
 const levelParamSchema = z.coerce.number().int().min(2).max(10_000);
 const welcomeDayParamSchema = z.coerce.number().int().min(1).max(100);
+/** Long enough to cover the trip back from Google or the e-mail, short enough to welcome only once. */
+const JUST_JOINED_MS = 10 * 60_000;
 
 /** Player state for the current session. Never cached: it changes with every action. */
 export function meRoutes() {
@@ -431,6 +433,7 @@ export function meRoutes() {
         email: session.user.email,
         isAdmin: session.user.role === ADMIN_ROLE,
         withGoogle: google !== undefined,
+        justJoined: Date.now() - session.user.createdAt.getTime() < JUST_JOINED_MS,
       });
     }
     const rules = guestRulesAt(GUEST_SCHEDULE, Date.now());

@@ -25,8 +25,8 @@ import {
   needsNewCode,
   PACK_NOUNS,
   SIGN_IN_QUERY,
-  SIGNED_IN_TOAST,
   sendErrorMessage,
+  signedInToast,
 } from "@leximon/view-model";
 import { router, useLocalSearchParams } from "expo-router";
 import * as WebBrowser from "expo-web-browser";
@@ -172,8 +172,10 @@ export function AccountScreen() {
       // Missing consent is the safe failure: the player can still tick it in their account.
       await api.setEmailPreferences({ newsOptIn: true, source: "signup" }).catch(() => undefined);
     }
+    // Whether the account is new is the server's to say; a failed read only loses the welcome.
+    const account = await api.fetchAccount().catch(() => null);
     playFromScratch();
-    toast(SIGNED_IN_TOAST);
+    toast(signedInToast(account?.kind === "member" && account.justJoined));
   };
 
   /** Off to Google in the browser; back here signed in, or with the reason it failed. */

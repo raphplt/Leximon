@@ -107,7 +107,7 @@ Sans être connecté.
 
 ### INS-06 · Connexion et déconnexion
 - **Faire :** se connecter avec un code, aller sur `/compte`, se déconnecter, puis revenir sur `/compte`.
-- **Attendu :** après le code, on arrive sur `/jouer` avec le message « Tu es connecté. » en bas de l'écran, une seule fois. Sur `/compte`, « Retour au jeu » occupe le centre et « Me déconnecter » est un lien discret sous le panneau. Une fois déconnecté, le champ d'adresse est prérempli avec la dernière adresse. Après « Supprimer mon compte », il est vide. Une session dure 90 jours et se prolonge à chaque visite.
+- **Attendu :** après le code, on arrive sur `/jouer` avec le message « Tu es connecté. » en bas de l'écran, une seule fois. Un compte créé dans les dix dernières minutes reçoit à la place « Bienvenue ! Ton compte est créé, tes cartes te suivent partout. ». Sur `/compte`, « Retour au jeu » occupe le centre et « Me déconnecter » est un lien discret sous le panneau. La déconnexion mène à la page d'accueil. Une fois déconnecté, le champ d'adresse est prérempli avec la dernière adresse. Après « Supprimer mon compte », il est vide. Une session dure 90 jours et se prolonge à chaque visite.
 - **Retour :**
 
 ---

@@ -9,6 +9,9 @@ import {
   googleReturn,
   needsConfirmation,
   needsNewCode,
+  SIGNED_IN_TOAST,
+  signedInToast,
+  WELCOME_TOAST,
 } from "./account";
 import { DEFAULT_PACK_NOUN } from "./pack";
 
@@ -148,5 +151,12 @@ describe("googleReturn", () => {
     expect(googleReturn("state_mismatch", null)).toMatchObject({
       message: "La connexion avec Google a échoué. Réessaie.",
     });
+  });
+});
+
+describe("signedInToast", () => {
+  it("welcomes a new account and greets a returning one", () => {
+    expect(signedInToast(true)).toBe(WELCOME_TOAST);
+    expect(signedInToast(false)).toBe(SIGNED_IN_TOAST);
   });
 });

@@ -81,7 +81,10 @@ function accountPath(intent: AccountIntent): string {
 }
 
 /** Signed in, by code or Google: what the browser keeps is reset, then back to the game. */
-async function finishSignIn(email: string, newsOptIn: boolean): Promise<void> {
+async function finishSignIn(
+  { email, justJoined }: { readonly email: string; readonly justJoined: boolean },
+  newsOptIn: boolean,
+): Promise<void> {
   forgetPendingCode();
   forgetArrival();
   if (newsOptIn) {
@@ -90,7 +93,7 @@ async function finishSignIn(email: string, newsOptIn: boolean): Promise<void> {
   }
   forgetProgress();
   keepLastEmail(email);
-  noteSignedIn();
+  noteSignedIn(justJoined ? "joined" : "back");
   // Straight back to the game, with a full load: every screen then reads the account afresh.
   window.location.assign("/jouer");
 }
@@ -154,7 +157,7 @@ export function AccountScreen() {
     try {
       const account = await api.fetchAccount();
       if (account.kind === "member" && query.has(GOOGLE_QUERY.done)) {
-        await finishSignIn(account.email, query.has(GOOGLE_QUERY.news));
+        await finishSignIn(account, query.has(GOOGLE_QUERY.news));
       } else if (account.kind === "member") {
         forgetPendingCode();
         setStep({
@@ -231,8 +234,12 @@ export function AccountScreen() {
       ...(ageBracket === null ? {} : { ageBracket }),
       ...(preview.outcome === "abandon" ? { acceptGuestLoss: true } : {}),
     });
-    if (result.kind === "signed_in") await finishSignIn(email, newsOptIn);
-    else showCodeError(result.code, email);
+    if (result.kind === "signed_in") {
+      // Whether the account is new is the server's to say; a failed read only loses the welcome.
+      const account = await api.fetchAccount().catch(() => null);
+      const justJoined = account?.kind === "member" && account.justJoined;
+      await finishSignIn({ email, justJoined }, newsOptIn);
+    } else showCodeError(result.code, email);
   };
 
   /** Off to Google; its redirect comes back to this screen, signed in or with the reason. */
@@ -258,8 +265,8 @@ export function AccountScreen() {
   const leave = () =>
     run(async () => {
       await api.signOut();
-      // A full load: the next screen starts a new guest from scratch.
-      window.location.assign("/jouer");
+      // A full load on the home page: the game, if played again, starts a new guest from scratch.
+      window.location.assign("/");
     });
 
   return (

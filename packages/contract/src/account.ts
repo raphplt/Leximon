@@ -129,6 +129,8 @@ export const accountResponseSchema = z.discriminatedUnion("kind", [
     isAdmin: z.boolean(),
     /** The member can sign in with Google (absent from an API older than it). */
     withGoogle: z.boolean().default(false),
+    /** The account was created a few minutes ago: the game welcomes it rather than greets it. */
+    justJoined: z.boolean().default(false),
   }),
 ]);
 export type AccountResponse = z.infer<typeof accountResponseSchema>;

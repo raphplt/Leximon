@@ -68,6 +68,13 @@ export const GUEST_SIGN_UP_CTA = "Crée ton compte pour garder tes cartes";
 /** Said over the game once the code is accepted. */
 export const SIGNED_IN_TOAST = "Tu es connecté.";
 
+/** Said instead when the account was just created. */
+export const WELCOME_TOAST = "Bienvenue ! Ton compte est créé, tes cartes te suivent partout.";
+
+export function signedInToast(justJoined: boolean): string {
+  return justJoined ? WELCOME_TOAST : SIGNED_IN_TOAST;
+}
+
 export const NEWS_OPT_IN = "M'écrire quand il y a du nouveau";
 
 /** The age is optional: this choice sends none. */
