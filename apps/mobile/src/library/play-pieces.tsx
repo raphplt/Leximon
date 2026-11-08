@@ -31,6 +31,7 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 import { colors, fontSizes, fonts } from "@/theme";
+import { LevelMedal } from "@/ui/level";
 import { Matter } from "@/ui/matter";
 import { Kicker, Lettering, Toy, ToyBody, ToyIcon } from "@/ui/toy";
 
@@ -149,7 +150,10 @@ export function PortraitButton({
   );
 }
 
-/** The level as a blue medal, and the experience toward the next one as a gilt bar. */
+/** Narrower, on a small phone, the XP bar would shrink to a sliver beside the medal: it goes. */
+const GAUGE_MIN_WIDTH = 110;
+
+/** The level as its gilt medal, and the experience toward the next one as a gilt bar. */
 export function LevelGauge({
   level,
   progress,
@@ -161,19 +165,25 @@ export function LevelGauge({
   readonly label: string;
 }) {
   const filled = Math.min(1, Math.max(0, progress));
+  const [roomy, setRoomy] = useState(true);
   return (
-    <View style={styles.level}>
-      <ToyBody matter="blue" shape="round" style={styles.medal}>
-        <Lettering size={22}>{level}</Lettering>
-      </ToyBody>
-      <View style={styles.xp}>
-        <View style={[styles.xpFill, { width: `${filled * 100}%` }]} />
-        <View style={styles.xpText}>
-          <Lettering size={12} font={fonts.ui.extrabold}>
-            {label}
-          </Lettering>
-        </View>
+    <View
+      style={styles.level}
+      onLayout={(event) => setRoomy(event.nativeEvent.layout.width >= GAUGE_MIN_WIDTH)}
+    >
+      <View style={styles.medal}>
+        <LevelMedal level={level} size={46} />
       </View>
+      {roomy && (
+        <View style={styles.xp}>
+          <View style={[styles.xpFill, { width: `${filled * 100}%` }]} />
+          <View style={styles.xpText}>
+            <Lettering size={12} font={fonts.ui.extrabold}>
+              {label}
+            </Lettering>
+          </View>
+        </View>
+      )}
     </View>
   );
 }

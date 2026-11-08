@@ -38,6 +38,15 @@
   height: var(--height);
 }
 
+/* Once the pointer leaves, the pouch eases back to rest instead of snapping. */
+.scene[data-holo="idle"] {
+  transition:
+    --holo-x 600ms ease-out,
+    --holo-y 600ms ease-out,
+    --holo-rx 600ms ease-out,
+    --holo-ry 600ms ease-out;
+}
+
 .stage {
   position: absolute;
   inset: 0;
@@ -84,9 +93,12 @@
   animation: none;
 }
 
-/* Under a finger or a tilted phone, the light comes from there and the sway stops. */
+/*
+ * Under a finger or a tilted phone, the light comes from there and the sway holds where it is,
+ * to take up again from there: restarted, it would jump.
+ */
 :global([data-holo="live"]) .stage {
-  animation: none;
+  animation-play-state: paused;
 }
 
 /* --- Layers in depth ------------------------------------------------------------------ */

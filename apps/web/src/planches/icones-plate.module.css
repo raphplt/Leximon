@@ -1,0 +1,151 @@
+/* A trial of illuminated icons: each look on its own band of parchment, alone then in place. */
+
+.page {
+  min-height: 100dvh;
+  padding: var(--lx-s16) var(--lx-s8) var(--lx-s32);
+  box-sizing: border-box;
+  background: var(--lx-room) fixed;
+  color: var(--lx-color-page-ink);
+}
+
+.header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--lx-s3);
+  margin: 0 auto var(--lx-s16);
+  max-width: 640px;
+  text-align: center;
+}
+
+.title {
+  font-size: var(--lx-size-display);
+}
+
+.intro {
+  margin: 0;
+  color: var(--lx-color-page-ink-soft);
+  font:
+    italic 500 var(--lx-size-body-large) / 1.4 var(--font-text),
+    serif;
+}
+
+.look {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--lx-s8);
+  max-width: 1100px;
+  margin: 0 auto var(--lx-s16);
+  padding: var(--lx-s8);
+  border-radius: 18px;
+  background: color-mix(in srgb, var(--lx-toy-drop) 55%, transparent);
+}
+
+.lookHead {
+  display: flex;
+  flex-direction: column;
+  gap: var(--lx-s2);
+}
+
+.lookTitle {
+  margin: 0;
+  font:
+    800 var(--lx-size-title) / 1.1 var(--font-display),
+    Georgia,
+    serif;
+  color: var(--lx-toy-gold-top);
+}
+
+.lookText {
+  margin: 0;
+  max-width: 720px;
+  color: var(--lx-color-page-ink-soft);
+  font:
+    500 var(--lx-size-body) / 1.4 var(--font-text),
+    serif;
+}
+
+.grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+}
+
+.toySlot {
+  display: grid;
+}
+
+.toy {
+  display: grid;
+  place-items: center;
+}
+
+.svg {
+  display: block;
+  flex-shrink: 0;
+  filter: drop-shadow(0 3px 0 var(--lx-toy-drop));
+}
+
+.context {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: var(--lx-s12);
+}
+
+.leaf {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  width: 300px;
+  padding: 16px;
+  box-sizing: border-box;
+}
+
+.leafHead {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.leafTitles {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.leafKicker {
+  font-size: var(--lx-size-micro);
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--lx-color-page-ink-muted);
+}
+
+.leafTitle {
+  font:
+    800 var(--lx-size-body-large) / 1.2 var(--font-display),
+    Georgia,
+    serif;
+}
+
+.doors {
+  display: flex;
+  gap: 22px;
+  padding-top: 8px;
+}
+
+.door {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.doorLabel {
+  font:
+    800 var(--lx-size-label) / 1 var(--font-display),
+    Georgia,
+    serif;
+  color: var(--lx-color-page-ink-soft);
+}

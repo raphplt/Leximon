@@ -2,6 +2,7 @@
 
 import { stockToyInks, type ToyIconName, type ToyMatterName } from "@leximon/tokens";
 import { type MouseEvent, type ReactNode, useEffect, useRef } from "react";
+import { LevelMedal } from "@/ui/level-bits";
 import { Kicker, Lettering, Toy, ToyBody, ToyIcon } from "@/ui/toy";
 import styles from "./play-pieces.module.css";
 
@@ -51,7 +52,7 @@ export function PortraitButton({
   );
 }
 
-/** The level as a blue medal, and the experience toward the next one as a gilt bar. */
+/** The level as its gilt medal, and the experience toward the next one as a gilt bar. */
 export function LevelGauge({
   level,
   progress,
@@ -65,9 +66,9 @@ export function LevelGauge({
   const filled = Math.min(1, Math.max(0, progress));
   return (
     <div className={styles.level}>
-      <ToyBody matter="blue" shape="round" className={styles.medal}>
-        <Lettering>{level}</Lettering>
-      </ToyBody>
+      <span className={styles.medal}>
+        <LevelMedal level={level} size={46} />
+      </span>
       <span className={styles.xp}>
         <span className={styles.xpFill} style={{ width: `${filled * 100}%` }} />
         <Lettering className={styles.xpText}>{label}</Lettering>

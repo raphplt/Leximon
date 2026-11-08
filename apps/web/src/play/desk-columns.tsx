@@ -71,12 +71,11 @@ export function TodayColumn({ word }: { readonly word: ReactNode }) {
           {word}
         </div>
       )}
-      <StockLeaf index={4} />
     </aside>
   );
 }
 
-/** On the line of the gold button: the sachets in stock, when the next comes, the reserve. */
+/** The sachets in stock, when the next comes, the reserve. */
 function StockLeaf({ index }: { readonly index: number }) {
   const view = usePlayerView();
   if (view.wallet === null) return null;
@@ -231,7 +230,7 @@ export function RiddleLeaf({
 
 /**
  * Right of the desk on a wide screen: the level and the next reward, the coffrets waiting, the
- * clan's week and the doors to the rest of the room.
+ * sachets in stock, the clan's week and the doors to the rest of the room.
  */
 export function StandingColumn() {
   const view = usePlayerView();
@@ -246,8 +245,9 @@ export function StandingColumn() {
         </Lettering>
       </header>
       <LevelLeaf index={0} />
-      <ClanLeaf index={1} />
-      <Doors index={2} />
+      <StockLeaf index={1} />
+      <ClanLeaf index={2} />
+      <Doors index={3} />
     </aside>
   );
 }

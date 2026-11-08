@@ -361,7 +361,7 @@ button.leaf {
 }
 
 /* A short screen keeps every leaf in view: tighter, without the lines the title already says. */
-@media (max-height: 820px) {
+@media (max-height: 940px) {
   .column {
     gap: 12px;
   }

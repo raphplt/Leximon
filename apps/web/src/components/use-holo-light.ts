@@ -5,6 +5,7 @@ import { type PointerEvent, useCallback, useEffect, useRef } from "react";
 
 /** After a pointer move, the phone's tilt waits this long before taking the light back. */
 const POINTER_PRIORITY_MS = 1500;
+const HOLO_VARIABLES = ["--holo-x", "--holo-y", "--holo-rx", "--holo-ry"] as const;
 
 /**
  * Feeds the light of a held card (`--holo-x`, `--holo-y`, `--holo-rx`, `--holo-ry`) to the
@@ -26,9 +27,13 @@ export function useHoloLight(enabled: boolean) {
     element.style.setProperty("--holo-ry", `${light.rotateY.toFixed(2)}deg`);
   }, []);
 
+  // The light goes back to its rest: left as the pointer last set it, the card or the pouch
+  // would keep leaning towards a pointer that has gone.
   const rest = useCallback(() => {
     const element = ref.current;
-    if (element !== null) element.dataset["holo"] = "idle";
+    if (element === null) return;
+    element.dataset["holo"] = "idle";
+    for (const name of HOLO_VARIABLES) element.style.removeProperty(name);
   }, []);
 
   useEffect(() => {

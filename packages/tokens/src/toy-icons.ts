@@ -295,3 +295,28 @@ export const goalChestInks = {
   gold: { f1: "#9C5F2C", f2: "#C47D3E", f3: "#F6D47A" },
   illuminated: { f1: "#6E1428", f2: "#A3304A", f3: "#F6D47A" },
 } as const satisfies Record<string, ToyInks>;
+
+/**
+ * Inks of the illuminated looks the toy icons may take, on trial on /planches/icones: gold leaf,
+ * the pigments of a manuscript and its iron-gall ink.
+ */
+export const illumination = {
+  goldLeaf: [
+    ["#FFF3C4", 0],
+    ["#F6D47A", 0.32],
+    ["#C9952E", 0.68],
+    ["#8A5A14", 1],
+  ],
+  ink: "#2A160B",
+  sepia: "#5A3A1E",
+  vellum: "#FBF3DE",
+  parchment: "#F1E1BC",
+  rubric: "#A3271F",
+  pigments: {
+    vermilion: "#B23A2A",
+    lapis: "#2B4A8F",
+    verdigris: "#2F6E52",
+    madder: "#7A1E34",
+    umber: "#7A4E2A",
+  },
+} as const;

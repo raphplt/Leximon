@@ -94,11 +94,10 @@
 }
 
 .medal {
+  position: relative;
   z-index: 2;
+  display: grid;
   flex: none;
-  width: 46px;
-  height: 46px;
-  font-size: var(--lx-size-title);
 }
 
 .xp {
