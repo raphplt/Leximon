@@ -546,3 +546,14 @@ Pour ajouter ou modifier une décision, utiliser le skill `decision`.
 - **Choix :** une carte que le Littré laisse sans citation en cherche une sur fr.wikisource. La chaîne trouve les phrases qui contiennent le mot et lit l'auteur et l'année sur la page, puis la date de mort dans Wikidata. Des agents Claude Code choisissent au plus une phrase au sens de la carte, et un contrôle mécanique la vérifie mot pour mot contre la page. Une citation n'est gardée que si son auteur est mort avant 1956 ou si son texte est paru avant 1871. Les traductions sont écartées.
 - **Pourquoi :** le Littré ne cite pas d'auteur pour les deux tiers du catalogue. Sur l'essai, Wikisource donne une citation juste à 38 % de ces cartes, sans erreur d'exactitude ni de droits, et sans appel payant.
 - **Conséquences :** seul le texte du domaine public est repris, jamais les notes ni les introductions des éditeurs de Wikisource. La carte crédite l'auteur comme pour le Littré. Les citations ajoutées sont relues par échantillon, comme les cartes (D-021), car les transcriptions gardent parfois des coquilles d'OCR.
+
+## D-059 · Paiement de l'abonnement Mécène : Stripe en direct sur le web, le mobile plus tard
+
+- **Statut :** Acceptée (2026-11-08), choisie par le propriétaire (recommandations de [mecene.md](cahiers-des-charges/mecene.md)). Met en œuvre P73.
+- **Choix :** sur le web, le compte Stripe du propriétaire en direct : Checkout en mode abonnement, Billing et portail client, sans Stripe Tax, la micro-entreprise étant en franchise de TVA. L'API parle à Stripe par le SDK officiel `stripe`, dans `apps/api` seulement, et apprend l'état d'un abonnement par les webhooks, signés et rejoués sans effet. Le mobile montre le statut d'un mécène sans rien vendre ; l'achat intégré (Google, puis Apple) et RevenueCat viendront plus tard.
+- **Pourquoi :** en franchise de TVA, Stripe en direct laisse environ 3,65 € sur 3,99 €, contre environ 2,80 € avec Stripe Managed Payments, qui facture la TVA à 20 % même en franchise et prend environ 3,5 % de plus. Le SDK est maintenu par Stripe, typé, et tourne sur Workers (client `fetch`, signature vérifiée par `constructEventAsync`).
+- **Conséquences :**
+  - factures, CGV, rétractation, remboursements et suivi des seuils de TVA sont à la charge du propriétaire ; les factures portent « TVA non applicable, art. 293 B du CGI » ;
+  - au passage d'un seuil (franchise, ou 10 000 € de ventes dans le reste de l'UE), bascule vers Managed Payments : un drapeau sur la session Checkout et un code fiscal sur le produit, les abonnements en cours restant à migrer ;
+  - secrets `STRIPE_SECRET_KEY` et `STRIPE_WEBHOOK_SECRET`, prix retrouvés par leur `lookup_key` ; en local, la CLI Stripe relaie les webhooks ;
+  - aucun bouton ni lien d'achat dans l'app mobile, que les règles de Google et d'Apple interdisent.

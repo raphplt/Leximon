@@ -65,7 +65,7 @@ Arbitrés par le propriétaire le 2026-10-20 : jeu grand public (B2C), pas de ve
 
 | Étape | Statut | Détail |
 |---|---|---|
-| Abonnement Mécène | À faire | P72, P73 : tout le jeu gratuit, une offre Mécène au contenu dévoilé le 1er du mois, dont « ton mot dans le jeu ». Fausse porte sur `/mecene`, mesurée dans `/admin/mesure`. Le paiement n'est pas construit, et attend les chiffres de la bêta |
+| Abonnement Mécène | À faire | P72, P73 : tout le jeu gratuit, une offre Mécène au contenu dévoilé le 1er du mois, dont « ton mot dans le jeu ». Fausse porte sur `/mecene`, mesurée dans `/admin/mesure`. Cahier tranché le 2026-11-08 ([mecene.md](cahiers-des-charges/mecene.md)) : Stripe en direct sur le web (D-059), statut seul sur le mobile, quatre lots à construire en mode test derrière un interrupteur ; la vente ouvre sur les seuils de la stratégie et après l'avocat |
 | Économie du jeu | En partie construite | P84 à P90, tranchés le 2026-11-01 : écus, recyclage en un bouton, mot manquant, tampons, série qui pardonne, 40 succès, codes. Écus, recyclage, mot manquant, missions et carnet construits le 2026-11-05 (voir la ligne « Économie et équilibrage ») ; restent tampons, paliers de série, succès et codes. Étude : [rnd/doublons.md](rnd/doublons.md). Phase 5 du cahier |
 
 ### Interface
@@ -126,7 +126,7 @@ Dans l'ordre où elles débloquent le plus :
 
 1. **Bêta ouverte :** les préalables ci-dessus, d'abord la hausse du quota d'envoi des codes.
 2. **Avatars gravés (P49) :** valider les seize gravures choisies et leurs noms.
-3. **Mécène (P73) :** l'exemplaire de la carte dénichée, non échangeable et sans XP, reste à confirmer.
+3. **Mécène (P73) :** les trois points à confirmer de [mecene.md](cahiers-des-charges/mecene.md#10-à-confirmer) (premier mot d'un abonné mensuel, signe de l'exemplaire du dénicheur, défis sur la carte dénichée).
 4. **Questions ouvertes** de [regles-du-jeu.md](regles-du-jeu.md#à-décider) : numéro de collection, sons de l'ouverture, notation phonétique, forme du paquet.
 5. **Réécriture des textes :** donner dix phrases aimées et dix phrases détestées, avant la phase 3.
 6. **Choix sur pièces de la refonte :** [la liste du cahier](cahiers-des-charges/retours-game-designer.md#ce-qui-reste-à-décider-et-quand), avec le moment de chacun.
