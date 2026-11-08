@@ -513,6 +513,7 @@ Règle P99, web et app. Pour la recette, `pnpm dev:player <email> --level 30` do
 ### BAN-02 · L'atelier : aperçu et essayage
 
 - « Apparence » : la carte du profil (bannière, avatar dans son cadre, pseudo, niveau et titre) se tient à gauche sur grand écran et reste visible pendant qu'on fait défiler. Sur téléphone, elle est en haut.
+- Les boutons « Apparence » du menu du joueur et du profil (et celui du profil sur l'app) portent aussi « Nouveau » : cliquer sur l'un l'enlève des deux.
 - L'onglet « Bannières » porte une étiquette rouge « Nouveau » dans son coin, pour tout joueur, jusqu'à ce qu'il l'ouvre une fois sur cet appareil. Elle ne revient pas quand on recharge la page ou qu'on relance l'app.
 - Toucher un avatar, un cadre, un titre, une teinte ou un motif le montre aussitôt sur la carte, sans rien enregistrer. Une barre apparaît en bas : « Tes changements ne sont pas encore enregistrés. », avec « Annuler » et « Enregistrer ». « Enregistrer » porte tout d'un coup (« Apparence enregistrée. ») ; « Annuler » remet la carte comme avant.
 - Une pièce pas encore gagnée s'essaie aussi : elle s'entoure d'un pointillé doré, la carte porte « Essai », et la barre dit comment l'avoir (« Tu gagnes l'avatar Le Flûteau au niveau 40. D'ici là, tu peux seulement l'essayer. »). « Enregistrer » reste grisé.

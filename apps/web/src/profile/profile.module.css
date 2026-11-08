@@ -37,12 +37,15 @@
   border-bottom: 3px solid var(--lx-toy-outline);
 }
 
+/* The avatar straddles the banner's edge; the pseudo and its code stand on the banner, the title
+   and what follows start under its edge. */
 .identity {
   display: flex;
-  align-items: flex-end;
+  align-items: flex-start;
   flex-wrap: wrap;
   gap: var(--lx-s10);
-  margin-top: -58px;
+  --banner-overlap: 58px;
+  margin-top: calc(-1 * var(--banner-overlap));
   padding: 0 var(--lx-s14) var(--lx-s12);
 }
 
@@ -61,8 +64,9 @@
 .nameRow {
   display: flex;
   flex-wrap: wrap;
-  align-items: baseline;
+  align-items: center;
   gap: var(--lx-s2) var(--lx-s6);
+  min-height: var(--banner-overlap);
 }
 
 .name {
@@ -146,6 +150,7 @@ a.clan:hover {
 .actions {
   display: flex;
   flex-wrap: wrap;
+  align-self: flex-end;
   gap: var(--lx-s5);
 }
 
@@ -484,61 +489,16 @@ button.emptySlot {
   line-height: 1;
 }
 
+/* A button or tab with a « Nouveau » on its corner. */
+.holdsTag {
+  position: relative;
+}
+
 .tabs {
   display: flex;
   flex-wrap: wrap;
   gap: var(--lx-s4);
   margin-bottom: var(--lx-s9);
-}
-
-/* « Nouveau » pinned to the corner of a tab, like a sticker, until the tab is opened. It
-   wiggles now and then to catch the eye, then rests. */
-.newTab {
-  position: absolute;
-  top: -8px;
-  right: -6px;
-  padding: 0 5px;
-  border: 1.5px solid var(--lx-toy-outline);
-  border-radius: var(--lx-radius-pill);
-  background: linear-gradient(
-    180deg,
-    var(--lx-toy-alert-top) 0 47%,
-    var(--lx-toy-alert-bottom) 53% 100%
-  );
-  box-shadow: 0 1.5px 0 var(--lx-toy-outline);
-  color: var(--lx-color-ink-on-color);
-  font-size: var(--lx-size-micro);
-  font-weight: 800;
-  line-height: 1.35;
-  rotate: 6deg;
-  animation: newTabWiggle 2.8s ease-in-out infinite;
-}
-
-@keyframes newTabWiggle {
-  0%,
-  72%,
-  100% {
-    rotate: 6deg;
-    scale: 1;
-  }
-  78% {
-    rotate: -8deg;
-    scale: 1.12;
-  }
-  84% {
-    rotate: 10deg;
-    scale: 1.12;
-  }
-  90% {
-    rotate: -3deg;
-    scale: 1.04;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .newTab {
-    animation: none;
-  }
 }
 
 .items {
@@ -735,6 +695,7 @@ button.emptySlot {
 
   .nameRow {
     justify-content: center;
+    min-height: 0;
   }
 
   .headline,
@@ -763,6 +724,7 @@ button.emptySlot {
   }
 
   .actions {
+    align-self: center;
     justify-content: center;
   }
 

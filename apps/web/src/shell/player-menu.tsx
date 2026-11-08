@@ -1,14 +1,17 @@
 "use client";
 
+import { APPEARANCE_NEW_KEY } from "@leximon/view-model";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { FeedbackDialog } from "@/beta/feedback-dialog";
 import { Avatar } from "@/components/avatar";
+import { useSeenFlag } from "@/lib/seen-flag";
 import { useNarrow } from "@/lib/use-narrow";
 import { SignOutDialog } from "@/profile/sign-out-dialog";
 import { Dialog } from "@/ui/dialog";
 import { Icon, type IconName } from "@/ui/icon";
 import { LevelMedal } from "@/ui/level-bits";
+import { NewTag } from "@/ui/new-tag";
 import ui from "@/ui/ui.module.css";
 import styles from "./player-menu.module.css";
 import { useShell } from "./shell-context";
@@ -19,6 +22,9 @@ interface Item {
   readonly icon: IconName;
   readonly href?: string;
   readonly action?: () => void;
+  /** Marked « Nouveau » until followed once. */
+  readonly fresh?: boolean;
+  readonly onFollow?: () => void;
 }
 
 /** The player's menu: under the avatar on the web, a sheet on phones. */
@@ -35,6 +41,7 @@ export function PlayerMenu({
   const list = useRef<HTMLUListElement>(null);
   const [feedbackOpen, setFeedbackOpen] = useState(false);
   const [signOutOpen, setSignOutOpen] = useState(false);
+  const [appearanceFresh, appearanceSeen] = useSeenFlag(APPEARANCE_NEW_KEY);
 
   const admin: Item[] = view.admin ? [{ label: "Admin", icon: "cle", href: "/admin" }] : [];
   // Until the account is read, the account page: it knows what to offer either way.
@@ -43,7 +50,13 @@ export function PlayerMenu({
     : { label: "Créer mon compte", icon: "cle", href: "/compte" };
   const groups: readonly (readonly Item[])[] = [
     [
-      { label: "Apparence", icon: "palette", href: "/atelier" },
+      {
+        label: "Apparence",
+        icon: "palette",
+        href: "/atelier",
+        fresh: appearanceFresh,
+        onFollow: appearanceSeen,
+      },
       { label: "Réglages", icon: "reglages", action: openSettings },
     ],
     [
@@ -101,14 +114,29 @@ export function PlayerMenu({
                   <span className={narrow ? styles.sheetIcon : styles.icon}>
                     <Icon name={item.icon} size={narrow ? 20 : 19} />
                   </span>
-                  <span className={styles.label}>{item.label}</span>
+                  <span className={styles.label}>
+                    {item.label}
+                    {item.fresh === true && (
+                      <>
+                        {" "}
+                        <NewTag inline />
+                      </>
+                    )}
+                  </span>
                   {narrow && <Icon name="chev" size={16} />}
                 </>
               );
               return (
                 <li key={item.label}>
                   {item.href !== undefined ? (
-                    <Link href={item.href} className={styles.row} onClick={onClose}>
+                    <Link
+                      href={item.href}
+                      className={styles.row}
+                      onClick={() => {
+                        item.onFollow?.();
+                        onClose();
+                      }}
+                    >
                       {content}
                     </Link>
                   ) : (

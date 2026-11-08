@@ -69,7 +69,7 @@ const styles = StyleSheet.create({
   body: { alignItems: "center", gap: space.s3, marginTop: -44, paddingHorizontal: space.s6 },
   name: { fontFamily: fonts.display, fontSize: fontSizes.heading, color: paperColors.pageInk },
   headline: { flexDirection: "row", alignItems: "center", gap: space.s4, minHeight: 26 },
-  title: { fontFamily: fonts.ui.extrabold, fontSize: fontSizes.body, color: paperColors.rubric },
+  title: { fontFamily: fonts.ui.bold, fontSize: fontSizes.body, color: paperColors.pageInk },
   note: {
     fontFamily: fonts.ui.medium,
     fontSize: fontSizes.small,

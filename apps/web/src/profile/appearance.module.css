@@ -1,10 +1,7 @@
-.title {
-  margin-bottom: var(--lx-s9);
-}
-
 /* The profile card stays in view beside the shelf while the pieces are tried. */
 .layout {
   display: grid;
+  margin-top: var(--lx-s12);
   grid-template-columns: 320px minmax(0, 1fr);
   gap: var(--lx-s12);
   align-items: start;
@@ -95,8 +92,8 @@
   gap: var(--lx-s4);
   min-height: 28px;
   margin: 0;
-  color: var(--lx-toy-red-bottom);
-  font-weight: 800;
+  color: var(--lx-color-paper-ink);
+  font-weight: 700;
 }
 
 .note {
@@ -165,6 +162,7 @@
   .layout {
     grid-template-columns: minmax(0, 1fr);
     gap: var(--lx-s9);
+    margin-top: var(--lx-s9);
   }
 
   .side {

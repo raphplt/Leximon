@@ -21,14 +21,14 @@ import {
   cosmeticStateLabel,
   draftItems,
   isAppearanceChanged,
-  NEW_TAB_BADGE,
   playerName,
   savedAppearance,
   withChoice,
 } from "@leximon/view-model";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Avatar } from "@/components/avatar";
+import { useSeenFlag } from "@/lib/seen-flag";
 import { useNow } from "@/lib/use-now";
 import { profile } from "@/player/player";
 import { useSharedFailed } from "@/player/resource";
@@ -36,6 +36,7 @@ import { Button } from "@/ui/button";
 import { Dialog } from "@/ui/dialog";
 import { Icon } from "@/ui/icon";
 import { LoadFailed } from "@/ui/load-failed";
+import { NewTag } from "@/ui/new-tag";
 import { Bone } from "@/ui/skeleton";
 import ui from "@/ui/ui.module.css";
 import appearance from "./appearance.module.css";
@@ -55,27 +56,6 @@ const STATE_CLASS = {
 /** The first row of the shelf, while the profile arrives. */
 const WAITING_ITEMS = [1, 2, 3, 4, 5];
 
-/** Whether this device has yet to open the atelier's new tab; read once mounted, never on the server. */
-function useNewTab(): readonly [boolean, () => void] {
-  const [fresh, setFresh] = useState(false);
-  useEffect(() => {
-    try {
-      setFresh(window.localStorage.getItem(ATELIER_NEW_TAB_KEY) === null);
-    } catch {
-      // Storage refused (private window): no badge rather than one that never goes.
-    }
-  }, []);
-  const seen = () => {
-    setFresh(false);
-    try {
-      window.localStorage.setItem(ATELIER_NEW_TAB_KEY, "1");
-    } catch {
-      // Not remembered: the badge is gone for this visit only.
-    }
-  };
-  return [fresh, seen];
-}
-
 /**
  * The atelier: avatars, frames, titles and banners chosen on a draft, shown at once on the
  * profile card beside them, worn only once saved. A piece not yet owned may be tried on.
@@ -86,7 +66,7 @@ export function AtelierScreen() {
   const failed = useSharedFailed(profile);
   const now = useNow(60_000);
   const [tab, setTab] = useState<AtelierTab>("avatars");
-  const [newTabFresh, newTabSeen] = useNewTab();
+  const [newTabFresh, newTabSeen] = useSeenFlag(ATELIER_NEW_TAB_KEY);
   const [draft, setDraft] = useState<Appearance | null>(null);
   const [buying, setBuying] = useState(false);
 
@@ -114,7 +94,7 @@ export function AtelierScreen() {
         <Icon name="back" size={18} />
         Retour au profil
       </Link>
-      <h1 className={`${ui.display} ${styles.title} ${appearance.title}`}>Apparence</h1>
+      <h1 className={`${ui.display} ${styles.title}`}>Apparence</h1>
       <div className={appearance.layout}>
         <aside className={appearance.side}>
           {me !== null && look !== null ? (
@@ -149,9 +129,7 @@ export function AtelierScreen() {
                 }}
               >
                 {entry.label}
-                {newTabFresh && entry.tab === ATELIER_NEW_TAB && (
-                  <span className={styles.newTab}>{NEW_TAB_BADGE}</span>
-                )}
+                {newTabFresh && entry.tab === ATELIER_NEW_TAB && <NewTag />}
               </button>
             ))}
           </div>

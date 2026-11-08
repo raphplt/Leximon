@@ -1,0 +1,57 @@
+/* A sticker, until what it marks is opened: it wiggles now and then, then rests. */
+.tag {
+  padding: 0 5px;
+  border: 1.5px solid var(--lx-toy-outline);
+  border-radius: var(--lx-radius-pill);
+  background: linear-gradient(
+    180deg,
+    var(--lx-toy-alert-top) 0 47%,
+    var(--lx-toy-alert-bottom) 53% 100%
+  );
+  box-shadow: 0 1.5px 0 var(--lx-toy-outline);
+  color: var(--lx-color-ink-on-color);
+  font-size: var(--lx-size-micro);
+  font-weight: 800;
+  line-height: 1.35;
+  rotate: 6deg;
+  animation: newTabWiggle 2.8s ease-in-out infinite;
+}
+
+@keyframes newTabWiggle {
+  0%,
+  72%,
+  100% {
+    rotate: 6deg;
+    scale: 1;
+  }
+  78% {
+    rotate: -8deg;
+    scale: 1.12;
+  }
+  84% {
+    rotate: 10deg;
+    scale: 1.12;
+  }
+  90% {
+    rotate: -3deg;
+    scale: 1.04;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tag {
+    animation: none;
+  }
+}
+
+.corner {
+  composes: tag;
+  position: absolute;
+  top: -8px;
+  right: -6px;
+}
+
+.inline {
+  composes: tag;
+  display: inline-block;
+}

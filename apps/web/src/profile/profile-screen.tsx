@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  APPEARANCE_NEW_KEY,
   canShareProfile,
   PLAIN_BANNER,
   PROFILE_LINK_COPIED,
@@ -11,12 +12,14 @@ import {
 import Link from "next/link";
 import { useState } from "react";
 import { ProfileBanner } from "@/components/profile-banner";
+import { useSeenFlag } from "@/lib/seen-flag";
 import { profile } from "@/player/player";
 import { useShared, useSharedFailed } from "@/player/resource";
 import { useShell } from "@/shell/shell-context";
 import { Button, ButtonLink } from "@/ui/button";
 import { Icon } from "@/ui/icon";
 import { LoadFailed } from "@/ui/load-failed";
+import { NewTag } from "@/ui/new-tag";
 import { Bone, WaitingScreen } from "@/ui/skeleton";
 import { useToast } from "@/ui/toast";
 import ui from "@/ui/ui.module.css";
@@ -32,6 +35,7 @@ export function ProfileScreen() {
   const { openCard } = useShell();
   const toast = useToast();
   const [choosing, setChoosing] = useState(false);
+  const [appearanceFresh, appearanceSeen] = useSeenFlag(APPEARANCE_NEW_KEY);
 
   if (me === null && failed) {
     return (
@@ -77,9 +81,16 @@ export function ProfileScreen() {
         face={face}
         actions={
           <>
-            <ButtonLink href="/atelier" variant="secondary" small>
+            <ButtonLink
+              href="/atelier"
+              variant="secondary"
+              small
+              className={styles.holdsTag}
+              onClick={appearanceSeen}
+            >
               <Icon name="palette" size={17} />
               Apparence
+              {appearanceFresh && <NewTag />}
             </ButtonLink>
             {canShareProfile(me) && (
               <Button variant="secondary" small onClick={() => void share()}>

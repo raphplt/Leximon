@@ -25,9 +25,9 @@ import {
   savedAppearance,
   withChoice,
 } from "@leximon/view-model";
-import * as SecureStore from "expo-secure-store";
 import { useState } from "react";
 import { Pressable, StyleSheet, Text, useWindowDimensions, View } from "react-native";
+import { useSeenFlag } from "@/player/seen-flag";
 import { useNow, useSharedFailed } from "@/player/shared";
 import { profile } from "@/player/state";
 import { useProfileActions } from "@/profile/profile-actions";
@@ -47,15 +47,6 @@ import { LockSeal, sunkCall, sunkInk, sunkTile, tryingRing } from "./lock-seal";
 const COLUMNS: Readonly<Record<CosmeticTab, number>> = { avatars: 3, frames: 3, titles: 2 };
 const GAP = 10;
 
-/** Storage can fail: then no badge, rather than one that never goes. */
-function newTabFresh(): boolean {
-  try {
-    return SecureStore.getItem(ATELIER_NEW_TAB_KEY) === null;
-  } catch {
-    return false;
-  }
-}
-
 /**
  * The atelier: avatars, frames, titles and banners chosen on a draft, shown at once on the
  * profile card above them, worn only once saved. A piece not yet owned may be tried on.
@@ -67,7 +58,7 @@ export function AtelierScreen() {
   const now = useNow(60_000);
   const window = useWindowDimensions();
   const [tab, setTab] = useState<AtelierTab>("avatars");
-  const [fresh, setFresh] = useState(newTabFresh);
+  const [fresh, newTabSeen] = useSeenFlag(ATELIER_NEW_TAB_KEY);
   const [draft, setDraft] = useState<Appearance | null>(null);
   const [buying, setBuying] = useState(false);
 
@@ -134,11 +125,7 @@ export function AtelierScreen() {
         value={tab}
         onChange={(next) => {
           setTab(next);
-          if (next !== ATELIER_NEW_TAB || !fresh) return;
-          setFresh(false);
-          SecureStore.setItemAsync(ATELIER_NEW_TAB_KEY, "1").catch(() => {
-            // Not remembered: the badge comes back next time.
-          });
+          if (next === ATELIER_NEW_TAB && fresh) newTabSeen();
         }}
       />
       {me === null || look === null ? (

@@ -1,5 +1,6 @@
-import { StyleSheet } from "react-native";
+import { StyleSheet, View } from "react-native";
 import { space } from "@/theme";
+import { NewBadge } from "./new-badge";
 import { Lettering, Toy } from "./toy";
 
 /**
@@ -14,6 +15,7 @@ export function Button({
   danger = false,
   small = false,
   accessibilityLabel = label,
+  badge,
 }: {
   readonly label: string;
   readonly onPress: () => void;
@@ -23,8 +25,10 @@ export function Button({
   readonly small?: boolean;
   /** When the label alone does not say what the button acts on. */
   readonly accessibilityLabel?: string;
+  /** A word on the button's corner, such as « Nouveau ». */
+  readonly badge?: string | undefined;
 }) {
-  return (
+  const toy = (
     <Toy
       matter={danger ? "red" : secondary ? "paper" : disabled ? "locked" : "gold"}
       style={small ? styles.smallToy : styles.toy}
@@ -37,6 +41,13 @@ export function Button({
     >
       <Lettering size={small ? 15 : 17}>{label}</Lettering>
     </Toy>
+  );
+  if (badge === undefined) return toy;
+  return (
+    <View>
+      {toy}
+      <NewBadge label={badge} />
+    </View>
   );
 }
 

@@ -171,6 +171,8 @@ export const ATELIER_NEW_TAB: AtelierTab = "banners";
 export const NEW_TAB_BADGE = "Nouveau";
 /** Where a device remembers it opened the new tab; named after it, so the next one shows again. */
 export const ATELIER_NEW_TAB_KEY = `leximon_atelier_seen_${ATELIER_NEW_TAB}`;
+/** The « Apparence » buttons say « Nouveau » too, until one of them is followed. */
+export const APPEARANCE_NEW_KEY = `leximon_appearance_seen_${ATELIER_NEW_TAB}`;
 
 /** `locked`: not reached yet; `in_coffret`: reached, waiting in an unopened coffret. */
 export type CosmeticState = "worn" | "owned" | "in_coffret" | "locked";

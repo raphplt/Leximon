@@ -27,7 +27,7 @@ export function AppearancePreview({
 }) {
   return (
     <figure className={styles.preview} aria-label={APPEARANCE_PREVIEW_TITLE}>
-      <div className={styles.card}>
+      <div className={styles.card} data-paper>
         <ProfileBanner
           banner={{ motif: look.bannerMotif, tint: look.bannerTint }}
           className={styles.cloth}

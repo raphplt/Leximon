@@ -2,8 +2,10 @@ import type { ProfileResponse } from "@leximon/contract";
 import { type Catalog, collectionName } from "@leximon/contract/client";
 import type { IconName } from "@leximon/tokens";
 import {
+  APPEARANCE_NEW_KEY,
   canShareProfile,
   movePin,
+  NEW_TAB_BADGE,
   PIN_TEXTS,
   pinnedSlotsLabel,
   placePin,
@@ -19,6 +21,7 @@ import { Pressable, ScrollView, Share, StyleSheet, Text, View } from "react-nati
 import { Card } from "@/cards/card";
 import { catalogInHand, loadCatalog } from "@/cards/catalog";
 import { WEB_URL } from "@/config";
+import { useSeenFlag } from "@/player/seen-flag";
 import { useShared, useSharedFailed } from "@/player/shared";
 import { profile } from "@/player/state";
 import { useProfileActions } from "@/profile/profile-actions";
@@ -48,6 +51,7 @@ export function ProfileScreen() {
   const failed = useSharedFailed(profile);
   const [choosing, setChoosing] = useState(false);
   const [feedback, setFeedback] = useState(false);
+  const [appearanceFresh, appearanceSeen] = useSeenFlag(APPEARANCE_NEW_KEY);
   const [catalog, setCatalog] = useState<Catalog | null>(catalogInHand);
 
   useEffect(() => {
@@ -96,7 +100,15 @@ export function ProfileScreen() {
 
       <View style={styles.actions}>
         <View style={styles.grow}>
-          <Button label="Apparence" secondary onPress={() => router.push("/atelier")} />
+          <Button
+            label="Apparence"
+            secondary
+            badge={appearanceFresh ? NEW_TAB_BADGE : undefined}
+            onPress={() => {
+              appearanceSeen();
+              router.push("/atelier");
+            }}
+          />
         </View>
         {canShareProfile(me) && (
           <View style={styles.grow}>
