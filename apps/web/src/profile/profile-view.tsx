@@ -8,6 +8,7 @@ import type {
 } from "@leximon/contract";
 import { collectionName } from "@leximon/contract/client";
 import {
+  capitalize,
   formatPlayerCode,
   memberSinceLabel,
   PROFILE_JOUSTS_TITLE,
@@ -76,11 +77,18 @@ export function ProfileHeader({
             </p>
           )}
           {face.clan !== null && <ClanLine clan={face.clan} href={face.clanHref} />}
-          {face.memberSince !== null && (
-            <p className={styles.subline}>{memberSinceLabel(face.memberSince)}</p>
-          )}
         </div>
-        {actions !== undefined && <div className={styles.actions}>{actions}</div>}
+        {(face.memberSince !== null || actions !== undefined) && (
+          <div className={styles.aside}>
+            {face.memberSince !== null && (
+              <p className={styles.since}>
+                <Icon name="calendar" size={18} />
+                {capitalize(memberSinceLabel(face.memberSince))}
+              </p>
+            )}
+            {actions !== undefined && <div className={styles.actions}>{actions}</div>}
+          </div>
+        )}
       </div>
     </header>
   );

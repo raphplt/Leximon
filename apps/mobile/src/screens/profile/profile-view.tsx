@@ -5,8 +5,9 @@ import type {
   ProfileStats,
 } from "@leximon/contract";
 import { type Catalog, collectionName } from "@leximon/contract/client";
-import { toy as toyValues } from "@leximon/tokens";
+import { alpha, lettering, toy as toyValues } from "@leximon/tokens";
 import {
+  capitalize,
   formatPlayerCode,
   leagueNumeral,
   memberSinceLabel,
@@ -21,6 +22,7 @@ import { Shield } from "@/screens/jousts/league-pieces";
 import { openCard } from "@/screens/trades/card-row";
 import { colors, fontSizes, fonts, paperColors, radii, space } from "@/theme";
 import { Avatar } from "@/ui/avatar";
+import { Icon } from "@/ui/icon";
 import { LevelMedal } from "@/ui/level";
 import { Panel } from "@/ui/panel";
 import { ProfileBanner } from "@/ui/profile-banner";
@@ -46,10 +48,6 @@ export function ProfileHeader({
   /** Where the clan's name leads. */
   readonly onClan?: () => void;
 }) {
-  const subline = [
-    face.code === null ? null : `Code joueur ${formatPlayerCode(face.code)}`,
-    face.memberSince === null ? null : memberSinceLabel(face.memberSince),
-  ].filter((part) => part !== null);
   const clan =
     face.clan === null ? null : (
       <>
@@ -59,7 +57,15 @@ export function ProfileHeader({
     );
   return (
     <View>
-      <ProfileBanner banner={face.banner} style={styles.cloth} />
+      <View>
+        <ProfileBanner banner={face.banner} style={styles.cloth} />
+        {face.memberSince !== null && (
+          <View style={styles.since}>
+            <Icon name="calendar" size={14} color={lettering.fill} />
+            <Text style={styles.sinceText}>{capitalize(memberSinceLabel(face.memberSince))}</Text>
+          </View>
+        )}
+      </View>
       <View style={styles.identity}>
         <Avatar avatar={face.avatar} frame={face.frame} size={92} label="Avatar" />
         <View style={styles.names}>
@@ -77,7 +83,9 @@ export function ProfileHeader({
                 {clan}
               </Pressable>
             ))}
-          {subline.length > 0 && <Text style={styles.subline}>{subline.join(" · ")}</Text>}
+          {face.code !== null && (
+            <Text style={styles.subline}>Code joueur {formatPlayerCode(face.code)}</Text>
+          )}
         </View>
       </View>
     </View>
@@ -195,6 +203,20 @@ const styles = StyleSheet.create({
     borderWidth: toyValues.outlineWidth,
     borderColor: toyValues.outline,
   },
+  // In the cloth's top corner, away from the avatar that climbs onto its lower edge.
+  since: {
+    position: "absolute",
+    top: space.s4,
+    right: space.s4,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: space.s2,
+    paddingVertical: space.s1,
+    paddingHorizontal: space.s4,
+    borderRadius: radii.pill,
+    backgroundColor: alpha(lettering.outline, 0.7),
+  },
+  sinceText: { fontFamily: fonts.ui.bold, fontSize: fontSizes.caption, color: lettering.fill },
   // The avatar sits astride the cloth's lower edge; the words start under it.
   identity: {
     flexDirection: "row",

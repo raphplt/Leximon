@@ -133,17 +133,32 @@ a.clan:hover {
   text-decoration: underline;
 }
 
-.subline {
-  margin: var(--lx-s2) 0 0;
+/* The right column: the date stands on the banner, level with the pseudo; the buttons at its foot. */
+.aside {
+  display: flex;
+  flex-direction: column;
+  align-self: stretch;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--lx-s5);
+}
+
+.since {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--lx-s3);
+  min-height: var(--banner-overlap);
+  margin: 0;
   font-size: var(--lx-size-small);
-  color: var(--lx-color-page-ink-muted);
+  font-weight: 700;
+  white-space: nowrap;
 }
 
 .banner .headline {
   color: var(--lx-lettering-kicker);
 }
 
-.banner :is(.clan, .subline) {
+.banner :is(.clan, .since) {
   color: color-mix(in srgb, var(--lx-lettering-fill) 85%, transparent);
 }
 
@@ -202,7 +217,7 @@ a.clan:hover {
 .sublineBone {
   width: 150px;
   height: 10px;
-  margin: var(--lx-s5) 0 3px;
+  margin: calc((var(--banner-overlap) - 10px) / 2) 0 0;
 }
 
 .actionBone {
@@ -721,6 +736,15 @@ button.emptySlot {
 
   .headlineBone {
     margin-top: 13px;
+  }
+
+  .aside {
+    align-self: center;
+    align-items: center;
+  }
+
+  .since {
+    min-height: 0;
   }
 
   .actions {
