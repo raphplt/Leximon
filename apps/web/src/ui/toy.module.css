@@ -204,3 +204,28 @@ a.toy {
   color: var(--lx-color-paper-ink);
   font-family: var(--font-text), Georgia, serif;
 }
+
+/* --- A lettrine inside a gold tile --- */
+
+.lettrine {
+  position: absolute;
+  overflow: hidden;
+  box-sizing: border-box;
+  border-style: solid;
+  border-color: var(--lx-toy-outline);
+  box-shadow: inset 0 2px 3px color-mix(in srgb, var(--lx-toy-outline) 45%, transparent);
+  pointer-events: none;
+}
+
+.lettrine > svg {
+  display: block;
+}
+
+/* The icon sits on the ground, a little above the tile's lip. */
+.lettrineIcon {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  translate: 0 calc(var(--lip) / -2);
+  filter: drop-shadow(0 1.5px 0 var(--lx-toy-outline));
+}

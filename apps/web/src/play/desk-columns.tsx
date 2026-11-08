@@ -38,7 +38,7 @@ import { usePlayerView } from "@/shell/use-player-view";
 import { Button } from "@/ui/button";
 import { Icon } from "@/ui/icon";
 import { LevelMedal, XpBar } from "@/ui/level-bits";
-import { Kicker, Lettering, ToyBody, ToyIcon } from "@/ui/toy";
+import { Kicker, Lettering, Lettrine, ToyBody, ToyIcon } from "@/ui/toy";
 import ui from "@/ui/ui.module.css";
 import styles from "./desk-columns.module.css";
 import play from "./play.module.css";
@@ -148,8 +148,8 @@ function DailyContent({ view }: { readonly view: ReturnType<typeof dailyView> })
   return (
     <>
       <span className={styles.leafHead}>
-        <ToyBody matter="red" shape="tile" className={styles.badge}>
-          <ToyIcon name="challenge" size={26} />
+        <ToyBody matter="gold" shape="tile" className={styles.badge}>
+          <Lettrine icon="challenge" matter="red" size={24} />
         </ToyBody>
         <span className={styles.leafTitles}>
           <span className={styles.leafKicker}>{DESK_TEXTS.daily}</span>
@@ -191,9 +191,7 @@ export function RiddleLeaf({
     >
       <span className={styles.leafHead}>
         <ToyBody matter="gold" shape="tile" className={styles.badge}>
-          <span className={styles.badgeGlyph}>
-            <Icon name="plume" size={22} />
-          </span>
+          <Lettrine icon="ink" matter="gold" size={24} />
         </ToyBody>
         <span className={styles.leafTitles}>
           <span className={styles.leafKicker}>
@@ -239,9 +237,9 @@ export function StandingColumn() {
     <aside className={styles.column} aria-label={DESK_TEXTS.standing}>
       <header className={styles.head}>
         <Kicker>{DESK_TEXTS.standing}</Kicker>
+        {/* The level is on the medal just below: the title says the player, or the level without one. */}
         <Lettering className={styles.headTitle}>
-          Niveau {view.progress.level}
-          {view.title !== null && <span className={styles.headSub}> · {view.title}</span>}
+          {view.title ?? `Niveau ${view.progress.level}`}
         </Lettering>
       </header>
       <LevelLeaf index={0} />
@@ -323,11 +321,11 @@ function ClanLeaf({ index }: { readonly index: number }) {
       >
         <span className={styles.leafHead}>
           <ToyBody
-            matter={locked != null ? "locked" : "blue"}
+            matter={locked != null ? "locked" : "gold"}
             shape="tile"
             className={styles.badge}
           >
-            <ToyIcon name="clan" size={26} locked={locked != null} />
+            <Lettrine icon="clan" matter="blue" size={24} locked={locked != null} />
           </ToyBody>
           <span className={styles.leafTitles}>
             <span className={styles.leafKicker}>Clan</span>

@@ -37,7 +37,7 @@ import { Icon } from "@/ui/icon";
 import { Sheet } from "@/ui/sheet";
 import { TextButton } from "@/ui/text-button";
 import { toast } from "@/ui/toast";
-import { ToyBody, ToyIcon } from "@/ui/toy";
+import { Lettrine, ToyBody, ToyIcon } from "@/ui/toy";
 
 let shown = false;
 const listeners = new Set<() => void>();
@@ -142,8 +142,8 @@ function Missions() {
   return (
     <View style={styles.box}>
       <View style={styles.head}>
-        <ToyBody matter={locked === null ? "gold" : "locked"} style={styles.badge}>
-          <ToyIcon name="missions" size={28} locked={locked !== null} />
+        <ToyBody matter={locked === null ? "gold" : "locked"} shape="tile" style={styles.badge}>
+          <Lettrine icon="missions" matter="gold" size={24} locked={locked !== null} />
         </ToyBody>
         <Text style={styles.title}>{locked ?? missionsHeadline(current)}</Text>
         {locked === null && (

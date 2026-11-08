@@ -38,10 +38,6 @@
   line-height: 1.1;
 }
 
-.headSub {
-  font-size: var(--lx-size-body-large);
-}
-
 /* --- A leaf of the column --- */
 
 .leaf {
@@ -93,13 +89,6 @@ button.leaf {
   place-items: center;
   width: 46px;
   height: 46px;
-}
-
-.badgeGlyph {
-  position: relative;
-  z-index: 1;
-  display: grid;
-  color: var(--lx-toy-outline);
 }
 
 .leafTitles {

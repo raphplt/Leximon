@@ -1,5 +1,7 @@
 import {
   lettering,
+  lettrine,
+  lettrineInks,
   lockedToyInks,
   press,
   type ToyIconName,
@@ -16,7 +18,7 @@ import {
   toyRadii,
   toy as toyValues,
 } from "@leximon/tokens";
-import type { ReactNode } from "react";
+import { type ReactNode, useId } from "react";
 import {
   Pressable,
   type PressableProps,
@@ -34,7 +36,7 @@ import Animated, {
   withSequence,
   withTiming,
 } from "react-native-reanimated";
-import Svg, { Path } from "react-native-svg";
+import Svg, { Circle, Defs, Path, Pattern, Rect } from "react-native-svg";
 import { vibrate } from "@/feedback/feedback";
 import { colors, fonts } from "@/theme";
 import { OnPaperContext } from "./ink";
@@ -310,7 +312,72 @@ export function ToyIcon({
   );
 }
 
+/**
+ * The inside of a gold tile as an illuminated initial: a ground in the pigment of `matter`,
+ * strewn with pale vines, and the icon in vellum and gold. Closed, it goes grey.
+ */
+export function Lettrine({
+  icon,
+  matter,
+  size,
+  locked = false,
+}: {
+  readonly icon: ToyIconName;
+  readonly matter: ToyMatterName;
+  readonly size: number;
+  readonly locked?: boolean;
+}) {
+  const id = `${useId().replace(/[^\w-]/g, "")}vine`;
+  const { vine, inset } = lettrine;
+  return (
+    <>
+      <View
+        pointerEvents="none"
+        style={[
+          styles.lettrine,
+          {
+            top: inset,
+            left: inset,
+            right: inset,
+            bottom: inset + toyValues.lip.small,
+            borderRadius: lettrine.radius,
+            borderWidth: lettrine.ruleWidth,
+            backgroundColor: lettrine.grounds[locked ? "locked" : matter],
+          },
+        ]}
+      >
+        <Svg width="100%" height="100%">
+          <Defs>
+            <Pattern id={id} width={vine.size} height={vine.size} patternUnits="userSpaceOnUse">
+              <Path
+                d={vine.d}
+                fill="none"
+                stroke={vine.color}
+                strokeOpacity={vine.opacity}
+                strokeWidth={vine.width}
+                strokeLinecap="round"
+              />
+              <Circle {...vine.dot} fill={vine.color} fillOpacity={vine.dotOpacity} />
+            </Pattern>
+          </Defs>
+          <Rect width="100%" height="100%" fill={`url(#${id})`} />
+        </Svg>
+      </View>
+      <View style={styles.lettrineIcon}>
+        <ToyIcon name={icon} size={size} locked={locked} inks={lettrineInks(icon)} />
+      </View>
+    </>
+  );
+}
+
 const styles = StyleSheet.create({
+  lettrine: {
+    position: "absolute",
+    overflow: "hidden",
+    borderColor: toyValues.outline,
+    boxShadow: `inset 0 2px 3px ${toyValues.drop}`,
+  },
+  lettrineIcon: { marginBottom: toyValues.lip.small },
   off: { opacity: 0.6 },
   toy: { position: "relative" },
   fill: { flexGrow: 1 },

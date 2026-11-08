@@ -36,7 +36,7 @@ import { Dialog } from "@/ui/dialog";
 import { HelpTip } from "@/ui/help-tip";
 import { Icon } from "@/ui/icon";
 import { useToast } from "@/ui/toast";
-import { ToyBody, ToyIcon } from "@/ui/toy";
+import { Lettrine, ToyBody, ToyIcon } from "@/ui/toy";
 import ui from "@/ui/ui.module.css";
 import styles from "./missions-card.module.css";
 
@@ -114,7 +114,7 @@ export function MissionsCard({
     >
       <span className={styles.head}>
         <ToyBody matter={locked === null ? "gold" : "locked"} shape="tile" className={styles.badge}>
-          <ToyIcon name="missions" size={28} locked={locked !== null} />
+          <Lettrine icon="missions" matter="gold" size={24} locked={locked !== null} />
         </ToyBody>
         <span className={styles.titles}>
           <span className={styles.kicker}>{MISSIONS_TITLE}</span>

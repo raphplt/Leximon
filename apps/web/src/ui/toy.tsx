@@ -1,6 +1,8 @@
 "use client";
 
 import {
+  lettrine,
+  lettrineInks,
   lockedToyInks,
   press,
   type ToyIconName,
@@ -15,7 +17,7 @@ import {
   toyLights,
   toy as toyValues,
 } from "@leximon/tokens";
-import type { ButtonHTMLAttributes, PointerEvent, ReactNode } from "react";
+import { type ButtonHTMLAttributes, type PointerEvent, type ReactNode, useId } from "react";
 import { vibrate } from "@/booster/feedback";
 import styles from "./toy.module.css";
 
@@ -196,5 +198,59 @@ export function ToyIcon({
         <ShapePath key={index} shape={shape} inks={used} />
       ))}
     </svg>
+  );
+}
+
+/**
+ * The inside of a gold tile as an illuminated initial: a ground in the pigment of `matter`,
+ * strewn with pale vines, and the icon in vellum and gold. Closed, it goes grey.
+ */
+export function Lettrine({
+  icon,
+  matter,
+  size,
+  locked = false,
+}: {
+  readonly icon: ToyIconName;
+  readonly matter: ToyMatterName;
+  readonly size: number;
+  readonly locked?: boolean;
+}) {
+  // The pattern is referenced by id: React's own ids carry characters `url()` does not like.
+  const id = `${useId().replace(/[^\w-]/g, "")}vine`;
+  const { vine, inset } = lettrine;
+  return (
+    <>
+      <span
+        className={styles.lettrine}
+        style={{
+          inset: `${inset}px ${inset}px calc(var(--lip) + ${inset}px)`,
+          borderRadius: lettrine.radius,
+          borderWidth: lettrine.ruleWidth,
+          background: lettrine.grounds[locked ? "locked" : matter],
+        }}
+        aria-hidden="true"
+      >
+        <svg width="100%" height="100%" aria-hidden="true">
+          <defs>
+            <pattern id={id} width={vine.size} height={vine.size} patternUnits="userSpaceOnUse">
+              <path
+                d={vine.d}
+                fill="none"
+                stroke={vine.color}
+                strokeOpacity={vine.opacity}
+                strokeWidth={vine.width}
+                strokeLinecap="round"
+              />
+              <circle {...vine.dot} fill={vine.color} fillOpacity={vine.dotOpacity} />
+            </pattern>
+          </defs>
+          <rect width="100%" height="100%" fill={`url(#${id})`} />
+        </svg>
+      </span>
+      <span className={styles.lettrineIcon}>
+        <ToyIcon name={icon} size={size} locked={locked} inks={lettrineInks(icon)} />
+      </span>
+    </>
   );
 }

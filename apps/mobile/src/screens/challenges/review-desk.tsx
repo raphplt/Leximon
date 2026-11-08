@@ -53,7 +53,7 @@ import { TAB_BAR_RISE } from "@/shell/tab-bar";
 import { alpha, colors, fontSizes, fonts, paperColors, radii, space } from "@/theme";
 import { Icon } from "@/ui/icon";
 import { Panel } from "@/ui/panel";
-import { Lettering, Toy, ToyBody, ToyIcon } from "@/ui/toy";
+import { Lettering, Lettrine, Toy, ToyBody, ToyIcon } from "@/ui/toy";
 
 const NOUN = PACK_NOUNS.sachet;
 
@@ -360,16 +360,10 @@ function Option({
   );
 }
 
-/** A small badge of leather at the head of a leaf. */
-function LeafBadge({
-  matter,
-  children,
-}: {
-  readonly matter: ToyMatterName;
-  readonly children: ReactNode;
-}) {
+/** A small gold tile at the head of a leaf, holding its lettrine. */
+function LeafBadge({ children }: { readonly children: ReactNode }) {
   return (
-    <ToyBody matter={matter} shape="tile" style={styles.badge}>
+    <ToyBody matter="gold" shape="tile" style={styles.badge}>
       {children}
     </ToyBody>
   );
@@ -396,8 +390,8 @@ function DailyLeaf({
   const content = (
     <Panel paper style={styles.leaf}>
       <View style={styles.leafHead}>
-        <LeafBadge matter="red">
-          <ToyIcon name="challenge" size={26} />
+        <LeafBadge>
+          <Lettrine icon="challenge" matter="red" size={24} />
         </LeafBadge>
         <View style={styles.leafTitles}>
           <PaperKicker>{DESK_TEXTS.daily}</PaperKicker>
@@ -447,8 +441,8 @@ function RiddleLeaf({ riddle }: { readonly riddle: RiddleResponse }) {
     >
       <Panel paper style={styles.leaf}>
         <View style={styles.leafHead}>
-          <LeafBadge matter="gold">
-            <Icon name="plume" size={22} color={toyValues.outline} />
+          <LeafBadge>
+            <Lettrine icon="ink" matter="gold" size={24} />
           </LeafBadge>
           <View style={styles.leafTitles}>
             <PaperKicker>{`${DESK_TEXTS.riddle} · n° ${riddle.number}`}</PaperKicker>

@@ -1,3 +1,5 @@
+import type { ToyMatterName } from "./library";
+
 /**
  * The filled icons of « La Bibliothèque »'s toys, on a 48 px grid: up to three fills, a dark
  * outline and a touch of light. Plain SVG paths, which the web and react-native-svg both draw.
@@ -297,8 +299,8 @@ export const goalChestInks = {
 } as const satisfies Record<string, ToyInks>;
 
 /**
- * Inks of the illuminated looks the toy icons may take, on trial on /planches/icones: gold leaf,
- * the pigments of a manuscript and its iron-gall ink.
+ * Inks of illumination: gold leaf, the pigments of a manuscript and its iron-gall ink. The
+ * lettrines of the tiles are painted with them; /planches/icones compares them with other looks.
  */
 export const illumination = {
   goldLeaf: [
@@ -320,3 +322,63 @@ export const illumination = {
     umber: "#7A4E2A",
   },
 } as const;
+
+/**
+ * The inside of a tile as an illuminated initial: a ground of pigment, chosen by the tile's
+ * matter, strewn with pale vines, and the icon painted in vellum and gold. The tile around it is
+ * old gold, so that every tile of the room reads as one family.
+ */
+export const lettrine = {
+  grounds: {
+    gold: illumination.pigments.madder,
+    red: illumination.pigments.vermilion,
+    green: illumination.pigments.verdigris,
+    blue: illumination.pigments.lapis,
+    paper: illumination.pigments.umber,
+    locked: "#6E675C",
+    alert: illumination.pigments.vermilion,
+    dark: illumination.ink,
+  } satisfies Record<ToyMatterName, string>,
+  /** The dark line around the ground. */
+  rule: illumination.ink,
+  ruleWidth: 1.2,
+  /** Room between the tile's edge and the ground, in px; the lip of the tile comes on top below. */
+  inset: 5,
+  radius: 4,
+  /** One tile of the vines, repeated over the ground, in px. */
+  vine: {
+    size: 16,
+    d: "M2 14c0-6 6-6 6-2s-4 3-4 0M10 6c0-4 5-4 5-1s-3 2-3 0",
+    width: 0.9,
+    dot: { cx: 13, cy: 13, r: 0.9 },
+    color: illumination.vellum,
+    opacity: 0.4,
+    dotOpacity: 0.55,
+  },
+} as const;
+
+/** Light and deep gold, for the parts of an icon that are not pale. */
+const LETTRINE_GOLD = { light: "#F6D47A", deep: "#D9A63A" } as const;
+
+/** Lighter than this, an ink is the icon's paper and stays vellum. */
+const PALE_LIGHTNESS = 0.82;
+
+/**
+ * The inks of an icon on a lettrine: what was pale stays vellum, the rest turns to gold, lighter
+ * where the toy's ink was lighter, so the drawing keeps its parts apart.
+ */
+export function lettrineInks(name: ToyIconName): ToyInks {
+  const source = toyIconInks[name];
+  const repaint = (hex: string): string => {
+    const lightness = lightnessOf(hex);
+    if (lightness > PALE_LIGHTNESS) return illumination.vellum;
+    return lightness > 0.6 ? LETTRINE_GOLD.light : LETTRINE_GOLD.deep;
+  };
+  return { f1: repaint(source.f1), f2: repaint(source.f2), f3: repaint(source.f3) };
+}
+
+function lightnessOf(hex: string): number {
+  const value = Number.parseInt(hex.slice(1), 16);
+  const channels = [(value >> 16) & 255, (value >> 8) & 255, value & 255];
+  return (Math.max(...channels) + Math.min(...channels)) / 2 / 255;
+}

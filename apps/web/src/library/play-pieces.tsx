@@ -3,7 +3,7 @@
 import { stockToyInks, type ToyIconName, type ToyMatterName } from "@leximon/tokens";
 import { type MouseEvent, type ReactNode, useEffect, useRef } from "react";
 import { LevelMedal } from "@/ui/level-bits";
-import { Kicker, Lettering, Toy, ToyBody, ToyIcon } from "@/ui/toy";
+import { Kicker, Lettering, Lettrine, Toy, ToyBody, ToyIcon } from "@/ui/toy";
 import styles from "./play-pieces.module.css";
 
 /**
@@ -152,15 +152,13 @@ export function SideTile({
   return (
     <div className={styles.side}>
       <Toy
-        matter={locked ? "locked" : matter}
+        matter={locked ? "locked" : "gold"}
         shape="tile"
         className={styles.tile}
         aria-label={locked ? `${label}, ${lockedAt}` : label}
         onClick={onClick}
       >
-        <span className={locked ? styles.tileIconLocked : styles.tileIcon}>
-          <ToyIcon name={icon} size={38} locked={locked} />
-        </span>
+        <Lettrine icon={icon} matter={matter} size={32} locked={locked} />
         {locked && (
           <span className={styles.lockPin}>
             <ToyIcon name="lock" size={26} />

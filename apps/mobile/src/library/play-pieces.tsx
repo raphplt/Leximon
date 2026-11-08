@@ -33,7 +33,7 @@ import Animated, {
 import { colors, fontSizes, fonts } from "@/theme";
 import { LevelMedal } from "@/ui/level";
 import { Matter } from "@/ui/matter";
-import { Kicker, Lettering, Toy, ToyBody, ToyIcon } from "@/ui/toy";
+import { Kicker, Lettering, Lettrine, Toy, ToyBody, ToyIcon } from "@/ui/toy";
 
 /**
  * The pieces of the Jouer screen. They know nothing of the game: each
@@ -286,7 +286,7 @@ export function SideTile({
     <View style={styles.side}>
       <View>
         <Toy
-          matter={locked ? "locked" : matter}
+          matter={locked ? "locked" : "gold"}
           shape="tile"
           style={styles.tile}
           accessibilityRole="button"
@@ -294,9 +294,7 @@ export function SideTile({
           onPress={onPress}
         >
           <View style={styles.tileRule} />
-          <View style={locked ? styles.tileIconLocked : undefined}>
-            <ToyIcon name={icon} size={38} locked={locked} />
-          </View>
+          <Lettrine icon={icon} matter={matter} size={32} locked={locked} />
         </Toy>
         {locked && (
           <View style={styles.lockPin} pointerEvents="none">
@@ -670,7 +668,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: toyValues.innerRule,
   },
-  tileIconLocked: { opacity: 0.7 },
   lockPin: { position: "absolute", top: -10, right: -10, zIndex: 2 },
   levelTag: { zIndex: 2, marginTop: -9, paddingHorizontal: 7, paddingBottom: 2 },
   sideLabel: { marginTop: 5, textAlign: "center" },
