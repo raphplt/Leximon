@@ -293,8 +293,7 @@ export function SideTile({
           accessibilityLabel={locked ? `${label}, ${lockedAt}` : label}
           onPress={onPress}
         >
-          <View style={styles.tileRule} />
-          <Lettrine icon={icon} matter={matter} size={32} locked={locked} />
+          <Lettrine icon={icon} matter={matter} size={34} locked={locked} />
         </Toy>
         {locked && (
           <View style={styles.lockPin} pointerEvents="none">
@@ -658,16 +657,6 @@ const styles = StyleSheet.create({
   mail: { width: 46, height: 46 },
   side: { alignItems: "center", width: 86 },
   tile: { width: 58, height: 58 },
-  tileRule: {
-    position: "absolute",
-    top: 1,
-    left: 1,
-    right: 1,
-    bottom: 5,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: toyValues.innerRule,
-  },
   lockPin: { position: "absolute", top: -10, right: -10, zIndex: 2 },
   levelTag: { zIndex: 2, marginTop: -9, paddingHorizontal: 7, paddingBottom: 2 },
   sideLabel: { marginTop: 5, textAlign: "center" },

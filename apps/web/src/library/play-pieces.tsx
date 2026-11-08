@@ -158,7 +158,7 @@ export function SideTile({
         aria-label={locked ? `${label}, ${lockedAt}` : label}
         onClick={onClick}
       >
-        <Lettrine icon={icon} matter={matter} size={32} locked={locked} />
+        <Lettrine icon={icon} matter={matter} size={34} locked={locked} />
         {locked && (
           <span className={styles.lockPin}>
             <ToyIcon name="lock" size={26} />

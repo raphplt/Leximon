@@ -36,7 +36,7 @@ import Animated, {
   withSequence,
   withTiming,
 } from "react-native-reanimated";
-import Svg, { Circle, Defs, Path, Pattern, Rect } from "react-native-svg";
+import Svg, { Circle, Defs, Path, RadialGradient, Rect, Stop } from "react-native-svg";
 import { vibrate } from "@/feedback/feedback";
 import { colors, fonts } from "@/theme";
 import { OnPaperContext } from "./ink";
@@ -313,8 +313,8 @@ export function ToyIcon({
 }
 
 /**
- * The inside of a gold tile as an illuminated initial: a ground in the pigment of `matter`,
- * strewn with pale vines, and the icon in vellum and gold. Closed, it goes grey.
+ * The inside of a gold tile as an illuminated initial: a ground in the pigment of `matter`, lit
+ * from above, and the icon in vellum and gold. Closed, it goes grey.
  */
 export function Lettrine({
   icon,
@@ -327,8 +327,9 @@ export function Lettrine({
   readonly size: number;
   readonly locked?: boolean;
 }) {
-  const id = `${useId().replace(/[^\w-]/g, "")}vine`;
-  const { vine, inset } = lettrine;
+  const id = `${useId().replace(/[^\w-]/g, "")}glow`;
+  const { glow, glowAt, bezants, inset } = lettrine;
+  const percent = (fraction: number) => `${fraction * 100}%`;
   return (
     <>
       <View
@@ -342,25 +343,40 @@ export function Lettrine({
             bottom: inset + toyValues.lip.small,
             borderRadius: lettrine.radius,
             borderWidth: lettrine.ruleWidth,
+            borderColor: lettrine.rule,
             backgroundColor: lettrine.grounds[locked ? "locked" : matter],
           },
         ]}
       >
         <Svg width="100%" height="100%">
           <Defs>
-            <Pattern id={id} width={vine.size} height={vine.size} patternUnits="userSpaceOnUse">
-              <Path
-                d={vine.d}
-                fill="none"
-                stroke={vine.color}
-                strokeOpacity={vine.opacity}
-                strokeWidth={vine.width}
-                strokeLinecap="round"
-              />
-              <Circle {...vine.dot} fill={vine.color} fillOpacity={vine.dotOpacity} />
-            </Pattern>
+            <RadialGradient
+              id={id}
+              cx={percent(glowAt.cx)}
+              cy={percent(glowAt.cy)}
+              r={percent(glowAt.r)}
+            >
+              {glow.map((stop) => (
+                <Stop
+                  key={stop.offset}
+                  offset={stop.offset}
+                  stopColor={stop.color}
+                  stopOpacity={stop.opacity}
+                />
+              ))}
+            </RadialGradient>
           </Defs>
           <Rect width="100%" height="100%" fill={`url(#${id})`} />
+          {bezants.at.map(([cx, cy]) => (
+            <Circle
+              key={`${cx}-${cy}`}
+              cx={percent(cx)}
+              cy={percent(cy)}
+              r={bezants.r}
+              fill={bezants.color}
+              fillOpacity={bezants.opacity}
+            />
+          ))}
         </Svg>
       </View>
       <View style={styles.lettrineIcon}>
@@ -374,8 +390,7 @@ const styles = StyleSheet.create({
   lettrine: {
     position: "absolute",
     overflow: "hidden",
-    borderColor: toyValues.outline,
-    boxShadow: `inset 0 2px 3px ${toyValues.drop}`,
+    boxShadow: `inset 0 1px 2px ${toyValues.drop}`,
   },
   lettrineIcon: { marginBottom: toyValues.lip.small },
   off: { opacity: 0.6 },

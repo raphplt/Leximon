@@ -325,8 +325,9 @@ export const illumination = {
 
 /**
  * The inside of a tile as an illuminated initial: a ground of pigment, chosen by the tile's
- * matter, strewn with pale vines, and the icon painted in vellum and gold. The tile around it is
- * old gold, so that every tile of the room reads as one family.
+ * matter, lit from above and darker at its edges, a dot of gold in each corner, and the icon
+ * painted in vellum and gold. The tile around it is old gold, so that every tile of the room
+ * reads as one family.
  */
 export const lettrine = {
   grounds: {
@@ -339,21 +340,31 @@ export const lettrine = {
     alert: illumination.pigments.vermilion,
     dark: illumination.ink,
   } satisfies Record<ToyMatterName, string>,
-  /** The dark line around the ground. */
-  rule: illumination.ink,
-  ruleWidth: 1.2,
+  /** The line around the ground, in the shade of the gold: frame and ground read as one piece. */
+  rule: "#8A5A14",
+  ruleWidth: 1,
   /** Room between the tile's edge and the ground, in px; the lip of the tile comes on top below. */
-  inset: 5,
+  inset: 4,
   radius: 4,
-  /** One tile of the vines, repeated over the ground, in px. */
-  vine: {
-    size: 16,
-    d: "M2 14c0-6 6-6 6-2s-4 3-4 0M10 6c0-4 5-4 5-1s-3 2-3 0",
-    width: 0.9,
-    dot: { cx: 13, cy: 13, r: 0.9 },
-    color: illumination.vellum,
-    opacity: 0.4,
-    dotOpacity: 0.55,
+  /** Over the ground: a light from above, fading to a shade at the edges, as under varnish. */
+  glow: [
+    { offset: 0, color: illumination.vellum, opacity: 0.24 },
+    { offset: 0.55, color: illumination.vellum, opacity: 0 },
+    { offset: 1, color: illumination.ink, opacity: 0.38 },
+  ],
+  /** The light's center and reach, as fractions of the ground. */
+  glowAt: { cx: 0.5, cy: 0.32, r: 0.8 },
+  /** The dots of gold in the corners, as fractions of the ground. */
+  bezants: {
+    r: 1,
+    color: "#F6D47A",
+    opacity: 0.85,
+    at: [
+      [0.13, 0.13],
+      [0.87, 0.13],
+      [0.13, 0.87],
+      [0.87, 0.87],
+    ],
   },
 } as const;
 

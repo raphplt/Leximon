@@ -202,8 +202,8 @@ export function ToyIcon({
 }
 
 /**
- * The inside of a gold tile as an illuminated initial: a ground in the pigment of `matter`,
- * strewn with pale vines, and the icon in vellum and gold. Closed, it goes grey.
+ * The inside of a gold tile as an illuminated initial: a ground in the pigment of `matter`, lit
+ * from above, and the icon in vellum and gold. Closed, it goes grey.
  */
 export function Lettrine({
   icon,
@@ -216,9 +216,10 @@ export function Lettrine({
   readonly size: number;
   readonly locked?: boolean;
 }) {
-  // The pattern is referenced by id: React's own ids carry characters `url()` does not like.
-  const id = `${useId().replace(/[^\w-]/g, "")}vine`;
-  const { vine, inset } = lettrine;
+  // The gradient is referenced by id: React's own ids carry characters `url()` does not like.
+  const id = `${useId().replace(/[^\w-]/g, "")}glow`;
+  const { glow, glowAt, bezants, inset } = lettrine;
+  const percent = (fraction: number) => `${fraction * 100}%`;
   return (
     <>
       <span
@@ -226,26 +227,40 @@ export function Lettrine({
         style={{
           inset: `${inset}px ${inset}px calc(var(--lip) + ${inset}px)`,
           borderRadius: lettrine.radius,
-          borderWidth: lettrine.ruleWidth,
+          border: `${lettrine.ruleWidth}px solid ${lettrine.rule}`,
           background: lettrine.grounds[locked ? "locked" : matter],
         }}
         aria-hidden="true"
       >
         <svg width="100%" height="100%" aria-hidden="true">
           <defs>
-            <pattern id={id} width={vine.size} height={vine.size} patternUnits="userSpaceOnUse">
-              <path
-                d={vine.d}
-                fill="none"
-                stroke={vine.color}
-                strokeOpacity={vine.opacity}
-                strokeWidth={vine.width}
-                strokeLinecap="round"
-              />
-              <circle {...vine.dot} fill={vine.color} fillOpacity={vine.dotOpacity} />
-            </pattern>
+            <radialGradient
+              id={id}
+              cx={percent(glowAt.cx)}
+              cy={percent(glowAt.cy)}
+              r={percent(glowAt.r)}
+            >
+              {glow.map((stop) => (
+                <stop
+                  key={stop.offset}
+                  offset={stop.offset}
+                  stopColor={stop.color}
+                  stopOpacity={stop.opacity}
+                />
+              ))}
+            </radialGradient>
           </defs>
           <rect width="100%" height="100%" fill={`url(#${id})`} />
+          {bezants.at.map(([cx, cy]) => (
+            <circle
+              key={`${cx}-${cy}`}
+              cx={percent(cx)}
+              cy={percent(cy)}
+              r={bezants.r}
+              fill={bezants.color}
+              fillOpacity={bezants.opacity}
+            />
+          ))}
         </svg>
       </span>
       <span className={styles.lettrineIcon}>
