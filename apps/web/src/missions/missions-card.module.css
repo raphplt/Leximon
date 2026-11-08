@@ -58,23 +58,24 @@
 }
 
 /*
- * One grid for every mission, which each row shares: the bars, the counts and the buttons
- * fall in the same columns, a mission done or not.
+ * One grid for every mission, which each row shares: the seal on the left and the buttons on the
+ * right, both centred on the mission; between them its words, and under the words its bar and its
+ * count, so that every bar starts and ends at the same place, a mission done or not.
  */
 .list {
   display: grid;
-  grid-template-columns: 24px minmax(0, 1fr) auto auto;
-  gap: 14px 8px;
+  grid-template-columns: 24px minmax(0, 1fr) auto;
+  gap: 16px 10px;
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
-/* The mission's words on their own line, then its bar, its count and its buttons. */
 .row {
   display: grid;
   grid-column: 1 / -1;
   grid-template-columns: subgrid;
+  grid-template-rows: auto auto;
   align-items: center;
   row-gap: 6px;
 }
@@ -82,6 +83,7 @@
 /* A round seal: empty while the mission goes on, gilt once done. */
 .seal {
   grid-column: 1;
+  grid-row: 1 / 3;
   display: grid;
   place-items: center;
   width: 24px;
@@ -99,7 +101,8 @@
 }
 
 .what {
-  grid-column: 2 / -1;
+  grid-column: 2;
+  grid-row: 1;
   font-family: var(--font-text), Georgia, serif;
   font-size: var(--lx-size-label);
   font-weight: 700;
@@ -110,18 +113,16 @@
   color: var(--lx-color-page-ink-muted);
 }
 
-.figure {
-  grid-column: 3;
-  min-width: 2.6em;
-  font-size: var(--lx-size-small);
-  font-weight: 800;
-  font-variant-numeric: tabular-nums;
-  text-align: right;
-  color: var(--lx-color-page-ink-muted);
+.progress {
+  grid-column: 2;
+  grid-row: 2;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .bar {
-  grid-column: 2;
+  flex: 1;
   height: 8px;
   border: 2px solid var(--lx-toy-outline);
   border-radius: 999px;
@@ -136,13 +137,22 @@
   transition: width 300ms ease-out;
 }
 
+.figure {
+  min-width: 2.6em;
+  font-size: var(--lx-size-small);
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  color: var(--lx-color-page-ink-muted);
+}
+
 .actions {
-  grid-column: 4;
+  grid-column: 3;
+  grid-row: 1 / 3;
   display: flex;
   align-items: center;
   justify-content: flex-end;
   gap: 4px;
-  min-height: 28px;
 }
 
 .go {

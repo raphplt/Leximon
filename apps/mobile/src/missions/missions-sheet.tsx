@@ -250,45 +250,45 @@ function Row({
   const { place } = line;
   return (
     <View style={styles.row}>
-      <View style={styles.line} accessible accessibilityLabel={line.label}>
-        <View style={[styles.seal, finished && styles.sealDone]}>
-          {finished && <Icon name="check" size={14} color={toyValues.outline} />}
-        </View>
-        <Text style={[styles.what, line.state === "claimed" && styles.faded]}>{line.text}</Text>
+      <View style={[styles.seal, finished && styles.sealDone]}>
+        {finished && <Icon name="check" size={14} color={toyValues.outline} />}
       </View>
-      <View style={styles.progress}>
-        <View style={styles.bar}>
-          <View style={[styles.fill, { width: `${Math.round(line.ratio * 100)}%` }]} />
+      <View style={styles.body} accessible accessibilityLabel={line.label}>
+        <Text style={[styles.what, line.state === "claimed" && styles.faded]}>{line.text}</Text>
+        <View style={styles.progress}>
+          <View style={styles.bar}>
+            <View style={[styles.fill, { width: `${Math.round(line.ratio * 100)}%` }]} />
+          </View>
+          <Text style={styles.figure}>{line.figure}</Text>
         </View>
-        <Text style={styles.figure}>{line.figure}</Text>
-        {/* Always there, even empty: every row keeps the same bar under the same buttons. */}
-        <View style={styles.actions}>
-          {canChange && (
-            <Pressable
-              onPress={onChange}
-              disabled={disabled}
-              hitSlop={8}
-              style={[styles.round, disabled && styles.dim]}
-              accessibilityRole="button"
-              accessibilityLabel={MISSION_CHANGE_LABEL}
-              accessibilityState={{ disabled, busy: changing }}
-            >
-              <Icon name="swap" size={18} color={paperColors.pageInkMuted} />
-            </Pressable>
-          )}
-          {!finished && place !== null && (
-            <Toy
-              matter="gold"
-              style={styles.go}
-              bodyStyle={styles.goBody}
-              accessibilityRole="button"
-              accessibilityLabel="Y aller"
-              onPress={() => onGo(place)}
-            >
-              <Lettering size={13}>Y aller</Lettering>
-            </Toy>
-          )}
-        </View>
+      </View>
+      {/* Always there, even empty: every row keeps its bar the same length. */}
+      <View style={styles.actions}>
+        {canChange && (
+          <Pressable
+            onPress={onChange}
+            disabled={disabled}
+            hitSlop={8}
+            style={[styles.round, disabled && styles.dim]}
+            accessibilityRole="button"
+            accessibilityLabel={MISSION_CHANGE_LABEL}
+            accessibilityState={{ disabled, busy: changing }}
+          >
+            <Icon name="swap" size={18} color={paperColors.pageInkMuted} />
+          </Pressable>
+        )}
+        {!finished && place !== null && (
+          <Toy
+            matter="gold"
+            style={styles.go}
+            bodyStyle={styles.goBody}
+            accessibilityRole="button"
+            accessibilityLabel="Y aller"
+            onPress={() => onGo(place)}
+          >
+            <Lettering size={13}>Y aller</Lettering>
+          </Toy>
+        )}
       </View>
     </View>
   );
@@ -304,15 +304,10 @@ const styles = StyleSheet.create({
     fontSize: fontSizes.bodyLarge,
     color: paperColors.pageInk,
   },
-  row: { gap: space.s2 },
-  line: { flexDirection: "row", alignItems: "center", gap: space.s4 },
-  // The bar starts under the words, past the seal.
-  progress: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: space.s3,
-    paddingLeft: 24 + space.s4,
-  },
+  // The seal and the buttons centred on the mission; between them its words, its bar under them.
+  row: { flexDirection: "row", alignItems: "center", gap: space.s4, paddingVertical: space.s2 },
+  body: { flex: 1, gap: space.s2 },
+  progress: { flexDirection: "row", alignItems: "center", gap: space.s3 },
   // A round seal: empty while the mission goes on, gilt once done.
   seal: {
     width: 24,

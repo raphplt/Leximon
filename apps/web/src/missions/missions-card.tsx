@@ -246,13 +246,13 @@ function Row({
       <span className={styles.what} aria-hidden="true">
         {line.text}
       </span>
-      <span className={styles.bar} aria-hidden="true">
-        <span className={styles.fill} style={{ width: `${Math.round(line.ratio * 100)}%` }} />
+      <span className={styles.progress} aria-hidden="true">
+        <span className={styles.bar}>
+          <span className={styles.fill} style={{ width: `${Math.round(line.ratio * 100)}%` }} />
+        </span>
+        <span className={styles.figure}>{line.figure}</span>
       </span>
-      <span className={styles.figure} aria-hidden="true">
-        {line.figure}
-      </span>
-      {/* Always there, even empty: every row keeps the same bar under the same buttons. */}
+      {/* Always there, even empty: the buttons' column keeps every bar the same length. */}
       <span className={styles.actions}>
         {canChange && (
           <button
