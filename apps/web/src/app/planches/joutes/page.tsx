@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { JoutesPlate } from "@/planches/joutes-plate";
+import { LicePlate } from "@/planches/lice-plate";
 
 export const metadata: Metadata = {
   title: "Planche Joutes · Leximon",
@@ -7,5 +7,5 @@ export const metadata: Metadata = {
 };
 
 export default function JoutesPlatePage() {
-  return <JoutesPlate />;
+  return <LicePlate />;
 }
