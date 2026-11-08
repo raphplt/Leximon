@@ -21,6 +21,7 @@ import {
   pairsVerdict,
   pickInPairs,
   questionKicker,
+  reviewScopeName,
   spellingLine,
   typedQuestionHint,
 } from "@leximon/view-model";
@@ -230,6 +231,8 @@ export function QuestionView({
   const pairs = question.format === "pairs";
   const level = memory?.get(question.cardId)?.level ?? "blank";
   const total = session.questions.length;
+  // A series drawn from a collection or a theme says which, above it.
+  const scope = session.request.scope;
   const last = session.index + 1 === total;
   const step = session.step;
   const result = step.name === "answered" ? (session.answers.at(-1) ?? null) : null;
@@ -278,6 +281,13 @@ export function QuestionView({
       contentContainerStyle={[styles.page, library.page]}
       keyboardShouldPersistTaps="handled"
     >
+      {scope !== undefined && (
+        <View style={styles.scopeTitle}>
+          <Lettering size={26} numberOfLines={2}>
+            {reviewScopeName(scope, (id) => collectionName(catalog, id))}
+          </Lettering>
+        </View>
+      )}
       <View style={styles.top}>
         <Pressable
           onPress={onQuit}
@@ -704,6 +714,7 @@ const styles = StyleSheet.create({
     paddingTop: space.s4,
     paddingBottom: TAB_BAR_RISE + 24,
   },
+  scopeTitle: { alignItems: "center" },
   top: { flexDirection: "row", alignItems: "center", gap: space.s6 },
   round: {
     width: 40,

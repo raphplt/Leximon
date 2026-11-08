@@ -4,7 +4,7 @@ import type { AnswerJoustResponse } from "@leximon/contract";
 import { collectionName } from "@leximon/contract/client";
 import type { Rarity } from "@leximon/core";
 import { revealEffects, toyMatters } from "@leximon/tokens";
-import { secondsLeft } from "@leximon/view-model";
+import { LEAVE_JOUST, secondsLeft } from "@leximon/view-model";
 import { type CSSProperties, useCallback, useEffect, useRef, useState } from "react";
 import { play, vibrate } from "@/booster/feedback";
 import { useCatalog } from "@/cards/use-catalog";
@@ -14,6 +14,7 @@ import { useNarrow } from "@/lib/use-narrow";
 import desk from "@/play/desk-columns.module.css";
 import { catalogCard } from "@/trades/card-thumb";
 import { Icon } from "@/ui/icon";
+import { useLeaveGuard } from "@/ui/leave-guard";
 import { useStage } from "@/ui/stage";
 import { Lettering, Toy } from "@/ui/toy";
 import ui from "@/ui/ui.module.css";
@@ -105,6 +106,8 @@ export function RunScene({
   const timers = useRef<number[]>([]);
   const card = useRef<HTMLDivElement>(null);
   const retry = useRef<() => void>(() => undefined);
+  // Once the clock runs, leaving lets it run on: the page asks first.
+  const guard = useLeaveGuard(phase.kind !== "versus" && phase.kind !== "done", LEAVE_JOUST);
 
   const later = useCallback((ms: number, action: () => void) => {
     timers.current.push(window.setTimeout(action, ms));
@@ -386,6 +389,7 @@ export function RunScene({
           </div>
         )}
       </div>
+      {guard.dialog}
     </section>
   );
 }

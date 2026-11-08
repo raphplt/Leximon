@@ -4,6 +4,7 @@ import {
   AFTER_ANSWER_MS,
   answerFeedback,
   freeAnswerOutcome,
+  LEAVE_SERIES,
   noChallengeNotice,
   PACK_NOUNS,
   PRACTICE_REFUSED,
@@ -23,6 +24,7 @@ import { dailyChallenge, refreshIfRead, reviewSummary, wordMemory } from "@/play
 import { publishEcusWon } from "@/player/missions";
 import { useNow, useShared } from "@/player/shared";
 import { missions, publishProgress, wallet } from "@/player/state";
+import { useLeaveGuard } from "@/ui/leave-guard";
 import { ParticleStage } from "@/ui/stage";
 import { toast } from "@/ui/toast";
 import { ChallengeRecap } from "./challenge-recap";
@@ -191,11 +193,13 @@ function ChallengeFlow({
     }
   };
 
-  const quit = () => {
+  const quit = useCallback(() => {
     setSession(null);
     setError(null);
     reviewSummary.refresh();
-  };
+  }, []);
+  const playing = session !== null && session.step.name !== "recap";
+  const guard = useLeaveGuard(playing, LEAVE_SERIES, quit);
 
   if (session !== null && catalog !== null) {
     return session.step.name === "recap" ? (
@@ -208,15 +212,18 @@ function ChallengeFlow({
         onBack={quit}
       />
     ) : (
-      <QuestionView
-        catalog={catalog}
-        session={session}
-        error={error}
-        onMeet={() => setSession({ ...session, step: { name: "asking" } })}
-        onChoose={(chosen) => void choose(chosen)}
-        onNext={() => setSession(advance(session))}
-        onQuit={quit}
-      />
+      <>
+        <QuestionView
+          catalog={catalog}
+          session={session}
+          error={error}
+          onMeet={() => setSession({ ...session, step: { name: "asking" } })}
+          onChoose={(chosen) => void choose(chosen)}
+          onNext={() => setSession(advance(session))}
+          onQuit={() => guard.ask(quit)}
+        />
+        {guard.dialog}
+      </>
     );
   }
 

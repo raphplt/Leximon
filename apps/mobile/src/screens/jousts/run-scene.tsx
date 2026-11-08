@@ -8,7 +8,7 @@ import {
   toyMatters,
   toy as toyValues,
 } from "@leximon/tokens";
-import { secondsLeft } from "@leximon/view-model";
+import { LEAVE_JOUST, secondsLeft } from "@leximon/view-model";
 import { type ReactNode, useCallback, useEffect, useRef, useState } from "react";
 import {
   Pressable,
@@ -41,6 +41,7 @@ import { catalogCard } from "@/screens/trades/card-row";
 import { fontSizes, fonts, radii, space } from "@/theme";
 import { DefinitionText } from "@/ui/definition-text";
 import { Icon } from "@/ui/icon";
+import { useLeaveGuard } from "@/ui/leave-guard";
 import { useStage } from "@/ui/stage";
 import { Leaf, Lettering, Toy } from "@/ui/toy";
 import { type Duelist, DuelistFace, ink, LeafKicker, Notice, pieces } from "./pieces";
@@ -153,6 +154,8 @@ export function RunScene({
   const [now, setNow] = useState(() => Date.now());
   const timers = useRef<ReturnType<typeof setTimeout>[]>([]);
   const retry = useRef<() => void>(() => undefined);
+  // Once the clock runs, leaving lets it run on: the screen asks first.
+  const guard = useLeaveGuard(phase.kind !== "versus" && phase.kind !== "done", LEAVE_JOUST);
   const choiceViews = useRef(new Map<string, ViewInstance>());
   const shake = useSharedValue(0);
   const shaken = useAnimatedStyle(() => ({ transform: [{ translateX: shake.value }] }));
@@ -492,6 +495,7 @@ export function RunScene({
           </Toy>
         </View>
       )}
+      {guard.dialog}
     </Leaf>
   );
 }

@@ -22,6 +22,7 @@ import {
   hideWordIn,
   KEYBOARD_HELP,
   type KeyShortcut,
+  LEAVE_SERIES,
   levelUpLine,
   MEET_ACTION,
   MEET_KICKER,
@@ -45,6 +46,7 @@ import {
   RECAP_TITLE,
   recapActions,
   recapTimes,
+  reviewScopeName,
   type SeriesQuestion,
   scoredAnswers,
   seriesOf,
@@ -88,9 +90,10 @@ import { Button, RoundButton } from "@/ui/button";
 import { GainBanner } from "@/ui/gain-banner";
 import { HelpTip } from "@/ui/help-tip";
 import { Icon } from "@/ui/icon";
+import { useLeaveGuard } from "@/ui/leave-guard";
 import { ParticleStage, useOptionalStage } from "@/ui/stage";
 import { useToast } from "@/ui/toast";
-import { Toy, ToyBody, ToyIcon } from "@/ui/toy";
+import { Lettering, Toy, ToyBody, ToyIcon } from "@/ui/toy";
 import ui from "@/ui/ui.module.css";
 import styles from "./challenge-screen.module.css";
 import { takeAlbumPractice } from "./pending-practice";
@@ -294,6 +297,8 @@ function ChallengeFlow() {
     reviewSummary.refresh();
     window.scrollTo(0, 0);
   };
+  const playing = session !== null && session.step.name !== "recap";
+  const guard = useLeaveGuard(playing, LEAVE_SERIES);
 
   if (session !== null && catalog !== null) {
     return (
@@ -315,9 +320,11 @@ function ChallengeFlow() {
             onMeet={() => setSession({ ...session, step: { name: "asking" } })}
             onChoose={(chosen) => void choose(chosen)}
             onNext={() => advance(session)}
-            onQuit={quit}
+            onQuit={() => guard.ask(quit)}
+            paused={guard.asking}
           />
         )}
+        {guard.dialog}
       </main>
     );
   }
@@ -360,6 +367,7 @@ function QuestionView({
   onChoose,
   onNext,
   onQuit,
+  paused,
 }: {
   readonly catalog: Catalog;
   readonly session: Session;
@@ -368,6 +376,8 @@ function QuestionView({
   readonly onChoose: (cardId: string) => void;
   readonly onNext: () => void;
   readonly onQuit: () => void;
+  /** The window asking whether to stop is open: the keys wait. */
+  readonly paused: boolean;
 }) {
   const { noun } = usePackShape();
   const memory = useShared(wordMemory);
@@ -387,10 +397,10 @@ function QuestionView({
   // Anki's keys: 1 to 4 (or a to d) answers, Enter goes on, Escape stops.
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
-      if (event.ctrlKey || event.metaKey || event.altKey) return;
+      if (paused || event.ctrlKey || event.metaKey || event.altKey) return;
       if (event.key === "Escape") {
         event.preventDefault();
-        if (session.answers.length === 0 || window.confirm("Arrêter la révision ?")) onQuit();
+        onQuit();
         return;
       }
       if (event.key === "Enter") {
@@ -413,12 +423,14 @@ function QuestionView({
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [question, step, session.answers.length, onChoose, onMeet, onNext, onQuit]);
+  }, [question, step, paused, onChoose, onMeet, onNext, onQuit]);
   if (question === undefined) return null;
   const card = cardOrPlaceholder(catalog, question.cardId, "common");
   const level = memory?.get(question.cardId)?.level ?? "blank";
   const total = session.questions.length;
   const last = session.index + 1 === total;
+  // A series drawn from a collection or a theme says which, above it.
+  const scope = session.request.scope;
   const slip = step.name === "answered" && step.slip;
   const spelling =
     result?.correct && question.format === "typed" && step.name === "answered"
@@ -426,63 +438,70 @@ function QuestionView({
       : null;
 
   return (
-    <section ref={quizRef} className={styles.quiz} aria-labelledby="prompt">
-      <Desk className={styles.quizDesk} />
-      <div className={styles.quizTop}>
-        <RoundButton label="Arrêter le défi" onClick={onQuit}>
-          <Icon name="close" size={20} />
-        </RoundButton>
-        <div className={styles.dots} aria-hidden="true">
-          {session.questions.map((q, index) => {
-            const answer = session.answers[index];
-            const tone =
-              answer !== undefined
-                ? answer.correct
-                  ? styles.right
-                  : styles.wrong
-                : index === session.index
-                  ? styles.current
-                  : styles.empty;
-            // A missed word asked again comes back as a smaller dot.
-            return (
-              <span
-                // biome-ignore lint/suspicious/noArrayIndexKey: one dot per question, in order
-                key={index}
-                className={`${styles.dot} ${tone} ${q.catchUp ? styles.catchUpDot : ""}`}
-              />
-            );
-          })}
-        </div>
-        <span className={styles.position}>
-          {session.index + 1}/{total}
-          {result?.correct && result.progress.xpGained > 0 && (
-            <span key={session.answers.length} className={styles.xpFloat} aria-hidden="true">
-              +{result.progress.xpGained} XP
-            </span>
-          )}
-        </span>
-      </div>
-
-      {step.name === "meeting" ? (
-        <Meeting catalog={catalog} card={card} onMeet={onMeet} />
-      ) : (
-        <Asked
-          catalog={catalog}
-          session={session}
-          question={question}
-          card={card}
-          level={level}
-          result={result}
-          spelling={spelling}
-          slip={slip}
-          last={last}
-          error={error}
-          noun={noun}
-          onChoose={onChoose}
-          onNext={onNext}
-        />
+    <>
+      {scope !== undefined && (
+        <Lettering className={styles.scopeTitle}>
+          {reviewScopeName(scope, (id) => collectionName(catalog, id))}
+        </Lettering>
       )}
-    </section>
+      <section ref={quizRef} className={styles.quiz} aria-labelledby="prompt">
+        <Desk className={styles.quizDesk} />
+        <div className={styles.quizTop}>
+          <RoundButton label="Arrêter le défi" onClick={onQuit}>
+            <Icon name="close" size={20} />
+          </RoundButton>
+          <div className={styles.dots} aria-hidden="true">
+            {session.questions.map((q, index) => {
+              const answer = session.answers[index];
+              const tone =
+                answer !== undefined
+                  ? answer.correct
+                    ? styles.right
+                    : styles.wrong
+                  : index === session.index
+                    ? styles.current
+                    : styles.empty;
+              // A missed word asked again comes back as a smaller dot.
+              return (
+                <span
+                  // biome-ignore lint/suspicious/noArrayIndexKey: one dot per question, in order
+                  key={index}
+                  className={`${styles.dot} ${tone} ${q.catchUp ? styles.catchUpDot : ""}`}
+                />
+              );
+            })}
+          </div>
+          <span className={styles.position}>
+            {session.index + 1}/{total}
+            {result?.correct && result.progress.xpGained > 0 && (
+              <span key={session.answers.length} className={styles.xpFloat} aria-hidden="true">
+                +{result.progress.xpGained} XP
+              </span>
+            )}
+          </span>
+        </div>
+
+        {step.name === "meeting" ? (
+          <Meeting catalog={catalog} card={card} onMeet={onMeet} />
+        ) : (
+          <Asked
+            catalog={catalog}
+            session={session}
+            question={question}
+            card={card}
+            level={level}
+            result={result}
+            spelling={spelling}
+            slip={slip}
+            last={last}
+            error={error}
+            noun={noun}
+            onChoose={onChoose}
+            onNext={onNext}
+          />
+        )}
+      </section>
+    </>
   );
 }
 

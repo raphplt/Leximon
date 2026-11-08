@@ -43,6 +43,16 @@
   z-index: -1;
 }
 
+/* The collection or theme of the series, above the desk. */
+.scopeTitle {
+  display: block;
+  max-width: 720px;
+  margin: 0 auto 16px;
+  font-size: var(--lx-size-heading-large);
+  line-height: 1.1;
+  text-align: center;
+}
+
 .quizTop {
   display: flex;
   align-items: center;

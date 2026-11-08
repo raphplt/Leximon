@@ -241,7 +241,11 @@ function scopeKey(scope: ReviewScope): string {
   return "id" in scope ? `${scope.kind}-${scope.id}` : scope.kind;
 }
 
-function scopeName(scope: ReviewScope, collectionName: (id: string) => string): string {
+/** What a scope is called, on its cover and above the series drawn from it. */
+export function reviewScopeName(
+  scope: ReviewScope,
+  collectionName: (id: string) => string,
+): string {
   switch (scope.kind) {
     case "rising":
       return "Prêts à monter";
@@ -275,7 +279,7 @@ export function reviewShelf(
             key: scopeKey(scope),
             kind: scope.kind,
             scope,
-            name: scopeName(scope, collectionName),
+            name: reviewScopeName(scope, collectionName),
             words: `${words} ${plural(words, "mot", "mots")}`,
             due,
             levels,
