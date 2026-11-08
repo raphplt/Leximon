@@ -1,0 +1,645 @@
+.page {
+  min-height: 100dvh;
+  padding: 14px 16px 40px;
+  box-sizing: border-box;
+  background: var(--lx-room) fixed;
+  color: var(--lx-color-page-ink);
+}
+
+/* --- The plate's own controls, not part of the screen --- */
+
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin: 0 auto 10px;
+}
+
+.controlsLabel {
+  font-size: var(--lx-size-micro);
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--lx-toy-gold-top);
+}
+
+.control {
+  height: 36px;
+  padding: 0 14px;
+  font-size: var(--lx-size-label);
+  font-weight: 800;
+  color: var(--lx-toy-outline);
+}
+
+.screen {
+  max-width: 1100px;
+  margin: 24px auto 0;
+}
+
+/* Each piece rises in turn as the screen appears. */
+.screen [style*="--rise"] {
+  animation: rise 0.5s calc(var(--rise) * 90ms) cubic-bezier(0.3, 1.4, 0.5, 1) both;
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    translate: 0 18px;
+  }
+}
+
+/* --- Shared pieces --- */
+
+.display {
+  font-size: clamp(34px, 6vw, 52px);
+  line-height: 1.05;
+  text-align: center;
+}
+
+.lead {
+  margin: 0;
+  font-size: var(--lx-size-subtitle);
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.text {
+  margin: 0;
+  font-size: var(--lx-size-body-large);
+  font-weight: 600;
+  line-height: 1.45;
+}
+
+.note,
+.fine {
+  margin: 0;
+  font-size: var(--lx-size-small);
+  font-weight: 600;
+  line-height: 1.4;
+  color: var(--lx-color-paper-ink-muted, var(--lx-color-page-ink-muted));
+}
+
+.fine {
+  text-align: center;
+}
+
+.plans {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 10px;
+}
+
+.plan {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  min-height: 96px;
+  padding: 18px 12px 12px;
+  color: var(--lx-toy-outline);
+}
+
+.plans[data-big="true"] .plan {
+  min-height: 124px;
+}
+
+.planPrice {
+  font-size: var(--lx-size-title-large);
+}
+
+.plans[data-big="true"] .planPrice {
+  font-size: clamp(28px, 4vw, 38px);
+}
+
+.planPeriod {
+  font-size: var(--lx-size-label);
+  font-weight: 800;
+}
+
+/* The ribbon over the yearly plan: what it comes to a month. */
+.ribbon {
+  position: absolute;
+  top: -14px;
+  left: 50%;
+  translate: -50% 0;
+  padding: 3px 12px 6px;
+  font-size: var(--lx-size-small);
+  white-space: nowrap;
+}
+
+.checkout {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 14px;
+}
+
+.check {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  font-size: var(--lx-size-body);
+  font-weight: 700;
+  line-height: 1.4;
+  text-align: left;
+  cursor: pointer;
+}
+
+/* The month's frame, crowned: the crown sits on the frame like the badge on a profile. */
+.crowned {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  padding-top: calc(var(--size) / 5);
+}
+
+.crown {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  translate: -50% 0;
+  color: var(--lx-toy-gold-top);
+  filter: drop-shadow(0 2px 0 var(--lx-toy-outline)) drop-shadow(0 0 1px var(--lx-toy-outline));
+  rotate: -8deg;
+}
+
+.statusTitle {
+  font-size: var(--lx-size-title-large);
+}
+
+.claim {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 16px;
+  padding: 14px 18px;
+  border: var(--lx-toy-outline-width) solid var(--lx-toy-outline);
+  border-radius: var(--lx-toy-radius-tile);
+  background: color-mix(in srgb, var(--lx-toy-gold-top) 30%, var(--lx-color-paper));
+  box-shadow: 0 4px 0 var(--lx-toy-outline);
+  color: var(--lx-toy-outline);
+}
+
+.claimChest {
+  animation: hop 2.4s ease-in-out infinite;
+}
+
+@keyframes hop {
+  0%,
+  70%,
+  100% {
+    translate: 0 0;
+  }
+  78% {
+    translate: 0 -8px;
+  }
+  86% {
+    translate: 0 0;
+  }
+  92% {
+    translate: 0 -3px;
+  }
+}
+
+.claimTile {
+  display: block;
+  position: relative;
+  width: 64px;
+  height: 64px;
+}
+
+.claimText {
+  display: grid;
+  gap: 4px;
+  font-size: var(--lx-size-body-large);
+}
+
+.claimButton {
+  height: 48px;
+  padding: 0 22px;
+  font-size: var(--lx-size-subtitle);
+}
+
+.manage {
+  height: 48px;
+  padding: 0 22px;
+  font-size: var(--lx-size-body);
+  font-weight: 800;
+  color: var(--lx-toy-outline);
+}
+
+/* --- A. The showcase --- */
+
+.showcase {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  max-width: 760px;
+  margin: 0 auto;
+}
+
+.showcaseHero {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 28px;
+  text-align: left;
+}
+
+.showcaseTitle {
+  display: grid;
+  gap: 8px;
+  color: var(--lx-color-page-ink);
+}
+
+.showcaseTitle .display {
+  text-align: left;
+}
+
+.founding {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 18px;
+  border: var(--lx-toy-outline-width) solid var(--lx-toy-outline);
+  border-radius: var(--lx-radius-pill);
+  background: linear-gradient(180deg, var(--lx-toy-red-top), var(--lx-toy-red-bottom));
+  box-shadow: 0 4px 0 var(--lx-toy-red-edge);
+  color: var(--lx-toy-gold-top);
+  font-size: var(--lx-size-body-large);
+  font-weight: 800;
+}
+
+.founding p {
+  margin: 0;
+}
+
+.seal {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 46px;
+  height: 46px;
+  color: var(--lx-toy-gold-top);
+}
+
+.benefits {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.benefit {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 18px 14px;
+  text-align: center;
+}
+
+.benefit p {
+  margin: 0;
+  font-size: var(--lx-size-body);
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.benefitIcon {
+  display: block;
+  position: relative;
+  width: 64px;
+  height: 64px;
+}
+
+.buy {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding: 24px;
+}
+
+.memberCard {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 24px;
+}
+
+.memberHead {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.memberText {
+  display: grid;
+  justify-items: start;
+  gap: 6px;
+}
+
+.memberName {
+  margin: 0;
+  font-family: var(--font-display), Georgia, serif;
+  font-weight: var(--lx-weight-display);
+  font-size: var(--lx-size-display);
+  line-height: 1;
+}
+
+/* --- B. The charter --- */
+
+.charter {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-width: 640px;
+  margin: 40px auto 0;
+  padding: 56px 40px 32px;
+  text-align: center;
+}
+
+.charterSeal {
+  position: absolute;
+  top: -38px;
+  left: 50%;
+  display: grid;
+  place-items: center;
+  width: 76px;
+  height: 76px;
+  translate: -50% 0;
+  color: var(--lx-toy-gold-top);
+}
+
+.charterTitle {
+  margin: 0;
+  font-family: var(--font-display), Georgia, serif;
+  font-weight: var(--lx-weight-display);
+  font-size: clamp(30px, 5vw, 42px);
+  line-height: 1.05;
+}
+
+.articles {
+  display: grid;
+  gap: 14px;
+  margin: 6px 0;
+  padding: 18px 0;
+  border-block: 1px solid color-mix(in srgb, var(--lx-toy-outline) 25%, transparent);
+  list-style: none;
+  text-align: left;
+}
+
+.articles li {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: start;
+  gap: 14px;
+  font-size: var(--lx-size-body-large);
+  font-weight: 600;
+  line-height: 1.45;
+}
+
+/* Each article opens on an illuminated figure, in the red of the rubrics. */
+.articleNumber {
+  font-family: var(--font-display), Georgia, serif;
+  font-weight: var(--lx-weight-display);
+  font-size: 40px;
+  line-height: 0.9;
+  color: var(--lx-toy-red-bottom);
+}
+
+/* --- C. Your profile --- */
+
+.profile {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(320px, 1fr);
+  align-items: start;
+  gap: 24px;
+}
+
+.preview {
+  display: grid;
+  gap: 12px;
+}
+
+.previewFrame {
+  border-radius: var(--lx-radius-xl);
+  outline: 3px dashed color-mix(in srgb, var(--lx-toy-gold-top) 70%, transparent);
+  outline-offset: 8px;
+}
+
+.callouts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 12px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.callouts li {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  border-radius: var(--lx-radius-pill);
+  background: color-mix(in srgb, var(--lx-toy-outline) 55%, transparent);
+  color: var(--lx-toy-gold-top);
+  font-size: var(--lx-size-label);
+  font-weight: 800;
+}
+
+.side {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 24px;
+}
+
+.sideTitle {
+  font-size: var(--lx-size-title-large);
+}
+
+.ticks {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding-left: 20px;
+  font-size: var(--lx-size-body);
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+/* --- Back from the payment --- */
+
+.thanks {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+  max-width: 760px;
+  margin: 0 auto;
+}
+
+.thanksStage {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 260px;
+}
+
+.thanksAvatar {
+  position: relative;
+  display: grid;
+  place-items: center;
+  padding-top: 40px;
+}
+
+/* The crown falls on the frame and settles, a moment after the page opens. */
+.fallingCrown {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  z-index: 1;
+  translate: -50% 0;
+  color: var(--lx-toy-gold-top);
+  filter: drop-shadow(0 3px 0 var(--lx-toy-outline)) drop-shadow(0 0 1px var(--lx-toy-outline));
+  animation: crown 0.9s 0.35s cubic-bezier(0.3, 1.6, 0.5, 1) both;
+}
+
+@keyframes crown {
+  from {
+    opacity: 0;
+    translate: -50% -140px;
+    rotate: -30deg;
+    scale: 1.6;
+  }
+  to {
+    rotate: -8deg;
+  }
+}
+
+.thanksBadge {
+  scale: 1.4;
+  animation: rise 0.5s 1s both;
+}
+
+.timeline {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  width: 100%;
+  margin: 10px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 18px 12px;
+  border: var(--lx-toy-outline-width) solid var(--lx-toy-outline);
+  border-radius: var(--lx-toy-radius-tile);
+  background: var(--lx-color-paper);
+  box-shadow: 0 4px 0 var(--lx-toy-outline);
+  color: var(--lx-color-paper-ink);
+  text-align: center;
+}
+
+.step:first-child {
+  background: color-mix(in srgb, var(--lx-toy-gold-top) 35%, var(--lx-color-paper));
+}
+
+.when {
+  font-size: var(--lx-size-micro);
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--lx-toy-red-bottom);
+}
+
+.step strong {
+  font-size: var(--lx-size-body);
+  line-height: 1.35;
+}
+
+.stepIcon {
+  display: block;
+  position: relative;
+  width: 56px;
+  height: 56px;
+}
+
+.thanksActions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+}
+
+.thanks[data-direction="charter"] .timeline {
+  grid-template-columns: 1fr;
+  max-width: 460px;
+}
+
+.thanks[data-direction="charter"] .step {
+  flex-direction: row;
+  text-align: left;
+}
+
+@media (max-width: 1180px) {
+  .profile {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 720px) {
+  .showcaseHero {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .showcaseTitle .display {
+    text-align: center;
+  }
+
+  .benefits,
+  .timeline,
+  .profile {
+    grid-template-columns: 1fr;
+  }
+
+  .charter {
+    padding: 52px 20px 24px;
+  }
+
+  .claim {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .claimButton {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .screen [style*="--rise"],
+  .claimChest,
+  .fallingCrown,
+  .thanksBadge {
+    animation: none;
+  }
+}
