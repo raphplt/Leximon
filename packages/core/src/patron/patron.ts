@@ -27,6 +27,12 @@ export interface PatronRules {
    * yearly one at its payment and at the start of each such stretch of the year.
    */
   readonly monthsPerFind: number;
+  /** Pinned cards a paying patron shows beyond those of their levels; gone when they stop. */
+  readonly extraPinnedSlots: number;
+  /** The library editions every patron owns from their first payment. */
+  readonly launchEditions: readonly string[];
+  /** Month (in Paris, `YYYY-MM`) → the edition every patron who paid for it owns. */
+  readonly editions: Readonly<Record<string, string>>;
 }
 
 /** What a patron wears: the same kinds of cosmetics as the level rewards, always named. */
@@ -244,4 +250,35 @@ export function reserveSearchKey(text: string): string {
     .replace(/\p{M}/gu, "")
     .replace(/[^a-z0-9]+/g, " ")
     .trim();
+}
+
+/**
+ * The library editions a player owns, for life: those of the launch from a first payment, then
+ * each month's for the months paid. Nothing to claim, and a refunded period gives nothing.
+ */
+export function ownedEditions(
+  rules: Pick<PatronRules, "launchEditions" | "editions">,
+  periods: readonly PaidPeriod[],
+  now: EpochMs,
+): string[] {
+  const months = paidMonths(periods, now);
+  if (months.size === 0) return [];
+  const owned = new Set(rules.launchEditions);
+  for (const month of [...months].sort()) {
+    const edition = rules.editions[month];
+    if (edition !== undefined) owned.add(edition);
+  }
+  return [...owned];
+}
+
+/**
+ * The edition a card is printed in: the card's own choice when there is one, `null` meaning the
+ * ordinary print, else the album's. An edition no longer owned prints nothing.
+ */
+export function cardEditionOf(
+  choice: { readonly album: string | null; readonly card: string | null | undefined },
+  owned: ReadonlySet<string>,
+): string | null {
+  const edition = choice.card === undefined ? choice.album : choice.card;
+  return edition !== null && owned.has(edition) ? edition : null;
 }

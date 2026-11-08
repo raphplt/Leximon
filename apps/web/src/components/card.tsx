@@ -1,10 +1,18 @@
 import type { CatalogCard } from "@leximon/contract";
 import { RARITY_LABELS } from "@leximon/contract";
 import type { Rarity } from "@leximon/core";
-import { cardSize, cssFill, cssUrl, rarityStyles } from "@leximon/tokens";
+import {
+  type CardEdition,
+  cardSize,
+  cssFill,
+  cssUrl,
+  editionColors,
+  rarityStyles,
+} from "@leximon/tokens";
 import {
   creditLine,
   type Engraving,
+  editionBox,
   engravingBox,
   engravingOf,
   formatOdds,
@@ -22,10 +30,12 @@ interface CardProps {
   readonly collectionName: string;
   /** Width in px; the card keeps its proportions. */
   readonly width?: number;
+  /** The library edition its owner prints it in; ordinary when absent or unknown. */
+  readonly edition?: string | null | undefined;
 }
 
 /** A card face, drawn from the rarity tokens. Pure display: no state, no data access. */
-export function Card({ card, collectionName, width = cardSize.width }: CardProps) {
+export function Card({ card, collectionName, width = cardSize.width, edition }: CardProps) {
   const style = rarityStyles[card.rarity];
   const variables = {
     "--u": `${width / cardSize.width}px`,
@@ -58,6 +68,8 @@ export function Card({ card, collectionName, width = cardSize.width }: CardProps
           <div className={styles.engraving} aria-hidden="true">
             <span className={styles.initial}>{card.word.slice(0, 1)}</span>
           </div>
+        ) : editionColors(edition) !== null ? (
+          <EditionPrint engraving={engraving} edition={editionColors(edition) as CardEdition} />
         ) : (
           <EngravingPrint
             engraving={engraving}
@@ -175,6 +187,42 @@ function EngravingPrint({
       <div className={box.tall ? styles.printTall : styles.printWide} style={variables}>
         {plate && <div className={night ? styles.plateNight : styles.plate} />}
         <div className={styles.ink} />
+      </div>
+    </div>
+  );
+}
+
+/**
+ * The engraving in a library edition, pasted on the card on its own sheet like a plate in a book:
+ * the edition's inks and paper, while the frame, the gem and the word keep the rarity's colours.
+ */
+function EditionPrint({
+  engraving,
+  edition,
+}: {
+  readonly engraving: Engraving;
+  readonly edition: CardEdition;
+}) {
+  const box = editionBox(engraving);
+  const sheet = {
+    "--edition-paper": edition.paper,
+    "--edition-ink": edition.ink,
+    "--edition-plate": edition.plate,
+    "--edition-plate-opacity": edition.plateOpacity,
+  } as CSSProperties;
+  const variables = {
+    width: units(box.width),
+    height: units(box.height),
+    "--ink-src": cssUrl(catalogFileUrl(engraving.ink)),
+    "--fill-src": cssUrl(catalogFileUrl(engraving.fill)),
+  } as CSSProperties;
+  return (
+    <div className={styles.print} title={creditLine(engraving)} aria-hidden="true">
+      <div className={styles.editionSheet} style={sheet}>
+        <div className={styles.printWide} style={variables}>
+          <div className={styles.editionPlate} />
+          <div className={styles.editionInk} />
+        </div>
       </div>
     </div>
   );

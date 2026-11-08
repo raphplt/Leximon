@@ -10,6 +10,7 @@ import type {
 import type { ToyIconName } from "@leximon/tokens";
 import {
   claimableLabel,
+  editionsOwnedLine,
   findStateLine,
   findsLeftLine,
   monthCosmeticLine,
@@ -27,6 +28,7 @@ import {
   PATRON_CREATE_ACCOUNT,
   PATRON_DEFAULT_PLAN,
   PATRON_DOOR_KICKER,
+  PATRON_EDITIONS_TITLE,
   PATRON_FIND_ACTION,
   PATRON_FINDS_RULE,
   PATRON_FINDS_TITLE,
@@ -66,7 +68,7 @@ import { PatronBadge } from "@/components/patron-badge";
 import { api } from "@/lib/api";
 import { MainAction } from "@/library/play-pieces";
 import { Rays } from "@/library/reveal-pieces";
-import { profile } from "@/player/player";
+import { editions, profile } from "@/player/player";
 import { useShared } from "@/player/resource";
 import { useProfileActions } from "@/profile/use-profile-actions";
 import { ButtonLink } from "@/ui/button";
@@ -567,6 +569,7 @@ function MemberView({
       </div>
       <div style={rise(1)}>
         <Finds finds={patron.finds} />
+        <Editions />
       </div>
       {patron.claimable.length > 0 && (
         <section className={styles.claims} aria-label={PATRON_CLAIMABLE_TITLE} style={rise(1)}>
@@ -576,6 +579,25 @@ function MemberView({
         </section>
       )}
     </main>
+  );
+}
+
+/** The library editions owned, kept for life, and where to choose them. */
+function Editions() {
+  const mine = useShared(editions);
+  if (mine === null) return null;
+  return (
+    <Leaf className={styles.finds}>
+      <div className={styles.findsHead}>
+        <ToyBody matter="gold" shape="tile" className={styles.tileIcon}>
+          <Lettrine icon="ink" matter="red" size={52} />
+        </ToyBody>
+        <div className={styles.findsText}>
+          <Lettering className={styles.headline}>{PATRON_EDITIONS_TITLE}</Lettering>
+          <p className={styles.text}>{editionsOwnedLine(mine.owned)}</p>
+        </div>
+      </div>
+    </Leaf>
   );
 }
 

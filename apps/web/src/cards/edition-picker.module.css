@@ -1,0 +1,67 @@
+.picker {
+  display: grid;
+  justify-items: start;
+  gap: var(--lx-s4);
+  margin-top: var(--lx-s9);
+}
+
+.options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--lx-s3);
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.option {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--lx-s3);
+  min-height: 40px;
+  padding: 0 var(--lx-s6) 0 var(--lx-s3);
+  border: 2px solid color-mix(in srgb, var(--lx-toy-outline) 35%, transparent);
+  border-radius: var(--lx-radius-pill);
+  background: var(--lx-color-paper);
+  color: var(--lx-color-paper-ink);
+  font: inherit;
+  font-size: var(--lx-size-small);
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.option[aria-pressed="true"] {
+  border-color: var(--lx-toy-outline);
+  background: color-mix(in srgb, var(--lx-toy-gold-top) 35%, var(--lx-color-paper));
+  box-shadow: 0 3px 0 var(--lx-toy-outline);
+}
+
+.option:disabled {
+  cursor: progress;
+}
+
+/* The edition's paper, with a stroke of its ink. */
+.swatch,
+.plain {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+}
+
+.swatch {
+  background: radial-gradient(circle at 50% 50%, var(--ink) 0 28%, var(--paper) 30%);
+  box-shadow: inset 0 0 0 2px var(--ink);
+}
+
+.plain {
+  background: var(--lx-color-paper);
+  box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--lx-toy-outline) 45%, transparent);
+}
+
+.note {
+  margin: 0;
+  font-size: var(--lx-size-small);
+  line-height: 1.45;
+  color: var(--lx-color-paper-ink-muted);
+}

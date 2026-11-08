@@ -2,6 +2,7 @@ import type {
   AccountResponse,
   BoosterWalletResponse,
   CarnetResponse,
+  EditionsResponse,
   FriendsResponse,
   LevelRewardsResponse,
   MailResponse,
@@ -30,6 +31,8 @@ export const missions = sharedResource<MissionsResponse>(api.fetchMissions);
 export const carnet = sharedResource<CarnetResponse>(api.fetchCarnet);
 export const account = sharedResource<AccountResponse>(api.fetchAccount);
 export const profile = sharedResource<ProfileResponse>(api.fetchProfile);
+/** The library editions the player owns and how their cards print: read where cards are shown. */
+export const editions = sharedResource<EditionsResponse>(api.fetchEditions);
 export const progress = sharedResource<Progress>(api.fetchProgress);
 export const mailbox = sharedResource<MailResponse>(() => api.fetchMail());
 export const myClan = sharedResource<MyClanResponse>(api.fetchMyClan);
@@ -77,6 +80,7 @@ export function resetPlayerState(): void {
     carnet,
     account,
     profile,
+    editions,
     progress,
     mailbox,
     myClan,

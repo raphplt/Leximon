@@ -69,4 +69,9 @@ export type {
   LeagueClaimResult,
   SaveDeckResult,
 } from "./jousts";
-export type { FindResult, PatronClaimResult, PatronRedirectResult } from "./patron";
+export type {
+  EditionResult,
+  FindResult,
+  PatronClaimResult,
+  PatronRedirectResult,
+} from "./patron";

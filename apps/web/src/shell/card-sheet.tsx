@@ -12,6 +12,7 @@ import {
   cardRun,
   cardShareRefused,
   copiesLabel,
+  editionOfCard,
   masteryView,
   PIN_TEXTS,
   placePin,
@@ -24,6 +25,7 @@ import { FeedbackDialog } from "@/beta/feedback-dialog";
 import { type PackCollection, packOf } from "@/booster/pack-looks";
 import { CardFacts, CardOrigin, CardQuoteInFull } from "@/cards/card-facts";
 import { loadCatalog } from "@/cards/catalog";
+import { EditionPicker } from "@/cards/edition-picker";
 import { useCardShare } from "@/cards/share-card";
 import { CollectionSeal } from "@/components/collection-seal";
 import { EngravingCredit } from "@/components/engraving-credit";
@@ -34,6 +36,7 @@ import { useArrowTurn } from "@/lib/use-arrow-turn";
 import { useNarrow } from "@/lib/use-narrow";
 import { useNow } from "@/lib/use-now";
 import { noteCardRead, ownedCards, wordMemory } from "@/player/collection";
+import { editions } from "@/player/player";
 import { useShared } from "@/player/resource";
 import { ReplacePin } from "@/profile/pin-picker";
 import { useProfileActions } from "@/profile/use-profile-actions";
@@ -144,6 +147,7 @@ function SheetBody({
 }) {
   const owned = useShared(ownedCards);
   const memory = useShared(wordMemory);
+  const printed = useShared(editions);
   const progress = useProgress();
   const now = useNow(60_000);
   const narrow = useNarrow();
@@ -207,7 +211,12 @@ function SheetBody({
               onTurn={onTurn}
             />
           )}
-          <HoloCard card={card} collectionName={collection} width={narrow ? 250 : 300} />
+          <HoloCard
+            card={card}
+            collectionName={collection}
+            width={narrow ? 250 : 300}
+            edition={quantity > 0 ? editionOfCard(printed, card.id) : null}
+          />
           {run !== null && (
             <TurnButton label={CARD_RUN_TEXTS.next} icon="chev" to={run.next} onTurn={onTurn} />
           )}
@@ -248,6 +257,7 @@ function SheetBody({
 
         <CardQuoteInFull card={card} />
         <CardOrigin card={card} />
+        {quantity > 0 && <EditionPicker cardId={card.id} />}
 
         {quantity > 0 && (
           <div className={styles.actions}>

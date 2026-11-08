@@ -767,6 +767,20 @@ Préparer : `pnpm db:migrate`, puis `pnpm reserve:publish` (charge `content/rese
 - **Attendu :** `select` annonce le mot déniché en tête. Après la publication, la page Mécène dit « Paru, avec ton pseudo sur la carte. », la fiche de la carte montre « Déniché par [pseudo] » (web et téléphone, pour tous les joueurs), et le mécène a un exemplaire de plus, sans XP ni échange possible. Le mot écarté dit « Écarté au contrôle de qualité. Ton droit de dénicher t'est rendu. » et le droit revient.
 - **Retour :**
 
+## Mécène · éditions de bibliothèque et épingles
+
+Préparer : `pnpm db:migrate`, un compte mécène qui a payé au moins une fois (horloge de test de Stripe) et qui possède quelques cartes.
+
+### MEC-13 · Éditions de bibliothèque
+- **Faire :** ouvre la fiche d'une carte de ton album, choisis « Sanguine », puis « Lavis » et « Appliquer à tout l'album ». Ouvre ton profil public depuis un autre compte. Recommence sur le téléphone. Puis ouvre la fiche avec un compte sans abonnement, et pendant un essai.
+- **Attendu :** sous l'origine du mot, « Édition de bibliothèque » avec « Ordinaire », « Sanguine », « Lavis » et « Encre de Chine ». La gravure passe sur une feuille collée, aux couleurs de l'édition ; le cadre, la gemme et le mot gardent la couleur de la rareté. Après « Appliquer à tout l'album », le message « Tout ton album est imprimé au lavis. » et toutes les cartes de l'album changent. L'autre compte voit tes cartes épinglées dans leur édition. La page Mécène dit « Tu possèdes la sanguine, le lavis et l'encre de Chine. ». Sans abonnement ou pendant l'essai, rien n'apparaît sur la fiche. Après l'arrêt de l'abonnement, les éditions restent.
+- **Retour :**
+
+### MEC-14 · Trois cartes épinglées de plus
+- **Faire :** regarde le nombre de places d'épingles de ton profil avant l'abonnement, pendant l'essai, après le premier paiement, puis après l'arrêt.
+- **Attendu :** trois places de plus après le premier paiement, aucune pendant l'essai. À l'arrêt, les places en plus disparaissent et seules les premières cartes épinglées restent visibles.
+- **Retour :**
+
 ## Mauvais choix des QCM
 
 Retour de bêta du 2026-10-31 : on trouvait la réponse par élimination (un verbe parmi des noms, un mot sans rapport avec le thème révisé). La nature des cartes vient de la publication du catalogue : en production, la colonne reste vide tant qu'une publication n'est pas passée, et les choix restent ceux d'avant.

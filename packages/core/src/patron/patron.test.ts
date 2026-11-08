@@ -1,12 +1,14 @@
 import { describe, expect, it } from "vitest";
 import { PATRON_SCHEDULE } from "../rules";
 import {
+  cardEditionOf,
   claimableCosmetics,
   earnedFinds,
   FOUNDER_TITLE,
   findsLeft,
   isFoundingPayment,
   monthCosmetic,
+  ownedEditions,
   PATRON_TITLE,
   paidMonths,
   parisMonthOf,
@@ -69,6 +71,9 @@ describe("founders", () => {
     foundingMonth: "2027-01",
     cosmetics: {},
     monthsPerFind: 3,
+    extraPinnedSlots: 3,
+    launchEditions: [],
+    editions: {},
   };
 
   it("are those who first pay within the founding month", () => {
@@ -111,6 +116,9 @@ describe("cosmetics of the month", () => {
     foundingMonth: null,
     cosmetics: { "2027-01": frame, "2027-02": avatar, "2027-03": frame },
     monthsPerFind: 3,
+    extraPinnedSlots: 3,
+    launchEditions: [],
+    editions: {},
   };
   const at = (iso: string) => Date.parse(iso);
   const monthly = (start: string, end: string) => ({
@@ -206,6 +214,48 @@ describe("words to find", () => {
   it("loses the unused rights at the stop, except those given back", () => {
     expect(findsLeft({ earned: 3, used: 1, returned: 0, subscribed: false })).toBe(0);
     expect(findsLeft({ earned: 3, used: 1, returned: 1, subscribed: false })).toBe(1);
+  });
+});
+
+describe("library editions", () => {
+  const rules = {
+    launchEditions: ["sanguine", "lavis"],
+    editions: { "2027-02": "bistre", "2027-04": "sepia" },
+  };
+  const at = (iso: string) => Date.parse(iso);
+  const period = (start: string, end: string, refunded = false) => ({
+    startsAt: at(start),
+    endsAt: at(end),
+    refunded,
+  });
+
+  it("are owned from a first payment, with the edition of each month paid", () => {
+    const periods = [period("2027-01-20T10:00:00Z", "2027-02-20T10:00:00Z")];
+    expect(ownedEditions(rules, periods, at("2027-02-25T10:00:00Z"))).toEqual([
+      "sanguine",
+      "lavis",
+      "bistre",
+    ]);
+  });
+
+  it("are kept once the subscription stops, and none comes ahead of its month", () => {
+    const periods = [period("2027-01-20T10:00:00Z", "2027-02-20T10:00:00Z")];
+    expect(ownedEditions(rules, periods, at("2027-06-01T10:00:00Z"))).not.toContain("sepia");
+    expect(ownedEditions(rules, periods, at("2028-01-01T10:00:00Z"))).toContain("bistre");
+  });
+
+  it("are not given by a trial nor by a refunded payment", () => {
+    expect(ownedEditions(rules, [], at("2027-02-25T10:00:00Z"))).toEqual([]);
+    const refunded = [period("2027-01-20T10:00:00Z", "2027-02-20T10:00:00Z", true)];
+    expect(ownedEditions(rules, refunded, at("2027-02-25T10:00:00Z"))).toEqual([]);
+  });
+
+  it("print a card in its own choice, else in the album's, and only when owned", () => {
+    const owned = new Set(["sanguine", "lavis"]);
+    expect(cardEditionOf({ album: "lavis", card: undefined }, owned)).toBe("lavis");
+    expect(cardEditionOf({ album: "lavis", card: "sanguine" }, owned)).toBe("sanguine");
+    expect(cardEditionOf({ album: "lavis", card: null }, owned)).toBeNull();
+    expect(cardEditionOf({ album: "bistre", card: undefined }, owned)).toBeNull();
   });
 });
 

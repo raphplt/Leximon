@@ -28,6 +28,7 @@ import {
   comparingTitle,
   ECUS_TITLE,
   ecusLabel,
+  editionOfCard,
   filterButtonLabel,
   isAlbumSort,
   isFeatureOpen,
@@ -59,7 +60,7 @@ import { vibrate } from "@/feedback/feedback";
 import { Desk } from "@/library/play-pieces";
 import { cardDates, ownedCards, wordMemory } from "@/player/collection";
 import { useNow, useShared, useSharedFailed } from "@/player/shared";
-import { progress, wallet } from "@/player/state";
+import { editions, progress, wallet } from "@/player/state";
 import { askAlbumPractice } from "@/screens/challenges/pending-practice";
 import { openCard } from "@/screens/trades/card-row";
 import { TAB_BAR_RISE } from "@/shell/tab-bar";
@@ -627,6 +628,7 @@ function OwnedTile({
   readonly width: number;
   readonly onOpen: (cardId: string) => void;
 }) {
+  const printed = useShared(editions);
   return (
     <Pressable
       onPress={() => onOpen(item.card.id)}
@@ -635,7 +637,12 @@ function OwnedTile({
       style={[styles.tile, { width }]}
     >
       <View importantForAccessibility="no-hide-descendants">
-        <Card card={item.card} collectionName={item.collectionName} width={width} />
+        <Card
+          card={item.card}
+          collectionName={item.collectionName}
+          width={width}
+          edition={editionOfCard(printed, item.card.id)}
+        />
       </View>
       {item.fresh && <Text style={styles.fresh}>Nouveau</Text>}
       {item.quantity > 1 && <Text style={styles.quantity}>×{item.quantity}</Text>}

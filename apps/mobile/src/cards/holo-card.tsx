@@ -467,10 +467,12 @@ export function HoloCard({
   collectionName,
   width = cardSize.width,
   touchable = true,
+  edition,
 }: {
   readonly card: CatalogCard;
   readonly collectionName: string;
   readonly width?: number;
+  readonly edition?: string | null | undefined;
   /** False while the card must not answer the finger yet; its light drifts all the same. */
   readonly touchable?: boolean;
 }) {
@@ -550,7 +552,7 @@ export function HoloCard({
 
   return (
     <Animated.View style={[{ width, height, borderRadius: (16 * width) / W }, styles.tilt, tilt]}>
-      <Card card={card} collectionName={collectionName} width={width} />
+      <Card card={card} collectionName={collectionName} width={width} edition={edition} />
       {CAN_BLEND && (
         <Foils layers={holoLayers(card.rarity)} width={width} light={light} active={active} />
       )}

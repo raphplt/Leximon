@@ -9,6 +9,7 @@ interface HoloCardProps {
   readonly card: CatalogCard;
   readonly collectionName: string;
   readonly width?: number;
+  readonly edition?: string | null | undefined;
 }
 
 /**
@@ -16,13 +17,13 @@ interface HoloCardProps {
  * feeds through `useHoloLight`, or drift on their own until then. Meant for the one card the
  * player is looking at (revealed, zoomed); grids keep the plain `Card`.
  */
-export function HoloCard({ card, collectionName, width = cardSize.width }: HoloCardProps) {
+export function HoloCard({ card, collectionName, width = cardSize.width, edition }: HoloCardProps) {
   const layers = holoLayers(card.rarity);
   const variables = { "--u": `${width / cardSize.width}px` } as CSSProperties;
   return (
     <div className={styles.holo} style={variables}>
       <div className={styles.tilt}>
-        <Card card={card} collectionName={collectionName} width={width} />
+        <Card card={card} collectionName={collectionName} width={width} edition={edition} />
         {layers.glare !== "none" && (
           <span className={layers.glare === "soft" ? styles.glareSoft : styles.glare} />
         )}

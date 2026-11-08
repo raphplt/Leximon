@@ -25,6 +25,7 @@ describe("database", () => {
       "booster_open_requests",
       "booster_opens",
       "booster_wallets",
+      "card_editions",
       "card_themes",
       "cards",
       "clan_goal_claims",

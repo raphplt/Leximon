@@ -4,6 +4,7 @@ import type {
   AccountResponse,
   BoosterWalletResponse,
   CarnetResponse,
+  EditionsResponse,
   LevelRewardsResponse,
   MissionsResponse,
   ProfileResponse,
@@ -15,6 +16,9 @@ import { forgetProgress } from "@/progress/use-progress";
 import { myClan, sanctions } from "./clan";
 import { dailyChallenge, ownedCards, refreshIfRead, wordMemory } from "./collection";
 import { mailbox } from "./mail";
+
+/** The library editions the player owns and how their cards print: read where cards are shown. */
+export const editions = sharedResource<EditionsResponse>(api.fetchEditions);
 
 /** The player's wallet: free stock and bonus reserve. */
 export const wallet = sharedResource<BoosterWalletResponse>(api.fetchWallet);
@@ -67,6 +71,7 @@ export function forgetPlayer(): void {
   account.refresh();
   refreshIfRead(profile);
   refreshIfRead(ownedCards);
+  refreshIfRead(editions);
   refreshIfRead(wordMemory);
   refreshIfRead(dailyChallenge);
   refreshIfRead(myClan);

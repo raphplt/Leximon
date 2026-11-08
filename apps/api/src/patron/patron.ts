@@ -217,9 +217,13 @@ export async function claimCosmetic(
 
 /**
  * What a patron may wear, read as coffrets so that the profile's wardrobe takes it in: the
- * cosmetics claimed, kept for life, and the title while subscribed.
+ * cosmetics claimed, kept for life, then the title and the extra pinned cards while subscribed.
  */
-export async function readPatronWardrobe(db: Reader, userId: string): Promise<ClaimedReward[]> {
+export async function readPatronWardrobe(
+  db: Reader,
+  userId: string,
+  now: EpochMs,
+): Promise<ClaimedReward[]> {
   const [rows, claims] = await Promise.all([
     db
       .select({
@@ -235,10 +239,16 @@ export async function readPatronWardrobe(db: Reader, userId: string): Promise<Cl
       .where(eq(patronCosmeticClaims.userId, userId)),
   ]);
   const row = rows[0];
-  const title = row === undefined ? null : patronTitle(standingOf(row), row.founderAt !== null);
+  const standing = row === undefined ? "none" : standingOf(row);
+  const title = row === undefined ? null : patronTitle(standing, row.founderAt !== null);
+  // Only a paying patron shows more pinned cards: a trial gives the title alone.
+  const slots = standing === "patron" ? patronRulesAt(PATRON_SCHEDULE, now).extraPinnedSlots : 0;
   return [
     ...claims.map((claim) => ({ rewards: [claim.cosmetic] })),
     ...(title === null ? [] : [{ rewards: [{ kind: "title" as const, title }] }]),
+    ...(slots === 0
+      ? []
+      : [{ rewards: Array.from({ length: slots }, () => ({ kind: "pinned_slot" as const })) }]),
   ];
 }
 

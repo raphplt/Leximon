@@ -175,6 +175,47 @@
   mask-image: var(--ink-src);
 }
 
+/* A library edition: the engraving on its own sheet, pasted in, with a fine rule inside its edge. */
+.editionSheet {
+  position: absolute;
+  inset: 0;
+  border-radius: calc(3 * var(--u));
+  background: var(--edition-paper);
+  box-shadow:
+    0 0 0 calc(0.6 * var(--u)) color-mix(in srgb, var(--edition-ink) 30%, transparent),
+    0 calc(1.5 * var(--u)) calc(4 * var(--u))
+    color-mix(in srgb, var(--edition-ink) 35%, transparent);
+}
+
+.editionSheet::after {
+  content: "";
+  position: absolute;
+  inset: calc(4 * var(--u));
+  border: calc(0.5 * var(--u)) solid color-mix(in srgb, var(--edition-ink) 35%, transparent);
+  pointer-events: none;
+}
+
+.editionPlate,
+.editionInk {
+  position: absolute;
+  inset: 0;
+  mask-repeat: no-repeat;
+  mask-position: center;
+  mask-size: 100% 100%;
+}
+
+.editionPlate {
+  background: var(--edition-plate);
+  mask-image: var(--fill-src);
+  opacity: var(--edition-plate-opacity);
+  translate: calc(2 * var(--u)) calc(1.5 * var(--u));
+}
+
+.editionInk {
+  background: var(--edition-ink);
+  mask-image: var(--ink-src);
+}
+
 /* Stands in for the engraving on cards that have none. */
 .initial {
   font-family: var(--font-fraunces), Georgia, serif;

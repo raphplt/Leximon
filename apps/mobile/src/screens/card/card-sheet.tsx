@@ -10,6 +10,7 @@ import {
   cardRun,
   copiesLabel,
   creditLine,
+  editionOfCard,
   engravingOf,
   finderLine,
   frequencyLine,
@@ -27,12 +28,13 @@ import { useCallback, useEffect, useState } from "react";
 import { Pressable, Share, StyleSheet, Text, useWindowDimensions, View } from "react-native";
 import { cardsAround } from "@/cards/card-run";
 import { catalogInHand, loadCatalog, useFinder } from "@/cards/catalog";
+import { EditionPicker } from "@/cards/edition-picker";
 import { HoloCard } from "@/cards/holo-card";
 import { WEB_URL } from "@/config";
 import { RecycleCopy } from "@/ecus/recycle-copy";
 import { noteCardRead, ownedCards, wordMemory } from "@/player/collection";
 import { useNow, useShared } from "@/player/shared";
-import { progress as progressResource } from "@/player/state";
+import { editions, progress as progressResource } from "@/player/state";
 import { useProfileActions } from "@/profile/profile-actions";
 import { FeedbackSheet } from "@/screens/profile/feedback-sheet";
 import { ReplacePin } from "@/screens/profile/pin-picker";
@@ -133,6 +135,7 @@ function SheetBody({
   const progress = useShared(progressResource);
   const now = useNow(60_000);
   const quantity = owned?.get(card.id) ?? 0;
+  const printed = useShared(editions);
   const tradeable = progress !== null && canOfferInTrade(quantity, progress.level, now);
 
   // Opening the sheet is reading the card: the album stops calling it new.
@@ -185,6 +188,7 @@ function SheetBody({
             card={card}
             collectionName={collection}
             width={Math.min(CARD_MAX, window.width - (run === null ? 48 : 136))}
+            edition={quantity > 0 ? editionOfCard(printed, card.id) : null}
           />
           {run !== null && <TurnButton label={CARD_RUN_TEXTS.next} icon="chev" to={run.next} />}
         </View>
@@ -249,6 +253,8 @@ function SheetBody({
             <Text style={styles.etymology}>{card.etymology}</Text>
           </View>
         )}
+
+        {quantity > 0 && <EditionPicker cardId={card.id} />}
 
         {quantity > 0 ? (
           <View style={styles.actions}>

@@ -104,9 +104,12 @@ const PIN_WIDTH = 116;
 /** Someone's pinned cards, as others see them. */
 export function PinnedCards({
   pinned,
+  editions,
   catalog,
 }: {
   readonly pinned: readonly string[];
+  /** The library edition of each card printed in one. */
+  readonly editions?: Readonly<Record<string, string>> | undefined;
   readonly catalog: Catalog | null;
 }) {
   return (
@@ -137,6 +140,7 @@ export function PinnedCards({
                     card={card}
                     collectionName={collectionName(catalog, card.collectionId)}
                     width={PIN_WIDTH}
+                    edition={editions?.[cardId] ?? null}
                   />
                 )}
               </Pressable>

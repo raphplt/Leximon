@@ -8,6 +8,7 @@ export * from "./challenges";
 export * from "./clans";
 export * from "./common";
 export * from "./ecus";
+export * from "./editions";
 export * from "./email";
 export * from "./events";
 export * from "./friends";

@@ -519,6 +519,8 @@ export const players = pgTable(
     /** The profile's banner; `null` wears the plain cloth in the first tint. */
     bannerMotif: text(),
     bannerTint: text(),
+    /** The library edition the whole album prints in; `null` for the ordinary print. */
+    cardEdition: text(),
     /** public by default; private shows only the pseudo and the avatar to others. */
     profilePublic: boolean().notNull().default(true),
     /** Last request, to the nearest few minutes: "online" and "seen 2 days ago" in a clan. */

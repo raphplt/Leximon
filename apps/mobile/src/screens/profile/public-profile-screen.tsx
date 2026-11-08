@@ -133,7 +133,7 @@ export function PublicProfileScreen({ pseudo }: { readonly pseudo: string }) {
       )}
       {shown.visibility === "public" ? (
         <>
-          <PinnedCards pinned={shown.pinned} catalog={catalog} />
+          <PinnedCards pinned={shown.pinned} editions={shown.editions} catalog={catalog} />
           <StatsPanel stats={shown.stats} catalog={catalog} />
           {shown.jousts !== null && <JoustsPanel jousts={shown.jousts} />}
         </>

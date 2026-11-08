@@ -52,6 +52,21 @@ export function engravingBox(engraving: Pick<Engraving, "width" | "height">): En
   return { tall, width: engraving.width * scale, height: engraving.height * scale };
 }
 
+/** Margin of an edition's paper around its engraving, as a share of the slot. */
+const SHEET_MARGIN = 0.06;
+
+/**
+ * An engraving printed in a library edition: on its own sheet of paper the size of the slot, so
+ * that a tall subject stays within it instead of rising into the header.
+ */
+export function editionBox(engraving: Pick<Engraving, "width" | "height">): EngravingBox {
+  const scale = Math.min(
+    (ENGRAVING_SLOT.width * (1 - SHEET_MARGIN)) / engraving.width,
+    (ENGRAVING_SLOT.height * (1 - 2 * SHEET_MARGIN)) / engraving.height,
+  );
+  return { tall: false, width: engraving.width * scale, height: engraving.height * scale };
+}
+
 /** Credit shown to the player (CC BY requires it): the catalogue's line already holds author,
  * source and licence ("D'après X, 1849 · fonds (licence)"); `licence` alone is for filtering. */
 export function creditLine(engraving: Pick<Engraving, "credit">): string {

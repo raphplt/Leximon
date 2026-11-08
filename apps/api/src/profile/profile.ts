@@ -56,6 +56,7 @@ import {
 import { ADMIN_ROLE } from "../auth";
 import { breakFriendship, notLocked, readFriendship } from "../friends/friends";
 import { readJoustRecord } from "../jousts/leagues";
+import { readCardEditions } from "../patron/editions";
 import { readPatronMarks, readPatronWardrobe } from "../patron/patron";
 import { ensurePlayer } from "../trades/players";
 import { bannersOwned, completeCollectionsSql, readBannerFigures } from "./banners";
@@ -155,7 +156,7 @@ export async function readOwnProfile(
   if (row === undefined) throw new Error("Player row missing right after its creation");
 
   const rules = levelRewardRulesAt(LEVEL_REWARD_SCHEDULE, now);
-  const claimed = await readClaims(db, userId);
+  const claimed = await readClaims(db, userId, now);
   const worn = wardrobe(rules, claimed);
   const pinned = await db
     .select({ cardId: pinnedCards.cardId })
@@ -200,7 +201,7 @@ export async function readOwnProfile(
       motif: row.bannerMotif,
       tint: row.bannerTint,
     }),
-    pinned: pinned.map((pin) => pin.cardId),
+    pinned: pinned.slice(0, worn.pinnedSlots).map((pin) => pin.cardId),
     pinnedSlots: worn.pinnedSlots,
     wardrobe: {
       avatars: [...worn.avatars],
@@ -221,7 +222,7 @@ function publicLevel(now: EpochMs): number {
  * The coffrets claimed, then the days of the welcome week, which carry no level, then what the
  * patron subscription gives.
  */
-async function readClaims(db: Reader, userId: string): Promise<ClaimedReward[]> {
+async function readClaims(db: Reader, userId: string, now: EpochMs): Promise<ClaimedReward[]> {
   const levels = await db
     .select({ level: userLevelRewards.level, rewards: userLevelRewards.rewards })
     .from(userLevelRewards)
@@ -230,7 +231,7 @@ async function readClaims(db: Reader, userId: string): Promise<ClaimedReward[]> 
     .select({ rewards: userWelcomeDays.rewards })
     .from(userWelcomeDays)
     .where(eq(userWelcomeDays.userId, userId));
-  return [...levels, ...days, ...(await readPatronWardrobe(db, userId))];
+  return [...levels, ...days, ...(await readPatronWardrobe(db, userId, now))];
 }
 
 /** The chosen title while the player still holds it, else the latest one won. */
@@ -323,7 +324,7 @@ export async function updateProfile(
       }
       if (changes.avatar !== undefined || changes.frame !== undefined || changes.title) {
         const rules = levelRewardRulesAt(LEVEL_REWARD_SCHEDULE, now);
-        const worn = wardrobe(rules, await readClaims(tx, userId));
+        const worn = wardrobe(rules, await readClaims(tx, userId, now));
         if (changes.avatar !== undefined && !worn.avatars.has(changes.avatar)) {
           return { kind: "cosmetic_locked" };
         }
@@ -401,7 +402,7 @@ export async function setPinnedCards(
   return db.transaction(async (tx): Promise<ProfileWriteResult> => {
     if ((await lockMember(tx, userId)) === null) return { kind: "account_required" };
     const rules = levelRewardRulesAt(LEVEL_REWARD_SCHEDULE, now);
-    const slots = wardrobe(rules, await readClaims(tx, userId)).pinnedSlots;
+    const slots = wardrobe(rules, await readClaims(tx, userId, now)).pinnedSlots;
     if (cardIds.length > slots) return { kind: "too_many_pins" };
     if (cardIds.length > 0) {
       const owned = await tx
@@ -484,16 +485,19 @@ export async function readPublicProfile(
   }
 
   const rules = levelRewardRulesAt(LEVEL_REWARD_SCHEDULE, now);
-  const claimed = await readClaims(db, row.userId);
+  const claimed = await readClaims(db, row.userId, now);
   const worn = wardrobe(rules, claimed);
   const pinned = await db
     .select({ cardId: pinnedCards.cardId })
     .from(pinnedCards)
     .where(eq(pinnedCards.userId, row.userId))
     .orderBy(asc(pinnedCards.position));
-  const [stats, record] = await Promise.all([
+  // A patron who stopped keeps the pins past their slots, shown again should they come back.
+  const shown = pinned.slice(0, worn.pinnedSlots).map((pin) => pin.cardId);
+  const [stats, record, editions] = await Promise.all([
     readStats(db, row.userId),
     readJoustRecord(db, row.userId, now),
+    readCardEditions(db, row.userId, shown, now),
   ]);
   const banners = await bannersOwned(db, {
     userId: row.userId,
@@ -519,7 +523,8 @@ export async function readPublicProfile(
         motif: row.bannerMotif,
         tint: row.bannerTint,
       }),
-      pinned: pinned.map((pin) => pin.cardId),
+      pinned: shown,
+      ...(Object.keys(editions).length === 0 ? {} : { editions }),
       stats,
       jousts: record.jousts,
       ...(friendship === undefined ? {} : { friendship }),

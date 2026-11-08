@@ -694,5 +694,8 @@ export const PATRON_SCHEDULE: PatronSchedule = [
     foundingMonth: null,
     cosmetics: {},
     monthsPerFind: 3,
+    extraPinnedSlots: 3,
+    launchEditions: ["sanguine", "lavis", "encre"],
+    editions: {},
   },
 ];

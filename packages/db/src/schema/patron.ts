@@ -11,6 +11,7 @@ import {
   timestamp,
 } from "drizzle-orm/pg-core";
 import { users } from "./auth";
+import { cards } from "./game";
 
 /**
  * The patron subscription. Stripe keeps it and says what happens through its webhooks: these rows
@@ -158,4 +159,23 @@ export const wordFinds = pgTable(
     index("word_finds_user_idx").on(table.userId, table.foundAt),
     check("word_finds_state_check", sql`${table.state} in ('reserved', 'published', 'rejected')`),
   ],
+);
+
+/**
+ * A card printed otherwise than the album: in an edition, or ordinary (`edition` null) in an album
+ * printed in one. Owned editions are checked when the choice is made, and again when it is read.
+ */
+export const cardEditions = pgTable(
+  "card_editions",
+  {
+    userId: text()
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    cardId: text()
+      .notNull()
+      .references(() => cards.id),
+    edition: text(),
+    updatedAt: timestamp({ withTimezone: true }).notNull(),
+  },
+  (table) => [primaryKey({ columns: [table.userId, table.cardId] })],
 );

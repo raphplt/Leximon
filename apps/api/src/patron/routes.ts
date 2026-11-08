@@ -3,6 +3,8 @@ import {
   type AdminPatronRefundResponse,
   type AdminPatronsResponse,
   adminPatronsQuerySchema,
+  type EditionsResponse,
+  editionChoiceSchema,
   type FindRefusal,
   IDEMPOTENCY_KEY_HEADER,
   idempotencyKeySchema,
@@ -18,13 +20,14 @@ import {
   slugSchema,
   type WordFindView,
 } from "@leximon/contract";
-import { Hono } from "hono";
+import { type Context, Hono } from "hono";
 import type { AppEnv } from "../context";
 import { playerRateLimit } from "../middleware/rate-limit";
 import { requireAdmin } from "../middleware/require-admin";
 import { refuseLockedWrites } from "../moderation/restrictions";
 import { InvalidPatronCursorError, listPatrons, refundPatron } from "./admin";
 import type { BillingFactory } from "./billing";
+import { type EditionWriteResult, readEditions, setAlbumEdition, setCardEdition } from "./editions";
 import { billingEventOf, verifiedStripeEvent } from "./events";
 import {
   applyBillingEvent,
@@ -40,6 +43,44 @@ import { findWord, InvalidReserveCursorError, searchReserve } from "./reserve";
 const MAX_WEBHOOK_BYTES = 256 * 1024;
 
 const webUrlOf = (env: Env) => env.PUBLIC_WEB_URL.replace(/\/+$/, "");
+
+/** Library editions, under `/me/editions` (signed-in player, rate limited). */
+export function editionRoutes() {
+  const routes = new Hono<AppEnv>();
+
+  routes.get("/", async (c) =>
+    c.json<EditionsResponse>(await readEditions(c.var.db, c.var.userId, Date.now())),
+  );
+
+  const answer = (c: Context<AppEnv>, result: EditionWriteResult) =>
+    result.kind === "ok" ? c.body(null, 204) : c.json({ error: result.reason }, 403);
+
+  routes.put("/album", refuseLockedWrites, async (c) => {
+    const body = editionChoiceSchema.safeParse(await c.req.json().catch(() => null));
+    if (!body.success) return c.json({ error: "invalid_request" }, 400);
+    const result = await setAlbumEdition(c.var.db, {
+      userId: c.var.userId,
+      edition: body.data.edition,
+      now: Date.now(),
+    });
+    return answer(c, result);
+  });
+
+  routes.put("/cards/:cardId", refuseLockedWrites, async (c) => {
+    const cardId = slugSchema.safeParse(c.req.param("cardId"));
+    const body = editionChoiceSchema.safeParse(await c.req.json().catch(() => null));
+    if (!cardId.success || !body.success) return c.json({ error: "invalid_request" }, 400);
+    const result = await setCardEdition(c.var.db, {
+      userId: c.var.userId,
+      cardId: cardId.data,
+      edition: body.data.edition,
+      now: Date.now(),
+    });
+    return answer(c, result);
+  });
+
+  return routes;
+}
 
 /** The patron subscription, under `/me/patron` (signed-in player, rate limited). */
 export function patronRoutes(createBilling: BillingFactory) {

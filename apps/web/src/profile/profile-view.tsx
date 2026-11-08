@@ -157,9 +157,12 @@ function ClanLine({
 /** Someone's pinned cards, as others see them (the player's own: `PinnedCardsEditor`). */
 export function PinnedCards({
   pinned,
+  editions,
   onOpen,
 }: {
   readonly pinned: readonly string[];
+  /** The library edition of each card printed in one. */
+  readonly editions?: Readonly<Record<string, string>> | undefined;
   readonly onOpen?: (cardId: string) => void;
 }) {
   const catalog = useCatalog();
@@ -186,6 +189,7 @@ export function PinnedCards({
                   card={card}
                   collectionName={collectionName(catalog, card.collectionId)}
                   width={narrow ? 130 : 150}
+                  edition={editions?.[cardId] ?? null}
                 />
               );
             return (

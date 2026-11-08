@@ -3,6 +3,11 @@ import {
   type AdminPatronsResponse,
   adminPatronRefundResponseSchema,
   adminPatronsResponseSchema,
+  type EditionChoice,
+  type EditionRefusal,
+  type EditionsResponse,
+  editionRefusalSchema,
+  editionsResponseSchema,
   type FindRefusal,
   findRefusalSchema,
   findResponseSchema,
@@ -30,6 +35,10 @@ export type PatronRedirectResult =
 export type FindResult =
   | { readonly kind: "found"; readonly find: WordFindView }
   | { readonly kind: "refused"; readonly reason: FindRefusal };
+
+export type EditionResult =
+  | { readonly kind: "ok" }
+  | { readonly kind: "refused"; readonly reason: EditionRefusal };
 
 export type PatronClaimResult =
   | { readonly kind: "claimed"; readonly cosmetic: PatronCosmeticView }
@@ -100,7 +109,36 @@ export function patronRoutes(http: Http) {
       if (!response.ok) throw new ApiError("find_failed", response.status);
       return { kind: "found", find: (await parse(response, findResponseSchema)).find };
     },
+
+    async fetchEditions(): Promise<EditionsResponse> {
+      const response = await send("/me/editions");
+      if (!response.ok) throw new ApiError("editions_unavailable", response.status);
+      return parse(response, editionsResponseSchema);
+    },
+
+    /** Prints the whole album in an edition, or ordinary with `null`, cards' own choices dropped. */
+    async setAlbumEdition(edition: EditionChoice["edition"]): Promise<EditionResult> {
+      return editionResult(await send("/me/editions/album", json("PUT", { edition })));
+    },
+
+    /** Prints one card in an edition, or ordinary with `null`, whatever the album's. */
+    async setCardEdition(
+      cardId: string,
+      edition: EditionChoice["edition"],
+    ): Promise<EditionResult> {
+      return editionResult(
+        await send(`/me/editions/cards/${segment(cardId)}`, json("PUT", { edition })),
+      );
+    },
   };
+}
+
+async function editionResult(response: Response): Promise<EditionResult> {
+  if (response.status === 403) {
+    return { kind: "refused", reason: (await parse(response, editionRefusalSchema)).error };
+  }
+  if (!response.ok) throw new ApiError("edition_failed", response.status);
+  return { kind: "ok" };
 }
 
 /** The subscribers in the back office (`/admin/patrons`). */

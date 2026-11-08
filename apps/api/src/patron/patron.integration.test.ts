@@ -1,6 +1,8 @@
 import {
   adminPatronRefundResponseSchema,
   adminPatronsResponseSchema,
+  editionRefusalSchema,
+  editionsResponseSchema,
   findRefusalSchema,
   findResponseSchema,
   IDEMPOTENCY_KEY_HEADER,
@@ -10,19 +12,34 @@ import {
   patronRefusalSchema,
   patronResponseSchema,
   profileResponseSchema,
+  publicProfileSchema,
   reserveResponseSchema,
 } from "@leximon/contract";
-import { PATRON_SCHEDULE, parisMonthOf } from "@leximon/core";
+import {
+  PATRON_SCHEDULE,
+  parisMonthOf,
+  UNLOCK_SCHEDULE,
+  unlockRulesAt,
+  xpToReach,
+} from "@leximon/core";
 import { createDb, schema } from "@leximon/db";
 import { rejectFind } from "@leximon/db/catalog";
 import { testDatabaseUrl } from "@leximon/db/testing";
 import { eq } from "drizzle-orm";
 import Stripe from "stripe";
-import { afterAll, describe, expect, it, vi } from "vitest";
+import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import { createApp } from "../app";
 import { ADMIN_ROLE } from "../auth";
 import { TEST_ORIGIN, TEST_STRIPE_WEBHOOK_SECRET, testEnv } from "../test-env";
-import { type Guest, signInAsGuest, signInAsMember } from "../test-support";
+import {
+  type Guest,
+  STARTER_COLLECTION,
+  seedTestCatalog,
+  setOwnedCards,
+  setXp,
+  signInAsGuest,
+  signInAsMember,
+} from "../test-support";
 import { ensurePlayer } from "../trades/players";
 import type { Billing, CheckoutInput, SubscriptionSnapshot } from "./billing";
 
@@ -836,5 +853,134 @@ describe("finding a word", () => {
     expect(patron.finds.words[0]?.state).toBe("rejected");
     expect((await find(member, second)).status).toBe(200);
     expect((await readPatron(member)).finds.left).toBe(0);
+  });
+});
+
+const LAUNCH_EDITIONS = PATRON_SCHEDULE[0].launchEditions;
+const [EDITION = "", OTHER_EDITION = ""] = LAUNCH_EDITIONS;
+const CARD = `${STARTER_COLLECTION}-rare-1`;
+const OTHER_CARD = `${STARTER_COLLECTION}-rare-2`;
+
+beforeAll(() => seedTestCatalog(db));
+
+async function readEditions(player: Guest) {
+  const response = await request(player, "GET", "/me/editions");
+  expect(response.status).toBe(200);
+  return editionsResponseSchema.parse(await response.json());
+}
+
+const printAlbum = (player: Guest, edition: string | null) =>
+  request(player, "PUT", "/me/editions/album", { edition });
+const printCard = (player: Guest, cardId: string, edition: string | null) =>
+  request(player, "PUT", `/me/editions/cards/${cardId}`, { edition });
+
+async function editionRefusal(response: Response) {
+  expect(response.status).toBe(403);
+  return editionRefusalSchema.parse(await response.json()).error;
+}
+
+describe("library editions", () => {
+  it("come with the first payment, not with the trial", async () => {
+    const { member, customerId } = await memberWithCustomer();
+    await checkoutCompleted(subscribe(customerId));
+    expect((await readEditions(member)).owned).toEqual([]);
+    expect(await editionRefusal(await printAlbum(member, EDITION))).toBe("edition_not_owned");
+
+    const { member: patron } = await payingPatron();
+    expect((await readEditions(patron)).owned).toEqual([...LAUNCH_EDITIONS]);
+  });
+
+  it("print an owned card, and the whole album, which drops the cards' own choices", async () => {
+    const { member } = await payingPatron();
+    await setOwnedCards(db, member.userId, [
+      { cardId: CARD, quantity: 1 },
+      { cardId: OTHER_CARD, quantity: 1 },
+    ]);
+    expect(
+      await editionRefusal(await printCard(member, `${STARTER_COLLECTION}-epic-3`, EDITION)),
+    ).toBe("card_not_owned");
+    expect((await printCard(member, CARD, EDITION)).status).toBe(204);
+    expect((await printCard(member, OTHER_CARD, null)).status).toBe(204);
+    expect(await readEditions(member)).toMatchObject({
+      album: null,
+      cards: { [CARD]: EDITION, [OTHER_CARD]: null },
+    });
+
+    expect((await printAlbum(member, OTHER_EDITION)).status).toBe(204);
+    expect(await readEditions(member)).toMatchObject({ album: OTHER_EDITION, cards: {} });
+  });
+
+  it("keep the latest of two choices made at the same time", async () => {
+    const { member } = await payingPatron();
+    await setOwnedCards(db, member.userId, [{ cardId: CARD, quantity: 1 }]);
+    const statuses = (
+      await Promise.all([printCard(member, CARD, EDITION), printCard(member, CARD, OTHER_EDITION)])
+    ).map((response) => response.status);
+    expect(statuses).toEqual([204, 204]);
+    const chosen = (await readEditions(member)).cards[CARD];
+    expect([EDITION, OTHER_EDITION]).toContain(chosen);
+  });
+
+  it("show on the pinned cards of the public profile, and are kept after the subscription", async () => {
+    const { member, customerId, subscription } = await payingPatron();
+    const pseudo = `Edition${crypto.randomUUID().slice(0, 6)}`;
+    await ensurePlayer(db, member.userId);
+    await db
+      .update(schema.players)
+      .set({ pseudo, pseudoKey: pseudo.toLowerCase(), pseudoChangedAt: new Date() })
+      .where(eq(schema.players.userId, member.userId));
+    await setXp(
+      db,
+      member.userId,
+      xpToReach(unlockRulesAt(UNLOCK_SCHEDULE, Date.now()).levels.public_profile),
+    );
+    await setOwnedCards(db, member.userId, [
+      { cardId: CARD, quantity: 1 },
+      { cardId: OTHER_CARD, quantity: 1 },
+    ]);
+    expect(
+      (await request(member, "PUT", "/me/pinned-cards", { cardIds: [CARD, OTHER_CARD] })).status,
+    ).toBe(200);
+    await printAlbum(member, EDITION);
+    await printCard(member, OTHER_CARD, null);
+
+    const publicProfile = async () => {
+      const response = await request(member, "GET", `/players/${pseudo}`);
+      expect(response.status).toBe(200);
+      return publicProfileSchema.parse(await response.json());
+    };
+    const during = await publicProfile();
+    expect(during.visibility === "public" && during.editions).toEqual({ [CARD]: EDITION });
+
+    stripe.subscriptions.set(subscription.id, { ...subscription, status: "canceled" });
+    await sendEvent("customer.subscription.deleted", { id: subscription.id, customer: customerId });
+    expect((await readEditions(member)).album).toBe(EDITION);
+  });
+});
+
+describe("pinned cards of a patron", () => {
+  it("are three more while paying, not during the trial, and the extra ones hide at the end", async () => {
+    const trial = await memberWithCustomer();
+    await checkoutCompleted(subscribe(trial.customerId));
+    const before = (await readProfile(trial.member)).pinnedSlots;
+
+    const { member, customerId, subscription } = await payingPatron();
+    const slots = (await readProfile(member)).pinnedSlots;
+    expect(slots).toBe(before + PATRON_SCHEDULE[0].extraPinnedSlots);
+
+    const cards = Array.from({ length: slots }, (_, index) => ({
+      cardId: `${STARTER_COLLECTION}-${index % 2 === 0 ? "common" : "uncommon"}-${(index % 3) + 1}`,
+      quantity: 1,
+    }));
+    const unique = [...new Map(cards.map((card) => [card.cardId, card])).values()];
+    await setOwnedCards(db, member.userId, unique);
+    const pins = unique.slice(0, Math.min(slots, unique.length)).map((card) => card.cardId);
+    expect((await request(member, "PUT", "/me/pinned-cards", { cardIds: pins })).status).toBe(200);
+
+    stripe.subscriptions.set(subscription.id, { ...subscription, status: "canceled" });
+    await sendEvent("customer.subscription.deleted", { id: subscription.id, customer: customerId });
+    const after = await readProfile(member);
+    expect(after.pinnedSlots).toBe(before);
+    expect(after.pinned).toEqual(pins.slice(0, before));
   });
 });

@@ -193,7 +193,7 @@ export function PublicProfileScreen({
       )}
       {shown.visibility === "public" ? (
         <div className={styles.layout}>
-          <PinnedCards pinned={shown.pinned} />
+          <PinnedCards pinned={shown.pinned} editions={shown.editions} />
           <div className={styles.side}>
             <StatsPanel stats={shown.stats} />
             {shown.jousts !== null && <JoustsPanel jousts={shown.jousts} />}

@@ -1,6 +1,6 @@
 # Cahier des charges · Avantages du mécène
 
-- **Statut :** liste des avantages tranchée le 2026-11-08 ; les modalités restent à trancher (§ 9). Rien n'est construit.
+- **Statut :** tranché le 2026-11-08, les dix recommandations du § 9 retenues. Éditions de bibliothèque et épingles en plus construites le 2026-11-08 (web et mobile), recette MEC-13 et MEC-14 dans [recette-nouveautes.md](../recette-nouveautes.md). Reste le cabinet du mot, la page de remerciements, le vote, le Discord, l'animation et la parure.
 - **Règles concernées :** P72 (gratuit et payant) et P73 (abonnement Mécène), dans [regles-du-jeu.md](../regles-du-jeu.md), qui fait foi. Socle et dénichage : [mecene.md](mecene.md).
 - **D'où ça vient :** après le dénichage, le propriétaire trouve l'offre mince. La page Mécène ne montre que deux avantages construits (le cosmétique du mois et le mot déniché), alors que P73 en promet d'autres. Il retient : construire les éditions de bibliothèque et le cabinet du mot avant l'ouverture de la vente, et ajouter de petits avantages sociaux. De l'XP en plus lui irait, mais elle est remise à plus tard (P72 l'exclut tant qu'elle n'est pas changée), et les sachets restent exclus.
 - **Objectif :** tout ce qui suit est construit, web et mobile, avant l'ouverture de la vente vers mi-janvier 2027.
@@ -24,7 +24,8 @@ Une édition est une façon d'imprimer la gravure d'une carte : la couleur des t
 - Elle appartient au joueur, pas à l'exemplaire : une carte échangée arrive chez l'autre dans son allure ordinaire.
 - Les autres la voient là où ils voient ses cartes : cartes épinglées du profil public, joutes.
 - Les éditions reçues restent à vie après l'arrêt (P73) ; elles restent exclusives aux mécènes.
-- Une édition par mois, dévoilée le 1er avec le cosmétique du mois, réclamée de la même façon.
+- Une édition par mois, dévoilée le 1er avec le cosmétique du mois. Rien à réclamer : le mécène possède l'édition de chaque mois payé, comme les trois du départ dès son premier paiement.
+- **Construit :** l'épreuve est une feuille du papier de l'édition, collée dans la place de la gravure avec un filet à l'intérieur de son bord ; le sujet y tient tout entier (un sujet haut ne déborde plus dans l'en-tête). Couleurs dans `packages/tokens/src/card-editions.ts`, qu'un test tient à l'écart de toute couleur de rareté. Le choix se fait sur la fiche de la carte (« Ordinaire », puis les éditions possédées, et « Appliquer à tout l'album ») ; la page Mécène dit lesquelles on possède. Les éditions se voient dans l'album, sur la fiche, sur ses cartes épinglées et sur le profil public ; pas encore en joute. Routes `GET /me/editions`, `PUT /me/editions/album`, `PUT /me/editions/cards/:cardId` ; table `card_editions` et colonne `players.card_edition` (migration `0051`).
 
 ## 2. Cabinet du mot
 
@@ -39,7 +40,7 @@ Le carnet (statistiques de ses mots, album à imprimer) que P73 range avec le ca
 
 ## 3. Cartes épinglées en plus
 
-Le mécène a des places d'épingles en plus de celles que lui donnent ses niveaux. Elles ne remplacent jamais une récompense de niveau (§ 9, question 6). À l'arrêt, les places en plus disparaissent : les cartes épinglées au-delà ne se montrent plus, et reviennent s'il reprend.
+Le mécène a des places d'épingles en plus de celles que lui donnent ses niveaux. Elles ne remplacent jamais une récompense de niveau (§ 9, question 6). À l'arrêt, les places en plus disparaissent : les cartes épinglées au-delà ne se montrent plus, et reviennent s'il reprend sans avoir changé ses épingles entre-temps. **Construit :** `extraPinnedSlots` (3) dans `PATRON_SCHEDULE`, compté dans la garde-robe tant que l'abonnement est payé, jamais pendant l'essai.
 
 ## 4. Rôle et salon sur le Discord
 
@@ -71,6 +72,8 @@ Une page publique `/mecenes` : « Merci à ceux qui font vivre Leximon », puis 
 La vitrine (`apps/web/src/beta/patron-screen.tsx` et l'écran du mobile) liste les nouveaux avantages, dans la limite de ce qui est construit le jour de l'ouverture : une promesse affichée est une promesse tenue (N2).
 
 ## 9. Décisions
+
+Toutes tranchées le 2026-11-08 selon la recommandation.
 
 1. **Ce qu'est une édition.**
    - a. Une allure d'impression (encre, masses, papier) applicable à toutes ses cartes. Aucune illustration nouvelle, les 2 065 cartes d'un coup.
@@ -116,9 +119,9 @@ La vitrine (`apps/web/src/beta/patron-screen.tsx` et l'écran du mobile) liste l
 
 ## 10. Lots
 
-1. **Éditions de bibliothèque** : réglages dans `core`, table des éditions du joueur et de leur application (migration additive), API, fiche de carte et album (web et mobile), rendu sur le profil public et en joute, éditions dans le calendrier du mois.
+1. **Éditions de bibliothèque** (fait le 2026-11-08) : réglages dans `core`, table des éditions du joueur et de leur application (migration additive), API, fiche de carte et album (web et mobile), rendu sur le profil public et en joute, éditions dans le calendrier du mois.
 2. **Cabinet du mot** : fichiers du cabinet écrits par la chaîne et publiés avec le catalogue, fiche du cabinet (web et mobile), réservée aux mécènes.
-3. **Épingles en plus et page de remerciements.**
+3. **Épingles en plus** (fait le 2026-11-08) **et page de remerciements.**
 4. **Vote des mécènes** : admin, page Mécène, résultat.
 5. **Discord** : liaison du compte, rôle posé et retiré par la file.
 6. **Animation d'ouverture et parure de joute.**

@@ -20,6 +20,7 @@ import {
   comparingTitle,
   ECUS_TITLE,
   ecusLabel,
+  editionOfCard,
   isAlbumSort,
   isFeatureOpen,
   type MissingItem,
@@ -43,7 +44,7 @@ import { useNarrow } from "@/lib/use-narrow";
 import { useNow } from "@/lib/use-now";
 import { Desk } from "@/library/play-pieces";
 import { cardDates, ownedCards, wordMemory } from "@/player/collection";
-import { wallet } from "@/player/player";
+import { editions, wallet } from "@/player/player";
 import { useShared, useSharedFailed } from "@/player/resource";
 import { useProgress } from "@/progress/use-progress";
 import { useShell } from "@/shell/shell-context";
@@ -593,6 +594,7 @@ function OwnedTile({
   readonly width: number;
   readonly onOpen: (cardId: string) => void;
 }) {
+  const printed = useShared(editions);
   return (
     <button
       type="button"
@@ -600,7 +602,12 @@ function OwnedTile({
       onClick={() => onOpen(item.card.id)}
       aria-label={item.aria}
     >
-      <Card card={item.card} collectionName={item.collectionName} width={width} />
+      <Card
+        card={item.card}
+        collectionName={item.collectionName}
+        width={width}
+        edition={editionOfCard(printed, item.card.id)}
+      />
       {item.fresh && <span className={styles.fresh}>Nouveau</span>}
       {item.quantity > 1 && <span className={styles.quantity}>×{item.quantity}</span>}
       <span className={`${styles.mastery} ${styles[item.level]}`}>

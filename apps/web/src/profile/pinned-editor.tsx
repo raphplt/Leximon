@@ -2,6 +2,7 @@
 
 import { collectionName } from "@leximon/contract/client";
 import {
+  editionOfCard,
   movePin,
   PIN_TEXTS,
   pinnedSlotsLabel,
@@ -13,6 +14,8 @@ import { type RefObject, useEffect, useRef, useState } from "react";
 import { useCatalog } from "@/cards/use-catalog";
 import { Card } from "@/components/card";
 import { useNarrow } from "@/lib/use-narrow";
+import { editions } from "@/player/player";
+import { useShared } from "@/player/resource";
 import { Icon } from "@/ui/icon";
 import ui from "@/ui/ui.module.css";
 import { PinPicker } from "./pin-picker";
@@ -34,6 +37,7 @@ export function PinnedCardsEditor({
 }) {
   const catalog = useCatalog();
   const narrow = useNarrow();
+  const printed = useShared(editions);
   const actions = useProfileActions();
   /** The place being filled: an index replaces its card, `null` takes a free place. */
   const [picking, setPicking] = useState<{ readonly at: number | null } | null>(null);
@@ -80,6 +84,7 @@ export function PinnedCardsEditor({
                     card={card}
                     collectionName={collectionName(catalog, card.collectionId)}
                     width={narrow ? 130 : 150}
+                    edition={editionOfCard(printed, cardId)}
                   />
                 )}
               </button>

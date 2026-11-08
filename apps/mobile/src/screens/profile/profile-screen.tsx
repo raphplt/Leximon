@@ -4,6 +4,7 @@ import type { IconName } from "@leximon/tokens";
 import {
   APPEARANCE_NEW_KEY,
   canShareProfile,
+  editionOfCard,
   movePin,
   NEW_TAB_BADGE,
   PATRON_MEMBER_TITLE,
@@ -25,7 +26,7 @@ import { catalogInHand, loadCatalog } from "@/cards/catalog";
 import { WEB_URL } from "@/config";
 import { useSeenFlag } from "@/player/seen-flag";
 import { useShared, useSharedFailed } from "@/player/shared";
-import { profile } from "@/player/state";
+import { editions, profile } from "@/player/state";
 import { useProfileActions } from "@/profile/profile-actions";
 import { openCard } from "@/screens/trades/card-row";
 import { fontSizes, fonts, paperColors, radii, space } from "@/theme";
@@ -218,6 +219,7 @@ function PinnedCards({
   readonly catalog: Catalog | null;
 }) {
   const actions = useProfileActions();
+  const printed = useShared(editions);
   /** The place being filled: an index replaces its card, `null` takes a free place. */
   const [picking, setPicking] = useState<{ readonly at: number | null } | null>(null);
   const { pinned, pinnedSlots: slots } = me;
@@ -263,6 +265,7 @@ function PinnedCards({
                     card={card}
                     collectionName={collectionName(catalog, card.collectionId)}
                     width={PIN_WIDTH}
+                    edition={editionOfCard(printed, cardId)}
                   />
                 )}
               </Pressable>

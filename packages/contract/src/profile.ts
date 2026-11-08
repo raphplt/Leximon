@@ -119,6 +119,8 @@ export const publicProfileSchema = z.discriminatedUnion("visibility", [
     banner: profileBannerSchema,
     /** In the order of the profile. */
     pinned: z.array(slugSchema),
+    /** The library edition of each pinned card printed in one; absent from older servers. */
+    editions: z.record(slugSchema, slugSchema).optional(),
     stats: profileStatsSchema,
     /** `null` before the player's first ranked joust. */
     jousts: profileJoustsSchema.nullable(),

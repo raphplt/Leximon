@@ -1,10 +1,18 @@
 import type { CatalogCard } from "@leximon/contract";
 import { RARITY_LABELS } from "@leximon/contract";
 import type { Rarity } from "@leximon/core";
-import { cardSize, rarityStyles, solidColor } from "@leximon/tokens";
+import {
+  type CardEdition,
+  cardSize,
+  editionColors,
+  mixHex,
+  rarityStyles,
+  solidColor,
+} from "@leximon/tokens";
 import {
   ENGRAVING_SLOT,
   type Engraving,
+  editionBox,
   engravingBox,
   engravingOf,
   formatOdds,
@@ -41,15 +49,19 @@ export function Card({
   card,
   collectionName,
   width = cardSize.width,
+  edition,
 }: {
   readonly card: CatalogCard;
   readonly collectionName: string;
   readonly width?: number;
+  /** The library edition its owner prints it in; ordinary when absent or unknown. */
+  readonly edition?: string | null | undefined;
 }) {
   const u = width / cardSize.width;
   const style = rarityStyles[card.rarity];
   const height = cardSize.height * u;
   const engraving = engravingOf(card);
+  const colors = editionColors(edition);
   return (
     <View
       style={[styles.card, { width, height, borderRadius: 16 * u }]}
@@ -68,6 +80,8 @@ export function Card({
                 {card.word.slice(0, 1)}
               </Text>
             </View>
+          ) : colors !== null ? (
+            <EditionPrint engraving={engraving} edition={colors} u={u} />
           ) : (
             <EngravingPrint card={card} engraving={engraving} u={u} />
           )}
@@ -342,6 +356,76 @@ function EngravingPrint({
             />
           </Svg>
         )}
+      </View>
+    </View>
+  );
+}
+
+/**
+ * The engraving in a library edition, pasted on the card on its own sheet like a plate in a book:
+ * the edition's inks and paper, while the frame, the gem and the word keep the rarity's colours.
+ */
+function EditionPrint({
+  engraving,
+  edition,
+  u,
+}: {
+  readonly engraving: Engraving;
+  readonly edition: CardEdition;
+  readonly u: number;
+}) {
+  const box = editionBox(engraving);
+  const size = { width: box.width * u, height: box.height * u };
+  const place = {
+    top: ((ENGRAVING_SLOT.height - box.height) / 2) * u,
+    left: ((ENGRAVING_SLOT.width - box.width) / 2) * u,
+  };
+  return (
+    <View
+      style={{ height: ENGRAVING_SLOT.height * u, marginTop: 2 * u }}
+      importantForAccessibility="no-hide-descendants"
+    >
+      <View
+        style={[
+          StyleSheet.absoluteFill,
+          {
+            borderRadius: 3 * u,
+            backgroundColor: edition.paper,
+            borderWidth: Math.max(0.6 * u, StyleSheet.hairlineWidth),
+            borderColor: mixHex(edition.paper, edition.ink, 0.3),
+            boxShadow: `0 ${1.5 * u}px ${4 * u}px ${mixHex(edition.paper, edition.ink, 0.6)}`,
+          },
+        ]}
+      />
+      <View
+        style={{
+          position: "absolute",
+          top: 4 * u,
+          right: 4 * u,
+          bottom: 4 * u,
+          left: 4 * u,
+          borderWidth: Math.max(0.5 * u, StyleSheet.hairlineWidth),
+          borderColor: mixHex(edition.paper, edition.ink, 0.35),
+        }}
+      />
+      <View style={[styles.print, size, place]}>
+        <Image
+          source={{ uri: catalogFileUrl(engraving.fill) }}
+          style={[
+            StyleSheet.absoluteFill,
+            {
+              tintColor: edition.plate,
+              opacity: edition.plateOpacity,
+              transform: [{ translateX: 2 * u }, { translateY: 1.5 * u }],
+            },
+          ]}
+          resizeMode="stretch"
+        />
+        <Image
+          source={{ uri: catalogFileUrl(engraving.ink) }}
+          style={[StyleSheet.absoluteFill, { tintColor: edition.ink }]}
+          resizeMode="stretch"
+        />
       </View>
     </View>
   );

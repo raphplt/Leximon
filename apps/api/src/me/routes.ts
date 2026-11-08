@@ -64,7 +64,7 @@ import { readRestrictions, refuseLockedWrites } from "../moderation/restrictions
 import { sanctionRoutes } from "../moderation/routes";
 import { type BillingFactory, billingConfigured } from "../patron/billing";
 import { endBillingOfAccount } from "../patron/patron";
-import { patronRoutes } from "../patron/routes";
+import { editionRoutes, patronRoutes } from "../patron/routes";
 import { buyBanner } from "../profile/banners";
 import {
   blockPlayer,
@@ -110,6 +110,7 @@ export function meRoutes(createBilling: BillingFactory) {
   routes.route("/clan", myClanRoutes());
   routes.route("/sanctions", sanctionRoutes());
   routes.route("/patron", patronRoutes(createBilling));
+  routes.route("/editions", editionRoutes());
   routes.route("/", betaPlayerRoutes());
   routes.route("/", friendRoutes());
   routes.route("/", ecuRoutes());

@@ -2,6 +2,7 @@ import type { MonthCosmeticView, PatronFindsView, PatronResponse } from "@leximo
 import { mixHex, toyMatters, toy as toyValues } from "@leximon/tokens";
 import {
   claimableLabel,
+  editionsOwnedLine,
   findStateLine,
   findsLeftLine,
   PATRON_CARD_KICKER,
@@ -9,6 +10,7 @@ import {
   PATRON_CLAIM_BUSY,
   PATRON_CLAIMABLE_TITLE,
   PATRON_CLAIMED,
+  PATRON_EDITIONS_TITLE,
   PATRON_FIND_ACTION,
   PATRON_FINDS_RULE,
   PATRON_FINDS_TITLE,
@@ -24,7 +26,7 @@ import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
 import { api } from "@/api/client";
 import { MainAction } from "@/library/play-pieces";
 import { useShared } from "@/player/shared";
-import { profile } from "@/player/state";
+import { editions, profile } from "@/player/state";
 import { colors, fontSizes, fonts, paperColors, space } from "@/theme";
 import { Avatar } from "@/ui/avatar";
 import { Button } from "@/ui/button";
@@ -77,6 +79,7 @@ export function PatronScreen() {
         <>
           <PatronCard patron={patron} />
           <Finds finds={patron.finds} />
+          <Editions />
           {patron.claimable.map((item) => (
             <ClaimTile key={item.month} item={item} onClaimed={load} />
           ))}
@@ -143,6 +146,25 @@ function Finds({ finds }: { readonly finds: PatronFindsView }) {
           <Text style={styles.text}>{findStateLine(find.state)}</Text>
         </View>
       ))}
+    </Leaf>
+  );
+}
+
+/** The library editions owned, kept for life, and where to choose them. */
+function Editions() {
+  const mine = useShared(editions);
+  if (mine === null) return null;
+  return (
+    <Leaf style={styles.card}>
+      <View style={styles.claimRow}>
+        <ToyBody matter="gold" shape="tile" style={styles.claimIcon}>
+          <Lettrine icon="ink" matter="red" size={48} />
+        </ToyBody>
+        <View style={styles.claimText}>
+          <Lettering size={fontSizes.title}>{PATRON_EDITIONS_TITLE}</Lettering>
+          <Text style={styles.text}>{editionsOwnedLine(mine.owned)}</Text>
+        </View>
+      </View>
     </Leaf>
   );
 }
