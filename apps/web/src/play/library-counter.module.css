@@ -460,6 +460,14 @@
     grid-row: 2;
   }
 
+  /*
+   * Room enough for the sachet's full size, however short the columns (a guest's are): the band
+   * and the screen's padding aside, as much of the window as that needs.
+   */
+  .stage {
+    min-height: min(950px, 100dvh - 76px - 46px);
+  }
+
   .today,
   .standing {
     display: flex;
