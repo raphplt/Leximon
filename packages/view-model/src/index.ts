@@ -3,6 +3,7 @@ export * from "./album";
 export * from "./app-version";
 export * from "./appearance";
 export * from "./banners";
+export * from "./cabinet";
 export * from "./card-sheet";
 export * from "./cards";
 export * from "./carnet";

@@ -15,7 +15,7 @@ import {
   unclaimedLevels,
 } from "@leximon/core";
 import { FEATURE_WORDS, levelsOfFeatures, opensAt } from "./features";
-import { capitalize, formatCount, plural } from "./format";
+import { capitalize, formatCount, plural, romanNumeral } from "./format";
 import { xpBefore } from "./level";
 import { avatarName, frameName } from "./profile";
 
@@ -329,30 +329,6 @@ export interface Quarter {
   readonly range: string;
   /** « Chapitre II ». */
   readonly chapter: string;
-}
-
-const ROMAN_DIGITS: readonly (readonly [number, string])[] = [
-  [100, "C"],
-  [90, "XC"],
-  [50, "L"],
-  [40, "XL"],
-  [10, "X"],
-  [9, "IX"],
-  [5, "V"],
-  [4, "IV"],
-  [1, "I"],
-];
-
-function romanNumeral(value: number): string {
-  let left = value;
-  let numeral = "";
-  for (const [worth, digit] of ROMAN_DIGITS) {
-    while (left >= worth) {
-      numeral += digit;
-      left -= worth;
-    }
-  }
-  return numeral;
 }
 
 export function quarterAt(index: number): Quarter {

@@ -2,7 +2,12 @@ import { describe, expect, it } from "vitest";
 import { editionAlbumDone, editionOfCard, editionsOwnedLine } from "./editions";
 
 describe("library editions", () => {
-  const editions = { owned: ["sanguine", "lavis"], album: "lavis", cards: { ablais: null } };
+  const editions = {
+    owned: ["sanguine", "lavis"],
+    album: "lavis",
+    cards: { ablais: null },
+    cabinet: false,
+  };
 
   it("print a card in its own choice, else in the album's", () => {
     expect(editionOfCard(editions, "ablais")).toBeNull();

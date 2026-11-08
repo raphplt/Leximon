@@ -37,6 +37,7 @@ uv run python -m leximon_content reserve        # réserve des mots à dénicher
 uv run python -m leximon_content quality        # écarte, vérifie, corrige, note le charme (--run <nom>)
 uv run python -m leximon_content push           # cartes gardées vers Directus, puis refresh, report
 uv run python -m leximon_content release        # version du catalogue dans content/releases (collections : content/collections.toml)
+uv run python -m leximon_content cabinet        # cabinet de chaque carte (courbe Ngram, Littré, famille), publié par catalog:publish
 uv run python -m leximon_content citations-search   # citations Wikisource des cartes sans citation (D-058), puis agents (citations-agents.md) et citations-apply
 uv run ruff check src tests && uv run ruff format --check src tests && uv run pytest   # avant de rendre la main
 ```

@@ -47,6 +47,9 @@ citations-apply   checks the quotes the agents picked (data/citations/picks/, se
                   citations-agents.md) word for word and for rights, and writes the accepted ones
                   to data/citations/quotes.json, read by release
 
+cabinet   write the cabinet of every card of the latest release (data/cabinet/out/): use since
+          1800, Littré article, family of the word; served by catalog:publish (no LLM call)
+
 A step whose estimated cost exceeds a few dollars waits for --yes (the owner's approval).
 """
 
@@ -59,6 +62,7 @@ from datetime import UTC, date, datetime
 import httpx
 
 from . import (
+    cabinet,
     citations,
     config,
     curation,
@@ -452,6 +456,7 @@ def main() -> None:
             "prescreen",
             "select",
             "reserve",
+            "cabinet",
             "draft",
             "quality",
             "push",
@@ -531,6 +536,9 @@ def main() -> None:
         return
     if args.command == "select":
         command_select(args.run, args.size)
+        return
+    if args.command == "cabinet":
+        print(f"{cabinet.build()} cabinets -> {cabinet.OUT_DIR}")
         return
     if args.command == "reserve":
         command_reserve()

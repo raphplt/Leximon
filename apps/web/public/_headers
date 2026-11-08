@@ -6,8 +6,8 @@
   Cache-Control: public, max-age=31536000, immutable
 
 # Catalogue: every file is named after the hash of its content, except the manifest, which
-# points at the current ones, and the engraving index: both must change within a minute of a
-# publication.
+# points at the current ones, and the indexes beside it (engravings, cabinets, finders): they
+# must change within a minute of a publication.
 /matter/*
   Cache-Control: public, max-age=86400
 
@@ -20,8 +20,17 @@
 /catalog/prononciation/*
   Cache-Control: public, max-age=31536000, immutable
 
+/catalog/cabinet/*
+  Cache-Control: public, max-age=31536000, immutable
+
 /catalog/manifest.json
   Cache-Control: public, max-age=60, must-revalidate
 
 /catalog/engravings.json
+  Cache-Control: public, max-age=60, must-revalidate
+
+/catalog/cabinet.json
+  Cache-Control: public, max-age=60, must-revalidate
+
+/catalog/finders.json
   Cache-Control: public, max-age=60, must-revalidate

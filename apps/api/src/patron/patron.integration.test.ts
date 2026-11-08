@@ -890,6 +890,22 @@ describe("library editions", () => {
     expect((await readEditions(patron)).owned).toEqual([...LAUNCH_EDITIONS]);
   });
 
+  it("open the cabinet of the words to a paying patron only", async () => {
+    const { member, customerId } = await memberWithCustomer();
+    expect((await readEditions(member)).cabinet).toBe(false);
+    await checkoutCompleted(subscribe(customerId));
+    expect((await readEditions(member)).cabinet).toBe(false);
+
+    const { member: patron, customerId: patronCustomer, subscription } = await payingPatron();
+    expect((await readEditions(patron)).cabinet).toBe(true);
+    stripe.subscriptions.set(subscription.id, { ...subscription, status: "canceled" });
+    await sendEvent("customer.subscription.deleted", {
+      id: subscription.id,
+      customer: patronCustomer,
+    });
+    expect((await readEditions(patron)).cabinet).toBe(false);
+  });
+
   it("print an owned card, and the whole album, which drops the cards' own choices", async () => {
     const { member } = await payingPatron();
     await setOwnedCards(db, member.userId, [

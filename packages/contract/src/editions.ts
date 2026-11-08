@@ -4,16 +4,23 @@ import { slugSchema } from "./common";
 /**
  * `GET /me/editions`, 200: the library editions the player owns, the album's and each card's
  * own choice. A card missing from `cards` prints in the album's edition; `null` there prints it
- * ordinary. Read a card's with `cardEditionOf` from `@leximon/core`.
+ * ordinary. Read a card's with `cardEditionOf` from `@leximon/core`. `cabinet` opens the cabinet
+ * of the words, while the player pays a subscription.
  */
 export const editionsResponseSchema = z.object({
   owned: z.array(slugSchema),
   album: slugSchema.nullable(),
   cards: z.record(slugSchema, slugSchema.nullable()),
+  cabinet: z.boolean().default(false),
 });
 export type EditionsResponse = z.infer<typeof editionsResponseSchema>;
 
-export const EMPTY_EDITIONS: EditionsResponse = { owned: [], album: null, cards: {} };
+export const EMPTY_EDITIONS: EditionsResponse = {
+  owned: [],
+  album: null,
+  cards: {},
+  cabinet: false,
+};
 
 /** `PUT /me/editions/album` and `PUT /me/editions/cards/:cardId` body; `null` prints ordinary. */
 export const editionChoiceSchema = z.object({ edition: slugSchema.nullable() });

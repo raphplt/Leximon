@@ -182,3 +182,9 @@
     gap: var(--lx-s3);
   }
 }
+
+.cabinet {
+  justify-self: start;
+  align-self: flex-start;
+  gap: 8px;
+}

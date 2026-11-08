@@ -9,9 +9,9 @@ import {
 import { type Database, schema } from "@leximon/db";
 import { and, eq, gt, inArray } from "drizzle-orm";
 import { ensurePlayer } from "../trades/players";
-import { readPeriods } from "./patron";
+import { readPeriods, standingOfRow } from "./patron";
 
-const { cardEditions, players, userCards } = schema;
+const { cardEditions, patronSubscriptions, players, userCards } = schema;
 
 type Reader = Pick<Database, "select">;
 
@@ -33,19 +33,29 @@ async function albumOf(db: Reader, userId: string): Promise<string | null> {
   return row?.edition ?? null;
 }
 
+/** Only a paying patron opens the cabinet of the words: a trial does not. */
+async function opensCabinet(db: Reader, userId: string): Promise<boolean> {
+  const [row] = await db
+    .select({ status: patronSubscriptions.status, firstPaidAt: patronSubscriptions.firstPaidAt })
+    .from(patronSubscriptions)
+    .where(eq(patronSubscriptions.userId, userId));
+  return standingOfRow(row) === "patron";
+}
+
 /** `GET /me/editions`: choices for an edition no longer owned are left out. */
 export async function readEditions(
   db: Reader,
   userId: string,
   now: EpochMs,
 ): Promise<EditionsResponse> {
-  const [owned, album, rows] = await Promise.all([
+  const [owned, album, rows, cabinet] = await Promise.all([
     ownedBy(db, userId, now),
     albumOf(db, userId),
     db
       .select({ cardId: cardEditions.cardId, edition: cardEditions.edition })
       .from(cardEditions)
       .where(eq(cardEditions.userId, userId)),
+    opensCabinet(db, userId),
   ]);
   const cards: Record<string, string | null> = {};
   for (const row of rows) {
@@ -55,6 +65,7 @@ export async function readEditions(
     owned: [...owned],
     album: album !== null && owned.has(album) ? album : null,
     cards,
+    cabinet,
   };
 }
 

@@ -3,6 +3,7 @@ export * from "./admin";
 export * from "./app";
 export * from "./beta";
 export * from "./boosters";
+export * from "./cabinet";
 export * from "./catalog";
 export * from "./challenges";
 export * from "./clans";

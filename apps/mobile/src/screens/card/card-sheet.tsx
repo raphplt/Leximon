@@ -2,6 +2,7 @@ import type { CatalogCard } from "@leximon/contract";
 import { type Catalog, collectionName } from "@leximon/contract/client";
 import { masteryColors } from "@leximon/tokens";
 import {
+  CABINET_OPEN,
   CARD_REPORT,
   CARD_RUN_TEXTS,
   type CardRun,
@@ -254,6 +255,14 @@ function SheetBody({
           </View>
         )}
 
+        {printed?.cabinet === true && (
+          <Button
+            label={CABINET_OPEN}
+            secondary
+            small
+            onPress={() => router.push({ pathname: "/cabinet/[id]", params: { id: card.id } })}
+          />
+        )}
         {quantity > 0 && <EditionPicker cardId={card.id} />}
 
         {quantity > 0 ? (

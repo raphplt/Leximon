@@ -1,4 +1,5 @@
 import type { Rarity } from "@leximon/core";
+import { type CatalogCabinet, cabinetIndexSchema, catalogCabinetSchema } from "../cabinet";
 import {
   type CatalogCard,
   type CatalogCollectionFile,
@@ -103,6 +104,33 @@ export async function fetchFinders(baseUrl: string): Promise<ReadonlyMap<string,
   const index = finderIndexSchema.safeParse(await response.json().catch(() => null));
   if (!index.success) throw new CatalogError("invalid_finders");
   return new Map(Object.entries(index.data.cards));
+}
+
+/**
+ * The cabinet file of each card, by card id. A catalogue published without cabinets has no such
+ * file: no card has one then.
+ */
+export async function fetchCabinetIndex(baseUrl: string): Promise<ReadonlyMap<string, string>> {
+  let response: Response;
+  try {
+    response = await fetch(`${baseUrl}/cabinet.json`, { cache: "no-cache" });
+  } catch {
+    throw new CatalogError("network_error");
+  }
+  if (response.status === 404) return new Map();
+  if (!response.ok) throw new CatalogError(`catalog_unavailable_${response.status}`);
+  const index = cabinetIndexSchema.safeParse(await response.json().catch(() => null));
+  if (!index.success) throw new CatalogError("invalid_cabinet_index");
+  return new Map(Object.entries(index.data.cards));
+}
+
+/** A card's cabinet, from the path the index gives: named after its content, cached for good. */
+export async function fetchCabinet(baseUrl: string, path: string): Promise<CatalogCabinet> {
+  const cabinet = catalogCabinetSchema.safeParse(
+    await fetchJson(`${baseUrl}/${path}`, { cache: "force-cache" }),
+  );
+  if (!cabinet.success) throw new CatalogError("invalid_cabinet");
+  return cabinet.data;
 }
 
 export function collectionName(catalog: Catalog, collectionId: string): string {

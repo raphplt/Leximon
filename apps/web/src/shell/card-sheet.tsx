@@ -3,6 +3,7 @@
 import type { CatalogCard } from "@leximon/contract";
 import { type Catalog, collectionName } from "@leximon/contract/client";
 import {
+  CABINET_OPEN,
   CARD_REPORT,
   CARD_RUN_TEXTS,
   CARD_SHARE_COPIED,
@@ -257,6 +258,17 @@ function SheetBody({
 
         <CardQuoteInFull card={card} />
         <CardOrigin card={card} />
+        {printed?.cabinet === true && (
+          <ButtonLink
+            href={`/mecene/cabinet/${card.id}`}
+            variant="secondary"
+            className={styles.cabinet}
+            onClick={onClose}
+          >
+            <Icon name="cle" size={17} />
+            {CABINET_OPEN}
+          </ButtonLink>
+        )}
         {quantity > 0 && <EditionPicker cardId={card.id} />}
 
         {quantity > 0 && (

@@ -95,8 +95,9 @@ async function readRow(db: Database, userId: string): Promise<PatronRow | undefi
   return row;
 }
 
-export const standingOfRow = (row: PatronRow | undefined): PatronStanding =>
-  row === undefined ? "none" : standingOf(row);
+export const standingOfRow = (
+  row: Pick<PatronRow, "status" | "firstPaidAt"> | undefined,
+): PatronStanding => (row === undefined ? "none" : standingOf(row));
 
 export async function readPatron(
   db: Database,

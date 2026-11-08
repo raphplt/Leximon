@@ -49,6 +49,7 @@ export const PATRON_BENEFITS: readonly string[] = [
   "Un cosmétique chaque mois, cadre ou avatar gravé, dévoilé le 1er et gardé à vie.",
   "Un mot par trimestre, que tu choisis parmi les mots pas encore publiés. Il entre dans le jeu avec ton pseudo, et tu en reçois un exemplaire unique.",
   "Des éditions de bibliothèque pour imprimer tes gravures à la sanguine, au lavis ou à l'encre de Chine, et une nouvelle chaque mois.",
+  "Le cabinet de chaque mot, ouvert depuis sa carte, avec son usage dans les livres depuis 1800, son article du Littré et sa famille.",
   "Le titre et le badge de mécène sur ton profil, et trois cartes épinglées de plus.",
 ];
 

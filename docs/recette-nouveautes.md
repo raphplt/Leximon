@@ -781,6 +781,12 @@ Préparer : `pnpm db:migrate`, un compte mécène qui a payé au moins une fois 
 - **Attendu :** trois places de plus après le premier paiement, aucune pendant l'essai. À l'arrêt, les places en plus disparaissent et seules les premières cartes épinglées restent visibles.
 - **Retour :**
 
+### MEC-15 · Cabinet du mot
+- **Préparer :** en local, `uv run python -m leximon_content ngram` (une fois), puis `cabinet` dans `content/pipeline`, puis `pnpm catalog:publish`.
+- **Faire :** ouvre la fiche d'une carte pendant l'essai, après le premier paiement, puis après l'arrêt. Une fois abonné, touche « Ouvrir le cabinet du mot », sur le web (grand écran et téléphone) et sur le mobile. Essaie renfler, forlancer et cassandre.
+- **Attendu :** le bouton n'apparaît qu'aux mécènes qui paient, ni pendant l'essai ni après l'arrêt ; l'adresse `/mecene/cabinet/<carte>` montre alors « Le cabinet du mot est réservé aux mécènes abonnés. ». Le cabinet montre la courbe d'usage depuis 1800 avec une phrase qui la lit (renfler : « Dès 1800, le mot est à son plus haut, puis se raréfie après 1980. »), la décennie pointée ou touchée avec son chiffre, l'article du Littré (sens numérotés, citations, étymologie, historique par siècle), la famille du mot (forlancer : vient de fors, de la même famille que forlonger, formuer…) dont les mots du jeu ouvrent leur carte, et la ligne des sources.
+- **Retour :**
+
 ## Mauvais choix des QCM
 
 Retour de bêta du 2026-10-31 : on trouvait la réponse par élimination (un verbe parmi des noms, un mot sans rapport avec le thème révisé). La nature des cartes vient de la publication du catalogue : en production, la colonne reste vide tant qu'une publication n'est pas passée, et les choix restent ceux d'avant.

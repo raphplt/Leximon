@@ -23,6 +23,8 @@ from .config import DATA_DIR, USER_AGENT
 NGRAM_DIR = DATA_DIR / "ngram"
 RAW_DIR = NGRAM_DIR / "raw"
 FREQUENCIES_FILE = NGRAM_DIR / "frequencies.tsv"
+#: Per billion words in each decade since 1800, for the usage curve of the word's cabinet.
+DECADES_FILE = NGRAM_DIR / "decades.tsv"
 BASE_URL = "http://storage.googleapis.com/books/ngrams/books/20200217/fre"
 SHARDS = tuple(f"1-{i:05d}-of-00006.gz" for i in range(6))
 TOTALS = "totalcounts-1"
@@ -131,24 +133,34 @@ def mean_over(per_decade: list[float], years: range) -> float:
     return statistics.fmean(per_decade[first : first + len(years) // 10])
 
 
-def frequencies_from_counts(
+def per_billion_by_lemma(
     form_counts: dict[str, list[int]], owner_of: dict[str, str], totals: list[int]
-) -> dict[str, NgramFrequency]:
+) -> dict[str, list[float]]:
+    """Occurrences per billion words in each decade since 1800, all forms of each lemma summed."""
     lemma_counts: dict[str, list[int]] = defaultdict(lambda: [0] * DECADES)
     for form, counts in form_counts.items():
         target = lemma_counts[owner_of[form]]
         for decade, count in enumerate(counts):
             target[decade] += count
-    result = {}
-    for lemma in set(owner_of.values()):
-        counts = lemma_counts.get(lemma, [0] * DECADES)
-        per_billion = [1e9 * c / t for c, t in zip(counts, totals, strict=True)]
-        result[lemma] = NgramFrequency(
+    return {
+        lemma: [
+            1e9 * c / t for c, t in zip(lemma_counts.get(lemma, [0] * DECADES), totals, strict=True)
+        ]
+        for lemma in set(owner_of.values())
+    }
+
+
+def frequencies_from_counts(
+    form_counts: dict[str, list[int]], owner_of: dict[str, str], totals: list[int]
+) -> dict[str, NgramFrequency]:
+    return {
+        lemma: NgramFrequency(
             modern=mean_over(per_billion, MODERN),
             littre_era=mean_over(per_billion, LITTRE_ERA),
-            attested=any(counts),
+            attested=any(per_billion),
         )
-    return result
+        for lemma, per_billion in per_billion_by_lemma(form_counts, owner_of, totals).items()
+    }
 
 
 # --- Files ----------------------------------------------------------------------------------
@@ -198,7 +210,18 @@ def build() -> int:
         out.write("lemma\tmodern\tlittre_era\tattested\n")
         for lemma, f in sorted(frequencies.items()):
             out.write(f"{lemma}\t{f.modern:.6g}\t{f.littre_era:.6g}\t{int(f.attested)}\n")
+    write_decades(per_billion_by_lemma(form_counts, owner_of, totals))
     return len(frequencies)
+
+
+def write_decades(per_decade: dict[str, list[float]], path: Path = DECADES_FILE) -> None:
+    """Attested lemmas only: a word never printed has no curve to draw."""
+    first_decades = "\t".join(str(FIRST_DECADE + 10 * i) for i in range(DECADES))
+    with path.open("w", encoding="utf-8") as out:
+        out.write(f"lemma\t{first_decades}\n")
+        for lemma, values in sorted(per_decade.items()):
+            if any(values):
+                out.write(lemma + "".join(f"\t{value:.4g}" for value in values) + "\n")
 
 
 def _rows(path: Path) -> Iterator[list[str]]:
@@ -219,3 +242,16 @@ def frequencies(path: Path = FREQUENCIES_FILE) -> dict[str, NgramFrequency]:
 def frequency(word: str) -> NgramFrequency | None:
     """None when Ngram cannot tell: compounds, and words outside the Littré."""
     return frequencies().get(word.lower())
+
+
+@cache
+def decades(path: Path = DECADES_FILE) -> dict[str, tuple[float, ...]]:
+    """Empty until `ngram` has written the file."""
+    if not path.exists():
+        return {}
+    return {lemma: tuple(float(value) for value in values) for lemma, *values in _rows(path)}
+
+
+def usage(word: str) -> tuple[float, ...] | None:
+    """The word's per-billion frequency in each decade since 1800, or None when unknown."""
+    return decades().get(word.lower())

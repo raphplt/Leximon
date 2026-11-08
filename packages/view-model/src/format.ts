@@ -55,3 +55,28 @@ export function shortName(name: string): string {
   const words = name.split(/\s+/);
   return words.find((w) => !ARTICLES.has(w.toLowerCase())) ?? name;
 }
+
+const ROMAN_DIGITS: readonly (readonly [number, string])[] = [
+  [100, "C"],
+  [90, "XC"],
+  [50, "L"],
+  [40, "XL"],
+  [10, "X"],
+  [9, "IX"],
+  [5, "V"],
+  [4, "IV"],
+  [1, "I"],
+];
+
+/** 13 → "XIII". */
+export function romanNumeral(value: number): string {
+  let left = value;
+  let numeral = "";
+  for (const [worth, digit] of ROMAN_DIGITS) {
+    while (left >= worth) {
+      numeral += digit;
+      left -= worth;
+    }
+  }
+  return numeral;
+}
