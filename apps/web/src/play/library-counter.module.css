@@ -445,6 +445,8 @@
     grid-template-columns: minmax(250px, 300px) minmax(0, 1fr) minmax(250px, 300px);
     gap: 26px;
     max-width: 1560px;
+    /* The desk runs to the bottom of the screen like the album's, and the sachet grows with it. */
+    max-height: none;
   }
 
   .today,
