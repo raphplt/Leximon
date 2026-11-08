@@ -1,6 +1,6 @@
 "use client";
 
-import { sharedResource } from "@leximon/view-model";
+import { SIGN_IN_QUERY, sharedResource } from "@leximon/view-model";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { api } from "@/lib/api";
@@ -43,7 +43,7 @@ export function TopAction() {
         <Lettering>{RESUME}</Lettering>
       </Link>
       <Link
-        href="/compte"
+        href={`/compte?${SIGN_IN_QUERY}`}
         {...shownIf(!playing, toyClass("paper", "box", false, styles.topButton))}
       >
         <Lettering>Me connecter</Lettering>

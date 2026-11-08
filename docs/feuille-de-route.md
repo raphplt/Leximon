@@ -88,7 +88,7 @@ Arbitrés par le propriétaire le 2026-10-20 : jeu grand public (B2C), pas de ve
 | Étape | Statut | Détail |
 |---|---|---|
 | Hébergement de production | En cours | En ligne depuis le 2026-10-22 : `leximon.fr` et `api.leximon.fr`, base sur le serveur maison depuis le 2026-10-30 (D-053), catalogue servi par le Worker web (D-043). Mise en production en une commande (`pnpm deploy:prod`). En-têtes de sécurité, préflights CORS en cache, première visite allégée (ni catalogue sur l'accueil, ni dans la coque du jeu). Procédure : [mise-en-ligne.md](mise-en-ligne.md). Sauvegarde chaque heure sur R2 et chaque nuit sur le disque `tank`, restauration vérifiée, alerte Discord si la base ou les sauvegardes s'arrêtent. Codes de connexion vérifiés en production. `www` redirigé vers `leximon.fr` (2026-10-26). Reste : hausse du quota d'envoi des codes, Lettermint |
-| Bêta fermée sur invitation | En ligne, premiers liens envoyés (2026-10-25) | D-041 : liens par groupe dans `/admin/invitations`, page `/invitation/<code>`, porte tenue par l'API (`BETA_INVITES`), `?src=` gardé avec le joueur. Une invitation rejouée par un invité ne rouvre plus la porte |
+| Bêta fermée sur invitation | En ligne, premiers liens envoyés (2026-10-25) ; ouverture à tous prête le 2026-11-08, à déployer le 2026-11-09 | D-041 : liens par groupe dans `/admin/invitations`, page `/invitation/<code>`, porte tenue par l'API (`BETA_INVITES`), `?src=` gardé avec le joueur. Une invitation rejouée par un invité ne rouvre plus la porte |
 | Mesure | En ligne | D-042 et D-052 : `/admin/mesure`, tableau de bord sur une période choisie (7, 30, 90 jours, depuis le début ou dates libres, gardée dans l'adresse) comparée à la période d'avant : chiffres clés avec tendance, activité par jour, entonnoir, courbe de rétention, cohortes par jour ou semaine, origine et âge, heures de jeu, fausse porte mécène, testeurs, `/admin/retours` (« Un retour ? » dans le menu, « Signaler une erreur » sur la fiche de carte, avec un lien vers la carte), tranche d'âge facultative à l'inscription. Visites du site par Umami (sans cookie, codes des liens masqués, refus sur « Tes données ») et `robots.txt`, `sitemap.xml` (pages publiques et toutes les cartes, ouvertes aux moteurs de recherche) pour Search Console. Umami installé sur le serveur maison et publié sur `stats.leximon.fr` le 2026-10-28. Reste : déployer le web, Search Console ([mise-en-ligne.md](mise-en-ligne.md), étape 12 bis) |
 | Suivi des erreurs | Fait | D-045 : erreurs relevées par Cloudflare (Workers Logs), résumé chaque matin sur Discord avec les chiffres de la veille. Pas de suivi des erreurs du navigateur |
 | Test de charge | Fait (pas en ligne) | D-047 : scénarios k6 dans `infra/load/`, staging sur une branche Neon ([rnd/charge.md](rnd/charge.md)). 572 requêtes/s sans une erreur (2026-10-23). Ouverture d'un sachet ramenée de 8 à 5 allers-retours SQL et cache de session réparé (il ne servait pas) : 37 ms en médiane et 72 ms au p95 côté serveur (2026-10-24). API placée à Paris depuis que la base est sur le serveur maison (D-053). En production |
@@ -96,7 +96,7 @@ Arbitrés par le propriétaire le 2026-10-20 : jeu grand public (B2C), pas de ve
 
 ## Avant la bêta ouverte
 
-La bêta reste fermée jusqu'à ce que le jeu soit prêt (décidé le 2026-11-01) : début décembre visé, janvier en repli. On ouvre quand tout ceci est fait :
+La bêta devait rester fermée jusqu'à début décembre (décidé le 2026-11-01). Le propriétaire l'ouvre finalement sur le web le 2026-11-09 (décidé le 2026-11-08), avant que toutes les conditions ci-dessous soient tenues : les codes de connexion (1) et la liste d'attente (2) sont à surveiller en premier. Les conditions prévues :
 
 1. **Codes de connexion :** quota d'Email Service relevé ([mise-en-ligne.md](mise-en-ligne.md), étape 12). Sans lui, une vague d'inscriptions bloque les connexions.
 2. **Liste d'attente prévenue :** Lettermint prêt (étape 12), pour tenir la promesse de P55.
@@ -117,7 +117,7 @@ La grande mise à jour (nouvelle allure, retours du game designer) et l'ouvertur
 
 À vérifier tout de suite dans la Play Console : un compte développeur personnel créé après novembre 2023 doit tenir un test fermé avec au moins 12 testeurs pendant 14 jours d'affilée avant de publier en production. Si c'est le cas, ce test commence dès maintenant avec les joueurs Android de la bêta, et il fixe le calendrier.
 
-Le jour de l'ouverture : `BETA_INVITES` à `"off"` dans `env.production` de `apps/api/wrangler.jsonc`, puis `pnpm deploy:prod` ; publier les deux apps ; envoyer la campagne à la liste d'attente.
+Le jour de l'ouverture : `BETA_INVITES` est déjà à `"off"` dans `env.production` de `apps/api/wrangler.jsonc`, et le build du web n'a plus `NEXT_PUBLIC_BETA_INVITES=required` (fait le 2026-11-08, pas encore déployé). Reste `pnpm deploy:prod`, publier les deux apps et envoyer la campagne à la liste d'attente. Une fois ouverte, tout lien d'invitation fait entrer, même plein, expiré ou mal recopié, et l'écran Compte propose « Se connecter » à côté de « Créer un compte ».
 
 ## Ce qui attend ta décision
 

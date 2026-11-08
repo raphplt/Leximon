@@ -203,6 +203,16 @@ describe("closed beta", () => {
     expect(await status(invite.code)).toBe("expired");
     const refused = await guestSignIn({ [INVITE_HEADER]: invite.code });
     expect(await errorCode(refused)).toBe(ACCOUNT_ERROR_CODES.inviteClosed);
+
+    // Once the beta is open, the same link and a mistyped one both let their holder in.
+    const openStatus = async (code: string) => {
+      const response = await app.request(`/invites/${code}`, { headers: headers() }, openEnv);
+      return inviteStatusSchema.parse(await response.json()).status;
+    };
+    expect(await openStatus(invite.code)).toBe("open");
+    expect(await openStatus("nope-nope")).toBe("open");
+    const admitted = await guestSignIn({ [INVITE_HEADER]: invite.code }, openEnv);
+    expect(admitted.status).toBe(200);
   });
 
   it("lets anyone in when invitations are off, and still notes the source", async () => {

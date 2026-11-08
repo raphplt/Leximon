@@ -165,7 +165,7 @@
         "EMAIL_NOTIFY_FROM": "Leximon <facteur@avis.leximon.fr>",
         "NOTIFY_DAILY_LIMIT": "200",
         "PUBLIC_WEB_URL": "https://leximon.fr",
-        "BETA_INVITES": "required",
+        "BETA_INVITES": "off",
         "MOBILE_MIN_VERSION": "0.0.0"
       },
       // Same queue names as above: `queue()` recognises the game events queue by its name.

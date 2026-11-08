@@ -1,5 +1,6 @@
 "use client";
 
+import { SIGN_IN_QUERY } from "@leximon/view-model";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { type ReactNode, Suspense, useEffect, useState } from "react";
@@ -56,7 +57,7 @@ export function AdminShell({ children }: { readonly children: ReactNode }) {
           {access.kind === "signed_out" && (
             <>
               <p className={styles.muted}>Connecte-toi avec ton adresse admin pour continuer.</p>
-              <Link href="/compte" className={styles.primary}>
+              <Link href={`/compte?${SIGN_IN_QUERY}`} className={styles.primary}>
                 Me connecter
               </Link>
             </>

@@ -6,15 +6,23 @@ import {
 import { schema } from "@leximon/db";
 import { Hono } from "hono";
 import type { AppEnv } from "../context";
-import { parseInviteCode, readInviteStatus } from "./invites";
+import { invitesRequired, parseInviteCode, readInviteStatus } from "./invites";
 
-/** `GET /invites/{code}`: public, for the invitation page. Must run after `withDatabase`. */
+/**
+ * `GET /invites/{code}`: public, for the invitation page. Must run after `withDatabase`. Once the
+ * beta is open, every link lets its holder in, full, expired or mistyped: the door no longer needs
+ * one.
+ */
 export function inviteRoutes() {
   const routes = new Hono<AppEnv>();
 
   routes.get("/:code", async (c) => {
     const code = parseInviteCode(c.req.param("code"));
-    const status = code === null ? "unknown" : await readInviteStatus(c.var.db, code, Date.now());
+    const status = !invitesRequired(c.env)
+      ? "open"
+      : code === null
+        ? "unknown"
+        : await readInviteStatus(c.var.db, code, Date.now());
     c.header("Cache-Control", "no-store");
     return c.json<InviteStatus>({ status });
   });

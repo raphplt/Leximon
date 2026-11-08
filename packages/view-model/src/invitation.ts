@@ -5,7 +5,7 @@ import { inviteCodeSchema, playerCodeSchema } from "@leximon/contract";
 export const INVITED_TITLE = "Tu es invité";
 export const CLOSED_TITLE = "Ce lien ne fonctionne pas";
 export const INVITED_PITCH =
-  "Leximon est un jeu de cartes à collectionner sur les mots rares et oubliés du français. La bêta est fermée, mais ce lien t'y fait entrer.";
+  "Leximon est un jeu de cartes à collectionner sur les mots rares et oubliés du français. Ouvre ton premier sachet, sans compte et sans rien payer.";
 export const INVITED_ACTION = "Ouvrir mon premier sachet";
 
 export const INVITATION_REQUIRED_TITLE = "Sur invitation";

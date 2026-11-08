@@ -9,6 +9,7 @@ import {
   INVITED_ACTION,
   INVITED_PITCH,
   INVITED_TITLE,
+  SIGN_IN_QUERY,
 } from "@leximon/view-model";
 import Link from "next/link";
 import { useParams } from "next/navigation";
@@ -76,7 +77,7 @@ export function InvitationScreen() {
           </>
         )}
         <p style={{ marginTop: 32 }}>
-          Déjà un compte ? <Link href="/compte">Me connecter</Link>
+          Déjà un compte ? <Link href={`/compte?${SIGN_IN_QUERY}`}>Me connecter</Link>
         </p>
       </section>
     </main>
@@ -97,7 +98,7 @@ export function InvitationRequiredScreen() {
           <WaitlistForm />
         </div>
         <p style={{ marginTop: 32 }}>
-          Déjà un compte ? <Link href="/compte">Me connecter</Link>
+          Déjà un compte ? <Link href={`/compte?${SIGN_IN_QUERY}`}>Me connecter</Link>
         </p>
       </section>
     </main>

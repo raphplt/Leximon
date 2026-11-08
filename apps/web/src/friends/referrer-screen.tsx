@@ -7,6 +7,7 @@ import {
   REFERRER_PITCH,
   REFERRER_UNKNOWN,
   referrerTitle,
+  SIGN_IN_QUERY,
 } from "@leximon/view-model";
 import Link from "next/link";
 import { useParams } from "next/navigation";
@@ -91,7 +92,7 @@ export function ReferrerScreen() {
               <WaitlistForm />
             </div>
             <p style={{ marginTop: 32 }}>
-              Déjà un compte ? <Link href="/compte">Me connecter</Link>
+              Déjà un compte ? <Link href={`/compte?${SIGN_IN_QUERY}`}>Me connecter</Link>
             </p>
           </>
         )}
