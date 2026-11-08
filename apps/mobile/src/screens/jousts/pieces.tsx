@@ -1,10 +1,19 @@
 import type { CatalogCard } from "@leximon/contract";
-import { rarityStyles, solidColor, toyMatters, toy as toyValues } from "@leximon/tokens";
-import { FURET, formatCount, trappedText } from "@leximon/view-model";
-import { type ReactNode, useEffect } from "react";
-import { type StyleProp, StyleSheet, Text, View, type ViewStyle } from "react-native";
+import { collectionName } from "@leximon/contract/client";
+import { toyMatters, toy as toyValues } from "@leximon/tokens";
+import { answerTimeText, FURET, formatCount, plural, trappedText } from "@leximon/view-model";
+import { type ReactNode, useEffect, useState } from "react";
+import {
+  type LayoutChangeEvent,
+  type StyleProp,
+  StyleSheet,
+  Text,
+  View,
+  type ViewStyle,
+} from "react-native";
 import Animated, {
   Easing,
+  Keyframe,
   useAnimatedStyle,
   useReducedMotion,
   useSharedValue,
@@ -13,33 +22,26 @@ import Animated, {
   withSequence,
   withTiming,
 } from "react-native-reanimated";
+import { Card } from "@/cards/card";
+import { useCatalog } from "@/cards/use-catalog";
+import { catalogCard } from "@/screens/trades/card-row";
 import { colors, fontSizes, fonts, paperColors, radii, space } from "@/theme";
 import { Avatar } from "@/ui/avatar";
-import { RarityIcon } from "@/ui/rarity-icon";
+import { Icon } from "@/ui/icon";
 import { ToyBody, ToyIcon } from "@/ui/toy";
 
 /** What the leaves hold is read on paper. */
 export const ink = paperColors;
 
-/** The share of the font size a letter of the word takes, on average, in the bold UI face. */
-const LETTER_WIDTH = 0.66;
-const SMALLEST_WORD = 9;
-
 /**
- * The size at which the word's longest piece holds on one line of the card: a long word shrinks
- * rather than breaks in the middle. On the narrowest cards it still breaks, hyphenated.
+ * A card of the deck as the real card, small: the cost of its rarity as a coin on its corner if
+ * asked, and the opponents it trapped as a seal.
  */
-function wordSize(word: string, width: number): number {
-  const longest = Math.max(...word.split(" ").map((piece) => piece.length));
-  const fits = Math.floor((width - 12) / (longest * LETTER_WIDTH));
-  return Math.max(SMALLEST_WORD, Math.min(fontSizes.micro, fits));
-}
-
-/** A small card of the deck: the rarity band, its gem, the cost if asked, and the word. */
 export function MiniCard({
   card,
   cost,
   trapped = 0,
+  sealLeft = false,
   width = 76,
   style,
 }: {
@@ -47,29 +49,31 @@ export function MiniCard({
   readonly cost?: number | undefined;
   /** Opponents the card trapped, shown as a seal on its corner. */
   readonly trapped?: number;
+  /** The seal on the left corner, which stays in view when the next card of a fan covers the right. */
+  readonly sealLeft?: boolean;
   readonly width?: number;
   readonly style?: StyleProp<ViewStyle>;
 }) {
-  const rarity = rarityStyles[card.rarity];
-  const size = wordSize(card.word, width);
+  const catalog = useCatalog();
+  const coin = width < 70 ? 20 : 24;
   return (
-    <View style={[pieces.mini, { width }, style]}>
-      <View style={[pieces.miniBand, { backgroundColor: solidColor(rarity.band) }]}>
-        <RarityIcon rarity={card.rarity} size={11} color={rarity.bandInk} />
-        {cost !== undefined && (
-          <Text style={[pieces.miniCost, { color: rarity.bandInk }]}>{cost}</Text>
-        )}
-      </View>
-      <Text
-        style={[pieces.miniWord, { fontSize: size, lineHeight: Math.round(size * 1.3) }]}
-        numberOfLines={2}
-        android_hyphenationFrequency="full"
-      >
-        {card.word}
-      </Text>
+    <View style={[{ width }, style]}>
+      <Card
+        card={card}
+        collectionName={catalog === null ? "" : collectionName(catalog, card.collectionId)}
+        width={width}
+      />
+      {cost !== undefined && (
+        <View
+          style={[pieces.miniCost, { width: coin, height: coin, borderRadius: coin / 2 }]}
+          accessibilityLabel={plural(cost, "point", "points")}
+        >
+          <Text style={pieces.miniCostText}>{cost}</Text>
+        </View>
+      )}
       {trapped > 0 && (
         <View
-          style={pieces.trapSeal}
+          style={[pieces.trapSeal, sealLeft && pieces.trapSealLeft]}
           accessible
           accessibilityRole="image"
           accessibilityLabel={trappedText(trapped)}
@@ -79,6 +83,79 @@ export function MiniCard({
       )}
     </View>
   );
+}
+
+/**
+ * The width of a card so that `count` of them hold on one row of the measured width, `max` at most:
+ * five cards of a run fit even on a narrow phone.
+ */
+export function useRowFit(count: number, gap: number, max: number) {
+  const [rowWidth, setRowWidth] = useState(0);
+  const width =
+    rowWidth === 0 ? max : Math.min(max, Math.floor((rowWidth - (count - 1) * gap) / count));
+  const onLayout = (event: LayoutChangeEvent) => setRowWidth(event.nativeEvent.layout.width);
+  return { width, onLayout };
+}
+
+/** A run's answers as the cards asked, each turning over, a mark of found or missed, the time. */
+export function AnswerCards({
+  answers,
+  width,
+}: {
+  readonly answers: readonly {
+    readonly cardId: string;
+    readonly correct: boolean;
+    readonly ms: number;
+  }[];
+  /** The widest a card may be. */
+  readonly width: number;
+}) {
+  const catalog = useCatalog();
+  const fit = useRowFit(answers.length, space.s3, width);
+  if (catalog === null) return null;
+  return (
+    <View style={pieces.answers} onLayout={fit.onLayout}>
+      {answers.map((answer, index) => {
+        const tone = answer.correct ? toyMatters.green : toyMatters.red;
+        return (
+          <Animated.View
+            key={answer.cardId}
+            entering={answerIn(index)}
+            style={[pieces.answer, { width: fit.width }]}
+          >
+            <MiniCard
+              card={catalogCard(catalog, answer.cardId)}
+              width={fit.width}
+              style={answer.correct ? undefined : pieces.missed}
+            />
+            <View style={[pieces.answerIcon, { backgroundColor: tone.top }]}>
+              <Icon
+                name={answer.correct ? "check" : "close"}
+                size={12}
+                color={toyMatters.paper.top}
+              />
+            </View>
+            <Text style={pieces.answerTime} numberOfLines={1} adjustsFontSizeToFit>
+              {answerTimeText(answer)}
+            </Text>
+          </Animated.View>
+        );
+      })}
+    </View>
+  );
+}
+
+/** How far apart two answers turn over. */
+export const ANSWER_MS = 260;
+
+/** An answer turns over like a card. */
+function answerIn(index: number) {
+  return new Keyframe({
+    0: { opacity: 0, transform: [{ perspective: 600 }, { rotateY: "-90deg" }] },
+    100: { opacity: 1, transform: [{ perspective: 600 }, { rotateY: "0deg" }] },
+  })
+    .delay(200 + index * ANSWER_MS)
+    .duration(280);
 }
 
 /** Maître Furet in a medallion, and what he says in a bubble beside him. */
@@ -193,25 +270,46 @@ export function LeafKicker({ children }: { readonly children: string }) {
 }
 
 export const pieces = StyleSheet.create({
-  mini: {
-    overflow: "hidden",
-    borderRadius: radii.sm,
+  miniCost: {
+    position: "absolute",
+    top: -6,
+    right: -6,
+    alignItems: "center",
+    justifyContent: "center",
     borderWidth: 2,
     borderColor: toyValues.outline,
-    backgroundColor: toyMatters.paper.top,
-    boxShadow: `0 2px 0 ${toyValues.outline}`,
+    backgroundColor: toyMatters.gold.top,
   },
-  miniBand: {
-    flexDirection: "row",
+  miniCostText: {
+    fontFamily: fonts.ui.extrabold,
+    fontSize: fontSizes.nano,
+    color: toyValues.outline,
+    includeFontPadding: false,
+  },
+  missed: { opacity: 0.6 },
+  answers: { flexDirection: "row", flexWrap: "wrap", justifyContent: "center", gap: space.s3 },
+  answer: { alignItems: "center", gap: space.s2 },
+  answerIcon: {
+    position: "absolute",
+    top: -6,
+    left: -6,
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    borderWidth: 2,
+    borderColor: toyValues.outline,
     alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: 5,
-    height: 16,
+    justifyContent: "center",
+  },
+  answerTime: {
+    fontFamily: fonts.ui.extrabold,
+    fontSize: fontSizes.micro,
+    color: ink.pageInkMuted,
   },
   trapSeal: {
     position: "absolute",
-    right: 3,
-    bottom: 3,
+    right: -6,
+    bottom: -6,
     minWidth: 20,
     height: 20,
     paddingHorizontal: 4,
@@ -222,23 +320,12 @@ export const pieces = StyleSheet.create({
     borderColor: toyValues.outline,
     backgroundColor: toyMatters.red.top,
   },
+  trapSealLeft: { right: undefined, left: -6 },
   trapCount: {
     fontFamily: fonts.ui.extrabold,
     fontSize: fontSizes.nano,
     color: colors.inkOnColor,
     includeFontPadding: false,
-  },
-  miniCost: { fontFamily: fonts.ui.extrabold, fontSize: fontSizes.nano },
-  miniWord: {
-    minHeight: 34,
-    paddingHorizontal: 4,
-    paddingVertical: 3,
-    textAlign: "center",
-    textAlignVertical: "center",
-    fontFamily: fonts.ui.bold,
-    fontSize: fontSizes.micro,
-    lineHeight: 14,
-    color: ink.pageInk,
   },
   furet: { flexDirection: "row", alignItems: "flex-start", gap: space.s4 },
   furetFace: { width: 52, height: 52 },

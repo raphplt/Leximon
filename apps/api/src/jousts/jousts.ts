@@ -17,6 +17,7 @@ import {
   BONUS_SCHEDULE,
   bonusRulesAt,
   type ChoiceCard,
+  canEnterDeck,
   composeDeck,
   createSeededRandom,
   type DeckCandidate,
@@ -224,7 +225,7 @@ export async function readDeck(
     cardIds: [...deckOf(rules, saved, candidates)],
     saved: saved !== null,
     candidates: candidates
-      .filter((candidate) => deckProblem(rules, [candidate.cardId], candidates) !== "not_eligible")
+      .filter((candidate) => canEnterDeck(rules, candidate.level))
       .map((candidate) => ({ cardId: candidate.cardId, cost: rules.cost[candidate.rarity] })),
     budget: rules.deckBudget,
     size: rules.deckSize,

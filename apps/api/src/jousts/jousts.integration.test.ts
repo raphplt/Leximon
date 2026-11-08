@@ -594,6 +594,24 @@ describe("the routes", () => {
     expect(again?.at).toEqual(row?.at);
   });
 
+  it("offer for the deck only the words found at least once, and keep what they offer", async () => {
+    const a = await jouster({ deck: false });
+    const unfound = `${STARTER_COLLECTION}-rare-1`;
+    await setOwnedCards(db, a.userId, [{ cardId: unfound, quantity: 1 }]);
+    const deck = joustDeckResponseSchema.parse(
+      await (await app.request("/jousts/deck", { headers: headers(a) }, env)).json(),
+    );
+    const offered = deck.candidates.map((candidate) => candidate.cardId);
+    expect(offered).toHaveLength(6);
+    expect(offered).not.toContain(unfound);
+    const saved = await app.request(
+      "/jousts/deck",
+      { method: "PUT", headers: headers(a), body: JSON.stringify({ cardIds: offered }) },
+      env,
+    );
+    expect(saved.status).toBe(204);
+  });
+
   it("show the closed run and its traps, then the result sealed until seen", async () => {
     const a = await jouster();
     const b = await jouster();

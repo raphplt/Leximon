@@ -1,5 +1,5 @@
 import type { CatalogCard, JoustOutcome } from "@leximon/contract";
-import { joustOutcome } from "@leximon/core";
+import { hideWordIn, joustOutcome } from "@leximon/core";
 import type { RunSize } from "./jousts";
 
 /**
@@ -24,7 +24,7 @@ export function guideLine(step: GuideStep, size: RunSize, deck: DeckLimits): str
     case 0:
       return `Bienvenue dans la lice. Chacun apporte un deck de ses mots, et le jeu en tire ${size.questions} de chaque côté : tu trouves les mots de l'autre, l'autre trouve les tiens.`;
     case 1:
-      return `Choisis jusqu'à ${deck.size} mots que tu as déjà trouvés. Un mot rare piège mieux, mais il coûte plus : tu as ${deck.budget} points.`;
+      return `Choisis jusqu'à ${deck.size} mots que tu as déjà trouvés, avec ${deck.budget} points en tout. Un mot rare piège mieux, mais il coûte plus de points.`;
     case 2:
       return `Essayons sur ${TRAINING_QUESTIONS} mots, sans rien gagner ni perdre. Je les ai déjà joués : tu vois mon score à côté du tien.`;
     case 3:
@@ -94,7 +94,7 @@ export function trainingQuestions(
     });
     return {
       cardId: card.id,
-      definition: card.definition,
+      definition: hideWordIn(card.definition, card.word),
       choices: shuffled(
         [card.id, ...decoys.slice(0, choices - 1).map((other) => other.id)],
         random,

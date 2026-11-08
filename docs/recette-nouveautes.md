@@ -202,26 +202,26 @@ En local, aucun e-mail ne part : ce test se fait une fois le site en ligne.
 - **Faire :** un compte qui n'a jamais joué de joute ouvre `/joutes`. Suivre les quatre temps : la lice, ton deck, l'entraînement, la première joute.
 - **Attendu :**
   - Maître Furet accueille en plein écran, avec les quatre temps en haut et « Passer » à droite ;
-  - la lice : tes cartes et les siennes qui changent de côté, puis 15 s par mot, le plus de mots trouvés gagne, égalité au plus rapide ;
-  - ton deck : 10 places vides et la jauge des 25 points (voir JTE-05) ;
+  - la lice : tes vraies cartes et les siennes, deux par ligne, qui penchent vers l'autre côté, puis 15 s par mot, le plus de mots trouvés gagne, égalité au plus rapide ;
+  - ton deck : 10 places vides, rien de posé d'avance, et la jauge des 25 points (voir JTE-05) ;
   - l'entraînement : 3 mots contre Maître Furet avec le vrai chrono, ses réponses dans le ruban du bas, puis le résultat révélé comme une vraie joute, sans gain ;
-  - la première joute : « Trouver un adversaire » lance une joute classée, « Plus tard » mène à l'accueil des joutes.
+  - la première joute : ton avatar et 5 cartes de ton deck en éventail, « contre », un adversaire inconnu et 5 cartes face cachée ; « Trouver un adversaire » lance une joute classée, « Plus tard » mène à l'accueil des joutes.
   - Recharger la page ensuite : l'accueil guidé ne revient pas, ni sur le téléphone avec le même compte.
 - **Retour :**
 
 ### JTE-05 · Composer son deck
 - **Faire :** dans l'accueil guidé (ou « Modifier » depuis l'accueil des joutes), poser des cartes, en retirer, essayer de dépasser 25 points, puis 10 cartes. « Compléter pour moi » avec 3 cartes posées. Descendre sous 5 cartes, puis garder un deck de 7 cartes et recharger.
-- **Attendu :** la jauge suit chaque touche. Au-delà de 25 points ou de 10 cartes, la carte n'entre pas et une phrase dit pourquoi. « Compléter pour moi » garde les 3 cartes et remplit les places vides avec les plus rares qui tiennent. Sous 5 cartes, « Garder ce deck » est grisé. Après le rechargement, le deck de 7 cartes est en éventail sur l'accueil.
+- **Attendu :** le deck et tes mots sont de vraies cartes ; tes mots sont rangés par rareté, la plus rare en haut, avec ce que coûte chaque rareté. Une carte posée reste dans la liste, pâlie avec une coche ; la toucher, ou la toucher dans le deck, la retire. La jauge suit chaque touche, et une phrase sous le deck dit ce qui reste (« Il te reste 12 points pour 6 places. Une carte Courante coûte 1 point, une Légendaire 6. ») ou pourquoi plus rien n'entre alors que des places sont vides. Au-delà de 25 points ou de 10 cartes, la carte n'entre pas et une phrase dit pourquoi. « Compléter pour moi » garde les 3 cartes et remplit les 7 places vides, avec des cartes aussi rares que les points le permettent. Sous 5 cartes, « Garder ce deck » est grisé ; « Garder ce deck » passe pour tout deck valide. Après le rechargement, le deck de 7 cartes est en éventail sur l'accueil.
 - **Retour :**
 
 ### JTE-06 · Pas de joute sans deck
 - **Faire :** un compte neuf passe le temps « Ton deck » sans garder de deck, finit l'accueil guidé. Puis un compte qui a moins de 5 mots en Esquisse ouvre `/joutes`.
-- **Attendu :** le premier voit « Composer mon deck » à la place de « Jouter », avec « Compose ton deck pour jouter : ce sont tes mots que tes adversaires devront trouver. ». Le second a ce bouton grisé, avec « Il te faut au moins 5 mots trouvés une fois pour faire un deck. Réponds à tes défis pour en trouver. »
+- **Attendu :** le premier voit « Composer mon deck » à la place de « Joute classée », avec « Compose ton deck pour jouter : ce sont tes mots que tes adversaires devront trouver. ». Le second a ce bouton grisé, avec « Il te faut au moins 5 mots trouvés une fois pour faire un deck. Réponds à tes défis pour en trouver. »
 - **Retour :**
 
 ### JTE-06b · Un testeur qui a déjà jouté
 - **Faire :** un compte qui a joué des joutes avant cette version ouvre `/joutes`.
-- **Attendu :** il voit l'accueil guidé une fois ; au temps « Ton deck », son deck est déjà posé, il n'a qu'à le garder. S'il passe ce temps, sa prochaine joute garde le deck qu'il jouait.
+- **Attendu :** il voit l'accueil guidé une fois ; au temps « Ton deck », les places sont vides s'il n'a jamais gardé de deck (« Compléter pour moi » en refait un d'une touche), et son deck est posé s'il en a gardé un. S'il passe ce temps, sa prochaine joute garde le deck qu'il jouait.
 - **Retour :**
 
 ### JTE-06c · La bulle « ? »
@@ -235,18 +235,19 @@ En local, aucun e-mail ne part : ce test se fait une fois le site en ligne.
 
 ### JTE-07 · Lancer
 - **Faire :** A clique « Défier un ami ». Regarder la liste, puis défier B.
-- **Attendu :** « Jouter » est le gros bouton, « Défier un ami » est à côté, plus petit. La liste montre les amis et les membres du clan qui peuvent jouter, avec avatar et pseudo. C n'y est pas. Un ami qui n'a pas le niveau ou l'accès n'y est pas non plus. Après « Défier », A arrive sur la joute : les deux avatars face à face, puis 3, 2, 1 (un toucher passe ce face-à-face).
+- **Attendu :** « Joute classée » est le gros bouton, « Défier un ami » est à côté, plus petit. La liste montre les amis et les membres du clan qui peuvent jouter, avec avatar et pseudo. C n'y est pas. Un ami qui n'a pas le niveau ou l'accès n'y est pas non plus. Après « Défier », A arrive sur la joute : les deux avatars face à face, puis 3, 2, 1 (un toucher passe ce face-à-face).
 - **Retour :**
 
 ### JTE-08 · Jouer sa partie
 - **Faire :** A répond aux 5 questions : une juste, une fausse, et une laissée passer sans répondre. Puis « Voir le bilan ».
 - **Attendu :**
-  - en haut, les deux rubans (A et B), « 1 / 5 » et l'anneau du chrono, qui se vide, rougit et bat les 5 dernières secondes avec un tic ;
-  - la définition arrive comme une carte retournée, avec la couleur de sa rareté ; 4 mots, sans le mot cherché dans la définition ;
+  - la joute prend toute la largeur de la page ; en haut, le bandeau des deux joueurs (avatar, pseudo, score, une case par mot) et, au milieu, l'anneau du chrono, qui se vide, rougit et bat les 5 dernières secondes avec un tic, avec « Mot 1 sur 5 » dessous ;
+  - la définition arrive sur une grande carte à deviner, retournée, aux couleurs de sa rareté, un « ? » à la place de la gravure et « Quel est ce mot ? » en pied ; 4 mots dessous ; un mot de la même famille que le mot cherché est remplacé dans la définition par une étiquette sombre « même famille » (jamais « … ») ;
+  - après la réponse, la carte se retourne et montre la vraie carte du mot ;
   - une bonne réponse : le mot s'allume en vert, un éclat, un son, une vibration et un « +1 » qui s'envole ; une faute : la carte tremble, le choix passe en rouge et le bon mot s'allume en vert ;
   - la question laissée passer : « Le temps est écoulé : la question compte fausse. », puis la suivante ;
   - à la fin, le tampon « Partie jouée » ;
-  - le bilan : les 5 réponses se retournent une à une, le score se compte, la barre du niveau se remplit de 20 XP ; « Tes pièges » montre les 5 mots du deck de A que B devra trouver ; « B a jusqu'à demain … On te prévient au courrier. » ; « Nouvelle joute » puis « Retour aux joutes ».
+  - le bilan : les 5 cartes se retournent une à une, chacune marquée trouvée ou manquée avec son temps, le score se compte, la barre du niveau se remplit de 20 XP ; « Tes pièges » montre les 5 cartes du deck de A que B devra trouver ; « B a jusqu'à demain … On te prévient au courrier. » ; « Nouvelle joute » puis « Retour aux joutes ».
 - **Retour :**
 
 ### JTE-09 · Reprendre après un rechargement
@@ -266,13 +267,13 @@ En local, aucun e-mail ne part : ce test se fait une fois le site en ligne.
 
 ### JTE-12 · La partie de B, contre le fantôme
 - **Faire :** B joue sa partie.
-- **Attendu :** le ruban du bas montre les réponses de A au même moment de sa partie, celui du haut celles de B ; chaque ruban a son score à droite.
+- **Attendu :** dans le bandeau du haut, le côté droit montre les réponses de A au même moment de sa partie, le côté gauche celles de B ; chaque côté a son score près de l'avatar.
 - **Retour :**
 
 ### JTE-13 · Le résultat
 - **Faire :** B finit sa partie et touche « Voir le résultat ». A ouvre sa lettre « Ta joute contre B est finie », puis `/joutes`.
 - **Attendu :**
-  - B voit la révélation tout de suite : les deux avatars, les questions retournées une à une sur deux colonnes avec le score qui monte de chaque côté, puis la bannière Victoire, Défaite ou Égalité (fanfare, éclats et vibration pour une victoire), les gains (XP, sachet), et « Ton mot … a piégé A. » ;
+  - B voit la révélation tout de suite : les deux avatars, les questions retournées une à une sur deux colonnes avec le score qui monte de chaque côté, puis la bannière Victoire, Défaite ou Égalité (fanfare, éclats et vibration pour une victoire), les gains (XP, sachet), les cartes des deux parties (« Les mots de A », « Tes mots »), chacune marquée trouvée ou manquée, et « Ton mot … a piégé A. » ;
   - à égalité de bonnes réponses, le temps total départage ;
   - chez A, la joute est dans « Résultats à découvrir », scellée ; l'ouvrir casse le sceau et joue la même révélation de son côté ;
   - ensuite, la joute passe dans « Terminées » (« Victoire », « Classée · 3 à 2 ») et rouvrir la joute montre le résultat entier avec « Revoir », sur le web comme sur le téléphone.
@@ -450,7 +451,7 @@ Le mobile se prépare comme dans [recette-mobile.md](recette-mobile.md). Les com
 
 ### MJT-05 · Tournoi et classement
 - **Faire :** sur le téléphone, ouvrir les joutes, puis « Classement ». Jouer une joute classée contre un bot et la gagner, puis une joute libre. Avec les raccourcis, finir une semaine (JTE-28).
-- **Attendu :** comme JTE-23 à JTE-32 : l'en-tête de ligue en haut des joutes, « Joute libre » sous le bouton « Jouter », le point rouge quand une récompense attend, « Réclamer », « Mon tournoi » avec ses automates et ses zones teintées, l'échelle des ligues, les onglets des classements. À la révélation, l'écu, « +3 points » et ta place dans le groupe.
+- **Attendu :** comme JTE-23 à JTE-32 : l'en-tête de ligue en haut des joutes, « Joute libre » sous le bouton « Joute classée », le point rouge quand une récompense attend, « Réclamer », « Mon tournoi » avec ses automates et ses zones teintées, l'échelle des ligues, les onglets des classements. À la révélation, l'écu, « +3 points » et ta place dans le groupe.
 - **Retour :**
 
 ### MJT-06 · Pièges et souhaits

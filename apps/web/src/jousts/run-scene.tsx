@@ -1,20 +1,16 @@
 "use client";
 
 import type { AnswerJoustResponse } from "@leximon/contract";
+import { collectionName } from "@leximon/contract/client";
 import type { Rarity } from "@leximon/core";
-import { cssFill, rarityStyles, revealEffects, toyMatters } from "@leximon/tokens";
+import { revealEffects, toyMatters } from "@leximon/tokens";
 import { secondsLeft } from "@leximon/view-model";
-import {
-  type CSSProperties,
-  type RefObject,
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-} from "react";
+import { type CSSProperties, useCallback, useEffect, useRef, useState } from "react";
 import { play, vibrate } from "@/booster/feedback";
 import { useCatalog } from "@/cards/use-catalog";
-import { RarityIcon } from "@/components/rarity-icon";
+import { Card, QuestionCard } from "@/components/card";
+import { DefinitionText } from "@/components/definition-text";
+import { useNarrow } from "@/lib/use-narrow";
 import desk from "@/play/desk-columns.module.css";
 import { catalogCard } from "@/trades/card-thumb";
 import { Icon } from "@/ui/icon";
@@ -98,6 +94,7 @@ export function RunScene({
 }) {
   const stage = useStage();
   const catalog = useCatalog();
+  const narrow = useNarrow();
   const [phase, setPhase] = useState<Phase>({ kind: "versus", count: 0 });
   const [results, setResults] = useState<readonly LaneAnswer[]>(() =>
     Array.from({ length: answered }, () => null),
@@ -239,187 +236,202 @@ export function RunScene({
     ghost === null
       ? []
       : ghost.slice(0, phase.kind === "done" ? ghost.length : results.length).map((g) => g.correct);
+  const faceSize = narrow ? 30 : 56;
+  const cardWidth = narrow ? 212 : 330;
+  const revealed =
+    shown?.kind === "answered" && catalog !== null && shown.answer.rightCardId !== ""
+      ? catalogCard(catalog, shown.answer.rightCardId)
+      : null;
 
   return (
-    <section className={`${ui.leaf} ${styles.joust} ${desk.rising}`} style={rise(0)}>
-      <header className={styles.joustHead}>
-        <span className={desk.leafKicker}>{kicker}</span>
-      </header>
+    <section className={`${ui.leaf} ${styles.arena} ${desk.rising}`} style={rise(0)}>
+      <span className={`${desk.leafKicker} ${styles.arenaKicker}`}>{kicker}</span>
 
-      <Lanes me={me.name} them={them.name} mine={results} theirs={ghostSoFar} total={questions} />
+      <div className={styles.hud}>
+        <HudSide duelist={me} answers={results} total={questions} size={faceSize} side="me" />
+        <div className={styles.hudMiddle}>
+          {shown !== null ? (
+            <>
+              <Ring
+                key={shown.question.position}
+                question={shown.question}
+                running={shown.kind === "question"}
+                left={left ?? 0}
+              />
+              <span className={styles.counter}>
+                Mot {shown.question.position + 1} sur {questions}
+              </span>
+            </>
+          ) : (
+            <Lettering className={styles.hudVersus}>contre</Lettering>
+          )}
+        </div>
+        <HudSide
+          duelist={them}
+          answers={ghostSoFar}
+          total={questions}
+          size={faceSize}
+          side="them"
+        />
+      </div>
 
-      {phase.kind === "versus" && (
-        // A touch skips the face-to-face.
-        <button type="button" className={styles.versusStage} onClick={skipVersus}>
-          <span className={styles.versusSide} data-side="left">
-            <DuelistFace duelist={me} size={96} />
-            <Lettering className={styles.versusName}>{me.name}</Lettering>
-          </span>
-          <span className={styles.versusMiddle}>
-            {phase.count === 0 ? (
-              <Lettering className={styles.versusWord}>contre</Lettering>
-            ) : (
-              <Lettering key={phase.count} className={styles.countdown}>
-                {COUNTDOWN[phase.count - 1]}
+      <div className={styles.arenaStage}>
+        {phase.kind === "versus" && (
+          // A touch skips the face-to-face.
+          <button type="button" className={styles.versusStage} onClick={skipVersus}>
+            <span className={styles.versusSide} data-side="left">
+              <DuelistFace duelist={me} size={narrow ? 96 : 150} />
+              <Lettering className={styles.versusName}>{me.name}</Lettering>
+            </span>
+            <span className={styles.versusMiddle}>
+              {phase.count === 0 ? (
+                <Lettering className={styles.versusWord}>contre</Lettering>
+              ) : (
+                <Lettering key={phase.count} className={styles.countdown}>
+                  {COUNTDOWN[phase.count - 1]}
+                </Lettering>
+              )}
+            </span>
+            <span className={styles.versusSide} data-side="right">
+              <DuelistFace duelist={them} size={narrow ? 96 : 150} />
+              <Lettering className={styles.versusName}>{them.name}</Lettering>
+            </span>
+          </button>
+        )}
+
+        {phase.kind === "loading" && <div className={styles.questionWait} aria-busy="true" />}
+
+        {shown !== null && (
+          <div className={styles.questionStage}>
+            <div
+              key={`card-${shown.question.position}`}
+              ref={card}
+              className={styles.dealt}
+              style={{ "--w": `${cardWidth}px` } as CSSProperties}
+            >
+              <div className={styles.flip} data-turned={revealed !== null || undefined}>
+                <div className={styles.flipFace}>
+                  <QuestionCard
+                    rarity={rarityOf(shown.question.choices) ?? "common"}
+                    width={cardWidth}
+                  >
+                    <DefinitionText text={shown.question.definition} />
+                  </QuestionCard>
+                </div>
+                {revealed !== null && catalog !== null && (
+                  <div className={styles.flipBack}>
+                    <Card
+                      card={revealed}
+                      collectionName={collectionName(catalog, revealed.collectionId)}
+                      width={cardWidth}
+                    />
+                  </div>
+                )}
+              </div>
+            </div>
+            <div className={styles.choicesColumn}>
+              <div className={styles.choices}>
+                {shown.question.choices.map((cardId) => {
+                  const answered = shown.kind === "answered" ? shown : null;
+                  const isRight = answered !== null && cardId === answered.answer.rightCardId;
+                  const chosen = answered !== null && answered.chosen === cardId;
+                  const word = wordOf(cardId);
+                  return (
+                    <Toy
+                      key={cardId}
+                      matter={isRight ? "green" : chosen ? "red" : "paper"}
+                      className={styles.choice}
+                      data-dim={(answered !== null && !isRight && !chosen) || undefined}
+                      disabled={shown.kind !== "question" || shown.sending}
+                      onClick={(event) => {
+                        if (shown.kind === "question" && !shown.sending) {
+                          void answer(shown.question, cardId, event.currentTarget);
+                        }
+                      }}
+                    >
+                      {isRight || chosen ? <Lettering>{word}</Lettering> : word}
+                    </Toy>
+                  );
+                })}
+              </div>
+              {shown.kind === "answered" && shown.answer.late && (
+                <p className={styles.lateLine} role="status">
+                  Le temps est écoulé : la question compte fausse.
+                </p>
+              )}
+            </div>
+            {flying > 0 && (
+              <Lettering key={flying} className={styles.plusOne}>
+                +1
               </Lettering>
             )}
-          </span>
-          <span className={styles.versusSide} data-side="right">
-            <DuelistFace duelist={them} size={96} />
-            <Lettering className={styles.versusName}>{them.name}</Lettering>
-          </span>
-        </button>
-      )}
-
-      {phase.kind === "loading" && <div className={styles.questionWait} aria-busy="true" />}
-
-      {shown !== null && (
-        <div className={styles.questionStage}>
-          <div className={styles.questionTop}>
-            <span className={styles.counter}>
-              {shown.question.position + 1} / {questions}
-            </span>
-            <Ring
-              key={shown.question.position}
-              question={shown.question}
-              running={shown.kind === "question"}
-              left={left ?? 0}
-            />
           </div>
-          <Definition
-            key={`card-${shown.question.position}`}
-            refTo={card}
-            rarity={rarityOf(shown.question.choices)}
-            text={shown.question.definition}
-          />
-          <div className={styles.choices}>
-            {shown.question.choices.map((cardId) => {
-              const answered = shown.kind === "answered" ? shown : null;
-              const isRight = answered !== null && cardId === answered.answer.rightCardId;
-              const chosen = answered !== null && answered.chosen === cardId;
-              const word = wordOf(cardId);
-              return (
-                <Toy
-                  key={cardId}
-                  matter={isRight ? "green" : chosen ? "red" : "paper"}
-                  className={styles.choice}
-                  data-dim={(answered !== null && !isRight && !chosen) || undefined}
-                  disabled={shown.kind !== "question" || shown.sending}
-                  onClick={(event) => {
-                    if (shown.kind === "question" && !shown.sending) {
-                      void answer(shown.question, cardId, event.currentTarget);
-                    }
-                  }}
-                >
-                  {isRight || chosen ? <Lettering>{word}</Lettering> : word}
-                </Toy>
-              );
-            })}
+        )}
+
+        {phase.kind === "done" && (
+          <div className={styles.doneStage}>
+            <span className={styles.stamp}>Partie jouée</span>
+            <Toy matter="gold" className={styles.doneAction} onClick={onDone}>
+              {doneLabel}
+            </Toy>
           </div>
-          {shown.kind === "answered" && shown.answer.late && (
-            <p className={styles.lateLine} role="status">
-              Le temps est écoulé : la question compte fausse.
-            </p>
-          )}
-          {flying > 0 && (
-            <Lettering key={flying} className={styles.plusOne}>
-              +1
-            </Lettering>
-          )}
-        </div>
-      )}
+        )}
 
-      {phase.kind === "done" && (
-        <div className={styles.doneStage}>
-          <span className={styles.stamp}>Partie jouée</span>
-          <Toy matter="gold" className={styles.control} onClick={onDone}>
-            {doneLabel}
-          </Toy>
-        </div>
-      )}
-
-      {error !== null && (
-        <div className={styles.runError} role="alert">
-          <p className={styles.notice}>{error}</p>
-          <Toy matter="paper" className={styles.control} onClick={() => retry.current()}>
-            Réessayer
-          </Toy>
-        </div>
-      )}
+        {error !== null && (
+          <div className={styles.runError} role="alert">
+            <p className={styles.notice}>{error}</p>
+            <Toy matter="paper" className={styles.control} onClick={() => retry.current()}>
+              Réessayer
+            </Toy>
+          </div>
+        )}
+      </div>
     </section>
   );
 }
 
-function Definition({
-  refTo,
-  rarity,
-  text,
-}: {
-  readonly refTo: RefObject<HTMLDivElement | null>;
-  readonly rarity: Rarity | null;
-  readonly text: string;
-}) {
-  return (
-    <div
-      ref={refTo}
-      className={styles.definition}
-      style={
-        rarity === null
-          ? undefined
-          : ({ "--band": cssFill(rarityStyles[rarity].band) } as CSSProperties)
-      }
-    >
-      <span className={styles.definitionBand}>
-        {rarity !== null && <RarityIcon rarity={rarity} size="14px" />}
-      </span>
-      <p>{text}</p>
-    </div>
-  );
-}
-
-/** Two ribbons: the player's answers and the other's recorded ones, question by question. */
-function Lanes({
-  me,
-  them,
-  mine,
-  theirs,
+/** One side of the scoreboard: the player's face, name, a pip per question, and their score. */
+function HudSide({
+  duelist,
+  answers,
   total,
+  size,
+  side,
 }: {
-  readonly me: string;
-  readonly them: string;
-  readonly mine: readonly LaneAnswer[];
-  readonly theirs: readonly LaneAnswer[];
+  readonly duelist: Duelist;
+  readonly answers: readonly LaneAnswer[];
   readonly total: number;
+  readonly size: number;
+  readonly side: "me" | "them";
 }) {
-  const lane = (name: string, answers: readonly LaneAnswer[], side: "me" | "them") => (
-    <div className={styles.lane} data-side={side}>
-      <span className={styles.laneName}>{name}</span>
-      <span className={styles.lanePips}>
-        {Array.from({ length: total }, (_, index) => {
-          const answer = answers[index];
-          const state =
-            answer === undefined
-              ? undefined
-              : answer === null
-                ? "played"
-                : answer
-                  ? "right"
-                  : "wrong";
-          return (
-            // biome-ignore lint/suspicious/noArrayIndexKey: one pip per question, in order
-            <span key={index} className={styles.pip} data-state={state}>
-              {typeof answer === "boolean" && <Icon name={answer ? "check" : "close"} size={12} />}
-            </span>
-          );
-        })}
-      </span>
-      <Lettering className={styles.laneScore}>{answers.filter((a) => a === true).length}</Lettering>
-    </div>
-  );
   return (
-    <div className={styles.lanes}>
-      {lane(me, mine, "me")}
-      {lane(them, theirs, "them")}
+    <div className={styles.hudSide} data-side={side}>
+      <DuelistFace duelist={duelist} size={size} />
+      <div className={styles.hudBody}>
+        <span className={styles.hudName}>{duelist.name}</span>
+        <span className={styles.lanePips}>
+          {Array.from({ length: total }, (_, index) => {
+            const answer = answers[index];
+            const state =
+              answer === undefined
+                ? undefined
+                : answer === null
+                  ? "played"
+                  : answer
+                    ? "right"
+                    : "wrong";
+            return (
+              // biome-ignore lint/suspicious/noArrayIndexKey: one pip per question, in order
+              <span key={index} className={styles.pip} data-state={state}>
+                {typeof answer === "boolean" && (
+                  <Icon name={answer ? "check" : "close"} size={12} />
+                )}
+              </span>
+            );
+          })}
+        </span>
+      </div>
+      <Lettering className={styles.hudScore}>{answers.filter((a) => a === true).length}</Lettering>
     </div>
   );
 }

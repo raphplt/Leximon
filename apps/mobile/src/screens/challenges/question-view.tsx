@@ -56,6 +56,7 @@ import { openCard } from "@/screens/trades/card-row";
 import { TAB_BAR_RISE } from "@/shell/tab-bar";
 import { alpha, colors, fontSizes, fonts, paperColors, radii, space } from "@/theme";
 import { Button } from "@/ui/button";
+import { DefinitionText } from "@/ui/definition-text";
 import { GainBanner } from "@/ui/gain-banner";
 import { Icon } from "@/ui/icon";
 import { useOptionalStage } from "@/ui/stage";
@@ -253,7 +254,11 @@ export function QuestionView({
         <HeardPrompt key={question.cardId} card={card} shown={result !== null} />
       ) : pairs ? null : (
         <Text style={styles.promptDefinition} accessibilityRole="header">
-          {result === null ? hideWordIn(card.definition, card.word) : card.definition}
+          {result === null ? (
+            <DefinitionText text={hideWordIn(card.definition, card.word)} />
+          ) : (
+            card.definition
+          )}
         </Text>
       )}
       {question.format === "typed" && result === null && (
@@ -667,7 +672,11 @@ function PairsRound({
                       judged && library.onLeather,
                     ]}
                   >
-                    {side === "word" ? card.word : hideWordIn(card.definition, card.word)}
+                    {side === "word" ? (
+                      card.word
+                    ) : (
+                      <DefinitionText text={hideWordIn(card.definition, card.word)} />
+                    )}
                   </Text>
                 </Pressable>
               </Reaction>

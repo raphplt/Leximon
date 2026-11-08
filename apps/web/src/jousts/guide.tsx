@@ -24,7 +24,9 @@ import {
   trainingQuestions,
 } from "@leximon/view-model";
 import { type CSSProperties, useEffect, useMemo, useRef, useState } from "react";
+import { CardBack } from "@/booster/card-back";
 import { useCatalog } from "@/cards/use-catalog";
+import { useNarrow } from "@/lib/use-narrow";
 import { MainAction, PaperAction } from "@/library/play-pieces";
 import desk from "@/play/desk-columns.module.css";
 import { catalogCard } from "@/trades/card-thumb";
@@ -47,7 +49,6 @@ const RULE_ICONS: readonly IconName[] = ["clock", "check", "bolt"];
 export function Guide({
   deck,
   deckSaved,
-  jousted,
   size,
   me,
   busy,
@@ -58,8 +59,6 @@ export function Guide({
 }: {
   readonly deck: JoustDeckResponse;
   readonly deckSaved: boolean;
-  /** The player jousted before composing a deck: the deck they played starts in place. */
-  readonly jousted: boolean;
   readonly size: RunSize;
   readonly me: Duelist;
   readonly busy: boolean;
@@ -96,7 +95,7 @@ export function Guide({
       {step === 1 && (
         <DeckBuilder
           deck={deck}
-          initial={deck.saved || jousted ? deck.cardIds : []}
+          initial={deck.saved ? deck.cardIds : []}
           intro={
             <Furet>
               <p>{guideLine(1, size, deck)}</p>
@@ -110,25 +109,17 @@ export function Guide({
       )}
       {step === 2 && <Training deck={deck} size={size} me={me} onNext={next} />}
       {step === 3 && (
-        <div className={styles.firstJoust}>
-          <Furet>
-            <p>{deckSaved ? guideLine(3, size, deck) : GUIDE_NO_DECK}</p>
-            {deckSaved && <p>{GUIDE_DECK_SAVED}</p>}
-          </Furet>
-          {refusal !== null && (
-            <p className={styles.notice} role="alert">
-              {refusal}
-            </p>
-          )}
-          <div className={styles.firstJoustAction}>
-            {deckSaved ? (
-              <MainAction label={LAUNCH_RANKED} disabled={busy} onClick={onLaunch} />
-            ) : (
-              <MainAction label={COMPOSE_DECK} onClick={() => setStep(1)} />
-            )}
-            <PaperAction label={GUIDE_LATER} onClick={onClose} />
-          </div>
-        </div>
+        <FirstJoust
+          deck={deck}
+          deckSaved={deckSaved}
+          size={size}
+          me={me}
+          busy={busy}
+          refusal={refusal}
+          onCompose={() => setStep(1)}
+          onLaunch={onLaunch}
+          onLater={onClose}
+        />
       )}
     </section>
   );
@@ -147,6 +138,7 @@ function GuideLists({
   readonly onNext: () => void;
 }) {
   const catalog = useCatalog();
+  const narrow = useNarrow();
   const sides = useMemo(() => {
     if (catalog === null) return null;
     const mine = deck.cardIds.slice(0, size.questions).map((id) => catalogCard(catalog, id));
@@ -161,6 +153,7 @@ function GuideLists({
       <MiniCard
         key={card.id}
         card={card}
+        width={narrow ? 54 : 76}
         className={cross}
         style={{ "--i": index } as CSSProperties}
       />
@@ -199,6 +192,102 @@ function GuideLists({
       </ul>
       <div className={styles.guideAction}>
         <PaperAction label={GUIDE_UNDERSTOOD} onClick={onNext} />
+      </div>
+    </div>
+  );
+}
+
+/**
+ * The last step: the player's deck face to face with an opponent still to find, the cards the
+ * other will bring still face down, and the button that launches the first ranked joust.
+ */
+function FirstJoust({
+  deck,
+  deckSaved,
+  size,
+  me,
+  busy,
+  refusal,
+  onCompose,
+  onLaunch,
+  onLater,
+}: {
+  readonly deck: JoustDeckResponse;
+  readonly deckSaved: boolean;
+  readonly size: RunSize;
+  readonly me: Duelist;
+  readonly busy: boolean;
+  readonly refusal: string | null;
+  readonly onCompose: () => void;
+  readonly onLaunch: () => void;
+  readonly onLater: () => void;
+}) {
+  const catalog = useCatalog();
+  const narrow = useNarrow();
+  const width = narrow ? 50 : 72;
+  const mine = deckSaved && catalog !== null ? deck.cardIds.slice(0, size.questions) : [];
+  const fan = (index: number, count: number) =>
+    ({ "--i": index - (count - 1) / 2 }) as CSSProperties;
+  return (
+    <div className={styles.firstJoust}>
+      <Furet>
+        <p>{deckSaved ? guideLine(3, size, deck) : GUIDE_NO_DECK}</p>
+        {deckSaved && <p>{GUIDE_DECK_SAVED}</p>}
+      </Furet>
+      <div className={styles.matchup}>
+        <div className={styles.matchupSide}>
+          <DuelistFace duelist={me} size={narrow ? 64 : 88} />
+          <Lettering className={styles.matchupName}>{me.name}</Lettering>
+          <div className={styles.matchupFan}>
+            {catalog !== null &&
+              mine.map((cardId, index) => (
+                <MiniCard
+                  key={cardId}
+                  card={catalogCard(catalog, cardId)}
+                  width={width}
+                  className={styles.matchupCard}
+                  style={fan(index, mine.length)}
+                />
+              ))}
+          </div>
+        </div>
+        <Lettering className={styles.versus}>contre</Lettering>
+        <div className={styles.matchupSide}>
+          <span
+            className={styles.medallion}
+            data-tone="red"
+            style={{ "--size": `${narrow ? 64 : 88}px` } as CSSProperties}
+            aria-hidden="true"
+          >
+            ?
+          </span>
+          <Lettering className={styles.matchupName}>Un adversaire</Lettering>
+          <div className={styles.matchupFan} aria-hidden="true">
+            {Array.from({ length: size.questions }, (_, index) => (
+              <span
+                // biome-ignore lint/suspicious/noArrayIndexKey: backs of cards still unknown
+                key={index}
+                className={styles.matchupCard}
+                style={fan(index, size.questions)}
+              >
+                <CardBack rarity="rare" width={width} />
+              </span>
+            ))}
+          </div>
+        </div>
+      </div>
+      {refusal !== null && (
+        <p className={styles.notice} role="alert">
+          {refusal}
+        </p>
+      )}
+      <div className={styles.firstJoustAction}>
+        {deckSaved ? (
+          <MainAction label={LAUNCH_RANKED} disabled={busy} onClick={onLaunch} />
+        ) : (
+          <MainAction label={COMPOSE_DECK} onClick={onCompose} />
+        )}
+        <PaperAction label={GUIDE_LATER} onClick={onLater} />
       </div>
     </div>
   );

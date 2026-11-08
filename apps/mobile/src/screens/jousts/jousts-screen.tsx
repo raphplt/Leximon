@@ -68,7 +68,7 @@ const FAN_CARD = 60;
 /** Each leaf rises in turn when the screen appears. */
 const rise = (index: number) => FadeInUp.delay(index * 90).duration(320);
 
-/** The jousts' hall: the first visit, then « Jouter », the deck and the player's jousts. */
+/** The jousts' hall: the first visit, then « Joute classée », the deck and the player's jousts. */
 export function JoustsScreen() {
   return (
     <ParticleStage>
@@ -144,7 +144,6 @@ function JoustsHall() {
         <Guide
           deck={deck}
           deckSaved={jousts.deckSaved}
-          jousted={jousts.jousts.length > 0}
           size={runSize(Date.now())}
           me={{ name: me?.pseudo ?? "Toi", avatar: me?.avatar ?? null, frame: me?.frame ?? null }}
           busy={busy}
@@ -351,6 +350,7 @@ function Home({
                         <MiniCard
                           card={catalogCard(catalog, cardId)}
                           trapped={trapsByCard.get(cardId) ?? 0}
+                          sealLeft
                           width={FAN_CARD}
                         />
                       </View>

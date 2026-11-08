@@ -6,6 +6,7 @@ import {
   answerTitle,
   challengeOutlook,
   dailyView,
+  definitionPieces,
   escapingWords,
   feedbackLine,
   hideWordIn,
@@ -308,6 +309,24 @@ describe("défis screen", () => {
     expect(hideWordIn("Petit fossé creusé au fond d'un grand fossé.", "cunette")).toBe(
       "Petit fossé creusé au fond d'un grand fossé.",
     );
+  });
+
+  it("marks each hidden word apart, and leaves a cut-short opening as it is", () => {
+    expect(definitionPieces("Petit du …, jeune ….")).toEqual([
+      { kind: "text", text: "Petit du " },
+      { kind: "hidden" },
+      { kind: "text", text: ", jeune " },
+      { kind: "hidden" },
+      { kind: "text", text: "." },
+    ]);
+    expect(definitionPieces("Marchand d'….")).toEqual([
+      { kind: "text", text: "Marchand d'" },
+      { kind: "hidden" },
+      { kind: "text", text: "." },
+    ]);
+    expect(definitionPieces("Cordage cousu en ourlet…")).toEqual([
+      { kind: "text", text: "Cordage cousu en ourlet…" },
+    ]);
   });
 });
 

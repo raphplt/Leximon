@@ -37,6 +37,7 @@ import { type CSSProperties, type ReactNode, useCallback, useEffect, useState } 
 import { useCatalog } from "@/cards/use-catalog";
 import { Avatar } from "@/components/avatar";
 import { api } from "@/lib/api";
+import { useNarrow } from "@/lib/use-narrow";
 import { useNow } from "@/lib/use-now";
 import { MainAction } from "@/library/play-pieces";
 import desk from "@/play/desk-columns.module.css";
@@ -63,7 +64,7 @@ type Loaded =
   | { readonly state: "failed" }
   | { readonly state: "ready"; readonly jousts: JoustsResponse; readonly deck: JoustDeckResponse };
 
-/** The jousts' hall: the first visit, then « Jouter », the deck and the player's jousts. */
+/** The jousts' hall: the first visit, then « Joute classée », the deck and the player's jousts. */
 export function JoustsScreen() {
   return (
     <ParticleStage>
@@ -129,7 +130,6 @@ function JoustsHall() {
         <Guide
           deck={deck}
           deckSaved={jousts.deckSaved}
-          jousted={jousts.jousts.length > 0}
           size={runSize(Date.now())}
           me={{ name: me?.pseudo ?? "Toi", avatar: me?.avatar ?? null, frame: me?.frame ?? null }}
           busy={busy}
@@ -176,6 +176,7 @@ function Home({
   readonly onDeckSaved: () => void;
 }) {
   const catalog = useCatalog();
+  const narrow = useNarrow();
   const now = useNow(60_000) || Date.now();
   const [deckOpen, setDeckOpen] = useState(false);
   const [friendsOpen, setFriendsOpen] = useState(false);
@@ -284,6 +285,7 @@ function Home({
                   <MiniCard
                     key={cardId}
                     card={catalogCard(catalog, cardId)}
+                    width={narrow ? 62 : 92}
                     trapped={trapsByCard.get(cardId) ?? 0}
                     className={styles.fanCard}
                     style={{ "--i": index - (deck.cardIds.length - 1) / 2 } as CSSProperties}

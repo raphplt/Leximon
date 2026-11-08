@@ -71,6 +71,7 @@ import { loadCatalog } from "@/cards/catalog";
 import { SpeechButtons } from "@/cards/speech-buttons";
 import { useSpokenWord } from "@/cards/use-spoken-word";
 import { Card } from "@/components/card";
+import { DefinitionText } from "@/components/definition-text";
 import { api } from "@/lib/api";
 import { useNarrow } from "@/lib/use-narrow";
 import { useNow } from "@/lib/use-now";
@@ -563,7 +564,11 @@ function Asked({
           <HeardPrompt key={question.cardId} card={card} shown={result !== null} />
         ) : pairs ? null : (
           <h2 id="prompt" className={styles.promptDefinition}>
-            {result === null ? hideWordIn(card.definition, card.word) : card.definition}
+            {result === null ? (
+              <DefinitionText text={hideWordIn(card.definition, card.word)} />
+            ) : (
+              card.definition
+            )}
           </h2>
         )}
         {question.format === "typed" && result === null && (
@@ -791,7 +796,11 @@ function PairsRound({
                   disabled={done || state.matched.includes(cardId)}
                   onClick={() => pick(side, cardId)}
                 >
-                  {side === "word" ? card.word : hideWordIn(card.definition, card.word)}
+                  {side === "word" ? (
+                    card.word
+                  ) : (
+                    <DefinitionText text={hideWordIn(card.definition, card.word)} />
+                  )}
                 </button>
               </li>
             );

@@ -20,7 +20,9 @@ import { Icon } from "@/ui/icon";
 import { useStage } from "@/ui/stage";
 import { Leaf, Lettering, ToyBody, ToyIcon } from "@/ui/toy";
 import { TournamentGain } from "./league-pieces";
-import { type Duelist, DuelistFace, ink, LeafKicker, Looping, pieces } from "./pieces";
+import { AnswerCards, type Duelist, DuelistFace, ink, LeafKicker, Looping, pieces } from "./pieces";
+
+const REVEAL_CARD = 60;
 
 export interface RevealAnswer {
   readonly cardId: string;
@@ -261,6 +263,18 @@ export function Reveal({
               <TournamentGain tournament={data.gains.tournament} />
             </Animated.View>
           )}
+          <Animated.View entering={FadeInUp.delay(400).duration(300)} style={styles.revealCards}>
+            <View style={styles.revealSide}>
+              <LeafKicker>{`Les mots de ${data.them.name}`}</LeafKicker>
+              <AnswerCards answers={data.mine} width={REVEAL_CARD} />
+            </View>
+            {data.theirs !== null && (
+              <View style={styles.revealSide}>
+                <LeafKicker>Tes mots</LeafKicker>
+                <AnswerCards answers={data.theirs} width={REVEAL_CARD} />
+              </View>
+            )}
+          </Animated.View>
           {data.closing !== null && (
             <Animated.View entering={FadeInUp.delay(480).duration(300)} style={styles.closing}>
               <ToyIcon name="jousts" size={24} />
@@ -362,6 +376,8 @@ const styles = StyleSheet.create({
   banner: { minHeight: 76, alignItems: "center", justifyContent: "center" },
   bannerBody: { paddingHorizontal: space.s16, paddingVertical: space.s5 },
   gains: { alignItems: "center", gap: space.s6 },
+  revealCards: { alignSelf: "stretch", gap: space.s5 },
+  revealSide: { alignItems: "center", gap: space.s3 },
   gain: { flexDirection: "row", alignItems: "center", gap: space.s4 },
   tournament: { alignSelf: "stretch", alignItems: "center" },
   closing: { flexDirection: "row", alignItems: "center", gap: space.s4, alignSelf: "stretch" },

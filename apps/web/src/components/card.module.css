@@ -255,6 +255,23 @@
   font-weight: 700;
 }
 
+/* A card still to guess: a short hatched slot, the definition taking the room of the word. */
+.mystery {
+  composes: engraving;
+  height: calc(84 * var(--u));
+}
+
+.question {
+  display: grid;
+  flex: 1;
+  place-items: center;
+  margin: 0;
+  font-size: calc(21 * var(--u));
+  font-weight: 500;
+  line-height: 1.28;
+  text-align: center;
+}
+
 .footer {
   display: flex;
   justify-content: space-between;

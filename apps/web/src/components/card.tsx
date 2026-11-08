@@ -1,5 +1,6 @@
 import type { CatalogCard } from "@leximon/contract";
 import { RARITY_LABELS } from "@leximon/contract";
+import type { Rarity } from "@leximon/core";
 import { cardSize, cssFill, cssUrl, rarityStyles } from "@leximon/tokens";
 import {
   creditLine,
@@ -10,7 +11,7 @@ import {
   hasPlate,
   wordFontSize,
 } from "@leximon/view-model";
-import type { CSSProperties } from "react";
+import type { CSSProperties, ReactNode } from "react";
 import { catalogFileUrl } from "@/cards/catalog";
 import styles from "./card.module.css";
 import { CardQuote } from "./card-quote";
@@ -88,6 +89,55 @@ export function Card({ card, collectionName, width = cardSize.width }: CardProps
           >
             {formatOdds(card.perBillion)}
           </span>
+        </footer>
+      </div>
+    </article>
+  );
+}
+
+/**
+ * The face of a card still to guess, as a joust asks it: the frame and gem of its rarity, a « ? »
+ * where the engraving and the word would give it away, and the definition in large.
+ */
+export function QuestionCard({
+  rarity,
+  width = cardSize.width,
+  children,
+}: {
+  readonly rarity: Rarity;
+  readonly width?: number;
+  /** The definition, the words of its family hidden. */
+  readonly children: ReactNode;
+}) {
+  const style = rarityStyles[rarity];
+  const variables = {
+    "--u": `${width / cardSize.width}px`,
+    "--frame": cssFill(style.frame),
+    "--band": cssFill(style.band),
+    "--band-ink": style.bandInk,
+    "--word": cssFill(style.word),
+    "--paper": style.paper,
+    "--ink": style.ink,
+    "--muted": style.muted,
+    "--hatch": style.hatch,
+  } as CSSProperties;
+  const label = RARITY_LABELS[rarity];
+  return (
+    <article className={styles.card} style={variables} aria-label={`Carte ${label} à deviner`}>
+      <div className={styles.inner}>
+        <header className={styles.top}>
+          <span className={styles.band} role="img" aria-label={label} title={label}>
+            <RarityIcon rarity={rarity} />
+          </span>
+        </header>
+        <div className={styles.mystery} aria-hidden="true">
+          <span className={styles.initial}>?</span>
+        </div>
+        <p className={styles.question}>
+          <span>{children}</span>
+        </p>
+        <footer className={styles.footer}>
+          <span>Quel est ce mot ?</span>
         </footer>
       </div>
     </article>

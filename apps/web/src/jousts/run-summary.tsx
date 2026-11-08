@@ -2,7 +2,6 @@
 
 import type { JoustView, Progress } from "@leximon/contract";
 import {
-  answerTimeText,
   BACK_TO_JOUSTS,
   NEW_JOUST,
   RUN_DONE,
@@ -14,6 +13,7 @@ import {
 } from "@leximon/view-model";
 import { type CSSProperties, useEffect, useState } from "react";
 import { useCatalog } from "@/cards/use-catalog";
+import { useNarrow } from "@/lib/use-narrow";
 import { MainAction, PaperAction } from "@/library/play-pieces";
 import desk from "@/play/desk-columns.module.css";
 import { catalogCard } from "@/trades/card-thumb";
@@ -21,7 +21,7 @@ import { Icon } from "@/ui/icon";
 import { Lettering } from "@/ui/toy";
 import ui from "@/ui/ui.module.css";
 import styles from "./jousts.module.css";
-import { type Duelist, DuelistFace, MiniCard, rise } from "./pieces";
+import { AnswerCards, type Duelist, DuelistFace, MiniCard, rise } from "./pieces";
 
 /** Counts up to `target`, one step at a time, after `startMs`. */
 function useTicker(target: number, startMs: number, stepMs: number): number {
@@ -60,11 +60,11 @@ export function RunSummary({
   readonly onBack: () => void;
 }) {
   const catalog = useCatalog();
+  const narrow = useNarrow();
   const answers = view.run?.answers ?? [];
   const xp = view.run?.xp ?? 0;
   const found = answers.filter((answer) => answer.correct).length;
   const counted = useTicker(found, answers.length * 260 + 300, 220);
-  const word = (cardId: string) => (catalog === null ? "…" : catalogCard(catalog, cardId).word);
   const traps = view.traps ?? [];
 
   return (
@@ -74,22 +74,7 @@ export function RunSummary({
           <span className={desk.leafKicker}>{kicker}</span>
         </header>
         <Lettering className={styles.runTitle}>{RUN_DONE}</Lettering>
-        <ol className={styles.answers}>
-          {answers.map((answer, index) => (
-            <li
-              key={answer.cardId}
-              className={styles.answerCard}
-              data-right={answer.correct || undefined}
-              style={{ "--i": index } as CSSProperties}
-            >
-              <span className={styles.answerIcon}>
-                <Icon name={answer.correct ? "check" : "close"} size={18} />
-              </span>
-              <span className={styles.answerWord}>{word(answer.cardId)}</span>
-              <span className={styles.answerTime}>{answerTimeText(answer)}</span>
-            </li>
-          ))}
-        </ol>
+        <AnswerCards answers={answers} width={narrow ? 52 : 88} />
         <p className={styles.runScore}>
           <Lettering className={styles.runScoreFigure}>
             {counted} / {answers.length}
@@ -110,6 +95,7 @@ export function RunSummary({
               <MiniCard
                 key={cardId}
                 card={catalogCard(catalog, cardId)}
+                width={narrow ? 58 : 76}
                 className={styles.trapCard}
                 style={{ "--i": index } as CSSProperties}
               />

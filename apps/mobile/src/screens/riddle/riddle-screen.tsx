@@ -36,6 +36,7 @@ import { missions, publishProgress } from "@/player/state";
 import { openCard } from "@/screens/trades/card-row";
 import { alpha, fontSizes, fonts, paperColors, radii, space } from "@/theme";
 import { Button } from "@/ui/button";
+import { DefinitionText } from "@/ui/definition-text";
 import { FormError, Page, Paragraph } from "@/ui/page";
 import { Panel } from "@/ui/panel";
 import { TextButton } from "@/ui/text-button";
@@ -175,7 +176,9 @@ function Riddle({
         {riddleClueLines(riddle).map((clue) => (
           <View key={clue.label} style={styles.clue}>
             <Text style={styles.kicker}>{clue.label.toUpperCase()}</Text>
-            <Text style={styles.clueText}>{clue.text}</Text>
+            <Text style={styles.clueText}>
+              <DefinitionText text={clue.text} />
+            </Text>
           </View>
         ))}
       </Panel>

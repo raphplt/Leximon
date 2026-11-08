@@ -6,6 +6,8 @@ import {
   clockShare,
   completeDeck,
   deadlineText,
+  deckPoolGroups,
+  deckRoomLine,
   forfeitLine,
   ghostLine,
   joustLine,
@@ -216,12 +218,46 @@ describe("completing the deck", () => {
     { cardId: "e", cost: 2 },
   ];
 
-  it("fills the empty places with the rarest cards that fit", () => {
+  it("takes every place it can, then the rarest cards the points allow", () => {
     expect(completeDeck([], candidates, { size: 3, budget: 25 })).toEqual(["b", "c", "d"]);
-    expect(completeDeck(["a"], candidates, { size: 10, budget: 10 })).toEqual(["a", "b", "c"]);
+    expect(completeDeck(["a"], candidates, { size: 10, budget: 10 })).toEqual(["a", "c", "d", "e"]);
   });
 
   it("keeps the cards already chosen and a full deck as it is", () => {
     expect(completeDeck(["e", "a"], candidates, { size: 2, budget: 25 })).toEqual(["e", "a"]);
+  });
+
+  it("says the room left, or why nothing fits although places are empty", () => {
+    const limits = { size: 10, budget: 25, min: 5 };
+    expect(deckRoomLine(0, 0, limits, 1)).toBe(
+      "Il te reste 25 points pour 10 places. Une carte Courante coûte 1 point, une Légendaire 6.",
+    );
+    expect(deckRoomLine(9, 24, limits, 1)).toBe(
+      "Il te reste 1 point pour 1 place. Une carte Courante coûte 1 point, une Légendaire 6.",
+    );
+    expect(deckRoomLine(6, 21, limits, 5)).toBe(
+      "Aucun de tes mots ne tient dans les 4 points qui restent. Retire une carte rare pour poser plusieurs cartes moins chères ou garde ce deck de 6 cartes.",
+    );
+    expect(deckRoomLine(4, 25, limits, 2)).toBe(
+      "Tes 25 points sont dépensés. Retire une carte rare pour poser plusieurs cartes moins chères.",
+    );
+    expect(deckRoomLine(10, 20, limits, 1)).toBe("Ton deck est complet, avec 10 cartes.");
+  });
+
+  it("groups the words found by rarity, the rarest first, each group in alphabetical order", () => {
+    const card = (word: string, rarity: "common" | "rare", cost: number) => ({
+      cost,
+      card: { word, rarity },
+    });
+    const groups = deckPoolGroups([
+      card("zibeline", "common", 1),
+      card("écureuil", "common", 1),
+      card("orfraie", "rare", 3),
+    ]);
+    expect(groups.map((group) => [group.rarity, group.cost])).toEqual([
+      ["rare", 3],
+      ["common", 1],
+    ]);
+    expect(groups[1]?.cards.map((entry) => entry.card.word)).toEqual(["écureuil", "zibeline"]);
   });
 });

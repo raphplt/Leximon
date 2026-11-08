@@ -38,7 +38,7 @@ function steady(): () => number {
 
 describe("the guided first visit", () => {
   it("lets Maître Furet say the rule with the numbers of the day", () => {
-    expect(guideLine(1, SIZE, { size: 10, budget: 25 })).toContain("tu as 25 points");
+    expect(guideLine(1, SIZE, { size: 10, budget: 25 })).toContain("avec 25 points en tout");
     expect(guideLine(3, SIZE, { size: 10, budget: 25 })).toContain("24 heures");
   });
 });

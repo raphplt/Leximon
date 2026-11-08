@@ -1,18 +1,21 @@
 "use client";
 
-import type { JoustDeckResponse } from "@leximon/contract";
+import { type JoustDeckResponse, RARITY_LABELS } from "@leximon/contract";
 import {
   COMPLETE_DECK,
   completeDeck,
+  deckPoolGroups,
   deckRefusalText,
+  deckRoomLine,
   plural,
   SAVE_DECK,
   toggleDeckCard,
 } from "@leximon/view-model";
-import { type ReactNode, useState } from "react";
+import { type CSSProperties, type ReactNode, useState } from "react";
 import { play } from "@/booster/feedback";
 import { useCatalog } from "@/cards/use-catalog";
 import { api } from "@/lib/api";
+import { useNarrow } from "@/lib/use-narrow";
 import desk from "@/play/desk-columns.module.css";
 import { catalogCard } from "@/trades/card-thumb";
 import { Toy } from "@/ui/toy";
@@ -20,8 +23,9 @@ import styles from "./jousts.module.css";
 import { MiniCard } from "./pieces";
 
 /**
- * The deck being composed: its places, the gauge of its points, « Compléter pour moi », and the
- * words found that can enter it. Saved on the server, which checks it again.
+ * The deck being composed: its places as real cards, the gauge of its points and what room is
+ * left, « Compléter pour moi », and the words found that can enter it, by rarity. Saved on the
+ * server, which checks it again.
  */
 export function DeckBuilder({
   deck,
@@ -35,6 +39,7 @@ export function DeckBuilder({
   readonly onSaved: () => void;
 }) {
   const catalog = useCatalog();
+  const narrow = useNarrow();
   const [chosen, setChosen] = useState<readonly string[]>(initial);
   const [message, setMessage] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
@@ -42,6 +47,10 @@ export function DeckBuilder({
   const costOf = (cardId: string) => costs.get(cardId) ?? 0;
   const traps = new Map(deck.trapped.map((card) => [card.cardId, card.count]));
   const spent = chosen.reduce((total, id) => total + costOf(id), 0);
+  const left = deck.candidates.filter((candidate) => !chosen.includes(candidate.cardId));
+  const cheapestLeft = left.length === 0 ? null : Math.min(...left.map((c) => c.cost));
+  const slotWidth = narrow ? 52 : 96;
+  const poolWidth = narrow ? 92 : 116;
 
   const toggle = (cardId: string) => {
     const next = toggleDeckCard(chosen, cardId, costOf, deck);
@@ -70,14 +79,34 @@ export function DeckBuilder({
     }
   };
 
-  const pool = [...deck.candidates].sort(
-    (a, b) => b.cost - a.cost || a.cardId.localeCompare(b.cardId),
-  );
+  const groups =
+    catalog === null
+      ? []
+      : deckPoolGroups(
+          deck.candidates.map((candidate) => ({
+            ...candidate,
+            card: catalogCard(catalog, candidate.cardId),
+          })),
+        );
   return (
     <div className={styles.builder}>
       {intro}
-      <div className={styles.builderBody}>
-        <div className={styles.slots}>
+      <section className={styles.tray}>
+        <header className={styles.trayHead}>
+          <span className={desk.leafKicker}>
+            Ton deck · {chosen.length} / {plural(deck.size, "carte", "cartes")}
+          </span>
+          <div className={styles.gauge}>
+            <span className={styles.gaugeLabel}>Points</span>
+            <span className={styles.gaugeBar} aria-hidden="true">
+              <span style={{ width: `${Math.min(100, (spent / deck.budget) * 100)}%` }} />
+            </span>
+            <span className={styles.gaugeFigure} aria-live="polite">
+              {spent} / {deck.budget}
+            </span>
+          </div>
+        </header>
+        <div className={styles.slots} style={{ "--w": `${slotWidth}px` } as CSSProperties}>
           {Array.from({ length: deck.size }, (_, index) => {
             const cardId = chosen[index];
             if (cardId === undefined || catalog === null) {
@@ -99,6 +128,7 @@ export function DeckBuilder({
               >
                 <MiniCard
                   card={card}
+                  width={slotWidth}
                   cost={costOf(cardId)}
                   trapped={traps.get(cardId) ?? 0}
                   className={styles.dropIn}
@@ -107,15 +137,9 @@ export function DeckBuilder({
             );
           })}
         </div>
-        <div className={styles.gauge}>
-          <span className={styles.gaugeLabel}>Points</span>
-          <span className={styles.gaugeBar} aria-hidden="true">
-            <span style={{ width: `${Math.min(100, (spent / deck.budget) * 100)}%` }} />
-          </span>
-          <span className={styles.gaugeFigure} aria-live="polite">
-            {spent} / {deck.budget}
-          </span>
-        </div>
+        <p className={styles.room} aria-live="polite">
+          {deckRoomLine(chosen.length, spent, deck, cheapestLeft)}
+        </p>
         {message !== null && (
           <p className={styles.notice} role="alert">
             {message}
@@ -139,11 +163,16 @@ export function DeckBuilder({
             {SAVE_DECK}
           </Toy>
         </div>
-        <span className={desk.leafKicker}>Tes mots trouvés</span>
-        {catalog !== null && (
-          <ul className={styles.pool}>
-            {pool.map((candidate) => {
-              const card = catalogCard(catalog, candidate.cardId);
+      </section>
+
+      <span className={desk.leafKicker}>Tes mots trouvés</span>
+      {groups.map((group) => (
+        <div key={group.rarity} className={styles.poolGroup}>
+          <span className={styles.poolHead}>
+            {RARITY_LABELS[group.rarity]} · {plural(group.cost, "point", "points")}
+          </span>
+          <ul className={styles.pool} style={{ "--w": `${poolWidth}px` } as CSSProperties}>
+            {group.cards.map((candidate) => {
               const taken = chosen.includes(candidate.cardId);
               const fits = spent + candidate.cost <= deck.budget && chosen.length < deck.size;
               return (
@@ -152,22 +181,24 @@ export function DeckBuilder({
                     type="button"
                     className={styles.poolCard}
                     data-taken={taken || undefined}
-                    disabled={taken || !fits}
-                    aria-label={`${card.word}, ${plural(candidate.cost, "point", "points")}`}
+                    disabled={!taken && !fits}
+                    aria-pressed={taken}
+                    aria-label={`${candidate.card.word}, ${plural(candidate.cost, "point", "points")}`}
                     onClick={() => toggle(candidate.cardId)}
                   >
                     <MiniCard
-                      card={card}
-                      cost={candidate.cost}
+                      card={candidate.card}
+                      width={poolWidth}
                       trapped={traps.get(candidate.cardId) ?? 0}
                     />
+                    {taken && <span className={styles.takenMark}>Dans le deck</span>}
                   </button>
                 </li>
               );
             })}
           </ul>
-        )}
-      </div>
+        </div>
+      ))}
     </div>
   );
 }

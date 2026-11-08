@@ -35,6 +35,7 @@ import Animated, {
   withSequence,
   withTiming,
 } from "react-native-reanimated";
+import { CardBack } from "@/cards/card-back";
 import { useCatalog } from "@/cards/use-catalog";
 import { MainAction, PaperAction } from "@/library/play-pieces";
 import { catalogCard } from "@/screens/trades/card-row";
@@ -48,6 +49,7 @@ import { RunScene, type RunSource } from "./run-scene";
 
 const FURET_DUELIST: Duelist = { name: FURET, avatar: null, frame: null, furet: true };
 const RULE_ICONS: readonly IconName[] = ["clock", "check", "bolt"];
+const LIST_WIDTH = 54;
 
 /**
  * The first visit to the jousts, with Maître Furet: the lists, the player's deck, a training run
@@ -56,7 +58,6 @@ const RULE_ICONS: readonly IconName[] = ["clock", "check", "bolt"];
 export function Guide({
   deck,
   deckSaved,
-  jousted,
   size,
   me,
   busy,
@@ -67,8 +68,6 @@ export function Guide({
 }: {
   readonly deck: JoustDeckResponse;
   readonly deckSaved: boolean;
-  /** The player jousted before composing a deck: the deck they played starts in place. */
-  readonly jousted: boolean;
   readonly size: RunSize;
   readonly me: Duelist;
   readonly busy: boolean;
@@ -128,7 +127,7 @@ export function Guide({
         <Leaf style={pieces.leaf}>
           <DeckBuilder
             deck={deck}
-            initial={deck.saved || jousted ? deck.cardIds : []}
+            initial={deck.saved ? deck.cardIds : []}
             intro={<Furet>{guideLine(1, size, deck)}</Furet>}
             onSaved={() => {
               onDeckSaved();
@@ -140,9 +139,7 @@ export function Guide({
       {step === 2 && <Training deck={deck} size={size} me={me} onNext={next} />}
       {step === 3 && (
         <Leaf style={pieces.leaf}>
-          <Furet>
-            {deckSaved ? `${guideLine(3, size, deck)}\n\n${GUIDE_DECK_SAVED}` : GUIDE_NO_DECK}
-          </Furet>
+          <FirstJoust deck={deck} deckSaved={deckSaved} size={size} me={me} />
           <Notice>{refusal}</Notice>
           <View style={pieces.actions}>
             {deckSaved ? (
@@ -157,6 +154,76 @@ export function Guide({
     </View>
   );
 }
+
+/**
+ * Before the first joust: the player and their deck fanned out, against an opponent still
+ * unknown whose cards are face down.
+ */
+function FirstJoust({
+  deck,
+  deckSaved,
+  size,
+  me,
+}: {
+  readonly deck: JoustDeckResponse;
+  readonly deckSaved: boolean;
+  readonly size: RunSize;
+  readonly me: Duelist;
+}) {
+  const catalog = useCatalog();
+  const mine = deckSaved && catalog !== null ? deck.cardIds.slice(0, size.questions) : [];
+  const fan = (index: number, count: number) => {
+    const offset = index - (count - 1) / 2;
+    return {
+      marginLeft: index === 0 ? 0 : -FAN_WIDTH * 0.55,
+      transform: [{ translateY: Math.abs(offset) * 4 }, { rotate: `${offset * 7}deg` }],
+    };
+  };
+  return (
+    <>
+      <Furet>
+        {deckSaved ? `${guideLine(3, size, deck)}\n\n${GUIDE_DECK_SAVED}` : GUIDE_NO_DECK}
+      </Furet>
+      <View style={styles.matchup}>
+        <View style={styles.matchupSide}>
+          <DuelistFace duelist={me} size={64} />
+          <Lettering size={fontSizes.body}>{me.name}</Lettering>
+          <View style={styles.fan}>
+            {catalog !== null &&
+              mine.map((cardId, index) => (
+                <MiniCard
+                  key={cardId}
+                  card={catalogCard(catalog, cardId)}
+                  width={FAN_WIDTH}
+                  style={fan(index, mine.length)}
+                />
+              ))}
+          </View>
+        </View>
+        <Lettering size={fontSizes.heading}>contre</Lettering>
+        <View style={styles.matchupSide}>
+          <ToyBody matter="red" shape="round" style={styles.unknownLarge}>
+            <Lettering size={fontSizes.title}>?</Lettering>
+          </ToyBody>
+          <Lettering size={fontSizes.body}>Un adversaire</Lettering>
+          <View style={styles.fan}>
+            {Array.from({ length: size.questions }, (_, index) => (
+              <View
+                // biome-ignore lint/suspicious/noArrayIndexKey: backs of cards still unknown
+                key={index}
+                style={fan(index, size.questions)}
+              >
+                <CardBack width={FAN_WIDTH} />
+              </View>
+            ))}
+          </View>
+        </View>
+      </View>
+    </>
+  );
+}
+
+const FAN_WIDTH = 64;
 
 /** The lists: the player's cards cross to the other side, the other's come to theirs. */
 function GuideLists({
@@ -183,7 +250,7 @@ function GuideLists({
   const cards = (list: readonly CatalogCard[], toward: 1 | -1) =>
     list.map((card, index) => (
       <Crossing key={card.id} index={index} toward={toward}>
-        <MiniCard card={card} width={104} />
+        <MiniCard card={card} width={LIST_WIDTH} />
       </Crossing>
     ));
   return (
@@ -193,7 +260,7 @@ function GuideLists({
         <View style={styles.listSide}>
           <DuelistFace duelist={me} size={52} />
           <Text style={styles.listName}>Ton deck</Text>
-          {sides !== null && cards(sides.mine, 1)}
+          <View style={styles.listCards}>{sides !== null && cards(sides.mine, 1)}</View>
         </View>
         <View style={styles.listMiddle}>
           <Lettering size={fontSizes.body}>contre</Lettering>
@@ -203,7 +270,7 @@ function GuideLists({
             <Lettering size={fontSizes.heading}>?</Lettering>
           </ToyBody>
           <Text style={styles.listName}>Son deck</Text>
-          {sides !== null && cards(sides.theirs, -1)}
+          <View style={styles.listCards}>{sides !== null && cards(sides.theirs, -1)}</View>
         </View>
       </View>
       <View style={styles.rules}>
@@ -399,7 +466,15 @@ const styles = StyleSheet.create({
   },
   lists: { flexDirection: "row", alignItems: "flex-start" },
   listSide: { flex: 1, alignItems: "center", gap: space.s3 },
-  listMiddle: { width: 56, alignItems: "center", paddingTop: space.s12 },
+  listCards: {
+    alignSelf: "stretch",
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "center",
+    gap: space.s3,
+    paddingTop: space.s2,
+  },
+  listMiddle: { alignItems: "center", paddingTop: space.s12 },
   listName: { fontFamily: fonts.ui.bold, fontSize: fontSizes.label, color: ink.pageInk },
   unknown: { width: 52, height: 52, borderColor: toyValues.outline },
   rules: { gap: space.s4 },
@@ -411,6 +486,10 @@ const styles = StyleSheet.create({
     lineHeight: 21,
     color: ink.pageInk,
   },
+  matchup: { alignItems: "center", gap: space.s5 },
+  matchupSide: { alignItems: "center", gap: space.s3 },
+  fan: { flexDirection: "row", justifyContent: "center", paddingVertical: space.s3 },
+  unknownLarge: { width: 64, height: 64, borderColor: toyValues.outline },
   training: { gap: space.s6 },
   wait: { minHeight: 300 },
 });

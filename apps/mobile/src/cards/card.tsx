@@ -1,5 +1,6 @@
 import type { CatalogCard } from "@leximon/contract";
 import { RARITY_LABELS } from "@leximon/contract";
+import type { Rarity } from "@leximon/core";
 import { cardSize, rarityStyles, solidColor } from "@leximon/tokens";
 import {
   ENGRAVING_SLOT,
@@ -11,9 +12,16 @@ import {
   wordFontSize,
   wordWidthEm,
 } from "@leximon/view-model";
-import { useState } from "react";
+import { type ReactNode, useState } from "react";
 import { Image, StyleSheet, Text, View } from "react-native";
-import Svg, { Defs, Mask, Rect, Image as SvgImage, Text as SvgText } from "react-native-svg";
+import Svg, {
+  Defs,
+  Mask,
+  Pattern,
+  Rect,
+  Image as SvgImage,
+  Text as SvgText,
+} from "react-native-svg";
 import { fonts } from "@/theme";
 import { FillGradient, paintOf } from "@/ui/fill";
 import { RarityIcon } from "@/ui/rarity-icon";
@@ -48,58 +56,10 @@ export function Card({
       accessible
       accessibilityLabel={`${card.word}, ${RARITY_LABELS[card.rarity]}`}
     >
-      <Svg width={width} height={height} style={StyleSheet.absoluteFill}>
-        <Defs>
-          <FillGradient id="frame" fill={style.frame} />
-        </Defs>
-        <Rect width={width} height={height} rx={16 * u} fill={paintOf("frame", style.frame)} />
-        <Rect
-          x={7 * u}
-          y={7 * u}
-          width={width - 14 * u}
-          height={height - 14 * u}
-          rx={10 * u}
-          fill={style.paper}
-        />
-        {/* Laid paper: sparse chain lines in the ink's tone. */}
-        {width >= CHAIN_LINES_FROM &&
-          Array.from({ length: 9 }, (_, i) => (
-            <Rect
-              // biome-ignore lint/suspicious/noArrayIndexKey: a line of the paper is its place.
-              key={i}
-              x={(7 + 30 * (i + 1)) * u}
-              y={7 * u}
-              width={0.7 * u}
-              height={height - 14 * u}
-              fill={style.ink}
-              opacity={0.06}
-            />
-          ))}
-        {/* The double rule inside the frame, in the frame's own fill. */}
-        <Rect
-          x={11.15 * u}
-          y={11.15 * u}
-          width={width - 22.3 * u}
-          height={height - 22.3 * u}
-          rx={6 * u}
-          fill="none"
-          stroke={paintOf("frame", style.frame)}
-          strokeWidth={1.3 * u}
-        />
-        <Rect
-          x={13.45 * u}
-          y={13.45 * u}
-          width={width - 26.9 * u}
-          height={height - 26.9 * u}
-          rx={3.8 * u}
-          fill="none"
-          stroke={paintOf("frame", style.frame)}
-          strokeWidth={0.5 * u}
-        />
-      </Svg>
+      <CardFrame rarity={card.rarity} width={width} height={height} />
       <View style={[styles.inner, { padding: 7 * u, gap: 6 * u }]}>
         <View style={{ paddingHorizontal: 14 * u, paddingTop: 10 * u, zIndex: 1 }}>
-          <Band card={card} u={u} />
+          <Band rarity={card.rarity} u={u} />
         </View>
         <View style={{ paddingHorizontal: 14 * u }}>
           {engraving === null ? (
@@ -149,8 +109,154 @@ export function Card({
   );
 }
 
-function Band({ card, u }: { readonly card: CatalogCard; readonly u: number }) {
-  const style = rarityStyles[card.rarity];
+/** The frame of a card in its rarity's fill, the paper inside it and the double rule. */
+function CardFrame({
+  rarity,
+  width,
+  height,
+}: {
+  readonly rarity: Rarity;
+  readonly width: number;
+  readonly height: number;
+}) {
+  const u = width / cardSize.width;
+  const style = rarityStyles[rarity];
+  return (
+    <Svg width={width} height={height} style={StyleSheet.absoluteFill}>
+      <Defs>
+        <FillGradient id="frame" fill={style.frame} />
+      </Defs>
+      <Rect width={width} height={height} rx={16 * u} fill={paintOf("frame", style.frame)} />
+      <Rect
+        x={7 * u}
+        y={7 * u}
+        width={width - 14 * u}
+        height={height - 14 * u}
+        rx={10 * u}
+        fill={style.paper}
+      />
+      {/* Laid paper: sparse chain lines in the ink's tone. */}
+      {width >= CHAIN_LINES_FROM &&
+        Array.from({ length: 9 }, (_, i) => (
+          <Rect
+            // biome-ignore lint/suspicious/noArrayIndexKey: a line of the paper is its place.
+            key={i}
+            x={(7 + 30 * (i + 1)) * u}
+            y={7 * u}
+            width={0.7 * u}
+            height={height - 14 * u}
+            fill={style.ink}
+            opacity={0.06}
+          />
+        ))}
+      {/* The double rule inside the frame, in the frame's own fill. */}
+      <Rect
+        x={11.15 * u}
+        y={11.15 * u}
+        width={width - 22.3 * u}
+        height={height - 22.3 * u}
+        rx={6 * u}
+        fill="none"
+        stroke={paintOf("frame", style.frame)}
+        strokeWidth={1.3 * u}
+      />
+      <Rect
+        x={13.45 * u}
+        y={13.45 * u}
+        width={width - 26.9 * u}
+        height={height - 26.9 * u}
+        rx={3.8 * u}
+        fill="none"
+        stroke={paintOf("frame", style.frame)}
+        strokeWidth={0.5 * u}
+      />
+    </Svg>
+  );
+}
+
+/**
+ * The face of a card still to guess, as a joust asks it: the frame and gem of its rarity, a « ? »
+ * where the engraving and the word would give it away, and the definition in large.
+ */
+export function QuestionCard({
+  rarity,
+  width = cardSize.width,
+  children,
+}: {
+  readonly rarity: Rarity;
+  readonly width?: number;
+  /** The definition, the words of its family hidden. */
+  readonly children: ReactNode;
+}) {
+  const u = width / cardSize.width;
+  const style = rarityStyles[rarity];
+  const height = cardSize.height * u;
+  return (
+    <View
+      style={[styles.card, { width, height, borderRadius: 16 * u }]}
+      accessible
+      accessibilityLabel={`Carte ${RARITY_LABELS[rarity]} à deviner`}
+    >
+      <CardFrame rarity={rarity} width={width} height={height} />
+      <View style={[styles.inner, { padding: 7 * u, gap: 6 * u }]}>
+        <View style={{ paddingHorizontal: 14 * u, paddingTop: 10 * u }}>
+          <Band rarity={rarity} u={u} />
+        </View>
+        <View style={{ paddingHorizontal: 14 * u }}>
+          <View style={[styles.slot, { height: 84 * u, marginTop: 2 * u, borderRadius: 10 * u }]}>
+            <Svg style={StyleSheet.absoluteFill}>
+              <Defs>
+                <Pattern
+                  id="mystery-hatch"
+                  width={5 * u}
+                  height={5 * u}
+                  patternUnits="userSpaceOnUse"
+                  patternTransform="rotate(35)"
+                >
+                  <Rect width={1.2 * u} height={5 * u} fill={style.hatch} />
+                </Pattern>
+              </Defs>
+              <Rect width="100%" height="100%" fill="url(#mystery-hatch)" />
+            </Svg>
+            <Text style={[styles.initial, { fontSize: 88 * u, color: style.ink }]}>?</Text>
+          </View>
+        </View>
+        <View style={[styles.question, { paddingHorizontal: 18 * u }]}>
+          <Text
+            style={[
+              styles.definition,
+              {
+                fontSize: 21 * u,
+                lineHeight: 21 * 1.28 * u,
+                color: style.ink,
+                textAlign: "center",
+              },
+            ]}
+          >
+            {children}
+          </Text>
+        </View>
+        <Text
+          style={[
+            styles.collection,
+            {
+              paddingHorizontal: 14 * u,
+              paddingBottom: 10 * u,
+              fontSize: 10 * u,
+              letterSpacing: 0.4 * u,
+              color: style.muted,
+            },
+          ]}
+        >
+          QUEL EST CE MOT ?
+        </Text>
+      </View>
+    </View>
+  );
+}
+
+function Band({ rarity, u }: { readonly rarity: Rarity; readonly u: number }) {
+  const style = rarityStyles[rarity];
   const size = 32 * u;
   return (
     <View style={{ width: size, height: size, alignItems: "center", justifyContent: "center" }}>
@@ -160,7 +266,7 @@ function Band({ card, u }: { readonly card: CatalogCard; readonly u: number }) {
         </Defs>
         <Rect width={size} height={size} rx={size / 2} fill={paintOf("band", style.band)} />
       </Svg>
-      <RarityIcon rarity={card.rarity} size={22 * u} color={style.bandInk} />
+      <RarityIcon rarity={rarity} size={22 * u} color={style.bandInk} />
     </View>
   );
 }
@@ -356,6 +462,7 @@ const styles = StyleSheet.create({
     elevation: 12,
   },
   inner: { flex: 1 },
+  question: { flex: 1, justifyContent: "center" },
   slot: { alignItems: "center", justifyContent: "center", overflow: "hidden" },
   print: { position: "absolute" },
   initial: { fontFamily: fonts.display, includeFontPadding: false },

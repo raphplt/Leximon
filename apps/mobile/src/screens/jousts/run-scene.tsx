@@ -1,17 +1,23 @@
 import type { AnswerJoustResponse } from "@leximon/contract";
+import { collectionName } from "@leximon/contract/client";
 import type { Rarity } from "@leximon/core";
 import {
   lettering,
-  rarityStyles,
   revealEffects,
-  solidColor,
   type ToyMatterName,
   toyMatters,
   toy as toyValues,
 } from "@leximon/tokens";
 import { secondsLeft } from "@leximon/view-model";
 import { type ReactNode, useCallback, useEffect, useRef, useState } from "react";
-import { Pressable, StyleSheet, Text, View, type ViewInstance } from "react-native";
+import {
+  Pressable,
+  StyleSheet,
+  Text,
+  useWindowDimensions,
+  View,
+  type ViewInstance,
+} from "react-native";
 import Animated, {
   cancelAnimation,
   Easing,
@@ -28,12 +34,13 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 import Svg, { Circle } from "react-native-svg";
+import { Card, QuestionCard } from "@/cards/card";
 import { useCatalog } from "@/cards/use-catalog";
 import { play, vibrate } from "@/feedback/feedback";
 import { catalogCard } from "@/screens/trades/card-row";
 import { fontSizes, fonts, radii, space } from "@/theme";
+import { DefinitionText } from "@/ui/definition-text";
 import { Icon } from "@/ui/icon";
-import { RarityIcon } from "@/ui/rarity-icon";
 import { useStage } from "@/ui/stage";
 import { Leaf, Lettering, Toy } from "@/ui/toy";
 import { type Duelist, DuelistFace, ink, LeafKicker, Notice, pieces } from "./pieces";
@@ -103,8 +110,9 @@ const stampIn = new Keyframe({
 }).duration(420);
 
 /**
- * A run on the clock: the face-to-face and its countdown, then each definition turned like a card,
- * the ring of the clock, the four words, and the two ribbons of the players' answers.
+ * A run on the clock: the board of the two players and the ring of the clock above, the
+ * face-to-face and its countdown, then each definition dealt as a card still to guess, the four
+ * words, and once answered the card turned over to show the word.
  */
 export function RunScene({
   source,
@@ -134,6 +142,7 @@ export function RunScene({
 }) {
   const stage = useStage();
   const catalog = useCatalog();
+  const window = useWindowDimensions();
   const reduced = useReducedMotion();
   const [phase, setPhase] = useState<Phase>({ kind: "versus", count: 0 });
   const [results, setResults] = useState<readonly LaneAnswer[]>(() =>
@@ -293,10 +302,40 @@ export function RunScene({
       ? []
       : ghost.slice(0, phase.kind === "done" ? ghost.length : results.length).map((g) => g.correct);
 
+  const revealed =
+    shown?.kind === "answered" && catalog !== null && shown.answer.rightCardId !== ""
+      ? catalogCard(catalog, shown.answer.rightCardId)
+      : null;
+  // As large as the screen allows with the board above and the four words below still in view.
+  const cardWidth = Math.max(
+    160,
+    Math.min(250, Math.round(window.width * 0.6), Math.round((window.height - 600) / 1.4)),
+  );
+
   return (
     <Leaf style={pieces.leaf}>
       <LeafKicker>{kicker}</LeafKicker>
-      <Lanes me={me.name} them={them.name} mine={results} theirs={ghostSoFar} total={questions} />
+      <View style={styles.hud}>
+        <HudSide duelist={me} answers={results} total={questions} side="me" />
+        <View style={styles.hudMiddle}>
+          {shown !== null ? (
+            <>
+              <Ring
+                key={shown.question.position}
+                question={shown.question}
+                running={shown.kind === "question"}
+                left={left ?? 0}
+              />
+              <Text style={styles.counter}>
+                Mot {shown.question.position + 1} sur {questions}
+              </Text>
+            </>
+          ) : (
+            <Lettering size={fontSizes.body}>contre</Lettering>
+          )}
+        </View>
+        <HudSide duelist={them} answers={ghostSoFar} total={questions} side="them" />
+      </View>
 
       {phase.kind === "versus" && (
         // A touch skips the face-to-face.
@@ -307,7 +346,7 @@ export function RunScene({
           accessibilityLabel={`${me.name} contre ${them.name}. Touche pour commencer.`}
         >
           <Animated.View entering={FadeInLeft.duration(420)} style={styles.versusSide}>
-            <DuelistFace duelist={me} size={84} />
+            <DuelistFace duelist={me} size={96} />
             <Lettering size={fontSizes.bodyLarge} numberOfLines={2} style={styles.centered}>
               {me.name}
             </Lettering>
@@ -326,7 +365,7 @@ export function RunScene({
             )}
           </View>
           <Animated.View entering={FadeInRight.duration(420)} style={styles.versusSide}>
-            <DuelistFace duelist={them} size={84} />
+            <DuelistFace duelist={them} size={96} />
             <Lettering size={fontSizes.bodyLarge} numberOfLines={2} style={styles.centered}>
               {them.name}
             </Lettering>
@@ -338,24 +377,27 @@ export function RunScene({
 
       {shown !== null && (
         <View style={styles.question}>
-          <View style={styles.questionTop}>
-            <Text style={styles.counter}>
-              {shown.question.position + 1} / {questions}
-            </Text>
-            <Ring
-              key={shown.question.position}
-              question={shown.question}
-              running={shown.kind === "question"}
-              left={left ?? 0}
-            />
-          </View>
-          <Animated.View style={shaken}>
-            <Animated.View key={`card-${shown.question.position}`} entering={flipIn}>
-              <Definition
-                rarity={rarityOf(shown.question.choices)}
-                text={shown.question.definition}
-              />
-            </Animated.View>
+          <Animated.View style={[styles.dealt, shaken]}>
+            {revealed === null ? (
+              <Animated.View key={`card-${shown.question.position}`} entering={flipIn}>
+                <QuestionCard
+                  rarity={rarityOf(shown.question.choices) ?? "common"}
+                  width={cardWidth}
+                >
+                  <DefinitionText text={shown.question.definition} />
+                </QuestionCard>
+              </Animated.View>
+            ) : (
+              <Animated.View key={`answer-${shown.question.position}`} entering={flipIn}>
+                <Card
+                  card={revealed}
+                  collectionName={
+                    catalog === null ? "" : collectionName(catalog, revealed.collectionId)
+                  }
+                  width={cardWidth}
+                />
+              </Animated.View>
+            )}
           </Animated.View>
           <View style={styles.choices}>
             {shown.question.choices.map((cardId) => {
@@ -454,22 +496,6 @@ export function RunScene({
   );
 }
 
-function Definition({ rarity, text }: { readonly rarity: Rarity | null; readonly text: string }) {
-  const band = rarity === null ? toyMatters.dark.bottom : solidColor(rarityStyles[rarity].band);
-  return (
-    <View style={styles.definition}>
-      <View style={[styles.definitionBand, { backgroundColor: band }]}>
-        {rarity !== null && (
-          <RarityIcon rarity={rarity} size={13} color={rarityStyles[rarity].bandInk} />
-        )}
-      </View>
-      <Text style={styles.definitionText} accessibilityRole="header">
-        {text}
-      </Text>
-    </View>
-  );
-}
-
 /** A long word takes a smaller size, so that it holds on its half of the row. */
 function choiceSize(word: string): number {
   const longest = Math.max(...word.split(" ").map((piece) => piece.length));
@@ -533,26 +559,29 @@ function PlusOne() {
   );
 }
 
-/** Two ribbons: the player's answers and the other's recorded ones, question by question. */
-function Lanes({
-  me,
-  them,
-  mine,
-  theirs,
+/** One side of the board: the player's face, name and score, and a pip for each question. */
+function HudSide({
+  duelist,
+  answers,
   total,
+  side,
 }: {
-  readonly me: string;
-  readonly them: string;
-  readonly mine: readonly LaneAnswer[];
-  readonly theirs: readonly LaneAnswer[];
+  readonly duelist: Duelist;
+  readonly answers: readonly LaneAnswer[];
   readonly total: number;
+  readonly side: "me" | "them";
 }) {
-  const lane = (name: string, answers: readonly LaneAnswer[]) => (
-    <View style={styles.lane}>
-      <Text style={styles.laneName} numberOfLines={1}>
-        {name}
+  const mirrored = side === "them";
+  return (
+    <View style={styles.hudSide}>
+      <View style={[styles.hudTop, mirrored && styles.mirrored]}>
+        <DuelistFace duelist={duelist} size={34} />
+        <Lettering size={fontSizes.subtitle}>{answers.filter((a) => a === true).length}</Lettering>
+      </View>
+      <Text style={[styles.hudName, mirrored && styles.hudNameMirrored]} numberOfLines={1}>
+        {duelist.name}
       </Text>
-      <View style={styles.pips}>
+      <View style={[styles.pips, mirrored && styles.mirrored]}>
         {Array.from({ length: total }, (_, index) => {
           const answer = answers[index];
           const fill =
@@ -568,20 +597,13 @@ function Lanes({
             <View key={index} style={[styles.pip, { backgroundColor: fill }]}>
               {typeof answer === "boolean" && (
                 <Animated.View entering={countIn}>
-                  <Icon name={answer ? "check" : "close"} size={12} color={toyMatters.paper.top} />
+                  <Icon name={answer ? "check" : "close"} size={11} color={toyMatters.paper.top} />
                 </Animated.View>
               )}
             </View>
           );
         })}
       </View>
-      <Lettering size={fontSizes.subtitle}>{answers.filter((a) => a === true).length}</Lettering>
-    </View>
-  );
-  return (
-    <View style={styles.lanes}>
-      {lane(me, mine)}
-      {lane(them, theirs)}
     </View>
   );
 }
@@ -655,19 +677,22 @@ function Ring({
 }
 
 const styles = StyleSheet.create({
-  lanes: { gap: space.s3 },
-  lane: { flexDirection: "row", alignItems: "center", gap: space.s4 },
-  laneName: {
-    width: 96,
+  hud: { flexDirection: "row", alignItems: "flex-start", gap: space.s3 },
+  hudSide: { flex: 1, gap: space.s2 },
+  hudTop: { flexDirection: "row", alignItems: "center", gap: space.s3 },
+  mirrored: { flexDirection: "row-reverse" },
+  hudName: {
     fontFamily: fonts.ui.bold,
     fontSize: fontSizes.small,
     color: ink.pageInk,
   },
-  pips: { flex: 1, flexDirection: "row", gap: space.s2 },
+  hudNameMirrored: { textAlign: "right" },
+  hudMiddle: { width: RING_SIZE + 10, alignItems: "center", gap: space.s1 },
+  pips: { flexDirection: "row", gap: 3 },
   pip: {
     flex: 1,
-    maxWidth: 30,
-    height: 18,
+    maxWidth: 24,
+    height: 16,
     borderRadius: radii.xs,
     borderWidth: 2,
     borderColor: toyValues.outline,
@@ -684,27 +709,8 @@ const styles = StyleSheet.create({
   versusMiddle: { width: 86, alignItems: "center", justifyContent: "center" },
   wait: { minHeight: 300 },
   question: { gap: space.s6 },
-  questionTop: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
-  counter: { fontFamily: fonts.ui.extrabold, fontSize: fontSizes.bodyLarge, color: ink.pageInk },
-  definition: {
-    minHeight: 96,
-    overflow: "hidden",
-    borderRadius: radii.lg,
-    borderWidth: 2,
-    borderColor: toyValues.outline,
-    backgroundColor: toyMatters.paper.top,
-    boxShadow: `0 4px 0 ${toyValues.outline}`,
-  },
-  definitionBand: { height: 20, alignItems: "center", justifyContent: "center" },
-  definitionText: {
-    paddingHorizontal: space.s8,
-    paddingVertical: space.s6,
-    textAlign: "center",
-    fontFamily: fonts.ui.semibold,
-    fontSize: fontSizes.bodyLarge,
-    lineHeight: 22,
-    color: ink.pageInk,
-  },
+  dealt: { alignItems: "center" },
+  counter: { fontFamily: fonts.ui.extrabold, fontSize: fontSizes.micro, color: ink.pageInkMuted },
   choices: {
     flexDirection: "row",
     flexWrap: "wrap",
@@ -728,8 +734,8 @@ const styles = StyleSheet.create({
     fontSize: fontSizes.body,
     color: ink.danger,
   },
-  // Beside the clock, not over its figure.
-  plusOne: { position: "absolute", right: RING_SIZE + space.s8, top: 0 },
+  // Over the card's corner, where the eye already is.
+  plusOne: { position: "absolute", right: space.s12, top: 110 },
   ring: {
     width: RING_SIZE,
     height: RING_SIZE,

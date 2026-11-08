@@ -7,7 +7,7 @@ import type {
   PlayerBadge,
   RunScore,
 } from "@leximon/contract";
-import { type EpochMs, JOUST_SCHEDULE, joustRulesAt } from "@leximon/core";
+import { type EpochMs, JOUST_SCHEDULE, joustRulesAt, type Rarity } from "@leximon/core";
 import { formatCount, plural } from "./format";
 import { playerName } from "./trades";
 
@@ -359,7 +359,8 @@ export function runRules(now: EpochMs): string {
 
 // --- The jousts' home, the run's summary and the result's reveal ---------------------------------
 
-export const JOUST = "Jouter";
+/** The big button: a ranked joust, beside « Joute libre ». */
+export const JOUST = "Joute classée";
 export const NEW_JOUST = "Nouvelle joute";
 export const BACK_TO_JOUSTS = "Retour aux joutes";
 export const REVENGE_SHORT = "Revanche";
@@ -489,8 +490,9 @@ export function trappingWords(
 }
 
 /**
- * Fills the deck's empty places with the rarest cards that still fit its budget, as the game's own
- * deck does; ties go by card id, so the same cards give the same deck.
+ * Fills the deck's empty places as the game's own deck does: every place taken while the budget
+ * allows, the cheapest cards first, then each traded for a rarer one while the points last. Ties go
+ * by card id, so the same cards give the same deck.
  */
 export function completeDeck(
   deck: readonly string[],
@@ -499,17 +501,80 @@ export function completeDeck(
 ): readonly string[] {
   const costs = new Map(candidates.map((candidate) => [candidate.cardId, candidate.cost]));
   let spent = deck.reduce((total, id) => total + (costs.get(id) ?? 0), 0);
-  const next = [...deck];
-  const byRarity = [...candidates].sort(
-    (a, b) => b.cost - a.cost || a.cardId.localeCompare(b.cardId),
-  );
-  for (const candidate of byRarity) {
-    if (next.length >= limits.size) break;
-    if (next.includes(candidate.cardId) || spent + candidate.cost > limits.budget) continue;
-    next.push(candidate.cardId);
+  const byCost = (a: { cardId: string; cost: number }, b: { cardId: string; cost: number }) =>
+    a.cost - b.cost || a.cardId.localeCompare(b.cardId);
+  const rest = candidates.filter((candidate) => !deck.includes(candidate.cardId)).sort(byCost);
+  const added: { cardId: string; cost: number }[] = [];
+  for (const candidate of rest) {
+    if (deck.length + added.length >= limits.size) break;
+    if (spent + candidate.cost > limits.budget) break;
+    added.push(candidate);
     spent += candidate.cost;
   }
-  return next;
+  const addedIds = new Set(added.map((candidate) => candidate.cardId));
+  for (const candidate of [...rest].reverse()) {
+    if (addedIds.has(candidate.cardId)) continue;
+    const cheapest = added[0];
+    if (cheapest === undefined) break;
+    const gain = candidate.cost - cheapest.cost;
+    if (gain <= 0 || spent + gain > limits.budget) continue;
+    added.shift();
+    addedIds.delete(cheapest.cardId);
+    added.push(candidate);
+    addedIds.add(candidate.cardId);
+    added.sort(byCost);
+    spent += gain;
+  }
+  const rarestFirst = added.sort((a, b) => b.cost - a.cost || a.cardId.localeCompare(b.cardId));
+  return [...deck, ...rarestFirst.map((candidate) => candidate.cardId)];
+}
+
+/**
+ * Under the deck's gauge: what room is left, or why nothing fits any more although places are
+ * empty, since a deck of rare words runs out of points before it runs out of places.
+ */
+export function deckRoomLine(
+  chosen: number,
+  spent: number,
+  limits: { readonly size: number; readonly budget: number; readonly min: number },
+  cheapestLeft: number | null,
+): string {
+  const places = limits.size - chosen;
+  const points = limits.budget - spent;
+  if (places <= 0) return `Ton deck est complet, avec ${plural(chosen, "carte", "cartes")}.`;
+  if (cheapestLeft !== null && cheapestLeft <= points) {
+    return `Il te reste ${plural(points, "point", "points")} pour ${plural(places, "place", "places")}. Une carte Courante coûte 1 point, une Légendaire 6.`;
+  }
+  const keep =
+    chosen >= limits.min ? ` ou garde ce deck de ${plural(chosen, "carte", "cartes")}` : "";
+  return points === 0
+    ? `Tes ${limits.budget} points sont dépensés. Retire une carte rare pour poser plusieurs cartes moins chères${keep}.`
+    : `Aucun de tes mots ne tient dans ${points === 1 ? "le point qui reste" : `les ${points} points qui restent`}. Retire une carte rare pour poser plusieurs cartes moins chères${keep}.`;
+}
+
+/** The words found that can enter the deck, by rarity, the rarest first; a rarity has one cost. */
+export function deckPoolGroups<
+  T extends {
+    readonly cost: number;
+    readonly card: { readonly rarity: Rarity; readonly word: string };
+  },
+>(cards: readonly T[]): { readonly rarity: Rarity; readonly cost: number; readonly cards: T[] }[] {
+  const groups = new Map<Rarity, { rarity: Rarity; cost: number; cards: T[] }>();
+  for (const card of cards) {
+    const group = groups.get(card.card.rarity) ?? {
+      rarity: card.card.rarity,
+      cost: card.cost,
+      cards: [],
+    };
+    group.cards.push(card);
+    groups.set(card.card.rarity, group);
+  }
+  return [...groups.values()]
+    .sort((a, b) => b.cost - a.cost)
+    .map((group) => ({
+      ...group,
+      cards: group.cards.sort((a, b) => a.card.word.localeCompare(b.card.word, "fr")),
+    }));
 }
 
 // --- Traps ---------------------------------------------------------------------------------------

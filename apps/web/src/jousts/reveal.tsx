@@ -22,6 +22,7 @@ import {
 } from "react";
 import { play, vibrate } from "@/booster/feedback";
 import { useCatalog } from "@/cards/use-catalog";
+import { useNarrow } from "@/lib/use-narrow";
 import desk from "@/play/desk-columns.module.css";
 import { catalogCard } from "@/trades/card-thumb";
 import { Icon } from "@/ui/icon";
@@ -30,7 +31,7 @@ import { Lettering, ToyIcon } from "@/ui/toy";
 import ui from "@/ui/ui.module.css";
 import styles from "./jousts.module.css";
 import { Shield, TournamentGain } from "./league-pieces";
-import { type Duelist, DuelistFace, rise } from "./pieces";
+import { AnswerCards, type Duelist, DuelistFace, rise } from "./pieces";
 
 export interface RevealAnswer {
   readonly cardId: string;
@@ -102,6 +103,7 @@ export function Reveal({
 }) {
   const stage = useStage();
   const catalog = useCatalog();
+  const narrow = useNarrow();
   const rows = data.mine.length;
   const [shown, setShown] = useState(playing ? 0 : rows);
   const [verdict, setVerdict] = useState(!playing);
@@ -238,6 +240,18 @@ export function Reveal({
               <TournamentGain tournament={data.gains.tournament} />
             </>
           )}
+          <div className={styles.revealCards}>
+            <div className={styles.revealSide}>
+              <span className={desk.leafKicker}>Les mots de {data.them.name}</span>
+              <AnswerCards answers={data.mine} width={narrow ? 46 : 74} />
+            </div>
+            {data.theirs !== null && (
+              <div className={styles.revealSide}>
+                <span className={desk.leafKicker}>Tes mots</span>
+                <AnswerCards answers={data.theirs} width={narrow ? 46 : 74} />
+              </div>
+            )}
+          </div>
           {data.closing !== null && (
             <p className={styles.trapped}>
               <ToyIcon name="jousts" size={22} /> {data.closing}

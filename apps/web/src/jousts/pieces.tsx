@@ -1,54 +1,100 @@
 "use client";
 
 import type { CatalogCard } from "@leximon/contract";
-import { cssFill, rarityStyles } from "@leximon/tokens";
-import { FURET, formatCount, trappedText } from "@leximon/view-model";
+import { collectionName } from "@leximon/contract/client";
+import { answerTimeText, FURET, formatCount, trappedText } from "@leximon/view-model";
 import type { CSSProperties, ReactNode } from "react";
+import { useCatalog } from "@/cards/use-catalog";
 import { Avatar } from "@/components/avatar";
-import { RarityIcon } from "@/components/rarity-icon";
+import { Card } from "@/components/card";
+import { catalogCard } from "@/trades/card-thumb";
+import { Icon } from "@/ui/icon";
 import { ToyIcon } from "@/ui/toy";
 import styles from "./jousts.module.css";
 
 /** Each leaf rises in turn when the screen appears, as on Jouer. */
 export const rise = (index: number) => ({ "--rise": index }) as CSSProperties;
 
-/** A small card of the deck: the rarity band, its gem, the cost if asked, and the word. */
+/**
+ * A card of the deck, the real face at a small size: its cost on a gold coin when asked, and the
+ * opponents it trapped on a red seal.
+ */
 export function MiniCard({
   card,
+  width,
   cost,
   trapped = 0,
   className,
   style,
 }: {
   readonly card: CatalogCard;
+  readonly width: number;
   readonly cost?: number | undefined;
   /** Opponents the card trapped, shown as a seal under it. */
   readonly trapped?: number;
   readonly className?: string | undefined;
   readonly style?: CSSProperties | undefined;
 }) {
+  const catalog = useCatalog();
   return (
     <span
       className={`${styles.mini} ${className ?? ""}`}
-      style={
-        {
-          "--band": cssFill(rarityStyles[card.rarity].band),
-          "--band-ink": rarityStyles[card.rarity].bandInk,
-          ...style,
-        } as CSSProperties
-      }
+      style={{ "--w": `${width}px`, ...style } as CSSProperties}
     >
-      <span className={styles.miniBand}>
-        <RarityIcon rarity={card.rarity} size="12px" />
-        {cost !== undefined && <span className={styles.miniCost}>{cost}</span>}
-      </span>
-      <span className={styles.miniWord}>{card.word}</span>
+      <Card
+        card={card}
+        collectionName={catalog === null ? "" : collectionName(catalog, card.collectionId)}
+        width={width}
+      />
+      {cost !== undefined && (
+        <span className={styles.miniCost} aria-hidden="true">
+          {cost}
+        </span>
+      )}
       {trapped > 0 && (
         <span className={styles.trapSeal} role="img" aria-label={trappedText(trapped)}>
           {formatCount(trapped)}
         </span>
       )}
     </span>
+  );
+}
+
+/** The words of a run as real cards, each with its mark, right or wrong, and its time. */
+export function AnswerCards({
+  answers,
+  width,
+}: {
+  readonly answers: readonly {
+    readonly cardId: string;
+    readonly correct: boolean;
+    readonly ms: number;
+  }[];
+  readonly width: number;
+}) {
+  const catalog = useCatalog();
+  if (catalog === null) return null;
+  return (
+    <ol className={styles.answers}>
+      {answers.map((answer, index) => (
+        <li
+          key={answer.cardId}
+          className={styles.answerCard}
+          data-right={answer.correct || undefined}
+          style={{ "--i": index } as CSSProperties}
+        >
+          <MiniCard
+            card={catalogCard(catalog, answer.cardId)}
+            width={width}
+            className={answer.correct ? undefined : styles.missed}
+          />
+          <span className={styles.answerIcon}>
+            <Icon name={answer.correct ? "check" : "close"} size={16} />
+          </span>
+          <span className={styles.answerTime}>{answerTimeText(answer)}</span>
+        </li>
+      ))}
+    </ol>
   );
 }
 

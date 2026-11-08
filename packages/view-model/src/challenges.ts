@@ -19,6 +19,31 @@ import type { SoundCue } from "./staging";
 
 export { hideWordIn } from "@leximon/core";
 
+/** A piece of a definition as shown: its text, or a word of the same family hidden. */
+export type DefinitionPiece =
+  | { readonly kind: "text"; readonly text: string }
+  | { readonly kind: "hidden" };
+
+/** Stands for a hidden word: a plain « … » could pass for the word to find. */
+export const HIDDEN_WORD_LABEL = "même famille";
+export const HIDDEN_WORD_HINT = "Mot de la même famille, caché pour ne pas donner la réponse";
+
+/** A « … » standing alone, as `hideWordIn` leaves it; « Cordage cousu en… » stays as it is. */
+const HIDDEN_MARK = /(?<![\p{L}\p{N}])…(?![\p{L}\p{N}])/gu;
+
+/** A definition cut where `hideWordIn` hid a word, so the screen can mark each one plainly. */
+export function definitionPieces(text: string): readonly DefinitionPiece[] {
+  const pieces: DefinitionPiece[] = [];
+  let from = 0;
+  for (const match of text.matchAll(HIDDEN_MARK)) {
+    if (match.index > from) pieces.push({ kind: "text", text: text.slice(from, match.index) });
+    pieces.push({ kind: "hidden" });
+    from = match.index + match[0].length;
+  }
+  if (from < text.length) pieces.push({ kind: "text", text: text.slice(from) });
+  return pieces;
+}
+
 /** Outcome of one answered question, kept for the recap. */
 export interface AnsweredQuestion {
   readonly cardId: string;

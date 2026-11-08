@@ -1,7 +1,6 @@
 import type { JoustView, Progress } from "@leximon/contract";
 import { toyMatters, toy as toyValues } from "@leximon/tokens";
 import {
-  answerTimeText,
   BACK_TO_JOUSTS,
   NEW_JOUST,
   RUN_DONE,
@@ -16,7 +15,6 @@ import { StyleSheet, Text, View } from "react-native";
 import Animated, {
   Easing,
   FadeInUp,
-  Keyframe,
   useAnimatedStyle,
   useSharedValue,
   withDelay,
@@ -26,10 +24,12 @@ import { useCatalog } from "@/cards/use-catalog";
 import { play } from "@/feedback/feedback";
 import { MainAction, PaperAction } from "@/library/play-pieces";
 import { catalogCard } from "@/screens/trades/card-row";
-import { fontSizes, fonts, radii, space } from "@/theme";
+import { fontSizes, fonts, space } from "@/theme";
 import { Icon } from "@/ui/icon";
 import { Leaf, Lettering } from "@/ui/toy";
 import {
+  ANSWER_MS,
+  AnswerCards,
   type Duelist,
   DuelistFace,
   ink,
@@ -38,19 +38,8 @@ import {
   MiniCard,
   Notice,
   pieces,
+  useRowFit,
 } from "./pieces";
-
-const ANSWER_MS = 260;
-
-/** An answer turns over like a card. */
-function answerIn(index: number) {
-  return new Keyframe({
-    0: { opacity: 0, transform: [{ perspective: 600 }, { rotateY: "-90deg" }] },
-    100: { opacity: 1, transform: [{ perspective: 600 }, { rotateY: "0deg" }] },
-  })
-    .delay(index * ANSWER_MS)
-    .duration(280);
-}
 
 /** Counts up to `target`, one step at a time, after `startMs`. */
 function useTicker(target: number, startMs: number, stepMs: number): number {
@@ -99,8 +88,8 @@ export function RunSummary({
   const xp = view.run?.xp ?? 0;
   const found = answers.filter((answer) => answer.correct).length;
   const counted = useTicker(found, answers.length * ANSWER_MS + 300, 220);
-  const word = (cardId: string) => (catalog === null ? "…" : catalogCard(catalog, cardId).word);
   const traps = view.traps ?? [];
+  const trapFit = useRowFit(traps.length, space.s3, 64);
 
   return (
     <View style={styles.run}>
@@ -109,30 +98,7 @@ export function RunSummary({
         <View style={styles.title}>
           <Lettering size={fontSizes.titleLarge}>{RUN_DONE}</Lettering>
         </View>
-        <View style={styles.answers}>
-          {answers.map((answer, index) => {
-            const tone = answer.correct ? toyMatters.green : toyMatters.red;
-            return (
-              <Animated.View
-                key={answer.cardId}
-                entering={answerIn(index)}
-                style={[styles.answer, { borderColor: tone.bottom }]}
-              >
-                <View style={[styles.answerIcon, { backgroundColor: tone.top }]}>
-                  <Icon
-                    name={answer.correct ? "check" : "close"}
-                    size={14}
-                    color={toyMatters.paper.top}
-                  />
-                </View>
-                <Text style={styles.answerWord} numberOfLines={1}>
-                  {word(answer.cardId)}
-                </Text>
-                <Text style={styles.answerTime}>{answerTimeText(answer)}</Text>
-              </Animated.View>
-            );
-          })}
-        </View>
+        <AnswerCards answers={answers} width={64} />
         <View style={styles.score}>
           <Lettering size={fontSizes.headingLarge}>{`${counted} / ${answers.length}`}</Lettering>
           <View style={styles.scoreTime}>
@@ -148,14 +114,14 @@ export function RunSummary({
           <LeafKicker>{TRAPS_TITLE}</LeafKicker>
           <Text style={pieces.line}>{trapsLine(traps.length, view.summary.opponent)}</Text>
           {catalog !== null && (
-            <View style={styles.traps}>
+            <View style={styles.traps} onLayout={trapFit.onLayout}>
               {traps.map((cardId, index) => (
                 <Animated.View
                   key={cardId}
                   entering={FadeInUp.delay(600 + index * 90).duration(260)}
                   style={{ transform: [{ rotate: `${(index % 2 === 0 ? -1 : 1) * 3}deg` }] }}
                 >
-                  <MiniCard card={catalogCard(catalog, cardId)} />
+                  <MiniCard card={catalogCard(catalog, cardId)} width={trapFit.width} />
                 </Animated.View>
               ))}
             </View>
@@ -207,31 +173,6 @@ function XpBar({ progress, xp }: { readonly progress: Progress; readonly xp: num
 const styles = StyleSheet.create({
   run: { gap: space.s8 },
   title: { alignItems: "center" },
-  answers: { gap: space.s3 },
-  answer: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: space.s4,
-    paddingHorizontal: space.s4,
-    paddingVertical: space.s3,
-    borderRadius: radii.md,
-    borderWidth: 2,
-    backgroundColor: ink.pageRaised,
-  },
-  answerIcon: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  answerWord: {
-    flex: 1,
-    fontFamily: fonts.ui.bold,
-    fontSize: fontSizes.bodyLarge,
-    color: ink.pageInk,
-  },
-  answerTime: { fontFamily: fonts.ui.semibold, fontSize: fontSizes.small, color: ink.pageInkMuted },
   score: { alignItems: "center", gap: space.s2 },
   scoreTime: { flexDirection: "row", alignItems: "center", gap: space.s2 },
   scoreTimeText: { fontFamily: fonts.ui.bold, fontSize: fontSizes.body, color: ink.pageInkMuted },
@@ -247,7 +188,7 @@ const styles = StyleSheet.create({
     backgroundColor: ink.track,
   },
   xpFill: { height: "100%", backgroundColor: toyMatters.gold.top },
-  traps: { flexDirection: "row", flexWrap: "wrap", justifyContent: "center", gap: space.s4 },
+  traps: { flexDirection: "row", flexWrap: "wrap", justifyContent: "center", gap: space.s3 },
   waiting: { flexDirection: "row", alignItems: "center", gap: space.s4 },
   waitingText: {
     flex: 1,

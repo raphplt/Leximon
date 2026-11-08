@@ -24,6 +24,7 @@ import {
 import Link from "next/link";
 import { type FormEvent, useCallback, useEffect, useRef, useState } from "react";
 import { play, vibrate } from "@/booster/feedback";
+import { DefinitionText } from "@/components/definition-text";
 import { api } from "@/lib/api";
 import { refreshIfRead } from "@/player/collection";
 import { missions } from "@/player/player";
@@ -150,7 +151,9 @@ function Riddle({
         {riddleClueLines(riddle).map((clue) => (
           <div key={clue.label} className={styles.clue}>
             <p className={ui.kicker}>{clue.label}</p>
-            <p className={styles.clueText}>{clue.text}</p>
+            <p className={styles.clueText}>
+              <DefinitionText text={clue.text} />
+            </p>
           </div>
         ))}
       </section>
