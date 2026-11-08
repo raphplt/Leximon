@@ -4,6 +4,8 @@
   display: grid;
   grid-template-columns: 220px minmax(0, 1fr);
   min-height: 100dvh;
+  /* A plain desk: the game's shelves behind tables and small print made them hard to read. */
+  background: var(--lx-color-well);
 }
 
 .side {
@@ -257,6 +259,7 @@
   overflow-x: auto;
   border-radius: var(--lx-radius-xl);
   border: 1px solid var(--lx-color-rule);
+  background: var(--lx-color-page);
 }
 
 .table {
