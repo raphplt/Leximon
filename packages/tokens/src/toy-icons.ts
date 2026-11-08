@@ -345,8 +345,8 @@ export const lettrine = {
   ruleWidth: 1,
   /** Room between the tile's edge and the ground, in px; the lip of the tile comes on top below. */
   inset: 3,
-  /** The tile's own rounding less its rim: the ground follows the frame instead of cutting it. */
-  radius: 12,
+  /** Rounder than a corner, tighter than the tile's frame: the ground reads as set inside it. */
+  radius: 8,
   /** Over the ground: a light from above, fading to a shade at the edges, as under varnish. */
   glow: [
     { offset: 0, color: illumination.vellum, opacity: 0.24 },
