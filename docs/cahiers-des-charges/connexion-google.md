@@ -1,6 +1,6 @@
 # Cahier des charges · Connexion avec Google
 
-- **Statut :** cahier écrit le 2026-11-08, questions ouvertes (§ 8), rien n'est codé.
+- **Statut :** tranché le 2026-11-08 : le propriétaire retient toutes les recommandations du § 8 (D-057).
 - **Règles concernées :** P37 (l'inscription transfère la partie de l'invité, « code, Apple, Google »), P54 (invité qui se connecte à un compte qui joue déjà), P61 (nouvelles par e-mail), dans [regles-du-jeu.md](../regles-du-jeu.md), qui fait foi.
 - **D'où ça vient :** le propriétaire veut un bouton « Continuer avec Google » à côté du code par e-mail. La bêta s'ouvre à tous le 2026-11-09.
 - **Objectif :** créer son compte ou se connecter en deux gestes, sans attendre un e-mail. Chaque inscription par Google est aussi un code de moins à envoyer, alors que le quota d'envoi est la première limite de la bêta ouverte.
