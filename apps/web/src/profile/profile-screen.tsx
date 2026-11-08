@@ -7,6 +7,7 @@ import {
   PROFILE_LINK_COPIED,
   playerName,
   profilePath,
+  SIGN_IN_QUERY,
   visibilityNote,
 } from "@leximon/view-model";
 import Link from "next/link";
@@ -106,9 +107,12 @@ export function ProfileScreen() {
           <Icon name={me.member && me.pseudo !== null ? "lock" : "profil"} size={18} />
           {note}
           {!me.member && (
-            <ButtonLink href="/compte" small>
-              Créer mon compte
-            </ButtonLink>
+            <>
+              <ButtonLink href="/compte" small>
+                Créer mon compte
+              </ButtonLink>
+              <Link href={`/compte?${SIGN_IN_QUERY}`}>Me connecter</Link>
+            </>
           )}
           {me.member && me.pseudo === null && (
             <Button small onClick={() => setChoosing(true)}>

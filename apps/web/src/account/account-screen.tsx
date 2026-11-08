@@ -3,24 +3,30 @@
 import { AGE_BRACKETS, type AgeBracket, type LinkPreviewResponse } from "@leximon/contract";
 import { BetaClosedError } from "@leximon/contract/client";
 import {
+  ACCOUNT_INTENTS,
   ACCOUNT_TITLES,
+  type AccountIntent,
   AGE_UNSAID,
   ageBracketLabel,
   type CodeError,
   codeErrorMessage,
   confirmStep,
+  emailStep,
   NEWS_OPT_IN,
   needsConfirmation,
   needsNewCode,
+  SIGN_IN_QUERY,
   sendErrorMessage,
 } from "@leximon/view-model";
 import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
 import { type FormEvent, useCallback, useEffect, useId, useState } from "react";
 import { Select, type SelectOption } from "@/components/select";
 import { api } from "@/lib/api";
 import { usePackShape } from "@/lib/use-pack-shape";
 import { forgetProgress } from "@/progress/use-progress";
 import { Switch } from "@/ui/switch";
+import { Segmented } from "@/ui/tabs";
 import ui from "@/ui/ui.module.css";
 import styles from "./account-screen.module.css";
 import { forgetPendingCode, keepPendingCode, readPendingCode } from "./pending-code";
@@ -41,6 +47,9 @@ type Step =
 
 const OFFLINE = "Pas de connexion. Réessaie.";
 
+/** Where a guest's game is kept. */
+const HERE = "dans ce navigateur";
+
 /**
  * Signing up or in with a code sent by e-mail. One flow for both: whether the address has
  * an account is only told once the code is checked, so that nobody learns it without the mailbox.
@@ -49,6 +58,9 @@ export function AccountScreen() {
   const [step, setStep] = useState<Step>({ kind: "loading" });
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  // Kept in the address, so that the menu's « Se connecter » works from this screen too.
+  const router = useRouter();
+  const intent: AccountIntent = useSearchParams().has(SIGN_IN_QUERY) ? "signin" : "signup";
   // Ticked on the address form: given once the session exists, never assumed.
   const [newsOptIn, setNewsOptIn] = useState(false);
 
@@ -164,7 +176,7 @@ export function AccountScreen() {
     <main className={styles.screen}>
       <header className={styles.header}>
         <p className={styles.kicker}>Ton compte</p>
-        <h1 className={`${styles.title} ${ui.lettered}`}>{titleOf(step)}</h1>
+        <h1 className={`${styles.title} ${ui.lettered}`}>{titleOf(step, intent)}</h1>
       </header>
 
       {step.kind === "loading" && <p className={styles.hint}>Un instant…</p>}
@@ -211,6 +223,15 @@ export function AccountScreen() {
 
       {step.kind === "email" && (
         <EmailForm
+          intent={intent}
+          onIntent={(next) => {
+            router.replace(next === "signin" ? `/compte?${SIGN_IN_QUERY}` : "/compte", {
+              scroll: false,
+            });
+            // The box is only shown to a new account: switching away unticks it.
+            if (next === "signin") setNewsOptIn(false);
+            setError(null);
+          }}
           busy={busy}
           newsOptIn={newsOptIn}
           onNewsOptIn={setNewsOptIn}
@@ -234,6 +255,7 @@ export function AccountScreen() {
       {step.kind === "confirm" && (
         <Confirm
           preview={step.preview}
+          intent={intent}
           busy={busy}
           onConfirm={(ageConfirmed, ageBracket) =>
             void confirm(step.email, step.code, step.preview, ageConfirmed, ageBracket)
@@ -252,23 +274,27 @@ export function AccountScreen() {
   );
 }
 
-function titleOf(step: Step): string {
+function titleOf(step: Step, intent: AccountIntent): string {
   switch (step.kind) {
     case "member":
     case "code":
     case "confirm":
       return ACCOUNT_TITLES[step.kind];
     default:
-      return ACCOUNT_TITLES.email;
+      return emailStep(intent, HERE).title;
   }
 }
 
 function EmailForm({
+  intent,
+  onIntent,
   busy,
   newsOptIn,
   onNewsOptIn,
   onSubmit,
 }: {
+  readonly intent: AccountIntent;
+  readonly onIntent: (intent: AccountIntent) => void;
   readonly busy: boolean;
   readonly newsOptIn: boolean;
   readonly onNewsOptIn: (value: boolean) => void;
@@ -276,15 +302,20 @@ function EmailForm({
 }) {
   const [email, setEmail] = useState(readLastEmail);
   const id = useId();
+  const words = emailStep(intent, HERE);
   const submit = (event: FormEvent) => {
     event.preventDefault();
     onSubmit(email.trim().toLowerCase());
   };
   return (
     <form className={`${styles.panel} ${ui.leaf}`} onSubmit={submit}>
-      <p className={styles.text}>
-        Sans compte, ta collection n'est enregistrée que dans ce navigateur.
-      </p>
+      <Segmented
+        label="Ce que tu veux faire"
+        options={ACCOUNT_INTENTS}
+        value={intent}
+        onChange={onIntent}
+      />
+      <p className={styles.text}>{words.text}</p>
       <label htmlFor={id} className={styles.label}>
         Ton adresse e-mail
       </label>
@@ -298,14 +329,16 @@ function EmailForm({
         value={email}
         onChange={(event) => setEmail(event.target.value)}
       />
-      <label className={styles.check}>
-        <input
-          type="checkbox"
-          checked={newsOptIn}
-          onChange={(event) => onNewsOptIn(event.target.checked)}
-        />
-        <span>{NEWS_OPT_IN}</span>
-      </label>
+      {words.asksNews && (
+        <label className={styles.check}>
+          <input
+            type="checkbox"
+            checked={newsOptIn}
+            onChange={(event) => onNewsOptIn(event.target.checked)}
+          />
+          <span>{NEWS_OPT_IN}</span>
+        </label>
+      )}
       <button
         type="submit"
         className={`${styles.primary} ${ui.goldToy}`}
@@ -313,6 +346,7 @@ function EmailForm({
       >
         {busy ? "Envoi…" : "Recevoir un code"}
       </button>
+      <p className={styles.muted}>{words.how}</p>
     </form>
   );
 }
@@ -425,11 +459,13 @@ const AGE_OPTIONS: readonly SelectOption<AgeBracket | "">[] = [
 
 function Confirm({
   preview,
+  intent,
   busy,
   onConfirm,
   onCancel,
 }: {
   readonly preview: LinkPreviewResponse;
+  readonly intent: AccountIntent;
   readonly busy: boolean;
   readonly onConfirm: (ageConfirmed: boolean, ageBracket: AgeBracket | null) => void;
   readonly onCancel: () => void;
@@ -437,7 +473,7 @@ function Confirm({
   const { noun } = usePackShape();
   const [ageConfirmed, setAgeConfirmed] = useState(false);
   const [ageBracket, setAgeBracket] = useState<AgeBracket | null>(null);
-  const step = confirmStep(preview, noun);
+  const step = confirmStep(preview, noun, intent);
   const ready = !busy && (!step.needsAge || ageConfirmed);
   if (step.closed) {
     return (

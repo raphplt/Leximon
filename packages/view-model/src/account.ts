@@ -14,11 +14,55 @@ import { capitalize, type PackNoun } from "./format";
 
 /** The title of each step of the account screen. */
 export const ACCOUNT_TITLES = {
-  email: "Garde ta collection",
+  email: "Crée ton compte",
   code: "Vérifie tes e-mails",
   confirm: "Presque fini",
   member: "Tu es connecté",
 } as const;
+
+/**
+ * What the player came to do. Both go through the same code by e-mail, and the server alone
+ * knows whether the address has an account: the intent only changes what the screen says.
+ */
+export type AccountIntent = "signup" | "signin";
+
+export const ACCOUNT_INTENTS: readonly { readonly value: AccountIntent; readonly label: string }[] =
+  [
+    { value: "signup", label: "Créer un compte" },
+    { value: "signin", label: "Se connecter" },
+  ];
+
+/** The query that opens the account screen on signing in rather than up. */
+export const SIGN_IN_QUERY = "connexion";
+
+export interface EmailStep {
+  readonly title: string;
+  readonly text: string;
+  /** How the code works, said once since there is no password to type. */
+  readonly how: string;
+  /** Only a new account is asked about news by e-mail: a member sets it in their account. */
+  readonly asksNews: boolean;
+}
+
+const HOW_THE_CODE_WORKS =
+  "Il n'y a pas de mot de passe. On t'envoie par e-mail un code à 6 chiffres, que tu recopies à l'étape suivante.";
+
+/** Where a guest's game is kept: « dans ce navigateur » on the web, « sur ce téléphone » on mobile. */
+export function emailStep(intent: AccountIntent, here: string): EmailStep {
+  return intent === "signup"
+    ? {
+        title: "Crée ton compte",
+        text: `Ton compte garde ta collection et te la rend sur tous tes appareils. Sans compte, elle n'est enregistrée que ${here}.`,
+        how: HOW_THE_CODE_WORKS,
+        asksNews: true,
+      }
+    : {
+        title: "Connecte-toi",
+        text: "Entre l'adresse e-mail de ton compte pour retrouver ta collection.",
+        how: HOW_THE_CODE_WORKS,
+        asksNews: false,
+      };
+}
 
 /** Said over the game once the code is accepted. */
 export const SIGNED_IN_TOAST = "Tu es connecté.";
@@ -52,7 +96,11 @@ export interface ConfirmStep {
 }
 
 /** What the player confirms, given what signing in would do to the guest's game. */
-export function confirmStep(preview: LinkPreviewResponse, noun: PackNoun): ConfirmStep {
+export function confirmStep(
+  preview: LinkPreviewResponse,
+  noun: PackNoun,
+  intent: AccountIntent = "signup",
+): ConfirmStep {
   if (preview.inviteRequired) {
     return {
       title: "Sur invitation",
@@ -64,8 +112,20 @@ export function confirmStep(preview: LinkPreviewResponse, noun: PackNoun): Confi
       closed: true,
     };
   }
-  return { ...stepOf(preview, noun), closed: false };
+  const step = stepOf(preview, noun);
+  // Come to sign in with an address that has no account: say so before creating one.
+  if (intent === "signin" && !preview.accountExists) {
+    return {
+      ...step,
+      title: "Pas encore de compte",
+      text: `${NO_ACCOUNT_YET} ${step.text}`,
+      closed: false,
+    };
+  }
+  return { ...step, closed: false };
 }
+
+const NO_ACCOUNT_YET = "Aucun compte n'utilise encore cette adresse. Tu peux le créer maintenant.";
 
 function stepOf(preview: LinkPreviewResponse, noun: PackNoun): Omit<ConfirmStep, "closed"> {
   switch (preview.outcome) {

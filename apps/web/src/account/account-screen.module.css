@@ -137,11 +137,44 @@
   cursor: pointer;
 }
 
+/* A box of the game's paper, filled with gold and ticked once checked. */
 .check input {
-  width: 22px;
-  height: 22px;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
   margin: 0;
-  accent-color: var(--lx-color-rubric);
+  appearance: none;
+  border: var(--lx-toy-outline-width) solid var(--lx-toy-outline);
+  border-radius: 7px;
+  background: var(--lx-color-paper);
+  box-shadow: inset 0 2px 0 color-mix(in srgb, var(--lx-toy-paper-edge) 60%, transparent);
+  cursor: pointer;
+}
+
+.check input:checked {
+  background: linear-gradient(
+    180deg,
+    var(--lx-toy-gold-top) 0 47%,
+    var(--lx-toy-gold-bottom) 53% 100%
+  );
+  box-shadow: none;
+}
+
+.check input:checked::after {
+  content: "";
+  width: 6px;
+  height: 11px;
+  margin-top: -3px;
+  border: solid var(--lx-toy-outline);
+  border-width: 0 3px 3px 0;
+  rotate: 45deg;
+}
+
+.check input:focus-visible {
+  outline: 3px solid var(--lx-color-focus);
+  outline-offset: 2px;
 }
 
 /* --- Buttons -------------------------------------------------------------------------- */

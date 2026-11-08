@@ -5,6 +5,7 @@ import {
   cardCount,
   codeErrorMessage,
   confirmStep,
+  emailStep,
   needsConfirmation,
   needsNewCode,
 } from "./account";
@@ -28,7 +29,28 @@ describe("cardCount", () => {
   });
 });
 
+describe("emailStep", () => {
+  it("asks about news only when an account is created", () => {
+    const signUp = emailStep("signup", "sur ce téléphone");
+    expect(signUp).toMatchObject({ title: "Crée ton compte", asksNews: true });
+    expect(signUp.text).toContain("n'est enregistrée que sur ce téléphone.");
+    expect(emailStep("signin", "sur ce téléphone")).toMatchObject({
+      title: "Connecte-toi",
+      asksNews: false,
+    });
+  });
+});
+
 describe("confirmStep", () => {
+  it("tells a player come to sign in that the address has no account yet", () => {
+    const step = confirmStep(preview({ outcome: "none" }), DEFAULT_PACK_NOUN, "signin");
+    expect(step).toMatchObject({ title: "Pas encore de compte", needsAge: true });
+    expect(step.text).toContain("Aucun compte n'utilise encore cette adresse.");
+
+    const known = confirmStep(preview({ accountExists: true }), DEFAULT_PACK_NOUN, "signin");
+    expect(known.title).toBe("Connecte-toi");
+  });
+
   it("offers no account to create when the beta needs an invitation the player lacks", () => {
     const step = confirmStep(preview({ outcome: "none", inviteRequired: true }), DEFAULT_PACK_NOUN);
     expect(step).toMatchObject({ closed: true, needsAge: false });

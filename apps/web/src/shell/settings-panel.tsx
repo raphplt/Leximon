@@ -1,7 +1,12 @@
 "use client";
 
 import type { Preferences } from "@leximon/contract";
-import { blockedCountLabel, pseudoSettingLabel, publicProfileDetail } from "@leximon/view-model";
+import {
+  blockedCountLabel,
+  pseudoSettingLabel,
+  publicProfileDetail,
+  SIGN_IN_QUERY,
+} from "@leximon/view-model";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { canVibrate, type FeedbackKind, readPreference, writePreference } from "@/booster/feedback";
@@ -269,6 +274,13 @@ export function SettingsPanel({
                 <span className={ui.switchLabel}>
                   Créer mon compte
                   <span className={ui.switchSub}>Pour garder tes cartes</span>
+                </span>
+                <Icon name="chev" size={16} />
+              </Link>
+              <Link href={`/compte?${SIGN_IN_QUERY}`} className={ui.switchRow} onClick={onClose}>
+                <span className={ui.switchLabel}>
+                  Me connecter
+                  <span className={ui.switchSub}>Pour retrouver ta collection</span>
                 </span>
                 <Icon name="chev" size={16} />
               </Link>

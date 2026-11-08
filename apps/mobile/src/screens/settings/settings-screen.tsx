@@ -11,6 +11,7 @@ import {
   playerName,
   pseudoSettingLabel,
   publicProfileDetail,
+  SIGN_IN_QUERY,
   UNBLOCKED_TOAST,
 } from "@leximon/view-model";
 import { router } from "expo-router";
@@ -237,6 +238,11 @@ export function SettingsScreen() {
               label="Créer mon compte"
               detail="Pour garder tes cartes"
               onPress={() => router.push("/compte")}
+            />
+            <Row
+              label="Me connecter"
+              detail="Pour retrouver ta collection"
+              onPress={() => router.push({ pathname: "/compte", params: { [SIGN_IN_QUERY]: "1" } })}
             />
             <Row label="Tes données" onPress={() => openWebPage("/confidentialite")} />
           </>

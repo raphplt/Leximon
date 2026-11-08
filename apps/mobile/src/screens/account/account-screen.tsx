@@ -1,20 +1,24 @@
 import { AGE_BRACKETS, type AgeBracket, type LinkPreviewResponse } from "@leximon/contract";
 import { BetaClosedError } from "@leximon/contract/client";
 import {
+  ACCOUNT_INTENTS,
   ACCOUNT_TITLES,
+  type AccountIntent,
   AGE_UNSAID,
   ageBracketLabel,
   type CodeError,
   codeErrorMessage,
   confirmStep,
+  emailStep,
   NEWS_OPT_IN,
   needsConfirmation,
   needsNewCode,
   PACK_NOUNS,
+  SIGN_IN_QUERY,
   SIGNED_IN_TOAST,
   sendErrorMessage,
 } from "@leximon/view-model";
-import { router } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import * as WebBrowser from "expo-web-browser";
 import { useCallback, useEffect, useState } from "react";
 import { Pressable, StyleSheet, Switch, Text, View } from "react-native";
@@ -26,6 +30,7 @@ import { Button } from "@/ui/button";
 import { Check } from "@/ui/check";
 import { FormError, Page, Paragraph } from "@/ui/page";
 import { OnPaper } from "@/ui/panel";
+import { Segmented } from "@/ui/segmented";
 import { TextButton } from "@/ui/text-button";
 import { TextField } from "@/ui/text-field";
 import { toast } from "@/ui/toast";
@@ -49,6 +54,9 @@ const OFFLINE = "Pas de connexion. Réessaie.";
 /** The game shows sachets on the phone. */
 const NOUN = PACK_NOUNS.sachet;
 
+/** Where a guest's game is kept. */
+const HERE = "sur ce téléphone";
+
 /**
  * Signing up or in with a code sent by e-mail. One flow for both: whether the address has
  * an account is only told once the code is checked, so that nobody learns it without the mailbox.
@@ -57,6 +65,9 @@ export function AccountScreen() {
   const [step, setStep] = useState<Step>({ kind: "loading" });
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  // Kept in the route's params, so that a « Me connecter » works from this screen too.
+  const intent: AccountIntent =
+    useLocalSearchParams()[SIGN_IN_QUERY] !== undefined ? "signin" : "signup";
   // Ticked on the address form: given once the session exists, never assumed.
   const [newsOptIn, setNewsOptIn] = useState(false);
 
@@ -148,7 +159,7 @@ export function AccountScreen() {
     });
 
   return (
-    <Page kicker="Ton compte" title={titleOf(step)}>
+    <Page kicker="Ton compte" title={titleOf(step, intent)}>
       {step.kind === "loading" && <Paragraph muted>Un instant…</Paragraph>}
 
       {step.kind === "failed" && (
@@ -178,6 +189,13 @@ export function AccountScreen() {
       {step.kind === "email" && (
         <OnPaper>
           <EmailForm
+            intent={intent}
+            onIntent={(next) => {
+              router.setParams({ [SIGN_IN_QUERY]: next === "signin" ? "1" : undefined });
+              // The box is only shown to a new account: switching away unticks it.
+              if (next === "signin") setNewsOptIn(false);
+              setError(null);
+            }}
             busy={busy}
             newsOptIn={newsOptIn}
             onNewsOptIn={setNewsOptIn}
@@ -202,6 +220,7 @@ export function AccountScreen() {
         <OnPaper>
           <Confirm
             preview={step.preview}
+            intent={intent}
             busy={busy}
             onConfirm={(ageConfirmed, ageBracket) =>
               void run(() => signIn(step.email, step.code, step.preview, ageConfirmed, ageBracket))
@@ -216,23 +235,27 @@ export function AccountScreen() {
   );
 }
 
-function titleOf(step: Step): string {
+function titleOf(step: Step, intent: AccountIntent): string {
   switch (step.kind) {
     case "member":
     case "code":
     case "confirm":
       return ACCOUNT_TITLES[step.kind];
     default:
-      return ACCOUNT_TITLES.email;
+      return emailStep(intent, HERE).title;
   }
 }
 
 function EmailForm({
+  intent,
+  onIntent,
   busy,
   newsOptIn,
   onNewsOptIn,
   onSubmit,
 }: {
+  readonly intent: AccountIntent;
+  readonly onIntent: (intent: AccountIntent) => void;
   readonly busy: boolean;
   readonly newsOptIn: boolean;
   readonly onNewsOptIn: (value: boolean) => void;
@@ -240,12 +263,14 @@ function EmailForm({
 }) {
   const [email, setEmail] = useState(readLastEmail);
   const ready = !busy && email.trim() !== "";
+  const words = emailStep(intent, HERE);
   const submit = () => {
     if (ready) onSubmit(email.trim().toLowerCase());
   };
   return (
     <>
-      <Paragraph>Sans compte, ta collection n'est enregistrée que sur ce téléphone.</Paragraph>
+      <Segmented options={ACCOUNT_INTENTS} value={intent} onChange={onIntent} />
+      <Paragraph>{words.text}</Paragraph>
       <TextField
         label="Ton adresse e-mail"
         value={email}
@@ -259,10 +284,13 @@ function EmailForm({
         returnKeyType="send"
         onSubmitEditing={submit}
       />
-      <Check checked={newsOptIn} onChange={onNewsOptIn}>
-        {NEWS_OPT_IN}
-      </Check>
+      {words.asksNews && (
+        <Check checked={newsOptIn} onChange={onNewsOptIn}>
+          {NEWS_OPT_IN}
+        </Check>
+      )}
       <Button label={busy ? "Envoi…" : "Recevoir un code"} disabled={!ready} onPress={submit} />
+      <Paragraph muted>{words.how}</Paragraph>
     </>
   );
 }
@@ -369,18 +397,20 @@ function CodeForm({
 
 function Confirm({
   preview,
+  intent,
   busy,
   onConfirm,
   onCancel,
 }: {
   readonly preview: LinkPreviewResponse;
+  readonly intent: AccountIntent;
   readonly busy: boolean;
   readonly onConfirm: (ageConfirmed: boolean, ageBracket: AgeBracket | null) => void;
   readonly onCancel: () => void;
 }) {
   const [ageConfirmed, setAgeConfirmed] = useState(false);
   const [ageBracket, setAgeBracket] = useState<AgeBracket | null>(null);
-  const step = confirmStep(preview, NOUN);
+  const step = confirmStep(preview, NOUN, intent);
   const ready = !busy && (!step.needsAge || ageConfirmed);
   if (step.closed) {
     return (

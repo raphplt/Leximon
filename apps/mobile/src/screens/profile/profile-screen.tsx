@@ -12,6 +12,7 @@ import {
   playerName,
   profilePath,
   replaceTitle,
+  SIGN_IN_QUERY,
   unpin,
   visibilityNote,
 } from "@leximon/view-model";
@@ -123,7 +124,12 @@ export function ProfileScreen() {
           {!me.member && (
             <>
               <Button label="Créer mon compte" onPress={() => router.push("/compte")} />
-              <TextButton label="Me connecter" onPress={() => router.push("/compte")} />
+              <TextButton
+                label="Me connecter"
+                onPress={() =>
+                  router.push({ pathname: "/compte", params: { [SIGN_IN_QUERY]: "1" } })
+                }
+              />
             </>
           )}
           {me.member && me.pseudo === null && (

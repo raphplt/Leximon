@@ -1,6 +1,6 @@
 "use client";
 
-import { APPEARANCE_NEW_KEY } from "@leximon/view-model";
+import { APPEARANCE_NEW_KEY, SIGN_IN_QUERY } from "@leximon/view-model";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { FeedbackDialog } from "@/beta/feedback-dialog";
@@ -45,9 +45,12 @@ export function PlayerMenu({
 
   const admin: Item[] = view.admin ? [{ label: "Admin", icon: "cle", href: "/admin" }] : [];
   // Until the account is read, the account page: it knows what to offer either way.
-  const account: Item = view.member
-    ? { label: "Déconnexion", icon: "logout", action: () => setSignOutOpen(true) }
-    : { label: "Créer mon compte", icon: "cle", href: "/compte" };
+  const account: readonly Item[] = view.member
+    ? [{ label: "Déconnexion", icon: "logout", action: () => setSignOutOpen(true) }]
+    : [
+        { label: "Se connecter", icon: "porte", href: `/compte?${SIGN_IN_QUERY}` },
+        { label: "Créer mon compte", icon: "cle", href: "/compte" },
+      ];
   const groups: readonly (readonly Item[])[] = [
     [
       {
@@ -65,7 +68,7 @@ export function PlayerMenu({
       { label: "Écrire à l'équipe", icon: "chat", action: () => setFeedbackOpen(true) },
       ...admin,
     ],
-    [account],
+    account,
   ];
 
   // Web: Escape and a click beside it close the menu; the first entry takes the focus, and the
