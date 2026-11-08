@@ -80,12 +80,14 @@ export function ProfileHeader({
         </div>
         {(face.memberSince !== null || actions !== undefined) && (
           <div className={styles.aside}>
-            {face.memberSince !== null && (
-              <p className={styles.since}>
-                <Icon name="calendar" size={18} />
-                {capitalize(memberSinceLabel(face.memberSince))}
-              </p>
-            )}
+            <div className={styles.sinceRow}>
+              {face.memberSince !== null && (
+                <p className={styles.since}>
+                  <Icon name="calendar" size={15} />
+                  {capitalize(memberSinceLabel(face.memberSince))}
+                </p>
+              )}
+            </div>
             {actions !== undefined && <div className={styles.actions}>{actions}</div>}
           </div>
         )}

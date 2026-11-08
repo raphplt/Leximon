@@ -203,11 +203,11 @@ const styles = StyleSheet.create({
     borderWidth: toyValues.outlineWidth,
     borderColor: toyValues.outline,
   },
-  // In the cloth's top corner, away from the avatar that climbs onto its lower edge.
+  // In the cloth's top corner, away from the avatar, and as far from the edge as the avatar is.
   since: {
     position: "absolute",
-    top: space.s4,
-    right: space.s4,
+    top: space.s6,
+    right: space.s6,
     flexDirection: "row",
     alignItems: "center",
     gap: space.s2,

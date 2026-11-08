@@ -33,20 +33,22 @@
 .bannerArt {
   display: block;
   width: 100%;
-  height: 130px;
+  height: 110px;
   border-bottom: 3px solid var(--lx-toy-outline);
 }
 
 /* The avatar straddles the banner's edge; the pseudo and its code stand on the banner, the title
-   and what follows start under its edge. */
+   and what follows start under its edge. The same inset all round, the avatar's gold rings counted. */
 .identity {
   display: flex;
   align-items: flex-start;
   flex-wrap: wrap;
   gap: var(--lx-s10);
   --banner-overlap: 58px;
+  --inset: var(--lx-s14);
+  --avatar-rings: 9px;
   margin-top: calc(-1 * var(--banner-overlap));
-  padding: 0 var(--lx-s14) var(--lx-s12);
+  padding: 0 var(--inset) var(--inset) calc(var(--inset) + var(--avatar-rings));
 }
 
 .bigAvatar {
@@ -61,12 +63,16 @@
   min-width: 0;
 }
 
-.nameRow {
+/* Clear of the edge, so that the pseudo's descenders never touch it. */
+.nameRow,
+.sinceRow {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: var(--lx-s2) var(--lx-s6);
+  box-sizing: border-box;
   min-height: var(--banner-overlap);
+  padding-bottom: var(--lx-s6);
 }
 
 .name {
@@ -133,32 +139,32 @@ a.clan:hover {
   text-decoration: underline;
 }
 
-/* The right column: the date stands on the banner, level with the pseudo; the buttons at its foot. */
+/* The right column: the date on the banner, level with the code; under the edge, the buttons
+   centred on the title and the clan (the gap matches the title's top margin). */
 .aside {
   display: flex;
   flex-direction: column;
   align-self: stretch;
   align-items: flex-end;
-  justify-content: space-between;
-  gap: var(--lx-s5);
+  gap: var(--lx-s3);
 }
 
 .since {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--lx-s3);
-  min-height: var(--banner-overlap);
+  composes: codeButton;
   margin: 0;
-  font-size: var(--lx-size-small);
-  font-weight: 700;
-  white-space: nowrap;
+  cursor: default;
+}
+
+.since:hover {
+  background: color-mix(in srgb, var(--lx-lettering-fill) 14%, transparent);
+  color: color-mix(in srgb, var(--lx-lettering-fill) 85%, transparent);
 }
 
 .banner .headline {
   color: var(--lx-lettering-kicker);
 }
 
-.banner :is(.clan, .since) {
+.banner .clan {
   color: color-mix(in srgb, var(--lx-lettering-fill) 85%, transparent);
 }
 
@@ -167,6 +173,7 @@ a.clan:hover {
   flex-wrap: wrap;
   align-self: flex-end;
   gap: var(--lx-s5);
+  margin-block: auto;
 }
 
 /* Always worn with the leaf, which gives it its paper, its edge and its ink. */
@@ -205,19 +212,18 @@ a.clan:hover {
 .nameBone {
   width: min(240px, 100%);
   height: 32px;
-  margin-top: 5px;
+  margin-top: 7px;
 }
 
 .headlineBone {
   width: 90px;
   height: 13px;
-  margin-top: var(--lx-s7);
+  margin-top: 35px;
 }
 
 .sublineBone {
   width: 150px;
-  height: 10px;
-  margin: calc((var(--banner-overlap) - 10px) / 2) 0 0;
+  height: 22px;
 }
 
 .actionBone {
@@ -708,9 +714,11 @@ button.emptySlot {
     font-size: var(--lx-size-heading);
   }
 
-  .nameRow {
+  .nameRow,
+  .sinceRow {
     justify-content: center;
     min-height: 0;
+    padding-bottom: 0;
   }
 
   .headline,
@@ -741,10 +749,6 @@ button.emptySlot {
   .aside {
     align-self: center;
     align-items: center;
-  }
-
-  .since {
-    min-height: 0;
   }
 
   .actions {

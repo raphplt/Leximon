@@ -155,7 +155,9 @@ function ProfileWaiting() {
             <Bone className={styles.headlineBone} />
           </div>
           <div className={styles.aside}>
-            <Bone className={styles.sublineBone} />
+            <div className={styles.sinceRow}>
+              <Bone className={styles.sublineBone} />
+            </div>
             <div className={styles.actions}>
               <Bone className={styles.actionBone} />
             </div>
