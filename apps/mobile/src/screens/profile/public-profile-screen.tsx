@@ -6,6 +6,7 @@ import {
   BLOCKED_TOAST,
   blockRefusalMessage,
   friendRefusalText,
+  PLAIN_BANNER,
   PROFILE_NOT_FOUND,
   REPORTED_TOAST,
   requestSentToast,
@@ -93,6 +94,7 @@ export function PublicProfileScreen({ pseudo }: { readonly pseudo: string }) {
           code: shown.code,
           memberSince: shown.memberSince,
           clan: shown.clan,
+          banner: shown.banner,
         }
       : {
           avatar: shown.avatar,
@@ -102,6 +104,7 @@ export function PublicProfileScreen({ pseudo }: { readonly pseudo: string }) {
           code: null,
           memberSince: null,
           clan: null,
+          banner: PLAIN_BANNER,
         };
   const own = viewer !== null && shown.visibility === "public" && viewer.playerCode === shown.code;
   const clanId = shown.visibility === "public" ? (shown.clan?.id ?? null) : null;

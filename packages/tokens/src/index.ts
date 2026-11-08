@@ -6,6 +6,7 @@ export * from "./level-badge";
 export * from "./library";
 export * from "./pack-looks";
 export * from "./particles";
+export * from "./profile-banners";
 export * from "./rarity-icons";
 export * from "./tokens";
 export * from "./toy-icons";

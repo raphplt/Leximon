@@ -20,6 +20,7 @@ import type { LeagueSchedule } from "./joust/leagues";
 import type { MasterySchedule } from "./mastery/mastery";
 import type { PracticeSchedule } from "./mastery/practice";
 import type { NotifySchedule } from "./notify/notify";
+import type { BannerSchedule } from "./profile/banners";
 import type { CarnetSchedule } from "./progress/carnet";
 import type { MissionSchedule } from "./progress/missions";
 import type { XpSchedule } from "./progress/progress";
@@ -55,6 +56,8 @@ const REVIEW_DECIDED = Date.UTC(2026, 10, 3, 23);
  * (slower clock, longer guest trial), a day after it was decided so testers hear of it first.
  */
 const ECONOMY_DECIDED = Date.UTC(2026, 10, 6, 23);
+// Profile banners, decided on 2026-11-08.
+const BANNERS_DECIDED = Date.UTC(2026, 10, 7, 23);
 
 export const REFILL_SCHEDULE: RefillSchedule = [
   { startsAt: SINCE_LAUNCH, capacity: 6, intervalMs: 30 * MINUTE },
@@ -635,3 +638,17 @@ export const NOTIFY_SCHEDULE: NotifySchedule = [
 
 /** "Proches de mon niveau" in the list of players: this many levels on each side. */
 export const NEAR_LEVEL_SPREAD = 2;
+
+// The profile's banner: eight free tints and motifs earned by level, league, a complete collection
+// or écus. Price provisional; the season's motif comes with the season.
+export const BANNER_SCHEDULE: BannerSchedule = [
+  {
+    startsAt: BANNERS_DECIDED,
+    tints: ["bordeaux", "bottle", "prussian", "leather", "bishop", "ochre", "ink", "slate"],
+    startingMotif: "plain",
+    levels: { 15: "fleurons", 30: "scrolls", 45: "damask" },
+    leagues: { chevalier: "checky", marechal: "quarterly", champion: "cloth_of_gold" },
+    completeCollection: "binding",
+    forEcus: { marbled: 250, printer: 250 },
+  },
+];

@@ -89,6 +89,7 @@ export function ProfileScreen() {
           code: me.playerCode,
           memberSince: me.member ? me.memberSince : null,
           clan: me.clan,
+          banner: me.banner,
         }}
         onClan={() => router.dismissTo("/clan")}
       />

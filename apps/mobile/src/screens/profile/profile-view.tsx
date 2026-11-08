@@ -1,5 +1,11 @@
-import type { ProfileClan, ProfileJousts, ProfileStats } from "@leximon/contract";
+import type {
+  ProfileBanner as Banner,
+  ProfileClan,
+  ProfileJousts,
+  ProfileStats,
+} from "@leximon/contract";
 import { type Catalog, collectionName } from "@leximon/contract/client";
+import { toy as toyValues } from "@leximon/tokens";
 import {
   formatPlayerCode,
   leagueNumeral,
@@ -17,6 +23,7 @@ import { colors, fontSizes, fonts, paperColors, radii, space } from "@/theme";
 import { Avatar } from "@/ui/avatar";
 import { LevelMedal } from "@/ui/level";
 import { Panel } from "@/ui/panel";
+import { ProfileBanner } from "@/ui/profile-banner";
 
 export interface ProfileFace {
   readonly avatar: string;
@@ -27,9 +34,10 @@ export interface ProfileFace {
   readonly code: string | null;
   readonly memberSince: string | null;
   readonly clan: ProfileClan | null;
+  readonly banner: Banner;
 }
 
-/** Under the profile's name: avatar in its frame, title and level, clan, code. */
+/** Under the profile's name: the banner, avatar in its frame over it, title and level, clan, code. */
 export function ProfileHeader({
   face,
   onClan,
@@ -50,28 +58,34 @@ export function ProfileHeader({
       </>
     );
   return (
-    <View style={styles.identity}>
-      <Avatar avatar={face.avatar} frame={face.frame} size={92} label="Avatar" />
-      <View style={styles.names}>
-        {face.code !== null && (
-          <View style={styles.headline}>
-            <LevelMedal level={face.level} size={32} labelled />
-            {face.title !== null && <Text style={styles.headlineText}>{face.title}</Text>}
-          </View>
-        )}
-        {clan !== null &&
-          (onClan === undefined ? (
-            <View style={styles.clan}>{clan}</View>
-          ) : (
-            <Pressable onPress={onClan} accessibilityRole="link" style={styles.clan}>
-              {clan}
-            </Pressable>
-          ))}
-        {subline.length > 0 && <Text style={styles.subline}>{subline.join(" · ")}</Text>}
+    <View>
+      <ProfileBanner banner={face.banner} style={styles.cloth} />
+      <View style={styles.identity}>
+        <Avatar avatar={face.avatar} frame={face.frame} size={92} label="Avatar" />
+        <View style={styles.names}>
+          {face.code !== null && (
+            <View style={styles.headline}>
+              <LevelMedal level={face.level} size={32} labelled />
+              {face.title !== null && <Text style={styles.headlineText}>{face.title}</Text>}
+            </View>
+          )}
+          {clan !== null &&
+            (onClan === undefined ? (
+              <View style={styles.clan}>{clan}</View>
+            ) : (
+              <Pressable onPress={onClan} accessibilityRole="link" style={styles.clan}>
+                {clan}
+              </Pressable>
+            ))}
+          {subline.length > 0 && <Text style={styles.subline}>{subline.join(" · ")}</Text>}
+        </View>
       </View>
     </View>
   );
 }
+
+/** How far the avatar climbs onto the banner. */
+const CLOTH_OVERLAP = 36;
 
 const PIN_WIDTH = 116;
 
@@ -174,8 +188,22 @@ export function StatsPanel({
 const ink = paperColors;
 
 const styles = StyleSheet.create({
-  identity: { flexDirection: "row", alignItems: "center", gap: space.s8, marginTop: -6 },
-  names: { flex: 1, gap: space.s2 },
+  cloth: {
+    height: 72,
+    overflow: "hidden",
+    borderRadius: radii.lg,
+    borderWidth: toyValues.outlineWidth,
+    borderColor: toyValues.outline,
+  },
+  // The avatar sits astride the cloth's lower edge; the words start under it.
+  identity: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: space.s8,
+    marginTop: -CLOTH_OVERLAP,
+    paddingHorizontal: space.s6,
+  },
+  names: { flex: 1, gap: space.s2, paddingTop: CLOTH_OVERLAP + space.s3 },
   headline: { flexDirection: "row", alignItems: "center", gap: space.s4 },
   headlineText: {
     fontFamily: fonts.ui.extrabold,

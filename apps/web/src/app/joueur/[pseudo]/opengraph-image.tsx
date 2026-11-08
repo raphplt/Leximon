@@ -1,8 +1,9 @@
-import { colors, cssFill, fonts, lettering, oldGold, toy } from "@leximon/tokens";
-import { formatCount, plural, profileHeadline } from "@leximon/view-model";
+import { bannerSvg, colors, cssFill, fonts, lettering, oldGold, room, toy } from "@leximon/tokens";
+import { formatCount, PLAIN_BANNER, plural, profileHeadline } from "@leximon/view-model";
 import { ImageResponse } from "next/og";
+import type { ReactNode } from "react";
 import { googleFont } from "@/lib/og-fonts";
-import { lettered, OG_DOMAIN, OG_SIZE, OgBrand, OgDesk, OgRoom } from "@/lib/og-scene";
+import { lettered, OG_DOMAIN, OG_SIZE, OgBrand, OgRoom } from "@/lib/og-scene";
 import { readPublicProfile } from "@/profile/public-profile-data";
 
 export const alt = "Profil d'un joueur de Leximon";
@@ -10,8 +11,8 @@ export const size = OG_SIZE;
 export const contentType = "image/png";
 
 /**
- * The image of a shared profile: the initial on a gilt medal on the desk, then pseudo, title,
- * level, clan and the figures. Drawn on demand by
+ * The image of a shared profile: the initial on a gilt medal over the player's banner, then
+ * pseudo, title, level, clan and the figures. Drawn on demand by
  * Next, from the same cached copy as the page; nothing goes through the queue.
  */
 export default async function Image({ params }: { params: Promise<{ pseudo: string }> }) {
@@ -38,6 +39,7 @@ export default async function Image({ params }: { params: Promise<{ pseudo: stri
         ].join(" · ")
       : "";
   const initial = name.slice(0, 1).toUpperCase();
+  const banner = profile?.visibility === "public" ? profile.banner : PLAIN_BANNER;
 
   const [display, ui] = await Promise.all([
     googleFont(
@@ -50,7 +52,7 @@ export default async function Image({ params }: { params: Promise<{ pseudo: stri
   return new ImageResponse(
     <OgRoom>
       <div style={{ flex: 1, display: "flex", alignItems: "center", gap: 56, padding: "0 64px" }}>
-        <OgDesk width={400} height={480}>
+        <BannerFrame banner={banner}>
           <div
             style={{
               width: 250,
@@ -82,7 +84,7 @@ export default async function Image({ params }: { params: Promise<{ pseudo: stri
               {initial}
             </div>
           </div>
-        </OgDesk>
+        </BannerFrame>
         <div style={{ display: "flex", flexDirection: "column", gap: 20, flex: 1 }}>
           <OgBrand size={36} />
           <div style={{ ...lettered(nameSize(name)), lineHeight: 1.05 }}>{name}</div>
@@ -130,6 +132,60 @@ export default async function Image({ params }: { params: Promise<{ pseudo: stri
         { name: "Ui", data: ui, weight: 800, style: "normal" },
       ],
     },
+  );
+}
+
+const FRAME = { width: 400, height: 480, padding: 10, border: 4 };
+
+/** The player's banner in a gilt frame, with what it holds in the middle. */
+function BannerFrame({
+  banner,
+  children,
+}: {
+  readonly banner: { readonly motif: string; readonly tint: string };
+  readonly children: ReactNode;
+}) {
+  const inner = {
+    width: FRAME.width - 2 * (FRAME.padding + FRAME.border),
+    height: FRAME.height - 2 * (FRAME.padding + FRAME.border),
+  };
+  const src = `data:image/svg+xml;utf8,${encodeURIComponent(bannerSvg(banner, inner.width, inner.height))}`;
+  return (
+    <div
+      style={{
+        width: FRAME.width,
+        height: FRAME.height,
+        flexShrink: 0,
+        display: "flex",
+        padding: FRAME.padding,
+        borderRadius: room.desk.radius + 6,
+        border: `${FRAME.border}px solid ${toy.outline}`,
+        backgroundImage: cssFill(oldGold),
+        boxShadow: `0 28px 50px ${toy.drop}`,
+      }}
+    >
+      <div
+        style={{
+          position: "relative",
+          flex: 1,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          overflow: "hidden",
+          borderRadius: room.desk.radius,
+        }}
+      >
+        {/* biome-ignore lint/performance/noImgElement: drawn by next/og, not served to a browser */}
+        <img
+          src={src}
+          alt=""
+          width={inner.width}
+          height={inner.height}
+          style={{ position: "absolute", top: 0, left: 0 }}
+        />
+        {children}
+      </div>
+    </div>
   );
 }
 

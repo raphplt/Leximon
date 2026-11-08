@@ -52,6 +52,13 @@ export const profileJoustsSchema = z.object({
 });
 export type ProfileJousts = z.infer<typeof profileJoustsSchema>;
 
+/** The banner at the top of a profile: a motif over a tint. */
+export const profileBannerSchema = z.object({
+  motif: cosmeticSchema,
+  tint: cosmeticSchema,
+});
+export type ProfileBanner = z.infer<typeof profileBannerSchema>;
+
 /** The clan a public profile shows: its name, emblem and level. */
 export const profileClanSchema = z.object({
   id: z.uuid(),
@@ -106,6 +113,7 @@ export const publicProfileSchema = z.discriminatedUnion("visibility", [
     memberSince: timestampSchema,
     /** `null` without a clan. */
     clan: profileClanSchema.nullable(),
+    banner: profileBannerSchema,
     /** In the order of the profile. */
     pinned: z.array(slugSchema),
     stats: profileStatsSchema,
@@ -129,6 +137,8 @@ export const wardrobeSchema = z.object({
   avatars: z.array(cosmeticSchema),
   frames: z.array(cosmeticSchema),
   titles: z.array(z.string()),
+  /** Banner motifs earned or bought; every tint is free. */
+  banners: z.array(cosmeticSchema),
 });
 export type WardrobeView = z.infer<typeof wardrobeSchema>;
 
@@ -139,6 +149,8 @@ export const updateProfileRequestSchema = z
     avatar: cosmeticSchema,
     frame: cosmeticSchema,
     title: z.string().max(60).nullable(),
+    bannerMotif: cosmeticSchema,
+    bannerTint: cosmeticSchema,
     profilePublic: z.boolean(),
   })
   .partial()

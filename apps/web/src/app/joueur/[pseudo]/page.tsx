@@ -1,6 +1,7 @@
-import { profileHeadline } from "@leximon/view-model";
+import { PLAIN_BANNER, profileHeadline } from "@leximon/view-model";
 import type { Metadata } from "next";
 import { Suspense } from "react";
+import { ProfileBanner } from "@/components/profile-banner";
 import styles from "@/profile/profile.module.css";
 import { PlayerPageFrame, PublicProfileScreen } from "@/profile/public-profile";
 import { readPublicProfile } from "@/profile/public-profile-data";
@@ -37,7 +38,7 @@ export default function PlayerPage(props: PageProps<"/joueur/[pseudo]">) {
       fallback={
         <PlayerPageFrame signedIn={false}>
           <div className={styles.banner}>
-            <div className={styles.bannerArt} />
+            <ProfileBanner banner={PLAIN_BANNER} className={styles.bannerArt} />
           </div>
         </PlayerPageFrame>
       }

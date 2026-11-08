@@ -2,6 +2,7 @@
 
 import {
   canShareProfile,
+  PLAIN_BANNER,
   PROFILE_LINK_COPIED,
   playerName,
   profilePath,
@@ -9,6 +10,7 @@ import {
 } from "@leximon/view-model";
 import Link from "next/link";
 import { useState } from "react";
+import { ProfileBanner } from "@/components/profile-banner";
 import { profile } from "@/player/player";
 import { useShared, useSharedFailed } from "@/player/resource";
 import { useShell } from "@/shell/shell-context";
@@ -65,6 +67,7 @@ export function ProfileScreen() {
     code: me.playerCode,
     memberSince: me.member ? me.memberSince : null,
     clan: me.clan,
+    banner: me.banner,
     clanHref: "/clan",
   };
 
@@ -133,7 +136,7 @@ function ProfileWaiting() {
   return (
     <WaitingScreen className={styles.page}>
       <div className={styles.banner}>
-        <div className={styles.bannerArt} />
+        <ProfileBanner banner={PLAIN_BANNER} className={styles.bannerArt} />
         <div className={styles.identity}>
           <Bone className={styles.avatarBone} />
           <div className={styles.names}>

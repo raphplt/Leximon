@@ -1,7 +1,7 @@
 # Cahier des charges · Les bannières du profil
 
-- **Statut :** proposé le 2026-11-08. Rien de construit.
-- **Choix du propriétaire, le 2026-11-08 :** une bannière faite d'un motif et d'une teinte (direction A), plutôt qu'une couleur seule ou la gravure d'une carte. Le reste attend les réponses aux questions plus bas.
+- **Statut :** proposé le 2026-11-08 ; tranché le même jour, inscrit en P99 (et renvoyé depuis P58, P96 et P98).
+- **Choix du propriétaire, le 2026-11-08 :** une bannière faite d'un motif et d'une teinte (direction A), plutôt qu'une couleur seule ou la gravure d'une carte ; puis toutes les recommandations, B1 à B10. Le motif de saison se construira avec la saison, qui n'est pas encore dans le code.
 - **Source :** le retour du propriétaire du 2026-11-08 : les rayures en diagonale du haut du profil ne sont pas jolies, et chacun devrait pouvoir choisir la sienne.
 - **Règles liées :** P58 (récompenses de niveau), P60 (visibilité du profil), P73 (Mécène), P84 (écus), P89 (succès), P96 (saison), P97 (récompenses connues), P98 (ligues), N1 ([regles-du-jeu.md](../regles-du-jeu.md)).
 - **Cahiers liés :** [direction-artistique.md](direction-artistique.md), [economie.md](economie.md), [saison.md](saison.md), [joutes-ligues.md](joutes-ligues.md).

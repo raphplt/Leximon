@@ -1,9 +1,13 @@
 import type { z } from "zod";
 import {
+  type BannerPurchaseRefusal,
+  type BannerPurchaseResponse,
   type BlockRefusal,
   type BlocksResponse,
   type BoosterSource,
   type BoosterWalletResponse,
+  bannerPurchaseRefusalSchema,
+  bannerPurchaseResponseSchema,
   blockRefusalSchema,
   blocksResponseSchema,
   boosterStockEmptySchema,
@@ -168,6 +172,10 @@ export type RiddleAnswerResult =
   | ({ readonly kind: "answered" } & RiddleAnswerResponse)
   /** The day changed while the player was on it: there is a new riddle to read. */
   | { readonly kind: "over" };
+
+export type BannerPurchaseResult =
+  | ({ readonly kind: "bought" } & BannerPurchaseResponse)
+  | { readonly kind: "refused"; readonly reason: BannerPurchaseRefusal };
 
 export type ProfileResult =
   | { readonly kind: "ok"; readonly profile: ProfileResponse }
@@ -414,6 +422,23 @@ export function gameRoutes(http: Http) {
       }
       if (!response.ok) throw new ApiError("missing_word_failed", response.status);
       return { kind: "bought", ...(await parse(response, missingWordResponseSchema)) };
+    },
+
+    /** Spends écus on a banner motif sold at a fixed price. */
+    async buyBanner(motif: string, idempotencyKey: string): Promise<BannerPurchaseResult> {
+      const response = await sendAsPlayer(
+        `/me/banners/${segment(motif)}`,
+        json("POST", {}, { [IDEMPOTENCY_KEY_HEADER]: idempotencyKey }),
+      );
+      await refuseArchivedGuest(response);
+      if (response.status === 409) {
+        return {
+          kind: "refused",
+          reason: (await parse(response, bannerPurchaseRefusalSchema)).error,
+        };
+      }
+      if (!response.ok) throw new ApiError("banner_not_bought", response.status);
+      return { kind: "bought", ...(await parse(response, bannerPurchaseResponseSchema)) };
     },
 
     fetchChallenges: (limit = 5): Promise<ChallengesResponse> =>

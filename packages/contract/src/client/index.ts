@@ -39,6 +39,7 @@ export type { ClanResult } from "./clans";
 export type { ClaimReferralResult, FriendResult } from "./friends";
 export type {
   AnswerResult,
+  BannerPurchaseResult,
   BlockResult,
   CarnetClaimResult,
   ChangeMissionResult,

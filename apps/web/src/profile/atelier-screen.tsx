@@ -5,6 +5,7 @@ import {
   type AtelierItem,
   type AtelierTab,
   atelierItems,
+  type CosmeticTab,
   cosmeticLockedToast,
   cosmeticStateLabel,
   wornToast,
@@ -20,6 +21,7 @@ import { LoadFailed } from "@/ui/load-failed";
 import { Bone } from "@/ui/skeleton";
 import { useToast } from "@/ui/toast";
 import ui from "@/ui/ui.module.css";
+import { BannerPanel } from "./banner-panel";
 import styles from "./profile.module.css";
 import { useProfileActions } from "./use-profile-actions";
 
@@ -42,7 +44,7 @@ export function AtelierScreen() {
   const toast = useToast();
   const [tab, setTab] = useState<AtelierTab>("avatars");
 
-  const choose = (item: AtelierItem) => {
+  const choose = (tab: CosmeticTab, item: AtelierItem) => {
     if (item.state === "worn") return;
     if (item.state !== "owned") {
       toast(cosmeticLockedToast(item));
@@ -57,7 +59,7 @@ export function AtelierScreen() {
     void actions.update(change, { success: wornToast(tab) });
   };
 
-  const items = me === null || now === 0 ? [] : atelierItems(tab, me, now);
+  const items = me === null || now === 0 || tab === "banners" ? [] : atelierItems(tab, me, now);
 
   return (
     <main className={styles.page}>
@@ -69,7 +71,7 @@ export function AtelierScreen() {
         <Avatar avatar={me?.avatar ?? null} frame={me?.frame ?? null} size={72} />
         <h1 className={`${ui.display} ${styles.title}`}>Apparence</h1>
       </div>
-      <div className={styles.tabs} role="tablist" aria-label="Avatars, cadres et titres">
+      <div className={styles.tabs} role="tablist" aria-label="Avatars, cadres, titres et bannières">
         {ATELIER_TABS.map((entry) => (
           <button
             key={entry.tab}
@@ -87,6 +89,8 @@ export function AtelierScreen() {
       </div>
       {me === null && failed ? (
         <LoadFailed onRetry={() => profile.ensure()} />
+      ) : tab === "banners" && me !== null && now !== 0 ? (
+        <BannerPanel me={me} now={now} actions={actions} />
       ) : (
         <ul
           id="atelier-items"
@@ -111,7 +115,7 @@ export function AtelierScreen() {
                   aria-pressed={item.state === "worn"}
                   aria-disabled={item.state !== "owned" ? true : undefined}
                   disabled={actions.busy}
-                  onClick={() => choose(item)}
+                  onClick={() => tab !== "banners" && choose(tab, item)}
                 >
                   <Preview tab={tab} item={item} wornAvatar={me?.avatar ?? null} />
                   {tab !== "titles" && <span className={styles.itemName}>{item.name}</span>}
@@ -134,7 +138,7 @@ function Preview({
   item,
   wornAvatar,
 }: {
-  readonly tab: AtelierTab;
+  readonly tab: CosmeticTab | "banners";
   readonly item: AtelierItem;
   readonly wornAvatar: string | null;
 }) {

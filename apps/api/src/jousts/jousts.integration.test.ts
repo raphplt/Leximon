@@ -44,7 +44,7 @@ import {
   settleExpired,
   settleJoust,
 } from "./jousts";
-import { readProfileJousts, weekNow } from "./leagues";
+import { readJoustRecord, weekNow } from "./leagues";
 
 const url = testDatabaseUrl();
 const env = testEnv(url);
@@ -783,16 +783,19 @@ describe("leagues", () => {
   it("show the league, the week's points and the ranked jousts on the profile, nothing before", async () => {
     const a = await jouster();
     const b = await jouster();
-    expect(await readProfileJousts(db, a.userId, Date.now())).toBeNull();
+    expect(await readJoustRecord(db, a.userId, Date.now())).toEqual({
+      jousts: null,
+      bestLeague: null,
+    });
     const { joustId, done } = await rankedJoust(a, b);
     await settleJoust(db, joustId, await playRun(b, joustId, done + 1_000, [0]));
     const own = profileResponseSchema.parse(
       await (await app.request("/me/profile", { headers: headers(a) }, env)).json(),
     );
     expect(own.jousts).toMatchObject({ league: "page", ranked: 1, week: { points: 3, size: 30 } });
-    expect(await readProfileJousts(db, b.userId, Date.now())).toMatchObject({
-      ranked: 1,
-      week: { points: 0 },
+    expect(await readJoustRecord(db, b.userId, Date.now())).toMatchObject({
+      jousts: { ranked: 1, week: { points: 0 } },
+      bestLeague: "page",
     });
   });
 

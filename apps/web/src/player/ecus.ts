@@ -1,13 +1,17 @@
 "use client";
 
 import type { MissingWordRequest, RecycleResponse } from "@leximon/contract";
-import type { MissingWordResult, RecycleCopyResult } from "@leximon/contract/client";
+import type {
+  BannerPurchaseResult,
+  MissingWordResult,
+  RecycleCopyResult,
+} from "@leximon/contract/client";
 import type { RecycleChoice } from "@leximon/core";
 import { copiesAfterRecycle } from "@leximon/view-model";
 import { api } from "@/lib/api";
 import { publishProgress } from "@/progress/use-progress";
 import { noteGained, ownedCards, refreshIfRead } from "./collection";
-import { missions, wallet } from "./player";
+import { missions, profile, wallet } from "./player";
 
 /**
  * Recycling and the missing word: each request has its own key, since a repeated tap after a
@@ -50,6 +54,16 @@ export async function buyMissingWord(request: MissingWordRequest): Promise<Missi
         new Map(current).set(result.cardId, (current.get(result.cardId) ?? 0) + 1),
       );
     }
+  }
+  return result;
+}
+
+/** Spends écus on a banner motif: it joins the atelier at once. */
+export async function buyBanner(motif: string): Promise<BannerPurchaseResult> {
+  const result = await api.buyBanner(motif, crypto.randomUUID());
+  if (result.kind === "bought") {
+    wallet.publish(result.wallet);
+    profile.publish(result.profile);
   }
   return result;
 }

@@ -1,6 +1,11 @@
 "use client";
 
-import type { ProfileClan, ProfileJousts, ProfileStats } from "@leximon/contract";
+import type {
+  ProfileBanner as Banner,
+  ProfileClan,
+  ProfileJousts,
+  ProfileStats,
+} from "@leximon/contract";
 import { collectionName } from "@leximon/contract/client";
 import {
   formatPlayerCode,
@@ -15,6 +20,7 @@ import { useCatalog } from "@/cards/use-catalog";
 import { Emblem } from "@/clan/emblem";
 import { Avatar } from "@/components/avatar";
 import { Card } from "@/components/card";
+import { ProfileBanner } from "@/components/profile-banner";
 import { Shield } from "@/jousts/league-pieces";
 import { useNarrow } from "@/lib/use-narrow";
 import { Icon } from "@/ui/icon";
@@ -33,6 +39,7 @@ export interface ProfileFace {
   readonly code: string | null;
   readonly memberSince: string | null;
   readonly clan: ProfileClan | null;
+  readonly banner: Banner;
   /** Where the clan's name leads, for a player in the game. */
   readonly clanHref?: string;
 }
@@ -48,7 +55,7 @@ export function ProfileHeader({
   const narrow = useNarrow();
   return (
     <header className={styles.banner}>
-      <div className={styles.bannerArt} aria-hidden="true" />
+      <ProfileBanner banner={face.banner} className={styles.bannerArt} />
       <div className={styles.identity}>
         <Avatar
           avatar={face.avatar}

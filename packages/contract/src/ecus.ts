@@ -2,6 +2,7 @@ import { z } from "zod";
 import { boosterWalletSchema, rarityCompletionSchema, raritySchema } from "./boosters";
 import { slugSchema } from "./common";
 import { progressGainSchema } from "./progress";
+import { profileResponseSchema } from "./trades";
 
 /** Copies of a card turned into écus. */
 export const recycledCardSchema = z.object({
@@ -78,3 +79,19 @@ export const missingWordRefusalSchema = z.object({
   ]),
 });
 export type MissingWordRefusal = z.infer<typeof missingWordRefusalSchema>["error"];
+
+/** `POST /me/banners/:motif`, 200: the profile with the motif bought, and the écus left. */
+export const bannerPurchaseResponseSchema = z.object({
+  profile: profileResponseSchema,
+  wallet: boosterWalletSchema,
+});
+export type BannerPurchaseResponse = z.infer<typeof bannerPurchaseResponseSchema>;
+
+/**
+ * `POST /me/banners/:motif`, 409. `account_required`: a guest has no profile to show it on.
+ * `not_for_sale`: the motif is earned, not bought. `already_owned`: bought before, with another key.
+ */
+export const bannerPurchaseRefusalSchema = z.object({
+  error: z.enum(["account_required", "not_for_sale", "already_owned", "not_enough_ecus"]),
+});
+export type BannerPurchaseRefusal = z.infer<typeof bannerPurchaseRefusalSchema>["error"];

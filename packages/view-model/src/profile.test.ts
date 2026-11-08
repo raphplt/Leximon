@@ -51,6 +51,7 @@ function profile(overrides: Partial<ProfileResponse> = {}): ProfileResponse {
       ],
       frames: ["simple", "gilded"],
       titles: ["Lexicographe en herbe"],
+      banners: ["plain"],
     },
     stats: {
       words: 412,
@@ -60,6 +61,7 @@ function profile(overrides: Partial<ProfileResponse> = {}): ProfileResponse {
       completeCollections: 0,
       daysPlayed: 18,
     },
+    banner: { motif: "plain", tint: "bordeaux" },
     jousts: null,
     ...overrides,
   };

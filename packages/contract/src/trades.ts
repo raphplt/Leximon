@@ -2,6 +2,7 @@ import { z } from "zod";
 import { slugSchema, timestampSchema } from "./common";
 import {
   playerBadgeSchema,
+  profileBannerSchema,
   profileClanSchema,
   profileJoustsSchema,
   profileStatsSchema,
@@ -37,6 +38,7 @@ export const profileResponseSchema = z.object({
   memberSince: timestampSchema,
   /** `null` without a clan. */
   clan: profileClanSchema.nullable(),
+  banner: profileBannerSchema,
   pinned: z.array(slugSchema),
   pinnedSlots: z.int().nonnegative(),
   wardrobe: wardrobeSchema,

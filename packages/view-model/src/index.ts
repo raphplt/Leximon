@@ -1,6 +1,7 @@
 export * from "./account";
 export * from "./album";
 export * from "./app-version";
+export * from "./banners";
 export * from "./card-sheet";
 export * from "./cards";
 export * from "./carnet";

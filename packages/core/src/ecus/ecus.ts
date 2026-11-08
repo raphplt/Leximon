@@ -18,6 +18,7 @@ export const ECU_MOVEMENT_KINDS = [
   "mission",
   "carnet",
   "league",
+  "banner",
 ] as const;
 export type EcuMovementKind = (typeof ECU_MOVEMENT_KINDS)[number];
 

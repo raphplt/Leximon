@@ -155,12 +155,15 @@ export function statTiles(stats: ProfileStats, totalWords: number | null): StatT
   ];
 }
 
-export type AtelierTab = "avatars" | "frames" | "titles";
+/** The tabs that wear what the coffrets gave; the banner tab has its own items. */
+export type CosmeticTab = "avatars" | "frames" | "titles";
+export type AtelierTab = CosmeticTab | "banners";
 
 export const ATELIER_TABS: readonly { readonly tab: AtelierTab; readonly label: string }[] = [
   { tab: "avatars", label: "Avatars" },
   { tab: "frames", label: "Cadres" },
   { tab: "titles", label: "Titres" },
+  { tab: "banners", label: "Bannières" },
 ];
 
 /** `locked`: not reached yet; `in_coffret`: reached, waiting in an unopened coffret. */
@@ -184,7 +187,7 @@ function byLevel(map: Readonly<Record<number, string>>): Cosmetic[] {
   return Object.entries(map).map(([level, id]) => ({ id, level: Number(level) }));
 }
 
-function cosmeticsOf(rules: LevelRewardRules, tab: AtelierTab): Cosmetic[] {
+function cosmeticsOf(rules: LevelRewardRules, tab: CosmeticTab): Cosmetic[] {
   switch (tab) {
     case "avatars":
       return [...rules.startingAvatars.map((id) => ({ id, level: 1 })), ...byLevel(rules.avatars)];
@@ -200,7 +203,7 @@ function cosmeticsOf(rules: LevelRewardRules, tab: AtelierTab): Cosmetic[] {
  * the player already owns from older rules (never taken back).
  */
 export function atelierItems(
-  tab: AtelierTab,
+  tab: CosmeticTab,
   profile: Pick<ProfileResponse, "avatar" | "frame" | "title" | "level" | "wardrobe">,
   now: EpochMs,
 ): AtelierItem[] {
@@ -263,6 +266,8 @@ export function wornToast(tab: AtelierTab): string {
       return "Cadre changé.";
     case "titles":
       return "Titre changé.";
+    case "banners":
+      return "Bannière changée.";
   }
 }
 

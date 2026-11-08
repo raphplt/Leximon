@@ -277,7 +277,21 @@ export type EcuMovementDetails =
       readonly missions: readonly { readonly day: string; readonly slot: number }[];
     }
   | { readonly kind: "carnet"; readonly period: number; readonly case: number }
-  | { readonly kind: "league"; readonly week: number };
+  | { readonly kind: "league"; readonly week: number }
+  | { readonly kind: "banner"; readonly motif: string };
+
+/** Banner motifs bought with écus, one row each: the primary key makes a purchase happen once. */
+export const userBanners = pgTable(
+  "user_banners",
+  {
+    userId: text()
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    motif: text().notNull(),
+    boughtAt: timestamp({ withTimezone: true }).notNull(),
+  },
+  (table) => [primaryKey({ columns: [table.userId, table.motif] })],
+);
 
 /**
  * Days of the welcome week claimed, one row per day: the primary key makes a claim happen once,
@@ -500,6 +514,9 @@ export const players = pgTable(
     avatar: text(),
     frame: text(),
     title: text(),
+    /** The profile's banner; `null` wears the plain cloth in the first tint. */
+    bannerMotif: text(),
+    bannerTint: text(),
     /** public by default; private shows only the pseudo and the avatar to others. */
     profilePublic: boolean().notNull().default(true),
     /** Last request, to the nearest few minutes: "online" and "seen 2 days ago" in a clan. */

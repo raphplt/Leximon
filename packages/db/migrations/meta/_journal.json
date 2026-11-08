@@ -323,6 +323,13 @@
       "when": 1794065511721,
       "tag": "0045_joust_traps_and_wishes",
       "breakpoints": true
+    },
+    {
+      "idx": 46,
+      "version": "7",
+      "when": 1794147609289,
+      "tag": "0046_profile_banners",
+      "breakpoints": true
     }
   ]
 }

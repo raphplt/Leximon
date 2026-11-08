@@ -7,6 +7,7 @@ import {
   BLOCKED_TOAST,
   blockRefusalMessage,
   friendRefusalText,
+  PLAIN_BANNER,
   PROFILE_NOT_FOUND,
   REPORTED_TOAST,
   requestSentToast,
@@ -146,6 +147,7 @@ export function PublicProfileScreen({
           code: shown.code,
           memberSince: shown.memberSince,
           clan: shown.clan,
+          banner: shown.banner,
           // The clan's page is in the game: a visitor without a session stays here.
           ...(shown.clan === null || viewer == null ? {} : { clanHref: `/clan/${shown.clan.id}` }),
         }
@@ -158,6 +160,7 @@ export function PublicProfileScreen({
           code: null,
           memberSince: null,
           clan: null,
+          banner: PLAIN_BANNER,
         };
   const own = viewer != null && shown.visibility === "public" && viewer.playerCode === shown.code;
 

@@ -501,6 +501,30 @@ Ces réglages ne sont ni justes ni faux : ils se décident à l'usage. Dis ce qu
 | Récompenses de la semaine | 10 à 40 écus selon la ligue, un sachet garni pour une montée, un sachet garni Précieux pour le podium de Champion | |
 | Noms des ligues | Page, Écuyer, Chevalier, Banneret, Maréchal, Connétable, Champion | |
 
+## Bannières du profil
+
+Règle P99, web et app. Pour la recette, `pnpm dev:player <email> --level 30` donne les motifs des niveaux 15 et 30.
+
+### BAN-01 · La bannière sur le profil
+
+- Ton profil (`/profil`) et ta page publique (`/joueur/<pseudo>`) : en haut, une toile bordeaux unie à la place des rayures en diagonale. Sur l'app, la même toile en tête du profil, avec l'avatar à cheval sur son bord bas.
+- Un profil privé montre toujours la toile unie bordeaux.
+
+### BAN-02 · L'onglet Bannières de l'atelier
+
+- « Apparence », puis l'onglet « Bannières » : l'aperçu de ta bannière, les huit teintes en pastilles, puis les motifs. Ceux que tu as viennent en premier, les autres sont grisés avec ce qui les donne (« Niveau 45 », « Ligue Chevalier », « Une collection complète », « 250 écus »).
+- Toucher une teinte la pose aussitôt (« Bannière changée. ») ; les motifs se redessinent dans la nouvelle teinte.
+- Toucher un motif fermé dit comment le gagner (« Tu le gagnes au niveau 45. »).
+
+### BAN-03 · Acheter un motif en écus
+
+- Toucher « Papier marbré » ouvre une fenêtre avec l'aperçu, ton solde et le prix : « Papier marbré coûte 250 écus. Il te restera 40 écus. Le motif est à toi pour toujours. » Sans assez d'écus, le bouton est grisé et la fenêtre dit combien il manque.
+- « Oui, l'acheter » : le son des pièces, les écus baissent, le motif se pose sur ta bannière (« Motif acheté. Il est sur ta bannière. »). Un invité ne peut pas acheter : il est invité à créer un compte.
+
+### BAN-04 · L'image de partage
+
+- Partager son profil : l'image montre la médaille à l'initiale posée sur ta bannière, dans son cadre doré.
+
 ## Retours de la recette
 
 Les retours qui demandent un changement s'écrivent ici, datés, avec ce qu'on en fait.

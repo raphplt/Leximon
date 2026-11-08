@@ -4,6 +4,7 @@ import {
   type AtelierItem,
   type AtelierTab,
   atelierItems,
+  type CosmeticTab,
   cosmeticLockedToast,
   cosmeticStateLabel,
   wornToast,
@@ -21,9 +22,10 @@ import { Page, Paragraph } from "@/ui/page";
 import { Segmented } from "@/ui/segmented";
 import { toast } from "@/ui/toast";
 import { toyFace } from "@/ui/toy";
+import { BannerPanel } from "./banner-panel";
 
 /** Titles are words, wider than a face: two to a row. */
-const COLUMNS: Readonly<Record<AtelierTab, number>> = { avatars: 3, frames: 3, titles: 2 };
+const COLUMNS: Readonly<Record<CosmeticTab, number>> = { avatars: 3, frames: 3, titles: 2 };
 const GAP = 10;
 
 /** The atelier: what the coffrets gave, worn on the profile with one tap. */
@@ -35,7 +37,7 @@ export function AtelierScreen() {
   const window = useWindowDimensions();
   const [tab, setTab] = useState<AtelierTab>("avatars");
 
-  const choose = (item: AtelierItem) => {
+  const choose = (tab: CosmeticTab, item: AtelierItem) => {
     if (item.state === "worn") return;
     if (item.state !== "owned") {
       toast(cosmeticLockedToast(item));
@@ -50,8 +52,8 @@ export function AtelierScreen() {
     void actions.update(change, { success: wornToast(tab) });
   };
 
-  const items = me === null ? [] : atelierItems(tab, me, now);
-  const columns = COLUMNS[tab];
+  const items = me === null || tab === "banners" ? [] : atelierItems(tab, me, now);
+  const columns = tab === "banners" ? 2 : COLUMNS[tab];
   // The page's side margins, then the gaps between the columns.
   const itemWidth = Math.floor((window.width - 48 - GAP * (columns - 1)) / columns);
   const previewSize = tab === "titles" ? 72 : itemWidth - 28;
@@ -76,6 +78,8 @@ export function AtelierScreen() {
         ) : (
           <Paragraph muted>Un instant…</Paragraph>
         )
+      ) : tab === "banners" ? (
+        <BannerPanel me={me} now={now} actions={actions} width={window.width - 48} />
       ) : (
         <View style={styles.grid}>
           {items.map((item) => {
@@ -84,7 +88,7 @@ export function AtelierScreen() {
               <Pressable
                 key={item.id}
                 disabled={actions.busy}
-                onPress={() => choose(item)}
+                onPress={() => choose(tab, item)}
                 accessibilityRole="button"
                 accessibilityState={{ selected: item.state === "worn" }}
                 accessibilityLabel={`${item.name}, ${cosmeticStateLabel(item)}`}
@@ -133,7 +137,7 @@ function Preview({
   wornAvatar,
   size,
 }: {
-  readonly tab: AtelierTab;
+  readonly tab: CosmeticTab;
   readonly item: AtelierItem;
   readonly wornAvatar: string;
   readonly size: number;

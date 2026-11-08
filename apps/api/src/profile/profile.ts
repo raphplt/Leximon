@@ -32,6 +32,7 @@ import {
   tradeRulesAt,
   UNLOCK_SCHEDULE,
   wardrobe,
+  wornBanner,
   xpToReach,
 } from "@leximon/core";
 import { type Database, schema } from "@leximon/db";
@@ -54,8 +55,9 @@ import {
 } from "drizzle-orm";
 import { ADMIN_ROLE } from "../auth";
 import { breakFriendship, notLocked, readFriendship } from "../friends/friends";
-import { readProfileJousts } from "../jousts/leagues";
+import { readJoustRecord } from "../jousts/leagues";
 import { ensurePlayer } from "../trades/players";
+import { bannersOwned, completeCollectionsSql, readBannerFigures } from "./banners";
 
 const {
   adminActions,
@@ -140,6 +142,8 @@ export async function readOwnProfile(
       ...badgeFields,
       pseudoChangedAt: players.pseudoChangedAt,
       title: players.title,
+      bannerMotif: players.bannerMotif,
+      bannerTint: players.bannerTint,
       profilePublic: players.profilePublic,
       isAnonymous: users.isAnonymous,
     })
@@ -163,6 +167,17 @@ export async function readOwnProfile(
     row.pseudoChangedAt?.getTime() ?? null,
   );
   const { minLevel } = tradeRulesAt(TRADE_SCHEDULE, now);
+  const [stats, record] = await Promise.all([
+    readStats(db, userId),
+    readJoustRecord(db, userId, now),
+  ]);
+  const banners = await bannersOwned(db, {
+    userId,
+    level: badge.level,
+    completeCollections: stats.completeCollections,
+    bestLeague: record.bestLeague,
+    now,
+  });
   return {
     playerCode: player.code,
     tradeMinLevel: minLevel,
@@ -179,15 +194,20 @@ export async function readOwnProfile(
     level: badge.level,
     memberSince: new Date(player.createdAt).toISOString(),
     clan: await readProfileClan(db, userId),
+    banner: wornBanner(banners.rules, banners.owned, {
+      motif: row.bannerMotif,
+      tint: row.bannerTint,
+    }),
     pinned: pinned.map((pin) => pin.cardId),
     pinnedSlots: worn.pinnedSlots,
     wardrobe: {
       avatars: [...worn.avatars],
       frames: [...worn.frames],
       titles: [...worn.titles],
+      banners: [...banners.owned],
     },
-    stats: await readStats(db, userId),
-    jousts: await readProfileJousts(db, userId, now),
+    stats,
+    jousts: record.jousts,
   };
 }
 
@@ -246,11 +266,7 @@ async function readStats(db: Reader, userId: string): Promise<ProfileStats> {
       tradesCompleted: sql<number>`(select count(*)::int from ${trades}
         where (${trades.proposerId} = ${userId} or ${trades.recipientId} = ${userId})
         and ${trades.status} = 'completed')`,
-      completeCollections: sql<number>`(select count(*)::int from collections c
-        where c.published_at is not null and not exists (
-          select 1 from cards k where k.collection_id = c.id and k.retired_at is null
-          and not exists (select 1 from user_cards uc
-            where uc.user_id = ${userId} and uc.card_id = k.id and uc.quantity > 0)))`,
+      completeCollections: completeCollectionsSql(userId),
       daysPlayed: sql<number>`coalesce((select ${boosterWallets.daysPlayed} from ${boosterWallets}
         where ${boosterWallets.userId} = ${userId}), 0)`,
     })
@@ -312,6 +328,19 @@ export async function updateProfile(
         if (changes.title != null && !worn.titles.has(changes.title)) {
           return { kind: "cosmetic_locked" };
         }
+      }
+      if (changes.bannerMotif !== undefined || changes.bannerTint !== undefined) {
+        const figures = await readBannerFigures(tx, userId);
+        const { bestLeague } = await readJoustRecord(tx, userId, now);
+        const banners = await bannersOwned(tx, { userId, ...figures, bestLeague, now });
+        if (changes.bannerMotif !== undefined && !banners.owned.has(changes.bannerMotif)) {
+          return { kind: "cosmetic_locked" };
+        }
+        if (changes.bannerTint !== undefined && !banners.rules.tints.includes(changes.bannerTint)) {
+          return { kind: "cosmetic_locked" };
+        }
+        if (changes.bannerMotif !== undefined) update.bannerMotif = changes.bannerMotif;
+        if (changes.bannerTint !== undefined) update.bannerTint = changes.bannerTint;
       }
       if (changes.avatar !== undefined) update.avatar = changes.avatar;
       if (changes.frame !== undefined) update.frame = changes.frame;
@@ -414,6 +443,8 @@ export async function readPublicProfile(
     .select({
       ...badgeFields,
       title: players.title,
+      bannerMotif: players.bannerMotif,
+      bannerTint: players.bannerTint,
       profilePublic: players.profilePublic,
       createdAt: users.createdAt,
       isAnonymous: users.isAnonymous,
@@ -455,6 +486,17 @@ export async function readPublicProfile(
     .from(pinnedCards)
     .where(eq(pinnedCards.userId, row.userId))
     .orderBy(asc(pinnedCards.position));
+  const [stats, record] = await Promise.all([
+    readStats(db, row.userId),
+    readJoustRecord(db, row.userId, now),
+  ]);
+  const banners = await bannersOwned(db, {
+    userId: row.userId,
+    level: badge.level,
+    completeCollections: stats.completeCollections,
+    bestLeague: record.bestLeague,
+    now,
+  });
   return {
     kind: "found",
     profile: {
@@ -467,9 +509,13 @@ export async function readPublicProfile(
       level: badge.level,
       memberSince: row.createdAt.toISOString(),
       clan: await readProfileClan(db, row.userId),
+      banner: wornBanner(banners.rules, banners.owned, {
+        motif: row.bannerMotif,
+        tint: row.bannerTint,
+      }),
       pinned: pinned.map((pin) => pin.cardId),
-      stats: await readStats(db, row.userId),
-      jousts: await readProfileJousts(db, row.userId, now),
+      stats,
+      jousts: record.jousts,
       ...(friendship === undefined ? {} : { friendship }),
     },
   };

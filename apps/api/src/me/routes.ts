@@ -1,5 +1,7 @@
 import {
   type AccountResponse,
+  type BannerPurchaseRefusal,
+  type BannerPurchaseResponse,
   type BlocksResponse,
   type BoosterWalletResponse,
   type ClaimLevelRewardResponse,
@@ -7,6 +9,8 @@ import {
   type ClaimWelcomeDayResponse,
   cardReadParamSchema,
   type DeleteAccountRefusal,
+  IDEMPOTENCY_KEY_HEADER,
+  idempotencyKeySchema,
   type LevelRewardsResponse,
   type MailResponse,
   type MarkMailReadResponse,
@@ -57,6 +61,7 @@ import { requireUser } from "../middleware/require-user";
 import { missionRoutes } from "../missions/routes";
 import { readRestrictions, refuseLockedWrites } from "../moderation/restrictions";
 import { sanctionRoutes } from "../moderation/routes";
+import { buyBanner } from "../profile/banners";
 import {
   blockPlayer,
   deleteAccount,
@@ -291,6 +296,32 @@ export function meRoutes() {
     });
     if (result.kind !== "ok") return profileRefusal(c, result.kind);
     return c.json<ProfileResponse>(await readOwnProfile(c.var.db, c.var.userId, now));
+  });
+
+  /** A banner motif bought with écus: the profile with it, and the écus left. */
+  routes.post("/banners/:motif", refuseLockedWrites, async (c) => {
+    const key = idempotencyKeySchema.safeParse(c.req.header(IDEMPOTENCY_KEY_HEADER));
+    if (!key.success) return c.json({ error: "invalid_idempotency_key" }, 400);
+    const motif = c.req.param("motif");
+    if (!/^[a-z_]{1,40}$/.test(motif)) return c.json({ error: "invalid_request" }, 400);
+    const now = Date.now();
+    const result = await buyBanner(c.var.db, {
+      userId: c.var.userId,
+      motif,
+      idempotencyKey: key.data,
+      now,
+    });
+    switch (result.kind) {
+      case "guest_archived":
+        return c.json({ error: "guest_archived" }, 409);
+      case "refused":
+        return c.json<{ error: BannerPurchaseRefusal }>({ error: result.reason }, 409);
+      case "bought":
+        return c.json<BannerPurchaseResponse>({
+          profile: await readOwnProfile(c.var.db, c.var.userId, now),
+          wallet: result.wallet,
+        });
+    }
   });
 
   /** The cards pinned to the profile, all of them in order. */
