@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { Rarity } from "../booster/rarity";
+import type { WordClass } from "../mastery/challenge";
 import { createSeededRandom } from "../random";
 import { JOUST_SCHEDULE } from "../rules";
 import {
@@ -99,11 +100,12 @@ describe("the deck", () => {
 });
 
 describe("joustChoices", () => {
-  const card = (id: string, collectionId: string, rarity: Rarity): ChoiceCard => ({
-    id,
-    collectionId,
-    rarity,
-  });
+  const card = (
+    id: string,
+    collectionId: string,
+    rarity: Rarity,
+    wordClass: WordClass = "noun",
+  ): ChoiceCard => ({ id, collectionId, rarity, wordClass });
   const answer = card("a", "fondateurs", "rare");
 
   it("offers the right word among words of the same collection and rarity", () => {
@@ -134,6 +136,23 @@ describe("joustChoices", () => {
     expect([...choices].sort()).toEqual(["a", "b", "c", "d"]);
     const small = catalogue.filter((c) => c.id !== "d");
     expect([...joustChoices(rules, seed(1), answer, small)].sort()).toEqual(["a", "b", "c", "e"]);
+  });
+
+  it("keeps to the word's class before its collection and rarity", () => {
+    const verb = card("a", "fondateurs", "rare", "verb");
+    const catalogue = [
+      verb,
+      ...["b", "c", "d"].map((id) => card(id, "fondateurs", "rare")),
+      card("e", "fondateurs", "common", "verb"),
+      card("f", "bestiaire", "legendary", "verb"),
+      card("g", "bestiaire", "rare", "verb"),
+    ];
+    for (let n = 0; n < 20; n++) {
+      const choices = joustChoices(rules, seed(n), verb, catalogue);
+      expect([...choices].sort()).toEqual(["a", "e", "f", "g"]);
+    }
+    const twoVerbs = catalogue.filter((c) => c.id !== "f" && c.id !== "g");
+    expect(joustChoices(rules, seed(1), verb, twoVerbs)).toContain("e");
   });
 
   it("puts the right word anywhere among the choices", () => {

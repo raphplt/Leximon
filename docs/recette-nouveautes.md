@@ -742,3 +742,22 @@ Préparer : les clés de test de Stripe dans `apps/api/.dev.vars` et `stripe lis
 - **Faire :** ouvre `/admin/mecenes`, puis « Rembourser et résilier » sur ton abonnement de test. Sur le téléphone, ouvre ton profil avec et sans badge.
 - **Attendu :** les chiffres (mécènes, essais, résiliés, paiements refusés, fondateurs, revenu par mois) et la liste. Le remboursement demande une confirmation qui dit le montant, puis « Abonnement arrêté et 3,99 € remboursés. » ; le journal le note. Sur le téléphone, le badge s'affiche comme sur le web ; « Ton abonnement mécène » n'apparaît dans le profil qu'avec le badge, et sa page dit « Ton abonnement se gère depuis ton compte sur leximon.fr. », sans lien ni prix.
 - **Retour :**
+
+## Mauvais choix des QCM
+
+Retour de bêta du 2026-10-31 : on trouvait la réponse par élimination (un verbe parmi des noms, un mot sans rapport avec le thème révisé). La nature des cartes vient de la publication du catalogue : en production, la colonne reste vide tant qu'une publication n'est pas passée, et les choix restent ceux d'avant.
+
+### QCM-01 · Même nature
+- **Faire :** lance plusieurs révisions et un défi du jour, et regarde les choix des questions sur un verbe (« trouver le mot » et « trouver la définition »).
+- **Attendu :** quatre verbes (infinitifs en -er, -ir…) ou quatre définitions qui commencent par un verbe. Un nom n'a que des noms autour de lui, un adjectif que des adjectifs.
+- **Retour :**
+
+### QCM-02 · Révision d'un thème
+- **Faire :** au niveau 3 au moins, révise un thème (Religion, Cuisine…), en Normal puis en Exigeant.
+- **Attendu :** les mauvais choix sont des mots du thème, de la même nature que le mot demandé, possédés ou non.
+- **Retour :**
+
+### QCM-03 · Joutes
+- **Faire :** joue une joute dont un mot du deck adverse est un verbe ou un adjectif.
+- **Attendu :** les quatre mots proposés sont de la même nature, même si la rareté ou la collection doit changer pour cela.
+- **Retour :**

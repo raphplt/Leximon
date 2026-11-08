@@ -130,48 +130,81 @@ function oneSlipApart(a: string, b: string): boolean {
 }
 
 /**
- * Builds one question, of `format` or of a format drawn at random. `sameCollection` and
- * `wholeCatalog` are the other cards to pick wrong choices from, in order of preference; the card
- * itself is ignored if present. Returns `null` when the catalog is too small for a full set of
- * choices.
+ * Builds one question, of `format` or of a format drawn at random. `pools` hold the other cards to
+ * pick wrong choices from, nearest first: each is drawn from before the next, and the card itself
+ * is ignored if present. Returns `null` when they are too small for a full set of choices.
  */
 export function buildQuestion(
   random: RandomSource,
   cardId: string,
-  sameCollection: readonly string[],
-  wholeCatalog: readonly string[],
+  pools: readonly (readonly string[])[],
 ): ChoiceQuestion<ChoiceFormat> | null;
 export function buildQuestion<F extends QuizFormat>(
   random: RandomSource,
   cardId: string,
-  sameCollection: readonly string[],
-  wholeCatalog: readonly string[],
+  pools: readonly (readonly string[])[],
   format: F,
 ): ChoiceQuestion<F> | null;
 export function buildQuestion(
   random: RandomSource,
   cardId: string,
-  sameCollection: readonly string[],
-  wholeCatalog: readonly string[],
+  pools: readonly (readonly string[])[],
   format?: QuizFormat,
 ): ChoiceQuestion | null {
-  const wrong = pickDistinct(
-    random,
-    sameCollection.filter((id) => id !== cardId),
-    CHOICES_PER_QUESTION - 1,
-  );
-  if (wrong.length < CHOICES_PER_QUESTION - 1) {
-    const taken = new Set([cardId, ...wrong]);
-    const more = wholeCatalog.filter((id) => !taken.has(id));
-    wrong.push(...pickDistinct(random, more, CHOICES_PER_QUESTION - 1 - wrong.length));
+  const needed = CHOICES_PER_QUESTION - 1;
+  const taken = new Set([cardId]);
+  const wrong: string[] = [];
+  for (const pool of pools) {
+    if (wrong.length === needed) break;
+    const drawn = pickDistinct(
+      random,
+      pool.filter((id) => !taken.has(id)),
+      needed - wrong.length,
+    );
+    for (const id of drawn) taken.add(id);
+    wrong.push(...drawn);
   }
-  if (wrong.length < CHOICES_PER_QUESTION - 1) return null;
+  if (wrong.length < needed) return null;
 
   const answerIndex = randomInt(random, CHOICES_PER_QUESTION);
   const choices = [...wrong];
   choices.splice(answerIndex, 0, cardId);
   const drawn = format ?? CHOICE_FORMATS[randomInt(random, CHOICE_FORMATS.length)] ?? "definition";
   return { cardId, format: drawn, choices, answerIndex };
+}
+
+/**
+ * The broad class of a word, read from the part of speech its card prints. Choices of one class
+ * keep a player from finding the answer by elimination, a verb among nouns for instance.
+ */
+export type WordClass = "noun" | "verb" | "adjective" | "other";
+
+export function wordClassOf(partOfSpeech: string): WordClass {
+  // A phrase is classed by what it stands for: « loc. v. » is a verb.
+  const head =
+    partOfSpeech
+      .trim()
+      .replace(/^loc\.\s*/, "")
+      .split(/[\s.]/, 1)[0] ?? "";
+  if (head === "n" || head === "nom") return "noun";
+  if (head === "v" || head === "verb") return "verb";
+  if (head === "adj") return "adjective";
+  return "other";
+}
+
+/**
+ * The pools of a question's wrong choices with the words of the card's class first: the class
+ * within each pool, nearest first, then each pool whatever the class, so that a rare class still
+ * makes a full question. A card of unknown class keeps its pools.
+ */
+export function sameClassFirst(
+  cardId: string,
+  classOf: (cardId: string) => WordClass | undefined,
+  pools: readonly (readonly string[])[],
+): readonly (readonly string[])[] {
+  const wordClass = classOf(cardId);
+  if (wordClass === undefined) return pools;
+  return [...pools.map((pool) => pool.filter((id) => classOf(id) === wordClass)), ...pools];
 }
 
 /**

@@ -80,6 +80,8 @@ export const cards = pgTable(
     lemma: text().notNull(),
     /** The definition with its word hidden, as a joust asks it; written by each publication. */
     definition: text(),
+    /** As the card prints it ("n. f.", "v. tr."), so that a question's choices share it. */
+    partOfSpeech: text(),
     /** Frozen once published (enforced by a trigger): a re-tiered word becomes a new card. */
     rarity: rarity().notNull(),
     /** Every card belongs to exactly one collection, whatever booster it comes from. */

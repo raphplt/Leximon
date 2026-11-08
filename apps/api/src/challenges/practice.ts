@@ -1,4 +1,4 @@
-import type { PracticeQuestion, PracticeScope } from "@leximon/contract";
+import type { PracticeQuestion, PracticeScope, ReviewScope } from "@leximon/contract";
 import {
   answerBonuses,
   BONUS_SCHEDULE,
@@ -37,7 +37,7 @@ import { type Database, schema } from "@leximon/db";
 import { and, eq, gt, gte, sql, type WithSubquery } from "drizzle-orm";
 import { creditPerfectStart, perfectStartOf } from "../ecus/perfect-start";
 import { addXp, readXp } from "../progress/progress";
-import type { CatalogIndex } from "./catalog-index";
+import { type CatalogIndex, choicePools } from "./catalog-index";
 import {
   type AnswerBonus,
   lockWallet,
@@ -169,6 +169,14 @@ export function inScope(
   }
 }
 
+/** A theme reviewed draws its wrong choices from the theme before the collection. */
+export function scopeChoicePools(
+  scope: PracticeScope | ReviewScope | undefined,
+  catalog: CatalogIndex,
+): readonly (readonly string[])[] {
+  return scope?.kind === "theme" ? [catalog.byTheme.get(scope.id) ?? []] : [];
+}
+
 export function countsAsReview(word: PoolWord, now: EpochMs): boolean {
   return word.due === null || word.due <= now;
 }
@@ -262,12 +270,9 @@ export async function startPractice(
   );
 
   const mastery = masteryRulesAt(MASTERY_SCHEDULE, now);
-  const multipleChoice = (cardId: string) => {
-    const collectionId = catalog.collectionOf.get(cardId);
-    const sameCollection =
-      collectionId === undefined ? [] : (catalog.byCollection.get(collectionId) ?? []);
-    return buildQuestion(random, cardId, sameCollection, catalog.all);
-  };
+  const nearest = scopeChoicePools(scope, catalog);
+  const multipleChoice = (cardId: string) =>
+    buildQuestion(random, cardId, choicePools(catalog, cardId, nearest));
   const questions: PracticeQuestion[] = [];
   for (const cardId of counted) {
     const word = byId.get(cardId);

@@ -42,7 +42,7 @@ import { type Database, schema } from "@leximon/db";
 import { and, asc, eq, type SQL, sql, type WithSubquery } from "drizzle-orm";
 import { creditPerfectStart, perfectStartOf } from "../ecus/perfect-start";
 import { addXp } from "../progress/progress";
-import type { CatalogIndex } from "./catalog-index";
+import { type CatalogIndex, choicePools } from "./catalog-index";
 
 const {
   boosterBonusAwards,
@@ -144,10 +144,7 @@ export async function nextChallenges(
       questions.push({ cardId, format: "typed" });
       continue;
     }
-    const collectionId = catalog.collectionOf.get(cardId);
-    const sameCollection =
-      collectionId === undefined ? [] : (catalog.byCollection.get(collectionId) ?? []);
-    const question = buildQuestion(random, cardId, sameCollection, catalog.all);
+    const question = buildQuestion(random, cardId, choicePools(catalog, cardId));
     if (question !== null) questions.push(question);
   }
 

@@ -25,6 +25,7 @@ export interface CatalogPlan {
     readonly lemma: string;
     /** As a joust asks it: the word hidden. */
     readonly definition: string;
+    readonly partOfSpeech: string;
     readonly rarity: Rarity;
     readonly collectionId: string;
   }[];
@@ -55,6 +56,7 @@ export function planCatalog(release: Release, published: readonly PublishedCard[
       id: card.id,
       lemma: card.word,
       definition: hideWordIn(card.definition, card.word),
+      partOfSpeech: card.partOfSpeech,
       rarity: card.rarity,
       collectionId: card.collectionId,
     })),
@@ -123,6 +125,7 @@ export async function applyCatalog(db: Database, plan: CatalogPlan, now: Date): 
           set: {
             lemma: sql`excluded.lemma`,
             definition: sql`excluded.definition`,
+            partOfSpeech: sql`excluded.part_of_speech`,
             collectionId: sql`excluded.collection_id`,
             retiredAt: null,
           },

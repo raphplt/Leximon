@@ -492,12 +492,7 @@ export function reviewQuestion(
     return { cardId, format: "typed" };
   }
   const all = collections.flatMap((collection) => collection.cards.map((card) => card.id));
-  const question = buildQuestion(
-    random,
-    cardId,
-    home.cards.map((card) => card.id),
-    all,
-  );
+  const question = buildQuestion(random, cardId, [home.cards.map((card) => card.id), all]);
   return question === null
     ? null
     : { cardId: question.cardId, format: question.format, choices: [...question.choices] };

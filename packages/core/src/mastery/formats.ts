@@ -47,23 +47,17 @@ export function pickFormat(
 }
 
 /**
- * Where the wrong choices of a demanding question come from: the words of the same theme that
- * start with the same letter, or else of the same theme, or else of the same collection, the
- * first of these with enough words for a full set of choices.
+ * Where the wrong choices of a demanding question come from before the collection, nearest first:
+ * the words of the same theme that start with the same letter, then the rest of the theme.
  */
-export function closeChoicePool(
+export function closeChoicePools(
   cardId: string,
   initialOf: (cardId: string) => string,
   sameTheme: readonly string[],
-  sameCollection: readonly string[],
-  needed: number,
-): readonly string[] {
+): readonly (readonly string[])[] {
   const initial = initialOf(cardId);
   const others = sameTheme.filter((id) => id !== cardId);
-  const close = others.filter((id) => initialOf(id) === initial);
-  if (close.length >= needed) return close;
-  if (others.length >= needed) return others;
-  return sameCollection;
+  return [others.filter((id) => initialOf(id) === initial), others];
 }
 
 /**

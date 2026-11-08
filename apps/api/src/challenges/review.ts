@@ -6,8 +6,7 @@ import type {
 } from "@leximon/contract";
 import {
   buildQuestion,
-  CHOICES_PER_QUESTION,
-  closeChoicePool,
+  closeChoicePools,
   createSeededRandom,
   type EpochMs,
   endsWithPairs,
@@ -38,7 +37,7 @@ import type { Database } from "@leximon/db";
 import { readPreferences } from "../profile/profile";
 import { readXp } from "../progress/progress";
 import { readStreak } from "../progress/streak";
-import type { CatalogIndex } from "./catalog-index";
+import { type CatalogIndex, choicePools } from "./catalog-index";
 import {
   countsAsReview,
   inScope,
@@ -46,6 +45,7 @@ import {
   ownedWords,
   type PoolWord,
   practiceXpToday,
+  scopeChoicePools,
   scopeLevel,
 } from "./practice";
 
@@ -262,7 +262,7 @@ export async function startReview(
     if (word === undefined) continue;
     const rising =
       item.counted && canRise(mastery, catalog, word, now) && countsAsReview(word, now);
-    const question = buildReviewQuestion(random, rules, catalog, item, rising, settings);
+    const question = buildReviewQuestion(random, rules, catalog, item, rising, settings, scope);
     if (question !== null) questions.push(question);
   }
   const last = questions.at(-1);
@@ -288,6 +288,17 @@ export async function startReview(
   return { kind: "ready", questions };
 }
 
+/** The theme a demanding question stays in: the theme reviewed, or else every theme of the card. */
+function closeTheme(
+  scope: ReviewScope | undefined,
+  catalog: CatalogIndex,
+  cardId: string,
+): readonly string[] {
+  if (scope?.kind === "theme") return catalog.byTheme.get(scope.id) ?? [];
+  const themes = catalog.themesOf.get(cardId) ?? [];
+  return [...new Set(themes.flatMap((theme) => catalog.byTheme.get(theme) ?? []))];
+}
+
 function buildReviewQuestion(
   random: RandomSource,
   rules: PracticeRules,
@@ -295,30 +306,22 @@ function buildReviewQuestion(
   item: { readonly cardId: string; readonly counted: boolean; readonly fresh: boolean },
   rising: boolean,
   choices: FormatChoices,
+  scope: ReviewScope | undefined,
 ): ReviewQuestion | null {
   const { cardId, counted, fresh } = item;
   const format = pickFormat(random, rules, { counted, fresh, rising }, choices);
-  const collectionId = catalog.collectionOf.get(cardId);
-  const sameCollection =
-    collectionId === undefined ? [] : (catalog.byCollection.get(collectionId) ?? []);
-  const wrongFrom =
+  const pools = choicePools(
+    catalog,
+    cardId,
     !counted && choices.difficulty === "hard"
-      ? closeChoicePool(
+      ? closeChoicePools(
           cardId,
           (id) => normalizeWord(catalog.wordOf.get(id) ?? "").slice(0, 1),
-          [
-            ...new Set(
-              (catalog.themesOf.get(cardId) ?? []).flatMap(
-                (theme) => catalog.byTheme.get(theme) ?? [],
-              ),
-            ),
-          ],
-          sameCollection,
-          CHOICES_PER_QUESTION - 1,
+          closeTheme(scope, catalog, cardId),
         )
-      : sameCollection;
-  const choice = (asked: QuizFormat) =>
-    buildQuestion(random, cardId, wrongFrom, catalog.all, asked);
+      : scopeChoicePools(scope, catalog),
+  );
+  const choice = (asked: QuizFormat) => buildQuestion(random, cardId, pools, asked);
   const other = otherChoiceFormat(format);
   const again = rules.catchUps > 0 ? choice(other) : null;
   const meta = {

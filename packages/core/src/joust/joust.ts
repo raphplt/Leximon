@@ -7,6 +7,7 @@
 
 import { type Rarity, rarityRank } from "../booster/rarity";
 import type { EpochMs } from "../booster/refill";
+import type { WordClass } from "../mastery/challenge";
 import { MASTERY_LEVELS, type MasteryLevel } from "../mastery/mastery";
 import { type RandomSource, randomInt } from "../random";
 import type { GlickoRules } from "./glicko";
@@ -180,12 +181,15 @@ export interface ChoiceCard {
   readonly id: string;
   readonly collectionId: string;
   readonly rarity: Rarity;
+  /** `null` until a publication writes the card's part of speech. */
+  readonly wordClass: WordClass | null;
 }
 
 /**
  * The words offered for the card `answer`, the right one among them, in a random order: words of
- * the same collection and rarity first, then of the same collection and the nearest rarity, then
- * of the nearest rarity anywhere, so that a small rarity still makes a full question.
+ * the same class, collection and rarity first, then of the same class and collection at the
+ * nearest rarity, then of the same class anywhere, and only then of another class, so that a small
+ * rarity or class still makes a full question.
  */
 export function joustChoices(
   rules: JoustRules,
@@ -195,6 +199,7 @@ export function joustChoices(
 ): readonly string[] {
   const others = catalogue.filter((card) => card.id !== answer.id);
   const distance = (card: ChoiceCard) =>
+    (card.wordClass === answer.wordClass ? 0 : 100) +
     (card.collectionId === answer.collectionId ? 0 : 10) +
     Math.abs(rarityRank(card.rarity) - rarityRank(answer.rarity));
   const wrong: string[] = [];

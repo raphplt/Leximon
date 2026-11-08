@@ -4,7 +4,7 @@ import { PRACTICE_SCHEDULE } from "../rules";
 import { otherChoiceFormat } from "./challenge";
 import {
   type AskedFormat,
-  closeChoicePool,
+  closeChoicePools,
   endsWithPairs,
   pairsCards,
   pickFormat,
@@ -62,11 +62,12 @@ describe("catch-up", () => {
 describe("close choices", () => {
   const initialOf = (id: string) => id.slice(0, 1);
 
-  it("prefers the same theme and initial, then the theme, then the collection", () => {
-    const theme = ["ba", "bb", "bc", "bd", "ca"];
-    expect(closeChoicePool("bz", initialOf, theme, ["x"], 3)).toEqual(["ba", "bb", "bc", "bd"]);
-    expect(closeChoicePool("cz", initialOf, theme, ["x"], 3)).toEqual(theme);
-    expect(closeChoicePool("cz", initialOf, ["ca"], ["x", "y", "z"], 3)).toEqual(["x", "y", "z"]);
+  it("prefers the same theme and initial, then the rest of the theme", () => {
+    const theme = ["ba", "bb", "bz", "ca"];
+    expect(closeChoicePools("bz", initialOf, theme)).toEqual([
+      ["ba", "bb"],
+      ["ba", "bb", "ca"],
+    ]);
   });
 });
 

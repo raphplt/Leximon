@@ -284,4 +284,8 @@ describe("planCatalog", () => {
     const plan = planCatalog(release, [{ id: "raclure", rarity: "common", retiredAt: null }]);
     expect(plan.rarityConflicts).toEqual([{ id: "raclure", published: "common", release: "rare" }]);
   });
+
+  it("keeps each card's part of speech, for the choices of a question", () => {
+    expect(planCatalog(release, []).cards.map((c) => c.partOfSpeech)).toEqual(["n. f.", "n. f."]);
+  });
 });

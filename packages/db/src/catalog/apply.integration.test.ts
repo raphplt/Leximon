@@ -80,6 +80,11 @@ describe("catalog publication", () => {
       { id: "pub-poue", retiredAt: null },
       { id: "pub-raclure", retiredAt: null },
     ]);
+    const [poue] = await db
+      .select({ partOfSpeech: cards.partOfSpeech })
+      .from(cards)
+      .where(eq(cards.id, "pub-poue"));
+    expect(poue?.partOfSpeech).toBe("n. f.");
   });
 
   it("retires a card left out, keeps the first publication date, and brings a card back", async () => {
