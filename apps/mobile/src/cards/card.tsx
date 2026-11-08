@@ -367,13 +367,19 @@ function Word({ card, u }: { readonly card: CatalogCard; readonly u: number }) {
   }
   const room = TEXT_WIDTH * u;
   const natural = wordWidthEm(card.word) * size;
+  // The canvas overflows the word's room so descenders (j, p) and the j's hook are not cut off.
+  const bleed = 0.1 * size;
   return (
-    <Svg width={room} height={size * 1.05} style={{ marginTop: 2 * u }}>
+    <Svg
+      width={room + 2 * bleed}
+      height={size * 1.05 + bleed}
+      style={{ marginTop: 2 * u, marginHorizontal: -bleed, marginBottom: -bleed }}
+    >
       <Defs>
         <FillGradient id="word" fill={style.word} />
       </Defs>
       <SvgText
-        x={0}
+        x={bleed}
         y={size * 0.8}
         fontFamily={fonts.display}
         fontSize={size}

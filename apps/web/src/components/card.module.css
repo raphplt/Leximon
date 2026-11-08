@@ -200,7 +200,11 @@
   color: var(--word);
 }
 
+/* The gradient only paints the element's box: padding takes in the descenders (j, p) and the
+   j's hook on the left, and the negative margin keeps the word where it was. */
 .wordGradient {
+  margin: calc(2 * var(--u) - 0.1em) -0.1em -0.25em;
+  padding: 0.1em 0.1em 0.25em;
   background: var(--word);
   -webkit-background-clip: text;
   background-clip: text;
