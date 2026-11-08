@@ -207,7 +207,7 @@
   border: 0;
 }
 
-.plan {
+.plans .plan {
   position: relative;
   display: flex;
   flex-direction: column;
@@ -246,7 +246,8 @@
   text-align: left;
 }
 
-.secondary {
+/* Dark words on paper: written over the toy's own lettering ink, whatever order the sheets load in. */
+.page .secondary {
   align-self: center;
   height: 48px;
   padding: 0 22px;
