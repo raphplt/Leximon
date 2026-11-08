@@ -693,6 +693,12 @@ fieldset.segmented {
   gap: var(--lx-s4);
 }
 
+.cardDialog {
+  display: flex;
+  flex-direction: column;
+  gap: var(--lx-s8);
+}
+
 @media (max-width: 760px) {
   .cardLayout {
     grid-template-columns: minmax(0, 1fr);

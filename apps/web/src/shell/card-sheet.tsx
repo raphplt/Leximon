@@ -30,6 +30,7 @@ import { EngravingCredit } from "@/components/engraving-credit";
 import { HoloCard } from "@/components/holo-card";
 import { useHoloLight } from "@/components/use-holo-light";
 import { RecycleCopy } from "@/ecus/recycle-copy";
+import { useArrowTurn } from "@/lib/use-arrow-turn";
 import { useNarrow } from "@/lib/use-narrow";
 import { useNow } from "@/lib/use-now";
 import { noteCardRead, ownedCards, wordMemory } from "@/player/collection";
@@ -74,22 +75,7 @@ export function CardSheet({
   const card = cardId === null ? undefined : catalog?.cardsById.get(cardId);
   const run = cardId === null ? null : cardRun(among, cardId);
 
-  useEffect(() => {
-    if (run === null) return;
-    const onKey = (event: KeyboardEvent) => {
-      if (event.key !== "ArrowLeft" && event.key !== "ArrowRight") return;
-      if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return;
-      const { target } = event;
-      if (target instanceof Element && target.closest("input, textarea, select, [contenteditable]"))
-        return;
-      const to = event.key === "ArrowLeft" ? run.previous : run.next;
-      if (to === null) return;
-      event.preventDefault();
-      onTurn(to);
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [run, onTurn]);
+  useArrowTurn(run, onTurn);
 
   return (
     <Dialog open={cardId !== null} title={card?.word ?? "Carte"} onClose={onClose} variant="wide">

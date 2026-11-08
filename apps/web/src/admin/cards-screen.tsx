@@ -4,13 +4,14 @@ import { RARITIES, type Rarity } from "@leximon/core";
 import { formatOdds } from "@leximon/view-model";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { type MouseEvent, useEffect, useMemo, useState } from "react";
 import { loadCatalog } from "@/cards/catalog";
 import { Card } from "@/components/card";
 import { RarityName } from "@/components/rarity-icon";
 import { Select } from "@/components/select";
 import styles from "./admin.module.css";
 import { type EngravingFilter, filterCards } from "./card-filter";
+import { adminCardPath, CardDialog } from "./card-screen";
 import { type CardSortColumn, isSortColumn, type SortDirection, sortCards } from "./card-sort";
 import { formatNumber } from "./format";
 import { useLoad } from "./use-load";
@@ -125,6 +126,16 @@ export function CardsScreen() {
           ),
     [filtered, sortColumn, sortDirection, names],
   );
+
+  const [openId, setOpenId] = useState<string | null>(null);
+  const cardIds = useMemo(() => cards.map((card) => card.id), [cards]);
+  /** A plain click opens the card over the list; a click asking for a new tab keeps the link. */
+  const openCard = (event: MouseEvent, id: string) => {
+    if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey)
+      return;
+    event.preventDefault();
+    setOpenId(id);
+  };
 
   const engraved = useMemo(
     () => all.filter((card) => (card.engraving ?? null) !== null).length,
@@ -309,7 +320,10 @@ export function CardsScreen() {
                     {cards.slice(0, shown).map((card) => (
                       <tr key={card.id}>
                         <td>
-                          <Link href={`/admin/cartes/${encodeURIComponent(card.id)}`}>
+                          <Link
+                            href={adminCardPath(card.id)}
+                            onClick={(event) => openCard(event, card.id)}
+                          >
                             {card.word}
                           </Link>{" "}
                           <span className={styles.muted}>{card.partOfSpeech}</span>
@@ -330,8 +344,9 @@ export function CardsScreen() {
                 {cards.slice(0, shown).map((card) => (
                   <li key={card.id}>
                     <Link
-                      href={`/admin/cartes/${encodeURIComponent(card.id)}`}
+                      href={adminCardPath(card.id)}
                       className={styles.cardGridItem}
+                      onClick={(event) => openCard(event, card.id)}
                     >
                       <Card
                         card={card}
@@ -352,6 +367,13 @@ export function CardsScreen() {
               Afficher plus
             </button>
           )}
+          <CardDialog
+            catalog={catalog}
+            cardId={openId}
+            among={cardIds}
+            onTurn={setOpenId}
+            onClose={() => setOpenId(null)}
+          />
         </>
       )}
     </>

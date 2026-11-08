@@ -1,8 +1,8 @@
 "use client";
 
 import type { CatalogCard } from "@leximon/contract";
-import { collectionName } from "@leximon/contract/client";
-import { formatOdds } from "@leximon/view-model";
+import { type Catalog, collectionName } from "@leximon/contract/client";
+import { CARD_RUN_TEXTS, cardRun, formatOdds } from "@leximon/view-model";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useCallback } from "react";
@@ -11,6 +11,8 @@ import { loadCatalog } from "@/cards/catalog";
 import { Card } from "@/components/card";
 import { EngravingCredit } from "@/components/engraving-credit";
 import { RarityName } from "@/components/rarity-icon";
+import { useArrowTurn } from "@/lib/use-arrow-turn";
+import { Dialog } from "@/ui/dialog";
 import styles from "./admin.module.css";
 import { formatNumber } from "./format";
 import { useLoad } from "./use-load";
@@ -38,6 +40,72 @@ function CardScreen({ id }: { readonly id: string }) {
         <CardDetail card={card} collection={collectionName(state.data, card.collectionId)} />
       )}
     </>
+  );
+}
+
+export function adminCardPath(id: string): string {
+  return `/admin/cartes/${encodeURIComponent(id)}`;
+}
+
+/** A card opened over the list, with arrows to its neighbours in the list as filtered. */
+export function CardDialog({
+  catalog,
+  cardId,
+  among,
+  onTurn,
+  onClose,
+}: {
+  readonly catalog: Catalog;
+  readonly cardId: string | null;
+  readonly among: readonly string[];
+  readonly onTurn: (cardId: string) => void;
+  readonly onClose: () => void;
+}) {
+  const card = cardId === null ? undefined : catalog.cardsById.get(cardId);
+  const run = cardId === null ? null : cardRun(among, cardId);
+  useArrowTurn(run, onTurn);
+  return (
+    <Dialog
+      open={cardId !== null}
+      title={card?.word ?? "Carte"}
+      onClose={onClose}
+      variant="wide"
+      hideTitle
+    >
+      {card !== undefined && (
+        <div className={styles.cardDialog}>
+          <div className={styles.toolbar}>
+            {run !== null && (
+              <>
+                <button
+                  type="button"
+                  className={styles.button}
+                  disabled={run.previous === null}
+                  onClick={() => run.previous !== null && onTurn(run.previous)}
+                >
+                  ← {CARD_RUN_TEXTS.previous}
+                </button>
+                <span className={styles.muted}>{run.place}</span>
+                <button
+                  type="button"
+                  className={styles.button}
+                  disabled={run.next === null}
+                  onClick={() => run.next !== null && onTurn(run.next)}
+                >
+                  {CARD_RUN_TEXTS.next} →
+                </button>
+              </>
+            )}
+            <Link href={adminCardPath(card.id)}>Ouvrir sa page</Link>
+          </div>
+          <CardDetail
+            key={card.id}
+            card={card}
+            collection={collectionName(catalog, card.collectionId)}
+          />
+        </div>
+      )}
+    </Dialog>
   );
 }
 
