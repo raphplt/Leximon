@@ -109,3 +109,26 @@ def test_accepted_quotes_keep_the_checked_picks_with_their_source() -> None:
     assert citations.accepted_quotes(wrong, candidates)[1] == [
         "sizerin : absente de la page · Le sizerin vole"
     ]
+
+
+def test_the_word_is_found_whatever_its_accents() -> None:
+    page = {**BUFFON, "sentences": ["Il faut épépiner les groseilles avant de les confire."]}
+    quote = "Il faut épépiner les groseilles avant de les confire"
+    assert citations.problems("épepiner", quote, [page]) == []
+
+
+def test_an_anonymous_work_is_credited_without_its_quotation_marks() -> None:
+    candidates = {"sizerin": {"word": "sizerin", "candidates": [BUFFON]}}
+    picks = {
+        "sizerin": {
+            "quote_text": "Le sizerin fréquente les bois",
+            "quote_author": "« L'Encyclopédie »",
+        }
+    }
+    quotes, _ = citations.accepted_quotes(picks, candidates)
+    assert quotes["sizerin"]["author"] == "L'Encyclopédie"
+
+
+def test_the_word_is_found_in_an_old_spelling_with_a_single_letter() -> None:
+    page = {**BUFFON, "sentences": ["Il leur fit une belle barretade en passant."]}
+    assert citations.problems("barrettade", "Il leur fit une belle barretade", [page]) == []

@@ -96,6 +96,13 @@ def norm(text: str) -> str:
     return re.sub(r"\s+", " ", text).strip()
 
 
+def loose_spelling(text: str) -> str:
+    """Without accents or doubled letters: old spellings vary on both (« barretade »)."""
+    decomposed = unicodedata.normalize("NFKD", norm(text).lower())
+    bare = "".join(c for c in decomposed if not unicodedata.combining(c))
+    return re.sub(r"(\w)\1", r"\1", bare)
+
+
 class _TextOnly(HTMLParser):
     """Visible text of a parsed page, without Wikisource's header, notes and page numbers."""
 
@@ -230,9 +237,9 @@ def problems(word: str, text: str, pages: Sequence[Mapping[str, object]]) -> lis
         )
     if len(norm(text)) > MAX_QUOTE:
         found.append(f"{len(norm(text))} caractères")
-    # A stem, so that a plural or a conjugated verb still counts.
-    stem = norm(word).lower()
-    if stem[: max(4, len(stem) - 2)] not in norm(text).lower():
+    # A stem in loose spelling, so that a plural, a conjugated verb or an old spelling counts.
+    stem = loose_spelling(word)
+    if stem[: max(4, len(stem) - 2)] not in loose_spelling(text):
         found.append("le mot n'y est pas")
     return found
 
@@ -418,7 +425,8 @@ def accepted_quotes(
         page = quote_page(str(text), pages)  # type: ignore[arg-type]
         quotes[card_id] = {
             "text": str(text).strip(),
-            "author": str(author).strip(),
+            # « L'Encyclopédie » for an anonymous text: the card shows a name, not a title.
+            "author": str(author).strip(' «»"\u00a0'),
             "source": str(page["url"]) if page else "",
         }
     return quotes, refused
