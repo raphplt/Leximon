@@ -427,7 +427,8 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 7px 16px 9px;
+  margin-top: 8px;
+  padding: 12px 24px 14px;
   color: var(--lx-toy-outline);
   font-size: var(--lx-size-label);
   font-weight: 800;

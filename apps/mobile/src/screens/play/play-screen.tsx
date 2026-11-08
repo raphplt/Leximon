@@ -537,7 +537,9 @@ function PlayFlow() {
                 {canOpen && guestLeft === 1 && (
                   <Text style={styles.message}>C'est ton dernier sachet sans compte.</Text>
                 )}
-                <PaperAction label={GUEST_SIGN_UP_CTA} onPress={() => router.push("/compte")} />
+                <View style={styles.signUp}>
+                  <PaperAction label={GUEST_SIGN_UP_CTA} onPress={() => router.push("/compte")} />
+                </View>
               </>
             ) : null
           }
@@ -615,6 +617,7 @@ const styles = StyleSheet.create({
     color: colors.pageInk,
     textAlign: "center",
   },
+  signUp: { marginTop: 8 },
   message: {
     fontFamily: fonts.ui.medium,
     fontSize: fontSizes.body,
