@@ -222,8 +222,16 @@ a.clan:hover {
   padding: var(--lx-s10) 22px var(--lx-s12);
 }
 
-.layout > .panel {
+.layout > .panel,
+.side > .panel {
   padding: var(--lx-s10) 22px;
+}
+
+/* The right-hand column: the figures, then the jousts under them. */
+.side {
+  display: grid;
+  gap: var(--lx-s10);
+  min-width: 0;
 }
 
 .panelHead {
@@ -236,6 +244,23 @@ a.clan:hover {
 .panelTitle {
   margin: 0 0 var(--lx-s8);
   font-size: var(--lx-size-title);
+}
+
+.joustsHead {
+  display: flex;
+  align-items: center;
+  gap: var(--lx-s6);
+  margin-bottom: var(--lx-s8);
+}
+
+.joustsHead .panelTitle {
+  margin: 0;
+}
+
+.joustsLeague {
+  margin: var(--lx-s1) 0 0;
+  font-weight: 800;
+  color: var(--lx-color-rubric);
 }
 
 .panelMeta {

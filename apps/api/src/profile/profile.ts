@@ -54,6 +54,7 @@ import {
 } from "drizzle-orm";
 import { ADMIN_ROLE } from "../auth";
 import { breakFriendship, notLocked, readFriendship } from "../friends/friends";
+import { readProfileJousts } from "../jousts/leagues";
 import { ensurePlayer } from "../trades/players";
 
 const {
@@ -186,6 +187,7 @@ export async function readOwnProfile(
       titles: [...worn.titles],
     },
     stats: await readStats(db, userId),
+    jousts: await readProfileJousts(db, userId, now),
   };
 }
 
@@ -467,6 +469,7 @@ export async function readPublicProfile(
       clan: await readProfileClan(db, row.userId),
       pinned: pinned.map((pin) => pin.cardId),
       stats: await readStats(db, row.userId),
+      jousts: await readProfileJousts(db, row.userId, now),
       ...(friendship === undefined ? {} : { friendship }),
     },
   };

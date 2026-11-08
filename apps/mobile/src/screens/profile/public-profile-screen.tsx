@@ -25,7 +25,13 @@ import { Panel } from "@/ui/panel";
 import { Sheet } from "@/ui/sheet";
 import { TextButton } from "@/ui/text-button";
 import { toast } from "@/ui/toast";
-import { PinnedCards, type ProfileFace, ProfileHeader, StatsPanel } from "./profile-view";
+import {
+  JoustsPanel,
+  PinnedCards,
+  type ProfileFace,
+  ProfileHeader,
+  StatsPanel,
+} from "./profile-view";
 
 function failureMessage(error: unknown): string {
   return error instanceof ApiError && error.status === null
@@ -125,6 +131,7 @@ export function PublicProfileScreen({ pseudo }: { readonly pseudo: string }) {
         <>
           <PinnedCards pinned={shown.pinned} catalog={catalog} />
           <StatsPanel stats={shown.stats} catalog={catalog} />
+          {shown.jousts !== null && <JoustsPanel jousts={shown.jousts} />}
         </>
       ) : (
         <View style={styles.private}>

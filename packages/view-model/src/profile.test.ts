@@ -60,6 +60,7 @@ function profile(overrides: Partial<ProfileResponse> = {}): ProfileResponse {
       completeCollections: 0,
       daysPlayed: 18,
     },
+    jousts: null,
     ...overrides,
   };
 }

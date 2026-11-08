@@ -20,7 +20,7 @@ import { useToast } from "@/ui/toast";
 import ui from "@/ui/ui.module.css";
 import { PinnedCardsEditor } from "./pinned-editor";
 import styles from "./profile.module.css";
-import { ProfileHeader, StatsPanel } from "./profile-view";
+import { JoustsPanel, ProfileHeader, StatsPanel } from "./profile-view";
 import { PseudoDialog } from "./pseudo-dialog";
 
 /** The player's own profile, also before others can see it. */
@@ -118,7 +118,10 @@ export function ProfileScreen() {
             </p>
           </section>
         )}
-        <StatsPanel stats={me.stats} />
+        <div className={styles.side}>
+          <StatsPanel stats={me.stats} />
+          {me.jousts !== null && <JoustsPanel jousts={me.jousts} />}
+        </div>
       </div>
       <PseudoDialog open={choosing} onClose={() => setChoosing(false)} />
     </main>

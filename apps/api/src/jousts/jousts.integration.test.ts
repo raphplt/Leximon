@@ -5,6 +5,7 @@ import {
   joustsResponseSchema,
   joustViewSchema,
   leagueResponseSchema,
+  profileResponseSchema,
   wishesResponseSchema,
   wishSeekersResponseSchema,
 } from "@leximon/contract";
@@ -43,7 +44,7 @@ import {
   settleExpired,
   settleJoust,
 } from "./jousts";
-import { weekNow } from "./leagues";
+import { readProfileJousts, weekNow } from "./leagues";
 
 const url = testDatabaseUrl();
 const env = testEnv(url);
@@ -779,6 +780,22 @@ describe("leagues", () => {
     });
   });
 
+  it("show the league, the week's points and the ranked jousts on the profile, nothing before", async () => {
+    const a = await jouster();
+    const b = await jouster();
+    expect(await readProfileJousts(db, a.userId, Date.now())).toBeNull();
+    const { joustId, done } = await rankedJoust(a, b);
+    await settleJoust(db, joustId, await playRun(b, joustId, done + 1_000, [0]));
+    const own = profileResponseSchema.parse(
+      await (await app.request("/me/profile", { headers: headers(a) }, env)).json(),
+    );
+    expect(own.jousts).toMatchObject({ league: "page", ranked: 1, week: { points: 3, size: 30 } });
+    expect(await readProfileJousts(db, b.userId, Date.now())).toMatchObject({
+      ranked: 1,
+      week: { points: 0 },
+    });
+  });
+
   it("count both ranked jousts of a player ending at the same time", async () => {
     const a = await jouster();
     const b = await jouster();
@@ -884,9 +901,11 @@ describe("leagues", () => {
     const b = await jouster();
     await groupOf("chevalier", [{ who: a, points: 100 }], week() - 1);
     const { joustId, done } = await rankedJoust(a, b);
-    await settleJoust(db, joustId, done + RULES.replyMs + 1_000);
-    expect(await memberOf(a)).toMatchObject({ league: "banneret", points: 3 });
-    expect(await memberOf(b)).toMatchObject({ league: "page", losses: 1 });
+    // Settled a day later: on a Sunday, in next week's tournament.
+    const settled = done + RULES.replyMs + 1_000;
+    await settleJoust(db, joustId, settled);
+    expect(await memberOf(a, week(settled))).toMatchObject({ league: "banneret", points: 3 });
+    expect(await memberOf(b, week(settled))).toMatchObject({ league: "page", losses: 1 });
   });
 
   it("show the group with its automatons, and rank friends and clan by league then points", async () => {

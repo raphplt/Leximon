@@ -23,7 +23,13 @@ import { Logo } from "@/ui/logo";
 import { ToastProvider, useToast } from "@/ui/toast";
 import ui from "@/ui/ui.module.css";
 import styles from "./profile.module.css";
-import { PinnedCards, type ProfileFace, ProfileHeader, StatsPanel } from "./profile-view";
+import {
+  JoustsPanel,
+  PinnedCards,
+  type ProfileFace,
+  ProfileHeader,
+  StatsPanel,
+} from "./profile-view";
 import { failureMessage } from "./use-profile-actions";
 
 /**
@@ -184,7 +190,10 @@ export function PublicProfileScreen({
       {shown.visibility === "public" ? (
         <div className={styles.layout}>
           <PinnedCards pinned={shown.pinned} />
-          <StatsPanel stats={shown.stats} />
+          <div className={styles.side}>
+            <StatsPanel stats={shown.stats} />
+            {shown.jousts !== null && <JoustsPanel jousts={shown.jousts} />}
+          </div>
         </div>
       ) : (
         <p className={`${styles.note} ${ui.leaf}`}>

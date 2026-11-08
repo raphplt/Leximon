@@ -8,6 +8,7 @@ import {
   leagueNumeral,
   placeText,
   pointsText,
+  profileJoustTiles,
   rankedLeftText,
   ratingLine,
   standingHeader,
@@ -297,5 +298,42 @@ describe("boards", () => {
     expect(boardNote({ ...friends, me: null })).toBe(
       "Tes amis entrés dans le tournoi de la semaine, sans toi, par ligue puis par points. Joue une joute classée pour y entrer.",
     );
+  });
+});
+
+describe("profileJoustTiles", () => {
+  it("names the league, the place in the group, the week's points and the jousts played", () => {
+    expect(
+      profileJoustTiles({
+        league: "chevalier",
+        ranked: 42,
+        week: { place: 3, size: 30, points: 12 },
+      }),
+    ).toEqual({
+      league: "Ligue Chevalier",
+      tiles: [
+        { value: "3e sur 30", label: "du groupe" },
+        { value: "12", label: "points cette semaine" },
+        { value: "42", label: "joutes classées" },
+      ],
+    });
+  });
+
+  it("agrees with one and with none, and says when the week is not played yet", () => {
+    expect(
+      profileJoustTiles({ league: "page", ranked: 1, week: { place: 1, size: 30, points: 0 } })
+        .tiles,
+    ).toEqual([
+      { value: "1er sur 30", label: "du groupe" },
+      { value: "0", label: "point cette semaine" },
+      { value: "1", label: "joute classée" },
+    ]);
+    expect(profileJoustTiles({ league: "champion", ranked: 7, week: null })).toEqual({
+      league: "Ligue Champion",
+      tiles: [
+        { value: "–", label: "pas encore joué cette semaine" },
+        { value: "7", label: "joutes classées" },
+      ],
+    });
   });
 });

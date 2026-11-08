@@ -3,6 +3,7 @@ import { slugSchema, timestampSchema } from "./common";
 import {
   playerBadgeSchema,
   profileClanSchema,
+  profileJoustsSchema,
   profileStatsSchema,
   wardrobeSchema,
 } from "./profile";
@@ -40,6 +41,8 @@ export const profileResponseSchema = z.object({
   pinnedSlots: z.int().nonnegative(),
   wardrobe: wardrobeSchema,
   stats: profileStatsSchema,
+  /** `null` before the player's first ranked joust. */
+  jousts: profileJoustsSchema.nullable(),
 });
 export type ProfileResponse = z.infer<typeof profileResponseSchema>;
 

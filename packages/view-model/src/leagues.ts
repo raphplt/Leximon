@@ -10,10 +10,12 @@ import type {
   LeagueResponse,
   LevelRewardView,
   PlayerBadge,
+  ProfileJousts,
   WeekMove,
   WeekView,
 } from "@leximon/contract";
 import { formatCount, plural } from "./format";
+import type { StatTile } from "./profile";
 import { rewardItem, rewardsPhrase } from "./rewards";
 import { playerName } from "./trades";
 
@@ -56,6 +58,34 @@ export function placeText(place: number): string {
 export const CLASSEMENT = "Classement";
 export const LADDER_TITLE = "L'échelle des ligues";
 export const CHAMPION_EMBLEM = "Champion";
+
+export const PROFILE_JOUSTS_TITLE = "Joutes";
+
+/** The jousts on a profile: the league, then this week's place and points, and the jousts played. */
+export function profileJoustTiles(jousts: ProfileJousts): {
+  readonly league: string;
+  readonly tiles: readonly StatTile[];
+} {
+  const { week } = jousts;
+  const played = {
+    value: formatCount(jousts.ranked),
+    label: jousts.ranked > 1 ? "joutes classées" : "joute classée",
+  };
+  return {
+    league: `Ligue ${LEAGUE_NAMES[jousts.league]}`,
+    tiles:
+      week === null
+        ? [{ value: "–", label: "pas encore joué cette semaine" }, played]
+        : [
+            { value: `${placeText(week.place)} sur ${formatCount(week.size)}`, label: "du groupe" },
+            {
+              value: formatCount(week.points),
+              label: week.points > 1 ? "points cette semaine" : "point cette semaine",
+            },
+            played,
+          ],
+  };
+}
 
 /** What a place would give if the week ended now, in a sentence. */
 export function moveSentence(league: LeagueId, move: WeekMove): string {

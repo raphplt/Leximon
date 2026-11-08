@@ -31,7 +31,7 @@ import { Panel } from "@/ui/panel";
 import { TextButton } from "@/ui/text-button";
 import { FeedbackSheet } from "./feedback-sheet";
 import { PinPicker } from "./pin-picker";
-import { ProfileHeader, StatsPanel } from "./profile-view";
+import { JoustsPanel, ProfileHeader, StatsPanel } from "./profile-view";
 import { PseudoSheet } from "./pseudo-sheet";
 
 const PIN_WIDTH = 116;
@@ -130,6 +130,7 @@ export function ProfileScreen() {
       )}
 
       <StatsPanel stats={me.stats} catalog={catalog} />
+      {me.jousts !== null && <JoustsPanel jousts={me.jousts} />}
 
       <Panel paper style={styles.links}>
         {LINKS.map((link) => (

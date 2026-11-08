@@ -1,14 +1,21 @@
 "use client";
 
-import type { ProfileClan, ProfileStats } from "@leximon/contract";
+import type { ProfileClan, ProfileJousts, ProfileStats } from "@leximon/contract";
 import { collectionName } from "@leximon/contract/client";
-import { formatPlayerCode, memberSinceLabel, statTiles } from "@leximon/view-model";
+import {
+  formatPlayerCode,
+  memberSinceLabel,
+  PROFILE_JOUSTS_TITLE,
+  profileJoustTiles,
+  statTiles,
+} from "@leximon/view-model";
 import Link from "next/link";
 import { type ReactNode, useEffect, useState } from "react";
 import { useCatalog } from "@/cards/use-catalog";
 import { Emblem } from "@/clan/emblem";
 import { Avatar } from "@/components/avatar";
 import { Card } from "@/components/card";
+import { Shield } from "@/jousts/league-pieces";
 import { useNarrow } from "@/lib/use-narrow";
 import { Icon } from "@/ui/icon";
 import { LevelMedal } from "@/ui/level-bits";
@@ -184,6 +191,32 @@ export function PinnedCards({
 }
 
 const PIN_TILTS = [-3, 2, -1.5, 3, -2];
+
+/** The ranked jousts: the league's shield and name, then the week and the jousts played. */
+export function JoustsPanel({ jousts }: { readonly jousts: ProfileJousts }) {
+  const { league, tiles } = profileJoustTiles(jousts);
+  return (
+    <section className={`${ui.panel} ${styles.panel}`} aria-labelledby="jousts-title">
+      <div className={styles.joustsHead}>
+        <Shield league={jousts.league} size={42} />
+        <div>
+          <h2 id="jousts-title" className={`${ui.display} ${styles.panelTitle}`}>
+            {PROFILE_JOUSTS_TITLE}
+          </h2>
+          <p className={styles.joustsLeague}>{league}</p>
+        </div>
+      </div>
+      <dl className={styles.tiles}>
+        {tiles.map((tile) => (
+          <div key={tile.label} className={styles.tile}>
+            <dt className={styles.tileLabel}>{tile.label}</dt>
+            <dd className={`${ui.display} ${styles.tileValue}`}>{tile.value}</dd>
+          </div>
+        ))}
+      </dl>
+    </section>
+  );
+}
 
 /** The profile in figures. */
 export function StatsPanel({ stats }: { readonly stats: ProfileStats }) {

@@ -1,9 +1,17 @@
-import type { ProfileClan, ProfileStats } from "@leximon/contract";
+import type { ProfileClan, ProfileJousts, ProfileStats } from "@leximon/contract";
 import { type Catalog, collectionName } from "@leximon/contract/client";
-import { formatPlayerCode, memberSinceLabel, statTiles } from "@leximon/view-model";
+import {
+  formatPlayerCode,
+  leagueNumeral,
+  memberSinceLabel,
+  PROFILE_JOUSTS_TITLE,
+  profileJoustTiles,
+  statTiles,
+} from "@leximon/view-model";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { Card } from "@/cards/card";
 import { Emblem } from "@/clan/emblem";
+import { Shield } from "@/screens/jousts/league-pieces";
 import { openCard } from "@/screens/trades/card-row";
 import { colors, fontSizes, fonts, paperColors, radii, space } from "@/theme";
 import { Avatar } from "@/ui/avatar";
@@ -114,6 +122,30 @@ export function PinnedCards({
   );
 }
 
+/** The ranked jousts: the league's shield and name, then the week and the jousts played. */
+export function JoustsPanel({ jousts }: { readonly jousts: ProfileJousts }) {
+  const { league, tiles } = profileJoustTiles(jousts);
+  return (
+    <Panel paper>
+      <View style={styles.joustsHead}>
+        <Shield league={jousts.league} numeral={leagueNumeral(jousts.league)} size={38} />
+        <View>
+          <Text style={styles.panelTitle}>{PROFILE_JOUSTS_TITLE}</Text>
+          <Text style={styles.joustsLeague}>{league}</Text>
+        </View>
+      </View>
+      <View style={styles.tiles}>
+        {tiles.map((tile) => (
+          <View key={tile.label} style={styles.tile}>
+            <Text style={styles.tileValue}>{tile.value}</Text>
+            <Text style={styles.tileLabel}>{tile.label}</Text>
+          </View>
+        ))}
+      </View>
+    </Panel>
+  );
+}
+
 /** The profile in figures. */
 export function StatsPanel({
   stats,
@@ -159,6 +191,8 @@ const styles = StyleSheet.create({
     color: colors.pageInkMuted,
   },
   panelTitle: { fontFamily: fonts.display, fontSize: fontSizes.title, color: ink.pageInk },
+  joustsHead: { flexDirection: "row", alignItems: "center", gap: space.s6 },
+  joustsLeague: { fontFamily: fonts.ui.bold, fontSize: fontSizes.body, color: colors.rubric },
   muted: { fontFamily: fonts.ui.medium, fontSize: fontSizes.label, color: ink.pageInkMuted },
   pinsScroll: { marginHorizontal: -18 },
   pins: { gap: space.s7, paddingHorizontal: space.s9, paddingTop: space.s2 },

@@ -9,6 +9,7 @@ import type {
   LeagueResponse,
   LevelRewardView,
   PlayerBadge,
+  ProfileJousts,
 } from "@leximon/contract";
 import {
   type EpochMs,
@@ -246,6 +247,33 @@ async function standingOf(
     rankedLeft: rankedLeft(rules, today),
     rankedPerDay: rules.rankedPerDay,
     rewardsWaiting: waitingWeeks(rows, claimed, week).length,
+  };
+}
+
+/** The jousts on a profile: league, this week's place, ranked jousts played; `null` before any. */
+export async function readProfileJousts(
+  db: Reader,
+  userId: string,
+  now: EpochMs,
+): Promise<ProfileJousts | null> {
+  const rules = rulesAt(now);
+  const week = weekNow(rules, now);
+  const [rating, rows] = await Promise.all([
+    db.execute<{ games: number }>(sql`select games from joust_ratings where user_id = ${userId}`),
+    readMemberships(db, userId),
+  ]);
+  const ranked = rating.rows[0]?.games ?? 0;
+  if (ranked === 0) return null;
+  const current = rows.find((row) => row.week === week);
+  const [league, group] = await Promise.all([
+    leagueFrom(db, rules, userId, rows, week),
+    current === undefined ? null : readGroup(db, current.groupId),
+  ]);
+  const place = group === null ? null : placeOf(rules, linesOf(rules, group, now), userId);
+  return {
+    league,
+    ranked,
+    week: place === null ? null : { place: place.place, size: place.size, points: place.points },
   };
 }
 

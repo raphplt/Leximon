@@ -1,4 +1,4 @@
-import { REVIEW_DIFFICULTIES } from "@leximon/core";
+import { LEAGUES, REVIEW_DIFFICULTIES } from "@leximon/core";
 import { z } from "zod";
 import { emblemSchema, slugSchema, timestampSchema } from "./common";
 
@@ -30,6 +30,27 @@ export const profileStatsSchema = z.object({
   daysPlayed: z.int().nonnegative(),
 });
 export type ProfileStats = z.infer<typeof profileStatsSchema>;
+
+/**
+ * The player's ranked jousts, as their profile shows them: league, week, jousts played. The rating
+ * stays out: only its owner reads it, in their joust statistics.
+ */
+export const profileJoustsSchema = z.object({
+  /** The `leagueSchema` of `./leagues`, which imports this file. */
+  league: z.enum(LEAGUES),
+  /** Ranked jousts played, every week. */
+  ranked: z.int().positive(),
+  /** This week's tournament; `null` until the player's first ranked joust of the week. */
+  week: z
+    .object({
+      place: z.int().positive(),
+      /** Places of the group, automatons included. */
+      size: z.int().positive(),
+      points: z.int().nonnegative(),
+    })
+    .nullable(),
+});
+export type ProfileJousts = z.infer<typeof profileJoustsSchema>;
 
 /** The clan a public profile shows: its name, emblem and level. */
 export const profileClanSchema = z.object({
@@ -88,6 +109,8 @@ export const publicProfileSchema = z.discriminatedUnion("visibility", [
     /** In the order of the profile. */
     pinned: z.array(slugSchema),
     stats: profileStatsSchema,
+    /** `null` before the player's first ranked joust. */
+    jousts: profileJoustsSchema.nullable(),
     /** Where the signed-in viewer stands with this player; missing for a guest or anonymous viewer. */
     friendship: z.enum(["none", "friends", "requested", "incoming"]).optional(),
   }),
