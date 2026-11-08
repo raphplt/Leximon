@@ -1,4 +1,5 @@
 import type {
+  CatalogCollectionFile,
   DailyChallengeResponse,
   LevelCounts,
   ReviewRequest,
@@ -7,7 +8,7 @@ import type {
 } from "@leximon/contract";
 import { type Catalog, collectionName } from "@leximon/contract/client";
 import { PRACTICE_SCHEDULE, practiceRulesAt, UNLOCK_SCHEDULE, unlockRulesAt } from "@leximon/core";
-import { room, type ToyMatterName, toyMatters, toy as toyValues } from "@leximon/tokens";
+import { backTone, room, type ToyMatterName, toyMatters, toy as toyValues } from "@leximon/tokens";
 import {
   DESK_TEXTS,
   DIFFICULTY_OPTIONS,
@@ -43,15 +44,19 @@ import { router, useFocusEffect } from "expo-router";
 import { type ReactNode, useCallback, useState } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import Animated, { FadeInUp } from "react-native-reanimated";
+import Svg from "react-native-svg";
 import { api } from "@/api/client";
 import { readPreference, writePreference } from "@/feedback/feedback";
 import { CountBadge, MainAction } from "@/library/play-pieces";
 import { dailyChallenge, reviewSummary } from "@/player/collection";
 import { useShared } from "@/player/shared";
 import { progress } from "@/player/state";
+import { Seal } from "@/screens/play/sachet-face";
+import { asIs } from "@/screens/play/sachet-paint";
 import { TAB_BAR_RISE } from "@/shell/tab-bar";
 import { alpha, colors, fontSizes, fonts, paperColors, radii, space } from "@/theme";
 import { Icon } from "@/ui/icon";
+import { Matter } from "@/ui/matter";
 import { Panel } from "@/ui/panel";
 import { Lettering, Lettrine, Toy, ToyBody, ToyIcon } from "@/ui/toy";
 
@@ -475,12 +480,14 @@ const SHORTCUT_MATTERS: Readonly<Record<string, ToyMatterName>> = {
   recent: "paper",
 };
 const SHORTCUT_MARKS: Readonly<Record<string, string>> = { rising: "▲", missed: "✕", recent: "✦" };
-const COLLECTION_MATTERS: readonly ToyMatterName[] = ["blue", "red", "green"];
-const THEME_MATTERS: readonly ToyMatterName[] = ["green", "red", "blue", "dark", "paper", "gold"];
+/** The themes are one set of volumes: the same brown leather, told apart by their titles. */
+const THEME_MATTER: ToyMatterName = "dark";
 
-/** The first letter of a name, past its article: « Les Fondateurs » shows an F. */
-function initialOf(name: string): string {
-  return (name.replace(/^(les|le|la|l')\s*/i, "").charAt(0) || name.charAt(0)).toUpperCase();
+/** A collection's cover is cut from its sachet's cloth; the scope names the collection. */
+function packOfScope(catalog: Catalog, cover: ReviewCover): CatalogCollectionFile | null {
+  if (cover.scope.kind !== "collection") return null;
+  const id = cover.scope.id;
+  return catalog.collections.find((collection) => collection.id === id) ?? null;
 }
 
 /** What to practise on: book covers seen from the front, each one a door. */
@@ -537,13 +544,13 @@ function Shelf({
       {shelf.collections.length > 0 && (
         <>
           <Text style={styles.shelfTitle}>LES COLLECTIONS</Text>
-          {shelf.collections.map((cover, at) => (
+          {shelf.collections.map((cover) => (
             <Cover
               key={cover.key}
               cover={cover}
               size="large"
-              matter={COLLECTION_MATTERS[at % COLLECTION_MATTERS.length] ?? "blue"}
-              mark={initialOf(cover.name)}
+              matter="blue"
+              pack={packOfScope(catalog, cover)}
               onPick={pick}
             />
           ))}
@@ -553,15 +560,9 @@ function Shelf({
         <>
           <Text style={styles.shelfTitle}>LES THÈMES</Text>
           <View style={styles.themes}>
-            {shelf.themes.map((cover, at) => (
+            {shelf.themes.map((cover) => (
               <View key={cover.key} style={styles.theme}>
-                <Cover
-                  cover={cover}
-                  size="small"
-                  matter={THEME_MATTERS[at % THEME_MATTERS.length] ?? "green"}
-                  mark={initialOf(cover.name)}
-                  onPick={pick}
-                />
+                <Cover cover={cover} size="small" matter={THEME_MATTER} onPick={pick} />
               </View>
             ))}
           </View>
@@ -572,23 +573,29 @@ function Shelf({
   );
 }
 
-/** A book seen from the front: its leather, its title, how much of it is learnt, what is due. */
+/**
+ * A book seen from the front: its leather (or, for a collection, its sachet's cloth), its title, how
+ * much of it is learnt, what is due.
+ */
 function Cover({
   cover,
   size,
   matter,
-  mark,
+  pack = null,
+  mark = "",
   onPick,
 }: {
   readonly cover: ReviewCover;
   readonly size: "large" | "small" | "short";
   readonly matter: ToyMatterName;
-  readonly mark: string;
+  readonly pack?: CatalogCollectionFile | null;
+  readonly mark?: string;
   readonly onPick: (cover: ReviewCover) => void;
 }) {
   const locked = cover.lockedAt !== null;
-  const leather = toyMatters[locked ? "locked" : matter];
-  const light = !locked && (matter === "paper" || matter === "gold");
+  const cloth = pack !== null && !locked;
+  const leather = coverLeather(locked ? "locked" : matter, cloth ? pack : null);
+  const light = !locked && !cloth && (matter === "paper" || matter === "gold");
   const face = {
     backgroundImage: `linear-gradient(160deg, ${leather.top}, ${leather.bottom})`,
     boxShadow: `inset 0 -4px 0 ${leather.edge}, 0 4px 0 ${toyValues.outline}`,
@@ -611,19 +618,23 @@ function Cover({
           pressed && !locked && styles.coverPressed,
         ]}
       >
+        <Matter kind={cloth ? "cloth" : light ? "paper" : "leather"} />
         <View style={[styles.spine, { backgroundColor: leather.edge }]} />
         <View style={styles.fillet} pointerEvents="none" />
+        {LOZENGES.map((corner) => (
+          <View key={corner} style={[styles.lozenge, styles[corner]]} pointerEvents="none" />
+        ))}
         <View style={styles.coverRow}>
-          {size !== "small" && (
-            <ToyBody
-              matter="gold"
-              shape="round"
-              style={size === "large" ? styles.markLarge : styles.mark}
-            >
-              <Text style={[styles.markText, size === "large" && styles.markTextLarge]}>
-                {mark}
-              </Text>
-            </ToyBody>
+          {cloth ? (
+            <Svg width={54} height={54} viewBox="0 0 120 120">
+              <Seal collection={pack} paint={asIs} />
+            </Svg>
+          ) : (
+            size === "short" && (
+              <ToyBody matter="gold" shape="round" style={styles.mark}>
+                <Text style={styles.markText}>{mark}</Text>
+              </ToyBody>
+            )
           )}
           <View style={styles.coverText}>
             <Lettering size={size === "large" ? 18 : 15} numberOfLines={2}>
@@ -645,6 +656,21 @@ function Cover({
       )}
     </View>
   );
+}
+
+/** The corners of the fillet, each stamped with a gilt lozenge. */
+const LOZENGES = [
+  "lozengeTopLeft",
+  "lozengeTopRight",
+  "lozengeBottomLeft",
+  "lozengeBottomRight",
+] as const;
+
+/** A leather of the toys, or a collection's sachet cloth, a shade deeper on its spine. */
+function coverLeather(matter: ToyMatterName, pack: CatalogCollectionFile | null) {
+  if (pack === null) return toyMatters[matter];
+  const tone = backTone(pack.back);
+  return { top: tone.light, bottom: tone.dark, edge: toyValues.outline };
 }
 
 /** Blank page, sketch, ink and gilding, on one bar. */
@@ -891,10 +917,21 @@ const styles = StyleSheet.create({
     opacity: 0.7,
   },
   coverRow: { flexDirection: "row", alignItems: "center", gap: space.s6 },
+  lozenge: {
+    position: "absolute",
+    width: 7,
+    height: 7,
+    borderWidth: 1,
+    borderColor: toyValues.outline,
+    backgroundColor: toyMatters.gold.top,
+    transform: [{ rotate: "45deg" }],
+  },
+  lozengeTopLeft: { top: 2, left: 12 },
+  lozengeTopRight: { top: 2, right: 3 },
+  lozengeBottomLeft: { bottom: 4, left: 12 },
+  lozengeBottomRight: { bottom: 4, right: 3 },
   mark: { width: 42, height: 42, borderWidth: 2 },
-  markLarge: { width: 54, height: 54, borderWidth: 2 },
   markText: { fontFamily: fonts.display, fontSize: 20, color: toyValues.outline },
-  markTextLarge: { fontSize: 26 },
   coverText: { flex: 1, minWidth: 0, gap: space.s2 },
   coverWords: {
     fontFamily: fonts.ui.extrabold,

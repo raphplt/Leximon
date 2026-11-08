@@ -28,8 +28,10 @@ import {
   shelfXpLine,
   streakLine,
 } from "@leximon/view-model";
-import { type CSSProperties, useEffect, useState } from "react";
+import { type CSSProperties, type ReactNode, useEffect, useState } from "react";
 import { readPreference, writePreference } from "@/booster/feedback";
+import { type PackCollection, packOf, packVariables } from "@/booster/pack-looks";
+import { CollectionSeal } from "@/components/collection-seal";
 import { api } from "@/lib/api";
 import { usePackShape } from "@/lib/use-pack-shape";
 import { CountBadge, MainAction } from "@/library/play-pieces";
@@ -301,12 +303,15 @@ const SHORTCUT_MATTERS: Readonly<Record<string, ToyMatterName>> = {
   recent: "paper",
 };
 const SHORTCUT_MARKS: Readonly<Record<string, string>> = { rising: "▲", missed: "✕", recent: "✦" };
-const COLLECTION_MATTERS: readonly ToyMatterName[] = ["blue", "red", "green"];
-const THEME_MATTERS: readonly ToyMatterName[] = ["green", "red", "blue", "dark", "paper", "gold"];
+/** The themes are one set of volumes: the same brown leather, told apart by their titles. */
+const THEME_MATTER: ToyMatterName = "dark";
 
-/** The first letter of a name, past its article: « Les Fondateurs » shows an F. */
-function initialOf(name: string): string {
-  return (name.replace(/^(les|le|la|l')\s*/i, "").charAt(0) || name.charAt(0)).toUpperCase();
+/** A collection's cover is cut from its sachet's cloth; the scope names the collection. */
+function packOfScope(catalog: Catalog, cover: ReviewCover): PackCollection | null {
+  if (cover.scope.kind !== "collection") return null;
+  const id = cover.scope.id;
+  const file = catalog.collections.find((collection) => collection.id === id);
+  return file === undefined ? null : packOf(file);
 }
 
 /** What to practise on: book covers seen from the front, each one a door. */
@@ -363,7 +368,7 @@ function Shelf({
                 cover={cover}
                 size="short"
                 matter={SHORTCUT_MATTERS[cover.kind] ?? "paper"}
-                mark={SHORTCUT_MARKS[cover.kind] ?? "✦"}
+                mark={<span className={styles.coverCoin}>{SHORTCUT_MARKS[cover.kind] ?? "✦"}</span>}
                 onPick={pick}
               />
             </li>
@@ -374,17 +379,21 @@ function Shelf({
         <>
           <h3 className={styles.shelfTitle}>Les collections</h3>
           <ul className={styles.collections}>
-            {shelf.collections.map((cover, at) => (
-              <li key={cover.key}>
-                <Cover
-                  cover={cover}
-                  size="large"
-                  matter={COLLECTION_MATTERS[at % COLLECTION_MATTERS.length] ?? "blue"}
-                  mark={initialOf(cover.name)}
-                  onPick={pick}
-                />
-              </li>
-            ))}
+            {shelf.collections.map((cover) => {
+              const pack = packOfScope(catalog, cover);
+              return (
+                <li key={cover.key}>
+                  <Cover
+                    cover={cover}
+                    size="large"
+                    matter="blue"
+                    pack={pack}
+                    mark={pack === null ? null : <CollectionSeal collection={pack} size={58} />}
+                    onPick={pick}
+                  />
+                </li>
+              );
+            })}
           </ul>
         </>
       )}
@@ -392,15 +401,9 @@ function Shelf({
         <>
           <h3 className={styles.shelfTitle}>Les thèmes</h3>
           <ul className={styles.themes}>
-            {shelf.themes.map((cover, at) => (
+            {shelf.themes.map((cover) => (
               <li key={cover.key}>
-                <Cover
-                  cover={cover}
-                  size="small"
-                  matter={THEME_MATTERS[at % THEME_MATTERS.length] ?? "green"}
-                  mark={initialOf(cover.name)}
-                  onPick={pick}
-                />
+                <Cover cover={cover} size="small" matter={THEME_MATTER} mark={null} onPick={pick} />
               </li>
             ))}
           </ul>
@@ -411,35 +414,44 @@ function Shelf({
   );
 }
 
-/** A book seen from the front: its leather, its title, how much of it is learnt, what is due. */
+/**
+ * A book seen from the front: its leather (or, for a collection, its sachet's cloth), its title, how
+ * much of it is learnt, what is due.
+ */
 function Cover({
   cover,
   size,
   matter,
+  pack = null,
   mark,
   onPick,
 }: {
   readonly cover: ReviewCover;
   readonly size: "large" | "small" | "short";
   readonly matter: ToyMatterName;
-  readonly mark: string;
+  readonly pack?: PackCollection | null;
+  readonly mark: ReactNode;
   readonly onPick: (cover: ReviewCover) => void;
 }) {
   const locked = cover.lockedAt !== null;
   const leather = locked ? "locked" : matter;
+  const cloth = pack !== null && !locked;
   return (
     <button
       type="button"
       className={styles.cover}
       data-size={size}
       data-locked={locked || undefined}
+      data-pack={cloth || undefined}
       data-light={leather === "paper" || leather === "gold" || undefined}
       style={
-        {
-          "--cover-top": `var(--lx-toy-${leather}-top)`,
-          "--cover-bottom": `var(--lx-toy-${leather}-bottom)`,
-          "--cover-edge": `var(--lx-toy-${leather}-edge)`,
-        } as CSSProperties
+        cloth
+          ? packVariables(pack)
+          : ({
+              "--cover-top": `var(--lx-toy-${leather}-top)`,
+              "--cover-bottom": `var(--lx-toy-${leather}-bottom)`,
+              "--cover-edge": `var(--lx-toy-${leather}-edge)`,
+            } as CSSProperties)
       }
       aria-disabled={locked || undefined}
       aria-label={
@@ -449,9 +461,11 @@ function Cover({
       }
       onClick={() => onPick(cover)}
     >
-      <span className={styles.coverMark} aria-hidden="true">
-        {mark}
-      </span>
+      {mark !== null && (
+        <span className={styles.coverMark} aria-hidden="true">
+          {mark}
+        </span>
+      )}
       <span className={styles.coverText}>
         <Lettering className={styles.coverName}>{cover.name}</Lettering>
         <span className={styles.coverWords}>

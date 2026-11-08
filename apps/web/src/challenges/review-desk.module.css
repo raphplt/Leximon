@@ -235,6 +235,7 @@
 }
 
 .cover {
+  --cover-grain: var(--lx-matter-leather);
   position: relative;
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
@@ -257,7 +258,14 @@
       color-mix(in srgb, var(--cover-edge) 50%, transparent) 9px 11px,
       transparent 11px
     ),
-    linear-gradient(160deg, var(--cover-top), var(--cover-bottom));
+    var(--cover-grain) 0 0 / var(--lx-matter-size),
+    /* Lamplight from the top left, worn darker toward the corners. */
+    radial-gradient(
+      ellipse 90% 120% at 30% 15%,
+      color-mix(in oklab, var(--cover-top), white 8%) 0%,
+      var(--cover-top) 35%,
+      var(--cover-bottom) 100%
+    );
   box-shadow:
     inset 0 0 0 5px transparent,
     inset 0 -4px 0 var(--cover-edge),
@@ -272,15 +280,42 @@
     box-shadow 140ms ease-out;
 }
 
-/* A fine gilt fillet framing the cover, as on a bound book. */
+/* A fine gilt fillet framing the cover, tooled into the leather as on a bound book. */
 .cover::before {
   content: "";
   position: absolute;
   inset: 6px 7px 8px 17px;
-  border: 1.5px solid var(--lx-shelf-gilt);
+  border: 1.5px solid color-mix(in srgb, var(--lx-shelf-gilt) 75%, transparent);
   border-radius: 3px 9px 9px 3px;
-  opacity: 0.7;
+  box-shadow: 0 1px 0 color-mix(in srgb, var(--lx-toy-outline) 45%, transparent);
   pointer-events: none;
+}
+
+/* A gilt lozenge stamped at each corner of the fillet. */
+.cover::after {
+  --lozenge: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M6 0.5 L11.5 6 L6 11.5 L0.5 6Z' fill='%23E9C06A' stroke='%232A1608' stroke-width='1.2'/%3E%3Ccircle cx='6' cy='6' r='1.4' fill='%238F611C'/%3E%3C/svg%3E");
+  content: "";
+  position: absolute;
+  inset: 2px 3px 4px 13px;
+  background:
+    var(--lozenge) top left / 9px no-repeat,
+    var(--lozenge) top right / 9px no-repeat,
+    var(--lozenge) bottom left / 9px no-repeat,
+    var(--lozenge) bottom right / 9px no-repeat;
+  pointer-events: none;
+}
+
+/* Paper and gold are not leather: they keep the grain of paper. */
+.cover[data-light] {
+  --cover-grain: var(--lx-matter-paper);
+}
+
+/* A collection is bound in its sachet's cloth, a shade deeper at the edges. */
+.cover[data-pack] {
+  --cover-grain: var(--lx-matter-cloth);
+  --cover-top: var(--tone-light);
+  --cover-bottom: var(--tone-dark);
+  --cover-edge: color-mix(in oklab, var(--tone-dark), black 40%);
 }
 
 .cover:hover:not([data-locked]) {
@@ -320,6 +355,13 @@
 }
 
 .coverMark {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  filter: drop-shadow(0 3px 0 color-mix(in srgb, var(--lx-toy-outline) 60%, transparent));
+}
+
+.coverCoin {
   display: grid;
   place-items: center;
   width: 46px;
@@ -327,21 +369,10 @@
   border: 2px solid var(--lx-toy-outline);
   border-radius: 50%;
   background: linear-gradient(180deg, var(--lx-toy-gold-top), var(--lx-toy-gold-bottom));
-  box-shadow: 0 2px 0 var(--lx-toy-outline);
   color: var(--lx-toy-outline);
   font-family: var(--font-display), Georgia, serif;
   font-size: 22px;
   font-weight: 900;
-}
-
-.cover[data-size="large"] .coverMark {
-  width: 58px;
-  height: 58px;
-  font-size: 28px;
-}
-
-.cover[data-size="small"] .coverMark {
-  display: none;
 }
 
 .coverText {
