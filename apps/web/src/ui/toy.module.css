@@ -211,7 +211,10 @@ a.toy {
   position: absolute;
   overflow: hidden;
   box-sizing: border-box;
-  box-shadow: inset 0 1px 2px color-mix(in srgb, var(--lx-toy-outline) 40%, transparent);
+  /* Set into the gold: shaded under its upper rim, caught by the light along the lower one. */
+  box-shadow:
+    inset 0 2px 3px color-mix(in srgb, var(--lx-toy-outline) 70%, transparent),
+    inset 0 -1px 0 color-mix(in srgb, var(--lx-toy-sheen) 30%, transparent);
   pointer-events: none;
 }
 

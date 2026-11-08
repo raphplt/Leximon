@@ -390,7 +390,8 @@ const styles = StyleSheet.create({
   lettrine: {
     position: "absolute",
     overflow: "hidden",
-    boxShadow: `inset 0 1px 2px ${toyValues.drop}`,
+    // Set into the gold: shaded under its upper rim, caught by the light along the lower one.
+    boxShadow: `inset 0 2px 3px ${toyValues.drop}, inset 0 -1px 0 ${toyValues.sheen}`,
   },
   lettrineIcon: { marginBottom: toyValues.lip.small },
   off: { opacity: 0.6 },
