@@ -1,16 +1,19 @@
-import type { IconName } from "@leximon/tokens";
+import type { ToyIconName, ToyMatterName } from "@leximon/tokens";
 import type { RewardIcon } from "@leximon/view-model";
 
-/** The icon of each reward. */
-export const REWARD_ICONS: Readonly<Record<RewardIcon, IconName>> = {
-  sachet: "sachet",
-  bolt: "bolt",
-  star: "star",
-  plume: "plume",
-  carte: "carte",
-  plus: "plus",
-  profil: "profil",
-  cadre: "palette",
-  pin: "pin",
-  ecu: "ecu",
+/** Each reward's sign: a filled icon, and the ground it is painted on as a coin. */
+export const REWARD_SIGNS: Readonly<
+  Record<RewardIcon | "lock", { readonly icon: ToyIconName; readonly matter: ToyMatterName }>
+> = {
+  sachet: { icon: "sachet", matter: "red" },
+  bolt: { icon: "sachet", matter: "green" },
+  star: { icon: "sachet", matter: "gold" },
+  plume: { icon: "ink", matter: "red" },
+  carte: { icon: "blank", matter: "blue" },
+  plus: { icon: "chest", matter: "blue" },
+  profil: { icon: "sketch", matter: "green" },
+  cadre: { icon: "gilded", matter: "blue" },
+  pin: { icon: "album", matter: "red" },
+  ecu: { icon: "ecu", matter: "gold" },
+  lock: { icon: "lock", matter: "gold" },
 };

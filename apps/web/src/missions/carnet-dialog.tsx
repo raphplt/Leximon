@@ -21,12 +21,12 @@ import {
 } from "@leximon/view-model";
 import { useRouter } from "next/navigation";
 import { type CSSProperties, useEffect, useState } from "react";
+import { RewardSign } from "@/levels/reward-toy";
 import { claimCarnetCase } from "@/player/missions";
 import { carnet } from "@/player/player";
 import { useShared } from "@/player/resource";
 import { RewardVisual } from "@/shell/coffret-dialog";
 import styles from "@/shell/coffret-dialog.module.css";
-import { REWARD_ICONS } from "@/shell/reward-icons";
 import { Button } from "@/ui/button";
 import { Dialog } from "@/ui/dialog";
 import { Icon } from "@/ui/icon";
@@ -204,7 +204,11 @@ function Case({ item, next }: { readonly item: CarnetCase; readonly next: number
       aria-label={item.label}
     >
       <span className={page.caseIcon} aria-hidden="true">
-        <Icon name={item.status === "claimed" ? "check" : REWARD_ICONS[item.icon]} size={16} />
+        {item.status === "claimed" ? (
+          <Icon name="check" size={16} />
+        ) : (
+          <RewardSign icon={item.icon} size={24} />
+        )}
       </span>
       <span className={page.caseNumber} aria-hidden="true">
         {item.number}

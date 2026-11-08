@@ -24,6 +24,7 @@ import {
 import { useRouter } from "next/navigation";
 import { type CSSProperties, useEffect, useRef, useState } from "react";
 import { Avatar } from "@/components/avatar";
+import { RewardSign } from "@/levels/reward-toy";
 import { api } from "@/lib/api";
 import { publishClaimed, wallet } from "@/player/player";
 import { Button } from "@/ui/button";
@@ -34,7 +35,6 @@ import { useToast } from "@/ui/toast";
 import { ToyIcon } from "@/ui/toy";
 import ui from "@/ui/ui.module.css";
 import styles from "./coffret-dialog.module.css";
-import { REWARD_ICONS } from "./reward-icons";
 
 type Step =
   | { readonly name: "closed" }
@@ -405,7 +405,7 @@ export function RewardVisual({ reward }: { readonly reward: LevelRewardView }) {
       const item = rewardItem(reward);
       return (
         <span className={styles.itemIcon}>
-          <Icon name={REWARD_ICONS[item.icon]} size={26} />
+          <RewardSign icon={item.icon} size={34} />
         </span>
       );
     }

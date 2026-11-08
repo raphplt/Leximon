@@ -1,31 +1,34 @@
-import { type IconName, type ToyIconName, toyIconInks } from "@leximon/tokens";
+import { lettrineInks, toyIconInks } from "@leximon/tokens";
 import type { RewardIcon } from "@leximon/view-model";
-import { colors } from "@/theme";
-import { Icon } from "@/ui/icon";
 import { ToyBody, ToyIcon } from "@/ui/toy";
+import { REWARD_SIGNS } from "./reward-icons";
 
-type Matter = "gold" | "red" | "green" | "blue";
+/** The rewards drawn as they are; the rest is a coin bearing the reward's sign. */
+const DRAWN: ReadonlySet<RewardIcon | "lock"> = new Set(["sachet", "star", "ecu", "lock"]);
 
-/** The sachets and écus are drawn; the rest is a coin bearing the reward's sign. */
-const LOOKS: Readonly<
-  Record<
-    RewardIcon | "lock",
-    | { readonly toy: ToyIconName; readonly gilt?: true }
-    | { readonly line: IconName; readonly matter: Matter }
-  >
-> = {
-  sachet: { toy: "sachet" },
-  star: { toy: "sachet", gilt: true },
-  bolt: { line: "bolt", matter: "gold" },
-  plume: { line: "plume", matter: "red" },
-  carte: { line: "carte", matter: "blue" },
-  plus: { line: "plus", matter: "blue" },
-  profil: { line: "profil", matter: "green" },
-  cadre: { line: "palette", matter: "gold" },
-  pin: { line: "pin", matter: "red" },
-  ecu: { toy: "ecu" },
-  lock: { toy: "lock" },
-};
+/**
+ * A reward's sign in its own inks, for a cell that is already its ground (a case, a day, a
+ * coffret). A garnished sachet is gilt.
+ */
+export function RewardSign({
+  icon,
+  size,
+  locked = false,
+}: {
+  readonly icon: RewardIcon | "lock";
+  readonly size: number;
+  readonly locked?: boolean;
+}) {
+  const name = REWARD_SIGNS[icon].icon;
+  return (
+    <ToyIcon
+      name={name}
+      size={size}
+      locked={locked}
+      inks={icon === "star" ? toyIconInks.gilded : toyIconInks[name]}
+    />
+  );
+}
 
 /** A reward as a small toy; `dim` greys it out, for the levels still far ahead. */
 export function RewardToy({
@@ -37,24 +40,20 @@ export function RewardToy({
   readonly size: number;
   readonly dim?: boolean;
 }) {
-  const look = LOOKS[icon];
-  if ("toy" in look) {
-    return (
-      <ToyIcon
-        name={look.toy}
-        size={size}
-        locked={dim}
-        inks={look.gilt ? toyIconInks.gilded : toyIconInks[look.toy]}
-      />
-    );
-  }
+  if (DRAWN.has(icon)) return <RewardSign icon={icon} size={size} locked={dim} />;
+  const look = REWARD_SIGNS[icon];
   return (
     <ToyBody
       matter={dim ? "locked" : look.matter}
       shape="round"
       style={{ width: size, height: size, alignItems: "center", justifyContent: "center" }}
     >
-      <Icon name={look.line} size={Math.round(size * 0.48)} color={colors.paper} />
+      <ToyIcon
+        name={look.icon}
+        size={Math.round(size * 0.56)}
+        locked={dim}
+        inks={lettrineInks(look.icon)}
+      />
     </ToyBody>
   );
 }

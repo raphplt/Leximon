@@ -38,7 +38,7 @@ import { toast } from "@/ui/toast";
 import { Lettering, ToyBody } from "@/ui/toy";
 import { openCarnet } from "./carnet";
 import { CoffretFrame, openCoffret, RewardSlips } from "./coffret";
-import { REWARD_ICONS } from "./reward-icons";
+import { RewardSign } from "./reward-toy";
 
 let shown = false;
 const listeners = new Set<() => void>();
@@ -233,11 +233,11 @@ function Day({ day }: { readonly day: WelcomeCase }) {
       matter={matter}
       style={[styles.dayIcon, { width: size, height: size }, day.status === "later" && styles.dim]}
     >
-      <Icon
-        name={day.status === "claimed" ? "check" : REWARD_ICONS[day.icon]}
-        size={day.last || tomorrow ? 20 : 17}
-        color={colors.kraftInk}
-      />
+      {day.status === "claimed" ? (
+        <Icon name="check" size={day.last || tomorrow ? 20 : 17} color={colors.kraftInk} />
+      ) : (
+        <RewardSign icon={day.icon} size={Math.round(size * 0.72)} />
+      )}
     </ToyBody>
   );
   return (

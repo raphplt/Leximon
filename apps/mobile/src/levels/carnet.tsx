@@ -30,7 +30,7 @@ import { Icon } from "@/ui/icon";
 import { toast } from "@/ui/toast";
 import { Lettering, ToyBody } from "@/ui/toy";
 import { CoffretFrame, RewardSlips } from "./coffret";
-import { REWARD_ICONS } from "./reward-icons";
+import { RewardSign } from "./reward-toy";
 
 let shown = false;
 const listeners = new Set<() => void>();
@@ -209,11 +209,11 @@ function Case({ item, next }: { readonly item: CarnetCase; readonly next: number
           item.status === "later" && styles.dim,
         ]}
       >
-        <Icon
-          name={item.status === "claimed" ? "check" : REWARD_ICONS[item.icon]}
-          size={16}
-          color={colors.kraftInk}
-        />
+        {item.status === "claimed" ? (
+          <Icon name="check" size={16} color={colors.kraftInk} />
+        ) : (
+          <RewardSign icon={item.icon} size={22} />
+        )}
       </ToyBody>
       <Text style={[styles.caseNumber, glowing && styles.nextNumber]}>{item.number}</Text>
     </View>

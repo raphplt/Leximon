@@ -21,6 +21,7 @@ import {
 } from "@leximon/view-model";
 import { useRouter } from "next/navigation";
 import { type CSSProperties, useEffect, useState } from "react";
+import { RewardSign } from "@/levels/reward-toy";
 import { api } from "@/lib/api";
 import { publishWelcomeClaimed, wallet, welcomeWeek } from "@/player/player";
 import { useShared } from "@/player/resource";
@@ -31,7 +32,6 @@ import { useToast } from "@/ui/toast";
 import ui from "@/ui/ui.module.css";
 import { RewardVisual } from "./coffret-dialog";
 import styles from "./coffret-dialog.module.css";
-import { REWARD_ICONS } from "./reward-icons";
 import week from "./welcome-dialog.module.css";
 
 type Step =
@@ -246,10 +246,11 @@ function Day({ day }: { readonly day: WelcomeCase }) {
       aria-label={`${day.label}, ${day.phrase}${day.status === "claimed" ? ", reçu" : ""}`}
     >
       <span className={week.dayIcon} aria-hidden="true">
-        <Icon
-          name={day.status === "claimed" ? "check" : REWARD_ICONS[day.icon]}
-          size={day.last || day.status === "tomorrow" ? 30 : 26}
-        />
+        {day.status === "claimed" ? (
+          <Icon name="check" size={26} />
+        ) : (
+          <RewardSign icon={day.icon} size={day.last || day.status === "tomorrow" ? 44 : 36} />
+        )}
       </span>
       <span className={week.dayLabel} aria-hidden="true">
         {day.status === "tomorrow" ? WELCOME_TOMORROW : day.day}

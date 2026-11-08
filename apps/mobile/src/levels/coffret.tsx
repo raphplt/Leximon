@@ -57,7 +57,7 @@ import { LevelMedal } from "@/ui/level";
 import { TextButton } from "@/ui/text-button";
 import { toast } from "@/ui/toast";
 import { Leaf, Lettering, ToyBody, ToyIcon } from "@/ui/toy";
-import { REWARD_ICONS } from "./reward-icons";
+import { RewardSign } from "./reward-toy";
 
 /** The coffret shown, and whether every coffret waiting opens at once from it. */
 interface Shown {
@@ -571,7 +571,7 @@ function RewardVisual({ reward }: { readonly reward: LevelRewardView }) {
     default:
       return (
         <View style={styles.itemIcon}>
-          <Icon name={REWARD_ICONS[rewardItem(reward).icon]} size={26} color={ink.rubric} />
+          <RewardSign icon={rewardItem(reward).icon} size={36} />
         </View>
       );
   }
