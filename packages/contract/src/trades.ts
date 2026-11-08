@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { slugSchema, timestampSchema } from "./common";
+import { patronMarkSchema } from "./patron";
 import {
   playerBadgeSchema,
   profileBannerSchema,
@@ -36,6 +37,7 @@ export const profileResponseSchema = z.object({
   publicFromLevel: z.int().positive(),
   level: z.int().positive(),
   memberSince: timestampSchema,
+  patron: patronMarkSchema,
   /** `null` without a clan. */
   clan: profileClanSchema.nullable(),
   banner: profileBannerSchema,

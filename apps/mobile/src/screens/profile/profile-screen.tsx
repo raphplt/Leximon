@@ -6,6 +6,7 @@ import {
   canShareProfile,
   movePin,
   NEW_TAB_BADGE,
+  PATRON_MEMBER_TITLE,
   PIN_TEXTS,
   pinnedSlotsLabel,
   placePin,
@@ -95,6 +96,7 @@ export function ProfileScreen() {
           memberSince: me.member ? me.memberSince : null,
           clan: me.clan,
           banner: me.banner,
+          patron: me.patron,
         }}
         onClan={() => router.dismissTo("/clan")}
       />
@@ -164,6 +166,18 @@ export function ProfileScreen() {
             <Icon name="chev" size={16} color={ink.pageInkMuted} />
           </Pressable>
         ))}
+        {/* Only for a patron: the stores forbid showing the offer to anyone else. */}
+        {me.patron !== null && (
+          <Pressable
+            onPress={() => router.push("/mecene")}
+            accessibilityRole="link"
+            style={({ pressed }) => [styles.link, pressed && styles.pressed]}
+          >
+            <Icon name="crown" size={20} color={ink.pageInk} />
+            <Text style={styles.linkText}>{PATRON_MEMBER_TITLE}</Text>
+            <Icon name="chev" size={16} color={ink.pageInkMuted} />
+          </Pressable>
+        )}
         {me.member && me.pseudo !== null && (
           <Pressable
             onPress={() => setChoosing(true)}

@@ -56,6 +56,7 @@ import {
 import { ADMIN_ROLE } from "../auth";
 import { breakFriendship, notLocked, readFriendship } from "../friends/friends";
 import { readJoustRecord } from "../jousts/leagues";
+import { readPatronMarks, readPatronWardrobe } from "../patron/patron";
 import { ensurePlayer } from "../trades/players";
 import { bannersOwned, completeCollectionsSql, readBannerFigures } from "./banners";
 
@@ -193,6 +194,7 @@ export async function readOwnProfile(
     publicFromLevel: publicLevel(now),
     level: badge.level,
     memberSince: new Date(player.createdAt).toISOString(),
+    patron: (await readPatronMarks(db, [userId])).get(userId) ?? null,
     clan: await readProfileClan(db, userId),
     banner: wornBanner(banners.rules, banners.owned, {
       motif: row.bannerMotif,
@@ -215,7 +217,10 @@ function publicLevel(now: EpochMs): number {
   return featureLevels(UNLOCK_SCHEDULE, TRADE_SCHEDULE, now).public_profile;
 }
 
-/** The coffrets claimed, then the days of the welcome week, which carry no level. */
+/**
+ * The coffrets claimed, then the days of the welcome week, which carry no level, then what the
+ * patron subscription gives.
+ */
 async function readClaims(db: Reader, userId: string): Promise<ClaimedReward[]> {
   const levels = await db
     .select({ level: userLevelRewards.level, rewards: userLevelRewards.rewards })
@@ -225,7 +230,7 @@ async function readClaims(db: Reader, userId: string): Promise<ClaimedReward[]> 
     .select({ rewards: userWelcomeDays.rewards })
     .from(userWelcomeDays)
     .where(eq(userWelcomeDays.userId, userId));
-  return [...levels, ...days];
+  return [...levels, ...days, ...(await readPatronWardrobe(db, userId))];
 }
 
 /** The chosen title while the player still holds it, else the latest one won. */
@@ -508,6 +513,7 @@ export async function readPublicProfile(
       title: wornTitle(rules, row.title, claimed, worn.titles),
       level: badge.level,
       memberSince: row.createdAt.toISOString(),
+      patron: (await readPatronMarks(db, [row.userId])).get(row.userId) ?? null,
       clan: await readProfileClan(db, row.userId),
       banner: wornBanner(banners.rules, banners.owned, {
         motif: row.bannerMotif,
@@ -656,9 +662,10 @@ export async function listPublicPlayers(
     .limit(limit + 1);
   const page = rows.slice(0, limit);
   const userIds = page.map((row) => row.userId);
-  const [clansOf, pinnedOf] = await Promise.all([
+  const [clansOf, pinnedOf, marks] = await Promise.all([
     readProfileClans(db, userIds),
     readPinnedInList(db, userIds),
+    readPatronMarks(db, userIds),
   ]);
   const last = page.at(-1);
   return {
@@ -666,6 +673,7 @@ export async function listPublicPlayers(
       player: toBadge(row, now),
       clan: clansOf.get(row.userId) ?? null,
       pinned: [...(pinnedOf.get(row.userId) ?? [])],
+      patron: marks.get(row.userId) ?? null,
     })),
     last:
       rows.length > limit && last?.at != null ? { at: last.at.getTime(), code: last.code } : null,

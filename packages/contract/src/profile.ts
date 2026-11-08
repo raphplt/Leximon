@@ -1,6 +1,7 @@
 import { LEAGUES, REVIEW_DIFFICULTIES } from "@leximon/core";
 import { z } from "zod";
 import { emblemSchema, slugSchema, timestampSchema } from "./common";
+import { patronMarkSchema } from "./patron";
 
 /** Cosmetic ids: avatars are card ids, frames short names ("gilded"). */
 const cosmeticSchema = z.string().min(1).max(64);
@@ -75,6 +76,7 @@ export const directoryPlayerSchema = z.object({
   clan: profileClanSchema.nullable(),
   /** The first cards of the profile, in its order. */
   pinned: z.array(slugSchema),
+  patron: patronMarkSchema,
 });
 export type DirectoryPlayer = z.infer<typeof directoryPlayerSchema>;
 
@@ -111,6 +113,7 @@ export const publicProfileSchema = z.discriminatedUnion("visibility", [
     title: z.string().nullable(),
     level: z.int().positive(),
     memberSince: timestampSchema,
+    patron: patronMarkSchema,
     /** `null` without a clan. */
     clan: profileClanSchema.nullable(),
     banner: profileBannerSchema,

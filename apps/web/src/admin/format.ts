@@ -45,6 +45,7 @@ export const ACTION_LABELS: Readonly<Record<string, string>> = {
   invite_create: "Invitation créée",
   invite_revoke: "Invitation retirée",
   invite_places: "Places d'une invitation",
+  patron_refund: "Mécène remboursé et résilié",
 };
 
 /** What the team does, as the sanction form and the contests name it. */
@@ -78,6 +79,9 @@ export function actionSummary(details: Record<string, unknown>): string {
   }
   if (typeof details["erased"] === "number") {
     parts.push(`${formatNumber(details["erased"])} adresse(s)`);
+  }
+  if (typeof details["refunded"] === "number") {
+    parts.push(`${formatNumber(details["refunded"] / 100)} € remboursés`);
   }
   if (typeof details["access"] === "boolean") parts.push(details["access"] ? "ouvert" : "fermé");
   return parts.join(" · ");

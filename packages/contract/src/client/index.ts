@@ -5,6 +5,7 @@ import { friendRoutes } from "./friends";
 import { gameRoutes } from "./game";
 import { type ApiClientOptions, createHttp } from "./http";
 import { joustRoutes } from "./jousts";
+import { adminPatronRoutes, patronRoutes } from "./patron";
 import { wishRoutes } from "./wishes";
 
 /**
@@ -20,6 +21,7 @@ export function createApiClient(options: ApiClientOptions) {
     ...clanRoutes(http),
     ...joustRoutes(http),
     ...wishRoutes(http),
+    ...patronRoutes(http),
   };
 }
 
@@ -27,7 +29,8 @@ export type ApiClient = ReturnType<typeof createApiClient>;
 
 /** Client of the back office, on the same session as the game. */
 export function createAdminClient(options: ApiClientOptions) {
-  return adminRoutes(createHttp(options));
+  const http = createHttp(options);
+  return { ...adminRoutes(http), ...adminPatronRoutes(http) };
 }
 
 export type AdminClient = ReturnType<typeof createAdminClient>;
@@ -66,3 +69,4 @@ export type {
   LeagueClaimResult,
   SaveDeckResult,
 } from "./jousts";
+export type { PatronClaimResult, PatronRedirectResult } from "./patron";

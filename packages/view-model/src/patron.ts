@@ -1,0 +1,251 @@
+import type {
+  MonthCosmeticView,
+  PatronCosmeticView,
+  PatronMarkView,
+  PatronPlan,
+  PatronResponse,
+} from "@leximon/contract";
+import { type EpochMs, PATRON_SCHEDULE, PATRON_TIME_ZONE, patronRulesAt } from "@leximon/core";
+import { capitalize } from "./format";
+import { avatarName, frameName } from "./profile";
+
+/**
+ * The patron page and the mark on profiles. The server says what the player may buy and claim;
+ * these only choose the screen and word it.
+ */
+
+const EUROS = new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR" });
+
+/** « 3,99 € », from cents. */
+export function formatEuros(cents: number): string {
+  return EUROS.format(cents / 100);
+}
+
+export function patronPrice(plan: PatronPlan, now: EpochMs): string {
+  return formatEuros(patronRulesAt(PATRON_SCHEDULE, now).prices[plan]);
+}
+
+export const PATRON_PAGE_TITLE = "Devenir mécène";
+export const PATRON_MEMBER_TITLE = "Ton abonnement mécène";
+
+/** What the subscription gives, the same before and after sales open. */
+export const PATRON_BENEFITS: readonly string[] = [
+  "Un cosmétique chaque mois, cadre ou avatar gravé, dévoilé le 1er et gardé à vie.",
+  "Un mot par trimestre, que tu choisis parmi les mots pas encore publiés. Il entre dans le jeu avec ton pseudo, et tu en reçois un exemplaire unique.",
+  "Le titre et le badge de mécène sur ton profil.",
+];
+
+export const PATRON_INTRO =
+  "Leximon est gratuit, sans publicité et sans sachet à acheter. Avec l'abonnement mécène, tu fais vivre le jeu.";
+export const PATRON_NO_ADVANTAGE =
+  "Un mécène n'a ni sachet, ni XP, ni avantage aux échanges en plus.";
+
+/**
+ * - `door`: sales are not open to this player; the offer is announced and « Préviens-moi » counted;
+ * - `offer`: the player can subscribe, or a guest is sent to create an account first;
+ * - `member`: subscribed, trial included.
+ */
+export type PatronPageKind = "door" | "offer" | "member";
+
+export function patronPageKind(patron: PatronResponse, guest: boolean): PatronPageKind {
+  const standing = patron.subscription?.standing ?? "none";
+  if (standing !== "none") return "member";
+  if (patron.canBuy || (guest && patron.sales === "open")) return "offer";
+  return "door";
+}
+
+export interface PatronPlanChoice {
+  readonly plan: PatronPlan;
+  /** « 3,99 € par mois ». */
+  readonly label: string;
+  /** What a yearly plan comes to each month, `null` for the monthly one. */
+  readonly note: string | null;
+}
+
+export function patronPlanChoices(now: EpochMs): readonly PatronPlanChoice[] {
+  const { prices } = patronRulesAt(PATRON_SCHEDULE, now);
+  return [
+    { plan: "monthly", label: `${formatEuros(prices.monthly)} par mois`, note: null },
+    {
+      plan: "yearly",
+      label: `${formatEuros(prices.yearly)} par an`,
+      note: `Soit ${formatEuros(Math.round(prices.yearly / 12))} par mois.`,
+    },
+  ];
+}
+
+/** Under the plans, for a player who never had a trial. */
+export function patronTrialNote(patron: Pick<PatronResponse, "trialAvailable" | "trialDays">) {
+  if (!patron.trialAvailable || patron.trialDays === 0) return null;
+  return `Les ${patron.trialDays} premiers jours sont gratuits, et tu peux résilier en un clic avant le premier paiement.`;
+}
+
+/** Under the plans, for a player whose trial is spent. */
+export const PATRON_CANCEL_NOTE = "Tu peux résilier en un clic depuis cette page, quand tu veux.";
+
+export const PATRON_FOUNDING_OFFER =
+  "Abonne-toi avant la fin du mois pour devenir Mécène fondateur. Tu gardes ce prix tant que ton abonnement continue, et le badge de fondateur à vie.";
+
+/** The box the player ticks before paying; its final wording comes from the lawyer. */
+export const PATRON_WAIVER =
+  "Je veux profiter tout de suite de mon abonnement et je renonce à mon droit de rétractation.";
+export const PATRON_MINOR_NOTE =
+  "Tu as moins de 18 ans. Demande l'accord d'un parent avant de t'abonner.";
+export const PATRON_GUEST_NOTE = "Crée un compte pour t'abonner.";
+
+export const PATRON_SUBSCRIBE = "Devenir mécène";
+export const PATRON_SUBSCRIBE_BUSY = "Ouverture du paiement…";
+export const PATRON_CREATE_ACCOUNT = "Créer mon compte";
+export const PATRON_NOTIFY = "Préviens-moi";
+export const PATRON_NOTIFIED = "Noté. On te préviendra à l'ouverture des abonnements.";
+export const PATRON_DOOR_KICKER = "Bientôt";
+
+export const PATRON_MANAGE = "Gérer mon abonnement";
+export const PATRON_RESUME = "Reprendre mon abonnement";
+export const PATRON_MANAGE_BUSY = "Ouverture…";
+/** On the phone, where nothing may be bought outside the stores' payment. */
+export const PATRON_MANAGED_ON_WEB = "Ton abonnement se gère depuis ton compte sur leximon.fr.";
+
+export const PATRON_THANKS = "Te voilà mécène !";
+export const PATRON_CONFIRMING = "Ton paiement est en cours de confirmation.";
+export const PATRON_CHECKOUT_FAILED = "La page de paiement ne s'est pas ouverte. Réessaie.";
+export const PATRON_PORTAL_FAILED = "La page de ton abonnement ne s'est pas ouverte. Réessaie.";
+export const PATRON_LOAD_FAILED = "Le serveur ne répond pas. Réessaie.";
+
+/** « le cadre Sceau de cire », « l'avatar gravé Le Grimelin », « le titre Mécène des brumes ». */
+export function patronCosmeticName(cosmetic: PatronCosmeticView): string {
+  switch (cosmetic.kind) {
+    case "frame":
+      return `le cadre ${frameName(cosmetic.frame)}`;
+    case "avatar":
+      return `l'avatar gravé ${avatarName(cosmetic.avatar)}`;
+    case "title":
+      return `le titre ${cosmetic.title}`;
+  }
+}
+
+/** The month's showcase, seen by everyone from the 1st. */
+export function monthCosmeticLine(month: MonthCosmeticView | null): string | null {
+  if (month === null) return null;
+  return `Ce mois-ci, les mécènes reçoivent ${patronCosmeticName(month.cosmetic)}.`;
+}
+
+const MONTH_FORMAT = new Intl.DateTimeFormat("fr-FR", { month: "long", year: "numeric" });
+
+/** « mars 2027 », from `2027-03`. */
+export function patronMonthLabel(month: string): string {
+  return MONTH_FORMAT.format(Date.parse(`${month}-15T12:00:00Z`));
+}
+
+/** A claimable cosmetic, « Le cadre Sceau de cire, mars 2027 ». */
+export function claimableLabel(item: MonthCosmeticView): string {
+  return `${capitalize(patronCosmeticName(item.cosmetic))}, ${patronMonthLabel(item.month)}`;
+}
+
+export const PATRON_CLAIMABLE_TITLE = "À réclamer";
+export const PATRON_CLAIM = "Réclamer";
+export const PATRON_CLAIM_BUSY = "Réclamation…";
+export const PATRON_CLAIMED = "Ajouté à ton apparence.";
+
+/** « 14 avril », with the year when it is not this one. Paris time, like every patron day. */
+function patronDay(iso: string, now: EpochMs, timeZone: string): string {
+  const at = Date.parse(iso);
+  const year = (time: number) =>
+    new Intl.DateTimeFormat("fr-FR", { year: "numeric", timeZone }).format(time);
+  return new Intl.DateTimeFormat("fr-FR", {
+    day: "numeric",
+    month: "long",
+    ...(year(at) === year(now) ? {} : { year: "numeric" }),
+    timeZone,
+  }).format(at);
+}
+
+export interface PatronStatus {
+  /** « Mécène depuis mars 2027 », « Essai gratuit en cours ». */
+  readonly headline: string;
+  readonly lines: readonly string[];
+  /** A payment Stripe is retrying: shown apart, with the button that fixes it. */
+  readonly warning: string | null;
+  /** « Reprendre mon abonnement » once cancelled, « Gérer mon abonnement » otherwise. */
+  readonly manage: string;
+}
+
+/** The member's status, or `null` without a running subscription. */
+export function patronStatus(
+  patron: Pick<PatronResponse, "subscription" | "founder">,
+  now: EpochMs,
+  timeZone: string = PATRON_TIME_ZONE,
+): PatronStatus | null {
+  const subscription = patron.subscription;
+  if (subscription === null || subscription.standing === "none") return null;
+  const day = (iso: string) => patronDay(iso, now, timeZone);
+  const price = subscription.plan === null ? null : patronPrice(subscription.plan, now);
+  const lines: string[] = [];
+
+  if (subscription.standing === "trial") {
+    const end = subscription.trialEnd ?? subscription.currentPeriodEnd;
+    if (subscription.cancelAt !== null) {
+      lines.push(`Ton essai s'arrête le ${day(subscription.cancelAt)}, sans aucun paiement.`);
+    } else if (end !== null) {
+      lines.push(
+        price === null
+          ? `Ton essai se termine le ${day(end)}.`
+          : `Ton essai se termine le ${day(end)}, et ton premier paiement de ${price} aura lieu ce jour-là.`,
+      );
+    }
+    lines.push(
+      "Pendant l'essai, tu portes le titre et le badge de mécène. Le cosmétique du mois et le droit de dénicher un mot arrivent avec le premier paiement.",
+    );
+  } else if (subscription.cancelAt !== null) {
+    lines.push(
+      `Ton abonnement s'arrête le ${day(subscription.cancelAt)}. Tes cosmétiques restent à toi.`,
+    );
+  } else if (subscription.currentPeriodEnd !== null && price !== null) {
+    lines.push(
+      `Ton prochain paiement de ${price} aura lieu le ${day(subscription.currentPeriodEnd)}.`,
+    );
+  }
+
+  const title = patron.founder ? "Mécène fondateur" : "Mécène";
+  return {
+    headline:
+      subscription.standing === "trial"
+        ? "Essai gratuit en cours"
+        : subscription.since === null
+          ? title
+          : `${title} depuis ${new Intl.DateTimeFormat("fr-FR", { month: "long", year: "numeric", timeZone }).format(Date.parse(subscription.since))}`,
+    lines,
+    warning: subscription.paymentFailing
+      ? "Ton dernier paiement n'est pas passé. Mets à jour ta carte pour rester mécène."
+      : null,
+    manage: subscription.cancelAt === null ? PATRON_MANAGE : PATRON_RESUME,
+  };
+}
+
+/** The badge on profiles and in the list of players. */
+export function patronMarkLabel(mark: PatronMarkView): string | null {
+  switch (mark) {
+    case "founder":
+      return "Mécène fondateur";
+    case "patron":
+      return "Mécène";
+    case null:
+      return null;
+  }
+}
+
+/** What the badge says on hover; a founder who stopped keeps the badge, so the past tense. */
+export function patronMarkHint(mark: PatronMarkView): string | null {
+  switch (mark) {
+    case "founder":
+      return "Ce mécène fondateur a soutenu Leximon dès le premier mois.";
+    case "patron":
+      return "Ce mécène fait vivre Leximon.";
+    case null:
+      return null;
+  }
+}
+
+/** How long the page waits for Stripe's webhook after the payment, before saying it is coming. */
+export const PATRON_CONFIRM_POLLS = 5;
+export const PATRON_CONFIRM_INTERVAL_MS = 2_000;

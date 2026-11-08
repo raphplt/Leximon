@@ -31,6 +31,7 @@ function profile(overrides: Partial<ProfileResponse> = {}): ProfileResponse {
     frame: "simple",
     title: "Lexicographe en herbe",
     titleChosen: false,
+    patron: null,
     profilePublic: true,
     publicFromLevel: 8,
     level: 12,

@@ -337,6 +337,13 @@
       "when": 1794162698261,
       "tag": "0047_patron_subscriptions",
       "breakpoints": true
+    },
+    {
+      "idx": 48,
+      "version": "7",
+      "when": 1794165939383,
+      "tag": "0048_patron_cosmetics",
+      "breakpoints": true
     }
   ]
 }

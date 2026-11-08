@@ -1,20 +1,37 @@
 import {
+  adminPatronRefundResponseSchema,
+  adminPatronsResponseSchema,
   IDEMPOTENCY_KEY_HEADER,
+  patronClaimRefusalSchema,
+  patronClaimResponseSchema,
   patronRedirectResponseSchema,
   patronRefusalSchema,
   patronResponseSchema,
+  profileResponseSchema,
 } from "@leximon/contract";
-import { PATRON_SCHEDULE } from "@leximon/core";
+import { PATRON_SCHEDULE, parisMonthOf } from "@leximon/core";
 import { createDb, schema } from "@leximon/db";
 import { testDatabaseUrl } from "@leximon/db/testing";
 import { eq } from "drizzle-orm";
 import Stripe from "stripe";
-import { afterAll, describe, expect, it } from "vitest";
+import { afterAll, describe, expect, it, vi } from "vitest";
 import { createApp } from "../app";
 import { ADMIN_ROLE } from "../auth";
 import { TEST_ORIGIN, TEST_STRIPE_WEBHOOK_SECRET, testEnv } from "../test-env";
 import { type Guest, signInAsGuest, signInAsMember } from "../test-support";
 import type { Billing, CheckoutInput, SubscriptionSnapshot } from "./billing";
+
+/** The calendar is empty until the cosmetics are drawn: this month gets one for the tests. */
+vi.mock("@leximon/core", async (importOriginal) => {
+  const core = await importOriginal<typeof import("@leximon/core")>();
+  const [rules] = core.PATRON_SCHEDULE;
+  return {
+    ...core,
+    PATRON_SCHEDULE: [
+      { ...rules, cosmetics: { [core.parisMonthOf(Date.now())]: { kind: "frame", frame: "wax" } } },
+    ],
+  };
+});
 
 const url = testDatabaseUrl();
 const env = testEnv(url);
@@ -23,6 +40,7 @@ afterAll(close);
 
 const DAY = 86_400_000;
 const TRIAL_DAYS = PATRON_SCHEDULE[0].trialDays;
+const THIS_MONTH = parisMonthOf(Date.now());
 
 /** Stripe, as far as the game asks it: subscriptions are set by the test, as Stripe would. */
 function fakeStripe() {
@@ -34,6 +52,7 @@ function fakeStripe() {
   const expired: string[] = [];
   const cancelled: string[] = [];
   const forgotten: string[] = [];
+  const refunds: string[] = [];
   let failing = false;
   const reachable = () => {
     if (failing) throw new Error("Stripe unreachable");
@@ -79,6 +98,10 @@ function fakeStripe() {
       reachable();
       forgotten.push(customerId);
     },
+    async refundInvoice(invoiceId) {
+      reachable();
+      refunds.push(invoiceId);
+    },
   };
   return {
     billing,
@@ -88,6 +111,7 @@ function fakeStripe() {
     expired,
     cancelled,
     forgotten,
+    refunds,
     newSubscriptionId: () => id("sub"),
     setFailing: (value: boolean) => {
       failing = value;
@@ -227,10 +251,15 @@ describe("the patron page", () => {
     const member = await signInAsMember(app, env, db);
     expect(await readPatron(member)).toEqual({
       sales: "open",
+      minor: false,
+      mark: null,
+      monthCosmetic: { month: THIS_MONTH, cosmetic: { kind: "frame", frame: "wax" } },
+      claimable: [],
       canBuy: true,
       trialAvailable: true,
       trialDays: TRIAL_DAYS,
       founder: false,
+      foundingOffer: false,
       subscription: null,
     });
   });
@@ -522,5 +551,164 @@ describe("deleting an account", () => {
       stripe.setFailing(false);
     }
     expect(await rowOf(member.userId)).toBeDefined();
+  });
+});
+
+/** A member whose first month is paid. */
+async function payingPatron() {
+  const { member, customerId } = await memberWithCustomer();
+  const subscription = subscribe(customerId, { status: "active", trialEnd: null });
+  await checkoutCompleted(subscription);
+  await invoicePaid(subscription);
+  return { member, customerId, subscription };
+}
+
+async function readProfile(player: Guest) {
+  const response = await request(player, "GET", "/me/profile");
+  expect(response.status).toBe(200);
+  return profileResponseSchema.parse(await response.json());
+}
+
+const claim = (player: Guest, month = THIS_MONTH) =>
+  request(player, "POST", `/me/patron/cosmetics/${month}/claim`);
+
+describe("the cosmetic of the month", () => {
+  it("is claimed once by a patron who paid for the month, and kept in the wardrobe", async () => {
+    const { member } = await payingPatron();
+    expect((await readPatron(member)).claimable).toEqual([
+      { month: THIS_MONTH, cosmetic: { kind: "frame", frame: "wax" } },
+    ]);
+    const claimed = await claim(member);
+    expect(claimed.status).toBe(200);
+    expect(patronClaimResponseSchema.parse(await claimed.json()).cosmetic).toEqual({
+      kind: "frame",
+      frame: "wax",
+    });
+    expect((await readProfile(member)).wardrobe.frames).toContain("wax");
+    expect((await readPatron(member)).claimable).toEqual([]);
+    const again = await claim(member);
+    expect(again.status).toBe(409);
+    expect(patronClaimRefusalSchema.parse(await again.json()).error).toBe("nothing_to_claim");
+  });
+
+  it("is claimed once when two claims come at the same time", async () => {
+    const { member } = await payingPatron();
+    const statuses = (await Promise.all([claim(member), claim(member)])).map((r) => r.status);
+    expect(statuses.sort()).toEqual([200, 409]);
+  });
+
+  it("waits for the first payment: nothing during the trial", async () => {
+    const { member, customerId } = await memberWithCustomer();
+    await checkoutCompleted(subscribe(customerId));
+    expect((await readPatron(member)).claimable).toEqual([]);
+    expect((await claim(member)).status).toBe(409);
+  });
+
+  it("stays in the wardrobe after the subscription ends", async () => {
+    const { member, customerId, subscription } = await payingPatron();
+    await claim(member);
+    stripe.subscriptions.set(subscription.id, { ...subscription, status: "canceled" });
+    await sendEvent("customer.subscription.deleted", { id: subscription.id, customer: customerId });
+    expect((await readProfile(member)).wardrobe.frames).toContain("wax");
+  });
+});
+
+describe("the title and the mark", () => {
+  it("come with the trial and go with the subscription, the claimed cosmetics stay", async () => {
+    const { member, customerId } = await memberWithCustomer();
+    const subscription = subscribe(customerId);
+    await checkoutCompleted(subscription);
+    const during = await readProfile(member);
+    expect(during.wardrobe.titles).toContain("Mécène");
+    expect(during.patron).toBe("patron");
+    expect((await readPatron(member)).mark).toBe("patron");
+
+    stripe.subscriptions.set(subscription.id, { ...subscription, status: "canceled" });
+    await sendEvent("customer.subscription.deleted", { id: subscription.id, customer: customerId });
+    const after = await readProfile(member);
+    expect(after.wardrobe.titles).not.toContain("Mécène");
+    expect(after.patron).toBeNull();
+  });
+
+  it("keeps a founder's mark for life", async () => {
+    const { member, customerId, subscription } = await payingPatron();
+    await db
+      .update(schema.patronSubscriptions)
+      .set({ founderAt: new Date() })
+      .where(eq(schema.patronSubscriptions.userId, member.userId));
+    expect((await readProfile(member)).wardrobe.titles).toContain("Mécène fondateur");
+    stripe.subscriptions.set(subscription.id, { ...subscription, status: "canceled" });
+    await sendEvent("customer.subscription.deleted", { id: subscription.id, customer: customerId });
+    const after = await readProfile(member);
+    expect(after.patron).toBe("founder");
+    expect(after.wardrobe.titles).not.toContain("Mécène fondateur");
+  });
+
+  it("asks a player declared 15 to 17 for a parent's agreement", async () => {
+    const member = await signInAsMember(app, env, db);
+    await db.insert(schema.playerAgeBrackets).values({ userId: member.userId, bracket: "15-17" });
+    expect((await readPatron(member)).minor).toBe(true);
+  });
+});
+
+describe("the back office", () => {
+  async function admin() {
+    const player = await signInAsMember(app, env, db);
+    await db
+      .update(schema.users)
+      .set({ role: ADMIN_ROLE })
+      .where(eq(schema.users.id, player.userId));
+    return player;
+  }
+
+  it("is for admins only", async () => {
+    const member = await signInAsMember(app, env, db);
+    expect((await request(member, "GET", "/admin/patrons")).status).toBe(403);
+  });
+
+  it("lists the subscribers with their latest payment, and counts them", async () => {
+    const { member } = await payingPatron();
+    const response = await request(await admin(), "GET", "/admin/patrons");
+    expect(response.status).toBe(200);
+    const list = adminPatronsResponseSchema.parse(await response.json());
+    const row = list.patrons.find((patron) => patron.userId === member.userId);
+    expect(row).toMatchObject({ standing: "patron", plan: "monthly", founder: false });
+    expect(row?.lastPayment).toMatchObject({ amount: 399, refunded: false });
+    expect(list.counts.patrons).toBeGreaterThanOrEqual(1);
+    expect(list.monthlyRevenue).toBeGreaterThanOrEqual(399);
+  });
+
+  it("refunds the latest payment and stops the subscription, once for a retried request", async () => {
+    const { member, subscription } = await payingPatron();
+    const officer = await admin();
+    const key = crypto.randomUUID();
+    const refund = () =>
+      app.request(
+        `/admin/patrons/${member.userId}/refund`,
+        {
+          method: "POST",
+          headers: { origin: TEST_ORIGIN, cookie: officer.cookie, [IDEMPOTENCY_KEY_HEADER]: key },
+        },
+        env,
+      );
+    const first = await refund();
+    expect(first.status).toBe(200);
+    expect(adminPatronRefundResponseSchema.parse(await first.json()).refunded).toBe(399);
+    const refundsBefore = stripe.refunds.length;
+    expect((await refund()).status).toBe(200);
+    expect(stripe.refunds.length).toBe(refundsBefore);
+    expect(stripe.cancelled).toContain(subscription.id);
+    const [period] = await db
+      .select()
+      .from(schema.patronPeriods)
+      .where(eq(schema.patronPeriods.userId, member.userId));
+    expect(period?.refundedAt).not.toBeNull();
+    expect((await readPatron(member)).claimable).toEqual([]);
+  });
+
+  it("refuses a refund for a player who never subscribed", async () => {
+    const member = await signInAsMember(app, env, db);
+    const response = await request(await admin(), "POST", `/admin/patrons/${member.userId}/refund`);
+    expect(response.status).toBe(409);
   });
 });

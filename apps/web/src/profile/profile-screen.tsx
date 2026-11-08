@@ -74,6 +74,7 @@ export function ProfileScreen() {
     clan: me.clan,
     banner: me.banner,
     clanHref: "/clan",
+    patron: me.patron,
   };
 
   return (

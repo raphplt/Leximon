@@ -1,6 +1,13 @@
 import {
+  type AdminPatronRefundRefusal,
+  type AdminPatronRefundResponse,
+  type AdminPatronsResponse,
+  adminPatronsQuerySchema,
   IDEMPOTENCY_KEY_HEADER,
   idempotencyKeySchema,
+  monthCosmeticSchema,
+  type PatronClaimRefusal,
+  type PatronClaimResponse,
   type PatronRedirectResponse,
   type PatronRefusal,
   type PatronResponse,
@@ -8,10 +15,20 @@ import {
 } from "@leximon/contract";
 import { Hono } from "hono";
 import type { AppEnv } from "../context";
+import { playerRateLimit } from "../middleware/rate-limit";
+import { requireAdmin } from "../middleware/require-admin";
 import { refuseLockedWrites } from "../moderation/restrictions";
+import { InvalidPatronCursorError, listPatrons, refundPatron } from "./admin";
 import type { BillingFactory } from "./billing";
 import { billingEventOf, verifiedStripeEvent } from "./events";
-import { applyBillingEvent, openCheckout, openPortal, patronSales, readPatron } from "./patron";
+import {
+  applyBillingEvent,
+  claimCosmetic,
+  openCheckout,
+  openPortal,
+  patronSales,
+  readPatron,
+} from "./patron";
 
 /** Invoices list their lines: larger than other webhooks, still far below this. */
 const MAX_WEBHOOK_BYTES = 256 * 1024;
@@ -69,6 +86,20 @@ export function patronRoutes(createBilling: BillingFactory) {
     return c.json<PatronRedirectResponse>({ url: result.url });
   });
 
+  routes.post("/cosmetics/:month/claim", refuseLockedWrites, async (c) => {
+    const month = monthCosmeticSchema.shape.month.safeParse(c.req.param("month"));
+    if (!month.success) return c.json({ error: "invalid_request" }, 400);
+    const result = await claimCosmetic(c.var.db, {
+      userId: c.var.userId,
+      month: month.data,
+      now: Date.now(),
+    });
+    if (result.kind === "refused") {
+      return c.json<{ error: PatronClaimRefusal }>({ error: result.reason }, 409);
+    }
+    return c.json<PatronClaimResponse>({ cosmetic: result.cosmetic });
+  });
+
   return routes;
 }
 
@@ -101,6 +132,49 @@ export function stripeWebhookRoutes(createBilling: BillingFactory) {
       console.warn("Stripe event for a customer the game did not make", { type: event.type });
     }
     return c.json({ result });
+  });
+
+  return routes;
+}
+
+/** `/admin/patrons`: the subscribers and the refund, admins only, never cached. */
+export function adminPatronRoutes(createBilling: BillingFactory) {
+  const routes = new Hono<AppEnv>();
+  routes.use(requireAdmin);
+  routes.use(playerRateLimit);
+  routes.use(async (c, next) => {
+    await next();
+    c.header("Cache-Control", "no-store");
+  });
+  routes.onError((error, c) => {
+    if (error instanceof InvalidPatronCursorError) return c.json({ error: "invalid_cursor" }, 400);
+    throw error;
+  });
+
+  routes.get("/", async (c) => {
+    const query = adminPatronsQuerySchema.safeParse(c.req.query());
+    if (!query.success) return c.json({ error: "invalid_request" }, 400);
+    return c.json<AdminPatronsResponse>(
+      await listPatrons(c.var.db, { cursor: query.data.cursor, sales: patronSales(c.env) }),
+    );
+  });
+
+  routes.post("/:userId/refund", async (c) => {
+    const key = idempotencyKeySchema.safeParse(c.req.header(IDEMPOTENCY_KEY_HEADER));
+    if (!key.success) return c.json({ error: "invalid_idempotency_key" }, 400);
+    if (patronSales(c.env) === "unavailable") {
+      return c.json<{ error: AdminPatronRefundRefusal }>({ error: "not_subscribed" }, 409);
+    }
+    const result = await refundPatron(c.var.db, createBilling(c.env), {
+      adminId: c.var.userId,
+      userId: c.req.param("userId"),
+      idempotencyKey: key.data,
+      now: Date.now(),
+    });
+    if (result.kind === "refused") {
+      return c.json<{ error: AdminPatronRefundRefusal }>({ error: result.reason }, 409);
+    }
+    return c.json<AdminPatronRefundResponse>({ refunded: result.refunded });
   });
 
   return routes;

@@ -1,6 +1,6 @@
 # Cahier des charges · Abonnement Mécène et paiement Stripe
 
-- **Statut :** tranché le 2026-11-08 sur huit questions (§ 9) ; trois points restent à confirmer (§ 10). Lot 1 (socle) construit le 2026-11-08, sans rien de visible pour les joueurs ; à essayer avec les clés de test de Stripe (§ 11).
+- **Statut :** tranché le 2026-11-08 sur huit questions (§ 9) ; trois points restent à confirmer (§ 10). Lots 1 (socle) et 2 (page Mécène, badge, cosmétiques, admin) construits le 2026-11-08 ; à essayer avec les clés de test de Stripe (§ 11), recette MEC-01 à MEC-08 dans [recette-nouveautes.md](../recette-nouveautes.md).
 - **Règles concernées :** P72 (gratuit et payant) et P73 (abonnement Mécène), dans [regles-du-jeu.md](../regles-du-jeu.md), qui fait foi. Décision technique : D-059.
 - **D'où ça vient :** le propriétaire veut brancher Stripe, sur le compte qu'il a déjà, et construire l'offre Mécène. La stratégie commerciale ouvre la vente vers mi-janvier 2027, si les seuils sont atteints (2 000 joueurs actifs par mois, 10 % de rétention à 7 jours, 3 % de clics sur la fausse porte) et après relecture des documents par un avocat.
 - **Objectif :** tout construire maintenant, en mode test de Stripe, vente fermée. Le jour où les seuils et l'avocat sont là, on passe les clés en production et on ouvre.
@@ -21,11 +21,11 @@
 
 - **Avant l'ouverture** (vente fermée, `PATRON_SALES`) : la fausse porte, avec les avantages de P73 réécrits, le prix et « Préviens-moi ».
 - **Vente ouverte, joueur non abonné** :
-  - les avantages, le cosmétique du mois en image (« Ce mois-ci chez les mécènes : le cadre Cadeler. »), le prix ;
+  - les avantages, le cosmétique du mois (« Ce mois-ci, les mécènes reçoivent le cadre Sceau de cire. »), le prix ;
   - deux choix, « 3,99 € par mois » et « 29,99 € par an », et « 14 jours gratuits, résiliables en un clic » si le joueur n'a jamais eu d'essai ;
   - pendant le premier mois de vente, le bandeau « Mécène fondateur » et le Sceau du fondateur en image ;
   - une case non cochée : « Je veux profiter tout de suite de mon abonnement et je renonce à mon droit de rétractation. » (libellé final par l'avocat) ;
-  - compte déclaré 15-17 ans : « Tu as moins de 18 ans : demande l'accord d'un parent avant de t'abonner. » au-dessus du bouton ;
+  - compte déclaré 15-17 ans : « Tu as moins de 18 ans. Demande l'accord d'un parent avant de t'abonner. » au-dessus du bouton ;
   - un invité voit l'offre, et le bouton l'envoie créer un compte : on ne s'abonne qu'avec un compte.
 - **Le bouton « Devenir mécène »** part sur la page de paiement de Stripe (Checkout), puis revient sur `/mecene?merci`.
 - **Retour de Stripe** : « Te voilà mécène ! » et la suite selon le cas (essai en cours, premier mot à dénicher, cosmétique à réclamer). Si le webhook n'est pas encore arrivé, la page attend quelques secondes en relisant le statut, puis dit « Ton paiement est en cours de confirmation. » sans jamais dire « échec ».
@@ -35,7 +35,7 @@
 
 ### Ailleurs dans le jeu
 
-- **Le badge de mécène** sur le profil public et dans la liste des joueurs ; au survol, « Mécène. Fait vivre Leximon. » ; « Mécène fondateur » pour les fondateurs.
+- **Le badge de mécène** sur le profil public et dans la liste des joueurs ; au survol, « Ce mécène fait vivre Leximon. » ; « Mécène fondateur » pour les fondateurs (badge rouge, au survol « Ce mécène fondateur a soutenu Leximon dès le premier mois. », au passé puisqu'il le garde à vie).
 - **Le titre « Mécène »** (ou « Mécène fondateur ») se choisit parmi les titres, tant que l'abonnement court.
 - **L'entrée « Devenir mécène »** reste là où est la fausse porte (menu du joueur, profil). Jamais pendant l'ouverture d'un sachet, jamais dans une fenêtre qui bloque (P73).
 
@@ -123,12 +123,15 @@
 
 ### API (Hono, Workers)
 
-Construit au lot 1 (`apps/api/src/patron/`), sauf la réclamation des cosmétiques et la réserve.
+Construit aux lots 1 et 2 (`apps/api/src/patron/`), sauf la réserve.
 
-- `GET /me/patron` : la vente (`open`, `closed`, `unavailable` sans les secrets), si le joueur peut acheter, l'essai encore possible et sa durée, fondateur ou non, et l'abonnement (`trial`, `patron` ou `none`, rythme, fin de période, fin d'essai, résiliation prévue, paiement en échec, mécène depuis). Les droits de dénicher et les cosmétiques à réclamer viendront avec leurs lots.
+- `GET /me/patron` : la vente (`open`, `closed`, `unavailable` sans les secrets), si le joueur peut acheter, l'essai encore possible et sa durée, fondateur ou non, le mois fondateur en cours (`foundingOffer`), compte déclaré 15-17 ans (`minor`), le badge (`mark`), le cosmétique du mois, ceux à réclamer, et l'abonnement (`trial`, `patron` ou `none`, rythme, fin de période, fin d'essai, résiliation prévue, paiement en échec, mécène depuis). Les droits de dénicher viendront au lot 3.
 - `POST /me/patron/checkout` (`plan`, `waiverAccepted: true`, clé d'idempotence) : refuse un invité, un abonné, ou tout le monde sauf les admins tant que la vente est fermée ; crée le client Stripe au premier passage (identifiant du joueur en métadonnée, sans adresse ni nom : Checkout demande l'adresse des reçus) ; expire le checkout précédent resté ouvert ; ouvre une session Checkout en mode abonnement, avec 14 jours d'essai si le compte n'a jamais eu d'essai ni payé, carte demandée, essai annulé sans carte ; rend l'adresse de la page de paiement. La clé d'idempotence est passée à Stripe : deux clics font une session.
 - `POST /me/patron/portal` : une session du portail client, pour un compte qui a eu un abonnement.
-- `POST /me/patron/cosmetics/:month/claim` (lot 2) et `GET /reserve`, `POST /reserve/:wordId/find` (lot 3), comme prévu.
+- `POST /me/patron/cosmetics/:month/claim` : un mois payé (une période non remboursée qui en couvre un jour), pas encore réclamé, dont le calendrier a un cosmétique ; ligne du joueur verrouillée, une réclamation par mois. Le cosmétique entre dans l'apparence avec ceux des niveaux, et le titre « Mécène » (ou « Mécène fondateur ») y est tant que l'abonnement court.
+- Le badge (`patron`) est ajouté au profil, au profil public et à la liste des joueurs (champ additif, `null` par défaut pour les anciennes versions).
+- `GET /admin/patrons` (chiffres, revenu du mois, abonnés par dernier changement, page de 50) et `POST /admin/patrons/:userId/refund` (clé d'idempotence : rembourse le dernier paiement non remboursé, résilie tout de suite, note l'action au journal).
+- `GET /reserve`, `POST /reserve/:wordId/find` (lot 3), comme prévu.
 - `POST /stripe/webhook` : corps brut, signature vérifiée par la bibliothèque de Stripe (tolérance de 5 minutes), événement relu avec Zod, noté dans `stripe_events` dans la même transaction que son effet, ligne du joueur verrouillée. Événements traités : `checkout.session.completed`, `customer.subscription.*`, `invoice.paid`, `invoice.payment_failed` ; les autres sont acquittés sans effet. L'abonnement est relu chez Stripe avant d'écrire, donc l'ordre d'arrivée ne compte pas. Une facture de zéro (début d'essai) ne fait pas de période. Un client que le jeu n'a pas créé (autre produit du même compte Stripe) est ignoré.
 - Un second abonnement vivant à côté du premier (deux checkouts payés malgré l'expiration) est résilié tout de suite et laissé dans les journaux ; s'il a été payé, le remboursement se fait à la main.
 - Aucun statut n'est accordé sur le seul retour de Checkout : il vient du webhook.
@@ -144,7 +147,7 @@ Construit au lot 1 (`apps/api/src/patron/`), sauf la réclamation des cosmétiqu
 
 ### Admin
 
-- Page « Mécènes » : nombre d'abonnés, revenu du mois, essais en cours, résiliations ; un abonné avec ses paiements, « Rembourser et résilier ».
+- Page « Mécènes » (`/admin/mecenes`, faite au lot 2) : mécènes, essais, résiliés encore en cours, paiements refusés, fondateurs, revenu par mois (dernier paiement de chacun, un annuel pour un douzième) ; chaque abonné avec son dernier paiement et « Rembourser et résilier ». L'historique complet des paiements reste dans Stripe.
 - `/admin/mesure` : conversion de la page Mécène, essais convertis.
 
 ### Tests
@@ -156,7 +159,7 @@ Construit au lot 1 (`apps/api/src/patron/`), sauf la réclamation des cosmétiqu
 ## 4. Lots
 
 1. **Socle** (fait le 2026-11-08) : migration `0047`, SDK `stripe`, `GET /me/patron`, checkout, portail, webhook, `PATRON_SALES`, règles dans `core` (statut, fondateur), suppression de compte, tests. Rien de visible pour les joueurs.
-2. **Page Mécène, badge et cosmétiques** : page Mécène web (tous les états du § 1), badge et titre, cosmétique du mois réclamé ; statut et cosmétiques sur le mobile ; admin Mécènes.
+2. **Page Mécène, badge et cosmétiques** (fait le 2026-11-08) : page Mécène web (porte avant la vente, offre, retour de Stripe, abonné, essai, résilié, paiement refusé), badge et titre, cosmétique du mois réclamé ; sur le mobile, badge et page en lecture, que seul un joueur qui porte le badge atteint (lien dans son profil) ; admin Mécènes. Prix dans `PATRON_SCHEDULE` (à changer en même temps que ceux de Stripe). Restent : le calendrier des cosmétiques (vide, un mois se remplit dans `PATRON_SCHEDULE` le 1er au plus tôt), le Sceau du fondateur, la conversion de la page dans `/admin/mesure`, les mots dénichés sur la page (lot 3).
 3. **Dénichage** : réserve publiée, recherche et réservation (web et mobile), exemplaire du dénicheur, « Déniché par » dans le catalogue et sur la carte, liens avec la chaîne de contenu.
 4. **Ouverture** : CGV et CGU relues par l'avocat, page « Tes données » mise à jour, clés de production, `PATRON_SALES` à `"open"`.
 

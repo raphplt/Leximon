@@ -16,6 +16,7 @@ const LINKS = [
   { href: "/admin/retours", label: "Retours" },
   { href: "/admin/campagnes", label: "Campagnes" },
   { href: "/admin/echanges", label: "Échanges" },
+  { href: "/admin/mecenes", label: "Mécènes" },
   { href: "/admin/signalements", label: "Signalements" },
   { href: "/admin/contestations", label: "Contestations" },
   { href: "/admin/cartes", label: "Cartes" },

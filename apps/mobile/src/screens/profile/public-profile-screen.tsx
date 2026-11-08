@@ -95,6 +95,7 @@ export function PublicProfileScreen({ pseudo }: { readonly pseudo: string }) {
           memberSince: shown.memberSince,
           clan: shown.clan,
           banner: shown.banner,
+          patron: shown.patron,
         }
       : {
           avatar: shown.avatar,

@@ -324,6 +324,7 @@ export const ADMIN_ACTIONS = {
   sanction: "sanction",
   resolveContest: "resolve_contest",
   joustAccess: "joust_access",
+  patronRefund: "patron_refund",
 } as const;
 
 // --- E-mails ---------------------------------------------------------------------------------

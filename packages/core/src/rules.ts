@@ -682,7 +682,14 @@ export const BANNER_SCHEDULE: BannerSchedule = [
   },
 ];
 
-// The patron subscription. The founding month is set when sales open.
+// The patron subscription. The founding month is set when sales open, and each month's cosmetic
+// once it is drawn: a month is never announced before its 1st, whatever is written here.
 export const PATRON_SCHEDULE: PatronSchedule = [
-  { startsAt: SINCE_LAUNCH, trialDays: 14, foundingMonth: null },
+  {
+    startsAt: SINCE_LAUNCH,
+    trialDays: 14,
+    prices: { monthly: 399, yearly: 2999 },
+    foundingMonth: null,
+    cosmetics: {},
+  },
 ];

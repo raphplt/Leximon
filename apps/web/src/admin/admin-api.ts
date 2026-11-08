@@ -60,6 +60,8 @@ export function adminErrorMessage(error: unknown): string {
       return "Le message ou le clan visé n'existe plus.";
     case "already_resolved":
       return "Déjà traité.";
+    case "not_subscribed":
+      return "Ce joueur n'a pas d'abonnement mécène.";
     case "admin_target":
       return "Un admin ne se sanctionne pas.";
     default:

@@ -6,6 +6,8 @@ Ce qui a été construit du 4 au 6 novembre 2026, en deux parties :
 - **Connexion avec Google** (GGL-01 à GGL-07), construite le 2026-11-08.
 - **Joutes, lots 1 à 4** (JTE-01 à JTE-37 sur le web, MJT-01 à MJT-06 sur Android, PROD-01 à PROD-03 en production) : ce qu'on vérifie avant d'ouvrir les joutes aux testeurs, puis en production. Les règles sont en P91 ([regles-du-jeu.md](regles-du-jeu.md)), le cahier dans [joutes.md](cahiers-des-charges/joutes.md). Le lot 1 est construit depuis le 2026-11-05, web et mobile.
 
+- **Mécène, lot 2** (MEC-01 à MEC-08), construit le 2026-11-08 : la page Mécène, le badge, les cosmétiques et l'admin, en mode test de Stripe. Le cahier est [mecene.md](cahiers-des-charges/mecene.md).
+
 Pour chaque test, note dans **Retour** : « OK », ou ce que tu as vu à la place. Une capture d'écran aide.
 
 ## 0. Préparer
@@ -694,3 +696,49 @@ Retour du propriétaire le même jour : la page ne doit plus défiler, et la rou
 - Les coffrets s'ouvrent l'un après l'autre, du plus bas au plus haut (« Ouverture… 3 / 9 »), puis une seule fenêtre montre tout ce qu'ils ont donné, les récompenses pareilles comptées ensemble : « 5 sachets bonus », « 2 sachets garnis », chaque titre, avatar ou cadre à part.
 - Si la réserve de sachets bonus se remplit en route, l'ouverture s'arrête et le dit : « Ta réserve de sachets bonus est pleine, donc 5 coffrets restent fermés. Ouvre un sachet bonus pour les récupérer. » Rien n'est perdu, les autres attendent.
 - Côté serveur rien ne change : chaque coffret passe par la même réclamation qu'avant, une à la fois, ce qui garde les vieilles versions de l'app compatibles.
+
+---
+
+## Mécène · lot 2
+
+Préparer : les clés de test de Stripe dans `apps/api/.dev.vars` et `stripe listen --forward-to localhost:8787/stripe/webhook` lancé ([mecene.md](cahiers-des-charges/mecene.md#11-stripe-pas-à-pas--toi), § 11). La vente reste fermée en local (`PATRON_SALES`) : passe ton compte admin (`pnpm admin:grant <email>`) pour acheter, ou lance l'API avec `--var PATRON_SALES:open`. Sans les clés, la page montre toujours la porte.
+
+### MEC-01 · La porte, vente fermée
+- **Faire :** ouvre `/mecene` avec un compte qui n'est pas admin.
+- **Attendu :** « Bientôt », les trois avantages (cosmétique du mois, un mot par trimestre, titre et badge), « Un mécène n'a ni sachet, ni XP, ni avantage aux échanges en plus. », les deux prix et « Préviens-moi ». Après le clic, « Noté. On te préviendra à l'ouverture des abonnements. »
+- **Retour :**
+
+### MEC-02 · L'offre
+- **Faire :** ouvre `/mecene` en admin (ou vente ouverte), avec un compte qui n'a jamais été abonné ; puis avec un compte déclaré 15-17 ans ; puis en invité, vente ouverte.
+- **Attendu :** les deux formules, « 3,99 € par mois » et « 29,99 € par an » (« Soit 2,50 € par mois. »), la mention des 14 premiers jours gratuits, la case de renonciation non cochée, et « Devenir mécène » grisé tant qu'elle ne l'est pas. Le compte 15-17 ans voit en rouge « Tu as moins de 18 ans. Demande l'accord d'un parent avant de t'abonner. ». L'invité voit « Crée un compte pour t'abonner. » et « Créer mon compte » à la place de la case.
+- **Retour :**
+
+### MEC-03 · Payer
+- **Faire :** coche la case, « Devenir mécène », paie avec la carte `4242 4242 4242 4242`.
+- **Attendu :** la page de Stripe en français, avec l'essai de 14 jours. Au retour, « Te voilà mécène ! », « Essai gratuit en cours », la date de fin d'essai et le premier paiement de 3,99 € ce jour-là. Si le webhook tarde, la page attend une dizaine de secondes, puis dit « Ton paiement est en cours de confirmation. » sans parler d'échec.
+- **Retour :**
+
+### MEC-04 · Le badge
+- **Faire :** regarde ton profil, ton profil public (`/joueur/<pseudo>`) et la liste des joueurs ; dans l'atelier, l'onglet Titres.
+- **Attendu :** le badge doré « Mécène » à côté du code joueur, une couronne seule dans la liste, « Ce mécène fait vivre Leximon. » au survol. Le titre « Mécène » se choisit dans l'atelier. Un fondateur a le badge rouge « Mécène fondateur ».
+- **Retour :**
+
+### MEC-05 · Gérer, résilier, reprendre
+- **Faire :** « Gérer mon abonnement », résilie dans le portail de Stripe, reviens, puis « Reprendre mon abonnement ».
+- **Attendu :** le portail s'ouvre. Résilié, la page dit « Ton essai s'arrête le …, sans aucun paiement. » (ou, après un paiement, « Ton abonnement s'arrête le …. Tes cosmétiques restent à toi. ») et le bouton devient « Reprendre mon abonnement ».
+- **Retour :**
+
+### MEC-06 · Fin d'essai et paiement refusé
+- **Faire :** avec une horloge de test de Stripe, avance après la fin de l'essai ; puis recommence avec la carte `4000 0000 0000 0341` (refusée au paiement).
+- **Attendu :** après le paiement, « Mécène depuis novembre 2026 » et le prochain paiement. Avec la carte refusée, « Ton dernier paiement n'est pas passé. Mets à jour ta carte pour rester mécène. » en rouge, le badge restant là tant que Stripe réessaie.
+- **Retour :**
+
+### MEC-07 · Le cosmétique du mois
+- **Faire :** mets un cosmétique au mois en cours dans `PATRON_SCHEDULE` (`packages/core/src/rules.ts`, par exemple `cosmetics: { "2026-11": { kind: "frame", frame: "wax" } }`), puis ouvre `/mecene` en abonné qui a payé, et en joueur qui ne l'est pas.
+- **Attendu :** le non-abonné lit « Ce mois-ci, les mécènes reçoivent le cadre Sceau de cire. ». L'abonné voit « À réclamer » avec « Le cadre Sceau de cire, novembre 2026 » et « Réclamer » ; après, « Ajouté à ton apparence. » et le cadre dans l'atelier. Pendant l'essai, rien à réclamer. Remets le calendrier vide ensuite.
+- **Retour :**
+
+### MEC-08 · L'admin et le téléphone
+- **Faire :** ouvre `/admin/mecenes`, puis « Rembourser et résilier » sur ton abonnement de test. Sur le téléphone, ouvre ton profil avec et sans badge.
+- **Attendu :** les chiffres (mécènes, essais, résiliés, paiements refusés, fondateurs, revenu par mois) et la liste. Le remboursement demande une confirmation qui dit le montant, puis « Abonnement arrêté et 3,99 € remboursés. » ; le journal le note. Sur le téléphone, le badge s'affiche comme sur le web ; « Ton abonnement mécène » n'apparaît dans le profil qu'avec le badge, et sa page dit « Ton abonnement se gère depuis ton compte sur leximon.fr. », sans lien ni prix.
+- **Retour :**

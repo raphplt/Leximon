@@ -23,6 +23,8 @@ export interface Billing {
   cancelSubscription(subscriptionId: string): Promise<void>;
   /** Removes the account's id from its customer, whose invoices Stripe keeps. */
   forgetCustomer(customerId: string): Promise<void>;
+  /** Refunds what an invoice was paid; refunded twice, Stripe makes it once. */
+  refundInvoice(invoiceId: string): Promise<void>;
 }
 
 export type BillingFactory = (env: Env) => Billing;
@@ -165,6 +167,19 @@ export const createStripeBilling: BillingFactory = (env) => {
 
     async forgetCustomer(customerId) {
       await stripe.customers.update(customerId, { metadata: { userId: "" } });
+    },
+
+    async refundInvoice(invoiceId) {
+      const payments = await stripe.invoicePayments.list({ invoice: invoiceId, status: "paid" });
+      for (const { payment } of payments.data) {
+        const intent = payment.payment_intent;
+        const intentId = typeof intent === "string" ? intent : intent?.id;
+        if (intentId === undefined) continue;
+        await stripe.refunds.create(
+          { payment_intent: intentId },
+          { idempotencyKey: `refund-${invoiceId}-${intentId}` },
+        );
+      }
     },
   };
 };

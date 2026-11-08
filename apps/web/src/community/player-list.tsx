@@ -20,6 +20,7 @@ import { useCatalog } from "@/cards/use-catalog";
 import clanStyles from "@/clan/clan.module.css";
 import { Emblem } from "@/clan/emblem";
 import { Avatar } from "@/components/avatar";
+import { PatronBadge } from "@/components/patron-badge";
 import { api } from "@/lib/api";
 import { profile } from "@/player/player";
 import { useShared } from "@/player/resource";
@@ -187,14 +188,17 @@ function PlayerRow({
   readonly entry: DirectoryPlayer;
   readonly catalog: Catalog | null;
 }) {
-  const { player, clan, pinned } = entry;
+  const { player, clan, pinned, patron } = entry;
   const words = pinned.flatMap((cardId) => catalog?.cardsById.get(cardId)?.word ?? []);
   return (
     <Link href={profilePath(player.pseudo ?? "")} className={styles.player}>
       <span className={styles.playerWho}>
         <Avatar avatar={player.avatar} frame={player.frame} size={44} />
         <span className={styles.playerText}>
-          <span className={styles.playerName}>{player.pseudo}</span>
+          <span className={styles.playerNameRow}>
+            <span className={styles.playerName}>{player.pseudo}</span>
+            <PatronBadge mark={patron} compact />
+          </span>
           <span className={styles.playerLevel}>{levelLabel(player.level)}</span>
         </span>
       </span>

@@ -148,6 +148,7 @@ export function PublicProfileScreen({
           memberSince: shown.memberSince,
           clan: shown.clan,
           banner: shown.banner,
+          patron: shown.patron,
           // The clan's page is in the game: a visitor without a session stays here.
           ...(shown.clan === null || viewer == null ? {} : { clanHref: `/clan/${shown.clan.id}` }),
         }

@@ -1,22 +1,47 @@
-import type { PatronRefusal, PatronResponse, PatronSales } from "@leximon/contract";
+import type {
+  PatronClaimRefusal,
+  PatronRefusal,
+  PatronResponse,
+  PatronSales,
+} from "@leximon/contract";
 import {
+  type ClaimedReward,
+  claimableCosmetics,
   type EpochMs,
   isFoundingPayment,
+  monthCosmetic,
   PATRON_SCHEDULE,
+  type PaidPeriod,
+  type PatronCosmetic,
+  type PatronMark,
   type PatronPlan,
+  type PatronStanding,
+  patronMark,
   patronRulesAt,
   patronStanding,
+  patronTitle,
   type SubscriptionStatus,
 } from "@leximon/core";
 import { type Database, schema } from "@leximon/db";
-import { eq } from "drizzle-orm";
+import { eq, inArray } from "drizzle-orm";
 import { ADMIN_ROLE } from "../auth";
 import { type Billing, billingConfigured, type SubscriptionSnapshot } from "./billing";
 import type { BillingEvent } from "./events";
 
-const { patronPeriods, patronSubscriptions, stripeEvents, users } = schema;
+const {
+  patronCosmeticClaims,
+  patronPeriods,
+  patronSubscriptions,
+  playerAgeBrackets,
+  stripeEvents,
+  users,
+} = schema;
 
 type PatronRow = typeof patronSubscriptions.$inferSelect;
+type Reader = Pick<Database, "select">;
+
+const standingOf = (row: Pick<PatronRow, "status" | "firstPaidAt">): PatronStanding =>
+  patronStanding(row.status as SubscriptionStatus | null, row.firstPaidAt?.getTime() ?? null);
 
 /** A subscription Stripe still bills or may bill again: the account cannot open a second one. */
 const LIVE_STATUSES: ReadonlySet<string> = new Set<SubscriptionStatus>([
@@ -73,22 +98,35 @@ export async function readPatron(
   db: Database,
   input: { readonly userId: string; readonly sales: PatronSales; readonly now: EpochMs },
 ): Promise<PatronResponse> {
-  const [row, buyer] = await Promise.all([readRow(db, input.userId), readBuyer(db, input.userId)]);
+  const [row, buyer, bracket, periods, claimed] = await Promise.all([
+    readRow(db, input.userId),
+    readBuyer(db, input.userId),
+    db
+      .select({ bracket: playerAgeBrackets.bracket })
+      .from(playerAgeBrackets)
+      .where(eq(playerAgeBrackets.userId, input.userId)),
+    readPeriods(db, input.userId),
+    readClaimedMonths(db, input.userId),
+  ]);
   const rules = patronRulesAt(PATRON_SCHEDULE, input.now);
+  const standing = row === undefined ? "none" : standingOf(row);
+  const founder = row?.founderAt != null;
   return {
     sales: input.sales,
+    minor: bracket[0]?.bracket === "15-17",
+    mark: patronMark(standing, founder),
+    monthCosmetic: monthCosmetic(rules, input.now),
+    claimable: claimableCosmetics(rules, periods, claimed, input.now),
     canBuy: buyRefusal(input.sales, buyer, row) === null,
     trialAvailable: trialAvailable(row),
     trialDays: rules.trialDays,
-    founder: row?.founderAt != null,
+    founder,
+    foundingOffer: isFoundingPayment(rules, input.now),
     subscription:
       row?.stripeSubscriptionId == null
         ? null
         : {
-            standing: patronStanding(
-              row.status as SubscriptionStatus | null,
-              row.firstPaidAt?.getTime() ?? null,
-            ),
+            standing,
             plan: row.plan as PatronPlan | null,
             currentPeriodEnd: row.currentPeriodEnd?.toISOString() ?? null,
             trialEnd: row.trialEnd?.toISOString() ?? null,
@@ -97,6 +135,118 @@ export async function readPatron(
             since: row.firstPaidAt?.toISOString() ?? null,
           },
   };
+}
+
+async function readPeriods(db: Reader, userId: string): Promise<PaidPeriod[]> {
+  const rows = await db
+    .select({
+      startsAt: patronPeriods.startsAt,
+      endsAt: patronPeriods.endsAt,
+      refundedAt: patronPeriods.refundedAt,
+    })
+    .from(patronPeriods)
+    .where(eq(patronPeriods.userId, userId));
+  return rows.map((row) => ({
+    startsAt: row.startsAt.getTime(),
+    endsAt: row.endsAt.getTime(),
+    refunded: row.refundedAt !== null,
+  }));
+}
+
+async function readClaimedMonths(db: Reader, userId: string): Promise<Set<string>> {
+  const rows = await db
+    .select({ month: patronCosmeticClaims.month })
+    .from(patronCosmeticClaims)
+    .where(eq(patronCosmeticClaims.userId, userId));
+  return new Set(rows.map((row) => row.month));
+}
+
+export type CosmeticClaimResult =
+  | { readonly kind: "claimed"; readonly cosmetic: PatronCosmetic }
+  | { readonly kind: "refused"; readonly reason: PatronClaimRefusal };
+
+/**
+ * Claims the cosmetic of a month paid for. Under the lock of the patron's row, as the webhook
+ * that writes the periods: a refund applied at the same time is seen, or sees the claim.
+ */
+export async function claimCosmetic(
+  db: Database,
+  input: { readonly userId: string; readonly month: string; readonly now: EpochMs },
+): Promise<CosmeticClaimResult> {
+  return db.transaction(async (tx): Promise<CosmeticClaimResult> => {
+    const [row] = await tx
+      .select({ userId: patronSubscriptions.userId })
+      .from(patronSubscriptions)
+      .where(eq(patronSubscriptions.userId, input.userId))
+      .for("update");
+    if (row === undefined) return { kind: "refused", reason: "nothing_to_claim" };
+    const rules = patronRulesAt(PATRON_SCHEDULE, input.now);
+    const [periods, claimed] = await Promise.all([
+      readPeriods(tx, input.userId),
+      readClaimedMonths(tx, input.userId),
+    ]);
+    const found = claimableCosmetics(rules, periods, claimed, input.now).find(
+      (claimable) => claimable.month === input.month,
+    );
+    if (found === undefined) return { kind: "refused", reason: "nothing_to_claim" };
+    await tx.insert(patronCosmeticClaims).values({
+      userId: input.userId,
+      month: found.month,
+      cosmetic: found.cosmetic,
+      claimedAt: new Date(input.now),
+    });
+    return { kind: "claimed", cosmetic: found.cosmetic };
+  });
+}
+
+/**
+ * What a patron may wear, read as coffrets so that the profile's wardrobe takes it in: the
+ * cosmetics claimed, kept for life, and the title while subscribed.
+ */
+export async function readPatronWardrobe(db: Reader, userId: string): Promise<ClaimedReward[]> {
+  const [rows, claims] = await Promise.all([
+    db
+      .select({
+        status: patronSubscriptions.status,
+        firstPaidAt: patronSubscriptions.firstPaidAt,
+        founderAt: patronSubscriptions.founderAt,
+      })
+      .from(patronSubscriptions)
+      .where(eq(patronSubscriptions.userId, userId)),
+    db
+      .select({ cosmetic: patronCosmeticClaims.cosmetic })
+      .from(patronCosmeticClaims)
+      .where(eq(patronCosmeticClaims.userId, userId)),
+  ]);
+  const row = rows[0];
+  const title = row === undefined ? null : patronTitle(standingOf(row), row.founderAt !== null);
+  return [
+    ...claims.map((claim) => ({ rewards: [claim.cosmetic] })),
+    ...(title === null ? [] : [{ rewards: [{ kind: "title" as const, title }] }]),
+  ];
+}
+
+/** The marks of several players in one query, by user id; players without one are missing. */
+export async function readPatronMarks(
+  db: Reader,
+  userIds: readonly string[],
+): Promise<Map<string, Exclude<PatronMark, null>>> {
+  const marks = new Map<string, Exclude<PatronMark, null>>();
+  if (userIds.length === 0) return marks;
+  const rows = await db
+    .select({
+      userId: patronSubscriptions.userId,
+      status: patronSubscriptions.status,
+      firstPaidAt: patronSubscriptions.firstPaidAt,
+      founderAt: patronSubscriptions.founderAt,
+    })
+    .from(patronSubscriptions)
+    .where(inArray(patronSubscriptions.userId, [...new Set(userIds)]));
+  for (const row of rows) {
+    const mark = patronMark(standingOf(row), row.founderAt !== null);
+    if (mark !== null) marks.set(row.userId, mark);
+  }
+  return marks;
 }
 
 export type CheckoutResult =

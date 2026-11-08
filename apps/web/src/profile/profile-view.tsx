@@ -2,6 +2,7 @@
 
 import type {
   ProfileBanner as Banner,
+  PatronMarkView,
   ProfileClan,
   ProfileJousts,
   ProfileStats,
@@ -21,6 +22,7 @@ import { useCatalog } from "@/cards/use-catalog";
 import { Emblem } from "@/clan/emblem";
 import { Avatar } from "@/components/avatar";
 import { Card } from "@/components/card";
+import { PatronBadge } from "@/components/patron-badge";
 import { ProfileBanner } from "@/components/profile-banner";
 import { Shield } from "@/jousts/league-pieces";
 import { useNarrow } from "@/lib/use-narrow";
@@ -43,6 +45,7 @@ export interface ProfileFace {
   readonly banner: Banner;
   /** Where the clan's name leads, for a player in the game. */
   readonly clanHref?: string;
+  readonly patron?: PatronMarkView;
 }
 
 /** The profile's banner: avatar in its frame, pseudo and code, title, level, clan. */
@@ -69,6 +72,7 @@ export function ProfileHeader({
           <div className={styles.nameRow}>
             <h1 className={`${ui.display} ${styles.name}`}>{face.name}</h1>
             {face.code !== null && <CodeButton code={face.code} />}
+            {face.patron != null && <PatronBadge mark={face.patron} />}
           </div>
           {face.code !== null && (
             <p className={styles.headline}>

@@ -1,5 +1,6 @@
 import type {
   ProfileBanner as Banner,
+  PatronMarkView,
   ProfileClan,
   ProfileJousts,
   ProfileStats,
@@ -25,6 +26,7 @@ import { Avatar } from "@/ui/avatar";
 import { Icon } from "@/ui/icon";
 import { LevelMedal } from "@/ui/level";
 import { Panel } from "@/ui/panel";
+import { PatronBadge } from "@/ui/patron-badge";
 import { ProfileBanner } from "@/ui/profile-banner";
 
 export interface ProfileFace {
@@ -37,6 +39,7 @@ export interface ProfileFace {
   readonly memberSince: string | null;
   readonly clan: ProfileClan | null;
   readonly banner: Banner;
+  readonly patron?: PatronMarkView;
 }
 
 /** Under the profile's name: the banner, avatar in its frame over it, title and level, clan, code. */
@@ -75,6 +78,7 @@ export function ProfileHeader({
               {face.title !== null && <Text style={styles.headlineText}>{face.title}</Text>}
             </View>
           )}
+          {face.patron != null && <PatronBadge mark={face.patron} />}
           {clan !== null &&
             (onClan === undefined ? (
               <View style={styles.clan}>{clan}</View>

@@ -1,0 +1,93 @@
+.benefits {
+  display: flex;
+  flex-direction: column;
+  gap: var(--lx-s4);
+  margin: 0;
+  padding-left: var(--lx-s9);
+  font-size: var(--lx-size-body-large);
+  font-weight: 600;
+  line-height: 1.45;
+}
+
+/* The month's cosmetic and the founding offer: news set apart from the list. */
+.showcase {
+  margin: 0;
+  padding: var(--lx-s5) var(--lx-s6);
+  border-radius: var(--lx-radius-chip);
+  background: var(--lx-color-page);
+  font-size: var(--lx-size-body);
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.plans {
+  display: grid;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: var(--lx-s5);
+}
+
+.plan {
+  display: flex;
+  flex-direction: column;
+  gap: var(--lx-s2);
+  padding: var(--lx-s6);
+  border: var(--lx-toy-outline-width) solid var(--lx-toy-outline);
+  border-radius: var(--lx-radius-chip);
+  background: var(--lx-color-paper);
+  font: inherit;
+  text-align: left;
+  color: inherit;
+  cursor: pointer;
+}
+
+.plan[aria-pressed="true"] {
+  background: linear-gradient(
+    180deg,
+    var(--lx-toy-gold-top) 0 47%,
+    var(--lx-toy-gold-bottom) 53% 100%
+  );
+}
+
+.plan:focus-visible {
+  outline: 3px solid var(--lx-color-focus);
+  outline-offset: 2px;
+}
+
+.planLabel {
+  font-size: var(--lx-size-subtitle);
+  font-weight: 800;
+}
+
+.planNote {
+  font-size: var(--lx-size-small);
+  font-weight: 600;
+}
+
+.headline {
+  margin: 0;
+  font-family: var(--font-display), Georgia, serif;
+  font-weight: var(--lx-weight-display);
+  font-size: var(--lx-size-title);
+}
+
+.claims {
+  display: flex;
+  flex-direction: column;
+  gap: var(--lx-s4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.claim {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--lx-s5);
+  font-size: var(--lx-size-body-large);
+  font-weight: 700;
+}

@@ -21,6 +21,7 @@ import { Button } from "@/ui/button";
 import { Chip } from "@/ui/chip";
 import { Icon } from "@/ui/icon";
 import { Panel } from "@/ui/panel";
+import { PatronBadge } from "@/ui/patron-badge";
 import { SearchField } from "@/ui/search-field";
 import { TextButton } from "@/ui/text-button";
 
@@ -134,7 +135,7 @@ export function PlayerList() {
 
 /** The row leads to the profile, where everything one can do with a player already is. */
 function PlayerRow({ entry, first }: { readonly entry: DirectoryPlayer; readonly first: boolean }) {
-  const { player, clan } = entry;
+  const { player, clan, patron } = entry;
   return (
     <Pressable
       style={[styles.player, !first && styles.playerRule]}
@@ -148,9 +149,12 @@ function PlayerRow({ entry, first }: { readonly entry: DirectoryPlayer; readonly
     >
       <Avatar avatar={player.avatar} frame={player.frame} size={44} />
       <View style={styles.text}>
-        <Text style={styles.name} numberOfLines={1}>
-          {player.pseudo}
-        </Text>
+        <View style={styles.nameRow}>
+          <Text style={styles.name} numberOfLines={1}>
+            {player.pseudo}
+          </Text>
+          <PatronBadge mark={patron} compact />
+        </View>
         <Text style={styles.small} numberOfLines={1}>
           {clan === null ? `Niveau ${player.level}` : `Niveau ${player.level} · ${clan.name}`}
         </Text>
@@ -186,6 +190,12 @@ const styles = StyleSheet.create({
   player: { flexDirection: "row", alignItems: "center", gap: space.s6, minHeight: 66 },
   playerRule: { borderTopWidth: 1, borderTopColor: ink.track },
   text: { flex: 1, gap: space.s1 },
-  name: { fontFamily: fonts.ui.extrabold, fontSize: fontSizes.bodyLarge, color: ink.pageInk },
+  nameRow: { flexDirection: "row", alignItems: "center", gap: space.s3 },
+  name: {
+    flexShrink: 1,
+    fontFamily: fonts.ui.extrabold,
+    fontSize: fontSizes.bodyLarge,
+    color: ink.pageInk,
+  },
   small: { fontFamily: fonts.ui.medium, fontSize: fontSizes.label, color: ink.pageInkMuted },
 });

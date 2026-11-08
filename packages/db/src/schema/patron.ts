@@ -1,5 +1,15 @@
+import type { PatronCosmetic } from "@leximon/core";
 import { sql } from "drizzle-orm";
-import { check, index, integer, pgTable, text, timestamp } from "drizzle-orm/pg-core";
+import {
+  check,
+  index,
+  integer,
+  jsonb,
+  pgTable,
+  primaryKey,
+  text,
+  timestamp,
+} from "drizzle-orm/pg-core";
 import { users } from "./auth";
 
 /**
@@ -68,6 +78,24 @@ export const patronPeriods = pgTable(
     check("patron_periods_plan_check", sql`${table.plan} in ('monthly', 'yearly')`),
     check("patron_periods_amount_check", sql`${table.amountPaid} > 0`),
   ],
+);
+
+/**
+ * The cosmetic of a month paid for, claimed by the patron: the primary key makes it once.
+ * `cosmetic` keeps what was given, so that a later change of the calendar never takes it back.
+ */
+export const patronCosmeticClaims = pgTable(
+  "patron_cosmetic_claims",
+  {
+    userId: text()
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    /** In Paris, `YYYY-MM`. */
+    month: text().notNull(),
+    cosmetic: jsonb().$type<PatronCosmetic>().notNull(),
+    claimedAt: timestamp({ withTimezone: true }).notNull(),
+  },
+  (table) => [primaryKey({ columns: [table.userId, table.month] })],
 );
 
 /** Every Stripe event applied: one Stripe sends again finds its row and changes nothing. */

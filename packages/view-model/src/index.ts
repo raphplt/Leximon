@@ -28,6 +28,7 @@ export * from "./mail";
 export * from "./missions";
 export * from "./open-all";
 export * from "./pack";
+export * from "./patron";
 export * from "./pins";
 export * from "./play";
 export * from "./practice";

@@ -11,11 +11,24 @@ export interface PatronRules {
   /** Free days before the first payment, once per account. */
   readonly trialDays: number;
   /**
+   * What each plan costs, in cents of euro, as shown to players. Stripe charges its own prices:
+   * the two are changed together.
+   */
+  readonly prices: Readonly<Record<PatronPlan, number>>;
+  /**
    * The month (in Paris, `YYYY-MM`) whose first payments make founders: the first month of sales.
    * `null` until sales open.
    */
   readonly foundingMonth: string | null;
+  /** Month (in Paris, `YYYY-MM`) → the cosmetic every patron who paid for it receives. */
+  readonly cosmetics: Readonly<Record<string, PatronCosmetic>>;
 }
+
+/** What a patron wears: the same kinds of cosmetics as the level rewards, always named. */
+export type PatronCosmetic =
+  | { readonly kind: "frame"; readonly frame: string }
+  | { readonly kind: "avatar"; readonly avatar: string }
+  | { readonly kind: "title"; readonly title: string };
 
 export type PatronSchedule = readonly [PatronRules, ...PatronRules[]];
 
@@ -88,4 +101,82 @@ export function parisMonthOf(time: EpochMs): string {
 /** A first payment within the founding month makes a founder, for life. */
 export function isFoundingPayment(rules: PatronRules, paidAt: EpochMs): boolean {
   return rules.foundingMonth !== null && parisMonthOf(paidAt) === rules.foundingMonth;
+}
+
+/** Titles a subscriber may wear while subscribed, trial included. */
+export const PATRON_TITLE = "Mécène";
+export const FOUNDER_TITLE = "Mécène fondateur";
+
+/**
+ * The mark shown on a profile: a founder keeps it for life, a patron while subscribed (trial
+ * included).
+ */
+export type PatronMark = "founder" | "patron" | null;
+
+export function patronMark(standing: PatronStanding, founder: boolean): PatronMark {
+  if (founder) return "founder";
+  return standing === "none" ? null : "patron";
+}
+
+export function patronTitle(standing: PatronStanding, founder: boolean): string | null {
+  if (standing === "none") return null;
+  return founder ? FOUNDER_TITLE : PATRON_TITLE;
+}
+
+/** A period paid with money; a refunded one gives nothing more. */
+export interface PaidPeriod {
+  readonly startsAt: EpochMs;
+  readonly endsAt: EpochMs;
+  readonly refunded: boolean;
+}
+
+function nextMonth(month: string): string {
+  const [year, number] = month.split("-").map(Number) as [number, number];
+  return number === 12 ? `${year + 1}-01` : `${year}-${String(number + 1).padStart(2, "0")}`;
+}
+
+/**
+ * The months a patron paid for, up to the current one: a month counts when a paid period covers
+ * at least one of its days. A yearly subscriber receives each month's cosmetic when it comes.
+ */
+export function paidMonths(periods: readonly PaidPeriod[], now: EpochMs): Set<string> {
+  const months = new Set<string>();
+  const current = parisMonthOf(now);
+  for (const period of periods) {
+    if (period.refunded || period.endsAt <= period.startsAt) continue;
+    const last = parisMonthOf(period.endsAt - 1);
+    for (let month = parisMonthOf(period.startsAt); month <= last && month <= current; ) {
+      months.add(month);
+      month = nextMonth(month);
+    }
+  }
+  return months;
+}
+
+export interface MonthCosmetic {
+  readonly month: string;
+  readonly cosmetic: PatronCosmetic;
+}
+
+/** The cosmetic of the current month, shown to everyone from the 1st; never one ahead. */
+export function monthCosmetic(rules: PatronRules, now: EpochMs): MonthCosmetic | null {
+  const month = parisMonthOf(now);
+  const cosmetic = rules.cosmetics[month];
+  return cosmetic === undefined ? null : { month, cosmetic };
+}
+
+/** The cosmetics of the months paid for, not claimed yet, oldest first. */
+export function claimableCosmetics(
+  rules: PatronRules,
+  periods: readonly PaidPeriod[],
+  claimed: ReadonlySet<string>,
+  now: EpochMs,
+): MonthCosmetic[] {
+  return [...paidMonths(periods, now)]
+    .filter((month) => !claimed.has(month))
+    .sort()
+    .flatMap((month) => {
+      const cosmetic = rules.cosmetics[month];
+      return cosmetic === undefined ? [] : [{ month, cosmetic }];
+    });
 }
