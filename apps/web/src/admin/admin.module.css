@@ -137,6 +137,43 @@
   gap: var(--lx-s2);
 }
 
+/* --- Dashboard ------------------------------------------------------------------------- */
+
+.overviewSection {
+  display: flex;
+  flex-direction: column;
+  gap: var(--lx-s6);
+}
+
+.overviewKpis {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  gap: var(--lx-s6);
+}
+
+.overviewList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--lx-s6);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.overviewList li {
+  display: flex;
+  flex-direction: column;
+  gap: var(--lx-s1);
+}
+
+.overviewQuote {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+}
+
 .statValue {
   font-size: var(--lx-size-heading);
   font-weight: 800;
@@ -152,6 +189,15 @@
 .statNote {
   font-size: var(--lx-size-caption);
   color: var(--lx-color-page-ink-muted);
+}
+
+.stat[data-pending] {
+  border-color: var(--lx-color-gilt);
+  box-shadow: inset 4px 0 0 var(--lx-color-rubric);
+}
+
+.stat[data-pending] .statValue {
+  color: var(--lx-color-rubric);
 }
 
 .panel {

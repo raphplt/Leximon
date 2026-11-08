@@ -3,13 +3,26 @@
 import type { ReactNode } from "react";
 import styles from "./admin.module.css";
 import { Sparkline } from "./charts";
+import { formatNumber } from "./format";
 import m from "./measures.module.css";
+import { change } from "./measures-model";
 
 /** Pieces shared by the dashboards of the back office: figures and panel titles. */
 
 export interface Delta {
   readonly text: string;
   readonly direction: "up" | "down" | "flat";
+}
+
+/** The change from the period before, in percent; null when there was nothing before. */
+export function ratioDelta(current: number, previous: number): Delta | null {
+  const ratio = change(current, previous);
+  if (ratio === null) return null;
+  const rounded = Math.round(ratio * 100);
+  return {
+    text: `${rounded > 0 ? "+" : ""}${formatNumber(rounded)} %`,
+    direction: rounded > 0 ? "up" : rounded < 0 ? "down" : "flat",
+  };
 }
 
 const ARROWS = { up: "▲", down: "▼", flat: "■" } as const;

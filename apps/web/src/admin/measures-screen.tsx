@@ -7,11 +7,10 @@ import { useEffect, useState } from "react";
 import { adminApi, adminErrorMessage } from "@/admin/admin-api";
 import styles from "./admin.module.css";
 import { Bar, ColumnChart, heat, Legend, LineChart, SERIES, type Series } from "./charts";
-import { type Delta, Kpi, PanelHead } from "./dashboard";
+import { type Delta, Kpi, PanelHead, ratioDelta } from "./dashboard";
 import { formatNumber } from "./format";
 import m from "./measures.module.css";
 import {
-  change,
   cohortTable,
   type DayMetric,
   daysBetween,
@@ -267,16 +266,6 @@ function Dashboard({ data }: { readonly data: AdminMeasures }) {
       </section>
     </>
   );
-}
-
-function ratioDelta(current: number, previous: number): Delta | null {
-  const ratio = change(current, previous);
-  if (ratio === null) return null;
-  const rounded = Math.round(ratio * 100);
-  return {
-    text: `${rounded > 0 ? "+" : ""}${formatNumber(rounded)} %`,
-    direction: rounded > 0 ? "up" : rounded < 0 ? "down" : "flat",
-  };
 }
 
 function pointsDelta(current: Rate, previous: Rate): Delta | null {
