@@ -122,7 +122,7 @@ def test_an_anonymous_work_is_credited_without_its_quotation_marks() -> None:
     picks = {
         "sizerin": {
             "quote_text": "Le sizerin fréquente les bois",
-            "quote_author": "« L'Encyclopédie »",
+            "quote_author": "« L’Encyclopédie »",
         }
     }
     quotes, _ = citations.accepted_quotes(picks, candidates)
@@ -132,3 +132,25 @@ def test_an_anonymous_work_is_credited_without_its_quotation_marks() -> None:
 def test_the_word_is_found_in_an_old_spelling_with_a_single_letter() -> None:
     page = {**BUFFON, "sentences": ["Il leur fit une belle barretade en passant."]}
     assert citations.problems("barrettade", "Il leur fit une belle barretade", [page]) == []
+
+
+def test_a_quote_found_on_two_pages_takes_the_one_with_free_rights() -> None:
+    chapter = {**BUFFON, "url": "chapitre", "author_death": None, "year": None}
+    quote = "Le sizerin fréquente les bois"
+    assert citations.quote_page(quote, [chapter, BUFFON]) == BUFFON
+    assert citations.problems("sizerin", quote, [chapter, BUFFON]) == []
+
+
+def test_invisible_marks_of_a_transcription_do_not_break_the_copy() -> None:
+    page = {**BUFFON, "sentences": ["Le siz﻿erin fréquente les bois."]}
+    assert citations.problems("sizerin", "Le sizerin fréquente les bois", [page]) == []
+
+
+def test_the_long_s_of_old_editions_becomes_a_plain_s() -> None:
+    page = {**BUFFON, "sentences": ["Le \u017fizerin fréquente les bois."]}
+    candidates = {"sizerin": {"word": "sizerin", "candidates": [page]}}
+    picks = {
+        "sizerin": {"quote_text": "Le \u017fizerin fréquente les bois", "quote_author": "Buffon"}
+    }
+    quotes, refused = citations.accepted_quotes(picks, candidates)
+    assert refused == [] and quotes["sizerin"]["text"] == "Le sizerin fréquente les bois"

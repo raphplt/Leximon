@@ -93,6 +93,8 @@ def cards_without_quote(release_dir: Path) -> list[Card]:
 def norm(text: str) -> str:
     """Spacing and apostrophes evened out, so that a copy is compared on its words alone."""
     text = unicodedata.normalize("NFC", text).replace("’", "'").replace("\u00a0", " ")
+    text = re.sub("[\u200b-\u200d\ufeff]", "", text)  # invisible marks left in transcriptions
+    text = text.replace("\u017f", "s")  # the long s is typography, not spelling
     return re.sub(r"\s+", " ", text).strip()
 
 
@@ -216,13 +218,15 @@ def _in_order(pieces: Sequence[str], sentence: str) -> bool:
 
 def quote_page(text: str, pages: Sequence[Mapping[str, object]]) -> Mapping[str, object] | None:
     """The page whose sentence the quote copies: the whole sentence, or pieces of it in order
-    joined by "....", without its final full stop."""
+    joined by "....", without its final full stop. When several pages hold it (a chapter and the
+    whole text), one whose rights are known to be free comes first."""
     pieces = [p.strip(" ,;:") for p in norm(text).split("....") if p.strip(" ,;:")]
-    for page in pages:
-        for sentence in page.get("sentences", []):  # type: ignore[union-attr]
-            if _in_order(pieces, norm(str(sentence))):
-                return page
-    return None
+    copied = [
+        page
+        for page in pages
+        if any(_in_order(pieces, norm(str(s))) for s in page.get("sentences", []))  # type: ignore[union-attr]
+    ]
+    return next((p for p in copied if public_domain(p)), copied[0] if copied else None)
 
 
 def problems(word: str, text: str, pages: Sequence[Mapping[str, object]]) -> list[str]:
@@ -424,9 +428,10 @@ def accepted_quotes(
             continue
         page = quote_page(str(text), pages)  # type: ignore[arg-type]
         quotes[card_id] = {
-            "text": str(text).strip(),
-            # « L'Encyclopédie » for an anonymous text: the card shows a name, not a title.
-            "author": str(author).strip(' «»"\u00a0'),
+            "text": str(text).strip().replace("\u017f", "s"),
+            # « L'Encyclopédie » for an anonymous text: the card shows a name, not a title, with the
+            # straight apostrophe of the Littré's authors (D'Alembert).
+            "author": str(author).strip(' «»"\u00a0').replace("’", "'"),
             "source": str(page["url"]) if page else "",
         }
     return quotes, refused
