@@ -10,7 +10,14 @@ import {
   type EmailSender,
   EmailSenderNotConfiguredError,
 } from "./account/email-sender";
-import { linkGuestOnSignIn, readBodyFlag } from "./account/link-on-sign-in";
+import { linkGuestOnSignIn } from "./account/link-on-sign-in";
+import {
+  arrivalHeaders,
+  declarations,
+  guestOnTrip,
+  keepArrivalForTrip,
+  readDeclaredFlag,
+} from "./account/oauth-trip";
 import { reviewSignInCode } from "./account/review-account";
 import { recordingEmailSender } from "./account/sign-in-log";
 import { type Arrival, admitNewPlayer, recordArrival, wouldAdmitNewPlayer } from "./beta/arrival";
@@ -33,6 +40,12 @@ export const SIGN_IN_CODE = { length: 6, expiresInS: 10 * 60, allowedAttempts: 3
 export const SESSION_TTL_S = 90 * 24 * 60 * 60;
 
 const SEND_CODE_PATH = "/email-otp/send-verification-otp";
+const SOCIAL_SIGN_IN_PATH = "/sign-in/social";
+
+/** Google is offered only once its OAuth client is set (`GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`). */
+export function googleSignInConfigured(env: Env): boolean {
+  return Boolean(env.GOOGLE_CLIENT_ID && env.GOOGLE_CLIENT_SECRET);
+}
 
 /** The request context Better Auth hands to its callbacks. */
 type EndpointContext = Parameters<typeof getSessionFromCtx>[0];
@@ -92,6 +105,28 @@ export function createAuth(env: Env, db: Database, provider: EmailSender) {
         verifications: schema.verifications,
       },
     }),
+    socialProviders: googleSignInConfigured(env)
+      ? {
+          google: {
+            clientId: env.GOOGLE_CLIENT_ID,
+            clientSecret: env.GOOGLE_CLIENT_SECRET,
+            // The address only: no name, no picture on Google's consent screen.
+            scope: ["openid", "email"],
+            disableDefaultScope: true,
+            // An account is created only from « Créer un compte », where the age was asked.
+            disableImplicitSignUp: true,
+            prompt: "select_account",
+          },
+        }
+      : {},
+    account: {
+      // Google's tokens serve nothing once the player is in: none is written (hooks below).
+      updateAccountOnSignIn: false,
+      // No `trustedProviders`: Google joins an account by code only when Google itself has
+      // verified the address, or anyone could open a Google account in another's name and take
+      // over their game.
+      accountLinking: { enabled: true },
+    },
     plugins: [
       // The mobile app's session: a cookie it keeps in the device keychain and sends itself.
       expo(),
@@ -135,11 +170,19 @@ export function createAuth(env: Env, db: Database, provider: EmailSender) {
       }),
     ],
     user: {
-      // "J'ai 15 ans ou plus": required to create an account with a code, never stored.
-      // Apple and Google will pass it through their OAuth state.
-      validateUserInfo({ source }, ctx) {
-        if (source.action !== "create-user" || source.method !== "email-otp") return;
-        if (readBodyFlag(ctx.body, "ageConfirmed")) return;
+      // "J'ai 15 ans ou plus": required to create an account, never stored. With Google it
+      // travels in the OAuth state, ticked before leaving.
+      async validateUserInfo({ user, source }, ctx) {
+        if (source.action !== "create-user") return;
+        if (source.method !== "email-otp" && source.method !== "oauth") return;
+        // Better Auth would create the player with an address nobody proved to own.
+        if (source.method === "oauth" && user.emailVerified !== true) {
+          return {
+            error: "email_not_verified",
+            errorDescription: "The provider has not verified this address",
+          };
+        }
+        if (await readDeclaredFlag(ctx, "ageConfirmed")) return;
         return {
           error: ACCOUNT_ERROR_CODES.ageConfirmationRequired,
           errorDescription: "Creating an account requires being 15 or older",
@@ -160,8 +203,8 @@ export function createAuth(env: Env, db: Database, provider: EmailSender) {
                 ? null
                 : await getSessionFromCtx(ctx, { disableRefresh: true, disableCookieCache: true });
             arrival = await admitNewPlayer(db, env, {
-              headers: ctx?.headers,
-              fromGuest: session?.user["isAnonymous"] === true,
+              headers: await arrivalHeaders(ctx),
+              fromGuest: session?.user["isAnonymous"] === true || (await guestOnTrip(ctx)),
               now: Date.now(),
             });
             if (isGuest) return;
@@ -173,14 +216,27 @@ export function createAuth(env: Env, db: Database, provider: EmailSender) {
               userId: user.id,
               isGuest: user["isAnonymous"] === true,
               arrival,
-              body: ctx?.body,
+              body: await declarations(ctx),
               now: Date.now(),
             });
           },
         },
       },
+      account: {
+        create: { before: async (account) => ({ data: { ...account, ...NO_TOKENS } }) },
+        update: { before: async (account) => ({ data: { ...account, ...NO_TOKENS } }) },
+      },
     },
     hooks: {
+      before: createAuthMiddleware(async (ctx) => {
+        if (ctx.path !== SOCIAL_SIGN_IN_PATH) return;
+        // Signing in with a token the client got from Google itself skips the trip, and with it
+        // what travels in the state: only the redirect is offered.
+        if (readsIdToken(ctx.body)) {
+          throw new APIError("BAD_REQUEST", { message: "Only the redirect to Google is offered" });
+        }
+        await keepArrivalForTrip(ctx.headers);
+      }),
       after: createAuthMiddleware(async (ctx) => {
         if (ctx.path !== SEND_CODE_PATH || sendFailure === null) return;
         if (!(sendFailure instanceof EmailSenderNotConfiguredError)) {
@@ -210,6 +266,12 @@ export function createAuth(env: Env, db: Database, provider: EmailSender) {
 }
 
 export type Auth = ReturnType<typeof createAuth>;
+
+const NO_TOKENS = { accessToken: null, refreshToken: null, idToken: null } as const;
+
+function readsIdToken(body: unknown): boolean {
+  return typeof body === "object" && body !== null && "idToken" in body;
+}
 
 export function parseOrigins(value: string): string[] {
   return value

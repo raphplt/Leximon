@@ -136,6 +136,13 @@ pnpm exec wrangler secret put REVIEW_ACCOUNT_EMAIL --env production
 pnpm exec wrangler secret put REVIEW_ACCOUNT_CODE --env production
 ```
 
+La connexion avec Google, facultative : sans ces deux secrets, le bouton n'apparaît pas. Ce sont ceux du client OAuth « Leximon production » de la console Google ([connexion-google.md](cahiers-des-charges/connexion-google.md#4-la-console-google--toi)).
+
+```bash
+pnpm exec wrangler secret put GOOGLE_CLIENT_ID --env production
+pnpm exec wrangler secret put GOOGLE_CLIENT_SECRET --env production
+```
+
 ## 7. Migrations · toi (la chaîne), agent (la commande)
 
 `pnpm deploy:prod` fait tout cela seul. Pour un geste isolé, dans le terminal qui lance les commandes de production, ouvrir un tunnel SSH vers le conteneur de la base, puis :

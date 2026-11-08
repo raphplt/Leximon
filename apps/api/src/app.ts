@@ -1,4 +1,5 @@
 import {
+  type AppStatusResponse,
   appVersionSchema,
   INVITE_HEADER,
   REFERRER_HEADER,
@@ -15,7 +16,7 @@ import { createEmailSender, type EmailSenderFactory } from "./account/email-send
 import { dnsOverHttpsResolver, type MailDomainResolver, mailDomainOf } from "./account/mail-domain";
 import { accountRoutes } from "./account/routes";
 import { adminRoutes } from "./admin/routes";
-import { AUTH_BASE_PATH, parseOrigins } from "./auth";
+import { AUTH_BASE_PATH, googleSignInConfigured, parseOrigins } from "./auth";
 import { inviteRoutes } from "./beta/routes";
 import { createCardPoolLoader } from "./boosters/card-pool";
 import { boosterRoutes } from "./boosters/routes";
@@ -45,13 +46,16 @@ import { waitlistRoutes } from "./waitlist/routes";
 
 /**
  * Better Auth routes the clients use; every other route Better Auth offers (passwords, profile
- * updates, other code types…) answers 404, so that nothing unused can be reached. Apple and Google
- * will add `/sign-in/social` and `/callback/:provider`.
+ * updates, other code types…) answers 404, so that nothing unused can be reached. The proxy carries
+ * the mobile app's trip to Google from its browser.
  */
 const AUTH_ROUTES = new Set([
   "POST /sign-in/anonymous",
   "POST /email-otp/send-verification-otp",
   "POST /sign-in/email-otp",
+  "POST /sign-in/social",
+  "GET /callback/google",
+  "GET /expo-authorization-proxy",
   "GET /get-session",
   "POST /sign-out",
 ]);
@@ -102,7 +106,10 @@ export function createApp(options: AppOptions = {}) {
     // A malformed setting never locks every player out.
     const minimum = appVersionSchema.safeParse(c.env.MOBILE_MIN_VERSION);
     c.header("Cache-Control", "public, max-age=60");
-    return c.json({ mobileMinVersion: minimum.success ? minimum.data : "0.0.0" });
+    return c.json<AppStatusResponse>({
+      mobileMinVersion: minimum.success ? minimum.data : "0.0.0",
+      googleSignIn: googleSignInConfigured(c.env),
+    });
   });
 
   // Limits run before the database is opened. Hono runs every matching handler in order.
@@ -111,6 +118,8 @@ export function createApp(options: AppOptions = {}) {
     return AUTH_ROUTES.has(route) ? next() : c.json({ error: "not_found" }, 404);
   });
   app.post(`${AUTH_BASE_PATH}/sign-in/anonymous`, signupRateLimit);
+  // Each trip to Google writes its state: as many as guests, not more.
+  app.post(`${AUTH_BASE_PATH}/sign-in/social`, signupRateLimit);
   app.post(
     `${AUTH_BASE_PATH}/email-otp/send-verification-otp`,
     onlySignInCodes,

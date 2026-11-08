@@ -246,3 +246,81 @@ export function codeErrorMessage(error: CodeError): string {
 export function needsNewCode(error: CodeError): boolean {
   return error !== "invalid_code" && error !== "INVALID_OTP" && error !== "rate_limited";
 }
+
+/* --- Signing in with Google --- */
+
+export const GOOGLE_BUTTON = "Continuer avec Google";
+
+/** Between the Google button and the address form. */
+export const GOOGLE_OR = "ou";
+
+/** Said on the step that asks the age before leaving for Google. */
+// A non-breaking hyphen: « e-mail » never splits over two lines.
+export const GOOGLE_AGE_TEXT = "Google ne nous transmet que ton adresse e\u2011mail.";
+
+/**
+ * Queries of the account page on Google's return: `google` once signed in (with `news` when the
+ * box was ticked before leaving), `error` and `cards` when the sign-in failed. Better Auth names
+ * `error` itself.
+ */
+export const GOOGLE_QUERY = { done: "google", news: "nouvelles", error: "error", cards: "cards" };
+
+export type GoogleReturn =
+  /** The player turned back at Google's: nothing to say. */
+  | { readonly kind: "cancelled" }
+  /** « Se connecter » with a Google account that has no account here: off to « Créer ». */
+  | { readonly kind: "no_account"; readonly notice: string }
+  /** The account plays already: the guest's game would be lost, the player confirms first. */
+  | { readonly kind: "guest_loss"; readonly step: Omit<ConfirmStep, "closed" | "needsAge"> }
+  | { readonly kind: "error"; readonly message: string };
+
+/** What the account page says after a failed trip to Google, from its `error` and `cards`. */
+export function googleReturn(error: string, cards: string | null): GoogleReturn {
+  switch (error) {
+    case "access_denied":
+      return { kind: "cancelled" };
+    case "signup_disabled":
+      return {
+        kind: "no_account",
+        notice: "Aucun compte n'utilise encore ce compte Google. Crée-le ici.",
+      };
+    case ACCOUNT_ERROR_CODES.guestLossNotAcknowledged: {
+      const count = Number.parseInt(cards ?? "", 10);
+      return {
+        kind: "guest_loss",
+        step: {
+          title: "Tu vas perdre cette partie",
+          text: "Ce compte Google mène à un compte Leximon qui a déjà sa propre collection. Pour garder la partie que tu joues ici, utilise un autre compte Google.",
+          warning: `Si tu te connectes, ${lostGame(Number.isNaN(count) ? 0 : count)}.`,
+          confirmLabel: "Perdre cette partie et me connecter",
+          acceptsLoss: true,
+        },
+      };
+    }
+    default:
+      return { kind: "error", message: googleErrorMessage(error) };
+  }
+}
+
+function googleErrorMessage(error: string): string {
+  switch (error) {
+    case "BANNED_USER":
+      return "Ce compte a été suspendu. Écris à contact@leximon.fr pour en savoir plus.";
+    case "email_not_verified":
+    case "account_not_linked":
+      return "Google n'a pas vérifié cette adresse. Connecte-toi plutôt avec un code par e-mail.";
+    case ACCOUNT_ERROR_CODES.ageConfirmationRequired:
+      return "Il faut cocher la case de l'âge pour créer un compte.";
+    case ACCOUNT_ERROR_CODES.accountLinkFailed:
+      return "Le transfert de ta partie a échoué, mais tes cartes sont toujours là. Réessaie.";
+    case ACCOUNT_ERROR_CODES.inviteRequired:
+      return "La bêta est sur invitation. Ouvre d'abord ton lien d'invitation.";
+    case ACCOUNT_ERROR_CODES.inviteClosed:
+      return "Ce lien d'invitation n'est plus valable.";
+    default:
+      return "La connexion avec Google a échoué. Réessaie.";
+  }
+}
+
+/** After the member's address, when Google is one of the ways they sign in. */
+export const BY_GOOGLE = "par Google";

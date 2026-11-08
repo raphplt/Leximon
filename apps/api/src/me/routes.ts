@@ -416,10 +416,21 @@ export function meRoutes() {
       return c.json({ error: "unauthorized" }, 401);
     }
     if (session.user.isAnonymous !== true) {
+      const [google] = await c.var.db
+        .select({ id: schema.accounts.id })
+        .from(schema.accounts)
+        .where(
+          and(
+            eq(schema.accounts.userId, session.user.id),
+            eq(schema.accounts.providerId, "google"),
+          ),
+        )
+        .limit(1);
       return c.json<AccountResponse>({
         kind: "member",
         email: session.user.email,
         isAdmin: session.user.role === ADMIN_ROLE,
+        withGoogle: google !== undefined,
       });
     }
     const rules = guestRulesAt(GUEST_SCHEDULE, Date.now());

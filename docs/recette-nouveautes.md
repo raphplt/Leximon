@@ -3,6 +3,7 @@
 Ce qui a été construit du 4 au 6 novembre 2026, en deux parties :
 
 - **Finitions hors du jeu** (FIN-01 à FIN-13) : le [cahier des finitions](cahiers-des-charges/finitions-hors-du-jeu.md) (accueil, icônes, images de partage, e-mails, cadres, emblèmes, fiches des stores), puis trois corrections du 5 novembre (écran Jouer sur petit téléphone, bilan du sachet, réglages de la révision). La plupart de ces tests renvoient à un test de la [recette du web](recette-web.md) ou de la [recette du mobile](recette-mobile.md) et disent ce qu'il faut y regarder ; les attendus complets restent dans le test cité.
+- **Connexion avec Google** (GGL-01 à GGL-06), construite le 2026-11-08.
 - **Joutes, lots 1 à 4** (JTE-01 à JTE-37 sur le web, MJT-01 à MJT-06 sur Android, PROD-01 à PROD-03 en production) : ce qu'on vérifie avant d'ouvrir les joutes aux testeurs, puis en production. Les règles sont en P91 ([regles-du-jeu.md](regles-du-jeu.md)), le cahier dans [joutes.md](cahiers-des-charges/joutes.md). Le lot 1 est construit depuis le 2026-11-05, web et mobile.
 
 Pour chaque test, note dans **Retour** : « OK », ou ce que tu as vu à la place. Une capture d'écran aide.
@@ -528,6 +529,43 @@ Règle P99, web et app. Pour la recette, `pnpm dev:player <email> --level 30` do
 ### BAN-04 · L'image de partage
 
 - Partager son profil : l'image montre la médaille à l'initiale posée sur ta bannière, dans son cadre doré.
+
+## Connexion avec Google
+
+D-057, [cahier](cahiers-des-charges/connexion-google.md). Web et Android ; l'iOS attend Apple. Avant tout, les étapes « La console Google » du cahier (§ 4) et les deux identifiants du client « Leximon local » dans `apps/api/.dev.vars` (`GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`), puis relancer l'API. Sans eux, le bouton n'apparaît pas. Prends une adresse Gmail qui n'a pas encore de compte, et une autre qui en a un par code.
+
+### GGL-01 · Le bouton
+
+- `/compte`, onglets « Créer un compte » et « Se connecter » : « Continuer avec Google » en haut du formulaire, blanc avec le « G » en couleurs, puis un trait « ou », puis l'adresse e-mail et « Recevoir un code ».
+- Sans les identifiants dans `.dev.vars`, le bouton et le trait n'apparaissent pas.
+
+### GGL-02 · Créer un compte avec Google
+
+- Invité avec quelques cartes, onglet « Créer un compte », « Continuer avec Google » : une étape « Google ne nous transmet que ton adresse e-mail. », la tranche d'âge, « M'écrire quand il y a du nouveau » et « J'ai 15 ans ou plus ». Le bouton Google reste grisé tant que la case de l'âge n'est pas cochée. « Retour » ramène au formulaire.
+- Cocher l'âge et les nouvelles, continuer : Google demande de choisir un compte, son écran ne parle que de l'adresse e-mail. Retour sur Jouer, « Tu es connecté. », les cartes de l'invité sont là.
+- `/compte` : « Connecté avec …@gmail.com par Google. », et « M'écrire quand il y a du nouveau » activé.
+
+### GGL-03 · Se connecter avec Google
+
+- Déconnecté, onglet « Se connecter », « Continuer avec Google » part tout de suite chez Google, sans étape d'âge.
+- Avec l'adresse qui a un compte par code : retour sur Jouer, connecté à ce compte et sa collection. La fois suivante, Google suffit.
+- Avec une adresse Gmail sans compte : retour sur `/compte`, onglet « Créer un compte », avec « Aucun compte n'utilise encore ce compte Google. Crée-le ici. » Aucun compte n'est créé.
+- Annuler chez Google (flèche retour, ou « Annuler ») : retour sur `/compte`, sans message.
+
+### GGL-04 · Un invité vers un compte qui joue déjà
+
+- Invité avec des cartes, onglet « Se connecter », Google avec l'adresse qui a un compte et une collection : retour sur `/compte` avec « Tu vas perdre cette partie », « Si tu te connectes, les 3 cartes obtenues ici seront perdues. », « Garder ma partie » et « Perdre cette partie et me connecter ». Tu es toujours l'invité, avec ses cartes.
+- « Garder ma partie » ramène au formulaire. « Perdre cette partie et me connecter » repasse par Google, puis connecte au compte, sans les cartes de l'invité.
+
+### GGL-05 · Sur l'app Android
+
+- Les mêmes tests que GGL-01 à GGL-04 sur le téléphone. Google s'ouvre dans un onglet du navigateur par-dessus l'app, puis l'app revient seule, sans ouvrir une page en double.
+- Fermer l'onglet sans choisir de compte : l'app reste sur le formulaire, sans message.
+- Le bouton n'apparaît pas sur l'iPhone.
+
+### GGL-06 · Tes données
+
+- `/confidentialite`, « Compte de jeu » : un paragraphe dit ce que Google transmet (l'adresse et un identifiant) et ce qu'on ne garde pas (nom, photo, jetons).
 
 ## Retours de la recette
 

@@ -172,6 +172,37 @@
   color: var(--lx-color-rubric);
 }
 
+/* Where Google's return left the player: news, not a fault. */
+.notice {
+  margin: 0;
+  padding: var(--lx-s5) var(--lx-s6);
+  border-radius: var(--lx-radius-chip);
+  background: var(--lx-color-page);
+  font-size: var(--lx-size-body);
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+/* Between Google and the address: a word on a rule. */
+.or {
+  display: flex;
+  align-items: center;
+  gap: var(--lx-s5);
+  margin: 0;
+  font-size: var(--lx-size-label);
+  font-weight: 700;
+  color: var(--lx-color-page-ink-muted);
+}
+
+.or::before,
+.or::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: currentcolor;
+  opacity: 0.4;
+}
+
 .error {
   margin: 0;
   font-size: var(--lx-size-body);

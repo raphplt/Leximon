@@ -5,28 +5,31 @@ import { expireCookie, setSessionCookie } from "better-auth/cookies";
 import type { AnonymousOptions } from "better-auth/plugins";
 import { errorSummary } from "../error-summary";
 import { linkGuest } from "./link-guest";
+import { isOAuthCallback, readDeclaredFlag, tripErrorURL } from "./oauth-trip";
 
 type LinkAccountData = Parameters<NonNullable<AnonymousOptions["onLinkAccount"]>>[0];
 
 /**
  * `onLinkAccount` of Better Auth's anonymous plugin: runs after any sign-in made with a guest
- * session (e-mail code today, Apple and Google later), once the account and its new session exist
- * and the new session cookie is already on the response.
+ * session (e-mail code, Google), once the account and its new session exist and the new session
+ * cookie is already on the response.
  *
  * If the guest's game cannot follow, the sign-in must not go through: otherwise the browser would
  * hold the account's session while the guest's game stayed behind, out of reach. So on any
  * failure the new session is deleted, the response puts the guest's own session cookie back (it
  * is still valid: nothing was committed), and the error tells the client it is still the guest.
  * Better Auth keeps the cookies set by a hook that throws an `APIError`, in order: the restored
- * guest cookie comes last, so it is the one the browser keeps.
+ * guest cookie comes last, so it is the one the browser keeps. On Google's return the player is in
+ * a browser tab, not a script: the error is a redirect to the client's error page instead.
  */
 export async function linkGuestOnSignIn(db: Database, data: LinkAccountData): Promise<void> {
   const { anonymousUser: guest, newUser: account, ctx } = data;
   // Signing in to another guest (its placeholder address cannot receive a code, but still).
   if (account.user["isAnonymous"] === true || account.user.id === guest.user.id) return;
 
-  const acceptGuestLoss = readBodyFlag(ctx.body, "acceptGuestLoss");
+  const acceptGuestLoss = await readDeclaredFlag(ctx, "acceptGuestLoss");
   let failure: APIError;
+  let guestCards = 0;
   try {
     const result = await linkGuest(db, {
       guestId: guest.user.id,
@@ -35,6 +38,7 @@ export async function linkGuestOnSignIn(db: Database, data: LinkAccountData): Pr
       acceptGuestLoss,
     });
     if (result.kind !== "guest_loss_not_acknowledged") return;
+    guestCards = result.cards;
     failure = new APIError("CONFLICT", {
       code: ACCOUNT_ERROR_CODES.guestLossNotAcknowledged,
       message: "Signing in would abandon the guest's cards: the player must accept it first",
@@ -49,6 +53,12 @@ export async function linkGuestOnSignIn(db: Database, data: LinkAccountData): Pr
   }
 
   await restoreGuestSession(data);
+  if (isOAuthCallback(ctx)) {
+    const code = String(failure.body?.code);
+    // The client needs the count to warn the player before sending them back to Google.
+    const url = await tripErrorURL(code, guestCards > 0 ? { cards: String(guestCards) } : {});
+    if (url !== null) throw ctx.redirect(url);
+  }
   throw failure;
 }
 
@@ -66,11 +76,4 @@ async function restoreGuestSession({
   expireCookie(ctx, ctx.context.authCookies.sessionToken);
   expireCookie(ctx, ctx.context.authCookies.sessionData);
   await setSessionCookie(ctx, { session: guest.session, user: guest.user });
-}
-
-/** Reads a boolean sent with a sign-in, beside Better Auth's own fields. */
-export function readBodyFlag(body: unknown, name: string): boolean {
-  return (
-    typeof body === "object" && body !== null && (body as Record<string, unknown>)[name] === true
-  );
 }

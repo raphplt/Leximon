@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { ageBracketSchema } from "./beta";
+import { type AgeBracket, ageBracketSchema } from "./beta";
 
 /**
  * Signing up and signing in: a 6-digit code sent by e-mail, through Better Auth's routes
@@ -96,6 +96,25 @@ export const UNDELIVERABLE_EMAIL_ERROR = "undeliverable_email";
 export const authErrorResponseSchema = z.object({ code: z.string() });
 export type AuthErrorResponse = z.infer<typeof authErrorResponseSchema>;
 
+/** What the player declares before leaving for Google; it comes back with Google's redirect. */
+export interface GoogleDeclarations {
+  readonly ageConfirmed?: true;
+  readonly ageBracket?: AgeBracket;
+  readonly acceptGuestLoss?: true;
+}
+
+export interface GoogleSignInRequest {
+  /** From « Créer un compte »: an account may be created (the age was asked). */
+  readonly signUp: boolean;
+  /** Where Google's redirect lands once signed in, and where it lands on a failure (`?error=`). */
+  readonly callbackURL: string;
+  readonly errorCallbackURL: string;
+  readonly declared: GoogleDeclarations;
+}
+
+/** `POST /api/auth/sign-in/social`, 200: Google's page the player is sent to. */
+export const googleSignInStartSchema = z.object({ url: z.url() });
+
 /** `GET /me/account`, 200: who is playing. */
 export const accountResponseSchema = z.discriminatedUnion("kind", [
   z.object({
@@ -108,6 +127,8 @@ export const accountResponseSchema = z.discriminatedUnion("kind", [
     email: z.string(),
     /** Shows the link to the back office; the server checks the role on every admin route. */
     isAdmin: z.boolean(),
+    /** The member can sign in with Google (absent from an API older than it). */
+    withGoogle: z.boolean().default(false),
   }),
 ]);
 export type AccountResponse = z.infer<typeof accountResponseSchema>;

@@ -1,6 +1,11 @@
 "use client";
 
-import { AGE_BRACKETS, type AgeBracket, type LinkPreviewResponse } from "@leximon/contract";
+import {
+  AGE_BRACKETS,
+  type AgeBracket,
+  type GoogleDeclarations,
+  type LinkPreviewResponse,
+} from "@leximon/contract";
 import { BetaClosedError } from "@leximon/contract/client";
 import {
   ACCOUNT_INTENTS,
@@ -8,10 +13,16 @@ import {
   type AccountIntent,
   AGE_UNSAID,
   ageBracketLabel,
+  BY_GOOGLE,
   type CodeError,
+  type ConfirmStep,
   codeErrorMessage,
   confirmStep,
   emailStep,
+  GOOGLE_AGE_TEXT,
+  GOOGLE_OR,
+  GOOGLE_QUERY,
+  googleReturn,
   NEWS_OPT_IN,
   needsConfirmation,
   needsNewCode,
@@ -21,6 +32,7 @@ import {
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { type FormEvent, useCallback, useEffect, useId, useState } from "react";
+import { forgetArrival } from "@/beta/arrival";
 import { packOf } from "@/booster/pack-looks";
 import { useCatalog } from "@/cards/use-catalog";
 import { CollectionSeal } from "@/components/collection-seal";
@@ -32,14 +44,24 @@ import { Switch } from "@/ui/switch";
 import { Segmented } from "@/ui/tabs";
 import ui from "@/ui/ui.module.css";
 import styles from "./account-screen.module.css";
+import { GoogleButton } from "./google-button";
 import { forgetPendingCode, keepPendingCode, readPendingCode } from "./pending-code";
 import { keepLastEmail, noteSignedIn, readLastEmail } from "./sign-in-memory";
 
 type Step =
   | { readonly kind: "loading" }
   | { readonly kind: "failed" }
-  | { readonly kind: "member"; readonly email: string; readonly isAdmin: boolean }
+  | {
+      readonly kind: "member";
+      readonly email: string;
+      readonly isAdmin: boolean;
+      readonly withGoogle: boolean;
+    }
   | { readonly kind: "email" }
+  /** « J'ai 15 ans ou plus », asked before leaving for Google to create an account. */
+  | { readonly kind: "googleAge" }
+  /** Back from Google: the account plays already, the guest's game would be lost. */
+  | { readonly kind: "googleLoss"; readonly step: GoogleLossStep }
   | { readonly kind: "code"; readonly email: string }
   | {
       readonly kind: "confirm";
@@ -48,16 +70,42 @@ type Step =
       readonly preview: LinkPreviewResponse;
     };
 
+type GoogleLossStep = Omit<ConfirmStep, "closed" | "needsAge">;
+
 const OFFLINE = "Pas de connexion. Réessaie.";
 
+/** The account screen on either tab: the intent lives in the address. */
+function accountPath(intent: AccountIntent): string {
+  return intent === "signin" ? `/compte?${SIGN_IN_QUERY}` : "/compte";
+}
+
+/** Signed in, by code or Google: what the browser keeps is reset, then back to the game. */
+async function finishSignIn(email: string, newsOptIn: boolean): Promise<void> {
+  forgetPendingCode();
+  forgetArrival();
+  if (newsOptIn) {
+    // Missing consent is the safe failure: the player can still tick it in their account.
+    await api.setEmailPreferences({ newsOptIn: true, source: "signup" }).catch(() => undefined);
+  }
+  forgetProgress();
+  keepLastEmail(email);
+  noteSignedIn();
+  // Straight back to the game, with a full load: every screen then reads the account afresh.
+  window.location.assign("/jouer");
+}
+
 /**
- * Signing up or in with a code sent by e-mail. One flow for both: whether the address has
- * an account is only told once the code is checked, so that nobody learns it without the mailbox.
+ * Signing up or in with a code sent by e-mail, or with Google. One flow for both with a code:
+ * whether the address has an account is only told once the code is checked, so that nobody learns
+ * it without the mailbox.
  */
 export function AccountScreen() {
   const [step, setStep] = useState<Step>({ kind: "loading" });
   const [error, setError] = useState<string | null>(null);
+  // Said above the form, not as an error: where Google's return left the player.
+  const [notice, setNotice] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const google = useGoogleSignIn();
   // Kept in the address, so that the menu's « Se connecter » works from this screen too.
   const router = useRouter();
   const intent: AccountIntent = useSearchParams().has(SIGN_IN_QUERY) ? "signin" : "signup";
@@ -72,18 +120,54 @@ export function AccountScreen() {
       setNewsOptIn(pending.newsOptIn);
       return { kind: "code", email: pending.email };
     };
+    /** Back from Google without signing in: says why, and drops the reason from the address. */
+    const afterGoogle = (error: string, cards: string | null, intent: AccountIntent): Step => {
+      const back = googleReturn(error, cards);
+      router.replace(accountPath(back.kind === "no_account" ? "signup" : intent), {
+        scroll: false,
+      });
+      switch (back.kind) {
+        case "cancelled":
+          return { kind: "email" };
+        case "no_account":
+          setNotice(back.notice);
+          return { kind: "email" };
+        case "guest_loss":
+          return { kind: "googleLoss", step: back.step };
+        case "error":
+          setError(back.message);
+          return { kind: "email" };
+      }
+    };
+    const query = new URLSearchParams(window.location.search);
+    const googleError = query.get(GOOGLE_QUERY.error);
+    const guestStep = (): Step =>
+      googleError === null
+        ? resumeOrStart()
+        : afterGoogle(
+            googleError,
+            query.get(GOOGLE_QUERY.cards),
+            query.has(SIGN_IN_QUERY) ? "signin" : "signup",
+          );
     setStep({ kind: "loading" });
     try {
       const account = await api.fetchAccount();
-      if (account.kind === "member") {
+      if (account.kind === "member" && query.has(GOOGLE_QUERY.done)) {
+        await finishSignIn(account.email, query.has(GOOGLE_QUERY.news));
+      } else if (account.kind === "member") {
         forgetPendingCode();
-        setStep({ kind: "member", email: account.email, isAdmin: account.isAdmin });
-      } else setStep(resumeOrStart());
+        setStep({
+          kind: "member",
+          email: account.email,
+          isAdmin: account.isAdmin,
+          withGoogle: account.withGoogle,
+        });
+      } else setStep(guestStep());
     } catch (error) {
       // No guest can start here without an invitation: signing in to an account still works.
-      setStep(error instanceof BetaClosedError ? resumeOrStart() : { kind: "failed" });
+      setStep(error instanceof BetaClosedError ? guestStep() : { kind: "failed" });
     }
-  }, []);
+  }, [router]);
 
   useEffect(() => {
     void load();
@@ -146,19 +230,24 @@ export function AccountScreen() {
       ...(ageBracket === null ? {} : { ageBracket }),
       ...(preview.outcome === "abandon" ? { acceptGuestLoss: true } : {}),
     });
-    if (result.kind === "signed_in") {
-      forgetPendingCode();
-      if (newsOptIn) {
-        // Missing consent is the safe failure: the player can still tick it in their account.
-        await api.setEmailPreferences({ newsOptIn: true, source: "signup" }).catch(() => undefined);
-      }
-      forgetProgress();
-      keepLastEmail(email);
-      noteSignedIn();
-      // Straight back to the game, with a full load: every screen then reads the account afresh.
-      window.location.assign("/jouer");
-    } else showCodeError(result.code, email);
+    if (result.kind === "signed_in") await finishSignIn(email, newsOptIn);
+    else showCodeError(result.code, email);
   };
+
+  /** Off to Google; its redirect comes back to this screen, signed in or with the reason. */
+  const leaveForGoogle = (signUp: boolean, declared: GoogleDeclarations, news = false) =>
+    run(async () => {
+      const origin = window.location.origin;
+      const done = new URLSearchParams({ [GOOGLE_QUERY.done]: "1" });
+      if (news) done.set(GOOGLE_QUERY.news, "1");
+      const url = await api.startGoogleSignIn({
+        signUp,
+        callbackURL: `${origin}/compte?${done}`,
+        errorCallbackURL: `${origin}${accountPath(signUp ? "signup" : "signin")}`,
+        declared,
+      });
+      window.location.assign(url);
+    });
 
   const showCodeError = (reason: CodeError, email: string) => {
     if (needsNewCode(reason)) setStep({ kind: "code", email });
@@ -199,7 +288,8 @@ export function AccountScreen() {
         <>
           <div className={`${styles.panel} ${ui.leaf}`}>
             <p className={styles.text}>
-              Connecté avec <strong className={styles.email}>{step.email}</strong>.
+              Connecté avec <strong className={styles.email}>{step.email}</strong>
+              {step.withGoogle ? ` ${BY_GOOGLE}` : ""}.
             </p>
             <NewsToggle />
             <Link href="/jouer" className={`${styles.primary} ${ui.goldToy}`}>
@@ -226,17 +316,48 @@ export function AccountScreen() {
         <EmailForm
           intent={intent}
           onIntent={(next) => {
-            router.replace(next === "signin" ? `/compte?${SIGN_IN_QUERY}` : "/compte", {
-              scroll: false,
-            });
+            router.replace(accountPath(next), { scroll: false });
             // The box is only shown to a new account: switching away unticks it.
             if (next === "signin") setNewsOptIn(false);
             setError(null);
+            setNotice(null);
+          }}
+          notice={notice}
+          google={google}
+          onGoogle={() => {
+            setNotice(null);
+            if (intent === "signup") go({ kind: "googleAge" });
+            else void leaveForGoogle(false, {});
           }}
           busy={busy}
           newsOptIn={newsOptIn}
           onNewsOptIn={setNewsOptIn}
           onSubmit={(email) => void sendCode(email)}
+        />
+      )}
+
+      {step.kind === "googleAge" && (
+        <GoogleAge
+          busy={busy}
+          newsOptIn={newsOptIn}
+          onNewsOptIn={setNewsOptIn}
+          onLeave={(ageBracket) =>
+            void leaveForGoogle(
+              true,
+              { ageConfirmed: true, ...(ageBracket === null ? {} : { ageBracket }) },
+              newsOptIn,
+            )
+          }
+          onCancel={() => go({ kind: "email" })}
+        />
+      )}
+
+      {step.kind === "googleLoss" && (
+        <GoogleLoss
+          step={step.step}
+          busy={busy}
+          onConfirm={() => void leaveForGoogle(false, { acceptGuestLoss: true })}
+          onCancel={() => go({ kind: "email" })}
         />
       )}
 
@@ -309,14 +430,37 @@ function titleOf(step: Step, intent: AccountIntent): string {
     case "code":
     case "confirm":
       return ACCOUNT_TITLES[step.kind];
+    case "googleLoss":
+      return step.step.title;
     default:
       return emailStep(intent).title;
   }
 }
 
+/** Whether this API offers Google: hidden until it says so. */
+function useGoogleSignIn(): boolean {
+  const [offered, setOffered] = useState(false);
+  useEffect(() => {
+    let live = true;
+    api
+      .fetchAppStatus()
+      .then((status) => {
+        if (live) setOffered(status.googleSignIn);
+      })
+      .catch(() => undefined);
+    return () => {
+      live = false;
+    };
+  }, []);
+  return offered;
+}
+
 function EmailForm({
   intent,
   onIntent,
+  notice,
+  google,
+  onGoogle,
   busy,
   newsOptIn,
   onNewsOptIn,
@@ -324,6 +468,9 @@ function EmailForm({
 }: {
   readonly intent: AccountIntent;
   readonly onIntent: (intent: AccountIntent) => void;
+  readonly notice: string | null;
+  readonly google: boolean;
+  readonly onGoogle: () => void;
   readonly busy: boolean;
   readonly newsOptIn: boolean;
   readonly onNewsOptIn: (value: boolean) => void;
@@ -344,7 +491,14 @@ function EmailForm({
         value={intent}
         onChange={onIntent}
       />
+      {notice !== null && <p className={styles.notice}>{notice}</p>}
       <p className={styles.text}>{words.text}</p>
+      {google && (
+        <>
+          <GoogleButton busy={busy} onClick={onGoogle} />
+          <p className={styles.or}>{GOOGLE_OR}</p>
+        </>
+      )}
       <label htmlFor={id} className={styles.label}>
         Ton adresse e-mail
       </label>
@@ -486,6 +640,128 @@ const AGE_OPTIONS: readonly SelectOption<AgeBracket | "">[] = [
   ...AGE_BRACKETS.map((bracket) => ({ value: bracket, label: ageBracketLabel(bracket) })),
 ];
 
+/** The optional age bracket, as on the code's last step. */
+function AgeBracketField({
+  value,
+  onChange,
+}: {
+  readonly value: AgeBracket | null;
+  readonly onChange: (value: AgeBracket | null) => void;
+}) {
+  return (
+    <>
+      <span className={styles.label}>Ta tranche d'âge (facultatif)</span>
+      <Select
+        className={styles.ageSelect ?? ""}
+        ariaLabel="Ta tranche d'âge (facultatif)"
+        value={value ?? ""}
+        options={AGE_OPTIONS}
+        onChange={(next) => onChange(next === "" ? null : next)}
+      />
+    </>
+  );
+}
+
+/** « J'ai 15 ans ou plus », required to create an account. */
+function AgeCheck({
+  checked,
+  onChange,
+}: {
+  readonly checked: boolean;
+  readonly onChange: (value: boolean) => void;
+}) {
+  return (
+    <label className={styles.check}>
+      <input
+        type="checkbox"
+        checked={checked}
+        onChange={(event) => onChange(event.target.checked)}
+      />
+      <span>
+        J'ai 15 ans ou plus et j'accepte les{" "}
+        <Link href="/conditions" target="_blank">
+          conditions d'utilisation
+        </Link>
+      </span>
+    </label>
+  );
+}
+
+/** Before leaving for Google to create an account: what the code asks on its last step. */
+function GoogleAge({
+  busy,
+  newsOptIn,
+  onNewsOptIn,
+  onLeave,
+  onCancel,
+}: {
+  readonly busy: boolean;
+  readonly newsOptIn: boolean;
+  readonly onNewsOptIn: (value: boolean) => void;
+  readonly onLeave: (ageBracket: AgeBracket | null) => void;
+  readonly onCancel: () => void;
+}) {
+  const [ageConfirmed, setAgeConfirmed] = useState(false);
+  const [ageBracket, setAgeBracket] = useState<AgeBracket | null>(null);
+  return (
+    <div className={`${styles.panel} ${ui.leaf}`}>
+      <p className={styles.text}>{GOOGLE_AGE_TEXT}</p>
+      <AgeBracketField value={ageBracket} onChange={setAgeBracket} />
+      <label className={styles.check}>
+        <input
+          type="checkbox"
+          checked={newsOptIn}
+          onChange={(event) => onNewsOptIn(event.target.checked)}
+        />
+        <span>{NEWS_OPT_IN}</span>
+      </label>
+      <AgeCheck checked={ageConfirmed} onChange={setAgeConfirmed} />
+      <GoogleButton busy={busy} disabled={!ageConfirmed} onClick={() => onLeave(ageBracket)} />
+      <button type="button" className={styles.link} disabled={busy} onClick={onCancel}>
+        Retour
+      </button>
+    </div>
+  );
+}
+
+/** Back from Google to an account that plays: the guest's game is lost only if the player says so. */
+function GoogleLoss({
+  step,
+  busy,
+  onConfirm,
+  onCancel,
+}: {
+  readonly step: GoogleLossStep;
+  readonly busy: boolean;
+  readonly onConfirm: () => void;
+  readonly onCancel: () => void;
+}) {
+  return (
+    <div className={`${styles.panel} ${ui.leaf}`}>
+      <p className={styles.text}>{step.text}</p>
+      {step.warning !== null && <p className={styles.warning}>{step.warning}</p>}
+      <div className={styles.actions}>
+        <button
+          type="button"
+          className={`${styles.primary} ${ui.goldToy}`}
+          disabled={busy}
+          onClick={onCancel}
+        >
+          Garder ma partie
+        </button>
+        <button
+          type="button"
+          className={`${styles.secondary} ${ui.paperToy}`}
+          disabled={busy}
+          onClick={onConfirm}
+        >
+          {busy ? "Un instant…" : step.confirmLabel}
+        </button>
+      </div>
+    </div>
+  );
+}
+
 function Confirm({
   preview,
   intent,
@@ -525,33 +801,8 @@ function Confirm({
       <h2 className={styles.subtitle}>{step.title}</h2>
       <p className={styles.text}>{step.text}</p>
       {step.warning !== null && <p className={styles.warning}>{step.warning}</p>}
-      {step.needsAge && (
-        <>
-          <span className={styles.label}>Ta tranche d'âge (facultatif)</span>
-          <Select
-            className={styles.ageSelect ?? ""}
-            ariaLabel="Ta tranche d'âge (facultatif)"
-            value={ageBracket ?? ""}
-            options={AGE_OPTIONS}
-            onChange={(value) => setAgeBracket(value === "" ? null : value)}
-          />
-        </>
-      )}
-      {step.needsAge && (
-        <label className={styles.check}>
-          <input
-            type="checkbox"
-            checked={ageConfirmed}
-            onChange={(event) => setAgeConfirmed(event.target.checked)}
-          />
-          <span>
-            J'ai 15 ans ou plus et j'accepte les{" "}
-            <Link href="/conditions" target="_blank">
-              conditions d'utilisation
-            </Link>
-          </span>
-        </label>
-      )}
+      {step.needsAge && <AgeBracketField value={ageBracket} onChange={setAgeBracket} />}
+      {step.needsAge && <AgeCheck checked={ageConfirmed} onChange={setAgeConfirmed} />}
       {step.acceptsLoss ? (
         <div className={styles.actions}>
           <button

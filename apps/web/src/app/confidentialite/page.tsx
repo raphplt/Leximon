@@ -45,6 +45,13 @@ export default function PrivacyPage() {
           gardée tant que ton compte existe. Il faut avoir 15 ans ou plus pour créer un compte.
         </p>
         <p>
+          Tu peux aussi te connecter avec Google. On demande alors à Google ton adresse e-mail et
+          rien d'autre : ni ton nom, ni ta photo. On garde l'identifiant que Google donne à ton
+          compte, pour te reconnaître la fois suivante. Les jetons d'accès de Google ne sont pas
+          gardés : on ne peut rien lire d'autre dans ton compte Google. Google sait que tu t'es
+          connecté à Leximon, selon ses propres règles de confidentialité.
+        </p>
+        <p>
           Sans compte, tu joues en invité. On ne garde aucune adresse, seulement une partie liée à
           ton navigateur. Si tu ne reviens pas, la partie devient inaccessible au bout de 90 jours,
           et on l'efface 6 mois après ta première visite.

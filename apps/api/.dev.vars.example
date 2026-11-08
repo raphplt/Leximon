@@ -15,3 +15,6 @@ OBSERVABILITY_TOKEN=
 # Empty: no such account. See docs/fiches-stores.md.
 REVIEW_ACCOUNT_EMAIL=
 REVIEW_ACCOUNT_CODE=
+# Signing in with Google: the "Leximon local" OAuth client of the Google console. Empty: no Google.
+GOOGLE_CLIENT_ID=
+GOOGLE_CLIENT_SECRET=

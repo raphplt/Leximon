@@ -6,6 +6,7 @@ import {
   codeErrorMessage,
   confirmStep,
   emailStep,
+  googleReturn,
   needsConfirmation,
   needsNewCode,
 } from "./account";
@@ -109,5 +110,43 @@ describe("ageBracketLabel", () => {
   it("reads the bracket as words", () => {
     expect(ageBracketLabel("15-17")).toBe("15 à 17 ans");
     expect(ageBracketLabel("50+")).toBe("50 ans et plus");
+  });
+});
+
+describe("googleReturn", () => {
+  it("says nothing when the player turned back at Google's", () => {
+    expect(googleReturn("access_denied", null)).toEqual({ kind: "cancelled" });
+  });
+
+  it("sends a Google account without an account here to « Créer un compte »", () => {
+    expect(googleReturn("signup_disabled", null).kind).toBe("no_account");
+  });
+
+  it("warns with the count of cards the guest would lose", () => {
+    const back = googleReturn(ACCOUNT_ERROR_CODES.guestLossNotAcknowledged, "12");
+    expect(back.kind === "guest_loss" && back.step.warning).toBe(
+      "Si tu te connectes, les 12 cartes obtenues ici seront perdues.",
+    );
+    const one = googleReturn(ACCOUNT_ERROR_CODES.guestLossNotAcknowledged, "1");
+    expect(one.kind === "guest_loss" && one.step.warning).toBe(
+      "Si tu te connectes, la carte obtenue ici sera perdue.",
+    );
+    const none = googleReturn(ACCOUNT_ERROR_CODES.guestLossNotAcknowledged, null);
+    expect(none.kind === "guest_loss" && none.step.warning).toBe(
+      "Si tu te connectes, la progression de cette partie sera perdue.",
+    );
+  });
+
+  it("explains a suspension, an unverified address, and anything else", () => {
+    expect(googleReturn("BANNED_USER", null)).toEqual({
+      kind: "error",
+      message: "Ce compte a été suspendu. Écris à contact@leximon.fr pour en savoir plus.",
+    });
+    expect(googleReturn("account_not_linked", null)).toMatchObject({
+      message: "Google n'a pas vérifié cette adresse. Connecte-toi plutôt avec un code par e-mail.",
+    });
+    expect(googleReturn("state_mismatch", null)).toMatchObject({
+      message: "La connexion avec Google a échoué. Réessaie.",
+    });
   });
 });

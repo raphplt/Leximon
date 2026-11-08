@@ -1,6 +1,6 @@
 # Cahier des charges · Connexion avec Google
 
-- **Statut :** tranché le 2026-11-08 : le propriétaire retient toutes les recommandations du § 8 (D-057).
+- **Statut :** tranché le 2026-11-08 : le propriétaire retient toutes les recommandations du § 8 (D-057). Lots 1 à 3 construits le même jour (API, web, Android), à essayer avec les vrais identifiants de Google : [recette-nouveautes.md](../recette-nouveautes.md#connexion-avec-google).
 - **Règles concernées :** P37 (l'inscription transfère la partie de l'invité, « code, Apple, Google »), P54 (invité qui se connecte à un compte qui joue déjà), P61 (nouvelles par e-mail), dans [regles-du-jeu.md](../regles-du-jeu.md), qui fait foi.
 - **D'où ça vient :** le propriétaire veut un bouton « Continuer avec Google » à côté du code par e-mail. La bêta s'ouvre à tous le 2026-11-09.
 - **Objectif :** créer son compte ou se connecter en deux gestes, sans attendre un e-mail. Chaque inscription par Google est aussi un code de moins à envoyer, alors que le quota d'envoi est la première limite de la bêta ouverte.
@@ -40,7 +40,7 @@
 
 - **API (`auth.ts`) :**
   - `socialProviders.google` : `clientId` et `clientSecret` lus dans les secrets, `scope: ["openid", "email"]` sans les valeurs par défaut, `disableImplicitSignUp: true` (un compte ne se crée que si le client le demande avec `requestSignUp`), `mapProfileToUser` qui ne garde que l'adresse ;
-  - `account.accountLinking` : `trustedProviders: ["google"]`, pour le rattachement de Q3 ;
+  - `account.accountLinking` : le rattachement de Q3 se fait quand Google a vérifié l'adresse, sans `trustedProviders` (qui rattacherait aussi une adresse non vérifiée) ;
   - `databaseHooks.account.create.before` : jetons d'accès et d'identité mis à `null` avant d'écrire, sauf si Better Auth en a besoin pour finir la connexion (à vérifier au lot 1) ;
   - `validateUserInfo` : pour une création par Google, « 15 ans ou plus » se lit dans les données du voyage (`getOAuthState`), et non dans le corps de la requête comme pour le code ;
   - `linkGuestOnSignIn` : `acceptGuestLoss` se lit aussi dans les données du voyage ;

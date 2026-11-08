@@ -6,6 +6,8 @@ import {
   type EmailPreferences,
   type EmailSignInRequest,
   emailPreferencesSchema,
+  type GoogleSignInRequest,
+  googleSignInStartSchema,
   type InviteStatus,
   inviteStatusSchema,
   type JoinWaitlistRequest,
@@ -113,6 +115,27 @@ export function accountRoutes(http: Http) {
       const code = await authErrorCode(response);
       if (code !== null) return { kind: "refused", code };
       throw new ApiError("sign_in_failed", response.status);
+    },
+
+    /**
+     * Asks for the trip to Google and returns Google's page, where the client sends the player.
+     * It brings the invitation, if any: the account may be created on the way back.
+     */
+    async startGoogleSignIn(request: GoogleSignInRequest): Promise<string> {
+      const body = {
+        provider: "google",
+        callbackURL: request.callbackURL,
+        errorCallbackURL: request.errorCallbackURL,
+        disableRedirect: true,
+        ...(request.signUp ? { requestSignUp: true } : {}),
+        additionalData: request.declared,
+      };
+      const response = await send(
+        "/api/auth/sign-in/social",
+        json("POST", body, arrival.headers()),
+      );
+      if (!response.ok) throw new ApiError("google_unavailable", response.status);
+      return (await parse(response, googleSignInStartSchema)).url;
     },
 
     async signOut(): Promise<void> {
