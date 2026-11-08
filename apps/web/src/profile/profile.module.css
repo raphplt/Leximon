@@ -478,13 +478,6 @@ button.emptySlot {
   cursor: pointer;
 }
 
-.atelierHead {
-  display: flex;
-  align-items: center;
-  gap: var(--lx-s9);
-  margin-bottom: var(--lx-s9);
-}
-
 .title {
   margin: 0;
   font-size: var(--lx-size-display-large);
@@ -609,6 +602,25 @@ button.emptySlot {
   translate: 0 4px;
   border-style: dashed;
   border-color: color-mix(in srgb, var(--lx-color-ink-on-color) 30%, transparent);
+  background: color-mix(in srgb, var(--lx-toy-outline) 74%, transparent);
+  box-shadow: inset 0 4px 14px var(--lx-toy-drop);
+  color: color-mix(in srgb, var(--lx-color-ink-on-color) 72%, transparent);
+}
+
+/* A piece tried on but not owned keeps its look, ringed in dashed gold. */
+.item.itemTrying {
+  outline: 3px dashed var(--lx-toy-gold-top);
+  outline-offset: 3px;
+  background:
+    var(--lx-matter-paper) 0 0 / var(--lx-matter-size),
+    var(--lx-color-paper);
+  box-shadow:
+    inset 0 -4px 0 var(--lx-toy-paper-bottom),
+    0 4px 0 var(--lx-toy-outline);
+  color: var(--lx-color-paper-ink);
+}
+
+.item.itemLocked.itemTrying {
   background: color-mix(in srgb, var(--lx-toy-outline) 74%, transparent);
   box-shadow: inset 0 4px 14px var(--lx-toy-drop);
   color: color-mix(in srgb, var(--lx-color-ink-on-color) 72%, transparent);

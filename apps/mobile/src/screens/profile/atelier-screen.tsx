@@ -1,16 +1,29 @@
 import { toy as toyValues } from "@leximon/tokens";
 import {
+  APPEARANCE_RESET,
+  APPEARANCE_SAVE,
+  APPEARANCE_SAVE_BUSY,
+  APPEARANCE_SAVED,
+  APPEARANCE_UNSAVED,
+  type Appearance,
   ATELIER_NEW_TAB,
   ATELIER_NEW_TAB_KEY,
   ATELIER_TABS,
   type AtelierItem,
   type AtelierTab,
+  appearanceBlock,
+  appearanceBuyAction,
+  appearanceChanges,
   atelierItems,
   type CosmeticTab,
-  cosmeticLockedToast,
+  chosenIn,
   cosmeticStateLabel,
+  draftItems,
+  isAppearanceChanged,
   NEW_TAB_BADGE,
-  wornToast,
+  playerName,
+  savedAppearance,
+  withChoice,
 } from "@leximon/view-model";
 import * as SecureStore from "expo-secure-store";
 import { useState } from "react";
@@ -18,16 +31,17 @@ import { Pressable, StyleSheet, Text, useWindowDimensions, View } from "react-na
 import { useNow, useSharedFailed } from "@/player/shared";
 import { profile } from "@/player/state";
 import { useProfileActions } from "@/profile/profile-actions";
-import { colors, fontSizes, fonts, paperColors, radii, space } from "@/theme";
+import { alpha, colors, fontSizes, fonts, paperColors, radii, space } from "@/theme";
 import { Avatar } from "@/ui/avatar";
 import { Button } from "@/ui/button";
 import { Icon } from "@/ui/icon";
 import { Page, Paragraph } from "@/ui/page";
 import { Segmented } from "@/ui/segmented";
-import { toast } from "@/ui/toast";
+import { Sheet } from "@/ui/sheet";
 import { toyFace } from "@/ui/toy";
-import { BannerPanel } from "./banner-panel";
-import { LockSeal, sunkCall, sunkInk, sunkTile } from "./lock-seal";
+import { AppearancePreview } from "./appearance-preview";
+import { BannerPanel, BuyBanner } from "./banner-panel";
+import { LockSeal, sunkCall, sunkInk, sunkTile, tryingRing } from "./lock-seal";
 
 /** Titles are words, wider than a face: two to a row. */
 const COLUMNS: Readonly<Record<CosmeticTab, number>> = { avatars: 3, frames: 3, titles: 2 };
@@ -42,7 +56,10 @@ function newTabFresh(): boolean {
   }
 }
 
-/** The atelier: what the coffrets gave, worn on the profile with one tap. */
+/**
+ * The atelier: avatars, frames, titles and banners chosen on a draft, shown at once on the
+ * profile card above them, worn only once saved. A piece not yet owned may be tried on.
+ */
 export function AtelierScreen() {
   const actions = useProfileActions();
   const me = actions.profile;
@@ -51,34 +68,63 @@ export function AtelierScreen() {
   const window = useWindowDimensions();
   const [tab, setTab] = useState<AtelierTab>("avatars");
   const [fresh, setFresh] = useState(newTabFresh);
+  const [draft, setDraft] = useState<Appearance | null>(null);
+  const [buying, setBuying] = useState(false);
 
-  const choose = (tab: CosmeticTab, item: AtelierItem) => {
-    if (item.state === "worn") return;
-    if (item.state !== "owned") {
-      toast(cosmeticLockedToast(item));
-      return;
-    }
-    const change =
-      tab === "avatars"
-        ? { avatar: item.id }
-        : tab === "frames"
-          ? { frame: item.id }
-          : { title: item.id };
-    void actions.update(change, { success: wornToast(tab) });
+  const look = me === null ? null : (draft ?? savedAppearance(me));
+  const changed = me !== null && look !== null && isAppearanceChanged(me, look);
+  const block = me !== null && look !== null && changed ? appearanceBlock(me, look, now) : null;
+
+  const save = async () => {
+    if (me === null || look === null) return;
+    const problem = await actions.update(appearanceChanges(me, look), {
+      success: APPEARANCE_SAVED,
+    });
+    if (problem === null) setDraft(null);
   };
 
-  const items = me === null || tab === "banners" ? [] : atelierItems(tab, me, now);
+  const items =
+    me === null || look === null || tab === "banners"
+      ? []
+      : draftItems(atelierItems(tab, me, now), (item) => item.id === chosenIn(tab, look));
   const columns = tab === "banners" ? 2 : COLUMNS[tab];
   // The page's side margins, then the gaps between the columns.
   const itemWidth = Math.floor((window.width - 48 - GAP * (columns - 1)) / columns);
   const previewSize = tab === "titles" ? 72 : itemWidth - 28;
 
-  return (
-    <Page title="Apparence">
-      <View style={styles.head}>
-        <Avatar avatar={me?.avatar ?? null} frame={me?.frame ?? null} size={72} />
-        {me?.title != null && <Text style={styles.wornTitle}>{me.title}</Text>}
+  const bar = changed ? (
+    <View style={styles.bar}>
+      <Text style={styles.barText}>{block?.text ?? APPEARANCE_UNSAVED}</Text>
+      <View style={styles.barButtons}>
+        <View style={styles.grow}>
+          <Button label={APPEARANCE_RESET} secondary small onPress={() => setDraft(null)} />
+        </View>
+        <View style={styles.grow}>
+          {block?.kind === "for_sale" ? (
+            <Button label={appearanceBuyAction(block)} small onPress={() => setBuying(true)} />
+          ) : (
+            <Button
+              label={actions.busy ? APPEARANCE_SAVE_BUSY : APPEARANCE_SAVE}
+              small
+              disabled={actions.busy || block !== null}
+              onPress={() => void save()}
+            />
+          )}
+        </View>
       </View>
+    </View>
+  ) : undefined;
+
+  return (
+    <Page title="Apparence" {...(bar === undefined ? {} : { footer: bar })}>
+      {me !== null && look !== null && (
+        <AppearancePreview
+          look={look}
+          name={me.member ? playerName({ code: me.playerCode, pseudo: me.pseudo }) : "Invité"}
+          level={me.level}
+          trying={block !== null}
+        />
+      )}
       <Segmented
         options={ATELIER_TABS.map((entry) => ({
           value: entry.tab,
@@ -95,7 +141,7 @@ export function AtelierScreen() {
           });
         }}
       />
-      {me === null ? (
+      {me === null || look === null ? (
         failed ? (
           <>
             <Paragraph muted>L'atelier ne se charge pas.</Paragraph>
@@ -105,7 +151,7 @@ export function AtelierScreen() {
           <Paragraph muted>Un instant…</Paragraph>
         )
       ) : tab === "banners" ? (
-        <BannerPanel me={me} now={now} actions={actions} width={window.width - 48} />
+        <BannerPanel me={me} now={now} look={look} onLook={setDraft} width={window.width - 48} />
       ) : (
         <View style={styles.grid}>
           {items.map((item) => {
@@ -113,10 +159,9 @@ export function AtelierScreen() {
             return (
               <Pressable
                 key={item.id}
-                disabled={actions.busy}
-                onPress={() => choose(tab, item)}
+                onPress={() => setDraft(withChoice(look, tab, item.id))}
                 accessibilityRole="button"
-                accessibilityState={{ selected: item.state === "worn" }}
+                accessibilityState={{ selected: item.chosen }}
                 accessibilityLabel={`${item.name}, ${cosmeticStateLabel(item)}`}
                 style={({ pressed }) => [
                   styles.item,
@@ -125,12 +170,13 @@ export function AtelierScreen() {
                   closed
                     ? sunkTile
                     : [styles.toy, toyFace(item.state === "worn" ? "gold" : "paper", "tile")],
+                  item.chosen && closed && tryingRing,
                   pressed && styles.pressed,
                 ]}
               >
                 <View>
                   <View style={closed && styles.closed}>
-                    <Preview tab={tab} item={item} wornAvatar={me.avatar} size={previewSize} />
+                    <Preview tab={tab} item={item} wornAvatar={look.avatar} size={previewSize} />
                   </View>
                   {closed && <LockSeal />}
                 </View>
@@ -158,6 +204,25 @@ export function AtelierScreen() {
           })}
         </View>
       )}
+      <Sheet
+        open={buying && block?.kind === "for_sale"}
+        title={block?.kind === "for_sale" ? block.name : ""}
+        onClose={() => setBuying(false)}
+      >
+        {buying && block?.kind === "for_sale" && look !== null && (
+          <BuyBanner
+            motif={block.motif}
+            name={block.name}
+            price={block.price}
+            tint={look.bannerTint}
+            onDone={(bought) => {
+              setBuying(false);
+              // Bought: the rest of the draft is worn with it, as one save.
+              if (bought) void save();
+            }}
+          />
+        )}
+      </Sheet>
     </Page>
   );
 }
@@ -193,17 +258,18 @@ const ink = paperColors;
 const wornInk = toyValues.outline;
 
 const styles = StyleSheet.create({
-  head: { flexDirection: "row", alignItems: "center", gap: space.s7, marginTop: -6 },
-  wornTitle: {
-    overflow: "hidden",
-    paddingHorizontal: space.s5,
-    paddingVertical: 3,
-    borderRadius: radii.sm,
-    backgroundColor: colors.kraft,
-    color: colors.kraftTitle,
-    fontFamily: fonts.display,
-    fontSize: fontSizes.body,
+  bar: {
+    gap: space.s5,
+    padding: space.s6,
+    borderWidth: toyValues.outlineWidth,
+    borderColor: toyValues.outline,
+    borderRadius: radii.xxl,
+    backgroundColor: alpha(toyValues.outline, 0.95),
+    boxShadow: `0 10px 24px ${toyValues.drop}`,
   },
+  barText: { fontFamily: fonts.ui.bold, fontSize: fontSizes.body, color: colors.inkOnColor },
+  barButtons: { flexDirection: "row", gap: space.s4 },
+  grow: { flex: 1 },
   grid: { flexDirection: "row", flexWrap: "wrap", gap: GAP },
   item: {
     alignItems: "center",

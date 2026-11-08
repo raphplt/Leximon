@@ -10,6 +10,9 @@ import { Icon } from "./icon";
 import { useInk } from "./ink";
 import { Lettering } from "./toy";
 
+/** The height left free under the content for a footer of two lines and its buttons. */
+const FOOTER_ROOM = 170;
+
 /** Leaves the page; a page opened from a link, with nothing behind it, leads to the game. */
 function back() {
   if (router.canGoBack()) router.back();
@@ -25,6 +28,7 @@ export function Page({
   inTab = false,
   desk = false,
   fill = false,
+  footer,
 }: {
   readonly kicker?: string;
   readonly title: string;
@@ -37,6 +41,8 @@ export function Page({
   readonly desk?: boolean;
   /** The page holds in the screen and its content scrolls where it says: the levels' road. */
   readonly fill?: boolean;
+  /** Held at the bottom over the content, which leaves room under itself: a bar of unsaved changes. */
+  readonly footer?: ReactNode;
 }) {
   const insets = useSafeAreaInsets();
   const onDesk = desk && !inTab;
@@ -47,6 +53,7 @@ export function Page({
       : onDesk
         ? { paddingTop: space.s4, paddingBottom: space.s16 }
         : { paddingTop: insets.top + 8, paddingBottom: insets.bottom + (fill ? 12 : 32) },
+    footer !== undefined && { paddingBottom: insets.bottom + FOOTER_ROOM },
   ];
   const inside = (
     <>
@@ -97,6 +104,9 @@ export function Page({
       ) : (
         scroll
       )}
+      {footer !== undefined && (
+        <View style={[styles.footer, { bottom: insets.bottom + space.s6 }]}>{footer}</View>
+      )}
       {/* The content scrolls under the status bar: a band of background keeps the clock legible. */}
       {!inTab && !onDesk && <View style={[styles.statusBand, { height: insets.top }]} />}
     </KeyboardAvoidingView>
@@ -146,6 +156,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.page,
   },
   content: { paddingHorizontal: space.s12 },
+  footer: { position: "absolute", left: space.s8, right: space.s8 },
   desk: { flex: 1, marginHorizontal: 6 },
   deskInside: {
     flex: 1,

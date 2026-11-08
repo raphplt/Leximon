@@ -257,26 +257,6 @@ export function cosmeticStateLabel(item: AtelierItem): string {
   }
 }
 
-/** Toast when a closed item is tapped. */
-export function cosmeticLockedToast(item: AtelierItem): string {
-  return item.state === "in_coffret"
-    ? `Il est dans ton coffret du niveau ${item.level}. Ouvre-le d'abord.`
-    : `Tu le gagnes au niveau ${item.level}.`;
-}
-
-export function wornToast(tab: AtelierTab): string {
-  switch (tab) {
-    case "avatars":
-      return "Avatar changé.";
-    case "frames":
-      return "Cadre changé.";
-    case "titles":
-      return "Titre changé.";
-    case "banners":
-      return "Bannière changée.";
-  }
-}
-
 const PROFILE_REFUSALS: Readonly<Record<ProfileRefusal, string>> = {
   account_required: "Crée d'abord un compte, ta partie y sera conservée.",
   pseudo_too_short: "Le pseudo doit faire au moins 3 caractères.",

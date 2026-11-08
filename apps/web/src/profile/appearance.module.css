@@ -1,0 +1,193 @@
+.title {
+  margin-bottom: var(--lx-s9);
+}
+
+/* The profile card stays in view beside the shelf while the pieces are tried. */
+.layout {
+  display: grid;
+  grid-template-columns: 320px minmax(0, 1fr);
+  gap: var(--lx-s12);
+  align-items: start;
+}
+
+.side {
+  position: sticky;
+  top: var(--lx-s8);
+}
+
+.shelf {
+  min-width: 0;
+}
+
+.preview {
+  display: flex;
+  flex-direction: column;
+  gap: var(--lx-s5);
+  margin: 0;
+}
+
+.card {
+  position: relative;
+  overflow: hidden;
+  border: var(--lx-toy-outline-width) solid var(--lx-toy-outline);
+  border-radius: var(--lx-toy-radius-tile);
+  background:
+    var(--lx-matter-paper) 0 0 / var(--lx-matter-size),
+    var(--lx-color-paper);
+  box-shadow:
+    inset 0 -4px 0 var(--lx-toy-paper-bottom),
+    0 4px 0 var(--lx-toy-outline);
+  color: var(--lx-color-paper-ink);
+}
+
+.cloth {
+  display: block;
+  width: 100%;
+  height: 104px;
+  border-bottom: 3px solid var(--lx-toy-outline);
+}
+
+.trying {
+  position: absolute;
+  top: var(--lx-s5);
+  left: var(--lx-s5);
+  padding: 1px var(--lx-s5);
+  border: 2px solid var(--lx-toy-outline);
+  border-radius: var(--lx-radius-pill);
+  background: linear-gradient(
+    180deg,
+    var(--lx-toy-gold-top) 0 47%,
+    var(--lx-toy-gold-bottom) 53% 100%
+  );
+  color: var(--lx-toy-outline);
+  font-size: var(--lx-size-caption);
+  font-weight: 800;
+}
+
+.cardBody {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--lx-s3);
+  margin-top: -52px;
+  padding: 0 var(--lx-s8) var(--lx-s10);
+  text-align: center;
+}
+
+.cardAvatar {
+  outline: var(--lx-toy-outline-width) solid var(--lx-toy-outline);
+  box-shadow:
+    0 0 0 5px var(--lx-toy-gold-top),
+    0 0 0 8px var(--lx-toy-outline);
+}
+
+.cardName {
+  margin: var(--lx-s5) 0 0;
+  font-size: var(--lx-size-heading);
+  line-height: 1.1;
+  overflow-wrap: anywhere;
+}
+
+.cardHeadline {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--lx-s4);
+  min-height: 28px;
+  margin: 0;
+  color: var(--lx-toy-red-bottom);
+  font-weight: 800;
+}
+
+.note {
+  color: var(--lx-color-page-ink-muted);
+  font-size: var(--lx-size-small);
+  text-align: center;
+}
+
+.previewBone {
+  height: 260px;
+  border-radius: 20px;
+}
+
+/* Room under the shelf for the bar of unsaved changes. */
+.pageWithBar {
+  padding-bottom: 140px;
+}
+
+.bar {
+  position: fixed;
+  left: 50%;
+  bottom: var(--lx-s10);
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  gap: var(--lx-s8);
+  box-sizing: border-box;
+  width: min(760px, calc(100% - 32px));
+  padding: var(--lx-s6) var(--lx-s6) var(--lx-s6) var(--lx-s9);
+  border: var(--lx-toy-outline-width) solid var(--lx-toy-outline);
+  border-radius: var(--lx-toy-radius-tile);
+  background: color-mix(in srgb, var(--lx-toy-outline) 94%, transparent);
+  box-shadow: 0 12px 30px var(--lx-toy-drop);
+  color: var(--lx-color-ink-on-color);
+  translate: -50% 0;
+  animation: barIn 200ms ease-out;
+}
+
+.barText {
+  flex: 1;
+  margin: 0;
+  font-weight: 700;
+}
+
+.barButtons {
+  display: flex;
+  flex-shrink: 0;
+  gap: var(--lx-s4);
+}
+
+@keyframes barIn {
+  from {
+    opacity: 0;
+    translate: -50% 16px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bar {
+    animation: none;
+  }
+}
+
+/* One column: the card first, smaller, then the shelf. */
+@media (max-width: 860px) {
+  .layout {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--lx-s9);
+  }
+
+  .side {
+    position: static;
+    width: min(100%, 360px);
+    margin: 0 auto;
+  }
+}
+
+/* Above the bottom tabs of the phone shell. */
+@media (max-width: 759px) {
+  .bar {
+    bottom: 88px;
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--lx-s5);
+  }
+
+  .barButtons {
+    justify-content: flex-end;
+  }
+
+  .pageWithBar {
+    padding-bottom: 220px;
+  }
+}

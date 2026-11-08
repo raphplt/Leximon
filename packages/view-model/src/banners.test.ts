@@ -3,7 +3,6 @@ import { BANNER_SCHEDULE } from "@leximon/core";
 import { describe, expect, it } from "vitest";
 import {
   bannerItems,
-  bannerLockedToast,
   bannerMotifName,
   bannerPurchaseConfirm,
   bannerStateLabel,
@@ -61,8 +60,7 @@ describe("banner items", () => {
     expect(items.find((item) => item.motif === "retired")?.state).toBe("owned");
   });
 
-  it("says how to earn a motif and what a purchase leaves", () => {
-    expect(bannerLockedToast({ kind: "level", level: 30 })).toBe("Tu le gagnes au niveau 30.");
+  it("says what a purchase leaves", () => {
     expect(bannerPurchaseConfirm("Papier marbré", 250, 251)).toBe(
       "Papier marbré coûte 250 écus. Il te restera 1 écu. Le motif est à toi pour toujours.",
     );

@@ -510,17 +510,19 @@ Règle P99, web et app. Pour la recette, `pnpm dev:player <email> --level 30` do
 - Ton profil (`/profil`) et ta page publique (`/joueur/<pseudo>`) : en haut, une toile bordeaux unie à la place des rayures en diagonale. Sur l'app, la même toile en tête du profil, avec l'avatar à cheval sur son bord bas.
 - Un profil privé montre toujours la toile unie bordeaux.
 
-### BAN-02 · L'onglet Bannières de l'atelier
+### BAN-02 · L'atelier : aperçu et essayage
 
+- « Apparence » : la carte du profil (bannière, avatar dans son cadre, pseudo, niveau et titre) se tient à gauche sur grand écran et reste visible pendant qu'on fait défiler. Sur téléphone, elle est en haut.
 - L'onglet « Bannières » porte une étiquette rouge « Nouveau » dans son coin, pour tout joueur, jusqu'à ce qu'il l'ouvre une fois sur cet appareil. Elle ne revient pas quand on recharge la page ou qu'on relance l'app.
-- « Apparence », puis l'onglet « Bannières » : l'aperçu de ta bannière, les huit teintes en pastilles, puis les motifs. Ceux que tu as viennent en premier, les autres sont grisés avec ce qui les donne (« Niveau 45 », « Ligue Chevalier », « Une collection complète », « 250 écus »).
-- Toucher une teinte la pose aussitôt (« Bannière changée. ») ; les motifs se redessinent dans la nouvelle teinte.
-- Toucher un motif fermé dit comment le gagner (« Tu le gagnes au niveau 45. »).
+- Toucher un avatar, un cadre, un titre, une teinte ou un motif le montre aussitôt sur la carte, sans rien enregistrer. Une barre apparaît en bas : « Tes changements ne sont pas encore enregistrés. », avec « Annuler » et « Enregistrer ». « Enregistrer » porte tout d'un coup (« Apparence enregistrée. ») ; « Annuler » remet la carte comme avant.
+- Une pièce pas encore gagnée s'essaie aussi : elle s'entoure d'un pointillé doré, la carte porte « Essai », et la barre dit comment l'avoir (« Tu gagnes l'avatar Le Flûteau au niveau 40. D'ici là, tu peux seulement l'essayer. »). « Enregistrer » reste grisé.
+- Quitter l'atelier sans enregistrer oublie les changements.
 
 ### BAN-03 · Acheter un motif en écus
 
-- Toucher « Papier marbré » ouvre une fenêtre avec l'aperçu, ton solde et le prix : « Papier marbré coûte 250 écus. Il te restera 40 écus. Le motif est à toi pour toujours. » Sans assez d'écus, le bouton est grisé et la fenêtre dit combien il manque.
-- « Oui, l'acheter » : le son des pièces, les écus baissent, le motif se pose sur ta bannière (« Motif acheté. Il est sur ta bannière. »). Un invité ne peut pas acheter : il est invité à créer un compte.
+- Choisir « Papier marbré » : la barre dit « Le motif Papier marbré coûte 250 écus. Achète-le pour le porter. » et son bouton devient « Acheter, 250 écus ».
+- Le bouton ouvre une fenêtre avec l'aperçu, ton solde et ce qu'il te restera. Sans assez d'écus, le bouton est grisé et la fenêtre dit combien il manque.
+- « Oui, l'acheter » : le son des pièces, les écus baissent, et tout le brouillon est enregistré avec le motif. Un invité ne peut pas acheter : il est invité à créer un compte.
 
 ### BAN-04 · L'image de partage
 

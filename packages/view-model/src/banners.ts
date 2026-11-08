@@ -137,21 +137,6 @@ export function bannerStateLabel(item: BannerItem): string {
   }
 }
 
-/** Toast when a motif earned by playing is tapped before it is. */
-export function bannerLockedToast(source: BannerSource): string {
-  switch (source.kind) {
-    case "level":
-      return `Tu le gagnes au niveau ${source.level}.`;
-    case "league":
-      return `Tu le gagnes en atteignant la ligue ${LEAGUE_NAMES[source.league]} aux joutes classées.`;
-    case "collection":
-      return "Tu le gagnes en complétant une collection.";
-    case "start":
-    case "ecus":
-      return "Tu n'as pas encore ce motif.";
-  }
-}
-
 /** Before a purchase: the price and what is left, or what is missing. */
 export function bannerPurchaseConfirm(name: string, price: number, ecus: number): string {
   if (ecus < price) {
@@ -168,7 +153,6 @@ export const BANNER_BUY_ACTION = "Oui, l'acheter";
 export const BANNER_BUY_CANCEL = "Annuler";
 export const BANNER_BUY_CLOSE = "Fermer";
 export const BANNER_BUY_BUSY = "Achat…";
-export const BANNER_BOUGHT_TOAST = "Motif acheté. Il est sur ta bannière.";
 export const BANNER_BUY_FAILED = "Le motif n'a pas été acheté. Réessaie.";
 
 export function bannerPurchaseRefusalMessage(reason: BannerPurchaseRefusal): string {

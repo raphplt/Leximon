@@ -4,20 +4,6 @@
   gap: var(--lx-s7);
 }
 
-/* The cloth worn, as wide as the shelf, framed like the profile's banner. */
-.preview {
-  overflow: hidden;
-  border: var(--lx-toy-outline-width) solid var(--lx-toy-outline);
-  border-radius: var(--lx-toy-radius-tile);
-  box-shadow: 0 4px 0 var(--lx-toy-outline);
-}
-
-.previewCloth {
-  display: block;
-  width: 100%;
-  height: 110px;
-}
-
 .heading {
   margin: var(--lx-s4) 0 0;
   font-size: var(--lx-size-label);

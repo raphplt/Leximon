@@ -5,7 +5,6 @@ import {
   atelierItems,
   avatarName,
   canShareProfile,
-  cosmeticLockedToast,
   cosmeticStateLabel,
   deleteAccountLabel,
   frameName,
@@ -139,9 +138,6 @@ describe("atelierItems", () => {
     expect(fanfreluche?.state).toBe("in_coffret");
     if (fanfreluche === undefined) throw new Error("missing");
     expect(cosmeticStateLabel(fanfreluche)).toBe("Dans un coffret");
-    expect(cosmeticLockedToast(fanfreluche)).toBe(
-      "Il est dans ton coffret du niveau 20. Ouvre-le d'abord.",
-    );
   });
 
   it("lists frames and titles, and keeps what older rules gave", () => {

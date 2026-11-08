@@ -16,6 +16,13 @@ export const sunkTile: ViewStyle = {
   boxShadow: `inset 0 4px 14px ${toyValues.drop}`,
 };
 
+/** A piece tried on but not owned: it keeps its look, ringed in gold. */
+export const tryingRing: ViewStyle = {
+  borderWidth: 3,
+  borderStyle: "dashed",
+  borderColor: toyMatters.gold.top,
+};
+
 export const sunkInk = alpha(colors.inkOnColor, 0.72);
 export const sunkCall = toyMatters.gold.top;
 
