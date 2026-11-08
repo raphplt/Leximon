@@ -516,8 +516,11 @@ function Motif({
   );
 }
 
-/** The collection's seal, hot-stamped in gold: rosette, beads, and its emblem on the field. */
-function Seal({
+/**
+ * The collection's seal, hot-stamped in gold: rosette, beads, and its emblem on the field. Drawn
+ * on a 120 × 120 grid, alone in its own `Svg` elsewhere than on the sachet.
+ */
+export function Seal({
   collection,
   paint,
 }: {

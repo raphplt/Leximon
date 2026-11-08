@@ -21,6 +21,9 @@ import {
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { type FormEvent, useCallback, useEffect, useId, useState } from "react";
+import { packOf } from "@/booster/pack-looks";
+import { useCatalog } from "@/cards/use-catalog";
+import { CollectionSeal } from "@/components/collection-seal";
 import { Select, type SelectOption } from "@/components/select";
 import { api } from "@/lib/api";
 import { usePackShape } from "@/lib/use-pack-shape";
@@ -46,9 +49,6 @@ type Step =
     };
 
 const OFFLINE = "Pas de connexion. Réessaie.";
-
-/** Where a guest's game is kept. */
-const HERE = "dans ce navigateur";
 
 /**
  * Signing up or in with a code sent by e-mail. One flow for both: whether the address has
@@ -175,6 +175,7 @@ export function AccountScreen() {
   return (
     <main className={styles.screen}>
       <header className={styles.header}>
+        <Crest />
         <p className={styles.kicker}>Ton compte</p>
         <h1 className={`${styles.title} ${ui.lettered}`}>{titleOf(step, intent)}</h1>
       </header>
@@ -274,6 +275,34 @@ export function AccountScreen() {
   );
 }
 
+/**
+ * The collections' gold seals fanned over the page, the first in front: what an account keeps.
+ * Its room is held while the catalogue loads, so the form does not move when they come.
+ */
+function Crest() {
+  const collections = useCatalog()?.collections ?? [];
+  const [front, ...others] = collections;
+  const sides = others.slice(0, 2);
+  return (
+    <div className={styles.crest} aria-hidden="true">
+      {sides.map((collection, index) => (
+        <span
+          key={collection.id}
+          className={styles.sideSeal}
+          data-side={index === 0 ? "left" : "right"}
+        >
+          <CollectionSeal collection={packOf(collection)} size={84} />
+        </span>
+      ))}
+      {front !== undefined && (
+        <span className={styles.frontSeal}>
+          <CollectionSeal collection={packOf(front)} size={118} />
+        </span>
+      )}
+    </div>
+  );
+}
+
 function titleOf(step: Step, intent: AccountIntent): string {
   switch (step.kind) {
     case "member":
@@ -281,7 +310,7 @@ function titleOf(step: Step, intent: AccountIntent): string {
     case "confirm":
       return ACCOUNT_TITLES[step.kind];
     default:
-      return emailStep(intent, HERE).title;
+      return emailStep(intent).title;
   }
 }
 
@@ -302,7 +331,7 @@ function EmailForm({
 }) {
   const [email, setEmail] = useState(readLastEmail);
   const id = useId();
-  const words = emailStep(intent, HERE);
+  const words = emailStep(intent);
   const submit = (event: FormEvent) => {
     event.preventDefault();
     onSubmit(email.trim().toLowerCase());
@@ -346,7 +375,7 @@ function EmailForm({
       >
         {busy ? "Envoi…" : "Recevoir un code"}
       </button>
-      <p className={styles.muted}>{words.how}</p>
+      <p className={styles.how}>{words.how}</p>
     </form>
   );
 }

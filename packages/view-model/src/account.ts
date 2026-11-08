@@ -38,27 +38,25 @@ export const SIGN_IN_QUERY = "connexion";
 export interface EmailStep {
   readonly title: string;
   readonly text: string;
-  /** How the code works, said once since there is no password to type. */
+  /** How the code works, in small under the button: there is no password to look for. */
   readonly how: string;
   /** Only a new account is asked about news by e-mail: a member sets it in their account. */
   readonly asksNews: boolean;
 }
 
-const HOW_THE_CODE_WORKS =
-  "Il n'y a pas de mot de passe. On t'envoie par e-mail un code à 6 chiffres, que tu recopies à l'étape suivante.";
+const HOW_THE_CODE_WORKS = "Tu recevras un code par e-mail, sans mot de passe.";
 
-/** Where a guest's game is kept: « dans ce navigateur » on the web, « sur ce téléphone » on mobile. */
-export function emailStep(intent: AccountIntent, here: string): EmailStep {
+export function emailStep(intent: AccountIntent): EmailStep {
   return intent === "signup"
     ? {
         title: "Crée ton compte",
-        text: `Ton compte garde ta collection et te la rend sur tous tes appareils. Sans compte, elle n'est enregistrée que ${here}.`,
+        text: "Garde ta collection et retrouve-la partout.",
         how: HOW_THE_CODE_WORKS,
         asksNews: true,
       }
     : {
         title: "Connecte-toi",
-        text: "Entre l'adresse e-mail de ton compte pour retrouver ta collection.",
+        text: "Retrouve ta collection là où tu l'as laissée.",
         how: HOW_THE_CODE_WORKS,
         asksNews: false,
       };

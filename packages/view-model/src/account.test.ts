@@ -31,13 +31,8 @@ describe("cardCount", () => {
 
 describe("emailStep", () => {
   it("asks about news only when an account is created", () => {
-    const signUp = emailStep("signup", "sur ce téléphone");
-    expect(signUp).toMatchObject({ title: "Crée ton compte", asksNews: true });
-    expect(signUp.text).toContain("n'est enregistrée que sur ce téléphone.");
-    expect(emailStep("signin", "sur ce téléphone")).toMatchObject({
-      title: "Connecte-toi",
-      asksNews: false,
-    });
+    expect(emailStep("signup")).toMatchObject({ title: "Crée ton compte", asksNews: true });
+    expect(emailStep("signin")).toMatchObject({ title: "Connecte-toi", asksNews: false });
   });
 });
 

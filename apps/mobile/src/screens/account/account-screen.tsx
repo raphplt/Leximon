@@ -22,9 +22,13 @@ import { router, useLocalSearchParams } from "expo-router";
 import * as WebBrowser from "expo-web-browser";
 import { useCallback, useEffect, useState } from "react";
 import { Pressable, StyleSheet, Switch, Text, View } from "react-native";
+import Svg from "react-native-svg";
 import { api } from "@/api/client";
+import { catalogInHand, loadCatalog } from "@/cards/catalog";
 import { WEB_URL } from "@/config";
 import { playFromScratch } from "@/player/session";
+import { Seal } from "@/screens/play/sachet-face";
+import { asIs, dimmed } from "@/screens/play/sachet-paint";
 import { alpha, fontSizes, fonts, paperColors, space, switchColors } from "@/theme";
 import { Button } from "@/ui/button";
 import { Check } from "@/ui/check";
@@ -53,9 +57,6 @@ const OFFLINE = "Pas de connexion. Réessaie.";
 
 /** The game shows sachets on the phone. */
 const NOUN = PACK_NOUNS.sachet;
-
-/** Where a guest's game is kept. */
-const HERE = "sur ce téléphone";
 
 /**
  * Signing up or in with a code sent by e-mail. One flow for both: whether the address has
@@ -160,6 +161,7 @@ export function AccountScreen() {
 
   return (
     <Page kicker="Ton compte" title={titleOf(step, intent)}>
+      <Crest />
       {step.kind === "loading" && <Paragraph muted>Un instant…</Paragraph>}
 
       {step.kind === "failed" && (
@@ -235,6 +237,61 @@ export function AccountScreen() {
   );
 }
 
+/**
+ * The collections' gold seals fanned over the page, the first in front: what an account keeps.
+ * Its room is held while the catalogue loads, so the form does not move when they come.
+ */
+function Crest() {
+  const [catalog, setCatalog] = useState(catalogInHand);
+  useEffect(() => {
+    if (catalog !== null) return;
+    let live = true;
+    loadCatalog()
+      .then((loaded) => {
+        if (live) setCatalog(loaded);
+      })
+      // Only a decoration: without the catalogue, the page goes without it.
+      .catch(() => undefined);
+    return () => {
+      live = false;
+    };
+  }, [catalog]);
+  const [front, ...others] = catalog?.collections ?? [];
+  return (
+    <View
+      style={styles.crest}
+      accessibilityElementsHidden
+      importantForAccessibility="no-hide-descendants"
+    >
+      {others.slice(0, 2).map((collection, index) => (
+        <View
+          key={collection.id}
+          style={[
+            styles.sideSeal,
+            {
+              transform: [
+                { translateX: index === 0 ? -72 : 72 },
+                { rotate: index === 0 ? "-14deg" : "14deg" },
+              ],
+            },
+          ]}
+        >
+          <Svg width={78} height={78} viewBox="0 0 120 120">
+            <Seal collection={collection} paint={dimmed} />
+          </Svg>
+        </View>
+      ))}
+      {front !== undefined && (
+        <View style={styles.frontSeal}>
+          <Svg width={108} height={108} viewBox="0 0 120 120">
+            <Seal collection={front} paint={asIs} />
+          </Svg>
+        </View>
+      )}
+    </View>
+  );
+}
+
 function titleOf(step: Step, intent: AccountIntent): string {
   switch (step.kind) {
     case "member":
@@ -242,7 +299,7 @@ function titleOf(step: Step, intent: AccountIntent): string {
     case "confirm":
       return ACCOUNT_TITLES[step.kind];
     default:
-      return emailStep(intent, HERE).title;
+      return emailStep(intent).title;
   }
 }
 
@@ -263,7 +320,7 @@ function EmailForm({
 }) {
   const [email, setEmail] = useState(readLastEmail);
   const ready = !busy && email.trim() !== "";
-  const words = emailStep(intent, HERE);
+  const words = emailStep(intent);
   const submit = () => {
     if (ready) onSubmit(email.trim().toLowerCase());
   };
@@ -290,7 +347,7 @@ function EmailForm({
         </Check>
       )}
       <Button label={busy ? "Envoi…" : "Recevoir un code"} disabled={!ready} onPress={submit} />
-      <Paragraph muted>{words.how}</Paragraph>
+      <Text style={styles.how}>{words.how}</Text>
     </>
   );
 }
@@ -506,6 +563,20 @@ function AgeChoice({
 const ink = paperColors;
 
 const styles = StyleSheet.create({
+  crest: {
+    height: 112,
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: space.s4,
+  },
+  sideSeal: { position: "absolute", top: 22 },
+  frontSeal: { position: "absolute", top: 0 },
+  how: {
+    fontFamily: fonts.ui.semibold,
+    fontSize: fontSizes.micro,
+    textAlign: "center",
+    color: ink.pageInkMuted,
+  },
   leave: { marginTop: space.s10 },
   email: { fontFamily: fonts.text.medium, color: ink.rubric },
   subtitle: {
