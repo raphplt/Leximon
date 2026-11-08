@@ -26,6 +26,14 @@ def test_a_prediction_outside_the_categories_is_an_error() -> None:
     assert no_domain.suitability is None and no_domain.error
 
 
+def test_a_word_screened_before_a_domain_split_is_outdated() -> None:
+    fresh = prescreen.predict(FakeApi({"suitability": "ok", "domain": "betes_plantes"}), ENTRY)  # type: ignore[arg-type]
+    row = asyncio.run(fresh).to_json()
+    assert not prescreen.outdated_domain(row)
+    assert prescreen.outdated_domain({**row, "domains": None})
+    assert prescreen.outdated_domain({k: v for k, v in row.items() if k != "domains"})
+
+
 def test_agreement_counts_the_words_let_through_and_those_lost() -> None:
     predicted = {"a": "ok", "b": "ok", "c": "trop_courant", "d": "trop_technique", "z": "ok"}
     reference = {"a": "ok", "b": "sens_incertain", "c": "ok", "d": "trop_technique"}

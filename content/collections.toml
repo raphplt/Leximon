@@ -39,3 +39,11 @@ domains = ["metiers_objets"]
 back = "green"
 # The Chaudronnier auvergnat of the Cris de Paris (Bouchardon, engraved by Caylus), head and cauldron.
 engraving = { title = "File:Études prises dans le bas peuple ou les Cris de Paris - Chaudronier Auvergnat.jpg", crop = [0.12, 0.06, 0.9, 0.6], author = "Edme Bouchardon", year = 1737 }
+
+[[collection]]
+id = "betes-plantes"
+name = "Bêtes et plantes"
+tagline = "Les bêtes, les plantes et leurs vieux noms."
+runs = ["betes-1", "betes-2"]
+domains = ["betes_plantes"]
+back = "green"

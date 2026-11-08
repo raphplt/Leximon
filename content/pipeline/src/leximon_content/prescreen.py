@@ -23,7 +23,8 @@ MAX_ETYMOLOGY_CHARS = 160
 DOMAINS = {
     "caractere": "caractère, mœurs, défauts, travers, moqueries et injures, relations entre les gens, sentiments",
     "metiers_objets": "métiers, outils, objets, vêtements, habitat, techniques, commerce et monnaie",
-    "nature": "animaux, plantes, campagne, mer, ciel et météo",
+    "betes_plantes": "animaux et plantes : espèces, cris, petits, élevage, chasse, pêche, jardin et culture",
+    "nature": "campagne et terrains, eaux, mer, ciel et météo",
     "table": "nourriture, boissons, cuisine, fête et jeux",
     "autre": "tout le reste : idées, discours, droit, religion, temps, lieux…",
 }
@@ -82,6 +83,7 @@ class Prediction:
             "domain": self.domain,
             "error": self.error,
             "cost_usd": round(self.cost_usd, 7),
+            "domains": sorted(DOMAINS),
         }
 
 
@@ -104,6 +106,11 @@ def load() -> dict[str, dict[str, object]]:
         return {}
     rows = (json.loads(line) for line in PRESCREEN_FILE.read_text(encoding="utf-8").splitlines())
     return {row["word"]: row for row in rows if row["suitability"]}
+
+
+def outdated_domain(row: dict[str, object]) -> bool:
+    """Screened with an older list of domains: its domain may since have been split."""
+    return row.get("domains") != sorted(DOMAINS)
 
 
 async def screen(entries: list[littre.Entry], concurrency: int = 16) -> Counter[str]:

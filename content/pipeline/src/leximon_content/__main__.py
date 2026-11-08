@@ -2,7 +2,8 @@
 
 ngram     download Google Ngram (5 GB, once) and compute word frequencies
 prescreen predict with Haiku which words are worth drafting (data/prescreen.jsonl): --pool
-          screens the candidate pool (--limit N), --run compares with a drafted run
+          screens the candidate pool (--limit N), --run compares with a drafted run;
+          --pool --domain nature screens again the promising words of a domain since split
 select    pick the words of a run (selection.json), skipping words of earlier runs and words the
           pre-screen rejected, within the domains of the run's collection; --size
 draft     draft every word with the chosen model (drafts.jsonl); --compare uses all models
@@ -136,12 +137,28 @@ def command_draft(run: str, compare: bool) -> None:
     print(f"-> {out}")
 
 
-def command_prescreen(run: str, pool: bool, limit: int | None, yes: bool) -> None:
+def command_prescreen(
+    run: str, pool: bool, limit: int | None, yes: bool, domain: str | None
+) -> None:
     config.load_env()
     config.require_env("ANTHROPIC_API_KEY")
     if pool:
         words = sorted(c.word for c in selection.candidate_pool())
-        todo = [w for w in words if w not in prescreen.load()][:limit]
+        screened = prescreen.load()
+        if domain is not None:
+            # A domain split in two: its words are screened again under the new list. Only the
+            # promising ones, since the others are never drafted whatever their domain.
+            todo = [
+                w
+                for w in words
+                if (row := screened.get(w))
+                and row.get("domain") == domain
+                and row["suitability"] == "ok"
+                and prescreen.outdated_domain(row)
+            ][:limit]
+            asyncio.run(curation.prescreen_words(todo, yes, again=True))
+            return
+        todo = [w for w in words if w not in screened][:limit]
         asyncio.run(curation.prescreen_words(todo, yes))
         return
     words = [
@@ -398,6 +415,11 @@ def main() -> None:
     parser.add_argument("--size", type=int, default=50, help="select: number of words")
     parser.add_argument("--pool", action="store_true", help="prescreen: the candidate pool")
     parser.add_argument(
+        "--domain",
+        default=None,
+        help="prescreen --pool: screen again the promising words of a domain since split",
+    )
+    parser.add_argument(
         "--limit",
         type=int,
         default=None,
@@ -430,7 +452,7 @@ def main() -> None:
         command_release()
         return
     if args.command == "prescreen":
-        command_prescreen(args.run, args.pool, args.limit, args.yes)
+        command_prescreen(args.run, args.pool, args.limit, args.yes, args.domain)
         return
     if args.command == "quality":
         command_quality(args.run, args.yes)

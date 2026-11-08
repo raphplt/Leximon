@@ -250,10 +250,11 @@ async def judge_run(run: str, yes: bool) -> None:
             )
 
 
-async def prescreen_words(words: list[str], yes: bool) -> None:
+async def prescreen_words(words: list[str], yes: bool, again: bool = False) -> None:
+    """Screens the words not screened yet, or all of them `again`."""
     index = littre.index()
     done = prescreen.load()
-    todo = [index[w][0] for w in words if w not in done and w in index]
+    todo = [index[w][0] for w in words if (again or w not in done) and w in index]
     if not todo:
         print("pré-tri : déjà fait")
         return
