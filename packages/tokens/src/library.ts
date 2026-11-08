@@ -123,6 +123,14 @@ export const sachetCloths = {
   night: ["#34479A", "#18215A", "#0B1033"],
   burgundy: ["#A3253F", "#6A1023", "#33040F"],
   green: ["#2F8A5C", "#165238", "#082A1B"],
+  moss: ["#6E7F2E", "#3F4A16", "#1E2408"],
+  ochre: ["#B8862A", "#7A5512", "#3A2805"],
+  rust: ["#B5532A", "#73300F", "#371505"],
+  plum: ["#8E3A72", "#561F45", "#2A0C21"],
+  sea: ["#2C7F96", "#14495A", "#06232C"],
+  slate: ["#5D6C7C", "#363F4A", "#191E24"],
+  indigo: ["#5E3FA0", "#341F66", "#170C33"],
+  sepia: ["#8A6446", "#553B27", "#281A10"],
 } as const satisfies Record<string, readonly [string, string, string]>;
 
 /**

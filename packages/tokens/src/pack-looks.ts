@@ -4,7 +4,7 @@
  * draw the same sachet.
  */
 
-export type PackMotif = "dots" | "hatch" | "grid";
+export type PackMotif = "dots" | "hatch" | "grid" | "leaves";
 
 export interface PackLook {
   /** Strokes of the emblem, in a 64 × 64 box; the first ones listed in `solid` are filled too. */
@@ -24,6 +24,32 @@ const BOOK: PackLook = {
   solid: 1,
   motif: "dots",
 };
+
+/**
+ * The tile of the `leaves` motif, a herbarium print: two sprigs of three leaves, the second one
+ * mirrored and dropped half a tile, and two seeds between them.
+ */
+export const leafTile = {
+  /** Size of the geometry below. */
+  size: 40,
+  /** Size of a tile on the foil, in the sachet's pixels: larger than drawn, so a sprig reads. */
+  shown: 56,
+  /** Darker than the other motifs (0.11): thin sprigs fade sooner than dots or lines. */
+  opacity: 0.15,
+  /** Leaves and seeds, filled. */
+  fills: [
+    "M8 19C4 19 2 16 2 13 5 13 8 15 8 19Z",
+    "M11 14C13 11 16 11 18 13 16 16 13 16 11 14Z",
+    "M16 8C16 5 18 4 20 4 20 7 18 8 16 8Z",
+    "M32 33C36 33 38 30 38 27 35 27 32 29 32 33Z",
+    "M29 28C27 25 24 25 22 27 24 30 27 30 29 28Z",
+    "M24 22C24 19 22 18 20 18 20 21 22 22 24 22Z",
+    "M30 8.5a1.5 1.5 0 1 0 0.01 0Z",
+    "M10 32.5a1.5 1.5 0 1 0 0.01 0Z",
+  ],
+  /** Stems, stroked one unit wide. */
+  stems: ["M4 26C8 20 10 14 16 8", "M36 40C32 34 30 28 24 22"],
+} as const;
 
 /** Each collection's emblem and motif; a collection missing here gets the book. */
 const LOOKS: Readonly<Record<string, PackLook>> = {
@@ -51,6 +77,16 @@ const LOOKS: Readonly<Record<string, PackLook>> = {
     ],
     solid: 2,
     motif: "grid",
+  },
+  "betes-plantes": {
+    emblem: [
+      "M30 40C20 40 12 34 10 24c10 0 18 6 20 16z",
+      "M31 30c4-8 12-12 22-12-2 10-10 16-22 12z",
+      "M26 22c-6-4-8-10-6-16 6 2 9 8 6 16z",
+      "M32 54C32 40 30 26 22 12",
+    ],
+    solid: 3,
+    motif: "leaves",
   },
 };
 

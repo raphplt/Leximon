@@ -71,8 +71,9 @@ PICK_EFFORT: llm.Effort = "medium"
 #: The Message Batches API costs half the price of llm.PRICES.
 BATCH_DISCOUNT = 0.5
 #: Owner's cap for this whole step (queries and pick, both rounds), whatever --yes says: 9 $ for
-#: the first round, 5 $ more for the second (owner, 2026-10-21; first round spent 4.98 $).
-STEP_BUDGET_USD = 10.0
+#: the first round, 5 $ more for the second (owner, 2026-10-21; first round spent 4.98 $), then
+#: 3 $ more for Bêtes et plantes (owner, 2026-11-07: 15 $ for its cards and engravings together).
+STEP_BUDGET_USD = 13.0
 #: Slots kept for the first round's other candidates in a second-round search.
 SECOND_ROUND_OLD = 3
 #: Estimates before a first measurement (vision measurement, R&D §6; Haiku query trial).
@@ -863,7 +864,8 @@ def run_search(cards: Sequence[Card]) -> None:
     )
     first_round = searches_of_round(1) if ROUND == 2 else {}
     earlier = [searches_of_round(n) for n in range(1, ROUND)]
-    taken = engraved_titles() if ROUND > 2 else frozenset()
+    # Every round: a new collection is searched after the rest of the catalogue is engraved.
+    taken = engraved_titles()
     refused_titles = {
         card: row["pick_title"]
         for card, row in _latest_by_card(FIRST_ROUND_PICKS_FILE, lambda r: True).items()

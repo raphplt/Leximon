@@ -1,6 +1,7 @@
 import type { CatalogCollectionFile } from "@leximon/contract";
 import {
   backTone,
+  leafTile,
   type PackMotif,
   packLook,
   sealBeads,
@@ -468,6 +469,26 @@ function Motif({
         paint={asIs}
       />
     );
+  } else if (motif === "leaves") {
+    pattern = (
+      <Pattern
+        id="motif"
+        patternUnits="userSpaceOnUse"
+        x={0}
+        y={STRIP}
+        width={px(leafTile.shown)}
+        height={px(leafTile.shown)}
+      >
+        <G transform={`scale(${px(leafTile.shown / leafTile.size)})`}>
+          {leafTile.fills.map((d) => (
+            <Path key={d} d={d} fill={ink} />
+          ))}
+          {leafTile.stems.map((d) => (
+            <Path key={d} d={d} fill="none" stroke={ink} strokeWidth={1} />
+          ))}
+        </G>
+      </Pattern>
+    );
   } else {
     pattern = (
       <Pattern
@@ -486,7 +507,11 @@ function Motif({
   return (
     <>
       <Defs>{pattern}</Defs>
-      <Rect {...BODY_BOX} fill="url(#motif)" opacity={MOTIF_OPACITY} />
+      <Rect
+        {...BODY_BOX}
+        fill="url(#motif)"
+        opacity={motif === "leaves" ? leafTile.opacity : MOTIF_OPACITY}
+      />
     </>
   );
 }

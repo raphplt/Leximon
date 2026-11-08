@@ -47,3 +47,5 @@ tagline = "Les bêtes, les plantes et leurs vieux noms."
 runs = ["betes-1", "betes-2"]
 domains = ["betes_plantes"]
 back = "moss"
+# Dürer's Rhinoceros, the head and its horn.
+engraving = { title = "File:Albrecht Dürer, The Rhinoceros, 1515, NGA 47903.jpg", crop = [0.6, 0.28, 1, 0.8], author = "Albrecht Dürer", year = 1515 }

@@ -1,6 +1,7 @@
 import type { CatalogCollectionFile } from "@leximon/contract";
 import {
   backTone,
+  leafTile,
   type PackMotif,
   packLook,
   sealBeads,
@@ -30,20 +31,44 @@ export function packOf(collection: CatalogCollectionFile): PackCollection {
   };
 }
 
-/** The foil's motif in CSS, drawn in currentColor. */
-const MOTIFS: Readonly<Record<PackMotif, string>> = {
-  dots: "radial-gradient(circle, currentColor 1.4px, transparent 1.6px) 0 0 / 22px 22px",
-  hatch: "repeating-linear-gradient(45deg, currentColor 0 1px, transparent 1px 11px)",
-  grid: "linear-gradient(currentColor 1px, transparent 1px) 0 0 / 24px 24px, linear-gradient(90deg, currentColor 1px, transparent 1px) 0 0 / 24px 24px",
-};
+/** The leaves tile as an SVG mask: CSS gradients cannot draw a leaf. */
+const LEAF_MASK = (() => {
+  const { size, shown, fills, stems } = leafTile;
+  const svg = [
+    `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">`,
+    ...fills.map((d) => `<path d="${d}"/>`),
+    ...stems.map((d) => `<path d="${d}" fill="none" stroke="#000"/>`),
+    "</svg>",
+  ].join("");
+  return `url("data:image/svg+xml,${encodeURIComponent(svg)}") 0 0 / ${shown}px ${shown}px`;
+})();
+
+/** The foil's motif in CSS, drawn in currentColor, and the mask that cuts it when it has one. */
+const MOTIFS: Readonly<Record<PackMotif, { background: string; mask?: string; opacity?: number }>> =
+  {
+    dots: {
+      background: "radial-gradient(circle, currentColor 1.4px, transparent 1.6px) 0 0 / 22px 22px",
+    },
+    hatch: {
+      background: "repeating-linear-gradient(45deg, currentColor 0 1px, transparent 1px 11px)",
+    },
+    grid: {
+      background:
+        "linear-gradient(currentColor 1px, transparent 1px) 0 0 / 24px 24px, linear-gradient(90deg, currentColor 1px, transparent 1px) 0 0 / 24px 24px",
+    },
+    leaves: { background: "currentColor", mask: LEAF_MASK, opacity: leafTile.opacity },
+  };
 
 /** The colors and motif of a collection's sachet, as CSS variables. */
 export function packVariables(collection: PackCollection): CSSProperties {
   const tone = backTone(collection.back);
+  const motif = MOTIFS[packLook(collection.id).motif];
   return {
     "--tone-light": tone.light,
     "--tone-dark": tone.dark,
-    "--motif": MOTIFS[packLook(collection.id).motif],
+    "--motif": motif.background,
+    "--motif-mask": motif.mask ?? "none",
+    "--motif-opacity": motif.opacity ?? 0.11,
   } as CSSProperties;
 }
 

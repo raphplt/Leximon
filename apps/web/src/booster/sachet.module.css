@@ -351,7 +351,9 @@
   inset: 0;
   color: var(--lx-color-kraft);
   background: var(--motif, none);
-  opacity: 0.11;
+  -webkit-mask: var(--motif-mask, none);
+  mask: var(--motif-mask, none);
+  opacity: var(--motif-opacity, 0.11);
   pointer-events: none;
 }
 
