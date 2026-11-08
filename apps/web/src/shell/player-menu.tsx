@@ -1,6 +1,6 @@
 "use client";
 
-import { APPEARANCE_NEW_KEY, SIGN_IN_QUERY } from "@leximon/view-model";
+import { APPEARANCE_NEW_KEY, patronMenuLabel, SIGN_IN_QUERY } from "@leximon/view-model";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { FeedbackDialog } from "@/beta/feedback-dialog";
@@ -64,7 +64,7 @@ export function PlayerMenu({
     ],
     [
       { label: "Nouveautés", icon: "bolt", href: "/nouveautes" },
-      { label: "Devenir mécène", icon: "crown", href: "/mecene" },
+      { label: patronMenuLabel(view.patron), icon: "crown", href: "/mecene" },
       { label: "Écrire à l'équipe", icon: "chat", action: () => setFeedbackOpen(true) },
       ...admin,
     ],

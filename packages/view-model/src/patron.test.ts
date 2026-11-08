@@ -2,6 +2,9 @@ import type { PatronResponse } from "@leximon/contract";
 import { describe, expect, it } from "vitest";
 import {
   claimableLabel,
+  finderLine,
+  findStateLine,
+  findsLeftLine,
   formatEuros,
   monthCosmeticLine,
   PATRON_MANAGE,
@@ -9,11 +12,13 @@ import {
   patronCosmeticName,
   patronMarkHint,
   patronMarkLabel,
+  patronMenuLabel,
   patronPageKind,
   patronPlanChoices,
   patronStatus,
   patronTrialNote,
   patronWelcome,
+  wordFoundLine,
 } from "./patron";
 
 const NOW = Date.parse("2027-03-10T12:00:00.000Z");
@@ -33,6 +38,7 @@ function patron(overrides: Partial<PatronResponse> = {}): PatronResponse {
     trialDays: 14,
     founder: false,
     foundingOffer: false,
+    finds: { left: 0, words: [] },
     subscription: null,
     ...overrides,
   };
@@ -270,6 +276,14 @@ describe("patronWelcome", () => {
   });
 });
 
+describe("menu", () => {
+  it("offers the subscription, or leads a patron to theirs", () => {
+    expect(patronMenuLabel(null)).toBe("Devenir mécène");
+    expect(patronMenuLabel("patron")).toBe("Mon abonnement mécène");
+    expect(patronMenuLabel("founder")).toBe("Mon abonnement mécène");
+  });
+});
+
 describe("mark", () => {
   it("labels the badge and its hint", () => {
     expect(patronMarkLabel("patron")).toBe("Mécène");
@@ -277,5 +291,21 @@ describe("mark", () => {
     expect(patronMarkLabel(null)).toBeNull();
     expect(patronMarkHint("patron")).toBe("Ce mécène fait vivre Leximon.");
     expect(patronMarkHint(null)).toBeNull();
+  });
+});
+
+describe("finding a word", () => {
+  it("counts the words left for 0, 1 and several", () => {
+    expect(findsLeftLine(0)).toBe("Tu n'as pas de mot à dénicher pour l'instant.");
+    expect(findsLeftLine(1)).toBe("Tu peux dénicher un mot.");
+    expect(findsLeftLine(3)).toBe("Tu peux dénicher 3 mots.");
+  });
+
+  it("says where a found word stands, and signs its card", () => {
+    expect(wordFoundLine("lucubrateur")).toBe(
+      "« lucubrateur » est à toi. Il paraîtra avec sa collection, signé de ton pseudo.",
+    );
+    expect(findStateLine("rejected")).toContain("rendu");
+    expect(finderLine("Raph")).toBe("Déniché par Raph");
   });
 });

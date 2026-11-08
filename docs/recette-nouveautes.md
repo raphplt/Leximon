@@ -743,6 +743,30 @@ Préparer : les clés de test de Stripe dans `apps/api/.dev.vars` et `stripe lis
 - **Attendu :** les chiffres (mécènes, essais, résiliés, paiements refusés, fondateurs, revenu par mois) et la liste. Le remboursement demande une confirmation qui dit le montant, puis « Abonnement arrêté et 3,99 € remboursés. » ; le journal le note. Sur le téléphone, le badge s'affiche comme sur le web ; « Ton abonnement mécène » n'apparaît dans le profil qu'avec le badge, et sa page montre la même carte de mécène que le web (avatar couronné, nom, badge, statut) et le coffret à réclamer, puis dit « Ton abonnement se gère depuis ton compte sur leximon.fr. », sans lien ni prix.
 - **Retour :**
 
+## Mécène · lot 3, dénicher un mot
+
+Préparer : `pnpm db:migrate`, puis `pnpm reserve:publish` (charge `content/reserve/reserve.json`). Un abonné annuel a un mot à dénicher dès son paiement ; un mensuel, après trois mois payés (avec une horloge de test de Stripe). Il faut un pseudo.
+
+### MEC-09 · Ton mot dans le jeu
+- **Faire :** ouvre `/mecene` en abonné annuel qui a payé, puis en abonné mensuel, puis pendant un essai.
+- **Attendu :** sous ta carte de mécène, « Ton mot dans le jeu ». L'annuel lit « Tu peux dénicher un mot. » et le bouton « Dénicher un mot » ; le mensuel et l'essai lisent « Tu n'as pas de mot à dénicher pour l'instant. » et « Un mot par trimestre d'abonnement, dès le premier paiement pour un abonnement annuel. ». Le menu du joueur dit « Mon abonnement mécène » au lieu de « Devenir mécène ».
+- **Retour :**
+
+### MEC-10 · Chercher et dénicher
+- **Faire :** « Dénicher un mot », tape « ebau », choisis « ébaucheur », puis « Dénicher ce mot ». Recommence sur le téléphone (profil, « Ton abonnement mécène »).
+- **Attendu :** la liste suit la frappe, sans tenir compte des accents ; chaque mot a sa nature et sa définition du Littré, jamais sa rareté. « Dénicher » demande une confirmation en rouge (« Ce choix est définitif… »). Après, le mot en grand et « « ébaucheur » est à toi. Il paraîtra avec sa collection, signé de ton pseudo. ». De retour sur la page Mécène, le mot est listé, « Il paraîtra avec sa collection. », et les boutons « Dénicher » ont disparu de la recherche.
+- **Retour :**
+
+### MEC-11 · Deux mécènes, un mot
+- **Faire :** avec deux comptes mécènes, ouvre la recherche sur le même mot, et confirme sur l'un puis sur l'autre. Puis, avec un compte sans pseudo, essaie de dénicher.
+- **Attendu :** le second lit « Ce mot vient d'être déniché par un autre mécène. ». Sans pseudo : « Choisis d'abord un pseudo dans ton profil : il signera ta carte. ».
+- **Retour :**
+
+### MEC-12 · Parution et mot écarté
+- **Faire :** `pnpm finds:export`, puis une série de la chaîne avec `select` ; publie une version qui contient le mot (`catalog:publish`). Pour un autre mot, `pnpm finds:reject <id>`.
+- **Attendu :** `select` annonce le mot déniché en tête. Après la publication, la page Mécène dit « Paru, avec ton pseudo sur la carte. », la fiche de la carte montre « Déniché par [pseudo] » (web et téléphone, pour tous les joueurs), et le mécène a un exemplaire de plus, sans XP ni échange possible. Le mot écarté dit « Écarté au contrôle de qualité. Ton droit de dénicher t'est rendu. » et le droit revient.
+- **Retour :**
+
 ## Mauvais choix des QCM
 
 Retour de bêta du 2026-10-31 : on trouvait la réponse par élimination (un verbe parmi des noms, un mot sans rapport avec le thème révisé). La nature des cartes vient de la publication du catalogue : en production, la colonne reste vide tant qu'une publication n'est pas passée, et les choix restent ceux d'avant.

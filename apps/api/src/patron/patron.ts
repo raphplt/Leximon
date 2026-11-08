@@ -27,6 +27,7 @@ import { eq, inArray } from "drizzle-orm";
 import { ADMIN_ROLE } from "../auth";
 import { type Billing, billingConfigured, type SubscriptionSnapshot } from "./billing";
 import type { BillingEvent } from "./events";
+import { findsLeftOf, readFinds } from "./reserve";
 
 const {
   patronCosmeticClaims,
@@ -94,11 +95,14 @@ async function readRow(db: Database, userId: string): Promise<PatronRow | undefi
   return row;
 }
 
+export const standingOfRow = (row: PatronRow | undefined): PatronStanding =>
+  row === undefined ? "none" : standingOf(row);
+
 export async function readPatron(
   db: Database,
   input: { readonly userId: string; readonly sales: PatronSales; readonly now: EpochMs },
 ): Promise<PatronResponse> {
-  const [row, buyer, bracket, periods, claimed] = await Promise.all([
+  const [row, buyer, bracket, periods, claimed, finds] = await Promise.all([
     readRow(db, input.userId),
     readBuyer(db, input.userId),
     db
@@ -107,9 +111,10 @@ export async function readPatron(
       .where(eq(playerAgeBrackets.userId, input.userId)),
     readPeriods(db, input.userId),
     readClaimedMonths(db, input.userId),
+    readFinds(db, input.userId),
   ]);
   const rules = patronRulesAt(PATRON_SCHEDULE, input.now);
-  const standing = row === undefined ? "none" : standingOf(row);
+  const standing = standingOfRow(row);
   const founder = row?.founderAt != null;
   return {
     sales: input.sales,
@@ -122,6 +127,15 @@ export async function readPatron(
     trialDays: rules.trialDays,
     founder,
     foundingOffer: isFoundingPayment(rules, input.now),
+    finds: {
+      left: findsLeftOf(rules, periods, finds, standing, input.now),
+      words: finds.map((find) => ({
+        id: find.id,
+        word: find.word,
+        state: find.state,
+        foundAt: find.foundAt.toISOString(),
+      })),
+    },
     subscription:
       row?.stripeSubscriptionId == null
         ? null
@@ -137,12 +151,13 @@ export async function readPatron(
   };
 }
 
-async function readPeriods(db: Reader, userId: string): Promise<PaidPeriod[]> {
+export async function readPeriods(db: Reader, userId: string): Promise<PaidPeriod[]> {
   const rows = await db
     .select({
       startsAt: patronPeriods.startsAt,
       endsAt: patronPeriods.endsAt,
       refundedAt: patronPeriods.refundedAt,
+      plan: patronPeriods.plan,
     })
     .from(patronPeriods)
     .where(eq(patronPeriods.userId, userId));
@@ -150,6 +165,7 @@ async function readPeriods(db: Reader, userId: string): Promise<PaidPeriod[]> {
     startsAt: row.startsAt.getTime(),
     endsAt: row.endsAt.getTime(),
     refunded: row.refundedAt !== null,
+    plan: row.plan as PatronPlan,
   }));
 }
 

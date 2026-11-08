@@ -400,6 +400,46 @@
   font-size: var(--lx-size-title-large);
 }
 
+.finds {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 20px 24px;
+}
+
+.findsHead {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.findsText {
+  display: grid;
+  gap: 4px;
+}
+
+.found {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 12px 0 0;
+  border-top: 1px solid color-mix(in srgb, var(--lx-toy-outline) 25%, transparent);
+  list-style: none;
+}
+
+.found li {
+  display: grid;
+  gap: 2px;
+  font-size: var(--lx-size-body);
+  font-weight: 600;
+}
+
+.foundWord {
+  font-family: var(--font-display), Georgia, serif;
+  font-weight: var(--lx-weight-display);
+  font-size: var(--lx-size-subtitle);
+}
+
 .claims {
   display: flex;
   flex-direction: column;

@@ -11,6 +11,7 @@ import {
   copiesLabel,
   creditLine,
   engravingOf,
+  finderLine,
   frequencyLine,
   masteryView,
   PIN_TEXTS,
@@ -25,7 +26,7 @@ import * as WebBrowser from "expo-web-browser";
 import { useCallback, useEffect, useState } from "react";
 import { Pressable, Share, StyleSheet, Text, useWindowDimensions, View } from "react-native";
 import { cardsAround } from "@/cards/card-run";
-import { catalogInHand, loadCatalog } from "@/cards/catalog";
+import { catalogInHand, loadCatalog, useFinder } from "@/cards/catalog";
 import { HoloCard } from "@/cards/holo-card";
 import { WEB_URL } from "@/config";
 import { RecycleCopy } from "@/ecus/recycle-copy";
@@ -231,6 +232,8 @@ function SheetBody({
           <Text style={styles.chip}>{collection}</Text>
         </View>
 
+        <Finder cardId={card.id} />
+
         {card.quote !== null && (
           <View style={styles.quote}>
             <Text style={styles.quoteText}>« {card.quote.text} »</Text>
@@ -323,6 +326,18 @@ function SheetBody({
  * Credit of the card's engraving, under the card shown large: the small card face has no room
  * for it, and CC BY requires it somewhere the player can see.
  */
+/** The patron who brought the word into the game, signed on the card for every player. */
+function Finder({ cardId }: { readonly cardId: string }) {
+  const finder = useFinder(cardId);
+  if (finder === null) return null;
+  return (
+    <View style={styles.finder}>
+      <Icon name="crown" size={18} color={ink.rubric} />
+      <Text style={styles.finderText}>{finderLine(finder)}</Text>
+    </View>
+  );
+}
+
 function EngravingCredit({ card }: { readonly card: CatalogCard }) {
   const engraving = engravingOf(card);
   if (engraving === null) return null;
@@ -390,6 +405,8 @@ const styles = StyleSheet.create({
     color: ink.pageInkMuted,
   },
   chips: { flexDirection: "row", flexWrap: "wrap", gap: space.s4 },
+  finder: { flexDirection: "row", alignItems: "center", gap: space.s3 },
+  finderText: { fontFamily: fonts.ui.extrabold, fontSize: fontSizes.body, color: ink.rubric },
   chip: {
     overflow: "hidden",
     paddingHorizontal: space.s6,

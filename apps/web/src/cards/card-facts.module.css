@@ -30,6 +30,16 @@
   color: var(--lx-color-page-ink-soft);
 }
 
+.finder {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: var(--lx-s4) 0 0;
+  font-size: var(--lx-size-body);
+  font-weight: 800;
+  color: var(--lx-color-rubric);
+}
+
 .quote {
   margin: var(--lx-s9) 0 0;
   padding-left: var(--lx-s7);

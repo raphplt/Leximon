@@ -104,3 +104,58 @@ export const stripeEvents = pgTable("stripe_events", {
   type: text().notNull(),
   receivedAt: timestamp({ withTimezone: true }).defaultNow().notNull(),
 });
+
+/**
+ * The words patrons may find: pre-screened and not published yet, loaded from the content
+ * pipeline's reserve. A word's id is the card it would become. The rarity never comes here, so
+ * nobody picks a word for it.
+ */
+export const reserveWords = pgTable(
+  "reserve_words",
+  {
+    id: text().primaryKey(),
+    word: text().notNull(),
+    definition: text().notNull(),
+    theme: text(),
+    partOfSpeech: text(),
+    /** The word lowercased and without accents: searched by its beginning. */
+    searchKey: text().notNull(),
+    /** The reserve version that last listed it. */
+    release: text().notNull(),
+    /** No longer in the latest reserve (published meanwhile, or dropped by the pipeline). */
+    removedAt: timestamp({ withTimezone: true }),
+  },
+  (table) => [
+    index("reserve_words_search_idx")
+      .on(table.searchKey.op("text_pattern_ops"))
+      .where(sql`${table.removedAt} is null`),
+    index("reserve_words_theme_idx")
+      .on(table.theme, table.searchKey)
+      .where(sql`${table.removedAt} is null`),
+  ],
+);
+
+/**
+ * A word found by a patron: the word as primary key, so that it is found once. It stays
+ * `reserved` until its card is published, or `rejected` if the quality check sets it aside,
+ * which gives the patron's right back.
+ */
+export const wordFinds = pgTable(
+  "word_finds",
+  {
+    wordId: text()
+      .primaryKey()
+      .references(() => reserveWords.id),
+    userId: text()
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    state: text().notNull(),
+    foundAt: timestamp({ withTimezone: true }).notNull(),
+    /** When it was published or set aside. */
+    settledAt: timestamp({ withTimezone: true }),
+  },
+  (table) => [
+    index("word_finds_user_idx").on(table.userId, table.foundAt),
+    check("word_finds_state_check", sql`${table.state} in ('reserved', 'published', 'rejected')`),
+  ],
+);

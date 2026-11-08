@@ -3,6 +3,7 @@ import {
   type AdminPatronRefundResponse,
   type AdminPatronsResponse,
   adminPatronsQuerySchema,
+  type FindRefusal,
   IDEMPOTENCY_KEY_HEADER,
   idempotencyKeySchema,
   monthCosmeticSchema,
@@ -12,6 +13,10 @@ import {
   type PatronRefusal,
   type PatronResponse,
   patronCheckoutRequestSchema,
+  type ReserveResponse,
+  reserveQuerySchema,
+  slugSchema,
+  type WordFindView,
 } from "@leximon/contract";
 import { Hono } from "hono";
 import type { AppEnv } from "../context";
@@ -29,6 +34,7 @@ import {
   patronSales,
   readPatron,
 } from "./patron";
+import { findWord, InvalidReserveCursorError, searchReserve } from "./reserve";
 
 /** Invoices list their lines: larger than other webhooks, still far below this. */
 const MAX_WEBHOOK_BYTES = 256 * 1024;
@@ -38,6 +44,10 @@ const webUrlOf = (env: Env) => env.PUBLIC_WEB_URL.replace(/\/+$/, "");
 /** The patron subscription, under `/me/patron` (signed-in player, rate limited). */
 export function patronRoutes(createBilling: BillingFactory) {
   const routes = new Hono<AppEnv>();
+  routes.onError((error, c) => {
+    if (error instanceof InvalidReserveCursorError) return c.json({ error: "invalid_cursor" }, 400);
+    throw error;
+  });
 
   routes.get("/", async (c) =>
     c.json<PatronResponse>(
@@ -98,6 +108,26 @@ export function patronRoutes(createBilling: BillingFactory) {
       return c.json<{ error: PatronClaimRefusal }>({ error: result.reason }, 409);
     }
     return c.json<PatronClaimResponse>({ cosmetic: result.cosmetic });
+  });
+
+  routes.get("/reserve", async (c) => {
+    const query = reserveQuerySchema.safeParse(c.req.query());
+    if (!query.success) return c.json({ error: "invalid_request" }, 400);
+    return c.json<ReserveResponse>(await searchReserve(c.var.db, query.data));
+  });
+
+  routes.post("/reserve/:wordId/find", refuseLockedWrites, async (c) => {
+    const wordId = slugSchema.safeParse(c.req.param("wordId"));
+    if (!wordId.success) return c.json({ error: "invalid_request" }, 400);
+    const result = await findWord(c.var.db, {
+      userId: c.var.userId,
+      wordId: wordId.data,
+      now: Date.now(),
+    });
+    if (result.kind === "refused") {
+      return c.json<{ error: FindRefusal }>({ error: result.reason }, 409);
+    }
+    return c.json<{ find: WordFindView }>({ find: result.find });
   });
 
   return routes;

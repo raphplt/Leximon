@@ -1,14 +1,17 @@
 """Picks the words of a drafting batch from the whole Littré, spread across the rarity tiers that
 the Ngram frequency predicts. Deterministic for a given seed."""
 
+import json
 import random
 import re
-from collections.abc import Iterable
+from collections.abc import Iterable, Sequence
 from dataclasses import asdict, dataclass
 from datetime import date
+from pathlib import Path
 
-from . import lexique, littre, ngram, rarity, wiktionary
+from . import config, lexique, littre, ngram, rarity, wiktionary
 from .exclusions import is_excluded
+from .release import slug
 
 #: Editorial seed list for the "odd words" theme, which has no Wiktionnaire category.
 ODD_WORDS = (
@@ -55,6 +58,9 @@ TIER_SHARES = {"common": 0.35, "uncommon": 0.22, "rare": 0.15, "precious": 0.28}
 #: Share of the batch reserved for the themes with a strong buzz potential.
 INSULT_SHARE = 0.05
 ODD_SHARE = 0.03
+#: Words patrons reserved in the game ("dénicher un mot"), written by the API's export.
+FINDS_FILE = config.DATA_DIR / "finds.json"
+FOUND_REASON = "déniché"
 
 
 @dataclass(frozen=True)
@@ -115,20 +121,79 @@ def candidate_pool() -> list[Candidate]:
     return pool
 
 
+@dataclass(frozen=True)
+class Find:
+    id: str
+    word: str
+
+
+class FindsError(Exception):
+    """finds.json does not have the expected shape."""
+
+
+def load_finds(path: Path = FINDS_FILE) -> list[Find]:
+    """The reserved words, in the file's order; none when the file is absent."""
+    if not path.exists():
+        return []
+    data = json.loads(path.read_text(encoding="utf-8"))
+    words = data.get("words") if isinstance(data, dict) else None
+    if not isinstance(words, list):
+        raise FindsError(f"{path} : une liste « words » est attendue")
+    finds = []
+    for item in words:
+        if not (
+            isinstance(item, dict)
+            and isinstance(item.get("id"), str)
+            and isinstance(item.get("word"), str)
+            and item["word"].strip()
+        ):
+            raise FindsError(f"{path} : entrée invalide {item!r}")
+        finds.append(Find(item["id"], item["word"].strip().lower()))
+    return finds
+
+
+def match_finds(finds: Sequence[Find], pool: Iterable[Candidate]) -> tuple[list[str], list[Find]]:
+    """(words of the pool that patrons found, finds absent from the pool). A find matches by its
+    word or by its card id."""
+    by_word = {c.word: c for c in pool}
+    by_id = {slug(word): word for word in by_word}
+    placed: list[str] = []
+    missing: list[Find] = []
+    for find in finds:
+        word = find.word if find.word in by_word else by_id.get(find.id)
+        if word is None:
+            missing.append(find)
+        elif word not in placed:
+            placed.append(word)
+    return placed, missing
+
+
 def pick(
-    pool: Iterable[Candidate], size: int, seed: int, exclude: frozenset[str] = frozenset()
+    pool: Iterable[Candidate],
+    size: int,
+    seed: int,
+    exclude: frozenset[str] = frozenset(),
+    first: Sequence[str] = (),
 ) -> list[Candidate]:
-    """Themed words first, then each predicted tier in its share. Words in `exclude` (already
-    drafted in an earlier run) are skipped."""
+    """The words of `first` (found by patrons), then themed words, then each predicted tier in
+    its share. Words in `first` all count toward `size` and are never left out, even beyond it.
+    Words in `exclude` (already drafted in an earlier run) are skipped."""
     rng = random.Random(seed)
     available = sorted((c for c in pool if c.word not in exclude), key=lambda c: c.word)
     chosen: dict[str, Candidate] = {}
 
+    def keep(candidate: Candidate, reason: str) -> None:
+        chosen[candidate.word] = Candidate(**{**asdict(candidate), "pick_reason": reason})
+
     def take(candidates: list[Candidate], count: int, reason: str) -> None:
         fresh = [c for c in candidates if c.word not in chosen]
-        for candidate in rng.sample(fresh, min(count, len(fresh))):
-            chosen[candidate.word] = Candidate(**{**asdict(candidate), "pick_reason": reason})
+        for candidate in rng.sample(fresh, max(0, min(count, len(fresh)))):
+            keep(candidate, reason)
 
+    by_word = {c.word: c for c in available}
+    for word in first:
+        if word in by_word:
+            keep(by_word[word], FOUND_REASON)
     take([c for c in available if "insulte" in c.categories], round(size * INSULT_SHARE), "insulte")
     take([c for c in available if c.word in ODD_WORDS], round(size * ODD_SHARE), "loufoque")
     remaining = size - len(chosen)

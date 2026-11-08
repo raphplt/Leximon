@@ -1,9 +1,11 @@
 import type {
+  FindRefusal,
   MonthCosmeticView,
   PatronCosmeticView,
   PatronMarkView,
   PatronPlan,
   PatronResponse,
+  WordFindView,
 } from "@leximon/contract";
 import {
   type EpochMs,
@@ -34,6 +36,11 @@ export function patronPrice(plan: PatronPlan, now: EpochMs): string {
 
 export const PATRON_PAGE_TITLE = "Devenir mécène";
 export const PATRON_KICKER = "Abonnement";
+
+/** The entry of the player's menu: the offer to whoever has no mark, their subscription otherwise. */
+export function patronMenuLabel(mark: PatronMarkView): string {
+  return mark === null ? "Devenir mécène" : "Mon abonnement mécène";
+}
 export const PATRON_CARD_KICKER = "Carte de mécène";
 export const PATRON_MEMBER_TITLE = "Ton abonnement mécène";
 
@@ -370,4 +377,65 @@ export function patronWelcome(
     ],
     note: null,
   };
+}
+
+// --- Finding a word ---------------------------------------------------------------------------
+
+export const PATRON_FINDS_TITLE = "Ton mot dans le jeu";
+export const PATRON_FINDS_RULE =
+  "Un mot par trimestre d'abonnement, dès le premier paiement pour un abonnement annuel.";
+export const PATRON_FIND_ACTION = "Dénicher un mot";
+export const PATRON_FIND_PAGE_TITLE = "Dénicher un mot";
+export const PATRON_FIND_INTRO =
+  "Choisis un mot parmi ceux qui ne sont pas encore dans le jeu. Il paraîtra dans une prochaine collection avec ton pseudo, et tu en recevras un exemplaire unique.";
+export const PATRON_FIND_SEARCH = "Cherche un mot par son début";
+export const PATRON_FIND_EMPTY = "Aucun mot de la réserve ne commence ainsi.";
+export const PATRON_FIND_MORE = "Voir plus de mots";
+export const PATRON_FIND_PICK = "Dénicher";
+export const PATRON_FIND_CONFIRM = "Dénicher ce mot";
+export const PATRON_FIND_CANCEL = "Annuler";
+export const PATRON_FIND_BUSY = "Dénichage…";
+export const PATRON_FIND_WARNING =
+  "Ce choix est définitif : le mot sort de la réserve pour tout le monde.";
+export const PATRON_FIND_BACK = "Retour à ma page de mécène";
+
+/** How many words the patron may still find. */
+export function findsLeftLine(left: number): string {
+  if (left === 0) return "Tu n'as pas de mot à dénicher pour l'instant.";
+  return left === 1 ? "Tu peux dénicher un mot." : `Tu peux dénicher ${left} mots.`;
+}
+
+/** After the find: the reward, the word in quotes. */
+export function wordFoundLine(word: string): string {
+  return `« ${word} » est à toi. Il paraîtra avec sa collection, signé de ton pseudo.`;
+}
+
+/** Where a found word stands. */
+export function findStateLine(state: WordFindView["state"]): string {
+  switch (state) {
+    case "reserved":
+      return "Il paraîtra avec sa collection.";
+    case "published":
+      return "Paru, avec ton pseudo sur la carte.";
+    case "rejected":
+      return "Écarté au contrôle de qualité. Ton droit de dénicher t'est rendu.";
+  }
+}
+
+export function findRefusalLine(reason: FindRefusal): string {
+  switch (reason) {
+    case "taken":
+      return "Ce mot vient d'être déniché par un autre mécène.";
+    case "no_right":
+      return "Tu n'as plus de mot à dénicher pour l'instant.";
+    case "no_pseudo":
+      return "Choisis d'abord un pseudo dans ton profil : il signera ta carte.";
+    case "not_in_reserve":
+      return "Ce mot n'est plus dans la réserve.";
+  }
+}
+
+/** On a card found by a patron, for every player. */
+export function finderLine(pseudo: string): string {
+  return `Déniché par ${pseudo}`;
 }

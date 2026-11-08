@@ -21,6 +21,7 @@ export * from "./moderation";
 export * from "./patron";
 export * from "./profile";
 export * from "./progress";
+export * from "./reserve";
 export * from "./riddles";
 export * from "./trades";
 export * from "./waitlist";

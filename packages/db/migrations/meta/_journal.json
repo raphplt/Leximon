@@ -351,6 +351,13 @@
       "when": 1794170162544,
       "tag": "0049_card_part_of_speech",
       "breakpoints": true
+    },
+    {
+      "idx": 50,
+      "version": "7",
+      "when": 1794170933998,
+      "tag": "0050_reserve_words",
+      "breakpoints": true
     }
   ]
 }

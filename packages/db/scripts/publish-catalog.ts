@@ -7,7 +7,9 @@
  * pointing at a missing file. Engravings and audio come from the content pipeline's output
  * (git-ignored binaries, never in content/releases): a release referring to a missing one is
  * refused. `engravings.json`, the ink of each card by id, is written from the release beside the
- * manifest. Collection files listed by neither the new manifest nor the one it replaces are
+ * manifest. The words found by patrons that this release publishes give each finder their copy,
+ * and `finders.json`, the pseudo signing each found card, is written from the base beside the
+ * manifest, before it. Collection files listed by neither the new manifest nor the one it replaces are
  * deleted, so that each deployment does not carry every past release.
  */
 
@@ -26,7 +28,9 @@ import {
   planCatalog,
   pronunciationFiles,
   pronunciationProblems,
+  publishFinds,
   type Release,
+  readFinders,
   staleCollectionFiles,
 } from "../src/catalog/index";
 import { createDb } from "../src/client";
@@ -189,16 +193,25 @@ async function main(): Promise<void> {
         `${plan.retire.length} retired, ${engravings.size} engraving files, ${audio.size} audio files`,
     );
     if (values["dry-run"]) return;
-    await applyCatalog(db, plan, new Date());
+    const now = new Date();
+    await applyCatalog(db, plan, now);
+    const found = await publishFinds(
+      db,
+      parsed.release.collections.flatMap((collection) => collection.cards.map((card) => card.id)),
+      now,
+    );
     const target = values.target ?? DEFAULT_TARGET;
     const previous = await publishedManifest(target);
     await copyAssets(target, engravings);
     await copyAssets(target, audio);
+    // Before the manifest: a reader of the new catalogue finds its finders already there.
+    await writeAtomically(join(target, "finders.json"), JSON.stringify(await readFinders(db)));
     await copyRelease(source, target, parsed.release, files.keys());
     const kept = [parsed.release.manifest, ...(previous === null ? [] : [previous])];
     const pruned = await pruneCollections(target, kept);
     console.info(
-      `Database updated, files copied to ${target}, ${pruned} old collection files deleted`,
+      `Database updated, ${found} found words published, files copied to ${target}, ` +
+        `${pruned} old collection files deleted`,
     );
   } finally {
     await close();

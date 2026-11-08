@@ -67,6 +67,7 @@ const OFFER: PatronResponse = {
   trialDays: 14,
   founder: false,
   foundingOffer: true,
+  finds: { left: 0, words: [] },
   subscription: null,
 };
 

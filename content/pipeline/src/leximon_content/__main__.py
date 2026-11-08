@@ -6,6 +6,9 @@ prescreen predict with Haiku which words are worth drafting (data/prescreen.json
           --pool --domain nature screens again the promising words of a domain since split
 select    pick the words of a run (selection.json), skipping words of earlier runs and words the
           pre-screen rejected, within the domains of the run's collection; --size
+          Words patrons found (data/finds.json) come first and always stay in the run.
+reserve   write content/reserve/reserve.json, the words patrons may find: those select could
+          still pick, with their future card id and the Littré's first sense (no LLM call)
 draft     draft every word with the chosen model (drafts.jsonl); --compare uses all models
 quality   drop unsuitable drafts, verify faithfulness (Opus), send flagged cards back to the
           drafter once and verify them again, judge charm (Opus), then summarize
@@ -68,6 +71,7 @@ from . import (
     prescreen,
     pronunciation,
     release,
+    reserve,
     selection,
 )
 from .curation import run_dir
@@ -106,7 +110,17 @@ def command_select(run: str, size: int) -> None:
 
         promising = [c for c in promising if domain(c) in collection.domains]
         print(f"{collection.name} : {len(promising)} mots dans {', '.join(collection.domains)}")
-    selected = selection.pick(promising, size, seed=2026, exclude=drafted_elsewhere(run))
+    exclude = drafted_elsewhere(run)
+    try:
+        finds = selection.load_finds()
+    except selection.FindsError as error:
+        raise SystemExit(str(error)) from error
+    found, missing = selection.match_finds(finds, [c for c in promising if c.word not in exclude])
+    selected = selection.pick(promising, size, seed=2026, exclude=exclude, first=found)
+    if found:
+        print(f"{len(found)} mots dénichés placés en tête : {', '.join(found)}")
+    for find in missing:
+        print(f"Attention : le mot déniché « {find.word} » ({find.id}) n'est pas dans le vivier")
     out = run_dir(run) / "selection.json"
     out.write_text(
         json.dumps(selection.as_rows(selected), ensure_ascii=False, indent=2), encoding="utf-8"
@@ -114,6 +128,27 @@ def command_select(run: str, size: int) -> None:
     reasons = Counter(candidate.pick_reason for candidate in selected)
     print(f"{len(selected)} mots -> {out}")
     print(", ".join(f"{reason} {count}" for reason, count in reasons.items()))
+
+
+def command_reserve() -> None:
+    pool = selection.candidate_pool()
+    every_run = frozenset(
+        row["word"]
+        for path in config.RUNS_DIR.glob("*/selection.json")
+        for row in json.loads(path.read_text(encoding="utf-8"))
+    )
+    rows, collisions = reserve.build(
+        pool, prescreen.load(), littre.index(), reserve.published(), every_run
+    )
+    version = reserve.next_version(reserve.RESERVE_FILE, date.today())
+    reserve.write(rows, version)
+    themed = sum(row["theme"] is not None for row in rows)
+    print(
+        f"{len(rows)} mots dans la réserve, dont {themed} avec un thème -> {reserve.RESERVE_FILE}"
+    )
+    if collisions:
+        print(f"{collisions} mots écartés : un autre mot a déjà le même identifiant")
+    print(f"Version {version}")
 
 
 def command_draft(run: str, compare: bool) -> None:
@@ -416,6 +451,7 @@ def main() -> None:
             "ngram",
             "prescreen",
             "select",
+            "reserve",
             "draft",
             "quality",
             "push",
@@ -495,6 +531,9 @@ def main() -> None:
         return
     if args.command == "select":
         command_select(args.run, args.size)
+        return
+    if args.command == "reserve":
+        command_reserve()
         return
     {
         "ngram": command_ngram,

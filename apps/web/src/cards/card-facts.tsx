@@ -1,11 +1,12 @@
 "use client";
 
 import type { CatalogCard } from "@leximon/contract";
-import { frequencyLine } from "@leximon/view-model";
+import { finderLine, frequencyLine } from "@leximon/view-model";
 import { RarityLadder, RarityName } from "@/components/rarity-icon";
 import { Icon } from "@/ui/icon";
 import ui from "@/ui/ui.module.css";
 import styles from "./card-facts.module.css";
+import { useFinder } from "./finders";
 import { useSpokenWord } from "./use-spoken-word";
 
 /** What anyone can know of a card: its rarity, how it sounds, how rare it is in print. */
@@ -18,7 +19,20 @@ export function CardFacts({ card }: { readonly card: CatalogCard }) {
       </p>
       <Pronunciation card={card} />
       <p className={styles.frequency}>{frequencyLine(card.perBillion)}</p>
+      <CardFinder cardId={card.id} />
     </>
+  );
+}
+
+/** The patron who brought the word into the game, signed on the card for every player. */
+function CardFinder({ cardId }: { readonly cardId: string }) {
+  const finder = useFinder(cardId);
+  if (finder === null) return null;
+  return (
+    <p className={styles.finder}>
+      <Icon name="crown" size={18} />
+      {finderLine(finder)}
+    </p>
   );
 }
 

@@ -1,21 +1,28 @@
-import type { MonthCosmeticView, PatronResponse } from "@leximon/contract";
+import type { MonthCosmeticView, PatronFindsView, PatronResponse } from "@leximon/contract";
 import { mixHex, toyMatters, toy as toyValues } from "@leximon/tokens";
 import {
   claimableLabel,
+  findStateLine,
+  findsLeftLine,
   PATRON_CARD_KICKER,
   PATRON_CLAIM,
   PATRON_CLAIM_BUSY,
   PATRON_CLAIMABLE_TITLE,
   PATRON_CLAIMED,
+  PATRON_FIND_ACTION,
+  PATRON_FINDS_RULE,
+  PATRON_FINDS_TITLE,
   PATRON_LOAD_FAILED,
   PATRON_MANAGED_ON_WEB,
   PATRON_MEMBER_TITLE,
   patronStatus,
   playerName,
 } from "@leximon/view-model";
-import { useCallback, useEffect, useState } from "react";
+import { router, useFocusEffect } from "expo-router";
+import { useCallback, useState } from "react";
 import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
 import { api } from "@/api/client";
+import { MainAction } from "@/library/play-pieces";
 import { useShared } from "@/player/shared";
 import { profile } from "@/player/state";
 import { colors, fontSizes, fonts, paperColors, space } from "@/theme";
@@ -48,7 +55,12 @@ export function PatronScreen() {
       setFailed(true);
     }
   }, []);
-  useEffect(() => void load(), [load]);
+  // Read again on return from finding a word, which spends a right.
+  useFocusEffect(
+    useCallback(() => {
+      void load();
+    }, [load]),
+  );
 
   return (
     <Page title={PATRON_MEMBER_TITLE}>
@@ -64,6 +76,7 @@ export function PatronScreen() {
       ) : (
         <>
           <PatronCard patron={patron} />
+          <Finds finds={patron.finds} />
           {patron.claimable.map((item) => (
             <ClaimTile key={item.month} item={item} onClaimed={load} />
           ))}
@@ -102,6 +115,34 @@ function PatronCard({ patron }: { readonly patron: PatronResponse }) {
       ))}
       {status.warning !== null && <Text style={styles.warning}>{status.warning}</Text>}
       <Text style={styles.muted}>{PATRON_MANAGED_ON_WEB}</Text>
+    </Leaf>
+  );
+}
+
+/** The words the patron may find, and those found, with where each stands. */
+function Finds({ finds }: { readonly finds: PatronFindsView }) {
+  return (
+    <Leaf style={styles.card}>
+      <View style={styles.claimRow}>
+        <ToyBody matter="gold" shape="tile" style={styles.claimIcon}>
+          <Lettrine icon="scroll" matter="blue" size={48} />
+        </ToyBody>
+        <View style={styles.claimText}>
+          <Lettering size={fontSizes.title}>{PATRON_FINDS_TITLE}</Lettering>
+          <Text style={styles.text}>{findsLeftLine(finds.left)}</Text>
+        </View>
+      </View>
+      {finds.left > 0 ? (
+        <MainAction label={PATRON_FIND_ACTION} onPress={() => router.push("/denicher")} />
+      ) : (
+        <Text style={styles.muted}>{PATRON_FINDS_RULE}</Text>
+      )}
+      {finds.words.map((find) => (
+        <View key={find.id} style={styles.found}>
+          <Text style={styles.foundWord}>{find.word}</Text>
+          <Text style={styles.text}>{findStateLine(find.state)}</Text>
+        </View>
+      ))}
     </Leaf>
   );
 }
@@ -208,4 +249,16 @@ const styles = StyleSheet.create({
     color: paperColors.pageInk,
   },
   claimButton: { height: 48 },
+  found: {
+    gap: 2,
+    paddingTop: space.s4,
+    borderTopWidth: 1,
+    borderTopColor: paperColors.rule,
+  },
+  foundWord: {
+    fontFamily: fonts.display,
+    fontSize: fontSizes.subtitle,
+    lineHeight: 24,
+    color: paperColors.pageInk,
+  },
 });

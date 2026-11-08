@@ -3,6 +3,9 @@ import {
   type AdminPatronsResponse,
   adminPatronRefundResponseSchema,
   adminPatronsResponseSchema,
+  type FindRefusal,
+  findRefusalSchema,
+  findResponseSchema,
   IDEMPOTENCY_KEY_HEADER,
   type PatronClaimRefusal,
   type PatronCosmeticView,
@@ -14,12 +17,19 @@ import {
   patronRedirectResponseSchema,
   patronRefusalSchema,
   patronResponseSchema,
+  type ReserveResponse,
+  reserveResponseSchema,
+  type WordFindView,
 } from "../index";
 import { ApiError, errorCode, type Http, json, parse, segment, withQuery } from "./http";
 
 export type PatronRedirectResult =
   | { readonly kind: "redirect"; readonly url: string }
   | { readonly kind: "refused"; readonly reason: PatronRefusal };
+
+export type FindResult =
+  | { readonly kind: "found"; readonly find: WordFindView }
+  | { readonly kind: "refused"; readonly reason: FindRefusal };
 
 export type PatronClaimResult =
   | { readonly kind: "claimed"; readonly cosmetic: PatronCosmeticView }
@@ -68,6 +78,27 @@ export function patronRoutes(http: Http) {
       }
       if (!response.ok) throw new ApiError("claim_failed", response.status);
       return { kind: "claimed", ...(await parse(response, patronClaimResponseSchema)) };
+    },
+
+    /** The reserve, by beginning of word or by theme, a page at a time. */
+    async searchReserve(query: {
+      readonly q?: string;
+      readonly theme?: string;
+      readonly cursor?: string;
+    }): Promise<ReserveResponse> {
+      const response = await send(withQuery("/me/patron/reserve", query));
+      if (!response.ok) throw new ApiError("reserve_unavailable", response.status);
+      return parse(response, reserveResponseSchema);
+    },
+
+    /** Finds a word of the reserve; finding the same word again answers the same. */
+    async findWord(wordId: string): Promise<FindResult> {
+      const response = await send(`/me/patron/reserve/${segment(wordId)}/find`, json("POST", {}));
+      if (response.status === 409) {
+        return { kind: "refused", reason: (await parse(response, findRefusalSchema)).error };
+      }
+      if (!response.ok) throw new ApiError("find_failed", response.status);
+      return { kind: "found", find: (await parse(response, findResponseSchema)).find };
     },
   };
 }

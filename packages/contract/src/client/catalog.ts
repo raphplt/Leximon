@@ -7,6 +7,7 @@ import {
   catalogEngravingIndexSchema,
   catalogManifestSchema,
 } from "../catalog";
+import { finderIndexSchema } from "../reserve";
 
 /**
  * The published catalogue, read by the web and the app from where each serves it: the manifest
@@ -84,6 +85,24 @@ export async function fetchEngravingInks(baseUrl: string): Promise<ReadonlyMap<s
   );
   if (!index.success) throw new CatalogError("invalid_engravings");
   return new Map(Object.entries(index.data.inks));
+}
+
+/**
+ * The pseudo signing each card found by a patron, by card id. A catalogue published before
+ * patrons found words has no such file: no card has a finder then.
+ */
+export async function fetchFinders(baseUrl: string): Promise<ReadonlyMap<string, string>> {
+  let response: Response;
+  try {
+    response = await fetch(`${baseUrl}/finders.json`, { cache: "no-cache" });
+  } catch {
+    throw new CatalogError("network_error");
+  }
+  if (response.status === 404) return new Map();
+  if (!response.ok) throw new CatalogError(`catalog_unavailable_${response.status}`);
+  const index = finderIndexSchema.safeParse(await response.json().catch(() => null));
+  if (!index.success) throw new CatalogError("invalid_finders");
+  return new Map(Object.entries(index.data.cards));
 }
 
 export function collectionName(catalog: Catalog, collectionId: string): string {

@@ -693,5 +693,6 @@ export const PATRON_SCHEDULE: PatronSchedule = [
     prices: { monthly: 399, yearly: 2999 },
     foundingMonth: null,
     cosmetics: {},
+    monthsPerFind: 3,
   },
 ];

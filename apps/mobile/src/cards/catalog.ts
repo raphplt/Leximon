@@ -1,6 +1,7 @@
 import {
   type Catalog,
   fetchCatalog,
+  fetchFinders,
   fetchEngravingInks as fetchInks,
   catalogFileUrl as fileUrl,
 } from "@leximon/contract/client";
@@ -46,4 +47,11 @@ export function useEngravingInk(cardId: string | null): string | null {
   const known = useShared(inks);
   const path = cardId === null ? undefined : known?.get(cardId);
   return path === undefined ? null : catalogFileUrl(path);
+}
+
+const finders = sharedResource<ReadonlyMap<string, string>>(() => fetchFinders(CATALOG_URL));
+
+/** The pseudo of the patron who found this card, `null` for most cards and while it loads. */
+export function useFinder(cardId: string): string | null {
+  return useShared(finders)?.get(cardId) ?? null;
 }

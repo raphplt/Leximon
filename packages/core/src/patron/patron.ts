@@ -22,6 +22,11 @@ export interface PatronRules {
   readonly foundingMonth: string | null;
   /** Month (in Paris, `YYYY-MM`) → the cosmetic every patron who paid for it receives. */
   readonly cosmetics: Readonly<Record<string, PatronCosmetic>>;
+  /**
+   * Paid months per word to find: a monthly patron earns one with every such run of payments, a
+   * yearly one at its payment and at the start of each such stretch of the year.
+   */
+  readonly monthsPerFind: number;
 }
 
 /** What a patron wears: the same kinds of cosmetics as the level rewards, always named. */
@@ -128,6 +133,8 @@ export interface PaidPeriod {
   readonly startsAt: EpochMs;
   readonly endsAt: EpochMs;
   readonly refunded: boolean;
+  /** Absent where only the months covered matter (cosmetics). */
+  readonly plan?: PatronPlan;
 }
 
 function nextMonth(month: string): string {
@@ -179,4 +186,62 @@ export function claimableCosmetics(
       const cosmetic = rules.cosmetics[month];
       return cosmetic === undefined ? [] : [{ month, cosmetic }];
     });
+}
+
+/** `months` calendar months after `time`, in UTC: close enough for a quarter of a paid year. */
+function addMonths(time: EpochMs, months: number): EpochMs {
+  const date = new Date(time);
+  date.setUTCMonth(date.getUTCMonth() + months);
+  return date.getTime();
+}
+
+/**
+ * The words a patron earned the right to find, up to now. A yearly payment gives one at once,
+ * then one at the start of each stretch of `monthsPerFind` months it covers; monthly payments
+ * give one with every `monthsPerFind`-th. Refunded periods give nothing; a trial is no period.
+ */
+export function earnedFinds(
+  rules: Pick<PatronRules, "monthsPerFind">,
+  periods: readonly PaidPeriod[],
+  now: EpochMs,
+): number {
+  const paid = periods.filter((period) => !period.refunded && period.startsAt <= now);
+  let earned = 0;
+  for (const period of paid.filter((period) => period.plan === "yearly")) {
+    for (let at = period.startsAt; at < period.endsAt && at <= now; ) {
+      earned += 1;
+      at = addMonths(at, rules.monthsPerFind);
+    }
+  }
+  const monthly = paid.filter((period) => period.plan === "monthly").length;
+  return earned + Math.floor(monthly / rules.monthsPerFind);
+}
+
+/**
+ * The words a patron may still find. A word found counts against the rights unless the quality
+ * check set it aside, which gives the right back. Rights left unused are lost when the
+ * subscription stops, except those given back: that word was paid for.
+ */
+export function findsLeft(input: {
+  readonly earned: number;
+  /** Words found and kept, waiting or published. */
+  readonly used: number;
+  /** Words found then set aside by the quality check. */
+  readonly returned: number;
+  readonly subscribed: boolean;
+}): number {
+  const left = Math.max(0, input.earned - input.used);
+  return input.subscribed ? left : Math.min(left, input.returned);
+}
+
+/** A word as the reserve searches it: lower case, without accents nor ligatures. */
+export function reserveSearchKey(text: string): string {
+  return text
+    .toLowerCase()
+    .replace(/œ/g, "oe")
+    .replace(/æ/g, "ae")
+    .normalize("NFD")
+    .replace(/\p{M}/gu, "")
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim();
 }

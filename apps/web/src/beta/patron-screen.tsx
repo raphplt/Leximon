@@ -2,6 +2,7 @@
 
 import type {
   MonthCosmeticView,
+  PatronFindsView,
   PatronPlan,
   PatronResponse,
   ProfileResponse,
@@ -9,6 +10,8 @@ import type {
 import type { ToyIconName } from "@leximon/tokens";
 import {
   claimableLabel,
+  findStateLine,
+  findsLeftLine,
   monthCosmeticLine,
   PATRON_BENEFITS,
   PATRON_CANCEL_NOTE,
@@ -24,6 +27,9 @@ import {
   PATRON_CREATE_ACCOUNT,
   PATRON_DEFAULT_PLAN,
   PATRON_DOOR_KICKER,
+  PATRON_FIND_ACTION,
+  PATRON_FINDS_RULE,
+  PATRON_FINDS_TITLE,
   PATRON_FOUNDING_OFFER,
   PATRON_GUEST_NOTE,
   PATRON_INTRO,
@@ -559,6 +565,9 @@ function MemberView({
           )}
         </Leaf>
       </div>
+      <div style={rise(1)}>
+        <Finds finds={patron.finds} />
+      </div>
       {patron.claimable.length > 0 && (
         <section className={styles.claims} aria-label={PATRON_CLAIMABLE_TITLE} style={rise(1)}>
           {patron.claimable.map((item) => (
@@ -567,6 +576,39 @@ function MemberView({
         </section>
       )}
     </main>
+  );
+}
+
+/** The words the patron may find, and those found, with where each stands. */
+function Finds({ finds }: { readonly finds: PatronFindsView }) {
+  const router = useRouter();
+  return (
+    <Leaf className={styles.finds}>
+      <div className={styles.findsHead}>
+        <ToyBody matter="gold" shape="tile" className={styles.tileIcon}>
+          <Lettrine icon="scroll" matter="blue" size={52} />
+        </ToyBody>
+        <div className={styles.findsText}>
+          <Lettering className={styles.headline}>{PATRON_FINDS_TITLE}</Lettering>
+          <p className={styles.text}>{findsLeftLine(finds.left)}</p>
+        </div>
+      </div>
+      {finds.left > 0 ? (
+        <MainAction label={PATRON_FIND_ACTION} onClick={() => router.push("/mecene/denicher")} />
+      ) : (
+        <p className={styles.note}>{PATRON_FINDS_RULE}</p>
+      )}
+      {finds.words.length > 0 && (
+        <ul className={styles.found}>
+          {finds.words.map((find) => (
+            <li key={find.id}>
+              <strong className={styles.foundWord}>{find.word}</strong>
+              <span>{findStateLine(find.state)}</span>
+            </li>
+          ))}
+        </ul>
+      )}
+    </Leaf>
   );
 }
 

@@ -13,6 +13,7 @@ cp apps/api/.dev.vars.example apps/api/.dev.vars   # une fois, puis remplir le s
 docker compose up -d             # Postgres local sur le port 54329
 pnpm db:migrate                  # applique les migrations à la base de dev
 pnpm catalog:publish             # publie la dernière version du catalogue (base de dev et fichiers du web, D-023)
+pnpm reserve:publish             # charge la réserve des mots à dénicher (content/reserve) ; finds:export, finds:reject <id>
 pnpm dev                         # Postgres et Directus (Docker), puis toutes les apps (ou --filter @leximon/api, /web, /mobile)
 pnpm --filter @leximon/mobile reverse   # téléphone ou émulateur branché : Metro, API et catalogue locaux joignables
 pnpm check                       # lint + typecheck + tests unitaires, à lancer avant de rendre la main
@@ -31,7 +32,8 @@ docker compose --profile content up -d          # Postgres + Directus (http://12
 cd content/pipeline && uv sync                  # dépendances Python
 uv run python -m leximon_content ngram          # une fois : fréquences Google Ngram (5 Go téléchargés)
 uv run python -m leximon_content prescreen --pool   # pré-tri Haiku des mots candidats (--limit N)
-uv run python -m leximon_content select         # --size N, puis draft (--run <nom>)
+uv run python -m leximon_content select         # --size N, puis draft (--run <nom>) ; les mots dénichés (data/finds.json) passent en tête
+uv run python -m leximon_content reserve        # réserve des mots à dénicher par les mécènes (content/reserve/reserve.json), sans appel au LLM
 uv run python -m leximon_content quality        # écarte, vérifie, corrige, note le charme (--run <nom>)
 uv run python -m leximon_content push           # cartes gardées vers Directus, puis refresh, report
 uv run python -m leximon_content release        # version du catalogue dans content/releases (collections : content/collections.toml)

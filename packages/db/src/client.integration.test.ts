@@ -71,6 +71,7 @@ describe("database", () => {
       "players",
       "practice_answers",
       "referrals",
+      "reserve_words",
       "review_logs",
       "riddle_plays",
       "riddle_words",
@@ -97,6 +98,7 @@ describe("database", () => {
       "verifications",
       "waitlist_signups",
       "wishes",
+      "word_finds",
     ]);
   });
 });

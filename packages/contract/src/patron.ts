@@ -1,6 +1,7 @@
 import { PATRON_PLANS } from "@leximon/core";
 import { z } from "zod";
 import { timestampSchema } from "./common";
+import { patronFindsSchema } from "./reserve";
 
 export const patronPlanSchema = z.enum(PATRON_PLANS);
 export type PatronPlan = z.infer<typeof patronPlanSchema>;
@@ -52,6 +53,7 @@ export const patronResponseSchema = z.object({
   founder: z.boolean(),
   /** Within the founding month: a first payment now makes a founder. */
   foundingOffer: z.boolean().default(false),
+  finds: patronFindsSchema,
   subscription: z
     .object({
       standing: z.enum(["none", "trial", "patron"]),

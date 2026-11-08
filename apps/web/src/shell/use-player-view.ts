@@ -50,6 +50,8 @@ export function usePlayerView() {
     carnetWaits: carnetWaits(card),
     /** What « Récompenses » counts: the coffrets, the welcome week's day and the carnet. */
     rewardsWaiting: coffrets.length + (welcomeWaits(welcome) ? 1 : 0) + (carnetWaits(card) ? 1 : 0),
+    /** The patron's mark, `null` for who has none or until read. */
+    patron: me?.patron ?? null,
     /** The title worn: the one chosen in the atelier, else the latest won. */
     title: me !== null ? me.title : now === 0 ? null : playerTitle(claimed, now),
     guest: who?.kind === "guest",

@@ -1,6 +1,6 @@
 # Cahier des charges · Abonnement Mécène et paiement Stripe
 
-- **Statut :** tranché le 2026-11-08 sur huit questions (§ 9) ; trois points restent à confirmer (§ 10). Lots 1 (socle) et 2 (page Mécène, badge, cosmétiques, admin) construits le 2026-11-08 ; à essayer avec les clés de test de Stripe (§ 11), recette MEC-01 à MEC-08 dans [recette-nouveautes.md](../recette-nouveautes.md).
+- **Statut :** tranché le 2026-11-08 sur huit questions (§ 9) ; trois points restent à confirmer (§ 10). Lots 1 (socle), 2 (page Mécène, badge, cosmétiques, admin) et 3 (dénichage, sans le signe de l'exemplaire) construits le 2026-11-08 ; à essayer avec les clés de test de Stripe (§ 11), recette MEC-01 à MEC-12 dans [recette-nouveautes.md](../recette-nouveautes.md).
 - **Règles concernées :** P72 (gratuit et payant) et P73 (abonnement Mécène), dans [regles-du-jeu.md](../regles-du-jeu.md), qui fait foi. Décision technique : D-059.
 - **D'où ça vient :** le propriétaire veut brancher Stripe, sur le compte qu'il a déjà, et construire l'offre Mécène. La stratégie commerciale ouvre la vente vers mi-janvier 2027, si les seuils sont atteints (2 000 joueurs actifs par mois, 10 % de rétention à 7 jours, 3 % de clics sur la fausse porte) et après relecture des documents par un avocat.
 - **Objectif :** tout construire maintenant, en mode test de Stripe, vente fermée. Le jour où les seuils et l'avocat sont là, on passe les clés en production et on ouvre.
@@ -131,7 +131,7 @@ Construit aux lots 1 et 2 (`apps/api/src/patron/`), sauf la réserve.
 - `POST /me/patron/cosmetics/:month/claim` : un mois payé (une période non remboursée qui en couvre un jour), pas encore réclamé, dont le calendrier a un cosmétique ; ligne du joueur verrouillée, une réclamation par mois. Le cosmétique entre dans l'apparence avec ceux des niveaux, et le titre « Mécène » (ou « Mécène fondateur ») y est tant que l'abonnement court.
 - Le badge (`patron`) est ajouté au profil, au profil public et à la liste des joueurs (champ additif, `null` par défaut pour les anciennes versions).
 - `GET /admin/patrons` (chiffres, revenu du mois, abonnés par dernier changement, page de 50) et `POST /admin/patrons/:userId/refund` (clé d'idempotence : rembourse le dernier paiement non remboursé, résilie tout de suite, note l'action au journal).
-- `GET /reserve`, `POST /reserve/:wordId/find` (lot 3), comme prévu.
+- `GET /me/patron/reserve` (`q` : début du mot, sans accent ni casse ; `theme` ; pages de 30 par curseur) et `POST /me/patron/reserve/:wordId/find` (lot 3, fait). Le dénichage verrouille la ligne d'abonnement du mécène (deux dénichages ne dépensent pas le même droit) ; le mot en clé primaire de `word_finds` le donne à un seul mécène. Refus : `no_right`, `taken`, `no_pseudo`, `not_in_reserve`. Redénicher son propre mot répond pareil. `GET /me/patron` porte `finds` (droits restants, mots dénichés et leur état).
 - `POST /stripe/webhook` : corps brut, signature vérifiée par la bibliothèque de Stripe (tolérance de 5 minutes), événement relu avec Zod, noté dans `stripe_events` dans la même transaction que son effet, ligne du joueur verrouillée. Événements traités : `checkout.session.completed`, `customer.subscription.*`, `invoice.paid`, `invoice.payment_failed` ; les autres sont acquittés sans effet. L'abonnement est relu chez Stripe avant d'écrire, donc l'ordre d'arrivée ne compte pas. Une facture de zéro (début d'essai) ne fait pas de période. Un client que le jeu n'a pas créé (autre produit du même compte Stripe) est ignoré.
 - Un second abonnement vivant à côté du premier (deux checkouts payés malgré l'expiration) est résilié tout de suite et laissé dans les journaux ; s'il a été payé, le remboursement se fait à la main.
 - Aucun statut n'est accordé sur le seul retour de Checkout : il vient du webhook.
@@ -141,9 +141,10 @@ Construit aux lots 1 et 2 (`apps/api/src/patron/`), sauf la réserve.
 
 ### Contenu
 
-- Une commande `reserve` de la chaîne publie la réserve (mots pré-triés retenus, première définition du Littré, thème) dans `content/releases`, et `pnpm reserve:publish` la charge dans la base (dev, puis production).
-- Une commande `pnpm finds:export` sort les mots dénichés ; `select` les place en tête de la collection où ils ont leur place, et `release` y écrit le pseudo du dénicheur.
-- Un mot déniché qui échoue au contrôle qualité passe à `rejected` dans la base, ce qui rend le droit et prévient le mécène.
+- La commande `reserve` de la chaîne écrit `content/reserve/reserve.json` (mots pré-triés « ok », pas encore publiés ni rédigés, première définition du Littré coupée à 240 signes, nature) ; `pnpm reserve:publish` (ou `:prod`) la charge dans la base. Un mot que la réserve ne liste plus en sort, sauf s'il est déniché. Les thèmes ne viennent que de la rédaction : la réserve n'en a pas, on y cherche par le début du mot.
+- `pnpm finds:export` (ou `:prod`) écrit `content/pipeline/data/finds.json` ; `select` place ces mots en tête de la série (« déniché ») et prévient s'il en manque un dans le vivier.
+- `catalog:publish` passe à `published` les mots dénichés que la version publie, donne au dénicheur son exemplaire (`user_cards.variant = "finder"`, sans XP ni réclamation) et écrit `finders.json` (pseudo du dénicheur par carte, relu à chaque publication) à côté du manifeste. Le web et le mobile affichent « Déniché par [pseudo] » sur la fiche de la carte.
+- `pnpm finds:reject <id>` passe un mot à `rejected` : le droit revient au mécène, même après l'arrêt. Le mécène le lit sur sa page Mécène ; le courrier ne le prévient pas encore.
 
 ### Admin
 
@@ -160,7 +161,7 @@ Construit aux lots 1 et 2 (`apps/api/src/patron/`), sauf la réserve.
 
 1. **Socle** (fait le 2026-11-08) : migration `0047`, SDK `stripe`, `GET /me/patron`, checkout, portail, webhook, `PATRON_SALES`, règles dans `core` (statut, fondateur), suppression de compte, tests. Rien de visible pour les joueurs.
 2. **Page Mécène, badge et cosmétiques** (fait le 2026-11-08) : page Mécène web (porte avant la vente, offre, retour de Stripe, abonné, essai, résilié, paiement refusé), badge et titre, cosmétique du mois réclamé ; sur le mobile, badge et page en lecture, que seul un joueur qui porte le badge atteint (lien dans son profil) ; admin Mécènes. Prix dans `PATRON_SCHEDULE` (à changer en même temps que ceux de Stripe). Restent : le calendrier des cosmétiques (vide, un mois se remplit dans `PATRON_SCHEDULE` le 1er au plus tôt), le Sceau du fondateur, la conversion de la page dans `/admin/mesure`, les mots dénichés sur la page (lot 3).
-3. **Dénichage** : réserve publiée, recherche et réservation (web et mobile), exemplaire du dénicheur, « Déniché par » dans le catalogue et sur la carte, liens avec la chaîne de contenu.
+3. **Dénichage** (fait le 2026-11-08) : droits dans `core` (`earnedFinds`, `findsLeft`, `monthsPerFind` dans `PATRON_SCHEDULE`), migration `0050` (`reserve_words`, `word_finds`), réserve publiée, recherche et dénichage (web `/mecene/denicher` et mobile `/denicher`), section « Ton mot dans le jeu » sur la page Mécène, exemplaire du dénicheur donné à la publication, « Déniché par » sur la fiche de carte, liens avec la chaîne de contenu. Restent : le signe de l'exemplaire dans l'album et sur la carte (§ 10, point 2), un courrier à la parution et à l'écart (nouveaux types de courrier, à ajouter sans casser les anciennes versions de l'app).
 4. **Ouverture** : CGV et CGU relues par l'avocat, page « Tes données » mise à jour, clés de production, `PATRON_SALES` à `"open"`.
 
 Lots suivants, hors de ce cahier : cabinet du mot et carnet (février), éditions de bibliothèque, dos de carte et thème d'album (mars), « Offrir Mécène », achat intégré sur le mobile.
@@ -207,7 +208,7 @@ Tranché par le propriétaire le 2026-11-08 :
 1. **Premier mot d'un abonné mensuel.**
    - a. Après trois mois payés, comme le dit la stratégie (« un mot par trimestre, un dès le départ pour l'annuel »). L'annuel garde un vrai avantage ; le texte « Va dénicher ton premier mot » ne vaut que pour l'annuel.
    - b. Un mot au premier paiement, puis tous les trois mois. Plus fort à la conversion, mais un mot signé à vie pour 3,99 € puis une résiliation.
-   - **Recommandation : a.**
+   - **Recommandation : a.** C'est ce que dit déjà P73 (« un mot par trimestre d'abonnement, un dès le départ pour un abonnement annuel ») : le lot 3 l'applique.
 2. **Le signe de l'exemplaire du dénicheur** : un sceau de cire en coin, un ex-libris au dos, ou un liseré gravé, sans or ni couleur de rareté. À dessiner, avec les cosmétiques du calendrier, par toi ou un graphiste (50 à 150 € pièce, estimation).
 3. **Jouer la carte dénichée** : je lis « sans XP » comme « rien à l'arrivée », et ses réponses en défi comptent comme pour toute carte (maîtrise, XP de la réponse), puisque tu veux qu'elle se joue comme les autres. C'est une petite entorse à P72 (« ni maîtrise, ni XP »), sur un mot à la fois. À confirmer.
 

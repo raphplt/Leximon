@@ -2,7 +2,9 @@ import { describe, expect, it } from "vitest";
 import { PATRON_SCHEDULE } from "../rules";
 import {
   claimableCosmetics,
+  earnedFinds,
   FOUNDER_TITLE,
+  findsLeft,
   isFoundingPayment,
   monthCosmetic,
   PATRON_TITLE,
@@ -12,6 +14,7 @@ import {
   patronRulesAt,
   patronStanding,
   patronTitle,
+  reserveSearchKey,
   type SubscriptionStatus,
 } from "./patron";
 
@@ -65,6 +68,7 @@ describe("founders", () => {
     prices: { monthly: 399, yearly: 2999 },
     foundingMonth: "2027-01",
     cosmetics: {},
+    monthsPerFind: 3,
   };
 
   it("are those who first pay within the founding month", () => {
@@ -106,6 +110,7 @@ describe("cosmetics of the month", () => {
     prices: { monthly: 399, yearly: 2999 },
     foundingMonth: null,
     cosmetics: { "2027-01": frame, "2027-02": avatar, "2027-03": frame },
+    monthsPerFind: 3,
   };
   const at = (iso: string) => Date.parse(iso);
   const monthly = (start: string, end: string) => ({
@@ -148,5 +153,66 @@ describe("cosmetics of the month", () => {
   it("show this month's cosmetic to everyone, none ahead", () => {
     expect(monthCosmetic(rules, at("2027-02-01T00:30:00+01:00"))?.cosmetic).toEqual(avatar);
     expect(monthCosmetic(rules, at("2027-04-01T10:00:00Z"))).toBeNull();
+  });
+});
+
+describe("words to find", () => {
+  const rules = { monthsPerFind: 3 };
+  const at = (iso: string) => Date.parse(iso);
+  const period = (plan: "monthly" | "yearly", start: string, end: string, refunded = false) => ({
+    startsAt: at(start),
+    endsAt: at(end),
+    refunded,
+    plan,
+  });
+  const months = (count: number) =>
+    Array.from({ length: count }, (_, index) => {
+      const start = new Date(Date.UTC(2027, index, 10)).toISOString();
+      const end = new Date(Date.UTC(2027, index + 1, 10)).toISOString();
+      return period("monthly", start, end);
+    });
+
+  it("gives a monthly patron one every three months paid", () => {
+    const now = at("2028-01-01T00:00:00Z");
+    expect(earnedFinds(rules, months(2), now)).toBe(0);
+    expect(earnedFinds(rules, months(3), now)).toBe(1);
+    expect(earnedFinds(rules, months(7), now)).toBe(2);
+  });
+
+  it("gives a yearly patron one at once, then one each quarter as it comes", () => {
+    const year = [period("yearly", "2027-01-10T00:00:00Z", "2028-01-10T00:00:00Z")];
+    expect(earnedFinds(rules, year, at("2027-01-10T00:00:00Z"))).toBe(1);
+    expect(earnedFinds(rules, year, at("2027-04-09T00:00:00Z"))).toBe(1);
+    expect(earnedFinds(rules, year, at("2027-04-10T00:00:00Z"))).toBe(2);
+    expect(earnedFinds(rules, year, at("2028-06-01T00:00:00Z"))).toBe(4);
+  });
+
+  it("adds both rhythms after a change of plan", () => {
+    const mixed = [...months(3), period("yearly", "2027-04-10T00:00:00Z", "2028-04-10T00:00:00Z")];
+    expect(earnedFinds(rules, mixed, at("2027-05-01T00:00:00Z"))).toBe(2);
+  });
+
+  it("gives nothing for a refunded period", () => {
+    const refunded = [period("yearly", "2027-01-10T00:00:00Z", "2028-01-10T00:00:00Z", true)];
+    expect(earnedFinds(rules, refunded, at("2027-06-01T00:00:00Z"))).toBe(0);
+  });
+
+  it("counts the words found against the rights, a word set aside giving its right back", () => {
+    expect(findsLeft({ earned: 2, used: 1, returned: 0, subscribed: true })).toBe(1);
+    expect(findsLeft({ earned: 2, used: 1, returned: 1, subscribed: true })).toBe(1);
+    expect(findsLeft({ earned: 1, used: 2, returned: 0, subscribed: true })).toBe(0);
+  });
+
+  it("loses the unused rights at the stop, except those given back", () => {
+    expect(findsLeft({ earned: 3, used: 1, returned: 0, subscribed: false })).toBe(0);
+    expect(findsLeft({ earned: 3, used: 1, returned: 1, subscribed: false })).toBe(1);
+  });
+});
+
+describe("reserve search key", () => {
+  it("drops case, accents and ligatures", () => {
+    expect(reserveSearchKey("Œillère")).toBe("oeillere");
+    expect(reserveSearchKey("  Ébaubi ")).toBe("ebaubi");
+    expect(reserveSearchKey("chausse-trape")).toBe("chausse trape");
   });
 });

@@ -1,6 +1,8 @@
 import {
   adminPatronRefundResponseSchema,
   adminPatronsResponseSchema,
+  findRefusalSchema,
+  findResponseSchema,
   IDEMPOTENCY_KEY_HEADER,
   patronClaimRefusalSchema,
   patronClaimResponseSchema,
@@ -8,9 +10,11 @@ import {
   patronRefusalSchema,
   patronResponseSchema,
   profileResponseSchema,
+  reserveResponseSchema,
 } from "@leximon/contract";
 import { PATRON_SCHEDULE, parisMonthOf } from "@leximon/core";
 import { createDb, schema } from "@leximon/db";
+import { rejectFind } from "@leximon/db/catalog";
 import { testDatabaseUrl } from "@leximon/db/testing";
 import { eq } from "drizzle-orm";
 import Stripe from "stripe";
@@ -19,6 +23,7 @@ import { createApp } from "../app";
 import { ADMIN_ROLE } from "../auth";
 import { TEST_ORIGIN, TEST_STRIPE_WEBHOOK_SECRET, testEnv } from "../test-env";
 import { type Guest, signInAsGuest, signInAsMember } from "../test-support";
+import { ensurePlayer } from "../trades/players";
 import type { Billing, CheckoutInput, SubscriptionSnapshot } from "./billing";
 
 /** The calendar is empty until the cosmetics are drawn: this month gets one for the tests. */
@@ -260,6 +265,7 @@ describe("the patron page", () => {
       trialDays: TRIAL_DAYS,
       founder: false,
       foundingOffer: false,
+      finds: { left: 0, words: [] },
       subscription: null,
     });
   });
@@ -710,5 +716,125 @@ describe("the back office", () => {
     const member = await signInAsMember(app, env, db);
     const response = await request(await admin(), "POST", `/admin/patrons/${member.userId}/refund`);
     expect(response.status).toBe(409);
+  });
+});
+
+/** Words of the reserve under a prefix of their own, so that each test reads only its words. */
+async function reserveOf(count: number) {
+  const prefix = `zq${crypto.randomUUID().replace(/-/g, "").slice(0, 8)}`;
+  const words = Array.from({ length: count }, (_, index) => ({
+    id: `${prefix}-${index}`,
+    word: `${prefix}${index}`,
+    definition: "Un mot de la réserve.",
+    theme: null,
+    partOfSpeech: "s. m.",
+    searchKey: `${prefix}${index}`,
+    release: "2026-11-08.1",
+  }));
+  await db.insert(schema.reserveWords).values(words);
+  return { prefix, ids: words.map((word) => word.id) };
+}
+
+/** A patron who paid a year: one word to find at once. */
+async function yearlyPatron(pseudo: string | null = `Mecene${crypto.randomUUID().slice(0, 6)}`) {
+  const { member, customerId } = await memberWithCustomer();
+  const subscription = subscribe(customerId, { status: "active", trialEnd: null, plan: "yearly" });
+  await checkoutCompleted(subscription);
+  await invoicePaid(subscription);
+  await ensurePlayer(db, member.userId);
+  await db
+    .update(schema.players)
+    .set({
+      pseudo,
+      pseudoKey: pseudo?.toLowerCase() ?? null,
+      pseudoChangedAt: pseudo === null ? null : new Date(),
+    })
+    .where(eq(schema.players.userId, member.userId));
+  return { member, subscription };
+}
+
+const find = (player: Guest, wordId: string) =>
+  request(player, "POST", `/me/patron/reserve/${wordId}/find`);
+
+async function searchReserve(player: Guest, q: string) {
+  const response = await request(player, "GET", `/me/patron/reserve?q=${q}`);
+  expect(response.status).toBe(200);
+  return reserveResponseSchema.parse(await response.json());
+}
+
+async function refusal(response: Response) {
+  expect(response.status).toBe(409);
+  return findRefusalSchema.parse(await response.json()).error;
+}
+
+describe("finding a word", () => {
+  it("spends a right on a word of the reserve, which leaves it for everyone", async () => {
+    const { member } = await yearlyPatron();
+    const { prefix, ids } = await reserveOf(2);
+    const [first = "", second = ""] = ids;
+    expect((await readPatron(member)).finds.left).toBe(1);
+    expect((await searchReserve(member, prefix)).words.map((word) => word.id)).toEqual(ids);
+
+    const found = await find(member, first);
+    expect(found.status).toBe(200);
+    expect(findResponseSchema.parse(await found.json()).find).toMatchObject({
+      id: first,
+      state: "reserved",
+    });
+    const patron = await readPatron(member);
+    expect(patron.finds.left).toBe(0);
+    expect(patron.finds.words.map((word) => word.id)).toEqual([first]);
+    expect((await searchReserve(member, prefix)).words.map((word) => word.id)).toEqual([second]);
+
+    expect((await find(member, first)).status).toBe(200);
+    expect(await refusal(await find(member, second))).toBe("no_right");
+  });
+
+  it("gives a word to one patron only when two find it at the same time", async () => {
+    const [one, two] = await Promise.all([yearlyPatron(), yearlyPatron()]);
+    const { ids } = await reserveOf(1);
+    const wordId = ids[0] ?? "";
+    const statuses = (await Promise.all([find(one.member, wordId), find(two.member, wordId)])).map(
+      (response) => response.status,
+    );
+    expect(statuses.sort()).toEqual([200, 409]);
+  });
+
+  it("spends one right once when a patron finds two words at the same time", async () => {
+    const { member } = await yearlyPatron();
+    const { ids } = await reserveOf(2);
+    const statuses = (await Promise.all(ids.map((id) => find(member, id)))).map((r) => r.status);
+    expect(statuses.sort()).toEqual([200, 409]);
+  });
+
+  it("waits three paid months for a monthly patron", async () => {
+    const { member } = await payingPatron();
+    const { ids } = await reserveOf(1);
+    expect((await readPatron(member)).finds.left).toBe(0);
+    expect(await refusal(await find(member, ids[0] ?? ""))).toBe("no_right");
+  });
+
+  it("asks for a pseudo first, since the card is signed with it", async () => {
+    const { member } = await yearlyPatron(null);
+    const { ids } = await reserveOf(1);
+    expect(await refusal(await find(member, ids[0] ?? ""))).toBe("no_pseudo");
+  });
+
+  it("gives the right back for a word the quality check sets aside, even after the stop", async () => {
+    const { member, subscription } = await yearlyPatron();
+    const { ids } = await reserveOf(2);
+    const [first = "", second = ""] = ids;
+    expect((await find(member, first)).status).toBe(200);
+    stripe.subscriptions.set(subscription.id, { ...subscription, status: "canceled" });
+    await sendEvent("customer.subscription.deleted", {
+      id: subscription.id,
+      customer: subscription.customerId,
+    });
+    expect(await rejectFind(db, first, new Date())).toBe(true);
+    const patron = await readPatron(member);
+    expect(patron.finds.left).toBe(1);
+    expect(patron.finds.words[0]?.state).toBe("rejected");
+    expect((await find(member, second)).status).toBe(200);
+    expect((await readPatron(member)).finds.left).toBe(0);
   });
 });
