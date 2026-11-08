@@ -35,6 +35,7 @@ import { ProfileBanner } from "@/ui/profile-banner";
 import { Sheet } from "@/ui/sheet";
 import { toast } from "@/ui/toast";
 import { toyFace } from "@/ui/toy";
+import { LockSeal, sunkInk, sunkTile } from "./lock-seal";
 
 const GAP = 10;
 
@@ -94,6 +95,7 @@ export function BannerPanel({
       <View style={styles.grid}>
         {motifs.map((item) => {
           const worn = item.state === "worn";
+          const locked = item.state === "locked";
           return (
             <Pressable
               key={item.motif}
@@ -105,27 +107,28 @@ export function BannerPanel({
               style={({ pressed }) => [
                 styles.item,
                 { width: itemWidth },
-                toyFace(worn ? "gold" : "paper", "tile"),
+                locked ? sunkTile : toyFace(worn ? "gold" : "paper", "tile"),
                 pressed && styles.pressed,
               ]}
             >
-              <ProfileBanner
-                banner={{ motif: item.motif, tint: me.banner.tint }}
-                style={[styles.swatch, item.state === "locked" && styles.locked]}
-              />
-              <Text style={styles.name} numberOfLines={1}>
+              <View style={styles.swatchArt}>
+                <ProfileBanner
+                  banner={{ motif: item.motif, tint: me.banner.tint }}
+                  style={[styles.swatch, locked && styles.locked]}
+                />
+                {locked && <LockSeal />}
+              </View>
+              <Text style={[styles.name, locked && styles.sunk]} numberOfLines={1}>
                 {item.name}
               </Text>
               <View style={styles.state}>
                 {worn && <Icon name="check" size={13} color={toyValues.outline} />}
-                {item.state === "locked" && (
-                  <Icon name="lock" size={12} color={paperColors.pageInkMuted} />
-                )}
                 <Text
                   style={[
                     styles.stateText,
                     worn && styles.stateWorn,
                     item.state === "owned" && styles.stateOwned,
+                    locked && styles.sunk,
                   ]}
                 >
                   {bannerStateLabel(item)}
@@ -242,8 +245,10 @@ const styles = StyleSheet.create({
     padding: space.s4,
     borderRadius: radii.xxl,
   },
-  swatch: { ...cloth, alignSelf: "stretch", height: 56, borderRadius: radii.md },
-  locked: { opacity: 0.4 },
+  swatch: { ...cloth, height: 56, borderRadius: radii.md },
+  swatchArt: { alignSelf: "stretch" },
+  locked: { opacity: 0.3 },
+  sunk: { color: sunkInk },
   pressed: { opacity: 0.7 },
   name: { fontFamily: fonts.ui.bold, fontSize: fontSizes.small, color: paperColors.pageInk },
   state: { flexDirection: "row", alignItems: "center", gap: space.s2 },

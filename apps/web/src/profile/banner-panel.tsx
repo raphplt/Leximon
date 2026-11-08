@@ -33,6 +33,7 @@ import { Dialog } from "@/ui/dialog";
 import { Icon } from "@/ui/icon";
 import { useToast } from "@/ui/toast";
 import styles from "./banner-panel.module.css";
+import { LockSeal } from "./lock-seal";
 import profileStyles from "./profile.module.css";
 import type { useProfileActions } from "./use-profile-actions";
 
@@ -106,10 +107,13 @@ export function BannerPanel({
                 disabled={actions.busy}
                 onClick={() => chooseMotif(item)}
               >
-                <ProfileBanner
-                  banner={{ motif: item.motif, tint: me.banner.tint }}
-                  className={styles.swatch}
-                />
+                <span className={`${profileStyles.itemArt} ${styles.swatchArt}`}>
+                  <ProfileBanner
+                    banner={{ motif: item.motif, tint: me.banner.tint }}
+                    className={styles.swatch}
+                  />
+                  {item.state === "locked" && <LockSeal />}
+                </span>
                 <span className={profileStyles.itemName}>{item.name}</span>
                 <span className={`${profileStyles.itemState} ${STATE_CLASS[item.state]}`}>
                   {item.state === "worn" && <Icon name="check" size={14} />}{" "}

@@ -603,10 +603,46 @@ button.emptySlot {
   height: 178px;
 }
 
-/* A piece still closed is paper gone grey, not a hole in the shelf. */
+/* A piece not yet the player's is an empty slot sunk into the shelf: dark and flat beside the
+   raised paper tiles, its drawing faded behind a lock. */
 .itemLocked {
+  translate: 0 4px;
+  border-style: dashed;
+  border-color: color-mix(in srgb, var(--lx-color-ink-on-color) 30%, transparent);
+  background: color-mix(in srgb, var(--lx-toy-outline) 74%, transparent);
+  box-shadow: inset 0 4px 14px var(--lx-toy-drop);
+  color: color-mix(in srgb, var(--lx-color-ink-on-color) 72%, transparent);
+}
+
+.itemLocked:hover {
+  filter: none;
+  background: color-mix(in srgb, var(--lx-toy-outline) 62%, transparent);
+}
+
+.itemArt {
+  position: relative;
+  display: grid;
+  place-items: center;
+}
+
+.itemLocked .itemArt > :not(.lockSeal) {
+  opacity: 0.3;
   filter: grayscale(1);
-  opacity: 0.85;
+}
+
+.lockSeal {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  margin: auto;
+  width: 38px;
+  height: 38px;
+  border: 2px solid var(--lx-toy-gold-top);
+  border-radius: 50%;
+  background: var(--lx-toy-outline);
+  box-shadow: 0 2px 0 var(--lx-toy-drop);
+  color: var(--lx-toy-gold-top);
 }
 
 .itemName {
@@ -634,6 +670,15 @@ button.emptySlot {
 
 .closed {
   color: var(--lx-color-paper-ink-muted);
+}
+
+.itemLocked .closed {
+  color: inherit;
+}
+
+/* Reached, waiting in a coffret: the slot calls in gold. */
+.itemLocked .inCoffret {
+  color: var(--lx-toy-gold-top);
 }
 
 .titlePreview {

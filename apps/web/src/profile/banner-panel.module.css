@@ -59,6 +59,10 @@
   outline-offset: 2px;
 }
 
+.swatchArt {
+  align-self: stretch;
+}
+
 .swatch {
   display: block;
   width: 100%;

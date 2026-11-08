@@ -25,13 +25,14 @@ import { Bone } from "@/ui/skeleton";
 import { useToast } from "@/ui/toast";
 import ui from "@/ui/ui.module.css";
 import { BannerPanel } from "./banner-panel";
+import { LockSeal } from "./lock-seal";
 import styles from "./profile.module.css";
 import { useProfileActions } from "./use-profile-actions";
 
 const STATE_CLASS = {
   worn: styles.worn,
   owned: styles.owned,
-  in_coffret: styles.closed,
+  in_coffret: styles.inCoffret,
   locked: styles.closed,
 } as const;
 
@@ -148,7 +149,10 @@ export function AtelierScreen() {
                   disabled={actions.busy}
                   onClick={() => tab !== "banners" && choose(tab, item)}
                 >
-                  <Preview tab={tab} item={item} wornAvatar={me?.avatar ?? null} />
+                  <span className={styles.itemArt}>
+                    <Preview tab={tab} item={item} wornAvatar={me?.avatar ?? null} />
+                    {closed && <LockSeal />}
+                  </span>
                   {tab !== "titles" && <span className={styles.itemName}>{item.name}</span>}
                   <span className={`${styles.itemState} ${STATE_CLASS[item.state]}`}>
                     {item.state === "worn" && <Icon name="check" size={14} />}{" "}

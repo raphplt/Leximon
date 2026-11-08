@@ -27,6 +27,7 @@ import { Segmented } from "@/ui/segmented";
 import { toast } from "@/ui/toast";
 import { toyFace } from "@/ui/toy";
 import { BannerPanel } from "./banner-panel";
+import { LockSeal, sunkCall, sunkInk, sunkTile } from "./lock-seal";
 
 /** Titles are words, wider than a face: two to a row. */
 const COLUMNS: Readonly<Record<CosmeticTab, number>> = { avatars: 3, frames: 3, titles: 2 };
@@ -121,27 +122,32 @@ export function AtelierScreen() {
                   styles.item,
                   { width: itemWidth },
                   item.state === "worn" && styles.itemWorn,
-                  styles.toy,
-                  toyFace(item.state === "worn" ? "gold" : "paper", "tile"),
+                  closed
+                    ? sunkTile
+                    : [styles.toy, toyFace(item.state === "worn" ? "gold" : "paper", "tile")],
                   pressed && styles.pressed,
                 ]}
               >
-                <View style={closed && styles.closed}>
-                  <Preview tab={tab} item={item} wornAvatar={me.avatar} size={previewSize} />
+                <View>
+                  <View style={closed && styles.closed}>
+                    <Preview tab={tab} item={item} wornAvatar={me.avatar} size={previewSize} />
+                  </View>
+                  {closed && <LockSeal />}
                 </View>
                 {tab !== "titles" && (
-                  <Text style={styles.name} numberOfLines={1}>
+                  <Text style={[styles.name, closed && styles.sunk]} numberOfLines={1}>
                     {item.name}
                   </Text>
                 )}
                 <View style={styles.state}>
                   {item.state === "worn" && <Icon name="check" size={13} color={wornInk} />}
-                  {closed && <Icon name="lock" size={12} color={ink.pageInkMuted} />}
                   <Text
                     style={[
                       styles.stateText,
                       item.state === "worn" && styles.stateWorn,
                       item.state === "owned" && styles.stateOwned,
+                      item.state === "locked" && styles.sunk,
+                      item.state === "in_coffret" && styles.call,
                     ]}
                   >
                     {cosmeticStateLabel(item)}
@@ -212,7 +218,9 @@ const styles = StyleSheet.create({
   itemWorn: { borderColor: ink.success },
   toy: { marginBottom: 4 },
   pressed: { opacity: 0.7 },
-  closed: { opacity: 0.4 },
+  closed: { opacity: 0.3 },
+  sunk: { color: sunkInk },
+  call: { color: sunkCall },
   name: { fontFamily: fonts.ui.bold, fontSize: fontSizes.small, color: ink.pageInk },
   state: { flexDirection: "row", alignItems: "center", gap: space.s2 },
   stateText: {
