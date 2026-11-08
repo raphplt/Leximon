@@ -59,9 +59,11 @@ const REVIEW_DECIDED = Date.UTC(2026, 10, 3, 23);
 const ECONOMY_DECIDED = Date.UTC(2026, 10, 6, 23);
 // Profile banners, decided on 2026-11-08.
 const BANNERS_DECIDED = Date.UTC(2026, 10, 7, 23);
-// Midnight in Paris, 9 November 2026: a smaller stock and fewer écus per mission, decided on
+// Midnight in Paris, 9 November 2026: fewer écus per mission, decided on
 // 2026-11-08 after simulating every reward source together.
 const REBALANCED = Date.UTC(2026, 10, 8, 23);
+// 21:40 in Paris, 8 November 2026: the owner brought the smaller stock forward to that evening.
+const STOCK_TRIMMED = Date.parse("2026-11-08T20:40:00Z");
 
 export const REFILL_SCHEDULE: RefillSchedule = [
   { startsAt: SINCE_LAUNCH, capacity: 6, intervalMs: 30 * MINUTE },
@@ -69,7 +71,7 @@ export const REFILL_SCHEDULE: RefillSchedule = [
   // by playing. Three visits a day keep about what they had.
   { startsAt: ECONOMY_DECIDED, capacity: 8, intervalMs: 60 * MINUTE },
   // The clock gave over 80 % of the sachets: no more than 6 pile up between two visits.
-  { startsAt: REBALANCED, capacity: 6, intervalMs: 60 * MINUTE },
+  { startsAt: STOCK_TRIMMED, capacity: 6, intervalMs: 60 * MINUTE },
 ];
 
 export const DRAW_SCHEDULE: DrawSchedule = [
