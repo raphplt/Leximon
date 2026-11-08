@@ -445,13 +445,14 @@
     grid-template-columns: minmax(250px, 300px) minmax(0, 1fr) minmax(250px, 300px);
     gap: 26px;
     /*
-     * As tall as the longer column, so the desk and its button end where its last leaf does; on a
-     * screen too short for it, the screen's height, and the columns scroll.
+     * As tall as the longer column, so the desk and its button end where its last leaf does, and
+     * centred on the screen; on a screen too short for it, the screen's height, and the columns
+     * scroll.
      */
-    grid-template-rows: minmax(0, 1fr);
+    grid-template-rows: fit-content(100%);
+    align-content: center;
     max-width: 1560px;
-    height: auto;
-    max-height: calc(100dvh - 76px);
+    max-height: none;
   }
 
   .today,
