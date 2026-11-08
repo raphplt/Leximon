@@ -462,6 +462,14 @@
     display: none;
   }
 
+  /*
+   * The desk stops once the sachet has its full size, the button just under it; the columns keep
+   * the screen's whole height, as theirs can run long.
+   */
+  .play {
+    max-height: 860px;
+  }
+
   /* Air above and under the pouch, so it does not fill the whole desk's height. */
   .sachet {
     inset: 170px 90px 80px;
