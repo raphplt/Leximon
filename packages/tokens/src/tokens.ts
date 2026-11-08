@@ -374,11 +374,21 @@ export interface BackTone {
 /**
  * Tones of the card back, one per collection (`back` in content/collections.toml, chosen
  * 2026-10-21). A pack shows the tone of its collection; an unknown name falls back to night.
+ * The tones after the first three wait for the next collections, each a distinct hue at the
+ * same depth, so that two packs side by side never look alike.
  */
 export const backTones = {
   night: { light: "#2C3459", dark: "#161A2C" },
   burgundy: { light: "#5E2130", dark: "#2A0D15" },
   green: { light: "#22493C", dark: "#0E221B" },
+  moss: { light: "#4A5223", dark: "#1F230E" },
+  ochre: { light: "#7A5A1E", dark: "#33240A" },
+  rust: { light: "#7A3A1C", dark: "#33170A" },
+  plum: { light: "#5A2547", dark: "#250F1D" },
+  sea: { light: "#1E4C5C", dark: "#0B2129" },
+  slate: { light: "#3D4752", dark: "#1A1F25" },
+  indigo: { light: "#43296B", dark: "#1B1030" },
+  sepia: { light: "#5B4130", dark: "#261A12" },
 } as const satisfies Record<string, BackTone>;
 
 export type BackToneName = keyof typeof backTones;

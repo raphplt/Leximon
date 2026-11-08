@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "version": "2026-11-08.3",
+  "releasedAt": "2026-11-08T09:34:42.008Z",
+  "collections": [
+    {
+      "id": "fondateurs",
+      "name": "Les Fondateurs",
+      "cardCount": 519,
+      "file": "collections/fondateurs.c97b6e96a72b.json"
+    },
+    {
+      "id": "caracteres",
+      "name": "Caractères et travers",
+      "cardCount": 539,
+      "file": "collections/caracteres.2e1d479869ae.json"
+    },
+    {
+      "id": "metiers",
+      "name": "Métiers et objets disparus",
+      "cardCount": 503,
+      "file": "collections/metiers.2ef068151034.json"
+    },
+    {
+      "id": "betes-plantes",
+      "name": "Bêtes et plantes",
+      "cardCount": 504,
+      "file": "collections/betes-plantes.4bf742b22461.json"
+    }
+  ]
+}

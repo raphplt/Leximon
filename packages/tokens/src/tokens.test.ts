@@ -164,7 +164,8 @@ describe("backTone", () => {
   it("reads a collection's tone, and falls back to night for a name it lacks", () => {
     expect(backTone("burgundy")).toBe(backTones.burgundy);
     expect(backTone(undefined)).toBe(backTones.night);
-    expect(backTone("ochre")).toBe(backTones.night);
+    expect(backTone("ochre")).toBe(backTones.ochre);
+    expect(backTone("mauve")).toBe(backTones.night);
     expect(backTone("toString")).toBe(backTones.night);
   });
 });
