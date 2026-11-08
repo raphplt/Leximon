@@ -17,6 +17,7 @@ import {
   revealNextLabel,
   revealOrder,
   stagingFor,
+  starterChoice,
   stockView,
   welcomeGuestLine,
 } from "@leximon/view-model";
@@ -309,7 +310,7 @@ function PlayFlow() {
     }
     if (result.kind === "level_required") {
       // The screen thought the choice was open: back to the starter sachet.
-      pick(choices[0] ?? choice);
+      pick(starterChoice(choices, now) ?? choice);
       onLocked();
       setPhase({ name: "sealed" });
       return;

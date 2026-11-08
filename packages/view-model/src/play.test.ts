@@ -14,6 +14,7 @@ import {
   sachetContents,
   sachetsPanel,
   speechToggleLabel,
+  starterChoice,
   stockView,
   todayLabel,
   wordUnderCounter,
@@ -95,7 +96,7 @@ describe("stock", () => {
   it("says what is left and what the button does", () => {
     expect(stockView(wallet(4), NOW)).toMatchObject({
       count: "4 sachets sur 6",
-      refillLine: "Le prochain arrive dans 18 min.",
+      refillLine: "Prochain dans 18 min",
       note: "+1 dans 18 min",
       action: "Ouvrir le sachet",
       refillShort: "18 min",
@@ -181,6 +182,20 @@ describe("collection of the sachet", () => {
       collectionId: "metiers",
     });
     expect(pickCollection(choices, "gone").id).toBe("fondateurs");
+  });
+
+  it("puts Bêtes et plantes first, and falls back on the first sachet that opens", () => {
+    const withBeasts = [...collections, { id: "betes-plantes", name: "Bêtes et plantes" }];
+    const closed = collectionChoices(withBeasts, 2, NOW);
+    expect(closed.map((c) => c.id)).toEqual([
+      "betes-plantes",
+      "fondateurs",
+      "caracteres",
+      "metiers",
+    ]);
+    expect(pickCollection(closed, null).id).toBe("fondateurs");
+    expect(pickCollection(collectionChoices(withBeasts, 3, NOW), null).id).toBe("betes-plantes");
+    expect(starterChoice(closed, NOW)?.id).toBe("fondateurs");
   });
 });
 

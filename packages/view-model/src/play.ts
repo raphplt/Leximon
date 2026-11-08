@@ -33,7 +33,7 @@ export interface StockView {
   readonly refillShort: string;
   /** « 4 sachets sur 6 ». */
   readonly count: string;
-  /** « Le prochain arrive dans 18 min. », « Ton stock est plein. » */
+  /** « Prochain dans 18 min », « Ton stock est plein. » */
   readonly refillLine: string;
   /** « 4 sachets sur 6, 2 bonus en réserve », for screen readers. */
   readonly description: string;
@@ -62,7 +62,7 @@ export function stockView(wallet: BoosterWalletResponse, now: EpochMs): StockVie
           : `Prochain dans ${wait}`,
     refillShort: wait ?? "plein",
     count,
-    refillLine: wait === null ? "Ton stock est plein." : `Le prochain arrive dans ${wait}.`,
+    refillLine: wait === null ? "Ton stock est plein." : `Prochain dans ${wait}`,
     description: `${count}, ${bonus} bonus en réserve`,
     refill:
       wallet.nextRefillAt === null
@@ -266,9 +266,12 @@ export interface CollectionChoice {
   readonly lock: string | null;
 }
 
+/** The collection put forward: its sachet comes before all the others, the starter one next. */
+const FEATURED_COLLECTION = "betes-plantes";
+
 /**
- * One sachet per published collection, the starter one first. Before the level that opens the
- * choice, only the starter sachet opens; the others show their level.
+ * One sachet per published collection, the featured one first, then the starter one. Before the
+ * level that opens the choice, only the starter sachet opens; the others show their level.
  */
 export function collectionChoices(
   collections: readonly {
@@ -281,11 +284,10 @@ export function collectionChoices(
 ): CollectionChoice[] {
   const rules = unlockRulesAt(UNLOCK_SCHEDULE, now);
   const lock = levelBadge(rules.levels.choose_collection);
-  const starterFirst = [
-    ...collections.filter((c) => c.id === rules.starterCollection),
-    ...collections.filter((c) => c.id !== rules.starterCollection),
-  ];
-  return starterFirst.map((c) => ({
+  const rank = (id: string) =>
+    id === FEATURED_COLLECTION ? 0 : id === rules.starterCollection ? 1 : 2;
+  const ordered = [...collections].sort((a, b) => rank(a.id) - rank(b.id));
+  return ordered.map((c) => ({
     id: c.id,
     name: c.name,
     short: shortName(c.name),
@@ -295,14 +297,23 @@ export function collectionChoices(
   }));
 }
 
-/** The choice kept when the one asked for is closed or gone: the starter sachet. */
+/** The choice kept when the one asked for is closed or gone: the first sachet that opens. */
 export function pickCollection(
   choices: readonly CollectionChoice[],
   wanted: string | null,
 ): CollectionChoice {
   const found = choices.find((c) => c.id === wanted && c.lock === null);
-  // The starter sachet is always first and always open.
-  return found ?? (choices[0] as CollectionChoice);
+  // The starter sachet is always open, so one always is.
+  return found ?? (choices.find((c) => c.lock === null) as CollectionChoice);
+}
+
+/** The sachet that opens at any level, for when the server says the choice is still closed. */
+export function starterChoice(
+  choices: readonly CollectionChoice[],
+  now: EpochMs,
+): CollectionChoice | undefined {
+  const { starterCollection } = unlockRulesAt(UNLOCK_SCHEDULE, now);
+  return choices.find((c) => c.id === starterCollection);
 }
 
 /**

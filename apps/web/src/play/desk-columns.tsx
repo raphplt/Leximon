@@ -94,10 +94,13 @@ function StockLeaf({ index }: { readonly index: number }) {
           </span>
         ))}
       </span>
-      <span className={styles.leafText}>
+      <span className={styles.stockNext}>
+        {stock.refill !== null && <Icon name="clock" size={16} />}
         {stock.refillLine}
-        {stock.bonus > 0 && ` ${reserve.headline} en réserve.`}
       </span>
+      {stock.bonus > 0 && (
+        <span className={styles.leafText}>{`${reserve.headline} en réserve.`}</span>
+      )}
     </div>
   );
 }

@@ -38,6 +38,7 @@ import {
   revealOrder,
   signedInToast,
   stagingFor,
+  starterChoice,
   stockView,
   type WordMemory,
   welcomeGuestLine,
@@ -437,7 +438,7 @@ function BoosterFlow() {
     }
     if (result.kind === "level_required") {
       // The screen thought the choice was open: back to the starter sachet.
-      pick(choices[0] ?? choice);
+      pick(starterChoice(choices, now) ?? choice);
       toast(lockedToast("choose_collection", now));
       setPhase({ name: "sealed" });
       return;

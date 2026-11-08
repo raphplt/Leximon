@@ -175,6 +175,17 @@ button.leaf {
   gap: 6px;
 }
 
+.stockNext {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-text), Georgia, serif;
+  font-size: var(--lx-size-label);
+  font-weight: 600;
+  line-height: 1.4;
+  color: var(--lx-color-page-ink);
+}
+
 .sachetHeld,
 .sachetWaiting {
   display: grid;
