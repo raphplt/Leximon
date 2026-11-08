@@ -72,6 +72,8 @@ export const USER_REFERENCES = {
   // Profile, blocks and reports are for members only: a guest never has any (kept to be safe).
   "pinned_cards.user_id": { transfer: "kept", abandon: "kept" },
   "user_preferences.user_id": { transfer: "kept", abandon: "kept" },
+  // Bought in the atelier, which refuses a guest.
+  "user_banners.user_id": { transfer: "kept", abandon: "kept" },
   "user_blocks.blocker_id": { transfer: "kept", abandon: "kept" },
   "user_blocks.blocked_id": { transfer: "kept", abandon: "kept" },
   "moderation_reports.reporter_id": { transfer: "kept", abandon: "kept" },

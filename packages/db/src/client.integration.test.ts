@@ -78,6 +78,7 @@ describe("database", () => {
       "themes",
       "trade_items",
       "trades",
+      "user_banners",
       "user_blocks",
       "user_cards",
       "user_carnet_cases",
