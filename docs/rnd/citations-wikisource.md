@@ -85,6 +85,10 @@ Avant de l'étendre à tout le catalogue :
 - **Inscrire Wikisource parmi les sources autorisées** du skill `carte-mot`. Seul le texte du domaine public est repris, jamais les notes ni les introductions modernes.
 - **Garder la relecture humaine des citations**, ou au moins d'un échantillon, comme pour les cartes. Les transcriptions de Wikisource peuvent garder des coquilles d'OCR.
 
+## Suite
+
+Appliqué à tout le catalogue le 2026-11-08 (D-058, version 2026-11-08.7), avec les quatre points ci-dessus : 721 citations Wikisource gardées sur 1 423 cartes sans citation du Littré, 0 refusée par le contrôle. La part de cartes citées passe de 31 % à 66 %. Une coquille d'OCR (gliron) et deux droits ou emplois douteux (prunelaie, vlaau) ont été écartés à la relecture.
+
 ## Pour reproduire
 
 ```bash
