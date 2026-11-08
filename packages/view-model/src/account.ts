@@ -62,6 +62,9 @@ export function emailStep(intent: AccountIntent): EmailStep {
       };
 }
 
+/** Under the button that opens a sachet, while a guest still has some to open. */
+export const GUEST_SIGN_UP_CTA = "Crée ton compte pour garder tes cartes";
+
 /** Said over the game once the code is accepted. */
 export const SIGNED_IN_TOAST = "Tu es connecté.";
 

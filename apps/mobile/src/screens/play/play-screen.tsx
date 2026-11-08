@@ -8,6 +8,7 @@ import {
   collectionProgress,
   copiesAt,
   firstOfRarityLabel,
+  GUEST_SIGN_UP_CTA,
   isFirstOfRarity,
   keepsAnnouncementWhenHurried,
   lockedToast,
@@ -531,8 +532,13 @@ function PlayFlow() {
               <Text style={styles.error} accessibilityRole="alert">
                 {error}
               </Text>
-            ) : canOpen && guestLeft === 1 ? (
-              <Text style={styles.message}>C'est ton dernier sachet sans compte.</Text>
+            ) : guestLeft !== null ? (
+              <>
+                {canOpen && guestLeft === 1 && (
+                  <Text style={styles.message}>C'est ton dernier sachet sans compte.</Text>
+                )}
+                <PaperAction label={GUEST_SIGN_UP_CTA} onPress={() => router.push("/compte")} />
+              </>
             ) : null
           }
         />

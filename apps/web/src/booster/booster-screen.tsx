@@ -18,6 +18,7 @@ import {
   type DrawnCard,
   ecuRules,
   firstOfRarityLabel,
+  GUEST_SIGN_UP_CTA,
   isFirstOfRarity,
   keepsAnnouncementWhenHurried,
   levelLabel,
@@ -43,6 +44,7 @@ import {
   wordUnderCounter,
   xpGainLabel,
 } from "@leximon/view-model";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   type CSSProperties,
@@ -707,8 +709,15 @@ function BoosterFlow() {
               <p className={counter.error} role="alert">
                 {error}
               </p>
-            ) : canOpen && guestLeft === 1 ? (
-              <p className={counter.message}>C'est ton dernier sachet sans compte.</p>
+            ) : guestLeft !== null ? (
+              <>
+                {canOpen && guestLeft === 1 && (
+                  <p className={counter.message}>C'est ton dernier sachet sans compte.</p>
+                )}
+                <Link href="/compte" className={`${counter.signUp} ${ui.paperToy}`}>
+                  {GUEST_SIGN_UP_CTA}
+                </Link>
+              </>
             ) : null
           }
           today={<TodayColumn word={wordTag} />}

@@ -422,6 +422,29 @@
   gap: 8px;
 }
 
+/* A guest's way to an account: paper under the gold, so the sachet stays the first thing to do. */
+.signUp {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 16px 9px;
+  color: var(--lx-toy-outline);
+  font-size: var(--lx-size-label);
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.signUp::after {
+  content: "›";
+  font-size: 1.2em;
+  line-height: 0.8;
+}
+
+.signUp:focus-visible {
+  outline: 3px solid var(--lx-color-focus);
+  outline-offset: 3px;
+}
+
 .word {
   display: flex;
   justify-content: center;
