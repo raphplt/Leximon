@@ -157,7 +157,7 @@ function MissingWordChoice({
       </ul>
       {blocked !== null && <p className={styles.blocked}>{blocked}</p>}
       {option !== undefined && (
-        <Button wide disabled={busy || blocked !== null} onClick={buy}>
+        <Button wide className={styles.action} disabled={busy || blocked !== null} onClick={buy}>
           {busy ? MISSING_WORD_BUSY : missingWordAction(option)}
         </Button>
       )}

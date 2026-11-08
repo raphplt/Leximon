@@ -12,7 +12,7 @@ import {
   unlockRulesAt,
 } from "@leximon/core";
 import { levelBadge, levelsOfFeatures } from "./features";
-import { capitalize, formatWait } from "./format";
+import { capitalize, formatWait, shortName } from "./format";
 import { MISSIONS_TITLE } from "./missions";
 
 /** The Jouer screen and the stock shown in the top bar. */
@@ -293,14 +293,6 @@ export function collectionChoices(
     source: { kind: "collection", collectionId: c.id } as const,
     lock: canOpenCollection(rules, c.id, level) ? null : lock,
   }));
-}
-
-const ARTICLES = new Set(["le", "la", "les", "l'", "un", "une", "des"]);
-
-/** « Caractères et travers » → « Caractères », « Les Fondateurs » → « Fondateurs »: the first word that is not an article, for chips. */
-export function shortName(name: string): string {
-  const words = name.split(/\s+/);
-  return words.find((w) => !ARTICLES.has(w.toLowerCase())) ?? name;
 }
 
 /** The choice kept when the one asked for is closed or gone: the starter sachet. */

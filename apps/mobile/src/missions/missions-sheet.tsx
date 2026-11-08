@@ -250,45 +250,54 @@ function Row({
   const { place } = line;
   return (
     <View style={styles.row}>
-      <View style={[styles.seal, finished && styles.sealDone]}>
-        {finished && <Icon name="check" size={14} color={toyValues.outline} />}
-      </View>
-      <View style={styles.body} accessible accessibilityLabel={line.label}>
-        <Text style={[styles.what, line.state === "claimed" && styles.faded]}>{line.text}</Text>
-        <View style={styles.progress}>
+      <Text
+        style={[styles.what, line.state === "claimed" && styles.faded]}
+        accessibilityLabel={line.label}
+      >
+        {line.text}
+      </Text>
+      <View style={styles.line}>
+        <View
+          style={styles.progress}
+          accessibilityElementsHidden
+          importantForAccessibility="no-hide-descendants"
+        >
+          <View style={[styles.seal, finished && styles.sealDone]}>
+            {finished && <Icon name="check" size={14} color={toyValues.outline} />}
+          </View>
           <View style={styles.bar}>
             <View style={[styles.fill, { width: `${Math.round(line.ratio * 100)}%` }]} />
           </View>
           <Text style={styles.figure}>{line.figure}</Text>
         </View>
-      </View>
-      {/* Always there, even empty: every row keeps its bar the same length. */}
-      <View style={styles.actions}>
-        {canChange && (
-          <Pressable
-            onPress={onChange}
-            disabled={disabled}
-            hitSlop={8}
-            style={[styles.round, disabled && styles.dim]}
-            accessibilityRole="button"
-            accessibilityLabel={MISSION_CHANGE_LABEL}
-            accessibilityState={{ disabled, busy: changing }}
-          >
-            <Icon name="swap" size={18} color={paperColors.pageInkMuted} />
-          </Pressable>
-        )}
-        {!finished && place !== null && (
-          <Toy
-            matter="gold"
-            style={styles.go}
-            bodyStyle={styles.goBody}
-            accessibilityRole="button"
-            accessibilityLabel="Y aller"
-            onPress={() => onGo(place)}
-          >
-            <Lettering size={13}>Y aller</Lettering>
-          </Toy>
-        )}
+        {/* Always there, even empty: every row keeps its bar the same length. */}
+        <View style={styles.actions}>
+          {canChange && (
+            <Pressable
+              onPress={onChange}
+              disabled={disabled}
+              hitSlop={8}
+              style={[styles.round, disabled && styles.dim]}
+              accessibilityRole="button"
+              accessibilityLabel={MISSION_CHANGE_LABEL}
+              accessibilityState={{ disabled, busy: changing }}
+            >
+              <Icon name="swap" size={18} color={paperColors.pageInkMuted} />
+            </Pressable>
+          )}
+          {!finished && place !== null && (
+            <Toy
+              matter="gold"
+              style={styles.go}
+              bodyStyle={styles.goBody}
+              accessibilityRole="button"
+              accessibilityLabel="Y aller"
+              onPress={() => onGo(place)}
+            >
+              <Lettering size={13}>Y aller</Lettering>
+            </Toy>
+          )}
+        </View>
       </View>
     </View>
   );
@@ -304,10 +313,10 @@ const styles = StyleSheet.create({
     fontSize: fontSizes.bodyLarge,
     color: paperColors.pageInk,
   },
-  // The seal and the buttons centred on the mission; between them its words, its bar under them.
-  row: { flexDirection: "row", alignItems: "center", gap: space.s4, paddingVertical: space.s2 },
-  body: { flex: 1, gap: space.s2 },
-  progress: { flexDirection: "row", alignItems: "center", gap: space.s3 },
+  // The mission's words on one line across the whole width; under them its seal, bar and buttons.
+  row: { gap: space.s2, paddingVertical: space.s2 },
+  line: { flexDirection: "row", alignItems: "center", gap: space.s4 },
+  progress: { flex: 1, flexDirection: "row", alignItems: "center", gap: space.s3 },
   // A round seal: empty while the mission goes on, gilt once done.
   seal: {
     width: 24,
@@ -321,7 +330,6 @@ const styles = StyleSheet.create({
   },
   sealDone: { backgroundColor: toyMatters.gold.top },
   what: {
-    flex: 1,
     fontFamily: fonts.ui.bold,
     fontSize: fontSizes.label,
     color: paperColors.pageInk,

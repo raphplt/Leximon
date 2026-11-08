@@ -11,7 +11,7 @@ import {
   type MissionKind,
   missionRulesAt,
 } from "@leximon/core";
-import { formatCount, plural } from "./format";
+import { formatCount, plural, shortName } from "./format";
 
 /** The missions of the day: their card on the Jouer screen, their claim and their change. */
 
@@ -96,8 +96,8 @@ function missionText(
       return {
         text:
           name === null
-            ? `Révise juste ${words} d'une de tes collections`
-            : `Révise juste ${words} de la collection ${name}`,
+            ? `Révise juste ${words} d'une collection`
+            : `Révise juste ${words} de ${shortName(name)}`,
         place: "challenges",
       };
     }

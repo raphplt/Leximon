@@ -47,3 +47,11 @@ export interface PackNoun {
 }
 
 export const SACHET_NOUN: PackNoun = { one: "sachet", many: "sachets" };
+
+const ARTICLES = new Set(["le", "la", "les", "l'", "un", "une", "des"]);
+
+/** « Caractères et travers » → « Caractères », « Les Fondateurs » → « Fondateurs »: the first word that is not an article, for chips. */
+export function shortName(name: string): string {
+  const words = name.split(/\s+/);
+  return words.find((w) => !ARTICLES.has(w.toLowerCase())) ?? name;
+}

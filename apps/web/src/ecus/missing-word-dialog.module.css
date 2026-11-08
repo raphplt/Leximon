@@ -1,5 +1,7 @@
 .choice {
   display: grid;
+  /* The dialog's width holds, whatever the longest label of the chosen rarity. */
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--lx-s6);
   font-size: var(--lx-size-label);
 }
@@ -93,6 +95,13 @@
 .blocked {
   color: var(--lx-color-rubric);
   font-weight: 700;
+}
+
+.action {
+  padding-block: var(--lx-s3);
+  white-space: normal;
+  text-align: center;
+  text-wrap: balance;
 }
 
 .hidden {

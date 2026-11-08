@@ -69,7 +69,7 @@ describe("missionLine", () => {
       names,
     );
     expect(line).toMatchObject({
-      text: "Révise juste 3 mots de la collection Bestiaire",
+      text: "Révise juste 3 mots de Bestiaire",
       state: "done",
     });
   });

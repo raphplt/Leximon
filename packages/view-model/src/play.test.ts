@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { shortName } from "./format";
 import {
   canOpenAgain,
   collectionChoices,
@@ -12,7 +13,6 @@ import {
   revealNextLabel,
   sachetContents,
   sachetsPanel,
-  shortName,
   speechToggleLabel,
   stockView,
   todayLabel,
