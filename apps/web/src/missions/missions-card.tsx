@@ -16,7 +16,6 @@ import {
   MISSIONS_HELP_TITLE,
   MISSIONS_TITLE,
   type MissionLine,
-  type MissionPlace,
   missionChangeConfirm,
   missionLine,
   missionsClaimAction,
@@ -26,7 +25,6 @@ import {
   missionsHelp,
   missionsLockedLine,
 } from "@leximon/view-model";
-import Link from "next/link";
 import { type CSSProperties, useEffect, useState } from "react";
 import { play } from "@/booster/feedback";
 import { useCatalog } from "@/cards/use-catalog";
@@ -42,15 +40,6 @@ import { ToyBody, ToyIcon } from "@/ui/toy";
 import ui from "@/ui/ui.module.css";
 import styles from "./missions-card.module.css";
 
-const PLACES: Readonly<Record<MissionPlace, string>> = {
-  play: "/jouer",
-  challenges: "/defis",
-  riddle: "/enigme",
-  trades: "/echanges",
-  album: "/album",
-  jousts: "/joutes",
-};
-
 /**
  * The missions of the day: each with how far it is and where it is done, the claim of what is
  * done, and the one change of the day. Read again each time it is shown: progress comes from
@@ -59,12 +48,9 @@ const PLACES: Readonly<Record<MissionPlace, string>> = {
 export function MissionsCard({
   className,
   style,
-  onLeave,
 }: {
   readonly className?: string | undefined;
   readonly style?: CSSProperties | undefined;
-  /** Called when a link leads to another screen, to close a panel around the card. */
-  readonly onLeave?: (() => void) | undefined;
 }) {
   const current = useShared(missions);
   const failed = useSharedFailed(missions);
@@ -151,7 +137,6 @@ export function MissionsCard({
               changing={busy === slot}
               disabled={busy !== null}
               onChange={() => setAsking(slot)}
-              onLeave={onLeave}
             />
           ))}
         </ol>
@@ -228,14 +213,12 @@ function Row({
   changing,
   disabled,
   onChange,
-  onLeave,
 }: {
   readonly line: MissionLine;
   readonly canChange: boolean;
   readonly changing: boolean;
   readonly disabled: boolean;
   readonly onChange: () => void;
-  readonly onLeave: (() => void) | undefined;
 }) {
   const finished = line.state !== "todo";
   return (
@@ -272,11 +255,6 @@ function Row({
             )}
           </button>
         )}
-        {!finished && line.place !== null && (
-          <Link href={PLACES[line.place]} className={styles.go} onClick={() => onLeave?.()}>
-            Y aller
-          </Link>
-        )}
       </span>
     </li>
   );
@@ -292,7 +270,7 @@ export function MissionsDialog({
 }) {
   return (
     <Dialog open={open} title={MISSIONS_TITLE} onClose={onClose} variant="center" hideTitle>
-      {open && <MissionsCard className={styles.inDialog} onLeave={onClose} />}
+      {open && <MissionsCard className={styles.inDialog} />}
     </Dialog>
   );
 }

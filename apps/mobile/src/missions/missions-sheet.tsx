@@ -15,7 +15,6 @@ import {
   MISSIONS_HELP_TITLE,
   MISSIONS_TITLE,
   type MissionLine,
-  type MissionPlace,
   missionChangeConfirm,
   missionLine,
   missionsClaimAction,
@@ -25,7 +24,6 @@ import {
   missionsHelp,
   missionsLockedLine,
 } from "@leximon/view-model";
-import { type Href, router } from "expo-router";
 import { useEffect, useState, useSyncExternalStore } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { useCatalog } from "@/cards/use-catalog";
@@ -39,16 +37,7 @@ import { Icon } from "@/ui/icon";
 import { Sheet } from "@/ui/sheet";
 import { TextButton } from "@/ui/text-button";
 import { toast } from "@/ui/toast";
-import { Lettering, Toy, ToyBody, ToyIcon } from "@/ui/toy";
-
-const PLACES: Readonly<Record<MissionPlace, Href>> = {
-  play: "/",
-  challenges: "/defis",
-  riddle: "/enigme",
-  trades: "/echanges",
-  album: "/album",
-  jousts: "/joutes",
-};
+import { ToyBody, ToyIcon } from "@/ui/toy";
 
 let shown = false;
 const listeners = new Set<() => void>();
@@ -73,7 +62,7 @@ export function MissionsHost() {
   const open = useSyncExternalStore(subscribe, () => shown);
   return (
     <Sheet open={open} title={MISSIONS_TITLE} onClose={() => show(false)}>
-      {open && <Missions onLeave={() => show(false)} />}
+      {open && <Missions />}
     </Sheet>
   );
 }
@@ -83,7 +72,7 @@ export function MissionsHost() {
  * change of the day. Read again each time it is shown: progress comes from what the player did
  * meanwhile.
  */
-function Missions({ onLeave }: { readonly onLeave: () => void }) {
+function Missions() {
   const current = useShared(missions);
   const failed = useSharedFailed(missions);
   const catalog = useCatalog();
@@ -180,10 +169,6 @@ function Missions({ onLeave }: { readonly onLeave: () => void }) {
           changing={busy === slot}
           disabled={busy !== null}
           onChange={() => setAsking(slot)}
-          onGo={(place) => {
-            onLeave();
-            router.navigate(PLACES[place]);
-          }}
         />
       ))}
       {claimAction !== null && (
@@ -237,17 +222,14 @@ function Row({
   changing,
   disabled,
   onChange,
-  onGo,
 }: {
   readonly line: MissionLine;
   readonly canChange: boolean;
   readonly changing: boolean;
   readonly disabled: boolean;
   readonly onChange: () => void;
-  readonly onGo: (place: MissionPlace) => void;
 }) {
   const finished = line.state !== "todo";
-  const { place } = line;
   return (
     <View style={styles.row}>
       <Text
@@ -284,18 +266,6 @@ function Row({
             >
               <Icon name="swap" size={18} color={paperColors.pageInkMuted} />
             </Pressable>
-          )}
-          {!finished && place !== null && (
-            <Toy
-              matter="gold"
-              style={styles.go}
-              bodyStyle={styles.goBody}
-              accessibilityRole="button"
-              accessibilityLabel="Y aller"
-              onPress={() => onGo(place)}
-            >
-              <Lettering size={13}>Y aller</Lettering>
-            </Toy>
           )}
         </View>
       </View>
@@ -362,16 +332,14 @@ const styles = StyleSheet.create({
   },
   roundOn: { backgroundColor: alpha(toyValues.outline, 0.1) },
   dim: { opacity: 0.5 },
-  // Wide enough for the change and « Y aller », on every row.
+  // Wide enough for the change, on every row.
   actions: {
-    width: 32 + space.s3 + 78,
+    width: 32,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "flex-end",
     gap: space.s3,
   },
-  go: { minHeight: 32 },
-  goBody: { paddingHorizontal: space.s5, paddingVertical: space.s1 },
   help: {
     gap: space.s3,
     padding: space.s5,
