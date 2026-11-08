@@ -20,14 +20,19 @@ import {
   confirmStep,
   emailStep,
   GOOGLE_AGE_TEXT,
+  GOOGLE_LINK_BUTTON,
+  GOOGLE_LINKED_NOTICE,
   GOOGLE_OR,
   GOOGLE_QUERY,
+  googleLinkError,
   googleReturn,
   NEWS_OPT_IN,
   needsConfirmation,
   needsNewCode,
   SIGN_IN_QUERY,
+  type SignedInWay,
   sendErrorMessage,
+  signedInWay,
 } from "@leximon/view-model";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -82,7 +87,7 @@ function accountPath(intent: AccountIntent): string {
 
 /** Signed in, by code or Google: what the browser keeps is reset, then back to the game. */
 async function finishSignIn(
-  { email, justJoined }: { readonly email: string; readonly justJoined: boolean },
+  { email, way }: { readonly email: string; readonly way: SignedInWay },
   newsOptIn: boolean,
 ): Promise<void> {
   forgetPendingCode();
@@ -93,7 +98,7 @@ async function finishSignIn(
   }
   forgetProgress();
   keepLastEmail(email);
-  noteSignedIn(justJoined ? "joined" : "back");
+  noteSignedIn(way);
   // Straight back to the game, with a full load: every screen then reads the account afresh.
   window.location.assign("/jouer");
 }
@@ -157,9 +162,16 @@ export function AccountScreen() {
     try {
       const account = await api.fetchAccount();
       if (account.kind === "member" && query.has(GOOGLE_QUERY.done)) {
-        await finishSignIn(account, query.has(GOOGLE_QUERY.news));
+        const way = signedInWay(account, true);
+        await finishSignIn({ email: account.email, way }, query.has(GOOGLE_QUERY.news));
       } else if (account.kind === "member") {
         forgetPendingCode();
+        if (query.has(GOOGLE_QUERY.linked)) {
+          // Back from adding Google: said once, then dropped from the address.
+          if (googleError === null) setNotice(GOOGLE_LINKED_NOTICE);
+          else setError(googleLinkError(googleError, account.email));
+          router.replace("/compte", { scroll: false });
+        }
         setStep({
           kind: "member",
           email: account.email,
@@ -237,8 +249,8 @@ export function AccountScreen() {
     if (result.kind === "signed_in") {
       // Whether the account is new is the server's to say; a failed read only loses the welcome.
       const account = await api.fetchAccount().catch(() => null);
-      const justJoined = account?.kind === "member" && account.justJoined;
-      await finishSignIn({ email, justJoined }, newsOptIn);
+      const way = account?.kind === "member" ? signedInWay(account, false) : "back";
+      await finishSignIn({ email, way }, newsOptIn);
     } else showCodeError(result.code, email);
   };
 
@@ -255,6 +267,15 @@ export function AccountScreen() {
         declared,
       });
       window.location.assign(url);
+    });
+
+  /** Off to Google to add it to the account; its redirect comes back here, linked or not. */
+  const linkGoogle = () =>
+    run(async () => {
+      const back = `${window.location.origin}/compte?${GOOGLE_QUERY.linked}=1`;
+      window.location.assign(
+        await api.startGoogleLink({ callbackURL: back, errorCallbackURL: back }),
+      );
     });
 
   const showCodeError = (reason: CodeError, email: string) => {
@@ -296,10 +317,14 @@ export function AccountScreen() {
       {step.kind === "member" && (
         <>
           <div className={`${styles.panel} ${ui.leaf}`}>
+            {notice !== null && <p className={styles.notice}>{notice}</p>}
             <p className={styles.text}>
               Connecté avec <strong className={styles.email}>{step.email}</strong>
               {step.withGoogle ? ` ${BY_GOOGLE}` : ""}.
             </p>
+            {google && !step.withGoogle && (
+              <GoogleButton busy={busy} label={GOOGLE_LINK_BUTTON} onClick={linkGoogle} />
+            )}
             <NewsToggle />
             <Link href="/jouer" className={`${styles.primary} ${ui.goldToy}`}>
               Retour au jeu

@@ -11,6 +11,7 @@ import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } 
 import { createApp } from "../app";
 import { TEST_ORIGIN, testEnv } from "../test-env";
 import {
+  ageAccount,
   anyMailDomain,
   applySetCookies,
   createOutbox,
@@ -32,6 +33,8 @@ const { accounts, playerAgeBrackets, playerSignups, userCards, users } = schema;
 const GOOGLE_TOKEN_URL = "https://oauth2.googleapis.com/token";
 const PLAY_URL = `${TEST_ORIGIN}/jouer`;
 const ERROR_URL = `${TEST_ORIGIN}/compte`;
+const LINKED_URL = `${TEST_ORIGIN}/compte?associe=1`;
+const DAY = 24 * 60 * 60_000;
 
 beforeAll(() => seedTestCatalog(db));
 afterAll(close);
@@ -138,6 +141,54 @@ async function userByEmail(email: string) {
   return user ?? null;
 }
 
+/** The member adds Google from the account page: the trip, then Google's redirect. */
+async function linkWithGoogle(cookie: string) {
+  const start = await app.request(
+    "/api/auth/link-social",
+    {
+      method: "POST",
+      headers: { origin: TEST_ORIGIN, "content-type": "application/json", cookie },
+      body: JSON.stringify({
+        provider: "google",
+        callbackURL: LINKED_URL,
+        errorCallbackURL: LINKED_URL,
+        disableRedirect: true,
+      }),
+    },
+    env,
+  );
+  expect(start.status).toBe(200);
+  const { url: googleURL } = (await start.json()) as { url: string };
+  const leaving = applySetCookies(cookie, start);
+  const state = new URL(googleURL).searchParams.get("state");
+  const back = await app.request(
+    `/api/auth/callback/google?code=google-code&state=${state}`,
+    { headers: { cookie: leaving } },
+    env,
+  );
+  expect(back.status).toBe(302);
+  return new URL(back.headers.get("location") ?? "", TEST_ORIGIN);
+}
+
+/** A member signed in with a code, and the session cookie the client keeps. */
+async function memberWithCode(email: string) {
+  expect((await requestCode(app, env, email)).status).toBe(200);
+  const response = await signInWithCode(app, env, {
+    email,
+    code: outbox.codeFor(email),
+    cookie: null,
+    ageConfirmed: true,
+  });
+  expect(response.status).toBe(200);
+  const { user } = (await response.json()) as { user: { id: string } };
+  return { userId: user.id, cookie: applySetCookies("", response) };
+}
+
+async function googleRowsOf(userId: string) {
+  const rows = await db.select().from(accounts).where(eq(accounts.userId, userId));
+  return rows.filter((row) => row.providerId === "google");
+}
+
 async function codeAccount(email: string) {
   expect((await requestCode(app, env, email)).status).toBe(200);
   const response = await signInWithCode(app, env, {
@@ -169,7 +220,13 @@ describe("creating an account with Google", () => {
       headers: { [SOURCE_HEADER]: "reddit" },
     });
     expect(location.href).toBe(PLAY_URL);
-    expect(await whoIs(cookie)).toMatchObject({ kind: "member", withGoogle: true });
+    // Made with Google: a welcome, not a word about Google being added.
+    expect(await whoIs(cookie)).toMatchObject({
+      kind: "member",
+      withGoogle: true,
+      justJoined: true,
+      googleJustLinked: false,
+    });
 
     const user = await userByEmail(googleProfile.email);
     expect(user).toMatchObject({ name: "", image: null, emailVerified: true, isAnonymous: false });
@@ -229,10 +286,15 @@ describe("an address that already has an account", () => {
   it("joins the account made with a code, and signs in to it from « Se connecter »", async () => {
     googleProfile = newGoogleAccount();
     const userId = await codeAccount(googleProfile.email);
+    await ageAccount(db, userId, DAY);
 
     const { location, cookie } = await signInWithGoogle(null);
     expect(location.href).toBe(PLAY_URL);
-    expect((await whoIs(cookie))?.kind).toBe("member");
+    expect(await whoIs(cookie)).toMatchObject({
+      kind: "member",
+      justJoined: false,
+      googleJustLinked: true,
+    });
     const linked = await db.select().from(accounts).where(eq(accounts.userId, userId));
     expect(linked.map((account) => account.providerId)).toContain("google");
 
@@ -259,6 +321,54 @@ describe("an address that already has an account", () => {
     const { location, cookie } = await signInWithGoogle(null);
     expect(location.searchParams.get("error")).toBe("BANNED_USER");
     expect(await whoIs(cookie)).toBeNull();
+  });
+});
+
+describe("adding Google to a signed-in member", () => {
+  it("adds the Google account with the member's address, which then signs in", async () => {
+    googleProfile = newGoogleAccount();
+    const member = await memberWithCode(googleProfile.email);
+    expect(await whoIs(member.cookie)).toMatchObject({ withGoogle: false });
+
+    const location = await linkWithGoogle(member.cookie);
+    expect(location.href).toBe(LINKED_URL);
+    expect(await whoIs(member.cookie)).toMatchObject({ kind: "member", withGoogle: true });
+    expect(await googleRowsOf(member.userId)).toMatchObject([
+      { accountId: googleProfile.sub, accessToken: null, refreshToken: null, idToken: null },
+    ]);
+
+    const again = await signInWithGoogle(null);
+    expect(again.location.href).toBe(PLAY_URL);
+  });
+
+  it("refuses a Google account with another address", async () => {
+    googleProfile = newGoogleAccount();
+    const member = await memberWithCode(newGoogleAccount().email);
+    const location = await linkWithGoogle(member.cookie);
+    expect(location.pathname).toBe("/compte");
+    expect(location.searchParams.get("error")).toBe("email_does_not_match");
+    expect(await googleRowsOf(member.userId)).toEqual([]);
+  });
+
+  it("refuses an address Google has not verified", async () => {
+    googleProfile = newGoogleAccount(false);
+    const member = await memberWithCode(googleProfile.email);
+    const location = await linkWithGoogle(member.cookie);
+    expect(location.searchParams.get("error")).toBe("email_not_verified");
+    expect(await googleRowsOf(member.userId)).toEqual([]);
+  });
+
+  it("is refused to a player who is not signed in", async () => {
+    const response = await app.request(
+      "/api/auth/link-social",
+      {
+        method: "POST",
+        headers: { origin: TEST_ORIGIN, "content-type": "application/json" },
+        body: JSON.stringify({ provider: "google", callbackURL: LINKED_URL }),
+      },
+      env,
+    );
+    expect(response.status).toBe(401);
   });
 });
 

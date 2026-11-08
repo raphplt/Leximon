@@ -10,17 +10,19 @@ import { space } from "@/theme";
 export function GoogleButton({
   busy,
   disabled = false,
+  label = GOOGLE_BUTTON,
   onPress,
 }: {
   readonly busy: boolean;
   readonly disabled?: boolean;
+  readonly label?: string;
   readonly onPress: () => void;
 }) {
   const off = busy || disabled;
   return (
     <Pressable
       accessibilityRole="button"
-      accessibilityLabel={GOOGLE_BUTTON}
+      accessibilityLabel={label}
       accessibilityState={{ disabled: off }}
       disabled={off}
       onPress={onPress}
@@ -44,7 +46,7 @@ export function GoogleButton({
           d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"
         />
       </Svg>
-      <Text style={styles.label}>{busy ? "Un instant…" : GOOGLE_BUTTON}</Text>
+      <Text style={styles.label}>{busy ? "Un instant…" : label}</Text>
     </Pressable>
   );
 }

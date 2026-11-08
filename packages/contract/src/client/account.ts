@@ -6,6 +6,7 @@ import {
   type EmailPreferences,
   type EmailSignInRequest,
   emailPreferencesSchema,
+  type GoogleLinkRequest,
   type GoogleSignInRequest,
   googleSignInStartSchema,
   type InviteStatus,
@@ -134,6 +135,19 @@ export function accountRoutes(http: Http) {
         "/api/auth/sign-in/social",
         json("POST", body, arrival.headers()),
       );
+      if (!response.ok) throw new ApiError("google_unavailable", response.status);
+      return (await parse(response, googleSignInStartSchema)).url;
+    },
+
+    /** Asks for the trip to Google that adds it to the signed-in member, and returns its page. */
+    async startGoogleLink(request: GoogleLinkRequest): Promise<string> {
+      const body = {
+        provider: "google",
+        callbackURL: request.callbackURL,
+        errorCallbackURL: request.errorCallbackURL,
+        disableRedirect: true,
+      };
+      const response = await send("/api/auth/link-social", json("POST", body));
       if (!response.ok) throw new ApiError("google_unavailable", response.status);
       return (await parse(response, googleSignInStartSchema)).url;
     },

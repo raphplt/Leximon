@@ -6,11 +6,14 @@ import {
   codeErrorMessage,
   confirmStep,
   emailStep,
+  GOOGLE_LINKED_TOAST,
+  googleLinkError,
   googleReturn,
   needsConfirmation,
   needsNewCode,
   SIGNED_IN_TOAST,
   signedInToast,
+  signedInWay,
   WELCOME_TOAST,
 } from "./account";
 import { DEFAULT_PACK_NOUN } from "./pack";
@@ -154,9 +157,39 @@ describe("googleReturn", () => {
   });
 });
 
-describe("signedInToast", () => {
-  it("welcomes a new account and greets a returning one", () => {
-    expect(signedInToast(true)).toBe(WELCOME_TOAST);
-    expect(signedInToast(false)).toBe(SIGNED_IN_TOAST);
+describe("signedInWay", () => {
+  const account = (justJoined: boolean, googleJustLinked: boolean) => ({
+    justJoined,
+    googleJustLinked,
+  });
+
+  it("welcomes a new account, even one made with Google", () => {
+    expect(signedInToast(signedInWay(account(true, false), true))).toBe(WELCOME_TOAST);
+    expect(signedInToast(signedInWay(account(true, false), false))).toBe(WELCOME_TOAST);
+  });
+
+  it("says Google was added only on the way back from Google", () => {
+    expect(signedInToast(signedInWay(account(false, true), true))).toBe(GOOGLE_LINKED_TOAST);
+    expect(signedInToast(signedInWay(account(false, true), false))).toBe(SIGNED_IN_TOAST);
+  });
+
+  it("greets a returning player", () => {
+    expect(signedInToast(signedInWay(account(false, false), true))).toBe(SIGNED_IN_TOAST);
+  });
+});
+
+describe("googleLinkError", () => {
+  it("says nothing when the player turned back at Google's", () => {
+    expect(googleLinkError("access_denied", "a@b.fr")).toBeNull();
+  });
+
+  it("names the address the Google account must have", () => {
+    expect(googleLinkError("email_does_not_match", "a@b.fr")).toContain("a@b.fr");
+  });
+
+  it("falls back to a retry for an unknown reason", () => {
+    expect(googleLinkError("whatever", "a@b.fr")).toBe(
+      "L'association avec Google a échoué. Réessaie.",
+    );
   });
 });

@@ -54,6 +54,7 @@ const AUTH_ROUTES = new Set([
   "POST /email-otp/send-verification-otp",
   "POST /sign-in/email-otp",
   "POST /sign-in/social",
+  "POST /link-social",
   "GET /callback/google",
   "GET /expo-authorization-proxy",
   "GET /get-session",
@@ -120,6 +121,7 @@ export function createApp(options: AppOptions = {}) {
   app.post(`${AUTH_BASE_PATH}/sign-in/anonymous`, signupRateLimit);
   // Each trip to Google writes its state: as many as guests, not more.
   app.post(`${AUTH_BASE_PATH}/sign-in/social`, signupRateLimit);
+  app.post(`${AUTH_BASE_PATH}/link-social`, signupRateLimit);
   app.post(
     `${AUTH_BASE_PATH}/email-otp/send-verification-otp`,
     onlySignInCodes,

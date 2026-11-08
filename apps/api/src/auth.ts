@@ -41,6 +41,7 @@ export const SESSION_TTL_S = 90 * 24 * 60 * 60;
 
 const SEND_CODE_PATH = "/email-otp/send-verification-otp";
 const SOCIAL_SIGN_IN_PATH = "/sign-in/social";
+const LINK_SOCIAL_PATH = "/link-social";
 
 /** Google is offered only once its OAuth client is set (`GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`). */
 export function googleSignInConfigured(env: Env): boolean {
@@ -173,6 +174,15 @@ export function createAuth(env: Env, db: Database, provider: EmailSender) {
       // "J'ai 15 ans ou plus": required to create an account, never stored. With Google it
       // travels in the OAuth state, ticked before leaving.
       async validateUserInfo({ user, source }, ctx) {
+        // A Google account added to a signed-in member: only one whose address Google checked,
+        // since it can sign in to the account from then on.
+        if (source.action === "link-account") {
+          if (source.method !== "oauth" || user.emailVerified === true) return;
+          return {
+            error: "email_not_verified",
+            errorDescription: "The provider has not verified this address",
+          };
+        }
         if (source.action !== "create-user") return;
         if (source.method !== "email-otp" && source.method !== "oauth") return;
         // Better Auth would create the player with an address nobody proved to own.
@@ -229,13 +239,13 @@ export function createAuth(env: Env, db: Database, provider: EmailSender) {
     },
     hooks: {
       before: createAuthMiddleware(async (ctx) => {
-        if (ctx.path !== SOCIAL_SIGN_IN_PATH) return;
+        if (ctx.path !== SOCIAL_SIGN_IN_PATH && ctx.path !== LINK_SOCIAL_PATH) return;
         // Signing in with a token the client got from Google itself skips the trip, and with it
         // what travels in the state: only the redirect is offered.
         if (readsIdToken(ctx.body)) {
           throw new APIError("BAD_REQUEST", { message: "Only the redirect to Google is offered" });
         }
-        await keepArrivalForTrip(ctx.headers);
+        if (ctx.path === SOCIAL_SIGN_IN_PATH) await keepArrivalForTrip(ctx.headers);
       }),
       after: createAuthMiddleware(async (ctx) => {
         if (ctx.path !== SEND_CODE_PATH || sendFailure === null) return;

@@ -87,6 +87,10 @@ const levelParamSchema = z.coerce.number().int().min(2).max(10_000);
 const welcomeDayParamSchema = z.coerce.number().int().min(1).max(100);
 /** Long enough to cover the trip back from Google or the e-mail, short enough to welcome only once. */
 const JUST_JOINED_MS = 10 * 60_000;
+/** An account made with Google gets its Google row within the same request. */
+const LINKED_LATER_MS = 60_000;
+
+const isRecent = (at: Date) => Date.now() - at.getTime() < JUST_JOINED_MS;
 
 /** Player state for the current session. Never cached: it changes with every action. */
 export function meRoutes() {
@@ -419,7 +423,7 @@ export function meRoutes() {
     }
     if (session.user.isAnonymous !== true) {
       const [google] = await c.var.db
-        .select({ id: schema.accounts.id })
+        .select({ linkedAt: schema.accounts.createdAt })
         .from(schema.accounts)
         .where(
           and(
@@ -433,7 +437,12 @@ export function meRoutes() {
         email: session.user.email,
         isAdmin: session.user.role === ADMIN_ROLE,
         withGoogle: google !== undefined,
-        justJoined: Date.now() - session.user.createdAt.getTime() < JUST_JOINED_MS,
+        justJoined: isRecent(session.user.createdAt),
+        // Google added to an account that was already there, not the way the account was made.
+        googleJustLinked:
+          google !== undefined &&
+          isRecent(google.linkedAt) &&
+          google.linkedAt.getTime() - session.user.createdAt.getTime() > LINKED_LATER_MS,
       });
     }
     const rules = guestRulesAt(GUEST_SCHEDULE, Date.now());

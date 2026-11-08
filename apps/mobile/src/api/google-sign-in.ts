@@ -17,6 +17,11 @@ export type GoogleTrip =
   /** The browser was closed before Google sent the player back. */
   | { readonly kind: "closed" };
 
+export type GoogleLinkTrip =
+  | { readonly kind: "linked" }
+  | { readonly kind: "refused"; readonly error: string }
+  | { readonly kind: "closed" };
+
 export function isGoogleReturn(url: string): boolean {
   return url.startsWith(APP_RETURN);
 }
@@ -26,6 +31,16 @@ export function isGoogleReturn(url: string): boolean {
  * browser the state cookie the app holds; on the way back the API adds the session cookie to the
  * app's link, kept here in the keychain as Better Auth's Expo client does.
  */
+/** Opens Google's page through the API's proxy, which gives the browser the state cookie. */
+async function tripToGoogle(googleURL: string): Promise<URLSearchParams | null> {
+  const proxy = `${API_URL}/api/auth/expo-authorization-proxy?${new URLSearchParams({
+    authorizationURL: googleURL,
+  })}`;
+  const result = await WebBrowser.openAuthSessionAsync(proxy, APP_RETURN);
+  if (result.type !== "success") return null;
+  return new URLSearchParams(result.url.split("?")[1] ?? "");
+}
+
 export async function signInWithGoogle(
   signUp: boolean,
   declared: GoogleDeclarations,
@@ -37,13 +52,8 @@ export async function signInWithGoogle(
     errorCallbackURL: APP_RETURN,
     declared,
   });
-  const proxy = `${API_URL}/api/auth/expo-authorization-proxy?${new URLSearchParams({
-    authorizationURL: googleURL,
-  })}`;
-  const result = await WebBrowser.openAuthSessionAsync(proxy, APP_RETURN);
-  if (result.type !== "success") return { kind: "closed" };
-
-  const query = new URLSearchParams(result.url.split("?")[1] ?? "");
+  const query = await tripToGoogle(googleURL);
+  if (query === null) return { kind: "closed" };
   const cookie = query.get("cookie");
   if (cookie !== null) {
     const kept = await SecureStore.getItemAsync(COOKIE_STORAGE_KEY);
@@ -53,4 +63,15 @@ export async function signInWithGoogle(
   const error = query.get(GOOGLE_QUERY.error);
   if (error === null) return { kind: "closed" };
   return { kind: "refused", error, cards: query.get(GOOGLE_QUERY.cards) };
+}
+
+/** Adds Google to the signed-in member, in the browser; the session stays the one the app holds. */
+export async function linkGoogle(): Promise<GoogleLinkTrip> {
+  const back = `${APP_RETURN}?${new URLSearchParams({ [GOOGLE_QUERY.linked]: "1" })}`;
+  const googleURL = await api.startGoogleLink({ callbackURL: back, errorCallbackURL: back });
+  const query = await tripToGoogle(googleURL);
+  if (query === null) return { kind: "closed" };
+  const error = query.get(GOOGLE_QUERY.error);
+  if (error !== null) return { kind: "refused", error };
+  return query.has(GOOGLE_QUERY.linked) ? { kind: "linked" } : { kind: "closed" };
 }

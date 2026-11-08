@@ -245,7 +245,7 @@ function BoosterFlow() {
 
   useEffect(() => {
     const signedIn = takeSignedIn();
-    if (signedIn !== null) toast(signedInToast(signedIn === "joined"));
+    if (signedIn !== null) toast(signedInToast(signedIn));
   }, [toast]);
 
   const { now } = view;

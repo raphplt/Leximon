@@ -1,3 +1,5 @@
+import type { SignedInWay } from "@leximon/view-model";
+
 /**
  * What this browser remembers of a sign-in: the address, to fill the form next time, and that one
  * just happened, for the game to say so after the full load. Storage can be missing or blocked:
@@ -32,10 +34,7 @@ export function forgetLastEmail(): void {
   }
 }
 
-/** A new account is welcomed, a returning one greeted. */
-export type SignedIn = "joined" | "back";
-
-export function noteSignedIn(how: SignedIn): void {
+export function noteSignedIn(how: SignedInWay): void {
   try {
     window.sessionStorage.setItem(SIGNED_IN_KEY, how);
   } catch {
@@ -44,12 +43,12 @@ export function noteSignedIn(how: SignedIn): void {
 }
 
 /** How the player just signed in, once; null the rest of the time. */
-export function takeSignedIn(): SignedIn | null {
+export function takeSignedIn(): SignedInWay | null {
   try {
     const noted = window.sessionStorage.getItem(SIGNED_IN_KEY);
     window.sessionStorage.removeItem(SIGNED_IN_KEY);
     if (noted === null) return null;
-    return noted === "joined" ? "joined" : "back";
+    return noted === "joined" || noted === "linked" ? noted : "back";
   } catch {
     return null;
   }

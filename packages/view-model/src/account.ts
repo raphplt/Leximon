@@ -71,8 +71,29 @@ export const SIGNED_IN_TOAST = "Tu es connecté.";
 /** Said instead when the account was just created. */
 export const WELCOME_TOAST = "Bienvenue ! Ton compte est créé, tes cartes te suivent partout.";
 
-export function signedInToast(justJoined: boolean): string {
-  return justJoined ? WELCOME_TOAST : SIGNED_IN_TOAST;
+/** Said instead when Google came in by the address of an account that was already there. */
+export const GOOGLE_LINKED_TOAST = "Ton compte Google est maintenant associé à ton compte.";
+
+/** How a sign-in went: a new account, Google added to an existing one, or a return. */
+export type SignedInWay = "joined" | "linked" | "back";
+
+export function signedInWay(
+  account: { readonly justJoined: boolean; readonly googleJustLinked: boolean },
+  byGoogle: boolean,
+): SignedInWay {
+  if (account.justJoined) return "joined";
+  return byGoogle && account.googleJustLinked ? "linked" : "back";
+}
+
+export function signedInToast(way: SignedInWay): string {
+  switch (way) {
+    case "joined":
+      return WELCOME_TOAST;
+    case "linked":
+      return GOOGLE_LINKED_TOAST;
+    case "back":
+      return SIGNED_IN_TOAST;
+  }
 }
 
 export const NEWS_OPT_IN = "M'écrire quand il y a du nouveau";
@@ -273,7 +294,13 @@ export const GOOGLE_AGE_TEXT = "Google ne nous transmet que ton adresse e\u2011m
  * box was ticked before leaving), `error` and `cards` when the sign-in failed. Better Auth names
  * `error` itself.
  */
-export const GOOGLE_QUERY = { done: "google", news: "nouvelles", error: "error", cards: "cards" };
+export const GOOGLE_QUERY = {
+  done: "google",
+  linked: "associe",
+  news: "nouvelles",
+  error: "error",
+  cards: "cards",
+};
 
 export type GoogleReturn =
   /** The player turned back at Google's: nothing to say. */
@@ -334,3 +361,28 @@ function googleErrorMessage(error: string): string {
 
 /** After the member's address, when Google is one of the ways they sign in. */
 export const BY_GOOGLE = "par Google";
+
+/** On the member's panel while Google is not one of the ways they sign in. */
+export const GOOGLE_LINK_BUTTON = "Associer mon compte Google";
+
+export const GOOGLE_LINKED_NOTICE =
+  "Ton compte Google est associé. Tu peux maintenant te connecter avec lui.";
+
+/**
+ * What the member's panel says after a failed trip to add Google, from Better Auth's `error`;
+ * null when the player turned back at Google's.
+ */
+export function googleLinkError(error: string, email: string): string | null {
+  switch (error) {
+    case "access_denied":
+      return null;
+    case "email_does_not_match":
+      return `Ce compte Google n'a pas la même adresse que ton compte. Choisis celui de ${email}.`;
+    case "account_already_linked_to_different_user":
+      return "Ce compte Google est déjà associé à un autre compte Leximon.";
+    case "email_not_verified":
+      return "Google n'a pas vérifié l'adresse de ce compte Google.";
+    default:
+      return "L'association avec Google a échoué. Réessaie.";
+  }
+}

@@ -112,7 +112,13 @@ export interface GoogleSignInRequest {
   readonly declared: GoogleDeclarations;
 }
 
-/** `POST /api/auth/sign-in/social`, 200: Google's page the player is sent to. */
+/** Adding Google to the signed-in member: where Google's redirect lands, linked or not. */
+export interface GoogleLinkRequest {
+  readonly callbackURL: string;
+  readonly errorCallbackURL: string;
+}
+
+/** `POST /api/auth/sign-in/social` and `/link-social`, 200: Google's page the player is sent to. */
 export const googleSignInStartSchema = z.object({ url: z.url() });
 
 /** `GET /me/account`, 200: who is playing. */
@@ -131,6 +137,8 @@ export const accountResponseSchema = z.discriminatedUnion("kind", [
     withGoogle: z.boolean().default(false),
     /** The account was created a few minutes ago: the game welcomes it rather than greets it. */
     justJoined: z.boolean().default(false),
+    /** Google was added to this existing account a few minutes ago: the game says so. */
+    googleJustLinked: z.boolean().default(false),
   }),
 ]);
 export type AccountResponse = z.infer<typeof accountResponseSchema>;

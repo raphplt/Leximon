@@ -3,7 +3,7 @@
 Ce qui a été construit du 4 au 6 novembre 2026, en deux parties :
 
 - **Finitions hors du jeu** (FIN-01 à FIN-13) : le [cahier des finitions](cahiers-des-charges/finitions-hors-du-jeu.md) (accueil, icônes, images de partage, e-mails, cadres, emblèmes, fiches des stores), puis trois corrections du 5 novembre (écran Jouer sur petit téléphone, bilan du sachet, réglages de la révision). La plupart de ces tests renvoient à un test de la [recette du web](recette-web.md) ou de la [recette du mobile](recette-mobile.md) et disent ce qu'il faut y regarder ; les attendus complets restent dans le test cité.
-- **Connexion avec Google** (GGL-01 à GGL-06), construite le 2026-11-08.
+- **Connexion avec Google** (GGL-01 à GGL-07), construite le 2026-11-08.
 - **Joutes, lots 1 à 4** (JTE-01 à JTE-37 sur le web, MJT-01 à MJT-06 sur Android, PROD-01 à PROD-03 en production) : ce qu'on vérifie avant d'ouvrir les joutes aux testeurs, puis en production. Les règles sont en P91 ([regles-du-jeu.md](regles-du-jeu.md)), le cahier dans [joutes.md](cahiers-des-charges/joutes.md). Le lot 1 est construit depuis le 2026-11-05, web et mobile.
 
 Pour chaque test, note dans **Retour** : « OK », ou ce que tu as vu à la place. Une capture d'écran aide.
@@ -542,13 +542,13 @@ D-057, [cahier](cahiers-des-charges/connexion-google.md). Web et Android ; l'iOS
 ### GGL-02 · Créer un compte avec Google
 
 - Invité avec quelques cartes, onglet « Créer un compte », « Continuer avec Google » : une étape « Google ne nous transmet que ton adresse e-mail. », la tranche d'âge, « M'écrire quand il y a du nouveau » et « J'ai 15 ans ou plus ». Le bouton Google reste grisé tant que la case de l'âge n'est pas cochée. « Retour » ramène au formulaire.
-- Cocher l'âge et les nouvelles, continuer : Google demande de choisir un compte, son écran ne parle que de l'adresse e-mail. Retour sur Jouer, « Tu es connecté. », les cartes de l'invité sont là.
+- Cocher l'âge et les nouvelles, continuer : Google demande de choisir un compte, son écran ne parle que de l'adresse e-mail. Retour sur Jouer, « Bienvenue ! Ton compte est créé, tes cartes te suivent partout. », les cartes de l'invité sont là.
 - `/compte` : « Connecté avec …@gmail.com par Google. », et « M'écrire quand il y a du nouveau » activé.
 
 ### GGL-03 · Se connecter avec Google
 
 - Déconnecté, onglet « Se connecter », « Continuer avec Google » part tout de suite chez Google, sans étape d'âge.
-- Avec l'adresse qui a un compte par code : retour sur Jouer, connecté à ce compte et sa collection. La fois suivante, Google suffit.
+- Avec l'adresse qui a un compte par code : retour sur Jouer avec « Ton compte Google est maintenant associé à ton compte. », connecté à ce compte et sa collection. La fois suivante, Google suffit, avec « Tu es connecté. ».
 - Avec une adresse Gmail sans compte : retour sur `/compte`, onglet « Créer un compte », avec « Aucun compte n'utilise encore ce compte Google. Crée-le ici. » Aucun compte n'est créé.
 - Annuler chez Google (flèche retour, ou « Annuler ») : retour sur `/compte`, sans message.
 
@@ -559,9 +559,16 @@ D-057, [cahier](cahiers-des-charges/connexion-google.md). Web et Android ; l'iOS
 
 ### GGL-05 · Sur l'app Android
 
-- Les mêmes tests que GGL-01 à GGL-04 sur le téléphone. Google s'ouvre dans un onglet du navigateur par-dessus l'app, puis l'app revient seule, sans ouvrir une page en double.
+- Les mêmes tests que GGL-01 à GGL-04 et GGL-07 sur le téléphone. Google s'ouvre dans un onglet du navigateur par-dessus l'app, puis l'app revient seule, sans ouvrir une page en double.
 - Fermer l'onglet sans choisir de compte : l'app reste sur le formulaire, sans message.
 - Le bouton n'apparaît pas sur l'iPhone.
+
+### GGL-07 · Associer Google à un compte
+
+- Connecté avec un code, sans Google : `/compte` montre « Associer mon compte Google » sous « Connecté avec … ». Il disparaît une fois Google associé, et la ligne dit « par Google ».
+- Choisir chez Google le compte de la même adresse : retour sur `/compte` avec « Ton compte Google est associé. Tu peux maintenant te connecter avec lui. ».
+- Choisir un compte Google d'une autre adresse : « Ce compte Google n'a pas la même adresse que ton compte. Choisis celui de … ». Rien n'est associé.
+- Annuler chez Google : retour sur `/compte`, sans message.
 
 ### GGL-06 · Tes données
 

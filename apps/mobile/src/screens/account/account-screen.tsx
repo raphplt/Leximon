@@ -18,7 +18,10 @@ import {
   confirmStep,
   emailStep,
   GOOGLE_AGE_TEXT,
+  GOOGLE_LINK_BUTTON,
+  GOOGLE_LINKED_NOTICE,
   GOOGLE_OR,
+  googleLinkError,
   googleReturn,
   NEWS_OPT_IN,
   needsConfirmation,
@@ -27,6 +30,7 @@ import {
   SIGN_IN_QUERY,
   sendErrorMessage,
   signedInToast,
+  signedInWay,
 } from "@leximon/view-model";
 import { router, useLocalSearchParams } from "expo-router";
 import * as WebBrowser from "expo-web-browser";
@@ -34,7 +38,7 @@ import { useCallback, useEffect, useState } from "react";
 import { Platform, Pressable, StyleSheet, Switch, Text, View } from "react-native";
 import Svg from "react-native-svg";
 import { api } from "@/api/client";
-import { signInWithGoogle } from "@/api/google-sign-in";
+import { linkGoogle, signInWithGoogle } from "@/api/google-sign-in";
 import { catalogInHand, loadCatalog } from "@/cards/catalog";
 import { WEB_URL } from "@/config";
 import { playFromScratch } from "@/player/session";
@@ -163,11 +167,11 @@ export function AccountScreen() {
     });
     if (result.kind === "signed_in") {
       keepLastEmail(email);
-      await finishSignIn();
+      await finishSignIn(false);
     } else showCodeError(result.code, email);
   };
 
-  const finishSignIn = async () => {
+  const finishSignIn = async (byGoogle: boolean) => {
     if (newsOptIn) {
       // Missing consent is the safe failure: the player can still tick it in their account.
       await api.setEmailPreferences({ newsOptIn: true, source: "signup" }).catch(() => undefined);
@@ -175,7 +179,7 @@ export function AccountScreen() {
     // Whether the account is new is the server's to say; a failed read only loses the welcome.
     const account = await api.fetchAccount().catch(() => null);
     playFromScratch();
-    toast(signedInToast(account?.kind === "member" && account.justJoined));
+    toast(signedInToast(account?.kind === "member" ? signedInWay(account, byGoogle) : "back"));
   };
 
   /** Off to Google in the browser; back here signed in, or with the reason it failed. */
@@ -183,7 +187,7 @@ export function AccountScreen() {
     run(async () => {
       const trip = await signInWithGoogle(signUp, declared);
       if (trip.kind === "signed_in") {
-        await finishSignIn();
+        await finishSignIn(true);
         return;
       }
       if (trip.kind === "closed") return;
@@ -204,6 +208,17 @@ export function AccountScreen() {
           go({ kind: "email" });
           setError(back.message);
       }
+    });
+
+  /** Off to Google in the browser to add it to the account; back here linked or not. */
+  const addGoogle = (email: string) =>
+    run(async () => {
+      setNotice(null);
+      const trip = await linkGoogle();
+      if (trip.kind === "linked") {
+        setNotice(GOOGLE_LINKED_NOTICE);
+        setStep({ kind: "member", email, withGoogle: true });
+      } else if (trip.kind === "refused") setError(googleLinkError(trip.error, email));
     });
 
   const showCodeError = (reason: CodeError, email: string) => {
@@ -231,10 +246,18 @@ export function AccountScreen() {
 
       {step.kind === "member" && (
         <OnPaper>
+          {notice !== null && <Text style={styles.notice}>{notice}</Text>}
           <Paragraph>
             Connecté avec <Text style={styles.email}>{step.email}</Text>
             {step.withGoogle ? ` ${BY_GOOGLE}` : ""}.
           </Paragraph>
+          {google && !step.withGoogle && (
+            <GoogleButton
+              busy={busy}
+              label={GOOGLE_LINK_BUTTON}
+              onPress={() => void addGoogle(step.email)}
+            />
+          )}
           <NewsToggle />
           <Button label="Retour au jeu" onPress={() => router.navigate("/")} />
           <View style={styles.leave}>
