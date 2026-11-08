@@ -1104,11 +1104,13 @@
   gap: var(--lx-s6);
 }
 
+/* The widest frame reaches 20 px past a 72 px avatar: room above it, or the dialog's scroll crops it. */
 .sheetHead {
   display: flex;
   align-items: center;
   gap: var(--lx-s8);
-  margin-bottom: var(--lx-s3);
+  padding-top: var(--lx-s8);
+  margin-bottom: var(--lx-s4);
 }
 
 .sheetRole {
