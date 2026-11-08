@@ -76,7 +76,29 @@ Limites : les profils et le rythme des Dorures sont des hypothèses, le modèle 
 
 ## Suite donnée
 
-Le 2026-11-08, le propriétaire a gardé les prix et les récompenses de la saison, puis reporté la saison elle-même (P96) : il veut d'abord les retours des joueurs sur les nouveautés. Il a penché pour revenir à 30 minutes et 6 en stock ; les chiffres ci-dessus montrent que ce réglage donne moins au régulier et beaucoup plus à celui qui revient toutes les heures. Le réglage de l'horloge reste à trancher.
+Le 2026-11-08, le propriétaire a gardé les prix et les récompenses de la saison, puis reporté la saison elle-même (P96) : il veut d'abord les retours des joueurs sur les nouveautés. Il a ensuite fixé le stock à 6 sachets au plus, et choisi sur une seconde passe (sans la saison) :
+
+| Horloge, 6 en stock | Occasionnel | Matin et soir | Trois passages | Toutes les heures | Légendaire, matin et soir |
+|---|---|---|---|---|---|
+| 1 h (choisie) | 3,9 | 15,0 | 20,6 | 25,4 | 26 j |
+| 1 h 30 | 3,9 | 15,0 | 17,6 | 19,4 | 26 j |
+| 2 h | 3,9 | 15,0 | 15,6 | 16,4 | 26 j |
+
+- **Horloge :** un sachet par heure, 6 en stock au plus (P10). Revenir souvent rapporte encore ; le joueur qui ne vient qu'une fois par jour passe de 8 à 6 sachets de l'horloge.
+- **Écus :** une mission rapporte 5 écus au lieu de 10 (P94), les prix du mot manquant ne changent pas.
+
+Ce que donnent les deux réglages ensemble, sans la saison :
+
+| Profil | Sachets par jour | dont horloge | Écus par jour | Jours d'écus pour une Légendaire |
+|---|---|---|---|---|
+| Occasionnel | 3,9 | 73 % | 8 | 213 |
+| Régulier | 15,0 | 80 % | 48 | 33 |
+| Appliqué | 20,5 | 83 % | 77 | 21 |
+| Assidu | 25,4 | 83 % | 109 | 15 |
+
+Le régulier rentre dans la cible des écus (Légendaire en un peu moins de 5 semaines) et l'assidu dans celle des sachets (25 par jour au plus). L'assidu achète encore une Légendaire en 2 semaines, et l'horloge reste au-dessus de 80 % des sachets.
+
+Les deux réglages valent à partir du 2026-11-09 à minuit (heure de Paris), par une nouvelle période de `rules.ts`.
 
 ## Pour reproduire
 

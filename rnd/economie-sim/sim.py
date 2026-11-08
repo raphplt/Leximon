@@ -142,6 +142,21 @@ SCENARIOS = {
     "C. horloge 2 h, 6 en stock": dict(clock=(2.0, 6)),
     "C0. horloge 2 h, 6 en stock, sans la saison": dict(clock=(2.0, 6), season=False),
     "E. horloge 30 min, 6 en stock": dict(clock=(0.5, 6)),
+    "S1. 6 en stock, 1 h": dict(clock=(1.0, 6)),
+    "S2. 6 en stock, 1 h 30": dict(clock=(1.5, 6)),
+    "S3. 6 en stock, 2 h": dict(clock=(2.0, 6)),
+    "S2e. 6 en stock, 1 h 30, missions 5 écus, carnet et saison à moitié": dict(
+        clock=(1.5, 6), mission_ecus=5, half_ecus=True
+    ),
+    "S2r. 6 en stock, 1 h 30, recyclage 1, 1, 3, 10, 30, 120": dict(
+        clock=(1.5, 6), recycle=[1, 1, 3, 10, 30, 120]
+    ),
+    "S2x. 6 en stock, 1 h 30, missions 5, carnet et saison à moitié, recyclage 1, 1, 3, 10, 30, 120": dict(
+        clock=(1.5, 6), mission_ecus=5, half_ecus=True, recycle=[1, 1, 3, 10, 30, 120]
+    ),
+    "S3x. 6 en stock, 2 h, missions 5, carnet et saison à moitié, recyclage 1, 1, 3, 10, 30, 120": dict(
+        clock=(2.0, 6), mission_ecus=5, half_ecus=True, recycle=[1, 1, 3, 10, 30, 120]
+    ),
     "D. horloge 2 h, 8 en stock": dict(clock=(2.0, 8)),
     "D2. horloge 2 h, 8 en stock, Épique 800 et Légendaire 3 200 écus": dict(
         clock=(2.0, 8), prices=[8, 16, 40, 120, 800, 3200]
@@ -221,11 +236,13 @@ class Player:
         """The « Garder un double » button, once a day: two copies kept, no Épique nor Légendaire."""
         for key, held in self.copies.items():
             if held > 2 and key[1] < EPIC:
-                self.ecus += RECYCLE[key[1]] * (held - 2)
-                self.earned["recyclage"] += RECYCLE[key[1]] * (held - 2)
+                gain = self.recycle_values[key[1]] * (held - 2)
+                self.ecus += gain
+                self.earned["recyclage"] += gain
                 self.copies[key] = 2
 
     half = False
+    recycle_values = RECYCLE
 
     def gain(self, source: str, amount: int) -> None:
         if self.half and source in ("carnet", "saison"):
@@ -257,6 +274,7 @@ def run(profile: str, scenario: dict, seed: int, veteran: bool = False, days: in
     collections = LAUNCH + [SEASON]
     player = Player(rng, collections)
     player.half = rules.get("half_ecus", False)
+    player.recycle_values = rules.get("recycle", RECYCLE)
     out = {"checkpoints": {}}
     if veteran:
         # A beta player of the same profile, 35 days on the three launch collections first.

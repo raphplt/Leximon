@@ -170,7 +170,7 @@ describe("GET /me/missions", () => {
     expect(a.missions.length).toBeGreaterThan(0);
     expect(b.missions).toEqual(a.missions);
     expect(a.canChange).toBe(true);
-    expect(a.rewards).toEqual({ xp: 30, ecus: 10, allDoneBoosters: 1 });
+    expect(a.rewards).toEqual({ xp: 30, ecus: RULES.ecus, allDoneBoosters: 1 });
     const rows = await db
       .select()
       .from(schema.userMissions)
@@ -235,16 +235,16 @@ describe("POST /me/missions/claim", () => {
     const response = await claim(guest, key);
     expect(response.status).toBe(200);
     const body = claimMissionsResponseSchema.parse(await response.json());
-    expect(body).toMatchObject({ missions: 1, ecus: 10, boosters: 0, bonusWaiting: false });
+    expect(body).toMatchObject({ missions: 1, ecus: RULES.ecus, boosters: 0, bonusWaiting: false });
     expect(body.progress.xpGained).toBe(30);
     expect(await xpOf(guest)).toBe(xp + 30);
-    expect((await walletOf(guest))?.ecus).toBe(10);
+    expect((await walletOf(guest))?.ecus).toBe(RULES.ecus);
 
     const replay = claimMissionsResponseSchema.parse(await (await claim(guest, key)).json());
-    expect(replay).toMatchObject({ missions: 1, ecus: 10 });
+    expect(replay).toMatchObject({ missions: 1, ecus: RULES.ecus });
     const again = claimMissionsResponseSchema.parse(await (await claim(guest)).json());
     expect(again).toMatchObject({ missions: 0, ecus: 0 });
-    expect((await walletOf(guest))?.ecus).toBe(10);
+    expect((await walletOf(guest))?.ecus).toBe(RULES.ecus);
     const movements = await db
       .select()
       .from(schema.ecuMovements)
@@ -259,9 +259,14 @@ describe("POST /me/missions/claim", () => {
     await rightAnswers(guest, ["test-a-common-1", "test-a-common-2", "test-a-rare-1"]);
     await recycleOnce(guest);
     const body = claimMissionsResponseSchema.parse(await (await claim(guest)).json());
-    expect(body).toMatchObject({ missions: 3, ecus: 30, boosters: 1, bonusWaiting: false });
+    expect(body).toMatchObject({
+      missions: 3,
+      ecus: 3 * RULES.ecus,
+      boosters: 1,
+      bonusWaiting: false,
+    });
     expect(body.wallet.bonus).toBe(3);
-    expect(await walletOf(guest)).toMatchObject({ bonusBoosters: 3, ecus: 31 });
+    expect(await walletOf(guest)).toMatchObject({ bonusBoosters: 3, ecus: 1 + 3 * RULES.ecus });
 
     const after = missionsResponseSchema.parse(await (await read(guest)).json());
     expect(after.bonusClaimed).toBe(true);
@@ -297,7 +302,7 @@ describe("POST /me/missions/claim", () => {
     const body = missionsResponseSchema.parse(await (await read(guest)).json());
     expect(body.claimable.missions).toBe(1);
     const claimed = claimMissionsResponseSchema.parse(await (await claim(guest)).json());
-    expect(claimed).toMatchObject({ missions: 1, ecus: 10 });
+    expect(claimed).toMatchObject({ missions: 1, ecus: RULES.ecus });
   });
 
   it("gives each mission once when claims race", async () => {
@@ -311,7 +316,7 @@ describe("POST /me/missions/claim", () => {
       ),
     );
     expect(bodies.reduce((sum, body) => sum + body.missions, 0)).toBe(2);
-    expect((await walletOf(guest))?.ecus).toBe(1 + 20);
+    expect((await walletOf(guest))?.ecus).toBe(1 + 2 * RULES.ecus);
   });
 });
 
