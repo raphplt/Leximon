@@ -5,7 +5,14 @@ import type {
   PatronPlan,
   PatronResponse,
 } from "@leximon/contract";
-import { type EpochMs, PATRON_SCHEDULE, PATRON_TIME_ZONE, patronRulesAt } from "@leximon/core";
+import {
+  type EpochMs,
+  FOUNDER_TITLE,
+  PATRON_SCHEDULE,
+  PATRON_TIME_ZONE,
+  PATRON_TITLE,
+  patronRulesAt,
+} from "@leximon/core";
 import { capitalize } from "./format";
 import { avatarName, frameName } from "./profile";
 
@@ -26,6 +33,8 @@ export function patronPrice(plan: PatronPlan, now: EpochMs): string {
 }
 
 export const PATRON_PAGE_TITLE = "Devenir mécène";
+export const PATRON_KICKER = "Abonnement";
+export const PATRON_CARD_KICKER = "Carte de mécène";
 export const PATRON_MEMBER_TITLE = "Ton abonnement mécène";
 
 /** What the subscription gives, the same before and after sales open. */
@@ -60,19 +69,38 @@ export interface PatronPlanChoice {
   readonly label: string;
   /** What a yearly plan comes to each month, `null` for the monthly one. */
   readonly note: string | null;
+  /** The label split for a price tag: « 3,99 € », then « par mois ». */
+  readonly price: string;
+  readonly period: string;
+  /** The ribbon over the yearly plan, « 2,50 € par mois »; `null` for the monthly one. */
+  readonly ribbon: string | null;
 }
 
 export function patronPlanChoices(now: EpochMs): readonly PatronPlanChoice[] {
   const { prices } = patronRulesAt(PATRON_SCHEDULE, now);
+  const perMonth = `${formatEuros(Math.round(prices.yearly / 12))} par mois`;
   return [
-    { plan: "monthly", label: `${formatEuros(prices.monthly)} par mois`, note: null },
+    {
+      plan: "monthly",
+      label: `${formatEuros(prices.monthly)} par mois`,
+      note: null,
+      price: formatEuros(prices.monthly),
+      period: "par mois",
+      ribbon: null,
+    },
     {
       plan: "yearly",
       label: `${formatEuros(prices.yearly)} par an`,
-      note: `Soit ${formatEuros(Math.round(prices.yearly / 12))} par mois.`,
+      note: `Soit ${perMonth}.`,
+      price: formatEuros(prices.yearly),
+      period: "par an",
+      ribbon: perMonth,
     },
   ];
 }
+
+/** The plan picked when the page opens: the cheaper one each month. */
+export const PATRON_DEFAULT_PLAN: PatronPlan = "yearly";
 
 /** Under the plans, for a player who never had a trial. */
 export function patronTrialNote(patron: Pick<PatronResponse, "trialAvailable" | "trialDays">) {
@@ -107,6 +135,8 @@ export const PATRON_MANAGE_BUSY = "Ouverture…";
 export const PATRON_MANAGED_ON_WEB = "Ton abonnement se gère depuis ton compte sur leximon.fr.";
 
 export const PATRON_THANKS = "Te voilà mécène !";
+export const PATRON_WEAR_TITLE = "Porter mon titre";
+export const PATRON_SEE_SUBSCRIPTION = "Voir mon abonnement";
 export const PATRON_CONFIRMING = "Ton paiement est en cours de confirmation.";
 export const PATRON_CHECKOUT_FAILED = "La page de paiement ne s'est pas ouverte. Réessaie.";
 export const PATRON_PORTAL_FAILED = "La page de ton abonnement ne s'est pas ouverte. Réessaie.";
@@ -249,3 +279,95 @@ export function patronMarkHint(mark: PatronMarkView): string | null {
 /** How long the page waits for Stripe's webhook after the payment, before saying it is coming. */
 export const PATRON_CONFIRM_POLLS = 5;
 export const PATRON_CONFIRM_INTERVAL_MS = 2_000;
+
+/** The title the subscription lets the player wear. */
+export function patronTitleOf(patron: Pick<PatronResponse, "founder">): string {
+  return patron.founder ? FOUNDER_TITLE : PATRON_TITLE;
+}
+
+/** Once the title is worn from the thanks, « Tu portes le titre Mécène. ». */
+export function patronTitleWorn(title: string): string {
+  return `Tu portes le titre ${title}.`;
+}
+
+/** What a step of the welcome brings: drawn with its own icon. */
+export type PatronWelcomeKind = "mark" | "payment" | "cosmetic" | "word";
+
+export interface PatronWelcomeStep {
+  readonly kind: PatronWelcomeKind;
+  /** « Aujourd'hui », « 22 novembre », « Chaque mois ». */
+  readonly when: string;
+  readonly what: string;
+  /** Still to come: drawn locked. */
+  readonly later: boolean;
+}
+
+export interface PatronWelcome {
+  readonly steps: readonly PatronWelcomeStep[];
+  /** Under the steps: how to stop a trial before it costs anything. */
+  readonly note: string | null;
+}
+
+/**
+ * The reward back from the payment: what the subscription gives today, and what comes next. A
+ * trial gives the title and the badge now, the cosmetic and the word with the first payment.
+ */
+export function patronWelcome(
+  patron: Pick<PatronResponse, "subscription">,
+  now: EpochMs,
+  timeZone: string = PATRON_TIME_ZONE,
+): PatronWelcome | null {
+  const subscription = patron.subscription;
+  if (subscription === null || subscription.standing === "none") return null;
+  const mark = {
+    kind: "mark",
+    when: "Aujourd'hui",
+    what: "Le titre et le badge de mécène",
+    later: false,
+  } as const;
+
+  const end = subscription.trialEnd ?? subscription.currentPeriodEnd;
+  if (subscription.standing === "trial" && end !== null) {
+    const day = patronDay(end, now, timeZone);
+    const price = subscription.plan === null ? null : patronPrice(subscription.plan, now);
+    return {
+      steps: [
+        mark,
+        {
+          kind: "payment",
+          when: day,
+          what: price === null ? "Premier paiement" : `Premier paiement de ${price}`,
+          later: true,
+        },
+        {
+          kind: "cosmetic",
+          when: "Dès ce paiement",
+          what: "Le cosmétique du mois et le droit de dénicher un mot",
+          later: true,
+        },
+      ],
+      note:
+        subscription.cancelAt === null
+          ? `Tu peux résilier en un clic avant le ${day}, sans rien payer.`
+          : null,
+    };
+  }
+  return {
+    steps: [
+      { ...mark, what: "Le titre, le badge et le cosmétique du mois" },
+      {
+        kind: "cosmetic",
+        when: "Chaque mois",
+        what: "Un nouveau cosmétique, gardé à vie",
+        later: true,
+      },
+      {
+        kind: "word",
+        when: "Chaque trimestre",
+        what: "Un mot à dénicher pour le jeu",
+        later: true,
+      },
+    ],
+    note: null,
+  };
+}

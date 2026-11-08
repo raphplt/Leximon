@@ -705,17 +705,17 @@ Préparer : les clés de test de Stripe dans `apps/api/.dev.vars` et `stripe lis
 
 ### MEC-01 · La porte, vente fermée
 - **Faire :** ouvre `/mecene` avec un compte qui n'est pas admin.
-- **Attendu :** « Bientôt », les trois avantages (cosmétique du mois, un mot par trimestre, titre et badge), « Un mécène n'a ni sachet, ni XP, ni avantage aux échanges en plus. », les deux prix et « Préviens-moi ». Après le clic, « Noté. On te préviendra à l'ouverture des abonnements. »
+- **Attendu :** ton avatar couronné en tête, « Bientôt » et « Devenir mécène », les trois avantages en tuiles illustrées (cosmétique du mois, un mot par trimestre, titre et badge), « Un mécène n'a ni sachet, ni XP, ni avantage aux échanges en plus. », les deux prix et « Préviens-moi ». Après le clic, « Noté. On te préviendra à l'ouverture des abonnements. »
 - **Retour :**
 
 ### MEC-02 · L'offre
 - **Faire :** ouvre `/mecene` en admin (ou vente ouverte), avec un compte qui n'a jamais été abonné ; puis avec un compte déclaré 15-17 ans ; puis en invité, vente ouverte.
-- **Attendu :** les deux formules, « 3,99 € par mois » et « 29,99 € par an » (« Soit 2,50 € par mois. »), la mention des 14 premiers jours gratuits, la case de renonciation non cochée, et « Devenir mécène » grisé tant qu'elle ne l'est pas. Le compte 15-17 ans voit en rouge « Tu as moins de 18 ans. Demande l'accord d'un parent avant de t'abonner. ». L'invité voit « Crée un compte pour t'abonner. » et « Créer mon compte » à la place de la case.
+- **Attendu :** la vitrine (avatar couronné, avantages en tuiles), puis les deux formules en grosses tuiles, « 3,99 € par mois » et « 29,99 € par an » avec le ruban « 2,50 € par mois », l'annuelle choisie d'avance ; la mention des 14 premiers jours gratuits, la case de renonciation non cochée, et « Devenir mécène » grisé tant qu'elle ne l'est pas. Le compte 15-17 ans voit en rouge « Tu as moins de 18 ans. Demande l'accord d'un parent avant de t'abonner. ». L'invité voit « Crée un compte pour t'abonner. » et « Créer mon compte » à la place de la case.
 - **Retour :**
 
 ### MEC-03 · Payer
 - **Faire :** coche la case, « Devenir mécène », paie avec la carte `4242 4242 4242 4242`.
-- **Attendu :** la page de Stripe en français, avec l'essai de 14 jours. Au retour, « Te voilà mécène ! », « Essai gratuit en cours », la date de fin d'essai et le premier paiement de 3,99 € ce jour-là. Si le webhook tarde, la page attend une dizaine de secondes, puis dit « Ton paiement est en cours de confirmation. » sans parler d'échec.
+- **Attendu :** la page de Stripe en français, avec l'essai de 14 jours. Au retour, les rayons dorés, la couronne qui tombe sur ton avatar, « Te voilà mécène ! » et le badge, puis trois étapes : « Aujourd'hui » le titre et le badge, la date de fin d'essai avec « Premier paiement de 3,99 € », et « Dès ce paiement » le cosmétique du mois et le droit de dénicher un mot (ces deux-là cadenassés). Dessous, « Tu peux résilier en un clic avant le …, sans rien payer. ». « Porter mon titre » n'apparaît que si tu portes un autre titre ; il met le titre Mécène et dit « Tu portes le titre Mécène. ». « Voir mon abonnement » mène à ta carte de mécène : avatar couronné, nom, badge, « Essai gratuit en cours » et la date du premier paiement. Si le webhook tarde, la page attend une dizaine de secondes, puis dit « Ton paiement est en cours de confirmation. » sans parler d'échec.
 - **Retour :**
 
 ### MEC-04 · Le badge
@@ -735,12 +735,12 @@ Préparer : les clés de test de Stripe dans `apps/api/.dev.vars` et `stripe lis
 
 ### MEC-07 · Le cosmétique du mois
 - **Faire :** mets un cosmétique au mois en cours dans `PATRON_SCHEDULE` (`packages/core/src/rules.ts`, par exemple `cosmetics: { "2026-11": { kind: "frame", frame: "wax" } }`), puis ouvre `/mecene` en abonné qui a payé, et en joueur qui ne l'est pas.
-- **Attendu :** le non-abonné lit « Ce mois-ci, les mécènes reçoivent le cadre Sceau de cire. ». L'abonné voit « À réclamer » avec « Le cadre Sceau de cire, novembre 2026 » et « Réclamer » ; après, « Ajouté à ton apparence. » et le cadre dans l'atelier. Pendant l'essai, rien à réclamer. Remets le calendrier vide ensuite.
+- **Attendu :** le non-abonné lit « Ce mois-ci, les mécènes reçoivent le cadre Sceau de cire. ». Ton avatar en tête de la vitrine porte le cadre du mois. L'abonné voit sous sa carte un coffret qui sautille, « À réclamer » avec « Le cadre Sceau de cire, novembre 2026 » et « Réclamer » ; après, « Ajouté à ton apparence. » et le cadre dans l'atelier. Pendant l'essai, rien à réclamer. Remets le calendrier vide ensuite.
 - **Retour :**
 
 ### MEC-08 · L'admin et le téléphone
 - **Faire :** ouvre `/admin/mecenes`, puis « Rembourser et résilier » sur ton abonnement de test. Sur le téléphone, ouvre ton profil avec et sans badge.
-- **Attendu :** les chiffres (mécènes, essais, résiliés, paiements refusés, fondateurs, revenu par mois) et la liste. Le remboursement demande une confirmation qui dit le montant, puis « Abonnement arrêté et 3,99 € remboursés. » ; le journal le note. Sur le téléphone, le badge s'affiche comme sur le web ; « Ton abonnement mécène » n'apparaît dans le profil qu'avec le badge, et sa page dit « Ton abonnement se gère depuis ton compte sur leximon.fr. », sans lien ni prix.
+- **Attendu :** les chiffres (mécènes, essais, résiliés, paiements refusés, fondateurs, revenu par mois) et la liste. Le remboursement demande une confirmation qui dit le montant, puis « Abonnement arrêté et 3,99 € remboursés. » ; le journal le note. Sur le téléphone, le badge s'affiche comme sur le web ; « Ton abonnement mécène » n'apparaît dans le profil qu'avec le badge, et sa page montre la même carte de mécène que le web (avatar couronné, nom, badge, statut) et le coffret à réclamer, puis dit « Ton abonnement se gère depuis ton compte sur leximon.fr. », sans lien ni prix.
 - **Retour :**
 
 ## Mauvais choix des QCM

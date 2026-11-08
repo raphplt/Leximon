@@ -13,6 +13,7 @@ import {
   patronPlanChoices,
   patronStatus,
   patronTrialNote,
+  patronWelcome,
 } from "./patron";
 
 const NOW = Date.parse("2027-03-10T12:00:00.000Z");
@@ -93,6 +94,20 @@ describe("prices", () => {
     expect(monthly?.note).toBeNull();
     expect(plain(yearly?.label)).toBe("29,99 € par an");
     expect(plain(yearly?.note)).toBe("Soit 2,50 € par mois.");
+  });
+
+  it("splits each plan into a price tag, the ribbon on the yearly one", () => {
+    const [monthly, yearly] = patronPlanChoices(NOW);
+    expect([plain(monthly?.price), monthly?.period, monthly?.ribbon]).toEqual([
+      "3,99 €",
+      "par mois",
+      null,
+    ]);
+    expect([plain(yearly?.price), yearly?.period, plain(yearly?.ribbon)]).toEqual([
+      "29,99 €",
+      "par an",
+      "2,50 € par mois",
+    ]);
   });
 
   it("mentions the trial only to who never had one", () => {
@@ -217,6 +232,41 @@ describe("patronStatus", () => {
     expect(status?.warning).toBe(
       "Ton dernier paiement n'est pas passé. Mets à jour ta carte pour rester mécène.",
     );
+  });
+});
+
+describe("patronWelcome", () => {
+  const trial = subscription({
+    standing: "trial",
+    since: null,
+    trialEnd: "2027-03-22T08:00:00.000Z",
+    currentPeriodEnd: "2027-03-22T08:00:00.000Z",
+  });
+
+  it("is null without a running subscription", () => {
+    expect(patronWelcome(patron(), NOW, ZONE)).toBeNull();
+  });
+
+  it("gives a trial the mark now, then the first payment and what it brings", () => {
+    const welcome = patronWelcome(patron({ subscription: trial }), NOW, ZONE);
+    expect(welcome?.steps.map((step) => [step.when, plain(step.what), step.later])).toEqual([
+      ["Aujourd'hui", "Le titre et le badge de mécène", false],
+      ["22 mars", "Premier paiement de 3,99 €", true],
+      ["Dès ce paiement", "Le cosmétique du mois et le droit de dénicher un mot", true],
+    ]);
+    expect(welcome?.note).toBe("Tu peux résilier en un clic avant le 22 mars, sans rien payer.");
+  });
+
+  it("drops the way out once the trial is already cancelled", () => {
+    const cancelled = { ...trial, cancelAt: "2027-03-22T08:00:00.000Z" };
+    expect(patronWelcome(patron({ subscription: cancelled }), NOW, ZONE)?.note).toBeNull();
+  });
+
+  it("gives a paying patron the month's cosmetic now, then the months and quarters to come", () => {
+    const welcome = patronWelcome(patron({ subscription: subscription() }), NOW, ZONE);
+    expect(welcome?.steps.map((step) => step.kind)).toEqual(["mark", "cosmetic", "word"]);
+    expect(welcome?.steps[0]?.what).toBe("Le titre, le badge et le cosmétique du mois");
+    expect(welcome?.note).toBeNull();
   });
 });
 

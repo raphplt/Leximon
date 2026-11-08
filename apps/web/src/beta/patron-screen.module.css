@@ -1,93 +1,505 @@
-.benefits {
+.page {
+  box-sizing: border-box;
   display: flex;
   flex-direction: column;
-  gap: var(--lx-s4);
+  gap: 22px;
+  max-width: 800px;
+  min-height: 100dvh;
+  margin: 0 auto;
+  padding: 28px var(--lx-s16) var(--lx-s32);
+  overflow-x: clip;
+  color: var(--lx-color-page-ink);
+}
+
+/* Each piece rises in turn as the screen appears. */
+.page [style*="--rise"] {
+  animation: rise 0.5s calc(var(--rise) * 90ms) cubic-bezier(0.3, 1.4, 0.5, 1) both;
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    translate: 0 18px;
+  }
+}
+
+.display {
   margin: 0;
-  padding-left: var(--lx-s9);
+  font-size: clamp(34px, 6vw, 52px);
+  line-height: 1.05;
+}
+
+.lead {
+  margin: 0;
+  font-size: var(--lx-size-subtitle);
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.month {
+  margin: 0;
+  font-size: var(--lx-size-body-large);
+  font-weight: 800;
+  line-height: 1.4;
+  color: var(--lx-toy-gold-top);
+}
+
+.text {
+  margin: 0;
   font-size: var(--lx-size-body-large);
   font-weight: 600;
   line-height: 1.45;
 }
 
-/* The month's cosmetic and the founding offer: news set apart from the list. */
-.showcase {
+.note,
+.fine {
   margin: 0;
-  padding: var(--lx-s5) var(--lx-s6);
-  border-radius: var(--lx-radius-chip);
-  background: var(--lx-color-page);
-  font-size: var(--lx-size-body);
-  font-weight: 700;
-  line-height: 1.4;
-}
-
-.plans {
-  display: grid;
-  min-width: 0;
-  margin: 0;
-  padding: 0;
-  border: 0;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: var(--lx-s5);
-}
-
-.plan {
-  display: flex;
-  flex-direction: column;
-  gap: var(--lx-s2);
-  padding: var(--lx-s6);
-  border: var(--lx-toy-outline-width) solid var(--lx-toy-outline);
-  border-radius: var(--lx-radius-chip);
-  background: var(--lx-color-paper);
-  font: inherit;
-  text-align: left;
-  color: inherit;
-  cursor: pointer;
-}
-
-.plan[aria-pressed="true"] {
-  background: linear-gradient(
-    180deg,
-    var(--lx-toy-gold-top) 0 47%,
-    var(--lx-toy-gold-bottom) 53% 100%
-  );
-}
-
-.plan:focus-visible {
-  outline: 3px solid var(--lx-color-focus);
-  outline-offset: 2px;
-}
-
-.planLabel {
-  font-size: var(--lx-size-subtitle);
-  font-weight: 800;
-}
-
-.planNote {
   font-size: var(--lx-size-small);
   font-weight: 600;
+  line-height: 1.4;
+  color: var(--lx-color-paper-ink-muted);
 }
 
-.headline {
+.fine {
+  text-align: center;
+}
+
+.notice,
+.done {
   margin: 0;
-  font-family: var(--font-display), Georgia, serif;
-  font-weight: var(--lx-weight-display);
-  font-size: var(--lx-size-title);
+  font-size: var(--lx-size-body-large);
+  font-weight: 800;
+  text-align: center;
 }
 
-.claims {
+.warning,
+.error {
+  margin: 0;
+  font-size: var(--lx-size-body);
+  font-weight: 800;
+  line-height: 1.4;
+  color: var(--lx-toy-red-bottom);
+}
+
+/* --- The window --- */
+
+.hero {
   display: flex;
-  flex-direction: column;
-  gap: var(--lx-s4);
+  align-items: center;
+  justify-content: center;
+  gap: 28px;
+}
+
+.heroText {
+  display: grid;
+  gap: 8px;
+}
+
+/* The player's frame, crowned: the crown sits on the frame like the badge on a profile. */
+.crowned {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  padding-top: calc(var(--size) / 5);
+}
+
+.crown {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  translate: -50% 0;
+  color: var(--lx-toy-gold-top);
+  filter: drop-shadow(0 2px 0 var(--lx-toy-outline)) drop-shadow(0 0 1px var(--lx-toy-outline));
+  rotate: -8deg;
+}
+
+.founding {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 18px;
+  border: var(--lx-toy-outline-width) solid var(--lx-toy-outline);
+  border-radius: var(--lx-radius-pill);
+  background: linear-gradient(180deg, var(--lx-toy-red-top), var(--lx-toy-red-bottom));
+  box-shadow: 0 4px 0 var(--lx-toy-red-edge);
+  color: var(--lx-toy-gold-top);
+  font-size: var(--lx-size-body);
+  font-weight: 800;
+  line-height: 1.35;
+}
+
+.founding p {
+  margin: 0;
+}
+
+.seal {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 46px;
+  height: 46px;
+  color: var(--lx-toy-gold-top);
+}
+
+.benefits {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
-.claim {
+.benefits li {
+  display: flex;
+}
+
+.benefit {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 18px 14px;
+  text-align: center;
+}
+
+.benefit p {
+  margin: 0;
+  font-size: var(--lx-size-body);
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.tileIcon {
+  display: block;
+  position: relative;
+  flex: none;
+  width: 64px;
+  height: 64px;
+}
+
+.buy {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding: 24px;
+}
+
+.prices {
+  margin: 0;
+  font-size: var(--lx-size-subtitle);
+  font-weight: 600;
+  text-align: center;
+}
+
+.plans {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  min-width: 0;
+  margin: 10px 0 0;
+  padding: 0;
+  border: 0;
+}
+
+.plan {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  min-height: 124px;
+  padding: 18px 12px 12px;
+  color: var(--lx-toy-outline);
+}
+
+.planPrice {
+  font-size: clamp(28px, 4vw, 38px);
+}
+
+.planPeriod {
+  font-size: var(--lx-size-label);
+  font-weight: 800;
+}
+
+/* The ribbon over the yearly plan: what it comes to a month. */
+.ribbon {
+  position: absolute;
+  top: -14px;
+  left: 50%;
+  translate: -50% 0;
+  padding: 3px 12px 6px;
+  font-size: var(--lx-size-small);
+  white-space: nowrap;
+}
+
+.check {
+  align-items: flex-start;
+  font-size: var(--lx-size-body);
+  line-height: 1.4;
+  text-align: left;
+}
+
+.secondary {
+  align-self: center;
+  height: 48px;
+  padding: 0 22px;
+  font-size: var(--lx-size-body);
+  font-weight: 800;
+  color: var(--lx-toy-outline);
+}
+
+/* --- Back from the payment --- */
+
+.thanks {
+  align-items: center;
+  gap: 18px;
+  text-align: center;
+}
+
+.thanksStage {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 260px;
+}
+
+.thanksAvatar {
+  position: relative;
+  display: grid;
+  place-items: center;
+  padding-top: 40px;
+}
+
+/* The crown falls on the frame and settles, a moment after the page opens. */
+.fallingCrown {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  z-index: 1;
+  translate: -50% 0;
+  rotate: -8deg;
+  color: var(--lx-toy-gold-top);
+  filter: drop-shadow(0 3px 0 var(--lx-toy-outline)) drop-shadow(0 0 1px var(--lx-toy-outline));
+  animation: crown 0.9s 0.35s cubic-bezier(0.3, 1.6, 0.5, 1) both;
+}
+
+@keyframes crown {
+  from {
+    opacity: 0;
+    translate: -50% -140px;
+    rotate: -30deg;
+    scale: 1.6;
+  }
+}
+
+.thanksBadge {
+  scale: 1.4;
+  animation: rise 0.5s 1s both;
+}
+
+.timeline {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  width: 100%;
+  margin: 10px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 18px 12px;
+  border: var(--lx-toy-outline-width) solid var(--lx-toy-outline);
+  border-radius: var(--lx-toy-radius-tile);
+  background: var(--lx-color-paper);
+  box-shadow: 0 4px 0 var(--lx-toy-outline);
+  color: var(--lx-color-paper-ink);
+}
+
+.step[data-later="false"] {
+  background: color-mix(in srgb, var(--lx-toy-gold-top) 35%, var(--lx-color-paper));
+}
+
+.step strong {
+  font-size: var(--lx-size-body);
+  line-height: 1.35;
+}
+
+.stepIcon {
+  display: block;
+  position: relative;
+  width: 56px;
+  height: 56px;
+}
+
+.when {
+  font-size: var(--lx-size-micro);
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--lx-toy-red-bottom);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+}
+
+/* --- The subscriber's card --- */
+
+.member {
+  max-width: 680px;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 24px;
+}
+
+.cardHead {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: var(--lx-s5);
+  gap: 20px;
+}
+
+.cardName {
+  display: grid;
+  justify-items: start;
+  gap: 6px;
+  min-width: 0;
+}
+
+.name {
+  margin: 0;
+  overflow-wrap: anywhere;
+  font-family: var(--font-display), Georgia, serif;
+  font-weight: var(--lx-weight-display);
+  font-size: var(--lx-size-display);
+  line-height: 1;
+}
+
+.headline {
+  font-size: var(--lx-size-title-large);
+}
+
+.claims {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.claim {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 16px;
+  padding: 14px 18px;
+  border: var(--lx-toy-outline-width) solid var(--lx-toy-outline);
+  border-radius: var(--lx-toy-radius-tile);
+  background: color-mix(in srgb, var(--lx-toy-gold-top) 30%, var(--lx-color-paper));
+  box-shadow: 0 4px 0 var(--lx-toy-outline);
+  color: var(--lx-toy-outline);
+}
+
+.claimChest {
+  animation: hop 2.4s ease-in-out infinite;
+}
+
+@keyframes hop {
+  0%,
+  70%,
+  100% {
+    translate: 0 0;
+  }
+  78% {
+    translate: 0 -8px;
+  }
+  86% {
+    translate: 0 0;
+  }
+  92% {
+    translate: 0 -3px;
+  }
+}
+
+.claimText {
+  display: grid;
+  gap: 4px;
   font-size: var(--lx-size-body-large);
-  font-weight: 700;
+}
+
+.claimButton {
+  height: 48px;
+  padding: 0 22px;
+  font-size: var(--lx-size-subtitle);
+}
+
+@media (max-width: 720px) {
+  .page {
+    padding-inline: 16px;
+  }
+
+  .hero {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .benefits,
+  .timeline {
+    grid-template-columns: 1fr;
+  }
+
+  /* On a phone, a step is a row: the icon beside when and what. */
+  .step {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    justify-items: start;
+    column-gap: 14px;
+    row-gap: 2px;
+    padding: 12px 14px;
+    text-align: left;
+  }
+
+  .stepIcon {
+    grid-row: span 2;
+  }
+
+  .claim {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .claimButton {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .page [style*="--rise"],
+  .claimChest,
+  .fallingCrown,
+  .thanksBadge {
+    animation: none;
+  }
+}
+
+/* Off the paper, on the room: the page's own muted ink. */
+.thanks .fine {
+  color: var(--lx-color-page-ink-muted);
 }
