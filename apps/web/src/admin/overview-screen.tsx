@@ -53,7 +53,7 @@ export function OverviewScreen() {
       <div key={nonce} className={m.dashboard}>
         <Inbox />
         <Week />
-        <div className={m.split}>
+        <div className={styles.overviewSplit}>
           <LatestFeedback />
           <RecentPlayers />
         </div>
@@ -97,7 +97,7 @@ function Inbox() {
           }
         />
         {waiting > 0 && (
-          <div className={styles.stats}>
+          <div className={styles.overviewStats}>
             {todo.map((item) => (
               <Stat key={item.label} {...item} pending />
             ))}
@@ -106,7 +106,7 @@ function Inbox() {
       </section>
       <section className={styles.overviewSection}>
         <PanelHead title="En tout" />
-        <div className={styles.stats}>
+        <div className={styles.overviewStats}>
           <Stat
             label="Comptes"
             value={overview.players.members}
@@ -183,7 +183,7 @@ function WeekFigures({ data }: { readonly data: AdminMeasures }) {
 function LatestFeedback() {
   const { state } = useLoad(adminApi.fetchFeedback);
   return (
-    <section className={m.panel}>
+    <section className={styles.overviewSection}>
       <PanelHead title="Derniers retours">
         <Link href="/admin/retours">Tous les retours</Link>
       </PanelHead>
@@ -217,7 +217,7 @@ function LatestFeedback() {
 function RecentPlayers() {
   const { state } = useLoad(fetchTesters);
   return (
-    <section className={m.panel}>
+    <section className={styles.overviewSection}>
       <PanelHead title="Joueurs du moment" hint="Les derniers à avoir joué d'abord.">
         <Link href="/admin/mesure">Tous les testeurs</Link>
       </PanelHead>

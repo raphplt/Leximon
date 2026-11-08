@@ -139,16 +139,36 @@
 
 /* --- Dashboard ------------------------------------------------------------------------- */
 
+/* Each block on a solid leaf: the shelves behind would eat the small print. */
 .overviewSection {
   display: flex;
   flex-direction: column;
+  gap: var(--lx-s7);
+  min-width: 0;
+  padding: var(--lx-s9) var(--lx-s10);
+  border-radius: var(--lx-radius-xl);
+  background: var(--lx-color-page);
+  border: 1px solid var(--lx-color-rule);
+  box-shadow: var(--lx-shadow-raised);
+}
+
+.overviewStats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
   gap: var(--lx-s6);
 }
 
 .overviewKpis {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
   gap: var(--lx-s6);
+}
+
+.overviewSplit {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 440px), 1fr));
+  gap: var(--lx-s10);
+  align-items: start;
 }
 
 .overviewList {
