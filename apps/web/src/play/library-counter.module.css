@@ -465,7 +465,7 @@
   /* Air above and under the pouch, so it does not fill the whole desk's height. */
   .sachet {
     inset: 170px 90px 80px;
-    --sachet-max-unit: 1.7px;
+    --sachet-max-unit: 1.4px;
     /* The pouch's slot spans the whole desk, so the sachets behind stay level with it. */
     --sachet-max-height: none;
   }
