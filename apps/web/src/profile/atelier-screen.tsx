@@ -1,6 +1,8 @@
 "use client";
 
 import {
+  ATELIER_NEW_TAB,
+  ATELIER_NEW_TAB_KEY,
   ATELIER_TABS,
   type AtelierItem,
   type AtelierTab,
@@ -8,10 +10,11 @@ import {
   type CosmeticTab,
   cosmeticLockedToast,
   cosmeticStateLabel,
+  NEW_TAB_BADGE,
   wornToast,
 } from "@leximon/view-model";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Avatar } from "@/components/avatar";
 import { useNow } from "@/lib/use-now";
 import { profile } from "@/player/player";
@@ -35,6 +38,27 @@ const STATE_CLASS = {
 /** The first row of the shelf, while the profile arrives. */
 const WAITING_ITEMS = [1, 2, 3, 4, 5];
 
+/** Whether this device has yet to open the atelier's new tab; read once mounted, never on the server. */
+function useNewTab(): readonly [boolean, () => void] {
+  const [fresh, setFresh] = useState(false);
+  useEffect(() => {
+    try {
+      setFresh(window.localStorage.getItem(ATELIER_NEW_TAB_KEY) === null);
+    } catch {
+      // Storage refused (private window): no badge rather than one that never goes.
+    }
+  }, []);
+  const seen = () => {
+    setFresh(false);
+    try {
+      window.localStorage.setItem(ATELIER_NEW_TAB_KEY, "1");
+    } catch {
+      // Not remembered: the badge is gone for this visit only.
+    }
+  };
+  return [fresh, seen];
+}
+
 /** The atelier: what the coffrets gave, worn on the profile with one tap. */
 export function AtelierScreen() {
   const actions = useProfileActions();
@@ -43,6 +67,7 @@ export function AtelierScreen() {
   const now = useNow(60_000);
   const toast = useToast();
   const [tab, setTab] = useState<AtelierTab>("avatars");
+  const [newTabFresh, newTabSeen] = useNewTab();
 
   const choose = (tab: CosmeticTab, item: AtelierItem) => {
     if (item.state === "worn") return;
@@ -81,9 +106,15 @@ export function AtelierScreen() {
             aria-selected={tab === entry.tab}
             aria-controls="atelier-items"
             className={ui.chip}
-            onClick={() => setTab(entry.tab)}
+            onClick={() => {
+              setTab(entry.tab);
+              if (entry.tab === ATELIER_NEW_TAB) newTabSeen();
+            }}
           >
             {entry.label}
+            {newTabFresh && entry.tab === ATELIER_NEW_TAB && (
+              <span className={styles.newTab}>{NEW_TAB_BADGE}</span>
+            )}
           </button>
         ))}
       </div>

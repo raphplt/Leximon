@@ -498,6 +498,27 @@ button.emptySlot {
   margin-bottom: var(--lx-s9);
 }
 
+/* « Nouveau » pinned to the corner of a tab, like a sticker, until the tab is opened. */
+.newTab {
+  position: absolute;
+  top: -10px;
+  right: -8px;
+  padding: 1px var(--lx-s3);
+  border: 2px solid var(--lx-toy-outline);
+  border-radius: var(--lx-radius-pill);
+  background: linear-gradient(
+    180deg,
+    var(--lx-toy-alert-top) 0 47%,
+    var(--lx-toy-alert-bottom) 53% 100%
+  );
+  box-shadow: 0 2px 0 var(--lx-toy-outline);
+  color: var(--lx-color-ink-on-color);
+  font-size: var(--lx-size-caption);
+  font-weight: 800;
+  line-height: 1.3;
+  rotate: 6deg;
+}
+
 .items {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));

@@ -1,4 +1,4 @@
-import { toy as toyValues } from "@leximon/tokens";
+import { toyMatters, toy as toyValues } from "@leximon/tokens";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { alpha, colors, fontSizes, fonts, paperColors, radii, space } from "@/theme";
 import { toyFace } from "./toy";
@@ -11,7 +11,12 @@ export function Segmented<T extends string>({
   light = false,
   wrap = false,
 }: {
-  readonly options: readonly { readonly value: T; readonly label: string }[];
+  /** `badge`: a word pinned to the tab's corner, such as « Nouveau ». */
+  readonly options: readonly {
+    readonly value: T;
+    readonly label: string;
+    readonly badge?: string | undefined;
+  }[];
   readonly value: T;
   readonly onChange: (next: T) => void;
   /** A smaller row without its pill, for a navigation above another one. */
@@ -32,6 +37,9 @@ export function Segmented<T extends string>({
             onPress={() => onChange(option.value)}
             accessibilityRole="tab"
             accessibilityState={{ selected }}
+            accessibilityLabel={
+              option.badge === undefined ? option.label : `${option.label}, ${option.badge}`
+            }
             style={[
               styles.tab,
               light && styles.tabLight,
@@ -51,6 +59,7 @@ export function Segmented<T extends string>({
             >
               {option.label}
             </Text>
+            {option.badge !== undefined && <Text style={styles.badge}>{option.badge}</Text>}
           </Pressable>
         );
       })}
@@ -95,4 +104,19 @@ const styles = StyleSheet.create({
   },
   labelPaper: { fontFamily: fonts.ui.extrabold, color: paperColors.pageInk },
   labelGold: { fontFamily: fonts.ui.extrabold, color: toyValues.outline },
+  badge: {
+    position: "absolute",
+    top: -9,
+    right: -6,
+    overflow: "hidden",
+    paddingHorizontal: space.s3,
+    borderWidth: 2,
+    borderColor: toyValues.outline,
+    borderRadius: radii.pill,
+    backgroundColor: toyMatters.alert.top,
+    color: colors.inkOnColor,
+    fontFamily: fonts.ui.extrabold,
+    fontSize: fontSizes.micro,
+    transform: [{ rotate: "6deg" }],
+  },
 });

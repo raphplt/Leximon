@@ -1,5 +1,7 @@
 import { toy as toyValues } from "@leximon/tokens";
 import {
+  ATELIER_NEW_TAB,
+  ATELIER_NEW_TAB_KEY,
   ATELIER_TABS,
   type AtelierItem,
   type AtelierTab,
@@ -7,8 +9,10 @@ import {
   type CosmeticTab,
   cosmeticLockedToast,
   cosmeticStateLabel,
+  NEW_TAB_BADGE,
   wornToast,
 } from "@leximon/view-model";
+import * as SecureStore from "expo-secure-store";
 import { useState } from "react";
 import { Pressable, StyleSheet, Text, useWindowDimensions, View } from "react-native";
 import { useNow, useSharedFailed } from "@/player/shared";
@@ -28,6 +32,15 @@ import { BannerPanel } from "./banner-panel";
 const COLUMNS: Readonly<Record<CosmeticTab, number>> = { avatars: 3, frames: 3, titles: 2 };
 const GAP = 10;
 
+/** Storage can fail: then no badge, rather than one that never goes. */
+function newTabFresh(): boolean {
+  try {
+    return SecureStore.getItem(ATELIER_NEW_TAB_KEY) === null;
+  } catch {
+    return false;
+  }
+}
+
 /** The atelier: what the coffrets gave, worn on the profile with one tap. */
 export function AtelierScreen() {
   const actions = useProfileActions();
@@ -36,6 +49,7 @@ export function AtelierScreen() {
   const now = useNow(60_000);
   const window = useWindowDimensions();
   const [tab, setTab] = useState<AtelierTab>("avatars");
+  const [fresh, setFresh] = useState(newTabFresh);
 
   const choose = (tab: CosmeticTab, item: AtelierItem) => {
     if (item.state === "worn") return;
@@ -65,9 +79,20 @@ export function AtelierScreen() {
         {me?.title != null && <Text style={styles.wornTitle}>{me.title}</Text>}
       </View>
       <Segmented
-        options={ATELIER_TABS.map((entry) => ({ value: entry.tab, label: entry.label }))}
+        options={ATELIER_TABS.map((entry) => ({
+          value: entry.tab,
+          label: entry.label,
+          badge: fresh && entry.tab === ATELIER_NEW_TAB ? NEW_TAB_BADGE : undefined,
+        }))}
         value={tab}
-        onChange={setTab}
+        onChange={(next) => {
+          setTab(next);
+          if (next !== ATELIER_NEW_TAB || !fresh) return;
+          setFresh(false);
+          SecureStore.setItemAsync(ATELIER_NEW_TAB_KEY, "1").catch(() => {
+            // Not remembered: the badge comes back next time.
+          });
+        }}
       />
       {me === null ? (
         failed ? (

@@ -512,6 +512,7 @@ Règle P99, web et app. Pour la recette, `pnpm dev:player <email> --level 30` do
 
 ### BAN-02 · L'onglet Bannières de l'atelier
 
+- L'onglet « Bannières » porte une étiquette rouge « Nouveau » dans son coin, pour tout joueur, jusqu'à ce qu'il l'ouvre une fois sur cet appareil. Elle ne revient pas quand on recharge la page ou qu'on relance l'app.
 - « Apparence », puis l'onglet « Bannières » : l'aperçu de ta bannière, les huit teintes en pastilles, puis les motifs. Ceux que tu as viennent en premier, les autres sont grisés avec ce qui les donne (« Niveau 45 », « Ligue Chevalier », « Une collection complète », « 250 écus »).
 - Toucher une teinte la pose aussitôt (« Bannière changée. ») ; les motifs se redessinent dans la nouvelle teinte.
 - Toucher un motif fermé dit comment le gagner (« Tu le gagnes au niveau 45. »).

@@ -166,6 +166,12 @@ export const ATELIER_TABS: readonly { readonly tab: AtelierTab; readonly label: 
   { tab: "banners", label: "Bannières" },
 ];
 
+/** The tab that just arrived: marked « Nouveau » until the player opens it, once per device. */
+export const ATELIER_NEW_TAB: AtelierTab = "banners";
+export const NEW_TAB_BADGE = "Nouveau";
+/** Where a device remembers it opened the new tab; named after it, so the next one shows again. */
+export const ATELIER_NEW_TAB_KEY = `leximon_atelier_seen_${ATELIER_NEW_TAB}`;
+
 /** `locked`: not reached yet; `in_coffret`: reached, waiting in an unopened coffret. */
 export type CosmeticState = "worn" | "owned" | "in_coffret" | "locked";
 
