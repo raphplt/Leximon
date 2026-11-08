@@ -42,6 +42,7 @@ export const icons = {
     "M7 3 H17 C18 3 19 4 19 5 V19 C19 20 18 21 17 21 H7 C6 21 5 20 5 19 V5 C5 4 6 3 7 3Z M12 8.5 L14 12 L12 15.5 L10 12Z",
   logout: "M14 4 H19 V20 H14 M10 8 L6 12 L10 16 M6 12 H15",
   share: "M12 3 V15 M7.5 7.5 L12 3 L16.5 7.5 M5 12 V20 H19 V12",
+  copier: "M9 9 H20 V20 H9Z M15 9 V4 H4 V15 H9",
   clock: `${circle(12, 12, 9)} M12 7 V12 L15 14`,
   encre: "M7 10 H17 L18.5 20.5 H5.5Z M9 10 V6.5 H15 V10 M10.5 6.5 V3.5 H13.5 V6.5",
   palette:

@@ -63,15 +63,55 @@
   min-width: 0;
 }
 
+.nameRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--lx-s2) var(--lx-s6);
+}
+
 .name {
+  min-width: 0;
   margin: 0;
   font-size: var(--lx-size-display);
   line-height: 1.05;
   overflow-wrap: anywhere;
 }
 
-.headline {
+/* The code beside the pseudo, smaller: a pill that copies it, so that it reads as something to press. */
+.codeButton {
   display: inline-flex;
+  align-items: center;
+  gap: var(--lx-s3);
+  padding: var(--lx-s2) var(--lx-s5);
+  border: 0;
+  border-radius: var(--lx-radius-pill);
+  background: color-mix(in srgb, var(--lx-lettering-fill) 14%, transparent);
+  color: color-mix(in srgb, var(--lx-lettering-fill) 85%, transparent);
+  font: inherit;
+  font-size: var(--lx-size-small);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background-color 120ms ease;
+}
+
+.codeButton:hover {
+  background: color-mix(in srgb, var(--lx-lettering-fill) 24%, transparent);
+  color: var(--lx-lettering-fill);
+}
+
+.codeButton:focus-visible {
+  outline: 2px solid var(--lx-lettering-fill);
+  outline-offset: 2px;
+}
+
+/* The title and the clan each have their own line: side by side, the clan's emblem covered the title. */
+.headline {
+  display: flex;
+  width: fit-content;
   align-items: center;
   gap: var(--lx-s4);
   margin: var(--lx-s3) 0 0;
@@ -80,7 +120,8 @@
 }
 
 .clan {
-  display: inline-flex;
+  display: flex;
+  width: fit-content;
   align-items: center;
   gap: var(--lx-s4);
   margin: var(--lx-s3) 0 0;
@@ -397,14 +438,24 @@ button.emptySlot {
 
 /* --- Atelier --- */
 
-.back {
+.back,
+.home {
   display: inline-flex;
   align-items: center;
   gap: var(--lx-s3);
   margin-bottom: var(--lx-s7);
+}
+
+/* A link to the atelier, or a button back to the screen before: the same words in the lettering. */
+.back {
+  padding: 0;
+  border: 0;
+  background: none;
   color: var(--lx-lettering-fill);
+  font: inherit;
   font-weight: 700;
   text-decoration: none;
+  cursor: pointer;
 }
 
 .atelierHead {
@@ -553,6 +604,15 @@ button.emptySlot {
 
   .name {
     font-size: var(--lx-size-heading);
+  }
+
+  .nameRow {
+    justify-content: center;
+  }
+
+  .headline,
+  .clan {
+    margin-inline: auto;
   }
 
   .avatarBone {

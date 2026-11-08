@@ -4,13 +4,15 @@ import type { ProfileClan, ProfileStats } from "@leximon/contract";
 import { collectionName } from "@leximon/contract/client";
 import { formatPlayerCode, memberSinceLabel, statTiles } from "@leximon/view-model";
 import Link from "next/link";
-import type { ReactNode } from "react";
+import { type ReactNode, useEffect, useState } from "react";
 import { useCatalog } from "@/cards/use-catalog";
 import { Emblem } from "@/clan/emblem";
 import { Avatar } from "@/components/avatar";
 import { Card } from "@/components/card";
 import { useNarrow } from "@/lib/use-narrow";
+import { Icon } from "@/ui/icon";
 import { LevelMedal } from "@/ui/level-bits";
+import { useToast } from "@/ui/toast";
 import ui from "@/ui/ui.module.css";
 import styles from "./profile.module.css";
 
@@ -28,7 +30,7 @@ export interface ProfileFace {
   readonly clanHref?: string;
 }
 
-/** The profile's banner: avatar in its frame, pseudo, title, level, clan, code. */
+/** The profile's banner: avatar in its frame, pseudo and code, title, level, clan. */
 export function ProfileHeader({
   face,
   actions,
@@ -37,10 +39,6 @@ export function ProfileHeader({
   readonly actions?: ReactNode;
 }) {
   const narrow = useNarrow();
-  const subline = [
-    face.code === null ? null : `Code joueur ${formatPlayerCode(face.code)}`,
-    face.memberSince === null ? null : memberSinceLabel(face.memberSince),
-  ].filter((part) => part !== null);
   return (
     <header className={styles.banner}>
       <div className={styles.bannerArt} aria-hidden="true" />
@@ -53,7 +51,10 @@ export function ProfileHeader({
           className={styles.bigAvatar}
         />
         <div className={styles.names}>
-          <h1 className={`${ui.display} ${styles.name}`}>{face.name}</h1>
+          <div className={styles.nameRow}>
+            <h1 className={`${ui.display} ${styles.name}`}>{face.name}</h1>
+            {face.code !== null && <CodeButton code={face.code} />}
+          </div>
           {face.code !== null && (
             <p className={styles.headline}>
               <LevelMedal level={face.level} size={34} labelled />
@@ -61,11 +62,45 @@ export function ProfileHeader({
             </p>
           )}
           {face.clan !== null && <ClanLine clan={face.clan} href={face.clanHref} />}
-          {subline.length > 0 && <p className={styles.subline}>{subline.join(" · ")}</p>}
+          {face.memberSince !== null && (
+            <p className={styles.subline}>{memberSinceLabel(face.memberSince)}</p>
+          )}
         </div>
         {actions !== undefined && <div className={styles.actions}>{actions}</div>}
       </div>
     </header>
+  );
+}
+
+/** « #0N3E 2Q8N » beside the pseudo: a click copies the code, and the icon ticks for a moment. */
+function CodeButton({ code }: { readonly code: string }) {
+  const toast = useToast();
+  const [copied, setCopied] = useState(false);
+  useEffect(() => {
+    if (!copied) return;
+    const timer = setTimeout(() => setCopied(false), 2000);
+    return () => clearTimeout(timer);
+  }, [copied]);
+  const copy = async () => {
+    try {
+      await navigator.clipboard.writeText(code);
+      setCopied(true);
+      toast("Code copié.");
+    } catch {
+      toast(`Copie impossible. Le code est ${formatPlayerCode(code)}.`);
+    }
+  };
+  return (
+    <button
+      type="button"
+      className={styles.codeButton}
+      onClick={() => void copy()}
+      title="Copier le code joueur"
+      aria-label={`Copier le code joueur, ${code.split("").join(" ")}`}
+    >
+      #{formatPlayerCode(code)}
+      <Icon name={copied ? "check" : "copier"} size={15} />
+    </button>
   );
 }
 

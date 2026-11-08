@@ -11,11 +11,15 @@ import {
   REPORTED_TOAST,
   requestSentToast,
 } from "@leximon/view-model";
-import { useEffect, useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { type ReactNode, useEffect, useState } from "react";
 import { api } from "@/lib/api";
+import { GameShell } from "@/shell/game-shell";
 import { Button, ButtonLink } from "@/ui/button";
 import { Dialog } from "@/ui/dialog";
 import { Icon } from "@/ui/icon";
+import { Logo } from "@/ui/logo";
 import { ToastProvider, useToast } from "@/ui/toast";
 import ui from "@/ui/ui.module.css";
 import styles from "./profile.module.css";
@@ -23,24 +27,62 @@ import { PinnedCards, type ProfileFace, ProfileHeader, StatsPanel } from "./prof
 import { failureMessage } from "./use-profile-actions";
 
 /**
- * Someone's profile, as the server rendered it for everyone. A signed-in viewer reads
- * it again with their session, which hides it when either blocked the other, and gets the actions.
+ * The page around the profile: the game's bars and a way back for a signed-in viewer. A visitor
+ * gets the logo only, since the game's bars would open a guest account for anyone a link brings.
  */
-export function PublicProfileScreen({
-  pseudo,
-  initial,
+export function PlayerPageFrame({
+  signedIn,
+  children,
 }: {
-  readonly pseudo: string;
-  readonly initial: PublicProfile | null;
+  readonly signedIn: boolean;
+  readonly children: ReactNode;
 }) {
+  if (signedIn) {
+    return (
+      <GameShell>
+        <main className={styles.page}>
+          <BackButton />
+          {children}
+        </main>
+      </GameShell>
+    );
+  }
   return (
     <ToastProvider>
-      <PublicProfileBody pseudo={pseudo} initial={initial} />
+      <div className={styles.page}>
+        <Link href="/" aria-label="Accueil de Leximon" className={styles.home}>
+          <Logo size="md" />
+        </Link>
+        {children}
+      </div>
     </ToastProvider>
   );
 }
 
-function PublicProfileBody({
+/** Back to the screen the player came from; a page opened from a link has none in the game. */
+function BackButton() {
+  const router = useRouter();
+  const back = () => {
+    const [arrival] = performance.getEntriesByType("navigation");
+    if (arrival !== undefined && arrival.name === window.location.href) {
+      router.push("/communaute");
+    } else {
+      router.back();
+    }
+  };
+  return (
+    <button type="button" className={styles.back} onClick={back}>
+      <Icon name="back" size={18} />
+      Retour
+    </button>
+  );
+}
+
+/**
+ * Someone's profile, as the server rendered it for everyone. A signed-in viewer reads
+ * it again with their session, which hides it when either blocked the other, and gets the actions.
+ */
+export function PublicProfileScreen({
   pseudo,
   initial,
 }: {
@@ -72,15 +114,18 @@ function PublicProfileBody({
     };
   }, [pseudo]);
 
-  if (blocked) return <p className={`${styles.note} ${ui.leaf}`}>{BLOCKED_NOTE}</p>;
+  const framed = (content: ReactNode) => (
+    <PlayerPageFrame signedIn={viewer != null}>{content}</PlayerPageFrame>
+  );
+  if (blocked) return framed(<p className={`${styles.note} ${ui.leaf}`}>{BLOCKED_NOTE}</p>);
   if (shown === null) {
-    return (
+    return framed(
       <div className={`${styles.note} ${ui.leaf}`}>
         <span>{PROFILE_NOT_FOUND}</span>
         <ButtonLink href="/jouer" small>
           Jouer à Leximon
         </ButtonLink>
-      </div>
+      </div>,
     );
   }
 
@@ -110,7 +155,7 @@ function PublicProfileBody({
         };
   const own = viewer != null && shown.visibility === "public" && viewer.playerCode === shown.code;
 
-  return (
+  return framed(
     <>
       <ProfileHeader face={face} />
       {viewer === undefined ? null : own ? (
@@ -147,7 +192,7 @@ function PublicProfileBody({
           Profil privé.
         </p>
       )}
-    </>
+    </>,
   );
 }
 

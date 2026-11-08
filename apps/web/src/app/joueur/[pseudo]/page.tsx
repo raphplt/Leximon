@@ -1,11 +1,9 @@
 import { profileHeadline } from "@leximon/view-model";
 import type { Metadata } from "next";
-import Link from "next/link";
 import { Suspense } from "react";
 import styles from "@/profile/profile.module.css";
-import { PublicProfileScreen } from "@/profile/public-profile";
+import { PlayerPageFrame, PublicProfileScreen } from "@/profile/public-profile";
 import { readPublicProfile } from "@/profile/public-profile-data";
-import { Logo } from "@/ui/logo";
 
 function pseudoOf(param: string): string {
   try {
@@ -35,20 +33,17 @@ export async function generateMetadata({
 /** Someone's public profile, the page a shared link leads to. */
 export default function PlayerPage(props: PageProps<"/joueur/[pseudo]">) {
   return (
-    <div className={styles.page}>
-      <Link href="/" aria-label="Accueil de Leximon" className={styles.back}>
-        <Logo size="md" />
-      </Link>
-      <Suspense
-        fallback={
+    <Suspense
+      fallback={
+        <PlayerPageFrame signedIn={false}>
           <div className={styles.banner}>
             <div className={styles.bannerArt} />
           </div>
-        }
-      >
-        <PlayerProfile params={props.params} />
-      </Suspense>
-    </div>
+        </PlayerPageFrame>
+      }
+    >
+      <PlayerProfile params={props.params} />
+    </Suspense>
   );
 }
 
@@ -57,6 +52,10 @@ async function PlayerProfile({ params }: Pick<PageProps<"/joueur/[pseudo]">, "pa
   try {
     return <PublicProfileScreen pseudo={pseudo} initial={await readPublicProfile(pseudo)} />;
   } catch {
-    return <p className={styles.note}>Le serveur ne répond pas. Recharge la page.</p>;
+    return (
+      <PlayerPageFrame signedIn={false}>
+        <p className={styles.note}>Le serveur ne répond pas. Recharge la page.</p>
+      </PlayerPageFrame>
+    );
   }
 }
