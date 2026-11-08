@@ -22,6 +22,7 @@
     "better-auth": "1.7.11",
     "drizzle-orm": "catalog:",
     "hono": "4.13.13",
+    "stripe": "23.1.0",
     "zod": "catalog:"
   },
   "devDependencies": {

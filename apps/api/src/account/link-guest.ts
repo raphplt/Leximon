@@ -109,6 +109,9 @@ export const USER_REFERENCES = {
   "accounts.user_id": { transfer: "kept", abandon: "kept" },
   "guest_links.guest_id": { transfer: "link_log", abandon: "link_log" },
   "guest_links.account_id": { transfer: "link_log", abandon: "link_log" },
+  // Only an account subscribes: a guest is refused at checkout.
+  "patron_subscriptions.user_id": { transfer: "kept", abandon: "kept" },
+  "patron_periods.user_id": { transfer: "kept", abandon: "kept" },
   // Back office audit log: written by admins, who are never guests.
   "admin_actions.admin_id": { transfer: "kept", abandon: "kept" },
   "moderation_reports.resolved_by": { transfer: "kept", abandon: "kept" },

@@ -18,6 +18,7 @@ export * from "./mail";
 export * from "./me";
 export * from "./missions";
 export * from "./moderation";
+export * from "./patron";
 export * from "./profile";
 export * from "./progress";
 export * from "./riddles";

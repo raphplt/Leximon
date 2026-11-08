@@ -65,7 +65,7 @@ Arbitrés par le propriétaire le 2026-10-20 : jeu grand public (B2C), pas de ve
 
 | Étape | Statut | Détail |
 |---|---|---|
-| Abonnement Mécène | À faire | P72, P73 : tout le jeu gratuit, une offre Mécène au contenu dévoilé le 1er du mois, dont « ton mot dans le jeu ». Fausse porte sur `/mecene`, mesurée dans `/admin/mesure`. Cahier tranché le 2026-11-08 ([mecene.md](cahiers-des-charges/mecene.md)) : Stripe en direct sur le web (D-059), statut seul sur le mobile, quatre lots à construire en mode test derrière un interrupteur ; la vente ouvre sur les seuils de la stratégie et après l'avocat |
+| Abonnement Mécène | À faire | P72, P73 : tout le jeu gratuit, une offre Mécène au contenu dévoilé le 1er du mois, dont « ton mot dans le jeu ». Fausse porte sur `/mecene`, mesurée dans `/admin/mesure`. Cahier tranché le 2026-11-08 ([mecene.md](cahiers-des-charges/mecene.md)) : Stripe en direct sur le web (D-059), statut seul sur le mobile, quatre lots en mode test, vente fermée (`PATRON_SALES`). Lot 1 (socle : abonnement, checkout, portail, webhook, suppression de compte) construit le 2026-11-08, sans écran ; la fiche Stripe à suivre est au § 11 du cahier. La vente ouvre sur les seuils de la stratégie et après l'avocat |
 | Économie du jeu | En partie construite | P84 à P90, tranchés le 2026-11-01 : écus, recyclage en un bouton, mot manquant, tampons, série qui pardonne, 40 succès, codes. Écus, recyclage, mot manquant, missions et carnet construits le 2026-11-05 (voir la ligne « Économie et équilibrage ») ; restent tampons, paliers de série, succès et codes. Étude : [rnd/doublons.md](rnd/doublons.md). Phase 5 du cahier |
 
 ### Interface

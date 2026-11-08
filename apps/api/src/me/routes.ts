@@ -53,6 +53,7 @@ import { sendGameEvents } from "../clans/events";
 import { myClanRoutes } from "../clans/routes";
 import type { AppEnv } from "../context";
 import { ecuRoutes } from "../ecus/routes";
+import { errorSummary } from "../error-summary";
 import { friendRoutes } from "../friends/routes";
 import { claimLevelReward, readLevelRewards, walletView } from "../levels/rewards";
 import { markMailRead, readMail } from "../mail/mail";
@@ -61,6 +62,9 @@ import { requireUser } from "../middleware/require-user";
 import { missionRoutes } from "../missions/routes";
 import { readRestrictions, refuseLockedWrites } from "../moderation/restrictions";
 import { sanctionRoutes } from "../moderation/routes";
+import { type BillingFactory, billingConfigured } from "../patron/billing";
+import { endBillingOfAccount } from "../patron/patron";
+import { patronRoutes } from "../patron/routes";
 import { buyBanner } from "../profile/banners";
 import {
   blockPlayer,
@@ -93,7 +97,7 @@ const LINKED_LATER_MS = 60_000;
 const isRecent = (at: Date) => Date.now() - at.getTime() < JUST_JOINED_MS;
 
 /** Player state for the current session. Never cached: it changes with every action. */
-export function meRoutes() {
+export function meRoutes(createBilling: BillingFactory) {
   const routes = new Hono<AppEnv>();
   routes.use(requireUser);
   routes.use(playerRateLimit);
@@ -105,6 +109,7 @@ export function meRoutes() {
   routes.route("/email-preferences", emailPreferenceRoutes());
   routes.route("/clan", myClanRoutes());
   routes.route("/sanctions", sanctionRoutes());
+  routes.route("/patron", patronRoutes(createBilling));
   routes.route("/", betaPlayerRoutes());
   routes.route("/", friendRoutes());
   routes.route("/", ecuRoutes());
@@ -461,6 +466,15 @@ export function meRoutes() {
    */
   routes.delete("/account", async (c) => {
     const now = Date.now();
+    // A deleted account is never billed again: without Stripe's answer, nothing is deleted.
+    if (billingConfigured(c.env)) {
+      try {
+        await endBillingOfAccount(c.var.db, createBilling(c.env), c.var.userId);
+      } catch (error) {
+        console.error("Billing not ended before an account deletion", errorSummary(error));
+        return c.json({ error: "billing_unavailable" }, 503);
+      }
+    }
     // Leaves the clan first, as anyone leaving: the chief's role passes on, the count follows.
     const left = await leaveClan(c.var.db, { userId: c.var.userId, now });
     if (left.kind === "left" && !left.dissolved) {

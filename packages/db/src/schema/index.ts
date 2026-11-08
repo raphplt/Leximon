@@ -7,4 +7,5 @@ export * from "./friend";
 export * from "./game";
 export * from "./joust";
 export * from "./mail";
+export * from "./patron";
 export * from "./waitlist";

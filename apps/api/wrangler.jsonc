@@ -39,7 +39,8 @@
     "BETA_INVITES": "off",
     // Oldest mobile app version still served: raised when the API drops what an old app needs,
     // the app then asks to be updated.
-    "MOBILE_MIN_VERSION": "0.0.0"
+    "MOBILE_MIN_VERSION": "0.0.0",
+    "PATRON_SALES": "closed"
   },
   // Campaign e-mails: the pump queues row ids, the consumer sends them in batches.
   // Game events: cards obtained and clan changes, recounted from the database.
@@ -166,7 +167,9 @@
         "NOTIFY_DAILY_LIMIT": "200",
         "PUBLIC_WEB_URL": "https://leximon.fr",
         "BETA_INVITES": "off",
-        "MOBILE_MIN_VERSION": "0.0.0"
+        "MOBILE_MIN_VERSION": "0.0.0",
+        // "open" sells the patron subscription; closed, only admins can buy, to try the payment.
+        "PATRON_SALES": "closed"
       },
       // Same queue names as above: `queue()` recognises the game events queue by its name.
       "queues": {
@@ -277,7 +280,8 @@
         "NOTIFY_DAILY_LIMIT": "0",
         "PUBLIC_WEB_URL": "https://leximon.fr",
         "BETA_INVITES": "off",
-        "MOBILE_MIN_VERSION": "0.0.0"
+        "MOBILE_MIN_VERSION": "0.0.0",
+        "PATRON_SALES": "closed"
       },
       "queues": {
         "producers": [

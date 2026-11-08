@@ -330,6 +330,13 @@
       "when": 1794147609289,
       "tag": "0046_profile_banners",
       "breakpoints": true
+    },
+    {
+      "idx": 47,
+      "version": "7",
+      "when": 1794162698261,
+      "tag": "0047_patron_subscriptions",
+      "breakpoints": true
     }
   ]
 }

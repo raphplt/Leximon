@@ -40,6 +40,8 @@ import {
   signupRateLimit,
   waitlistRateLimit,
 } from "./middleware/rate-limit";
+import { type BillingFactory, createStripeBilling } from "./patron/billing";
+import { stripeWebhookRoutes } from "./patron/routes";
 import { riddleRoutes } from "./riddles/routes";
 import { playerRoutes, tradeRoutes } from "./trades/routes";
 import { waitlistRoutes } from "./waitlist/routes";
@@ -68,6 +70,8 @@ export interface AppOptions {
   readonly campaignMailer?: CampaignMailerFactory;
   /** Checks that an address's domain takes e-mail before a code goes; tests pass one without DNS. */
   readonly mailDomain?: MailDomainResolver;
+  /** Talks to Stripe; tests pass a fake. */
+  readonly billing?: BillingFactory;
 }
 
 /**
@@ -81,6 +85,7 @@ export function createApp(options: AppOptions = {}) {
   const withDatabase = databaseMiddleware(options.emailSender ?? createEmailSender);
   const loadCardPool = createCardPoolLoader();
   const loadCatalogIndex = createCatalogIndexLoader();
+  const createBilling = options.billing ?? createStripeBilling;
 
   app.use(requestId());
   app.use(secureHeaders());
@@ -139,7 +144,7 @@ export function createApp(options: AppOptions = {}) {
   app.use("/boosters/*", withDatabase);
   app.route("/boosters", boosterRoutes(loadCardPool));
   app.use("/me/*", withDatabase);
-  app.route("/me", meRoutes());
+  app.route("/me", meRoutes(createBilling));
   app.use("/challenges", withDatabase);
   app.use("/challenges/*", withDatabase);
   app.route("/challenges", challengeRoutes(loadCatalogIndex));
@@ -156,6 +161,8 @@ export function createApp(options: AppOptions = {}) {
   app.route("/clans", clanRoutes());
   app.use("/players/*", withDatabase);
   app.route("/players", playerRoutes());
+  app.use("/stripe/*", withDatabase);
+  app.route("/stripe", stripeWebhookRoutes(createBilling));
   app.use("/admin/*", withDatabase);
   app.route("/admin", adminRoutes(options.campaignMailer ?? createCampaignMailer));
   app.use("/email/*", withDatabase);

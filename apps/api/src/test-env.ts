@@ -34,6 +34,7 @@ export function recordingQueue<Body>(): Queue<Body> & { readonly sent: Body[] } 
 
 export const TEST_LINK_SECRET = "test-link-secret-0123456789abcdef";
 export const TEST_WEBHOOK_SECRET = "test-webhook-secret-0123456789abcdef";
+export const TEST_STRIPE_WEBHOOK_SECRET = "whsec_test0123456789abcdef";
 
 /** Worker bindings for tests that call the app directly. */
 export function testEnv(connectionString = "postgres://unused@127.0.0.1:1/unused"): Env {
@@ -55,6 +56,7 @@ export function testEnv(connectionString = "postgres://unused@127.0.0.1:1/unused
     PUBLIC_WEB_URL: "http://localhost:3000",
     BETA_INVITES: "off",
     MOBILE_MIN_VERSION: "0.0.0",
+    PATRON_SALES: "open",
     EMAIL_LINK_SECRET: TEST_LINK_SECRET,
     LETTERMINT_WEBHOOK_SECRET: TEST_WEBHOOK_SECRET,
     DISCORD_WEBHOOK_URL: "",
@@ -62,6 +64,9 @@ export function testEnv(connectionString = "postgres://unused@127.0.0.1:1/unused
     OBSERVABILITY_TOKEN: "",
     REVIEW_ACCOUNT_EMAIL: "",
     REVIEW_ACCOUNT_CODE: "",
+    // Stripe itself is faked by the tests that need it (`AppOptions.billing`).
+    STRIPE_SECRET_KEY: "sk_test_unused",
+    STRIPE_WEBHOOK_SECRET: TEST_STRIPE_WEBHOOK_SECRET,
     CAMPAIGN_QUEUE: unusedQueue,
     // Game events are hints: tests that need them pass a recording queue.
     GAME_EVENTS: recordingQueue() as Queue,

@@ -143,6 +143,13 @@ pnpm exec wrangler secret put GOOGLE_CLIENT_ID --env production
 pnpm exec wrangler secret put GOOGLE_CLIENT_SECRET --env production
 ```
 
+L'abonnement Mécène, facultatif : sans ces deux secrets, rien n'est vendu et la page Mécène reste une annonce. Ce sont la clé secrète et le secret du webhook de production de Stripe ([mecene.md](cahiers-des-charges/mecene.md#11-stripe-pas-à-pas--toi)). La vente reste fermée tant que `PATRON_SALES` vaut `"closed"` dans `apps/api/wrangler.jsonc` ; seuls les admins peuvent alors s'abonner.
+
+```bash
+pnpm exec wrangler secret put STRIPE_SECRET_KEY --env production
+pnpm exec wrangler secret put STRIPE_WEBHOOK_SECRET --env production
+```
+
 ## 7. Migrations · toi (la chaîne), agent (la commande)
 
 `pnpm deploy:prod` fait tout cela seul. Pour un geste isolé, dans le terminal qui lance les commandes de production, ouvrir un tunnel SSH vers le conteneur de la base, puis :

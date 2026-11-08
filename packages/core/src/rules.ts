@@ -20,6 +20,7 @@ import type { LeagueSchedule } from "./joust/leagues";
 import type { MasterySchedule } from "./mastery/mastery";
 import type { PracticeSchedule } from "./mastery/practice";
 import type { NotifySchedule } from "./notify/notify";
+import type { PatronSchedule } from "./patron/patron";
 import type { BannerSchedule } from "./profile/banners";
 import type { CarnetSchedule } from "./progress/carnet";
 import type { MissionSchedule } from "./progress/missions";
@@ -679,4 +680,9 @@ export const BANNER_SCHEDULE: BannerSchedule = [
     completeCollection: "binding",
     forEcus: { marbled: 250, printer: 250 },
   },
+];
+
+// The patron subscription. The founding month is set when sales open.
+export const PATRON_SCHEDULE: PatronSchedule = [
+  { startsAt: SINCE_LAUNCH, trialDays: 14, foundingMonth: null },
 ];

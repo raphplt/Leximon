@@ -21,6 +21,7 @@ export * from "./mastery/practice";
 export * from "./moderation/sanction";
 export * from "./moderation/text-filter";
 export * from "./notify/notify";
+export * from "./patron/patron";
 export * from "./profile/banners";
 export * from "./progress/carnet";
 export * from "./progress/missions";
