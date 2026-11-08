@@ -1,13 +1,21 @@
 .screen {
   box-sizing: border-box;
   max-width: 440px;
-  min-height: calc(100dvh - 68px);
+  min-height: 100dvh;
   margin: 0 auto;
   padding: var(--lx-s4) var(--lx-s8) var(--lx-s24);
   display: flex;
   flex-direction: column;
   justify-content: center;
   gap: var(--lx-s8);
+}
+
+/* The page stands alone, out of the game's bars: this is the only way back. */
+.back {
+  position: fixed;
+  top: max(var(--lx-s6), env(safe-area-inset-top));
+  left: var(--lx-s6);
+  z-index: 1;
 }
 
 .header {

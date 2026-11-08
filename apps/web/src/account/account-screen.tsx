@@ -40,6 +40,7 @@ import { Select, type SelectOption } from "@/components/select";
 import { api } from "@/lib/api";
 import { usePackShape } from "@/lib/use-pack-shape";
 import { forgetProgress } from "@/progress/use-progress";
+import { Icon } from "@/ui/icon";
 import { Switch } from "@/ui/switch";
 import { Segmented } from "@/ui/tabs";
 import ui from "@/ui/ui.module.css";
@@ -263,6 +264,7 @@ export function AccountScreen() {
 
   return (
     <main className={styles.screen}>
+      <BackButton />
       <header className={styles.header}>
         <Crest />
         <p className={styles.kicker}>Ton compte</p>
@@ -641,6 +643,27 @@ const AGE_OPTIONS: readonly SelectOption<AgeBracket | "">[] = [
 ];
 
 /** The optional age bracket, as on the code's last step. */
+/** Back to the game screen the player came from; a page opened from a link has none, so Jouer. */
+function BackButton() {
+  const router = useRouter();
+  const back = () => {
+    const [arrival] = performance.getEntriesByType("navigation");
+    const openedHere = arrival !== undefined && new URL(arrival.name).pathname === "/compte";
+    if (openedHere) router.push("/jouer");
+    else router.back();
+  };
+  return (
+    <button
+      type="button"
+      className={`${styles.back} ${ui.round}`}
+      aria-label="Retour"
+      onClick={back}
+    >
+      <Icon name="back" size={20} />
+    </button>
+  );
+}
+
 function AgeBracketField({
   value,
   onChange,
