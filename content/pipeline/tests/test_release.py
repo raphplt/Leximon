@@ -238,3 +238,16 @@ def test_a_card_without_engraving_shows_the_initial_of_its_word() -> None:
         "raclure": engraving,
         "zinzolin": None,
     }
+
+
+def test_a_wikisource_quote_fills_only_a_card_the_littre_left_without_one() -> None:
+    wikisource = {"text": "Un grondin gronde", "author": "Georges Fourest"}
+    quotes = {"grondin": wikisource, "raclure": {"text": "Autre", "author": "Quelqu'un"}}
+    rows = [row("grondin", quote_text=None, quote_author=None), row("raclure")]
+    files = release.build(
+        [FONDATEURS], {"lot-1": rows}, frequency, "2026-10-19.1", NOW, quotes=quotes
+    )
+    path = next(p for p in files if p.startswith("collections/"))
+    cards = {c["id"]: c for c in json.loads(files[path])["cards"]}
+    assert cards["grondin"]["quote"] == wikisource
+    assert cards["raclure"]["quote"] == {"text": "Une citation", "author": "Molière"}

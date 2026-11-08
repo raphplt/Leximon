@@ -103,16 +103,20 @@ def card(
     frequency: ngram.NgramFrequency | None,
     engraving: Mapping[str, object] | None = None,
     pronunciation: Mapping[str, object] | None = None,
+    wikisource_quote: Mapping[str, object] | None = None,
 ) -> dict[str, object] | None:
     """The catalogue card of a Directus row, or `None` when its rarity is not computed yet
     (compound words). A card without an approved engraving keeps its initial (`null`),
-    one without a settled pronunciation stays silent (`null`)."""
+    one without a settled pronunciation stays silent (`null`). The Littré's quote, chosen in
+    review, wins over the one found on Wikisource."""
     rarity = RARITY_CODES.get(str(row["rarity"]))
     if rarity is None:
         return None
     quote = (
         {"text": row["quote_text"], "author": row["quote_author"]}
         if row.get("quote_text") and row.get("quote_author")
+        else dict(wikisource_quote)
+        if wikisource_quote is not None
         else None
     )
     word = str(row["word"])
@@ -160,13 +164,16 @@ def build(
     pronunciations: Mapping[str, Mapping[str, object]] | None = None,
     initials: Mapping[str, Mapping[str, object]] | None = None,
     seals: Mapping[str, Mapping[str, object]] | None = None,
+    quotes: Mapping[str, Mapping[str, object]] | None = None,
 ) -> dict[str, bytes]:
     """Every file of the release, keyed by path relative to the release folder. `engravings`
     holds the rendered engraving of each card that has one (data/gravures/out/rendered.json),
     `pronunciations` its spoken word (data/prononciation/out/rendered.json). A card without an
     engraving shows the decorated initial of its word, from `initials`, when there is one.
-    `seals` holds the rendered engraving of each collection, by collection id."""
+    `seals` holds the rendered engraving of each collection, by collection id, and `quotes` the
+    quote found on Wikisource for a card the Littré left without one (data/citations/quotes.json)."""
     seals = seals or {}
+    quotes = quotes or {}
     engravings = engravings or {}
     initials = initials or {}
     pronunciations = pronunciations or {}
@@ -188,6 +195,7 @@ def build(
                     frequency_of(word),
                     engravings.get(slug(word)) or initial_of(word, initials),
                     pronunciations.get(slug(word)),
+                    quotes.get(slug(word)),
                 )
                 if built is None:
                     continue

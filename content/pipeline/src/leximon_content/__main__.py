@@ -37,6 +37,13 @@ prononciation-notation  phonetic notation of every card of the latest release (L
 prononciation-audio     read each settled notation with the Google voice (MP3,
                   data/prononciation/out/), read by release; --limit N, --cards
 
+citations-search  for each card of the latest release without a quote, the sentences of
+                  fr.wikisource that hold its word, with author, year and the author's death
+                  (data/citations/candidates.jsonl; hours: run it in the background, it resumes)
+citations-apply   checks the quotes the agents picked (data/citations/picks/, see
+                  citations-agents.md) word for word and for rights, and writes the accepted ones
+                  to data/citations/quotes.json, read by release
+
 A step whose estimated cost exceeds a few dollars waits for --yes (the owner's approval).
 """
 
@@ -49,6 +56,7 @@ from datetime import UTC, date, datetime
 import httpx
 
 from . import (
+    citations,
     config,
     curation,
     directus,
@@ -243,6 +251,7 @@ def command_release() -> None:
             pronunciations,
             engraving.load_initials(),
             engraving.load_seals(),
+            citations.load_quotes(),
         )
     except release.ReleaseError as error:
         raise SystemExit(f"Version refusée : {error}") from error
@@ -387,6 +396,18 @@ def command_pronunciation_audio(ids: str | None, limit: int | None, yes: bool) -
     print(f"{len(rendered)} cartes ont un son dans {out}")
 
 
+def command_citations_search(release_dir: str | None, ids: str | None, limit: int | None) -> None:
+    path = release.latest_release(release.RELEASES_DIR) if release_dir is None else None
+    path = path or release.RELEASES_DIR / str(release_dir)
+    cards = citations.cards_without_quote(path)
+    if ids:
+        wanted = {i.strip() for i in ids.split(",")}
+        cards = [c for c in cards if c.id in wanted]
+    cards = cards[:limit] if limit is not None else cards
+    print(f"{path.name} : {len(cards)} cartes sans citation")
+    citations.run_search(cards)
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(prog="leximon_content")
     parser.add_argument(
@@ -408,6 +429,8 @@ def main() -> None:
             "gravures-render",
             "prononciation-notation",
             "prononciation-audio",
+            "citations-search",
+            "citations-apply",
         ],
     )
     parser.add_argument("--run", default="essai-50")
@@ -423,19 +446,29 @@ def main() -> None:
         "--limit",
         type=int,
         default=None,
-        help="prescreen --pool, gravures-*, prononciation-audio: at most N",
+        help="prescreen --pool, gravures-*, prononciation-audio, citations-search: at most N",
     )
     parser.add_argument(
-        "--cards", default=None, help="gravures-*, prononciation-audio: comma-separated card ids"
+        "--cards",
+        default=None,
+        help="gravures-*, prononciation-audio, citations-search: comma-separated card ids",
     )
     parser.add_argument(
-        "--release", default=None, help="gravures-*, prononciation-notation: release directory name"
+        "--release",
+        default=None,
+        help="gravures-*, prononciation-notation, citations-search: release directory name",
     )
     parser.add_argument(
         "--round", type=int, default=1, help="gravures-*: 2 or 3 for the cards still without one"
     )
     parser.add_argument("--yes", action="store_true", help="approve a step above a few dollars")
     args = parser.parse_args()
+    if args.command == "citations-search":
+        command_citations_search(args.release, args.cards, args.limit)
+        return
+    if args.command == "citations-apply":
+        citations.run_apply()
+        return
     if args.command == "prononciation-notation":
         command_pronunciation_notation(args.release)
         return

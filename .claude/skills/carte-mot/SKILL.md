@@ -30,6 +30,7 @@ Une erreur publique sur un mot coûte cher en crédibilité. On préfère une ca
 - le Littré via XMLittré (`content/pipeline/data/littre/`) : texte brut uniquement, crédit « XMLittré, François Gannaz (littre.org) » ;
 - autres dictionnaires du domaine public : Académie jusqu'à la 8e édition (1935), Godefroy, Furetière, Trévoux, Larousse du XIXe, à partir de transcriptions réutilisables (pas les scans Gallica) ;
 - Wikidata (lexèmes, CC0) ;
+- citations : fr.wikisource quand le Littré n'en a pas (D-058), le texte de l'auteur seulement (jamais les notes ni les introductions de Wikisource), d'un auteur mort avant 1956 ou d'un texte paru avant 1871, et jamais une traduction ;
 - fréquences : Google Books Ngram (CC BY, à créditer), Lexique 3.83 (CC BY-SA, scores dérivés seulement) ;
 - illustrations : Met Open Access, Rijksmuseum, Paris Musées (CC0), Wikimedia Commons uniquement si le fichier est marqué domaine public ou CC0.
 
