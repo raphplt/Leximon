@@ -443,16 +443,21 @@
   .screen {
     display: grid;
     grid-template-columns: minmax(250px, 300px) minmax(0, 1fr) minmax(250px, 300px);
-    gap: 26px;
     /*
-     * As tall as the longer column, so the desk and its button end where its last leaf does, and
-     * centred on the screen; on a screen too short for it, the screen's height, and the columns
-     * scroll.
+     * As tall as the longer column, so the desk and its button end where its last leaf does, with
+     * a third of the room left above it and the rest below; on a screen too short for it, the
+     * screen's height, and the columns scroll.
      */
-    grid-template-rows: fit-content(100%);
-    align-content: center;
+    grid-template-rows: minmax(0, 1fr) fit-content(100%) minmax(0, 2fr);
+    gap: 0 26px;
     max-width: 1560px;
     max-height: none;
+  }
+
+  .today,
+  .stage,
+  .standing {
+    grid-row: 2;
   }
 
   .today,
