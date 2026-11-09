@@ -3,7 +3,7 @@
 import type { LevelCounts, ReviewRequest, ReviewSummaryResponse } from "@leximon/contract";
 import { type Catalog, collectionName } from "@leximon/contract/client";
 import { PRACTICE_SCHEDULE, practiceRulesAt, UNLOCK_SCHEDULE, unlockRulesAt } from "@leximon/core";
-import type { ToyMatterName } from "@leximon/tokens";
+import type { ToyIconName, ToyMatterName } from "@leximon/tokens";
 import {
   DIFFICULTY_OPTIONS,
   FORMAT_PREFERENCE,
@@ -306,7 +306,11 @@ const SHORTCUT_MATTERS: Readonly<Record<string, ToyMatterName>> = {
   missed: "red",
   recent: "paper",
 };
-const SHORTCUT_MARKS: Readonly<Record<string, string>> = { rising: "▲", missed: "✕", recent: "✦" };
+const SHORTCUT_MARKS: Readonly<Record<string, ToyIconName>> = {
+  rising: "rising",
+  missed: "missed",
+  recent: "recent",
+};
 /** The themes are one set of volumes: the same brown leather, told apart by their titles. */
 const THEME_MATTER: ToyMatterName = "dark";
 
@@ -373,7 +377,11 @@ function Shelf({
                 cover={cover}
                 size="short"
                 matter={SHORTCUT_MATTERS[cover.kind] ?? "paper"}
-                mark={<span className={styles.coverCoin}>{SHORTCUT_MARKS[cover.kind] ?? "✦"}</span>}
+                mark={
+                  <span className={styles.coverCoin}>
+                    <ToyIcon name={SHORTCUT_MARKS[cover.kind] ?? "recent"} size={36} />
+                  </span>
+                }
                 onPick={pick}
               />
             </li>

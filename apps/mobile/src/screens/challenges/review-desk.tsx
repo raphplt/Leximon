@@ -8,7 +8,14 @@ import type {
 } from "@leximon/contract";
 import { type Catalog, collectionName } from "@leximon/contract/client";
 import { PRACTICE_SCHEDULE, practiceRulesAt, UNLOCK_SCHEDULE, unlockRulesAt } from "@leximon/core";
-import { backTone, room, type ToyMatterName, toyMatters, toy as toyValues } from "@leximon/tokens";
+import {
+  backTone,
+  room,
+  type ToyIconName,
+  type ToyMatterName,
+  toyMatters,
+  toy as toyValues,
+} from "@leximon/tokens";
 import {
   DESK_TEXTS,
   DIFFICULTY_OPTIONS,
@@ -484,7 +491,11 @@ const SHORTCUT_MATTERS: Readonly<Record<string, ToyMatterName>> = {
   missed: "red",
   recent: "paper",
 };
-const SHORTCUT_MARKS: Readonly<Record<string, string>> = { rising: "▲", missed: "✕", recent: "✦" };
+const SHORTCUT_MARKS: Readonly<Record<string, ToyIconName>> = {
+  rising: "rising",
+  missed: "missed",
+  recent: "recent",
+};
 /** The themes are one set of volumes: the same brown leather, told apart by their titles. */
 const THEME_MATTER: ToyMatterName = "dark";
 
@@ -543,7 +554,7 @@ function Shelf({
           cover={cover}
           size="short"
           matter={SHORTCUT_MATTERS[cover.kind] ?? "paper"}
-          mark={SHORTCUT_MARKS[cover.kind] ?? "✦"}
+          mark={SHORTCUT_MARKS[cover.kind] ?? "recent"}
           onPick={pick}
         />
       ))}
@@ -594,14 +605,14 @@ function Cover({
   size,
   matter,
   pack = null,
-  mark = "",
+  mark = null,
   onPick,
 }: {
   readonly cover: ReviewCover;
   readonly size: "large" | "small" | "short";
   readonly matter: ToyMatterName;
   readonly pack?: CatalogCollectionFile | null;
-  readonly mark?: string;
+  readonly mark?: ToyIconName | null;
   readonly onPick: (cover: ReviewCover) => void;
 }) {
   const locked = cover.lockedAt !== null;
@@ -642,9 +653,10 @@ function Cover({
               <Seal collection={pack} paint={asIs} />
             </Svg>
           ) : (
-            size === "short" && (
+            size === "short" &&
+            mark !== null && (
               <ToyBody matter="gold" shape="round" style={styles.mark}>
-                <Text style={styles.markText}>{mark}</Text>
+                <ToyIcon name={mark} size={32} />
               </ToyBody>
             )
           )}
@@ -935,7 +947,6 @@ const styles = StyleSheet.create({
   lozengeBottomLeft: { bottom: 4, left: 12 },
   lozengeBottomRight: { bottom: 4, right: 3 },
   mark: { width: 42, height: 42, borderWidth: 2 },
-  markText: { fontFamily: fonts.display, fontSize: 20, color: toyValues.outline },
   coverText: { flex: 1, minWidth: 0, gap: space.s2 },
   coverWords: {
     fontFamily: fonts.ui.extrabold,

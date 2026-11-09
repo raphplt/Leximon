@@ -368,10 +368,6 @@
   border: 2px solid var(--lx-toy-outline);
   border-radius: 50%;
   background: linear-gradient(180deg, var(--lx-toy-gold-top), var(--lx-toy-gold-bottom));
-  color: var(--lx-toy-outline);
-  font-family: var(--font-display), Georgia, serif;
-  font-size: 22px;
-  font-weight: 900;
 }
 
 .coverText {
