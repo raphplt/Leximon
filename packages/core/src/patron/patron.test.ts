@@ -14,7 +14,6 @@ import {
   parisMonthOf,
   patronCosmeticIds,
   patronMark,
-  patronRulesAt,
   patronStanding,
   patronTitle,
   pollWinner,
@@ -66,7 +65,11 @@ describe("founders", () => {
   const rules = {
     startsAt: 0,
     prices: { monthly: 399, yearly: 2999 },
-    foundingMonth: "2027-01",
+    founding: {
+      from: Date.parse("2027-01-01T00:00:00+01:00"),
+      until: Date.parse("2027-02-01T00:00:00+01:00"),
+    },
+    founderCosmetics: [],
     cosmetics: {},
     monthsPerFind: 3,
     extraPinnedSlots: 3,
@@ -76,18 +79,25 @@ describe("founders", () => {
     pollDays: 7,
   };
 
-  it("are those who first pay within the founding month", () => {
+  it("are those who first pay within the founding window", () => {
     expect(isFoundingPayment(rules, PAID)).toBe(true);
-    expect(isFoundingPayment(rules, Date.parse("2027-02-01T10:00:00Z"))).toBe(false);
+    expect(isFoundingPayment(rules, Date.parse("2027-01-31T22:59:59Z"))).toBe(true);
+    expect(isFoundingPayment(rules, Date.parse("2027-01-31T23:00:00Z"))).toBe(false);
+    expect(isFoundingPayment(rules, Date.parse("2026-12-31T22:59:59Z"))).toBe(false);
   });
 
-  it("do not exist before the founding month is set", () => {
-    expect(isFoundingPayment({ ...rules, foundingMonth: null }, PAID)).toBe(false);
+  it("do not exist without a founding window", () => {
+    expect(isFoundingPayment({ ...rules, founding: null }, PAID)).toBe(false);
   });
 
-  it("start with no founding month", () => {
-    const current = patronRulesAt(PATRON_SCHEDULE, Date.now());
-    expect(current.foundingMonth).toBeNull();
+  it("are made during thirty days, and given a piece of their own", () => {
+    const [first] = PATRON_SCHEDULE;
+    expect(first.founding).not.toBeNull();
+    if (first.founding !== null) {
+      expect(first.founding.until - first.founding.from).toBe(30 * 86_400_000);
+    }
+    expect(first.founderCosmetics.length).toBeGreaterThan(0);
+    expect(patronCosmeticIds(PATRON_SCHEDULE).frames.has("tessere")).toBe(true);
   });
 });
 
@@ -114,7 +124,8 @@ describe("cosmetics of the month", () => {
   const rules = {
     startsAt: 0,
     prices: { monthly: 399, yearly: 2999 },
-    foundingMonth: null,
+    founding: null,
+    founderCosmetics: [],
     cosmetics: { "2027-01": frame, "2027-02": pair, "2027-03": frame, "2027-04": [] },
     monthsPerFind: 3,
     extraPinnedSlots: 3,

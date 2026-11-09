@@ -48,7 +48,10 @@ import { ensurePlayer } from "../trades/players";
 import type { Billing, CheckoutInput, SubscriptionSnapshot } from "./billing";
 import { type DiscordApi, discordRolesAdrift, syncDiscordRoles } from "./discord";
 
-/** This month gets a pair for the tests, whatever the calendar holds. */
+/**
+ * This month gets a pair for the tests, whatever the calendar holds, and no founding window is
+ * open: a test makes its founders itself.
+ */
 vi.mock("@leximon/core", async (importOriginal) => {
   const core = await importOriginal<typeof import("@leximon/core")>();
   const [rules] = core.PATRON_SCHEDULE;
@@ -57,6 +60,7 @@ vi.mock("@leximon/core", async (importOriginal) => {
     PATRON_SCHEDULE: [
       {
         ...rules,
+        founding: null,
         cosmetics: {
           [core.parisMonthOf(Date.now())]: [
             { kind: "frame", frame: "wax" },
@@ -690,7 +694,7 @@ describe("the title and the mark", () => {
     expect(after.patron).toBeNull();
   });
 
-  it("keeps a founder's mark for life, the title only while paying", async () => {
+  it("keeps a founder's mark and piece for life, the title only while paying", async () => {
     const { member, customerId, subscription } = await payingPatron();
     await db
       .update(schema.patronSubscriptions)
@@ -702,6 +706,7 @@ describe("the title and the mark", () => {
     const after = await readProfile(member);
     expect(after.patron).toBe("founder");
     expect(after.wardrobe.titles).not.toContain("Mécène fondateur");
+    expect(after.wardrobe.frames).toContain("tessere");
   });
 
   it("asks a player declared 15 to 17 for a parent's agreement", async () => {

@@ -293,6 +293,58 @@ function cadelerFrame(flourish: Flourish): AvatarFrame {
   };
 }
 
+/**
+ * A ring of mosaic tesserae round the medallion, boxwood and calf set in dark grout: the token by
+ * which the first Christians knew each other, worn by the first patrons.
+ */
+function tessereFrame(): AvatarFrame {
+  const count = 30;
+  const step = 360 / count;
+  const inner = R + 1.1;
+  const outer = R + 6.5;
+  // A fixed unevenness rather than chance: the frame must draw the same on every screen.
+  const tile = (index: number, dy: number) => {
+    const start = index * step - 90 + 0.8;
+    const end = start + step - 1.6;
+    const lean = 0.5 * Math.sin(index * 2.7);
+    const swell = 0.45 * Math.sin(index * 1.9 + 1);
+    const corners = [
+      point(inner, start + lean * 0.4),
+      point(outer + swell, start - lean * 0.3),
+      point(outer + swell, end - lean * 0.3),
+      point(inner, end + lean * 0.4),
+    ];
+    return `M${corners.map(([x, y]) => `${x} ${round(y + dy)}`).join("L")}Z`;
+  };
+  const tiles = (matter: number, dy: number) =>
+    Array.from({ length: count }, (_, index) => index)
+      .filter((index) => (index % 3 === 1 ? 1 : 0) === matter)
+      .map((index) => tile(index, dy))
+      .join("");
+  const lit = Array.from({ length: count }, (_, index) => index)
+    .map((index) => {
+      const start = index * step - 90 + 1.6;
+      const end = start + step - 3.2;
+      if (start < -150 || end > -30) return "";
+      const [ax, ay] = point(outer - 0.9, start);
+      const [bx, by] = point(outer - 0.9, end);
+      return `M${ax} ${ay}L${bx} ${by}`;
+    })
+    .join("");
+  return {
+    footprint: 7,
+    reach: R + 10,
+    shapes: [
+      outlined(ring(R, R + 7.6, DEPTH), "gall:edge"),
+      outlined(ring(R, R + 7.6), "gall"),
+      { d: `${tiles(0, 0.6)}${tiles(1, 0.6)}`, fill: "gall:edge" },
+      { d: tiles(0, 0), fill: "boxwood" },
+      { d: tiles(1, 0), fill: "calf" },
+      { d: lit, stroke: "sheen", strokeWidth: 0.7 },
+    ],
+  };
+}
+
 const CADELER: Flourish = {
   loops: 16,
   middle: R + 6.2,
@@ -386,6 +438,7 @@ export const avatarFrames = {
     shapes: [...band(R, R + 7, "gold"), outlined(around(R + 3.5, 4, 3, 45), "red")],
   },
   cadeler: cadelerFrame(CADELER),
+  tessere: tessereFrame(),
 } as const satisfies Record<string, AvatarFrame>;
 
 export type AvatarFrameName = keyof typeof avatarFrames;

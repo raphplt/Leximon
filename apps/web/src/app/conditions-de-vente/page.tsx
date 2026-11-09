@@ -63,6 +63,10 @@ export default function SalesTermsPage() {
           </li>
         </ul>
         <p>
+          L'abonné dont le premier paiement intervient entre le 9 novembre et le 8 décembre 2026
+          inclus reçoit en outre le badge de mécène fondateur et le cadre Tessère, conservés à vie.
+        </p>
+        <p>
           L'abonnement ne donne accès à aucun contenu aléatoire, à aucune monnaie du jeu, ni à aucun
           avantage dans les défis, les joutes ou les échanges.
         </p>
@@ -132,8 +136,8 @@ export default function SalesTermsPage() {
         <h2>8. Fin de l'abonnement</h2>
         <p>
           À la fin de l'abonnement, l'abonné conserve les cosmétiques obtenus, les éditions de
-          bibliothèque, le badge de mécène fondateur le cas échéant et les cartes dénichées. Les
-          autres avantages prennent fin.
+          bibliothèque, le badge de mécène fondateur et le cadre Tessère le cas échéant, et les
+          cartes dénichées. Les autres avantages prennent fin.
         </p>
         <p>
           Les avantages n'ont aucune valeur monétaire et ne peuvent être ni cédés ni remboursés.

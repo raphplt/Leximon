@@ -16,6 +16,7 @@ import {
   patronClaimedLine,
   patronCosmeticCaption,
   patronCosmeticName,
+  patronFoundingOffer,
   patronMarkHint,
   patronMarkLabel,
   patronMenuLabel,
@@ -167,6 +168,19 @@ describe("cosmetics", () => {
   it("says where the claimed cosmetics went", () => {
     expect(patronClaimedLine(1)).toBe("Ton cosmétique est rangé dans l'atelier.");
     expect(patronClaimedLine(2)).toBe("Tes cosmétiques sont rangés dans l'atelier.");
+  });
+});
+
+describe("the founding offer", () => {
+  it("names its last day and what a founder keeps, while it is open", () => {
+    expect(patronFoundingOffer(Date.parse("2026-11-20T12:00:00Z"))).toBe(
+      "Abonne-toi d'ici le 8 décembre pour devenir Mécène fondateur. Tu reçois le cadre Tessère et le badge de fondateur, gardés à vie.",
+    );
+  });
+
+  it("is gone once the window has closed", () => {
+    expect(patronFoundingOffer(Date.parse("2026-12-08T22:59:59Z"))).not.toBeNull();
+    expect(patronFoundingOffer(Date.parse("2026-12-08T23:00:00Z"))).toBeNull();
   });
 });
 

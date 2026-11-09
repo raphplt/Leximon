@@ -716,13 +716,19 @@ export const BANNER_SCHEDULE: BannerSchedule = [
   },
 ];
 
-// The patron subscription. The founding month is set when sales open, and each month's pair of
-// cosmetics once it is drawn: a month is never announced before its 1st, whatever is written here.
+// The patron subscription. Founders are made during the first thirty days of sales, and each
+// month's pair of cosmetics is added once it is drawn: a month is never announced before its 1st,
+// whatever is written here.
 export const PATRON_SCHEDULE: PatronSchedule = [
   {
     startsAt: SINCE_LAUNCH,
     prices: { monthly: 399, yearly: 2999 },
-    foundingMonth: null,
+    founding: {
+      from: Date.parse("2026-11-09T00:00:00+01:00"),
+      until: Date.parse("2026-12-09T00:00:00+01:00"),
+    },
+    // The token by which the first Christians knew each other: the first patrons wear it.
+    founderCosmetics: [{ kind: "frame", frame: "tessere" }],
     cosmetics: {
       // The scribe's vigils: pen flourishes around a book-lover writing at his desk.
       "2026-11": [

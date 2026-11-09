@@ -14,10 +14,12 @@ export interface PatronRules {
    */
   readonly prices: Readonly<Record<PatronPlan, number>>;
   /**
-   * The month (in Paris, `YYYY-MM`) whose first payments make founders: the first month of sales.
-   * `null` until sales open.
+   * The days whose first payments make founders, from `from` up to `until` excluded: the first
+   * days of sales. `null` when no window is open or planned.
    */
-  readonly foundingMonth: string | null;
+  readonly founding: FoundingWindow | null;
+  /** What every founder is given, for life, on top of the badge. */
+  readonly founderCosmetics: readonly PatronCosmetic[];
   /**
    * Month (in Paris, `YYYY-MM`) → the cosmetics every patron who paid for it receives: a matching
    * pair, claimed together.
@@ -37,6 +39,11 @@ export interface PatronRules {
   /** Themes the owner offers to the patrons' vote, and the days it stays open. */
   readonly pollThemes: number;
   readonly pollDays: number;
+}
+
+export interface FoundingWindow {
+  readonly from: EpochMs;
+  readonly until: EpochMs;
 }
 
 /** What a patron wears: the same kinds of cosmetics as the level rewards, always named. */
@@ -102,9 +109,10 @@ export function parisMonthOf(time: EpochMs): string {
   return `${year}-${month}`;
 }
 
-/** A first payment within the founding month makes a founder, for life. */
+/** A first payment within the founding window makes a founder, for life. */
 export function isFoundingPayment(rules: PatronRules, paidAt: EpochMs): boolean {
-  return rules.foundingMonth !== null && parisMonthOf(paidAt) === rules.foundingMonth;
+  const window = rules.founding;
+  return window !== null && paidAt >= window.from && paidAt < window.until;
 }
 
 /** Titles a subscriber may wear while subscribed. */
@@ -184,7 +192,7 @@ export function patronCosmeticIds(schedule: PatronSchedule): {
   const frames = new Set<string>();
   const titles = new Set([PATRON_TITLE, FOUNDER_TITLE]);
   for (const rules of schedule) {
-    for (const cosmetic of Object.values(rules.cosmetics).flat()) {
+    for (const cosmetic of [...Object.values(rules.cosmetics).flat(), ...rules.founderCosmetics]) {
       if (cosmetic.kind === "avatar") avatars.add(cosmetic.avatar);
       else if (cosmetic.kind === "frame") frames.add(cosmetic.frame);
       else titles.add(cosmetic.title);

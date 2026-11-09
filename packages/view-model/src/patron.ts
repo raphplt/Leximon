@@ -184,8 +184,21 @@ export const PATRON_PERKS_TITLE = "Ce que tu reçois";
 /** At the foot of the offer, back up to the plans. */
 export const PATRON_CHOOSE_PLAN = "Choisir ma formule";
 
-export const PATRON_FOUNDING_OFFER =
-  "Abonne-toi avant la fin du mois pour devenir Mécène fondateur. Tu gardes ce prix tant que ton abonnement continue, et le badge de fondateur à vie.";
+/**
+ * The founding offer while its window is open: its last day, and what a founder keeps for life.
+ * `null` once it has closed.
+ */
+export function patronFoundingOffer(
+  now: EpochMs,
+  timeZone: string = PATRON_TIME_ZONE,
+): string | null {
+  const rules = patronRulesAt(PATRON_SCHEDULE, now);
+  const window = rules.founding;
+  if (window === null || now < window.from || now >= window.until) return null;
+  const last = patronDay(new Date(window.until - 1).toISOString(), now, timeZone);
+  const kept = [...rules.founderCosmetics.map(patronCosmeticName), "le badge de fondateur"];
+  return `Abonne-toi d'ici le ${last} pour devenir Mécène fondateur. Tu reçois ${kept.slice(0, -1).join(", ")} et ${kept.at(-1)}, gardés à vie.`;
+}
 
 /** The box the player ticks before paying; its final wording comes from the lawyer. */
 export const PATRON_WAIVER =
@@ -365,7 +378,7 @@ export function patronMarkLabel(mark: PatronMarkView): string | null {
 export function patronMarkHint(mark: PatronMarkView): string | null {
   switch (mark) {
     case "founder":
-      return "Ce mécène fondateur a soutenu Leximon dès le premier mois.";
+      return "Ce mécène fondateur a soutenu Leximon dès l'ouverture des abonnements.";
     case "patron":
       return "Ce mécène fait vivre Leximon.";
     case null:

@@ -252,8 +252,13 @@ export async function readPatronWardrobe(
   const standing = row === undefined ? "none" : standingOf(row);
   const title = row === undefined ? null : patronTitle(standing, row.founderAt !== null);
   const slots = standing === "patron" ? patronRulesAt(PATRON_SCHEDULE, now).extraPinnedSlots : 0;
+  // A founder's piece is given with the mark, for life: nothing to claim.
+  const founderAt = row?.founderAt ?? null;
+  const founded =
+    founderAt === null ? [] : patronRulesAt(PATRON_SCHEDULE, founderAt.getTime()).founderCosmetics;
   return [
     ...claims.map((claim) => ({ rewards: [...claim.cosmetics] })),
+    ...(founded.length === 0 ? [] : [{ rewards: [...founded] }]),
     ...(title === null ? [] : [{ rewards: [{ kind: "title" as const, title }] }]),
     ...(slots === 0
       ? []

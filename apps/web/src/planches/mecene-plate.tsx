@@ -294,7 +294,8 @@ function Showcase({ member }: { readonly member: boolean }) {
             <Icon name="crown" size={26} />
           </ToyBody>
           <p>
-            Abonne-toi avant la fin du mois pour devenir Mécène fondateur et garder ce badge à vie.
+            Abonne-toi d'ici le 8 décembre pour devenir Mécène fondateur. Tu reçois le cadre Tessère
+            et le badge de fondateur, gardés à vie.
           </p>
         </div>
       )}

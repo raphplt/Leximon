@@ -41,7 +41,6 @@ import {
   PATRON_DOOR_KICKER,
   PATRON_FIND_ACTION,
   PATRON_FINDS_RULE,
-  PATRON_FOUNDING_OFFER,
   PATRON_GUEST_NOTE,
   PATRON_INTRO,
   PATRON_INVOICES,
@@ -80,6 +79,7 @@ import {
   type PatronWelcomeKind,
   patronClaimedLine,
   patronCosmeticCaption,
+  patronFoundingOffer,
   patronPageKind,
   patronPlanChoices,
   patronStatus,
@@ -462,6 +462,7 @@ function OfferView({
   const [waived, setWaived] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const foundingOffer = patronFoundingOffer(Date.now());
   // Kept until the server answers: a second click opens the same payment page.
   const pendingKey = useRef<{ plan: PatronPlan; key: string } | null>(null);
 
@@ -496,12 +497,12 @@ function OfferView({
       <div className={styles.shopTop}>
         <div className={styles.heroColumn}>
           <Hero kicker={PATRON_KICKER} patron={patron} me={me} />
-          {patron.foundingOffer && (
+          {patron.foundingOffer && foundingOffer !== null && (
             <div className={styles.founding} style={rise(1)}>
               <ToyBody matter="red" shape="round" className={styles.seal}>
                 <Icon name="crown" size={26} />
               </ToyBody>
-              <p>{PATRON_FOUNDING_OFFER}</p>
+              <p>{foundingOffer}</p>
             </div>
           )}
         </div>

@@ -57,6 +57,7 @@ const FRAME_NAMES: Readonly<Record<string, string>> = {
   iridescent: "Irisé",
   "royal-sun": "Soleil royal",
   cadeler: "Cadeler",
+  tessere: "Tessère",
 };
 
 function fallbackName(id: string): string {

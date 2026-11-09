@@ -23,7 +23,7 @@
 - **Vente ouverte, joueur non abonné** :
   - les avantages, le cosmétique du mois (« Ce mois-ci, les mécènes reçoivent le cadre Sceau de cire. »), le prix ;
   - deux choix, « 3,99 € par mois » et « 29,99 € par an », et « résiliable en un clic » ;
-  - pendant le premier mois de vente, le bandeau « Mécène fondateur » et le Sceau du fondateur en image ;
+  - pendant la fenêtre fondatrice, le bandeau « Mécène fondateur », avec son dernier jour et le cadre Tessère ;
   - une case non cochée : « Je veux profiter tout de suite de mon abonnement et je renonce à mon droit de rétractation. » (libellé final par l'avocat) ;
   - compte déclaré 15-17 ans : « Tu as moins de 18 ans. Demande l'accord d'un parent avant de t'abonner. » au-dessus du bouton ;
   - un invité voit l'offre, et le bouton l'envoie créer un compte : on ne s'abonne qu'avec un compte.
@@ -53,7 +53,7 @@
 - **Une offre, deux rythmes** : 3,99 € par mois ou 29,99 € par an, prix TTC, TVA non applicable. Passer du mois à l'an (ou l'inverse) se fait dans le portail ; Stripe calcule le prorata.
 - **Est mécène** un joueur dont l'abonnement est payé, ou en retard de paiement tant que Stripe réessaie. Il cesse de l'être quand Stripe abandonne ou quand la période résiliée se termine.
 - **Pas d'essai gratuit** : le premier paiement a lieu à l'abonnement, et tout arrive avec lui.
-- **Fondateur** : premier paiement pendant le premier mois de vente (dates dans `rules.ts`). Le badge « Mécène fondateur » et le Sceau du fondateur restent à vie. Le prix fondateur tient tant que l'abonnement ne s'interrompt pas : un fondateur qui revient paie le prix du moment. Tant que le prix ne monte pas, cela ne change rien.
+- **Fondateur** : premier paiement pendant les trente premiers jours de vente, du 9 novembre au 8 décembre 2026 inclus (`founding` dans `PATRON_SCHEDULE`, décidé le 2026-11-09). Le badge « Mécène fondateur » et le cadre Tessère (`founderCosmetics`, donné avec le badge, sans rien à réclamer) restent à vie. Le prix tient tant que l'abonnement ne s'interrompt pas, pour tout abonné : un fondateur qui revient paie le prix du moment.
 - **Une hausse de prix** ne touche que les nouveaux abonnés : un nouveau prix dans Stripe, les abonnements en cours gardent le leur.
 
 ### Cosmétique du mois
@@ -86,7 +86,7 @@
 
 | À l'arrêt de l'abonnement | Reste | Se perd |
 |---|---|---|
-| Cosmétiques réclamés, Sceau du fondateur | Oui | |
+| Cosmétiques réclamés, cadre Tessère des fondateurs | Oui | |
 | Badge « Mécène fondateur » | Oui | |
 | Cartes dénichées, leur signature et l'exemplaire du dénicheur | Oui | |
 | Mot réservé, pas encore paru | Oui, il paraît quand même | |
@@ -125,7 +125,7 @@
 
 Construit aux lots 1 et 2 (`apps/api/src/patron/`), sauf la réserve.
 
-- `GET /me/patron` : la vente (`open`, `closed`, `unavailable` sans les secrets), si le joueur peut acheter, fondateur ou non, le mois fondateur en cours (`foundingOffer`), compte déclaré 15-17 ans (`minor`), le badge (`mark`), le cosmétique du mois, ceux à réclamer, et l'abonnement (`patron` ou `none`, rythme, fin de période, résiliation prévue, paiement en échec, mécène depuis). Les droits de dénicher viendront au lot 3.
+- `GET /me/patron` : la vente (`open`, `closed`, `unavailable` sans les secrets), si le joueur peut acheter, fondateur ou non, la fenêtre fondatrice ouverte (`foundingOffer`), compte déclaré 15-17 ans (`minor`), le badge (`mark`), le cosmétique du mois, ceux à réclamer, et l'abonnement (`patron` ou `none`, rythme, fin de période, résiliation prévue, paiement en échec, mécène depuis). Les droits de dénicher viendront au lot 3.
 - `POST /me/patron/checkout` (`plan`, `waiverAccepted: true`, clé d'idempotence) : refuse un invité, un abonné, ou tout le monde sauf les admins tant que la vente est fermée ; crée le client Stripe au premier passage (identifiant du joueur en métadonnée, sans adresse ni nom : Checkout demande l'adresse des reçus) ; expire le checkout précédent resté ouvert ; ouvre une session Checkout en mode abonnement, payée tout de suite ; rend l'adresse de la page de paiement. La clé d'idempotence est passée à Stripe : deux clics font une session.
 - `POST /me/patron/portal` : une session du portail client, pour un compte qui a eu un abonnement.
 - `POST /me/patron/refresh` : relit l'abonnement chez Stripe et rend le même corps que `GET /me/patron`. La page l'appelle au retour du portail (`/mecene?abonnement`), pour montrer une résiliation sans attendre le webhook.
@@ -176,7 +176,7 @@ Lots suivants, hors de ce cahier : cabinet du mot et carnet (février), édition
 - **Stripe** : produit, prix, pied de facture, portail, relances, webhooks (une fiche pas à pas viendra avec le lot 1).
 - **Franchise de TVA** : vérifier avec un comptable que ta micro-entreprise y est, et suivre les seuils (franchise, et 10 000 € de ventes vers le reste de l'UE). Au-delà, bascule vers Managed Payments (D-059).
 - **Avocat** avant d'ouvrir : CGV, CGU, case de renonciation, mineurs.
-- **Les cosmétiques** du calendrier : Sceau du fondateur, Cadeler, Le Lucubrateur, et le signe de l'exemplaire du dénicheur (§ 10, point 2).
+- **Les cosmétiques** du calendrier et le signe de l'exemplaire du dénicheur (§ 10, point 2).
 
 ## 7. Risques
 
