@@ -7,6 +7,14 @@ import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
 import { api } from "@/lib/api";
 
+// The joust just launched from this page: it opens on the search for its opponent, once.
+let fresh: string | null = null;
+
+/** Whether the joust was the last launched here, so that its page plays the search. */
+export function launchedHere(joustId: string): boolean {
+  return fresh === joustId;
+}
+
 /** Launches a joust and opens it; a refusal comes back as its sentence. */
 export function useLaunch(opensAtLevel: number) {
   const router = useRouter();
@@ -31,6 +39,7 @@ export function useLaunch(opensAtLevel: number) {
     pendingKey.current = null;
     setBusy(false);
     if (result.kind === "launched") {
+      fresh = result.joustId;
       router.push(`/joutes/${result.joustId}`);
       return true;
     }

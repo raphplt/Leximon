@@ -211,6 +211,23 @@ function waitingWeeks(rows: readonly MemberRow[], claimed: ReadonlySet<number>, 
   return rows.filter((row) => row.week < week && !claimed.has(row.week));
 }
 
+/** A player's league and place this week, as the other player meets them face to face. */
+export async function readDuelist(
+  db: Reader,
+  userId: string,
+  now: EpochMs,
+): Promise<{ readonly league: League; readonly group: GroupPlace | null }> {
+  const rules = rulesAt(now);
+  const week = weekNow(rules, now);
+  const rows = await readMemberships(db, userId);
+  const current = rows.find((row) => row.week === week);
+  const group = current === undefined ? null : await readGroup(db, current.groupId);
+  return {
+    league: await leagueFrom(db, rules, userId, rows, week),
+    group: group === null ? null : placeOf(rules, linesOf(rules, group, now), userId),
+  };
+}
+
 /** League and place in this week's tournament, for the jousts' home. */
 export async function readStanding(
   db: Reader,

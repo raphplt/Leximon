@@ -118,8 +118,9 @@ export function joustLine(
 
 function endedDetail(joust: JoustSummary, name: string, questions: number): string {
   if (joust.forfeit) {
+    if (joust.outcome === "won") return `Gagnée. ${name} n'a pas joué à temps.`;
     return joust.launched
-      ? `Gagnée. ${name} n'a pas joué à temps.`
+      ? "Perdue. Tu ne l'as pas commencée à temps."
       : "Perdue. Tu n'as pas joué à temps.";
   }
   const scores =
@@ -316,10 +317,18 @@ export function scoresLine(
   return `Tu as trouvé ${mine.correct} ${found} sur ${questions} en ${Math.round(mine.ms / 1000)} s, et ${playerName(opponent)} ${scoreText(theirs, questions)}.`;
 }
 
-/** Why the joust ended without the second run. */
-export function forfeitLine(launched: boolean, opponent: PlayerBadge | null): string {
-  return launched
-    ? `La joute te revient, car ${playerName(opponent)} n'a pas joué à temps.`
+/**
+ * Why the joust ended without a run: the second player never came, or the first never started
+ * theirs. Won, it was the other's; lost, the player's own.
+ */
+export function forfeitLine(
+  joust: Pick<JoustSummary, "launched" | "outcome" | "opponent">,
+): string {
+  if (joust.outcome === "won") {
+    return `La joute te revient, car ${playerName(joust.opponent)} n'a pas joué à temps.`;
+  }
+  return joust.launched
+    ? `La joute revient à ${playerName(joust.opponent)}, car tu ne l'as pas commencée dans les 24 heures.`
     : "La joute revient à ton adversaire, car tu n'as pas joué à temps.";
 }
 

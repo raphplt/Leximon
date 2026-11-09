@@ -8,6 +8,14 @@ import { api } from "@/api/client";
 
 export const NO_ANSWER = "Le serveur ne répond pas. Réessaie.";
 
+// The joust just launched from this screen: it opens on the search for its opponent.
+let fresh: string | null = null;
+
+/** Whether the joust was the last launched here, so that its screen plays the search. */
+export function launchedHere(joustId: string): boolean {
+  return fresh === joustId;
+}
+
 /** Launches a joust and opens it; a refusal comes back as its sentence. */
 export function useLaunch(opensAtLevel: number) {
   const [busy, setBusy] = useState(false);
@@ -31,6 +39,7 @@ export function useLaunch(opensAtLevel: number) {
     pendingKey.current = null;
     setBusy(false);
     if (result.kind === "launched") {
+      fresh = result.joustId;
       router.push({ pathname: "/joutes/[id]", params: { id: result.joustId } });
       return true;
     }

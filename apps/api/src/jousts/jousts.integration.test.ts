@@ -472,6 +472,90 @@ describe("a joust played to the end", () => {
     });
   });
 
+  it("starts the first player's clock at their first word, after the face-to-face", async () => {
+    const a = await jouster();
+    const b = await jouster();
+    await befriend(a, b);
+    const start = Date.now();
+    const joustId = await launched(a, b, start);
+    const view = async () =>
+      joustViewSchema.parse(
+        await (await app.request(`/jousts/${joustId}`, { headers: headers(a) }, env)).json(),
+      );
+    const before = await view();
+    expect(before.started).toBe(false);
+    expect(before.duel?.mine.rarities).toHaveLength(RULES.drawn);
+    expect(before.duel?.theirs.rarities).toHaveLength(RULES.drawn);
+    expect(Date.parse(before.startBy ?? "")).toBeGreaterThan(start);
+
+    // An hour on the face-to-face, longer than a whole run: the run has not begun.
+    const later = start + 60 * 60_000;
+    expect((await settleExpired(db, later)).joustIds).not.toContain(joustId);
+    const first = await nextQuestion(db, { userId: a.userId, joustId, now: later });
+    expect(first).toMatchObject({ kind: "question", position: 0, servedAt: later });
+    const after = await view();
+    expect(after).toMatchObject({ started: true, startBy: null, duel: null });
+    const end = await playRun(a, joustId, later);
+    await settleJoust(db, joustId, end);
+    expect((await readJoustRow(joustId)).challengerCorrect).toBe(RULES.drawn);
+  });
+
+  it("serves the first word once to two requests at the same instant", async () => {
+    const a = await jouster();
+    const b = await jouster();
+    await befriend(a, b);
+    const start = Date.now();
+    const joustId = await launched(a, b, start);
+    const [one, two] = await Promise.all([
+      nextQuestion(db, { userId: a.userId, joustId, now: start + 5_000 }),
+      nextQuestion(db, { userId: a.userId, joustId, now: start + 5_100 }),
+    ]);
+    expect(one).toMatchObject({ kind: "question", position: 0 });
+    expect(two).toMatchObject({ kind: "question", position: 0 });
+    if (one.kind === "question" && two.kind === "question") {
+      expect(one.servedAt).toBe(two.servedAt);
+    }
+  });
+
+  it("gives the joust to the other when the first player never starts in 24 hours", async () => {
+    const a = await jouster();
+    const b = await jouster();
+    await befriend(a, b);
+    const start = Date.now();
+    const joustId = await launched(a, b, start);
+    const due = start + RULES.startMs;
+    expect((await settleExpired(db, due - 1)).joustIds).not.toContain(joustId);
+    expect(await nextQuestion(db, { userId: a.userId, joustId, now: due })).toEqual({
+      kind: "run_over",
+    });
+    const swept = await settleExpired(db, due);
+    expect(swept.joustIds).toContain(joustId);
+    expect(await readJoustRow(joustId)).toMatchObject({
+      outcome: "opponent",
+      forfeit: true,
+      challengerDoneAt: null,
+      opponentXp: 0,
+      challengerXp: 0,
+    });
+    // The other player was never offered it: it stays out of their list and their letters.
+    const list = async (who: Jouster) =>
+      joustsResponseSchema.parse(
+        await (await app.request("/jousts", { headers: headers(who) }, env)).json(),
+      );
+    expect((await list(b)).jousts.map((joust) => joust.id)).not.toContain(joustId);
+    expect((await list(a)).jousts.find((joust) => joust.id === joustId)).toMatchObject({
+      state: "ended",
+      outcome: "lost",
+      forfeit: true,
+    });
+    await writeJoustLetters(db, [joustId]);
+    const letters = await db
+      .select({ userId: mailLetters.userId })
+      .from(mailLetters)
+      .where(inArray(mailLetters.userId, [a.userId, b.userId]));
+    expect(letters).toEqual([]);
+  });
+
   it("gives no XP past the day's rewarded jousts", async () => {
     const a = await jouster();
     const b = await jouster();

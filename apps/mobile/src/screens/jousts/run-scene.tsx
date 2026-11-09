@@ -126,6 +126,7 @@ export function RunScene({
   doneLabel,
   onDone,
   onStart,
+  versus = true,
 }: {
   readonly source: RunSource;
   readonly me: Duelist;
@@ -140,12 +141,16 @@ export function RunScene({
   readonly onDone: () => void;
   /** The first question is on: what stood above the scene can make room for it. */
   readonly onStart?: () => void;
+  /** Play the face-to-face and its countdown first; off when they were played before. */
+  readonly versus?: boolean;
 }) {
   const stage = useStage();
   const catalog = useCatalog();
   const window = useWindowDimensions();
   const reduced = useReducedMotion();
-  const [phase, setPhase] = useState<Phase>({ kind: "versus", count: 0 });
+  const [phase, setPhase] = useState<Phase>(
+    versus ? { kind: "versus", count: 0 } : { kind: "loading" },
+  );
   const [results, setResults] = useState<readonly LaneAnswer[]>(() =>
     Array.from({ length: answered }, () => null),
   );
@@ -226,6 +231,10 @@ export function RunScene({
   // The face-to-face, then 3, 2, 1: the server's clock starts only with the first question.
   // biome-ignore lint/correctness/useExhaustiveDependencies: plays once, when the scene appears
   useEffect(() => {
+    if (!versus) {
+      void fetchNext(null);
+      return;
+    }
     COUNTDOWN.forEach((_, index) => {
       later(900 + index * COUNT_MS, () => {
         setPhase({ kind: "versus", count: index + 1 });

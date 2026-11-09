@@ -153,7 +153,15 @@ describe("the end of a joust", () => {
     expect(trappedLine([], alix)).toBeNull();
     expect(trappedLine(["cacochyme"], alix)).toBe("Ton mot cacochyme a piégé Alix.");
     expect(trappedLine(["a", "b", "c"], alix)).toBe("Tes mots a, b et c ont piégé Alix.");
-    expect(forfeitLine(true, alix)).toBe("La joute te revient, car Alix n'a pas joué à temps.");
+    expect(forfeitLine({ launched: true, outcome: "won", opponent: alix })).toBe(
+      "La joute te revient, car Alix n'a pas joué à temps.",
+    );
+    expect(forfeitLine({ launched: true, outcome: "lost", opponent: alix })).toBe(
+      "La joute revient à Alix, car tu ne l'as pas commencée dans les 24 heures.",
+    );
+    expect(forfeitLine({ launched: false, outcome: "lost", opponent: alix })).toBe(
+      "La joute revient à ton adversaire, car tu n'as pas joué à temps.",
+    );
   });
 });
 

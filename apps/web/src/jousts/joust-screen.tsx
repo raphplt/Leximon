@@ -10,6 +10,7 @@ import {
   playerName,
   REVENGE_SHORT,
   runSize,
+  searchedFor,
   trappedLine,
   trappingWords,
   wishedLine,
@@ -32,7 +33,8 @@ import type { Duelist } from "./pieces";
 import { Reveal, type RevealData, SealedResult } from "./reveal";
 import { RunScene, type RunSource } from "./run-scene";
 import { RunSummary } from "./run-summary";
-import { useLaunch } from "./use-launch";
+import { StartScene } from "./start-scene";
+import { launchedHere, useLaunch } from "./use-launch";
 
 /** After the clock, the server still takes an answer this long: the next question waits for it. */
 const AFTER_CLOCK_MS = 2_500;
@@ -61,6 +63,8 @@ function JoustFlow({ joustId }: { readonly joustId: string }) {
   const [loaded, setLoaded] = useState<Loaded>({ state: "loading" });
   // The result plays at once, unsealed, when it comes from the run just played or the seal broken.
   const [revealing, setRevealing] = useState(false);
+  // « Commencer » was pressed on the face-to-face: the run follows without its own countdown.
+  const [begun, setBegun] = useState(false);
   const { launch, busy, refusal } = useLaunch(0);
 
   const load = useCallback(() => {
@@ -123,8 +127,19 @@ function JoustFlow({ joustId }: { readonly joustId: string }) {
   return (
     <main className={styles.page}>
       <BackLink />
-      {summary.state === "play" && (
+      {summary.state === "play" && !view.started && !begun && (
+        <StartScene
+          view={view}
+          me={mine}
+          them={them}
+          search={launchedHere(joustId) && searchedFor(summary.kind)}
+          onStart={() => setBegun(true)}
+          onLater={goHome}
+        />
+      )}
+      {summary.state === "play" && (view.started || begun) && (
         <RunScene
+          versus={!begun}
           source={source}
           me={mine}
           them={them}
@@ -209,7 +224,7 @@ function revealOf(
         ? null
         : { xp: result.xp, boosters: result.boosters, tournament: result.tournament },
     closing: summary.forfeit
-      ? forfeitLine(summary.launched, summary.opponent)
+      ? forfeitLine(summary)
       : trappedLine(trappingWords(theirs ?? [], word), summary.opponent),
     wished: wishedLine(result?.wished.length ?? 0),
   };

@@ -80,6 +80,7 @@ export function RunScene({
   kicker,
   doneLabel,
   onDone,
+  versus = true,
 }: {
   readonly source: RunSource;
   readonly me: Duelist;
@@ -92,11 +93,15 @@ export function RunScene({
   readonly kicker: string;
   readonly doneLabel: string;
   readonly onDone: () => void;
+  /** Play the face-to-face and its countdown first; off when they were played before. */
+  readonly versus?: boolean;
 }) {
   const stage = useStage();
   const catalog = useCatalog();
   const narrow = useNarrow();
-  const [phase, setPhase] = useState<Phase>({ kind: "versus", count: 0 });
+  const [phase, setPhase] = useState<Phase>(
+    versus ? { kind: "versus", count: 0 } : { kind: "loading" },
+  );
   const [results, setResults] = useState<readonly LaneAnswer[]>(() =>
     Array.from({ length: answered }, () => null),
   );
@@ -106,8 +111,10 @@ export function RunScene({
   const timers = useRef<number[]>([]);
   const card = useRef<HTMLDivElement>(null);
   const retry = useRef<() => void>(() => undefined);
-  // Once the clock runs, leaving lets it run on: the page asks first.
-  const guard = useLeaveGuard(phase.kind !== "versus" && phase.kind !== "done", LEAVE_JOUST);
+  // Once the clock runs, leaving lets it run on: the page asks first. The clock runs from the
+  // first word on screen.
+  const [running, setRunning] = useState(answered > 0);
+  const guard = useLeaveGuard(running && phase.kind !== "done", LEAVE_JOUST);
 
   const later = useCallback((ms: number, action: () => void) => {
     timers.current.push(window.setTimeout(action, ms));
@@ -136,6 +143,7 @@ export function RunScene({
         }
         setNow(Date.now());
         setPhase({ kind: "question", question: result.question, sending: false });
+        setRunning(true);
         play("flip");
       } catch (failure) {
         retry.current = () => void fetchNext(after);
@@ -163,6 +171,10 @@ export function RunScene({
   // The face-to-face, then 3, 2, 1: the server's clock starts only with the first question.
   // biome-ignore lint/correctness/useExhaustiveDependencies: plays once, when the scene appears
   useEffect(() => {
+    if (!versus) {
+      void fetchNext(null);
+      return;
+    }
     COUNTDOWN.forEach((_, index) => {
       later(900 + index * COUNT_MS, () => {
         setPhase({ kind: "versus", count: index + 1 });

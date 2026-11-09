@@ -34,6 +34,8 @@ export interface JoustRules {
   readonly graceMs: number;
   /** Once a player's first question is served, their run ends this long after, done or not. */
   readonly runMs: number;
+  /** The first player's time to start their run, from the launch: past it, they lose the joust. */
+  readonly startMs: number;
   /** The second player's time to play, from the end of the first player's run. */
   readonly replyMs: number;
   /** Jousts a player may have launched and waiting for their opponent. */
@@ -264,6 +266,27 @@ export function runOver(
     (answer.servedAt !== null && !answerInTime(rules, answer.servedAt, now));
   if (answers.every(closed)) return true;
   return startedAt !== null && now >= startedAt + rules.runMs;
+}
+
+/** A run starts with its first question served: the face-to-face before it leaves the clock still. */
+export function runStartedAt(answers: readonly RunAnswer[]): EpochMs | null {
+  return answers.reduce<EpochMs | null>(
+    (first, answer) =>
+      answer.servedAt === null || (first !== null && first <= answer.servedAt)
+        ? first
+        : answer.servedAt,
+    null,
+  );
+}
+
+/** The first player never started their run in time: the joust goes to the other. */
+export function startMissed(
+  rules: JoustRules,
+  launchedAt: EpochMs,
+  answers: readonly RunAnswer[],
+  now: EpochMs,
+): boolean {
+  return runStartedAt(answers) === null && now >= launchedAt + rules.startMs;
 }
 
 export type JoustOutcome = "challenger" | "opponent" | "draw";

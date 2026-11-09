@@ -225,7 +225,7 @@ export function openedLetter(
 ): OpenedLetter {
   const score =
     joust.forfeit || joust.mine === null || joust.theirs === null
-      ? forfeitLine(joust.launched, joust.opponent)
+      ? forfeitLine(joust)
       : `${plural(joust.mine.correct, "mot trouvé", "mots trouvés")} contre ${joust.theirs.correct}.`;
   const gains =
     result === null

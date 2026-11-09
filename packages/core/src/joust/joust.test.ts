@@ -16,6 +16,8 @@ import {
   playedXp,
   runOver,
   runScore,
+  runStartedAt,
+  startMissed,
   trappedCards,
   winReward,
   wishedCards,
@@ -187,6 +189,18 @@ describe("the run", () => {
       at(null, null),
     ]);
     expect(score).toEqual({ correct: 2, ms: 3_000 + 4_000 + 15_000 + 15_000 + 15_000 });
+  });
+
+  it("starts with its first question served, not with the launch", () => {
+    expect(runStartedAt([at(null, null), at(null, null)])).toBeNull();
+    expect(runStartedAt([at(7_000, 9_000), at(4_000, 6_000), at(null, null)])).toBe(4_000);
+  });
+
+  it("goes to the other player when the first never starts in time", () => {
+    const unplayed = [at(null, null), at(null, null)];
+    expect(startMissed(rules, 0, unplayed, rules.startMs - 1)).toBe(false);
+    expect(startMissed(rules, 0, unplayed, rules.startMs)).toBe(true);
+    expect(startMissed(rules, 0, [at(1_000, null), at(null, null)], rules.startMs * 2)).toBe(false);
   });
 
   it("ends when every question is answered or past its clock, or when its time is gone", () => {

@@ -65,7 +65,15 @@ import {
 import { Image } from "expo-image";
 import { router } from "expo-router";
 import { Fragment, type ReactNode, useState } from "react";
-import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import {
+  Pressable,
+  ScrollView,
+  type StyleProp,
+  StyleSheet,
+  Text,
+  View,
+  type ViewStyle,
+} from "react-native";
 import Animated, {
   Easing,
   FadeInUp,
@@ -281,12 +289,88 @@ function Lice({
   readonly children: ReactNode;
 }) {
   const header = standingHeader(standing, gameDayOf(now).key);
-  const engraving = useEngravingInk(LICE_ENGRAVING);
   const group = standing.group;
   const figures = group === null ? null : weekFigures(group);
   return (
+    <LeatherStage>
+      <View style={styles.crest}>
+        <Crest league={standing.league} size={110} />
+        <View style={styles.ribbon}>
+          <Lettering size={fontSizes.subtitle}>{header.name}</Lettering>
+        </View>
+      </View>
+
+      <Text style={styles.kickerLight}>TOURNOI DE LA SEMAINE</Text>
+      {figures !== null && group !== null && (
+        <View style={styles.figures}>
+          <View style={styles.figure}>
+            <Lettering size={fontSizes.display}>{figures.place}</Lettering>
+            <Text style={styles.figureSmall}>{figures.of}</Text>
+          </View>
+          <View style={styles.figure}>
+            <Lettering size={fontSizes.display}>{figures.points}</Lettering>
+            <Text style={styles.figureSmall}>{figures.pointsWord}</Text>
+          </View>
+        </View>
+      )}
+      {group !== null && (
+        <View style={[styles.zone, ZONE_FILLS[group.move]]}>
+          {group.move !== "stay" && (
+            <View style={{ transform: [{ rotate: group.move === "up" ? "-90deg" : "90deg" }] }}>
+              <Icon name="chev" size={13} color={lettering.fill} />
+            </View>
+          )}
+          <Text style={[styles.zoneText, group.move === "stay" && { color: ink.pageInk }]}>
+            {zoneChip(group.move)}
+          </Text>
+        </View>
+      )}
+      <Text style={styles.weekLine}>{header.line}</Text>
+      <View style={styles.clock}>
+        <Icon name="clock" size={14} color={lettering.fill} />
+        <Text style={styles.clockText}>{header.week}</Text>
+      </View>
+      <View
+        style={styles.lances}
+        accessible
+        accessibilityLabel={rankedLeftText(standing.rankedLeft)}
+      >
+        {rankedLances(standing.rankedLeft, standing.rankedPerDay).map((up, index) => (
+          // biome-ignore lint/suspicious/noArrayIndexKey: the day's lances, in order
+          <Lance key={index} spent={!up} />
+        ))}
+      </View>
+      <Text style={styles.lancesText}>{rankedLeftText(standing.rankedLeft)}</Text>
+      {header.waiting !== null && (
+        <Pressable
+          style={styles.waiting}
+          onPress={() => router.push("/joutes/classement")}
+          accessibilityRole="button"
+        >
+          <ToyIcon name="chest" size={20} />
+          <Text style={styles.waitingText}>{header.waiting}</Text>
+        </Pressable>
+      )}
+      {children}
+    </LeatherStage>
+  );
+}
+
+/**
+ * Red leather in old gold, as the gain banners, with the old print of a rider behind: the lice of
+ * the hall, and the arena before a run.
+ */
+export function LeatherStage({
+  children,
+  style,
+}: {
+  readonly children: ReactNode;
+  readonly style?: StyleProp<ViewStyle>;
+}) {
+  const engraving = useEngravingInk(LICE_ENGRAVING);
+  return (
     <View style={styles.frame}>
-      <View style={styles.leather}>
+      <View style={[styles.leather, style]}>
         <Matter kind="leather" />
         <View style={styles.rule} />
         {engraving !== null && (
@@ -297,64 +381,6 @@ function Lice({
             tintColor={lettering.fill}
             accessible={false}
           />
-        )}
-        <View style={styles.crest}>
-          <Crest league={standing.league} size={110} />
-          <View style={styles.ribbon}>
-            <Lettering size={fontSizes.subtitle}>{header.name}</Lettering>
-          </View>
-        </View>
-
-        <Text style={styles.kickerLight}>TOURNOI DE LA SEMAINE</Text>
-        {figures !== null && group !== null && (
-          <View style={styles.figures}>
-            <View style={styles.figure}>
-              <Lettering size={fontSizes.display}>{figures.place}</Lettering>
-              <Text style={styles.figureSmall}>{figures.of}</Text>
-            </View>
-            <View style={styles.figure}>
-              <Lettering size={fontSizes.display}>{figures.points}</Lettering>
-              <Text style={styles.figureSmall}>{figures.pointsWord}</Text>
-            </View>
-          </View>
-        )}
-        {group !== null && (
-          <View style={[styles.zone, ZONE_FILLS[group.move]]}>
-            {group.move !== "stay" && (
-              <View style={{ transform: [{ rotate: group.move === "up" ? "-90deg" : "90deg" }] }}>
-                <Icon name="chev" size={13} color={lettering.fill} />
-              </View>
-            )}
-            <Text style={[styles.zoneText, group.move === "stay" && { color: ink.pageInk }]}>
-              {zoneChip(group.move)}
-            </Text>
-          </View>
-        )}
-        <Text style={styles.weekLine}>{header.line}</Text>
-        <View style={styles.clock}>
-          <Icon name="clock" size={14} color={lettering.fill} />
-          <Text style={styles.clockText}>{header.week}</Text>
-        </View>
-        <View
-          style={styles.lances}
-          accessible
-          accessibilityLabel={rankedLeftText(standing.rankedLeft)}
-        >
-          {rankedLances(standing.rankedLeft, standing.rankedPerDay).map((up, index) => (
-            // biome-ignore lint/suspicious/noArrayIndexKey: the day's lances, in order
-            <Lance key={index} spent={!up} />
-          ))}
-        </View>
-        <Text style={styles.lancesText}>{rankedLeftText(standing.rankedLeft)}</Text>
-        {header.waiting !== null && (
-          <Pressable
-            style={styles.waiting}
-            onPress={() => router.push("/joutes/classement")}
-            accessibilityRole="button"
-          >
-            <ToyIcon name="chest" size={20} />
-            <Text style={styles.waitingText}>{header.waiting}</Text>
-          </Pressable>
         )}
         {children}
       </View>

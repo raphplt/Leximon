@@ -46,6 +46,8 @@ import {
   reserveCapacity,
   runOver,
   runScore,
+  runStartedAt,
+  startMissed,
   TRADE_SCHEDULE,
   trappedCards,
   UNLOCK_SCHEDULE,
@@ -54,14 +56,14 @@ import {
   xpToReach,
 } from "@leximon/core";
 import { type Database, schema } from "@leximon/db";
-import { and, asc, eq, type SQL, sql } from "drizzle-orm";
+import { and, asc, eq, inArray, type SQL, sql } from "drizzle-orm";
 import type { CatalogIndex } from "../challenges/catalog-index";
 import { notLocked } from "../friends/friends";
 import { lockWallet } from "../levels/rewards";
 import { readBadges } from "../profile/profile";
 import { addXpToPlayers, readXp } from "../progress/progress";
 import { ownedAmong, wishJoustWords } from "../wishes/wishes";
-import { applyPoints, readRankedLeft, readStanding, tournamentView } from "./leagues";
+import { applyPoints, readDuelist, readRankedLeft, readStanding, tournamentView } from "./leagues";
 
 const {
   boosterWallets,
@@ -505,9 +507,12 @@ function toRunAnswer(question: QuestionRow): RunAnswer {
   };
 }
 
-/** When the player's run started, or `null` while it may not start. */
-function runStart(joust: JoustRow, role: Role): EpochMs | null {
-  if (role === "challenger") return joust.createdAt.getTime();
+/**
+ * When the player's run started, or `null` before: the challenger's starts with their first
+ * question, after the face-to-face; the opponent's when they first ask for one.
+ */
+function runStart(joust: JoustRow, role: Role, run: readonly QuestionRow[]): EpochMs | null {
+  if (role === "challenger") return runStartedAt(run.map(toRunAnswer));
   return joust.opponentStartedAt?.getTime() ?? null;
 }
 
@@ -568,9 +573,11 @@ export async function nextQuestion(
       }
     }
     const run = await runQuestions(tx, joustId, userId);
-    if (runOver(rules, run.map(toRunAnswer), runStart(joust, role), now)) {
+    const answers = run.map(toRunAnswer);
+    if (role === "challenger" && startMissed(rules, joust.createdAt.getTime(), answers, now)) {
       return { kind: "run_over" };
     }
+    if (runOver(rules, answers, runStart(joust, role, run), now)) return { kind: "run_over" };
     const pending = run.find(
       (q) =>
         q.servedAt !== null &&
@@ -638,7 +645,7 @@ export async function answerQuestion(
     const run = await runQuestions(tx, joustId, userId);
     const question = run.find((q) => q.position === position);
     if (question === undefined) return { kind: "not_found" };
-    const over = () => runOver(rules, run.map(toRunAnswer), runStart(joust, role), now);
+    const over = () => runOver(rules, run.map(toRunAnswer), runStart(joust, role, run), now);
     if (question.answeredAt !== null) {
       return {
         kind: "answered",
@@ -817,8 +824,21 @@ export async function settleJoust(
     ]);
     const gain = (userId: string, xp: number) => gains.set(userId, (gains.get(userId) ?? 0) + xp);
 
+    // Never started in time: the joust ends lost for the challenger, unseen by the opponent, who
+    // gains nothing from a joust they were never offered.
+    if (
+      joust.challengerDoneAt === null &&
+      startMissed(rules, joust.createdAt.getTime(), challengerRun, now)
+    ) {
+      await tx
+        .update(jousts)
+        .set({ endedAt: new Date(now), outcome: "opponent", forfeit: true })
+        .where(eq(jousts.id, joustId));
+      return { changed: true, levelUps: [] };
+    }
+
     let challengerDone = joust.challengerDoneAt !== null;
-    if (!challengerDone && runOver(rules, challengerRun, joust.createdAt.getTime(), now)) {
+    if (!challengerDone && runOver(rules, challengerRun, runStartedAt(challengerRun), now)) {
       const score = runScore(rules, challengerRun);
       const xp = playedXp(rules, await rewardedToday(tx, challengerId, now));
       Object.assign(changes, {
@@ -987,13 +1007,21 @@ export async function settleJoust(
   });
 }
 
+/** The challenger's run is due to close: its time gone since its first question, or never started. */
+function challengerRunDue(rules: JoustRules, now: EpochMs): SQL {
+  return sql`created_at <= ${new Date(now - rules.startMs)}
+    or exists (select 1 from joust_questions q
+      where q.joust_id = jousts.id and q.answerer_id = jousts.challenger_id
+        and q.served_at <= ${new Date(now - rules.runMs)})`;
+}
+
 /** Open jousts of the player that time may have closed: settled before they are read. */
 async function settleDue(db: Database, userId: string, now: EpochMs): Promise<SettledJousts> {
   const rules = rulesAt(now);
   const due = await db.execute<{ id: string }>(sql`
     select id from jousts
     where (challenger_id = ${userId} or opponent_id = ${userId}) and ended_at is null
-      and ((challenger_done_at is null and created_at <= ${new Date(now - rules.runMs)})
+      and ((challenger_done_at is null and (${challengerRunDue(rules, now)}))
         or (challenger_done_at is not null and opponent_started_at is null
           and reply_by <= ${new Date(now)})
         or (opponent_done_at is null and opponent_started_at <= ${new Date(now - rules.runMs)}))`);
@@ -1036,7 +1064,7 @@ export async function settleExpired(
     select id from jousts
     where ended_at is null
       and (reply_by <= ${new Date(now)}
-        or (challenger_done_at is null and created_at <= ${new Date(now - rules.runMs)})
+        or (challenger_done_at is null and (${challengerRunDue(rules, now)}))
         or opponent_started_at <= ${new Date(now - rules.runMs)})
     order by reply_by nulls first
     limit ${limit}`);
@@ -1115,7 +1143,9 @@ export async function listJousts(
         and ended_at is null)
     union all
     (select id, created_at from jousts
-      where (challenger_id = ${userId} or opponent_id = ${userId}) and ended_at is not null
+      where (challenger_id = ${userId}
+          or (opponent_id = ${userId} and challenger_done_at is not null))
+        and ended_at is not null
       order by ended_at desc limit ${ENDED_LISTED})
     order by created_at desc`);
   const ids = open.rows.map((row) => row.id);
@@ -1192,6 +1222,7 @@ export async function readJoust(
   });
   const ended = joust.endedAt !== null;
   const closed = runClosed(joust, role);
+  const started = closed || ended || runStart(joust, role, mine) !== null;
   const ghost =
     role === "opponent" && !joust.forfeit
       ? theirs.map((q) => ({ correct: q.correct === true, ms: answerTime(rules, toRunAnswer(q)) }))
@@ -1199,6 +1230,18 @@ export async function readJoust(
   return {
     view: {
       summary: summaryOf(joust, role, badges),
+      started,
+      startBy:
+        role === "challenger" && !started
+          ? new Date(joust.createdAt.getTime() + rules.startMs).toISOString()
+          : null,
+      duel: started
+        ? null
+        : await duelOf(db, {
+            mine: { userId, cardIds: theirs.map((q) => q.cardId) },
+            theirs: { userId: otherId, cardIds: mine.map((q) => q.cardId) },
+            now,
+          }),
       ghost,
       ghostPlayedAt: role === "opponent" ? (joust.challengerDoneAt?.toISOString() ?? null) : null,
       answered: mine.filter((q) => q.answeredAt !== null).length,
@@ -1240,6 +1283,40 @@ export async function readJoust(
         : null,
     },
     settled,
+  };
+}
+
+/**
+ * Both players as they meet before the run: league, week and the backs of the cards the other
+ * draws from their deck. Read only before the run starts.
+ */
+async function duelOf(
+  db: Database,
+  input: {
+    readonly mine: { readonly userId: string; readonly cardIds: readonly string[] };
+    readonly theirs: { readonly userId: string; readonly cardIds: readonly string[] };
+    readonly now: EpochMs;
+  },
+): Promise<NonNullable<JoustView["duel"]>> {
+  const { mine, theirs, now } = input;
+  const ids = [...mine.cardIds, ...theirs.cardIds];
+  const rows = await db
+    .select({ id: cards.id, rarity: cards.rarity })
+    .from(cards)
+    .where(inArray(cards.id, ids));
+  const rarityOf = new Map(rows.map((row) => [row.id, row.rarity]));
+  const raritiesOf = (cardIds: readonly string[]) =>
+    cardIds.flatMap((id) => {
+      const rarity = rarityOf.get(id);
+      return rarity === undefined ? [] : [rarity];
+    });
+  const [me, them] = await Promise.all([
+    readDuelist(db, mine.userId, now),
+    readDuelist(db, theirs.userId, now),
+  ]);
+  return {
+    mine: { ...me, rarities: raritiesOf(mine.cardIds) },
+    theirs: { ...them, rarities: raritiesOf(theirs.cardIds) },
   };
 }
 

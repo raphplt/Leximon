@@ -499,6 +499,7 @@ export const JOUST_SCHEDULE: JoustSchedule = [
     answerMs: 15_000,
     graceMs: 2_000,
     runMs: 5 * MINUTE,
+    startMs: 24 * 60 * MINUTE,
     replyMs: 24 * 60 * MINUTE,
     maxWaiting: 5,
     maxToPlay: 3,
