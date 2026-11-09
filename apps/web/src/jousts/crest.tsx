@@ -27,13 +27,54 @@ export function Crest({
   const id = useId();
   const art = leagueCrests[league];
   const colors = crestColors(dim);
-  const paint = (value: CrestPaint | undefined, flat: boolean) => paintOf(value, flat, colors, id);
-  const layer = (shape: CrestLayer, index: number, flat: boolean) => (
+  return (
+    <svg width={size} height={size * crestRatio} viewBox={crestViewBox} aria-hidden="true">
+      <defs>
+        <TinctureGradients id={id} colors={colors} />
+        <pattern
+          id={`${id}diaper`}
+          width={art.diaper.size}
+          height={art.diaper.size}
+          patternUnits="userSpaceOnUse"
+        >
+          {art.diaper.layers.map((shape, index) => crestShape(shape, index, colors, id, true))}
+        </pattern>
+      </defs>
+      {art.layers.map((shape, index) => crestShape(shape, index, colors, id))}
+    </svg>
+  );
+}
+
+/** One gradient per tincture, named after `id`, for the shapes drawn with these colours. */
+export function TinctureGradients({
+  id,
+  colors,
+}: {
+  readonly id: string;
+  readonly colors: CrestColors;
+}) {
+  return tinctureNames.map((name) => (
+    <linearGradient key={name} id={`${id}${name}`} x1="0" y1="0" x2="0.25" y2="1">
+      <stop offset="0" stopColor={colors.tinctures[name].top} />
+      <stop offset="1" stopColor={colors.tinctures[name].bottom} />
+    </linearGradient>
+  ));
+}
+
+/** One layer of an illuminated drawing. `flat` paints a tincture plain, inside a pattern. */
+export function crestShape(
+  shape: CrestLayer,
+  key: number,
+  colors: CrestColors,
+  id: string,
+  flat = false,
+) {
+  return (
     <path
-      key={index}
+      key={key}
       d={shape.d}
-      fill={paint(shape.fill, flat)}
-      stroke={paint(shape.stroke, flat)}
+      fill={paintOf(shape.fill, flat, colors, id)}
+      stroke={paintOf(shape.stroke, flat, colors, id)}
       strokeWidth={shape.width}
       strokeOpacity={shape.stroke === undefined ? undefined : shape.opacity}
       fillOpacity={shape.fill === undefined ? undefined : shape.opacity}
@@ -41,27 +82,6 @@ export function Crest({
       strokeLinecap={shape.cap}
       strokeLinejoin="round"
     />
-  );
-  return (
-    <svg width={size} height={size * crestRatio} viewBox={crestViewBox} aria-hidden="true">
-      <defs>
-        {tinctureNames.map((name) => (
-          <linearGradient key={name} id={`${id}${name}`} x1="0" y1="0" x2="0.25" y2="1">
-            <stop offset="0" stopColor={colors.tinctures[name].top} />
-            <stop offset="1" stopColor={colors.tinctures[name].bottom} />
-          </linearGradient>
-        ))}
-        <pattern
-          id={`${id}diaper`}
-          width={art.diaper.size}
-          height={art.diaper.size}
-          patternUnits="userSpaceOnUse"
-        >
-          {art.diaper.layers.map((shape, index) => layer(shape, index, true))}
-        </pattern>
-      </defs>
-      {art.layers.map((shape, index) => layer(shape, index, false))}
-    </svg>
   );
 }
 

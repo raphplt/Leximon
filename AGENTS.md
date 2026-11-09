@@ -65,7 +65,7 @@ Les sources téléchargées vivent dans `content/pipeline/data/` (ignoré par gi
 | `docs/recette-nouveautes.md` | Recette des derniers lots : finitions hors du jeu, joutes (web, mobile, prod)    | Oui                           |
 | `docs/retours-joueurs.md`   | Retours des joueurs de la bêta (Reddit…) et ce qu'on en fait                      | Oui                           |
 | `docs/fiches-stores.md`     | Fiches Google Play et App Store : textes, classification, données collectées      | Oui                           |
-| `docs/ornements.md`         | Ornements anciens de l'interface : source et licence de chacun (fichier généré)   | Oui                           |
+| `docs/ornements.md`         | Ornements anciens de l'interface : source et licence de chacun                     | Oui                           |
 | `docs/north-star.md`        | Vision produit, marché, monétisation, lancement                                   | Non (local, peut être absent) |
 | `docs/architecture.md`      | Architecture détaillée, charge visée, modèle de données                           | Non (local, peut être absent) |
 

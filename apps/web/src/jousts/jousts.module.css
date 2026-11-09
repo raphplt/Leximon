@@ -153,19 +153,10 @@
 }
 
 .furetFace {
-  display: grid;
-  place-items: center;
   flex: none;
-  width: 72px;
-  height: 72px;
-  border: var(--lx-toy-outline-width) solid var(--lx-toy-outline);
-  border-radius: 50%;
-  background: radial-gradient(
-    circle at 40% 35%,
-    var(--lx-color-ink-on-color),
-    var(--lx-toy-gold-bottom)
-  );
-  box-shadow: 0 4px 0 var(--lx-toy-drop);
+  margin-top: -14px;
+  filter: drop-shadow(0 4px 0 var(--lx-toy-drop));
+  transform-origin: 50% 60%;
   animation: nod 3.2s ease-in-out infinite;
 }
 
@@ -2151,6 +2142,7 @@
 @media (prefers-reduced-motion: reduce) {
   .choice[data-verdict],
   .plaque,
+  .furetFace,
   .row[data-pulse],
   .seal,
   .hourglass,

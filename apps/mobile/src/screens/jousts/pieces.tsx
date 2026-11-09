@@ -29,7 +29,7 @@ import { catalogCard } from "@/screens/trades/card-row";
 import { colors, fontSizes, fonts, paperColors, radii, space } from "@/theme";
 import { Avatar } from "@/ui/avatar";
 import { Icon } from "@/ui/icon";
-import { ToyBody, ToyIcon } from "@/ui/toy";
+import { FuretMedallion } from "./furet-medallion";
 
 /** What the leaves hold is read on paper. */
 export const ink = paperColors;
@@ -187,9 +187,9 @@ function answerIn(index: number) {
 export function Furet({ children }: { readonly children: string }) {
   return (
     <View style={pieces.furet}>
-      <ToyBody matter="gold" shape="round" style={pieces.furetFace}>
-        <ToyIcon name="books" size={30} />
-      </ToyBody>
+      <View style={pieces.furetFace}>
+        <FuretMedallion size={68} />
+      </View>
       <View style={pieces.furetBubble}>
         <Text style={pieces.furetName}>{FURET}</Text>
         <Text style={pieces.furetText}>{children}</Text>
@@ -215,11 +215,7 @@ export function DuelistFace({
   readonly size: number;
 }) {
   if (duelist.furet === true) {
-    return (
-      <ToyBody matter="gold" shape="round" style={{ width: size, height: size }}>
-        <ToyIcon name="books" size={Math.round(size * 0.62)} />
-      </ToyBody>
-    );
+    return <FuretMedallion size={size} ribbon={false} />;
   }
   return <Avatar avatar={duelist.avatar} frame={duelist.frame} size={size} />;
 }
@@ -360,7 +356,7 @@ export const pieces = StyleSheet.create({
     includeFontPadding: false,
   },
   furet: { flexDirection: "row", alignItems: "flex-start", gap: space.s4 },
-  furetFace: { width: 52, height: 52 },
+  furetFace: { marginTop: -10 },
   furetBubble: {
     flex: 1,
     gap: space.s1,

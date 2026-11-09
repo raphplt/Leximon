@@ -11,7 +11,7 @@ import { Avatar } from "@/components/avatar";
 import { Card } from "@/components/card";
 import { catalogCard } from "@/trades/card-thumb";
 import { Icon } from "@/ui/icon";
-import { ToyIcon } from "@/ui/toy";
+import { FuretMedallion } from "./furet-medallion";
 import styles from "./jousts.module.css";
 
 /** Each leaf rises in turn when the screen appears, as on Jouer. */
@@ -122,8 +122,8 @@ export function AnswerCards({
 export function Furet({ children }: { readonly children: ReactNode }) {
   return (
     <div className={styles.furet}>
-      <span className={styles.furetFace} aria-hidden="true">
-        <ToyIcon name="books" size={44} />
+      <span className={styles.furetFace}>
+        <FuretMedallion size={84} />
       </span>
       <div className={styles.furetBubble}>
         <span className={styles.furetName}>{FURET}</span>
@@ -150,16 +150,7 @@ export function DuelistFace({
   readonly size: number;
 }) {
   if (duelist.furet === true) {
-    return (
-      <span
-        className={styles.medallion}
-        data-tone="gold"
-        style={{ "--size": `${size}px` } as CSSProperties}
-        aria-hidden="true"
-      >
-        <ToyIcon name="books" size={Math.round(size * 0.62)} />
-      </span>
-    );
+    return <FuretMedallion size={size} ribbon={false} />;
   }
   return <Avatar avatar={duelist.avatar} frame={duelist.frame} size={size} />;
 }

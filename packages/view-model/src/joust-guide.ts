@@ -8,6 +8,8 @@ import type { RunSize } from "./jousts";
  */
 
 export const FURET = "Maître Furet";
+/** The word on the ribbon under his medallion. */
+export const FURET_TITLE = "Maître";
 
 export const GUIDE_STEPS = ["La lice", "Ton deck", "L'entraînement", "La première joute"] as const;
 export type GuideStep = 0 | 1 | 2 | 3;
