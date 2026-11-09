@@ -15,6 +15,7 @@ import {
   type PatronCosmetic,
   type PatronMark,
   type PatronPlan,
+  type PatronRules,
   type PatronStanding,
   patronMark,
   patronRulesAt,
@@ -85,9 +86,10 @@ function buyRefusal(sales: PatronSales, buyer: Buyer, row: PatronRow | undefined
   return null;
 }
 
-/** A trial once per account, and never after a payment. */
-const trialAvailable = (row: PatronRow | undefined) =>
-  row === undefined || (row.trialUsedAt === null && row.firstPaidAt === null);
+/** A trial once per account, never after a payment, and none while the rules give 0 days. */
+const trialAvailable = (row: PatronRow | undefined, rules: PatronRules) =>
+  rules.trialDays > 0 &&
+  (row === undefined || (row.trialUsedAt === null && row.firstPaidAt === null));
 
 async function readRow(db: Database, userId: string): Promise<PatronRow | undefined> {
   const [row] = await db
@@ -133,7 +135,7 @@ export async function readPatron(
     monthCosmetic: monthCosmetic(rules, input.now),
     claimable: claimableCosmetics(rules, periods, claimed, input.now),
     canBuy: buyRefusal(input.sales, buyer, row) === null,
-    trialAvailable: trialAvailable(row),
+    trialAvailable: trialAvailable(row, rules),
     trialDays: rules.trialDays,
     founder,
     foundingOffer: isFoundingPayment(rules, input.now),
@@ -333,7 +335,7 @@ export async function openCheckout(
     customerId: row.stripeCustomerId,
     userId: input.userId,
     plan: input.plan,
-    trialDays: trialAvailable(row) ? rules.trialDays : null,
+    trialDays: trialAvailable(row, rules) ? rules.trialDays : null,
     successUrl: `${input.webUrl}/mecene?merci`,
     cancelUrl: `${input.webUrl}/mecene`,
     idempotencyKey: input.idempotencyKey,

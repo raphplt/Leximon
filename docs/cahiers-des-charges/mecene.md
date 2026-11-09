@@ -197,7 +197,7 @@ Tranché par le propriétaire le 2026-11-08 :
 | Q1 | Encaisser sur le web | Stripe en direct, sur son compte existant, en franchise de TVA (D-059) |
 | Q2 | Premier lot de vente | Paiement, statut, cosmétique du mois, fondateur et dénichage |
 | Q3 | Mobile | Statut seul, achat sur le web ; achat intégré plus tard |
-| Q4 | Essai | 14 jours avec carte ; cosmétique, dénichage et fondateur au premier paiement |
+| Q4 | Essai | 14 jours avec carte ; cosmétique, dénichage et fondateur au premier paiement. Retiré le 2026-11-09 : `trialDays` vaut 0, la mécanique reste pour le remettre |
 | Q5 | Exemplaire du dénicheur | Exemplaire spécial, visible comme unique, non échangeable et sans XP, épinglable et jouable comme toute carte |
 | Q6 | Fondateur qui revient | Prix fondateur perdu à l'arrêt, badge et sceau gardés |
 | Q7 | Comptes 15-17 ans | Achat ouvert, mention du parent, remboursement sur demande d'un parent |

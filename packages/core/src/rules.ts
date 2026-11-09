@@ -690,7 +690,7 @@ export const BANNER_SCHEDULE: BannerSchedule = [
 export const PATRON_SCHEDULE: PatronSchedule = [
   {
     startsAt: SINCE_LAUNCH,
-    trialDays: 14,
+    trialDays: 0,
     prices: { monthly: 399, yearly: 2999 },
     foundingMonth: null,
     cosmetics: {},

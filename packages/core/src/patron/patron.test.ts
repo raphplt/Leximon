@@ -88,9 +88,9 @@ describe("founders", () => {
     expect(isFoundingPayment({ ...rules, foundingMonth: null }, PAID)).toBe(false);
   });
 
-  it("start with no founding month and fourteen free days", () => {
+  it("start with no founding month and no free days", () => {
     const current = patronRulesAt(PATRON_SCHEDULE, Date.now());
-    expect(current.trialDays).toBe(14);
+    expect(current.trialDays).toBe(0);
     expect(current.foundingMonth).toBeNull();
   });
 });

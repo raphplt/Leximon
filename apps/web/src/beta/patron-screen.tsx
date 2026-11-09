@@ -594,7 +594,7 @@ function MemberView({
           )}
         </Leaf>
       </div>
-      <div style={rise(1)}>
+      <div className={styles.perks} style={rise(1)}>
         <Poll patron={patron} onChanged={onClaimed} />
         <Finds finds={patron.finds} />
         <Editions />

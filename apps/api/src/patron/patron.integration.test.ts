@@ -294,7 +294,7 @@ describe("the patron page", () => {
       monthCosmetic: { month: THIS_MONTH, cosmetic: { kind: "frame", frame: "wax" } },
       claimable: [],
       canBuy: true,
-      trialAvailable: true,
+      trialAvailable: TRIAL_DAYS > 0,
       trialDays: TRIAL_DAYS,
       founder: false,
       foundingOffer: false,
@@ -358,7 +358,7 @@ describe("checkout", () => {
     expect(sent).toMatchObject({
       userId: member.userId,
       plan: "yearly",
-      trialDays: TRIAL_DAYS,
+      trialDays: TRIAL_DAYS > 0 ? TRIAL_DAYS : null,
       successUrl: "http://localhost:3000/mecene?merci",
       cancelUrl: "http://localhost:3000/mecene",
     });

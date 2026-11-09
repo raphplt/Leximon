@@ -400,6 +400,12 @@
   font-size: var(--lx-size-title-large);
 }
 
+.perks {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
 .finds {
   display: flex;
   flex-direction: column;
