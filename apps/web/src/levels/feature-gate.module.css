@@ -1,6 +1,13 @@
 .gated {
   box-sizing: border-box;
-  max-width: 980px;
+  max-width: 1180px;
   margin: 0 auto;
-  padding: 22px var(--lx-s16) 0;
+  padding: 26px var(--lx-s16) 0;
+}
+
+/* On a phone, as near the edges as the page of Défis. */
+@media (max-width: 759px) {
+  .gated {
+    padding: var(--lx-s4) var(--lx-s7) 0;
+  }
 }

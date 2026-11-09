@@ -12,6 +12,19 @@
   color: var(--lx-color-page-ink);
 }
 
+/* Under the head of Défis, as wide and as high as the training's page. */
+.hallPage {
+  max-width: 1180px;
+  padding-top: 26px;
+  gap: 20px;
+}
+
+@media (max-width: 759px) {
+  .hallPage {
+    padding: var(--lx-s4) var(--lx-s7) var(--lx-s14);
+  }
+}
+
 .back {
   align-self: flex-start;
   font-size: var(--lx-size-body);

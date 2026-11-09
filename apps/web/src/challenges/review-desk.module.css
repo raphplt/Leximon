@@ -8,10 +8,6 @@
   margin: 0 auto;
 }
 
-.pageTitle {
-  font-size: var(--lx-size-display);
-}
-
 .lower {
   display: flex;
   flex-direction: column;

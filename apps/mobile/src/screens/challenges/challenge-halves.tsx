@@ -1,4 +1,4 @@
-import { toyMatters, toyRadii, toy as toyValues } from "@leximon/tokens";
+import { toyRadii, toy as toyValues } from "@leximon/tokens";
 import {
   CHALLENGE_HALVES,
   type ChallengeHalf,
@@ -85,7 +85,6 @@ function Half({
     <View style={styles.slot}>
       <Toy
         matter={matter}
-        large
         bodyStyle={styles.body}
         accessibilityRole="link"
         accessibilityState={{ selected: here }}
@@ -102,7 +101,6 @@ function Half({
         {/* The other half sits in the shade, never see-through over the shelves. */}
         {!here && <View style={styles.shade} pointerEvents="none" />}
       </Toy>
-      {here && <View style={styles.notch} />}
       {waiting > 0 && <CountBadge count={String(waiting)} style={styles.badge} />}
     </View>
   );
@@ -129,17 +127,8 @@ const styles = StyleSheet.create({
   },
   shade: {
     ...StyleSheet.absoluteFill,
-    borderRadius: toyRadii.large,
+    borderRadius: toyRadii.small,
     backgroundColor: toyValues.drop,
-  },
-  notch: {
-    alignSelf: "center",
-    width: 10,
-    height: 10,
-    marginTop: 2,
-    backgroundColor: toyMatters.gold.top,
-    borderRadius: 2,
-    transform: [{ rotate: "45deg" }],
   },
   badge: { position: "absolute", top: -6, right: -4 },
 });

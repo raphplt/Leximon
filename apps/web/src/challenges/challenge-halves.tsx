@@ -4,6 +4,7 @@ import {
   CHALLENGE_HALVES,
   type ChallengeHalf,
   joustsHalf,
+  TAB_LABELS,
   trainingHalfLine,
 } from "@leximon/view-model";
 import Link from "next/link";
@@ -19,8 +20,8 @@ import styles from "./challenge-halves.module.css";
 const HREFS: Readonly<Record<ChallengeHalf, string>> = { training: "/defis", jousts: "/joutes" };
 
 /**
- * The two halves of Défis, side by side at the top of each: the training on the player's words,
- * and the jousts with their league, their place and what waits there.
+ * The head of Défis, the same on its two pages: the title, then its two halves side by side, the
+ * training on the player's words and the jousts with their league, their place and what waits.
  */
 export function ChallengeHalves({ current }: { readonly current: ChallengeHalf }) {
   const summary = useShared(reviewSummary);
@@ -31,32 +32,35 @@ export function ChallengeHalves({ current }: { readonly current: ChallengeHalf }
     string,
   ];
   return (
-    <nav className={styles.halves} aria-label="Défis">
-      <Half
-        id="training"
-        current={current}
-        label={trainingLabel}
-        matter="blue"
-        emblem={<ToyIcon name="challenges" size={40} />}
-        lines={training === null ? [] : [training]}
-        waiting={0}
-      />
-      <Half
-        id="jousts"
-        current={current}
-        label={joustsLabel}
-        matter={jousts.lockedAt === null ? "red" : "locked"}
-        emblem={
-          jousts.league === null ? (
-            <ToyIcon name="jousts" size={40} locked={jousts.lockedAt !== null} />
-          ) : (
-            <Crest league={jousts.league} size={36} />
-          )
-        }
-        lines={jousts.lines}
-        waiting={jousts.waiting}
-      />
-    </nav>
+    <header className={styles.head}>
+      <Lettering className={styles.title}>{TAB_LABELS.defis}</Lettering>
+      <nav className={styles.halves} aria-label={TAB_LABELS.defis}>
+        <Half
+          id="training"
+          current={current}
+          label={trainingLabel}
+          matter="blue"
+          emblem={<ToyIcon name="challenges" size={40} />}
+          lines={training === null ? [] : [training]}
+          waiting={0}
+        />
+        <Half
+          id="jousts"
+          current={current}
+          label={joustsLabel}
+          matter={jousts.lockedAt === null ? "red" : "locked"}
+          emblem={
+            jousts.league === null ? (
+              <ToyIcon name="jousts" size={40} locked={jousts.lockedAt !== null} />
+            ) : (
+              <Crest league={jousts.league} size={36} />
+            )
+          }
+          lines={jousts.lines}
+          waiting={jousts.waiting}
+        />
+      </nav>
+    </header>
   );
 }
 
@@ -81,7 +85,7 @@ function Half({
   return (
     <Link
       href={HREFS[id]}
-      className={toyClass(matter, "box", true, styles.half)}
+      className={toyClass(matter, "box", false, styles.half)}
       aria-current={here ? "page" : undefined}
       data-here={here || undefined}
     >

@@ -90,7 +90,7 @@ function JoustsHall() {
   }
   if (loaded.state === "loading") {
     return (
-      <main className={styles.page}>
+      <main className={`${styles.page} ${styles.hallPage}`}>
         <ChallengeHalves current="jousts" />
       </main>
     );
@@ -100,7 +100,7 @@ function JoustsHall() {
 
   if (closed !== null) {
     return (
-      <main className={styles.page}>
+      <main className={`${styles.page} ${styles.hallPage}`}>
         <ChallengeHalves current="jousts" />
         <section className={`${ui.leaf} ${styles.closed}`}>
           <Lettering className={styles.homeTitle}>{JOUSTS_TITLE}</Lettering>
@@ -147,7 +147,7 @@ function JoustsHall() {
   }
 
   return (
-    <main className={styles.page}>
+    <main className={`${styles.page} ${styles.hallPage}`}>
       <ChallengeHalves current="jousts" />
       <Hall
         jousts={jousts}

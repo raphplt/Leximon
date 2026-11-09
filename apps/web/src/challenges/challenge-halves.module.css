@@ -1,8 +1,17 @@
+.head {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.title {
+  font-size: var(--lx-size-display);
+}
+
 .halves {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: 12px;
-  padding-top: 6px;
 }
 
 .half {
@@ -17,20 +26,6 @@
 /* The other half sits in the shade, never see-through: the shelves must not show behind it. */
 .half:not([data-here]) {
   filter: brightness(0.72) saturate(0.7);
-}
-
-/* The half the player stands in points down to the page below. */
-.half[data-here]::before {
-  content: "";
-  position: absolute;
-  bottom: calc(-1 * var(--depth) - 12px);
-  left: 50%;
-  width: 12px;
-  height: 12px;
-  border-radius: 2px;
-  background: var(--lx-toy-gold-top);
-  translate: -50% 0;
-  rotate: 45deg;
 }
 
 .emblem {

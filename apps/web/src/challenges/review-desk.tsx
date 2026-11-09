@@ -81,7 +81,6 @@ export function ReviewDesk({
   const rules = unlockRulesAt(UNLOCK_SCHEDULE, now);
   return (
     <div className={styles.screen}>
-      <Lettering className={styles.pageTitle}>Défis</Lettering>
       <ChallengeHalves current="training" />
       <Review summary={summary} now={now} busy={busy} onStart={onStart} />
       {notice !== null && (
