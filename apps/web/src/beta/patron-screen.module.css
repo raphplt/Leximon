@@ -255,10 +255,6 @@
   grid-column: 2;
 }
 
-[data-perk="cosmetic"] .tileIcon {
-  grid-row: span 2;
-}
-
 .showcase {
   grid-column: 2;
   display: flex;
@@ -299,6 +295,10 @@
 .tileIcon.small {
   width: 48px;
   height: 48px;
+}
+
+[data-perk="cosmetic"] .tileIcon {
+  grid-row: span 2;
 }
 
 .buy {
