@@ -1,7 +1,7 @@
 import type { CatalogCard } from "@leximon/contract";
 import { collectionName } from "@leximon/contract/client";
 import type { Rarity } from "@leximon/core";
-import { cssFill, rarityStyles, toyMatters, toy as toyValues } from "@leximon/tokens";
+import { cssFill, lettering, rarityStyles, toyMatters, toy as toyValues } from "@leximon/tokens";
 import { answerTimeText, FURET, plural, trappedText } from "@leximon/view-model";
 import { type ReactNode, useEffect, useState } from "react";
 import {
@@ -119,6 +119,7 @@ export function useRowFit(count: number, gap: number, max: number) {
 export function AnswerCards({
   answers,
   width,
+  onDesk = false,
 }: {
   readonly answers: readonly {
     readonly cardId: string;
@@ -127,6 +128,8 @@ export function AnswerCards({
   }[];
   /** The widest a card may be. */
   readonly width: number;
+  /** On the green desk, the times read in light letters. */
+  readonly onDesk?: boolean;
 }) {
   const catalog = useCatalog();
   const fit = useRowFit(answers.length, space.s3, width);
@@ -153,7 +156,11 @@ export function AnswerCards({
                 color={toyMatters.paper.top}
               />
             </View>
-            <Text style={pieces.answerTime} numberOfLines={1} adjustsFontSizeToFit>
+            <Text
+              style={[pieces.answerTime, onDesk && pieces.answerTimeOnDesk]}
+              numberOfLines={1}
+              adjustsFontSizeToFit
+            >
               {answerTimeText(answer)}
             </Text>
           </Animated.View>
@@ -332,6 +339,7 @@ export const pieces = StyleSheet.create({
     fontSize: fontSizes.micro,
     color: ink.pageInkMuted,
   },
+  answerTimeOnDesk: { color: lettering.fill },
   trapRibbon: {
     position: "absolute",
     left: -4,
