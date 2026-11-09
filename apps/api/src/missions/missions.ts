@@ -123,7 +123,7 @@ async function readActivity(
       (select count(*)::int from ${jousts}
         where (${jousts.challengerId} = ${userId}
             and ${jousts.challengerDoneAt} >= d.starts and ${jousts.challengerDoneAt} < d.ends)
-          or (${jousts.opponentId} = ${userId}
+          or (${jousts.opponentId} = ${userId} and ${jousts.opponentStartedAt} is not null
             and ${jousts.opponentDoneAt} >= d.starts and ${jousts.opponentDoneAt} < d.ends))
         as jousts
     from (values ${values}) as d(day, starts, ends)
@@ -281,7 +281,8 @@ async function readDrawContext(
         where ${jousts.challengerId} = ${userId} and ${jousts.challengerDoneAt} >= ${since}
         union all
         select ${jousts.opponentDoneAt} from ${jousts}
-        where ${jousts.opponentId} = ${userId} and ${jousts.opponentDoneAt} >= ${since}
+        where ${jousts.opponentId} = ${userId} and ${jousts.opponentStartedAt} is not null
+          and ${jousts.opponentDoneAt} >= ${since}
       ) played) as joust_days
   `);
   const row = result.rows[0];
@@ -537,7 +538,12 @@ export async function claimMissions(
     let bonusWaiting = false;
     const updates: { day: string; claimed: number[]; bonus: boolean }[] = [];
     const claimed: { day: string; slot: number }[] = [];
+    let xpGained = 0;
+    let ecus = 0;
     for (const row of rows) {
+      // A mission pays what its own day promised, even claimed after the rules changed.
+      const start = days.find((day) => day.key === row.day)?.start ?? now;
+      const paid = missionRulesAt(MISSION_SCHEDULE, start);
       const claim = claimOfDay(rules, toDay(row), activity.get(row.day) ?? IDLE);
       let bonus = false;
       if (claim.bonus) {
@@ -551,6 +557,8 @@ export async function claimMissions(
       if (claim.slots.length === 0 && !bonus) continue;
       updates.push({ day: row.day, claimed: [...row.claimed, ...claim.slots], bonus });
       for (const slot of claim.slots) claimed.push({ day: row.day, slot });
+      xpGained += claim.slots.length * paid.xp;
+      ecus += claim.slots.length * paid.ecus;
     }
     if (updates.length === 0) return { ...unchanged, bonusWaiting };
 
@@ -568,8 +576,6 @@ export async function claimMissions(
       where ${userMissions.userId} = ${userId} and ${userMissions.day} = changes.day
     `);
 
-    const xpGained = claimed.length * rules.xp;
-    const ecus = claimed.length * rules.ecus;
     const boosters = reserve - locked.bonusBoosters;
     const progressUpsert = addXp(tx, "progress_upsert", userId, xpGained);
     const walletUpdate = tx.$with("wallet_update").as(

@@ -202,7 +202,13 @@ describe("GET /me/missions", () => {
     });
     await db.insert(schema.jousts).values([
       { ...joust(guest.userId, other.userId), challengerDoneAt: new Date(now) },
-      { ...joust(other.userId, guest.userId), opponentDoneAt: new Date(now) },
+      {
+        ...joust(other.userId, guest.userId),
+        opponentStartedAt: new Date(now),
+        opponentDoneAt: new Date(now),
+      },
+      // A joust left unanswered is closed for the player without a run of theirs.
+      { ...joust(other.userId, guest.userId), opponentDoneAt: new Date(now), forfeit: true },
       { ...joust(guest.userId, other.userId), challengerDoneAt: new Date(now - 2 * DAY) },
       { ...joust(other.userId, guest.userId), challengerDoneAt: new Date(now) },
     ]);
@@ -302,7 +308,25 @@ describe("POST /me/missions/claim", () => {
     const body = missionsResponseSchema.parse(await (await read(guest)).json());
     expect(body.claimable.missions).toBe(1);
     const claimed = claimMissionsResponseSchema.parse(await (await claim(guest)).json());
-    expect(claimed).toMatchObject({ missions: 1, ecus: RULES.ecus });
+    const paid = missionRulesAt(MISSION_SCHEDULE, gameDayOf(yesterday).start);
+    expect(claimed).toMatchObject({ missions: 1, ecus: paid.ecus });
+  });
+
+  it("pays a mission what its own day promised, once the rules have changed", async () => {
+    const [before, after] = MISSION_SCHEDULE.slice(-2);
+    if (before === undefined || after === undefined || before.ecus === after.ecus) {
+      throw new Error("The last two mission periods no longer differ in écus");
+    }
+    const guest = await player();
+    const eve = after.startsAt - DAY / 2;
+    await setMissions(guest, THREE, eve);
+    await openSachets(guest, 3, eve);
+    const result = await claimMissions(db, {
+      userId: guest.userId,
+      idempotencyKey: crypto.randomUUID(),
+      now: after.startsAt + DAY / 2,
+    });
+    expect(result).toMatchObject({ kind: "claimed", missions: 1, ecus: before.ecus });
   });
 
   it("gives each mission once when claims race", async () => {
