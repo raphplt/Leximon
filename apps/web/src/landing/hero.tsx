@@ -27,9 +27,9 @@ const SIDE_PACKS: readonly [PackCollection, PackCollection] = [
 ];
 
 const HERO_STATS = [
-  { figure: "1 561", label: "mots rares du Littré" },
+  { figure: "2 065", label: "mots rares du Littré" },
   { figure: "6", label: "paliers de rareté" },
-  { figure: "3", label: "collections illustrées" },
+  { figure: "4", label: "collections illustrées" },
   { figure: "0 €", label: "de hasard payant" },
 ] as const;
 
