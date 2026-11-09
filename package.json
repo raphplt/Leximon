@@ -23,6 +23,7 @@
     "finds:export": "pnpm --filter @leximon/db finds:export",
     "finds:reject": "pnpm --filter @leximon/db finds:reject",
     "dev:player": "pnpm --filter @leximon/db dev:player",
+    "dev:clan-feed": "pnpm --filter @leximon/db dev:clan-feed",
     "dev:bots": "pnpm --filter @leximon/api dev:bots",
     "load:players": "pnpm --filter @leximon/db load:players",
     "db:migrate:prod": "sh infra/prod/check-database-url.sh && pnpm db:migrate",

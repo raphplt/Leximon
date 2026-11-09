@@ -23,6 +23,7 @@
     "finds:reject": "node --env-file-if-exists=../../.env --import ../config/node/resolve-ts.mjs scripts/finds.ts reject",
     "admin:grant": "node --env-file-if-exists=../../.env --import ../config/node/resolve-ts.mjs scripts/grant-admin.ts",
     "dev:player": "node --env-file-if-exists=../../.env --import ../config/node/resolve-ts.mjs scripts/dev-player.ts",
+    "dev:clan-feed": "node --env-file-if-exists=../../.env --import ../config/node/resolve-ts.mjs scripts/dev-clan-feed.ts",
     "economy:snapshot": "node --env-file-if-exists=../../.env --import ../config/node/resolve-ts.mjs scripts/economy-snapshot.ts",
     "load:players": "node --import ../config/node/resolve-ts.mjs scripts/load-players.ts"
   },
