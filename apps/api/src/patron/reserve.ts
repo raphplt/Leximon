@@ -47,7 +47,7 @@ export async function readFinds(db: Reader, userId: string): Promise<FindRow[]> 
   return rows.map((row) => ({ ...row, state: row.state as FindRow["state"] }));
 }
 
-/** Rights are lost when the subscription stops; a trial earns none, having no paid period. */
+/** Rights are lost when the subscription stops. */
 export function findsLeftOf(
   rules: Pick<PatronRules, "monthsPerFind">,
   periods: readonly PaidPeriod[],

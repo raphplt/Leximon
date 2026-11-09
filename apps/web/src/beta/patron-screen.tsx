@@ -3,6 +3,7 @@
 import {
   DISCORD_RETURN_QUERY,
   type MonthCosmeticView,
+  PATRON_PORTAL_RETURN_QUERY,
   type PatronFindsView,
   type PatronPlan,
   type PatronResponse,
@@ -10,13 +11,15 @@ import {
 } from "@leximon/contract";
 import type { ToyIconName } from "@leximon/tokens";
 import {
+  badgePerkLine,
   claimableLabel,
+  cosmeticPerkLine,
   discordScreen,
   editionsOwnedLine,
   findStateLine,
   findsLeftLine,
   monthCosmeticLine,
-  PATRON_BENEFITS,
+  PATRON_CABINET_LINE,
   PATRON_CANCEL_NOTE,
   PATRON_CARD_KICKER,
   PATRON_CHECKOUT_FAILED,
@@ -32,13 +35,11 @@ import {
   PATRON_DISCORD_FAILED,
   PATRON_DISCORD_LINK,
   PATRON_DISCORD_LINKED,
-  PATRON_DISCORD_TITLE,
+  PATRON_DISCORD_SOON,
   PATRON_DISCORD_UNLINK,
   PATRON_DOOR_KICKER,
-  PATRON_EDITIONS_TITLE,
   PATRON_FIND_ACTION,
   PATRON_FINDS_RULE,
-  PATRON_FINDS_TITLE,
   PATRON_FOUNDING_OFFER,
   PATRON_GUEST_NOTE,
   PATRON_INTRO,
@@ -46,26 +47,31 @@ import {
   PATRON_LOAD_FAILED,
   PATRON_MANAGE_BUSY,
   PATRON_MINOR_NOTE,
-  PATRON_NO_ADVANTAGE,
   PATRON_NOTIFIED,
   PATRON_NOTIFY,
+  PATRON_OPEN_ALBUM,
   PATRON_PAGE_TITLE,
+  PATRON_PERKS,
+  PATRON_PLAY,
   PATRON_POLL_CHOSEN,
   PATRON_POLL_FAILED,
-  PATRON_POLL_TITLE,
   PATRON_POLL_VOTE,
   PATRON_PORTAL_FAILED,
+  PATRON_SEAL_LINE,
+  PATRON_SEE_PROFILE,
   PATRON_SEE_SUBSCRIPTION,
   PATRON_SUBSCRIBE,
   PATRON_SUBSCRIBE_BUSY,
   PATRON_THANKS,
   PATRON_THANKS_FAILED,
   PATRON_THANKS_HIDE,
-  PATRON_THANKS_PAGE_TITLE,
   PATRON_THANKS_SEE,
   PATRON_THANKS_SHOW,
+  PATRON_VOTE_NONE,
   PATRON_WAIVER,
   PATRON_WEAR_TITLE,
+  type PatronPerk,
+  type PatronPerkKey,
   type PatronWelcomeKind,
   patronPageKind,
   patronPlanChoices,
@@ -73,7 +79,6 @@ import {
   patronThanksLine,
   patronTitleOf,
   patronTitleWorn,
-  patronTrialNote,
   patronWelcome,
   playerName,
   pollScreen,
@@ -81,7 +86,14 @@ import {
 } from "@leximon/view-model";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { type CSSProperties, useCallback, useEffect, useRef, useState } from "react";
+import {
+  type CSSProperties,
+  type ReactNode,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import account from "@/account/account-screen.module.css";
 import { Avatar } from "@/components/avatar";
 import { PatronBadge } from "@/components/patron-badge";
@@ -102,19 +114,23 @@ import styles from "./patron-screen.module.css";
 /** Where Stripe sends the player back after paying. */
 const THANKS_QUERY = "merci";
 
-/** The icon of each benefit, in the order of the list. */
-const BENEFIT_ICONS: readonly ToyIconName[] = [
-  "chest",
-  "scroll",
-  "ink",
-  "books",
-  "gilded",
-  "community",
-];
+/** The icon of each perk, the same on the offer and on the subscriber's page. */
+const PERK_ICONS: Readonly<
+  Record<PatronPerkKey, { readonly icon: ToyIconName; readonly matter: "red" | "blue" }>
+> = {
+  cosmetic: { icon: "chest", matter: "red" },
+  word: { icon: "scroll", matter: "blue" },
+  editions: { icon: "ink", matter: "red" },
+  cabinet: { icon: "candle", matter: "blue" },
+  badge: { icon: "gilded", matter: "red" },
+  thanks: { icon: "books", matter: "blue" },
+  vote: { icon: "community", matter: "red" },
+  discord: { icon: "discussion", matter: "blue" },
+  seal: { icon: "sachet", matter: "red" },
+};
 
 const WELCOME_ICONS: Readonly<Record<PatronWelcomeKind, ToyIconName>> = {
   mark: "gilded",
-  payment: "ecu",
   cosmetic: "chest",
   word: "scroll",
 };
@@ -138,15 +154,17 @@ export function PatronScreen() {
 function PatronPage() {
   const me = useShared(profile);
   const router = useRouter();
-  const thanks = useSearchParams().has(THANKS_QUERY);
+  const query = useSearchParams();
+  const thanks = query.has(THANKS_QUERY);
+  const fromPortal = query.has(PATRON_PORTAL_RETURN_QUERY);
   const [patron, setPatron] = useState<PatronResponse | null>(null);
   const [failed, setFailed] = useState(false);
   const [confirming, setConfirming] = useState(thanks);
 
-  const load = useCallback(async () => {
+  const load = useCallback(async (refresh = false) => {
     setFailed(false);
     try {
-      const read = await api.fetchPatron();
+      const read = refresh ? await api.refreshPatron() : await api.fetchPatron();
       setPatron(read);
       return read;
     } catch {
@@ -161,6 +179,12 @@ function PatronPage() {
   }, []);
 
   useEffect(() => {
+    // Back from Stripe's portal: the subscription read again from Stripe, a cancellation shown
+    // at once, then the address cleaned.
+    if (fromPortal) {
+      void load(true).then(() => router.replace("/mecene"));
+      return;
+    }
     let cancelled = false;
     let timer: ReturnType<typeof setTimeout> | undefined;
     // Back from Stripe, the webhook may land a moment after the player: read again for a while.
@@ -179,7 +203,7 @@ function PatronPage() {
       cancelled = true;
       clearTimeout(timer);
     };
-  }, [load, thanks]);
+  }, [fromPortal, load, router, thanks]);
 
   if (patron === null && failed) {
     return (
@@ -203,7 +227,7 @@ function PatronPage() {
           }}
         />
       ) : (
-        <MemberView patron={patron} me={me} onClaimed={load} />
+        <MemberView patron={patron} me={me} onClaimed={() => load()} />
       );
     case "offer":
       return <OfferView patron={patron} me={me} guest={guest} confirming={confirming} />;
@@ -267,24 +291,44 @@ function Hero({
   );
 }
 
-function Benefits() {
+/** A perk's icon, a gold tile with its lettrine. */
+function PerkIcon({
+  perk,
+  small = false,
+}: {
+  readonly perk: PatronPerkKey;
+  readonly small?: boolean;
+}) {
+  const { icon, matter } = PERK_ICONS[perk];
   return (
-    <ul className={styles.benefits} style={rise(2)}>
-      {PATRON_BENEFITS.map((benefit, index) => (
-        <li key={benefit}>
-          <Leaf className={styles.benefit}>
-            <ToyBody matter="gold" shape="tile" className={styles.tileIcon}>
-              <Lettrine
-                icon={BENEFIT_ICONS[index] ?? "chest"}
-                matter={index === 1 ? "blue" : "red"}
-                size={52}
-              />
-            </ToyBody>
-            <p>{benefit}</p>
-          </Leaf>
-        </li>
-      ))}
-    </ul>
+    <ToyBody
+      matter="gold"
+      shape="tile"
+      className={small ? `${styles.tileIcon} ${styles.small}` : styles.tileIcon}
+    >
+      <Lettrine icon={icon} matter={matter} size={small ? 38 : 52} />
+    </ToyBody>
+  );
+}
+
+/** What the subscription gives, its first words in bold: the same list as on the subscriber's page. */
+function Perks() {
+  return (
+    <div style={rise(2)}>
+      <Leaf className={styles.perkLeaf}>
+        <ul className={styles.perkList}>
+          {PATRON_PERKS.map((perk) => (
+            <li key={perk.key}>
+              <PerkIcon perk={perk.key} small />
+              <p>
+                <strong>{perk.lead}</strong>
+                {perk.rest}
+              </p>
+            </li>
+          ))}
+        </ul>
+      </Leaf>
+    </div>
   );
 }
 
@@ -303,23 +347,24 @@ function DoorView({
     api.recordInterest("patron_notify").catch(() => undefined);
   };
   return (
-    <main className={styles.page}>
+    <main className={`${styles.page} ${styles.shop}`}>
       <Hero kicker={PATRON_DOOR_KICKER} patron={patron} me={me} />
-      <Benefits />
-      <div style={rise(3)}>
-        <Leaf className={styles.buy}>
-          <p className={styles.prices}>
-            <strong>{monthly?.label}</strong> ou <strong>{yearly?.label}</strong>.
-          </p>
-          {asked ? (
-            <p className={styles.done} role="status">
-              {PATRON_NOTIFIED}
+      <div className={styles.shopBody}>
+        <Perks />
+        <div className={styles.buyColumn} style={rise(3)}>
+          <Leaf className={styles.buy}>
+            <p className={styles.prices}>
+              <strong>{monthly?.label}</strong> ou <strong>{yearly?.label}</strong>.
             </p>
-          ) : (
-            <MainAction label={PATRON_NOTIFY} onClick={ask} />
-          )}
-          <p className={styles.fine}>{PATRON_NO_ADVANTAGE}</p>
-        </Leaf>
+            {asked ? (
+              <p className={styles.done} role="status">
+                {PATRON_NOTIFIED}
+              </p>
+            ) : (
+              <MainAction label={PATRON_NOTIFY} onClick={ask} />
+            )}
+          </Leaf>
+        </div>
       </div>
     </main>
   );
@@ -365,7 +410,7 @@ function OfferView({
   };
 
   return (
-    <main className={styles.page}>
+    <main className={`${styles.page} ${styles.shop}`}>
       {confirming && (
         <p className={styles.notice} role="status">
           {PATRON_CONFIRMING}
@@ -380,62 +425,65 @@ function OfferView({
           <p>{PATRON_FOUNDING_OFFER}</p>
         </div>
       )}
-      <Benefits />
-      <div style={rise(3)}>
-        <Leaf className={styles.buy}>
-          <fieldset className={styles.plans} aria-label="Formule">
-            {patronPlanChoices(Date.now()).map((choice) => (
-              <Toy
-                key={choice.plan}
-                matter={plan === choice.plan ? "gold" : "paper"}
-                shape="tile"
-                large
-                className={styles.plan}
-                aria-pressed={plan === choice.plan}
-                aria-label={choice.note === null ? choice.label : `${choice.label}. ${choice.note}`}
-                onClick={() => setPlan(choice.plan)}
-              >
-                {choice.ribbon !== null && (
-                  <ToyBody matter="red" shape="tag" className={styles.ribbon}>
-                    <Lettering>{choice.ribbon}</Lettering>
-                  </ToyBody>
-                )}
-                <Lettering className={styles.planPrice}>{choice.price}</Lettering>
-                <span className={styles.planPeriod}>{choice.period}</span>
-              </Toy>
-            ))}
-          </fieldset>
-          <p className={styles.note}>{patronTrialNote(patron) ?? PATRON_CANCEL_NOTE}</p>
-          {guest ? (
-            <>
-              <p className={styles.text}>{PATRON_GUEST_NOTE}</p>
-              <ButtonLink href="/compte">{PATRON_CREATE_ACCOUNT}</ButtonLink>
-            </>
-          ) : (
-            <>
-              <label className={`${account.check} ${styles.check}`}>
-                <input
-                  type="checkbox"
-                  checked={waived}
-                  onChange={(event) => setWaived(event.target.checked)}
+      <div className={styles.shopBody}>
+        <Perks />
+        <div className={styles.buyColumn} style={rise(3)}>
+          <Leaf className={styles.buy}>
+            <fieldset className={styles.plans} aria-label="Formule">
+              {patronPlanChoices(Date.now()).map((choice) => (
+                <Toy
+                  key={choice.plan}
+                  matter={plan === choice.plan ? "gold" : "paper"}
+                  shape="tile"
+                  large
+                  className={styles.plan}
+                  aria-pressed={plan === choice.plan}
+                  aria-label={
+                    choice.note === null ? choice.label : `${choice.label}. ${choice.note}`
+                  }
+                  onClick={() => setPlan(choice.plan)}
+                >
+                  {choice.ribbon !== null && (
+                    <ToyBody matter="red" shape="tag" className={styles.ribbon}>
+                      <Lettering>{choice.ribbon}</Lettering>
+                    </ToyBody>
+                  )}
+                  <Lettering className={styles.planPrice}>{choice.price}</Lettering>
+                  <span className={styles.planPeriod}>{choice.period}</span>
+                </Toy>
+              ))}
+            </fieldset>
+            <p className={styles.note}>{PATRON_CANCEL_NOTE}</p>
+            {guest ? (
+              <>
+                <p className={styles.text}>{PATRON_GUEST_NOTE}</p>
+                <ButtonLink href="/compte">{PATRON_CREATE_ACCOUNT}</ButtonLink>
+              </>
+            ) : (
+              <>
+                <label className={`${account.check} ${styles.check}`}>
+                  <input
+                    type="checkbox"
+                    checked={waived}
+                    onChange={(event) => setWaived(event.target.checked)}
+                  />
+                  <span>{PATRON_WAIVER}</span>
+                </label>
+                {patron.minor && <p className={styles.warning}>{PATRON_MINOR_NOTE}</p>}
+                <MainAction
+                  label={busy ? PATRON_SUBSCRIBE_BUSY : PATRON_SUBSCRIBE}
+                  disabled={!waived || busy}
+                  onClick={() => void subscribe()}
                 />
-                <span>{PATRON_WAIVER}</span>
-              </label>
-              {patron.minor && <p className={styles.warning}>{PATRON_MINOR_NOTE}</p>}
-              <MainAction
-                label={busy ? PATRON_SUBSCRIBE_BUSY : PATRON_SUBSCRIBE}
-                disabled={!waived || busy}
-                onClick={() => void subscribe()}
-              />
-              {error !== null && (
-                <p className={styles.error} role="alert">
-                  {error}
-                </p>
-              )}
-            </>
-          )}
-          <p className={styles.fine}>{PATRON_NO_ADVANTAGE}</p>
-        </Leaf>
+                {error !== null && (
+                  <p className={styles.error} role="alert">
+                    {error}
+                  </p>
+                )}
+              </>
+            )}
+          </Leaf>
+        </div>
       </div>
     </main>
   );
@@ -457,7 +505,7 @@ function Thanks({
     const timer = setTimeout(() => setShown(true), 150);
     return () => clearTimeout(timer);
   }, []);
-  const welcome = patronWelcome(patron, Date.now());
+  const welcome = patronWelcome(patron);
   const title = patronTitleOf(patron);
   const wearing = me?.title === title;
 
@@ -485,7 +533,7 @@ function Thanks({
       </span>
       {welcome !== null && (
         <ol className={styles.timeline}>
-          {welcome.steps.map((step, index) => (
+          {welcome.map((step, index) => (
             <li
               key={step.kind + step.when}
               className={styles.step}
@@ -522,12 +570,11 @@ function Thanks({
           {PATRON_SEE_SUBSCRIPTION}
         </Toy>
       </div>
-      {welcome?.note != null && <p className={styles.fine}>{welcome.note}</p>}
     </main>
   );
 }
 
-/** The subscriber's card: who they are as a patron, what comes next, what waits to be claimed. */
+/** The subscriber's card, then each perk in the order of the offer, with its state and its action. */
 function MemberView({
   patron,
   me,
@@ -573,6 +620,7 @@ function MemberView({
             </div>
           </div>
           <Lettering className={styles.headline}>{status.headline}</Lettering>
+          {status.ending !== null && <p className={styles.ending}>{status.ending}</p>}
           {status.lines.map((line) => (
             <p key={line} className={styles.text}>
               {line}
@@ -580,7 +628,7 @@ function MemberView({
           ))}
           {status.warning !== null && <p className={styles.warning}>{status.warning}</p>}
           <Toy
-            matter="paper"
+            matter={status.ending === null ? "paper" : "gold"}
             className={styles.secondary}
             disabled={busy}
             onClick={() => void manage()}
@@ -595,28 +643,140 @@ function MemberView({
         </Leaf>
       </div>
       <div className={styles.perks} style={rise(1)}>
-        <Poll patron={patron} onChanged={onClaimed} />
-        <Finds finds={patron.finds} />
-        <Editions />
-        <DiscordSetting patron={patron} onChanged={onClaimed} />
-        <ThanksSetting patron={patron} onChanged={onClaimed} />
+        {PATRON_PERKS.map((perk) => (
+          <MemberPerk key={perk.key} perk={perk} patron={patron} me={me} onChanged={onClaimed} />
+        ))}
       </div>
-      {patron.claimable.length > 0 && (
-        <section className={styles.claims} aria-label={PATRON_CLAIMABLE_TITLE} style={rise(1)}>
-          {patron.claimable.map((item) => (
-            <ClaimTile key={item.month} item={item} onClaimed={onClaimed} />
-          ))}
-        </section>
-      )}
     </main>
+  );
+}
+
+/** A perk on the subscriber's page: its icon and title, where it stands, then what to do. */
+function PerkBlock({
+  perk,
+  line,
+  children,
+}: {
+  readonly perk: PatronPerk;
+  readonly line: string;
+  readonly children?: ReactNode;
+}) {
+  return (
+    <Leaf className={styles.finds}>
+      <div className={styles.findsHead}>
+        <PerkIcon perk={perk.key} />
+        <div className={styles.findsText}>
+          <Lettering className={styles.headline}>{perk.title}</Lettering>
+          <p className={styles.text}>{line}</p>
+        </div>
+      </div>
+      {children}
+    </Leaf>
+  );
+}
+
+function MemberPerk({
+  perk,
+  patron,
+  me,
+  onChanged,
+}: {
+  readonly perk: PatronPerk;
+  readonly patron: PatronResponse;
+  readonly me: ProfileResponse | null;
+  readonly onChanged: () => Promise<unknown>;
+}) {
+  switch (perk.key) {
+    case "cosmetic":
+      return (
+        <PerkBlock perk={perk} line={cosmeticPerkLine(patron, Date.now())}>
+          {patron.claimable.length > 0 && (
+            <section className={styles.claims} aria-label={PATRON_CLAIMABLE_TITLE}>
+              {patron.claimable.map((item) => (
+                <ClaimTile key={item.month} item={item} onClaimed={onChanged} />
+              ))}
+            </section>
+          )}
+        </PerkBlock>
+      );
+    case "word":
+      return <Finds perk={perk} finds={patron.finds} />;
+    case "editions":
+      return <Editions perk={perk} />;
+    case "cabinet":
+      return (
+        <PerkBlock perk={perk} line={PATRON_CABINET_LINE}>
+          <PerkLink href="/album" label={PATRON_OPEN_ALBUM} />
+        </PerkBlock>
+      );
+    case "badge":
+      return <BadgePerk perk={perk} patron={patron} me={me} />;
+    case "thanks":
+      return <ThanksSetting perk={perk} patron={patron} onChanged={onChanged} />;
+    case "vote":
+      return <Poll perk={perk} patron={patron} onChanged={onChanged} />;
+    case "discord":
+      return <DiscordSetting perk={perk} patron={patron} onChanged={onChanged} />;
+    case "seal":
+      return (
+        <PerkBlock perk={perk} line={PATRON_SEAL_LINE}>
+          <PerkLink href="/jouer" label={PATRON_PLAY} />
+        </PerkBlock>
+      );
+  }
+}
+
+function PerkLink({ href, label }: { readonly href: string; readonly label: string }) {
+  return (
+    <div className={styles.thanksActions}>
+      <Link href={href} className={styles.thanksLink}>
+        {label}
+      </Link>
+    </div>
+  );
+}
+
+/** The title worn or not, with the button that puts it on, and the pinned cards it adds. */
+function BadgePerk({
+  perk,
+  patron,
+  me,
+}: {
+  readonly perk: PatronPerk;
+  readonly patron: PatronResponse;
+  readonly me: ProfileResponse | null;
+}) {
+  const actions = useProfileActions();
+  const title = patronTitleOf(patron);
+  const worn = me?.title === title;
+  return (
+    <PerkBlock perk={perk} line={badgePerkLine(title, worn)}>
+      <div className={styles.thanksActions}>
+        <Link href="/profil" className={styles.thanksLink}>
+          {PATRON_SEE_PROFILE}
+        </Link>
+        {!worn && (
+          <Toy
+            matter="paper"
+            className={styles.secondary}
+            disabled={actions.busy}
+            onClick={() => void actions.update({ title }, { success: patronTitleWorn(title) })}
+          >
+            {PATRON_WEAR_TITLE}
+          </Toy>
+        )}
+      </div>
+    </PerkBlock>
   );
 }
 
 /** The vote on the theme of a coming collection: open for a week, results once it closes. */
 function Poll({
+  perk,
   patron,
   onChanged,
 }: {
+  readonly perk: PatronPerk;
   readonly patron: PatronResponse;
   readonly onChanged: () => Promise<unknown>;
 }) {
@@ -624,7 +784,7 @@ function Poll({
   const [error, setError] = useState<string | null>(null);
   const screen = pollScreen(patron, Date.now());
   const poll = patron.poll;
-  if (screen === null || poll === null) return null;
+  if (screen === null || poll === null) return <PerkBlock perk={perk} line={PATRON_VOTE_NONE} />;
 
   const vote = async (theme: number) => {
     setBusy(true);
@@ -640,16 +800,7 @@ function Poll({
   };
 
   return (
-    <Leaf className={styles.finds}>
-      <div className={styles.findsHead}>
-        <ToyBody matter="gold" shape="tile" className={styles.tileIcon}>
-          <Lettrine icon="community" matter="red" size={52} />
-        </ToyBody>
-        <div className={styles.findsText}>
-          <Lettering className={styles.headline}>{PATRON_POLL_TITLE}</Lettering>
-          <p className={styles.text}>{screen.intro}</p>
-        </div>
-      </div>
+    <PerkBlock perk={perk} line={screen.intro}>
       <ul className={styles.pollThemes}>
         {screen.themes.map((theme, index) => (
           <li key={theme.name} className={theme.winner ? styles.pollWinner : undefined}>
@@ -683,15 +834,17 @@ function Poll({
           {error}
         </p>
       )}
-    </Leaf>
+    </PerkBlock>
   );
 }
 
 /** The patrons' Discord: the link, which brings the role and the reserved room, and its undoing. */
 function DiscordSetting({
+  perk,
   patron,
   onChanged,
 }: {
+  readonly perk: PatronPerk;
   readonly patron: PatronResponse;
   readonly onChanged: () => Promise<unknown>;
 }) {
@@ -710,7 +863,7 @@ function DiscordSetting({
     router.replace("/mecene");
   }, [back, router, toast]);
 
-  if (screen === null) return null;
+  if (screen === null) return <PerkBlock perk={perk} line={PATRON_DISCORD_SOON} />;
 
   const link = async () => {
     setBusy(true);
@@ -741,16 +894,7 @@ function DiscordSetting({
   };
 
   return (
-    <Leaf className={styles.finds}>
-      <div className={styles.findsHead}>
-        <ToyBody matter="gold" shape="tile" className={styles.tileIcon}>
-          <Lettrine icon="discussion" matter="blue" size={52} />
-        </ToyBody>
-        <div className={styles.findsText}>
-          <Lettering className={styles.headline}>{PATRON_DISCORD_TITLE}</Lettering>
-          <p className={styles.text}>{screen.line}</p>
-        </div>
-      </div>
+    <PerkBlock perk={perk} line={screen.line}>
       {screen.canLink && (
         <MainAction label={PATRON_DISCORD_LINK} disabled={busy} onClick={() => void link()} />
       )}
@@ -771,21 +915,22 @@ function DiscordSetting({
           {error}
         </p>
       )}
-    </Leaf>
+    </PerkBlock>
   );
 }
 
 /** The public page of thanks: whether the patron's pseudo is on it, and « Ne pas me citer ». */
 function ThanksSetting({
+  perk,
   patron,
   onChanged,
 }: {
+  readonly perk: PatronPerk;
   readonly patron: PatronResponse;
   readonly onChanged: () => Promise<unknown>;
 }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const paying = patron.subscription?.standing === "patron";
 
   const toggle = async () => {
     setBusy(true);
@@ -800,74 +945,42 @@ function ThanksSetting({
   };
 
   return (
-    <Leaf className={styles.finds}>
-      <div className={styles.findsHead}>
-        <ToyBody matter="gold" shape="tile" className={styles.tileIcon}>
-          <Lettrine icon="books" matter="red" size={52} />
-        </ToyBody>
-        <div className={styles.findsText}>
-          <Lettering className={styles.headline}>{PATRON_THANKS_PAGE_TITLE}</Lettering>
-          <p className={styles.text}>{patronThanksLine(patron)}</p>
-        </div>
-      </div>
+    <PerkBlock perk={perk} line={patronThanksLine(patron)}>
       <div className={styles.thanksActions}>
         <Link href="/mecenes" className={styles.thanksLink}>
           {PATRON_THANKS_SEE}
         </Link>
-        {paying && (
-          <Toy
-            matter="paper"
-            className={styles.secondary}
-            disabled={busy}
-            aria-pressed={!patron.thanksListed}
-            onClick={() => void toggle()}
-          >
-            {patron.thanksListed ? PATRON_THANKS_HIDE : PATRON_THANKS_SHOW}
-          </Toy>
-        )}
+        <Toy
+          matter="paper"
+          className={styles.secondary}
+          disabled={busy}
+          aria-pressed={!patron.thanksListed}
+          onClick={() => void toggle()}
+        >
+          {patron.thanksListed ? PATRON_THANKS_HIDE : PATRON_THANKS_SHOW}
+        </Toy>
       </div>
       {error !== null && (
         <p className={styles.error} role="alert">
           {error}
         </p>
       )}
-    </Leaf>
+    </PerkBlock>
   );
 }
 
 /** The library editions owned, kept for life, and where to choose them. */
-function Editions() {
+function Editions({ perk }: { readonly perk: PatronPerk }) {
   const mine = useShared(editions);
   if (mine === null) return null;
-  return (
-    <Leaf className={styles.finds}>
-      <div className={styles.findsHead}>
-        <ToyBody matter="gold" shape="tile" className={styles.tileIcon}>
-          <Lettrine icon="ink" matter="red" size={52} />
-        </ToyBody>
-        <div className={styles.findsText}>
-          <Lettering className={styles.headline}>{PATRON_EDITIONS_TITLE}</Lettering>
-          <p className={styles.text}>{editionsOwnedLine(mine.owned)}</p>
-        </div>
-      </div>
-    </Leaf>
-  );
+  return <PerkBlock perk={perk} line={editionsOwnedLine(mine.owned)} />;
 }
 
 /** The words the patron may find, and those found, with where each stands. */
-function Finds({ finds }: { readonly finds: PatronFindsView }) {
+function Finds({ perk, finds }: { readonly perk: PatronPerk; readonly finds: PatronFindsView }) {
   const router = useRouter();
   return (
-    <Leaf className={styles.finds}>
-      <div className={styles.findsHead}>
-        <ToyBody matter="gold" shape="tile" className={styles.tileIcon}>
-          <Lettrine icon="scroll" matter="blue" size={52} />
-        </ToyBody>
-        <div className={styles.findsText}>
-          <Lettering className={styles.headline}>{PATRON_FINDS_TITLE}</Lettering>
-          <p className={styles.text}>{findsLeftLine(finds.left)}</p>
-        </div>
-      </div>
+    <PerkBlock perk={perk} line={findsLeftLine(finds.left)}>
       {finds.left > 0 ? (
         <MainAction label={PATRON_FIND_ACTION} onClick={() => router.push("/mecene/denicher")} />
       ) : (
@@ -883,7 +996,7 @@ function Finds({ finds }: { readonly finds: PatronFindsView }) {
           ))}
         </ul>
       )}
-    </Leaf>
+    </PerkBlock>
   );
 }
 

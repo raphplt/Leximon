@@ -33,7 +33,7 @@ async function albumOf(db: Reader, userId: string): Promise<string | null> {
   return row?.edition ?? null;
 }
 
-/** Only a paying patron opens the cabinet of the words: a trial does not. */
+/** Only a paying patron opens the cabinet of the words. */
 async function opensCabinet(db: Reader, userId: string): Promise<boolean> {
   const [row] = await db
     .select({ status: patronSubscriptions.status, firstPaidAt: patronSubscriptions.firstPaidAt })

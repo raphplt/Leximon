@@ -33,8 +33,6 @@ export interface CheckoutInput {
   readonly customerId: string;
   readonly userId: string;
   readonly plan: PatronPlan;
-  /** `null` for no trial. */
-  readonly trialDays: number | null;
   readonly successUrl: string;
   readonly cancelUrl: string;
   /** The client's key: a checkout asked twice is opened once. */
@@ -49,7 +47,6 @@ export interface SubscriptionSnapshot {
   readonly status: SubscriptionStatus | null;
   readonly plan: PatronPlan | null;
   readonly currentPeriodEnd: EpochMs | null;
-  readonly trialEnd: EpochMs | null;
   readonly cancelAt: EpochMs | null;
 }
 
@@ -84,7 +81,6 @@ export function subscriptionSnapshot(subscription: Stripe.Subscription): Subscri
     status: status.success ? status.data : null,
     plan: planOfLookupKey(item?.price.lookup_key),
     currentPeriodEnd: secondsToMs(periodEnd),
-    trialEnd: secondsToMs(subscription.trial_end),
     cancelAt: secondsToMs(cancelAt),
   };
 }
@@ -121,15 +117,7 @@ export const createStripeBilling: BillingFactory = (env) => {
           line_items: [{ price: price.id, quantity: 1 }],
           payment_method_collection: "always",
           locale: "fr",
-          subscription_data: {
-            metadata: { userId: input.userId },
-            ...(input.trialDays === null
-              ? {}
-              : {
-                  trial_period_days: input.trialDays,
-                  trial_settings: { end_behavior: { missing_payment_method: "cancel" } },
-                }),
-          },
+          subscription_data: { metadata: { userId: input.userId } },
           success_url: input.successUrl,
           cancel_url: input.cancelUrl,
         },

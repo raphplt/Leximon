@@ -21,7 +21,7 @@ const { adminActions, patronPeriods, patronSubscriptions, players, users } = sch
 const PAGE = 50;
 
 /** Statuses Stripe still bills: the subscribers of the counts. */
-const BILLED = sql`${patronSubscriptions.status} in ('trialing', 'active', 'past_due')`;
+const BILLED = sql`${patronSubscriptions.status} in ('active', 'past_due')`;
 
 export class InvalidPatronCursorError extends Error {}
 
@@ -35,10 +35,7 @@ export async function listPatrons(
   const paid = isNotNull(patronSubscriptions.firstPaidAt);
   const [counts] = await db
     .select({
-      patrons: sql<number>`count(*) filter (where ${BILLED} and ${paid}
-        and ${patronSubscriptions.status} <> 'trialing')::int`,
-      trials: sql<number>`count(*) filter (where ${BILLED} and (${patronSubscriptions.status} =
-        'trialing' or ${patronSubscriptions.firstPaidAt} is null))::int`,
+      patrons: sql<number>`count(*) filter (where ${BILLED} and ${paid})::int`,
       cancelling: sql<number>`count(*) filter (where ${BILLED}
         and ${patronSubscriptions.cancelAt} is not null)::int`,
       failing: sql<number>`count(*) filter (where ${patronSubscriptions.status} = 'past_due')::int`,
@@ -93,7 +90,7 @@ export async function listPatrons(
 
   return {
     sales: input.sales,
-    counts: counts ?? { patrons: 0, trials: 0, cancelling: 0, failing: 0, founders: 0 },
+    counts: counts ?? { patrons: 0, cancelling: 0, failing: 0, founders: 0 },
     monthlyRevenue: revenue.rows[0]?.cents ?? 0,
     patrons: page.map(
       (row): AdminPatron => ({

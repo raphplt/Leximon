@@ -98,6 +98,13 @@ export function patronRoutes(http: Http) {
       return redirect(response, "checkout_failed");
     },
 
+    /** Back from Stripe's portal: the subscription read again from Stripe. */
+    async refreshPatron(): Promise<PatronResponse> {
+      const response = await send("/me/patron/refresh", json("POST", {}));
+      if (!response.ok) throw new ApiError("patron_unavailable", response.status);
+      return parse(response, patronResponseSchema);
+    },
+
     /** Stripe's page to change plan, card, see invoices or cancel. */
     async openPatronPortal(): Promise<PatronRedirectResult> {
       return redirect(await send("/me/patron/portal", json("POST", {})), "portal_failed");

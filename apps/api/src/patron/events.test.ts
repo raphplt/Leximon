@@ -89,7 +89,6 @@ function subscription(overrides: Partial<Stripe.Subscription> = {}): Stripe.Subs
     status: "active",
     cancel_at: null,
     cancel_at_period_end: false,
-    trial_end: null,
     items: {
       data: [{ current_period_end: 1_802_000_000, price: { lookup_key: "patron_monthly" } }],
     },
@@ -105,7 +104,6 @@ describe("Stripe subscriptions", () => {
       status: "active",
       plan: "monthly",
       currentPeriodEnd: 1_802_000_000_000,
-      trialEnd: null,
       cancelAt: null,
     });
     expect(planOfLookupKey("patron_yearly")).toBe("yearly");

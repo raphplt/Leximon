@@ -24,10 +24,6 @@ import {
 const PAID = Date.parse("2027-01-20T10:00:00Z");
 
 describe("patron standing", () => {
-  it("is a trial while Stripe counts the free days", () => {
-    expect(patronStanding("trialing", null)).toBe("trial");
-  });
-
   it("makes a patron once a payment went through", () => {
     expect(patronStanding("active", PAID)).toBe("patron");
   });
@@ -36,8 +32,9 @@ describe("patron standing", () => {
     expect(patronStanding("past_due", PAID)).toBe("patron");
   });
 
-  it("keeps a trial whose first payment is being retried", () => {
-    expect(patronStanding("past_due", null)).toBe("trial");
+  it("waits for the first payment to be recorded", () => {
+    expect(patronStanding("active", null)).toBe("none");
+    expect(patronStanding("past_due", null)).toBe("none");
   });
 
   it("gives nothing once the subscription ended or never started", () => {
@@ -67,7 +64,6 @@ describe("Paris months", () => {
 describe("founders", () => {
   const rules = {
     startsAt: 0,
-    trialDays: 14,
     prices: { monthly: 399, yearly: 2999 },
     foundingMonth: "2027-01",
     cosmetics: {},
@@ -88,9 +84,8 @@ describe("founders", () => {
     expect(isFoundingPayment({ ...rules, foundingMonth: null }, PAID)).toBe(false);
   });
 
-  it("start with no founding month and no free days", () => {
+  it("start with no founding month", () => {
     const current = patronRulesAt(PATRON_SCHEDULE, Date.now());
-    expect(current.trialDays).toBe(0);
     expect(current.foundingMonth).toBeNull();
   });
 });
@@ -102,9 +97,9 @@ describe("the mark and the title", () => {
     expect(patronTitle("patron", true)).toBe(FOUNDER_TITLE);
   });
 
-  it("show a patron during the trial, and nobody after", () => {
-    expect(patronMark("trial", false)).toBe("patron");
-    expect(patronTitle("trial", false)).toBe(PATRON_TITLE);
+  it("show a patron while subscribed, and nobody after", () => {
+    expect(patronMark("patron", false)).toBe("patron");
+    expect(patronTitle("patron", false)).toBe(PATRON_TITLE);
     expect(patronMark("none", false)).toBeNull();
   });
 });
@@ -114,7 +109,6 @@ describe("cosmetics of the month", () => {
   const avatar = { kind: "avatar", avatar: "lucubrateur" } as const;
   const rules = {
     startsAt: 0,
-    trialDays: 14,
     prices: { monthly: 399, yearly: 2999 },
     foundingMonth: null,
     cosmetics: { "2027-01": frame, "2027-02": avatar, "2027-03": frame },
@@ -249,7 +243,7 @@ describe("library editions", () => {
     expect(ownedEditions(rules, periods, at("2028-01-01T10:00:00Z"))).toContain("bistre");
   });
 
-  it("are not given by a trial nor by a refunded payment", () => {
+  it("are not given without a payment nor by a refunded one", () => {
     expect(ownedEditions(rules, [], at("2027-02-25T10:00:00Z"))).toEqual([]);
     const refunded = [period("2027-01-20T10:00:00Z", "2027-02-20T10:00:00Z", true)];
     expect(ownedEditions(rules, refunded, at("2027-02-25T10:00:00Z"))).toEqual([]);

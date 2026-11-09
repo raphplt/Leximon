@@ -10,7 +10,7 @@ const { patronSubscriptions, players, userProgress, users } = schema;
 type Reader = Pick<Database, "select">;
 
 /**
- * `GET /patrons`: who the public page thanks. A paying patron, never during the trial, with a
+ * `GET /patrons`: who the public page thanks. A paying patron with a
  * profile anyone may read, who did not ask to stay off it; never a suspended or closed account.
  * The list is as long as the patrons are few, and the CDN keeps it a few minutes.
  */

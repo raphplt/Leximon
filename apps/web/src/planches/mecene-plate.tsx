@@ -5,10 +5,10 @@ import type { ToyIconName } from "@leximon/tokens";
 import {
   claimableLabel,
   monthCosmeticLine,
-  PATRON_BENEFITS,
+  PATRON_CANCEL_NOTE,
   PATRON_CLAIM,
   PATRON_MANAGE,
-  PATRON_NO_ADVANTAGE,
+  PATRON_PERKS,
   PATRON_SUBSCRIBE,
   PATRON_THANKS,
   PATRON_WAIVER,
@@ -16,7 +16,6 @@ import {
   PLAIN_BANNER,
   patronPlanChoices,
   patronStatus,
-  patronTrialNote,
 } from "@leximon/view-model";
 import { type CSSProperties, useEffect, useState } from "react";
 import account from "@/account/account-screen.module.css";
@@ -63,8 +62,6 @@ const OFFER: PatronResponse = {
   monthCosmetic: MONTH,
   claimable: [],
   canBuy: true,
-  trialAvailable: true,
-  trialDays: 14,
   founder: false,
   foundingOffer: true,
   finds: { left: 0, words: [] },
@@ -84,7 +81,6 @@ const MEMBER: PatronResponse = {
     standing: "patron",
     plan: "monthly",
     currentPeriodEnd: "2026-12-14T08:00:00.000Z",
-    trialEnd: null,
     cancelAt: null,
     paymentFailing: false,
     since: "2026-10-14T08:00:00.000Z",
@@ -178,12 +174,12 @@ function Plans({ big = false }: { readonly big?: boolean }) {
   );
 }
 
-/** The trial, the waiver and the button: the same under every direction. */
+/** The waiver and the button: the same under every direction. */
 function Checkout() {
   const [waived, setWaived] = useState(false);
   return (
     <div className={styles.checkout}>
-      <p className={styles.note}>{patronTrialNote(OFFER)}</p>
+      <p className={styles.note}>{PATRON_CANCEL_NOTE}</p>
       <label className={`${account.check} ${styles.check}`}>
         <input
           type="checkbox"
@@ -295,8 +291,8 @@ function Showcase({ member }: { readonly member: boolean }) {
         </div>
       )}
       <div className={styles.benefits} style={rise(2)}>
-        {PATRON_BENEFITS.map((benefit, index) => (
-          <Leaf key={benefit} className={styles.benefit}>
+        {PATRON_PERKS.map((perk, index) => (
+          <Leaf key={perk.key} className={styles.benefit}>
             <ToyBody matter="gold" shape="tile" className={styles.benefitIcon}>
               <Lettrine
                 icon={BENEFIT_ICONS[index] ?? "chest"}
@@ -304,14 +300,16 @@ function Showcase({ member }: { readonly member: boolean }) {
                 size={52}
               />
             </ToyBody>
-            <p>{benefit}</p>
+            <p>
+              <strong>{perk.lead}</strong>
+              {perk.rest}
+            </p>
           </Leaf>
         ))}
       </div>
       <Leaf className={styles.buy}>
         <Plans big />
         <Checkout />
-        <p className={styles.fine}>{PATRON_NO_ADVANTAGE}</p>
       </Leaf>
     </div>
   );
@@ -339,14 +337,14 @@ function Charter({ member }: { readonly member: boolean }) {
         <>
           <p className={styles.lead}>{monthCosmeticLine(MONTH)}</p>
           <ol className={styles.articles}>
-            {PATRON_BENEFITS.map((benefit, index) => (
-              <li key={benefit}>
+            {PATRON_PERKS.map((perk, index) => (
+              <li key={perk.key}>
                 <span className={styles.articleNumber}>{index + 1}</span>
-                {benefit}
+                {perk.lead}
+                {perk.rest}
               </li>
             ))}
           </ol>
-          <p className={styles.fine}>{PATRON_NO_ADVANTAGE}</p>
           <Plans />
           <Checkout />
         </>
@@ -403,8 +401,11 @@ function Profile({ member }: { readonly member: boolean }) {
           <>
             <Lettering className={styles.sideTitle}>Devenir mécène</Lettering>
             <ul className={styles.ticks}>
-              {PATRON_BENEFITS.map((benefit) => (
-                <li key={benefit}>{benefit}</li>
+              {PATRON_PERKS.map((perk) => (
+                <li key={perk.key}>
+                  {perk.lead}
+                  {perk.rest}
+                </li>
               ))}
             </ul>
             <Plans />
@@ -418,15 +419,15 @@ function Profile({ member }: { readonly member: boolean }) {
 
 // --- Back from the payment: a reward, the same moment under every direction -----------------
 
-/** What the trial gives now, and what comes with the first payment. */
+/** What the subscription gives now, and what comes each month and each quarter. */
 const TIMELINE: readonly {
   readonly when: string;
   readonly what: string;
   readonly icon: ToyIconName;
 }[] = [
-  { when: "Aujourd'hui", what: "Le titre et le badge de mécène", icon: "gilded" },
-  { when: "22 novembre", what: "Premier paiement de 3,99 €", icon: "ecu" },
-  { when: "Dès ce paiement", what: "Le cadre du mois et ton mot à dénicher", icon: "chest" },
+  { when: "Aujourd'hui", what: "Le titre, le badge et le cosmétique du mois", icon: "gilded" },
+  { when: "Chaque mois", what: "Un nouveau cosmétique, gardé à vie", icon: "chest" },
+  { when: "Chaque trimestre", what: "Un mot à dénicher pour le jeu", icon: "scroll" },
 ];
 
 function Thanks({ direction }: { readonly direction: Direction }) {
@@ -476,9 +477,6 @@ function Thanks({ direction }: { readonly direction: Direction }) {
           Voir mon profil
         </Toy>
       </div>
-      <p className={styles.fine}>
-        Tu peux résilier en un clic avant le 22 novembre, sans rien payer.
-      </p>
     </div>
   );
 }

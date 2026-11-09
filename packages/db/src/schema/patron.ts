@@ -34,15 +34,12 @@ export const patronSubscriptions = pgTable(
     /** The latest checkout opened: expired when another one opens, so that only one can be paid. */
     checkoutSessionId: text(),
     stripeSubscriptionId: text().unique(),
-    /** Stripe's status, as Stripe names it (`trialing`, `active`, `past_due`, `canceled`…). */
+    /** Stripe's status, as Stripe names it (`active`, `past_due`, `canceled`…). */
     status: text(),
     plan: text(),
     currentPeriodEnd: timestamp({ withTimezone: true }),
-    trialEnd: timestamp({ withTimezone: true }),
     /** When a subscription cancelled by the player stops; `null` while it renews. */
     cancelAt: timestamp({ withTimezone: true }),
-    /** A trial, once per account. */
-    trialUsedAt: timestamp({ withTimezone: true }),
     firstPaidAt: timestamp({ withTimezone: true }),
     /** First payment within the founding month: a founder for life. */
     founderAt: timestamp({ withTimezone: true }),
@@ -59,8 +56,8 @@ export const patronSubscriptions = pgTable(
 );
 
 /**
- * One row per invoice paid with money: the months it covers. Trials and invoices of zero are not
- * periods. What a patron is given for having paid is read from here.
+ * One row per invoice paid with money: the months it covers. Invoices of zero are not periods.
+ * What a patron is given for having paid is read from here.
  */
 export const patronPeriods = pgTable(
   "patron_periods",

@@ -66,7 +66,6 @@ const { db, close } = createDb(url, { maxConnections: 4 });
 afterAll(close);
 
 const DAY = 86_400_000;
-const TRIAL_DAYS = PATRON_SCHEDULE[0].trialDays;
 const THIS_MONTH = parisMonthOf(Date.now());
 
 /** Stripe, as far as the game asks it: subscriptions are set by the test, as Stripe would. */
@@ -227,10 +226,9 @@ function subscribe(
   const subscription: SubscriptionSnapshot = {
     id: stripe.newSubscriptionId(),
     customerId,
-    status: "trialing",
+    status: "active",
     plan: "monthly",
-    currentPeriodEnd: now + TRIAL_DAYS * DAY,
-    trialEnd: now + TRIAL_DAYS * DAY,
+    currentPeriodEnd: now + 30 * DAY,
     cancelAt: null,
     ...overrides,
   };
@@ -285,7 +283,7 @@ async function rowOf(userId: string) {
 }
 
 describe("the patron page", () => {
-  it("offers the subscription and its trial to a member who never subscribed", async () => {
+  it("offers the subscription to a member who never subscribed", async () => {
     const member = await signInAsMember(app, env, db);
     expect(await readPatron(member)).toEqual({
       sales: "open",
@@ -294,8 +292,6 @@ describe("the patron page", () => {
       monthCosmetic: { month: THIS_MONTH, cosmetic: { kind: "frame", frame: "wax" } },
       claimable: [],
       canBuy: true,
-      trialAvailable: TRIAL_DAYS > 0,
-      trialDays: TRIAL_DAYS,
       founder: false,
       foundingOffer: false,
       finds: { left: 0, words: [] },
@@ -348,7 +344,7 @@ describe("checkout", () => {
     expect(response.status).toBe(400);
   });
 
-  it("opens Stripe's page with the trial, the plan and the way back", async () => {
+  it("opens Stripe's page with the plan and the way back", async () => {
     const member = await signInAsMember(app, env, db);
     const response = await checkout(member, "yearly");
     expect(response.status).toBe(200);
@@ -358,7 +354,6 @@ describe("checkout", () => {
     expect(sent).toMatchObject({
       userId: member.userId,
       plan: "yearly",
-      trialDays: TRIAL_DAYS > 0 ? TRIAL_DAYS : null,
       successUrl: "http://localhost:3000/mecene?merci",
       cancelUrl: "http://localhost:3000/mecene",
     });
@@ -402,15 +397,15 @@ describe("Stripe's webhook", () => {
     expect(response.status).toBe(400);
   });
 
-  it("starts a trial with the title and the badge, and nothing more to buy", async () => {
+  it("gives nothing before the first payment is recorded, and nothing more to buy", async () => {
     const { member, customerId } = await memberWithCustomer();
     const subscription = subscribe(customerId);
     expect(await eventResult(await checkoutCompleted(subscription))).toBe("applied");
 
     const patron = await readPatron(member);
-    expect(patron.subscription).toMatchObject({ standing: "trial", plan: "monthly", since: null });
+    expect(patron.subscription).toMatchObject({ standing: "none", plan: "monthly", since: null });
+    expect(patron.mark).toBeNull();
     expect(patron.canBuy).toBe(false);
-    expect(patron.trialAvailable).toBe(false);
     const again = await checkout(member);
     expect(patronRefusalSchema.parse(await again.json()).error).toBe("already_patron");
   });
@@ -419,7 +414,6 @@ describe("Stripe's webhook", () => {
     const { member, customerId } = await memberWithCustomer();
     const subscription = subscribe(customerId);
     await checkoutCompleted(subscription);
-    stripe.subscriptions.set(subscription.id, { ...subscription, status: "active" });
     expect(await eventResult(await invoicePaid(subscription))).toBe("applied");
 
     const patron = await readPatron(member);
@@ -433,7 +427,7 @@ describe("Stripe's webhook", () => {
     expect(periods[0]).toMatchObject({ plan: "monthly", amountPaid: 399 });
   });
 
-  it("counts no period for the invoice of zero that starts a trial", async () => {
+  it("counts no period for an invoice of zero", async () => {
     const { member, customerId } = await memberWithCustomer();
     const subscription = subscribe(customerId);
     const response = await sendEvent("invoice.paid", {
@@ -446,7 +440,7 @@ describe("Stripe's webhook", () => {
       lines: { data: [{ period: { start: 1, end: 2 } }] },
     });
     expect(await eventResult(response)).toBe("applied");
-    expect((await readPatron(member)).subscription?.standing).toBe("trial");
+    expect((await readPatron(member)).subscription?.standing).toBe("none");
     const periods = await db
       .select()
       .from(schema.patronPeriods)
@@ -456,7 +450,7 @@ describe("Stripe's webhook", () => {
 
   it("applies an event once, even sent twice at the same time", async () => {
     const { member, customerId } = await memberWithCustomer();
-    const subscription = subscribe(customerId, { status: "active", trialEnd: null });
+    const subscription = subscribe(customerId, { status: "active" });
     await checkoutCompleted(subscription);
     const invoiceId = `in_${crypto.randomUUID()}`;
     const eventId = `evt_${crypto.randomUUID()}`;
@@ -488,7 +482,7 @@ describe("Stripe's webhook", () => {
 
   it("follows Stripe's latest state whatever order the events come in", async () => {
     const { member, customerId } = await memberWithCustomer();
-    const subscription = subscribe(customerId, { status: "active", trialEnd: null });
+    const subscription = subscribe(customerId, { status: "active" });
     await checkoutCompleted(subscription);
     const cancelAt = Date.now() + 10 * DAY;
     stripe.subscriptions.set(subscription.id, { ...subscription, status: "canceled", cancelAt });
@@ -503,7 +497,7 @@ describe("Stripe's webhook", () => {
 
   it("says when a subscription stops, and when a payment fails", async () => {
     const { member, customerId } = await memberWithCustomer();
-    const subscription = subscribe(customerId, { status: "active", trialEnd: null });
+    const subscription = subscribe(customerId, { status: "active" });
     await checkoutCompleted(subscription);
     await invoicePaid(subscription);
     const cancelAt = Date.now() + 20 * DAY;
@@ -524,23 +518,29 @@ describe("Stripe's webhook", () => {
     });
   });
 
-  it("gives no second trial, after a trial or after a payment", async () => {
+  it("reads the subscription again from Stripe back from the portal, before any webhook", async () => {
     const { member, customerId } = await memberWithCustomer();
     const subscription = subscribe(customerId);
     await checkoutCompleted(subscription);
-    stripe.subscriptions.set(subscription.id, { ...subscription, status: "canceled" });
-    await sendEvent("customer.subscription.deleted", { id: subscription.id, customer: customerId });
+    await invoicePaid(subscription);
+    const cancelAt = Date.now() + 20 * DAY;
+    stripe.subscriptions.set(subscription.id, { ...subscription, cancelAt });
+    expect((await readPatron(member)).subscription?.cancelAt).toBeNull();
 
-    expect((await readPatron(member)).trialAvailable).toBe(false);
-    expect((await checkout(member)).status).toBe(200);
-    expect(stripe.checkouts.at(-1)?.trialDays).toBeNull();
+    const response = await request(member, "POST", "/me/patron/refresh", {});
+    expect(response.status).toBe(200);
+    const patron = patronResponseSchema.parse(await response.json());
+    expect(patron.subscription).toMatchObject({
+      standing: "patron",
+      cancelAt: new Date(cancelAt).toISOString(),
+    });
   });
 
   it("cancels a second subscription opened next to a live one", async () => {
     const { member, customerId } = await memberWithCustomer();
-    const first = subscribe(customerId, { status: "active", trialEnd: null });
+    const first = subscribe(customerId, { status: "active" });
     await checkoutCompleted(first);
-    const second = subscribe(customerId, { status: "active", trialEnd: null });
+    const second = subscribe(customerId, { status: "active" });
     expect(await eventResult(await checkoutCompleted(second))).toBe("applied");
 
     expect(stripe.cancelled).toContain(second.id);
@@ -574,7 +574,7 @@ describe("the subscription portal", () => {
 describe("deleting an account", () => {
   it("stops the subscription and makes Stripe forget the account", async () => {
     const { member, customerId } = await memberWithCustomer();
-    const subscription = subscribe(customerId, { status: "active", trialEnd: null });
+    const subscription = subscribe(customerId, { status: "active" });
     await checkoutCompleted(subscription);
 
     expect((await request(member, "DELETE", "/me/account")).status).toBe(204);
@@ -585,7 +585,7 @@ describe("deleting an account", () => {
 
   it("deletes nothing while Stripe cannot be reached", async () => {
     const { member, customerId } = await memberWithCustomer();
-    await checkoutCompleted(subscribe(customerId, { status: "active", trialEnd: null }));
+    await checkoutCompleted(subscribe(customerId, { status: "active" }));
     stripe.setFailing(true);
     try {
       expect((await request(member, "DELETE", "/me/account")).status).toBe(503);
@@ -599,7 +599,7 @@ describe("deleting an account", () => {
 /** A member whose first month is paid. */
 async function payingPatron() {
   const { member, customerId } = await memberWithCustomer();
-  const subscription = subscribe(customerId, { status: "active", trialEnd: null });
+  const subscription = subscribe(customerId, { status: "active" });
   await checkoutCompleted(subscription);
   await invoicePaid(subscription);
   return { member, customerId, subscription };
@@ -639,7 +639,7 @@ describe("the cosmetic of the month", () => {
     expect(statuses.sort()).toEqual([200, 409]);
   });
 
-  it("waits for the first payment: nothing during the trial", async () => {
+  it("waits for the first payment", async () => {
     const { member, customerId } = await memberWithCustomer();
     await checkoutCompleted(subscribe(customerId));
     expect((await readPatron(member)).claimable).toEqual([]);
@@ -656,14 +656,16 @@ describe("the cosmetic of the month", () => {
 });
 
 describe("the title and the mark", () => {
-  it("come with the trial and go with the subscription, the claimed cosmetics stay", async () => {
+  it("come with the first payment and go with the subscription", async () => {
     const { member, customerId } = await memberWithCustomer();
     const subscription = subscribe(customerId);
     await checkoutCompleted(subscription);
+    expect((await readProfile(member)).patron).toBeNull();
+    await invoicePaid(subscription);
     const during = await readProfile(member);
     expect(during.wardrobe.titles).toContain("Mécène");
     expect(during.patron).toBe("patron");
-    expect(during.patronPaying).toBe(false);
+    expect(during.patronPaying).toBe(true);
     expect((await readPatron(member)).mark).toBe("patron");
 
     stripe.subscriptions.set(subscription.id, { ...subscription, status: "canceled" });
@@ -777,7 +779,7 @@ async function reserveOf(count: number) {
 /** A patron who paid a year: one word to find at once. */
 async function yearlyPatron(pseudo: string | null = `Mecene${crypto.randomUUID().slice(0, 6)}`) {
   const { member, customerId } = await memberWithCustomer();
-  const subscription = subscribe(customerId, { status: "active", trialEnd: null, plan: "yearly" });
+  const subscription = subscribe(customerId, { status: "active", plan: "yearly" });
   await checkoutCompleted(subscription);
   await invoicePaid(subscription);
   await ensurePlayer(db, member.userId);
@@ -902,7 +904,7 @@ async function editionRefusal(response: Response) {
 }
 
 describe("library editions", () => {
-  it("come with the first payment, not with the trial", async () => {
+  it("come with the first payment", async () => {
     const { member, customerId } = await memberWithCustomer();
     await checkoutCompleted(subscribe(customerId));
     expect((await readEditions(member)).owned).toEqual([]);
@@ -997,10 +999,10 @@ describe("library editions", () => {
 });
 
 describe("pinned cards of a patron", () => {
-  it("are three more while paying, not during the trial, and the extra ones hide at the end", async () => {
-    const trial = await memberWithCustomer();
-    await checkoutCompleted(subscribe(trial.customerId));
-    const before = (await readProfile(trial.member)).pinnedSlots;
+  it("are three more while paying, and the extra ones hide at the end", async () => {
+    const unpaid = await memberWithCustomer();
+    await checkoutCompleted(subscribe(unpaid.customerId));
+    const before = (await readProfile(unpaid.member)).pinnedSlots;
 
     const { member, customerId, subscription } = await payingPatron();
     const slots = (await readProfile(member)).pinnedSlots;
@@ -1031,7 +1033,7 @@ describe("the page of thanks", () => {
     const pseudo = `Merci${crypto.randomUUID().slice(0, 6)}`;
     const { member, customerId } = await memberWithCustomer();
     if (paying) {
-      const subscription = subscribe(customerId, { status: "active", trialEnd: null });
+      const subscription = subscribe(customerId, { status: "active" });
       await checkoutCompleted(subscription);
       await invoicePaid(subscription);
     } else {
@@ -1053,17 +1055,17 @@ describe("the page of thanks", () => {
     return patronThanksResponseSchema.parse(await response.json()).patrons;
   }
 
-  it("names paying patrons with a public profile, founders first, and not the trial", async () => {
+  it("names paying patrons with a public profile, founders first", async () => {
     const first = await publicPatron(true);
     const founder = await publicPatron(true);
     await db
       .update(schema.patronSubscriptions)
       .set({ founderAt: new Date() })
       .where(eq(schema.patronSubscriptions.userId, founder.member.userId));
-    const trial = await publicPatron(false);
+    const unpaid = await publicPatron(false);
 
     const pseudos = (await thanked()).map((patron) => patron.pseudo);
-    expect(pseudos).not.toContain(trial.pseudo);
+    expect(pseudos).not.toContain(unpaid.pseudo);
     expect(pseudos.indexOf(founder.pseudo)).toBeGreaterThanOrEqual(0);
     expect(pseudos.indexOf(founder.pseudo)).toBeLessThan(pseudos.indexOf(first.pseudo));
     expect((await thanked()).find((patron) => patron.pseudo === founder.pseudo)?.founder).toBe(
@@ -1162,11 +1164,11 @@ describe("the patrons' vote", () => {
     expect(list.polls[0]?.votes).toEqual([0, 0, 0]);
   });
 
-  it("takes a paying patron's voice, changed until it closes, and not a trial's", async () => {
+  it("takes a paying patron's voice, changed until it closes", async () => {
     const pollId = await openVote();
-    const { member: trial, customerId } = await memberWithCustomer();
+    const { member: unpaid, customerId } = await memberWithCustomer();
     await checkoutCompleted(subscribe(customerId));
-    expect(await voteRefusal(await vote(trial, pollId, 0))).toBe("not_patron");
+    expect(await voteRefusal(await vote(unpaid, pollId, 0))).toBe("not_patron");
 
     const { member } = await payingPatron();
     const [once, twice] = await Promise.all([vote(member, pollId, 1), vote(member, pollId, 1)]);
@@ -1230,10 +1232,10 @@ describe("the patrons' Discord", () => {
   const linkOf = async (userId: string) =>
     (await db.select().from(schema.discordLinks).where(eq(schema.discordLinks.userId, userId)))[0];
 
-  it("is linked by a paying patron, never during the trial", async () => {
-    const { member: trial, customerId } = await memberWithCustomer();
+  it("is linked by a paying patron only", async () => {
+    const { member: unpaid, customerId } = await memberWithCustomer();
     await checkoutCompleted(subscribe(customerId));
-    expect(await linkUrl(trial).then((r) => r.status)).toBe(409);
+    expect(await linkUrl(unpaid).then((r) => r.status)).toBe(409);
 
     const { member } = await payingPatron();
     const id = discordId();

@@ -1,8 +1,9 @@
-import type {
-  PatronClaimRefusal,
-  PatronRefusal,
-  PatronResponse,
-  PatronSales,
+import {
+  PATRON_PORTAL_RETURN_QUERY,
+  type PatronClaimRefusal,
+  type PatronRefusal,
+  type PatronResponse,
+  type PatronSales,
 } from "@leximon/contract";
 import {
   type ClaimedReward,
@@ -15,7 +16,6 @@ import {
   type PatronCosmetic,
   type PatronMark,
   type PatronPlan,
-  type PatronRules,
   type PatronStanding,
   patronMark,
   patronRulesAt,
@@ -49,7 +49,6 @@ const standingOf = (row: Pick<PatronRow, "status" | "firstPaidAt">): PatronStand
 
 /** A subscription Stripe still bills or may bill again: the account cannot open a second one. */
 const LIVE_STATUSES: ReadonlySet<string> = new Set<SubscriptionStatus>([
-  "trialing",
   "active",
   "past_due",
   "incomplete",
@@ -85,11 +84,6 @@ function buyRefusal(sales: PatronSales, buyer: Buyer, row: PatronRow | undefined
   if (row !== undefined && isLive(row.status)) return "already_patron";
   return null;
 }
-
-/** A trial once per account, never after a payment, and none while the rules give 0 days. */
-const trialAvailable = (row: PatronRow | undefined, rules: PatronRules) =>
-  rules.trialDays > 0 &&
-  (row === undefined || (row.trialUsedAt === null && row.firstPaidAt === null));
 
 async function readRow(db: Database, userId: string): Promise<PatronRow | undefined> {
   const [row] = await db
@@ -135,8 +129,6 @@ export async function readPatron(
     monthCosmetic: monthCosmetic(rules, input.now),
     claimable: claimableCosmetics(rules, periods, claimed, input.now),
     canBuy: buyRefusal(input.sales, buyer, row) === null,
-    trialAvailable: trialAvailable(row, rules),
-    trialDays: rules.trialDays,
     founder,
     foundingOffer: isFoundingPayment(rules, input.now),
     thanksListed: row?.thanksHidden !== true,
@@ -158,7 +150,6 @@ export async function readPatron(
             standing,
             plan: row.plan as PatronPlan | null,
             currentPeriodEnd: row.currentPeriodEnd?.toISOString() ?? null,
-            trialEnd: row.trialEnd?.toISOString() ?? null,
             cancelAt: row.cancelAt?.toISOString() ?? null,
             paymentFailing: row.status === "past_due",
             since: row.firstPaidAt?.toISOString() ?? null,
@@ -256,7 +247,6 @@ export async function readPatronWardrobe(
   const row = rows[0];
   const standing = row === undefined ? "none" : standingOf(row);
   const title = row === undefined ? null : patronTitle(standing, row.founderAt !== null);
-  // Only a paying patron shows more pinned cards: a trial gives the title alone.
   const slots = standing === "patron" ? patronRulesAt(PATRON_SCHEDULE, now).extraPinnedSlots : 0;
   return [
     ...claims.map((claim) => ({ rewards: [claim.cosmetic] })),
@@ -267,7 +257,7 @@ export async function readPatronWardrobe(
   ];
 }
 
-/** A paying patron now: the trial gives the title and the badge, not this. */
+/** A paying patron now, unlike a founder who stopped and keeps the mark. */
 export async function paysAsPatron(db: Reader, userId: string): Promise<boolean> {
   const [row] = await db
     .select({ status: patronSubscriptions.status, firstPaidAt: patronSubscriptions.firstPaidAt })
@@ -306,7 +296,7 @@ export type CheckoutResult =
 /**
  * Opens a Stripe checkout. Nothing is granted here: the subscription exists once Stripe says so,
  * through the webhook. The customer is made before the first checkout and kept, so that every
- * checkout, the portal and the trial once per account all know the player.
+ * checkout and the portal know the player.
  */
 export async function openCheckout(
   db: Database,
@@ -330,12 +320,10 @@ export async function openCheckout(
   const row = found ?? (await createCustomerRow(db, billing, input.userId));
   // Two checkouts open in two tabs would make two subscriptions: the older one goes.
   if (row.checkoutSessionId !== null) await billing.expireCheckout(row.checkoutSessionId);
-  const rules = patronRulesAt(PATRON_SCHEDULE, input.now);
   const session = await billing.createCheckout({
     customerId: row.stripeCustomerId,
     userId: input.userId,
     plan: input.plan,
-    trialDays: trialAvailable(row, rules) ? rules.trialDays : null,
     successUrl: `${input.webUrl}/mecene?merci`,
     cancelUrl: `${input.webUrl}/mecene`,
     idempotencyKey: input.idempotencyKey,
@@ -376,8 +364,40 @@ export async function openPortal(
 ): Promise<PortalResult> {
   const row = await readRow(db, input.userId);
   if (row?.stripeSubscriptionId == null) return { kind: "refused", reason: "not_subscribed" };
-  const url = await billing.createPortal(row.stripeCustomerId, `${input.webUrl}/mecene`);
+  const url = await billing.createPortal(
+    row.stripeCustomerId,
+    `${input.webUrl}/mecene?${PATRON_PORTAL_RETURN_QUERY}`,
+  );
   return { kind: "opened", url };
+}
+
+/**
+ * Back from Stripe's portal: the subscription read again from Stripe, so that a cancellation
+ * shows at once even when the webhook is late. Returns whether the standing changed, for the
+ * Discord role to follow.
+ */
+export async function refreshSubscription(
+  db: Database,
+  billing: Billing,
+  input: { readonly userId: string; readonly now: EpochMs },
+): Promise<boolean> {
+  const found = await readRow(db, input.userId);
+  if (found?.stripeSubscriptionId == null) return false;
+  const snapshot = await billing.retrieveSubscription(found.stripeSubscriptionId);
+  return db.transaction(async (tx) => {
+    const [row] = await tx
+      .select()
+      .from(patronSubscriptions)
+      .where(eq(patronSubscriptions.userId, input.userId))
+      .for("update");
+    // A newer subscription came meanwhile: the webhook tells about it.
+    if (row === undefined || row.stripeSubscriptionId !== snapshot.id) return false;
+    await tx
+      .update(patronSubscriptions)
+      .set({ ...subscriptionColumns(snapshot), updatedAt: new Date(input.now) })
+      .where(eq(patronSubscriptions.userId, input.userId));
+    return standingOf(row) !== standingOf({ ...row, status: snapshot.status });
+  });
 }
 
 export type EventResult =
@@ -455,7 +475,7 @@ export async function applyBillingEvent(
     await tx
       .update(patronSubscriptions)
       .set({
-        ...(change.kind === "take" ? subscriptionColumns(row, change.snapshot, at) : {}),
+        ...(change.kind === "take" ? subscriptionColumns(change.snapshot) : {}),
         firstPaidAt,
         founderAt,
         updatedAt: at,
@@ -492,16 +512,14 @@ function subscriptionChange(row: PatronRow, snapshot: SubscriptionSnapshot): Sub
   return { kind: "take", snapshot };
 }
 
-function subscriptionColumns(row: PatronRow, snapshot: SubscriptionSnapshot, at: Date) {
+function subscriptionColumns(snapshot: SubscriptionSnapshot) {
   const toDate = (time: EpochMs | null) => (time === null ? null : new Date(time));
   return {
     stripeSubscriptionId: snapshot.id,
     status: snapshot.status,
     plan: snapshot.plan,
     currentPeriodEnd: toDate(snapshot.currentPeriodEnd),
-    trialEnd: toDate(snapshot.trialEnd),
     cancelAt: toDate(snapshot.cancelAt),
-    trialUsedAt: row.trialUsedAt ?? (snapshot.trialEnd === null ? null : at),
   };
 }
 

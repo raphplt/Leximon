@@ -1,7 +1,9 @@
 import type { PatronResponse } from "@leximon/contract";
 import { describe, expect, it } from "vitest";
 import {
+  badgePerkLine,
   claimableLabel,
+  cosmeticPerkLine,
   discordScreen,
   finderLine,
   findStateLine,
@@ -18,7 +20,6 @@ import {
   patronPlanChoices,
   patronStatus,
   patronThanksLine,
-  patronTrialNote,
   patronWelcome,
   pollScreen,
   thanksGroups,
@@ -38,8 +39,6 @@ function patron(overrides: Partial<PatronResponse> = {}): PatronResponse {
     monthCosmetic: null,
     claimable: [],
     canBuy: true,
-    trialAvailable: true,
-    trialDays: 14,
     founder: false,
     foundingOffer: false,
     finds: { left: 0, words: [] },
@@ -56,7 +55,6 @@ function subscription(overrides: Partial<Subscription> = {}): Subscription {
     standing: "patron",
     plan: "monthly",
     currentPeriodEnd: "2027-04-14T08:00:00.000Z",
-    trialEnd: null,
     cancelAt: null,
     paymentFailing: false,
     since: "2027-02-14T08:00:00.000Z",
@@ -82,11 +80,8 @@ describe("patronPageKind", () => {
     expect(patronPageKind(patron({ sales: "unavailable", canBuy: false }), false)).toBe("door");
   });
 
-  it("shows the status to a subscriber, trial included", () => {
+  it("shows the status to a paying subscriber", () => {
     expect(patronPageKind(patron({ subscription: subscription() }), false)).toBe("member");
-    expect(
-      patronPageKind(patron({ subscription: subscription({ standing: "trial" }) }), false),
-    ).toBe("member");
   });
 
   it("offers again to a former subscriber", () => {
@@ -121,11 +116,6 @@ describe("prices", () => {
       "par an",
       "2,50 € par mois",
     ]);
-  });
-
-  it("mentions the trial only to who never had one", () => {
-    expect(patronTrialNote(patron())).toContain("14 premiers jours");
-    expect(patronTrialNote(patron({ trialAvailable: false }))).toBeNull();
   });
 });
 
@@ -181,9 +171,11 @@ describe("patronStatus", () => {
       NOW,
       ZONE,
     );
-    expect(status?.lines).toEqual([
-      "Ton abonnement s'arrête le 14 avril. Tes cosmétiques restent à toi.",
-    ]);
+    expect(status?.headline).toBe("Mécène jusqu'au 14 avril");
+    expect(status?.ending).toBe(
+      "Tu as résilié ton abonnement. Il s'arrête le 14 avril, sans autre paiement, et tes cosmétiques restent à toi.",
+    );
+    expect(status?.lines).toEqual([]);
     expect(status?.manage).toBe(PATRON_RESUME);
   });
 
@@ -200,42 +192,6 @@ describe("patronStatus", () => {
     ]);
   });
 
-  it("tells a trial when it ends and what it pays then", () => {
-    const status = patronStatus(
-      patron({
-        subscription: subscription({
-          standing: "trial",
-          since: null,
-          trialEnd: "2027-03-22T08:00:00.000Z",
-          currentPeriodEnd: "2027-03-22T08:00:00.000Z",
-        }),
-      }),
-      NOW,
-      ZONE,
-    );
-    expect(status?.headline).toBe("Essai gratuit en cours");
-    expect(plain(status?.lines[0])).toBe(
-      "Ton essai se termine le 22 mars, et ton premier paiement de 3,99 € aura lieu ce jour-là.",
-    );
-    expect(status?.lines).toHaveLength(2);
-  });
-
-  it("tells a cancelled trial that nothing will be charged", () => {
-    const status = patronStatus(
-      patron({
-        subscription: subscription({
-          standing: "trial",
-          since: null,
-          trialEnd: "2027-03-22T08:00:00.000Z",
-          cancelAt: "2027-03-22T08:00:00.000Z",
-        }),
-      }),
-      NOW,
-      ZONE,
-    );
-    expect(status?.lines[0]).toBe("Ton essai s'arrête le 22 mars, sans aucun paiement.");
-  });
-
   it("warns of a failed payment", () => {
     const status = patronStatus(
       patron({ subscription: subscription({ paymentFailing: true }) }),
@@ -249,37 +205,38 @@ describe("patronStatus", () => {
 });
 
 describe("patronWelcome", () => {
-  const trial = subscription({
-    standing: "trial",
-    since: null,
-    trialEnd: "2027-03-22T08:00:00.000Z",
-    currentPeriodEnd: "2027-03-22T08:00:00.000Z",
-  });
-
   it("is null without a running subscription", () => {
-    expect(patronWelcome(patron(), NOW, ZONE)).toBeNull();
+    expect(patronWelcome(patron())).toBeNull();
   });
 
-  it("gives a trial the mark now, then the first payment and what it brings", () => {
-    const welcome = patronWelcome(patron({ subscription: trial }), NOW, ZONE);
-    expect(welcome?.steps.map((step) => [step.when, plain(step.what), step.later])).toEqual([
-      ["Aujourd'hui", "Le titre et le badge de mécène", false],
-      ["22 mars", "Premier paiement de 3,99 €", true],
-      ["Dès ce paiement", "Le cosmétique du mois et le droit de dénicher un mot", true],
-    ]);
-    expect(welcome?.note).toBe("Tu peux résilier en un clic avant le 22 mars, sans rien payer.");
+  it("gives the month's cosmetic now, then the months and quarters to come", () => {
+    const welcome = patronWelcome(patron({ subscription: subscription() }));
+    expect(welcome?.map((step) => step.kind)).toEqual(["mark", "cosmetic", "word"]);
+    expect(welcome?.[0]?.what).toBe("Le titre, le badge et le cosmétique du mois");
+  });
+});
+
+describe("perks on the subscriber's page", () => {
+  const frame = { month: "2027-03", cosmetic: { kind: "frame", frame: "wax" } } as const;
+
+  it("asks to claim what waits, else gives the day of the next cosmetic", () => {
+    expect(cosmeticPerkLine(patron({ claimable: [frame] }), NOW, ZONE)).toBe(
+      "Un cosmétique t'attend. Réclame-le pour l'ajouter à ton apparence.",
+    );
+    expect(cosmeticPerkLine(patron({ claimable: [frame, frame] }), NOW, ZONE)).toBe(
+      "2 cosmétiques t'attendent. Réclame-les pour les ajouter à ton apparence.",
+    );
+    expect(cosmeticPerkLine(patron(), NOW, ZONE)).toBe("Le prochain se dévoile le 1er avril.");
+    expect(cosmeticPerkLine(patron(), Date.parse("2027-12-10T12:00:00Z"), ZONE)).toBe(
+      "Le prochain se dévoile le 1er janvier 2028.",
+    );
   });
 
-  it("drops the way out once the trial is already cancelled", () => {
-    const cancelled = { ...trial, cancelAt: "2027-03-22T08:00:00.000Z" };
-    expect(patronWelcome(patron({ subscription: cancelled }), NOW, ZONE)?.note).toBeNull();
-  });
-
-  it("gives a paying patron the month's cosmetic now, then the months and quarters to come", () => {
-    const welcome = patronWelcome(patron({ subscription: subscription() }), NOW, ZONE);
-    expect(welcome?.steps.map((step) => step.kind)).toEqual(["mark", "cosmetic", "word"]);
-    expect(welcome?.steps[0]?.what).toBe("Le titre, le badge et le cosmétique du mois");
-    expect(welcome?.note).toBeNull();
+  it("says whether the title is worn", () => {
+    expect(badgePerkLine("Mécène", true)).toBe(
+      "Tu portes le titre Mécène. Ton profil montre trois cartes épinglées de plus.",
+    );
+    expect(badgePerkLine("Mécène", false)).toContain("Porte ton titre");
   });
 });
 
@@ -324,9 +281,6 @@ describe("the page of thanks", () => {
     expect(patronThanksLine({ ...paying, thanksListed: false })).toBe(
       "Tu as choisi de ne pas y figurer.",
     );
-    expect(patronThanksLine(patron({ subscription: subscription({ standing: "trial" }) }))).toBe(
-      "Ton pseudo y figurera après ton premier paiement, si ton profil est public.",
-    );
   });
 
   it("puts the founders first and leaves out an empty group", () => {
@@ -362,16 +316,19 @@ describe("the patrons' vote", () => {
   const paying = (poll: PatronResponse["poll"]) =>
     patron({ poll, subscription: subscription({ standing: "patron" }) });
 
-  it("lets a paying patron vote, and a trial wait for the first payment", () => {
+  it("lets a paying patron vote, and a former one only see the vote", () => {
     const screen = pollScreen(paying(open), NOW, ZONE);
     expect(screen?.canVote).toBe(true);
     expect(screen?.intro).toBe(
       "Choisis le thème de la prochaine collection. Le vote se ferme le 17 mars.",
     );
-    const trial = patron({ poll: open, subscription: subscription({ standing: "trial" }) });
-    expect(pollScreen(trial, NOW, ZONE)).toMatchObject({
+    const former = patron({
+      poll: { ...open, myVote: 0 },
+      subscription: subscription({ standing: "none" }),
+    });
+    expect(pollScreen(former, NOW, ZONE)).toMatchObject({
       canVote: false,
-      note: "Ta voix comptera après ton premier paiement.",
+      note: "Le vote est réservé aux mécènes.",
     });
   });
 
@@ -410,14 +367,14 @@ describe("the patrons' vote", () => {
 describe("the patrons' Discord", () => {
   const discord = (username: string | null) => ({ available: true, username });
 
-  it("offers the link to a paying patron, and waits for the trial's first payment", () => {
+  it("offers the link to a paying patron, and nothing to a former one without a link", () => {
     const paying = patron({ discord: discord(null), subscription: subscription() });
     expect(discordScreen(paying)).toMatchObject({ canLink: true, canUnlink: false });
-    const trial = patron({
+    const former = patron({
       discord: discord(null),
-      subscription: subscription({ standing: "trial" }),
+      subscription: subscription({ standing: "none" }),
     });
-    expect(discordScreen(trial)).toMatchObject({ canLink: false, canUnlink: false });
+    expect(discordScreen(former)).toBeNull();
   });
 
   it("names the account linked, and shows nothing before the bot is set", () => {

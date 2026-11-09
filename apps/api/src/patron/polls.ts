@@ -90,7 +90,7 @@ export type VoteResult =
   | { readonly kind: "missing" }
   | { readonly kind: "refused"; readonly reason: PatronVoteRefusal };
 
-/** `PUT /me/patron/polls/:pollId/vote`: a paying patron's voice, never a trial's; changed until it closes. */
+/** `PUT /me/patron/polls/:pollId/vote`: a paying patron's voice, changed until it closes. */
 export async function votePoll(
   db: Database,
   input: {

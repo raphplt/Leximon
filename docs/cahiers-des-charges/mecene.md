@@ -22,14 +22,14 @@
 - **Avant l'ouverture** (vente fermée, `PATRON_SALES`) : la fausse porte, avec les avantages de P73 réécrits, le prix et « Préviens-moi ».
 - **Vente ouverte, joueur non abonné** :
   - les avantages, le cosmétique du mois (« Ce mois-ci, les mécènes reçoivent le cadre Sceau de cire. »), le prix ;
-  - deux choix, « 3,99 € par mois » et « 29,99 € par an », et « 14 jours gratuits, résiliables en un clic » si le joueur n'a jamais eu d'essai ;
+  - deux choix, « 3,99 € par mois » et « 29,99 € par an », et « résiliable en un clic » ;
   - pendant le premier mois de vente, le bandeau « Mécène fondateur » et le Sceau du fondateur en image ;
   - une case non cochée : « Je veux profiter tout de suite de mon abonnement et je renonce à mon droit de rétractation. » (libellé final par l'avocat) ;
   - compte déclaré 15-17 ans : « Tu as moins de 18 ans. Demande l'accord d'un parent avant de t'abonner. » au-dessus du bouton ;
   - un invité voit l'offre, et le bouton l'envoie créer un compte : on ne s'abonne qu'avec un compte.
 - **Le bouton « Devenir mécène »** part sur la page de paiement de Stripe (Checkout), puis revient sur `/mecene?merci`.
-- **Retour de Stripe** : « Te voilà mécène ! » et la suite selon le cas (essai en cours, premier mot à dénicher, cosmétique à réclamer). Si le webhook n'est pas encore arrivé, la page attend quelques secondes en relisant le statut, puis dit « Ton paiement est en cours de confirmation. » sans jamais dire « échec ».
-- **Joueur abonné** : son statut (« Mécène depuis mars 2027 », « Prochain paiement le 14 avril, 3,99 € », ou « Ton essai se termine le 22 mars »), les cosmétiques du mois à réclamer, ses mots dénichés et le bouton « Dénicher un mot » s'il lui reste un droit, et « Gérer mon abonnement » (portail client de Stripe : moyen de paiement, factures, passage à l'annuel, résiliation).
+- **Retour de Stripe** : « Te voilà mécène ! » et la suite (titre et badge, cosmétique du mois, mot à dénicher). Si le webhook n'est pas encore arrivé, la page attend quelques secondes en relisant le statut, puis dit « Ton paiement est en cours de confirmation. » sans jamais dire « échec ».
+- **Joueur abonné** : son statut (« Mécène depuis mars 2027 », « Prochain paiement le 14 avril, 3,99 € », ou « Mécène jusqu'au 22 mars » après une résiliation), les cosmétiques du mois à réclamer, ses mots dénichés et le bouton « Dénicher un mot » s'il lui reste un droit, et « Gérer mon abonnement » (portail client de Stripe : moyen de paiement, factures, passage à l'annuel, résiliation).
 - **Abonnement résilié, encore en cours** : « Ton abonnement s'arrête le 14 mars. Tes cosmétiques, tes éditions et tes cartes signées restent à toi. » et « Reprendre mon abonnement ».
 - **Paiement refusé** : « Ton dernier paiement n'est pas passé. Mets à jour ta carte pour rester mécène. » avec le lien du portail, tant que Stripe réessaie.
 
@@ -51,8 +51,8 @@
 ### Abonnement
 
 - **Une offre, deux rythmes** : 3,99 € par mois ou 29,99 € par an, prix TTC, TVA non applicable. Passer du mois à l'an (ou l'inverse) se fait dans le portail ; Stripe calcule le prorata.
-- **Est mécène** un joueur dont l'abonnement est en essai, payé, ou en retard de paiement tant que Stripe réessaie. Il cesse de l'être quand Stripe abandonne ou quand la période résiliée se termine.
-- **L'essai de 14 jours** : carte bancaire demandée, un seul essai par compte, à vie. Pendant l'essai, le joueur a le titre et le badge. Le cosmétique du mois, le droit de dénicher et le statut de fondateur n'arrivent qu'au premier paiement, pour qu'on ne les récolte pas en enchaînant les essais.
+- **Est mécène** un joueur dont l'abonnement est payé, ou en retard de paiement tant que Stripe réessaie. Il cesse de l'être quand Stripe abandonne ou quand la période résiliée se termine.
+- **Pas d'essai gratuit** : le premier paiement a lieu à l'abonnement, et tout arrive avec lui.
 - **Fondateur** : premier paiement pendant le premier mois de vente (dates dans `rules.ts`). Le badge « Mécène fondateur » et le Sceau du fondateur restent à vie. Le prix fondateur tient tant que l'abonnement ne s'interrompt pas : un fondateur qui revient paie le prix du moment. Tant que le prix ne monte pas, cela ne change rien.
 - **Une hausse de prix** ne touche que les nouveaux abonnés : un nouveau prix dans Stripe, les abonnements en cours gardent le leur.
 
@@ -113,7 +113,7 @@
 
 ### Données (migration additive)
 
-- **`patron_subscriptions`**, une ligne par compte : identifiants Stripe du client, du dernier checkout ouvert et de l'abonnement, statut, rythme, fin de la période en cours, fin de l'essai, résiliation prévue, `trial_used_at`, `first_paid_at`, `founder_at`, `waiver_accepted_at`. Le serveur fait foi : ces champs ne s'écrivent que depuis un webhook ou une lecture de Stripe.
+- **`patron_subscriptions`**, une ligne par compte : identifiants Stripe du client, du dernier checkout ouvert et de l'abonnement, statut, rythme, fin de la période en cours, résiliation prévue, `first_paid_at`, `founder_at`, `waiver_accepted_at`. Le serveur fait foi : ces champs ne s'écrivent que depuis un webhook ou une lecture de Stripe.
 - **`patron_periods`**, une ligne par facture payée : début, fin, facture, remboursée ou non. C'est la source des cosmétiques et des droits, calculés à la volée.
 - **`patron_cosmetic_claims`** (lot 2) : (compte, mois) en clé primaire, ce qui a été réclamé.
 - **`stripe_events`** : l'identifiant de chaque événement reçu, en clé primaire. Un événement rejoué ne fait rien.
@@ -125,14 +125,15 @@
 
 Construit aux lots 1 et 2 (`apps/api/src/patron/`), sauf la réserve.
 
-- `GET /me/patron` : la vente (`open`, `closed`, `unavailable` sans les secrets), si le joueur peut acheter, l'essai encore possible et sa durée, fondateur ou non, le mois fondateur en cours (`foundingOffer`), compte déclaré 15-17 ans (`minor`), le badge (`mark`), le cosmétique du mois, ceux à réclamer, et l'abonnement (`trial`, `patron` ou `none`, rythme, fin de période, fin d'essai, résiliation prévue, paiement en échec, mécène depuis). Les droits de dénicher viendront au lot 3.
-- `POST /me/patron/checkout` (`plan`, `waiverAccepted: true`, clé d'idempotence) : refuse un invité, un abonné, ou tout le monde sauf les admins tant que la vente est fermée ; crée le client Stripe au premier passage (identifiant du joueur en métadonnée, sans adresse ni nom : Checkout demande l'adresse des reçus) ; expire le checkout précédent resté ouvert ; ouvre une session Checkout en mode abonnement, avec 14 jours d'essai si le compte n'a jamais eu d'essai ni payé, carte demandée, essai annulé sans carte ; rend l'adresse de la page de paiement. La clé d'idempotence est passée à Stripe : deux clics font une session.
+- `GET /me/patron` : la vente (`open`, `closed`, `unavailable` sans les secrets), si le joueur peut acheter, fondateur ou non, le mois fondateur en cours (`foundingOffer`), compte déclaré 15-17 ans (`minor`), le badge (`mark`), le cosmétique du mois, ceux à réclamer, et l'abonnement (`patron` ou `none`, rythme, fin de période, résiliation prévue, paiement en échec, mécène depuis). Les droits de dénicher viendront au lot 3.
+- `POST /me/patron/checkout` (`plan`, `waiverAccepted: true`, clé d'idempotence) : refuse un invité, un abonné, ou tout le monde sauf les admins tant que la vente est fermée ; crée le client Stripe au premier passage (identifiant du joueur en métadonnée, sans adresse ni nom : Checkout demande l'adresse des reçus) ; expire le checkout précédent resté ouvert ; ouvre une session Checkout en mode abonnement, payée tout de suite ; rend l'adresse de la page de paiement. La clé d'idempotence est passée à Stripe : deux clics font une session.
 - `POST /me/patron/portal` : une session du portail client, pour un compte qui a eu un abonnement.
+- `POST /me/patron/refresh` : relit l'abonnement chez Stripe et rend le même corps que `GET /me/patron`. La page l'appelle au retour du portail (`/mecene?abonnement`), pour montrer une résiliation sans attendre le webhook.
 - `POST /me/patron/cosmetics/:month/claim` : un mois payé (une période non remboursée qui en couvre un jour), pas encore réclamé, dont le calendrier a un cosmétique ; ligne du joueur verrouillée, une réclamation par mois. Le cosmétique entre dans l'apparence avec ceux des niveaux, et le titre « Mécène » (ou « Mécène fondateur ») y est tant que l'abonnement court.
 - Le badge (`patron`) est ajouté au profil, au profil public et à la liste des joueurs (champ additif, `null` par défaut pour les anciennes versions).
 - `GET /admin/patrons` (chiffres, revenu du mois, abonnés par dernier changement, page de 50) et `POST /admin/patrons/:userId/refund` (clé d'idempotence : rembourse le dernier paiement non remboursé, résilie tout de suite, note l'action au journal).
 - `GET /me/patron/reserve` (`q` : début du mot, sans accent ni casse ; `theme` ; pages de 30 par curseur) et `POST /me/patron/reserve/:wordId/find` (lot 3, fait). Le dénichage verrouille la ligne d'abonnement du mécène (deux dénichages ne dépensent pas le même droit) ; le mot en clé primaire de `word_finds` le donne à un seul mécène. Refus : `no_right`, `taken`, `no_pseudo`, `not_in_reserve`. Redénicher son propre mot répond pareil. `GET /me/patron` porte `finds` (droits restants, mots dénichés et leur état).
-- `POST /stripe/webhook` : corps brut, signature vérifiée par la bibliothèque de Stripe (tolérance de 5 minutes), événement relu avec Zod, noté dans `stripe_events` dans la même transaction que son effet, ligne du joueur verrouillée. Événements traités : `checkout.session.completed`, `customer.subscription.*`, `invoice.paid`, `invoice.payment_failed` ; les autres sont acquittés sans effet. L'abonnement est relu chez Stripe avant d'écrire, donc l'ordre d'arrivée ne compte pas. Une facture de zéro (début d'essai) ne fait pas de période. Un client que le jeu n'a pas créé (autre produit du même compte Stripe) est ignoré.
+- `POST /stripe/webhook` : corps brut, signature vérifiée par la bibliothèque de Stripe (tolérance de 5 minutes), événement relu avec Zod, noté dans `stripe_events` dans la même transaction que son effet, ligne du joueur verrouillée. Événements traités : `checkout.session.completed`, `customer.subscription.*`, `invoice.paid`, `invoice.payment_failed` ; les autres sont acquittés sans effet. L'abonnement est relu chez Stripe avant d'écrire, donc l'ordre d'arrivée ne compte pas. Une facture de zéro ne fait pas de période. Un client que le jeu n'a pas créé (autre produit du même compte Stripe) est ignoré.
 - Un second abonnement vivant à côté du premier (deux checkouts payés malgré l'expiration) est résilié tout de suite et laissé dans les journaux ; s'il a été payé, le remboursement se fait à la main.
 - Aucun statut n'est accordé sur le seul retour de Checkout : il vient du webhook.
 - **Vente fermée ou ouverte :** la variable `PATRON_SALES` du Worker (`"closed"` ou `"open"`, dans `apps/api/wrangler.jsonc`), comme `BETA_INVITES`, plutôt qu'un bouton de l'admin : ouvrir se fait au déploiement, et tant que c'est fermé, les admins peuvent payer pour de vrai. Le premier mois de vente se date dans `PATRON_SCHEDULE` (`packages/core/src/rules.ts`).
@@ -148,19 +149,19 @@ Construit aux lots 1 et 2 (`apps/api/src/patron/`), sauf la réserve.
 
 ### Admin
 
-- Page « Mécènes » (`/admin/mecenes`, faite au lot 2) : mécènes, essais, résiliés encore en cours, paiements refusés, fondateurs, revenu par mois (dernier paiement de chacun, un annuel pour un douzième) ; chaque abonné avec son dernier paiement et « Rembourser et résilier ». L'historique complet des paiements reste dans Stripe.
-- `/admin/mesure` : conversion de la page Mécène, essais convertis.
+- Page « Mécènes » (`/admin/mecenes`, faite au lot 2) : mécènes, résiliés encore en cours, paiements refusés, fondateurs, revenu par mois (dernier paiement de chacun, un annuel pour un douzième) ; chaque abonné avec son dernier paiement et « Rembourser et résilier ». L'historique complet des paiements reste dans Stripe.
+- `/admin/mesure` : conversion de la page Mécène.
 
 ### Tests
 
 - `packages/core` : statut d'après l'abonnement, cosmétiques couverts par des périodes, droits de dénicher (mensuel, annuel, changement de rythme, arrêt, mot rendu), fondateur.
-- Intégration contre un vrai Postgres, Stripe simulé par des événements signés : webhook rejoué, événements dans le désordre, deux réservations du même mot en même temps, deux réclamations du même cosmétique, essai refusé au second abonnement, remboursement.
-- Recette en mode test de Stripe, avec les horloges de test (fin d'essai, renouvellement, paiement refusé).
+- Intégration contre un vrai Postgres, Stripe simulé par des événements signés : webhook rejoué, événements dans le désordre, deux réservations du même mot en même temps, deux réclamations du même cosmétique, remboursement, relecture de l'abonnement au retour du portail.
+- Recette en mode test de Stripe, avec les horloges de test (renouvellement, paiement refusé).
 
 ## 4. Lots
 
 1. **Socle** (fait le 2026-11-08) : migration `0047`, SDK `stripe`, `GET /me/patron`, checkout, portail, webhook, `PATRON_SALES`, règles dans `core` (statut, fondateur), suppression de compte, tests. Rien de visible pour les joueurs.
-2. **Page Mécène, badge et cosmétiques** (fait le 2026-11-08) : page Mécène web (porte avant la vente, offre, retour de Stripe, abonné, essai, résilié, paiement refusé), badge et titre, cosmétique du mois réclamé ; sur le mobile, badge et page en lecture, que seul un joueur qui porte le badge atteint (lien dans son profil) ; admin Mécènes. Prix dans `PATRON_SCHEDULE` (à changer en même temps que ceux de Stripe). Restent : le calendrier des cosmétiques (vide, un mois se remplit dans `PATRON_SCHEDULE` le 1er au plus tôt), le Sceau du fondateur, la conversion de la page dans `/admin/mesure`, les mots dénichés sur la page (lot 3).
+2. **Page Mécène, badge et cosmétiques** (fait le 2026-11-08) : page Mécène web (porte avant la vente, offre, retour de Stripe, abonné, résilié, paiement refusé), badge et titre, cosmétique du mois réclamé ; sur le mobile, badge et page en lecture, que seul un joueur qui porte le badge atteint (lien dans son profil) ; admin Mécènes. Prix dans `PATRON_SCHEDULE` (à changer en même temps que ceux de Stripe). Restent : le calendrier des cosmétiques (vide, un mois se remplit dans `PATRON_SCHEDULE` le 1er au plus tôt), le Sceau du fondateur, la conversion de la page dans `/admin/mesure`, les mots dénichés sur la page (lot 3).
 3. **Dénichage** (fait le 2026-11-08) : droits dans `core` (`earnedFinds`, `findsLeft`, `monthsPerFind` dans `PATRON_SCHEDULE`), migration `0050` (`reserve_words`, `word_finds`), réserve publiée, recherche et dénichage (web `/mecene/denicher` et mobile `/denicher`), section « Ton mot dans le jeu » sur la page Mécène, exemplaire du dénicheur donné à la publication, « Déniché par » sur la fiche de carte, liens avec la chaîne de contenu. Courrier à la parution et à l'écart fait le 2026-11-09 (recette MEC-20) ; l'app ignore désormais une lettre d'un type qu'elle ne connaît pas. Reste le signe de l'exemplaire dans l'album et sur la carte (§ 10, point 2).
 4. **Ouverture** : CGV et CGU relues par l'avocat, page « Tes données » mise à jour, clés de production, `PATRON_SALES` à `"open"`.
 
@@ -168,7 +169,7 @@ Lots suivants, hors de ce cahier : cabinet du mot et carnet (février), édition
 
 ## 5. Textes
 
-À écrire avec [voix.md](../voix.md), en reprenant ceux de la stratégie : vitrine, badge, après l'achat, mot réservé, parution, abonnement arrêté. S'y ajoutent : essai en cours, paiement en attente de confirmation, paiement refusé, mot déjà déniché, mention du parent, case de renonciation.
+À écrire avec [voix.md](../voix.md), en reprenant ceux de la stratégie : vitrine, badge, après l'achat, mot réservé, parution, abonnement arrêté. S'y ajoutent : paiement en attente de confirmation, paiement refusé, mot déjà déniché, mention du parent, case de renonciation.
 
 ## 6. Ce qui est à ta charge
 
@@ -181,7 +182,6 @@ Lots suivants, hors de ce cahier : cabinet du mot et carnet (février), édition
 
 - **Le webhook n'arrive pas** (Workers ou base injoignable) : Stripe réessaie pendant trois jours ; la page Mécène relit l'abonnement chez Stripe si le webhook tarde, sans rien accorder qui ne vienne de Stripe.
 - **Le serveur maison tombe** pendant un paiement : Stripe encaisse quand même, et le webhook rejoué rattrape à la remise en route.
-- **Un essai abusé** par des comptes multiples : rien à récolter pendant l'essai, donc peu d'intérêt.
 - **La réserve vidée** par les dénichages plus vite qu'on publie : c'est un bon problème (stratégie), on élargit les collections.
 
 ## 8. Hors champ
@@ -197,7 +197,7 @@ Tranché par le propriétaire le 2026-11-08 :
 | Q1 | Encaisser sur le web | Stripe en direct, sur son compte existant, en franchise de TVA (D-059) |
 | Q2 | Premier lot de vente | Paiement, statut, cosmétique du mois, fondateur et dénichage |
 | Q3 | Mobile | Statut seul, achat sur le web ; achat intégré plus tard |
-| Q4 | Essai | 14 jours avec carte ; cosmétique, dénichage et fondateur au premier paiement. Retiré le 2026-11-09 : `trialDays` vaut 0, la mécanique reste pour le remettre |
+| Q4 | Essai | Aucun essai gratuit (retiré le 2026-11-09) : le premier paiement a lieu à l'abonnement |
 | Q5 | Exemplaire du dénicheur | Exemplaire spécial, visible comme unique, non échangeable et sans XP, épinglable et jouable comme toute carte |
 | Q6 | Fondateur qui revient | Prix fondateur perdu à l'arrêt, badge et sceau gardés |
 | Q7 | Comptes 15-17 ans | Achat ouvert, mention du parent, remboursement sur demande d'un parent |
@@ -222,7 +222,7 @@ Tranché par le propriétaire le 2026-11-08 :
    - 29,99 € par an, clé `patron_yearly`.
 3. **Factures.** Paramètres → Facturation → Factures : pied de page « TVA non applicable, art. 293 B du CGI », avec ton nom, ton SIRET et ton adresse dans les informations de l'entreprise. Paramètres → E-mails clients : cocher les reçus des paiements réussis et des remboursements.
 4. **Portail client.** Paramètres → Facturation → Portail client : autoriser la mise à jour du moyen de paiement, l'historique des factures, le changement de formule entre les deux prix du produit Mécène (prorata), et la résiliation **en fin de période**, sans motif obligatoire. Pas de pause. Lien de retour : `https://leximon.fr/mecene`.
-5. **Relances.** Paramètres → Facturation → Abonnements et e-mails → Gérer les paiements échoués : Smart Retries, puis « résilier l'abonnement » quand toutes les tentatives échouent. Activer l'e-mail de fin d'essai (rappel 7 jours avant).
+5. **Relances.** Paramètres → Facturation → Abonnements et e-mails → Gérer les paiements échoués : Smart Retries, puis « résilier l'abonnement » quand toutes les tentatives échouent.
 6. **Webhook.** Développeurs → Webhooks → Ajouter une destination : `https://api.leximon.fr/stripe/webhook`, version `2026-10-28.endive`, événements `checkout.session.completed`, `customer.subscription.created`, `customer.subscription.updated`, `customer.subscription.deleted`, `customer.subscription.paused`, `customer.subscription.resumed`, `invoice.paid`, `invoice.payment_failed`. Copier le secret de signature (`whsec_…`).
 7. **Clés.** Développeurs → Clés API : une clé secrète restreinte suffit, avec les droits en écriture sur Customers, Checkout Sessions, Customer portal, Subscriptions et Refunds, et en lecture sur Prices et Invoices (le remboursement de l'admin retrouve le paiement d'une facture). En local, la clé secrète standard `sk_test_…` suffit. Puis `wrangler secret put` (voir [mise-en-ligne.md](../mise-en-ligne.md#6-secrets-de-lapi--toi)).
 
@@ -232,5 +232,5 @@ Tranché par le propriétaire le 2026-11-08 :
 stripe listen --forward-to localhost:8787/stripe/webhook
 ```
 
-Elle affiche un `whsec_…` à mettre dans `STRIPE_WEBHOOK_SECRET`. Avec `PATRON_SALES` à `"closed"`, il faut un compte admin (`pnpm admin:grant <email>`) pour aller jusqu'au paiement ; carte de test `4242 4242 4242 4242`. Les horloges de test (Facturation → Horloges de test) font passer la fin d'essai et les renouvellements sans attendre.
+Elle affiche un `whsec_…` à mettre dans `STRIPE_WEBHOOK_SECRET`. Avec `PATRON_SALES` à `"closed"`, il faut un compte admin (`pnpm admin:grant <email>`) pour aller jusqu'au paiement ; carte de test `4242 4242 4242 4242`. Les horloges de test (Facturation → Horloges de test) font passer les renouvellements sans attendre.
 

@@ -17,7 +17,6 @@ const SALES_LABELS: Readonly<Record<PatronSales, string>> = {
 
 const STANDING_LABELS: Readonly<Record<AdminPatron["standing"], string>> = {
   patron: "Mécène",
-  trial: "Essai",
   none: "Arrêté",
 };
 
@@ -103,7 +102,6 @@ export function PatronsScreen() {
       {page !== null && (
         <div className={styles.stats}>
           <Figure label="Mécènes" value={formatNumber(page.counts.patrons)} />
-          <Figure label="Essais en cours" value={formatNumber(page.counts.trials)} />
           <Figure label="Résiliés, encore en cours" value={formatNumber(page.counts.cancelling)} />
           <Figure label="Paiements refusés" value={formatNumber(page.counts.failing)} />
           <Figure label="Fondateurs" value={formatNumber(page.counts.founders)} />

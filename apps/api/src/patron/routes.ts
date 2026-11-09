@@ -59,6 +59,7 @@ import {
   patronSales,
   paysAsPatron,
   readPatron,
+  refreshSubscription,
 } from "./patron";
 import { listPolls, openPoll, votePoll } from "./polls";
 import { findWord, InvalidReserveCursorError, searchReserve } from "./reserve";
@@ -115,7 +116,7 @@ export function patronRoutes(createBilling: BillingFactory) {
     throw error;
   });
 
-  routes.get("/", async (c) =>
+  const respond = async (c: Context<AppEnv>) =>
     c.json<PatronResponse>(
       await readPatron(c.var.db, {
         userId: c.var.userId,
@@ -123,8 +124,25 @@ export function patronRoutes(createBilling: BillingFactory) {
         discordAvailable: discordConfigured(c.env),
         now: Date.now(),
       }),
-    ),
-  );
+    );
+
+  routes.get("/", respond);
+
+  routes.post("/refresh", async (c) => {
+    if (patronSales(c.env) !== "unavailable") {
+      const changed = await refreshSubscription(c.var.db, createBilling(c.env), {
+        userId: c.var.userId,
+        now: Date.now(),
+      });
+      const link = changed ? await readDiscordLink(c.var.db, c.var.userId) : null;
+      if (link !== null) {
+        sendGameEvents(c, [
+          { type: "discord_role", userId: c.var.userId, discordUserId: link.discordUserId },
+        ]);
+      }
+    }
+    return respond(c);
+  });
 
   routes.put("/thanks", refuseLockedWrites, async (c) => {
     const body = patronThanksChoiceSchema.safeParse(await c.req.json().catch(() => null));

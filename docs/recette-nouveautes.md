@@ -710,12 +710,12 @@ Préparer : les clés de test de Stripe dans `apps/api/.dev.vars` et `stripe lis
 
 ### MEC-02 · L'offre
 - **Faire :** ouvre `/mecene` en admin (ou vente ouverte), avec un compte qui n'a jamais été abonné ; puis avec un compte déclaré 15-17 ans ; puis en invité, vente ouverte.
-- **Attendu :** la vitrine (avatar couronné, avantages en tuiles), puis les deux formules en grosses tuiles, « 3,99 € par mois » et « 29,99 € par an » avec le ruban « 2,50 € par mois », l'annuelle choisie d'avance ; la mention des 14 premiers jours gratuits, la case de renonciation non cochée, et « Devenir mécène » grisé tant qu'elle ne l'est pas. Le compte 15-17 ans voit en rouge « Tu as moins de 18 ans. Demande l'accord d'un parent avant de t'abonner. ». L'invité voit « Crée un compte pour t'abonner. » et « Créer mon compte » à la place de la case.
+- **Attendu :** la vitrine (avatar couronné), puis sur deux colonnes : à gauche les neuf avantages, chacun avec son icône et ses premiers mots en gras ; à droite les deux formules en grosses tuiles, « 3,99 € par mois » et « 29,99 € par an » avec le ruban « 2,50 € par mois » au-dessus du reflet du bouton, l'annuelle choisie d'avance. Dessous, « Tu peux résilier en un clic depuis cette page, quand tu veux. », la case de renonciation non cochée, et « Devenir mécène » grisé tant qu'elle ne l'est pas. Sur un écran de 1920 × 1080, le bouton se voit sans faire défiler ; sous 900 px de large, l'achat passe sous les avantages. Le compte 15-17 ans voit en rouge « Tu as moins de 18 ans. Demande l'accord d'un parent avant de t'abonner. ». L'invité voit « Crée un compte pour t'abonner. » et « Créer mon compte » à la place de la case.
 - **Retour :**
 
 ### MEC-03 · Payer
 - **Faire :** coche la case, « Devenir mécène », paie avec la carte `4242 4242 4242 4242`.
-- **Attendu :** la page de Stripe en français, avec l'essai de 14 jours. Au retour, les rayons dorés, la couronne qui tombe sur ton avatar, « Te voilà mécène ! » et le badge, puis trois étapes : « Aujourd'hui » le titre et le badge, la date de fin d'essai avec « Premier paiement de 3,99 € », et « Dès ce paiement » le cosmétique du mois et le droit de dénicher un mot (ces deux-là cadenassés). Dessous, « Tu peux résilier en un clic avant le …, sans rien payer. ». « Porter mon titre » n'apparaît que si tu portes un autre titre ; il met le titre Mécène et dit « Tu portes le titre Mécène. ». « Voir mon abonnement » mène à ta carte de mécène : avatar couronné, nom, badge, « Essai gratuit en cours » et la date du premier paiement. Si le webhook tarde, la page attend une dizaine de secondes, puis dit « Ton paiement est en cours de confirmation. » sans parler d'échec.
+- **Attendu :** la page de Stripe en français, qui débite tout de suite. Au retour, les rayons dorés, la couronne qui tombe sur ton avatar, « Te voilà mécène ! » et le badge, puis trois étapes : « Aujourd'hui » le titre, le badge et le cosmétique du mois, « Chaque mois » un nouveau cosmétique et « Chaque trimestre » un mot à dénicher (ces deux-là cadenassés). « Porter mon titre » n'apparaît que si tu portes un autre titre ; il met le titre Mécène et dit « Tu portes le titre Mécène. ». « Voir mon abonnement » mène à ta carte de mécène : avatar couronné, nom, badge, « Mécène depuis … » et la date du prochain paiement, puis un bloc par avantage, dans l'ordre de la vitrine. Si le webhook tarde, la page attend une dizaine de secondes, puis dit « Ton paiement est en cours de confirmation. » sans parler d'échec.
 - **Retour :**
 
 ### MEC-04 · Le badge
@@ -724,23 +724,23 @@ Préparer : les clés de test de Stripe dans `apps/api/.dev.vars` et `stripe lis
 - **Retour :**
 
 ### MEC-05 · Gérer, résilier, reprendre
-- **Faire :** « Gérer mon abonnement », résilie dans le portail de Stripe, reviens, puis « Reprendre mon abonnement ».
-- **Attendu :** le portail s'ouvre. Résilié, la page dit « Ton essai s'arrête le …, sans aucun paiement. » (ou, après un paiement, « Ton abonnement s'arrête le …. Tes cosmétiques restent à toi. ») et le bouton devient « Reprendre mon abonnement ».
+- **Faire :** « Gérer mon abonnement », résilie dans le portail de Stripe, reviens par « Revenir à Leximon », puis « Reprendre mon abonnement ». En local, fais-le sans `stripe listen` : le retour du portail suffit.
+- **Attendu :** le portail s'ouvre. Au retour, la page relit l'abonnement chez Stripe : le titre devient « Mécène jusqu'au … », un encadré rouge dit « Tu as résilié ton abonnement. Il s'arrête le …, sans autre paiement, et tes cosmétiques restent à toi. », et le bouton doré devient « Reprendre mon abonnement ». Repris, la page revient à « Mécène depuis … » et au prochain paiement.
 - **Retour :**
 
-### MEC-06 · Fin d'essai et paiement refusé
-- **Faire :** avec une horloge de test de Stripe, avance après la fin de l'essai ; puis recommence avec la carte `4000 0000 0000 0341` (refusée au paiement).
-- **Attendu :** après le paiement, « Mécène depuis novembre 2026 » et le prochain paiement. Avec la carte refusée, « Ton dernier paiement n'est pas passé. Mets à jour ta carte pour rester mécène. » en rouge, le badge restant là tant que Stripe réessaie.
+### MEC-06 · Renouvellement et paiement refusé
+- **Faire :** avec une horloge de test de Stripe, avance après la fin du premier mois ; puis abonne-toi avec la carte `4000 0000 0000 0341`, qui passe au premier paiement et échoue au suivant, et avance d'un mois.
+- **Attendu :** après le renouvellement, « Mécène depuis novembre 2026 » et le prochain paiement. Avec la carte refusée, « Ton dernier paiement n'est pas passé. Mets à jour ta carte pour rester mécène. » en rouge, le badge restant là tant que Stripe réessaie.
 - **Retour :**
 
 ### MEC-07 · Le cosmétique du mois
 - **Faire :** mets un cosmétique au mois en cours dans `PATRON_SCHEDULE` (`packages/core/src/rules.ts`, par exemple `cosmetics: { "2026-11": { kind: "frame", frame: "wax" } }`), puis ouvre `/mecene` en abonné qui a payé, et en joueur qui ne l'est pas.
-- **Attendu :** le non-abonné lit « Ce mois-ci, les mécènes reçoivent le cadre Sceau de cire. ». Ton avatar en tête de la vitrine porte le cadre du mois. L'abonné voit sous sa carte un coffret qui sautille, « À réclamer » avec « Le cadre Sceau de cire, novembre 2026 » et « Réclamer » ; après, « Ajouté à ton apparence. » et le cadre dans l'atelier. Pendant l'essai, rien à réclamer. Remets le calendrier vide ensuite.
+- **Attendu :** le non-abonné lit « Ce mois-ci, les mécènes reçoivent le cadre Sceau de cire. ». Ton avatar en tête de la vitrine porte le cadre du mois. L'abonné voit sous sa carte un coffret qui sautille, « À réclamer » avec « Le cadre Sceau de cire, novembre 2026 » et « Réclamer » ; après, « Ajouté à ton apparence. » et le cadre dans l'atelier. Remets le calendrier vide ensuite.
 - **Retour :**
 
 ### MEC-08 · L'admin et le téléphone
 - **Faire :** ouvre `/admin/mecenes`, puis « Rembourser et résilier » sur ton abonnement de test. Sur le téléphone, ouvre ton profil avec et sans badge.
-- **Attendu :** les chiffres (mécènes, essais, résiliés, paiements refusés, fondateurs, revenu par mois) et la liste. Le remboursement demande une confirmation qui dit le montant, puis « Abonnement arrêté et 3,99 € remboursés. » ; le journal le note. Sur le téléphone, le badge s'affiche comme sur le web ; « Ton abonnement mécène » n'apparaît dans le profil qu'avec le badge, et sa page montre la même carte de mécène que le web (avatar couronné, nom, badge, statut) et le coffret à réclamer, puis dit « Ton abonnement se gère depuis ton compte sur leximon.fr. », sans lien ni prix.
+- **Attendu :** les chiffres (mécènes, résiliés, paiements refusés, fondateurs, revenu par mois) et la liste. Le remboursement demande une confirmation qui dit le montant, puis « Abonnement arrêté et 3,99 € remboursés. » ; le journal le note. Sur le téléphone, le badge s'affiche comme sur le web ; « Ton abonnement mécène » n'apparaît dans le profil qu'avec le badge, et sa page montre la même carte de mécène que le web (avatar couronné, nom, badge, statut) et le coffret à réclamer, puis dit « Ton abonnement se gère depuis ton compte sur leximon.fr. », sans lien ni prix, et montre ensuite les mêmes blocs d'avantages que le web, dans le même ordre.
 - **Retour :**
 
 ## Mécène · lot 3, dénicher un mot
@@ -748,8 +748,8 @@ Préparer : les clés de test de Stripe dans `apps/api/.dev.vars` et `stripe lis
 Préparer : `pnpm db:migrate`, puis `pnpm reserve:publish` (charge `content/reserve/reserve.json`). Un abonné annuel a un mot à dénicher dès son paiement ; un mensuel, après trois mois payés (avec une horloge de test de Stripe). Il faut un pseudo.
 
 ### MEC-09 · Ton mot dans le jeu
-- **Faire :** ouvre `/mecene` en abonné annuel qui a payé, puis en abonné mensuel, puis pendant un essai.
-- **Attendu :** sous ta carte de mécène, « Ton mot dans le jeu ». L'annuel lit « Tu peux dénicher un mot. » et le bouton « Dénicher un mot » ; le mensuel et l'essai lisent « Tu n'as pas de mot à dénicher pour l'instant. » et « Un mot par trimestre d'abonnement, dès le premier paiement pour un abonnement annuel. ». Le menu du joueur dit « Mon abonnement mécène » au lieu de « Devenir mécène ».
+- **Faire :** ouvre `/mecene` en abonné annuel qui a payé, puis en abonné mensuel.
+- **Attendu :** sous ta carte de mécène, « Ton mot dans le jeu ». L'annuel lit « Tu peux dénicher un mot. » et le bouton « Dénicher un mot » ; le mensuel lit « Tu n'as pas de mot à dénicher pour l'instant. » et « Un mot par trimestre d'abonnement, dès le premier paiement pour un abonnement annuel. ». Le menu du joueur dit « Mon abonnement mécène » au lieu de « Devenir mécène ».
 - **Retour :**
 
 ### MEC-10 · Chercher et dénicher
@@ -772,39 +772,39 @@ Préparer : `pnpm db:migrate`, puis `pnpm reserve:publish` (charge `content/rese
 Préparer : `pnpm db:migrate`, un compte mécène qui a payé au moins une fois (horloge de test de Stripe) et qui possède quelques cartes.
 
 ### MEC-13 · Éditions de bibliothèque
-- **Faire :** ouvre la fiche d'une carte de ton album, choisis « Sanguine », puis « Lavis » et « Appliquer à tout l'album ». Ouvre ton profil public depuis un autre compte. Recommence sur le téléphone. Puis ouvre la fiche avec un compte sans abonnement, et pendant un essai.
-- **Attendu :** sous l'origine du mot, « Édition de bibliothèque » avec « Ordinaire », « Sanguine », « Lavis » et « Encre de Chine ». La gravure passe sur une feuille collée, aux couleurs de l'édition ; le cadre, la gemme et le mot gardent la couleur de la rareté. Après « Appliquer à tout l'album », le message « Tout ton album est imprimé au lavis. » et toutes les cartes de l'album changent. L'autre compte voit tes cartes épinglées dans leur édition. La page Mécène dit « Tu possèdes la sanguine, le lavis et l'encre de Chine. ». Sans abonnement ou pendant l'essai, rien n'apparaît sur la fiche. Après l'arrêt de l'abonnement, les éditions restent.
+- **Faire :** ouvre la fiche d'une carte de ton album, choisis « Sanguine », puis « Lavis » et « Appliquer à tout l'album ». Ouvre ton profil public depuis un autre compte. Recommence sur le téléphone. Puis ouvre la fiche avec un compte sans abonnement.
+- **Attendu :** sous l'origine du mot, « Édition de bibliothèque » avec « Ordinaire », « Sanguine », « Lavis » et « Encre de Chine ». La gravure passe sur une feuille collée, aux couleurs de l'édition ; le cadre, la gemme et le mot gardent la couleur de la rareté. Après « Appliquer à tout l'album », le message « Tout ton album est imprimé au lavis. » et toutes les cartes de l'album changent. L'autre compte voit tes cartes épinglées dans leur édition. La page Mécène dit « Tu possèdes la sanguine, le lavis et l'encre de Chine. ». Sans abonnement, rien n'apparaît sur la fiche. Après l'arrêt de l'abonnement, les éditions restent.
 - **Retour :**
 
 ### MEC-14 · Trois cartes épinglées de plus
-- **Faire :** regarde le nombre de places d'épingles de ton profil avant l'abonnement, pendant l'essai, après le premier paiement, puis après l'arrêt.
-- **Attendu :** trois places de plus après le premier paiement, aucune pendant l'essai. À l'arrêt, les places en plus disparaissent et seules les premières cartes épinglées restent visibles.
+- **Faire :** regarde le nombre de places d'épingles de ton profil avant l'abonnement, après le premier paiement, puis après l'arrêt.
+- **Attendu :** trois places de plus après le premier paiement. À l'arrêt, les places en plus disparaissent et seules les premières cartes épinglées restent visibles.
 - **Retour :**
 
 ### MEC-15 · Cabinet du mot
 - **Préparer :** en local, `uv run python -m leximon_content ngram` (une fois), puis `cabinet` dans `content/pipeline`, puis `pnpm catalog:publish`.
-- **Faire :** ouvre la fiche d'une carte pendant l'essai, après le premier paiement, puis après l'arrêt. Une fois abonné, touche « Ouvrir le cabinet du mot », sur le web (grand écran et téléphone) et sur le mobile. Essaie renfler, forlancer et cassandre.
-- **Attendu :** le bouton n'apparaît qu'aux mécènes qui paient, ni pendant l'essai ni après l'arrêt ; l'adresse `/mecene/cabinet/<carte>` montre alors « Le cabinet du mot est réservé aux mécènes abonnés. ». Le cabinet montre la courbe d'usage depuis 1800 avec une phrase qui la lit (renfler : « Dès 1800, le mot est à son plus haut, puis se raréfie après 1980. »), la décennie pointée ou touchée avec son chiffre, l'article du Littré (sens numérotés, citations, étymologie, historique par siècle), la famille du mot (forlancer : vient de fors, de la même famille que forlonger, formuer…) dont les mots du jeu ouvrent leur carte, et la ligne des sources.
+- **Faire :** ouvre la fiche d'une carte avant l'abonnement, après le premier paiement, puis après l'arrêt. Une fois abonné, touche « Ouvrir le cabinet du mot », sur le web (grand écran et téléphone) et sur le mobile. Essaie renfler, forlancer et cassandre.
+- **Attendu :** le bouton n'apparaît qu'aux mécènes qui paient, ni avant ni après l'arrêt ; l'adresse `/mecene/cabinet/<carte>` montre alors « Le cabinet du mot est réservé aux mécènes abonnés. ». Le cabinet montre la courbe d'usage depuis 1800 avec une phrase qui la lit (renfler : « Dès 1800, le mot est à son plus haut, puis se raréfie après 1980. »), la décennie pointée ou touchée avec son chiffre, l'article du Littré (sens numérotés, citations, étymologie, historique par siècle), la famille du mot (forlancer : vient de fors, de la même famille que forlonger, formuer…) dont les mots du jeu ouvrent leur carte, et la ligne des sources.
 - **Retour :**
 
 ### MEC-16 · Page des mécènes
 - **Faire :** ouvre `/mecenes` sans être connecté, puis abonne-toi avec un compte au profil public et rouvre la page. Sur la page Mécène, touche « Ne pas me citer », puis « Me citer à nouveau ». Recommence sur le mobile, depuis l'écran Mécène.
-- **Attendu :** la page remercie sans rien vendre (ni prix, ni bouton, ni lien vers l'offre). Elle liste les mécènes qui paient et dont le profil est public, les fondateurs d'abord avec leur sceau, puis par date du premier paiement ; chaque pseudo ouvre son profil. Ni l'essai, ni un profil privé, ni un compte suspendu n'y figurent. « Ne pas me citer » retire le pseudo (la page se met à jour en cinq minutes au plus), « Me citer à nouveau » le remet. Sans mécène, la page dit « Aucun mécène ne figure encore sur cette page. ».
+- **Attendu :** la page remercie sans rien vendre (ni prix, ni bouton, ni lien vers l'offre). Elle liste les mécènes qui paient et dont le profil est public, les fondateurs d'abord avec leur sceau, puis par date du premier paiement ; chaque pseudo ouvre son profil. Ni un profil privé, ni un compte suspendu n'y figurent. « Ne pas me citer » retire le pseudo (la page se met à jour en cinq minutes au plus), « Me citer à nouveau » le remet. Sans mécène, la page dit « Aucun mécène ne figure encore sur cette page. ».
 - **Retour :**
 
 ### MEC-17 · Vote des mécènes
-- **Faire :** dans `/admin/mecenes`, ouvre un vote avec trois thèmes (nom et ce que la collection contiendrait), puis essaie d'en ouvrir un second. Sur la page Mécène, vote avec un compte qui a payé, change ta voix, puis regarde la même page avec un compte en essai. Recommence sur le mobile. Pour voir le résultat sans attendre une semaine, ferme le vote en base locale (`update patron_polls set closes_at = now()`).
-- **Attendu :** le vote s'ouvre pour sept jours ; le second est refusé tant que le premier est ouvert. La page Mécène montre les trois thèmes et la date de fermeture ; « Voter pour ce thème » met « Ta voix » sur le thème choisi, et un autre choix la déplace. L'essai voit les thèmes sans bouton, avec « Ta voix comptera après ton premier paiement. ». Aucun compte de voix tant que le vote est ouvert. Une fois fermé, chaque thème montre ses voix, le gagnant est mis en avant et la page dit « La prochaine collection aura pour thème « … ». » (ou l'égalité). L'admin montre les voix de chaque vote, ouvert ou fermé, et le journal note l'ouverture.
+- **Faire :** dans `/admin/mecenes`, ouvre un vote avec trois thèmes (nom et ce que la collection contiendrait), puis essaie d'en ouvrir un second. Sur la page Mécène, vote avec un compte qui a payé, change ta voix. Recommence sur le mobile. Sans vote ouvert, regarde le bloc. Pour voir le résultat sans attendre une semaine, ferme le vote en base locale (`update patron_polls set closes_at = now()`).
+- **Attendu :** le vote s'ouvre pour sept jours ; le second est refusé tant que le premier est ouvert. La page Mécène montre les trois thèmes et la date de fermeture ; « Voter pour ce thème » met « Ta voix » sur le thème choisi, et un autre choix la déplace. Sans vote, le bloc dit « Aucun vote n'est ouvert. Le prochain s'annoncera ici avant une nouvelle collection. ». Aucun compte de voix tant que le vote est ouvert. Une fois fermé, chaque thème montre ses voix, le gagnant est mis en avant et la page dit « La prochaine collection aura pour thème « … ». » (ou l'égalité). L'admin montre les voix de chaque vote, ouvert ou fermé, et le journal note l'ouverture.
 - **Retour :**
 
 ### MEC-18 · Salon des mécènes sur Discord
-- **Faire :** une fois les réglages posés (cahier des avantages, § 4), touche « Relier mon Discord » sur la page Mécène avec un compte qui a payé, accepte sur la page de Discord, puis regarde le serveur. Touche ensuite « Délier mon Discord ». Recommence sur le mobile. Avec un compte en essai, regarde le bloc.
-- **Attendu :** Discord demande de connaître le compte et de rejoindre le serveur. Au retour, la page Mécène dit « Ton compte Discord est relié. Le rôle Mécène arrive dans une minute. » et nomme le compte relié ; le compte est sur le serveur, avec le rôle « Mécène » et l'accès au salon réservé. Délier retire le rôle. Une résiliation qui prend effet, ou la suppression du compte, retire aussi le rôle. L'essai lit « Le salon réservé sur Discord s'ouvre après ton premier paiement. », sans bouton. Un refus sur la page de Discord ramène sur la page Mécène avec « La liaison avec Discord n'a pas abouti. Réessaie. ».
+- **Faire :** une fois les réglages posés (cahier des avantages, § 4), touche « Relier mon Discord » sur la page Mécène avec un compte qui a payé, accepte sur la page de Discord, puis regarde le serveur. Touche ensuite « Délier mon Discord ». Recommence sur le mobile.
+- **Attendu :** Discord demande de connaître le compte et de rejoindre le serveur. Au retour, la page Mécène dit « Ton compte Discord est relié. Le rôle Mécène arrive dans une minute. » et nomme le compte relié ; le compte est sur le serveur, avec le rôle « Mécène » et l'accès au salon réservé. Délier retire le rôle. Une résiliation qui prend effet, ou la suppression du compte, retire aussi le rôle. Un refus sur la page de Discord ramène sur la page Mécène avec « La liaison avec Discord n'a pas abouti. Réessaie. ».
 - **Retour :**
 
 ### MEC-19 · Sceau de cire du sachet
-- **Faire :** avec un compte qui a payé, ouvre un sachet sur Jouer, sur le web puis sur le mobile. Recommence avec un compte en essai, puis avec un ancien mécène fondateur dont l'abonnement est arrêté.
-- **Attendu :** le sachet du mécène payant porte un sceau de cire rouge à la couronne, à cheval sur la ligne de déchirure. À l'ouverture, il se fend en deux et ses moitiés tombent pendant que la bande s'envole ; l'ouverture dure le même temps et les cartes se révèlent comme d'habitude. L'essai et l'ancien fondateur ont le sachet ordinaire. Avec « réduire les animations », le sceau disparaît sans tomber.
+- **Faire :** avec un compte qui a payé, ouvre un sachet sur Jouer, sur le web puis sur le mobile. Recommence avec un ancien mécène fondateur dont l'abonnement est arrêté.
+- **Attendu :** le sachet du mécène payant porte un sceau de cire rouge à la couronne, à cheval sur la ligne de déchirure. À l'ouverture, il se fend en deux et ses moitiés tombent pendant que la bande s'envole ; l'ouverture dure le même temps et les cartes se révèlent comme d'habitude. L'ancien fondateur a le sachet ordinaire. Avec « réduire les animations », le sceau disparaît sans tomber.
 - **Retour :**
 
 ### MEC-20 · Courrier du dénichage

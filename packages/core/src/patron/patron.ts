@@ -8,8 +8,6 @@ import type { EpochMs } from "../booster/refill";
 export interface PatronRules {
   /** Period start; the rules in force at the time of each payment apply. */
   readonly startsAt: EpochMs;
-  /** Free days before the first payment, once per account. */
-  readonly trialDays: number;
   /**
    * What each plan costs, in cents of euro, as shown to players. Stripe charges its own prices:
    * the two are changed together.
@@ -62,7 +60,6 @@ export type PatronPlan = (typeof PATRON_PLANS)[number];
 export const SUBSCRIPTION_STATUSES = [
   "incomplete",
   "incomplete_expired",
-  "trialing",
   "active",
   "past_due",
   "canceled",
@@ -73,26 +70,16 @@ export type SubscriptionStatus = (typeof SUBSCRIPTION_STATUSES)[number];
 
 /**
  * - `patron`: paid at least once and still subscribed, payments retried included;
- * - `trial`: subscribed, nothing paid yet: the title and the badge only, so that trials taken one
- *   after the other harvest nothing;
- * - `none`: not or no longer subscribed.
+ * - `none`: not or no longer subscribed, or the first payment not recorded yet.
  */
-export type PatronStanding = "none" | "trial" | "patron";
+export type PatronStanding = "none" | "patron";
 
 export function patronStanding(
   status: SubscriptionStatus | null,
   firstPaidAt: EpochMs | null,
 ): PatronStanding {
-  switch (status) {
-    case "trialing":
-      return "trial";
-    case "active":
-    case "past_due":
-      // A first payment that fails at the end of the trial is retried: still a trial meanwhile.
-      return firstPaidAt === null ? "trial" : "patron";
-    default:
-      return "none";
-  }
+  const subscribed = status === "active" || status === "past_due";
+  return subscribed && firstPaidAt !== null ? "patron" : "none";
 }
 
 /** Patron days follow the clock of the players the game is made for, like the other days. */
@@ -117,14 +104,11 @@ export function isFoundingPayment(rules: PatronRules, paidAt: EpochMs): boolean 
   return rules.foundingMonth !== null && parisMonthOf(paidAt) === rules.foundingMonth;
 }
 
-/** Titles a subscriber may wear while subscribed, trial included. */
+/** Titles a subscriber may wear while subscribed. */
 export const PATRON_TITLE = "Mécène";
 export const FOUNDER_TITLE = "Mécène fondateur";
 
-/**
- * The mark shown on a profile: a founder keeps it for life, a patron while subscribed (trial
- * included).
- */
+/** The mark shown on a profile: a founder keeps it for life, a patron while subscribed. */
 export type PatronMark = "founder" | "patron" | null;
 
 export function patronMark(standing: PatronStanding, founder: boolean): PatronMark {
@@ -207,7 +191,7 @@ function addMonths(time: EpochMs, months: number): EpochMs {
 /**
  * The words a patron earned the right to find, up to now. A yearly payment gives one at once,
  * then one at the start of each stretch of `monthsPerFind` months it covers; monthly payments
- * give one with every `monthsPerFind`-th. Refunded periods give nothing; a trial is no period.
+ * give one with every `monthsPerFind`-th. Refunded periods give nothing.
  */
 export function earnedFinds(
   rules: Pick<PatronRules, "monthsPerFind">,

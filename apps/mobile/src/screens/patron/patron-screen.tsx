@@ -1,11 +1,14 @@
 import type { MonthCosmeticView, PatronFindsView, PatronResponse } from "@leximon/contract";
-import { mixHex, toyMatters, toy as toyValues } from "@leximon/tokens";
+import { mixHex, type ToyIconName, toyMatters, toy as toyValues } from "@leximon/tokens";
 import {
+  badgePerkLine,
   claimableLabel,
+  cosmeticPerkLine,
   discordScreen,
   editionsOwnedLine,
   findStateLine,
   findsLeftLine,
+  PATRON_CABINET_LINE,
   PATRON_CARD_KICKER,
   PATRON_CLAIM,
   PATRON_CLAIM_BUSY,
@@ -14,38 +17,46 @@ import {
   PATRON_DISCORD_FAILED,
   PATRON_DISCORD_LINK,
   PATRON_DISCORD_LINKED,
-  PATRON_DISCORD_TITLE,
+  PATRON_DISCORD_SOON,
   PATRON_DISCORD_UNLINK,
-  PATRON_EDITIONS_TITLE,
   PATRON_FIND_ACTION,
   PATRON_FINDS_RULE,
-  PATRON_FINDS_TITLE,
   PATRON_LOAD_FAILED,
   PATRON_MANAGED_ON_WEB,
   PATRON_MEMBER_TITLE,
+  PATRON_OPEN_ALBUM,
+  PATRON_PERKS,
+  PATRON_PLAY,
   PATRON_POLL_CHOSEN,
   PATRON_POLL_FAILED,
-  PATRON_POLL_TITLE,
   PATRON_POLL_VOTE,
+  PATRON_SEAL_LINE,
+  PATRON_SEE_PROFILE,
   PATRON_THANKS_FAILED,
   PATRON_THANKS_HIDE,
-  PATRON_THANKS_PAGE_TITLE,
   PATRON_THANKS_SEE,
   PATRON_THANKS_SHOW,
+  PATRON_VOTE_NONE,
+  PATRON_WEAR_TITLE,
+  type PatronPerk,
+  type PatronPerkKey,
   patronStatus,
   patronThanksLine,
+  patronTitleOf,
+  patronTitleWorn,
   playerName,
   pollScreen,
   voteRefusalLine,
 } from "@leximon/view-model";
 import { router, useFocusEffect } from "expo-router";
-import { useCallback, useState } from "react";
+import { type ReactNode, useCallback, useState } from "react";
 import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
 import { api } from "@/api/client";
 import { linkDiscord } from "@/api/discord-link";
 import { MainAction } from "@/library/play-pieces";
 import { useShared } from "@/player/shared";
 import { editions, profile } from "@/player/state";
+import { useProfileActions } from "@/profile/profile-actions";
 import { colors, fontSizes, fonts, paperColors, space } from "@/theme";
 import { Avatar } from "@/ui/avatar";
 import { Button } from "@/ui/button";
@@ -58,6 +69,21 @@ import { toast } from "@/ui/toast";
 import { Kicker, Leaf, Lettering, Lettrine, Toy, ToyBody } from "@/ui/toy";
 
 const AVATAR = 92;
+
+/** The icon of each perk, the same as on the web's offer and subscriber's page. */
+const PERK_ICONS: Readonly<
+  Record<PatronPerkKey, { readonly icon: ToyIconName; readonly matter: "red" | "blue" }>
+> = {
+  cosmetic: { icon: "chest", matter: "red" },
+  word: { icon: "scroll", matter: "blue" },
+  editions: { icon: "ink", matter: "red" },
+  cabinet: { icon: "candle", matter: "blue" },
+  badge: { icon: "gilded", matter: "red" },
+  thanks: { icon: "books", matter: "blue" },
+  vote: { icon: "community", matter: "red" },
+  discord: { icon: "discussion", matter: "blue" },
+  seal: { icon: "sachet", matter: "red" },
+};
 
 /**
  * The subscriber's card, read only: the stores forbid selling outside their payment, so nothing
@@ -97,13 +123,8 @@ export function PatronScreen() {
       ) : (
         <>
           <PatronCard patron={patron} />
-          <Poll patron={patron} onChanged={load} />
-          <Finds finds={patron.finds} />
-          <Editions />
-          <DiscordSetting patron={patron} onChanged={load} />
-          <ThanksSetting patron={patron} onChanged={load} />
-          {patron.claimable.map((item) => (
-            <ClaimTile key={item.month} item={item} onClaimed={load} />
+          {PATRON_PERKS.map((perk) => (
+            <MemberPerk key={perk.key} perk={perk} patron={patron} onChanged={load} />
           ))}
         </>
       )}
@@ -133,6 +154,7 @@ function PatronCard({ patron }: { readonly patron: PatronResponse }) {
         </View>
       </View>
       <Lettering size={fontSizes.title}>{status.headline}</Lettering>
+      {status.ending !== null && <Text style={styles.ending}>{status.ending}</Text>}
       {status.lines.map((line) => (
         <Text key={line} style={styles.text}>
           {line}
@@ -144,19 +166,109 @@ function PatronCard({ patron }: { readonly patron: PatronResponse }) {
   );
 }
 
-/** The words the patron may find, and those found, with where each stands. */
-function Finds({ finds }: { readonly finds: PatronFindsView }) {
+/** A perk on the subscriber's page: its icon and title, where it stands, then what to do. */
+function PerkBlock({
+  perk,
+  line,
+  children,
+}: {
+  readonly perk: PatronPerk;
+  readonly line: string;
+  readonly children?: ReactNode;
+}) {
+  const { icon, matter } = PERK_ICONS[perk.key];
   return (
     <Leaf style={styles.card}>
       <View style={styles.claimRow}>
         <ToyBody matter="gold" shape="tile" style={styles.claimIcon}>
-          <Lettrine icon="scroll" matter="blue" size={48} />
+          <Lettrine icon={icon} matter={matter} size={48} />
         </ToyBody>
         <View style={styles.claimText}>
-          <Lettering size={fontSizes.title}>{PATRON_FINDS_TITLE}</Lettering>
-          <Text style={styles.text}>{findsLeftLine(finds.left)}</Text>
+          <Lettering size={fontSizes.title}>{perk.title}</Lettering>
+          <Text style={styles.text}>{line}</Text>
         </View>
       </View>
+      {children}
+    </Leaf>
+  );
+}
+
+function MemberPerk({
+  perk,
+  patron,
+  onChanged,
+}: {
+  readonly perk: PatronPerk;
+  readonly patron: PatronResponse;
+  readonly onChanged: () => Promise<void>;
+}) {
+  switch (perk.key) {
+    case "cosmetic":
+      return (
+        <PerkBlock perk={perk} line={cosmeticPerkLine(patron, Date.now())}>
+          {patron.claimable.map((item) => (
+            <ClaimTile key={item.month} item={item} onClaimed={onChanged} />
+          ))}
+        </PerkBlock>
+      );
+    case "word":
+      return <Finds perk={perk} finds={patron.finds} />;
+    case "editions":
+      return <Editions perk={perk} />;
+    case "cabinet":
+      return (
+        <PerkBlock perk={perk} line={PATRON_CABINET_LINE}>
+          <Button label={PATRON_OPEN_ALBUM} secondary small onPress={() => router.push("/album")} />
+        </PerkBlock>
+      );
+    case "badge":
+      return <BadgePerk perk={perk} patron={patron} />;
+    case "thanks":
+      return <ThanksSetting perk={perk} patron={patron} onChanged={onChanged} />;
+    case "vote":
+      return <Poll perk={perk} patron={patron} onChanged={onChanged} />;
+    case "discord":
+      return <DiscordSetting perk={perk} patron={patron} onChanged={onChanged} />;
+    case "seal":
+      return (
+        <PerkBlock perk={perk} line={PATRON_SEAL_LINE}>
+          <Button label={PATRON_PLAY} secondary small onPress={() => router.push("/")} />
+        </PerkBlock>
+      );
+  }
+}
+
+/** The title worn or not, with the button that puts it on, and the pinned cards it adds. */
+function BadgePerk({
+  perk,
+  patron,
+}: {
+  readonly perk: PatronPerk;
+  readonly patron: PatronResponse;
+}) {
+  const actions = useProfileActions();
+  const title = patronTitleOf(patron);
+  const worn = actions.profile?.title === title;
+  return (
+    <PerkBlock perk={perk} line={badgePerkLine(title, worn)}>
+      {!worn && (
+        <Button
+          label={PATRON_WEAR_TITLE}
+          secondary
+          small
+          disabled={actions.busy}
+          onPress={() => void actions.update({ title }, { success: patronTitleWorn(title) })}
+        />
+      )}
+      <Button label={PATRON_SEE_PROFILE} secondary small onPress={() => router.push("/profil")} />
+    </PerkBlock>
+  );
+}
+
+/** The words the patron may find, and those found, with where each stands. */
+function Finds({ perk, finds }: { readonly perk: PatronPerk; readonly finds: PatronFindsView }) {
+  return (
+    <PerkBlock perk={perk} line={findsLeftLine(finds.left)}>
       {finds.left > 0 ? (
         <MainAction label={PATRON_FIND_ACTION} onPress={() => router.push("/denicher")} />
       ) : (
@@ -168,41 +280,31 @@ function Finds({ finds }: { readonly finds: PatronFindsView }) {
           <Text style={styles.text}>{findStateLine(find.state)}</Text>
         </View>
       ))}
-    </Leaf>
+    </PerkBlock>
   );
 }
 
 /** The library editions owned, kept for life, and where to choose them. */
-function Editions() {
+function Editions({ perk }: { readonly perk: PatronPerk }) {
   const mine = useShared(editions);
   if (mine === null) return null;
-  return (
-    <Leaf style={styles.card}>
-      <View style={styles.claimRow}>
-        <ToyBody matter="gold" shape="tile" style={styles.claimIcon}>
-          <Lettrine icon="ink" matter="red" size={48} />
-        </ToyBody>
-        <View style={styles.claimText}>
-          <Lettering size={fontSizes.title}>{PATRON_EDITIONS_TITLE}</Lettering>
-          <Text style={styles.text}>{editionsOwnedLine(mine.owned)}</Text>
-        </View>
-      </View>
-    </Leaf>
-  );
+  return <PerkBlock perk={perk} line={editionsOwnedLine(mine.owned)} />;
 }
 
 /** The vote on the theme of a coming collection: open for a week, results once it closes. */
 function Poll({
+  perk,
   patron,
   onChanged,
 }: {
+  readonly perk: PatronPerk;
   readonly patron: PatronResponse;
   readonly onChanged: () => Promise<void>;
 }) {
   const [busy, setBusy] = useState(false);
   const screen = pollScreen(patron, Date.now());
   const poll = patron.poll;
-  if (screen === null || poll === null) return null;
+  if (screen === null || poll === null) return <PerkBlock perk={perk} line={PATRON_VOTE_NONE} />;
 
   const vote = async (theme: number) => {
     setBusy(true);
@@ -217,16 +319,7 @@ function Poll({
   };
 
   return (
-    <Leaf style={styles.card}>
-      <View style={styles.claimRow}>
-        <ToyBody matter="gold" shape="tile" style={styles.claimIcon}>
-          <Lettrine icon="community" matter="red" size={48} />
-        </ToyBody>
-        <View style={styles.claimText}>
-          <Lettering size={fontSizes.title}>{PATRON_POLL_TITLE}</Lettering>
-          <Text style={styles.text}>{screen.intro}</Text>
-        </View>
-      </View>
+    <PerkBlock perk={perk} line={screen.intro}>
       {screen.themes.map((theme, index) => (
         <View key={theme.name} style={[styles.pollTheme, theme.winner && styles.pollWinner]}>
           <Text style={styles.foundWord}>{theme.name}</Text>
@@ -250,21 +343,23 @@ function Poll({
         </View>
       ))}
       {screen.note !== null && <Text style={styles.muted}>{screen.note}</Text>}
-    </Leaf>
+    </PerkBlock>
   );
 }
 
 /** The patrons' Discord: the link, which brings the role and the reserved room, and its undoing. */
 function DiscordSetting({
+  perk,
   patron,
   onChanged,
 }: {
+  readonly perk: PatronPerk;
   readonly patron: PatronResponse;
   readonly onChanged: () => Promise<void>;
 }) {
   const [busy, setBusy] = useState(false);
   const screen = discordScreen(patron);
-  if (screen === null) return null;
+  if (screen === null) return <PerkBlock perk={perk} line={PATRON_DISCORD_SOON} />;
 
   const link = async () => {
     setBusy(true);
@@ -291,16 +386,7 @@ function DiscordSetting({
   };
 
   return (
-    <Leaf style={styles.card}>
-      <View style={styles.claimRow}>
-        <ToyBody matter="gold" shape="tile" style={styles.claimIcon}>
-          <Lettrine icon="discussion" matter="blue" size={48} />
-        </ToyBody>
-        <View style={styles.claimText}>
-          <Lettering size={fontSizes.title}>{PATRON_DISCORD_TITLE}</Lettering>
-          <Text style={styles.text}>{screen.line}</Text>
-        </View>
-      </View>
+    <PerkBlock perk={perk} line={screen.line}>
       {screen.canLink && (
         <MainAction label={PATRON_DISCORD_LINK} disabled={busy} onPress={() => void link()} />
       )}
@@ -313,20 +399,21 @@ function DiscordSetting({
           onPress={() => void unlink()}
         />
       )}
-    </Leaf>
+    </PerkBlock>
   );
 }
 
 /** The public page of thanks: whether the patron's pseudo is on it, and « Ne pas me citer ». */
 function ThanksSetting({
+  perk,
   patron,
   onChanged,
 }: {
+  readonly perk: PatronPerk;
   readonly patron: PatronResponse;
   readonly onChanged: () => Promise<void>;
 }) {
   const [busy, setBusy] = useState(false);
-  const paying = patron.subscription?.standing === "patron";
 
   const toggle = async () => {
     setBusy(true);
@@ -340,27 +427,16 @@ function ThanksSetting({
   };
 
   return (
-    <Leaf style={styles.card}>
-      <View style={styles.claimRow}>
-        <ToyBody matter="gold" shape="tile" style={styles.claimIcon}>
-          <Lettrine icon="books" matter="red" size={48} />
-        </ToyBody>
-        <View style={styles.claimText}>
-          <Lettering size={fontSizes.title}>{PATRON_THANKS_PAGE_TITLE}</Lettering>
-          <Text style={styles.text}>{patronThanksLine(patron)}</Text>
-        </View>
-      </View>
+    <PerkBlock perk={perk} line={patronThanksLine(patron)}>
       <Button label={PATRON_THANKS_SEE} secondary small onPress={() => router.push("/mecenes")} />
-      {paying && (
-        <Button
-          label={patron.thanksListed ? PATRON_THANKS_HIDE : PATRON_THANKS_SHOW}
-          secondary
-          small
-          disabled={busy}
-          onPress={() => void toggle()}
-        />
-      )}
-    </Leaf>
+      <Button
+        label={patron.thanksListed ? PATRON_THANKS_HIDE : PATRON_THANKS_SHOW}
+        secondary
+        small
+        disabled={busy}
+        onPress={() => void toggle()}
+      />
+    </PerkBlock>
   );
 }
 
@@ -431,6 +507,18 @@ const styles = StyleSheet.create({
   },
   text: {
     fontFamily: fonts.ui.semibold,
+    fontSize: fontSizes.body,
+    lineHeight: 22,
+    color: paperColors.pageInk,
+  },
+  // A cancelled subscription: said apart, so that the player sees it at once.
+  ending: {
+    padding: space.s5,
+    borderWidth: 2,
+    borderColor: mixHex(colors.paper, toyMatters.red.bottom, 0.5),
+    borderRadius: 18,
+    backgroundColor: mixHex(colors.paper, toyMatters.red.top, 0.12),
+    fontFamily: fonts.ui.bold,
     fontSize: fontSizes.body,
     lineHeight: 22,
     color: paperColors.pageInk,

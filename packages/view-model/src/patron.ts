@@ -14,6 +14,7 @@ import {
   PATRON_SCHEDULE,
   PATRON_TIME_ZONE,
   PATRON_TITLE,
+  parisMonthOf,
   patronRulesAt,
 } from "@leximon/core";
 import { capitalize } from "./format";
@@ -45,25 +46,91 @@ export function patronMenuLabel(mark: PatronMarkView): string {
 export const PATRON_CARD_KICKER = "Carte de mécène";
 export const PATRON_MEMBER_TITLE = "Ton abonnement mécène";
 
-/** What the subscription gives, the same before and after sales open. */
-export const PATRON_BENEFITS: readonly string[] = [
-  "Un cosmétique chaque mois, cadre ou avatar gravé, dévoilé le 1er et gardé à vie.",
-  "Un mot par trimestre, que tu choisis parmi les mots pas encore publiés. Il entre dans le jeu avec ton pseudo, et tu en reçois un exemplaire unique.",
-  "Des éditions de bibliothèque pour imprimer tes gravures à la sanguine, au lavis ou à l'encre de Chine, et une nouvelle chaque mois.",
-  "Le cabinet de chaque mot, ouvert depuis sa carte, avec son usage dans les livres depuis 1800, son article du Littré et sa famille.",
-  "Le titre et le badge de mécène sur ton profil, trois cartes épinglées de plus et ton pseudo sur la page des mécènes.",
-  "Une voix dans le vote des mécènes sur le thème d'une prochaine collection, et un sceau de cire sur tes sachets.",
+/** One thing the subscription gives: the same list on the offer and on the subscriber's page. */
+export type PatronPerkKey =
+  | "cosmetic"
+  | "word"
+  | "editions"
+  | "cabinet"
+  | "badge"
+  | "thanks"
+  | "vote"
+  | "discord"
+  | "seal";
+
+export interface PatronPerk {
+  readonly key: PatronPerkKey;
+  /** The block's title on the subscriber's page. */
+  readonly title: string;
+  /** On the offer, the words set in bold, then the rest of the sentence. */
+  readonly lead: string;
+  readonly rest: string;
+}
+
+export const PATRON_PERKS: readonly PatronPerk[] = [
+  {
+    key: "cosmetic",
+    title: "Le cosmétique du mois",
+    lead: "Un cosmétique chaque mois",
+    rest: ", cadre ou avatar gravé, dévoilé le 1er et gardé à vie.",
+  },
+  {
+    key: "word",
+    title: "Ton mot dans le jeu",
+    lead: "Un mot à toi chaque trimestre",
+    rest: ", choisi parmi les mots pas encore publiés. Il paraît avec ton pseudo, et tu en reçois un exemplaire unique.",
+  },
+  {
+    key: "editions",
+    title: "Éditions de bibliothèque",
+    lead: "Des éditions de bibliothèque",
+    rest: " pour imprimer tes gravures à la sanguine, au lavis ou à l'encre de Chine, et une nouvelle chaque mois.",
+  },
+  {
+    key: "cabinet",
+    title: "Le cabinet des mots",
+    lead: "Le cabinet de chaque mot",
+    rest: ", ouvert depuis sa carte, avec son usage dans les livres depuis 1800, son article du Littré et sa famille.",
+  },
+  {
+    key: "badge",
+    title: "Ton titre et ton badge",
+    lead: "Le titre et le badge de mécène",
+    rest: " sur ton profil, avec trois cartes épinglées de plus.",
+  },
+  {
+    key: "thanks",
+    title: "La page des mécènes",
+    lead: "Ton pseudo sur la page des mécènes",
+    rest: ", si ton profil est public.",
+  },
+  {
+    key: "vote",
+    title: "Le vote des mécènes",
+    lead: "Une voix dans le vote des mécènes",
+    rest: " sur le thème d'une prochaine collection.",
+  },
+  {
+    key: "discord",
+    title: "Le salon des mécènes",
+    lead: "Le salon des mécènes",
+    rest: " sur le Discord de Leximon, ouvert par le rôle Mécène.",
+  },
+  {
+    key: "seal",
+    title: "Le sceau de tes sachets",
+    lead: "Un sceau de cire sur tes sachets",
+    rest: ", qui se brise à chaque ouverture.",
+  },
 ];
 
 export const PATRON_INTRO =
   "Leximon est gratuit, sans publicité et sans sachet à acheter. Avec l'abonnement mécène, tu fais vivre le jeu.";
-export const PATRON_NO_ADVANTAGE =
-  "Un mécène n'a ni sachet, ni XP, ni avantage aux échanges en plus.";
 
 /**
  * - `door`: sales are not open to this player; the offer is announced and « Préviens-moi » counted;
  * - `offer`: the player can subscribe, or a guest is sent to create an account first;
- * - `member`: subscribed, trial included.
+ * - `member`: a paying subscriber, until the subscription stops.
  */
 export type PatronPageKind = "door" | "offer" | "member";
 
@@ -113,13 +180,7 @@ export function patronPlanChoices(now: EpochMs): readonly PatronPlanChoice[] {
 /** The plan picked when the page opens: the cheaper one each month. */
 export const PATRON_DEFAULT_PLAN: PatronPlan = "yearly";
 
-/** Under the plans, for a player who never had a trial. */
-export function patronTrialNote(patron: Pick<PatronResponse, "trialAvailable" | "trialDays">) {
-  if (!patron.trialAvailable || patron.trialDays === 0) return null;
-  return `Les ${patron.trialDays} premiers jours sont gratuits, et tu peux résilier en un clic avant le premier paiement.`;
-}
-
-/** Under the plans, for a player whose trial is spent. */
+/** Under the plans. */
 export const PATRON_CANCEL_NOTE = "Tu peux résilier en un clic depuis cette page, quand tu veux.";
 
 export const PATRON_FOUNDING_OFFER =
@@ -202,11 +263,13 @@ function patronDay(iso: string, now: EpochMs, timeZone: string): string {
 }
 
 export interface PatronStatus {
-  /** « Mécène depuis mars 2027 », « Essai gratuit en cours ». */
+  /** « Mécène depuis mars 2027 », or « Mécène jusqu'au 22 novembre » once cancelled. */
   readonly headline: string;
   readonly lines: readonly string[];
   /** A payment Stripe is retrying: shown apart, with the button that fixes it. */
   readonly warning: string | null;
+  /** The subscription was cancelled and stops at its end: shown apart, like the warning. */
+  readonly ending: string | null;
   /** « Reprendre mon abonnement » once cancelled, « Gérer mon abonnement » otherwise. */
   readonly manage: string;
 }
@@ -221,45 +284,33 @@ export function patronStatus(
   if (subscription === null || subscription.standing === "none") return null;
   const day = (iso: string) => patronDay(iso, now, timeZone);
   const price = subscription.plan === null ? null : patronPrice(subscription.plan, now);
-  const lines: string[] = [];
-
-  if (subscription.standing === "trial") {
-    const end = subscription.trialEnd ?? subscription.currentPeriodEnd;
-    if (subscription.cancelAt !== null) {
-      lines.push(`Ton essai s'arrête le ${day(subscription.cancelAt)}, sans aucun paiement.`);
-    } else if (end !== null) {
-      lines.push(
-        price === null
-          ? `Ton essai se termine le ${day(end)}.`
-          : `Ton essai se termine le ${day(end)}, et ton premier paiement de ${price} aura lieu ce jour-là.`,
-      );
-    }
-    lines.push(
-      "Pendant l'essai, tu portes le titre et le badge de mécène. Le cosmétique du mois et le droit de dénicher un mot arrivent avec le premier paiement.",
-    );
-  } else if (subscription.cancelAt !== null) {
-    lines.push(
-      `Ton abonnement s'arrête le ${day(subscription.cancelAt)}. Tes cosmétiques restent à toi.`,
-    );
-  } else if (subscription.currentPeriodEnd !== null && price !== null) {
-    lines.push(
-      `Ton prochain paiement de ${price} aura lieu le ${day(subscription.currentPeriodEnd)}.`,
-    );
-  }
-
   const title = patron.founder ? "Mécène fondateur" : "Mécène";
+  const month = (iso: string) =>
+    new Intl.DateTimeFormat("fr-FR", { month: "long", year: "numeric", timeZone }).format(
+      Date.parse(iso),
+    );
+
+  if (subscription.cancelAt !== null) {
+    const end = day(subscription.cancelAt);
+    return {
+      headline: `${title} jusqu'au ${end}`,
+      lines: [],
+      warning: null,
+      ending: `Tu as résilié ton abonnement. Il s'arrête le ${end}, sans autre paiement, et tes cosmétiques restent à toi.`,
+      manage: PATRON_RESUME,
+    };
+  }
   return {
-    headline:
-      subscription.standing === "trial"
-        ? "Essai gratuit en cours"
-        : subscription.since === null
-          ? title
-          : `${title} depuis ${new Intl.DateTimeFormat("fr-FR", { month: "long", year: "numeric", timeZone }).format(Date.parse(subscription.since))}`,
-    lines,
+    headline: subscription.since === null ? title : `${title} depuis ${month(subscription.since)}`,
+    lines:
+      subscription.currentPeriodEnd !== null && price !== null
+        ? [`Ton prochain paiement de ${price} aura lieu le ${day(subscription.currentPeriodEnd)}.`]
+        : [],
     warning: subscription.paymentFailing
       ? "Ton dernier paiement n'est pas passé. Mets à jour ta carte pour rester mécène."
       : null,
-    manage: subscription.cancelAt === null ? PATRON_MANAGE : PATRON_RESUME,
+    ending: null,
+    manage: PATRON_MANAGE,
   };
 }
 
@@ -302,86 +353,81 @@ export function patronTitleWorn(title: string): string {
 }
 
 /** What a step of the welcome brings: drawn with its own icon. */
-export type PatronWelcomeKind = "mark" | "payment" | "cosmetic" | "word";
+export type PatronWelcomeKind = "mark" | "cosmetic" | "word";
 
 export interface PatronWelcomeStep {
   readonly kind: PatronWelcomeKind;
-  /** « Aujourd'hui », « 22 novembre », « Chaque mois ». */
+  /** « Aujourd'hui », « Chaque mois ». */
   readonly when: string;
   readonly what: string;
   /** Still to come: drawn locked. */
   readonly later: boolean;
 }
 
-export interface PatronWelcome {
-  readonly steps: readonly PatronWelcomeStep[];
-  /** Under the steps: how to stop a trial before it costs anything. */
-  readonly note: string | null;
-}
-
-/**
- * The reward back from the payment: what the subscription gives today, and what comes next. A
- * trial gives the title and the badge now, the cosmetic and the word with the first payment.
- */
+/** The reward back from the payment: what the subscription gives today, and what comes next. */
 export function patronWelcome(
   patron: Pick<PatronResponse, "subscription">,
+): readonly PatronWelcomeStep[] | null {
+  if ((patron.subscription?.standing ?? "none") === "none") return null;
+  return [
+    {
+      kind: "mark",
+      when: "Aujourd'hui",
+      what: "Le titre, le badge et le cosmétique du mois",
+      later: false,
+    },
+    {
+      kind: "cosmetic",
+      when: "Chaque mois",
+      what: "Un nouveau cosmétique, gardé à vie",
+      later: true,
+    },
+    { kind: "word", when: "Chaque trimestre", what: "Un mot à dénicher pour le jeu", later: true },
+  ];
+}
+
+// --- The subscriber's page, perk by perk ------------------------------------------------------
+
+/** Under the cosmetic's block: what waits to be claimed, or when the next one comes. */
+export function cosmeticPerkLine(
+  patron: Pick<PatronResponse, "claimable">,
   now: EpochMs,
   timeZone: string = PATRON_TIME_ZONE,
-): PatronWelcome | null {
-  const subscription = patron.subscription;
-  if (subscription === null || subscription.standing === "none") return null;
-  const mark = {
-    kind: "mark",
-    when: "Aujourd'hui",
-    what: "Le titre et le badge de mécène",
-    later: false,
-  } as const;
-
-  const end = subscription.trialEnd ?? subscription.currentPeriodEnd;
-  if (subscription.standing === "trial" && end !== null) {
-    const day = patronDay(end, now, timeZone);
-    const price = subscription.plan === null ? null : patronPrice(subscription.plan, now);
-    return {
-      steps: [
-        mark,
-        {
-          kind: "payment",
-          when: day,
-          what: price === null ? "Premier paiement" : `Premier paiement de ${price}`,
-          later: true,
-        },
-        {
-          kind: "cosmetic",
-          when: "Dès ce paiement",
-          what: "Le cosmétique du mois et le droit de dénicher un mot",
-          later: true,
-        },
-      ],
-      note:
-        subscription.cancelAt === null
-          ? `Tu peux résilier en un clic avant le ${day}, sans rien payer.`
-          : null,
-    };
+): string {
+  const count = patron.claimable.length;
+  if (count === 1) return "Un cosmétique t'attend. Réclame-le pour l'ajouter à ton apparence.";
+  if (count > 1) {
+    return `${count} cosmétiques t'attendent. Réclame-les pour les ajouter à ton apparence.`;
   }
-  return {
-    steps: [
-      { ...mark, what: "Le titre, le badge et le cosmétique du mois" },
-      {
-        kind: "cosmetic",
-        when: "Chaque mois",
-        what: "Un nouveau cosmétique, gardé à vie",
-        later: true,
-      },
-      {
-        kind: "word",
-        when: "Chaque trimestre",
-        what: "Un mot à dénicher pour le jeu",
-        later: true,
-      },
-    ],
-    note: null,
-  };
+  const [year, month] = parisMonthOf(now).split("-").map(Number) as [number, number];
+  const next = Date.UTC(month === 12 ? year + 1 : year, month === 12 ? 0 : month, 15, 12);
+  const name = new Intl.DateTimeFormat("fr-FR", {
+    month: "long",
+    ...(month === 12 ? { year: "numeric" } : {}),
+    timeZone,
+  }).format(next);
+  return `Le prochain se dévoile le 1er ${name}.`;
 }
+
+export const PATRON_CABINET_LINE =
+  "Le cabinet s'ouvre depuis la fiche de chaque carte de ton album.";
+export const PATRON_OPEN_ALBUM = "Ouvrir l'album";
+
+/** Under the badge's block: the title worn or not, and the pinned cards it adds. */
+export function badgePerkLine(title: string, worn: boolean): string {
+  const pins = "Ton profil montre trois cartes épinglées de plus.";
+  return worn
+    ? `Tu portes le titre ${title}. ${pins}`
+    : `${pins} Porte ton titre pour l'afficher à côté de ton pseudo.`;
+}
+export const PATRON_SEE_PROFILE = "Voir mon profil";
+
+export const PATRON_VOTE_NONE =
+  "Aucun vote n'est ouvert. Le prochain s'annoncera ici avant une nouvelle collection.";
+export const PATRON_DISCORD_SOON = "Le salon ouvre bientôt sur le Discord de Leximon.";
+export const PATRON_SEAL_LINE =
+  "Tes sachets portent un sceau de cire, qui se brise à chaque ouverture.";
+export const PATRON_PLAY = "Jouer";
 
 // --- Finding a word ---------------------------------------------------------------------------
 
@@ -452,9 +498,6 @@ export const PATRON_THANKS_FAILED = "Le réglage n'a pas été enregistré. Rée
 
 /** Where the patron stands on the public page of thanks. */
 export function patronThanksLine(patron: PatronResponse): string {
-  if (patron.subscription?.standing === "trial") {
-    return "Ton pseudo y figurera après ton premier paiement, si ton profil est public.";
-  }
   return patron.thanksListed
     ? "Ton pseudo y figure tant que ton profil est public."
     : "Tu as choisi de ne pas y figurer.";
@@ -508,8 +551,8 @@ export interface PollScreen {
 }
 
 /**
- * The vote on the patron page, for a subscriber: a paying patron votes, a trial sees the themes
- * and waits for the first payment. Nothing for a player who never subscribed.
+ * The vote on the patron page: a paying patron votes; a former one still sees the vote they took
+ * part in. Nothing without a vote, nor for a player who never subscribed.
  */
 export function pollScreen(
   patron: PatronResponse,
@@ -536,9 +579,7 @@ export function pollScreen(
         ? poll.myVote === null
           ? "Une voix par mécène. Le résultat s'affiche à la fermeture."
           : "Tu peux changer ta voix jusqu'à la fermeture. Le résultat s'affiche alors."
-        : standing === "trial"
-          ? "Ta voix comptera après ton premier paiement."
-          : "Le vote est réservé aux mécènes.",
+        : "Le vote est réservé aux mécènes.",
       canVote,
       themes,
     };
@@ -565,7 +606,7 @@ function pollOutcome(poll: NonNullable<PatronResponse["poll"]>): string {
 export function voteRefusalLine(reason: PatronVoteRefusal): string {
   switch (reason) {
     case "not_patron":
-      return "Le vote est réservé aux mécènes, après le premier paiement.";
+      return "Le vote est réservé aux mécènes.";
     case "poll_closed":
       return "Le vote vient de se fermer.";
     case "unknown_theme":
@@ -602,15 +643,9 @@ export function discordScreen(patron: PatronResponse): DiscordScreen | null {
       canUnlink: true,
     };
   }
-  return standing === "patron"
-    ? {
-        line: "Relie ton compte Discord pour rejoindre le serveur de Leximon avec le rôle Mécène, qui ouvre un salon réservé.",
-        canLink: true,
-        canUnlink: false,
-      }
-    : {
-        line: "Le salon réservé sur Discord s'ouvre après ton premier paiement.",
-        canLink: false,
-        canUnlink: false,
-      };
+  return {
+    line: "Relie ton compte Discord pour rejoindre le serveur de Leximon avec le rôle Mécène, qui ouvre un salon réservé.",
+    canLink: true,
+    canUnlink: false,
+  };
 }

@@ -39,8 +39,8 @@ export const profileResponseSchema = z.object({
   memberSince: timestampSchema,
   patron: patronMarkSchema,
   /**
-   * A paying patron now, never during the trial: the wax seal on the sachets. Lost when the
-   * subscription stops, unlike the founder's mark.
+   * A paying patron now: the wax seal on the sachets. Lost when the subscription stops, unlike
+   * the founder's mark.
    */
   patronPaying: z.boolean().default(false),
   /** `null` without a clan. */

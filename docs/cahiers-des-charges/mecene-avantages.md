@@ -40,7 +40,7 @@ Le carnet (statistiques de ses mots, album à imprimer) que P73 range avec le ca
 
 ## 3. Cartes épinglées en plus
 
-Le mécène a des places d'épingles en plus de celles que lui donnent ses niveaux. Elles ne remplacent jamais une récompense de niveau (§ 9, question 6). À l'arrêt, les places en plus disparaissent : les cartes épinglées au-delà ne se montrent plus, et reviennent s'il reprend sans avoir changé ses épingles entre-temps. **Construit :** `extraPinnedSlots` (3) dans `PATRON_SCHEDULE`, compté dans la garde-robe tant que l'abonnement est payé, jamais pendant l'essai.
+Le mécène a des places d'épingles en plus de celles que lui donnent ses niveaux. Elles ne remplacent jamais une récompense de niveau (§ 9, question 6). À l'arrêt, les places en plus disparaissent : les cartes épinglées au-delà ne se montrent plus, et reviennent s'il reprend sans avoir changé ses épingles entre-temps. **Construit :** `extraPinnedSlots` (3) dans `PATRON_SCHEDULE`, compté dans la garde-robe tant que l'abonnement est payé.
 
 ## 4. Rôle et salon sur le Discord
 
@@ -62,7 +62,7 @@ Tant qu'un de ces réglages manque, la page Mécène ne montre pas le bloc Disco
 Avant une nouvelle collection, le propriétaire propose trois thèmes dans `/admin`. Les mécènes votent sur leur page Mécène pendant une semaine, une voix chacun ; le thème gagnant est celui de la collection. Le résultat est annoncé sur `/nouveautes` et le Discord.
 
 - Pas de proposition libre des joueurs : ce serait du texte écrit par les joueurs, à modérer.
-- Pendant l'essai, pas de voix (l'essai donne le titre et le badge seulement) : la voix arrive au premier paiement (§ 9, question 8).
+- Seuls les mécènes qui paient votent (§ 9, question 8).
 
 ## 6. Page de remerciements
 
@@ -116,9 +116,7 @@ Toutes tranchées le 2026-11-08 selon la recommandation.
    - c. À la main : le mécène donne son pseudo Discord, tu poses le rôle. Rien à coder, mais le rôle ne part pas tout seul.
    - **Recommandation : a.**
 8. **Qui vote.**
-   - a. Les mécènes qui ont payé au moins une fois, essai exclu.
-   - b. Tout mécène, essai compris.
-   - **Recommandation : a.** C'est la règle de l'essai pour le cosmétique et le dénichage.
+   - Les mécènes qui paient. Sans objet depuis le retrait de l'essai gratuit (2026-11-09).
 9. **Page de remerciements.**
    - a. Tous les mécènes au profil public, avec un réglage « Ne pas me citer » sur la page Mécène. Le badge est déjà public sur le profil.
    - b. Seulement ceux qui le demandent, par une case à cocher.

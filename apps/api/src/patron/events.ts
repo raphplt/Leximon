@@ -130,7 +130,7 @@ export function billingEventOf(raw: unknown): BillingEvent | null {
   return ignored;
 }
 
-/** `null` for an invoice of zero (the start of a trial) or without a line. */
+/** `null` for an invoice of zero or without a line. */
 function paidInvoiceOf(
   invoice: z.infer<typeof invoiceSchema>,
   subscriptionId: string,

@@ -34,7 +34,7 @@ export type PatronSales = z.infer<typeof patronSalesSchema>;
 
 /**
  * `GET /me/patron`, 200. `subscription` is `null` for a player who never subscribed.
- * - `standing`: `patron` (paid and subscribed), `trial` (subscribed, nothing paid yet), `none`;
+ * - `standing`: `patron` (paid and subscribed), `none` otherwise;
  * - `cancelAt`: when a subscription cancelled by the player stops, `null` while it renews;
  * - `paymentFailing`: the latest payment failed and Stripe is retrying it.
  */
@@ -71,8 +71,6 @@ export const patronResponseSchema = z.object({
   /** Cosmetics of the months paid for, not claimed yet, oldest first. */
   claimable: z.array(monthCosmeticSchema),
   canBuy: z.boolean(),
-  trialAvailable: z.boolean(),
-  trialDays: z.int().nonnegative(),
   founder: z.boolean(),
   /** Within the founding month: a first payment now makes a founder. */
   foundingOffer: z.boolean().default(false),
@@ -89,10 +87,9 @@ export const patronResponseSchema = z.object({
     .default({ available: false, username: null }),
   subscription: z
     .object({
-      standing: z.enum(["none", "trial", "patron"]),
+      standing: z.enum(["none", "patron"]),
       plan: patronPlanSchema.nullable(),
       currentPeriodEnd: timestampSchema.nullable(),
-      trialEnd: timestampSchema.nullable(),
       cancelAt: timestampSchema.nullable(),
       paymentFailing: z.boolean(),
       since: timestampSchema.nullable(),
@@ -156,7 +153,7 @@ export const adminPatronSchema = z.object({
   email: z.string(),
   pseudo: z.string().nullable(),
   playerCode: z.string().nullable(),
-  standing: z.enum(["none", "trial", "patron"]),
+  standing: z.enum(["none", "patron"]),
   plan: patronPlanSchema.nullable(),
   since: timestampSchema.nullable(),
   currentPeriodEnd: timestampSchema.nullable(),
@@ -181,7 +178,6 @@ export const adminPatronsResponseSchema = z.object({
   sales: patronSalesSchema,
   counts: z.object({
     patrons: z.int().nonnegative(),
-    trials: z.int().nonnegative(),
     cancelling: z.int().nonnegative(),
     failing: z.int().nonnegative(),
     founders: z.int().nonnegative(),
@@ -195,7 +191,7 @@ export type AdminPatronsResponse = z.infer<typeof adminPatronsResponseSchema>;
 
 /**
  * `POST /admin/patrons/:userId/refund`, 200: the subscription stops at once and its latest
- * payment, if any, is refunded. `refunded` is 0 when nothing had been paid (a trial).
+ * payment, if any, is refunded. `refunded` is 0 when nothing had been paid.
  */
 export const adminPatronRefundResponseSchema = z.object({
   /** In cents of euro. */
@@ -218,6 +214,12 @@ export type DiscordLinkRefusal = z.infer<typeof discordLinkRefusalSchema>["error
 
 /** Where Discord's page sends the player back: `?discord=linked`, or `?discord=failed`. */
 export const DISCORD_RETURN_QUERY = "discord";
+
+/**
+ * Where Stripe's portal sends the player back: the page then asks `POST /me/patron/refresh`
+ * (200, the same body as `GET /me/patron`) to read the subscription again from Stripe.
+ */
+export const PATRON_PORTAL_RETURN_QUERY = "abonnement";
 
 /** `PUT /me/patron/polls/:pollId/vote` body: the theme chosen, as an index. */
 export const patronVoteRequestSchema = z.object({ theme: z.int().nonnegative() });
