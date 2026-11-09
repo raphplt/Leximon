@@ -145,8 +145,17 @@
 
 .typedField {
   min-height: 64px;
+  font-family: var(--font-display), Georgia, serif;
+  font-weight: 900;
   font-size: var(--lx-size-title-large);
   text-align: center;
+}
+
+/* Typed in brown ink on paper, the word has no outline; once judged, on green or red, it is lettered. */
+:is(.typedRight, .typedWrong) {
+  -webkit-text-stroke: var(--lx-lettering-width) var(--lx-lettering-outline);
+  paint-order: stroke fill;
+  text-shadow: 0 var(--lx-lettering-drop) 0 var(--lx-lettering-outline);
 }
 
 .typedField:disabled {

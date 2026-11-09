@@ -149,3 +149,12 @@
   font-size: var(--lx-size-small);
   color: var(--lx-color-binding-ink-muted);
 }
+
+/* The phone's sheet is paper, not the binding: its entries take the paper's ink. */
+.sheetList :is(.row, .who) {
+  color: var(--lx-color-page-ink);
+}
+
+.sheetList .whoLevel {
+  color: var(--lx-color-page-ink-muted);
+}

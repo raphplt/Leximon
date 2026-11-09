@@ -876,7 +876,7 @@ function TypedAnswer({
     <form className={styles.typed} onSubmit={submit}>
       <input
         data-right={correct === true || undefined}
-        className={`${ui.field} ${ui.display} ${styles.typedField} ${state}`}
+        className={`${ui.field} ${styles.typedField} ${state}`}
         value={step.name === "answered" ? step.chosen : typed}
         maxLength={TYPED_ANSWER_MAX_LENGTH}
         aria-label="Le mot"
