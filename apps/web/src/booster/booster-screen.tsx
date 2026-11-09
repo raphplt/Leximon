@@ -63,7 +63,7 @@ import { RarityIcon, RarityName } from "@/components/rarity-icon";
 import { RecycleButton } from "@/ecus/recycle-button";
 import { api } from "@/lib/api";
 import { usePackShape } from "@/lib/use-pack-shape";
-import { Desk, DeskToneDevBar, MainAction, PaperAction } from "@/library/play-pieces";
+import { Desk, MainAction, PaperAction } from "@/library/play-pieces";
 import { StandingColumn, TodayColumn } from "@/play/desk-columns";
 import { type CounterMoment, LibraryCounter } from "@/play/library-counter";
 import counter from "@/play/library-counter.module.css";
@@ -212,7 +212,6 @@ export function BoosterScreen() {
   return (
     <ParticleStage dust>
       <BoosterFlow />
-      <DeskToneDevBar />
     </ParticleStage>
   );
 }
@@ -566,6 +565,7 @@ function BoosterFlow() {
           <Revealing
             catalog={catalog}
             pack={pack}
+            collectionId={choice?.id}
             index={phase.index}
             hurried={phase.hurriedFrom !== null}
             width={cardWidth}
@@ -578,6 +578,7 @@ function BoosterFlow() {
           <Recap
             catalog={catalog}
             pack={pack}
+            collectionId={choice?.id}
             hurriedFrom={phase.hurriedFrom}
             mustSignUp={mustSignUp}
             onOpenAnother={() => {
@@ -774,6 +775,7 @@ function PackView({ shape, ...props }: PackProps & { readonly shape: PackShape }
 function Revealing({
   catalog,
   pack,
+  collectionId,
   index,
   hurried,
   width,
@@ -783,6 +785,7 @@ function Revealing({
 }: {
   readonly catalog: Catalog;
   readonly pack: Pack;
+  readonly collectionId?: string | undefined;
   readonly index: number;
   readonly hurried: boolean;
   readonly width: number;
@@ -806,7 +809,7 @@ function Revealing({
   // The cards come onto the desk the sachet burst on, as in the recap.
   return (
     <div className={styles.revealing}>
-      <Desk className={styles.recapDesk} />
+      <Desk className={styles.recapDesk} collectionId={collectionId} />
       <RevealCard
         key={index}
         card={card}
@@ -848,6 +851,7 @@ function Revealing({
 function Recap({
   catalog,
   pack,
+  collectionId,
   hurriedFrom,
   mustSignUp,
   onOpenAnother,
@@ -855,6 +859,7 @@ function Recap({
 }: {
   readonly catalog: Catalog | null;
   readonly pack: Pack;
+  readonly collectionId?: string | undefined;
   readonly hurriedFrom: number | null;
   readonly mustSignUp: boolean;
   readonly onOpenAnother: () => void;
@@ -885,7 +890,7 @@ function Recap({
   // The cards lie on the desk and the buttons are its objects.
   return (
     <div className={styles.recap}>
-      <Desk className={styles.recapDesk} />
+      <Desk className={styles.recapDesk} collectionId={collectionId} />
       <p className={`${ui.kicker} ${styles.recapKicker}`}>Ton sachet</p>
       <RecapLine pack={pack} />
       {catalog !== null && (
