@@ -63,7 +63,7 @@ import { RarityIcon, RarityName } from "@/components/rarity-icon";
 import { RecycleButton } from "@/ecus/recycle-button";
 import { api } from "@/lib/api";
 import { usePackShape } from "@/lib/use-pack-shape";
-import { Desk, MainAction, PaperAction } from "@/library/play-pieces";
+import { Desk, DeskToneDevBar, MainAction, PaperAction } from "@/library/play-pieces";
 import { StandingColumn, TodayColumn } from "@/play/desk-columns";
 import { type CounterMoment, LibraryCounter } from "@/play/library-counter";
 import counter from "@/play/library-counter.module.css";
@@ -212,6 +212,7 @@ export function BoosterScreen() {
   return (
     <ParticleStage dust>
       <BoosterFlow />
+      <DeskToneDevBar />
     </ParticleStage>
   );
 }

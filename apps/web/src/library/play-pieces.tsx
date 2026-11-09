@@ -1,7 +1,14 @@
 "use client";
 
 import { stockToyInks, type ToyIconName, type ToyMatterName } from "@leximon/tokens";
-import { type MouseEvent, type ReactNode, useEffect, useRef } from "react";
+import {
+  type MouseEvent,
+  type ReactNode,
+  useEffect,
+  useRef,
+  useState,
+  useSyncExternalStore,
+} from "react";
 import { LevelMedal } from "@/ui/level-bits";
 import { Tooling } from "@/ui/ornaments";
 import { Kicker, Lettering, Lettrine, Toy, ToyBody, ToyIcon } from "@/ui/toy";
@@ -12,12 +19,136 @@ import styles from "./play-pieces.module.css";
  * screen gives them their words and figures, so that the same pieces serve every state.
  */
 
-/** The green leather desk under the lamp, tooled in gold as the board of a bound book. */
+export type DeskTone =
+  | "acajou"
+  | "emeraude"
+  | "nuit"
+  | "velours"
+  | "ardoise"
+  | "ambre"
+  | "cuir-vert";
+
+export type DeskContrast = "subtle" | "balanced" | "bold";
+
+interface DeskLook {
+  readonly tone: DeskTone;
+  readonly contrast: DeskContrast;
+}
+
+const DESK_TONES: readonly { readonly id: DeskTone; readonly label: string }[] = [
+  { id: "acajou", label: "Acajou & Noyer" },
+  { id: "emeraude", label: "Émeraude & Forêt" },
+  { id: "nuit", label: "Saphir Royal" },
+  { id: "velours", label: "Velours Pourpre" },
+  { id: "ardoise", label: "Obsidienne & Or" },
+  { id: "ambre", label: "Cuir Fauve" },
+  { id: "cuir-vert", label: "Cuir vert (ancien)" },
+];
+
+const DESK_CONTRASTS: readonly { readonly id: DeskContrast; readonly label: string }[] = [
+  { id: "subtle", label: "Doux" },
+  { id: "balanced", label: "Équilibré" },
+  { id: "bold", label: "Marqué" },
+];
+
+let currentDeskLook: DeskLook = { tone: "acajou", contrast: "balanced" };
+const deskListeners = new Set<() => void>();
+
+function setDeskLook(next: DeskLook): void {
+  currentDeskLook = next;
+  for (const listener of deskListeners) listener();
+}
+
+function subscribeDeskLook(listener: () => void): () => void {
+  deskListeners.add(listener);
+  return () => {
+    deskListeners.delete(listener);
+  };
+}
+
+function getDeskLook(): DeskLook {
+  return currentDeskLook;
+}
+
+/** The tooled desk under the lamp, with aged 3D two-tone diamonds. */
 export function Desk({ className }: { readonly className?: string | undefined }) {
+  const { tone, contrast } = useSyncExternalStore(subscribeDeskLook, getDeskLook, getDeskLook);
   return (
-    <div className={[styles.desk, className].filter(Boolean).join(" ")} aria-hidden="true">
+    <div
+      className={[styles.desk, className].filter(Boolean).join(" ")}
+      data-tone={tone}
+      data-contrast={contrast}
+      aria-hidden="true"
+    >
       <Tooling />
     </div>
+  );
+}
+
+/** Temporary dev bar to try all diamond desk palettes and contrasts on `/jouer`. */
+export function DeskToneDevBar() {
+  const { tone, contrast } = useSyncExternalStore(subscribeDeskLook, getDeskLook, getDeskLook);
+  const [minimized, setMinimized] = useState(false);
+
+  if (minimized) {
+    return (
+      <div className={styles.devBar}>
+        <button
+          type="button"
+          className={styles.devToggleBtn}
+          onClick={() => setMinimized(false)}
+          title="Afficher le sélecteur de fond"
+        >
+          🎨 Fond : {DESK_TONES.find((t) => t.id === tone)?.label}
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <aside className={styles.devBar} aria-label="Testeur de fond du tapis">
+      <div className={styles.devBarRow}>
+        <span className={styles.devLabel}>Fond boosters :</span>
+        <div className={styles.devPills}>
+          {DESK_TONES.map((item) => (
+            <button
+              key={item.id}
+              type="button"
+              className={styles.devPill}
+              data-tone={item.id}
+              data-active={tone === item.id || undefined}
+              onClick={() => setDeskLook({ tone: item.id, contrast })}
+            >
+              <span className={styles.devSwatch} data-tone={item.id} aria-hidden="true" />
+              {item.label}
+            </button>
+          ))}
+        </div>
+        {tone !== "cuir-vert" && (
+          <div className={styles.devContrasts}>
+            {DESK_CONTRASTS.map((item) => (
+              <button
+                key={item.id}
+                type="button"
+                className={styles.devContrastBtn}
+                data-active={contrast === item.id || undefined}
+                onClick={() => setDeskLook({ tone, contrast: item.id })}
+              >
+                {item.label}
+              </button>
+            ))}
+          </div>
+        )}
+        <button
+          type="button"
+          className={styles.devCloseBtn}
+          onClick={() => setMinimized(true)}
+          title="Réduire la barre de test"
+        >
+          Réduire
+        </button>
+      </div>
+    </aside>
   );
 }
 

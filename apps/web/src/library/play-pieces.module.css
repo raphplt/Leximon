@@ -1,12 +1,124 @@
-/* The pieces of the Jouer screen, in leather and old gold on the green desk. */
+/* The pieces of the Jouer screen, in leather and old gold on the tooled desk. */
 
 /* --- The desk --- */
 
-/* The leather runs to the edge, turned in a shade darker, and takes its gilt tooling inside. */
+/*
+ * Aged two-tone diamond desk (62 × 66 px, nearly square, with leather/cloth grain, pillowed
+ * centers and beveled seams), tooled in gold as the board of a bound book.
+ */
 .desk {
   position: relative;
   box-sizing: border-box;
   border-radius: 22px;
+  --base-a: var(--lx-color-sheet-light);
+  --base-b: color-mix(in srgb, var(--lx-color-sheet) 74%, var(--lx-room-floor));
+  --lamp-tint: color-mix(in srgb, var(--lx-toy-gold-top) 10%, transparent);
+  --d1: color-mix(in srgb, var(--base-a) 74%, var(--base-b));
+  --d2: var(--base-b);
+  --seam-light: color-mix(in srgb, var(--lx-toy-sheen) 14%, var(--d1));
+  --seam-dark: color-mix(in srgb, var(--lx-color-shade) 42%, var(--d2));
+  background:
+    var(--lx-matter-leather) 0 0 / var(--lx-matter-size),
+    var(--lx-matter-cloth) 36px 48px / 192px 192px,
+    radial-gradient(
+      ellipse 85% 65% at 50% 34%,
+      var(--lamp-tint) 0%,
+      transparent 58%,
+      color-mix(in srgb, var(--lx-color-shade) 54%, transparent) 100%
+    ),
+    radial-gradient(
+      circle at 50% 50%,
+      color-mix(in srgb, var(--lx-toy-sheen) 5%, transparent) 0%,
+      transparent 54%
+    )
+    0 0 / 62px 66px,
+    radial-gradient(
+      circle at 50% 50%,
+      color-mix(in srgb, var(--lx-toy-gold-top) 5%, transparent) 0%,
+      transparent 54%
+    )
+    31px 33px / 62px 66px,
+    linear-gradient(
+      133.21deg,
+      var(--d1) 23.6%,
+      var(--seam-light) 24.5%,
+      var(--seam-dark) 25.2%,
+      transparent 25.8%
+    )
+    0 0 / 62px 66px,
+    linear-gradient(
+      226.79deg,
+      var(--d1) 23.6%,
+      var(--seam-light) 24.5%,
+      var(--seam-dark) 25.2%,
+      transparent 25.8%
+    )
+    0 0 / 62px 66px,
+    linear-gradient(313.21deg, var(--d1) 23.8%, var(--seam-dark) 24.8%, transparent 25.5%) 0 0 /
+    62px 66px,
+    linear-gradient(46.79deg, var(--d1) 23.8%, var(--seam-dark) 24.8%, var(--d2) 25.5%) 0 0 / 62px
+    66px;
+  box-shadow:
+    0 0 0 3px var(--lx-toy-outline),
+    0 24px 44px var(--lx-toy-drop),
+    inset 0 0 0 5px color-mix(in srgb, var(--d2) 70%, transparent),
+    inset 0 2px 0 5px color-mix(in srgb, var(--lx-toy-sheen) 12%, transparent),
+    inset 0 0 50px var(--lx-desk-hollow);
+}
+
+.desk[data-tone="acajou"] {
+  --base-a: var(--lx-color-sheet-light);
+  --base-b: color-mix(in srgb, var(--lx-color-sheet) 74%, var(--lx-room-floor));
+  --lamp-tint: color-mix(in srgb, var(--lx-toy-gold-top) 10%, transparent);
+}
+
+.desk[data-tone="emeraude"] {
+  --base-a: var(--lx-desk-center);
+  --base-b: var(--lx-desk-edge);
+  --lamp-tint: color-mix(in srgb, var(--lx-color-success) 12%, transparent);
+}
+
+.desk[data-tone="nuit"] {
+  --base-a: color-mix(in srgb, var(--lx-mastery-ink-deep) 64%, var(--lx-room-floor));
+  --base-b: color-mix(in srgb, var(--lx-mastery-ink-deep) 24%, var(--lx-room-floor));
+  --lamp-tint: color-mix(in srgb, var(--lx-mastery-ink) 16%, transparent);
+}
+
+.desk[data-tone="velours"] {
+  --base-a: color-mix(in srgb, var(--lx-color-banner-start) 66%, var(--lx-room-floor));
+  --base-b: color-mix(in srgb, var(--lx-color-danger-edge) 68%, var(--lx-room-floor));
+  --lamp-tint: color-mix(in srgb, var(--lx-toy-red-top) 14%, transparent);
+}
+
+.desk[data-tone="ardoise"] {
+  --base-a: color-mix(in srgb, var(--lx-color-data) 34%, var(--lx-color-sheet));
+  --base-b: color-mix(in srgb, var(--lx-color-data) 12%, var(--lx-room-floor));
+  --lamp-tint: color-mix(in srgb, var(--lx-toy-gold-top) 14%, transparent);
+}
+
+.desk[data-tone="ambre"] {
+  --base-a: color-mix(in srgb, var(--lx-toy-gold-edge) 50%, var(--lx-color-sheet-light));
+  --base-b: color-mix(in srgb, var(--lx-toy-gold-edge) 20%, var(--lx-room-floor));
+  --lamp-tint: color-mix(in srgb, var(--lx-toy-gold-top) 16%, transparent);
+}
+
+.desk[data-contrast="subtle"] {
+  --d1: color-mix(in srgb, var(--base-a) 55%, var(--base-b));
+  --d2: var(--base-b);
+}
+
+.desk[data-contrast="balanced"] {
+  --d1: color-mix(in srgb, var(--base-a) 78%, var(--base-b));
+  --d2: var(--base-b);
+}
+
+.desk[data-contrast="bold"] {
+  --d1: var(--base-a);
+  --d2: color-mix(in srgb, var(--base-b) 82%, var(--lx-color-shade));
+}
+
+/* Original smooth green leather desk for side-by-side comparison. */
+.desk[data-tone="cuir-vert"] {
   background:
     var(--lx-matter-leather) 0 0 / var(--lx-matter-size),
     radial-gradient(
@@ -21,6 +133,183 @@
     inset 0 0 0 5px color-mix(in srgb, var(--lx-desk-edge) 70%, transparent),
     inset 0 2px 0 5px color-mix(in srgb, var(--lx-toy-sheen) 12%, transparent),
     inset 0 0 50px var(--lx-desk-hollow);
+}
+
+/* --- Temporary dev bar for testing desk backgrounds on `/jouer` --- */
+
+.devBar {
+  position: fixed;
+  bottom: 14px;
+  left: 50%;
+  translate: -50% 0;
+  z-index: 48;
+  max-width: calc(100vw - 24px);
+}
+
+.devBarRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border: 2px solid var(--lx-toy-outline);
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--lx-room-floor) 94%, transparent);
+  backdrop-filter: blur(8px);
+  box-shadow:
+    0 12px 28px var(--lx-toy-drop),
+    inset 0 0 0 1px color-mix(in srgb, var(--lx-shelf-gilt) 45%, transparent);
+}
+
+.devLabel {
+  font-size: var(--lx-size-caption);
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--lx-color-gilt);
+  padding-right: 4px;
+}
+
+.devPills {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+.devPill {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 10px;
+  border: 1.5px solid color-mix(in srgb, var(--lx-shelf-gilt) 30%, transparent);
+  border-radius: 9px;
+  background: color-mix(in srgb, var(--lx-color-sheet) 75%, var(--lx-room-floor));
+  color: var(--lx-color-page-ink-soft);
+  font: inherit;
+  font-size: var(--lx-size-caption);
+  font-weight: 700;
+  cursor: pointer;
+  transition:
+    transform 120ms ease-out,
+    border-color 120ms ease-out,
+    background 120ms ease-out;
+}
+
+.devPill:hover {
+  transform: translateY(-1px);
+  border-color: var(--lx-color-gilt);
+  color: var(--lx-color-page-ink);
+}
+
+.devPill[data-active] {
+  border-color: var(--lx-toy-gold-top);
+  background: color-mix(in srgb, var(--lx-toy-gold-bottom) 28%, var(--lx-color-sheet));
+  color: var(--lx-toy-gold-top);
+  box-shadow: 0 2px 0 var(--lx-toy-outline);
+}
+
+.devSwatch {
+  width: 14px;
+  height: 14px;
+  border-radius: 4px;
+  border: 1px solid color-mix(in srgb, var(--lx-toy-sheen) 45%, transparent);
+  transform: rotate(45deg) scale(0.82);
+  flex-shrink: 0;
+}
+
+.devSwatch[data-tone="acajou"] {
+  background: linear-gradient(135deg, var(--lx-color-sheet-light) 50%, var(--lx-room-floor) 50%);
+}
+
+.devSwatch[data-tone="emeraude"] {
+  background: linear-gradient(135deg, var(--lx-desk-center) 50%, var(--lx-desk-edge) 50%);
+}
+
+.devSwatch[data-tone="nuit"] {
+  background: linear-gradient(
+    135deg,
+    var(--lx-mastery-ink-deep) 50%,
+    color-mix(in srgb, var(--lx-mastery-ink-deep) 24%, var(--lx-room-floor)) 50%
+  );
+}
+
+.devSwatch[data-tone="velours"] {
+  background: linear-gradient(
+    135deg,
+    var(--lx-color-banner-start) 50%,
+    var(--lx-color-danger-edge) 50%
+  );
+}
+
+.devSwatch[data-tone="ardoise"] {
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--lx-color-data) 38%, var(--lx-color-sheet)) 50%,
+    var(--lx-room-floor) 50%
+  );
+}
+
+.devSwatch[data-tone="ambre"] {
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--lx-toy-gold-edge) 55%, var(--lx-color-sheet-light)) 50%,
+    var(--lx-room-floor) 50%
+  );
+}
+
+.devSwatch[data-tone="cuir-vert"] {
+  transform: none;
+  border-radius: 50%;
+  background: var(--lx-desk-middle);
+}
+
+.devContrasts {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 2px;
+  border: 1px solid color-mix(in srgb, var(--lx-shelf-gilt) 28%, transparent);
+  border-radius: 8px;
+  background: var(--lx-room-floor);
+}
+
+.devContrastBtn {
+  appearance: none;
+  padding: 4px 8px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--lx-color-page-ink-muted);
+  font: inherit;
+  font-size: var(--lx-size-caption);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.devContrastBtn[data-active] {
+  background: color-mix(in srgb, var(--lx-color-sheet-light) 85%, var(--lx-room-floor));
+  color: var(--lx-toy-gold-top);
+}
+
+.devCloseBtn,
+.devToggleBtn {
+  appearance: none;
+  padding: 5px 10px;
+  border: 1.5px solid color-mix(in srgb, var(--lx-shelf-gilt) 40%, transparent);
+  border-radius: 9px;
+  background: color-mix(in srgb, var(--lx-room-floor) 92%, transparent);
+  color: var(--lx-color-page-ink-soft);
+  font: inherit;
+  font-size: var(--lx-size-caption);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.devToggleBtn {
+  box-shadow: 0 8px 20px var(--lx-toy-drop);
 }
 
 /* --- Counts --- */
