@@ -83,6 +83,26 @@ function star(cx: number, cy: number, outer: number, inner: number): string {
   return `M${points.join("L")}Z`;
 }
 
+/** A word card, tilted as if just drawn from the deck: the ground of the practice shortcuts. */
+function card(): ToyShape[] {
+  const rotate = [-10, 20, 21.5] as const;
+  return [
+    outlined(rect(8, 5, 24, 33, 4), "f1", { rotate }),
+    outlined("M20 14l5 7.5-5 7.5-5-7.5z", "f3", { rotate }),
+    { d: "M12.5 10v23", stroke: "sheen", rotate },
+  ];
+}
+
+/** A round badge pinned on the card's corner, with its sign drawn thick so it reads small. */
+function badge(sign: string): ToyShape[] {
+  return [
+    outlined(circle(33, 34, 11.5), "f2"),
+    { d: sign, stroke: "outline", strokeWidth: 8 },
+    { d: sign, stroke: "f1", strokeWidth: 3.6 },
+    light("M25.5 31a8 8 0 0 1 4-5"),
+  ];
+}
+
 /** A four-pointed spark. */
 function spark(cx: number, cy: number, reach: number, waist: number): string {
   return `M${cx} ${cy - reach}Q${cx + waist} ${cy - waist} ${cx + reach} ${cy}Q${cx + waist} ${cy + waist} ${cx} ${cy + reach}Q${cx - waist} ${cy + waist} ${cx - reach} ${cy}Q${cx - waist} ${cy - waist} ${cx} ${cy - reach}Z`;
@@ -220,21 +240,13 @@ export const toyIcons = {
     light("M13.5 31v9"),
   ],
   // The practice shortcuts: the words ready to rise, the missed ones, the recent ones.
-  rising: [
-    outlined("M24 4L42 23H32v19H16V23H6z", "f1"),
-    { d: "M28.6 25.5v13", stroke: "f2", strokeWidth: 2.4 },
-    light("M10.5 21L22 8.5"),
-  ],
-  missed: [
-    outlined("M18.5 6h11v12.5H42v11H29.5V42h-11V29.5H6v-11h12.5z", "f1", { rotate: [45, 24, 24] }),
-    { d: "M31.5 27.4H39.5M27.4 31.5V39.5", stroke: "f2", strokeWidth: 2.4, rotate: [45, 24, 24] },
-    light("M11.5 14.5l5 5"),
-  ],
+  rising: [...card(), ...badge("M33 40.5V28.5M28 33l5-5 5 5")],
+  missed: [...card(), ...badge("M28.8 29.8l8.4 8.4M37.2 29.8l-8.4 8.4")],
   recent: [
-    outlined(spark(21, 26, 18, 4.2), "f1"),
-    outlined(spark(39, 10, 7.5, 1.8), "f2"),
-    outlined(spark(40, 38, 5, 1.2), "f2"),
-    light("M21 13.5v6"),
+    ...card(),
+    outlined(spark(35, 14, 11, 2.2), "f2"),
+    outlined(spark(38.5, 33, 6, 1.4), "f2"),
+    light("M35 7.5v4"),
   ],
   // Along the level road, a reading room's odds and ends.
   books: [
@@ -295,9 +307,9 @@ export const toyIconInks: Readonly<Record<ToyIconName, ToyInks>> = {
   sketch: { f1: "#FFF6E0", f2: "#E9B44C", f3: "#6B655C" },
   ink: { f1: "#2F3E66", f2: "#FBECCB", f3: "#FFF6E0" },
   gilded: { f1: "#D9A63A", f2: "#F6D47A", f3: "#FFF6E0" },
-  rising: { f1: "#4E9A5F", f2: "#34714A", f3: "#FFF6E0" },
-  missed: { f1: "#C8473A", f2: "#922A34", f3: "#FFF6E0" },
-  recent: { f1: "#FFF6E0", f2: "#FFFFFF", f3: "#F6D47A" },
+  rising: { f1: "#FBECCB", f2: "#34714A", f3: "#34714A" },
+  missed: { f1: "#FBECCB", f2: "#B23A2A", f3: "#B23A2A" },
+  recent: { f1: "#FBECCB", f2: "#F6D47A", f3: "#5A7CB8" },
   books: { f1: "#922A34", f2: "#34714A", f3: "#344F8F" },
   candle: { f1: "#D9A63A", f2: "#FFF6E0", f3: "#F6D47A" },
   scroll: { f1: "#FBECCB", f2: "#C47D3E", f3: "#922A34" },
