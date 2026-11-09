@@ -5,7 +5,7 @@ import { type CSSProperties, useState } from "react";
 import { CardBack } from "@/booster/card-back";
 import { play } from "@/booster/feedback";
 import { Card } from "@/components/card";
-import { Lettering } from "@/ui/toy";
+import { Kicker, Lettering } from "@/ui/toy";
 import styles from "./landing-page.module.css";
 import { useNarrow } from "./narrow";
 import type { ShowcaseCard } from "./showcase-cards";
@@ -27,13 +27,14 @@ export function Guess({ cards }: { readonly cards: readonly ShowcaseCard[] }) {
     });
   };
   return (
-    <section className={styles.section} aria-labelledby="guess-title">
+    <section id="deviner" className={styles.section} aria-labelledby="guess-title">
       <div className={styles.sectionHead}>
+        <Kicker>Mots oubliés</Kicker>
         <h2 id="guess-title" className={styles.sectionTitle}>
           <Lettering>Tu sais ce que c'est ?</Lettering>
         </h2>
         <p className={styles.sectionLead}>
-          On traitait les gens de tout ça, autrefois. Touche une carte pour la retourner.
+          On traitait les gens de tout ça, autrefois. Touche une carte pour découvrir son sens.
         </p>
       </div>
       <ul className={styles.guess}>
@@ -54,6 +55,7 @@ export function Guess({ cards }: { readonly cards: readonly ShowcaseCard[] }) {
                   <CardBack rarity={card.rarity} width={width} />
                   <span className={styles.flipWord}>
                     <Lettering>{card.word} ?</Lettering>
+                    <span className={styles.flipHint}>Retourner ›</span>
                   </span>
                 </span>
                 <span className={styles.flipBack}>

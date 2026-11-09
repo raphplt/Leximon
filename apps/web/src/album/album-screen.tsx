@@ -54,7 +54,6 @@ import { api } from "@/lib/api";
 import { useIncremental } from "@/lib/use-incremental";
 import { useNarrow } from "@/lib/use-narrow";
 import { useNow } from "@/lib/use-now";
-import { Desk } from "@/library/play-pieces";
 import { cardDates, ownedCards, wordMemory } from "@/player/collection";
 import { editions, wallet } from "@/player/player";
 import { useShared, useSharedFailed } from "@/player/resource";
@@ -64,6 +63,7 @@ import { Button } from "@/ui/button";
 import { Dialog } from "@/ui/dialog";
 import { Icon } from "@/ui/icon";
 import { LoadFailed } from "@/ui/load-failed";
+import { Tooling } from "@/ui/ornaments";
 import { Bone, WaitingScreen } from "@/ui/skeleton";
 import { ToyIcon } from "@/ui/toy";
 import ui from "@/ui/ui.module.css";
@@ -228,7 +228,7 @@ export function AlbumScreen() {
     writeSort(next);
     setState((s) => ({ ...s, sort: next }));
   };
-  const cardWidth = narrow ? 100 : 168;
+  const cardWidth = narrow ? 102 : 172;
   const pickedTheme = view?.themes.find((theme) => theme.id === state.theme);
 
   if (failed) {
@@ -328,57 +328,68 @@ export function AlbumScreen() {
         </Dialog>
       )}
 
-      <div className={styles.desk}>
-        <Desk className={styles.deskBack} />
-        {/* The collections and filters scroll away with the cards, so that the cards get the desk. */}
-        <div className={styles.shelf}>
-          <div ref={setScroller} className={styles.scroller}>
-            <div
-              className={`${styles.tabs} ${view.searching ? styles.dimmed : ""}`}
-              role="tablist"
-              aria-label="Collections"
+      <div
+        className={`${styles.tabs} ${view.searching ? styles.dimmed : ""}`}
+        role="tablist"
+        aria-label="Collections"
+      >
+        {view.tabs.map((tab) => {
+          const selected = !view.searching && tab.id === state.collectionId;
+          const file = catalog?.collections.find((c) => c.id === tab.id);
+          return (
+            <button
+              key={tab.id}
+              type="button"
+              role="tab"
+              aria-selected={selected}
+              className={styles.tab}
+              onClick={() => pickCollection(tab.id)}
             >
-              {view.tabs.map((tab) => {
-                const selected = !view.searching && tab.id === state.collectionId;
-                const file = catalog?.collections.find((c) => c.id === tab.id);
-                return (
-                  <button
-                    key={tab.id}
-                    type="button"
-                    role="tab"
-                    aria-selected={selected}
-                    className={styles.tab}
-                    onClick={() => pickCollection(tab.id)}
-                  >
-                    <span className={styles.tabHead}>
-                      {file !== undefined && (
-                        <CollectionSeal collection={packOf(file)} size={narrow ? 20 : 30} />
-                      )}
-                      <span className={styles.tabText}>
-                        <span className={styles.tabName}>
-                          {narrow ? shortName(tab.name) : tab.name}
-                        </span>
-                        <span className={styles.tabCount}>{tab.count}</span>
-                      </span>
-                    </span>
-                    <span className={styles.tabTrack}>
-                      <span
-                        className={styles.tabFill}
-                        style={{
-                          width: `${Math.round(tab.ratio * 100)}%`,
-                          background: collectionTone(tab.id),
-                        }}
-                      />
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
+              <span className={styles.tabHead}>
+                {file !== undefined && (
+                  <CollectionSeal collection={packOf(file)} size={narrow ? 20 : 28} />
+                )}
+                <span className={styles.tabText}>
+                  <span className={styles.tabName}>{narrow ? shortName(tab.name) : tab.name}</span>
+                  <span className={styles.tabCount}>{tab.count}</span>
+                </span>
+              </span>
+              <span className={styles.tabTrack}>
+                <span
+                  className={styles.tabFill}
+                  style={{
+                    width: `${Math.round(tab.ratio * 100)}%`,
+                    background: collectionTone(tab.id),
+                  }}
+                />
+              </span>
+            </button>
+          );
+        })}
+      </div>
 
-            {!view.searching && (
-              <>
-                {!narrow && (
-                  <div className={styles.row}>
+      <div className={styles.desk}>
+        <div className={styles.deskBack} aria-hidden="true">
+          <Tooling />
+        </div>
+        <div className={styles.toolbar}>
+          {!view.searching && (
+            <>
+              {!narrow && !comparing && (
+                <div className={styles.toolbarRow}>
+                  <fieldset className={styles.filterSegments} aria-label={ALBUM_FILTER_TEXTS.show}>
+                    {view.filters.map((filter) => (
+                      <FilterChip
+                        key={filter.id}
+                        label={filter.label}
+                        count={filter.count}
+                        on={state.filter === filter.id}
+                        segment
+                        onPick={() => setState((s) => ({ ...s, filter: filter.id as AlbumFilter }))}
+                      />
+                    ))}
+                  </fieldset>
+                  <fieldset className={styles.rarityGroup} aria-label={ALBUM_FILTER_TEXTS.rarity}>
                     {view.rarities.map((chip) => (
                       <RarityChip
                         key={chip.rarity}
@@ -389,69 +400,18 @@ export function AlbumScreen() {
                         onPick={() => pickRarity(chip.rarity)}
                       />
                     ))}
-                    <SortPicker sort={sort} onPick={pickSort} />
-                  </div>
-                )}
-                {comparing && (
-                  <div className={styles.compare}>
-                    <p className={styles.compareTitle}>{comparingTitle(friend.name)}</p>
-                    <div className={styles.row}>
-                      {compareFilters(friend.name).map((choice) => (
-                        <FilterChip
-                          key={choice.id}
-                          label={choice.label}
-                          on={state.compare === choice.id}
-                          onPick={() =>
-                            setState((s) => ({ ...s, compare: choice.id as CompareFilter }))
-                          }
-                        />
-                      ))}
-                      <Button variant="ghost" small onClick={() => router.replace("/album")}>
-                        Fermer la comparaison
-                      </Button>
-                    </div>
-                  </div>
-                )}
-                {/* On a phone the filters wait in a panel; only the new words stay at hand. */}
-                {narrow &&
-                  !comparing &&
-                  fresh !== undefined &&
-                  ((fresh.count ?? 0) > 0 || state.filter === "new") && (
-                    <div className={styles.row}>
-                      <FilterChip
-                        label={fresh.label}
-                        count={fresh.count}
-                        on={state.filter === "new"}
-                        onPick={() =>
-                          setState((s) => ({ ...s, filter: s.filter === "new" ? "all" : "new" }))
-                        }
-                      />
-                    </div>
-                  )}
-                <div className={styles.row} hidden={narrow || comparing}>
-                  {view.filters.map((filter) => (
-                    <FilterChip
-                      key={filter.id}
-                      label={filter.label}
-                      count={filter.count}
-                      on={state.filter === filter.id}
-                      onPick={() => setState((s) => ({ ...s, filter: filter.id as AlbumFilter }))}
-                    />
-                  ))}
+                  </fieldset>
                   {view.themes.length > 0 && (
-                    <>
-                      <span className={styles.divider} aria-hidden="true" />
-                      <button
-                        type="button"
-                        className={`${ui.chip} ${styles.filter}`}
-                        aria-expanded={themesOpen}
-                        aria-controls="album-themes"
-                        onClick={() => setThemesOpen((open) => !open)}
-                      >
-                        {themesOpen ? ALBUM_THEME_TEXTS.hide : ALBUM_THEME_TEXTS.show}
-                        <Icon name="chevd" size={14} />
-                      </button>
-                    </>
+                    <button
+                      type="button"
+                      className={`${ui.chip} ${styles.filter}`}
+                      aria-expanded={themesOpen}
+                      aria-controls="album-themes"
+                      onClick={() => setThemesOpen((open) => !open)}
+                    >
+                      {themesOpen ? ALBUM_THEME_TEXTS.hide : ALBUM_THEME_TEXTS.show}
+                      <Icon name="chevd" size={14} />
+                    </button>
                   )}
                   {!themesOpen && pickedTheme !== undefined && (
                     <FilterChip
@@ -460,42 +420,111 @@ export function AlbumScreen() {
                       onPick={() => setState((s) => ({ ...s, theme: null }))}
                     />
                   )}
+                  {practiceCards !== null && (
+                    <Button
+                      variant="secondary"
+                      small
+                      onClick={() => {
+                        askAlbumPractice(practiceCards);
+                        router.push("/defis?revision=album");
+                      }}
+                    >
+                      Réviser ces mots
+                    </Button>
+                  )}
+                  <SortPicker sort={sort} onPick={pickSort} />
                 </div>
-                {themesOpen && !narrow && (
-                  <div id="album-themes" className={`${styles.row} ${styles.themes}`}>
-                    {view.themes.map((theme) => (
-                      <FilterChip
-                        key={theme.id}
-                        label={theme.label}
-                        on={state.theme === theme.id}
-                        onPick={() => pickTheme(theme.id)}
+              )}
+              {!narrow && comparing && (
+                <div className={styles.toolbarRow}>
+                  <div className={styles.rarityGroup}>
+                    {view.rarities.map((chip) => (
+                      <RarityChip
+                        key={chip.rarity}
+                        rarity={chip.rarity}
+                        count={chip.count}
+                        aria={chip.aria}
+                        on={state.rarity === chip.rarity}
+                        onPick={() => pickRarity(chip.rarity)}
                       />
                     ))}
                   </div>
+                  <SortPicker sort={sort} onPick={pickSort} />
+                </div>
+              )}
+              {comparing && (
+                <div className={styles.compare}>
+                  <p className={styles.compareTitle}>{comparingTitle(friend.name)}</p>
+                  <div className={styles.row}>
+                    {compareFilters(friend.name).map((choice) => (
+                      <FilterChip
+                        key={choice.id}
+                        label={choice.label}
+                        on={state.compare === choice.id}
+                        onPick={() =>
+                          setState((s) => ({ ...s, compare: choice.id as CompareFilter }))
+                        }
+                      />
+                    ))}
+                    <Button variant="ghost" small onClick={() => router.replace("/album")}>
+                      Fermer la comparaison
+                    </Button>
+                  </div>
+                </div>
+              )}
+              {/* On a phone the filters wait in a panel; only the new words stay at hand. */}
+              {narrow &&
+                !comparing &&
+                (practiceCards !== null ||
+                  (fresh !== undefined && ((fresh.count ?? 0) > 0 || state.filter === "new"))) && (
+                  <div className={styles.row}>
+                    {fresh !== undefined && ((fresh.count ?? 0) > 0 || state.filter === "new") && (
+                      <FilterChip
+                        label={fresh.label}
+                        count={fresh.count}
+                        on={state.filter === "new"}
+                        onPick={() =>
+                          setState((s) => ({ ...s, filter: s.filter === "new" ? "all" : "new" }))
+                        }
+                      />
+                    )}
+                    {practiceCards !== null && (
+                      <Button
+                        variant="secondary"
+                        small
+                        onClick={() => {
+                          askAlbumPractice(practiceCards);
+                          router.push("/defis?revision=album");
+                        }}
+                      >
+                        Réviser ces mots
+                      </Button>
+                    )}
+                  </div>
                 )}
-              </>
-            )}
-            {view.searching && (
-              <div className={styles.row}>
-                <SortPicker sort={sort} onPick={pickSort} />
-              </div>
-            )}
+              {themesOpen && !narrow && !comparing && (
+                <div id="album-themes" className={`${styles.row} ${styles.themes}`}>
+                  {view.themes.map((theme) => (
+                    <FilterChip
+                      key={theme.id}
+                      label={theme.label}
+                      on={state.theme === theme.id}
+                      onPick={() => pickTheme(theme.id)}
+                    />
+                  ))}
+                </div>
+              )}
+            </>
+          )}
+          {view.searching && (
+            <div className={styles.toolbarRow}>
+              <SortPicker sort={sort} onPick={pickSort} />
+            </div>
+          )}
+        </div>
 
-            {practiceCards !== null && (
-              <div className={styles.revise}>
-                <Button
-                  variant="secondary"
-                  small
-                  onClick={() => {
-                    askAlbumPractice(practiceCards);
-                    router.push("/defis?revision=album");
-                  }}
-                >
-                  Réviser ces mots
-                </Button>
-              </div>
-            )}
-
+        <div className={styles.shelf}>
+          <div ref={setScroller} className={styles.scroller}>
             {view.empty !== null ? (
               <p className={styles.empty}>
                 <em>{view.empty}</em>
@@ -509,7 +538,12 @@ export function AlbumScreen() {
                 >
                   {view.items.slice(0, shown).map((item, index) => (
                     <li key={itemKey(item)} className={styles.slot} data-index={index}>
-                      <Tile item={item} width={cardWidth} onOpen={(id) => openCard(id, ownedIds)} />
+                      <Tile
+                        item={item}
+                        width={cardWidth}
+                        showMasteryLabel={sort === "mastery"}
+                        onOpen={(id) => openCard(id, ownedIds)}
+                      />
                     </li>
                   ))}
                 </ul>
@@ -689,15 +723,19 @@ function itemKey(item: AlbumItem): string {
 function Tile({
   item,
   width,
+  showMasteryLabel,
   onOpen,
 }: {
   readonly item: AlbumItem;
   readonly width: number;
+  readonly showMasteryLabel: boolean;
   readonly onOpen: (cardId: string) => void;
 }) {
   switch (item.kind) {
     case "owned":
-      return <OwnedTile item={item} width={width} onOpen={onOpen} />;
+      return (
+        <OwnedTile item={item} width={width} showMasteryLabel={showMasteryLabel} onOpen={onOpen} />
+      );
     case "missing":
       return <MissingTile item={item} />;
     case "more":
@@ -713,10 +751,12 @@ function Tile({
 function OwnedTile({
   item,
   width,
+  showMasteryLabel,
   onOpen,
 }: {
   readonly item: OwnedItem;
   readonly width: number;
+  readonly showMasteryLabel: boolean;
   readonly onOpen: (cardId: string) => void;
 }) {
   const printed = useShared(editions);
@@ -735,9 +775,13 @@ function OwnedTile({
       />
       {item.fresh && <span className={styles.fresh}>Nouveau</span>}
       {item.quantity > 1 && <span className={styles.quantity}>×{item.quantity}</span>}
-      <span className={`${styles.mastery} ${styles[item.level]}`}>
-        <ToyIcon name={item.level} size={20} />
-        {item.levelLabel}
+      <span
+        className={`${styles.masteryPin} ${styles[item.level]}`}
+        data-labeled={showMasteryLabel || undefined}
+        title={item.levelLabel}
+      >
+        <ToyIcon name={item.level} size={16} />
+        <span className={styles.masteryText}>{item.levelLabel}</span>
       </span>
     </button>
   );
@@ -753,9 +797,9 @@ function MissingTile({ item }: { readonly item: MissingItem }) {
         <span className={`${ui.display} ${styles.question}`} aria-hidden="true">
           ?
         </span>
-      </span>
-      <span className={styles.missingLabel}>
-        <RarityName rarity={item.rarity} />
+        <span className={styles.missingLabel}>
+          <RarityName rarity={item.rarity} />
+        </span>
       </span>
     </div>
   );
@@ -902,18 +946,20 @@ function FilterChip({
   label,
   count = null,
   on,
+  segment = false,
   onPick,
 }: {
   readonly label: string;
   /** Shown beside the label when there is something to count. */
   readonly count?: number | null;
   readonly on: boolean;
+  readonly segment?: boolean;
   readonly onPick: () => void;
 }) {
   return (
     <button
       type="button"
-      className={`${ui.chip} ${styles.filter}`}
+      className={segment ? styles.segmentButton : `${ui.chip} ${styles.filter}`}
       aria-pressed={on}
       onClick={onPick}
     >

@@ -25,24 +25,35 @@ export async function LandingPage() {
   );
   return (
     <ParticleStage dust>
-      <main className={styles.page}>
-        <header className={styles.top}>
-          <Logo size="md" />
-          <TopAction />
+      <div className={styles.page}>
+        <header className={styles.topBar}>
+          <div className={styles.top}>
+            <Logo size="md" />
+            <nav className={styles.topNav} aria-label="Aperçu du jeu">
+              <a href="#deviner">Deviner</a>
+              <a href="#raretes">Raretés</a>
+              <a href="#comment-jouer">Règles</a>
+              <a href="#collections">Collections</a>
+              <Link href="/enigme">Énigme du jour</Link>
+            </nav>
+            <TopAction />
+          </div>
         </header>
 
-        <Hero
-          door={LANDING_DOOR}
-          words={showcase.heroWords}
-          collectionNames={collectionNames}
-          pack={showcase.pack}
-        />
-        <Guess cards={showcase.guess} />
-        <Ladder ladder={showcase.ladder} />
-        <HowToPlay pack={showcase.pack} trade={showcase.trade} quiz={showcase.heroWords} />
-        <Library shelves={showcase.shelves} />
-        <Testimonials />
-        <Closing door={LANDING_DOOR} />
+        <main className={styles.main}>
+          <Hero
+            door={LANDING_DOOR}
+            words={showcase.heroWords}
+            collectionNames={collectionNames}
+            pack={showcase.pack}
+          />
+          <Guess cards={showcase.guess} />
+          <Ladder ladder={showcase.ladder} />
+          <HowToPlay pack={showcase.pack} trade={showcase.trade} quiz={showcase.heroWords} />
+          <Library shelves={showcase.shelves} />
+          <Testimonials />
+          <Closing door={LANDING_DOOR} />
+        </main>
 
         <footer className={styles.footer}>
           <span className={styles.footerBrand}>
@@ -60,7 +71,7 @@ export async function LandingPage() {
             <a href="mailto:contact@leximon.fr">contact@leximon.fr</a>
           </span>
         </footer>
-      </main>
+      </div>
     </ParticleStage>
   );
 }

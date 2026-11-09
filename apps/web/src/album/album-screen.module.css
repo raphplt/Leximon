@@ -2,9 +2,9 @@
 
 .page {
   box-sizing: border-box;
-  max-width: 1180px;
+  max-width: 1260px;
   margin: 0 auto;
-  padding: 26px var(--lx-s16) var(--lx-s32);
+  padding: 20px var(--lx-s16) var(--lx-s32);
 }
 
 /*
@@ -16,27 +16,29 @@
   flex-direction: column;
   height: calc(100dvh - 76px);
   min-height: 560px;
-  padding-bottom: var(--lx-s9);
+  padding-bottom: var(--lx-s8);
 }
 
 .header {
   display: flex;
-  align-items: flex-end;
+  align-items: center;
   justify-content: space-between;
   flex-wrap: wrap;
-  gap: var(--lx-s8);
-  margin-bottom: var(--lx-s9);
+  gap: var(--lx-s6);
+  margin-bottom: var(--lx-s5);
 }
 
 .title {
-  margin: 0;
-  font-size: var(--lx-size-display-large);
+  display: inline;
+  margin: 0 var(--lx-s6) 0 0;
+  font-size: var(--lx-size-heading-large);
   line-height: 1;
 }
 
 .headline {
-  margin: var(--lx-s3) 0 0;
-  font-size: var(--lx-size-label);
+  display: inline;
+  margin: 0;
+  font-size: var(--lx-size-body);
   color: var(--lx-color-page-ink-muted);
 }
 
@@ -50,20 +52,20 @@
   flex-wrap: wrap;
   align-items: center;
   justify-content: flex-end;
-  gap: var(--lx-s5);
+  gap: var(--lx-s4);
 }
 
 /* As tall as the search beside it. */
 .ecus {
   flex-shrink: 0;
   gap: var(--lx-s3);
-  min-height: 48px;
+  min-height: 44px;
 }
 
 .search {
   position: relative;
   display: block;
-  width: 300px;
+  width: 280px;
 }
 
 .searchIcon {
@@ -87,8 +89,8 @@
 .input {
   box-sizing: border-box;
   width: 100%;
-  min-height: 48px;
-  padding: 0 var(--lx-s8) 0 42px;
+  min-height: 44px;
+  padding: 0 var(--lx-s8) 0 40px;
   border: var(--lx-toy-outline-width) solid var(--lx-toy-outline);
   border-radius: var(--lx-toy-radius-small);
   background:
@@ -104,12 +106,12 @@
   outline: none;
 }
 
-/* --- Collection tabs --- */
+/* --- Collection tabs, above the showcase --- */
 
 .tabs {
   display: flex;
-  gap: var(--lx-s5);
-  margin-bottom: var(--lx-s7);
+  gap: var(--lx-s4);
+  margin-bottom: var(--lx-s5);
   /* One row: the tabs share the width, and scroll sideways once collections no longer fit. */
   overflow-x: auto;
   scroll-snap-type: x proximity;
@@ -126,12 +128,12 @@
 
 /* A collection is a paper tab; the one open is in old gold. */
 .tab {
-  flex: 1 0 168px;
+  flex: 1 0 160px;
   min-width: 0;
   scroll-snap-align: start;
   appearance: none;
   margin-bottom: 4px;
-  padding: var(--lx-s6) var(--lx-s7);
+  padding: var(--lx-s4) var(--lx-s6);
   border: var(--lx-toy-outline-width) solid var(--lx-toy-outline);
   border-radius: var(--lx-toy-radius-small);
   background: linear-gradient(
@@ -171,7 +173,9 @@
 .tabText {
   display: flex;
   flex: 1;
-  flex-direction: column;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--lx-s3);
   min-width: 0;
 }
 
@@ -179,7 +183,7 @@
   overflow: hidden;
   font-family: var(--font-display), Georgia, serif;
   font-weight: 800;
-  font-size: var(--lx-size-body);
+  font-size: var(--lx-size-label);
   white-space: nowrap;
   text-overflow: ellipsis;
 }
@@ -194,8 +198,8 @@
 
 .tabTrack {
   display: block;
-  height: 6px;
-  margin-top: var(--lx-s4);
+  height: 5px;
+  margin-top: var(--lx-s3);
   border-radius: var(--lx-radius-pill);
   background: color-mix(in srgb, var(--lx-color-shade) 25%, transparent);
   overflow: hidden;
@@ -207,24 +211,102 @@
   border-radius: var(--lx-radius-pill);
 }
 
-/* --- Rarities and filters --- */
+/* --- Fixed toolbar of filters and sort --- */
+
+.toolbar {
+  position: relative;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  gap: var(--lx-s4);
+  padding-bottom: var(--lx-s5);
+  margin-bottom: var(--lx-s2);
+  border-bottom: 1px solid color-mix(in srgb, var(--lx-shelf-gilt) 28%, transparent);
+}
+
+.toolbar:empty {
+  display: none;
+}
+
+.toolbarRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--lx-s4);
+}
+
+/* State filters sit in a dark-leather groove, distinct from rarity chips. */
+.filterSegments {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  min-width: 0;
+  margin: 0;
+  padding: 3px;
+  border: var(--lx-toy-outline-width) solid var(--lx-toy-outline);
+  border-radius: var(--lx-toy-radius-small);
+  background: var(--lx-toy-dark-bottom);
+  box-shadow: inset 0 2px 0 var(--lx-toy-drop);
+}
+
+.segmentButton {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 30px;
+  margin: 0;
+  padding: 0 11px;
+  border: 0;
+  border-radius: calc(var(--lx-toy-radius-small) - 4px);
+  background: none;
+  color: var(--lx-color-page-ink-muted);
+  font: inherit;
+  font-size: var(--lx-size-small);
+  font-weight: 700;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: color 120ms;
+}
+
+.segmentButton:hover {
+  color: var(--lx-color-page-ink);
+}
+
+.segmentButton[aria-pressed="true"] {
+  background: linear-gradient(
+    180deg,
+    var(--lx-toy-gold-top) 0 47%,
+    var(--lx-toy-gold-bottom) 53% 100%
+  );
+  box-shadow:
+    inset 0 -2px 0 var(--lx-toy-gold-edge),
+    0 2px 0 var(--lx-toy-outline);
+  color: var(--lx-toy-outline);
+  font-weight: 800;
+}
+
+.rarityGroup {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
 
 .row {
   display: flex;
   align-items: center;
-  gap: var(--lx-s4);
-  margin-bottom: var(--lx-s5);
-  padding-bottom: var(--lx-s2);
+  gap: var(--lx-s3);
   overflow-x: auto;
   scrollbar-width: none;
 }
 
 .row::-webkit-scrollbar {
   display: none;
-}
-
-.row + .row {
-  margin-bottom: var(--lx-s5);
 }
 
 /* On a wide screen every chip shows: the rows go to the line rather than hide some aside. */
@@ -236,15 +318,16 @@
 }
 
 .themes {
-  margin-top: calc(-1 * var(--lx-s2));
+  padding-top: var(--lx-s2);
 }
 
-/* The sort, a select dressed as a chip, at the end of the rarities. */
+/* The sort, a select dressed as a chip, at the end of the toolbar. */
 .sort {
   position: relative;
   gap: var(--lx-s3);
   margin-left: auto;
-  padding-right: var(--lx-s5);
+  min-height: 34px;
+  padding: 0 12px;
   cursor: pointer;
 }
 
@@ -336,30 +419,27 @@
 .rarityChip,
 .filter {
   flex-shrink: 0;
+  min-height: 34px;
+  padding: 0 11px;
+  font-size: var(--lx-size-small);
+}
+
+.rarityChip {
+  gap: 6px;
+  padding-left: 7px;
 }
 
 .gem {
   display: grid;
   place-items: center;
-  width: 24px;
-  height: 24px;
+  width: 22px;
+  height: 22px;
   border-radius: 50%;
 }
 
 .num {
   font-variant-numeric: tabular-nums;
-}
-
-.filter {
-  font-size: var(--lx-size-small);
-}
-
-.divider {
-  flex-shrink: 0;
-  width: 1px;
-  height: 22px;
-  margin: 0 var(--lx-s2);
-  background: var(--lx-color-rule);
+  font-size: var(--lx-size-caption);
 }
 
 /* --- Grid --- */
@@ -367,7 +447,7 @@
 .grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(var(--card), 1fr));
-  gap: 22px var(--lx-s9);
+  gap: 18px 14px;
   margin: 0;
   padding: 0;
   list-style: none;
@@ -384,14 +464,13 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--lx-s3);
   padding: 0;
   border: 0;
   background: none;
   color: inherit;
   font: inherit;
   cursor: pointer;
-  transition: transform 120ms;
+  transition: transform 140ms ease-out;
 }
 
 .owned:hover {
@@ -401,8 +480,9 @@
 /* Same tag as in the sachet's recap: the card waits to be read. */
 .fresh {
   position: absolute;
-  top: -8px;
-  left: -6px;
+  top: -7px;
+  left: -5px;
+  z-index: 2;
   padding: 1px 7px;
   border-radius: var(--lx-radius-pill);
   background: var(--lx-color-action);
@@ -413,8 +493,8 @@
 }
 
 .filterCount {
-  margin-left: var(--lx-s3);
-  padding: 0 var(--lx-s3);
+  margin-left: 4px;
+  padding: 0 6px;
   border-radius: var(--lx-radius-pill);
   background: var(--lx-color-action);
   color: var(--lx-color-action-ink);
@@ -426,6 +506,7 @@
   position: absolute;
   top: -6px;
   right: -4px;
+  z-index: 2;
   padding: var(--lx-s1) var(--lx-s4);
   border-radius: var(--lx-radius-pill);
   background: var(--lx-color-page-ink);
@@ -435,16 +516,50 @@
   box-shadow: 0 2px 0 color-mix(in srgb, var(--lx-color-shade) 30%, transparent);
 }
 
-.mastery {
+/*
+ * Mastery sits as a discreet medallion at the foot of the card; its text only unfolds when
+ * sorting by mastery or when the card is hovered/focused.
+ */
+.masteryPin {
+  position: absolute;
+  bottom: -8px;
+  right: 8px;
+  z-index: 2;
   display: inline-flex;
   align-items: center;
-  gap: 5px;
-  font-size: var(--lx-size-caption);
-  font-weight: 700;
+  gap: 4px;
+  height: 24px;
+  padding: 0 5px;
+  border: 2px solid var(--lx-toy-outline);
+  border-radius: var(--lx-radius-pill);
+  background: var(--lx-toy-dark-bottom);
+  box-shadow: 0 2px 0 var(--lx-toy-outline);
+  font-size: var(--lx-size-micro);
+  font-weight: 800;
+  pointer-events: none;
+}
+
+.masteryText {
+  display: none;
+  padding-right: 3px;
+  white-space: nowrap;
+}
+
+.masteryPin[data-labeled] .masteryText,
+.owned:hover .masteryText,
+.owned:focus-visible .masteryText {
+  display: inline;
 }
 
 .blank {
   color: var(--lx-mastery-blank);
+  opacity: 0.72;
+}
+
+.owned:hover .blank,
+.owned:focus-visible .blank,
+.masteryPin[data-labeled].blank {
+  opacity: 1;
 }
 
 .sketch {
@@ -463,18 +578,20 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--lx-s3);
 }
 
 .missingBox {
+  position: relative;
   box-sizing: border-box;
-  display: grid;
-  place-items: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   width: var(--card);
   height: calc(var(--card) * 1.4);
   border: 2px dashed color-mix(in srgb, var(--frame) 55%, transparent);
   border-radius: var(--lx-radius-lg);
-  background: color-mix(in srgb, var(--lx-color-well) 50%, transparent);
+  background: color-mix(in srgb, var(--lx-color-well) 55%, transparent);
 }
 
 .question {
@@ -483,7 +600,9 @@
 }
 
 .missingLabel {
-  font-size: var(--lx-size-caption);
+  position: absolute;
+  bottom: 10px;
+  font-size: var(--lx-size-micro);
   font-weight: 700;
   color: var(--lx-color-page-ink-faint);
 }
@@ -532,13 +651,13 @@
 
 .searchBone {
   border-radius: var(--lx-radius-pill);
-  height: 48px;
+  height: 44px;
 }
 
 .tabBone {
   border-radius: var(--lx-radius-xxl);
-  flex: 1 0 168px;
-  height: 70px;
+  flex: 1 0 160px;
+  height: 58px;
 }
 
 .rarityBone,
@@ -548,8 +667,8 @@
 }
 
 .rarityBone {
-  width: 92px;
-  height: 38px;
+  width: 82px;
+  height: 34px;
 }
 
 .filterBone {
@@ -569,17 +688,10 @@
 }
 
 .labelBone {
-  border-radius: var(--lx-radius-pill);
-  width: 64px;
-  height: 10px;
-  margin: var(--lx-s1) 0;
+  display: none;
 }
 
 /* --- Empty --- */
-
-.revise {
-  margin: var(--lx-s6) 0 0;
-}
 
 .empty {
   margin: var(--lx-s20) 0;
@@ -589,12 +701,89 @@
   color: var(--lx-color-page-ink-muted);
 }
 
+/* Comparing with a friend's album. */
+.compare {
+  display: flex;
+  flex-direction: column;
+  gap: var(--lx-s3);
+}
+
+.compareTitle {
+  margin: 0;
+  font-weight: 800;
+  color: var(--lx-color-rubric);
+}
+
+.row[hidden] {
+  display: none;
+}
+
+/* --- The showcase cabinet (two-tone diamond lining) --- */
+
+.desk {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  margin: 0 -18px;
+  padding: 22px 22px 16px 26px;
+}
+
+.deskBack {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  box-sizing: border-box;
+  border-radius: 22px;
+  --d1: color-mix(in srgb, var(--lx-color-sheet-light) 38%, var(--lx-room-floor));
+  --d2: color-mix(in srgb, var(--lx-color-sheet) 76%, var(--lx-room-floor));
+  background:
+    radial-gradient(
+      ellipse 85% 65% at 50% 35%,
+      color-mix(in srgb, var(--lx-toy-gold-top) 7%, transparent) 0%,
+      transparent 60%,
+      color-mix(in srgb, var(--lx-color-shade) 48%, transparent) 100%
+    ),
+    linear-gradient(144.5deg, var(--d1) 25%, transparent 25%) -22px 0 / 44px 62px,
+    linear-gradient(215.5deg, var(--d1) 25%, transparent 25%) -22px 0 / 44px 62px,
+    linear-gradient(324.5deg, var(--d1) 25%, transparent 25%) 0 0 / 44px 62px,
+    linear-gradient(35.5deg, var(--d1) 25%, var(--d2) 25%) 0 0 / 44px 62px;
+  box-shadow:
+    0 0 0 3px var(--lx-toy-outline),
+    0 24px 44px var(--lx-toy-drop),
+    inset 0 0 0 5px color-mix(in srgb, var(--lx-room-floor) 70%, transparent),
+    inset 0 2px 0 5px color-mix(in srgb, var(--lx-toy-sheen) 12%, transparent),
+    inset 0 0 50px var(--lx-desk-hollow);
+}
+
+/* Six cards to a row on a wide screen, tightly spaced. */
+@media (min-width: 760px) {
+  .grid {
+    gap: 20px 14px;
+  }
+
+  /* A long collection name takes the room a short one leaves. */
+  .tab {
+    flex-basis: auto;
+  }
+
+  /* The letters stand in the cabinet's margin. */
+  .shelf {
+    margin-right: -10px;
+  }
+}
+
+/*
+ * On a phone the cabinet runs to the screen's edges and under the tabs: only its top edge shows,
+ * and the cards have the whole width, centred.
+ */
 @media (max-width: 759px) {
   .page {
     padding: var(--lx-s4) var(--lx-s7) var(--lx-s14);
   }
 
-  /* The desk runs on under the tabs, so the album holds the whole height below the top bar. */
   .page:has(.desk) {
     height: calc(100dvh - 66px);
     min-height: 480px;
@@ -603,7 +792,7 @@
   }
 
   .header {
-    margin-bottom: var(--lx-s5);
+    margin-bottom: var(--lx-s4);
   }
 
   .letters {
@@ -611,7 +800,7 @@
   }
 
   .title {
-    font-size: var(--lx-size-heading-large);
+    font-size: var(--lx-size-heading);
   }
 
   .tools {
@@ -627,11 +816,7 @@
 
   .tabs {
     gap: var(--lx-s3);
-  }
-
-  /* One short line per collection: seal, name and count, the progress a thread beneath. */
-  .tabs {
-    margin-bottom: var(--lx-s5);
+    margin-bottom: var(--lx-s4);
   }
 
   .tab {
@@ -644,12 +829,6 @@
     height: 44px;
   }
 
-  .tabText {
-    flex-direction: row;
-    align-items: baseline;
-    gap: var(--lx-s3);
-  }
-
   .tabName {
     font-size: var(--lx-size-small);
   }
@@ -659,80 +838,14 @@
     margin-top: var(--lx-s3);
   }
 
-  /* Three cards to a row on a phone, as in the album of old, inside the desk's frame. */
+  /* Three cards to a row on a phone, closely spaced. */
   .grid {
-    gap: var(--lx-s8) 8px;
-  }
-}
-
-/* Comparing with a friend's album. */
-.compare {
-  display: flex;
-  flex-direction: column;
-  gap: var(--lx-s4);
-  margin-bottom: var(--lx-s2);
-}
-
-.compareTitle {
-  margin: 0;
-  font-weight: 800;
-  color: var(--lx-color-rubric);
-}
-
-.row[hidden] {
-  display: none;
-}
-
-/* --- The desk --- */
-
-/* The cards lie on the desk; the title and the search stay on the room above it. */
-.desk {
-  position: relative;
-  isolation: isolate;
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-  min-height: 0;
-  margin: 0 -28px;
-  padding: 30px 22px 18px 30px;
-}
-
-.deskBack {
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-}
-
-/* Air between the cards, as on the page of old: five to a row rather than six packed. */
-@media (min-width: 760px) {
-  .grid {
-    gap: 26px 30px;
+    gap: 14px 8px;
   }
 
-  /* The filters stand clear of the first row and of the tags above its cards. */
-  .scroller .grid {
-    margin-top: 30px;
-  }
-
-  /* A long collection name takes the room a short one leaves. */
-  .tab {
-    flex-basis: auto;
-  }
-
-  /* The letters stand in the desk's margin, leaving the collections their whole name. */
-  .shelf {
-    margin-right: -14px;
-  }
-}
-
-/*
- * On a phone the desk runs to the screen's edges and under the tabs: only its top edge shows,
- * and the cards have the whole width, centred.
- */
-@media (max-width: 759px) {
   .desk {
     margin: 0 calc(-1 * var(--lx-s7));
-    padding: 16px 10px 0;
+    padding: 14px 10px 0;
   }
 
   .deskBack {

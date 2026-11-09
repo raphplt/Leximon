@@ -5,6 +5,7 @@ import { effects, openingTimes, rarityLights } from "@leximon/tokens";
 import { frequencyLine, LANDING_PITCH, LANDING_TITLE, stagingFor } from "@leximon/view-model";
 import { useEffect, useRef, useState } from "react";
 import { play } from "@/booster/feedback";
+import type { PackCollection } from "@/booster/pack-looks";
 import { RevealCard } from "@/booster/reveal-card";
 import { Sachet } from "@/booster/sachet";
 import { Card } from "@/components/card";
@@ -12,13 +13,18 @@ import { RarityName } from "@/components/rarity-icon";
 import { Desk, PaperAction } from "@/library/play-pieces";
 import { GiltCorners } from "@/ui/ornaments";
 import { useStage } from "@/ui/stage";
-import { Kicker, Leaf, Lettering } from "@/ui/toy";
+import { Kicker, Lettering } from "@/ui/toy";
 import { DiscordLink } from "./discord";
 import type { Door } from "./door";
 import styles from "./landing-page.module.css";
 import { useNarrow } from "./narrow";
 import { DoorAction } from "./player-access";
 import type { Showcase } from "./showcase-cards";
+
+const SIDE_PACKS: readonly [PackCollection, PackCollection] = [
+  { id: "caracteres", name: "Caractères et travers", back: "burgundy" },
+  { id: "metiers", name: "Métiers et objets disparus", back: "green" },
+];
 
 /** Where the seam of the sachet runs, from its top: the sparks of the charge leak from there. */
 const SEAM_AT = 0.13;
@@ -126,13 +132,17 @@ export function Hero({
   return (
     <section className={styles.hero} aria-labelledby="landing-title">
       <div className={styles.pitch}>
+        <GiltCorners />
+        <Kicker>Jeu de cartes littéraire · 100 % gratuit</Kicker>
         <h1 id="landing-title" className={styles.title}>
           <Lettering>{LANDING_TITLE}</Lettering>
         </h1>
-        <Leaf className={styles.lead}>
-          <GiltCorners />
-          <p>{LANDING_PITCH}</p>
-        </Leaf>
+        <p className={styles.leadText}>{LANDING_PITCH}</p>
+        <ul className={styles.pillars} aria-label="En bref">
+          <li>1 561 mots rares</li>
+          <li>Gravures d'époque</li>
+          <li>Aucun hasard payant</li>
+        </ul>
         <DoorAction door={door} />
         <DiscordLink className={styles.discord} />
       </div>
@@ -141,19 +151,51 @@ export function Hero({
         <Desk className={styles.counterDesk} />
         {phase.name === "sealed" || phase.name === "opening" ? (
           <>
+            <div className={styles.counterHead} data-gone={phase.name === "opening" || undefined}>
+              <Kicker>Sachet de découverte</Kicker>
+              <Lettering className={styles.counterName}>{pack?.name ?? "Les Fondateurs"}</Lettering>
+            </div>
             <div ref={sachetRef} className={styles.sachet} data-moment={moment}>
+              {!narrow && (
+                <div
+                  className={styles.heroPeeks}
+                  data-gone={phase.name === "opening" || undefined}
+                  aria-hidden="true"
+                >
+                  <div className={styles.heroPeekLeft}>
+                    <Sachet
+                      collection={SIDE_PACKS[0]}
+                      state="sealed"
+                      still
+                      onTearStart={() => undefined}
+                      onOpen={() => undefined}
+                    />
+                  </div>
+                  <div className={styles.heroPeekRight}>
+                    <Sachet
+                      collection={SIDE_PACKS[1]}
+                      state="sealed"
+                      still
+                      onTearStart={() => undefined}
+                      onOpen={() => undefined}
+                    />
+                  </div>
+                </div>
+              )}
               {pack !== null && (
-                <Sachet
-                  key={round}
-                  collection={pack}
-                  state={moment === "burst" ? "opening" : "sealed"}
-                  onTearStart={() => undefined}
-                  onOpen={open}
-                />
+                <div className={styles.heroFront}>
+                  <Sachet
+                    key={round}
+                    collection={pack}
+                    state={moment === "burst" ? "opening" : "sealed"}
+                    onTearStart={() => undefined}
+                    onOpen={open}
+                  />
+                </div>
               )}
             </div>
             <p className={styles.deskHint} data-gone={phase.name === "opening" || undefined}>
-              <Kicker>Un sachet t'attend. Déchire-le.</Kicker>
+              <Kicker>Un sachet t'attend · Déchire-le ou touche-le</Kicker>
             </p>
           </>
         ) : phase.name === "revealing" ? (

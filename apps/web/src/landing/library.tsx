@@ -2,14 +2,20 @@ import type { ToyMatterName } from "@leximon/tokens";
 import { formatCount } from "@leximon/view-model";
 import Link from "next/link";
 import type { CSSProperties } from "react";
+import { CollectionSeal } from "@/components/collection-seal";
 import desk from "@/play/desk-columns.module.css";
 import { GiltCorners } from "@/ui/ornaments";
-import { Lettering, ToyBody } from "@/ui/toy";
+import { Kicker, Lettering } from "@/ui/toy";
 import ui from "@/ui/ui.module.css";
 import styles from "./landing-page.module.css";
 import type { Shelf } from "./showcase-cards";
 
 const BOOK_MATTERS: readonly ToyMatterName[] = ["blue", "red", "green"];
+const BOOK_BACKS: Readonly<Record<string, string>> = {
+  fondateurs: "night",
+  caracteres: "burgundy",
+  metiers: "green",
+};
 
 /** The lettering has no narrow space: at display size, thousands take a full no-break space. */
 function displayCount(value: number): string {
@@ -21,8 +27,9 @@ export function Library({ shelves }: { readonly shelves: readonly Shelf[] }) {
   if (shelves.length === 0) return null;
   const total = shelves.reduce((sum, shelf) => sum + shelf.count, 0);
   return (
-    <section className={styles.section} aria-labelledby="library-title">
+    <section id="collections" className={styles.section} aria-labelledby="library-title">
       <div className={styles.sectionHead}>
+        <Kicker>Le catalogue de lancement</Kicker>
         <h2 id="library-title" className={styles.sectionTitle}>
           <Lettering>{`${displayCount(total)} mots, en trois collections`}</Lettering>
         </h2>
@@ -43,9 +50,10 @@ export function Library({ shelves }: { readonly shelves: readonly Shelf[] }) {
                     } as CSSProperties
                   }
                 >
-                  <ToyBody matter="gold" shape="round" className={styles.bookMark}>
-                    <Lettering>{shelf.name.replace(/^Les /, "").slice(0, 1)}</Lettering>
-                  </ToyBody>
+                  <CollectionSeal
+                    collection={{ id: shelf.id, name: shelf.name, back: BOOK_BACKS[shelf.id] }}
+                    size={76}
+                  />
                   <span className={styles.bookText}>
                     <Lettering className={styles.bookName}>{shelf.name}</Lettering>
                     <span className={styles.bookWords}>{formatCount(shelf.count)} mots</span>

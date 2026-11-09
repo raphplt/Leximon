@@ -16,14 +16,9 @@
   display: none;
 }
 
-/*
- * The last piece of each column sits on the line of the gold button, while the column is nearly
- * full. On a tall screen it would stand alone far below its own: it stays with them instead.
- */
-@media (max-height: 1099px) {
-  .column > :last-child:not(:only-child) {
-    margin-top: auto;
-  }
+/* The last piece of each column sits on the line of the gold button. */
+.column > :last-child:not(:only-child) {
+  margin-top: auto;
 }
 
 .head {

@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 import { Sachet } from "@/booster/sachet";
 import { Card } from "@/components/card";
 import { Fleurons } from "@/ui/ornaments";
-import { Leaf, Lettering, ToyBody } from "@/ui/toy";
+import { Kicker, Leaf, Lettering, ToyBody } from "@/ui/toy";
 import styles from "./landing-page.module.css";
 import type { Showcase, ShowcaseCard } from "./showcase-cards";
 
@@ -25,8 +25,9 @@ export function HowToPlay({
   readonly quiz: readonly CatalogCard[];
 }) {
   return (
-    <section className={styles.section} aria-labelledby="how-title">
+    <section id="comment-jouer" className={styles.section} aria-labelledby="how-title">
       <div className={styles.sectionHead}>
+        <Kicker>Trois gestes</Kicker>
         <h2 id="how-title" className={styles.sectionTitle}>
           <Lettering>Comment on joue</Lettering>
         </h2>
@@ -36,6 +37,9 @@ export function HowToPlay({
           <Leaf className={styles.howLeaf}>
             <Fleurons />
             <div className={styles.howArt}>
+              <span className={styles.howStep} aria-hidden="true">
+                <Lettering>1</Lettering>
+              </span>
               <div className={styles.howSachet}>
                 {pack !== null && (
                   <Sachet
@@ -58,6 +62,9 @@ export function HowToPlay({
           <Leaf className={styles.howLeaf}>
             <Fleurons />
             <div className={styles.howArt}>
+              <span className={styles.howStep} aria-hidden="true">
+                <Lettering>2</Lettering>
+              </span>
               <QuizFigure words={quiz} />
             </div>
             <Lettering className={styles.howTitle}>Des mots qui montent</Lettering>
@@ -71,6 +78,9 @@ export function HowToPlay({
           <Leaf className={styles.howLeaf}>
             <Fleurons />
             <div className={styles.howArt}>
+              <span className={styles.howStep} aria-hidden="true">
+                <Lettering>3</Lettering>
+              </span>
               <TradeFigure trade={trade} />
             </div>
             <Lettering className={styles.howTitle}>Des doubles à échanger</Lettering>

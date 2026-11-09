@@ -546,6 +546,57 @@
   }
 }
 
+/* Tall wide screens (QHD, 4K): the desk, sachet and side columns scale up in proportion to 1080p. */
+@media (min-width: 1440px) and (min-height: 1100px) {
+  .screen {
+    grid-template-columns: minmax(295px, 354px) minmax(0, 1fr) minmax(295px, 354px);
+    gap: 0 32px;
+    max-width: min(2040px, calc((100dvh - 76px) * 1.62));
+    padding: 26px 36px 28px;
+  }
+
+  .stage {
+    min-height: min(1320px, 100dvh - 76px - 54px);
+  }
+
+  .today,
+  .standing,
+  .title,
+  .cta {
+    zoom: 1.18;
+  }
+
+  .sachet {
+    inset: 18% 10% 8%;
+    --sachet-max-unit: 1.9px;
+  }
+}
+
+@media (min-width: 1800px) and (min-height: 1460px) {
+  .screen {
+    grid-template-columns: minmax(355px, 426px) minmax(0, 1fr) minmax(355px, 426px);
+    gap: 0 42px;
+    max-width: min(2680px, calc((100dvh - 76px) * 1.62));
+    padding: 32px 48px 36px;
+  }
+
+  .stage {
+    min-height: min(1840px, 100dvh - 76px - 68px);
+  }
+
+  .today,
+  .standing,
+  .title,
+  .cta {
+    zoom: 1.42;
+  }
+
+  .sachet {
+    inset: 18% 10% 8%;
+    --sachet-max-unit: 2.5px;
+  }
+}
+
 .message,
 .error {
   margin: 0;
