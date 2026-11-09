@@ -629,19 +629,34 @@
     gap: var(--lx-s3);
   }
 
+  /* One short line per collection: seal, name and count, the progress a thread beneath. */
+  .tabs {
+    margin-bottom: var(--lx-s5);
+  }
+
   .tab {
     flex: 0 0 auto;
-    min-width: 128px;
-    padding: var(--lx-s5);
+    padding: var(--lx-s3) var(--lx-s5) var(--lx-s4);
   }
 
   .tabBone {
-    flex: 0 0 128px;
-    height: 64px;
+    flex: 0 0 112px;
+    height: 44px;
+  }
+
+  .tabText {
+    flex-direction: row;
+    align-items: baseline;
+    gap: var(--lx-s3);
   }
 
   .tabName {
     font-size: var(--lx-size-small);
+  }
+
+  .tabTrack {
+    height: 3px;
+    margin-top: var(--lx-s3);
   }
 
   /* Three cards to a row on a phone, as in the album of old, inside the desk's frame. */
@@ -741,4 +756,44 @@
   .lettersPlace {
     display: none;
   }
+}
+
+/* The filters' panel, on a phone. */
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--lx-s8);
+}
+
+.group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--lx-s4);
+}
+
+.groupTitle {
+  margin: 0;
+  font-family: var(--font-display), Georgia, serif;
+  font-size: var(--lx-size-body);
+  font-weight: 800;
+}
+
+.groupChips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--lx-s4);
+}
+
+/* The way back to the cards stays in reach below a long list of themes. */
+.panelActions {
+  position: sticky;
+  bottom: calc(-1 * var(--lx-s14));
+  display: flex;
+  flex-direction: column;
+  gap: var(--lx-s4);
+  margin-bottom: calc(-1 * var(--lx-s14));
+  padding: var(--lx-s5) 0 var(--lx-s14);
+  background:
+    var(--lx-matter-paper) 0 0 / var(--lx-matter-size),
+    var(--lx-color-paper);
 }

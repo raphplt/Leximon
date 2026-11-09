@@ -283,6 +283,7 @@ export function AlbumScreen({ friendCode }: { readonly friendCode: string | null
   };
   const comparing = friend !== null && state.compare != null;
   const filtersOn = activeFilterCount(state);
+  const fresh = view.filters.find((filter) => filter.id === "new");
   const sort = state.sort ?? "alpha";
   const pickSort = (next: AlbumSort) => {
     writeSort(next);
@@ -391,6 +392,21 @@ export function AlbumScreen({ friendCode }: { readonly friendCode: string | null
           );
         })}
       </TabRow>
+
+      {/* The filters wait in their panel; only the new words stay at hand. */}
+      {!view.searching &&
+        !comparing &&
+        fresh !== undefined &&
+        ((fresh.count ?? 0) > 0 || state.filter === "new") && (
+          <View style={styles.quick}>
+            <FilterChip
+              label={fresh.label}
+              count={fresh.count}
+              on={state.filter === "new"}
+              onPick={() => setState((s) => ({ ...s, filter: s.filter === "new" ? "all" : "new" }))}
+            />
+          </View>
+        )}
 
       {!view.searching && comparing && (
         <View style={styles.compare}>
@@ -882,6 +898,7 @@ const styles = StyleSheet.create({
   bleed: { marginHorizontal: -GUTTER, flexGrow: 0 },
   row: { gap: space.s4, paddingHorizontal: GUTTER, alignItems: "center" },
   compare: { gap: space.s4 },
+  quick: { flexDirection: "row" },
   compareHead: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
   compareTitle: { fontFamily: fonts.ui.extrabold, fontSize: fontSizes.body, color: colors.rubric },
   dimmed: { opacity: 0.4 },

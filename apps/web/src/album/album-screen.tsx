@@ -4,6 +4,7 @@ import type { Catalog } from "@leximon/contract/client";
 import { PRACTICE_SCHEDULE, practiceRulesAt, type Rarity } from "@leximon/core";
 import { collectionTone, cssFill, rarityStyles } from "@leximon/tokens";
 import {
+  ALBUM_FILTER_TEXTS,
   ALBUM_SORT_LABELS,
   ALBUM_SORT_TITLE,
   ALBUM_SORTS,
@@ -13,6 +14,7 @@ import {
   type AlbumItem,
   type AlbumSort,
   type AlbumState,
+  activeFilterCount,
   albumPracticeCards,
   albumView,
   type CompareFilter,
@@ -21,16 +23,26 @@ import {
   ECUS_TITLE,
   ecusLabel,
   editionOfCard,
+  filterButtonLabel,
   isAlbumSort,
   isFeatureOpen,
   type MissingItem,
   type OwnedItem,
   playerName,
   shortName,
+  withoutFilters,
 } from "@leximon/view-model";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { type CSSProperties, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  type CSSProperties,
+  type ReactNode,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { packOf } from "@/booster/pack-looks";
 import { loadCatalog } from "@/cards/catalog";
 import { askAlbumPractice } from "@/challenges/pending-practice";
@@ -210,6 +222,7 @@ export function AlbumScreen() {
     setJump(null);
   }, [jump, shown, scroller]);
   const [themesOpen, setThemesOpen] = useState(false);
+  const [filtering, setFiltering] = useState(false);
   const sort = state.sort ?? "alpha";
   const pickSort = (next: AlbumSort) => {
     writeSort(next);
@@ -248,6 +261,13 @@ export function AlbumScreen() {
     writeCollection(id);
     setState((s) => ({ ...s, collectionId: id, rarity: null, theme: null, search: "" }));
   };
+  const comparing = friend !== null && state.compare != null;
+  const filtersOn = activeFilterCount(state);
+  const fresh = view.filters.find((filter) => filter.id === "new");
+  const pickRarity = (rarity: Rarity) =>
+    setState((s) => ({ ...s, rarity: s.rarity === rarity ? null : rarity }));
+  const pickTheme = (theme: string) =>
+    setState((s) => ({ ...s, theme: s.theme === theme ? null : theme }));
 
   return (
     <main className={styles.page}>
@@ -272,6 +292,18 @@ export function AlbumScreen() {
               onChange={(event) => setState((s) => ({ ...s, search: event.target.value }))}
             />
           </label>
+          {narrow && !view.searching && (
+            <button
+              type="button"
+              className={`${ui.chip} ${styles.ecus}`}
+              aria-pressed={filtersOn > 0}
+              aria-label={filterButtonLabel(filtersOn)}
+              onClick={() => setFiltering(true)}
+            >
+              {ALBUM_FILTER_TEXTS.button}
+              {filtersOn > 0 && <span className={styles.filterCount}>{filtersOn}</span>}
+            </button>
+          )}
           {currentWallet !== null && (
             <button
               type="button"
@@ -280,7 +312,7 @@ export function AlbumScreen() {
               onClick={() => setEcusOpen(true)}
             >
               <ToyIcon name="ecu" size={22} />
-              {ECUS_TITLE}
+              {!narrow && ECUS_TITLE}
             </button>
           )}
         </div>
@@ -320,7 +352,7 @@ export function AlbumScreen() {
                   >
                     <span className={styles.tabHead}>
                       {file !== undefined && (
-                        <CollectionSeal collection={packOf(file)} size={narrow ? 24 : 30} />
+                        <CollectionSeal collection={packOf(file)} size={narrow ? 20 : 30} />
                       )}
                       <span className={styles.tabText}>
                         <span className={styles.tabName}>
@@ -345,25 +377,22 @@ export function AlbumScreen() {
 
             {!view.searching && (
               <>
-                <div className={styles.row}>
-                  {view.rarities.map((chip) => (
-                    <RarityChip
-                      key={chip.rarity}
-                      rarity={chip.rarity}
-                      count={chip.count}
-                      aria={chip.aria}
-                      on={state.rarity === chip.rarity}
-                      onPick={() =>
-                        setState((s) => ({
-                          ...s,
-                          rarity: s.rarity === chip.rarity ? null : chip.rarity,
-                        }))
-                      }
-                    />
-                  ))}
-                  <SortPicker sort={sort} onPick={pickSort} />
-                </div>
-                {friend !== null && state.compare != null && (
+                {!narrow && (
+                  <div className={styles.row}>
+                    {view.rarities.map((chip) => (
+                      <RarityChip
+                        key={chip.rarity}
+                        rarity={chip.rarity}
+                        count={chip.count}
+                        aria={chip.aria}
+                        on={state.rarity === chip.rarity}
+                        onPick={() => pickRarity(chip.rarity)}
+                      />
+                    ))}
+                    <SortPicker sort={sort} onPick={pickSort} />
+                  </div>
+                )}
+                {comparing && (
                   <div className={styles.compare}>
                     <p className={styles.compareTitle}>{comparingTitle(friend.name)}</p>
                     <div className={styles.row}>
@@ -383,7 +412,23 @@ export function AlbumScreen() {
                     </div>
                   </div>
                 )}
-                <div className={styles.row} hidden={friend !== null && state.compare != null}>
+                {/* On a phone the filters wait in a panel; only the new words stay at hand. */}
+                {narrow &&
+                  !comparing &&
+                  fresh !== undefined &&
+                  ((fresh.count ?? 0) > 0 || state.filter === "new") && (
+                    <div className={styles.row}>
+                      <FilterChip
+                        label={fresh.label}
+                        count={fresh.count}
+                        on={state.filter === "new"}
+                        onPick={() =>
+                          setState((s) => ({ ...s, filter: s.filter === "new" ? "all" : "new" }))
+                        }
+                      />
+                    </div>
+                  )}
+                <div className={styles.row} hidden={narrow || comparing}>
                   {view.filters.map((filter) => (
                     <FilterChip
                       key={filter.id}
@@ -416,16 +461,14 @@ export function AlbumScreen() {
                     />
                   )}
                 </div>
-                {themesOpen && (
+                {themesOpen && !narrow && (
                   <div id="album-themes" className={`${styles.row} ${styles.themes}`}>
                     {view.themes.map((theme) => (
                       <FilterChip
                         key={theme.id}
                         label={theme.label}
                         on={state.theme === theme.id}
-                        onPick={() =>
-                          setState((s) => ({ ...s, theme: s.theme === theme.id ? null : theme.id }))
-                        }
+                        onPick={() => pickTheme(theme.id)}
                       />
                     ))}
                   </div>
@@ -497,7 +540,91 @@ export function AlbumScreen() {
           )}
         </div>
       </div>
+      {narrow && (
+        <Dialog
+          open={filtering}
+          title={ALBUM_FILTER_TEXTS.button}
+          onClose={() => setFiltering(false)}
+        >
+          <div className={styles.panel}>
+            {!comparing && (
+              <FilterGroup title={ALBUM_SORT_TITLE}>
+                {ALBUM_SORTS.map((choice) => (
+                  <FilterChip
+                    key={choice}
+                    label={ALBUM_SORT_LABELS[choice]}
+                    on={sort === choice}
+                    onPick={() => pickSort(choice)}
+                  />
+                ))}
+              </FilterGroup>
+            )}
+            {view.rarities.length > 0 && (
+              <FilterGroup title={ALBUM_FILTER_TEXTS.rarity}>
+                {view.rarities.map((chip) => (
+                  <RarityChip
+                    key={chip.rarity}
+                    rarity={chip.rarity}
+                    count={chip.count}
+                    aria={chip.aria}
+                    on={state.rarity === chip.rarity}
+                    onPick={() => pickRarity(chip.rarity)}
+                  />
+                ))}
+              </FilterGroup>
+            )}
+            {!comparing && (
+              <FilterGroup title={ALBUM_FILTER_TEXTS.show}>
+                {view.filters.map((filter) => (
+                  <FilterChip
+                    key={filter.id}
+                    label={filter.label}
+                    count={filter.count}
+                    on={state.filter === filter.id}
+                    onPick={() => setState((s) => ({ ...s, filter: filter.id as AlbumFilter }))}
+                  />
+                ))}
+              </FilterGroup>
+            )}
+            {!comparing && view.themes.length > 0 && (
+              <FilterGroup title={ALBUM_FILTER_TEXTS.themes}>
+                {view.themes.map((theme) => (
+                  <FilterChip
+                    key={theme.id}
+                    label={theme.label}
+                    on={state.theme === theme.id}
+                    onPick={() => pickTheme(theme.id)}
+                  />
+                ))}
+              </FilterGroup>
+            )}
+            <div className={styles.panelActions}>
+              <Button onClick={() => setFiltering(false)}>{ALBUM_FILTER_TEXTS.apply}</Button>
+              {filtersOn > 0 && (
+                <Button variant="ghost" onClick={() => setState((s) => withoutFilters(s))}>
+                  {ALBUM_FILTER_TEXTS.clear}
+                </Button>
+              )}
+            </div>
+          </div>
+        </Dialog>
+      )}
     </main>
+  );
+}
+
+function FilterGroup({
+  title,
+  children,
+}: {
+  readonly title: string;
+  readonly children: ReactNode;
+}) {
+  return (
+    <section className={styles.group}>
+      <h3 className={styles.groupTitle}>{title}</h3>
+      <div className={styles.groupChips}>{children}</div>
+    </section>
   );
 }
 
