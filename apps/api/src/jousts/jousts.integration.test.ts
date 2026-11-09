@@ -65,6 +65,8 @@ const {
 const RULES = joustRulesAt(JOUST_SCHEDULE, Date.now());
 const LEVEL_XP = xpToReach(featureLevels(UNLOCK_SCHEDULE, TRADE_SCHEDULE, Date.now()).jousts);
 const SEED = "0123456789abcdef0123456789abcdef";
+// Before jousts opened to every player, when only the testers ticked in the admin could joust.
+const TESTERS_ONLY = Date.parse("2026-11-08T12:00:00Z");
 
 beforeAll(async () => {
   await seedTestCatalog(db);
@@ -235,7 +237,7 @@ describe("launching", () => {
     const closed = await jouster({ access: false });
     const a = await jouster();
     const b = await jouster();
-    expect(await launch(closed, { kind: "friendly", opponentCode: a.code })).toEqual({
+    expect(await launch(closed, { kind: "friendly", opponentCode: a.code }, TESTERS_ONLY)).toEqual({
       kind: "refused",
       reason: "not_open",
     });
@@ -244,9 +246,12 @@ describe("launching", () => {
       reason: "not_friends",
     });
     await befriend(a, closed);
-    expect(await launch(a, { kind: "friendly", opponentCode: closed.code })).toEqual({
+    expect(await launch(a, { kind: "friendly", opponentCode: closed.code }, TESTERS_ONLY)).toEqual({
       kind: "refused",
       reason: "opponent_unavailable",
+    });
+    expect(await launch(closed, { kind: "friendly", opponentCode: a.code })).toMatchObject({
+      kind: "launched",
     });
   });
 

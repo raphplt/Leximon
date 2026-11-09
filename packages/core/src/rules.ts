@@ -64,6 +64,8 @@ const BANNERS_DECIDED = Date.UTC(2026, 10, 7, 23);
 const REBALANCED = Date.UTC(2026, 10, 8, 23);
 // 21:40 in Paris, 8 November 2026: the owner brought the smaller stock forward to that evening.
 const STOCK_TRIMMED = Date.parse("2026-11-08T20:40:00Z");
+// Midnight in Paris, 9 November 2026: jousts open to every player past their level, with the open beta.
+const JOUSTS_OPEN = Date.UTC(2026, 10, 8, 23);
 
 export const REFILL_SCHEDULE: RefillSchedule = [
   { startsAt: SINCE_LAUNCH, capacity: 6, intervalMs: 30 * MINUTE },
@@ -490,6 +492,35 @@ export const JOUST_SCHEDULE: JoustSchedule = [
   {
     startsAt: SINCE_LAUNCH,
     openToAll: false,
+    deckSize: 10,
+    drawn: 5,
+    deckBudget: 25,
+    cost: { common: 1, uncommon: 2, rare: 3, precious: 4, epic: 5, legendary: 6 },
+    minimumMastery: "sketch",
+    choices: 4,
+    answerMs: 15_000,
+    graceMs: 2_000,
+    runMs: 5 * MINUTE,
+    startMs: 24 * 60 * MINUTE,
+    replyMs: 24 * 60 * MINUTE,
+    maxWaiting: 5,
+    maxToPlay: 3,
+    seenWithinMs: 24 * 60 * MINUTE,
+    pairCooldownMs: 24 * 60 * MINUTE,
+    xpPlayed: 20,
+    xpWon: 20,
+    rewardedPerDay: 5,
+    firstWinBoosters: 1,
+    glicko: {
+      initial: { rating: 1500, deviation: 350, volatility: 0.06 },
+      tau: 0.5,
+      periodDays: 7,
+    },
+  },
+  // Until then only the testers ticked in the admin could joust.
+  {
+    startsAt: JOUSTS_OPEN,
+    openToAll: true,
     deckSize: 10,
     drawn: 5,
     deckBudget: 25,
