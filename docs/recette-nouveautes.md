@@ -792,6 +792,11 @@ Préparer : `pnpm db:migrate`, un compte mécène qui a payé au moins une fois 
 - **Attendu :** la page remercie sans rien vendre (ni prix, ni bouton, ni lien vers l'offre). Elle liste les mécènes qui paient et dont le profil est public, les fondateurs d'abord avec leur sceau, puis par date du premier paiement ; chaque pseudo ouvre son profil. Ni l'essai, ni un profil privé, ni un compte suspendu n'y figurent. « Ne pas me citer » retire le pseudo (la page se met à jour en cinq minutes au plus), « Me citer à nouveau » le remet. Sans mécène, la page dit « Aucun mécène ne figure encore sur cette page. ».
 - **Retour :**
 
+### MEC-17 · Vote des mécènes
+- **Faire :** dans `/admin/mecenes`, ouvre un vote avec trois thèmes (nom et ce que la collection contiendrait), puis essaie d'en ouvrir un second. Sur la page Mécène, vote avec un compte qui a payé, change ta voix, puis regarde la même page avec un compte en essai. Recommence sur le mobile. Pour voir le résultat sans attendre une semaine, ferme le vote en base locale (`update patron_polls set closes_at = now()`).
+- **Attendu :** le vote s'ouvre pour sept jours ; le second est refusé tant que le premier est ouvert. La page Mécène montre les trois thèmes et la date de fermeture ; « Voter pour ce thème » met « Ta voix » sur le thème choisi, et un autre choix la déplace. L'essai voit les thèmes sans bouton, avec « Ta voix comptera après ton premier paiement. ». Aucun compte de voix tant que le vote est ouvert. Une fois fermé, chaque thème montre ses voix, le gagnant est mis en avant et la page dit « La prochaine collection aura pour thème « … ». » (ou l'égalité). L'admin montre les voix de chaque vote, ouvert ou fermé, et le journal note l'ouverture.
+- **Retour :**
+
 ## Mauvais choix des QCM
 
 Retour de bêta du 2026-10-31 : on trouvait la réponse par élimination (un verbe parmi des noms, un mot sans rapport avec le thème révisé). La nature des cartes vient de la publication du catalogue : en production, la colonne reste vide tant qu'une publication n'est pas passée, et les choix restent ceux d'avant.

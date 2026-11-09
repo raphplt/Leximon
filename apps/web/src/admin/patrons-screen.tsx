@@ -7,6 +7,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { adminApi, adminErrorMessage } from "@/admin/admin-api";
 import styles from "./admin.module.css";
 import { formatDateTime, formatNumber } from "./format";
+import { PatronPolls } from "./patron-polls";
 
 const SALES_LABELS: Readonly<Record<PatronSales, string>> = {
   closed: "Vente fermée : seuls les admins peuvent s'abonner, pour essayer le paiement.",
@@ -200,6 +201,7 @@ export function PatronsScreen() {
           Afficher plus
         </button>
       )}
+      <PatronPolls />
     </>
   );
 }

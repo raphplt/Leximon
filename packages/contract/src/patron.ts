@@ -38,6 +38,29 @@ export type PatronSales = z.infer<typeof patronSalesSchema>;
  * - `cancelAt`: when a subscription cancelled by the player stops, `null` while it renews;
  * - `paymentFailing`: the latest payment failed and Stripe is retrying it.
  */
+const pollThemeViewSchema = z.object({ name: z.string(), description: z.string() });
+
+/**
+ * The patrons' vote on the theme of a coming collection: the one open, or the last one closed
+ * for a month after. Voices show only once it closes.
+ */
+export const patronPollSchema = z.object({
+  id: z.uuid(),
+  themes: z.array(pollThemeViewSchema),
+  closesAt: timestampSchema,
+  open: z.boolean(),
+  /** The patron's choice, as an index of `themes`. */
+  myVote: z.int().nonnegative().nullable(),
+  /** Once closed: voices by theme, and the theme chosen (`null` on a tie or without a voice). */
+  result: z
+    .object({
+      votes: z.array(z.int().nonnegative()),
+      winner: z.int().nonnegative().nullable(),
+    })
+    .nullable(),
+});
+export type PatronPollView = z.infer<typeof patronPollSchema>;
+
 export const patronResponseSchema = z.object({
   sales: patronSalesSchema,
   /** Declared 15 to 17 years old: the page asks for a parent's agreement. */
@@ -56,6 +79,7 @@ export const patronResponseSchema = z.object({
   finds: patronFindsSchema,
   /** On the public page of thanks while paying, unless the patron asked not to be. */
   thanksListed: z.boolean().default(true),
+  poll: patronPollSchema.nullable().default(null),
   subscription: z
     .object({
       standing: z.enum(["none", "trial", "patron"]),
@@ -175,3 +199,40 @@ export type AdminPatronRefundResponse = z.infer<typeof adminPatronRefundResponse
 /** `POST /admin/patrons/:userId/refund`, 409: the player never subscribed. */
 export const adminPatronRefundRefusalSchema = z.object({ error: z.enum(["not_subscribed"]) });
 export type AdminPatronRefundRefusal = z.infer<typeof adminPatronRefundRefusalSchema>["error"];
+
+/** `PUT /me/patron/polls/:pollId/vote` body: the theme chosen, as an index. */
+export const patronVoteRequestSchema = z.object({ theme: z.int().nonnegative() });
+
+/** Refusals of a vote, as `{ error }` with 409: not a paying patron, a vote closed, no such theme. */
+export const patronVoteRefusalSchema = z.object({
+  error: z.enum(["not_patron", "poll_closed", "unknown_theme"]),
+});
+export type PatronVoteRefusal = z.infer<typeof patronVoteRefusalSchema>["error"];
+
+/** A theme an admin offers to the vote. */
+export const pollThemeSchema = z.object({
+  name: z.string().trim().min(2).max(40),
+  description: z.string().trim().min(10).max(200),
+});
+
+/** `POST /admin/patrons/polls` body: the themes of a new vote, which opens at once. */
+export const adminPollCreateSchema = z.object({ themes: z.array(pollThemeSchema).min(2).max(5) });
+export type AdminPollCreate = z.infer<typeof adminPollCreateSchema>;
+
+/** Refusals, as `{ error }` with 409: a vote still open, or not the number of themes the rules set. */
+export const adminPollRefusalSchema = z.object({ error: z.enum(["poll_open", "theme_count"]) });
+export type AdminPollRefusal = z.infer<typeof adminPollRefusalSchema>["error"];
+
+/** `GET /admin/patrons/polls`, 200: the votes, latest first, with their voices while open too. */
+export const adminPollsResponseSchema = z.object({
+  polls: z.array(
+    z.object({
+      id: z.uuid(),
+      themes: z.array(pollThemeViewSchema),
+      opensAt: timestampSchema,
+      closesAt: timestampSchema,
+      votes: z.array(z.int().nonnegative()),
+    }),
+  ),
+});
+export type AdminPollsResponse = z.infer<typeof adminPollsResponseSchema>;

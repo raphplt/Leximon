@@ -62,6 +62,8 @@ describe("database", () => {
       "notification_emails",
       "patron_cosmetic_claims",
       "patron_periods",
+      "patron_poll_votes",
+      "patron_polls",
       "patron_subscriptions",
       "pinned_cards",
       "player_age_brackets",

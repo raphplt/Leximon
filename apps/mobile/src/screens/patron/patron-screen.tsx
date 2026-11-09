@@ -17,6 +17,10 @@ import {
   PATRON_LOAD_FAILED,
   PATRON_MANAGED_ON_WEB,
   PATRON_MEMBER_TITLE,
+  PATRON_POLL_CHOSEN,
+  PATRON_POLL_FAILED,
+  PATRON_POLL_TITLE,
+  PATRON_POLL_VOTE,
   PATRON_THANKS_FAILED,
   PATRON_THANKS_HIDE,
   PATRON_THANKS_PAGE_TITLE,
@@ -25,6 +29,8 @@ import {
   patronStatus,
   patronThanksLine,
   playerName,
+  pollScreen,
+  voteRefusalLine,
 } from "@leximon/view-model";
 import { router, useFocusEffect } from "expo-router";
 import { useCallback, useState } from "react";
@@ -84,6 +90,7 @@ export function PatronScreen() {
       ) : (
         <>
           <PatronCard patron={patron} />
+          <Poll patron={patron} onChanged={load} />
           <Finds finds={patron.finds} />
           <Editions />
           <ThanksSetting patron={patron} onChanged={load} />
@@ -172,6 +179,69 @@ function Editions() {
           <Text style={styles.text}>{editionsOwnedLine(mine.owned)}</Text>
         </View>
       </View>
+    </Leaf>
+  );
+}
+
+/** The vote on the theme of a coming collection: open for a week, results once it closes. */
+function Poll({
+  patron,
+  onChanged,
+}: {
+  readonly patron: PatronResponse;
+  readonly onChanged: () => Promise<void>;
+}) {
+  const [busy, setBusy] = useState(false);
+  const screen = pollScreen(patron, Date.now());
+  const poll = patron.poll;
+  if (screen === null || poll === null) return null;
+
+  const vote = async (theme: number) => {
+    setBusy(true);
+    try {
+      const result = await api.votePatronPoll(poll.id, theme);
+      if (result.kind === "refused") toast(voteRefusalLine(result.reason));
+      await onChanged();
+    } catch {
+      toast(PATRON_POLL_FAILED);
+    }
+    setBusy(false);
+  };
+
+  return (
+    <Leaf style={styles.card}>
+      <View style={styles.claimRow}>
+        <ToyBody matter="gold" shape="tile" style={styles.claimIcon}>
+          <Lettrine icon="community" matter="red" size={48} />
+        </ToyBody>
+        <View style={styles.claimText}>
+          <Lettering size={fontSizes.title}>{PATRON_POLL_TITLE}</Lettering>
+          <Text style={styles.text}>{screen.intro}</Text>
+        </View>
+      </View>
+      {screen.themes.map((theme, index) => (
+        <View key={theme.name} style={[styles.pollTheme, theme.winner && styles.pollWinner]}>
+          <Text style={styles.foundWord}>{theme.name}</Text>
+          <Text style={styles.muted}>{theme.description}</Text>
+          <View style={styles.pollSide}>
+            {theme.votes !== null && <Text style={styles.claimLabel}>{theme.votes}</Text>}
+            {theme.chosen ? (
+              <Text style={styles.pollChosen}>{PATRON_POLL_CHOSEN}</Text>
+            ) : (
+              screen.canVote && (
+                <Button
+                  label={PATRON_POLL_VOTE}
+                  secondary
+                  small
+                  disabled={busy}
+                  onPress={() => void vote(index)}
+                />
+              )
+            )}
+          </View>
+        </View>
+      ))}
+      {screen.note !== null && <Text style={styles.muted}>{screen.note}</Text>}
     </Leaf>
   );
 }
@@ -330,6 +400,30 @@ const styles = StyleSheet.create({
     paddingTop: space.s4,
     borderTopWidth: 1,
     borderTopColor: paperColors.rule,
+  },
+  pollTheme: {
+    gap: space.s2,
+    padding: space.s5,
+    borderWidth: 2,
+    borderColor: paperColors.rule,
+    borderRadius: 18,
+  },
+  pollWinner: {
+    borderWidth: toyValues.outlineWidth,
+    borderColor: toyValues.outline,
+    backgroundColor: mixHex(colors.paper, toyMatters.gold.top, 0.3),
+    boxShadow: `0 4px 0 ${toyValues.outline}`,
+  },
+  pollSide: { flexDirection: "row", flexWrap: "wrap", alignItems: "center", gap: space.s4 },
+  pollChosen: {
+    overflow: "hidden",
+    paddingHorizontal: space.s5,
+    paddingVertical: space.s2,
+    borderRadius: 999,
+    backgroundColor: paperColors.pageInk,
+    color: colors.paper,
+    fontFamily: fonts.ui.extrabold,
+    fontSize: fontSizes.small,
   },
   foundWord: {
     fontFamily: fonts.display,

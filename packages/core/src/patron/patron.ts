@@ -33,6 +33,9 @@ export interface PatronRules {
   readonly launchEditions: readonly string[];
   /** Month (in Paris, `YYYY-MM`) → the edition every patron who paid for it owns. */
   readonly editions: Readonly<Record<string, string>>;
+  /** Themes the owner offers to the patrons' vote, and the days it stays open. */
+  readonly pollThemes: number;
+  readonly pollDays: number;
 }
 
 /** What a patron wears: the same kinds of cosmetics as the level rewards, always named. */
@@ -281,4 +284,15 @@ export function cardEditionOf(
 ): string | null {
   const edition = choice.card === undefined ? choice.album : choice.card;
   return edition !== null && owned.has(edition) ? edition : null;
+}
+
+/**
+ * The theme a vote chose: the one with the most voices. `null` without a voice, or when two
+ * themes tie for first: the owner then decides.
+ */
+export function pollWinner(votes: readonly number[]): number | null {
+  const most = Math.max(0, ...votes);
+  if (most === 0) return null;
+  const first = votes.indexOf(most);
+  return votes.indexOf(most, first + 1) === -1 ? first : null;
 }

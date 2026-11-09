@@ -27,6 +27,7 @@ import { eq, inArray } from "drizzle-orm";
 import { ADMIN_ROLE } from "../auth";
 import { type Billing, billingConfigured, type SubscriptionSnapshot } from "./billing";
 import type { BillingEvent } from "./events";
+import { readCurrentPoll } from "./polls";
 import { findsLeftOf, readFinds } from "./reserve";
 
 const {
@@ -103,7 +104,7 @@ export async function readPatron(
   db: Database,
   input: { readonly userId: string; readonly sales: PatronSales; readonly now: EpochMs },
 ): Promise<PatronResponse> {
-  const [row, buyer, bracket, periods, claimed, finds] = await Promise.all([
+  const [row, buyer, bracket, periods, claimed, finds, poll] = await Promise.all([
     readRow(db, input.userId),
     readBuyer(db, input.userId),
     db
@@ -113,6 +114,7 @@ export async function readPatron(
     readPeriods(db, input.userId),
     readClaimedMonths(db, input.userId),
     readFinds(db, input.userId),
+    readCurrentPoll(db, input.userId, input.now),
   ]);
   const rules = patronRulesAt(PATRON_SCHEDULE, input.now);
   const standing = standingOfRow(row);
@@ -129,6 +131,7 @@ export async function readPatron(
     founder,
     foundingOffer: isFoundingPayment(rules, input.now),
     thanksListed: row?.thanksHidden !== true,
+    poll,
     finds: {
       left: findsLeftOf(rules, periods, finds, standing, input.now),
       words: finds.map((find) => ({

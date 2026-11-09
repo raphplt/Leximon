@@ -1,6 +1,8 @@
 import {
   adminPatronRefundResponseSchema,
   adminPatronsResponseSchema,
+  adminPollRefusalSchema,
+  adminPollsResponseSchema,
   editionRefusalSchema,
   editionsResponseSchema,
   findRefusalSchema,
@@ -12,6 +14,7 @@ import {
   patronRefusalSchema,
   patronResponseSchema,
   patronThanksResponseSchema,
+  patronVoteRefusalSchema,
   profileResponseSchema,
   publicProfileSchema,
   reserveResponseSchema,
@@ -26,7 +29,7 @@ import {
 import { createDb, schema } from "@leximon/db";
 import { rejectFind } from "@leximon/db/catalog";
 import { testDatabaseUrl } from "@leximon/db/testing";
-import { eq } from "drizzle-orm";
+import { eq, gt } from "drizzle-orm";
 import Stripe from "stripe";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import { createApp } from "../app";
@@ -285,6 +288,7 @@ describe("the patron page", () => {
       foundingOffer: false,
       finds: { left: 0, words: [] },
       thanksListed: true,
+      poll: null,
       subscription: null,
     });
   });
@@ -1071,5 +1075,108 @@ describe("the page of thanks", () => {
 
     await request(quiet.member, "PUT", "/me/patron/thanks", { listed: true });
     expect((await thanked()).map((patron) => patron.pseudo)).toContain(quiet.pseudo);
+  });
+});
+
+describe("the patrons' vote", () => {
+  const THEMES = [
+    { name: "La mer", description: "Les mots des marins, des ports et des tempêtes." },
+    { name: "La cuisine", description: "Les mots des tables, des fours et des marmites." },
+    { name: "Le jardin", description: "Les mots des haies, des greffes et des potagers." },
+  ];
+
+  async function officer() {
+    const player = await signInAsMember(app, env, db);
+    await db
+      .update(schema.users)
+      .set({ role: ADMIN_ROLE })
+      .where(eq(schema.users.id, player.userId));
+    return player;
+  }
+
+  /** Closes the vote another test left open: one opens at a time. */
+  async function closeOpenPolls() {
+    const now = new Date();
+    await db
+      .update(schema.patronPolls)
+      .set({ closesAt: new Date(now.getTime() - 1000) })
+      .where(gt(schema.patronPolls.closesAt, now));
+  }
+
+  async function openVote() {
+    await closeOpenPolls();
+    const response = await request(await officer(), "POST", "/admin/patrons/polls", {
+      themes: THEMES,
+    });
+    expect(response.status).toBe(201);
+    return ((await response.json()) as { id: string }).id;
+  }
+
+  const vote = (player: Guest, pollId: string, theme: number) =>
+    request(player, "PUT", `/me/patron/polls/${pollId}/vote`, { theme });
+
+  async function voteRefusal(response: Response) {
+    expect(response.status).toBe(409);
+    return patronVoteRefusalSchema.parse(await response.json()).error;
+  }
+
+  it("is opened by an admin, one at a time, with the number of themes the rules set", async () => {
+    await closeOpenPolls();
+    const member = await signInAsMember(app, env, db);
+    expect((await request(member, "POST", "/admin/patrons/polls", { themes: THEMES })).status).toBe(
+      403,
+    );
+    const admin = await officer();
+    const short = await request(admin, "POST", "/admin/patrons/polls", {
+      themes: THEMES.slice(0, 2),
+    });
+    expect(short.status).toBe(409);
+    expect(adminPollRefusalSchema.parse(await short.json()).error).toBe("theme_count");
+
+    const [first, second] = await Promise.all([
+      request(admin, "POST", "/admin/patrons/polls", { themes: THEMES }),
+      request(admin, "POST", "/admin/patrons/polls", { themes: THEMES }),
+    ]);
+    expect([first.status, second.status].sort()).toEqual([201, 409]);
+
+    const list = adminPollsResponseSchema.parse(
+      await (await request(admin, "GET", "/admin/patrons/polls")).json(),
+    );
+    expect(list.polls[0]?.themes.map((theme) => theme.name)).toEqual(THEMES.map((t) => t.name));
+    expect(list.polls[0]?.votes).toEqual([0, 0, 0]);
+  });
+
+  it("takes a paying patron's voice, changed until it closes, and not a trial's", async () => {
+    const pollId = await openVote();
+    const { member: trial, customerId } = await memberWithCustomer();
+    await checkoutCompleted(subscribe(customerId));
+    expect(await voteRefusal(await vote(trial, pollId, 0))).toBe("not_patron");
+
+    const { member } = await payingPatron();
+    const [once, twice] = await Promise.all([vote(member, pollId, 1), vote(member, pollId, 1)]);
+    expect([once.status, twice.status]).toEqual([204, 204]);
+    expect((await vote(member, pollId, 2)).status).toBe(204);
+    const poll = (await readPatron(member)).poll;
+    expect(poll).toMatchObject({ id: pollId, open: true, myVote: 2, result: null });
+
+    expect(await voteRefusal(await vote(member, pollId, 3))).toBe("unknown_theme");
+    expect((await vote(member, crypto.randomUUID(), 0)).status).toBe(404);
+  });
+
+  it("shows the voices and the theme chosen once it closes", async () => {
+    const pollId = await openVote();
+    const voters = await Promise.all([payingPatron(), payingPatron(), payingPatron()]);
+    await vote(voters[0].member, pollId, 0);
+    await vote(voters[1].member, pollId, 0);
+    await vote(voters[2].member, pollId, 2);
+    await closeOpenPolls();
+
+    expect(await voteRefusal(await vote(voters[2].member, pollId, 0))).toBe("poll_closed");
+    const poll = (await readPatron(voters[2].member)).poll;
+    expect(poll).toMatchObject({
+      open: false,
+      myVote: 2,
+      result: { votes: [2, 0, 1], winner: 0 },
+    });
   });
 });

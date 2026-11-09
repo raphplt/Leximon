@@ -10,6 +10,7 @@ import {
   primaryKey,
   text,
   timestamp,
+  uuid,
 } from "drizzle-orm/pg-core";
 import { users } from "./auth";
 import { cards } from "./game";
@@ -181,4 +182,49 @@ export const cardEditions = pgTable(
     updatedAt: timestamp({ withTimezone: true }).notNull(),
   },
   (table) => [primaryKey({ columns: [table.userId, table.cardId] })],
+);
+
+/** A theme offered to the vote: a short name and what the collection would hold. */
+export interface PatronPollTheme {
+  readonly name: string;
+  readonly description: string;
+}
+
+/**
+ * A vote of the patrons on the theme of a coming collection, opened by an admin. One at a time:
+ * a new one opens only once the last has closed.
+ */
+export const patronPolls = pgTable(
+  "patron_polls",
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    themes: jsonb().$type<PatronPollTheme[]>().notNull(),
+    opensAt: timestamp({ withTimezone: true }).notNull(),
+    closesAt: timestamp({ withTimezone: true }).notNull(),
+    createdBy: text()
+      .notNull()
+      .references(() => users.id),
+    createdAt: timestamp({ withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [index("patron_polls_opens_idx").on(table.opensAt)],
+);
+
+/** A patron's voice, one per vote: changed until the vote closes. `theme` is its index. */
+export const patronPollVotes = pgTable(
+  "patron_poll_votes",
+  {
+    pollId: uuid()
+      .notNull()
+      .references(() => patronPolls.id, { onDelete: "cascade" }),
+    userId: text()
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    theme: integer().notNull(),
+    votedAt: timestamp({ withTimezone: true }).notNull(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.pollId, table.userId] }),
+    index("patron_poll_votes_theme_idx").on(table.pollId, table.theme),
+    check("patron_poll_votes_theme_check", sql`${table.theme} >= 0`),
+  ],
 );

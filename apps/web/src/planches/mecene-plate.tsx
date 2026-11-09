@@ -69,6 +69,7 @@ const OFFER: PatronResponse = {
   foundingOffer: true,
   finds: { left: 0, words: [] },
   thanksListed: true,
+  poll: null,
   subscription: null,
 };
 

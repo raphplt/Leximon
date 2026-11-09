@@ -325,6 +325,7 @@ export const ADMIN_ACTIONS = {
   resolveContest: "resolve_contest",
   joustAccess: "joust_access",
   patronRefund: "patron_refund",
+  patronPoll: "patron_poll",
 } as const;
 
 // --- E-mails ---------------------------------------------------------------------------------

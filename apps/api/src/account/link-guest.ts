@@ -113,13 +113,15 @@ export const USER_REFERENCES = {
   "patron_subscriptions.user_id": { transfer: "kept", abandon: "kept" },
   "patron_periods.user_id": { transfer: "kept", abandon: "kept" },
   "patron_cosmetic_claims.user_id": { transfer: "kept", abandon: "kept" },
-  // Editions are printed and words found by patrons only.
+  // Editions are printed, words found and votes cast by patrons only.
   "card_editions.user_id": { transfer: "kept", abandon: "kept" },
   "word_finds.user_id": { transfer: "kept", abandon: "kept" },
+  "patron_poll_votes.user_id": { transfer: "kept", abandon: "kept" },
   // Back office audit log: written by admins, who are never guests.
   "admin_actions.admin_id": { transfer: "kept", abandon: "kept" },
   "moderation_reports.resolved_by": { transfer: "kept", abandon: "kept" },
   "sanctions.created_by": { transfer: "kept", abandon: "kept" },
+  "patron_polls.created_by": { transfer: "kept", abandon: "kept" },
   "email_campaigns.created_by": { transfer: "kept", abandon: "kept" },
   "email_campaigns.launched_by": { transfer: "kept", abandon: "kept" },
   // Campaigns, their consent and notification e-mails need an address: a guest never has one.

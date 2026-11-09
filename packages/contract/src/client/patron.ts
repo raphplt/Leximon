@@ -1,8 +1,13 @@
 import {
   type AdminPatronRefundResponse,
   type AdminPatronsResponse,
+  type AdminPollCreate,
+  type AdminPollRefusal,
+  type AdminPollsResponse,
   adminPatronRefundResponseSchema,
   adminPatronsResponseSchema,
+  adminPollRefusalSchema,
+  adminPollsResponseSchema,
   type EditionChoice,
   type EditionRefusal,
   type EditionsResponse,
@@ -18,12 +23,14 @@ import {
   type PatronRefusal,
   type PatronResponse,
   type PatronThanksResponse,
+  type PatronVoteRefusal,
   patronClaimRefusalSchema,
   patronClaimResponseSchema,
   patronRedirectResponseSchema,
   patronRefusalSchema,
   patronResponseSchema,
   patronThanksResponseSchema,
+  patronVoteRefusalSchema,
   type ReserveResponse,
   reserveResponseSchema,
   type WordFindView,
@@ -41,6 +48,14 @@ export type FindResult =
 export type EditionResult =
   | { readonly kind: "ok" }
   | { readonly kind: "refused"; readonly reason: EditionRefusal };
+
+export type PatronVoteResult =
+  | { readonly kind: "voted" }
+  | { readonly kind: "refused"; readonly reason: PatronVoteRefusal };
+
+export type AdminPollResult =
+  | { readonly kind: "opened" }
+  | { readonly kind: "refused"; readonly reason: AdminPollRefusal };
 
 export type PatronClaimResult =
   | { readonly kind: "claimed"; readonly cosmetic: PatronCosmeticView }
@@ -123,7 +138,19 @@ export function patronRoutes(http: Http) {
       return editionResult(await send("/me/editions/album", json("PUT", { edition })));
     },
 
-    /** Prints one card in an edition, or ordinary with `null`, whatever the album's. */
+    /** A patron's voice in the vote open; a new one replaces the last until it closes. */
+    async votePatronPoll(pollId: string, theme: number): Promise<PatronVoteResult> {
+      const response = await send(
+        `/me/patron/polls/${segment(pollId)}/vote`,
+        json("PUT", { theme }),
+      );
+      if (response.status === 409) {
+        return { kind: "refused", reason: (await parse(response, patronVoteRefusalSchema)).error };
+      }
+      if (!response.ok) throw new ApiError("patron_vote_failed", response.status);
+      return { kind: "voted" };
+    },
+
     /** Whether the patron's pseudo shows on the page of thanks. */
     async setPatronThanks(listed: boolean): Promise<void> {
       const response = await send("/me/patron/thanks", json("PUT", { listed }));
@@ -137,6 +164,7 @@ export function patronRoutes(http: Http) {
       return parse(response, patronThanksResponseSchema);
     },
 
+    /** Prints one card in an edition, or ordinary with `null`, whatever the album's. */
     async setCardEdition(
       cardId: string,
       edition: EditionChoice["edition"],
@@ -169,6 +197,22 @@ export function adminPatronRoutes(http: Http) {
       const response = await send(withQuery("/admin/patrons", { cursor }));
       if (!response.ok) throw await failure(response);
       return parse(response, adminPatronsResponseSchema);
+    },
+
+    async fetchPolls(): Promise<AdminPollsResponse> {
+      const response = await send("/admin/patrons/polls");
+      if (!response.ok) throw await failure(response);
+      return parse(response, adminPollsResponseSchema);
+    },
+
+    /** Opens a vote at once; refused while another is open. */
+    async openPoll(themes: AdminPollCreate["themes"]): Promise<AdminPollResult> {
+      const response = await send("/admin/patrons/polls", json("POST", { themes }));
+      if (response.status === 409) {
+        return { kind: "refused", reason: (await parse(response, adminPollRefusalSchema)).error };
+      }
+      if (!response.ok) throw await failure(response);
+      return { kind: "opened" };
     },
 
     /** The caller keeps `idempotencyKey` until it gets an answer: a retry never refunds twice. */

@@ -16,6 +16,7 @@ import {
   patronRulesAt,
   patronStanding,
   patronTitle,
+  pollWinner,
   reserveSearchKey,
   type SubscriptionStatus,
 } from "./patron";
@@ -74,6 +75,8 @@ describe("founders", () => {
     extraPinnedSlots: 3,
     launchEditions: [],
     editions: {},
+    pollThemes: 3,
+    pollDays: 7,
   };
 
   it("are those who first pay within the founding month", () => {
@@ -119,6 +122,8 @@ describe("cosmetics of the month", () => {
     extraPinnedSlots: 3,
     launchEditions: [],
     editions: {},
+    pollThemes: 3,
+    pollDays: 7,
   };
   const at = (iso: string) => Date.parse(iso);
   const monthly = (start: string, end: string) => ({
@@ -264,5 +269,14 @@ describe("reserve search key", () => {
     expect(reserveSearchKey("Œillère")).toBe("oeillere");
     expect(reserveSearchKey("  Ébaubi ")).toBe("ebaubi");
     expect(reserveSearchKey("chausse-trape")).toBe("chausse trape");
+  });
+});
+
+describe("the patrons' vote", () => {
+  it("chooses the theme with the most voices, and nothing on a tie or without a voice", () => {
+    expect(pollWinner([3, 7, 2])).toBe(1);
+    expect(pollWinner([4, 4, 1])).toBeNull();
+    expect(pollWinner([0, 0, 0])).toBeNull();
+    expect(pollWinner([1, 0, 0])).toBe(0);
   });
 });

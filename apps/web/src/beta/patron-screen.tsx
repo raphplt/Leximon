@@ -43,6 +43,10 @@ import {
   PATRON_NOTIFIED,
   PATRON_NOTIFY,
   PATRON_PAGE_TITLE,
+  PATRON_POLL_CHOSEN,
+  PATRON_POLL_FAILED,
+  PATRON_POLL_TITLE,
+  PATRON_POLL_VOTE,
   PATRON_PORTAL_FAILED,
   PATRON_SEE_SUBSCRIPTION,
   PATRON_SUBSCRIBE,
@@ -65,6 +69,8 @@ import {
   patronTrialNote,
   patronWelcome,
   playerName,
+  pollScreen,
+  voteRefusalLine,
 } from "@leximon/view-model";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -575,6 +581,7 @@ function MemberView({
         </Leaf>
       </div>
       <div style={rise(1)}>
+        <Poll patron={patron} onChanged={onClaimed} />
         <Finds finds={patron.finds} />
         <Editions />
         <ThanksSetting patron={patron} onChanged={onClaimed} />
@@ -587,6 +594,81 @@ function MemberView({
         </section>
       )}
     </main>
+  );
+}
+
+/** The vote on the theme of a coming collection: open for a week, results once it closes. */
+function Poll({
+  patron,
+  onChanged,
+}: {
+  readonly patron: PatronResponse;
+  readonly onChanged: () => Promise<unknown>;
+}) {
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const screen = pollScreen(patron, Date.now());
+  const poll = patron.poll;
+  if (screen === null || poll === null) return null;
+
+  const vote = async (theme: number) => {
+    setBusy(true);
+    setError(null);
+    try {
+      const result = await api.votePatronPoll(poll.id, theme);
+      if (result.kind === "refused") setError(voteRefusalLine(result.reason));
+      await onChanged();
+    } catch {
+      setError(PATRON_POLL_FAILED);
+    }
+    setBusy(false);
+  };
+
+  return (
+    <Leaf className={styles.finds}>
+      <div className={styles.findsHead}>
+        <ToyBody matter="gold" shape="tile" className={styles.tileIcon}>
+          <Lettrine icon="community" matter="red" size={52} />
+        </ToyBody>
+        <div className={styles.findsText}>
+          <Lettering className={styles.headline}>{PATRON_POLL_TITLE}</Lettering>
+          <p className={styles.text}>{screen.intro}</p>
+        </div>
+      </div>
+      <ul className={styles.pollThemes}>
+        {screen.themes.map((theme, index) => (
+          <li key={theme.name} className={theme.winner ? styles.pollWinner : undefined}>
+            <div className={styles.pollTheme}>
+              <span className={styles.foundWord}>{theme.name}</span>
+              <span className={styles.note}>{theme.description}</span>
+            </div>
+            <div className={styles.pollSide}>
+              {theme.votes !== null && <span className={styles.pollVotes}>{theme.votes}</span>}
+              {theme.chosen ? (
+                <span className={styles.pollChosen}>{PATRON_POLL_CHOSEN}</span>
+              ) : (
+                screen.canVote && (
+                  <Toy
+                    matter="paper"
+                    className={styles.secondary}
+                    disabled={busy}
+                    onClick={() => void vote(index)}
+                  >
+                    {PATRON_POLL_VOTE}
+                  </Toy>
+                )
+              )}
+            </div>
+          </li>
+        ))}
+      </ul>
+      {screen.note !== null && <p className={styles.note}>{screen.note}</p>}
+      {error !== null && (
+        <p className={styles.error} role="alert">
+          {error}
+        </p>
+      )}
+    </Leaf>
   );
 }
 

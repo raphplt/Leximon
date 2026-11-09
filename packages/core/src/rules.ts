@@ -697,5 +697,7 @@ export const PATRON_SCHEDULE: PatronSchedule = [
     extraPinnedSlots: 3,
     launchEditions: ["sanguine", "lavis", "encre"],
     editions: {},
+    pollThemes: 3,
+    pollDays: 7,
   },
 ];

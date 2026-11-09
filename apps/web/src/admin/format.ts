@@ -46,6 +46,7 @@ export const ACTION_LABELS: Readonly<Record<string, string>> = {
   invite_revoke: "Invitation retirée",
   invite_places: "Places d'une invitation",
   patron_refund: "Mécène remboursé et résilié",
+  patron_poll: "Vote des mécènes ouvert",
 };
 
 /** What the team does, as the sanction form and the contests name it. */

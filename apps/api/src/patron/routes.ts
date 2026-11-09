@@ -2,7 +2,10 @@ import {
   type AdminPatronRefundRefusal,
   type AdminPatronRefundResponse,
   type AdminPatronsResponse,
+  type AdminPollRefusal,
+  type AdminPollsResponse,
   adminPatronsQuerySchema,
+  adminPollCreateSchema,
   type EditionsResponse,
   editionChoiceSchema,
   type FindRefusal,
@@ -15,14 +18,17 @@ import {
   type PatronRefusal,
   type PatronResponse,
   type PatronThanksResponse,
+  type PatronVoteRefusal,
   patronCheckoutRequestSchema,
   patronThanksChoiceSchema,
+  patronVoteRequestSchema,
   type ReserveResponse,
   reserveQuerySchema,
   slugSchema,
   type WordFindView,
 } from "@leximon/contract";
 import { type Context, Hono } from "hono";
+import { z } from "zod";
 import type { AppEnv } from "../context";
 import { playerRateLimit } from "../middleware/rate-limit";
 import { requireAdmin } from "../middleware/require-admin";
@@ -39,6 +45,7 @@ import {
   patronSales,
   readPatron,
 } from "./patron";
+import { listPolls, openPoll, votePoll } from "./polls";
 import { findWord, InvalidReserveCursorError, searchReserve } from "./reserve";
 import { readPatronThanks, setPatronThanks } from "./thanks";
 
@@ -107,6 +114,23 @@ export function patronRoutes(createBilling: BillingFactory) {
     const body = patronThanksChoiceSchema.safeParse(await c.req.json().catch(() => null));
     if (!body.success) return c.json({ error: "invalid_request" }, 400);
     await setPatronThanks(c.var.db, { userId: c.var.userId, listed: body.data.listed });
+    return c.body(null, 204);
+  });
+
+  routes.put("/polls/:pollId/vote", refuseLockedWrites, async (c) => {
+    const pollId = z.uuid().safeParse(c.req.param("pollId"));
+    const body = patronVoteRequestSchema.safeParse(await c.req.json().catch(() => null));
+    if (!pollId.success || !body.success) return c.json({ error: "invalid_request" }, 400);
+    const result = await votePoll(c.var.db, {
+      userId: c.var.userId,
+      pollId: pollId.data,
+      theme: body.data.theme,
+      now: Date.now(),
+    });
+    if (result.kind === "missing") return c.json({ error: "not_found" }, 404);
+    if (result.kind === "refused") {
+      return c.json<{ error: PatronVoteRefusal }>({ error: result.reason }, 409);
+    }
     return c.body(null, 204);
   });
 
@@ -238,6 +262,22 @@ export function adminPatronRoutes(createBilling: BillingFactory) {
     return c.json<AdminPatronsResponse>(
       await listPatrons(c.var.db, { cursor: query.data.cursor, sales: patronSales(c.env) }),
     );
+  });
+
+  routes.get("/polls", async (c) => c.json<AdminPollsResponse>(await listPolls(c.var.db)));
+
+  routes.post("/polls", async (c) => {
+    const body = adminPollCreateSchema.safeParse(await c.req.json().catch(() => null));
+    if (!body.success) return c.json({ error: "invalid_request" }, 400);
+    const result = await openPoll(c.var.db, {
+      adminId: c.var.userId,
+      themes: body.data.themes,
+      now: Date.now(),
+    });
+    if (result.kind === "refused") {
+      return c.json<{ error: AdminPollRefusal }>({ error: result.reason }, 409);
+    }
+    return c.json({ id: result.id }, 201);
   });
 
   routes.post("/:userId/refund", async (c) => {

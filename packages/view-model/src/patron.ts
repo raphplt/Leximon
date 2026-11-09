@@ -5,6 +5,7 @@ import type {
   PatronMarkView,
   PatronPlan,
   PatronResponse,
+  PatronVoteRefusal,
   WordFindView,
 } from "@leximon/contract";
 import {
@@ -479,4 +480,94 @@ export function thanksGroups(
       pseudos: patrons.filter((p) => p.founder === group.founder).map((p) => p.pseudo),
     }))
     .filter((group) => group.pseudos.length > 0);
+}
+
+export const PATRON_POLL_TITLE = "Le vote des mécènes";
+export const PATRON_POLL_VOTE = "Voter pour ce thème";
+export const PATRON_POLL_CHOSEN = "Ta voix";
+export const PATRON_POLL_FAILED = "Ta voix n'a pas été enregistrée. Réessaie.";
+
+export interface PollThemeScreen {
+  readonly name: string;
+  readonly description: string;
+  /** The patron's voice went to this theme. */
+  readonly chosen: boolean;
+  /** « 3 voix », once the vote has closed. */
+  readonly votes: string | null;
+  readonly winner: boolean;
+}
+
+export interface PollScreen {
+  readonly intro: string;
+  /** Under the themes: who may vote, or the theme chosen once closed. */
+  readonly note: string | null;
+  /** The patron may give or change a voice now. */
+  readonly canVote: boolean;
+  readonly themes: readonly PollThemeScreen[];
+}
+
+/**
+ * The vote on the patron page, for a subscriber: a paying patron votes, a trial sees the themes
+ * and waits for the first payment. Nothing for a player who never subscribed.
+ */
+export function pollScreen(
+  patron: PatronResponse,
+  now: EpochMs,
+  timeZone: string = PATRON_TIME_ZONE,
+): PollScreen | null {
+  const poll = patron.poll;
+  const standing = patron.subscription?.standing ?? "none";
+  if (poll === null || (standing === "none" && poll.myVote === null)) return null;
+  const closes = patronDay(poll.closesAt, now, timeZone);
+  const result = poll.result;
+  const themes = poll.themes.map((theme, index) => ({
+    name: theme.name,
+    description: theme.description,
+    chosen: poll.myVote === index,
+    votes: result === null ? null : `${result.votes[index] ?? 0} voix`,
+    winner: result?.winner === index,
+  }));
+  if (poll.open) {
+    const canVote = standing === "patron";
+    return {
+      intro: `Choisis le thème de la prochaine collection. Le vote se ferme le ${closes}.`,
+      note: canVote
+        ? poll.myVote === null
+          ? "Une voix par mécène. Le résultat s'affiche à la fermeture."
+          : "Tu peux changer ta voix jusqu'à la fermeture. Le résultat s'affiche alors."
+        : standing === "trial"
+          ? "Ta voix comptera après ton premier paiement."
+          : "Le vote est réservé aux mécènes.",
+      canVote,
+      themes,
+    };
+  }
+  return {
+    intro: `Le vote s'est fermé le ${closes}.`,
+    note: pollOutcome(poll),
+    canVote: false,
+    themes,
+  };
+}
+
+function pollOutcome(poll: NonNullable<PatronResponse["poll"]>): string {
+  const winner = poll.result?.winner;
+  const theme = winner == null ? undefined : poll.themes[winner];
+  if (theme !== undefined) {
+    return `La prochaine collection aura pour thème « ${theme.name} ».`;
+  }
+  return poll.result?.votes.some((votes) => votes > 0) === true
+    ? "Plusieurs thèmes sont à égalité. Le choix sera annoncé dans les nouveautés."
+    : "Aucun mécène n'a voté.";
+}
+
+export function voteRefusalLine(reason: PatronVoteRefusal): string {
+  switch (reason) {
+    case "not_patron":
+      return "Le vote est réservé aux mécènes, après le premier paiement.";
+    case "poll_closed":
+      return "Le vote vient de se fermer.";
+    case "unknown_theme":
+      return "Ce thème ne fait pas partie du vote.";
+  }
 }

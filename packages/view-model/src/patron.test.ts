@@ -19,6 +19,7 @@ import {
   patronThanksLine,
   patronTrialNote,
   patronWelcome,
+  pollScreen,
   thanksGroups,
   wordFoundLine,
 } from "./patron";
@@ -42,6 +43,7 @@ function patron(overrides: Partial<PatronResponse> = {}): PatronResponse {
     foundingOffer: false,
     finds: { left: 0, words: [] },
     thanksListed: true,
+    poll: null,
     subscription: null,
     ...overrides,
   };
@@ -338,5 +340,67 @@ describe("the page of thanks", () => {
     expect(thanksGroups([{ pseudo: "Ludo", founder: false }]).map((g) => g.title)).toEqual([
       "Les mécènes",
     ]);
+  });
+});
+
+describe("the patrons' vote", () => {
+  const THEMES = [
+    { name: "La mer", description: "Les mots des marins." },
+    { name: "La cuisine", description: "Les mots des tables." },
+    { name: "Le jardin", description: "Les mots des haies." },
+  ];
+  const open = {
+    id: "6f1f6c2e-5d0b-4f55-9a43-9d7b8a1f1a01",
+    themes: THEMES,
+    closesAt: "2027-03-17T12:00:00.000Z",
+    open: true,
+    myVote: null,
+    result: null,
+  };
+  const paying = (poll: PatronResponse["poll"]) =>
+    patron({ poll, subscription: subscription({ standing: "patron" }) });
+
+  it("lets a paying patron vote, and a trial wait for the first payment", () => {
+    const screen = pollScreen(paying(open), NOW, ZONE);
+    expect(screen?.canVote).toBe(true);
+    expect(screen?.intro).toBe(
+      "Choisis le thème de la prochaine collection. Le vote se ferme le 17 mars.",
+    );
+    const trial = patron({ poll: open, subscription: subscription({ standing: "trial" }) });
+    expect(pollScreen(trial, NOW, ZONE)).toMatchObject({
+      canVote: false,
+      note: "Ta voix comptera après ton premier paiement.",
+    });
+  });
+
+  it("shows nothing to a player who never subscribed", () => {
+    expect(pollScreen(patron({ poll: open }), NOW, ZONE)).toBeNull();
+    expect(pollScreen(paying(null), NOW, ZONE)).toBeNull();
+  });
+
+  it("marks the patron's voice, and keeps the counts until it closes", () => {
+    const screen = pollScreen(paying({ ...open, myVote: 1 }), NOW, ZONE);
+    expect(screen?.themes.map((theme) => theme.chosen)).toEqual([false, true, false]);
+    expect(screen?.themes.every((theme) => theme.votes === null)).toBe(true);
+  });
+
+  it("names the theme chosen once closed, or says the tie", () => {
+    const closed = { ...open, open: false, myVote: 0 };
+    const won = pollScreen(paying({ ...closed, result: { votes: [1, 4, 0], winner: 1 } }), NOW);
+    expect(won?.note).toBe("La prochaine collection aura pour thème « La cuisine ».");
+    expect(won?.themes.map((theme) => [theme.votes, theme.winner])).toEqual([
+      ["1 voix", false],
+      ["4 voix", true],
+      ["0 voix", false],
+    ]);
+    const tie = pollScreen(paying({ ...closed, result: { votes: [2, 2, 0], winner: null } }), NOW);
+    expect(tie?.note).toBe(
+      "Plusieurs thèmes sont à égalité. Le choix sera annoncé dans les nouveautés.",
+    );
+    const empty = pollScreen(
+      paying({ ...closed, result: { votes: [0, 0, 0], winner: null } }),
+      NOW,
+    );
+    expect(empty?.note).toBe("Aucun mécène n'a voté.");
   });
 });

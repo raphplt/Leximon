@@ -563,3 +563,58 @@
   outline: 3px solid var(--lx-color-focus);
   outline-offset: 2px;
 }
+
+.pollThemes {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.pollThemes li {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 6px 14px;
+  padding: 12px 16px;
+  border: 2px solid color-mix(in srgb, var(--lx-toy-outline) 30%, transparent);
+  border-radius: var(--lx-toy-radius-tile);
+}
+
+.pollThemes li.pollWinner {
+  border: var(--lx-toy-outline-width) solid var(--lx-toy-outline);
+  background: color-mix(in srgb, var(--lx-toy-gold-top) 30%, var(--lx-color-paper));
+  box-shadow: 0 4px 0 var(--lx-toy-outline);
+}
+
+.pollTheme {
+  display: grid;
+  gap: 2px;
+}
+
+.pollSide {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.pollVotes,
+.pollChosen {
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.pollChosen {
+  padding: 4px 12px;
+  border-radius: var(--lx-radius-pill);
+  background: var(--lx-color-paper-ink);
+  color: var(--lx-color-paper);
+}
+
+@media (max-width: 520px) {
+  .pollThemes li {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

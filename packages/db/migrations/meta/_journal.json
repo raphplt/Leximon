@@ -372,6 +372,13 @@
       "when": 1794213646787,
       "tag": "0052_patron_thanks",
       "breakpoints": true
+    },
+    {
+      "idx": 53,
+      "version": "7",
+      "when": 1794214095650,
+      "tag": "0053_patron_polls",
+      "breakpoints": true
     }
   ]
 }
