@@ -13,7 +13,6 @@ import {
   PATRON_CLAIM,
   PATRON_CLAIM_BUSY,
   PATRON_CLAIMABLE_TITLE,
-  PATRON_CLAIMED,
   PATRON_DISCORD_FAILED,
   PATRON_DISCORD_LINK,
   PATRON_DISCORD_LINKED,
@@ -38,6 +37,7 @@ import {
   PATRON_WEAR_TITLE,
   type PatronPerk,
   type PatronPerkKey,
+  patronClaimedLine,
   patronStatus,
   patronThanksLine,
   patronTitleOf,
@@ -473,7 +473,7 @@ function ClaimTile({
     try {
       const result = await api.claimPatronCosmetic(item.month);
       if (result.kind === "claimed") {
-        toast(PATRON_CLAIMED);
+        toast(patronClaimedLine(result.cosmetics.length));
         profile.refresh();
       }
       await onClaimed();

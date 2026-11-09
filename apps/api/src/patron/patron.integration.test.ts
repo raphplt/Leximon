@@ -48,14 +48,22 @@ import { ensurePlayer } from "../trades/players";
 import type { Billing, CheckoutInput, SubscriptionSnapshot } from "./billing";
 import { type DiscordApi, discordRolesAdrift, syncDiscordRoles } from "./discord";
 
-/** The calendar is empty until the cosmetics are drawn: this month gets one for the tests. */
+/** This month gets a pair for the tests, whatever the calendar holds. */
 vi.mock("@leximon/core", async (importOriginal) => {
   const core = await importOriginal<typeof import("@leximon/core")>();
   const [rules] = core.PATRON_SCHEDULE;
   return {
     ...core,
     PATRON_SCHEDULE: [
-      { ...rules, cosmetics: { [core.parisMonthOf(Date.now())]: { kind: "frame", frame: "wax" } } },
+      {
+        ...rules,
+        cosmetics: {
+          [core.parisMonthOf(Date.now())]: [
+            { kind: "frame", frame: "wax" },
+            { kind: "avatar", avatar: "lucubrateur" },
+          ],
+        },
+      },
     ],
   };
 });
@@ -67,6 +75,10 @@ afterAll(close);
 
 const DAY = 86_400_000;
 const THIS_MONTH = parisMonthOf(Date.now());
+const PAIR = [
+  { kind: "frame", frame: "wax" },
+  { kind: "avatar", avatar: "lucubrateur" },
+];
 
 /** Stripe, as far as the game asks it: subscriptions are set by the test, as Stripe would. */
 function fakeStripe() {
@@ -289,7 +301,7 @@ describe("the patron page", () => {
       sales: "open",
       minor: false,
       mark: null,
-      monthCosmetic: { month: THIS_MONTH, cosmetic: { kind: "frame", frame: "wax" } },
+      monthCosmetic: { month: THIS_MONTH, cosmetics: PAIR },
       claimable: [],
       canBuy: true,
       founder: false,
@@ -615,19 +627,16 @@ async function readProfile(player: Guest) {
 const claim = (player: Guest, month = THIS_MONTH) =>
   request(player, "POST", `/me/patron/cosmetics/${month}/claim`);
 
-describe("the cosmetic of the month", () => {
-  it("is claimed once by a patron who paid for the month, and kept in the wardrobe", async () => {
+describe("the cosmetics of the month", () => {
+  it("are claimed together, once, by a patron who paid for the month, and kept", async () => {
     const { member } = await payingPatron();
-    expect((await readPatron(member)).claimable).toEqual([
-      { month: THIS_MONTH, cosmetic: { kind: "frame", frame: "wax" } },
-    ]);
+    expect((await readPatron(member)).claimable).toEqual([{ month: THIS_MONTH, cosmetics: PAIR }]);
     const claimed = await claim(member);
     expect(claimed.status).toBe(200);
-    expect(patronClaimResponseSchema.parse(await claimed.json()).cosmetic).toEqual({
-      kind: "frame",
-      frame: "wax",
-    });
-    expect((await readProfile(member)).wardrobe.frames).toContain("wax");
+    expect(patronClaimResponseSchema.parse(await claimed.json()).cosmetics).toEqual(PAIR);
+    const wardrobe = (await readProfile(member)).wardrobe;
+    expect(wardrobe.frames).toContain("wax");
+    expect(wardrobe.avatars).toContain("lucubrateur");
     expect((await readPatron(member)).claimable).toEqual([]);
     const again = await claim(member);
     expect(again.status).toBe(409);
@@ -846,11 +855,9 @@ describe("finding a word", () => {
     expect(statuses.sort()).toEqual([200, 409]);
   });
 
-  it("waits three paid months for a monthly patron", async () => {
+  it("gives a monthly patron a word from the first payment", async () => {
     const { member } = await payingPatron();
-    const { ids } = await reserveOf(1);
-    expect((await readPatron(member)).finds.left).toBe(0);
-    expect(await refusal(await find(member, ids[0] ?? ""))).toBe("no_right");
+    expect((await readPatron(member)).finds.left).toBe(1);
   });
 
   it("asks for a pseudo first, since the card is signed with it", async () => {

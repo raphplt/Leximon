@@ -1,4 +1,4 @@
-import { LEVEL_REWARD_SCHEDULE } from "@leximon/core";
+import { LEVEL_REWARD_SCHEDULE, PATRON_SCHEDULE } from "@leximon/core";
 import { describe, expect, it } from "vitest";
 import {
   type AvatarFrame,
@@ -10,6 +10,15 @@ import {
 import { emblemColors, emblemField, mixHex } from "./tokens";
 
 describe("avatar frames", () => {
+  it("exist for every frame the patron calendar gives", () => {
+    for (const rules of PATRON_SCHEDULE) {
+      for (const cosmetic of Object.values(rules.cosmetics).flat()) {
+        if (cosmetic.kind === "frame")
+          expect(cosmetic.frame in avatarFrames, cosmetic.frame).toBe(true);
+      }
+    }
+  });
+
   it("draws every frame the rules give", () => {
     for (const period of LEVEL_REWARD_SCHEDULE) {
       for (const id of [period.startingFrame, ...Object.values(period.frames)]) {

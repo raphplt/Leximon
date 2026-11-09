@@ -21,7 +21,8 @@ export type PatronCosmeticView = z.infer<typeof patronCosmeticSchema>;
 /** A month of the calendar (in Paris, `YYYY-MM`) and its cosmetic. */
 export const monthCosmeticSchema = z.object({
   month: z.string().regex(/^\d{4}-\d{2}$/),
-  cosmetic: patronCosmeticSchema,
+  /** A matching pair, claimed together. */
+  cosmetics: z.array(patronCosmeticSchema).min(1).readonly(),
 });
 export type MonthCosmeticView = z.infer<typeof monthCosmeticSchema>;
 
@@ -143,8 +144,10 @@ export const patronRefusalSchema = z.object({
 });
 export type PatronRefusal = z.infer<typeof patronRefusalSchema>["error"];
 
-/** `POST /me/patron/cosmetics/:month/claim`, 200: the cosmetic, now in the player's wardrobe. */
-export const patronClaimResponseSchema = z.object({ cosmetic: patronCosmeticSchema });
+/** `POST /me/patron/cosmetics/:month/claim`, 200: the month's cosmetics, now in the wardrobe. */
+export const patronClaimResponseSchema = z.object({
+  cosmetics: z.array(patronCosmeticSchema).readonly(),
+});
 export type PatronClaimResponse = z.infer<typeof patronClaimResponseSchema>;
 
 /** `POST /me/patron/cosmetics/:month/claim`, 409: the month was not paid for, or is claimed. */

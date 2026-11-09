@@ -37,6 +37,7 @@ const AVATAR_NAMES: Readonly<Record<string, string>> = {
   zani: "Le Zani",
   pochon: "Le Pochon",
   bejaune: "Le Béjaune",
+  lucubrateur: "Le Lucubrateur",
 };
 
 const FRAME_NAMES: Readonly<Record<string, string>> = {
@@ -53,6 +54,7 @@ const FRAME_NAMES: Readonly<Record<string, string>> = {
   "bright-gold": "Or vif",
   iridescent: "Irisé",
   "royal-sun": "Soleil royal",
+  cadeler: "Cadeler",
 };
 
 function fallbackName(id: string): string {

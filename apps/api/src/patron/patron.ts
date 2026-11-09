@@ -188,7 +188,7 @@ async function readClaimedMonths(db: Reader, userId: string): Promise<Set<string
 }
 
 export type CosmeticClaimResult =
-  | { readonly kind: "claimed"; readonly cosmetic: PatronCosmetic }
+  | { readonly kind: "claimed"; readonly cosmetics: readonly PatronCosmetic[] }
   | { readonly kind: "refused"; readonly reason: PatronClaimRefusal };
 
 /**
@@ -218,10 +218,10 @@ export async function claimCosmetic(
     await tx.insert(patronCosmeticClaims).values({
       userId: input.userId,
       month: found.month,
-      cosmetic: found.cosmetic,
+      cosmetics: found.cosmetics,
       claimedAt: new Date(input.now),
     });
-    return { kind: "claimed", cosmetic: found.cosmetic };
+    return { kind: "claimed", cosmetics: found.cosmetics };
   });
 }
 
@@ -244,7 +244,7 @@ export async function readPatronWardrobe(
       .from(patronSubscriptions)
       .where(eq(patronSubscriptions.userId, userId)),
     db
-      .select({ cosmetic: patronCosmeticClaims.cosmetic })
+      .select({ cosmetics: patronCosmeticClaims.cosmetics })
       .from(patronCosmeticClaims)
       .where(eq(patronCosmeticClaims.userId, userId)),
   ]);
@@ -253,7 +253,7 @@ export async function readPatronWardrobe(
   const title = row === undefined ? null : patronTitle(standing, row.founderAt !== null);
   const slots = standing === "patron" ? patronRulesAt(PATRON_SCHEDULE, now).extraPinnedSlots : 0;
   return [
-    ...claims.map((claim) => ({ rewards: [claim.cosmetic] })),
+    ...claims.map((claim) => ({ rewards: [...claim.cosmetics] })),
     ...(title === null ? [] : [{ rewards: [{ kind: "title" as const, title }] }]),
     ...(slots === 0
       ? []

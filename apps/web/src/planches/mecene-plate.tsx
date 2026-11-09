@@ -51,7 +51,14 @@ const DIRECTIONS: readonly { readonly id: Direction; readonly label: string }[] 
 ];
 
 const NOW = Date.parse("2026-11-20T12:00:00.000Z");
-const MONTH = { month: "2026-11", cosmetic: { kind: "frame", frame: "wax" } } as const;
+const MONTH_FRAME = "wax";
+const MONTH = {
+  month: "2026-11",
+  cosmetics: [
+    { kind: "frame", frame: MONTH_FRAME },
+    { kind: "avatar", avatar: "lucubrateur" },
+  ],
+} as const;
 
 const ME = { pseudo: "Raph", avatar: "cuistre", frame: "simple", level: 16, code: "K7QP2MXA" };
 
@@ -274,7 +281,7 @@ function Showcase({ member }: { readonly member: boolean }) {
   return (
     <div className={styles.showcase}>
       <header className={styles.showcaseHero} style={rise(0)}>
-        <CrownedAvatar size={150} frame={MONTH.cosmetic.frame} />
+        <CrownedAvatar size={150} frame={MONTH_FRAME} />
         <div className={styles.showcaseTitle}>
           <Kicker>Abonnement</Kicker>
           <Lettering className={styles.display}>Devenir mécène</Lettering>
@@ -368,7 +375,7 @@ function Profile({ member }: { readonly member: boolean }) {
             face={{
               name: ME.pseudo,
               avatar: ME.avatar,
-              frame: MONTH.cosmetic.frame,
+              frame: MONTH_FRAME,
               title: "Mécène",
               level: ME.level,
               code: ME.code,

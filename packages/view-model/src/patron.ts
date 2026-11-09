@@ -69,15 +69,15 @@ export interface PatronPerk {
 export const PATRON_PERKS: readonly PatronPerk[] = [
   {
     key: "cosmetic",
-    title: "Le cosmétique du mois",
-    lead: "Un cosmétique chaque mois",
-    rest: " (un cadre ou un avatar gravé), dévoilé le 1er et à toi pour toujours.",
+    title: "Les cosmétiques du mois",
+    lead: "Deux cosmétiques chaque mois",
+    rest: ", un cadre et un avatar gravé assortis, dévoilés le 1er et à toi pour toujours.",
   },
   {
     key: "word",
     title: "Ton mot dans le jeu",
-    lead: "Un mot à toi chaque trimestre",
-    rest: ", choisi parmi les mots pas encore publiés. Il paraît avec ton pseudo, et tu en reçois un exemplaire unique.",
+    lead: "Un mot à toi dès le premier mois",
+    rest: ", puis un tous les trois mois, choisi parmi les mots pas encore publiés. Il paraît avec ton pseudo, et tu en reçois un exemplaire unique.",
   },
   {
     key: "editions",
@@ -220,10 +220,18 @@ export function patronCosmeticName(cosmetic: PatronCosmeticView): string {
   }
 }
 
+/** « le cadre Cadeler et l'avatar gravé Le Lucubrateur ». */
+function cosmeticsNames(cosmetics: readonly PatronCosmeticView[]): string {
+  const names = cosmetics.map(patronCosmeticName);
+  return names.length === 1
+    ? (names[0] ?? "")
+    : `${names.slice(0, -1).join(", ")} et ${names.at(-1)}`;
+}
+
 /** The month's showcase, seen by everyone from the 1st. */
 export function monthCosmeticLine(month: MonthCosmeticView | null): string | null {
   if (month === null) return null;
-  return `Ce mois-ci, les mécènes reçoivent ${patronCosmeticName(month.cosmetic)}.`;
+  return `Ce mois-ci, les mécènes reçoivent ${cosmeticsNames(month.cosmetics)}.`;
 }
 
 const MONTH_FORMAT = new Intl.DateTimeFormat("fr-FR", { month: "long", year: "numeric" });
@@ -233,15 +241,20 @@ export function patronMonthLabel(month: string): string {
   return MONTH_FORMAT.format(Date.parse(`${month}-15T12:00:00Z`));
 }
 
-/** A claimable cosmetic, « Le cadre Sceau de cire, mars 2027 ». */
+/** A month to claim, « Le cadre Cadeler et l'avatar gravé Le Lucubrateur, novembre 2026 ». */
 export function claimableLabel(item: MonthCosmeticView): string {
-  return `${capitalize(patronCosmeticName(item.cosmetic))}, ${patronMonthLabel(item.month)}`;
+  return `${capitalize(cosmeticsNames(item.cosmetics))}, ${patronMonthLabel(item.month)}`;
 }
 
 export const PATRON_CLAIMABLE_TITLE = "À réclamer";
 export const PATRON_CLAIM = "Réclamer";
 export const PATRON_CLAIM_BUSY = "Réclamation…";
-export const PATRON_CLAIMED = "Ton cosmétique est rangé dans l'atelier.";
+/** Once claimed: where the cosmetics went. */
+export function patronClaimedLine(count: number): string {
+  return count === 1
+    ? "Ton cosmétique est rangé dans l'atelier."
+    : "Tes cosmétiques sont rangés dans l'atelier.";
+}
 
 /** « 14 avril », with the year when it is not this one. Paris time, like every patron day. */
 function patronDay(iso: string, now: EpochMs, timeZone: string): string {
@@ -367,31 +380,38 @@ export function patronWelcome(
     {
       kind: "mark",
       when: "Aujourd'hui",
-      what: "Le titre, le badge et le cosmétique du mois",
+      what: "Le titre, le badge et les cosmétiques du mois",
       later: false,
     },
+    { kind: "word", when: "Aujourd'hui", what: "Un mot à dénicher pour le jeu", later: false },
     {
       kind: "cosmetic",
       when: "Chaque mois",
-      what: "Un nouveau cosmétique, gardé à vie",
+      what: "Deux nouveaux cosmétiques, et un mot tous les trois mois",
       later: true,
     },
-    { kind: "word", when: "Chaque trimestre", what: "Un mot à dénicher pour le jeu", later: true },
   ];
 }
 
 // --- The subscriber's page, perk by perk ------------------------------------------------------
 
-/** Under the cosmetic's block: what waits to be claimed, or when the next one comes. */
+/** Under the cosmetics' tile: what waits to be claimed, or when the next ones come. */
 export function cosmeticPerkLine(
   patron: Pick<PatronResponse, "claimable">,
   now: EpochMs,
   timeZone: string = PATRON_TIME_ZONE,
 ): string {
-  const count = patron.claimable.length;
-  if (count === 1) return "Un cosmétique t'attend. Réclame-le pour le porter.";
-  if (count > 1) {
-    return `${count} cosmétiques t'attendent. Réclame-les pour les porter.`;
+  const [first] = patron.claimable;
+  if (patron.claimable.length > 1) {
+    return `Les cosmétiques de ${patron.claimable.length} mois t'attendent. Réclame-les pour les porter.`;
+  }
+  if (first !== undefined) {
+    const month = patronMonthLabel(first.month);
+    // « d'avril », « d'août », « d'octobre », « de mars ».
+    const of = /^[aeiou]/.test(month) ? `d'${month}` : `de ${month}`;
+    return first.cosmetics.length === 1
+      ? `Le cosmétique ${of} t'attend. Réclame-le pour le porter.`
+      : `Les cosmétiques ${of} t'attendent. Réclame-les pour les porter.`;
   }
   const [year, month] = parisMonthOf(now).split("-").map(Number) as [number, number];
   const next = Date.UTC(month === 12 ? year + 1 : year, month === 12 ? 0 : month, 15, 12);
@@ -400,7 +420,7 @@ export function cosmeticPerkLine(
     ...(month === 12 ? { year: "numeric" } : {}),
     timeZone,
   }).format(next);
-  return `Le prochain cosmétique sera dévoilé le 1er ${name}.`;
+  return `Les prochains cosmétiques seront dévoilés le 1er ${name}.`;
 }
 
 export const PATRON_CABINET_LINE =
@@ -425,7 +445,7 @@ export const PATRON_DISCORD_SOON =
 
 export const PATRON_FINDS_TITLE = "Ton mot dans le jeu";
 export const PATRON_FINDS_RULE =
-  "Tu gagnes un mot tous les trois mois d'abonnement. Avec l'abonnement annuel, le premier arrive dès le paiement.";
+  "Tu gagnes un mot dès ton premier paiement, puis un tous les trois mois d'abonnement.";
 export const PATRON_FIND_ACTION = "Dénicher un mot";
 export const PATRON_FIND_PAGE_TITLE = "Dénicher un mot";
 export const PATRON_FIND_INTRO =

@@ -105,13 +105,16 @@ describe("the mark and the title", () => {
 });
 
 describe("cosmetics of the month", () => {
-  const frame = { kind: "frame", frame: "cadeler" } as const;
-  const avatar = { kind: "avatar", avatar: "lucubrateur" } as const;
+  const pair = [
+    { kind: "frame", frame: "cadeler" },
+    { kind: "avatar", avatar: "lucubrateur" },
+  ] as const;
+  const frame = [{ kind: "frame", frame: "wax" }] as const;
   const rules = {
     startsAt: 0,
     prices: { monthly: 399, yearly: 2999 },
     foundingMonth: null,
-    cosmetics: { "2027-01": frame, "2027-02": avatar, "2027-03": frame },
+    cosmetics: { "2027-01": frame, "2027-02": pair, "2027-03": frame, "2027-04": [] },
     monthsPerFind: 3,
     extraPinnedSlots: 3,
     launchEditions: [],
@@ -140,8 +143,8 @@ describe("cosmetics of the month", () => {
     const periods = [monthly("2027-01-10T10:00:00Z", "2028-01-10T10:00:00Z")];
     const claimable = claimableCosmetics(rules, periods, new Set(), at("2027-02-01T10:00:00Z"));
     expect(claimable).toEqual([
-      { month: "2027-01", cosmetic: frame },
-      { month: "2027-02", cosmetic: avatar },
+      { month: "2027-01", cosmetics: frame },
+      { month: "2027-02", cosmetics: pair },
     ]);
   });
 
@@ -157,9 +160,10 @@ describe("cosmetics of the month", () => {
     expect([...paidMonths(periods, at("2027-03-10T10:00:00Z"))]).toEqual(["2027-01"]);
   });
 
-  it("show this month's cosmetic to everyone, none ahead", () => {
-    expect(monthCosmetic(rules, at("2027-02-01T00:30:00+01:00"))?.cosmetic).toEqual(avatar);
-    expect(monthCosmetic(rules, at("2027-04-01T10:00:00Z"))).toBeNull();
+  it("show this month's pair to everyone, none ahead nor for an empty month", () => {
+    expect(monthCosmetic(rules, at("2027-02-01T00:30:00+01:00"))?.cosmetics).toEqual(pair);
+    expect(monthCosmetic(rules, at("2027-04-10T10:00:00Z"))).toBeNull();
+    expect(monthCosmetic(rules, at("2027-05-10T10:00:00Z"))).toBeNull();
   });
 });
 
@@ -179,11 +183,13 @@ describe("words to find", () => {
       return period("monthly", start, end);
     });
 
-  it("gives a monthly patron one every three months paid", () => {
+  it("gives a monthly patron one from the first payment, then one every three", () => {
     const now = at("2028-01-01T00:00:00Z");
-    expect(earnedFinds(rules, months(2), now)).toBe(0);
+    expect(earnedFinds(rules, months(0), now)).toBe(0);
+    expect(earnedFinds(rules, months(1), now)).toBe(1);
     expect(earnedFinds(rules, months(3), now)).toBe(1);
-    expect(earnedFinds(rules, months(7), now)).toBe(2);
+    expect(earnedFinds(rules, months(4), now)).toBe(2);
+    expect(earnedFinds(rules, months(7), now)).toBe(3);
   });
 
   it("gives a yearly patron one at once, then one each quarter as it comes", () => {

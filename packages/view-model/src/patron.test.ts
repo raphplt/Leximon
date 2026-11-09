@@ -12,6 +12,7 @@ import {
   monthCosmeticLine,
   PATRON_MANAGE,
   PATRON_RESUME,
+  patronClaimedLine,
   patronCosmeticName,
   patronMarkHint,
   patronMarkLabel,
@@ -129,17 +130,33 @@ describe("cosmetics", () => {
     expect(patronCosmeticName({ kind: "title", title: "Veilleur" })).toBe("le titre Veilleur");
   });
 
-  it("shows the month's cosmetic, or nothing for a month without one", () => {
-    expect(monthCosmeticLine({ month: "2027-03", cosmetic: { kind: "frame", frame: "wax" } })).toBe(
-      "Ce mois-ci, les mécènes reçoivent le cadre Sceau de cire.",
+  const pair = {
+    month: "2027-03",
+    cosmetics: [
+      { kind: "frame", frame: "wax" },
+      { kind: "avatar", avatar: "grimelin" },
+    ],
+  } as const;
+
+  it("shows the month's pair, or nothing for a month without one", () => {
+    expect(monthCosmeticLine(pair)).toBe(
+      "Ce mois-ci, les mécènes reçoivent le cadre Sceau de cire et l'avatar gravé Le Grimelin.",
     );
+    expect(
+      monthCosmeticLine({ month: "2027-03", cosmetics: [{ kind: "frame", frame: "wax" }] }),
+    ).toBe("Ce mois-ci, les mécènes reçoivent le cadre Sceau de cire.");
     expect(monthCosmeticLine(null)).toBeNull();
   });
 
-  it("labels a claimable cosmetic with its month", () => {
-    expect(claimableLabel({ month: "2027-03", cosmetic: { kind: "frame", frame: "wax" } })).toBe(
-      "Le cadre Sceau de cire, mars 2027",
+  it("labels a month to claim", () => {
+    expect(claimableLabel(pair)).toBe(
+      "Le cadre Sceau de cire et l'avatar gravé Le Grimelin, mars 2027",
     );
+  });
+
+  it("says where the claimed cosmetics went", () => {
+    expect(patronClaimedLine(1)).toBe("Ton cosmétique est rangé dans l'atelier.");
+    expect(patronClaimedLine(2)).toBe("Tes cosmétiques sont rangés dans l'atelier.");
   });
 });
 
@@ -210,28 +227,39 @@ describe("patronWelcome", () => {
     expect(patronWelcome(patron())).toBeNull();
   });
 
-  it("gives the month's cosmetic now, then the months and quarters to come", () => {
+  it("gives the month's cosmetics and a word now, then what each month brings", () => {
     const welcome = patronWelcome(patron({ subscription: subscription() }));
-    expect(welcome?.map((step) => step.kind)).toEqual(["mark", "cosmetic", "word"]);
-    expect(welcome?.[0]?.what).toBe("Le titre, le badge et le cosmétique du mois");
+    expect(welcome?.map((step) => step.kind)).toEqual(["mark", "word", "cosmetic"]);
+    expect(welcome?.map((step) => step.later)).toEqual([false, false, true]);
+    expect(welcome?.[0]?.what).toBe("Le titre, le badge et les cosmétiques du mois");
   });
 });
 
 describe("perks on the subscriber's page", () => {
-  const frame = { month: "2027-03", cosmetic: { kind: "frame", frame: "wax" } } as const;
+  const frame = { month: "2027-03", cosmetics: [{ kind: "frame", frame: "wax" }] } as const;
+  const pair = {
+    month: "2027-04",
+    cosmetics: [
+      { kind: "frame", frame: "wax" },
+      { kind: "avatar", avatar: "grimelin" },
+    ],
+  } as const;
 
-  it("asks to claim what waits, else gives the day of the next cosmetic", () => {
+  it("asks to claim what waits, else gives the day of the next cosmetics", () => {
     expect(cosmeticPerkLine(patron({ claimable: [frame] }), NOW, ZONE)).toBe(
-      "Un cosmétique t'attend. Réclame-le pour le porter.",
+      "Le cosmétique de mars 2027 t'attend. Réclame-le pour le porter.",
     );
-    expect(cosmeticPerkLine(patron({ claimable: [frame, frame] }), NOW, ZONE)).toBe(
-      "2 cosmétiques t'attendent. Réclame-les pour les porter.",
+    expect(cosmeticPerkLine(patron({ claimable: [pair] }), NOW, ZONE)).toBe(
+      "Les cosmétiques d'avril 2027 t'attendent. Réclame-les pour les porter.",
+    );
+    expect(cosmeticPerkLine(patron({ claimable: [frame, pair] }), NOW, ZONE)).toBe(
+      "Les cosmétiques de 2 mois t'attendent. Réclame-les pour les porter.",
     );
     expect(cosmeticPerkLine(patron(), NOW, ZONE)).toBe(
-      "Le prochain cosmétique sera dévoilé le 1er avril.",
+      "Les prochains cosmétiques seront dévoilés le 1er avril.",
     );
     expect(cosmeticPerkLine(patron(), Date.parse("2027-12-10T12:00:00Z"), ZONE)).toBe(
-      "Le prochain cosmétique sera dévoilé le 1er janvier 2028.",
+      "Les prochains cosmétiques seront dévoilés le 1er janvier 2028.",
     );
   });
 

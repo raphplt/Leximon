@@ -18,8 +18,11 @@ export interface PatronRules {
    * `null` until sales open.
    */
   readonly foundingMonth: string | null;
-  /** Month (in Paris, `YYYY-MM`) → the cosmetic every patron who paid for it receives. */
-  readonly cosmetics: Readonly<Record<string, PatronCosmetic>>;
+  /**
+   * Month (in Paris, `YYYY-MM`) → the cosmetics every patron who paid for it receives: a matching
+   * pair, claimed together.
+   */
+  readonly cosmetics: Readonly<Record<string, readonly PatronCosmetic[]>>;
   /**
    * Paid months per word to find: a monthly patron earns one with every such run of payments, a
    * yearly one at its payment and at the start of each such stretch of the year.
@@ -155,14 +158,17 @@ export function paidMonths(periods: readonly PaidPeriod[], now: EpochMs): Set<st
 
 export interface MonthCosmetic {
   readonly month: string;
-  readonly cosmetic: PatronCosmetic;
+  readonly cosmetics: readonly PatronCosmetic[];
 }
 
-/** The cosmetic of the current month, shown to everyone from the 1st; never one ahead. */
+function monthOf(rules: PatronRules, month: string): MonthCosmetic | null {
+  const cosmetics = rules.cosmetics[month] ?? [];
+  return cosmetics.length === 0 ? null : { month, cosmetics };
+}
+
+/** The cosmetics of the current month, shown to everyone from the 1st; never ahead. */
 export function monthCosmetic(rules: PatronRules, now: EpochMs): MonthCosmetic | null {
-  const month = parisMonthOf(now);
-  const cosmetic = rules.cosmetics[month];
-  return cosmetic === undefined ? null : { month, cosmetic };
+  return monthOf(rules, parisMonthOf(now));
 }
 
 /** The cosmetics of the months paid for, not claimed yet, oldest first. */
@@ -175,10 +181,7 @@ export function claimableCosmetics(
   return [...paidMonths(periods, now)]
     .filter((month) => !claimed.has(month))
     .sort()
-    .flatMap((month) => {
-      const cosmetic = rules.cosmetics[month];
-      return cosmetic === undefined ? [] : [{ month, cosmetic }];
-    });
+    .flatMap((month) => monthOf(rules, month) ?? []);
 }
 
 /** `months` calendar months after `time`, in UTC: close enough for a quarter of a paid year. */
@@ -190,8 +193,10 @@ function addMonths(time: EpochMs, months: number): EpochMs {
 
 /**
  * The words a patron earned the right to find, up to now. A yearly payment gives one at once,
- * then one at the start of each stretch of `monthsPerFind` months it covers; monthly payments
- * give one with every `monthsPerFind`-th. Refunded periods give nothing.
+ * then one at the start of each stretch of `monthsPerFind` months it covers. Monthly payments
+ * give one with the first, then one every `monthsPerFind` payments: a patron finds a word from
+ * the first month. Payments are counted over the whole account, so stopping and coming back
+ * does not give a word again. Refunded periods give nothing.
  */
 export function earnedFinds(
   rules: Pick<PatronRules, "monthsPerFind">,
@@ -207,7 +212,7 @@ export function earnedFinds(
     }
   }
   const monthly = paid.filter((period) => period.plan === "monthly").length;
-  return earned + Math.floor(monthly / rules.monthsPerFind);
+  return earned + Math.ceil(monthly / rules.monthsPerFind);
 }
 
 /**

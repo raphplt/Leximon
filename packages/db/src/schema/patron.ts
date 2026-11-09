@@ -83,8 +83,8 @@ export const patronPeriods = pgTable(
 );
 
 /**
- * The cosmetic of a month paid for, claimed by the patron: the primary key makes it once.
- * `cosmetic` keeps what was given, so that a later change of the calendar never takes it back.
+ * The cosmetics of a month paid for, claimed by the patron: the primary key makes it once.
+ * `cosmetics` keeps what was given, so that a later change of the calendar never takes it back.
  */
 export const patronCosmeticClaims = pgTable(
   "patron_cosmetic_claims",
@@ -94,7 +94,7 @@ export const patronCosmeticClaims = pgTable(
       .references(() => users.id, { onDelete: "cascade" }),
     /** In Paris, `YYYY-MM`. */
     month: text().notNull(),
-    cosmetic: jsonb().$type<PatronCosmetic>().notNull(),
+    cosmetics: jsonb("cosmetic").$type<readonly PatronCosmetic[]>().notNull(),
     claimedAt: timestamp({ withTimezone: true }).notNull(),
   },
   (table) => [primaryKey({ columns: [table.userId, table.month] })],

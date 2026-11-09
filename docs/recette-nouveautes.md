@@ -705,7 +705,7 @@ Préparer : les clés de test de Stripe dans `apps/api/.dev.vars` et `stripe lis
 
 ### MEC-01 · La porte, vente fermée
 - **Faire :** ouvre `/mecene` avec un compte qui n'est pas admin.
-- **Attendu :** ton avatar couronné en tête, « Bientôt » et « Devenir mécène », les trois avantages en tuiles illustrées (cosmétique du mois, un mot par trimestre, titre et badge), « Un mécène n'a ni sachet, ni XP, ni avantage aux échanges en plus. », les deux prix et « Préviens-moi ». Après le clic, « Noté. On te préviendra à l'ouverture des abonnements. »
+- **Attendu :** ton avatar couronné en tête, « Bientôt » et « Devenir mécène », la liste des avantages avec leurs icônes, les deux prix et « Préviens-moi ». Après le clic, « Noté. On te préviendra à l'ouverture des abonnements. »
 - **Retour :**
 
 ### MEC-02 · L'offre
@@ -715,7 +715,7 @@ Préparer : les clés de test de Stripe dans `apps/api/.dev.vars` et `stripe lis
 
 ### MEC-03 · Payer
 - **Faire :** coche la case, « Devenir mécène », paie avec la carte `4242 4242 4242 4242`.
-- **Attendu :** la page de Stripe en français, qui débite tout de suite. Au retour, les rayons dorés, la couronne qui tombe sur ton avatar, « Te voilà mécène ! » et le badge, puis trois étapes : « Aujourd'hui » le titre, le badge et le cosmétique du mois, « Chaque mois » un nouveau cosmétique et « Chaque trimestre » un mot à dénicher (ces deux-là cadenassés). « Porter mon titre » n'apparaît que si tu portes un autre titre ; il met le titre Mécène et dit « Tu portes le titre Mécène. ». « Voir mon abonnement » mène à ta carte de mécène : avatar couronné, nom, badge, « Mécène depuis … » et la date du prochain paiement, puis une tuile par avantage (MEC-19). Si le webhook tarde, la page attend une dizaine de secondes, puis dit « Ton paiement est en cours de confirmation. » sans parler d'échec.
+- **Attendu :** la page de Stripe en français, qui débite tout de suite. Au retour, les rayons dorés, la couronne qui tombe sur ton avatar, « Te voilà mécène ! » et le badge, puis trois étapes : « Aujourd'hui » le titre, le badge et les cosmétiques du mois, « Aujourd'hui » un mot à dénicher, et « Chaque mois » deux nouveaux cosmétiques et un mot tous les trois mois (cadenassé). « Porter mon titre » n'apparaît que si tu portes un autre titre ; il met le titre Mécène et dit « Tu portes le titre Mécène. ». « Voir mon abonnement » mène à ta carte de mécène : avatar couronné, nom, badge, « Mécène depuis … » et la date du prochain paiement, puis une tuile par avantage (MEC-19). Si le webhook tarde, la page attend une dizaine de secondes, puis dit « Ton paiement est en cours de confirmation. » sans parler d'échec.
 - **Retour :**
 
 ### MEC-04 · Le badge
@@ -734,8 +734,8 @@ Préparer : les clés de test de Stripe dans `apps/api/.dev.vars` et `stripe lis
 - **Retour :**
 
 ### MEC-07 · Le cosmétique du mois
-- **Faire :** mets un cosmétique au mois en cours dans `PATRON_SCHEDULE` (`packages/core/src/rules.ts`, par exemple `cosmetics: { "2026-11": { kind: "frame", frame: "wax" } }`), puis ouvre `/mecene` en abonné qui a payé, et en joueur qui ne l'est pas.
-- **Attendu :** le non-abonné lit « Ce mois-ci, les mécènes reçoivent le cadre Sceau de cire. ». Ton avatar en tête de la vitrine porte le cadre du mois. L'abonné voit sous sa carte un coffret qui sautille, « À réclamer » avec « Le cadre Sceau de cire, novembre 2026 » et « Réclamer » ; après, « Ton cosmétique est rangé dans l'atelier. » et le cadre dans l'atelier. Remets le calendrier vide ensuite.
+- **Faire :** en novembre 2026, ouvre `/mecene` en abonné qui a payé, et en joueur qui ne l'est pas. Puis porte le cadre et l'avatar dans l'atelier.
+- **Attendu :** le non-abonné lit « Ce mois-ci, les mécènes reçoivent le cadre Cadeler et l'avatar gravé Le Lucubrateur. ». Ton avatar en tête de la vitrine porte les deux. L'abonné voit dans la tuile un coffret qui sautille, « À réclamer » avec « Le cadre Cadeler et l'avatar gravé Le Lucubrateur, novembre 2026 » et « Réclamer » ; après, « Tes cosmétiques sont rangés dans l'atelier. », le cadre et l'avatar dans l'atelier, et la tuile dit « Les prochains cosmétiques seront dévoilés le 1er décembre. ». Le cadre, des traits de plume à l'encre entrelacés, se lit bien en petit dans la barre du haut comme en grand sur le profil.
 - **Retour :**
 
 ### MEC-08 · L'admin et le téléphone
@@ -745,11 +745,11 @@ Préparer : les clés de test de Stripe dans `apps/api/.dev.vars` et `stripe lis
 
 ## Mécène · lot 3, dénicher un mot
 
-Préparer : `pnpm db:migrate`, puis `pnpm reserve:publish` (charge `content/reserve/reserve.json`). Un abonné annuel a un mot à dénicher dès son paiement ; un mensuel, après trois mois payés (avec une horloge de test de Stripe). Il faut un pseudo.
+Préparer : `pnpm db:migrate`, puis `pnpm reserve:publish` (charge `content/reserve/reserve.json`). Un abonné a un mot à dénicher dès son premier paiement, au mois comme à l'année ; le suivant vient trois mois plus tard. Il faut un pseudo.
 
 ### MEC-09 · Ton mot dans le jeu
-- **Faire :** ouvre `/mecene` en abonné annuel qui a payé, puis en abonné mensuel.
-- **Attendu :** sous ta carte de mécène, « Ton mot dans le jeu ». L'annuel lit « Tu peux dénicher un mot. » et le bouton « Dénicher un mot » ; le mensuel lit « Tu n'as pas de mot à dénicher pour l'instant. » et « Un mot par trimestre d'abonnement, dès le premier paiement pour un abonnement annuel. ». Le menu du joueur dit « Mon abonnement mécène » au lieu de « Devenir mécène ».
+- **Faire :** ouvre `/mecene` en abonné mensuel qui vient de payer, puis en abonné annuel. Déniche un mot, puis reviens.
+- **Attendu :** la tuile « Ton mot dans le jeu » dit, au mois comme à l'année, « Tu peux dénicher un mot. » avec le bouton « Dénicher un mot ». Une fois le mot pris, elle dit « Tu n'as pas de mot à dénicher pour l'instant. » et « Tu gagnes un mot dès ton premier paiement, puis un tous les trois mois d'abonnement. ». Résilier puis se réabonner ne redonne pas de mot. Le menu du joueur dit « Mon abonnement mécène » au lieu de « Devenir mécène ».
 - **Retour :**
 
 ### MEC-10 · Chercher et dénicher

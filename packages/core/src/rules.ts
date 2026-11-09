@@ -685,14 +685,20 @@ export const BANNER_SCHEDULE: BannerSchedule = [
   },
 ];
 
-// The patron subscription. The founding month is set when sales open, and each month's cosmetic
-// once it is drawn: a month is never announced before its 1st, whatever is written here.
+// The patron subscription. The founding month is set when sales open, and each month's pair of
+// cosmetics once it is drawn: a month is never announced before its 1st, whatever is written here.
 export const PATRON_SCHEDULE: PatronSchedule = [
   {
     startsAt: SINCE_LAUNCH,
     prices: { monthly: 399, yearly: 2999 },
     foundingMonth: null,
-    cosmetics: {},
+    cosmetics: {
+      // The scribe's vigils: pen flourishes around Dürer's Saint Jerome at his lamp.
+      "2026-11": [
+        { kind: "frame", frame: "cadeler" },
+        { kind: "avatar", avatar: "lucubrateur" },
+      ],
+    },
     monthsPerFind: 3,
     extraPinnedSlots: 3,
     launchEditions: ["sanguine", "lavis", "encre"],

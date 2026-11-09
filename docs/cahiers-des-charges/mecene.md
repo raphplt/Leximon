@@ -66,7 +66,7 @@
 
 - **Les droits** :
   - annuel : un droit au premier paiement de l'année, puis un au début de chaque trimestre payé (quatre par an) ;
-  - mensuel : un droit tous les trois mois payés (voir § 10, point 1).
+  - mensuel : un droit au premier paiement, puis un tous les trois paiements (quatre par an, comme l'annuel). Les paiements se comptent sur toute la vie du compte : arrêter puis reprendre ne redonne pas de mot (§ 10, point 1).
 - Un droit non utilisé se garde tant que l'abonnement court, et se perd à l'arrêt (P73). Un mot écarté au contrôle qualité rend son droit, même après l'arrêt : le joueur a payé ce mot.
 - **La réserve** : les mots pré-triés et pas encore publiés, avec leur définition courte, sans leur rareté. On cherche par début de mot ou on feuillette par thème. Aucun champ libre.
 - **Un mot ne se déniche qu'une fois** : le premier qui le réserve l'a. Deux mécènes au même instant : un seul l'obtient, l'autre lit « Ce mot vient d'être déniché par un autre mécène. ».
@@ -208,7 +208,7 @@ Tranché par le propriétaire le 2026-11-08 :
 1. **Premier mot d'un abonné mensuel.**
    - a. Après trois mois payés, comme le dit la stratégie (« un mot par trimestre, un dès le départ pour l'annuel »). L'annuel garde un vrai avantage ; le texte « Va dénicher ton premier mot » ne vaut que pour l'annuel.
    - b. Un mot au premier paiement, puis tous les trois mois. Plus fort à la conversion, mais un mot signé à vie pour 3,99 € puis une résiliation.
-   - **Recommandation : a.** C'est ce que dit déjà P73 (« un mot par trimestre d'abonnement, un dès le départ pour un abonnement annuel ») : le lot 3 l'applique.
+   - **Tranché le 2026-11-09 : b.** Attendre trois mois donnait l'impression de payer dans le vide. Les paiements se comptent sur toute la vie du compte, ce qui empêche d'enchaîner les abonnements d'un mois pour récolter des mots.
 2. **Le signe de l'exemplaire du dénicheur** : un sceau de cire en coin, un ex-libris au dos, ou un liseré gravé, sans or ni couleur de rareté. À dessiner, avec les cosmétiques du calendrier, par toi ou un graphiste (50 à 150 € pièce, estimation).
 3. **Jouer la carte dénichée** : je lis « sans XP » comme « rien à l'arrivée », et ses réponses en défi comptent comme pour toute carte (maîtrise, XP de la réponse), puisque tu veux qu'elle se joue comme les autres. C'est une petite entorse à P72 (« ni maîtrise, ni XP »), sur un mot à la fois. À confirmer.
 

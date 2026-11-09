@@ -26,7 +26,6 @@ import {
   PATRON_CLAIM,
   PATRON_CLAIM_BUSY,
   PATRON_CLAIMABLE_TITLE,
-  PATRON_CLAIMED,
   PATRON_CONFIRM_INTERVAL_MS,
   PATRON_CONFIRM_POLLS,
   PATRON_CONFIRMING,
@@ -72,6 +71,7 @@ import {
   type PatronPerk,
   type PatronPerkKey,
   type PatronWelcomeKind,
+  patronClaimedLine,
   patronPageKind,
   patronPlanChoices,
   patronStatus,
@@ -254,12 +254,14 @@ function CrownedAvatar({
   );
 }
 
-/** The player wearing this month's cosmetic, to show what it looks like on them. */
+/** The player wearing this month's cosmetics, to show what they look like on them. */
 function monthLook(me: ProfileResponse | null, month: MonthCosmeticView | null) {
-  const cosmetic = month?.cosmetic;
+  const cosmetics = month?.cosmetics ?? [];
+  const avatar = cosmetics.find((cosmetic) => cosmetic.kind === "avatar");
+  const frame = cosmetics.find((cosmetic) => cosmetic.kind === "frame");
   return {
-    avatar: cosmetic?.kind === "avatar" ? cosmetic.avatar : (me?.avatar ?? null),
-    frame: cosmetic?.kind === "frame" ? cosmetic.frame : (me?.frame ?? null),
+    avatar: avatar?.kind === "avatar" ? avatar.avatar : (me?.avatar ?? null),
+    frame: frame?.kind === "frame" ? frame.frame : (me?.frame ?? null),
   };
 }
 
@@ -1035,7 +1037,7 @@ function ClaimTile({
     try {
       const result = await api.claimPatronCosmetic(item.month);
       if (result.kind === "claimed") {
-        toast(PATRON_CLAIMED);
+        toast(patronClaimedLine(result.cosmetics.length));
         profile.refresh();
       }
       await onClaimed();

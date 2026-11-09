@@ -2,7 +2,7 @@ import { room, toy, toyMatters } from "./library";
 
 /**
  * The frames of an avatar, in the matters of the room: wood, gold, brass, leather, patina, paper,
- * wax and nacre, from the plainest to the rarest. Each is a list of SVG paths around the
+ * ink, wax and nacre, from the plainest to the rarest. Each is a list of SVG paths around the
  * medallion, on the grid of the 84 px atelier preview, centred on 0 0: the medallion is the
  * circle of radius `AVATAR_MEDALLION`. A band is drawn as a toy: its thickness under it, a matter
  * lit from the top, an ink outline and a line of light along its top. The web and
@@ -23,6 +23,8 @@ export const frameMatters = {
   brass: { stops: ["#E8CB84", "#A8813A"], edge: "#6E5020" },
   indigo: { stops: ["#4A58B0", "#22307A"], edge: "#141C4E" },
   ink: { stops: ["#4466BC", "#16245A"], edge: "#0A1130" },
+  /** Iron-gall ink, the brown black of the scribes. */
+  gall: { stops: ["#4A3C38", "#140D0B"], edge: "#050302" },
   patina: { stops: ["#86C2A8", "#3F7A64"], edge: "#24493B" },
   red: { stops: [toyMatters.red.top, toyMatters.red.bottom], edge: toyMatters.red.edge },
   wax: { stops: ["#E2604A", "#A3201B"], edge: "#5E0F0C" },
@@ -153,6 +155,160 @@ function strands(inner: number, outer: number, count: number): string {
   }).join("");
 }
 
+/** A point of a pen's path: where the nib is, and how wide its trace is there. */
+interface NibPoint {
+  readonly x: number;
+  readonly y: number;
+  readonly nx: number;
+  readonly ny: number;
+  readonly width: number;
+}
+
+/**
+ * The broad nib of a scribe, held at a fixed slant: its trace is thin where the pen runs along the
+ * slant and full across it, which gives a flourish its thick and thin.
+ */
+const NIB_SLANT = (-50 * Math.PI) / 180;
+
+/**
+ * A scribe's flourish around the medallion: one pen stroke that runs round it in cursive loops,
+ * each loop an oval `rise` high and `sweep` long, centred `middle` from the centre and tilted.
+ */
+interface Flourish {
+  readonly loops: number;
+  readonly middle: number;
+  readonly rise: number;
+  readonly sweep: number;
+  readonly tilt: number;
+  /** How much every other loop grows, and the one between shrinks with a finer trace. */
+  readonly swell: number;
+  readonly thin: number;
+  readonly full: number;
+}
+
+function flourishPath(flourish: Flourish, samplesPerLoop: number): NibPoint[] {
+  const { loops, middle, rise, sweep, tilt, swell, thin, full } = flourish;
+  const count = loops * samplesPerLoop;
+  const sizeAt = (t: number) => 1 + swell * Math.sin((loops * t) / 2);
+  const at = (t: number): [number, number] => {
+    const phase = loops * t;
+    const size = sizeAt(t);
+    const out = -rise * size * Math.cos(phase);
+    const along = sweep * size * Math.sin(phase);
+    const radius = middle + out * Math.cos(tilt) - along * Math.sin(tilt);
+    const back = out * Math.sin(tilt) + along * Math.cos(tilt);
+    return [radius * Math.cos(t) - back * Math.sin(t), radius * Math.sin(t) + back * Math.cos(t)];
+  };
+  return Array.from({ length: count + 1 }, (_, index) => {
+    const t = (index / count) * 2 * Math.PI;
+    const [x, y] = at(t);
+    const [ax, ay] = at(t - 1e-4);
+    const [bx, by] = at(t + 1e-4);
+    const direction = Math.atan2(by - ay, bx - ax);
+    const length = Math.hypot(bx - ax, by - ay);
+    const width =
+      (thin + (full - thin) * Math.abs(Math.sin(direction - NIB_SLANT))) * Math.min(1, sizeAt(t));
+    return { x, y, nx: -(by - ay) / length, ny: (bx - ax) / length, width };
+  });
+}
+
+/** A tenth of the grid is finer than a pixel at every size shown, and keeps long traces light. */
+const fine = (value: number) => Number(value.toFixed(1));
+
+const side = (points: readonly NibPoint[], sign: number, dy: number) =>
+  points.map(
+    (p) =>
+      `${fine(p.x + (sign * p.nx * p.width) / 2)} ${fine(p.y + (sign * p.ny * p.width) / 2 + dy)}`,
+  );
+
+/** The trace of a run of the nib, as a closed shape, `dy` lower. */
+function trace(points: readonly NibPoint[], dy = 0): string {
+  return `M${side(points, 1, dy).join("L")}L${side(points, -1, dy).reverse().join("L")}Z`;
+}
+
+/** The two edges of a run of the nib, open at its ends so that runs join without a seam. */
+function traceEdges(points: readonly NibPoint[]): string {
+  return `M${side(points, 1, 0).join("L")}M${side(points, -1, 0).join("L")}`;
+}
+
+/** A line of light along the full strokes of a run, on the side the lamp lights. */
+function traceSheen(points: readonly NibPoint[]): string {
+  const lit = points.map((p) => {
+    const toward = p.ny < 0 ? 1 : -1;
+    return {
+      on: p.width > 2.2,
+      at: `${fine(p.x + toward * p.nx * p.width * 0.2)} ${fine(p.y + toward * p.ny * p.width * 0.2)}`,
+    };
+  });
+  return lit.map((p, index) => (p.on ? `${lit[index - 1]?.on ? "L" : "M"}${p.at}` : "")).join("");
+}
+
+/**
+ * The flourish split in two layers: each loop's way up, then its way down, which crosses over the
+ * way up as a later stroke of the pen lies over an earlier one.
+ */
+function flourishLayers(flourish: Flourish): [NibPoint[][], NibPoint[][]] {
+  const perLoop = 20;
+  const { loops } = flourish;
+  const points = flourishPath(flourish, perLoop);
+  const runs = Array.from({ length: loops * 2 }, (_, index) => {
+    // Runs start half a loop early, so that each loop's apex is a cut between the two layers.
+    const start = index * (perLoop / 2) - perLoop / 2;
+    return Array.from({ length: perLoop / 2 + 1 }, (_, step) => {
+      const at = (start + step + loops * perLoop) % (loops * perLoop);
+      return points[at] as NibPoint;
+    });
+  });
+  // The even runs come down from an apex, the odd ones climb to it.
+  return [runs.filter((_, index) => index % 2 === 1), runs.filter((_, index) => index % 2 === 0)];
+}
+
+/**
+ * The flourish in ink: the thickness of both layers first, so that no cut between two runs shows,
+ * then each layer's trace, edges and light.
+ */
+function inkFlourish(layers: readonly NibPoint[][][]): FrameShape[] {
+  return [
+    ...layers.map(
+      (runs): FrameShape => ({
+        d: runs.map((run) => trace(run, 1)).join(""),
+        fill: "gall:edge",
+      }),
+    ),
+    ...layers.flatMap((runs): FrameShape[] => [
+      { d: runs.map((run) => trace(run)).join(""), fill: "gall" },
+      { d: runs.map(traceEdges).join(""), stroke: "outline", strokeWidth: 0.8 },
+      { d: runs.map(traceSheen).join(""), stroke: "sheen", strokeWidth: 0.5 },
+    ]),
+  ];
+}
+
+/** A scribe's flourish on a leaf of paper, ruled in ink inside and out. */
+function cadelerFrame(flourish: Flourish): AvatarFrame {
+  const [up, down] = flourishLayers(flourish);
+  return {
+    footprint: 12,
+    reach: R + 16,
+    shapes: [
+      ...band(R, R + 13.6, "paper"),
+      { d: circle(0, 0, R + 12.2), stroke: "gall", strokeWidth: 0.5 },
+      ...band(R, R + 1.6, "gall"),
+      ...inkFlourish([up, down]),
+    ],
+  };
+}
+
+const CADELER: Flourish = {
+  loops: 16,
+  middle: R + 6.2,
+  rise: 3.8,
+  sweep: 6.4,
+  tilt: 0.45,
+  swell: 0.35,
+  thin: 0.35,
+  full: 2.8,
+};
+
 export const avatarFrames = {
   simple: { footprint: 5, reach: R + 8, shapes: band(R, R + 5, "wood") },
   gilded: { footprint: 7, reach: R + 10, shapes: band(R, R + 7, "gold") },
@@ -234,6 +390,7 @@ export const avatarFrames = {
     turning: [outlined(rays(R + 5, R + 21, 24, 8, R + 13), "gold")],
     shapes: [...band(R, R + 7, "gold"), outlined(around(R + 3.5, 4, 3, 45), "red")],
   },
+  cadeler: cadelerFrame(CADELER),
 } as const satisfies Record<string, AvatarFrame>;
 
 export type AvatarFrameName = keyof typeof avatarFrames;

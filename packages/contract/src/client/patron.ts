@@ -64,7 +64,7 @@ export type DiscordLinkResult =
   | { readonly kind: "refused"; readonly reason: DiscordLinkRefusal };
 
 export type PatronClaimResult =
-  | { readonly kind: "claimed"; readonly cosmetic: PatronCosmeticView }
+  | { readonly kind: "claimed"; readonly cosmetics: readonly PatronCosmeticView[] }
   | { readonly kind: "refused"; readonly reason: PatronClaimRefusal };
 
 /** The patron subscription (`/me/patron`). Never signs in as a guest: a guest cannot subscribe. */

@@ -239,7 +239,7 @@ export function patronRoutes(createBilling: BillingFactory) {
     if (result.kind === "refused") {
       return c.json<{ error: PatronClaimRefusal }>({ error: result.reason }, 409);
     }
-    return c.json<PatronClaimResponse>({ cosmetic: result.cosmetic });
+    return c.json<PatronClaimResponse>({ cosmetics: result.cosmetics });
   });
 
   routes.get("/reserve", async (c) => {

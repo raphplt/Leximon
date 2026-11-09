@@ -8,7 +8,7 @@
 ## Ce qui existe
 
 - **Les gravures** : chaque carte du catalogue (2 065 aujourd'hui) a une gravure en deux calques WebP de transparence seule, les traits (`ink`) et les masses (`fill`), teintés à l'affichage par la carte (`apps/web/src/components/card.tsx`, et son pendant sur le mobile). Changer l'encre et le papier d'une gravure ne demande aucune nouvelle illustration.
-- **Le calendrier du mécène** : `PATRON_SCHEDULE` dans `packages/core/src/rules.ts`, un cosmétique par mois, réclamé sur la page Mécène (coffret).
+- **Le calendrier du mécène** : `PATRON_SCHEDULE` dans `packages/core/src/rules.ts`, une paire de cosmétiques assortis par mois (un cadre et un avatar gravé), réclamée d'un coup sur la page Mécène (coffret).
 - **Les cartes épinglées** : `pinned_cards`, 3 places à l'ouverture du profil, une de plus tous les 10 niveaux jusqu'à 6 au niveau 30 (P58, `pinnedSlotsAtStart` et `pinnedSlotsUntil`).
 - **Les données des mots** : fréquence Google Ngram par décennie depuis 1800 (`content/pipeline`, `ngram`), article du Littré (domaine public), étymologie et une citation par carte (1 363 cartes sur 2 065 en ont une), Wiktionnaire en local.
 - **Le Discord** : serveur, bot « Leximon Bot » (sans l'intent des membres), rôles posés par l'API le 2026-11-08.
