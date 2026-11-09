@@ -5,13 +5,11 @@ import { effects, openingTimes, rarityLights } from "@leximon/tokens";
 import { frequencyLine, LANDING_PITCH, LANDING_TITLE, stagingFor } from "@leximon/view-model";
 import { useEffect, useRef, useState } from "react";
 import { play } from "@/booster/feedback";
-import type { PackCollection } from "@/booster/pack-looks";
 import { RevealCard } from "@/booster/reveal-card";
 import { Sachet } from "@/booster/sachet";
 import { Card } from "@/components/card";
 import { RarityName } from "@/components/rarity-icon";
-import { Desk, PaperAction } from "@/library/play-pieces";
-import { GiltCorners } from "@/ui/ornaments";
+import { PaperAction } from "@/library/play-pieces";
 import { useStage } from "@/ui/stage";
 import { Kicker, Lettering } from "@/ui/toy";
 import { DiscordLink } from "./discord";
@@ -20,11 +18,6 @@ import styles from "./landing-page.module.css";
 import { useNarrow } from "./narrow";
 import { DoorAction } from "./player-access";
 import type { Showcase } from "./showcase-cards";
-
-const SIDE_PACKS: readonly [PackCollection, PackCollection] = [
-  { id: "caracteres", name: "Caractères et travers", back: "burgundy" },
-  { id: "metiers", name: "Métiers et objets disparus", back: "green" },
-];
 
 /** Where the seam of the sachet runs, from its top: the sparks of the charge leak from there. */
 const SEAM_AT = 0.13;
@@ -43,9 +36,8 @@ type HeroPhase =
 type Moment = "waiting" | "arriving" | "charging" | "burst";
 
 /**
- * The first screen: the promise, the door, and a real sachet on the desk that the visitor tears
- * on the spot. The card comes from the page's own few words: nothing is asked of the server and
- * nothing is kept.
+ * The first screen: the promise, the door, and a real sachet that the visitor tears on the spot.
+ * The card comes from the page's own few words: nothing is asked of the server and nothing is kept.
  */
 export function Hero({
   door,
@@ -132,66 +124,27 @@ export function Hero({
   return (
     <section className={styles.hero} aria-labelledby="landing-title">
       <div className={styles.pitch}>
-        <GiltCorners />
-        <Kicker>Jeu de cartes littéraire · 100 % gratuit</Kicker>
+        <Kicker>Jeu de cartes des mots rares et anciens</Kicker>
         <h1 id="landing-title" className={styles.title}>
           <Lettering>{LANDING_TITLE}</Lettering>
         </h1>
         <p className={styles.leadText}>{LANDING_PITCH}</p>
-        <ul className={styles.pillars} aria-label="En bref">
-          <li>1 561 mots rares</li>
-          <li>Gravures d'époque</li>
-          <li>Aucun hasard payant</li>
-        </ul>
         <DoorAction door={door} />
         <DiscordLink className={styles.discord} />
       </div>
 
       <div ref={deskRef} className={styles.counter}>
-        <Desk className={styles.counterDesk} />
         {phase.name === "sealed" || phase.name === "opening" ? (
           <>
-            <div className={styles.counterHead} data-gone={phase.name === "opening" || undefined}>
-              <Kicker>Sachet de découverte</Kicker>
-              <Lettering className={styles.counterName}>{pack?.name ?? "Les Fondateurs"}</Lettering>
-            </div>
             <div ref={sachetRef} className={styles.sachet} data-moment={moment}>
-              {!narrow && (
-                <div
-                  className={styles.heroPeeks}
-                  data-gone={phase.name === "opening" || undefined}
-                  aria-hidden="true"
-                >
-                  <div className={styles.heroPeekLeft}>
-                    <Sachet
-                      collection={SIDE_PACKS[0]}
-                      state="sealed"
-                      still
-                      onTearStart={() => undefined}
-                      onOpen={() => undefined}
-                    />
-                  </div>
-                  <div className={styles.heroPeekRight}>
-                    <Sachet
-                      collection={SIDE_PACKS[1]}
-                      state="sealed"
-                      still
-                      onTearStart={() => undefined}
-                      onOpen={() => undefined}
-                    />
-                  </div>
-                </div>
-              )}
               {pack !== null && (
-                <div className={styles.heroFront}>
-                  <Sachet
-                    key={round}
-                    collection={pack}
-                    state={moment === "burst" ? "opening" : "sealed"}
-                    onTearStart={() => undefined}
-                    onOpen={open}
-                  />
-                </div>
+                <Sachet
+                  key={round}
+                  collection={pack}
+                  state={moment === "burst" ? "opening" : "sealed"}
+                  onTearStart={() => undefined}
+                  onOpen={open}
+                />
               )}
             </div>
             <p className={styles.deskHint} data-gone={phase.name === "opening" || undefined}>
@@ -221,7 +174,7 @@ export function Hero({
             <Card
               card={phase.card}
               collectionName={collectionNames[phase.card.collectionId] ?? ""}
-              width={narrow ? 138 : 188}
+              width={narrow ? 148 : 204}
             />
             <div className={styles.revealedText}>
               <span className={styles.revealedRarity}>

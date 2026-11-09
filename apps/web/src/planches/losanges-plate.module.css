@@ -18,7 +18,8 @@
  * Two-tone diamond engine:
  * - `--base-a` and `--base-b` define the two foundational colors of the palette.
  * - `--d1` and `--d2` mix them according to the chosen contrast (subtle, balanced, bold).
- * - `--tile-w`, `--tile-h`, `--half-w` and the four diagonal angles define the diamond geometry.
+ * - `--tile-w`, `--tile-h` and the four diagonal angles (alpha = arctan(H / W)) draw a closed
+ *   diamond in the middle of each tile and a second closed diamond across the four corners.
  */
 .diamondSurface,
 .page[data-page-bg] {
@@ -27,13 +28,12 @@
   --lamp-tint: color-mix(in srgb, var(--lx-toy-gold-top) 12%, transparent);
   --vignette-tint: color-mix(in srgb, var(--lx-room-vignette) 58%, transparent);
 
-  --tile-w: 44px;
-  --tile-h: 62px;
-  --half-w: -22px;
-  --a1: 144.5deg;
-  --a2: 215.5deg;
-  --a3: 324.5deg;
-  --a4: 35.5deg;
+  --tile-w: 54px;
+  --tile-h: 72px;
+  --a1: 126.87deg;
+  --a2: 233.13deg;
+  --a3: 306.87deg;
+  --a4: 53.13deg;
 }
 
 /* --- 6 Palettes --- */
@@ -104,20 +104,18 @@
 
 .diamondSurface[data-cut="harlequin"],
 .page[data-page-bg][data-cut="harlequin"] {
-  --tile-w: 44px;
-  --tile-h: 62px;
-  --half-w: -22px;
-  --a1: 144.5deg;
-  --a2: 215.5deg;
-  --a3: 324.5deg;
-  --a4: 35.5deg;
+  --tile-w: 54px;
+  --tile-h: 72px;
+  --a1: 126.87deg;
+  --a2: 233.13deg;
+  --a3: 306.87deg;
+  --a4: 53.13deg;
 }
 
 .diamondSurface[data-cut="square"],
 .page[data-page-bg][data-cut="square"] {
-  --tile-w: 52px;
-  --tile-h: 52px;
-  --half-w: -26px;
+  --tile-w: 56px;
+  --tile-h: 56px;
   --a1: 135deg;
   --a2: 225deg;
   --a3: 315deg;
@@ -126,24 +124,22 @@
 
 .diamondSurface[data-cut="grand"],
 .page[data-page-bg][data-cut="grand"] {
-  --tile-w: 68px;
-  --tile-h: 96px;
-  --half-w: -34px;
-  --a1: 144.7deg;
-  --a2: 215.3deg;
-  --a3: 324.7deg;
-  --a4: 35.3deg;
+  --tile-w: 78px;
+  --tile-h: 104px;
+  --a1: 126.87deg;
+  --a2: 233.13deg;
+  --a3: 306.87deg;
+  --a4: 53.13deg;
 }
 
 .diamondSurface[data-cut="petit"],
 .page[data-page-bg][data-cut="petit"] {
-  --tile-w: 28px;
-  --tile-h: 40px;
-  --half-w: -14px;
-  --a1: 145deg;
-  --a2: 215deg;
-  --a3: 325deg;
-  --a4: 35deg;
+  --tile-w: 36px;
+  --tile-h: 48px;
+  --a1: 126.87deg;
+  --a2: 233.13deg;
+  --a3: 306.87deg;
+  --a4: 53.13deg;
 }
 
 /* --- Background composition --- */
@@ -151,12 +147,10 @@
 .diamondSurface,
 .page[data-page-bg] {
   background:
-    linear-gradient(var(--a1), var(--d1) 25%, transparent 25%) var(--half-w) 0 / var(--tile-w)
-    var(--tile-h),
-    linear-gradient(var(--a2), var(--d1) 25%, transparent 25%) var(--half-w) 0 / var(--tile-w)
-    var(--tile-h),
-    linear-gradient(var(--a3), var(--d1) 25%, transparent 25%) 0 0 / var(--tile-w) var(--tile-h),
-    linear-gradient(var(--a4), var(--d1) 25%, var(--d2) 25%) 0 0 / var(--tile-w) var(--tile-h);
+    linear-gradient(var(--a1), var(--d1) 25%, transparent 25.5%) 0 0 / var(--tile-w) var(--tile-h),
+    linear-gradient(var(--a2), var(--d1) 25%, transparent 25.5%) 0 0 / var(--tile-w) var(--tile-h),
+    linear-gradient(var(--a3), var(--d1) 25%, transparent 25.5%) 0 0 / var(--tile-w) var(--tile-h),
+    linear-gradient(var(--a4), var(--d1) 25%, var(--d2) 25.5%) 0 0 / var(--tile-w) var(--tile-h);
 }
 
 .diamondSurface[data-lamp],
@@ -164,12 +158,10 @@
   background:
     radial-gradient(ellipse 85% 75% at 50% 42%, var(--lamp-tint), transparent 65%),
     radial-gradient(ellipse 95% 90% at 50% 50%, transparent 52%, var(--vignette-tint) 100%),
-    linear-gradient(var(--a1), var(--d1) 25%, transparent 25%) var(--half-w) 0 / var(--tile-w)
-    var(--tile-h),
-    linear-gradient(var(--a2), var(--d1) 25%, transparent 25%) var(--half-w) 0 / var(--tile-w)
-    var(--tile-h),
-    linear-gradient(var(--a3), var(--d1) 25%, transparent 25%) 0 0 / var(--tile-w) var(--tile-h),
-    linear-gradient(var(--a4), var(--d1) 25%, var(--d2) 25%) 0 0 / var(--tile-w) var(--tile-h);
+    linear-gradient(var(--a1), var(--d1) 25%, transparent 25.5%) 0 0 / var(--tile-w) var(--tile-h),
+    linear-gradient(var(--a2), var(--d1) 25%, transparent 25.5%) 0 0 / var(--tile-w) var(--tile-h),
+    linear-gradient(var(--a3), var(--d1) 25%, transparent 25.5%) 0 0 / var(--tile-w) var(--tile-h),
+    linear-gradient(var(--a4), var(--d1) 25%, var(--d2) 25.5%) 0 0 / var(--tile-w) var(--tile-h);
 }
 
 .diamondSurface[data-seams]::after {

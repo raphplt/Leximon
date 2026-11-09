@@ -4,9 +4,10 @@ import { SIGN_IN_QUERY, sharedResource } from "@leximon/view-model";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { api } from "@/lib/api";
-import { Desk, MainAction } from "@/library/play-pieces";
+import { MainAction } from "@/library/play-pieces";
 import { useShared } from "@/player/resource";
-import { Lettering, toyClass } from "@/ui/toy";
+import { TitleRule } from "@/ui/ornaments";
+import { Kicker, Lettering, toyClass } from "@/ui/toy";
 import type { Door } from "./door";
 import styles from "./landing-page.module.css";
 import { WaitlistForm } from "./waitlist-form";
@@ -78,12 +79,13 @@ export function DoorAction({ door }: { readonly door: Door }) {
   );
 }
 
-/** The end of the page: the promise again, on the desk. */
+/** The end of the page: the promise again, directly on the diamond backdrop. */
 export function Closing({ door }: { readonly door: Door }) {
   const playing = useShared(hasGame) === true;
   return (
     <section className={styles.closing} aria-labelledby="closing-title">
-      <Desk className={styles.closingDesk} />
+      <TitleRule className={styles.sectionRule} />
+      <Kicker>Entrer dans la Bibliothèque</Kicker>
       <h2 id="closing-title" className={styles.closingTitle}>
         <Lettering>
           {playing || door === "open" ? "Tes sachets sont prêts." : "L'ouverture approche."}

@@ -21,6 +21,12 @@
   margin-top: auto;
 }
 
+@media (min-height: 1100px) {
+  .column {
+    gap: 22px;
+  }
+}
+
 .head {
   display: flex;
   flex-direction: column;

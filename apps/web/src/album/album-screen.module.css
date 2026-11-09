@@ -219,7 +219,7 @@
   display: flex;
   flex-direction: column;
   gap: var(--lx-s4);
-  padding-bottom: var(--lx-s5);
+  padding: 0 8px var(--lx-s5) 2px;
   margin-bottom: var(--lx-s2);
   border-bottom: 1px solid color-mix(in srgb, var(--lx-shelf-gilt) 28%, transparent);
 }
@@ -504,9 +504,10 @@
 
 .quantity {
   position: absolute;
-  top: -6px;
-  right: -4px;
-  z-index: 2;
+  top: -7px;
+  left: 50%;
+  translate: -50% 0;
+  z-index: 3;
   padding: var(--lx-s1) var(--lx-s4);
   border-radius: var(--lx-radius-pill);
   background: var(--lx-color-page-ink);
@@ -517,24 +518,24 @@
 }
 
 /*
- * Mastery sits as a discreet medallion at the foot of the card; its text only unfolds when
- * sorting by mastery or when the card is hovered/focused.
+ * Mastery sits in the empty top-right corner of the card's header, opposite the rarity gem on the
+ * top-left, as a solid opaque medallion; its text unfolds on hover/focus or when sorting by mastery.
  */
 .masteryPin {
   position: absolute;
-  bottom: -8px;
-  right: 8px;
+  top: 8px;
+  right: 9px;
   z-index: 2;
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  height: 24px;
-  padding: 0 5px;
-  border: 2px solid var(--lx-toy-outline);
+  height: 22px;
+  padding: 0 4px;
+  border: 1.5px solid var(--lx-toy-outline);
   border-radius: var(--lx-radius-pill);
-  background: var(--lx-toy-dark-bottom);
+  background: var(--lx-room-floor);
   box-shadow: 0 2px 0 var(--lx-toy-outline);
-  font-size: var(--lx-size-micro);
+  font-size: var(--lx-size-nano);
   font-weight: 800;
   pointer-events: none;
 }
@@ -552,18 +553,11 @@
 }
 
 .blank {
-  color: var(--lx-mastery-blank);
-  opacity: 0.72;
-}
-
-.owned:hover .blank,
-.owned:focus-visible .blank,
-.masteryPin[data-labeled].blank {
-  opacity: 1;
+  color: var(--lx-color-page-ink-muted);
 }
 
 .sketch {
-  color: var(--lx-color-page-ink-muted);
+  color: var(--lx-color-page-ink);
 }
 
 .ink {
@@ -728,7 +722,7 @@
   flex: 1;
   min-height: 0;
   margin: 0 -18px;
-  padding: 22px 22px 16px 26px;
+  padding: 22px 28px 16px 26px;
 }
 
 .deskBack {
@@ -737,7 +731,7 @@
   z-index: -1;
   box-sizing: border-box;
   border-radius: 22px;
-  --d1: color-mix(in srgb, var(--lx-color-sheet-light) 38%, var(--lx-room-floor));
+  --d1: color-mix(in srgb, var(--lx-color-sheet-light) 42%, var(--lx-room-floor));
   --d2: color-mix(in srgb, var(--lx-color-sheet) 76%, var(--lx-room-floor));
   background:
     radial-gradient(
@@ -746,10 +740,10 @@
       transparent 60%,
       color-mix(in srgb, var(--lx-color-shade) 48%, transparent) 100%
     ),
-    linear-gradient(144.5deg, var(--d1) 25%, transparent 25%) -22px 0 / 44px 62px,
-    linear-gradient(215.5deg, var(--d1) 25%, transparent 25%) -22px 0 / 44px 62px,
-    linear-gradient(324.5deg, var(--d1) 25%, transparent 25%) 0 0 / 44px 62px,
-    linear-gradient(35.5deg, var(--d1) 25%, var(--d2) 25%) 0 0 / 44px 62px;
+    linear-gradient(126.87deg, var(--d1) 25%, transparent 25.5%) 0 0 / 54px 72px,
+    linear-gradient(233.13deg, var(--d1) 25%, transparent 25.5%) 0 0 / 54px 72px,
+    linear-gradient(306.87deg, var(--d1) 25%, transparent 25.5%) 0 0 / 54px 72px,
+    linear-gradient(53.13deg, var(--d1) 25%, var(--d2) 25.5%) 0 0 / 54px 72px;
   box-shadow:
     0 0 0 3px var(--lx-toy-outline),
     0 24px 44px var(--lx-toy-drop),

@@ -14,9 +14,9 @@ import { readShowcase } from "./showcase-server";
 import { Testimonials } from "./testimonials";
 
 /**
- * The public home page, in the room of the game: a sachet to tear on the desk first, then words
- * to guess, the six rarities, how the game is played, the collections and the riddle, and the
- * door again for those who read to the end. Someone who already plays finds the way back.
+ * The public home page, set on a two-tone diamond backdrop: a sachet to tear first, then words
+ * to guess, how the game is played, the six rarities, the three launch collections, and the
+ * door again at the foot.
  */
 export async function LandingPage() {
   const showcase = await readShowcase();
@@ -26,18 +26,10 @@ export async function LandingPage() {
   return (
     <ParticleStage dust>
       <div className={styles.page}>
-        <header className={styles.topBar}>
-          <div className={styles.top}>
-            <Logo size="md" />
-            <nav className={styles.topNav} aria-label="Aperçu du jeu">
-              <a href="#deviner">Deviner</a>
-              <a href="#raretes">Raretés</a>
-              <a href="#comment-jouer">Règles</a>
-              <a href="#collections">Collections</a>
-              <Link href="/enigme">Énigme du jour</Link>
-            </nav>
-            <TopAction />
-          </div>
+        <div className={styles.backdrop} aria-hidden="true" />
+        <header className={styles.top}>
+          <Logo size="md" />
+          <TopAction />
         </header>
 
         <main className={styles.main}>
@@ -48,8 +40,8 @@ export async function LandingPage() {
             pack={showcase.pack}
           />
           <Guess cards={showcase.guess} />
-          <Ladder ladder={showcase.ladder} />
           <HowToPlay pack={showcase.pack} trade={showcase.trade} quiz={showcase.heroWords} />
+          <Ladder ladder={showcase.ladder} />
           <Library shelves={showcase.shelves} />
           <Testimonials />
           <Closing door={LANDING_DOOR} />
