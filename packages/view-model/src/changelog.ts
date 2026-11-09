@@ -9,6 +9,19 @@ export interface ChangelogEntry {
 /** Newest first. An entry is added the day a change players can see goes live. */
 export const CHANGELOG: readonly ChangelogEntry[] = [
   {
+    date: "2026-11-09",
+    title: "La plus grande mise à jour de Leximon",
+    items: [
+      "Le jeu change d'allure. Tout se passe désormais dans une bibliothèque, les cartes ont du relief et les sachets se déchirent.",
+      "Une quatrième collection arrive, Bêtes et plantes, avec 504 mots d'oiseaux, de poissons, de plantes et de chasse. Ses sachets s'ouvrent dès le niveau 3.",
+      "Au niveau 8, les joutes s'ouvrent. Tu composes un deck de 10 cartes et tu affrontes un autre joueur sur vos mots, chacun à son heure. Chaque semaine, un tournoi te fait monter de ligue en ligue.",
+      "Tes doubles se recyclent en écus, de 1 écu pour une carte Courante à 200 pour une Légendaire. Avec tes écus, tu choisis la collection et la rareté d'un mot qui te manque.",
+      "Trois missions t'attendent chaque jour. Chacune rapporte 30 XP et 10 écus, et les trois faites te donnent un sachet bonus.",
+      "Le carnet de pointage coche chaque jour où tu joues, sans obligation de jours d'affilée. Ses cases donnent des écus et des sachets.",
+      "Leximon s'ouvre à tous, et tes amis peuvent entrer sans invitation.",
+    ],
+  },
+  {
     date: "2026-11-01",
     title: "Tous les joueurs, tous les clans",
     items: [
