@@ -48,13 +48,12 @@ Un rôle « Mécène » sur le Discord du projet, qui ouvre un salon réservé e
 
 **Construit le 2026-11-09.** « Relier mon Discord » (mécène payant seulement) ouvre la page de Discord, qui demande deux droits : connaître le compte, et l'ajouter au serveur s'il n'y est pas. La liaison passe par une route de l'API (`/discord/callback`) et non par Better Auth : relier Discord n'en fait pas un moyen de se connecter à Leximon, et Discord ne donne pas l'adresse e-mail. Le bot pose le rôle par la file, le retire à l'arrêt de l'abonnement, à la déliaison et à la suppression du compte ; la maintenance du matin rattrape un message perdu. Un compte Discord relié à un second compte Leximon quitte le premier.
 
-**Pas à pas (toi) :**
+**Déjà en place (2026-11-09) :** le rôle « Mécène » (`1569285444594573342`, dans `DISCORD_PATRON_ROLE_ID` de `apps/api/wrangler.jsonc`), le salon réservé `#la-cour`, et « Leximon Bot » administrateur, son rôle tout en haut de la liste.
 
-1. Sur le serveur, crée le rôle « Mécène » (couleur au choix) et le salon réservé, visible de ce rôle seul. Place le rôle du bot au-dessus de « Mécène » dans la liste des rôles, sinon il ne peut pas le donner.
-2. Donne au bot les droits « Gérer les rôles » et « Créer une invitation » (ce dernier lui permet d'ajouter un mécène au serveur).
-3. Dans le portail des développeurs Discord, application « Leximon Bot », onglet OAuth2 : ajoute les redirections `https://api.leximon.fr/discord/callback` et `http://localhost:8787/discord/callback`, et copie le secret du client.
-4. Donne-moi l'identifiant du rôle (clic droit sur le rôle, « Copier l'identifiant », mode développeur activé) : il va dans `DISCORD_PATRON_ROLE_ID` de `apps/api/wrangler.jsonc`.
-5. Pose les deux secrets, en local dans `apps/api/.dev.vars` et en production ([mise-en-ligne.md](../mise-en-ligne.md#6-secrets-de-lapi--toi)).
+**Reste à faire (toi) :**
+
+1. Dans le portail des développeurs Discord, application « Leximon Bot », onglet OAuth2 : ajoute les redirections `https://api.leximon.fr/discord/callback` et `http://localhost:8787/discord/callback`, et copie le secret du client.
+2. Pose le secret du client en local dans `apps/api/.dev.vars`, puis les deux secrets en production ([mise-en-ligne.md](../mise-en-ligne.md#6-secrets-de-lapi--toi)).
 
 Tant qu'un de ces réglages manque, la page Mécène ne montre pas le bloc Discord.
 

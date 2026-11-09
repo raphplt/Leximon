@@ -45,7 +45,7 @@
     // link offered. Secrets DISCORD_CLIENT_SECRET and DISCORD_BOT_TOKEN complete them.
     "DISCORD_CLIENT_ID": "1568981422721470464",
     "DISCORD_GUILD_ID": "1563157710042570764",
-    "DISCORD_PATRON_ROLE_ID": ""
+    "DISCORD_PATRON_ROLE_ID": "1569285444594573342"
   },
   // Campaign e-mails: the pump queues row ids, the consumer sends them in batches.
   // Game events: cards obtained and clan changes, recounted from the database.
@@ -178,7 +178,7 @@
         "PATRON_SALES": "closed",
         "DISCORD_CLIENT_ID": "1568981422721470464",
         "DISCORD_GUILD_ID": "1563157710042570764",
-        "DISCORD_PATRON_ROLE_ID": ""
+        "DISCORD_PATRON_ROLE_ID": "1569285444594573342"
       },
       // Same queue names as above: `queue()` recognises the game events queue by its name.
       "queues": {
@@ -293,7 +293,7 @@
         "PATRON_SALES": "closed",
         "DISCORD_CLIENT_ID": "1568981422721470464",
         "DISCORD_GUILD_ID": "1563157710042570764",
-        "DISCORD_PATRON_ROLE_ID": ""
+        "DISCORD_PATRON_ROLE_ID": "1569285444594573342"
       },
       "queues": {
         "producers": [
