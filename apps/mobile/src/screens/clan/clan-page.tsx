@@ -213,10 +213,11 @@ export function ClanPage({
             <Icon name="reglages" size={20} color={ink.pageInk} />
           </HeroButton>
         </View>
+        {/* The discussion in the middle, as between the columns of a wide screen. */}
         <Segmented
           options={[
-            { value: "discussion", label: "Discussion" },
             { value: "clan", label: "Clan" },
+            { value: "discussion", label: "Discussion" },
             { value: "members", label: "Membres" },
           ]}
           value={tab}

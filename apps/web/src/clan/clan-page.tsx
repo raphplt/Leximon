@@ -49,9 +49,10 @@ import { ClanSettings, MemberSheet, RequestsDialog } from "./manage";
 
 type Tab = "discussion" | "clan" | "members";
 
+// In the order of the columns on a wide screen: the discussion in the middle.
 const TABS: readonly { readonly id: Tab; readonly label: string }[] = [
-  { id: "discussion", label: "Discussion" },
   { id: "clan", label: "Clan" },
+  { id: "discussion", label: "Discussion" },
   { id: "members", label: "Membres" },
 ];
 
@@ -270,11 +271,9 @@ export function ClanPage({
       </div>
 
       <div className={styles.columns}>
-        <div className={styles.column}>
+        <div className={`${styles.column} ${styles.clanSide}`}>
           {goal !== null && bar !== null && (
-            <section
-              className={`${ui.panel} ${styles.card} ${styles.framed} ${styles.onClan} ${styles.goalCard}`}
-            >
+            <section className={`${ui.panel} ${styles.card} ${styles.framed} ${styles.onClan}`}>
               <BindingRule />
               <div className={styles.cardHead}>
                 <div>
@@ -355,7 +354,20 @@ export function ClanPage({
               </div>
             ))}
           </section>
+        </div>
 
+        <div className={styles.onDiscussion}>
+          <ClanChat
+            clanId={clanId}
+            role={me.role}
+            mutedUntil={me.mutedUntil}
+            online={onlineCountLabel(view.members)}
+            now={now}
+            wordOf={wordOf}
+          />
+        </div>
+
+        <div className={`${styles.column} ${styles.membersSide}`}>
           <section className={`${ui.panel} ${styles.card} ${styles.onMembers}`}>
             <div className={styles.cardHead}>
               <p className={ui.kicker}>Membres</p>
@@ -399,17 +411,6 @@ export function ClanPage({
               </Button>
             )}
           </section>
-        </div>
-
-        <div className={styles.onDiscussion}>
-          <ClanChat
-            clanId={clanId}
-            role={me.role}
-            mutedUntil={me.mutedUntil}
-            online={onlineCountLabel(view.members)}
-            now={now}
-            wordOf={wordOf}
-          />
         </div>
       </div>
 

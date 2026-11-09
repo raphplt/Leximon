@@ -262,9 +262,16 @@
   color: var(--lx-toy-outline);
 }
 
+/*
+ * The discussion stands between what the clan does together (its goal, its library) and who is
+ * in it. Short of room for three columns, it keeps the left and the two others share the right.
+ */
 .columns {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
+  grid-template-areas:
+    "discussion clan"
+    "discussion members";
   gap: var(--lx-s8);
   align-items: start;
 }
@@ -275,20 +282,25 @@
   gap: var(--lx-s8);
 }
 
-/* Wide enough for the library and the members to stand side by side under the goal. */
-@media (min-width: 1240px) {
+.clanSide {
+  grid-area: clan;
+}
+
+.membersSide {
+  grid-area: members;
+}
+
+/* Under the top bar, the discussion stays in sight while the columns beside it scroll. */
+.onDiscussion {
+  position: sticky;
+  top: 92px;
+  grid-area: discussion;
+}
+
+@media (min-width: 1180px) {
   .columns {
-    grid-template-columns: minmax(0, 1.7fr) minmax(0, 1fr);
-  }
-
-  .column {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-    align-items: start;
-  }
-
-  .goalCard {
-    grid-column: 1 / -1;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.3fr) minmax(0, 1fr);
+    grid-template-areas: "clan discussion members";
   }
 }
 
@@ -536,11 +548,13 @@
 
 /* --- Discussion and journal --- */
 
+/* As tall as the screen leaves under the top bar and the banner: its field shows on arrival. */
 .chat {
   display: flex;
   flex-direction: column;
-  height: 680px;
-  max-height: calc(100dvh - 140px);
+  height: calc(100dvh - 390px);
+  min-height: 460px;
+  max-height: 820px;
   overflow: hidden;
 }
 
@@ -1250,8 +1264,17 @@
     grid-template-columns: minmax(0, 1fr);
   }
 
+  .columns {
+    grid-template-areas: none;
+  }
+
   .column {
     display: contents;
+  }
+
+  .onDiscussion {
+    position: static;
+    grid-area: auto;
   }
 
   .screen[data-tab="discussion"] .onClan,
