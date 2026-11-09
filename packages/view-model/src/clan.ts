@@ -38,7 +38,8 @@ export function entryModeLabel(mode: ClanEntryMode): string {
 
 /** The motto under the clan's name, between French quotes; `null` without one. */
 export function clanMottoLine(motto: string): string | null {
-  return motto === "" ? null : `« ${motto} »`;
+  // Non-breaking spaces, so that a guillemet never ends up alone on a line.
+  return motto === "" ? null : `«\u00a0${motto}\u00a0»`;
 }
 
 /** What a clan's header shows beside its buttons, each with its icon. */

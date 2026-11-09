@@ -56,7 +56,7 @@ function member(overrides: Partial<ClanMember> = {}): ClanMember {
 
 describe("the clan header", () => {
   it("puts the motto alone under the name, the size and the entry beside the buttons", () => {
-    expect(clanMottoLine("Rien ne se perd")).toBe("« Rien ne se perd »");
+    expect(clanMottoLine("Rien ne se perd")).toBe("«\u00a0Rien ne se perd\u00a0»");
     expect(clanMottoLine("")).toBeNull();
     expect(clanFacts({ memberCount: 1, entryMode: "invite" })).toEqual([
       { kind: "members", label: "1 membre" },

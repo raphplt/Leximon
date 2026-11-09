@@ -332,12 +332,13 @@
     scale: 1;
   }
 
+  /* Clear of the gilt tooling round the leather, the tiles' names included. */
   .left {
-    left: 24px;
+    left: 34px;
   }
 
   .right {
-    right: 24px;
+    right: 34px;
   }
 }
 
