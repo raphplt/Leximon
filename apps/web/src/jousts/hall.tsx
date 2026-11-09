@@ -16,8 +16,10 @@ import {
   CLASSEMENT,
   COMPOSE_DECK,
   DECK_NOT_SAVED,
+  deckPointsLine,
   deckTrapsLine,
   EDIT_DECK_SHORT,
+  ENDED_IN_VIEW,
   GUIDE_AGAIN,
   groupGlimpse,
   HOW_FOLD,
@@ -51,7 +53,9 @@ import {
   runSize,
   SEE_LEAGUES,
   sealedLine,
+  seeAllEndedText,
   standingHeader,
+  waitingTokenLine,
   weekFigures,
   weekRewardLine,
   YOU,
@@ -153,6 +157,10 @@ export function Hall({
         />
       </Lice>
 
+      {jousts.deckSaved && (
+        <DeckLeaf deck={deck} onEdit={() => setDeckOpen(true)} style={rise(order++)} />
+      )}
+
       <Road
         standing={jousts.standing}
         league={league}
@@ -218,10 +226,6 @@ export function Hall({
       )}
 
       <JoustLists jousts={jousts.jousts} now={now} style={rise(order++)} />
-
-      {jousts.deckSaved && (
-        <DeckLeaf deck={deck} onEdit={() => setDeckOpen(true)} style={rise(order++)} />
-      )}
 
       <Dialog
         open={deckOpen}
@@ -524,6 +528,7 @@ function JoustLists({
   readonly style: CSSProperties;
 }) {
   const sections = joustSections(jousts);
+  const [allEnded, setAllEnded] = useState(false);
   return (
     <section className={styles.leaf} style={style}>
       {jousts.length === 0 && <p className={styles.leafText}>{NO_JOUSTS}</p>}
@@ -547,22 +552,25 @@ function JoustLists({
       )}
       {sections.waiting.length > 0 && (
         <Group title="En attente">
-          {sections.waiting.map((joust) => (
-            <JoustRow key={joust.id} joust={joust} now={now} clock>
-              {null}
-            </JoustRow>
-          ))}
+          <div className={styles.tokens}>
+            {sections.waiting.map((joust) => (
+              <WaitingToken key={joust.id} joust={joust} now={now} />
+            ))}
+          </div>
         </Group>
       )}
       {sections.ended.length > 0 && (
         <Group title="Terminées">
-          {sections.ended.map((joust) => (
-            <JoustRow key={joust.id} joust={joust} now={now}>
-              <span className={styles.outcome} data-outcome={joust.outcome ?? "draw"}>
-                {outcomeWord(joust.outcome)}
-              </span>
-            </JoustRow>
-          ))}
+          <div className={styles.ended}>
+            {(allEnded ? sections.ended : sections.ended.slice(0, ENDED_IN_VIEW)).map((joust) => (
+              <EndedRow key={joust.id} joust={joust} now={now} />
+            ))}
+          </div>
+          {!allEnded && sections.ended.length > ENDED_IN_VIEW && (
+            <button type="button" className={styles.more} onClick={() => setAllEnded(true)}>
+              {seeAllEndedText(sections.ended.length)} <Icon name="chev" size={14} />
+            </button>
+          )}
         </Group>
       )}
     </section>
@@ -662,13 +670,11 @@ function JoustRow({
   joust,
   now,
   toPlay = false,
-  clock = false,
   children,
 }: {
   readonly joust: JoustSummary;
   readonly now: number;
   readonly toPlay?: boolean;
-  readonly clock?: boolean;
   readonly children: ReactNode;
 }) {
   return (
@@ -683,10 +689,48 @@ function JoustRow({
         size={38}
       />
       <b className={styles.listName}>{playerName(joust.opponent)}</b>
-      <span className={styles.listState}>
-        {clock && <Icon name="clock" size={14} />} {joustRowState(joust, now)}
-      </span>
+      <span className={styles.listState}>{joustRowState(joust, now)}</span>
       {children}
+    </Link>
+  );
+}
+
+/** A joust waiting on the opponent: their portrait under an hourglass, and until when. */
+function WaitingToken({ joust, now }: { readonly joust: JoustSummary; readonly now: number }) {
+  const name = playerName(joust.opponent);
+  const line = waitingTokenLine(joust, now);
+  return (
+    <Link href={`/joutes/${joust.id}`} className={styles.token} aria-label={`${name}, ${line}`}>
+      <span className={styles.tokenFace}>
+        <Avatar
+          avatar={joust.opponent?.avatar ?? null}
+          frame={joust.opponent?.frame ?? null}
+          size={48}
+        />
+        <span className={styles.tokenClock} aria-hidden="true">
+          <Icon name="clock" size={14} />
+        </span>
+      </span>
+      <b className={styles.tokenName}>{name}</b>
+      <span className={styles.tokenLine}>{line}</span>
+    </Link>
+  );
+}
+
+/** An ended joust on one tight line, its outcome in colour down its whole right end. */
+function EndedRow({ joust, now }: { readonly joust: JoustSummary; readonly now: number }) {
+  return (
+    <Link href={`/joutes/${joust.id}`} className={styles.endedRow}>
+      <Avatar
+        avatar={joust.opponent?.avatar ?? null}
+        frame={joust.opponent?.frame ?? null}
+        size={30}
+      />
+      <b className={styles.listName}>{playerName(joust.opponent)}</b>
+      <span className={styles.endedState}>{joustRowState(joust, now)}</span>
+      <span className={styles.outcome} data-outcome={joust.outcome ?? "draw"}>
+        {outcomeWord(joust.outcome)}
+      </span>
     </Link>
   );
 }
@@ -707,20 +751,20 @@ function DeckLeaf({
   const { openCard } = useShell();
   const costs = new Map(deck.candidates.map((candidate) => [candidate.cardId, candidate.cost]));
   const spent = deck.cardIds.reduce((total, id) => total + (costs.get(id) ?? 0), 0);
-  const traps = new Map(deck.trapped.map((card) => [card.cardId, card.count]));
   const trapsLine = deckTrapsLine(deck.trapped);
   const middle = (deck.cardIds.length - 1) / 2;
   return (
     <section className={styles.leaf} style={style}>
       <header className={styles.leafHead}>
-        <span className={styles.kicker}>
-          Ton deck · {spent} / {deck.budget} points
-        </span>
+        <span className={styles.kicker}>Ton deck</span>
         <Toy matter="paper" className={styles.minor} onClick={onEdit}>
           {EDIT_DECK_SHORT}
         </Toy>
       </header>
-      {trapsLine !== null && <p className={styles.leafText}>{trapsLine}</p>}
+      <p className={styles.leafText}>
+        {deckPointsLine(spent, deck.budget)}
+        {trapsLine !== null && ` ${trapsLine}`}
+      </p>
       {catalog !== null && (
         <div className={styles.fan}>
           {deck.cardIds.map((cardId, index) => {
@@ -739,12 +783,7 @@ function DeckLeaf({
                   } as CSSProperties
                 }
               >
-                <MiniCard
-                  card={card}
-                  width={narrow ? 70 : 104}
-                  trapped={traps.get(cardId) ?? 0}
-                  sealLeft
-                />
+                <MiniCard card={card} width={narrow ? 70 : 104} />
               </button>
             );
           })}

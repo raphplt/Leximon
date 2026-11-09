@@ -6,6 +6,7 @@ import {
   clockShare,
   completeDeck,
   deadlineText,
+  deckPointsLine,
   deckPoolGroups,
   deckRoomLine,
   forfeitLine,
@@ -19,11 +20,13 @@ import {
   scoresLine,
   scoreText,
   secondsLeft,
+  seeAllEndedText,
   sortJousts,
   toggleDeckCard,
   trappedLine,
   trapsLine,
   waitingLine,
+  waitingTokenLine,
 } from "./jousts";
 
 const NOW = Date.parse("2026-11-10T15:00:00Z");
@@ -179,6 +182,16 @@ describe("the jousts' home", () => {
     expect(sections.ended).toEqual([newer, old]);
   });
 
+  it("says under a waiting token until when the opponent has", () => {
+    expect(
+      waitingTokenLine(joust({ state: "waiting", replyBy: "2026-11-11T08:05:00Z" }), NOW, PARIS),
+    ).toBe("jusqu'à demain 9 h 05");
+    expect(waitingTokenLine(joust({ state: "waiting", replyBy: null }), NOW, PARIS)).toBe(
+      "joue en ce moment",
+    );
+    expect(seeAllEndedText(12)).toBe("Voir les 12 joutes terminées");
+  });
+
   it("says in one short line where a joust stands", () => {
     const at = "2026-11-11T08:05:00Z";
     expect(joustRowState(joust({ kind: "ranked" }), NOW, PARIS)).toBe("Classée · à toi de jouer");
@@ -267,5 +280,13 @@ describe("completing the deck", () => {
       ["common", 1],
     ]);
     expect(groups[1]?.cards.map((entry) => entry.card.word)).toEqual(["écureuil", "zibeline"]);
+  });
+});
+
+describe("the deck's points on the hall", () => {
+  it("says the points left, or that all are spent", () => {
+    expect(deckPointsLine(25, 25)).toBe("Ton deck utilise ses 25 points.");
+    expect(deckPointsLine(24, 25)).toBe("Il te reste 1 point pour ton deck.");
+    expect(deckPointsLine(21, 25)).toBe("Il te reste 4 points pour ton deck.");
   });
 });

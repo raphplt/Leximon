@@ -31,7 +31,7 @@ Ces défauts étaient nets, ils sont corrigés sur le web et le mobile :
 
 **6. Les chiffres sur les cartes du deck.** Le cachet « 1 », « 2 », « 3 » sous certaines cartes compte les adversaires qu'elles ont piégés. Sans légende, on ne le comprend pas.
 
-**7. « 25 / 25 points » n'est pas expliqué.** Ni sur l'accueil, ni dans la fenêtre du deck. Chaque carte coûte selon sa rareté (Commune 1, Peu courante 2, Rare 3, Précieuse 4, Épique 5, Légendaire 6) et un deck ne dépasse pas 25 points ; le chiffre dans un rond, au coin de chaque carte, ne le dit pas.
+**7. « 25 / 25 points » n'est pas expliqué.** Ni sur l'accueil, ni dans la fenêtre du deck. Chaque carte coûte selon sa rareté (Courante 1, Peu courante 2, Rare 3, Précieuse 4, Épique 5, Légendaire 6) et un deck ne dépasse pas 25 points ; le chiffre dans un rond, au coin de chaque carte, ne le dit pas.
 
 **8. La fenêtre du deck est étroite.** Une colonne au milieu de l'écran, des cartes petites, une jauge seule.
 

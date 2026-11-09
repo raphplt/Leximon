@@ -443,6 +443,20 @@ export function joustRowState(joust: JoustSummary, now: EpochMs, timeZone?: stri
   }
 }
 
+/** How many ended jousts the list keeps in view; the rest unfold on demand. */
+export const ENDED_IN_VIEW = 5;
+
+export function seeAllEndedText(count: number): string {
+  return `Voir les ${formatCount(count)} joutes terminées`;
+}
+
+/** Under a waiting joust's token: « jusqu'à demain 9 h 05 », or « joue en ce moment ». */
+export function waitingTokenLine(joust: JoustSummary, now: EpochMs, timeZone?: string): string {
+  return joust.replyBy === null
+    ? "joue en ce moment"
+    : `jusqu'à ${deadlineText(joust.replyBy, now, timeZone)}`;
+}
+
 /** The word of the banner, and of an ended joust in the list. */
 export function outcomeWord(outcome: JoustSummary["outcome"], banner = false): string {
   switch (outcome) {
@@ -596,6 +610,14 @@ export function deckPoolGroups<
 /** « 3 adversaires piégés », for a card of the deck. */
 export function trappedText(count: number): string {
   return count === 1 ? "1 adversaire piégé" : `${formatCount(count)} adversaires piégés`;
+}
+
+/** What the deck's points say on the hall: all spent, or how many are left. */
+export function deckPointsLine(spent: number, budget: number): string {
+  const left = budget - spent;
+  return left <= 0
+    ? `Ton deck utilise ses ${plural(budget, "point", "points")}.`
+    : `Il te reste ${plural(left, "point", "points")} pour ton deck.`;
 }
 
 /**

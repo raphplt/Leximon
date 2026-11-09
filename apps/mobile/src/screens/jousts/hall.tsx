@@ -23,8 +23,10 @@ import {
   CLASSEMENT,
   COMPOSE_DECK,
   DECK_NOT_SAVED,
+  deckPointsLine,
   deckTrapsLine,
   EDIT_DECK_SHORT,
+  ENDED_IN_VIEW,
   GUIDE_AGAIN,
   groupGlimpse,
   HOW_FOLD,
@@ -57,7 +59,9 @@ import {
   runSize,
   SEE_LEAGUES,
   sealedLine,
+  seeAllEndedText,
   standingHeader,
+  waitingTokenLine,
   weekFigures,
   weekRewardLine,
   YOU,
@@ -178,6 +182,12 @@ export function Hall({
         </Lice>
       </Animated.View>
 
+      {jousts.deckSaved && (
+        <Animated.View entering={rise(order++)}>
+          <DeckLeaf deck={deck} onEdit={() => setDeckOpen(true)} />
+        </Animated.View>
+      )}
+
       <Animated.View entering={rise(order++)}>
         <Road standing={jousts.standing} league={league} onOpen={() => setLeaguesOpen(true)} />
       </Animated.View>
@@ -237,12 +247,6 @@ export function Hall({
       <Animated.View entering={rise(order++)}>
         <JoustLists jousts={jousts.jousts} now={now} />
       </Animated.View>
-
-      {jousts.deckSaved && (
-        <Animated.View entering={rise(order++)}>
-          <DeckLeaf deck={deck} onEdit={() => setDeckOpen(true)} />
-        </Animated.View>
-      )}
 
       <Sheet open={deckOpen} title="Ton deck" tall onClose={() => setDeckOpen(false)}>
         {deckOpen && (
@@ -667,6 +671,7 @@ function JoustLists({
   readonly now: number;
 }) {
   const sections = joustSections(jousts);
+  const [allEnded, setAllEnded] = useState(false);
   return (
     <Leaf style={pieces.leaf}>
       {jousts.length === 0 && <Text style={pieces.line}>{NO_JOUSTS}</Text>}
@@ -692,24 +697,30 @@ function JoustLists({
       )}
       {sections.waiting.length > 0 && (
         <Group title="En attente">
-          {sections.waiting.map((joust) => (
-            <JoustRow key={joust.id} joust={joust} now={now} clock />
-          ))}
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.tokens}
+          >
+            {sections.waiting.map((joust) => (
+              <WaitingToken key={joust.id} joust={joust} now={now} />
+            ))}
+          </ScrollView>
         </Group>
       )}
       {sections.ended.length > 0 && (
         <Group title="Terminées">
-          {sections.ended.map((joust) => (
-            <JoustRow key={joust.id} joust={joust} now={now}>
-              <View style={[styles.outcome, OUTCOME_FILLS[joust.outcome ?? "draw"]]}>
-                <Text
-                  style={[styles.outcomeText, joust.outcome === "draw" && { color: ink.pageInk }]}
-                >
-                  {outcomeWord(joust.outcome)}
-                </Text>
-              </View>
-            </JoustRow>
-          ))}
+          <View style={styles.ended}>
+            {(allEnded ? sections.ended : sections.ended.slice(0, ENDED_IN_VIEW)).map((joust) => (
+              <EndedRow key={joust.id} joust={joust} now={now} />
+            ))}
+          </View>
+          {!allEnded && sections.ended.length > ENDED_IN_VIEW && (
+            <More
+              label={seeAllEndedText(sections.ended.length)}
+              onPress={() => setAllEnded(true)}
+            />
+          )}
         </Group>
       )}
     </Leaf>
@@ -844,13 +855,11 @@ function JoustRow({
   joust,
   now,
   toPlay = false,
-  clock = false,
   children,
 }: {
   readonly joust: JoustSummary;
   readonly now: number;
   readonly toPlay?: boolean;
-  readonly clock?: boolean;
   readonly children?: ReactNode;
 }) {
   const name = playerName(joust.opponent);
@@ -872,13 +881,77 @@ function JoustRow({
           {name}
         </Text>
         <View style={styles.rowStateLine}>
-          {clock && <Icon name="clock" size={13} color={ink.pageInkMuted} />}
           <Text style={styles.rowState} numberOfLines={2}>
             {state}
           </Text>
         </View>
       </View>
       {children}
+    </Pressable>
+  );
+}
+
+/** A joust waiting on the opponent: their portrait under an hourglass, and until when. */
+function WaitingToken({ joust, now }: { readonly joust: JoustSummary; readonly now: number }) {
+  const name = playerName(joust.opponent);
+  const line = waitingTokenLine(joust, now);
+  return (
+    <Pressable
+      onPress={() => goTo(joust)}
+      style={({ pressed }) => [styles.token, pressed && styles.pressed]}
+      accessibilityRole="button"
+      accessibilityLabel={`${name}, ${line}`}
+    >
+      <View>
+        <Avatar
+          avatar={joust.opponent?.avatar ?? null}
+          frame={joust.opponent?.frame ?? null}
+          size={46}
+        />
+        <View style={styles.tokenClock}>
+          <Icon name="clock" size={12} color={toyValues.outline} />
+        </View>
+      </View>
+      <Text style={styles.tokenName} numberOfLines={1}>
+        {name}
+      </Text>
+      <Text style={styles.tokenLine} numberOfLines={2}>
+        {line}
+      </Text>
+    </Pressable>
+  );
+}
+
+/** An ended joust on one tight line, its outcome in colour down its whole right end. */
+function EndedRow({ joust, now }: { readonly joust: JoustSummary; readonly now: number }) {
+  const name = playerName(joust.opponent);
+  const state = joustRowState(joust, now);
+  const outcome = outcomeWord(joust.outcome);
+  return (
+    <Pressable
+      onPress={() => goTo(joust)}
+      style={({ pressed }) => [styles.endedRow, pressed && styles.pressed]}
+      accessibilityRole="button"
+      accessibilityLabel={`${name}. ${state}. ${outcome}`}
+    >
+      <Avatar
+        avatar={joust.opponent?.avatar ?? null}
+        frame={joust.opponent?.frame ?? null}
+        size={30}
+      />
+      <View style={styles.flex}>
+        <Text style={styles.endedName} numberOfLines={1}>
+          {name}
+        </Text>
+        <Text style={styles.rowState} numberOfLines={1}>
+          {state}
+        </Text>
+      </View>
+      <View style={[styles.outcome, OUTCOME_FILLS[joust.outcome ?? "draw"]]}>
+        <Text style={[styles.outcomeText, joust.outcome === "draw" && { color: ink.pageInk }]}>
+          {outcome}
+        </Text>
+      </View>
     </Pressable>
   );
 }
@@ -895,7 +968,6 @@ function DeckLeaf({
   const catalog = useCatalog();
   const costs = new Map(deck.candidates.map((candidate) => [candidate.cardId, candidate.cost]));
   const spent = deck.cardIds.reduce((total, id) => total + (costs.get(id) ?? 0), 0);
-  const traps = new Map(deck.trapped.map((card) => [card.cardId, card.count]));
   const trapsLine = deckTrapsLine(deck.trapped);
   const middle = (deck.cardIds.length - 1) / 2;
   // The fan closes up to hold in the leaf, whatever the phone's width.
@@ -908,7 +980,7 @@ function DeckLeaf({
     <Leaf style={pieces.leaf}>
       <View style={styles.leafHead}>
         <View style={styles.flex}>
-          <LeafKicker>{`Ton deck · ${spent} / ${deck.budget} points`}</LeafKicker>
+          <LeafKicker>Ton deck</LeafKicker>
         </View>
         <Toy
           matter="paper"
@@ -921,7 +993,10 @@ function DeckLeaf({
           <Text style={styles.minorText}>{EDIT_DECK_SHORT}</Text>
         </Toy>
       </View>
-      {trapsLine !== null && <Text style={pieces.line}>{trapsLine}</Text>}
+      <Text style={pieces.line}>
+        {deckPointsLine(spent, deck.budget)}
+        {trapsLine !== null && ` ${trapsLine}`}
+      </Text>
       {catalog !== null && (
         <View style={styles.fan} onLayout={(event) => setFanWidth(event.nativeEvent.layout.width)}>
           {deck.cardIds.map((cardId, index) => {
@@ -941,7 +1016,7 @@ function DeckLeaf({
                   ],
                 }}
               >
-                <MiniCard card={card} trapped={traps.get(cardId) ?? 0} sealLeft width={FAN_CARD} />
+                <MiniCard card={card} width={FAN_CARD} />
               </Pressable>
             );
           })}
@@ -1338,12 +1413,62 @@ const styles = StyleSheet.create({
     backgroundImage: matterFill(toyMatters.gold),
   },
   gainText: { fontFamily: fonts.ui.extrabold, fontSize: fontSizes.small, color: ink.pageInk },
-  outcome: {
-    paddingHorizontal: space.s5,
-    paddingVertical: space.s1,
+  tokens: { gap: space.s4, paddingBottom: space.s2 },
+  token: {
+    width: 104,
+    alignItems: "center",
+    gap: space.s1,
+    paddingHorizontal: space.s3,
+    paddingVertical: space.s4,
+    borderRadius: radii.lg,
+    borderWidth: 2,
+    borderColor: ink.rule,
+  },
+  tokenClock: {
+    position: "absolute",
+    right: -6,
+    bottom: -4,
+    width: 22,
+    height: 22,
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: 11,
     borderWidth: 2,
     borderColor: toyValues.outline,
-    borderRadius: radii.pill,
+    backgroundImage: matterFill(toyMatters.gold),
+  },
+  tokenName: {
+    marginTop: space.s2,
+    fontFamily: fonts.ui.bold,
+    fontSize: fontSizes.small,
+    color: ink.pageInk,
+  },
+  tokenLine: {
+    textAlign: "center",
+    fontFamily: fonts.ui.medium,
+    fontSize: fontSizes.caption,
+    color: ink.pageInkMuted,
+  },
+  ended: { gap: space.s2 },
+  endedRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: space.s4,
+    minHeight: 46,
+    paddingLeft: space.s3,
+    overflow: "hidden",
+    borderRadius: radii.lg,
+    borderWidth: 2,
+    borderColor: ink.rule,
+  },
+  endedName: { fontFamily: fonts.ui.bold, fontSize: fontSizes.body, color: ink.pageInk },
+  outcome: {
+    alignSelf: "stretch",
+    width: 88,
+    alignItems: "center",
+    justifyContent: "center",
+    borderLeftWidth: 2,
+    borderLeftColor: toyValues.outline,
   },
   outcomeText: {
     fontFamily: fonts.ui.extrabold,
