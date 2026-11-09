@@ -28,12 +28,14 @@
   --lamp-tint: color-mix(in srgb, var(--lx-toy-gold-top) 12%, transparent);
   --vignette-tint: color-mix(in srgb, var(--lx-room-vignette) 58%, transparent);
 
-  --tile-w: 54px;
-  --tile-h: 72px;
-  --a1: 126.87deg;
-  --a2: 233.13deg;
-  --a3: 306.87deg;
-  --a4: 53.13deg;
+  --tile-w: 62px;
+  --tile-h: 66px;
+  --half-x: 31px;
+  --half-y: 33px;
+  --a1: 133.21deg;
+  --a2: 226.79deg;
+  --a3: 313.21deg;
+  --a4: 46.79deg;
 }
 
 /* --- 6 Palettes --- */
@@ -104,18 +106,22 @@
 
 .diamondSurface[data-cut="harlequin"],
 .page[data-page-bg][data-cut="harlequin"] {
-  --tile-w: 54px;
-  --tile-h: 72px;
-  --a1: 126.87deg;
-  --a2: 233.13deg;
-  --a3: 306.87deg;
-  --a4: 53.13deg;
+  --tile-w: 62px;
+  --tile-h: 66px;
+  --half-x: 31px;
+  --half-y: 33px;
+  --a1: 133.21deg;
+  --a2: 226.79deg;
+  --a3: 313.21deg;
+  --a4: 46.79deg;
 }
 
 .diamondSurface[data-cut="square"],
 .page[data-page-bg][data-cut="square"] {
-  --tile-w: 56px;
-  --tile-h: 56px;
+  --tile-w: 60px;
+  --tile-h: 60px;
+  --half-x: 30px;
+  --half-y: 30px;
   --a1: 135deg;
   --a2: 225deg;
   --a3: 315deg;
@@ -124,44 +130,112 @@
 
 .diamondSurface[data-cut="grand"],
 .page[data-page-bg][data-cut="grand"] {
-  --tile-w: 78px;
-  --tile-h: 104px;
-  --a1: 126.87deg;
-  --a2: 233.13deg;
-  --a3: 306.87deg;
-  --a4: 53.13deg;
+  --tile-w: 84px;
+  --tile-h: 90px;
+  --half-x: 42px;
+  --half-y: 45px;
+  --a1: 133.03deg;
+  --a2: 226.97deg;
+  --a3: 313.03deg;
+  --a4: 46.97deg;
 }
 
 .diamondSurface[data-cut="petit"],
 .page[data-page-bg][data-cut="petit"] {
-  --tile-w: 36px;
-  --tile-h: 48px;
-  --a1: 126.87deg;
-  --a2: 233.13deg;
-  --a3: 306.87deg;
-  --a4: 53.13deg;
+  --tile-w: 42px;
+  --tile-h: 45px;
+  --half-x: 21px;
+  --half-y: 22.5px;
+  --a1: 133.03deg;
+  --a2: 226.97deg;
+  --a3: 313.03deg;
+  --a4: 46.97deg;
 }
 
-/* --- Background composition --- */
+/* --- Background composition (with aged leather grain and beveled seams) --- */
 
 .diamondSurface,
 .page[data-page-bg] {
+  --seam-light: color-mix(in srgb, var(--lx-toy-sheen) 14%, var(--d1));
+  --seam-dark: color-mix(in srgb, var(--lx-color-shade) 40%, var(--d2));
   background:
-    linear-gradient(var(--a1), var(--d1) 25%, transparent 25.5%) 0 0 / var(--tile-w) var(--tile-h),
-    linear-gradient(var(--a2), var(--d1) 25%, transparent 25.5%) 0 0 / var(--tile-w) var(--tile-h),
-    linear-gradient(var(--a3), var(--d1) 25%, transparent 25.5%) 0 0 / var(--tile-w) var(--tile-h),
-    linear-gradient(var(--a4), var(--d1) 25%, var(--d2) 25.5%) 0 0 / var(--tile-w) var(--tile-h);
+    var(--lx-matter-leather) 0 0 / var(--lx-matter-size),
+    var(--lx-matter-cloth) 36px 48px / 192px 192px,
+    radial-gradient(
+      circle at 50% 50%,
+      color-mix(in srgb, var(--lx-toy-sheen) 5%, transparent) 0%,
+      transparent 54%
+    )
+    0 0 / var(--tile-w) var(--tile-h),
+    radial-gradient(
+      circle at 50% 50%,
+      color-mix(in srgb, var(--lx-toy-gold-top) 5%, transparent) 0%,
+      transparent 54%
+    )
+    var(--half-x) var(--half-y) / var(--tile-w) var(--tile-h),
+    linear-gradient(
+      var(--a1),
+      var(--d1) 23.6%,
+      var(--seam-light) 24.5%,
+      var(--seam-dark) 25.2%,
+      transparent 25.8%
+    )
+    0 0 / var(--tile-w) var(--tile-h),
+    linear-gradient(
+      var(--a2),
+      var(--d1) 23.6%,
+      var(--seam-light) 24.5%,
+      var(--seam-dark) 25.2%,
+      transparent 25.8%
+    )
+    0 0 / var(--tile-w) var(--tile-h),
+    linear-gradient(var(--a3), var(--d1) 23.8%, var(--seam-dark) 24.8%, transparent 25.5%) 0 0 /
+    var(--tile-w) var(--tile-h),
+    linear-gradient(var(--a4), var(--d1) 23.8%, var(--seam-dark) 24.8%, var(--d2) 25.5%) 0 0 /
+    var(--tile-w) var(--tile-h);
 }
 
 .diamondSurface[data-lamp],
 .page[data-page-bg][data-lamp] {
+  --seam-light: color-mix(in srgb, var(--lx-toy-sheen) 14%, var(--d1));
+  --seam-dark: color-mix(in srgb, var(--lx-color-shade) 40%, var(--d2));
   background:
+    var(--lx-matter-leather) 0 0 / var(--lx-matter-size),
+    var(--lx-matter-cloth) 36px 48px / 192px 192px,
     radial-gradient(ellipse 85% 75% at 50% 42%, var(--lamp-tint), transparent 65%),
-    radial-gradient(ellipse 95% 90% at 50% 50%, transparent 52%, var(--vignette-tint) 100%),
-    linear-gradient(var(--a1), var(--d1) 25%, transparent 25.5%) 0 0 / var(--tile-w) var(--tile-h),
-    linear-gradient(var(--a2), var(--d1) 25%, transparent 25.5%) 0 0 / var(--tile-w) var(--tile-h),
-    linear-gradient(var(--a3), var(--d1) 25%, transparent 25.5%) 0 0 / var(--tile-w) var(--tile-h),
-    linear-gradient(var(--a4), var(--d1) 25%, var(--d2) 25.5%) 0 0 / var(--tile-w) var(--tile-h);
+    radial-gradient(ellipse 95% 90% at 50% 50%, transparent 50%, var(--vignette-tint) 100%),
+    radial-gradient(
+      circle at 50% 50%,
+      color-mix(in srgb, var(--lx-toy-sheen) 5%, transparent) 0%,
+      transparent 54%
+    )
+    0 0 / var(--tile-w) var(--tile-h),
+    radial-gradient(
+      circle at 50% 50%,
+      color-mix(in srgb, var(--lx-toy-gold-top) 5%, transparent) 0%,
+      transparent 54%
+    )
+    var(--half-x) var(--half-y) / var(--tile-w) var(--tile-h),
+    linear-gradient(
+      var(--a1),
+      var(--d1) 23.6%,
+      var(--seam-light) 24.5%,
+      var(--seam-dark) 25.2%,
+      transparent 25.8%
+    )
+    0 0 / var(--tile-w) var(--tile-h),
+    linear-gradient(
+      var(--a2),
+      var(--d1) 23.6%,
+      var(--seam-light) 24.5%,
+      var(--seam-dark) 25.2%,
+      transparent 25.8%
+    )
+    0 0 / var(--tile-w) var(--tile-h),
+    linear-gradient(var(--a3), var(--d1) 23.8%, var(--seam-dark) 24.8%, transparent 25.5%) 0 0 /
+    var(--tile-w) var(--tile-h),
+    linear-gradient(var(--a4), var(--d1) 23.8%, var(--seam-dark) 24.8%, var(--d2) 25.5%) 0 0 /
+    var(--tile-w) var(--tile-h);
 }
 
 .diamondSurface[data-seams]::after {

@@ -731,19 +731,51 @@
   z-index: -1;
   box-sizing: border-box;
   border-radius: 22px;
-  --d1: color-mix(in srgb, var(--lx-color-sheet-light) 42%, var(--lx-room-floor));
-  --d2: color-mix(in srgb, var(--lx-color-sheet) 76%, var(--lx-room-floor));
+  --d1: color-mix(in srgb, var(--lx-color-sheet-light) 44%, var(--lx-room-floor));
+  --d2: color-mix(in srgb, var(--lx-color-sheet) 74%, var(--lx-room-floor));
+  --seam-light: color-mix(in srgb, var(--lx-toy-sheen) 14%, var(--d1));
+  --seam-dark: color-mix(in srgb, var(--lx-color-shade) 42%, var(--d2));
   background:
+    var(--lx-matter-leather) 0 0 / var(--lx-matter-size),
+    var(--lx-matter-cloth) 36px 48px / 192px 192px,
     radial-gradient(
-      ellipse 85% 65% at 50% 35%,
-      color-mix(in srgb, var(--lx-toy-gold-top) 7%, transparent) 0%,
-      transparent 60%,
-      color-mix(in srgb, var(--lx-color-shade) 48%, transparent) 100%
+      ellipse 85% 65% at 50% 32%,
+      color-mix(in srgb, var(--lx-toy-gold-top) 8%, transparent) 0%,
+      transparent 58%,
+      color-mix(in srgb, var(--lx-color-shade) 54%, transparent) 100%
     ),
-    linear-gradient(126.87deg, var(--d1) 25%, transparent 25.5%) 0 0 / 54px 72px,
-    linear-gradient(233.13deg, var(--d1) 25%, transparent 25.5%) 0 0 / 54px 72px,
-    linear-gradient(306.87deg, var(--d1) 25%, transparent 25.5%) 0 0 / 54px 72px,
-    linear-gradient(53.13deg, var(--d1) 25%, var(--d2) 25.5%) 0 0 / 54px 72px;
+    radial-gradient(
+      circle at 50% 50%,
+      color-mix(in srgb, var(--lx-toy-sheen) 5%, transparent) 0%,
+      transparent 54%
+    )
+    0 0 / 62px 66px,
+    radial-gradient(
+      circle at 50% 50%,
+      color-mix(in srgb, var(--lx-toy-gold-top) 5%, transparent) 0%,
+      transparent 54%
+    )
+    31px 33px / 62px 66px,
+    linear-gradient(
+      133.21deg,
+      var(--d1) 23.6%,
+      var(--seam-light) 24.5%,
+      var(--seam-dark) 25.2%,
+      transparent 25.8%
+    )
+    0 0 / 62px 66px,
+    linear-gradient(
+      226.79deg,
+      var(--d1) 23.6%,
+      var(--seam-light) 24.5%,
+      var(--seam-dark) 25.2%,
+      transparent 25.8%
+    )
+    0 0 / 62px 66px,
+    linear-gradient(313.21deg, var(--d1) 23.8%, var(--seam-dark) 24.8%, transparent 25.5%) 0 0 /
+    62px 66px,
+    linear-gradient(46.79deg, var(--d1) 23.8%, var(--seam-dark) 24.8%, var(--d2) 25.5%) 0 0 / 62px
+    66px;
   box-shadow:
     0 0 0 3px var(--lx-toy-outline),
     0 24px 44px var(--lx-toy-drop),

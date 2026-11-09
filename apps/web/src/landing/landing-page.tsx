@@ -13,11 +13,6 @@ import { Closing, TopAction } from "./player-access";
 import { readShowcase } from "./showcase-server";
 import { Testimonials } from "./testimonials";
 
-/**
- * The public home page, set on a two-tone diamond backdrop: a sachet to tear first, then words
- * to guess, how the game is played, the six rarities, the three launch collections, and the
- * door again at the foot.
- */
 export async function LandingPage() {
   const showcase = await readShowcase();
   const collectionNames = Object.fromEntries(
@@ -27,9 +22,18 @@ export async function LandingPage() {
     <ParticleStage dust>
       <div className={styles.page}>
         <div className={styles.backdrop} aria-hidden="true" />
-        <header className={styles.top}>
-          <Logo size="md" />
-          <TopAction />
+        <header className={styles.topBar}>
+          <div className={styles.top}>
+            <Logo size="md" />
+            <nav className={styles.topNav} aria-label="Explorer la page">
+              <a href="#defi-cartes">Défi des mots</a>
+              <a href="#comment-jouer">Le jeu en 3 actes</a>
+              <a href="#raretes">Les 6 raretés</a>
+              <a href="#collections">Collections</a>
+              <Link href="/enigme">Énigme du jour</Link>
+            </nav>
+            <TopAction />
+          </div>
         </header>
 
         <main className={styles.main}>

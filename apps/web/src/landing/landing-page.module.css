@@ -1,6 +1,6 @@
 /*
- * The public landing page: one unified two-tone diamond backdrop replaces the bookshelf room,
- * and every section breathes directly on it without nested container boxes.
+ * The public landing page: an aged two-tone diamond room backdrop, and sculpted cabinet stages
+ * (in mahogany, crimson velvet, midnight royal and emerald leather) for every act of the page.
  */
 
 .page {
@@ -14,40 +14,104 @@
 }
 
 /*
- * Full-page two-tone diamond backdrop (54 × 72 px, 3:4 proportion, alpha = arctan(72/54) = 53.13deg).
- * Fixed so it stays still during scroll and covers `body::before`.
+ * Full-page aged diamond backdrop (62 × 66 px, nearly square, with leather/cloth grain and
+ * beveled seams). Fixed so it stays still during scroll and replaces `body::before`.
  */
 .backdrop {
   position: fixed;
   inset: 0;
   z-index: -1;
   pointer-events: none;
-  --d1: color-mix(in srgb, var(--lx-color-sheet-light) 36%, var(--lx-room-floor));
-  --d2: color-mix(in srgb, var(--lx-color-sheet) 72%, var(--lx-room-floor));
+  --d1: color-mix(in srgb, var(--lx-color-sheet-light) 26%, var(--lx-room-floor));
+  --d2: color-mix(in srgb, var(--lx-color-sheet) 52%, var(--lx-room-floor));
+  --seam-light: color-mix(in srgb, var(--lx-toy-sheen) 10%, var(--d1));
+  --seam-dark: color-mix(in srgb, var(--lx-color-shade) 45%, var(--d2));
   background:
+    var(--lx-matter-leather) 0 0 / var(--lx-matter-size),
+    var(--lx-matter-cloth) 36px 48px / 192px 192px,
     radial-gradient(
-      ellipse 80% 55% at 50% 22%,
-      color-mix(in srgb, var(--lx-toy-gold-top) 10%, transparent) 0%,
+      ellipse 85% 55% at 50% 18%,
+      color-mix(in srgb, var(--lx-toy-gold-top) 9%, transparent) 0%,
       transparent 70%
     ),
     radial-gradient(
       ellipse 95% 90% at 50% 50%,
-      transparent 48%,
-      color-mix(in srgb, var(--lx-room-vignette) 72%, transparent) 100%
+      transparent 42%,
+      color-mix(in srgb, var(--lx-room-vignette) 82%, transparent) 100%
     ),
-    linear-gradient(126.87deg, var(--d1) 25%, transparent 25.5%) 0 0 / 54px 72px,
-    linear-gradient(233.13deg, var(--d1) 25%, transparent 25.5%) 0 0 / 54px 72px,
-    linear-gradient(306.87deg, var(--d1) 25%, transparent 25.5%) 0 0 / 54px 72px,
-    linear-gradient(53.13deg, var(--d1) 25%, var(--d2) 25.5%) 0 0 / 54px 72px;
+    linear-gradient(
+      133.21deg,
+      var(--d1) 23.6%,
+      var(--seam-light) 24.5%,
+      var(--seam-dark) 25.2%,
+      transparent 25.8%
+    )
+    0 0 / 62px 66px,
+    linear-gradient(
+      226.79deg,
+      var(--d1) 23.6%,
+      var(--seam-light) 24.5%,
+      var(--seam-dark) 25.2%,
+      transparent 25.8%
+    )
+    0 0 / 62px 66px,
+    linear-gradient(313.21deg, var(--d1) 23.8%, var(--seam-dark) 24.8%, transparent 25.5%) 0 0 /
+    62px 66px,
+    linear-gradient(46.79deg, var(--d1) 23.8%, var(--seam-dark) 24.8%, var(--d2) 25.5%) 0 0 / 62px
+    66px;
+}
+
+/* --- Sticky Header Bar --- */
+
+.topBar {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  width: 100%;
+  padding: 12px 24px;
+  box-sizing: border-box;
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--lx-shelf-top) 94%, transparent),
+    color-mix(in srgb, var(--lx-shelf-bottom) 94%, transparent)
+  );
+  backdrop-filter: blur(8px);
+  border-bottom: 2px solid var(--lx-toy-outline);
+  box-shadow:
+    inset 0 -1px 0 color-mix(in srgb, var(--lx-shelf-gilt) 40%, transparent),
+    0 6px 20px var(--lx-toy-drop);
 }
 
 .top {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  width: min(1160px, 100% - 40px);
+  gap: 16px;
+  max-width: 1240px;
   margin: 0 auto;
-  padding: 22px 0 8px;
+}
+
+.topNav {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.topNav a {
+  padding: 7px 14px;
+  border-radius: var(--lx-radius-pill);
+  color: var(--lx-color-binding-ink-muted);
+  font-size: var(--lx-size-label);
+  font-weight: 700;
+  text-decoration: none;
+  transition:
+    background 140ms ease-out,
+    color 140ms ease-out;
+}
+
+.topNav a:hover {
+  background: color-mix(in srgb, var(--lx-toy-gold-top) 16%, transparent);
+  color: var(--lx-color-page-ink);
 }
 
 .topAction {
@@ -59,7 +123,7 @@
 }
 
 .topButton {
-  height: 42px;
+  height: 40px;
   padding: 0 18px;
   font-size: var(--lx-size-label);
 }
@@ -69,55 +133,193 @@
   pointer-events: none;
 }
 
+/* --- Main flow & Sculpted Diamond Cabinets --- */
+
 .main {
   display: flex;
   flex-direction: column;
-  gap: 112px;
+  gap: 56px;
   flex: 1;
-  padding: 24px 0 96px;
+  padding: 28px 0 88px;
 }
 
-.hero,
+.heroWrap,
 .section,
 .closing {
-  width: min(1160px, 100% - 40px);
+  width: min(1240px, 100% - 36px);
   margin: 0 auto;
   box-sizing: border-box;
 }
 
-/* --- Hero: clean typography on the left, the 3D sachet in the spotlight on the right --- */
+/*
+ * Every major stage is a sculpted, gold-tooled cabinet with aged leather grain, 3D beveled
+ * diamonds (62 × 66 px), warm overhead spotlight and deep hollow vignette.
+ */
+.cabinet {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  border-radius: 26px;
+  --d1: color-mix(in srgb, var(--lx-color-sheet-light) 48%, var(--lx-room-floor));
+  --d2: color-mix(in srgb, var(--lx-color-sheet) 78%, var(--lx-room-floor));
+  --lamp: color-mix(in srgb, var(--lx-toy-gold-top) 11%, transparent);
+  --seam-light: color-mix(in srgb, var(--lx-toy-sheen) 15%, var(--d1));
+  --seam-dark: color-mix(in srgb, var(--lx-color-shade) 42%, var(--d2));
+  background:
+    var(--lx-matter-leather) 0 0 / var(--lx-matter-size),
+    var(--lx-matter-cloth) 36px 48px / 192px 192px,
+    radial-gradient(
+      ellipse 85% 65% at 50% 25%,
+      var(--lamp) 0%,
+      transparent 60%,
+      color-mix(in srgb, var(--lx-color-shade) 54%, transparent) 100%
+    ),
+    radial-gradient(
+      circle at 50% 50%,
+      color-mix(in srgb, var(--lx-toy-sheen) 6%, transparent) 0%,
+      transparent 54%
+    )
+    0 0 / 62px 66px,
+    radial-gradient(
+      circle at 50% 50%,
+      color-mix(in srgb, var(--lx-toy-gold-top) 6%, transparent) 0%,
+      transparent 54%
+    )
+    31px 33px / 62px 66px,
+    linear-gradient(
+      133.21deg,
+      var(--d1) 23.6%,
+      var(--seam-light) 24.5%,
+      var(--seam-dark) 25.2%,
+      transparent 25.8%
+    )
+    0 0 / 62px 66px,
+    linear-gradient(
+      226.79deg,
+      var(--d1) 23.6%,
+      var(--seam-light) 24.5%,
+      var(--seam-dark) 25.2%,
+      transparent 25.8%
+    )
+    0 0 / 62px 66px,
+    linear-gradient(313.21deg, var(--d1) 23.8%, var(--seam-dark) 24.8%, transparent 25.5%) 0 0 /
+    62px 66px,
+    linear-gradient(46.79deg, var(--d1) 23.8%, var(--seam-dark) 24.8%, var(--d2) 25.5%) 0 0 / 62px
+    66px;
+  box-shadow:
+    0 0 0 3px var(--lx-toy-outline),
+    0 24px 52px var(--lx-toy-drop),
+    inset 0 0 0 5px color-mix(in srgb, var(--lx-room-floor) 68%, transparent),
+    inset 0 2px 0 5px color-mix(in srgb, var(--lx-toy-sheen) 14%, transparent),
+    inset 0 0 56px var(--lx-desk-hollow);
+}
+
+.cabinet[data-tone="velours"] {
+  --d1: color-mix(in srgb, var(--lx-color-banner-start) 52%, var(--lx-room-floor));
+  --d2: color-mix(in srgb, var(--lx-color-danger-edge) 58%, var(--lx-room-floor));
+  --lamp: color-mix(in srgb, var(--lx-toy-red-top) 12%, transparent);
+}
+
+.cabinet[data-tone="nuit"] {
+  --d1: color-mix(in srgb, var(--lx-mastery-ink-deep) 48%, var(--lx-room-floor));
+  --d2: color-mix(in srgb, var(--lx-mastery-ink-deep) 22%, var(--lx-room-floor));
+  --lamp: color-mix(in srgb, var(--lx-mastery-ink) 14%, transparent);
+}
+
+.cabinet[data-tone="emeraude"] {
+  --d1: color-mix(in srgb, var(--lx-desk-center) 88%, var(--lx-room-floor));
+  --d2: color-mix(in srgb, var(--lx-desk-edge) 92%, var(--lx-room-floor));
+  --lamp: color-mix(in srgb, var(--lx-color-success) 10%, transparent);
+}
+
+/* --- Acte I: Hero Cabinet & 4-Stat Ribbon --- */
+
+.heroWrap {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
 
 .hero {
   display: grid;
-  grid-template-columns: minmax(0, 1.1fr) minmax(320px, 0.9fr);
+  grid-template-columns: minmax(0, 1.08fr) minmax(360px, 0.92fr);
   align-items: center;
-  gap: 48px;
-  min-height: 540px;
-  padding-top: 12px;
+  gap: 36px;
+  padding: 44px 44px 48px;
 }
 
 .pitch {
+  position: relative;
+  z-index: 2;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 22px;
+  gap: 20px;
+}
+
+.heroBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  border: 1.5px solid color-mix(in srgb, var(--lx-shelf-gilt) 55%, transparent);
+  border-radius: var(--lx-radius-pill);
+  background: color-mix(in srgb, var(--lx-room-floor) 78%, transparent);
+  box-shadow: 0 3px 0 var(--lx-toy-outline);
+  color: var(--lx-toy-gold-top);
+  font-size: var(--lx-size-small);
+  font-weight: 800;
 }
 
 .title {
   margin: 0;
-  font-size: clamp(38px, 4.6vw, 60px);
+  font-size: clamp(36px, 4.3vw, 56px);
   line-height: 1.05;
   text-wrap: balance;
 }
 
 .leadText {
-  max-width: 48ch;
+  max-width: 50ch;
   margin: 0;
   font-family: var(--font-text), Georgia, serif;
-  font-size: clamp(18px, 1.4vw, 21px);
-  line-height: 1.55;
+  font-size: clamp(17px, 1.35vw, 20px);
+  line-height: 1.5;
   color: var(--lx-color-page-ink-soft);
   user-select: text;
+}
+
+.heroPillars {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 2px 0;
+  padding: 0;
+  list-style: none;
+}
+
+.heroPillar {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px 6px 8px;
+  border: 2px solid var(--lx-toy-outline);
+  border-radius: var(--lx-radius-pill);
+  background: linear-gradient(180deg, var(--lx-toy-paper-top), var(--lx-toy-paper-bottom));
+  box-shadow:
+    inset 0 -2px 0 var(--lx-toy-paper-edge),
+    0 3px 0 var(--lx-toy-outline);
+  color: var(--lx-color-paper-ink);
+  font-size: var(--lx-size-small);
+  font-weight: 800;
+}
+
+.pillarIcon {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--lx-toy-gold-top) 35%, transparent);
 }
 
 .doorCell {
@@ -158,37 +360,131 @@
   color: var(--lx-color-page-ink);
 }
 
-/* The sachet stage: no heavy box, only a warm spotlight halo behind the pouch. */
+/* The recessed emerald opening table on the right of the Hero. */
 .counter {
   position: relative;
+  isolation: isolate;
   display: grid;
   place-items: center;
-  min-height: 500px;
+  min-height: 510px;
+  padding: 24px;
+  box-sizing: border-box;
 }
 
-.counter::before {
-  content: "";
+.counterWell {
   position: absolute;
-  inset: 4% 8%;
+  inset: 0;
   z-index: -1;
-  border-radius: 50%;
-  background: radial-gradient(
-    closest-side,
-    color-mix(in srgb, var(--lx-toy-gold-top) 22%, transparent),
-    color-mix(in srgb, var(--lx-toy-gold-bottom) 6%, transparent) 62%,
-    transparent 100%
-  );
+  border-radius: 22px;
+  --d1: var(--lx-desk-center);
+  --d2: var(--lx-desk-edge);
+  --seam-light: color-mix(in srgb, var(--lx-toy-sheen) 12%, var(--d1));
+  --seam-dark: color-mix(in srgb, var(--lx-color-shade) 40%, var(--d2));
+  background:
+    var(--lx-matter-leather) 0 0 / var(--lx-matter-size),
+    radial-gradient(
+      ellipse 80% 65% at 50% 45%,
+      color-mix(in srgb, var(--lx-toy-gold-top) 16%, transparent) 0%,
+      transparent 62%,
+      color-mix(in srgb, var(--lx-color-shade) 52%, transparent) 100%
+    ),
+    linear-gradient(
+      133.21deg,
+      var(--d1) 23.6%,
+      var(--seam-light) 24.5%,
+      var(--seam-dark) 25.2%,
+      transparent 25.8%
+    )
+    0 0 / 62px 66px,
+    linear-gradient(
+      226.79deg,
+      var(--d1) 23.6%,
+      var(--seam-light) 24.5%,
+      var(--seam-dark) 25.2%,
+      transparent 25.8%
+    )
+    0 0 / 62px 66px,
+    linear-gradient(313.21deg, var(--d1) 23.8%, var(--seam-dark) 24.8%, transparent 25.5%) 0 0 /
+    62px 66px,
+    linear-gradient(46.79deg, var(--d1) 23.8%, var(--seam-dark) 24.8%, var(--d2) 25.5%) 0 0 / 62px
+    66px;
+  box-shadow:
+    0 0 0 3px var(--lx-toy-outline),
+    inset 0 6px 24px var(--lx-desk-hollow),
+    0 14px 28px var(--lx-toy-drop);
+}
+
+.counterHead {
+  position: absolute;
+  top: 22px;
+  left: 24px;
+  right: 24px;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  text-align: center;
   pointer-events: none;
+  transition: opacity 220ms ease-out;
+}
+
+.counterHead[data-gone] {
+  opacity: 0;
+}
+
+.counterName {
+  font-size: var(--lx-size-title);
 }
 
 .sachet {
   position: relative;
   display: flex;
-  width: 248px;
-  height: 416px;
+  width: 226px;
+  height: 380px;
+  margin-top: 16px;
   transition:
     scale var(--lx-open-arrive) cubic-bezier(0.3, 1.4, 0.5, 1),
     opacity var(--lx-open-burst) ease-in;
+}
+
+.heroFront {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  width: 100%;
+  height: 100%;
+}
+
+.heroPeeks {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  transition: opacity 220ms ease-out;
+}
+
+.heroPeeks[data-gone] {
+  opacity: 0;
+}
+
+.heroPeekLeft,
+.heroPeekRight {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  scale: 0.74;
+  filter: brightness(0.6) saturate(0.88);
+}
+
+.heroPeekLeft {
+  translate: -46% 4%;
+  rotate: -9deg;
+}
+
+.heroPeekRight {
+  translate: 46% 4%;
+  rotate: 9deg;
 }
 
 .sachet[data-moment="arriving"],
@@ -219,14 +515,16 @@
 
 .deskHint {
   position: absolute;
-  bottom: 6px;
+  bottom: 20px;
   left: 50%;
   translate: -50% 0;
+  z-index: 3;
   margin: 0;
   padding: 6px 16px;
-  border: 1.5px solid color-mix(in srgb, var(--lx-shelf-gilt) 40%, transparent);
+  border: 1.5px solid color-mix(in srgb, var(--lx-shelf-gilt) 50%, transparent);
   border-radius: var(--lx-radius-pill);
-  background: color-mix(in srgb, var(--lx-room-floor) 82%, transparent);
+  background: color-mix(in srgb, var(--lx-room-floor) 86%, transparent);
+  box-shadow: 0 3px 0 var(--lx-toy-outline);
   white-space: nowrap;
   pointer-events: none;
   transition: opacity 250ms ease-out;
@@ -240,14 +538,14 @@
   position: relative;
   width: 100%;
   height: 100%;
-  min-height: 460px;
+  min-height: 450px;
 }
 
 .revealed {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 18px;
+  gap: 16px;
   padding: 12px;
   animation: settle 380ms cubic-bezier(0.2, 1.2, 0.4, 1) both;
 }
@@ -261,7 +559,7 @@
   padding: 10px 18px;
   border: 1.5px solid color-mix(in srgb, var(--lx-shelf-gilt) 45%, transparent);
   border-radius: var(--lx-radius-pill);
-  background: color-mix(in srgb, var(--lx-room-floor) 85%, transparent);
+  background: color-mix(in srgb, var(--lx-room-floor) 88%, transparent);
   color: var(--lx-toy-paper-top);
   font-size: var(--lx-size-body);
   font-weight: 700;
@@ -278,15 +576,50 @@
   }
 }
 
-/* --- Sections: breathing directly on the diamond backdrop --- */
+/* 4-Stat Ribbon below the Hero cabinet */
+.statRibbon {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 18px;
+  margin: 0;
+  padding: 0;
+}
+
+.statPlaque {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 18px 16px 20px;
+  text-align: center;
+}
+
+.statFigure {
+  margin: 0;
+  font-size: clamp(26px, 2.6vw, 36px);
+  line-height: 1;
+}
+
+.statLabel {
+  font-size: var(--lx-size-label);
+  font-weight: 800;
+  color: var(--lx-color-paper-ink-muted);
+}
+
+/* --- Sculpted Sections --- */
 
 .section {
   display: flex;
   flex-direction: column;
-  gap: 44px;
+  gap: 38px;
+  padding: 48px 42px 52px;
 }
 
 .sectionHead {
+  position: relative;
+  z-index: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -297,13 +630,13 @@
 .sectionTitle {
   max-width: 28ch;
   margin: 0;
-  font-size: clamp(28px, 3.4vw, 42px);
+  font-size: clamp(28px, 3.2vw, 42px);
   line-height: 1.12;
   text-wrap: balance;
 }
 
 .sectionLead {
-  max-width: 54ch;
+  max-width: 58ch;
   margin: 0;
   font-family: var(--font-text), Georgia, serif;
   font-size: var(--lx-size-lead);
@@ -317,13 +650,41 @@
   color: var(--lx-shelf-gilt);
 }
 
-/* --- Section 1: Words to guess (flip cards) --- */
+/* --- Acte II: Interactive Guess Table --- */
+
+.guessBar {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 4px;
+}
+
+.guessScore {
+  padding: 7px 16px;
+  border: 1.5px solid color-mix(in srgb, var(--lx-shelf-gilt) 45%, transparent);
+  border-radius: var(--lx-radius-pill);
+  background: color-mix(in srgb, var(--lx-room-floor) 80%, transparent);
+  color: var(--lx-toy-paper-top);
+  font-size: var(--lx-size-small);
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.guessToggle {
+  height: 36px;
+  padding: 0 16px;
+  font-size: var(--lx-size-small);
+}
 
 .guess {
+  position: relative;
+  z-index: 1;
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   justify-items: center;
-  gap: 28px;
+  gap: 22px;
   margin: 0;
   padding: 0;
   list-style: none;
@@ -331,6 +692,14 @@
 
 .guessSlot {
   perspective: 1100px;
+}
+
+.cardMat {
+  padding: 12px;
+  border: 1.5px solid color-mix(in srgb, var(--lx-shelf-gilt) 30%, transparent);
+  border-radius: 20px;
+  background: color-mix(in srgb, var(--lx-room-floor) 52%, transparent);
+  box-shadow: inset 0 4px 14px var(--lx-desk-hollow);
 }
 
 .flip {
@@ -403,12 +772,14 @@
   opacity: 0.85;
 }
 
-/* --- Section 2: How to play (three uniform parchment leaves) --- */
+/* --- Acte III: How the game is played (3 royal leaves with live scenes) --- */
 
 .how {
+  position: relative;
+  z-index: 1;
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 28px;
+  gap: 24px;
   margin: 0;
   padding: 0;
   list-style: none;
@@ -422,22 +793,73 @@
   gap: 14px;
   height: 100%;
   box-sizing: border-box;
-  padding: 36px 28px 34px;
+  padding: 32px 26px 34px;
   text-align: center;
 }
 
-.howStep {
+.howArt {
+  position: relative;
   display: grid;
   place-items: center;
-  width: 38px;
-  height: 38px;
+  width: 100%;
+  height: 248px;
+  box-sizing: border-box;
+  padding: 14px;
+  border: 2.5px solid var(--lx-toy-outline);
+  border-radius: 16px;
+  --w1: color-mix(in srgb, var(--lx-color-sheet-light) 42%, var(--lx-room-floor));
+  --w2: color-mix(in srgb, var(--lx-color-sheet) 76%, var(--lx-room-floor));
+  background:
+    var(--lx-matter-leather) 0 0 / var(--lx-matter-size),
+    radial-gradient(
+      circle at 50% 45%,
+      color-mix(in srgb, var(--lx-toy-gold-top) 14%, transparent),
+      transparent 70%
+    ),
+    linear-gradient(135deg, var(--w1) 25%, transparent 25.5%) 0 0 / 38px 38px,
+    linear-gradient(225deg, var(--w1) 25%, transparent 25.5%) 0 0 / 38px 38px,
+    linear-gradient(315deg, var(--w1) 25%, transparent 25.5%) 0 0 / 38px 38px,
+    linear-gradient(45deg, var(--w1) 25%, var(--w2) 25.5%) 0 0 / 38px 38px;
+  box-shadow: inset 0 4px 14px var(--lx-desk-hollow);
+  color: var(--lx-color-page-ink);
+}
+
+.howArt[data-tone="emeraude"] {
+  --w1: var(--lx-desk-center);
+  --w2: var(--lx-desk-edge);
+}
+
+.howArt[data-tone="nuit"] {
+  --w1: color-mix(in srgb, var(--lx-mastery-ink-deep) 52%, var(--lx-room-floor));
+  --w2: color-mix(in srgb, var(--lx-mastery-ink-deep) 24%, var(--lx-room-floor));
+}
+
+.howArt[data-tone="velours"] {
+  --w1: color-mix(in srgb, var(--lx-color-banner-start) 52%, var(--lx-room-floor));
+  --w2: color-mix(in srgb, var(--lx-color-danger-edge) 58%, var(--lx-room-floor));
+}
+
+.howStep {
+  position: absolute;
+  top: -13px;
+  left: 14px;
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
   border: 2px solid var(--lx-toy-outline);
   border-radius: 50%;
   background: linear-gradient(180deg, var(--lx-toy-gold-top), var(--lx-toy-gold-bottom));
   box-shadow:
     inset 0 -2px 0 var(--lx-toy-gold-edge),
-    0 3px 0 var(--lx-toy-outline);
-  font-size: var(--lx-size-body-large);
+    0 2px 0 var(--lx-toy-outline);
+  font-size: var(--lx-size-body);
+}
+
+.howSachet {
+  display: flex;
+  width: 138px;
+  height: 228px;
 }
 
 .howTitle {
@@ -449,19 +871,126 @@
   margin: 0;
   font-family: var(--font-text), Georgia, serif;
   font-size: var(--lx-size-body-large);
-  line-height: 1.5;
+  line-height: 1.48;
   color: var(--lx-color-paper-ink);
 }
 
-/* --- Section 3: The six rarities --- */
+.masterySteps {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin-top: auto;
+  padding-top: 4px;
+  color: var(--lx-color-paper-ink-muted);
+  font-size: var(--lx-size-caption);
+  font-weight: 800;
+}
+
+.masteryBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border: 1.5px solid var(--lx-toy-outline);
+  border-radius: var(--lx-radius-pill);
+  background: var(--lx-room-floor);
+  color: var(--lx-color-page-ink);
+}
+
+.quiz {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: min(244px, 100%);
+}
+
+.quizPrompt {
+  margin: 0 0 4px;
+  font-family: var(--font-text), Georgia, serif;
+  font-size: var(--lx-size-small);
+  font-style: italic;
+  line-height: 1.35;
+  color: var(--lx-toy-paper-top);
+}
+
+.quizChoice {
+  height: 38px;
+  font-size: var(--lx-size-body);
+  transition: background 200ms ease-out;
+}
+
+.trade {
+  position: relative;
+  width: 224px;
+  height: 184px;
+}
+
+.tradeLeft,
+.tradeRight {
+  position: absolute;
+  top: 10px;
+  animation: 3.6s ease-in-out infinite;
+}
+
+.tradeLeft {
+  left: 0;
+  rotate: -6deg;
+  animation-name: trade-left;
+}
+
+.tradeRight {
+  right: 0;
+  rotate: 6deg;
+  animation-name: trade-right;
+}
+
+@keyframes trade-left {
+  0%,
+  30% {
+    translate: 0 0;
+    rotate: -6deg;
+  }
+  50% {
+    translate: 66px -28px;
+    rotate: 4deg;
+  }
+  70%,
+  100% {
+    translate: 132px 0;
+    rotate: 6deg;
+  }
+}
+
+@keyframes trade-right {
+  0%,
+  30% {
+    translate: 0 0;
+    rotate: 6deg;
+  }
+  50% {
+    translate: -66px 28px;
+    rotate: -4deg;
+  }
+  70%,
+  100% {
+    translate: -132px 0;
+    rotate: -6deg;
+  }
+}
+
+/* --- Acte IV: The six rarities on stepped pedestals --- */
 
 .ladder {
+  position: relative;
+  z-index: 1;
   display: grid;
   grid-template-columns: repeat(6, minmax(0, 1fr));
   align-items: end;
-  gap: 18px;
+  gap: 16px;
   margin: 0;
-  padding: 20px 0 0;
+  padding: 24px 0 0;
   list-style: none;
 }
 
@@ -470,12 +999,23 @@
   flex-direction: column;
   align-items: center;
   gap: 12px;
-  translate: 0 calc(var(--at) * -4px);
+  padding: 14px 10px 12px;
+  border: 1.5px solid color-mix(in srgb, var(--lx-shelf-gilt) 32%, transparent);
+  border-radius: 18px;
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--lx-shelf-top) 60%, transparent),
+    color-mix(in srgb, var(--lx-room-floor) 82%, transparent)
+  );
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, var(--lx-toy-sheen) 22%, transparent),
+    0 10px 20px var(--lx-toy-drop);
+  translate: 0 calc(var(--at) * -5px);
   transition: translate 160ms ease-out;
 }
 
 .rung:hover {
-  translate: 0 calc(var(--at) * -4px - 6px);
+  translate: 0 calc(var(--at) * -5px - 6px);
 }
 
 .rungCard {
@@ -515,12 +1055,21 @@
   color: var(--lx-color-paper-ink-muted);
 }
 
-/* --- Section 4: The three collections on uniform parchment leaves + daily riddle --- */
+/* --- Acte V: Bound Collection Tomes & Daily Riddle --- */
+
+.library {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: minmax(0, 1.9fr) minmax(300px, 1fr);
+  gap: 28px;
+  align-items: stretch;
+}
 
 .books {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 28px;
+  gap: 20px;
   margin: 0;
   padding: 0;
   list-style: none;
@@ -530,80 +1079,96 @@
   position: relative;
   display: flex;
   flex-direction: column;
+  justify-content: space-between;
   align-items: center;
-  gap: 16px;
+  gap: 14px;
   height: 100%;
+  min-height: 250px;
   box-sizing: border-box;
-  padding: 30px 24px 28px;
+  padding: 24px 18px 22px 28px;
   text-align: center;
+  border: var(--lx-toy-outline-width) solid var(--lx-toy-outline);
+  border-radius: 6px 18px 18px 6px;
+  background:
+    var(--lx-matter-leather) 0 0 / var(--lx-matter-size),
+    linear-gradient(
+      90deg,
+      var(--cover-edge) 0 11px,
+      color-mix(in srgb, var(--cover-edge) 50%, transparent) 11px 13px,
+      transparent 13px
+    ),
+    linear-gradient(160deg, var(--cover-top), var(--cover-bottom));
+  box-shadow:
+    inset 0 -4px 0 var(--cover-edge),
+    0 5px 0 var(--lx-toy-outline),
+    0 12px 22px var(--lx-toy-drop);
+  color: var(--lx-toy-paper-top);
+}
+
+.book::before {
+  content: "";
+  position: absolute;
+  inset: 7px 8px 9px 20px;
+  border: 1.5px solid var(--lx-shelf-gilt);
+  border-radius: 3px 12px 12px 3px;
+  opacity: 0.72;
+  pointer-events: none;
 }
 
 .bookText {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
+  gap: 6px;
 }
 
 .bookName {
-  font-family: var(--font-display), Georgia, serif;
-  font-size: var(--lx-size-title-small);
-  font-weight: 900;
-  color: var(--lx-color-paper-ink);
+  font-size: var(--lx-size-subtitle);
 }
 
-.bookWords {
-  font-size: var(--lx-size-label);
-  font-weight: 800;
-  color: var(--lx-color-paper-ink-muted);
-}
-
-.riddleBanner {
-  display: flex;
-  justify-content: center;
-}
-
-.riddleLink {
-  display: inline-flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  align-items: center;
-  gap: 10px 20px;
-  padding: 14px 26px;
-  border: 2px solid color-mix(in srgb, var(--lx-shelf-gilt) 55%, transparent);
-  border-radius: var(--lx-radius-pill);
-  background: color-mix(in srgb, var(--lx-room-floor) 78%, transparent);
-  box-shadow: 0 6px 18px var(--lx-toy-drop);
-  color: var(--lx-color-page-ink);
-  text-decoration: none;
-  transition:
-    translate 140ms ease-out,
-    border-color 140ms ease-out;
-}
-
-.riddleLink:hover {
-  translate: 0 -2px;
-  border-color: var(--lx-shelf-gilt);
-}
-
-.riddleCopy {
+.bookNote {
   font-family: var(--font-text), Georgia, serif;
-  font-size: var(--lx-size-body-large);
+  font-size: var(--lx-size-small);
+  line-height: 1.35;
   color: var(--lx-color-page-ink-soft);
 }
 
-.riddleCta {
-  font-size: var(--lx-size-label);
+.bookWords {
+  padding: 3px 10px;
+  border-radius: var(--lx-radius-pill);
+  background: color-mix(in srgb, var(--lx-room-floor) 55%, transparent);
+  font-size: var(--lx-size-caption);
   font-weight: 800;
-  color: var(--lx-color-rubric);
+}
+
+.riddle {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  color: var(--lx-color-paper-ink);
+}
+
+.riddleTitle {
+  font-family: var(--font-display), Georgia, serif;
+  font-size: var(--lx-size-title-small);
+  font-weight: 900;
+  line-height: 1.15;
+}
+
+.riddleText {
+  font-family: var(--font-text), Georgia, serif;
+  font-size: var(--lx-size-body);
+  line-height: 1.42;
 }
 
 /* --- Testimonials --- */
 
 .voices {
+  position: relative;
+  z-index: 1;
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  gap: 28px;
+  gap: 24px;
   margin: 0;
   padding: 0;
   list-style: none;
@@ -632,25 +1197,33 @@
   font-weight: 800;
 }
 
-/* --- Closing CTA & Footer --- */
+/* --- Acte VI: Grand Finale Banner & Footer --- */
 
 .closing {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 20px;
-  padding-top: 12px;
+  gap: 18px;
+  padding: 64px 32px;
   text-align: center;
 }
 
 .closingTitle {
   margin: 0;
-  font-size: clamp(32px, 4vw, 50px);
+  font-size: clamp(32px, 4vw, 52px);
+}
+
+.closingSub {
+  max-width: 48ch;
+  margin: 0 0 6px;
+  font-family: var(--font-text), Georgia, serif;
+  font-size: var(--lx-size-lead);
+  color: var(--lx-color-page-ink-soft);
 }
 
 .closing .doorCell {
   justify-items: center;
-  width: min(500px, 100%);
+  width: min(520px, 100%);
 }
 
 .closing .door {
@@ -670,9 +1243,9 @@
   width: 100%;
   box-sizing: border-box;
   margin: 0;
-  padding: 26px max(20px, (100% - 1160px) / 2) 32px;
-  background: color-mix(in srgb, var(--lx-room-floor) 82%, transparent);
-  border-top: 1px solid color-mix(in srgb, var(--lx-shelf-gilt) 28%, transparent);
+  padding: 26px max(20px, (100% - 1240px) / 2) 32px;
+  background: linear-gradient(180deg, var(--lx-shelf-top), var(--lx-shelf-bottom));
+  border-top: var(--lx-toy-outline-width) solid var(--lx-toy-outline);
   color: var(--lx-toy-paper-top);
   font-size: var(--lx-size-label);
 }
@@ -692,19 +1265,22 @@
 
 /* --- Responsive --- */
 
-@media (max-width: 1060px) {
+@media (max-width: 1080px) {
+  .topNav {
+    display: none;
+  }
+
   .hero {
     grid-template-columns: minmax(0, 1fr);
-    text-align: center;
-    gap: 32px;
+    padding: 36px 28px;
   }
 
-  .pitch {
-    align-items: center;
+  .statRibbon {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .door {
-    align-items: center;
+  .guess {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .ladder {
@@ -719,27 +1295,26 @@
 
   .rung {
     flex: none;
-    width: 164px;
+    width: 168px;
     scroll-snap-align: center;
     translate: none;
   }
 
   .how,
-  .books {
+  .library {
     grid-template-columns: minmax(0, 1fr);
-    gap: 20px;
+    gap: 24px;
   }
 }
 
 @media (max-width: 759px) {
   .main {
-    gap: 72px;
-    padding: 16px 0 64px;
+    gap: 36px;
+    padding: 16px 0 56px;
   }
 
-  .top {
-    width: calc(100% - 28px);
-    padding: 14px 0 4px;
+  .topBar {
+    padding: 10px 14px;
   }
 
   .topButton {
@@ -748,17 +1323,15 @@
     font-size: var(--lx-size-small);
   }
 
-  .hero,
+  .heroWrap,
   .section,
   .closing {
-    width: calc(100% - 28px);
+    width: calc(100% - 24px);
   }
 
   .hero {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-    min-height: 0;
+    padding: 26px 18px 28px;
+    gap: 24px;
   }
 
   .title {
@@ -770,26 +1343,30 @@
   }
 
   .counter {
-    width: 100%;
-    min-height: 370px;
+    min-height: 400px;
+    padding: 16px;
   }
 
   .sachet {
-    width: 196px;
-    height: 332px;
+    width: 188px;
+    height: 320px;
   }
 
   .deskHint {
-    bottom: 4px;
+    bottom: 12px;
   }
 
   .section {
     gap: 28px;
+    padding: 32px 16px 36px;
   }
 
   .guess {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 20px 12px;
+    gap: 16px 10px;
+  }
+
+  .cardMat {
+    padding: 6px;
   }
 
   .flipWord {
@@ -798,10 +1375,16 @@
     font-size: var(--lx-size-label);
   }
 
+  .books {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 16px;
+  }
+
   .book {
     flex-direction: row;
     justify-content: flex-start;
-    padding: 20px 22px;
+    min-height: 104px;
+    padding: 18px 18px 18px 26px;
     text-align: left;
   }
 
@@ -817,6 +1400,8 @@
     transition: none;
   }
 
+  .tradeLeft,
+  .tradeRight,
   .revealed {
     animation: none;
   }

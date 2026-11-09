@@ -60,10 +60,10 @@ const PALETTES: readonly {
 ];
 
 const CUTS: readonly { readonly id: CutId; readonly label: string; readonly note: string }[] = [
-  { id: "harlequin", label: "Losange vertical (54 × 72)", note: "Proportion 3 : 4" },
-  { id: "square", label: "Losange carré (56 × 56)", note: "Coupe à 45° façon Clash Royale" },
-  { id: "grand", label: "Grand losange (78 × 104)", note: "Ample, idéal pour un fond de page" },
-  { id: "petit", label: "Petit losange (36 × 48)", note: "Serré, idéal pour un encart" },
+  { id: "harlequin", label: "Losange classique (62 × 66)", note: "Presque carré, relief patiné" },
+  { id: "square", label: "Losange carré (60 × 60)", note: "Coupe exacte à 45°" },
+  { id: "grand", label: "Grand losange (84 × 90)", note: "Ample, idéal pour un fond de page" },
+  { id: "petit", label: "Petit losange (42 × 45)", note: "Serré, idéal pour un encart" },
 ];
 
 const CONTRASTS: readonly { readonly id: ContrastId; readonly label: string }[] = [

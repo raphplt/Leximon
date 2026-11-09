@@ -6,16 +6,12 @@ import { useRouter } from "next/navigation";
 import { api } from "@/lib/api";
 import { MainAction } from "@/library/play-pieces";
 import { useShared } from "@/player/resource";
-import { TitleRule } from "@/ui/ornaments";
+import { Fleurons, Tooling } from "@/ui/ornaments";
 import { Kicker, Lettering, toyClass } from "@/ui/toy";
 import type { Door } from "./door";
 import styles from "./landing-page.module.css";
 import { WaitlistForm } from "./waitlist-form";
 
-/**
- * Whether this browser already has a game, guest or member. A visitor who only reads the page
- * must not get a guest account.
- */
 const hasGame = sharedResource<boolean>(async () => {
   try {
     return await api.hasSession();
@@ -26,7 +22,6 @@ const hasGame = sharedResource<boolean>(async () => {
 
 const RESUME = "Reprendre la partie";
 
-/** Props that hide one of two pieces sharing a cell, and keep it out of reach. */
 function shownIf(shown: boolean, className: string | undefined) {
   return {
     className: shown ? className : `${className ?? ""} ${styles.away}`,
@@ -53,10 +48,7 @@ export function TopAction() {
   );
 }
 
-/**
- * The main action: the game, or the waitlist while the beta is closed; for a player, the way
- * back. Both answers keep their room in one cell, so nothing below jumps once it comes.
- */
+/** The main action: the game, or the waitlist while the beta is closed. */
 export function DoorAction({ door }: { readonly door: Door }) {
   const router = useRouter();
   const playing = useShared(hasGame) === true;
@@ -79,18 +71,26 @@ export function DoorAction({ door }: { readonly door: Door }) {
   );
 }
 
-/** The end of the page: the promise again, directly on the diamond backdrop. */
+/** Grand Finale banner: sculpted diamond cabinet with Fleurons and the main call to action. */
 export function Closing({ door }: { readonly door: Door }) {
   const playing = useShared(hasGame) === true;
   return (
-    <section className={styles.closing} aria-labelledby="closing-title">
-      <TitleRule className={styles.sectionRule} />
+    <section
+      className={`${styles.cabinet} ${styles.closing}`}
+      data-tone="emeraude"
+      aria-labelledby="closing-title"
+    >
+      <Tooling />
+      <Fleurons />
       <Kicker>Entrer dans la Bibliothèque</Kicker>
       <h2 id="closing-title" className={styles.closingTitle}>
         <Lettering>
           {playing || door === "open" ? "Tes sachets sont prêts." : "L'ouverture approche."}
         </Lettering>
       </h2>
+      <p className={styles.closingSub}>
+        Deux sachets gratuits dès ton arrivée pour tirer tes dix premiers mots rares.
+      </p>
       <DoorAction door={door} />
     </section>
   );

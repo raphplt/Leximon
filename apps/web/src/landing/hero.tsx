@@ -5,19 +5,33 @@ import { effects, openingTimes, rarityLights } from "@leximon/tokens";
 import { frequencyLine, LANDING_PITCH, LANDING_TITLE, stagingFor } from "@leximon/view-model";
 import { useEffect, useRef, useState } from "react";
 import { play } from "@/booster/feedback";
+import type { PackCollection } from "@/booster/pack-looks";
 import { RevealCard } from "@/booster/reveal-card";
 import { Sachet } from "@/booster/sachet";
 import { Card } from "@/components/card";
 import { RarityName } from "@/components/rarity-icon";
 import { PaperAction } from "@/library/play-pieces";
+import { Fleurons, GiltCorners, Tooling } from "@/ui/ornaments";
 import { useStage } from "@/ui/stage";
-import { Kicker, Lettering } from "@/ui/toy";
+import { Kicker, Leaf, Lettering, ToyIcon } from "@/ui/toy";
 import { DiscordLink } from "./discord";
 import type { Door } from "./door";
 import styles from "./landing-page.module.css";
 import { useNarrow } from "./narrow";
 import { DoorAction } from "./player-access";
 import type { Showcase } from "./showcase-cards";
+
+const SIDE_PACKS: readonly [PackCollection, PackCollection] = [
+  { id: "caracteres", name: "Caractères et travers", back: "burgundy" },
+  { id: "metiers", name: "Métiers et objets disparus", back: "green" },
+];
+
+const HERO_STATS = [
+  { figure: "1 561", label: "mots rares du Littré" },
+  { figure: "6", label: "paliers de rareté" },
+  { figure: "3", label: "collections illustrées" },
+  { figure: "0 €", label: "de hasard payant" },
+] as const;
 
 /** Where the seam of the sachet runs, from its top: the sparks of the charge leak from there. */
 const SEAM_AT = 0.13;
@@ -35,10 +49,6 @@ type HeroPhase =
 
 type Moment = "waiting" | "arriving" | "charging" | "burst";
 
-/**
- * The first screen: the promise, the door, and a real sachet that the visitor tears on the spot.
- * The card comes from the page's own few words: nothing is asked of the server and nothing is kept.
- */
 export function Hero({
   door,
   words,
@@ -122,70 +132,146 @@ export function Hero({
 
   const cardWidth = narrow ? 168 : 228;
   return (
-    <section className={styles.hero} aria-labelledby="landing-title">
-      <div className={styles.pitch}>
-        <Kicker>Jeu de cartes des mots rares et anciens</Kicker>
-        <h1 id="landing-title" className={styles.title}>
-          <Lettering>{LANDING_TITLE}</Lettering>
-        </h1>
-        <p className={styles.leadText}>{LANDING_PITCH}</p>
-        <DoorAction door={door} />
-        <DiscordLink className={styles.discord} />
+    <section className={styles.heroWrap} aria-labelledby="landing-title">
+      <div className={`${styles.cabinet} ${styles.hero}`} data-tone="acajou">
+        <Tooling />
+        <Fleurons />
+        <div className={styles.pitch}>
+          <span className={styles.heroBadge}>
+            <ToyIcon name="gilded" size={18} />
+            <span>Jeu de cartes à collectionner · 100 % gratuit</span>
+          </span>
+          <h1 id="landing-title" className={styles.title}>
+            <Lettering>{LANDING_TITLE}</Lettering>
+          </h1>
+          <p className={styles.leadText}>{LANDING_PITCH}</p>
+          <ul className={styles.heroPillars} aria-label="Piliers du jeu">
+            <li className={styles.heroPillar}>
+              <span className={styles.pillarIcon}>
+                <ToyIcon name="sachet" size={20} />
+              </span>
+              <span>Sachets gratuits</span>
+            </li>
+            <li className={styles.heroPillar}>
+              <span className={styles.pillarIcon}>
+                <ToyIcon name="challenges" size={20} />
+              </span>
+              <span>Défis & Dorure</span>
+            </li>
+            <li className={styles.heroPillar}>
+              <span className={styles.pillarIcon}>
+                <ToyIcon name="trades" size={20} />
+              </span>
+              <span>Échanges & Joutes</span>
+            </li>
+          </ul>
+          <DoorAction door={door} />
+          <DiscordLink className={styles.discord} />
+        </div>
+
+        <div ref={deskRef} className={styles.counter}>
+          <div className={styles.counterWell} aria-hidden="true">
+            <Tooling />
+          </div>
+          {phase.name === "sealed" || phase.name === "opening" ? (
+            <>
+              <div className={styles.counterHead} data-gone={phase.name === "opening" || undefined}>
+                <Kicker>Table d'ouverture en direct</Kicker>
+                <Lettering className={styles.counterName}>
+                  {pack?.name ?? "Les Fondateurs"}
+                </Lettering>
+              </div>
+              <div ref={sachetRef} className={styles.sachet} data-moment={moment}>
+                {!narrow && (
+                  <div
+                    className={styles.heroPeeks}
+                    data-gone={phase.name === "opening" || undefined}
+                    aria-hidden="true"
+                  >
+                    <div className={styles.heroPeekLeft}>
+                      <Sachet
+                        collection={SIDE_PACKS[0]}
+                        state="sealed"
+                        still
+                        onTearStart={() => undefined}
+                        onOpen={() => undefined}
+                      />
+                    </div>
+                    <div className={styles.heroPeekRight}>
+                      <Sachet
+                        collection={SIDE_PACKS[1]}
+                        state="sealed"
+                        still
+                        onTearStart={() => undefined}
+                        onOpen={() => undefined}
+                      />
+                    </div>
+                  </div>
+                )}
+                {pack !== null && (
+                  <div className={styles.heroFront}>
+                    <Sachet
+                      key={round}
+                      collection={pack}
+                      state={moment === "burst" ? "opening" : "sealed"}
+                      onTearStart={() => undefined}
+                      onOpen={open}
+                    />
+                  </div>
+                )}
+              </div>
+              <p className={styles.deskHint} data-gone={phase.name === "opening" || undefined}>
+                <Kicker>Déchire ou touche le sachet pour tirer une carte ›</Kicker>
+              </p>
+            </>
+          ) : phase.name === "revealing" ? (
+            <div className={styles.reveal}>
+              <RevealCard
+                card={phase.card}
+                collectionName={collectionNames[phase.card.collectionId] ?? ""}
+                backTone={pack?.back}
+                staging={stagingFor(phase.card.rarity, {
+                  reducedMotion: prefersReducedMotion(),
+                  hurried: false,
+                })}
+                width={cardWidth}
+                isNew
+                copies={1}
+                firstLabel={null}
+                stage={stage}
+                onNext={() => setPhase({ name: "revealed", card: phase.card })}
+              />
+            </div>
+          ) : (
+            <div className={styles.revealed}>
+              <Card
+                card={phase.card}
+                collectionName={collectionNames[phase.card.collectionId] ?? ""}
+                width={narrow ? 148 : 196}
+              />
+              <div className={styles.revealedText}>
+                <span className={styles.revealedRarity}>
+                  <RarityName rarity={phase.card.rarity} />
+                </span>
+                <span>{frequencyLine(phase.card.perBillion)}</span>
+                <PaperAction label="Ouvrir un autre sachet" onClick={again} />
+              </div>
+            </div>
+          )}
+        </div>
       </div>
 
-      <div ref={deskRef} className={styles.counter}>
-        {phase.name === "sealed" || phase.name === "opening" ? (
-          <>
-            <div ref={sachetRef} className={styles.sachet} data-moment={moment}>
-              {pack !== null && (
-                <Sachet
-                  key={round}
-                  collection={pack}
-                  state={moment === "burst" ? "opening" : "sealed"}
-                  onTearStart={() => undefined}
-                  onOpen={open}
-                />
-              )}
-            </div>
-            <p className={styles.deskHint} data-gone={phase.name === "opening" || undefined}>
-              <Kicker>Un sachet t'attend · Déchire-le ou touche-le</Kicker>
-            </p>
-          </>
-        ) : phase.name === "revealing" ? (
-          <div className={styles.reveal}>
-            <RevealCard
-              card={phase.card}
-              collectionName={collectionNames[phase.card.collectionId] ?? ""}
-              backTone={pack?.back}
-              staging={stagingFor(phase.card.rarity, {
-                reducedMotion: prefersReducedMotion(),
-                hurried: false,
-              })}
-              width={cardWidth}
-              isNew
-              copies={1}
-              firstLabel={null}
-              stage={stage}
-              onNext={() => setPhase({ name: "revealed", card: phase.card })}
-            />
-          </div>
-        ) : (
-          <div className={styles.revealed}>
-            <Card
-              card={phase.card}
-              collectionName={collectionNames[phase.card.collectionId] ?? ""}
-              width={narrow ? 148 : 204}
-            />
-            <div className={styles.revealedText}>
-              <span className={styles.revealedRarity}>
-                <RarityName rarity={phase.card.rarity} />
-              </span>
-              <span>{frequencyLine(phase.card.perBillion)}</span>
-              <PaperAction label="Un autre sachet" onClick={again} />
-            </div>
-          </div>
-        )}
-      </div>
+      <dl className={styles.statRibbon} aria-label="En quelques chiffres">
+        {HERO_STATS.map((stat) => (
+          <Leaf key={stat.label} className={styles.statPlaque}>
+            <GiltCorners />
+            <dd className={styles.statFigure}>
+              <Lettering>{stat.figure}</Lettering>
+            </dd>
+            <dt className={styles.statLabel}>{stat.label}</dt>
+          </Leaf>
+        ))}
+      </dl>
     </section>
   );
 }
