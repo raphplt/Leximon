@@ -498,11 +498,19 @@ function OfferView({
         <div className={styles.heroColumn}>
           <Hero kicker={PATRON_KICKER} patron={patron} me={me} />
           {patron.foundingOffer && foundingOffer !== null && (
-            <div className={styles.founding} style={rise(1)}>
-              <ToyBody matter="red" shape="round" className={styles.seal}>
-                <Icon name="crown" size={26} />
-              </ToyBody>
-              <p>{foundingOffer}</p>
+            <div style={rise(1)}>
+              <Leaf className={styles.founding}>
+                <ToyBody matter="red" shape="tag" className={styles.foundingRibbon}>
+                  <Lettering>{foundingOffer.ribbon}</Lettering>
+                </ToyBody>
+                <Avatar avatar={me?.avatar ?? null} frame={foundingOffer.frame} size={64} />
+                <div className={styles.foundingText}>
+                  <h2 className={styles.foundingTitle}>
+                    {foundingOffer.title} <PatronBadge mark="founder" compact />
+                  </h2>
+                  <p>{foundingOffer.line}</p>
+                </div>
+              </Leaf>
             </div>
           )}
         </div>

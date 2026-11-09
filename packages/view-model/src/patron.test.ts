@@ -173,9 +173,12 @@ describe("cosmetics", () => {
 
 describe("the founding offer", () => {
   it("names its last day and what a founder keeps, while it is open", () => {
-    expect(patronFoundingOffer(Date.parse("2026-11-20T12:00:00Z"))).toBe(
-      "Abonne-toi d'ici le 8 décembre pour devenir Mécène fondateur. Tu reçois le cadre Tessère et le badge de fondateur, gardés à vie.",
-    );
+    expect(patronFoundingOffer(Date.parse("2026-11-20T12:00:00Z"))).toEqual({
+      ribbon: "Jusqu'au 8 décembre",
+      title: "Deviens Mécène fondateur",
+      line: "Abonne-toi avant la fin de l'offre et tu gardes à vie le cadre Tessère et le badge de fondateur.",
+      frame: "tessere",
+    });
   });
 
   it("is gone once the window has closed", () => {

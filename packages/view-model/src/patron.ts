@@ -184,20 +184,34 @@ export const PATRON_PERKS_TITLE = "Ce que tu reçois";
 /** At the foot of the offer, back up to the plans. */
 export const PATRON_CHOOSE_PLAN = "Choisir ma formule";
 
-/**
- * The founding offer while its window is open: its last day, and what a founder keeps for life.
- * `null` once it has closed.
- */
+/** The founding offer, in the pieces its card shows. */
+export interface PatronFoundingOffer {
+  /** The last day, on the card's ribbon. */
+  readonly ribbon: string;
+  readonly title: string;
+  /** What a founder keeps for life. */
+  readonly line: string;
+  /** The founders' frame, to show it worn; `null` when founders get none. */
+  readonly frame: string | null;
+}
+
+/** The founding offer while its window is open; `null` once it has closed. */
 export function patronFoundingOffer(
   now: EpochMs,
   timeZone: string = PATRON_TIME_ZONE,
-): string | null {
+): PatronFoundingOffer | null {
   const rules = patronRulesAt(PATRON_SCHEDULE, now);
   const window = rules.founding;
   if (window === null || now < window.from || now >= window.until) return null;
   const last = patronDay(new Date(window.until - 1).toISOString(), now, timeZone);
   const kept = [...rules.founderCosmetics.map(patronCosmeticName), "le badge de fondateur"];
-  return `Abonne-toi d'ici le ${last} pour devenir Mécène fondateur. Tu reçois ${kept.slice(0, -1).join(", ")} et ${kept.at(-1)}, gardés à vie.`;
+  const frame = rules.founderCosmetics.find((cosmetic) => cosmetic.kind === "frame");
+  return {
+    ribbon: `Jusqu'au ${last}`,
+    title: "Deviens Mécène fondateur",
+    line: `Abonne-toi avant la fin de l'offre et tu gardes à vie ${kept.slice(0, -1).join(", ")} et ${kept.at(-1)}.`,
+    frame: frame?.kind === "frame" ? frame.frame : null,
+  };
 }
 
 /** The box the player ticks before paying; its final wording comes from the lawyer. */

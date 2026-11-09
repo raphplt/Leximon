@@ -117,32 +117,46 @@
   rotate: -8deg;
 }
 
+/* The founding offer: a leaf of paper under a red ribbon, with the founders' frame worn. */
 .founding {
+  position: relative;
   display: flex;
   align-items: center;
-  gap: 14px;
-  padding: 12px 18px;
-  border: var(--lx-toy-outline-width) solid var(--lx-toy-outline);
-  border-radius: var(--lx-radius-pill);
-  background: linear-gradient(180deg, var(--lx-toy-red-top), var(--lx-toy-red-bottom));
-  box-shadow: 0 4px 0 var(--lx-toy-red-edge);
-  color: var(--lx-toy-gold-top);
+  gap: 22px;
+  margin-top: 14px;
+  padding: 26px 22px 20px 26px;
   font-size: var(--lx-size-body);
-  font-weight: 800;
-  line-height: 1.35;
+  line-height: 1.4;
 }
 
-.founding p {
+.foundingRibbon {
+  position: absolute;
+  top: -14px;
+  left: 20px;
+  padding: 3px 12px 6px;
+  font-size: var(--lx-size-small);
+  white-space: nowrap;
+}
+
+.foundingText {
+  display: grid;
+  gap: 4px;
+}
+
+.foundingText p {
   margin: 0;
 }
 
-.seal {
-  display: grid;
-  place-items: center;
-  flex: none;
-  width: 46px;
-  height: 46px;
-  color: var(--lx-toy-gold-top);
+.foundingTitle {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  font-family: var(--font-display), Georgia, serif;
+  font-size: var(--lx-size-subtitle);
+  font-weight: 900;
+  line-height: 1.15;
 }
 
 /*
