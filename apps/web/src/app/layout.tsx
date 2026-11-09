@@ -4,6 +4,9 @@ import { Bricolage_Grotesque, Fraunces, Newsreader } from "next/font/google";
 import { Umami } from "@/analytics/umami";
 import { SourceCapture } from "@/beta/source-capture";
 import "./globals.css";
+// The pieces' base rules must come before every module that restyles a piece. The production
+// build orders shared CSS chunks on its own, so a piece imported first by a page can land last.
+import "@/ui/toy.module.css";
 
 export const metadata: Metadata = {
   // Shared images (`opengraph-image.tsx`) need absolute URLs.
