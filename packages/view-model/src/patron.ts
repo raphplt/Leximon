@@ -52,6 +52,7 @@ export const PATRON_BENEFITS: readonly string[] = [
   "Des éditions de bibliothèque pour imprimer tes gravures à la sanguine, au lavis ou à l'encre de Chine, et une nouvelle chaque mois.",
   "Le cabinet de chaque mot, ouvert depuis sa carte, avec son usage dans les livres depuis 1800, son article du Littré et sa famille.",
   "Le titre et le badge de mécène sur ton profil, trois cartes épinglées de plus et ton pseudo sur la page des mécènes.",
+  "Une voix dans le vote des mécènes sur le thème d'une prochaine collection, et un sceau de cire sur tes sachets.",
 ];
 
 export const PATRON_INTRO =

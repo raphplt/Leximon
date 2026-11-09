@@ -103,7 +103,14 @@ import styles from "./patron-screen.module.css";
 const THANKS_QUERY = "merci";
 
 /** The icon of each benefit, in the order of the list. */
-const BENEFIT_ICONS: readonly ToyIconName[] = ["chest", "scroll", "ink", "books", "gilded"];
+const BENEFIT_ICONS: readonly ToyIconName[] = [
+  "chest",
+  "scroll",
+  "ink",
+  "books",
+  "gilded",
+  "community",
+];
 
 const WELCOME_ICONS: Readonly<Record<PatronWelcomeKind, ToyIconName>> = {
   mark: "gilded",
