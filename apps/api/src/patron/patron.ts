@@ -265,6 +265,15 @@ export async function readPatronWardrobe(
   ];
 }
 
+/** A paying patron now: the trial gives the title and the badge, not this. */
+export async function paysAsPatron(db: Reader, userId: string): Promise<boolean> {
+  const [row] = await db
+    .select({ status: patronSubscriptions.status, firstPaidAt: patronSubscriptions.firstPaidAt })
+    .from(patronSubscriptions)
+    .where(eq(patronSubscriptions.userId, userId));
+  return standingOfRow(row) === "patron";
+}
+
 /** The marks of several players in one query, by user id; players without one are missing. */
 export async function readPatronMarks(
   db: Reader,

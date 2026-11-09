@@ -4,6 +4,7 @@ import { sachetContents } from "@leximon/view-model";
 import Image from "next/image";
 import { type CSSProperties, useEffect, useRef, useState } from "react";
 import { useHoloLight } from "@/components/use-holo-light";
+import { Icon } from "@/ui/icon";
 import { play, vibrate } from "./feedback";
 import { PackSeal, packVariables } from "./pack-looks";
 import type { PackProps } from "./pack-shape";
@@ -32,6 +33,7 @@ export function Sachet({
   refill = null,
   refillLabel = null,
   still = false,
+  patron = false,
 }: PackProps) {
   const sealed = state === "sealed";
   const refilled = useRefilled(state, refill);
@@ -127,6 +129,7 @@ export function Sachet({
               <span className={styles.volume} aria-hidden="true" />
               <span className={styles.glare} aria-hidden="true" />
             </button>
+            {patron && <PatronWax />}
             <div ref={tear.strip} className={styles.strip} {...tear.handlers} aria-hidden="true">
               <div className={styles.stripKept}>
                 déchirer ici ▸<span className={styles.glare} />
@@ -138,6 +141,22 @@ export function Sachet({
           </div>
         </div>
       </div>
+    </div>
+  );
+}
+
+/**
+ * The patron's wax seal across the tear line, a crown pressed in it. It is drawn twice, each copy
+ * showing one half, so that it can break in two when the strip goes.
+ */
+function PatronWax() {
+  return (
+    <div className={styles.wax} aria-hidden="true">
+      {[styles.waxLeft, styles.waxRight].map((half) => (
+        <span key={half} className={`${styles.waxHalf} ${half}`}>
+          <Icon name="crown" size={24} className={styles.waxCrown} />
+        </span>
+      ))}
     </div>
   );
 }

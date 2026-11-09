@@ -38,6 +38,11 @@ export const profileResponseSchema = z.object({
   level: z.int().positive(),
   memberSince: timestampSchema,
   patron: patronMarkSchema,
+  /**
+   * A paying patron now, never during the trial: the wax seal on the sachets. Lost when the
+   * subscription stops, unlike the founder's mark.
+   */
+  patronPaying: z.boolean().default(false),
   /** `null` without a clan. */
   clan: profileClanSchema.nullable(),
   banner: profileBannerSchema,

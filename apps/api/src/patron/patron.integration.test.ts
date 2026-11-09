@@ -663,6 +663,7 @@ describe("the title and the mark", () => {
     const during = await readProfile(member);
     expect(during.wardrobe.titles).toContain("Mécène");
     expect(during.patron).toBe("patron");
+    expect(during.patronPaying).toBe(false);
     expect((await readPatron(member)).mark).toBe("patron");
 
     stripe.subscriptions.set(subscription.id, { ...subscription, status: "canceled" });
@@ -672,17 +673,19 @@ describe("the title and the mark", () => {
     expect(after.patron).toBeNull();
   });
 
-  it("keeps a founder's mark for life", async () => {
+  it("keeps a founder's mark for life, the seal of the sachets only while paying", async () => {
     const { member, customerId, subscription } = await payingPatron();
     await db
       .update(schema.patronSubscriptions)
       .set({ founderAt: new Date() })
       .where(eq(schema.patronSubscriptions.userId, member.userId));
     expect((await readProfile(member)).wardrobe.titles).toContain("Mécène fondateur");
+    expect((await readProfile(member)).patronPaying).toBe(true);
     stripe.subscriptions.set(subscription.id, { ...subscription, status: "canceled" });
     await sendEvent("customer.subscription.deleted", { id: subscription.id, customer: customerId });
     const after = await readProfile(member);
     expect(after.patron).toBe("founder");
+    expect(after.patronPaying).toBe(false);
     expect(after.wardrobe.titles).not.toContain("Mécène fondateur");
   });
 

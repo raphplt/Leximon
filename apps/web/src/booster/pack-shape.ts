@@ -18,4 +18,9 @@ export interface PackProps {
   readonly refillLabel?: string | null | undefined;
   /** Held still: a sachet waiting behind the counter's does not sway. */
   readonly still?: boolean | undefined;
+  /**
+   * A paying patron's: a wax seal that breaks as it opens. The same time and the same cards: it
+   * says nothing of what is inside.
+   */
+  readonly patron?: boolean | undefined;
 }

@@ -3,7 +3,7 @@ import { type Database, schema } from "@leximon/db";
 import { and, eq, inArray, isNotNull, ne, sql } from "drizzle-orm";
 import { z } from "zod";
 import { signPayload, verifySignedPayload } from "../campaigns/signatures";
-import { standingOfRow } from "./patron";
+import { paysAsPatron, standingOfRow } from "./patron";
 
 const { discordLinks, patronSubscriptions } = schema;
 
@@ -162,7 +162,7 @@ export async function linkDiscord(
   env: Env,
   input: { readonly userId: string; readonly code: string; readonly now: EpochMs },
 ): Promise<LinkResult> {
-  if (!(await paysNow(db, input.userId))) return { kind: "refused" };
+  if (!(await paysAsPatron(db, input.userId))) return { kind: "refused" };
   const identity = await discord.identify(input.code, redirectUriOf(env));
   return db.transaction(async (tx) => {
     const [before] = await tx
@@ -196,14 +196,6 @@ export async function linkDiscord(
       before !== undefined && before.discordUserId !== identity.id ? before.discordUserId : null;
     return { kind: "linked", previous, discordUserId: identity.id } as const;
   });
-}
-
-async function paysNow(db: Reader, userId: string): Promise<boolean> {
-  const [row] = await db
-    .select({ status: patronSubscriptions.status, firstPaidAt: patronSubscriptions.firstPaidAt })
-    .from(patronSubscriptions)
-    .where(eq(patronSubscriptions.userId, userId));
-  return standingOfRow(row) === "patron";
 }
 
 /** `DELETE /me/patron/discord`: the Discord account it was, for the role to leave it. */

@@ -42,7 +42,7 @@ import { play, prepareSounds } from "@/feedback/feedback";
 import { Desk, PaperAction } from "@/library/play-pieces";
 import { noteGained, OWNED_CARDS_MAX_AGE_MS, ownedCards, refreshIfRead } from "@/player/collection";
 import { useNow, useShared } from "@/player/shared";
-import { account, carnet, missions, publishProgress, wallet } from "@/player/state";
+import { account, carnet, missions, profile, publishProgress, wallet } from "@/player/state";
 import { usePlayerView } from "@/player/use-player-view";
 import { TAB_BAR_RISE } from "@/shell/tab-bar";
 import { colors, fontSizes, fonts, space } from "@/theme";
@@ -142,6 +142,7 @@ function PlayFlow() {
   });
   const view = usePlayerView();
   const who = useShared(account);
+  const me = useShared(profile);
   const now = useNow(15_000);
   const reduced = useReducedMotion();
   const focused = useIsFocused();
@@ -500,6 +501,7 @@ function PlayFlow() {
               // A guest out of sachets waits for an account, not for time.
               refill={mustSignUp ? null : (stock?.refill ?? null)}
               refillLabel={stock?.refillShort ?? null}
+              patron={me?.patronPaying === true}
               onTearStart={() => {
                 startRequest();
               }}

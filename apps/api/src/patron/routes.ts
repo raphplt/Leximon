@@ -30,8 +30,6 @@ import {
   slugSchema,
   type WordFindView,
 } from "@leximon/contract";
-import { schema } from "@leximon/db";
-import { eq } from "drizzle-orm";
 import { type Context, Hono } from "hono";
 import { z } from "zod";
 import { sendGameEvents } from "../clans/events";
@@ -59,8 +57,8 @@ import {
   openCheckout,
   openPortal,
   patronSales,
+  paysAsPatron,
   readPatron,
-  standingOfRow,
 } from "./patron";
 import { listPolls, openPoll, votePoll } from "./polls";
 import { findWord, InvalidReserveCursorError, searchReserve } from "./reserve";
@@ -141,14 +139,7 @@ export function patronRoutes(createBilling: BillingFactory) {
     const refuse = (error: DiscordLinkRefusal) =>
       c.json<{ error: DiscordLinkRefusal }>({ error }, 409);
     if (!discordConfigured(c.env)) return refuse("discord_unavailable");
-    const [row] = await c.var.db
-      .select({
-        status: schema.patronSubscriptions.status,
-        firstPaidAt: schema.patronSubscriptions.firstPaidAt,
-      })
-      .from(schema.patronSubscriptions)
-      .where(eq(schema.patronSubscriptions.userId, c.var.userId));
-    if (standingOfRow(row) !== "patron") return refuse("not_patron");
+    if (!(await paysAsPatron(c.var.db, c.var.userId))) return refuse("not_patron");
     const url = await discordAuthorizeUrl(c.env, {
       userId: c.var.userId,
       app: body.data.app,

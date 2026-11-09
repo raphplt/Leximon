@@ -1,5 +1,5 @@
 import type { CatalogCollectionFile } from "@leximon/contract";
-import { backTone } from "@leximon/tokens";
+import { backTone, iconStroke, icons } from "@leximon/tokens";
 import { TEAR_COMPLETE_AT, TEAR_STARTED_AT, tearProgress } from "@leximon/view-model";
 import { type ReactNode, useEffect, useRef, useState } from "react";
 import {
@@ -31,8 +31,10 @@ import Svg, {
   Ellipse,
   FeGaussianBlur,
   Filter,
+  G,
   LinearGradient,
   Path,
+  Polygon,
   RadialGradient,
   Rect,
   Stop,
@@ -100,6 +102,7 @@ export function Sachet({
   width,
   refill,
   refillLabel,
+  patron = false,
   onTearStart,
   onOpen,
 }: {
@@ -112,6 +115,11 @@ export function Sachet({
   readonly refill: number | null;
   /** Empty, the time left before the next one (« 12 min »). */
   readonly refillLabel: string | null;
+  /**
+   * A paying patron's: a wax seal that breaks as it opens. The same time and the same cards: it
+   * says nothing of what is inside.
+   */
+  readonly patron?: boolean;
   /** The tear has really begun: time to ask the server for the cards. */
   readonly onTearStart: () => void;
   readonly onOpen: () => void;
@@ -256,6 +264,7 @@ export function Sachet({
               />
             </Strip>
           )}
+          {patron && !(reduced && state === "opening") && <PatronWax u={u} fly={fly} />}
           <Glow u={u} glow={glow} />
           {state === "sealed" && (
             <View
@@ -451,6 +460,98 @@ function Shadow({
     </Animated.View>
   );
 }
+
+/** The wax seal's size, in units of the pouch. */
+const WAX = 54;
+/** Each half of the broken seal, as a polygon of its 54-unit square. */
+const WAX_HALVES = [
+  { side: -1, points: "0,0 29,0 25,20 30,33 26,54 0,54" },
+  { side: 1, points: "29,0 54,0 54,54 26,54 30,33 25,20" },
+] as const;
+
+/**
+ * The patron's wax seal across the tear line, a crown pressed in it. Drawn twice, each copy
+ * clipped to one half, it breaks in two and falls away as the strip flies off.
+ */
+function PatronWax({ u, fly }: { readonly u: number; readonly fly: SharedValue<number> }) {
+  const size = WAX * u;
+  return (
+    <View
+      pointerEvents="none"
+      style={{
+        position: "absolute",
+        left: (GRID.width / 2) * u - size / 2,
+        top: (STRIP - WAX / 2) * u,
+        width: size,
+        height: size,
+      }}
+    >
+      {WAX_HALVES.map((half) => (
+        <WaxHalf key={half.side} u={u} fly={fly} side={half.side} points={half.points} />
+      ))}
+    </View>
+  );
+}
+
+function WaxHalf({
+  u,
+  fly,
+  side,
+  points,
+}: {
+  readonly u: number;
+  readonly fly: SharedValue<number>;
+  readonly side: -1 | 1;
+  readonly points: string;
+}) {
+  const style = useAnimatedStyle(() => ({
+    opacity: 1 - fly.value,
+    transform: [
+      { translateX: side * 46 * u * fly.value },
+      { translateY: 90 * u * fly.value },
+      { rotate: `${side * 38 * fly.value}deg` },
+    ],
+  }));
+  const clip = `wax-clip-${side}`;
+  const melt = `wax-melt-${side}`;
+  return (
+    <Animated.View style={[StyleSheet.absoluteFill, style]}>
+      <Svg width="100%" height="100%" viewBox={`0 0 ${WAX} ${WAX}`}>
+        <Defs>
+          <ClipPath id={clip}>
+            <Polygon points={points} />
+          </ClipPath>
+          <RadialGradient id={melt} cx="50%" cy="50%" r="50%">
+            <Stop offset="0.4" stopColor="#E2604A" />
+            <Stop offset="0.72" stopColor="#A3201B" />
+            <Stop offset="1" stopColor="#5E0F0C" />
+          </RadialGradient>
+        </Defs>
+        <G clipPath={`url(#${clip})`}>
+          <Path
+            d={WAX_EDGE}
+            fill={`url(#${melt})`}
+            stroke="#5E0F0C"
+            strokeOpacity={0.5}
+            strokeWidth={2}
+          />
+          <Path
+            d={icons.crown}
+            transform="translate(15 15)"
+            fill="none"
+            stroke="#5E0F0C"
+            strokeWidth={iconStroke}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </G>
+      </Svg>
+    </Animated.View>
+  );
+}
+
+/** Poured wax: a disc whose edge swells here and there. */
+const WAX_EDGE = "M27 2 C38 1 51 10 52 25 C53 38 45 51 29 52 C15 53 3 45 2 30 C1 15 13 3 27 2 Z";
 
 /** Two cards rising out of the pouch as its strip flies off, between its back and its front. */
 function Burst({ u }: { readonly u: number }) {

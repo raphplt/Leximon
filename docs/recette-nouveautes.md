@@ -802,6 +802,11 @@ Préparer : `pnpm db:migrate`, un compte mécène qui a payé au moins une fois 
 - **Attendu :** Discord demande de connaître le compte et de rejoindre le serveur. Au retour, la page Mécène dit « Ton compte Discord est relié. Le rôle Mécène arrive dans une minute. » et nomme le compte relié ; le compte est sur le serveur, avec le rôle « Mécène » et l'accès au salon réservé. Délier retire le rôle. Une résiliation qui prend effet, ou la suppression du compte, retire aussi le rôle. L'essai lit « Le salon réservé sur Discord s'ouvre après ton premier paiement. », sans bouton. Un refus sur la page de Discord ramène sur la page Mécène avec « La liaison avec Discord n'a pas abouti. Réessaie. ».
 - **Retour :**
 
+### MEC-19 · Sceau de cire du sachet
+- **Faire :** avec un compte qui a payé, ouvre un sachet sur Jouer, sur le web puis sur le mobile. Recommence avec un compte en essai, puis avec un ancien mécène fondateur dont l'abonnement est arrêté.
+- **Attendu :** le sachet du mécène payant porte un sceau de cire rouge à la couronne, à cheval sur la ligne de déchirure. À l'ouverture, il se fend en deux et ses moitiés tombent pendant que la bande s'envole ; l'ouverture dure le même temps et les cartes se révèlent comme d'habitude. L'essai et l'ancien fondateur ont le sachet ordinaire. Avec « réduire les animations », le sceau disparaît sans tomber.
+- **Retour :**
+
 ## Mauvais choix des QCM
 
 Retour de bêta du 2026-10-31 : on trouvait la réponse par élimination (un verbe parmi des noms, un mot sans rapport avec le thème révisé). La nature des cartes vient de la publication du catalogue : en production, la colonne reste vide tant qu'une publication n'est pas passée, et les choix restent ceux d'avant.
