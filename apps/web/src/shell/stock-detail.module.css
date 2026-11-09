@@ -35,13 +35,19 @@
   line-height: 1;
 }
 
-/* The sachets stand in a row on their shelf, the empty places drawn in dashes; on a narrow
-   screen the places shrink rather than wrap. */
+/* The sachets stand in a niche hollowed in the paper, spread along it, the empty places drawn in
+   dashes; on a narrow screen the places shrink rather than wrap. */
 .slots {
   display: grid;
   grid-template-columns: repeat(var(--slots), minmax(0, 44px));
+  justify-content: space-between;
   gap: var(--lx-s4);
-  padding: 0 var(--lx-s4);
+  padding: var(--lx-s4) var(--lx-s5);
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--lx-color-paper-ink) 7%, transparent);
+  box-shadow:
+    inset 0 2px 3px color-mix(in srgb, var(--lx-toy-outline) 18%, transparent),
+    0 1px 0 color-mix(in srgb, var(--lx-toy-paper-top) 80%, transparent);
 }
 
 .slot {
@@ -55,6 +61,8 @@
 .small {
   grid-template-columns: repeat(var(--slots), minmax(0, 27px));
   gap: var(--lx-s2);
+  padding: var(--lx-s3) var(--lx-s5);
+  border-radius: 11px;
 }
 
 .small .slot {
@@ -119,16 +127,6 @@
 .garniInline {
   width: 17px;
   height: 17px;
-}
-
-/* A plank of the room's shelves under the row. */
-.ledge {
-  height: 8px;
-  margin-top: -2px;
-  border-top: 2px solid var(--lx-shelf-gilt);
-  border-radius: 3px;
-  background: linear-gradient(180deg, var(--lx-shelf-top), var(--lx-shelf-bottom));
-  box-shadow: 0 2px 0 var(--lx-toy-outline);
 }
 
 .note,

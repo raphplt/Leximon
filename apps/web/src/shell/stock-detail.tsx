@@ -58,7 +58,6 @@ export function StockDetail({
             );
           })}
         </div>
-        <span className={styles.ledge} aria-hidden="true" />
         <p className={free.refill === null ? styles.full : styles.note}>
           {free.refill !== null && <Icon name="clock" size={16} />}
           {free.note}
@@ -96,7 +95,6 @@ export function StockDetail({
             );
           })}
         </div>
-        <span className={styles.ledge} aria-hidden="true" />
         {reserve.garniLabel !== null && (
           <p className={styles.note}>
             <span className={styles.garniInline} style={GARNI_BADGE} aria-hidden="true">

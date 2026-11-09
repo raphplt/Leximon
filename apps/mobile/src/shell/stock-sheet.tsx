@@ -1,5 +1,5 @@
 import type { BoosterWalletResponse } from "@leximon/contract";
-import { room, toyMatters, toy as toyValues } from "@leximon/tokens";
+import { toyMatters, toy as toyValues } from "@leximon/tokens";
 import { SACHETS_TITLE, sachetsPanel, stockView } from "@leximon/view-model";
 import { router } from "expo-router";
 import { useState } from "react";
@@ -51,7 +51,6 @@ export function StockSheet({
             );
           })}
         </View>
-        <View style={styles.ledge} />
         <View style={styles.noteRow}>
           {free.refill !== null && <Icon name="clock" size={16} color={ink.pageInkMuted} />}
           <Text style={[styles.note, free.refill === null && styles.full]}>{free.note}</Text>
@@ -97,7 +96,6 @@ export function StockSheet({
             );
           })}
         </View>
-        <View style={styles.ledge} />
         {reserve.garniLabel !== null && (
           <View style={styles.noteRow}>
             <RarityChip rarity="rare" size={17} />
@@ -168,9 +166,19 @@ const styles = StyleSheet.create({
     lineHeight: 20,
     color: ink.pageInk,
   },
-  // The sachets stand in a row on their shelf; on a narrow phone the places shrink, never wrap.
-  slots: { flexDirection: "row", gap: space.s4, paddingHorizontal: space.s4 },
-  small: { gap: space.s2 },
+  // The sachets stand in a niche hollowed in the paper, spread along it; on a narrow phone the
+  // places shrink, never wrap.
+  slots: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    gap: space.s4,
+    paddingVertical: space.s4,
+    paddingHorizontal: space.s5,
+    borderRadius: 14,
+    backgroundColor: alpha(ink.pageInk, 0.07),
+    boxShadow: `inset 0 2px 3px ${alpha(toyValues.outline, 0.18)}, 0 1px 0 ${alpha(toyMatters.paper.top, 0.8)}`,
+  },
+  small: { gap: space.s2, paddingVertical: space.s3, borderRadius: 11 },
   slot: {
     flex: 1,
     maxWidth: 44,
@@ -209,16 +217,6 @@ const styles = StyleSheet.create({
     backgroundColor: alpha(toyMatters.gold.top, 0.7),
   },
   garni: { position: "absolute", top: -6, right: -6 },
-  // A plank of the room's shelves under the row.
-  ledge: {
-    height: 8,
-    marginTop: -2,
-    borderTopWidth: 2,
-    borderTopColor: room.shelf.gilt,
-    borderRadius: 3,
-    backgroundImage: `linear-gradient(180deg, ${room.shelf.top}, ${room.shelf.bottom})`,
-    boxShadow: `0 2px 0 ${toyValues.outline}`,
-  },
   noteRow: { flexDirection: "row", alignItems: "center", gap: space.s3, marginTop: space.s5 },
   note: { fontFamily: fonts.ui.bold, fontSize: fontSizes.label, color: ink.pageInkMuted },
   full: { color: ink.success },
