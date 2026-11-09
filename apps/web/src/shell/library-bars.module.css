@@ -253,8 +253,11 @@
 
 /* --- The phone band and tabs --- */
 
-/* On a narrow phone the XP bar would shrink to a sliver beside the medal: the medal stays alone. */
-@container (max-width: 109px) {
+/*
+ * On a narrow phone the XP bar would be too short for a four-figure count beside the medal:
+ * the medal stays alone.
+ */
+@container (max-width: 127px) {
   .gauge > * > :last-child {
     display: none;
   }

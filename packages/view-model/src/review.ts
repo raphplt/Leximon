@@ -113,7 +113,9 @@ function minutes(seconds: number): string {
 
 /** The gold button of the review and the length of its series. */
 export function reviewAction(summary: ReviewSummaryResponse): ReviewAction {
-  const { length } = summary.settings;
+  const owned = ownedWords(summary.levels);
+  // A series asks each word once: a small collection makes a shorter one.
+  const length = Math.min(summary.settings.length, Math.max(owned, 1));
   const waiting = summary.due + summary.fresh > 0;
   const typed = Math.min(summary.rising, length);
   const time = minutes(typed * TYPED_SECONDS + (length - typed) * CHOICE_SECONDS);
@@ -123,7 +125,7 @@ export function reviewAction(summary: ReviewSummaryResponse): ReviewAction {
     estimate: waiting
       ? `La révision pose ${length} ${plural(length, "question", "questions")} et dure ${time}.`
       : `L'entraînement pose ${length} ${plural(length, "question", "questions")} sur tes mots les plus fragiles et dure ${time}.`,
-    disabled: ownedWords(summary.levels) === 0,
+    disabled: owned === 0,
   };
 }
 

@@ -229,7 +229,8 @@
 
   .xpText {
     position: absolute;
-    inset: 0;
+    /* Centred in what shows of the bar: its first pixels lie under the medal. */
+    inset: 0 0 0 14px;
     display: grid;
     place-items: center;
     font:

@@ -114,6 +114,19 @@ describe("what waits", () => {
       "La révision pose 5 questions et dure environ 1 minute.",
     );
   });
+
+  it("announces no more questions than the words owned", () => {
+    const few = summary({
+      due: 0,
+      fresh: 5,
+      rising: 0,
+      levels: { blank: 5, sketch: 0, ink: 0, gilded: 0 },
+    });
+    expect(reviewAction(few)).toMatchObject({
+      count: 5,
+      estimate: "La révision pose 5 questions et dure environ 1 minute.",
+    });
+  });
 });
 
 describe("settings and streak", () => {
