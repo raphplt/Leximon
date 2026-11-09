@@ -121,10 +121,9 @@
 
 .mailHeading {
   margin: 0 0 var(--lx-s4);
-  font-size: var(--lx-size-caption);
+  font-family: var(--font-display), Georgia, serif;
+  font-size: var(--lx-size-body);
   font-weight: 800;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
   color: var(--lx-color-page-ink-faint);
 }
 

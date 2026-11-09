@@ -306,10 +306,9 @@ const styles = StyleSheet.create({
     color: paperColors.pageInk,
   },
   subheading: {
+    fontFamily: fonts.displayBold,
     marginTop: space.s4,
-    fontFamily: fonts.ui.extrabold,
-    fontSize: fontSizes.caption,
-    letterSpacing: 2,
+    fontSize: fontSizes.body,
     color: paperColors.pageInkMuted,
   },
   century: { fontFamily: fonts.ui.extrabold, fontSize: fontSizes.body, color: paperColors.pageInk },

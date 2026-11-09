@@ -105,10 +105,9 @@
   padding: var(--lx-s5) var(--lx-s6);
   border-bottom: 1px solid color-mix(in srgb, var(--lx-color-page-ink) 10%, transparent);
   color: var(--lx-color-page-ink-muted);
-  font-size: var(--lx-size-caption);
+  font-family: var(--font-display), Georgia, serif;
+  font-size: var(--lx-size-body);
   font-weight: 800;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
 }
 
 .playerRows {

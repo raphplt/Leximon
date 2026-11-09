@@ -101,9 +101,8 @@ export function EditionPicker({ cardId }: { readonly cardId: string }) {
 const styles = StyleSheet.create({
   picker: { gap: space.s4, alignItems: "flex-start" },
   kicker: {
-    fontFamily: fonts.ui.extrabold,
-    fontSize: fontSizes.caption,
-    letterSpacing: 2,
+    fontFamily: fonts.displayBold,
+    fontSize: fontSizes.body,
     color: paperColors.pageInkMuted,
   },
   options: { flexDirection: "row", flexWrap: "wrap", gap: space.s3 },

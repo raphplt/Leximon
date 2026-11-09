@@ -207,10 +207,9 @@
 
 .shelfTitle {
   margin: 14px 0 2px;
-  font-size: var(--lx-size-micro);
+  font-family: var(--font-display), Georgia, serif;
+  font-size: var(--lx-size-body);
   font-weight: 800;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
   color: var(--lx-color-page-ink-muted);
 }
 
@@ -517,10 +516,9 @@
 
 .sheetTitle {
   margin: 0;
-  font-size: var(--lx-size-label);
+  font-family: var(--font-display), Georgia, serif;
+  font-size: var(--lx-size-body-large);
   font-weight: 800;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
   color: var(--lx-color-page-ink-muted);
 }
 

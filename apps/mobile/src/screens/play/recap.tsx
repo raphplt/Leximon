@@ -438,9 +438,8 @@ const styles = StyleSheet.create({
   },
   tally: { flex: 1, alignItems: "center", gap: space.s2 },
   tallyName: {
-    fontFamily: fonts.ui.extrabold,
-    fontSize: fontSizes.caption,
-    letterSpacing: 1.6,
+    fontFamily: fonts.displayBold,
+    fontSize: fontSizes.body,
     color: colors.pageInkMuted,
   },
   tallyFigure: { flexDirection: "row", alignItems: "center", gap: space.s3 },

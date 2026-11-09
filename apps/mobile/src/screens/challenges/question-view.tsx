@@ -174,7 +174,7 @@ function Meeting({
   }, []);
   const content = (
     <>
-      <Text style={styles.kicker}>{MEET_KICKER.toUpperCase()}</Text>
+      <Text style={styles.kicker}>{MEET_KICKER}</Text>
       <View style={styles.meetingCard}>
         <Card card={card} collectionName={collectionName(catalog, card.collectionId)} width={230} />
       </View>
@@ -250,7 +250,7 @@ export function QuestionView({
 
   const prompt = (
     <>
-      <Text style={styles.kicker}>{questionKicker(question.format).toUpperCase()}</Text>
+      <Text style={styles.kicker}>{questionKicker(question.format)}</Text>
       {question.format === "definition" ? (
         <SpokenPrompt key={question.cardId} card={card} />
       ) : question.format === "listen" ? (
@@ -735,9 +735,8 @@ const styles = StyleSheet.create({
   },
   dot: { width: 10, height: 10, borderRadius: 5 },
   kicker: {
-    fontFamily: fonts.ui.extrabold,
-    fontSize: fontSizes.caption,
-    letterSpacing: 2,
+    fontFamily: fonts.displayBold,
+    fontSize: fontSizes.body,
     color: ink.pageInkMuted,
   },
   promptWord: {

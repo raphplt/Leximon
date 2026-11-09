@@ -482,10 +482,9 @@
 
 .sideLabel {
   margin: var(--lx-s5) 0 var(--lx-s3);
-  font-size: var(--lx-size-caption);
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
+  font-family: var(--font-display), Georgia, serif;
+  font-size: var(--lx-size-body);
+  font-weight: 800;
   color: var(--lx-color-page-ink-muted);
 }
 

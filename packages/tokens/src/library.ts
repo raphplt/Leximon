@@ -56,7 +56,7 @@ export const lettering = {
   minOutline: 3,
   /** The drop under the letters, in px. */
   drop: 2,
-  /** Small capitals above a title, in the gilt of the frame. */
+  /** A short title above a larger one, in the gilt of the frame. */
   kicker: "#E9C06A",
 } as const;
 

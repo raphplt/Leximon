@@ -42,10 +42,9 @@
 
 .kicker {
   position: relative;
-  font-size: var(--lx-size-micro);
+  font-family: var(--font-display), Georgia, serif;
+  font-size: var(--lx-size-body);
   font-weight: 800;
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
   color: var(--lx-lettering-kicker);
 }
 

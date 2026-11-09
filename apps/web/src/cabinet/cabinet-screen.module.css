@@ -50,10 +50,9 @@
 
 .subheading {
   margin: var(--lx-s8) 0 0;
-  font-size: var(--lx-size-label);
+  font-family: var(--font-display), Georgia, serif;
+  font-size: var(--lx-size-body-large);
   font-weight: 800;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
   color: var(--lx-color-paper-ink-muted);
 }
 

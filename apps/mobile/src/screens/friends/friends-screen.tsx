@@ -135,7 +135,7 @@ function FriendList({
 
   return (
     <Panel paper>
-      <Text style={styles.kicker}>TES AMIS</Text>
+      <Text style={styles.kicker}>Tes amis</Text>
       {list.length === 0 && <Text style={styles.empty}>{FRIENDS_EMPTY}</Text>}
       {view.searchable && (
         <>
@@ -304,7 +304,7 @@ function FriendLink({
   const places = betaPlacesLabel(placesLeft);
   return (
     <Panel paper>
-      <Text style={styles.kicker}>TON LIEN D'AMI</Text>
+      <Text style={styles.kicker}>Ton lien d'ami</Text>
       <Text style={styles.line}>
         Ceux qui entrent par ton lien deviennent tes amis. Quand l'un d'eux atteint le niveau 5,
         vous gagnez chacun un sachet bonus.
@@ -498,9 +498,8 @@ const styles = StyleSheet.create({
     marginTop: -10,
   },
   kicker: {
-    fontFamily: fonts.ui.extrabold,
-    fontSize: fontSizes.caption,
-    letterSpacing: 2,
+    fontFamily: fonts.displayBold,
+    fontSize: fontSizes.body,
     color: ink.pageInkMuted,
   },
   hint: {

@@ -268,7 +268,7 @@ export function ClanPage({
           )}
 
           <Panel paper>
-            <Text style={styles.kicker}>BIBLIOTHÈQUE DU CLAN</Text>
+            <Text style={styles.kicker}>Bibliothèque du clan</Text>
             <Text style={styles.libraryLine}>{libraryHeadline(rows)}</Text>
             {rows.map((row) => (
               <View key={row.collectionId} style={styles.libraryRow}>
@@ -308,7 +308,7 @@ export function ClanPage({
         <ScrollView contentContainerStyle={styles.page}>
           <MembersGround>
             <View style={styles.membersHead}>
-              <Text style={styles.kicker}>MEMBRES</Text>
+              <Text style={styles.kicker}>Membres</Text>
               <Text style={styles.small}>{view.clan.memberCount}</Text>
             </View>
             {members.map((entry) => {
@@ -430,7 +430,7 @@ function GoalPanel({
     <Panel paper>
       <View style={styles.goalHead}>
         <View style={styles.goalTitles}>
-          <Text style={styles.kicker}>OBJECTIF DE LA SEMAINE</Text>
+          <Text style={styles.kicker}>Objectif de la semaine</Text>
           <Text style={styles.goalTitle}>{goalTitle(goal)}</Text>
         </View>
         <Text style={styles.small}>{goalTimeLeft(goal.endsAt, now)}</Text>
@@ -529,9 +529,8 @@ const styles = StyleSheet.create({
     color: ink.pageInk,
   },
   kicker: {
-    fontFamily: fonts.ui.extrabold,
-    fontSize: fontSizes.caption,
-    letterSpacing: 2,
+    fontFamily: fonts.displayBold,
+    fontSize: fontSizes.body,
     color: ink.pageInkMuted,
   },
   xpHead: { gap: space.s1 },

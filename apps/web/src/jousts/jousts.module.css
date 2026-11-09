@@ -200,10 +200,9 @@
 }
 
 .furetName {
-  font-size: var(--lx-size-micro);
+  font-family: var(--font-display), Georgia, serif;
+  font-size: var(--lx-size-body);
   font-weight: 800;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
   color: var(--lx-color-rubric);
 }
 
@@ -940,11 +939,10 @@
 }
 
 .arenaKicker {
-  font-size: var(--lx-size-micro);
+  font-family: var(--font-display), Georgia, serif;
+  font-size: var(--lx-size-body);
   font-weight: 800;
-  letter-spacing: 0.22em;
   text-align: center;
-  text-transform: uppercase;
   color: var(--lx-lettering-kicker);
 }
 

@@ -163,7 +163,7 @@ function ClanVisit({
 
       <Panel paper>
         <View style={styles.membersHead}>
-          <Text style={styles.kicker}>MEMBRES</Text>
+          <Text style={styles.kicker}>Membres</Text>
           <Text style={styles.small}>{clan.memberCount}</Text>
         </View>
         {members.map((entry) => (
@@ -258,9 +258,8 @@ const styles = StyleSheet.create({
     color: ink.pageInkMuted,
   },
   kicker: {
-    fontFamily: fonts.ui.extrabold,
-    fontSize: fontSizes.caption,
-    letterSpacing: 2,
+    fontFamily: fonts.displayBold,
+    fontSize: fontSizes.body,
     color: ink.pageInkMuted,
   },
   membersHead: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },

@@ -238,7 +238,7 @@ export function CoffretHost() {
     <CoffretFrame visible={level !== null} onClose={close}>
       {step.name === "openedAll" ? (
         <>
-          <Text style={styles.kicker}>{openedLevelsLabel(step.levels).toUpperCase()}</Text>
+          <Text style={styles.kicker}>{openedLevelsLabel(step.levels)}</Text>
           <Animated.View entering={ZoomIn.duration(320)}>
             <ToyIcon name="chest" size={80} />
           </Animated.View>
@@ -287,7 +287,7 @@ export function CoffretHost() {
         </>
       ) : step.name === "claimingAll" ? (
         <>
-          <Text style={styles.kicker}>{coffretsLabel(step.total).toUpperCase()}</Text>
+          <Text style={styles.kicker}>{coffretsLabel(step.total)}</Text>
           <Box busy disabled onOpen={() => undefined} />
           <View accessibilityRole="header">
             <Lettering size={fontSizes.heading} style={styles.centered}>
@@ -322,9 +322,7 @@ export function CoffretHost() {
         </>
       ) : (
         <>
-          {level !== null && (
-            <Text style={styles.kicker}>{coffretReached(level).toUpperCase()}</Text>
-          )}
+          {level !== null && <Text style={styles.kicker}>{coffretReached(level)}</Text>}
           <Box
             busy={step.name === "claiming"}
             disabled={step.name === "claiming" || step.name === "refused"}
@@ -591,9 +589,8 @@ const styles = StyleSheet.create({
   },
   inner: { alignItems: "center", gap: space.s6, padding: space.s12 },
   kicker: {
-    fontFamily: fonts.ui.extrabold,
-    fontSize: fontSizes.caption,
-    letterSpacing: 2,
+    fontFamily: fonts.displayBold,
+    fontSize: fontSizes.body,
     color: lettering.kicker,
   },
   box: { width: BOX, height: BOX, alignItems: "center", justifyContent: "center" },

@@ -123,7 +123,7 @@ export function RunSummary({
   return (
     <View style={styles.arena}>
       <Desk style={StyleSheet.absoluteFill} />
-      <Text style={styles.kicker}>{kicker.toUpperCase()}</Text>
+      <Text style={styles.kicker}>{kicker}</Text>
       <View style={styles.title}>
         <Lettering size={fontSizes.titleLarge}>{RUN_DONE}</Lettering>
       </View>
@@ -203,10 +203,9 @@ function XpBar({ progress, xp }: { readonly progress: Progress; readonly xp: num
 const styles = StyleSheet.create({
   arena: { padding: space.s8, gap: space.s6, overflow: "hidden" },
   kicker: {
+    fontFamily: fonts.displayBold,
     textAlign: "center",
-    fontFamily: fonts.ui.extrabold,
-    fontSize: fontSizes.micro,
-    letterSpacing: 2.4,
+    fontSize: fontSizes.body,
     color: lettering.kicker,
   },
   title: { alignItems: "center" },

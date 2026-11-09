@@ -172,14 +172,13 @@ a.toy {
   text-shadow: 0 var(--lx-lettering-drop) 0 var(--lx-lettering-outline);
 }
 
-/* Small capitals above a title, in the gilt of the frame. */
+/* A short title above a larger one, in the gilt of the frame. */
 .kicker {
   color: var(--lx-lettering-kicker);
-  font:
-    800 var(--lx-size-micro) / 1 var(--font-ui),
-    sans-serif;
-  letter-spacing: 0.28em;
-  text-transform: uppercase;
+  font-family: var(--font-display), Georgia, serif;
+  font-size: var(--lx-size-body);
+  font-weight: 800;
+  line-height: 1.1;
   text-shadow: 0 1px 0 var(--lx-color-shade);
 }
 

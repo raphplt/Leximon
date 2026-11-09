@@ -38,7 +38,7 @@ export function Podium({ alone, now }: { readonly alone: boolean; readonly now: 
   return (
     <Panel paper>
       <View style={styles.head}>
-        <Text style={styles.kicker}>PODIUM DE LA SEMAINE</Text>
+        <Text style={styles.kicker}>Podium de la semaine</Text>
         {podium !== null && <Text style={styles.small}>{goalTimeLeft(podium.weekEnd, now)}</Text>}
       </View>
       {view === null ? (
@@ -105,9 +105,8 @@ const styles = StyleSheet.create({
     gap: space.s4,
   },
   kicker: {
-    fontFamily: fonts.ui.extrabold,
-    fontSize: fontSizes.caption,
-    letterSpacing: 2,
+    fontFamily: fonts.displayBold,
+    fontSize: fontSizes.body,
     color: ink.pageInkMuted,
   },
   small: { fontFamily: fonts.ui.medium, fontSize: fontSizes.small, color: ink.pageInkMuted },

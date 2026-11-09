@@ -140,7 +140,7 @@ export function WelcomeHost() {
     <CoffretFrame visible={visible} onClose={close} cloth>
       {step.name === "opened" ? (
         <>
-          <Text style={styles.kicker}>{WELCOME_TITLE.toUpperCase()}</Text>
+          <Text style={styles.kicker}>{WELCOME_TITLE}</Text>
           <Animated.View entering={ZoomIn.duration(320)}>
             <Lettering size={fontSizes.headingLarge}>{`Jour ${step.day} !`}</Lettering>
           </Animated.View>
@@ -167,7 +167,7 @@ export function WelcomeHost() {
       ) : (
         <>
           <Text style={styles.kicker}>
-            {(today === null ? WELCOME_TITLE : welcomeKicker(today, total)).toUpperCase()}
+            {today === null ? WELCOME_TITLE : welcomeKicker(today, total)}
           </Text>
           <View accessibilityRole="header">
             <Lettering size={fontSizes.heading} style={styles.centered}>
@@ -268,9 +268,8 @@ function Beckoning({ children }: { readonly children: ReactNode }) {
 
 const styles = StyleSheet.create({
   kicker: {
-    fontFamily: fonts.ui.extrabold,
-    fontSize: fontSizes.caption,
-    letterSpacing: 2,
+    fontFamily: fonts.displayBold,
+    fontSize: fontSizes.body,
     color: lettering.kicker,
   },
   days: {

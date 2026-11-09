@@ -329,7 +329,7 @@ export function RunScene({
   return (
     <View style={styles.arena}>
       <Desk style={StyleSheet.absoluteFill} />
-      <Text style={styles.kicker}>{kicker.toUpperCase()}</Text>
+      <Text style={styles.kicker}>{kicker}</Text>
       <View style={styles.hud}>
         <HudSide duelist={me} answers={results} total={questions} side="me" />
         <View style={styles.hudMiddle}>
@@ -705,10 +705,9 @@ function Ring({
 const styles = StyleSheet.create({
   arena: { padding: space.s8, gap: space.s6, minHeight: 560 },
   kicker: {
+    fontFamily: fonts.displayBold,
     textAlign: "center",
-    fontFamily: fonts.ui.extrabold,
-    fontSize: fontSizes.micro,
-    letterSpacing: 2.4,
+    fontSize: fontSizes.body,
     color: lettering.kicker,
   },
   hud: { flexDirection: "row", alignItems: "center", gap: space.s2 },

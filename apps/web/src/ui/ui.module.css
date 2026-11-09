@@ -289,10 +289,9 @@ a.chip {
 
 .kicker {
   margin: 0;
-  font-size: var(--lx-size-caption);
+  font-family: var(--font-display), Georgia, serif;
+  font-size: var(--lx-size-body);
   font-weight: 800;
-  letter-spacing: 0.24em;
-  text-transform: uppercase;
   color: var(--lx-lettering-kicker);
 }
 

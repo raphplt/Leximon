@@ -116,7 +116,7 @@ export function ClimbScene({
 
   return (
     <LeatherStage style={styles.arena}>
-      <Text style={styles.kicker}>{CLIMB_KICKER.toUpperCase()}</Text>
+      <Text style={styles.kicker}>{CLIMB_KICKER}</Text>
       <View ref={crest} collapsable={false} style={styles.stage}>
         {phase !== "new" ? (
           <Animated.View style={[styles.old, shaking]}>
@@ -165,9 +165,8 @@ export function ClimbScene({
 const styles = StyleSheet.create({
   arena: { minHeight: 440, alignItems: "center", justifyContent: "center", gap: space.s6 },
   kicker: {
-    fontFamily: fonts.ui.extrabold,
-    fontSize: fontSizes.micro,
-    letterSpacing: 2.4,
+    fontFamily: fonts.displayBold,
+    fontSize: fontSizes.body,
     color: lettering.kicker,
   },
   stage: { width: 220, height: 220, alignItems: "center", justifyContent: "center" },

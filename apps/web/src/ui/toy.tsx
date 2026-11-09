@@ -129,7 +129,7 @@ export function Lettering({
   );
 }
 
-/** Small capitals in gilt, above a title. */
+/** A short title in gilt, above a larger one. */
 export function Kicker({ children }: { readonly children: ReactNode }) {
   return <small className={styles.kicker}>{children}</small>;
 }

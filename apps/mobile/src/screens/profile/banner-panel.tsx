@@ -192,11 +192,9 @@ const cloth = {
 const styles = StyleSheet.create({
   panel: { gap: space.s6 },
   heading: {
+    fontFamily: fonts.displayBold,
     marginTop: space.s3,
-    fontFamily: fonts.ui.extrabold,
-    fontSize: fontSizes.caption,
-    letterSpacing: 0.8,
-    textTransform: "uppercase",
+    fontSize: fontSizes.body,
     color: colors.pageInkMuted,
   },
   tints: { flexDirection: "row", flexWrap: "wrap", gap: space.s5 },

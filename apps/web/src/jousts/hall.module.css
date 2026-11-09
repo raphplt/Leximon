@@ -19,10 +19,9 @@
 }
 
 .kicker {
-  font-size: var(--lx-size-micro);
+  font-family: var(--font-display), Georgia, serif;
+  font-size: var(--lx-size-body);
   font-weight: 800;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
   color: var(--lx-color-paper-ink-muted);
 }
 
@@ -457,10 +456,9 @@
   gap: 8px;
   padding: 2px 0;
   color: var(--lx-toy-green-bottom);
-  font-size: var(--lx-size-caption);
-  font-weight: 900;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
+  font-family: var(--font-display), Georgia, serif;
+  font-size: var(--lx-size-body);
+  font-weight: 800;
 }
 
 .zoneLine::before,
@@ -989,10 +987,9 @@
 }
 
 .kickerLight {
-  font-size: var(--lx-size-micro);
+  font-family: var(--font-display), Georgia, serif;
+  font-size: var(--lx-size-body);
   font-weight: 800;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
   color: var(--lx-lettering-kicker);
 }
 

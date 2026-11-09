@@ -250,7 +250,7 @@ function Hero({
           <LevelMedal level={progress.level} size={RING - 22} />
         </View>
         <View style={styles.heroText}>
-          {title !== null && <Text style={styles.kicker}>{title.toUpperCase()}</Text>}
+          {title !== null && <Text style={styles.kicker}>{title}</Text>}
           <Text style={styles.heroTitle}>Niveau {progress.level}</Text>
           <View style={styles.heroBar}>
             <View style={[styles.heroFill, { width: `${Math.round(ratio * 100)}%` }]} />
@@ -401,7 +401,7 @@ function Banner({ quarter }: { readonly quarter: Quarter }) {
           <Lettering size={fontSizes.title}>{quarter.name}</Lettering>
         </ToyBody>
       </View>
-      <Text style={styles.range}>{`${quarter.chapter} · ${quarter.range}`.toUpperCase()}</Text>
+      <Text style={styles.range}>{`${quarter.chapter} · ${quarter.range}`}</Text>
     </View>
   );
 }
@@ -727,7 +727,7 @@ function ChapterSignpost({
     >
       <ToyIcon name={open ? "community" : "lock"} size={28} />
       <View style={styles.signText}>
-        <Text style={styles.signKicker}>CHAPITRE SUIVANT</Text>
+        <Text style={styles.signKicker}>Chapitre suivant</Text>
         <Text style={styles.signName}>{name}</Text>
         <Text style={styles.signNote}>{note}</Text>
       </View>
@@ -752,7 +752,7 @@ function Detail({
   return (
     <Leaf style={styles.detail}>
       <View accessibilityLiveRegion="polite" style={styles.detailInside}>
-        <Text style={styles.kicker}>NIVEAU {detail.level}</Text>
+        <Text style={styles.kicker}>Niveau {detail.level}</Text>
         <Text style={styles.detailTitle}>{detail.title}</Text>
         {detail.items.map((item, index) => (
           // biome-ignore lint/suspicious/noArrayIndexKey: a fixed list; two rewards may be alike
@@ -812,9 +812,8 @@ function Unlocks({ level, now }: { readonly level: number; readonly now: number 
 
 const styles = StyleSheet.create({
   kicker: {
-    fontFamily: fonts.ui.extrabold,
-    fontSize: fontSizes.micro,
-    letterSpacing: 1.6,
+    fontFamily: fonts.displayBold,
+    fontSize: fontSizes.body,
     color: ink.pageInkMuted,
   },
   hero: { gap: space.s5, padding: space.s6 },
@@ -974,9 +973,8 @@ const styles = StyleSheet.create({
   },
   signText: { flexShrink: 1 },
   signKicker: {
-    fontFamily: fonts.ui.extrabold,
-    fontSize: 10,
-    letterSpacing: 1.4,
+    fontFamily: fonts.displayBold,
+    fontSize: fontSizes.body,
     color: toyValues.outline,
   },
   signName: { fontFamily: fonts.display, fontSize: fontSizes.body, color: toyValues.outline },
@@ -998,9 +996,8 @@ const styles = StyleSheet.create({
   tailLeft: { left: 0 },
   tailRight: { right: 0 },
   range: {
-    fontFamily: fonts.ui.extrabold,
-    fontSize: fontSizes.micro,
-    letterSpacing: 1.4,
+    fontFamily: fonts.displayBold,
+    fontSize: fontSizes.body,
     color: ink.pageInkMuted,
   },
   stop: { position: "absolute", left: 0, right: 0, height: ROAD_ROW },

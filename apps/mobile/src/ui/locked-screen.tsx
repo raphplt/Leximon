@@ -40,7 +40,7 @@ export function LockedScreen({
         <ToyBody matter="gold" shape="round" large style={styles.medal}>
           <Icon name={icon} size={38} color={toyValues.outline} />
         </ToyBody>
-        {level !== undefined && <Text style={styles.kicker}>NIVEAU {level}</Text>}
+        {level !== undefined && <Text style={styles.kicker}>Niveau {level}</Text>}
         <Text style={styles.title} accessibilityRole="header">
           {title}
         </Text>
@@ -75,9 +75,8 @@ const styles = StyleSheet.create({
   panel: { alignItems: "center", paddingVertical: space.s16, gap: space.s5 },
   medal: { width: 84, height: 84, marginBottom: space.s5 },
   kicker: {
-    fontFamily: fonts.ui.extrabold,
-    fontSize: fontSizes.caption,
-    letterSpacing: 2,
+    fontFamily: fonts.displayBold,
+    fontSize: fontSizes.body,
     color: ink.pageInkMuted,
   },
   title: {

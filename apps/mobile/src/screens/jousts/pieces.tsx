@@ -285,9 +285,9 @@ export function Notice({ children }: { readonly children: string | null }) {
   );
 }
 
-/** Small capitals above a leaf's content, in the paper's muted ink. */
+/** A short title above a leaf's content, in the paper's muted ink. */
 export function LeafKicker({ children }: { readonly children: string }) {
-  return <Text style={pieces.kicker}>{children.toUpperCase()}</Text>;
+  return <Text style={pieces.kicker}>{children}</Text>;
 }
 
 export const pieces = StyleSheet.create({
@@ -367,9 +367,8 @@ export const pieces = StyleSheet.create({
     backgroundColor: ink.pageRaised,
   },
   furetName: {
-    fontFamily: fonts.ui.extrabold,
-    fontSize: fontSizes.caption,
-    letterSpacing: 1,
+    fontFamily: fonts.displayBold,
+    fontSize: fontSizes.body,
     color: ink.rubric,
   },
   furetText: {
@@ -386,9 +385,8 @@ export const pieces = StyleSheet.create({
     textAlign: "center",
   },
   kicker: {
-    fontFamily: fonts.ui.extrabold,
-    fontSize: fontSizes.caption,
-    letterSpacing: 2,
+    fontFamily: fonts.displayBold,
+    fontSize: fontSizes.body,
     color: ink.pageInkMuted,
   },
   line: {

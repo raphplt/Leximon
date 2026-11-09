@@ -134,7 +134,7 @@ function Moment({
 
   return (
     <View style={styles.moment}>
-      <Text style={styles.kicker}>ÉCHANGE CONCLU</Text>
+      <Text style={styles.kicker}>Échange conclu</Text>
       <Text style={styles.title} accessibilityRole="header">
         {tradeDoneTitle(done.player)}
       </Text>
@@ -206,9 +206,8 @@ const styles = StyleSheet.create({
     backgroundColor: colors.sheet,
   },
   kicker: {
-    fontFamily: fonts.ui.extrabold,
-    fontSize: fontSizes.caption,
-    letterSpacing: 2,
+    fontFamily: fonts.displayBold,
+    fontSize: fontSizes.body,
     color: colors.success,
   },
   title: {

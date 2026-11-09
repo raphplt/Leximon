@@ -169,7 +169,7 @@ export function ReviewDesk({
   );
 }
 
-/** Small capitals above a title, on paper. */
+/** A short title above a larger one, on paper. */
 function PaperKicker({ children }: { readonly children: string }) {
   return <Text style={styles.kicker}>{children.toUpperCase()}</Text>;
 }
@@ -545,7 +545,7 @@ function Shelf({
       ))}
       {shelf.collections.length > 0 && (
         <>
-          <Text style={styles.shelfTitle}>LES COLLECTIONS</Text>
+          <Text style={styles.shelfTitle}>Les collections</Text>
           {shelf.collections.map((cover) => (
             <Cover
               key={cover.key}
@@ -560,7 +560,7 @@ function Shelf({
       )}
       {shelf.themes.length > 0 && (
         <>
-          <Text style={styles.shelfTitle}>LES THÈMES</Text>
+          <Text style={styles.shelfTitle}>Les thèmes</Text>
           <View style={styles.themes}>
             {shelf.themes.map((cover) => (
               <View key={cover.key} style={styles.theme}>
@@ -742,9 +742,8 @@ const styles = StyleSheet.create({
     paddingBottom: TAB_BAR_RISE + 24,
   },
   kicker: {
-    fontFamily: fonts.ui.extrabold,
-    fontSize: fontSizes.caption,
-    letterSpacing: 2,
+    fontFamily: fonts.displayBold,
+    fontSize: fontSizes.body,
     color: ink.pageInkMuted,
   },
   title: {
@@ -811,9 +810,8 @@ const styles = StyleSheet.create({
   settingsToy: { width: 46, height: 46 },
   sheet: { gap: space.s6 },
   sheetTitle: {
-    fontFamily: fonts.ui.extrabold,
-    fontSize: fontSizes.small,
-    letterSpacing: 1.5,
+    fontFamily: fonts.displayBold,
+    fontSize: fontSizes.body,
     color: ink.pageInkMuted,
   },
   options: { flexDirection: "row", flexWrap: "wrap", gap: space.s4 },
@@ -871,10 +869,9 @@ const styles = StyleSheet.create({
   blockLetter: { fontFamily: fonts.display, fontSize: fontSizes.bodyLarge, color: ink.pageInk },
   shelf: { gap: space.s7 },
   shelfTitle: {
+    fontFamily: fonts.displayBold,
     marginTop: space.s5,
-    fontFamily: fonts.ui.extrabold,
-    fontSize: fontSizes.micro,
-    letterSpacing: 2,
+    fontSize: fontSizes.body,
     color: ink.pageInkMuted,
   },
   themes: {

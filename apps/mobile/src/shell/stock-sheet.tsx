@@ -137,10 +137,8 @@ const ink = paperColors;
 const styles = StyleSheet.create({
   head: { flexDirection: "row", alignItems: "center", gap: space.s3, marginBottom: space.s4 },
   title: {
-    fontFamily: fonts.ui.extrabold,
-    fontSize: fontSizes.caption,
-    letterSpacing: 1.4,
-    textTransform: "uppercase",
+    fontFamily: fonts.displayBold,
+    fontSize: fontSizes.body,
     color: ink.pageInkMuted,
   },
   figure: {

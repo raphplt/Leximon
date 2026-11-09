@@ -308,7 +308,7 @@ function Lice({
         </View>
       </View>
 
-      <Text style={styles.kickerLight}>TOURNOI DE LA SEMAINE</Text>
+      <Text style={styles.kickerLight}>Tournoi de la semaine</Text>
       {figures !== null && group !== null && (
         <View style={styles.figures}>
           <View style={styles.figure}>
@@ -655,7 +655,7 @@ export function ZoneLine({
   return (
     <View style={styles.zoneLine}>
       <View style={[styles.zoneDash, { borderColor: color }]} />
-      <Text style={[styles.zoneLineText, { color }]}>{children.toUpperCase()}</Text>
+      <Text style={[styles.zoneLineText, { color }]}>{children}</Text>
       <View style={[styles.zoneDash, { borderColor: color }]} />
     </View>
   );
@@ -1082,10 +1082,9 @@ const styles = StyleSheet.create({
     boxShadow: `0 3px 0 ${toyValues.outline}`,
   },
   kickerLight: {
+    fontFamily: fonts.displayBold,
     marginTop: space.s4,
-    fontFamily: fonts.ui.extrabold,
-    fontSize: fontSizes.micro,
-    letterSpacing: 2,
+    fontSize: fontSizes.body,
     color: lettering.kicker,
   },
   figures: { flexDirection: "row", gap: space.s10, alignItems: "flex-end" },
@@ -1278,11 +1277,10 @@ const styles = StyleSheet.create({
   zoneLine: { flexDirection: "row", alignItems: "center", gap: space.s3 },
   zoneDash: { flex: 1, borderTopWidth: 2.5, borderStyle: "dashed" },
   zoneLineText: {
+    fontFamily: fonts.displayBold,
     flexShrink: 1,
     textAlign: "center",
-    fontFamily: fonts.ui.extrabold,
-    fontSize: fontSizes.nano,
-    letterSpacing: 0.6,
+    fontSize: fontSizes.body,
   },
 
   // How it works.

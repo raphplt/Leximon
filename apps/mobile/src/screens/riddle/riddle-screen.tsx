@@ -155,7 +155,7 @@ function Riddle({
   return (
     <>
       <Panel paper style={styles.panel}>
-        <Text style={styles.kicker}>ÉNIGME N° {riddle.number}</Text>
+        <Text style={styles.kicker}>Énigme n° {riddle.number}</Text>
         {playing && <Text style={styles.line}>{riddleRule(riddle.lastStep)}</Text>}
         <View
           style={styles.cells}
@@ -263,9 +263,8 @@ const ink = paperColors;
 const styles = StyleSheet.create({
   panel: { gap: space.s6 },
   kicker: {
-    fontFamily: fonts.ui.extrabold,
-    fontSize: fontSizes.caption,
-    letterSpacing: 2,
+    fontFamily: fonts.displayBold,
+    fontSize: fontSizes.body,
     color: ink.pageInkMuted,
   },
   line: {

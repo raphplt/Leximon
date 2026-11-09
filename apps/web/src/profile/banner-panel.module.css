@@ -6,10 +6,9 @@
 
 .heading {
   margin: var(--lx-s4) 0 0;
-  font-size: var(--lx-size-label);
+  font-family: var(--font-display), Georgia, serif;
+  font-size: var(--lx-size-body-large);
   font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
   color: var(--lx-color-page-ink-muted);
 }
 

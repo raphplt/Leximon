@@ -38,7 +38,7 @@ import Animated, {
 } from "react-native-reanimated";
 import Svg, { Circle, Defs, Path, RadialGradient, Rect, Stop } from "react-native-svg";
 import { vibrate } from "@/feedback/feedback";
-import { colors, fonts } from "@/theme";
+import { colors, fontSizes, fonts } from "@/theme";
 import { OnPaperContext } from "./ink";
 import { Matter } from "./matter";
 
@@ -241,9 +241,9 @@ export function Lettering({
   );
 }
 
-/** Small capitals in gilt, above a title. */
+/** A short title in gilt, above a larger one. */
 export function Kicker({ children }: { readonly children: string }) {
-  return <Text style={styles.kicker}>{children.toUpperCase()}</Text>;
+  return <Text style={styles.kicker}>{children}</Text>;
 }
 
 /** A leaf of cream paper, for what is read. */
@@ -405,10 +405,9 @@ const styles = StyleSheet.create({
     color: lettering.outline,
   },
   kicker: {
+    fontFamily: fonts.displayBold,
     color: lettering.kicker,
-    fontFamily: fonts.ui.extrabold,
-    fontSize: 11,
-    letterSpacing: 3,
+    fontSize: fontSizes.body,
     textShadowColor: colors.shade,
     textShadowOffset: { width: 0, height: 1 },
     textShadowRadius: 0,

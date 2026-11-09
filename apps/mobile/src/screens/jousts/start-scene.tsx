@@ -72,7 +72,7 @@ export function StartScene({
   if (duel === null) return null;
   return (
     <LeatherStage style={styles.arena}>
-      <Text style={styles.kicker}>{joustKindName(view.summary.kind).toUpperCase()}</Text>
+      <Text style={styles.kicker}>{joustKindName(view.summary.kind)}</Text>
       {moment === "search" ? (
         <Search
           view={view}
@@ -268,9 +268,8 @@ function Side({
 const styles = StyleSheet.create({
   arena: { minHeight: 480, justifyContent: "center", gap: space.s8 },
   kicker: {
-    fontFamily: fonts.ui.extrabold,
-    fontSize: fontSizes.micro,
-    letterSpacing: 2.4,
+    fontFamily: fonts.displayBold,
+    fontSize: fontSizes.body,
     color: lettering.kicker,
   },
   line: {

@@ -477,9 +477,8 @@ const ink = paperColors;
 const styles = StyleSheet.create({
   group: { gap: space.s4 },
   kicker: {
-    fontFamily: fonts.ui.extrabold,
-    fontSize: fontSizes.caption,
-    letterSpacing: 2,
+    fontFamily: fonts.displayBold,
+    fontSize: fontSizes.body,
     color: colors.pageInkMuted,
   },
   leafRows: { paddingHorizontal: space.s8 },

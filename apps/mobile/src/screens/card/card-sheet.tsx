@@ -248,9 +248,7 @@ function SheetBody({
 
         {card.etymology !== null && (
           <View style={styles.block}>
-            <Text style={styles.kicker}>
-              ORIGINE{card.era !== null ? ` · ${card.era.toUpperCase()}` : ""}
-            </Text>
+            <Text style={styles.kicker}>Origine{card.era !== null ? ` · ${card.era}` : ""}</Text>
             <Text style={styles.etymology}>{card.etymology}</Text>
           </View>
         )}
@@ -403,9 +401,8 @@ const styles = StyleSheet.create({
   },
   block: { gap: space.s4 },
   kicker: {
-    fontFamily: fonts.ui.extrabold,
-    fontSize: fontSizes.caption,
-    letterSpacing: 2,
+    fontFamily: fonts.displayBold,
+    fontSize: fontSizes.body,
     color: ink.pageInkMuted,
   },
   steps: { flexDirection: "row", gap: space.s4 },

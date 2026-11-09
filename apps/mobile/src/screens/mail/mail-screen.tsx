@@ -256,7 +256,7 @@ export function MailScreen() {
         <>
           {todo.length > 0 && (
             <View style={styles.section}>
-              <Text style={styles.heading}>{MAIL_TODO.toUpperCase()}</Text>
+              <Text style={styles.heading}>{MAIL_TODO}</Text>
               {todo.map((row) => (
                 <RowItem key={row.key} row={row} />
               ))}
@@ -264,7 +264,7 @@ export function MailScreen() {
           )}
           {news.length > 0 && (
             <View style={styles.section}>
-              <Text style={styles.heading}>{MAIL_NEWS.toUpperCase()}</Text>
+              <Text style={styles.heading}>{MAIL_NEWS}</Text>
               {news.map((row) => (
                 <RowItem key={row.key} row={row} />
               ))}
@@ -310,9 +310,8 @@ const ink = paperColors;
 const styles = StyleSheet.create({
   section: { gap: space.s4 },
   heading: {
-    fontFamily: fonts.ui.extrabold,
-    fontSize: fontSizes.caption,
-    letterSpacing: 2,
+    fontFamily: fonts.displayBold,
+    fontSize: fontSizes.body,
     color: colors.pageInkMuted,
     marginBottom: space.s1,
   },

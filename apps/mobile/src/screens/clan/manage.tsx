@@ -163,7 +163,7 @@ function MemberActions({
 
       {!self && canAct(myRole, "mute", target) && (
         <View style={styles.group}>
-          <Text style={styles.kicker}>RENDRE MUET</Text>
+          <Text style={styles.kicker}>Rendre muet</Text>
           <View style={styles.chips}>
             {muteChoices(now).map((choice) => (
               <Chip
@@ -373,7 +373,7 @@ export function ClanSettings({
   return (
     <Sheet open={open} title={view.clan.name} onClose={onClose}>
       <View style={styles.group}>
-        <Text style={styles.kicker}>CODE D'INVITATION</Text>
+        <Text style={styles.kicker}>Code d'invitation</Text>
         <Text style={styles.inviteCode} selectable>
           {formatPlayerCode(me.inviteCode)}
         </Text>
@@ -441,9 +441,8 @@ const styles = StyleSheet.create({
   name: { fontFamily: fonts.ui.extrabold, fontSize: fontSizes.bodyLarge, color: ink.pageInk },
   group: { gap: space.s5 },
   kicker: {
-    fontFamily: fonts.ui.extrabold,
-    fontSize: fontSizes.caption,
-    letterSpacing: 2,
+    fontFamily: fonts.displayBold,
+    fontSize: fontSizes.body,
     color: ink.pageInkMuted,
   },
   chips: { flexDirection: "row", flexWrap: "wrap", gap: space.s4 },

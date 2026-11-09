@@ -259,9 +259,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: space.s4,
   },
   kicker: {
-    fontFamily: fonts.ui.extrabold,
-    fontSize: fontSizes.caption,
-    letterSpacing: 2,
+    fontFamily: fonts.displayBold,
+    fontSize: fontSizes.body,
     color: ink.pageInkMuted,
     marginBottom: -space.s8,
   },

@@ -72,7 +72,7 @@ export function Page({
           )}
         </View>
       )}
-      {kicker !== undefined && <Text style={styles.kicker}>{kicker.toUpperCase()}</Text>}
+      {kicker !== undefined && <Text style={styles.kicker}>{kicker}</Text>}
       <View accessibilityRole="header">
         <Lettering size={fontSizes.headingLarge}>{title}</Lettering>
       </View>
@@ -174,9 +174,8 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   kicker: {
-    fontFamily: fonts.ui.extrabold,
-    fontSize: fontSizes.caption,
-    letterSpacing: 2,
+    fontFamily: fonts.displayBold,
+    fontSize: fontSizes.body,
     color: lettering.kicker,
     marginBottom: space.s3,
   },

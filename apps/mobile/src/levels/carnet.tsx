@@ -126,7 +126,7 @@ export function CarnetHost() {
     <CoffretFrame visible={visible} onClose={close}>
       {step.name === "opened" ? (
         <>
-          <Text style={styles.kicker}>{CARNET_TITLE.toUpperCase()}</Text>
+          <Text style={styles.kicker}>{CARNET_TITLE}</Text>
           <Animated.View entering={ZoomIn.duration(320)}>
             <Lettering size={fontSizes.headingLarge}>{`Case ${step.case} !`}</Lettering>
           </Animated.View>
@@ -143,7 +143,7 @@ export function CarnetHost() {
         </>
       ) : (
         <>
-          <Text style={styles.kicker}>{view.dates.toUpperCase()}</Text>
+          <Text style={styles.kicker}>{view.dates}</Text>
           <View accessibilityRole="header">
             <Lettering size={fontSizes.heading}>{CARNET_TITLE}</Lettering>
           </View>
@@ -222,9 +222,8 @@ function Case({ item, next }: { readonly item: CarnetCase; readonly next: number
 
 const styles = StyleSheet.create({
   kicker: {
-    fontFamily: fonts.ui.extrabold,
-    fontSize: fontSizes.caption,
-    letterSpacing: 2,
+    fontFamily: fonts.displayBold,
+    fontSize: fontSizes.body,
     color: lettering.kicker,
   },
   filled: {
