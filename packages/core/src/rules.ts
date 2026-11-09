@@ -735,6 +735,21 @@ export const PATRON_SCHEDULE: PatronSchedule = [
         { kind: "frame", frame: "cadeler" },
         { kind: "avatar", avatar: "bibliomaniaque" },
       ],
+      // The binders of the cloister: a calf spine with raised bands, around a monk.
+      "2026-12": [
+        { kind: "frame", frame: "nerver" },
+        { kind: "avatar", avatar: "monacaille" },
+      ],
+      // The new year's notebook: laced wax tablets, around the young woman of Pompeii and her stylus.
+      "2027-01": [
+        { kind: "frame", frame: "polyptyque" },
+        { kind: "avatar", avatar: "vitelliennes" },
+      ],
+      // The month of love letters: a silk bookmark tied in a bow, around a sweet face.
+      "2027-02": [
+        { kind: "frame", frame: "nonpareille" },
+        { kind: "avatar", avatar: "bouchette" },
+      ],
     },
     monthsPerFind: 3,
     extraPinnedSlots: 3,

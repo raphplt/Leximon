@@ -168,8 +168,10 @@
   gap: 24px;
 }
 
+/* The frame spills out of the avatar's box: the text keeps clear of the frame, not of the box. */
 .shop .hero {
   justify-content: flex-start;
+  gap: 52px;
 }
 
 .shop .heroText {
@@ -854,6 +856,10 @@
   .hero {
     flex-direction: column;
     text-align: center;
+  }
+
+  .shop .hero {
+    gap: 28px;
   }
 
   .timeline {

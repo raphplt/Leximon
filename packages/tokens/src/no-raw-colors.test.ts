@@ -35,6 +35,9 @@ const OWN_PALETTE = [
   /play\/play\.module/,
   // Shared images, composed apart from the game.
   /opengraph-image/,
+  // Third-party identity and seals fanned on the account page.
+  /google-button/,
+  /account-screen\.module/,
 ];
 
 const RAW_COLOR = /#[0-9a-f]{3}(?:[0-9a-f]{3})?\b|rgba?\(\s*\d/gi;

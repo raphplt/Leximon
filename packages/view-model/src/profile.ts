@@ -40,6 +40,9 @@ const AVATAR_NAMES: Readonly<Record<string, string>> = {
   pochon: "Le Pochon",
   bejaune: "Le Béjaune",
   bibliomaniaque: "Le Bibliomaniaque",
+  monacaille: "La Monacaille",
+  vitelliennes: "Les Vitelliennes",
+  bouchette: "La Bouchette",
 };
 
 const FRAME_NAMES: Readonly<Record<string, string>> = {
@@ -58,6 +61,9 @@ const FRAME_NAMES: Readonly<Record<string, string>> = {
   "royal-sun": "Soleil royal",
   cadeler: "Cadeler",
   tessere: "Tessère",
+  nerver: "Nerver",
+  polyptyque: "Polyptyque",
+  nonpareille: "Nonpareille",
 };
 
 function fallbackName(id: string): string {

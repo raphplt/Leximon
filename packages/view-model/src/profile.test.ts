@@ -1,4 +1,5 @@
 import type { ProfileResponse } from "@leximon/contract";
+import { PATRON_SCHEDULE } from "@leximon/core";
 import { describe, expect, it } from "vitest";
 import { formatCount } from "./format";
 import {
@@ -73,6 +74,16 @@ describe("names", () => {
     expect(avatarName("bejaune")).toBe("Le Béjaune");
     expect(frameName("ink")).toBe("Encre qui coule");
     expect(avatarName("grigou")).toBe("Grigou");
+  });
+
+  it("names every avatar of the patron calendar with its article", () => {
+    for (const rules of PATRON_SCHEDULE) {
+      for (const cosmetic of Object.values(rules.cosmetics).flat()) {
+        if (cosmetic.kind === "avatar") {
+          expect(avatarName(cosmetic.avatar)).toMatch(/^(L'|La |Le |Les )/);
+        }
+      }
+    }
   });
 
   it("says what a coffret puts in the atelier", () => {

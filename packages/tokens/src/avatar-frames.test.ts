@@ -40,6 +40,13 @@ describe("avatar frames", () => {
     }
   });
 
+  it("never draws the same path twice in a frame, as the apps key shapes by their path", () => {
+    for (const frame of Object.values<AvatarFrame>(avatarFrames)) {
+      const paths = [...(frame.turning ?? []), ...frame.shapes].map((shape) => shape.d);
+      expect(new Set(paths).size).toBe(paths.length);
+    }
+  });
+
   it("paints matters with a gradient and thicknesses flat", () => {
     expect(framePaint("gold")).toEqual({ matter: "gold" });
     expect(framePaint("gold:edge")).toHaveProperty("color");
