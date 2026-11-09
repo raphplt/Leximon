@@ -1,4 +1,4 @@
-import { toyMatters } from "@leximon/tokens";
+import { toyMatters, toyRadii, toy as toyValues } from "@leximon/tokens";
 import {
   CHALLENGE_HALVES,
   type ChallengeHalf,
@@ -40,7 +40,7 @@ export function ChallengeHalves({ current }: { readonly current: ChallengeHalf }
         current={current}
         label={trainingLabel}
         matter="blue"
-        emblem={<ToyIcon name="challenges" size={44} />}
+        emblem={<ToyIcon name="challenges" size={30} />}
         lines={training === null ? [] : [training]}
         waiting={0}
       />
@@ -51,9 +51,9 @@ export function ChallengeHalves({ current }: { readonly current: ChallengeHalf }
         matter={jousts.lockedAt === null ? "red" : "locked"}
         emblem={
           jousts.league === null ? (
-            <ToyIcon name="jousts" size={44} locked={jousts.lockedAt !== null} />
+            <ToyIcon name="jousts" size={30} locked={jousts.lockedAt !== null} />
           ) : (
-            <Crest league={jousts.league} size={40} />
+            <Crest league={jousts.league} size={26} />
           )
         }
         lines={jousts.lines}
@@ -82,29 +82,26 @@ function Half({
 }) {
   const here = id === current;
   return (
-    <View style={[styles.slot, !here && styles.away]}>
-      <View style={[styles.ring, here && styles.here]}>
-        <Toy
-          matter={matter}
-          shape="tile"
-          large
-          bodyStyle={styles.body}
-          accessibilityRole="link"
-          accessibilityState={{ selected: here }}
-          accessibilityLabel={[label, ...lines].join(" ")}
-          onPress={() => {
-            if (!here) router.navigate(HREFS[id]);
-          }}
-        >
-          {emblem}
-          <Lettering size={fontSizes.bodyLarge}>{label}</Lettering>
-          {lines.map((line) => (
-            <Text key={line} style={styles.line}>
-              {line}
-            </Text>
-          ))}
-        </Toy>
-      </View>
+    <View style={styles.slot}>
+      <Toy
+        matter={matter}
+        large
+        bodyStyle={styles.body}
+        accessibilityRole="link"
+        accessibilityState={{ selected: here }}
+        accessibilityLabel={[label, ...lines].join(" ")}
+        onPress={() => {
+          if (!here) router.navigate(HREFS[id]);
+        }}
+      >
+        {emblem}
+        <View style={styles.text}>
+          <Lettering size={fontSizes.body}>{label}</Lettering>
+          {lines.length > 0 && <Text style={styles.line}>{lines.join(" ")}</Text>}
+        </View>
+        {/* The other half sits in the shade, never see-through over the shelves. */}
+        {!here && <View style={styles.shade} pointerEvents="none" />}
+      </Toy>
       {here && <View style={styles.notch} />}
       {waiting > 0 && <CountBadge count={String(waiting)} style={styles.badge} />}
     </View>
@@ -112,31 +109,34 @@ function Half({
 }
 
 const styles = StyleSheet.create({
-  halves: { flexDirection: "row", gap: space.s8, paddingTop: space.s6 },
+  halves: { flexDirection: "row", gap: space.s4, paddingTop: space.s3 },
   slot: { flex: 1 },
-  // The other half waits a little in the shade.
-  away: { opacity: 0.8 },
-  ring: { flex: 1, padding: 3, borderRadius: 24, borderWidth: 3, borderColor: "transparent" },
-  here: { borderColor: toyMatters.gold.top },
   body: {
     flex: 1,
+    flexDirection: "row",
     alignItems: "center",
-    gap: space.s2,
-    paddingHorizontal: space.s6,
-    paddingVertical: space.s8,
+    gap: space.s4,
+    paddingLeft: space.s4,
+    paddingRight: space.s5,
+    paddingVertical: space.s4,
   },
+  text: { flex: 1, gap: 1 },
   line: {
-    textAlign: "center",
     fontFamily: fonts.ui.bold,
     fontSize: fontSizes.micro,
-    lineHeight: 15,
+    lineHeight: 14,
     color: colors.inkOnColor,
+  },
+  shade: {
+    ...StyleSheet.absoluteFill,
+    borderRadius: toyRadii.large,
+    backgroundColor: toyValues.drop,
   },
   notch: {
     alignSelf: "center",
-    width: 12,
-    height: 12,
-    marginTop: -2,
+    width: 10,
+    height: 10,
+    marginTop: 2,
     backgroundColor: toyMatters.gold.top,
     borderRadius: 2,
     transform: [{ rotate: "45deg" }],

@@ -359,10 +359,6 @@
   filter: drop-shadow(0 4px 0 var(--lx-toy-drop));
 }
 
-.stop[data-state="ahead"] svg {
-  opacity: 0.85;
-}
-
 .stopName {
   font-size: var(--lx-size-small);
   font-weight: 800;

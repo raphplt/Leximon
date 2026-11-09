@@ -37,7 +37,7 @@ export function ChallengeHalves({ current }: { readonly current: ChallengeHalf }
         current={current}
         label={trainingLabel}
         matter="blue"
-        emblem={<ToyIcon name="challenges" size={60} />}
+        emblem={<ToyIcon name="challenges" size={40} />}
         lines={training === null ? [] : [training]}
         waiting={0}
       />
@@ -48,9 +48,9 @@ export function ChallengeHalves({ current }: { readonly current: ChallengeHalf }
         matter={jousts.lockedAt === null ? "red" : "locked"}
         emblem={
           jousts.league === null ? (
-            <ToyIcon name="jousts" size={60} locked={jousts.lockedAt !== null} />
+            <ToyIcon name="jousts" size={40} locked={jousts.lockedAt !== null} />
           ) : (
-            <Crest league={jousts.league} size={56} />
+            <Crest league={jousts.league} size={36} />
           )
         }
         lines={jousts.lines}
@@ -81,18 +81,14 @@ function Half({
   return (
     <Link
       href={HREFS[id]}
-      className={toyClass(matter, "tile", true, styles.half)}
+      className={toyClass(matter, "box", true, styles.half)}
       aria-current={here ? "page" : undefined}
       data-here={here || undefined}
     >
       <span className={styles.emblem}>{emblem}</span>
       <span className={styles.text}>
         <Lettering className={styles.label}>{label}</Lettering>
-        {lines.map((line) => (
-          <span key={line} className={styles.line}>
-            {line}
-          </span>
-        ))}
+        {lines.length > 0 && <span className={styles.line}>{lines.join(" ")}</span>}
       </span>
       {waiting > 0 && <CountBadge count={String(waiting)} className={styles.badge} />}
     </Link>
