@@ -37,6 +37,34 @@ describe("campaign Markdown", () => {
     expect(html).toContain("&lt;img src=&quot;x&quot;");
   });
 
+  it("shows an image of leximon.fr alone on its line, and leaves it out of the text version", () => {
+    const markdown = "Avant.\n![Trois cartes](https://leximon.fr/email/cartes.png)\n\nAprès.";
+    const html = markdownToHtml(markdown);
+    expect(html).toContain('<img src="https://leximon.fr/email/cartes.png" alt="Trois cartes"');
+    expect(html).toContain('<p style="margin:0 0 16px;">Avant.</p>');
+    expect(markdownToText(markdown)).toBe("Avant.\n\nAprès.");
+  });
+
+  it("refuses an image from elsewhere, in an unreadable format, or inside a sentence", () => {
+    for (const markdown of [
+      "![x](https://tracker.example/pixel.png)",
+      "![x](https://leximon.fr.example/a.png)",
+      "![x](https://leximon.fr/a.webp)",
+      "![x](https://leximon.fr/a.svg)",
+      "![x](http://leximon.fr/a.png)",
+      "![x](https://leximon.fr/a.png?u=1)",
+      "Voici ![x](https://leximon.fr/a.png)",
+    ]) {
+      expect(markdownToHtml(markdown)).not.toContain("<img");
+    }
+  });
+
+  it("escapes the description of an image", () => {
+    expect(markdownToHtml('![a "b" <c>](https://leximon.fr/a.png)')).toContain(
+      'alt="a &quot;b&quot; &lt;c&gt;"',
+    );
+  });
+
   it("takes the first paragraph as the inbox line, cut at a word", () => {
     expect(firstParagraphText("## Titre\n\nPremière **phrase**.\n\nSeconde.")).toBe(
       "Première phrase.",

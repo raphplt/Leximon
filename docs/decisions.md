@@ -358,7 +358,7 @@ Pour ajouter ou modifier une décision, utiliser le skill `decision`.
 
 ## D-036 · Modèles d'e-mail : rendu maison, Markdown réduit, sans dépendance
 
-- **Statut :** Acceptée (2026-10-21), choisie par le propriétaire.
+- **Statut :** Remplacée par D-060 (2026-11-09) pour les images ; le reste tient. Acceptée (2026-10-21), choisie par le propriétaire.
 - **Choix :** un gabarit en tableaux HTML et styles en ligne, plus une version texte, rendus par des fonctions pures de l'API. Le corps d'une campagne est un Markdown réduit (paragraphes, gras, italique, liens `https://`, listes, intertitres), converti par notre code ; tout le reste est échappé.
 - **Pourquoi :** ni React ni MJML dans le Worker, et un contenu qui ne peut injecter ni HTML ni image.
 - **Conséquences :** aucune image distante ni lien traqué (`/confidentialite` promet « pas de traceur »). Une mise en forme nouvelle s'ajoute au convertisseur, avec son test.
@@ -557,3 +557,10 @@ Pour ajouter ou modifier une décision, utiliser le skill `decision`.
   - au passage d'un seuil (franchise, ou 10 000 € de ventes dans le reste de l'UE), bascule vers Managed Payments : un drapeau sur la session Checkout et un code fiscal sur le produit, les abonnements en cours restant à migrer ;
   - secrets `STRIPE_SECRET_KEY` et `STRIPE_WEBHOOK_SECRET`, prix retrouvés par leur `lookup_key` ; en local, la CLI Stripe relaie les webhooks ;
   - aucun bouton ni lien d'achat dans l'app mobile, que les règles de Google et d'Apple interdisent.
+
+## D-060 · Images des e-mails de campagne : servies par leximon.fr, la même pour tous
+
+- **Statut :** Acceptée (2026-11-09), choisie par le propriétaire pour l'e-mail de la bêta ouverte. Remplace D-036 sur ce seul point.
+- **Choix :** le Markdown d'une campagne accepte une image seule sur sa ligne, `![description](https://leximon.fr/….png)`, en PNG, JPG ou GIF, sans paramètre dans l'adresse. Le reste de D-036 ne change pas : rendu maison, rien d'autre que ce Markdown, aucun HTML brut.
+- **Pourquoi :** un e-mail de lancement se lit mieux avec ce qu'il annonce sous les yeux. Une adresse unique pour tous les destinataires ne dit à personne qui a ouvert quoi, donc la promesse « aucun pixel, aucun lien pisté » de `/confidentialite` tient.
+- **Conséquences :** les images d'une campagne vivent dans `apps/web/public/email/<date>/`, en cache immuable, et doivent être en ligne avant l'envoi du test. Ni WebP (Outlook) ni SVG (Gmail). La version texte les omet.

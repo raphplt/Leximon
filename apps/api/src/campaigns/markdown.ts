@@ -4,17 +4,27 @@ import { EMAIL_COLORS, escapeHtml } from "../email/layout";
  * The reduced Markdown of campaign bodies, converted to e-mail HTML and to plain text.
  *
  * Accepted: paragraphs (one line break gives a `<br>`), `## titles`, `- lists`, `**bold**`,
- * `*italic*` and `[links](https://…)`. Everything else is shown as typed, escaped: no raw HTML, no
- * image, no other link scheme.
+ * `*italic*`, `[links](https://…)` and, alone on its line, `![an image](https://leximon.fr/….png)`.
+ * Everything else is shown as typed, escaped: no raw HTML, no image from elsewhere, no other link
+ * scheme.
  */
 
 type Block =
   | { readonly kind: "paragraph"; readonly lines: readonly string[] }
   | { readonly kind: "title"; readonly text: string }
-  | { readonly kind: "list"; readonly items: readonly string[] };
+  | { readonly kind: "list"; readonly items: readonly string[] }
+  | { readonly kind: "image"; readonly alt: string; readonly url: string };
 
 const TITLE = /^#{1,3}\s+(.+)$/;
 const LIST_ITEM = /^[-*]\s+(.+)$/;
+/**
+ * Only our own site, so every reader loads the same file and nothing tells us who opened what; only
+ * formats every mail client shows (Outlook ignores WebP, Gmail ignores SVG).
+ */
+const IMAGE = /^!\[([^\]\n]*)\]\((https:\/\/leximon\.fr\/[A-Za-z0-9._~/-]+\.(?:png|jpe?g|gif))\)$/;
+
+/** The width of the paper column inside its border and padding, for clients that need a number. */
+const IMAGE_WIDTH = 492;
 
 export function parseBlocks(markdown: string): Block[] {
   const blocks: Block[] = [];
@@ -37,6 +47,12 @@ export function parseBlocks(markdown: string): Block[] {
       list = [];
     };
     for (const line of lines) {
+      const image = IMAGE.exec(line);
+      if (image?.[1] !== undefined && image[2] !== undefined) {
+        flush();
+        blocks.push({ kind: "image", alt: image[1].trim(), url: image[2] });
+        continue;
+      }
       const title = TITLE.exec(line);
       const item = LIST_ITEM.exec(line);
       if (title?.[1] !== undefined) {
@@ -127,11 +143,16 @@ function blockHtml(block: Block): string {
       return `<h2 style="margin:24px 0 12px;font-size:20px;line-height:1.3;">${inlineHtml(parseInline(block.text))}</h2>`;
     case "list":
       return `<ul style="margin:0 0 16px;padding-left:24px;">${block.items.map((item) => `<li style="margin:0 0 6px;">${inlineHtml(parseInline(item))}</li>`).join("")}</ul>`;
+    case "image":
+      return `<p style="margin:0 0 16px;"><img src="${escapeHtml(block.url)}" alt="${escapeHtml(block.alt)}" width="${IMAGE_WIDTH}" style="display:block;width:100%;max-width:${IMAGE_WIDTH}px;height:auto;border:0;border-radius:12px;"></p>`;
   }
 }
 
 export function markdownToText(markdown: string): string {
-  return parseBlocks(markdown).map(blockText).join("\n\n");
+  return parseBlocks(markdown)
+    .map(blockText)
+    .filter((text) => text !== "")
+    .join("\n\n");
 }
 
 function blockText(block: Block): string {
@@ -142,6 +163,9 @@ function blockText(block: Block): string {
       return inlineText(parseInline(block.text));
     case "list":
       return block.items.map((item) => `- ${inlineText(parseInline(item))}`).join("\n");
+    case "image":
+      // The words around an image say what matters: a description in brackets would only be noise.
+      return "";
   }
 }
 

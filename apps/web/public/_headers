@@ -34,3 +34,7 @@
 
 /catalog/finders.json
   Cache-Control: public, max-age=60, must-revalidate
+
+# Images of the campaign e-mails: one folder per campaign, never rewritten.
+/email/*
+  Cache-Control: public, max-age=31536000, immutable

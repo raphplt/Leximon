@@ -201,7 +201,8 @@ function CampaignEditor({
             />
           </label>
           <label className={styles.field}>
-            Texte (Markdown : **gras**, *italique*, [lien](https://…), ## titre, - liste)
+            Texte (Markdown : **gras**, *italique*, [lien](https://…), ## titre, - liste, et seule
+            sur sa ligne ![image](https://leximon.fr/….png))
             <textarea
               className={styles.input}
               style={{ minHeight: 220, padding: 12, fontFamily: "ui-monospace, monospace" }}
