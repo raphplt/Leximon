@@ -325,10 +325,10 @@
   margin-top: var(--lx-s2);
 }
 
-/* The collection's bar: what was owned before in cream, what this sachet added in green after it. */
+/* The collection's bar: what was owned before in cream, what this sachet added in green right
+   after it, the two meeting edge to edge; the bar's own rounding closes the left end. */
 .collectionBar {
-  position: relative;
-  display: block;
+  display: flex;
   height: 16px;
   border-radius: var(--lx-radius-pill);
   background: var(--lx-color-well);
@@ -338,14 +338,16 @@
 
 .collectionOwned,
 .collectionGained {
-  position: absolute;
-  inset: 0 auto 0 0;
-  border-radius: var(--lx-radius-pill);
+  flex: none;
+  border-radius: 0 var(--lx-radius-pill) var(--lx-radius-pill) 0;
+}
+
+.collectionOwned:not(:last-child) {
+  border-radius: 0;
 }
 
 /* A few words out of five hundred: drawn a little wider than their share, so that they show. */
 .collectionGained {
-  left: var(--from);
   width: max(14px, var(--share));
 }
 

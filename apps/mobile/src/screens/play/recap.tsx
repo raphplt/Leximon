@@ -289,15 +289,18 @@ export function Recap({
                 {tally.gained !== null && <Text style={styles.tallyGained}>{tally.gained}</Text>}
               </View>
               <View style={[styles.tallyBar, styles.collectionBar]}>
-                <View style={[styles.collectionOwned, { width: `${tally.before * 100}%` }]} />
+                <View
+                  style={[
+                    styles.collectionOwned,
+                    tally.gained !== null && styles.collectionOwnedBeforeGain,
+                    { width: `${tally.before * 100}%` },
+                  ]}
+                />
                 {tally.gained !== null && (
                   <View
                     style={[
                       styles.collectionGained,
-                      {
-                        left: `${tally.before * 100}%`,
-                        width: `${(tally.after - tally.before) * 100}%`,
-                      },
+                      { width: `${(tally.after - tally.before) * 100}%` },
                     ]}
                   />
                 )}
@@ -456,28 +459,26 @@ const styles = StyleSheet.create({
     fontSize: fontSizes.small,
   },
   tallyBar: { alignSelf: "stretch", marginTop: space.s1 },
-  // What was owned before in cream, what this sachet added in green after it.
+  // What was owned before in cream, what this sachet added in green right after it, the two
+  // meeting edge to edge; the bar's own rounding closes the left end.
   collectionBar: {
+    flexDirection: "row",
     height: 16,
     overflow: "hidden",
     borderRadius: radii.pill,
     backgroundColor: colors.well,
   },
   collectionOwned: {
-    position: "absolute",
-    top: 0,
-    bottom: 0,
-    left: 0,
-    borderRadius: radii.pill,
+    borderTopRightRadius: radii.pill,
+    borderBottomRightRadius: radii.pill,
     backgroundColor: toyMatters.paper.top,
   },
+  collectionOwnedBeforeGain: { borderTopRightRadius: 0, borderBottomRightRadius: 0 },
   // A few words out of five hundred: drawn a little wider than their share, so that they show.
   collectionGained: {
-    position: "absolute",
-    top: 0,
-    bottom: 0,
     minWidth: 14,
-    borderRadius: radii.pill,
+    borderTopRightRadius: radii.pill,
+    borderBottomRightRadius: radii.pill,
     backgroundColor: colors.successLight,
   },
   note: {

@@ -951,12 +951,7 @@ function Recap({
             {tally.gained !== null && (
               <span
                 className={styles.collectionGained}
-                style={
-                  {
-                    "--from": `${tally.before * 100}%`,
-                    "--share": `${(tally.after - tally.before) * 100}%`,
-                  } as CSSProperties
-                }
+                style={{ "--share": `${(tally.after - tally.before) * 100}%` } as CSSProperties}
               />
             )}
           </span>
