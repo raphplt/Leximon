@@ -1,15 +1,9 @@
-import type { JoustStanding, LeagueId, WeekMove } from "@leximon/contract";
+import type { LeagueId, WeekMove } from "@leximon/contract";
 import { toyMatters, toy as toyValues } from "@leximon/tokens";
-import {
-  type JoustTournament,
-  leagueNumeral,
-  standingHeader,
-  tournamentGain,
-} from "@leximon/view-model";
+import { type JoustTournament, leagueNumeral, tournamentGain } from "@leximon/view-model";
 import { StyleSheet, Text, View } from "react-native";
 import Svg, { Defs, LinearGradient, Path, Stop, Text as SvgText } from "react-native-svg";
 import { alpha, fontSizes, fonts, radii, space } from "@/theme";
-import { Icon } from "@/ui/icon";
 import { Lettering } from "@/ui/toy";
 import { ink } from "./pieces";
 
@@ -91,49 +85,6 @@ export function Shield({
         ))
       )}
     </Svg>
-  );
-}
-
-/** The player's league at the top of the jousts' home: shield, place in the week's tournament. */
-export function LeagueHeader({
-  standing,
-  today,
-}: {
-  readonly standing: JoustStanding;
-  readonly today: string;
-}) {
-  const header = standingHeader(standing, today);
-  return (
-    <View style={styles.head}>
-      <View style={styles.headTop}>
-        <Shield league={standing.league} numeral={leagueNumeral(standing.league)} size={52} />
-        <View style={styles.headText}>
-          <View style={styles.headName}>
-            <Lettering size={fontSizes.subtitle}>{header.name}</Lettering>
-            {header.champion !== null && <Emblem>{header.champion}</Emblem>}
-          </View>
-          {header.place !== null && header.points !== null && (
-            <Text style={styles.place}>{`${header.place} · ${header.points}`}</Text>
-          )}
-        </View>
-      </View>
-      <Text
-        style={[
-          styles.line,
-          header.move !== null && header.move !== "stay" && { color: MOVE_COLORS[header.move] },
-        ]}
-      >
-        {header.line}
-      </Text>
-      <View style={styles.ranked}>
-        <Icon name="bolt" size={14} color={ink.pageInk} />
-        <Text style={styles.rankedText}>{header.ranked}</Text>
-      </View>
-      <View style={styles.week}>
-        <Icon name="clock" size={13} color={toyMatters.paper.top} />
-        <Text style={styles.weekText}>{header.week}</Text>
-      </View>
-    </View>
   );
 }
 

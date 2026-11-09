@@ -1,6 +1,6 @@
 # Cahier des charges · La refonte des joutes (écran et parcours)
 
-- **Statut :** proposé et tranché le 2026-11-08 ; départ au face-à-face inscrit en P91 ; pas encore dans le code.
+- **Statut :** proposé et tranché le 2026-11-08 ; départ au face-à-face inscrit en P91. Dans le code, web et mobile : lot 1 (l'accueil) le 2026-11-08, lots 2 (le départ) et 3 (la partie et le classement) le 2026-11-09 ; pas encore en ligne. Sur le téléphone, la flèche de retour de la page tient lieu de croix ronde ; la ligne du joueur dans son groupe reste au pied de l'écran.
 - **Choix du propriétaire, le 2026-11-08 :** toutes les recommandations, J1 à J9 : une page qui défile, le chemin des ligues toujours visible, recherche d'adversaire puis face-à-face avec « Commencer » et le chrono au premier mot, joute non commencée perdue au bout de 24 h, voisins du tournoi sur l'accueil, partie sur le tapis vert des défis, blasons en SVG et gravures anciennes du domaine public, « comment ça marche » replié après 3 joutes, planches animées d'abord.
 - **Source :** le retour vocal du propriétaire du 2026-11-08 sur `/joutes` et sur une joute classée : l'ensemble est en dessous du reste du site, trop basique, pas assez dans la direction artistique, mal organisé une fois l'accueil guidé fini, et une joute classée démarre sans prévenir.
 - **Inspirations données :** Clash of Clans et Duolingo, pour les ligues, leur affichage et le passage d'une ligue à l'autre.

@@ -63,7 +63,8 @@ export function StartScene({
   );
 }
 
-function Arena({ children }: { readonly children: React.ReactNode }) {
+/** The arena of red leather in old gold, the old print behind. */
+export function Arena({ children }: { readonly children: React.ReactNode }) {
   const engraving = useEngravingInk(ARENA_ENGRAVING);
   return (
     <section className={styles.arena}>

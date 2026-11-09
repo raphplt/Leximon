@@ -1,5 +1,4 @@
 import type { Board, BoardEntry, BoardResponse, LeagueResponse } from "@leximon/contract";
-import { gameDayOf } from "@leximon/core";
 import { toyMatters, toy as toyValues } from "@leximon/tokens";
 import {
   BOARDS,
@@ -7,14 +6,14 @@ import {
   boardLines,
   boardNote,
   CLASSEMENT,
-  LADDER_TITLE,
+  CLIMB_KICKER,
   LEAGUE_CLAIM,
   LEAGUE_CLAIM_BUSY,
-  ladderRules,
-  ladderSteps,
+  LEAGUE_NAMES,
   leagueClaimedToast,
   leagueClaimRefusalText,
-  leagueNumeral,
+  leagueClimb,
+  MY_GROUP,
   placeText,
   pointsText,
   ratingLine,
@@ -29,6 +28,7 @@ import { Fragment, useCallback, useEffect, useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
 import Animated, { FadeInUp } from "react-native-reanimated";
 import { api } from "@/api/client";
+import { play } from "@/feedback/feedback";
 import { MainAction } from "@/library/play-pieces";
 import { wallet } from "@/player/state";
 import { alpha, fontSizes, fonts, radii, space } from "@/theme";
@@ -36,9 +36,14 @@ import { Avatar } from "@/ui/avatar";
 import { Button } from "@/ui/button";
 import { Page, Paragraph } from "@/ui/page";
 import { Segmented } from "@/ui/segmented";
+import { Sheet } from "@/ui/sheet";
+import { ParticleStage } from "@/ui/stage";
 import { toast } from "@/ui/toast";
-import { Leaf, Lettering, ToyIcon } from "@/ui/toy";
-import { Emblem, LeagueHeader, MOVE_COLORS, Shield } from "./league-pieces";
+import { Leaf, ToyIcon } from "@/ui/toy";
+import { ClimbScene } from "./climb-scene";
+import { Crest } from "./crest";
+import { GroupRow, Leagues, Road, ZoneLine } from "./hall";
+import { Emblem } from "./league-pieces";
 import { ink, LeafKicker, Notice, pieces } from "./pieces";
 
 type Loaded =
@@ -48,9 +53,23 @@ type Loaded =
 
 const rise = (index: number) => FadeInUp.delay(index * 90).duration(320);
 
-/** The leagues: where the player stands this week, the rewards to claim, the ladder, the boards. */
+/**
+ * The leagues: a league climbed plays its scene first, then the road of the seven leagues, the
+ * week's boards with the group's zones, and the player's figures. The player's own line of the
+ * group stays at the foot of the screen. As on the web.
+ */
 export function LeagueScreen() {
+  return (
+    <ParticleStage>
+      <LeagueFlow />
+    </ParticleStage>
+  );
+}
+
+function LeagueFlow() {
   const [loaded, setLoaded] = useState<Loaded>({ state: "loading" });
+  const [leaguesOpen, setLeaguesOpen] = useState(false);
+  const [mine, setMine] = useState<BoardLine | null>(null);
   const load = useCallback(() => {
     api
       .fetchJoustLeague()
@@ -74,19 +93,18 @@ export function LeagueScreen() {
   }
   const { league } = loaded;
   return (
-    <Page title={CLASSEMENT}>
+    <Page title={CLASSEMENT} {...(mine === null ? {} : { footer: <GroupRow line={mine} zoned /> })}>
       <View style={styles.screen}>
         <Animated.View entering={rise(0)}>
-          <Leaf style={pieces.leaf}>
-            <LeagueHeader standing={league.standing} today={gameDayOf(Date.now()).key} />
-            <ClaimBox league={league} onClaimed={load} />
-            <Ladder league={league} />
-          </Leaf>
+          <Claim league={league} onClaimed={load} />
         </Animated.View>
         <Animated.View entering={rise(1)}>
-          <Boards league={league} />
+          <Road standing={league.standing} league={league} onOpen={() => setLeaguesOpen(true)} />
         </Animated.View>
         <Animated.View entering={rise(2)}>
+          <Boards league={league} onMine={setMine} />
+        </Animated.View>
+        <Animated.View entering={rise(3)}>
           <Leaf style={pieces.leaf}>
             <LeafKicker>Tes joutes classées</LeafKicker>
             <Text style={styles.record}>{weekRecord(league.stats)}</Text>
@@ -94,12 +112,15 @@ export function LeagueScreen() {
           </Leaf>
         </Animated.View>
       </View>
+      <Sheet open={leaguesOpen} title="Les ligues" onClose={() => setLeaguesOpen(false)}>
+        <Leagues league={league} />
+      </Sheet>
     </Page>
   );
 }
 
-/** The oldest reward waiting, with its button. */
-function ClaimBox({
+/** The oldest reward waiting: the scene of a league climbed, or its leaf with the button. */
+function Claim({
   league,
   onClaimed,
 }: {
@@ -109,6 +130,7 @@ function ClaimBox({
   const [busy, setBusy] = useState(false);
   const [refusal, setRefusal] = useState<string | null>(null);
   const next = waitingReward(league);
+  const climb = leagueClimb(league);
   if (next === null) return null;
 
   const claim = async () => {
@@ -121,6 +143,7 @@ function ClaimBox({
         return;
       }
       wallet.publish(result.wallet);
+      play("coins");
       toast(leagueClaimedToast(result.rewards));
       onClaimed();
     } catch {
@@ -130,61 +153,37 @@ function ClaimBox({
     }
   };
 
+  if (climb !== null) {
+    return (
+      <ClimbScene
+        key={climb.week}
+        climb={climb}
+        busy={busy}
+        refusal={refusal}
+        onClaim={() => void claim()}
+      />
+    );
+  }
   return (
-    <View style={styles.claim}>
+    <Leaf style={pieces.leaf}>
+      <LeafKicker>{CLIMB_KICKER}</LeafKicker>
       <View style={styles.claimText}>
-        <ToyIcon name={next.icon === "ecu" ? "ecu" : "sachet"} size={30} />
+        <ToyIcon name={next.icon === "ecu" ? "ecu" : "sachet"} size={34} />
         <View style={styles.claimWords}>
           <Text style={styles.claimTitle}>{next.title}</Text>
           <Text style={styles.claimDetail}>{next.detail}</Text>
           {next.more !== null && <Text style={styles.claimMore}>{next.more}</Text>}
         </View>
       </View>
-      <Button
-        label={busy ? LEAGUE_CLAIM_BUSY : LEAGUE_CLAIM}
-        disabled={busy}
-        onPress={() => void claim()}
-      />
+      <View style={pieces.actions}>
+        <MainAction
+          label={busy ? LEAGUE_CLAIM_BUSY : LEAGUE_CLAIM}
+          disabled={busy}
+          onPress={() => void claim()}
+        />
+      </View>
       <Notice>{refusal}</Notice>
-    </View>
-  );
-}
-
-/** Every league, highest first, the player's own picked out, and how the tournament works. */
-function Ladder({ league }: { readonly league: LeagueResponse }) {
-  return (
-    <>
-      <Lettering size={fontSizes.subtitle}>{LADDER_TITLE}</Lettering>
-      <View style={styles.ladder}>
-        {ladderSteps(league).map((step) => (
-          <View
-            key={step.league}
-            style={[styles.step, step.here && styles.stepHere]}
-            accessible
-            accessibilityLabel={step.label}
-          >
-            <Shield
-              league={step.league}
-              numeral={leagueNumeral(step.league)}
-              size={step.here ? 40 : 32}
-            />
-            <View style={styles.stepText}>
-              <Text style={styles.stepName}>{step.name}</Text>
-              <Text style={styles.stepMoves}>{step.moves}</Text>
-              <Text style={styles.stepReward}>{step.reward}</Text>
-            </View>
-          </View>
-        ))}
-      </View>
-      <View style={styles.rules}>
-        {ladderRules(league).map((rule) => (
-          <View key={rule} style={styles.rule}>
-            <View style={styles.bullet} />
-            <Text style={[pieces.line, styles.ruleText]}>{rule}</Text>
-          </View>
-        ))}
-      </View>
-    </>
+    </Leaf>
   );
 }
 
@@ -193,7 +192,14 @@ type BoardState =
   | { readonly state: "failed" }
   | { readonly state: "ready"; readonly board: BoardResponse; readonly more: boolean };
 
-function Boards({ league }: { readonly league: LeagueResponse }) {
+function Boards({
+  league,
+  onMine,
+}: {
+  readonly league: LeagueResponse;
+  /** The player's own line of the group, held at the foot of the screen; `null` elsewhere. */
+  readonly onMine: (line: BoardLine | null) => void;
+}) {
   const [tab, setTab] = useState<Board>("group");
   const [shown, setShown] = useState<BoardState>({ state: "loading" });
   const tabs = BOARDS.filter((entry) => entry.id !== "general" || league.generalOpen);
@@ -206,6 +212,11 @@ function Boards({ league }: { readonly league: LeagueResponse }) {
       .catch(() => setShown({ state: "failed" }));
   }, []);
   useEffect(() => load(tab), [load, tab]);
+  useEffect(() => {
+    const group = shown.state === "ready" && shown.board.board === "group" ? shown.board : null;
+    // The player's line alone: the one the board pins under a page that does not show them.
+    onMine(group === null ? null : boardLines({ ...group, entries: [] }).pinned);
+  }, [shown, onMine]);
 
   const more = async () => {
     if (shown.state !== "ready" || shown.board.next === null) return;
@@ -224,7 +235,11 @@ function Boards({ league }: { readonly league: LeagueResponse }) {
 
   return (
     <Leaf style={pieces.leaf}>
-      <Lettering size={fontSizes.subtitle}>{CLASSEMENT}</Lettering>
+      <LeafKicker>
+        {shown.state === "ready" && shown.board.league !== null
+          ? `${MY_GROUP} · ${LEAGUE_NAMES[shown.board.league]}`
+          : CLASSEMENT}
+      </LeafKicker>
       <Segmented
         options={tabs.map((entry) => ({ value: entry.id, label: entry.label }))}
         value={tab}
@@ -255,48 +270,43 @@ function Boards({ league }: { readonly league: LeagueResponse }) {
   );
 }
 
-/** The lines of a board; the group's split into the places that go up, stay and go down. */
+/**
+ * The lines of a board. In the group, as in Duolingo: the zones that go up and down in their
+ * colour, and a line where each ends.
+ */
 function BoardTable({ board }: { readonly board: BoardResponse }) {
   const { lines, pinned } = boardLines(board);
   const group = board.board === "group";
   const zones = group ? zoneStarts(lines) : { stay: null, down: null };
   return (
     <View style={styles.standings}>
-      {group && lines[0]?.move === "up" && <ZoneRule label={ZONE_UP} color={MOVE_COLORS.up} />}
       {lines.map((line, index) => (
         <Fragment key={line.key}>
-          {line.key === zones.stay && <View style={styles.zoneBreak} />}
-          {line.key === zones.down && <ZoneRule label={ZONE_DOWN} color={MOVE_COLORS.down} />}
-          <Standing line={line} entry={board.entries[index]} shield={!group} />
+          {line.key === zones.stay && <ZoneLine move="up">{ZONE_UP}</ZoneLine>}
+          {line.key === zones.down && <ZoneLine move="down">{ZONE_DOWN}</ZoneLine>}
+          {group ? (
+            <GroupRow line={line} zoned />
+          ) : (
+            <Standing line={line} entry={board.entries[index]} />
+          )}
         </Fragment>
       ))}
-      {pinned !== null && board.me !== null && (
-        <Standing line={pinned} entry={board.me} shield={!group} pinned />
+      {pinned !== null && board.me !== null && !group && (
+        <Standing line={pinned} entry={board.me} pinned />
       )}
     </View>
   );
 }
 
-function ZoneRule({ label, color }: { readonly label: string; readonly color: string }) {
-  return (
-    <View style={styles.zone} accessibilityRole="header">
-      <View style={[styles.zoneLine, { backgroundColor: color }]} />
-      <Text style={[styles.zoneText, { color }]}>{label}</Text>
-      <View style={[styles.zoneLine, { backgroundColor: color }]} />
-    </View>
-  );
-}
-
+/** A line of another board: friends, clan, every league, each with their league's crest. */
 function Standing({
   line,
   entry,
-  shield,
   pinned = false,
 }: {
   readonly line: BoardLine;
   /** The entry the line was made from, for its spoken label. */
   readonly entry: BoardEntry | undefined;
-  readonly shield: boolean;
   readonly pinned?: boolean;
 }) {
   const label =
@@ -307,13 +317,7 @@ function Standing({
           .join(", ");
   return (
     <View
-      style={[
-        styles.standing,
-        line.move === "up" && styles.standingUp,
-        line.move === "down" && styles.standingDown,
-        line.me && styles.standingMe,
-        pinned && styles.pinned,
-      ]}
+      style={[styles.standing, line.me && styles.standingMe, pinned && styles.pinned]}
       accessible
       {...(label === undefined ? {} : { accessibilityLabel: label })}
     >
@@ -334,7 +338,7 @@ function Standing({
         {line.tag !== null && <Text style={styles.tag}>{line.tag}</Text>}
         {line.champion && <Emblem>Champion</Emblem>}
       </View>
-      {shield && <Shield league={line.league} numeral={leagueNumeral(line.league)} size={22} />}
+      <Crest league={line.league} size={26} />
       <Text style={styles.standingPoints}>{line.points}</Text>
     </View>
   );
@@ -343,55 +347,11 @@ function Standing({
 const styles = StyleSheet.create({
   screen: { gap: space.s8 },
   record: { fontFamily: fonts.ui.bold, fontSize: fontSizes.bodyLarge, color: ink.pageInk },
-  claim: {
-    gap: space.s4,
-    alignItems: "center",
-    padding: space.s5,
-    borderRadius: radii.lg,
-    borderWidth: 2,
-    borderColor: toyMatters.gold.edge,
-    backgroundColor: alpha(toyMatters.gold.top, 0.35),
-  },
   claimText: { flexDirection: "row", alignItems: "center", gap: space.s4, alignSelf: "stretch" },
   claimWords: { flex: 1, gap: space.s1 },
   claimTitle: { fontFamily: fonts.ui.bold, fontSize: fontSizes.body, color: ink.pageInk },
   claimDetail: { fontFamily: fonts.ui.medium, fontSize: fontSizes.small, color: ink.pageInk },
   claimMore: { fontFamily: fonts.ui.medium, fontSize: fontSizes.small, color: ink.pageInkMuted },
-  ladder: { gap: space.s2 },
-  step: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: space.s4,
-    paddingHorizontal: space.s3,
-    paddingVertical: space.s2,
-    borderRadius: radii.md,
-    borderWidth: 2,
-    borderColor: "transparent",
-  },
-  stepHere: {
-    borderColor: toyMatters.gold.edge,
-    backgroundColor: alpha(toyMatters.gold.top, 0.4),
-  },
-  stepText: { flex: 1, gap: 2 },
-  stepName: { fontFamily: fonts.ui.extrabold, fontSize: fontSizes.body, color: ink.pageInk },
-  stepMoves: { fontFamily: fonts.ui.medium, fontSize: fontSizes.small, color: ink.pageInkMuted },
-  stepReward: { fontFamily: fonts.ui.bold, fontSize: fontSizes.small, color: ink.pageInk },
-  rules: { gap: space.s3 },
-  rule: { flexDirection: "row", alignItems: "flex-start", gap: space.s4 },
-  ruleText: { flex: 1 },
-  bullet: {
-    width: 7,
-    height: 7,
-    marginTop: 7,
-    borderRadius: 4,
-    backgroundColor: ink.rubric,
-    borderWidth: 1,
-    borderColor: toyValues.outline,
-  },
-  zone: { flexDirection: "row", alignItems: "center", gap: space.s3 },
-  zoneLine: { flex: 1, height: 2, borderRadius: 1, opacity: 0.6 },
-  zoneText: { fontFamily: fonts.ui.extrabold, fontSize: fontSizes.micro, letterSpacing: 1 },
-  zoneBreak: { height: 2, marginVertical: space.s1, backgroundColor: ink.rule },
   standings: { gap: space.s3 },
   standing: {
     flexDirection: "row",
@@ -404,8 +364,6 @@ const styles = StyleSheet.create({
     borderColor: ink.rule,
     backgroundColor: ink.pageRaised,
   },
-  standingUp: { backgroundColor: alpha(toyMatters.green.top, 0.14) },
-  standingDown: { backgroundColor: alpha(toyMatters.red.top, 0.12) },
   standingMe: {
     borderColor: toyMatters.blue.bottom,
     backgroundColor: alpha(toyMatters.blue.top, 0.18),

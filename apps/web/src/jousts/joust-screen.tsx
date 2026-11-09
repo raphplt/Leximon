@@ -123,10 +123,12 @@ function JoustFlow({ joustId }: { readonly joustId: string }) {
   const them = opponentOf(summary.opponent);
   const word = (cardId: string) => (catalog === null ? "…" : catalogCard(catalog, cardId).word);
   const goHome = () => router.push("/joutes");
+  // The run has its round cross in the desk's corner instead.
+  const running = summary.state === "play" && (view.started || begun);
 
   return (
     <main className={styles.page}>
-      <BackLink />
+      {!running && <BackLink />}
       {summary.state === "play" && !view.started && !begun && (
         <StartScene
           view={view}
@@ -137,7 +139,7 @@ function JoustFlow({ joustId }: { readonly joustId: string }) {
           onLater={goHome}
         />
       )}
-      {summary.state === "play" && (view.started || begun) && (
+      {running && (
         <RunScene
           versus={!begun}
           source={source}
@@ -149,6 +151,7 @@ function JoustFlow({ joustId }: { readonly joustId: string }) {
           kicker={kicker}
           doneLabel={summary.launched ? "Voir le bilan" : "Voir le résultat"}
           onDone={runOver}
+          onQuit={goHome}
         />
       )}
       {summary.state === "waiting" && (

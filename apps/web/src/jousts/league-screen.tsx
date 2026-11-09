@@ -1,7 +1,6 @@
 "use client";
 
 import type { Board, BoardResponse, LeagueResponse } from "@leximon/contract";
-import { gameDayOf } from "@leximon/core";
 import {
   AUTOMATON,
   BOARDS,
@@ -9,13 +8,14 @@ import {
   boardLines,
   boardNote,
   CLASSEMENT,
-  LADDER_TITLE,
+  CLIMB_KICKER,
   LEAGUE_CLAIM,
   LEAGUE_CLAIM_BUSY,
-  ladderRules,
-  ladderSteps,
+  LEAGUE_NAMES,
   leagueClaimedToast,
   leagueClaimRefusalText,
+  leagueClimb,
+  MY_GROUP,
   ratingLine,
   waitingReward,
   weekRecord,
@@ -24,20 +24,23 @@ import {
   zoneStarts,
 } from "@leximon/view-model";
 import Link from "next/link";
-import { Fragment, useCallback, useEffect, useState } from "react";
+import { type CSSProperties, Fragment, useCallback, useEffect, useState } from "react";
+import { play } from "@/booster/feedback";
 import { Avatar } from "@/components/avatar";
 import { api } from "@/lib/api";
 import { MainAction } from "@/library/play-pieces";
-import desk from "@/play/desk-columns.module.css";
 import { wallet } from "@/player/player";
-import { Button } from "@/ui/button";
+import { Dialog } from "@/ui/dialog";
 import { Icon } from "@/ui/icon";
 import { LoadFailed } from "@/ui/load-failed";
+import { ParticleStage } from "@/ui/stage";
 import { useToast } from "@/ui/toast";
-import { Lettering, ToyIcon } from "@/ui/toy";
-import ui from "@/ui/ui.module.css";
+import { ToyIcon } from "@/ui/toy";
+import { ClimbScene } from "./climb-scene";
+import { Crest } from "./crest";
+import { Leagues, Road } from "./hall";
+import hall from "./hall.module.css";
 import styles from "./jousts.module.css";
-import { LeagueHeader, Shield } from "./league-pieces";
 import { rise } from "./pieces";
 
 type Loaded =
@@ -45,9 +48,21 @@ type Loaded =
   | { readonly state: "failed" }
   | { readonly state: "ready"; readonly league: LeagueResponse };
 
-/** The leagues: where the player stands this week, the rewards to claim, the boards, the ladder. */
+/**
+ * The leagues: a league climbed plays its scene first, then the road of the seven leagues, the
+ * week's boards with the group's zones, and the player's figures.
+ */
 export function LeagueScreen() {
+  return (
+    <ParticleStage>
+      <LeagueFlow />
+    </ParticleStage>
+  );
+}
+
+function LeagueFlow() {
   const [loaded, setLoaded] = useState<Loaded>({ state: "loading" });
+  const [leaguesOpen, setLeaguesOpen] = useState(false);
   const load = useCallback(() => {
     api
       .fetchJoustLeague()
@@ -65,45 +80,56 @@ export function LeagueScreen() {
   }
   if (loaded.state === "loading") return <main className={styles.page} />;
   const { league } = loaded;
-  const today = gameDayOf(Date.now()).key;
+  let order = 0;
   return (
     <main className={styles.page}>
       <Link href="/joutes" className={styles.back}>
         Retour aux joutes
       </Link>
-      <div className={styles.leagues}>
-        <section className={`${ui.leaf} ${styles.roadLeaf} ${desk.rising}`} style={rise(0)}>
-          <LeagueHeader standing={league.standing} today={today} />
-          <ClaimBox league={league} onClaimed={load} />
-        </section>
-        <Boards league={league} />
-        <section className={`${ui.leaf} ${styles.roadLeaf} ${desk.rising}`} style={rise(2)}>
-          <Ladder league={league} />
-        </section>
-        <section className={`${ui.leaf} ${styles.boardLeaf} ${desk.rising}`} style={rise(3)}>
-          <span className={desk.leafKicker}>Tes joutes classées</span>
-          <div className={styles.figures}>
-            <p className={styles.line}>{weekRecord(league.stats)}</p>
-            <p className={styles.trapsText}>{ratingLine(league.stats)}</p>
-          </div>
+      <div className={hall.hall}>
+        <h1 className={hall.title}>{CLASSEMENT}</h1>
+        <Claim league={league} onClaimed={load} style={rise(order++)} />
+        <Road
+          standing={league.standing}
+          league={league}
+          onOpen={() => setLeaguesOpen(true)}
+          style={rise(order++)}
+        />
+        <Boards league={league} style={rise(order++)} />
+        <section className={hall.leaf} style={rise(order++)}>
+          <span className={hall.kicker}>Tes joutes classées</span>
+          <p className={styles.line}>{weekRecord(league.stats)}</p>
+          <p className={hall.leafText}>{ratingLine(league.stats)}</p>
         </section>
       </div>
+      <Dialog
+        open={leaguesOpen}
+        title="Les ligues"
+        variant="center"
+        size="medium"
+        onClose={() => setLeaguesOpen(false)}
+      >
+        <Leagues league={league} />
+      </Dialog>
     </main>
   );
 }
 
-/** The oldest reward waiting, with its button. */
-function ClaimBox({
+/** The oldest reward waiting: the scene of a league climbed, or its leaf with the button. */
+function Claim({
   league,
   onClaimed,
+  style,
 }: {
   readonly league: LeagueResponse;
   readonly onClaimed: () => void;
+  readonly style: CSSProperties;
 }) {
   const toast = useToast();
   const [busy, setBusy] = useState(false);
   const [refusal, setRefusal] = useState<string | null>(null);
   const next = waitingReward(league);
+  const climb = leagueClimb(league);
   if (next === null) return null;
 
   const claim = async () => {
@@ -116,6 +142,7 @@ function ClaimBox({
         return;
       }
       wallet.publish(result.wallet);
+      play("coins");
       toast(leagueClaimedToast(result.rewards));
       onClaimed();
     } catch {
@@ -125,56 +152,43 @@ function ClaimBox({
     }
   };
 
+  if (climb !== null) {
+    return (
+      <div style={style}>
+        <ClimbScene
+          key={climb.week}
+          climb={climb}
+          busy={busy}
+          refusal={refusal}
+          onClaim={() => void claim()}
+        />
+      </div>
+    );
+  }
   return (
-    <div className={styles.claim}>
-      <span className={styles.claimText}>
-        <ToyIcon name={next.icon === "ecu" ? "ecu" : "sachet"} size={26} />
-        <span>
-          {next.title}
-          <span className={styles.claimMore}>{next.detail}</span>
-          {next.more !== null && <span className={styles.claimMore}>{next.more}</span>}
+    <section className={hall.leaf} style={style}>
+      <span className={hall.kicker}>{CLIMB_KICKER}</span>
+      <div className={styles.claim}>
+        <span className={styles.claimText}>
+          <ToyIcon name={next.icon === "ecu" ? "ecu" : "sachet"} size={34} />
+          <span>
+            {next.title}
+            <span className={styles.claimMore}>{next.detail}</span>
+            {next.more !== null && <span className={styles.claimMore}>{next.more}</span>}
+          </span>
         </span>
-      </span>
-      <Button onClick={() => void claim()} disabled={busy}>
-        {busy ? LEAGUE_CLAIM_BUSY : LEAGUE_CLAIM}
-      </Button>
-      {refusal !== null && (
-        <p className={styles.notice} role="alert">
-          {refusal}
-        </p>
-      )}
-    </div>
-  );
-}
-
-/** The seven leagues, highest first, with what each week in them gives. */
-function Ladder({ league }: { readonly league: LeagueResponse }) {
-  return (
-    <>
-      <Lettering className={styles.homeTitle}>{LADDER_TITLE}</Lettering>
-      <ol className={styles.ladder}>
-        {ladderSteps(league).map((step) => (
-          <li
-            key={step.league}
-            className={styles.ladderStep}
-            data-here={step.here || undefined}
-            aria-label={step.label}
-          >
-            <Shield league={step.league} size={step.here ? 40 : 30} />
-            <strong>{step.name}</strong>
-            <span className={styles.ladderMoves}>{step.moves}</span>
-            <span className={styles.ladderReward}>
-              <ToyIcon name="ecu" size={18} /> {step.reward}
-            </span>
-          </li>
-        ))}
-      </ol>
-      <ul className={styles.ladderRules}>
-        {ladderRules(league).map((line) => (
-          <li key={line}>{line}</li>
-        ))}
-      </ul>
-    </>
+        <MainAction
+          label={busy ? LEAGUE_CLAIM_BUSY : LEAGUE_CLAIM}
+          disabled={busy}
+          onClick={() => void claim()}
+        />
+        {refusal !== null && (
+          <p className={styles.notice} role="alert">
+            {refusal}
+          </p>
+        )}
+      </div>
+    </section>
   );
 }
 
@@ -183,7 +197,13 @@ type BoardState =
   | { readonly state: "failed" }
   | { readonly state: "ready"; readonly board: BoardResponse; readonly more: boolean };
 
-function Boards({ league }: { readonly league: LeagueResponse }) {
+function Boards({
+  league,
+  style,
+}: {
+  readonly league: LeagueResponse;
+  readonly style: CSSProperties;
+}) {
   const [tab, setTab] = useState<Board>("group");
   const [shown, setShown] = useState<BoardState>({ state: "loading" });
   const tabs = BOARDS.filter((entry) => entry.id !== "general" || league.generalOpen);
@@ -213,9 +233,13 @@ function Boards({ league }: { readonly league: LeagueResponse }) {
   };
 
   return (
-    <section className={`${ui.leaf} ${styles.boardLeaf} ${desk.rising}`} style={rise(1)}>
+    <section className={hall.leaf} style={style}>
       <header className={styles.boardHead}>
-        <Lettering className={styles.homeTitle}>{CLASSEMENT}</Lettering>
+        <span className={hall.kicker}>
+          {shown.state === "ready" && shown.board.league !== null
+            ? `${MY_GROUP} · ${LEAGUE_NAMES[shown.board.league]}`
+            : CLASSEMENT}
+        </span>
         <div className={styles.tabs} role="tablist" aria-label={CLASSEMENT}>
           {tabs.map((entry) => (
             <button
@@ -244,70 +268,68 @@ function Boards({ league }: { readonly league: LeagueResponse }) {
               />
             </div>
           )}
-          <p className={styles.trapsText}>{boardNote(shown.board)}</p>
+          <p className={hall.leafText}>{boardNote(shown.board)}</p>
         </>
       )}
     </section>
   );
 }
 
-/** A board's lines; in the group, the zones that go up and down are marked. */
+/**
+ * A board's lines. In the group, as in Duolingo: the zones that go up and down in their colour, a
+ * line where each ends, and the player's own line kept in sight while the list scrolls.
+ */
 function Standings({ board }: { readonly board: BoardResponse }) {
   const { lines, pinned } = boardLines(board);
   if (lines.length === 0 && pinned === null) return null;
-  const zones = board.board === "group" ? zoneStarts(lines) : { stay: null, down: null };
-  const ups = board.board === "group" && lines[0]?.move === "up";
+  const group = board.board === "group";
+  const zones = group ? zoneStarts(lines) : { stay: null, down: null };
   return (
-    <ol className={styles.standings}>
-      {ups && <li className={styles.zone}>{ZONE_UP}</li>}
+    <ol className={`${hall.rows} ${styles.groupBoard}`}>
       {lines.map((line) => (
         <Fragment key={line.key}>
-          {line.key === zones.stay && <li className={styles.zoneEnd} aria-hidden="true" />}
+          {line.key === zones.stay && (
+            <li className={hall.zoneLine} data-move="up">
+              <Icon name="chev" size={12} className={hall.up} /> {ZONE_UP}
+            </li>
+          )}
           {line.key === zones.down && (
-            <li className={styles.zone} data-move="down">
+            <li className={hall.zoneLine} data-move="down">
               {ZONE_DOWN}
             </li>
           )}
-          <Standing line={line} />
+          <Standing line={line} zoned={group} />
         </Fragment>
       ))}
-      {pinned !== null && <Standing line={pinned} pinned />}
+      {pinned !== null && <Standing line={pinned} zoned={group} />}
     </ol>
   );
 }
 
-function Standing({
-  line,
-  pinned = false,
-}: {
-  readonly line: BoardLine;
-  readonly pinned?: boolean;
-}) {
+function Standing({ line, zoned }: { readonly line: BoardLine; readonly zoned: boolean }) {
   return (
     <li
-      className={styles.standing}
+      className={`${hall.row} ${styles.groupRow}`}
       data-me={line.me || undefined}
-      data-pinned={pinned || undefined}
-      data-move={line.move ?? undefined}
-      data-kind={line.kind}
+      data-move={zoned ? (line.move ?? undefined) : undefined}
     >
-      <span className={styles.place} data-podium={line.podium || undefined}>
+      <span className={hall.rowPlace} data-podium={line.podium || undefined}>
         {line.place}
       </span>
       {line.player !== null ? (
-        <Avatar avatar={line.player.avatar} frame={line.player.frame} size={36} />
+        <Avatar avatar={line.player.avatar} frame={line.player.frame} size={34} />
       ) : (
-        <span className={styles.automaton} aria-hidden="true">
-          <Icon name={line.kind === "bot" ? "reglages" : "profil"} size={20} />
+        <span className={hall.automaton} aria-hidden="true">
+          <Icon name={line.kind === "bot" ? "reglages" : "profil"} size={18} />
         </span>
       )}
-      <span className={styles.standingName}>
+      <span className={hall.rowName}>
         {line.name}
-        {line.tag !== null && <span className={styles.botTag}>{AUTOMATON}</span>}
+        {line.tag !== null && <span className={hall.botTag}>{AUTOMATON}</span>}
         {line.champion && <span className={styles.emblem}>Champion</span>}
       </span>
-      <Shield league={line.league} size={24} />
-      <span className={styles.standingPoints}>{line.points}</span>
+      {!zoned && <Crest league={line.league} size={26} />}
+      <span className={hall.rowPoints}>{line.points} pts</span>
     </li>
   );
 }

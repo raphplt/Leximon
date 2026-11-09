@@ -1,16 +1,13 @@
 "use client";
 
-import type { JoustStanding, LeagueId } from "@leximon/contract";
+import type { LeagueId } from "@leximon/contract";
 import { toyMatters, toy as toyValues } from "@leximon/tokens";
 import {
   type JoustTournament,
   LEAGUE_NAMES,
   leagueNumeral,
-  standingHeader,
   tournamentGain,
 } from "@leximon/view-model";
-import { Icon } from "@/ui/icon";
-import { Lettering } from "@/ui/toy";
 import styles from "./jousts.module.css";
 
 /** Each league in its matter, from paper to gold, bronze and silver just below. */
@@ -80,38 +77,6 @@ export function Shield({ league, size }: { readonly league: LeagueId; readonly s
         </text>
       )}
     </svg>
-  );
-}
-
-/** The player's league at the top of the jousts' home: shield, place in the week's group. */
-export function LeagueHeader({
-  standing,
-  today,
-}: {
-  readonly standing: JoustStanding;
-  readonly today: string;
-}) {
-  const header = standingHeader(standing, today);
-  return (
-    <div className={styles.leagueHead}>
-      <Shield league={standing.league} size={58} />
-      <div className={styles.leagueText}>
-        <Lettering className={styles.leagueName}>{header.name}</Lettering>
-        {header.place !== null && (
-          <span className={styles.groupPlace}>
-            <Icon name="crown" size={16} /> {header.place} · {header.points}
-            {header.champion !== null && <span className={styles.emblem}>{header.champion}</span>}
-          </span>
-        )}
-        <span className={styles.leagueNext} data-move={header.move ?? undefined}>
-          {header.line}
-        </span>
-        <span className={styles.rankedLeft}>{header.ranked}</span>
-      </div>
-      <span className={styles.season}>
-        <Icon name="clock" size={14} /> {header.week}
-      </span>
-    </div>
   );
 }
 

@@ -11,13 +11,14 @@ import { useCatalog } from "@/cards/use-catalog";
 import { Card, QuestionCard } from "@/components/card";
 import { DefinitionText } from "@/components/definition-text";
 import { useNarrow } from "@/lib/use-narrow";
+import { Desk } from "@/library/play-pieces";
 import desk from "@/play/desk-columns.module.css";
 import { catalogCard } from "@/trades/card-thumb";
+import { RoundButton } from "@/ui/button";
 import { Icon } from "@/ui/icon";
 import { useLeaveGuard } from "@/ui/leave-guard";
 import { useStage } from "@/ui/stage";
 import { Lettering, Toy } from "@/ui/toy";
-import ui from "@/ui/ui.module.css";
 import styles from "./jousts.module.css";
 import { type Duelist, DuelistFace, rise } from "./pieces";
 
@@ -67,8 +68,9 @@ type Phase =
 type LaneAnswer = boolean | null;
 
 /**
- * A run on the clock: the face-to-face and its countdown, then each definition turned like a card,
- * the ring of the clock, the four words, and the two ribbons of the players' answers.
+ * A run on the clock, on the green desk of the challenges: the face-to-face and its countdown, then
+ * each definition turned like a card, the four words, and the scoreboard on top with the two
+ * players' plaques either side of the clock's ring.
  */
 export function RunScene({
   source,
@@ -80,6 +82,7 @@ export function RunScene({
   kicker,
   doneLabel,
   onDone,
+  onQuit,
   versus = true,
 }: {
   readonly source: RunSource;
@@ -93,6 +96,8 @@ export function RunScene({
   readonly kicker: string;
   readonly doneLabel: string;
   readonly onDone: () => void;
+  /** The round cross in the desk's corner, which asks first once the clock runs. */
+  readonly onQuit?: () => void;
   /** Play the face-to-face and its countdown first; off when they were played before. */
   readonly versus?: boolean;
 }) {
@@ -251,7 +256,7 @@ export function RunScene({
     ghost === null
       ? []
       : ghost.slice(0, phase.kind === "done" ? ghost.length : results.length).map((g) => g.correct);
-  const faceSize = narrow ? 30 : 56;
+  const faceSize = narrow ? 30 : 64;
   const cardWidth = narrow ? 212 : 330;
   const revealed =
     shown?.kind === "answered" && catalog !== null && shown.answer.rightCardId !== ""
@@ -259,8 +264,20 @@ export function RunScene({
       : null;
 
   return (
-    <section className={`${ui.leaf} ${styles.arena} ${desk.rising}`} style={rise(0)}>
-      <span className={`${desk.leafKicker} ${styles.arenaKicker}`}>{kicker}</span>
+    <section className={`${styles.arena} ${desk.rising}`} style={rise(0)}>
+      <Desk className={styles.arenaDesk} />
+      <div className={styles.arenaTop}>
+        {onQuit !== undefined && (
+          <RoundButton
+            label="Quitter la joute"
+            className={styles.quit}
+            onClick={() => guard.ask(onQuit)}
+          >
+            <Icon name="close" size={20} />
+          </RoundButton>
+        )}
+        <span className={styles.arenaKicker}>{kicker}</span>
+      </div>
 
       <div className={styles.hud}>
         <HudSide duelist={me} answers={results} total={questions} size={faceSize} side="me" />
@@ -482,8 +499,8 @@ function Ring({
       }
     >
       <svg viewBox="0 0 44 44" aria-hidden="true">
-        <circle className={styles.ringTrack} cx="22" cy="22" r="18" />
-        <circle className={styles.ringFill} cx="22" cy="22" r="18" />
+        <circle className={styles.ringTrack} cx="22" cy="22" r="19" />
+        <circle className={styles.ringFill} cx="22" cy="22" r="19" />
       </svg>
       <Lettering className={styles.ringFigure}>{shown.current}</Lettering>
     </span>

@@ -499,7 +499,7 @@ function Lance({ spent }: { readonly spent: boolean }) {
 
 const STOP = 76;
 
-function Road({
+export function Road({
   standing,
   league,
   onOpen,
@@ -566,7 +566,7 @@ function Road({
   );
 }
 
-function Leagues({ league }: { readonly league: LeagueResponse }) {
+export function Leagues({ league }: { readonly league: LeagueResponse }) {
   return (
     <View style={styles.leagues}>
       {ladderSteps(league).map((step) => (
@@ -603,9 +603,23 @@ function Leagues({ league }: { readonly league: LeagueResponse }) {
 
 // --- The group -----------------------------------------------------------------------------------
 
-function GroupRow({ line }: { readonly line: BoardLine }) {
+/** A line of the group; `zoned` tints it in the colour of the zone it stands in. */
+export function GroupRow({
+  line,
+  zoned = false,
+}: {
+  readonly line: BoardLine;
+  readonly zoned?: boolean;
+}) {
   return (
-    <View style={[styles.groupRow, line.me && styles.groupRowMe]}>
+    <View
+      style={[
+        styles.groupRow,
+        zoned && line.move === "up" && styles.groupRowUp,
+        zoned && line.move === "down" && styles.groupRowDown,
+        line.me && styles.groupRowMe,
+      ]}
+    >
       <Text style={styles.groupPlace}>{line.place}</Text>
       {line.player !== null ? (
         <Avatar avatar={line.player.avatar} frame={line.player.frame} size={32} />
@@ -627,7 +641,13 @@ function GroupRow({ line }: { readonly line: BoardLine }) {
   );
 }
 
-function ZoneLine({ move, children }: { readonly move: "up" | "down"; readonly children: string }) {
+export function ZoneLine({
+  move,
+  children,
+}: {
+  readonly move: "up" | "down";
+  readonly children: string;
+}) {
   const color = move === "up" ? toyMatters.green.bottom : toyMatters.red.bottom;
   return (
     <View style={styles.zoneLine}>
@@ -1151,6 +1171,14 @@ const styles = StyleSheet.create({
     borderColor: ink.rule,
     borderRadius: radii.xl,
     backgroundColor: alpha(toyMatters.paper.top, 0.7),
+  },
+  groupRowUp: {
+    borderColor: alpha(toyMatters.green.bottom, 0.55),
+    backgroundColor: alpha(toyMatters.green.top, 0.22),
+  },
+  groupRowDown: {
+    borderColor: alpha(toyMatters.red.bottom, 0.55),
+    backgroundColor: alpha(toyMatters.red.top, 0.18),
   },
   groupRowMe: {
     borderColor: toyValues.outline,

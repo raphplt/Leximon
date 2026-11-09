@@ -291,6 +291,52 @@ export function waitingReward(league: LeagueResponse): WaitingReward | null {
   };
 }
 
+export const CLIMB_KICKER = "Fin du tournoi de la semaine";
+
+/** A league climbed, played as its scene before its reward is claimed. */
+export interface LeagueClimb {
+  readonly week: number;
+  readonly from: LeagueId;
+  readonly to: LeagueId;
+  /** « Tu montes en Écuyer ! » */
+  readonly title: string;
+  /** « Tu as fini 9e de ton groupe de Page. » */
+  readonly line: string;
+  /** What the week gives, one piece each: « 10 écus », « Sachet garni ». */
+  readonly gains: readonly { readonly icon: "ecu" | "sachet" | "scroll"; readonly text: string }[];
+}
+
+/** The oldest reward waiting, when its week sent the player up a league; `null` otherwise. */
+export function leagueClimb(league: LeagueResponse): LeagueClimb | null {
+  const [first] = league.waiting;
+  if (first === undefined || first.move !== "up") return null;
+  const to = leagueBeside(first.league, "up");
+  const sachets = first.rewards.filter((reward) => reward.kind === "bonus_booster").length;
+  const gains: LeagueClimb["gains"][number][] = [];
+  if (sachets > 1) {
+    gains.push({ icon: "sachet", text: plural(sachets, "sachet bonus", "sachets bonus") });
+  }
+  for (const reward of first.rewards) {
+    if (reward.kind === "bonus_booster" && sachets > 1) continue;
+    const item = rewardItem(reward);
+    const icon =
+      reward.kind === "ecus"
+        ? "ecu"
+        : item.icon === "sachet" || item.icon === "star"
+          ? "sachet"
+          : "scroll";
+    gains.push({ icon, text: reward.kind === "title" ? item.detail : item.title });
+  }
+  return {
+    week: first.week,
+    from: first.league,
+    to,
+    title: `Tu montes en ${LEAGUE_NAMES[to]} !`,
+    line: `Tu as fini ${placeText(first.place)} de ton groupe de ${LEAGUE_NAMES[first.league]}.`,
+    gains,
+  };
+}
+
 /** « 9 novembre »: the first day of an earlier week. */
 function weekStartText(week: number, current: WeekView): string {
   const first = Date.parse(`${current.firstDay}T00:00:00Z`);

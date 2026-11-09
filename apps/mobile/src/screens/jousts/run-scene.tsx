@@ -37,14 +37,16 @@ import Svg, { Circle } from "react-native-svg";
 import { Card, QuestionCard } from "@/cards/card";
 import { useCatalog } from "@/cards/use-catalog";
 import { play, vibrate } from "@/feedback/feedback";
+import { Desk } from "@/library/play-pieces";
 import { catalogCard } from "@/screens/trades/card-row";
-import { fontSizes, fonts, radii, space } from "@/theme";
+import { alpha, fontSizes, fonts, radii, space } from "@/theme";
 import { DefinitionText } from "@/ui/definition-text";
 import { Icon } from "@/ui/icon";
 import { useLeaveGuard } from "@/ui/leave-guard";
+import { Matter } from "@/ui/matter";
 import { useStage } from "@/ui/stage";
-import { Leaf, Lettering, Toy } from "@/ui/toy";
-import { type Duelist, DuelistFace, ink, LeafKicker, Notice, pieces } from "./pieces";
+import { Lettering, Toy } from "@/ui/toy";
+import { type Duelist, DuelistFace, ink, Notice } from "./pieces";
 
 /** A question as the scene shows it, its clock set on this device. */
 export interface RunQuestion {
@@ -111,8 +113,8 @@ const stampIn = new Keyframe({
 }).duration(420);
 
 /**
- * A run on the clock: the board of the two players and the ring of the clock above, the
- * face-to-face and its countdown, then each definition dealt as a card still to guess, the four
+ * A run on the clock, on the green desk of the challenges: the two players' plaques of leather
+ * either side of the clock's ring above, the face-to-face and its countdown, then each definition dealt as a card still to guess, the four
  * words, and once answered the card turned over to show the word.
  */
 export function RunScene({
@@ -325,8 +327,9 @@ export function RunScene({
   );
 
   return (
-    <Leaf style={pieces.leaf}>
-      <LeafKicker>{kicker}</LeafKicker>
+    <View style={styles.arena}>
+      <Desk style={StyleSheet.absoluteFill} />
+      <Text style={styles.kicker}>{kicker.toUpperCase()}</Text>
       <View style={styles.hud}>
         <HudSide duelist={me} answers={results} total={questions} side="me" />
         <View style={styles.hudMiddle}>
@@ -339,7 +342,7 @@ export function RunScene({
                 left={left ?? 0}
               />
               <Text style={styles.counter}>
-                Mot {shown.question.position + 1} sur {questions}
+                MOT {shown.question.position + 1} SUR {questions}
               </Text>
             </>
           ) : (
@@ -505,7 +508,7 @@ export function RunScene({
         </View>
       )}
       {guard.dialog}
-    </Leaf>
+    </View>
   );
 }
 
@@ -572,7 +575,7 @@ function PlusOne() {
   );
 }
 
-/** One side of the board: the player's face, name and score, and a pip for each question. */
+/** A player's plaque of leather, blue for the player and red for the other: name, pips, score. */
 function HudSide({
   duelist,
   answers,
@@ -586,44 +589,54 @@ function HudSide({
 }) {
   const mirrored = side === "them";
   return (
-    <View style={styles.hudSide}>
-      <View style={[styles.hudTop, mirrored && styles.mirrored]}>
-        <DuelistFace duelist={duelist} size={34} />
-        <Lettering size={fontSizes.subtitle}>{answers.filter((a) => a === true).length}</Lettering>
+    <Animated.View
+      entering={(mirrored ? FadeInRight : FadeInLeft).duration(420)}
+      style={[styles.plaque, mirrored ? styles.plaqueThem : styles.plaqueMe]}
+    >
+      <Matter kind="leather" />
+      <View style={[styles.plaqueRow, mirrored && styles.mirrored]}>
+        <View style={styles.plaqueBody}>
+          <Text style={[styles.hudName, mirrored && styles.hudNameMirrored]} numberOfLines={1}>
+            {duelist.name}
+          </Text>
+          <View style={[styles.pips, mirrored && styles.mirrored]}>
+            {Array.from({ length: total }, (_, index) => {
+              const answer = answers[index];
+              const fill =
+                answer === undefined
+                  ? PIP_EMPTY
+                  : answer === null
+                    ? toyMatters.paper.top
+                    : answer
+                      ? toyMatters.green.top
+                      : toyMatters.red.top;
+              return (
+                // biome-ignore lint/suspicious/noArrayIndexKey: one pip per question, in order
+                <View key={index} style={[styles.pip, { backgroundColor: fill }]}>
+                  {typeof answer === "boolean" && (
+                    <Animated.View entering={countIn}>
+                      <Icon
+                        name={answer ? "check" : "close"}
+                        size={10}
+                        color={toyMatters.paper.top}
+                      />
+                    </Animated.View>
+                  )}
+                </View>
+              );
+            })}
+          </View>
+        </View>
+        <Lettering size={fontSizes.title}>{answers.filter((a) => a === true).length}</Lettering>
       </View>
-      <Text style={[styles.hudName, mirrored && styles.hudNameMirrored]} numberOfLines={1}>
-        {duelist.name}
-      </Text>
-      <View style={[styles.pips, mirrored && styles.mirrored]}>
-        {Array.from({ length: total }, (_, index) => {
-          const answer = answers[index];
-          const fill =
-            answer === undefined
-              ? ink.track
-              : answer === null
-                ? toyMatters.dark.bottom
-                : answer
-                  ? toyMatters.green.top
-                  : toyMatters.red.top;
-          return (
-            // biome-ignore lint/suspicious/noArrayIndexKey: one pip per question, in order
-            <View key={index} style={[styles.pip, { backgroundColor: fill }]}>
-              {typeof answer === "boolean" && (
-                <Animated.View entering={countIn}>
-                  <Icon name={answer ? "check" : "close"} size={11} color={toyMatters.paper.top} />
-                </Animated.View>
-              )}
-            </View>
-          );
-        })}
-      </View>
-    </View>
+    </Animated.View>
   );
 }
 
 const AnimatedCircle = Animated.createAnimatedComponent(Circle);
-const RING_SIZE = 58;
-const RING_RADIUS = 24;
+const RING_SIZE = 64;
+const RING_RADIUS = 26;
+const PIP_EMPTY = alpha(toyValues.outline, 0.45);
 const RING_LENGTH = 2 * Math.PI * RING_RADIUS;
 
 /** The clock: a ring that empties over the question's time and turns red for the last seconds. */
@@ -665,16 +678,16 @@ function Ring({
           cx={center}
           cy={center}
           r={RING_RADIUS}
-          stroke={ink.track}
-          strokeWidth={6}
+          stroke={toyValues.outline}
+          strokeWidth={7}
           fill={toyMatters.paper.top}
         />
         <AnimatedCircle
           cx={center}
           cy={center}
           r={RING_RADIUS}
-          stroke={hot ? toyMatters.red.bottom : toyMatters.green.top}
-          strokeWidth={6}
+          stroke={hot ? toyMatters.red.top : toyMatters.gold.top}
+          strokeWidth={4}
           strokeLinecap="round"
           fill="none"
           strokeDasharray={`${RING_LENGTH} ${RING_LENGTH}`}
@@ -690,22 +703,47 @@ function Ring({
 }
 
 const styles = StyleSheet.create({
-  hud: { flexDirection: "row", alignItems: "flex-start", gap: space.s3 },
-  hudSide: { flex: 1, gap: space.s2 },
-  hudTop: { flexDirection: "row", alignItems: "center", gap: space.s3 },
+  arena: { padding: space.s8, gap: space.s6, minHeight: 560 },
+  kicker: {
+    textAlign: "center",
+    fontFamily: fonts.ui.extrabold,
+    fontSize: fontSizes.micro,
+    letterSpacing: 2.4,
+    color: lettering.kicker,
+  },
+  hud: { flexDirection: "row", alignItems: "center", gap: space.s2 },
+  plaque: {
+    flex: 1,
+    overflow: "hidden",
+    paddingHorizontal: space.s4,
+    paddingVertical: space.s3,
+    borderRadius: radii.pill,
+    borderWidth: 2.5,
+    borderColor: toyValues.outline,
+  },
+  plaqueMe: {
+    backgroundImage: `linear-gradient(180deg, ${toyMatters.blue.top}, ${toyMatters.blue.bottom})`,
+    boxShadow: `inset 0 -4px 0 ${toyMatters.blue.edge}, 0 4px 0 ${toyValues.outline}`,
+  },
+  plaqueThem: {
+    backgroundImage: `linear-gradient(180deg, ${toyMatters.red.top}, ${toyMatters.red.bottom})`,
+    boxShadow: `inset 0 -4px 0 ${toyMatters.red.edge}, 0 4px 0 ${toyValues.outline}`,
+  },
+  plaqueRow: { flexDirection: "row", alignItems: "center", gap: space.s3 },
+  plaqueBody: { flex: 1, gap: space.s2 },
   mirrored: { flexDirection: "row-reverse" },
   hudName: {
-    fontFamily: fonts.ui.bold,
+    fontFamily: fonts.ui.extrabold,
     fontSize: fontSizes.small,
-    color: ink.pageInk,
+    color: lettering.fill,
   },
   hudNameMirrored: { textAlign: "right" },
-  hudMiddle: { width: RING_SIZE + 10, alignItems: "center", gap: space.s1 },
+  hudMiddle: { width: RING_SIZE + 6, alignItems: "center", gap: space.s1 },
   pips: { flexDirection: "row", gap: 3 },
   pip: {
     flex: 1,
     maxWidth: 24,
-    height: 16,
+    height: 14,
     borderRadius: radii.xs,
     borderWidth: 2,
     borderColor: toyValues.outline,
@@ -723,7 +761,12 @@ const styles = StyleSheet.create({
   wait: { minHeight: 300 },
   question: { gap: space.s6 },
   dealt: { alignItems: "center" },
-  counter: { fontFamily: fonts.ui.extrabold, fontSize: fontSizes.micro, color: ink.pageInkMuted },
+  counter: {
+    fontFamily: fonts.ui.extrabold,
+    fontSize: fontSizes.micro,
+    letterSpacing: 1.2,
+    color: lettering.kicker,
+  },
   choices: {
     flexDirection: "row",
     flexWrap: "wrap",
@@ -742,10 +785,18 @@ const styles = StyleSheet.create({
   centered: { textAlign: "center" },
   dim: { opacity: 0.45 },
   late: {
+    alignSelf: "center",
+    overflow: "hidden",
+    paddingHorizontal: space.s6,
+    paddingVertical: space.s2,
+    borderRadius: radii.pill,
+    borderWidth: 2,
+    borderColor: toyValues.outline,
+    backgroundImage: `linear-gradient(180deg, ${toyMatters.red.top}, ${toyMatters.red.bottom})`,
     textAlign: "center",
     fontFamily: fonts.ui.bold,
     fontSize: fontSizes.body,
-    color: ink.danger,
+    color: lettering.fill,
   },
   // Over the card's corner, where the eye already is.
   plusOne: { position: "absolute", right: space.s12, top: 110 },
@@ -760,7 +811,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: space.s8,
     paddingVertical: space.s4,
     borderWidth: 3,
-    borderColor: ink.rubric,
+    borderColor: toyMatters.gold.top,
     borderRadius: radii.sm,
     transform: [{ rotate: "-8deg" }],
   },
@@ -768,7 +819,7 @@ const styles = StyleSheet.create({
     fontFamily: fonts.ui.extrabold,
     fontSize: fontSizes.titleSmall,
     letterSpacing: 3,
-    color: ink.rubric,
+    color: toyMatters.gold.top,
   },
   control: { height: 54, minWidth: 220, paddingHorizontal: space.s8 },
   error: { alignItems: "center", gap: space.s6 },

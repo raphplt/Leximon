@@ -5,6 +5,7 @@ import {
   boardNote,
   ladderRules,
   ladderSteps,
+  leagueClimb,
   leagueNumeral,
   placeText,
   pointsText,
@@ -211,6 +212,35 @@ describe("waitingReward", () => {
       more: "Encore 1 récompense après celle-ci",
     });
     expect(waitingReward(league)).toBeNull();
+  });
+});
+
+describe("leagueClimb", () => {
+  const waiting = (move: "up" | "stay") => ({
+    week: 1,
+    league: "page" as const,
+    place: 9,
+    move,
+    rewards: [ecus(10), { kind: "bonus_booster" as const }, { kind: "bonus_booster" as const }],
+  });
+
+  it("plays the climb of the oldest reward, with each gain once", () => {
+    expect(leagueClimb({ ...league, waiting: [waiting("up")] })).toEqual({
+      week: 1,
+      from: "page",
+      to: "ecuyer",
+      title: "Tu montes en Écuyer !",
+      line: "Tu as fini 9e de ton groupe de Page.",
+      gains: [
+        { icon: "sachet", text: "2 sachets bonus" },
+        { icon: "ecu", text: "10 écus" },
+      ],
+    });
+  });
+
+  it("plays nothing for a week that did not send the player up", () => {
+    expect(leagueClimb({ ...league, waiting: [waiting("stay"), waiting("up")] })).toBeNull();
+    expect(leagueClimb(league)).toBeNull();
   });
 });
 

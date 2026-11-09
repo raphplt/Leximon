@@ -404,7 +404,7 @@ function Lance({ spent }: { readonly spent: boolean }) {
 
 // --- The road of the leagues ---------------------------------------------------------------------
 
-function Road({
+export function Road({
   standing,
   league,
   onOpen,
@@ -456,7 +456,7 @@ function Road({
   );
 }
 
-function Leagues({ league }: { readonly league: LeagueResponse }) {
+export function Leagues({ league }: { readonly league: LeagueResponse }) {
   return (
     <div className={styles.leagues}>
       <ol className={styles.ladder}>
