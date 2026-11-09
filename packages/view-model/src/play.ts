@@ -270,6 +270,18 @@ export interface CollectionChoice {
 const FEATURED_COLLECTION = "betes-plantes";
 
 /**
+ * Ranks on the counter: the featured collection first, then the starter one, then alternating hues
+ * so the two green packs (moss and green) never sit side by side going round the carousel.
+ */
+function counterRank(id: string, featured: string, starter: string): number {
+  if (id === featured) return 0;
+  if (id === starter) return 1;
+  if (id === "metiers") return 2;
+  if (id === "caracteres") return 3;
+  return 4;
+}
+
+/**
  * One sachet per published collection, the featured one first, then the starter one. Before the
  * level that opens the choice, only the starter sachet opens; the others show their level.
  */
@@ -284,8 +296,7 @@ export function collectionChoices(
 ): CollectionChoice[] {
   const rules = unlockRulesAt(UNLOCK_SCHEDULE, now);
   const lock = levelBadge(rules.levels.choose_collection);
-  const rank = (id: string) =>
-    id === FEATURED_COLLECTION ? 0 : id === rules.starterCollection ? 1 : 2;
+  const rank = (id: string) => counterRank(id, FEATURED_COLLECTION, rules.starterCollection);
   const ordered = [...collections].sort((a, b) => rank(a.id) - rank(b.id));
   return ordered.map((c) => ({
     id: c.id,

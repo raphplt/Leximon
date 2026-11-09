@@ -163,14 +163,14 @@ describe("collection of the sachet", () => {
     const choices = collectionChoices(collections, 2, NOW);
     expect(choices.map((c) => [c.short, c.lock])).toEqual([
       ["Fondateurs", null],
-      ["Caractères", "Niv. 3"],
       ["Métiers", "Niv. 3"],
+      ["Caractères", "Niv. 3"],
     ]);
     expect(pickCollection(choices, "metiers").id).toBe("fondateurs");
     expect(choices.map((c) => c.tagline)).toEqual([
       null,
-      "Sacripants, médicastres et pendardeaux.",
       null,
+      "Sacripants, médicastres et pendardeaux.",
     ]);
   });
 
@@ -190,8 +190,8 @@ describe("collection of the sachet", () => {
     expect(closed.map((c) => c.id)).toEqual([
       "betes-plantes",
       "fondateurs",
-      "caracteres",
       "metiers",
+      "caracteres",
     ]);
     expect(pickCollection(closed, null).id).toBe("fondateurs");
     expect(pickCollection(collectionChoices(withBeasts, 3, NOW), null).id).toBe("betes-plantes");
