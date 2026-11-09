@@ -1,8 +1,13 @@
-import type { MonthCosmeticView, PatronFindsView, PatronResponse } from "@leximon/contract";
+import type {
+  MonthCosmeticView,
+  PatronCosmeticView,
+  PatronFindsView,
+  PatronResponse,
+} from "@leximon/contract";
 import { mixHex, type ToyIconName, toyMatters, toy as toyValues } from "@leximon/tokens";
 import {
   badgePerkLine,
-  claimableLabel,
+  claimableMonth,
   cosmeticPerkLine,
   discordScreen,
   editionsOwnedLine,
@@ -12,7 +17,6 @@ import {
   PATRON_CARD_KICKER,
   PATRON_CLAIM,
   PATRON_CLAIM_BUSY,
-  PATRON_CLAIMABLE_TITLE,
   PATRON_DISCORD_FAILED,
   PATRON_DISCORD_LINK,
   PATRON_DISCORD_LINKED,
@@ -38,6 +42,7 @@ import {
   type PatronPerk,
   type PatronPerkKey,
   patronClaimedLine,
+  patronCosmeticCaption,
   patronStatus,
   patronThanksLine,
   patronTitleOf,
@@ -223,7 +228,12 @@ function MemberPerk({
       return (
         <PerkBlock perk={perk} line={cosmeticPerkLine(patron, Date.now())}>
           {patron.claimable.map((item) => (
-            <ClaimTile key={item.month} item={item} onClaimed={onChanged} />
+            <ClaimTile
+              key={item.month}
+              item={item}
+              showMonth={patron.claimable.length > 1}
+              onClaimed={onChanged}
+            />
           ))}
         </PerkBlock>
       );
@@ -458,12 +468,14 @@ function ThanksSetting({
   );
 }
 
-/** A month's cosmetic waiting for its patron, as a coffret to open. */
+/** A month's cosmetics waiting for their patron, each drawn as it will be worn. */
 function ClaimTile({
   item,
+  showMonth,
   onClaimed,
 }: {
   readonly item: MonthCosmeticView;
+  readonly showMonth: boolean;
   readonly onClaimed: () => Promise<void>;
 }) {
   const [claiming, setClaiming] = useState(false);
@@ -486,15 +498,21 @@ function ClaimTile({
 
   return (
     <View style={styles.claim}>
-      <View style={styles.claimRow}>
-        <ToyBody matter="gold" shape="tile" style={styles.claimIcon}>
-          <Lettrine icon="chest" matter="red" size={48} />
-        </ToyBody>
-        <View style={styles.claimText}>
-          <Kicker>{PATRON_CLAIMABLE_TITLE}</Kicker>
-          <Text style={styles.claimLabel}>{claimableLabel(item)}</Text>
-        </View>
-      </View>
+      {showMonth && <Text style={styles.claimMonth}>{claimableMonth(item)}</Text>}
+      {item.cosmetics.map((cosmetic) => {
+        const caption = patronCosmeticCaption(cosmetic);
+        return (
+          <View key={`${caption.kind}-${caption.name}`} style={styles.claimRow}>
+            <View style={styles.claimLook}>
+              <CosmeticLook cosmetic={cosmetic} />
+            </View>
+            <View style={styles.claimName}>
+              <Text style={styles.claimKind}>{caption.kind}</Text>
+              <Text style={styles.claimLabel}>{caption.name}</Text>
+            </View>
+          </View>
+        );
+      })}
       <Toy
         matter="gold"
         style={styles.claimButton}
@@ -509,6 +527,21 @@ function ClaimTile({
     </View>
   );
 }
+
+/** A frame around the player's own engraving, an engraving bare, a title as a crown. */
+function CosmeticLook({ cosmetic }: { readonly cosmetic: PatronCosmeticView }) {
+  const me = useShared(profile);
+  switch (cosmetic.kind) {
+    case "frame":
+      return <Avatar avatar={me?.avatar ?? null} frame={cosmetic.frame} size={CLAIM_LOOK} />;
+    case "avatar":
+      return <Avatar avatar={cosmetic.avatar} frame="simple" size={CLAIM_LOOK} />;
+    case "title":
+      return <Lettrine icon="crown" matter="gold" size={CLAIM_LOOK} />;
+  }
+}
+
+const CLAIM_LOOK = 64;
 
 const styles = StyleSheet.create({
   card: { gap: space.s5, padding: space.s8 },
@@ -570,8 +603,21 @@ const styles = StyleSheet.create({
     boxShadow: `0 4px 0 ${toyValues.outline}`,
   },
   claimRow: { flexDirection: "row", alignItems: "center", gap: space.s6 },
+  // The frame spills over the medallion: room for it.
+  claimLook: { width: CLAIM_LOOK + 20, alignItems: "center", justifyContent: "center" },
   claimIcon: { width: 60, height: 60, alignItems: "center", justifyContent: "center" },
   claimText: { flex: 1, gap: space.s2 },
+  claimName: { flex: 1, gap: 2 },
+  claimMonth: {
+    fontFamily: fonts.ui.extrabold,
+    fontSize: fontSizes.subtitle,
+    color: paperColors.pageInk,
+  },
+  claimKind: {
+    fontFamily: fonts.ui.semibold,
+    fontSize: fontSizes.body,
+    color: paperColors.pageInk,
+  },
   claimLabel: {
     fontFamily: fonts.ui.extrabold,
     fontSize: fontSizes.bodyLarge,

@@ -283,18 +283,13 @@ function inkFlourish(layers: readonly NibPoint[][][]): FrameShape[] {
   ];
 }
 
-/** A scribe's flourish on a leaf of paper, ruled in ink inside and out. */
+/** A scribe's flourish straight on the page, around a thin rule of ink. */
 function cadelerFrame(flourish: Flourish): AvatarFrame {
   const [up, down] = flourishLayers(flourish);
   return {
-    footprint: 12,
-    reach: R + 16,
-    shapes: [
-      ...band(R, R + 13.6, "paper"),
-      { d: circle(0, 0, R + 12.2), stroke: "gall", strokeWidth: 0.5 },
-      ...band(R, R + 1.6, "gall"),
-      ...inkFlourish([up, down]),
-    ],
+    footprint: 8,
+    reach: R + 12,
+    shapes: [...band(R, R + 1.6, "gall"), ...inkFlourish([up, down])],
   };
 }
 

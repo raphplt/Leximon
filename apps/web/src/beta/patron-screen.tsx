@@ -4,6 +4,7 @@ import {
   DISCORD_RETURN_QUERY,
   type MonthCosmeticView,
   PATRON_PORTAL_RETURN_QUERY,
+  type PatronCosmeticView,
   type PatronFindsView,
   type PatronPlan,
   type PatronResponse,
@@ -12,7 +13,7 @@ import {
 import type { ToyIconName } from "@leximon/tokens";
 import {
   badgePerkLine,
-  claimableLabel,
+  claimableMonth,
   cosmeticPerkLine,
   discordScreen,
   editionsOwnedLine,
@@ -72,6 +73,7 @@ import {
   type PatronPerkKey,
   type PatronWelcomeKind,
   patronClaimedLine,
+  patronCosmeticCaption,
   patronPageKind,
   patronPlanChoices,
   patronStatus,
@@ -716,7 +718,13 @@ function MemberPerk({
           {patron.claimable.length > 0 && (
             <section className={styles.claims} aria-label={PATRON_CLAIMABLE_TITLE}>
               {patron.claimable.map((item) => (
-                <ClaimTile key={item.month} item={item} onClaimed={onChanged} />
+                <ClaimTile
+                  key={item.month}
+                  item={item}
+                  me={me}
+                  showMonth={patron.claimable.length > 1}
+                  onClaimed={onChanged}
+                />
               ))}
             </section>
           )}
@@ -1021,12 +1029,16 @@ function Finds({ perk, finds }: { readonly perk: PatronPerk; readonly finds: Pat
   );
 }
 
-/** A month's cosmetic waiting for its patron, as a coffret to open. */
+/** A month's cosmetics waiting for their patron, each drawn as it will be worn. */
 function ClaimTile({
   item,
+  me,
+  showMonth,
   onClaimed,
 }: {
   readonly item: MonthCosmeticView;
+  readonly me: ProfileResponse | null;
+  readonly showMonth: boolean;
   readonly onClaimed: () => Promise<unknown>;
 }) {
   const toast = useToast();
@@ -1050,15 +1062,23 @@ function ClaimTile({
 
   return (
     <div className={styles.claim}>
-      <span className={styles.claimChest}>
-        <ToyBody matter="gold" shape="tile" className={styles.tileIcon}>
-          <Lettrine icon="chest" matter="red" size={52} />
-        </ToyBody>
-      </span>
-      <span className={styles.claimText}>
-        <Kicker>{PATRON_CLAIMABLE_TITLE}</Kicker>
-        <strong>{claimableLabel(item)}</strong>
-      </span>
+      {showMonth && <span className={styles.claimMonth}>{claimableMonth(item)}</span>}
+      <ul className={styles.claimPieces}>
+        {item.cosmetics.map((cosmetic) => {
+          const caption = patronCosmeticCaption(cosmetic);
+          return (
+            <li key={`${caption.kind}-${caption.name}`} className={styles.claimPiece}>
+              <span className={styles.claimLook} aria-hidden>
+                <CosmeticLook cosmetic={cosmetic} me={me} />
+              </span>
+              <span className={styles.claimName}>
+                <small>{caption.kind}</small>
+                <strong>{caption.name}</strong>
+              </span>
+            </li>
+          );
+        })}
+      </ul>
       <Toy
         matter="gold"
         className={styles.claimButton}
@@ -1070,3 +1090,23 @@ function ClaimTile({
     </div>
   );
 }
+
+/** A frame around the player's own engraving, an engraving bare, a title as a crown. */
+function CosmeticLook({
+  cosmetic,
+  me,
+}: {
+  readonly cosmetic: PatronCosmeticView;
+  readonly me: ProfileResponse | null;
+}) {
+  switch (cosmetic.kind) {
+    case "frame":
+      return <Avatar avatar={me?.avatar ?? null} frame={cosmetic.frame} size={CLAIM_LOOK} />;
+    case "avatar":
+      return <Avatar avatar={cosmetic.avatar} frame="simple" size={CLAIM_LOOK} />;
+    case "title":
+      return <Lettrine icon="crown" matter="gold" size={CLAIM_LOOK} />;
+  }
+}
+
+const CLAIM_LOOK = 76;

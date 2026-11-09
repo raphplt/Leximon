@@ -564,9 +564,9 @@
 
 .claim {
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
-  gap: 16px;
+  gap: 12px 16px;
   padding: 14px 18px;
   border: var(--lx-toy-outline-width) solid var(--lx-toy-outline);
   border-radius: var(--lx-toy-radius-tile);
@@ -575,8 +575,37 @@
   color: var(--lx-toy-outline);
 }
 
-.claimChest {
+.claimMonth {
+  grid-column: 1 / -1;
+  font-weight: var(--lx-weight-display);
+  font-size: var(--lx-size-subtitle);
+}
+
+.claimPieces {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 24px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.claimPiece {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+/* The frame spills over the medallion: room for it, and a hop to say it is waiting. */
+.claimLook {
+  display: grid;
+  place-items: center;
+  padding: 12px;
   animation: hop 2.4s ease-in-out infinite;
+}
+
+.claimPiece + .claimPiece .claimLook {
+  animation-delay: 0.3s;
 }
 
 @keyframes hop {
@@ -596,10 +625,14 @@
   }
 }
 
-.claimText {
+.claimName {
   display: grid;
-  gap: 4px;
+  gap: 2px;
   font-size: var(--lx-size-body-large);
+}
+
+.claimName small {
+  font-size: var(--lx-size-body);
 }
 
 .claimButton {
@@ -668,11 +701,7 @@
   }
 
   .claim {
-    grid-template-columns: auto minmax(0, 1fr);
-  }
-
-  .claimButton {
-    grid-column: 1 / -1;
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 
@@ -690,7 +719,7 @@
 
 @media (prefers-reduced-motion: reduce) {
   .page [style*="--rise"],
-  .claimChest,
+  .claimLook,
   .fallingCrown,
   .thanksBadge {
     animation: none;

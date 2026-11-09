@@ -220,7 +220,7 @@ export function patronCosmeticName(cosmetic: PatronCosmeticView): string {
   }
 }
 
-/** « le cadre Cadeler et l'avatar gravé Le Lucubrateur ». */
+/** « le cadre Cadeler et l'avatar gravé Le Bibliomaniaque ». */
 function cosmeticsNames(cosmetics: readonly PatronCosmeticView[]): string {
   const names = cosmetics.map(patronCosmeticName);
   return names.length === 1
@@ -241,12 +241,32 @@ export function patronMonthLabel(month: string): string {
   return MONTH_FORMAT.format(Date.parse(`${month}-15T12:00:00Z`));
 }
 
-/** A month to claim, « Le cadre Cadeler et l'avatar gravé Le Lucubrateur, novembre 2026 ». */
+/** A month to claim, « Le cadre Cadeler et l'avatar gravé Le Bibliomaniaque, novembre 2026 ». */
 export function claimableLabel(item: MonthCosmeticView): string {
   return `${capitalize(cosmeticsNames(item.cosmetics))}, ${patronMonthLabel(item.month)}`;
 }
 
-export const PATRON_CLAIMABLE_TITLE = "À réclamer";
+/** Under a cosmetic drawn in its claim: what it is, then its name. */
+export function patronCosmeticCaption(cosmetic: PatronCosmeticView): {
+  readonly kind: string;
+  readonly name: string;
+} {
+  switch (cosmetic.kind) {
+    case "frame":
+      return { kind: "Cadre", name: frameName(cosmetic.frame) };
+    case "avatar":
+      return { kind: "Avatar gravé", name: avatarName(cosmetic.avatar) };
+    case "title":
+      return { kind: "Titre", name: cosmetic.title };
+  }
+}
+
+/** « Novembre 2026 », over a claim when several months wait. */
+export function claimableMonth(item: MonthCosmeticView): string {
+  return capitalize(patronMonthLabel(item.month));
+}
+
+export const PATRON_CLAIMABLE_TITLE = "Cosmétiques à réclamer";
 export const PATRON_CLAIM = "Réclamer";
 export const PATRON_CLAIM_BUSY = "Réclamation…";
 /** Once claimed: where the cosmetics went. */

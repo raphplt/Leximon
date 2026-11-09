@@ -9,6 +9,7 @@ import {
   type Appearance,
   ATELIER_NEW_TAB,
   ATELIER_NEW_TAB_KEY,
+  ATELIER_PATRON_MARK,
   ATELIER_TABS,
   type AtelierItem,
   type AtelierTab,
@@ -159,6 +160,7 @@ export function AtelierScreen() {
                     <li key={item.id}>
                       <button
                         type="button"
+                        data-patron={item.patron || undefined}
                         className={[
                           styles.item,
                           closed ? styles.itemLocked : "",
@@ -171,6 +173,16 @@ export function AtelierScreen() {
                           <Preview tab={tab} item={item} wornAvatar={look.avatar} />
                           {closed && <LockSeal />}
                         </span>
+                        {item.patron && (
+                          <span
+                            className={styles.patronMark}
+                            role="img"
+                            aria-label={ATELIER_PATRON_MARK}
+                            title={ATELIER_PATRON_MARK}
+                          >
+                            <Icon name="crown" size={14} />
+                          </span>
+                        )}
                         {tab !== "titles" && <span className={styles.itemName}>{item.name}</span>}
                         <span className={`${styles.itemState} ${STATE_CLASS[item.state]}`}>
                           {item.state === "worn" && <Icon name="check" size={14} />}{" "}

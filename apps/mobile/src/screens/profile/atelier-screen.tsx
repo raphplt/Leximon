@@ -1,4 +1,4 @@
-import { toy as toyValues } from "@leximon/tokens";
+import { toyMatters, toy as toyValues } from "@leximon/tokens";
 import {
   APPEARANCE_RESET,
   APPEARANCE_SAVE,
@@ -8,6 +8,7 @@ import {
   type Appearance,
   ATELIER_NEW_TAB,
   ATELIER_NEW_TAB_KEY,
+  ATELIER_PATRON_MARK,
   ATELIER_TABS,
   type AtelierItem,
   type AtelierTab,
@@ -149,7 +150,13 @@ export function AtelierScreen() {
                 onPress={() => setDraft(withChoice(look, tab, item.id))}
                 accessibilityRole="button"
                 accessibilityState={{ selected: item.chosen }}
-                accessibilityLabel={`${item.name}, ${cosmeticStateLabel(item)}`}
+                accessibilityLabel={[
+                  item.name,
+                  item.patron ? ATELIER_PATRON_MARK : null,
+                  cosmeticStateLabel(item),
+                ]
+                  .filter((part) => part !== null)
+                  .join(", ")}
                 style={({ pressed }) => [
                   styles.item,
                   { width: itemWidth },
@@ -158,9 +165,15 @@ export function AtelierScreen() {
                     ? sunkTile
                     : [styles.toy, toyFace(item.state === "worn" ? "gold" : "paper", "tile")],
                   item.chosen && closed && tryingRing,
+                  item.patron && item.state !== "worn" && styles.itemPatron,
                   pressed && styles.pressed,
                 ]}
               >
+                {item.patron && (
+                  <View style={styles.patronMark}>
+                    <Icon name="crown" size={13} color={toyValues.outline} />
+                  </View>
+                )}
                 <View>
                   <View style={closed && styles.closed}>
                     <Preview tab={tab} item={item} wornAvatar={look.avatar} size={previewSize} />
@@ -269,6 +282,22 @@ const styles = StyleSheet.create({
     borderColor: "transparent",
   },
   itemWorn: { borderColor: ink.success },
+  // A patron's piece: ruled in gold, a crown in its corner, like the badge beside the pseudo.
+  itemPatron: { borderColor: toyMatters.gold.top },
+  patronMark: {
+    position: "absolute",
+    top: 6,
+    right: 6,
+    width: 24,
+    height: 24,
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 2,
+    borderColor: toyValues.outline,
+    borderRadius: 12,
+    backgroundColor: toyMatters.gold.top,
+    zIndex: 1,
+  },
   toy: { marginBottom: 4 },
   pressed: { opacity: 0.7 },
   closed: { opacity: 0.3 },

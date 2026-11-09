@@ -161,6 +161,13 @@ describe("atelierItems", () => {
     expect(titles.find((i) => i.id === "Vieux titre")?.state).toBe("owned");
     expect(titles.find((i) => i.id === "Fine plume")?.state).toBe("locked");
   });
+
+  it("marks the patrons' pieces and shelves them after the levels'", () => {
+    const wardrobe = { ...profile().wardrobe, frames: ["simple", "cadeler"] };
+    const frames = atelierItems("frames", profile({ wardrobe }), NOW);
+    expect(frames.at(-1)).toMatchObject({ id: "cadeler", name: "Cadeler", patron: true });
+    expect(frames.filter((i) => i.patron).map((i) => i.id)).toEqual(["cadeler"]);
+  });
 });
 
 describe("settings", () => {

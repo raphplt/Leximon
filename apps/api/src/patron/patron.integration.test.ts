@@ -60,7 +60,7 @@ vi.mock("@leximon/core", async (importOriginal) => {
         cosmetics: {
           [core.parisMonthOf(Date.now())]: [
             { kind: "frame", frame: "wax" },
-            { kind: "avatar", avatar: "lucubrateur" },
+            { kind: "avatar", avatar: "bibliomaniaque" },
           ],
         },
       },
@@ -77,7 +77,7 @@ const DAY = 86_400_000;
 const THIS_MONTH = parisMonthOf(Date.now());
 const PAIR = [
   { kind: "frame", frame: "wax" },
-  { kind: "avatar", avatar: "lucubrateur" },
+  { kind: "avatar", avatar: "bibliomaniaque" },
 ];
 
 /** Stripe, as far as the game asks it: subscriptions are set by the test, as Stripe would. */
@@ -636,7 +636,7 @@ describe("the cosmetics of the month", () => {
     expect(patronClaimResponseSchema.parse(await claimed.json()).cosmetics).toEqual(PAIR);
     const wardrobe = (await readProfile(member)).wardrobe;
     expect(wardrobe.frames).toContain("wax");
-    expect(wardrobe.avatars).toContain("lucubrateur");
+    expect(wardrobe.avatars).toContain("bibliomaniaque");
     expect((await readPatron(member)).claimable).toEqual([]);
     const again = await claim(member);
     expect(again.status).toBe(409);

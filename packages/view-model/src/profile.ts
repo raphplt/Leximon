@@ -9,6 +9,8 @@ import {
   LEVEL_REWARD_SCHEDULE,
   type LevelRewardRules,
   levelRewardRulesAt,
+  PATRON_SCHEDULE,
+  patronCosmeticIds,
 } from "@leximon/core";
 import { formatCount, plural } from "./format";
 import { formatPlayerCode } from "./trades";
@@ -37,7 +39,7 @@ const AVATAR_NAMES: Readonly<Record<string, string>> = {
   zani: "Le Zani",
   pochon: "Le Pochon",
   bejaune: "Le Béjaune",
-  lucubrateur: "Le Lucubrateur",
+  bibliomaniaque: "Le Bibliomaniaque",
 };
 
 const FRAME_NAMES: Readonly<Record<string, string>> = {
@@ -186,6 +188,8 @@ export interface AtelierItem {
   readonly state: CosmeticState;
   /** Level that gives it; 1 for the starting set. */
   readonly level: number;
+  /** Given to the patrons, set apart from the levels' on the shelf. */
+  readonly patron: boolean;
 }
 
 interface Cosmetic {
@@ -230,11 +234,15 @@ export function atelierItems(
   const extra = [...owned]
     .filter((id) => !known.some((item) => item.id === id))
     .map((id) => ({ id, level: 1 }));
+  const patron = patronCosmeticIds(PATRON_SCHEDULE)[tab];
+  // The patrons' pieces come last, after the ladder of the levels.
+  const rank = (item: Cosmetic) => (patron.has(item.id) ? Number.POSITIVE_INFINITY : item.level);
   return [...known, ...extra]
-    .sort((a, b) => a.level - b.level)
+    .sort((a, b) => rank(a) - rank(b))
     .map(({ id, level }) => ({
       id,
       level,
+      patron: patron.has(id),
       name: tab === "avatars" ? avatarName(id) : tab === "frames" ? frameName(id) : id,
       state:
         id === worn
@@ -246,6 +254,9 @@ export function atelierItems(
               : "locked",
     }));
 }
+
+/** Read on the crown that marks a patron's piece in the atelier. */
+export const ATELIER_PATRON_MARK = "Réservé aux mécènes";
 
 /** The label of an atelier item's button or state. */
 export function cosmeticStateLabel(item: AtelierItem): string {

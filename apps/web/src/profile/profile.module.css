@@ -612,6 +612,35 @@ button.emptySlot {
   background: color-mix(in srgb, var(--lx-toy-outline) 62%, transparent);
 }
 
+/* A patron's piece: ruled in gold, a crown in its corner, like the badge beside the pseudo. */
+.item[data-patron]:not([aria-pressed="true"]) {
+  position: relative;
+  border-color: var(--lx-toy-gold-edge);
+  box-shadow:
+    inset 0 0 0 2px var(--lx-toy-gold-top),
+    inset 0 -4px 0 var(--lx-toy-paper-bottom),
+    0 4px 0 var(--lx-toy-outline);
+}
+
+.patronMark {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border: 2px solid var(--lx-toy-outline);
+  border-radius: 50%;
+  background: linear-gradient(
+    180deg,
+    var(--lx-toy-gold-top) 0 47%,
+    var(--lx-toy-gold-bottom) 53% 100%
+  );
+  box-shadow: 0 2px 0 var(--lx-toy-outline);
+  color: var(--lx-toy-outline);
+}
+
 .itemArt {
   position: relative;
   display: grid;

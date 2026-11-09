@@ -735,7 +735,7 @@ Préparer : les clés de test de Stripe dans `apps/api/.dev.vars` et `stripe lis
 
 ### MEC-07 · Le cosmétique du mois
 - **Faire :** en novembre 2026, ouvre `/mecene` en abonné qui a payé, et en joueur qui ne l'est pas. Puis porte le cadre et l'avatar dans l'atelier.
-- **Attendu :** le non-abonné lit « Ce mois-ci, les mécènes reçoivent le cadre Cadeler et l'avatar gravé Le Lucubrateur. ». Ton avatar en tête de la vitrine porte les deux. L'abonné voit dans la tuile un coffret qui sautille, « À réclamer » avec « Le cadre Cadeler et l'avatar gravé Le Lucubrateur, novembre 2026 » et « Réclamer » ; après, « Tes cosmétiques sont rangés dans l'atelier. », le cadre et l'avatar dans l'atelier, et la tuile dit « Les prochains cosmétiques seront dévoilés le 1er décembre. ». Le cadre, des traits de plume à l'encre entrelacés, se lit bien en petit dans la barre du haut comme en grand sur le profil.
+- **Attendu :** le non-abonné lit « Ce mois-ci, les mécènes reçoivent le cadre Cadeler et l'avatar gravé Le Bibliomaniaque. ». Ton avatar en tête de la vitrine porte les deux. L'abonné voit dans la tuile les deux pièces dessinées qui sautillent, ton avatar dans le cadre Cadeler et l'avatar Le Bibliomaniaque, chacune avec son nom, puis « Réclamer » ; après, « Tes cosmétiques sont rangés dans l'atelier. », le cadre et l'avatar dans l'atelier, et la tuile dit « Les prochains cosmétiques seront dévoilés le 1er décembre. ». Dans l'atelier, les pièces de mécène viennent après celles des niveaux, liserées d'or, une couronne dans le coin. Le cadre, des traits de plume à l'encre entrelacés sans fond ni bordure, n'est pas plus large que les autres et se lit bien en petit dans la barre du haut comme en grand sur le profil.
 - **Retour :**
 
 ### MEC-08 · L'admin et le téléphone

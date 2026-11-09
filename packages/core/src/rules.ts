@@ -693,10 +693,10 @@ export const PATRON_SCHEDULE: PatronSchedule = [
     prices: { monthly: 399, yearly: 2999 },
     foundingMonth: null,
     cosmetics: {
-      // The scribe's vigils: pen flourishes around Dürer's Saint Jerome at his lamp.
+      // The scribe's vigils: pen flourishes around a book-lover writing at his desk.
       "2026-11": [
         { kind: "frame", frame: "cadeler" },
-        { kind: "avatar", avatar: "lucubrateur" },
+        { kind: "avatar", avatar: "bibliomaniaque" },
       ],
     },
     monthsPerFind: 3,

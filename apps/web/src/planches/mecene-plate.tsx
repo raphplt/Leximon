@@ -56,7 +56,7 @@ const MONTH = {
   month: "2026-11",
   cosmetics: [
     { kind: "frame", frame: MONTH_FRAME },
-    { kind: "avatar", avatar: "lucubrateur" },
+    { kind: "avatar", avatar: "bibliomaniaque" },
   ],
 } as const;
 

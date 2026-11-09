@@ -171,6 +171,28 @@ export function monthCosmetic(rules: PatronRules, now: EpochMs): MonthCosmetic |
   return monthOf(rules, parisMonthOf(now));
 }
 
+/**
+ * The ids of every avatar, frame and title the patrons were ever given, the two patron titles
+ * among them, so that a wardrobe can set them apart from those of the levels.
+ */
+export function patronCosmeticIds(schedule: PatronSchedule): {
+  readonly avatars: ReadonlySet<string>;
+  readonly frames: ReadonlySet<string>;
+  readonly titles: ReadonlySet<string>;
+} {
+  const avatars = new Set<string>();
+  const frames = new Set<string>();
+  const titles = new Set([PATRON_TITLE, FOUNDER_TITLE]);
+  for (const rules of schedule) {
+    for (const cosmetic of Object.values(rules.cosmetics).flat()) {
+      if (cosmetic.kind === "avatar") avatars.add(cosmetic.avatar);
+      else if (cosmetic.kind === "frame") frames.add(cosmetic.frame);
+      else titles.add(cosmetic.title);
+    }
+  }
+  return { avatars, frames, titles };
+}
+
 /** The cosmetics of the months paid for, not claimed yet, oldest first. */
 export function claimableCosmetics(
   rules: PatronRules,

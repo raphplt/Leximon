@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   badgePerkLine,
   claimableLabel,
+  claimableMonth,
   cosmeticPerkLine,
   discordScreen,
   finderLine,
@@ -13,6 +14,7 @@ import {
   PATRON_MANAGE,
   PATRON_RESUME,
   patronClaimedLine,
+  patronCosmeticCaption,
   patronCosmeticName,
   patronMarkHint,
   patronMarkLabel,
@@ -152,6 +154,14 @@ describe("cosmetics", () => {
     expect(claimableLabel(pair)).toBe(
       "Le cadre Sceau de cire et l'avatar gravé Le Grimelin, mars 2027",
     );
+  });
+
+  it("captions each cosmetic of a claim, and names the month", () => {
+    expect(pair.cosmetics.map(patronCosmeticCaption)).toEqual([
+      { kind: "Cadre", name: "Sceau de cire" },
+      { kind: "Avatar gravé", name: "Le Grimelin" },
+    ]);
+    expect(claimableMonth(pair)).toBe("Mars 2027");
   });
 
   it("says where the claimed cosmetics went", () => {

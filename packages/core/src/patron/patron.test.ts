@@ -12,6 +12,7 @@ import {
   PATRON_TITLE,
   paidMonths,
   parisMonthOf,
+  patronCosmeticIds,
   patronMark,
   patronRulesAt,
   patronStanding,
@@ -107,7 +108,7 @@ describe("the mark and the title", () => {
 describe("cosmetics of the month", () => {
   const pair = [
     { kind: "frame", frame: "cadeler" },
-    { kind: "avatar", avatar: "lucubrateur" },
+    { kind: "avatar", avatar: "bibliomaniaque" },
   ] as const;
   const frame = [{ kind: "frame", frame: "wax" }] as const;
   const rules = {
@@ -158,6 +159,14 @@ describe("cosmetics of the month", () => {
   it("do not count a period ending at midnight into the next month", () => {
     const periods = [monthly("2027-01-01T00:00:00+01:00", "2027-02-01T00:00:00+01:00")];
     expect([...paidMonths(periods, at("2027-03-10T10:00:00Z"))]).toEqual(["2027-01"]);
+  });
+
+  it("are told apart from the levels' by their ids, the patron titles with them", () => {
+    const ids = patronCosmeticIds([rules]);
+    expect([...ids.frames]).toEqual(["wax", "cadeler"]);
+    expect([...ids.avatars]).toEqual(["bibliomaniaque"]);
+    expect(ids.titles.has(PATRON_TITLE)).toBe(true);
+    expect(ids.titles.has(FOUNDER_TITLE)).toBe(true);
   });
 
   it("show this month's pair to everyone, none ahead nor for an empty month", () => {
