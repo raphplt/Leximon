@@ -1,6 +1,8 @@
+import { BACK_HOME_LABEL } from "@leximon/view-model";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { HOST, PUBLISHER } from "@/lib/publisher";
+import { ButtonLink } from "@/ui/button";
 import ui from "@/ui/ui.module.css";
 import styles from "../confidentialite/privacy.module.css";
 
@@ -94,6 +96,10 @@ export default function MentionsPage() {
         <h2>La voix</h2>
         <p>Les mots sont lus par une voix de synthèse, Google Cloud Text-to-Speech.</p>
       </section>
+
+      <div className={styles.home}>
+        <ButtonLink href="/">{BACK_HOME_LABEL}</ButtonLink>
+      </div>
 
       <p className={styles.related}>
         <Link href="/conditions">Conditions d'utilisation</Link> ·{" "}

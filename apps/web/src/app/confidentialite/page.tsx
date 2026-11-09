@@ -1,7 +1,9 @@
+import { BACK_HOME_LABEL } from "@leximon/view-model";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { AnalyticsOptOut } from "@/analytics/opt-out";
 import { PUBLISHER } from "@/lib/publisher";
+import { ButtonLink } from "@/ui/button";
 import ui from "@/ui/ui.module.css";
 import styles from "./privacy.module.css";
 
@@ -202,6 +204,10 @@ export default function PrivacyPage() {
           tu peux saisir la <a href="https://www.cnil.fr/fr/plaintes">CNIL</a>.
         </p>
       </section>
+
+      <div className={styles.home}>
+        <ButtonLink href="/">{BACK_HOME_LABEL}</ButtonLink>
+      </div>
 
       <p className={styles.related}>
         <Link href="/conditions">Conditions d'utilisation</Link> ·{" "}

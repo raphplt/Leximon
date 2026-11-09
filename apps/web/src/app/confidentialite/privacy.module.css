@@ -88,6 +88,10 @@
   color: var(--lx-color-page-ink-faint);
 }
 
+.home {
+  margin-top: var(--lx-s24);
+}
+
 .related {
   margin-top: var(--lx-s24);
   font-size: var(--lx-size-body);
