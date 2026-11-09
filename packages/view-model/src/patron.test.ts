@@ -43,6 +43,7 @@ function patron(overrides: Partial<PatronResponse> = {}): PatronResponse {
     foundingOffer: false,
     finds: { left: 0, words: [] },
     thanksListed: true,
+    thanksWaiting: null,
     poll: null,
     discord: { available: false, username: null },
     subscription: null,
@@ -277,7 +278,16 @@ describe("finding a word", () => {
 describe("the page of thanks", () => {
   it("tells the patron whether their pseudo is on it", () => {
     const paying = patron({ subscription: subscription({ standing: "patron" }) });
-    expect(patronThanksLine(paying)).toBe("Ton pseudo y figure tant que ton profil est public.");
+    expect(patronThanksLine(paying)).toBe("Ton pseudo y figure.");
+    expect(patronThanksLine({ ...paying, thanksWaiting: { reason: "level", level: 5 } })).toBe(
+      "Ton pseudo y figurera au niveau 5, quand ton profil deviendra public.",
+    );
+    expect(patronThanksLine({ ...paying, thanksWaiting: { reason: "private", level: 5 } })).toBe(
+      "Ton pseudo y figurera quand ton profil sera public.",
+    );
+    expect(patronThanksLine({ ...paying, thanksWaiting: { reason: "pseudo", level: 5 } })).toBe(
+      "Ton pseudo y figurera dès que tu en auras choisi un.",
+    );
     expect(patronThanksLine({ ...paying, thanksListed: false })).toBe(
       "Tu as choisi de ne pas y figurer.",
     );

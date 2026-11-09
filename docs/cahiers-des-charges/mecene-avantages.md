@@ -1,6 +1,6 @@
 # Cahier des charges · Avantages du mécène
 
-- **Statut :** tranché le 2026-11-08, les dix recommandations du § 9 retenues. Éditions de bibliothèque, épingles en plus et cabinet du mot construits le 2026-11-08, page des mécènes, vote et liaison Discord le 2026-11-09 (web et mobile), recette MEC-13 à MEC-18 dans [recette-nouveautes.md](../recette-nouveautes.md). Le cabinet ne montre pas encore les mots du Wiktionnaire ni les citations de Wikisource (§ 2). Le Discord attend ses réglages (§ 4, pas à pas). Sceau de cire du sachet construit le même jour (MEC-19). Reste la parure de joute, à faire une fois la refonte des joutes en cours commitée.
+- **Statut :** tranché le 2026-11-08, les dix recommandations du § 9 retenues. Éditions de bibliothèque, épingles en plus et cabinet du mot construits le 2026-11-08, page des mécènes, vote et liaison Discord le 2026-11-09 (web et mobile), recette MEC-13 à MEC-18 dans [recette-nouveautes.md](../recette-nouveautes.md). Le cabinet ne montre pas encore les mots du Wiktionnaire ni les citations de Wikisource (§ 2). Le Discord attend ses réglages (§ 4, pas à pas). Le sceau de cire du sachet, construit le même jour, est retiré le 2026-11-09 : il n'apportait rien. Reste la parure de joute, à faire une fois la refonte des joutes en cours commitée.
 - **Règles concernées :** P72 (gratuit et payant) et P73 (abonnement Mécène), dans [regles-du-jeu.md](../regles-du-jeu.md), qui fait foi. Socle et dénichage : [mecene.md](mecene.md).
 - **D'où ça vient :** après le dénichage, le propriétaire trouve l'offre mince. La page Mécène ne montre que deux avantages construits (le cosmétique du mois et le mot déniché), alors que P73 en promet d'autres. Il retient : construire les éditions de bibliothèque et le cabinet du mot avant l'ouverture de la vente, et ajouter de petits avantages sociaux. De l'XP en plus lui irait, mais elle est remise à plus tard (P72 l'exclut tant qu'elle n'est pas changée), et les sachets restent exclus.
 - **Objectif :** tout ce qui suit est construit, web et mobile, avant l'ouverture de la vente vers mi-janvier 2027.
@@ -72,11 +72,11 @@ Une page publique `/mecenes` : « Merci à ceux qui font vivre Leximon », puis 
 - La page ne vend rien : ni prix, ni bouton, ni lien vers l'offre, qui ne se montre qu'aux trois endroits de P73.
 - Qui arrête quitte la liste (§ 9, question 9).
 
-## 7. Animation d'ouverture et parure de joute
+## 7. Parure de joute
 
-- **Ouverture de sachet** : le sachet du mécène est fermé d'un sceau de cire à sa marque, qui se brise à l'ouverture. Même durée que l'ouverture ordinaire, même révélation des cartes : rien ne laisse deviner une rareté avant son tour.
+- **Ouverture de sachet** : retirée le 2026-11-09. Le sceau de cire qui se brisait à l'ouverture n'apportait rien ; le sachet du mécène est celui de tout le monde.
 - **Parure de joute** : la couronne du mécène sur son portrait, vue par l'adversaire, et une entrée en scène à lui. Elle ne dit rien de la force du joueur.
-- Les deux tiennent au statut, comme le titre et le badge : elles partent à l'arrêt. D'autres animations peuvent ensuite venir comme cosmétiques du mois, gardées à vie (§ 9, question 10).
+- La parure tient au statut, comme le titre et le badge : elle part à l'arrêt. D'autres animations peuvent ensuite venir comme cosmétiques du mois, gardées à vie (§ 9, question 10).
 
 ## 8. Page Mécène
 

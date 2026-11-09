@@ -26,11 +26,9 @@ import {
   PATRON_MEMBER_TITLE,
   PATRON_OPEN_ALBUM,
   PATRON_PERKS,
-  PATRON_PLAY,
   PATRON_POLL_CHOSEN,
   PATRON_POLL_FAILED,
   PATRON_POLL_VOTE,
-  PATRON_SEAL_LINE,
   PATRON_SEE_PROFILE,
   PATRON_THANKS_FAILED,
   PATRON_THANKS_HIDE,
@@ -82,7 +80,6 @@ const PERK_ICONS: Readonly<
   thanks: { icon: "books", matter: "blue" },
   vote: { icon: "community", matter: "red" },
   discord: { icon: "discussion", matter: "blue" },
-  seal: { icon: "sachet", matter: "red" },
 };
 
 /**
@@ -123,9 +120,11 @@ export function PatronScreen() {
       ) : (
         <>
           <PatronCard patron={patron} />
-          {PATRON_PERKS.map((perk) => (
-            <MemberPerk key={perk.key} perk={perk} patron={patron} onChanged={load} />
-          ))}
+          <View style={styles.bento}>
+            {PATRON_PERKS.map((perk) => (
+              <MemberPerk key={perk.key} perk={perk} patron={patron} onChanged={load} />
+            ))}
+          </View>
         </>
       )}
     </Page>
@@ -166,19 +165,36 @@ function PatronCard({ patron }: { readonly patron: PatronResponse }) {
   );
 }
 
-/** A perk on the subscriber's page: its icon and title, where it stands, then what to do. */
+/**
+ * A tile of the subscriber's page: the perk's icon and title, where it stands, then what to do.
+ * A half tile goes two to a row, its icon above its title; one left alone takes the whole row.
+ */
 function PerkBlock({
   perk,
   line,
+  half = false,
   children,
 }: {
   readonly perk: PatronPerk;
   readonly line: string;
+  readonly half?: boolean;
   readonly children?: ReactNode;
 }) {
   const { icon, matter } = PERK_ICONS[perk.key];
+  if (half) {
+    return (
+      <Leaf style={[styles.card, styles.half]}>
+        <ToyBody matter="gold" shape="tile" style={styles.halfIcon}>
+          <Lettrine icon={icon} matter={matter} size={38} />
+        </ToyBody>
+        <Lettering size={fontSizes.subtitle}>{perk.title}</Lettering>
+        <Text style={styles.text}>{line}</Text>
+        {children ? <View style={styles.halfActions}>{children}</View> : null}
+      </Leaf>
+    );
+  }
   return (
-    <Leaf style={styles.card}>
+    <Leaf style={[styles.card, styles.whole]}>
       <View style={styles.claimRow}>
         <ToyBody matter="gold" shape="tile" style={styles.claimIcon}>
           <Lettrine icon={icon} matter={matter} size={48} />
@@ -217,7 +233,7 @@ function MemberPerk({
       return <Editions perk={perk} />;
     case "cabinet":
       return (
-        <PerkBlock perk={perk} line={PATRON_CABINET_LINE}>
+        <PerkBlock perk={perk} line={PATRON_CABINET_LINE} half>
           <Button label={PATRON_OPEN_ALBUM} secondary small onPress={() => router.push("/album")} />
         </PerkBlock>
       );
@@ -229,12 +245,6 @@ function MemberPerk({
       return <Poll perk={perk} patron={patron} onChanged={onChanged} />;
     case "discord":
       return <DiscordSetting perk={perk} patron={patron} onChanged={onChanged} />;
-    case "seal":
-      return (
-        <PerkBlock perk={perk} line={PATRON_SEAL_LINE}>
-          <Button label={PATRON_PLAY} secondary small onPress={() => router.push("/")} />
-        </PerkBlock>
-      );
   }
 }
 
@@ -288,7 +298,13 @@ function Finds({ perk, finds }: { readonly perk: PatronPerk; readonly finds: Pat
 function Editions({ perk }: { readonly perk: PatronPerk }) {
   const mine = useShared(editions);
   if (mine === null) return null;
-  return <PerkBlock perk={perk} line={editionsOwnedLine(mine.owned)} />;
+  return (
+    <PerkBlock perk={perk} line={editionsOwnedLine(mine.owned)} half>
+      {mine.owned.length > 0 && (
+        <Button label={PATRON_OPEN_ALBUM} secondary small onPress={() => router.push("/album")} />
+      )}
+    </PerkBlock>
+  );
 }
 
 /** The vote on the theme of a coming collection: open for a week, results once it closes. */
@@ -304,7 +320,9 @@ function Poll({
   const [busy, setBusy] = useState(false);
   const screen = pollScreen(patron, Date.now());
   const poll = patron.poll;
-  if (screen === null || poll === null) return <PerkBlock perk={perk} line={PATRON_VOTE_NONE} />;
+  if (screen === null || poll === null) {
+    return <PerkBlock perk={perk} line={PATRON_VOTE_NONE} />;
+  }
 
   const vote = async (theme: number) => {
     setBusy(true);
@@ -494,6 +512,13 @@ function ClaimTile({
 
 const styles = StyleSheet.create({
   card: { gap: space.s5, padding: space.s8 },
+  // The perks as a grid of tiles: a half tile shares its row, a whole one fills it.
+  bento: { flexDirection: "row", flexWrap: "wrap", gap: space.s8 },
+  whole: { width: "100%" },
+  half: { flexBasis: "40%", flexGrow: 1, gap: space.s4, padding: space.s6 },
+  halfIcon: { width: 48, height: 48, alignItems: "center", justifyContent: "center" },
+  // What to do sits at the foot of the tile, so that the two tiles of a row end together.
+  halfActions: { marginTop: "auto", gap: space.s4 },
   cardHead: { flexDirection: "row", alignItems: "center", gap: space.s6 },
   // The crown sits on the frame, like the badge beside a patron's name.
   crowned: { alignItems: "center", paddingTop: 20 },

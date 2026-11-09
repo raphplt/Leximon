@@ -387,7 +387,65 @@
 /* --- The subscriber's card --- */
 
 .member {
-  max-width: 680px;
+  max-width: 1120px;
+}
+
+/*
+ * The subscriber's page, a grid of tiles: the card holds two rows, what is to claim and to find
+ * is drawn wide, the rest goes three to a row. An open vote takes a row of its own.
+ */
+.bento {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  grid-template-areas:
+    "card card card cosmetic cosmetic cosmetic"
+    "card card card word word word"
+    "editions editions cabinet cabinet badge badge"
+    "vote vote thanks thanks discord discord";
+  gap: 20px;
+}
+
+.bento:has([data-wide]) {
+  grid-template-areas:
+    "card card card cosmetic cosmetic cosmetic"
+    "card card card word word word"
+    "vote vote vote vote vote vote"
+    "editions editions cabinet cabinet badge badge"
+    "thanks thanks thanks discord discord discord";
+}
+
+.bento [data-perk="card"] {
+  grid-area: card;
+}
+.bento [data-perk="cosmetic"] {
+  grid-area: cosmetic;
+}
+.bento [data-perk="word"] {
+  grid-area: word;
+}
+.bento [data-perk="editions"] {
+  grid-area: editions;
+}
+.bento [data-perk="cabinet"] {
+  grid-area: cabinet;
+}
+.bento [data-perk="badge"] {
+  grid-area: badge;
+}
+.bento [data-perk="vote"] {
+  grid-area: vote;
+}
+.bento [data-perk="thanks"] {
+  grid-area: thanks;
+}
+.bento [data-perk="discord"] {
+  grid-area: discord;
+}
+
+/* The leaf fills its cell, so that the tiles of a row end together. */
+.cell {
+  display: grid;
+  min-width: 0;
 }
 
 .card {
@@ -395,6 +453,47 @@
   flex-direction: column;
   gap: 14px;
   padding: 24px;
+}
+
+.cardActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: auto;
+}
+
+.tile {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 20px;
+}
+
+.tile.big {
+  gap: 14px;
+  padding: 24px;
+}
+
+.tileHead {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.tileTitle {
+  font-size: var(--lx-size-title-small);
+}
+
+.big .tileTitle {
+  font-size: var(--lx-size-title-large);
+}
+
+/* What to do sits at the foot of the tile, whatever the length of the line above. */
+.tileActions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: auto;
 }
 
 .cardHead {
@@ -433,30 +532,6 @@
   font-size: var(--lx-size-body-large);
   font-weight: 700;
   line-height: 1.45;
-}
-
-.perks {
-  display: flex;
-  flex-direction: column;
-  gap: 22px;
-}
-
-.finds {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-  padding: 20px 24px;
-}
-
-.findsHead {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-}
-
-.findsText {
-  display: grid;
-  gap: 4px;
 }
 
 .found {
@@ -538,6 +613,26 @@
     grid-template-columns: minmax(0, 1fr);
   }
 
+  .bento {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-areas:
+      "card card"
+      "cosmetic word"
+      "editions cabinet"
+      "badge vote"
+      "thanks discord";
+  }
+
+  .bento:has([data-wide]) {
+    grid-template-areas:
+      "card card"
+      "cosmetic word"
+      "vote vote"
+      "editions cabinet"
+      "badge thanks"
+      "discord discord";
+  }
+
   .buyColumn {
     position: static;
   }
@@ -578,6 +673,18 @@
 
   .claimButton {
     grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 600px) {
+  .bento {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas: "card" "cosmetic" "word" "editions" "cabinet" "badge" "vote" "thanks" "discord";
+    gap: 16px;
+  }
+
+  .bento:has([data-wide]) {
+    grid-template-areas: "card" "cosmetic" "word" "vote" "editions" "cabinet" "badge" "thanks" "discord";
   }
 }
 

@@ -78,7 +78,7 @@ import {
   refreshIfRead,
   wordMemory,
 } from "@/player/collection";
-import { account, carnet, missions, profile, wallet } from "@/player/player";
+import { account, carnet, missions, wallet } from "@/player/player";
 import { useShared } from "@/player/resource";
 import { publishProgress, useProgress } from "@/progress/use-progress";
 import { useShell } from "@/shell/shell-context";
@@ -220,7 +220,6 @@ const SEAM_AT = 0.13;
 const CHARGE_SPARKS_MAX = 6;
 
 function BoosterFlow() {
-  const me = useShared(profile);
   const [phase, setPhase] = useState<Phase>({ name: "loading" });
   const [catalog, setCatalog] = useState<Catalog | null>(null);
   const [owned, setOwned] = useState<ReadonlyMap<string, number>>(new Map());
@@ -652,7 +651,6 @@ function BoosterFlow() {
               // A guest out of sachets waits for an account, not for time.
               refill={mustSignUp ? null : stock?.refill}
               refillLabel={stock?.refillShort}
-              patron={me?.patronPaying === true}
               onTearStart={() => {
                 startRequest();
               }}

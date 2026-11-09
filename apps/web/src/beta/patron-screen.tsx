@@ -43,6 +43,7 @@ import {
   PATRON_FOUNDING_OFFER,
   PATRON_GUEST_NOTE,
   PATRON_INTRO,
+  PATRON_INVOICES,
   PATRON_KICKER,
   PATRON_LOAD_FAILED,
   PATRON_MANAGE_BUSY,
@@ -52,12 +53,10 @@ import {
   PATRON_OPEN_ALBUM,
   PATRON_PAGE_TITLE,
   PATRON_PERKS,
-  PATRON_PLAY,
   PATRON_POLL_CHOSEN,
   PATRON_POLL_FAILED,
   PATRON_POLL_VOTE,
   PATRON_PORTAL_FAILED,
-  PATRON_SEAL_LINE,
   PATRON_SEE_PROFILE,
   PATRON_SEE_SUBSCRIPTION,
   PATRON_SUBSCRIBE,
@@ -126,7 +125,6 @@ const PERK_ICONS: Readonly<
   thanks: { icon: "books", matter: "blue" },
   vote: { icon: "community", matter: "red" },
   discord: { icon: "discussion", matter: "blue" },
-  seal: { icon: "sachet", matter: "red" },
 };
 
 const WELCOME_ICONS: Readonly<Record<PatronWelcomeKind, ToyIconName>> = {
@@ -607,42 +605,53 @@ function MemberView({
 
   return (
     <main className={`${styles.page} ${styles.member}`}>
-      <div style={rise(0)}>
-        <Leaf className={styles.card}>
-          <div className={styles.cardHead}>
-            <CrownedAvatar size={110} avatar={me?.avatar ?? null} frame={me?.frame ?? null} />
-            <div className={styles.cardName}>
-              <Kicker>{PATRON_CARD_KICKER}</Kicker>
-              <h1 className={styles.name}>
-                {me === null ? "" : playerName({ code: me.playerCode, pseudo: me.pseudo })}
-              </h1>
-              <PatronBadge mark={patron.mark ?? "patron"} />
+      <div className={styles.bento}>
+        <div className={styles.cell} data-perk="card" style={rise(0)}>
+          <Leaf className={styles.card}>
+            <div className={styles.cardHead}>
+              <CrownedAvatar size={110} avatar={me?.avatar ?? null} frame={me?.frame ?? null} />
+              <div className={styles.cardName}>
+                <Kicker>{PATRON_CARD_KICKER}</Kicker>
+                <h1 className={styles.name}>
+                  {me === null ? "" : playerName({ code: me.playerCode, pseudo: me.pseudo })}
+                </h1>
+                <PatronBadge mark={patron.mark ?? "patron"} />
+              </div>
             </div>
-          </div>
-          <Lettering className={styles.headline}>{status.headline}</Lettering>
-          {status.ending !== null && <p className={styles.ending}>{status.ending}</p>}
-          {status.lines.map((line) => (
-            <p key={line} className={styles.text}>
-              {line}
-            </p>
-          ))}
-          {status.warning !== null && <p className={styles.warning}>{status.warning}</p>}
-          <Toy
-            matter={status.ending === null ? "paper" : "gold"}
-            className={styles.secondary}
-            disabled={busy}
-            onClick={() => void manage()}
-          >
-            {busy ? PATRON_MANAGE_BUSY : status.manage}
-          </Toy>
-          {error !== null && (
-            <p className={styles.error} role="alert">
-              {error}
-            </p>
-          )}
-        </Leaf>
-      </div>
-      <div className={styles.perks} style={rise(1)}>
+            <Lettering className={styles.headline}>{status.headline}</Lettering>
+            {status.ending !== null && <p className={styles.ending}>{status.ending}</p>}
+            {status.lines.map((line) => (
+              <p key={line} className={styles.text}>
+                {line}
+              </p>
+            ))}
+            {status.warning !== null && <p className={styles.warning}>{status.warning}</p>}
+            <div className={styles.cardActions}>
+              <Toy
+                matter={status.ending === null ? "paper" : "gold"}
+                className={styles.secondary}
+                disabled={busy}
+                onClick={() => void manage()}
+              >
+                {busy ? PATRON_MANAGE_BUSY : status.manage}
+              </Toy>
+              {/* Stripe's portal lists the invoices: the same door, said for what it holds. */}
+              <Toy
+                matter="paper"
+                className={styles.secondary}
+                disabled={busy}
+                onClick={() => void manage()}
+              >
+                {PATRON_INVOICES}
+              </Toy>
+            </div>
+            {error !== null && (
+              <p className={styles.error} role="alert">
+                {error}
+              </p>
+            )}
+          </Leaf>
+        </div>
         {PATRON_PERKS.map((perk) => (
           <MemberPerk key={perk.key} perk={perk} patron={patron} me={me} onChanged={onClaimed} />
         ))}
@@ -651,27 +660,39 @@ function MemberView({
   );
 }
 
-/** A perk on the subscriber's page: its icon and title, where it stands, then what to do. */
+/** The perks given the most room in the grid: what is to claim and to find. */
+const BIG_PERKS: ReadonlySet<PatronPerkKey> = new Set(["cosmetic", "word"]);
+
+/** A tile of the subscriber's page: the perk's icon and title, where it stands, then what to do. */
 function PerkBlock({
   perk,
   line,
+  wide = false,
   children,
 }: {
   readonly perk: PatronPerk;
   readonly line: string;
+  /** Takes a row of its own, as an open vote does. */
+  readonly wide?: boolean;
   readonly children?: ReactNode;
 }) {
+  const big = wide || BIG_PERKS.has(perk.key);
   return (
-    <Leaf className={styles.finds}>
-      <div className={styles.findsHead}>
-        <PerkIcon perk={perk.key} />
-        <div className={styles.findsText}>
-          <Lettering className={styles.headline}>{perk.title}</Lettering>
-          <p className={styles.text}>{line}</p>
+    <div
+      className={styles.cell}
+      data-perk={perk.key}
+      data-wide={wide || undefined}
+      style={rise(PATRON_PERKS.indexOf(perk) + 1)}
+    >
+      <Leaf className={big ? `${styles.tile} ${styles.big}` : styles.tile}>
+        <div className={styles.tileHead}>
+          <PerkIcon perk={perk.key} small={!big} />
+          <Lettering className={styles.tileTitle}>{perk.title}</Lettering>
         </div>
-      </div>
-      {children}
-    </Leaf>
+        <p className={styles.text}>{line}</p>
+        {children ? <div className={styles.tileActions}>{children}</div> : null}
+      </Leaf>
+    </div>
   );
 }
 
@@ -717,12 +738,6 @@ function MemberPerk({
       return <Poll perk={perk} patron={patron} onChanged={onChanged} />;
     case "discord":
       return <DiscordSetting perk={perk} patron={patron} onChanged={onChanged} />;
-    case "seal":
-      return (
-        <PerkBlock perk={perk} line={PATRON_SEAL_LINE}>
-          <PerkLink href="/jouer" label={PATRON_PLAY} />
-        </PerkBlock>
-      );
   }
 }
 
@@ -800,7 +815,7 @@ function Poll({
   };
 
   return (
-    <PerkBlock perk={perk} line={screen.intro}>
+    <PerkBlock perk={perk} line={screen.intro} wide>
       <ul className={styles.pollThemes}>
         {screen.themes.map((theme, index) => (
           <li key={theme.name} className={theme.winner ? styles.pollWinner : undefined}>
@@ -973,7 +988,11 @@ function ThanksSetting({
 function Editions({ perk }: { readonly perk: PatronPerk }) {
   const mine = useShared(editions);
   if (mine === null) return null;
-  return <PerkBlock perk={perk} line={editionsOwnedLine(mine.owned)} />;
+  return (
+    <PerkBlock perk={perk} line={editionsOwnedLine(mine.owned)}>
+      {mine.owned.length > 0 && <PerkLink href="/album" label={PATRON_OPEN_ALBUM} />}
+    </PerkBlock>
+  );
 }
 
 /** The words the patron may find, and those found, with where each stands. */

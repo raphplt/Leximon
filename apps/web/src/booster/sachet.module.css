@@ -770,81 +770,6 @@
   }
 }
 
-/* --- The patron's wax seal, across the tear line --------------------------------------- */
-
-.wax {
-  position: absolute;
-  left: 50%;
-  top: calc(var(--strip) - 27 * var(--u));
-  width: calc(54 * var(--u));
-  height: calc(54 * var(--u));
-  margin-left: calc(-27 * var(--u));
-  transform: translateZ(calc(var(--face) + 2 * var(--u)));
-  pointer-events: none;
-  filter: drop-shadow(0 calc(3 * var(--u)) calc(3 * var(--u)) rgba(40, 6, 4, 0.55));
-}
-
-.waxHalf {
-  position: absolute;
-  inset: 0;
-  display: grid;
-  place-items: center;
-  /* Poured wax: a disc whose edge swells here and there. */
-  border-radius: 47% 53% 50% 50% / 52% 46% 54% 48%;
-  background:
-    radial-gradient(circle at 34% 30%, rgba(255, 200, 170, 0.55), transparent 32%),
-    radial-gradient(circle at 50% 50%, #e2604a 0 40%, #a3201b 72%, #5e0f0c 100%);
-  box-shadow:
-    inset 0 0 0 calc(5 * var(--u)) rgba(94, 15, 12, 0.35),
-    inset 0 calc(-3 * var(--u)) calc(4 * var(--u)) rgba(40, 6, 4, 0.45);
-}
-
-.waxLeft {
-  clip-path: polygon(0 0, 54% 0, 46% 38%, 56% 62%, 48% 100%, 0 100%);
-}
-
-.waxRight {
-  clip-path: polygon(54% 0, 100% 0, 100% 100%, 48% 100%, 56% 62%, 46% 38%);
-}
-
-.waxCrown {
-  width: calc(26 * var(--u));
-  height: calc(26 * var(--u));
-  color: #5e0f0c;
-  filter: drop-shadow(0 calc(1 * var(--u)) 0 rgba(255, 190, 160, 0.5));
-}
-
-/* As the strip goes, the seal cracks and its halves fall away, within the strip's own time. */
-.opening .waxLeft {
-  animation: wax-left 0.55s cubic-bezier(0.3, 0, 0.7, 1) forwards;
-}
-
-.opening .waxRight {
-  animation: wax-right 0.55s cubic-bezier(0.3, 0, 0.7, 1) forwards;
-}
-
-@keyframes wax-left {
-  15% {
-    transform: translateX(calc(-2 * var(--u))) rotate(-4deg);
-    opacity: 1;
-  }
-  100% {
-    transform: translate(calc(-46 * var(--u)), calc(90 * var(--u))) rotate(-38deg);
-    opacity: 0;
-  }
-}
-
-@keyframes wax-right {
-  15% {
-    transform: translateX(calc(2 * var(--u))) rotate(4deg);
-    opacity: 1;
-  }
-  100% {
-    transform: translate(calc(46 * var(--u)), calc(90 * var(--u))) rotate(38deg);
-    opacity: 0;
-  }
-}
-
 @media (prefers-reduced-motion: reduce) {
   .stage,
   .sachet,
@@ -853,9 +778,5 @@
   .opening .burstCardA,
   .opening .burstCardB {
     animation: none;
-  }
-
-  .opening .wax {
-    opacity: 0;
   }
 }

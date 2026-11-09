@@ -57,7 +57,7 @@ import { ADMIN_ROLE } from "../auth";
 import { breakFriendship, notLocked, readFriendship } from "../friends/friends";
 import { readJoustRecord } from "../jousts/leagues";
 import { readCardEditions } from "../patron/editions";
-import { paysAsPatron, readPatronMarks, readPatronWardrobe } from "../patron/patron";
+import { readPatronMarks, readPatronWardrobe } from "../patron/patron";
 import { ensurePlayer } from "../trades/players";
 import { bannersOwned, completeCollectionsSql, readBannerFigures } from "./banners";
 
@@ -196,7 +196,6 @@ export async function readOwnProfile(
     level: badge.level,
     memberSince: new Date(player.createdAt).toISOString(),
     patron: (await readPatronMarks(db, [userId])).get(userId) ?? null,
-    patronPaying: await paysAsPatron(db, userId),
     clan: await readProfileClan(db, userId),
     banner: wornBanner(banners.rules, banners.owned, {
       motif: row.bannerMotif,

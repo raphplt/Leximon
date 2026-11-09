@@ -77,6 +77,14 @@ export const patronResponseSchema = z.object({
   finds: patronFindsSchema,
   /** On the public page of thanks while paying, unless the patron asked not to be. */
   thanksListed: z.boolean().default(true),
+  /**
+   * What still keeps a listed patron off the page: a level below the one from which profiles are
+   * public, a profile set private, or no pseudo chosen. `null` once nothing does.
+   */
+  thanksWaiting: z
+    .object({ reason: z.enum(["level", "private", "pseudo"]), level: z.int().positive() })
+    .nullable()
+    .default(null),
   poll: patronPollSchema.nullable().default(null),
   /**
    * The patrons' Discord: `available` once the bot is set on the server, `username` the account

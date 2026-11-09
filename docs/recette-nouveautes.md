@@ -715,7 +715,7 @@ Préparer : les clés de test de Stripe dans `apps/api/.dev.vars` et `stripe lis
 
 ### MEC-03 · Payer
 - **Faire :** coche la case, « Devenir mécène », paie avec la carte `4242 4242 4242 4242`.
-- **Attendu :** la page de Stripe en français, qui débite tout de suite. Au retour, les rayons dorés, la couronne qui tombe sur ton avatar, « Te voilà mécène ! » et le badge, puis trois étapes : « Aujourd'hui » le titre, le badge et le cosmétique du mois, « Chaque mois » un nouveau cosmétique et « Chaque trimestre » un mot à dénicher (ces deux-là cadenassés). « Porter mon titre » n'apparaît que si tu portes un autre titre ; il met le titre Mécène et dit « Tu portes le titre Mécène. ». « Voir mon abonnement » mène à ta carte de mécène : avatar couronné, nom, badge, « Mécène depuis … » et la date du prochain paiement, puis un bloc par avantage, dans l'ordre de la vitrine. Si le webhook tarde, la page attend une dizaine de secondes, puis dit « Ton paiement est en cours de confirmation. » sans parler d'échec.
+- **Attendu :** la page de Stripe en français, qui débite tout de suite. Au retour, les rayons dorés, la couronne qui tombe sur ton avatar, « Te voilà mécène ! » et le badge, puis trois étapes : « Aujourd'hui » le titre, le badge et le cosmétique du mois, « Chaque mois » un nouveau cosmétique et « Chaque trimestre » un mot à dénicher (ces deux-là cadenassés). « Porter mon titre » n'apparaît que si tu portes un autre titre ; il met le titre Mécène et dit « Tu portes le titre Mécène. ». « Voir mon abonnement » mène à ta carte de mécène : avatar couronné, nom, badge, « Mécène depuis … » et la date du prochain paiement, puis une tuile par avantage (MEC-19). Si le webhook tarde, la page attend une dizaine de secondes, puis dit « Ton paiement est en cours de confirmation. » sans parler d'échec.
 - **Retour :**
 
 ### MEC-04 · Le badge
@@ -725,7 +725,7 @@ Préparer : les clés de test de Stripe dans `apps/api/.dev.vars` et `stripe lis
 
 ### MEC-05 · Gérer, résilier, reprendre
 - **Faire :** « Gérer mon abonnement », résilie dans le portail de Stripe, reviens par « Revenir à Leximon », puis « Reprendre mon abonnement ». En local, fais-le sans `stripe listen` : le retour du portail suffit.
-- **Attendu :** le portail s'ouvre. Au retour, la page relit l'abonnement chez Stripe : le titre devient « Mécène jusqu'au … », un encadré rouge dit « Tu as résilié ton abonnement. Il s'arrête le …, sans autre paiement, et tes cosmétiques restent à toi. », et le bouton doré devient « Reprendre mon abonnement ». Repris, la page revient à « Mécène depuis … » et au prochain paiement.
+- **Attendu :** le portail s'ouvre, et « Voir mes factures » ouvre le même portail, où les factures sont listées. Au retour, la page relit l'abonnement chez Stripe : le titre devient « Mécène jusqu'au … », un encadré rouge dit « Tu as résilié ton abonnement. Il s'arrête le …, sans autre paiement, et tes cosmétiques restent à toi. », et le bouton doré devient « Reprendre mon abonnement ». Repris, la page revient à « Mécène depuis … » et au prochain paiement.
 - **Retour :**
 
 ### MEC-06 · Renouvellement et paiement refusé
@@ -773,7 +773,7 @@ Préparer : `pnpm db:migrate`, un compte mécène qui a payé au moins une fois 
 
 ### MEC-13 · Éditions de bibliothèque
 - **Faire :** ouvre la fiche d'une carte de ton album, choisis « Sanguine », puis « Lavis » et « Appliquer à tout l'album ». Ouvre ton profil public depuis un autre compte. Recommence sur le téléphone. Puis ouvre la fiche avec un compte sans abonnement.
-- **Attendu :** sous l'origine du mot, « Édition de bibliothèque » avec « Ordinaire », « Sanguine », « Lavis » et « Encre de Chine ». La gravure passe sur une feuille collée, aux couleurs de l'édition ; le cadre, la gemme et le mot gardent la couleur de la rareté. Après « Appliquer à tout l'album », le message « Tout ton album est imprimé au lavis. » et toutes les cartes de l'album changent. L'autre compte voit tes cartes épinglées dans leur édition. La page Mécène dit « Tu possèdes la sanguine, le lavis et l'encre de Chine. ». Sans abonnement, rien n'apparaît sur la fiche. Après l'arrêt de l'abonnement, les éditions restent.
+- **Attendu :** sous l'origine du mot, « Édition de bibliothèque » avec « Ordinaire », « Sanguine », « Lavis » et « Encre de Chine ». La gravure passe sur une feuille collée, aux couleurs de l'édition ; le cadre, la gemme et le mot gardent la couleur de la rareté. Après « Appliquer à tout l'album », le message « Tout ton album est imprimé au lavis. » et toutes les cartes de l'album changent. L'autre compte voit tes cartes épinglées dans leur édition. La tuile de la page Mécène dit « Tu possèdes la sanguine, le lavis et l'encre de Chine. Choisis l'édition d'une carte depuis sa fiche. » avec « Ouvrir l'album ». Sans abonnement, rien n'apparaît sur la fiche. Après l'arrêt de l'abonnement, les éditions restent.
 - **Retour :**
 
 ### MEC-14 · Trois cartes épinglées de plus
@@ -788,8 +788,8 @@ Préparer : `pnpm db:migrate`, un compte mécène qui a payé au moins une fois 
 - **Retour :**
 
 ### MEC-16 · Page des mécènes
-- **Faire :** ouvre `/mecenes` sans être connecté, puis abonne-toi avec un compte au profil public et rouvre la page. Sur la page Mécène, touche « Ne pas me citer », puis « Me citer à nouveau ». Recommence sur le mobile, depuis l'écran Mécène.
-- **Attendu :** la page remercie sans rien vendre (ni prix, ni bouton, ni lien vers l'offre). Elle liste les mécènes qui paient et dont le profil est public, les fondateurs d'abord avec leur sceau, puis par date du premier paiement ; chaque pseudo ouvre son profil. Ni un profil privé, ni un compte suspendu n'y figurent. « Ne pas me citer » retire le pseudo (la page se met à jour en cinq minutes au plus), « Me citer à nouveau » le remet. Sans mécène, la page dit « Aucun mécène ne figure encore sur cette page. ».
+- **Faire :** ouvre `/mecenes` sans être connecté, puis abonne-toi avec un compte au profil public et rouvre la page. Regarde la tuile de la page Mécène avec un compte sous le niveau du profil public (5), puis au profil privé. Sur la page Mécène, touche « Ne pas me citer », puis « Me citer à nouveau ». Recommence sur le mobile, depuis l'écran Mécène.
+- **Attendu :** la page remercie sans rien vendre (ni prix, ni bouton, ni lien vers l'offre). Elle liste les mécènes qui paient et dont le profil est public, les fondateurs d'abord avec leur sceau, puis par date du premier paiement ; chaque pseudo ouvre son profil. Ni un profil privé, ni un compte suspendu n'y figurent. La tuile dit « Ton pseudo y figure. », ou sous le niveau 5 « Ton pseudo y figurera au niveau 5, quand ton profil deviendra public. », ou au profil privé « Ton pseudo y figurera quand ton profil sera public. ». « Ne pas me citer » retire le pseudo (la page se met à jour en cinq minutes au plus), « Me citer à nouveau » le remet. Sans mécène, la page dit « Aucun mécène ne figure encore sur cette page. ».
 - **Retour :**
 
 ### MEC-17 · Vote des mécènes
@@ -802,9 +802,9 @@ Préparer : `pnpm db:migrate`, un compte mécène qui a payé au moins une fois 
 - **Attendu :** Discord demande de connaître le compte et de rejoindre le serveur. Au retour, la page Mécène dit « Ton compte Discord est relié. Le rôle Mécène arrive dans une minute. » et nomme le compte relié ; le compte est sur le serveur, avec le rôle « Mécène » et l'accès au salon réservé. Délier retire le rôle. Une résiliation qui prend effet, ou la suppression du compte, retire aussi le rôle. Un refus sur la page de Discord ramène sur la page Mécène avec « La liaison avec Discord n'a pas abouti. Réessaie. ».
 - **Retour :**
 
-### MEC-19 · Sceau de cire du sachet
-- **Faire :** avec un compte qui a payé, ouvre un sachet sur Jouer, sur le web puis sur le mobile. Recommence avec un ancien mécène fondateur dont l'abonnement est arrêté.
-- **Attendu :** le sachet du mécène payant porte un sceau de cire rouge à la couronne, à cheval sur la ligne de déchirure. À l'ouverture, il se fend en deux et ses moitiés tombent pendant que la bande s'envole ; l'ouverture dure le même temps et les cartes se révèlent comme d'habitude. L'ancien fondateur a le sachet ordinaire. Avec « réduire les animations », le sceau disparaît sans tomber.
+### MEC-19 · La page de l'abonné en tuiles
+- **Faire :** ouvre `/mecene` en abonné sur un écran de 1920 × 1080, puis à 800 px de large et sur un téléphone ; ouvre un vote (MEC-17) et regarde de nouveau. Recommence sur le mobile. Ouvre un sachet en mécène.
+- **Attendu :** sur grand écran, ta carte de mécène occupe deux rangées à gauche, avec « Gérer mon abonnement » et « Voir mes factures » ; à droite, en grand, le cosmétique du mois et ton mot dans le jeu. Dessous, trois tuiles par rangée : éditions, cabinet, titre et badge, puis vote, page des mécènes et salon Discord. Chaque tuile a son icône, son titre, une phrase, et ses boutons en pied. Un vote ouvert prend une rangée entière, sous ton mot. À 800 px, deux tuiles par rangée ; sur un téléphone, une seule colonne. Sur le mobile, les éditions et le cabinet partagent une rangée, les autres tuiles la prennent entière, sans bouton de factures (l'abonnement se gère sur le web). Le sachet du mécène est le même que celui de tout le monde, sans sceau de cire.
 - **Retour :**
 
 ### MEC-20 · Courrier du dénichage

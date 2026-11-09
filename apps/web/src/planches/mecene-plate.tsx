@@ -66,6 +66,7 @@ const OFFER: PatronResponse = {
   foundingOffer: true,
   finds: { left: 0, words: [] },
   thanksListed: true,
+  thanksWaiting: null,
   poll: null,
   discord: { available: false, username: null },
   subscription: null,

@@ -296,6 +296,7 @@ describe("the patron page", () => {
       foundingOffer: false,
       finds: { left: 0, words: [] },
       thanksListed: true,
+      thanksWaiting: { reason: "level", level: expect.any(Number) },
       poll: null,
       discord: { available: true, username: null },
       subscription: null,
@@ -665,7 +666,6 @@ describe("the title and the mark", () => {
     const during = await readProfile(member);
     expect(during.wardrobe.titles).toContain("Mécène");
     expect(during.patron).toBe("patron");
-    expect(during.patronPaying).toBe(true);
     expect((await readPatron(member)).mark).toBe("patron");
 
     stripe.subscriptions.set(subscription.id, { ...subscription, status: "canceled" });
@@ -675,19 +675,17 @@ describe("the title and the mark", () => {
     expect(after.patron).toBeNull();
   });
 
-  it("keeps a founder's mark for life, the seal of the sachets only while paying", async () => {
+  it("keeps a founder's mark for life, the title only while paying", async () => {
     const { member, customerId, subscription } = await payingPatron();
     await db
       .update(schema.patronSubscriptions)
       .set({ founderAt: new Date() })
       .where(eq(schema.patronSubscriptions.userId, member.userId));
     expect((await readProfile(member)).wardrobe.titles).toContain("Mécène fondateur");
-    expect((await readProfile(member)).patronPaying).toBe(true);
     stripe.subscriptions.set(subscription.id, { ...subscription, status: "canceled" });
     await sendEvent("customer.subscription.deleted", { id: subscription.id, customer: customerId });
     const after = await readProfile(member);
     expect(after.patron).toBe("founder");
-    expect(after.patronPaying).toBe(false);
     expect(after.wardrobe.titles).not.toContain("Mécène fondateur");
   });
 
@@ -1093,6 +1091,20 @@ describe("the page of thanks", () => {
 
     await request(quiet.member, "PUT", "/me/patron/thanks", { listed: true });
     expect((await thanked()).map((patron) => patron.pseudo)).toContain(quiet.pseudo);
+  });
+
+  it("tells the patron what still keeps them off the page", async () => {
+    const patron = await publicPatron(true);
+    expect((await readPatron(patron.member)).thanksWaiting).toBeNull();
+
+    await db
+      .update(schema.players)
+      .set({ profilePublic: false })
+      .where(eq(schema.players.userId, patron.member.userId));
+    expect((await readPatron(patron.member)).thanksWaiting?.reason).toBe("private");
+
+    await setXp(db, patron.member.userId, 0);
+    expect((await readPatron(patron.member)).thanksWaiting?.reason).toBe("level");
   });
 });
 

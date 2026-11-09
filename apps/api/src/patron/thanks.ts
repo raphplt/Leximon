@@ -1,4 +1,4 @@
-import type { PatronThanksResponse } from "@leximon/contract";
+import type { PatronResponse, PatronThanksResponse } from "@leximon/contract";
 import { type EpochMs, xpToReach } from "@leximon/core";
 import { type Database, schema } from "@leximon/db";
 import { and, asc, eq, gte, inArray, isNotNull, sql } from "drizzle-orm";
@@ -43,6 +43,28 @@ export async function readPatronThanks(db: Reader, now: EpochMs): Promise<Patron
       row.pseudo === null ? [] : [{ pseudo: row.pseudo, founder: row.founderAt !== null }],
     ),
   };
+}
+
+/**
+ * What still keeps the patron off the page of thanks, the same conditions as `readPatronThanks`
+ * seen from the patron's side.
+ */
+export async function readThanksWaiting(
+  db: Reader,
+  userId: string,
+  now: EpochMs,
+): Promise<PatronResponse["thanksWaiting"]> {
+  const [row] = await db
+    .select({ pseudo: players.pseudo, profilePublic: players.profilePublic, xp: userProgress.xp })
+    .from(users)
+    .leftJoin(players, eq(players.userId, users.id))
+    .leftJoin(userProgress, eq(userProgress.userId, users.id))
+    .where(eq(users.id, userId));
+  const level = publicLevel(now);
+  if ((row?.xp ?? 0) < xpToReach(level)) return { reason: "level", level };
+  if (row?.profilePublic !== true) return { reason: "private", level };
+  if (row.pseudo == null) return { reason: "pseudo", level };
+  return null;
 }
 
 /** `PUT /me/patron/thanks`: « Ne pas me citer », or back on the page. */

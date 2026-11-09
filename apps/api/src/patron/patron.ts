@@ -31,6 +31,7 @@ import { readDiscordLink } from "./discord";
 import type { BillingEvent } from "./events";
 import { readCurrentPoll } from "./polls";
 import { findsLeftOf, readFinds } from "./reserve";
+import { readThanksWaiting } from "./thanks";
 
 const {
   patronCosmeticClaims,
@@ -106,19 +107,21 @@ export async function readPatron(
     readonly now: EpochMs;
   },
 ): Promise<PatronResponse> {
-  const [row, buyer, bracket, periods, claimed, finds, poll, discord] = await Promise.all([
-    readRow(db, input.userId),
-    readBuyer(db, input.userId),
-    db
-      .select({ bracket: playerAgeBrackets.bracket })
-      .from(playerAgeBrackets)
-      .where(eq(playerAgeBrackets.userId, input.userId)),
-    readPeriods(db, input.userId),
-    readClaimedMonths(db, input.userId),
-    readFinds(db, input.userId),
-    readCurrentPoll(db, input.userId, input.now),
-    readDiscordLink(db, input.userId),
-  ]);
+  const [row, buyer, bracket, periods, claimed, finds, poll, discord, thanksWaiting] =
+    await Promise.all([
+      readRow(db, input.userId),
+      readBuyer(db, input.userId),
+      db
+        .select({ bracket: playerAgeBrackets.bracket })
+        .from(playerAgeBrackets)
+        .where(eq(playerAgeBrackets.userId, input.userId)),
+      readPeriods(db, input.userId),
+      readClaimedMonths(db, input.userId),
+      readFinds(db, input.userId),
+      readCurrentPoll(db, input.userId, input.now),
+      readDiscordLink(db, input.userId),
+      readThanksWaiting(db, input.userId, input.now),
+    ]);
   const rules = patronRulesAt(PATRON_SCHEDULE, input.now);
   const standing = standingOfRow(row);
   const founder = row?.founderAt != null;
@@ -132,6 +135,7 @@ export async function readPatron(
     founder,
     foundingOffer: isFoundingPayment(rules, input.now),
     thanksListed: row?.thanksHidden !== true,
+    thanksWaiting,
     poll,
     discord: { available: input.discordAvailable, username: discord?.username ?? null },
     finds: {

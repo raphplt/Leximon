@@ -53,10 +53,9 @@ export type PatronPerkKey =
   | "editions"
   | "cabinet"
   | "badge"
-  | "thanks"
   | "vote"
-  | "discord"
-  | "seal";
+  | "thanks"
+  | "discord";
 
 export interface PatronPerk {
   readonly key: PatronPerkKey;
@@ -99,28 +98,22 @@ export const PATRON_PERKS: readonly PatronPerk[] = [
     rest: " sur ton profil, avec trois cartes épinglées de plus.",
   },
   {
-    key: "thanks",
-    title: "La page des mécènes",
-    lead: "Ton pseudo sur la page des mécènes",
-    rest: ", si ton profil est public.",
-  },
-  {
     key: "vote",
     title: "Le vote des mécènes",
     lead: "Une voix dans le vote des mécènes",
     rest: " sur le thème d'une prochaine collection.",
   },
   {
+    key: "thanks",
+    title: "La page des mécènes",
+    lead: "Ton pseudo sur la page des mécènes",
+    rest: ", si ton profil est public.",
+  },
+  {
     key: "discord",
     title: "Le salon des mécènes",
     lead: "Le salon des mécènes",
     rest: " sur le Discord de Leximon, ouvert par le rôle Mécène.",
-  },
-  {
-    key: "seal",
-    title: "Le sceau de tes sachets",
-    lead: "Un sceau de cire sur tes sachets",
-    rest: ", qui se brise à chaque ouverture.",
   },
 ];
 
@@ -203,6 +196,7 @@ export const PATRON_DOOR_KICKER = "Bientôt";
 export const PATRON_MANAGE = "Gérer mon abonnement";
 export const PATRON_RESUME = "Reprendre mon abonnement";
 export const PATRON_MANAGE_BUSY = "Ouverture…";
+export const PATRON_INVOICES = "Voir mes factures";
 /** On the phone, where nothing may be bought outside the stores' payment. */
 export const PATRON_MANAGED_ON_WEB = "Ton abonnement se gère depuis ton compte sur leximon.fr.";
 
@@ -425,9 +419,6 @@ export const PATRON_SEE_PROFILE = "Voir mon profil";
 export const PATRON_VOTE_NONE =
   "Aucun vote n'est ouvert. Le prochain s'annoncera ici avant une nouvelle collection.";
 export const PATRON_DISCORD_SOON = "Le salon ouvre bientôt sur le Discord de Leximon.";
-export const PATRON_SEAL_LINE =
-  "Tes sachets portent un sceau de cire, qui se brise à chaque ouverture.";
-export const PATRON_PLAY = "Jouer";
 
 // --- Finding a word ---------------------------------------------------------------------------
 
@@ -498,9 +489,14 @@ export const PATRON_THANKS_FAILED = "Le réglage n'a pas été enregistré. Rée
 
 /** Where the patron stands on the public page of thanks. */
 export function patronThanksLine(patron: PatronResponse): string {
-  return patron.thanksListed
-    ? "Ton pseudo y figure tant que ton profil est public."
-    : "Tu as choisi de ne pas y figurer.";
+  if (!patron.thanksListed) return "Tu as choisi de ne pas y figurer.";
+  const waiting = patron.thanksWaiting;
+  if (waiting?.reason === "level") {
+    return `Ton pseudo y figurera au niveau ${waiting.level}, quand ton profil deviendra public.`;
+  }
+  if (waiting?.reason === "private") return "Ton pseudo y figurera quand ton profil sera public.";
+  if (waiting?.reason === "pseudo") return "Ton pseudo y figurera dès que tu en auras choisi un.";
+  return "Ton pseudo y figure.";
 }
 
 export const THANKS_PAGE_TITLE = "Les mécènes de Leximon";
