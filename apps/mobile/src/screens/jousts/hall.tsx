@@ -89,7 +89,7 @@ import { useCatalog } from "@/cards/use-catalog";
 import { play, vibrate } from "@/feedback/feedback";
 import { MainAction } from "@/library/play-pieces";
 import { useNow } from "@/player/shared";
-import { catalogCard } from "@/screens/trades/card-row";
+import { catalogCard, openCard } from "@/screens/trades/card-row";
 import { alpha, fontSizes, fonts, radii, space } from "@/theme";
 import { Avatar } from "@/ui/avatar";
 import { Icon } from "@/ui/icon";
@@ -719,7 +719,7 @@ function JoustLists({
 
 const OUTCOME_FILLS = StyleSheet.create({
   won: { backgroundImage: matterFill(toyMatters.green) },
-  lost: { backgroundImage: matterFill(toyMatters.locked) },
+  lost: { backgroundImage: matterFill(toyMatters.red) },
   draw: { backgroundImage: matterFill(toyMatters.paper) },
 });
 
@@ -815,7 +815,7 @@ function Letter({ joust }: { readonly joust: JoustSummary }) {
         <Matter kind="paper" />
         <Lettering
           size={fontSizes.titleLarge}
-          {...(joust.outcome === "lost" ? { color: toyMatters.locked.top } : {})}
+          {...(joust.outcome === "lost" ? { color: toyMatters.red.bottom } : {})}
         >
           {back.outcome}
         </Lettering>
@@ -924,18 +924,16 @@ function DeckLeaf({
       </View>
       {trapsLine !== null && <Text style={pieces.line}>{trapsLine}</Text>}
       {catalog !== null && (
-        <Pressable
-          style={styles.fan}
-          onLayout={(event) => setFanWidth(event.nativeEvent.layout.width)}
-          onPress={onEdit}
-          accessibilityRole="button"
-          accessibilityLabel={EDIT_DECK_SHORT}
-        >
+        <View style={styles.fan} onLayout={(event) => setFanWidth(event.nativeEvent.layout.width)}>
           {deck.cardIds.map((cardId, index) => {
             const offset = index - middle;
+            const card = catalogCard(catalog, cardId);
             return (
-              <View
+              <Pressable
                 key={cardId}
+                accessibilityRole="button"
+                accessibilityLabel={card.word}
+                onPress={() => openCard(cardId, deck.cardIds)}
                 style={{
                   marginLeft: index === 0 ? 0 : fanStep - FAN_CARD,
                   transform: [
@@ -944,16 +942,11 @@ function DeckLeaf({
                   ],
                 }}
               >
-                <MiniCard
-                  card={catalogCard(catalog, cardId)}
-                  trapped={traps.get(cardId) ?? 0}
-                  sealLeft
-                  width={FAN_CARD}
-                />
-              </View>
+                <MiniCard card={card} trapped={traps.get(cardId) ?? 0} sealLeft width={FAN_CARD} />
+              </Pressable>
             );
           })}
-        </Pressable>
+        </View>
       )}
     </Leaf>
   );

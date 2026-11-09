@@ -339,20 +339,19 @@
   display: grid;
   justify-items: center;
   gap: 2px;
-  transition: translate 160ms ease-out;
 }
 
 .road:disabled {
   cursor: default;
 }
 
-.road:hover .stop[data-state="ahead"] {
-  translate: 0 -2px;
+.stop[data-state="here"] {
+  animation: hover 3.2s ease-in-out infinite;
 }
 
-.stop[data-state="here"] {
+/* The drop sits under the crest alone: on the name it blurred the letters. */
+.stop[data-state="here"] > svg {
   filter: drop-shadow(0 4px 0 var(--lx-toy-drop));
-  animation: hover 3.2s ease-in-out infinite;
 }
 
 .stop[data-state="ahead"] svg {
@@ -630,7 +629,7 @@
 }
 
 .letterBack[data-outcome="lost"] .letterOutcome {
-  --lx-lettering-fill: var(--lx-toy-locked-top);
+  --lx-lettering-fill: var(--lx-toy-red-bottom);
 }
 
 .letterScore {
@@ -805,6 +804,10 @@
   background: linear-gradient(180deg, var(--lx-toy-green-top), var(--lx-toy-green-bottom));
 }
 
+.outcome[data-outcome="lost"] {
+  background: linear-gradient(180deg, var(--lx-toy-red-top), var(--lx-toy-red-bottom));
+}
+
 .outcome[data-outcome="draw"] {
   background: linear-gradient(180deg, var(--lx-toy-paper-top), var(--lx-toy-paper-bottom));
   color: var(--lx-color-paper-ink);
@@ -821,6 +824,10 @@
   position: relative;
   line-height: 0;
   margin: 0 -22px;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
   rotate: var(--turn);
   translate: 0 var(--lift);
   transition:
@@ -828,7 +835,8 @@
     rotate 160ms ease-out;
 }
 
-.fanCard:hover {
+.fanCard:hover,
+.fanCard:focus-visible {
   z-index: 1;
   rotate: 0deg;
   translate: 0 -14px;

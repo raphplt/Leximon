@@ -374,6 +374,7 @@ export function RunScene({
                       matter={isRight ? "green" : chosen ? "red" : "paper"}
                       className={styles.choice}
                       data-dim={(answered !== null && !isRight && !chosen) || undefined}
+                      data-verdict={isRight ? "right" : chosen ? "wrong" : undefined}
                       disabled={shown.kind !== "question" || shown.sending}
                       onClick={(event) => {
                         if (shown.kind === "question" && !shown.sending) {

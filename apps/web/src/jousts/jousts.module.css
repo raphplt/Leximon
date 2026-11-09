@@ -1280,7 +1280,36 @@
 }
 
 .choice[data-dim] {
-  opacity: 0.45;
+  opacity: 0.55;
+  filter: saturate(0.6);
+}
+
+/* Off once answered, the words keep their colour: the green and red of the verdict stand out. */
+.choices .choice:disabled:not([data-dim]) {
+  filter: none;
+}
+
+.choice[data-verdict="right"] {
+  animation: verdictRight 260ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.choice[data-verdict="wrong"] {
+  animation: verdictWrong 320ms ease-in-out;
+}
+
+@keyframes verdictRight {
+  50% {
+    scale: 1.05;
+  }
+}
+
+@keyframes verdictWrong {
+  25% {
+    translate: -6px 0;
+  }
+  75% {
+    translate: 6px 0;
+  }
 }
 
 @keyframes rise {
@@ -2049,6 +2078,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .choice[data-verdict],
   .row[data-pulse],
   .seal,
   .hourglass,

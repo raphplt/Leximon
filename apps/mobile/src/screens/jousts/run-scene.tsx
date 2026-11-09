@@ -774,7 +774,8 @@ const styles = StyleSheet.create({
     rowGap: space.s3,
   },
   choiceCell: { width: "48.5%" },
-  choice: { height: 60 },
+  // Off once answered, the words keep their colour: the green and red of the verdict stand out.
+  choice: { height: 60, opacity: 1 },
   choiceBody: { paddingHorizontal: space.s4, paddingVertical: space.s3 },
   choiceWord: {
     textAlign: "center",

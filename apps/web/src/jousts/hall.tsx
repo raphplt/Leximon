@@ -66,6 +66,7 @@ import { api } from "@/lib/api";
 import { useNarrow } from "@/lib/use-narrow";
 import { useNow } from "@/lib/use-now";
 import { MainAction } from "@/library/play-pieces";
+import { useShell } from "@/shell/shell-context";
 import { catalogCard } from "@/trades/card-thumb";
 import { Dialog } from "@/ui/dialog";
 import { Icon } from "@/ui/icon";
@@ -702,6 +703,7 @@ function DeckLeaf({
 }) {
   const catalog = useCatalog();
   const narrow = useNarrow();
+  const { openCard } = useShell();
   const costs = new Map(deck.candidates.map((candidate) => [candidate.cardId, candidate.cost]));
   const spent = deck.cardIds.reduce((total, id) => total + (costs.get(id) ?? 0), 0);
   const traps = new Map(deck.trapped.map((card) => [card.cardId, card.count]));
@@ -720,22 +722,31 @@ function DeckLeaf({
       {trapsLine !== null && <p className={styles.leafText}>{trapsLine}</p>}
       {catalog !== null && (
         <div className={styles.fan}>
-          {deck.cardIds.map((cardId, index) => (
-            <MiniCard
-              key={cardId}
-              card={catalogCard(catalog, cardId)}
-              width={narrow ? 70 : 104}
-              trapped={traps.get(cardId) ?? 0}
-              sealLeft
-              className={styles.fanCard}
-              style={
-                {
-                  "--turn": `${(index - middle) * 4}deg`,
-                  "--lift": `${Math.abs(index - middle) * 4}px`,
-                } as CSSProperties
-              }
-            />
-          ))}
+          {deck.cardIds.map((cardId, index) => {
+            const card = catalogCard(catalog, cardId);
+            return (
+              <button
+                key={cardId}
+                type="button"
+                className={styles.fanCard}
+                aria-label={card.word}
+                onClick={() => openCard(cardId, deck.cardIds)}
+                style={
+                  {
+                    "--turn": `${(index - middle) * 4}deg`,
+                    "--lift": `${Math.abs(index - middle) * 4}px`,
+                  } as CSSProperties
+                }
+              >
+                <MiniCard
+                  card={card}
+                  width={narrow ? 70 : 104}
+                  trapped={traps.get(cardId) ?? 0}
+                  sealLeft
+                />
+              </button>
+            );
+          })}
         </div>
       )}
     </section>
