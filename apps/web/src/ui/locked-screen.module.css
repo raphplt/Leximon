@@ -1,77 +1,81 @@
-/* A door to a feature, framed in fleurons: the padding keeps the text clear of them. */
-.screen {
-  position: relative;
-  box-sizing: border-box;
-  max-width: 640px;
-  margin: var(--lx-s20) auto;
-  padding: var(--lx-s20) var(--lx-s12) var(--lx-s16);
-  text-align: center;
-}
+@layer reset, toy, ui, pieces, sets;
 
-/* The sign of the page is a gold medallion. */
-.icon {
-  display: inline-grid;
-  place-items: center;
-  width: 84px;
-  height: 84px;
-  border: var(--lx-toy-outline-width) solid var(--lx-toy-outline);
-  border-radius: 50%;
-  background: linear-gradient(
-    180deg,
-    var(--lx-toy-gold-top) 0 47%,
-    var(--lx-toy-gold-bottom) 53% 100%
-  );
-  box-shadow:
-    inset 0 -4px 0 var(--lx-toy-gold-edge),
-    inset 0 2px 0 var(--lx-toy-sheen),
-    0 4px 0 var(--lx-toy-outline);
-  color: var(--lx-toy-outline);
-}
-
-.kicker {
-  margin-top: var(--lx-s8);
-}
-
-.title {
-  margin: var(--lx-s3) 0 var(--lx-s5);
-  font-size: var(--lx-size-heading-large);
-  line-height: 1.05;
-}
-
-.text {
-  max-width: 380px;
-  margin: 0 auto;
-  color: var(--lx-color-page-ink-soft);
-  font-size: var(--lx-size-body-large);
-  line-height: 1.45;
-}
-
-.bar {
-  max-width: 320px;
-  margin: 22px auto var(--lx-s3);
-}
-
-.left {
-  margin: 0;
-  font-size: var(--lx-size-small);
-  color: var(--lx-color-page-ink-muted);
-}
-
-.actions {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: var(--lx-s5);
-  margin-top: var(--lx-s12);
-}
-
-@media (max-width: 759px) {
+@layer sets {
+  /* A door to a feature, framed in fleurons: the padding keeps the text clear of them. */
   .screen {
-    margin: var(--lx-s4) 0;
-    padding: var(--lx-s16) 36px var(--lx-s12);
+    position: relative;
+    box-sizing: border-box;
+    max-width: 640px;
+    margin: var(--lx-s20) auto;
+    padding: var(--lx-s20) var(--lx-s12) var(--lx-s16);
+    text-align: center;
+  }
+
+  /* The sign of the page is a gold medallion. */
+  .icon {
+    display: inline-grid;
+    place-items: center;
+    width: 84px;
+    height: 84px;
+    border: var(--lx-toy-outline-width) solid var(--lx-toy-outline);
+    border-radius: 50%;
+    background: linear-gradient(
+      180deg,
+      var(--lx-toy-gold-top) 0 47%,
+      var(--lx-toy-gold-bottom) 53% 100%
+    );
+    box-shadow:
+      inset 0 -4px 0 var(--lx-toy-gold-edge),
+      inset 0 2px 0 var(--lx-toy-sheen),
+      0 4px 0 var(--lx-toy-outline);
+    color: var(--lx-toy-outline);
+  }
+
+  .kicker {
+    margin-top: var(--lx-s8);
   }
 
   .title {
-    font-size: var(--lx-size-heading);
+    margin: var(--lx-s3) 0 var(--lx-s5);
+    font-size: var(--lx-size-heading-large);
+    line-height: 1.05;
+  }
+
+  .text {
+    max-width: 380px;
+    margin: 0 auto;
+    color: var(--lx-color-page-ink-soft);
+    font-size: var(--lx-size-body-large);
+    line-height: 1.45;
+  }
+
+  .bar {
+    max-width: 320px;
+    margin: 22px auto var(--lx-s3);
+  }
+
+  .left {
+    margin: 0;
+    font-size: var(--lx-size-small);
+    color: var(--lx-color-page-ink-muted);
+  }
+
+  .actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: var(--lx-s5);
+    margin-top: var(--lx-s12);
+  }
+
+  @media (max-width: 759px) {
+    .screen {
+      margin: var(--lx-s4) 0;
+      padding: var(--lx-s16) 36px var(--lx-s12);
+    }
+
+    .title {
+      font-size: var(--lx-size-heading);
+    }
   }
 }

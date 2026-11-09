@@ -1,17 +1,21 @@
-.hidden {
-  display: inline-block;
-  padding: 0.12em 0.5em 0.16em;
-  border-radius: 0.3em;
-  background: color-mix(in srgb, var(--lx-color-paper-ink) 82%, transparent);
-  font-family: var(--font-ui), system-ui, sans-serif;
-  font-size: 0.62em;
-  font-style: normal;
-  font-weight: 800;
-  line-height: 1.2;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  vertical-align: 0.14em;
-  white-space: nowrap;
-  color: var(--lx-color-paper);
-  cursor: help;
+@layer reset, toy, ui, pieces, sets;
+
+@layer pieces {
+  .hidden {
+    display: inline-block;
+    padding: 0.12em 0.5em 0.16em;
+    border-radius: 0.3em;
+    background: color-mix(in srgb, var(--lx-color-paper-ink) 82%, transparent);
+    font-family: var(--font-ui), system-ui, sans-serif;
+    font-size: 0.62em;
+    font-style: normal;
+    font-weight: 800;
+    line-height: 1.2;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    vertical-align: 0.14em;
+    white-space: nowrap;
+    color: var(--lx-color-paper);
+    cursor: help;
+  }
 }

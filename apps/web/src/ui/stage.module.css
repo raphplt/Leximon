@@ -1,42 +1,46 @@
-/* The layers of light over the whole window: none of them ever takes a click. */
+@layer reset, toy, ui, pieces, sets;
 
-.canvas,
-.flash {
-  position: fixed;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-}
+@layer pieces {
+  /* The layers of light over the whole window: none of them ever takes a click. */
 
-.canvas {
-  z-index: 60;
-}
+  .canvas,
+  .flash {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+  }
 
-.flash {
-  z-index: 59;
-  opacity: 0;
-  background: var(--lx-lettering-fill);
-}
+  .canvas {
+    z-index: 60;
+  }
 
-.ring {
-  position: fixed;
-  z-index: 59;
-  width: 80px;
-  height: 80px;
-  border: 5px solid var(--ring);
-  border-radius: 50%;
-  box-shadow: 0 0 24px var(--ring);
-  opacity: 0;
-  pointer-events: none;
-}
+  .flash {
+    z-index: 59;
+    opacity: 0;
+    background: var(--lx-lettering-fill);
+  }
 
-.dust {
-  position: fixed;
-  inset: 0;
-  z-index: 58;
-  overflow: hidden;
-  pointer-events: none;
+  .ring {
+    position: fixed;
+    z-index: 59;
+    width: 80px;
+    height: 80px;
+    border: 5px solid var(--ring);
+    border-radius: 50%;
+    box-shadow: 0 0 24px var(--ring);
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .dust {
+    position: fixed;
+    inset: 0;
+    z-index: 58;
+    overflow: hidden;
+    pointer-events: none;
+  }
 }
 
 .dust > span {

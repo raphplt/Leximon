@@ -1,80 +1,89 @@
-/* The pieces of the Jouer screen, in leather and old gold on the tooled desk. */
+@layer reset, toy, ui, pieces, sets;
 
-/* --- The desk --- */
+@layer sets {
+  /* The pieces of the Jouer screen, in leather and old gold on the tooled desk. */
 
-/*
- * Aged two-tone diamond desk (62 × 66 px, nearly square, with leather/cloth grain, pillowed
- * centers and beveled seams), tooled in gold as the board of a bound book.
- */
-.desk {
-  position: relative;
-  box-sizing: border-box;
-  border-radius: 22px;
-  --base-a: var(--lx-desk-center);
-  --base-b: var(--lx-desk-edge);
-  --desk-lamp: color-mix(in srgb, var(--lx-color-success) 12%, transparent);
-  --desk-d1: color-mix(in srgb, var(--base-a) 78%, var(--base-b));
-  --desk-d2: var(--base-b);
-  --desk-seam-light: color-mix(in srgb, var(--lx-toy-sheen) 14%, var(--desk-d1));
-  --desk-seam-dark: color-mix(in srgb, var(--lx-color-shade) 42%, var(--desk-d2));
-  transition:
-    --desk-d1 420ms ease-out,
-    --desk-d2 420ms ease-out,
-    --desk-seam-light 420ms ease-out,
-    --desk-seam-dark 420ms ease-out,
-    --desk-lamp 420ms ease-out;
-  background:
-    var(--lx-matter-leather) 0 0 / var(--lx-matter-size),
-    var(--lx-matter-cloth) 36px 48px / 192px 192px,
-    radial-gradient(
-      ellipse 85% 65% at 50% 34%,
-      var(--desk-lamp) 0%,
-      transparent 58%,
-      color-mix(in srgb, var(--lx-color-shade) 54%, transparent) 100%
-    ),
-    radial-gradient(
-      circle at 50% 50%,
-      color-mix(in srgb, var(--lx-toy-sheen) 5%, transparent) 0%,
-      transparent 54%
-    )
-    0 0 / 62px 66px,
-    radial-gradient(
-      circle at 50% 50%,
-      color-mix(in srgb, var(--lx-toy-gold-top) 5%, transparent) 0%,
-      transparent 54%
-    )
-    31px 33px / 62px 66px,
-    linear-gradient(
-      133.21deg,
-      var(--desk-d1) 23.6%,
-      var(--desk-seam-light) 24.5%,
-      var(--desk-seam-dark) 25.2%,
-      transparent 25.8%
-    )
-    0 0 / 62px 66px,
-    linear-gradient(
-      226.79deg,
-      var(--desk-d1) 23.6%,
-      var(--desk-seam-light) 24.5%,
-      var(--desk-seam-dark) 25.2%,
-      transparent 25.8%
-    )
-    0 0 / 62px 66px,
-    linear-gradient(313.21deg, var(--desk-d1) 23.8%, var(--desk-seam-dark) 24.8%, transparent 25.5%)
-    0 0 / 62px 66px,
-    linear-gradient(
-      46.79deg,
-      var(--desk-d1) 23.8%,
-      var(--desk-seam-dark) 24.8%,
-      var(--desk-d2) 25.5%
-    )
-    0 0 / 62px 66px;
-  box-shadow:
-    0 0 0 3px var(--lx-toy-outline),
-    0 24px 44px var(--lx-toy-drop),
-    inset 0 0 0 5px color-mix(in srgb, var(--desk-d2) 70%, transparent),
-    inset 0 2px 0 5px color-mix(in srgb, var(--lx-toy-sheen) 12%, transparent),
-    inset 0 0 50px var(--lx-desk-hollow);
+  /* --- The desk --- */
+
+  /*
+   * Aged two-tone diamond desk (62 × 66 px, nearly square, with leather/cloth grain, pillowed
+   * centers and beveled seams), tooled in gold as the board of a bound book.
+   */
+  .desk {
+    position: relative;
+    box-sizing: border-box;
+    border-radius: 22px;
+    --base-a: var(--lx-desk-center);
+    --base-b: var(--lx-desk-edge);
+    --desk-lamp: color-mix(in srgb, var(--lx-color-success) 12%, transparent);
+    --desk-d1: color-mix(in srgb, var(--base-a) 78%, var(--base-b));
+    --desk-d2: var(--base-b);
+    --desk-seam-light: color-mix(in srgb, var(--lx-toy-sheen) 14%, var(--desk-d1));
+    --desk-seam-dark: color-mix(in srgb, var(--lx-color-shade) 42%, var(--desk-d2));
+    transition:
+      --desk-d1 420ms ease-out,
+      --desk-d2 420ms ease-out,
+      --desk-seam-light 420ms ease-out,
+      --desk-seam-dark 420ms ease-out,
+      --desk-lamp 420ms ease-out;
+    background:
+      var(--lx-matter-leather) 0 0 / var(--lx-matter-size),
+      var(--lx-matter-cloth) 36px 48px / 192px 192px,
+      radial-gradient(
+        ellipse 85% 65% at 50% 34%,
+        var(--desk-lamp) 0%,
+        transparent 58%,
+        color-mix(in srgb, var(--lx-color-shade) 54%, transparent) 100%
+      ),
+      radial-gradient(
+        circle at 50% 50%,
+        color-mix(in srgb, var(--lx-toy-sheen) 5%, transparent) 0%,
+        transparent 54%
+      )
+      0 0 / 62px 66px,
+      radial-gradient(
+        circle at 50% 50%,
+        color-mix(in srgb, var(--lx-toy-gold-top) 5%, transparent) 0%,
+        transparent 54%
+      )
+      31px 33px / 62px 66px,
+      linear-gradient(
+        133.21deg,
+        var(--desk-d1) 23.6%,
+        var(--desk-seam-light) 24.5%,
+        var(--desk-seam-dark) 25.2%,
+        transparent 25.8%
+      )
+      0 0 / 62px 66px,
+      linear-gradient(
+        226.79deg,
+        var(--desk-d1) 23.6%,
+        var(--desk-seam-light) 24.5%,
+        var(--desk-seam-dark) 25.2%,
+        transparent 25.8%
+      )
+      0 0 / 62px 66px,
+      linear-gradient(
+        313.21deg,
+        var(--desk-d1) 23.8%,
+        var(--desk-seam-dark) 24.8%,
+        transparent 25.5%
+      )
+      0 0 / 62px 66px,
+      linear-gradient(
+        46.79deg,
+        var(--desk-d1) 23.8%,
+        var(--desk-seam-dark) 24.8%,
+        var(--desk-d2) 25.5%
+      )
+      0 0 / 62px 66px;
+    box-shadow:
+      0 0 0 3px var(--lx-toy-outline),
+      0 24px 44px var(--lx-toy-drop),
+      inset 0 0 0 5px color-mix(in srgb, var(--desk-d2) 70%, transparent),
+      inset 0 2px 0 5px color-mix(in srgb, var(--lx-toy-sheen) 12%, transparent),
+      inset 0 0 50px var(--lx-desk-hollow);
+  }
 }
 
 .desk[data-tone="acajou"] {
@@ -113,22 +122,24 @@
   --desk-lamp: color-mix(in srgb, var(--lx-toy-gold-top) 16%, transparent);
 }
 
-/* --- Counts --- */
+@layer sets {
+  /* --- Counts --- */
 
-.badge {
-  min-width: 23px;
-  height: 23px;
-  padding: 0 5px;
-  font-size: var(--lx-size-small);
-  line-height: 1;
-  animation: nudge 2.6s ease-in-out infinite;
-}
+  .badge {
+    min-width: 23px;
+    height: 23px;
+    padding: 0 5px;
+    font-size: var(--lx-size-small);
+    line-height: 1;
+    animation: nudge 2.6s ease-in-out infinite;
+  }
 
-.corner {
-  position: absolute;
-  top: -9px;
-  right: -9px;
-  z-index: 2;
+  .corner {
+    position: absolute;
+    top: -9px;
+    right: -9px;
+    z-index: 2;
+  }
 }
 
 @keyframes nudge {
@@ -148,253 +159,263 @@
   }
 }
 
-/* --- The top bar --- */
+@layer sets {
+  /* --- The top bar --- */
 
-.portrait {
-  width: 54px;
-  height: 54px;
-  flex: none;
-  border-radius: 16px;
-}
-
-.portraitFrame {
-  position: absolute;
-  inset: 4px 4px 7px;
-  overflow: hidden;
-  border-radius: 11px;
-  display: grid;
-  place-items: center;
-}
-
-.level {
-  position: relative;
-  flex: 1;
-  display: flex;
-  align-items: center;
-  min-width: 0;
-}
-
-.medal {
-  position: relative;
-  z-index: 2;
-  display: grid;
-  flex: none;
-}
-
-.xp {
-  position: relative;
-  flex: 1;
-  max-width: 120px;
-  height: 20px;
-  margin-left: -14px;
-  padding-left: 14px;
-  box-sizing: border-box;
-  overflow: hidden;
-  border: var(--lx-toy-outline-width) solid var(--lx-toy-outline);
-  border-left: 0;
-  border-radius: 0 11px 11px 0;
-  background: var(--lx-color-well);
-  box-shadow:
-    0 4px 0 var(--lx-toy-outline),
-    inset 0 3px 4px var(--lx-toy-drop);
-}
-
-.xpFill {
-  position: absolute;
-  left: 0;
-  top: 0;
-  bottom: 0;
-  background: linear-gradient(180deg, var(--lx-color-xp-light) 0 45%, var(--lx-color-xp-deep) 55%);
-  box-shadow:
-    inset 0 -3px 0 var(--lx-toy-gold-edge),
-    inset -2.5px 0 0 var(--lx-toy-outline);
-  transition: width 600ms var(--lx-ease-overshoot);
-}
-
-.xpText {
-  position: absolute;
-  inset: 0;
-  display: grid;
-  place-items: center;
-  font:
-    800 var(--lx-size-caption) / 1 var(--font-ui),
-    sans-serif;
-}
-
-.stock {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  height: 42px;
-  padding: 0 12px 0 5px;
-}
-
-.stockFigure {
-  font-size: var(--lx-size-lead);
-}
-
-.mail {
-  width: 46px;
-  height: 46px;
-}
-
-/* --- The tiles beside the sachet --- */
-
-.side {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  width: 72px;
-}
-
-.tile {
-  width: 58px;
-  height: 58px;
-}
-
-.lockPin {
-  position: absolute;
-  z-index: 2;
-  top: -10px;
-  right: -10px;
-}
-
-.levelTag {
-  z-index: 2;
-  margin-top: -9px;
-  padding: 1px 7px 2px;
-  font-size: var(--lx-size-micro);
-  line-height: 1.2;
-}
-
-.sideLabel {
-  margin-top: 5px;
-  font-size: var(--lx-size-caption);
-  line-height: 1.1;
-  text-align: center;
-}
-
-/* On a phone a long name (« Récompenses ») stays within its tile's column. */
-@media (max-width: 759px) {
-  .sideLabel {
-    font-size: var(--lx-size-micro);
+  .portrait {
+    width: 54px;
+    height: 54px;
+    flex: none;
+    border-radius: 16px;
   }
-}
 
-/* --- The collection on the desk --- */
+  .portraitFrame {
+    position: absolute;
+    inset: 4px 4px 7px;
+    overflow: hidden;
+    border-radius: 11px;
+    display: grid;
+    place-items: center;
+  }
 
-.collection {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
+  .level {
+    position: relative;
+    flex: 1;
+    display: flex;
+    align-items: center;
+    min-width: 0;
+  }
 
-.collectionRow {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-}
+  .medal {
+    position: relative;
+    z-index: 2;
+    display: grid;
+    flex: none;
+  }
 
-.arrow {
-  width: 42px;
-  height: 42px;
-  border-radius: 13px;
-}
+  .xp {
+    position: relative;
+    flex: 1;
+    max-width: 120px;
+    height: 20px;
+    margin-left: -14px;
+    padding-left: 14px;
+    box-sizing: border-box;
+    overflow: hidden;
+    border: var(--lx-toy-outline-width) solid var(--lx-toy-outline);
+    border-left: 0;
+    border-radius: 0 11px 11px 0;
+    background: var(--lx-color-well);
+    box-shadow:
+      0 4px 0 var(--lx-toy-outline),
+      inset 0 3px 4px var(--lx-toy-drop);
+  }
 
-.flipped {
-  display: grid;
-  transform: scaleX(-1);
-}
+  .xpFill {
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    background: linear-gradient(
+      180deg,
+      var(--lx-color-xp-light) 0 45%,
+      var(--lx-color-xp-deep) 55%
+    );
+    box-shadow:
+      inset 0 -3px 0 var(--lx-toy-gold-edge),
+      inset -2.5px 0 0 var(--lx-toy-outline);
+    transition: width 600ms var(--lx-ease-overshoot);
+  }
 
-.collectionName {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  min-width: 180px;
-}
+  .xpText {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    font:
+      800 var(--lx-size-caption) / 1 var(--font-ui),
+      sans-serif;
+  }
 
-.name {
-  max-width: 200px;
-  margin-top: 3px;
-  font-size: var(--lx-size-title-large);
-  line-height: 1.08;
-  text-align: center;
-}
+  .stock {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    height: 42px;
+    padding: 0 12px 0 5px;
+  }
 
-.dots {
-  display: flex;
-  gap: 7px;
-  margin-top: 6px;
-}
+  .stockFigure {
+    font-size: var(--lx-size-lead);
+  }
 
-.dot,
-.dotOn {
-  width: 10px;
-  height: 10px;
-  box-sizing: border-box;
-  border: 2px solid var(--lx-toy-outline);
-  border-radius: 50%;
-  background: var(--lx-desk-edge);
-}
+  .mail {
+    width: 46px;
+    height: 46px;
+  }
 
-.dotOn {
-  background: var(--lx-toy-gold-top);
-  box-shadow: inset 0 -2px 0 var(--lx-toy-gold-edge);
-}
+  /* --- The tiles beside the sachet --- */
 
-/* The arrows and dots on their own, apart from the name. */
-.pager {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 18px;
+  .side {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 72px;
+  }
+
+  .tile {
+    width: 58px;
+    height: 58px;
+  }
+
+  .lockPin {
+    position: absolute;
+    z-index: 2;
+    top: -10px;
+    right: -10px;
+  }
+
+  .levelTag {
+    z-index: 2;
+    margin-top: -9px;
+    padding: 1px 7px 2px;
+    font-size: var(--lx-size-micro);
+    line-height: 1.2;
+  }
+
+  .sideLabel {
+    margin-top: 5px;
+    font-size: var(--lx-size-caption);
+    line-height: 1.1;
+    text-align: center;
+  }
+
+  /* On a phone a long name (« Récompenses ») stays within its tile's column. */
+  @media (max-width: 759px) {
+    .sideLabel {
+      font-size: var(--lx-size-micro);
+    }
+  }
+
+  /* --- The collection on the desk --- */
+
+  .collection {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .collectionRow {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .arrow {
+    width: 42px;
+    height: 42px;
+    border-radius: 13px;
+  }
+
+  .flipped {
+    display: grid;
+    transform: scaleX(-1);
+  }
+
+  .collectionName {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 180px;
+  }
+
+  .name {
+    max-width: 200px;
+    margin-top: 3px;
+    font-size: var(--lx-size-title-large);
+    line-height: 1.08;
+    text-align: center;
+  }
+
+  .dots {
+    display: flex;
+    gap: 7px;
+    margin-top: 6px;
+  }
+
+  .dot,
+  .dotOn {
+    width: 10px;
+    height: 10px;
+    box-sizing: border-box;
+    border: 2px solid var(--lx-toy-outline);
+    border-radius: 50%;
+    background: var(--lx-desk-edge);
+  }
+
+  .dotOn {
+    background: var(--lx-toy-gold-top);
+    box-shadow: inset 0 -2px 0 var(--lx-toy-gold-edge);
+  }
+
+  /* The arrows and dots on their own, apart from the name. */
+  .pager {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 18px;
+  }
 }
 
 .pager .dots {
   margin-top: 0;
 }
 
-.tagline {
-  margin: 6px 40px 0;
-  color: color-mix(in srgb, var(--lx-lettering-fill) 80%, transparent);
-  font:
-    italic 500 var(--lx-size-body) / 1.3 var(--font-text),
-    serif;
-  text-align: center;
-  text-shadow: 0 1px 2px var(--lx-color-shade);
-}
+@layer sets {
+  .tagline {
+    margin: 6px 40px 0;
+    color: color-mix(in srgb, var(--lx-lettering-fill) 80%, transparent);
+    font:
+      italic 500 var(--lx-size-body) / 1.3 var(--font-text),
+      serif;
+    text-align: center;
+    text-shadow: 0 1px 2px var(--lx-color-shade);
+  }
 
-/* --- The main action --- */
+  /* --- The main action --- */
 
-/* The gold button keeps room around its words, and its count sits as a cap on its right end. */
-.main {
-  display: flex;
-  justify-content: center;
-  gap: 14px;
-  min-width: min(100%, 300px);
-  max-width: 100%;
-  height: 66px;
-  padding-inline: 36px;
+  /* The gold button keeps room around its words, and its count sits as a cap on its right end. */
+  .main {
+    display: flex;
+    justify-content: center;
+    gap: 14px;
+    min-width: min(100%, 300px);
+    max-width: 100%;
+    height: 66px;
+    padding-inline: 36px;
+  }
 }
 
 .main:has(.mainCount) {
   padding-inline: 36px 16px;
 }
 
-.mainLabel {
-  font-size: var(--lx-size-title);
-}
+@layer sets {
+  .mainLabel {
+    font-size: var(--lx-size-title);
+  }
 
-.mainCount {
-  width: 38px;
-  height: 38px;
-  font-size: var(--lx-size-subtitle);
-  box-shadow: inset 0 -4px 0 var(--edge);
-}
+  .mainCount {
+    width: 38px;
+    height: 38px;
+    font-size: var(--lx-size-subtitle);
+    box-shadow: inset 0 -4px 0 var(--edge);
+  }
 
-.inviting {
-  animation: invite 3s ease-in-out infinite;
+  .inviting {
+    animation: invite 3s ease-in-out infinite;
+  }
 }
 
 .inviting[data-down] {
@@ -415,72 +436,76 @@
   }
 }
 
-.paperAction {
-  height: 48px;
-  padding: 0 24px;
-  border-radius: 15px;
-  font-size: var(--lx-size-lead);
-}
+@layer sets {
+  .paperAction {
+    height: 48px;
+    padding: 0 24px;
+    border-radius: 15px;
+    font-size: var(--lx-size-lead);
+  }
 
-/* --- The shelf of tabs --- */
+  /* --- The shelf of tabs --- */
 
-/* The icons and their names sit in the middle of the shelf, from its gilt edge to its foot. */
-.tabs {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-around;
-  height: 71px;
-  padding: 6px 4px calc(env(safe-area-inset-bottom) + 13px);
-  background:
-    repeating-linear-gradient(90deg, var(--lx-toy-drop) 0 1px, transparent 1px 70px),
-    linear-gradient(180deg, var(--lx-shelf-top), var(--lx-shelf-bottom));
-  box-shadow:
-    inset 0 3px 0 var(--lx-shelf-gilt),
-    inset 0 5px 0 var(--lx-shelf-gilt-shade),
-    0 -8px 20px var(--lx-toy-drop);
-}
+  /* The icons and their names sit in the middle of the shelf, from its gilt edge to its foot. */
+  .tabs {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-around;
+    height: 71px;
+    padding: 6px 4px calc(env(safe-area-inset-bottom) + 13px);
+    background:
+      repeating-linear-gradient(90deg, var(--lx-toy-drop) 0 1px, transparent 1px 70px),
+      linear-gradient(180deg, var(--lx-shelf-top), var(--lx-shelf-bottom));
+    box-shadow:
+      inset 0 3px 0 var(--lx-shelf-gilt),
+      inset 0 5px 0 var(--lx-shelf-gilt-shade),
+      0 -8px 20px var(--lx-toy-drop);
+  }
 
-.tab,
-.playTab {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 3px;
-  width: 70px;
-  padding: 0 0 4px;
-  border: 0;
-  background: none;
-  font: inherit;
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
-}
+  .tab,
+  .playTab {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    width: 70px;
+    padding: 0 0 4px;
+    border: 0;
+    background: none;
+    font: inherit;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
 
-.tabIcon,
-.tabIconLocked {
-  position: relative;
-  display: grid;
-  filter: drop-shadow(0 2px 0 var(--lx-toy-drop));
+  .tabIcon,
+  .tabIconLocked {
+    position: relative;
+    display: grid;
+    filter: drop-shadow(0 2px 0 var(--lx-toy-drop));
+  }
 }
 
 .tabIconLocked > svg:first-child {
   filter: grayscale(1) brightness(0.75);
 }
 
-.tabLock {
-  position: absolute;
-  top: -4px;
-  right: -8px;
-}
+@layer sets {
+  .tabLock {
+    position: absolute;
+    top: -4px;
+    right: -8px;
+  }
 
-.tabBadge {
-  position: absolute;
-  top: -6px;
-  right: -10px;
-}
+  .tabBadge {
+    position: absolute;
+    top: -6px;
+    right: -10px;
+  }
 
-.tabLabel {
-  font-size: var(--lx-size-micro);
+  .tabLabel {
+    font-size: var(--lx-size-micro);
+  }
 }
 
 .tab[aria-current="page"] .tabIcon {
@@ -491,50 +516,52 @@
   color: var(--lx-toy-gold-top);
 }
 
-.playDisc {
-  width: 74px;
-  height: 74px;
-  margin-top: -38px;
-  box-shadow:
-    inset 0 -7px 0 var(--edge),
-    inset 0 3px 0 var(--lx-toy-sheen),
-    0 5px 0 var(--lx-toy-outline),
-    0 0 0 4px var(--lx-shelf-bottom);
-}
+@layer sets {
+  .playDisc {
+    width: 74px;
+    height: 74px;
+    margin-top: -38px;
+    box-shadow:
+      inset 0 -7px 0 var(--edge),
+      inset 0 3px 0 var(--lx-toy-sheen),
+      0 5px 0 var(--lx-toy-outline),
+      0 0 0 4px var(--lx-shelf-bottom);
+  }
 
-.playLabel {
-  color: var(--lx-toy-gold-top);
-}
+  .playLabel {
+    color: var(--lx-toy-gold-top);
+  }
 
-/* --- The bubble --- */
+  /* --- The bubble --- */
 
-.bubble {
-  position: fixed;
-  left: 50%;
-  top: 22%;
-  z-index: 70;
-  max-width: min(320px, calc(100vw - 48px));
-  margin: 0;
-  padding: 12px 18px;
-  translate: -50% 0;
-  border: var(--lx-toy-outline-width) solid var(--lx-toy-outline);
-  border-radius: 16px;
-  background: var(--lx-color-paper);
-  box-shadow:
-    0 4px 0 var(--lx-toy-outline),
-    0 10px 20px var(--lx-toy-drop);
-  color: var(--lx-color-paper-ink);
-  font:
-    500 var(--lx-size-body-large) / 1.3 var(--font-text),
-    serif;
-  text-align: center;
-  opacity: 0;
-  pointer-events: none;
-}
+  .bubble {
+    position: fixed;
+    left: 50%;
+    top: 22%;
+    z-index: 70;
+    max-width: min(320px, calc(100vw - 48px));
+    margin: 0;
+    padding: 12px 18px;
+    translate: -50% 0;
+    border: var(--lx-toy-outline-width) solid var(--lx-toy-outline);
+    border-radius: 16px;
+    background: var(--lx-color-paper);
+    box-shadow:
+      0 4px 0 var(--lx-toy-outline),
+      0 10px 20px var(--lx-toy-drop);
+    color: var(--lx-color-paper-ink);
+    font:
+      500 var(--lx-size-body-large) / 1.3 var(--font-text),
+      serif;
+    text-align: center;
+    opacity: 0;
+    pointer-events: none;
+  }
 
-@media (prefers-reduced-motion: reduce) {
-  .badge,
-  .inviting {
-    animation: none;
+  @media (prefers-reduced-motion: reduce) {
+    .badge,
+    .inviting {
+      animation: none;
+    }
   }
 }

@@ -1,32 +1,36 @@
-/*
- * A gain, illuminated: red leather in a frame of old gold, a fine gilt rule inside with a lozenge
- * at each corner, as in the margins of an old book.
- */
-.banner {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  gap: 14px;
-  box-sizing: border-box;
-  max-width: 100%;
-  padding: 14px 30px 14px 14px;
-  border: 4px solid transparent;
-  border-radius: 18px;
-  background:
-    var(--lx-matter-leather) 0 0 / var(--lx-matter-size) padding-box,
-    radial-gradient(
-      ellipse 90% 140% at 30% 20%,
-      var(--lx-gain-center) 0%,
-      var(--lx-gain-middle) 60%,
-      var(--lx-gain-edge) 100%
-    )
-    padding-box,
-    var(--lx-old-gold) border-box;
-  box-shadow:
-    0 0 0 2.5px var(--lx-toy-outline),
-    0 6px 0 2.5px var(--lx-toy-outline),
-    0 14px 28px var(--lx-toy-drop);
-  text-align: left;
+@layer reset, toy, ui, pieces, sets;
+
+@layer sets {
+  /*
+   * A gain, illuminated: red leather in a frame of old gold, a fine gilt rule inside with a lozenge
+   * at each corner, as in the margins of an old book.
+   */
+  .banner {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 14px;
+    box-sizing: border-box;
+    max-width: 100%;
+    padding: 14px 30px 14px 14px;
+    border: 4px solid transparent;
+    border-radius: 18px;
+    background:
+      var(--lx-matter-leather) 0 0 / var(--lx-matter-size) padding-box,
+      radial-gradient(
+        ellipse 90% 140% at 30% 20%,
+        var(--lx-gain-center) 0%,
+        var(--lx-gain-middle) 60%,
+        var(--lx-gain-edge) 100%
+      )
+      padding-box,
+      var(--lx-old-gold) border-box;
+    box-shadow:
+      0 0 0 2.5px var(--lx-toy-outline),
+      0 6px 0 2.5px var(--lx-toy-outline),
+      0 14px 28px var(--lx-toy-drop);
+    text-align: left;
+  }
 }
 
 /* The gilt rule, with its four corner lozenges. */
@@ -52,62 +56,64 @@
   pointer-events: none;
 }
 
-/* The reward in a round of cream paper, set in the leather. */
-.medallion {
-  position: relative;
-  z-index: 1;
-  display: grid;
-  flex-shrink: 0;
-  place-items: center;
-  width: 54px;
-  height: 54px;
-  border: 2.5px solid var(--lx-toy-outline);
-  border-radius: 50%;
-  background: radial-gradient(
-    circle at 40% 30%,
-    var(--lx-toy-paper-top),
-    var(--lx-toy-paper-bottom)
-  );
-  box-shadow:
-    0 0 0 3px var(--lx-lettering-kicker),
-    0 3px 0 3px var(--lx-toy-outline);
-}
+@layer sets {
+  /* The reward in a round of cream paper, set in the leather. */
+  .medallion {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    flex-shrink: 0;
+    place-items: center;
+    width: 54px;
+    height: 54px;
+    border: 2.5px solid var(--lx-toy-outline);
+    border-radius: 50%;
+    background: radial-gradient(
+      circle at 40% 30%,
+      var(--lx-toy-paper-top),
+      var(--lx-toy-paper-bottom)
+    );
+    box-shadow:
+      0 0 0 3px var(--lx-lettering-kicker),
+      0 3px 0 3px var(--lx-toy-outline);
+  }
 
-.words {
-  position: relative;
-  z-index: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  min-width: 0;
-}
+  .words {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+  }
 
-.title {
-  color: var(--lx-lettering-fill);
-  font-family: var(--font-display), Georgia, serif;
-  font-size: var(--lx-size-title, 24px);
-  font-weight: 900;
-  line-height: 1.1;
-  -webkit-text-stroke: var(--lx-lettering-width) var(--lx-lettering-outline);
-  paint-order: stroke fill;
-  text-shadow: 0 var(--lx-lettering-drop) 0 var(--lx-lettering-outline);
-}
+  .title {
+    color: var(--lx-lettering-fill);
+    font-family: var(--font-display), Georgia, serif;
+    font-size: var(--lx-size-title, 24px);
+    font-weight: 900;
+    line-height: 1.1;
+    -webkit-text-stroke: var(--lx-lettering-width) var(--lx-lettering-outline);
+    paint-order: stroke fill;
+    text-shadow: 0 var(--lx-lettering-drop) 0 var(--lx-lettering-outline);
+  }
 
-.note {
-  font-family: var(--font-ui), system-ui, sans-serif;
-  font-size: var(--lx-size-small);
-  font-weight: 800;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--lx-lettering-kicker);
-}
+  .note {
+    font-family: var(--font-ui), system-ui, sans-serif;
+    font-size: var(--lx-size-small);
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--lx-lettering-kicker);
+  }
 
-/* Within a panel: the same banner, a size down. */
-.small {
-  gap: 10px;
-  padding: 9px 22px 9px 9px;
-  border-width: 3px;
-  border-radius: 15px;
+  /* Within a panel: the same banner, a size down. */
+  .small {
+    gap: 10px;
+    padding: 9px 22px 9px 9px;
+    border-width: 3px;
+    border-radius: 15px;
+  }
 }
 
 .small .medallion {
@@ -123,12 +129,14 @@
   font-size: var(--lx-size-caption);
 }
 
-@media (max-width: 759px) {
-  .banner {
-    padding-right: 22px;
-  }
+@layer sets {
+  @media (max-width: 759px) {
+    .banner {
+      padding-right: 22px;
+    }
 
-  .title {
-    font-size: var(--lx-size-title-small);
+    .title {
+      font-size: var(--lx-size-title-small);
+    }
   }
 }

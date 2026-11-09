@@ -1,15 +1,19 @@
-/*
- * Light layers laid over a card face. Their geometry copies card.module.css (frame of 7 units,
- * corners of 16 and 10, gem chip of 32 at 21 × 17): change both together.
- *
- * The light comes from four inherited variables, registered in globals.css so that the idle drift
- * can animate them; `useHoloLight` writes them on an ancestor and marks it `data-holo="live"`.
- */
-.holo {
-  position: relative;
-  width: calc(300 * var(--u));
-  height: calc(420 * var(--u));
-  animation: drift 7s ease-in-out infinite;
+@layer reset, toy, ui, pieces, sets;
+
+@layer sets {
+  /*
+   * Light layers laid over a card face. Their geometry copies card.module.css (frame of 7 units,
+   * corners of 16 and 10, gem chip of 32 at 21 × 17): change both together.
+   *
+   * The light comes from four inherited variables, registered in globals.css so that the idle drift
+   * can animate them; `useHoloLight` writes them on an ancestor and marks it `data-holo="live"`.
+   */
+  .holo {
+    position: relative;
+    width: calc(300 * var(--u));
+    height: calc(420 * var(--u));
+    animation: drift 7s ease-in-out infinite;
+  }
 }
 
 /* Under a finger or a tilted phone, the light comes from there and the drift stops. */
@@ -17,185 +21,187 @@
   animation: none;
 }
 
-.tilt {
-  position: relative;
-  width: 100%;
-  height: 100%;
-  border-radius: calc(16 * var(--u));
-  transform: perspective(900px) rotateX(var(--holo-rx)) rotateY(var(--holo-ry));
-  transition: transform 0.1s linear;
-  will-change: transform;
-}
+@layer sets {
+  .tilt {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    border-radius: calc(16 * var(--u));
+    transform: perspective(900px) rotateX(var(--holo-rx)) rotateY(var(--holo-ry));
+    transition: transform 0.1s linear;
+    will-change: transform;
+  }
 
-.glare,
-.glareSoft,
-.gem,
-.frame,
-.glitter,
-.rainbow,
-.sweep {
-  position: absolute;
-  inset: 0;
-  border-radius: calc(16 * var(--u));
-  pointer-events: none;
-}
+  .glare,
+  .glareSoft,
+  .gem,
+  .frame,
+  .glitter,
+  .rainbow,
+  .sweep {
+    position: absolute;
+    inset: 0;
+    border-radius: calc(16 * var(--u));
+    pointer-events: none;
+  }
 
-/* --- Light patch following the finger ------------------------------------------------- */
+  /* --- Light patch following the finger ------------------------------------------------- */
 
-.glare,
-.glareSoft {
-  background: radial-gradient(
-    farthest-corner circle at var(--holo-x) var(--holo-y),
-    rgba(255, 255, 255, 0.85) 0%,
-    rgba(255, 255, 255, 0.3) 20%,
-    rgba(0, 0, 0, 0) 45%,
-    rgba(0, 0, 0, 0.28) 90%
-  );
-  mix-blend-mode: overlay;
-}
+  .glare,
+  .glareSoft {
+    background: radial-gradient(
+      farthest-corner circle at var(--holo-x) var(--holo-y),
+      rgba(255, 255, 255, 0.85) 0%,
+      rgba(255, 255, 255, 0.3) 20%,
+      rgba(0, 0, 0, 0) 45%,
+      rgba(0, 0, 0, 0.28) 90%
+    );
+    mix-blend-mode: overlay;
+  }
 
-.glareSoft {
-  opacity: 0.5;
-}
+  .glareSoft {
+    opacity: 0.5;
+  }
 
-/* --- Glint on the rarity gem (Rare up) ------------------------------------------------- */
+  /* --- Glint on the rarity gem (Rare up) ------------------------------------------------- */
 
-.gem {
-  inset: auto;
-  left: calc(21 * var(--u));
-  top: calc(17 * var(--u));
-  width: calc(32 * var(--u));
-  height: calc(32 * var(--u));
-  border-radius: 50%;
-  background:
-    linear-gradient(
+  .gem {
+    inset: auto;
+    left: calc(21 * var(--u));
+    top: calc(17 * var(--u));
+    width: calc(32 * var(--u));
+    height: calc(32 * var(--u));
+    border-radius: 50%;
+    background:
+      linear-gradient(
+        115deg,
+        transparent 30%,
+        rgba(255, 255, 255, 0.95) 48%,
+        rgba(255, 255, 255, 0.2) 55%,
+        transparent 70%
+      )
+      var(--holo-x) var(--holo-y) / 300% 300%;
+    mix-blend-mode: overlay;
+  }
+
+  /* --- Foil on the frame (Précieux up) --------------------------------------------------- */
+
+  .frame {
+    box-sizing: border-box;
+    padding: calc(7 * var(--u));
+    background-size: 300% 300%;
+    background-position: var(--holo-x) var(--holo-y);
+    -webkit-mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask:
+      linear-gradient(#000 0 0) content-box exclude,
+      linear-gradient(#000 0 0);
+  }
+
+  .frame-cobalt {
+    background-image: repeating-linear-gradient(
       115deg,
-      transparent 30%,
-      rgba(255, 255, 255, 0.95) 48%,
-      rgba(255, 255, 255, 0.2) 55%,
-      transparent 70%
-    )
-    var(--holo-x) var(--holo-y) / 300% 300%;
-  mix-blend-mode: overlay;
-}
+      rgba(255, 255, 255, 0) 0%,
+      rgba(225, 235, 255, 1) 4%,
+      rgba(255, 255, 255, 0) 9%
+    );
+    mix-blend-mode: hard-light;
+    opacity: 0.8;
+  }
 
-/* --- Foil on the frame (Précieux up) --------------------------------------------------- */
-
-.frame {
-  box-sizing: border-box;
-  padding: calc(7 * var(--u));
-  background-size: 300% 300%;
-  background-position: var(--holo-x) var(--holo-y);
-  -webkit-mask:
-    linear-gradient(#000 0 0) content-box,
-    linear-gradient(#000 0 0);
-  -webkit-mask-composite: xor;
-  mask:
-    linear-gradient(#000 0 0) content-box exclude,
-    linear-gradient(#000 0 0);
-}
-
-.frame-cobalt {
-  background-image: repeating-linear-gradient(
-    115deg,
-    rgba(255, 255, 255, 0) 0%,
-    rgba(225, 235, 255, 1) 4%,
-    rgba(255, 255, 255, 0) 9%
-  );
-  mix-blend-mode: hard-light;
-  opacity: 0.8;
-}
-
-.frame-gold {
-  background-image: linear-gradient(
-    115deg,
-    rgba(255, 255, 255, 0) 30%,
-    rgba(255, 246, 208, 1) 45%,
-    rgba(255, 210, 77, 0.6) 52%,
-    rgba(255, 255, 255, 0) 66%
-  );
-  mix-blend-mode: hard-light;
-  opacity: 0.85;
-}
-
-.frame-iridescent {
-  background-image: linear-gradient(
-    115deg,
-    #ff6fb5,
-    #ffd24d,
-    #7cf08a,
-    #4fd8ff,
-    #a77bff,
-    #ff6fb5,
-    #ffd24d,
-    #7cf08a
-  );
-  mix-blend-mode: hard-light;
-  opacity: 0.7;
-}
-
-/* --- Glitter on the paper, lit where the light falls (Épique up) ------------------------ */
-
-.glitter {
-  inset: calc(7 * var(--u));
-  border-radius: calc(10 * var(--u));
-  background-size:
-    calc(23 * var(--u)) calc(19 * var(--u)),
-    calc(13 * var(--u)) calc(17 * var(--u));
-  background-position:
-    0 0,
-    calc(6 * var(--u)) calc(9 * var(--u));
-  -webkit-mask-image: radial-gradient(
-    circle at var(--holo-x) var(--holo-y),
-    #000 0%,
-    transparent 42%
-  );
-  mask-image: radial-gradient(circle at var(--holo-x) var(--holo-y), #000 0%, transparent 42%);
-  mix-blend-mode: screen;
-}
-
-.glitter-gold {
-  background-image:
-    radial-gradient(circle, #ffe9a8 0 calc(0.9 * var(--u)), transparent calc(1.5 * var(--u))),
-    radial-gradient(circle, #ffd24d 0 calc(0.6 * var(--u)), transparent calc(1.1 * var(--u)));
-}
-
-.glitter-rainbow {
-  background-image:
-    radial-gradient(circle, #ffffff 0 calc(0.9 * var(--u)), transparent calc(1.5 * var(--u))),
-    radial-gradient(circle, #bfefff 0 calc(0.6 * var(--u)), transparent calc(1.1 * var(--u)));
-}
-
-/* --- Rainbow over the whole card (Légendaire) ------------------------------------------- */
-
-.rainbow {
-  background:
-    linear-gradient(
+  .frame-gold {
+    background-image: linear-gradient(
       115deg,
-      transparent 10%,
-      rgba(255, 111, 181, 0.7) 25%,
-      rgba(255, 210, 77, 0.7) 33%,
-      rgba(124, 240, 138, 0.7) 41%,
-      rgba(79, 216, 255, 0.7) 49%,
-      rgba(167, 123, 255, 0.7) 57%,
-      rgba(255, 111, 181, 0.7) 65%,
-      transparent 80%
-    )
-    var(--holo-x) var(--holo-y) / 260% 260%;
-  mix-blend-mode: color-dodge;
-  opacity: 0.38;
-}
+      rgba(255, 255, 255, 0) 30%,
+      rgba(255, 246, 208, 1) 45%,
+      rgba(255, 210, 77, 0.6) 52%,
+      rgba(255, 255, 255, 0) 66%
+    );
+    mix-blend-mode: hard-light;
+    opacity: 0.85;
+  }
 
-.sweep {
-  background:
-    linear-gradient(115deg, transparent 42%, rgba(255, 255, 255, 0.7) 50%, transparent 58%) 0 0 /
-    300% 100% no-repeat;
-  mix-blend-mode: overlay;
-  animation: sweep 5s ease-in-out infinite;
+  .frame-iridescent {
+    background-image: linear-gradient(
+      115deg,
+      #ff6fb5,
+      #ffd24d,
+      #7cf08a,
+      #4fd8ff,
+      #a77bff,
+      #ff6fb5,
+      #ffd24d,
+      #7cf08a
+    );
+    mix-blend-mode: hard-light;
+    opacity: 0.7;
+  }
+
+  /* --- Glitter on the paper, lit where the light falls (Épique up) ------------------------ */
+
+  .glitter {
+    inset: calc(7 * var(--u));
+    border-radius: calc(10 * var(--u));
+    background-size:
+      calc(23 * var(--u)) calc(19 * var(--u)),
+      calc(13 * var(--u)) calc(17 * var(--u));
+    background-position:
+      0 0,
+      calc(6 * var(--u)) calc(9 * var(--u));
+    -webkit-mask-image: radial-gradient(
+      circle at var(--holo-x) var(--holo-y),
+      #000 0%,
+      transparent 42%
+    );
+    mask-image: radial-gradient(circle at var(--holo-x) var(--holo-y), #000 0%, transparent 42%);
+    mix-blend-mode: screen;
+  }
+
+  .glitter-gold {
+    background-image:
+      radial-gradient(circle, #ffe9a8 0 calc(0.9 * var(--u)), transparent calc(1.5 * var(--u))),
+      radial-gradient(circle, #ffd24d 0 calc(0.6 * var(--u)), transparent calc(1.1 * var(--u)));
+  }
+
+  .glitter-rainbow {
+    background-image:
+      radial-gradient(circle, #ffffff 0 calc(0.9 * var(--u)), transparent calc(1.5 * var(--u))),
+      radial-gradient(circle, #bfefff 0 calc(0.6 * var(--u)), transparent calc(1.1 * var(--u)));
+  }
+
+  /* --- Rainbow over the whole card (Légendaire) ------------------------------------------- */
+
+  .rainbow {
+    background:
+      linear-gradient(
+        115deg,
+        transparent 10%,
+        rgba(255, 111, 181, 0.7) 25%,
+        rgba(255, 210, 77, 0.7) 33%,
+        rgba(124, 240, 138, 0.7) 41%,
+        rgba(79, 216, 255, 0.7) 49%,
+        rgba(167, 123, 255, 0.7) 57%,
+        rgba(255, 111, 181, 0.7) 65%,
+        transparent 80%
+      )
+      var(--holo-x) var(--holo-y) / 260% 260%;
+    mix-blend-mode: color-dodge;
+    opacity: 0.38;
+  }
+
+  .sweep {
+    background:
+      linear-gradient(115deg, transparent 42%, rgba(255, 255, 255, 0.7) 50%, transparent 58%) 0 0 /
+      300% 100% no-repeat;
+    mix-blend-mode: overlay;
+    animation: sweep 5s ease-in-out infinite;
+  }
 }
 
 /* The light alone drifts: a card left turning would keep its text blurred, sharp only as it
-   passes flat. */
+  passes flat. */
 @keyframes drift {
   0%,
   100% {
@@ -218,14 +224,16 @@
   }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .holo,
-  .sweep {
-    animation: none;
-  }
+@layer sets {
+  @media (prefers-reduced-motion: reduce) {
+    .holo,
+    .sweep {
+      animation: none;
+    }
 
-  .tilt {
-    transform: none;
-    transition: none;
+    .tilt {
+      transform: none;
+      transition: none;
+    }
   }
 }

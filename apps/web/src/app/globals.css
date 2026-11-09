@@ -35,13 +35,24 @@ body::before {
   pointer-events: none;
 }
 
-a {
-  color: inherit;
-}
+/*
+ * Cascade layers, lowest first. A rule outside any layer beats every layered one, wherever its file
+ * loads: the production build orders stylesheets on its own, and a shared piece's base rule could
+ * land after the screen's rule that restyles the piece. So the base rules of shared pieces (one
+ * class, nothing more) sit in layers, each above the pieces it is built from, and a screen's own
+ * rules stay outside. The rules below are in the lowest layer so that a piece still overrides them.
+ */
+@layer reset, toy, ui, pieces, sets;
 
-:focus-visible {
-  outline: 3px solid var(--lx-color-focus);
-  outline-offset: 3px;
+@layer reset {
+  a {
+    color: inherit;
+  }
+
+  :focus-visible {
+    outline: 3px solid var(--lx-color-focus);
+    outline-offset: 3px;
+  }
 }
 
 /*

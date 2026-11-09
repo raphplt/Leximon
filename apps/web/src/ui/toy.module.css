@@ -1,34 +1,38 @@
-/*
- * The toys of « La Bibliothèque »: a lit top, a darker bottom, a lip inside, a thickness under it
- * and a dark outline. Pressed, a toy sinks by its thickness; released, it springs back (toy.tsx).
- */
+@layer reset, toy, ui, pieces, sets;
 
-.toy {
-  --depth: var(--lx-toy-edge-small);
-  --lip: var(--lx-toy-lip-small);
-  position: relative;
-  display: inline-grid;
-  place-items: center;
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-  border: var(--lx-toy-outline-width) solid var(--lx-toy-outline);
-  border-radius: var(--lx-toy-radius-small);
-  background: linear-gradient(180deg, var(--top) 0 47%, var(--bottom) 53% 100%);
-  box-shadow:
-    inset 0 calc(-1 * var(--lip)) 0 var(--edge),
-    inset 0 2px 0 var(--lx-toy-sheen),
-    0 var(--depth) 0 var(--lx-toy-outline),
-    0 calc(var(--depth) + 3px) 10px var(--lx-toy-drop);
-  color: var(--lx-lettering-fill);
-  font: inherit;
-  text-decoration: none;
-  -webkit-tap-highlight-color: transparent;
-  touch-action: manipulation;
-  transition:
-    translate var(--lx-press-sink) ease-out,
-    box-shadow var(--lx-press-sink) ease-out,
-    filter 120ms ease-out;
+@layer toy {
+  /*
+   * The toys of « La Bibliothèque »: a lit top, a darker bottom, a lip inside, a thickness under it
+   * and a dark outline. Pressed, a toy sinks by its thickness; released, it springs back (toy.tsx).
+   */
+
+  .toy {
+    --depth: var(--lx-toy-edge-small);
+    --lip: var(--lx-toy-lip-small);
+    position: relative;
+    display: inline-grid;
+    place-items: center;
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    border: var(--lx-toy-outline-width) solid var(--lx-toy-outline);
+    border-radius: var(--lx-toy-radius-small);
+    background: linear-gradient(180deg, var(--top) 0 47%, var(--bottom) 53% 100%);
+    box-shadow:
+      inset 0 calc(-1 * var(--lip)) 0 var(--edge),
+      inset 0 2px 0 var(--lx-toy-sheen),
+      0 var(--depth) 0 var(--lx-toy-outline),
+      0 calc(var(--depth) + 3px) 10px var(--lx-toy-drop);
+    color: var(--lx-lettering-fill);
+    font: inherit;
+    text-decoration: none;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+    transition:
+      translate var(--lx-press-sink) ease-out,
+      box-shadow var(--lx-press-sink) ease-out,
+      filter 120ms ease-out;
+  }
 }
 
 button.toy,
@@ -68,12 +72,14 @@ a.toy {
   outline-offset: calc(var(--depth) + 2px);
 }
 
-/* --- Sizes and shapes --- */
+@layer toy {
+  /* --- Sizes and shapes --- */
 
-.large {
-  --depth: var(--lx-toy-edge-large);
-  --lip: var(--lx-toy-lip-large);
-  border-radius: var(--lx-toy-radius-large);
+  .large {
+    --depth: var(--lx-toy-edge-large);
+    --lip: var(--lx-toy-lip-large);
+    border-radius: var(--lx-toy-radius-large);
+  }
 }
 
 /* A large toy carries a line of light along its top. */
@@ -87,8 +93,10 @@ a.toy {
   pointer-events: none;
 }
 
-.tile {
-  border-radius: var(--lx-toy-radius-tile);
+@layer toy {
+  .tile {
+    border-radius: var(--lx-toy-radius-tile);
+  }
 }
 
 /* A fine gilt rule inside a tile. */
@@ -101,85 +109,87 @@ a.toy {
   pointer-events: none;
 }
 
-.tag {
-  --depth: 2px;
-  --lip: 2px;
-  border-radius: var(--lx-toy-radius-tag);
-}
+@layer toy {
+  .tag {
+    --depth: 2px;
+    --lip: 2px;
+    border-radius: var(--lx-toy-radius-tag);
+  }
 
-.round {
-  border-radius: 50%;
-}
+  .round {
+    border-radius: 50%;
+  }
 
-/* --- Matters --- */
+  /* --- Matters --- */
 
-.gold {
-  --top: var(--lx-toy-gold-top);
-  --bottom: var(--lx-toy-gold-bottom);
-  --edge: var(--lx-toy-gold-edge);
-}
+  .gold {
+    --top: var(--lx-toy-gold-top);
+    --bottom: var(--lx-toy-gold-bottom);
+    --edge: var(--lx-toy-gold-edge);
+  }
 
-.red {
-  --top: var(--lx-toy-red-top);
-  --bottom: var(--lx-toy-red-bottom);
-  --edge: var(--lx-toy-red-edge);
-}
+  .red {
+    --top: var(--lx-toy-red-top);
+    --bottom: var(--lx-toy-red-bottom);
+    --edge: var(--lx-toy-red-edge);
+  }
 
-.green {
-  --top: var(--lx-toy-green-top);
-  --bottom: var(--lx-toy-green-bottom);
-  --edge: var(--lx-toy-green-edge);
-}
+  .green {
+    --top: var(--lx-toy-green-top);
+    --bottom: var(--lx-toy-green-bottom);
+    --edge: var(--lx-toy-green-edge);
+  }
 
-.blue {
-  --top: var(--lx-toy-blue-top);
-  --bottom: var(--lx-toy-blue-bottom);
-  --edge: var(--lx-toy-blue-edge);
-}
+  .blue {
+    --top: var(--lx-toy-blue-top);
+    --bottom: var(--lx-toy-blue-bottom);
+    --edge: var(--lx-toy-blue-edge);
+  }
 
-.paper {
-  --top: var(--lx-toy-paper-top);
-  --bottom: var(--lx-toy-paper-bottom);
-  --edge: var(--lx-toy-paper-edge);
-}
+  .paper {
+    --top: var(--lx-toy-paper-top);
+    --bottom: var(--lx-toy-paper-bottom);
+    --edge: var(--lx-toy-paper-edge);
+  }
 
-.locked {
-  --top: var(--lx-toy-locked-top);
-  --bottom: var(--lx-toy-locked-bottom);
-  --edge: var(--lx-toy-locked-edge);
-}
+  .locked {
+    --top: var(--lx-toy-locked-top);
+    --bottom: var(--lx-toy-locked-bottom);
+    --edge: var(--lx-toy-locked-edge);
+  }
 
-.alert {
-  --top: var(--lx-toy-alert-top);
-  --bottom: var(--lx-toy-alert-bottom);
-  --edge: var(--lx-toy-alert-edge);
-}
+  .alert {
+    --top: var(--lx-toy-alert-top);
+    --bottom: var(--lx-toy-alert-bottom);
+    --edge: var(--lx-toy-alert-edge);
+  }
 
-.dark {
-  --top: var(--lx-toy-dark-top);
-  --bottom: var(--lx-toy-dark-bottom);
-  --edge: var(--lx-toy-dark-edge);
-}
+  .dark {
+    --top: var(--lx-toy-dark-top);
+    --bottom: var(--lx-toy-dark-bottom);
+    --edge: var(--lx-toy-dark-edge);
+  }
 
-/* --- Lettering: cream, outlined in the dark of the toys, with a short drop --- */
+  /* --- Lettering: cream, outlined in the dark of the toys, with a short drop --- */
 
-.lettering {
-  color: var(--lx-lettering-fill);
-  font-family: var(--font-display), Georgia, serif;
-  font-weight: 900;
-  -webkit-text-stroke: var(--lx-lettering-width) var(--lx-lettering-outline);
-  paint-order: stroke fill;
-  text-shadow: 0 var(--lx-lettering-drop) 0 var(--lx-lettering-outline);
-}
+  .lettering {
+    color: var(--lx-lettering-fill);
+    font-family: var(--font-display), Georgia, serif;
+    font-weight: 900;
+    -webkit-text-stroke: var(--lx-lettering-width) var(--lx-lettering-outline);
+    paint-order: stroke fill;
+    text-shadow: 0 var(--lx-lettering-drop) 0 var(--lx-lettering-outline);
+  }
 
-/* A short title above a larger one, in the gilt of the frame. */
-.kicker {
-  color: var(--lx-lettering-kicker);
-  font-family: var(--font-display), Georgia, serif;
-  font-size: var(--lx-size-body);
-  font-weight: 800;
-  line-height: 1.1;
-  text-shadow: 0 1px 0 var(--lx-color-shade);
+  /* A short title above a larger one, in the gilt of the frame. */
+  .kicker {
+    color: var(--lx-lettering-kicker);
+    font-family: var(--font-display), Georgia, serif;
+    font-size: var(--lx-size-body);
+    font-weight: 800;
+    line-height: 1.1;
+    text-shadow: 0 1px 0 var(--lx-color-shade);
+  }
 }
 
 /* Gilt on cream does not read: on paper, the kicker takes the paper's ink. */
@@ -188,39 +198,41 @@ a.toy {
   text-shadow: none;
 }
 
-.icon {
-  display: block;
-  flex: none;
-  overflow: visible;
-}
+@layer toy {
+  .icon {
+    display: block;
+    flex: none;
+    overflow: visible;
+  }
 
-/* --- Paper: what is read lies on a cream leaf with a thickness of its own --- */
+  /* --- Paper: what is read lies on a cream leaf with a thickness of its own --- */
 
-.leaf {
-  border: var(--lx-toy-outline-width) solid var(--lx-toy-outline);
-  border-radius: var(--lx-toy-radius-tile);
-  background:
-    var(--lx-matter-paper) 0 0 / var(--lx-matter-size),
-    var(--lx-color-paper);
-  box-shadow:
-    inset 0 -4px 0 var(--lx-toy-paper-bottom),
-    0 4px 0 var(--lx-toy-outline),
-    0 10px 20px var(--lx-toy-drop);
-  color: var(--lx-color-paper-ink);
-  font-family: var(--font-text), Georgia, serif;
-}
+  .leaf {
+    border: var(--lx-toy-outline-width) solid var(--lx-toy-outline);
+    border-radius: var(--lx-toy-radius-tile);
+    background:
+      var(--lx-matter-paper) 0 0 / var(--lx-matter-size),
+      var(--lx-color-paper);
+    box-shadow:
+      inset 0 -4px 0 var(--lx-toy-paper-bottom),
+      0 4px 0 var(--lx-toy-outline),
+      0 10px 20px var(--lx-toy-drop);
+    color: var(--lx-color-paper-ink);
+    font-family: var(--font-text), Georgia, serif;
+  }
 
-/* --- A lettrine inside a gold tile --- */
+  /* --- A lettrine inside a gold tile --- */
 
-.lettrine {
-  position: absolute;
-  overflow: hidden;
-  box-sizing: border-box;
-  /* Set into the gold: shaded under its upper rim, caught by the light along the lower one. */
-  box-shadow:
-    inset 0 2px 3px color-mix(in srgb, var(--lx-toy-outline) 70%, transparent),
-    inset 0 -1px 0 color-mix(in srgb, var(--lx-toy-sheen) 30%, transparent);
-  pointer-events: none;
+  .lettrine {
+    position: absolute;
+    overflow: hidden;
+    box-sizing: border-box;
+    /* Set into the gold: shaded under its upper rim, caught by the light along the lower one. */
+    box-shadow:
+      inset 0 2px 3px color-mix(in srgb, var(--lx-toy-outline) 70%, transparent),
+      inset 0 -1px 0 color-mix(in srgb, var(--lx-toy-sheen) 30%, transparent);
+    pointer-events: none;
+  }
 }
 
 .lettrine > svg {
@@ -232,11 +244,13 @@ a.toy {
   display: none;
 }
 
-/* The icon sits on the ground, a little above the tile's lip. */
-.lettrineIcon {
-  position: relative;
-  z-index: 1;
-  display: grid;
-  translate: 0 calc(var(--lip) / -2);
-  filter: drop-shadow(0 1.5px 0 color-mix(in srgb, var(--lx-toy-outline) 70%, transparent));
+@layer toy {
+  /* The icon sits on the ground, a little above the tile's lip. */
+  .lettrineIcon {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    translate: 0 calc(var(--lip) / -2);
+    filter: drop-shadow(0 1.5px 0 color-mix(in srgb, var(--lx-toy-outline) 70%, transparent));
+  }
 }

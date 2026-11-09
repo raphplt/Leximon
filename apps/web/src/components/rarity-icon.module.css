@@ -1,34 +1,38 @@
-.icon {
-  display: block;
-  flex-shrink: 0;
-}
+@layer reset, toy, ui, pieces, sets;
 
-.name {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.45em;
-  font-family: var(--font-bricolage), sans-serif;
-  font-weight: 700;
-  white-space: nowrap;
-}
+@layer pieces {
+  .icon {
+    display: block;
+    flex-shrink: 0;
+  }
 
-/* Sized from the text: 1.6em round, the gem at 1.1em inside. */
-.chip {
-  display: inline-grid;
-  place-items: center;
-  width: 1.6em;
-  height: 1.6em;
-  border-radius: 50%;
-  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.18);
-  font-size: 1em;
-}
+  .name {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45em;
+    font-family: var(--font-bricolage), sans-serif;
+    font-weight: 700;
+    white-space: nowrap;
+  }
 
-.ladder {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35em;
-  vertical-align: middle;
+  /* Sized from the text: 1.6em round, the gem at 1.1em inside. */
+  .chip {
+    display: inline-grid;
+    place-items: center;
+    width: 1.6em;
+    height: 1.6em;
+    border-radius: 50%;
+    box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.18);
+    font-size: 1em;
+  }
+
+  .ladder {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35em;
+    vertical-align: middle;
+  }
 }
 
 /* The thread the gems sit on. */
@@ -42,25 +46,27 @@
   background: rgba(255, 255, 255, 0.3);
 }
 
-.step,
-.stepOn {
-  position: relative;
-  display: inline-grid;
-  place-items: center;
-  width: 1.3em;
-  height: 1.3em;
-  border-radius: 50%;
-}
+@layer pieces {
+  .step,
+  .stepOn {
+    position: relative;
+    display: inline-grid;
+    place-items: center;
+    width: 1.3em;
+    height: 1.3em;
+    border-radius: 50%;
+  }
 
-.step {
-  filter: saturate(0.45);
-  opacity: 0.6;
-}
+  .step {
+    filter: saturate(0.45);
+    opacity: 0.6;
+  }
 
-.stepOn {
-  width: 1.6em;
-  height: 1.6em;
-  box-shadow:
-    0 0 0 2px var(--lx-color-page-ink),
-    0 0 12px rgba(255, 255, 255, 0.35);
+  .stepOn {
+    width: 1.6em;
+    height: 1.6em;
+    box-shadow:
+      0 0 0 2px var(--lx-color-page-ink),
+      0 0 12px rgba(255, 255, 255, 0.35);
+  }
 }

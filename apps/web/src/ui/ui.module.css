@@ -1,53 +1,57 @@
-/*
- * Base components of the interface, shared by every game screen, dressed for the reading room:
- * buttons, chips and tabs are toys that sink under the finger, a panel is a leaf of cream paper,
- * titles on the room take the outlined lettering. Each screen keeps its layout and only adds what
- * is its own.
- *
- * A screen with pieces of its own wears the same skin through `leaf` (a panel), `goldToy` and
- * `paperToy` (buttons), `lettered` (a title) and `paperField` (a field).
- */
+@layer reset, toy, ui, pieces, sets;
 
-/* --- Buttons --- */
+@layer ui {
+  /*
+   * Base components of the interface, shared by every game screen, dressed for the reading room:
+   * buttons, chips and tabs are toys that sink under the finger, a panel is a leaf of cream paper,
+   * titles on the room take the outlined lettering. Each screen keeps its layout and only adds what
+   * is its own.
+   *
+   * A screen with pieces of its own wears the same skin through `leaf` (a panel), `goldToy` and
+   * `paperToy` (buttons), `lettered` (a title) and `paperField` (a field).
+   */
 
-.primary,
-.secondary,
-.ghost,
-.round {
-  appearance: none;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--lx-s4);
-  margin: 0;
-  border: 0;
-  font: inherit;
-  text-decoration: none;
-  white-space: nowrap;
-  cursor: pointer;
-}
+  /* --- Buttons --- */
 
-/* Toys: a lit top, a darker bottom, the thickness under them, and they sink when pressed. */
-:is(.primary, .secondary, .round, .chip, .goldToy, .paperToy) {
-  --depth: var(--lx-toy-edge-small);
-  --lip: var(--lx-toy-lip-small);
-  --top: var(--lx-toy-paper-top);
-  --bottom: var(--lx-toy-paper-bottom);
-  --edge: var(--lx-toy-paper-edge);
-  border: var(--lx-toy-outline-width) solid var(--lx-toy-outline);
-  border-radius: var(--lx-toy-radius-small);
-  background: linear-gradient(180deg, var(--top) 0 47%, var(--bottom) 53% 100%);
-  box-shadow:
-    inset 0 calc(-1 * var(--lip)) 0 var(--edge),
-    inset 0 2px 0 var(--lx-toy-sheen),
-    0 var(--depth) 0 var(--lx-toy-outline),
-    0 calc(var(--depth) + 3px) 10px var(--lx-toy-drop);
-  color: var(--lx-color-paper-ink);
-  transform: none;
-  transition:
-    translate var(--lx-press-sink) ease-out,
-    box-shadow var(--lx-press-sink) ease-out,
-    filter 120ms ease-out;
+  .primary,
+  .secondary,
+  .ghost,
+  .round {
+    appearance: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--lx-s4);
+    margin: 0;
+    border: 0;
+    font: inherit;
+    text-decoration: none;
+    white-space: nowrap;
+    cursor: pointer;
+  }
+
+  /* Toys: a lit top, a darker bottom, the thickness under them, and they sink when pressed. */
+  :is(.primary, .secondary, .round, .chip, .goldToy, .paperToy) {
+    --depth: var(--lx-toy-edge-small);
+    --lip: var(--lx-toy-lip-small);
+    --top: var(--lx-toy-paper-top);
+    --bottom: var(--lx-toy-paper-bottom);
+    --edge: var(--lx-toy-paper-edge);
+    border: var(--lx-toy-outline-width) solid var(--lx-toy-outline);
+    border-radius: var(--lx-toy-radius-small);
+    background: linear-gradient(180deg, var(--top) 0 47%, var(--bottom) 53% 100%);
+    box-shadow:
+      inset 0 calc(-1 * var(--lip)) 0 var(--edge),
+      inset 0 2px 0 var(--lx-toy-sheen),
+      0 var(--depth) 0 var(--lx-toy-outline),
+      0 calc(var(--depth) + 3px) 10px var(--lx-toy-drop);
+    color: var(--lx-color-paper-ink);
+    transform: none;
+    transition:
+      translate var(--lx-press-sink) ease-out,
+      box-shadow var(--lx-press-sink) ease-out,
+      filter 120ms ease-out;
+  }
 }
 
 /* A toy keeps its colors under the pointer, whatever a screen's own hover says: it rises instead. */
@@ -79,20 +83,22 @@
     0 2px 4px var(--lx-toy-drop);
 }
 
-/* The main action: old gold, thicker, its words in the lettering. */
-:is(.primary, .goldToy) {
-  --depth: var(--lx-toy-edge-large);
-  --lip: var(--lx-toy-lip-large);
-  --top: var(--lx-toy-gold-top);
-  --bottom: var(--lx-toy-gold-bottom);
-  --edge: var(--lx-toy-gold-edge);
-  border-radius: var(--lx-toy-radius-large);
-  color: var(--lx-lettering-fill);
-  font-family: var(--font-display), Georgia, serif;
-  font-weight: 900;
-  -webkit-text-stroke: var(--lx-lettering-width) var(--lx-lettering-outline);
-  paint-order: stroke fill;
-  text-shadow: 0 var(--lx-lettering-drop) 0 var(--lx-lettering-outline);
+@layer ui {
+  /* The main action: old gold, thicker, its words in the lettering. */
+  :is(.primary, .goldToy) {
+    --depth: var(--lx-toy-edge-large);
+    --lip: var(--lx-toy-lip-large);
+    --top: var(--lx-toy-gold-top);
+    --bottom: var(--lx-toy-gold-bottom);
+    --edge: var(--lx-toy-gold-edge);
+    border-radius: var(--lx-toy-radius-large);
+    color: var(--lx-lettering-fill);
+    font-family: var(--font-display), Georgia, serif;
+    font-weight: 900;
+    -webkit-text-stroke: var(--lx-lettering-width) var(--lx-lettering-outline);
+    paint-order: stroke fill;
+    text-shadow: 0 var(--lx-lettering-drop) 0 var(--lx-lettering-outline);
+  }
 }
 
 /* A line icon has no outline of its own: white on gold, it vanished. It takes the lettering's ink. */
@@ -108,25 +114,29 @@
   translate: none;
 }
 
-:is(.secondary, .paperToy) {
-  font-family: var(--font-display), Georgia, serif;
-  font-weight: 800;
-}
+@layer ui {
+  :is(.secondary, .paperToy) {
+    font-family: var(--font-display), Georgia, serif;
+    font-weight: 800;
+  }
 
-.primary {
-  min-height: 52px;
-  padding: 0 26px;
-  font-size: var(--lx-size-body-large);
+  .primary {
+    min-height: 52px;
+    padding: 0 26px;
+    font-size: var(--lx-size-body-large);
+  }
 }
 
 .primary:disabled {
   cursor: default;
 }
 
-.secondary {
-  min-height: 48px;
-  padding: 0 22px;
-  font-size: var(--lx-size-body);
+@layer ui {
+  .secondary {
+    min-height: 48px;
+    padding: 0 22px;
+    font-size: var(--lx-size-body);
+  }
 }
 
 .secondary:disabled {
@@ -134,15 +144,17 @@
   cursor: default;
 }
 
-.ghost {
-  min-height: 44px;
-  padding: 0 var(--lx-s7);
-  border-radius: var(--lx-radius-pill);
-  background: none;
-  color: var(--lx-color-page-ink-muted);
-  font-family: var(--font-display), Georgia, serif;
-  font-weight: 700;
-  font-size: var(--lx-size-label);
+@layer ui {
+  .ghost {
+    min-height: 44px;
+    padding: 0 var(--lx-s7);
+    border-radius: var(--lx-radius-pill);
+    background: none;
+    color: var(--lx-color-page-ink-muted);
+    font-family: var(--font-display), Georgia, serif;
+    font-weight: 700;
+    font-size: var(--lx-size-label);
+  }
 }
 
 .ghost:hover {
@@ -150,47 +162,49 @@
   color: var(--lx-color-page-ink);
 }
 
-.small {
-  min-height: 42px;
-  padding: 0 var(--lx-s8);
-  font-size: var(--lx-size-label);
-}
+@layer ui {
+  .small {
+    min-height: 42px;
+    padding: 0 var(--lx-s8);
+    font-size: var(--lx-size-label);
+  }
 
-.wide {
-  box-sizing: border-box;
-  width: 100%;
-}
+  .wide {
+    box-sizing: border-box;
+    width: 100%;
+  }
 
-/* A round icon button: back, close, mail. */
-.round {
-  position: relative;
-  flex-shrink: 0;
-  width: 44px;
-  height: 44px;
-  padding: 0;
-  border-radius: 50%;
-}
+  /* A round icon button: back, close, mail. */
+  .round {
+    position: relative;
+    flex-shrink: 0;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    border-radius: 50%;
+  }
 
-/* --- Chips, badges --- */
+  /* --- Chips, badges --- */
 
-/* A chip is a small paper tag; the one chosen is in old gold. */
-.chip {
-  --depth: 3px;
-  --lip: 3px;
-  appearance: none;
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  min-height: 36px;
-  margin: 0;
-  padding: 0 15px;
-  border-radius: var(--lx-toy-radius-small);
-  font: inherit;
-  font-weight: 700;
-  font-size: var(--lx-size-label);
-  text-decoration: none;
-  white-space: nowrap;
+  /* A chip is a small paper tag; the one chosen is in old gold. */
+  .chip {
+    --depth: 3px;
+    --lip: 3px;
+    appearance: none;
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    min-height: 36px;
+    margin: 0;
+    padding: 0 15px;
+    border-radius: var(--lx-toy-radius-small);
+    font: inherit;
+    font-weight: 700;
+    font-size: var(--lx-size-label);
+    text-decoration: none;
+    white-space: nowrap;
+  }
 }
 
 button.chip,
@@ -208,34 +222,36 @@ a.chip {
   color: var(--lx-toy-outline);
 }
 
-.chipGold {
-  --top: var(--lx-toy-gold-top);
-  --bottom: var(--lx-toy-gold-bottom);
-  --edge: var(--lx-toy-gold-edge);
-  color: var(--lx-toy-outline);
-}
+@layer ui {
+  .chipGold {
+    --top: var(--lx-toy-gold-top);
+    --bottom: var(--lx-toy-gold-bottom);
+    --edge: var(--lx-toy-gold-edge);
+    color: var(--lx-toy-outline);
+  }
 
-.badge {
-  position: absolute;
-  top: -5px;
-  right: -5px;
-  display: grid;
-  place-items: center;
-  min-width: 22px;
-  height: 22px;
-  padding: 0 var(--lx-s3);
-  border: 2px solid var(--lx-toy-outline);
-  border-radius: var(--lx-radius-pill);
-  background: linear-gradient(
-    180deg,
-    var(--lx-toy-alert-top) 0 47%,
-    var(--lx-toy-alert-bottom) 53% 100%
-  );
-  color: var(--lx-color-ink-on-color);
-  font-size: var(--lx-size-caption);
-  font-weight: 800;
-  font-variant-numeric: tabular-nums;
-  box-shadow: 0 2px 0 var(--lx-toy-outline);
+  .badge {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    display: grid;
+    place-items: center;
+    min-width: 22px;
+    height: 22px;
+    padding: 0 var(--lx-s3);
+    border: 2px solid var(--lx-toy-outline);
+    border-radius: var(--lx-radius-pill);
+    background: linear-gradient(
+      180deg,
+      var(--lx-toy-alert-top) 0 47%,
+      var(--lx-toy-alert-bottom) 53% 100%
+    );
+    color: var(--lx-color-ink-on-color);
+    font-size: var(--lx-size-caption);
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+    box-shadow: 0 2px 0 var(--lx-toy-outline);
+  }
 }
 
 /* --- Surfaces --- */
@@ -273,42 +289,46 @@ a.chip {
   color: var(--lx-color-paper-ink);
 }
 
-/* A panel is a leaf of cream paper with a thickness of its own. */
-:is(.panel, .leaf) {
-  border: var(--lx-toy-outline-width) solid var(--lx-toy-outline);
-  border-radius: var(--lx-toy-radius-tile);
-  background:
-    var(--lx-matter-paper) 0 0 / var(--lx-matter-size),
-    var(--lx-color-paper);
-  box-shadow:
-    inset 0 -4px 0 var(--lx-toy-paper-bottom),
-    0 4px 0 var(--lx-toy-outline),
-    0 10px 20px var(--lx-toy-drop);
-  color: var(--lx-color-paper-ink);
-}
+@layer ui {
+  /* A panel is a leaf of cream paper with a thickness of its own. */
+  :is(.panel, .leaf) {
+    border: var(--lx-toy-outline-width) solid var(--lx-toy-outline);
+    border-radius: var(--lx-toy-radius-tile);
+    background:
+      var(--lx-matter-paper) 0 0 / var(--lx-matter-size),
+      var(--lx-color-paper);
+    box-shadow:
+      inset 0 -4px 0 var(--lx-toy-paper-bottom),
+      0 4px 0 var(--lx-toy-outline),
+      0 10px 20px var(--lx-toy-drop);
+    color: var(--lx-color-paper-ink);
+  }
 
-.kicker {
-  margin: 0;
-  font-family: var(--font-display), Georgia, serif;
-  font-size: var(--lx-size-body);
-  font-weight: 800;
-  color: var(--lx-lettering-kicker);
+  .kicker {
+    margin: 0;
+    font-family: var(--font-display), Georgia, serif;
+    font-size: var(--lx-size-body);
+    font-weight: 800;
+    color: var(--lx-lettering-kicker);
+  }
 }
 
 :is(.panel, .leaf, [data-paper]) .kicker {
   color: var(--lx-color-paper-ink-muted);
 }
 
-.display {
-  font-family: var(--font-display), Georgia, serif;
-}
+@layer ui {
+  .display {
+    font-family: var(--font-display), Georgia, serif;
+  }
 
-/* On the room, a title takes the outlined lettering; on paper, plain ink. */
-:is(.display, .lettered) {
-  font-weight: 900;
-  -webkit-text-stroke: var(--lx-lettering-width) var(--lx-lettering-outline);
-  paint-order: stroke fill;
-  text-shadow: 0 var(--lx-lettering-drop) 0 var(--lx-lettering-outline);
+  /* On the room, a title takes the outlined lettering; on paper, plain ink. */
+  :is(.display, .lettered) {
+    font-weight: 900;
+    -webkit-text-stroke: var(--lx-lettering-width) var(--lx-lettering-outline);
+    paint-order: stroke fill;
+    text-shadow: 0 var(--lx-lettering-drop) 0 var(--lx-lettering-outline);
+  }
 }
 
 :is(.panel, .leaf, [data-paper]) :is(.display, .lettered) {
@@ -316,59 +336,61 @@ a.chip {
   text-shadow: none;
 }
 
-/* --- XP bar and level badge --- */
+@layer ui {
+  /* --- XP bar and level badge --- */
 
-.bar {
-  position: relative;
-  display: block;
-  height: 16px;
-  border-radius: var(--lx-radius-pill);
-  background: var(--lx-color-well);
-  box-shadow: inset 0 2px 0 color-mix(in srgb, var(--lx-color-shade) 35%, transparent);
-  overflow: hidden;
-}
+  .bar {
+    position: relative;
+    display: block;
+    height: 16px;
+    border-radius: var(--lx-radius-pill);
+    background: var(--lx-color-well);
+    box-shadow: inset 0 2px 0 color-mix(in srgb, var(--lx-color-shade) 35%, transparent);
+    overflow: hidden;
+  }
 
-.barThin {
-  height: 9px;
-}
+  .barThin {
+    height: 9px;
+  }
 
-.barFill {
-  display: block;
-  height: 100%;
-  border-radius: var(--lx-radius-pill);
-  background:
-    repeating-linear-gradient(
-      115deg,
-      color-mix(in srgb, var(--lx-color-glint) 18%, transparent) 0 8px,
-      transparent 8px 16px
-    ),
-    linear-gradient(var(--lx-color-xp-light), var(--lx-color-xp-deep));
-  box-shadow: inset 0 -3px 0 color-mix(in srgb, var(--lx-color-shade) 15%, transparent);
-  transition: width 600ms cubic-bezier(0.2, 0.8, 0.2, 1);
-}
+  .barFill {
+    display: block;
+    height: 100%;
+    border-radius: var(--lx-radius-pill);
+    background:
+      repeating-linear-gradient(
+        115deg,
+        color-mix(in srgb, var(--lx-color-glint) 18%, transparent) 0 8px,
+        transparent 8px 16px
+      ),
+      linear-gradient(var(--lx-color-xp-light), var(--lx-color-xp-deep));
+    box-shadow: inset 0 -3px 0 color-mix(in srgb, var(--lx-color-shade) 15%, transparent);
+    transition: width 600ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
 
-.medal {
-  display: block;
-  flex-shrink: 0;
-  overflow: visible;
-}
+  .medal {
+    display: block;
+    flex-shrink: 0;
+    overflow: visible;
+  }
 
-.medalLabelled {
-  display: inline-flex;
-  flex-shrink: 0;
-  line-height: 0;
-}
+  .medalLabelled {
+    display: inline-flex;
+    flex-shrink: 0;
+    line-height: 0;
+  }
 
-.medalNumber {
-  font-family: var(--font-display), Georgia, serif;
-  font-weight: var(--lx-weight-display);
-  text-anchor: middle;
-}
+  .medalNumber {
+    font-family: var(--font-display), Georgia, serif;
+    font-weight: var(--lx-weight-display);
+    text-anchor: middle;
+  }
 
-/* --- A button calling to be pressed --- */
+  /* --- A button calling to be pressed --- */
 
-.glow {
-  animation: pulse 1.6s ease-in-out infinite;
+  .glow {
+    animation: pulse 1.6s ease-in-out infinite;
+  }
 }
 
 @keyframes pulse {
@@ -385,25 +407,27 @@ a.chip {
   }
 }
 
-/* --- Switch --- */
+@layer ui {
+  /* --- Switch --- */
 
-.switchRow {
-  appearance: none;
-  display: flex;
-  align-items: center;
-  gap: var(--lx-s6);
-  width: 100%;
-  min-height: 56px;
-  margin: 0;
-  padding: 0 var(--lx-s8);
-  border: 0;
-  border-bottom: 1px solid color-mix(in srgb, var(--lx-color-page-ink) 6%, transparent);
-  background: none;
-  color: inherit;
-  font: inherit;
-  text-align: left;
-  text-decoration: none;
-  cursor: pointer;
+  .switchRow {
+    appearance: none;
+    display: flex;
+    align-items: center;
+    gap: var(--lx-s6);
+    width: 100%;
+    min-height: 56px;
+    margin: 0;
+    padding: 0 var(--lx-s8);
+    border: 0;
+    border-bottom: 1px solid color-mix(in srgb, var(--lx-color-page-ink) 6%, transparent);
+    background: none;
+    color: inherit;
+    font: inherit;
+    text-align: left;
+    text-decoration: none;
+    cursor: pointer;
+  }
 }
 
 .switchRow:last-child {
@@ -414,29 +438,31 @@ a.chip {
   background: color-mix(in srgb, var(--lx-color-page-ink) 5%, transparent);
 }
 
-.switchLabel {
-  flex: 1;
-  font-weight: 700;
-  font-size: var(--lx-size-body);
-}
+@layer ui {
+  .switchLabel {
+    flex: 1;
+    font-weight: 700;
+    font-size: var(--lx-size-body);
+  }
 
-.switchSub {
-  display: block;
-  font-size: var(--lx-size-caption);
-  font-weight: 600;
-  color: var(--lx-color-page-ink-muted);
-}
+  .switchSub {
+    display: block;
+    font-size: var(--lx-size-caption);
+    font-weight: 600;
+    color: var(--lx-color-page-ink-muted);
+  }
 
-/* A switch is a groove of leather with a knob of paper; on, the groove turns green. */
-.track {
-  position: relative;
-  flex-shrink: 0;
-  width: 48px;
-  height: 28px;
-  border: 2px solid var(--lx-toy-outline);
-  border-radius: var(--lx-radius-pill);
-  background: var(--lx-toy-dark-bottom);
-  box-shadow: inset 0 3px 0 var(--lx-toy-drop);
+  /* A switch is a groove of leather with a knob of paper; on, the groove turns green. */
+  .track {
+    position: relative;
+    flex-shrink: 0;
+    width: 48px;
+    height: 28px;
+    border: 2px solid var(--lx-toy-outline);
+    border-radius: var(--lx-radius-pill);
+    background: var(--lx-toy-dark-bottom);
+    box-shadow: inset 0 3px 0 var(--lx-toy-drop);
+  }
 }
 
 .track::after {
@@ -469,29 +495,31 @@ a.chip {
   left: 21px;
 }
 
-.group {
-  margin-bottom: var(--lx-s9);
-}
+@layer ui {
+  .group {
+    margin-bottom: var(--lx-s9);
+  }
 
-.groupRows {
-  margin-top: var(--lx-s3);
-  border-radius: var(--lx-radius-xxl);
-  background: var(--lx-color-page);
-  overflow: hidden;
-}
+  .groupRows {
+    margin-top: var(--lx-s3);
+    border-radius: var(--lx-radius-xxl);
+    background: var(--lx-color-page);
+    overflow: hidden;
+  }
 
-/* --- Motion --- */
+  /* --- Motion --- */
 
-.enter {
-  animation: enter 200ms ease-out both;
-}
+  .enter {
+    animation: enter 200ms ease-out both;
+  }
 
-.pop {
-  animation: pop 420ms cubic-bezier(0.2, 0.9, 0.3, 1.2) both;
-}
+  .pop {
+    animation: pop 420ms cubic-bezier(0.2, 0.9, 0.3, 1.2) both;
+  }
 
-.float {
-  animation: float 4.6s ease-in-out infinite;
+  .float {
+    animation: float 4.6s ease-in-out infinite;
+  }
 }
 
 /* A plain fade: panels that slid in one after the other made the screen wobble. */
@@ -525,65 +553,69 @@ a.chip {
   }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .glow,
-  .enter,
-  .pop,
-  .float {
-    animation: none;
+@layer ui {
+  @media (prefers-reduced-motion: reduce) {
+    .glow,
+    .enter,
+    .pop,
+    .float {
+      animation: none;
+    }
   }
-}
 
-/* --- Text field --- */
+  /* --- Text field --- */
 
-/* A field is pressed into the paper. */
-:is(.field, .paperField) {
-  border: var(--lx-toy-outline-width) solid var(--lx-toy-outline);
-  border-radius: var(--lx-toy-radius-small);
-  background:
-    var(--lx-matter-paper) 0 0 / var(--lx-matter-size),
-    var(--lx-color-paper);
-  box-shadow: inset 0 3px 0 color-mix(in srgb, var(--lx-toy-paper-edge) 60%, transparent);
-  color: var(--lx-color-paper-ink);
-}
+  /* A field is pressed into the paper. */
+  :is(.field, .paperField) {
+    border: var(--lx-toy-outline-width) solid var(--lx-toy-outline);
+    border-radius: var(--lx-toy-radius-small);
+    background:
+      var(--lx-matter-paper) 0 0 / var(--lx-matter-size),
+      var(--lx-color-paper);
+    box-shadow: inset 0 3px 0 color-mix(in srgb, var(--lx-toy-paper-edge) 60%, transparent);
+    color: var(--lx-color-paper-ink);
+  }
 
-.field {
-  box-sizing: border-box;
-  width: 100%;
-  min-height: 52px;
-  padding: 0 var(--lx-s9);
-  font: inherit;
-  font-size: var(--lx-size-lead);
+  .field {
+    box-sizing: border-box;
+    width: 100%;
+    min-height: 52px;
+    padding: 0 var(--lx-s9);
+    font: inherit;
+    font-size: var(--lx-size-lead);
+  }
 }
 
 .field:focus-visible {
   outline: none;
 }
 
-/* --- Tabs and segments --- */
+@layer ui {
+  /* --- Tabs and segments --- */
 
-.tabs {
-  display: flex;
-  gap: var(--lx-s2);
-}
+  .tabs {
+    display: flex;
+    gap: var(--lx-s2);
+  }
 
-.tab,
-.segment {
-  appearance: none;
-  flex: 1;
-  min-height: 44px;
-  margin: 0;
-  padding: 0 var(--lx-s7);
-  border: 0;
-  border-radius: var(--lx-toy-radius-small);
-  background: none;
-  color: var(--lx-lettering-fill);
-  font: inherit;
-  font-family: var(--font-display), Georgia, serif;
-  font-weight: 700;
-  font-size: var(--lx-size-label);
-  white-space: nowrap;
-  cursor: pointer;
+  .tab,
+  .segment {
+    appearance: none;
+    flex: 1;
+    min-height: 44px;
+    margin: 0;
+    padding: 0 var(--lx-s7);
+    border: 0;
+    border-radius: var(--lx-toy-radius-small);
+    background: none;
+    color: var(--lx-lettering-fill);
+    font: inherit;
+    font-family: var(--font-display), Georgia, serif;
+    font-weight: 700;
+    font-size: var(--lx-size-label);
+    white-space: nowrap;
+    cursor: pointer;
+  }
 }
 
 /* The one chosen rises in gold. */
@@ -601,79 +633,83 @@ a.chip {
   color: var(--lx-toy-outline);
 }
 
-/* Segments sit in a groove of dark leather. */
-.segments {
-  display: flex;
-  gap: var(--lx-s2);
-  min-width: 0;
-  margin: 0;
-  padding: var(--lx-s2);
-  border: var(--lx-toy-outline-width) solid var(--lx-toy-outline);
-  border-radius: var(--lx-toy-radius-small);
-  background: var(--lx-toy-dark-bottom);
-  box-shadow: inset 0 3px 0 var(--lx-toy-drop);
-}
+@layer ui {
+  /* Segments sit in a groove of dark leather. */
+  .segments {
+    display: flex;
+    gap: var(--lx-s2);
+    min-width: 0;
+    margin: 0;
+    padding: var(--lx-s2);
+    border: var(--lx-toy-outline-width) solid var(--lx-toy-outline);
+    border-radius: var(--lx-toy-radius-small);
+    background: var(--lx-toy-dark-bottom);
+    box-shadow: inset 0 3px 0 var(--lx-toy-drop);
+  }
 
-/* --- Ruled lists and leaders --- */
+  /* --- Ruled lists and leaders --- */
 
-.ruled {
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
+  .ruled {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
 
-.ruledRow {
-  padding: var(--lx-s6) 0;
-  border-bottom: 1px solid color-mix(in srgb, var(--lx-color-page-ink) 9%, transparent);
+  .ruledRow {
+    padding: var(--lx-s6) 0;
+    border-bottom: 1px solid color-mix(in srgb, var(--lx-color-page-ink) 9%, transparent);
+  }
 }
 
 .ruledRow:last-child {
   border-bottom: 0;
 }
 
-.leaders {
-  display: flex;
-  flex-direction: column;
-  gap: var(--lx-s3);
-  margin: 0;
-}
+@layer ui {
+  .leaders {
+    display: flex;
+    flex-direction: column;
+    gap: var(--lx-s3);
+    margin: 0;
+  }
 
-.leader {
-  display: flex;
-  align-items: baseline;
-  gap: var(--lx-s3);
-}
+  .leader {
+    display: flex;
+    align-items: baseline;
+    gap: var(--lx-s3);
+  }
 
-.leaderLabel {
-  color: var(--lx-color-page-ink);
-}
+  .leaderLabel {
+    color: var(--lx-color-page-ink);
+  }
 
-.leaderDots {
-  flex: 1;
-  min-width: 24px;
-  border-bottom: 1px dotted var(--lx-color-page-ink-muted);
-}
+  .leaderDots {
+    flex: 1;
+    min-width: 24px;
+    border-bottom: 1px dotted var(--lx-color-page-ink-muted);
+  }
 
-.leaderValue {
-  margin: 0;
-  color: var(--lx-color-page-ink);
-  font-variant-numeric: tabular-nums;
-}
+  .leaderValue {
+    margin: 0;
+    color: var(--lx-color-page-ink);
+    font-variant-numeric: tabular-nums;
+  }
 
-/* --- Empty state --- */
+  /* --- Empty state --- */
 
-.empty {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--lx-s6);
-  padding: var(--lx-s16) var(--lx-s8);
-  text-align: center;
-}
+  .empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--lx-s6);
+    padding: var(--lx-s16) var(--lx-s8);
+    text-align: center;
+  }
 
-.emptyText {
-  margin: 0;
-  max-width: 34ch;
-  color: var(--lx-color-page-ink-muted);
-  font-size: var(--lx-size-body-large);
+  .emptyText {
+    margin: 0;
+    max-width: 34ch;
+    color: var(--lx-color-page-ink-muted);
+    font-size: var(--lx-size-body-large);
+  }
 }

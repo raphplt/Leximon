@@ -1,35 +1,39 @@
-.region {
-  position: fixed;
-  inset: auto auto 32px 50%;
-  margin: 0;
-  padding: 0;
-  border: 0;
-  background: none;
-  overflow: visible;
-  z-index: 80;
-  transform: translateX(-50%);
-  width: max-content;
-  max-width: calc(100% - 32px);
-  pointer-events: none;
-}
+@layer reset, toy, ui, pieces, sets;
 
-.toast {
-  margin: 0;
-  padding: 13px 22px;
-  border-radius: var(--lx-radius-pill);
-  background: var(--lx-color-page-ink);
-  color: var(--lx-color-page);
-  font-weight: 800;
-  font-size: var(--lx-size-body);
-  text-align: center;
-  box-shadow: var(--lx-shadow-floating);
-  animation: enter 300ms ease-out both;
-}
-
-/* Above the bottom tabs of the phone shell. */
-@media (max-width: 759px) {
+@layer pieces {
   .region {
-    inset: auto auto 100px 50%;
+    position: fixed;
+    inset: auto auto 32px 50%;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: none;
+    overflow: visible;
+    z-index: 80;
+    transform: translateX(-50%);
+    width: max-content;
+    max-width: calc(100% - 32px);
+    pointer-events: none;
+  }
+
+  .toast {
+    margin: 0;
+    padding: 13px 22px;
+    border-radius: var(--lx-radius-pill);
+    background: var(--lx-color-page-ink);
+    color: var(--lx-color-page);
+    font-weight: 800;
+    font-size: var(--lx-size-body);
+    text-align: center;
+    box-shadow: var(--lx-shadow-floating);
+    animation: enter 300ms ease-out both;
+  }
+
+  /* Above the bottom tabs of the phone shell. */
+  @media (max-width: 759px) {
+    .region {
+      inset: auto auto 100px 50%;
+    }
   }
 }
 
@@ -44,8 +48,10 @@
   }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .toast {
-    animation: none;
+@layer pieces {
+  @media (prefers-reduced-motion: reduce) {
+    .toast {
+      animation: none;
+    }
   }
 }

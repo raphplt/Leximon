@@ -1,3 +1,5 @@
+@layer reset, toy, ui, pieces, sets;
+
 /*
  * Shapes standing in for content on its way. Without weight (`:where`): the screen's own class
  * sets size, corner and display, whatever the order the stylesheets load in.
@@ -21,13 +23,15 @@
   animation: breathe 1.6s ease-in-out 440ms infinite both;
 }
 
-.spoken {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  clip-path: inset(50%);
-  white-space: nowrap;
+@layer pieces {
+  .spoken {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
 }
 
 @keyframes appear {

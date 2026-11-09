@@ -1,22 +1,26 @@
-.side,
-.center,
-.wide {
-  margin: 0;
-  padding: 0;
-  overflow: visible;
-}
+@layer reset, toy, ui, pieces, sets;
 
-/* A window is a leaf of cream paper, outlined like the toys. */
-.side,
-.center {
-  border: var(--lx-toy-outline-width) solid var(--lx-toy-outline);
-  background:
-    var(--lx-matter-paper) 0 0 / var(--lx-matter-size),
-    var(--lx-color-paper);
-  box-shadow:
-    inset 0 -5px 0 var(--lx-toy-paper-bottom),
-    0 5px 0 var(--lx-toy-outline),
-    0 24px 48px var(--lx-toy-drop);
+@layer sets {
+  .side,
+  .center,
+  .wide {
+    margin: 0;
+    padding: 0;
+    overflow: visible;
+  }
+
+  /* A window is a leaf of cream paper, outlined like the toys. */
+  .side,
+  .center {
+    border: var(--lx-toy-outline-width) solid var(--lx-toy-outline);
+    background:
+      var(--lx-matter-paper) 0 0 / var(--lx-matter-size),
+      var(--lx-color-paper);
+    box-shadow:
+      inset 0 -5px 0 var(--lx-toy-paper-bottom),
+      0 5px 0 var(--lx-toy-outline),
+      0 24px 48px var(--lx-toy-drop);
+  }
 }
 
 .side::backdrop,
@@ -25,28 +29,32 @@
   background: color-mix(in srgb, var(--lx-color-scrim) 60%, transparent);
 }
 
-/* Web: a panel against the right edge. */
-.side {
-  position: fixed;
-  inset: 0 0 0 auto;
-  width: 440px;
-  max-width: 100%;
-  height: 100dvh;
-  max-height: 100dvh;
+@layer sets {
+  /* Web: a panel against the right edge. */
+  .side {
+    position: fixed;
+    inset: 0 0 0 auto;
+    width: 440px;
+    max-width: 100%;
+    height: 100dvh;
+    max-height: 100dvh;
+  }
 }
 
 .side[open] {
   animation: fromSide 260ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
 }
 
-.center {
-  position: fixed;
-  inset: 0;
-  width: min(440px, calc(100% - 32px));
-  max-height: calc(100dvh - 32px);
-  margin: auto;
-  border-radius: var(--lx-toy-radius-large);
-  overflow: hidden;
+@layer sets {
+  .center {
+    position: fixed;
+    inset: 0;
+    width: min(440px, calc(100% - 32px));
+    max-height: calc(100dvh - 32px);
+    margin: auto;
+    border-radius: var(--lx-toy-radius-large);
+    overflow: hidden;
+  }
 }
 
 .center.medium {
@@ -65,49 +73,51 @@
   animation: pop 420ms cubic-bezier(0.2, 0.9, 0.3, 1.2) both;
 }
 
-/*
- * Web: a large window in the middle, for a card and what goes with it. It is the desk itself:
- * green leather in its gold frame, the card lying on it.
- */
-.wide {
-  position: fixed;
-  inset: 0;
-  width: min(880px, calc(100% - 48px));
-  max-width: none;
-  /* One size for every card: turning to the next one never moves the arrows. */
-  height: min(720px, calc(100dvh - 48px));
-  max-height: none;
-  margin: auto;
-  border: 0;
-  border-radius: 28px;
-  background:
-    var(--lx-matter-leather) 0 0 / var(--lx-matter-size),
-    radial-gradient(
-      ellipse 80% 70% at 35% 40%,
-      var(--lx-desk-center) 0%,
-      var(--lx-desk-middle) 55%,
-      var(--lx-desk-edge) 100%
-    );
-  box-shadow:
-    0 0 0 3px var(--lx-toy-outline),
-    0 28px 56px var(--lx-toy-drop),
-    inset 0 0 0 5px color-mix(in srgb, var(--lx-desk-edge) 70%, transparent),
-    inset 0 2px 0 5px color-mix(in srgb, var(--lx-toy-sheen) 12%, transparent),
-    inset 0 0 50px var(--lx-desk-hollow);
-  color: var(--lx-color-page-ink);
-}
+@layer sets {
+  /*
+   * Web: a large window in the middle, for a card and what goes with it. It is the desk itself:
+   * green leather in its gold frame, the card lying on it.
+   */
+  .wide {
+    position: fixed;
+    inset: 0;
+    width: min(880px, calc(100% - 48px));
+    max-width: none;
+    /* One size for every card: turning to the next one never moves the arrows. */
+    height: min(720px, calc(100dvh - 48px));
+    max-height: none;
+    margin: auto;
+    border: 0;
+    border-radius: 28px;
+    background:
+      var(--lx-matter-leather) 0 0 / var(--lx-matter-size),
+      radial-gradient(
+        ellipse 80% 70% at 35% 40%,
+        var(--lx-desk-center) 0%,
+        var(--lx-desk-middle) 55%,
+        var(--lx-desk-edge) 100%
+      );
+    box-shadow:
+      0 0 0 3px var(--lx-toy-outline),
+      0 28px 56px var(--lx-toy-drop),
+      inset 0 0 0 5px color-mix(in srgb, var(--lx-desk-edge) 70%, transparent),
+      inset 0 2px 0 5px color-mix(in srgb, var(--lx-toy-sheen) 12%, transparent),
+      inset 0 0 50px var(--lx-desk-hollow);
+    color: var(--lx-color-page-ink);
+  }
 
-/* The card window is the desk: its gilt tooling lies under the card, and a sheet on a phone has none. */
-.tooling {
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  pointer-events: none;
-}
-
-@media (max-width: 759px) {
+  /* The card window is the desk: its gilt tooling lies under the card, and a sheet on a phone has none. */
   .tooling {
-    display: none;
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+  }
+
+  @media (max-width: 759px) {
+    .tooling {
+      display: none;
+    }
   }
 }
 
@@ -115,10 +125,12 @@
   animation: pop 320ms cubic-bezier(0.2, 0.9, 0.3, 1.1) both;
 }
 
-.box {
-  display: flex;
-  flex-direction: column;
-  max-height: inherit;
+@layer sets {
+  .box {
+    display: flex;
+    flex-direction: column;
+    max-height: inherit;
+  }
 }
 
 /* Only where the window has a height: under one sized by its content, Safari 16 resolves this to 0 and the window vanishes. */
@@ -132,31 +144,33 @@
   outline: none;
 }
 
-.handle {
-  display: none;
-}
+@layer sets {
+  .handle {
+    display: none;
+  }
 
-.head {
-  display: flex;
-  align-items: center;
-  gap: var(--lx-s5);
-  padding: var(--lx-s10) var(--lx-s10) var(--lx-s6) 26px;
-}
+  .head {
+    display: flex;
+    align-items: center;
+    gap: var(--lx-s5);
+    padding: var(--lx-s10) var(--lx-s10) var(--lx-s6) 26px;
+  }
 
-.headFloating {
-  position: absolute;
-  top: 12px;
-  right: 12px;
-  z-index: 2;
-}
+  .headFloating {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    z-index: 2;
+  }
 
-.title {
-  flex: 1;
-  margin: 0;
-  font-family: var(--font-display), Georgia, serif;
-  font-weight: var(--lx-weight-display);
-  font-size: var(--lx-size-title-large);
-  line-height: 1.1;
+  .title {
+    flex: 1;
+    margin: 0;
+    font-family: var(--font-display), Georgia, serif;
+    font-weight: var(--lx-weight-display);
+    font-size: var(--lx-size-title-large);
+    line-height: 1.1;
+  }
 }
 
 .wide .title {
@@ -170,32 +184,34 @@
   text-shadow: 0 var(--lx-lettering-drop) 0 var(--lx-lettering-outline);
 }
 
-.close {
-  display: grid;
-  place-items: center;
-  width: 44px;
-  height: 44px;
-  padding: 0;
-  border: var(--lx-toy-outline-width) solid var(--lx-toy-outline);
-  border-radius: 50%;
-  background: linear-gradient(
-    180deg,
-    var(--lx-toy-paper-top) 0 47%,
-    var(--lx-toy-paper-bottom) 53% 100%
-  );
-  box-shadow:
-    inset 0 -3px 0 var(--lx-toy-paper-edge),
-    0 3px 0 var(--lx-toy-outline);
-  color: var(--lx-color-paper-ink);
-  cursor: pointer;
-}
+@layer sets {
+  .close {
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    border: var(--lx-toy-outline-width) solid var(--lx-toy-outline);
+    border-radius: 50%;
+    background: linear-gradient(
+      180deg,
+      var(--lx-toy-paper-top) 0 47%,
+      var(--lx-toy-paper-bottom) 53% 100%
+    );
+    box-shadow:
+      inset 0 -3px 0 var(--lx-toy-paper-edge),
+      0 3px 0 var(--lx-toy-outline);
+    color: var(--lx-color-paper-ink);
+    cursor: pointer;
+  }
 
-.body {
-  flex: 1;
-  min-height: 0;
-  overflow-y: auto;
-  padding: var(--lx-s3) 26px 30px;
-  overscroll-behavior: contain;
+  .body {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    padding: var(--lx-s3) 26px 30px;
+    overscroll-behavior: contain;
+  }
 }
 
 .center .body {
@@ -207,48 +223,52 @@
   padding: 0;
 }
 
-/* Phones: a sheet rising from the bottom, with a handle. */
-@media (max-width: 759px) {
-  .side,
-  .wide {
-    inset: auto 0 0 0;
-    width: 100%;
-    max-width: 100%;
-    height: auto;
-    max-height: 90dvh;
-    border-bottom: 0;
-    border-radius: 26px 26px 0 0;
-  }
+@layer sets {
+  /* Phones: a sheet rising from the bottom, with a handle. */
+  @media (max-width: 759px) {
+    .side,
+    .wide {
+      inset: auto 0 0 0;
+      width: 100%;
+      max-width: 100%;
+      height: auto;
+      max-height: 90dvh;
+      border-bottom: 0;
+      border-radius: 26px 26px 0 0;
+    }
 
+    /* Its full height on phones too, so that the sheet's top stays put from one card to the next. */
+    .wide {
+      height: 90dvh;
+    }
+
+    .handle {
+      display: block;
+      width: 44px;
+      height: 5px;
+      margin: var(--lx-s5) auto var(--lx-s1);
+      border-radius: var(--lx-radius-pill);
+      background: var(--lx-toy-paper-edge);
+    }
+
+    .head {
+      padding: var(--lx-s3) var(--lx-s8) var(--lx-s5) var(--lx-s10);
+    }
+
+    .body {
+      padding: var(--lx-s2) var(--lx-s9) var(--lx-s14);
+    }
+  }
+}
+
+@media (max-width: 759px) {
   .side[open],
   .wide[open] {
     animation-name: fromBottom;
   }
 
-  /* Its full height on phones too, so that the sheet's top stays put from one card to the next. */
-  .wide {
-    height: 90dvh;
-  }
-
   .wide .box {
     max-height: 90dvh;
-  }
-
-  .handle {
-    display: block;
-    width: 44px;
-    height: 5px;
-    margin: var(--lx-s5) auto var(--lx-s1);
-    border-radius: var(--lx-radius-pill);
-    background: var(--lx-toy-paper-edge);
-  }
-
-  .head {
-    padding: var(--lx-s3) var(--lx-s8) var(--lx-s5) var(--lx-s10);
-  }
-
-  .body {
-    padding: var(--lx-s2) var(--lx-s9) var(--lx-s14);
   }
 
   .center .body {

@@ -1,51 +1,55 @@
-.root {
-  position: relative;
-  display: inline-block;
-  min-width: 170px;
-}
+@layer reset, toy, ui, pieces, sets;
 
-.trigger {
-  all: unset;
-  box-sizing: border-box;
-  width: 100%;
-  min-height: 40px;
-  padding: 0 var(--lx-s6) 0 var(--lx-s7);
-  display: inline-flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--lx-s5);
-  border: 1px solid var(--lx-color-rule);
-  border-radius: var(--lx-radius-md);
-  background: var(--lx-color-page);
-  color: var(--lx-color-page-ink);
-  font: inherit;
-  font-size: var(--lx-size-label);
-  font-weight: 600;
-  cursor: pointer;
-  user-select: none;
-  white-space: nowrap;
-  transition:
-    border-color 0.15s ease,
-    background-color 0.15s ease,
-    box-shadow 0.15s ease;
-}
+@layer pieces {
+  .root {
+    position: relative;
+    display: inline-block;
+    min-width: 170px;
+  }
 
-.triggerValue {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--lx-s4);
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
+  .trigger {
+    all: unset;
+    box-sizing: border-box;
+    width: 100%;
+    min-height: 40px;
+    padding: 0 var(--lx-s6) 0 var(--lx-s7);
+    display: inline-flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--lx-s5);
+    border: 1px solid var(--lx-color-rule);
+    border-radius: var(--lx-radius-md);
+    background: var(--lx-color-page);
+    color: var(--lx-color-page-ink);
+    font: inherit;
+    font-size: var(--lx-size-label);
+    font-weight: 600;
+    cursor: pointer;
+    user-select: none;
+    white-space: nowrap;
+    transition:
+      border-color 0.15s ease,
+      background-color 0.15s ease,
+      box-shadow 0.15s ease;
+  }
 
-.chevron {
-  flex-shrink: 0;
-  width: 14px;
-  height: 14px;
-  color: var(--lx-color-page-ink-muted);
-  transition:
-    transform 0.18s ease,
-    color 0.15s ease;
+  .triggerValue {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--lx-s4);
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .chevron {
+    flex-shrink: 0;
+    width: 14px;
+    height: 14px;
+    color: var(--lx-color-page-ink-muted);
+    transition:
+      transform 0.18s ease,
+      color 0.15s ease;
+  }
 }
 
 .triggerOpen .chevron {
@@ -80,62 +84,64 @@
   }
 }
 
-.menu {
-  position: absolute;
-  top: calc(100% + 6px);
-  left: 0;
-  z-index: 60;
-  box-sizing: border-box;
-  min-width: 100%;
-  width: max-content;
-  max-height: 320px;
-  overflow-y: auto;
-  margin: 0;
-  padding: 5px;
-  list-style: none;
-  border: 1px solid var(--lx-color-rule);
-  border-radius: var(--lx-radius-lg);
-  background: var(--lx-color-page-raised);
-  box-shadow:
-    0 14px 34px color-mix(in srgb, var(--lx-color-shade) 50%, transparent),
-    0 2px 8px color-mix(in srgb, var(--lx-color-shade) 35%, transparent);
-  animation: menuEnter 0.12s cubic-bezier(0.16, 1, 0.3, 1);
-}
+@layer pieces {
+  .menu {
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    z-index: 60;
+    box-sizing: border-box;
+    min-width: 100%;
+    width: max-content;
+    max-height: 320px;
+    overflow-y: auto;
+    margin: 0;
+    padding: 5px;
+    list-style: none;
+    border: 1px solid var(--lx-color-rule);
+    border-radius: var(--lx-radius-lg);
+    background: var(--lx-color-page-raised);
+    box-shadow:
+      0 14px 34px color-mix(in srgb, var(--lx-color-shade) 50%, transparent),
+      0 2px 8px color-mix(in srgb, var(--lx-color-shade) 35%, transparent);
+    animation: menuEnter 0.12s cubic-bezier(0.16, 1, 0.3, 1);
+  }
 
-.option {
-  all: unset;
-  box-sizing: border-box;
-  width: 100%;
-  padding: var(--lx-s4) var(--lx-s5);
-  border-radius: var(--lx-radius-sm);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--lx-s7);
-  font: inherit;
-  font-size: var(--lx-size-label);
-  font-weight: 600;
-  color: var(--lx-color-page-ink-muted);
-  cursor: pointer;
-  user-select: none;
-  white-space: nowrap;
-  transition:
-    background-color 0.1s ease,
-    color 0.1s ease;
-}
+  .option {
+    all: unset;
+    box-sizing: border-box;
+    width: 100%;
+    padding: var(--lx-s4) var(--lx-s5);
+    border-radius: var(--lx-radius-sm);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--lx-s7);
+    font: inherit;
+    font-size: var(--lx-size-label);
+    font-weight: 600;
+    color: var(--lx-color-page-ink-muted);
+    cursor: pointer;
+    user-select: none;
+    white-space: nowrap;
+    transition:
+      background-color 0.1s ease,
+      color 0.1s ease;
+  }
 
-.optionLabel {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--lx-s4);
-}
+  .optionLabel {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--lx-s4);
+  }
 
-.check {
-  flex-shrink: 0;
-  width: 14px;
-  height: 14px;
-  color: var(--lx-color-rubric);
-  opacity: 0;
+  .check {
+    flex-shrink: 0;
+    width: 14px;
+    height: 14px;
+    color: var(--lx-color-rubric);
+    opacity: 0;
+  }
 }
 
 .option:hover,
@@ -144,9 +150,11 @@
   color: var(--lx-color-page-ink);
 }
 
-.optionSelected {
-  color: var(--lx-color-page-ink);
-  font-weight: 700;
+@layer pieces {
+  .optionSelected {
+    color: var(--lx-color-page-ink);
+    font-weight: 700;
+  }
 }
 
 .optionSelected .check {

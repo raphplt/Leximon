@@ -1,14 +1,18 @@
-.failed {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--lx-s8);
-  padding: var(--lx-s32) var(--lx-s8);
-  text-align: center;
-}
+@layer reset, toy, ui, pieces, sets;
 
-.text {
-  margin: 0;
-  color: var(--lx-color-page-ink-muted);
-  font-size: var(--lx-size-body-large);
+@layer sets {
+  .failed {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--lx-s8);
+    padding: var(--lx-s32) var(--lx-s8);
+    text-align: center;
+  }
+
+  .text {
+    margin: 0;
+    color: var(--lx-color-page-ink-muted);
+    font-size: var(--lx-size-body-large);
+  }
 }

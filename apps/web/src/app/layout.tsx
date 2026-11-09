@@ -4,16 +4,6 @@ import { Bricolage_Grotesque, Fraunces, Newsreader } from "next/font/google";
 import { Umami } from "@/analytics/umami";
 import { SourceCapture } from "@/beta/source-capture";
 import "./globals.css";
-// Shared pieces' base rules must come before every module that restyles a piece, as they do in
-// development. The production build orders shared CSS chunks on its own: a piece's rule could land
-// after a page's and win, or the reverse. Loaded here, they always come first, in this order.
-import "@/ui/toy.module.css";
-import "@/ui/ui.module.css";
-import "@/ui/ornaments.module.css";
-import "@/ui/logo.module.css";
-import "@/ui/gain-banner.module.css";
-import "@/library/sachet.module.css";
-import "@/library/play-pieces.module.css";
 
 export const metadata: Metadata = {
   // Shared images (`opengraph-image.tsx`) need absolute URLs.

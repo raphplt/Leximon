@@ -1,14 +1,18 @@
-/* The medallion of paper, and the engraving printed on it; the frame is drawn around it. */
-.avatar {
-  position: relative;
-  display: grid;
-  flex-shrink: 0;
-  place-items: center;
-  width: var(--size);
-  height: var(--size);
-  isolation: isolate;
-  border-radius: 50%;
-  color: var(--lx-color-paper-ink);
+@layer reset, toy, ui, pieces, sets;
+
+@layer pieces {
+  /* The medallion of paper, and the engraving printed on it; the frame is drawn around it. */
+  .avatar {
+    position: relative;
+    display: grid;
+    flex-shrink: 0;
+    place-items: center;
+    width: var(--size);
+    height: var(--size);
+    isolation: isolate;
+    border-radius: 50%;
+    color: var(--lx-color-paper-ink);
+  }
 }
 
 .avatar::after {
@@ -20,30 +24,32 @@
   background: var(--lx-color-paper);
 }
 
-.ink {
-  position: absolute;
-  inset: 11%;
-  background: var(--lx-color-paper-ink);
-  mask-image: var(--ink-src);
-  mask-repeat: no-repeat;
-  mask-position: center;
-  mask-size: contain;
-}
+@layer pieces {
+  .ink {
+    position: absolute;
+    inset: 11%;
+    background: var(--lx-color-paper-ink);
+    mask-image: var(--ink-src);
+    mask-repeat: no-repeat;
+    mask-position: center;
+    mask-size: contain;
+  }
 
-/* The frame worn, centred on the medallion: it keeps the engraving's size and spills over the box. */
-.frame {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  overflow: visible;
-  translate: -50% -50%;
-  pointer-events: none;
-}
+  /* The frame worn, centred on the medallion: it keeps the engraving's size and spills over the box. */
+  .frame {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    overflow: visible;
+    translate: -50% -50%;
+    pointer-events: none;
+  }
 
-.turning {
-  transform-box: fill-box;
-  transform-origin: center;
-  animation: frame-turn 40s linear infinite;
+  .turning {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: frame-turn 40s linear infinite;
+  }
 }
 
 @keyframes frame-turn {
@@ -52,8 +58,10 @@
   }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .turning {
-    animation: none;
+@layer pieces {
+  @media (prefers-reduced-motion: reduce) {
+    .turning {
+      animation: none;
+    }
   }
 }

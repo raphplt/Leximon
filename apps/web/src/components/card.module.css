@@ -1,50 +1,54 @@
-/*
- * Every size is a multiple of --u, one pixel of the 300 × 420 reference card, so the same card
- * can be drawn at any width.
- */
-.card {
-  box-sizing: border-box;
-  width: calc(300 * var(--u));
-  height: calc(420 * var(--u));
-  flex-shrink: 0;
-  padding: calc(7 * var(--u));
-  border-radius: calc(16 * var(--u));
-  background: var(--frame);
-  box-shadow: 0 calc(12 * var(--u)) calc(30 * var(--u)) rgba(0, 0, 0, 0.35);
-  color: var(--ink);
-  font-family: var(--font-newsreader), Georgia, serif;
-  text-align: left;
+@layer reset, toy, ui, pieces, sets;
+
+@layer pieces {
+  /*
+   * Every size is a multiple of --u, one pixel of the 300 × 420 reference card, so the same card
+   * can be drawn at any width.
+   */
+  .card {
+    box-sizing: border-box;
+    width: calc(300 * var(--u));
+    height: calc(420 * var(--u));
+    flex-shrink: 0;
+    padding: calc(7 * var(--u));
+    border-radius: calc(16 * var(--u));
+    background: var(--frame);
+    box-shadow: 0 calc(12 * var(--u)) calc(30 * var(--u)) rgba(0, 0, 0, 0.35);
+    color: var(--ink);
+    font-family: var(--font-newsreader), Georgia, serif;
+    text-align: left;
+  }
+
+  /* Laid paper (chosen 2026-10-21): sparse chain lines across fine laid lines, in the ink's tone. */
+  .inner {
+    position: relative;
+    box-sizing: border-box;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: calc(6 * var(--u));
+    padding: calc(10 * var(--u)) calc(14 * var(--u));
+    overflow: hidden;
+    border-radius: calc(10 * var(--u));
+    background:
+      repeating-linear-gradient(
+        90deg,
+        color-mix(in srgb, var(--ink) 6%, transparent) 0 calc(0.7 * var(--u)),
+        transparent calc(0.7 * var(--u)) calc(30 * var(--u))
+      ),
+      repeating-linear-gradient(
+        0deg,
+        color-mix(in srgb, var(--ink) 3%, transparent) 0 calc(0.5 * var(--u)),
+        transparent calc(0.5 * var(--u)) calc(2.2 * var(--u))
+      ),
+      var(--paper);
+  }
 }
 
-/* Laid paper (chosen 2026-10-21): sparse chain lines across fine laid lines, in the ink's tone. */
-.inner {
-  position: relative;
-  box-sizing: border-box;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  gap: calc(6 * var(--u));
-  padding: calc(10 * var(--u)) calc(14 * var(--u));
-  overflow: hidden;
-  border-radius: calc(10 * var(--u));
-  background:
-    repeating-linear-gradient(
-      90deg,
-      color-mix(in srgb, var(--ink) 6%, transparent) 0 calc(0.7 * var(--u)),
-      transparent calc(0.7 * var(--u)) calc(30 * var(--u))
-    ),
-    repeating-linear-gradient(
-      0deg,
-      color-mix(in srgb, var(--ink) 3%, transparent) 0 calc(0.5 * var(--u)),
-      transparent calc(0.5 * var(--u)) calc(2.2 * var(--u))
-    ),
-    var(--paper);
-}
-
 /*
- * Double rule inside the frame (chosen 2026-10-21), in the frame's own fill, gold and iridescent
- * included: each rule is a box of that fill with its content cut out.
- */
+   * Double rule inside the frame (chosen 2026-10-21), in the frame's own fill, gold and iridescent
+   * included: each rule is a box of that fill with its content cut out.
+   */
 .inner::before,
 .inner::after {
   content: "";
@@ -73,118 +77,120 @@
   border-radius: calc(4 * var(--u));
 }
 
-.top {
-  /* Keeps the rarity band above a tall engraving that rises into the header row. */
-  position: relative;
-  z-index: 1;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
+@layer pieces {
+  .top {
+    /* Keeps the rarity band above a tall engraving that rises into the header row. */
+    position: relative;
+    z-index: 1;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
 
-/* Round chip of the rarity colour holding the gem (icon set chosen 2026-10-20). */
-.band {
-  display: inline-grid;
-  place-items: center;
-  width: calc(32 * var(--u));
-  height: calc(32 * var(--u));
-  border-radius: 50%;
-  background: var(--band);
-  color: var(--band-ink);
-  font-size: calc(22 * var(--u));
-}
+  /* Round chip of the rarity colour holding the gem (icon set chosen 2026-10-20). */
+  .band {
+    display: inline-grid;
+    place-items: center;
+    width: calc(32 * var(--u));
+    height: calc(32 * var(--u));
+    border-radius: 50%;
+    background: var(--band);
+    color: var(--band-ink);
+    font-size: calc(22 * var(--u));
+  }
 
-.engraving {
-  position: relative;
-  flex-shrink: 0;
-  height: calc(118 * var(--u));
-  margin-top: calc(2 * var(--u));
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
-  border-radius: calc(10 * var(--u));
-  background:
-    radial-gradient(ellipse at 50% 50%, transparent 40%, var(--paper) 92%),
-    repeating-linear-gradient(
-      35deg,
-      var(--hatch) 0 calc(1.2 * var(--u)),
-      transparent calc(1.2 * var(--u)) calc(5 * var(--u))
-    ),
-    repeating-linear-gradient(
-      -55deg,
-      var(--hatch) 0 calc(0.7 * var(--u)),
-      transparent calc(0.7 * var(--u)) calc(7 * var(--u))
-    );
-}
+  .engraving {
+    position: relative;
+    flex-shrink: 0;
+    height: calc(118 * var(--u));
+    margin-top: calc(2 * var(--u));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    border-radius: calc(10 * var(--u));
+    background:
+      radial-gradient(ellipse at 50% 50%, transparent 40%, var(--paper) 92%),
+      repeating-linear-gradient(
+        35deg,
+        var(--hatch) 0 calc(1.2 * var(--u)),
+        transparent calc(1.2 * var(--u)) calc(5 * var(--u))
+      ),
+      repeating-linear-gradient(
+        -55deg,
+        var(--hatch) 0 calc(0.7 * var(--u)),
+        transparent calc(0.7 * var(--u)) calc(7 * var(--u))
+      );
+  }
 
-/*
- * A real engraving. The slot keeps the size of the hatched one, so the text never moves; a tall
- * subject rises above it into the header row, right of centre to clear the rarity band.
- */
-.print {
-  position: relative;
-  flex-shrink: 0;
-  height: calc(118 * var(--u));
-  margin-top: calc(2 * var(--u));
-}
+  /*
+   * A real engraving. The slot keeps the size of the hatched one, so the text never moves; a tall
+   * subject rises above it into the header row, right of centre to clear the rarity band.
+   */
+  .print {
+    position: relative;
+    flex-shrink: 0;
+    height: calc(118 * var(--u));
+    margin-top: calc(2 * var(--u));
+  }
 
-.printWide,
-.printTall {
-  position: absolute;
-  left: 50%;
-}
+  .printWide,
+  .printTall {
+    position: absolute;
+    left: 50%;
+  }
 
-.printWide {
-  top: 50%;
-  translate: -50% -50%;
-}
+  .printWide {
+    top: 50%;
+    translate: -50% -50%;
+  }
 
-.printTall {
-  bottom: 0;
-  left: 62%;
-  translate: -50% 0;
-}
+  .printTall {
+    bottom: 0;
+    left: 62%;
+    translate: -50% 0;
+  }
 
-.plate,
-.plateNight,
-.ink {
-  position: absolute;
-  inset: 0;
-  mask-repeat: no-repeat;
-  mask-position: center;
-  mask-size: 100% 100%;
-}
+  .plate,
+  .plateNight,
+  .ink {
+    position: absolute;
+    inset: 0;
+    mask-repeat: no-repeat;
+    mask-position: center;
+    mask-size: 100% 100%;
+  }
 
-/* Second pass of the press, out of register: it shows beside the ink, never hides it. */
-.plate,
-.plateNight {
-  background: var(--frame);
-  mask-image: var(--fill-src);
-  opacity: 0.5;
-  translate: calc(2 * var(--u)) calc(1.5 * var(--u));
-}
+  /* Second pass of the press, out of register: it shows beside the ink, never hides it. */
+  .plate,
+  .plateNight {
+    background: var(--frame);
+    mask-image: var(--fill-src);
+    opacity: 0.5;
+    translate: calc(2 * var(--u)) calc(1.5 * var(--u));
+  }
 
-/* On a night card the ink is light: a plate as strong would muddy its lines. */
-.plateNight {
-  opacity: 0.3;
-}
+  /* On a night card the ink is light: a plate as strong would muddy its lines. */
+  .plateNight {
+    opacity: 0.3;
+  }
 
-.ink {
-  background: var(--word);
-  mask-image: var(--ink-src);
-}
+  .ink {
+    background: var(--word);
+    mask-image: var(--ink-src);
+  }
 
-/* A library edition: the engraving on its own sheet, pasted in, with a fine rule inside its edge. */
-.editionSheet {
-  position: absolute;
-  inset: 0;
-  border-radius: calc(3 * var(--u));
-  background: var(--edition-paper);
-  box-shadow:
-    0 0 0 calc(0.6 * var(--u)) color-mix(in srgb, var(--edition-ink) 30%, transparent),
-    0 calc(1.5 * var(--u)) calc(4 * var(--u))
-    color-mix(in srgb, var(--edition-ink) 35%, transparent);
+  /* A library edition: the engraving on its own sheet, pasted in, with a fine rule inside its edge. */
+  .editionSheet {
+    position: absolute;
+    inset: 0;
+    border-radius: calc(3 * var(--u));
+    background: var(--edition-paper);
+    box-shadow:
+      0 0 0 calc(0.6 * var(--u)) color-mix(in srgb, var(--edition-ink) 30%, transparent),
+      0 calc(1.5 * var(--u)) calc(4 * var(--u))
+      color-mix(in srgb, var(--edition-ink) 35%, transparent);
+  }
 }
 
 .editionSheet::after {
@@ -195,84 +201,86 @@
   pointer-events: none;
 }
 
-.editionPlate,
-.editionInk {
-  position: absolute;
-  inset: 0;
-  mask-repeat: no-repeat;
-  mask-position: center;
-  mask-size: 100% 100%;
-}
+@layer pieces {
+  .editionPlate,
+  .editionInk {
+    position: absolute;
+    inset: 0;
+    mask-repeat: no-repeat;
+    mask-position: center;
+    mask-size: 100% 100%;
+  }
 
-.editionPlate {
-  background: var(--edition-plate);
-  mask-image: var(--fill-src);
-  opacity: var(--edition-plate-opacity);
-  translate: calc(2 * var(--u)) calc(1.5 * var(--u));
-}
+  .editionPlate {
+    background: var(--edition-plate);
+    mask-image: var(--fill-src);
+    opacity: var(--edition-plate-opacity);
+    translate: calc(2 * var(--u)) calc(1.5 * var(--u));
+  }
 
-.editionInk {
-  background: var(--edition-ink);
-  mask-image: var(--ink-src);
-}
+  .editionInk {
+    background: var(--edition-ink);
+    mask-image: var(--ink-src);
+  }
 
-/* Stands in for the engraving on cards that have none. */
-.initial {
-  font-family: var(--font-fraunces), Georgia, serif;
-  font-variation-settings: "SOFT" 100;
-  font-weight: 900;
-  font-size: calc(88 * var(--u));
-  line-height: 1;
-  color: var(--paper);
-  -webkit-text-stroke: calc(2.5 * var(--u)) var(--ink);
-  paint-order: stroke fill;
-}
+  /* Stands in for the engraving on cards that have none. */
+  .initial {
+    font-family: var(--font-fraunces), Georgia, serif;
+    font-variation-settings: "SOFT" 100;
+    font-weight: 900;
+    font-size: calc(88 * var(--u));
+    line-height: 1;
+    color: var(--paper);
+    -webkit-text-stroke: calc(2.5 * var(--u)) var(--ink);
+    paint-order: stroke fill;
+  }
 
-.word,
-.wordGradient {
-  margin: calc(2 * var(--u)) 0 0;
-  font-family: var(--font-fraunces), Georgia, serif;
-  font-variation-settings: "SOFT" 100;
-  font-weight: 900;
-  font-size: calc(var(--word-size) * var(--u));
-  line-height: 0.95;
-  letter-spacing: -0.015em;
-  overflow-wrap: break-word;
-  color: var(--word);
-}
+  .word,
+  .wordGradient {
+    margin: calc(2 * var(--u)) 0 0;
+    font-family: var(--font-fraunces), Georgia, serif;
+    font-variation-settings: "SOFT" 100;
+    font-weight: 900;
+    font-size: calc(var(--word-size) * var(--u));
+    line-height: 0.95;
+    letter-spacing: -0.015em;
+    overflow-wrap: break-word;
+    color: var(--word);
+  }
 
-/* The gradient only paints the element's box: padding takes in the descenders (j, p) and the
-   j's hook on the left, and the negative margin keeps the word where it was. */
-.wordGradient {
-  margin: calc(2 * var(--u) - 0.1em) -0.1em -0.25em;
-  padding: 0.1em 0.1em 0.25em;
-  background: var(--word);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-}
+  /* The gradient only paints the element's box: padding takes in the descenders (j, p) and the
+  j's hook on the left, and the negative margin keeps the word where it was. */
+  .wordGradient {
+    margin: calc(2 * var(--u) - 0.1em) -0.1em -0.25em;
+    padding: 0.1em 0.1em 0.25em;
+    background: var(--word);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
 
-.chips {
-  display: flex;
-  gap: calc(5 * var(--u));
-  margin: 0;
-  font-family: var(--font-bricolage), sans-serif;
-  font-size: calc(10.5 * var(--u));
-  font-weight: 700;
-}
+  .chips {
+    display: flex;
+    gap: calc(5 * var(--u));
+    margin: 0;
+    font-family: var(--font-bricolage), sans-serif;
+    font-size: calc(10.5 * var(--u));
+    font-weight: 700;
+  }
 
-.chip {
-  padding: calc(2 * var(--u)) calc(7 * var(--u));
-  border-radius: calc(8 * var(--u));
-  background: var(--chip);
-  color: var(--chip-ink);
-}
+  .chip {
+    padding: calc(2 * var(--u)) calc(7 * var(--u));
+    border-radius: calc(8 * var(--u));
+    background: var(--chip);
+    color: var(--chip-ink);
+  }
 
-.definition {
-  margin: 0;
-  font-size: calc(14.5 * var(--u));
-  font-weight: 500;
-  line-height: 1.27;
+  .definition {
+    margin: 0;
+    font-size: calc(14.5 * var(--u));
+    font-weight: 500;
+    line-height: 1.27;
+  }
 }
 
 /* Only the quote gives way when the face is full: `CardQuote` counts the lines left for it. */
@@ -280,24 +288,26 @@
   flex-shrink: 0;
 }
 
-.quote {
-  display: -webkit-box;
-  flex-shrink: 1;
-  min-height: 0;
-  margin: 0;
-  overflow: hidden;
-  -webkit-box-orient: vertical;
-  font-size: calc(12.5 * var(--u));
-  font-style: italic;
-  line-height: 1.3;
-  color: var(--muted);
-}
+@layer pieces {
+  .quote {
+    display: -webkit-box;
+    flex-shrink: 1;
+    min-height: 0;
+    margin: 0;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    font-size: calc(12.5 * var(--u));
+    font-style: italic;
+    line-height: 1.3;
+    color: var(--muted);
+  }
 
-.author {
-  font-family: var(--font-bricolage), sans-serif;
-  font-size: calc(10 * var(--u));
-  font-style: normal;
-  font-weight: 700;
+  .author {
+    font-family: var(--font-bricolage), sans-serif;
+    font-size: calc(10 * var(--u));
+    font-style: normal;
+    font-weight: 700;
+  }
 }
 
 /* A card still to guess: a short hatched slot, the definition taking the room of the word. */
@@ -306,34 +316,36 @@
   height: calc(84 * var(--u));
 }
 
-.question {
-  display: grid;
-  flex: 1;
-  place-items: center;
-  margin: 0;
-  font-size: calc(21 * var(--u));
-  font-weight: 500;
-  line-height: 1.28;
-  text-align: center;
-}
+@layer pieces {
+  .question {
+    display: grid;
+    flex: 1;
+    place-items: center;
+    margin: 0;
+    font-size: calc(21 * var(--u));
+    font-weight: 500;
+    line-height: 1.28;
+    text-align: center;
+  }
 
-.footer {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-top: auto;
-  font-family: var(--font-bricolage), sans-serif;
-  font-size: calc(10 * var(--u));
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: var(--muted);
-}
+  .footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: auto;
+    font-family: var(--font-bricolage), sans-serif;
+    font-size: calc(10 * var(--u));
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
 
-.odds {
-  font-size: calc(11 * var(--u));
-  font-weight: 800;
-  letter-spacing: 0;
-  text-transform: none;
-  color: var(--spot);
+  .odds {
+    font-size: calc(11 * var(--u));
+    font-weight: 800;
+    letter-spacing: 0;
+    text-transform: none;
+    color: var(--spot);
+  }
 }

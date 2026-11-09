@@ -1,22 +1,26 @@
-/* A discreet « ? » and the popover it opens, a slip of paper pointing at it. */
-.button {
-  display: grid;
-  flex-shrink: 0;
-  place-items: center;
-  width: 32px;
-  height: 32px;
-  padding: 0;
-  border: 0;
-  border-radius: 50%;
-  background: transparent;
-  cursor: pointer;
-  transition:
-    color 120ms ease-out,
-    background 120ms ease-out;
-}
+@layer reset, toy, ui, pieces, sets;
 
-.paper {
-  color: var(--lx-color-paper-ink-muted);
+@layer pieces {
+  /* A discreet « ? » and the popover it opens, a slip of paper pointing at it. */
+  .button {
+    display: grid;
+    flex-shrink: 0;
+    place-items: center;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: transparent;
+    cursor: pointer;
+    transition:
+      color 120ms ease-out,
+      background 120ms ease-out;
+  }
+
+  .paper {
+    color: var(--lx-color-paper-ink-muted);
+  }
 }
 
 .paper:hover,
@@ -25,10 +29,12 @@
   color: var(--lx-color-paper-ink);
 }
 
-/* On the felt: a cream ring, readable on the dark green. */
-.felt {
-  border: 2px solid color-mix(in srgb, var(--lx-lettering-fill) 55%, transparent);
-  color: var(--lx-lettering-fill);
+@layer pieces {
+  /* On the felt: a cream ring, readable on the dark green. */
+  .felt {
+    border: 2px solid color-mix(in srgb, var(--lx-lettering-fill) 55%, transparent);
+    color: var(--lx-lettering-fill);
+  }
 }
 
 .felt:hover,
@@ -42,31 +48,33 @@
   outline-offset: 2px;
 }
 
-/* In the top layer: placed by script under or over its button, never clipped by a card. */
-.popover {
-  position: fixed;
-  inset: auto;
-  display: none;
-  flex-direction: column;
-  gap: 10px;
-  box-sizing: border-box;
-  width: max-content;
-  max-width: min(360px, calc(100vw - 40px));
-  margin: 0;
-  padding: 12px 16px 14px;
-  overflow: visible;
-  border: var(--lx-toy-outline-width) solid var(--lx-toy-outline);
-  border-radius: var(--lx-toy-radius-small);
-  background: var(--lx-color-paper);
-  box-shadow:
-    0 4px 0 var(--lx-toy-outline),
-    0 12px 28px var(--lx-toy-drop);
-  /* Paper ink, never the page's: on the felt, the page's ink turns cream. */
-  color: var(--lx-color-paper-ink);
-  font-family: var(--font-ui), system-ui, sans-serif;
-  font-size: var(--lx-size-label);
-  line-height: 1.35;
-  text-align: left;
+@layer pieces {
+  /* In the top layer: placed by script under or over its button, never clipped by a card. */
+  .popover {
+    position: fixed;
+    inset: auto;
+    display: none;
+    flex-direction: column;
+    gap: 10px;
+    box-sizing: border-box;
+    width: max-content;
+    max-width: min(360px, calc(100vw - 40px));
+    margin: 0;
+    padding: 12px 16px 14px;
+    overflow: visible;
+    border: var(--lx-toy-outline-width) solid var(--lx-toy-outline);
+    border-radius: var(--lx-toy-radius-small);
+    background: var(--lx-color-paper);
+    box-shadow:
+      0 4px 0 var(--lx-toy-outline),
+      0 12px 28px var(--lx-toy-drop);
+    /* Paper ink, never the page's: on the felt, the page's ink turns cream. */
+    color: var(--lx-color-paper-ink);
+    font-family: var(--font-ui), system-ui, sans-serif;
+    font-size: var(--lx-size-label);
+    line-height: 1.35;
+    text-align: left;
+  }
 }
 
 .popover:popover-open {
@@ -112,12 +120,14 @@
   border-left: 0;
 }
 
-.title {
-  padding-bottom: 8px;
-  border-bottom: 1px dashed color-mix(in srgb, var(--lx-toy-outline) 30%, transparent);
-  font-family: var(--font-display), Georgia, serif;
-  font-size: var(--lx-size-body);
-  font-weight: 800;
+@layer pieces {
+  .title {
+    padding-bottom: 8px;
+    border-bottom: 1px dashed color-mix(in srgb, var(--lx-toy-outline) 30%, transparent);
+    font-family: var(--font-display), Georgia, serif;
+    font-size: var(--lx-size-body);
+    font-weight: 800;
+  }
 }
 
 @keyframes rise {

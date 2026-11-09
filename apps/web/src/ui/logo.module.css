@@ -1,22 +1,26 @@
-.logo {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--lx-s5);
-  text-decoration: none;
-  color: var(--lx-color-page-ink);
-  line-height: 1;
-}
+@layer reset, toy, ui, pieces, sets;
 
-.text {
-  font-family: var(--font-fraunces), Georgia, serif;
-  font-weight: 900;
-  letter-spacing: -0.01em;
-  color: inherit;
-}
+@layer pieces {
+  .logo {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--lx-s5);
+    text-decoration: none;
+    color: var(--lx-color-page-ink);
+    line-height: 1;
+  }
 
-.mark {
-  flex-shrink: 0;
-  display: block;
+  .text {
+    font-family: var(--font-fraunces), Georgia, serif;
+    font-weight: 900;
+    letter-spacing: -0.01em;
+    color: inherit;
+  }
+
+  .mark {
+    flex-shrink: 0;
+    display: block;
+  }
 }
 
 /* Sizes */

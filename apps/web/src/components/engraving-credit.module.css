@@ -1,11 +1,15 @@
-.credit {
-  max-width: 300px;
-  margin: 0;
-  color: var(--lx-color-page-ink-muted);
-  font-family: var(--font-ui), sans-serif;
-  font-size: var(--lx-size-caption);
-  line-height: 1.35;
-  text-align: center;
+@layer reset, toy, ui, pieces, sets;
+
+@layer pieces {
+  .credit {
+    max-width: 300px;
+    margin: 0;
+    color: var(--lx-color-page-ink-muted);
+    font-family: var(--font-ui), sans-serif;
+    font-size: var(--lx-size-caption);
+    line-height: 1.35;
+    text-align: center;
+  }
 }
 
 .credit a {
