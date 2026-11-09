@@ -3,16 +3,14 @@ import { cardEditionOf } from "@leximon/core";
 
 interface EditionWords {
   readonly name: string;
-  /** With its article, in a sentence. */
-  readonly the: string;
   /** How a print in it is said. */
   readonly printed: string;
 }
 
 const EDITION_WORDS: Readonly<Record<string, EditionWords>> = {
-  sanguine: { name: "Sanguine", the: "la sanguine", printed: "à la sanguine" },
-  lavis: { name: "Lavis", the: "le lavis", printed: "au lavis" },
-  encre: { name: "Encre de Chine", the: "l'encre de Chine", printed: "à l'encre de Chine" },
+  sanguine: { name: "Sanguine", printed: "à la sanguine" },
+  lavis: { name: "Lavis", printed: "au lavis" },
+  encre: { name: "Encre de Chine", printed: "à l'encre de Chine" },
 };
 
 /** The name of an edition; an id this version does not know keeps its own. */
@@ -39,11 +37,8 @@ export function editionAlbumDone(id: string | null): string {
   return `Tout ton album est imprimé ${EDITION_WORDS[id]?.printed ?? `en ${editionName(id)}`}.`;
 }
 
-/** On the patron page: the editions owned, and where to use them. */
+/** On the patron page: where the editions owned are used, without naming them. */
 export function editionsOwnedLine(owned: readonly string[]): string {
   if (owned.length === 0) return "Tes éditions arrivent avec ton premier paiement.";
-  const names = owned.map((id) => EDITION_WORDS[id]?.the ?? editionName(id));
-  const list =
-    names.length === 1 ? names[0] : `${names.slice(0, -1).join(", ")} et ${names.at(-1)}`;
-  return `Tu possèdes ${list}. Choisis l'édition d'une carte depuis sa fiche.`;
+  return "Découvre de nouveaux styles pour tes cartes. Choisis-les depuis la fiche de chaque carte.";
 }

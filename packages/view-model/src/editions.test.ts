@@ -16,11 +16,8 @@ describe("library editions", () => {
   });
 
   it("are said whole, for one edition, several, and none", () => {
-    expect(editionsOwnedLine(["encre"])).toBe(
-      "Tu possèdes l'encre de Chine. Choisis l'édition d'une carte depuis sa fiche.",
-    );
     expect(editionsOwnedLine(["sanguine", "lavis", "encre"])).toBe(
-      "Tu possèdes la sanguine, le lavis et l'encre de Chine. Choisis l'édition d'une carte depuis sa fiche.",
+      "Découvre de nouveaux styles pour tes cartes. Choisis-les depuis la fiche de chaque carte.",
     );
     expect(editionsOwnedLine([])).toBe("Tes éditions arrivent avec ton premier paiement.");
     expect(editionAlbumDone("sanguine")).toBe("Tout ton album est imprimé à la sanguine.");
