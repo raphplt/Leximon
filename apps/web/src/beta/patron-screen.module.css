@@ -213,11 +213,13 @@
   grid-column: span 2;
 }
 
+/* Framed in gilt: the padding keeps the text clear of the fleurons. */
 .perkCard {
+  position: relative;
   display: flex;
   flex-direction: column;
   gap: 14px;
-  padding: 24px;
+  padding: 36px;
   color: var(--lx-color-paper-ink);
 }
 
@@ -907,7 +909,7 @@
     align-items: start;
     column-gap: 14px;
     row-gap: 12px;
-    padding: 18px;
+    padding: 30px 28px;
   }
 
   [data-perk="cosmetic"] .tileIcon {

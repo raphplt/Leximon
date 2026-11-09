@@ -114,6 +114,7 @@ import { LoadFailed } from "@/ui/load-failed";
 import { ParticleStage } from "@/ui/stage";
 import { useToast } from "@/ui/toast";
 import { Kicker, Leaf, Lettering, Lettrine, Toy, ToyBody } from "@/ui/toy";
+import { IlluminatedBorder } from "./illuminated-border";
 import styles from "./patron-screen.module.css";
 
 /** Where Stripe sends the player back after paying. */
@@ -367,6 +368,7 @@ function Perks({
         {PATRON_PERKS.map((perk, index) => (
           <li key={perk.key} data-perk={perk.key} style={rise(index + 4)}>
             <Leaf className={styles.perkCard}>
+              <IlluminatedBorder />
               <PerkIcon perk={perk.key} small />
               <div className={styles.perkText}>
                 <h3 className={styles.perkTitle}>{perk.title}</h3>
