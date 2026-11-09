@@ -249,7 +249,7 @@ describe("POST /me/missions/claim", () => {
       .select()
       .from(schema.ecuMovements)
       .where(eq(schema.ecuMovements.userId, guest.userId));
-    expect(movements.map((m) => [m.kind, m.amount])).toEqual([["mission", 10]]);
+    expect(movements.map((m) => [m.kind, m.amount])).toEqual([["mission", RULES.ecus]]);
   });
 
   it("adds a bonus sachet once the three missions are claimed", async () => {
