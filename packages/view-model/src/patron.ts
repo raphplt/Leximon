@@ -571,3 +571,45 @@ export function voteRefusalLine(reason: PatronVoteRefusal): string {
       return "Ce thème ne fait pas partie du vote.";
   }
 }
+
+export const PATRON_DISCORD_TITLE = "Le salon des mécènes";
+export const PATRON_DISCORD_LINK = "Relier mon Discord";
+export const PATRON_DISCORD_UNLINK = "Délier mon Discord";
+export const PATRON_DISCORD_LINKED =
+  "Ton compte Discord est relié. Le rôle Mécène arrive dans une minute.";
+export const PATRON_DISCORD_FAILED = "La liaison avec Discord n'a pas abouti. Réessaie.";
+
+export interface DiscordScreen {
+  readonly line: string;
+  /** « Relier mon Discord », for a paying patron not linked yet. */
+  readonly canLink: boolean;
+  readonly canUnlink: boolean;
+}
+
+/** The patrons' Discord on the patron page; nothing until the bot is set, nor for a non-subscriber. */
+export function discordScreen(patron: PatronResponse): DiscordScreen | null {
+  const standing = patron.subscription?.standing ?? "none";
+  const { available, username } = patron.discord;
+  if (!available || (standing === "none" && username === null)) return null;
+  if (username !== null) {
+    return {
+      line:
+        standing === "patron"
+          ? `Relié au compte Discord ${username}. Le rôle Mécène t'ouvre le salon réservé tant que ton abonnement court.`
+          : `Relié au compte Discord ${username}. Le rôle Mécène revient avec ton abonnement.`,
+      canLink: false,
+      canUnlink: true,
+    };
+  }
+  return standing === "patron"
+    ? {
+        line: "Relie ton compte Discord pour rejoindre le serveur de Leximon avec le rôle Mécène, qui ouvre un salon réservé.",
+        canLink: true,
+        canUnlink: false,
+      }
+    : {
+        line: "Le salon réservé sur Discord s'ouvre après ton premier paiement.",
+        canLink: false,
+        canUnlink: false,
+      };
+}

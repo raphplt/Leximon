@@ -2,6 +2,7 @@ import type { PatronResponse } from "@leximon/contract";
 import { describe, expect, it } from "vitest";
 import {
   claimableLabel,
+  discordScreen,
   finderLine,
   findStateLine,
   findsLeftLine,
@@ -44,6 +45,7 @@ function patron(overrides: Partial<PatronResponse> = {}): PatronResponse {
     finds: { left: 0, words: [] },
     thanksListed: true,
     poll: null,
+    discord: { available: false, username: null },
     subscription: null,
     ...overrides,
   };
@@ -402,5 +404,26 @@ describe("the patrons' vote", () => {
       NOW,
     );
     expect(empty?.note).toBe("Aucun mécène n'a voté.");
+  });
+});
+
+describe("the patrons' Discord", () => {
+  const discord = (username: string | null) => ({ available: true, username });
+
+  it("offers the link to a paying patron, and waits for the trial's first payment", () => {
+    const paying = patron({ discord: discord(null), subscription: subscription() });
+    expect(discordScreen(paying)).toMatchObject({ canLink: true, canUnlink: false });
+    const trial = patron({
+      discord: discord(null),
+      subscription: subscription({ standing: "trial" }),
+    });
+    expect(discordScreen(trial)).toMatchObject({ canLink: false, canUnlink: false });
+  });
+
+  it("names the account linked, and shows nothing before the bot is set", () => {
+    const linked = patron({ discord: discord("raph"), subscription: subscription() });
+    expect(discordScreen(linked)?.line).toContain("Relié au compte Discord raph.");
+    expect(discordScreen(linked)?.canUnlink).toBe(true);
+    expect(discordScreen(patron({ subscription: subscription() }))).toBeNull();
   });
 });

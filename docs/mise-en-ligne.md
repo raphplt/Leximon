@@ -150,6 +150,13 @@ pnpm exec wrangler secret put STRIPE_SECRET_KEY --env production
 pnpm exec wrangler secret put STRIPE_WEBHOOK_SECRET --env production
 ```
 
+Le salon des mécènes sur Discord, facultatif : sans ces deux secrets et l'identifiant du rôle (`DISCORD_PATRON_ROLE_ID` dans `apps/api/wrangler.jsonc`), la page Mécène ne propose pas de relier son Discord. Ce sont le secret OAuth de l'application « Leximon Bot » et le jeton du bot ([mecene-avantages.md](cahiers-des-charges/mecene-avantages.md#4-rôle-et-salon-sur-le-discord)).
+
+```bash
+pnpm exec wrangler secret put DISCORD_CLIENT_SECRET --env production
+pnpm exec wrangler secret put DISCORD_BOT_TOKEN --env production
+```
+
 ## 7. Migrations · toi (la chaîne), agent (la commande)
 
 `pnpm deploy:prod` fait tout cela seul. Pour un geste isolé, dans le terminal qui lance les commandes de production, ouvrir un tunnel SSH vers le conteneur de la base, puis :

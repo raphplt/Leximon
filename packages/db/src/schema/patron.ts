@@ -228,3 +228,20 @@ export const patronPollVotes = pgTable(
     check("patron_poll_votes_theme_check", sql`${table.theme} >= 0`),
   ],
 );
+
+/**
+ * A patron's Discord account, linked from the patron page: the bot gives it the patrons' role
+ * while the subscription is paid, and takes it back when it stops. One Discord account for one
+ * Leximon account: linked again elsewhere, it moves.
+ */
+export const discordLinks = pgTable("discord_links", {
+  userId: text()
+    .primaryKey()
+    .references(() => users.id, { onDelete: "cascade" }),
+  discordUserId: text().notNull().unique(),
+  /** Shown to the patron alone, to say which account is linked. */
+  username: text().notNull(),
+  /** Whether Discord holds the role, as the last sync left it: the daily check mends the gaps. */
+  roleHeld: boolean().notNull().default(false),
+  linkedAt: timestamp({ withTimezone: true }).notNull(),
+});

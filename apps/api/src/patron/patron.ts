@@ -26,6 +26,7 @@ import { type Database, schema } from "@leximon/db";
 import { eq, inArray } from "drizzle-orm";
 import { ADMIN_ROLE } from "../auth";
 import { type Billing, billingConfigured, type SubscriptionSnapshot } from "./billing";
+import { readDiscordLink } from "./discord";
 import type { BillingEvent } from "./events";
 import { readCurrentPoll } from "./polls";
 import { findsLeftOf, readFinds } from "./reserve";
@@ -102,9 +103,14 @@ export const standingOfRow = (
 
 export async function readPatron(
   db: Database,
-  input: { readonly userId: string; readonly sales: PatronSales; readonly now: EpochMs },
+  input: {
+    readonly userId: string;
+    readonly sales: PatronSales;
+    readonly discordAvailable: boolean;
+    readonly now: EpochMs;
+  },
 ): Promise<PatronResponse> {
-  const [row, buyer, bracket, periods, claimed, finds, poll] = await Promise.all([
+  const [row, buyer, bracket, periods, claimed, finds, poll, discord] = await Promise.all([
     readRow(db, input.userId),
     readBuyer(db, input.userId),
     db
@@ -115,6 +121,7 @@ export async function readPatron(
     readClaimedMonths(db, input.userId),
     readFinds(db, input.userId),
     readCurrentPoll(db, input.userId, input.now),
+    readDiscordLink(db, input.userId),
   ]);
   const rules = patronRulesAt(PATRON_SCHEDULE, input.now);
   const standing = standingOfRow(row);
@@ -132,6 +139,7 @@ export async function readPatron(
     foundingOffer: isFoundingPayment(rules, input.now),
     thanksListed: row?.thanksHidden !== true,
     poll,
+    discord: { available: input.discordAvailable, username: discord?.username ?? null },
     finds: {
       left: findsLeftOf(rules, periods, finds, standing, input.now),
       words: finds.map((find) => ({
@@ -379,12 +387,12 @@ export async function applyBillingEvent(
   billing: Billing,
   event: BillingEvent,
   now: EpochMs,
-): Promise<EventResult> {
+): Promise<{ readonly result: EventResult; readonly userId: string | null }> {
   const [seen] = await db
     .select({ id: stripeEvents.id })
     .from(stripeEvents)
     .where(eq(stripeEvents.id, event.id));
-  if (seen !== undefined) return "duplicate";
+  if (seen !== undefined) return { result: "duplicate", userId: null };
   const snapshot =
     event.subscriptionId === null ? null : await billing.retrieveSubscription(event.subscriptionId);
 
@@ -394,15 +402,16 @@ export async function applyBillingEvent(
       .values({ id: event.id, type: event.type, receivedAt: new Date(now) })
       .onConflictDoNothing()
       .returning({ id: stripeEvents.id });
-    if (recorded === undefined) return { result: "duplicate" as const, surplus: null };
+    const none = { surplus: null, userId: null };
+    if (recorded === undefined) return { result: "duplicate" as const, ...none };
     const customerId = snapshot?.customerId ?? event.customerId;
-    if (customerId === null) return { result: "ignored" as const, surplus: null };
+    if (customerId === null) return { result: "ignored" as const, ...none };
     const [row] = await tx
       .select()
       .from(patronSubscriptions)
       .where(eq(patronSubscriptions.stripeCustomerId, customerId))
       .for("update");
-    if (row === undefined) return { result: "unknown_customer" as const, surplus: null };
+    if (row === undefined) return { result: "unknown_customer" as const, ...none };
 
     const change =
       snapshot === null ? { kind: "keep" as const } : subscriptionChange(row, snapshot);
@@ -444,6 +453,7 @@ export async function applyBillingEvent(
     return {
       result: "applied" as const,
       surplus: change.kind === "surplus" ? change.snapshot.id : null,
+      userId: row.userId,
     };
   });
 
@@ -452,7 +462,7 @@ export async function applyBillingEvent(
     console.error("Second patron subscription cancelled", { subscriptionId: outcome.surplus });
     await billing.cancelSubscription(outcome.surplus);
   }
-  return outcome.result;
+  return { result: outcome.result, userId: outcome.userId };
 }
 
 type SubscriptionChange =

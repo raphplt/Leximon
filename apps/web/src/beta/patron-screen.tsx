@@ -1,15 +1,17 @@
 "use client";
 
-import type {
-  MonthCosmeticView,
-  PatronFindsView,
-  PatronPlan,
-  PatronResponse,
-  ProfileResponse,
+import {
+  DISCORD_RETURN_QUERY,
+  type MonthCosmeticView,
+  type PatronFindsView,
+  type PatronPlan,
+  type PatronResponse,
+  type ProfileResponse,
 } from "@leximon/contract";
 import type { ToyIconName } from "@leximon/tokens";
 import {
   claimableLabel,
+  discordScreen,
   editionsOwnedLine,
   findStateLine,
   findsLeftLine,
@@ -27,6 +29,11 @@ import {
   PATRON_CONFIRMING,
   PATRON_CREATE_ACCOUNT,
   PATRON_DEFAULT_PLAN,
+  PATRON_DISCORD_FAILED,
+  PATRON_DISCORD_LINK,
+  PATRON_DISCORD_LINKED,
+  PATRON_DISCORD_TITLE,
+  PATRON_DISCORD_UNLINK,
   PATRON_DOOR_KICKER,
   PATRON_EDITIONS_TITLE,
   PATRON_FIND_ACTION,
@@ -584,6 +591,7 @@ function MemberView({
         <Poll patron={patron} onChanged={onClaimed} />
         <Finds finds={patron.finds} />
         <Editions />
+        <DiscordSetting patron={patron} onChanged={onClaimed} />
         <ThanksSetting patron={patron} onChanged={onClaimed} />
       </div>
       {patron.claimable.length > 0 && (
@@ -663,6 +671,94 @@ function Poll({
         ))}
       </ul>
       {screen.note !== null && <p className={styles.note}>{screen.note}</p>}
+      {error !== null && (
+        <p className={styles.error} role="alert">
+          {error}
+        </p>
+      )}
+    </Leaf>
+  );
+}
+
+/** The patrons' Discord: the link, which brings the role and the reserved room, and its undoing. */
+function DiscordSetting({
+  patron,
+  onChanged,
+}: {
+  readonly patron: PatronResponse;
+  readonly onChanged: () => Promise<unknown>;
+}) {
+  const toast = useToast();
+  const router = useRouter();
+  const back = useSearchParams().get(DISCORD_RETURN_QUERY);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const screen = discordScreen(patron);
+
+  // Back from Discord's page: said once, then the address is cleaned.
+  useEffect(() => {
+    if (back === null) return;
+    if (back === "linked") toast(PATRON_DISCORD_LINKED);
+    else setError(PATRON_DISCORD_FAILED);
+    router.replace("/mecene");
+  }, [back, router, toast]);
+
+  if (screen === null) return null;
+
+  const link = async () => {
+    setBusy(true);
+    setError(null);
+    try {
+      const result = await api.linkDiscord(false);
+      if (result.kind === "redirect") {
+        window.location.assign(result.url);
+        return;
+      }
+      setError(PATRON_DISCORD_FAILED);
+    } catch {
+      setError(PATRON_DISCORD_FAILED);
+    }
+    setBusy(false);
+  };
+
+  const unlink = async () => {
+    setBusy(true);
+    setError(null);
+    try {
+      await api.unlinkDiscord();
+      await onChanged();
+    } catch {
+      setError(PATRON_DISCORD_FAILED);
+    }
+    setBusy(false);
+  };
+
+  return (
+    <Leaf className={styles.finds}>
+      <div className={styles.findsHead}>
+        <ToyBody matter="gold" shape="tile" className={styles.tileIcon}>
+          <Lettrine icon="discussion" matter="blue" size={52} />
+        </ToyBody>
+        <div className={styles.findsText}>
+          <Lettering className={styles.headline}>{PATRON_DISCORD_TITLE}</Lettering>
+          <p className={styles.text}>{screen.line}</p>
+        </div>
+      </div>
+      {screen.canLink && (
+        <MainAction label={PATRON_DISCORD_LINK} disabled={busy} onClick={() => void link()} />
+      )}
+      {screen.canUnlink && (
+        <div className={styles.thanksActions}>
+          <Toy
+            matter="paper"
+            className={styles.secondary}
+            disabled={busy}
+            onClick={() => void unlink()}
+          >
+            {PATRON_DISCORD_UNLINK}
+          </Toy>
+        </div>
+      )}
       {error !== null && (
         <p className={styles.error} role="alert">
           {error}

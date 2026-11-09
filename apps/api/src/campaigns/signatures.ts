@@ -73,6 +73,39 @@ export async function verifyUnsubscribeToken(
   return valid ? sendId : null;
 }
 
+/**
+ * `<payload>.<HMAC>` for another use of ours, told apart by `context`: the payload can be read by
+ * anyone, never made without the secret. The payload must not hold a dot.
+ */
+export async function signPayload(secret: string, context: string, payload: string) {
+  const mac = await crypto.subtle.sign(
+    "HMAC",
+    await hmacKey(secret, "sign"),
+    encoder.encode(context + payload),
+  );
+  return `${payload}.${toBase64Url(mac)}`;
+}
+
+/** The payload of a genuine token from `signPayload`, or null. */
+export async function verifySignedPayload(
+  secret: string,
+  context: string,
+  token: string,
+): Promise<string | null> {
+  const dot = token.lastIndexOf(".");
+  if (dot <= 0 || token.length > 512) return null;
+  const payload = token.slice(0, dot);
+  const signature = fromBase64Url(token.slice(dot + 1));
+  if (signature === null) return null;
+  const valid = await crypto.subtle.verify(
+    "HMAC",
+    await hmacKey(secret, "verify"),
+    signature,
+    encoder.encode(context + payload),
+  );
+  return valid ? payload : null;
+}
+
 /** Replays older than this are refused, as Lettermint recommends. */
 export const WEBHOOK_TOLERANCE_S = 5 * 60;
 

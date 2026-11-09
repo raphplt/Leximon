@@ -797,6 +797,11 @@ Préparer : `pnpm db:migrate`, un compte mécène qui a payé au moins une fois 
 - **Attendu :** le vote s'ouvre pour sept jours ; le second est refusé tant que le premier est ouvert. La page Mécène montre les trois thèmes et la date de fermeture ; « Voter pour ce thème » met « Ta voix » sur le thème choisi, et un autre choix la déplace. L'essai voit les thèmes sans bouton, avec « Ta voix comptera après ton premier paiement. ». Aucun compte de voix tant que le vote est ouvert. Une fois fermé, chaque thème montre ses voix, le gagnant est mis en avant et la page dit « La prochaine collection aura pour thème « … ». » (ou l'égalité). L'admin montre les voix de chaque vote, ouvert ou fermé, et le journal note l'ouverture.
 - **Retour :**
 
+### MEC-18 · Salon des mécènes sur Discord
+- **Faire :** une fois les réglages posés (cahier des avantages, § 4), touche « Relier mon Discord » sur la page Mécène avec un compte qui a payé, accepte sur la page de Discord, puis regarde le serveur. Touche ensuite « Délier mon Discord ». Recommence sur le mobile. Avec un compte en essai, regarde le bloc.
+- **Attendu :** Discord demande de connaître le compte et de rejoindre le serveur. Au retour, la page Mécène dit « Ton compte Discord est relié. Le rôle Mécène arrive dans une minute. » et nomme le compte relié ; le compte est sur le serveur, avec le rôle « Mécène » et l'accès au salon réservé. Délier retire le rôle. Une résiliation qui prend effet, ou la suppression du compte, retire aussi le rôle. L'essai lit « Le salon réservé sur Discord s'ouvre après ton premier paiement. », sans bouton. Un refus sur la page de Discord ramène sur la page Mécène avec « La liaison avec Discord n'a pas abouti. Réessaie. ».
+- **Retour :**
+
 ## Mauvais choix des QCM
 
 Retour de bêta du 2026-10-31 : on trouvait la réponse par élimination (un verbe parmi des noms, un mot sans rapport avec le thème révisé). La nature des cartes vient de la publication du catalogue : en production, la colonne reste vide tant qu'une publication n'est pas passée, et les choix restent ceux d'avant.

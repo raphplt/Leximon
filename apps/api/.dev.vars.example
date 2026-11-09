@@ -22,3 +22,8 @@ GOOGLE_CLIENT_SECRET=
 # `stripe listen --forward-to localhost:8787/stripe/webhook` prints. Empty: nothing is sold.
 STRIPE_SECRET_KEY=
 STRIPE_WEBHOOK_SECRET=
+# The patrons' Discord: the OAuth secret of the bot's application (Discord developer portal,
+# OAuth2), and the bot's token. Empty: no link offered. The redirect to register in the portal is
+# http://localhost:8787/discord/callback (https://api.leximon.fr/discord/callback in production).
+DISCORD_CLIENT_SECRET=
+DISCORD_BOT_TOKEN=

@@ -40,7 +40,12 @@
     // Oldest mobile app version still served: raised when the API drops what an old app needs,
     // the app then asks to be updated.
     "MOBILE_MIN_VERSION": "0.0.0",
-    "PATRON_SALES": "closed"
+    "PATRON_SALES": "closed",
+    // The patrons' Discord: the bot's application, the server, the role it gives. Empty: no
+    // link offered. Secrets DISCORD_CLIENT_SECRET and DISCORD_BOT_TOKEN complete them.
+    "DISCORD_CLIENT_ID": "1568981422721470464",
+    "DISCORD_GUILD_ID": "1563157710042570764",
+    "DISCORD_PATRON_ROLE_ID": ""
   },
   // Campaign e-mails: the pump queues row ids, the consumer sends them in batches.
   // Game events: cards obtained and clan changes, recounted from the database.
@@ -146,7 +151,8 @@
   // Secrets (`wrangler secret put … --env production`): BETTER_AUTH_SECRET, EMAIL_LINK_SECRET,
   // LETTERMINT_SENDING_TOKEN, LETTERMINT_WEBHOOK_SECRET, and for the morning summary
   // DISCORD_WEBHOOK_URL, CLOUDFLARE_ACCOUNT_ID, OBSERVABILITY_TOKEN, and for the store reviewers
-  // REVIEW_ACCOUNT_EMAIL, REVIEW_ACCOUNT_CODE. See docs/mise-en-ligne.md.
+  // REVIEW_ACCOUNT_EMAIL, REVIEW_ACCOUNT_CODE, and for the patrons' Discord DISCORD_CLIENT_SECRET,
+  // DISCORD_BOT_TOKEN. See docs/mise-en-ligne.md.
   "env": {
     "production": {
       "routes": [{ "pattern": "api.leximon.fr", "custom_domain": true }],
@@ -169,7 +175,10 @@
         "BETA_INVITES": "off",
         "MOBILE_MIN_VERSION": "0.0.0",
         // "open" sells the patron subscription; closed, only admins can buy, to try the payment.
-        "PATRON_SALES": "closed"
+        "PATRON_SALES": "closed",
+        "DISCORD_CLIENT_ID": "1568981422721470464",
+        "DISCORD_GUILD_ID": "1563157710042570764",
+        "DISCORD_PATRON_ROLE_ID": ""
       },
       // Same queue names as above: `queue()` recognises the game events queue by its name.
       "queues": {
@@ -281,7 +290,10 @@
         "PUBLIC_WEB_URL": "https://leximon.fr",
         "BETA_INVITES": "off",
         "MOBILE_MIN_VERSION": "0.0.0",
-        "PATRON_SALES": "closed"
+        "PATRON_SALES": "closed",
+        "DISCORD_CLIENT_ID": "1568981422721470464",
+        "DISCORD_GUILD_ID": "1563157710042570764",
+        "DISCORD_PATRON_ROLE_ID": ""
       },
       "queues": {
         "producers": [

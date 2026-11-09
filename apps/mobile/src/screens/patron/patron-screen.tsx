@@ -2,6 +2,7 @@ import type { MonthCosmeticView, PatronFindsView, PatronResponse } from "@leximo
 import { mixHex, toyMatters, toy as toyValues } from "@leximon/tokens";
 import {
   claimableLabel,
+  discordScreen,
   editionsOwnedLine,
   findStateLine,
   findsLeftLine,
@@ -10,6 +11,11 @@ import {
   PATRON_CLAIM_BUSY,
   PATRON_CLAIMABLE_TITLE,
   PATRON_CLAIMED,
+  PATRON_DISCORD_FAILED,
+  PATRON_DISCORD_LINK,
+  PATRON_DISCORD_LINKED,
+  PATRON_DISCORD_TITLE,
+  PATRON_DISCORD_UNLINK,
   PATRON_EDITIONS_TITLE,
   PATRON_FIND_ACTION,
   PATRON_FINDS_RULE,
@@ -36,6 +42,7 @@ import { router, useFocusEffect } from "expo-router";
 import { useCallback, useState } from "react";
 import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
 import { api } from "@/api/client";
+import { linkDiscord } from "@/api/discord-link";
 import { MainAction } from "@/library/play-pieces";
 import { useShared } from "@/player/shared";
 import { editions, profile } from "@/player/state";
@@ -93,6 +100,7 @@ export function PatronScreen() {
           <Poll patron={patron} onChanged={load} />
           <Finds finds={patron.finds} />
           <Editions />
+          <DiscordSetting patron={patron} onChanged={load} />
           <ThanksSetting patron={patron} onChanged={load} />
           {patron.claimable.map((item) => (
             <ClaimTile key={item.month} item={item} onClaimed={load} />
@@ -242,6 +250,69 @@ function Poll({
         </View>
       ))}
       {screen.note !== null && <Text style={styles.muted}>{screen.note}</Text>}
+    </Leaf>
+  );
+}
+
+/** The patrons' Discord: the link, which brings the role and the reserved room, and its undoing. */
+function DiscordSetting({
+  patron,
+  onChanged,
+}: {
+  readonly patron: PatronResponse;
+  readonly onChanged: () => Promise<void>;
+}) {
+  const [busy, setBusy] = useState(false);
+  const screen = discordScreen(patron);
+  if (screen === null) return null;
+
+  const link = async () => {
+    setBusy(true);
+    try {
+      const trip = await linkDiscord();
+      if (trip === "linked") toast(PATRON_DISCORD_LINKED);
+      else if (trip !== "closed") toast(PATRON_DISCORD_FAILED);
+      await onChanged();
+    } catch {
+      toast(PATRON_DISCORD_FAILED);
+    }
+    setBusy(false);
+  };
+
+  const unlink = async () => {
+    setBusy(true);
+    try {
+      await api.unlinkDiscord();
+      await onChanged();
+    } catch {
+      toast(PATRON_DISCORD_FAILED);
+    }
+    setBusy(false);
+  };
+
+  return (
+    <Leaf style={styles.card}>
+      <View style={styles.claimRow}>
+        <ToyBody matter="gold" shape="tile" style={styles.claimIcon}>
+          <Lettrine icon="discussion" matter="blue" size={48} />
+        </ToyBody>
+        <View style={styles.claimText}>
+          <Lettering size={fontSizes.title}>{PATRON_DISCORD_TITLE}</Lettering>
+          <Text style={styles.text}>{screen.line}</Text>
+        </View>
+      </View>
+      {screen.canLink && (
+        <MainAction label={PATRON_DISCORD_LINK} disabled={busy} onPress={() => void link()} />
+      )}
+      {screen.canUnlink && (
+        <Button
+          label={PATRON_DISCORD_UNLINK}
+          secondary
+          small
+          disabled={busy}
+          onPress={() => void unlink()}
+        />
+      )}
     </Leaf>
   );
 }

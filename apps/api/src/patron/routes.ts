@@ -6,6 +6,9 @@ import {
   type AdminPollsResponse,
   adminPatronsQuerySchema,
   adminPollCreateSchema,
+  DISCORD_RETURN_QUERY,
+  type DiscordLinkRefusal,
+  discordLinkRequestSchema,
   type EditionsResponse,
   editionChoiceSchema,
   type FindRefusal,
@@ -27,14 +30,27 @@ import {
   slugSchema,
   type WordFindView,
 } from "@leximon/contract";
+import { schema } from "@leximon/db";
+import { eq } from "drizzle-orm";
 import { type Context, Hono } from "hono";
 import { z } from "zod";
+import { sendGameEvents } from "../clans/events";
 import type { AppEnv } from "../context";
+import { errorSummary } from "../error-summary";
 import { playerRateLimit } from "../middleware/rate-limit";
 import { requireAdmin } from "../middleware/require-admin";
 import { refuseLockedWrites } from "../moderation/restrictions";
 import { InvalidPatronCursorError, listPatrons, refundPatron } from "./admin";
 import type { BillingFactory } from "./billing";
+import {
+  type DiscordFactory,
+  discordAuthorizeUrl,
+  discordConfigured,
+  linkDiscord,
+  readDiscordLink,
+  readDiscordState,
+  unlinkDiscord,
+} from "./discord";
 import { type EditionWriteResult, readEditions, setAlbumEdition, setCardEdition } from "./editions";
 import { billingEventOf, verifiedStripeEvent } from "./events";
 import {
@@ -44,6 +60,7 @@ import {
   openPortal,
   patronSales,
   readPatron,
+  standingOfRow,
 } from "./patron";
 import { listPolls, openPoll, votePoll } from "./polls";
 import { findWord, InvalidReserveCursorError, searchReserve } from "./reserve";
@@ -105,6 +122,7 @@ export function patronRoutes(createBilling: BillingFactory) {
       await readPatron(c.var.db, {
         userId: c.var.userId,
         sales: patronSales(c.env),
+        discordAvailable: discordConfigured(c.env),
         now: Date.now(),
       }),
     ),
@@ -114,6 +132,36 @@ export function patronRoutes(createBilling: BillingFactory) {
     const body = patronThanksChoiceSchema.safeParse(await c.req.json().catch(() => null));
     if (!body.success) return c.json({ error: "invalid_request" }, 400);
     await setPatronThanks(c.var.db, { userId: c.var.userId, listed: body.data.listed });
+    return c.body(null, 204);
+  });
+
+  routes.post("/discord/link", refuseLockedWrites, async (c) => {
+    const body = discordLinkRequestSchema.safeParse(await c.req.json().catch(() => ({})));
+    if (!body.success) return c.json({ error: "invalid_request" }, 400);
+    const refuse = (error: DiscordLinkRefusal) =>
+      c.json<{ error: DiscordLinkRefusal }>({ error }, 409);
+    if (!discordConfigured(c.env)) return refuse("discord_unavailable");
+    const [row] = await c.var.db
+      .select({
+        status: schema.patronSubscriptions.status,
+        firstPaidAt: schema.patronSubscriptions.firstPaidAt,
+      })
+      .from(schema.patronSubscriptions)
+      .where(eq(schema.patronSubscriptions.userId, c.var.userId));
+    if (standingOfRow(row) !== "patron") return refuse("not_patron");
+    const url = await discordAuthorizeUrl(c.env, {
+      userId: c.var.userId,
+      app: body.data.app,
+      now: Date.now(),
+    });
+    return c.json<PatronRedirectResponse>({ url });
+  });
+
+  routes.delete("/discord", async (c) => {
+    const discordUserId = await unlinkDiscord(c.var.db, c.var.userId);
+    if (discordUserId !== null) {
+      sendGameEvents(c, [{ type: "discord_role", userId: c.var.userId, discordUserId }]);
+    }
     return c.body(null, 204);
   });
 
@@ -232,9 +280,19 @@ export function stripeWebhookRoutes(createBilling: BillingFactory) {
     if (verified === null) return c.json({ error: "invalid_signature" }, 400);
     const event = billingEventOf(verified);
     if (event === null) return c.json({ error: "invalid_request" }, 400);
-    const result = await applyBillingEvent(c.var.db, createBilling(c.env), event, Date.now());
+    const { result, userId } = await applyBillingEvent(
+      c.var.db,
+      createBilling(c.env),
+      event,
+      Date.now(),
+    );
     if (result === "unknown_customer") {
       console.warn("Stripe event for a customer the game did not make", { type: event.type });
+    }
+    // The subscription may have started paying or stopped: the role follows.
+    const link = userId === null ? null : await readDiscordLink(c.var.db, userId);
+    if (userId !== null && link !== null) {
+      sendGameEvents(c, [{ type: "discord_role", userId, discordUserId: link.discordUserId }]);
     }
     return c.json({ result });
   });
@@ -307,6 +365,53 @@ export function patronThanksRoutes() {
   routes.get("/", async (c) => {
     c.header("Cache-Control", "public, max-age=300");
     return c.json<PatronThanksResponse>(await readPatronThanks(c.var.db, Date.now()));
+  });
+  return routes;
+}
+
+/**
+ * `GET /discord/callback`: Discord's page sends the browser back here. The signed state names the
+ * account; the player then goes back to the patron page, on the web or in the app.
+ */
+export function discordRoutes(createDiscord: DiscordFactory) {
+  const routes = new Hono<AppEnv>();
+  routes.get("/callback", async (c) => {
+    const now = Date.now();
+    const state = await readDiscordState(c.env, c.req.query("state") ?? "", now);
+    if (state === null) return c.json({ error: "invalid_state" }, 400);
+    const back = (outcome: "linked" | "failed") => {
+      const query = `?${DISCORD_RETURN_QUERY}=${outcome}`;
+      return c.redirect(
+        state.app ? `leximon://mecene${query}` : `${webUrlOf(c.env)}/mecene${query}`,
+      );
+    };
+    const code = c.req.query("code");
+    // Refused on Discord's page, or Discord not set here any more.
+    if (code === undefined || code === "" || !discordConfigured(c.env)) return back("failed");
+    try {
+      const linked = await linkDiscord(c.var.db, createDiscord(c.env), c.env, {
+        userId: state.userId,
+        code,
+        now,
+      });
+      if (linked.kind === "refused") return back("failed");
+      sendGameEvents(c, [
+        { type: "discord_role", userId: state.userId, discordUserId: linked.discordUserId },
+        ...(linked.previous === null
+          ? []
+          : [
+              {
+                type: "discord_role" as const,
+                userId: state.userId,
+                discordUserId: linked.previous,
+              },
+            ]),
+      ]);
+      return back("linked");
+    } catch (error) {
+      console.error("Discord link failed", errorSummary(error));
+      return back("failed");
+    }
   });
   return routes;
 }

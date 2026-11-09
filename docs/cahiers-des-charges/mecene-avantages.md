@@ -1,6 +1,6 @@
 # Cahier des charges · Avantages du mécène
 
-- **Statut :** tranché le 2026-11-08, les dix recommandations du § 9 retenues. Éditions de bibliothèque, épingles en plus et cabinet du mot construits le 2026-11-08, page des mécènes et vote le 2026-11-09 (web et mobile), recette MEC-13 à MEC-17 dans [recette-nouveautes.md](../recette-nouveautes.md). Le cabinet ne montre pas encore les mots du Wiktionnaire ni les citations de Wikisource (§ 2). Reste le Discord, l'animation et la parure.
+- **Statut :** tranché le 2026-11-08, les dix recommandations du § 9 retenues. Éditions de bibliothèque, épingles en plus et cabinet du mot construits le 2026-11-08, page des mécènes, vote et liaison Discord le 2026-11-09 (web et mobile), recette MEC-13 à MEC-18 dans [recette-nouveautes.md](../recette-nouveautes.md). Le cabinet ne montre pas encore les mots du Wiktionnaire ni les citations de Wikisource (§ 2). Le Discord attend ses réglages (§ 4, pas à pas). Reste l'animation et la parure.
 - **Règles concernées :** P72 (gratuit et payant) et P73 (abonnement Mécène), dans [regles-du-jeu.md](../regles-du-jeu.md), qui fait foi. Socle et dénichage : [mecene.md](mecene.md).
 - **D'où ça vient :** après le dénichage, le propriétaire trouve l'offre mince. La page Mécène ne montre que deux avantages construits (le cosmétique du mois et le mot déniché), alors que P73 en promet d'autres. Il retient : construire les éditions de bibliothèque et le cabinet du mot avant l'ouverture de la vente, et ajouter de petits avantages sociaux. De l'XP en plus lui irait, mais elle est remise à plus tard (P72 l'exclut tant qu'elle n'est pas changée), et les sachets restent exclus.
 - **Objectif :** tout ce qui suit est construit, web et mobile, avant l'ouverture de la vente vers mi-janvier 2027.
@@ -45,6 +45,18 @@ Le mécène a des places d'épingles en plus de celles que lui donnent ses nivea
 ## 4. Rôle et salon sur le Discord
 
 Un rôle « Mécène » sur le Discord du projet, qui ouvre un salon réservé et colore le pseudo. Le rôle part quand l'abonnement s'arrête. Le lien entre le compte Leximon et le compte Discord se fait depuis la page Mécène (§ 9, question 7).
+
+**Construit le 2026-11-09.** « Relier mon Discord » (mécène payant seulement) ouvre la page de Discord, qui demande deux droits : connaître le compte, et l'ajouter au serveur s'il n'y est pas. La liaison passe par une route de l'API (`/discord/callback`) et non par Better Auth : relier Discord n'en fait pas un moyen de se connecter à Leximon, et Discord ne donne pas l'adresse e-mail. Le bot pose le rôle par la file, le retire à l'arrêt de l'abonnement, à la déliaison et à la suppression du compte ; la maintenance du matin rattrape un message perdu. Un compte Discord relié à un second compte Leximon quitte le premier.
+
+**Pas à pas (toi) :**
+
+1. Sur le serveur, crée le rôle « Mécène » (couleur au choix) et le salon réservé, visible de ce rôle seul. Place le rôle du bot au-dessus de « Mécène » dans la liste des rôles, sinon il ne peut pas le donner.
+2. Donne au bot les droits « Gérer les rôles » et « Créer une invitation » (ce dernier lui permet d'ajouter un mécène au serveur).
+3. Dans le portail des développeurs Discord, application « Leximon Bot », onglet OAuth2 : ajoute les redirections `https://api.leximon.fr/discord/callback` et `http://localhost:8787/discord/callback`, et copie le secret du client.
+4. Donne-moi l'identifiant du rôle (clic droit sur le rôle, « Copier l'identifiant », mode développeur activé) : il va dans `DISCORD_PATRON_ROLE_ID` de `apps/api/wrangler.jsonc`.
+5. Pose les deux secrets, en local dans `apps/api/.dev.vars` et en production ([mise-en-ligne.md](../mise-en-ligne.md#6-secrets-de-lapi--toi)).
+
+Tant qu'un de ces réglages manque, la page Mécène ne montre pas le bloc Discord.
 
 ## 5. Vote des mécènes
 

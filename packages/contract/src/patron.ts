@@ -80,6 +80,13 @@ export const patronResponseSchema = z.object({
   /** On the public page of thanks while paying, unless the patron asked not to be. */
   thanksListed: z.boolean().default(true),
   poll: patronPollSchema.nullable().default(null),
+  /**
+   * The patrons' Discord: `available` once the bot is set on the server, `username` the account
+   * linked, if any.
+   */
+  discord: z
+    .object({ available: z.boolean(), username: z.string().nullable() })
+    .default({ available: false, username: null }),
   subscription: z
     .object({
       standing: z.enum(["none", "trial", "patron"]),
@@ -199,6 +206,18 @@ export type AdminPatronRefundResponse = z.infer<typeof adminPatronRefundResponse
 /** `POST /admin/patrons/:userId/refund`, 409: the player never subscribed. */
 export const adminPatronRefundRefusalSchema = z.object({ error: z.enum(["not_subscribed"]) });
 export type AdminPatronRefundRefusal = z.infer<typeof adminPatronRefundRefusalSchema>["error"];
+
+/** `POST /me/patron/discord/link` body: back to the app (`leximon://`) or to the web page. */
+export const discordLinkRequestSchema = z.object({ app: z.boolean().default(false) });
+
+/** Refusals of a Discord link, as `{ error }` with 409: not a paying patron, or no bot set. */
+export const discordLinkRefusalSchema = z.object({
+  error: z.enum(["not_patron", "discord_unavailable"]),
+});
+export type DiscordLinkRefusal = z.infer<typeof discordLinkRefusalSchema>["error"];
+
+/** Where Discord's page sends the player back: `?discord=linked`, or `?discord=failed`. */
+export const DISCORD_RETURN_QUERY = "discord";
 
 /** `PUT /me/patron/polls/:pollId/vote` body: the theme chosen, as an index. */
 export const patronVoteRequestSchema = z.object({ theme: z.int().nonnegative() });

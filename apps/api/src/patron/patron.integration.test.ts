@@ -46,6 +46,7 @@ import {
 } from "../test-support";
 import { ensurePlayer } from "../trades/players";
 import type { Billing, CheckoutInput, SubscriptionSnapshot } from "./billing";
+import { type DiscordApi, discordRolesAdrift, syncDiscordRoles } from "./discord";
 
 /** The calendar is empty until the cosmetics are drawn: this month gets one for the tests. */
 vi.mock("@leximon/core", async (importOriginal) => {
@@ -146,7 +147,18 @@ function fakeStripe() {
 }
 
 const stripe = fakeStripe();
-const app = createApp({ billing: () => stripe.billing });
+/** Discord, as far as the game asks it: the code Discord's page sends back is the account's id. */
+const roles = new Map<string, boolean>();
+const discord: DiscordApi = {
+  async identify(code) {
+    return { id: code, username: `joueur_${code.slice(-4)}` };
+  },
+  async setPatronRole(discordUserId, held) {
+    roles.set(discordUserId, held);
+    return "done";
+  },
+};
+const app = createApp({ billing: () => stripe.billing, discord: () => discord });
 
 function request(
   player: Guest,
@@ -289,6 +301,7 @@ describe("the patron page", () => {
       finds: { left: 0, words: [] },
       thanksListed: true,
       poll: null,
+      discord: { available: true, username: null },
       subscription: null,
     });
   });
@@ -1178,5 +1191,95 @@ describe("the patrons' vote", () => {
       myVote: 2,
       result: { votes: [2, 0, 1], winner: 0 },
     });
+  });
+});
+
+describe("the patrons' Discord", () => {
+  let next = 0;
+  const discordId = () => `${Date.now()}${String(++next).padStart(4, "0")}`;
+
+  async function linkUrl(player: Guest) {
+    const response = await request(player, "POST", "/me/patron/discord/link", { app: false });
+    return response;
+  }
+
+  /** Discord's page accepted: the browser comes back with the code and the state. */
+  async function comeBack(state: string, code: string) {
+    const response = await app.request(
+      `/discord/callback?${new URLSearchParams({ state, code })}`,
+      {},
+      env,
+    );
+    return response;
+  }
+
+  async function linked(player: Guest, id: string) {
+    const response = await linkUrl(player);
+    expect(response.status).toBe(200);
+    const url = new URL(((await response.json()) as { url: string }).url);
+    expect(url.origin).toBe("https://discord.com");
+    expect(url.searchParams.get("scope")).toBe("identify guilds.join");
+    const back = await comeBack(url.searchParams.get("state") ?? "", id);
+    expect(back.status).toBe(302);
+    expect(back.headers.get("location")).toBe("http://localhost:3000/mecene?discord=linked");
+  }
+
+  const linkOf = async (userId: string) =>
+    (await db.select().from(schema.discordLinks).where(eq(schema.discordLinks.userId, userId)))[0];
+
+  it("is linked by a paying patron, never during the trial", async () => {
+    const { member: trial, customerId } = await memberWithCustomer();
+    await checkoutCompleted(subscribe(customerId));
+    expect(await linkUrl(trial).then((r) => r.status)).toBe(409);
+
+    const { member } = await payingPatron();
+    const id = discordId();
+    await linked(member, id);
+    expect((await readPatron(member)).discord).toEqual({
+      available: true,
+      username: `joueur_${id.slice(-4)}`,
+    });
+  });
+
+  it("refuses a state it did not sign", async () => {
+    const forged = `someone:${Date.now() + 60_000}:web.AAAA`;
+    expect((await comeBack(forged, discordId())).status).toBe(400);
+  });
+
+  it("gives the role while the patron pays, and takes it back when the subscription stops", async () => {
+    const { member } = await payingPatron();
+    const id = discordId();
+    await linked(member, id);
+    await syncDiscordRoles(db, discord, [{ userId: member.userId, discordUserId: id }]);
+    expect(roles.get(id)).toBe(true);
+    expect((await linkOf(member.userId))?.roleHeld).toBe(true);
+
+    await db
+      .update(schema.patronSubscriptions)
+      .set({ status: "canceled" })
+      .where(eq(schema.patronSubscriptions.userId, member.userId));
+    const adrift = await discordRolesAdrift(db);
+    expect(adrift).toContainEqual({ userId: member.userId, discordUserId: id });
+    await syncDiscordRoles(db, discord, adrift);
+    expect(roles.get(id)).toBe(false);
+    expect(await discordRolesAdrift(db)).not.toContainEqual({
+      userId: member.userId,
+      discordUserId: id,
+    });
+  });
+
+  it("moves a Discord account linked again from another patron, and unlinks", async () => {
+    const first = await payingPatron();
+    const second = await payingPatron();
+    const id = discordId();
+    await linked(first.member, id);
+    await linked(second.member, id);
+    expect(await linkOf(first.member.userId)).toBeUndefined();
+    expect((await linkOf(second.member.userId))?.discordUserId).toBe(id);
+
+    expect((await request(second.member, "DELETE", "/me/patron/discord")).status).toBe(204);
+    expect(await linkOf(second.member.userId)).toBeUndefined();
+    await syncDiscordRoles(db, discord, [{ userId: second.member.userId, discordUserId: id }]);
+    expect(roles.get(id)).toBe(false);
   });
 });

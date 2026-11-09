@@ -63,6 +63,7 @@ import { missionRoutes } from "../missions/routes";
 import { readRestrictions, refuseLockedWrites } from "../moderation/restrictions";
 import { sanctionRoutes } from "../moderation/routes";
 import { type BillingFactory, billingConfigured } from "../patron/billing";
+import { readDiscordLink } from "../patron/discord";
 import { endBillingOfAccount } from "../patron/patron";
 import { editionRoutes, patronRoutes } from "../patron/routes";
 import { buyBanner } from "../profile/banners";
@@ -481,9 +482,16 @@ export function meRoutes(createBilling: BillingFactory) {
     if (left.kind === "left" && !left.dissolved) {
       sendGameEvents(c, [{ type: "clan_changed", clanId: left.clanId }]);
     }
+    // Read before the account goes: the patrons' role must leave that Discord account.
+    const discord = await readDiscordLink(c.var.db, c.var.userId);
     const result = await deleteAccount(c.var.db, { userId: c.var.userId, now });
     if (result.kind === "admin_account") {
       return c.json<{ error: DeleteAccountRefusal }>({ error: result.kind }, 409);
+    }
+    if (discord !== null) {
+      sendGameEvents(c, [
+        { type: "discord_role", userId: c.var.userId, discordUserId: discord.discordUserId },
+      ]);
     }
     const signedOut = await c.var.auth.api.signOut({
       headers: c.req.raw.headers,

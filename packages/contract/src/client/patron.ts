@@ -8,6 +8,8 @@ import {
   adminPatronsResponseSchema,
   adminPollRefusalSchema,
   adminPollsResponseSchema,
+  type DiscordLinkRefusal,
+  discordLinkRefusalSchema,
   type EditionChoice,
   type EditionRefusal,
   type EditionsResponse,
@@ -56,6 +58,10 @@ export type PatronVoteResult =
 export type AdminPollResult =
   | { readonly kind: "opened" }
   | { readonly kind: "refused"; readonly reason: AdminPollRefusal };
+
+export type DiscordLinkResult =
+  | { readonly kind: "redirect"; readonly url: string }
+  | { readonly kind: "refused"; readonly reason: DiscordLinkRefusal };
 
 export type PatronClaimResult =
   | { readonly kind: "claimed"; readonly cosmetic: PatronCosmeticView }
@@ -149,6 +155,22 @@ export function patronRoutes(http: Http) {
       }
       if (!response.ok) throw new ApiError("patron_vote_failed", response.status);
       return { kind: "voted" };
+    },
+
+    /** Discord's page, to link the patron's account; `app` brings the browser back to the app. */
+    async linkDiscord(app: boolean): Promise<DiscordLinkResult> {
+      const response = await send("/me/patron/discord/link", json("POST", { app }));
+      if (response.status === 409) {
+        return { kind: "refused", reason: (await parse(response, discordLinkRefusalSchema)).error };
+      }
+      if (!response.ok) throw new ApiError("discord_link_failed", response.status);
+      return { kind: "redirect", url: (await parse(response, patronRedirectResponseSchema)).url };
+    },
+
+    /** Unlinks the patron's Discord account; the role leaves it. */
+    async unlinkDiscord(): Promise<void> {
+      const response = await send("/me/patron/discord", { method: "DELETE" });
+      if (!response.ok) throw new ApiError("discord_unlink_failed", response.status);
     },
 
     /** Whether the patron's pseudo shows on the page of thanks. */

@@ -42,6 +42,16 @@ export const gameEventSchema = z.discriminatedUnion("type", [
   z.object({ type: z.literal("joust_changed"), joustId: z.uuid() }),
   /** Letters came in a while ago: an e-mail if they are still unread and the player away. */
   z.object({ type: z.literal("news_due"), userId: z.string().min(1) }),
+  /**
+   * A patron's Discord account was linked or unlinked, or the subscription changed: the bot gives
+   * or takes the patrons' role, as the database says now. `discordUserId` is the account the
+   * role was on, which an unlinked or deleted account no longer names.
+   */
+  z.object({
+    type: z.literal("discord_role"),
+    userId: z.string().min(1),
+    discordUserId: z.string().regex(/^\d{1,20}$/),
+  }),
   /** The evening's reminders, for players away while their sachets are full. */
   z.object({
     type: z.literal("reminders_due"),

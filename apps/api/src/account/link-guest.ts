@@ -117,6 +117,7 @@ export const USER_REFERENCES = {
   "card_editions.user_id": { transfer: "kept", abandon: "kept" },
   "word_finds.user_id": { transfer: "kept", abandon: "kept" },
   "patron_poll_votes.user_id": { transfer: "kept", abandon: "kept" },
+  "discord_links.user_id": { transfer: "kept", abandon: "kept" },
   // Back office audit log: written by admins, who are never guests.
   "admin_actions.admin_id": { transfer: "kept", abandon: "kept" },
   "moderation_reports.resolved_by": { transfer: "kept", abandon: "kept" },

@@ -41,7 +41,13 @@ import {
   waitlistRateLimit,
 } from "./middleware/rate-limit";
 import { type BillingFactory, createStripeBilling } from "./patron/billing";
-import { adminPatronRoutes, patronThanksRoutes, stripeWebhookRoutes } from "./patron/routes";
+import { createDiscordApi, type DiscordFactory } from "./patron/discord";
+import {
+  adminPatronRoutes,
+  discordRoutes,
+  patronThanksRoutes,
+  stripeWebhookRoutes,
+} from "./patron/routes";
 import { riddleRoutes } from "./riddles/routes";
 import { playerRoutes, tradeRoutes } from "./trades/routes";
 import { waitlistRoutes } from "./waitlist/routes";
@@ -72,6 +78,8 @@ export interface AppOptions {
   readonly mailDomain?: MailDomainResolver;
   /** Talks to Stripe; tests pass a fake. */
   readonly billing?: BillingFactory;
+  /** Reads the Discord account a patron links; tests pass a fake. */
+  readonly discord?: DiscordFactory;
 }
 
 /**
@@ -165,6 +173,10 @@ export function createApp(options: AppOptions = {}) {
   app.get("/patrons", waitlistRateLimit);
   app.use("/patrons", withDatabase);
   app.route("/patrons", patronThanksRoutes());
+  // Discord's page sends the browser back here: public, a signed state names the account.
+  app.get("/discord/*", waitlistRateLimit);
+  app.use("/discord/*", withDatabase);
+  app.route("/discord", discordRoutes(options.discord ?? createDiscordApi));
   app.use("/stripe/*", withDatabase);
   app.route("/stripe", stripeWebhookRoutes(createBilling));
   app.use("/admin/*", withDatabase);

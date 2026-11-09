@@ -60,6 +60,12 @@ export function testEnv(connectionString = "postgres://unused@127.0.0.1:1/unused
     EMAIL_LINK_SECRET: TEST_LINK_SECRET,
     LETTERMINT_WEBHOOK_SECRET: TEST_WEBHOOK_SECRET,
     DISCORD_WEBHOOK_URL: "",
+    // Discord itself is faked by the tests that need it (`AppOptions.discord`).
+    DISCORD_CLIENT_ID: "1568981422721470464",
+    DISCORD_CLIENT_SECRET: "discord_test_secret",
+    DISCORD_BOT_TOKEN: "discord_test_bot",
+    DISCORD_GUILD_ID: "1563157710042570764",
+    DISCORD_PATRON_ROLE_ID: "1000000000000000001",
     CLOUDFLARE_ACCOUNT_ID: "",
     OBSERVABILITY_TOKEN: "",
     REVIEW_ACCOUNT_EMAIL: "",

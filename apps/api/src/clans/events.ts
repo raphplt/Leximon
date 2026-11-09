@@ -13,6 +13,7 @@ import {
   writeTradeLetters,
 } from "../mail/mail";
 import { lastLetterId, playersWithNews } from "../notifications/notifications";
+import type { RoleSync } from "../patron/discord";
 import { clansOf } from "./clans";
 import { recountClanWeek } from "./goal";
 
@@ -52,6 +53,8 @@ export interface GameEventsReport {
   /** E-mails due now, sent by the caller, which holds the mailer. */
   readonly newsDue: readonly string[];
   readonly remindersDue: readonly string[];
+  /** Discord accounts whose patrons' role is to follow the database, synced by the caller. */
+  readonly discordDue: readonly RoleSync[];
 }
 
 export interface LibraryDeferral {
@@ -91,6 +94,7 @@ export async function handleGameEvents(
   const reactions = new Set<number>();
   const newsDue = new Set<string>();
   const remindersDue = new Set<string>();
+  const discordDue = new Map<string, RoleSync>();
   const weeks = new Set<string>([gameWeekOf(now).key]);
   // When the newest event that moves a player's cards, or a clan's library, was sent.
   const cardsSentAt = new Map<string, EpochMs>();
@@ -155,6 +159,11 @@ export async function handleGameEvents(
       case "reminders_due":
         for (const userId of event.data.userIds) remindersDue.add(userId);
         break;
+      case "discord_role": {
+        const { userId, discordUserId } = event.data;
+        discordDue.set(discordUserId, { userId, discordUserId });
+        break;
+      }
     }
   });
 
@@ -208,6 +217,7 @@ export async function handleGameEvents(
     news: await playersWithNews(db, lettersBefore),
     newsDue: [...newsDue],
     remindersDue: [...remindersDue],
+    discordDue: [...discordDue.values()],
   };
 }
 

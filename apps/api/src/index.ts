@@ -23,6 +23,12 @@ import {
   notifyContext,
   remindersDue,
 } from "./notifications/notifications";
+import {
+  createDiscordApi,
+  discordConfigured,
+  discordRolesAdrift,
+  syncDiscordRoles,
+} from "./patron/discord";
 import { runWatchdog, WATCHDOG_CRON } from "./watchdog";
 
 const app = createApp();
@@ -83,6 +89,15 @@ export default {
       const now = Date.now();
       const report = await runMaintenance(db, now);
       console.info("Maintenance done", report);
+      // Mends the patrons' roles a lost message or a lapsed payment left behind.
+      if (discordConfigured(env)) {
+        const adrift = await discordRolesAdrift(db);
+        await sendFollowUps(
+          env.GAME_EVENTS,
+          adrift.map((sync) => ({ body: { type: "discord_role", ...sync } satisfies GameEvent })),
+          "Discord roles",
+        );
+      }
       // Restarts the campaign pump in case its last message was lost.
       if (await campaignPumpNeeded(db, now)) await startCampaignPump(env.CAMPAIGN_QUEUE);
       // The summary never fails the maintenance.
@@ -139,6 +154,10 @@ export default {
               await deliverReminders(notify, report.remindersDue, now),
             );
           }
+        }
+        if (report.discordDue.length > 0 && discordConfigured(env)) {
+          const roles = await syncDiscordRoles(db, createDiscordApi(env), report.discordDue);
+          console.info("Discord roles", roles);
         }
         batch.ackAll();
       } catch (error) {

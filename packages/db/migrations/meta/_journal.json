@@ -379,6 +379,13 @@
       "when": 1794214095650,
       "tag": "0053_patron_polls",
       "breakpoints": true
+    },
+    {
+      "idx": 54,
+      "version": "7",
+      "when": 1794214757831,
+      "tag": "0054_discord_links",
+      "breakpoints": true
     }
   ]
 }

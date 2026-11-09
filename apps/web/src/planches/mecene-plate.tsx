@@ -70,6 +70,7 @@ const OFFER: PatronResponse = {
   finds: { left: 0, words: [] },
   thanksListed: true,
   poll: null,
+  discord: { available: false, username: null },
   subscription: null,
 };
 
