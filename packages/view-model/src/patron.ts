@@ -71,7 +71,7 @@ export const PATRON_PERKS: readonly PatronPerk[] = [
     key: "cosmetic",
     title: "Le cosmétique du mois",
     lead: "Un cosmétique chaque mois",
-    rest: ", cadre ou avatar gravé, dévoilé le 1er et gardé à vie.",
+    rest: " (un cadre ou un avatar gravé), dévoilé le 1er et à toi pour toujours.",
   },
   {
     key: "word",
@@ -89,7 +89,7 @@ export const PATRON_PERKS: readonly PatronPerk[] = [
     key: "cabinet",
     title: "Le cabinet des mots",
     lead: "Le cabinet de chaque mot",
-    rest: ", ouvert depuis sa carte, avec son usage dans les livres depuis 1800, son article du Littré et sa famille.",
+    rest: ", avec son usage dans les livres depuis 1800, son article du Littré et les mots de sa famille.",
   },
   {
     key: "badge",
@@ -113,7 +113,7 @@ export const PATRON_PERKS: readonly PatronPerk[] = [
     key: "discord",
     title: "Le salon des mécènes",
     lead: "Le salon des mécènes",
-    rest: " sur le Discord de Leximon, ouvert par le rôle Mécène.",
+    rest: " sur le Discord de Leximon, réservé aux abonnés.",
   },
 ];
 
@@ -241,7 +241,7 @@ export function claimableLabel(item: MonthCosmeticView): string {
 export const PATRON_CLAIMABLE_TITLE = "À réclamer";
 export const PATRON_CLAIM = "Réclamer";
 export const PATRON_CLAIM_BUSY = "Réclamation…";
-export const PATRON_CLAIMED = "Ajouté à ton apparence.";
+export const PATRON_CLAIMED = "Ton cosmétique est rangé dans l'atelier.";
 
 /** « 14 avril », with the year when it is not this one. Paris time, like every patron day. */
 function patronDay(iso: string, now: EpochMs, timeZone: string): string {
@@ -389,9 +389,9 @@ export function cosmeticPerkLine(
   timeZone: string = PATRON_TIME_ZONE,
 ): string {
   const count = patron.claimable.length;
-  if (count === 1) return "Un cosmétique t'attend. Réclame-le pour l'ajouter à ton apparence.";
+  if (count === 1) return "Un cosmétique t'attend. Réclame-le pour le porter.";
   if (count > 1) {
-    return `${count} cosmétiques t'attendent. Réclame-les pour les ajouter à ton apparence.`;
+    return `${count} cosmétiques t'attendent. Réclame-les pour les porter.`;
   }
   const [year, month] = parisMonthOf(now).split("-").map(Number) as [number, number];
   const next = Date.UTC(month === 12 ? year + 1 : year, month === 12 ? 0 : month, 15, 12);
@@ -400,16 +400,16 @@ export function cosmeticPerkLine(
     ...(month === 12 ? { year: "numeric" } : {}),
     timeZone,
   }).format(next);
-  return `Le prochain se dévoile le 1er ${name}.`;
+  return `Le prochain cosmétique sera dévoilé le 1er ${name}.`;
 }
 
 export const PATRON_CABINET_LINE =
-  "Le cabinet s'ouvre depuis la fiche de chaque carte de ton album.";
+  "Ouvre une carte de ton album, puis « Ouvrir le cabinet du mot » sous sa définition.";
 export const PATRON_OPEN_ALBUM = "Ouvrir l'album";
 
 /** Under the badge's block: the title worn or not, and the pinned cards it adds. */
 export function badgePerkLine(title: string, worn: boolean): string {
-  const pins = "Ton profil montre trois cartes épinglées de plus.";
+  const pins = "Tu peux épingler trois cartes de plus sur ton profil.";
   return worn
     ? `Tu portes le titre ${title}. ${pins}`
     : `${pins} Porte ton titre pour l'afficher à côté de ton pseudo.`;
@@ -417,14 +417,15 @@ export function badgePerkLine(title: string, worn: boolean): string {
 export const PATRON_SEE_PROFILE = "Voir mon profil";
 
 export const PATRON_VOTE_NONE =
-  "Aucun vote n'est ouvert. Le prochain s'annoncera ici avant une nouvelle collection.";
-export const PATRON_DISCORD_SOON = "Le salon ouvre bientôt sur le Discord de Leximon.";
+  "Il n'y a pas de vote en ce moment. Avant une nouvelle collection, tu choisiras ici son thème parmi trois.";
+export const PATRON_DISCORD_SOON =
+  "Le salon des mécènes n'est pas encore ouvert sur le Discord de Leximon.";
 
 // --- Finding a word ---------------------------------------------------------------------------
 
 export const PATRON_FINDS_TITLE = "Ton mot dans le jeu";
 export const PATRON_FINDS_RULE =
-  "Un mot par trimestre d'abonnement, dès le premier paiement pour un abonnement annuel.";
+  "Tu gagnes un mot tous les trois mois d'abonnement. Avec l'abonnement annuel, le premier arrive dès le paiement.";
 export const PATRON_FIND_ACTION = "Dénicher un mot";
 export const PATRON_FIND_PAGE_TITLE = "Dénicher un mot";
 export const PATRON_FIND_INTRO =
@@ -437,7 +438,7 @@ export const PATRON_FIND_CONFIRM = "Dénicher ce mot";
 export const PATRON_FIND_CANCEL = "Annuler";
 export const PATRON_FIND_BUSY = "Dénichage…";
 export const PATRON_FIND_WARNING =
-  "Ce choix est définitif : le mot sort de la réserve pour tout le monde.";
+  "Ce choix est définitif. Une fois déniché, le mot n'est plus proposé aux autres mécènes.";
 export const PATRON_FIND_BACK = "Retour à ma page de mécène";
 
 /** How many words the patron may still find. */
@@ -448,18 +449,18 @@ export function findsLeftLine(left: number): string {
 
 /** After the find: the reward, the word in quotes. */
 export function wordFoundLine(word: string): string {
-  return `« ${word} » est à toi. Il paraîtra avec sa collection, signé de ton pseudo.`;
+  return `« ${word} » est à toi. Il paraîtra dans une prochaine collection, avec ton pseudo sur la carte.`;
 }
 
 /** Where a found word stands. */
 export function findStateLine(state: WordFindView["state"]): string {
   switch (state) {
     case "reserved":
-      return "Il paraîtra avec sa collection.";
+      return "Il paraîtra dans une prochaine collection.";
     case "published":
-      return "Paru, avec ton pseudo sur la carte.";
+      return "Il est paru, avec ton pseudo sur la carte.";
     case "rejected":
-      return "Écarté au contrôle de qualité. Ton droit de dénicher t'est rendu.";
+      return "Il a été écarté au contrôle de qualité. Tu peux dénicher un autre mot à sa place.";
   }
 }
 
@@ -573,8 +574,8 @@ export function pollScreen(
       intro: `Choisis le thème de la prochaine collection. Le vote se ferme le ${closes}.`,
       note: canVote
         ? poll.myVote === null
-          ? "Une voix par mécène. Le résultat s'affiche à la fermeture."
-          : "Tu peux changer ta voix jusqu'à la fermeture. Le résultat s'affiche alors."
+          ? "Chaque mécène a une voix. Le résultat s'affichera à la fermeture du vote."
+          : "Tu peux changer ta voix jusqu'à la fermeture du vote. Le résultat s'affichera alors."
         : "Le vote est réservé aux mécènes.",
       canVote,
       themes,
@@ -633,14 +634,14 @@ export function discordScreen(patron: PatronResponse): DiscordScreen | null {
     return {
       line:
         standing === "patron"
-          ? `Relié au compte Discord ${username}. Le rôle Mécène t'ouvre le salon réservé tant que ton abonnement court.`
-          : `Relié au compte Discord ${username}. Le rôle Mécène revient avec ton abonnement.`,
+          ? `Ton compte Discord ${username} est relié. Le rôle Mécène te donne accès au salon des mécènes tant que tu es abonné.`
+          : `Ton compte Discord ${username} est relié. Le rôle Mécène reviendra si tu te réabonnes.`,
       canLink: false,
       canUnlink: true,
     };
   }
   return {
-    line: "Relie ton compte Discord pour rejoindre le serveur de Leximon avec le rôle Mécène, qui ouvre un salon réservé.",
+    line: "Relie ton compte Discord pour recevoir le rôle Mécène, qui ouvre le salon des mécènes sur le serveur de Leximon.",
     canLink: true,
     canUnlink: false,
   };

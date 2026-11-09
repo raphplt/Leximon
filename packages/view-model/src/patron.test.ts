@@ -222,20 +222,22 @@ describe("perks on the subscriber's page", () => {
 
   it("asks to claim what waits, else gives the day of the next cosmetic", () => {
     expect(cosmeticPerkLine(patron({ claimable: [frame] }), NOW, ZONE)).toBe(
-      "Un cosmétique t'attend. Réclame-le pour l'ajouter à ton apparence.",
+      "Un cosmétique t'attend. Réclame-le pour le porter.",
     );
     expect(cosmeticPerkLine(patron({ claimable: [frame, frame] }), NOW, ZONE)).toBe(
-      "2 cosmétiques t'attendent. Réclame-les pour les ajouter à ton apparence.",
+      "2 cosmétiques t'attendent. Réclame-les pour les porter.",
     );
-    expect(cosmeticPerkLine(patron(), NOW, ZONE)).toBe("Le prochain se dévoile le 1er avril.");
+    expect(cosmeticPerkLine(patron(), NOW, ZONE)).toBe(
+      "Le prochain cosmétique sera dévoilé le 1er avril.",
+    );
     expect(cosmeticPerkLine(patron(), Date.parse("2027-12-10T12:00:00Z"), ZONE)).toBe(
-      "Le prochain se dévoile le 1er janvier 2028.",
+      "Le prochain cosmétique sera dévoilé le 1er janvier 2028.",
     );
   });
 
   it("says whether the title is worn", () => {
     expect(badgePerkLine("Mécène", true)).toBe(
-      "Tu portes le titre Mécène. Ton profil montre trois cartes épinglées de plus.",
+      "Tu portes le titre Mécène. Tu peux épingler trois cartes de plus sur ton profil.",
     );
     expect(badgePerkLine("Mécène", false)).toContain("Porte ton titre");
   });
@@ -268,9 +270,9 @@ describe("finding a word", () => {
 
   it("says where a found word stands, and signs its card", () => {
     expect(wordFoundLine("lucubrateur")).toBe(
-      "« lucubrateur » est à toi. Il paraîtra avec sa collection, signé de ton pseudo.",
+      "« lucubrateur » est à toi. Il paraîtra dans une prochaine collection, avec ton pseudo sur la carte.",
     );
-    expect(findStateLine("rejected")).toContain("rendu");
+    expect(findStateLine("rejected")).toContain("un autre mot");
     expect(finderLine("Raph")).toBe("Déniché par Raph");
   });
 });
@@ -389,7 +391,7 @@ describe("the patrons' Discord", () => {
 
   it("names the account linked, and shows nothing before the bot is set", () => {
     const linked = patron({ discord: discord("raph"), subscription: subscription() });
-    expect(discordScreen(linked)?.line).toContain("Relié au compte Discord raph.");
+    expect(discordScreen(linked)?.line).toContain("Ton compte Discord raph est relié.");
     expect(discordScreen(linked)?.canUnlink).toBe(true);
     expect(discordScreen(patron({ subscription: subscription() }))).toBeNull();
   });

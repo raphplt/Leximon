@@ -735,7 +735,7 @@ Préparer : les clés de test de Stripe dans `apps/api/.dev.vars` et `stripe lis
 
 ### MEC-07 · Le cosmétique du mois
 - **Faire :** mets un cosmétique au mois en cours dans `PATRON_SCHEDULE` (`packages/core/src/rules.ts`, par exemple `cosmetics: { "2026-11": { kind: "frame", frame: "wax" } }`), puis ouvre `/mecene` en abonné qui a payé, et en joueur qui ne l'est pas.
-- **Attendu :** le non-abonné lit « Ce mois-ci, les mécènes reçoivent le cadre Sceau de cire. ». Ton avatar en tête de la vitrine porte le cadre du mois. L'abonné voit sous sa carte un coffret qui sautille, « À réclamer » avec « Le cadre Sceau de cire, novembre 2026 » et « Réclamer » ; après, « Ajouté à ton apparence. » et le cadre dans l'atelier. Remets le calendrier vide ensuite.
+- **Attendu :** le non-abonné lit « Ce mois-ci, les mécènes reçoivent le cadre Sceau de cire. ». Ton avatar en tête de la vitrine porte le cadre du mois. L'abonné voit sous sa carte un coffret qui sautille, « À réclamer » avec « Le cadre Sceau de cire, novembre 2026 » et « Réclamer » ; après, « Ton cosmétique est rangé dans l'atelier. » et le cadre dans l'atelier. Remets le calendrier vide ensuite.
 - **Retour :**
 
 ### MEC-08 · L'admin et le téléphone
@@ -794,7 +794,7 @@ Préparer : `pnpm db:migrate`, un compte mécène qui a payé au moins une fois 
 
 ### MEC-17 · Vote des mécènes
 - **Faire :** dans `/admin/mecenes`, ouvre un vote avec trois thèmes (nom et ce que la collection contiendrait), puis essaie d'en ouvrir un second. Sur la page Mécène, vote avec un compte qui a payé, change ta voix. Recommence sur le mobile. Sans vote ouvert, regarde le bloc. Pour voir le résultat sans attendre une semaine, ferme le vote en base locale (`update patron_polls set closes_at = now()`).
-- **Attendu :** le vote s'ouvre pour sept jours ; le second est refusé tant que le premier est ouvert. La page Mécène montre les trois thèmes et la date de fermeture ; « Voter pour ce thème » met « Ta voix » sur le thème choisi, et un autre choix la déplace. Sans vote, le bloc dit « Aucun vote n'est ouvert. Le prochain s'annoncera ici avant une nouvelle collection. ». Aucun compte de voix tant que le vote est ouvert. Une fois fermé, chaque thème montre ses voix, le gagnant est mis en avant et la page dit « La prochaine collection aura pour thème « … ». » (ou l'égalité). L'admin montre les voix de chaque vote, ouvert ou fermé, et le journal note l'ouverture.
+- **Attendu :** le vote s'ouvre pour sept jours ; le second est refusé tant que le premier est ouvert. La page Mécène montre les trois thèmes et la date de fermeture ; « Voter pour ce thème » met « Ta voix » sur le thème choisi, et un autre choix la déplace. Sans vote, la tuile dit « Il n'y a pas de vote en ce moment. Avant une nouvelle collection, tu choisiras ici son thème parmi trois. ». Aucun compte de voix tant que le vote est ouvert. Une fois fermé, chaque thème montre ses voix, le gagnant est mis en avant et la page dit « La prochaine collection aura pour thème « … ». » (ou l'égalité). L'admin montre les voix de chaque vote, ouvert ou fermé, et le journal note l'ouverture.
 - **Retour :**
 
 ### MEC-18 · Salon des mécènes sur Discord
