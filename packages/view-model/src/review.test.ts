@@ -101,14 +101,18 @@ describe("what waits", () => {
     expect(reviewAction(summary())).toEqual({
       label: "Commencer",
       count: 10,
-      estimate: "10 questions, environ 3 minutes",
+      estimate: "La révision pose 10 questions et dure environ 3 minutes.",
       disabled: false,
     });
     const calm = reviewAction(summary({ due: 0, fresh: 0, rising: 0 }));
     expect(calm.label).toBe("S'entraîner");
-    expect(calm.estimate).toBe("10 questions sur tes mots les plus fragiles, environ 3 minutes");
+    expect(calm.estimate).toBe(
+      "L'entraînement pose 10 questions sur tes mots les plus fragiles et dure environ 3 minutes.",
+    );
     const short = summary({ rising: 0, settings: { ...summary().settings, length: 5 } });
-    expect(reviewAction(short).estimate).toBe("5 questions, environ 1 minute");
+    expect(reviewAction(short).estimate).toBe(
+      "La révision pose 5 questions et dure environ 1 minute.",
+    );
   });
 });
 

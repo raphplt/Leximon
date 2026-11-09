@@ -120,13 +120,6 @@
   gap: 8px;
 }
 
-.estimate {
-  font:
-    italic 500 var(--lx-size-label) / 1.3 var(--font-text),
-    serif;
-  color: var(--lx-color-page-ink-muted);
-}
-
 .settings {
   position: absolute;
   top: 18px;

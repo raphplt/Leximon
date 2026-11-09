@@ -22,7 +22,7 @@ import {
   REVIEW_SOUND_LABEL,
   type ReviewCover,
   reviewAction,
-  reviewLine,
+  reviewParagraph,
   reviewShelf,
   reviewWells,
   shelfXpLine,
@@ -174,7 +174,11 @@ function Review({
             ))}
       </div>
       <p className={styles.line}>
-        {summary === null ? <Bone className={styles.lineBone} /> : reviewLine(summary, now, noun)}
+        {summary === null ? (
+          <Bone className={styles.lineBone} />
+        ) : (
+          reviewParagraph(summary, now, noun)
+        )}
       </p>
       <div className={styles.go}>
         <MainAction
@@ -183,9 +187,6 @@ function Review({
           disabled={busy || action === null || action.disabled}
           onClick={() => onStart({})}
         />
-        {action !== null && !action.disabled && (
-          <span className={styles.estimate}>{action.estimate}</span>
-        )}
       </div>
       <Toy
         matter="paper"

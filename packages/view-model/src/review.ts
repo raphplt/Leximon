@@ -100,7 +100,7 @@ export interface ReviewAction {
   readonly label: string;
   /** The length of the series, shown at the end of the button. */
   readonly count: number;
-  /** « 10 questions, environ 3 minutes » */
+  /** « La révision pose 10 questions et dure environ 3 minutes. », said after the counters. */
   readonly estimate: string;
   /** Nothing owned yet: there is nothing to ask. */
   readonly disabled: boolean;
@@ -111,7 +111,7 @@ function minutes(seconds: number): string {
   return `environ ${count} minute${count > 1 ? "s" : ""}`;
 }
 
-/** The gold button of the review and the estimate under it. */
+/** The gold button of the review and the length of its series. */
 export function reviewAction(summary: ReviewSummaryResponse): ReviewAction {
   const { length } = summary.settings;
   const waiting = summary.due + summary.fresh > 0;
@@ -121,10 +121,21 @@ export function reviewAction(summary: ReviewSummaryResponse): ReviewAction {
     label: waiting ? "Commencer" : "S'entraîner",
     count: length,
     estimate: waiting
-      ? `${length} questions, ${time}`
-      : `${length} questions sur tes mots les plus fragiles, ${time}`,
+      ? `La révision pose ${length} ${plural(length, "question", "questions")} et dure ${time}.`
+      : `L'entraînement pose ${length} ${plural(length, "question", "questions")} sur tes mots les plus fragiles et dure ${time}.`,
     disabled: ownedWords(summary.levels) === 0,
   };
+}
+
+/** The counters said in a sentence, then the length of the series the button starts. */
+export function reviewParagraph(
+  summary: ReviewSummaryResponse,
+  now: number,
+  noun: PackNoun = SACHET_NOUN,
+): string {
+  const line = reviewLine(summary, now, noun);
+  const action = reviewAction(summary);
+  return action.disabled ? line : `${line} ${action.estimate}`;
 }
 
 // --- Settings -----------------------------------------------------------------------

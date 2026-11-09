@@ -30,7 +30,7 @@ import {
   REVIEW_SOUND_LABEL,
   type ReviewCover,
   reviewAction,
-  reviewLine,
+  reviewParagraph,
   reviewShelf,
   reviewWells,
   riddleAction,
@@ -219,7 +219,9 @@ function Review({
               </View>
             ))}
       </View>
-      <Text style={styles.line}>{summary === null ? " " : reviewLine(summary, now, NOUN)}</Text>
+      <Text style={styles.line}>
+        {summary === null ? " " : reviewParagraph(summary, now, NOUN)}
+      </Text>
       <View style={styles.go}>
         <MainAction
           label={action?.label ?? "Commencer"}
@@ -227,9 +229,6 @@ function Review({
           disabled={disabled}
           onPress={() => onStart({})}
         />
-        {action !== null && !action.disabled && (
-          <Text style={styles.estimate}>{action.estimate}</Text>
-        )}
       </View>
       {settingsOpen && summary !== null && <Settings summary={summary} />}
       <View style={styles.settings}>
@@ -800,12 +799,6 @@ const styles = StyleSheet.create({
     color: ink.pageInkMuted,
   },
   go: { alignItems: "center", gap: space.s4 },
-  estimate: {
-    fontFamily: fonts.text.italic,
-    fontSize: fontSizes.label,
-    color: ink.pageInkMuted,
-    textAlign: "center",
-  },
   settings: { position: "absolute", top: space.s7, right: space.s7 },
   settingsToy: { width: 46, height: 46 },
   sheet: { gap: space.s6 },
