@@ -658,7 +658,10 @@
   line-height: 1;
 }
 
+/* The card is as tall as the two tiles beside it: the status sits between the name and the
+   buttons rather than leaving a hole above them. */
 .headline {
+  margin-top: auto;
   font-size: var(--lx-size-title-large);
 }
 

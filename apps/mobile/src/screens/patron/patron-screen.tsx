@@ -69,7 +69,7 @@ import { Page, Paragraph } from "@/ui/page";
 import { Panel } from "@/ui/panel";
 import { PatronBadge } from "@/ui/patron-badge";
 import { toast } from "@/ui/toast";
-import { Kicker, Leaf, Lettering, Lettrine, Toy, ToyBody } from "@/ui/toy";
+import { Leaf, Lettering, Lettrine, Toy, ToyBody } from "@/ui/toy";
 
 const AVATAR = 92;
 
@@ -150,7 +150,7 @@ function PatronCard({ patron }: { readonly patron: PatronResponse }) {
           <Avatar avatar={me?.avatar ?? null} frame={me?.frame ?? null} size={AVATAR} />
         </View>
         <View style={styles.cardName}>
-          <Kicker>{PATRON_CARD_KICKER}</Kicker>
+          <Text style={styles.cardKicker}>{PATRON_CARD_KICKER}</Text>
           <Text style={styles.name} accessibilityRole="header">
             {me === null ? "" : playerName({ code: me.playerCode, pseudo: me.pseudo })}
           </Text>
@@ -557,6 +557,12 @@ const styles = StyleSheet.create({
   crowned: { alignItems: "center", paddingTop: 20 },
   crown: { position: "absolute", top: 0, zIndex: 1, transform: [{ rotate: "-8deg" }] },
   cardName: { flex: 1, alignItems: "flex-start", gap: space.s2 },
+  // Gilt on cream does not read: on the card, the kicker takes the paper's ink.
+  cardKicker: {
+    fontFamily: fonts.displayBold,
+    fontSize: fontSizes.body,
+    color: paperColors.pageInkMuted,
+  },
   name: {
     fontFamily: fonts.display,
     fontSize: fontSizes.title,

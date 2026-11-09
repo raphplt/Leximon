@@ -182,6 +182,12 @@ a.toy {
   text-shadow: 0 1px 0 var(--lx-color-shade);
 }
 
+/* Gilt on cream does not read: on paper, the kicker takes the paper's ink. */
+.leaf .kicker {
+  color: var(--lx-color-paper-ink-muted);
+  text-shadow: none;
+}
+
 .icon {
   display: block;
   flex: none;
