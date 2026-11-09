@@ -36,6 +36,7 @@ import { HelpTip } from "@/ui/help-tip";
 import { Icon } from "@/ui/icon";
 import { LevelMedal } from "@/ui/level-bits";
 import { LoadFailed } from "@/ui/load-failed";
+import { Fleurons, TitleRule } from "@/ui/ornaments";
 import { Lettering, Toy, ToyBody, ToyIcon } from "@/ui/toy";
 import ui from "@/ui/ui.module.css";
 import styles from "./level-road.module.css";
@@ -618,7 +619,8 @@ function Detail({
 }) {
   const detail = levelDetail(level, progress, claimed, now);
   return (
-    <section className={`${ui.leaf} ${styles.detail}`} aria-live="polite">
+    <section className={`${ui.leaf} ${styles.detail}`} data-state={detail.state} aria-live="polite">
+      {detail.state === "claimable" && <Fleurons />}
       <span className={desk.leafKicker}>Niveau {detail.level}</span>
       <h2 className={styles.detailTitle}>{detail.title}</h2>
       <ul className={styles.items}>
@@ -661,7 +663,10 @@ function Unlocks({ level, now }: { readonly level: number; readonly now: number 
   if (ahead.length === 0) return null;
   return (
     <section className={`${ui.leaf} ${styles.unlocks}`}>
-      <span className={desk.leafKicker}>À débloquer</span>
+      <span className={styles.unlocksHead}>
+        <span className={desk.leafKicker}>À débloquer</span>
+        <TitleRule className={styles.unlocksRule} />
+      </span>
       <ul className={styles.unlockList}>
         {ahead.map((unlock) => (
           <li key={unlock.level} className={styles.unlock}>

@@ -255,6 +255,14 @@ a.clan:hover {
   min-width: 0;
 }
 
+/* Framed in the bookbinder's rule: the padding keeps the text clear of it. */
+.panel.framed,
+.layout > .panel.framed,
+.side > .panel.framed {
+  position: relative;
+  padding: 30px 30px 32px;
+}
+
 .panelHead {
   display: flex;
   align-items: baseline;
@@ -265,6 +273,17 @@ a.clan:hover {
 .panelTitle {
   margin: 0 0 var(--lx-s8);
   font-size: var(--lx-size-title);
+}
+
+.titled {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: var(--lx-s8);
+}
+
+.titled .panelTitle {
+  margin: 0;
 }
 
 .joustsHead {

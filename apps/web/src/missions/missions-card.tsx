@@ -35,6 +35,7 @@ import { Button } from "@/ui/button";
 import { Dialog } from "@/ui/dialog";
 import { HelpTip } from "@/ui/help-tip";
 import { Icon } from "@/ui/icon";
+import { GiltCorners } from "@/ui/ornaments";
 import { useToast } from "@/ui/toast";
 import { Lettrine, ToyBody, ToyIcon } from "@/ui/toy";
 import ui from "@/ui/ui.module.css";
@@ -112,6 +113,7 @@ export function MissionsCard({
       style={style}
       aria-label={MISSIONS_TITLE}
     >
+      <GiltCorners />
       <span className={styles.head}>
         <ToyBody matter={locked === null ? "gold" : "locked"} shape="tile" className={styles.badge}>
           <Lettrine icon="missions" matter="gold" size={24} locked={locked !== null} />

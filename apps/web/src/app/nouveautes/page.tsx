@@ -1,6 +1,8 @@
 import { CHANGELOG, changelogDate } from "@leximon/view-model";
 import type { Metadata } from "next";
 import Link from "next/link";
+import { Fragment } from "react";
+import { BindingRule, Tailpiece } from "@/ui/ornaments";
 import ui from "@/ui/ui.module.css";
 import styles from "../confidentialite/privacy.module.css";
 
@@ -17,16 +19,20 @@ export default function NewsPage() {
         Leximon
       </Link>
       <h1 className={`${styles.title} ${ui.lettered}`}>Nouveautés</h1>
-      {CHANGELOG.map((entry) => (
-        <section key={entry.date} className={`${styles.section} ${ui.leaf}`}>
-          <h2>{entry.title}</h2>
-          <p className={styles.updated}>{changelogDate(entry.date)}</p>
-          <ul>
-            {entry.items.map((item) => (
-              <li key={item}>{item}</li>
-            ))}
-          </ul>
-        </section>
+      {CHANGELOG.map((entry, index) => (
+        <Fragment key={entry.date}>
+          {index > 0 && <Tailpiece className={styles.tailpiece} />}
+          <section className={`${styles.section} ${styles.framed} ${ui.leaf}`}>
+            <BindingRule />
+            <h2>{entry.title}</h2>
+            <p className={styles.updated}>{changelogDate(entry.date)}</p>
+            <ul>
+              {entry.items.map((item) => (
+                <li key={item}>{item}</li>
+              ))}
+            </ul>
+          </section>
+        </Fragment>
       ))}
     </main>
   );

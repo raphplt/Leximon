@@ -40,11 +40,12 @@
 
 /* --- The review, across the screen --- */
 
+/* Framed in the bookbinder's rule: the padding keeps the text clear of it. */
 .review {
   position: relative;
   display: grid;
   gap: 16px;
-  padding: 22px;
+  padding: 30px;
 }
 
 .reviewHead {
@@ -122,8 +123,8 @@
 
 .settings {
   position: absolute;
-  top: 18px;
-  right: 18px;
+  top: 24px;
+  right: 24px;
   display: grid;
   place-items: center;
   width: 46px;
@@ -186,6 +187,10 @@
   gap: 4px;
 }
 
+.practiceHead > svg {
+  margin-top: 6px;
+}
+
 .sectionTitle {
   margin: 0;
   font-family: var(--font-display), Georgia, serif;
@@ -195,11 +200,17 @@
 }
 
 .shelfTitle {
-  margin: 14px 0 2px;
+  margin: 14px 0 0;
   font-family: var(--font-display), Georgia, serif;
   font-size: var(--lx-size-body);
   font-weight: 800;
   color: var(--lx-color-page-ink-muted);
+}
+
+.practice .shelfRule {
+  width: 100px;
+  height: 10px;
+  margin-bottom: 4px;
 }
 
 .shortcuts,

@@ -8,6 +8,7 @@ import { fontSizes, fonts, paperColors, space } from "@/theme";
 import { Button } from "./button";
 import { Icon } from "./icon";
 import { XpBar } from "./level";
+import { Fleurons, ORNAMENT_PADDING } from "./ornaments";
 import { Panel } from "./panel";
 import { ToyBody } from "./toy";
 
@@ -37,6 +38,7 @@ export function LockedScreen({
     <ScrollView contentContainerStyle={styles.page}>
       {above}
       <Panel paper style={styles.panel}>
+        <Fleurons small />
         <ToyBody matter="gold" shape="round" large style={styles.medal}>
           <Icon name={icon} size={38} color={toyValues.outline} />
         </ToyBody>
@@ -72,7 +74,12 @@ const styles = StyleSheet.create({
     paddingVertical: space.s12,
     paddingBottom: TAB_BAR_RISE + 24,
   },
-  panel: { alignItems: "center", paddingVertical: space.s16, gap: space.s5 },
+  panel: {
+    alignItems: "center",
+    paddingVertical: space.s16,
+    paddingHorizontal: ORNAMENT_PADDING.fleurons,
+    gap: space.s5,
+  },
   medal: { width: 84, height: 84, marginBottom: space.s5 },
   kicker: {
     fontFamily: fonts.displayBold,

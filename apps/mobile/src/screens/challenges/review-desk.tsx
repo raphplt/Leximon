@@ -57,6 +57,7 @@ import { TAB_BAR_RISE } from "@/shell/tab-bar";
 import { alpha, colors, fontSizes, fonts, paperColors, radii, space } from "@/theme";
 import { Icon } from "@/ui/icon";
 import { Matter } from "@/ui/matter";
+import { BindingRule, GiltCorners, ORNAMENT_PADDING, TitleRule } from "@/ui/ornaments";
 import { Panel } from "@/ui/panel";
 import { Lettering, Lettrine, Toy, ToyBody, ToyIcon } from "@/ui/toy";
 import { ChallengeHalves } from "./challenge-halves";
@@ -191,6 +192,7 @@ function Review({
   const disabled = busy || action === null || action.disabled;
   return (
     <Panel paper style={styles.review}>
+      <BindingRule />
       <View style={styles.reviewHead}>
         <PaperKicker>Ta révision</PaperKicker>
         <Text style={styles.title} accessibilityRole="header">
@@ -395,6 +397,7 @@ function DailyLeaf({
   const label = `${DESK_TEXTS.daily}. ${view.title}. ${view.text}`;
   const content = (
     <Panel paper style={styles.leaf}>
+      <GiltCorners />
       <View style={styles.leafHead}>
         <LeafBadge>
           <Lettrine icon="challenge" matter="red" size={24} />
@@ -446,6 +449,7 @@ function RiddleLeaf({ riddle }: { readonly riddle: RiddleResponse }) {
       style={({ pressed }) => pressed && styles.pressed}
     >
       <Panel paper style={styles.leaf}>
+        <GiltCorners />
         <View style={styles.leafHead}>
           <LeafBadge>
             <Lettrine icon="ink" matter="gold" size={24} />
@@ -526,6 +530,7 @@ function Shelf({
         <Text style={styles.title} accessibilityRole="header">
           S'entraîner sur…
         </Text>
+        <TitleRule />
       </View>
       {empty && (
         <Text style={styles.line}>
@@ -544,7 +549,10 @@ function Shelf({
       ))}
       {shelf.collections.length > 0 && (
         <>
-          <Text style={styles.shelfTitle}>Les collections</Text>
+          <View style={styles.shelfHead}>
+            <Text style={styles.shelfTitle}>Les collections</Text>
+            <TitleRule small />
+          </View>
           {shelf.collections.map((cover) => (
             <Cover
               key={cover.key}
@@ -559,7 +567,10 @@ function Shelf({
       )}
       {shelf.themes.length > 0 && (
         <>
-          <Text style={styles.shelfTitle}>Les thèmes</Text>
+          <View style={styles.shelfHead}>
+            <Text style={styles.shelfTitle}>Les thèmes</Text>
+            <TitleRule small />
+          </View>
           <View style={styles.themes}>
             {shelf.themes.map((cover) => (
               <View key={cover.key} style={styles.theme}>
@@ -697,6 +708,7 @@ function MemoryLeaf({
   const streak = streakLine(summary.streak);
   return (
     <Panel paper style={styles.leaf}>
+      <GiltCorners />
       <PaperKicker>Ta mémoire</PaperKicker>
       <LevelBar levels={summary.levels} />
       <View style={styles.tierFigures}>
@@ -763,7 +775,7 @@ const styles = StyleSheet.create({
     lineHeight: 21,
     color: ink.danger,
   },
-  review: { gap: space.s8 },
+  review: { gap: space.s8, padding: ORNAMENT_PADDING.binding },
   head: { gap: space.s2 },
   reviewHead: { gap: space.s2, paddingRight: 52 },
   wells: { flexDirection: "row", gap: space.s5 },
@@ -799,7 +811,7 @@ const styles = StyleSheet.create({
     color: ink.pageInkMuted,
   },
   go: { alignItems: "center", gap: space.s4 },
-  settings: { position: "absolute", top: space.s7, right: space.s7 },
+  settings: { position: "absolute", top: space.s12, right: space.s12 },
   settingsToy: { width: 46, height: 46 },
   sheet: { gap: space.s6 },
   sheetTitle: {
@@ -815,7 +827,7 @@ const styles = StyleSheet.create({
     fontSize: fontSizes.label,
     color: toyValues.outline,
   },
-  leaf: { gap: space.s6 },
+  leaf: { gap: space.s6, padding: ORNAMENT_PADDING.corners },
   pressed: { transform: [{ translateY: 2 }] },
   leafHead: { flexDirection: "row", alignItems: "center", gap: space.s6 },
   badge: { width: 46, height: 46, alignItems: "center", justifyContent: "center" },
@@ -861,9 +873,9 @@ const styles = StyleSheet.create({
   blockHollow: { borderColor: ink.rule, backgroundColor: "transparent" },
   blockLetter: { fontFamily: fonts.display, fontSize: fontSizes.bodyLarge, color: ink.pageInk },
   shelf: { gap: space.s7 },
+  shelfHead: { gap: space.s3, marginTop: space.s5 },
   shelfTitle: {
     fontFamily: fonts.displayBold,
-    marginTop: space.s5,
     fontSize: fontSizes.body,
     color: ink.pageInkMuted,
   },

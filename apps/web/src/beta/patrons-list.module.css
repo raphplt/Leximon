@@ -5,6 +5,17 @@
   padding: var(--lx-s10) var(--lx-s12);
 }
 
+/* Framed in the bookbinder's rule: the padding keeps the text clear of it. */
+.group.framed {
+  position: relative;
+  padding: 34px 36px;
+}
+
+/* Under the last group, a tailpiece closes the page. */
+.tailpiece {
+  margin: var(--lx-s10) auto 0;
+}
+
 .group + .group {
   margin-top: var(--lx-s9);
 }

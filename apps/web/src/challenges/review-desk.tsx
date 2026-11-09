@@ -41,6 +41,7 @@ import { dailyChallenge, reviewSummary } from "@/player/collection";
 import { useShared } from "@/player/resource";
 import { todayRiddle } from "@/player/riddle";
 import { useProgress } from "@/progress/use-progress";
+import { BindingRule, GiltCorners, TitleRule } from "@/ui/ornaments";
 import { Bone } from "@/ui/skeleton";
 import { Lettering, Toy, ToyIcon } from "@/ui/toy";
 import ui from "@/ui/ui.module.css";
@@ -148,6 +149,7 @@ function Review({
       style={rise(0)}
       aria-labelledby="review-title"
     >
+      <BindingRule />
       <header className={styles.reviewHead}>
         <span className={desk.leafKicker}>Ta révision</span>
         <h2 id="review-title" className={styles.reviewTitle}>
@@ -356,6 +358,7 @@ function Shelf({
         <h2 id="practice-title" className={styles.sectionTitle}>
           S'entraîner sur…
         </h2>
+        <TitleRule />
       </header>
       {empty && (
         <p className={styles.note}>
@@ -380,6 +383,7 @@ function Shelf({
       {shelf.collections.length > 0 && (
         <>
           <h3 className={styles.shelfTitle}>Les collections</h3>
+          <TitleRule className={styles.shelfRule} />
           <ul className={styles.collections}>
             {shelf.collections.map((cover) => {
               const pack = packOfScope(catalog, cover);
@@ -402,6 +406,7 @@ function Shelf({
       {shelf.themes.length > 0 && (
         <>
           <h3 className={styles.shelfTitle}>Les thèmes</h3>
+          <TitleRule className={styles.shelfRule} />
           <ul className={styles.themes}>
             {shelf.themes.map((cover) => (
               <li key={cover.key}>
@@ -524,6 +529,7 @@ function MemoryLeaf({
       style={rise(4)}
       aria-label="Ta mémoire"
     >
+      <GiltCorners />
       <span className={desk.leafKicker}>Ta mémoire</span>
       <LevelBar levels={summary.levels} />
       <div className={styles.tierFigures}>

@@ -30,6 +30,21 @@
   margin-top: var(--lx-s9);
 }
 
+/* Framed in the bookbinder's rule: the padding keeps the text clear of it. */
+.section.framed {
+  position: relative;
+  padding: 34px 36px;
+}
+
+/* Between two framed sections, a tailpiece takes the place of the gap. */
+.tailpiece {
+  margin: var(--lx-s8) auto 0;
+}
+
+.tailpiece + .section {
+  margin-top: var(--lx-s8);
+}
+
 .section h2 {
   margin: 0 0 var(--lx-s4);
   font-size: var(--lx-size-subtitle);

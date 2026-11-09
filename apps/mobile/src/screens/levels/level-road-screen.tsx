@@ -50,6 +50,7 @@ import { Avatar } from "@/ui/avatar";
 import { Button } from "@/ui/button";
 import { Icon } from "@/ui/icon";
 import { LevelMedal } from "@/ui/level";
+import { Fleurons, ORNAMENT_PADDING, TitleRule } from "@/ui/ornaments";
 import { Page, Paragraph } from "@/ui/page";
 import { Leaf, Lettering, Toy, ToyBody, ToyIcon } from "@/ui/toy";
 
@@ -750,7 +751,8 @@ function Detail({
 }) {
   const detail = levelDetail(level, progress, claimed, now);
   return (
-    <Leaf style={styles.detail}>
+    <Leaf style={[styles.detail, detail.state === "claimable" && styles.detailReward]}>
+      {detail.state === "claimable" && <Fleurons small />}
       <View accessibilityLiveRegion="polite" style={styles.detailInside}>
         <Text style={styles.kicker}>Niveau {detail.level}</Text>
         <Text style={styles.detailTitle}>{detail.title}</Text>
@@ -791,7 +793,10 @@ function Unlocks({ level, now }: { readonly level: number; readonly now: number 
   if (ahead.length === 0) return null;
   return (
     <Leaf style={styles.unlocks}>
-      <Text style={styles.kicker}>À DÉBLOQUER</Text>
+      <View style={styles.unlocksHead}>
+        <Text style={styles.kicker}>À DÉBLOQUER</Text>
+        <TitleRule small />
+      </View>
       {ahead.map((unlock) => (
         <View key={unlock.level} style={styles.unlock}>
           <View>
@@ -1088,6 +1093,8 @@ const styles = StyleSheet.create({
     borderRightWidth: toyValues.outlineWidth,
   },
   detail: { padding: space.s7 },
+  /** A coffret waiting is a reward: the leaf takes the fleurons, and the room they need. */
+  detailReward: { padding: ORNAMENT_PADDING.fleurons },
   detailInside: { gap: space.s5 },
   detailTitle: {
     fontFamily: fonts.display,
@@ -1119,6 +1126,7 @@ const styles = StyleSheet.create({
   doneText: { fontFamily: fonts.ui.extrabold, fontSize: fontSizes.body, color: ink.success },
   left: { fontFamily: fonts.ui.bold, fontSize: fontSizes.body, color: ink.pageInkMuted },
   unlocks: { gap: space.s5, padding: space.s7 },
+  unlocksHead: { gap: space.s3 },
   unlock: {
     flexDirection: "row",
     alignItems: "center",

@@ -776,9 +776,15 @@
 }
 
 .detail {
+  position: relative;
   display: grid;
   gap: 10px;
   padding: 18px 20px;
+}
+
+/* A coffret waiting is a reward: the leaf takes the fleurons, and the room they need. */
+.detail[data-state="claimable"] {
+  padding: 36px 38px 40px;
 }
 
 .detailTitle {
@@ -845,6 +851,16 @@
   display: grid;
   gap: 12px;
   padding: 18px 20px;
+}
+
+.unlocksHead {
+  display: grid;
+  gap: 6px;
+}
+
+.unlocks .unlocksRule {
+  width: 100px;
+  height: 10px;
 }
 
 .unlockList {

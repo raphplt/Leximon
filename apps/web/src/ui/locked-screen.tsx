@@ -2,6 +2,7 @@ import { ButtonLink } from "./button";
 import { Icon, type IconName } from "./icon";
 import { XpBar } from "./level-bits";
 import styles from "./locked-screen.module.css";
+import { Fleurons } from "./ornaments";
 import ui from "./ui.module.css";
 
 /**
@@ -25,6 +26,7 @@ export function LockedScreen({
 }) {
   return (
     <main className={`${ui.panel} ${styles.screen}`}>
+      <Fleurons />
       <span className={styles.icon}>
         <Icon name={icon} size={38} />
       </span>

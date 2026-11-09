@@ -5,6 +5,7 @@ import type { ToyMatterName } from "@leximon/tokens";
 import { useEffect, useState } from "react";
 import { Sachet } from "@/booster/sachet";
 import { Card } from "@/components/card";
+import { Fleurons } from "@/ui/ornaments";
 import { Leaf, Lettering, ToyBody } from "@/ui/toy";
 import styles from "./landing-page.module.css";
 import type { Showcase, ShowcaseCard } from "./showcase-cards";
@@ -33,6 +34,7 @@ export function HowToPlay({
       <ol className={styles.how}>
         <li>
           <Leaf className={styles.howLeaf}>
+            <Fleurons />
             <div className={styles.howArt}>
               <div className={styles.howSachet}>
                 {pack !== null && (
@@ -54,6 +56,7 @@ export function HowToPlay({
         </li>
         <li>
           <Leaf className={styles.howLeaf}>
+            <Fleurons />
             <div className={styles.howArt}>
               <QuizFigure words={quiz} />
             </div>
@@ -66,6 +69,7 @@ export function HowToPlay({
         </li>
         <li>
           <Leaf className={styles.howLeaf}>
+            <Fleurons />
             <div className={styles.howArt}>
               <TradeFigure trade={trade} />
             </div>

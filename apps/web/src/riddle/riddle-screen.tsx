@@ -31,6 +31,7 @@ import { missions } from "@/player/player";
 import { publishProgress } from "@/progress/use-progress";
 import { Button, ButtonLink } from "@/ui/button";
 import { LoadFailed } from "@/ui/load-failed";
+import { Tailpiece } from "@/ui/ornaments";
 import { useToast } from "@/ui/toast";
 import ui from "@/ui/ui.module.css";
 import styles from "./riddle-screen.module.css";
@@ -227,6 +228,7 @@ function Result({ riddle }: { readonly riddle: RiddleResponse }) {
   return (
     <section className={`${ui.panel} ${styles.panel}`} aria-live="polite">
       <h2 className={`${ui.display} ${styles.headline}`}>{riddleHeadline(riddle)}</h2>
+      {riddle.outcome === "found" && <Tailpiece className={styles.tailpiece} />}
       <p className={styles.result}>
         {riddleResultLine(riddle)} <span aria-hidden="true">{riddleSquares(riddle)}</span>
       </p>

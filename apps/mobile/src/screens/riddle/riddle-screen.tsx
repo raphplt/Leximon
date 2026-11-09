@@ -37,6 +37,7 @@ import { openCard } from "@/screens/trades/card-row";
 import { alpha, fontSizes, fonts, paperColors, radii, space } from "@/theme";
 import { Button } from "@/ui/button";
 import { DefinitionText } from "@/ui/definition-text";
+import { Tailpiece } from "@/ui/ornaments";
 import { FormError, Page, Paragraph } from "@/ui/page";
 import { Panel } from "@/ui/panel";
 import { TextButton } from "@/ui/text-button";
@@ -234,6 +235,7 @@ function Result({ riddle }: { readonly riddle: RiddleResponse }) {
       <Text style={styles.headline} accessibilityLiveRegion="polite">
         {riddleHeadline(riddle)}
       </Text>
+      {riddle.outcome === "found" && <Tailpiece />}
       <Text style={styles.result}>{riddleResultLine(riddle)}</Text>
       <Text style={styles.squares} importantForAccessibility="no" accessibilityElementsHidden>
         {riddleSquares(riddle)}

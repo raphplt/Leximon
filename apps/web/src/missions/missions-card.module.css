@@ -1,9 +1,11 @@
 /* The missions of the day: a leaf of paper with one line per mission. */
+/* Gilt corners on the leaf: the padding keeps the text clear of them. */
 .card {
+  position: relative;
   display: flex;
   flex-direction: column;
   gap: 12px;
-  padding: 16px 16px 18px;
+  padding: 20px 22px 22px;
 }
 
 .inDialog {

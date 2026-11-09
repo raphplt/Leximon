@@ -2,14 +2,16 @@ import { type ChangelogEntry, changelogDate } from "@leximon/view-model";
 import { StyleSheet, Text, View } from "react-native";
 import { fontSizes, fonts, space } from "@/theme";
 import { useInk } from "@/ui/ink";
+import { Tailpiece } from "@/ui/ornaments";
 
 /** Entries of the changelog: a title, the day, what changed. */
 export function NewsEntries({ entries }: { readonly entries: readonly ChangelogEntry[] }) {
   const ink = useInk();
   return (
     <View style={styles.list}>
-      {entries.map((entry) => (
+      {entries.map((entry, index) => (
         <View key={entry.date} style={styles.entry}>
+          {index > 0 && <Tailpiece />}
           <Text style={[styles.title, { color: ink.pageInk }]} accessibilityRole="header">
             {entry.title}
           </Text>

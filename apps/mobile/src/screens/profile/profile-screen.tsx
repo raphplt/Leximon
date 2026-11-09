@@ -32,6 +32,7 @@ import { openCard } from "@/screens/trades/card-row";
 import { fontSizes, fonts, paperColors, radii, space } from "@/theme";
 import { Button } from "@/ui/button";
 import { Icon } from "@/ui/icon";
+import { BindingRule, ORNAMENT_PADDING, TitleRule } from "@/ui/ornaments";
 import { Page, Paragraph } from "@/ui/page";
 import { Panel } from "@/ui/panel";
 import { TextButton } from "@/ui/text-button";
@@ -237,9 +238,13 @@ function PinnedCards({
   };
 
   return (
-    <Panel paper>
+    <Panel paper style={styles.framed}>
+      <BindingRule />
       <View style={styles.panelHead}>
-        <Text style={styles.panelTitle}>Cartes épinglées</Text>
+        <View style={styles.titled}>
+          <Text style={styles.panelTitle}>Cartes épinglées</Text>
+          <TitleRule />
+        </View>
         <Text style={styles.meta}>{pinnedSlotsLabel(slots)}</Text>
       </View>
       <ScrollView
@@ -341,6 +346,9 @@ function PinnedCards({
 /** The profile's blocks lie on paper. */
 const ink = paperColors;
 
+/** How far the pinned cards reach past the padding: to just inside the gilt rule. */
+const PINS_BLEED = 12;
+
 const styles = StyleSheet.create({
   actions: { flexDirection: "row", gap: space.s5 },
   grow: { flex: 1 },
@@ -350,11 +358,14 @@ const styles = StyleSheet.create({
     lineHeight: 24,
     color: ink.pageInk,
   },
+  framed: { padding: ORNAMENT_PADDING.binding },
+  titled: { gap: space.s3 },
   panelHead: { flexDirection: "row", alignItems: "baseline", justifyContent: "space-between" },
   panelTitle: { fontFamily: fonts.display, fontSize: fontSizes.title, color: ink.pageInk },
   meta: { fontFamily: fonts.ui.semibold, fontSize: fontSizes.small, color: ink.pageInkMuted },
-  pinsScroll: { marginHorizontal: -18 },
-  pins: { gap: space.s7, paddingHorizontal: space.s9, paddingTop: space.s4 },
+  /** The pins scroll up to the gilt rule, not over it. */
+  pinsScroll: { marginHorizontal: -PINS_BLEED },
+  pins: { gap: space.s7, paddingHorizontal: PINS_BLEED, paddingTop: space.s4 },
   pin: { width: PIN_WIDTH, gap: space.s4 },
   placeholder: {
     width: PIN_WIDTH,

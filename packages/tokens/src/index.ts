@@ -7,6 +7,7 @@ export * from "./league-crests";
 export * from "./level-badge";
 export * from "./library";
 export * from "./maitre-furet";
+export * from "./ornaments";
 export * from "./pack-looks";
 export * from "./particles";
 export * from "./profile-banners";

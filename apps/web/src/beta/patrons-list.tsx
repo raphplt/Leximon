@@ -7,6 +7,7 @@ import { useCallback, useEffect, useState } from "react";
 import { PatronBadge } from "@/components/patron-badge";
 import { api } from "@/lib/api";
 import { Button } from "@/ui/button";
+import { BindingRule, Tailpiece } from "@/ui/ornaments";
 import ui from "@/ui/ui.module.css";
 import styles from "./patrons-list.module.css";
 
@@ -43,21 +44,27 @@ export function PatronsList() {
       </section>
     );
   }
-  return groups.map((group) => (
-    <section key={group.title} className={`${styles.group} ${ui.leaf}`}>
-      <h2 className={styles.heading}>
-        {group.title}
-        <PatronBadge mark={group.founder ? "founder" : "patron"} compact />
-      </h2>
-      <ul className={styles.names}>
-        {group.pseudos.map((pseudo) => (
-          <li key={pseudo}>
-            <Link href={`/joueur/${encodeURIComponent(pseudo)}`} className={styles.name}>
-              {pseudo}
-            </Link>
-          </li>
-        ))}
-      </ul>
-    </section>
-  ));
+  return (
+    <>
+      {groups.map((group) => (
+        <section key={group.title} className={`${styles.group} ${styles.framed} ${ui.leaf}`}>
+          <BindingRule />
+          <h2 className={styles.heading}>
+            {group.title}
+            <PatronBadge mark={group.founder ? "founder" : "patron"} compact />
+          </h2>
+          <ul className={styles.names}>
+            {group.pseudos.map((pseudo) => (
+              <li key={pseudo}>
+                <Link href={`/joueur/${encodeURIComponent(pseudo)}`} className={styles.name}>
+                  {pseudo}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ))}
+      <Tailpiece className={styles.tailpiece} />
+    </>
+  );
 }

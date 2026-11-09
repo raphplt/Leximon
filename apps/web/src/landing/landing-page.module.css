@@ -396,14 +396,16 @@
   list-style: none;
 }
 
+/* Framed in fleurons: the padding keeps the art and the text clear of them. */
 .howLeaf {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 16px;
   height: 100%;
   box-sizing: border-box;
-  padding: 28px 26px 32px;
+  padding: 40px 36px 42px;
   text-align: center;
 }
 

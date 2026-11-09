@@ -1,4 +1,6 @@
+/* A door to a feature, framed in fleurons: the padding keeps the text clear of them. */
 .screen {
+  position: relative;
   box-sizing: border-box;
   max-width: 640px;
   margin: var(--lx-s20) auto;
@@ -66,7 +68,7 @@
 @media (max-width: 759px) {
   .screen {
     margin: var(--lx-s4) 0;
-    padding: var(--lx-s16) var(--lx-s8) var(--lx-s12);
+    padding: var(--lx-s16) 36px var(--lx-s12);
   }
 
   .title {

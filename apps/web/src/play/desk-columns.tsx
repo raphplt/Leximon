@@ -38,6 +38,7 @@ import { usePlayerView } from "@/shell/use-player-view";
 import { Button } from "@/ui/button";
 import { Icon } from "@/ui/icon";
 import { LevelMedal, XpBar } from "@/ui/level-bits";
+import { GiltCorners } from "@/ui/ornaments";
 import { Kicker, Lettering, Lettrine, ToyBody, ToyIcon } from "@/ui/toy";
 import ui from "@/ui/ui.module.css";
 import styles from "./desk-columns.module.css";
@@ -85,6 +86,7 @@ function StockLeaf({ index }: { readonly index: number }) {
       className={`${ui.leaf} ${styles.leaf} ${styles.stock} ${styles.rising}`}
       style={rise(index)}
     >
+      <GiltCorners />
       <span className={styles.leafKicker}>{DESK_TEXTS.stock}</span>
       <span className={styles.sachets} aria-hidden="true">
         {Array.from({ length: stock.capacity }, (_, at) => (
@@ -149,6 +151,7 @@ export function DailyLeaf({
 function DailyContent({ view }: { readonly view: ReturnType<typeof dailyView> }) {
   return (
     <>
+      <GiltCorners />
       <span className={styles.leafHead}>
         <ToyBody matter="gold" shape="tile" className={styles.badge}>
           <Lettrine icon="challenge" matter="red" size={24} />
@@ -191,6 +194,7 @@ export function RiddleLeaf({
       style={rise(index)}
       aria-label={`${DESK_TEXTS.riddle}, n° ${riddle.number}. ${riddleNature(riddle.partOfSpeech, riddle.letters)}.`}
     >
+      <GiltCorners />
       <span className={styles.leafHead}>
         <ToyBody matter="gold" shape="tile" className={styles.badge}>
           <Lettrine icon="ink" matter="gold" size={24} />
@@ -260,6 +264,7 @@ function LevelLeaf({ index }: { readonly index: number }) {
   const [reward] = upcomingRewards(progress.level, view.now, 1);
   return (
     <div className={`${ui.leaf} ${styles.leaf} ${styles.rising}`} style={rise(index)}>
+      <GiltCorners />
       <Link href="/niveaux" className={styles.level} aria-label={levelDescription(progress)}>
         <LevelMedal level={progress.level} size={54} />
         <span className={styles.levelBody}>
@@ -321,6 +326,7 @@ function ClanLeaf({ index }: { readonly index: number }) {
         className={`${ui.leaf} ${styles.leaf} ${styles.rising} ${locked != null ? styles.closed : ""}`}
         style={rise(index)}
       >
+        <GiltCorners />
         <span className={styles.leafHead}>
           <ToyBody
             matter={locked != null ? "locked" : "gold"}
@@ -348,6 +354,7 @@ function ClanLeaf({ index }: { readonly index: number }) {
   const ring = clan.goal === null ? null : goalRing(clan.goal);
   return (
     <div className={`${ui.leaf} ${styles.leaf} ${styles.rising}`} style={rise(index)}>
+      <GiltCorners />
       <Link href="/clan" className={styles.leafHead}>
         <Emblem emblem={clan.emblem} size={46} />
         <span className={styles.leafTitles}>

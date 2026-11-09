@@ -24,6 +24,7 @@ import { colors, fontSizes, fonts, paperColors, radii, space } from "@/theme";
 import { Avatar } from "@/ui/avatar";
 import { Icon } from "@/ui/icon";
 import { LevelMedal } from "@/ui/level";
+import { BindingRule, ORNAMENT_PADDING, TitleRule } from "@/ui/ornaments";
 import { Panel } from "@/ui/panel";
 import { PatronBadge } from "@/ui/patron-badge";
 import { ProfileBanner } from "@/ui/profile-banner";
@@ -112,8 +113,12 @@ export function PinnedCards({
   readonly catalog: Catalog | null;
 }) {
   return (
-    <Panel paper>
-      <Text style={styles.panelTitle}>Cartes épinglées</Text>
+    <Panel paper style={styles.framed}>
+      <BindingRule />
+      <View style={styles.titled}>
+        <Text style={styles.panelTitle}>Cartes épinglées</Text>
+        <TitleRule />
+      </View>
       {pinned.length === 0 ? (
         <Text style={styles.muted}>Aucune carte épinglée.</Text>
       ) : (
@@ -155,7 +160,8 @@ export function PinnedCards({
 export function JoustsPanel({ jousts }: { readonly jousts: ProfileJousts }) {
   const { league, tiles } = profileJoustTiles(jousts);
   return (
-    <Panel paper>
+    <Panel paper style={styles.framed}>
+      <BindingRule />
       <View style={styles.joustsHead}>
         <Crest league={jousts.league} size={38} />
         <View>
@@ -185,7 +191,8 @@ export function StatsPanel({
 }) {
   const tiles = statTiles(stats, catalog === null ? null : catalog.cardsById.size);
   return (
-    <Panel paper>
+    <Panel paper style={styles.framed}>
+      <BindingRule />
       <Text style={styles.panelTitle}>En chiffres</Text>
       <View style={styles.tiles}>
         {tiles.map((tile) => (
@@ -201,6 +208,9 @@ export function StatsPanel({
 
 /** The pinned cards and the figures lie on paper; the identity stays in the room. */
 const ink = paperColors;
+
+/** How far the pinned cards reach past the padding: to just inside the gilt rule. */
+const PINS_BLEED = 12;
 
 const styles = StyleSheet.create({
   cloth: {
@@ -247,12 +257,15 @@ const styles = StyleSheet.create({
     lineHeight: 18,
     color: colors.pageInkMuted,
   },
+  framed: { padding: ORNAMENT_PADDING.binding },
+  titled: { gap: space.s3 },
   panelTitle: { fontFamily: fonts.display, fontSize: fontSizes.title, color: ink.pageInk },
   joustsHead: { flexDirection: "row", alignItems: "center", gap: space.s6 },
   joustsLeague: { fontFamily: fonts.ui.bold, fontSize: fontSizes.body, color: colors.rubric },
   muted: { fontFamily: fonts.ui.medium, fontSize: fontSizes.label, color: ink.pageInkMuted },
-  pinsScroll: { marginHorizontal: -18 },
-  pins: { gap: space.s7, paddingHorizontal: space.s9, paddingTop: space.s2 },
+  /** The pins scroll up to the gilt rule, not over it. */
+  pinsScroll: { marginHorizontal: -PINS_BLEED },
+  pins: { gap: space.s7, paddingHorizontal: PINS_BLEED, paddingTop: space.s2 },
   placeholder: {
     width: PIN_WIDTH,
     height: PIN_WIDTH * 1.4,
