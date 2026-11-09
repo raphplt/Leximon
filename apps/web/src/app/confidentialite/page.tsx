@@ -109,6 +109,28 @@ export default function PrivacyPage() {
       </section>
 
       <section className={`${styles.section} ${ui.leaf}`}>
+        <h2>Abonnement Mécène</h2>
+        <p>
+          Le paiement se fait sur la page de Stripe, notre prestataire de paiement : tu y saisis ta
+          carte et ton adresse e-mail, et on ne voit jamais ton numéro de carte. On garde
+          l'identifiant de client que Stripe nous donne, l'état de ton abonnement, la date et le
+          montant de chaque paiement, et la date à laquelle tu as renoncé au droit de rétractation.
+          Stripe garde tes paiements et tes factures selon ses propres règles et ses obligations
+          légales (comptabilité, lutte contre la fraude).
+        </p>
+        <p>
+          Si tu relies ton compte Discord depuis la page Mécène, on demande à Discord l'identifiant
+          et le nom de ton compte, et rien d'autre. Ils servent à te donner le rôle des mécènes et à
+          le retirer quand ton abonnement s'arrête. Tu peux défaire le lien depuis la même page.
+        </p>
+        <p>
+          Si ton profil est public, ton pseudo figure sur la page des mécènes, sauf si tu coches «
+          Ne pas me citer ». Une carte que tu as dénichée porte ton pseudo, visible par tous les
+          joueurs, tant que ton compte existe.
+        </p>
+      </section>
+
+      <section className={`${styles.section} ${ui.leaf}`}>
         <h2>E-mails</h2>
         <p>
           Les codes de connexion sont envoyés via Cloudflare uniquement quand tu en demandes un.
@@ -136,13 +158,14 @@ export default function PrivacyPage() {
       <section className={`${styles.section} ${ui.leaf}`}>
         <h2>Bases légales</h2>
         <p>
-          La gestion de ton compte, de ta partie et de tes connexions repose sur l'exécution du
-          contrat (les conditions d'utilisation acceptées à la création du compte). L'envoi des
-          nouvelles, l'inscription sur la liste d'attente et la tranche d'âge reposent sur ton
-          consentement, que tu peux retirer à tout moment. La sécurité, la modération, les
-          statistiques de la bêta, le comptage des visites et les rappels liés à ta partie reposent
-          sur notre intérêt légitime à assurer le bon fonctionnement du jeu ; tu peux désactiver ces
-          rappels à tout moment.
+          La gestion de ton compte, de ta partie, de tes connexions et de ton abonnement repose sur
+          l'exécution du contrat (les conditions d'utilisation acceptées à la création du compte, et
+          les conditions de vente pour l'abonnement). Les factures sont gardées dix ans, comme la
+          loi l'impose. L'envoi des nouvelles, l'inscription sur la liste d'attente et la tranche
+          d'âge reposent sur ton consentement, que tu peux retirer à tout moment. La sécurité, la
+          modération, les statistiques de la bêta, le comptage des visites et les rappels liés à ta
+          partie reposent sur notre intérêt légitime à assurer le bon fonctionnement du jeu ; tu
+          peux désactiver ces rappels à tout moment.
         </p>
       </section>
 
@@ -156,9 +179,9 @@ export default function PrivacyPage() {
           visites est gardé sur ce même serveur et passe lui aussi par Cloudflare.
         </p>
         <p>
-          Cloudflare est une société américaine : une donnée peut passer par les États-Unis. Ces
-          transferts sont encadrés par les clauses types de la Commission européenne et par le Data
-          Privacy Framework.
+          Cloudflare, Stripe et Discord sont des sociétés américaines : une donnée peut passer par
+          les États-Unis. Ces transferts sont encadrés par les clauses types de la Commission
+          européenne et par le Data Privacy Framework.
         </p>
         <p>
           Les sauvegardes de la base sont gardées 30 jours au plus. Ce que tu effaces disparaît

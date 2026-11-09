@@ -176,6 +176,9 @@ export const PATRON_DEFAULT_PLAN: PatronPlan = "yearly";
 /** Under the plans. */
 export const PATRON_CANCEL_NOTE = "Tu peux résilier en un clic depuis cette page, quand tu veux.";
 export const PATRON_PAYMENT_NOTE = "Le paiement se fait sur la page sécurisée de Stripe.";
+/** Followed by the link to the terms of sale. */
+export const PATRON_TERMS_LEAD = "En t'abonnant, tu acceptes les ";
+export const PATRON_TERMS_LINK = "conditions de vente";
 export const PATRON_PLANS_TITLE = "Choisis ta formule";
 export const PATRON_PERKS_TITLE = "Ce que tu reçois";
 /** At the foot of the offer, back up to the plans. */

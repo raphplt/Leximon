@@ -35,7 +35,8 @@ const outbox = createOutbox();
 const app = createApp({ emailSender: outbox.emailSender, mailDomain: anyMailDomain });
 const { db, close } = createDb(url, { maxConnections: 4 });
 
-const { invites, playerAgeBrackets, playerDays, playerSignups, users } = schema;
+const { invites, patronSubscriptions, playerAgeBrackets, playerDays, playerSignups, users } =
+  schema;
 
 let admin: Guest;
 
@@ -364,6 +365,12 @@ describe("closed beta", () => {
     const [row] = await db.select().from(invites).where(eq(invites.id, invite.id));
     expect(row?.uses).toBe(1);
 
+    await db.insert(patronSubscriptions).values({
+      userId: accountId,
+      stripeCustomerId: `cus_${crypto.randomUUID()}`,
+      firstPaidAt: new Date(),
+    });
+
     const measures = adminMeasuresSchema.parse(
       await (
         await app.request("/admin/measures", { headers: headers({ cookie: admin.cookie }) }, env)
@@ -379,6 +386,7 @@ describe("closed beta", () => {
     expect(measures.daily.at(-1)?.accounts).toBeGreaterThan(0);
     expect(measures.cohorts.find((cohort) => cohort.day === today)?.players).toBeGreaterThan(0);
     expect(measures.uniqueActive.current).toBeGreaterThan(0);
+    expect(measures.interest.newPatrons).toBeGreaterThan(0);
 
     const reversed = await app.request(
       "/admin/measures?from=2026-10-20&to=2026-10-10",

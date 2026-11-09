@@ -35,7 +35,18 @@ describe("Stripe events", () => {
         startsAt: 1_800_000_000_000,
         endsAt: 1_831_536_000_000,
       },
+      refundedPayment: null,
     });
+  });
+
+  it("read a charge refunded in full into its payment, and leave a part refunded", () => {
+    const charge = (refunded: boolean) =>
+      event("charge.refunded", { customer: "cus_1", refunded, payment_intent: "pi_1" });
+    expect(billingEventOf(charge(true))).toMatchObject({
+      customerId: "cus_1",
+      refundedPayment: "pi_1",
+    });
+    expect(billingEventOf(charge(false))?.refundedPayment).toBeNull();
   });
 
   it("span every line of an invoice that changes plan", () => {

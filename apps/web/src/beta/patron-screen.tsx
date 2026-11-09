@@ -65,6 +65,8 @@ import {
   PATRON_SEE_SUBSCRIPTION,
   PATRON_SUBSCRIBE,
   PATRON_SUBSCRIBE_BUSY,
+  PATRON_TERMS_LEAD,
+  PATRON_TERMS_LINK,
   PATRON_THANKS,
   PATRON_THANKS_FAILED,
   PATRON_THANKS_HIDE,
@@ -566,6 +568,13 @@ function OfferView({
               <li>
                 <Icon name="lock" size={18} />
                 {PATRON_PAYMENT_NOTE}
+              </li>
+              <li>
+                <Icon name="album" size={18} />
+                <span>
+                  {PATRON_TERMS_LEAD}
+                  <Link href="/conditions-de-vente">{PATRON_TERMS_LINK}</Link>.
+                </span>
               </li>
             </ul>
           </Leaf>

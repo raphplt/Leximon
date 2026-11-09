@@ -10,6 +10,8 @@ export interface BillingEvent {
   /** The subscription to read again from Stripe: its latest state, whatever order events came in. */
   readonly subscriptionId: string | null;
   readonly paidInvoice: PaidInvoice | null;
+  /** The payment of a charge refunded in full, wherever the refund was made. */
+  readonly refundedPayment: string | null;
 }
 
 /** An invoice paid with money, and the months it pays for. */
@@ -70,6 +72,12 @@ const invoiceSchema = z.object({
   }),
 });
 
+const chargeSchema = z.object({
+  customer: z.string().nullable(),
+  refunded: z.boolean(),
+  payment_intent: z.string().nullable(),
+});
+
 const SUBSCRIPTION_EVENTS = new Set([
   "customer.subscription.created",
   "customer.subscription.updated",
@@ -90,6 +98,7 @@ export function billingEventOf(raw: unknown): BillingEvent | null {
     customerId: null,
     subscriptionId: null,
     paidInvoice: null,
+    refundedPayment: null,
   };
 
   if (type === "checkout.session.completed") {
@@ -124,6 +133,18 @@ export function billingEventOf(raw: unknown): BillingEvent | null {
       customerId: invoice.data.customer,
       subscriptionId,
       paidInvoice: type === "invoice.paid" ? paidInvoiceOf(invoice.data, subscriptionId) : null,
+    };
+  }
+
+  if (type === "charge.refunded") {
+    const charge = chargeSchema.safeParse(object);
+    if (!charge.success) return null;
+    // A part refunded leaves the period paid: only a whole refund takes it back.
+    if (!charge.data.refunded || charge.data.payment_intent === null) return ignored;
+    return {
+      ...ignored,
+      customerId: charge.data.customer,
+      refundedPayment: charge.data.payment_intent,
     };
   }
 

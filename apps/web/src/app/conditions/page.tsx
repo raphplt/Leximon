@@ -21,7 +21,7 @@ export default function TermsPage() {
         Leximon
       </Link>
       <h1 className={`${styles.title} ${ui.lettered}`}>Conditions d'utilisation</h1>
-      <p className={styles.updated}>Version du 22 octobre 2026.</p>
+      <p className={styles.updated}>Version du 9 novembre 2026.</p>
 
       <section className={`${styles.section} ${ui.leaf}`}>
         <h2>L'éditeur</h2>
@@ -45,8 +45,8 @@ export default function TermsPage() {
         </p>
         <p>
           Le jeu est gratuit. Aucun sachet ne s'achète, ni directement ni avec une monnaie achetée.
-          Si une offre payante arrive un jour (abonnement, objets d'apparence), son contenu sera
-          connu avant l'achat, et ces conditions seront mises à jour.
+          L'abonnement Mécène, facultatif, a un contenu connu avant l'achat ; il suit les{" "}
+          <Link href="/conditions-de-vente">conditions de vente</Link>.
         </p>
       </section>
 

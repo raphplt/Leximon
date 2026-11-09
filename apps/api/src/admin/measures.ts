@@ -36,6 +36,7 @@ const {
   playerFeedback,
   playerInterest,
   playerSignups,
+  patronSubscriptions,
   players,
   reviewLogs,
   trades,
@@ -252,10 +253,18 @@ export async function readMeasures(
       join ${users} on ${users.id} = ${playerDays.userId}
       where ${playerDays.day} > ${today}::date - 30 and ${counted}
     `),
-    db.execute<{ door: number; notify: number }>(sql`
+    db.execute<{ door: number; notify: number; paid: number }>(sql`
       select
         count(*) filter (where ${playerInterest.kind} = 'patron_door')::int as door,
-        count(*) filter (where ${playerInterest.kind} = 'patron_notify')::int as notify
+        count(*) filter (where ${playerInterest.kind} = 'patron_notify')::int as notify,
+        (
+          select count(*)::int
+          from ${patronSubscriptions}
+          join ${users} on ${users.id} = ${patronSubscriptions.userId}
+          where ${counted}
+            and ${patronSubscriptions.firstPaidAt} >= ${parisStart(from)}
+            and ${patronSubscriptions.firstPaidAt} < ${parisStart(addDays(to, 1))}
+        ) as paid
       from ${playerInterest}
       join ${users} on ${users.id} = ${playerInterest.userId}
       where ${counted}
@@ -310,7 +319,11 @@ export async function readMeasures(
     byAge: retentionBy(players, (player) => player.age, today).sort((a, b) =>
       a.key.localeCompare(b.key),
     ),
-    interest: { patronDoor: interested?.door ?? 0, patronNotify: interested?.notify ?? 0 },
+    interest: {
+      patronDoor: interested?.door ?? 0,
+      patronNotify: interested?.notify ?? 0,
+      newPatrons: interested?.paid ?? 0,
+    },
   };
 }
 

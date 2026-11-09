@@ -91,6 +91,7 @@ function fakeStripe() {
   const cancelled: string[] = [];
   const forgotten: string[] = [];
   const refunds: string[] = [];
+  const invoicesOfPayments = new Map<string, string>();
   let failing = false;
   const reachable = () => {
     if (failing) throw new Error("Stripe unreachable");
@@ -140,6 +141,10 @@ function fakeStripe() {
       reachable();
       refunds.push(invoiceId);
     },
+    async invoiceOfPayment(paymentIntentId) {
+      reachable();
+      return invoicesOfPayments.get(paymentIntentId) ?? null;
+    },
   };
   return {
     billing,
@@ -150,6 +155,7 @@ function fakeStripe() {
     cancelled,
     forgotten,
     refunds,
+    invoicesOfPayments,
     newSubscriptionId: () => id("sub"),
     setFailing: (value: boolean) => {
       failing = value;
@@ -757,6 +763,37 @@ describe("the back office", () => {
       .from(schema.patronPeriods)
       .where(eq(schema.patronPeriods.userId, member.userId));
     expect(period?.refundedAt).not.toBeNull();
+    expect((await readPatron(member)).claimable).toEqual([]);
+  });
+
+  it("takes back a period refunded in full from Stripe's dashboard, not one refunded in part", async () => {
+    const { member, customerId } = await memberWithCustomer();
+    const subscription = subscribe(customerId, { status: "active" });
+    await checkoutCompleted(subscription);
+    const invoiceId = `in_${crypto.randomUUID()}`;
+    await invoicePaid(subscription, invoiceId);
+    const intentId = `pi_${crypto.randomUUID()}`;
+    stripe.invoicesOfPayments.set(intentId, invoiceId);
+    const refunded = (whole: boolean) =>
+      sendEvent("charge.refunded", {
+        id: `ch_${crypto.randomUUID()}`,
+        object: "charge",
+        customer: customerId,
+        refunded: whole,
+        payment_intent: intentId,
+      });
+    const periodOf = async () => {
+      const [period] = await db
+        .select()
+        .from(schema.patronPeriods)
+        .where(eq(schema.patronPeriods.invoiceId, invoiceId));
+      return period;
+    };
+
+    expect(await eventResult(await refunded(false))).toBe("ignored");
+    expect((await periodOf())?.refundedAt).toBeNull();
+    expect(await eventResult(await refunded(true))).toBe("applied");
+    expect((await periodOf())?.refundedAt).not.toBeNull();
     expect((await readPatron(member)).claimable).toEqual([]);
   });
 

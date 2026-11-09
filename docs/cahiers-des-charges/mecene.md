@@ -77,7 +77,7 @@
   - les autres joueurs la trouvent dans les sachets comme toute carte.
 - **L'exemplaire du dénicheur** :
   - une variante d'exemplaire à part, unique, qui se voit au premier coup d'œil (un signe propre, à dessiner, qui n'imite aucune rareté) ;
-  - il compte dans l'album, s'épingle sur le profil, se joue en défi et en joute comme toute carte ;
+  - il compte dans l'album, s'épingle sur le profil, se joue en défi et en joute comme toute carte, et ses réponses comptent en maîtrise et en XP ;
   - il ne s'échange pas, ne se recycle pas, et ne rapporte pas d'XP à son arrivée (ni XP de mot nouveau, ni complétion de rareté) ;
   - s'il gagne ensuite un exemplaire ordinaire du même mot, celui-ci suit les règles habituelles (doubles, échanges).
 - **Le pseudo sur la carte** est celui du jour de la publication, repris à chaque nouvelle version du catalogue. Un mécène qui supprime son compte disparaît de la carte à la version suivante. Un mécène sans pseudo en choisit un avant de dénicher.
@@ -98,7 +98,7 @@
 
 - **15-17 ans** : l'achat reste ouvert, avec la mention du parent. Un parent qui le demande obtient le remboursement et la résiliation, depuis l'admin. Un compte de moins de 15 ans n'existe pas.
 - **Rétractation** : la case de renonciation est obligatoire pour payer. Sa date est gardée.
-- **Remboursement** : à la main, depuis l'admin, qui rembourse chez Stripe et résilie. Un abonnement remboursé retire le cosmétique du mois concerné s'il n'a pas été réclamé ; ce qui est réclamé reste.
+- **Remboursement** : à la main, depuis l'admin, qui rembourse chez Stripe et résilie. Un remboursement complet fait directement dans le tableau de bord de Stripe est lu aussi (sans résilier : la résiliation s'y fait à part). Un abonnement remboursé retire le cosmétique du mois concerné s'il n'a pas été réclamé ; ce qui est réclamé reste.
 
 ## 3. Technique
 
@@ -161,9 +161,9 @@ Construit aux lots 1 et 2 (`apps/api/src/patron/`), sauf la réserve.
 ## 4. Lots
 
 1. **Socle** (fait le 2026-11-08) : migration `0047`, SDK `stripe`, `GET /me/patron`, checkout, portail, webhook, `PATRON_SALES`, règles dans `core` (statut, fondateur), suppression de compte, tests. Rien de visible pour les joueurs.
-2. **Page Mécène, badge et cosmétiques** (fait le 2026-11-08) : page Mécène web (porte avant la vente, offre, retour de Stripe, abonné, résilié, paiement refusé), badge et titre, cosmétique du mois réclamé ; sur le mobile, badge et page en lecture, que seul un joueur qui porte le badge atteint (lien dans son profil) ; admin Mécènes. Prix dans `PATRON_SCHEDULE` (à changer en même temps que ceux de Stripe). Restent : le calendrier des cosmétiques (vide, un mois se remplit dans `PATRON_SCHEDULE` le 1er au plus tôt), le Sceau du fondateur, la conversion de la page dans `/admin/mesure`, les mots dénichés sur la page (lot 3).
+2. **Page Mécène, badge et cosmétiques** (fait le 2026-11-08) : page Mécène web (porte avant la vente, offre, retour de Stripe, abonné, résilié, paiement refusé), badge et titre, cosmétique du mois réclamé ; sur le mobile, badge et page en lecture, que seul un joueur qui porte le badge atteint (lien dans son profil) ; admin Mécènes. Prix dans `PATRON_SCHEDULE` (à changer en même temps que ceux de Stripe). Restent : le calendrier des cosmétiques (un mois se remplit dans `PATRON_SCHEDULE` le 1er au plus tôt). Conversion de la page dans `/admin/mesure` faite le 2026-11-09.
 3. **Dénichage** (fait le 2026-11-08) : droits dans `core` (`earnedFinds`, `findsLeft`, `monthsPerFind` dans `PATRON_SCHEDULE`), migration `0050` (`reserve_words`, `word_finds`), réserve publiée, recherche et dénichage (web `/mecene/denicher` et mobile `/denicher`), section « Ton mot dans le jeu » sur la page Mécène, exemplaire du dénicheur donné à la publication, « Déniché par » sur la fiche de carte, liens avec la chaîne de contenu. Courrier à la parution et à l'écart fait le 2026-11-09 (recette MEC-20) ; l'app ignore désormais une lettre d'un type qu'elle ne connaît pas. Reste le signe de l'exemplaire dans l'album et sur la carte (§ 10, point 2).
-4. **Ouverture** : CGV et CGU relues par l'avocat, page « Tes données » mise à jour, clés de production, `PATRON_SALES` à `"open"`.
+4. **Ouverture** : conditions de vente (`/conditions-de-vente`, liées sous le bouton d'abonnement), paragraphe des CGU et section « Abonnement Mécène » de « Tes données » rédigés le 2026-11-09, à faire relire ; clés de production, `PATRON_SALES` à `"open"`. Pas de lien vers les conditions de vente dans l'app mobile, qui ne vend rien (règles des stores).
 
 Lots suivants, hors de ce cahier : cabinet du mot et carnet (février), éditions de bibliothèque, dos de carte et thème d'album (mars), « Offrir Mécène », achat intégré sur le mobile.
 
@@ -210,7 +210,7 @@ Tranché par le propriétaire le 2026-11-08 :
    - b. Un mot au premier paiement, puis tous les trois mois. Plus fort à la conversion, mais un mot signé à vie pour 3,99 € puis une résiliation.
    - **Tranché le 2026-11-09 : b.** Attendre trois mois donnait l'impression de payer dans le vide. Les paiements se comptent sur toute la vie du compte, ce qui empêche d'enchaîner les abonnements d'un mois pour récolter des mots.
 2. **Le signe de l'exemplaire du dénicheur** : un sceau de cire en coin, un ex-libris au dos, ou un liseré gravé, sans or ni couleur de rareté. À dessiner, avec les cosmétiques du calendrier, par toi ou un graphiste (50 à 150 € pièce, estimation).
-3. **Jouer la carte dénichée** : je lis « sans XP » comme « rien à l'arrivée », et ses réponses en défi comptent comme pour toute carte (maîtrise, XP de la réponse), puisque tu veux qu'elle se joue comme les autres. C'est une petite entorse à P72 (« ni maîtrise, ni XP »), sur un mot à la fois. À confirmer.
+3. **Jouer la carte dénichée** : je lis « sans XP » comme « rien à l'arrivée », et ses réponses en défi comptent comme pour toute carte (maîtrise, XP de la réponse), puisque tu veux qu'elle se joue comme les autres. C'est une petite entorse à P72 (« ni maîtrise, ni XP »), sur un mot à la fois. **Confirmé le 2026-11-09 :** ses réponses comptent comme pour toute carte.
 
 ## 11. Stripe pas à pas · toi
 
@@ -222,8 +222,8 @@ Tranché par le propriétaire le 2026-11-08 :
    - 29,99 € par an, clé `patron_yearly`.
 3. **Factures.** Paramètres → Facturation → Factures : pied de page « TVA non applicable, art. 293 B du CGI », avec ton nom, ton SIRET et ton adresse dans les informations de l'entreprise. Paramètres → E-mails clients : cocher les reçus des paiements réussis et des remboursements.
 4. **Portail client.** Paramètres → Facturation → Portail client : autoriser la mise à jour du moyen de paiement, l'historique des factures, le changement de formule entre les deux prix du produit Mécène (prorata), et la résiliation **en fin de période**, sans motif obligatoire. Pas de pause. Lien de retour : `https://leximon.fr/mecene`.
-5. **Relances.** Paramètres → Facturation → Abonnements et e-mails → Gérer les paiements échoués : Smart Retries, puis « résilier l'abonnement » quand toutes les tentatives échouent.
-6. **Webhook.** Développeurs → Webhooks → Ajouter une destination : `https://api.leximon.fr/stripe/webhook`, version `2026-10-28.endive`, événements `checkout.session.completed`, `customer.subscription.created`, `customer.subscription.updated`, `customer.subscription.deleted`, `customer.subscription.paused`, `customer.subscription.resumed`, `invoice.paid`, `invoice.payment_failed`. Copier le secret de signature (`whsec_…`).
+5. **Relances.** Paramètres → Facturation → Abonnements et e-mails → Gérer les paiements échoués : Smart Retries, puis « résilier l'abonnement » quand toutes les tentatives échouent. Sur la même page, activer l'e-mail des renouvellements à venir, au moins 30 jours avant : les conditions de vente promettent ce rappel pour la formule annuelle.
+6. **Webhook.** Développeurs → Webhooks → Ajouter une destination : `https://api.leximon.fr/stripe/webhook`, version `2026-10-28.endive`, événements `checkout.session.completed`, `customer.subscription.created`, `customer.subscription.updated`, `customer.subscription.deleted`, `customer.subscription.paused`, `customer.subscription.resumed`, `invoice.paid`, `invoice.payment_failed`, `charge.refunded` (un remboursement complet fait depuis le tableau de bord de Stripe retire la période, comme celui de l'admin). Copier le secret de signature (`whsec_…`).
 7. **Clés.** Développeurs → Clés API : une clé secrète restreinte suffit, avec les droits en écriture sur Customers, Checkout Sessions, Customer portal, Subscriptions et Refunds, et en lecture sur Prices et Invoices (le remboursement de l'admin retrouve le paiement d'une facture). En local, la clé secrète standard `sk_test_…` suffit. Puis `wrangler secret put` (voir [mise-en-ligne.md](../mise-en-ligne.md#6-secrets-de-lapi--toi)).
 
 **En local :** mettre la clé de test dans `apps/api/.dev.vars` (`STRIPE_SECRET_KEY`), installer la [CLI Stripe](https://docs.stripe.com/stripe-cli), puis :

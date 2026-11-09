@@ -25,6 +25,8 @@ export interface Billing {
   forgetCustomer(customerId: string): Promise<void>;
   /** Refunds what an invoice was paid; refunded twice, Stripe makes it once. */
   refundInvoice(invoiceId: string): Promise<void>;
+  /** The invoice a payment paid; `null` for a payment that paid none. */
+  invoiceOfPayment(paymentIntentId: string): Promise<string | null>;
 }
 
 export type BillingFactory = (env: Env) => Billing;
@@ -168,6 +170,16 @@ export const createStripeBilling: BillingFactory = (env) => {
           { idempotencyKey: `refund-${invoiceId}-${intentId}` },
         );
       }
+    },
+
+    async invoiceOfPayment(paymentIntentId) {
+      const payments = await stripe.invoicePayments.list({
+        payment: { type: "payment_intent", payment_intent: paymentIntentId },
+        limit: 1,
+      });
+      const invoice = payments.data[0]?.invoice;
+      if (invoice === undefined) return null;
+      return typeof invoice === "string" ? invoice : (invoice.id ?? null);
     },
   };
 };

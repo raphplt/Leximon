@@ -151,8 +151,9 @@
   // Secrets (`wrangler secret put … --env production`): BETTER_AUTH_SECRET, EMAIL_LINK_SECRET,
   // LETTERMINT_SENDING_TOKEN, LETTERMINT_WEBHOOK_SECRET, and for the morning summary
   // DISCORD_WEBHOOK_URL, CLOUDFLARE_ACCOUNT_ID, OBSERVABILITY_TOKEN, and for the store reviewers
-  // REVIEW_ACCOUNT_EMAIL, REVIEW_ACCOUNT_CODE, and for the patrons' Discord DISCORD_CLIENT_SECRET,
-  // DISCORD_BOT_TOKEN. See docs/mise-en-ligne.md.
+  // REVIEW_ACCOUNT_EMAIL, REVIEW_ACCOUNT_CODE, for the patrons' Discord DISCORD_CLIENT_SECRET,
+  // DISCORD_BOT_TOKEN, and for their payment STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET. See
+  // docs/mise-en-ligne.md.
   "env": {
     "production": {
       "routes": [{ "pattern": "api.leximon.fr", "custom_domain": true }],

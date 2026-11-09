@@ -24,7 +24,7 @@ import {
   type SubscriptionStatus,
 } from "@leximon/core";
 import { type Database, schema } from "@leximon/db";
-import { eq, inArray } from "drizzle-orm";
+import { and, eq, inArray, isNull } from "drizzle-orm";
 import { ADMIN_ROLE } from "../auth";
 import { type Billing, billingConfigured, type SubscriptionSnapshot } from "./billing";
 import { readDiscordLink } from "./discord";
@@ -430,6 +430,8 @@ export async function applyBillingEvent(
   if (seen !== undefined) return { result: "duplicate", userId: null };
   const snapshot =
     event.subscriptionId === null ? null : await billing.retrieveSubscription(event.subscriptionId);
+  const refundedInvoice =
+    event.refundedPayment === null ? null : await billing.invoiceOfPayment(event.refundedPayment);
 
   const outcome = await db.transaction(async (tx) => {
     const [recorded] = await tx
@@ -475,6 +477,19 @@ export async function applyBillingEvent(
         if (founderAt === null && isFoundingPayment(rules, invoice.paidAt))
           founderAt = period.paidAt;
       }
+    }
+    if (refundedInvoice !== null) {
+      // Refunded from Stripe's dashboard as well as from ours: the period no longer counts.
+      await tx
+        .update(patronPeriods)
+        .set({ refundedAt: at })
+        .where(
+          and(
+            eq(patronPeriods.invoiceId, refundedInvoice),
+            eq(patronPeriods.userId, row.userId),
+            isNull(patronPeriods.refundedAt),
+          ),
+        );
     }
     await tx
       .update(patronSubscriptions)

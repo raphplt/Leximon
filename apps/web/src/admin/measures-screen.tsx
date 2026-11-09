@@ -240,8 +240,8 @@ function Dashboard({ data }: { readonly data: AdminMeasures }) {
 
       <section className={m.panel}>
         <PanelHead
-          title="Fausse porte « Devenir mécène »"
-          hint="Signaux d'intérêt reçus sur la période, pour une offre pas encore en vente."
+          title="Page Mécène"
+          hint="Joueurs qui ouvrent la page pour la première fois sur la période, et ceux qui s'abonnent."
         />
         <div className={m.kpis}>
           <Kpi
@@ -260,6 +260,15 @@ function Dashboard({ data }: { readonly data: AdminMeasures }) {
               data.interest.patronDoor === 0
                 ? null
                 : data.interest.patronNotify / data.interest.patronDoor,
+            )} de ceux qui ont ouvert`}
+          />
+          <Kpi
+            label="Se sont abonnés"
+            value={formatNumber(data.interest.newPatrons)}
+            note={`${percent(
+              data.interest.patronDoor === 0
+                ? null
+                : data.interest.newPatrons / data.interest.patronDoor,
             )} de ceux qui ont ouvert`}
           />
         </div>

@@ -204,6 +204,8 @@ export const adminMeasuresSchema = z.object({
   interest: z.object({
     patronDoor: z.int().nonnegative(),
     patronNotify: z.int().nonnegative(),
+    /** Players whose first patron payment falls within the period. */
+    newPatrons: z.int().nonnegative(),
   }),
 });
 export type AdminMeasures = z.infer<typeof adminMeasuresSchema>;
