@@ -70,9 +70,14 @@
   color: var(--lx-color-page-ink-muted);
 }
 
-.last .dayIcon {
-  width: 68px;
-  height: 68px;
+/* Tomorrow's gift, lit and ringed in gold: what coming back brings. */
+.tomorrow {
+  flex-basis: 66px;
+}
+
+/* The last day is bigger: the best gift comes last. */
+.last {
+  flex-basis: 70px;
 }
 
 .claimed .dayIcon {
@@ -102,11 +107,6 @@
   opacity: 0.8;
 }
 
-/* Tomorrow's gift, lit and ringed in gold: what coming back brings. */
-.tomorrow {
-  flex-basis: 66px;
-}
-
 .tomorrow .dayIcon {
   width: 60px;
   height: 60px;
@@ -117,6 +117,16 @@
 
 .tomorrow .dayLabel {
   color: var(--lx-toy-gold-top);
+}
+
+.last .dayIcon {
+  width: 68px;
+  height: 68px;
+}
+
+/* When the last day is tomorrow, it stays bigger and keeps room for its ring. */
+.last.tomorrow {
+  flex-basis: 78px;
 }
 
 /* Under an opened day, the row comes back with tomorrow lit. */
@@ -141,9 +151,14 @@
 }
 
 /* A phone: seven cases, tomorrow's ring included, across the window without touching. */
-@media (max-width: 420px) {
+@media (max-width: 559px) {
   .title {
     font-size: var(--lx-size-heading);
+  }
+
+  .cloth {
+    padding-left: var(--lx-s7);
+    padding-right: var(--lx-s7);
   }
 
   .days {
@@ -159,11 +174,6 @@
     height: 34px;
   }
 
-  .last .dayIcon {
-    width: 42px;
-    height: 42px;
-  }
-
   .dayIcon svg {
     width: 18px;
     height: 18px;
@@ -173,9 +183,22 @@
     flex-basis: 46px;
   }
 
+  .last {
+    flex-basis: 42px;
+  }
+
   .tomorrow .dayIcon {
     width: 38px;
     height: 38px;
     outline-offset: 2px;
+  }
+
+  .last .dayIcon {
+    width: 42px;
+    height: 42px;
+  }
+
+  .last.tomorrow {
+    flex-basis: 50px;
   }
 }
