@@ -41,7 +41,7 @@ import {
   waitlistRateLimit,
 } from "./middleware/rate-limit";
 import { type BillingFactory, createStripeBilling } from "./patron/billing";
-import { adminPatronRoutes, stripeWebhookRoutes } from "./patron/routes";
+import { adminPatronRoutes, patronThanksRoutes, stripeWebhookRoutes } from "./patron/routes";
 import { riddleRoutes } from "./riddles/routes";
 import { playerRoutes, tradeRoutes } from "./trades/routes";
 import { waitlistRoutes } from "./waitlist/routes";
@@ -161,6 +161,10 @@ export function createApp(options: AppOptions = {}) {
   app.route("/clans", clanRoutes());
   app.use("/players/*", withDatabase);
   app.route("/players", playerRoutes());
+  // Public like the waiting list: one address does not read it in a loop.
+  app.get("/patrons", waitlistRateLimit);
+  app.use("/patrons", withDatabase);
+  app.route("/patrons", patronThanksRoutes());
   app.use("/stripe/*", withDatabase);
   app.route("/stripe", stripeWebhookRoutes(createBilling));
   app.use("/admin/*", withDatabase);

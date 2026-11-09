@@ -11,6 +11,7 @@ import {
   patronRedirectResponseSchema,
   patronRefusalSchema,
   patronResponseSchema,
+  patronThanksResponseSchema,
   profileResponseSchema,
   publicProfileSchema,
   reserveResponseSchema,
@@ -283,6 +284,7 @@ describe("the patron page", () => {
       founder: false,
       foundingOffer: false,
       finds: { left: 0, words: [] },
+      thanksListed: true,
       subscription: null,
     });
   });
@@ -998,5 +1000,76 @@ describe("pinned cards of a patron", () => {
     const after = await readProfile(member);
     expect(after.pinnedSlots).toBe(before);
     expect(after.pinned).toEqual(pins.slice(0, before));
+  });
+});
+
+describe("the page of thanks", () => {
+  const PUBLIC_XP = xpToReach(unlockRulesAt(UNLOCK_SCHEDULE, Date.now()).levels.public_profile);
+
+  /** A patron anyone may read: a pseudo, the level of a public profile. */
+  async function publicPatron(paying: boolean) {
+    const pseudo = `Merci${crypto.randomUUID().slice(0, 6)}`;
+    const { member, customerId } = await memberWithCustomer();
+    if (paying) {
+      const subscription = subscribe(customerId, { status: "active", trialEnd: null });
+      await checkoutCompleted(subscription);
+      await invoicePaid(subscription);
+    } else {
+      await checkoutCompleted(subscribe(customerId));
+    }
+    await ensurePlayer(db, member.userId);
+    await db
+      .update(schema.players)
+      .set({ pseudo, pseudoKey: pseudo.toLowerCase(), pseudoChangedAt: new Date() })
+      .where(eq(schema.players.userId, member.userId));
+    await setXp(db, member.userId, PUBLIC_XP);
+    return { member, pseudo };
+  }
+
+  async function thanked() {
+    const response = await app.request("/patrons", {}, env);
+    expect(response.status).toBe(200);
+    expect(response.headers.get("cache-control")).toContain("public");
+    return patronThanksResponseSchema.parse(await response.json()).patrons;
+  }
+
+  it("names paying patrons with a public profile, founders first, and not the trial", async () => {
+    const first = await publicPatron(true);
+    const founder = await publicPatron(true);
+    await db
+      .update(schema.patronSubscriptions)
+      .set({ founderAt: new Date() })
+      .where(eq(schema.patronSubscriptions.userId, founder.member.userId));
+    const trial = await publicPatron(false);
+
+    const pseudos = (await thanked()).map((patron) => patron.pseudo);
+    expect(pseudos).not.toContain(trial.pseudo);
+    expect(pseudos.indexOf(founder.pseudo)).toBeGreaterThanOrEqual(0);
+    expect(pseudos.indexOf(founder.pseudo)).toBeLessThan(pseudos.indexOf(first.pseudo));
+    expect((await thanked()).find((patron) => patron.pseudo === founder.pseudo)?.founder).toBe(
+      true,
+    );
+  });
+
+  it("leaves out a patron who asks not to be named, or whose profile is private", async () => {
+    const quiet = await publicPatron(true);
+    const hidden = await publicPatron(true);
+    expect((await readPatron(quiet.member)).thanksListed).toBe(true);
+
+    expect(
+      (await request(quiet.member, "PUT", "/me/patron/thanks", { listed: false })).status,
+    ).toBe(204);
+    expect((await readPatron(quiet.member)).thanksListed).toBe(false);
+    await db
+      .update(schema.players)
+      .set({ profilePublic: false })
+      .where(eq(schema.players.userId, hidden.member.userId));
+
+    const pseudos = (await thanked()).map((patron) => patron.pseudo);
+    expect(pseudos).not.toContain(quiet.pseudo);
+    expect(pseudos).not.toContain(hidden.pseudo);
+
+    await request(quiet.member, "PUT", "/me/patron/thanks", { listed: true });
+    expect((await thanked()).map((patron) => patron.pseudo)).toContain(quiet.pseudo);
   });
 });

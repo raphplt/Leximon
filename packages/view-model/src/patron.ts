@@ -50,7 +50,7 @@ export const PATRON_BENEFITS: readonly string[] = [
   "Un mot par trimestre, que tu choisis parmi les mots pas encore publiés. Il entre dans le jeu avec ton pseudo, et tu en reçois un exemplaire unique.",
   "Des éditions de bibliothèque pour imprimer tes gravures à la sanguine, au lavis ou à l'encre de Chine, et une nouvelle chaque mois.",
   "Le cabinet de chaque mot, ouvert depuis sa carte, avec son usage dans les livres depuis 1800, son article du Littré et sa famille.",
-  "Le titre et le badge de mécène sur ton profil, et trois cartes épinglées de plus.",
+  "Le titre et le badge de mécène sur ton profil, trois cartes épinglées de plus et ton pseudo sur la page des mécènes.",
 ];
 
 export const PATRON_INTRO =
@@ -440,4 +440,43 @@ export function findRefusalLine(reason: FindRefusal): string {
 /** On a card found by a patron, for every player. */
 export function finderLine(pseudo: string): string {
   return `Déniché par ${pseudo}`;
+}
+
+export const PATRON_THANKS_PAGE_TITLE = "La page des mécènes";
+export const PATRON_THANKS_HIDE = "Ne pas me citer";
+export const PATRON_THANKS_SHOW = "Me citer à nouveau";
+export const PATRON_THANKS_SEE = "Voir la page des mécènes";
+export const PATRON_THANKS_FAILED = "Le réglage n'a pas été enregistré. Réessaie.";
+
+/** Where the patron stands on the public page of thanks. */
+export function patronThanksLine(patron: PatronResponse): string {
+  if (patron.subscription?.standing === "trial") {
+    return "Ton pseudo y figurera après ton premier paiement, si ton profil est public.";
+  }
+  return patron.thanksListed
+    ? "Ton pseudo y figure tant que ton profil est public."
+    : "Tu as choisi de ne pas y figurer.";
+}
+
+export const THANKS_PAGE_TITLE = "Les mécènes de Leximon";
+export const THANKS_PAGE_INTRO =
+  "Merci à celles et ceux qui font vivre Leximon. Grâce à eux, le jeu reste gratuit et sans publicité.";
+export const THANKS_FOUNDERS = "Les mécènes fondateurs";
+export const THANKS_PATRONS = "Les mécènes";
+export const THANKS_EMPTY = "Aucun mécène ne figure encore sur cette page.";
+export const THANKS_FAILED = "La liste des mécènes ne s'est pas chargée. Réessaie.";
+
+/** The page of thanks in its two groups, founders first; an empty group is left out. */
+export function thanksGroups(
+  patrons: readonly { readonly pseudo: string; readonly founder: boolean }[],
+): { readonly title: string; readonly founder: boolean; readonly pseudos: string[] }[] {
+  return [
+    { title: THANKS_FOUNDERS, founder: true },
+    { title: THANKS_PATRONS, founder: false },
+  ]
+    .map((group) => ({
+      ...group,
+      pseudos: patrons.filter((p) => p.founder === group.founder).map((p) => p.pseudo),
+    }))
+    .filter((group) => group.pseudos.length > 0);
 }

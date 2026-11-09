@@ -17,11 +17,13 @@ import {
   type PatronPlan,
   type PatronRefusal,
   type PatronResponse,
+  type PatronThanksResponse,
   patronClaimRefusalSchema,
   patronClaimResponseSchema,
   patronRedirectResponseSchema,
   patronRefusalSchema,
   patronResponseSchema,
+  patronThanksResponseSchema,
   type ReserveResponse,
   reserveResponseSchema,
   type WordFindView,
@@ -122,6 +124,19 @@ export function patronRoutes(http: Http) {
     },
 
     /** Prints one card in an edition, or ordinary with `null`, whatever the album's. */
+    /** Whether the patron's pseudo shows on the page of thanks. */
+    async setPatronThanks(listed: boolean): Promise<void> {
+      const response = await send("/me/patron/thanks", json("PUT", { listed }));
+      if (!response.ok) throw new ApiError("patron_thanks_failed", response.status);
+    },
+
+    /** The page of thanks, readable without an account. */
+    async fetchPatronThanks(): Promise<PatronThanksResponse> {
+      const response = await send("/patrons");
+      if (!response.ok) throw new ApiError("patron_thanks_unavailable", response.status);
+      return parse(response, patronThanksResponseSchema);
+    },
+
     async setCardEdition(
       cardId: string,
       edition: EditionChoice["edition"],

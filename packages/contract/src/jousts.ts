@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { raritySchema } from "./boosters";
 import { slugSchema, timestampSchema } from "./common";
 import { groupPlaceSchema, joustStandingSchema, leagueSchema } from "./leagues";
 import { playerBadgeSchema } from "./profile";
@@ -190,8 +191,24 @@ export const joustAnswerSchema = z.object({
 export type JoustAnswer = z.infer<typeof joustAnswerSchema>;
 
 /** `GET /jousts/:id`: the joust as the player may see it now. */
+/** One side of the face-to-face: the player's league, their week, the backs of their 5 cards. */
+export const duelistSideSchema = z.object({
+  league: leagueSchema,
+  /** `null` before their first ranked joust of the week. */
+  group: groupPlaceSchema.nullable(),
+  /** Rarities of the cards drawn from their deck, which the other has to find. */
+  rarities: z.array(raritySchema),
+});
+export type DuelistSide = z.infer<typeof duelistSideSchema>;
+
 export const joustViewSchema = z.object({
   summary: joustSummarySchema,
+  /** The player's run started: before, they meet the other face to face and start it themselves. */
+  started: z.boolean(),
+  /** The first player loses the joust if they have not started by then; `null` once started. */
+  startBy: timestampSchema.nullable(),
+  /** Both players, for the face-to-face; `null` once the run started. */
+  duel: z.object({ mine: duelistSideSchema, theirs: duelistSideSchema }).nullable(),
   /**
    * The first player's run, question by question, shown to the second player as they play: the
    * recorded game of a real player. `null` for the first player and before it ends.

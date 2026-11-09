@@ -787,6 +787,11 @@ Préparer : `pnpm db:migrate`, un compte mécène qui a payé au moins une fois 
 - **Attendu :** le bouton n'apparaît qu'aux mécènes qui paient, ni pendant l'essai ni après l'arrêt ; l'adresse `/mecene/cabinet/<carte>` montre alors « Le cabinet du mot est réservé aux mécènes abonnés. ». Le cabinet montre la courbe d'usage depuis 1800 avec une phrase qui la lit (renfler : « Dès 1800, le mot est à son plus haut, puis se raréfie après 1980. »), la décennie pointée ou touchée avec son chiffre, l'article du Littré (sens numérotés, citations, étymologie, historique par siècle), la famille du mot (forlancer : vient de fors, de la même famille que forlonger, formuer…) dont les mots du jeu ouvrent leur carte, et la ligne des sources.
 - **Retour :**
 
+### MEC-16 · Page des mécènes
+- **Faire :** ouvre `/mecenes` sans être connecté, puis abonne-toi avec un compte au profil public et rouvre la page. Sur la page Mécène, touche « Ne pas me citer », puis « Me citer à nouveau ». Recommence sur le mobile, depuis l'écran Mécène.
+- **Attendu :** la page remercie sans rien vendre (ni prix, ni bouton, ni lien vers l'offre). Elle liste les mécènes qui paient et dont le profil est public, les fondateurs d'abord avec leur sceau, puis par date du premier paiement ; chaque pseudo ouvre son profil. Ni l'essai, ni un profil privé, ni un compte suspendu n'y figurent. « Ne pas me citer » retire le pseudo (la page se met à jour en cinq minutes au plus), « Me citer à nouveau » le remet. Sans mécène, la page dit « Aucun mécène ne figure encore sur cette page. ».
+- **Retour :**
+
 ## Mauvais choix des QCM
 
 Retour de bêta du 2026-10-31 : on trouvait la réponse par élimination (un verbe parmi des noms, un mot sans rapport avec le thème révisé). La nature des cartes vient de la publication du catalogue : en production, la colonne reste vide tant qu'une publication n'est pas passée, et les choix restent ceux d'avant.

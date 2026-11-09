@@ -1,6 +1,7 @@
 import type { PatronCosmetic } from "@leximon/core";
 import { sql } from "drizzle-orm";
 import {
+  boolean,
   check,
   index,
   integer,
@@ -46,6 +47,8 @@ export const patronSubscriptions = pgTable(
     founderAt: timestamp({ withTimezone: true }),
     /** The box giving up the right of withdrawal, ticked before the latest checkout. */
     waiverAcceptedAt: timestamp({ withTimezone: true }),
+    /** « Ne pas me citer »: the patron stays off the public page of thanks. */
+    thanksHidden: boolean().notNull().default(false),
     createdAt: timestamp({ withTimezone: true }).defaultNow().notNull(),
     updatedAt: timestamp({ withTimezone: true }).defaultNow().notNull(),
   },

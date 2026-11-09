@@ -48,18 +48,25 @@ import {
   PATRON_SUBSCRIBE,
   PATRON_SUBSCRIBE_BUSY,
   PATRON_THANKS,
+  PATRON_THANKS_FAILED,
+  PATRON_THANKS_HIDE,
+  PATRON_THANKS_PAGE_TITLE,
+  PATRON_THANKS_SEE,
+  PATRON_THANKS_SHOW,
   PATRON_WAIVER,
   PATRON_WEAR_TITLE,
   type PatronWelcomeKind,
   patronPageKind,
   patronPlanChoices,
   patronStatus,
+  patronThanksLine,
   patronTitleOf,
   patronTitleWorn,
   patronTrialNote,
   patronWelcome,
   playerName,
 } from "@leximon/view-model";
+import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { type CSSProperties, useCallback, useEffect, useRef, useState } from "react";
 import account from "@/account/account-screen.module.css";
@@ -570,6 +577,7 @@ function MemberView({
       <div style={rise(1)}>
         <Finds finds={patron.finds} />
         <Editions />
+        <ThanksSetting patron={patron} onChanged={onClaimed} />
       </div>
       {patron.claimable.length > 0 && (
         <section className={styles.claims} aria-label={PATRON_CLAIMABLE_TITLE} style={rise(1)}>
@@ -579,6 +587,66 @@ function MemberView({
         </section>
       )}
     </main>
+  );
+}
+
+/** The public page of thanks: whether the patron's pseudo is on it, and « Ne pas me citer ». */
+function ThanksSetting({
+  patron,
+  onChanged,
+}: {
+  readonly patron: PatronResponse;
+  readonly onChanged: () => Promise<unknown>;
+}) {
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const paying = patron.subscription?.standing === "patron";
+
+  const toggle = async () => {
+    setBusy(true);
+    setError(null);
+    try {
+      await api.setPatronThanks(!patron.thanksListed);
+      await onChanged();
+    } catch {
+      setError(PATRON_THANKS_FAILED);
+    }
+    setBusy(false);
+  };
+
+  return (
+    <Leaf className={styles.finds}>
+      <div className={styles.findsHead}>
+        <ToyBody matter="gold" shape="tile" className={styles.tileIcon}>
+          <Lettrine icon="books" matter="red" size={52} />
+        </ToyBody>
+        <div className={styles.findsText}>
+          <Lettering className={styles.headline}>{PATRON_THANKS_PAGE_TITLE}</Lettering>
+          <p className={styles.text}>{patronThanksLine(patron)}</p>
+        </div>
+      </div>
+      <div className={styles.thanksActions}>
+        <Link href="/mecenes" className={styles.thanksLink}>
+          {PATRON_THANKS_SEE}
+        </Link>
+        {paying && (
+          <Toy
+            matter="paper"
+            className={styles.secondary}
+            disabled={busy}
+            aria-pressed={!patron.thanksListed}
+            onClick={() => void toggle()}
+          >
+            {patron.thanksListed ? PATRON_THANKS_HIDE : PATRON_THANKS_SHOW}
+          </Toy>
+        )}
+      </div>
+      {error !== null && (
+        <p className={styles.error} role="alert">
+          {error}
+        </p>
+      )}
+    </Leaf>
   );
 }
 

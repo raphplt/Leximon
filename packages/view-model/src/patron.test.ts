@@ -16,8 +16,10 @@ import {
   patronPageKind,
   patronPlanChoices,
   patronStatus,
+  patronThanksLine,
   patronTrialNote,
   patronWelcome,
+  thanksGroups,
   wordFoundLine,
 } from "./patron";
 
@@ -39,6 +41,7 @@ function patron(overrides: Partial<PatronResponse> = {}): PatronResponse {
     founder: false,
     foundingOffer: false,
     finds: { left: 0, words: [] },
+    thanksListed: true,
     subscription: null,
     ...overrides,
   };
@@ -307,5 +310,33 @@ describe("finding a word", () => {
     );
     expect(findStateLine("rejected")).toContain("rendu");
     expect(finderLine("Raph")).toBe("Déniché par Raph");
+  });
+});
+
+describe("the page of thanks", () => {
+  it("tells the patron whether their pseudo is on it", () => {
+    const paying = patron({ subscription: subscription({ standing: "patron" }) });
+    expect(patronThanksLine(paying)).toBe("Ton pseudo y figure tant que ton profil est public.");
+    expect(patronThanksLine({ ...paying, thanksListed: false })).toBe(
+      "Tu as choisi de ne pas y figurer.",
+    );
+    expect(patronThanksLine(patron({ subscription: subscription({ standing: "trial" }) }))).toBe(
+      "Ton pseudo y figurera après ton premier paiement, si ton profil est public.",
+    );
+  });
+
+  it("puts the founders first and leaves out an empty group", () => {
+    expect(
+      thanksGroups([
+        { pseudo: "Ludo", founder: false },
+        { pseudo: "Raph", founder: true },
+      ]).map((group) => [group.title, group.pseudos]),
+    ).toEqual([
+      ["Les mécènes fondateurs", ["Raph"]],
+      ["Les mécènes", ["Ludo"]],
+    ]);
+    expect(thanksGroups([{ pseudo: "Ludo", founder: false }]).map((g) => g.title)).toEqual([
+      "Les mécènes",
+    ]);
   });
 });

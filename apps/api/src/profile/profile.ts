@@ -214,7 +214,7 @@ export async function readOwnProfile(
   };
 }
 
-function publicLevel(now: EpochMs): number {
+export function publicLevel(now: EpochMs): number {
   return featureLevels(UNLOCK_SCHEDULE, TRADE_SCHEDULE, now).public_profile;
 }
 

@@ -544,3 +544,22 @@
 .thanks .fine {
   color: var(--lx-color-page-ink-muted);
 }
+
+.thanksActions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 18px;
+}
+
+.thanksLink {
+  color: var(--lx-color-paper-ink);
+  font-weight: 800;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.thanksLink:focus-visible {
+  outline: 3px solid var(--lx-color-focus);
+  outline-offset: 2px;
+}

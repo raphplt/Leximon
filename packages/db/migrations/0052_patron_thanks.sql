@@ -1,0 +1,1 @@
+ALTER TABLE "patron_subscriptions" ADD COLUMN "thanks_hidden" boolean DEFAULT false NOT NULL;

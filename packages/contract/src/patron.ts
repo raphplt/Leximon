@@ -54,6 +54,8 @@ export const patronResponseSchema = z.object({
   /** Within the founding month: a first payment now makes a founder. */
   foundingOffer: z.boolean().default(false),
   finds: patronFindsSchema,
+  /** On the public page of thanks while paying, unless the patron asked not to be. */
+  thanksListed: z.boolean().default(true),
   subscription: z
     .object({
       standing: z.enum(["none", "trial", "patron"]),
@@ -67,6 +69,20 @@ export const patronResponseSchema = z.object({
     .nullable(),
 });
 export type PatronResponse = z.infer<typeof patronResponseSchema>;
+
+/** `PUT /me/patron/thanks` body: whether the patron's pseudo shows on the page of thanks. */
+export const patronThanksChoiceSchema = z.object({ listed: z.boolean() });
+export type PatronThanksChoice = z.infer<typeof patronThanksChoiceSchema>;
+
+/**
+ * `GET /patrons`, 200, readable without an account: the patrons thanked on the public page,
+ * founders first, then by the date of their first payment. Only paying patrons with a public
+ * profile who did not ask to stay off it.
+ */
+export const patronThanksResponseSchema = z.object({
+  patrons: z.array(z.object({ pseudo: z.string(), founder: z.boolean() })),
+});
+export type PatronThanksResponse = z.infer<typeof patronThanksResponseSchema>;
 
 /**
  * `POST /me/patron/checkout` request body. `waiverAccepted` is the box giving up the right of

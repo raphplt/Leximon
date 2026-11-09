@@ -17,7 +17,13 @@ import {
   PATRON_LOAD_FAILED,
   PATRON_MANAGED_ON_WEB,
   PATRON_MEMBER_TITLE,
+  PATRON_THANKS_FAILED,
+  PATRON_THANKS_HIDE,
+  PATRON_THANKS_PAGE_TITLE,
+  PATRON_THANKS_SEE,
+  PATRON_THANKS_SHOW,
   patronStatus,
+  patronThanksLine,
   playerName,
 } from "@leximon/view-model";
 import { router, useFocusEffect } from "expo-router";
@@ -80,6 +86,7 @@ export function PatronScreen() {
           <PatronCard patron={patron} />
           <Finds finds={patron.finds} />
           <Editions />
+          <ThanksSetting patron={patron} onChanged={load} />
           {patron.claimable.map((item) => (
             <ClaimTile key={item.month} item={item} onClaimed={load} />
           ))}
@@ -165,6 +172,53 @@ function Editions() {
           <Text style={styles.text}>{editionsOwnedLine(mine.owned)}</Text>
         </View>
       </View>
+    </Leaf>
+  );
+}
+
+/** The public page of thanks: whether the patron's pseudo is on it, and « Ne pas me citer ». */
+function ThanksSetting({
+  patron,
+  onChanged,
+}: {
+  readonly patron: PatronResponse;
+  readonly onChanged: () => Promise<void>;
+}) {
+  const [busy, setBusy] = useState(false);
+  const paying = patron.subscription?.standing === "patron";
+
+  const toggle = async () => {
+    setBusy(true);
+    try {
+      await api.setPatronThanks(!patron.thanksListed);
+      await onChanged();
+    } catch {
+      toast(PATRON_THANKS_FAILED);
+    }
+    setBusy(false);
+  };
+
+  return (
+    <Leaf style={styles.card}>
+      <View style={styles.claimRow}>
+        <ToyBody matter="gold" shape="tile" style={styles.claimIcon}>
+          <Lettrine icon="books" matter="red" size={48} />
+        </ToyBody>
+        <View style={styles.claimText}>
+          <Lettering size={fontSizes.title}>{PATRON_THANKS_PAGE_TITLE}</Lettering>
+          <Text style={styles.text}>{patronThanksLine(patron)}</Text>
+        </View>
+      </View>
+      <Button label={PATRON_THANKS_SEE} secondary small onPress={() => router.push("/mecenes")} />
+      {paying && (
+        <Button
+          label={patron.thanksListed ? PATRON_THANKS_HIDE : PATRON_THANKS_SHOW}
+          secondary
+          small
+          disabled={busy}
+          onPress={() => void toggle()}
+        />
+      )}
     </Leaf>
   );
 }

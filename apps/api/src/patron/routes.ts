@@ -14,7 +14,9 @@ import {
   type PatronRedirectResponse,
   type PatronRefusal,
   type PatronResponse,
+  type PatronThanksResponse,
   patronCheckoutRequestSchema,
+  patronThanksChoiceSchema,
   type ReserveResponse,
   reserveQuerySchema,
   slugSchema,
@@ -38,6 +40,7 @@ import {
   readPatron,
 } from "./patron";
 import { findWord, InvalidReserveCursorError, searchReserve } from "./reserve";
+import { readPatronThanks, setPatronThanks } from "./thanks";
 
 /** Invoices list their lines: larger than other webhooks, still far below this. */
 const MAX_WEBHOOK_BYTES = 256 * 1024;
@@ -99,6 +102,13 @@ export function patronRoutes(createBilling: BillingFactory) {
       }),
     ),
   );
+
+  routes.put("/thanks", refuseLockedWrites, async (c) => {
+    const body = patronThanksChoiceSchema.safeParse(await c.req.json().catch(() => null));
+    if (!body.success) return c.json({ error: "invalid_request" }, 400);
+    await setPatronThanks(c.var.db, { userId: c.var.userId, listed: body.data.listed });
+    return c.body(null, 204);
+  });
 
   routes.post("/checkout", refuseLockedWrites, async (c) => {
     const key = idempotencyKeySchema.safeParse(c.req.header(IDEMPOTENCY_KEY_HEADER));
@@ -248,5 +258,15 @@ export function adminPatronRoutes(createBilling: BillingFactory) {
     return c.json<AdminPatronRefundResponse>({ refunded: result.refunded });
   });
 
+  return routes;
+}
+
+/** The page of thanks, under `/patrons`: readable without an account, kept by the CDN. */
+export function patronThanksRoutes() {
+  const routes = new Hono<AppEnv>();
+  routes.get("/", async (c) => {
+    c.header("Cache-Control", "public, max-age=300");
+    return c.json<PatronThanksResponse>(await readPatronThanks(c.var.db, Date.now()));
+  });
   return routes;
 }

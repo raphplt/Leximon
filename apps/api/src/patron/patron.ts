@@ -128,6 +128,7 @@ export async function readPatron(
     trialDays: rules.trialDays,
     founder,
     foundingOffer: isFoundingPayment(rules, input.now),
+    thanksListed: row?.thanksHidden !== true,
     finds: {
       left: findsLeftOf(rules, periods, finds, standing, input.now),
       words: finds.map((find) => ({
