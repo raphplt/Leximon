@@ -1,4 +1,4 @@
-/* Before the run: the arena of red leather in old gold, the search, then the face-to-face. */
+/* Before the run: the arena of red leather tooled in gold, the search, then the face-to-face. */
 .arena {
   position: relative;
   overflow: hidden;
@@ -7,22 +7,22 @@
   align-items: center;
   gap: 18px;
   min-height: 560px;
-  padding: 34px 24px 40px;
-  border: 6px solid transparent;
-  border-radius: 28px;
+  /* Clear of the gilt tooling round the leather. */
+  padding: 44px 36px 48px;
+  border-radius: 24px;
   background:
-    var(--lx-matter-leather) 0 0 / var(--lx-matter-size) padding-box,
+    var(--lx-matter-leather) 0 0 / var(--lx-matter-size),
     radial-gradient(
       ellipse 70% 60% at 50% 40%,
       var(--lx-gain-middle) 0%,
       var(--lx-gain-edge) 60%,
       var(--lx-toy-outline) 100%
-    )
-    padding-box,
-    var(--lx-old-gold) border-box;
+    );
   box-shadow:
     0 0 0 3px var(--lx-toy-outline),
-    0 24px 44px var(--lx-toy-drop);
+    0 24px 44px var(--lx-toy-drop),
+    inset 0 0 0 5px color-mix(in srgb, var(--lx-gain-edge) 70%, transparent),
+    inset 0 2px 0 5px color-mix(in srgb, var(--lx-toy-sheen) 12%, transparent);
   color: var(--lx-lettering-fill);
   text-align: center;
 }
@@ -274,7 +274,7 @@
 @media (max-width: 559px) {
   .arena {
     min-height: 0;
-    padding: 24px 10px 28px;
+    padding: 30px 16px 32px;
   }
 
   .searchRow {

@@ -9,14 +9,7 @@ import type {
   LeagueResponse,
 } from "@leximon/contract";
 import { gameDayOf } from "@leximon/core";
-import {
-  cssFill,
-  gainBanner,
-  lettering,
-  oldGold,
-  toyMatters,
-  toy as toyValues,
-} from "@leximon/tokens";
+import { gainBanner, lettering, toyMatters, toy as toyValues } from "@leximon/tokens";
 import {
   AUTOMATON,
   type BoardLine,
@@ -47,6 +40,7 @@ import {
   launchRefusalText,
   leagueRoad,
   MY_GROUP,
+  moveChip,
   NO_JOUSTS,
   OPEN_LETTER,
   openedLetter,
@@ -65,7 +59,6 @@ import {
   weekFigures,
   weekRewardLine,
   YOU,
-  zoneChip,
 } from "@leximon/view-model";
 import { Image } from "expo-image";
 import { router } from "expo-router";
@@ -92,13 +85,14 @@ import { api } from "@/api/client";
 import { useEngravingInk } from "@/cards/catalog";
 import { useCatalog } from "@/cards/use-catalog";
 import { play, vibrate } from "@/feedback/feedback";
-import { MainAction } from "@/library/play-pieces";
+import { DESK_PADDING, DESK_RIM, MainAction } from "@/library/play-pieces";
 import { useNow } from "@/player/shared";
 import { catalogCard, openCard } from "@/screens/trades/card-row";
 import { alpha, fontSizes, fonts, radii, space } from "@/theme";
 import { Avatar } from "@/ui/avatar";
 import { Icon } from "@/ui/icon";
 import { Matter } from "@/ui/matter";
+import { BindingRule, Tooling } from "@/ui/ornaments";
 import { Sheet } from "@/ui/sheet";
 import { TextButton } from "@/ui/text-button";
 import { Leaf, Lettering, Toy, ToyIcon } from "@/ui/toy";
@@ -114,7 +108,6 @@ const FAN_CARD = 60;
 /** A toy matter as a fill: lit at the top, in shade at the bottom. */
 const matterFill = (matter: { readonly top: string; readonly bottom: string }) =>
   `linear-gradient(180deg, ${matter.top}, ${matter.bottom})`;
-const FRAME = 4;
 
 /** Each leaf rises in turn when the screen appears. */
 const rise = (index: number) => FadeInUp.delay(index * 90).duration(320);
@@ -194,7 +187,8 @@ export function Hall({
 
       {glimpse !== null && (
         <Animated.View entering={rise(order++)}>
-          <Leaf style={pieces.leaf}>
+          <Leaf style={[pieces.leaf, pieces.framed]}>
+            <BindingRule />
             <View style={styles.leafHead}>
               <View style={styles.flex}>
                 <LeafKicker>{`${MY_GROUP} · ${LEAGUE_NAMES[jousts.standing.league]}`}</LeafKicker>
@@ -218,7 +212,8 @@ export function Hall({
 
       {howOpen && (
         <Animated.View entering={rise(order++)}>
-          <Leaf style={pieces.leaf}>
+          <Leaf style={[pieces.leaf, pieces.framed]}>
+            <BindingRule />
             <View style={styles.leafHead}>
               <View style={styles.flex}>
                 <LeafKicker>{HOW_TITLE}</LeafKicker>
@@ -309,47 +304,38 @@ function Lice({
       </View>
 
       <Text style={styles.kickerLight}>Tournoi de la semaine</Text>
-      {figures !== null && group !== null && (
-        <View style={styles.figures}>
-          <View style={styles.figure}>
-            <Lettering size={fontSizes.display}>{figures.place}</Lettering>
-            <Text style={styles.figureSmall}>{figures.of}</Text>
-          </View>
-          <View style={styles.figure}>
-            <Lettering size={fontSizes.display}>{figures.points}</Lettering>
-            <Text style={styles.figureSmall}>{figures.pointsWord}</Text>
-          </View>
-        </View>
-      )}
-      {group !== null && (
-        <View style={[styles.zone, ZONE_FILLS[group.move]]}>
-          {group.move !== "stay" && (
-            <View style={{ transform: [{ rotate: group.move === "up" ? "-90deg" : "90deg" }] }}>
-              <Icon name="chev" size={13} color={lettering.fill} />
-            </View>
-          )}
-          <Text style={[styles.zoneText, group.move === "stay" && { color: ink.pageInk }]}>
-            {zoneChip(group.move)}
-          </Text>
-        </View>
-      )}
-      <Text style={styles.weekLine}>{header.line}</Text>
-      {reward !== null && <Text style={styles.weekReward}>{reward}</Text>}
       <View style={styles.clock}>
         <Icon name="clock" size={14} color={lettering.fill} />
         <Text style={styles.clockText}>{header.week}</Text>
       </View>
-      <View
-        style={styles.lances}
-        accessible
-        accessibilityLabel={rankedLeftText(standing.rankedLeft)}
-      >
-        {rankedLances(standing.rankedLeft, standing.rankedPerDay).map((up, index) => (
-          // biome-ignore lint/suspicious/noArrayIndexKey: the day's lances, in order
-          <Lance key={index} spent={!up} />
-        ))}
-      </View>
-      <Text style={styles.lancesText}>{rankedLeftText(standing.rankedLeft)}</Text>
+      {figures !== null && group !== null ? (
+        <>
+          <View style={styles.figures}>
+            <View style={styles.figure}>
+              <Lettering size={fontSizes.display}>{figures.place}</Lettering>
+              <Text style={styles.figureSmall}>{figures.of}</Text>
+            </View>
+            <View style={styles.figureDot} />
+            <View style={styles.figure}>
+              <Lettering size={fontSizes.display}>{figures.points}</Lettering>
+              <Text style={styles.figureSmall}>{figures.pointsWord}</Text>
+            </View>
+          </View>
+          <View style={[styles.zone, ZONE_FILLS[group.move]]}>
+            {group.move !== "stay" && (
+              <View style={{ transform: [{ rotate: group.move === "up" ? "-90deg" : "90deg" }] }}>
+                <Icon name="chev" size={15} color={lettering.fill} />
+              </View>
+            )}
+            <Text style={[styles.zoneText, group.move === "stay" && { color: ink.pageInk }]}>
+              {moveChip(standing.league, group.move)}
+            </Text>
+          </View>
+        </>
+      ) : (
+        <Text style={styles.weekLine}>{header.line}</Text>
+      )}
+      {reward !== null && <Text style={styles.weekReward}>{reward}</Text>}
       {header.waiting !== null && (
         <Pressable
           style={styles.waiting}
@@ -366,8 +352,8 @@ function Lice({
 }
 
 /**
- * Red leather in old gold, as the gain banners, with the old print of a rider behind: the lice of
- * the hall, and the arena before a run.
+ * Red leather tooled in gold, with the old print of a rider behind: the lice of the hall, and the
+ * arena before a run.
  */
 export function LeatherStage({
   children,
@@ -381,7 +367,8 @@ export function LeatherStage({
     <View style={styles.frame}>
       <View style={[styles.leather, style]}>
         <Matter kind="leather" />
-        <View style={styles.rule} />
+        {/* The leather turns in at its edge, a shade darker. */}
+        <View style={styles.rim} pointerEvents="none" />
         {engraving !== null && (
           <Image
             source={{ uri: engraving }}
@@ -391,6 +378,7 @@ export function LeatherStage({
             accessible={false}
           />
         )}
+        <Tooling />
         {children}
       </View>
     </View>
@@ -429,6 +417,7 @@ function LiceActions({
             disabled={busy}
             onPress={() => onLaunch({ kind: ranked ? "ranked" : "free" })}
           />
+          <Lances standing={jousts.standing} />
           <View style={styles.minorActions}>
             {ranked && (
               <Minor
@@ -451,6 +440,24 @@ function LiceActions({
         <Text style={styles.actionLine}>{DECK_NOT_SAVED}</Text>
       )}
       <Notice>{refusal}</Notice>
+    </View>
+  );
+}
+
+/** The ranked jousts left today, under the button that spends them. */
+function Lances({ standing }: { readonly standing: JoustStanding }) {
+  const text = rankedLeftText(standing.rankedLeft);
+  return (
+    <View style={styles.lancesBlock}>
+      <View style={styles.lances} accessible accessibilityLabel={text}>
+        {rankedLances(standing.rankedLeft, standing.rankedPerDay).map((up, index) => (
+          // biome-ignore lint/suspicious/noArrayIndexKey: the day's lances, in order
+          <Lance key={index} spent={!up} />
+        ))}
+      </View>
+      <Text style={styles.lancesText} importantForAccessibility="no">
+        {text}
+      </Text>
     </View>
   );
 }
@@ -520,7 +527,8 @@ export function Road({
   const stops = leagueRoad(standing.league);
   const here = stops.findIndex((stop) => stop.state === "here");
   return (
-    <Leaf style={pieces.leaf}>
+    <Leaf style={[pieces.leaf, pieces.framed]}>
+      <BindingRule />
       <View style={styles.leafHead}>
         <View style={styles.flex}>
           <LeafKicker>{LEAGUE_ROAD}</LeafKicker>
@@ -673,7 +681,8 @@ function JoustLists({
   const sections = joustSections(jousts);
   const [allEnded, setAllEnded] = useState(false);
   return (
-    <Leaf style={pieces.leaf}>
+    <Leaf style={[pieces.leaf, pieces.framed]}>
+      <BindingRule />
       {jousts.length === 0 && <Text style={pieces.line}>{NO_JOUSTS}</Text>}
       {sections.toPlay.length > 0 && (
         <Group title="À toi de jouer">
@@ -977,7 +986,8 @@ function DeckLeaf({
       ? FAN_CARD
       : Math.min(FAN_CARD * 0.8, (fanWidth - FAN_CARD - 8) / (deck.cardIds.length - 1));
   return (
-    <Leaf style={pieces.leaf}>
+    <Leaf style={[pieces.leaf, pieces.framed]}>
+      <BindingRule />
       <View style={styles.leafHead}>
         <View style={styles.flex}>
           <LeafKicker>Ton deck</LeafKicker>
@@ -1035,30 +1045,26 @@ const styles = StyleSheet.create({
 
   // The lice: red leather in old gold, as the gain banners.
   frame: {
-    padding: FRAME,
     borderRadius: 24,
-    backgroundImage: cssFill(oldGold),
     boxShadow: `0 0 0 2.5px ${toyValues.outline}, 0 6px 0 2.5px ${toyValues.outline}, 0 14px 28px ${toyValues.drop}`,
   },
+  // Clear of the gilt tooling round the leather.
   leather: {
     alignItems: "center",
     gap: space.s4,
     overflow: "hidden",
-    paddingTop: space.s10,
-    paddingBottom: space.s10,
-    paddingHorizontal: space.s8,
-    borderRadius: 20,
+    paddingTop: DESK_PADDING + space.s6,
+    paddingBottom: DESK_PADDING + space.s6,
+    paddingHorizontal: DESK_PADDING + space.s3,
+    borderRadius: 24,
     backgroundImage: `radial-gradient(ellipse 120% 70% at 50% 18%, ${gainBanner.center} 0%, ${gainBanner.middle} 55%, ${gainBanner.edge} 100%)`,
   },
-  rule: {
-    position: "absolute",
-    top: gainBanner.ruleInset - FRAME,
-    left: gainBanner.ruleInset - FRAME,
-    right: gainBanner.ruleInset - FRAME,
-    bottom: gainBanner.ruleInset - FRAME,
-    borderRadius: 15,
-    borderWidth: 1.5,
-    borderColor: gainBanner.rule,
+  rim: {
+    ...StyleSheet.absoluteFill,
+    borderRadius: 24,
+    borderWidth: DESK_RIM,
+    borderColor: alpha(gainBanner.edge, 0.7),
+    boxShadow: `inset 0 2px 0 ${alpha(lettering.fill, 0.05)}`,
   },
   engraving: {
     position: "absolute",
@@ -1068,7 +1074,7 @@ const styles = StyleSheet.create({
     height: 260,
     opacity: 0.12,
   },
-  helpCorner: { position: "absolute", top: space.s6, right: space.s6, zIndex: 1 },
+  helpCorner: { position: "absolute", top: DESK_PADDING, right: DESK_PADDING, zIndex: 1 },
   help: { width: 40, height: 40 },
   crest: { alignItems: "center", filter: `drop-shadow(0 6px 0 ${toyValues.drop})` },
   ribbon: {
@@ -1087,7 +1093,14 @@ const styles = StyleSheet.create({
     fontSize: fontSizes.body,
     color: lettering.kicker,
   },
-  figures: { flexDirection: "row", gap: space.s10, alignItems: "flex-end" },
+  figures: { flexDirection: "row", gap: space.s7, alignItems: "center" },
+  figureDot: {
+    width: 7,
+    height: 7,
+    borderRadius: 4,
+    backgroundColor: lettering.kicker,
+    opacity: 0.7,
+  },
   figure: { flexDirection: "row", alignItems: "baseline", gap: space.s2 },
   figureSmall: {
     fontFamily: fonts.ui.extrabold,
@@ -1105,7 +1118,7 @@ const styles = StyleSheet.create({
     borderRadius: radii.pill,
     boxShadow: `0 2px 0 ${toyValues.outline}`,
   },
-  zoneText: { fontFamily: fonts.ui.extrabold, fontSize: fontSizes.small, color: lettering.fill },
+  zoneText: { fontFamily: fonts.ui.extrabold, fontSize: fontSizes.body, color: lettering.fill },
   weekLine: {
     fontFamily: fonts.ui.semibold,
     fontSize: fontSizes.body,
@@ -1113,9 +1126,16 @@ const styles = StyleSheet.create({
     textAlign: "center",
     color: lettering.fill,
   },
+  // Under a rule, what Sunday brings: after the place, not beside it.
   weekReward: {
+    alignSelf: "stretch",
+    marginTop: space.s2,
+    paddingTop: space.s5,
+    borderTopWidth: 1,
+    borderTopColor: alpha(lettering.fill, 0.22),
     fontFamily: fonts.ui.extrabold,
     fontSize: fontSizes.small,
+    textAlign: "center",
     color: lettering.kicker,
   },
   clock: {
@@ -1128,9 +1148,15 @@ const styles = StyleSheet.create({
     backgroundColor: alpha(toyValues.outline, 0.55),
   },
   clockText: { fontFamily: fonts.ui.extrabold, fontSize: fontSizes.small, color: lettering.fill },
-  lances: { flexDirection: "row", alignItems: "flex-end", gap: space.s3, marginTop: space.s2 },
+  lancesBlock: { alignItems: "center", gap: space.s2 },
+  lances: { flexDirection: "row", alignItems: "flex-end", gap: space.s3 },
   lanceSpent: { opacity: 0.6, transform: [{ rotate: "18deg" }, { translateY: 4 }] },
-  lancesText: { fontFamily: fonts.ui.bold, fontSize: fontSizes.small, color: lettering.fill },
+  lancesText: {
+    fontFamily: fonts.ui.bold,
+    fontSize: fontSizes.small,
+    textAlign: "center",
+    color: lettering.fill,
+  },
   waiting: {
     flexDirection: "row",
     alignItems: "center",

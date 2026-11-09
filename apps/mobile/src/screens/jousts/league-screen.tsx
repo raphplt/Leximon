@@ -34,6 +34,7 @@ import { wallet } from "@/player/state";
 import { alpha, fontSizes, fonts, radii, space } from "@/theme";
 import { Avatar } from "@/ui/avatar";
 import { Button } from "@/ui/button";
+import { BindingRule } from "@/ui/ornaments";
 import { Page, Paragraph } from "@/ui/page";
 import { Segmented } from "@/ui/segmented";
 import { Sheet } from "@/ui/sheet";
@@ -105,7 +106,8 @@ function LeagueFlow() {
           <Boards league={league} onMine={setMine} />
         </Animated.View>
         <Animated.View entering={rise(3)}>
-          <Leaf style={pieces.leaf}>
+          <Leaf style={[pieces.leaf, pieces.framed]}>
+            <BindingRule />
             <LeafKicker>Tes joutes classées</LeafKicker>
             <Text style={styles.record}>{weekRecord(league.stats)}</Text>
             <Text style={pieces.line}>{ratingLine(league.stats)}</Text>
@@ -165,7 +167,8 @@ function Claim({
     );
   }
   return (
-    <Leaf style={pieces.leaf}>
+    <Leaf style={[pieces.leaf, pieces.framed]}>
+      <BindingRule />
       <LeafKicker>{CLIMB_KICKER}</LeafKicker>
       <View style={styles.claimText}>
         <ToyIcon name={next.icon === "ecu" ? "ecu" : "sachet"} size={34} />
@@ -234,7 +237,8 @@ function Boards({
   };
 
   return (
-    <Leaf style={pieces.leaf}>
+    <Leaf style={[pieces.leaf, pieces.framed]}>
+      <BindingRule />
       <LeafKicker>
         {shown.state === "ready" && shown.board.league !== null
           ? `${MY_GROUP} · ${LEAGUE_NAMES[shown.board.league]}`

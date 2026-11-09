@@ -19,6 +19,7 @@ import { play, vibrate } from "@/booster/feedback";
 import { useEngravingInk } from "@/cards/use-engraving-ink";
 import { Avatar } from "@/components/avatar";
 import { MainAction, PaperAction } from "@/library/play-pieces";
+import { Tooling } from "@/ui/ornaments";
 import { Lettering } from "@/ui/toy";
 import { Crest } from "./crest";
 import type { Duelist } from "./pieces";
@@ -63,7 +64,7 @@ export function StartScene({
   );
 }
 
-/** The arena of red leather in old gold, the old print behind. */
+/** The arena of red leather tooled in gold, the old print behind. */
 export function Arena({ children }: { readonly children: React.ReactNode }) {
   const engraving = useEngravingInk(ARENA_ENGRAVING);
   return (
@@ -75,6 +76,7 @@ export function Arena({ children }: { readonly children: React.ReactNode }) {
           aria-hidden="true"
         />
       )}
+      <Tooling />
       {children}
     </section>
   );

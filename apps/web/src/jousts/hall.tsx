@@ -41,6 +41,7 @@ import {
   launchRefusalText,
   leagueRoad,
   MY_GROUP,
+  moveChip,
   NO_JOUSTS,
   OPEN_LETTER,
   openedLetter,
@@ -59,7 +60,6 @@ import {
   weekFigures,
   weekRewardLine,
   YOU,
-  zoneChip,
 } from "@leximon/view-model";
 import Link from "next/link";
 import { type CSSProperties, Fragment, type ReactNode, useState } from "react";
@@ -75,6 +75,7 @@ import { useShell } from "@/shell/shell-context";
 import { catalogCard } from "@/trades/card-thumb";
 import { Dialog } from "@/ui/dialog";
 import { Icon } from "@/ui/icon";
+import { BindingRule, Tooling } from "@/ui/ornaments";
 import { Lettering, Toy, ToyIcon } from "@/ui/toy";
 import { Crest } from "./crest";
 import { DeckBuilder } from "./deck-builder";
@@ -170,6 +171,7 @@ export function Hall({
 
       {glimpse !== null && (
         <section className={styles.leaf} style={rise(order++)}>
+          <BindingRule />
           <header className={styles.leafHead}>
             <span className={styles.kicker}>
               {MY_GROUP} · {LEAGUE_NAMES[jousts.standing.league]}
@@ -200,6 +202,7 @@ export function Hall({
 
       {howOpen && (
         <section className={styles.leaf} style={rise(order++)}>
+          <BindingRule />
           <header className={styles.leafHead}>
             <span className={styles.kicker}>{HOW_TITLE}</span>
             <button type="button" className={styles.more} onClick={() => setHowChoice(false)}>
@@ -288,6 +291,7 @@ function Lice({
           aria-hidden="true"
         />
       )}
+      <Tooling />
       <span className={styles.helpSlot}>{help}</span>
       <div className={styles.liceCrest}>
         <span className={styles.crestGlow} aria-hidden="true" />
@@ -296,35 +300,34 @@ function Lice({
       </div>
 
       <div className={styles.week}>
-        <span className={styles.kickerLight}>Tournoi de la semaine</span>
-        {figures !== null && standing.group !== null && (
-          <div className={styles.figures}>
-            <Lettering className={styles.figure}>
-              {figures.place} <small>{figures.of}</small>
-            </Lettering>
-            <Lettering className={styles.figure}>
-              {figures.points} <small>{figures.pointsWord}</small>
-            </Lettering>
+        <div className={styles.weekHead}>
+          <span className={styles.kickerLight}>Tournoi de la semaine</span>
+          <span className={styles.clock}>
+            <Icon name="clock" size={16} /> {header.week}
+          </span>
+        </div>
+        {figures !== null && standing.group !== null ? (
+          <>
+            <div className={styles.figures}>
+              <Lettering className={styles.figure}>
+                {figures.place} <small>{figures.of}</small>
+              </Lettering>
+              <span className={styles.figureDot} aria-hidden="true" />
+              <Lettering className={styles.figure}>
+                {figures.points} <small>{figures.pointsWord}</small>
+              </Lettering>
+            </div>
             <span className={styles.zone} data-move={standing.group.move}>
               {standing.group.move !== "stay" && (
-                <Icon name="chev" size={14} className={styles[standing.group.move]} />
+                <Icon name="chev" size={16} className={styles[standing.group.move]} />
               )}
-              {zoneChip(standing.group.move)}
+              {moveChip(standing.league, standing.group.move)}
             </span>
-          </div>
+          </>
+        ) : (
+          <p className={styles.weekLine}>{header.line}</p>
         )}
-        <p className={styles.weekLine}>{header.line}</p>
         {reward !== null && <p className={styles.weekReward}>{reward}</p>}
-        <span className={styles.clock}>
-          <Icon name="clock" size={16} /> {header.week}
-        </span>
-        <div className={styles.lances}>
-          {rankedLances(standing.rankedLeft, standing.rankedPerDay).map((standingUp, index) => (
-            // biome-ignore lint/suspicious/noArrayIndexKey: the day's lances, in order
-            <Lance key={index} spent={!standingUp} />
-          ))}
-          <span className={styles.lancesText}>{rankedLeftText(standing.rankedLeft)}</span>
-        </div>
         {header.waiting !== null && (
           <Link href="/joutes/classement" className={styles.waiting}>
             <ToyIcon name="chest" size={22} /> {header.waiting}
@@ -363,6 +366,7 @@ function LiceActions({
             disabled={busy}
             onClick={() => onLaunch({ kind: ranked ? "ranked" : "free" })}
           />
+          <Lances standing={jousts.standing} />
           <div className={styles.minorActions}>
             {ranked && (
               <Toy
@@ -394,6 +398,19 @@ function LiceActions({
         </p>
       )}
     </>
+  );
+}
+
+/** The ranked jousts left today, under the button that spends them. */
+function Lances({ standing }: { readonly standing: JoustStanding }) {
+  return (
+    <div className={styles.lances}>
+      {rankedLances(standing.rankedLeft, standing.rankedPerDay).map((standingUp, index) => (
+        // biome-ignore lint/suspicious/noArrayIndexKey: the day's lances, in order
+        <Lance key={index} spent={!standingUp} />
+      ))}
+      <span className={styles.lancesText}>{rankedLeftText(standing.rankedLeft)}</span>
+    </div>
   );
 }
 
@@ -431,6 +448,7 @@ export function Road({
   const here = stops.findIndex((stop) => stop.state === "here");
   return (
     <section className={styles.leaf} style={style}>
+      <BindingRule />
       <header className={styles.leafHead}>
         <span className={styles.kicker}>{LEAGUE_ROAD}</span>
         <button type="button" className={styles.more} disabled={league === null} onClick={onOpen}>
@@ -531,6 +549,7 @@ function JoustLists({
   const [allEnded, setAllEnded] = useState(false);
   return (
     <section className={styles.leaf} style={style}>
+      <BindingRule />
       {jousts.length === 0 && <p className={styles.leafText}>{NO_JOUSTS}</p>}
       {sections.toPlay.length > 0 && (
         <Group title="À toi de jouer">
@@ -755,6 +774,7 @@ function DeckLeaf({
   const middle = (deck.cardIds.length - 1) / 2;
   return (
     <section className={styles.leaf} style={style}>
+      <BindingRule />
       <header className={styles.leafHead}>
         <span className={styles.kicker}>Ton deck</span>
         <Toy matter="paper" className={styles.minor} onClick={onEdit}>

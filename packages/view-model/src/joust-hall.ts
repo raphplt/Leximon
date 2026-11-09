@@ -5,7 +5,6 @@ import type {
   JoustView,
   LeagueId,
   LeagueResponse,
-  WeekMove,
 } from "@leximon/contract";
 import { formatCount, plural } from "./format";
 import { forfeitLine, outcomeWord, type RunSize, sachetGainText, xpGainText } from "./jousts";
@@ -16,8 +15,6 @@ import {
   placeText,
   pointsText,
   tournamentGain,
-  ZONE_DOWN,
-  ZONE_UP,
 } from "./leagues";
 import { rewardsPhrase } from "./rewards";
 
@@ -49,20 +46,6 @@ export function weekFigures(group: GroupPlace): WeekFigures {
     points: formatCount(group.points),
     pointsWord: group.points <= 1 ? "point" : "points",
   };
-}
-
-export const ZONE_STAY = "Zone de maintien";
-
-/** The zone the player's place falls in, as its chip says it. */
-export function zoneChip(move: WeekMove): string {
-  switch (move) {
-    case "up":
-      return ZONE_UP;
-    case "stay":
-      return ZONE_STAY;
-    case "down":
-      return ZONE_DOWN;
-  }
 }
 
 /** The ranked jousts of the day, as lances: one standing for each still to play. */

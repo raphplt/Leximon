@@ -99,6 +99,18 @@ export function moveSentence(league: LeagueId, move: WeekMove): string {
   }
 }
 
+/** What the place would give, short enough for a chip beside the figures. */
+export function moveChip(league: LeagueId, move: WeekMove): string {
+  switch (move) {
+    case "up":
+      return `Tu monterais en ${LEAGUE_NAMES[leagueBeside(league, "up")]}`;
+    case "down":
+      return `Tu descendrais en ${LEAGUE_NAMES[leagueBeside(league, "down")]}`;
+    case "stay":
+      return `Tu resterais en ${LEAGUE_NAMES[league]}`;
+  }
+}
+
 export interface StandingHeader {
   readonly name: string;
   /** « 4e sur 30 », once in the week's tournament. */

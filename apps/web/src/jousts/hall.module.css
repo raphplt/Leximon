@@ -25,11 +25,13 @@
   color: var(--lx-color-paper-ink-muted);
 }
 
+/* Framed in the bookbinder's rule: the padding keeps the text clear of it. */
 .leaf {
+  position: relative;
   display: flex;
   flex-direction: column;
   gap: 12px;
-  padding: 20px 22px;
+  padding: 30px;
   border: var(--lx-toy-outline-width) solid var(--lx-toy-outline);
   border-radius: var(--lx-toy-radius-tile);
   background:
@@ -84,6 +86,7 @@
 }
 
 /* The lice: red leather in old gold, the league as a trophy, the week beside it. */
+/* The lice: red leather tooled in gold, its padding clear of the tooling. */
 .lice {
   position: relative;
   overflow: hidden;
@@ -91,33 +94,23 @@
   grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: center;
   gap: 28px;
-  padding: 26px 30px;
-  border: 5px solid transparent;
+  padding: 36px 40px;
   border-radius: 24px;
   background:
-    var(--lx-matter-leather) 0 0 / var(--lx-matter-size) padding-box,
+    var(--lx-matter-leather) 0 0 / var(--lx-matter-size),
     radial-gradient(
       ellipse 70% 120% at 18% 30%,
       var(--lx-gain-center) 0%,
       var(--lx-gain-middle) 55%,
       var(--lx-gain-edge) 100%
-    )
-    padding-box,
-    var(--lx-old-gold) border-box;
+    );
   box-shadow:
     0 0 0 2.5px var(--lx-toy-outline),
     0 7px 0 2.5px var(--lx-toy-outline),
-    0 18px 34px var(--lx-toy-drop);
+    0 18px 34px var(--lx-toy-drop),
+    inset 0 0 0 5px color-mix(in srgb, var(--lx-gain-edge) 70%, transparent),
+    inset 0 2px 0 5px color-mix(in srgb, var(--lx-toy-sheen) 12%, transparent);
   color: var(--lx-lettering-fill);
-}
-
-.lice::before {
-  content: "";
-  position: absolute;
-  inset: 8px;
-  border: 1.5px solid var(--lx-gain-rule);
-  border-radius: 15px;
-  pointer-events: none;
 }
 
 /* An old print in light lines on the leather, faint, behind the week. */
@@ -181,18 +174,38 @@
   clip-path: polygon(0 0, 100% 0, 94% 50%, 100% 100%, 0 100%, 6% 50%);
 }
 
+/*
+ * The week reads from the top down: the tournament and its end, the place and the points large,
+ * what the place would give, then under a rule what Sunday brings.
+ */
 .week {
   position: relative;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.weekHead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 14px;
 }
 
 .figures {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 18px;
+  gap: 16px;
+}
+
+.figureDot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--lx-lettering-kicker);
+  opacity: 0.7;
 }
 
 .figure {
@@ -214,12 +227,12 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 5px 12px 6px;
+  padding: 6px 16px 7px 12px;
   border: 2px solid var(--lx-toy-outline);
   border-radius: var(--lx-radius-pill);
   background: linear-gradient(180deg, var(--lx-toy-green-top), var(--lx-toy-green-bottom));
-  box-shadow: 0 2px 0 var(--lx-toy-outline);
-  font-size: var(--lx-size-small);
+  box-shadow: 0 3px 0 var(--lx-toy-outline);
+  font-size: var(--lx-size-body);
   font-weight: 800;
 }
 
@@ -247,14 +260,17 @@
 }
 
 .weekReward {
-  margin: 0;
+  align-self: stretch;
+  margin: 2px 0 0;
+  padding-top: 12px;
+  border-top: 1px solid color-mix(in srgb, var(--lx-lettering-fill) 22%, transparent);
+  font-size: var(--lx-size-small);
   font-weight: 800;
   color: var(--lx-lettering-kicker);
 }
 
 .clock {
   display: inline-flex;
-  align-self: flex-start;
   align-items: center;
   gap: 6px;
   padding: 4px 12px;
@@ -265,16 +281,20 @@
 }
 
 /* The ranked jousts left today, as lances: a spent one is greyed and lies down a little. */
+/* Under the ranked joust's button, the lances it has left today. */
 .lances {
   display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
   align-items: flex-end;
-  gap: 6px;
-  margin-top: 4px;
+  gap: 5px;
+  margin-top: -2px;
+  text-align: center;
 }
 
 .lance {
-  width: 14px;
-  height: 40px;
+  width: 11px;
+  height: 32px;
   fill: var(--lx-toy-gold-top);
   stroke: var(--lx-toy-outline);
   stroke-width: 1.4;
@@ -989,10 +1009,11 @@
   color: var(--lx-lettering-kicker);
 }
 
+/* Inside the tooling's corner, not over it. */
 .helpSlot {
   position: absolute;
-  top: 14px;
-  right: 14px;
+  top: 26px;
+  right: 26px;
   z-index: 1;
 }
 
@@ -1114,7 +1135,7 @@
     grid-template-columns: minmax(0, 1fr);
     justify-items: center;
     gap: 18px;
-    padding: 22px 18px;
+    padding: 30px 26px;
     text-align: center;
   }
 
@@ -1126,7 +1147,12 @@
     justify-content: center;
   }
 
-  .clock,
+  .weekHead {
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .zone,
   .waiting {
     align-self: center;
   }
@@ -1143,7 +1169,7 @@
 
 @media (max-width: 559px) {
   .leaf {
-    padding: 16px 14px;
+    padding: 24px 22px;
   }
 
   .road {

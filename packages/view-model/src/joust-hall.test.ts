@@ -9,8 +9,8 @@ import {
   rankedLances,
   weekFigures,
   weekRewardLine,
-  zoneChip,
 } from "./joust-hall";
+import { moveChip } from "./leagues";
 
 const size = { questions: 5, seconds: 15, choices: 4, replyHours: 24 };
 
@@ -29,10 +29,10 @@ describe("the lice", () => {
     expect(weekFigures({ place: 30, points: 0, size: 30, move: "down" }).pointsWord).toBe("point");
   });
 
-  it("names each zone", () => {
-    expect(zoneChip("up")).toBe("Zone de montée");
-    expect(zoneChip("stay")).toBe("Zone de maintien");
-    expect(zoneChip("down")).toBe("Zone de descente");
+  it("says what the place would give, in a chip", () => {
+    expect(moveChip("page", "up")).toBe("Tu monterais en Écuyer");
+    expect(moveChip("chevalier", "stay")).toBe("Tu resterais en Chevalier");
+    expect(moveChip("chevalier", "down")).toBe("Tu descendrais en Écuyer");
   });
 
   it("stands a lance for each ranked joust left today", () => {
