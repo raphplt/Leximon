@@ -807,6 +807,11 @@ Préparer : `pnpm db:migrate`, un compte mécène qui a payé au moins une fois 
 - **Attendu :** le sachet du mécène payant porte un sceau de cire rouge à la couronne, à cheval sur la ligne de déchirure. À l'ouverture, il se fend en deux et ses moitiés tombent pendant que la bande s'envole ; l'ouverture dure le même temps et les cartes se révèlent comme d'habitude. L'essai et l'ancien fondateur ont le sachet ordinaire. Avec « réduire les animations », le sceau disparaît sans tomber.
 - **Retour :**
 
+### MEC-20 · Courrier du dénichage
+- **Faire :** déniche deux mots avec un compte mécène. Publie un catalogue qui contient le premier (`pnpm catalog:publish`), et écarte le second (`pnpm finds:reject <id>`). Ouvre le courrier sur le web puis sur le mobile, et touche chaque lettre.
+- **Attendu :** deux lettres, à la couronne : « « mot » est paru, signé de ton pseudo » (Ton mot dans le jeu) et « « mot » n'a pas passé le contrôle » (Ton droit de dénicher t'est rendu). Chacune mène à la page Mécène. Publier ou écarter une seconde fois n'écrit pas de lettre de plus.
+- **Retour :**
+
 ## Mauvais choix des QCM
 
 Retour de bêta du 2026-10-31 : on trouvait la réponse par élimination (un verbe parmi des noms, un mot sans rapport avec le thème révisé). La nature des cartes vient de la publication du catalogue : en production, la colonne reste vide tant qu'une publication n'est pas passée, et les choix restent ceux d'avant.

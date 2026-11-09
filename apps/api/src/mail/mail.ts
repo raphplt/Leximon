@@ -257,7 +257,11 @@ export async function readMail(
 
   const parties = await readTradeParties(db, page, userId);
   const playerOf = (row: LetterRow): string | null =>
-    "tradeId" in row.payload ? (parties.get(row.payload.tradeId) ?? null) : row.payload.playerId;
+    "tradeId" in row.payload
+      ? (parties.get(row.payload.tradeId) ?? null)
+      : "playerId" in row.payload
+        ? row.payload.playerId
+        : null;
   const [badges, excerpts, friendStates, counts, referralRewards] = await Promise.all([
     readBadges(
       db,
@@ -468,6 +472,11 @@ function toLetter(
     case "joust_received":
     case "joust_ended":
       return "joustId" in payload ? [{ kind: row.kind, ...base, joustId: payload.joustId }] : [];
+    case "word_published":
+    case "word_rejected":
+      return "wordId" in payload
+        ? [{ kind: row.kind, ...base, wordId: payload.wordId, word: payload.word }]
+        : [];
     default:
       throw new Error(`Unknown letter: ${JSON.stringify(row.kind satisfies never)}`);
   }

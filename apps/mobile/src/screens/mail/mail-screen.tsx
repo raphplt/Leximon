@@ -51,6 +51,8 @@ const LETTER_ICONS: Readonly<Record<MailKind, IconName>> = {
   friend_reaction: "amis",
   joust_received: "joutes",
   joust_ended: "joutes",
+  word_published: "crown",
+  word_rejected: "crown",
 };
 
 interface Row {

@@ -13,6 +13,19 @@ function view(letter: MailLetter) {
 }
 
 describe("letterView", () => {
+  it("tells a patron their word came out, or was set aside, and leads to the patron page", () => {
+    const found = { ...base, player: null, wordId: "lucubrateur", word: "lucubrateur" };
+    expect(view({ ...found, kind: "word_published" })).toEqual(
+      expect.objectContaining({
+        title: "« lucubrateur » est paru, signé de ton pseudo",
+        target: { kind: "screen", href: "/mecene" },
+      }),
+    );
+    expect(view({ ...found, kind: "word_rejected" }).detail).toBe(
+      "Ton droit de dénicher t'est rendu",
+    );
+  });
+
   it("names the other player and leads to the offers", () => {
     expect(view({ ...base, kind: "offer_received", tradeId })).toEqual({
       title: "Mirabelle t'envoie une offre",

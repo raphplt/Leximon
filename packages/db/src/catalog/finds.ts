@@ -2,7 +2,7 @@ import type { FinderIndex, ReserveFile } from "@leximon/contract";
 import { reserveSearchKey } from "@leximon/core";
 import { and, eq, inArray, isNull, ne, sql } from "drizzle-orm";
 import type { Database } from "../client";
-import { players, reserveWords, userCards, wordFinds } from "../schema/index";
+import { mailLetters, players, reserveWords, userCards, wordFinds } from "../schema/index";
 
 /**
  * The words patrons find: the reserve they pick from, loaded from the content pipeline, and what
@@ -80,6 +80,7 @@ export async function publishFinds(
         .where(and(inArray(wordFinds.wordId, batch), eq(wordFinds.state, "reserved")))
         .returning({ wordId: wordFinds.wordId, userId: wordFinds.userId });
       if (found.length === 0) continue;
+      await writeFindLetters(tx, "word_published", found, now);
       await tx
         .insert(userCards)
         .values(
@@ -123,12 +124,52 @@ export async function reservedFinds(
     .orderBy(wordFinds.foundAt);
 }
 
-/** A word found that the quality check sets aside: the patron gets their right back. */
+/**
+ * A word found that the quality check sets aside: the patron gets their right back, and a letter
+ * says so.
+ */
 export async function rejectFind(db: Database, wordId: string, now: Date): Promise<boolean> {
-  const rows = await db
-    .update(wordFinds)
-    .set({ state: "rejected", settledAt: now })
-    .where(and(eq(wordFinds.wordId, wordId), eq(wordFinds.state, "reserved")))
-    .returning({ wordId: wordFinds.wordId });
-  return rows.length > 0;
+  return db.transaction(async (tx) => {
+    const rows = await tx
+      .update(wordFinds)
+      .set({ state: "rejected", settledAt: now })
+      .where(and(eq(wordFinds.wordId, wordId), eq(wordFinds.state, "reserved")))
+      .returning({ wordId: wordFinds.wordId, userId: wordFinds.userId });
+    await writeFindLetters(tx, "word_rejected", rows, now);
+    return rows.length > 0;
+  });
+}
+
+type Transaction = Parameters<Parameters<Database["transaction"]>[0]>[0];
+
+/** A letter to each finder; a word published or set aside again writes nothing twice. */
+async function writeFindLetters(
+  tx: Transaction,
+  kind: "word_published" | "word_rejected",
+  finds: readonly { readonly wordId: string; readonly userId: string }[],
+  now: Date,
+): Promise<void> {
+  if (finds.length === 0) return;
+  const words = await tx
+    .select({ id: reserveWords.id, word: reserveWords.word })
+    .from(reserveWords)
+    .where(
+      inArray(
+        reserveWords.id,
+        finds.map((find) => find.wordId),
+      ),
+    );
+  const wordOf = new Map(words.map((row) => [row.id, row.word]));
+  await tx
+    .insert(mailLetters)
+    .values(
+      finds.map((find) => ({
+        userId: find.userId,
+        kind,
+        payload: { wordId: find.wordId, word: wordOf.get(find.wordId) ?? find.wordId },
+        dedupeKey: `find:${find.wordId}:${kind}`,
+        createdAt: now,
+      })),
+    )
+    .onConflictDoNothing();
 }

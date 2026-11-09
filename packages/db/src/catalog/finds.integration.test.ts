@@ -1,9 +1,9 @@
 import { and, eq } from "drizzle-orm";
 import { afterAll, describe, expect, it } from "vitest";
 import { createDb } from "../client";
-import { players, reserveWords, userCards, users, wordFinds } from "../schema/index";
+import { mailLetters, players, reserveWords, userCards, users, wordFinds } from "../schema/index";
 import { testDatabaseUrl } from "../testing";
-import { FINDER_VARIANT, publishFinds, publishReserve, readFinders } from "./finds";
+import { FINDER_VARIANT, publishFinds, publishReserve, readFinders, rejectFind } from "./finds";
 import { applyCatalog, loadPublishedCards, planCatalog } from "./plan";
 
 const { db, close } = createDb(testDatabaseUrl(), { maxConnections: 1 });
@@ -107,5 +107,28 @@ describe("words found by patrons", () => {
     const [find] = await db.select().from(wordFinds).where(eq(wordFinds.wordId, word));
     expect(find?.state).toBe("published");
     expect((await readFinders(db)).cards[word]).toBe(pseudo);
+    expect(await lettersOf(userId)).toEqual([
+      { kind: "word_published", payload: { wordId: word, word } },
+    ]);
+  });
+
+  it("give their right back when set aside, with a letter, once", async () => {
+    const word = `aside-${suffix()}`;
+    const userId = await patron(`Mecene${suffix().slice(0, 6)}`);
+    await publishReserve(db, { version: "2026-11-09.2", words: [reserveWord(word)] }, new Date());
+    await db
+      .insert(wordFinds)
+      .values({ wordId: word, userId, state: "reserved", foundAt: new Date() });
+    expect(await rejectFind(db, word, new Date())).toBe(true);
+    expect(await rejectFind(db, word, new Date())).toBe(false);
+    expect(await lettersOf(userId)).toEqual([
+      { kind: "word_rejected", payload: { wordId: word, word } },
+    ]);
   });
 });
+
+const lettersOf = (userId: string) =>
+  db
+    .select({ kind: mailLetters.kind, payload: mailLetters.payload })
+    .from(mailLetters)
+    .where(eq(mailLetters.userId, userId));

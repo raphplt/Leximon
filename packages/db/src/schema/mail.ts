@@ -27,6 +27,8 @@ export const MAIL_KINDS = [
   "friend_reaction",
   "joust_received",
   "joust_ended",
+  "word_published",
+  "word_rejected",
 ] as const;
 export const mailKind = pgEnum("mail_kind", MAIL_KINDS);
 
@@ -37,7 +39,9 @@ export type MailPayload =
   | { readonly clanId: string; readonly playerId: string }
   | { readonly playerId: string }
   | { readonly eventId: number; readonly playerId: string }
-  | { readonly joustId: string; readonly playerId: string };
+  | { readonly joustId: string; readonly playerId: string }
+  /** A word the patron found, published or set aside: written when the catalogue says so. */
+  | { readonly wordId: string; readonly word: string };
 
 /**
  * The player's mail: news written by the queue's consumer (an offer received or answered, a

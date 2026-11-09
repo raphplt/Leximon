@@ -50,6 +50,13 @@ export const mailLetterSchema = z.discriminatedUnion("kind", [
     ...letterBase,
     joustId: z.uuid(),
   }),
+  /** A word the patron found: published with its collection, or set aside by the quality check. */
+  z.object({
+    kind: z.enum(["word_published", "word_rejected"]),
+    ...letterBase,
+    wordId: slugSchema,
+    word: z.string(),
+  }),
 ]);
 export type MailLetter = z.infer<typeof mailLetterSchema>;
 export type MailKind = MailLetter["kind"];
@@ -61,7 +68,13 @@ export const mailQuerySchema = z.object({
 
 /** `GET /me/mail`: newest first. */
 export const mailResponseSchema = z.object({
-  letters: z.array(mailLetterSchema),
+  /** A letter of a kind this version does not know is left out: a newer server never breaks it. */
+  letters: z.array(z.unknown()).transform((letters) =>
+    letters.flatMap((letter) => {
+      const known = mailLetterSchema.safeParse(letter);
+      return known.success ? [known.data] : [];
+    }),
+  ),
   /** Letters not read yet, all pages together. */
   unread: z.int().nonnegative(),
   /**
