@@ -1,0 +1,265 @@
+.page {
+  min-height: 100dvh;
+  padding: 24px 16px 64px;
+  box-sizing: border-box;
+  background: var(--lx-room) fixed;
+  color: var(--lx-color-page-ink);
+}
+
+.header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 24px;
+}
+
+.title {
+  font-size: clamp(36px, 6vw, 56px);
+}
+
+.block {
+  max-width: 1000px;
+  margin: 40px auto 0;
+}
+
+.blockTitle {
+  margin: 0 0 16px;
+  font-size: var(--lx-size-micro);
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--lx-toy-gold-top);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 32px;
+}
+
+.sample {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 0;
+}
+
+.caption {
+  font-size: var(--lx-size-small);
+  color: var(--lx-color-page-ink-muted);
+}
+
+.caption strong {
+  color: var(--lx-toy-gold-top);
+}
+
+/* --- The panel and its dresses --- */
+
+.panel {
+  position: relative;
+}
+
+.panel[data-dress="corners"] {
+  padding: 28px 32px 32px;
+}
+
+.panel[data-dress="rule"] {
+  padding: 30px 30px 34px;
+}
+
+.panel[data-dress="fleurons"] {
+  padding: 38px 38px 42px;
+}
+
+.overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.corner {
+  position: absolute;
+  display: block;
+  width: 34px;
+  height: 34px;
+  margin: 6px;
+}
+
+.rule {
+  position: absolute;
+  inset: 8px;
+  border: 2px solid var(--lx-toy-gold-bottom);
+  border-radius: 2px;
+  pointer-events: none;
+}
+
+.rule::after {
+  content: "";
+  position: absolute;
+  inset: 3px;
+  border: 1px solid color-mix(in srgb, var(--lx-toy-red-bottom) 70%, transparent);
+}
+
+/* The lozenge sits astride the corner of the rule. */
+.stud {
+  position: absolute;
+  display: block;
+  width: 16px;
+  height: 16px;
+  margin: -9px;
+}
+
+.topLeft {
+  top: 0;
+  left: 0;
+}
+
+.topRight {
+  top: 0;
+  right: 0;
+  scale: -1 1;
+}
+
+.bottomRight {
+  right: 0;
+  bottom: 0;
+  scale: -1 -1;
+}
+
+.bottomLeft {
+  bottom: 0;
+  left: 0;
+  scale: 1 -1;
+}
+
+.corner svg,
+.stud svg,
+.hedera,
+.titleRule,
+.tailpiece {
+  display: block;
+  overflow: visible;
+  filter: drop-shadow(0 1px 0 color-mix(in srgb, var(--lx-toy-outline) 45%, transparent));
+}
+
+/* --- Titles --- */
+
+.titlePanel {
+  padding: 26px 24px;
+}
+
+.sectionTitle {
+  margin: 0;
+  font-size: var(--lx-size-title);
+}
+
+.withLeaf {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.centered {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+
+.ruled {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.titleRule {
+  width: 140px;
+  height: 14px;
+}
+
+/* --- Tailpiece --- */
+
+.news {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-width: 560px;
+  padding: 26px 28px;
+}
+
+.newsTitle {
+  margin: 0;
+  font-size: var(--lx-size-title);
+}
+
+.newsText {
+  margin: 0;
+  line-height: 1.5;
+}
+
+.tailpiece {
+  align-self: center;
+  width: 120px;
+  height: 36px;
+  margin: 14px 0;
+}
+
+/* --- The pieces, in the toys' gold and pigments, outlined in their ink --- */
+
+.stemInk,
+.stemGold {
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.stemInk {
+  stroke: var(--lx-toy-outline);
+  stroke-width: 4.6;
+}
+
+.stemGold {
+  stroke: var(--lx-toy-gold-top);
+  stroke-width: 2.4;
+}
+
+.leafRed,
+.leafBlue,
+.taper {
+  stroke: var(--lx-toy-outline);
+  stroke-width: 1.4;
+  stroke-linejoin: round;
+}
+
+.leafRed {
+  fill: var(--lx-toy-red-top);
+}
+
+.leafBlue {
+  fill: var(--lx-toy-blue-top);
+}
+
+.taper {
+  fill: var(--lx-toy-gold-top);
+  stroke-width: 1;
+}
+
+.dotRed {
+  fill: var(--lx-toy-red-top);
+  stroke: var(--lx-toy-outline);
+  stroke-width: 1.2;
+}
+
+.bezant {
+  fill: var(--lx-toy-gold-top);
+  stroke: var(--lx-toy-outline);
+  stroke-width: 1.4;
+  stroke-linejoin: round;
+}
+
+@media (max-width: 720px) {
+  .grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
