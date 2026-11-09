@@ -176,7 +176,7 @@
         "BETA_INVITES": "off",
         "MOBILE_MIN_VERSION": "0.0.0",
         // "open" sells the patron subscription; closed, only admins can buy, to try the payment.
-        "PATRON_SALES": "closed",
+        "PATRON_SALES": "open",
         "DISCORD_CLIENT_ID": "1568981422721470464",
         "DISCORD_GUILD_ID": "1563157710042570764",
         "DISCORD_PATRON_ROLE_ID": "1569285444594573342"

@@ -143,7 +143,7 @@ pnpm exec wrangler secret put GOOGLE_CLIENT_ID --env production
 pnpm exec wrangler secret put GOOGLE_CLIENT_SECRET --env production
 ```
 
-L'abonnement Mécène, facultatif : sans ces deux secrets, rien n'est vendu et la page Mécène reste une annonce. Ce sont la clé secrète et le secret du webhook de production de Stripe ([mecene.md](cahiers-des-charges/mecene.md#11-stripe-pas-à-pas--toi)). La vente reste fermée tant que `PATRON_SALES` vaut `"closed"` dans `apps/api/wrangler.jsonc` : la page Mécène et son entrée dans le menu ne se montrent alors qu'aux admins et aux mécènes, qui seuls peuvent s'abonner. Passer `PATRON_SALES` à `"open"` ouvre la page à tous.
+L'abonnement Mécène, facultatif : sans ces deux secrets, rien n'est vendu et la page Mécène reste une annonce. Ce sont la clé secrète et le secret du webhook de production de Stripe ([mecene.md](cahiers-des-charges/mecene.md#11-stripe-pas-à-pas--toi)). La vente reste fermée tant que `PATRON_SALES` vaut `"closed"` dans `apps/api/wrangler.jsonc` : la page Mécène et son entrée dans le menu ne se montrent alors qu'aux admins et aux mécènes, qui seuls peuvent s'abonner. Passer `PATRON_SALES` à `"open"` ouvre la page à tous : c'est fait en production depuis le 2026-11-09 ; secrets posés le même jour.
 
 ```bash
 pnpm exec wrangler secret put STRIPE_SECRET_KEY --env production
