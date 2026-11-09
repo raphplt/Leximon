@@ -37,7 +37,7 @@ import Svg, { Circle } from "react-native-svg";
 import { Card, QuestionCard } from "@/cards/card";
 import { useCatalog } from "@/cards/use-catalog";
 import { play, vibrate } from "@/feedback/feedback";
-import { Desk } from "@/library/play-pieces";
+import { DESK_PADDING, Desk } from "@/library/play-pieces";
 import { catalogCard } from "@/screens/trades/card-row";
 import { alpha, fontSizes, fonts, radii, space } from "@/theme";
 import { DefinitionText } from "@/ui/definition-text";
@@ -703,7 +703,7 @@ function Ring({
 }
 
 const styles = StyleSheet.create({
-  arena: { padding: space.s8, gap: space.s6, minHeight: 560 },
+  arena: { padding: DESK_PADDING, gap: space.s6, minHeight: 560 },
   kicker: {
     fontFamily: fonts.displayBold,
     textAlign: "center",

@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { Icon } from "./icon";
 import styles from "./locked-screen.module.css";
+import { BindingRule } from "./ornaments";
 import ui from "./ui.module.css";
 
 /** A page off the path (unknown address, crash): what happened, and the way back. */
@@ -15,6 +16,7 @@ export function StrayScreen({
 }) {
   return (
     <main className={`${ui.panel} ${ui.enter} ${styles.screen}`}>
+      <BindingRule />
       <span className={styles.icon}>
         <Icon name="carte" size={38} />
       </span>

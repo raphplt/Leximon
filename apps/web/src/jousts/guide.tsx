@@ -31,6 +31,7 @@ import { MainAction, PaperAction } from "@/library/play-pieces";
 import desk from "@/play/desk-columns.module.css";
 import { catalogCard } from "@/trades/card-thumb";
 import { Icon, type IconName } from "@/ui/icon";
+import { BindingRule } from "@/ui/ornaments";
 import { Lettering } from "@/ui/toy";
 import ui from "@/ui/ui.module.css";
 import { DeckBuilder } from "./deck-builder";
@@ -71,6 +72,7 @@ export function Guide({
   const next = () => (step === 3 ? onClose() : setStep((step + 1) as GuideStep));
   return (
     <section className={`${ui.leaf} ${styles.guide} ${desk.rising}`} style={rise(0)}>
+      <BindingRule />
       <header className={styles.guideHead}>
         <ol className={styles.steps}>
           {GUIDE_STEPS.map((label, index) => (
@@ -371,6 +373,7 @@ function Training({
       }}
       kicker={TRAINING_KICKER}
       playing
+      plain
     >
       <MainAction label={TRAINING_CONTINUE} onClick={onNext} />
     </Reveal>

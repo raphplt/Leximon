@@ -14,6 +14,7 @@ import { useEffect, useState } from "react";
 import { Avatar } from "@/components/avatar";
 import { api } from "@/lib/api";
 import { Button } from "@/ui/button";
+import { GiltCorners } from "@/ui/ornaments";
 import { Bone } from "@/ui/skeleton";
 import ui from "@/ui/ui.module.css";
 import styles from "./friends.module.css";
@@ -35,7 +36,8 @@ export function Podium({ alone, now }: { readonly alone: boolean; readonly now: 
 
   const view = podium === null ? null : podiumView(podium.entries);
   return (
-    <section className={`${ui.panel} ${styles.card}`}>
+    <section className={`${ui.panel} ${styles.card} ${styles.tile}`}>
+      <GiltCorners />
       <div className={styles.cardHead}>
         <p className={ui.kicker}>Podium de la semaine</p>
         {podium !== null && (

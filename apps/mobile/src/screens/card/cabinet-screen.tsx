@@ -32,6 +32,7 @@ import { editions } from "@/player/state";
 import { alpha, fontSizes, fonts, paperColors, space } from "@/theme";
 import { Button } from "@/ui/button";
 import { useInk } from "@/ui/ink";
+import { BindingRule, Fleurons, ORNAMENT_PADDING, Tailpiece, TitleRule } from "@/ui/ornaments";
 import { Page, Paragraph } from "@/ui/page";
 import { Panel } from "@/ui/panel";
 import { Leaf } from "@/ui/toy";
@@ -47,7 +48,8 @@ export function CabinetScreen({ cardId }: { readonly cardId: string }) {
   return (
     <Page {...(state.kind === "ready" ? { kicker: CABINET_TITLE } : {})} title={title}>
       {access === null ? null : !access.cabinet ? (
-        <Panel paper>
+        <Panel paper style={styles.door}>
+          <Fleurons small />
           <Paragraph>{CABINET_LOCKED}</Paragraph>
           <Button label={CABINET_LOCKED_ACTION} secondary onPress={() => router.push("/mecene")} />
         </Panel>
@@ -73,7 +75,8 @@ function CabinetView({ cabinet }: { readonly cabinet: CatalogCabinet }) {
   return (
     <>
       <Leaf style={styles.section}>
-        <Text style={styles.heading}>{CABINET_USAGE_TITLE}</Text>
+        <BindingRule />
+        <SectionTitle>{CABINET_USAGE_TITLE}</SectionTitle>
         <Text style={styles.lead}>{usageLine(cabinet.usage)}</Text>
         {cabinet.usage !== null && <UsageChart usage={cabinet.usage} />}
         <Text style={styles.note}>{CABINET_USAGE_NOTE}</Text>
@@ -81,7 +84,8 @@ function CabinetView({ cabinet }: { readonly cabinet: CatalogCabinet }) {
 
       {cabinet.articles.length > 0 && (
         <Leaf style={styles.section}>
-          <Text style={styles.heading}>{CABINET_LITTRE_TITLE}</Text>
+          <BindingRule />
+          <SectionTitle>{CABINET_LITTRE_TITLE}</SectionTitle>
           {cabinet.articles.map((article, index) => (
             // Homographs keep the Littré's order, which never changes within a file.
             // biome-ignore lint/suspicious/noArrayIndexKey: see above
@@ -92,7 +96,8 @@ function CabinetView({ cabinet }: { readonly cabinet: CatalogCabinet }) {
 
       {groups.length > 0 && (
         <Leaf style={styles.section}>
-          <Text style={styles.heading}>{CABINET_FAMILY_TITLE}</Text>
+          <BindingRule />
+          <SectionTitle>{CABINET_FAMILY_TITLE}</SectionTitle>
           {groups.map((group) => (
             <View key={group.relation} style={styles.familyRow}>
               <Text style={styles.familyLabel}>{group.label}</Text>
@@ -106,8 +111,18 @@ function CabinetView({ cabinet }: { readonly cabinet: CatalogCabinet }) {
         </Leaf>
       )}
 
+      <Tailpiece />
       <Text style={[styles.sources, { color: ink.pageInkMuted }]}>{CABINET_SOURCES}</Text>
     </>
+  );
+}
+
+function SectionTitle({ children }: { readonly children: string }) {
+  return (
+    <View style={styles.titled}>
+      <Text style={styles.heading}>{children}</Text>
+      <TitleRule />
+    </View>
   );
 }
 
@@ -245,7 +260,9 @@ function Citations({ citations }: { readonly citations: readonly CabinetCitation
 }
 
 const styles = StyleSheet.create({
-  section: { gap: space.s5, padding: space.s8 },
+  section: { gap: space.s5, padding: ORNAMENT_PADDING.binding },
+  door: { padding: ORNAMENT_PADDING.fleurons },
+  titled: { gap: space.s3 },
   heading: {
     fontFamily: fonts.display,
     fontSize: fontSizes.titleSmall,

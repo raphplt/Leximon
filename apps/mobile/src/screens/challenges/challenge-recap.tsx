@@ -36,6 +36,7 @@ import { alpha, colors, fontSizes, fonts, paperColors, space } from "@/theme";
 import { Button } from "@/ui/button";
 import { GainBanner } from "@/ui/gain-banner";
 import { Icon } from "@/ui/icon";
+import { Fleurons, ORNAMENT_PADDING } from "@/ui/ornaments";
 import { Panel } from "@/ui/panel";
 import { ToyIcon } from "@/ui/toy";
 
@@ -149,6 +150,7 @@ export function ChallengeRecap({
   return (
     <ScrollView contentContainerStyle={styles.page}>
       <Panel paper style={styles.recap}>
+        <Fleurons small />
         <Text style={styles.kicker}>{RECAP_TITLE.toUpperCase()}</Text>
         <Text style={styles.score} accessibilityLabel={sessionScore(scored)}>
           {right}/{scored.length}
@@ -247,7 +249,7 @@ const ink = paperColors;
 
 const styles = StyleSheet.create({
   page: {
-    padding: space.s6,
+    padding: space.s4,
     paddingBottom: TAB_BAR_RISE + 24,
     flexGrow: 1,
     justifyContent: "center",
@@ -255,8 +257,9 @@ const styles = StyleSheet.create({
   recap: {
     alignItems: "center",
     gap: space.s10,
-    paddingVertical: space.s14,
-    paddingHorizontal: space.s4,
+    paddingVertical: ORNAMENT_PADDING.fleurons + space.s2,
+    // Three climbed cards still fit in a row, clear of the fleurons' rule.
+    paddingHorizontal: space.s10,
   },
   kicker: {
     fontFamily: fonts.displayBold,

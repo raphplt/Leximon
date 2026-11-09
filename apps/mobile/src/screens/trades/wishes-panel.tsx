@@ -16,6 +16,7 @@ import { api } from "@/api/client";
 import { fontSizes, fonts, paperColors, space } from "@/theme";
 import { Avatar } from "@/ui/avatar";
 import { Button } from "@/ui/button";
+import { TitleRule } from "@/ui/ornaments";
 import { OnPaper } from "@/ui/panel";
 import { TextButton } from "@/ui/text-button";
 import { CardRow, catalogCard } from "./card-row";
@@ -79,11 +80,14 @@ export function WishesPanel({
 
   return (
     <>
-      <OnPaper>
+      <OnPaper ornament="binding">
         <View style={styles.section}>
-          <Text style={styles.title} accessibilityRole="header">
-            {WISH_SEEKERS_TITLE}
-          </Text>
+          <View style={styles.titled}>
+            <Text style={styles.title} accessibilityRole="header">
+              {WISH_SEEKERS_TITLE}
+            </Text>
+            <TitleRule />
+          </View>
           {seekers.players.map(({ player, cardIds }) => (
             <View key={player.code} style={styles.seeker}>
               <View style={styles.seekerHead}>
@@ -103,11 +107,14 @@ export function WishesPanel({
         </View>
       </OnPaper>
 
-      <OnPaper>
+      <OnPaper ornament="binding">
         <View style={styles.section}>
-          <Text style={styles.title} accessibilityRole="header">
-            {WISHES_TITLE}
-          </Text>
+          <View style={styles.titled}>
+            <Text style={styles.title} accessibilityRole="header">
+              {WISHES_TITLE}
+            </Text>
+            <TitleRule />
+          </View>
           {wishes.wishes.length > 0 && (
             <View style={styles.wishes}>
               {wishes.wishes.map((wish) => (
@@ -134,6 +141,7 @@ const ink = paperColors;
 
 const styles = StyleSheet.create({
   section: { gap: space.s6 },
+  titled: { gap: space.s3 },
   title: { fontFamily: fonts.display, fontSize: fontSizes.title, color: ink.pageInk },
   seeker: { gap: space.s4 },
   seekerHead: { flexDirection: "row", alignItems: "center", gap: space.s5 },

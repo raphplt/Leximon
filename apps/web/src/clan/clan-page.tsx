@@ -35,6 +35,7 @@ import { ownedCards } from "@/player/collection";
 import { useShared } from "@/player/resource";
 import { Button } from "@/ui/button";
 import { Icon } from "@/ui/icon";
+import { BindingRule, TitleRule, Tooling } from "@/ui/ornaments";
 import { Bone, WaitingScreen } from "@/ui/skeleton";
 import { useToast } from "@/ui/toast";
 import ui from "@/ui/ui.module.css";
@@ -207,6 +208,7 @@ export function ClanPage({
   return (
     <main className={styles.screen} data-tab={tab}>
       <header className={`${ui.panel} ${styles.hero}`}>
+        <Tooling />
         <Banner cardId={view.clan.banner} />
         <Emblem emblem={view.clan.emblem} size={narrow ? 64 : 96} level={progress.level} />
         <div className={styles.heroText}>
@@ -270,11 +272,15 @@ export function ClanPage({
       <div className={styles.columns}>
         <div className={styles.column}>
           {goal !== null && bar !== null && (
-            <section className={`${ui.panel} ${styles.card} ${styles.onClan} ${styles.goalCard}`}>
+            <section
+              className={`${ui.panel} ${styles.card} ${styles.framed} ${styles.onClan} ${styles.goalCard}`}
+            >
+              <BindingRule />
               <div className={styles.cardHead}>
                 <div>
                   <p className={ui.kicker}>Objectif de la semaine</p>
                   <h2 className={`${ui.display} ${styles.cardTitle}`}>{goalTitle(goal)}</h2>
+                  <TitleRule className={styles.cardRule} />
                 </div>
                 <span className={styles.small}>{now > 0 && goalTimeLeft(goal.endsAt, now)}</span>
               </div>
@@ -325,7 +331,8 @@ export function ClanPage({
             </section>
           )}
 
-          <section className={`${ui.panel} ${styles.card} ${styles.onClan}`}>
+          <section className={`${ui.panel} ${styles.card} ${styles.framed} ${styles.onClan}`}>
+            <BindingRule />
             <p className={ui.kicker}>Bibliothèque du clan</p>
             <p className={styles.libraryLine}>
               <em>{libraryHeadline(rows)}</em>

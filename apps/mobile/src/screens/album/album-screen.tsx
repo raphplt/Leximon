@@ -4,7 +4,6 @@ import {
   collectionTone,
   masteryColors,
   rarityStyles,
-  room,
   solidColor,
   toyMatters,
   toy as toyValues,
@@ -57,7 +56,7 @@ import { Card } from "@/cards/card";
 import { catalogInHand, loadCatalog } from "@/cards/catalog";
 import { EcusSheet } from "@/ecus/ecus-sheet";
 import { vibrate } from "@/feedback/feedback";
-import { Desk } from "@/library/play-pieces";
+import { DESK_RADIUS, Desk } from "@/library/play-pieces";
 import { cardDates, ownedCards, wordMemory } from "@/player/collection";
 import { useNow, useShared, useSharedFailed } from "@/player/shared";
 import { editions, progress, wallet } from "@/player/state";
@@ -67,6 +66,7 @@ import { TAB_BAR_RISE } from "@/shell/tab-bar";
 import { alpha, colors, fontSizes, fonts, paperColors, radii, space } from "@/theme";
 import { Button } from "@/ui/button";
 import { Icon } from "@/ui/icon";
+import { TOOLING_ROOM } from "@/ui/ornaments";
 import { RarityChip, RarityName } from "@/ui/rarity-icon";
 import { Sheet } from "@/ui/sheet";
 import { TextButton } from "@/ui/text-button";
@@ -77,8 +77,8 @@ const STORED_COLLECTION = "leximon_album";
 /** The order chosen last, kept on the device. */
 const STORED_SORT = "leximon_album_sort";
 const COLUMNS = 3;
-/** Inside the desk, its frame already holds the cards off the edge: a narrower margin leaves them wider. */
-const GUTTER = 10;
+/** Inside the desk, its tooling already holds the cards off the edge: a narrow margin leaves them wider. */
+const GUTTER = 6;
 const GAP = 12;
 const ROOM_MARGIN = 6;
 /** Under a card, its level or its rarity: every tile is as tall, so a letter knows its row. */
@@ -1032,8 +1032,8 @@ const styles = StyleSheet.create({
 /** The desk's outline and shadow, kept inside its clip. */
 const DESK_RING = 12;
 
-/** How far the desk's frame takes the cards in from the screen's edges. */
-const LIBRARY_INSET = ROOM_MARGIN + room.desk.frameWidth;
+/** How far the desk's tooling takes the cards in from the screen's edges. */
+const LIBRARY_INSET = ROOM_MARGIN + TOOLING_ROOM;
 
 const SEARCH_MUTED = colors.paperInkMuted;
 
@@ -1053,15 +1053,15 @@ const library = StyleSheet.create({
     top: DESK_RING,
     left: DESK_RING,
     right: DESK_RING,
-    bottom: -room.desk.radius * 2,
+    bottom: -DESK_RADIUS * 2,
   },
-  // The cards slide under the frame, not over it.
+  // The cards slide in within the gilt tooling, never over it.
   inside: {
     flex: 1,
-    marginTop: room.desk.frameWidth,
-    marginHorizontal: room.desk.frameWidth,
-    borderTopLeftRadius: room.desk.radius - room.desk.frameWidth,
-    borderTopRightRadius: room.desk.radius - room.desk.frameWidth,
+    marginTop: TOOLING_ROOM,
+    marginHorizontal: TOOLING_ROOM,
+    borderTopLeftRadius: DESK_RADIUS - TOOLING_ROOM,
+    borderTopRightRadius: DESK_RADIUS - TOOLING_ROOM,
     overflow: "hidden",
   },
   header: { paddingTop: space.s6, gap: space.s5 },

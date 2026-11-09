@@ -10,6 +10,7 @@ import { TAB_BAR_RISE } from "@/shell/tab-bar";
 import { fontSizes, fonts, paperColors, space } from "@/theme";
 import { Button } from "@/ui/button";
 import { Icon } from "@/ui/icon";
+import { GiltCorners, ORNAMENT_PADDING } from "@/ui/ornaments";
 import { Panel } from "@/ui/panel";
 import { Sheet } from "@/ui/sheet";
 import { TextField } from "@/ui/text-field";
@@ -78,7 +79,8 @@ export function FindClan({
 
       <ClanList join={join} />
 
-      <Panel paper>
+      <Panel paper style={styles.tile}>
+        <GiltCorners />
         <Text style={styles.kicker}>UN CODE D'INVITATION</Text>
         <Text style={styles.small}>Il ouvre n'importe quel clan, même sur invitation.</Text>
         <TextField
@@ -135,6 +137,7 @@ export function FindClan({
 const ink = paperColors;
 
 const styles = StyleSheet.create({
+  tile: { padding: ORNAMENT_PADDING.corners },
   page: {
     gap: space.s7,
     paddingHorizontal: space.s8,

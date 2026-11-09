@@ -42,6 +42,29 @@
   padding: var(--lx-s16) var(--lx-s16) var(--lx-s24);
 }
 
+/* Framed in the bookbinder's rule: the padding keeps the text clear of it. */
+.framed {
+  position: relative;
+  padding: 30px 30px 32px;
+}
+
+/* The door to the cabinet, illuminated: the fleurons need a wider margin. */
+.door {
+  position: relative;
+  padding: 40px 38px;
+}
+
+@media (max-width: 600px) {
+  .door {
+    padding: 34px 30px;
+  }
+}
+
+.titled {
+  display: grid;
+  gap: 6px;
+}
+
 .heading {
   margin: 0;
   font-size: var(--lx-size-title-small);
@@ -274,6 +297,11 @@
 .memberLink:focus-visible {
   outline: 3px solid var(--lx-color-focus);
   outline-offset: 2px;
+}
+
+.tailpiece {
+  align-self: center;
+  margin-top: var(--lx-s8);
 }
 
 .sources {

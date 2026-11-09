@@ -1,9 +1,9 @@
-import { lettering, room } from "@leximon/tokens";
+import { lettering } from "@leximon/tokens";
 import { router } from "expo-router";
 import type { ReactNode } from "react";
 import { KeyboardAvoidingView, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Desk, Room } from "@/library/play-pieces";
+import { DESK_RADIUS, DESK_RIM, Desk, Room } from "@/library/play-pieces";
 import { TAB_BAR_RISE } from "@/shell/tab-bar";
 import { colors, fontSizes, fonts, space } from "@/theme";
 import { Icon } from "./icon";
@@ -93,8 +93,9 @@ export function Page({
           <View
             style={[styles.desk, { marginTop: insets.top + 6, marginBottom: insets.bottom + 6 }]}
           >
-            <Desk style={StyleSheet.absoluteFill} />
-            {/* The page slides under the frame, not over it. */}
+            {/* A card read up close, as in a sheet on the web: the leather without its tooling. */}
+            <Desk style={StyleSheet.absoluteFill} tooled={false} />
+            {/* The page slides under the turned-in edge, not over it. */}
             <View style={styles.deskInside}>{scroll}</View>
           </View>
         </Room>
@@ -160,8 +161,8 @@ const styles = StyleSheet.create({
   desk: { flex: 1, marginHorizontal: 6 },
   deskInside: {
     flex: 1,
-    margin: room.desk.frameWidth,
-    borderRadius: room.desk.radius - room.desk.frameWidth,
+    margin: DESK_RIM,
+    borderRadius: DESK_RADIUS - DESK_RIM,
     overflow: "hidden",
   },
   top: { height: 44, flexDirection: "row", alignItems: "center", marginBottom: space.s6 },

@@ -44,11 +44,13 @@
   line-height: 1.45;
 }
 
+/* A closed door, framed in fleurons: the padding keeps the text clear of them. */
 .closed {
+  position: relative;
   display: flex;
   flex-direction: column;
   gap: 12px;
-  padding: 18px;
+  padding: 40px 38px;
 }
 
 .control {
@@ -228,10 +230,12 @@
 
 /* --- 1. The guided first visit --- */
 
+/* Framed in the bookbinder's rule: the padding keeps the text clear of it. */
 .guide {
+  position: relative;
   display: grid;
   gap: 18px;
-  padding: 18px 20px;
+  padding: 30px;
 }
 
 .guideHead {
@@ -850,6 +854,18 @@
   display: grid;
   gap: 16px;
   padding: 18px 20px;
+}
+
+/* The sealed letter wears the fleurons and the reveal after it the bookbinder's rule, so that two
+   screens in a row do not both wear the richest frame. The padding keeps the text clear of them. */
+.illuminated {
+  position: relative;
+  padding: 40px 38px;
+}
+
+.ruled {
+  position: relative;
+  padding: 30px;
 }
 
 .joustHead {
@@ -2097,7 +2113,16 @@
   }
 
   .guide {
-    padding: 14px 12px;
+    padding: 24px 22px;
+  }
+
+  .closed,
+  .illuminated {
+    padding: 34px 30px;
+  }
+
+  .ruled {
+    padding: 26px 22px;
   }
 
   .matchup {

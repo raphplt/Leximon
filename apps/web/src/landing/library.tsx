@@ -3,6 +3,7 @@ import { formatCount } from "@leximon/view-model";
 import Link from "next/link";
 import type { CSSProperties } from "react";
 import desk from "@/play/desk-columns.module.css";
+import { GiltCorners } from "@/ui/ornaments";
 import { Lettering, ToyBody } from "@/ui/toy";
 import ui from "@/ui/ui.module.css";
 import styles from "./landing-page.module.css";
@@ -55,6 +56,7 @@ export function Library({ shelves }: { readonly shelves: readonly Shelf[] }) {
           })}
         </ul>
         <Link href="/enigme" className={`${ui.leaf} ${desk.leaf} ${styles.riddle}`}>
+          <GiltCorners />
           <span className={desk.leafKicker}>Énigme du jour</span>
           <span className={styles.riddleTitle}>Un mot à trouver, indice après indice</span>
           <span

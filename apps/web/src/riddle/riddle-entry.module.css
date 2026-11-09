@@ -1,11 +1,13 @@
+/* Gilt corners on the tile: the padding keeps the text clear of them. */
 .panel {
+  position: relative;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
   gap: var(--lx-s7);
   margin-top: var(--lx-s9);
-  padding: var(--lx-s10);
+  padding: 20px 22px 22px;
 }
 
 .title {

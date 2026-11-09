@@ -36,6 +36,7 @@ import { useNow, useShared } from "@/player/shared";
 import { missions } from "@/player/state";
 import { usePlayerView } from "@/player/use-player-view";
 import { TAB_BAR_RISE } from "@/shell/tab-bar";
+import { TOOLING_ROOM } from "@/ui/ornaments";
 import { GRID } from "./sachet-face";
 
 type TileId = Exclude<FabId, "mail" | "settings">;
@@ -62,8 +63,8 @@ const OPENING_SCALE = 1.25;
 const SACHET_WIDTH = { min: 64, max: 180 } as const;
 /** Room the sachet keeps in its row: its top margin and its sway. */
 const SACHET_ROOM = 24;
-/** Room it keeps across: the desk's frame and some air beside the tiles. */
-const SACHET_GUTTER = 24;
+/** Room it keeps across: the desk's tooling on both sides, so the tiles lie inside it, and some air. */
+const SACHET_GUTTER = 2 * TOOLING_ROOM + 12;
 /** The desk's distance from the screen's sides. */
 const DESK_SIDE = 14;
 

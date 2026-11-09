@@ -6,21 +6,20 @@
   --lx-color-rubric: var(--lx-toy-gold-top);
   position: relative;
   padding: 34px var(--lx-s12) 26px;
-  border: 6px solid transparent;
   border-radius: var(--lx-toy-radius-large);
   /* The desk's leather, unless a box brings its own matter. */
   background:
-    var(--box-matter, var(--lx-matter-leather)) 0 0 / var(--lx-matter-size) padding-box,
+    var(--box-matter, var(--lx-matter-leather)) 0 0 / var(--lx-matter-size),
     radial-gradient(
       ellipse 80% 60% at 50% 35%,
       var(--box-center, var(--lx-desk-center)) 0%,
       var(--box-middle, var(--lx-desk-middle)) 55%,
       var(--box-edge, var(--lx-desk-edge)) 100%
-    )
-    padding-box,
-    var(--lx-old-gold) border-box;
+    );
   box-shadow:
     0 0 0 3px var(--lx-toy-outline),
+    inset 0 0 0 5px color-mix(in srgb, var(--box-edge, var(--lx-desk-edge)) 70%, transparent),
+    inset 0 2px 0 5px color-mix(in srgb, var(--lx-toy-sheen) 12%, transparent),
     inset 0 0 50px var(--lx-desk-hollow);
   color: var(--lx-lettering-fill);
   text-align: center;

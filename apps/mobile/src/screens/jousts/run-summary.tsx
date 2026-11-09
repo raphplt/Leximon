@@ -23,7 +23,7 @@ import Animated, {
 } from "react-native-reanimated";
 import { useCatalog } from "@/cards/use-catalog";
 import { play, vibrate } from "@/feedback/feedback";
-import { Desk, MainAction, PaperAction } from "@/library/play-pieces";
+import { DESK_PADDING, Desk, MainAction, PaperAction } from "@/library/play-pieces";
 import { catalogCard } from "@/screens/trades/card-row";
 import { alpha, fontSizes, fonts, radii, space } from "@/theme";
 import { Icon } from "@/ui/icon";
@@ -201,7 +201,7 @@ function XpBar({ progress, xp }: { readonly progress: Progress; readonly xp: num
 }
 
 const styles = StyleSheet.create({
-  arena: { padding: space.s8, gap: space.s6, overflow: "hidden" },
+  arena: { padding: DESK_PADDING, gap: space.s6, overflow: "hidden" },
   kicker: {
     fontFamily: fonts.displayBold,
     textAlign: "center",

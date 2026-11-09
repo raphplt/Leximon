@@ -18,6 +18,7 @@ import styles from "@/app/confidentialite/privacy.module.css";
 import { WaitlistForm } from "@/landing/waitlist-form";
 import { api } from "@/lib/api";
 import { Button } from "@/ui/button";
+import { Fleurons } from "@/ui/ornaments";
 import ui from "@/ui/ui.module.css";
 import { rememberInvite } from "./arrival";
 
@@ -57,7 +58,8 @@ export function InvitationScreen() {
       <h1 className={`${styles.title} ${ui.lettered}`}>
         {"status" in state && state.status !== "open" ? CLOSED_TITLE : INVITED_TITLE}
       </h1>
-      <section className={`${styles.section} ${ui.leaf}`}>
+      <section className={`${styles.section} ${styles.framed} ${ui.leaf}`}>
+        <Fleurons />
         {"kind" in state && state.kind === "loading" && <p>Un instant…</p>}
         {"kind" in state && state.kind === "failed" && <p>Le serveur ne répond pas. Réessaie.</p>}
         {"status" in state && state.status === "open" && (
@@ -92,7 +94,8 @@ export function InvitationRequiredScreen() {
         Leximon
       </Link>
       <h1 className={`${styles.title} ${ui.lettered}`}>{INVITATION_REQUIRED_TITLE}</h1>
-      <section className={`${styles.section} ${ui.leaf}`}>
+      <section className={`${styles.section} ${styles.framed} ${ui.leaf}`}>
+        <Fleurons />
         <p>{INVITATION_REQUIRED_TEXT}</p>
         <div style={{ marginTop: 24 }}>
           <WaitlistForm />

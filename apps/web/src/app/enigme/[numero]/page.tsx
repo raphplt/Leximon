@@ -7,6 +7,7 @@ import styles from "@/riddle/public-riddle.module.css";
 import { readPublicRiddle } from "@/riddle/public-riddle-data";
 import { ButtonLink } from "@/ui/button";
 import { Logo } from "@/ui/logo";
+import { Tailpiece } from "@/ui/ornaments";
 import ui from "@/ui/ui.module.css";
 
 function numberOf(param: string): number | null {
@@ -67,6 +68,7 @@ async function RiddleContent({ params }: Pick<PageProps<"/enigme/[numero]">, "pa
           ? "Sauras-tu trouver le mot du jour ?"
           : `Le mot était « ${riddle.answer.word} ».`}
       </h1>
+      <Tailpiece />
       <p className={styles.line}>{riddlePublicLine(riddle.played, riddle.found)}</p>
       {riddle.answer !== null && (
         <ButtonLink href={`/carte/${riddle.answer.cardId}`} variant="secondary">

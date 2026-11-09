@@ -26,6 +26,7 @@ import { useNarrow } from "@/lib/use-narrow";
 import desk from "@/play/desk-columns.module.css";
 import { catalogCard } from "@/trades/card-thumb";
 import { Icon } from "@/ui/icon";
+import { BindingRule, Fleurons } from "@/ui/ornaments";
 import { useStage } from "@/ui/stage";
 import { Lettering, ToyIcon } from "@/ui/toy";
 import ui from "@/ui/ui.module.css";
@@ -72,7 +73,11 @@ export function SealedResult({
   readonly onOpen: () => void;
 }) {
   return (
-    <section className={`${ui.leaf} ${styles.sealed} ${desk.rising}`} style={rise(0)}>
+    <section
+      className={`${ui.leaf} ${styles.sealed} ${styles.illuminated} ${desk.rising}`}
+      style={rise(0)}
+    >
+      <Fleurons />
       <span className={desk.leafKicker}>{kicker}</span>
       <button type="button" className={styles.pli} onClick={onOpen}>
         <span className={styles.pliSeal}>
@@ -94,11 +99,14 @@ export function Reveal({
   data,
   kicker,
   playing,
+  plain = false,
   children,
 }: {
   readonly data: RevealData;
   readonly kicker: string;
   readonly playing: boolean;
+  /** Inside a leaf already framed (the guide's training): no rule of its own. */
+  readonly plain?: boolean;
   /** The actions under the gains. */
   readonly children?: ReactNode;
 }) {
@@ -167,7 +175,11 @@ export function Reveal({
   const score = (answers: readonly RevealAnswer[] | null) =>
     (answers ?? []).slice(0, shown).filter((answer) => answer.correct).length;
   return (
-    <section className={`${ui.leaf} ${styles.result} ${desk.rising}`} style={rise(0)}>
+    <section
+      className={`${ui.leaf} ${styles.result} ${plain ? "" : styles.ruled} ${desk.rising}`}
+      style={rise(0)}
+    >
+      {!plain && <BindingRule />}
       <header className={styles.joustHead}>
         <span className={desk.leafKicker}>{kicker}</span>
         <button type="button" className={styles.replay} onClick={start}>

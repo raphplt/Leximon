@@ -32,8 +32,9 @@ import { Button } from "@/ui/button";
 import { Chip } from "@/ui/chip";
 import { Icon } from "@/ui/icon";
 import { LevelMedal } from "@/ui/level";
+import { GiltCorners, ORNAMENT_PADDING } from "@/ui/ornaments";
 import { Page, Paragraph } from "@/ui/page";
-import { Panel } from "@/ui/panel";
+import { OnPaper, Panel } from "@/ui/panel";
 import { SearchField } from "@/ui/search-field";
 import { Sheet } from "@/ui/sheet";
 import { TextButton } from "@/ui/text-button";
@@ -62,8 +63,10 @@ export function FriendsScreen({
   if (view.guest) {
     return (
       <Page inTab={inTab} title={FRIENDS_TITLE}>
-        <Paragraph>{FRIENDS_GUEST}</Paragraph>
-        <Button label="Créer mon compte" onPress={() => router.push("/compte")} />
+        <OnPaper ornament="fleurons">
+          <Paragraph>{FRIENDS_GUEST}</Paragraph>
+          <Button label="Créer mon compte" onPress={() => router.push("/compte")} />
+        </OnPaper>
       </Page>
     );
   }
@@ -92,7 +95,8 @@ export function FriendsScreen({
       <AddByPseudo />
     </>
   ) : (
-    <Panel paper>
+    <Panel paper style={styles.tile}>
+      <GiltCorners />
       <Text style={styles.hint}>{FRIENDS_PSEUDO_FIRST}</Text>
       <Button label="Choisir mon pseudo" onPress={() => setPseudoOpen(true)} />
     </Panel>
@@ -303,7 +307,8 @@ function FriendLink({
 }) {
   const places = betaPlacesLabel(placesLeft);
   return (
-    <Panel paper>
+    <Panel paper style={styles.tile}>
+      <GiltCorners />
       <Text style={styles.kicker}>Ton lien d'ami</Text>
       <Text style={styles.line}>
         Ceux qui entrent par ton lien deviennent tes amis. Quand l'un d'eux atteint le niveau 5,
@@ -335,7 +340,8 @@ function AddByPseudo() {
   };
 
   return (
-    <Panel paper>
+    <Panel paper style={styles.tile}>
+      <GiltCorners />
       <TextField
         label="Ajouter par pseudo"
         value={pseudo}
@@ -491,6 +497,7 @@ function FriendActions({
 const ink = paperColors;
 
 const styles = StyleSheet.create({
+  tile: { padding: ORNAMENT_PADDING.corners },
   count: {
     fontFamily: fonts.ui.semibold,
     fontSize: fontSizes.label,

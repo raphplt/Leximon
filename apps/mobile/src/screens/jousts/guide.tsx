@@ -41,6 +41,7 @@ import { MainAction, PaperAction } from "@/library/play-pieces";
 import { catalogCard } from "@/screens/trades/card-row";
 import { fontSizes, fonts, space } from "@/theme";
 import { Icon } from "@/ui/icon";
+import { BindingRule } from "@/ui/ornaments";
 import { Leaf, Lettering, ToyBody } from "@/ui/toy";
 import { DeckBuilder } from "./deck-builder";
 import { type Duelist, DuelistFace, Furet, ink, MiniCard, Notice, pieces } from "./pieces";
@@ -119,12 +120,14 @@ export function Guide({
       </View>
 
       {step === 0 && (
-        <Leaf style={pieces.leaf}>
+        <Leaf style={[pieces.leaf, pieces.framed]}>
+          <BindingRule />
           <GuideLists deck={deck} size={size} me={me} onNext={next} />
         </Leaf>
       )}
       {step === 1 && (
-        <Leaf style={pieces.leaf}>
+        <Leaf style={[pieces.leaf, pieces.framed]}>
+          <BindingRule />
           <DeckBuilder
             deck={deck}
             initial={deck.saved ? deck.cardIds : []}
@@ -138,7 +141,8 @@ export function Guide({
       )}
       {step === 2 && <Training deck={deck} size={size} me={me} onNext={next} />}
       {step === 3 && (
-        <Leaf style={pieces.leaf}>
+        <Leaf style={[pieces.leaf, pieces.framed]}>
+          <BindingRule />
           <FirstJoust deck={deck} deckSaved={deckSaved} size={size} me={me} />
           <Notice>{refusal}</Notice>
           <View style={pieces.actions}>

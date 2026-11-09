@@ -132,6 +132,24 @@
   padding: var(--lx-s8);
 }
 
+/* The way in wears the fleurons, the steps after it the bookbinder's rule; the padding keeps the
+   text clear of them. */
+.framed {
+  position: relative;
+  padding: 40px 38px;
+}
+
+.ruled {
+  position: relative;
+  padding: 30px;
+}
+
+@media (max-width: 600px) {
+  .framed {
+    padding: 34px 30px;
+  }
+}
+
 .hint {
   margin: 0;
   font-size: var(--lx-size-body-large);

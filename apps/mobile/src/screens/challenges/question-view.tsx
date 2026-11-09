@@ -1,7 +1,7 @@
 import type { CatalogCard } from "@leximon/contract";
 import { type Catalog, cardOrPlaceholder, collectionName } from "@leximon/contract/client";
 import { TYPED_ANSWER_MAX_LENGTH } from "@leximon/core";
-import { effects, room, type ToyMatterName, toyMatters, toy as toyValues } from "@leximon/tokens";
+import { effects, type ToyMatterName, toyMatters, toy as toyValues } from "@leximon/tokens";
 import {
   answerFeedback,
   answerGains,
@@ -50,7 +50,7 @@ import { Card } from "@/cards/card";
 import { SpeechButtons } from "@/cards/speech-buttons";
 import { useSpokenWord } from "@/cards/spoken-word";
 import { play, speechOn, vibrate } from "@/feedback/feedback";
-import { Desk } from "@/library/play-pieces";
+import { DESK_RADIUS, Desk } from "@/library/play-pieces";
 import { wordMemory } from "@/player/collection";
 import { useShared } from "@/player/shared";
 import { openCard } from "@/screens/trades/card-row";
@@ -60,6 +60,7 @@ import { Button } from "@/ui/button";
 import { DefinitionText } from "@/ui/definition-text";
 import { GainBanner } from "@/ui/gain-banner";
 import { Icon } from "@/ui/icon";
+import { TOOLING_ROOM } from "@/ui/ornaments";
 import { useOptionalStage } from "@/ui/stage";
 import { TextButton } from "@/ui/text-button";
 import { Leaf, Lettering, Toy, ToyIcon, toyFace } from "@/ui/toy";
@@ -493,7 +494,7 @@ export function QuestionView({
     <KeyboardAvoidingView style={styles.screen} behavior="padding">
       <View style={library.room}>
         <Desk style={StyleSheet.absoluteFill} />
-        {/* The questions slide under the frame, not over it. */}
+        {/* The questions slide in within the gilt tooling, never over it. */}
         <View style={library.inside}>{page}</View>
       </View>
     </KeyboardAvoidingView>
@@ -890,11 +891,11 @@ const library = StyleSheet.create({
   room: { flex: 1, marginHorizontal: 6, marginBottom: TAB_BAR_RISE },
   inside: {
     flex: 1,
-    margin: room.desk.frameWidth,
-    borderRadius: room.desk.radius - room.desk.frameWidth,
+    margin: TOOLING_ROOM,
+    borderRadius: DESK_RADIUS - TOOLING_ROOM,
     overflow: "hidden",
   },
-  page: { paddingHorizontal: space.s6, paddingTop: space.s7, paddingBottom: space.s12 },
+  page: { paddingHorizontal: space.s4, paddingTop: space.s7, paddingBottom: space.s12 },
   round: { borderWidth: toyValues.outlineWidth },
   dot: { height: 12, borderWidth: 2, borderColor: toyValues.outline },
   catchUpDot: { width: 8, height: 8, borderRadius: 4, borderWidth: 1.5 },

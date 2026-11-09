@@ -29,6 +29,7 @@ import { useProgress } from "@/progress/use-progress";
 import { Button, ButtonLink } from "@/ui/button";
 import { Icon } from "@/ui/icon";
 import { LoadFailed } from "@/ui/load-failed";
+import { Tooling } from "@/ui/ornaments";
 import { Bone, WaitingScreen } from "@/ui/skeleton";
 import { useToast } from "@/ui/toast";
 import ui from "@/ui/ui.module.css";
@@ -163,6 +164,7 @@ function ClanVisit({
   return (
     <main className={styles.screen}>
       <header className={`${ui.panel} ${styles.hero}`}>
+        <Tooling />
         <Banner cardId={clan.banner} />
         <Emblem emblem={clan.emblem} size={narrow ? 64 : 96} level={clan.level} />
         <div className={styles.heroText}>

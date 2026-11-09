@@ -31,7 +31,7 @@ import { claimGoal } from "@/clan/claim";
 import { ClanFacts } from "@/clan/clan-facts";
 import { Banner, Emblem } from "@/clan/emblem";
 import { WEB_URL } from "@/config";
-import { Desk } from "@/library/play-pieces";
+import { DESK_PADDING, Desk } from "@/library/play-pieces";
 import { ownedCards } from "@/player/collection";
 import { useShared } from "@/player/shared";
 import { myClan } from "@/player/state";
@@ -42,6 +42,7 @@ import { Badge } from "@/ui/badge";
 import { Button } from "@/ui/button";
 import { Icon } from "@/ui/icon";
 import { KeyboardLift } from "@/ui/keyboard-lift";
+import { BindingRule, ORNAMENT_PADDING, TitleRule } from "@/ui/ornaments";
 import { Panel } from "@/ui/panel";
 import { Segmented } from "@/ui/segmented";
 import { TextButton } from "@/ui/text-button";
@@ -267,7 +268,8 @@ export function ClanPage({
             />
           )}
 
-          <Panel paper>
+          <Panel paper style={styles.framed}>
+            <BindingRule />
             <Text style={styles.kicker}>Bibliothèque du clan</Text>
             <Text style={styles.libraryLine}>{libraryHeadline(rows)}</Text>
             {rows.map((row) => (
@@ -427,11 +429,13 @@ function GoalPanel({
   const reward = goalRewardLine(goal);
   const hint = contributionHint(goal);
   return (
-    <Panel paper>
+    <Panel paper style={styles.framed}>
+      <BindingRule />
       <View style={styles.goalHead}>
         <View style={styles.goalTitles}>
           <Text style={styles.kicker}>Objectif de la semaine</Text>
           <Text style={styles.goalTitle}>{goalTitle(goal)}</Text>
+          <TitleRule small />
         </View>
         <Text style={styles.small}>{goalTimeLeft(goal.endsAt, now)}</Text>
       </View>
@@ -478,6 +482,7 @@ function GoalPanel({
 const ink = paperColors;
 
 const styles = StyleSheet.create({
+  framed: { padding: ORNAMENT_PADDING.binding },
   screen: { flex: 1 },
   failed: { flex: 1, justifyContent: "center", gap: space.s8, paddingHorizontal: space.s12 },
   hint: {
@@ -497,8 +502,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: space.s6,
     overflow: "hidden",
-    padding: space.s8,
-    paddingRight: space.s7,
+    padding: DESK_PADDING,
   },
   heroText: { flex: 1, gap: space.s1 },
   heroSmall: {

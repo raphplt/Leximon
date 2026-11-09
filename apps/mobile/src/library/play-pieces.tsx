@@ -1,11 +1,11 @@
 import {
-  cssFill,
-  oldGold,
+  lettering,
   room,
   stockToyInks,
   type ToyIconName,
   type ToyMatterName,
   toyMatters,
+  toyRadii,
   toy as toyValues,
   welcomeCloth,
 } from "@leximon/tokens";
@@ -30,9 +30,10 @@ import Animated, {
   withSequence,
   withTiming,
 } from "react-native-reanimated";
-import { colors, fontSizes, fonts } from "@/theme";
+import { alpha, colors, fontSizes, fonts } from "@/theme";
 import { LevelMedal } from "@/ui/level";
 import { Matter } from "@/ui/matter";
+import { TOOLING_ROOM, Tooling } from "@/ui/ornaments";
 import { Kicker, Lettering, Lettrine, Toy, ToyBody, ToyIcon } from "@/ui/toy";
 
 /**
@@ -41,6 +42,12 @@ import { Kicker, Lettering, Lettrine, Toy, ToyBody, ToyIcon } from "@/ui/toy";
  */
 
 const SHELVES = require("../../assets/room/shelves.webp");
+
+/** The corners of the desk, and the width of the leather turned in at its edge. */
+export const DESK_RADIUS = toyRadii.large;
+export const DESK_RIM = 5;
+/** The room what lies on the desk keeps from its edge, clear of the gilt tooling. */
+export const DESK_PADDING = Math.ceil(TOOLING_ROOM) + 3;
 
 /**
  * The reading room behind a screen: shelves in the dark, the lamp's light in the middle and the
@@ -67,22 +74,27 @@ export function Room({ children }: { readonly children?: ReactNode }) {
 }
 
 /**
- * The green leather desk under the lamp, framed in old gold; `cloth` lines the same frame with the
- * welcome week's night-blue cloth.
+ * The green leather desk under the lamp, tooled in gold as the board of a bound book; `cloth`
+ * covers it with the welcome week's night-blue cloth instead. `tooled={false}` leaves the gilt off
+ * where the desk only lies under a page that scrolls across it.
  */
 export function Desk({
   style,
   cloth = false,
+  tooled = true,
 }: {
   readonly style?: StyleProp<ViewStyle>;
   readonly cloth?: boolean;
+  readonly tooled?: boolean;
 }) {
   return (
     <View style={[styles.deskFrame, style]} pointerEvents="none">
       <View style={[styles.desk, cloth && styles.cloth]}>
         <Matter kind={cloth ? "cloth" : "leather"} />
-        <View style={styles.deskRule} />
+        {/* The leather runs to the edge and turns in there, a shade darker. */}
+        <View style={[styles.deskRim, cloth && styles.clothRim]} />
       </View>
+      {tooled && <Tooling />}
     </View>
   );
 }
@@ -584,31 +596,28 @@ const styles = StyleSheet.create({
     backgroundImage: `radial-gradient(ellipse 90% 80% at 50% 45%, transparent 45%, ${room.vignette} 100%)`,
   },
   deskFrame: {
-    padding: room.desk.frameWidth,
-    borderRadius: room.desk.radius,
-    backgroundImage: cssFill(oldGold),
+    borderRadius: DESK_RADIUS,
     boxShadow: `0 0 0 3px ${toyValues.outline}, 0 24px 44px ${toyValues.drop}`,
   },
   desk: {
     flex: 1,
     overflow: "hidden",
-    borderRadius: room.desk.radius - room.desk.frameWidth,
+    borderRadius: DESK_RADIUS,
     backgroundImage: `radial-gradient(ellipse 80% 60% at 50% 40%, ${room.desk.center} 0%, ${room.desk.middle} 55%, ${room.desk.edge} 100%)`,
     boxShadow: `inset 0 0 50px ${room.desk.hollow}`,
   },
   cloth: {
     backgroundImage: `radial-gradient(ellipse 80% 60% at 50% 40%, ${welcomeCloth.center} 0%, ${welcomeCloth.middle} 55%, ${welcomeCloth.edge} 100%)`,
   },
-  deskRule: {
-    position: "absolute",
-    top: room.desk.ruleInset - room.desk.frameWidth,
-    left: room.desk.ruleInset - room.desk.frameWidth,
-    right: room.desk.ruleInset - room.desk.frameWidth,
-    bottom: room.desk.ruleInset - room.desk.frameWidth,
-    borderRadius: 17,
-    borderWidth: 1.5,
-    borderColor: room.desk.rule,
+  // A little light catches the top of the turn, under the rim.
+  deskRim: {
+    ...StyleSheet.absoluteFill,
+    borderRadius: DESK_RADIUS,
+    borderWidth: DESK_RIM,
+    borderColor: alpha(room.desk.edge, 0.7),
+    boxShadow: `inset 0 2px 0 ${alpha(lettering.fill, 0.05)}`,
   },
+  clothRim: { borderColor: alpha(welcomeCloth.edge, 0.7) },
   badge: { minWidth: 23, height: 23, paddingHorizontal: 5 },
   corner: { position: "absolute", top: -9, right: -9, zIndex: 2 },
   portrait: { width: 54, height: 54 },

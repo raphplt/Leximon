@@ -30,6 +30,7 @@ import { ownedCards } from "@/player/collection";
 import { friends } from "@/player/friends";
 import { useShared } from "@/player/resource";
 import { LevelMedal } from "@/ui/level-bits";
+import { BindingRule, TitleRule } from "@/ui/ornaments";
 import ui from "@/ui/ui.module.css";
 import { CardRow, cardLabel, catalogCard } from "./card-thumb";
 import { Counterpart } from "./counterpart";
@@ -306,10 +307,17 @@ export function ProposeTrade({
 
   if (blocked !== null) {
     return (
-      <section className={`${styles.panel} ${ui.leaf}`} aria-labelledby="propose-title">
-        <h2 id="propose-title" className={styles.sectionTitle}>
-          Proposer un échange
-        </h2>
+      <section
+        className={`${styles.panel} ${styles.framed} ${ui.leaf}`}
+        aria-labelledby="propose-title"
+      >
+        <BindingRule />
+        <div className={styles.titled}>
+          <h2 id="propose-title" className={styles.sectionTitle}>
+            Proposer un échange
+          </h2>
+          <TitleRule />
+        </div>
         <p className={styles.hint}>{blocked}</p>
         <p className={styles.muted}>
           En attendant, ouvre des {noun.many}. Tu pourras échanger tes doubles.
@@ -324,10 +332,17 @@ export function ProposeTrade({
   const partnerCode = partner === null ? "" : playerName(partner.badge);
 
   return (
-    <section className={`${styles.panel} ${ui.leaf}`} aria-labelledby="propose-title">
-      <h2 id="propose-title" className={styles.sectionTitle}>
-        Proposer un échange
-      </h2>
+    <section
+      className={`${styles.panel} ${styles.framed} ${ui.leaf}`}
+      aria-labelledby="propose-title"
+    >
+      <BindingRule />
+      <div className={styles.titled}>
+        <h2 id="propose-title" className={styles.sectionTitle}>
+          Proposer un échange
+        </h2>
+        <TitleRule />
+      </div>
       {step !== "sent" && <Steps step={step} />}
 
       {step === "code" && myFriends !== null && myFriends.friends.length > 0 && (

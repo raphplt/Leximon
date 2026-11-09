@@ -2,6 +2,7 @@ import { toy as toyValues } from "@leximon/tokens";
 import type { ReactNode } from "react";
 import { StyleSheet, View, type ViewProps } from "react-native";
 import { colors, space } from "@/theme";
+import { BindingRule, Fleurons, ORNAMENT_PADDING } from "./ornaments";
 import { Leaf } from "./toy";
 
 /**
@@ -22,13 +23,33 @@ export function Panel({
   );
 }
 
-/** How much a leaf laid by `OnPaper` takes from the width of what it holds, on each side. */
-export const ON_PAPER_INSET = space.s9 + toyValues.outlineWidth;
-
-/** A leaf of paper under what a screen lays straight on the page (a form, the facts of a card). */
-export function OnPaper({ children }: { readonly children: ReactNode }) {
-  return <Leaf style={styles.sheet}>{children}</Leaf>;
+/**
+ * A leaf of paper under what a screen lays straight on the page (a form, the facts of a card).
+ * `ornament` frames it: fleurons for a welcome, the binding rule for a panel the player reads.
+ */
+export function OnPaper({
+  children,
+  ornament,
+}: {
+  readonly children: ReactNode;
+  readonly ornament?: "fleurons" | "binding";
+}) {
+  return (
+    <Leaf style={[styles.sheet, ornament !== undefined && FRAMED[ornament]]}>
+      {ornament === "fleurons" && <Fleurons small />}
+      {ornament === "binding" && <BindingRule />}
+      {children}
+    </Leaf>
+  );
 }
+
+/** How much a leaf laid by `OnPaper` in its binding rule takes from the width of what it holds. */
+export const ON_BOUND_PAPER_INSET = ORNAMENT_PADDING.binding + toyValues.outlineWidth;
+
+const FRAMED = {
+  fleurons: { padding: ORNAMENT_PADDING.fleurons },
+  binding: { padding: ORNAMENT_PADDING.binding },
+} as const;
 
 const styles = StyleSheet.create({
   panel: { padding: space.s9, gap: space.s6, borderRadius: 20, backgroundColor: colors.panel },

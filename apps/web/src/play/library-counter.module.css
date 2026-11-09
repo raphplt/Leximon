@@ -110,7 +110,8 @@
     grid-template-columns: auto minmax(0, 1fr) auto;
     grid-template-rows: auto minmax(0, 1fr) auto;
     gap: 4px 6px;
-    padding: 22px 12px 14px;
+    /* Clear of the gilt tooling round the leather, the tiles' names included. */
+    padding: 28px 22px 24px;
   }
 
   .desk {
@@ -123,10 +124,11 @@
     grid-row: 1;
   }
 
+  /* The arrows only take the middle of the foot: the tiles keep its height on both sides. */
   .left,
   .right {
     position: relative;
-    grid-row: 2;
+    grid-row: 2 / -1;
     align-self: center;
     gap: 6px;
   }

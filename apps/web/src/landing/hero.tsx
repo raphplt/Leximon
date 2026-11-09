@@ -10,6 +10,7 @@ import { Sachet } from "@/booster/sachet";
 import { Card } from "@/components/card";
 import { RarityName } from "@/components/rarity-icon";
 import { Desk, PaperAction } from "@/library/play-pieces";
+import { GiltCorners } from "@/ui/ornaments";
 import { useStage } from "@/ui/stage";
 import { Kicker, Leaf, Lettering } from "@/ui/toy";
 import { DiscordLink } from "./discord";
@@ -129,6 +130,7 @@ export function Hero({
           <Lettering>{LANDING_TITLE}</Lettering>
         </h1>
         <Leaf className={styles.lead}>
+          <GiltCorners />
           <p>{LANDING_PITCH}</p>
         </Leaf>
         <DoorAction door={door} />

@@ -17,6 +17,7 @@ import { play, vibrate } from "@/feedback/feedback";
 import { catalogCard } from "@/screens/trades/card-row";
 import { fontSizes, fonts, radii, space } from "@/theme";
 import { Icon } from "@/ui/icon";
+import { BindingRule, Fleurons } from "@/ui/ornaments";
 import { useStage } from "@/ui/stage";
 import { Leaf, Lettering, ToyBody, ToyIcon } from "@/ui/toy";
 import { TournamentGain } from "./league-pieces";
@@ -81,7 +82,8 @@ export function SealedResult({
   readonly onOpen: () => void;
 }) {
   return (
-    <Leaf style={pieces.leaf}>
+    <Leaf style={[pieces.leaf, pieces.illuminated]}>
+      <Fleurons small />
       <LeafKicker>{kicker}</LeafKicker>
       <Pressable
         style={styles.pli}
@@ -185,7 +187,8 @@ export function Reveal({
   const score = (answers: readonly RevealAnswer[] | null) =>
     (answers ?? []).slice(0, shown).filter((answer) => answer.correct).length;
   return (
-    <Leaf style={pieces.leaf}>
+    <Leaf style={[pieces.leaf, pieces.framed]}>
+      <BindingRule />
       <View style={styles.head}>
         <View style={styles.headKicker}>
           <LeafKicker>{kicker}</LeafKicker>

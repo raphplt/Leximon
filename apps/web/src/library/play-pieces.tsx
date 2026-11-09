@@ -3,6 +3,7 @@
 import { stockToyInks, type ToyIconName, type ToyMatterName } from "@leximon/tokens";
 import { type MouseEvent, type ReactNode, useEffect, useRef } from "react";
 import { LevelMedal } from "@/ui/level-bits";
+import { Tooling } from "@/ui/ornaments";
 import { Kicker, Lettering, Lettrine, Toy, ToyBody, ToyIcon } from "@/ui/toy";
 import styles from "./play-pieces.module.css";
 
@@ -11,9 +12,13 @@ import styles from "./play-pieces.module.css";
  * screen gives them their words and figures, so that the same pieces serve every state.
  */
 
-/** The green leather desk under the lamp, framed in old gold. */
+/** The green leather desk under the lamp, tooled in gold as the board of a bound book. */
 export function Desk({ className }: { readonly className?: string | undefined }) {
-  return <div className={[styles.desk, className].filter(Boolean).join(" ")} aria-hidden="true" />;
+  return (
+    <div className={[styles.desk, className].filter(Boolean).join(" ")} aria-hidden="true">
+      <Tooling />
+    </div>
+  );
 }
 
 /** A red count of what waits for the player, which nudges now and then. */

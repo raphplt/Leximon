@@ -30,6 +30,7 @@ import { Button, ButtonLink } from "@/ui/button";
 import { Icon } from "@/ui/icon";
 import { LevelMedal } from "@/ui/level-bits";
 import { LoadFailed } from "@/ui/load-failed";
+import { Fleurons, GiltCorners } from "@/ui/ornaments";
 import { Bone, WaitingScreen } from "@/ui/skeleton";
 import { useToast } from "@/ui/toast";
 import ui from "@/ui/ui.module.css";
@@ -55,7 +56,8 @@ export function FriendsScreen() {
     return (
       <main className={styles.screen}>
         <h1 className={`${ui.display} ${styles.title}`}>{FRIENDS_TITLE}</h1>
-        <section className={`${ui.panel} ${styles.card} ${styles.lone}`}>
+        <section className={`${ui.panel} ${styles.card} ${styles.lone} ${styles.welcome}`}>
+          <Fleurons />
           <Icon name="amis" size={40} />
           <p className={styles.hint}>{FRIENDS_GUEST}</p>
           <ButtonLink href="/compte">Créer mon compte</ButtonLink>
@@ -105,7 +107,8 @@ export function FriendsScreen() {
 
         <div className={`${styles.column} ${styles.aside}`}>
           <div className={styles.addingSlot}>
-            <section className={`${ui.panel} ${styles.card}`}>
+            <section className={`${ui.panel} ${styles.card} ${styles.tile}`}>
+              <GiltCorners />
               {hasPseudo ? (
                 <>
                   <FriendLink code={data.link.code} placesLeft={data.link.betaPlacesLeft} />

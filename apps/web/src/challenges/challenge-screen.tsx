@@ -92,6 +92,7 @@ import { GainBanner } from "@/ui/gain-banner";
 import { HelpTip } from "@/ui/help-tip";
 import { Icon } from "@/ui/icon";
 import { useLeaveGuard } from "@/ui/leave-guard";
+import { Fleurons } from "@/ui/ornaments";
 import { ParticleStage, useOptionalStage } from "@/ui/stage";
 import { useToast } from "@/ui/toast";
 import { Lettering, Toy, ToyBody, ToyIcon } from "@/ui/toy";
@@ -996,6 +997,7 @@ function Recap({
   );
   return (
     <section className={`${ui.panel} ${styles.recap}`} aria-labelledby="recap-title">
+      <Fleurons />
       <header className={styles.recapHead}>
         <p id="recap-title" className={ui.kicker}>
           {RECAP_TITLE}

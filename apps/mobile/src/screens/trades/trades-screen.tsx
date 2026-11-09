@@ -45,6 +45,7 @@ import { TAB_BAR_RISE } from "@/shell/tab-bar";
 import { alpha, colors, fontSizes, fonts, paperColors, radii, space } from "@/theme";
 import { Button } from "@/ui/button";
 import { Icon } from "@/ui/icon";
+import { GiltCorners, ORNAMENT_PADDING } from "@/ui/ornaments";
 import { OnPaper, Panel } from "@/ui/panel";
 import { Segmented } from "@/ui/segmented";
 import { TextButton } from "@/ui/text-button";
@@ -391,7 +392,7 @@ function NoOffer({
   readonly onPropose: () => void;
 }) {
   return (
-    <OnPaper>
+    <OnPaper ornament="binding">
       <View style={styles.empty}>
         <Text style={styles.emptyText}>{text}</Text>
         <Text style={[styles.kicker, styles.guideTitle]} accessibilityRole="header">
@@ -488,7 +489,12 @@ function ReceivedOffer({
   const [confirming, setConfirming] = useState(false);
   const sides = tradeSides(trade, "incoming");
   return (
-    <Panel paper accessibilityLabel={`Offre de ${playerName(sides.counterpart)}`}>
+    <Panel
+      paper
+      style={styles.offer}
+      accessibilityLabel={`Offre de ${playerName(sides.counterpart)}`}
+    >
+      <GiltCorners />
       <View style={styles.offerHeader}>
         <Counterpart player={sides.counterpart} />
         <View style={styles.timeLeft}>
@@ -626,6 +632,7 @@ function History({
 const ink = paperColors;
 
 const styles = StyleSheet.create({
+  offer: { padding: ORNAMENT_PADDING.corners },
   screen: { flex: 1 },
   page: {
     gap: space.s8,

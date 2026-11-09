@@ -15,6 +15,7 @@ import { useShared } from "@/player/resource";
 import { useShell } from "@/shell/shell-context";
 import { Button } from "@/ui/button";
 import { Dialog } from "@/ui/dialog";
+import { Tooling } from "@/ui/ornaments";
 import ui from "@/ui/ui.module.css";
 import { catalogCard } from "./card-thumb";
 import styles from "./trade-done.module.css";
@@ -135,6 +136,7 @@ function Moment({
 
   return (
     <div className={styles.moment}>
+      <Tooling />
       <span className={styles.rays} aria-hidden="true" />
       <div className={styles.inner}>
         <p className={`${ui.kicker} ${styles.kicker}`}>Échange conclu</p>

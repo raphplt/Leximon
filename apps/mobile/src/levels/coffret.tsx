@@ -1,5 +1,5 @@
 import type { BoosterWalletResponse, ClaimRefusal, LevelRewardView } from "@leximon/contract";
-import { lettering, room, toyMatters } from "@leximon/tokens";
+import { lettering, toyMatters } from "@leximon/tokens";
 import {
   COFFRET_ACTION,
   COFFRET_ROAD,
@@ -46,7 +46,7 @@ import Animated, {
 } from "react-native-reanimated";
 import Svg, { Circle, Defs, Path, RadialGradient, Stop } from "react-native-svg";
 import { api } from "@/api/client";
-import { Desk } from "@/library/play-pieces";
+import { DESK_RADIUS, Desk } from "@/library/play-pieces";
 import { useNow, useShared } from "@/player/shared";
 import { levelRewards, progress, publishClaimed, wallet } from "@/player/state";
 import { alpha, colors, fontSizes, fonts, paperColors, radii, space } from "@/theme";
@@ -54,6 +54,7 @@ import { Avatar } from "@/ui/avatar";
 import { Button } from "@/ui/button";
 import { Icon } from "@/ui/icon";
 import { LevelMedal } from "@/ui/level";
+import { TOOLING_ROOM } from "@/ui/ornaments";
 import { TextButton } from "@/ui/text-button";
 import { toast } from "@/ui/toast";
 import { Leaf, Lettering, ToyBody, ToyIcon } from "@/ui/toy";
@@ -582,12 +583,13 @@ const styles = StyleSheet.create({
   backdrop: { ...StyleSheet.absoluteFill, backgroundColor: alpha(colors.scrim, 0.82) },
   center: { flex: 1, alignItems: "center", justifyContent: "center", paddingVertical: space.s24 },
   // The coffret lies on the desk.
-  card: { maxHeight: "100%", borderRadius: room.desk.radius, backgroundColor: "transparent" },
+  card: { maxHeight: "100%", borderRadius: DESK_RADIUS, backgroundColor: "transparent" },
+  // What the coffret holds scrolls within the gilt tooling, never over it.
   inside: {
-    margin: room.desk.frameWidth,
-    borderRadius: room.desk.radius - room.desk.frameWidth,
+    margin: TOOLING_ROOM,
+    borderRadius: DESK_RADIUS - TOOLING_ROOM,
   },
-  inner: { alignItems: "center", gap: space.s6, padding: space.s12 },
+  inner: { alignItems: "center", gap: space.s6, padding: space.s8 },
   kicker: {
     fontFamily: fonts.displayBold,
     fontSize: fontSizes.body,

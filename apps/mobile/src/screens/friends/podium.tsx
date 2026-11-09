@@ -13,6 +13,7 @@ import { StyleSheet, Text, View } from "react-native";
 import { api } from "@/api/client";
 import { alpha, fontSizes, fonts, paperColors, radii, space } from "@/theme";
 import { Avatar } from "@/ui/avatar";
+import { GiltCorners, ORNAMENT_PADDING } from "@/ui/ornaments";
 import { Panel } from "@/ui/panel";
 import { TextButton } from "@/ui/text-button";
 
@@ -36,7 +37,8 @@ export function Podium({ alone, now }: { readonly alone: boolean; readonly now: 
 
   const view = podium === null ? null : podiumView(podium.entries);
   return (
-    <Panel paper>
+    <Panel paper style={styles.tile}>
+      <GiltCorners />
       <View style={styles.head}>
         <Text style={styles.kicker}>Podium de la semaine</Text>
         {podium !== null && <Text style={styles.small}>{goalTimeLeft(podium.weekEnd, now)}</Text>}
@@ -98,6 +100,7 @@ export function Podium({ alone, now }: { readonly alone: boolean; readonly now: 
 const ink = paperColors;
 
 const styles = StyleSheet.create({
+  tile: { padding: ORNAMENT_PADDING.corners },
   head: {
     flexDirection: "row",
     alignItems: "center",

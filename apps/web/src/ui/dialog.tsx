@@ -3,6 +3,7 @@
 import { type ReactNode, useEffect, useRef } from "react";
 import styles from "./dialog.module.css";
 import { Icon } from "./icon";
+import { Tooling } from "./ornaments";
 
 /**
  * Secondary content over the screen: a panel on the right on the web, a sheet rising from
@@ -67,6 +68,11 @@ export function Dialog({
         event.stopPropagation();
       }}
     >
+      {open && variant === "wide" && (
+        <span className={styles.tooling}>
+          <Tooling />
+        </span>
+      )}
       {open && (
         <div className={styles.box} data-dialog-box tabIndex={-1}>
           {variant !== "center" && <span className={styles.handle} aria-hidden="true" />}

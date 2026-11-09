@@ -187,7 +187,9 @@
 
 /* --- Word slipping away, below the button --- */
 
+/* Gilt corners on the leaf: the padding keeps the card and the text clear of them. */
 .slipping {
+  position: relative;
   box-sizing: border-box;
   display: flex;
   align-items: center;
@@ -195,7 +197,7 @@
   width: 100%;
   max-width: 560px;
   margin: var(--lx-s3) auto 0;
-  padding: var(--lx-s6) var(--lx-s8) var(--lx-s6) var(--lx-s10);
+  padding: 20px 22px 22px;
 }
 
 .slippingCard {

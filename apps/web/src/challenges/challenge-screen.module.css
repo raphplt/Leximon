@@ -542,7 +542,9 @@
 /* --- Recap --- */
 
 /* Wide on a large screen: the words of a series lie in long rows, not two by two. */
+/* The end of a series is framed in fleurons: the padding keeps the text clear of them. */
 .recap {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -550,7 +552,7 @@
   box-sizing: border-box;
   max-width: 980px;
   margin: 30px auto;
-  padding: var(--lx-s16) 40px var(--lx-s14);
+  padding: 40px;
   text-align: center;
 }
 
@@ -803,10 +805,12 @@
   }
 
   /* Three climbing words to a row, four coming back, the main button on top. */
+  /* The rows of cards are centered, away from the corners: the sides stay narrow enough for
+     them, top and bottom keep the fleurons clear of the score and the stretched buttons. */
   .recap {
     gap: var(--lx-s10);
     margin: var(--lx-s6) -6px;
-    padding: var(--lx-s14) var(--lx-s5) var(--lx-s12);
+    padding: 36px 18px 42px;
   }
 
   .recapCards {

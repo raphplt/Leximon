@@ -17,6 +17,7 @@ import { Avatar } from "@/components/avatar";
 import { api } from "@/lib/api";
 import { Button } from "@/ui/button";
 import { LoadFailed } from "@/ui/load-failed";
+import { BindingRule, TitleRule } from "@/ui/ornaments";
 import ui from "@/ui/ui.module.css";
 import { CardRow, catalogCard } from "./card-thumb";
 import styles from "./trades.module.css";
@@ -70,10 +71,17 @@ export function WishesPanel({
 
   return (
     <>
-      <section className={`${styles.history} ${ui.leaf}`} aria-labelledby="wish-seekers">
-        <h2 id="wish-seekers" className={styles.wishTitle}>
-          {WISH_SEEKERS_TITLE}
-        </h2>
+      <section
+        className={`${styles.history} ${styles.wishPanel} ${ui.leaf}`}
+        aria-labelledby="wish-seekers"
+      >
+        <BindingRule />
+        <div className={styles.titled}>
+          <h2 id="wish-seekers" className={styles.wishTitle}>
+            {WISH_SEEKERS_TITLE}
+          </h2>
+          <TitleRule />
+        </div>
         <ul className={styles.seekers}>
           {seekers.players.map(({ player, cardIds }) => (
             <li key={player.code} className={styles.seeker}>
@@ -99,10 +107,17 @@ export function WishesPanel({
         <p className={styles.wishNote}>{seekersNote(seekers.players.length)}</p>
       </section>
 
-      <section className={`${styles.history} ${ui.leaf}`} aria-labelledby="wishes">
-        <h2 id="wishes" className={styles.wishTitle}>
-          {WISHES_TITLE}
-        </h2>
+      <section
+        className={`${styles.history} ${styles.wishPanel} ${ui.leaf}`}
+        aria-labelledby="wishes"
+      >
+        <BindingRule />
+        <div className={styles.titled}>
+          <h2 id="wishes" className={styles.wishTitle}>
+            {WISHES_TITLE}
+          </h2>
+          <TitleRule />
+        </div>
         <ul className={styles.wishes}>
           {wishes.wishes.map((wish) => (
             <li key={wish.cardId} className={styles.wish}>

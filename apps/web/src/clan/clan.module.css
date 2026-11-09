@@ -75,7 +75,8 @@
   align-items: center;
   gap: 26px;
   margin-bottom: var(--lx-s8);
-  padding: var(--lx-s12) 26px;
+  /* Clear of the gilt tooling round the leather. */
+  padding: 34px 42px;
   overflow: hidden;
   isolation: isolate;
 }
@@ -89,21 +90,20 @@
   --lx-color-page-ink-soft: color-mix(in srgb, var(--lx-lettering-fill) 85%, transparent);
   --lx-color-page-ink-muted: color-mix(in srgb, var(--lx-lettering-fill) 78%, transparent);
   --lx-color-track: var(--lx-desk-hollow);
-  border: 6px solid transparent;
   border-radius: var(--lx-toy-radius-large);
   background:
-    var(--lx-matter-leather) 0 0 / var(--lx-matter-size) padding-box,
+    var(--lx-matter-leather) 0 0 / var(--lx-matter-size),
     radial-gradient(
       ellipse 80% 90% at 30% 40%,
       var(--lx-desk-center) 0%,
       var(--lx-desk-middle) 55%,
       var(--lx-desk-edge) 100%
-    )
-    padding-box,
-    var(--lx-old-gold) border-box;
+    );
   box-shadow:
     0 0 0 3px var(--lx-toy-outline),
     0 6px 0 var(--lx-toy-outline),
+    inset 0 0 0 5px color-mix(in srgb, var(--lx-desk-edge) 70%, transparent),
+    inset 0 2px 0 5px color-mix(in srgb, var(--lx-toy-sheen) 12%, transparent),
     inset 0 0 50px var(--lx-desk-hollow);
   color: var(--lx-lettering-fill);
 }
@@ -294,6 +294,16 @@
 
 .card {
   padding: var(--lx-s10);
+}
+
+/* Framed in the bookbinder's rule: the padding keeps the text clear of it. */
+.card.framed {
+  position: relative;
+  padding: 30px;
+}
+
+.cardRule {
+  margin-top: 6px;
 }
 
 .cardHead {
@@ -981,11 +991,13 @@
   overflow-wrap: anywhere;
 }
 
+/* A side tile: gilt corners, and room enough to keep the text clear of them. */
 .codePanel {
+  position: relative;
   display: flex;
   flex-direction: column;
   gap: var(--lx-s4);
-  padding: var(--lx-s10);
+  padding: 20px 22px 22px;
 }
 
 .codeForm {
@@ -1168,7 +1180,8 @@
     align-items: center;
     gap: var(--lx-s5) var(--lx-s7);
     margin-bottom: var(--lx-s6);
-    padding: var(--lx-s8) var(--lx-s8) var(--lx-s7);
+    /* Clear of the gilt tooling round the leather. */
+    padding: 26px 24px 24px;
   }
 
   .heroText {

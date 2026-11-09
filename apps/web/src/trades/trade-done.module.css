@@ -6,20 +6,19 @@
   --lx-color-page-ink-muted: color-mix(in srgb, var(--lx-lettering-fill) 78%, transparent);
   position: relative;
   padding: 30px var(--lx-s12) var(--lx-s12);
-  border: 6px solid transparent;
   border-radius: var(--lx-toy-radius-large);
   background:
-    var(--lx-matter-leather) 0 0 / var(--lx-matter-size) padding-box,
+    var(--lx-matter-leather) 0 0 / var(--lx-matter-size),
     radial-gradient(
       ellipse 80% 60% at 50% 35%,
       var(--lx-desk-center) 0%,
       var(--lx-desk-middle) 55%,
       var(--lx-desk-edge) 100%
-    )
-    padding-box,
-    var(--lx-old-gold) border-box;
+    );
   box-shadow:
     0 0 0 3px var(--lx-toy-outline),
+    inset 0 0 0 5px color-mix(in srgb, var(--lx-desk-edge) 70%, transparent),
+    inset 0 2px 0 5px color-mix(in srgb, var(--lx-toy-sheen) 12%, transparent),
     inset 0 0 50px var(--lx-desk-hollow);
   text-align: center;
   /* Clipped, not hidden: the rays overflow, and a hidden box could scroll to them. */

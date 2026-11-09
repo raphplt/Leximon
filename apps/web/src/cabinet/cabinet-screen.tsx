@@ -26,6 +26,7 @@ import { useShell } from "@/shell/shell-context";
 import { ButtonLink } from "@/ui/button";
 import { Icon } from "@/ui/icon";
 import { LoadFailed } from "@/ui/load-failed";
+import { BindingRule, Fleurons, Tailpiece, TitleRule } from "@/ui/ornaments";
 import { ParticleStage } from "@/ui/stage";
 import { Leaf, Lettering } from "@/ui/toy";
 import ui from "@/ui/ui.module.css";
@@ -65,7 +66,8 @@ function BackLink() {
 
 function Locked() {
   return (
-    <Leaf className={styles.section}>
+    <Leaf className={`${styles.section} ${styles.door}`}>
+      <Fleurons />
       <p className={styles.lead}>{CABINET_LOCKED}</p>
       <ButtonLink href="/mecene" variant="secondary">
         {CABINET_LOCKED_ACTION}
@@ -94,16 +96,18 @@ function CabinetView({ cabinet }: { readonly cabinet: CatalogCabinet }) {
         </h1>
       </header>
 
-      <Leaf className={styles.section}>
-        <h2 className={styles.heading}>{CABINET_USAGE_TITLE}</h2>
+      <Leaf className={`${styles.section} ${styles.framed}`}>
+        <BindingRule />
+        <SectionTitle>{CABINET_USAGE_TITLE}</SectionTitle>
         <p className={styles.lead}>{usageLine(cabinet.usage)}</p>
         {cabinet.usage !== null && <UsageChart usage={cabinet.usage} />}
         <p className={styles.note}>{CABINET_USAGE_NOTE}</p>
       </Leaf>
 
       {cabinet.articles.length > 0 && (
-        <Leaf className={styles.section}>
-          <h2 className={styles.heading}>{CABINET_LITTRE_TITLE}</h2>
+        <Leaf className={`${styles.section} ${styles.framed}`}>
+          <BindingRule />
+          <SectionTitle>{CABINET_LITTRE_TITLE}</SectionTitle>
           {cabinet.articles.map((article, index) => (
             <Article
               // Homographs keep the Littré's order, which never changes within a file.
@@ -117,8 +121,9 @@ function CabinetView({ cabinet }: { readonly cabinet: CatalogCabinet }) {
       )}
 
       {groups.length > 0 && (
-        <Leaf className={styles.section}>
-          <h2 className={styles.heading}>{CABINET_FAMILY_TITLE}</h2>
+        <Leaf className={`${styles.section} ${styles.framed}`}>
+          <BindingRule />
+          <SectionTitle>{CABINET_FAMILY_TITLE}</SectionTitle>
           <dl className={styles.family}>
             {groups.map((group) => (
               <div key={group.relation} className={styles.familyRow}>
@@ -136,8 +141,18 @@ function CabinetView({ cabinet }: { readonly cabinet: CatalogCabinet }) {
         </Leaf>
       )}
 
+      <Tailpiece className={styles.tailpiece} />
       <p className={styles.sources}>{CABINET_SOURCES}</p>
     </>
+  );
+}
+
+function SectionTitle({ children }: { readonly children: string }) {
+  return (
+    <div className={styles.titled}>
+      <h2 className={styles.heading}>{children}</h2>
+      <TitleRule />
+    </div>
   );
 }
 

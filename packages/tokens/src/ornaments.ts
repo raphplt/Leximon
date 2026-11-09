@@ -17,7 +17,10 @@ export type OrnamentPaint =
   | "dotRed"
   | "taper"
   | "rule"
-  | "ruleThin";
+  | "ruleThin"
+  | "gilt"
+  | "giltThick"
+  | "giltThin";
 
 export interface OrnamentPart {
   readonly paint: OrnamentPaint;
@@ -158,6 +161,42 @@ export const hedera: Ornament = {
     },
   ],
 };
+
+/**
+ * Gilt tooling on the leather of the desk, as on a bound book: a thick and a thin gilt line with
+ * a row of beads between them, turned inward at each corner around a small lozenge, and a rosette
+ * stamped inside each corner. Gold only, as the tools leave it. The corner piece is drawn for the
+ * top left; the straight runs between corners repeat `bead` along their length.
+ */
+export const tooling = {
+  /** From the edge of the leather to the thick line. */
+  inset: 11,
+  /** The whole width of a run, from the outside of the thick line to the inside of the thin one. */
+  width: 10,
+  thick: 2,
+  thin: 1,
+  bead: { at: 5.5, r: 1.1, every: 6 },
+  corner: {
+    width: 32,
+    height: 32,
+    parts: [
+      { paint: "giltThick", d: "M32 1 H13.96 A14 14 0 0 1 1 13.96 V32" },
+      { paint: "giltThin", d: "M32 9.5 H18.73 A21 21 0 0 1 9.5 18.73 V32" },
+      { paint: "gilt", d: dot(22, 5.5, 1.1) },
+      { paint: "gilt", d: dot(28, 5.5, 1.1) },
+      { paint: "gilt", d: dot(5.5, 22, 1.1) },
+      { paint: "gilt", d: dot(5.5, 28, 1.1) },
+      { paint: "gilt", d: dot(15.86, 7.4, 1.1) },
+      { paint: "gilt", d: dot(12.37, 12.37, 1.1) },
+      { paint: "gilt", d: dot(7.4, 15.86, 1.1) },
+      { paint: "gilt", d: "M5 0.5 L9.5 5 L5 9.5 L0.5 5 Z" },
+      { paint: "gilt", d: dot(22.6, 26.4, 1.9) },
+      { paint: "gilt", d: dot(26.4, 22.6, 1.9) },
+      { paint: "gilt", d: dot(22.6, 22.6, 1.9) },
+      { paint: "gilt", d: dot(26.4, 26.4, 1.9) },
+    ],
+  } satisfies Ornament,
+} as const;
 
 /** The pigments of the ornaments, from the toys' own. */
 export const ornamentInks = {

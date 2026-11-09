@@ -14,6 +14,7 @@ import { Card } from "@/components/card";
 import { useShell } from "@/shell/shell-context";
 import { Button, ButtonLink } from "@/ui/button";
 import { Icon } from "@/ui/icon";
+import { GiltCorners } from "@/ui/ornaments";
 import ui from "@/ui/ui.module.css";
 import styles from "./play.module.css";
 
@@ -41,6 +42,8 @@ export function SlippingWord({
   const definition = <span className={styles.slippingDefinition}>{card.definition}</span>;
   const thumb = compact ? COMPACT_THUMB_WIDTH : THUMB_WIDTH;
   const frame = `${styles.slipping} ${ui.leaf} ${compact ? styles.slippingCompact : ""}`;
+  // The tag beside the button is as tall as it: no room there for the gilt corners.
+  const corners = !compact && <GiltCorners />;
   const go = compact && (
     <span className={styles.slippingGo} aria-hidden="true">
       <Icon name="chev" size={16} />
@@ -52,6 +55,7 @@ export function SlippingWord({
     const tone = catalog.collections.find((c) => c.id === card.collectionId)?.back;
     return (
       <div className={frame}>
+        {corners}
         <Link href={review} className={styles.slippingOpen}>
           <span className={styles.slippingCard}>
             <CardBack rarity={card.rarity} width={thumb} tone={tone} />
@@ -74,6 +78,7 @@ export function SlippingWord({
   const open = () => openCard(card.id);
   return (
     <div className={frame}>
+      {corners}
       <button type="button" className={styles.slippingOpen} onClick={open}>
         <span className={styles.slippingCard}>
           <Card

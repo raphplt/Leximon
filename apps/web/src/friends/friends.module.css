@@ -85,6 +85,28 @@
   text-align: center;
 }
 
+/* The ornaments of the leaves: the padding keeps the text clear of each frame. */
+.framed {
+  position: relative;
+  padding: 30px;
+}
+
+.tile {
+  position: relative;
+  padding: 20px 22px 22px;
+}
+
+.welcome {
+  position: relative;
+  padding: 40px;
+}
+
+@media (max-width: 600px) {
+  .welcome {
+    padding: 36px 30px;
+  }
+}
+
 .hint {
   margin: 0;
   font-size: var(--lx-size-body-large);

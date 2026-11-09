@@ -25,6 +25,7 @@ import { MainAction } from "@/library/play-pieces";
 import { fontSizes, fonts, paperColors, space } from "@/theme";
 import { Button } from "@/ui/button";
 import { useInk } from "@/ui/ink";
+import { GiltCorners, ORNAMENT_PADDING } from "@/ui/ornaments";
 import { Page, Paragraph } from "@/ui/page";
 import { Panel } from "@/ui/panel";
 import { SearchField } from "@/ui/search-field";
@@ -184,6 +185,7 @@ function WordRow({
 
   return (
     <Leaf style={styles.word}>
+      <GiltCorners />
       <View style={styles.wordHead}>
         <Text style={styles.wordName}>{word.word}</Text>
         {word.partOfSpeech !== null && <Text style={styles.pos}>{word.partOfSpeech}</Text>}
@@ -241,7 +243,7 @@ const styles = StyleSheet.create({
     lineHeight: 22,
     color: toyMatters.gold.top,
   },
-  word: { gap: space.s3, padding: space.s6 },
+  word: { gap: space.s3, padding: ORNAMENT_PADDING.corners },
   wordHead: { flexDirection: "row", flexWrap: "wrap", alignItems: "baseline", gap: space.s4 },
   wordName: {
     fontFamily: fonts.display,

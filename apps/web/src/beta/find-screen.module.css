@@ -96,10 +96,12 @@
   list-style: none;
 }
 
+/* Gilt corners on each word: the padding keeps the text clear of them. */
 .word {
+  position: relative;
   display: grid;
   gap: 8px;
-  padding: 16px 18px;
+  padding: 20px 22px 22px;
 }
 
 .wordHead {

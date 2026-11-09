@@ -79,9 +79,11 @@
   line-height: 1.05;
 }
 
+/* Gilt corners on the pitch: the padding keeps the text clear of them. */
 .lead {
+  position: relative;
   max-width: 520px;
-  padding: 18px 22px;
+  padding: 20px 22px 22px;
   font-size: var(--lx-size-body-large);
   line-height: 1.5;
 }
@@ -613,7 +615,9 @@
   list-style: none;
 }
 
+/* Gilt corners on each slip: the padding keeps the text clear of them. */
 .voice {
+  position: relative;
   display: flex;
   flex-direction: column;
   gap: 14px;

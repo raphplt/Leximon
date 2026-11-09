@@ -2,34 +2,25 @@
 
 /* --- The desk --- */
 
+/* The leather runs to the edge, turned in a shade darker, and takes its gilt tooling inside. */
 .desk {
   position: relative;
   box-sizing: border-box;
-  border: 6px solid transparent;
-  border-radius: 26px;
+  border-radius: 22px;
   background:
-    var(--lx-matter-leather) 0 0 / var(--lx-matter-size) padding-box,
+    var(--lx-matter-leather) 0 0 / var(--lx-matter-size),
     radial-gradient(
       ellipse 80% 60% at 50% 40%,
       var(--lx-desk-center) 0%,
       var(--lx-desk-middle) 55%,
       var(--lx-desk-edge) 100%
-    )
-    padding-box,
-    var(--lx-old-gold) border-box;
+    );
   box-shadow:
     0 0 0 3px var(--lx-toy-outline),
     0 24px 44px var(--lx-toy-drop),
+    inset 0 0 0 5px color-mix(in srgb, var(--lx-desk-edge) 70%, transparent),
+    inset 0 2px 0 5px color-mix(in srgb, var(--lx-toy-sheen) 12%, transparent),
     inset 0 0 50px var(--lx-desk-hollow);
-}
-
-.desk::before {
-  content: "";
-  position: absolute;
-  inset: 9px;
-  border-radius: 17px;
-  border: 1.5px solid var(--lx-desk-rule);
-  pointer-events: none;
 }
 
 /* --- Counts --- */
@@ -192,6 +183,13 @@
   font-size: var(--lx-size-caption);
   line-height: 1.1;
   text-align: center;
+}
+
+/* On a phone a long name (« Récompenses ») stays within its tile's column. */
+@media (max-width: 759px) {
+  .sideLabel {
+    font-size: var(--lx-size-micro);
+  }
 }
 
 /* --- The collection on the desk --- */

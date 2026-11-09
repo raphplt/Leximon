@@ -31,6 +31,7 @@ import { Button } from "@/ui/button";
 import { Dialog } from "@/ui/dialog";
 import { Icon } from "@/ui/icon";
 import { LevelMedal } from "@/ui/level-bits";
+import { Tooling } from "@/ui/ornaments";
 import { useToast } from "@/ui/toast";
 import { ToyIcon } from "@/ui/toy";
 import ui from "@/ui/ui.module.css";
@@ -186,6 +187,7 @@ export function CoffretDialog({
       hideTitle
     >
       <div className={styles.coffret}>
+        <Tooling />
         <span className={styles.rays} aria-hidden="true" />
         <div className={styles.inner}>
           {step.name === "openedAll" ? (

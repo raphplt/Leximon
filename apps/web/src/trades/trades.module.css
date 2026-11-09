@@ -233,8 +233,10 @@
   list-style: none;
 }
 
+/* An offer is a tile of the list: gilt corners, and room enough to keep the text clear of them. */
 .offer {
-  padding: var(--lx-s9);
+  position: relative;
+  padding: 20px 22px 22px;
 }
 
 .offerHeader {
@@ -329,6 +331,11 @@
   gap: var(--lx-s14);
   margin: var(--lx-s6) auto;
   padding: var(--lx-s16) var(--lx-s16) var(--lx-s20);
+}
+
+/* Framed in the bookbinder's rule, which the padding above already clears. */
+.empty.framed {
+  position: relative;
 }
 
 .emptyText {
@@ -544,6 +551,23 @@
 }
 
 .panel > .sectionTitle {
+  margin: 0;
+}
+
+/* Framed in the bookbinder's rule: the padding keeps the text clear of it. */
+.panel.framed {
+  position: relative;
+  padding: 30px;
+}
+
+/* A title and the gilt rule under it. */
+.titled {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.titled .sectionTitle {
   margin: 0;
 }
 
@@ -854,6 +878,11 @@
 }
 
 /* --- Wishes: who looks for my doubles, the words I look for --- */
+
+.history.wishPanel {
+  position: relative;
+  padding: 30px;
+}
 
 .wishTitle {
   margin: 0;

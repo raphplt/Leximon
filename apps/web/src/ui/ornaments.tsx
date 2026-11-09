@@ -7,6 +7,7 @@ import {
   type OrnamentPaint,
   tailpiece,
   titleRule,
+  tooling,
 } from "@leximon/tokens";
 import styles from "./ornaments.module.css";
 
@@ -26,6 +27,9 @@ const PAINTS: Readonly<Record<Exclude<OrnamentPaint, "stem">, string | undefined
   taper: styles.taper,
   rule: styles.rule,
   ruleThin: styles.ruleThin,
+  gilt: styles.gilt,
+  giltThick: styles.giltThick,
+  giltThin: styles.giltThin,
 };
 
 function Drawing({
@@ -85,6 +89,22 @@ export function BindingRule() {
       {CORNERS.map((corner) => (
         <span key={corner} className={`${styles.bindingCorner} ${styles[corner]}`}>
           <Drawing ornament={bindingRule.corner} />
+        </span>
+      ))}
+    </span>
+  );
+}
+
+/** Gilt tooling on the leather of the desk: two lines and a row of beads, turned at each corner. */
+export function Tooling() {
+  return (
+    <span className={styles.tooling} aria-hidden="true">
+      {RUNS.map((run) => (
+        <span key={run} className={`${styles.tooled} ${styles[run]}`} />
+      ))}
+      {CORNERS.map((corner) => (
+        <span key={corner} className={`${styles.tooledCorner} ${styles[corner]}`}>
+          <Drawing ornament={tooling.corner} />
         </span>
       ))}
     </span>

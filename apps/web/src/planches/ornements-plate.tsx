@@ -1,6 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
+import { Desk } from "@/library/play-pieces";
 import profile from "@/profile/profile.module.css";
 import { BindingRule, Fleurons, GiltCorners, Hedera, Tailpiece, TitleRule } from "@/ui/ornaments";
 import { Kicker, Lettering } from "@/ui/toy";
@@ -122,6 +123,16 @@ export function OrnementsPlate() {
             </Labelled>
           ))}
         </div>
+      </section>
+
+      <section className={styles.block}>
+        <h2 className={styles.blockTitle}>Le cuir de la table</h2>
+        <Labelled
+          label="Dorure aux petits fers"
+          note="La table de Jouer, l'album, l'arène des joutes."
+        >
+          <Desk className={styles.desk} />
+        </Labelled>
       </section>
 
       <section className={styles.block}>

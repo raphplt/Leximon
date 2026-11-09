@@ -7,6 +7,7 @@ import { useState } from "react";
 import styles from "@/app/confidentialite/privacy.module.css";
 import { api } from "@/lib/api";
 import { Button } from "@/ui/button";
+import { BindingRule } from "@/ui/ornaments";
 import ui from "@/ui/ui.module.css";
 
 type State = "ready" | "sending" | UnsubscribeStopped | "invalid" | "failed";
@@ -42,7 +43,8 @@ export function UnsubscribeFromAddress() {
         Leximon
       </Link>
       <h1 className={`${styles.title} ${ui.lettered}`}>{done ? "C'est fait" : "Se désinscrire"}</h1>
-      <section className={`${styles.section} ${ui.leaf}`}>
+      <section className={`${styles.section} ${styles.framed} ${ui.leaf}`}>
+        <BindingRule />
         {done && <p>{STOPPED[state]}</p>}
         {state === "invalid" && (
           <p>Ce lien de désinscription n'est pas valide. Recopie-le en entier depuis l'e-mail.</p>

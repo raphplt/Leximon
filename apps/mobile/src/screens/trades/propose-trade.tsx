@@ -30,8 +30,9 @@ import { fontSizes, fonts, paperColors, radii, space } from "@/theme";
 import { Avatar } from "@/ui/avatar";
 import { Button } from "@/ui/button";
 import { LevelMedal } from "@/ui/level";
+import { TitleRule } from "@/ui/ornaments";
 import { FormError } from "@/ui/page";
-import { ON_PAPER_INSET, OnPaper } from "@/ui/panel";
+import { ON_BOUND_PAPER_INSET, OnPaper } from "@/ui/panel";
 import { TextButton } from "@/ui/text-button";
 import { TextField } from "@/ui/text-field";
 import { CardRow, cardLabel, catalogCard, openCard } from "./card-row";
@@ -60,7 +61,7 @@ const NOUN = PACK_NOUNS.sachet;
 const COLUMNS = 3;
 const GAP = 10;
 /** The screen's side padding, on each side. */
-const GUTTER = 16 + ON_PAPER_INSET;
+const GUTTER = 16 + ON_BOUND_PAPER_INSET;
 const REVIEW_THUMB = 92;
 const CONNECTION_ERROR = "Ça n'a pas marché. Vérifie ta connexion.";
 
@@ -300,9 +301,12 @@ export function ProposeTrade({
 
   if (blocked !== null) {
     return (
-      <OnPaper>
+      <OnPaper ornament="binding">
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Proposer un échange</Text>
+          <View style={styles.titled}>
+            <Text style={styles.sectionTitle}>Proposer un échange</Text>
+            <TitleRule />
+          </View>
           <Text style={styles.hint}>{blocked}</Text>
           <Text style={styles.muted}>
             En attendant, ouvre des {NOUN.many}. Tu pourras échanger tes doubles.
@@ -316,11 +320,14 @@ export function ProposeTrade({
   const partnerName = partner === null ? "" : playerName(partner.badge);
 
   return (
-    <OnPaper>
+    <OnPaper ornament="binding">
       <View style={styles.section}>
-        <Text style={styles.sectionTitle} accessibilityRole="header">
-          Proposer un échange
-        </Text>
+        <View style={styles.titled}>
+          <Text style={styles.sectionTitle} accessibilityRole="header">
+            Proposer un échange
+          </Text>
+          <TitleRule />
+        </View>
         {step !== "sent" && <Steps step={step} />}
 
         {step === "code" && hasFriends && (
@@ -699,6 +706,7 @@ function StepActions({
 const ink = paperColors;
 
 const styles = StyleSheet.create({
+  titled: { gap: space.s3 },
   section: { gap: space.s7 },
   sectionTitle: { fontFamily: fonts.display, fontSize: fontSizes.title, color: ink.pageInk },
   hint: {
